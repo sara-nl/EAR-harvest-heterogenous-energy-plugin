@@ -6,7 +6,7 @@
 #define PAPI_LIB_PATH       "@PAPI_LIBDIR@"
 #define GSL_LIB_PATH        "@GSL_LIBDIR@"
 
-#define EAR_SUCCESS  1
+#define EAR_SUCCESS  0
 #define EAR_ERROR   -1
 #define EAR_WARNING -2
 

@@ -26,7 +26,7 @@ UNCORE_OBJS = uncore_architectures/pci_uncores.o \
               ear_uncores.o
 
 LIBRARIES = ear_uncores.a ear_node_energy_metrics.a
-BINARIES  = ear_daemon
+BINARIES  = eard
 
 ######## RULES
 
@@ -59,13 +59,13 @@ ear_uncores.o: ear_uncores.c ear_uncores.h
 ear_uncores.a: $(UNCORE_OBJS)
 	ar rvs ear_uncores.a $(UNCORE_OBJS)
 
-ear_daemon: ear_daemon.c $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
-	$(CC) $(CFLAGS) -o ear_daemon ear_daemon.c $(OBJS) $(OUTER_OBJS) $(LIBRARIES) $(LDFLAGS)
+eard: ear_daemon.c $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
+	$(CC) $(CFLAGS) -o eard ear_daemon.c $(OBJS) $(OUTER_OBJS) $(LIBRARIES) $(LDFLAGS)
 
 ######## OPTIONS
 
 install:
-	mv ear_daemon $(DESTDIR)/bin
+	mv eard $(DESTDIR)/sbin
 
 clean:
 	@ for i in $(COMPONENTS); do  \
