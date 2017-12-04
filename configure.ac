@@ -130,7 +130,7 @@ fi
 ##########
 
 AC_CONFIG_FILES([Makefile
-                 misc/ear-1.0
+                 etc/ear-1.0
                  src/common/config.h]) 
 AC_CONFIG_FILES([tests/check/check.sh], [chmod +x tests/check/check.sh])
 AC_OUTPUT
