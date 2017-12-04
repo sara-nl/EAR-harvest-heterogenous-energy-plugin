@@ -275,7 +275,6 @@ static int fork_ear_daemon(spank_t sp)
         SPANK_ERROR("Missing crucial environment variable");
         return (ESPANK_ENV_NOEXIST);
     }
-    sleep(4);
     return ESPANK_SUCCESS;
 }
 
@@ -437,17 +436,25 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
     return (ESPANK_SUCCESS);
 }
 
-//! Called on slurmstepd
-int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av)
+int slurm_spank_init (spank_t sp, int ac, char **av)
 {
-    FUNCTION_INFO("slurm_spank_task_init_privileged");
+    FUNCTION_INFO("slurm_spank_init");
 
-    if(spank_context () == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
+    if(spank_context () == S_CTX_SLURMD)
     {
-        if(task_lock(sp))
-        {
-            return fork_ear_daemon(sp);
-        }
+        // LAUNCH DAEMON
+    }
+
+    return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
+{
+    FUNCTION_INFO("slurm_spank_slurmd_init");
+
+    if(spank_context () == S_CTX_SLURMD || //NOT LAUNCHED)
+    {
+        // LAUNCH DAEMON
     }
 
     return (ESPANK_SUCCESS);
@@ -457,9 +464,9 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_exit");
 
-    if(spank_context () == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
+    if(spank_context () == S_CTX_SLURMD)
     {
-        task_unlock(sp);
+        // LAUNCH DAEMON
     }
 
     return (ESPANK_SUCCESS);
@@ -611,22 +618,3 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
     }
     return (ESPANK_SUCCESS);
 }
-
-int slurm_spank_init (spank_t sp, int ac, char **av)
-{
-    FUNCTION_INFO("slurm_spank_init");
-    return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
-{
-    FUNCTION_INFO("slurm_spank_slurmd_init");
-    return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
-{
-    FUNCTION_INFO("slurm_spank_slurmd_exit");
-    return (ESPANK_SUCCESS);
-}
-
