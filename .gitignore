@@ -31,7 +31,7 @@ tests/check/check.sh
 *compute_coefficients
 *traces_to_paraver
 *show_metrics
-
+*eard
 
 # IDE
 cmake*

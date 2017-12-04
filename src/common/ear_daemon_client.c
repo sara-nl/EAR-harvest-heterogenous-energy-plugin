@@ -94,8 +94,10 @@ int ear_daemon_client_connect()
 			}
 			switch(i){
 			case freq_req:
+				// When using a single communicator, we should send only a frequency connection request 
 				req.req_service=CONNECT_FREQ; 
 				break;
+#ifdef MULTIPLE_SERVICES
 			case uncore_req:
 				req.req_service=CONNECT_UNCORE;
 				break;
@@ -108,6 +110,7 @@ int ear_daemon_client_connect()
 			case node_energy_req:
 				req.req_service=CONNECT_ENERGY;
 				break;
+#endif
 			}
 			if (ear_fd_req[i]>0){ 
 				warning(write(ear_fd_req[i],&req,sizeof(req)),sizeof(req),"writting req_service in ear_daemon_client_connect");
