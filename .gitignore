@@ -1,0 +1,43 @@
+# General
+/Makefile
+*.o
+*.a
+*.so
+*/bin/
+*/lib/
+
+# Autotools
+*aclocal.m4
+*autom4te.cache*
+*config.log
+*config.status
+*cpu_property.out
+configure
+
+# Julita's
+DB/
+DB_Learning_phase/
+*romio_hints.txt
+*log.env
+*hostlist
+
+# Build
+misc/ear-1.0
+src/common/config.h
+tests/check/check.sh
+*ear_slurm_plugin.so
+*compute_coefficients
+*traces_to_paraver
+*show_metrics
+
+
+# IDE
+cmake*
+CMake*
+*_trash
+*.idea
+
+# Kernels
+*/npbparams.h
+*/setparams
+

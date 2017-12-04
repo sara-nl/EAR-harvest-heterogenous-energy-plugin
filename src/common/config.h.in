@@ -1,0 +1,16 @@
+#include <linux/limits.h>
+
+#define CPUPOWER_LIB_PATH   "@CPUPOWER_LIBDIR@"
+#define FREEIPMI_LIB_PATH   "@FREEIPMI_LIBDIR@"
+#define SLURM_LIB_PATH      "@SLURM_LIBDIR@"
+#define PAPI_LIB_PATH       "@PAPI_LIBDIR@"
+#define GSL_LIB_PATH        "@GSL_LIBDIR@"
+
+#define EAR_SUCCESS  1
+#define EAR_ERROR   -1
+#define EAR_WARNING -2
+
+typedef unsigned char uchar;
+typedef unsigned long long ull;
+typedef unsigned long ulong;
+typedef unsigned int uint;

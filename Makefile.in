@@ -1,0 +1,57 @@
+CC           = gcc
+MPICC        = mpicc
+ROOTDIR      = $(shell pwd)
+DESTDIR      = @prefix@
+PAPI_BASE    = @PAPI_DIR@
+PAPI_CFLAGS  = @PAPI_CPPFLAGS@
+PAPI_LDFLAGS = @PAPI_LDFLAGS@ @PAPI_LIBS@
+GSL_BASE     = @GSL_DIR@
+GSL_CFLAGS   = @GSL_CPPFLAGS@
+GSL_LDFLAGS  = @GSL_LDFLAGS@ @GSL_LIBS@
+SLURM_BASE   = @SLURM_DIR@
+SLURM_CFLAGS = @SLURM_CPPFLAGS@
+CPUF_BASE    = @CPUPOWER_DIR@
+CPUF_CFLAGS  = @CPUPOWER_CPPFLAGS@
+CPUF_LDFLAGS = @CPUPOWER_LDFLAGS@ @CPUPOWER_LIBS@
+IPMI_BASE    = @FREEIPMI_DIR@
+IPMI_CFLAGS  = @FREEIPMI_CPPFLAGS@
+IPMI_LDFLAGS = @FREEIPMI_LDFLAGS@ @FREEIPMI_LIBS@
+CONSTANTS = -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0
+
+######## VARS
+
+export CC
+export MPICC
+export ROOTDIR
+export DESTDIR
+export PAPI_BASE
+export PAPI_CFLAGS
+export PAPI_LDFLAGS
+export GSL_BASE
+export GSL_CFLAGS
+export GSL_LDFLAGS
+export IPMI_BASE
+export IPMI_CFLAGS
+export IPMI_LDFLAGS
+export SLURM_BASE
+export SLURM_CFLAGS
+export CPUF_LDFLAGS
+export CONSTANTS
+
+######## RULES
+
+.PHONY: check
+
+all:
+	@ $(MAKE) -C src all || exit
+	@ $(MAKE) -C tests all || exit
+
+check:
+	@ $(MAKE) -C tests check
+
+install:
+	@ $(MAKE) -C src install
+
+clean:
+	$(MAKE) -C src clean
+	$(MAKE) -C test clean

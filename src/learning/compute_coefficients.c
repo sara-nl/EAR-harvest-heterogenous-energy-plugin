@@ -1,0 +1,458 @@
+/*    This program is part of the Energy Aware Runtime (EAR).
+    It has been developed in the context of the BSC-Lenovo Collaboration project.
+    
+    Copyright (C) 2017  
+	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
+    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
+
+*/
+
+#include <stdio.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_multifit.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include <errno.h>
+#include <cpufreq.h>
+#include <ear_db_type.h>
+#include <ear_models/ear_models.h>
+#include <config.h>
+
+#define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
+
+struct App_info *app_list;
+struct App_info **sorted_app_list;
+struct Coefficients_info **coeffs_list;
+
+uint *samples_per_app;
+uint num_diff_apps;
+
+char *nodename;
+uint *node_freq_list;
+uint num_node_p_states;
+uint min_freq;
+uint nom_freq;
+
+uint num_apps, current_app = 0;
+uint *samples_f, i, *current;
+
+#define MALLOC(var, type, mult)                       \
+    var = (type *) malloc(sizeof(type) * mult);       \
+    if (var == NULL) {                                \
+        fprintf(stderr, "Error allocating memory\n"); \
+        exit(1);                                      \
+    }
+#define OPEN(desc, file_name, permissions, flags)     \
+    desc = open(file_name, permissions, flags);       \
+    if (desc < 0) {                                   \
+        perror("Error opening/creating file.");       \
+        exit(1);                                      \
+    }
+
+
+uint p_state_to_freq(int i) {
+    return node_freq_list[i];
+}
+
+uint freq_to_p_state(uint freq)
+{
+    int is_greater;
+    int is_equal;
+    int has_next;
+    int found = 0;
+    int i = 0;
+
+    while (i < num_node_p_states && !found) {
+        is_equal = freq == node_freq_list[i];
+        has_next = i < num_node_p_states - 1;
+        is_greater = has_next && freq > node_freq_list[i + 1];
+        found = is_equal || is_greater || !has_next;
+        i = i + !found;
+    }
+
+    return i;
+}
+
+uint fill_list_p_states()
+{
+    struct cpufreq_available_frequencies *list_freqs, *first_freq;
+    int num_pstates = 0;
+
+    list_freqs = cpufreq_get_available_frequencies(0);
+    first_freq = list_freqs;
+
+    while (list_freqs != NULL) {
+        list_freqs = list_freqs->next;
+        num_pstates++;
+    }
+
+    MALLOC(node_freq_list, uint, num_pstates);
+    list_freqs = first_freq;
+
+    for (i = 0; i < num_pstates; i++)
+    {
+        if (i == 1) nom_freq = list_freqs->frequency;
+        node_freq_list[i] = list_freqs->frequency;
+        list_freqs = list_freqs->next;
+    }
+
+    cpufreq_put_available_frequencies(first_freq);
+    return num_pstates;
+}
+
+int app_exists(struct App_info *Applist, uint total_apps, struct App_info *newApp) {
+    uint pos = 0, found = 0;
+
+    while ((pos < total_apps) && (found == 0)) {
+        if ((strcmp(Applist[pos].app_id, newApp->app_id) == 0) &&
+            (Applist[pos].nominal == newApp->nominal)) {
+            found = 1;
+        } else {
+            pos++;
+        }
+    }
+    if (found == 0) return -1;
+    else return pos;
+}
+
+void average_list_samples(struct App_info *current, uint samples)
+{
+    double foravg = (double) samples;
+    current->seconds = current->seconds / foravg;
+    current->GIPS_f0 = current->GIPS_f0 / foravg;
+    current->GBS_f0 = current->GBS_f0 / foravg;
+    current->POWER_f0 = current->POWER_f0 / foravg;
+    current->CPI = current->CPI / foravg;
+    current->TPI_f0 = current->TPI_f0 / foravg;
+}
+
+// A=A+B metrics
+void accum_app(struct App_info *A, struct App_info *B)
+{
+    A->seconds += B->seconds;
+    A->GIPS_f0 += B->GIPS_f0;
+    A->GBS_f0 += B->GBS_f0;
+    A->POWER_f0 += B->POWER_f0;
+    A->TPI_f0 += B->TPI_f0;
+    A->CPI += B->CPI;
+}
+
+void write_app(struct App_info *A, struct App_info *B)
+{
+    strcpy(A->app_id, B->app_id);
+    A->nominal = B->nominal;
+    A->procs = B->procs;
+    A->seconds = B->seconds;
+    A->GIPS_f0 = B->GIPS_f0;
+    A->GBS_f0 = B->GBS_f0;
+    A->POWER_f0 = B->POWER_f0;
+    A->TPI_f0 = B->TPI_f0;
+    A->CPI = B->CPI;
+}
+
+void nominal_for_power(uint ref, char *app_name, double *power, double *tpi)
+{
+    int i = 0, found = 0;
+    *power = 0;
+    *tpi = 0;
+
+    while ((i < samples_f[ref]) && (found == 0))
+    {
+        if (strcmp(sorted_app_list[ref][i].app_id, app_name) == 0) {
+            *power = sorted_app_list[ref][i].POWER_f0;
+            *tpi = sorted_app_list[ref][i].TPI_f0;
+            found = 1;
+        } else i++;
+    }
+}
+
+void nominal_for_cpi(uint ref, char *app_name, double *cpi, double *tpi)
+{
+    int i = 0, found = 0;
+    *cpi = 0;
+    *tpi = 0;
+
+    while ((i < samples_f[ref]) && (found == 0))
+    {
+        if (strcmp(sorted_app_list[ref][i].app_id, app_name) == 0)
+        {
+            *cpi = sorted_app_list[ref][i].CPI;
+            *tpi = sorted_app_list[ref][i].TPI_f0;
+            found = 1;
+        } else i++;
+    }
+}
+
+void init_list_coeffs(uint ref, uint i, uint f, double A, double B, double C, double D, double E, double F)
+{
+    coeffs_list[ref][i].pstate = f;
+    coeffs_list[ref][i].available = 1;
+    coeffs_list[ref][i].A = A;
+    coeffs_list[ref][i].B = B;
+    coeffs_list[ref][i].C = C;
+    coeffs_list[ref][i].D = D;
+    coeffs_list[ref][i].E = E;
+    coeffs_list[ref][i].F = F;
+}
+
+void usage(char *app)
+{
+    fprintf(stdout, "Usage: %s db_name coefficients_db min_freq nodename\n", app);
+    exit(1);
+}
+
+int main(int argc, char *argv[])
+{
+    struct App_info read_app;
+    int fd, index;
+    uint f, pos, ref, i;
+    uint filtered_apps = 0;
+    double power, cpi, tpi;
+    char coef_file[256];
+    char men[128];
+
+    if (argc < 5) {
+        usage(argv[0]);
+    }
+
+    //
+    min_freq = (uint) atoi(argv[3]);
+    nodename = argv[4];
+
+    // We get how many samples per frequency we have
+    num_node_p_states = fill_list_p_states();
+
+    // samples_f is to compute how many samples per frequency we have
+    MALLOC(samples_f, uint, num_node_p_states);
+    MALLOC(current, uint, num_node_p_states);
+
+    for (i = 0; i < num_node_p_states; i++) {
+        samples_f[i] = 0;
+        current[i] = 0;
+    }
+
+    // We read data from data file
+    OPEN(fd, argv[1], O_RDONLY, 0);
+
+    // Number of apps (total instances, not different apps)
+    num_apps = (lseek(fd, 0, SEEK_END) / sizeof(struct App_info));
+
+    if (num_apps < 0) {
+        perror("Error calculating num apps");
+        exit(1);
+    }
+
+    // Allocating space for the list of applications
+    MALLOC(app_list, struct App_info, num_apps);
+
+    // Allocating space for an array of pointers, which each position
+    // is also an array pointing to the same application samples
+    //samples_per_app = (uint *) malloc(sizeof(uint) * num_apps);
+    MALLOC(samples_per_app, uint, num_apps);
+
+    for (i = 0; i < num_apps; i++) {
+        samples_per_app[i] = 0;
+    }
+
+    //
+    if (lseek(fd, 0, SEEK_SET) < 0) {
+        perror("Error while executing lseek to offset=0");
+        exit(1);
+    }
+
+    //
+    for (i = 0; i < num_apps; i++) {
+        if (read(fd, &read_app, sizeof(struct App_info)) != sizeof(struct App_info)) {
+            perror("Error reading app info");
+            exit(1);
+        }
+
+        if (read_app.nominal >= min_freq) {
+
+            if ((index = app_exists(app_list, filtered_apps, &read_app)) >= 0) {
+                // If APP exists, then accumulate its values in
+                accum_app(&app_list[index], &read_app);
+                samples_per_app[index]++;
+            } else {
+                write_app(&app_list[filtered_apps], &read_app);
+                samples_per_app[filtered_apps] = 1;
+                filtered_apps++;
+            }
+        }
+    }
+
+    // We will consider only applictions with f >= min_freq
+    num_apps = filtered_apps;
+
+    // We must compute the average per (app,f)
+    for (i = 0; i < num_apps; i++) {
+        average_list_samples(&app_list[i], samples_per_app[i]);
+    }
+
+    fprintf(stdout, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u\n",
+            nodename, num_node_p_states, nom_freq, num_apps, min_freq);
+    close(fd);
+
+    // We maintain the name's of applications to generate graphs
+    for (current_app = 0; current_app < num_apps; current_app++) {
+        if (app_list[current_app].nominal >= min_freq) {
+            index = freq_to_p_state(app_list[current_app].nominal);
+            samples_f[index]++;
+        }
+    }
+
+    // We group applications with frequencies
+    MALLOC(sorted_app_list, struct App_info*, num_node_p_states);
+
+    for (i = 0; i < num_node_p_states; i++) {
+        MALLOC(sorted_app_list[i], struct App_info, samples_f[i]);
+    }
+
+    // Sorting applications by frequency
+    for (current_app = 0; current_app < num_apps; current_app++) {
+        f = app_list[current_app].nominal;
+
+        if (f >= min_freq) {
+            i = freq_to_p_state(f);
+            pos = current[i];
+
+            write_app(&sorted_app_list[i][pos], &app_list[current_app]);
+            current[i]++;
+        }
+    }
+
+    // Computing coefficients
+    MALLOC(coeffs_list, struct Coefficients_info *, num_node_p_states);
+
+    for (f = 0; f < num_node_p_states; f++) {
+        MALLOC(coeffs_list[f], struct Coefficients_info, num_node_p_states);
+
+        for (i = 0; i < num_node_p_states; i++) {
+            coeffs_list[f][i].available = 0;
+        }
+    }
+
+    init_list_coeffs(0, 0, nom_freq, 1, 0, 0, 1, 0, 0);
+    double A, B, C, D, E, F;
+
+    // We compute regression
+    for (ref = 0; ref < num_node_p_states; ref++)
+    {
+        if (samples_f[ref])
+        {
+            sprintf(coef_file, "%s.%u", argv[2], p_state_to_freq(ref));
+            OPEN(fd, coef_file, O_WRONLY | O_CREAT | O_TRUNC, CREATE_FLAGS);
+
+            for (f = 0; f < num_node_p_states; f++) // Coefficients per frequency
+            {
+                if (ref == f)
+                {
+                    init_list_coeffs(ref, f, p_state_to_freq(f), 1, 0, 0, 1, 0, 0);
+                }
+                else
+                {
+                    int n = samples_f[f];
+
+                    if (n > 0)
+                    {
+                        #ifdef DEBUG
+                        fprintf(stdout, "Computing POWER regression for freq %u with %u samples (REF=%u)\n",
+                                p_state_to_freq(f), samples_f[f], p_state_to_freq(ref));
+                        #endif
+                        gsl_matrix *SIGNATURE_POWER = gsl_matrix_calloc(n, 3);
+                        gsl_vector *POWER = gsl_vector_alloc(n);
+                        gsl_vector *COEFFS = gsl_vector_alloc(3);
+
+                        for (i = 0; i < n; i++) {
+                            // POWER
+                            gsl_vector_set(POWER, i, sorted_app_list[f][i].POWER_f0);
+
+                            nominal_for_power(ref, sorted_app_list[f][i].app_id, &power, &tpi);
+
+                            // SIGNATURE VALUES
+                            gsl_matrix_set(SIGNATURE_POWER, i, 0, 1);
+                            gsl_matrix_set(SIGNATURE_POWER, i, 1, power);
+                            gsl_matrix_set(SIGNATURE_POWER, i, 2, tpi);
+                        }
+
+                        double chisq;
+                        gsl_matrix *cov = gsl_matrix_alloc(3, 3);
+                        gsl_multifit_linear_workspace *wspc = gsl_multifit_linear_alloc(n, 3);
+                        gsl_multifit_linear(SIGNATURE_POWER, POWER, COEFFS, cov, &chisq, wspc);
+
+                        #ifdef DEBUG
+                        fprintf(stdout, "Coefficient for power: %g*POWER_f0 + %g*TPI_f0 + %g\n",
+                                gsl_vector_get(COEFFS, 1), gsl_vector_get(COEFFS, 2), gsl_vector_get(COEFFS, 0));
+                        #endif
+                        A = gsl_vector_get(COEFFS, 1);
+                        B = gsl_vector_get(COEFFS, 2);
+                        C = gsl_vector_get(COEFFS, 0);
+                        gsl_matrix_free(SIGNATURE_POWER);
+                        gsl_matrix_free(cov);
+                        gsl_vector_free(POWER);
+                        gsl_vector_free(COEFFS);
+                        gsl_multifit_linear_free(wspc);
+                    }
+                    if (n > 0)
+                    {
+                        #ifdef DEBUG
+                        fprintf(stdout, "Computing CPI regression for freq %u with %u samples (REF=%u)\n",
+                                p_state_to_freq(f), samples_f[f], p_state_to_freq(ref));
+                        #endif
+                        gsl_matrix *SIGNATURE_CPI = gsl_matrix_calloc(n, 3);
+                        gsl_vector *CPI = gsl_vector_alloc(n);
+                        gsl_vector *COEFFS = gsl_vector_alloc(3);
+
+                        for (i = 0; i < n; i++)
+                        {
+                            // CPI
+                            gsl_vector_set(CPI, i, sorted_app_list[f][i].CPI);
+
+                            nominal_for_cpi(ref, sorted_app_list[f][i].app_id, &cpi, &tpi);
+
+                            // SIGNATURE VALUES
+                            gsl_matrix_set(SIGNATURE_CPI, i, 0, 1);
+                            gsl_matrix_set(SIGNATURE_CPI, i, 1, cpi);
+                            gsl_matrix_set(SIGNATURE_CPI, i, 2, tpi);
+                        }
+
+                        double chisq;
+                        gsl_matrix *cov = gsl_matrix_alloc(3, 3);
+                        gsl_multifit_linear_workspace *wspc = gsl_multifit_linear_alloc(n, 3);
+                        gsl_multifit_linear(SIGNATURE_CPI, CPI, COEFFS, cov, &chisq, wspc);
+
+                        #ifdef DEBUG
+                        fprintf(stdout, "Coefficient for cpi: %g*CPI_f0 + %g*TPI_f0 + %g\n",
+                                gsl_vector_get(COEFFS, 1), gsl_vector_get(COEFFS, 2), gsl_vector_get(COEFFS, 0));
+                        #endif
+                        D = gsl_vector_get(COEFFS, 1);
+                        E = gsl_vector_get(COEFFS, 2);
+                        F = gsl_vector_get(COEFFS, 0);
+
+                        gsl_matrix_free(SIGNATURE_CPI);
+                        gsl_matrix_free(cov);
+                        gsl_vector_free(CPI);
+                        gsl_vector_free(COEFFS);
+                        gsl_multifit_linear_free(wspc);
+
+                        init_list_coeffs(ref, f, p_state_to_freq(f), A, B, C, D, E, F);
+                    }
+                }
+            }
+
+            if (write(fd, coeffs_list[ref], sizeof(struct Coefficients_info) * num_node_p_states) !=
+                (sizeof(struct Coefficients_info) * num_node_p_states)) {
+                perror("Error writting coefficients file\n");
+                exit(1);
+            }
+
+            close(fd);
+        }
+    }
+
+    fprintf(stdout, "%s: computed coefficients\n", nodename);
+    return 0;
+}

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+CPUPOWER_LIB_PATH="@CPUPOWER_LIBDIR@"
+FREEIPMI_LIB_PATH="@FREEIPMI_LIBDIR@"
+PAPI_LIB_PATH="@PAPI_LIBDIR@"
+
+export LD_LIBRARY_PATH=$CPUPOWER_LIB_PATH:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$FREEIPMI_LIB_PATH:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$PAPI_LIB_PATH:$LD_LIBRARY_PATH
+
+function check
+{
+	EXEC=`./$1 $3 2> /dev/null`
+	RETVAL=$?
+	
+	if test $RETVAL -eq 0; then
+    		echo -e Checking for $2 ... "\e[92mok\e[0m"
+	else
+    		echo -e Checking for $2 ... "\e[31mwarning\e[0m"
+	fi
+}
+
+check cpu_model "CPU compatible model"
+check cpu_aperf "CPU APERF counter available"
+check cpu_uncores "CPU uncores presence"
+check cpu_uncores_all "CPU uncores available (all)"
+check papi_version "PAPI version >="
+check papi_init "PAPI initialization"
+check papi_comp_available "PAPI perf counters component available" "perf_event"
+check papi_comp_enabled "PAPI perf counters component enabled" "perf_event"
+check papi_comp_available "PAPI perf uncore counters component available" "perf_event_uncore"
+check papi_comp_enabled "PAPI perf uncore counters component enabled" "perf_event_uncore"
+check papi_comp_available "PAPI libmsr component available" "libmsr"
+check papi_comp_enabled "PAPI libmsr component enabled" "libmsr"
+check papi_comp_available "PAPI rapl component available" "rapl"
+check papi_comp_enabled "PAPI rapl component enabled" "rapl"
+check gsl_version "GSL version >="
+check slurm_version "SLURM version >="
+check free_ipmi_version "Free IPMI version >="
+
+
+

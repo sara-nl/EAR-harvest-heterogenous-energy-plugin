@@ -1,0 +1,42 @@
+######## FILES
+
+COMPONENTS = common   \
+             library  \
+             daemon   \
+             learning \
+             slurm_plugin \
+             tools
+
+INSTALL_FOLDERS = $(DESTDIR)/bin  \
+                  $(DESTDIR)/bin/kernels \
+                  $(DESTDIR)/lib  \
+                  $(DESTDIR)/etc  \
+                  $(DESTDIR)/sbin
+
+######## RULES
+
+.PHONY: check
+
+all:
+	@ for i in $(COMPONENTS); do                         \
+	   	echo "===================================="; \
+		echo "= Compilling $$i";                     \
+		echo "===================================="; \
+		$(MAKE) -C $${i} all || exit;                \
+	done
+
+check:
+	@ $(MAKE) -C tests check
+
+######## OPTIONS
+
+install:
+	@ mkdir -p ${INSTALL_FOLDERS}
+	@ for i in $(COMPONENTS); do      \
+		$(MAKE) -S -C $${i} install; \
+	done
+
+clean:
+	@ for i in $(COMPONENTS); do    \
+		$(MAKE) -C $${i} clean; \
+	done

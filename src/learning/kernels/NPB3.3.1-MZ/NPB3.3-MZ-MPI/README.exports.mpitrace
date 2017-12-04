@@ -1,0 +1,129 @@
+A few environment variables can be set :-)
+
+Roughly from most important to least important.
+
+export PROFILE_XML=yes          # Profiling data is also output as XML. Default is no.
+                                #   which means text only.
+export PROFILE_VPROF=yes        # Turns the vprof profiler from Sandia on. Recommended.
+export PROFILE_GPERF=yes        # Turns on the Google Perftools profiler. It supports shared libraries
+                                # but may hang though. Better to turn PROFILE_BY_CALL_SITE off.
+export PROFILE_HPMPROF=yes      # Turns on the HPM profiler. It supports shared libraries
+                                # but may hang though. Better to turn PROFILE_BY_CALL_SITE off.
+export HPM_PROFILE_THRESHOLD=2400000 # Changes the threshold for the PAPI_overflow call.
+export PROFILE_ITIMERPROF=yes   # Turns on the itimer profiler. It supports shared libraries
+                                # and should not hang as the signal handler routine does not
+                                # call any "async signal unsafe" functions.
+export PROFILE_ITIMERPROF_MILLIS=100 # Changes the threshold for the itimer profiler, ie the number
+                                # of milliseconds at with the itimer ticks. The default is 100.
+export PROFILE_PG=yes           # If the application was linked with -pg, will create a 
+                                #   subdir for each task instead of having all tasks
+                                #   writing in the *same* gmon.out file.
+
+export PROFILE_ENERGY=yes       # Turns on energy measurements on all nodes involved
+
+export PROFILE_JIO=yes          # Turns on IO profiling. To catch MPI-IO file IO you need to use a static MPI library.
+   export JIO_LEVEL=SUMMARY     # - reports about the number of bytes read and written
+   export JIO_LEVEL=DETAILED    # - reports about the number of bytes read and written per file.
+                                #   This is the default.
+   export JIO_LEVEL=TRACE       # - traces *every* I/O. Don't use it :-)
+
+export PROFILE_IMBALANCE=yes    # Turns on imbalance profiling. Will time the imbalance ahead
+                                #   of the collective communications
+
+export SYNC_COLLECTIVES=yes     # Will insert a barrier ahead of all collectives. Without PROFILE_IMBALANCE
+                                #   these barriers will not be profiled
+
+export PROFILE_COMMUNICATORS=yes # Turns on communicator sizes  profiling. Will split the 
+                                #   statistics for collective communications depending
+                                #   on the communicator sizes.
+
+export PROFILE_SEND_PATTERN=yes # Turns on the heat map generation for point to point messages.
+
+export PROFILE_HPM=yes          # Turns HPM profiling (using PAPI5) on. It will dump the hpm data
+                                #   in the mpi_profile.* files.
+export PROFILE_HPM=1            # Same as "yes".
+export PROFILE_HPM=n (n>=2)     # Same as "yes". More details about the events selection.
+export PROFILE_HPM_EVENTS_ALL="PAPI_TOT_CYC,PAPI_TOT_INS" # Specify a comma separated list of events
+                                #       which will be selected on all tasks.
+                                #  PAPI native events can also be used: Such as: UNHALTED_CPU_CYCLES
+                                # For a list of available names use PAPI_avail and PAPI_native_avail commands.
+
+export PROFILE_HPM_SPLIT=yes    # To get a split of counters between compute, MPI, MPI-IO and Posix IO
+                                  components of the application. Very costly. Don't use it. It's off
+                                  by default.
+export PROFILE_HPM_NGROUPS=xx   # Use PROFILE_HPM_NGROUPS to reduce number of event sets. Still not 
+                                # possible to select event sets manually (ToDo). Task 0 will present global 
+                                # statistics on all HPM events active during the run (not including section 
+                                # info, only full run).
+
+---- STILL BEING WORKED ON ----
+-- export HPM_EVENT_SET="x,y,z.."  # If you are not happy with the default set of HPC Toolkit groups that
+--                                 #   mpitrace comes with, you can specify your own comma separated list of
+--                                 #   groups. By default we use : 
+--                                 #   Westmere : HPM_EVENT_SET="0,1,4,15,16,26"
+--                                 #   SandyBridge : HPM_EVENT_SET="0,2,6,7,14,36,37,38,39,40,41,60"
+--                                 # which should be enough.
+
+export PROFILE_DIR=/good/path   # If you wish to have the *profile.* files to appear under that path
+export PROFILE_ESTIMATE_OVERHEAD=yes # Tries to figure out the mpi_trace overhead. Default is off.
+
+export PROFILE_MALLOC=yes       # Turn malloc profiling on. It's also
+                                #   forcing a 128 bytes alignment on mallocs.
+export PROFILE_MALLOC_ALIGN=32  # will force the alignment to 32 bytes
+
+export PROFILE_ACTIVE=no        # Turn off all profiling.
+                                #   This is meant to allow "production" runs, with minimal
+                                #      overhead with the same binary. The LD_PRELOADable mpitrace
+                                #      is the proper way to do it.
+               
+                                # Even when PROFILE_ACTIVE=no, you can still set
+                                #           PROFILE_IMBALANCE=yes. This will add a Barrier
+                                #                 ahead of the collectives. In some situations
+                                #                 this can speed up execution.
+
+export PROFILE_DISABLE_LIST="MPI_Comm_rank,MPI_Send"
+                                # To disable profiling and tracing of the comma separated list
+                                #    of functions
+
+export PROFILE_DEBUG=yes        # Turn on debugging in the mpitrace library.
+
+                                #   instead of the current working directory.
+
+export PROFILE_OMIT_JOBID=yes   # By default the mpi trace files are named mpi_profile.jobid.taskid.
+                                #   If you prefer mpi_profile.taskid, set this variable.
+
+export PROFILE_TASKLIST="3,34"  # By default, mpitrace will print only a few mpi_profile files for
+                                #   task 0, the max, min and median communication times tasks. If you
+                                #   want to choose which tasks should be profiled, set this variable.
+                                #   Task 0 is always printed.
+
+export PROFILE_ALL_TASKS=<no|yes|0|1|3|5>
+                                # Default: "no", 0 or 3. Output files will be saved for tasks with minimum, maximum
+                                # and median communication time measured from MPI_Init() to MPI_Finalize()
+                                # "yes" or 1: Each MPI task will save a unique file with statistics
+                                # 5: In addition to minimum, maximum and median communication time tasks. Output 
+                                # will also be saved for the next to minimum and next to maximum task.
+
+export PROFILE_BY_CALL_SITE=yes # Will print a split of MPI/IO activity per call site.
+
+export TRACEBACK_LEVEL=4        # How many "up"s in the stack trace from the MPI routine into the user code.
+                                # Value -1 means no traceback (default). Level 0 is location of actual MPI 
+                                # in user code. Higher values returns instead a higher entry in the call stack.
+
+export JIO_TRACEBACK_LEVEL=4    # How many "up"s in the stack trace from the IO routine into the user code.
+                                # See TRACEBACK_LEVEL for details. If not set, JIO_TRACEBACK_LEVEL will be
+                                # set to TRACEBACK_LEVEL.
+
+Now the variables that affect the tracing, not the profiling.
+
+export SWAP_BYTES=yes           # To swap the byte order in the events.trc file
+export TRACE_ALL_EVENTS=yes     # As it says. Required for an events.trc file to be created.
+export TRACE_ALL_TASKS=yes      # As it says.
+export TRACE_MAX_RANK=256       # Traces the first 256 tasks. The default is 128.
+export TRACE_BUFFER_SIZE=8000000# Default is 2400000 (corresponding to 50000 events, an event requires 48 bytes)
+export TRACE_START_TIME=123     # Starts tracing after 123s of elapsed time
+export TRACE_STOP_TIME=234      # Stops tracing after 123s of elapsed time
+
+And a traceback handler.
+
+export TRACEBACK_ERRORS=yes     # To install a MPI error handler that will print a traceback.

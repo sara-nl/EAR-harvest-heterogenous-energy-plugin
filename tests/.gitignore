@@ -1,0 +1,19 @@
+# General
+core.*
+
+# Check
+*cpu_model
+*cpu_aperf
+*cpu_uncores
+*cpu_uncores_all
+*papi_version
+*papi_init
+*papi_comp_available
+*papi_comp_enabled
+*gsl_version
+*slurm_version
+*free_ipmi_version
+
+# Functionals
+*intel_pci_uncores_stress
+*daemon_monitoring
