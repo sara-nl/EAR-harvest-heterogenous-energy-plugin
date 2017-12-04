@@ -1,0 +1,15 @@
+export EAR=1
+export EAR_DB_PATHNAME=/home/xjaneas/ear/DBS/db
+export EAR_COEFF_DB_PATHNAME=/home/xjaneas/ear/COEFFICIENTS/coeff.
+export EAR_USER_DB_PATHNAME=/home/xjaneas/ear/SUMMARIES/sum
+export EAR_DYNAIS_LEVELS=4
+export EAR_DYNAIS_WINDOW_SIZE=200
+export EAR_LEARNING_PHASE=0
+export EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN=0.75
+export EAR_PERFORMANCE_PENALTY=0.2
+export EAR_PERFORMANCE_ACCURACY=100000
+export EAR_RESET_FREQ=0
+export EAR_TURBO=0
+export EAR_TMP=/home/xjaneas/slurm/tmp
+export EAR_GUI_PATH=/home/xjaneas/slurm/tmp
+export EAR_VERBOSE=4

@@ -5,7 +5,7 @@ then
 	exit
 fi
 
-source ear_env.sh
+source ear_env_libs.sh
 HOSTLIST=$(echo $(cat $1))
 
 ## Sarting EAR daemon: 1 ear_daemon per node
