@@ -22,9 +22,11 @@ DB_Learning_phase/
 *hostlist
 
 # Build
-*/ear-1.0
+etc/ear-1.0
+etc/examples/ear_env.sh
 src/common/config.h
 tests/check/check.sh
+
 *ear_slurm_plugin.so
 *compute_coefficients
 *traces_to_paraver
