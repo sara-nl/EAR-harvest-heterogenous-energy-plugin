@@ -17,6 +17,7 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <config.h>
 #include <ear_verbose.h>
 #include <ear_configuration.h>
 #include <ear_arch_type.h>
@@ -47,6 +48,7 @@ int EAR_VERBOSE_LEVEL=0;
 int application_id=-1;
 
 unsigned long energy_freq;
+struct daemon_req req;
 
 void ear_daemon_exit();
 void ear_daemon_close_comm();
@@ -254,20 +256,19 @@ void ear_daemon_close_comm()
 // Node_energy services
 void ear_daemon_node_energy()
 {
-    unsigned long req[2];
-    read(ear_fd_req[node_energy_req],&req[0],sizeof(unsigned long));
-    switch (req[0]){
+	unsigned long ack;
+    if (read(ear_fd_req[node_energy_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error reading info at ear_daemon_node_energyi (%s)\n",strerror(errno));
+    switch (req.req_service){
 		case CONNECT_ENERGY:
-			read(ear_fd_req[node_energy_req],&req[1],sizeof(unsigned long));
-			connect_service(node_energy_req,req[1]);
+			connect_service(node_energy_req,req.req_data.req_value);
 			break;
         case READ_DC_ENERGY:
-			read_dc_energy(&req[1]);
-            write(ear_fd_ack[node_energy_req],&req[1],sizeof(unsigned long));
+			read_dc_energy(&ack);
+            write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
             break;
 		case DATA_SIZE_ENERGY_NODE:
-			req[1]=(unsigned long)count_energy_data_length();
-            write(ear_fd_ack[node_energy_req],&req[1],sizeof(unsigned long));
+			ack=(unsigned long)count_energy_data_length();
+            write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
 			break;
         default:
             ear_verbose(0,"ear_daemon: Incorrect ear_daemon_node_energy request\n");
@@ -317,30 +318,23 @@ void write_db(int fd,struct App_info *app_signature)
 }
 void ear_daemon_system()
 {
-	unsigned long req,pid;
-	struct App_info app_signature;
+	unsigned long ack;
 	int db_fd;
-	read(ear_fd_req[system_req],&req,sizeof(unsigned long));
-	switch (req){
+	if (read(ear_fd_req[system_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error reading info at ear_daemon_system(%s)\n",strerror(errno));
+	switch (req.req_service){
 		case CONNECT_SYSTEM:
-			read(ear_fd_req[system_req],&pid,sizeof(unsigned long));
-			connect_service(system_req,pid);
+			connect_service(system_req,req.req_data.req_value);
 			break;
 		case WRITE_APP_SIGNATURE:
-			if (read(ear_fd_req[system_req],&app_signature,sizeof(app_signature))!=sizeof(app_signature)){
-				ear_verbose(0,"ear_daemon: Read returns invalid data size\n");
-				ear_daemon_close_comm();
-			}else{
-					db_fd=open_db();
-					if (db_fd>=0){
-						write_db(db_fd,&app_signature);
-						close(db_fd);
-						req=EAR_COM_OK;
-					}else req=EAR_COM_ERROR;
-					if (write(ear_fd_ack[system_req],&req,sizeof(unsigned long))!=sizeof(unsigned long)){
+			db_fd=open_db();
+			if (db_fd>=0){
+				write_db(db_fd,&req.req_data.app);
+				close(db_fd);
+				ack=EAR_COM_OK;
+				if (write(ear_fd_ack[system_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
 						ear_verbose(0,"ear_daemon: invalid write to system_req ack\n");
 						ear_daemon_close_comm();
-					}
+				}
 			}
 			break;
 		default:
@@ -363,39 +357,37 @@ void ear_daemon_set_freq(unsigned long new_freq,unsigned long max_freq)
 }
 void ear_daemon_freq()
 {
-	unsigned long req[2];
-	read(ear_fd_req[freq_req],&req[0],sizeof(unsigned long));
-	switch (req[0]){
+	unsigned long ack;
+	if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at ear_daemon_freq (%s)\n",strerror(errno));
+	switch (req.req_service){
 		case CONNECT_FREQ:
-			read(ear_fd_req[freq_req],&req[1],sizeof(unsigned long));
-			connect_service(freq_req,req[1]);		
+			connect_service(freq_req,req.req_data.req_value);		
 			break;
 		case SET_FREQ:
 			ear_debug(1,"ear_daemon: Setting node frequency\n");
-			read(ear_fd_req[freq_req],&req[1],sizeof(unsigned long));
-			ear_daemon_set_freq(req[1],ear_daemon_max_freq);
+			ear_daemon_set_freq(req.req_data.req_value,ear_daemon_max_freq);
 			break;
 		case START_GET_FREQ:
 			ear_begin_compute_turbo_freq();
-			req[1]=EAR_COM_OK;
-			write(ear_fd_ack[freq_req],&req[1],sizeof(unsigned long));
+			ack=EAR_COM_OK;
+			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case END_GET_FREQ:
 			ear_debug(1,"ear_daemon: get node frequency (trubo)\n");
-			req[1]=ear_end_compute_turbo_freq();
-			write(ear_fd_ack[freq_req],&req[1],sizeof(unsigned long));
+			ack=ear_end_compute_turbo_freq();
+			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case SET_TURBO:
 			ear_set_turbo();	
-			write(ear_fd_ack[freq_req],&req[1],sizeof(unsigned long));
+			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case END_COMM:
 			ear_debug(1,"ear_daemon: Closing comunication\n");
 			ear_daemon_close_comm();
 			break;
 		case DATA_SIZE_FREQ:
-			req[1]=sizeof(unsigned long);
-			write(ear_fd_ack[freq_req],&req[1],sizeof(unsigned long));
+			ack=sizeof(unsigned long);
+			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		default:
 			ear_verbose(0,"ear_daemon: Incorrect request\n");
@@ -407,17 +399,15 @@ void ear_daemon_freq()
 void ear_daemon_uncore(int num_counters)
 {
 
-	unsigned long req,pid;
-	unsigned long ack=0;
+	unsigned long ack=EAR_SUCCESS;
 	unsigned long long values[num_counters];
 
 	
-	read(ear_fd_req[uncore_req],&req,sizeof(unsigned long));
+	if (read(ear_fd_req[uncore_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at ear_daemon_uncore \n");
 
-	switch (req){
+	switch (req.req_service){
 	    case CONNECT_UNCORE:
-			read(ear_fd_req[uncore_req],&pid,sizeof(unsigned long));
-			connect_service(uncore_req,pid);
+			connect_service(uncore_req,req.req_data.req_value);
 			break;
 		case START_UNCORE:
 			ear_debug(1,"EAR_daemon_server: start uncore\n");
@@ -455,15 +445,13 @@ void ear_daemon_uncore(int num_counters)
 ////// RAPL SERVICES
 void ear_daemon_rapl()
 {
-    unsigned long req,pid;
 	unsigned long comm_req=rapl_req;
     unsigned long ack=0;
     unsigned long long values[EAR_RAPL_EVENTS];
-    read(ear_fd_req[comm_req],&req,sizeof(unsigned long));
-    switch (req){
+    if (read(ear_fd_req[comm_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at ear_daemon_rapl\n");
+    switch (req.req_service){
 		case CONNECT_RAPL:
-			read(ear_fd_req[comm_req],&pid,sizeof(unsigned long));
-			connect_service(rapl_req,pid);
+			connect_service(rapl_req,req.req_data.req_value);
 			break;
         case START_RAPL:
     		ear_debug(1,"EAR_daemon_server: start RAPL counters\n");

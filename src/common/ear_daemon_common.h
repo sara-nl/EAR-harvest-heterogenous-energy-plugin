@@ -1,5 +1,6 @@
 #ifndef _EAR_DAEMON_COMMON_H
 #define _EAR_DAEMON_COMMON_H
+#include <ear_db_type.h>
 
 // Number of services supported
 #define ear_daemon_client_requests 5
@@ -8,6 +9,18 @@
 #define rapl_req 2
 #define system_req 3
 #define node_energy_req 4
+
+// Data type to send the requests
+union daemon_req_opt{
+    unsigned long req_value;
+    struct App_info app;    
+};
+
+struct daemon_req{
+    unsigned long req_service;
+    union daemon_req_opt req_data;
+};  
+
 
 // Services related with frequency
 
