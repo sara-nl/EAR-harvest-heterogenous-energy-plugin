@@ -22,7 +22,7 @@ DB_Learning_phase/
 *hostlist
 
 # Build
-misc/ear-1.0
+*/ear-1.0
 src/common/config.h
 tests/check/check.sh
 *ear_slurm_plugin.so
