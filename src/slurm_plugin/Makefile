@@ -4,15 +4,15 @@ LDFLAGS      = -shared $(CPUF_LDFLAGS)
 
 ######## RULES
 
-all: ear_slurm_plugin.so
+all: earplug.so
 
-ear_slurm_plugin.so: ear_slurm_plugin.c
-	gcc $(CFLAGS) -o ear_slurm_plugin.so ear_slurm_plugin.c $(LDFLAGS)
+earplug.so: ear_slurm_plugin.c
+	gcc $(CFLAGS) -o earplug.so ear_slurm_plugin.c $(LDFLAGS)
 
 ######## OPTIONS
 
 install:
-	mv ear_slurm_plugin.so $(DESTDIR)/lib
+	mv earplug.so $(DESTDIR)/lib
 
 clean:
 	rm -f *.so *.o
