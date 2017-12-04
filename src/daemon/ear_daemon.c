@@ -37,6 +37,7 @@ int ear_fd_req[ear_daemon_client_requests];
 int ear_fd_ack[ear_daemon_client_requests];
 unsigned long ear_daemon_max_freq;
 int ear_daemon_max_pstate;
+int num_uncore_counters;
 
 char ear_ping[MAX_PATH_SIZE];
 int ear_ping_fd=-1;
@@ -254,10 +255,12 @@ void ear_daemon_close_comm()
 }
 
 // Node_energy services
-void ear_daemon_node_energy()
+int ear_daemon_node_energy(int must_read)
 {
 	unsigned long ack;
+	if (must_read){
     if (read(ear_fd_req[node_energy_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error reading info at ear_daemon_node_energyi (%s)\n",strerror(errno));
+	}
     switch (req.req_service){
 		case CONNECT_ENERGY:
 			connect_service(node_energy_req,req.req_data.req_value);
@@ -271,9 +274,9 @@ void ear_daemon_node_energy()
             write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
 			break;
         default:
-            ear_verbose(0,"ear_daemon: Incorrect ear_daemon_node_energy request\n");
-			ear_daemon_close_comm();
+			return 0;
     }
+	return 1;
 
 }
 // System services
@@ -316,11 +319,13 @@ void write_db(int fd,struct App_info *app_signature)
 		ear_daemon_close_comm();
 	}
 }
-void ear_daemon_system()
+int ear_daemon_system(int must_read)
 {
 	unsigned long ack;
 	int db_fd;
+	if (must_read){
 	if (read(ear_fd_req[system_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error reading info at ear_daemon_system(%s)\n",strerror(errno));
+	}
 	switch (req.req_service){
 		case CONNECT_SYSTEM:
 			connect_service(system_req,req.req_data.req_value);
@@ -338,9 +343,9 @@ void ear_daemon_system()
 			}
 			break;
 		default:
-			ear_verbose(0,"ear_daemon: Incorrect request\n");
-			ear_daemon_close_comm();
+			return 0;
 	}
+	return 1;
 }
 
 // FREQUENCY FUNCTIONALLITY: max_freq is the limit
@@ -355,10 +360,12 @@ void ear_daemon_set_freq(unsigned long new_freq,unsigned long max_freq)
 	ear_ok=ear_cpufreq_set_node(freq);
 	write(ear_fd_ack[freq_req],&ear_ok,sizeof(unsigned long));  
 }
-void ear_daemon_freq()
+int ear_daemon_freq(int must_read)
 {
 	unsigned long ack;
+	if (must_read){
 	if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at ear_daemon_freq (%s)\n",strerror(errno));
+	}
 	switch (req.req_service){
 		case CONNECT_FREQ:
 			connect_service(freq_req,req.req_data.req_value);		
@@ -390,20 +397,21 @@ void ear_daemon_freq()
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		default:
-			ear_verbose(0,"ear_daemon: Incorrect request\n");
-			ear_daemon_close_comm();
+			return 0;
 
 	}
+	return 1;
 }
 
-void ear_daemon_uncore(int num_counters)
+int ear_daemon_uncore(int must_read)
 {
 
 	unsigned long ack=EAR_SUCCESS;
-	unsigned long long values[num_counters];
+	unsigned long long values[num_uncore_counters];
 
-	
+	if (must_read){	
 	if (read(ear_fd_req[uncore_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at ear_daemon_uncore \n");
+	}
 
 	switch (req.req_service){
 	    case CONNECT_UNCORE:
@@ -425,30 +433,32 @@ void ear_daemon_uncore(int num_counters)
 			int i;
 			ear_debug(1,"EAR_daemon_server: read uncore\n");
 			stop_uncores(values);
-			write(ear_fd_ack[uncore_req],values,sizeof(unsigned long long) * num_counters);
-			for (i=0; i < num_counters; i++) demon_cas+=values[i];
-			ear_debug(3,"DAEMON cas %llu %d values\n", demon_cas, num_counters);
+			write(ear_fd_ack[uncore_req],values,sizeof(unsigned long long) * num_uncore_counters);
+			for (i=0; i < num_uncore_counters; i++) demon_cas+=values[i];
+			ear_debug(3,"DAEMON cas %llu %d values\n", demon_cas, num_uncore_counters);
 		}
 			break;
 		case DATA_SIZE_UNCORE:
-			ack=sizeof(unsigned long long) * num_counters;
+			ack=sizeof(unsigned long long) * num_uncore_counters;
 			write(ear_fd_ack[uncore_req],&ack,sizeof(unsigned long));
 			break;
 		default:
-			ear_verbose(0,"ear_daemon: Error, invalid UNCORE REQUEST\n");
-			ear_daemon_close_comm();	
+			return 0;
 		
 	}
+	return 1;
 }
 
 
 ////// RAPL SERVICES
-void ear_daemon_rapl()
+int ear_daemon_rapl(int must_read)
 {
 	unsigned long comm_req=rapl_req;
     unsigned long ack=0;
     unsigned long long values[EAR_RAPL_EVENTS];
-    if (read(ear_fd_req[comm_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at ear_daemon_rapl\n");
+	if (must_read){
+    	if (read(ear_fd_req[comm_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at ear_daemon_rapl\n");
+	}
     switch (req.req_service){
 		case CONNECT_RAPL:
 			connect_service(rapl_req,req.req_data.req_value);
@@ -473,12 +483,61 @@ void ear_daemon_rapl()
             write(ear_fd_ack[comm_req],&ack,sizeof(unsigned long));
             break;
         default:
-            ear_verbose(0,"ear_daemon: Error, invalid RAPL REQUEST\n");
-			ear_daemon_close_comm();
+			return 0;
 
     }
+	return 1;
 }
 /// END RAPL SERVICES
+
+// Depending on MULTIPLE_SERVICES we can have multiple entry points or just one
+#ifdef MULTIPLE_SERVICES
+void select_service(int i)
+{
+	int ret=0;
+	switch (i){
+		case freq_req:
+			ear_debug(1,"ear_daemon: frequency service\n");
+			ret=ear_daemon_freq(1);
+			break;
+		case uncore_req:
+			ear_debug(1,"ear_daemon uncore service\n");
+			ret=ear_daemon_uncore(1);
+			break;
+		case rapl_req:
+			ear_debug(1,"ear_daemon rapl service \n");
+			ret=ear_daemon_rapl(1);
+			break;  
+		case system_req:
+			ear_debug(1,"ear_daemon system service \n");
+			ret=ear_daemon_system(1);
+			break;
+		case node_energy_req:
+			ear_debug(1,"ear_daemon node_energy service\n");
+			ret=ear_daemon_node_energy(1);
+			break;
+		default:
+			ear_verbose(0,"ear_daemon: Error, request received not supported\n");
+			ear_daemon_close_comm();
+	}
+	if (ret==0){
+			ear_verbose(0,"ear_daemon: Error, request received not supported\n");
+			ear_daemon_close_comm();
+	}
+}
+#else
+void select_service(int fd)
+{
+    if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at select_service\n");
+	if (ear_daemon_freq(0)) return;
+	if (ear_daemon_uncore(0)) return;
+	if (ear_daemon_rapl(0)) return;
+	if (ear_daemon_system(0)) return;
+	if (ear_daemon_node_energy(0)) return;
+	ear_verbose(0,"eard: Error, request received not supported\n");
+	ear_daemon_close_comm();
+}
+#endif
 //
 // MAIN ear_daemon: ear_daemon default_freq [path for communication files]
 //
@@ -495,7 +554,7 @@ void main(int argc,char *argv[])
 	fd_set rfds,rfds_basic;
 	int numfds_ready,numfds_req=0;
 	unsigned long ear_node_freq,ear_ok=1;
-	int i, num_counters, cpu_model,ret;
+	int i,  cpu_model,ret;
 	int max_fd=-1;
 	sigset_t ear_daemon_mask;
 	struct timeval tv,*my_to;
@@ -549,7 +608,7 @@ void main(int argc,char *argv[])
 
 	// We initiaize uncore counters
 	cpu_model = get_model();
-	num_counters = init_uncores(cpu_model);
+	num_uncore_counters = init_uncores(cpu_model);
 
 	// We initialize rapl counters
 	init_rapl_metrics();
@@ -581,8 +640,6 @@ void main(int argc,char *argv[])
 		numfds_req=max_fd+1;
 		ear_debug(3,"ear_daemon: fd %d added to rdfd mask max=%d FD_SETSIZE=%d\n",ear_fd_req[i],numfds_req,FD_SETSIZE);
 	}
-	rfds_basic=rfds;
-	ear_verbose(2,"EAR:Communicator for %s on waiting for req: num_fds=%d mask=%d\n",nodename,numfds_req,rfds);
 	ear_verbose(1,"EAR:Communicator for %s ON\n",nodename);
 	// we wait until EAR daemon receives a request
 	// We support requests realted to frequency and to uncore counters
@@ -600,31 +657,7 @@ void main(int argc,char *argv[])
 		if (numfds_ready>0){
 		for (i=0;i<ear_daemon_client_requests;i++){
 			if (FD_ISSET(ear_fd_req[i],&rfds)){
-				switch (i){
-					case freq_req:
-						ear_debug(1,"ear_daemon: frequency service\n");
-						ear_daemon_freq();
-						break;
-					case uncore_req:
-						ear_debug(1,"ear_daemon uncore service\n");
-						ear_daemon_uncore(num_counters);
-						break;
-					case rapl_req:
-						ear_debug(1,"ear_daemon rapl service \n");
-						ear_daemon_rapl();
-						break;	
-					case system_req:
-						ear_debug(1,"ear_daemon system service \n");
-						ear_daemon_system();
-						break;
-					case node_energy_req:
-						ear_debug(1,"ear_daemon node_energy service\n");
-						ear_daemon_node_energy();
-						break;
-					default:
-					ear_verbose(0,"ear_daemon: Error, request received not supported\n");
-					ear_daemon_close_comm();
-				}// switch
+				select_service(i);
 			}	// IF FD_ISSET
 		} //for
 		// We have to check if there is something else

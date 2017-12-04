@@ -3,12 +3,21 @@
 #include <ear_db_type.h>
 
 // Number of services supported
+#ifdef MULTIPLE_SERVICES
 #define ear_daemon_client_requests 5
 #define freq_req 0
 #define uncore_req 1
 #define rapl_req 2
 #define system_req 3
 #define node_energy_req 4
+#else
+#define ear_daemon_client_requests 1
+#define freq_req 0
+#define uncore_req 0
+#define rapl_req 0
+#define system_req 0
+#define node_energy_req 0
+#endif
 
 // Data type to send the requests
 union daemon_req_opt{
@@ -37,27 +46,27 @@ struct daemon_req{
 #define EAR_COM_ERROR 	-1
 
 // Services related with uncore counters
-#define START_UNCORE 0
-#define RESET_UNCORE 1
-#define READ_UNCORE 2
-#define DATA_SIZE_UNCORE 3
-#define CONNECT_UNCORE 4
+#define START_UNCORE 100
+#define RESET_UNCORE 101
+#define READ_UNCORE 102
+#define DATA_SIZE_UNCORE 103
+#define CONNECT_UNCORE 104
 
 // Services related with rapl counters 
-#define START_RAPL 0
-#define RESET_RAPL 1
-#define READ_RAPL 2
-#define DATA_SIZE_RAPL 3
-#define CONNECT_RAPL 4
+#define START_RAPL 200
+#define RESET_RAPL 201
+#define READ_RAPL 202
+#define DATA_SIZE_RAPL 203
+#define CONNECT_RAPL 204
 
 // Services to contact with the rest of the system, such as writting data
-#define WRITE_APP_SIGNATURE 0
-#define CONNECT_SYSTEM 1
+#define WRITE_APP_SIGNATURE 300
+#define CONNECT_SYSTEM 301
 
 // Services related to node energy management
-#define READ_DC_ENERGY 0
-#define DATA_SIZE_ENERGY_NODE 1
-#define CONNECT_ENERGY 2
+#define READ_DC_ENERGY 400
+#define DATA_SIZE_ENERGY_NODE 401
+#define CONNECT_ENERGY 402
 
 #else
 #endif
