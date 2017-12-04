@@ -5,15 +5,13 @@ then
 	exit
 fi
 
+source ear_env.sh
 HOSTLIST=$(echo $(cat $1))
-export PAPIROOT=/hpc/base/ctt/packages/papi/5.4.3
-export FREEIPMIROOT=/home/xjcorbalan
-
 
 ## Sarting EAR daemon: 1 ear_daemon per node
 for i in ${HOSTLIST}
 do
-echo "Executing ear_daemon in node=${i} p_state=$2 tmpdir=${EAR_TMP} verbose=${EAR_VERBOSE}"
-ssh ${i} sudo LD_LIBRARY_PATH=${PAPIROOT}/lib:${FREEIPMIROOT}/lib EAR_DB_PATHNAME=${EAR_DB_PATHNAME} $EAR_INSTALL_PATH/sbin/eard $2 ${EAR_TMP} ${EAR_VERBOSE} &
+	echo "Executing ear_daemon in node=${i} p_state=$2 tmpdir=${EAR_TMP} verbose=${EAR_VERBOSE}"
+	ssh ${i} sudo LD_LIBRARY_PATH="$CPUPOWER_LIB_PATH:$FREEIPMI_LIB_PATH:$PAPI_LIB_PATH:$LD_LIBRARY_PATH" \
+	EAR_DB_PATHNAME=${EAR_DB_PATHNAME} $EAR_INSTALL_PATH/sbin/eard $2 ${EAR_TMP} ${EAR_VERBOSE} &
 done
-
