@@ -10,7 +10,8 @@
 #include <ear_slurm_plugin.h>
 #include <config.h>
 
-#define FUNCTION_INFO(function)
+#define FUNCTION_INFO(function) \
+	slurm_error("%s", function);
 #define SPANK_ERROR(string)                            \
     slurm_error(string);
 #define SPANK_STRERROR(string, var)                    \
@@ -610,3 +611,22 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
     }
     return (ESPANK_SUCCESS);
 }
+
+int slurm_spank_init (spank_t sp, int ac, char **av)
+{
+    FUNCTION_INFO("slurm_spank_init");
+    return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
+{
+    FUNCTION_INFO("slurm_spank_slurmd_init");
+    return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
+{
+    FUNCTION_INFO("slurm_spank_slurmd_exit");
+    return (ESPANK_SUCCESS);
+}
+
