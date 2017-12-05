@@ -7,8 +7,9 @@
 #include <spank.h>
 #include <fcntl.h>
 #include <cpufreq.h>
-#include <ear_slurm_plugin.h>
 #include <config.h>
+#include <signal.h>
+#include <ear_slurm_plugin.h>
 
 #define FUNCTION_INFO(function) \
 	slurm_error("%s", function);
@@ -18,6 +19,7 @@
     slurm_error(string " (%s)", var, strerror(errno));
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
+pid_t daemon_pid = -1;
 
 struct spank_option spank_options[] = {
     { "ear", NULL, "Enables Energy Aware Runtime",
@@ -150,6 +152,12 @@ static int getenv_remote(spank_t sp, char *name, char *value, int length)
     return serrno == ESPANK_SUCCESS && value != NULL && strlen(value);
 }
 
+static int existenv_local(char *name)
+{
+    char *env = getenv(name);
+    return env != NULL && strlen(env) > 0;
+}
+
 static int existenv_remote(spank_t sp, char *name)
 {
     char test[2];
@@ -165,6 +173,36 @@ static int isenv_remote(spank_t sp, char *name, char *value)
         return strcmp(buffer, value) == 0;
     }
     return 0;
+}
+
+
+/*
+ *
+ * Functionality
+ *
+ */
+
+static int freq_to_p_state(int freq)
+{
+    struct cpufreq_available_frequencies *list_freqs;
+    list_freqs = cpufreq_get_available_frequencies(0);
+    int i = 0;
+
+    if (freq > (int) list_freqs->frequency) {
+        return 0;
+    }
+
+    while(list_freqs != NULL)
+    {
+        if (freq == (int) list_freqs->frequency) {
+            return i;
+        }
+
+        list_freqs = list_freqs->next;
+        i += 1;
+    }
+
+    return 1;
 }
 
 static void file_to_environment(spank_t sp, const char *path)
@@ -195,33 +233,17 @@ static void file_to_environment(spank_t sp, const char *path)
     fclose(file);
 }
 
-/*
- *
- * Functionality
- *
- */
-
-static int freq_to_p_state(int freq)
+void find_ear_conf_file(spank_t sp, int ac, char **av)
 {
-    struct cpufreq_available_frequencies *list_freqs;
-    list_freqs = cpufreq_get_available_frequencies(0);
-    int i = 0;
+    int i;
 
-    if (freq > (int) list_freqs->frequency) {
-        return 0;
-    }
-
-    while(list_freqs != NULL)
+    for (i = 0; i < ac; ++i)
     {
-        if (freq == (int) list_freqs->frequency) {
-            return i;
+        slurm_error("%s", av[i]);
+        if (strncmp ("ear_conf_file=", av[i], 14) == 0) {
+            file_to_environment(sp, (const char *) &av[i][14]);
         }
-
-        list_freqs = list_freqs->next;
-        i += 1;
     }
-
-    return 1;
 }
 
 static int update_ld_preload(spank_t sp)
@@ -299,37 +321,6 @@ static int prepare_environment(spank_t sp)
     // Updating LD_LIBRARY_PATH
     update_ld_library_path(sp);
 
-    // Adding LD_LIBRARY_PATH visibility
-    if (isenv_remote(sp, "EAR_VERBOSE", "4"))
-    {
-        slurm_error("SLURM environment:");
-        printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
-        printenv_remote(sp, "SLURMD_NODENAME");
-        printenv_remote(sp, "SLURM_JOB_ID");
-        slurm_error("System environment:");
-        printenv_remote(sp, "LD_PRELOAD");
-        printenv_remote(sp, "LD_LIBRARY_PATH");
-        slurm_error("EAR special environment:");
-        printenv_remote(sp, "EAR_INSTALL_PATH");
-        slurm_error("EAR environment:");
-        printenv_remote(sp, "EAR_APP_NAME");
-        printenv_remote(sp, "EAR_DB_PATHNAME");
-        printenv_remote(sp, "EAR_COEFF_DB_PATHNAME");
-        printenv_remote(sp, "EAR_DYNAIS_LEVELS");
-        printenv_remote(sp, "EAR_DYNAIS_WINDOW_SIZE");
-        printenv_remote(sp, "EAR_LEARNING_PHASE");
-        printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
-        printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
-        printenv_remote(sp, "EAR_POWER_POLICY");
-        printenv_remote(sp, "EAR_PERFORMANCE_ACCURACY");
-        printenv_remote(sp, "EAR_P_STATE");
-        printenv_remote(sp, "EAR_RESET_FREQ");
-        printenv_remote(sp, "EAR_TURBO");
-        printenv_remote(sp, "EAR_TMP");
-        printenv_remote(sp, "EAR_USER_DB_PATHNAME");
-        printenv_remote(sp, "EAR_VERBOSE");
-    }
-
     return ESPANK_SUCCESS;
 }
 
@@ -375,20 +366,9 @@ static int fork_ear_daemon(spank_t sp)
     FUNCTION_INFO("fork_ear_daemon");
     pid_t pid;
 
-	slurm_error("System environment:");
-        slurm_error("%s", getenv("LD_PRELOAD"));
-        slurm_error("%s", getenv("LD_LIBRARY_PATH"));
-        slurm_error("EAR special environment:");
-        slurm_error("%s", getenv("EAR_INSTALL_PATH"));
-        slurm_error("EAR environment:");
-        slurm_error("%s", getenv("EAR_DB_PATHNAME"));
-        slurm_error("%s", getenv("EAR_TMP"));
-        slurm_error("%s", getenv("EAR_VERBOSE"));
-
-
-    if (existenv_remote(sp, "EAR_INSTALL_PATH") &&
-        existenv_remote(sp, "EAR_VERBOSE") &&
-        existenv_remote(sp, "EAR_TMP"))
+    if (existenv_local(sp, "EAR_INSTALL_PATH") &&
+        existenv_local(sp, "EAR_VERBOSE") &&
+        existenv_local(sp, "EAR_TMP"))
     {
         pid = fork();
 
@@ -403,19 +383,6 @@ static int fork_ear_daemon(spank_t sp)
         return ESPANK_ENV_NOEXIST;
     }
     return ESPANK_SUCCESS;
-}
-
-void find_ear_conf_file(spank_t sp, int ac, char **av)
-{
-    int i;
-
-    for (i = 0; i < ac; ++i)
-    {
-        slurm_error("%s", av[i]);
-        if (strncmp ("ear_conf_file=", av[i], 14) == 0) {
-            file_to_environment(sp, (const char *) &av[i][14]);
-        }
-    }
 }
 
 /*
@@ -440,7 +407,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_task_init");
 
-    if(spank_context () == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
+    if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
     {
         prepare_environment(sp);
     }
@@ -452,7 +419,7 @@ int slurm_spank_init (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_init");
 
-    if(spank_context () == S_CTX_SLURMD)
+    if(spank_context() == S_CTX_SLURMD)
     {
         find_ear_conf_file(sp, ac, av);
         return fork_ear_daemon(sp);
@@ -477,8 +444,9 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_slurmd_exit");
 
-    if(spank_context () == S_CTX_SLURMD)
+    if(spank_context() == S_CTX_SLURMD && daemon_pid > 0)
     {
+        kill(daemon_pid, SIGTERM);
     }
 
     return (ESPANK_SUCCESS);
