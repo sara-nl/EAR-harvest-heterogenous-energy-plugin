@@ -246,94 +246,13 @@ void find_ear_conf_file(spank_t sp, int ac, char **av)
     }
 }
 
-static void update_ear_install_path(spank_t sp)
-{
-    if 
-    getenv_remote(sp, "EAR_INSTALL_PATH", get_buffer, PATH_MAX);
-}
-
-static void update_ld_preload(spank_t sp)
-{
-    char buffer_aux[PATH_MAX];
-    char buffer[PATH_MAX];
-
-    buffer[0] = '\0';
-    getenv_remote(sp, "LD_PRELOAD", buffer, PATH_MAX);
-    getenv_remote(sp, "EAR_INSTALL_PATH", buffer_aux, PATH_MAX);
-    appendenv(buffer, buffer_aux);
-
-    // Appending libraries to LD_PRELOAD
-    if (isenv_remote(sp, "EAR_GUI", "1")) {
-        sprintf(buffer, "%s/%s", buffer, EAR_LIB_PATH);
-    } else {
-        sprintf(buffer, "%s/%s", buffer, EAR_LIB_TRAC_PATH);
-    }
-
-    //
-    setenv_remote(sp, "LD_PRELOAD", buffer, 1);
-}
-
-static void update_ld_library_path(spank_t sp)
-{
-    char buffer[PATH_MAX];
-
-    //
-    getenv_remote(sp, "LD_LIBRARY_PATH", buffer, PATH_MAX);
-    
-    //
-    appendenv(buffer, CPUPOWER_LIB_PATH);
-    appendenv(buffer, PAPI_LIB_PATH);
-    appendenv(buffer, FREEIPMI_LIB_PATH);
-    
-    //
-    setenv_remote(sp, "LD_LIBRARY_PATH", buffer, 1);
-}
-
-static int prepare_environment(spank_t sp)
-{
-    char get_buffer[PATH_MAX];
-    char set_buffer[PATH_MAX];
-    char p_state[8];
-    int p_freq = 1;
-
-    // Checking if the var EAR_INSTALL_PATH exists
-    if (!existenv_remote(sp, "EAR_INSTALL_PATH")) {
-        SPANK_ERROR("EAR environment module not loaded");
-        return (ESPANK_ENV_NOEXIST);
-    }
-
-    // If policy is monitoring
-    if(isenv_remote(sp, "EAR_POWER_POLICY", "MONITORING_ONLY"))
-    {
-        // If learning phase is not enabled
-        if (!existenv_remote(sp, "EAR_LEARNING_PHASE") ||
-            isenv_remote(sp, "EAR_LEARNING_PHASE", "0"))
-        {
-            // If this is passed SLURM's --cpu-freq argument
-            if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 8))
-            {
-                p_freq = atoi(p_state);
-                p_freq = freq_to_p_state(p_freq);
-
-                sprintf(p_state, "%i", p_freq);
-                setenv_remote(sp, "EAR_P_STATE", p_state, 0);
-            }
-        }
-    }
-
-    // Switching from SLURM_JOB_NAME to EAR_APP_NAME
-    if (getenv_remote(sp, "SLURM_JOB_NAME", set_buffer, PATH_MAX)) {
-        setenv_remote(sp, "EAR_APP_NAME", set_buffer, 1);
-    }
-
-    // Updating LD_PRELOAD
-    update_ld_preload(sp);
-
-    // Updating LD_LIBRARY_PATH
-    update_ld_library_path(sp);
-
-    return ESPANK_SUCCESS;
-}
+/*
+ *
+ *
+ *
+ *
+ *
+ */
 
 static void exec_ear_daemon(spank_t sp)
 {
@@ -406,7 +325,106 @@ static int fork_ear_daemon(spank_t sp)
 
 /*
  *
+ *
+ *
+ *
+ *
+ */
+
+static void remote_update_ld_preload(spank_t sp)
+{
+    char ear_install_path[PATH_MAX];
+    char ld_preload[PATH_MAX];
+
+    ld_preload[0] = '\0';
+    getenv_remote(sp, "LD_PRELOAD", ld_preload, PATH_MAX);
+    getenv_remote(sp, "EAR_INSTALL_PATH", ear_install_path, PATH_MAX);
+    appendenv(ld_preload, ear_install_path);
+
+    // Appending libraries to LD_PRELOAD
+    if (isenv_remote(sp, "EAR_GUI", "1")) {
+        sprintf(ld_preload, "%s/%s", ld_preload, EAR_LIB_PATH);
+    } else {
+        sprintf(ld_preload, "%s/%s", ld_preload, EAR_LIB_TRAC_PATH);
+    }
+
+    //
+    setenv_remote(sp, "LD_PRELOAD", ld_preload, 1);
+}
+
+
+static void local_update_ear_install_path()
+{
+    char *ear_install_path = getenv("EAR_INSTALL_PATH");
+
+    if (strlen(ear_install_path) == 0)
+    {
+        slurm_error("Warning: $EAR_INSTALL_PATH not found, using first installation path.");
+        slurm_error("Please, read the documentation and load the environment module.");
+        setenv("EAR_INSTALL_PATH", EAR_INSTALL_PATH, 1);
+    }
+}
+
+static void local_update_ld_library_path()
+{
+    char *ld_library_path;
+    char buffer[PATH_MAX];
+
+    //
+    ld_library_path = getenv("LD_LIBRARY_PATH");
+    strcpy(buffer, ld_library_path);
+
+    //
+    appendenv(buffer, CPUPOWER_LIB_PATH);
+    appendenv(buffer, PAPI_LIB_PATH);
+    appendenv(buffer, FREEIPMI_LIB_PATH);
+    
+    //
+    setenv("LD_LIBRARY_PATH", buffer, 1);
+}
+
+static int prepare_environment(spank_t sp)
+{
+    char get_buffer[PATH_MAX];
+    char set_buffer[PATH_MAX];
+    char p_state[8];
+    int p_freq = 1;
+
+    // If policy is monitoring
+    if(isenv_remote(sp, "EAR_POWER_POLICY", "MONITORING_ONLY"))
+    {
+        // If learning phase is not enabled
+        if (!existenv_remote(sp, "EAR_LEARNING_PHASE") ||
+            isenv_remote(sp, "EAR_LEARNING_PHASE", "0"))
+        {
+            // If this is passed SLURM's --cpu-freq argument
+            if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 8))
+            {
+                p_freq = atoi(p_state);
+                p_freq = freq_to_p_state(p_freq);
+
+                sprintf(p_state, "%i", p_freq);
+                setenv_remote(sp, "EAR_P_STATE", p_state, 0);
+            }
+        }
+    }
+
+    // Switching from SLURM_JOB_NAME to EAR_APP_NAME
+    if (getenv_remote(sp, "SLURM_JOB_NAME", set_buffer, PATH_MAX)) {
+        setenv_remote(sp, "EAR_APP_NAME", set_buffer, 1);
+    }
+
+    // Updating LD_PRELOAD
+    remote_update_ld_preload(sp);
+
+    return ESPANK_SUCCESS;
+}
+
+/*
+ *
+ *
  * SLURM FRAMEWORK
+ *
  *
  */
 
@@ -417,6 +435,8 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
     if(spank_context () == S_CTX_LOCAL)
     {
         find_ear_conf_file(sp, ac, av);
+        local_update_ear_install_path();
+        local_update_ld_library_path();
     }
 
     return (ESPANK_SUCCESS);
@@ -428,7 +448,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
     if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
     {
-        prepare_environment(sp);
+        //prepare_environment(sp);
     }
 
     return (ESPANK_SUCCESS);
@@ -438,10 +458,8 @@ int slurm_spank_init (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_init");
 
-    if(spank_context() == S_CTX_SLURMD)
-    {
-        find_ear_conf_file(sp, ac, av);
-        return fork_ear_daemon(sp);
+    if(spank_context() == S_CTX_SLURMD) {
+        return slurm_spank_slurmd_init(sp, ac, av);
     }
 
     return (ESPANK_SUCCESS);
@@ -451,10 +469,13 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_slurmd_init");
 
-    //if(spank_context () == S_CTX_SLURMD || //NOT LAUNCHED)
-    //{
-        // LAUNCH DAEMON
-    //}
+    if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
+    {
+        find_ear_conf_file(sp, ac, av);
+        local_update_ear_install_path();
+        local_update_ld_library_path();
+        return fork_ear_daemon(sp);
+    }
 
     return (ESPANK_SUCCESS);
 }
