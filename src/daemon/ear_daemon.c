@@ -64,8 +64,9 @@ void f_signals(int s)
 		ear_daemon_close_comm();
 	}
 	// ear_daemon exits here
-	if (s==SIGTERM){
-		ear_verbose(0,"ear_damon SIGTERM received.....\n");
+	if ((s==SIGTERM)||(s==SIGINT)){
+		if (s==SIGTERM) ear_verbose(0,"ear_damon SIGTERM received.....\n");
+		if (s==SIGINT) ear_verbose(0,"ear_damon SIGINT received.....\n");
 		if (ear_ping_fd>0){
 			ear_verbose(1,"ear_damon application is still connected!.....\n");
 			ear_daemon_close_comm();
@@ -85,6 +86,8 @@ void catch_signals()
     s=SIGPIPE;  
     if (sigaction(s, &sa, NULL) < 0)  ear_verbose(0,"ear_daemon doing sigaction of signal s=%d, %s\n",s,strerror(errno));
     s=SIGTERM;  
+    if (sigaction(s, &sa, NULL) < 0)  ear_verbose(0,"ear_daemon doing sigaction of signal s=%d, %s\n",s,strerror(errno));
+    s=SIGINT;  
     if (sigaction(s, &sa, NULL) < 0)  ear_verbose(0,"ear_daemon doing sigaction of signal s=%d, %s\n",s,strerror(errno));
 
 }
@@ -665,6 +668,7 @@ void main(int argc,char *argv[])
 	sigemptyset(&ear_daemon_mask);
 	sigaddset(&ear_daemon_mask,SIGPIPE);
 	sigaddset(&ear_daemon_mask,SIGTERM);
+	sigaddset(&ear_daemon_mask,SIGINT);
 	sigprocmask(SIG_UNBLOCK,&ear_daemon_mask,NULL);
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;
