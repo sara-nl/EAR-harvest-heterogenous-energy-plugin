@@ -32,7 +32,7 @@ local a=$(date +%s) ; date
 
 ## Sarting EAR daemon: 1 ear_daemon per node
 source ear_daemon_start.sh hostlist ${def_freq}
-sleep 1
+sleep 4
 
 ## Starting the application
 mpiexec.hydra -l -genv LD_PRELOAD=$EAR_LIBRARY_GUI_PATH -genvall -f ./hostlist -n ${mpi} -ppn=${ppn} ${binary}
