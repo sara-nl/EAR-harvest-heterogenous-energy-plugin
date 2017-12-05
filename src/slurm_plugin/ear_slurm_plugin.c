@@ -257,25 +257,20 @@ void find_ear_conf_file(spank_t sp, int ac, char **av)
 static void exec_ear_daemon(spank_t sp)
 {
     FUNCTION_INFO("exec_ear_daemon");
-    char buffer[PATH_MAX];
-    char bin[PATH_MAX];
-    char tmp[PATH_MAX];
-    char verb[4];
+    char ear_lib[PATH_MAX];
+    char *ear_install_path;
+    char *ear_verbose;
+    char *ear_tmp;
+
 
     // Getting environment variables configuration
-    if (existenv_remote(sp, "EAR_DB_PATHNAME")) {
-        getenv_remote(sp, "EAR_DB_PATHNAME", buffer, PATH_MAX);
-        setenv_local("EAR_DB_PATHNAME", buffer, 1);
-    }
+    ear_install_path = getenv("EAR_INSTALL_PATH");
+    sprintf(ear_lib, "%s/%s", ear_install_path, EAR_DAEMON_PATH);
 
-    getenv_remote(sp, "EAR_INSTALL_PATH", buffer, PATH_MAX);
-    sprintf(bin, "%s/%s", buffer, EAR_DAEMON_PATH);
-
-    getenv_remote(sp, "EAR_VERBOSE", verb, 4);
-    getenv_remote(sp, "EAR_TMP", tmp, PATH_MAX);
+    ear_verbose = getenv("EAR_VERBOSE");
+    ear_tmp = getenv("EAR_TMP");
 
     slurm_error("System environment:");
-    slurm_error("%s", getenv("LD_PRELOAD"));
     slurm_error("%s", getenv("LD_LIBRARY_PATH"));
     slurm_error("EAR special environment:");
     slurm_error("%s", getenv("EAR_INSTALL_PATH"));
@@ -285,8 +280,8 @@ static void exec_ear_daemon(spank_t sp)
     slurm_error("%s", getenv("EAR_VERBOSE"));
 
     // Executing EAR daemon
-    if (execl(bin, bin, "1", tmp, verb, (char *) 0) == -1) {
-        SPANK_STRERROR("Error while executing %s", bin);
+    if (execl(ear_lib, ear_lib, "1", ear_tmp, ear_verbose, (char *) 0) == -1) {
+        SPANK_STRERROR("Error while executing %s", ear_lib);
         exit(errno);
     }
 }
@@ -294,26 +289,17 @@ static void exec_ear_daemon(spank_t sp)
 static int fork_ear_daemon(spank_t sp)
 {
     FUNCTION_INFO("fork_ear_daemon");
-    pid_t pid;
-
-
-    slurm_error("%s", getenv("EAR_INSTALL_PATH"));
-    slurm_error("EAR environment:");
-    slurm_error("%s", getenv("EAR_DB_PATHNAME"));
-    slurm_error("%s", getenv("EAR_TMP"));
-    slurm_error("%s", getenv("EAR_VERBOSE"));
-
 
     if (existenv_local("EAR_INSTALL_PATH") &&
         existenv_local("EAR_VERBOSE") &&
         existenv_local("EAR_TMP"))
     {
-        pid = fork();
+        daemon_pid = fork();
 
-        if (pid == 0) {
+        if (daemon_pid == 0) {
             exec_ear_daemon(sp);
-        } else if (pid == -1) {
-            SPANK_STRERROR("Fork returned %i", pid);
+        } else if (daemon_pid < 0) {
+            SPANK_STRERROR("Fork returned %i", daemon_pid);
             return ESPANK_ERROR;
         }
     } else {
@@ -355,11 +341,12 @@ static void remote_update_ld_preload(spank_t sp)
 
 static void local_update_ear_install_path()
 {
+    FUNCTION_INFO("local_update_ear_install_path");
     char *ear_install_path = getenv("EAR_INSTALL_PATH");
-
-    if (strlen(ear_install_path) == 0)
+    
+    if (ear_install_path == NULL || strlen(ear_install_path) == 0)
     {
-        slurm_error("Warning: $EAR_INSTALL_PATH not found, using first installation path.");
+        slurm_error("Warning: $EAR_INSTALL_PATH not found, using %s", EAR_INSTALL_PATH);
         slurm_error("Please, read the documentation and load the environment module.");
         setenv("EAR_INSTALL_PATH", EAR_INSTALL_PATH, 1);
     }
@@ -367,12 +354,17 @@ static void local_update_ear_install_path()
 
 static void local_update_ld_library_path()
 {
+    FUNCTION_INFO("local_update_ld_library_path");
     char *ld_library_path;
     char buffer[PATH_MAX];
 
     //
+    buffer[0] = '\0';
     ld_library_path = getenv("LD_LIBRARY_PATH");
-    strcpy(buffer, ld_library_path);
+    
+    if (ld_library_path != NULL) {
+        strcpy(buffer, ld_library_path);
+    }
 
     //
     appendenv(buffer, CPUPOWER_LIB_PATH);
