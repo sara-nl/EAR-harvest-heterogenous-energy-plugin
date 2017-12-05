@@ -23,7 +23,7 @@
 
 static int ear_daemon_client_connected=0;
 static int ear_fd_req[ear_daemon_client_requests],ear_fd_ack[ear_daemon_client_requests];
-static unsigned long ear_data_sizes[ear_daemon_client_requests];
+static unsigned long uncore_size,rapl_size,freq_size,energy_size;
 char ear_commreq[1024],ear_commack[1024];
 char ear_ping[1024];
 int ear_ping_fd;
@@ -59,7 +59,7 @@ int ear_daemon_client_connect()
 		}
 		req.req_data.req_value=getpid();
 		for (i=0;i<ear_daemon_client_requests;i++){
-			ear_verbose(1,"ear_client connecting with service %d\n",i);
+			ear_debug(2,"ear_client connecting with service %d\n",i);
         	sprintf(ear_commreq,"%s/.ear_comm_%s.req_%d",ear_tmp,nodename,i);
         	sprintf(ear_commack,"%s/.ear_comm_%s.ack_%d.%d",ear_tmp,nodename,i,getpid());
 			// Sometimes ear_daemon needs some time to startm we will wait for the first one
@@ -84,7 +84,7 @@ int ear_daemon_client_connect()
 					ear_verbose(0,"EAR_daemon_client: error opening ping pipe %s\n",strerror(errno));
 					return EAR_ERROR;
 				}
-				ear_verbose(1,"ear_client ping conn created\n");
+				ear_debug(2,"ear_client ping conn created\n");
 			}else{
 				// ear_daemon will send an ack when pipe is created
         		if ((ear_fd_req[i]=open(ear_commreq,O_WRONLY))<0){
@@ -118,11 +118,11 @@ int ear_daemon_client_connect()
 			ear_verbose(2,"EAR_daemon_client:comm_req %s [%d] connected\n",nodename,i);
         	if (ear_fd_req[i]>=0){
 				// ear_demon sends an ack when ack pipe for specific service is created
-				ear_verbose(1,"ear_client: waiting for ear_daemon ok\n");
+				ear_debug(1,"ear_client: waiting for ear_daemon ok\n");
 				if (read(ear_ping_fd,&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
 					ear_verbose(0,"EAR_daemon_client: error reading ping conn (%d) %s\n",i,strerror(errno));
 				}	
-				ear_verbose(1,"ear_client: ear_daemon ok for service %d, opening ack\n",i);
+				ear_debug(1,"ear_client: ear_daemon ok for service %d, opening ack\n",i);
         		if ((ear_fd_ack[i]=open(ear_commack,O_RDONLY))<0){
         			ear_verbose(0,"EAR_daemon_client:Error opening ear communicator for ack(%s):%s\n",ear_commack,strerror(errno));
 					return EAR_ERROR;
@@ -194,7 +194,7 @@ unsigned long ear_daemon_client_get_data_size_frequency()
     else{
         ear_debug(0,"EAR_daemon_client: ear_daemon_client_get_data_size_frequency service not provided\n");
     }   
-	ear_data_sizes[com_fd]=ack;	
+	freq_size=ack;	
     return ack;
 }
 void ear_daemon_client_begin_compute_turbo_freq()
@@ -307,7 +307,7 @@ unsigned long ear_daemon_client_get_data_size_uncore()
         	ear_debug(0,"EAR_daemon_client: ear_daemon_client_get_data_size_uncore service not provided\n");
 			ack=EAR_ERROR;
     	}
-    ear_data_sizes[com_fd]=ack;
+    uncore_size=ack;
     return ack;
 }
 
@@ -338,6 +338,7 @@ int ear_daemon_client_start_uncore()
 {
 	struct daemon_req req;
 	unsigned long ack;
+	int ret;
     req.req_service=START_UNCORE;
 	ear_debug(2,"EAR_daemon_client:start uncore\n");
     if (ear_fd_req[uncore_req]>=0){
@@ -345,8 +346,8 @@ int ear_daemon_client_start_uncore()
                     ear_verbose(0,"EAR: Error requesting uncore counters to EAR daemon:%s\n",strerror(errno));
 					return EAR_ERROR;
             }
-            if (read(ear_fd_ack[uncore_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
-                    ear_verbose(0,"EAR: Error reading START ACK uncore counters from EAR daemon:%s\n",strerror(errno));
+            if ((ret=read(ear_fd_ack[uncore_req],&ack,sizeof(unsigned long)))!=sizeof(unsigned long)){
+                    ear_verbose(0,"EAR: Error reading START ACK uncore counters from EAR daemon:ret=%d %s\n",ret,strerror(errno));
 					return EAR_ERROR;
             }
             ear_debug(3,"EAR_daemon_client: START ACK Uncore counters received from daemon \n");
@@ -369,7 +370,7 @@ int ear_daemon_client_read_uncore(unsigned long long *values)
                 	ear_verbose(0,"EAR: Error requesting STOP&READ uncore counters to EAR daemon:%s\n",strerror(errno));
 					return EAR_ERROR;
         	}
-        	if (read(ear_fd_ack[uncore_req],values,ear_data_sizes[uncore_req])!=ear_data_sizes[uncore_req]){
+        	if (read(ear_fd_ack[uncore_req],values,uncore_size)!=uncore_size){
                  	ear_verbose(0,"EAR: Error reading VALUES uncore counters from EAR daemon:%s\n",strerror(errno));
 					return EAR_ERROR;
         	}else{
@@ -377,8 +378,8 @@ int ear_daemon_client_read_uncore(unsigned long long *values)
 		}
 		int i;
 		unsigned long long cas_client=0;
-		for (i=0;i<ear_data_sizes[uncore_req]/sizeof(unsigned long long);i++) cas_client+=values[i];
-		ear_debug(4,"CLIENT UNCORE cas %llu values %d\n",cas_client,ear_data_sizes[uncore_req]/sizeof(unsigned long long));
+		for (i=0;i<uncore_size/sizeof(unsigned long long);i++) cas_client+=values[i];
+		ear_debug(4,"CLIENT UNCORE cas %llu values %d\n",cas_client,uncore_size/sizeof(unsigned long long));
 	}else{
 		ack=EAR_ERROR;
 		ear_debug(0,"EAR_daemon_client: read uncore service not provided\n");
@@ -410,7 +411,7 @@ unsigned long ear_daemon_client_get_data_size_rapl() // size in bytes
         	ear_debug(0,"EAR_daemon_client: ear_daemon_client_get_data_size_rapl service not provided\n");
 			ack=EAR_ERROR;
 	}
-    ear_data_sizes[com_fd]=ack;
+    rapl_size=ack;
     return ack;
 }
 
@@ -442,6 +443,7 @@ int ear_daemon_client_start_rapl()
 {
 	struct daemon_req req;
 	unsigned long ack;
+	int ret;
     req.req_service=START_RAPL;
 	ear_debug(2,"EAR_daemon_client:start rapl\n");
     if (ear_fd_req[rapl_req]>=0){
@@ -449,8 +451,8 @@ int ear_daemon_client_start_rapl()
                     ear_verbose(0,"EAR: Error requesting rapl counters to EAR daemon:%s\n",strerror(errno));
 					return EAR_ERROR;
             }
-            if (read(ear_fd_ack[rapl_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
-                    ear_verbose(0,"EAR: Error reading START ACK rapl counters from EAR daemon:%s\n",strerror(errno));
+            if ((ret=read(ear_fd_ack[rapl_req],&ack,sizeof(unsigned long)))!=sizeof(unsigned long)){
+                    ear_verbose(0,"EAR: Error reading START ACK rapl counters from EAR daemon ret=%d:%s\n",ret,strerror(errno));
 					return EAR_ERROR;
             }
 			ear_verbose(3,"EAR_daemon_client: START ACK rapl counters received from daemon \n");
@@ -476,13 +478,13 @@ int ear_daemon_client_read_rapl(unsigned long long *values)
                 	ear_verbose(0,"EAR: Error requesting STOP&READ rapl counters to EAR daemon:%s\n",strerror(errno));
 					return EAR_ERROR;
         	}
-        	if (read(ear_fd_ack[rapl_req],values,ear_data_sizes[rapl_req])!=ear_data_sizes[rapl_req]){
+        	if (read(ear_fd_ack[rapl_req],values,rapl_size)!=rapl_size){
                  	ear_verbose(0,"EAR: Error reading VALUES rapl counters from EAR daemon:%s\n",strerror(errno));
 					return EAR_ERROR;
         	}else{
 			ack=EAR_SUCCESS;
 			}
-			for (i=0;i<ear_data_sizes[rapl_req]/sizeof(unsigned long long);i++){
+			for (i=0;i<rapl_size/sizeof(unsigned long long);i++){
 				acum_energy+=values[i];
 			}
 			ear_debug(4,"EAR_RAPL_CLIENT acum energy %llu\n",acum_energy);
@@ -515,7 +517,7 @@ unsigned long ear_daemon_client_node_energy_data_size()
             ear_debug(0,"EAR_daemon_client: ear_daemon_client_node_energy_data_size service not provided\n");
             ack=EAR_ERROR;
     }   
-    ear_data_sizes[com_fd]=ack;
+    energy_size=ack;
     return ack;
 }
 int ear_daemon_client_node_dc_energy(unsigned long *energy)
