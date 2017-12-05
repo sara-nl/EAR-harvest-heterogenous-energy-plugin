@@ -6,6 +6,11 @@
 #define PAPI_LIB_PATH       "@PAPI_LIBDIR@"
 #define GSL_LIB_PATH        "@GSL_LIBDIR@"
 
+#define EAR_INSTALL_PATH    "@prefix@"
+#define EAR_LIB_PATH        "lib/libear.so"
+#define EAR_TRAC_LIB_PATH   "lib/libeartrac.so"
+#define EAR_DAEMON_PATH     "sbin/eard"
+
 #define EAR_SUCCESS  0
 #define EAR_ERROR   -1
 #define EAR_WARNING -2

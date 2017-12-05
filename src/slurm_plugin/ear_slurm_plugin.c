@@ -201,51 +201,32 @@ static void file_to_environment(spank_t sp, const char *path)
  *
  */
 
-static int task_lock(spank_t sp)
-{
-    char lock_file[PATH_MAX];
-    int lock_fd;
-
-    getenv_remote(sp, "EAR_TASK_LOCK_FILE", lock_file, PATH_MAX);
-    lock_fd = open(lock_file, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
-
-    if (lock_fd >= 0)
-    {
-        close(lock_fd);
-        return 1;
-    }
-    return 0;
-}
-
-static void task_unlock(spank_t sp)
-{
-    char lock_file[PATH_MAX];
-    getenv_remote(sp, "EAR_TASK_LOCK_FILE", lock_file, PATH_MAX);
-    remove(lock_file);
-}
-
 static void exec_ear_daemon(spank_t sp)
 {
     FUNCTION_INFO("exec_ear_daemon");
-    char library_path[4096];
-    char db_path[1024];
-    char bin[1024];
-    char tmp[1024];
+    char buffer[PATH_MAX];
+    char bin[PATH_MAX];
+    char tmp[PATH_MAX];
     char verb[4];
 
+    //INSTALL_PATH
+    //CPUPOWER_LIB_PATH
+    //FREEIPMI_LIB_PATH
+    //SLURM_LIB_PATH
+    //PAPI_LIB_PATH
+
     // Getting environment variables configuration
-    getenv_remote(sp, "LD_LIBRARY_PATH", library_path, 4096);
-    getenv_remote(sp, "EAR_INSTALL_PATH", bin, 1024);
-    getenv_remote(sp, "EAR_DB_PATHNAME", db_path, 1024);
     getenv_remote(sp, "EAR_VERBOSE", verb, 4);
-    getenv_remote(sp, "EAR_TMP", tmp, 1024);
+    getenv_remote(sp, "EAR_TMP", tmp, PATH_MAX);
 
-    // Setting variables not in the arguments
-    setenv_local("LD_LIBRARY_PATH", library_path, 1);
-    setenv_local("EAR_DB_PATHNAME", db_path, 1);
+    getenv_remote(sp, "EAR_DB_PATHNAME", buffer, PATH_MAX);
+    setenv_local("EAR_DB_PATHNAME", buffer, 1);
 
-    // Appending binary file
-    sprintf(bin, "%s/bin/%s", bin, "ear_daemon");
+    //
+    setenv_local("LD_LIBRARY_PATH")
+
+    //
+    sprintf(bin, "%s/%s", INSTALL_PATH, EAR_DAEMON_PATH);
 
     // Executing EAR daemon
     if (execl(bin, bin, "1", tmp, verb, (char *) 0) == -1) {
@@ -259,7 +240,7 @@ static int fork_ear_daemon(spank_t sp)
     FUNCTION_INFO("fork_ear_daemon");
     pid_t pid;
 
-    if (existenv_remote(sp, "EAR_INSTALL_PATH") &&
+    if (existenv_remote(sp, "EAR_DB_PATHNAME") &&
         existenv_remote(sp, "EAR_VERBOSE") &&
         existenv_remote(sp, "EAR_TMP"))
     {
@@ -301,6 +282,18 @@ static int freq_to_p_state(int freq)
     return 1;
 }
 
+static int update_ld_library_path(spank_t sp)
+{
+    char get_buffer[PATH_MAX];
+    char set_buffer[PATH_MAX];
+
+    getenv_remote(sp, "LD_LIBRARY_PATH", set_buffer, PATH_MAX);
+    appendenv(set_buffer, CPUPOWER_LIB_PATH);
+    appendenv(set_buffer, PAPI_LIB_PATH);
+    appendenv(set_buffer, FREEIPMI_LIB_PATH);
+    setenv_remote(sp, "LD_LIBRARY_PATH", set_buffer, 1);
+}
+
 static int prepare_environment(spank_t sp)
 {
     char get_buffer[PATH_MAX];
@@ -339,20 +332,16 @@ static int prepare_environment(spank_t sp)
 
     // Appending libEAR.so or libEARgui.so
     if (isenv_remote(sp, "EAR_GUI", "1")) {
-        sprintf(set_buffer, "%s/lib/%s", set_buffer, "libEARgui.so");
+        sprintf(set_buffer, "%s/%s", set_buffer, EAR_INSTALL_PATH);
     } else {
-        sprintf(set_buffer, "%s/lib/%s", set_buffer, "libEAR.so");
+        sprintf(set_buffer, "%s/%s", set_buffer, EAR_TRAC_LIB_PATH);
     }
 
     // Saving environment variable LD_PRELOAD
     setenv_remote(sp, "LD_PRELOAD", set_buffer, 1);
 
-    // Appending this libraries to LD_LIBRARY_PATH
-    getenv_remote(sp, "LD_LIBRARY_PATH", set_buffer, PATH_MAX);
-    appendenv(set_buffer, CPUPOWER_LIB_PATH);
-    appendenv(set_buffer, PAPI_LIB_PATH);
-    appendenv(set_buffer, FREEIPMI_LIB_PATH);
-    setenv_remote(sp, "LD_LIBRARY_PATH", set_buffer, 1);
+    //
+    update_ld_library_path(sp);
 
     // Switching from SLURM_JOB_NAME to EAR_APP_NAME
     if (getenv_remote(sp, "SLURM_JOB_NAME", set_buffer, PATH_MAX)) {
