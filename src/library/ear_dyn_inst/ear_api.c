@@ -96,6 +96,11 @@ void ear_init(){
 	PMPI_Comm_size(MPI_COMM_WORLD,&my_size);
 	ear_lib_environment();
 	EAR_VERBOSE_LEVEL=get_ear_verbose();
+	if (get_ear_app_name()!=NULL){
+		if (ear_my_rank==0) ear_verbose(1,"EAR: Application %s starts.....\n",get_ear_app_name());
+	}else{
+		if (ear_my_rank==0) ear_verbose(1,"EAR: Application starts.....\n");
+	}
 	ear_debug(2,"EAR Starting initialization\n");	
 	ear_whole_app=get_ear_learning_phase();
     dynais_init(EAR_DYNAIS_WINDOW_SIZE,EAR_DYNAIS_LEVELS);
@@ -160,7 +165,7 @@ void ear_init(){
     	ear_verbose(0,"EAR:: Node Energy can not be measured, AEM is not loaded, exiting\n");
         exit(1) ;
     }else{
-		ear_verbose(1,"EAR: init_dc_energy ok!\n");
+		ear_debug(1,"EAR: init_dc_energy ok!\n");
 	}
     app_eru_init=read_dc_energy();
 	 

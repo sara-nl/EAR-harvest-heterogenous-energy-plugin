@@ -59,7 +59,6 @@ void states_begin_job(int  my_id, FILE *ear_fd,char *app_name)
 {
 	char *verbose,*loop_time,*who;
 	if (my_id) return;
-	ear_verbose(1,"EAR(%s) Starts execution\n",app_name);
 	PERF_ACCURACY_MIN_TIME=get_ear_performance_accuracy();
 	ear_debug(3,"EAR(%s) JOB %s STARTS EXECUTION. Performance accuracy set to (min) %.5lf usecs\n",__FILE__,app_name,PERF_ACCURACY_MIN_TIME);
 	EAR_STATE=NO_PERIOD;
