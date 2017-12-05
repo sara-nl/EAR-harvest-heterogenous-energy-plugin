@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <freeipmi/freeipmi.h>
 #include <endian.h>
+#include <config.h>
 #define IPMI_RAW_MAX_ARGS (1024)
 
 
@@ -43,7 +44,7 @@ int lenovo_act_node_energy_init()
 	//Creating the context
 	if (!(ipmi_ctx = ipmi_ctx_create ())){
         ear_verbose(0,"lenovo_air_cooling:Error in ipmi_ctx_create %s\n",strerror(errno));
-		return -1;
+		return EAR_ERROR;
 	}
 	// Checking for root
 	uid = getuid ();
@@ -53,7 +54,7 @@ int lenovo_act_node_energy_init()
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
 		ipmi_ctx_destroy (ipmi_ctx);
-		return -1;
+		return EAR_ERROR;
 	}
 	// inband context
 	if ((ret = ipmi_ctx_find_inband (ipmi_ctx, 
@@ -69,7 +70,7 @@ int lenovo_act_node_energy_init()
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
 		ipmi_ctx_destroy (ipmi_ctx);
-		return -1;	
+		return EAR_ERROR;	
 	}
 	if (ret==0){
 		ear_verbose(0,"lenovo_air_cooling: Not inband device found\n");
@@ -77,7 +78,7 @@ int lenovo_act_node_energy_init()
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
 		ipmi_ctx_destroy (ipmi_ctx);
-		return -1;	
+		return EAR_ERROR;	
 	}
 	// This part is hardcoded since we are not supporting other commands rather than reading DC energy
 	send_len=11;
@@ -88,7 +89,7 @@ int lenovo_act_node_energy_init()
         ipmi_ctx_close (ipmi_ctx);
         // delete context
         ipmi_ctx_destroy (ipmi_ctx);
-		return -1;
+		return EAR_ERROR;
 	}
 	if (!(bytes_rs = calloc (IPMI_RAW_MAX_ARGS, sizeof (uint8_t))))
 	{
@@ -97,7 +98,7 @@ int lenovo_act_node_energy_init()
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
 		ipmi_ctx_destroy (ipmi_ctx);
-		return -1;
+		return EAR_ERROR;
 	}	
 	// ipmitool raw 0x2e 0x82 0x66 0x4a 0 0 0 1 --> Command to get the parameter (0x20 in Lenovo) bytes_rq[6]
 	// sudo ./ipmi-raw 0x0 0x2e 0x82 0x66 0x4a 0 0 0 1 
@@ -121,7 +122,7 @@ int lenovo_act_node_energy_init()
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
         ear_verbose(0,"lenovo_air_cooling: ipmi_cmd_raw fails\n");
-        return -1;
+        return EAR_ERROR;
     }
 	// sudo ./ipmi-raw 0x0 0x2e 0x81 0x66 0x4a 0x00 0x20 0x01 0x82 0x0 0x08
 	bytes_rq[0]=(uint8_t)0x00;
@@ -136,7 +137,7 @@ int lenovo_act_node_energy_init()
 	bytes_rq[9]=(uint8_t)0x00;
 	bytes_rq[10]=(uint8_t)0x08;
 
-	return 0;	
+	return EAR_SUCCESS;	
 		
 }
 int lenovo_act_count_energy_data_length()
@@ -152,7 +153,7 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
 	int rs_len;
 	if (ipmi_ctx==NULL){ 
 		ear_verbose(0,"lenovo_air_cooling: IPMI context not initiallized\n");
-		return -1;
+		return EAR_ERROR;
 	}
 	FUNCVERB("lenovo_read_dc_energy");
 	// RAW CMD
@@ -165,17 +166,18 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
 		ear_verbose(0,"lenovo_air_cooling: ipmi_cmd_raw fails\n");
-		return -1;
+		return EAR_ERROR;
 	}
 	energyp=(unsigned long *)&bytes_rs[rs_len-8];
+	// Energy values provided in this model are reported in mJoules, the API returns uJ (multiply by 1000)
 	*energy=(unsigned long)be64toh(*energyp)*1000;
-	return 0;
+	return EAR_SUCCESS;
 }
 /* AC energy is not yet supported */
 int lenovo_act_read_ac_energy(unsigned long *energy)
 {
 	*energy=0;
-	return 0;
+	return EAR_SUCCESS;
 }
 /* Release access to ipmi device */
 int lenovo_act_node_energy_dispose()
@@ -184,12 +186,12 @@ int lenovo_act_node_energy_dispose()
 	FUNCVERB("lenovo_node_energy_dispose");
 	if (ipmi_ctx==NULL){ 
 		ear_verbose(0,"lenovo_air_cooling: IPMI context not initiallized\n");
-		return -1;
+		return EAR_ERROR;
 	}
 	// // Close context
 	ipmi_ctx_close (ipmi_ctx);
 	// delete context
 	ipmi_ctx_destroy (ipmi_ctx);
-	return 0;
+	return EAR_SUCCESS;
 }
 
