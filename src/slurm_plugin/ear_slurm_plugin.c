@@ -186,7 +186,7 @@ static void file_to_environment(spank_t sp, const char *path)
             if (strlen(option) && strlen(++value))
             {
                 strtoup(option);
-                //slurm_error("%s %s", option, value);
+                slurm_error("%s %s", option, value);
                 setenv_local(option, value, 0);
             }
         }
@@ -311,7 +311,6 @@ static int prepare_environment(spank_t sp)
         printenv_remote(sp, "LD_LIBRARY_PATH");
         slurm_error("EAR special environment:");
         printenv_remote(sp, "EAR_INSTALL_PATH");
-        printenv_remote(sp, "EAR_TASK_LOCK_FILE");
         slurm_error("EAR environment:");
         printenv_remote(sp, "EAR_APP_NAME");
         printenv_remote(sp, "EAR_DB_PATHNAME");
@@ -354,6 +353,16 @@ static void exec_ear_daemon(spank_t sp)
     getenv_remote(sp, "EAR_VERBOSE", verb, 4);
     getenv_remote(sp, "EAR_TMP", tmp, PATH_MAX);
 
+    slurm_error("System environment:");
+    slurm_error("%s", getenv("LD_PRELOAD"));
+    slurm_error("%s", getenv("LD_LIBRARY_PATH"));
+    slurm_error("EAR special environment:");
+    slurm_error("%s", getenv("EAR_INSTALL_PATH"));
+    slurm_error("EAR environment:");
+    slurm_error("%s", getenv("EAR_DB_PATHNAME"));
+    slurm_error("%s", getenv("EAR_TMP"));
+    slurm_error("%s", getenv("EAR_VERBOSE"));
+
     // Executing EAR daemon
     if (execl(bin, bin, "1", tmp, verb, (char *) 0) == -1) {
         SPANK_STRERROR("Error while executing %s", bin);
@@ -365,6 +374,17 @@ static int fork_ear_daemon(spank_t sp)
 {
     FUNCTION_INFO("fork_ear_daemon");
     pid_t pid;
+
+	slurm_error("System environment:");
+        slurm_error("%s", getenv("LD_PRELOAD"));
+        slurm_error("%s", getenv("LD_LIBRARY_PATH"));
+        slurm_error("EAR special environment:");
+        slurm_error("%s", getenv("EAR_INSTALL_PATH"));
+        slurm_error("EAR environment:");
+        slurm_error("%s", getenv("EAR_DB_PATHNAME"));
+        slurm_error("%s", getenv("EAR_TMP"));
+        slurm_error("%s", getenv("EAR_VERBOSE"));
+
 
     if (existenv_remote(sp, "EAR_INSTALL_PATH") &&
         existenv_remote(sp, "EAR_VERBOSE") &&
@@ -380,9 +400,22 @@ static int fork_ear_daemon(spank_t sp)
         }
     } else {
         SPANK_ERROR("Missing crucial environment variable");
-        return (ESPANK_ENV_NOEXIST);
+        return ESPANK_ENV_NOEXIST;
     }
     return ESPANK_SUCCESS;
+}
+
+void find_ear_conf_file(spank_t sp, int ac, char **av)
+{
+    int i;
+
+    for (i = 0; i < ac; ++i)
+    {
+        slurm_error("%s", av[i]);
+        if (strncmp ("ear_conf_file=", av[i], 14) == 0) {
+            file_to_environment(sp, (const char *) &av[i][14]);
+        }
+    }
 }
 
 /*
@@ -394,13 +427,10 @@ static int fork_ear_daemon(spank_t sp)
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_local_user_init");
-    int i;
 
     if(spank_context () == S_CTX_LOCAL)
     {
-        if (strncmp ("ear_conf_file=", av[i], 14) == 0) {
-            file_to_environment(sp, (const char *) &av[i][14]);
-        }
+        find_ear_conf_file(sp, ac, av);
     }
 
     return (ESPANK_SUCCESS);
@@ -424,37 +454,8 @@ int slurm_spank_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_SLURMD)
     {
-        if (strncmp ("ear_conf_file=", av[i], 14) == 0) {
-            file_to_environment(sp, (const char *) &av[i][14]);
-        }
-        // LAUNCH DAEMON
-        slurm_error("SLURM environment:");
-        printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
-        printenv_remote(sp, "SLURMD_NODENAME");
-        printenv_remote(sp, "SLURM_JOB_ID");
-        slurm_error("System environment:");
-        printenv_remote(sp, "LD_PRELOAD");
-        printenv_remote(sp, "LD_LIBRARY_PATH");
-        slurm_error("EAR special environment:");
-        printenv_remote(sp, "EAR_INSTALL_PATH");
-        printenv_remote(sp, "EAR_TASK_LOCK_FILE");
-        slurm_error("EAR environment:");
-        printenv_remote(sp, "EAR_APP_NAME");
-        printenv_remote(sp, "EAR_DB_PATHNAME");
-        printenv_remote(sp, "EAR_COEFF_DB_PATHNAME");
-        printenv_remote(sp, "EAR_DYNAIS_LEVELS");
-        printenv_remote(sp, "EAR_DYNAIS_WINDOW_SIZE");
-        printenv_remote(sp, "EAR_LEARNING_PHASE");
-        printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
-        printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
-        printenv_remote(sp, "EAR_POWER_POLICY");
-        printenv_remote(sp, "EAR_PERFORMANCE_ACCURACY");
-        printenv_remote(sp, "EAR_P_STATE");
-        printenv_remote(sp, "EAR_RESET_FREQ");
-        printenv_remote(sp, "EAR_TURBO");
-        printenv_remote(sp, "EAR_TMP");
-        printenv_remote(sp, "EAR_USER_DB_PATHNAME");
-        printenv_remote(sp, "EAR_VERBOSE");
+        find_ear_conf_file(sp, ac, av);
+        return fork_ear_daemon(sp);
     }
 
     return (ESPANK_SUCCESS);
@@ -472,13 +473,12 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
     return (ESPANK_SUCCESS);
 }
 
-int slurm_spank_exit (spank_t sp, int ac, char **av)
+int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 {
-    FUNCTION_INFO("slurm_spank_exit");
+    FUNCTION_INFO("slurm_spank_slurmd_exit");
 
     if(spank_context () == S_CTX_SLURMD)
     {
-        // LAUNCH DAEMON
     }
 
     return (ESPANK_SUCCESS);
