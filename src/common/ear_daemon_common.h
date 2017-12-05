@@ -40,7 +40,7 @@ struct daemon_req{
 #define DATA_SIZE_FREQ 4
 #define CONNECT_FREQ 5
 
-#define END_COMM 100
+#define END_COMM 1000
 
 #define EAR_COM_OK     	 0
 #define EAR_COM_ERROR 	-1

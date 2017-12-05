@@ -529,11 +529,26 @@ void select_service(int i)
 void select_service(int fd)
 {
     if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at select_service\n");
-	if (ear_daemon_freq(0)) return;
-	if (ear_daemon_uncore(0)) return;
-	if (ear_daemon_rapl(0)) return;
-	if (ear_daemon_system(0)) return;
-	if (ear_daemon_node_energy(0)) return;
+	if (ear_daemon_freq(0)){ 
+		ear_debug(0,"eard frequency service\n");
+		return;
+	}
+	if (ear_daemon_uncore(0)){ 
+		ear_debug(0,"eard uncore service\n");
+		return;
+	}
+	if (ear_daemon_rapl(0)){ 
+		ear_debug(0,"eard rapl service\n");
+		return;
+	}
+	if (ear_daemon_system(0)){ 
+		ear_debug(0,"eard system service\n");
+		return;
+	}
+	if (ear_daemon_node_energy(0)){ 
+		ear_debug(0,"eard node energy service\n");
+		return;
+	}
 	ear_verbose(0,"eard: Error, request received not supported\n");
 	ear_daemon_close_comm();
 }
@@ -609,6 +624,7 @@ void main(int argc,char *argv[])
 	// We initiaize uncore counters
 	cpu_model = get_model();
 	num_uncore_counters = init_uncores(cpu_model);
+	ear_verbose(1,"eard %d imc uncore counters detected\n",num_uncore_counters);
 
 	// We initialize rapl counters
 	init_rapl_metrics();
@@ -640,6 +656,7 @@ void main(int argc,char *argv[])
 		numfds_req=max_fd+1;
 		ear_debug(3,"ear_daemon: fd %d added to rdfd mask max=%d FD_SETSIZE=%d\n",ear_fd_req[i],numfds_req,FD_SETSIZE);
 	}
+	rfds_basic=rfds;
 	ear_verbose(1,"EAR:Communicator for %s ON\n",nodename);
 	// we wait until EAR daemon receives a request
 	// We support requests realted to frequency and to uncore counters
