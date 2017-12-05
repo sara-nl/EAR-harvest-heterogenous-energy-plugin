@@ -224,7 +224,7 @@ static void file_to_environment(spank_t sp, const char *path)
             if (strlen(option) && strlen(++value))
             {
                 strtoup(option);
-                slurm_error("%s %s", option, value);
+                //slurm_error("%s %s", option, value);
                 setenv_local(option, value, 0);
             }
         }
@@ -246,36 +246,47 @@ void find_ear_conf_file(spank_t sp, int ac, char **av)
     }
 }
 
-static int update_ld_preload(spank_t sp)
+static void update_ear_install_path(spank_t sp)
 {
-    char get_buffer[PATH_MAX];
-    char set_buffer[PATH_MAX];
-
-    set_buffer[0] = '\0';
-    getenv_remote(sp, "LD_PRELOAD", set_buffer, PATH_MAX);
+    if 
     getenv_remote(sp, "EAR_INSTALL_PATH", get_buffer, PATH_MAX);
-    appendenv(set_buffer, get_buffer);
+}
+
+static void update_ld_preload(spank_t sp)
+{
+    char buffer_aux[PATH_MAX];
+    char buffer[PATH_MAX];
+
+    buffer[0] = '\0';
+    getenv_remote(sp, "LD_PRELOAD", buffer, PATH_MAX);
+    getenv_remote(sp, "EAR_INSTALL_PATH", buffer_aux, PATH_MAX);
+    appendenv(buffer, buffer_aux);
 
     // Appending libraries to LD_PRELOAD
     if (isenv_remote(sp, "EAR_GUI", "1")) {
-        sprintf(set_buffer, "%s/%s", set_buffer, EAR_LIB_PATH);
+        sprintf(buffer, "%s/%s", buffer, EAR_LIB_PATH);
     } else {
-        sprintf(set_buffer, "%s/%s", set_buffer, EAR_LIB_TRAC_PATH);
+        sprintf(buffer, "%s/%s", buffer, EAR_LIB_TRAC_PATH);
     }
 
-    setenv_remote(sp, "LD_PRELOAD", set_buffer, 1);
+    //
+    setenv_remote(sp, "LD_PRELOAD", buffer, 1);
 }
 
-static int update_ld_library_path(spank_t sp)
+static void update_ld_library_path(spank_t sp)
 {
-    char get_buffer[PATH_MAX];
-    char set_buffer[PATH_MAX];
+    char buffer[PATH_MAX];
 
-    getenv_remote(sp, "LD_LIBRARY_PATH", set_buffer, PATH_MAX);
-    appendenv(set_buffer, CPUPOWER_LIB_PATH);
-    appendenv(set_buffer, PAPI_LIB_PATH);
-    appendenv(set_buffer, FREEIPMI_LIB_PATH);
-    setenv_remote(sp, "LD_LIBRARY_PATH", set_buffer, 1);
+    //
+    getenv_remote(sp, "LD_LIBRARY_PATH", buffer, PATH_MAX);
+    
+    //
+    appendenv(buffer, CPUPOWER_LIB_PATH);
+    appendenv(buffer, PAPI_LIB_PATH);
+    appendenv(buffer, FREEIPMI_LIB_PATH);
+    
+    //
+    setenv_remote(sp, "LD_LIBRARY_PATH", buffer, 1);
 }
 
 static int prepare_environment(spank_t sp)
@@ -366,9 +377,17 @@ static int fork_ear_daemon(spank_t sp)
     FUNCTION_INFO("fork_ear_daemon");
     pid_t pid;
 
-    if (existenv_local(sp, "EAR_INSTALL_PATH") &&
-        existenv_local(sp, "EAR_VERBOSE") &&
-        existenv_local(sp, "EAR_TMP"))
+
+    slurm_error("%s", getenv("EAR_INSTALL_PATH"));
+    slurm_error("EAR environment:");
+    slurm_error("%s", getenv("EAR_DB_PATHNAME"));
+    slurm_error("%s", getenv("EAR_TMP"));
+    slurm_error("%s", getenv("EAR_VERBOSE"));
+
+
+    if (existenv_local("EAR_INSTALL_PATH") &&
+        existenv_local("EAR_VERBOSE") &&
+        existenv_local("EAR_TMP"))
     {
         pid = fork();
 
