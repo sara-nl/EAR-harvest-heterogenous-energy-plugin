@@ -76,19 +76,6 @@ static char* strclean(char *string, char chr)
     return index;
 }
 
-static char* strend(char *string)
-{
-    int length = strlen(string);
-    return &string[length];
-}
-
-static void strapn(char *string, char character)
-{
-    char *last_char = strend(string);
-    last_char[0] = character;
-    last_char[1] = '\0';
-}
-
 /*
  *
  * Environment
@@ -107,30 +94,6 @@ static void appendenv(char *destiny, char *source)
     } else {
         strcpy(destiny, source);
     }
-}
-
-static void printenv_remote(spank_t sp, char *name)
-{
-    spank_err_t result;
-    char buffer[1024];
-    result = spank_getenv (sp, name, buffer, 1024);
-
-    if(result == ESPANK_SUCCESS) {
-        slurm_error("%s = %s", name, buffer);
-    } else if (result == ESPANK_NOSPACE) {
-        slurm_error("%s = (TOO BIG)", name);
-    } else {
-        slurm_error("%s = NULL", name);
-    }
-}
-
-static char* getenv_local(char *name, char *def_value)
-{
-    char *value = getenv (name);
-    if(value != NULL && strlen(value) > 0) {
-        return value;
-    }
-    return def_value;
 }
 
 static void setenv_local(const char *name, const char *value, int replace)
@@ -163,7 +126,7 @@ static int existenv_remote(spank_t sp, char *name)
     char test[2];
     spank_err_t serrno = spank_getenv (sp, name, test, 2);
     return (serrno == ESPANK_SUCCESS || serrno == ESPANK_NOSPACE) &&
-            test != NULL && strlen(test);
+            test != NULL && strlen(test) > 0;
 }
 
 static int isenv_remote(spank_t sp, char *name, char *value)
@@ -205,7 +168,7 @@ static int freq_to_p_state(int freq)
     return 1;
 }
 
-static void file_to_environment(spank_t sp, const char *path)
+static int file_to_environment(spank_t sp, const char *path)
 {
     const char *value = NULL;
     char option[512];
@@ -214,7 +177,7 @@ static void file_to_environment(spank_t sp, const char *path)
     if ((file = fopen(path, "r")) == NULL)
     {
         SPANK_STRERROR("Config file %s not found", path);
-        exit(ESPANK_ERROR);
+        return ESPANK_ERROR;
     }
 
     while (fgets(option, 100, file) != NULL)
@@ -224,24 +187,23 @@ static void file_to_environment(spank_t sp, const char *path)
             if (strlen(option) && strlen(++value))
             {
                 strtoup(option);
-                //slurm_error("%s %s", option, value);
                 setenv_local(option, value, 0);
+                //slurm_error("%s %s", option, value);
             }
         }
     }
 
     fclose(file);
+    return ESPANK_SUCCESS;
 }
 
 void find_ear_conf_file(spank_t sp, int ac, char **av)
 {
     int i;
-
     for (i = 0; i < ac; ++i)
     {
-        slurm_error("%s", av[i]);
         if (strncmp ("ear_conf_file=", av[i], 14) == 0) {
-            file_to_environment(sp, (const char *) &av[i][14]);
+            return file_to_environment(sp, (const char *) &av[i][14]);
         }
     }
 }
@@ -262,22 +224,12 @@ static void exec_ear_daemon(spank_t sp)
     char *ear_verbose;
     char *ear_tmp;
 
-
     // Getting environment variables configuration
     ear_install_path = getenv("EAR_INSTALL_PATH");
     sprintf(ear_lib, "%s/%s", ear_install_path, EAR_DAEMON_PATH);
 
     ear_verbose = getenv("EAR_VERBOSE");
     ear_tmp = getenv("EAR_TMP");
-
-    slurm_error("System environment:");
-    slurm_error("%s", getenv("LD_LIBRARY_PATH"));
-    slurm_error("EAR special environment:");
-    slurm_error("%s", getenv("EAR_INSTALL_PATH"));
-    slurm_error("EAR environment:");
-    slurm_error("%s", getenv("EAR_DB_PATHNAME"));
-    slurm_error("%s", getenv("EAR_TMP"));
-    slurm_error("%s", getenv("EAR_VERBOSE"));
 
     // Executing EAR daemon
     if (execl(ear_lib, ear_lib, "1", ear_tmp, ear_verbose, (char *) 0) == -1) {
@@ -484,6 +436,13 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
     return (ESPANK_SUCCESS);
 }
 
+int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_init_post_opt"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_init_privileged"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_init (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_init"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_exit"); return (ESPANK_SUCCESS); }
+int slurm_spank_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_exit"); return (ESPANK_SUCCESS); }
+    
 /*
  *
  *
