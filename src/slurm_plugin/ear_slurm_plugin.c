@@ -280,7 +280,7 @@ static int fork_ear_daemon(spank_t sp)
  *
  */
 
-static void local_update_ld_preload(spank_t sp)
+static int local_update_ld_preload(spank_t sp)
 {
     char *ld_preload, *ear_install_path;
     char buffer[PATH_MAX];
@@ -433,6 +433,7 @@ int slurm_spank_init (spank_t sp, int ac, char **av)
 int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_slurmd_init");
+    int r;
 
     if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
     {
