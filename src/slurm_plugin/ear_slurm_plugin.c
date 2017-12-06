@@ -11,8 +11,7 @@
 #include <signal.h>
 #include <ear_slurm_plugin.h>
 
-#define FUNCTION_INFO(function) \
-	slurm_error("%s", function);
+#define FUNCTION_INFO(function) 
 #define SPANK_ERROR(string)                            \
     slurm_error(string);
 #define SPANK_STRERROR(string, var)                    \
