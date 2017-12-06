@@ -129,6 +129,15 @@ static int existenv_remote(spank_t sp, char *name)
             test != NULL && strlen(test) > 0;
 }
 
+static int isenv_local(char *name, char *value)
+{
+    char *env = getenv(name);
+    if (env != NULL) {
+        return strcmp(env, value) == 0;
+    }
+    return 0;
+}
+
 static int isenv_remote(spank_t sp, char *name, char *value)
 {
     char buffer[16];
@@ -137,7 +146,6 @@ static int isenv_remote(spank_t sp, char *name, char *value)
     }
     return 0;
 }
-
 
 /*
  *
@@ -197,7 +205,7 @@ static int file_to_environment(spank_t sp, const char *path)
     return ESPANK_SUCCESS;
 }
 
-void find_ear_conf_file(spank_t sp, int ac, char **av)
+static int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
     int i;
     for (i = 0; i < ac; ++i)
@@ -206,6 +214,7 @@ void find_ear_conf_file(spank_t sp, int ac, char **av)
             return file_to_environment(sp, (const char *) &av[i][14]);
         }
     }
+    return ESPANK_ERROR;
 }
 
 /*
@@ -269,25 +278,31 @@ static int fork_ear_daemon(spank_t sp)
  *
  */
 
-static void remote_update_ld_preload(spank_t sp)
+static void local_update_ld_preload(spank_t sp)
 {
-    char ear_install_path[PATH_MAX];
-    char ld_preload[PATH_MAX];
+    char *ld_preload, *ear_install_path;
+    char buffer[PATH_MAX];
 
-    ld_preload[0] = '\0';
-    getenv_remote(sp, "LD_PRELOAD", ld_preload, PATH_MAX);
-    getenv_remote(sp, "EAR_INSTALL_PATH", ear_install_path, PATH_MAX);
-    appendenv(ld_preload, ear_install_path);
+    buffer[0] = '\0';
+    ld_preload = getenv("LD_PRELOAD");
+    ear_install_path = getenv("EAR_INSTALL_PATH");
+
+    if (ld_preload != NULL) {
+        strcpy(buffer, ld_preload);
+    }
+
+    // Apending: x:y or y
+    appendenv(buffer, ear_install_path);
 
     // Appending libraries to LD_PRELOAD
-    if (isenv_remote(sp, "EAR_GUI", "1")) {
-        sprintf(ld_preload, "%s/%s", ld_preload, EAR_LIB_PATH);
+    if (isenv_local("EAR_TRACES", "1")) {
+        sprintf(buffer, "%s/%s", buffer, EAR_LIB_PATH);
     } else {
-        sprintf(ld_preload, "%s/%s", ld_preload, EAR_LIB_TRAC_PATH);
+        sprintf(buffer, "%s/%s", buffer, EAR_LIB_TRAC_PATH);
     }
 
     //
-    setenv_remote(sp, "LD_PRELOAD", ld_preload, 1);
+    setenv_remote(sp, "LD_PRELOAD", buffer, 1);
 }
 
 
@@ -381,9 +396,25 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
         find_ear_conf_file(sp, ac, av);
         local_update_ear_install_path();
         local_update_ld_library_path();
+        local_update_ld_preload(sp);
     }
 
     return (ESPANK_SUCCESS);
+}
+
+static void printenv_remote(spank_t sp, char *name)
+{
+    spank_err_t result;
+    char buffer[1024];
+    result = spank_getenv (sp, name, buffer, 1024);
+
+    if(result == ESPANK_SUCCESS) {
+        slurm_error("%s = %s", name, buffer);
+    } else if (result == ESPANK_NOSPACE) {
+        slurm_error("%s = (TOO BIG)", name);
+    } else {
+        slurm_error("%s = NULL", name);
+    }
 }
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
@@ -392,6 +423,9 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
     if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
     {
+        printenv_remote(sp, "EAR_INSTALL_PATH");
+        printenv_remote(sp, "LD_PRELOAD");
+        printenv_remote(sp, "LD_LIBRARY_PATH");
         //prepare_environment(sp);
     }
 
@@ -442,7 +476,7 @@ int slurm_spank_task_init (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm
 int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
 int slurm_spank_task_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_exit"); return (ESPANK_SUCCESS); }
 int slurm_spank_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_exit"); return (ESPANK_SUCCESS); }
-    
+
 /*
  *
  *
@@ -584,7 +618,7 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 {
     FUNCTION_INFO("_opt_ear_traces");
     if (!remote) {
-        setenv_local("EAR_GUI", "1", 1);
+        setenv_local("EAR_TRACES", "1", 1);
         setenv_local("EAR", "1", 1);
     }
     return (ESPANK_SUCCESS);
