@@ -296,13 +296,14 @@ static void local_update_ld_preload(spank_t sp)
 
     // Appending libraries to LD_PRELOAD
     if (isenv_local("EAR_TRACES", "1")) {
-        sprintf(buffer, "%s/%s", buffer, EAR_LIB_PATH);
-    } else {
         sprintf(buffer, "%s/%s", buffer, EAR_LIB_TRAC_PATH);
+    } else {
+        sprintf(buffer, "%s/%s", buffer, EAR_LIB_PATH);
     }
 
     //
-    setenv_remote(sp, "LD_PRELOAD", buffer, 1);
+    //setenv_remote(sp, "LD_PRELOAD", buffer, 1);
+    setenv("LD_PRELOAD", buffer, 1);
 }
 
 
@@ -342,10 +343,9 @@ static void local_update_ld_library_path()
     setenv("LD_LIBRARY_PATH", buffer, 1);
 }
 
-static int prepare_environment(spank_t sp)
+static int remote_update_slurm_vars(spank_t sp)
 {
-    char get_buffer[PATH_MAX];
-    char set_buffer[PATH_MAX];
+    char buffer[PATH_MAX];
     char p_state[8];
     int p_freq = 1;
 
@@ -369,12 +369,9 @@ static int prepare_environment(spank_t sp)
     }
 
     // Switching from SLURM_JOB_NAME to EAR_APP_NAME
-    if (getenv_remote(sp, "SLURM_JOB_NAME", set_buffer, PATH_MAX)) {
-        setenv_remote(sp, "EAR_APP_NAME", set_buffer, 1);
+    if (getenv_remote(sp, "SLURM_JOB_NAME", buffer, PATH_MAX)) {
+        setenv_remote(sp, "EAR_APP_NAME", buffer, 1);
     }
-
-    // Updating LD_PRELOAD
-    remote_update_ld_preload(sp);
 
     return ESPANK_SUCCESS;
 }
@@ -394,9 +391,13 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
     if(spank_context () == S_CTX_LOCAL)
     {
         find_ear_conf_file(sp, ac, av);
-        local_update_ear_install_path();
-        local_update_ld_library_path();
-        local_update_ld_preload(sp);
+
+        if (isenv_local("EAR", "1"))
+        {
+            local_update_ear_install_path();
+            local_update_ld_library_path();
+            local_update_ld_preload(sp);
+        }
     }
 
     return (ESPANK_SUCCESS);
@@ -423,10 +424,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
     if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
     {
-        printenv_remote(sp, "EAR_INSTALL_PATH");
-        printenv_remote(sp, "LD_PRELOAD");
-        printenv_remote(sp, "LD_LIBRARY_PATH");
-        //prepare_environment(sp);
+        remote_update_slurm_vars(sp);
     }
 
     return (ESPANK_SUCCESS);
@@ -469,13 +467,6 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 
     return (ESPANK_SUCCESS);
 }
-
-int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_init_post_opt"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_init_privileged"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_init (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_init"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_task_exit"); return (ESPANK_SUCCESS); }
-int slurm_spank_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO("slurm_spank_exit"); return (ESPANK_SUCCESS); }
 
 /*
  *
