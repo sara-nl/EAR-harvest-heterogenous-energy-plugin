@@ -95,11 +95,13 @@ static void appendenv(char *destiny, char *source)
     }
 }
 
-static void setenv_local(const char *name, const char *value, int replace)
+static int setenv_local(const char *name, const char *value, int replace)
 {
     if (setenv (name, value, replace) == -1) {
         SPANK_STRERROR("Error while setting envar %s", name);
+        return ESPANK_ERROR;
     }
+    return ESPANK_SUCCESS;
 }
 
 static int setenv_remote(spank_t sp, char *name, char *value, int replace)
@@ -152,6 +154,7 @@ static int isenv_remote(spank_t sp, char *name, char *value)
  *
  */
 
+//TODO: Utilizar un common para esto
 static int freq_to_p_state(int freq)
 {
     struct cpufreq_available_frequencies *list_freqs;
@@ -301,12 +304,11 @@ static void local_update_ld_preload(spank_t sp)
     }
 
     //
-    //setenv_remote(sp, "LD_PRELOAD", buffer, 1);
-    setenv("LD_PRELOAD", buffer, 1);
+    return setenv_local("LD_PRELOAD", buffer, 1);
 }
 
 
-static void local_update_ear_install_path()
+static int local_update_ear_install_path()
 {
     FUNCTION_INFO("local_update_ear_install_path");
     char *ear_install_path = getenv("EAR_INSTALL_PATH");
@@ -315,11 +317,12 @@ static void local_update_ear_install_path()
     {
         slurm_error("Warning: $EAR_INSTALL_PATH not found, using %s", EAR_INSTALL_PATH);
         slurm_error("Please, read the documentation and load the environment module.");
-        setenv("EAR_INSTALL_PATH", EAR_INSTALL_PATH, 1);
+        return setenv_local("EAR_INSTALL_PATH", EAR_INSTALL_PATH, 1);
     }
+    return ESPANK_SUCCESS;
 }
 
-static void local_update_ld_library_path()
+static int local_update_ld_library_path()
 {
     FUNCTION_INFO("local_update_ld_library_path");
     char *ld_library_path;
@@ -339,10 +342,11 @@ static void local_update_ld_library_path()
     appendenv(buffer, FREEIPMI_LIB_PATH);
     
     //
-    setenv("LD_LIBRARY_PATH", buffer, 1);
+    return setenv_local("LD_LIBRARY_PATH", buffer, 1);
 }
 
-static int remote_update_slurm_vars(spank_t sp)
+//TODO: comprobar todos los tipos de --cpu-freq
+static void remote_update_slurm_vars(spank_t sp)
 {
     char buffer[PATH_MAX];
     char p_state[8];
@@ -371,8 +375,6 @@ static int remote_update_slurm_vars(spank_t sp)
     if (getenv_remote(sp, "SLURM_JOB_NAME", buffer, PATH_MAX)) {
         setenv_remote(sp, "EAR_APP_NAME", buffer, 1);
     }
-
-    return ESPANK_SUCCESS;
 }
 
 /*
@@ -382,39 +384,27 @@ static int remote_update_slurm_vars(spank_t sp)
  *
  *
  */
+#define NO_OK(function) \
+    if ((r = function) != ESPANK_SUCCESS) return r;
 
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_local_user_init");
+    int r;
 
     if(spank_context () == S_CTX_LOCAL)
     {
-        find_ear_conf_file(sp, ac, av);
+        NO_OK(find_ear_conf_file(sp, ac, av));
 
         if (isenv_local("EAR", "1"))
         {
-            local_update_ear_install_path();
-            local_update_ld_library_path();
-            local_update_ld_preload(sp);
+            NO_OK(local_update_ear_install_path());
+            NO_OK(local_update_ld_library_path());
+            NO_OK(local_update_ld_preload(sp));
         }
     }
 
     return (ESPANK_SUCCESS);
-}
-
-static void printenv_remote(spank_t sp, char *name)
-{
-    spank_err_t result;
-    char buffer[1024];
-    result = spank_getenv (sp, name, buffer, 1024);
-
-    if(result == ESPANK_SUCCESS) {
-        slurm_error("%s = %s", name, buffer);
-    } else if (result == ESPANK_NOSPACE) {
-        slurm_error("%s = (TOO BIG)", name);
-    } else {
-        slurm_error("%s = NULL", name);
-    }
 }
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
@@ -446,9 +436,9 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 
     if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
     {
-        find_ear_conf_file(sp, ac, av);
-        local_update_ear_install_path();
-        local_update_ld_library_path();
+        NO_OK(find_ear_conf_file(sp, ac, av));
+        NO_OK(local_update_ear_install_path());
+        NO_OK(local_update_ld_library_path());
         return fork_ear_daemon(sp);
     }
 
@@ -475,6 +465,7 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
  *
  */
 
+//TODO: añadir más control de errores aquí
 static int _opt_ear (int val, const char *optarg, int remote)
 {
     FUNCTION_INFO("_opt_ear");
