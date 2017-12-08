@@ -22,6 +22,7 @@
 #include <ear_db/ear_db.h>
 #include <ear_metrics/ear_papi.h>
 #include <ear_metrics/ear_turbo_metrics.h>
+#include <ear_metrics/ear_flops_metrics.h>
 #include <ear_models/ear_models.h>
 
 #define EAR_EXTRA_METRICS
@@ -97,6 +98,10 @@ unsigned long uncore_size,uncore_elements;
 //RAPL
 long long *event_values_rapl;
 unsigned long rapl_size,rapl_elements;
+
+//FLOPS
+
+long long total_flops;
 
 // This is for all the metrics
 long long acum_event_values[TOTAL_EVENTS];
@@ -219,6 +224,7 @@ void metrics_start()
 	}
 #ifdef EAR_EXTRA_METRICS
 	start_turbo_metrics();
+	start_flops_metrics();
 #endif
 }
 
@@ -239,6 +245,7 @@ void metrics_stop()
 	}
 #ifdef EAR_EXTRA_METRICS
 	stop_turbo_metrics();
+	stop_flops_metrics(&total_flops);
 #endif
 }
 
@@ -258,6 +265,7 @@ void metrics_reset()
 	}
 #ifdef EAR_EXTRA_METRICS
 	reset_turbo_metrics();
+	reset_flops_metrics();
 #endif
 }
 
@@ -386,6 +394,7 @@ int metrics_init(int my_id,int pid)
 	}
 #ifdef EAR_EXTRA_METRICS
 	init_turbo_metrics();
+	init_flops_metrics();
 #endif
 	reset_values();
 	metrics_reset();
@@ -410,6 +419,7 @@ void metrics_end(unsigned int whole_app,int my_id,FILE* fd,unsigned long int *er
 	
 #ifdef EAR_EXTRA_METRICS
 	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
+	print_flops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
 #endif
 }
 

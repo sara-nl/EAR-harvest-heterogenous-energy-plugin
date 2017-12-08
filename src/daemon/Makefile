@@ -10,10 +10,9 @@ export DIR
 
 COMPONENTS = uncore_architectures node_energy_metrics
 
-OUTER_OBJS = $(ROOTDIR)/src/common/ear_configuration.o
+OUTER_OBJS = $(ROOTDIR)/src/common/ear_configuration.o  $(ROOTDIR)/src/common/ear_arch_type.o
 
-OBJS = ear_arch_type.o    \
-       ear_frequency.o    \
+OBJS = ear_frequency.o    \
        ear_rapl_metrics.o \
        ear_turbo.o
 
@@ -43,9 +42,6 @@ ear_frequency.o: ear_frequency.c ear_frequency.h
 
 ear_rapl_metrics.o: ear_rapl_metrics.c ear_rapl_metrics.h
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c ear_rapl_metrics.c
-
-ear_arch_type.o: ear_arch_type.c ear_arch_type.h
-	$(CC) $(CFLAGS) -c ear_arch_type.c
 
 ear_node_energy_metrics.o: ear_node_energy_metrics.c ear_node_energy_metrics.h
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) $(IPMI_CFLAGS) -c ear_node_energy_metrics.c

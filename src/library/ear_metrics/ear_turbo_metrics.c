@@ -12,7 +12,7 @@
 #include <ear_verbose.h>
 
 #define EAR_TURBO_EVENTS_SETS 1
-#define EAR_TURBO_EVENTS 1
+#define EAR_TURBO_EVENTS 2
 #define AVX_SET 0
 #define AVX_ALL 0
 int ear_TurboEventSets[EAR_TURBO_EVENTS_SETS];
@@ -72,6 +72,7 @@ void init_turbo_metrics()
 		if ((retval=PAPI_add_named_event(ear_TurboEventSets[sets],"AVX"))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s): PAPI_add_named_event AVX.%s\n",__FILE__,PAPI_strerror(retval));
 		}
+		
     }
 	ear_debug(2,"EAR(%s):METRICS ON\n",__FILE__);
 	
