@@ -4,8 +4,10 @@ COMPONENTS = common   \
              library  \
              daemon   \
              learning \
-             slurm_plugin \
              tools
+ifdef SLURM_BASE
+	COMPONENTS += slurm_plugin
+endif
 
 INSTALL_FOLDERS = $(DESTDIR)/bin  \
                   $(DESTDIR)/bin/kernels \
