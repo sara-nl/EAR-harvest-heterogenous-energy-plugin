@@ -51,7 +51,8 @@ check:
 
 install:
 	@ $(MAKE) -C src install
+	@ $(MAKE) -C etc install
 
 clean:
-	$(MAKE) -C src clean
-	$(MAKE) -C tests clean
+	@ $(MAKE) -C src clean
+	@ $(MAKE) -C tests clean
