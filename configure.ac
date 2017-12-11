@@ -139,6 +139,6 @@ AC_CONFIG_FILES([Makefile
                  etc/ear-1.0
                  src/common/config.h]) 
 AC_CONFIG_FILES([tests/check/check.sh], [chmod +x tests/check/check.sh])
-AC_CONFIG_FILES([etc/examples/environment/ear_env_libs.sh], [chmod +x etc/examples/environment/ear_env_libs.sh])
+AC_CONFIG_FILES([etc/scripts/environment/lib_path.sh], [chmod +x etc/scripts/environment/lib_path.sh])
 AC_OUTPUT
 
