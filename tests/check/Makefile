@@ -15,8 +15,10 @@ BINARIES = cpu_model       \
            papi_comp_available \
            papi_comp_enabled   \
            gsl_version         \
-           slurm_version       \
            free_ipmi_version 
+ifdef SLURM_BASE
+	BINARIES += slurm_version
+endif
  
 ######## RULES
 
