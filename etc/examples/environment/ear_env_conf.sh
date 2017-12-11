@@ -9,7 +9,7 @@ function safexport
 }
 
 safexport EAR 1
-safexport EAR_DB_PATHNAME $EAR_INSTALL_PATH/DBS/syste_db
+safexport EAR_DB_PATHNAME $EAR_INSTALL_PATH/DBS/system_db
 safexport EAR_COEFF_DB_PATHNAME /home/xjcorbalan/EAR/COEFFICIENTS_TURBO/COEFF_COLLAB_
 safexport EAR_USER_DB_PATHNAME $HOME/my_user_db
 safexport EAR_DYNAIS_LEVELS 4
