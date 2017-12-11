@@ -419,7 +419,7 @@ void metrics_end(unsigned int whole_app,int my_id,FILE* fd,unsigned long int *er
 	
 #ifdef EAR_EXTRA_METRICS
 	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
-	print_flops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
+	print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
 #endif
 }
 
