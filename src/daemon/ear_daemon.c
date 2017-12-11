@@ -101,7 +101,7 @@ void ear_daemon_lock(char *tmp_dir,char *nodename)
 		if (errno!=EEXIST){
 			ear_verbose(0,"ear_daemon: error, creating lock file %s fails: %s\n",ear_daemon_lock_file,strerror(errno));
 		}
-		else {ear_debug(1,"ear_daemon: Error opening daemon lock file in %s. Exiting.%s\n",nodename,strerror(errno));}
+		else {ear_verbose(0,"ear_daemon: Error opening daemon lock file in %s. Exiting.%s\n",nodename,strerror(errno));}
 		exit(0);
 	}
 }
