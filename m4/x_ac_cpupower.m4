@@ -17,7 +17,7 @@
 
 AC_DEFUN([X_AC_CPUPOWER],
 [
-    _x_ac_cpupower_dirs_root="/usr /usr/local /opt/CPUPower"
+    _x_ac_cpupower_dirs_root="/usr /usr/local"
     _x_ac_cpupower_dirs_libs="lib64 lib"
     _x_ac_cpupower_gcc_libs="-lcpupower"
     _x_ac_cpupower_gcc_ldflags=
@@ -78,7 +78,7 @@ AC_DEFUN([X_AC_CPUPOWER],
     else
         CPUPOWER_DIR=$_cv_cpupower_dir_root
         CPUPOWER_LIBDIR=$_x_ac_cpupower_dir_lib
-        CPUPOWER_CPPFLAGS="-I$CPUPOWER_DIR/include/cpupower"
+        CPUPOWER_CPPFLAGS="-I$CPUPOWER_DIR/include"
         CPUPOWER_LDFLAGS=$_x_ac_cpupower_gcc_ldflags
         CPUPOWER_LIBS=$_x_ac_cpupower_gcc_libs
         echo checking for CPUPower compiler link... yes

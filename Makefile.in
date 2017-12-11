@@ -1,5 +1,5 @@
-CC           = gcc
-MPICC        = mpicc
+CC           = @CC@
+MPICC        = @MPICC@
 ROOTDIR      = $(shell pwd)
 DESTDIR      = @prefix@
 PAPI_BASE    = @PAPI_DIR@

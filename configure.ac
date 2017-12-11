@@ -125,6 +125,12 @@ if test "x$sysconfdir" = "x\${exec_prefix}/etc"; then
     sysconfdir=$exec_prefix/etc
 fi
 
+if test -z "$MPICC"; then
+    MPICC=mpicc
+fi
+
+AC_SUBST(MPICC)
+
 ##########
 # OUTPUT #
 ##########
