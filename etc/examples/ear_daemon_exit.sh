@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export HOSTLIST="$(echo $(cat hostlist))"
+export HOSTLIST="$(echo $(cat $1))"
 
 for i in ${HOSTLIST}
 do
