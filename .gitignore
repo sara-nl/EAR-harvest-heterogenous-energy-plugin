@@ -26,7 +26,7 @@ DB_Learning_phase/
 etc/ear-1.0
 src/common/config.h
 tests/check/check.sh
-etc/scripts/environment/lib_path.sh
+etc/scripts/environment/lib_vars.sh
 
 *earlib.so
 *earlibtrac.so
