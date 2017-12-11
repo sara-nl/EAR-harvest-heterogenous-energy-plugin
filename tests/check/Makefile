@@ -4,7 +4,7 @@ CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
 ######## FILES
 
 OUTER_OBJS = $(ROOTDIR)/src/daemon/ear_uncores.a \
-             $(ROOTDIR)/src/daemon/ear_arch_type.o
+             $(ROOTDIR)/src/common/ear_arch_type.o
 
 BINARIES = cpu_model       \
            cpu_aperf       \
