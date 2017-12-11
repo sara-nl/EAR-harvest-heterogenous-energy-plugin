@@ -9,10 +9,15 @@ ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
 
-INSTALL_FOLDERS = $(DESTDIR)/bin  \
+INSTALL_FOLDERS = $(DESTDIR)/bin \
                   $(DESTDIR)/bin/kernels \
-                  $(DESTDIR)/lib  \
-                  $(DESTDIR)/etc  \
+                  $(DESTDIR)/lib \
+                  $(DESTDIR)/etc \
+                  $(DESTDIR)/etc/scripts \
+                  $(DESTDIR)/etc/scripts/environment \
+                  $(DESTDIR)/etc/scripts/examples \
+                  $(DESTDIR)/etc/scripts/learning \
+                  $(DESTDIR)/etc/scripts/running \
                   $(DESTDIR)/sbin
 
 ######## RULES

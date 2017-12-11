@@ -1,2 +1,2 @@
 install:
-	cp -r examples $(DESTDIR)/etc
+	cp -r scripts $(DESTDIR)/etc/

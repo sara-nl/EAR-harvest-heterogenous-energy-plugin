@@ -1,7 +1,8 @@
 #!/bin/bash
 
-export BENCHS_SRC_PATH=$EAR_SRC_PATH/ear_learning_phase/kernels
+export BENCHS_SRC_PATH=$EAR_SRC_PATH/src/learning/kernels
 export BENCHS_BIN_PATH=$EAR_INSTALL_PATH/bin/kernels
+export MPI_SCRIPT_PATH=$EAR_INSTALL_PATH/etc/scripts/running/mpi_exec.sh
 
 function configuring
 {
@@ -29,32 +30,9 @@ function launching_disabled
 
 function launching
 {
-    # Edit region
-    export EAR_TMP=/home/xjaneas/tmp
-    export EAR_COEFF_DB_PATHNAME=$EAR_TMP/coeff
-    export EAR_USER_DB_PATHNAME=$EAR_TMP/sum
-    export EAR_DB_PATHNAME=$EAR_TMP/db
-
     # Non-edit region
-    export EAR_POWER_POLICY=MONITORING_ONLY
     export EAR_APP_NAME=$1.$EAR_P_STATE
-    launching_daemon
-
-    echo "----------------------------------------------------------"
-    echo "Launching (mpi) $1 $2"
-    echo "----------------------------------------------------------"
-    mpiexec.hydra -genv LD_PRELOAD=$EAR_INSTALL_PATH/lib/libEAR.so \
-        -genvall -n $2 $BENCHS_BIN_PATH/$1
-    sleep 1
-}
-
-function launching_daemon
-{
-    # Launching the deamon
-    sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-        EAR_DB_PATHNAME=$EAR_DB_PATHNAME  \
-        $EAR_INSTALL_PATH/bin/ear_daemon 1 $EAR_TMP 1 &
-    sleep 4
+    $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 MONITORING_ONLY
 }
 
 function learning_phase

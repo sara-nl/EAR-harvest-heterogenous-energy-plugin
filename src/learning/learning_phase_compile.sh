@@ -9,7 +9,7 @@ export CORES_PER_SOCKET=14
 export EAR_SRC_PATH=$HOME/git/EAR
 
 # Non edit region
-source $EAR_INSTALL_PATH/etc/learning_phase_helper.sh
+source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
 export BENCHS_MODE=$1
 export EAR_P_STATE=1
 

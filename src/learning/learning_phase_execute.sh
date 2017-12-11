@@ -11,10 +11,11 @@ export EAR_MAX_P_STATE=1
 export EAR_VERBOSE=4
 
 # Non edit region
-source $EAR_INSTALL_PATH/etc/learning_phase_helper.sh
+source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
 export EAR_LEARNING_PHASE=1
 export BENCHS_MODE="test"
 
+# Running the learning phase
 for (( i=$EAR_MIN_P_STATE; i<=$EAR_MAX_P_STATE; i++ ))
 do
     export EAR_P_STATE=$i
@@ -28,5 +29,6 @@ do
     learning_phase stream
 done
 
+# Calculating coefficients
 $EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME.`hostname`.db" \
      $EAR_COEFF_DB_PATHNAME`hostname` 1000000 `hostname`
