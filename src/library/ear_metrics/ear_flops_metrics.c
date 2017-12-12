@@ -13,8 +13,8 @@
 #include <intel_model_list.h>
 #include <ear_arch_type.h>
 
-#define EAR_FLOPS_EVENTS_SETS 1
-#define EAR_FLOPS_EVENTS 2
+#define EAR_FLOPS_EVENTS_SETS 2
+#define EAR_FLOPS_EVENTS 4
 #define SP_OPS 0
 #define DP_OPS 1
 int ear_flops_event_sets[EAR_FLOPS_EVENTS_SETS];
@@ -22,9 +22,34 @@ long long ear_flops_acum_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
 long long ear_flops_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
 
 extern int ear_papi_init;
-int ear_turbo_perf_event_cid;
-PAPI_attach_option_t turbo_attach_opt[EAR_FLOPS_EVENTS_SETS];
+int ear_flops_perf_event_cid;
+PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
 int flops_supported=0;
+
+/*
+DOUBLE-precision FLOPs = 1 FP_ARITH_INST_RETIRED.SCALAR_DOUBLE + 2 FP_ARITH_INST_RETIRED.128B_PACKED_DOUBLE + 4 FP_ARITH_INST_RETIRED.256B_PACKED_DOUBLE + 8 FP_ARITH_INST_RETIRED.512B_PACKED_DOUBLE
+Same for SP_OPS:
+SINGLE-precision FLOPs = 1 FP_ARITH_INST_RETIRED.PACKED_SINGLE + 4 FP_ARITH_INST_RETIRED.128B_PACKED_SINGLE + 8 FP_ARITH_INST_RETIRED.256B_PACKED_SINGLE + 16FP_ARITH_INST_RETIRED.512B_PACKED_SINGLE
+*/
+#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE 		0
+#define FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE	1
+#define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE	2
+#define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE	3
+#define FP_ARITH_INST_RETIRED_PACKED_SINGLE		0
+#define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE	1
+#define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE	2	
+#define FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE	3
+
+int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
+
+#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N 		"FP_ARITH:SCALAR_DOUBLE"	
+#define FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N	"FP_ARITH:128B_PACKED_DOUBLE"
+#define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
+#define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
+#define FP_ARITH_INST_RETIRED_PACKED_SINGLE_N		"FP_ARITH:SCALAR_SINGLE"
+#define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N	"FP_ARITH:128B_PACKED_SINGLE"
+#define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N	"FP_ARITH:256B_PACKED_SINGLE"
+#define FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE_N	"FP_ARITH:512B_PACKED_SINGLE"
 
 void init_flops_metrics()
 {
@@ -45,9 +70,9 @@ void init_flops_metrics()
 	}
 	// Here , papi is initialized
 
-	ear_turbo_perf_event_cid=PAPI_get_component_index("perf_event");
-   	 if (ear_turbo_perf_event_cid<0){
-   	     ear_verbose(0,"EAR(%s): perf_event component not found.Exiting:%s\n",__FILE__,PAPI_strerror(ear_turbo_perf_event_cid));
+	ear_flops_perf_event_cid=PAPI_get_component_index("perf_event");
+   	 if (ear_flops_perf_event_cid<0){
+   	     ear_verbose(0,"EAR(%s): perf_event component not found.Exiting:%s\n",__FILE__,PAPI_strerror(ear_flops_perf_event_cid));
    	     exit(1);
    	 }
 
@@ -58,8 +83,8 @@ void init_flops_metrics()
 			ear_flops_values[sets][events]=0;
 		}
 		/* Init event sets */
-    	ear_flops_event_sets[sets]=PAPI_NULL;
-        if ((retval=PAPI_create_eventset(&ear_flops_event_sets[sets]))!=PAPI_OK){
+	    	ear_flops_event_sets[sets]=PAPI_NULL;
+	        if ((retval=PAPI_create_eventset(&ear_flops_event_sets[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s): Creating %d eventset.Exiting.Exiting:%s\n",__FILE__,sets,PAPI_strerror(retval));
 			exit(1);
 		}
@@ -69,14 +94,15 @@ void init_flops_metrics()
 		}else if (retval != PAPI_OK){ 
 			ear_verbose(0,"EAR: Error , event set to compute FLOPS can not be multiplexed %s\n",PAPI_strerror(retval));
 		}
+		ear_verbose(2,"EAR: Set %d to compute flops has been multiplexed\n",sets);
 
-		if ((retval=PAPI_assign_eventset_component(ear_flops_event_sets[sets],ear_turbo_perf_event_cid))!=PAPI_OK){		
+		if ((retval=PAPI_assign_eventset_component(ear_flops_event_sets[sets],ear_flops_perf_event_cid))!=PAPI_OK){		
 			ear_verbose(0,"EAR(%s): PAPI_assign_eventset_component.Exiting:%s\n",__FILE__,sets,PAPI_strerror(retval));
 			exit(1);
 		}
-		turbo_attach_opt[sets].eventset=ear_flops_event_sets[sets];
- 		turbo_attach_opt[sets].tid=getpid();
-		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&turbo_attach_opt[sets]))!=PAPI_OK){
+		flops_attach_opt[sets].attach.eventset=ear_flops_event_sets[sets];
+ 		flops_attach_opt[sets].attach.tid=getpid();
+		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&flops_attach_opt[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s): PAPI_set_opt.%s\n",__FILE__,PAPI_strerror(retval));
 		}
 		cpu_model = get_model();
@@ -86,11 +112,37 @@ void init_flops_metrics()
 				break;
 			case CPU_SKYLAKE_X:
 				flops_supported=1;
-				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],"PAPI_SP_OPS"))!=PAPI_OK){
-					ear_verbose(0,"EAR: PAPI_add_named_event FP_SP_OPS.%s\n",PAPI_strerror(retval));
+				switch (sets){
+				case SP_OPS:
+				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_PACKED_SINGLE_N))!=PAPI_OK){
+					ear_verbose(0,"EAR: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_PACKED_SINGLE_N,PAPI_strerror(retval));
 				}
-				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],"PAPI_DP_OPS"))!=PAPI_OK){
-					ear_verbose(0,"EAR: PAPI_add_named_event FP_DP_OPS.%s\n",PAPI_strerror(retval));
+				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N))!=PAPI_OK){
+					ear_verbose(0,"EAR: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N,PAPI_strerror(retval));
+				}
+				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N))!=PAPI_OK){
+					ear_verbose(0,"EAR: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N,PAPI_strerror(retval));
+				}
+				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE_N))!=PAPI_OK){
+					ear_verbose(0,"EAR: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE_N,PAPI_strerror(retval));
+				}
+				
+				break;
+				case DP_OPS:
+				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N))!=PAPI_OK){
+					ear_verbose(0,"EAR: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N,PAPI_strerror(retval));
+				}
+				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N))!=PAPI_OK){
+					ear_verbose(0,"EAR: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N,PAPI_strerror(retval));
+				}
+				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N))!=PAPI_OK){
+					ear_verbose(0,"EAR: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N,PAPI_strerror(retval));
+				}
+				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N))!=PAPI_OK){
+					ear_verbose(0,"EAR: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N,PAPI_strerror(retval));
+				}
+				ear_verbose(2,"EAR: PAPI_DP_OPS added to set %d\n",sets);
+				break;
 				}
 		}
 		
@@ -105,7 +157,7 @@ void reset_flops_metrics()
 	if (!flops_supported) return;
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
 		if ((retval=PAPI_reset(ear_flops_event_sets[sets]))!=PAPI_OK){
-			ear_verbose(0,"EAR(%s): ResetTurboMetrics.%s\n",__FILE__,PAPI_strerror(retval));
+			ear_verbose(0,"EAR(%s): ResetFlopsMetrics.%s\n",__FILE__,PAPI_strerror(retval));
 		}
 		for (events=0;events<EAR_FLOPS_EVENTS;events++) ear_flops_values[sets][events]=0;
 		
@@ -117,39 +169,48 @@ void start_flops_metrics()
 	if (!flops_supported) return;
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
 		if ((retval=PAPI_start(ear_flops_event_sets[sets]))!=PAPI_OK){
-			ear_verbose(0,"EAR(%s):StartTurboMetrics.%s\n",__FILE__,PAPI_strerror(retval));
+			ear_verbose(0,"EAR(%s):StartFlopsMetrics.%s\n",__FILE__,PAPI_strerror(retval));
 		}
 	}
 }
 /* Stops includes accumulate metrics */
 void stop_flops_metrics(long long *flops)
 {
-	int sets,retval;
+	int sets,ev,retval;
 	if (!flops_supported) return;
+	*flops=0;
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
 		if ((retval=PAPI_stop(ear_flops_event_sets[sets],(long long *)&ear_flops_values[sets]))!=PAPI_OK){
-			ear_verbose(0,"EAR(%s) StopTurboMetrics.%s\n",__FILE__,PAPI_strerror(retval));
+			ear_verbose(0,"EAR(%s) StopFlopsMetrics.%s\n",__FILE__,PAPI_strerror(retval));
 		}else{	
-			ear_flops_acum_values[sets][SP_OPS]+=ear_flops_values[sets][SP_OPS];
-			ear_flops_acum_values[sets][DP_OPS]+=ear_flops_values[sets][DP_OPS];
+			for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){ 
+				ear_flops_acum_values[sets][ev]+=ear_flops_values[sets][ev];
+				*flops+=ear_flops_values[sets][ev];
+			}
 		}
-		*flops=ear_flops_values[sets][SP_OPS]+ear_flops_values[sets][DP_OPS];
 	}
 }
 void print_gflops(long long total_inst,unsigned long total_time)
 {
-	int sets,events;
+	int sets,ev;
+	long long total=0;
 	if (!flops_supported) return;
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
-		ear_verbose(0,"EAR: Computation of GFLOPS=%.3lf: SP_FLOPS %llu DP_FLOPS %llu (%llu total inst)\n",
-		(double)(ear_flops_acum_values[sets][SP_OPS]+ear_flops_acum_values[sets][DP_OPS])/(double)total_time,
-		ear_flops_acum_values[sets][SP_OPS],
-		ear_flops_acum_values[sets][DP_OPS],
-		total_inst);
+		if (sets==SP_OPS){ 
+			ear_verbose(0,"Single precision floating-point arithmetic instructions\n");
+		}else{ 
+			ear_verbose(0,"Double precision floating-point arithmetic instructions\n");
+		}
+		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
+			ear_verbose(0,"GFLOPS computation: set %d ev %d value %llu\n",sets,ev,ear_flops_acum_values[sets][ev]);
+			total=total+(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]);
+		}
 	}
+	ear_verbose(0,"Glops = %lf \n", (double)total/(double)(total_time*1000));
+	
 }
 double gflops(unsigned long total_time)
 {
-	return (double)(ear_flops_acum_values[0][SP_OPS]+ear_flops_acum_values[0][DP_OPS])/(double)total_time;
+	return 0.0;
 }
 

@@ -10,7 +10,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ear_verbose.h>
+#include <intel_model_list.h>
+#include <ear_arch_type.h>
 
+//#define AVX_METRICS
 #define EAR_TURBO_EVENTS_SETS 1
 #define EAR_TURBO_EVENTS 2
 #define AVX_SET 0
@@ -22,10 +25,13 @@ long long ear_turbo_values[EAR_TURBO_EVENTS_SETS][EAR_TURBO_EVENTS];
 extern int ear_papi_init;
 int ear_turbo_perf_event_cid;
 PAPI_attach_option_t turbo_attach_opt[EAR_TURBO_EVENTS_SETS];
+int metrics_avx_supported=0;
 
 void init_turbo_metrics()
 {
+#ifdef AVX_METRICS
 	int retval;
+	int cpu_model;
 	int sets;
 	int events;
 	// PAPI should be already initialized, but just in case
@@ -68,18 +74,31 @@ void init_turbo_metrics()
 		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&turbo_attach_opt[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s): PAPI_set_opt.%s\n",__FILE__,PAPI_strerror(retval));
 		}
-		// AVX: Counts AVX instructions, masks:Approximate counts of AVX and AVX2 256-bit instructions, including non-arithmetic instructions, loads, and stores. May count non-AVX instructions using 256-bit operations
-		if ((retval=PAPI_add_named_event(ear_TurboEventSets[sets],"AVX"))!=PAPI_OK){
-			ear_verbose(0,"EAR(%s): PAPI_add_named_event AVX.%s\n",__FILE__,PAPI_strerror(retval));
-		}
+                cpu_model = get_model();
+                switch(cpu_model){
+                        case CPU_HASWELL_X:
+				metrics_avx_supported=1;
+				// AVX: Counts AVX instructions, masks:Approximate counts of AVX and AVX2 256-bit instructions, including non-arithmetic instructions, loads, and stores. May count non-AVX instructions using 256-bit operations
+				if ((retval=PAPI_add_named_event(ear_TurboEventSets[sets],"AVX"))!=PAPI_OK){
+					ear_verbose(0,"EAR(%s): PAPI_add_named_event AVX.%s\n",__FILE__,PAPI_strerror(retval));
+				}
+				break;
+                        case CPU_BROADWELL_X:
+                        case CPU_SKYLAKE_X:
+                                break;
+                }
+
 		
     }
 	ear_debug(2,"EAR(%s):METRICS ON\n",__FILE__);
 	
+#endif
 }
 void reset_turbo_metrics()
 {
+#ifdef AVX_METRICS
 	int sets,events,retval;
+	if (!metrics_avx_supported) return;
 	for (sets=0;sets<EAR_TURBO_EVENTS_SETS;sets++){
 		if ((retval=PAPI_reset(ear_TurboEventSets[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s): ResetTurboMetrics.%s\n",__FILE__,PAPI_strerror(retval));
@@ -87,20 +106,26 @@ void reset_turbo_metrics()
 		for (events=0;events<EAR_TURBO_EVENTS;events++) ear_turbo_values[sets][events]=0;
 		
 	}
+#endif
 }
 void start_turbo_metrics()
 {
+#ifdef AVX_METRICS
 	int sets,retval;
+	if (!metrics_avx_supported) return;
 	for (sets=0;sets<EAR_TURBO_EVENTS_SETS;sets++){
 		if ((retval=PAPI_start(ear_TurboEventSets[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s):StartTurboMetrics.%s\n",__FILE__,PAPI_strerror(retval));
 		}
 	}
+#endif
 }
 /* Stops includes accumulate metrics */
 void stop_turbo_metrics()
 {
+#ifdef AVX_METRICS
 	int sets,retval;
+	if (!metrics_avx_supported) return;
 	for (sets=0;sets<EAR_TURBO_EVENTS_SETS;sets++){
 		if ((retval=PAPI_stop(ear_TurboEventSets[sets],(long long *)&ear_turbo_values[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s) StopTurboMetrics.%s\n",__FILE__,PAPI_strerror(retval));
@@ -109,10 +134,13 @@ void stop_turbo_metrics()
 		}
 	
 	}
+#endif
 }
 void print_turbo_metrics(long long total_inst)
 {
+#ifdef AVX_METRICS
 	int sets,events;
+	if (!metrics_avx_supported) return;
 	ear_verbose(0,"AVX metrics total inst %llu\n",total_inst);
 	for (sets=0;sets<EAR_TURBO_EVENTS_SETS;sets++){
 			for (events=0;events<EAR_TURBO_EVENTS;events++){
@@ -120,4 +148,5 @@ void print_turbo_metrics(long long total_inst)
 			}
 
 	}
+#endif
 }
