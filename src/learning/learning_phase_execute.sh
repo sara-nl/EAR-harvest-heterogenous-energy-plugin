@@ -8,10 +8,11 @@ export CORES_PER_SOCKET=14
 # Edit learning phase parameters
 export EAR_MIN_P_STATE=1
 export EAR_MAX_P_STATE=1
-export EAR_VERBOSE=4
 
 # Non edit region
 source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
+source $EAR_INSTALL_PATH/etc/scripts/environment/lib_vars.sh
+source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
 export EAR_LEARNING_PHASE=1
 export BENCHS_MODE="test"
 

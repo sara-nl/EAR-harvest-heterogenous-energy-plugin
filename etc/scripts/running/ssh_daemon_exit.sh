@@ -2,9 +2,9 @@
 
 if [[ $# -ne 1 ]]
 then
-  echo -e "Usage: ./ssh_daemon_exit.sh hostlist p_state"
-  echo -e "\thostlist: a file containing the list of hosts"
-  exit 1
+	echo -e "Usage: ./ssh_daemon_exit.sh hostlist"
+	echo -e "\thostlist: a host name list file, a host name list or 'local'"
+	exit 1
 fi
 
 if [ ! -f $1 ]

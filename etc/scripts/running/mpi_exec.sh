@@ -3,7 +3,7 @@
 if [[ $# -ne 5 ]]
 then
 	echo -e "Usage: ./mpi_exec.sh hostlist binary nmpi ppn policy"
-	echo -e "\thostlist: a file containing the list of hosts or 'local' for the local host"
+	echo -e "\thostlist: a host name list file, a comma separated host name list or 'local'"
 	echo -e "\tbinary: name of local binary to run"
 	echo -e "\tmpi: number of total MPI tasks to use"
 	echo -e "\tppn: number of MPI tasks per node"

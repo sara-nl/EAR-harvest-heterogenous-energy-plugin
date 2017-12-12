@@ -1,11 +1,11 @@
-#!/bin/bash
+#/bin/bash
 
 if [[ $# -ne 2 ]]
 then
-  echo -e "Usage: ./ssh_daemon_start.sh hostlist p_state"
-  echo -e "\thostlist: a file containing the list of hosts"
-  echo -e "\tp_state: number of total MPI tasks to use"
-  exit 1
+	echo -e "Usage: ./ssh_daemon_start.sh hostlist p_state"
+	echo -e "\thostlist: a host name list file, a host name list or 'local'"
+	echo -e "\tp_state: the maximum P_STATE which the daemon can set of the whole range"
+	exit 1
 fi
 
 if [ ! -f $1 ]
