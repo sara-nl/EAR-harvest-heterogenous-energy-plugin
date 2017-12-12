@@ -28,7 +28,8 @@ void read_file(char *path)
 
     while((length = read(fd, coeffs, size)) == size)
     {
-        printf("\t%d => %lu;%u;%f;%f;%f;%f;%f;%f\n", length,
+	if (coeffs->pstate > 0)
+        printf("\t\t(%lu,%u,%f,%f,%f,%f,%f,%f)\n",
                coeffs->pstate, coeffs->available,
                coeffs->A, coeffs->B, coeffs->C,
                coeffs->D, coeffs->E, coeffs->F);
