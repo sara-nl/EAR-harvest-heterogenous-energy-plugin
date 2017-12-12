@@ -20,6 +20,12 @@ INSTALL_FOLDERS = $(DESTDIR)/bin \
                   $(DESTDIR)/etc/scripts/running \
                   $(DESTDIR)/sbin
 
+# JUST FOR US, TODO: REMOVE
+INSTALL_FOLDERS += $(DESTDIR)/DBS
+                   $(DESTDIR)/COEFFICIENTS
+                   $(DESTDIR)/SUMMARIES
+                   $(DESTDIR)/tmp
+
 ######## RULES
 
 .PHONY: check
