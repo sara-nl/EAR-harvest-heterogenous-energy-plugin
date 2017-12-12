@@ -219,18 +219,16 @@ unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 unsigned long ear_cpufreq_set_node(unsigned long newfreq)
 {
 	unsigned int i=0;
-	unsigned long oldf;
 	if (ear_is_valid_frequency(newfreq)){
 		ear_verbose(1,"ear_daemon: Setting node: freq = %u\n",newfreq);
-		oldf=ear_cpufreq[0];
 		for (i=0;i<ear_num_cpus;i++){
 			ear_cpufreq[i]=newfreq;
 			// This is a privileged function
 			cpufreq_set_frequency(i,newfreq);
 		}
 		
-		return oldf;
-	}else return 0;
+		return newfreq;
+	}else return ear_cpufreq[0];
 }
 
 

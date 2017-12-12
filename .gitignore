@@ -20,15 +20,16 @@ DB_Learning_phase/
 *romio_hints.txt
 *log.env
 *hostlist
-*regenera
+*regenera.sh
 
 # Build
 etc/ear-1.0
-etc/examples/ear_env.sh
 src/common/config.h
 tests/check/check.sh
-etc/examples/environment/ear_env_libs.sh
+etc/scripts/environment/lib_vars.sh
 
+*earlib.so
+*earlibtrac.so
 *ear_slurm_plugin.so
 *compute_coefficients
 *traces_to_paraver
@@ -42,6 +43,6 @@ CMake*
 *.idea
 
 # Kernels
-*/npbparams.h
-*/setparams
+*npbparams.h
+*setparams
 

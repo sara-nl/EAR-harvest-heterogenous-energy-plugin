@@ -17,9 +17,7 @@ compute_coefficients: compute_coefficients.c
 
 install:
 	mv compute_coefficients $(DESTDIR)/bin
-	cp learning_phase_compile.sh $(DESTDIR)/etc
-	cp learning_phase_execute.sh $(DESTDIR)/etc
-	cp learning_phase_helper.sh $(DESTDIR)/etc
+	cp learning_phase_*.sh $(DESTDIR)/etc/scripts/learning
 clean:
 	rm -f $(BINARIES)
 	rm -f *.o

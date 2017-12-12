@@ -15,8 +15,7 @@
 
 //#define AVX_METRICS
 #define EAR_TURBO_EVENTS_SETS 1
-#define EAR_TURBO_EVENTS 2
-#define AVX_SET 0
+#define EAR_TURBO_EVENTS 1
 #define AVX_ALL 0
 int ear_TurboEventSets[EAR_TURBO_EVENTS_SETS];
 long long ear_turbo_acum_values[EAR_TURBO_EVENTS_SETS][EAR_TURBO_EVENTS];
