@@ -100,11 +100,13 @@ int ear_cpufreq_init()
 		if (PAPI_is_initialized()==PAPI_NOT_INITED){
         	retval=PAPI_library_init(PAPI_VER_CURRENT );
         	if ( (retval != PAPI_VER_CURRENT ) && (retval>0)){
+				ear_verbose(0,"eard: Papi can not be initialised \n");
 				return -1;
         	}
 		}
 		ear_cpufreq_hwinfo= PAPI_get_hardware_info();
         if (ear_cpufreq_hwinfo==NULL){
+			ear_verbose(0,"eard: PAPI_get_hardware_info \n");
 			return -1;
         }else{
 		// 1- We detect the number of cpus based on papi information
@@ -113,6 +115,7 @@ int ear_cpufreq_init()
 		}
 		ear_cpufreq=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus); 
 		if (ear_cpufreq==NULL){
+			ear_verbose(0,"eard: malloc return NULL in ear_cpufreq_init\n");
 			return -1;
 		}
 		// 2-We check all the cpus are online, we should detect cores but
@@ -136,6 +139,7 @@ int ear_cpufreq_init()
 			// 4-Detecting the list of pstates available
 			ear_cpufreq_pstates=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_p_states);
 			if (ear_cpufreq_pstates==NULL){
+				ear_verbose(0,"eard: malloc return NULL in ear_cpufreq_init\n");
 				return -1;
 			}
 	

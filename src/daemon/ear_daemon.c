@@ -59,14 +59,13 @@ int is_new_service(int req,int pid);
 // SIGNALS management
 void f_signals(int s)
 {
-	ear_verbose(0,"ear_daemon: signal %d received\n",s);
 	if (s==SIGPIPE){
 		ear_daemon_close_comm();
 	}
 	// ear_daemon exits here
 	if ((s==SIGTERM)||(s==SIGINT)){
-		if (s==SIGTERM) ear_verbose(0,"ear_damon SIGTERM received.....\n");
-		if (s==SIGINT) ear_verbose(0,"ear_damon SIGINT received.....\n");
+		if (s==SIGTERM) ear_verbose(0,"eard SIGTERM received.....\n");
+		if (s==SIGINT) ear_verbose(0,"eard SIGINT received.....\n");
 		if (ear_ping_fd>0){
 			ear_verbose(1,"ear_damon application is still connected!.....\n");
 			ear_daemon_close_comm();

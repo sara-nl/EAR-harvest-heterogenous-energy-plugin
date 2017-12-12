@@ -125,6 +125,9 @@ int lenovo_act_node_energy_init()
         return EAR_ERROR;
     }
 	// sudo ./ipmi-raw 0x0 0x2e 0x81 0x66 0x4a 0x00 0x20 0x01 0x82 0x0 0x08
+	if (bytes_rs[8]!=0x20){
+		ear_verbose(0,"eard:lenovo_air_cooling warning raw argument != 0x20\n");
+	}
 	bytes_rq[0]=(uint8_t)0x00;
 	bytes_rq[1]=(uint8_t)0x2E;
 	bytes_rq[2]=(uint8_t)0x81;
@@ -169,8 +172,7 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
 		return EAR_ERROR;
 	}
 	energyp=(unsigned long *)&bytes_rs[rs_len-8];
-	// Energy values provided in this model are reported in mJoules, the API returns uJ (multiply by 1000)
-	*energy=(unsigned long)be64toh(*energyp)*1000;
+	*energy=(unsigned long)be64toh(*energyp);
 	return EAR_SUCCESS;
 }
 /* AC energy is not yet supported */
