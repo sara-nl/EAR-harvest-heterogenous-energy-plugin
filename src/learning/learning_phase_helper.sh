@@ -31,7 +31,7 @@ function launching_disabled
 function launching
 {
     # Non-edit region
-    export EAR_APP_NAME=$1.$EAR_P_STATE
+    export EAR_APP_NAME=$1
     $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 MONITORING_ONLY
 }
 
