@@ -1,9 +1,13 @@
 DIR    = $(ROOTDIR)/tools
 CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/library
 
+######## FILES
+
+BINARIES = show_metrics traces_to_paraver coefficients_to_csv
+
 ######## RULES
 
-all: show_metrics traces_to_paraver coefficients_to_csv
+all: $(BINARIES)
 
 show_metrics: show_metrics.c
 	$(CC) $(CFLAGS) -o show_metrics show_metrics.c
@@ -21,4 +25,4 @@ install:
 	mv traces_to_paraver $(DESTDIR)/bin
 	mv coefficients_to_csv $(DESTDIR)/bin
 clean:
-	rm -rf show_metrics traces_to_paraver
+	rm -rf $(BINARIES)
