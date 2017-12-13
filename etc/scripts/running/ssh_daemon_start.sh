@@ -2,10 +2,17 @@
 
 if [[ $# -ne 2 ]]
 then
-	echo -e "Usage: ./ssh_daemon_start.sh hostlist p_state"
+	echo -e "Usage: ssh_daemon_start.sh hostlist p_state"
 	echo -e "\thostlist: a host name list file, a host name list or 'local'"
 	echo -e "\tp_state: the maximum P_STATE which the daemon can set of the whole range"
 	exit 1
+fi
+
+if [ -z $EAR_INSTALL_PATH ]
+then
+        echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
+        echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
+        exit 1
 fi
 
 if [ ! -f $1 ]
@@ -20,10 +27,8 @@ else
 	export HOSTLIST="$(echo $(cat $1))"
 fi
 
-
 source $EAR_INSTALL_PATH/etc/scripts/environment/lib_vars.sh
 source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
-
 
 for i in ${HOSTLIST}
 do
