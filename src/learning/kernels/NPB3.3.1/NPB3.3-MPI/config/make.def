@@ -30,7 +30,8 @@
 # This is the fortran compiler used for MPI programs
 #---------------------------------------------------------------------------
 MPIF77 = mpif77
-MPIF77 = mpiifort
+#MPIF77 = mpiifort
+
 # This links MPI fortran programs; usually the same as ${MPIF77}
 FLINK	= $(MPIF77)
 
@@ -48,8 +49,8 @@ FMPI_INC = -I/usr/local/include
 # Global *compile time* flags for Fortran programs
 #---------------------------------------------------------------------------
 FFLAGS	= -O3
-FFLAGS	= -O3 -fc=ifort 
-FFLAGS	= -O3 -fc=ifort -arch AVX
+#FFLAGS	= -O3 -fc=ifort 
+#FFLAGS	= -O3 -fc=ifort -arch AVX
 
 #---------------------------------------------------------------------------
 # Global *link time* flags. Flags for increasing maximum executable 
