@@ -132,8 +132,9 @@ int main(int argc, char *argv[])
             printf("Error opening coefficients list file %s\n", wfile_path);
         }
 
-        printf("Reading files in '%s' with suffix '%s'\n", dir_path, &dir_path[i_root]);
-        
+        printf("Reading files in '%s' with suffix '%s'\n", dir_path, &dir_path[i_root]);       
+        dprintf(wfd, "nodename;F_ref;F_n;AVAIL;A;B;C;D;E;F\n");
+ 
         while ((directory = readdir(dd)) != NULL)
         {
             sprintf(rfile_path, "%s/%s", dir_path, directory->d_name);
