@@ -826,8 +826,8 @@ void write_ep_info(FILE *fp, int nprocs, char class)
   else if (class == 'W') { m = 25; }
   else if (class == 'A') { m = 28; }
   else if (class == 'B') { m = 30; }
-  else if (class == 'C') { m = 33; }
-  else if (class == 'D') { m = 36; }
+  else if (class == 'C') { m = 32; }
+  else if (class == 'D') { m = 37; }
   else if (class == 'E') { m = 40; }
   else {
     printf("setparams: Internal error: invalid class type %c\n", class);
