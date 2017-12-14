@@ -612,7 +612,7 @@ void write_ua_info(FILE *fp, char class)
   else if( class == 'B' )
   { lelt=8800;  lmor=334600;   refine_max=7;  niter=200; nmxh=10; alpha="0.076d0"; }
   else if( class == 'C' )
-  { lelt=33500; lmor=1262100;  refine_max=8;  niter=250; nmxh=10; alpha="0.067d0"; }
+  { lelt=33500; lmor=1262100;  refine_max=8;  niter=230; nmxh=10; alpha="0.067d0"; }
   else if( class == 'D' )
   { lelt=515000;lmor=19500000; refine_max=10; niter=250; nmxh=10; alpha="0.046d0"; }
   else
