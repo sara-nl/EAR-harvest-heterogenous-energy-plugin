@@ -546,7 +546,7 @@ void write_lu_info(FILE *fp, int nprocs, char class)
       dt_default = "2.0d0"; itmax = 250; }
   else if (class == 'C') 
      {gx_size = 480; gy_size=320; gz_size=28;
-      dt_default = "2.0d0"; itmax = 600; }
+      dt_default = "2.0d0"; itmax = 800; }
   else if (class == 'D') 
      {gx_size = 1632; gy_size=1216; gz_size=34;
       dt_default = "1.0d0"; itmax = 300; }
