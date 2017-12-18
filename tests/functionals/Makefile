@@ -9,7 +9,8 @@ OUTER_OBJS = $(ROOTDIR)/src/daemon/ear_uncores.a       \
              $(ROOTDIR)/src/common/ear_configuration.o
 
 BINARIES = daemon_monitoring \
-           intel_pci_uncores_stress
+           intel_pci_uncores_stress \
+           papi_cpu_gflops
 
 ######## RULES
 
@@ -20,6 +21,9 @@ intel_pci_uncores_stress: intel_pci_uncores_stress.c $(OUTER_OBJS)
 
 daemon_monitoring: daemon_monitoring.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o daemon_monitoring daemon_monitoring.c $(OUTER_OBJS)
+
+papi_cpu_gflops: papi_cpu_gflops.c
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_cpu_gflops papi_cpu_gflops.c $(PAPI_LDFLAGS) -lpthread
 
 ######## OPTIONS
 

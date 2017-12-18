@@ -12,18 +12,6 @@
 #include <intel_model_list.h>
 #include <papi.h>
 
-int EAR_VERBOSE_LEVEL = 4;
-
-PAPI_option_t *options_cpu;
-int inst_iters[EVENTS_SETS][EVENTS_X_SET] = {{10000000, 1, 1, 1}, {10000000, 1, 1, 1}};
-int inst_weights[EVENTS_SETS][EVENTS_X_SET] = {{1, 4, 8, 16}, {1, 2, 4, 8}};
-
-long long *flops_accum;
-long long *flops_obtnd;
-int *events_sets;
-int spinning = 0;
-int _n_cores;
-
 #define MACC(core, set, event) flops_accum[core * 8 + set * 4 + event]
 #define MOBT(core, set, event) flops_obtnd[core * 8 + set * 4 + event]
 #define MOPT(core, set) options_cpu[core * 2 + set]
@@ -41,6 +29,17 @@ int _n_cores;
 #define EVENTS_SETS                                 2
 #define SP_OPS                                      0
 #define DP_OPS                                      1
+
+int EAR_VERBOSE_LEVEL = 4;
+
+PAPI_option_t *options_cpu;
+int inst_iters[EVENTS_SETS][EVENTS_X_SET] = {{10000000, 1, 1, 1}, {10000000, 1, 1, 1}};
+int inst_weights[EVENTS_SETS][EVENTS_X_SET] = {{1, 4, 8, 16}, {1, 2, 4, 8}};
+long long *flops_accum;
+long long *flops_obtnd;
+int *events_sets;
+int spinning = 0;
+int _n_cores;
 
 void check_added_event(int event_set, char *event)
 {
@@ -110,8 +109,10 @@ void init_flops_metrics(int n_cores)
                 exit(1);
             }
 
+            //MOPT(core, set).cpu.eventset = MSET(core, set);
+            //MOPT(core, set).cpu.cpu_num = core;
             MOPT(core, set).cpu.eventset = MSET(core, set);
-            MOPT(core, set).cpu.cpu_num = core;
+            MOPT(core, set).attach.tid=getpid();
 
             retval = PAPI_set_opt(PAPI_CPU_ATTACH, (PAPI_option_t *) &MOPT(core, set));
 
@@ -208,6 +209,33 @@ void stop_flops_metrics()
     }
 }
 
+
+static void printf_ull(int number, ull digits)
+{
+    ear_verbose(0, "%u", number);
+    while(number > 9) {
+        number = number / 10;
+        digits--;
+    }
+    while(digits > 1) {
+        ear_verbose(0, " ");
+        digits--;
+    }
+}
+
+static void printf_uint(int number, int digits)
+{
+    ear_verbose(0, "%u", number);
+    while(number > 9) {
+        number = number / 10;
+        digits--;
+    }
+    while(digits > 1) {
+        ear_verbose(0, " ");
+        digits--;
+    }
+}
+
 void print_gflops(unsigned long total_time_us)
 {
     long long inst_n, inst_d, inst_w;
@@ -241,32 +269,6 @@ void print_gflops(unsigned long total_time_us)
         gflops = (double) inst_w / (double) (total_time_us * 1000);
         ear_verbose(0, "%0.3lf", gflops);
         ear_verbose(0, "\n");
-    }
-}
-
-static void printf_ull(int number, ull digits)
-{
-    ear_verbose(0, "%u", number);
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        ear_verbose(0, " ");
-        digits--;
-    }
-}
-
-static void printf_uint(int number, int digits)
-{
-    ear_verbose(0, "%u", number);
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        ear_verbose(0, " ");
-        digits--;
     }
 }
 
