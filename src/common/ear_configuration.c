@@ -32,6 +32,16 @@ int conf_ear_verbose=DEFAULT_VERBOSE;
 int conf_ear_use_turbo=USE_TURBO;
 int conf_ear_local_id=-1;
 int conf_ear_num_nodes=0;
+int conf_ear_total_processes=1;
+
+void set_ear_total_processes(int procs)
+{
+	conf_ear_total_processes=procs;
+}
+int get_ear_total_processes()
+{
+	return conf_ear_total_processes;
+}
 
 char * getenv_ear_tmp()
 {

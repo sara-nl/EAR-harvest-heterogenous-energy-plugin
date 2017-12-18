@@ -47,6 +47,8 @@ double get_ear_performance_accuracy();
 int get_ear_verbose();
 void set_ear_verbose(int verb);
 int get_ear_num_nodes();
+void set_ear_total_processes(int procs);
+int get_ear_total_processes();
 
 
 void ear_lib_environment();

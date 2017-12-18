@@ -60,8 +60,8 @@ int ear_daemon_client_connect()
 		req.req_data.req_value=getpid();
 		for (i=0;i<ear_daemon_client_requests;i++){
 			ear_debug(2,"ear_client connecting with service %d\n",i);
-        	sprintf(ear_commreq,"%s/.ear_comm_%s.req_%d",ear_tmp,nodename,i);
-        	sprintf(ear_commack,"%s/.ear_comm_%s.ack_%d.%d",ear_tmp,nodename,i,getpid());
+        	sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
+        	sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,i,getpid());
 			// Sometimes ear_daemon needs some time to startm we will wait for the first one
 			if (i==0){
 				// First connection is special, we should wait
@@ -76,7 +76,7 @@ int ear_daemon_client_connect()
 					return EAR_ERROR;
 				}
 				// ping pipe is used just for synchronization 
-				sprintf(ear_ping,"%s/.ear_comm_%s.ping.%d",ear_tmp,nodename,getpid());
+				sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,getpid());
 				ret=mknod(ear_ping,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH,0);
 				if (ret<0) ear_verbose(0,"ear_client, error connecting ear_daemon\n");
 				ear_ping_fd=open(ear_ping,O_RDWR);
