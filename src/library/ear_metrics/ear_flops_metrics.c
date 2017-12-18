@@ -20,6 +20,7 @@ int ear_flops_perf_event_cid;
 PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
 int flops_supported=0;
 
+extern int (*my_omp_get_max_threads)(void);
 
 int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
 
@@ -190,12 +191,32 @@ void print_gflops(long long total_inst,unsigned long total_time)
 		}
 	}
 	procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
-	ear_verbose(0,"Glops per process = %lf \n", (double)(total)/(double)(total_time*1000));
-	ear_verbose(0,"Glops per node    = %lf \n", (double)(total*procs_per_node)/(double)(total_time*1000));
+	ear_verbose(0,"GFlops per process = %.3lf \n", (double)(total)/(double)(total_time*1000));
+	if (my_omp_get_max_threads!=NULL){ 	
+		ear_verbose(0,"GFlops per node    = %.3lf \n", (double)(total*procs_per_node*my_omp_get_max_threads())/(double)(total_time*1000));
+	}else{ 
+		ear_verbose(0,"GFlops per node    = %.3lf \n", (double)(total*procs_per_node)/(double)(total_time*1000));
+	}
 	
 }
 double gflops(unsigned long total_time)
 {
-	return 0.0;
+        int sets,ev;
+        int procs_per_node;
+        long long total=0;
+	double Gflops;
+        if (!flops_supported) return;
+        for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
+                for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
+                        total=total+(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]);
+                }
+        }
+        procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
+        if (my_omp_get_max_threads!=NULL){
+	 	Gflops=(double)(total*procs_per_node*my_omp_get_max_threads())/(double)(total_time*1000);
+        }else{ 
+		Gflops=(double)(total*procs_per_node)/(double)(total_time*1000);
+	}
+	return Gflops;
 }
 

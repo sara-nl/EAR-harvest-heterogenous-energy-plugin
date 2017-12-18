@@ -56,6 +56,7 @@ void ear_daemon_exit();
 void ear_daemon_close_comm();
 int is_new_application(int pid);
 int is_new_service(int req,int pid);
+int application_timeout();
 
 // SIGNALS management
 void f_signals(int s)
@@ -129,10 +130,20 @@ void connect_service(int req,unsigned long pid)
 {
 	char ear_commack[MAX_PATH_SIZE];
 	unsigned long ack;
+	int connect=1;
+	int alive;
 	// Let's check if there is another application
 	ear_verbose(2,"ear_daemon request for connection at service %d\n",req);
 	if (is_new_application(pid) || is_new_service(req,pid)){
-    sprintf(ear_commack,"%s/.ear_comm_%s.ack.%d",ear_tmp,req,pid);
+		connect=1;
+	}else{	
+		connect=0;
+		if (check_ping()) alive=application_timeout();	
+		if (alive==0) connect=1;
+		
+	}
+	if (connect){
+    sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,req,pid);
     application_id=pid;
     // ear_commack will be used to send ack's or values (depending on the requests) from ear_daemon to the library
     ear_verbose(3,"ear_daemon:creating ack comm %s pid=%d\n",ear_commack,pid);
@@ -208,7 +219,7 @@ int application_timeout()
 				read(fd,&c,1);
 				close(fd);  
 			}
-		}   
+		}else alive=0;
     }else alive=0;   
 	return alive;
 

@@ -76,14 +76,20 @@ FILE *stdtrace,*stdtracebin;
 #endif
 int EAR_VERBOSE_LEVEL=0;
 
-#include <dlfcn.h>
-int check_openmp()
-{
-	void    *handle;
+# define __USE_GNU
+# include <dlfcn.h>
+# undef  __USE_GNU
+int (*my_omp_get_max_threads)(void) = NULL;
 
-	/* open the needed object */
-	handle = dlopen("/opt/intel/compilers_and_libraries_2017.5.239/linux/compiler/lib/intel64/libiomp5.so", RTLD_LOCAL | RTLD_LAZY);
-	if (handle==NULL) return 0;
+
+int check_threads()
+{
+        my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_max_threads");
+	if (my_omp_get_max_threads==NULL){
+		my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_max_threads");
+		if (my_omp_get_max_threads==NULL) return 0;
+		else return 1;
+	} 
 	else return 1;
 }
 
@@ -97,8 +103,8 @@ void ear_init(){
 	struct stat lock_st;
 	char *snum_nodes;
 	unsigned int num_nodes,ppnode;
-    	//char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH\n";
-    	char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;EDP;POLICY;POLICY_TH\n";
+    	char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH\n";
+    	//char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;EDP;POLICY;POLICY_TH\n";
 	int new_fd=0,ret;
 
 
@@ -125,10 +131,11 @@ void ear_init(){
         my_id=(ear_my_rank%ppnode);
 	}
 	if (my_id) return;
-	if (check_openmp()){
-		ear_verbose(0,"OpenMP is used\n");
+	if (check_threads()){
+		ear_verbose(2,"OpenMP is used\n");
+		ear_verbose(2,"OpenMP max_threads %d\n",my_omp_get_max_threads());
 	}else{
-		ear_verbose(0,"OpenMP is not used\n");
+		ear_verbose(2,"OpenMP is not used\n");
 	}
 
 #ifdef DYNAIS_TRACE
