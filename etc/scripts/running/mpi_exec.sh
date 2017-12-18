@@ -2,7 +2,7 @@
 
 if [[ $# -ne 5 ]]
 then
-	echo -e "Usage: ./mpi_exec.sh hostlist binary nmpi ppn policy"
+	echo -e "Usage: mpi_exec.sh hostlist binary nmpi ppn policy"
 	echo -e "\thostlist: a host name list file, a comma separated host name list or 'local'"
 	echo -e "\tbinary: name of local binary to run"
 	echo -e "\tmpi: number of total MPI tasks to use"
@@ -11,9 +11,16 @@ then
   	exit 1
 fi
 
+if [ -z $EAR_INSTALL_PATH ]
+then
+        echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
+        echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
+        exit 1
+fi
+
 if [[ "$5" != "MONITORING_ONLY" ]] && [[ "$5" != "MIN_ENERGY_TO_SOLUTION" ]] && [[ "$5" != "MIN_TIME_TO_SOLUTION" ]]
 then
-	echo "ERROR: bad policy $5"
+	echo "ERROR: bad policy $5."
 	exit 1
 fi
 
@@ -31,6 +38,8 @@ fi
 
 source $EAR_INSTALL_PATH/etc/scripts/environment/lib_vars.sh
 source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
+
+export LD_LIBRARY_PATH="$FREEIPMI_LIB_PATH:$PAPI_LIB_PATH:$LD_LIBRARY_PATH:$CPUPOWER_LIB_PATH:$LD_LIBRARY_PATH"
 export EAR_POWER_POLICY="$5"
 
 # Non-edit region

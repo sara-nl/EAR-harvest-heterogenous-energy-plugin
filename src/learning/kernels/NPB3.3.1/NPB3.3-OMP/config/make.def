@@ -29,8 +29,9 @@
 #---------------------------------------------------------------------------
 # This is the fortran compiler used for programs
 #---------------------------------------------------------------------------
-F77 = mpif77
+#F77 = mpif77
 F77 = mpiifort
+
 # This links fortran programs; usually the same as ${F77}
 FLINK	= $(F77)
 
@@ -48,8 +49,9 @@ F_INC =
 #---------------------------------------------------------------------------
 # Global *compile time* flags for Fortran programs
 #---------------------------------------------------------------------------
-FFLAGS	= -O3 -fopenmp -mt_mpi -fc=ifort 
-FFLAGS	= -O3 -fopenmp -mt_mpi -fc=ifort -arch AVX
+#FFLAGS	= -O3 -fopenmp -mt_mpi -mcmodel=medium
+FFLAGS	= -O3 -fopenmp -mt_mpi -fc=ifort -mcmodel=medium
+#FFLAGS	= -O3 -fopenmp -mt_mpi -fc=ifort -arch AVX -mcmodel=medium
 #FFLAGS = -g
 
 #---------------------------------------------------------------------------
@@ -57,7 +59,6 @@ FFLAGS	= -O3 -fopenmp -mt_mpi -fc=ifort -arch AVX
 # size usually go here. 
 #---------------------------------------------------------------------------
 FLINKFLAGS = -O3 -fopenmp
-
 
 #---------------------------------------------------------------------------
 # Parallel C:

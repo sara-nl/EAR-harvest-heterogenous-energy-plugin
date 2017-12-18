@@ -1,23 +1,16 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
-*/
-#include <papi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ear_verbose.h>
 #include <ear_configuration.h>
-#include <intel_model_list.h>
 #include <ear_arch_type.h>
+#include <intel_model_list.h>
+#include <papi.h>
 
 #define EAR_FLOPS_EVENTS_SETS 2
 #define EAR_FLOPS_EVENTS 4
 #define SP_OPS 0
 #define DP_OPS 1
+
 int ear_flops_event_sets[EAR_FLOPS_EVENTS_SETS];
 long long ear_flops_acum_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
 long long ear_flops_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
@@ -27,23 +20,10 @@ int ear_flops_perf_event_cid;
 PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
 int flops_supported=0;
 
-/*
-DOUBLE-precision FLOPs = 1 FP_ARITH_INST_RETIRED.SCALAR_DOUBLE + 2 FP_ARITH_INST_RETIRED.128B_PACKED_DOUBLE + 4 FP_ARITH_INST_RETIRED.256B_PACKED_DOUBLE + 8 FP_ARITH_INST_RETIRED.512B_PACKED_DOUBLE
-Same for SP_OPS:
-SINGLE-precision FLOPs = 1 FP_ARITH_INST_RETIRED.PACKED_SINGLE + 4 FP_ARITH_INST_RETIRED.128B_PACKED_SINGLE + 8 FP_ARITH_INST_RETIRED.256B_PACKED_SINGLE + 16FP_ARITH_INST_RETIRED.512B_PACKED_SINGLE
-*/
-#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE 		0
-#define FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE	1
-#define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE	2
-#define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE	3
-#define FP_ARITH_INST_RETIRED_PACKED_SINGLE		0
-#define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE	1
-#define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE	2	
-#define FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE	3
 
 int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
 
-#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N 		"FP_ARITH:SCALAR_DOUBLE"	
+#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N 		"FP_ARITH:SCALAR_DOUBLE"
 #define FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N	"FP_ARITH:128B_PACKED_DOUBLE"
 #define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
 #define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
@@ -184,7 +164,7 @@ void stop_flops_metrics(long long *flops)
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
 		if ((retval=PAPI_stop(ear_flops_event_sets[sets],(long long *)&ear_flops_values[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s) StopFlopsMetrics.%s\n",__FILE__,PAPI_strerror(retval));
-		}else{	
+		}else{
 			for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){ 
 				ear_flops_acum_values[sets][ev]+=ear_flops_values[sets][ev];
 				*flops+=ear_flops_values[sets][ev];
@@ -199,9 +179,9 @@ void print_gflops(long long total_inst,unsigned long total_time)
 	long long total=0;
 	if (!flops_supported) return;
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
-		if (sets==SP_OPS){ 
+		if (sets==SP_OPS){
 			ear_verbose(0,"Single precision floating-point arithmetic instructions\n");
-		}else{ 
+		}else{
 			ear_verbose(0,"Double precision floating-point arithmetic instructions\n");
 		}
 		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
