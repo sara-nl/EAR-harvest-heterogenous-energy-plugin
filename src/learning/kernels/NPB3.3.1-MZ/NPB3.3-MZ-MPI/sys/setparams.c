@@ -372,7 +372,7 @@ void write_sp_info(FILE *fp, int nprocs, char class)
   {gx_size = 480; gy_size=320; gz_size=28; 
    x_zones = y_zones = 16;
 /* niter was 400 */
-   dt = "0.00067d0"; niter = 2000;}
+   dt = "0.00067d0"; niter = 800;}
   else if (class == 'D') 
   {gx_size = 1632; gy_size=1216; gz_size=34; 
    x_zones = y_zones = 32;
@@ -461,7 +461,7 @@ void write_bt_info(FILE *fp, int nprocs, char class)
   {gx_size = 480; gy_size=320; gz_size=28; 
    x_zones = y_zones = 16; ratio = "4.5d0";
 /* niter was 200 */
-   dt = "0.0001d0";  niter = 600;}
+   dt = "0.0001d0";  niter = 200;}
   else if (class == 'D') 
   {gx_size = 1632; gy_size=1216; gz_size=34; 
    x_zones = y_zones = 32; ratio = "4.5d0";
@@ -546,7 +546,7 @@ void write_lu_info(FILE *fp, int nprocs, char class)
       dt_default = "2.0d0"; itmax = 250; }
   else if (class == 'C') 
      {gx_size = 480; gy_size=320; gz_size=28;
-      dt_default = "2.0d0"; itmax = 800; }
+      dt_default = "2.0d0"; itmax = 250; }
   else if (class == 'D') 
      {gx_size = 1632; gy_size=1216; gz_size=34;
       dt_default = "1.0d0"; itmax = 300; }

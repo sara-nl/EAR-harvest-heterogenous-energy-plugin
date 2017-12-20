@@ -27,7 +27,7 @@
 
       DOUBLE PRECISION ALPHA, BETA
       INTEGER          M, P, N, I, J
-      PARAMETER        (M=24576, P=24576, N=24576)
+      PARAMETER        (M=16384, P=16384, N=16384)
       DOUBLE PRECISION A(M,P), B(P,N), C(M,N)
       
       INTEGER error,rank,size
