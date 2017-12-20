@@ -15,14 +15,14 @@ static double A[8] = { M_PI, M_E, M_LN2, M_LN10, M_SQRT2, M_SQRT1_2, M_LOG2E, M_
 static double B[8] = { M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E, M_PI, M_E, M_LN2, M_LN10 };
 static double C[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
 
-static int iterations;
+static int n_iterations;
 static int spinning = 1;
 int test = 0;
 
 #define PACK_OFFSET 1
 //#define AVX_512 1
 
-static void sse2_dp_add128(int iterations)
+static void sse2_dp_add128(int n_iterations)
 {
     static double D[2];
     __m128d *d;
@@ -34,14 +34,12 @@ static void sse2_dp_add128(int iterations)
     b = _mm_load_pd(B);
     d = (__m128d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm_add_pd(a, b);
     }
-
-    //printf("Result: %lf %lf\n", D[0], D[1]);
 }
 
-static void sse2_dp_mul128(int iterations)
+static void sse2_dp_mul128(int n_iterations)
 {
     static double D[2];
     __m128d *d;
@@ -53,12 +51,12 @@ static void sse2_dp_mul128(int iterations)
     b = _mm_load_pd(B);
     d = (__m128d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm_mul_pd(a, b);
     }
 }
 
-static void fma_dp_fmadd128(int iterations)
+static void fma_dp_fmadd128(int n_iterations)
 {
     static double D[2];
     __m128d *d;
@@ -72,12 +70,12 @@ static void fma_dp_fmadd128(int iterations)
     c = _mm_load_pd(C);
     d = (__m128d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm_fmadd_pd(a, b, c);
     }
 }
 
-static void avx_dp_add256(int iterations)
+static void avx_dp_add256(int n_iterations)
 {
     static double D[4];
     __m256d *d;
@@ -89,14 +87,12 @@ static void avx_dp_add256(int iterations)
     b = _mm256_load_pd(B);
     d = (__m256d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm256_add_pd(a, b);
     }
-
-    //printf("Result: %lf %lf %lf %lf\n", D[0], D[1], D[2], D[3]);
 }
 
-static void avx_dp_mul256(int iterations)
+static void avx_dp_mul256(int n_iterations)
 {
     static double D[4];
     __m256d *d;
@@ -108,12 +104,12 @@ static void avx_dp_mul256(int iterations)
     b = _mm256_load_pd(B);
     d = (__m256d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm256_mul_pd(a, b);
     }
 }
 
-static void fma_dp_fmadd256(int iterations)
+static void fma_dp_fmadd256(int n_iterations)
 {
     static double D[4];
     __m256d *d;
@@ -127,13 +123,13 @@ static void fma_dp_fmadd256(int iterations)
     c = _mm256_load_pd(C);
     d = (__m256d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm256_fmadd_pd(a, b, c);
     }
 }
 
 #if AVX_512
-static void avx512_dp_add512(int iterations)
+static void avx512_dp_add512(int n_iterations)
 {
     static double D[8];
     __m512d *d;
@@ -145,15 +141,12 @@ static void avx512_dp_add512(int iterations)
     b = _mm512_load_pd(B);
     d = (__m512d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm512_add_pd(a, b);
     }
-
-    //printf("Result: %lf %lf %lf %lf %lf %lf %lf %lf\n",
-    //       D[0], D[1], D[2], D[3], D[4], D[5], D[6], D[7]);
 }
 
-static void avx512_dp_mul512(int iterations)
+static void avx512_dp_mul512(int n_iterations)
 {
     static double D[8];
     __m512d *d;
@@ -165,12 +158,12 @@ static void avx512_dp_mul512(int iterations)
     b = _mm512_load_pd(B);
     d = (__m512d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm512_mul_pd(a, b);
     }
 }
 
-static void avx512_dp_fmadd512(int iterations)
+static void avx512_dp_fmadd512(int n_iterations)
 {
     static double D[8];
     __m512d *d;
@@ -184,7 +177,7 @@ static void avx512_dp_fmadd512(int iterations)
     c = _mm512_load_pd(C);
     d = (__m512d *) D;
 
-    for (i = 0; i < iterations; i++) {
+    for (i = 0; i < n_iterations; i++) {
         *d = _mm512_fmadd_pd(a, b, c);
     }
 }
@@ -200,16 +193,16 @@ static void set_affinity(int core)
 static void run_test(int index)
 {
     switch(test) {
-        case 0: sse2_dp_add128(iterations); break;
-        case 1: sse2_dp_mul128(iterations); break;
-        case 2: fma_dp_fmadd128(iterations); break;
-        case 3: avx_dp_add256(iterations); break;
-        case 4: avx_dp_mul256(iterations); break;
-        case 5: fma_dp_fmadd256(iterations); break;
+        case 0: sse2_dp_add128(n_iterations); break;
+        case 1: sse2_dp_mul128(n_iterations); break;
+        case 2: fma_dp_fmadd128(n_iterations); break;
+        case 3: avx_dp_add256(n_iterations); break;
+        case 4: avx_dp_mul256(n_iterations); break;
+        case 5: fma_dp_fmadd256(n_iterations); break;
         #if AVX_512
-        case 6: avx512_dp_add512(iterations); break;
-        case 7: avx512_dp_mul512(iterations); break;
-        case 8: avx512_dp_fmadd512(iterations); break;
+        case 6: avx512_dp_add512(n_iterations); break;
+        case 7: avx512_dp_mul512(n_iterations); break;
+        case 8: avx512_dp_fmadd512(n_iterations); break;
         #endif
     }
 }
@@ -259,6 +252,16 @@ static void *threaded_run_test(void *arg)
     pthread_exit(0);
 }
 
+void usage()
+{
+    printf("Usage: simd_power_metrics n_sockets n_threads n_iterations csv\n");
+    printf("- n_sockets: number of sockets in the node\n");
+    printf("- n_threads: threads to create and bind\n");
+    printf("- n_iterations: number of n_iterations to gather energy metrics\n");
+    printf("- csv: print output in csv format (0,1)\n");
+    exit(1);
+}
+
 int main (int argc, char *argv[])
 {
     int *tbinds;
@@ -268,23 +271,19 @@ int main (int argc, char *argv[])
     double time_s, flops_m, flops_x_watt;
     double power_ins, power_w, power_raw;
     double energy_nj, energy_j, energy_raw;
-    int n_tests, n_threads, result;
-    int i_socket, i_test, i;
-    int num_ops;
+    int n_tests, n_sockets, n_threads;
+    int i_test, i_socket, i_thread;
+    int result, num_ops, csv;
 
-    if (argc >= 2) {
-        n_threads = atoi(argv[1]);
-    } else {
-        n_threads = get_nprocs();
-    }
-
-    if (argc == 3) {
-        iterations = atoi(argv[2]);
-    } else {
-        iterations = 10000000;
+    if (argc != 5) {
+        usage();
     }
 
     // Options
+    n_sockets = atoi(argv[1]);
+    n_threads = atoi(argv[2]);
+    n_iterations = atoi(argv[3]);
+    csv = atoi(argv[4]);
     set_affinity(0);
 
     n_tests = 6;
@@ -296,11 +295,27 @@ int main (int argc, char *argv[])
     tbinds = malloc(sizeof(pid_t) * n_threads);
     tids = malloc(sizeof(pthread_t) * n_threads);
 
-    printf("CPU Model: \t\t%i\n", 85);
-    printf("Running in core: \t%d/%d\n", sched_getcpu(), n_threads);
-    printf("-------------------------- Working\n");
-    printf("-------------------------- Summary\n");
-    init_rapl_metrics();
+    if (csv == 0) {
+        printf("CPU Model: \t\t%i\n", 85);
+        printf("Running in core: \t%d/%d\n", sched_getcpu(), n_threads);
+        printf("-------------------------- Working\n");
+        printf("-------------------------- Summary\n");
+    }
+
+    #define FAIL(function, message) \
+    if (function == -1) {           \
+        printf("RAPL "message"\n"); \
+        exit(1);                    \
+    }
+
+    FAIL(init_rapl_metrics(), "initialization failed");
+
+    printf("test name;");
+    printf("exec. time (s);");
+    printf("core energy (J);", energy_j);
+    printf("inst. power (W);", power_ins);
+    printf("Mflops;", flops_m);
+    printf("Mflops/Watt\n", flops_x_watt);
 
     // Creating the threads
     for (i_test = 0; i_test < 6; ++i_test)
@@ -309,19 +324,19 @@ int main (int argc, char *argv[])
         spinning = 1;
         energy_raw = 0;
 
-        for (i = 1; i < n_threads; ++i)
+        for (i_thread = 1; i_thread < n_threads; ++i_thread)
         {
-            tbinds[i] = i;
-            result = pthread_create(&tids[i], NULL, threaded_run_test, (void *) &tbinds[i]);
+            tbinds[i_thread] = i_thread;
+            result = pthread_create(&tids[i_thread], NULL, threaded_run_test, (void *) &tbinds[i_thread]);
 
             if (result != 0) {
-                printf("Error %s\n", strerror(errno));
+                printf("Error while creating a thread (%s)\n", strerror(errno));
                 exit(result);
             }
         }
 
-        reset_rapl_metrics();
-        start_rapl_metrics();
+        FAIL(reset_rapl_metrics(), "reset events failed");
+        FAIL(start_rapl_metrics(), "start events failed");
         start_time = PAPI_get_real_usec();
 
         spinning = 0;
@@ -330,11 +345,11 @@ int main (int argc, char *argv[])
         // Execution time in micro seconds
         exec_time = (PAPI_get_real_usec() - start_time);
 
-        for (i = 1; i < n_threads; i++) {
-            pthread_join(tids[i], NULL);
+        for (i_thread = 1; i_thread < n_threads; i_thread++) {
+            pthread_join(tids[i_thread], NULL);
         }
 
-        stop_rapl_metrics(metrics);
+        FAIL(stop_rapl_metrics(metrics), "stop events failed");
 
         for (i_socket = 0; i_socket < 2; ++i_socket) {
             // Energy per socket in nano juls
@@ -353,12 +368,12 @@ int main (int argc, char *argv[])
         // Power (W) = energy (J) / time (s)
         power_w = energy_j / time_s;
         // Power divided per iteration
-        power_ins = power_w / ((double) iterations / time_s);
+        power_ins = power_w / ((double) n_iterations / time_s);
         // Power to uW
         power_ins = power_ins * 1000000.0;
 
         // Total number of operations
-        num_ops = get_test_ops(test) * iterations;
+        num_ops = get_test_ops(test) * n_iterations;
         // Floating point operations per second
         flops_m = ((double) num_ops) / time_s;
         // Flops to Mflops
@@ -366,11 +381,22 @@ int main (int argc, char *argv[])
         // Mflops x watt
         flops_x_watt = flops_m / power_w;
 
-        printf("%s, ", get_test_name(test));
-        printf("%0.3lf uW/call ", power_ins);
-        printf("(%0.2lf J in %0.2lf s per core), ", energy_j, time_s);
-        printf("%0.3lf Mflops, %0.3lf Mflops/Watt \n", flops_m, flops_x_watt);
+        if (csv == 0) {
+            printf("%s, ", get_test_name(test));
+            printf("%0.3lf uW/call ", power_ins);
+            printf("(%0.2lf J in %0.2lf s per core), ", energy_j, time_s);
+            printf("%0.3lf Mflops, %0.3lf Mflops/Watt \n", flops_m, flops_x_watt);
+        } else {
+            printf("%s;", get_test_name(test));
+            printf("%0.2lf;", time_s);
+            printf("%0.2lf;", energy_j);
+            printf("%0.3lf;", power_ins);
+            printf("%0.3lf;", flops_m);
+            printf("%0.3lf\n", flops_x_watt);
+        }
     }
 
+    free(tbinds);
+    free(tids);
     return 0;
 }
