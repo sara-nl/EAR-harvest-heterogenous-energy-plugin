@@ -7,8 +7,8 @@
 
 */
 
-#include <ear_arch_type.h>
 #include <string.h>
+#include <hardware.h>
 
 #define CPUIDREGS(EAX,ECX)  \
     unsigned int eax = EAX; \
@@ -35,7 +35,7 @@ static unsigned int extract_bits(unsigned int reg, int left_bit, int right_bit)
 	return ((reg >> right_bit) & mask);
 }
 
-static int get_vendor_id(char *vendor_id)
+int get_vendor_id(char *vendor_id)
 {
 	int *pointer = (int *) vendor_id;
 	CPUIDREGS(0,0);
@@ -45,7 +45,7 @@ static int get_vendor_id(char *vendor_id)
 	return 1;
 }
 
-static int get_family()
+int get_family()
 {
 	CPUIDREGS(1,0);
 	return extract_bits(eax, 11, 8);

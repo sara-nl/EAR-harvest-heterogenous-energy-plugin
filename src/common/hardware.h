@@ -9,7 +9,9 @@
 
 #define CPU_UNIDENTIFIED -1
 
-#define SUPPORTED_ARCH 3
+int get_vendor_id(char *vendor_id);
+
+int get_family();
 
 // Returns 1 if the CPU is APERF/MPERF compatible.
 int is_aperf_compatible();
