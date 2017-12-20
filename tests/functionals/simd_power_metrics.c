@@ -312,10 +312,10 @@ int main (int argc, char *argv[])
 
     printf("test name;");
     printf("exec. time (s);");
-    printf("core energy (J);", energy_j);
-    printf("inst. power (W);", power_ins);
-    printf("Mflops;", flops_m);
-    printf("Mflops/Watt\n", flops_x_watt);
+    printf("core energy (J);");
+    printf("inst. power (W);");
+    printf("Mflops;");
+    printf("Mflops/Watt\n");
 
     // Creating the threads
     for (i_test = 0; i_test < 6; ++i_test)

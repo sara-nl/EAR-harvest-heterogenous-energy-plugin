@@ -1,6 +1,6 @@
 DIR         = $(ROOTDIR)/tests/functionals
 CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
-SIMD_CFLAGS = -msse2 -mavx -mfma
+SIMD_CFLAGS = -march=native -DAVX_512
 
 ######## FILES
 
