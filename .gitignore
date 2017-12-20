@@ -31,11 +31,12 @@ etc/scripts/environment/lib_vars.sh
 *earlib.so
 *earlibtrac.so
 *ear_slurm_plugin.so
+*eard
+
 *compute_coefficients
 *coefficients_to_csv
 *traces_to_paraver
 *show_metrics
-*eard
 
 # IDE
 cmake*
@@ -44,6 +45,6 @@ CMake*
 *.idea
 
 # Kernels
-*npbparams.h
-*setparams
+npbparams.h
+setparams
 
