@@ -3,7 +3,6 @@
 #include <papi.h>
 #include <hardware.h>
 #include <environment.h>
-#include <intel_model_list.h>
 #include <ear_verbose.h>
 
 #define EAR_FLOPS_EVENTS_SETS 2

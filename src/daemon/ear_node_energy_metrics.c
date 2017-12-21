@@ -13,12 +13,11 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <freeipmi/freeipmi.h>
-#include <ear_verbose.h>
 #include <hardware.h>
-#include <intel_model_list.h>
 #include <node_energy_metrics/lenovo_act.h>
 #include <node_energy_metrics/lenovo_wct.h>
 #include <node_energy_metrics/ibm.h>
+#include <ear_verbose.h>
 
 #define FUNCVERB(function)                               \
     ear_debug(4, "ear_daemon(node_energy) " function "\n");

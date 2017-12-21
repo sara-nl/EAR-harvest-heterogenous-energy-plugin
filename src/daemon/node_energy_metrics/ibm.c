@@ -7,7 +7,7 @@
 
 */
 
-#include <intel_model_list.h>
+#include <hardware.h>
 #include <ear_verbose.h>
 #include <stdio.h>
 #include <stdlib.h>

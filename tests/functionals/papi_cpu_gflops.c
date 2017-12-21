@@ -1,16 +1,15 @@
 #define _GNU_SOURCE
 #include <math.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sched.h>
 #include <pthread.h>
 #include <sys/wait.h>
 #include <sys/sysinfo.h>
 #include <papi.h>
-#include <config.h>
-#include <hardware.h>
 #include <ear_verbose.h>
-#include <intel_model_list.h>
+#include <hardware.h>
+#include <config.h>
 
 #define MACC(core, set, event) flops_accum[core * 8 + set * 4 + event]
 #define MOBT(core, set, event) flops_obtnd[core * 8 + set * 4 + event]
@@ -109,10 +108,8 @@ void init_flops_metrics(int n_cores)
                 exit(1);
             }
 
-            //MOPT(core, set).cpu.eventset = MSET(core, set);
-            //MOPT(core, set).cpu.cpu_num = core;
             MOPT(core, set).cpu.eventset = MSET(core, set);
-            MOPT(core, set).attach.tid=getpid();
+            MOPT(core, set).cpu.cpu_num = core;
 
             retval = PAPI_set_opt(PAPI_CPU_ATTACH, (PAPI_option_t *) &MOPT(core, set));
 

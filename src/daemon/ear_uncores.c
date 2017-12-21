@@ -23,11 +23,10 @@
  *
  * When an error occurs, those calls returns -1.
  */
-
-#include <uncore_architectures/pci_uncores.h>
-#include <intel_model_list.h>
-#include <ear_verbose.h>
 #include <stdio.h>
+#include <hardware.h>
+#include <uncore_architectures/pci_uncores.h>
+#include <ear_verbose.h>
 
 #define FUNCVERB(function)                               \
     ear_debug(4, "EAR_DAEMON(UNCORES) " function "\n");
