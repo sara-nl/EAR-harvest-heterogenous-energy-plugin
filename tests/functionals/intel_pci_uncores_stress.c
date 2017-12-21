@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <ear_uncores.h>
-#include <ear_arch_type.h>
+#include <harware.h>
 #include <config.h>
 
 int EAR_VERBOSE_LEVEL = 4;

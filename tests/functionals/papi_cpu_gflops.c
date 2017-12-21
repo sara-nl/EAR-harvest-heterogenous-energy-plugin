@@ -6,11 +6,11 @@
 #include <pthread.h>
 #include <sys/wait.h>
 #include <sys/sysinfo.h>
-#include <config.h>
-#include <ear_verbose.h>
-#include <ear_arch_type.h>
-#include <intel_model_list.h>
 #include <papi.h>
+#include <config.h>
+#include <hardware.h>
+#include <ear_verbose.h>
+#include <intel_model_list.h>
 
 #define MACC(core, set, event) flops_accum[core * 8 + set * 4 + event]
 #define MOBT(core, set, event) flops_obtnd[core * 8 + set * 4 + event]

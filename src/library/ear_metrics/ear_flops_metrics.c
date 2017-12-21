@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ear_verbose.h>
-#include <ear_arch_type.h>
-#include <intel_model_list.h>
 #include <papi.h>
+#include <hardware.h>
+#include <intel_model_list.h>
+#include <ear_verbose.h>
 
 #define EAR_FLOPS_EVENTS_SETS 2
 #define EAR_FLOPS_EVENTS 4

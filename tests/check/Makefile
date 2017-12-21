@@ -4,14 +4,14 @@ CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
 ######## FILES
 
 OUTER_OBJS = $(ROOTDIR)/src/daemon/ear_uncores.a \
-             $(ROOTDIR)/src/common/ear_arch_type.o
+             $(ROOTDIR)/src/common/hardware.o
 
-BINARIES = cpu_model       \
-           cpu_aperf       \
-           cpu_uncores     \
-           cpu_uncores_all \
-           papi_init       \
-           papi_version    \
+BINARIES = cpu_model           \
+           cpu_aperf           \
+           cpu_uncores         \
+           cpu_uncores_all     \
+           papi_init           \
+           papi_version        \
            papi_comp_available \
            papi_comp_enabled   \
            gsl_version         \
