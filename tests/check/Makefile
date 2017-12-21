@@ -6,7 +6,7 @@ CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
 OUTER_OBJS = $(ROOTDIR)/src/daemon/ear_uncores.a \
              $(ROOTDIR)/src/common/hardware.o
 
-BINARIES = cpu_model           \
+BINARIES = cpu_examinable      \
            cpu_aperf           \
            cpu_uncores         \
            cpu_uncores_all     \
@@ -38,16 +38,13 @@ papi_comp_available: papi_comp_available.c
 papi_comp_enabled: papi_comp_enabled.c
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_comp_enabled papi_comp_enabled.c $(PAPI_LDFLAGS)
 
-cpu_vendor: cpu_vendor.c
-	$(CC) $(CFLAGS) -o cpu_vendor cpu_vendor.c
+cpu_examinable: cpu_examinable.c $(OUTER_OBJS)
+	$(CC) $(CFLAGS) -o cpu_examinable cpu_examinable.c
 
-cpu_model: cpu_model.c
-	$(CC) $(CFLAGS) -o cpu_model cpu_model.c
-
-cpu_aperf: cpu_aperf.c
+cpu_aperf: cpu_aperf.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o cpu_aperf cpu_aperf.c
 
-cpu_uncores: cpu_uncores.c
+cpu_uncores: cpu_uncores.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o cpu_uncores cpu_uncores.c $(OUTER_OBJS)
 
 cpu_uncores_all: cpu_uncores_all.c

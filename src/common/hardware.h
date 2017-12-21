@@ -23,8 +23,12 @@
 #define CPU_KABYLAKE            158
 #define CPU_KNIGHTS_LANDING     87
 #define CPU_KNIGHTS_MILL        133
-#define INTEL_VENDOR_NAME       "GenuineIntel"
 
+#define INTEL_VENDOR_NAME       "GenuineIntel"
+#define AMD_VENDOR_NAME         "AuthenticAMD"
+
+// Returns if the cpu is examinable by this library
+int is_cpu_examinable();
 // Returns the vendor ID
 int get_vendor_id(char *vendor_id);
 // Returns the family of the processor

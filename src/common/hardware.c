@@ -23,7 +23,7 @@
     edx = 0;              \
     native_cpuid(&eax, &ebx, &ecx, &edx);
 #define IS_LEAF(num)      \
-    is_cpu_leaf_present(num) == 1
+    is_cpu_leaf_present(num) == EAR_SUCCESS
 
 static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 								unsigned int *ecx, unsigned int *edx)
@@ -57,7 +57,18 @@ static unsigned int is_cpu_leaf_present(unsigned int leaf)
     if (ebx == 0)
         return EAR_ERROR;
 
-    return 1;
+    return EAR_SUCCESS;
+}
+
+int is_cpu_examinable()
+{
+    char vendor_id;
+    get_vendor(vendor_id);
+    if(strcmp(INTEL_VENDOR_NAME, vendor_id) == 0)
+        return EAR_ERROR;
+    if(!IS_LEAF(11))
+        return EAR_ERROR;
+    return EAR_SUCCESS;
 }
 
 int get_vendor_id(char *vendor_id)
@@ -131,6 +142,7 @@ int is_cpu_hyperthreading_capable()
     CPUID(1,0);
     return extract_bits(edx, 28, 28);
 }
+
 
 int get_cpu_logical_processors()
 {
