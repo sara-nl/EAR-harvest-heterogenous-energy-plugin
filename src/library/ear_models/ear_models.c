@@ -342,7 +342,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
                 	bestSolution=E_ref;
                 	bestPstate=ear_frequency;
         	}   
-
+		ear_verbose(0,"performance_penalty %lf\n",performance_penalty);
 		T_max=T_ref+(T_ref*performance_penalty);
 		// MIN_ENERGY_TO_SOLUTION BEGIN
 		for (i=min_pstate;i<ear_models_pstates;i++){

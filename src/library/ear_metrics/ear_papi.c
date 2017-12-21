@@ -34,7 +34,6 @@ extern int ear_resources;
 extern int ear_my_rank;
 extern int power_model_policy;
 extern char ear_policy_name[MAX_APP_NAME];
-extern double ear_policy_th;
 extern char ear_app_name[MAX_APP_NAME];
 
 
@@ -355,20 +354,7 @@ int metrics_init(int my_id,int pid)
 	// We create N event sets: preset
 	for (sets=0;sets<MAX_SETS;sets++){
 		EventSet[sets]=PAPI_NULL;
-	    ear_papi_error(PAPI_create_eventset(&EventSet[sets]),"Creating event set");
-#ifdef MULTIPLEX_PAPI
-		if (papi_multiplex){
-			if ((ret=PAPI_set_multiplex(EventSet[sets]))!=PAPI_OK){ 
-				if (ret!=PAPI_OK){ 
-					ret=PAPI_get_multiplex(EventSet[sets]);
-					if (ret>0){        ear_verbose(1,"EAR: Event set %d is ready for multiplexing\n",sets);
-					}else if (ret==0){ ear_verbose(1,"EAR: Event set %d is not enabled for multiplexing\n",sets);
-					}else if (ret<0) { ear_verbose(0,"EAR: Event set %d cannot be multiplexed: %s\n",sets,PAPI_strerror(ret));
-					}
-				}
-			}
-		}
-#endif
+	    	ear_papi_error(PAPI_create_eventset(&EventSet[sets]),"Creating event set");
 		papi_initialice_events(sets,pid);
 	}
 	// We ask for uncore and rapl metrics sizes
@@ -515,8 +501,8 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		db_set_EDP(&SIGNATURE,EDP);
 		db_set_default(&SIGNATURE,app_info->nominal);
 		db_set_policy(&SIGNATURE,ear_policy_name);
-		db_set_th(&SIGNATURE,ear_policy_th);
-		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0)) {
+		db_set_th(&SIGNATURE,get_ear_power_policy_th());
+		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->nominal==ear_get_nominal_frequency())) {
 			optimal=optimal_freq_min_energy(0.1,&SIGNATURE,&PP,&TP);
 			perf_deg=((TP-Seconds)/Seconds)*100.0;
 			power_sav=((POWER_DC-PP)/POWER_DC)*100.0;
