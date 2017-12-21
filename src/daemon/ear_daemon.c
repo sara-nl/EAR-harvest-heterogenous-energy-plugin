@@ -97,6 +97,13 @@ void catch_signals()
 // Lock unlock functions are used to be sure a single daemon is running per node
 void ear_daemon_lock(char *tmp_dir,char *nodename)
 {
+	int ret;
+	ret=mkdir(tmp_dir,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+	if ((ret<0) && (errno!=EEXIST)){
+		ear_verbose(0,"ear_daemon: ear tmp dir cannot be created (%s)",strerror(errno));
+		exit(0);
+	}
+	chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 	sprintf(ear_daemon_lock_file,"%s/%s.ear_daemon_lock",tmp_dir,nodename);
 	if ((ear_daemon_lockf=open(ear_daemon_lock_file,O_WRONLY|O_CREAT|O_EXCL,S_IRUSR|S_IWUSR))<0){ 
 		if (errno!=EEXIST){
