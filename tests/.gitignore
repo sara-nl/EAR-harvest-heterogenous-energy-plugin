@@ -15,5 +15,8 @@ core.*
 *free_ipmi_version
 
 # Functionals
+*eard_monitor
+*freeipmi_overhead
 *intel_pci_uncores_stress
-*daemon_monitoring
+*simd_power_metrics
+*papi_cpu_gflops
