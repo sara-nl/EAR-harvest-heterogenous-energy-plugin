@@ -28,11 +28,11 @@ if [ ! -f $1 ]
 then
 	if [ "x$1" != "xlocal" ]
 	then
-		export EAR_NUM_NODES=1
 		MPI_HOST="-hosts $1"
-	else
 		export EAR_NUM_NODES=`wc -l <$1`
+	else
 		MPI_HOST=""
+		export EAR_NUM_NODES=1
 	fi
 else 
 	MPI_HOST="-f $1"

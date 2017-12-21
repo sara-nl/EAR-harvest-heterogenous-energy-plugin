@@ -16,8 +16,8 @@ CPUF_LDFLAGS = @CPUPOWER_LDFLAGS@ @CPUPOWER_LIBS@
 IPMI_BASE    = @FREEIPMI_DIR@
 IPMI_CFLAGS  = @FREEIPMI_CPPFLAGS@
 IPMI_LDFLAGS = @FREEIPMI_LDFLAGS@ @FREEIPMI_LIBS@
-CONSTANTS = -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0
-DEBUG     =
+CONSTANTS    = -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0
+DEBUG        =
 
 ######## VARS
 
@@ -46,7 +46,10 @@ export DEBUG
 
 all:
 	@ $(MAKE) -C src all || exit
-	@ $(MAKE) -C tests all || exit
+	@ $(MAKE) -C tests/check all || exit
+
+functionals:
+	@ $(MAKE) -C tests/functionals || exit
 
 check:
 	@ $(MAKE) -C tests check
