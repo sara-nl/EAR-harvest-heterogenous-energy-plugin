@@ -327,8 +327,8 @@ int ear_daemon_client_reset_uncore()
                     ear_verbose(0,"EAR: Error reading RESET ACK uncore counters from EAR daemon:%s\n",strerror(errno));
 					return EAR_ERROR;
             }
-            ear_verbose(3,"EAR_daemon_client: RESET ACK Uncore counters received from daemon \n");
-			return EAR_SUCCESS;
+            ear_debug(3,"EAR_daemon_client: RESET ACK Uncore counters received from daemon \n");
+	    return EAR_SUCCESS;
     }
 	ear_debug(0,"EAR_daemon_client:reset uncore service not provided \n");
 	return EAR_ERROR;
@@ -431,7 +431,7 @@ int ear_daemon_client_reset_rapl()
                     ear_verbose(0,"EAR: Error reading RESET ACK rapl counters from EAR daemon:%s\n",strerror(errno));
 					return EAR_ERROR;
             }
-			ear_verbose(3,"EAR_daemon_client: RESET ACK rapl counters received from daemon \n");
+			ear_debug(3,"EAR_daemon_client: RESET ACK rapl counters received from daemon \n");
 			return ack;
     }
 	ear_debug(0,"EAR_daemon_client: reset rapl service not provided\n");
@@ -455,7 +455,7 @@ int ear_daemon_client_start_rapl()
                     ear_verbose(0,"EAR: Error reading START ACK rapl counters from EAR daemon ret=%d:%s\n",ret,strerror(errno));
 					return EAR_ERROR;
             }
-			ear_verbose(3,"EAR_daemon_client: START ACK rapl counters received from daemon \n");
+			ear_debug(3,"EAR_daemon_client: START ACK rapl counters received from daemon \n");
 		return EAR_SUCCESS;
     }
 	ear_debug(0,"EAR_daemon_client: start rapl service not provided\n");

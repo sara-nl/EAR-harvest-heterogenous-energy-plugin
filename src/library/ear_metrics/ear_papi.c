@@ -423,12 +423,12 @@ struct App_info* set_metrics(int period,int iteration,long long *counters,long l
 		POWER=(double)*eru/(double)(Seconds*1000000);
 		ear_debug(4,"EAR(%s):: Set_metrics: seconds %.5lf GBS %.5lf POWER %12.6f TPI %12.6f CPI %5lf\n",
 		__FILE__,Seconds/(double)N_iters,GBS,POWER,TPI,CPI);
-        app_info=db_current_app();
-        db_set_GBS(app_info,GBS);
-        db_set_POWER(app_info,POWER);
-        db_set_TPI(app_info,TPI);
-        db_set_seconds(app_info,Seconds/(double)N_iters);
-        db_set_CPI(app_info,CPI);
+        	app_info=db_current_app();
+        	db_set_GBS(app_info,GBS);
+        	db_set_POWER(app_info,POWER);
+        	db_set_TPI(app_info,TPI);
+        	db_set_seconds(app_info,Seconds/(double)N_iters);
+        	db_set_CPI(app_info,CPI);
 		db_set_frequency(app_info,ear_cpufreq_get(0));
 		return app_info;
 }
@@ -441,7 +441,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		struct App_info SIGNATURE;
 		unsigned long f,optimal;
 		double PP,TP,EP,perf_deg,power_sav,energy_sav,ener,new_EDP;
-	    char *app_name;
+	    	char *app_name;
 		
 		int i,new;
 		app_info=db_current_app();
@@ -585,8 +585,8 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	ear_debug(3,"EAR______________metrics_end_compute_signature __________\n");
 	// POWER_DC is provided
 	// WE Get iteration TIme
-    end_time=PAPI_get_real_usec();
-    iter_time=metrics_usecs_diff(end_time,start_time);
+    	end_time=PAPI_get_real_usec();
+    	iter_time=metrics_usecs_diff(end_time,start_time);
 	if (iter_time< min_t) return NULL;
 	// WE Get counters (Stop&Read)
 	metrics_stop();
@@ -596,10 +596,9 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	acum_counters();
 	diff_counters();
 	copy_last_iter_counters();
-	// This can generate an overflow: PENDING TO DETECT
 	// acum_time_time is total, 
 	acum_iter_time=acum_iter_time+iter_time;
-    start_time=end_time;
+    	start_time=end_time;
 	acum_energy=acum_energy+*eru;
 	app=set_metrics(period,0,diff_event_values,iter_time,eru,N_iters);
 	// Once processes, we reset actual counters

@@ -45,6 +45,7 @@ double performance_penalty_th=EAR_ACCEPTED_TH;
 unsigned int reset_freq_opt=RESET_FREQ;
 char ear_policy_name[MAX_APP_NAME];
 double ear_policy_th;
+static double T_max;
 
 
 void init_power_policy()
@@ -294,7 +295,6 @@ unsigned long optimal_freq_min_energy(double th,struct App_info * SIGNATURE,doub
 	return 	bestPstate;
 
 }
-
 // This is the main function in this file, it implements power policy
 unsigned long policy_power_for_application(unsigned int whole_app,struct App_info * SIGNATURE)
 {
@@ -304,7 +304,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
 	unsigned int ref,try_next;
 	double freq_gain,perf_gain;
 	double PP,TP,CPIP,EP,bestSolution,REF_ENER;
-	double P_ref,CPI_ref,T_ref,E_ref,T_max,T_current;
+	double P_ref,CPI_ref,T_ref,E_ref,T_current;
 	unsigned long bestPstate;
 	my_app=SIGNATURE;
 	if (ear_use_turbo) min_pstate=0;
@@ -342,7 +342,6 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
                 	bestSolution=E_ref;
                 	bestPstate=ear_frequency;
         	}   
-		ear_verbose(0,"performance_penalty %lf\n",performance_penalty);
 		T_max=T_ref+(T_ref*performance_penalty);
 		// MIN_ENERGY_TO_SOLUTION BEGIN
 		for (i=min_pstate;i<ear_models_pstates;i++){
@@ -441,23 +440,25 @@ unsigned int equal_with_th(double p,double r,double th)
 }
 unsigned int policy_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNATURE,struct App_info *LAST_SIGNATURE)
 {
-	ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",__FILE__,
+		ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",__FILE__,
 		PREDICTION->Time,PREDICTION->Power);
-	ear_debug(4,"EAR(%s):: Signature Time %12.6lf Power %12.6lf\n",__FILE__,
+		ear_debug(4,"EAR(%s):: Signature Time %12.6lf Power %12.6lf\n",__FILE__,
 		SIGNATURE->seconds,SIGNATURE->POWER_f0);
-	if (power_model_policy==MIN_TIME_TO_SOLUTION){
-		if ((SIGNATURE->seconds>LAST_SIGNATURE->seconds) && (SIGNATURE->f!=LAST_SIGNATURE->f)) return 0;
-		if (SIGNATURE->seconds<PREDICTION->Time) return 1;
-		else return 0;
-	}else if (power_model_policy==MIN_ENERGY_TO_SOLUTION){
-		double EP,ER;
-		EP=PREDICTION->Time*PREDICTION->Power;
-		ER=SIGNATURE->seconds*SIGNATURE->POWER_f0;
-		if (ER<EP) return 1;
-		else return 0;
-	}else if (power_model_policy==MONITORING_ONLY){
-		return 1;
-	}	
+		if (power_model_policy==MIN_TIME_TO_SOLUTION){
+			if ((SIGNATURE->seconds>LAST_SIGNATURE->seconds) && (SIGNATURE->f!=LAST_SIGNATURE->f)) return 0;
+			if (SIGNATURE->seconds<PREDICTION->Time) return 1;
+			else return 0;
+		}else if (power_model_policy==MIN_ENERGY_TO_SOLUTION){
+			double EP,ER;
+			EP=LAST_SIGNATURE->seconds*LAST_SIGNATURE->POWER_f0;
+			ER=SIGNATURE->seconds*SIGNATURE->POWER_f0;
+			ear_verbose(3,"CURRENT E=%lf (%lf x %lf) LAST E=%lf (%lf x %lf)\n",
+				ER,SIGNATURE->seconds,SIGNATURE->POWER_f0,EP,LAST_SIGNATURE->seconds,LAST_SIGNATURE->POWER_f0);
+			if ((ER<EP)&&(SIGNATURE->seconds<T_max)) return 1;
+			else return 0;
+		}else if (power_model_policy==MONITORING_ONLY){
+			return 1;
+		}	
 }
 unsigned int performance_projection_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNATURE)
 {
