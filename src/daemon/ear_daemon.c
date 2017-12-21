@@ -98,12 +98,12 @@ void catch_signals()
 void ear_daemon_lock(char *tmp_dir,char *nodename)
 {
 	int ret;
-	ret=mkdir(tmp_dir,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+	ret=mkdir(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 	if ((ret<0) && (errno!=EEXIST)){
 		ear_verbose(0,"ear_daemon: ear tmp dir cannot be created (%s)",strerror(errno));
 		exit(0);
 	}
-	chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+	chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 	sprintf(ear_daemon_lock_file,"%s/%s.ear_daemon_lock",tmp_dir,nodename);
 	if ((ear_daemon_lockf=open(ear_daemon_lock_file,O_WRONLY|O_CREAT|O_EXCL,S_IRUSR|S_IWUSR))<0){ 
 		if (errno!=EEXIST){
@@ -125,12 +125,13 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 {
 	char ear_commreq[MAX_PATH_SIZE];
 	sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
-	unlink(ear_commreq);
 	// ear_comreq files will be used to send requests from the library to the ear_daemon
 	if (mknod(ear_commreq,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
-		ear_verbose(0,"ear_daemon:Error creating ear communicator for requests %s\n",strerror(errno));
+		if (errno!=EEXIST){
+			ear_verbose(0,"ear_daemon:Error creating ear communicator for requests %s\n",strerror(errno));
+		}
 	}
-	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH);
+	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IRUSR|S_IWGRP|S_IROTH|S_IWOTH);
 }
 // Creates 1 pipe (per node) to send acks. 
 void connect_service(int req,unsigned long pid)
