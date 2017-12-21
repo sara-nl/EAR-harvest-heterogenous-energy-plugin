@@ -39,10 +39,10 @@ papi_comp_enabled: papi_comp_enabled.c
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_comp_enabled papi_comp_enabled.c $(PAPI_LDFLAGS)
 
 cpu_examinable: cpu_examinable.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -o cpu_examinable cpu_examinable.c
+	$(CC) $(CFLAGS) -o cpu_examinable cpu_examinable.c $(OUTER_OBJS)
 
 cpu_aperf: cpu_aperf.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -o cpu_aperf cpu_aperf.c
+	$(CC) $(CFLAGS) -o cpu_aperf cpu_aperf.c $(OUTER_OBJS)
 
 cpu_uncores: cpu_uncores.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o cpu_uncores cpu_uncores.c $(OUTER_OBJS)

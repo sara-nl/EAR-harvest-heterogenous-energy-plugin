@@ -42,14 +42,14 @@ export DEBUG
 
 ######## RULES
 
-.PHONY: check
+.PHONY: check functionals
 
 all:
 	@ $(MAKE) -C src all || exit
-	@ $(MAKE) -C tests/check all || exit
+	@ $(MAKE) -C tests all || exit
 
 functionals:
-	@ $(MAKE) -C tests/functionals || exit
+	@ $(MAKE) -C tests functionals || exit
 
 check:
 	@ $(MAKE) -C tests check

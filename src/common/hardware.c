@@ -10,7 +10,7 @@
 #include <string.h>
 #include <hardware.h>
 #include <config.h>
-
+#include <stdio.h>
 #define CREGS()           \
     unsigned int eax = 0; \
     unsigned int ebx = 0; \
@@ -49,25 +49,26 @@ static unsigned int is_cpu_leaf_present(unsigned int leaf)
 
     CPUID(0,0);
     // If max leafs are less
-    if (leaf < eax)
+    if (eax < leaf)
         return EAR_ERROR;
-
+printf("1\n");
     CPUID(leaf,0);
     // EBX confirms its presence
     if (ebx == 0)
         return EAR_ERROR;
 
+printf("2\n");
     return EAR_SUCCESS;
 }
 
 int is_cpu_examinable()
 {
-    char vendor_id;
-    get_vendor(vendor_id);
-    if(strcmp(INTEL_VENDOR_NAME, vendor_id) == 0)
+    char vendor_id[16];
+    get_vendor_id(vendor_id);
+    if(strcmp(INTEL_VENDOR_NAME, vendor_id) != 0)
         return EAR_ERROR;
     if(!IS_LEAF(11))
-        return EAR_ERROR;
+        return EAR_WARNING;
     return EAR_SUCCESS;
 }
 
