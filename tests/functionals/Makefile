@@ -4,8 +4,9 @@ SIMD_CFLAGS = -march=native -DAVX_512
 
 ######## FILES
 
-OUTER_OBJS = $(ROOTDIR)/src/common/hardware.o    \
-             $(ROOTDIR)/src/common/environment.o \
+OUTER_OBJS = $(ROOTDIR)/src/common/hardware.o        \
+             $(ROOTDIR)/src/common/environment.o     \
+             $(ROOTDIR)/src/common/string_enhanced.o \
              $(ROOTDIR)/src/common/ear_daemon_client.o
 
 BINARIES = intel_pci_uncores_stress eard_monitor papi_cpu_gflops simd_power_metrics freeipmi_overhead

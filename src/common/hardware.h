@@ -7,9 +7,6 @@
 
 */
 
-#define EAR_ERROR -1
-
-
 // Returns the vendor ID
 int get_vendor_id(char *vendor_id);
 

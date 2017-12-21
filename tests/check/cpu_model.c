@@ -1,6 +1,6 @@
-#include <intel_model_list.h>
-#include <assert.h>
 #include <cpuid.h>
+#include <assert.h>
+#include <intel_model_list.h>
 
 int main ()
 {
@@ -32,7 +32,7 @@ int main ()
 
     model = (eax >> 4) & 0x0000000F;
     model = model | ((eax >> 12) & 0x000000FF);
-    assert(IS_MY_INTEL_CPU_COMPATIBLE(model));
+    //assert(IS_MY_INTEL_CPU_COMPATIBLE(model));
 
     return 0;
 }
