@@ -10,8 +10,6 @@
 #include <string.h>
 #include <hardware.h>
 
-#include <stdio.h>
-
 #define CREGS()           \
     unsigned int eax = 0; \
     unsigned int ebx = 0; \

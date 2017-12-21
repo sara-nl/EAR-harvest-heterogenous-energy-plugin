@@ -19,8 +19,8 @@
 #include <time.h>
 #include <sys/time.h>
 // EAR includes
+#include <environment.h>
 #include <ear_verbose.h>
-#include <ear_configuration.h>
 #include <ear_dyn_inst/MPI_types.h>
 #include <ear_dyn_inst/MPI_calls_coded.h>
 #include <ear_dynais/ear_dynais.h>
