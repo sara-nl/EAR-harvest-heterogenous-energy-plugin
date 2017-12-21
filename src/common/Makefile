@@ -15,7 +15,7 @@ ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
 environment.o: environment.c environment.h ear_default_values.h
 	$(CC) $(CFLAGS) -c environment.c
 
-hardware.o: hawrdware.c hardware.h
+hardware.o: hardware.c hardware.h
 	$(CC) $(CFLAGS) -c hardware.c
 
 install:
