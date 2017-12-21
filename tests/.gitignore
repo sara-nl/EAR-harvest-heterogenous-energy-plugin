@@ -16,6 +16,7 @@ core.*
 
 # Functionals
 *eard_monitor
+*hardware_scanner
 *freeipmi_overhead
 *intel_pci_uncores_stress
 *simd_power_metrics
