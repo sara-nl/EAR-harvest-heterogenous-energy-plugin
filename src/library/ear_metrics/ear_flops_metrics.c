@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <papi.h>
 #include <hardware.h>
+#include <environment.h>
 #include <intel_model_list.h>
 #include <ear_verbose.h>
 
@@ -19,6 +20,7 @@ int ear_flops_perf_event_cid;
 PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
 int flops_supported=0;
 
+extern int (*my_omp_get_max_threads)(void);
 
 int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
 
@@ -68,13 +70,6 @@ void init_flops_metrics()
 			ear_verbose(0,"EAR(%s): Creating %d eventset.Exiting.Exiting:%s\n",__FILE__,sets,PAPI_strerror(retval));
 			exit(1);
 		}
-		retval = PAPI_set_multiplex(sets);
-		if ((retval == PAPI_EINVAL) && (PAPI_get_multiplex(sets) > 0)){
-			ear_verbose(0,"EAR: Event set to compute FLOPS already has multiplexing enabled\n");
-		}else if (retval != PAPI_OK){ 
-			ear_verbose(0,"EAR: Error , event set to compute FLOPS can not be multiplexed %s\n",PAPI_strerror(retval));
-		}
-		ear_verbose(2,"EAR: Set %d to compute flops has been multiplexed\n",sets);
 
 		if ((retval=PAPI_assign_eventset_component(ear_flops_event_sets[sets],ear_flops_perf_event_cid))!=PAPI_OK){		
 			ear_verbose(0,"EAR(%s): PAPI_assign_eventset_component.Exiting:%s\n",__FILE__,sets,PAPI_strerror(retval));
@@ -85,6 +80,13 @@ void init_flops_metrics()
 		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&flops_attach_opt[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s): PAPI_set_opt.%s\n",__FILE__,PAPI_strerror(retval));
 		}
+		retval = PAPI_set_multiplex(sets);
+		if ((retval == PAPI_EINVAL) && (PAPI_get_multiplex(sets) > 0)){
+			ear_verbose(0,"EAR: Event set to compute FLOPS already has multiplexing enabled\n");
+		}else if (retval != PAPI_OK){ 
+			ear_verbose(0,"EAR: Error , event set to compute FLOPS can not be multiplexed %s\n",PAPI_strerror(retval));
+		}
+		ear_verbose(2,"EAR: Set %d to compute flops has been multiplexed\n",sets);
 		cpu_model = get_model();
 		switch(cpu_model){
 			case CPU_HASWELL_X:
@@ -129,6 +131,7 @@ void init_flops_metrics()
     }
 	if (flops_supported){ ear_verbose(2,"EAR:Computation of Flops initialized\n");
 	}else ear_verbose(2,"EAR: Computation of Flops not supported\n");
+
 	
 }
 void reset_flops_metrics()
@@ -173,6 +176,7 @@ void stop_flops_metrics(long long *flops)
 void print_gflops(long long total_inst,unsigned long total_time)
 {
 	int sets,ev;
+	int procs_per_node;
 	long long total=0;
 	if (!flops_supported) return;
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
@@ -186,11 +190,33 @@ void print_gflops(long long total_inst,unsigned long total_time)
 			total=total+(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]);
 		}
 	}
-	ear_verbose(0,"Glops = %lf \n", (double)total/(double)(total_time*1000));
+	procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
+	ear_verbose(0,"GFlops per process = %.3lf \n", (double)(total)/(double)(total_time*1000));
+	if (my_omp_get_max_threads!=NULL){ 	
+		ear_verbose(0,"GFlops per node    = %.3lf \n", (double)(total*procs_per_node*my_omp_get_max_threads())/(double)(total_time*1000));
+	}else{ 
+		ear_verbose(0,"GFlops per node    = %.3lf \n", (double)(total*procs_per_node)/(double)(total_time*1000));
+	}
 	
 }
 double gflops(unsigned long total_time)
 {
-	return 0.0;
+        int sets,ev;
+        int procs_per_node;
+        long long total=0;
+	double Gflops;
+        if (!flops_supported) return;
+        for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
+                for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
+                        total=total+(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]);
+                }
+        }
+        procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
+        if (my_omp_get_max_threads!=NULL){
+	 	Gflops=(double)(total*procs_per_node*my_omp_get_max_threads())/(double)(total_time*1000);
+        }else{ 
+		Gflops=(double)(total*procs_per_node)/(double)(total_time*1000);
+	}
+	return Gflops;
 }
 

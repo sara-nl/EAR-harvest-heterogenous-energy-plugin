@@ -419,7 +419,7 @@ void metrics_end(unsigned int whole_app,int my_id,FILE* fd,unsigned long int *er
 	
 #ifdef EAR_EXTRA_METRICS
 	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
-	print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
+	//print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
 #endif
 }
 
@@ -466,7 +466,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		GBS=((double)(acum_event_values[EAR_ACUM_LD_INS]*ear_cache_line_size)/(Seconds*(double)(1024*1024*1024)))+ ((double)(acum_event_values[EAR_ACUM_SR_INS]*ear_cache_line_size)/(Seconds*(double)(1024*1024*1024)));
 		TPI=(double)(acum_event_values[EAR_ACUM_LD_INS]+acum_event_values[EAR_ACUM_SR_INS])/(double)(acum_event_values[EAR_ACUM_TOT_INS]/ear_cache_line_size);
 		GIBS=(double)ear_node_size*(double)ear_frequency/(CPI*1000000);
-		GFLOPS=0;
+		GFLOPS=gflops(app_exec_time);
 		GIBS_ranks=(double)ear_resources*(double)ear_frequency/(CPI*1000000);
 		POWER_DC=(double)acum_energy/(double)(Seconds*1000000);
 		EDP=Seconds*Seconds*POWER_DC;
@@ -491,8 +491,8 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		// Reporting application signature metrics at stderr
 		fprintf(stderr,"_____________________EAR Summary for %s ___________________\n",app_info->node_id);
 		fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,SIGNATURE.app_id,(double)app_exec_time/(double)1000000);
-		fprintf(stderr,"EAR CPI=%.3lf GBS=%.3lf \n",CPI,GBS);
-		fprintf(stderr,"EAR avg. node power=%.3lfW, avg. RAPL dram power=%.3lfW, avg. RAPL pck. power=%.3lfW EDP=%.3lf\n",POWER_DC,DRAM_POWER,PCK_POWER,EDP);
+		fprintf(stderr,"EAR CPI=%.3lf GBS=%.3lf GFlops=%.3lf\n",CPI,GBS,GFLOPS);
+		fprintf(stderr,"EAR avg. node power=%.3lfW, avg. RAPL dram power=%.3lfW, avg. RAPL pck. power=%.3lfW EDP=%.3lf GFlops/Watts=%.3lf\n",POWER_DC,DRAM_POWER,PCK_POWER,EDP,GFLOPS/POWER_DC);
 		fprintf(stderr,"EAR def. frequency %.3lf GHz avg. frequency %.3lf GHz\n",(double)app_info->nominal/(double)1000000,(double)f/(double)1000000);
 
 		// app_info links to the DB information . Update SIGNATURE metrics to report it at user_db and system_db
@@ -516,7 +516,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		db_set_default(&SIGNATURE,app_info->nominal);
 		db_set_policy(&SIGNATURE,ear_policy_name);
 		db_set_th(&SIGNATURE,ear_policy_th);
-		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0)) {
+		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->nominal==ear_get_nominal_frequency())) {
 			optimal=optimal_freq_min_energy(0.1,&SIGNATURE,&PP,&TP);
 			perf_deg=((TP-Seconds)/Seconds)*100.0;
 			power_sav=((POWER_DC-PP)/POWER_DC)*100.0;
@@ -531,11 +531,11 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		db_update_historical(whole_app,&SIGNATURE);
 		// Pending to compute GFlops
 		//"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH\n";
-        //if (fd!=NULL) fprintf(fd,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%s;%.3lf\n",SIGNATURE.user_id,SIGNATURE.job_id,SIGNATURE.node_id,
-		//SIGNATURE.app_id,SIGNATURE.f,SIGNATURE.seconds,SIGNATURE.CPI,SIGNATURE.TPI_f0,SIGNATURE.GBS_f0,SIGNATURE.Gflops,SIGNATURE.POWER_f0,SIGNATURE.DRAM_POWER,SIGNATURE.PCK_POWER,SIGNATURE.nominal,SIGNATURE.policy,SIGNATURE.th);
+        if (fd!=NULL) fprintf(fd,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%s;%.3lf\n",SIGNATURE.user_id,SIGNATURE.job_id,SIGNATURE.node_id,
+		SIGNATURE.app_id,SIGNATURE.f,SIGNATURE.seconds,SIGNATURE.CPI,SIGNATURE.TPI_f0,SIGNATURE.GBS_f0,SIGNATURE.Gflops,SIGNATURE.POWER_f0,SIGNATURE.DRAM_POWER,SIGNATURE.PCK_POWER,SIGNATURE.nominal,SIGNATURE.policy,SIGNATURE.th);
 		// fd is the user_db file. Gflops are not reported
-        if (fd!=NULL) fprintf(fd,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%.3lf;%s;%.3lf\n",SIGNATURE.user_id,SIGNATURE.job_id,SIGNATURE.node_id,
-		SIGNATURE.app_id,SIGNATURE.f,SIGNATURE.seconds,SIGNATURE.CPI,SIGNATURE.TPI_f0,SIGNATURE.GBS_f0,SIGNATURE.POWER_f0,SIGNATURE.DRAM_POWER,SIGNATURE.PCK_POWER,SIGNATURE.nominal,SIGNATURE.EDP,SIGNATURE.policy,SIGNATURE.th);
+        //if (fd!=NULL) fprintf(fd,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%.3lf;%s;%.3lf\n",SIGNATURE.user_id,SIGNATURE.job_id,SIGNATURE.node_id,
+		//SIGNATURE.app_id,SIGNATURE.f,SIGNATURE.seconds,SIGNATURE.CPI,SIGNATURE.TPI_f0,SIGNATURE.GBS_f0,SIGNATURE.POWER_f0,SIGNATURE.DRAM_POWER,SIGNATURE.PCK_POWER,SIGNATURE.nominal,SIGNATURE.EDP,SIGNATURE.policy,SIGNATURE.th);
 }
 
 void copy_last_iter_counters()

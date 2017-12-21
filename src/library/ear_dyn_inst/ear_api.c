@@ -76,6 +76,22 @@ FILE *stdtrace,*stdtracebin;
 #endif
 int EAR_VERBOSE_LEVEL=0;
 
+# define __USE_GNU
+# include <dlfcn.h>
+# undef  __USE_GNU
+int (*my_omp_get_max_threads)(void) = NULL;
+
+
+int check_threads()
+{
+        my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_max_threads");
+	if (my_omp_get_max_threads==NULL){
+		my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_max_threads");
+		if (my_omp_get_max_threads==NULL) return 0;
+		else return 1;
+	} 
+	else return 1;
+}
 
 void ear_init(){
 	char file_name[BUFFSIZE],node_name[BUFFSIZE],*ear_summary_filename,my_name[BUFFSIZE];
@@ -87,14 +103,15 @@ void ear_init(){
 	struct stat lock_st;
 	char *snum_nodes;
 	unsigned int num_nodes,ppnode;
-    //char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH\n";
-    char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;EDP;POLICY;POLICY_TH\n";
+    	char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH\n";
+    	//char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;EDP;POLICY;POLICY_TH\n";
 	int new_fd=0,ret;
 
 
 	PMPI_Comm_rank(MPI_COMM_WORLD,&ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD,&my_size);
 	ear_lib_environment();
+	set_ear_total_processes(my_size);
 	EAR_VERBOSE_LEVEL=get_ear_verbose();
 	if (get_ear_app_name()!=NULL){
 		if (ear_my_rank==0) ear_verbose(1,"EAR: Application %s starts.....\n",get_ear_app_name());
@@ -103,7 +120,7 @@ void ear_init(){
 	}
 	ear_debug(2,"EAR Starting initialization\n");	
 	ear_whole_app=get_ear_learning_phase();
-    dynais_init(EAR_DYNAIS_WINDOW_SIZE,EAR_DYNAIS_LEVELS);
+   	dynais_init(EAR_DYNAIS_WINDOW_SIZE,EAR_DYNAIS_LEVELS);
 
 	gethostname(node_name,sizeof(node_name));
 	strcpy(ear_node_name,node_name);
@@ -114,6 +131,12 @@ void ear_init(){
         my_id=(ear_my_rank%ppnode);
 	}
 	if (my_id) return;
+	if (check_threads()){
+		ear_verbose(2,"OpenMP is used\n");
+		ear_verbose(2,"OpenMP max_threads %d\n",my_omp_get_max_threads());
+	}else{
+		ear_verbose(2,"OpenMP is not used\n");
+	}
 
 #ifdef DYNAIS_TRACE
 	if (ear_my_rank==0){

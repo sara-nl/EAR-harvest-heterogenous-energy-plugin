@@ -35,7 +35,7 @@ int ear_rapl_num_events=0;
 int init_rapl_metrics()
 {
 	int retval;
-	int sets;
+	int sets,ret;
 	int events;
 	PAPI_event_info_t rapl_evinfo;
    	PAPI_granularity_option_t gran_opt;
@@ -137,26 +137,30 @@ int init_rapl_metrics()
    			}   
 
 			// rapl:::DRAM_ENERGY:PACKAGE0
-			if (PAPI_add_named_event(ear_RAPLEventSets[sets],"rapl:::DRAM_ENERGY:PACKAGE0")!=PAPI_OK){
-				ear_verbose(0,"ear_daemon_rapl:: PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE0\n");
+			if ((ret=PAPI_add_named_event(ear_RAPLEventSets[sets],"rapl:::DRAM_ENERGY:PACKAGE0"))!=PAPI_OK){
+				ear_verbose(0,"ear_daemon_rapl:: PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE0 (%s)\n",
+				PAPI_strerror(ret));
 				return -1;
 			}
 			ear_debug(3,"ear_daemon_rapl:: PAPI_add_named_event  rapl:::DRAM_ENERGY:PACKAGE0 success\n");
 			// rapl:::DRAM_ENERGY:PACKAGE1
-			if (PAPI_add_named_event(ear_RAPLEventSets[sets],"rapl:::DRAM_ENERGY:PACKAGE1")!=PAPI_OK){
-				ear_verbose(0,"ear_daemon_rapl:: PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1\n");
+			if ((ret=PAPI_add_named_event(ear_RAPLEventSets[sets],"rapl:::DRAM_ENERGY:PACKAGE1"))!=PAPI_OK){
+				ear_verbose(0,"ear_daemon_rapl:: PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1 (%s)\n",
+				PAPI_strerror(ret));
 				return -1;
 			}
 			ear_debug(3,"ear_daemon_rapl:: PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1  success\n");
 			// rapl:::PACKAGE_ENERGY:PACKAGE0
-			if (PAPI_add_named_event(ear_RAPLEventSets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE0")!=PAPI_OK){
-				ear_verbose(0,"ear_daemon_rapl:: PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0\n");
+			if ((ret=PAPI_add_named_event(ear_RAPLEventSets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE0"))!=PAPI_OK){
+				ear_verbose(0,"ear_daemon_rapl:: PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0 (%s)\n",
+					PAPI_strerror(ret));
 				return -1;
 			}
 			ear_debug(3,"ear_daemon_rapl:: PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0 success\n");
 			// rapl:::PACKAGE_ENERGY:PACKAGE1
-			if (PAPI_add_named_event(ear_RAPLEventSets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE1")!=PAPI_OK){
-				ear_verbose(0,"ear_daemon_rapl:: PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1\n");
+			if ((ret=PAPI_add_named_event(ear_RAPLEventSets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE1"))!=PAPI_OK){
+				ear_verbose(0,"ear_daemon_rapl:: PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1(%s)\n",
+					PAPI_strerror(ret));
 				return -1;
 			}
 			ear_debug(3,"ear_daemon_rapl:: PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1 success\n");
@@ -170,10 +174,10 @@ int init_rapl_metrics()
 }
 int reset_rapl_metrics()
 {
-	int sets,events;
+	int sets,events,ret;
 	for (sets=0;sets<EAR_EAR_EVENTS_SETS;sets++){
-		if (PAPI_reset(ear_RAPLEventSets[sets])!=PAPI_OK){
-			ear_verbose(0,"ear_daemon_rapl:: ResetRAPLMetrics\n");
+		if ((ret=PAPI_reset(ear_RAPLEventSets[sets]))!=PAPI_OK){
+			ear_verbose(0,"ear_daemon_rapl:: ResetRAPLMetrics (%s)\n",PAPI_strerror(ret));
 			return -1;
 		}
 		for (events=0;events<EAR_RAPL_EVENTS;events++) ear_rapl_values[sets][events]=0;
@@ -184,9 +188,10 @@ int reset_rapl_metrics()
 int start_rapl_metrics()
 {
 	int sets;
+	int ret;
 	for (sets=0;sets<EAR_EAR_EVENTS_SETS;sets++){
-		if (PAPI_start(ear_RAPLEventSets[sets])!=PAPI_OK){
-			ear_verbose(0,"ear_daemon_rapl::StartRAPLMetrics\n");
+		if ((ret=PAPI_start(ear_RAPLEventSets[sets]))!=PAPI_OK){
+			ear_verbose(0,"ear_daemon_rapl::StartRAPLMetrics (%s) \n",PAPI_strerror(ret));
 			return -1;
 		}
 	}
@@ -197,9 +202,10 @@ int stop_rapl_metrics(unsigned long long *values)
 {
 	int sets,counts;
 	unsigned long long acum_rapl=0;
+	int ret;
 	for (sets=0;sets<EAR_EAR_EVENTS_SETS;sets++){
-		if (PAPI_stop(ear_RAPLEventSets[sets],(long long *)&ear_rapl_values[sets])!=PAPI_OK){
-			ear_verbose(0,"ear_daemon_rapl: StopRAPLMetrics\n");
+		if ((ret=PAPI_stop(ear_RAPLEventSets[sets],(long long *)&ear_rapl_values[sets]))!=PAPI_OK){
+			ear_verbose(0,"ear_daemon_rapl: StopRAPLMetrics (%s)\n",PAPI_strerror(ret));
 			return -1;
 		}else{	
 			for (counts=0;counts<EAR_RAPL_EVENTS;counts++){ 
