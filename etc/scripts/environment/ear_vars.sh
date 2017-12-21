@@ -23,3 +23,5 @@ safexport EAR_TURBO 0
 safexport EAR_TMP /tmp/earc
 safexport EAR_GUI_PATH /tmp/ear
 safexport EAR_VERBOSE 2
+safexport EAR_P_STATE 1
+safexport EAR_NUM_NODES 1
