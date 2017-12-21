@@ -1,6 +1,6 @@
 #include <cpuid.h>
 #include <assert.h>
-#include <intel_model_list.h>
+#include <hardware.h>
 
 int main ()
 {
