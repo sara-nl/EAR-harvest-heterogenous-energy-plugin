@@ -8,31 +8,6 @@
 #include <config.h>
 
 int EAR_VERBOSE_LEVEL = 4;
-static char _buffer[32];
-
-static void _format_ull (ull n)
-{
-    if (n < 0) {
-        printf ("-");
-        _format_ull(-n);
-        return;
-    }
-
-    if (n < 1000) {
-        sprintf(_buffer, "%s%llu", _buffer, n);
-        return;
-    }
-
-    _format_ull(n / 1000);
-    sprintf(_buffer, "%s,%03llu", _buffer, (n % 1000));
-}
-
-char* format_ull(ull n)
-{
-    _buffer[0] = '\0';
-    _format_ull(n);
-    return _buffer;
-}
 
 int main (int argc, char *argv[])
 {

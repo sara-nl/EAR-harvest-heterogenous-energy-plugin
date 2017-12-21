@@ -7,10 +7,13 @@
 
 */
 
-#define CPU_UNIDENTIFIED -1
+#define EAR_ERROR -1
 
+
+// Returns the vendor ID
 int get_vendor_id(char *vendor_id);
 
+// Returns the family of the processor
 int get_family();
 
 // Returns 1 if the CPU is APERF/MPERF compatible.
@@ -22,3 +25,5 @@ int get_cache_line_size();
 // Returns an EAR architecture index (top).
 int get_model();
 
+// Returns if the processor is HTT capable
+int is_cpu_hyperthreading_capable();

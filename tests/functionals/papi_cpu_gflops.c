@@ -209,33 +209,6 @@ void stop_flops_metrics()
     }
 }
 
-
-static void printf_ull(int number, ull digits)
-{
-    ear_verbose(0, "%u", number);
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        ear_verbose(0, " ");
-        digits--;
-    }
-}
-
-static void printf_uint(int number, int digits)
-{
-    ear_verbose(0, "%u", number);
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        ear_verbose(0, " ");
-        digits--;
-    }
-}
-
 void print_gflops(unsigned long total_time_us)
 {
     long long inst_n, inst_d, inst_w;
