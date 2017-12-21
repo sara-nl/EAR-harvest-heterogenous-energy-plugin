@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <hardware.h>
+#include <config.h>
 
 #define CREGS()           \
     unsigned int eax = 0; \

@@ -1,6 +1,5 @@
 DIR         = $(ROOTDIR)/tests/functionals
-CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
-SIMD_CFLAGS = -march=native -DAVX_512
+CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon -march=native
 
 ######## FILES
 
@@ -22,8 +21,9 @@ intel_pci_uncores_stress: intel_pci_uncores_stress.c $(OUTER_OBJS)
 eard_monitor: eard_monitor.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c $(OUTER_OBJS)
 
-papi_cpu_gflops: papi_cpu_gflops.c
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_cpu_gflops papi_cpu_gflops.c $(PAPI_LDFLAGS) -lpthread
+papi_cpu_gflops: papi_cpu_gflops.c $(OUTER_OBJS)
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_cpu_gflops papi_cpu_gflops.c \
+	$(OUTER_OBJS) $(PAPI_LDFLAGS) -lpthread
 
 simd_power_metrics: simd_power_metrics.c $(OUTER_OBJS) $(ENERGY_OBJS)
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o simd_power_metrics simd_power_metrics.c \

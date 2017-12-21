@@ -222,7 +222,8 @@ void print_gflops(unsigned long total_time_us)
     // For every core
     for (core = 0; core < _n_cores; core++)
     {
-        printf_uint(core, 7);
+        print_spacing_digits(7);
+        print_spacing_int(core);
         inst_w = 0;
 
         // PACKED_SINGLE and SCALAR_DOUBLE
@@ -233,7 +234,8 @@ void print_gflops(unsigned long total_time_us)
             inst_e = (float) inst_d / (float) inst_n;
             inst_w = inst_w + (inst_weights[set][0] * inst_n);
 
-            printf_ull(inst_n, 12);
+            print_spacing_digits(12);
+            print_spacing_ull(inst_n);
             if (isinf(inst_e)) inst_e = 0;
             ear_verbose(0, "%0.3f    ", inst_e);
         }

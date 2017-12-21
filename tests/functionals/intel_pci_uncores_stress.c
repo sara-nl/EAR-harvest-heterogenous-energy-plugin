@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <ear_uncores.h>
-#include <harware.h>
+#include <hardware.h>
 #include <config.h>
 
 int EAR_VERBOSE_LEVEL = 4;
@@ -36,13 +36,13 @@ int main (int argc, char *argv[])
     printf("Reads\t  Writes\n");
     for (i = 0; i < num_counters; i += 2)
     {
-        printf("%s\t  %s\n", format_ull(values[i]), format_ull(values[i+1]));
+        printf("%s\t  %s\n", add_comma_ull(values[i]), add_comma_ull(values[i+1]));
         total_cas += values[i] + values[i+1];
     }
     total_bytes = total_cas * 64;
     printf("-------------------------- Summary\n");
-    printf("Total cas operations: %s ops\n", format_ull(total_cas));
-    printf("Total bytes transferred: %s bytes\n", format_ull(total_bytes));
+    printf("Total cas operations: %s ops\n", add_comma_ull(total_cas));
+    printf("Total bytes transferred: %s bytes\n", add_comma_ull(total_bytes));
 
     dispose_uncores();
     return 0;
