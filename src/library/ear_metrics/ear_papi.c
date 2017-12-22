@@ -34,7 +34,6 @@ extern int ear_resources;
 extern int ear_my_rank;
 extern int power_model_policy;
 extern char ear_policy_name[MAX_APP_NAME];
-extern double ear_policy_th;
 extern char ear_app_name[MAX_APP_NAME];
 
 
@@ -355,20 +354,7 @@ int metrics_init(int my_id,int pid)
 	// We create N event sets: preset
 	for (sets=0;sets<MAX_SETS;sets++){
 		EventSet[sets]=PAPI_NULL;
-	    ear_papi_error(PAPI_create_eventset(&EventSet[sets]),"Creating event set");
-#ifdef MULTIPLEX_PAPI
-		if (papi_multiplex){
-			if ((ret=PAPI_set_multiplex(EventSet[sets]))!=PAPI_OK){ 
-				if (ret!=PAPI_OK){ 
-					ret=PAPI_get_multiplex(EventSet[sets]);
-					if (ret>0){        ear_verbose(1,"EAR: Event set %d is ready for multiplexing\n",sets);
-					}else if (ret==0){ ear_verbose(1,"EAR: Event set %d is not enabled for multiplexing\n",sets);
-					}else if (ret<0) { ear_verbose(0,"EAR: Event set %d cannot be multiplexed: %s\n",sets,PAPI_strerror(ret));
-					}
-				}
-			}
-		}
-#endif
+	    	ear_papi_error(PAPI_create_eventset(&EventSet[sets]),"Creating event set");
 		papi_initialice_events(sets,pid);
 	}
 	// We ask for uncore and rapl metrics sizes
@@ -437,12 +423,12 @@ struct App_info* set_metrics(int period,int iteration,long long *counters,long l
 		POWER=(double)*eru/(double)(Seconds*1000000);
 		ear_debug(4,"EAR(%s):: Set_metrics: seconds %.5lf GBS %.5lf POWER %12.6f TPI %12.6f CPI %5lf\n",
 		__FILE__,Seconds/(double)N_iters,GBS,POWER,TPI,CPI);
-        app_info=db_current_app();
-        db_set_GBS(app_info,GBS);
-        db_set_POWER(app_info,POWER);
-        db_set_TPI(app_info,TPI);
-        db_set_seconds(app_info,Seconds/(double)N_iters);
-        db_set_CPI(app_info,CPI);
+        	app_info=db_current_app();
+        	db_set_GBS(app_info,GBS);
+        	db_set_POWER(app_info,POWER);
+        	db_set_TPI(app_info,TPI);
+        	db_set_seconds(app_info,Seconds/(double)N_iters);
+        	db_set_CPI(app_info,CPI);
 		db_set_frequency(app_info,ear_cpufreq_get(0));
 		return app_info;
 }
@@ -455,7 +441,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		struct App_info SIGNATURE;
 		unsigned long f,optimal;
 		double PP,TP,EP,perf_deg,power_sav,energy_sav,ener,new_EDP;
-	    char *app_name;
+	    	char *app_name;
 		
 		int i,new;
 		app_info=db_current_app();
@@ -515,7 +501,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		db_set_EDP(&SIGNATURE,EDP);
 		db_set_default(&SIGNATURE,app_info->nominal);
 		db_set_policy(&SIGNATURE,ear_policy_name);
-		db_set_th(&SIGNATURE,ear_policy_th);
+		db_set_th(&SIGNATURE,get_ear_power_policy_th());
 		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->nominal==ear_get_nominal_frequency())) {
 			optimal=optimal_freq_min_energy(0.1,&SIGNATURE,&PP,&TP);
 			perf_deg=((TP-Seconds)/Seconds)*100.0;
@@ -599,8 +585,8 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	ear_debug(3,"EAR______________metrics_end_compute_signature __________\n");
 	// POWER_DC is provided
 	// WE Get iteration TIme
-    end_time=PAPI_get_real_usec();
-    iter_time=metrics_usecs_diff(end_time,start_time);
+    	end_time=PAPI_get_real_usec();
+    	iter_time=metrics_usecs_diff(end_time,start_time);
 	if (iter_time< min_t) return NULL;
 	// WE Get counters (Stop&Read)
 	metrics_stop();
@@ -610,10 +596,9 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	acum_counters();
 	diff_counters();
 	copy_last_iter_counters();
-	// This can generate an overflow: PENDING TO DETECT
 	// acum_time_time is total, 
 	acum_iter_time=acum_iter_time+iter_time;
-    start_time=end_time;
+    	start_time=end_time;
 	acum_energy=acum_energy+*eru;
 	app=set_metrics(period,0,diff_event_values,iter_time,eru,N_iters);
 	// Once processes, we reset actual counters

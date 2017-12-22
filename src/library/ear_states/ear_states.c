@@ -37,8 +37,8 @@ extern int ear_my_rank;
 unsigned long int eru_init,eru_end,eru_diff;
 
 unsigned int USER_DEFINED_MIN_PERIOD=0;
-struct App_info *MY_SIGNATURE;
-struct App_info MY_LAST_SIGNATURE;
+static struct App_info *MY_SIGNATURE;
+static struct App_info MY_LAST_SIGNATURE;
 unsigned long POLICY_FREQ;
 unsigned int perf_count_period=100;
 unsigned int begin_iter,N_iter;
@@ -114,34 +114,34 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 		}
 		break;
 	case SIGNATURE_HAS_CHANGED:
-		ear_verbose(3,"EAR(%s): SIGNATURE_HAS_CHANGED state LoopID %u LoopSize %u iterations %d\n",ear_app_name,event,period,iterations);
-        comp_N_end=metrics_time();
-        comp_N_time=metrics_usecs_diff(comp_N_end,comp_N_begin);
-        if (comp_N_time<(long long)PERF_ACCURACY_MIN_TIME){// We include a dynamic configurarion of DPD behaviour
-        	perf_count_period=(PERF_ACCURACY_MIN_TIME/comp_N_time)+1;
-        }else{
-        	perf_count_period=1;
-        }
-		ear_verbose(3,"EAR(%s) at %u ::Recomputing N because signature has changed, N set to %d\n",ear_app_name,prev_f,perf_count_period);
-        EAR_STATE=EVALUATING_SIGNATURE;
+		ear_debug(3,"EAR(%s): SIGNATURE_HAS_CHANGED state LoopID %u LoopSize %u iterations %d\n",ear_app_name,event,period,iterations);
+        	comp_N_end=metrics_time();
+        	comp_N_time=metrics_usecs_diff(comp_N_end,comp_N_begin);
+        	if (comp_N_time<(long long)PERF_ACCURACY_MIN_TIME){// We include a dynamic configurarion of DPD behaviour
+        		perf_count_period=(PERF_ACCURACY_MIN_TIME/comp_N_time)+1;
+        	}else{
+        		perf_count_period=1;
+        	}
+		ear_verbose(3,"EAR(%s) at %u ::(SIGNATURE_HAS_CHANGED)Recomputing N because signature has changed, N set to %d\n",ear_app_name,prev_f,perf_count_period);
+        	EAR_STATE=EVALUATING_SIGNATURE;
 		ear_debug(3,"EAR(%s) SIGNATURE_HAS_CHANGED -> EVALUATING_SIGNATURE\n",ear_app_name);
 		break;
 	case RECOMPUTING_N:
-		ear_verbose(3,"EAR(%s): RECOMPUTING_N state LoopID %u LoopSize %u iterations %d\n",ear_app_name,event,period,iterations);
-        comp_N_end=metrics_time();
-        comp_N_time=metrics_usecs_diff(comp_N_end,comp_N_begin);
+		ear_debug(3,"EAR(%s): RECOMPUTING_N state LoopID %u LoopSize %u iterations %d\n",ear_app_name,event,period,iterations);
+        	comp_N_end=metrics_time();
+        	comp_N_time=metrics_usecs_diff(comp_N_end,comp_N_begin);
 		if (comp_N_time==0) ear_verbose(0,"EAR(%s):PANIC comp_N_time must be >0\n",ear_app_name);
-        if (comp_N_time<(long long)PERF_ACCURACY_MIN_TIME){// We include a dynamic configurarion of DPD behaviour
-        	perf_count_period=(PERF_ACCURACY_MIN_TIME/comp_N_time)+1;
-        }else{
-        	perf_count_period=1;
-        }
-		ear_verbose(3,"EAR(%s) at %u ::Recomputing N because F has changed, N set to %d\n",ear_app_name,prev_f,perf_count_period);
+        	if (comp_N_time<(long long)PERF_ACCURACY_MIN_TIME){// We include a dynamic configurarion of DPD behaviour
+        		perf_count_period=(PERF_ACCURACY_MIN_TIME/comp_N_time)+1;
+        	}else{
+        		perf_count_period=1;
+        	}
+		ear_verbose(3,"EAR(%s) at %u ::(RECOMPUTING_N)Recomputing N because F has changed, N set to %d\n",ear_app_name,prev_f,perf_count_period);
 		EAR_STATE=SIGNATURE_STABLE;
 		ear_debug(3,"EAR(%s) RECOMPUTING_N -> SIGNATURE_STABLE\n",ear_app_name);
 		break;
 	case EVALUATING_SIGNATURE:
-		ear_verbose(3,"EAR(%s): EVALUATING_SIGNATURE state LoopID %u LoopSize %u iterations %d\n",ear_app_name,event,period,iterations);
+		ear_debug(3,"EAR(%s): EVALUATING_SIGNATURE state LoopID %u LoopSize %u iterations %d\n",ear_app_name,event,period,iterations);
 		if ((((iterations-1)%perf_count_period)==0)&&(iterations>1)){
 			// GET power consumption for this N iterations
 			eru_end=read_dc_energy();
@@ -150,8 +150,8 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 			N_iter=iterations-begin_iter;
 			MY_SIGNATURE=metrics_end_compute_signature(period,&eru_diff,N_iter,PERF_ACCURACY_MIN_TIME);
 			if (MY_SIGNATURE==NULL){
-        		comp_N_begin=metrics_time();
-                EAR_STATE=SIGNATURE_HAS_CHANGED;
+        			comp_N_begin=metrics_time();
+                		EAR_STATE=SIGNATURE_HAS_CHANGED;
 				ear_debug(3,"EAR(%s) EVALUATING_SIGNATURE -> SIGNATURE_HAS_CHANGED\n",ear_app_name);
 			}else{
 				CPI=db_get_CPI(MY_SIGNATURE);
@@ -170,6 +170,7 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 					comp_N_begin=metrics_time();				
 					EAR_STATE=RECOMPUTING_N;
 					ear_debug(3,"EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n",ear_app_name);
+					db_copy_app(&MY_LAST_SIGNATURE,MY_SIGNATURE);
 				}else{ 
 					EAR_STATE=SIGNATURE_STABLE;
 					ear_debug(3,"EAR(%s) EVALUATING_SIGNATURE --> SIGNATURE_STABLE \n",ear_app_name);
@@ -189,10 +190,9 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 		}
 		break;
 	case SIGNATURE_STABLE: 
-		ear_verbose(3,"EAR(%s): SIGNATURE_STABLE state LoopID=%u, LoopSize=%u,iterations=%d\n",ear_app_name,event,period,iterations);
+		ear_debug(3,"EAR(%s): SIGNATURE_STABLE state LoopID=%u, LoopSize=%u,iterations=%d\n",ear_app_name,event,period,iterations);
 		// I have executed N iterations more with a new frequency, we must check the signature
 		if (((iterations-1)%perf_count_period)==0){
-			db_copy_app(&MY_LAST_SIGNATURE,MY_SIGNATURE);
 			// GET power consumption for this N iterations
 			eru_end=read_dc_energy();
 			eru_diff=energy_diff(eru_end , eru_init);
@@ -200,9 +200,9 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 			MY_SIGNATURE=metrics_end_compute_signature(period,&eru_diff,N_iter,PERF_ACCURACY_MIN_TIME);
 			// returns NULL if time is not enough for performance accuracy
 			if (MY_SIGNATURE==NULL){
-            	comp_N_begin=metrics_time();
-            	EAR_STATE=SIGNATURE_HAS_CHANGED;
-				ear_debug(3,"EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",__FILE__);	
+            			comp_N_begin=metrics_time();
+           		 	EAR_STATE=SIGNATURE_HAS_CHANGED;
+				ear_verbose(3,"EAR(%s) SIGNATURE_STABLE(NULL) --> SIGNATURE_HAS_CHANGED \n",__FILE__);	
 			}else{ 
 				CPI=db_get_CPI(MY_SIGNATURE);
 				GBS=db_get_GBS(MY_SIGNATURE);
@@ -216,28 +216,32 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 				gui_frequency(ear_my_rank,my_id,POLICY_FREQ);
 				gui_PP(ear_my_rank,my_id,PP->Time,PP->CPI,PP->Power);
 				begin_iter=iterations;
-				// We compare the projection with the signature
+				// We compare the projection with the signature and the old signature
 				PP=performance_projection(POLICY_FREQ);
 				if (policy_ok(PP,MY_SIGNATURE,&MY_LAST_SIGNATURE)){
 					perf_count_period=perf_count_period*2;
-				ear_verbose(3,"\n\nEAR(%s): Policy ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",ear_app_name,TIME,POWER,ENERGY,PP->Time,PP->Power,PP->Time*PP->Power);
-				/* If the policy is ok but the projection was different we can check again */
-				if (performance_projection_ok(PP,MY_SIGNATURE)==0){
-					EAR_STATE=EVALUATING_SIGNATURE;
-					ear_debug(3,"EAR(%s) SIGNATURE_STABLE --> EVALUATING_SIGNATURE\n",__FILE__);
-				}
-			}else{
-				/** If we are not going better **/
-				if (db_signature_has_changed(MY_SIGNATURE,&MY_LAST_SIGNATURE)){
-					EAR_STATE=SIGNATURE_HAS_CHANGED;
-					ear_debug(3,"EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",__FILE__);
-					comp_N_begin=metrics_time();
-					db_new_period();
-					models_new_period();
+					ear_verbose(3,"\n\nEAR(%s): Policy ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
+					ear_app_name,TIME,POWER,ENERGY,PP->Time,PP->Power,PP->Time*PP->Power);
+					/*
+					if (performance_projection_ok(PP,MY_SIGNATURE)==0){
+						EAR_STATE=EVALUATING_SIGNATURE;
+						ear_debug(3,"EAR(%s) SIGNATURE_STABLE --> EVALUATING_SIGNATURE\n",__FILE__);
+					}
+					*/
 				}else{
-					EAR_STATE=EVALUATING_SIGNATURE;
-				}	
-			}
+				/** If we are not going better **/
+					ear_verbose(3,"\n\nEAR(%s): Policy not ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
+					ear_app_name,TIME,POWER,ENERGY,PP->Time,PP->Power,PP->Time*PP->Power);
+					if (db_signature_has_changed(MY_SIGNATURE,&MY_LAST_SIGNATURE)){
+						EAR_STATE=SIGNATURE_HAS_CHANGED;
+						ear_verbose(3,"EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",__FILE__);
+						comp_N_begin=metrics_time();
+						db_new_period();
+						models_new_period();
+					}else{
+						EAR_STATE=EVALUATING_SIGNATURE;
+					}	
+				}
 			}
 		}
 		break;
