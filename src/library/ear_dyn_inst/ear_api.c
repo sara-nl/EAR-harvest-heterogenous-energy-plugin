@@ -34,11 +34,10 @@
 
 
 #define BUFFSIZE 128
-#define EAR_DYNAIS_WINDOW_SIZE	200
-#define EAR_DYNAIS_LEVELS	7
 unsigned int ear_loop_size;
 unsigned long int app_eru_init,app_eru_end,app_eru_diff;
 
+int report=0;
 // long long pmpi_app_begin_time,pmpi_app_end_time,pmpi_app_total_time;
 struct timeval pmpi_app_begin_time, pmpi_app_end_time;
 long long pmpi_app_total_time;
@@ -120,7 +119,8 @@ void ear_init(){
 	}
 	ear_debug(2,"EAR Starting initialization\n");	
 	ear_whole_app=get_ear_learning_phase();
-   	dynais_init(EAR_DYNAIS_WINDOW_SIZE,EAR_DYNAIS_LEVELS);
+	ear_verbose(3,"EAR using %d levels in dynais with %d of window size \n",get_ear_dynais_levels(),get_ear_dynais_window_size());
+   	dynais_init(get_ear_dynais_window_size(),get_ear_dynais_levels());
 
 	gethostname(node_name,sizeof(node_name));
 	strcpy(ear_node_name,node_name);
@@ -255,8 +255,10 @@ if (!ear_whole_app){
 		break;
 	case NEW_ITERATION:
 		ear_iterations++;
-		ear_debug(4,"NEW_ITERATION level %u event %u size %u iterations %u\n",ear_level,
+		if (report==1){
+		ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",ear_level,
 		ear_event,ear_loop_size,ear_iterations);
+		}
 		gui_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());	
 		states_new_iteration(my_id,ear_fd,ear_loop_size,ear_iterations,ear_event,ear_level);
 		break;

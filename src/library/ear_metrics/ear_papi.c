@@ -582,7 +582,7 @@ void metrics_set_signature_start_time()
 struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru,unsigned int N_iters,long long min_t)
 {
 	struct App_info *app;
-	ear_debug(3,"EAR______________metrics_end_compute_signature __________\n");
+	ear_verbose(3,"EAR______________metrics_end_compute_signature __________\n");
 	// POWER_DC is provided
 	// WE Get iteration TIme
     	end_time=PAPI_get_real_usec();
@@ -598,12 +598,14 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	copy_last_iter_counters();
 	// acum_time_time is total, 
 	acum_iter_time=acum_iter_time+iter_time;
+	// If application signature is correct, start time is set to current time
     	start_time=end_time;
 	acum_energy=acum_energy+*eru;
 	app=set_metrics(period,0,diff_event_values,iter_time,eru,N_iters);
 	// Once processes, we reset actual counters
 	reset_values();
 	metrics_start();
+	ear_verbose(3,"Signature: eneregy %ld Niters %u totalTime %llu \n",*eru,N_iters,iter_time);
 	ear_verbose(3,"EAR______________Application signature ready __________\n");
 	return app;
 }

@@ -33,6 +33,8 @@ int conf_ear_use_turbo=USE_TURBO;
 int conf_ear_local_id=-1;
 int conf_ear_num_nodes=0;
 int conf_ear_total_processes=1;
+int conf_ear_dynais_levels=DEFAULT_DYNAIS_LEVELS;
+int conf_ear_dynais_window_size=DEFAULT_DYNAIS_WINDOW_SIZE;
 
 void set_ear_total_processes(int procs)
 {
@@ -262,6 +264,37 @@ int getenv_ear_num_nodes()
 
 
 
+int getenv_ear_dynais_levels()
+{
+	char *dynais_levels=getenv("EAR_DYNAIS_LEVELS");
+	int dyn_level;
+	if (dynais_levels!=NULL){
+		dyn_level=atoi(dynais_levels);
+		if (dyn_level>0) conf_ear_dynais_levels=dyn_level;
+	}
+	return conf_ear_dynais_levels;
+}
+int getenv_ear_dynais_window_size()
+{
+        char *dynais_size=getenv("EAR_DYNAIS_WINDOW_SIZE");
+        int dyn_size;
+        if (dynais_size!=NULL){
+                dyn_size=atoi(dynais_size);
+                if (dyn_size>0) conf_ear_dynais_window_size=dyn_size;
+        }
+        return conf_ear_dynais_window_size;
+
+}
+int get_ear_dynais_levels()
+{
+	return conf_ear_dynais_levels;
+}
+int get_ear_dynais_window_size()
+{
+	return conf_ear_dynais_window_size;
+}
+
+
 // get_ functions must be used after getenv_
 char * get_ear_tmp()
 {
@@ -354,6 +387,8 @@ void ear_lib_environment()
 	getenv_ear_performance_accuracy();
 	getenv_ear_local_id();
 	getenv_ear_num_nodes();
+	getenv_ear_dynais_levels();
+	getenv_ear_dynais_window_size();
 }
 // This function writes ear variables in $EAR_TMP/environment.txt file
 void ear_print_lib_environment()
@@ -394,7 +429,13 @@ void ear_print_lib_environment()
 	write(fd,var,strlen(var));
 	sprintf(var,"EAR_P_STATE=%d\n",get_ear_p_state());
 	write(fd,var,strlen(var));
+	sprintf(var,"EAR_NUM_NODES=%d\n",get_ear_num_nodes());
+	write(fd,var,strlen(var));
 	sprintf(var,"EAR_PERFORMANCE_ACURACY=%lf\n",get_ear_performance_accuracy());
+	write(fd,var,strlen(var));
+	sprintf(var,"EAR_DYNAIS_LEVELS=%d\n",get_ear_dynais_levels());
+	write(fd,var,strlen(var));
+	sprintf(var,"EAR_DYNAIS_WINDOW_SIZE=%d\n",get_dynais_window_size());
 	write(fd,var,strlen(var));
 
 	close(fd);	
