@@ -48,11 +48,11 @@ Configure is based on shell variables which initial value could be given by sett
 | -------- | ------------------------------------------------------------------------------------------------------------ |
 | DEBUG    | Enables debug messages [0..4]. Debug messages with lower or equal level are printed.                         |
 | CC       | C compiler command.                                                                                          |
+| MPICC    | MPI compiler command.                                                                                        |
 | CFLAGS   | C compiler flags.                                                                                            |
-| LDFLAGS  | Linker flags. E.g. ‘-L\<lib dir\>’ if you have libraries in a nonstandard directory \<lib dir\>.                 |
+| LDFLAGS  | Linker flags. E.g. ‘-L\<lib dir\>’ if you have libraries in a nonstandard directory \<lib dir\>.             |
 | LIBS     | Libraries to pass to the linker. E.g. ‘-l<library>’.                                                         |
 | CPPFLAGS | C/C++ preprocessor flags, e.g. -I\<include dir\> if you have headers in a nonstandard directory \<include dir\>. |
-| MPICC    | MPI compiler command.                         |
 - This is an example of `CC`, `CFLAGS` and `DEBUG` variables overwriting:</ br>
 `./configure CC=c99 CFLAGS=-g DEBUG=4`
 
@@ -91,7 +91,7 @@ First of all, make sure your linker is aware of the required libraries and the e
 
 After the that, you need to pass the learning phase in all your computing nodes, so you will have to visit [EAR learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
 
-Finally, you can launch any MPI application next to Energy Aware Runtime library. You will find a complete user guide in [EAR library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md)
+Finally, you can launch any MPI application next to Energy Aware Runtime library. You will find a complete user guide in [EAR library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
 
 Changelog
 ---------
