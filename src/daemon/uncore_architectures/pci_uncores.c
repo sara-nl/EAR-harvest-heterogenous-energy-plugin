@@ -75,9 +75,9 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <uncore_architectures/pci_uncores.h>
-#include <intel_model_list.h>
 #include <ear_verbose.h>
+#include <hardware.h>
+#include <uncore_architectures/pci_uncores.h>
 #include <config.h>
 
 #define IJKFOR(i_len, j_len, k_len) \

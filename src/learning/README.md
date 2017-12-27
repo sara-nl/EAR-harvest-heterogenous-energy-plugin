@@ -19,11 +19,11 @@ Benchmarks are the stressing programs which learning phase will execute to get n
 
 Saved files
 -----------
-Visit [EAR lib page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/ear_lib/README.md) for more information.
+Visit [EAR lib page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md) for more information.
 
 Execution of the learning phase basics
 --------------------------------------
-Three scripts are provided for speed up with minimum editin requirements. These files are placed in the `etc` folder in your EAR installation folder pointed by *EAR_INSTALL_PATH*, variable which is loaded the environment module. They are `learning_phase_compile.sh`, `learning_phase_execute.sh` and `learning_phase_helper.sh`.
+Three scripts are provided for speed up with minimum edition requirements. These files are placed in the `etc` folder in your EAR installation folder pointed by *EAR_INSTALL_PATH*, variable which is loaded the environment module. They are `learning_phase_compile.sh`, `learning_phase_execute.sh` and `learning_phase_helper.sh`.
 
 `learning_phase_helper.sh` used by the others, and doesn't have to be launched. `learning_phase_compile.sh` is used for compile the kernels and could be launched without any job scheduler if you have access to a compile node. Also this script could be used to test the execution times of the benchmarks prior to execute the learning phase. `learning_phase_execute.sh` as the name says, it is used to perform a complete learning phase.
 

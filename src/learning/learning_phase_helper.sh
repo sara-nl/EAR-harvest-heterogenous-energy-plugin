@@ -30,6 +30,10 @@ function launching_disabled
 
 function launching
 {
+    # MPI options
+    export I_MPI_PIN=1
+    export I_MPI_PIN_DOMAIN=auto
+
     # Non-edit region
     export EAR_APP_NAME=$1
     $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 MONITORING_ONLY
@@ -101,6 +105,7 @@ function learning_phase
                 mv $BENCH_SRC_PATH/release/dgemm_example $BENCHS_BIN_PATH
             fi
             if [ "$BENCHS_MODE" == "test" ]; then
+                export KMP_AFFINITY=granularity=fine,compact,1,0
                 export MKL_NUM_THREADS=$CORES
                 launching dgemm_example $MPIS
             fi
