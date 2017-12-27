@@ -24,4 +24,4 @@ Script dependancies
 -------------------
 The following picture shows the dependancies between these scripts. This way of organizing favors the simplicity of editing, allowing that the smallest change to take effect on all scripts.
 
-<img src="etc/images/scripts.png" align="left">
+<img src="https://github.com/BarcelonaSupercomputingCenter/EAR/blob/new_kernel_params/etc/images/scripts.png" align="left">
