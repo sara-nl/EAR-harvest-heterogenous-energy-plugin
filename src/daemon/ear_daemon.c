@@ -103,7 +103,7 @@ void ear_daemon_lock(char *tmp_dir,char *nodename)
 		ear_verbose(0,"ear_daemon: ear tmp dir cannot be created (%s)",strerror(errno));
 		exit(0);
 	}
-	chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+	chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
 	sprintf(ear_daemon_lock_file,"%s/%s.ear_daemon_lock",tmp_dir,nodename);
 	if ((ear_daemon_lockf=open(ear_daemon_lock_file,O_WRONLY|O_CREAT|O_EXCL,S_IRUSR|S_IWUSR))<0){ 
 		if (errno!=EEXIST){

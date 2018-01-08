@@ -66,10 +66,12 @@ int ear_lock_fd;
 unsigned long ear_avg_turbo_freq;
 int ear_app_id;
 struct App_info *ear_my_app_info;
+//#define MEASURE_DYNAIS_OV
 #ifdef MEASURE_DYNAIS_OV
 long long begin_ov,end_ov,ear_acum=0;
 unsigned int calls=0;
 #endif
+#define DYNAIS_TRACE
 #ifdef DYNAIS_TRACE
 FILE *stdtrace,*stdtracebin;
 #endif
