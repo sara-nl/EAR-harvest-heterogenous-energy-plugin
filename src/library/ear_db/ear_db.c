@@ -67,7 +67,9 @@ void db_init(unsigned int whole_app,char *app_name)
 		strcpy(CURRENT_APP[i].app_id,app_name);
 		strcpy(CURRENT_APP[i].user_id,logname);
 		if (job_id!=NULL) strcpy(CURRENT_APP[i].job_id,job_id);
-		else strcpy(CURRENT_APP[i].job_id,"NA");
+		else{ 
+			sprintf(CURRENT_APP[i].job_id,"%d",getppid());
+		}
 		strcpy(CURRENT_APP[i].node_id,ear_node_name);
 	}	
 }
