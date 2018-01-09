@@ -15,7 +15,9 @@ core.*
 *free_ipmi_version
 
 # Functionals
+functionals/inputs
 *eard_monitor
+*dynais_input
 *hardware_scanner
 *freeipmi_overhead
 *intel_pci_uncores_stress

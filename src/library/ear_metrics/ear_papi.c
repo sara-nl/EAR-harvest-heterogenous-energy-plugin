@@ -502,7 +502,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		db_set_default(&SIGNATURE,app_info->nominal);
 		db_set_policy(&SIGNATURE,ear_policy_name);
 		db_set_th(&SIGNATURE,get_ear_power_policy_th());
-		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->nominal==ear_get_nominal_frequency())) {
+		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->nominal==ear_get_freq(1))) {
 			optimal=optimal_freq_min_energy(0.1,&SIGNATURE,&PP,&TP);
 			perf_deg=((TP-Seconds)/Seconds)*100.0;
 			power_sav=((POWER_DC-PP)/POWER_DC)*100.0;
