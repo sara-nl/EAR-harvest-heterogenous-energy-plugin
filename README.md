@@ -47,8 +47,8 @@ Configure is based on shell variables which initial value could be given by sett
 | Variable | Description                                                                                                  |
 | -------- | ------------------------------------------------------------------------------------------------------------ |
 | DEBUG    | Enables debug messages [0..4]. Debug messages with lower or equal level are printed.                         |
-| CC       | C compiler command.                                                                                          |
 | MPICC    | MPI compiler command.                                                                                        |
+| CC       | C compiler command.                                                                                          |
 | CFLAGS   | C compiler flags.                                                                                            |
 | LDFLAGS  | Linker flags. E.g. ‘-L\<lib dir\>’ if you have libraries in a nonstandard directory \<lib dir\>.             |
 | LIBS     | Libraries to pass to the linker. E.g. ‘-l<library>’.                                                         |
@@ -89,7 +89,7 @@ After the installation
 ----------------------
 First of all, make sure your linker is aware of the required libraries and the environment variable *EAR_INSTALL_PATH* is set. This variable defines the folder of EAR binaries, libraries and tools. For the ease of use, an **environment module** is also configured next to the EAR compilation. So locate in `autootools` folder the module file with name `ear-{version}`, and copy it to your module collection folder (e.g. `cp autotools/ear-1.0 /hpc/base/ctt/modulefiles/libraries`).
 
-After the that, you need to pass the learning phase in all your computing nodes, so you will have to visit [EAR learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
+After that, you need to pass the learning phase in all your computing nodes, so you will have to visit [EAR learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
 
 Finally, you can launch any MPI application next to Energy Aware Runtime library. You will find a complete user guide in [EAR library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
 
