@@ -100,6 +100,7 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 			ear_verbose(3,"EAR(%s): FIRST_ITERATION state LoopID %u LoopSize %u\n",ear_app_name,event,period);
 			comp_N_end=metrics_time();
 			comp_N_time=metrics_usecs_diff(comp_N_end,comp_N_begin);
+			if (comp_N_time==0) comp_N_time=1;
         		if (comp_N_time<(long long)PERF_ACCURACY_MIN_TIME){// We include a dynamic configurarion of EAR
                 		perf_count_period=(PERF_ACCURACY_MIN_TIME/comp_N_time)+1;
 			}else{
