@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+extern int report;
 
 // EAR Files
 #include <ear_verbose.h>
@@ -73,7 +74,7 @@ int states_my_state()
 void states_begin_period(int my_id,FILE *ear_fd,unsigned long event,unsigned int size)
 {
 	if (my_id==0){
-		ear_verbose(3,"EAR(%s): ________BEGIN_PERIOD: Computing N for period %d size %u_____BEGIN_____\n",ear_app_name,event,size);
+		ear_verbose(4,"EAR(%s): ________BEGIN_PERIOD: Computing N for period %d size %u_____BEGIN_____\n",ear_app_name,event,size);
 		EAR_STATE=FIRST_ITERATION;
 		db_new_period();
 		models_new_period();
@@ -85,7 +86,7 @@ void states_begin_period(int my_id,FILE *ear_fd,unsigned long event,unsigned int
 
 void  states_end_period(int my_id,FILE *ear_fd,unsigned int size,int iterations,unsigned long event)
 {
-    ear_verbose(3,"EAR(%s)::____________END_PERIOD: END loop detected (Loop ID: %u,size %u)______%d iters______ \n",ear_app_name,event,size,iterations);
+    ear_verbose(4,"EAR(%s)::____________END_PERIOD: END loop detected (Loop ID: %u,size %u)______%d iters______ \n",ear_app_name,event,size,iterations);
 }
 void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterations,unsigned long event,unsigned int level)
 {
@@ -99,7 +100,7 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 			ear_verbose(3,"EAR(%s): FIRST_ITERATION state LoopID %u LoopSize %u\n",ear_app_name,event,period);
 			comp_N_end=metrics_time();
 			comp_N_time=metrics_usecs_diff(comp_N_end,comp_N_begin);
-        	if (comp_N_time<(long long)PERF_ACCURACY_MIN_TIME){// We include a dynamic configurarion of EAR
+        		if (comp_N_time<(long long)PERF_ACCURACY_MIN_TIME){// We include a dynamic configurarion of EAR
                 		perf_count_period=(PERF_ACCURACY_MIN_TIME/comp_N_time)+1;
 			}else{
 				perf_count_period=1;
@@ -143,6 +144,7 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 	case EVALUATING_SIGNATURE:
 		ear_debug(3,"EAR(%s): EVALUATING_SIGNATURE state LoopID %u LoopSize %u iterations %d\n",ear_app_name,event,period,iterations);
 		if ((((iterations-1)%perf_count_period)==0)&&(iterations>1)){
+			report=1;
 			// GET power consumption for this N iterations
 			eru_end=read_dc_energy();
 			eru_diff=energy_diff(eru_end , eru_init);
@@ -166,7 +168,7 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 				POLICY_FREQ=policy_power(0,MY_SIGNATURE);
 				PP=performance_projection(POLICY_FREQ);
 				if (POLICY_FREQ!=prev_f){ 
-					metrics_set_signature_start_time();
+					//metrics_set_signature_start_time();
 					comp_N_begin=metrics_time();				
 					EAR_STATE=RECOMPUTING_N;
 					ear_debug(3,"EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n",ear_app_name);
@@ -183,8 +185,8 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 					ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\t Appplication Signature (CPI=%.3lf GBS=%.3lf Power=%.3lf Time=%.3lf Energy=%.3lfJ EDP=%.3lf)--> New frequency selected %u\n",
 					ear_app_name,prev_f,event,period,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP,POLICY_FREQ);
 				} else{
-			 		ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\t Application Signature (CPI=%.3lf GBS=%.3lf Power=%.3lf Time=%.3lf Energy=%.3lfJ EDP=%.3lf)\n",
-					ear_app_name,prev_f,event,period,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP);
+			 		ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.3lf GBS=%.3lf Power=%.3lf Time=%.3lf Energy=%.3lfJ EDP=%.3lf)\n",
+					ear_app_name,prev_f,event,period,level,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP);
 				}
 			}
 		}
@@ -234,7 +236,7 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 					ear_app_name,TIME,POWER,ENERGY,PP->Time,PP->Power,PP->Time*PP->Power);
 					if (db_signature_has_changed(MY_SIGNATURE,&MY_LAST_SIGNATURE)){
 						EAR_STATE=SIGNATURE_HAS_CHANGED;
-						ear_verbose(3,"EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",__FILE__);
+						ear_verbose(3,"EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",ear_app_name);
 						comp_N_begin=metrics_time();
 						db_new_period();
 						models_new_period();
