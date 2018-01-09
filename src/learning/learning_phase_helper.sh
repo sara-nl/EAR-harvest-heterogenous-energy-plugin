@@ -15,7 +15,7 @@ function configuring
 	export MPIS=$4
 }
 
-function launching_disabled
+function launching
 {
     # Update srun command for custom SLURM installations
     export SRUN_PATH=/home/xjaneas/slurm/bin/srun
@@ -28,7 +28,7 @@ function launching_disabled
         $BENCHS_BIN_PATH/$1
 }
 
-function launching
+function launching_disabled
 {
     # MPI options
     export I_MPI_PIN=1
