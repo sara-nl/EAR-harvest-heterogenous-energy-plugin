@@ -6,21 +6,13 @@ Energy Aware Runtime (EAR) library is designed to provide an energy efficient so
 
 Overview
 --------
-EAR library interceps the Profiling MPI Interface (PMPI) symbols using the dynamic loader environment variable LD_PRELOAD. The intercepted call is then saved in an internal, fast and small historic, which allows to our powerfull DynAIS algorithm to detect the tipical repetitive sequences of code found in the regular HPC applications (see [library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md) for more information about DynAIS). Once found a new repetitive sequence,  metrics like CPI, bandwith or power are calculated and stored.
+EAR library interceps the Profiling MPI Interface (PMPI) symbols using the dynamic loader environment variable LD_PRELOAD. The intercepted call is then saved in an internal, fast and small historic, which allows to our powerfull DynAIS algorithm to detect the tipical repetitive sequences of code found in the regular HPC applications. Once found a new repetitive sequence,  metrics like CPI, bandwith or power are calculated and stored.
 
-This data allows the library to predict the best frequency for the upcoming iterations and set the proper CPU clock. I.e, if a detected bucle iteration is memory intensive, setting lower clocks holds the performance but saves a lot of power consumption. Because of that, the CPU frequency is constantly switching, maximizing the efficiency of the cluster.
+This data allows the library to predict the best frequency for the upcoming iterations and set the proper CPU clock. I.e, if a detected bucle iteration is memory intensive, setting lower clocks holds the performance but saves a lot of power consumption. Because of that, the CPU frequency is constantly switching, maximizing the efficiency of the cluster. For all that privileged functions, the lightweight daemon is provided and must be running in the nodes.
 
 In order to be able to provide good predictions, the library must be trained to obtain good EAR model coefficients. This training is done through a simple and fast provided tool that stress the machine and computes this coefficients. Also, to interact with protected SO calls and files the EAR privileged daemon must be running.
 
-Components summary
-------------------
-EAR package is then divided in a set of components.
-
-1) EAR library, which holds the main functionality and is loaded next to your job application. Visit [EAR lib page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md) for more information.
-2) EAR daemon, which manages the privileged reads, writes and calls required by the library. Visit [EAR daemon page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/daemon/README.md) for more information.
-3) EAR learning phase tools, which computes node coefficients. Visit [EAR learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) for more information.
-4) EAR slurm plugin, making life easy in case you are using SLURM for your cluster job management. Visit [EAR slurm plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md) for more information.
-5) EAR scripts, to facilitate the use of the library and the demon when not using SLURM, or for a complete learning phase execution. Visit [EAR scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md) for more information.
+It is important to remark that this library is designed to work together with SLURM, a cluster job manager. Even so, a couple of scripts are provided in case you want to use directly MPI commands.
 
 Requirements
 ------------
@@ -89,9 +81,18 @@ After the installation
 ----------------------
 First of all, make sure your linker is aware of the required libraries and the environment variable *EAR_INSTALL_PATH* is set. This variable defines the folder of EAR binaries, libraries and tools. For the ease of use, an **environment module** is also configured next to the EAR compilation. So locate in `autootools` folder the module file with name `ear-{version}`, and copy it to your module collection folder (e.g. `cp autotools/ear-1.0 /hpc/base/ctt/modulefiles/libraries`).
 
-After that, you need to pass the learning phase in all your computing nodes, so you will have to visit [EAR learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
+Configuration
+-------------
+0) Depending on your environment:
+    * In case you are going to use EAR together with SLURM, visit the [SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
+    * In case you are going to use the provided scripts to use EAR next to MPI, visit the [scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md) for more information.
+1) Take a look into the
+[environment variables configuration page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/README.md) and customize the EAR library and daemon behaviour to fit the needs of the cluster.
+2) Pass the learning phase in all your computing nodes by visiting the [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
 
-Finally, you can launch any MPI application next to Energy Aware Runtime library. You will find a complete user guide in [EAR library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
+User guide
+----------
+Finally, you can launch any MPI application next to Energy Aware Runtime library following the [library user guide](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
 
 Changelog
 ---------
