@@ -48,9 +48,9 @@ export EAR_SRC_PATH=$HOME/git/EAR
 
 Testing benchmarks
 ------------------
-Once compiled, execute a test in a computing node. If you're using SLURM, launch a command like `srun -N1 -n1 --exclusive learning_phase_compile.sh test`, allocating a single but complete computing node (because the script will open new threads as it needs).
+Once compiled, execute a test in a computing node. **If you're using SLURM**, launch a command like `srun -N1 -n1 --exclusive learning_phase_compile.sh test`, allocating a single but complete computing node (because the script will open new threads as it needs).
 
-If you are doing it manually, follow the following steps:
+**If you are doing it manually**, follow the following steps:
 1) Open the script `learning_phase_helper` and look for these lines:
 ```
 function launching
