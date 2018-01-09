@@ -69,7 +69,7 @@ void print_spacing_string(char* string)
     int digits = _digits - strlen(string);
     printf("%s", string);
 
-    while(digits > 1) {
+    while(digits > 0) {
         printf(" ");
         digits--;
     }

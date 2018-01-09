@@ -1,19 +1,21 @@
 DIR         = $(ROOTDIR)/tests/functionals
-CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon -march=native
+CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon -I$(ROOTDIR)/src/library -march=native
 
 ######## FILES
 
-OUTER_OBJS = $(ROOTDIR)/src/common/hardware.o        \
-             $(ROOTDIR)/src/common/environment.o     \
-             $(ROOTDIR)/src/common/string_enhanced.o \
-             $(ROOTDIR)/src/common/ear_daemon_client.o
+OUTER_OBJS = $(ROOTDIR)/src/common/hardware.o          \
+             $(ROOTDIR)/src/common/environment.o       \
+             $(ROOTDIR)/src/common/string_enhanced.o   \
+             $(ROOTDIR)/src/common/ear_daemon_client.o \
+             $(ROOTDIR)/src/library/ear_dynais/ear_dynais.o
 
 BINARIES = intel_pci_uncores_stress \
            eard_monitor             \
            papi_cpu_gflops          \
            simd_power_metrics       \
            freeipmi_overhead        \
-           hardware_scanner
+           hardware_scanner         \
+           dynais_input
 
 ######## RULES
 
@@ -41,6 +43,9 @@ freeipmi_overhead: freeipmi_overhead.c $(OUTER_OBJS)
 
 hardware_scanner: hardware_scanner.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o hardware_scanner hardware_scanner.c $(OUTER_OBJS)
+
+dynais_input: dynais_input.c $(OUTER_OBJS)
+	$(CC) $(CFLAGS) -o dynais_input dynais_input.c $(OUTER_OBJS)
 
 ######## OPTIONS
 
