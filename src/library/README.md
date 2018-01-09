@@ -1,15 +1,15 @@
-Energy Aware Runtime library
-----------------------------
-The library is the core of the EAR package. It has the most of the functionality, via the interception of MPI function calls, and also controls other components of the EAR package like the daemon. 
+Library User Guide
+------------------
+The library is the core of the EAR package. It has the most of the functionality, via the interception of MPI function calls, and also controls other components of the EAR package like the daemon.
 
 Configuration
 -------------
-The library behaviour depends on variables defined in environment. You could find a complete list of these environment variables and its default values in [SLURM plugin configuration section](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/ear_slurm_plugin/README.md).
+The library behaviour depends on variables defined in environment. You could find a complete list of these environment variables and its default values in [SLURM plugin configuration section](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md).
 
 Manual Execution
 ----------------
-0) Remember to pass first the learning phase to get and store all node coefficients if you want to launch a normal job (see [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/ear_learning_phase/README.md) for more information).
-1) Make sure the EAR daemon is running (see [daemon manual execution section](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/ear_daemon/README.md)).
+0) Remember to pass first the learning phase to get and store all node coefficients if you want to launch a normal job (see [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) for more information).
+1) Make sure the EAR daemon is running (see [daemon manual execution section](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/daemon/README.md)).
 2) Append the path of the library (**libEAR.so**) to LD_PRELOAD environment variable.
 3) Launch your application.
 
