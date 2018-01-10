@@ -26,7 +26,7 @@ The `learning` folder, which contains a set of scripts to compile, test and run 
 - **learning_phase_helper.sh**: wraps all the learning phase functions, avoiding the repetition of functions and code.
 
 The `environment` folder, which contains two script which defines the environment of the daemon and the library:
-- **ear_vars.sh**: defines the EAR environment. You could over write the variables in order to change the library or daemon behaviour.
+- **ear_vars.sh**: defines the EAR environment and therefore the behaviour of the library and daemon by default. Please, head [environment variables configuration page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/README.md) to learn more about this variables and customize this file values to fit the needs of your cluster.
 - **lib_vars.sh**: defines third party libraries path. These paths were written when `configure` was launched.
 
 The `examples` folder just contains some examples of the use of these scripts.
