@@ -6,13 +6,13 @@ Energy Aware Runtime (EAR) library is designed to provide an energy efficient so
 
 Overview
 --------
-EAR library interceps the Profiling MPI Interface (PMPI) symbols using the dynamic loader environment variable LD_PRELOAD. The intercepted call is then saved in an internal, fast and small historic, which allows to our powerfull DynAIS algorithm to detect the tipical repetitive sequences of code found in the regular HPC applications. Once found a new repetitive sequence,  metrics like CPI, bandwith or power are calculated and stored.
+EAR library interceps the Profiling MPI Interface (PMPI) symbols using the dynamic loader environment variable LD_PRELOAD. The intercepted call is then saved in an internal, fast and small historic buffer. This allows the powerfull DynAIS algorithm to detect the tipical repetitive sequences of code found in the regular HPC applications. Once found a new repetitive sequence, metrics like CPI, bandwith and power are calculated and stored.
 
-This data allows the library to predict the best frequency for the upcoming iterations and set the proper CPU clock. I.e, if a detected bucle iteration is memory intensive, setting lower clocks holds the performance but saves a lot of power consumption. Because of that, the CPU frequency is constantly switching, maximizing the efficiency of the cluster. For all that privileged functions, the lightweight daemon is provided and must be running in the nodes.
+This data allows the library to predict the best frequency for the upcoming iterations and in this way, set the proper CPU clock. I.e, if a detected bucle iteration is memory intensive, setting lower clocks holds the performance but saves a lot of power consumption. Because of that, the CPU frequency is constantly switching, maximizing the efficiency of the cluster. For all that privileged functions, the lightweight daemon is provided and must be running in the nodes.
 
-In order to be able to provide good predictions, the library must be trained to obtain good EAR model coefficients. This training is done through a simple and fast provided tool that stress the machine and computes this coefficients. Also, to interact with protected SO calls and files the EAR privileged daemon must be running.
+In order to be able to provide good predictions, the library must be trained to obtain good EAR model coefficients. This training is done through a simple and fast provided tool that stress the nodes and computes their coefficients.
 
-It is important to remark that this library is designed to work together with SLURM, a cluster job manager. Even so, a couple of scripts are provided in case you want to use directly MPI commands.
+It is important to remark that this library is designed to work together with SLURM, a popular cluster job manager. Even so, a couple of scripts are provided in case you want to use directly MPI commands.
 
 Requirements
 ------------
@@ -92,7 +92,7 @@ Configuration
 
 User guide
 ----------
-Finally, you can launch any MPI application next to Energy Aware Runtime library following the [library user guide](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
+Finally, you can launch any MPI application next to EAR library following the [library user guide](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
 
 Changelog
 ---------
