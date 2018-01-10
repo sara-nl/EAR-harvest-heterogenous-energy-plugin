@@ -2,21 +2,21 @@
 Description
 -----------
 <img src="etc/images/logo.png" align="right" width="140">
-Energy Aware Runtime (EAR) library is designed to provide an energy efficient solution for MPI applications. It aims at finding the optimal frequency for a job according to its selected energy policy, being totally dynamic and transparent. The library is designed to work independently of any scheduler or cluster manager, however we provide a SLURM plugin to meake easy its utilization in an environment with a large number of nodes.
+Energy Aware Runtime (EAR) library is designed to provide an energy efficient solution for MPI applications. It aims at finding the optimal frequency for a job according to its selected energy policy, being totally dynamic and transparent.
 
 Overview
 --------
 EAR library interceps the Profiling MPI Interface (PMPI) symbols using the dynamic loader environment variable LD_PRELOAD. The intercepted call is then saved in an internal, fast and small historic buffer. This allows the powerfull DynAIS algorithm to detect the tipical repetitive sequences of code found in the regular HPC applications. Once found a new repetitive sequence, metrics like CPI, bandwith and power are calculated and stored.
 
-This data allows the library to predict the best frequency for the upcoming iterations and in this way, set the proper CPU clock. I.e, if a detected bucle iteration is memory intensive, setting lower clocks holds the performance but saves a lot of power consumption. Because of that, the CPU frequency is constantly switching, maximizing the efficiency of the cluster. For all that privileged functions, the lightweight daemon is provided and must be running in the nodes.
+This data allows the library to predict the best frequency for the upcoming iterations and in this way, set the proper CPU clock. I.e, if a detected bucle iteration is memory intensive, setting lower clocks holds the performance but saves a lot of power consumption. Because of that, the CPU frequency is constantly switching, maximizing the efficiency of the cluster. For all that privileged functions, the lightweight daemon is provided and must be running in the cluster nodes.
 
-In order to be able to provide good predictions, the library must be trained to obtain good EAR model coefficients. This training is done through a simple and fast provided tool that stress the nodes and computes their coefficients.
+In order to be able to provide good predictions, the library must be trained to obtain good EAR model coefficients. This training is done through a simple and fast tool provided that stresses the nodes and computes their coefficients.
 
-It is important to remark that this library is designed to work together with SLURM, a popular cluster job manager. Even so, a couple of scripts are provided in case you want to use directly MPI commands.
+The library is designed to work together with SLURM, a popular cluster job manager. Even so, a couple of scripts are provided in case you want to use directly MPI commands.
 
 Requirements
 ------------
-EAR requires some third party libraríes and headers to compile and run, in addition to the basic requirements such as the compiler and Autotools. This is a list of this libraries and its references:
+EAR requires some third party libraríes and headers to compile and run, in addition to the basic requirements such as the compiler and Autoconf. This is a list of this libraries and its references:
 
 | Library   | Requirement / comment | Minimum version | References                                        |
 | --------- | --------------------- | --------------- | ------------------------------------------------- |
@@ -63,38 +63,36 @@ This is the list of installation folder and their content:
 
 Adding required libraries installed in custom locations
 -------------------------------------------------------
-You can help `configure` to find PAPI, SLURM, or other required libraries in case you installed in a custom location. It is necessary add its root path for the compiler to see include files, and libraries for the linker. by adding to it the following arguments:
+You can help `configure` to find PAPI, SLURM, or other required libraries in case you installed in a custom location. It is necessary to add its root path for the compiler to see include headers and libraries for the linker. You can do this by adding to it the following arguments:
 
 | Argument                 | Description                                  |
 | ------------------------ | -------------------------------------------- |
 | --with-papi=\<path\>     | Specifies the path to PAPI installation.     |
 | --with-gsl=\<path\>      | Specifies the path to GSL installation.      |
-| --with-cpufreq=\<path\>  | Specifies the path to CPUFreq installation.  |
+| --with-cpupower=\<path\> | Specifies the path to CPUPower installation.  |
 | --with-slurm=\<path\>    | Specifies the path to SLURM installation.    |
 | --with-freeipmi=\<path\> | Specifies the path to FreeIPMI installation. |
-* This is an example of ‘CC‘ overwriting and PAPI path specification:</ br>
+* This is an example of ‘CC‘ overwriting and PAPI path specification:<br />
 `./configure --with-papi=/path/to/PAPI`
 
-If unusual procedures must be done to compile the package, please try to figure out how `configure` could check whether to do them and contact the team to be considered for the next release. In the meantime, you can use overwrite shell variables or export them to the environment (e.g. LD_LIBRARY) or specify the paths of external requirements. 
+If unusual procedures must be done to compile the package, please try to figure out how `configure` could check whether to do them and contact the team to be considered for the next release. In the meantime, you can overwrite shell variables or export its paths to the environment (e.g. LD_LIBRARY).
 
 After the installation
 ----------------------
-You can test the installation by typing `make check`. For more info visit the [tests page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/tests/README.md)
+You can test the installation by typing `make check`. For more info visit the [tests page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/tests/README.md).
 
-First of all, make sure your linker is aware of the required libraries and the environment variable *EAR_INSTALL_PATH* is set. This variable defines the folder of EAR binaries, libraries and tools. For the ease of use, an **environment module** is also configured next to the EAR compilation. So locate in `autootools` folder the module file with name `ear-{version}`, and copy it to your module collection folder (e.g. `cp autotools/ear-1.0 /hpc/base/ctt/modulefiles/libraries`).
+First of all, make sure your linker is aware of the required libraries and the environment variable *EAR_INSTALL_PATH* is set. This variable defines the folder of the EAR binaries, libraries and tools. For the ease of use, an **environment module** is also configured next to the EAR compilation. So locate in `etc` folder the module file with name `ear-{version}`, and copy it to your module collection folder (e.g. `cp etc/ear-1.0 /hpc/base/ctt/modulefiles/libraries`).
 
 Configuration
 -------------
 0) Depending on your environment:
-    * In case you are going to use EAR together with SLURM, visit the [SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
-    * In case you are going to use the provided scripts to use EAR next to MPI, visit the [scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md) for more information.
-1) Take a look into the
-[environment variables configuration page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/README.md) and customize the EAR library and daemon behaviour to fit the needs of the cluster.
-2) Pass the learning phase in all your computing nodes by visiting the [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
+    * In case you are going to use **EAR together with SLURM**, visit the [SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
+    * In case you are going to use **EAR with direct MPI calls**, visit the [scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md) for more information about the scripts that simplify the launch.
+1) Pass the learning phase in all your computing nodes by visiting the [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
 
 User guide
 ----------
-Finally, you can launch any MPI application next to EAR library following the [library user guide](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
+Finally, you can launch any MPI application next to EAR library by following the [library user guide](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
 
 Changelog
 ---------
