@@ -85,10 +85,10 @@ First of all, make sure your linker is aware of the required libraries and the e
 
 Configuration
 -------------
-0) Depending on your environment:
+1) Depending on your environment:
     * In case you are going to use **EAR together with SLURM**, visit the [SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
     * In case you are going to use **EAR with direct MPI calls**, visit the [scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md) for more information about the scripts that simplify the launch.
-1) Pass the learning phase in all your computing nodes by visiting the [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
+2) Pass the learning phase in all your computing nodes by visiting the [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) to follow its guide.
 
 User guide
 ----------

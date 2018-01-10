@@ -1,17 +1,15 @@
 SLURM plugin configuration guide
 --------------------------------
-EAR SLURM plugin allows to load and unload dynamically both the EAR library and daemon for a SLURM job, if the enabling argument is set.
-
-The library will be loaded over each job step, intercepting all MPI calls. The daemon will be loaded and closed next to SLURM's daemon (*slurmd*).
+EAR SLURM plugin allows to load dynamically the EAR library for a SLURM job, if the enabling argument is set. The library will be loaded over each job step, intercepting all MPI calls. The daemon will be loaded and closed next to SLURM's daemon (*slurmd*).
 
 Configuration
 -------------
-1) Locate and edit the library and plugin configuration file example in the installation path, `etc/ear.conf`.
+1) Locate and edit the library and daemon configuration file example in the installation path, `etc/ear.conf`.
 2) Modify the values of the variables, taking into account that only accepts complete paths or names, not appending from other environment variables like `$HOME`. You can find a complete list in [environment variables configuration page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/README.md).
-1) Add in SLURM's `plugstack.conf` file, a new entry with the paths of the compiled plugin `earplug.so` and also the `ear.conf`. taking a look in the example `etc/plugstack.conf`.
+1) Add in SLURM's `plugstack.conf` file, a new entry with the paths of the compiled plugin `earplug.so` and also the `ear.conf`, taking a look in the example `etc/plugstack.conf`.
 3) Reset the system or kill and run SLURM's slurmctld and slurmd daemons.
 
-As previously said EAR library and daemon behaviour depends on environment variables defined in **ear.conf** file. This environment variables could be redefined by the end user with some *srun* arguments added by the plugin (see execution section below) or exporting the same variables before sending a job.
+As previously said, EAR library and daemon behaviour depends on environment variables defined in **ear.conf** file. These environment variables could be redefined by the end user with some *srun* arguments added by the plugin (see execution section below) or exporting the same variables before sending a job.
 
 New SLURM arguments
 -------------------
