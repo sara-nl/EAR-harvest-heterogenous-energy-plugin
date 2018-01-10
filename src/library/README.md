@@ -2,21 +2,24 @@ Library User Guide
 ------------------
 The library is the core of the EAR package. It has the most of the functionality, via the interception of MPI function calls, and also controls other components of the EAR package like the daemon.
 
-Configuration
--------------
-The library behaviour depends on variables defined in environment. You could find a complete list of these environment variables and its default values in [SLURM plugin configuration section](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md).
+Options
+-------
+The library behaviour depends on variables defined in environment. You could find a complete list of these environment variables and its default values in [environment variables list](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/README.md).
 
-Manual Execution
-----------------
-0) Remember to pass first the learning phase to get and store all node coefficients if you want to launch a normal job (see [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/learning/README.md) for more information).
-1) Make sure the EAR daemon is running (see [daemon manual execution section](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/daemon/README.md)).
-2) Append the path of the library (**libEAR.so**) to LD_PRELOAD environment variable.
-3) Launch your application.
+Make sure to understand especially the variables **EAR_POWER_POLICY**, which controls the EAR policy, and also **EAR_USER_DB_PATHNAME** and **EAR_APP_NAME**.
 
-Execution managed by EAR SLURM plugin
--------------------------------------
-For a detailed guide, please visit the
-[SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/tree/development/ear_slurm_plugin).
+Launching jobs with SLURM
+-------------------------
+Just call the `srun` program with, at least, the argument `--ear`, which loads the EAR library together with your application using just the default configuration. For a complete list of parameters, please visit the [SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/tree/development/ear_slurm_plugin).
+
+In example: `./srun -N2 -n2 --ear-policy=MIN_ENERGY_TO_SOLUTION --ear-policy-th=0.9 application`
+
+Launching jobs calling MPI directly
+-----------------------------------
+This way doesn't make use of any cluster job scheduler, so a couple scripts are provided to make it easy that task. You can launch these scripts with empty parameters to view it's usage.
+
+0) In case the daemon is not running in the node, execute the script `etc/scripts/running/ssh_daemon_start` by typing `./ssh_daemon_start computing_node1 1`, where `computing_node1` is the node name where the daemon will be launched and the last number the default *P_STATE*. It also accepts a file containing the list of nodes where you want to wake that daemon.
+1) In the same folder, execute the `mpi_exec.sh` script to launch the job. In example `./mpi_exec.sh computing_node1 28 28 MONITORING_ONLY`, where both numbers are the MPI processes and the MPI's per node, an the last one is the policy.
 
 Stored files
 ------------

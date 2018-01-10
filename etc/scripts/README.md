@@ -4,14 +4,19 @@ A set of bash scripts are provided to make the process as simple and contained a
 1) Automatize the learning phase process.
 2) If you are not using SLURM:
     * Launch the EAR daemon through SSH.
-    * Launch jobs by MPI commands.
+    * Launch jobs by MPI commands. In this case, the scripts are responsible of launching your application together with EAR library.
 
 Subfolders and contents
 -----------------------
 The directory `etc` placed inside the installation path contains a subfolder called `scripts`. Inside, you will find the following subfolders:
 
-The `running` folder, which contains a set of scripts for launch MPI applications.
-- **mpi_exec.sh**: contains the `mpirun` command with a prepared environment to launch the application next to the EAR library in a set of specified nodes. Depending on the MPI distribution, it may be necessary to edit the `mpirun` comand by `mpiexec.hydra` or similar.
+The `running` folder, which contains a set of scripts for launch MPI applications. You can launch these scripts with empty parameters to view it's usage.
+- **mpi_exec.sh**: contains the `mpirun` command with a prepared environment to launch the application next to the EAR library in a set of specified nodes. Depending on the MPI distribution, may be is necessary to edit the launching command, because this could make not working other scripts:
+```
+## Starting the application
+mpiexec.hydra -l -genv LD_PRELOAD=${EAR_LIB_PATH} -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
+```
+So, head to this line and replace the `mpiexec.hydra` by `mpirun` similar.
 - **ssh_daemon_start.sh**: loads the EAR daemon in a a specified set of nodes.
 - **ssh_daemon_exit.sh**: closes the EAR daemon of a specified set of nodes.
 

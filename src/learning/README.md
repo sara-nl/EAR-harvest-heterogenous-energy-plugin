@@ -46,9 +46,11 @@ export EAR_SRC_PATH=$HOME/git/EAR
 
 Testing benchmarks
 ------------------
-Once compiled, execute a test in a computing node. **If you're using SLURM**, and already configured [slurm plugin](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md), launch a command like `srun -N1 -n1 --exclusive learning_phase_compile.sh test`, allocating a single but complete computing node (because the script will open new threads as it needs).
+Once compiled, execute a test in a computing node.
 
-**If you are doing it manually**, follow the following steps:
+**If you're using SLURM**, and already configured [slurm plugin](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md), launch a command like `srun -N1 -n1 --exclusive learning_phase_compile.sh test`, allocating a single but complete computing node (because the script will open new threads as it needs).
+
+**If you are doing it calling MPI directly**, make sure you have read the [scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md) and follow the next steps:
 1) Open the script `etc/scripts/learning/learning_phase_helper.sh` and look for these lines:
 ```
 function launching
@@ -149,8 +151,7 @@ export EAR_MAX_P_STATE=6
 - **CORES_PER_SOCKET**: the total number of cores per socket in a single computing node.<br />
 - **EAR_MIN_P_STATE**: defines the maximum frequency to set during the learning phase. The default value is 1, meaning that the nominal frequency will be the maximum frequency that your cluster nodes will set. In the current version of EAR turbo support is not included.<br />
 - **EAR_MAX_P_STATE**: defines the minimum frequency to test during the learning phase. If 6 is set and EAR_MIN_P_STATE is 1, it means that 6 frequencies will be set during the learning phase, from 1 to 6. This set of frequencies have to match with the set of frequencies that your cluster nodes are able to set during computing time.<br />
-4) **For SLURM users**, execute the learning phase in all of your nodes by typing a command like: `srun -N4 -n4 --exclusive -t 180 learning_phase_execute.sh`. In this example, are used 4 computing nodes.
-5) **For manual users**, launch the daemon executing the script `etc/scripts/running/ssh_daemon_start` by typing `./ssh_daemon_start computin_node1 1`, in case you have closed it.
-6) **For manual users** again, execute the MPI scheduling program of your MPI distribution by typing something like: `mpirun -n 4 -ppn 1 -hosts node1,node2,node3,node4 learning_phase_execute.sh`
-7) Check that there are the correct number of coefficients files stored in the folder pointed by the environment variable *EAR_COEFF_DB_PATHNAME*.
+4)  * **For SLURM users**, execute the learning phase in all of your nodes by typing a command like: `srun -N4 -n4 --exclusive -t 180 learning_phase_execute.sh`. In this example, are used 4 computing nodes.
+    * **For direct MPI call users**, launch the daemon executing the script `etc/scripts/running/ssh_daemon_start` by typing `./ssh_daemon_start computin_node1 1`, in case you have closed it. It also accepts a file containing the list of nodes where you want to wake that daemon. Then execute the MPI scheduling program of your MPI distribution by typing something like: `mpirun -n 4 -ppn 1 -hosts node1,node2,node3,node4 learning_phase_execute.sh`
+6) Check that there are the correct number of coefficients files stored in the folder pointed by the environment variable *EAR_COEFF_DB_PATHNAME*.
 

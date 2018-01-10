@@ -1,6 +1,6 @@
 Environment variables configuration
 -----------------------------------
-The EAR library and daemon behaviour is defined by a set of enviroment variables. You can define this environment variables before launching a job. Also, the SLURM plugin or the scripts provided for launching jobs directly calling MPI, makes use of a default configuration file, which gives value to these environment variables if aren't set before.
+The EAR library and daemon behaviour is defined by a set of enviroment variables. You can define this environment variables before launching a job. Also, the SLURM plugin and the scripts provided for launching jobs directly calling MPI, makes use of a default configuration file, which gives value to these environment variables if aren't set before.
 
 Environment variables list
 --------------------------
