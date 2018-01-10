@@ -79,6 +79,8 @@ If unusual procedures must be done to compile the package, please try to figure 
 
 After the installation
 ----------------------
+You can test the installation by typing `make check`. For more info visit the [tests page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/tests/README.md)
+
 First of all, make sure your linker is aware of the required libraries and the environment variable *EAR_INSTALL_PATH* is set. This variable defines the folder of EAR binaries, libraries and tools. For the ease of use, an **environment module** is also configured next to the EAR compilation. So locate in `autootools` folder the module file with name `ear-{version}`, and copy it to your module collection folder (e.g. `cp autotools/ear-1.0 /hpc/base/ctt/modulefiles/libraries`).
 
 Configuration
