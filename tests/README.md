@@ -1,6 +1,6 @@
 Tests
 -----
-The EAR package includes two type of tests. The **check tests**, prepared to be executed after the `make` by typing `make check`, with and without privileges, ald also **functional tests and misc test tools**, which tests library functionalities against your software and hardware platform.
+The EAR package includes two type of tests. The **check tests**, prepared to be executed after the `make` by typing `make check`, with and without privileges, and also **functional tests and misc test tools**, which tests library functionalities against your software and hardware platform.
 
 Make check tests list
 ---------------------
