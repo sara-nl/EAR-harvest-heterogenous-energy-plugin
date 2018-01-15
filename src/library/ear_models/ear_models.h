@@ -11,7 +11,7 @@
 #define EAR_MODELS_H_
 
 #include <ear_db_type.h>
-#include <ear_configuration.h>
+#include <environment.h>
 
 #if 0
 #define MIN_ENERGY_TO_SOLUTION 0

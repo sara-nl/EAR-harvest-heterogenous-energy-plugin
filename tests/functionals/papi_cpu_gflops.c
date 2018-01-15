@@ -1,16 +1,15 @@
 #define _GNU_SOURCE
 #include <math.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sched.h>
 #include <pthread.h>
 #include <sys/wait.h>
 #include <sys/sysinfo.h>
-#include <config.h>
-#include <ear_verbose.h>
-#include <ear_arch_type.h>
-#include <intel_model_list.h>
 #include <papi.h>
+#include <ear_verbose.h>
+#include <hardware.h>
+#include <config.h>
 
 #define MACC(core, set, event) flops_accum[core * 8 + set * 4 + event]
 #define MOBT(core, set, event) flops_obtnd[core * 8 + set * 4 + event]
@@ -109,10 +108,8 @@ void init_flops_metrics(int n_cores)
                 exit(1);
             }
 
-            //MOPT(core, set).cpu.eventset = MSET(core, set);
-            //MOPT(core, set).cpu.cpu_num = core;
             MOPT(core, set).cpu.eventset = MSET(core, set);
-            MOPT(core, set).attach.tid=getpid();
+            MOPT(core, set).cpu.cpu_num = core;
 
             retval = PAPI_set_opt(PAPI_CPU_ATTACH, (PAPI_option_t *) &MOPT(core, set));
 
@@ -209,33 +206,6 @@ void stop_flops_metrics()
     }
 }
 
-
-static void printf_ull(int number, ull digits)
-{
-    ear_verbose(0, "%u", number);
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        ear_verbose(0, " ");
-        digits--;
-    }
-}
-
-static void printf_uint(int number, int digits)
-{
-    ear_verbose(0, "%u", number);
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        ear_verbose(0, " ");
-        digits--;
-    }
-}
-
 void print_gflops(unsigned long total_time_us)
 {
     long long inst_n, inst_d, inst_w;
@@ -249,7 +219,8 @@ void print_gflops(unsigned long total_time_us)
     // For every core
     for (core = 0; core < _n_cores; core++)
     {
-        printf_uint(core, 7);
+        print_spacing_digits(7);
+        print_spacing_int(core);
         inst_w = 0;
 
         // PACKED_SINGLE and SCALAR_DOUBLE
@@ -260,7 +231,8 @@ void print_gflops(unsigned long total_time_us)
             inst_e = (float) inst_d / (float) inst_n;
             inst_w = inst_w + (inst_weights[set][0] * inst_n);
 
-            printf_ull(inst_n, 12);
+            print_spacing_digits(12);
+            print_spacing_ull(inst_n);
             if (isinf(inst_e)) inst_e = 0;
             ear_verbose(0, "%0.3f    ", inst_e);
         }

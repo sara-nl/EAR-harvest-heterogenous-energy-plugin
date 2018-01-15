@@ -20,7 +20,7 @@ function check
 	fi
 }
 
-check cpu_model "CPU compatible model"
+check cpu_examinable "CPU examinable by the library"
 check cpu_aperf "CPU APERF counter available"
 check cpu_uncores "CPU uncores presence"
 check cpu_uncores_all "CPU uncores available (all)"

@@ -9,6 +9,8 @@
 #include <cpufreq.h>
 #include <config.h>
 #include <signal.h>
+
+#include <string_enhanced.h>
 #include <ear_slurm_plugin.h>
 
 #define FUNCTION_INFO(function) 
@@ -52,28 +54,6 @@ struct spank_option spank_options[] = {
     },
     SPANK_OPTIONS_TABLE_END
 };
-
-/*
- *
- * String
- *
- */
-
-static void strtoup(char *string)
-{
-    while (*string) {
-        *string = toupper((unsigned char) *string);
-        string++;
-    }
-}
-
-static char* strclean(char *string, char chr)
-{
-    char *index = strchr(string, chr);
-    if (index == NULL) return NULL;
-    string[index - string] = '\0';
-    return index;
-}
 
 /*
  *

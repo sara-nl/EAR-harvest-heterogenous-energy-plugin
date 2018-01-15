@@ -7,20 +7,20 @@
 
 */
 
-#include <intel_model_list.h>
-#include <ear_verbose.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <endian.h>
 #include <sys/types.h>
 #include <sys/resource.h>
-#include <errno.h>
 #include <freeipmi/freeipmi.h>
-#include <endian.h>
+#include <ear_verbose.h>
+#include <hardware.h>
 #include <config.h>
-#define IPMI_RAW_MAX_ARGS (1024)
 
+#define IPMI_RAW_MAX_ARGS (1024)
 
 #define FUNCVERB(function)                               \
 ear_debug(4, "ear_daemon(lenovo_act) " function "\n");

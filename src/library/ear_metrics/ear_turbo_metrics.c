@@ -10,8 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ear_verbose.h>
-#include <intel_model_list.h>
-#include <ear_arch_type.h>
+#include <hardware.h>
 
 //#define AVX_METRICS
 #define EAR_TURBO_EVENTS_SETS 1

@@ -11,8 +11,8 @@ export LDFLAGS
 ######## FILES
 
 OUTER_OBJS = $(ROOTDIR)/src/common/ear_daemon_client.o \
-			 $(ROOTDIR)/src/common/ear_arch_type.o \
-             $(ROOTDIR)/src/common/ear_configuration.o
+             $(ROOTDIR)/src/common/environment.o \
+			 $(ROOTDIR)/src/common/hardware.o
 
 OBJS = ear_states/ear_states.o           \
        ear_db/ear_db.o                   \
