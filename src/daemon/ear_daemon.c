@@ -18,9 +18,9 @@
 #include <errno.h>
 #include <signal.h>
 #include <config.h>
+#include <hardware.h>
+#include <environment.h>
 #include <ear_verbose.h>
-#include <ear_configuration.h>
-#include <ear_arch_type.h>
 #include <ear_daemon_common.h>
 #include <ear_frequency.h>
 #include <ear_rapl_metrics.h>

@@ -17,8 +17,8 @@
 #include <errno.h>
 #include <papi.h>
 
+#include <environment.h>
 #include <ear_verbose.h>
-#include <ear_configuration.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_metrics/ear_papi.h>
 #include <ear_db/ear_db.h>

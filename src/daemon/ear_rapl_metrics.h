@@ -13,7 +13,7 @@
 // Initializes the PAPI library if needed and the rapl::DRAM_ENERGY:PACKAGE0, rapl:::DRAM_ENERGY:PACKAGE1, rapl:::PACKAGE_ENERGY:PACKAGE0, rapl:::PACKAGE_ENERGY:PACKAGE1 events
 // returns 0 on success and -1 on error
 
-int init_rapl_etrics();
+int init_rapl_metrics();
 // Resets (zeroes) rapl events
 // returns 0 on success and -1 on error
 int reset_rapl_metrics();

@@ -15,8 +15,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <environment.h>
 #include <ear_verbose.h>
-#include <ear_configuration.h>
 #include <ear_states/ear_states.h>
 #include <ear_gui/ear_gui.h>
 #include <ear_metrics/ear_papi.h>

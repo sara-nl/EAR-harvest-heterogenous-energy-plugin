@@ -1,11 +1,10 @@
 ######## FILES
 
-COMPONENTS = check \
-             functionals
+COMPONENTS = check
 
 ######## RULES
 
-.PHONY: check
+.PHONY: check functionals
 
 all:
 	@ for i in $(COMPONENTS); do                         \
@@ -14,6 +13,9 @@ all:
                 echo "===================================="; \
 		$(MAKE) -C $${i} all || exit;                \
         done
+
+functionals:
+	@ $(MAKE) -C functionals all || exit
 
 ######## OPTIONS
 
@@ -24,3 +26,5 @@ clean:
 	@ for i in $(COMPONENTS); do    \
                 $(MAKE) -C $${i} clean; \
         done
+	@ $(MAKE) -C functionals clean
+
