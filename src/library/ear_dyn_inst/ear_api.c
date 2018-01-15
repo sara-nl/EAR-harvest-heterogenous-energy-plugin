@@ -71,7 +71,7 @@ struct App_info *ear_my_app_info;
 long long begin_ov,end_ov,ear_acum=0;
 unsigned int calls=0;
 #endif
-#define DYNAIS_TRACE
+//#define DYNAIS_TRACE
 #ifdef DYNAIS_TRACE
 FILE *stdtrace,*stdtracebin;
 #endif
@@ -115,7 +115,7 @@ void ear_init(){
 	set_ear_total_processes(my_size);
 	EAR_VERBOSE_LEVEL=get_ear_verbose();
 	if (get_ear_app_name()!=NULL){
-		if (ear_my_rank==0) ear_verbose(1,"EAR: Application %s starts.....\n",get_ear_app_name());
+		if (ear_my_rank==0) ear_verbose(1,"________ EAR: Application %s starts__________\n",get_ear_app_name());
 	}else{
 		if (ear_my_rank==0) ear_verbose(1,"EAR: Application starts.....\n");
 	}
@@ -134,10 +134,10 @@ void ear_init(){
 	}
 	if (my_id) return;
 	if (check_threads()){
-		ear_verbose(2,"OpenMP is used\n");
-		ear_verbose(2,"OpenMP max_threads %d\n",my_omp_get_max_threads());
+		ear_verbose(2,"EAR: OpenMP is used\n");
+		ear_verbose(1,"EAR: OpenMP max_threads %d\n",my_omp_get_max_threads());
 	}else{
-		ear_verbose(2,"OpenMP is not used\n");
+		ear_verbose(2,"EAR: OpenMP is not used\n");
 	}
 
 #ifdef DYNAIS_TRACE
@@ -179,20 +179,20 @@ void ear_init(){
 	if ((new_fd)&& (ear_fd!=NULL)) fprintf(ear_fd,"%s",header_instances);
 
 	db_get_app_name(ear_app_name);
-    states_begin_job(my_id,ear_fd,ear_app_name);
+    	states_begin_job(my_id,ear_fd,ear_app_name);
 	ear_current_cpuid=getCPU_ID();// this function needs papi JORDI_NEW
 	ear_current_freq=ear_cpufreq_get(ear_current_cpuid);	
 	init_power_policy();
 	init_power_models(ear_get_num_p_states(),ear_get_pstate_list());
 	// Application info
 	db_init(ear_whole_app,ear_app_name);
-    if(init_dc_energy()<0){
-    	ear_verbose(0,"EAR:: Node Energy can not be measured, AEM is not loaded, exiting\n");
-        exit(1) ;
-    }else{
+    	if(init_dc_energy()<0){
+    		ear_verbose(0,"EAR:: Node Energy can not be measured, AEM is not loaded, exiting\n");
+    	    exit(1) ;
+    	}else{
 		ear_debug(1,"EAR: init_dc_energy ok!\n");
 	}
-    app_eru_init=read_dc_energy();
+    	app_eru_init=read_dc_energy();
 	 
 	gettimeofday(&pmpi_app_begin_time,NULL);
 	fflush(stderr);
@@ -200,6 +200,7 @@ void ear_init(){
 	gui_frequency(ear_my_rank,my_id,ear_current_freq);
 	ear_debug(1,"EAR Initialized successfully\n");	
 	ear_print_lib_environment();
+	ear_verbose(1,"______________EAR loaded___________________\n");
 }
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest){
 	unsigned ear_status;
@@ -217,7 +218,7 @@ if (!ear_whole_app){
 // DYNAIS_TRACE generates a text trace file with values used as dynais imput, it is used for dynais evaluation and optimization
 #ifdef DYNAIS_TRACE
 	if (ear_my_rank==0){
-	fprintf(stdtrace,"%u;%u;%u;%u\n",buf,dest,call_type,ear_event);
+	fprintf(stdtrace,"%u;%u;%u;%u;%llu\n",buf,dest,call_type,ear_event,PAPI_get_real_usec());
 	trace_data[0]=(unsigned long)buf;
 	trace_data[1]=(unsigned long)dest;
 	trace_data[2]=(unsigned long)call_type;
