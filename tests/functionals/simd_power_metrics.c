@@ -3,16 +3,19 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <sched.h>
 #include <pthread.h>
 #include <emmintrin.h> // -msse2
 #include <immintrin.h> // -mavx -mfma
 #include <ear_rapl_metrics.h>
+#include <ear_frequency.h>
+#include <ear_turbo.h>
 #include <config.h>
 #include <papi.h>
 
-int EAR_VERBOSE_LEVEL = 0;
+int EAR_VERBOSE_LEVEL = 4;
 static double A[8] = { M_PI, M_E, M_LN2, M_LN10, M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E };
 static double B[8] = { M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E, M_PI, M_E, M_LN2, M_LN10 };
 static double C[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
@@ -22,7 +25,7 @@ static uint spinning = 1;
 uint test = 0;
 
 #define PACK_OFFSET 1
-//#define AVX_512 1
+#define AVX_512 1
 
 static void sse2_dp_add128()
 {
@@ -281,7 +284,7 @@ int main (int argc, char *argv[])
 
     ull metrics[EAR_RAPL_EVENTS]; 
     ulong start_time, exec_time;
-    ulong num_ops;
+    ulong num_ops, frequency, aux;
 
     double time_s, flops_m, flops_x_watt;
     double power_ins, power_w, power_raw, power_raw_w;
@@ -327,6 +330,8 @@ int main (int argc, char *argv[])
     }
 
     FAIL(init_rapl_metrics(), "initialization failed");
+    ear_cpufreq_init();    
+    //aperf_init(80);
 
     printf("test name;");
     printf("total package energy (J);");
@@ -341,6 +346,9 @@ int main (int argc, char *argv[])
     // Creating the threads
     for (i_test = 0; i_test < n_tests; ++i_test)
     {
+        //ear_cpufreq_set_node(1);
+	//ear_cpufreq_set_node(2400000);
+
         test = i_test;
         spinning = 1;
         energy_raw = 0;
@@ -360,6 +368,11 @@ int main (int argc, char *argv[])
         FAIL(start_rapl_metrics(), "start events failed");
         start_time = PAPI_get_real_usec();
 
+        //for (i_thread = 0; i_thread < n_threads; i_thread++) {
+        //    aperf_get_avg_frequency_init(i_thread);
+	//}
+        ear_begin_compute_turbo_freq();
+
         spinning = 0;
         run_test(test);
 
@@ -369,6 +382,14 @@ int main (int argc, char *argv[])
         for (i_thread = 1; i_thread < n_threads; i_thread++) {
             pthread_join(tids[i_thread], NULL);
         }
+
+        //frequency = aux = 0;
+        //for (i_thread = 0; i_thread < n_threads; i_thread++) {
+        //    aperf_get_avg_frequency_end(i_thread, &aux);
+        //    frequency = frequency + aux;
+        //}
+        //frequency = frequency / n_threads;
+        frequency = ear_end_compute_turbo_freq();
 
         FAIL(stop_rapl_metrics(metrics), "stop events failed");
 
@@ -415,8 +436,13 @@ int main (int argc, char *argv[])
         printf("%0.3lf;", power_ins);
         printf("%0.3lf;", flops_m);
         printf("%0.3lf;", flops_x_watt);
-        printf("%lu\n", num_ops);
+        printf("%lu;", num_ops);
+        printf("%lu\n", frequency);
+
+        sleep(1);
     }
+
+    ear_cpufreq_end();
 
     free(tbinds);
     free(tids);
