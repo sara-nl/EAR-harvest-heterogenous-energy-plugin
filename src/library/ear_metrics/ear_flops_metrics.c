@@ -167,7 +167,7 @@ void stop_flops_metrics(long long *flops)
 		}else{
 			for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){ 
 				ear_flops_acum_values[sets][ev]+=ear_flops_values[sets][ev];
-				*flops+=ear_flops_values[sets][ev];
+				*flops+=(ear_flops_values[sets][ev]*FP_OPS_WEIGTH[sets][ev]);
 			}
 		}
 	}
