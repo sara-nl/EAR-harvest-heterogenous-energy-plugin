@@ -37,6 +37,7 @@ simd_power_metrics: simd_power_metrics.c $(OUTER_OBJS)
         $(ROOTDIR)/src/daemon/ear_turbo.o               \
         $(ROOTDIR)/src/daemon/ear_frequency.o           \
 	$(ROOTDIR)/src/daemon/ear_rapl_metrics.o        \
+	$(ROOTDIR)/src/library/ear_metrics/ear_flops_metrics.o \
 	$(OUTER_OBJS) $(PAPI_LDFLAGS) $(SIMD_CFLAGS) $(CPUF_LDFLAGS) -lpthread
 
 freeipmi_overhead: freeipmi_overhead.c $(OUTER_OBJS)
