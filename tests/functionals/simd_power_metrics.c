@@ -10,6 +10,7 @@
 #include <emmintrin.h> // -msse2
 #include <immintrin.h> // -mavx -mfma
 #include <ear_rapl_metrics.h>
+#include <ear_metrics/ear_flops_metrics.h>
 #include <ear_frequency.h>
 #include <ear_turbo.h>
 #include <config.h>
@@ -20,6 +21,8 @@ static double A[8] = { M_PI, M_E, M_LN2, M_LN10, M_SQRT2, M_SQRT1_2, M_LOG2E, M_
 static double B[8] = { M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E, M_PI, M_E, M_LN2, M_LN10 };
 static double C[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
 
+int ear_papi_init = 0;
+int* my_omp_get_max_threads = NULL;
 static ulong n_iterations;
 static uint spinning = 1;
 uint test = 0;
@@ -285,6 +288,7 @@ int main (int argc, char *argv[])
     ull metrics[EAR_RAPL_EVENTS]; 
     ulong start_time, exec_time;
     ulong num_ops, frequency, aux;
+    long long papi_flops; 
 
     double time_s, flops_m, flops_x_watt;
     double power_ins, power_w, power_raw, power_raw_w;
@@ -330,6 +334,7 @@ int main (int argc, char *argv[])
     }
 
     FAIL(init_rapl_metrics(), "initialization failed");
+    init_flops_metrics();
     ear_cpufreq_init();    
     //aperf_init(80);
 
@@ -365,12 +370,10 @@ int main (int argc, char *argv[])
         }
 
         FAIL(reset_rapl_metrics(), "reset events failed");
+        reset_flops_metrics();
         FAIL(start_rapl_metrics(), "start events failed");
+        start_flops_metrics();
         start_time = PAPI_get_real_usec();
-
-        //for (i_thread = 0; i_thread < n_threads; i_thread++) {
-        //    aperf_get_avg_frequency_init(i_thread);
-	//}
         ear_begin_compute_turbo_freq();
 
         spinning = 0;
@@ -383,15 +386,9 @@ int main (int argc, char *argv[])
             pthread_join(tids[i_thread], NULL);
         }
 
-        //frequency = aux = 0;
-        //for (i_thread = 0; i_thread < n_threads; i_thread++) {
-        //    aperf_get_avg_frequency_end(i_thread, &aux);
-        //    frequency = frequency + aux;
-        //}
-        //frequency = frequency / n_threads;
         frequency = ear_end_compute_turbo_freq();
-
         FAIL(stop_rapl_metrics(metrics), "stop events failed");
+        stop_flops_metrics(&papi_flops);
 
         for (i_socket = 0; i_socket < 2; ++i_socket) {
             // Energy per socket in nano juls
@@ -438,6 +435,11 @@ int main (int argc, char *argv[])
         printf("%0.3lf;", flops_x_watt);
         printf("%lu;", num_ops);
         printf("%lu\n", frequency);
+
+
+        flops_m = ((double) papi_flops) / time_s;
+        flops_m = flops_m / 1000000.0;
+        printf("PAPI FLOPS: %llu %0.3lf GFLOP/Watt: %lf\n", papi_flops, flops_m, (papi_flops * 40) / (power_raw_w * 1000000000.0));
 
         sleep(1);
     }
