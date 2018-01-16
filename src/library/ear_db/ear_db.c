@@ -140,7 +140,7 @@ int db_get_app_name(char *my_name)
 		strcpy(my_name,app_name);
 	}
 	
-    ear_verbose(1,"EAR::Application name is  %s\n",my_name);
+    ear_verbose(1,"EAR: Application name is  %s\n",my_name);
 	return defined;
 }
 
