@@ -32,6 +32,7 @@ etc/scripts/environment/lib_vars.sh
 *ear_slurm_plugin.so
 *eard
 
+*compute_projections
 *compute_coefficients
 *coefficients_to_csv
 *traces_to_paraver
