@@ -32,10 +32,12 @@ papi_cpu_gflops: papi_cpu_gflops.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_cpu_gflops papi_cpu_gflops.c \
 	$(OUTER_OBJS) $(PAPI_LDFLAGS) -lpthread
 
-simd_power_metrics: simd_power_metrics.c $(OUTER_OBJS) $(ENERGY_OBJS)
-	$(CC) $(CFLAGS) -march=native $(PAPI_CFLAGS) -o simd_power_metrics simd_power_metrics.c \
-	$(ROOTDIR)/src/daemon/ear_rapl_metrics.o $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a \
-	$(OUTER_OBJS) $(PAPI_LDFLAGS) $(SIMD_CFLAGS) -lpthread
+simd_power_metrics: simd_power_metrics.c $(OUTER_OBJS)
+	/opt/gcc/7.2.0/bin/gcc $(CFLAGS) -march=native $(PAPI_CFLAGS) -o simd_power_metrics simd_power_metrics.c \
+        $(ROOTDIR)/src/daemon/ear_turbo.o               \
+        $(ROOTDIR)/src/daemon/ear_frequency.o           \
+	$(ROOTDIR)/src/daemon/ear_rapl_metrics.o        \
+	$(OUTER_OBJS) $(PAPI_LDFLAGS) $(SIMD_CFLAGS) $(CPUF_LDFLAGS) -lpthread
 
 freeipmi_overhead: freeipmi_overhead.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) $(IPMI_CFLAGS) -o freeipmi_overhead freeipmi_overhead.c \
