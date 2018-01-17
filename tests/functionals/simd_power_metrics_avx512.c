@@ -15,11 +15,12 @@
 #include <ear_turbo.h>
 #include <config.h>
 #include <papi.h>
+#include "dummy.h"
 
 int EAR_VERBOSE_LEVEL = 4;
-static double A[8] = { M_PI, M_E, M_LN2, M_LN10, M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E };
-static double B[8] = { M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E, M_PI, M_E, M_LN2, M_LN10 };
-static double C[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) A[8] = { M_PI, M_E, M_LN2, M_LN10, M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E };
+static  double __attribute__((aligned(64))) B[8] = { M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E, M_PI, M_E, M_LN2, M_LN10 };
+static  double __attribute__((aligned(64))) C[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
 
 int ear_papi_init = 0;
 int* my_omp_get_max_threads = NULL;
@@ -36,17 +37,20 @@ static void sse2_dp_add128()
     __m128d d;
     __m128d a;
     __m128d b;
+    __m128d c;
     ulong i;
 
 
     a = _mm_load_pd(A);
     b = _mm_load_pd(B);
 
-    for (i = 0; i < n_iterations; i++) {
-        d = _mm_add_pd(a, b);
+    for (i = 0; i < n_iterations/2; i++) {
+        c = _mm_add_pd(a, b);
+        d = _mm_add_pd(c, d);
     }
     
     _mm_store_pd(D, d);
+    process_D(D);
 }
 
 static void sse2_dp_mul128()
@@ -55,16 +59,19 @@ static void sse2_dp_mul128()
     __m128d d;
     __m128d a;
     __m128d b;
+    __m128d c;
     ulong i;
 
     a = _mm_load_pd(A);
     b = _mm_load_pd(B);
 
-    for (i = 0; i < n_iterations; i++) {
-        d = _mm_mul_pd(a, b);
+    for (i = 0; i < n_iterations/2; i++) {
+        c = _mm_mul_pd(a, b);
+        d = _mm_mul_pd(c, d);
     }
 
     _mm_store_pd(D, d);
+    process_D(D);
 }
 
 static void fma_dp_fmadd128()
@@ -85,6 +92,7 @@ static void fma_dp_fmadd128()
     }
     
     _mm_store_pd(D, d);
+    process_D(D);
 }
 
 static void avx_dp_add256()
@@ -93,16 +101,19 @@ static void avx_dp_add256()
     __m256d d;
     __m256d a;
     __m256d b;
+    __m256d c;
     ulong i;
 
     a = _mm256_load_pd(A);
     b = _mm256_load_pd(B);
 
-    for (i = 0; i < n_iterations; i++) {
-        d = _mm256_add_pd(a, b);
+    for (i = 0; i < n_iterations/2; i++) {
+        c = _mm256_add_pd(a, b);
+        d = _mm256_add_pd(c, d);
     }
 
     _mm256_store_pd(D, d);
+    process_D(D);
 }
 
 static void avx_dp_mul256()
@@ -121,6 +132,7 @@ static void avx_dp_mul256()
     }
     
     _mm256_store_pd(D, d);
+    process_D(D);
 }
 
 static void fma_dp_fmadd256()
@@ -141,26 +153,25 @@ static void fma_dp_fmadd256()
     }
     
     _mm256_store_pd(D, d);
+    process_D(D);
 }
 
 #if AVX_512
 static void avx512_dp_add512()
 {
     static double D[8];
-    __m512d d;
-    __m512d a;
-    __m512d b;
-    __m512d c;
+    __m512d a,b,c,d;
     ulong i;
 
     a = _mm512_load_pd(A);
     b = _mm512_load_pd(B);
 
     for (i = 0; i < n_iterations; i++) {
-        c = _mm512_add_pd(a, b);
+        d = _mm512_add_pd(a, b);
     }
 
     _mm512_store_pd(D, d);
+    process_D(D);
 }
 
 static void avx512_dp_mul512()
@@ -179,6 +190,7 @@ static void avx512_dp_mul512()
     }
     
     _mm512_store_pd(D, d);
+    process_D(D);
 }
 
 static void avx512_dp_fmadd512()
@@ -199,12 +211,14 @@ static void avx512_dp_fmadd512()
     }
 
     _mm512_store_pd(D, d);
+    process_D(D);
 }
 #endif
 
 static void set_affinity(int core)
 {
     cpu_set_t set;
+    CPU_ZERO(&set);
     CPU_SET(core, &set);
     sched_setaffinity(0, sizeof(cpu_set_t), &set);
 }
@@ -263,6 +277,7 @@ uint get_test_ops(int index)
 static void *threaded_run_test(void *arg)
 {
     int core = *((int *) arg);
+    printf("Running  in cpu %d \n",core);
     set_affinity(core);
 
     while (spinning == 1);
@@ -318,8 +333,7 @@ int main (int argc, char *argv[])
     #endif
 
     // Reserving memory
-    tbinds = malloc(sizeof(pid_t) * n_threads);
-    tids = malloc(sizeof(pthread_t) * n_threads);
+    tbinds = (int *)malloc(sizeof(pid_t) * n_threads);
 
     if (csv == 0) {
         printf("CPU Model: \t\t%i\n", 85);
@@ -337,7 +351,6 @@ int main (int argc, char *argv[])
     FAIL(init_rapl_metrics(), "initialization failed");
     init_flops_metrics();
     ear_cpufreq_init();    
-    //aperf_init(80);
 
     printf("test name;");
     printf("total package energy (J);");
@@ -350,11 +363,11 @@ int main (int argc, char *argv[])
     printf("Mflops/Watt;");
     printf("Total num ops\n");
 
+    ear_cpufreq_set_node(2401000);
+    printf("Executing %d tests\n",n_tests);
     // Creating the threads
-    for (i_test = 0; i_test < n_tests; ++i_test)
+    for (i_test = 6; i_test < n_tests; ++i_test)
     {
-        //ear_cpufreq_set_node(1);
-	//ear_cpufreq_set_node(2400000);
 
         test = i_test;
         spinning = 1;
@@ -384,13 +397,14 @@ int main (int argc, char *argv[])
         // Execution time in micro seconds
         exec_time = (PAPI_get_real_usec() - start_time);
 
-        for (i_thread = 1; i_thread < n_threads; i_thread++) {
-            pthread_join(tids[i_thread], NULL);
-        }
 
         frequency = ear_end_compute_turbo_freq();
         FAIL(stop_rapl_metrics(metrics), "stop events failed");
         stop_flops_metrics(&papi_flops);
+
+        for (i_thread = 1; i_thread < n_threads; i_thread++) {
+            pthread_join(tids[i_thread], NULL);
+        }
 
         for (i_socket = 0; i_socket < 2; ++i_socket) {
             // Energy per socket in nano juls
@@ -429,23 +443,23 @@ int main (int argc, char *argv[])
 
 	flops_x_watt2= ((ull) get_test_ops(test) * n_iterations  * (double)40)/(power_raw_w*time_s);
 
-        printf("%s;", get_test_name(test));
-        printf("%.2lf;", energy_raw_j);
-        printf("%.2lf;", power_raw_w);
-        printf("%.2lf;", power_w);
-        printf("%.2lf;", time_s);
-        printf("%.2lf;", energy_j);
-        printf("%.3lf;", power_ins);
-        printf("%.3lf;", flops_m);
-        printf("%.3lf;", flops_x_watt);
-        printf("%lu;", num_ops);
-        printf("%lu\n", frequency);
+        printf("\n\n_____TEST  %d___%s\n", i_test,get_test_name(test));
+        printf("\tEnergy (j) %.2lf\n", energy_raw_j);
+        printf("\tAvg. Power Pckg(W) %.2lf\n", power_raw_w);
+        printf("\tAvg. Power core (W) %.2lf\n", power_w);
+        printf("\tTime(s) %.2lf\n", time_s);
+        printf("\tEnergy(core) (J) %.2lf\n", energy_j);
+        printf("\tPower(Inst)(uW) %.3lf\n", power_ins);
+        printf("\tMFlops(core) %.3lf\n", flops_m);
+        printf("\tMFlops/Watt %.3lf\n", flops_x_watt);
+        printf("\tTotal FP_OPS %lu\n", num_ops);
+        printf("\tAvg.Frequency %lu\n", frequency);
 
 
         flops_m = ((double) papi_flops) / time_s;
         flops_m = flops_m / 1000000.0;
-        printf("PAPI FLOPS: %llu %0.3lf GFLOP/Watt: %lf operations/sec %lf\\n", papi_flops, flops_m, (papi_flops * 40) / (power_raw_w * (double)1000000000*time_s),(double) n_iterations / time_s);
-
+        printf("\tPAPI FLOPS: %llu %0.3lf GFLOP/Watt: %lf operations/sec %lf\n", papi_flops, flops_m, (papi_flops * 40) / (power_raw_w * (double)1000000000*time_s),(double) n_iterations / time_s);
+	printf("_______\n");
         sleep(1);
     }
 
