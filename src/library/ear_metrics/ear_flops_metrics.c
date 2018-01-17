@@ -165,12 +165,17 @@ void stop_flops_metrics(long long *flops)
 		if ((retval=PAPI_stop(ear_flops_event_sets[sets],(long long *)&ear_flops_values[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s) StopFlopsMetrics.%s\n",__FILE__,PAPI_strerror(retval));
 		}else{
+			if (sets==SP_OPS) ear_verbose(2,"fops_fp -->");
+			if (sets==DP_OPS) ear_verbose(2,"fops_dp -->");
 			for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){ 
 				ear_flops_acum_values[sets][ev]+=ear_flops_values[sets][ev];
 				*flops+=(ear_flops_values[sets][ev]*FP_OPS_WEIGTH[sets][ev]);
+				ear_verbose(2,"[%d]=%llu x %d, ",ev,ear_flops_values[sets][ev],FP_OPS_WEIGTH[sets][ev]);
 			}
+			ear_verbose(2,"\n");
 		}
 	}
+	ear_verbose(2,"\n");
 }
 void print_gflops(long long total_inst,unsigned long total_time)
 {
@@ -180,21 +185,22 @@ void print_gflops(long long total_inst,unsigned long total_time)
 	if (!flops_supported) return;
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
 		if (sets==SP_OPS){
-			ear_verbose(0,"Single precision floating-point arithmetic instructions\n");
+			ear_verbose(1,"SP FOPS:");
 		}else{
-			ear_verbose(0,"Double precision floating-point arithmetic instructions\n");
+			ear_verbose(1,"DP FOPS");
 		}
 		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
-			ear_verbose(0,"GFLOPS computation: set %d ev %d value %llu\n",sets,ev,ear_flops_acum_values[sets][ev]);
+			ear_verbose(1,"[%d]=%llu x %d, ",ev,ear_flops_acum_values[sets][ev],FP_OPS_WEIGTH[sets][ev]);
 			total=total+(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]);
 		}
+		ear_verbose(1,"\n");
 	}
 	procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
-	ear_verbose(0,"GFlops per process = %.3lf \n", (double)(total)/(double)(total_time*1000));
+	ear_verbose(1,"GFlops per process = %.3lf \n", (double)(total)/(double)(total_time*1000));
 	if (my_omp_get_max_threads!=NULL){ 	
-		ear_verbose(0,"GFlops per node    = %.3lf \n", (double)(total*procs_per_node*my_omp_get_max_threads())/(double)(total_time*1000));
+		ear_verbose(1,"GFlops per node    = %.3lf \n", (double)(total*procs_per_node*my_omp_get_max_threads())/(double)(total_time*1000));
 	}else{ 
-		ear_verbose(0,"GFlops per node    = %.3lf \n", (double)(total*procs_per_node)/(double)(total_time*1000));
+		ear_verbose(1,"GFlops per node    = %.3lf \n", (double)(total*procs_per_node)/(double)(total_time*1000));
 	}
 	
 }
