@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <environment.h>
+#include <ear_configuration.h>
 
 char *conf_ear_tmp=NULL;
 char *conf_ear_db_pathname=NULL;
