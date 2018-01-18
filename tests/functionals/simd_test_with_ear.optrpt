@@ -1,0 +1,7 @@
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+Intel(R) C Intel(R) 64 Compiler for applications running on Intel(R) 64, Version 17.0.5.239 Build 20170817
+
+Compiler options: -I/home/xjcorbalan/git/EAR/tests/functionals -I/home/xjcorbalan/git/EAR/src/common -I/home/xjcorbalan/git/EAR/src/daemon -I/home/xjcorbalan/git/EAR/src/library -I/opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/intel64/include -O0 -malign-double -vec-threshold0 -xCORE-AVX512 -qopt-report=5 -o simd_test_with_ear -L/opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/intel64/lib/release_mt -L/opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/intel64/lib -Xlinker --enable-new-dtags -Xlinker -rpath -Xlinker /opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/intel64/lib/release_mt -Xlinker -rpath -Xlinker /opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/intel64/lib -Xlinker -rpath -Xlinker /opt/intel/mpi-rt/2017.0.0/intel64/lib/release_mt -Xlinker -rpath -Xlinker /opt/intel/mpi-rt/2017.0.0/intel64/lib -lmpifort -lmpi -lmpigi -ldl -lrt -lpthread

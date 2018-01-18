@@ -36,7 +36,7 @@ double cpi_proj(double cpi_f0,double tpi_f0,struct Coefficients_info *my_coeffs)
 }
 double time_proj(double time_f0,double cpi_proj,double cpi_f0,unsigned long f0,unsigned long fn)
 {
-	return time_f0*(cpi_proj/cpi_f0)*((double)f0/(double)fn);
+	return (time_f0*cpi_proj/cpi_f0)*((double)f0/(double)fn);
 }
 void usage(char *app)
 {
