@@ -5,16 +5,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sched.h>
-#include <pthread.h>
 #include <emmintrin.h> // -msse2
 #include <immintrin.h> // -mavx -mfma
-#include <ear_rapl_metrics.h>
-#include <ear_metrics/ear_flops_metrics.h>
-#include <ear_frequency.h>
-#include <ear_turbo.h>
-#include <config.h>
-#include <papi.h>
+#include <mpi.h>
 
 int EAR_VERBOSE_LEVEL = 4;
 static  double __attribute__((aligned(64))) A[8] = { M_PI, M_E, M_LN2, M_LN10, M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E };
@@ -44,9 +37,8 @@ static void sse2_dp_add128()
     a = _mm_load_pd(A);
     b = _mm_load_pd(B);
 
-    for (i = 0; i < n_iterations/2; i++) {
-        c = _mm_add_pd(a, b);
-        d = _mm_add_pd(c, d);
+    for (i = 0; i < n_iterations; i++) {
+        d = _mm_add_pd(a, b);
     }
     
     _mm_store_pd(D, d);
@@ -161,7 +153,7 @@ static void avx512_dp_add512()
     b = _mm512_load_pd(B);
 
     for (i = 0; i < n_iterations; i++) {
-        d = _mm512_add_pd(a, b);
+        d = _mm512_add_round_pd(a, b,_MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
     }
 
     _mm512_store_pd(D, d);
@@ -180,7 +172,7 @@ static void avx512_dp_mul512()
     b = _mm512_load_pd(B);
 
     for (i = 0; i < n_iterations; i++) {
-        d = _mm512_mul_pd(a, b);
+        d = _mm512_mul_round_pd(a, b,_MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
     }
     
     _mm512_store_pd(D, d);
@@ -200,25 +192,13 @@ static void avx512_dp_fmadd512()
     c = _mm512_load_pd(C);
 
     for (i = 0; i < n_iterations; i++) {
-        d = _mm512_fmadd_pd(a, b, c);
+        d = _mm512_fmadd_round_pd(a, b, c,_MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
     }
 
     _mm512_store_pd(D, d);
 }
 #endif
 
-static void set_affinity(int core)
-{
-    cpu_set_t set;
-    CPU_ZERO(&set);
-    CPU_SET(core, &set);
-    //sched_setaffinity(0, sizeof(cpu_set_t), &set);
-    if (pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&set)!=0){
-        perror("Error defining affinity mask \n");
-	pthread_exit(0);
-    }	
-
-}
 
 static void run_test(int index)
 {
@@ -282,11 +262,12 @@ void usage()
 int main (int argc, char *argv[])
 {
 
-
+    int rank;
     if (argc != 3) {
         usage();
     }
-    mpi_init();
+    MPI_Init(&argc,&argv);
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
     // Options
     n_iterations = strtoul(argv[1], NULL, 10);
@@ -294,14 +275,11 @@ int main (int argc, char *argv[])
     int i;
 
 
-    // Reserving memory
-    D=(double *)_mm_malloc(n_threads*sizeof(double)*8,64);
-    memset(D,0,sizeof(double)*8*n_threads);
-
+    if (rank==0) printf("running test %d with %llu iterations\n",test,1000000*n_iterations);
     for (i=0;i<1000000;i++) run_test(test);
 
 
-    mpi_finalize();
+    MPI_Finalize();
 
     return 0;
 }

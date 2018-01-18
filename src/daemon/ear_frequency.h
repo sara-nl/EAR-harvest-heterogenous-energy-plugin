@@ -11,6 +11,7 @@
 #define _ear_CPUFREQ_H
 // Initializes information concerning list of available frequencies and hardware architectures. Current cpu governor is saved. 
 int ear_cpufreq_init();
+int ear_cpufreq_init_ncpus(int ncpus);
 // cpu governor is restored
 void ear_cpufreq_end();
 // Returns cpu frequency for cpuid

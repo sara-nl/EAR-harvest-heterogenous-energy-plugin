@@ -190,8 +190,13 @@ void print_gflops(long long total_inst,unsigned long total_time)
 			ear_verbose(1,"DP FOPS");
 		}
 		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
-			ear_verbose(1,"[%d]=%llu x %d, ",ev,ear_flops_acum_values[sets][ev],FP_OPS_WEIGTH[sets][ev]);
 			total=total+(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]);
+		}
+		if (total>0){
+		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
+			ear_verbose(1,"[%d]=%llu x %d (%lf \%), ",ev,ear_flops_acum_values[sets][ev],FP_OPS_WEIGTH[sets][ev],
+			(double)(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]*100)/(double)total);
+		}
 		}
 		ear_verbose(1,"\n");
 	}

@@ -16,14 +16,17 @@ BINARIES = intel_pci_uncores_stress \
            simd_power_metrics_2       \
            simd_power_metrics_sse       \
            simd_power_metrics_avx2       \
-           simd_power_metrics_avx512       \
            freeipmi_overhead        \
            hardware_scanner         \
-           dynais_input
+           dynais_input  \
+	  simd_test_with_ear
 
 ######## RULES
 
 all: $(BINARIES)
+
+simd_test_with_ear:simd_test_with_ear.c
+	mpiicc $(CFLAGS) -O0 -malign-double -vec-threshold0 -xCORE-AVX512 -qopt-report=5  simd_test_with_ear.c -o simd_test_with_ear
 
 intel_pci_uncores_stress: intel_pci_uncores_stress.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o intel_pci_uncores_stress intel_pci_uncores_stress.c \
