@@ -183,10 +183,10 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 				gui_frequency(ear_my_rank,my_id,POLICY_FREQ);
 				gui_PP(ear_my_rank,my_id,PP->Time,PP->CPI,PP->Power);
 				if (POLICY_FREQ!=prev_f){
-					ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\t Appplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.3lf)--> New frequency selected %u\n",
+					ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\t Appplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
 					ear_app_name,prev_f,event,period,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP,POLICY_FREQ);
 				} else{
-			 		ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.3lf)\n",
+			 		ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
 					ear_app_name,prev_f,event,period,level,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP);
 				}
 			}
