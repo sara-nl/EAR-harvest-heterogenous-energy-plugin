@@ -1,5 +1,5 @@
 DIR         = $(ROOTDIR)/tests/functionals
-CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon -I$(ROOTDIR)/src/library -march=native
+CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon -I$(ROOTDIR)/src/library
 
 ######## FILES
 
@@ -33,7 +33,7 @@ papi_cpu_gflops: papi_cpu_gflops.c $(OUTER_OBJS)
 	$(OUTER_OBJS) $(PAPI_LDFLAGS) -lpthread
 
 simd_power_metrics: simd_power_metrics.c $(OUTER_OBJS) $(ENERGY_OBJS)
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o simd_power_metrics simd_power_metrics.c \
+	$(CC) $(CFLAGS) -march=native $(PAPI_CFLAGS) -o simd_power_metrics simd_power_metrics.c \
 	$(ROOTDIR)/src/daemon/ear_rapl_metrics.o $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a \
 	$(OUTER_OBJS) $(PAPI_LDFLAGS) $(SIMD_CFLAGS) -lpthread
 
