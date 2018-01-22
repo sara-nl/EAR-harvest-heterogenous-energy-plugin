@@ -25,8 +25,10 @@ BINARIES = intel_pci_uncores_stress \
 
 all: $(BINARIES)
 
-simd_test_with_ear:simd_test_with_ear.c
-	mpiicc $(CFLAGS) -O0 -malign-double -vec-threshold0 -xCORE-AVX512 -qopt-report=5  simd_test_with_ear.c -o simd_test_with_ear
+simd_test_with_ear:simd_test_with_ear.c Makefile
+	mpiicc $(CFLAGS) -O0 -malign-double -vec-threshold3 -xCORE-AVX512   simd_test_with_ear.c -o simd_test_with_ear 
+#	$(ROOTDIR)/src/library/ear_metrics/ear_cache.o \
+#	$(PAPI_LDFLAGS) $(SIMD_CFLAGS) 
 
 intel_pci_uncores_stress: intel_pci_uncores_stress.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o intel_pci_uncores_stress intel_pci_uncores_stress.c \

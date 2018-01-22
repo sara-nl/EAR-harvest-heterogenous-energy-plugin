@@ -79,13 +79,13 @@ void init_flops_metrics()
 		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&flops_attach_opt[sets]))!=PAPI_OK){
 			ear_verbose(0,"EAR(%s): PAPI_set_opt.%s\n",__FILE__,PAPI_strerror(retval));
 		}
-		retval = PAPI_set_multiplex(sets);
-		if ((retval == PAPI_EINVAL) && (PAPI_get_multiplex(sets) > 0)){
+		retval = PAPI_set_multiplex(ear_flops_event_sets[sets]);
+		if ((retval == PAPI_EINVAL) && (PAPI_get_multiplex(ear_flops_event_sets[sets]) > 0)){
 			ear_verbose(0,"EAR: Event set to compute FLOPS already has multiplexing enabled\n");
 		}else if (retval != PAPI_OK){ 
 			ear_verbose(0,"EAR: Error , event set to compute FLOPS can not be multiplexed %s\n",PAPI_strerror(retval));
 		}
-		ear_verbose(2,"EAR: Set %d to compute flops has been multiplexed\n",sets);
+		ear_verbose(2,"EAR: Set %d to compute flops has been multiplexed\n",ear_flops_event_sets[sets]);
 		cpu_model = get_model();
 		switch(cpu_model){
 			case CPU_HASWELL_X:
