@@ -23,9 +23,11 @@
 #include <ear_metrics/ear_papi.h>
 #include <ear_metrics/ear_turbo_metrics.h>
 #include <ear_metrics/ear_flops_metrics.h>
+#include <ear_metrics/ear_cache.h>
 #include <ear_models/ear_models.h>
 
 #define EAR_EXTRA_METRICS
+long long l1,l2,l3;
 
 extern int ear_whole_app;
 extern int ear_use_turbo;
@@ -224,6 +226,7 @@ void metrics_start()
 #ifdef EAR_EXTRA_METRICS
 	start_turbo_metrics();
 	start_flops_metrics();
+	start_cache_metrics();
 #endif
 }
 
@@ -245,6 +248,7 @@ void metrics_stop()
 #ifdef EAR_EXTRA_METRICS
 	stop_turbo_metrics();
 	stop_flops_metrics(&total_flops);
+	stop_cache_metrics(&l1,&l2,&l3);
 #endif
 }
 
@@ -265,6 +269,7 @@ void metrics_reset()
 #ifdef EAR_EXTRA_METRICS
 	reset_turbo_metrics();
 	reset_flops_metrics();
+	reset_cache_metrics();
 #endif
 }
 
@@ -381,6 +386,7 @@ int metrics_init(int my_id,int pid)
 #ifdef EAR_EXTRA_METRICS
 	init_turbo_metrics();
 	init_flops_metrics();
+	init_cache_metrics();
 #endif
 	reset_values();
 	metrics_reset();
@@ -406,6 +412,8 @@ void metrics_end(unsigned int whole_app,int my_id,FILE* fd,unsigned long int *er
 #ifdef EAR_EXTRA_METRICS
 	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
 	print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
+	get_cache_metrics(&l1,&l2,&l3);
+	ear_verbose(1,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
 #endif
 }
 

@@ -71,7 +71,7 @@ struct App_info *ear_my_app_info;
 long long begin_ov,end_ov,ear_acum=0;
 unsigned int calls=0;
 #endif
-//#define DYNAIS_TRACE
+#define DYNAIS_TRACE
 #ifdef DYNAIS_TRACE
 FILE *stdtrace,*stdtracebin;
 #endif
@@ -214,7 +214,7 @@ if (!ear_whole_app){
 	unsigned long ear_event = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
     unsigned int ear_size;
 	unsigned int ear_level;
-	unsigned long trace_data[4];
+	unsigned long trace_data[5];
 // DYNAIS_TRACE generates a text trace file with values used as dynais imput, it is used for dynais evaluation and optimization
 #ifdef DYNAIS_TRACE
 	if (ear_my_rank==0){
@@ -223,7 +223,8 @@ if (!ear_whole_app){
 	trace_data[1]=(unsigned long)dest;
 	trace_data[2]=(unsigned long)call_type;
 	trace_data[3]=(unsigned long)ear_event;
-	fwrite(trace_data,sizeof(unsigned long),4,stdtracebin);
+	trace_data[4]=(unsigned long)PAPI_get_real_usec();
+	fwrite(trace_data,sizeof(unsigned long),5,stdtracebin);
 	}
 #endif
 
