@@ -4,7 +4,7 @@ CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/library
 ######## FILES
 
 BINARIES = show_metrics traces_to_paraver coefficients_to_csv
-BINARIES = show_metrics coefficients_to_csv compute_projections
+BINARIES = show_metrics coefficients_to_csv compute_projections compute_projections_from_csv
 
 ######## RULES
 
@@ -22,6 +22,9 @@ coefficients_to_csv: coefficients_to_csv.c
 compute_projections:compute_projections.c
 	$(CC) $(CFLAGS) -o compute_projections compute_projections.c
 
+compute_projections_from_csv:compute_projections_from_csv.c
+	$(CC) $(CFLAGS) -o compute_projections_from_csv compute_projections_from_csv.c
+
 ######## OPTIONS
 
 install:
@@ -29,5 +32,6 @@ install:
 	#mv traces_to_paraver $(DESTDIR)/bin
 	mv coefficients_to_csv $(DESTDIR)/bin
 	mv compute_projections $(DESTDIR)/bin
+	mv compute_projections_from_csv $(DESTDIR)/bin
 clean:
 	rm -rf $(BINARIES)
