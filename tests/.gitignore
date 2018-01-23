@@ -3,6 +3,7 @@ core.*
 
 # Check
 *cpu_model
+*cpu_examinable
 *cpu_aperf
 *cpu_uncores
 *cpu_uncores_all
