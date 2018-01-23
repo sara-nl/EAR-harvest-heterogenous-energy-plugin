@@ -8,7 +8,7 @@
 #include <sched.h>
 #include <pthread.h>
 #include <emmintrin.h> // -msse2
-#include <immintrin.h> // -mavx -mfma
+#include <immintrin.h> // -mavx -mfma -mavx512f 
 #include <ear_rapl_metrics.h>
 #include <ear_metrics/ear_flops_metrics.h>
 #include <ear_frequency.h>
