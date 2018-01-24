@@ -18,26 +18,8 @@
 #include <linux/limits.h>
 #include <errno.h>
 #include <ear_models/ear_models.h>
+#include <projections.h>
 
-/*
-Power = A(fn)*Power + B(fn)*TPI + C(fn) 
-CPI = D(fn)*CPI + E(fn)*TPI +  F(fn) 
-TIME = TIME * CPI(fn)/CPI * (Rf/fn) 
-*/
-
-double power_proj(double power_f0,double tpi_f0,struct Coefficients_info *my_coeffs)
-{
-	return my_coeffs->A*power_f0+my_coeffs->B*tpi_f0+my_coeffs->C;
-	
-}
-double cpi_proj(double cpi_f0,double tpi_f0,struct Coefficients_info *my_coeffs)
-{
-	return my_coeffs->D*cpi_f0+my_coeffs->E*tpi_f0+my_coeffs->F;
-}
-double time_proj(double time_f0,double cpi_proj,double cpi_f0,unsigned long f0,unsigned long fn)
-{
-	return (time_f0*cpi_proj/cpi_f0)*((double)f0/(double)fn);
-}
 void usage(char *app)
 {
 	fprintf(stdout,"usage: %s coefficients_filename CPI_f0 TPI_f0 Time_f0 Power_f0 F0(Hz)\n",app);
