@@ -10,9 +10,9 @@ all:
 	@ for i in $(COMPONENTS); do                         \
 		echo "===================================="; \
 		echo "= Compilling tests/$$i";               \
-                echo "===================================="; \
+		echo "===================================="; \
 		$(MAKE) -C $${i} all || exit;                \
-        done
+	done
 
 functionals:
 	@ $(MAKE) -C functionals all || exit
@@ -24,7 +24,7 @@ check:
 
 clean:
 	@ for i in $(COMPONENTS); do    \
-                $(MAKE) -C $${i} clean; \
-        done
+		$(MAKE) -C $${i} clean; \
+	done
 	@ $(MAKE) -C functionals clean
 
