@@ -43,6 +43,10 @@
 #include <fcntl.h>
 #include <ear_dynais/ear_dynais.h>
 
+#if ANALYSIS
+#include <nmmintrin.h>
+#endif
+
 // General indexes.
 unsigned int _levels;
 unsigned int _window;
@@ -53,152 +57,55 @@ unsigned long *sample_vec[MAX_LEVELS];
 unsigned int  *zero_vec[MAX_LEVELS];
 unsigned int  *size_vec[MAX_LEVELS];
 
-unsigned int level_saved_size[MAX_LEVELS];
-unsigned int level_size[MAX_LEVELS];
+#if ANALYSIS
+unsigned int *crc_vec[MAX_LEVELS];
+#endif
+
+signed int   level_result[MAX_LEVELS];
+unsigned int level_previous_length[MAX_LEVELS];
+unsigned int level_length[MAX_LEVELS];
 unsigned int level_limit[MAX_LEVELS];
 unsigned int level_index[MAX_LEVELS];
-  signed int level_result[MAX_LEVELS];
 
-#if METRICS
-// Time metrics
-clock_t call_t1, elapsed_t1, elapsed_t2;
-unsigned int call_accum;
-double call_taccum;
-
-// Summary metrics (not precise)
-unsigned int summ_loops[METRICS_CHUNCK];
-unsigned int summ_iters[METRICS_CHUNCK];
-unsigned int summ_calls[METRICS_CHUNCK];
-unsigned int summ_ends[METRICS_CHUNCK];
-
-// Current loop metrics
-unsigned int iter_calls[MAX_LEVELS];
-unsigned int iter_ended[MAX_LEVELS];
-unsigned int loop_iters[MAX_LEVELS];
-unsigned int loop_calls[MAX_LEVELS];
-unsigned int loop_size[MAX_LEVELS];
-signed int loop_state[MAX_LEVELS];
-
-//
-//
-// DynAIS Metrics
-//
-//
-
-unsigned int dynais_metrics_get_loop_calls(unsigned int *level)
+#if ANALYSIS
+unsigned int dynais_loop_data(unsigned long *_samples,
+    unsigned int *_sizes,
+    unsigned int *_crcs,
+    unsigned int level,
+    unsigned int size)
 {
-    for (int l = _levels - 1; l >= 0; --l) {
-        if (loop_state[l] >= IN_LOOP && iter_ended[l]) {
-            *level = l;
-            return iter_calls[l];
-        }
-        else if (loop_state[l] >= IN_LOOP) {
-            *level = l;
-            return 0;
-        }
-    }
-    *level = 0;
-    return 0;
-}
-
-void dynais_metrics_level_close(unsigned int level)
-{
-    unsigned int calls_per_iter;
-    unsigned int calls_per_loop;
-    unsigned int sum_index = METRICS_WINDOW * level + loop_size[level];
-
-    // When level is 0, we add two additional iterations, completing the
-    // loop, because dynais() just starts counting at the third iteration.
-    // This doesn't no affect higher level because for higher level loops the
-    // precision is lost, because at the third iteration, we don't know how
-    // many calls are included in this higher loop composed of lower loops.
-    calls_per_loop = calls - loop_calls[level];
-    if (level == 0) calls_per_loop += (2 * loop_size[level] + 1);
-
-    // Finally
-    calls_per_iter = calls_per_loop / loop_iters[level];
-    summ_calls[sum_index] += calls_per_loop;
-}
-
-void dynais_metrics_sample_add(unsigned long value, int status, unsigned int size, unsigned int level)
-{
-    unsigned int loop_index = METRICS_WINDOW * level + size;
-    unsigned int sum_index = METRICS_WINDOW * level + loop_size[level];
-
-    // End of the loop, then loop data must be processed.
-    if (status == END_LOOP || status == END_NEW_LOOP) {
-        dynais_metrics_level_close(level);
-        iter_ended[level] = 0;
-    }
+    unsigned long *samples;
+    unsigned int *sizes;
+    unsigned int *crcs;
+    unsigned int limit;
+    unsigned int index;
+    unsigned int i, k;
 
     //
-    if (status == NEW_ITERATION && !iter_ended[level]) {
-        iter_calls[level] = calls - loop_calls[level] + 1;
-        iter_ended[level] = 1;
-    }
+    index = level_index[level];
+    limit = level_limit[level];
 
-    // The number of lowest level calls (the MPI calls).
-    calls += (level == 0);
+    //
+    samples = sample_vec[level];
+    sizes = size_vec[level];
+    crcs = crc_vec[level];
 
-    // Current loop iterations.
-    loop_state[level] = status;
-    loop_iters[level] += (status == NEW_ITERATION);
+    // Indexing
+    i = index + 2;
+    i = (i & ((i >= _window) - 1)) + (i > _window);
 
-    // Summary metrics.
-    summ_ends[sum_index]   += (status == END_LOOP || status == END_NEW_LOOP);
-    summ_iters[loop_index] += (status == NEW_ITERATION) + 3 * (status >= NEW_LOOP);
-    summ_loops[loop_index] += (status >= NEW_LOOP);
-
-    // New loop, some data must be reset.
-    if (status >= NEW_LOOP) {
-        loop_size[level] = size;
-        loop_calls[level] = calls;
-        loop_iters[level] = 3;
-        iter_ended[level] = 0;
-    }
-}
-
-void dynais_metrics_print()
-{
-    unsigned int level, index, i;
-    unsigned int calls_per_iter;
-    unsigned int calls_estimate;
-    int status;
-
-    printf("SUMMARY METRICS (no precision, just averages)\n");
-    for (level = 0; level < _levels; ++level)
+    // Copying the content
+    for (k = 0; k < size; ++k)
     {
-        // If the last status of the level shows that the
-        // loop in that level isn't finished, it has to
-        // to be closed before to complete statistics.
-        status = loop_state[level];
+        _samples[k] = samples[i];
+        _sizes[k] = sizes[i];
+        _crcs[k] = crcs[i];
 
-        if (status != END_LOOP && status != NO_LOOP) {
-            dynais_metrics_level_close(level);
-        }
-
-        printf("LEVEL %i\n", level);
-        index = METRICS_WINDOW * level;
-
-        for (i = 0; i < METRICS_WINDOW; ++i, ++index)
-        {
-            if (summ_loops[index] > 0)
-            {
-                calls_estimate = summ_calls[index];
-
-                if (level > 0) {
-                    calls_estimate = calls_estimate / (summ_iters[index] - 2);
-                    calls_estimate = summ_calls[index] + (calls_estimate * 2);
-                }
-
-                calls_per_iter = calls_estimate / summ_iters[index];
-
-                printf("- Size: %u, n/e: %u/%u", i, summ_loops[index], summ_ends[index]);
-                printf(", iters: %u, MPI_det/est: %u/%u", summ_iters[index], summ_calls[index], calls_estimate);
-                printf(", est_calls_iter: %u\n", calls_per_iter);
-            }
-        }
+        i = i + 1;
+        i = i & ((i == _window) - 1);
     }
+
+    return k;
 }
 #endif
 
@@ -211,8 +118,8 @@ void dynais_metrics_print()
 int dynais_init(unsigned int window, unsigned int levels)
 {
     unsigned long *p_data;
-    unsigned int *p_zero, *p_size;
-    int mem_res1, mem_res2, mem_res3;
+    unsigned int *p_zero, *p_size, *p_crc;
+    int mem_res1, mem_res2, mem_res3, mem_res4 = 0;
     int i;
 
     _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
@@ -221,8 +128,12 @@ int dynais_init(unsigned int window, unsigned int levels)
     mem_res2 = posix_memalign((void *) &p_zero, sizeof(long), sizeof(int) * window * levels);
     mem_res3 = posix_memalign((void *) &p_size, sizeof(long), sizeof(int) * window * levels);
 
+    #if ANALYSIS
+    mem_res4 = posix_memalign((void *) &p_crc, sizeof(long), sizeof(int) * window * levels);
+    #endif
+
     //EINVAL = 22, ENOMEM = 12
-    if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0) {
+    if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
         return -1;
     }
 
@@ -231,11 +142,15 @@ int dynais_init(unsigned int window, unsigned int levels)
         level_limit[i] = 0;
         level_index[i] = 0;
         level_result[i] = NO_LOOP;
-        level_size[i] = 0;
+        level_length[i] = 0;
 
         sample_vec[i] = &p_data[i * window];
         zero_vec[i] = &p_zero[i * window];
         size_vec[i] = &p_size[i * window];
+
+        #if ANALYSIS
+        crc_vec[i] = &p_crc[i * window];
+        #endif
     }
 
     return 0;
@@ -246,6 +161,10 @@ void dynais_dispose()
     free((void *) sample_vec[0]);
     free((void *) zero_vec[0]);
     free((void *) size_vec[0]);
+
+    #if ANALYSIS
+    free((void *) crc_vec[0]);
+    #endif
 }
 
 // How it works?
@@ -303,29 +222,31 @@ void dynais_dispose()
 //     But this fact just happens when two iterations
 //     of length N have passed.
 //
-int dynais_basic(unsigned long sample, unsigned int *size, unsigned int level)
+static int dynais_basic(unsigned long sample, unsigned int size, unsigned int level)
 {
     unsigned long *samples;
-    unsigned int *zeros, *sizes;
-    unsigned int index, limit, last_size, current_size;
-
+    unsigned int *zeros, *sizes, *crcs;
     unsigned int end_loop, in_loop, new_loop, new_iteration;
-    unsigned int max_size = 0, max_zeros = 0;
+    unsigned int index, limit, previous_length, sample_size;
+    unsigned int max_length = 0, max_zeros = 0, mask;
     unsigned int i, k, m;
-    unsigned int mask;
     int result = 0;
 
     // Getting level data (index, limit...)
     index = level_index[level];
     limit = level_limit[level];
-    last_size = level_saved_size[level];
+    previous_length = level_previous_length[level];
 
     samples = sample_vec[level];
     zeros = zero_vec[level];
     sizes = size_vec[level];
 
-    current_size = *size;
-    sizes[index] = current_size;
+    #if ANALYSIS
+    crcs = crc_vec[level];
+    #endif
+
+    sample_size = size;
+    sizes[index] = size;
     samples[index] = sample;
 
     // Indexing
@@ -336,17 +257,31 @@ int dynais_basic(unsigned long sample, unsigned int *size, unsigned int level)
 
     for (k = 1; k <= limit; ++k)
     {
-        if (sample == samples[i] && current_size == sizes[i])
+        if (sample == samples[i] && sample_size == sizes[i])
         {
             zeros[i] = zeros[m] + 1;
 
             if (zeros[i] > max_zeros && k < zeros[i])
             {
-                max_size = k;
+                max_length = k;
                 max_zeros = zeros[i];
+
+                // Caution, CRC code isn't implemented inter-level.
+                // To do that there are two possibilities:
+                // - Use the CRC code as upper level sample.
+                // - Initialize CRC vector with the level number.
+                #if ANALYSIS
+                crcs[i] = crcs[m];
+                #endif
             }
+            #if ANALYSIS
+            else {
+                crcs[i] = _mm_crc32_u32(crcs[m], sample);
+            }
+            #endif
         }
         zeros[m] = 0;
+        crcs[m] = 0;
 
         i = i + 1;
         i = i & ((i == _window) - 1);
@@ -364,29 +299,29 @@ int dynais_basic(unsigned long sample, unsigned int *size, unsigned int level)
     mask = (limit == (_window - 1)) - 1;
     limit = ((limit + 1) & mask) + ((_window - 1) & ~mask);
 
-    // STATUS is obtained. If max_size is greater than 0
-    // and if max_zeros is greater than the max_size, which
+    // STATUS is obtained. If max_length is greater than 0
+    // and if max_zeros is greater than the max_length, which
     // means we are in a loop (equal is the last sample of the
     // second iteration).
-    in_loop = max_size > 0 & (max_zeros > max_size);
+    in_loop = max_length > 0 & (max_zeros > max_length);
 
     // We know that we are at the begining of a loop or an
     // iteration because the module between max_zeros and
-    // max_size is 1. We also protect this operation
-    // with the last boolean sample, because if max_size
+    // max_length is 1. We also protect this operation
+    // with the last boolean sample, because if max_length
     // were 0, the application would crash.
-    new_iteration = in_loop && (max_size == 1 || (max_zeros % max_size) == 1);
+    new_iteration = in_loop && (max_length == 1 || (max_zeros % max_length) == 1);
 
-    // If max_zeros is equal to max_size plus one, means
+    // If max_zeros is equal to max_length plus one, means
     // that we are exactly at the point that the loop starts
     // not the iteration.
-    new_loop = new_iteration & (last_size != max_size);
+    new_loop = new_iteration & (previous_length != max_length);
 
     // If the last loop size is different than 0, which means
     // that we come from another loop, and the detected size is
     // different than the last saved size, it means that this is
     // an end loop status.
-    end_loop = (last_size != max_size && last_size != 0);
+    end_loop = (previous_length != max_length && previous_length != 0);
 
     result = 0;
     result -= !in_loop & end_loop; // -1 = end lopp
@@ -396,37 +331,72 @@ int dynais_basic(unsigned long sample, unsigned int *size, unsigned int level)
     result += new_loop & end_loop; // 4 = end and new loop
 
     // Saving the loop length if we are in a loop.
-    if (result >= 3) last_size = max_size;
-    else if (result <= 0) last_size = 0;
+    if (result >= 3) previous_length = max_length;
+    else if (result <= 0) previous_length = 0;
 
     // Length of the loop is obtained.
-    *size = max_size;
-
+    level_length[level] = max_length;
+    level_previous_length[level] = previous_length;
     level_index[level] = index;
     level_limit[level] = limit;
-    level_saved_size[level] = last_size;
 
     return result;
 }
 
-// Returns the highest level.
-int dynais_hierarchical(unsigned long sample, unsigned int size, unsigned int level)
+static unsigned int dynais_add_samples_size(unsigned int amount, unsigned int level)
 {
-    if (level >= _levels) return level - 1;
+    unsigned int *sizes, limit, index, total_size = 0;
+    unsigned int i, k;
 
-    level_size[level] = size;
+    // Getting content index and limit
+    index = level_index[level];
+    limit = level_limit[level];
+
+    // Pointing to the selected level vector of sizes
+    sizes = size_vec[level];
+
+    // Indexing
+    i = index + 2;
+    i = (i & ((i >= _window) - 1)) + (i > _window);
+
+    // Reading size vector
+    for (k = 0; k < amount; ++k)
+    {
+        total_size += sizes[i];
+
+        i = i + 1;
+        i = i & ((i == _window) - 1);
+    }
+
+    return total_size;
+}
+
+// Returns the highest level.
+static int dynais_hierarchical(unsigned long sample, unsigned int size, unsigned int level)
+{
+    unsigned int new_sample_size;
+
+    if (level >= _levels) {
+        return level - 1;
+    }
+
     // DynAIS basic algorithm call.
-    level_result[level] = dynais_basic(sample, &level_size[level], level);
-
-    // Metrics
-    #if METRICS
-    dynais_metrics_sample_add(sample, level_result[level], level_size[level], level);
-    #endif
+    level_result[level] = dynais_basic(sample, size, level);
 
     // If new loop is detected, the sample and the size
     // is passed recursively to dynais_hierarchical.
-    if (level_result[level] >= NEW_LOOP) {
-        return dynais_hierarchical(sample, level_size[level], level + 1);
+    if (level_result[level] >= NEW_LOOP)
+    {
+        // Finding the correct size of the loop. If the level
+        // is 0 then is not needed, because all level 0 inputs
+        // size is 1, and then is equal to level size.
+        if (level > 0) {
+            new_sample_size = dynais_add_samples_size(level_length[level], level);
+        } else {
+            new_sample_size = level_length[level];
+        }
+
+        return dynais_hierarchical(sample, new_sample_size, level + 1);
     }
 
     // If is not a NEW_LOOP.
@@ -439,27 +409,18 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
     int in_loop = 0;
     int result;
     int reach;
-    int l;
-
-    #if METRICS
-    call_accum += 1;
-    call_t1 = clock();
-    #endif
+    int l, ll;
 
     // Hierarchical algorithm call. The maximum level
     // reached is returned. All those values were updated
     // by the basic DynAIS algorithm call.
     reach = dynais_hierarchical(sample, 1, 0);
 
-    #if METRICS
-    call_taccum += (double) (clock() - call_t1);
-    #endif
-
     // Cleans didn't reach levels. Cleaning means previous
     // loops with a state greater than IN_LOOP have to be
     // converted to IN_LOOP and also END_LOOP have to be
     // converted to NO_LOOP.
-    for (l = _levels; l > reach; --l)
+    for (l = _levels - 1; l > reach; --l)
     {
         result = level_result[l];
         if (result > IN_LOOP) level_result[l] = IN_LOOP;
@@ -477,9 +438,37 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
         if (level_result[l] >= IN_LOOP)
         {
             *govern_level = l;
-            *size = level_size[l];
+            *size = level_length[l];
 
-            if (end_loop) return END_NEW_LOOP;
+            // END_LOOP is detected above, it means that in this and
+            // below levels the status is NEW_LOOP or END_NEW_LOOP,
+            // because the only way to break a loop is with the
+            // detection of a new loop.
+            if (end_loop) {
+                return END_NEW_LOOP;
+            }
+
+            // If the status of this level is NEW_LOOP, it means
+            // that the status in all below levels is NEW_LOOP or
+            // END_NEW_LOOP. If there is at least one END_NEW_LOOP
+            // the END part have to be propagated to this level.
+            if (level_result[l] == NEW_LOOP)
+            {
+                for (ll = l - 1; ll >= 0; --ll)
+                {
+                    end_loop |= level_result[ll] == END_NEW_LOOP;
+
+                    if (level_result[ll] < NEW_LOOP)
+                    {
+                        return IN_LOOP;
+                    }
+                }
+            }
+
+            if (end_loop) {
+                return END_NEW_LOOP;
+            }
+
             return level_result[l];
         }
     }
