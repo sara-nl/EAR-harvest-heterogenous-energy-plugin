@@ -15,6 +15,7 @@
 #define _GNU_SOURCE
 #define __USE_GNU
 #include <sched.h>
+#include <errno.h>
 
 
 #include <ear_verbose.h>
@@ -27,7 +28,13 @@
 #include <ear_models/ear_models.h>
 
 #define EAR_EXTRA_METRICS
+#ifdef EAR_EXTRA_METRICS
 long long l1,l2,l3;
+long long *flops_metrics;
+int flops_events;
+int *flops_weigth;
+long long total_flops;
+#endif
 
 extern int ear_whole_app;
 extern int ear_use_turbo;
@@ -100,9 +107,6 @@ unsigned long uncore_size,uncore_elements;
 long long *event_values_rapl;
 unsigned long rapl_size,rapl_elements;
 
-//FLOPS
-
-long long total_flops;
 
 // This is for all the metrics
 long long acum_event_values[TOTAL_EVENTS];
@@ -201,7 +205,8 @@ void papi_initialice_events(int sets,int pid)
 		strncpy(event_names[EAR_PAPI_TOT_CYC],"ix86arch::UNHALTED_CORE_CYCLES",PAPI_MIN_STR_LEN);
 		strncpy(event_names[EAR_PAPI_TOT_INS],"ix86arch::INSTRUCTION_RETIRED",PAPI_MIN_STR_LEN);
 		ear_papi_error(PAPI_add_named_event(EventSet[sets],"ix86arch::UNHALTED_CORE_CYCLES"),"Adding events to event set: ix86arch::UNHALTED_CORE_CYCLES");	
-		ear_papi_error(PAPI_add_named_event(EventSet[sets],"ix86arch::INSTRUCTION_RETIRED"),"Adding events to event set: ix86arch::INSTRUCTION_RETIRED");	
+		//ear_papi_error(PAPI_add_named_event(EventSet[sets],"ix86arch::INSTRUCTION_RETIRED"),"Adding events to event set: ix86arch::INSTRUCTION_RETIRED");	
+		ear_papi_error(PAPI_add_named_event(EventSet[sets],"PAPI_TOT_INS"),"Adding events to event set: ix86arch::INSTRUCTION_RETIRED");	
 		ear_papi_error(PAPI_event_name_to_code("ix86arch::UNHALTED_CORE_CYCLES",&event_codes[EAR_PAPI_TOT_CYC]),"Getting ix86arch::UNHALTED_CORE_CYCLES event code");
 		ear_papi_error(PAPI_event_name_to_code("ix86arch::INSTRUCTION_RETIRED",&event_codes[EAR_PAPI_TOT_INS]),"Getting ix86arch::INSTRUCTION_RETIRED event code");
 		ear_papi_error(PAPI_get_event_info(event_codes[EAR_PAPI_TOT_CYC],&evinfo[EAR_PAPI_TOT_CYC]),"Getting Event info for Total cycles");
@@ -221,7 +226,7 @@ void metrics_start()
 	ear_daemon_client_start_rapl();
 	for (sets=0;sets<MAX_SETS;sets++){
 		ear_debug(4,"EAR(%s): Starting counter sets %d\n",__FILE__,sets);
-        ear_papi_error(PAPI_start(EventSet[sets]),buff);
+        	ear_papi_error(PAPI_start(EventSet[sets]),buff);
 	}
 #ifdef EAR_EXTRA_METRICS
 	start_turbo_metrics();
@@ -247,7 +252,7 @@ void metrics_stop()
 	}
 #ifdef EAR_EXTRA_METRICS
 	stop_turbo_metrics();
-	stop_flops_metrics(&total_flops);
+	stop_flops_metrics(&total_flops,flops_metrics);
 	stop_cache_metrics(&l1,&l2,&l3);
 #endif
 }
@@ -387,6 +392,18 @@ int metrics_init(int my_id,int pid)
 	init_turbo_metrics();
 	init_flops_metrics();
 	init_cache_metrics();
+	flops_events=get_number_fops_events();
+	flops_metrics=(long long *) malloc(sizeof(long long)*flops_events);
+	if (flops_metrics==NULL){
+		ear_verbose(0,"EAR: Error allocating memory for flops %s\n",strerror(errno));
+		exit(1);
+	}
+	flops_weigth=(int *)malloc(sizeof(int)*flops_events);
+	if (flops_weigth==NULL){
+		ear_verbose(0,"EAR: Error allocating memory for flops weigth %s\n",strerror(errno));
+		exit(1);
+	}
+	get_weigth_fops_instructions(flops_weigth);	
 #endif
 	reset_values();
 	metrics_reset();
@@ -450,6 +467,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		unsigned long f,optimal;
 		double PP,TP,EP,perf_deg,power_sav,energy_sav,ener,new_EDP;
 	    	char *app_name;
+		long long total_fops_instructions;
 		
 		int i,new;
 		app_info=db_current_app();
@@ -467,6 +485,17 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		DRAM_POWER=(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/Seconds;
 		PCK_POWER=(double)(acum_event_values[EAR_ACUM_PCKG_ENER]/1000000000)/Seconds;
 		f=ear_daemon_client_end_compute_turbo_freq();
+#ifdef EAR_EXTRA_METRICS
+                get_total_fops(flops_metrics);
+                total_fops_instructions=0;
+                for (i=0;i<flops_events;i++) total_fops_instructions+=flops_metrics[i];
+                ear_verbose(1,"Total FP instructions %llu \n",total_fops_instructions);
+		ear_verbose(1,"AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
+		(double)flops_metrics[flops_events-1]/(double)total_fops_instructions);
+		ear_verbose(1,"Instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
+		ear_verbose(1,"Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+#endif          
+
 		// We can write summary metrics in any DB or any other place
 #if 0
 		fprintf(stderr,"_____________________APP SUMMARY ___________________\n");

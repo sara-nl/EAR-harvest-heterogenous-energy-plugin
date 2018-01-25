@@ -31,7 +31,7 @@ projections_avx512.o:projections_avx512.c
 	$(CC) $(CFLAGS) -c projections_avx512.c
 
 coefficients_tools.o:coefficients_tools.c 
-	 $(CC) $(CFLAGS) -c coefficients_tools.o
+	 $(CC) $(CFLAGS) -c coefficients_tools.c
 
 ######## OPTIONS
 
