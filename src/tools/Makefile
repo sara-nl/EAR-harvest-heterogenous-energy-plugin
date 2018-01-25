@@ -3,8 +3,7 @@ CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/library
 
 ######## FILES
 
-BINARIES = show_metrics traces_to_paraver coefficients_to_csv
-BINARIES = show_metrics coefficients_to_csv compute_projections compute_projections_from_csv
+BINARIES = show_metrics coefficients_to_csv compute_projections compute_projections_from_csv compute_projections_from_csv_avx512
 
 ######## RULES
 
@@ -19,17 +18,20 @@ traces_to_paraver: traces_to_paraver.cpp
 coefficients_to_csv: coefficients_to_csv.c
 	$(CC) $(CFLAGS) -o coefficients_to_csv coefficients_to_csv.c
 
-compute_projections:compute_projections.c projections.o
-	$(CC) $(CFLAGS) -o compute_projections compute_projections.c projections.o
+compute_projections:compute_projections.c
+	$(CC) $(CFLAGS) -o compute_projections compute_projections.c
 
-compute_projections_from_csv:compute_projections_from_csv.c projections.o coefficients_tools.o
-	$(CC) $(CFLAGS) -o compute_projections_from_csv compute_projections_from_csv.c projections.o coefficients_tools.o
+compute_projections_from_csv:compute_projections_from_csv.c
+	$(CC) $(CFLAGS) -o compute_projections_from_csv compute_projections_from_csv.c
 
-projections.o:projections.c
-	$(CC) $(CFLAGS) -DVERBOSE=1 -c projections.c
+compute_projections_from_csv_avx512:compute_projections_from_csv_avx512.c projections_avx512.o coefficients_tools.o
+	$(CC) $(CFLAGS) -o compute_projections_from_csv_avx512 compute_projections_from_csv_avx512.c projections_avx512.o coefficients_tools.o
 
-coefficients_tools.o:coefficients_tools.c
-	$(CC) $(CFLAGS)  -c coefficients_tools.c
+projections_avx512.o:projections_avx512.c
+	$(CC) $(CFLAGS) -c projections_avx512.c
+
+coefficients_tools.o:coefficients_tools.c 
+	 $(CC) $(CFLAGS) -c coefficients_tools.o
 
 ######## OPTIONS
 
@@ -39,5 +41,6 @@ install:
 	mv coefficients_to_csv $(DESTDIR)/bin
 	mv compute_projections $(DESTDIR)/bin
 	mv compute_projections_from_csv $(DESTDIR)/bin
+	mv compute_projections_from_csv_avx512 $(DESTDIR)/bin
 clean:
 	rm -rf $(BINARIES)
