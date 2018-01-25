@@ -89,20 +89,52 @@ void main(int argc,char *argv[])
 			    fprintf(stderr,"CASE  1 %lu\n",MY_COEFFS[i].pstate);
 			    // Case 1: MY_COEFFS[i].pstate>MY_COEFFS[pstate_avx512].pstate
 			    cpi_p=cpi_proj(cpi_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[1],perc_nonavx512,perc_avx512);
-			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;PROJECTION;0.0\n",
+			    // All the models are the same in this range of freqs. I generated three times to make it easy the loading in excel
+			    //MODEL 1
+			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;AVX512_MODEL1;%lf\n",
 				app_data.user_id,app_data.job_id,app_data.node_id,app_data.app_id,
 				MY_COEFFS[i].pstate,time_proj(time_f0,cpi_p,cpi_f0,f0,(MY_COEFFS[i].pstate*(unsigned long)(perc_nonavx512*100)+MY_COEFFS[1].pstate*(unsigned long)(perc_avx512*100))/100),
 				cpi_p,0.0,0.0,0.0,power_proj(power_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[1],perc_nonavx512,perc_avx512),
-				0.0,0.0,f0);
+				0.0,0.0,MY_COEFFS[i].pstate,perc_avx512);
+			    //MODEL 2
+			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;AVX512_MODEL2;%lf\n",
+				app_data.user_id,app_data.job_id,app_data.node_id,app_data.app_id,
+				MY_COEFFS[i].pstate,time_proj(time_f0,cpi_p,cpi_f0,f0,(MY_COEFFS[i].pstate*(unsigned long)(perc_nonavx512*100)+MY_COEFFS[1].pstate*(unsigned long)(perc_avx512*100))/100),
+				cpi_p,0.0,0.0,0.0,power_proj(power_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[1],perc_nonavx512,perc_avx512),
+				0.0,0.0,MY_COEFFS[i].pstate,perc_avx512);
+			    //MODEL 3
+			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;AVX512_MODEL3;%lf\n",
+				app_data.user_id,app_data.job_id,app_data.node_id,app_data.app_id,
+				MY_COEFFS[i].pstate,time_proj(time_f0,cpi_p,cpi_f0,f0,(MY_COEFFS[i].pstate*(unsigned long)(perc_nonavx512*100)+MY_COEFFS[1].pstate*(unsigned long)(perc_avx512*100))/100),
+				cpi_p,0.0,0.0,0.0,power_proj(power_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[1],perc_nonavx512,perc_avx512),
+				0.0,0.0,MY_COEFFS[i].pstate,perc_avx512);
 			}else{
 			    fprintf(stderr,"CASE 2 %lu \n",MY_COEFFS[pstate_avx512].pstate);
 			    // Case 2: MY_COEFFS[i].pstate<MY_COEFFS[pstate_avx512].pstate
+			    // MODEL 1 assumes under MY_COEFFS[pstate_avx512].pstate avx works the same as non-avx
+			    // MODE 1
 			    cpi_p=cpi_proj(cpi_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[i],perc_nonavx512,perc_avx512);
-			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;PROJECTION;0.0\n",
+			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;AVX512_MODEL1;%lf\n",
 				app_data.user_id,app_data.job_id,app_data.node_id,app_data.app_id,
-				MY_COEFFS[i].pstate,time_proj(time_f0,cpi_p,cpi_f0,f0,MY_COEFFS[i].pstate),
+				MY_COEFFS[i].pstate,time_proj(time_f0,cpi_p,cpi_f0,f0,(MY_COEFFS[i].pstate*(unsigned long)(perc_nonavx512*100)+MY_COEFFS[i].pstate*(unsigned long)(perc_avx512*100))/100),
 				cpi_p,0.0,0.0,0.0,power_proj(power_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[i],perc_nonavx512,perc_avx512),
-				0.0,0.0,f0);
+				0.0,0.0,MY_COEFFS[i].pstate,perc_avx512);
+			    // MODEL 2 assumes under MY_COEFFS[pstate_avx512].pstate avx works similar to ONE p_state less
+			    // MODE 2
+			    cpi_p=cpi_proj(cpi_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[i-1],perc_nonavx512,perc_avx512);
+			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;AVX512_MODEL2;%lf\n",
+				app_data.user_id,app_data.job_id,app_data.node_id,app_data.app_id,
+				MY_COEFFS[i].pstate,time_proj(time_f0,cpi_p,cpi_f0,f0,(MY_COEFFS[i].pstate*(unsigned long)(perc_nonavx512*100)+MY_COEFFS[i-1].pstate*(unsigned long)(perc_avx512*100))/100),
+				cpi_p,0.0,0.0,0.0,power_proj(power_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[i-1],perc_nonavx512,perc_avx512),
+				0.0,0.0,MY_COEFFS[i].pstate,perc_avx512);
+			    // MODEL 3 assumes under MY_COEFFS[pstate_avx512].pstate avx works the same as before
+			    // MODE 3
+			    cpi_p=cpi_proj(cpi_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[1],perc_nonavx512,perc_avx512);
+			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;AVX512_MODEL3;%lf\n",
+				app_data.user_id,app_data.job_id,app_data.node_id,app_data.app_id,
+				MY_COEFFS[i].pstate,time_proj(time_f0,cpi_p,cpi_f0,f0,(MY_COEFFS[i].pstate*(unsigned long)(perc_nonavx512*100)+MY_COEFFS[1].pstate*(unsigned long)(perc_avx512*100))/100),
+				cpi_p,0.0,0.0,0.0,power_proj(power_f0,tpi_f0,&MY_COEFFS[i],&MY_COEFFS[1],perc_nonavx512,perc_avx512),
+				0.0,0.0,MY_COEFFS[i].pstate,perc_avx512);
 			}
 		    }
 	    }	

@@ -11,6 +11,7 @@
 #include <immintrin.h> // -mavx -mfma
 #include <ear_rapl_metrics.h>
 #include <ear_metrics/ear_flops_metrics.h>
+#include <ear_metrics/ear_basic.h>
 #include <ear_frequency.h>
 #include <ear_turbo.h>
 #include <config.h>
@@ -207,6 +208,14 @@ static void avx512_dp_add512()
         e = _mm512_add_pd(a, b);
         f = _mm512_add_pd(a, b);
         g = _mm512_add_pd(a, b);
+        c = _mm512_add_pd(a, b);
+        e = _mm512_add_pd(a, b);
+        f = _mm512_add_pd(a, b);
+        g = _mm512_add_pd(a, b);
+        c = _mm512_add_pd(a, b);
+        e = _mm512_add_pd(a, b);
+        f = _mm512_add_pd(a, b);
+        g = _mm512_add_pd(a, b);
     }
 
     _mm512_store_pd(D, d);
@@ -224,6 +233,14 @@ static void avx512_dp_mul512()
     b = _mm512_load_pd(B);
 
     for (i = 0; i < n_iterations; i++) {
+        d = _mm512_mul_pd(a, b);
+        e = _mm512_mul_pd(a, b);
+        f = _mm512_mul_pd(a, b);
+        g = _mm512_mul_pd(a, b);
+        d = _mm512_mul_pd(a, b);
+        e = _mm512_mul_pd(a, b);
+        f = _mm512_mul_pd(a, b);
+        g = _mm512_mul_pd(a, b);
         d = _mm512_mul_pd(a, b);
         e = _mm512_mul_pd(a, b);
         f = _mm512_mul_pd(a, b);
@@ -251,6 +268,14 @@ static void avx512_dp_fmadd512()
     c = _mm512_load_pd(C);
 
     for (i = 0; i < n_iterations; i++) {
+        d = _mm512_fmadd_pd(a, b, c);
+        e = _mm512_fmadd_pd(a, b, c);
+        f = _mm512_fmadd_pd(a, b, c);
+        g = _mm512_fmadd_pd(a, b, c);
+        d = _mm512_fmadd_pd(a, b, c);
+        e = _mm512_fmadd_pd(a, b, c);
+        f = _mm512_fmadd_pd(a, b, c);
+        g = _mm512_fmadd_pd(a, b, c);
         d = _mm512_fmadd_pd(a, b, c);
         e = _mm512_fmadd_pd(a, b, c);
         f = _mm512_fmadd_pd(a, b, c);
@@ -353,11 +378,12 @@ int main (int argc, char *argv[])
     ull metrics[EAR_RAPL_EVENTS]; 
     ulong start_time, exec_time;
     ulong num_ops, frequency, aux;
-    long long papi_flops; 
+    long long papi_flops,total_flops[8]; 
 
     double time_s, flops_m, flops_x_watt,flops_x_watt2;
     double power_ins, power_w, power_raw, power_raw_w,power_ins2,power_raw_w2;
     double energy_nj, energy_j, energy_raw, energy_raw_j;
+    long long cycles, inst;
     
     uint n_tests, n_sockets, n_threads;
     uint i_test, i_socket, i_thread;
@@ -399,6 +425,7 @@ int main (int argc, char *argv[])
     }
 
     FAIL(init_rapl_metrics(), "initialization failed");
+    init_basic_metrics();
     init_flops_metrics();
     ear_cpufreq_init();    
 
@@ -416,7 +443,7 @@ int main (int argc, char *argv[])
     ear_cpufreq_set_node(2400000);
     printf("Executing %d tests\n",n_tests);
     // Creating the threads
-    for (i_test = 0; i_test < n_tests; ++i_test)
+    for (i_test = 6; i_test < n_tests; ++i_test)
     {
 
         test = i_test;
@@ -434,10 +461,9 @@ int main (int argc, char *argv[])
             }
         }
 
-        FAIL(reset_rapl_metrics(), "reset events failed");
-        reset_flops_metrics();
         FAIL(start_rapl_metrics(), "start events failed");
         start_flops_metrics();
+	start_basic_metrics();
         start_time = PAPI_get_real_usec();
         ear_begin_compute_turbo_freq();
 
@@ -450,7 +476,11 @@ int main (int argc, char *argv[])
 
         frequency = ear_end_compute_turbo_freq();
         FAIL(stop_rapl_metrics(metrics), "stop events failed");
-        stop_flops_metrics(&papi_flops);
+        FAIL(reset_rapl_metrics(), "reset events failed");
+        stop_flops_metrics(&papi_flops,&total_flops[0]);
+	stop_basic_metrics(&cycles,&inst);
+        reset_flops_metrics();
+ 	reset_basic_metrics();
 
         for (i_thread = 1; i_thread < n_threads; i_thread++) {
             pthread_join(tids[i_thread], NULL);
@@ -509,6 +539,7 @@ int main (int argc, char *argv[])
         flops_m = ((double) papi_flops) / time_s;
         flops_m = flops_m / 1000000.0;
         printf("\tPAPI FLOPS: %llu %0.3lf GFLOP/Watt: %lf operations/sec %lf\n", papi_flops, flops_m, (papi_flops * 40) / (power_raw_w * (double)1000000000*time_s),(double) n_iterations / time_s);
+	printf("\tPAPI instructions %llu Percentage avx512 %lf\n",inst,(double)total_flops[7]/(double)inst);
 	printf("_______\n");
         sleep(1);
     }

@@ -11,8 +11,11 @@
 int init_flops_metrics();
 int reset_flops_metrics();
 int start_flops_metrics();
-int stop_flops_metrics(long long *total_flops);
+int stop_flops_metrics(long long *total_flops,long long *f_operations);
 void print_gflops(long long total_inst,unsigned long total_time);
 double gflops(unsigned long total_time);
+int get_number_fops_events();
+void get_weigth_fops_instructions(int *weigth_vector);
+void get_total_fops(long long *metrics);
 #else
 #endif
