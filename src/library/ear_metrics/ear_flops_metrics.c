@@ -210,10 +210,20 @@ void print_gflops(long long total_inst,unsigned long total_time)
 	}
 	
 }
+int get_total_resources()
+{
+	int procs_per_node;
+	procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
+	if (my_omp_get_max_threads!=NULL){
+                return procs_per_node*my_omp_get_max_threads();
+        }else{
+		return procs_per_node;
+        }
+}
 double gflops(unsigned long total_time)
 {
         int sets,ev;
-        int procs_per_node;
+        int resources;
         long long total=0;
 	double Gflops;
         if (!flops_supported) return;
@@ -222,14 +232,11 @@ double gflops(unsigned long total_time)
                         total=total+(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]);
                 }
         }
-        procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
-        if (my_omp_get_max_threads!=NULL){
-	 	Gflops=(double)(total*procs_per_node*my_omp_get_max_threads())/(double)(total_time*1000);
-        }else{ 
-		Gflops=(double)(total*procs_per_node)/(double)(total_time*1000);
-	}
+	resources=get_total_resources();
+	Gflops=(double)(total*resources)/(double)(total_time*1000);
 	return Gflops;
 }
+
 int get_number_fops_events()
 {
 	return (EAR_FLOPS_EVENTS_SETS*EAR_FLOPS_EVENTS);

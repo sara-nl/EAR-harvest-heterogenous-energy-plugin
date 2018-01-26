@@ -65,11 +65,11 @@ void init_basic_metrics()
 		}else if (retval != PAPI_OK){ 
 			fprintf(stderr,"basic_metrics: Error , event set to compute BASIC can not be multiplexed %s\n",PAPI_strerror(retval));
 		}
-		if ((retval=PAPI_add_named_event(basic_event_sets[sets],"PAPI_TOT_INS"))!=PAPI_OK){
-				fprintf(stderr,"basic_metrics: PAPI_add_named_event %s.%s\n","ix86arch::INSTRUCTION_RETIRED",PAPI_strerror(retval));
-		}
 		if ((retval=PAPI_add_named_event(basic_event_sets[sets],"PAPI_TOT_CYC"))!=PAPI_OK){
 				fprintf(stderr,"basic_metrics: PAPI_add_named_event %s.%s\n","ix86arch::UNHALTED_CORE_CYCLES",PAPI_strerror(retval));
+		}
+		if ((retval=PAPI_add_named_event(basic_event_sets[sets],"PAPI_TOT_INS"))!=PAPI_OK){
+				fprintf(stderr,"basic_metrics: PAPI_add_named_event %s.%s\n","ix86arch::INSTRUCTION_RETIRED",PAPI_strerror(retval));
 		}
 	}
 }

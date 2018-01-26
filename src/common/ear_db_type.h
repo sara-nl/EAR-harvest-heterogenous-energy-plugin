@@ -13,21 +13,30 @@
 #define MAX_APP_NAME 1024
 #define BUFFSIZE 128
 
+#define FLOPS_EVENTS 8
+
+struct App_info_extended{
+		long long L1_misses;
+		long long L2_misses;
+		long long L3_misses;
+		long long FLOPS[FLOPS_EVENTS];
+};
+
 struct App_info {
 		// App identification: job;node;user;app
-        char job_id[MAX_APP_NAME];
-        char node_id[MAX_APP_NAME];
-        char user_id[MAX_APP_NAME];
-        char app_id[MAX_APP_NAME];
+        	char job_id[MAX_APP_NAME];
+        	char node_id[MAX_APP_NAME];
+        	char user_id[MAX_APP_NAME];
+        	char app_id[MAX_APP_NAME];
 		char policy[MAX_APP_NAME];
 		double th;
 		unsigned long f;
 		unsigned int procs;
 		double seconds;
-        double GIPS_f0;
-        double GBS_f0;
-        double POWER_f0;
-        double TPI_f0;
+        	double GIPS_f0;
+        	double GBS_f0;
+        	double POWER_f0;
+        	double TPI_f0;
 		double CPI;
 		unsigned int nominal;
 		// Extended data

@@ -22,18 +22,20 @@
 #include <ear_daemon_client.h>
 #include <ear_db/ear_db.h>
 #include <ear_metrics/ear_papi.h>
+#include <ear_metrics/ear_basic.h>
 #include <ear_metrics/ear_turbo_metrics.h>
 #include <ear_metrics/ear_flops_metrics.h>
 #include <ear_metrics/ear_cache.h>
 #include <ear_models/ear_models.h>
+#include <environment.h>
 
-#define EAR_EXTRA_METRICS
 #ifdef EAR_EXTRA_METRICS
 long long l1,l2,l3;
 long long *flops_metrics;
 int flops_events;
 int *flops_weigth;
 long long total_flops;
+int fd_extra;
 #endif
 
 extern int ear_whole_app;
@@ -190,44 +192,13 @@ void init_basic_event_info(int ear_event,PAPI_event_info_t *info){
         units[ear_event][sizeof( units[0] )-1] = '\0';
         data_type[ear_event] = info->data_type;
 }
-void papi_initialice_events(int sets,int pid)
-{
-	int retval;
-	ear_verbose(3,"EAR(%s) Initializing event set %d\n",ear_app_name,sets);
-	switch(sets){
-	case EVENT_SET_PRESET:
-		// Attach event set to process id
-		ear_papi_error(PAPI_assign_eventset_component(EventSet[sets],0),"EAR(PAPI):Assigning perf component to event set");
-		attach_opt[sets].eventset=EventSet[sets];
-		attach_opt[sets].tid=pid;
-		ear_papi_error(PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&attach_opt[sets]),"EAR(PAPI):Attaching the PID ");
-		// Selecting events	
-		strncpy(event_names[EAR_PAPI_TOT_CYC],"ix86arch::UNHALTED_CORE_CYCLES",PAPI_MIN_STR_LEN);
-		strncpy(event_names[EAR_PAPI_TOT_INS],"ix86arch::INSTRUCTION_RETIRED",PAPI_MIN_STR_LEN);
-		ear_papi_error(PAPI_add_named_event(EventSet[sets],"ix86arch::UNHALTED_CORE_CYCLES"),"Adding events to event set: ix86arch::UNHALTED_CORE_CYCLES");	
-		//ear_papi_error(PAPI_add_named_event(EventSet[sets],"ix86arch::INSTRUCTION_RETIRED"),"Adding events to event set: ix86arch::INSTRUCTION_RETIRED");	
-		ear_papi_error(PAPI_add_named_event(EventSet[sets],"PAPI_TOT_INS"),"Adding events to event set: ix86arch::INSTRUCTION_RETIRED");	
-		ear_papi_error(PAPI_event_name_to_code("ix86arch::UNHALTED_CORE_CYCLES",&event_codes[EAR_PAPI_TOT_CYC]),"Getting ix86arch::UNHALTED_CORE_CYCLES event code");
-		ear_papi_error(PAPI_event_name_to_code("ix86arch::INSTRUCTION_RETIRED",&event_codes[EAR_PAPI_TOT_INS]),"Getting ix86arch::INSTRUCTION_RETIRED event code");
-		ear_papi_error(PAPI_get_event_info(event_codes[EAR_PAPI_TOT_CYC],&evinfo[EAR_PAPI_TOT_CYC]),"Getting Event info for Total cycles");
-		init_basic_event_info(EAR_PAPI_TOT_CYC,&evinfo[EAR_PAPI_TOT_CYC]);
-		ear_papi_error(PAPI_get_event_info(event_codes[EAR_PAPI_TOT_INS],&evinfo[EAR_PAPI_TOT_INS]),"Getting Event info for Total instructions");
-		init_basic_event_info(EAR_PAPI_TOT_INS,&evinfo[EAR_PAPI_TOT_INS]);
-		break;
-	default:ear_verbose(0,"EAR(%s): Error event set not supported in EAR_PAPI_Initialice_events\n",ear_app_name);
-	}
-	
-}
 void metrics_start()
 {
 	int sets;
 	char buff[128];
 	ear_daemon_client_start_uncore();
 	ear_daemon_client_start_rapl();
-	for (sets=0;sets<MAX_SETS;sets++){
-		ear_debug(4,"EAR(%s): Starting counter sets %d\n",__FILE__,sets);
-        	ear_papi_error(PAPI_start(EventSet[sets]),buff);
-	}
+	start_basic_metrics();
 #ifdef EAR_EXTRA_METRICS
 	start_turbo_metrics();
 	start_flops_metrics();
@@ -247,9 +218,7 @@ void metrics_stop()
 		// Should we exit??
 		ear_verbose(0,"EAR(%s): Reading rapl is is failing\n",ear_app_name);
 	}
-	for (sets=0;sets<MAX_SETS;sets++){
-		ear_papi_error(PAPI_stop(EventSet[sets],(long long *)&events_values[sets]),"EAR:Stopping and reading PAPI counters");
-	}
+	stop_basic_metrics(&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_CYC],&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_INS]);
 #ifdef EAR_EXTRA_METRICS
 	stop_turbo_metrics();
 	stop_flops_metrics(&total_flops,flops_metrics);
@@ -268,9 +237,7 @@ void metrics_reset()
 		// Should we exit??
 		ear_verbose(0,"EAR(%s): Reset uncore counters to compute MB is failing\n",ear_app_name);
 	}
-	for (sets=0;sets<MAX_SETS;sets++){
-		if (PAPI_reset(EventSet[sets])!=PAPI_OK) ear_verbose(0,"EAR(%s):PAPI reset counters at each new period or iteration",ear_app_name);
-	}
+	reset_basic_metrics();
 #ifdef EAR_EXTRA_METRICS
 	reset_turbo_metrics();
 	reset_flops_metrics();
@@ -333,7 +300,7 @@ int metrics_init(int my_id,int pid)
 		exit(1);
 	}
 	// Checking HW info
-    ear_hwinfo= PAPI_get_hardware_info();
+    	ear_hwinfo= PAPI_get_hardware_info();
 	if (ear_hwinfo==NULL){
 		ear_verbose(0,"EAR: WARNING PAPI_get_hardware_info returns NULL\n");
 	}else{
@@ -354,19 +321,14 @@ int metrics_init(int my_id,int pid)
 	}
 	ear_node_size=ear_hwinfo->threads*ear_hwinfo->cores;
 	// This must be change to new EAR fucntion
-    ear_cpu_id=getCPU_ID();
+    	ear_cpu_id=getCPU_ID();
 #ifdef MULTIPLEX_PAPI
 	if ((ret=PAPI_multiplex_init())!=PAPI_OK){
 		ear_verbose(0,"EAR: WARNING PAPI_multiplex_init fails: %s\n",PAPI_strerror(ret));
 		papi_multiplex=0;
 	}	
 #endif
-	// We create N event sets: preset
-	for (sets=0;sets<MAX_SETS;sets++){
-		EventSet[sets]=PAPI_NULL;
-	    	ear_papi_error(PAPI_create_eventset(&EventSet[sets]),"Creating event set");
-		papi_initialice_events(sets,pid);
-	}
+	init_basic_metrics();
 	// We ask for uncore and rapl metrics sizes
 	uncore_size=ear_daemon_client_get_data_size_uncore();
 	rapl_size=ear_daemon_client_get_data_size_rapl();
@@ -428,9 +390,7 @@ void metrics_end(unsigned int whole_app,int my_id,FILE* fd,unsigned long int *er
 	
 #ifdef EAR_EXTRA_METRICS
 	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
-	print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
-	get_cache_metrics(&l1,&l2,&l3);
-	ear_verbose(1,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
+	//print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
 #endif
 }
 
@@ -485,15 +445,22 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		DRAM_POWER=(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/Seconds;
 		PCK_POWER=(double)(acum_event_values[EAR_ACUM_PCKG_ENER]/1000000000)/Seconds;
 		f=ear_daemon_client_end_compute_turbo_freq();
+		app_name=get_ear_app_name();
+		if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);
+		else strcpy(SIGNATURE.app_id,"NA");
 #ifdef EAR_EXTRA_METRICS
+		get_cache_metrics(&l1,&l2,&l3);
+		fprintf(stderr,"_____________________EAR Extra Summary for %s ___________________\n",SIGNATURE.app_id);
                 get_total_fops(flops_metrics);
                 total_fops_instructions=0;
                 for (i=0;i<flops_events;i++) total_fops_instructions+=flops_metrics[i];
-                ear_verbose(1,"Total FP instructions %llu \n",total_fops_instructions);
-		ear_verbose(1,"AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
+                ear_verbose(1,"EAR: Total FP instructions %llu \n",total_fops_instructions);
+		ear_verbose(1,"EAR: AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
 		(double)flops_metrics[flops_events-1]/(double)total_fops_instructions);
-		ear_verbose(1,"Instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
-		ear_verbose(1,"Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+		ear_verbose(1,"EAR: Total instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
+		ear_verbose(1,"EAR: Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+		ear_verbose(1,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
+		fprintf(stderr,"_______________________________\n");
 #endif          
 
 		// We can write summary metrics in any DB or any other place
@@ -508,9 +475,6 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		fprintf(stderr,"ACUM RAPL DRAM ENERGY  %llu\n",acum_event_values[EAR_ACUM_DRAM_ENER]); 
 		fprintf(stderr,"ACUM RAPL PCKG ENERGY  %llu\n",acum_event_values[EAR_ACUM_PCKG_ENER]); 
 #endif
-		app_name=get_ear_app_name();
-		if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);
-		else strcpy(SIGNATURE.app_id,"NA");
 		// Reporting application signature metrics at stderr
 		fprintf(stderr,"_____________________EAR Summary for %s ___________________\n",app_info->node_id);
 		fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,SIGNATURE.app_id,(double)app_exec_time/(double)1000000);
@@ -552,13 +516,9 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		fprintf(stderr,"____________________________________________________\n");
 		// We save it in the historical DB
 		db_update_historical(whole_app,&SIGNATURE);
-		// Pending to compute GFlops
 		//"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH\n";
-        if (fd!=NULL) fprintf(fd,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%s;%.3lf\n",SIGNATURE.user_id,SIGNATURE.job_id,SIGNATURE.node_id,
+        	if (fd!=NULL) fprintf(fd,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%s;%.3lf\n",SIGNATURE.user_id,SIGNATURE.job_id,SIGNATURE.node_id,
 		SIGNATURE.app_id,SIGNATURE.f,SIGNATURE.seconds,SIGNATURE.CPI,SIGNATURE.TPI_f0,SIGNATURE.GBS_f0,SIGNATURE.Gflops,SIGNATURE.POWER_f0,SIGNATURE.DRAM_POWER,SIGNATURE.PCK_POWER,SIGNATURE.nominal,SIGNATURE.policy,SIGNATURE.th);
-		// fd is the user_db file. Gflops are not reported
-        //if (fd!=NULL) fprintf(fd,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%.3lf;%s;%.3lf\n",SIGNATURE.user_id,SIGNATURE.job_id,SIGNATURE.node_id,
-		//SIGNATURE.app_id,SIGNATURE.f,SIGNATURE.seconds,SIGNATURE.CPI,SIGNATURE.TPI_f0,SIGNATURE.GBS_f0,SIGNATURE.POWER_f0,SIGNATURE.DRAM_POWER,SIGNATURE.PCK_POWER,SIGNATURE.nominal,SIGNATURE.EDP,SIGNATURE.policy,SIGNATURE.th);
 }
 
 void copy_last_iter_counters()
@@ -677,4 +637,43 @@ int ear_discover_cache_line_size()
 
 }
 
+
+
+#ifdef EAR_EXTRA_METRICS
+void metrics_get_extra_metrics(struct App_info_extended *my_extra)
+{
+	int i;
+	my_extra->L1_misses=l1;
+	my_extra->L2_misses=l2;
+	my_extra->L3_misses=l3;
+	for (i=0;i<flops_events;i++) my_extra->FLOPS[i]=flops_metrics[i];
+}
+void metrics_print_extra_metrics(struct App_info_extended *my_extra,double seconds,int iterations)
+{
+	long long sp=0,dp=0;
+	long long fops_single,fops_128,fops_256,fops_512,total_fops,dp_fops;
+	double psingle,p128,p256,p512;
+	int i;
+
+	for (i=0;i<flops_events/2;i++) sp+=my_extra->FLOPS[i];
+	for (i=flops_events/2;i<flops_events;i++){ 
+		dp+=my_extra->FLOPS[i];
+	}
+	fops_single=my_extra->FLOPS[flops_events/2]*flops_weigth[flops_events/2];
+	fops_128=my_extra->FLOPS[flops_events/2+1]*flops_weigth[flops_events/2+1];
+	fops_256=my_extra->FLOPS[flops_events/2+2]*flops_weigth[flops_events/2+2];
+	fops_512=my_extra->FLOPS[flops_events/2+3]*flops_weigth[flops_events/2+3];
+	total_fops=fops_single+fops_128+fops_256+fops_512;
+	dp_fops=total_fops;
+	// SP are usually 0 but we have to include in total
+	total_fops+=my_extra->FLOPS[0]*flops_weigth[0]+my_extra->FLOPS[1]*flops_weigth[1]+my_extra->FLOPS[2]*flops_weigth[2]+my_extra->FLOPS[3]*flops_weigth[3];
+	psingle=(double)fops_single/(double)total_fops;
+	p128=(double)fops_128/(double)total_fops;
+	p256=(double)fops_256/(double)total_fops;
+	p512=(double)fops_512/(double)total_fops;
+	ear_verbose(1,"\t\tEAR_extra: L1 misses %llu L2 misses %llu L3 misses %llu\n",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
+	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
+		((double)(total_fops*get_total_resources())/(seconds*iterations))/(double)1000000000,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
+}
+#endif
 

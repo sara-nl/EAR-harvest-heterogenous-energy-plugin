@@ -83,7 +83,7 @@ void db_update_historical(unsigned int whole_app,struct App_info *MY_APP)
 {
 	// At the end of the execution, we add one line to the historic DB file with the summary of the metrics
 	ear_daemon_client_write_app_signature(MY_APP);
-    ear_debug(4,"EAR(%s): Update values for app_id %s\n",__FILE__,MY_APP->app_id);
+    	ear_debug(4,"EAR(%s): Update values for app_id %s\n",__FILE__,MY_APP->app_id);
 	db_print_app_info(MY_APP);
 }
 
@@ -337,10 +337,10 @@ void db_print_app_info(struct App_info *APP)
         APP->seconds,
         APP->CPI,
         APP->nominal,
-		APP->CYCLES,
-		APP->INSTRUCTIONS,
-		APP->POWER_DC,
-		APP->DRAM_POWER,
-		APP->PCK_POWER);
+	APP->CYCLES,
+	APP->INSTRUCTIONS,
+	APP->POWER_DC,
+	APP->DRAM_POWER,
+	APP->PCK_POWER);
 
 }
