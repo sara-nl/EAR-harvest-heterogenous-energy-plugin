@@ -19,6 +19,7 @@
 
 
 #include <ear_verbose.h>
+#include <hardware.h>
 #include <ear_daemon_client.h>
 #include <ear_db/ear_db.h>
 #include <ear_metrics/ear_papi.h>
@@ -35,7 +36,7 @@ long long *flops_metrics;
 int flops_events;
 int *flops_weigth;
 long long total_flops;
-int fd_extra;
+FILE* fd_extra;
 #endif
 
 extern int ear_whole_app;
@@ -267,17 +268,21 @@ void metrics_get_hw_info(int *sockets,int *cores_socket,unsigned long *max_f,uns
 	strcpy(CPU_name,ear_hwinfo->vendor_string);
 }
  
-char *iters;
+///////////////////////
 /////// Init function
+///////////////////////
 int metrics_init(int my_id,int pid)
 {
 	int retval,ret;
 	int sets,i;
+#ifdef EAR_EXTRA_METRICS
+	char extra_filename[MAX_APP_NAME];
+#endif
 	
 
 	if (my_id) return 1;
 	// This must be change to new EAR fucntion
-	ear_cache_line_size=ear_discover_cache_line_size();
+	ear_cache_line_size=get_cache_line_size();
 	ear_debug(2,"EAR(%s):: Cache line size %d\n",__FILE__,ear_cache_line_size);
 	// Init the PAPI library
 	if (!ear_papi_init){
@@ -366,6 +371,13 @@ int metrics_init(int my_id,int pid)
 		exit(1);
 	}
 	get_weigth_fops_instructions(flops_weigth);	
+	sprintf(extra_filename,"%s.loop_info.csv",get_ear_app_name());
+	fd_extra=fopen(extra_filename,"w+");
+	if (fd_extra==NULL){
+		ear_verbose(0,"EAR: File for extra metrics can not be created %s\n",strerror(errno));
+	}else{
+		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256,PERC_DP512\n");
+	}
 #endif
 	reset_values();
 	metrics_reset();
@@ -375,7 +387,9 @@ int metrics_init(int my_id,int pid)
 
 	return 0;
 }
+/////////////////////
 /////// End function
+/////////////////////
 void metrics_end(unsigned int whole_app,int my_id,FILE* fd,unsigned long int *eru)
 {
 	metrics_stop();
@@ -607,36 +621,6 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	return app;
 }
 
-// BAsed on files provided by Lenovo
-//
-//
-int cache_line_size;
-int ear_discover_cache_line_size()
-{
-        FILE *f_cpuinfo;
-        char buffer[1024];
-
-        f_cpuinfo = fopen("/proc/cpuinfo", "r");
-        if (!f_cpuinfo)
-        {
-                fprintf(stderr,"Could not open /proc/cpuinfo for reading.\n");
-                return -1;
-        }
-        while ( fgets(buffer, 1024, f_cpuinfo)!=NULL )
-        {
-                if (strncmp(buffer, "cache_alignment", sizeof("cache_alignment") - 1) == 0)
-                {
-                        sscanf(buffer, "cache_alignment\t: %d", &cache_line_size);
-                        fclose(f_cpuinfo);
-                        return cache_line_size;
-                }
-        }
-        fclose(f_cpuinfo);
-        return cache_line_size;
-
-
-}
-
 
 
 #ifdef EAR_EXTRA_METRICS
@@ -648,11 +632,11 @@ void metrics_get_extra_metrics(struct App_info_extended *my_extra)
 	my_extra->L3_misses=l3;
 	for (i=0;i<flops_events;i++) my_extra->FLOPS[i]=flops_metrics[i];
 }
-void metrics_print_extra_metrics(struct App_info_extended *my_extra,double seconds,int iterations)
+void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extended *my_extra,int iterations,unsigned long loop_id,int period,unsigned int level)
 {
 	long long sp=0,dp=0;
 	long long fops_single,fops_128,fops_256,fops_512,total_fops,dp_fops;
-	double psingle,p128,p256,p512;
+	double psingle,p128,p256,p512,my_gflops;
 	int i;
 
 	for (i=0;i<flops_events/2;i++) sp+=my_extra->FLOPS[i];
@@ -671,9 +655,20 @@ void metrics_print_extra_metrics(struct App_info_extended *my_extra,double secon
 	p128=(double)fops_128/(double)total_fops;
 	p256=(double)fops_256/(double)total_fops;
 	p512=(double)fops_512/(double)total_fops;
+	my_gflops=((double)(total_fops*get_total_resources())/(my_sig->seconds*iterations))/(double)1000000000;
 	ear_verbose(1,"\t\tEAR_extra: L1 misses %llu L2 misses %llu L3 misses %llu\n",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
 	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
-		((double)(total_fops*get_total_resources())/(seconds*iterations))/(double)1000000000,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
+		my_gflops,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
+
+	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256,PERC_DP512\n");
+	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
+	fprintf(fd_extra,"0;%.5lf;%.5lf;.5%lf;%.5lf;%.5lf;",my_sig->seconds,my_sig->CPI,my_sig->TPI_f0,my_sig->GBS_f0,my_gflops);
+	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->POWER_f0,my_sig->DRAM_POWER,my_sig->PCK_POWER);
+	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->nominal,ear_policy_name,my_sig->th);
+	fprintf(fd_extra,"%lu;%d;%u;",loop_id,period,level);
+	fprintf(fd_extra,"%llu;%llu;%llu;",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
+	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;%.2lf\n",psingle*100,p128*100,p256*100,p512*100);	
+	
 }
 #endif
 
