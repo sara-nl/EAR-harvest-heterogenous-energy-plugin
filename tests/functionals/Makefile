@@ -19,7 +19,8 @@ BINARIES = intel_pci_uncores_stress \
            freeipmi_overhead        \
            hardware_scanner         \
            dynais_input  \
-	  simd_test_with_ear
+	  simd_test_with_ear \
+	  freeipmi_overhead_client
 
 ######## RULES
 
@@ -49,8 +50,13 @@ simd_power_metrics: simd_power_metrics.c $(OUTER_OBJS)
 	$(ROOTDIR)/src/library/ear_metrics/ear_flops_metrics.o \
 	$(OUTER_OBJS) $(PAPI_LDFLAGS) $(SIMD_CFLAGS) $(CPUF_LDFLAGS) -lpthread
 
-simd_power_metrics_2: simd_power_metrics_2.c $(OUTER_OBJS) $(ROOTDIR)/src/library/ear_metrics/ear_basic.o $(ROOTDIR)/src/library/ear_metrics/ear_flops_metrics.o $(ROOTDIR)/src/daemon/ear_rapl_metrics.o $(ROOTDIR)/src/daemon/ear_frequency.o $(ROOTDIR)/src/daemon/ear_turbo.o
-	icc $(CFLAGS) -O0 -malign-double -axMIC-AVX512  $(PAPI_CFLAGS) -o simd_power_metrics_2 simd_power_metrics_2.c \
+simd_power_metrics_2.o:simd_power_metrics_2.c 
+	icc $(CFLAGS) -O3 -malign-double -axCORE-AVX512  $(PAPI_CFLAGS)  -c simd_power_metrics_2.c	
+simd_power_metrics_2.s:simd_power_metrics_2.c 
+	icc $(CFLAGS) -O3 -malign-double -axCORE-AVX512  $(PAPI_CFLAGS)  -S simd_power_metrics_2.c	
+
+simd_power_metrics_2: simd_power_metrics_2.o $(OUTER_OBJS) $(ROOTDIR)/src/library/ear_metrics/ear_basic.o $(ROOTDIR)/src/library/ear_metrics/ear_flops_metrics.o $(ROOTDIR)/src/daemon/ear_rapl_metrics.o $(ROOTDIR)/src/daemon/ear_frequency.o $(ROOTDIR)/src/daemon/ear_turbo.o simd_power_metrics_2.s
+	icc $(CFLAGS) -malign-double -axCORE-AVX512  $(PAPI_CFLAGS) -o simd_power_metrics_2 simd_power_metrics_2.o \
         $(ROOTDIR)/src/daemon/ear_turbo.o               \
         $(ROOTDIR)/src/daemon/ear_frequency.o           \
 	$(ROOTDIR)/src/daemon/ear_rapl_metrics.o        \
@@ -63,6 +69,9 @@ freeipmi_overhead: freeipmi_overhead.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) $(IPMI_CFLAGS) -o freeipmi_overhead freeipmi_overhead.c \
 	$(ROOTDIR)/src/daemon/ear_node_energy_metrics.a $(OUTER_OBJS) $(PAPI_LDFLAGS) $(IPMI_LDFLAGS)
 
+freeipmi_overhead_client: freeipmi_overhead_client.c $(ROOTDIR)/src/common/ear_daemon_client.o
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) $(IPMI_CFLAGS) -o freeipmi_overhead_client freeipmi_overhead_client.c \
+	$(ROOTDIR)/src/common/ear_daemon_client.o  $(PAPI_LDFLAGS) $(IPMI_LDFLAGS)
 
 hardware_scanner: hardware_scanner.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o hardware_scanner hardware_scanner.c $(OUTER_OBJS)

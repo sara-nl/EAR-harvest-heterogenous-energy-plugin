@@ -16,11 +16,16 @@
 #include <ear_turbo.h>
 #include <config.h>
 #include <papi.h>
+#include <assert.h>
 
 int EAR_VERBOSE_LEVEL = 4;
 static  double __attribute__((aligned(64))) A[8] = { M_PI, M_E, M_LN2, M_LN10, M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E };
 static  double __attribute__((aligned(64))) B[8] = { M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E, M_PI, M_E, M_LN2, M_LN10 };
 static  double __attribute__((aligned(64))) C[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) E[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) F[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) G[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) H[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
 
 int ear_papi_init = 0;
 int* my_omp_get_max_threads = NULL;
@@ -192,30 +197,30 @@ static void fma_dp_fmadd256()
 #if AVX_512
 static void avx512_dp_add512()
 {
-    static double D[8];
-    __m512d a,b,c,d,e,f,g;
+    static double __attribute__((aligned(64))) D[8];
+    __m512d __attribute__((aligned(64))) a;
+    __m512d __attribute__((aligned(64))) b;
+    __m512d __attribute__((aligned(64))) c;
+    __m512d __attribute__((aligned(64))) d;
+    __m512d __attribute__((aligned(64))) e;
+    __m512d __attribute__((aligned(64))) f;
+    __m512d __attribute__((aligned(64))) g;
     ulong i;
 
     a = _mm512_load_pd(A);
     b = _mm512_load_pd(B);
 
+    assert(((long)A%64)==0);
+
     for (i = 0; i < n_iterations; i++) {
-        c = _mm512_add_pd(a, b);
-        e = _mm512_add_pd(a, b);
-        f = _mm512_add_pd(a, b);
-        g = _mm512_add_pd(a, b);
-        c = _mm512_add_pd(a, b);
-        e = _mm512_add_pd(a, b);
-        f = _mm512_add_pd(a, b);
-        g = _mm512_add_pd(a, b);
-        c = _mm512_add_pd(a, b);
-        e = _mm512_add_pd(a, b);
-        f = _mm512_add_pd(a, b);
-        g = _mm512_add_pd(a, b);
-        c = _mm512_add_pd(a, b);
-        e = _mm512_add_pd(a, b);
-        f = _mm512_add_pd(a, b);
-        g = _mm512_add_pd(a, b);
+        c = _mm512_add_pd(a,b);
+        d = _mm512_add_pd(a,b);
+        e = _mm512_add_pd(a,b);
+        f = _mm512_add_pd(a,b);
+        c = _mm512_add_pd(a,b);
+        d = _mm512_add_pd(a,b);
+        e = _mm512_add_pd(a,b);
+        f = _mm512_add_pd(a,b);
     }
 
     _mm512_store_pd(D, d);
@@ -224,9 +229,13 @@ static void avx512_dp_add512()
 static void avx512_dp_mul512()
 {
     static double D[8];
-    __m512d d;
-    __m512d a;
-    __m512d b,e,f,g,h;
+    __m512d __attribute__((aligned(64))) a;
+    __m512d __attribute__((aligned(64))) b;
+    __m512d __attribute__((aligned(64))) c;
+    __m512d __attribute__((aligned(64))) d;
+    __m512d __attribute__((aligned(64))) e;
+    __m512d __attribute__((aligned(64))) f;
+    __m512d __attribute__((aligned(64))) g;
     ulong i;
 
     a = _mm512_load_pd(A);
@@ -257,10 +266,13 @@ static void avx512_dp_mul512()
 static void avx512_dp_fmadd512()
 {
     static double D[8];
-    __m512d d;
-    __m512d a;
-    __m512d b;
-    __m512d c,e,f,g;
+    __m512d __attribute__((aligned(64))) a;
+    __m512d __attribute__((aligned(64))) c;
+    __m512d __attribute__((aligned(64))) b;
+    __m512d __attribute__((aligned(64))) d;
+    __m512d __attribute__((aligned(64))) e;
+    __m512d __attribute__((aligned(64))) f;
+    __m512d __attribute__((aligned(64))) g;
     ulong i;
 
     a = _mm512_load_pd(A);
