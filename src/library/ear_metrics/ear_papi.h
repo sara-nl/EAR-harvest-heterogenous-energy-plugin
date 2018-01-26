@@ -46,7 +46,8 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd);
 
 #ifdef EAR_EXTRA_METRICS
 void metrics_get_extra_metrics(struct App_info_extended *my_extra);
-void metrics_print_extra_metrics(struct App_info_extended *my_extra,double seconds,int iterations);
+void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extended *my_extra,int iterations,unsigned long loop_id,int period,unsigned int level);
+
 #endif
 
 

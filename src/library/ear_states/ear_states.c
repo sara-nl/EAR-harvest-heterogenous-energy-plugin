@@ -205,7 +205,7 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 					ear_app_name,prev_f,event,period,level,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP);
 				}
 #ifdef EAR_EXTRA_METRICS
-				metrics_print_extra_metrics(&my_extra_metrics,TIME,iterations);
+				metrics_print_extra_metrics(MY_SIGNATURE,&my_extra_metrics,N_iter,event,period,level);
 #endif
 			}
 		}
