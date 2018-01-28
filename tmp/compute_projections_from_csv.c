@@ -79,19 +79,25 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Error when readin coefficients file (%s)\n",strerror(errno));
 		exit(1);
 	}
+
+
 	fprintf(stdout,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;PROJECTION;POLICY_TH\n");
 	fprintf(stderr,"Reading metrics %s\n",argv[2]);
+
 	fd_apps=fopen(argv[2],"r");
 	if (fd_apps==NULL){
 		fprintf(stderr,"Error opening csv file %s (%s)\n",argv[2],strerror(errno));
 		exit(1);
 	}
+
 	fscanf(fd_apps,"%s\n",&line);
+
 	while((ret=fscanf(fd_apps,"%[^;];%[^;];%[^;];%[^;];%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%[^;];%lf\n",
 	app_data.user_id,app_data.job_id,app_data.node_id,app_data.app_id,
 	&app_data.f,
 	&app_data.seconds,&app_data.CPI,&app_data.TPI_f0,&app_data.GBS_f0,&app_data.Gflops,&app_data.POWER_f0,
-	&app_data.DRAM_POWER,&app_data.PCK_POWER,&app_data.nominal,app_data.policy,&app_data.th))>0){
+	&app_data.DRAM_POWER,&app_data.PCK_POWER,&app_data.nominal,app_data.policy,&app_data.th)) > 0)
+	{
 	if (app_data.nominal==f0){
 	    fprintf(stderr,"Reference values for %s: avgf %u CPI %f TPI %f Time %f Power %f\n",
 		app_data.app_id,app_data.f,app_data.CPI,app_data.TPI_f0,app_data.seconds,app_data.POWER_f0);

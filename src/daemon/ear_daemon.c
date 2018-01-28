@@ -28,6 +28,8 @@
 #include <ear_db_type.h>
 #include <ear_node_energy_metrics.h>
 
+char db_fullpath[MAX_PATH_SIZE];
+
 char my_errno[1024];
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
@@ -50,8 +52,6 @@ int application_id=-1;
 
 unsigned long energy_freq;
 struct daemon_req req;
-int db_fd;
-
 void ear_daemon_exit();
 void ear_daemon_close_comm();
 int is_new_application(int pid);
@@ -236,24 +236,25 @@ int application_timeout()
 // releases ear_daemon resources
 void ear_daemon_exit()
 {
-        int i;
-        unsigned long ack=0;
-        char ear_commreq[MAX_PATH_SIZE];
+	int i;
+	unsigned long ack=0;
+	char ear_commreq[MAX_PATH_SIZE];
 	ear_verbose(1,"ear_daemon_exit_________\n");
-        ear_daemon_unlock();
-	close(db_fd);
-        dispose_uncores();
-        print_rapl_metrics();
-        ear_cpufreq_end();
-        node_energy_dispose();
-        for (i=0;i<ear_daemon_client_requests;i++){
-                close(ear_fd_req[i]);
-                sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
-                ear_verbose(2,"ear_dameon: removing file %s\n",ear_commreq);
-                if (unlink(ear_commreq)<0) ear_verbose(0,"ear_daemon: error when removing com file %s : %s\n",ear_commreq,strerror(errno));
-        }
-		exit(1);
+	ear_daemon_unlock();
+
+	dispose_uncores();
+	print_rapl_metrics();
+	ear_cpufreq_end();
+	node_energy_dispose();
+	for (i=0;i<ear_daemon_client_requests;i++){
+			close(ear_fd_req[i]);
+			sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
+			ear_verbose(2,"ear_dameon: removing file %s\n",ear_commreq);
+			if (unlink(ear_commreq)<0) ear_verbose(0,"ear_daemon: error when removing com file %s : %s\n",ear_commreq,strerror(errno));
+	}
+	exit(1);
 }
+
 // closes communication with an application
 void ear_daemon_close_comm()
 {
@@ -302,64 +303,50 @@ int ear_daemon_node_energy(int must_read)
 	return 1;
 
 }
-// System services
-int open_db()
-{
-	int fd;
-	char *ear_DB_name;
-	char ear_db_def[MAX_PATH_SIZE];
-	char ear_node_name[MAX_PATH_SIZE];
-	gethostname(ear_node_name,sizeof(ear_node_name));
-	ear_DB_name=get_ear_db_pathname();
-    sprintf(ear_db_def,"%s.%s.db",ear_DB_name,ear_node_name);
-    ear_verbose(2,"ear_daemon  DB name %s\n",ear_db_def);
-    ear_DB_name=ear_db_def;
-    ear_verbose(2,"ear_daemon is using %s file as DB\n",ear_DB_name);
-    fd=open(ear_DB_name,O_WRONLY|O_APPEND);
-    if (fd<0){
-		ear_verbose(0,"ear_daemonn warning opening DB %s(%s)\n",ear_DB_name,strerror(errno));
-    	if (errno==ENOENT){
-			ear_verbose(1,"ear_daemon creating syste, db %s\n",ear_DB_name);
-            fd=open(ear_DB_name,O_WRONLY|O_CREAT|O_TRUNC|O_APPEND,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-            if (fd<0){
-                ear_verbose(0,"ear_daemon WARNING...it was impossible to create the DB file for historical information (%s)\n",strerror(errno));
-				ear_verbose(0,"ear_daemon WARNING: check all the directories in %s exists\n",ear_DB_name);
-            }
-    	}else{
-            ear_verbose(0,"ear_daemon WARNING...it was impossible to create the DB file for historical information (%s)\n",strerror(errno));
-			ear_verbose(0,"ear_daemon WARNING: check all the directories in %s exists\n",ear_DB_name);
-    	}
-	}
-	return fd;
 
-}
-void write_db(int fd,struct App_info *app_signature)
+// System services
+void form_db_fullpath()
 {
-	if (fd<0) return;
-	if (write(fd,app_signature,sizeof(struct App_info))!=sizeof(struct App_info)) {
-		ear_verbose(0,"ear_daemon PANIC error writting in DB (%s)\n",strerror(errno));
-		ear_daemon_close_comm();
-	}
+    char node_name[MAX_PATH_SIZE];
+	char *db_pathname;
+    int ret;
+
+    db_pathname = get_ear_db_pathname();
+	gethostname(ear_node_name, sizeof(ear_node_name));
+    sprintf(db_fullpath, "%s.%s.db", db_pathname, ear_node_name);
+    ear_verbose(2, "ear_daemon is using %s file as DB\n", db_fullpath);
 }
+
 int ear_daemon_system(int must_read)
 {
 	unsigned long ack;
-	if (must_read){
-	if (read(ear_fd_req[system_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error reading info at ear_daemon_system(%s)\n",strerror(errno));
+    int ret, size;
+
+	if (must_read)
+    {
+	    if (read(ear_fd_req[system_req],&req,sizeof(req))!=sizeof(req))
+            ear_verbose(0,"eard error reading info at ear_daemon_system(%s)\n",strerror(errno));
 	}
-	switch (req.req_service){
+
+	switch (req.req_service)
+    {
 		case CONNECT_SYSTEM:
 			connect_service(system_req,req.req_data.req_value);
 			break;
 		case WRITE_APP_SIGNATURE:
-			if (db_fd>=0){
-				write_db(db_fd,&req.req_data.app);
-				ack=EAR_COM_OK;
-				if (write(ear_fd_ack[system_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
-						ear_verbose(0,"ear_daemon: invalid write to system_req ack\n");
-						ear_daemon_close_comm();
+            ret = append_application_binary_file(db_fullpath, &req.req_data.app);
+
+            if (ret == EAR_SUCCESS)
+            {
+                ack = EAR_COM_OK;
+                size = sizeof(unsigned long);
+
+                if (write(ear_fd_ack[system_req], &ack, size) != size)
+                {
+                    ear_verbose(0,"ear_daemon: invalid write to system_req ack\n");
+                    ear_daemon_close_comm();
 				}
-			}
+            }
 			break;
 		default:
 			return 0;
@@ -654,8 +641,10 @@ void main(int argc,char *argv[])
 	}
 	energy_freq=node_energy_frequency();
 	ear_verbose(1,"ear_daemon min time between two dc node energy measurements is %lu usec., we recomend to use %lu usec.\n",energy_freq,energy_freq*2);
+
 	// We open the system_db
-	db_fd=open_db();
+	form_db_fullpath();
+
 	// HW initialized HERE...creating communication channels
 	ear_verbose(2,"ear_daemon: Creating comm in %s for node %s\n",ear_tmp,nodename);
 	FD_ZERO(&rfds);

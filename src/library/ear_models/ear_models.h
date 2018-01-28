@@ -7,38 +7,6 @@
 
 */
 
-#ifndef EAR_MODELS_H_
-#define EAR_MODELS_H_
-
-#include <ear_db_type.h>
-#include <environment.h>
-
-#if 0
-#define MIN_ENERGY_TO_SOLUTION 0
-#define MIN_TIME_TO_SOLUTION 1
-#define MONITORING_ONLY 2
-#endif
-
-
-struct Coefficients_info{
-unsigned long pstate;
-unsigned int available;
-// For power projection
-double A;
-double B;
-double C;
-// For CPI projection
-double D;
-double E;
-double F;
-};
-
-struct PerfProjection{
-	double Time;
-	double Power;
-	double CPI;
-};
-
 void set_performance_projection(int i,double TP,double PP, double CPI);
 void reset_performance_projection(unsigned int p_states);
 

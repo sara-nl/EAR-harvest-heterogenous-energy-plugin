@@ -51,8 +51,6 @@ int getenv_ear_num_nodes();
 int getenv_ear_dynais_levels();
 int getenv_ear_dynais_window_size();
 
-
-
 char * get_ear_tmp();
 void set_ear_tmp(char *new_tmp);
 char * get_ear_install_pathname();
@@ -74,7 +72,6 @@ void set_ear_total_processes(int procs);
 int get_ear_total_processes();
 int get_ear_dynais_levels();
 int get_ear_dynais_window_size();
-
 
 void ear_lib_environment();
 void ear_print_lib_environment();
