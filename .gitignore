@@ -27,17 +27,14 @@ src/common/config.h
 tests/check/check.sh
 etc/scripts/environment/lib_vars.sh
 
-*earlib.so
-*earlibtrac.so
-*ear_slurm_plugin.so
+*libear.so
+*libeart.so
 *eard
 
-*compute_projections_from_csv
-*compute_projections
+src/tools/input
+*coefficients_quality_control
 *compute_coefficients
-*coefficients_to_csv
 *traces_to_paraver
-*show_metrics
 
 # IDE
 cmake*

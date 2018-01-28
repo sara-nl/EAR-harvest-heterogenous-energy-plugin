@@ -10,12 +10,3 @@
 #define EAR_LIB_PATH        "lib/libear.so"
 #define EAR_LIB_TRAC_PATH   "lib/libeartrac.so"
 #define EAR_DAEMON_PATH     "sbin/eard"
-
-#define EAR_SUCCESS  0
-#define EAR_ERROR   -1
-#define EAR_WARNING -2
-
-typedef unsigned char uchar;
-typedef unsigned long long ull;
-typedef unsigned long ulong;
-typedef unsigned int uint;

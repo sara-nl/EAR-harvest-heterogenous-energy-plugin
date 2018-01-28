@@ -1,4 +1,4 @@
-#include <config.h>
+#include <types.h>
 
 char* add_comma_ull(ull number);
 char* add_point_ulong(ulong number);
