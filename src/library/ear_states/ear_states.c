@@ -26,6 +26,15 @@ extern int report;
 #include <ear_metrics/ear_node_energy.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_db/ear_db.h>
+<<<<<<< HEAD
+=======
+#include <ear_gui/ear_gui.h>
+
+#ifdef EAR_EXTRA_METRICS
+struct App_info_extended my_extra_metrics;
+#endif
+
+>>>>>>> e6ef5586c08a0ec7d9ff09992822cc616734e0a5
 
 extern unsigned long EAR_default_frequency;
 extern unsigned long ear_frequency;
@@ -51,6 +60,9 @@ double PERF_ACCURACY_MIN_TIME=1000000;
 
 unsigned int EAR_STATE=NO_PERIOD;
 int BEGIN_ITER=0;
+
+int loop_with_signature=0;
+int current_loop_id;
 
 void states_end_job(int  my_id, FILE *ear_fd,char *app_name)
 {
@@ -81,11 +93,14 @@ void states_begin_period(int my_id,FILE *ear_fd,unsigned long event,unsigned int
 		comp_N_begin=metrics_time();
 		BEGIN_ITER=0;
 		gui_new_period(ear_my_rank,my_id,event);
+		loop_with_signature=0;
 	}
 }
 
 void  states_end_period(int my_id,FILE *ear_fd,unsigned int size,int iterations,unsigned long event)
 {
+    if (loop_with_signature) ear_verbose(1,"EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",current_loop_id,iterations,MY_SIGNATURE->seconds*(double)iterations);
+    loop_with_signature=0;
     ear_verbose(4,"EAR(%s)::____________END_PERIOD: END loop detected (Loop ID: %u,size %u)______%d iters______ \n",ear_app_name,event,size,iterations);
 }
 void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterations,unsigned long event,unsigned int level)
@@ -157,11 +172,16 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
                 		EAR_STATE=SIGNATURE_HAS_CHANGED;
 				ear_debug(3,"EAR(%s) EVALUATING_SIGNATURE -> SIGNATURE_HAS_CHANGED\n",ear_app_name);
 			}else{
+				loop_with_signature=1;
+				current_loop_id=event;
 				CPI=db_get_CPI(MY_SIGNATURE);
 				GBS=db_get_GBS(MY_SIGNATURE);
 				POWER=db_get_POWER(MY_SIGNATURE);
 				TPI=db_get_TPI(MY_SIGNATURE);
 				TIME=db_get_seconds(MY_SIGNATURE);
+#ifdef EAR_EXTRA_METRICS
+				metrics_get_extra_metrics(&my_extra_metrics);
+#endif
 				ENERGY=TIME*POWER;
 				EDP=ENERGY*TIME;
 				begin_iter=iterations;
@@ -189,6 +209,9 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 			 		ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
 					ear_app_name,prev_f,event,period,level,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP);
 				}
+#ifdef EAR_EXTRA_METRICS
+				metrics_print_extra_metrics(MY_SIGNATURE,&my_extra_metrics,N_iter,event,period,level);
+#endif
 			}
 		}
 		break;

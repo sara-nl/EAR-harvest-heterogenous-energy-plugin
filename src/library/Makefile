@@ -28,7 +28,8 @@ OBJS = ear_states/ear_states.o           \
        ear_metrics/ear_node_energy.o     \
        ear_metrics/ear_turbo_metrics.o   \
        ear_metrics/ear_flops_metrics.o  \
-       ear_metrics/ear_cache.o 
+       ear_metrics/ear_cache.o \
+       ear_metrics/ear_basic.o
 
 BINARIES = libear.so
 

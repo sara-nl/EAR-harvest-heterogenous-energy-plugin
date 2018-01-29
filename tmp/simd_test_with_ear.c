@@ -64,7 +64,7 @@ static void sse2_dp_mul128()
     a = _mm_load_pd(A);
     b = _mm_load_pd(B);
 
-    for (i = 0; i < n_iterations/2; i++) {
+    for (i = 0; i < n_iterations; i++) {
         c = _mm_mul_pd(a, b);
         d = _mm_mul_pd(a, b);
         e = _mm_mul_pd(a, b);
@@ -117,7 +117,7 @@ static void avx_dp_add256()
     a = _mm256_load_pd(A);
     b = _mm256_load_pd(B);
 
-    for (i = 0; i < n_iterations/2; i++) {
+    for (i = 0; i < n_iterations; i++) {
         c = _mm256_add_pd(a, b);
         d = _mm256_add_pd(a, b);
         e = _mm256_add_pd(a, b);
@@ -239,7 +239,7 @@ static void avx512_dp_fmadd512()
     __m512d d;
     __m512d a;
     __m512d b;
-    __m512d c,f,g,h,j;
+    __m512d c,f,g,h,j,e;
     ulong i;
 
     a = _mm512_load_pd(A);
@@ -248,13 +248,13 @@ static void avx512_dp_fmadd512()
 
     for (i = 0; i < n_iterations; i++) {
         d = _mm512_fmadd_pd(a, b, c);
+        e = _mm512_fmadd_pd(a, b, c);
         f = _mm512_fmadd_pd(a, b, c);
         g = _mm512_fmadd_pd(a, b, c);
-        h = _mm512_fmadd_pd(a, b, c);
         d = _mm512_fmadd_pd(a, b, c);
+        e = _mm512_fmadd_pd(a, b, c);
         f = _mm512_fmadd_pd(a, b, c);
         g = _mm512_fmadd_pd(a, b, c);
-        h = _mm512_fmadd_pd(a, b, c);
     }
 
     _mm512_store_pd(D, d);
