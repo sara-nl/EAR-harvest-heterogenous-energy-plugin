@@ -25,6 +25,8 @@ void db_end(unsigned int whole_app);
 struct App_info * db_current_app();
 // Asks ear_daemon to write the MY_APP info in the EAR_DB_NAME database file
 void db_update_historical(unsigned int whole_app,struct App_info *MY_APP);
+void db_update_historical_extended(unsigned int whole_app,struct App_info_extended *MY_APP);
+
 // Returns true if EAR_APP_NAME is defined. Anyway, my_name[out] is set with the
 // application name: EAR_APP_NAME or PAPI provided name or UnknownApplication
 // otherwise

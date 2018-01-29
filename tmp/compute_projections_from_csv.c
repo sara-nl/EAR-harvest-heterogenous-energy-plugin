@@ -79,9 +79,13 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Error when readin coefficients file (%s)\n",strerror(errno));
 		exit(1);
 	}
+<<<<<<< HEAD:tmp/compute_projections_from_csv.c
 
 
 	fprintf(stdout,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;PROJECTION;POLICY_TH\n");
+=======
+	fprintf(stdout,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH\n");
+>>>>>>> e6ef5586c08a0ec7d9ff09992822cc616734e0a5:src/tools/compute_projections_from_csv.c
 	fprintf(stderr,"Reading metrics %s\n",argv[2]);
 
 	fd_apps=fopen(argv[2],"r");
@@ -108,11 +112,11 @@ void main(int argc,char *argv[])
 	    for (i=0;i<p_states;i++){
 		    if (my_coeffs[i].available){
 			    cpi_p=cpi_proj(cpi_f0,tpi_f0,&my_coeffs[i]);
-			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;PROJECTION;0.0\n",
+			    fprintf(stdout,"%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;STD_MODEL;0.0\n",
 				app_data.user_id,app_data.job_id,app_data.node_id,app_data.app_id,
 				my_coeffs[i].pstate,time_proj(time_f0,cpi_p,cpi_f0,f0,my_coeffs[i].pstate),
 				cpi_p,0.0,0.0,0.0,power_proj(power_f0,tpi_f0,&my_coeffs[i]),
-				0.0,0.0,f0);
+				0.0,0.0,my_coeffs[i].pstate);
 		    }
 	    }	
 	}

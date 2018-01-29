@@ -11,16 +11,21 @@
 #include <immintrin.h> // -mavx -mfma
 #include <ear_rapl_metrics.h>
 #include <ear_metrics/ear_flops_metrics.h>
+#include <ear_metrics/ear_basic.h>
 #include <ear_frequency.h>
 #include <ear_turbo.h>
 #include <config.h>
 #include <papi.h>
-#include "dummy.h"
+#include <assert.h>
 
 int EAR_VERBOSE_LEVEL = 4;
 static  double __attribute__((aligned(64))) A[8] = { M_PI, M_E, M_LN2, M_LN10, M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E };
 static  double __attribute__((aligned(64))) B[8] = { M_SQRT2, M_SQRT1_2, M_LOG2E, M_LOG10E, M_PI, M_E, M_LN2, M_LN10 };
 static  double __attribute__((aligned(64))) C[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) E[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) F[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) G[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
+static  double __attribute__((aligned(64))) H[8] = { M_LN2, M_LN10, M_PI, M_E, M_LOG2E, M_LOG10E, M_SQRT2, M_SQRT1_2 };
 
 int ear_papi_init = 0;
 int* my_omp_get_max_threads = NULL;
@@ -37,20 +42,25 @@ static void sse2_dp_add128()
     __m128d d;
     __m128d a;
     __m128d b;
-    __m128d c;
+    __m128d c,e,f,g,h;
     ulong i;
 
 
     a = _mm_load_pd(A);
     b = _mm_load_pd(B);
 
-    for (i = 0; i < n_iterations/2; i++) {
+    for (i = 0; i < n_iterations; i++) {
         c = _mm_add_pd(a, b);
-        d = _mm_add_pd(c, d);
+        e = _mm_add_pd(a, b);
+        g = _mm_add_pd(a, b);
+        h = _mm_add_pd(a, b);
+        c = _mm_add_pd(a, b);
+        e = _mm_add_pd(a, b);
+        g = _mm_add_pd(a, b);
+        h = _mm_add_pd(a, b);
     }
     
     _mm_store_pd(D, d);
-    process_D(D);
 }
 
 static void sse2_dp_mul128()
@@ -59,19 +69,24 @@ static void sse2_dp_mul128()
     __m128d d;
     __m128d a;
     __m128d b;
-    __m128d c;
+    __m128d c,e,f,g,h;
     ulong i;
 
     a = _mm_load_pd(A);
     b = _mm_load_pd(B);
 
-    for (i = 0; i < n_iterations/2; i++) {
+    for (i = 0; i < n_iterations; i++) {
         c = _mm_mul_pd(a, b);
-        d = _mm_mul_pd(c, d);
+        e = _mm_mul_pd(a, b);
+        g = _mm_mul_pd(a, b);
+        h = _mm_mul_pd(a, b);
+        c = _mm_mul_pd(a, b);
+        e = _mm_mul_pd(a, b);
+        g = _mm_mul_pd(a, b);
+        h = _mm_mul_pd(a, b);
     }
 
     _mm_store_pd(D, d);
-    process_D(D);
 }
 
 static void fma_dp_fmadd128()
@@ -80,7 +95,7 @@ static void fma_dp_fmadd128()
     __m128d d;
     __m128d a;
     __m128d b;
-    __m128d c;
+    __m128d c,f,g,h;
     ulong i;
 
     a = _mm_load_pd(A);
@@ -89,10 +104,16 @@ static void fma_dp_fmadd128()
 
     for (i = 0; i < n_iterations; i++) {
         d = _mm_fmadd_pd(a, b, c);
+        f = _mm_fmadd_pd(a, b, c);
+        h = _mm_fmadd_pd(a, b, c);
+        g = _mm_fmadd_pd(a, b, c);
+        d = _mm_fmadd_pd(a, b, c);
+        f = _mm_fmadd_pd(a, b, c);
+        h = _mm_fmadd_pd(a, b, c);
+        g = _mm_fmadd_pd(a, b, c);
     }
     
     _mm_store_pd(D, d);
-    process_D(D);
 }
 
 static void avx_dp_add256()
@@ -101,19 +122,24 @@ static void avx_dp_add256()
     __m256d d;
     __m256d a;
     __m256d b;
-    __m256d c;
+    __m256d c,e,f,g;
     ulong i;
 
     a = _mm256_load_pd(A);
     b = _mm256_load_pd(B);
 
-    for (i = 0; i < n_iterations/2; i++) {
+    for (i = 0; i < n_iterations; i++) {
         c = _mm256_add_pd(a, b);
-        d = _mm256_add_pd(c, d);
+        e = _mm256_add_pd(a, b);
+        f = _mm256_add_pd(a, b);
+        g = _mm256_add_pd(a, b);
+        c = _mm256_add_pd(a, b);
+        e = _mm256_add_pd(a, b);
+        f = _mm256_add_pd(a, b);
+        g = _mm256_add_pd(a, b);
     }
 
     _mm256_store_pd(D, d);
-    process_D(D);
 }
 
 static void avx_dp_mul256()
@@ -121,7 +147,7 @@ static void avx_dp_mul256()
     static double D[4];
     __m256d d;
     __m256d a;
-    __m256d b;
+    __m256d b,e,f,g;
     ulong i;
 
     a = _mm256_load_pd(A);
@@ -129,10 +155,16 @@ static void avx_dp_mul256()
 
     for (i = 0; i < n_iterations; i++) {
         d = _mm256_mul_pd(a, b);
+        e = _mm256_mul_pd(a, b);
+        f = _mm256_mul_pd(a, b);
+        g = _mm256_mul_pd(a, b);
+        d = _mm256_mul_pd(a, b);
+        e = _mm256_mul_pd(a, b);
+        f = _mm256_mul_pd(a, b);
+        g = _mm256_mul_pd(a, b);
     }
     
     _mm256_store_pd(D, d);
-    process_D(D);
 }
 
 static void fma_dp_fmadd256()
@@ -141,7 +173,7 @@ static void fma_dp_fmadd256()
     __m256d d;
     __m256d a;
     __m256d b;
-    __m256d c;
+    __m256d c,e,f,g,h;
     ulong i;
 
     a = _mm256_load_pd(A);
@@ -150,37 +182,60 @@ static void fma_dp_fmadd256()
 
     for (i = 0; i < n_iterations; i++) {
         d = _mm256_fmadd_pd(a, b, c);
+        e = _mm256_fmadd_pd(a, b, c);
+        f = _mm256_fmadd_pd(a, b, c);
+        g = _mm256_fmadd_pd(a, b, c);
+        d = _mm256_fmadd_pd(a, b, c);
+        e = _mm256_fmadd_pd(a, b, c);
+        f = _mm256_fmadd_pd(a, b, c);
+        g = _mm256_fmadd_pd(a, b, c);
     }
     
     _mm256_store_pd(D, d);
-    process_D(D);
 }
 
 #if AVX_512
 static void avx512_dp_add512()
 {
-    static double D[8];
-    __m512d a,b,c,d;
+    static double __attribute__((aligned(64))) D[8];
+    __m512d __attribute__((aligned(64))) a;
+    __m512d __attribute__((aligned(64))) b;
+    __m512d __attribute__((aligned(64))) c;
+    __m512d __attribute__((aligned(64))) d;
+    __m512d __attribute__((aligned(64))) e;
+    __m512d __attribute__((aligned(64))) f;
+    __m512d __attribute__((aligned(64))) g;
     ulong i;
 
     a = _mm512_load_pd(A);
     b = _mm512_load_pd(B);
 
-    for (i = 0; i < n_iterations/2; i++) {
-        c = _mm512_add_pd(a, b);
-        d = _mm512_add_pd(c, d);
+    assert(((long)A%64)==0);
+
+    for (i = 0; i < n_iterations; i++) {
+        c = _mm512_add_pd(a,b);
+        d = _mm512_add_pd(a,b);
+        e = _mm512_add_pd(a,b);
+        f = _mm512_add_pd(a,b);
+        c = _mm512_add_pd(a,b);
+        d = _mm512_add_pd(a,b);
+        e = _mm512_add_pd(a,b);
+        f = _mm512_add_pd(a,b);
     }
 
     _mm512_store_pd(D, d);
-    process_D(D);
 }
 
 static void avx512_dp_mul512()
 {
     static double D[8];
-    __m512d d;
-    __m512d a;
-    __m512d b;
+    __m512d __attribute__((aligned(64))) a;
+    __m512d __attribute__((aligned(64))) b;
+    __m512d __attribute__((aligned(64))) c;
+    __m512d __attribute__((aligned(64))) d;
+    __m512d __attribute__((aligned(64))) e;
+    __m512d __attribute__((aligned(64))) f;
+    __m512d __attribute__((aligned(64))) g;
     ulong i;
 
     a = _mm512_load_pd(A);
@@ -188,19 +243,36 @@ static void avx512_dp_mul512()
 
     for (i = 0; i < n_iterations; i++) {
         d = _mm512_mul_pd(a, b);
+        e = _mm512_mul_pd(a, b);
+        f = _mm512_mul_pd(a, b);
+        g = _mm512_mul_pd(a, b);
+        d = _mm512_mul_pd(a, b);
+        e = _mm512_mul_pd(a, b);
+        f = _mm512_mul_pd(a, b);
+        g = _mm512_mul_pd(a, b);
+        d = _mm512_mul_pd(a, b);
+        e = _mm512_mul_pd(a, b);
+        f = _mm512_mul_pd(a, b);
+        g = _mm512_mul_pd(a, b);
+        d = _mm512_mul_pd(a, b);
+        e = _mm512_mul_pd(a, b);
+        f = _mm512_mul_pd(a, b);
+        g = _mm512_mul_pd(a, b);
     }
     
     _mm512_store_pd(D, d);
-    process_D(D);
 }
 
 static void avx512_dp_fmadd512()
 {
     static double D[8];
-    __m512d d;
-    __m512d a;
-    __m512d b;
-    __m512d c;
+    __m512d __attribute__((aligned(64))) a;
+    __m512d __attribute__((aligned(64))) c;
+    __m512d __attribute__((aligned(64))) b;
+    __m512d __attribute__((aligned(64))) d;
+    __m512d __attribute__((aligned(64))) e;
+    __m512d __attribute__((aligned(64))) f;
+    __m512d __attribute__((aligned(64))) g;
     ulong i;
 
     a = _mm512_load_pd(A);
@@ -209,16 +281,31 @@ static void avx512_dp_fmadd512()
 
     for (i = 0; i < n_iterations; i++) {
         d = _mm512_fmadd_pd(a, b, c);
+        e = _mm512_fmadd_pd(a, b, c);
+        f = _mm512_fmadd_pd(a, b, c);
+        g = _mm512_fmadd_pd(a, b, c);
+        d = _mm512_fmadd_pd(a, b, c);
+        e = _mm512_fmadd_pd(a, b, c);
+        f = _mm512_fmadd_pd(a, b, c);
+        g = _mm512_fmadd_pd(a, b, c);
+        d = _mm512_fmadd_pd(a, b, c);
+        e = _mm512_fmadd_pd(a, b, c);
+        f = _mm512_fmadd_pd(a, b, c);
+        g = _mm512_fmadd_pd(a, b, c);
+        d = _mm512_fmadd_pd(a, b, c);
+        e = _mm512_fmadd_pd(a, b, c);
+        f = _mm512_fmadd_pd(a, b, c);
+        g = _mm512_fmadd_pd(a, b, c);
     }
 
     _mm512_store_pd(D, d);
-    process_D(D);
 }
 #endif
 
 static void set_affinity(int core)
 {
     cpu_set_t set;
+    CPU_ZERO(&set);
     CPU_SET(core, &set);
     sched_setaffinity(0, sizeof(cpu_set_t), &set);
 }
@@ -303,11 +390,12 @@ int main (int argc, char *argv[])
     ull metrics[EAR_RAPL_EVENTS]; 
     ulong start_time, exec_time;
     ulong num_ops, frequency, aux;
-    long long papi_flops; 
+    long long papi_flops,total_flops[8]; 
 
     double time_s, flops_m, flops_x_watt,flops_x_watt2;
     double power_ins, power_w, power_raw, power_raw_w,power_ins2,power_raw_w2;
     double energy_nj, energy_j, energy_raw, energy_raw_j;
+    long long cycles, inst;
     
     uint n_tests, n_sockets, n_threads;
     uint i_test, i_socket, i_thread;
@@ -349,6 +437,7 @@ int main (int argc, char *argv[])
     }
 
     FAIL(init_rapl_metrics(), "initialization failed");
+    init_basic_metrics();
     init_flops_metrics();
     ear_cpufreq_init();    
 
@@ -363,10 +452,10 @@ int main (int argc, char *argv[])
     printf("Mflops/Watt;");
     printf("Total num ops\n");
 
-    ear_cpufreq_set_node(2401000);
+    ear_cpufreq_set_node(2400000);
     printf("Executing %d tests\n",n_tests);
     // Creating the threads
-    for (i_test = 0; i_test < n_tests; ++i_test)
+    for (i_test = 6; i_test < n_tests; ++i_test)
     {
 
         test = i_test;
@@ -384,10 +473,9 @@ int main (int argc, char *argv[])
             }
         }
 
-        FAIL(reset_rapl_metrics(), "reset events failed");
-        reset_flops_metrics();
         FAIL(start_rapl_metrics(), "start events failed");
         start_flops_metrics();
+	start_basic_metrics();
         start_time = PAPI_get_real_usec();
         ear_begin_compute_turbo_freq();
 
@@ -400,7 +488,11 @@ int main (int argc, char *argv[])
 
         frequency = ear_end_compute_turbo_freq();
         FAIL(stop_rapl_metrics(metrics), "stop events failed");
-        stop_flops_metrics(&papi_flops);
+        FAIL(reset_rapl_metrics(), "reset events failed");
+        stop_flops_metrics(&papi_flops,&total_flops[0]);
+	stop_basic_metrics(&cycles,&inst);
+        reset_flops_metrics();
+ 	reset_basic_metrics();
 
         for (i_thread = 1; i_thread < n_threads; i_thread++) {
             pthread_join(tids[i_thread], NULL);
@@ -459,9 +551,11 @@ int main (int argc, char *argv[])
         flops_m = ((double) papi_flops) / time_s;
         flops_m = flops_m / 1000000.0;
         printf("\tPAPI FLOPS: %llu %0.3lf GFLOP/Watt: %lf operations/sec %lf\n", papi_flops, flops_m, (papi_flops * 40) / (power_raw_w * (double)1000000000*time_s),(double) n_iterations / time_s);
+	printf("\tPAPI instructions %llu Percentage avx512 %lf\n",inst,(double)total_flops[7]/(double)inst);
 	printf("_______\n");
         sleep(1);
     }
+    ear_cpufreq_set_node(2400000);
 
     ear_cpufreq_end();
 

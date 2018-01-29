@@ -289,7 +289,7 @@ int main (int argc, char *argv[])
     ull metrics[EAR_RAPL_EVENTS]; 
     ulong start_time, exec_time;
     ulong num_ops, frequency, aux;
-    long long papi_flops; 
+    long long papi_flops,flops_type[8]; 
 
     double time_s, flops_m, flops_x_watt,flops_x_watt2;
     double power_ins, power_w, power_raw, power_raw_w,power_ins2,power_raw_w2;
@@ -390,7 +390,7 @@ int main (int argc, char *argv[])
 
         frequency = ear_end_compute_turbo_freq();
         FAIL(stop_rapl_metrics(metrics), "stop events failed");
-        stop_flops_metrics(&papi_flops);
+        stop_flops_metrics(&papi_flops,flops_type);
 
         for (i_socket = 0; i_socket < 2; ++i_socket) {
             // Energy per socket in nano juls

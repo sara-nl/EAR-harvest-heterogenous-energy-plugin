@@ -156,7 +156,7 @@ void start_flops_metrics()
 	}
 }
 /* Stops includes accumulate metrics */
-void stop_flops_metrics(long long *flops)
+void stop_flops_metrics(long long *flops,long long *f_operations)
 {
 	int sets,ev,retval;
 	if (!flops_supported) return;
@@ -168,6 +168,7 @@ void stop_flops_metrics(long long *flops)
 			if (sets==SP_OPS) ear_verbose(2,"fops_fp -->");
 			if (sets==DP_OPS) ear_verbose(2,"fops_dp -->");
 			for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){ 
+				f_operations[sets*EAR_FLOPS_EVENTS+ev]=ear_flops_values[sets][ev];
 				ear_flops_acum_values[sets][ev]+=ear_flops_values[sets][ev];
 				*flops+=(ear_flops_values[sets][ev]*FP_OPS_WEIGTH[sets][ev]);
 				ear_verbose(2,"[%d]=%llu x %d, ",ev,ear_flops_values[sets][ev],FP_OPS_WEIGTH[sets][ev]);
@@ -209,10 +210,20 @@ void print_gflops(long long total_inst,unsigned long total_time)
 	}
 	
 }
+int get_total_resources()
+{
+	int procs_per_node;
+	procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
+	if (my_omp_get_max_threads!=NULL){
+                return procs_per_node*my_omp_get_max_threads();
+        }else{
+		return procs_per_node;
+        }
+}
 double gflops(unsigned long total_time)
 {
         int sets,ev;
-        int procs_per_node;
+        int resources;
         long long total=0;
 	double Gflops;
         if (!flops_supported) return;
@@ -221,12 +232,32 @@ double gflops(unsigned long total_time)
                         total=total+(FP_OPS_WEIGTH[sets][ev]*ear_flops_acum_values[sets][ev]);
                 }
         }
-        procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
-        if (my_omp_get_max_threads!=NULL){
-	 	Gflops=(double)(total*procs_per_node*my_omp_get_max_threads())/(double)(total_time*1000);
-        }else{ 
-		Gflops=(double)(total*procs_per_node)/(double)(total_time*1000);
-	}
+	resources=get_total_resources();
+	Gflops=(double)(total*resources)/(double)(total_time*1000);
 	return Gflops;
 }
 
+int get_number_fops_events()
+{
+	return (EAR_FLOPS_EVENTS_SETS*EAR_FLOPS_EVENTS);
+}
+
+void get_weigth_fops_instructions(int *weigth_vector)
+{
+	int sets,ev;
+	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
+		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
+			weigth_vector[sets*EAR_FLOPS_EVENTS+ev]=FP_OPS_WEIGTH[sets][ev];
+		}
+	}
+}
+void get_total_fops(long long *metrics)
+{
+	int sets,ev;
+	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
+		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
+			metrics[sets*EAR_FLOPS_EVENTS+ev]=ear_flops_acum_values[sets][ev];
+		}
+	}
+	
+}
