@@ -17,6 +17,8 @@
 extern int report;
 
 // EAR Files
+#include <ear_gui/ear_gui.h>
+
 #include <ear_verbose.h>
 #include <ear_states/ear_states.h>
 #include <ear_models/ear_models.h> 
@@ -24,13 +26,11 @@ extern int report;
 #include <ear_metrics/ear_node_energy.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_db/ear_db.h>
-#include <ear_gui/ear_gui.h>
-
 
 extern unsigned long EAR_default_frequency;
 extern unsigned long ear_frequency;
 extern char ear_app_name[MAX_APP_NAME];
-extern char ear_node_name[BUFFSIZE];
+extern char ear_node_name[MAX_APP_NAME];
 extern int ear_my_rank;
 
 

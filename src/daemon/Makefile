@@ -11,7 +11,8 @@ export DIR
 COMPONENTS = uncore_architectures node_energy_metrics
 
 OUTER_OBJS = $(ROOTDIR)/src/common/environment.o \
-             $(ROOTDIR)/src/common/hardware.o
+             $(ROOTDIR)/src/common/hardware.o \
+             $(ROOTDIR)/src/common/types.o
 
 OBJS = ear_frequency.o    \
        ear_rapl_metrics.o \

@@ -7,6 +7,18 @@
 
 */
 
+#ifndef EAR_MODELS_H_
+#define EAR_MODELS_H_
+
+#include <environment.h>
+#include <types.h>
+
+#if 0
+#define MIN_ENERGY_TO_SOLUTION 0
+#define MIN_TIME_TO_SOLUTION 1
+#define MONITORING_ONLY 2
+#endif
+
 void set_performance_projection(int i,double TP,double PP, double CPI);
 void reset_performance_projection(unsigned int p_states);
 

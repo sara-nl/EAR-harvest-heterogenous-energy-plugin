@@ -17,9 +17,8 @@
 #include <string.h>
 #include <errno.h>
 #include <cpufreq.h>
-#include <ear_db_type.h>
-#include <ear_models/ear_models.h>
 #include <config.h>
+#include <types.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 

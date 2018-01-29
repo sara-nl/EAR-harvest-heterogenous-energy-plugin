@@ -398,6 +398,7 @@ int metrics_init(int my_id,int pid)
 
 	return 0;
 }
+
 /////// End function
 void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned long int *eru)
 {

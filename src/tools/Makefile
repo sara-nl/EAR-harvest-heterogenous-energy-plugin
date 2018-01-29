@@ -3,8 +3,7 @@ CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/library
 
 ######## FILES
 
-BINARIES = show_metrics traces_to_paraver coefficients_to_csv
-BINARIES = show_metrics coefficients_to_csv compute_projections compute_projections_from_csv
+BINARIES = traces_to_paraver
 
 ######## RULES
 
