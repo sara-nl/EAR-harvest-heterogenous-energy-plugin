@@ -10,7 +10,7 @@
 #ifndef _db_DB_H
 #define _db_DB_H
 
-#include <ear_db_type.h>
+#include <types.h>
 
 #define CURRENT_SIGNATURE(f) ((struct App_info *)&CURRENT_APP[PSTATE(f)])
 

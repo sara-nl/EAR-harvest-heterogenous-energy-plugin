@@ -1,6 +1,6 @@
 #ifndef _EAR_DAEMON_COMMON_H
 #define _EAR_DAEMON_COMMON_H
-#include <ear_db_type.h>
+#include <types.h>
 
 // Number of services supported
 #ifdef MULTIPLE_SERVICES

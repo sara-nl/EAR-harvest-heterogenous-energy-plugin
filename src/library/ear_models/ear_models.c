@@ -26,7 +26,7 @@
 #define RESET_FREQ            0
 
 projection_t *projections;
-coefficients_t **coefficients;
+coefficient_t **coefficients;
 
 extern char ear_app_name[MAX_APP_NAME];
 extern unsigned long EAR_default_frequency;
@@ -114,7 +114,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
     sprintf(coeff_default_file, "%s.default", coeff_file);
 
     // Coefficient pointers allocation
-    coefficients = (coefficients_t **) malloc(sizeof(coefficients_t * p_states));
+    coefficients = (coefficient_t **) malloc(sizeof(coefficient_t) * p_states);
 
     if (coefficients == NULL) {
         ear_verbose(0, "EAR: Error allocating memory for p_states coefficients\n");

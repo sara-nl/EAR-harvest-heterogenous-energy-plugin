@@ -20,7 +20,8 @@ void acum_counters();
 int metrics_init(int id,int pid);
 
 // Computes the application global metrics (whole application) and reports the application summary. It calls metrics_print_summary
-void metrics_end(unsigned int whole_app,int id,FILE *fd,unsigned long int *eru);
+void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned long int *eru);
+
 // updates name with the application name
 void metrics_get_app_name(char *name);
 
@@ -39,7 +40,7 @@ void metrics_get_hw_info(int *sockets,int *cores_socket,unsigned long *max_f,uns
 // Returns elapsed time (end-init)
 long long metrics_usecs_diff(long long end,long long init);
 // Computes total application signature at application end and prints it at the stderr and in fd
-void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd);
+void metrics_print_summary(unsigned int whole_app, int my_id, char* summary_file);
 
 
 

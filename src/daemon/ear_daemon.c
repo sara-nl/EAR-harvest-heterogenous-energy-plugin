@@ -17,18 +17,20 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
-#include <config.h>
-#include <hardware.h>
-#include <environment.h>
+#include <linux/limits.h>
 #include <ear_verbose.h>
 #include <ear_daemon_common.h>
 #include <ear_frequency.h>
 #include <ear_rapl_metrics.h>
 #include <ear_uncores.h>
-#include <ear_db_type.h>
 #include <ear_node_energy_metrics.h>
+#include <environment.h>
+#include <hardware.h>
+//#include <config.h>
+#include <states.h>
+#include <types.h>
 
-char db_fullpath[MAX_PATH_SIZE];
+char db_fullpath[PATH_MAX];
 
 char my_errno[1024];
 #define max(a,b) (a>b?a:b)
@@ -308,12 +310,12 @@ int ear_daemon_node_energy(int must_read)
 void form_db_fullpath()
 {
     char node_name[MAX_PATH_SIZE];
-	char *db_pathname;
+    char *db_pathname;
     int ret;
 
     db_pathname = get_ear_db_pathname();
-	gethostname(ear_node_name, sizeof(ear_node_name));
-    sprintf(db_fullpath, "%s.%s.db", db_pathname, ear_node_name);
+    gethostname(node_name, sizeof(node_name));
+    sprintf(db_fullpath, "%s.%s.db", db_pathname, node_name);
     ear_verbose(2, "ear_daemon is using %s file as DB\n", db_fullpath);
 }
 

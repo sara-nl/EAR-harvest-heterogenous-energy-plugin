@@ -3,7 +3,7 @@ CFLAGS = -I$(DIR) -fPIC $(CONSTANTS)
 
 ######## FILES
 
-BINARIES = ear_daemon_client.o environment.o hardware.o string_enhanced.o
+BINARIES = ear_daemon_client.o environment.o hardware.o string_enhanced.o types.o
 
 ######## RULES
 
@@ -20,6 +20,9 @@ hardware.o: hardware.c hardware.h
 
 string_enhanced.o: string_enhanced.c string_enhanced.h
 	$(CC) $(CFLAGS) -c string_enhanced.c
+
+types.o: types.c
+	$(CC) $(CFLAGS) -c types.c
 
 install:
 
