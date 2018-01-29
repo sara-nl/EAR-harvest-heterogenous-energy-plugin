@@ -10,13 +10,12 @@
 #ifndef _EAR_PAPI_H_
 #define _EAR_PAPI_H_
 
-#include <ear_db_type.h>
+#include <types.h>
 
 // Internals to ear_papi.c
 void copy_metrics_last_iter_counters();
 void diff_counters();
 void acum_counters();
-
 
 // Initialice PAPI counters and allocates memory for rapl and uncore counters. 
 // Returns 0 on success and 1 if id!=0 (not a "master"process)
@@ -48,11 +47,7 @@ void metrics_print_summary(unsigned int whole_app, int my_id, char* summary_file
 #ifdef EAR_EXTRA_METRICS
 void metrics_get_extra_metrics(struct App_info_extended *my_extra);
 void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extended *my_extra,int iterations,unsigned long loop_id,int period,unsigned int level);
-
 #endif
-
-
-
 
 #else
 #endif

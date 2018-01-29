@@ -26,22 +26,16 @@ extern int report;
 #include <ear_metrics/ear_node_energy.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_db/ear_db.h>
-<<<<<<< HEAD
-=======
-#include <ear_gui/ear_gui.h>
 
 #ifdef EAR_EXTRA_METRICS
 struct App_info_extended my_extra_metrics;
 #endif
-
->>>>>>> e6ef5586c08a0ec7d9ff09992822cc616734e0a5
 
 extern unsigned long EAR_default_frequency;
 extern unsigned long ear_frequency;
 extern char ear_app_name[MAX_APP_NAME];
 extern char ear_node_name[MAX_APP_NAME];
 extern int ear_my_rank;
-
 
 #define BUFFSIZE 128
 unsigned long int eru_init,eru_end,eru_diff;

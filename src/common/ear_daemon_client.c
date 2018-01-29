@@ -238,6 +238,49 @@ unsigned long ear_daemon_client_end_compute_turbo_freq()
     	}   
     return ack;
 }
+void ear_daemon_client_begin_app_compute_turbo_freq()
+{
+    unsigned long old_freq=EAR_ERROR;
+    struct daemon_req req;
+    unsigned long ack=EAR_SUCCESS;
+    ear_debug(2,"EAR_daemon_client:start getting turbo freq \n");
+    req.req_service=START_APP_COMP_FREQ;
+    if (ear_fd_req[freq_req]>=0){
+            if (write(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)){
+                    ear_verbose(0,"EAR: Error sending request ear_daemon_client_begin_app_compute_turbo_freq:%s\n",strerror(errno));
+                    return ;
+            }
+            if (read(ear_fd_ack[freq_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
+                    ear_verbose(0,"EAR: Error ear_daemon_client_begin_app_compute_turbo_freq:%s\n",strerror(errno));
+                    return ;
+            }
+            return;
+   }
+   ear_debug(0,"EAR_daemon_client: ear_daemon_client_begin_app_compute_turbo_freq service not provided\n");
+   return;
+}
+unsigned long ear_daemon_client_end_app_compute_turbo_freq()
+{
+        struct daemon_req req;
+        unsigned long ack=EAR_SUCCESS;
+        ear_debug(2,"EAR_daemon_client:end getting turbo freq \n");
+        req.req_service=END_APP_COMP_FREQ;
+        if (ear_fd_req[freq_req]>=0){
+            if (write(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)){
+                ear_verbose(0,"EAR: Error sending request ear_daemon_client_end_app_compute_turbo_freq:%s\n",strerror(errno));
+                return EAR_ERROR;
+            }
+            if (read(ear_fd_ack[freq_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
+                    ear_verbose(0,"EAR: Error ear_daemon_client_app_end_compute_turbo_freq ACK:%s\n",strerror(errno));
+                    return EAR_ERROR;
+            }
+            ear_verbose(2,"EAR_daemon_client: TURBO freq computed as  %u\n",ack);
+        }else{
+            ear_debug(0,"EAR_daemon_client: ear_daemon_client_end_app_compute_turbo_freq service not provided\n");
+        }
+        return ack;
+}
+
 void ear_daemon_client_set_turbo()
 {
 	struct daemon_req req;

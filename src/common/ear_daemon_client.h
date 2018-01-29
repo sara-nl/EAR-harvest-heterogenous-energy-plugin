@@ -20,6 +20,8 @@ unsigned long ear_daemon_client_change_freq(unsigned long newfreq);
 void ear_daemon_client_set_turbo();
 void ear_daemon_client_begin_compute_turbo_freq();
 unsigned long ear_daemon_client_end_compute_turbo_freq();
+void ear_daemon_client_begin_app_compute_turbo_freq();
+unsigned long ear_daemon_client_end_app_compute_turbo_freq();
 unsigned long ear_daemon_client_get_data_size_frequency();
 // Uncore services
 int ear_daemon_client_read_uncore(unsigned long long *values);
