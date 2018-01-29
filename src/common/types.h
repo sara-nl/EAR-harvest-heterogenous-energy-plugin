@@ -6,9 +6,9 @@ typedef unsigned long long ull;
 typedef unsigned long ulong;
 typedef unsigned int uint;
 
-#define MAX_APP_NAME	1024
-#define BUFFSIZE	128
-#define FLOPS_EVENTS	8
+#define MAX_APP_NAME    1024
+#define BUFFSIZE        128
+#define FLOPS_EVENTS    8
 
 typedef struct App_info_extended
 {

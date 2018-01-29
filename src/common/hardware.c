@@ -51,13 +51,12 @@ static unsigned int is_cpu_leaf_present(unsigned int leaf)
     // If max leafs are less
     if (eax < leaf)
         return EAR_ERROR;
-printf("1\n");
+
     CPUID(leaf,0);
     // EBX confirms its presence
     if (ebx == 0)
         return EAR_ERROR;
 
-printf("2\n");
     return EAR_SUCCESS;
 }
 

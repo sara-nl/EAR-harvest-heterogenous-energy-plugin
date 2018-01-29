@@ -123,7 +123,7 @@ int read_summary_file(char *path, application_t **apps)
     fclose(fd);
 
     *apps = apps_aux;
-    return lines;
+    return i;
 }
 
 int read_coefficients_file(char *path, coefficient_t **coeffs, int size)
