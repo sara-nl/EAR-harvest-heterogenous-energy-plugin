@@ -124,6 +124,23 @@ application_t *merge(control_t *control)
     return apps_merged;
 }
 
+
+
+void save_applications_merged(control_t *control)
+{
+    application_t *apps;
+    int i;
+
+    if (control->csv == NULL) {
+        return;
+    }
+
+    for (i = 0; i < control->n_apps_merged; ++i)
+    {
+        append_application_text_file(control->csv, &control->apps_merged[i]);
+    }
+}
+
 void evaluate(control_t *control)
 {
     char buffer[32];
@@ -241,9 +258,10 @@ void evaluate(control_t *control)
 
 void usage(char *app)
 {
-    printf("Usage: %s [evaluate_coefficients] <coefficients file> <summary file> [frequency] <csv file>\n", app);
-    printf("Usage: %s [compute_projections] <coefficients file> <summary file> [frequency] [csv file]\n", app);
-    printf("Usage: %s [read_coefficients] <coefficients file> <csv file>\n", app);
+    printf("Usage: %s [evaluate_coefficients] <coefficients file> <summary file> [frequency] <output file>\n", app);
+    printf("Usage: %s [compute_projections] <coefficients file> <summary file> [frequency] <output file>\n", app);
+    printf("Usage: %s [read_coefficients] <coefficients file> <output file>\n", app);
+    printf("Usage: %s [merge_summary] <summary file> <output file>\n", app);
     exit(1);
 }
 
@@ -252,29 +270,53 @@ int main(int argc, char *argv[])
     control_t control;
 
     // Mode
-    control.mode = strcmp(argv[1], "evaluate_coefficients") == 0;
+    control.mode  = 1 * (strcmp(argv[1], "evaluate_coefficients") == 0);
+    control.mode += 2 * (strcmp(argv[1], "compute_projections") == 0);
+    control.mode += 3 * (strcmp(argv[1], "read_coefficients") == 0);
+    control.mode += 4 * (strcmp(argv[1], "merge_summary") == 0);
 
     //
     if (control.mode == 0)
     {
         usage(argv[0]);
     }
-
     //
-    control.n_apps = read_summary_file(argv[3], &control.apps);
-    control.n_coeffs = read_coefficients_file(argv[2], &control.coeffs, 0);
-    control.f0_mhz = (unsigned long) atoi(argv[4]);
+    else if (control.mode == 1)
+    {
+        //
+        control.n_apps = read_summary_file(argv[3], &control.apps);
+        control.n_coeffs = read_coefficients_file(argv[2], &control.coeffs, 0);
+        control.f0_mhz = (unsigned long) atoi(argv[4]);
+        control.csv = argv[5];
 
-    //
-    control.apps_merged = merge(&control);
+        //
+        control.apps_merged = merge(&control);
 
-    if (control.mode == 1) {
+        //
         evaluate(&control);
-    }
 
-    free(control.coeffs);
-    free(control.apps_merged);
-    free(control.apps);
+        //
+        free(control.coeffs);
+        free(control.apps_merged);
+        free(control.apps);
+    }
+    //
+    else if (control.mode == 4)
+    {
+        //
+        control.n_apps = read_summary_file(argv[2], &control.apps);
+        control.csv = argv[3];
+
+        //
+        control.apps_merged = merge(&control);
+
+        //
+        save_applications_merged(&control);
+
+        //
+        free(control.apps_merged);
+        free(control.apps);
+    }
 
     return 0;
 }
