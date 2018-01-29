@@ -428,7 +428,7 @@ struct App_info* set_metrics(int period,int iteration,long long *counters,long l
         	db_set_TPI(app_info,TPI);
         	db_set_seconds(app_info,Seconds/(double)N_iters);
         	db_set_CPI(app_info,CPI);
-		db_set_frequency(app_info,ear_cpufreq_get(0));
+		db_set_frequency(app_info,ear_daemon_client_end_compute_turbo_freq());
 		return app_info;
 }
 void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
@@ -458,7 +458,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id,FILE* fd)
 		EDP=Seconds*Seconds*POWER_DC;
 		DRAM_POWER=(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/Seconds;
 		PCK_POWER=(double)(acum_event_values[EAR_ACUM_PCKG_ENER]/1000000000)/Seconds;
-		f=ear_daemon_client_end_compute_turbo_freq();
+		f=ear_daemon_client_end_app_compute_turbo_freq();
 		app_name=get_ear_app_name();
 		if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);
 		else strcpy(SIGNATURE.app_id,"NA");
@@ -584,6 +584,7 @@ void metrics_start_computing_signature()
 	metrics_reset();
 	reset_values();
 	metrics_start();
+	ear_daemon_client_begin_compute_turbo_freq();
 }
 
 void metrics_set_signature_start_time()
@@ -593,6 +594,7 @@ void metrics_set_signature_start_time()
 struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru,unsigned int N_iters,long long min_t)
 {
 	struct App_info *app;
+	unsigned long avg_f;
 	ear_verbose(3,"EAR______________metrics_end_compute_signature __________\n");
 	// POWER_DC is provided
 	// WE Get iteration TIme
@@ -662,7 +664,7 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 
 	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256,PERC_DP512\n");
 	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
-	fprintf(fd_extra,"0;%.5lf;%.5lf;.5%lf;%.5lf;%.5lf;",my_sig->seconds,my_sig->CPI,my_sig->TPI_f0,my_sig->GBS_f0,my_gflops);
+	fprintf(fd_extra,"%lu;%.5lf;%.5lf;.5%lf;%.5lf;%.5lf;",my_sig->f,my_sig->seconds,my_sig->CPI,my_sig->TPI_f0,my_sig->GBS_f0,my_gflops);
 	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->POWER_f0,my_sig->DRAM_POWER,my_sig->PCK_POWER);
 	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->nominal,ear_policy_name,my_sig->th);
 	fprintf(fd_extra,"%lu;%d;%u;",loop_id,period,level);

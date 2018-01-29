@@ -34,13 +34,21 @@ unsigned long ear_max_f();
 unsigned long ear_min_f();
 // Returns the pstate associated with a given frequency
 unsigned int ear_get_pstate(unsigned long f);
+//Selects the “userspace” governor.
+void ear_set_userspace();
+
+
+
+
+//Selects the “performance” governor.
+void ear_set_turbo();
+// Start computing the avg freq for the whole application
+void ear_begin_app_compute_turbo_freq();
+// Ends computing the avg freq for the whole application
+unsigned long ear_end_app_compute_turbo_freq();
 // Computing the effective frequency when turbo is on needs root privileges. This function starts counters to compute frequency.
 void ear_begin_compute_turbo_freq();
 // Stops counters to compute effective frequency when turbo is on and returns the computed frequency.  
 unsigned long ear_end_compute_turbo_freq();
-//Selects the “performance” governor.
-void ear_set_turbo();
-//Selects the “userspace” governor.
-void ear_set_userspace();
 #else
 #endif

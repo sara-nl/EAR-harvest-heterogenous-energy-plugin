@@ -39,6 +39,8 @@ struct daemon_req{
 #define SET_TURBO 3
 #define DATA_SIZE_FREQ 4
 #define CONNECT_FREQ 5
+#define START_APP_COMP_FREQ 6
+#define END_APP_COMP_FREQ 7
 
 #define END_COMM 1000
 

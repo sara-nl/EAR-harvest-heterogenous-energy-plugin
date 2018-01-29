@@ -166,7 +166,7 @@ void ear_init(){
 		ear_verbose(1,"EAR: Turbo learning phase, turbo selected and start computing\n");
 		ear_daemon_client_set_turbo();
 	}else ear_verbose(1,"EAR: learning phase %d, turbo %d\n",ear_whole_app,ear_use_turbo);
-	ear_daemon_client_begin_compute_turbo_freq();
+	ear_daemon_client_begin_app_compute_turbo_freq();
 	ear_summary_filename=get_ear_user_db_pathname();
 	sprintf(file_name,"%s.%s",ear_summary_filename,ear_node_name);
 	if (open(file_name,O_RDONLY)<0) new_fd=1;
@@ -298,10 +298,9 @@ void ear_finalize(){
 	db_end(ear_whole_app);
 	dynais_dispose();
 
-    states_end_job(my_id,ear_fd,ear_app_name);
+    	states_end_job(my_id,ear_fd,ear_app_name);
 	ear_cpufreq_end();
 	end_dc_energy();
-	ear_avg_turbo_freq=ear_daemon_client_end_compute_turbo_freq();
 	ear_daemon_client_disconnect();
 #ifdef DYNAIS_TRACE
 	if (ear_my_rank==0){
