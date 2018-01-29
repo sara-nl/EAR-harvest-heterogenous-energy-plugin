@@ -108,7 +108,7 @@ struct avg_perf_cpu_info
     unsigned long saved_aperf;
     unsigned long saved_mperf;
     unsigned int snapped;
-} *cpu_info;
+} *cpu_info,*cpu_total_info;
 
 inline static int read_ulong(int fd, unsigned int pos, unsigned long *value)
 {
@@ -151,7 +151,9 @@ int aperf_init(unsigned int num_cpus)
     _num_cpus = num_cpus;
     int size = sizeof(struct avg_perf_cpu_info);
     int result = posix_memalign((void *) &cpu_info, size, size * num_cpus);
-    return -(result != 0);
+    if (result!=0) return EAPERF;
+    result = posix_memalign((void *) &cpu_total_info, size, size * num_cpus);
+    return -(result != 0) ;
 }
 
 int aperf_init_cpu(unsigned int cpu,unsigned long max_freq)
@@ -160,14 +162,16 @@ int aperf_init_cpu(unsigned int cpu,unsigned long max_freq)
         return EAPERF;
     }
     cpu_info[cpu].nominal_freq = max_freq;
+    cpu_total_info[cpu].nominal_freq = max_freq;
 }
 
 void aperf_dispose()
 {
 	if (cpu_info != NULL) free(cpu_info);
+	if (cpu_total_info!=NULL) free(cpu_total_info);
 }
 
-int aperf_get_avg_frequency_init(unsigned int cpu)
+int aperf_start_avg_freq(int cpu,struct avg_perf_cpu_info *my_cpu_info)
 {
     uint64_t aperf, mperf;
     int result;
@@ -182,14 +186,25 @@ int aperf_get_avg_frequency_init(unsigned int cpu)
         return EAPERF;
     }
 
-    cpu_info[cpu].saved_aperf = aperf;
-    cpu_info[cpu].saved_mperf = mperf;
-    cpu_info[cpu].snapped = 1;
+    my_cpu_info[cpu].saved_aperf = aperf;
+    my_cpu_info[cpu].saved_mperf = mperf;
+    my_cpu_info[cpu].snapped = 1;
 
     return 0;
 }
 
-int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
+int aperf_start_computing_app_avg_freq(unsigned int cpu)
+{
+        return aperf_start_avg_freq(cpu,cpu_total_info);
+}
+
+int aperf_get_avg_frequency_init(unsigned int cpu)
+{
+        return aperf_start_avg_freq(cpu,cpu_info);
+}
+
+
+int aperf_end_avg_freq(unsigned int cpu, struct avg_perf_cpu_info *my_cpu_info,unsigned long *frequency)
 {
     unsigned long current_aperf, current_mperf;
     unsigned long mperf_diff, aperf_diff;
@@ -200,7 +215,7 @@ int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
         return EAPERF;
     }
 
-    if (!cpu_info[cpu].snapped) {
+    if (!my_cpu_info[cpu].snapped) {
         return EAPERF;
     }
 
@@ -210,10 +225,10 @@ int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
         return EAPERF;
     }
 
-    aperf_diff = current_aperf - cpu_info[cpu].saved_aperf;
-    mperf_diff = current_mperf - cpu_info[cpu].saved_mperf;
-    cpu_info[cpu].saved_aperf = current_aperf;
-    cpu_info[cpu].saved_mperf = current_mperf;
+    aperf_diff = current_aperf - my_cpu_info[cpu].saved_aperf;
+    mperf_diff = current_mperf - my_cpu_info[cpu].saved_mperf;
+    my_cpu_info[cpu].saved_aperf = current_aperf;
+    my_cpu_info[cpu].saved_mperf = current_mperf;
 
     // Preventing the possible overflow removing 7 bits,
     // which is the maximum incresing bits in that
@@ -230,7 +245,17 @@ int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
 
     // The division again turns the value to MHz, because
     // it was increased before.
-    *frequency = (cpu_info[cpu].nominal_freq * perf_percent) / 100;
+    *frequency = (my_cpu_info[cpu].nominal_freq * perf_percent) / 100;
     return 0;
+}
+
+int aperf_end_computing_app_avg_freq(unsigned int cpu, unsigned long *frequency)
+{
+        return aperf_end_avg_freq(cpu,cpu_total_info,frequency);
+}
+
+int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
+{
+        return aperf_end_avg_freq(cpu,cpu_info,frequency);
 }
 
