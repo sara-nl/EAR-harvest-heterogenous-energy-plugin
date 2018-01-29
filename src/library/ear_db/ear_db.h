@@ -12,7 +12,7 @@
 
 #include <types.h>
 
-#define CURRENT_SIGNATURE(f) ((struct App_info *)&CURRENT_APP[PSTATE(f)])
+#define CURRENT_SIGNATURE(f) ((struct App_info *) &CURRENT_APP[PSTATE(f)])
 
 // initializes the data structures to deal with app info. db_init allocates
 // memory for the list of cpu p_states

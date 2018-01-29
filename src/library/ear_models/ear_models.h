@@ -42,6 +42,5 @@ unsigned int policy_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNAT
 // Returns the performance projection for a given frequency
 struct PerfProjection * performance_projection(unsigned long f);
 
-
 #else
 #endif
