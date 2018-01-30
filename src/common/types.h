@@ -7,7 +7,6 @@ typedef unsigned long ulong;
 typedef unsigned int uint;
 
 #define MAX_APP_NAME    1024
-#define BUFFSIZE        128
 #define FLOPS_EVENTS    8
 
 typedef struct App_info_extended
@@ -46,11 +45,6 @@ typedef struct App_info
     double EDP;
 } application_t;
 
-#define NOMINAL_POWER(app)  app->POWER_f0
-#define NOMINAL_TIME(app)   app->seconds
-#define NOMINAL_TPI(app)    app->TPI_f0
-#define NOMINAL_CPI(app)    app->CPI
-
 typedef struct Coefficients_info
 {
     unsigned long pstate;
@@ -77,5 +71,7 @@ int read_summary_file(char *path, application_t **apps);
 int read_coefficients_file(char *path, coefficient_t **coeffs, int size);
 int append_application_binary_file(char *path, application_t *app);
 int append_application_text_file(char *path, application_t *app);
+int append_coefficient_text_file(char *path, coefficient_t *coeff);
+int append_projection_text_file(char *path, projection_t *proj);
 
 #endif

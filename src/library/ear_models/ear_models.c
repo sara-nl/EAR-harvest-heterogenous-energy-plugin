@@ -20,10 +20,14 @@
 #include <ear_verbose.h>
 #include <types.h>
 
+#define RESET_FREQ 			0
 #define PERFORMANCE_PENALTY 0.1
+#define ACCEPTED_TH 		0.05
 // #define PERFORMANCE_GAIN 0.8 , this minimum has been moved to makefile option
-#define ACCEPTED_TH 0.05
-#define RESET_FREQ 0
+#define NOMINAL_POWER(app)  app->POWER_f0
+#define NOMINAL_TIME(app)   app->seconds
+#define NOMINAL_TPI(app)    app->TPI_f0
+#define NOMINAL_CPI(app)    app->CPI
 
 extern unsigned long ear_frequency;
 extern unsigned long EAR_default_frequency;
@@ -32,7 +36,6 @@ extern int ear_use_turbo;
 extern int ear_my_rank;
 extern int ear_whole_app;
 extern char ear_app_name[MAX_APP_NAME];
-
 
 struct PerfProjection *APP_PERF_PROJECTION;
 struct Coefficients_info **COEFFICIENTS_LENOVO;
