@@ -13,12 +13,6 @@
 #include <environment.h>
 #include <types.h>
 
-#if 0
-#define MIN_ENERGY_TO_SOLUTION 0
-#define MIN_TIME_TO_SOLUTION 1
-#define MONITORING_ONLY 2
-#endif
-
 void set_performance_projection(int i,double TP,double PP, double CPI);
 void reset_performance_projection(unsigned int p_states);
 
@@ -41,6 +35,7 @@ unsigned int performance_projection_ok(struct PerfProjection *PREDICTION,struct 
 unsigned int policy_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNATURE,struct App_info *LAST_SIGNATURE);
 // Returns the performance projection for a given frequency
 struct PerfProjection * performance_projection(unsigned long f);
+
 
 #else
 #endif
