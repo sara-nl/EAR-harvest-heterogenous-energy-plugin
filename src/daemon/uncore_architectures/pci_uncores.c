@@ -75,10 +75,12 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <linux/limits.h>
 #include <ear_verbose.h>
-#include <hardware.h>
 #include <uncore_architectures/pci_uncores.h>
-#include <config.h>
+#include <hardware.h>
+#include <states.h>
+#include <types.h>
 
 #define IJKFOR(i_len, j_len, k_len) \
     for(i = 0; i < i_len; i++)      \

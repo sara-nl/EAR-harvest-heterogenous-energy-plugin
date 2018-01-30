@@ -18,7 +18,7 @@
 #include <freeipmi/freeipmi.h>
 #include <ear_verbose.h>
 #include <hardware.h>
-#include <config.h>
+#include <states.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
