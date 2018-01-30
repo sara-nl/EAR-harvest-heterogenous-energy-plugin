@@ -10,6 +10,7 @@ typedef struct control
     application_t *apps;
     application_t *apps_merged;
     coefficient_t *coeffs;
+    projection_t *projs;
     int n_apps;
     int n_apps_merged;
     int n_coeffs;
@@ -55,7 +56,6 @@ int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
     return -1;
 }
 
-//application_t *merge(application_t *apps, int n_apps, int *n_apps_merged)
 application_t *merge(control_t *control)
 {
     application_t *apps, *apps_merged;
@@ -124,8 +124,6 @@ application_t *merge(control_t *control)
     return apps_merged;
 }
 
-
-
 void save_applications_merged(control_t *control)
 {
     application_t *apps;
@@ -138,6 +136,25 @@ void save_applications_merged(control_t *control)
     for (i = 0; i < control->n_apps_merged; ++i)
     {
         append_application_text_file(control->csv, &control->apps_merged[i]);
+    }
+}
+
+void save_coefficients(control_t *control)
+{
+    coefficient_t *coeff;
+    int i;
+
+    if (control->csv == NULL) {
+        return;
+    }
+
+    remove(control->csv);
+
+    for (i = 0; i < control->n_coeffs; ++i)
+    {
+        if (control->coeffs[i].available) {
+            append_coefficient_text_file(control->csv, &control->coeffs[i]);
+        }
     }
 }
 
@@ -259,7 +276,6 @@ void evaluate(control_t *control)
 void usage(char *app)
 {
     printf("Usage: %s [evaluate_coefficients] <coefficients file> <summary file> [frequency] <output file>\n", app);
-    printf("Usage: %s [compute_projections] <coefficients file> <summary file> [frequency] <output file>\n", app);
     printf("Usage: %s [read_coefficients] <coefficients file> <output file>\n", app);
     printf("Usage: %s [merge_summary] <summary file> <output file>\n", app);
     exit(1);
@@ -271,17 +287,11 @@ int main(int argc, char *argv[])
 
     // Mode
     control.mode  = 1 * (strcmp(argv[1], "evaluate_coefficients") == 0);
-    control.mode += 2 * (strcmp(argv[1], "compute_projections") == 0);
-    control.mode += 3 * (strcmp(argv[1], "read_coefficients") == 0);
-    control.mode += 4 * (strcmp(argv[1], "merge_summary") == 0);
+    control.mode += 2 * (strcmp(argv[1], "read_coefficients") == 0);
+    control.mode += 3 * (strcmp(argv[1], "merge_summary") == 0);
 
     //
-    if (control.mode == 0)
-    {
-        usage(argv[0]);
-    }
-    //
-    else if (control.mode == 1)
+    if (control.mode == 1 && (argc == 5 || argc == 6))
     {
         //
         control.n_apps = read_summary_file(argv[3], &control.apps);
@@ -301,7 +311,19 @@ int main(int argc, char *argv[])
         free(control.apps);
     }
     //
-    else if (control.mode == 4)
+    else if (control.mode == 2 && (argc == 3 || argc == 4))
+    {
+        //
+        control.n_coeffs = read_coefficients_file(argv[2], &control.coeffs, 0);
+        control.csv = argv[3];
+
+        save_coefficients(&control);
+
+        //
+        free(control.coeffs);
+    }
+    //
+    else if (control.mode == 3 && (argc == 3 || argc == 4))
     {
         //
         control.n_apps = read_summary_file(argv[2], &control.apps);
@@ -316,6 +338,10 @@ int main(int argc, char *argv[])
         //
         free(control.apps_merged);
         free(control.apps);
+    }
+    else
+    {
+        usage(argv[0]);
     }
 
     return 0;
