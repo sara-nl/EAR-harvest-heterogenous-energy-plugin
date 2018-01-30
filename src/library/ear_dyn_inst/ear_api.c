@@ -271,7 +271,9 @@ if (!ear_whole_app){
 
 void ear_finalize()
 {
-	char *ear_summary_filename;
+	char summary_fullpath[BUFFSIZE];
+	char node_name[BUFFSIZE];
+	char *summary_pathname;
 
 	if (my_id) return;
 	int iters=0;
@@ -292,8 +294,10 @@ void ear_finalize()
 
 	gui_end(ear_my_rank, my_id, app_eru_diff);
 
-	ear_summary_filename = get_ear_user_db_pathname();
-	metrics_end(ear_whole_app, my_id, ear_summary_filename, &app_eru_diff);
+	gethostname(node_name, sizeof(node_name));
+	summary_pathname = get_ear_user_db_pathname();
+	sprintf(summary_fullpath, "%s.%s", summary_pathname, node_name);
+	metrics_end(ear_whole_app, my_id, summary_fullpath, &app_eru_diff);
 
 	db_end(ear_whole_app);
 	dynais_dispose();

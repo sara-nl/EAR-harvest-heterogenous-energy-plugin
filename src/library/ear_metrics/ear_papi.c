@@ -531,7 +531,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		// We save it in the historical DB
 		db_update_historical(whole_app,&SIGNATURE);
 
-	append_application_text_file(summary_file, &SIGNATURE);		
+	append_application_text_file(summary_file, &SIGNATURE);
 }
 
 void copy_last_iter_counters()
