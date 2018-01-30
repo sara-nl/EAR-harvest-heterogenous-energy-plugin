@@ -71,7 +71,5 @@ int read_summary_file(char *path, application_t **apps);
 int read_coefficients_file(char *path, coefficient_t **coeffs, int size);
 int append_application_binary_file(char *path, application_t *app);
 int append_application_text_file(char *path, application_t *app);
-int append_coefficient_text_file(char *path, coefficient_t *coeff);
-int append_projection_text_file(char *path, projection_t *proj);
 
 #endif

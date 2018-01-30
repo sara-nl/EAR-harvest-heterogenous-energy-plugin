@@ -36,48 +36,6 @@ int append_application_binary_file(char *path, application_t *app)
     return EAR_SUCCESS;
 }
 
-int append_projection_text_file(char *path, projection_t *proj)
-{
-    static char *HEADER = "FREQ;CPI_PROJ;TIME_PROJ;POWER_PROJ";
-    int fd, ret;
-
-    return 0;
-}
-
-int append_coefficient_text_file(char *path, coefficient_t *coeff)
-{
-    static char *HEADER = "nodename;F_ref;F_n;AVAIL;A;B;C;D;E;F";
-    int fd, ret;
-
-    fd = open(path, O_WRONLY | O_APPEND);
-
-    if (fd < 0)
-    {
-        if (errno == ENOENT)
-        {
-            fd = open(path, OPTIONS, PERMISSION);
-
-            // Write header
-            if (fd >= 0) {
-                ret = dprintf(fd, "%s\n", HEADER);
-            }
-        }
-    }
-
-    if (fd < 0) {
-        return EAR_ERROR;
-    }
-
-    ret = dprintf(fd, "%lu;%u;%lf;%lf;%lf;%lf;%lf;%lf\n",
-           coeff->pstate, coeff->available,
-           coeff->A, coeff->B, coeff->C,
-           coeff->D, coeff->E, coeff->F);
-    close(fd);
-
-    if (ret < 0) return EAR_ERROR;
-    return ret;
-}
-
 int append_application_text_file(char *path, application_t *app)
 {
     static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;" \
