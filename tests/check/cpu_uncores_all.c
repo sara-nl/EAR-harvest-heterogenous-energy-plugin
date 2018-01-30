@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <ear_uncores.h>
 #include <hardware.h>
-#include <config.h>
+#include <states.h>
 
 int EAR_VERBOSE_LEVEL = 4;
 

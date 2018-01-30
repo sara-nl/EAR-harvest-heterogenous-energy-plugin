@@ -1,7 +1,7 @@
 #include <assert.h>
-#include <hardware.h>
-#include <config.h>
 #include <stdio.h>
+#include <hardware.h>
+#include <states.h>
 
 int main ()
 {
