@@ -1,7 +1,9 @@
 #include <math.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <string_enhanced.h>
 #include <types.h>
 
@@ -124,42 +126,11 @@ application_t *merge(control_t *control)
     return apps_merged;
 }
 
-void save_applications_merged(control_t *control)
-{
-    application_t *apps;
-    int i;
-
-    if (control->csv == NULL) {
-        return;
-    }
-
-    for (i = 0; i < control->n_apps_merged; ++i)
-    {
-        append_application_text_file(control->csv, &control->apps_merged[i]);
-    }
-}
-
-void save_coefficients(control_t *control)
-{
-    coefficient_t *coeff;
-    int i;
-
-    if (control->csv == NULL) {
-        return;
-    }
-
-    remove(control->csv);
-
-    for (i = 0; i < control->n_coeffs; ++i)
-    {
-        if (control->coeffs[i].available) {
-            append_coefficient_text_file(control->csv, &control->coeffs[i]);
-        }
-    }
-}
-
 void evaluate(control_t *control)
 {
+    static char *HEADER = "application;time_real;time_proj;time_error;" \
+                          "power_real;power_proj;power_error;" \
+                          "cpi_real:cpi_proj:cpi_error";
     char buffer[32];
     double cpi0, tpi0, time0, power0;
     double cpip, tpip, timep, powerp;
@@ -169,6 +140,20 @@ void evaluate(control_t *control)
     int n_apps, n_coeffs;
     int i, j, k;
     uint f0_mhz;
+    int fd = -1;
+
+    // Output
+    if (control->csv != NULL)
+    {
+        #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+        #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC
+
+        fd = open(control->csv, OPTIONS, PERMISSION);
+
+        if (fd >= 0) {
+            dprintf(fd, "%s\n", HEADER);
+        }
+    }
 
     // Initializations
     buffer[0] = '\0';
@@ -189,7 +174,7 @@ void evaluate(control_t *control)
 
             set_spacing_digits(11);
             printf("@");
-            print_spacing_ulong(apps[j].nominal);
+            print_spacing_uint(apps[j].nominal);
 
             set_spacing_digits(12);
             printf("| ");
@@ -208,7 +193,7 @@ void evaluate(control_t *control)
             time0 = apps[j].seconds;
             power0 = apps[j].POWER_f0;
 
-            for (i = 0;i < n_coeffs; i++)
+            for (i = 0; i < n_coeffs; i++)
             {
                 if (coeffs[i].available)
                 {
@@ -232,6 +217,7 @@ void evaluate(control_t *control)
 
                         timee = fabs((1.0 - (m->seconds / timep)) * 100.0);
                         powere = fabs((1.0 - (m->POWER_f0 / powerp)) * 100.0);
+                        cpie = fabs((1.0 - (m->CPI / cpip)) * 100.0);
 
                         printf("| ");
                         sprintf(buffer, "%0.2lf", m->seconds);
@@ -252,9 +238,7 @@ void evaluate(control_t *control)
 
                         sprintf(buffer, "%0.2lf", powere);
                         print_spacing_string(buffer);
-                    }
-                    else
-                    {
+                    } else {
                         printf("| ");
                         print_spacing_string("-");
                         print_spacing_string("-");
@@ -264,6 +248,13 @@ void evaluate(control_t *control)
                         print_spacing_string("-");
                         print_spacing_string("-");
                         print_spacing_string("-");
+                    }
+
+                    if (fd >= 0) {
+                        dprintf(fd, "%s;%u;%u;", apps[j].app_id, apps[j].nominal, m->nominal);
+                        dprintf(fd, "%lf;%lf;%lf;", m->seconds, timep, timee);
+                        dprintf(fd, "%lf;%lf;%lf;", m->POWER_f0, powerp, powere);
+                        dprintf(fd, "%lf;%lf;%lf\n", m->CPI, cpip, cpie);
                     }
 
                     printf("\n");
@@ -271,6 +262,62 @@ void evaluate(control_t *control)
             }
         }
     }
+
+    if (fd >= 0) {
+        close(fd);
+    }
+}
+
+void save_applications_merged(control_t *control)
+{
+    application_t *apps;
+    int i;
+
+    if (control->csv == NULL) {
+        return;
+    }
+
+    for (i = 0; i < control->n_apps_merged; ++i)
+    {
+        append_application_text_file(control->csv, &control->apps_merged[i]);
+    }
+}
+
+int append_coefficient_text_file(char *path, coefficient_t *coeff)
+{
+
+}
+
+void save_coefficients(control_t *control)
+{
+    static char *HEADER = "nodename;F_ref;F_n;AVAIL;A;B;C;D;E;F";
+    coefficient_t *coeff;
+    int fd, ret, i;
+
+    if (control->csv == NULL) {
+        return;
+    }
+
+    if ((fd = open(control->csv, OPTIONS, PERMISSION)) < 0) {
+        return;
+    }
+
+    ret = dprintf(fd, "%s\n", HEADER);
+
+    for (i = 0; i < control->n_coeffs; ++i)
+    {
+        if (control->coeffs[i].available)
+        {
+            coeff = &control->coeffs[i];
+
+            dprintf(fd, "%lu;%u;%lf;%lf;%lf;%lf;%lf;%lf\n",
+                    coeff->pstate, coeff->available,
+                    coeff->A, coeff->B, coeff->C,
+                    coeff->D, coeff->E, coeff->F);
+        }
+    }
+
+    close(fd);
 }
 
 void usage(char *app)
@@ -342,6 +389,11 @@ int main(int argc, char *argv[])
     else
     {
         usage(argv[0]);
+    }
+
+    if (control.csv != NULL) {
+        printf("···\n");
+        printf("*Output: %s\n", control.csv);
     }
 
     return 0;
