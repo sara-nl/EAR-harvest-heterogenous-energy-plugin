@@ -494,7 +494,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,SIGNATURE.app_id,(double)app_exec_time/(double)1000000);
 		fprintf(stderr,"EAR CPI=%.3lf GBS=%.3lf GFlops=%.3lf\n",CPI,GBS,GFLOPS);
 		fprintf(stderr,"EAR avg. node power=%.3lfW, avg. RAPL dram power=%.3lfW, avg. RAPL pck. power=%.3lfW EDP=%.3lf GFlops/Watts=%.3lf\n",POWER_DC,DRAM_POWER,PCK_POWER,EDP,GFLOPS/POWER_DC);
-		fprintf(stderr,"EAR def. frequency %.3lf GHz avg. frequency %.3lf GHz\n",(double)app_info->nominal/(double)1000000,(double)f/(double)1000000);
+		fprintf(stderr,"EAR def. frequency %.3lf GHz avg. frequency %.3lf GHz\n",(double)app_info->def_f/(double)1000000,(double)f/(double)1000000);
 
 		// app_info links to the DB information . Update SIGNATURE metrics to report it at user_db and system_db
 		strcpy(SIGNATURE.job_id,app_info->job_id);
@@ -514,10 +514,10 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		db_set_frequency(&SIGNATURE,f);
 		db_set_Gflops(&SIGNATURE,GFLOPS);
 		db_set_EDP(&SIGNATURE,EDP);
-		db_set_default(&SIGNATURE,app_info->nominal);
+		db_set_default(&SIGNATURE,app_info->def_f);
 		db_set_policy(&SIGNATURE,ear_policy_name);
 		db_set_th(&SIGNATURE,get_ear_power_policy_th());
-		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->nominal==ear_get_freq(1))) {
+		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->def_f==ear_get_freq(1))) {
 			optimal=optimal_freq_min_energy(0.1,&SIGNATURE,&PP,&TP);
 			perf_deg=((TP-Seconds)/Seconds)*100.0;
 			power_sav=((POWER_DC-PP)/POWER_DC)*100.0;
@@ -656,16 +656,16 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 	p128=(double)fops_128/(double)total_fops;
 	p256=(double)fops_256/(double)total_fops;
 	p512=(double)fops_512/(double)total_fops;
-	my_gflops=((double)(total_fops*get_total_resources())/(my_sig->seconds*iterations))/(double)1000000000;
+	my_gflops=((double)(total_fops*get_total_resources())/(my_sig->iter_time*iterations))/(double)1000000000;
 	ear_verbose(1,"\t\tEAR_extra: L1 misses %llu L2 misses %llu L3 misses %llu\n",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
 	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
 		my_gflops,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
 
 	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256,PERC_DP512\n");
 	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
-	fprintf(fd_extra,"%lu;%.5lf;%.5lf;.5%lf;%.5lf;%.5lf;",my_sig->f,my_sig->seconds,my_sig->CPI,my_sig->TPI_f0,my_sig->GBS_f0,my_gflops);
-	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->POWER_f0,my_sig->DRAM_POWER,my_sig->PCK_POWER);
-	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->nominal,ear_policy_name,my_sig->th);
+	fprintf(fd_extra,"%lu;%.5lf;%.5lf;.5%lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->iter_time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
+	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->DC_power,my_sig->DRAM_POWER,my_sig->PCK_power);
+	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->def_f,ear_policy_name,my_sig->policy_th);
 	fprintf(fd_extra,"%lu;%d;%u;",loop_id,period,level);
 	fprintf(fd_extra,"%llu;%llu;%llu;",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
 	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;%.2lf\n",psingle*100,p128*100,p256*100,p512*100);	

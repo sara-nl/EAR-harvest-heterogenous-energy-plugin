@@ -42,7 +42,7 @@ unsigned long DPD_Get_frequency(struct App_info *MY_APP)
 #ifdef EAR_DB_DEBUG
         fprintf(stderr,"EAR(DB_DEBUG): DPD_Get_frequency\n");
 #endif
-        return MY_APP->f;
+        return MY_APP->avg_f;
 }
 
 unsigned int  DPD_Get_procs(struct App_info *MY_APP)
@@ -59,28 +59,28 @@ double DPD_Get_GBS(struct App_info *MY_APP)
 #ifdef EAR_DB_DEBUG
 	fprintf(stderr,"EAR(DB_DEBUG): DPD_Get_GBS\n");
 #endif
-	return MY_APP->GBS_f0;
+	return MY_APP->GBS;
 }
 double DPD_Get_GIPS(struct App_info *MY_APP)
 {
 #ifdef EAR_DB_DEBUG
 	fprintf(stderr,"EAR(DB_DEBUG): DPD_Get_GIPS\n");
 #endif
-	return MY_APP->GIPS_f0;
+	return MY_APP->disabled_2;
 }
 double DPD_Get_POWER(struct App_info *MY_APP)
 {
 #ifdef EAR_DB_DEBUG
 	fprintf(stderr,"EAR(DB_DEBUG): DPD_Get_POWER\n");
 #endif
-	return MY_APP->POWER_f0;
+	return MY_APP->DC_power;
 }
 double DPD_Get_TPI(struct App_info *MY_APP)
 {
 #ifdef EAR_DB_DEBUG
 	fprintf(stderr,"EAR(DB_DEBUG): DPD_Get_TPI\n");
 #endif
-	return MY_APP->TPI_f0;
+	return MY_APP->TPI;
 }
 
 double DPD_Get_seconds(struct App_info *MY_APP)
@@ -88,5 +88,5 @@ double DPD_Get_seconds(struct App_info *MY_APP)
 #ifdef EAR_DB_DEBUG
 	fprintf(stderr,"EAR(DB_DEBUG): DPD_Get_seconds\n");
 #endif
-	return MY_APP->seconds;
+	return MY_APP->iter_time;
 }

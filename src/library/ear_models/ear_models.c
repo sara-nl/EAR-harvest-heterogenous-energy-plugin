@@ -24,9 +24,9 @@
 #define PERFORMANCE_PENALTY 0.1
 #define ACCEPTED_TH 		0.05
 // #define PERFORMANCE_GAIN 0.8 , this minimum has been moved to makefile option
-#define NOMINAL_POWER(app)  app->POWER_f0
-#define NOMINAL_TIME(app)   app->seconds
-#define NOMINAL_TPI(app)    app->TPI_f0
+#define NOMINAL_POWER(app)  app->DC_power
+#define NOMINAL_TIME(app)   app->iter_time
+#define NOMINAL_TPI(app)    app->TPI
 #define NOMINAL_CPI(app)    app->CPI
 
 extern unsigned long ear_frequency;
@@ -263,16 +263,16 @@ unsigned long optimal_freq_min_energy(double th,struct App_info * SIGNATURE,doub
     		bestSolution=E_ref;
     		bestPstate=EAR_default_frequency;
     	}else{// If we can not project, we use current signature
-    		T_ref=my_app->seconds;
-    		P_ref=my_app->POWER_f0;
+    		T_ref=my_app->iter_time;
+    		P_ref=my_app->DC_power;
     		CPI_ref=my_app->CPI;
     		E_ref=P_ref*T_ref;
     		bestSolution=E_ref;
     		bestPstate=ear_frequency;
     	}
     }else{ // if we are executing at submission freq
-    	T_ref=my_app->seconds;
-    	P_ref=my_app->POWER_f0;
+    	T_ref=my_app->iter_time;
+    	P_ref=my_app->DC_power;
     	CPI_ref=my_app->CPI;
     	E_ref=P_ref*T_ref;
     	bestSolution=E_ref;
@@ -316,8 +316,8 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
 	// My reference is the submission frequency
 	if (power_model_policy==MONITORING_ONLY){
 		bestPstate=ear_frequency;
-		T_ref=my_app->seconds;
-		P_ref=my_app->POWER_f0;
+		T_ref=my_app->iter_time;
+		P_ref=my_app->DC_power;
 		CPI_ref=my_app->CPI;
 		set_performance_projection(ref,T_ref,P_ref,CPI_ref);
 	}else if (power_model_policy==MIN_ENERGY_TO_SOLUTION){
@@ -330,16 +330,16 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
                         	bestSolution=E_ref;
                         	bestPstate=EAR_default_frequency;
                 	}else{// If we can not project, we use current signature
-                        	T_ref=my_app->seconds;
-                        	P_ref=my_app->POWER_f0;
+                        	T_ref=my_app->iter_time;
+                        	P_ref=my_app->DC_power;
                         	CPI_ref=my_app->CPI;
                         	E_ref=P_ref*T_ref;
                         	bestSolution=E_ref;
                         	bestPstate=ear_frequency;
                 	}    
         	}else{ // if we are executing at submission freq
-                	T_ref=my_app->seconds;
-                	P_ref=my_app->POWER_f0;
+                	T_ref=my_app->iter_time;
+                	P_ref=my_app->DC_power;
                 	CPI_ref=my_app->CPI;
                 	E_ref=P_ref*T_ref;
                 	bestSolution=E_ref;
@@ -382,14 +382,14 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
                                 T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
                                 bestPstate=EAR_default_frequency;
                         }else{// If we can not project, we use current signature
-                                T_ref=my_app->seconds;
-                                P_ref=my_app->POWER_f0;
+                                T_ref=my_app->iter_time;
+                                P_ref=my_app->DC_power;
                                 CPI_ref=my_app->CPI;
                                 bestPstate=ear_frequency;
                         }
                 }else{ // if we are executing at submission freq
-                        T_ref=my_app->seconds;
-                        P_ref=my_app->POWER_f0;
+                        T_ref=my_app->iter_time;
+                        P_ref=my_app->DC_power;
                         CPI_ref=my_app->CPI;
                         bestPstate=ear_frequency;
                 }
@@ -410,7 +410,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
 					if (perf_gain>=freq_gain){ // OK
 						ear_debug(4,"EAR[MIN_TIME][rank %d] go on evaluating other frequencies current %u Tcurrent %lf Tproj %lf perf_gain %lf \n\
 						freq_gain %lf (current %u next %u) (cpi actual %lf cpi proj %lf) GBS %lf\n",
-						ear_my_rank,bestPstate,T_current,TP,perf_gain,freq_gain,bestPstate,COEFFICIENTS_LENOVO[ref][i].pstate,my_app->CPI,CPIP,my_app->GBS_f0);
+						ear_my_rank,bestPstate,T_current,TP,perf_gain,freq_gain,bestPstate,COEFFICIENTS_LENOVO[ref][i].pstate,my_app->CPI,CPIP,my_app->GBS);
 						bestPstate=COEFFICIENTS_LENOVO[ref][i].pstate;
 						T_current=TP;
 						i--;
@@ -446,18 +446,18 @@ unsigned int policy_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNAT
 		ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",__FILE__,
 		PREDICTION->Time,PREDICTION->Power);
 		ear_debug(4,"EAR(%s):: Signature Time %12.6lf Power %12.6lf\n",__FILE__,
-		SIGNATURE->seconds,SIGNATURE->POWER_f0);
+		SIGNATURE->iter_time,SIGNATURE->DC_power);
 		if (power_model_policy==MIN_TIME_TO_SOLUTION){
-			if ((SIGNATURE->seconds>LAST_SIGNATURE->seconds) && (SIGNATURE->f!=LAST_SIGNATURE->f)) return 0;
-			if (SIGNATURE->seconds<PREDICTION->Time) return 1;
+			if ((SIGNATURE->iter_time>LAST_SIGNATURE->iter_time) && (SIGNATURE->avg_f!=LAST_SIGNATURE->avg_f)) return 0;
+			if (SIGNATURE->iter_time<PREDICTION->Time) return 1;
 			else return 0;
 		}else if (power_model_policy==MIN_ENERGY_TO_SOLUTION){
 			double EP,ER;
-			EP=LAST_SIGNATURE->seconds*LAST_SIGNATURE->POWER_f0;
-			ER=SIGNATURE->seconds*SIGNATURE->POWER_f0;
+			EP=LAST_SIGNATURE->iter_time*LAST_SIGNATURE->DC_power;
+			ER=SIGNATURE->iter_time*SIGNATURE->DC_power;
 			ear_verbose(3,"CURRENT E=%lf (%lf x %lf) LAST E=%lf (%lf x %lf)\n",
-				ER,SIGNATURE->seconds,SIGNATURE->POWER_f0,EP,LAST_SIGNATURE->seconds,LAST_SIGNATURE->POWER_f0);
-			if ((ER<EP)&&(SIGNATURE->seconds<T_max)) return 1;
+				ER,SIGNATURE->iter_time,SIGNATURE->DC_power,EP,LAST_SIGNATURE->iter_time,LAST_SIGNATURE->DC_power);
+			if ((ER<EP)&&(SIGNATURE->iter_time<T_max)) return 1;
 			else return 0;
 		}else if (power_model_policy==MONITORING_ONLY){
 			return 1;
@@ -465,7 +465,7 @@ unsigned int policy_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNAT
 }
 unsigned int performance_projection_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNATURE)
 {
-	if (equal_with_th(PREDICTION->Time,SIGNATURE->seconds,performance_penalty_th) && equal_with_th(PREDICTION->Power,SIGNATURE->POWER_f0,performance_penalty_th)){
+	if (equal_with_th(PREDICTION->Time,SIGNATURE->iter_time,performance_penalty_th) && equal_with_th(PREDICTION->Power,SIGNATURE->DC_power,performance_penalty_th)){
 		ear_debug(4,"EAR(%s):: Performance projection OK\n",__FILE__);
 		return 1;
 	}else return 0;
