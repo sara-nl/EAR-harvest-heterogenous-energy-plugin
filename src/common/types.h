@@ -19,28 +19,26 @@ typedef struct App_info_extended
 
 typedef struct App_info
 {
-    // App identification: job;node;user;app
     char job_id[MAX_APP_NAME];
     char node_id[MAX_APP_NAME];
     char user_id[MAX_APP_NAME];
     char app_id[MAX_APP_NAME];
     char policy[MAX_APP_NAME];
-    double th;
-    unsigned long f;
+    double policy_th; // th
+    unsigned long avg_f; // f
     unsigned int procs;
-    double seconds;
-    double GIPS_f0;
-    double GBS_f0;
-    double POWER_f0;
-    double TPI_f0;
+    double iter_time;
+    double disabled_2; // GIPS_f0
+    double GBS; // GBS_f0
+    double DC_power; // POWER_f0
+    double TPI;
     double CPI;
-    unsigned int nominal;
-    // Extended data
-    long long CYCLES;
-    long long INSTRUCTIONS;
-    double POWER_DC;
-    double DRAM_POWER;
-    double PCK_POWER;
+    unsigned int def_f;
+    unsigned long long cycles;
+    unsigned long long instructions;
+    double disabled_1; // POWER_DC
+    double DRAM_power;
+    double PCK_power;
     double Gflops;
     double EDP;
 } application_t;

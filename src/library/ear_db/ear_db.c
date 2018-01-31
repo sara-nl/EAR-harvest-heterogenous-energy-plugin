@@ -17,28 +17,14 @@
 #include <errno.h>
 #include <papi.h>
 
-#include <environment.h>
-#include <ear_verbose.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_metrics/ear_papi.h>
 #include <ear_db/ear_db.h>
-
-
-unsigned int numcpus=0;
-int ear_db_historic=-1;
-
-int ear_active_apps=0;
+#include <ear_verbose.h>
+#include <environment.h>
 
 struct App_info *CURRENT_APP;
 unsigned long CURRENT_FREQ;
-unsigned long ear_app_frequency;
-unsigned int ear_id_requested=0;
-char ear_app_name[256];
-extern char ear_node_name[MAX_APP_NAME];
-extern int ear_my_rank;
-extern double performance_penalty_th;
-extern unsigned long EAR_default_frequency;
-
 
 // This function initilices application information
 void db_init(unsigned int whole_app,char *app_name)
@@ -62,8 +48,8 @@ void db_init(unsigned int whole_app,char *app_name)
 	job_id=getenv("SLURM_JOB_ID");
 	logname=getenv("LOGNAME");	
 	for (i=0;i<ear_get_num_p_states();i++){
-		CURRENT_APP[i].nominal=EAR_default_frequency;
-		CURRENT_APP[i].f=ear_get_freq(i);
+		CURRENT_APP[i].def_f=EAR_default_frequency;
+		CURRENT_APP[i].avg_f=ear_get_freq(i);
 		strcpy(CURRENT_APP[i].app_id,app_name);
 		strcpy(CURRENT_APP[i].user_id,logname);
 		if (job_id!=NULL) strcpy(CURRENT_APP[i].job_id,job_id);
@@ -96,21 +82,21 @@ void db_copy_app(struct App_info *A,struct App_info *B)
     strcpy(A->user_id,B->user_id);
     strcpy(A->node_id,B->node_id);
     strcpy(A->policy,B->policy);
-	A->th=B->th;
-    A->f=B->f;
+	A->policy_th=B->policy_th;
+    A->avg_f=B->avg_f;
     A->procs=B->procs;
-    A->seconds=B->seconds;
-    A->GIPS_f0=B->GIPS_f0;
-    A->GBS_f0=B->GBS_f0;
-    A->POWER_f0=B->POWER_f0;
-    A->TPI_f0=B->TPI_f0;
+    A->iter_time=B->iter_time;
+    A->disabled_2=B->disabled_2;
+    A->GBS=B->GBS;
+    A->DC_power=B->DC_power;
+    A->TPI=B->TPI;
     A->CPI=B->CPI;
-    A->nominal=B->nominal;
-    A->CYCLES=B->CYCLES;
-    A->INSTRUCTIONS=B->INSTRUCTIONS;
-    A->POWER_DC=B->POWER_DC;
-    A->DRAM_POWER=B->DRAM_POWER;
-    A->PCK_POWER=B->PCK_POWER;
+    A->def_f=B->def_f;
+    A->cycles=B->cycles;
+    A->instructions=B->instructions;
+    A->disabled_1=B->disabled_1;
+    A->DRAM_power=B->DRAM_power;
+    A->PCK_power=B->PCK_power;
 	A->Gflops=B->Gflops;
 	A->EDP=B->EDP;
 	db_print_app_info(A);
@@ -121,7 +107,7 @@ void init_current_app(char *app_name)
 {
 	int i;
 	for (i=0;i<ear_get_num_p_states();i++){	
-		CURRENT_APP[i].f=0;
+		CURRENT_APP[i].avg_f=0;
 		strcpy(CURRENT_APP[i].app_id,app_name);
 	}
 }
@@ -152,15 +138,14 @@ unsigned long db_change_frequency(unsigned long f)
 	ear_debug(1,"EAR(%s) Setting node cpufrequency %u\n",__FILE__,f);
 	CURRENT_FREQ=ear_cpufreq_set_node(f);	
 	return CURRENT_FREQ;
-	
 }
 
 // Operations required at the begginning of a new period
 void db_new_period()
 {
 	ear_debug(4,"EAR(%s) db_new_period\n",__FILE__);
-	
 }
+
 unsigned int db_equal_with_th(double a,double b,double th)
 {
 	int eq;
@@ -177,16 +162,17 @@ unsigned int db_equal_with_th(double a,double b,double th)
 	return eq;
 }
 
-
 int db_signature_has_changed(struct App_info *A,struct App_info *B)
 {
-	if (db_equal_with_th(A->CPI,B->CPI,performance_penalty_th) && db_equal_with_th(A->GBS_f0,B->GBS_f0,performance_penalty_th))  return 0;
+	if (db_equal_with_th(A->CPI,B->CPI,performance_penalty_th) && db_equal_with_th(A->GBS,B->GBS,performance_penalty_th))  return 0;
 	else return 1;
 }
+
 struct App_info * db_current_app()
 {
 	return &CURRENT_APP[ear_get_pstate(CURRENT_FREQ)];
 }
+
 //
 // SET FUNCTIONS
 //
@@ -200,40 +186,36 @@ void db_set_th(struct App_info *MY_APP,double th)
 }
 void db_set_frequency(struct App_info *MY_APP,unsigned long f)
 {
-        MY_APP->f=f;
+        MY_APP->avg_f=f;
 }
 void db_set_default(struct App_info *MY_APP,unsigned long f)
 {
-	MY_APP->nominal=f;
+	MY_APP->def_f=f;
 }
-
 void db_set_procs(struct App_info *MY_APP,unsigned int procs)
 {
         MY_APP->procs=procs;
 }
-
 void db_set_GBS(struct App_info *MY_APP,double gbs)
 {
-	MY_APP->GBS_f0=gbs;
+	MY_APP->GBS=gbs;
 }
 void db_set_GIPS(struct App_info *MY_APP,double gips)
 {
-	MY_APP->GIPS_f0=gips;
+	MY_APP->disabled_2=gips;
 }
 void db_set_POWER(struct App_info *MY_APP,double power)
 {
-	MY_APP->POWER_f0=power;
+	MY_APP->DC_power=power;
 }
 void db_set_TPI(struct App_info *MY_APP,double tpi)
 {
-	MY_APP->TPI_f0=tpi;
+	MY_APP->TPI=tpi;
 }
-
 void db_set_seconds(struct App_info *MY_APP,double seconds)
 {
-	MY_APP->seconds=seconds;
+	MY_APP->iter_time=seconds;
 }
-
 void db_set_CPI(struct App_info *MY_APP,double CPI)
 {
         MY_APP->CPI=CPI;
@@ -248,44 +230,39 @@ void db_set_EDP(struct App_info *MY_APP,double EDP)
 }
 void db_set_CYCLES(struct App_info *MY_APP,long long cycles)
 {
-        MY_APP->CYCLES=cycles;
+        MY_APP->cycles=cycles;
 }
 void db_set_INSTRUCTIONS(struct App_info *MY_APP,long long instr)
 {
-        MY_APP->INSTRUCTIONS=instr;
+        MY_APP->instructions=instr;
 }
 void db_set_POWER_DC(struct App_info *MY_APP,double power_dc)
 {
-        MY_APP->POWER_DC=power_dc;
+        MY_APP->disabled_1=power_dc;
 }
 void db_set_DRAM_POWER(struct App_info *MY_APP,double dram_power)
 {
-        MY_APP->DRAM_POWER=dram_power;
+        MY_APP->DRAM_power=dram_power;
 }
 void db_set_PCK_POWER(struct App_info *MY_APP,double pck_power)
 {
-        MY_APP->PCK_POWER=pck_power;
+        MY_APP->PCK_power=pck_power;
 }
 
-
 // GET FUNCTIONS
-
-
 char * db_get_Name(struct App_info *MY_APP)
 {
-        return MY_APP->app_id;
+	return MY_APP->app_id;
 
 }
 unsigned long db_get_frequency(struct App_info *MY_APP)
 {
-        return MY_APP->f;
+	return MY_APP->avg_f;
 }
-
 unsigned int  db_get_procs(struct App_info *MY_APP)
 {
-        return MY_APP->procs;
+	return MY_APP->procs;
 }
-
 double db_get_Gflops(struct App_info *MY_APP)
 {
 	return MY_APP->Gflops;
@@ -294,27 +271,25 @@ double db_get_EDP(struct App_info *MY_APP)
 {
 	return MY_APP->EDP;
 }
-
 double db_get_GBS(struct App_info *MY_APP)
 {
-	return MY_APP->GBS_f0;
+	return MY_APP->GBS;
 }
 double db_get_GIPS(struct App_info *MY_APP)
 {
-	return MY_APP->GIPS_f0;
+	return MY_APP->disabled_2;
 }
 double db_get_POWER(struct App_info *MY_APP)
 {
-	return MY_APP->POWER_f0;
+	return MY_APP->DC_power;
 }
 double db_get_TPI(struct App_info *MY_APP)
 {
-	return MY_APP->TPI_f0;
+	return MY_APP->TPI;
 }
-
 double db_get_seconds(struct App_info *MY_APP)
 {
-	return MY_APP->seconds;
+	return MY_APP->iter_time;
 }
 double db_get_CPI(struct App_info *MY_APP)
 {
@@ -323,24 +298,23 @@ double db_get_CPI(struct App_info *MY_APP)
 
 void db_print_app_info(struct App_info *APP)
 {
-        ear_debug(2,"\t\t ***DEBUG*** Job_id %s Username %s Nodename %s App_name %s freq %u procs %u GIPS_f0 %.5lf GBS_f0 %.5lf POWER_f0 %.5lf TPI_f0 %12.6lf seconds %12.6lf CPI %.5lf nominal %u CYCLES %llu INSTRUCTIONS %llu DC_NODE_POWER %12.6lf DRAM_POWER %.5lf PCK_POWER %12.6lf\n",
-		APP->job_id,
-		APP->user_id,
-		APP->node_id,
-        APP->app_id,
-        APP->f,
-        APP->procs,
-        APP->GIPS_f0,
-        APP->GBS_f0,
-        APP->POWER_f0,
-        APP->TPI_f0,
-        APP->seconds,
-        APP->CPI,
-        APP->nominal,
-	APP->CYCLES,
-	APP->INSTRUCTIONS,
-	APP->POWER_DC,
-	APP->DRAM_POWER,
-	APP->PCK_POWER);
-
+	ear_debug(2,"\t\t ***DEBUG*** Job_id %s Username %s Nodename %s App_name %s freq %u procs %u GIPS_f0 %.5lf GBS_f0 %.5lf POWER_f0 %.5lf TPI_f0 %12.6lf seconds %12.6lf CPI %.5lf nominal %u CYCLES %llu INSTRUCTIONS %llu DC_NODE_POWER %12.6lf DRAM_POWER %.5lf PCK_POWER %12.6lf\n",
+	APP->job_id,
+	APP->user_id,
+	APP->node_id,
+	APP->app_id,
+	APP->avg_f,
+	APP->procs,
+	APP->disabled_2,
+	APP->GBS,
+	APP->DC_power,
+	APP->TPI,
+	APP->iter_time,
+	APP->CPI,
+	APP->def_f,
+	APP->cycles,
+	APP->instructions,
+	APP->disabled_1,
+	APP->DRAM_power,
+	APP->PCK_power);
 }
