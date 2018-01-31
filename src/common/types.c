@@ -64,9 +64,9 @@ int append_application_text_file(char *path, application_t *app)
 
     a = app;
     ret = dprintf(fd, "%s;%s;%s;%s;%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%s;%.3lf\n",
-           a->user_id, a->job_id, a->node_id, a->app_id, a->f, a->seconds, a->CPI,
-           a->TPI_f0, a->GBS_f0, a->Gflops, a->POWER_f0, a->DRAM_POWER, a->PCK_POWER,
-           a->nominal, a->policy, a->th);
+           a->user_id, a->job_id, a->node_id, a->app_id, a->avg_f, a->iter_time, a->CPI,
+           a->TPI, a->GBS, a->Gflops, a->DC_power, a->DRAM_power, a->PCK_power,
+           a->def_f, a->policy, a->policy_th);
     close(fd);
 
     if (ret < 0) return EAR_ERROR;
@@ -103,10 +103,11 @@ int read_summary_file(char *path, application_t **apps)
     i = 0;
     a = apps_aux;
 
-    #define READ_SUMMARY()                                                                                   \
-    ret = fscanf(fd, "%[^;];%[^;];%[^;];%[^;];%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%[^;];%lf\n",           \
-          a->user_id, a->job_id, a->node_id, a->app_id, &a->f, &a->seconds, &a->CPI, &a->TPI_f0, &a->GBS_f0, \
-          &a->Gflops, &a->POWER_f0, &a->DRAM_POWER, &a->PCK_POWER, &a->nominal, a->policy, &a->th)
+    #define READ_SUMMARY()                                                                          \
+    ret = fscanf(fd, "%[^;];%[^;];%[^;];%[^;];%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%[^;];%lf\n",  \
+          a->user_id, a->job_id, a->node_id, a->app_id, &a->avg_f, &a->iter_time, &a->CPI, &a->TPI, \
+          &a->GBS, &a->Gflops, &a->DC_power, &a->DRAM_power, &a->PCK_power, &a->def_f, a->policy,   \
+          &a->policy_th)
 
     while((READ_SUMMARY()) > 0)
     {

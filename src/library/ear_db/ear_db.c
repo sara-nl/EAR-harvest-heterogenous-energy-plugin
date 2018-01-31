@@ -22,6 +22,7 @@
 #include <ear_db/ear_db.h>
 #include <ear_verbose.h>
 #include <environment.h>
+#include <externs.h>
 
 struct App_info *CURRENT_APP;
 unsigned long CURRENT_FREQ;
@@ -182,7 +183,7 @@ void db_set_policy(struct App_info *MY_APP,char *policy_name)
 }
 void db_set_th(struct App_info *MY_APP,double th)
 {
-	MY_APP->th=th;
+	MY_APP->policy_th=th;
 }
 void db_set_frequency(struct App_info *MY_APP,unsigned long f)
 {
