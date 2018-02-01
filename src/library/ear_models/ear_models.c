@@ -29,27 +29,19 @@
 #define NOMINAL_TPI(app)    app->TPI
 #define NOMINAL_CPI(app)    app->CPI
 
-extern unsigned long ear_frequency;
-extern unsigned long EAR_default_frequency;
-extern unsigned int EAR_default_pstate;
-extern int ear_use_turbo;
-extern int ear_my_rank;
-extern int ear_whole_app;
-extern char ear_app_name[MAX_APP_NAME];
-
-struct PerfProjection *APP_PERF_PROJECTION;
-struct Coefficients_info **COEFFICIENTS_LENOVO;
-unsigned int ear_models_pstates=0;
-int coeff_fd;
-int power_model_policy=MIN_ENERGY_TO_SOLUTION;
-double performance_penalty=PERFORMANCE_PENALTY;
-double performance_gain=PERFORMANCE_GAIN;
-double performance_penalty_th=EAR_ACCEPTED_TH;
-unsigned int reset_freq_opt=RESET_FREQ;
+// Extern
 char ear_policy_name[MAX_APP_NAME];
-double ear_policy_th;
-static double T_max;
+int power_model_policy = MIN_ENERGY_TO_SOLUTION;
+double performance_penalty = PERFORMANCE_PENALTY;
+double performance_gain = PERFORMANCE_GAIN;
+double performance_penalty_th = EAR_ACCEPTED_TH;
 
+// Normals
+static projection_t *projections;
+static coefficient_t **coefficients;
+static uint reset_freq_opt = RESET_FREQ;
+static uint ear_models_pstates = 0;
+static double T_max;
 
 void init_power_policy()
 {
@@ -80,108 +72,109 @@ void init_power_policy()
 		ear_verbose(0,"ear: warning max freq is limited by the system, using %u as default\n",def_freq);
 		EAR_default_frequency=def_freq;
 	}
-	switch(power_model_policy){
-		case MIN_ENERGY_TO_SOLUTION: ear_policy_th=performance_penalty_th;break;
-		case MIN_TIME_TO_SOLUTION:ear_policy_th=performance_gain;break;
-		default:ear_policy_th=0;break;
-	}
+
 	ear_verbose(1,"EAR: power policy configuration: policy %s performance penalty %lf accepted th %lf Reset_freq=%u performance gain %lf\n",  (power_model_policy==MONITORING_ONLY)?"MONITORING_ONLY":((power_model_policy==MIN_ENERGY_TO_SOLUTION)?"MIN_ENERGY_TO_SOLUTION":"MIN_TIME_TO_SOLUTION"),reset_freq_opt, performance_penalty,performance_penalty_th,performance_gain);
 	ear_verbose(1,"EAR: Default p_state %u Default frequency %lu\n",EAR_default_pstate,EAR_default_frequency);
 }
+
 void init_power_models(unsigned int p_states,unsigned long *p_states_list)
 {
-	char *per_node;
-	char *coeff_file_name;
 	char coeff_file[128];
 	char coeff_default_file[128];
 	char coeff_file_fn[128];
-	int i,ref;
-	int begin_pstate=1,end_pstate;
-	struct Coefficients_info coef;
 	char nodename[128];
-	ear_debug(3,"EAR(%s): EAR_Init_power_models p_states=%u\n",__FILE__,p_states);
-	ear_models_pstates=p_states;
-	strcpy(coeff_file,get_ear_coeff_db_pathname());
-	sprintf(coeff_default_file,"%s.default",coeff_file);
-	gethostname(nodename,sizeof(nodename));
+	int begin_pstate, end_pstate;
+	int i, ref;
 
-	strcat(coeff_file,nodename);
-	//sprintf(coeff_file,"%s.%s",coeff_file,nodename);
+	ear_debug(3, "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
 
-	ear_verbose(1,"EAR: Using coefficients %s\n",coeff_file);
-	COEFFICIENTS_LENOVO=(struct Coefficients_info **)malloc(sizeof(struct Coefficients_info*)*p_states);
-	if (COEFFICIENTS_LENOVO==NULL) {
-		ear_verbose(0,"EAR: Error allocating memory for p_states coefficients\n");
+	// Initializations
+	begin_pstate = 1;
+	ear_models_pstates = p_states;
+
+	// Coefficient file
+	strcpy(coeff_file, get_ear_coeff_db_pathname());
+	gethostname(nodename, sizeof(nodename));
+	strcat(coeff_file, nodename);
+
+	ear_verbose(1, "EAR: Using coefficients %s\n", coeff_file);
+
+	// Default coefficient file
+	sprintf(coeff_default_file, "%s.default", coeff_file);
+
+	// Coefficient pointers allocation
+	coefficients = (coefficients_t **) malloc(sizeof(coefficients_t * p_states));
+
+	if (coefficients == NULL) {
+		ear_verbose(0, "EAR: Error allocating memory for p_states coefficients\n");
 		exit(1);
 	}
-	for (i=0;i<p_states;i++){
-		COEFFICIENTS_LENOVO[i]=(struct Coefficients_info *)malloc(sizeof(struct Coefficients_info)*p_states);
-		if (COEFFICIENTS_LENOVO[i]==NULL) {
-			ear_verbose(0,"EAR: Error allocating memory for p_states coefficients fn %d\n",i);
+
+	// Projections allocation
+	projections = (projection_t *) malloc(sizeof(projection_t) * p_states);
+
+	if (projections == NULL) {
+		ear_verbose(0, "EAR: Error allocating memory for perf. projections\n");
+		exit(1);
+	}
+
+	//
+	reset_performance_projection(p_states);
+
+	// Coefficient pointers allocation and reading
+	int size, state;
+
+	if (ear_use_turbo) begin_pstate = 0;
+	end_pstate = p_states;
+
+	for (ref = begin_pstate; ref < end_pstate; ref++)
+	{
+		sprintf(coeff_file_fn, "%s.%d", coeff_file, p_states_list[ref]);
+		ear_verbose(2, "EAR: Opening (per node) coefficient file %s\n", coeff_file_fn);
+
+		size = sizeof(coefficient_t) * p_states;
+		state = read_coefficients_file(coeff_file_fn, &coefficients[ref], size);
+
+		if (state == EAR_FILE_NOT_FOUND)
+		{
+			sprintf(coeff_file_fn, "%s.%d", coeff_default_file, p_states_list[ref]);
+			ear_verbose(2, "EAR: Opening (default) coefficient file %s\n", coeff_file_fn);
+
+			state = read_coefficients_file(coeff_file_fn, &coefficients[ref], size);
+		}
+
+		// If default coefficient file not found
+		if (state == EAR_FILE_NOT_FOUND) {
+			ear_verbose(2, "EAR: Coefficients are not available per node %s and freq %u\n",
+						nodename, p_states_list[ref]);
+		}
+
+		// If other king of error during the reading
+		if (state < 0) {
+			ear_verbose(0, "EAR: Error while reading coefficients for %s (%s) (%d)\n",
+						coeff_file_fn, state);
 			exit(1);
 		}
-		for (ref=0;ref<p_states;ref++){
-			COEFFICIENTS_LENOVO[i][ref].pstate=p_states_list[ref];
-			COEFFICIENTS_LENOVO[i][ref].available=0;
-		}
 	}
-	APP_PERF_PROJECTION=(struct PerfProjection*)malloc(sizeof(struct PerfProjection)*p_states);
-	if (APP_PERF_PROJECTION==NULL){
-		ear_verbose(0,"EAR: Error allocating memory for perf. projections\n");
-		exit(1);
-	}
-	reset_performance_projection(p_states);
-	if (ear_use_turbo) begin_pstate=0;
-	end_pstate=p_states;
-	for (ref=begin_pstate;ref<end_pstate;ref++){
-		sprintf(coeff_file_fn,"%s.%d",coeff_file,p_states_list[ref]);
-		ear_verbose(2,"EAR: Opening (per  node) coefficients for %s\n",coeff_file_fn);
-		coeff_fd=open(coeff_file_fn,O_RDONLY);
-		if (coeff_fd>=0){
-			if(read(coeff_fd,COEFFICIENTS_LENOVO[ref],sizeof(struct Coefficients_info)*p_states)!=sizeof(struct Coefficients_info)*p_states){
-				ear_verbose(0,"EAR: Error reading coefficienys for F=%u (%s)\n",ref,coeff_file_fn);
-				exit(1);
-			}
-			close(coeff_fd);
-		}else{
-			// Per node is not available, trying to open default coefficient file
-			sprintf(coeff_file_fn,"%s.%d",coeff_default_file,p_states_list[ref]);
-			ear_verbose(2,"EAR: Opening (default) coefficients for %s\n",coeff_file_fn);
-			coeff_fd=open(coeff_file_fn,O_RDONLY);
-			if (coeff_fd>=0){
-				if(read(coeff_fd,COEFFICIENTS_LENOVO[ref],sizeof(struct Coefficients_info)*p_states)!=sizeof(struct Coefficients_info)*p_states){
-					ear_verbose(0,"EAR: Error reading default coefficients for F=%u (%s)\n",ref,coeff_file_fn);
-					exit(1);
-				}
-				close(coeff_fd);
-			}else{
-				if (ear_whole_app==0){
-					// Coefficients are not available neither for this node neither default
-				 	ear_verbose(2,"EAR: Coefficients are not available per node %s and freq %u\n",nodename,p_states_list[ref]);
-				}
-			}
-			
-		}
-	}
-}		
+}
 
 void reset_performance_projection(unsigned int p_states)
 {
 	ear_debug(4,"EAR(%s) :: ResetperformanceProjection\n",__FILE__);
 	int i;
 	for (i=0;i<p_states;i++){
-		APP_PERF_PROJECTION[i].Time=0;
-		APP_PERF_PROJECTION[i].Power=0;	
-		APP_PERF_PROJECTION[i].CPI=0;	
+		projections[i].Time=0;
+		projections[i].Power=0;
+		projections[i].CPI=0;
 	}
 }
 
 void set_performance_projection(int i,double TP,double PP,double CPIP)
 {
 		ear_debug(4,"EAR(%s):: Setting PP for entry %d (%lf,%lf,%lf)\n",__FILE__,i,TP,PP,CPIP);
-		APP_PERF_PROJECTION[i].Time=TP;
-		APP_PERF_PROJECTION[i].Power=PP;	
-		APP_PERF_PROJECTION[i].CPI=CPIP;	
+		projections[i].Time=TP;
+		projections[i].Power=PP;
+		projections[i].CPI=CPIP;
 }
 
 double power_projection(struct App_info *my_app,unsigned int Fi)
@@ -192,15 +185,15 @@ double power_projection(struct App_info *my_app,unsigned int Fi)
 	POWER_F0=NOMINAL_POWER(my_app);
 	TPI_F0=NOMINAL_TPI(my_app);
 	Fref=ear_get_pstate(ear_frequency);
-	pp=COEFFICIENTS_LENOVO[Fref][Fi].A*POWER_F0+COEFFICIENTS_LENOVO[Fref][Fi].B*TPI_F0+COEFFICIENTS_LENOVO[Fref][Fi].C;
+	pp=coefficients[Fref][Fi].A*POWER_F0+coefficients[Fref][Fi].B*TPI_F0+coefficients[Fref][Fi].C;
 	ear_verbose(4,"EAR(%s):: POWER_PROJ=%.3lf=A(%.3lf)*POWERN(%.3lf)+B(%.3lf)*TPIN(%.3lf)+C(%.3lf)\n",
 	ear_app_name,
 	pp,
-	COEFFICIENTS_LENOVO[Fref][Fi].A,
+	coefficients[Fref][Fi].A,
 	POWER_F0,
-	COEFFICIENTS_LENOVO[Fref][Fi].B,
+	coefficients[Fref][Fi].B,
 	TPI_F0,
-	COEFFICIENTS_LENOVO[Fref][Fi].C);
+	coefficients[Fref][Fi].C);
 	return pp;
 }
 
@@ -213,15 +206,15 @@ double cpi_projection(struct App_info *my_app,unsigned int Fi)
 	Fref=ear_get_pstate(ear_frequency);
 	TPI_F0=NOMINAL_TPI(my_app);
 	CPI_F0=NOMINAL_CPI(my_app);
-	cpi_pr=COEFFICIENTS_LENOVO[Fref][Fi].F+COEFFICIENTS_LENOVO[Fref][Fi].D*CPI_F0+COEFFICIENTS_LENOVO[Fref][Fi].E*TPI_F0;
+	cpi_pr=coefficients[Fref][Fi].F+coefficients[Fref][Fi].D*CPI_F0+coefficients[Fref][Fi].E*TPI_F0;
 	ear_debug(4,"EAR(%s):: CPI_PROJ=%lf=D(%lf)*CPIN(%lf)+E(%lf)*TPIN(%lf)+F(%lf)\n",
 	__FILE__,
 	cpi_pr,
-	COEFFICIENTS_LENOVO[Fref][Fi].D,
+	coefficients[Fref][Fi].D,
 	CPI_F0,
-	COEFFICIENTS_LENOVO[Fref][Fi].E,
+	coefficients[Fref][Fi].E,
 	TPI_F0,
-	COEFFICIENTS_LENOVO[Fref][Fi].F);
+	coefficients[Fref][Fi].F);
 	return cpi_pr;
 }
 double time_projection(struct App_info *my_app,unsigned int Fi,double cpi_pr)
@@ -233,10 +226,10 @@ double time_projection(struct App_info *my_app,unsigned int Fi,double cpi_pr)
 	//TIME(fn) = TIME(f0) * CPI(fn)/CPI(f0) * (f0/fn)
 	CPI_F0=NOMINAL_CPI(my_app);
 	TIME_F0=NOMINAL_TIME(my_app);
-	timep=TIME_F0*(cpi_pr/CPI_F0)*((double)ear_frequency/(double)COEFFICIENTS_LENOVO[Fref][Fi].pstate);
+	timep=TIME_F0*(cpi_pr/CPI_F0)*((double)ear_frequency/(double)coefficients[Fref][Fi].pstate);
 	ear_debug(4,"EAR(%s):: TIME_P=%lf= TIMEN(%lf)*(cpi_pr(%lf)/CPI_F0(%lf))*(nominal(%u)/f_proj(%u))\n",
 	__FILE__,
-	timep,TIME_F0,cpi_pr,CPI_F0,ear_frequency,COEFFICIENTS_LENOVO[Fref][Fi].pstate);
+	timep,TIME_F0,cpi_pr,CPI_F0,ear_frequency,coefficients[Fref][Fi].pstate);
 	return timep; 
 }
 
@@ -255,7 +248,7 @@ unsigned long optimal_freq_min_energy(double th,struct App_info * SIGNATURE,doub
     ref=ear_get_pstate(ear_frequency);
     // My reference is the submission frequency
     if (ear_frequency!=EAR_default_frequency){
-    	if (COEFFICIENTS_LENOVO[ref][EAR_default_pstate].available){
+    	if (coefficients[ref][EAR_default_pstate].available){
     		P_ref=power_projection(my_app,EAR_default_pstate);
     		CPI_ref=cpi_projection(my_app,EAR_default_pstate);
     		T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
@@ -282,13 +275,13 @@ unsigned long optimal_freq_min_energy(double th,struct App_info * SIGNATURE,doub
     T_max=T_ref+(T_ref*th);
     // MIN_ENERGY_TO_SOLUTION BEGIN
     for (i=min_pstate;i<ear_models_pstates;i++){
-        if (COEFFICIENTS_LENOVO[ref][i].available){
+        if (coefficients[ref][i].available){
             PP=power_projection(my_app,i);
             CPIP=cpi_projection(my_app,i);
             TP=time_projection(my_app,i,CPIP);
             EP=PP*TP;
             if ((EP<bestSolution) && (TP<T_max)){
-                    bestPstate=COEFFICIENTS_LENOVO[ref][i].pstate;
+                    bestPstate=coefficients[ref][i].pstate;
                     bestSolution=EP;
 					*bestPP=PP;*bestTP=TP;
             }
@@ -322,7 +315,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
 		set_performance_projection(ref,T_ref,P_ref,CPI_ref);
 	}else if (power_model_policy==MIN_ENERGY_TO_SOLUTION){
         	if (ear_frequency!=EAR_default_frequency){
-                	if (COEFFICIENTS_LENOVO[ref][EAR_default_pstate].available){
+                	if (coefficients[ref][EAR_default_pstate].available){
                         	P_ref=power_projection(my_app,EAR_default_pstate);
                         	CPI_ref=cpi_projection(my_app,EAR_default_pstate);
                         	T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
@@ -348,7 +341,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
 		T_max=T_ref+(T_ref*performance_penalty);
 		// MIN_ENERGY_TO_SOLUTION BEGIN
 		for (i=min_pstate;i<ear_models_pstates;i++){
-		if (COEFFICIENTS_LENOVO[ref][i].available){
+		if (coefficients[ref][i].available){
 			PP=power_projection(my_app,i);
 			CPIP=cpi_projection(my_app,i);
 			TP=time_projection(my_app,i,CPIP);
@@ -357,15 +350,15 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
 			if (ear_my_rank==0){
 				if (ref==EAR_default_pstate){
 				ear_debug(4,"EAR POLICY:::: EAR[mpi_rank=%d at %u] REFERENCE_COMPUTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)\n",
-				ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,COEFFICIENTS_LENOVO[ref][i].pstate,EP,TP,PP,T_max);
+				ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
 				}else{
 				ear_debug(4,"EAR POLICY:::: EAR[mpi_rank=%d at %u] REFERENCE_PROJECTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)\n",
-				ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,COEFFICIENTS_LENOVO[ref][i].pstate,EP,TP,PP,T_max);
+				ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
 				}
 			}
 
 			if ((EP<bestSolution) && (TP<T_max)){
-					bestPstate=COEFFICIENTS_LENOVO[ref][i].pstate;
+					bestPstate=coefficients[ref][i].pstate;
 					bestSolution=EP;
 			}
 
@@ -376,7 +369,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
 		// MIN_TIME_TO_SOLUTION BEGIN
 
                 if (ear_frequency!=EAR_default_frequency){
-                        if (COEFFICIENTS_LENOVO[ref][EAR_default_pstate].available){
+                        if (coefficients[ref][EAR_default_pstate].available){
                                 P_ref=power_projection(my_app,EAR_default_pstate);
                                 CPI_ref=cpi_projection(my_app,EAR_default_pstate);
                                 T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
@@ -400,24 +393,24 @@ unsigned long policy_power_for_application(unsigned int whole_app,struct App_inf
 			i=EAR_default_pstate-1;
 			T_current=T_ref;
 			while(try_next && (i>=min_pstate)){
-				if (COEFFICIENTS_LENOVO[ref][i].available){
+				if (coefficients[ref][i].available){
 					PP=power_projection(my_app,i);
 					CPIP=cpi_projection(my_app,i);
 					TP=time_projection(my_app,i,CPIP);
 					set_performance_projection(i,TP,PP,CPIP);
-					freq_gain=performance_gain*(double)(COEFFICIENTS_LENOVO[ref][i].pstate-bestPstate)/(double)bestPstate;
+					freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-bestPstate)/(double)bestPstate;
 					perf_gain=(T_current-TP)/T_current;
 					if (perf_gain>=freq_gain){ // OK
 						ear_debug(4,"EAR[MIN_TIME][rank %d] go on evaluating other frequencies current %u Tcurrent %lf Tproj %lf perf_gain %lf \n\
 						freq_gain %lf (current %u next %u) (cpi actual %lf cpi proj %lf) GBS %lf\n",
-						ear_my_rank,bestPstate,T_current,TP,perf_gain,freq_gain,bestPstate,COEFFICIENTS_LENOVO[ref][i].pstate,my_app->CPI,CPIP,my_app->GBS);
-						bestPstate=COEFFICIENTS_LENOVO[ref][i].pstate;
+						ear_my_rank,bestPstate,T_current,TP,perf_gain,freq_gain,bestPstate,coefficients[ref][i].pstate,my_app->CPI,CPIP,my_app->GBS);
+						bestPstate=coefficients[ref][i].pstate;
 						T_current=TP;
 						i--;
 					}else{
 						if ((bestPstate!=ear_frequency)||(bestPstate==EAR_default_frequency)){
 						ear_debug(4,"EAR[MIN_TIME][rank %d] Not scaling more than -> Tcurrent[%u]= %lf vs Tproj[%u]= %lf (perf_gain %lf) \n",
-						ear_my_rank,bestPstate,T_current,COEFFICIENTS_LENOVO[ref][i].pstate,TP,perf_gain);
+						ear_my_rank,bestPstate,T_current,coefficients[ref][i].pstate,TP,perf_gain);
 						}
 						try_next=0;	
 					}
@@ -441,7 +434,7 @@ unsigned int equal_with_th(double p,double r,double th)
 	if (diff<(th*r)) return 1;
 	else return 0;
 }
-unsigned int policy_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNATURE,struct App_info *LAST_SIGNATURE)
+unsigned int policy_ok(projection_t *PREDICTION,struct App_info *SIGNATURE,struct App_info *LAST_SIGNATURE)
 {
 		ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",__FILE__,
 		PREDICTION->Time,PREDICTION->Power);
@@ -463,17 +456,17 @@ unsigned int policy_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNAT
 			return 1;
 		}	
 }
-unsigned int performance_projection_ok(struct PerfProjection *PREDICTION,struct App_info *SIGNATURE)
+unsigned int performance_projection_ok(projection_t *PREDICTION,struct App_info *SIGNATURE)
 {
 	if (equal_with_th(PREDICTION->Time,SIGNATURE->iter_time,performance_penalty_th) && equal_with_th(PREDICTION->Power,SIGNATURE->DC_power,performance_penalty_th)){
 		ear_debug(4,"EAR(%s):: Performance projection OK\n",__FILE__);
 		return 1;
 	}else return 0;
 }
-struct PerfProjection * performance_projection(unsigned long f)
+projection_t * performance_projection(unsigned long f)
 {
 	ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,ear_get_pstate(f));
-	return &APP_PERF_PROJECTION[ear_get_pstate(f)];	
+	return &projections[ear_get_pstate(f)];
 }
 
 unsigned long  policy_power(unsigned int whole_app,struct App_info* MY_SIGNATURE)

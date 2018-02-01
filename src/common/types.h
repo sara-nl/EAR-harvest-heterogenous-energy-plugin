@@ -27,18 +27,18 @@ typedef struct App_info
     double policy_th; // th
     unsigned long avg_f; // f
     unsigned int procs;
-    double iter_time;
+    double iter_time; // seconds
     double disabled_2; // GIPS_f0
     double GBS; // GBS_f0
     double DC_power; // POWER_f0
-    double TPI;
+    double TPI; // TPI_f0
     double CPI;
-    unsigned int def_f;
+    unsigned int def_f; // nominal
     unsigned long long cycles;
     unsigned long long instructions;
     double disabled_1; // POWER_DC
-    double DRAM_power;
-    double PCK_power;
+    double DRAM_power; // DRAM_POWER
+    double PCK_power; // PCK_POWER
     double Gflops;
     double EDP;
 } application_t;
