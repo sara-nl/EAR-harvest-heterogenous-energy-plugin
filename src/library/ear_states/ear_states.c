@@ -25,17 +25,17 @@
 #include <externs.h>
 
 // static defines
-#define NO_PERIOD 				0
+#define NO_PERIOD                       0
 #define FIRST_ITERATION 		1
-#define EVALUATING_SIGNATURE 	2
+#define EVALUATING_SIGNATURE            2
 #define SIGNATURE_STABLE 		3
 #define PROJECTION_ERROR 		4
 #define RECOMPUTING_N 			5
-#define SIGNATURE_HAS_CHANGED 	6
+#define SIGNATURE_HAS_CHANGED           6
 #define DPD_NUM_STATES 			7
 
 #ifdef EAR_EXTRA_METRICS
-application_t_extended my_extra_metrics;
+static application_ext_t my_extra_metrics;
 #endif
 
 static application_t *curr_signature;
