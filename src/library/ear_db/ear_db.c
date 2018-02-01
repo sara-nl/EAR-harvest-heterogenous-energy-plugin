@@ -25,8 +25,8 @@
 #include <externs.h>
 #include <types.h>
 
-application_t *apps;
-ulong current_freq;
+static application_t *apps;
+static ulong current_freq;
 
 // This function initilices application information
 void db_init(unsigned int whole_app, char *app_name) {
