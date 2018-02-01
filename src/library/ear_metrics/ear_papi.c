@@ -501,14 +501,12 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		strcpy(SIGNATURE.user_id,app_info->user_id);
 		strcpy(SIGNATURE.node_id,app_info->node_id);
 		db_set_GBS(&SIGNATURE,GBS);
-		db_set_GIPS(&SIGNATURE,GIBS);
 		db_set_POWER(&SIGNATURE,POWER_DC);
 		db_set_TPI(&SIGNATURE,TPI);
 		db_set_seconds(&SIGNATURE,Seconds);
 		db_set_CPI(&SIGNATURE,CPI);
 		db_set_CYCLES(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_CYC]);
 		db_set_INSTRUCTIONS(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_INS]);
-		db_set_POWER_DC(&SIGNATURE,POWER_DC);
 		db_set_DRAM_POWER(&SIGNATURE,DRAM_POWER);
 		db_set_PCK_POWER(&SIGNATURE,PCK_POWER);
 		db_set_frequency(&SIGNATURE,f);
@@ -663,7 +661,7 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 
 	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256,PERC_DP512\n");
 	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
-	fprintf(fd_extra,"%lu;%.5lf;%.5lf;.5%lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->iter_time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
+	fprintf(fd_extra,"%lu;%.5lf;%.5lf;%.5lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->iter_time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
 	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->DC_power,my_sig->DRAM_power,my_sig->PCK_power);
 	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->def_f,ear_policy_name,my_sig->policy_th);
 	fprintf(fd_extra,"%lu;%d;%u;",loop_id,period,level);
