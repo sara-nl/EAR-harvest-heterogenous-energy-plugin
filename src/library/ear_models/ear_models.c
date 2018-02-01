@@ -105,12 +105,29 @@ void init_power_models(unsigned int p_states,unsigned long *p_states_list)
 	sprintf(coeff_default_file, "%s.default", coeff_file);
 
 	// Coefficient pointers allocation
-	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t) * p_states);
+	coefficients = (coefficient_t **) malloc(sizeof((coefficient_t *) * p_states);
 
 	if (coefficients == NULL) {
 		ear_verbose(0, "EAR: Error allocating memory for p_states coefficients\n");
 		exit(1);
 	}
+
+	//TODO: aquí falta algo
+	for (i = 0; i < p_states; i++)
+	{
+		coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * p_states);
+		if (coefficients[i] == NULL) {
+			ear_verbose(0,"EAR: Error allocating memory for p_states coefficients fn %d\n",i);
+			exit(1);
+		}
+
+		for (ref = 0; ref < p_states; ref++)
+		{
+			coefficients[i][ref].pstate = p_states_list[ref];
+			coefficients[i][ref].available = 0;
+		}
+	}
+	//TODO: aquí falta algo
 
 	// Projections allocation
 	projections = (projection_t *) malloc(sizeof(projection_t) * p_states);
