@@ -22,9 +22,9 @@
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
-struct App_info *app_list;
-struct App_info **sorted_app_list;
-struct Coefficients_info **coeffs_list;
+application_t *app_list;
+application_t **sorted_app_list;
+coefficient_t **coeffs_list;
 
 uint *samples_per_app;
 uint num_diff_apps;
@@ -102,12 +102,12 @@ uint fill_list_p_states()
     return num_pstates;
 }
 
-int app_exists(struct App_info *Applist, uint total_apps, struct App_info *newApp) {
+int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {
     uint pos = 0, found = 0;
 
     while ((pos < total_apps) && (found == 0)) {
         if ((strcmp(Applist[pos].app_id, newApp->app_id) == 0) &&
-            (Applist[pos].nominal == newApp->nominal)) {
+            (Applist[pos].def_f == newApp->def_f)) {
             found = 1;
         } else {
             pos++;
@@ -117,38 +117,35 @@ int app_exists(struct App_info *Applist, uint total_apps, struct App_info *newAp
     else return pos;
 }
 
-void average_list_samples(struct App_info *current, uint samples)
+void average_list_samples(application_t *current, uint samples)
 {
     double foravg = (double) samples;
-    current->seconds = current->seconds / foravg;
-    current->GIPS_f0 = current->GIPS_f0 / foravg;
-    current->GBS_f0 = current->GBS_f0 / foravg;
-    current->POWER_f0 = current->POWER_f0 / foravg;
+    current->iter_time = current->iter_time / foravg;
+    current->GBS = current->GBS / foravg;
+    current->DC_power = current->DC_power / foravg;
     current->CPI = current->CPI / foravg;
-    current->TPI_f0 = current->TPI_f0 / foravg;
+    current->TPI = current->TPI / foravg;
 }
 
 // A=A+B metrics
-void accum_app(struct App_info *A, struct App_info *B)
+void accum_app(application_t *A, application_t *B)
 {
-    A->seconds += B->seconds;
-    A->GIPS_f0 += B->GIPS_f0;
-    A->GBS_f0 += B->GBS_f0;
-    A->POWER_f0 += B->POWER_f0;
-    A->TPI_f0 += B->TPI_f0;
+    A->iter_time += B->iter_time;
+    A->GBS += B->GBS;
+    A->DC_power += B->DC_power;
+    A->TPI += B->TPI;
     A->CPI += B->CPI;
 }
 
-void write_app(struct App_info *A, struct App_info *B)
+void write_app(application_t *A, application_t *B)
 {
     strcpy(A->app_id, B->app_id);
-    A->nominal = B->nominal;
+    A->def_f = B->def_f;
     A->procs = B->procs;
-    A->seconds = B->seconds;
-    A->GIPS_f0 = B->GIPS_f0;
-    A->GBS_f0 = B->GBS_f0;
-    A->POWER_f0 = B->POWER_f0;
-    A->TPI_f0 = B->TPI_f0;
+    A->iter_time = B->iter_time;
+    A->GBS = B->GBS;
+    A->DC_power = B->DC_power;
+    A->TPI = B->TPI;
     A->CPI = B->CPI;
 }
 
@@ -161,8 +158,8 @@ void nominal_for_power(uint ref, char *app_name, double *power, double *tpi)
     while ((i < samples_f[ref]) && (found == 0))
     {
         if (strcmp(sorted_app_list[ref][i].app_id, app_name) == 0) {
-            *power = sorted_app_list[ref][i].POWER_f0;
-            *tpi = sorted_app_list[ref][i].TPI_f0;
+            *power = sorted_app_list[ref][i].DC_power;
+            *tpi = sorted_app_list[ref][i].TPI;
             found = 1;
         } else i++;
     }
@@ -179,7 +176,7 @@ void nominal_for_cpi(uint ref, char *app_name, double *cpi, double *tpi)
         if (strcmp(sorted_app_list[ref][i].app_id, app_name) == 0)
         {
             *cpi = sorted_app_list[ref][i].CPI;
-            *tpi = sorted_app_list[ref][i].TPI_f0;
+            *tpi = sorted_app_list[ref][i].TPI;
             found = 1;
         } else i++;
     }
@@ -205,7 +202,7 @@ void usage(char *app)
 
 int main(int argc, char *argv[])
 {
-    struct App_info read_app;
+    application_t read_app;
     int fd, index;
     uint f, pos, ref, i;
     uint filtered_apps = 0;
@@ -237,7 +234,7 @@ int main(int argc, char *argv[])
     OPEN(fd, argv[1], O_RDONLY, 0);
 
     // Number of apps (total instances, not different apps)
-    num_apps = (lseek(fd, 0, SEEK_END) / sizeof(struct App_info));
+    num_apps = (lseek(fd, 0, SEEK_END) / sizeof(application_t));
 
     if (num_apps < 0) {
         perror("Error calculating num apps");
@@ -245,7 +242,7 @@ int main(int argc, char *argv[])
     }
 
     // Allocating space for the list of applications
-    MALLOC(app_list, struct App_info, num_apps);
+    MALLOC(app_list, application_t, num_apps);
 
     // Allocating space for an array of pointers, which each position
     // is also an array pointing to the same application samples
@@ -264,12 +261,12 @@ int main(int argc, char *argv[])
 
     //
     for (i = 0; i < num_apps; i++) {
-        if (read(fd, &read_app, sizeof(struct App_info)) != sizeof(struct App_info)) {
+        if (read(fd, &read_app, sizeof(application_t)) != sizeof(application_t)) {
             perror("Error reading app info");
             exit(1);
         }
 
-        if (read_app.nominal >= min_freq) {
+        if (read_app.def_f >= min_freq) {
 
             if ((index = app_exists(app_list, filtered_apps, &read_app)) >= 0) {
                 // If APP exists, then accumulate its values in
@@ -297,22 +294,22 @@ int main(int argc, char *argv[])
 
     // We maintain the name's of applications to generate graphs
     for (current_app = 0; current_app < num_apps; current_app++) {
-        if (app_list[current_app].nominal >= min_freq) {
-            index = freq_to_p_state(app_list[current_app].nominal);
+        if (app_list[current_app].def_f >= min_freq) {
+            index = freq_to_p_state(app_list[current_app].def_f);
             samples_f[index]++;
         }
     }
 
     // We group applications with frequencies
-    MALLOC(sorted_app_list, struct App_info*, num_node_p_states);
+    MALLOC(sorted_app_list, application_t*, num_node_p_states);
 
     for (i = 0; i < num_node_p_states; i++) {
-        MALLOC(sorted_app_list[i], struct App_info, samples_f[i]);
+        MALLOC(sorted_app_list[i], application_t, samples_f[i]);
     }
 
     // Sorting applications by frequency
     for (current_app = 0; current_app < num_apps; current_app++) {
-        f = app_list[current_app].nominal;
+        f = app_list[current_app].def_f;
 
         if (f >= min_freq) {
             i = freq_to_p_state(f);
@@ -324,10 +321,10 @@ int main(int argc, char *argv[])
     }
 
     // Computing coefficients
-    MALLOC(coeffs_list, struct Coefficients_info *, num_node_p_states);
+    MALLOC(coeffs_list, coefficient_t *, num_node_p_states);
 
     for (f = 0; f < num_node_p_states; f++) {
-        MALLOC(coeffs_list[f], struct Coefficients_info, num_node_p_states);
+        MALLOC(coeffs_list[f], coefficient_t, num_node_p_states);
 
         for (i = 0; i < num_node_p_states; i++) {
             coeffs_list[f][i].available = 0;
@@ -367,7 +364,7 @@ int main(int argc, char *argv[])
 
                         for (i = 0; i < n; i++) {
                             // POWER
-                            gsl_vector_set(POWER, i, sorted_app_list[f][i].POWER_f0);
+                            gsl_vector_set(POWER, i, sorted_app_list[f][i].DC_power);
 
                             nominal_for_power(ref, sorted_app_list[f][i].app_id, &power, &tpi);
 
@@ -383,7 +380,7 @@ int main(int argc, char *argv[])
                         gsl_multifit_linear(SIGNATURE_POWER, POWER, COEFFS, cov, &chisq, wspc);
 
                         #ifdef DEBUG
-                        fprintf(stdout, "Coefficient for power: %g*POWER_f0 + %g*TPI_f0 + %g\n",
+                        fprintf(stdout, "Coefficient for power: %g*DC_power + %g*TPI_f0 + %g\n",
                                 gsl_vector_get(COEFFS, 1), gsl_vector_get(COEFFS, 2), gsl_vector_get(COEFFS, 0));
                         #endif
                         A = gsl_vector_get(COEFFS, 1);
@@ -442,8 +439,8 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (write(fd, coeffs_list[ref], sizeof(struct Coefficients_info) * num_node_p_states) !=
-                (sizeof(struct Coefficients_info) * num_node_p_states)) {
+            if (write(fd, coeffs_list[ref], sizeof(coefficient_t) * num_node_p_states) !=
+                (sizeof(coefficient_t) * num_node_p_states)) {
                 perror("Error writting coefficients file\n");
                 exit(1);
             }

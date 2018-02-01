@@ -48,7 +48,7 @@ int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
     for(i = 0; i < n_apps; ++i)
     {
         equal_id = strcmp(app_id, apps[i].app_id) == 0;
-        equal_f = f0_mhz == apps[i].nominal;
+        equal_f = f0_mhz == apps[i].def_f;
 
         if (equal_id && equal_f) {
             return i;
@@ -83,37 +83,37 @@ application_t *merge(control_t *control)
     //
     for(i = 0, j = 0; i < n_apps; ++i)
     {
-        f0_mhz = apps[i].nominal;
+        f0_mhz = apps[i].def_f;
         app_id = apps[i].app_id;
 
         if (find(apps_merged, j, app_id, f0_mhz) == -1)
         {
             memcpy(&apps_merged[j], &apps[i], sizeof(application_t));
 
-            power = apps[i].POWER_f0;
-            time = apps[i].seconds;
-            tpi = apps[i].TPI_f0;
+            power = apps[i].DC_power;
+            time = apps[i].iter_time;
+            tpi = apps[i].TPI;
             cpi = apps[i].CPI;
             counter = 1.0;
 
             for(k = i + 1; k < n_apps; ++k)
             {
                 equal_id = strcmp(app_id, apps[k].app_id) == 0;
-                equal_f = f0_mhz == apps[k].nominal;
+                equal_f = f0_mhz == apps[k].def_f;
 
                 if (equal_id && equal_f)
                 {
-                    power += apps[k].POWER_f0;
-                    time += apps[k].seconds;
-                    tpi += apps[k].TPI_f0;
+                    power += apps[k].DC_power;
+                    time += apps[k].iter_time;
+                    tpi += apps[k].TPI;
                     cpi += apps[k].CPI;
                     counter += 1.0;
                 }
             }
 
-            apps_merged[j].POWER_f0 = power / counter;
-            apps_merged[j].seconds = time / counter;
-            apps_merged[j].TPI_f0 = tpi / counter;
+            apps_merged[j].DC_power = power / counter;
+            apps_merged[j].iter_time = time / counter;
+            apps_merged[j].TPI = tpi / counter;
             apps_merged[j].CPI = cpi / counter;
 
             j += 1;
@@ -166,7 +166,7 @@ void evaluate(control_t *control)
     // Apps iteration
     for (j = 0; j < n_apps; ++j)
     {
-        if (apps[j].nominal == f0_mhz)
+        if (apps[j].def_f == f0_mhz)
         {
             // Print content
             set_spacing_digits(18);
@@ -174,7 +174,7 @@ void evaluate(control_t *control)
 
             set_spacing_digits(11);
             printf("@");
-            print_spacing_uint(apps[j].nominal);
+            print_spacing_uint(apps[j].def_f);
 
             set_spacing_digits(12);
             printf("| ");
@@ -189,9 +189,9 @@ void evaluate(control_t *control)
             printf("\n");
 
             cpi0 = apps[j].CPI;
-            tpi0 = apps[j].TPI_f0;
-            time0 = apps[j].seconds;
-            power0 = apps[j].POWER_f0;
+            tpi0 = apps[j].TPI;
+            time0 = apps[j].iter_time;
+            power0 = apps[j].DC_power;
 
             for (i = 0; i < n_coeffs; i++)
             {
@@ -215,12 +215,12 @@ void evaluate(control_t *control)
                     {
                         m = &apps[k];
 
-                        timee = fabs((1.0 - (m->seconds / timep)) * 100.0);
-                        powere = fabs((1.0 - (m->POWER_f0 / powerp)) * 100.0);
+                        timee = fabs((1.0 - (m->iter_time / timep)) * 100.0);
+                        powere = fabs((1.0 - (m->DC_power / powerp)) * 100.0);
                         cpie = fabs((1.0 - (m->CPI / cpip)) * 100.0);
 
                         printf("| ");
-                        sprintf(buffer, "%0.2lf", m->seconds);
+                        sprintf(buffer, "%0.2lf", m->iter_time);
                         print_spacing_string(buffer);
 
                         sprintf(buffer, "%0.2lf", timep);
@@ -230,7 +230,7 @@ void evaluate(control_t *control)
                         print_spacing_string(buffer);
 
                         printf("| ");
-                        sprintf(buffer, "%0.2lf", m->POWER_f0);
+                        sprintf(buffer, "%0.2lf", m->DC_power);
                         print_spacing_string(buffer);
 
                         sprintf(buffer, "%0.2lf", powerp);
@@ -251,9 +251,9 @@ void evaluate(control_t *control)
                     }
 
                     if (fd >= 0) {
-                        dprintf(fd, "%s;%u;%u;", apps[j].app_id, apps[j].nominal, m->nominal);
-                        dprintf(fd, "%lf;%lf;%lf;", m->seconds, timep, timee);
-                        dprintf(fd, "%lf;%lf;%lf;", m->POWER_f0, powerp, powere);
+                        dprintf(fd, "%s;%u;%u;", apps[j].app_id, apps[j].def_f, m->def_f);
+                        dprintf(fd, "%lf;%lf;%lf;", m->iter_time, timep, timee);
+                        dprintf(fd, "%lf;%lf;%lf;", m->DC_power, powerp, powere);
                         dprintf(fd, "%lf;%lf;%lf\n", m->CPI, cpip, cpie);
                     }
 

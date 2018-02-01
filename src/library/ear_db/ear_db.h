@@ -39,7 +39,6 @@ void db_new_period();
 // maximum different of ACCEPTED_TH. It is used at policy validation
 int db_signature_has_changed(struct App_info *A,struct App_info *B);
 
-
 // Set/Get the different application fields
 void db_set_policy(struct App_info *MY_APP,char *policy_name);
 void db_set_th(struct App_info *MY_APP,double th);
@@ -47,7 +46,6 @@ void db_set_frequency(struct App_info *MY_APP,unsigned long f);
 void db_set_default(struct App_info *MY_APP,unsigned long f);
 void db_set_procs(struct App_info *MY_APP,unsigned int procs);
 void db_set_GBS(struct App_info *MY_APP,double gbs);
-void db_set_GIPS(struct App_info *MY_APP,double gips);
 void db_set_POWER(struct App_info *MY_APP,double power);
 void db_set_TPI(struct App_info *MY_APP,double tpi);
 void db_set_seconds(struct App_info *MY_APP,double seconds);
@@ -56,7 +54,6 @@ void db_set_Gflops(struct App_info *MY_APP,double Gflops);
 void db_set_EDP(struct App_info *MY_APP,double EDP);
 void db_set_CYCLES(struct App_info *MY_APP,long long cycles);
 void db_set_INSTRUCTIONS(struct App_info *MY_APP,long long instr);
-void db_set_POWER_DC(struct App_info *MY_APP,double power_dc);
 void db_set_DRAM_POWER(struct App_info *MY_APP,double dram_power);
 void db_set_PCK_POWER(struct App_info *MY_APP,double pck_power);
 char * db_get_name(struct App_info *MY_APP);
@@ -65,7 +62,6 @@ unsigned int  db_get_procs(struct App_info *MY_APP);
 double db_get_GBS(struct App_info *MY_APP);
 double db_get_Gflops(struct App_info *MY_APP);
 double db_get_EDP(struct App_info *MY_APP);
-double db_get_GIPS(struct App_info *MY_APP);
 double db_get_POWER(struct App_info *MY_APP);
 double db_get_TPI(struct App_info *MY_APP);
 double db_get_CPI(struct App_info *MY_APP);
