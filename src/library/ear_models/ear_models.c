@@ -112,7 +112,6 @@ void init_power_models(unsigned int p_states,unsigned long *p_states_list)
 		exit(1);
 	}
 
-	//TODO: aquí falta algo
 	for (i = 0; i < p_states; i++)
 	{
 		coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * p_states);
@@ -127,7 +126,6 @@ void init_power_models(unsigned int p_states,unsigned long *p_states_list)
 			coefficients[i][ref].available = 0;
 		}
 	}
-	//TODO: aquí falta algo
 
 	// Projections allocation
 	projections = (projection_t *) malloc(sizeof(projection_t) * p_states);
