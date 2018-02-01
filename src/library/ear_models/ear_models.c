@@ -150,7 +150,7 @@ void init_power_models(unsigned int p_states,unsigned long *p_states_list)
 		}
 
 		// If other king of error during the reading
-		if (state < 0) {
+		if (state == EAR_ALLOC_ERROR || state == EAR_READ_ERROR) {
 			ear_verbose(0, "EAR: Error while reading coefficients for %s (%s) (%d)\n",
 						coeff_file_fn, state);
 			exit(1);
