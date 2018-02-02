@@ -11,5 +11,5 @@ int ear_use_turbo = USE_TURBO;
 char ear_app_name[MAX_APP_NAME];
 char ear_node_name[MAX_APP_NAME];
 int EAR_VERBOSE_LEVEL = 0;
-extern int ear_papi_init;
+int ear_papi_init;
 char ear_policy_name[MAX_APP_NAME];
