@@ -6,16 +6,11 @@
 #define EAR_STALL_EVENTS_SETS 1
 #define EAR_STALL_EVENTS 2
 
-
-int stall_event_sets[EAR_STALL_EVENTS_SETS];
-long long stall_acum_values[EAR_STALL_EVENTS];
-long long stall_values[EAR_STALL_EVENTS_SETS][EAR_STALL_EVENTS];
-
-int ear_stall_perf_event_cid;
-PAPI_option_t stall_attach_opt[EAR_STALL_EVENTS_SETS];
-
-
-
+static int stall_event_sets[EAR_STALL_EVENTS_SETS];
+static long long stall_acum_values[EAR_STALL_EVENTS];
+static long long stall_values[EAR_STALL_EVENTS_SETS][EAR_STALL_EVENTS];
+static PAPI_option_t stall_attach_opt[EAR_STALL_EVENTS_SETS];
+static int ear_stall_perf_event_cid;
 
 void init_stall_metrics()
 {

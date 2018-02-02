@@ -1,23 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <papi.h>
-#include <hardware.h>
-#include <environment.h>
 #include <ear_verbose.h>
+#include <environment.h>
+#include <hardware.h>
 
 #define EAR_FLOPS_EVENTS_SETS 2
 #define EAR_FLOPS_EVENTS 4
 #define SP_OPS 0
 #define DP_OPS 1
 
-int ear_flops_event_sets[EAR_FLOPS_EVENTS_SETS];
-long long ear_flops_acum_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
-long long ear_flops_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
-
-extern int ear_papi_init;
-int ear_flops_perf_event_cid;
-PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
-int flops_supported=0;
+static int ear_flops_event_sets[EAR_FLOPS_EVENTS_SETS];
+static long long ear_flops_acum_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
+static long long ear_flops_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
+static PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
+static int ear_flops_perf_event_cid;
+static int flops_supported = 0;
 
 extern int (*my_omp_get_max_threads)(void);
 

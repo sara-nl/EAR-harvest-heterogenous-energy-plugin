@@ -7,36 +7,31 @@
 
 */
 
-#include <cpufreq.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
-#include <papi.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
 
-#include <ear_verbose.h>
+#include <cpufreq.h>
+#include <papi.h>
+
 #include <ear_daemon_client.h>
+#include <ear_verbose.h>
+#include <externs.h>
+#include <types.h>
 
-#define _GNU_SOURCE
-#define __USE_GNU
-
-
-
-unsigned int ear_num_cpus;
-unsigned long *ear_cpufreq;
-unsigned int ear_num_p_states=0;
-unsigned long *ear_cpufreq_pstates;
-unsigned long ear_nominal_freq;
-const PAPI_hw_info_t *ear_cpufreq_hwinfo;
-extern int ear_papi_init;
-extern unsigned long ear_frequency;
-struct cpufreq_policy *current_policy;
-struct cpufreq_policy prev_policy;
-extern int ear_my_rank;
+static uint ear_num_cpus;
+static uint ear_num_p_states = 0;
+static ulong *ear_cpufreq;
+static ulong *ear_cpufreq_pstates;
+static ulong ear_nominal_freq;
+static const PAPI_hw_info_t *ear_cpufreq_hwinfo;
+static struct cpufreq_policy *current_policy;
+static struct cpufreq_policy prev_policy;
 
 unsigned int ear_get_pstate(unsigned long f)
 {

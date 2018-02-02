@@ -6,16 +6,11 @@
 #define EAR_BASIC_EVENTS_SETS 1
 #define EAR_BASIC_EVENTS 2
 
-
-int basic_event_sets[EAR_BASIC_EVENTS_SETS];
-long long basic_acum_values[EAR_BASIC_EVENTS];
-long long basic_values[EAR_BASIC_EVENTS_SETS][EAR_BASIC_EVENTS];
-
-int ear_basic_perf_event_cid;
-PAPI_option_t basic_attach_opt[EAR_BASIC_EVENTS_SETS];
-
-
-
+static int basic_event_sets[EAR_BASIC_EVENTS_SETS];
+static long long basic_acum_values[EAR_BASIC_EVENTS];
+static long long basic_values[EAR_BASIC_EVENTS_SETS][EAR_BASIC_EVENTS];
+static PAPI_option_t basic_attach_opt[EAR_BASIC_EVENTS_SETS];
+static int ear_basic_perf_event_cid;
 
 void init_basic_metrics()
 {

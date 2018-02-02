@@ -33,7 +33,6 @@ unsigned long ear_my_frequency();
 unsigned long ear_max_f();
 //Returns the minimum frequency in the current node
 unsigned long ear_min_f();
-#define NOMINAL_F0 ear_get_nominal_frequency()
 // Returns the pstate associated with a given frequency
 unsigned int ear_get_pstate(unsigned long f);
 #else

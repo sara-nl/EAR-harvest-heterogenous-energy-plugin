@@ -11,19 +11,19 @@
 #include <stdlib.h>
 #include <ear_verbose.h>
 #include <hardware.h>
+#include <externs.h>
 
 //#define AVX_METRICS
-#define EAR_TURBO_EVENTS_SETS 1
-#define EAR_TURBO_EVENTS 1
-#define AVX_ALL 0
-int ear_TurboEventSets[EAR_TURBO_EVENTS_SETS];
-long long ear_turbo_acum_values[EAR_TURBO_EVENTS_SETS][EAR_TURBO_EVENTS];
-long long ear_turbo_values[EAR_TURBO_EVENTS_SETS][EAR_TURBO_EVENTS];
+#define EAR_TURBO_EVENTS_SETS 	1
+#define EAR_TURBO_EVENTS 		1
+#define AVX_ALL 				0
 
-extern int ear_papi_init;
-int ear_turbo_perf_event_cid;
-PAPI_attach_option_t turbo_attach_opt[EAR_TURBO_EVENTS_SETS];
-int metrics_avx_supported=0;
+static int ear_TurboEventSets[EAR_TURBO_EVENTS_SETS];
+static long long ear_turbo_acum_values[EAR_TURBO_EVENTS_SETS][EAR_TURBO_EVENTS];
+static long long ear_turbo_values[EAR_TURBO_EVENTS_SETS][EAR_TURBO_EVENTS];
+static PAPI_attach_option_t turbo_attach_opt[EAR_TURBO_EVENTS_SETS];
+static int ear_turbo_perf_event_cid;
+static int metrics_avx_supported=0;
 
 void init_turbo_metrics()
 {

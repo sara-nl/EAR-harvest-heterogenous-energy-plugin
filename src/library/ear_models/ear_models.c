@@ -32,7 +32,6 @@
 #define NOMINAL_CPI(app)    app->CPI
 
 // Extern
-char ear_policy_name[MAX_APP_NAME];
 int power_model_policy = MIN_ENERGY_TO_SOLUTION;
 double performance_penalty = PERFORMANCE_PENALTY;
 double performance_gain = PERFORMANCE_GAIN;

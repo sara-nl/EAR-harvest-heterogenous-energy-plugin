@@ -28,6 +28,9 @@
 static application_t *apps;
 static ulong current_freq;
 
+// TODO: remove
+extern double performance_penalty_th; // (-> ear_models <-)
+
 // This function initilices application information
 void db_init(unsigned int whole_app, char *app_name) {
     const char *ear_DB_name;

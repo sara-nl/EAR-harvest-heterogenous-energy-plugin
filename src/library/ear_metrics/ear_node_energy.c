@@ -7,31 +7,30 @@
 
 */
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <ear_daemon_client.h>
-
 #include <ear_verbose.h>
+
+#define MAX_LINE_LEN 	255
+#define SYSFS_PATH_MAX 	255
+#define ENERGY1_INPUT 	0
+#define NODE_ENERGY
+
 #ifndef PATH_TO_AEM
 #define PATH_TO_AEM "/sys/devices/platform/aem.0/"
 #endif
-#define MAX_LINE_LEN 255
-#define SYSFS_PATH_MAX 255
-#define ENERGY1_INPUT 0
-
-
-#define NODE_ENERGY
 #ifdef NODE_ENERGY
 static unsigned long *energy_init,*energy_end,*acum_energy;
 #endif
-unsigned ear_ibmaem=1;
+static unsigned ear_ibmaem=1;
 
 /* helper function to read file from /sys into given buffer */
 /* fname is a relative path under "aem.0" dir */
