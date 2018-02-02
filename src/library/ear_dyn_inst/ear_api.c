@@ -54,8 +54,7 @@ unsigned long ear_frequency;
 unsigned long EAR_default_frequency;
 unsigned int EAR_default_pstate;
 unsigned long ear_current_freq;
-int ear_current_cpuid;
-unsigned int ear_resources;
+uint ear_resources;
 char *ear_tmp;
 int ear_whole_app=0;
 int ear_use_turbo=USE_TURBO;
@@ -77,22 +76,8 @@ FILE *stdtrace,*stdtracebin;
 #endif
 int EAR_VERBOSE_LEVEL=0;
 
-# define __USE_GNU
-# include <dlfcn.h>
-# undef  __USE_GNU
-int (*my_omp_get_max_threads)(void) = NULL;
 
 
-int check_threads()
-{
-        my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_max_threads");
-	if (my_omp_get_max_threads==NULL){
-		my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_max_threads");
-		if (my_omp_get_max_threads==NULL) return 0;
-		else return 1;
-	} 
-	else return 1;
-}
 
 void ear_init(){
 	char file_name[BUFFSIZE],node_name[BUFFSIZE],*ear_summary_filename,my_name[BUFFSIZE];
@@ -121,7 +106,6 @@ void ear_init(){
 	}
 	ear_debug(2,"EAR Starting initialization\n");	
 	ear_whole_app=get_ear_learning_phase();
-	ear_verbose(3,"EAR using %d levels in dynais with %d of window size \n",get_ear_dynais_levels(),get_ear_dynais_window_size());
    	dynais_init(get_ear_dynais_window_size(),get_ear_dynais_levels());
 
 	gethostname(node_name,sizeof(node_name));
@@ -129,16 +113,12 @@ void ear_init(){
 	my_id=get_ear_local_id();
 	if (my_id<0){
 		num_nodes=get_ear_num_nodes();
-        ppnode=my_size/num_nodes;
-        my_id=(ear_my_rank%ppnode);
+        	ppnode=my_size/num_nodes;
+        	my_id=(ear_my_rank%ppnode);
 	}
 	if (my_id) return;
-	if (check_threads()){
-		ear_verbose(2,"EAR: OpenMP is used\n");
-		ear_verbose(1,"EAR: OpenMP max_threads %d\n",my_omp_get_max_threads());
-	}else{
-		ear_verbose(2,"EAR: OpenMP is not used\n");
-	}
+	ear_verbose(1,"EAR: Total resources %d\n",get_total_resources());
+	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",get_ear_dynais_levels(),get_ear_dynais_window_size());
 
 #ifdef DYNAIS_TRACE
 	if (ear_my_rank==0){
@@ -170,14 +150,13 @@ void ear_init(){
 	
 	db_get_app_name(ear_app_name);
     	states_begin_job(my_id, NULL, ear_app_name);
-	ear_current_cpuid=getCPU_ID();// this function needs papi JORDI_NEW
-	ear_current_freq=ear_cpufreq_get(ear_current_cpuid);	
+	ear_current_freq=ear_cpufreq_get(0);	
 	init_power_policy();
 	init_power_models(ear_get_num_p_states(),ear_get_pstate_list());
 	// Application info
 	db_init(ear_whole_app,ear_app_name);
     	if(init_dc_energy()<0){
-    		ear_verbose(0,"EAR:: Node Energy can not be measured, AEM is not loaded, exiting\n");
+    	    ear_verbose(0,"EAR:: Node Energy can not be measured, AEM is not loaded, exiting\n");
     	    exit(1) ;
     	}else{
 		ear_debug(1,"EAR: init_dc_energy ok!\n");
@@ -193,7 +172,7 @@ void ear_init(){
 	ear_verbose(1,"______________EAR loaded___________________\n");
 }
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest){
-	unsigned ear_status;
+	unsigned int ear_status;
 	int ret;
 	char men[128];
 	if (my_id) return;
@@ -202,7 +181,7 @@ if (!ear_whole_app){
 	ear_debug(3,"EAR(%s) EAR executing before an MPI Call\n",__FILE__);
 	// Create the event for DynAIS
 	unsigned long ear_event = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
-    unsigned int ear_size;
+    	unsigned int ear_size;
 	unsigned int ear_level;
 	unsigned long trace_data[5];
 // DYNAIS_TRACE generates a text trace file with values used as dynais imput, it is used for dynais evaluation and optimization
@@ -223,6 +202,7 @@ if (!ear_whole_app){
         begin_ov=PAPI_get_real_usec();
 #endif
 	// This is key to detect periods
+	ear_verbose(0,"event %lu\n",ear_event);
         ear_status=dynais(ear_event,&ear_size,&ear_level);
 #ifdef MEASURE_DYNAIS_OV
         end_ov=PAPI_get_real_usec();
