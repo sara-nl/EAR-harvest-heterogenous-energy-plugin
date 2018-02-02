@@ -1,26 +1,15 @@
-// ear_db
-extern char ear_node_name[1024]; //ear_states
-extern unsigned long EAR_default_frequency; // ear_models
-extern int ear_my_rank; // ear_models ear_states ear_cpufreq ear_papi
+#define MAX_APP_NAME 1024
 
-// ear_models
-extern char *ear_app_name[1024]; // ear_states ear_papi
-extern unsigned long ear_frequency; // ear_states ear_cpufreq ear_papi
+extern char ear_node_name[MAX_APP_NAME];
+extern char ear_app_name[MAX_APP_NAME];
+extern char ear_policy_name[MAX_APP_NAME];
+extern unsigned long EAR_default_frequency;
+extern unsigned long ear_frequency;
 extern unsigned int EAR_default_pstate;
-extern int ear_use_turbo; // ear_papi
-extern int ear_whole_app; // ear_papi
-
-// ear_states
-extern int report;
-
-// ear_cpufreq
-extern int ear_papi_init; // ear_flops_metrics
-
-// ear_gui
-extern char ear_policy_name[1024]; // ear_papi
-
-// ear_papi
 extern unsigned int ear_resources;
-
-// ear_papi
 extern int power_model_policy;
+extern int ear_use_turbo;
+extern int ear_whole_app;
+extern int ear_papi_init;
+extern int ear_my_rank;
+extern int report;
