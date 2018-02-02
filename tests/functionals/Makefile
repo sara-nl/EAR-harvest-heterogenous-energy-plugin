@@ -5,7 +5,8 @@ CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
 
 BINARIES = bandwith_monitor       \
            eard_monitor           \
-           freeipmi_overhead
+           freeipmi_overhead      \
+           simd_power_metrics_openmp
 
 ######## RULES
 
@@ -27,7 +28,7 @@ freeipmi_overhead: freeipmi_overhead.c
 simd_tests.o:simd_tests.c
 	/opt/gcc/7.2.0/bin/gcc $(CFLAGS) -O0 -malign-double -march=native -c simd_tests.c
 
-simd_power_metrics_openmp:simd_power_metrics_openmp.c simd_tests.o
+simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o
 	icc -qopenmp -axCORE_AVX512 $(CFLAGS) $(PAPI_CFLAGS) -o simd_power_metrics_openmp simd_power_metrics_openmp.c \
         $(PAPI_LDFLAGS) $(SIMD_CFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) simd_tests.o \
 	-I$(ROOTDIR)/src/library/ \
