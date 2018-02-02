@@ -1,9 +1,10 @@
+#include <papi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <papi.h>
 #include <ear_verbose.h>
 #include <environment.h>
 #include <hardware.h>
+#include <externs.h>
 
 #define EAR_FLOPS_EVENTS_SETS 2
 #define EAR_FLOPS_EVENTS 4

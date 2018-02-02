@@ -1,10 +1,10 @@
 // ear_db
-extern char ear_node_name[MAX_APP_NAME]; //ear_states
+extern char *ear_node_name; //ear_states
 extern unsigned long EAR_default_frequency; // ear_models
 extern int ear_my_rank; // ear_models ear_states ear_cpufreq ear_papi
 
 // ear_models
-extern char ear_app_name[MAX_APP_NAME]; // ear_states ear_papi
+extern char *ear_app_name; // ear_states ear_papi
 extern unsigned long ear_frequency; // ear_states ear_cpufreq ear_papi
 extern unsigned int EAR_default_pstate;
 extern int ear_use_turbo; // ear_papi
