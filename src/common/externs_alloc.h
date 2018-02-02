@@ -1,3 +1,5 @@
+#define MAX_APP_NAME    1024
+
 int report = 0;
 int ear_my_rank;
 unsigned long ear_frequency;
