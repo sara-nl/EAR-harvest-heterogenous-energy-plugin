@@ -49,8 +49,10 @@ void init_power_policy()
 	int min_p_state=0;
 	unsigned long def_freq;
 
-	ear_debug(2,"EAR(%s): EAR_init_power_policy\n",__FILE__);
+	ear_verbose(2,"EAR(%s): EAR_init_power_policy\n",__FILE__);
+	
 	power_model_policy=get_ear_power_policy();
+	
 	switch(power_model_policy){
 		case MIN_ENERGY_TO_SOLUTION:
 			strcpy(ear_policy_name,"min_energy");
@@ -64,6 +66,7 @@ void init_power_policy()
 			strcpy(ear_policy_name,"monitoring_only");
 				break;
 	}
+
 	reset_freq_opt=get_ear_reset_freq();
 	EAR_default_pstate=get_ear_p_state();
 	if (EAR_default_pstate>=ear_get_num_p_states()) EAR_default_pstate=DEFAULT_P_STATE;
