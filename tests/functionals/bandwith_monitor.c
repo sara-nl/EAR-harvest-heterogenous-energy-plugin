@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <ear_uncores.h>
 #include <hardware.h>
-#include <config.h>
+#include <types.h>
 
 int EAR_VERBOSE_LEVEL = 4;
 static char _buffer[32];
