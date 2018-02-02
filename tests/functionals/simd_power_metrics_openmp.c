@@ -10,10 +10,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <assert.h>
-#include <papi.h>
-
 #include <emmintrin.h> // -msse2
 #include <immintrin.h> // -mavx -mfma -mfavx512
+#include <papi.h>
+
 #include <ear_rapl_metrics.h>
 #include <ear_metrics/ear_flops_metrics.h>
 #include <ear_metrics/ear_stalls.h>
@@ -21,7 +21,7 @@
 #include <ear_frequency.h>
 #include <ear_turbo.h>
 #include <hardware.h>
-#include <config.h>
+#include <types.h>
 
 #define INST_ITER   64.0
 #define F           2400000
@@ -41,12 +41,13 @@ int open_csv()
 
     if (fd < 0)
     {
-        #define OPTIONS = O_WRONLY | O_CREAT
-        #define PRIVILEGES = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
-        fd = open(FILE, options, privileges);
+        #define OPTIONS O_WRONLY | O_CREAT
+        #define PRIVILEGES S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+        fd = open(FILE, OPTIONS, PRIVILEGES);
 
-        if (fd < 0) {
-            fprintf(stderr,"Error creating csv file %s\n",strerror(errno));
+        if (fd < 0)
+	{
+            fprintf(stderr, "Error creating csv file %s\n", strerror(errno));
             exit(1);
         }
 
