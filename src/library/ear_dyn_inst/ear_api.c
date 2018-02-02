@@ -7,16 +7,16 @@
 
 */
 
-#include <stdio.h>
 #include <mpi.h>
+#include <time.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <time.h>
 #include <sys/time.h>
 // EAR includes
 #include <ear_dyn_inst/MPI_types.h>
@@ -30,58 +30,38 @@
 #include <ear_gui/ear_gui.h>
 #include <ear_states/ear_states.h>
 #include <ear_verbose.h>
+
+#include <externs_alloc.h>
 #include <environment.h>
 #include <states.h>
 #include <types.h>
 
 #define BUFFSIZE 128
-unsigned int ear_loop_size;
-unsigned long int app_eru_init,app_eru_end,app_eru_diff;
 
-int report=0;
-// long long pmpi_app_begin_time,pmpi_app_end_time,pmpi_app_total_time;
-struct timeval pmpi_app_begin_time, pmpi_app_end_time;
-long long pmpi_app_total_time;
+static unsigned long int app_eru_init, app_eru_end, app_eru_diff;
+static unsigned int ear_loop_size;
+static struct timeval pmpi_app_begin_time, pmpi_app_end_time;
+static long long pmpi_app_total_time;
+static int period;
+static int my_id,my_size;
+static int ear_iterations = 0;
+static unsigned long ear_current_freq;
+static int ear_current_cpuid;
 
-
-int period,new_period; 
-int my_id,my_size;
-int ear_my_rank;
-int ear_iterations=0,min_period=10;
-const char *ear_out;
-const char *ear_iters;
-unsigned long ear_frequency;
-unsigned long EAR_default_frequency;
-unsigned int EAR_default_pstate;
-unsigned long ear_current_freq;
-int ear_current_cpuid;
-unsigned int ear_resources;
-char *ear_tmp;
-int ear_whole_app=0;
-int ear_use_turbo=USE_TURBO;
-char ear_app_name[MAX_APP_NAME];
-char ear_node_name[MAX_APP_NAME];
-char ear_lock_file[BUFFSIZE];
-int ear_lock_fd;
-unsigned long ear_avg_turbo_freq;
-int ear_app_id;
-struct App_info *ear_my_app_info;
-//#define MEASURE_DYNAIS_OV
+// #define MEASURE_DYNAIS_OV
+// #define DYNAIS_TRACE
 #ifdef MEASURE_DYNAIS_OV
-long long begin_ov,end_ov,ear_acum=0;
-unsigned int calls=0;
+static long long begin_ov, end_ov, ear_acum = 0;
+static unsigned int calls = 0;
 #endif
-//#define DYNAIS_TRACE
 #ifdef DYNAIS_TRACE
-FILE *stdtrace,*stdtracebin;
+static FILE *stdtrace,*stdtracebin;
 #endif
-int EAR_VERBOSE_LEVEL=0;
 
 # define __USE_GNU
 # include <dlfcn.h>
 # undef  __USE_GNU
 int (*my_omp_get_max_threads)(void) = NULL;
-
 
 int check_threads()
 {
@@ -97,7 +77,7 @@ int check_threads()
 void ear_init(){
 	char file_name[BUFFSIZE],node_name[BUFFSIZE],*ear_summary_filename,my_name[BUFFSIZE];
 	char tmp[BUFFSIZE];
-	char *freq,*ear_tmp;
+	char *freq;
 	int size,node_name_length;
 	int local_id;	
 	unsigned long optimal_freq;
