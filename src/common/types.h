@@ -1,6 +1,8 @@
 #ifndef _EAR_TYPES
 #define _EAR_TYPES
 
+#include <linux/limits.h>
+
 typedef unsigned char uchar;
 typedef unsigned long long ull;
 typedef unsigned long ulong;
@@ -42,6 +44,50 @@ typedef struct App_info
     double Gflops;
     double EDP;
 } application_t;
+
+
+/*#define GENERIC_NAME	NAME_MAX
+#define POLICY_NAME		32
+#define FLOPS_EVENTS    16
+
+typedef struct application
+{
+	char node_id[GENERIC_NAME];
+	char user_id[GENERIC_NAME];
+	char app_id[GENERIC_NAME];
+	char job_id[GENERIC_NAME];
+	char policy[POLICY_NAME];
+	double DC_power;
+	double DRAM_power;
+	double PCK_power;
+	double EDP;
+	double GBS;
+	double TPI;
+	double CPI;
+	double policy_th;
+	double Gflops;
+	double time;
+	double dyn1;
+	double dyn2;
+	unsigned long long FLOPS[FLOPS_EVENTS];
+	unsigned long long L1_misses;
+	unsigned long long L2_misses;
+	unsigned long long L3_misses;
+	unsigned long long instructions;
+	unsigned long long cycles;
+	unsigned int avg_f;
+	unsigned int def_f;
+	unsigned int procs;
+	unsigned int dyn4; // 64 bit alignment
+	long long dyn5;
+	long long dyn6;
+	void ext1;
+	void ext2;
+	void ext3;
+	void ext4;
+	void ext5;
+	void ext6;
+} application_t;*/
 
 typedef struct Coefficients_info
 {
