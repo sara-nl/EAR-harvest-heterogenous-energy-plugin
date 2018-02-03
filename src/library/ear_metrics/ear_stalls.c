@@ -24,6 +24,7 @@ void init_stall_metrics()
 			fprintf(stderr,"Basic metrics: Error when initializing PAPI\n");
         		exit(1);
     		}    
+		PAPI_multiplex_init();
 	}
 	// Here , papi is initialized
 

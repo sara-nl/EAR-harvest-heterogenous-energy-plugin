@@ -14,9 +14,9 @@
 #include <externs.h>
 
 //#define AVX_METRICS
-#define EAR_TURBO_EVENTS_SETS 	1
-#define EAR_TURBO_EVENTS 		1
-#define AVX_ALL 				0
+#define EAR_TURBO_EVENTS_SETS   1
+#define EAR_TURBO_EVENTS        1
+#define AVX_ALL                 0
 
 static int ear_TurboEventSets[EAR_TURBO_EVENTS_SETS];
 static long long ear_turbo_acum_values[EAR_TURBO_EVENTS_SETS][EAR_TURBO_EVENTS];
@@ -33,15 +33,12 @@ void init_turbo_metrics()
 	int sets;
 	int events;
 	// PAPI should be already initialized, but just in case
-	if (!ear_papi_init){
-		if (PAPI_is_initialized()==PAPI_NOT_INITED){
+	if (PAPI_is_initialized()==PAPI_NOT_INITED){
     		retval=PAPI_library_init(PAPI_VER_CURRENT );
     		if ( retval != PAPI_VER_CURRENT ) {
         		ear_verbose(0,"EAR(%s): Error intializing the PAPI library.Exiting:%s\n",__FILE__,PAPI_strerror(retval));
-        		exit(1);
+        	exit(1);
     		}    
-		}
-		ear_papi_init=1;
 	}
 	// Here , papi is initialized
 

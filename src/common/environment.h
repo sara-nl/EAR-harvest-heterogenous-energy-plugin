@@ -78,5 +78,7 @@ void ear_print_lib_environment();
 void ear_daemon_environment();
 void ear_print_daemon_environment();
 
+int get_total_resources();
+
 #else
 #endif

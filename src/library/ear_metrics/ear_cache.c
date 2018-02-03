@@ -3,6 +3,7 @@
 #include <papi.h>
 #include <hardware.h>
 #include <ear_metrics/ear_cache.h>
+#include <states.h>
 
 #define EAR_CACHE_EVENTS_SETS 3
 #define EAR_CACHE_EVENTS 2
@@ -16,7 +17,7 @@ static long long cache_values[EAR_CACHE_EVENTS_SETS][EAR_CACHE_EVENTS];
 static PAPI_option_t cache_attach_opt[EAR_CACHE_EVENTS_SETS];
 static int ear_cache_perf_event_cid;
 
-void init_cache_metrics()
+int init_cache_metrics()
 {
 	int retval;
 	int sets;
@@ -26,15 +27,16 @@ void init_cache_metrics()
     		retval=PAPI_library_init(PAPI_VER_CURRENT );
     		if ( retval != PAPI_VER_CURRENT ) {
 			fprintf(stderr,"Cache metrics: Error when initializing PAPI\n");
-        		exit(1);
+			return EAR_ERROR;
     		}    
+		PAPI_multiplex_init();
 	}
 	// Here , papi is initialized
 
 	ear_cache_perf_event_cid=PAPI_get_component_index("perf_event");
    	 if (ear_cache_perf_event_cid<0){
    	     fprintf(stderr,"cache_metrics: perf_event component not found.Exiting:%s\n",PAPI_strerror(ear_cache_perf_event_cid));
-   	     exit(1);
+	    return EAR_ERROR;
    	 }
 
 	for (sets=0;sets<EAR_CACHE_EVENTS_SETS;sets++){
@@ -86,6 +88,7 @@ void init_cache_metrics()
 			break;
 		}
 		}
+		return EAR_SUCCESS;
 	
 }
 void reset_cache_metrics()

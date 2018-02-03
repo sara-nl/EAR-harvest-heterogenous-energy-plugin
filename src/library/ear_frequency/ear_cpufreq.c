@@ -60,17 +60,14 @@ void ear_cpufreq_init()
 	char nodename[128];
 	char ear_commreq[128],ear_commack[128];
 	ear_verbose(4,"EAR: ear_cpufreq_init\n");
-    //Init the PAPI library
-    if (!ear_papi_init){
-		if (PAPI_is_initialized()==PAPI_NOT_INITED){
+    	//Init the PAPI library
+	if (PAPI_is_initialized()==PAPI_NOT_INITED){
         	retval=PAPI_library_init(PAPI_VER_CURRENT );
         	if ( (retval != PAPI_VER_CURRENT ) && (retval>0)){
         		ear_verbose(0,"EAR: Error intializing the PAPI library init %d current %d.Exiting\n",retval,PAPI_VER_CURRENT);
-        	    exit(1);
+        		exit(1);
         	}
-		}
-        ear_papi_init=1;
-	}                                    
+	}
 	ear_cpufreq_hwinfo= PAPI_get_hardware_info();
     if (ear_cpufreq_hwinfo==NULL){
         ear_verbose(0,"EAR: ERROR PAPI_get_hardware_info returns NULL.Exiting\n");
