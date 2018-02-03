@@ -4,8 +4,31 @@
     Copyright (C) 2017  
 	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
     	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
 */
+
+#include <string.h>
+#include <papi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#define _GNU_SOURCE
+#define __USE_GNU
+#include <sched.h>
+#include <errno.h>
+
+#include <ear_daemon_client.h>
+#include <ear_db/ear_db.h>
+#include <ear_metrics/ear_papi.h>
+#include <ear_metrics/ear_basic.h>
+#include <ear_metrics/ear_turbo_metrics.h>
+#include <ear_metrics/ear_flops_metrics.h>
+#include <ear_metrics/ear_cache.h>
+#include <ear_models/ear_models.h>
+#include <ear_verbose.h>
+#include <environment.h>
+#include <externs.h>
+#include <states.h>
+#include <types.h>
 
 #define MAX_SETS 			1
 #define EVENT_SET_PRESET 	0 //perf component
@@ -60,7 +83,9 @@ static int flops_events;
 static int *flops_weigth;
 static long long total_flops;
 static FILE* fd_extra;
+static int fops_supported;
 #endif
+
 
 long long metrics_usecs_diff(long long end,long long init)
 {
@@ -76,35 +101,20 @@ long long metrics_usecs_diff(long long end,long long init)
 
 void metrics_get_app_name(char *app_name)
 {
+	int retval;
 	const PAPI_exe_info_t *prginfo = NULL;
-	if (!ear_papi_init){
-		ear_debug(1,"EAR(%s): Warning, PAPI not initialized yet,using DEFAULT as application name\n",__FILE__);
-		sprintf(app_name,"default");
-		return;
-	}
+        if (PAPI_is_initialized()==PAPI_NOT_INITED){
+                retval=PAPI_library_init(PAPI_VER_CURRENT );
+                if ( retval != PAPI_VER_CURRENT ) {
+                        ear_verbose(0,"EAR: Error intializing the PAPI library.Exiting\n");
+                        exit(1);
+                }
+        }
 	if ( ( prginfo = PAPI_get_executable_info( ) ) == NULL ){
 		ear_verbose(0,"EAR(%s): Executable info not available. Exiting\n",__FILE__);
 		exit(2 );
 	}
 	strcpy(app_name,prginfo->fullname );
-}
-
-int getCPU_ID()
-{
-	int cpuid=-1,c=0;
-	cpu_set_t cpu_set;
-	CPU_ZERO(&cpu_set);
-	sched_getaffinity(getpid(),sizeof(cpu_set_t), &cpu_set);
-
-	#define TOTAL_CPUS (ear_hwinfo->threads*ear_hwinfo->cores*ear_hwinfo->sockets)
-
-	while ((cpuid == -1) && (c < TOTAL_CPUS))
-	{
-		if (CPU_ISSET(c,&cpu_set)) cpuid=c;
-		else c++;
-	}
-
-	return cpuid;
 }
 
 
@@ -115,6 +125,7 @@ void ear_papi_error(int ret,char *m)
                 exit(2);
         }
 }
+// This function is not used at this moment
 void print_units(FILE* fd)
 {
 	int i;
@@ -145,7 +156,7 @@ void metrics_start()
 	start_basic_metrics();
 #ifdef EAR_EXTRA_METRICS
 	start_turbo_metrics();
-	start_flops_metrics();
+	if (fops_supported) start_flops_metrics();
 	start_cache_metrics();
 #endif
 }
@@ -228,18 +239,15 @@ int metrics_init(int my_id,int pid)
 	ear_cache_line_size=get_cache_line_size();
 	ear_debug(2,"EAR(%s):: Cache line size %d\n",__FILE__,ear_cache_line_size);
 	// Init the PAPI library
-	if (!ear_papi_init){
 	if (PAPI_is_initialized()==PAPI_NOT_INITED){
 		retval=PAPI_library_init(PAPI_VER_CURRENT );
 		if ( retval != PAPI_VER_CURRENT ) {
 			ear_verbose(0,"EAR: Error intializing the PAPI library.Exiting\n");
 			exit(1);
  		}
-	}
-	else{
-		ear_verbose(3,"EAR PAPI_library_init initialized\n");
-	}
-	ear_papi_init=1;
+		if ((ret=PAPI_multiplex_init())!=PAPI_OK){
+			ear_verbose(0,"EAR: WARNING PAPI_multiplex_init fails: %s\n",PAPI_strerror(ret));
+		}	
 	}
 	// Checking the perf_event component  component 
 	perf_cid=PAPI_get_component_index("perf_event");
@@ -269,13 +277,6 @@ int metrics_init(int my_id,int pid)
 	}
 	ear_node_size=ear_hwinfo->threads*ear_hwinfo->cores;
 	// This must be change to new EAR fucntion
-    	ear_cpu_id=getCPU_ID();
-#ifdef MULTIPLEX_PAPI
-	if ((ret=PAPI_multiplex_init())!=PAPI_OK){
-		ear_verbose(0,"EAR: WARNING PAPI_multiplex_init fails: %s\n",PAPI_strerror(ret));
-		papi_multiplex=0;
-	}	
-#endif
 	init_basic_metrics();
 	// We ask for uncore and rapl metrics sizes
 	uncore_size=ear_daemon_client_get_data_size_uncore();
@@ -300,26 +301,28 @@ int metrics_init(int my_id,int pid)
 	}
 #ifdef EAR_EXTRA_METRICS
 	init_turbo_metrics();
-	init_flops_metrics();
+	fops_supported=init_flops_metrics();
 	init_cache_metrics();
-	flops_events=get_number_fops_events();
-	flops_metrics=(long long *) malloc(sizeof(long long)*flops_events);
-	if (flops_metrics==NULL){
-		ear_verbose(0,"EAR: Error allocating memory for flops %s\n",strerror(errno));
-		exit(1);
+	if (fops_supported){ 
+		flops_events=get_number_fops_events();
+		flops_metrics=(long long *) malloc(sizeof(long long)*flops_events);
+		if (flops_metrics==NULL){
+			ear_verbose(0,"EAR: Error allocating memory for flops %s\n",strerror(errno));
+			exit(1);
+		}
+		flops_weigth=(int *)malloc(sizeof(int)*flops_events);
+		if (flops_weigth==NULL){
+			ear_verbose(0,"EAR: Error allocating memory for flops weigth %s\n",strerror(errno));
+			exit(1);
+		}
+		get_weigth_fops_instructions(flops_weigth);	
 	}
-	flops_weigth=(int *)malloc(sizeof(int)*flops_events);
-	if (flops_weigth==NULL){
-		ear_verbose(0,"EAR: Error allocating memory for flops weigth %s\n",strerror(errno));
-		exit(1);
-	}
-	get_weigth_fops_instructions(flops_weigth);	
-	sprintf(extra_filename,"%s.loop_info.csv",get_ear_app_name());
+	sprintf(extra_filename,"%s.loop_info.csv",ear_app_name);
 	fd_extra=fopen(extra_filename,"w+");
 	if (fd_extra==NULL){
 		ear_verbose(0,"EAR: File for extra metrics can not be created %s\n",strerror(errno));
 	}else{
-		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256,PERC_DP512\n");
+		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512\n");
 	}
 #endif
 	reset_values();
@@ -344,10 +347,10 @@ void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned
 
 	metrics_print_summary(whole_app, my_id, summary_file);
 	
-	#ifdef EAR_EXTRA_METRICS
+#ifdef EAR_EXTRA_METRICS
 	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
 	//print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
-	#endif
+#endif
 }
 
 struct App_info* set_metrics(int period,int iteration,long long *counters,long long iter_time,unsigned long int *eru,unsigned int N_iters)
@@ -386,7 +389,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	    	char *app_name;
 		long long total_fops_instructions;
 		
-		int i,new;
+		int i;
 		app_info=db_current_app();
 
 		// Compute signature=METRICS
@@ -394,9 +397,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		CPI=(double)acum_event_values[EAR_ACUM_TOT_CYC]/(double)acum_event_values[EAR_ACUM_TOT_INS];
 		GBS=((double)(acum_event_values[EAR_ACUM_LD_INS]*ear_cache_line_size)/(Seconds*(double)(1024*1024*1024)))+ ((double)(acum_event_values[EAR_ACUM_SR_INS]*ear_cache_line_size)/(Seconds*(double)(1024*1024*1024)));
 		TPI=(double)(acum_event_values[EAR_ACUM_LD_INS]+acum_event_values[EAR_ACUM_SR_INS])/(double)(acum_event_values[EAR_ACUM_TOT_INS]/ear_cache_line_size);
-		GIBS=(double)ear_node_size*(double)ear_frequency/(CPI*1000000);
-		GFLOPS=gflops(app_exec_time);
-		GIBS_ranks=(double)ear_resources*(double)ear_frequency/(CPI*1000000);
+		GFLOPS=gflops(app_exec_time,get_total_resources());
 		POWER_DC=(double)acum_energy/(double)(Seconds*1000000);
 		EDP=Seconds*Seconds*POWER_DC;
 		DRAM_POWER=(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/Seconds;
@@ -408,14 +409,16 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 #ifdef EAR_EXTRA_METRICS
 		get_cache_metrics(&l1,&l2,&l3);
 		fprintf(stderr,"_____________________EAR Extra Summary for %s ___________________\n",SIGNATURE.app_id);
-                get_total_fops(flops_metrics);
-                total_fops_instructions=0;
-                for (i=0;i<flops_events;i++) total_fops_instructions+=flops_metrics[i];
-                ear_verbose(1,"EAR: Total FP instructions %llu \n",total_fops_instructions);
-		ear_verbose(1,"EAR: AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
-		(double)flops_metrics[flops_events-1]/(double)total_fops_instructions);
-		ear_verbose(1,"EAR: Total instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
-		ear_verbose(1,"EAR: Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+		if (fops_supported){
+                	get_total_fops(flops_metrics);
+                	total_fops_instructions=0;
+                	for (i=0;i<flops_events;i++) total_fops_instructions+=flops_metrics[i];
+                	ear_verbose(1,"EAR: Total FP instructions %llu \n",total_fops_instructions);
+			ear_verbose(1,"EAR: AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
+			(double)flops_metrics[flops_events-1]/(double)total_fops_instructions);
+			ear_verbose(1,"EAR: Total instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
+			ear_verbose(1,"EAR: Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+		}
 		ear_verbose(1,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
 		fprintf(stderr,"_______________________________\n");
 #endif          
@@ -499,13 +502,11 @@ void acum_counters()
 		acum_event_values[EAR_ACUM_LD_INS]+=event_values_uncore[i+READS_OFFSET];
 		acum_event_values[EAR_ACUM_SR_INS]+=event_values_uncore[i+WRITES_OFFSET];
 	}
-
-	// Rapl metrics are returned first 1 value per socket per dram energy and later 1
-	// value per socket per energy package
+	
+	// Rapl metrics are returned first 1 value per socket per dram energy and later 1 value per socket per energy package
 	#define SOCKETS ear_hwinfo->sockets
 
-	for (s=0;s< SOCKETS;s++)
-	{
+	for (s=0;s< SOCKETS;s++){	
 		acum_event_values[EAR_ACUM_DRAM_ENER]+=event_values_rapl[DRAM_OFFSET*SOCKETS+s];
 		acum_event_values[EAR_ACUM_PCKG_ENER]+=event_values_rapl[PACK_OFFSET*SOCKETS+s];
 	}
@@ -607,7 +608,7 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
 		my_gflops,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
 
-	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256,PERC_DP512\n");
+	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512\n");
 	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
 	fprintf(fd_extra,"%lu;%.5lf;%.5lf;%.5lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->iter_time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
 	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->DC_power,my_sig->DRAM_power,my_sig->PCK_power);
