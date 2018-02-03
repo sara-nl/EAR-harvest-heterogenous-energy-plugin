@@ -7,123 +7,60 @@
 
 */
 
-#include <string.h>
-#include <papi.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#define _GNU_SOURCE
-#define __USE_GNU
-#include <sched.h>
-#include <errno.h>
+#define MAX_SETS 			1
+#define EVENT_SET_PRESET 	0 //perf component
+#define	EAR_PAPI_TOT_CYC 	0 // Total Cycles
+#define EAR_PAPI_TOT_INS 	1 // Total instructions
+#define READS_OFFSET 		0
+#define WRITES_OFFSET 		1
+#define DRAM_OFFSET 		0
+#define PACK_OFFSET 		1
+#define	EAR_ACUM_TOT_CYC 	0 // Total Cycles
+#define EAR_ACUM_TOT_INS 	1 // Total instructions
+#define EAR_ACUM_LD_INS 	2 //Load instructions
+#define EAR_ACUM_SR_INS 	3 //Store instructions
+#define EAR_ACUM_DRAM_ENER 	4 //ENERGY  reported by rapl (DRAM)
+#define EAR_ACUM_PCKG_ENER 	5 //ENERGY  reported by rapl (CORES+CACHE)
+#define TOTAL_EVENTS 		6
+#define NUM_EVENTS 			2
 
-#include <ear_daemon_client.h>
-#include <ear_db/ear_db.h>
-#include <ear_metrics/ear_papi.h>
-#include <ear_metrics/ear_basic.h>
-#include <ear_metrics/ear_turbo_metrics.h>
-#include <ear_metrics/ear_flops_metrics.h>
-#include <ear_metrics/ear_cache.h>
-#include <ear_models/ear_models.h>
-#include <ear_verbose.h>
-#include <environment.h>
-#include <states.h>
-#include <types.h>
+static long long start_time = 0, end_time = 0, iter_time = 0;
+static long long app_start_time = 0, app_end_time = 0, app_exec_time = 0;
+static int ear_cache_line_size;
+static int ear_node_size;
+static int num_ctrs;
 
-#ifdef EAR_EXTRA_METRICS
-long long l1,l2,l3;
-long long *flops_metrics;
-int flops_events;
-int *flops_weigth;
-long long total_flops;
-FILE* fd_extra;
-#endif
+static const PAPI_hw_info_t *ear_hwinfo = NULL;
+static long long events_values[MAX_SETS][NUM_EVENTS];
+static char units[NUM_EVENTS][PAPI_MIN_STR_LEN];
+static char event_names[NUM_EVENTS][PAPI_MIN_STR_LEN];
+static int data_type[NUM_EVENTS];
+static int perf_cid = -1;
 
-extern int ear_whole_app;
-extern int ear_use_turbo;
-extern int ear_frequency;
-extern int ear_resources;
-extern int ear_my_rank;
-extern int power_model_policy;
-extern char ear_policy_name[MAX_APP_NAME];
-extern char ear_app_name[MAX_APP_NAME];
-
-
-int ear_node_size;
-int ear_papi_init=0;
-int ear_cache_line_size;
-#define MIN_TIME_BETWEEN_CHANGES 1000000
-int num_ctrs;
-static long long start_time=0, end_time=0, iter_time=0;
-long long app_start_time=0,app_end_time=0,app_exec_time=0;
-int num_ctrs;
+static long long *event_values_uncore; // UNCORE
+static unsigned long uncore_size, uncore_elements;
+static long long *event_values_rapl; // RAPL
+static unsigned long rapl_size, rapl_elements;
+static long long acum_event_values[TOTAL_EVENTS]; // This is for all the metrics
+static long long last_iter_event_values[TOTAL_EVENTS];
+static long long diff_event_values[TOTAL_EVENTS];
+static long long acum_iter_time=0;
+static long long acum_energy=0;
+static int ear_cpu_id;
 
 #define MULTIPLEX_PAPI
 #ifdef MULTIPLEX_PAPI
 int papi_multiplex=1;
 #endif
 
-typedef union { long long ll; double dbl; } ll_dbl_union_t;
-
-#define MAX_SETS 1
-
-#define EVENT_SET_PRESET 0
-
-int EventSet[MAX_SETS];
-//perf component
-#define	EAR_PAPI_TOT_CYC 0 // Total Cycles
-#define EAR_PAPI_TOT_INS 1 // Total instructions
-#define READS_OFFSET 0
-#define WRITES_OFFSET 1
-#define DRAM_OFFSET 0
-#define PACK_OFFSET 1
-
-
-#define	EAR_ACUM_TOT_CYC 0 // Total Cycles
-#define EAR_ACUM_TOT_INS 1 // Total instructions
-#define EAR_ACUM_LD_INS 2 //Load instructions
-#define EAR_ACUM_SR_INS 3 //Store instructions
-#define EAR_ACUM_DRAM_ENER 4 //ENERGY  reported by rapl (DRAM)
-#define EAR_ACUM_PCKG_ENER 5 //ENERGY  reported by rapl (CORES+CACHE)
-
-#define TOTAL_EVENTS 6
-#define NUM_EVENTS 2
-
-// PAPI specific
-long long events_values[MAX_SETS][NUM_EVENTS];
-int event_codes[NUM_EVENTS];
-int data_type[NUM_EVENTS];
-char units[NUM_EVENTS][PAPI_MIN_STR_LEN];
-char event_names[NUM_EVENTS][PAPI_MIN_STR_LEN];
-PAPI_cpu_option_t cpu_opt[MAX_SETS];
-PAPI_granularity_option_t gran_opt[MAX_SETS];
-PAPI_domain_option_t domain_opt[MAX_SETS];
-PAPI_attach_option_t attach_opt[MAX_SETS];
-PAPI_event_info_t evinfo[NUM_EVENTS];
-const PAPI_hw_info_t *ear_hwinfo=NULL;
-int perf_cid=-1;
-
-// UNCORE
-long long *event_values_uncore;
-unsigned long uncore_size,uncore_elements;
-//RAPL
-long long *event_values_rapl;
-unsigned long rapl_size,rapl_elements;
-
-
-// This is for all the metrics
-long long acum_event_values[TOTAL_EVENTS];
-long long last_iter_event_values[TOTAL_EVENTS];
-long long diff_event_values[TOTAL_EVENTS];
-
-long long acum_iter_time=0;
-long long acum_energy=0;
-#define TOTAL_CPUS (ear_hwinfo->threads*ear_hwinfo->cores*ear_hwinfo->sockets)
-#define SOCKETS ear_hwinfo->sockets
-int ear_cpu_id;
-
-
-#define MY_MAX 281474976710655
+#ifdef EAR_EXTRA_METRICS
+static long long l1,l2,l3;
+static long long *flops_metrics;
+static int flops_events;
+static int *flops_weigth;
+static long long total_flops;
+static FILE* fd_extra;
+#endif
 
 long long metrics_usecs_diff(long long end,long long init)
 {
@@ -151,16 +88,22 @@ void metrics_get_app_name(char *app_name)
 	}
 	strcpy(app_name,prginfo->fullname );
 }
+
 int getCPU_ID()
 {
-        int cpuid=-1,c=0;
-        cpu_set_t cpu_set;
-        CPU_ZERO(&cpu_set);
-        sched_getaffinity(getpid(),sizeof(cpu_set_t), &cpu_set);
-        while((cpuid==-1)&& (c<TOTAL_CPUS)){
-                if (CPU_ISSET(c,&cpu_set)) cpuid=c;
-                else c++;
-        }
+	int cpuid=-1,c=0;
+	cpu_set_t cpu_set;
+	CPU_ZERO(&cpu_set);
+	sched_getaffinity(getpid(),sizeof(cpu_set_t), &cpu_set);
+
+	#define TOTAL_CPUS (ear_hwinfo->threads*ear_hwinfo->cores*ear_hwinfo->sockets)
+
+	while ((cpuid == -1) && (c < TOTAL_CPUS))
+	{
+		if (CPU_ISSET(c,&cpu_set)) cpuid=c;
+		else c++;
+	}
+
 	return cpuid;
 }
 
@@ -556,8 +499,13 @@ void acum_counters()
 		acum_event_values[EAR_ACUM_LD_INS]+=event_values_uncore[i+READS_OFFSET];
 		acum_event_values[EAR_ACUM_SR_INS]+=event_values_uncore[i+WRITES_OFFSET];
 	}
-	// Rapl metrics are returned first 1 value per socket per dram energy and later 1 value per socket per energy package
-	for (s=0;s< SOCKETS;s++){	
+
+	// Rapl metrics are returned first 1 value per socket per dram energy and later 1
+	// value per socket per energy package
+	#define SOCKETS ear_hwinfo->sockets
+
+	for (s=0;s< SOCKETS;s++)
+	{
 		acum_event_values[EAR_ACUM_DRAM_ENER]+=event_values_rapl[DRAM_OFFSET*SOCKETS+s];
 		acum_event_values[EAR_ACUM_PCKG_ENER]+=event_values_rapl[PACK_OFFSET*SOCKETS+s];
 	}
