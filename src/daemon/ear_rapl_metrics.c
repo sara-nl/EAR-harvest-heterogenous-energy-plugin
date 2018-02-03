@@ -13,7 +13,7 @@
 #include <ear_verbose.h>
 #include <ear_rapl_metrics.h>
 
-#define EAR_EAR_EVENTS_SETS 1
+#define EAR_RAPL_EVENTS_SETS 1
 #define CORE_AND_DRAM_SET 0
 #define DRAM0 0
 #define DRAM1 1
@@ -22,13 +22,13 @@
 
 #define MAX_RAPL_EVENTS 64
 
-int ear_RAPLEventSets[EAR_EAR_EVENTS_SETS];
-long long ear_rapl_acum_values[EAR_EAR_EVENTS_SETS][EAR_RAPL_EVENTS];
-long long ear_rapl_values[EAR_EAR_EVENTS_SETS][EAR_RAPL_EVENTS];
+int ear_RAPLEventSets[EAR_RAPL_EVENTS_SETS];
+long long ear_rapl_acum_values[EAR_RAPL_EVENTS_SETS][EAR_RAPL_EVENTS];
+long long ear_rapl_values[EAR_RAPL_EVENTS_SETS][EAR_RAPL_EVENTS];
 char ear_rapl_units[MAX_RAPL_EVENTS][PAPI_MIN_STR_LEN];
 
 int ear_rapl_perf_event_cid;
-PAPI_attach_option_t rapl_attach_opt[EAR_EAR_EVENTS_SETS];
+PAPI_attach_option_t rapl_attach_opt[EAR_RAPL_EVENTS_SETS];
 const PAPI_component_info_t *ear_rapl_cmpinfo = NULL;
 int ear_rapl_num_events=0;
 
@@ -41,13 +41,15 @@ int init_rapl_metrics()
    	PAPI_granularity_option_t gran_opt;
    	PAPI_domain_option_t domain_opt;
 	// PAPI initialization
-    retval=PAPI_library_init(PAPI_VER_CURRENT );
-    if ( retval != PAPI_VER_CURRENT ) {
-       	ear_verbose(0,"ear_daemon_rapl:: Error intializing the PAPI library. PAPI_library_init returns %d and current version is %d\n",
-		retval,PAPI_VER_CURRENT);
-		return -1;
-    }    
-	// Here , papi is initialized
+        if (PAPI_is_initialized()==PAPI_NOT_INITED){
+                retval=PAPI_library_init(PAPI_VER_CURRENT );
+                if ( retval != PAPI_VER_CURRENT ) {
+			ear_verbose(0,"eard (rapl):Error initializing RAPL \n");
+                }
+                PAPI_multiplex_init();
+        }
+        // Here , papi is initialized
+
 
 	ear_rapl_perf_event_cid=PAPI_get_component_index("rapl");
    	if (ear_rapl_perf_event_cid<0){
@@ -93,15 +95,15 @@ int init_rapl_metrics()
 	ear_verbose(2,"ear_daemon_rapl:: %d RAPL events found\n",ear_rapl_num_events);
 	
 	// We only  have 1 event set at this time
-	for (sets=0;sets<EAR_EAR_EVENTS_SETS;sets++){
+	for (sets=0;sets<EAR_RAPL_EVENTS_SETS;sets++){
 		/* Event values set to 0 */
 		for (events=0;events<EAR_RAPL_EVENTS;events++) {
 			ear_rapl_acum_values[sets][events]=0;
 			ear_rapl_values[sets][events]=0;
 		}
 		/* Init event sets */
-    	ear_RAPLEventSets[sets]=PAPI_NULL;
-        if (PAPI_create_eventset(&ear_RAPLEventSets[sets])!=PAPI_OK){
+    		ear_RAPLEventSets[sets]=PAPI_NULL;
+        	if (PAPI_create_eventset(&ear_RAPLEventSets[sets])!=PAPI_OK){
 			ear_verbose(0,"ear_daemon_rapl:: Creating %d eventset\n",sets);
 			return -1;
 		}
@@ -114,7 +116,7 @@ int init_rapl_metrics()
 		case CORE_AND_DRAM_SET:
 
    			gran_opt.def_cidx=ear_rapl_perf_event_cid;
-   			gran_opt.eventset=sets;
+   			gran_opt.eventset=ear_RAPLEventSets[sets];
    			gran_opt.granularity=PAPI_GRN_SYS;
 
    			retval = PAPI_set_opt(PAPI_GRANUL,(PAPI_option_t*)&gran_opt);
@@ -127,7 +129,7 @@ int init_rapl_metrics()
 
 
    			domain_opt.def_cidx=ear_rapl_perf_event_cid;
-   			domain_opt.eventset=sets;
+   			domain_opt.eventset=ear_RAPLEventSets[sets];
    			domain_opt.domain=PAPI_DOM_ALL;
 
    			retval = PAPI_set_opt(PAPI_DOMAIN,(PAPI_option_t*)&domain_opt);
@@ -175,7 +177,7 @@ int init_rapl_metrics()
 int reset_rapl_metrics()
 {
 	int sets,events,ret;
-	for (sets=0;sets<EAR_EAR_EVENTS_SETS;sets++){
+	for (sets=0;sets<EAR_RAPL_EVENTS_SETS;sets++){
 		if ((ret=PAPI_reset(ear_RAPLEventSets[sets]))!=PAPI_OK){
 			ear_verbose(0,"ear_daemon_rapl:: ResetRAPLMetrics (%s)\n",PAPI_strerror(ret));
 			return -1;
@@ -189,7 +191,7 @@ int start_rapl_metrics()
 {
 	int sets;
 	int ret;
-	for (sets=0;sets<EAR_EAR_EVENTS_SETS;sets++){
+	for (sets=0;sets<EAR_RAPL_EVENTS_SETS;sets++){
 		if ((ret=PAPI_start(ear_RAPLEventSets[sets]))!=PAPI_OK){
 			ear_verbose(0,"ear_daemon_rapl::StartRAPLMetrics (%s) \n",PAPI_strerror(ret));
 			return -1;
@@ -203,7 +205,7 @@ int stop_rapl_metrics(unsigned long long *values)
 	int sets,counts;
 	unsigned long long acum_rapl=0;
 	int ret;
-	for (sets=0;sets<EAR_EAR_EVENTS_SETS;sets++){
+	for (sets=0;sets<EAR_RAPL_EVENTS_SETS;sets++){
 		if ((ret=PAPI_stop(ear_RAPLEventSets[sets],(long long *)&ear_rapl_values[sets]))!=PAPI_OK){
 			ear_verbose(0,"ear_daemon_rapl: StopRAPLMetrics (%s)\n",PAPI_strerror(ret));
 			return -1;
@@ -223,7 +225,7 @@ int stop_rapl_metrics(unsigned long long *values)
 void print_rapl_metrics()
 {
 	int sets,events;
-	for (sets=0;sets<EAR_EAR_EVENTS_SETS;sets++){
+	for (sets=0;sets<EAR_RAPL_EVENTS_SETS;sets++){
 		switch (sets){
 			case CORE_AND_DRAM_SET:
 			for (events=0;events<EAR_RAPL_EVENTS;events++){

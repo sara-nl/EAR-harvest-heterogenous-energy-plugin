@@ -36,6 +36,13 @@ int conf_ear_total_processes=1;
 int conf_ear_dynais_levels=DEFAULT_DYNAIS_LEVELS;
 int conf_ear_dynais_window_size=DEFAULT_DYNAIS_WINDOW_SIZE;
 
+
+# define __USE_GNU
+# include <dlfcn.h>
+# undef  __USE_GNU
+static int (*my_omp_get_max_threads)(void) = NULL;
+
+
 void set_ear_total_processes(int procs)
 {
 	conf_ear_total_processes=procs;
@@ -470,4 +477,29 @@ void ear_print_daemon_environment()
 	close(fd);
 #endif
 }
+
+
+int check_threads()
+{
+        my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_max_threads");
+        if (my_omp_get_max_threads==NULL){
+                my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_max_threads");
+                if (my_omp_get_max_threads==NULL) return 0;
+                else return 1;
+        }
+        else return 1;
+}
+
+int get_total_resources()
+{
+	int procs_per_node;
+	check_threads();
+	procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
+	if (my_omp_get_max_threads!=NULL){
+                return procs_per_node*my_omp_get_max_threads();
+        }else{
+		return procs_per_node;
+        }
+}
+
 

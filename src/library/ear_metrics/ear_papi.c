@@ -27,72 +27,102 @@
 #include <ear_models/ear_models.h>
 #include <ear_verbose.h>
 #include <environment.h>
-#include <externs.h>
 #include <states.h>
 #include <types.h>
 
-static int ear_node_size;
-static int ear_cache_line_size;
-static int num_ctrs;
-static long long start_time = 0, end_time = 0, iter_time = 0;
-static long long app_start_time = 0, app_end_time = 0, app_exec_time = 0;
+#ifdef EAR_EXTRA_METRICS
+long long l1,l2,l3;
+long long *flops_metrics;
+int flops_events;
+int *flops_weigth;
+long long total_flops;
+FILE* fd_extra;
+#endif
 
-#define MAX_SETS 			1
-#define EVENT_SET_PRESET 	0 //perf component
-#define	EAR_PAPI_TOT_CYC 	0 // Total Cycles
-#define EAR_PAPI_TOT_INS 	1 // Total instructions
-#define READS_OFFSET 		0
-#define WRITES_OFFSET 		1
-#define DRAM_OFFSET 		0
-#define PACK_OFFSET 		1
-#define	EAR_ACUM_TOT_CYC 	0 // Total Cycles
-#define EAR_ACUM_TOT_INS 	1 // Total instructions
-#define EAR_ACUM_LD_INS 	2 //Load instructions
-#define EAR_ACUM_SR_INS 	3 //Store instructions
-#define EAR_ACUM_DRAM_ENER 	4 //ENERGY  reported by rapl (DRAM)
-#define EAR_ACUM_PCKG_ENER 	5 //ENERGY  reported by rapl (CORES+CACHE)
-#define TOTAL_EVENTS 		6
-#define NUM_EVENTS 			2
+extern int ear_whole_app;
+extern int ear_use_turbo;
+extern int ear_frequency;
+extern int ear_resources;
+extern int ear_my_rank;
+extern int power_model_policy;
+extern char ear_policy_name[MAX_APP_NAME];
+extern char ear_app_name[MAX_APP_NAME];
+
+
+int ear_node_size;
+int ear_papi_init=0;
+int ear_cache_line_size;
+#define MIN_TIME_BETWEEN_CHANGES 1000000
+int num_ctrs;
+static long long start_time=0, end_time=0, iter_time=0;
+long long app_start_time=0,app_end_time=0,app_exec_time=0;
+int num_ctrs;
 
 #define MULTIPLEX_PAPI
 #ifdef MULTIPLEX_PAPI
 int papi_multiplex=1;
 #endif
 
-#ifdef EAR_EXTRA_METRICS
-static long long l1,l2,l3;
-static long long *flops_metrics;
-static int flops_events;
-static int *flops_weigth;
-static long long total_flops;
-static FILE* fd_extra;
-#endif
+typedef union { long long ll; double dbl; } ll_dbl_union_t;
+
+#define MAX_SETS 1
+
+#define EVENT_SET_PRESET 0
+
+int EventSet[MAX_SETS];
+//perf component
+#define	EAR_PAPI_TOT_CYC 0 // Total Cycles
+#define EAR_PAPI_TOT_INS 1 // Total instructions
+#define READS_OFFSET 0
+#define WRITES_OFFSET 1
+#define DRAM_OFFSET 0
+#define PACK_OFFSET 1
+
+
+#define	EAR_ACUM_TOT_CYC 0 // Total Cycles
+#define EAR_ACUM_TOT_INS 1 // Total instructions
+#define EAR_ACUM_LD_INS 2 //Load instructions
+#define EAR_ACUM_SR_INS 3 //Store instructions
+#define EAR_ACUM_DRAM_ENER 4 //ENERGY  reported by rapl (DRAM)
+#define EAR_ACUM_PCKG_ENER 5 //ENERGY  reported by rapl (CORES+CACHE)
+
+#define TOTAL_EVENTS 6
+#define NUM_EVENTS 2
 
 // PAPI specific
-static long long events_values[MAX_SETS][NUM_EVENTS];
-static int data_type[NUM_EVENTS];
-static char units[NUM_EVENTS][PAPI_MIN_STR_LEN];
-static char event_names[NUM_EVENTS][PAPI_MIN_STR_LEN];
-static const PAPI_hw_info_t *ear_hwinfo = NULL;
-static int perf_cid = -1;
+long long events_values[MAX_SETS][NUM_EVENTS];
+int event_codes[NUM_EVENTS];
+int data_type[NUM_EVENTS];
+char units[NUM_EVENTS][PAPI_MIN_STR_LEN];
+char event_names[NUM_EVENTS][PAPI_MIN_STR_LEN];
+PAPI_cpu_option_t cpu_opt[MAX_SETS];
+PAPI_granularity_option_t gran_opt[MAX_SETS];
+PAPI_domain_option_t domain_opt[MAX_SETS];
+PAPI_attach_option_t attach_opt[MAX_SETS];
+PAPI_event_info_t evinfo[NUM_EVENTS];
+const PAPI_hw_info_t *ear_hwinfo=NULL;
+int perf_cid=-1;
 
 // UNCORE
-static long long *event_values_uncore;
-static unsigned long uncore_size, uncore_elements;
+long long *event_values_uncore;
+unsigned long uncore_size,uncore_elements;
 //RAPL
-static long long *event_values_rapl;
-static unsigned long rapl_size, rapl_elements;
+long long *event_values_rapl;
+unsigned long rapl_size,rapl_elements;
+
 
 // This is for all the metrics
-static long long acum_event_values[TOTAL_EVENTS];
-static long long last_iter_event_values[TOTAL_EVENTS];
-static long long diff_event_values[TOTAL_EVENTS];
+long long acum_event_values[TOTAL_EVENTS];
+long long last_iter_event_values[TOTAL_EVENTS];
+long long diff_event_values[TOTAL_EVENTS];
 
-static long long acum_iter_time=0;
-static long long acum_energy=0;
-
+long long acum_iter_time=0;
+long long acum_energy=0;
 #define TOTAL_CPUS (ear_hwinfo->threads*ear_hwinfo->cores*ear_hwinfo->sockets)
 #define SOCKETS ear_hwinfo->sockets
+int ear_cpu_id;
+
+
 #define MY_MAX 281474976710655
 
 long long metrics_usecs_diff(long long end,long long init)
@@ -134,6 +164,7 @@ int getCPU_ID()
 	return cpuid;
 }
 
+
 void ear_papi_error(int ret,char *m)
 {
         if (ret!=PAPI_OK){
@@ -141,7 +172,6 @@ void ear_papi_error(int ret,char *m)
                 exit(2);
         }
 }
-
 void print_units(FILE* fd)
 {
 	int i;
@@ -295,14 +325,14 @@ int metrics_init(int my_id,int pid)
 			ear_hwinfo->model,ear_hwinfo->model_string);
 	}
 	ear_node_size=ear_hwinfo->threads*ear_hwinfo->cores;
-
-    #ifdef MULTIPLEX_PAPI
+	// This must be change to new EAR fucntion
+    	ear_cpu_id=getCPU_ID();
+#ifdef MULTIPLEX_PAPI
 	if ((ret=PAPI_multiplex_init())!=PAPI_OK){
 		ear_verbose(0,"EAR: WARNING PAPI_multiplex_init fails: %s\n",PAPI_strerror(ret));
 		papi_multiplex=0;
-	}
-    #endif
-
+	}	
+#endif
 	init_basic_metrics();
 	// We ask for uncore and rapl metrics sizes
 	uncore_size=ear_daemon_client_get_data_size_uncore();
@@ -413,7 +443,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	    	char *app_name;
 		long long total_fops_instructions;
 		
-		int i;
+		int i,new;
 		app_info=db_current_app();
 
 		// Compute signature=METRICS
