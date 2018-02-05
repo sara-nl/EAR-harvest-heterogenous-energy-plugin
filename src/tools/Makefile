@@ -28,6 +28,8 @@ dynais_graph: dynais_graph.c
 ######## OPTIONS
 
 install:
+    mv traces_to_paraver $(DESTDIR)/bin/
+    mv coefficients_quality_control $(DESTDIR)/bin/
 
 clean:
 	rm -rf $(BINARIES)

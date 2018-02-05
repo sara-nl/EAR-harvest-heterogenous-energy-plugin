@@ -18,7 +18,7 @@
 #include <ear_daemon_common.h>
 #include <ear_daemon_client.h>
 #include <states.h>
-#include <types.h>
+#include "types_generic.h"
 
 static int ear_daemon_client_connected=0;
 static int ear_fd_req[ear_daemon_client_requests],ear_fd_ack[ear_daemon_client_requests];
