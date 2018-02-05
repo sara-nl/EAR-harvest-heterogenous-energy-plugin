@@ -81,7 +81,7 @@ void states_begin_period(int my_id,FILE *ear_fd,unsigned long event,unsigned int
 		db_new_period();
 		models_new_period();
 		comp_N_begin=metrics_time();
-		gui_new_period(ear_my_rank,my_id,event);
+		traces_new_period(ear_my_rank,my_id,event);
 		loop_with_signature=0;
 	}
 }
@@ -188,9 +188,9 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 					ear_debug(3,"EAR(%s) EVALUATING_SIGNATURE --> SIGNATURE_STABLE \n",ear_app_name);
 				}
 	
-				gui_new_signature(ear_my_rank,my_id,TIME,CPI,TPI,GBS,POWER);
-				gui_frequency(ear_my_rank,my_id,policy_freq);
-				gui_PP(ear_my_rank,my_id,PP->Time,PP->CPI,PP->Power);
+				traces_new_signature(ear_my_rank,my_id,TIME,CPI,TPI,GBS,POWER);
+				traces_frequency(ear_my_rank,my_id,policy_freq);
+				traces_PP(ear_my_rank,my_id,PP->Time,PP->CPI,PP->Power);
 				if (policy_freq!=prev_f){
 					ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\t Appplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
 					ear_app_name,prev_f,event,period,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP,policy_freq);
@@ -227,9 +227,9 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 				ENERGY=TIME*POWER;
 				EDP=ENERGY*TIME;
 				eru_init=eru_end;
-				gui_new_signature(ear_my_rank,my_id,TIME,CPI,TPI,GBS,POWER);
-				gui_frequency(ear_my_rank,my_id,policy_freq);
-				gui_PP(ear_my_rank,my_id,PP->Time,PP->CPI,PP->Power);
+				traces_new_signature(ear_my_rank,my_id,TIME,CPI,TPI,GBS,POWER);
+				traces_frequency(ear_my_rank,my_id,policy_freq);
+				traces_PP(ear_my_rank,my_id,PP->Time,PP->CPI,PP->Power);
 				begin_iter=iterations;
 				// We compare the projection with the signature and the old signature
 				PP=performance_projection(policy_freq);

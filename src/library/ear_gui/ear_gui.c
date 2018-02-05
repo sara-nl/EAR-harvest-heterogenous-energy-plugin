@@ -22,6 +22,7 @@
 #include <environment.h>
 #include <ear_verbose.h>
 #include <externs.h>
+#include <types.h>
 
 // Move all the debug code here
 // #define GLOBAL_MASTER 0
@@ -29,9 +30,14 @@
 
 #ifdef EAR_GUI
 
-long long first_sample,sample_time;
-long long sample,last_sample=0;
-int fd_events;
+#define DYNAIS_TRACE 0
+#define GUI_TRACE	1
+
+static long long first_sample,sample_time;
+static long long sample,last_sample=0;
+static int fd_events;
+static char ear_gui_buffer[2048];
+static int trace_type=DYNAIS_TRACE;
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 /*
@@ -51,9 +57,9 @@ Archinfo.txt
 	CPU name		:
 */
 
-char ear_gui_buffer[2048];
 
-void gui_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis,int ppnode)
+
+void traces_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis,int ppnode)
 {
 	char *app_file="Appinfo.txt";
 	char *arch_file="Archinfo.txt";
@@ -61,6 +67,7 @@ void gui_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis
 	char filenameArch[128];
 	char filenameEvents[128];
 	char *ear_gui_path;
+	char *my_trace_type;
 
 
 
@@ -72,6 +79,9 @@ void gui_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis
     ear_gui_path=get_ear_gui_pathname();
 	ear_verbose(1,"EAR(%s) Using gui path %s\n",__FILE__,ear_gui_path);
 	if (gwho==0){ // By the moment, only the global master, node events must be replicated based on DEBUG options
+		my_trace_type=getenv("EAR_TRACE_TYPE");
+		if (my_trace_type!=NULL){
+		}
 		sprintf(filenameApp,"%s/%s",ear_gui_path,app_file);
 		sprintf(filenameArch,"%s/%s",ear_gui_path,arch_file);
 		// APP info
@@ -120,7 +130,7 @@ void gui_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis
 	
 }
 
-void gui_end(int gwho,int lwho,unsigned long int total_energy)
+void traces_end(int gwho,int lwho,unsigned long int total_energy)
 {
 	if (lwho==0){
 		sample=PAPI_get_real_usec();
@@ -131,13 +141,13 @@ void gui_end(int gwho,int lwho,unsigned long int total_energy)
 	}
 }
 
-void gui_new_period(int gwho,int lwho,int period_id)
+void traces_new_period(int gwho,int lwho,int period_id)
 {
 
 }
 
 
-void gui_new_n_iter(int gwho,int lwho,int period_id,int period_size, int iterations,int my_state)
+void traces_new_n_iter(int gwho,int lwho,int period_id,int period_size, int iterations,int my_state)
 {
 	if (lwho==0){
 		sample=PAPI_get_real_usec();
@@ -158,7 +168,7 @@ void gui_new_n_iter(int gwho,int lwho,int period_id,int period_size, int iterati
 		last_sample=sample_time;
 	}
 }
-void gui_end_period(int gwho,int lwho)
+void traces_end_period(int gwho,int lwho)
 {
 	if (lwho==0){
 		sample=PAPI_get_real_usec();
@@ -171,7 +181,7 @@ void gui_end_period(int gwho,int lwho)
 
 }
 
-void gui_new_signature(int gwho,int lwho,double seconds,double CPI,double TPI,double GBS,double POWER)
+void traces_new_signature(int gwho,int lwho,double seconds,double CPI,double TPI,double GBS,double POWER)
 {
 	if (lwho==0){
                 sample=PAPI_get_real_usec();
@@ -183,7 +193,7 @@ void gui_new_signature(int gwho,int lwho,double seconds,double CPI,double TPI,do
         }
 }
 
-void gui_PP(int gwho,int lwho,double seconds,double CPI,double POWER)
+void traces_PP(int gwho,int lwho,double seconds,double CPI,double POWER)
 {
 	if (lwho==0){
                 sample=PAPI_get_real_usec();
@@ -196,7 +206,7 @@ void gui_PP(int gwho,int lwho,double seconds,double CPI,double POWER)
 
 }
 
-void gui_frequency(int gwho,int lwho, unsigned long f)
+void traces_frequency(int gwho,int lwho, unsigned long f)
 {
 	if (lwho==0){
                 sample=PAPI_get_real_usec();
@@ -206,5 +216,9 @@ void gui_frequency(int gwho,int lwho, unsigned long f)
                 last_sample=sample_time;
 	}
 
+}
+
+void traces_mpi_call(int gwho,int lwho,ulong timestamp,ulong event,ulong arg1,ulong arg2,ulong arg3)
+{
 }
 #endif

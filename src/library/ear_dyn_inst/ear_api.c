@@ -146,8 +146,8 @@ void ear_init()
 	 
 	gettimeofday(&pmpi_app_begin_time,NULL);
 	fflush(stderr);
-	gui_init(ear_my_rank,my_id,ear_app_name,ear_node_name,num_nodes,my_size,ppnode);
-	gui_frequency(ear_my_rank,my_id,ear_current_freq);
+	traces_init(ear_my_rank,my_id,ear_app_name,ear_node_name,num_nodes,my_size,ppnode);
+	traces_frequency(ear_my_rank,my_id,ear_current_freq);
 	ear_debug(1,"EAR Initialized successfully\n");	
 	ear_print_lib_environment();
 	ear_verbose(1,"______________EAR loaded___________________\n");
@@ -201,7 +201,7 @@ if (!ear_whole_app){
 		break;
 	case END_NEW_LOOP:
 		ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
-		gui_end_period(ear_my_rank,my_id);
+		traces_end_period(ear_my_rank,my_id);
 		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
 		ear_iterations=0;
 		ear_loop_size=ear_size;
@@ -213,12 +213,12 @@ if (!ear_whole_app){
 		ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",ear_level,
 		ear_event,ear_loop_size,ear_iterations);
 		}
-		gui_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());	
+		traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());	
 		states_new_iteration(my_id, NULL, ear_loop_size, ear_iterations, ear_event, ear_level);
 		break;
 	case END_LOOP:
 		ear_debug(4,"END_LOOP event %u\n",ear_event);
-		gui_end_period(ear_my_rank,my_id);
+		traces_end_period(ear_my_rank,my_id);
 		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
 		ear_iterations=0;
 		break;
@@ -252,7 +252,7 @@ void ear_finalize()
 	//ear_verbose(0,"EAR: Accumulated energy %llu J. Execution time %llu (usecs) Avg. Power %5.5lf (W)\n",app_eru_diff/1000000,
 	//	pmpi_app_total_time,(double)app_eru_diff/(double)pmpi_app_total_time);
 
-	gui_end(ear_my_rank, my_id, app_eru_diff);
+	traces_end(ear_my_rank, my_id, app_eru_diff);
 
 	gethostname(node_name, sizeof(node_name));
 	summary_pathname = get_ear_user_db_pathname();
