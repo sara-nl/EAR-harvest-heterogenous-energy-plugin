@@ -1,7 +1,7 @@
 #ifndef _EAR_TYPES_APPLICATION
 #define _EAR_TYPES_APPLICATION
 
-#include <types_generic.h>
+#include "generic.h"
 
 #define MAX_APP_NAME    1024
 #define FLOPS_EVENTS    8

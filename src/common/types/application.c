@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <states.h>
-#include <types_application.h>
+#include "../states.h"
+#include "application.h"
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
