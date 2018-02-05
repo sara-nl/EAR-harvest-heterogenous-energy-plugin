@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <types/application.h>
+#include <types/projection.h>
 #include <string_enhanced.h>
-#include <types.h>
 
 typedef struct control
 {
