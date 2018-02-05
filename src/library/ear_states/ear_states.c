@@ -215,8 +215,8 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 			curr_signature=metrics_end_compute_signature(period,&eru_diff,N_iter,perf_accuracy_min_time);
 			// returns NULL if time is not enough for performance accuracy
 			if (curr_signature==NULL){
-            			comp_N_begin=metrics_time();
-           		 	EAR_STATE=SIGNATURE_HAS_CHANGED;
+            	comp_N_begin=metrics_time();
+           		 EAR_STATE=SIGNATURE_HAS_CHANGED;
 				ear_verbose(3,"EAR(%s) SIGNATURE_STABLE(NULL) --> SIGNATURE_HAS_CHANGED \n",__FILE__);	
 			}else{ 
 				CPI=db_get_CPI(curr_signature);

@@ -49,14 +49,10 @@ static unsigned long ear_current_freq;
 static int ear_current_cpuid;
 
 // #define MEASURE_DYNAIS_OV
-// #define DYNAIS_TRACE
 
 #ifdef MEASURE_DYNAIS_OV
 static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;
-#endif
-#ifdef DYNAIS_TRACE
-static FILE *stdtrace,*stdtracebin;
 #endif
 
 void ear_init()
@@ -101,20 +97,6 @@ void ear_init()
 	ear_verbose(1,"EAR: Total resources %d\n",get_total_resources());
 	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",get_ear_dynais_levels(),get_ear_dynais_window_size());
 
-#ifdef DYNAIS_TRACE
-	if (ear_my_rank==0){
-        stdtrace=fopen("app.dynais.trace.csv","w");
-        if (stdtrace==NULL){
-                perror("Error opening app.dynais.trace.csv trace file");
-                exit(1);
-        }
-        stdtracebin=fopen("app.dynais.trace.bin","w");
-        if (stdtracebin==NULL){
-                perror("Error opening app.dynais.trace.bin trace file");
-                exit(1);
-        }
-	}
-#endif
 	// Connecting with ear_daemon
 	if (ear_daemon_client_connect()<0){
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
@@ -165,18 +147,7 @@ if (!ear_whole_app){
     	unsigned int ear_size;
 	unsigned int ear_level;
 	unsigned long trace_data[5];
-// DYNAIS_TRACE generates a text trace file with values used as dynais imput, it is used for dynais evaluation and optimization
-#ifdef DYNAIS_TRACE
-	if (ear_my_rank==0){
-	fprintf(stdtrace,"%u;%u;%u;%u;%llu\n",buf,dest,call_type,ear_event,PAPI_get_real_usec());
-	trace_data[0]=(unsigned long)buf;
-	trace_data[1]=(unsigned long)dest;
-	trace_data[2]=(unsigned long)call_type;
-	trace_data[3]=(unsigned long)ear_event;
-	trace_data[4]=(unsigned long)PAPI_get_real_usec();
-	fwrite(trace_data,sizeof(unsigned long),5,stdtracebin);
-	}
-#endif
+    trace_mpi_call(ear_my_rank,my_id,(unsigned long)PAPI_get_real_usec(),(unsigned long)buf,(unsigned long)dest,(unsigned long)call_type,(unsigned long)ear_event);
 
 // MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
 #ifdef MEASURE_DYNAIS_OV
@@ -267,12 +238,6 @@ void ear_finalize()
 	end_dc_energy();
 	ear_daemon_client_disconnect();
 
-	#ifdef DYNAIS_TRACE
-	if (ear_my_rank==0){
-		fclose(stdtrace);
-		fclose(stdtracebin);
-	}
-	#endif
 }
 
 
