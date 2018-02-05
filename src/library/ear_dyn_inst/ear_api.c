@@ -183,7 +183,6 @@ if (!ear_whole_app){
         begin_ov=PAPI_get_real_usec();
 #endif
 	// This is key to detect periods
-	ear_verbose(0,"event %lu\n",ear_event);
         ear_status=dynais(ear_event,&ear_size,&ear_level);
 #ifdef MEASURE_DYNAIS_OV
         end_ov=PAPI_get_real_usec();
