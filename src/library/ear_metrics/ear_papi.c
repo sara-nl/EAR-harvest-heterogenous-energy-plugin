@@ -25,10 +25,10 @@
 #include <ear_metrics/ear_cache.h>
 #include <ear_models/ear_models.h>
 #include <ear_verbose.h>
+#include <types/application.h>
 #include <environment.h>
 #include <externs.h>
 #include <states.h>
-#include <types.h>
 
 #define MAX_SETS 			1
 #define EVENT_SET_PRESET 	0 //perf component
