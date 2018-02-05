@@ -25,13 +25,13 @@ freeipmi_overhead: freeipmi_overhead.c
 	$(PAPI_LDFLAGS) $(IPMI_LDFLAGS) $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a \
 	$(ROOTDIR)/src/common/hardware.o
 
-simd_tests.o:simd_tests.c
+simd_tests.o: simd_tests.c
 	/opt/gcc/7.2.0/bin/gcc $(CFLAGS) -O0 -malign-double -march=native -c simd_tests.c
 
 simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o
-	icc -qopenmp -axCORE_AVX512 $(CFLAGS) $(PAPI_CFLAGS) -o simd_power_metrics_openmp simd_power_metrics_openmp.c \
-        $(PAPI_LDFLAGS) $(SIMD_CFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) simd_tests.o \
-	-I$(ROOTDIR)/src/library/ \
+	icc -qopenmp -axCORE_AVX512 $(CFLAGS) $(PAPI_CFLAGS) -I$(ROOTDIR)/src/library \
+	-o simd_power_metrics_openmp simd_power_metrics_openmp.c \
+    $(PAPI_LDFLAGS) $(SIMD_CFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) simd_tests.o \
 	$(ROOTDIR)/src/common/hardware.o \
 	$(ROOTDIR)/src/daemon/ear_node_energy_metrics.a \
 	$(ROOTDIR)/src/daemon/ear_rapl_metrics.o \

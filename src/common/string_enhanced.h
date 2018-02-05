@@ -1,7 +1,7 @@
 #ifndef _STRING_ENHANCED_H_
 #define _STRING_ENHANCED_H_
 
-#include "types_generic.h"
+#include <types_generic.h>
 
 //
 char* add_comma_ull(ull number);
