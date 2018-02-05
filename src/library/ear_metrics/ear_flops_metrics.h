@@ -17,5 +17,10 @@ double gflops(unsigned long total_timei,uint total_cores);
 int get_number_fops_events();
 void get_weigth_fops_instructions(int *weigth_vector);
 void get_total_fops(long long *metrics);
+
+#ifdef EAR_EXTRA_METRICS
+long long get_ponderated_floating_operations();
+#endif
+
 #else
 #endif

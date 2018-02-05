@@ -154,11 +154,12 @@ void metrics_start()
 	ear_daemon_client_start_uncore();
 	ear_daemon_client_start_rapl();
 	start_basic_metrics();
-#ifdef EAR_EXTRA_METRICS
+
+    #ifdef EAR_EXTRA_METRICS
 	start_turbo_metrics();
 	if (fops_supported) start_flops_metrics();
 	start_cache_metrics();
-#endif
+	#endif
 }
 
 void metrics_stop()
@@ -174,11 +175,15 @@ void metrics_stop()
 		ear_verbose(0,"EAR(%s): Reading rapl is is failing\n",ear_app_name);
 	}
 	stop_basic_metrics(&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_CYC],&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_INS]);
-#ifdef EAR_EXTRA_METRICS
+
+	#ifdef EAR_EXTRA_METRICS
 	stop_turbo_metrics();
-	stop_flops_metrics(&total_flops,flops_metrics);
-	stop_cache_metrics(&l1,&l2,&l3);
-#endif
+
+	// FLOPS are merged and returned
+	stop_flops_metrics(&total_flops, flops_metrics);
+
+	stop_cache_metrics(&l1, &l2, &l3);
+	#endif
 }
 
 void metrics_reset()
@@ -347,84 +352,127 @@ void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned
 
 	metrics_print_summary(whole_app, my_id, summary_file);
 	
-#ifdef EAR_EXTRA_METRICS
+	#ifdef EAR_EXTRA_METRICS
 	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
 	//print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
-#endif
+	#endif
 }
 
-struct App_info* set_metrics(int period,int iteration,long long *counters,long long iter_time,unsigned long int *eru,unsigned int N_iters)
+// Called after metrics_stop
+application_t set_metrics(int period, int iteration, long long *counters, long long iter_time,
+						  ulong *eru, uint N_iters)
 {
-		double CPI,GBS,Seconds,TPI,POWER;
-		unsigned int app_id;
-		struct App_info *app_info;
-		unsigned long f;
-		ear_debug(4,"EAR(%s): Setting DB metrics for period %d iteration %d\n",__FILE__,period,N_iters);
-		Seconds=(double)iter_time/(double)1000000;
-		CPI=(double)counters[EAR_ACUM_TOT_CYC]/(double)counters[EAR_ACUM_TOT_INS];
-		GBS=((double)(counters[EAR_ACUM_LD_INS]*ear_cache_line_size)/(Seconds*(double)(1024*1024*1024)))+ ((double)(counters[EAR_ACUM_SR_INS]*ear_cache_line_size)/(Seconds*(double)(1024*1024*1024)));
-		TPI=(double)(counters[EAR_ACUM_LD_INS]+counters[EAR_ACUM_SR_INS])/(double)(counters[EAR_ACUM_TOT_INS]/ear_cache_line_size);
-		POWER=(double)*eru/(double)(Seconds*1000000);
-		ear_debug(4,"EAR(%s):: Set_metrics: seconds %.5lf GBS %.5lf POWER %12.6f TPI %12.6f CPI %5lf\n",
-		__FILE__,Seconds/(double)N_iters,GBS,POWER,TPI,CPI);
-        	app_info=db_current_app();
-        	db_set_GBS(app_info,GBS);
-        	db_set_POWER(app_info,POWER);
-        	db_set_TPI(app_info,TPI);
-        	db_set_seconds(app_info,Seconds/(double)N_iters);
-        	db_set_CPI(app_info,CPI);
-		db_set_frequency(app_info,ear_daemon_client_end_compute_turbo_freq());
-		return app_info;
+	double CPI, GBS, seconds, TPI, POWER;
+	struct App_info *app_info;
+
+	ear_debug(4,"EAR(%s): Setting DB metrics for period %d iteration %d\n",
+			  __FILE__,period,N_iters);
+
+	seconds = (double) iter_time / (double) 1000000;
+
+	GBS  = ((double)(counters[EAR_ACUM_LD_INS]*ear_cache_line_size) / (seconds * (double) (1024*1024*1024)));
+	GBS += ((double)(counters[EAR_ACUM_SR_INS]*ear_cache_line_size) / (seconds * (double) (1024*1024*1024)));
+
+	#ifdef EAR_EXTRA_METRICS
+	CPI  = (double) counters[EAR_ACUM_TOT_CYC] / (double) total_flops;
+	TPI  = (double) (counters[EAR_ACUM_LD_INS] + counters[EAR_ACUM_SR_INS]);
+	TPI /= (double) (total_flops / (long long) ear_cache_line_size);
+    #else
+	CPI  = (double) counters[EAR_ACUM_TOT_CYC] / (double) counters[EAR_ACUM_TOT_INS];
+	TPI  = (double) (counters[EAR_ACUM_LD_INS] + counters[EAR_ACUM_SR_INS]);
+	TPI /= (double) (counters[EAR_ACUM_TOT_INS] / ear_cache_line_size);
+    #endif
+
+	POWER = (double) *eru / (double) (seconds * 1000000);
+
+	ear_debug(4,"EAR(%s):: Set_metrics: seconds %.5lf GBS %.5lf POWER %12.6f TPI %12.6f CPI %5lf\n",
+			  __FILE__, seconds / (double) N_iters, GBS, POWER, TPI, CPI);
+
+	app_info = db_current_app();
+	db_set_GBS(app_info,GBS);
+	db_set_POWER(app_info,POWER);
+	db_set_TPI(app_info,TPI);
+	db_set_seconds(app_info,seconds/(double)N_iters);
+	db_set_CPI(app_info,CPI);
+	db_set_frequency(app_info,ear_daemon_client_end_compute_turbo_freq());
+
+	return app_info;
 }
 
 void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 {
-		double CPI,GBS,GIBS,Seconds,GIBS_ranks,TPI,POWER,POWER_DC,DRAM_POWER,PCK_POWER,CORE_POWER,GFLOPS,EDP;
+	double CPI,GBS,GIBS,seconds,GIBS_ranks,TPI,POWER,POWER_DC,DRAM_POWER,PCK_POWER,CORE_POWER,GFLOPS,EDP;
+	double PP,TP,EP,perf_deg,power_sav,energy_sav,ener,new_EDP;
+	long long total_fops_instructions, pond_fops;
+	application_t *app_info;
+	application_t SIGNATURE;
+	unsigned long f, optimal;
+	unsigned int app_id;
+	char *app_name;
+	int i;
 
-		unsigned int app_id;
-		struct App_info *app_info;
-		struct App_info SIGNATURE;
-		unsigned long f,optimal;
-		double PP,TP,EP,perf_deg,power_sav,energy_sav,ener,new_EDP;
-	    	char *app_name;
-		long long total_fops_instructions;
-		
-		int i;
-		app_info=db_current_app();
+	app_info = db_current_app();
 
-		// Compute signature=METRICS
-		Seconds=(double)app_exec_time/(double)1000000;
-		CPI=(double)acum_event_values[EAR_ACUM_TOT_CYC]/(double)acum_event_values[EAR_ACUM_TOT_INS];
-		GBS=((double)(acum_event_values[EAR_ACUM_LD_INS]*ear_cache_line_size)/(Seconds*(double)(1024*1024*1024)))+ ((double)(acum_event_values[EAR_ACUM_SR_INS]*ear_cache_line_size)/(Seconds*(double)(1024*1024*1024)));
-		TPI=(double)(acum_event_values[EAR_ACUM_LD_INS]+acum_event_values[EAR_ACUM_SR_INS])/(double)(acum_event_values[EAR_ACUM_TOT_INS]/ear_cache_line_size);
-		GFLOPS=gflops(app_exec_time,get_total_resources());
-		POWER_DC=(double)acum_energy/(double)(Seconds*1000000);
-		EDP=Seconds*Seconds*POWER_DC;
-		DRAM_POWER=(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/Seconds;
-		PCK_POWER=(double)(acum_event_values[EAR_ACUM_PCKG_ENER]/1000000000)/Seconds;
-		f=ear_daemon_client_end_app_compute_turbo_freq();
-		app_name=get_ear_app_name();
-		if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);
-		else strcpy(SIGNATURE.app_id,"NA");
-#ifdef EAR_EXTRA_METRICS
-		get_cache_metrics(&l1,&l2,&l3);
-		fprintf(stderr,"_____________________EAR Extra Summary for %s ___________________\n",SIGNATURE.app_id);
-		if (fops_supported){
-                	get_total_fops(flops_metrics);
-                	total_fops_instructions=0;
-                	for (i=0;i<flops_events;i++) total_fops_instructions+=flops_metrics[i];
-                	ear_verbose(1,"EAR: Total FP instructions %llu \n",total_fops_instructions);
-			ear_verbose(1,"EAR: AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
-			(double)flops_metrics[flops_events-1]/(double)total_fops_instructions);
-			ear_verbose(1,"EAR: Total instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
-			ear_verbose(1,"EAR: Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+	// Compute signature
+	seconds=(double)app_exec_time/(double)1000000;
+
+	GBS  = ((double) (acum_event_values[EAR_ACUM_LD_INS] * ear_cache_line_size) / (seconds*(double)(1024*1024*1024)));
+	GBS += ((double) (acum_event_values[EAR_ACUM_SR_INS] * ear_cache_line_size) / (seconds*(double)(1024*1024*1024)));
+
+	//
+	#ifdef EAR_EXTRA_METRICS
+	pond_fops = get_ponderated_floating_operations();
+
+	CPI  = (double) acum_event_values[EAR_ACUM_TOT_CYC] / (double) pond_fops;
+	TPI  = (double) (acum_event_values[EAR_ACUM_LD_INS] + acum_event_values[EAR_ACUM_SR_INS]);
+	TPI /= (double) (pond_fops / ear_cache_line_size);
+    #else
+	CPI  = (double) acum_event_values[EAR_ACUM_TOT_CYC] / (double) acum_event_values[EAR_ACUM_TOT_INS];
+	TPI  = (double) (acum_event_values[EAR_ACUM_LD_INS] + acum_event_values[EAR_ACUM_SR_INS]);
+	TPI /= (double) (pond_fops / ear_cache_line_size);
+	#endif
+
+	GFLOPS=gflops(app_exec_time,get_total_resources());
+	POWER_DC=(double)acum_energy/(double)(seconds*1000000);
+	EDP=seconds*seconds*POWER_DC;
+	DRAM_POWER=(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/seconds;
+	PCK_POWER=(double)(acum_event_values[EAR_ACUM_PCKG_ENER]/1000000000)/seconds;
+	f=ear_daemon_client_end_app_compute_turbo_freq();
+	app_name=get_ear_app_name();
+
+	if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);
+	else strcpy(SIGNATURE.app_id,"NA");
+
+	#ifdef EAR_EXTRA_METRICS
+	get_cache_metrics(&l1, &l2, &l3);
+	fprintf(stderr,"_____________________EAR Extra Summary for %s ___________________\n",SIGNATURE.app_id);
+
+	if (fops_supported)
+	{
+		// Application total FLOPS
+		get_total_fops(flops_metrics);
+		total_fops_instructions = 0;
+
+		for (i=0;i < flops_events;i++)
+		{
+			total_fops_instructions += flops_metrics[i];
 		}
-		ear_verbose(1,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
-		fprintf(stderr,"_______________________________\n");
-#endif          
+
+		ear_verbose(1,"EAR: Total FP instructions %llu \n",total_fops_instructions);
+
+		//
+		ear_verbose(1,"EAR: AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
+					(double)flops_metrics[flops_events-1]/(double)total_fops_instructions);
+		ear_verbose(1,"EAR: Total instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
+		ear_verbose(1,"EAR: Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+	}
+
+	ear_verbose(1,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
+	fprintf(stderr,"_______________________________\n");
+	#endif
 
 		// We can write summary metrics in any DB or any other place
-#if 0
+	#if 0
 		fprintf(stderr,"_____________________APP SUMMARY ___________________\n");
 		fprintf(stderr,"MPI_RANK= %d\n",my_id);
 		fprintf(stderr,"ACUM CYCLES %llu\n",acum_event_values[EAR_ACUM_TOT_CYC]);
@@ -434,7 +482,8 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		fprintf(stderr,"ACUM DC ENERGY %llu mJ\n",acum_energy);
 		fprintf(stderr,"ACUM RAPL DRAM ENERGY  %llu\n",acum_event_values[EAR_ACUM_DRAM_ENER]); 
 		fprintf(stderr,"ACUM RAPL PCKG ENERGY  %llu\n",acum_event_values[EAR_ACUM_PCKG_ENER]); 
-#endif
+	#endif
+
 		// Reporting application signature metrics at stderr
 		fprintf(stderr,"_____________________EAR Summary for %s ___________________\n",app_info->node_id);
 		fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,SIGNATURE.app_id,(double)app_exec_time/(double)1000000);
@@ -449,7 +498,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		db_set_GBS(&SIGNATURE,GBS);
 		db_set_POWER(&SIGNATURE,POWER_DC);
 		db_set_TPI(&SIGNATURE,TPI);
-		db_set_seconds(&SIGNATURE,Seconds);
+		db_set_seconds(&SIGNATURE,seconds);
 		db_set_CPI(&SIGNATURE,CPI);
 		db_set_CYCLES(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_CYC]);
 		db_set_INSTRUCTIONS(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_INS]);
@@ -463,9 +512,9 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		db_set_th(&SIGNATURE,get_ear_power_policy_th());
 		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->def_f==ear_get_freq(1))) {
 			optimal=optimal_freq_min_energy(0.1,&SIGNATURE,&PP,&TP);
-			perf_deg=((TP-Seconds)/Seconds)*100.0;
+			perf_deg=((TP-seconds)/seconds)*100.0;
 			power_sav=((POWER_DC-PP)/POWER_DC)*100.0;
-			ener=POWER_DC*Seconds;
+			ener=POWER_DC*seconds;
 			EP=TP*PP;
 			new_EDP=TP*TP*PP;
 			energy_sav=((ener-EP)/ener)*100.0;
@@ -547,8 +596,10 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
     	end_time=PAPI_get_real_usec();
     	iter_time=metrics_usecs_diff(end_time,start_time);
 	if (iter_time< min_t) return NULL;
+
 	// WE Get counters (Stop&Read)
 	metrics_stop();
+
 	// Reset actual counters
 	metrics_reset();
 	// We accumulate in the global counters acum_event_values
@@ -558,9 +609,11 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	// acum_time_time is total, 
 	acum_iter_time=acum_iter_time+iter_time;
 	// If application signature is correct, start time is set to current time
-    	start_time=end_time;
+	start_time=end_time;
 	acum_energy=acum_energy+*eru;
-	app=set_metrics(period,0,diff_event_values,iter_time,eru,N_iters);
+
+	app = set_metrics(period, 0, diff_event_values, iter_time, eru, N_iters);
+
 	// Once processes, we reset actual counters
 	reset_values();
 	metrics_start();
