@@ -47,6 +47,7 @@ static int my_id,my_size;
 static int ear_iterations = 0;
 static unsigned long ear_current_freq;
 static int ear_current_cpuid;
+static int in_loop=0;
 
 // #define MEASURE_DYNAIS_OV
 
@@ -112,7 +113,7 @@ void ear_init()
 	ear_daemon_client_begin_app_compute_turbo_freq();
 	
 	db_get_app_name(ear_app_name);
-    	states_begin_job(my_id, NULL, ear_app_name);
+    states_begin_job(my_id, NULL, ear_app_name);
 	ear_current_freq=ear_cpufreq_get(0);	
 	init_power_policy();
 	init_power_models(ear_get_num_p_states(),ear_get_pstate_list());
@@ -147,7 +148,7 @@ if (!ear_whole_app){
     	unsigned int ear_size;
 	unsigned int ear_level;
 	unsigned long trace_data[5];
-    trace_mpi_call(ear_my_rank,my_id,(unsigned long)PAPI_get_real_usec(),(unsigned long)buf,(unsigned long)dest,(unsigned long)call_type,(unsigned long)ear_event);
+    traces_mpi_call(ear_my_rank,my_id,(unsigned long)PAPI_get_real_usec(),(unsigned long)buf,(unsigned long)dest,(unsigned long)call_type,(unsigned long)ear_event);
 
 // MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
 #ifdef MEASURE_DYNAIS_OV
@@ -169,6 +170,7 @@ if (!ear_whole_app){
 		ear_iterations=0;
 		states_begin_period(my_id, NULL, ear_event, ear_size);
 		ear_loop_size=ear_size;
+		in_loop=1;
 		break;
 	case END_NEW_LOOP:
 		ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
@@ -189,9 +191,11 @@ if (!ear_whole_app){
 		break;
 	case END_LOOP:
 		ear_debug(4,"END_LOOP event %u\n",ear_event);
+		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
 		traces_end_period(ear_my_rank,my_id);
 		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
 		ear_iterations=0;
+		in_loop=0;
 		break;
 	default:
 		break;
@@ -213,6 +217,7 @@ void ear_finalize()
 	ear_verbose(0,"EAR:: Dynais algorithm consumes %llu usecs in %u calls\n",ear_acum,calls);
 	#endif
 	
+	
 	app_eru_end=read_dc_energy();
 	app_eru_diff=energy_diff(app_eru_end , app_eru_init);
 	gettimeofday(&pmpi_app_end_time,NULL);
@@ -232,8 +237,8 @@ void ear_finalize()
 
 	db_end(ear_whole_app);
 	dynais_dispose();
-
-    	states_end_job(my_id, NULL, ear_app_name);
+	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
+    states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
 	end_dc_energy();
 	ear_daemon_client_disconnect();

@@ -56,6 +56,7 @@ static int current_loop_id;
 void states_end_job(int  my_id, FILE *ear_fd,char *app_name)
 {
 	ear_verbose(1,"EAR(%s) Ends execution. \n",app_name);
+
 }
 
 void states_begin_job(int  my_id, FILE *ear_fd,char *app_name)
@@ -88,7 +89,12 @@ void states_begin_period(int my_id,FILE *ear_fd,unsigned long event,unsigned int
 
 void  states_end_period(int my_id,FILE *ear_fd,unsigned int size,int iterations,unsigned long event)
 {
-    if (loop_with_signature) ear_verbose(1,"EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",current_loop_id,iterations,curr_signature->iter_time*(double)iterations);
+    if (loop_with_signature){ 
+		ear_verbose(1,"EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",current_loop_id,iterations,curr_signature->iter_time*(double)iterations);
+#ifdef EAR_EXTRA_METRICS
+		metrics_end_loop_extra_metrics(iterations);
+#endif
+	}
     loop_with_signature=0;
     ear_verbose(4,"EAR(%s)::____________END_PERIOD: END loop detected (Loop ID: %u,size %u)______%d iters______ \n",ear_app_name,event,size,iterations);
 }
