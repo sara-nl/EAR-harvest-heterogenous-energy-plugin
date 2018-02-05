@@ -24,10 +24,10 @@
 #include <ear_node_energy_metrics.h>
 #include <ear_uncores.h>
 #include <ear_verbose.h>
+#include <types/generic.h>
 #include <environment.h>
 #include <hardware.h>
 #include <states.h>
-#include <types.h>
 
 char db_fullpath[PATH_MAX];
 

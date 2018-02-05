@@ -21,8 +21,8 @@
 
 #include <ear_daemon_client.h>
 #include <ear_verbose.h>
+#include <types/generic.h>
 #include <externs.h>
-#include <types.h>
 
 static uint ear_num_cpus;
 static uint ear_num_p_states = 0;

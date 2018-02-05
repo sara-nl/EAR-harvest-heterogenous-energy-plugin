@@ -1,4 +1,4 @@
-CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common $(CONSTANTS)
+CFLAGS = -fPIC -I$(DIR) -I$(ROOTDIR)/src/common $(CONSTANTS)
 
 ######## RULES
 
