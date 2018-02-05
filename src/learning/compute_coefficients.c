@@ -260,8 +260,10 @@ int main(int argc, char *argv[])
     }
 
     //
-    for (i = 0; i < num_apps; i++) {
-        if (read(fd, &read_app, sizeof(application_t)) != sizeof(application_t)) {
+    for (i = 0; i < num_apps; i++)
+    {
+        if (read(fd, &read_app, sizeof(application_t)) != sizeof(application_t))
+        {
             perror("Error reading app info");
             exit(1);
         }

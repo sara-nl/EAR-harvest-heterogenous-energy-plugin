@@ -72,6 +72,38 @@ int append_application_text_file(char *path, application_t *app)
     return ret;
 }
 
+int read_application_binary_file(char *path, application_t **apps) {
+    application_t *apps_aux, *a;
+    int fd, lines;
+
+    if ((fd = desc = open(path, O_RDONLY)) < 0) {
+        return EAR_FILE_NOT_FOUND;
+    }
+
+    // Getting the number
+    lines = (lseek(fd, 0, SEEK_END) / sizeof(application_t));
+
+    // Allocating memory
+    apps_aux = (application_t *) malloc(lines * sizeof(application_t));
+    memset(apps_aux, 0, sizeof(application_t));
+
+    // Returning to the begining
+    lseek(fd, 0, SEEK_SET);
+    i = 0;
+
+    while (read(fd, &apps_aux[i], sizeof(application_t)) > 0)
+    {
+        i += 1;
+        a = &apps_aux[i];
+    }
+
+    //
+    close(fd);
+
+    *apps = apps_aux;
+    return i;
+}
+
 int read_summary_file(char *path, application_t **apps)
 {
     char line[PIPE_BUF];
