@@ -26,7 +26,7 @@ freeipmi_overhead: freeipmi_overhead.c
 	$(ROOTDIR)/src/common/hardware.o
 
 simd_tests.o:simd_tests.c
-	gcc $(CFLAGS) -O0 -malign-double -march=native -c simd_tests.c
+	/opt/gcc/7.2.0/bin/gcc $(CFLAGS) -O0 -malign-double -march=native -c simd_tests.c
 
 simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o
 	icc -qopenmp -axCORE_AVX512 $(CFLAGS) $(PAPI_CFLAGS) -o simd_power_metrics_openmp simd_power_metrics_openmp.c \

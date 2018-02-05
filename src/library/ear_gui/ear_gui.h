@@ -24,6 +24,9 @@
         timestamp:11:           Period power projection
         timestamp:12:           Frequency
 */
+
+#include <types.h>
+
 #define PERIOD_ID               1
 #define PERIOD_LENGTH           2
 #define PERIOD_ITERATIONS       3
@@ -57,7 +60,7 @@ void traces_new_period(int gwho,int lwho,int period_id);
 void traces_end_period(int gwho,int lwho);
 
 // Executed at each mpi_call
-void traces_mpi_call(int gwho,int lwho, ulong timestamp ulong event, ulong arg1,ulong arg2,ulong arg3);
+void traces_mpi_call(int gwho,int lwho, ulong timestamp, ulong event, ulong arg1,ulong arg2,ulong arg3);
 
 #else
 #define traces_init(g,l,a,n,n1,m,p)
