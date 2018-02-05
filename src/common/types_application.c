@@ -4,9 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <linux/limits.h>
 #include <states.h>
-#include "types_generic.h"
+#include <types_application.h>
+
+#define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+#define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
 
 int append_application_binary_file(char *path, application_t *app)
 {

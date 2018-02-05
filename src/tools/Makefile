@@ -15,7 +15,8 @@ traces_to_paraver: traces_to_paraver.cpp
 
 coefficients_quality_control: coefficients_quality_control.c
 	$(CC) $(CFLAGS) -o coefficients_quality_control coefficients_quality_control.c \
-	$(ROOTDIR)/src/common/string_enhanced.o $(ROOTDIR)/src/common/types.o
+	$(ROOTDIR)/src/common/string_enhanced.o \
+	$(ROOTDIR)/src/common/types.a
 
 ######## MANUAL 
 
