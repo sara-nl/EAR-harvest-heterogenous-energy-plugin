@@ -24,7 +24,8 @@
 #include <types.h>
 
 #define INST_ITER   64.0
-#define F           2400000
+#define F           2401000
+#define F_BASE	    2400000
 
 static ulong n_iterations;
 int EAR_VERBOSE_LEVEL = 4;
@@ -273,7 +274,7 @@ int main (int argc, char *argv[])
         }
     }
 
-    ear_cpufreq_set_node(F);
+    ear_cpufreq_set_node(F_BASE);
     ear_cpufreq_end();
     node_energy_dispose();
 
