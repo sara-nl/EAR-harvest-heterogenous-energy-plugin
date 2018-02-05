@@ -154,18 +154,25 @@ void start_flops_metrics()
 void stop_flops_metrics(long long *flops,long long *f_operations)
 {
 	int sets,ev,retval;
+
 	if (!flops_supported) return;
 	*flops=0;
-	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
-		if ((retval=PAPI_stop(ear_flops_event_sets[sets],(long long *)&ear_flops_values[sets]))!=PAPI_OK){
+
+	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++)
+	{
+		if ((retval=PAPI_stop(ear_flops_event_sets[sets],(long long *)&ear_flops_values[sets]))!=PAPI_OK)
+		{
 			ear_verbose(0,"FP_METRICS: StopFlopsMetrics.%s\n",PAPI_strerror(retval));
-		}else{
+		} else
+		{
 			if (sets==SP_OPS) ear_verbose(2,"fops_fp -->");
 			if (sets==DP_OPS) ear_verbose(2,"fops_dp -->");
-			for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){ 
-				f_operations[sets*EAR_FLOPS_EVENTS+ev]=ear_flops_values[sets][ev];
-				ear_flops_acum_values[sets][ev]+=ear_flops_values[sets][ev];
-				*flops+=(ear_flops_values[sets][ev]*FP_OPS_WEIGTH[sets][ev]);
+
+			for (ev=0; ev < EAR_FLOPS_EVENTS;ev++)
+			{
+				f_operations[sets*EAR_FLOPS_EVENTS+ev] = ear_flops_values[sets][ev];
+				ear_flops_acum_values[sets][ev] += ear_flops_values[sets][ev];
+				*flops += (ear_flops_values[sets][ev] * FP_OPS_WEIGTH[sets][ev]);
 				ear_verbose(2,"[%d]=%llu x %d, ",ev,ear_flops_values[sets][ev],FP_OPS_WEIGTH[sets][ev]);
 			}
 			ear_verbose(2,"\n");
@@ -173,6 +180,7 @@ void stop_flops_metrics(long long *flops,long long *f_operations)
 	}
 	ear_verbose(2,"\n");
 }
+
 void print_gflops(long long total_inst,unsigned long total_time,uint total_cores)
 {
 	int sets,ev;
@@ -230,14 +238,41 @@ void get_weigth_fops_instructions(int *weigth_vector)
 		}
 	}
 }
+
 void get_total_fops(long long *metrics)
 {
-	int sets,ev;
+	int sets, ev, i;
+
 	if (!flops_supported) return;
-	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
-		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
-			metrics[sets*EAR_FLOPS_EVENTS+ev]=ear_flops_acum_values[sets][ev];
+
+	for (sets=0;sets < EAR_FLOPS_EVENTS_SETS; sets++)
+	{
+		for (ev=0;ev < EAR_FLOPS_EVENTS; ev++)
+		{
+			i = sets * EAR_FLOPS_EVENTS + ev;
+			metrics[i] = ear_flops_acum_values[sets][ev];
 		}
 	}
-	
 }
+
+#ifdef EAR_EXTRA_METRICS
+long long get_ponderated_floating_operations()
+{
+	long long pond_fops;
+	int sets, ev;
+
+	if (!flops_supported) return;
+	pond_fops = 0;
+
+	for (sets=0;sets < EAR_FLOPS_EVENTS_SETS; sets++)
+	{
+		for (ev = 0; ev < EAR_FLOPS_EVENTS; ev++)
+		{
+			i = sets * EAR_FLOPS_EVENTS + ev;
+			pond_fops += ear_flops_acum_values[sets][ev] * FP_OPS_WEIGTH[sets][ev];
+		}
+	}
+
+	return pond_fops;
+}
+#endif
