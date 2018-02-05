@@ -1,6 +1,8 @@
 DIR     = $(ROOTDIR)/src/library
 LDFLAGS = -O2 -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
-CFLAGS  = -I$(DIR) $(PAPI_CFLAGS) $(CPUF_CFLAGS) -I$(ROOTDIR)/src/common -fPIC $(CONSTANTS) $(DEBUG)
+CFLAGS  = -fPIC $(CONSTANTS) $(DEBUG) -I$(DIR)
+CFLAGS += -I$(DIR)/common -I$(ROOTDIR)/src/common
+CFLAGS += $(PAPI_CFLAGS) $(CPUF_CFLAGS)
 
 ######## VARS
 
@@ -49,7 +51,6 @@ all: libear.so
 
 libear.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
 	$(CC) $(CFLAGS) -o libear.so $(OBJS) $(OUTER_OBJS) $(LDFLAGS)
-	
 
 libeart.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
 	$(CC) $(CFLAGS) -o libeart.so $(OBJS) $(OUTER_OBJS) $(LIBRARIES) $(LDFLAGS)
