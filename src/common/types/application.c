@@ -4,9 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <linux/limits.h>
 #include <states.h>
-#include <types.h>
+#include <types/application.h>
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
@@ -73,7 +72,40 @@ int append_application_text_file(char *path, application_t *app)
     return ret;
 }
 
-int read_summary_file(char *path, application_t **apps)
+int read_application_binary_file(char *path, application_t **apps)
+{
+    application_t *apps_aux, *a;
+    int fd, lines, i;
+
+    if ((fd = open(path, O_RDONLY)) < 0) {
+        return EAR_FILE_NOT_FOUND;
+    }
+
+    // Getting the number
+    lines = (lseek(fd, 0, SEEK_END) / sizeof(application_t));
+
+    // Allocating memory
+    apps_aux = (application_t *) malloc(lines * sizeof(application_t));
+    memset(apps_aux, 0, sizeof(application_t));
+
+    // Returning to the begining
+    lseek(fd, 0, SEEK_SET);
+    i = 0;
+
+    while (read(fd, &apps_aux[i], sizeof(application_t)) > 0)
+    {
+        i += 1;
+        a = &apps_aux[i];
+    }
+
+    //
+    close(fd);
+
+    *apps = apps_aux;
+    return i;
+}
+
+int read_application_text_file(char *path, application_t **apps)
 {
     char line[PIPE_BUF];
     application_t *apps_aux, *a;
@@ -119,42 +151,4 @@ int read_summary_file(char *path, application_t **apps)
 
     *apps = apps_aux;
     return i;
-}
-
-int read_coefficients_file(char *path, coefficient_t **coeffs, int size)
-{
-    coefficient_t *coeffs_aux;
-    int ret, fd;
-
-    if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
-    }
-
-    if (size <= 0) {
-        size = lseek(fd, 0, SEEK_END);
-        lseek(fd, 0, SEEK_SET);
-    }
-
-    // Allocating memory
-    coeffs_aux = (coefficient_t *) malloc(size);
-
-    if (coeffs_aux == NULL)
-    {
-        close(fd);
-        return EAR_ALLOC_ERROR;
-    }
-
-    // Reset the memory to zeroes
-    memset(coeffs_aux, 0, sizeof(coefficient_t));
-
-    if ((ret = read(fd, coeffs_aux, size)) != size)
-    {
-        close(fd);
-        free(coeffs_aux);
-        return EAR_READ_ERROR;
-    }
-    close(fd);
-
-    *coeffs = coeffs_aux;
-    return (size / sizeof(coefficient_t));
 }

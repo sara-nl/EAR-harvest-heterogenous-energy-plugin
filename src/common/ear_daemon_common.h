@@ -1,6 +1,8 @@
 #ifndef _EAR_DAEMON_COMMON_H
 #define _EAR_DAEMON_COMMON_H
-#include <types.h>
+
+#include <types/generic.h>
+#include <types/application.h>
 
 // Number of services supported
 #ifdef MULTIPLE_SERVICES

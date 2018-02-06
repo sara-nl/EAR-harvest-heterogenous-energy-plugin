@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
-#include <spank.h>
+#include <slurm/spank.h>
 #include <fcntl.h>
 #include <cpufreq.h>
 #include <config.h>

@@ -25,10 +25,10 @@
 #include <ear_metrics/ear_cache.h>
 #include <ear_models/ear_models.h>
 #include <ear_verbose.h>
+#include <types/application.h>
 #include <environment.h>
 #include <externs.h>
 #include <states.h>
-#include <types.h>
 
 #define MAX_SETS 			1
 #define EVENT_SET_PRESET 	0 //perf component
@@ -322,12 +322,13 @@ int metrics_init(int my_id,int pid)
 		}
 		get_weigth_fops_instructions(flops_weigth);	
 	}
-	sprintf(extra_filename,"%s.loop_info.csv",ear_app_name);
+	sprintf(extra_filename,"%s.loop_info.csv",get_ear_app_name());
+	ear_verbose(1,"Opening/Creating %s file \n",extra_filename);
 	fd_extra=fopen(extra_filename,"w+");
 	if (fd_extra==NULL){
 		ear_verbose(0,"EAR: File for extra metrics can not be created %s\n",strerror(errno));
 	}else{
-		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512\n");
+		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512;ITERATIONS\n");
 	}
 #endif
 	reset_values();
@@ -661,15 +662,20 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
 		my_gflops,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
 
-	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512\n");
+	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512;ITERATIONS\n");
 	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
 	fprintf(fd_extra,"%lu;%.5lf;%.5lf;%.5lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->iter_time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
 	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->DC_power,my_sig->DRAM_power,my_sig->PCK_power);
 	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->def_f,ear_policy_name,my_sig->policy_th);
 	fprintf(fd_extra,"%lu;%d;%u;",loop_id,period,level);
 	fprintf(fd_extra,"%llu;%llu;%llu;",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
-	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;%.2lf\n",psingle*100,p128*100,p256*100,p512*100);	
+	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;%.2lf",psingle*100,p128*100,p256*100,p512*100);	
 	
+}
+
+void metrics_end_loop_extra_metrics(int iters)
+{
+	fprintf(fd_extra,";%d\n",iters);
 }
 #endif
 
