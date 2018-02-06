@@ -232,14 +232,20 @@ int main(int argc, char *argv[])
     }
 
     //TODO: NEW
+    #if 0
     application_t *apps;
 
     num_apps = read_application_text_file(argv[1], &apps);
     MALLOC(app_list, application_t, num_apps);
-
+    MALLOC(samples_per_app, uint, num_apps);
+   
+    for (i = 0; i < num_apps; i++) {
+        samples_per_app[i] = 0;
+    }
+ 
     for (i = 0; i < num_apps; i++)
     {
-        if (read_app.def_f >= min_freq) {
+        if (apps[i].def_f >= min_freq) {
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
                 // If APP exists, then accumulate its values in
@@ -252,9 +258,10 @@ int main(int argc, char *argv[])
             }
         }
     }
+    #endif
 
     //TODO: REMOVE
-    #if 0
+    #if 1
     // We read data from data file
     OPEN(fd, argv[1], O_RDONLY, 0);
 

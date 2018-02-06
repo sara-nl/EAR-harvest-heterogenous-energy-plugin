@@ -17,6 +17,7 @@
 #include <sys/types.h>
 
 #include <papi.h>
+#include <cpufreq.h>
 
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_daemon_client.h>
