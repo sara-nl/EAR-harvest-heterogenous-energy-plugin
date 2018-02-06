@@ -25,7 +25,7 @@
         timestamp:12:           Frequency
 */
 
-#include <types.h>
+#include <types/generic.h>
 
 #define PERIOD_ID               1
 #define PERIOD_LENGTH           2
