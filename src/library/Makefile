@@ -35,13 +35,14 @@ OBJS = ear_states/ear_states.o           \
        ear_metrics/ear_basic.o           \
        ear_metrics/ear_stalls.o
 
-BINARIES = libear.so
+BINARIES = libear.so libeart.so
 
 ######## RULES
 
 .PHONY:
 
-all: libear.so
+all: libear.so 
+traces: libeart.so
 
 %.a: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
@@ -54,20 +55,24 @@ libear.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
 
 libeart.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
 	touch ear_states/ear_states.c
-	touch ear_dyn_inst/process_MPI.c
+	touch ear_dyn_inst/ear_api.c
 	touch ear_gui/ear_gui.c
 	$(MAKE) -C ear_states CFLAGS='$(CFLAGS) -DEAR_GUI' ear_states.o
 	$(MAKE) -C ear_gui CFLAGS='$(CFLAGS) -DEAR_GUI' ear_gui.o
-	$(MAKE) -C ear_dyn_inst CFLAGS='$(CFLAGS) -DEAR_GUI' process_MPI.o
-	touch ear_states/ear_states.c
-	touch ear_dyn_inst/process_MPI.c
-	touch ear_gui/ear_gui.c
+	$(MAKE) -C ear_dyn_inst CFLAGS='$(CFLAGS) -DEAR_GUI' ear_api.o
 	$(CC) $(CFLAGS) -o libeart.so $(OBJS) $(OUTER_OBJS) $(LIBRARIES) $(LDFLAGS)
+	touch ear_states/ear_states.c
+	touch ear_dyn_inst/ear_api.c
+	touch ear_gui/ear_gui.c
 
 ######## OPTIONS
 
 install:
 	mv libear.so $(DESTDIR)/lib/libear.so
+
+install_traces:
+	mv libeart.so $(DESTDIR)/lib/libeart.so
+	
 
 SUB_DIRS = ear_states    \
            ear_db        \

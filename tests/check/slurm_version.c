@@ -1,4 +1,4 @@
-#include <slurm.h>
+#include <slurm/slurm.h>
 #include <assert.h>
 
 // VERSION 17.02.6

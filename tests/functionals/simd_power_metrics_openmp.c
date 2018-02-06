@@ -24,7 +24,6 @@
 #include <types.h>
 
 #define INST_ITER   64.0
-#define F           2400000
 
 static ulong n_iterations;
 int EAR_VERBOSE_LEVEL = 4;
@@ -65,6 +64,7 @@ void usage()
     printf("- n_threads: threads to create and bind\n");
     printf("- n_iterations: number of n_iterations to gather energy metrics\n");
     printf("- csv: print output in csv format (0,1)\n");
+    printf("- frequency \n");
     exit(1);
 }
 
@@ -79,6 +79,7 @@ int main (int argc, char *argv[])
     ulong num_ops, frequency, aux;
     long long papi_flops, total_fp_inst;
     long long cycles, inst, stalls;
+    unsigned long F,F_BASE;
 
     double power_dram_w, power_dc_w;
     double power_ins, power_w, power_raw, power_raw_w;
@@ -92,7 +93,7 @@ int main (int argc, char *argv[])
     int full_compatible;
     int cpu, fd, csv;
 
-    if (argc != 5) {
+    if (argc != 6) {
         usage();
     }
 
@@ -101,6 +102,7 @@ int main (int argc, char *argv[])
     n_threads = atoi(argv[2]);
     n_iterations = strtoul(argv[3], NULL, 10);
     csv = atoi(argv[4]);
+	F= (unsigned long) atoi(argv[5]);
 
     // Node info
     cpu = get_model();
@@ -125,6 +127,10 @@ int main (int argc, char *argv[])
 
     ear_cpufreq_init();
     node_energy_init();
+	F_BASE=ear_cpufreq_get(0);
+    printf("Default frequency was %lu\n",F_BASE);
+	printf("Setting frequency to %lu\n",F);
+	printf("Using %d cores\n",n_threads);
     ear_cpufreq_set_node(F);
 
     // Creating the threads
@@ -273,7 +279,7 @@ int main (int argc, char *argv[])
         }
     }
 
-    ear_cpufreq_set_node(F);
+    ear_cpufreq_set_node(F_BASE);
     ear_cpufreq_end();
     node_energy_dispose();
 
