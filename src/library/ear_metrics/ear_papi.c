@@ -403,7 +403,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 {
 	double CPI,GBS,GIBS,seconds,GIBS_ranks,TPI,POWER,POWER_DC,DRAM_POWER,PCK_POWER,CORE_POWER,GFLOPS,EDP;
 	double PP,TP,EP,perf_deg,power_sav,energy_sav,ener,new_EDP;
-	long long total_fops_instructions, pond_fops;
+	long long total_fops_instructions;
 	application_t *app_info;
 	application_t SIGNATURE;
 	unsigned long f, optimal;
@@ -421,7 +421,8 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 
 	//
 	#ifdef EAR_EXTRA_METRICS
-	pond_fops = get_ponderated_floating_operations();
+	double pond_ops = (double) acum_event_values[EAR_ACUM_TOT_INS];
+	pond_fops += get_ponderated_floating_operations();
 
 	CPI  = (double) acum_event_values[EAR_ACUM_TOT_CYC] / (double) pond_fops;
 	TPI  = (double) (acum_event_values[EAR_ACUM_LD_INS] + acum_event_values[EAR_ACUM_SR_INS]);
@@ -429,15 +430,15 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
     #else
 	CPI  = (double) acum_event_values[EAR_ACUM_TOT_CYC] / (double) acum_event_values[EAR_ACUM_TOT_INS];
 	TPI  = (double) (acum_event_values[EAR_ACUM_LD_INS] + acum_event_values[EAR_ACUM_SR_INS]);
-	TPI /= (double) (pond_fops / ear_cache_line_size);
+	TPI /= (double) (acum_event_values[EAR_ACUM_TOT_INS] / ear_cache_line_size);
 	#endif
 
-	GFLOPS=gflops(app_exec_time,get_total_resources());
-	POWER_DC=(double)acum_energy/(double)(seconds*1000000);
-	EDP=seconds*seconds*POWER_DC;
-	DRAM_POWER=(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/seconds;
-	PCK_POWER=(double)(acum_event_values[EAR_ACUM_PCKG_ENER]/1000000000)/seconds;
-	f=ear_daemon_client_end_app_compute_turbo_freq();
+	GFLOPS = gflops(app_exec_time,get_total_resources());
+	POWER_DC = (double)acum_energy/(double)(seconds*1000000);
+	EDP = seconds*seconds*POWER_DC;
+	DRAM_POWER =(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/seconds;
+	PCK_POWER = (double)(acum_event_values[EAR_ACUM_PCKG_ENER]/1000000000)/seconds;
+	f = ear_daemon_client_end_app_compute_turbo_freq();
 	app_name=get_ear_app_name();
 
 	if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);

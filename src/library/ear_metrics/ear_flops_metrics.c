@@ -10,24 +10,22 @@
 #define EAR_FLOPS_EVENTS 4
 #define SP_OPS 0
 #define DP_OPS 1
+#define FP_ARITH_INST_RETIRED_PACKED_SINGLE_N		"FP_ARITH:SCALAR_SINGLE"
+#define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N	"FP_ARITH:128B_PACKED_SINGLE"
+#define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N	"FP_ARITH:256B_PACKED_SINGLE"
+#define FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE_N	"FP_ARITH:512B_PACKED_SINGLE"
+#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N 		"FP_ARITH:SCALAR_DOUBLE"
+#define FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N	"FP_ARITH:128B_PACKED_DOUBLE"
+#define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
+#define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
 
+static int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
 static int ear_flops_event_sets[EAR_FLOPS_EVENTS_SETS];
 static long long ear_flops_acum_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
 static long long ear_flops_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
 static int ear_flops_perf_event_cid;
 static PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
 static int flops_supported=0;
-
-static int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
-
-#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N 		"FP_ARITH:SCALAR_DOUBLE"
-#define FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N	"FP_ARITH:128B_PACKED_DOUBLE"
-#define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
-#define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
-#define FP_ARITH_INST_RETIRED_PACKED_SINGLE_N		"FP_ARITH:SCALAR_SINGLE"
-#define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N	"FP_ARITH:128B_PACKED_SINGLE"
-#define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N	"FP_ARITH:256B_PACKED_SINGLE"
-#define FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE_N	"FP_ARITH:512B_PACKED_SINGLE"
 
 int init_flops_metrics()
 {
@@ -70,7 +68,7 @@ int init_flops_metrics()
 		}
 		flops_attach_opt[sets].attach.eventset=ear_flops_event_sets[sets];
  		flops_attach_opt[sets].attach.tid=getpid();
-		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&flops_attach_opt[sets]))!=PAPI_OK){
+		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*) &flops_attach_opt[sets]))!=PAPI_OK){
 			ear_verbose(0,"FP_METRICS: PAPI_set_opt.%s\n",__FILE__,PAPI_strerror(retval));
 		}
 		retval = PAPI_set_multiplex(ear_flops_event_sets[sets]);
@@ -270,6 +268,26 @@ long long get_ponderated_floating_operations()
 		{
 			i = sets * EAR_FLOPS_EVENTS + ev;
 			pond_fops += ear_flops_acum_values[sets][ev] * FP_OPS_WEIGTH[sets][ev];
+		}
+	}
+
+	return pond_fops;
+}
+
+double get_ponderated_ops_weight()
+{
+	static int NEW_WEIGHTS[2][4] = {{0.0, 0.0, 0.5, 1.0}, {0.0, 0.0, 0.5, 1.0}};
+	double pond_fops;
+	int sets, ev;
+
+	if (!flops_supported) return;
+	pond_fops = 0.0;
+
+	for (sets = 0;sets < EAR_FLOPS_EVENTS_SETS; sets++)
+	{
+		for (ev = 0; ev < EAR_FLOPS_EVENTS; ev++)
+		{
+			pond_fops += ear_flops_acum_values[sets][ev] * NEW_WEIGHTS[sets][ev];
 		}
 	}
 
