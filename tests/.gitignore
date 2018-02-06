@@ -20,8 +20,6 @@ functionals/inputs
 
 *eard_monitor
 *dynais_input
-*hardware_scanner
 *freeipmi_overhead
-*intel_pci_uncores_stress
-*simd_power_metrics
-*papi_cpu_gflops
+*bandwith_monitor
+*simd_power_metrics_openmp
