@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "../states.h"
+#include <states.h>
 #include "application.h"
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -72,11 +72,12 @@ int append_application_text_file(char *path, application_t *app)
     return ret;
 }
 
-int read_application_binary_file(char *path, application_t **apps) {
+int read_application_binary_file(char *path, application_t **apps)
+{
     application_t *apps_aux, *a;
-    int fd, lines;
+    int fd, lines, i;
 
-    if ((fd = desc = open(path, O_RDONLY)) < 0) {
+    if ((fd = open(path, O_RDONLY)) < 0) {
         return EAR_FILE_NOT_FOUND;
     }
 
@@ -104,7 +105,7 @@ int read_application_binary_file(char *path, application_t **apps) {
     return i;
 }
 
-int read_summary_file(char *path, application_t **apps)
+int read_application_text_file(char *path, application_t **apps)
 {
     char line[PIPE_BUF];
     application_t *apps_aux, *a;
