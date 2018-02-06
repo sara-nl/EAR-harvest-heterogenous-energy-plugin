@@ -31,10 +31,10 @@
 #include <ear_states/ear_states.h>
 #include <ear_verbose.h>
 
+#include <types/application.h>
 #include <externs_alloc.h>
 #include <environment.h>
 #include <states.h>
-#include <types.h>
 
 #define BUFFSIZE 128
 
@@ -47,16 +47,13 @@ static int my_id,my_size;
 static int ear_iterations = 0;
 static unsigned long ear_current_freq;
 static int ear_current_cpuid;
+static int in_loop=0;
 
 // #define MEASURE_DYNAIS_OV
-// #define DYNAIS_TRACE
 
 #ifdef MEASURE_DYNAIS_OV
 static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;
-#endif
-#ifdef DYNAIS_TRACE
-static FILE *stdtrace,*stdtracebin;
 #endif
 
 void ear_init()
@@ -101,20 +98,6 @@ void ear_init()
 	ear_verbose(1,"EAR: Total resources %d\n",get_total_resources());
 	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",get_ear_dynais_levels(),get_ear_dynais_window_size());
 
-#ifdef DYNAIS_TRACE
-	if (ear_my_rank==0){
-        stdtrace=fopen("app.dynais.trace.csv","w");
-        if (stdtrace==NULL){
-                perror("Error opening app.dynais.trace.csv trace file");
-                exit(1);
-        }
-        stdtracebin=fopen("app.dynais.trace.bin","w");
-        if (stdtracebin==NULL){
-                perror("Error opening app.dynais.trace.bin trace file");
-                exit(1);
-        }
-	}
-#endif
 	// Connecting with ear_daemon
 	if (ear_daemon_client_connect()<0){
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
@@ -130,7 +113,7 @@ void ear_init()
 	ear_daemon_client_begin_app_compute_turbo_freq();
 	
 	db_get_app_name(ear_app_name);
-    	states_begin_job(my_id, NULL, ear_app_name);
+    states_begin_job(my_id, NULL, ear_app_name);
 	ear_current_freq=ear_cpufreq_get(0);	
 	init_power_policy();
 	init_power_models(ear_get_num_p_states(),ear_get_pstate_list());
@@ -146,8 +129,8 @@ void ear_init()
 	 
 	gettimeofday(&pmpi_app_begin_time,NULL);
 	fflush(stderr);
-	gui_init(ear_my_rank,my_id,ear_app_name,ear_node_name,num_nodes,my_size,ppnode);
-	gui_frequency(ear_my_rank,my_id,ear_current_freq);
+	traces_init(ear_my_rank,my_id,ear_app_name,ear_node_name,num_nodes,my_size,ppnode);
+	traces_frequency(ear_my_rank,my_id,ear_current_freq);
 	ear_debug(1,"EAR Initialized successfully\n");	
 	ear_print_lib_environment();
 	ear_verbose(1,"______________EAR loaded___________________\n");
@@ -165,25 +148,13 @@ if (!ear_whole_app){
     	unsigned int ear_size;
 	unsigned int ear_level;
 	unsigned long trace_data[5];
-// DYNAIS_TRACE generates a text trace file with values used as dynais imput, it is used for dynais evaluation and optimization
-#ifdef DYNAIS_TRACE
-	if (ear_my_rank==0){
-	fprintf(stdtrace,"%u;%u;%u;%u;%llu\n",buf,dest,call_type,ear_event,PAPI_get_real_usec());
-	trace_data[0]=(unsigned long)buf;
-	trace_data[1]=(unsigned long)dest;
-	trace_data[2]=(unsigned long)call_type;
-	trace_data[3]=(unsigned long)ear_event;
-	trace_data[4]=(unsigned long)PAPI_get_real_usec();
-	fwrite(trace_data,sizeof(unsigned long),5,stdtracebin);
-	}
-#endif
+    traces_mpi_call(ear_my_rank,my_id,(unsigned long)PAPI_get_real_usec(),(unsigned long)buf,(unsigned long)dest,(unsigned long)call_type,(unsigned long)ear_event);
 
 // MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
 #ifdef MEASURE_DYNAIS_OV
         begin_ov=PAPI_get_real_usec();
 #endif
 	// This is key to detect periods
-	ear_verbose(0,"event %lu\n",ear_event);
         ear_status=dynais(ear_event,&ear_size,&ear_level);
 #ifdef MEASURE_DYNAIS_OV
         end_ov=PAPI_get_real_usec();
@@ -199,10 +170,11 @@ if (!ear_whole_app){
 		ear_iterations=0;
 		states_begin_period(my_id, NULL, ear_event, ear_size);
 		ear_loop_size=ear_size;
+		in_loop=1;
 		break;
 	case END_NEW_LOOP:
 		ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
-		gui_end_period(ear_my_rank,my_id);
+		traces_end_period(ear_my_rank,my_id);
 		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
 		ear_iterations=0;
 		ear_loop_size=ear_size;
@@ -214,14 +186,16 @@ if (!ear_whole_app){
 		ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",ear_level,
 		ear_event,ear_loop_size,ear_iterations);
 		}
-		gui_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());	
+		traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());	
 		states_new_iteration(my_id, NULL, ear_loop_size, ear_iterations, ear_event, ear_level);
 		break;
 	case END_LOOP:
 		ear_debug(4,"END_LOOP event %u\n",ear_event);
-		gui_end_period(ear_my_rank,my_id);
+		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
+		traces_end_period(ear_my_rank,my_id);
 		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
 		ear_iterations=0;
+		in_loop=0;
 		break;
 	default:
 		break;
@@ -243,6 +217,7 @@ void ear_finalize()
 	ear_verbose(0,"EAR:: Dynais algorithm consumes %llu usecs in %u calls\n",ear_acum,calls);
 	#endif
 	
+	
 	app_eru_end=read_dc_energy();
 	app_eru_diff=energy_diff(app_eru_end , app_eru_init);
 	gettimeofday(&pmpi_app_end_time,NULL);
@@ -253,7 +228,7 @@ void ear_finalize()
 	//ear_verbose(0,"EAR: Accumulated energy %llu J. Execution time %llu (usecs) Avg. Power %5.5lf (W)\n",app_eru_diff/1000000,
 	//	pmpi_app_total_time,(double)app_eru_diff/(double)pmpi_app_total_time);
 
-	gui_end(ear_my_rank, my_id, app_eru_diff);
+	traces_end(ear_my_rank, my_id, app_eru_diff);
 
 	gethostname(node_name, sizeof(node_name));
 	summary_pathname = get_ear_user_db_pathname();
@@ -262,18 +237,12 @@ void ear_finalize()
 
 	db_end(ear_whole_app);
 	dynais_dispose();
-
-    	states_end_job(my_id, NULL, ear_app_name);
+	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
+    states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
 	end_dc_energy();
 	ear_daemon_client_disconnect();
 
-	#ifdef DYNAIS_TRACE
-	if (ear_my_rank==0){
-		fclose(stdtrace);
-		fclose(stdtracebin);
-	}
-	#endif
 }
 
 

@@ -16,13 +16,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <cpufreq.h>
 #include <papi.h>
+#include <cpufreq.h>
 
+#include <ear_frequency/ear_cpufreq.h>
 #include <ear_daemon_client.h>
 #include <ear_verbose.h>
+#include <types/generic.h>
 #include <externs.h>
-#include <types.h>
 
 static uint ear_num_cpus;
 static uint ear_num_p_states = 0;
@@ -32,6 +33,7 @@ static ulong ear_nominal_freq;
 static const PAPI_hw_info_t *ear_cpufreq_hwinfo;
 static struct cpufreq_policy *current_policy;
 static struct cpufreq_policy prev_policy;
+static ulong ear_prev_freq;
 
 unsigned int ear_get_pstate(unsigned long f)
 {
@@ -46,7 +48,8 @@ unsigned int ear_get_pstate(unsigned long f)
 void ear_cpufreq_end()
 {
 	int i;
-	ear_verbose(2,"EAR:  ear_cpufreq_end: Restoring previous governor %s\n",prev_policy.governor);
+	ear_verbose(2,"EAR:  ear_cpufreq_end: Restoring previous governor %s and frequency %lu\n",prev_policy.governor,ear_prev_freq);
+	ear_cpufreq_set_node(ear_prev_freq);
 	for (i=0;i<ear_num_cpus;i++){
 		cpufreq_set_policy(i,&prev_policy);
 	}
@@ -91,33 +94,34 @@ void ear_cpufreq_init()
             	ear_verbose(4,"EAR: Curent cpu frequency for cpu %u is %u \n",i,ear_cpufreq[i]);
             }
         }
-		ear_nominal_freq=ear_cpufreq[1];
-		ear_verbose(2,"EAR: Nominal frequency detected %u\n",ear_nominal_freq);
-		// We are assuming all the cpus supports the same set of frequencies
-		// we check for cpu 0
+	ear_prev_freq=ear_cpufreq[0];
+	// We are assuming all the cpus supports the same set of frequencies
+	// we check for cpu 0
         list_f=cpufreq_get_available_frequencies(0);
         first=list_f;
         while(list_f!=NULL){
         	list_f=list_f->next;
-			ear_num_p_states++;
+		ear_num_p_states++;
         }
-		ear_verbose(2,"EAR: %d p_states available\n",ear_num_p_states);
-		ear_cpufreq_pstates=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_p_states);
-		if (ear_cpufreq_pstates==NULL){
+	ear_verbose(2,"EAR: %d p_states available\n",ear_num_p_states);
+	ear_cpufreq_pstates=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_p_states);
+	if (ear_cpufreq_pstates==NULL){
 			ear_verbose(0,"EAR: malloc return NULL for ear_cpufreq_pstates.Exiting\n");
 			exit(1);
-		}
-	
-		list_f=first;
-		i=0;
-        while(list_f!=NULL){
-			ear_cpufreq_pstates[i]=list_f->frequency;	
-        	list_f=list_f->next;
-			ear_verbose(4,"EAR: P_state %d is %u\n",i,ear_cpufreq_pstates[i]);
-			i++;
-		}	
-		cpufreq_put_available_frequencies(first);
 	}
+	
+	list_f=first;
+	i=0;
+        while(list_f!=NULL){
+		ear_cpufreq_pstates[i]=list_f->frequency;	
+        	list_f=list_f->next;
+		ear_verbose(4,"EAR: P_state %d is %u\n",i,ear_cpufreq_pstates[i]);
+		i++;
+	}	
+	cpufreq_put_available_frequencies(first);
+	}
+	ear_nominal_freq=ear_cpufreq_pstates[1];
+	ear_verbose(2,"EAR: Nominal frequency detected %u\n",ear_nominal_freq);
 	current_policy=cpufreq_get_policy(0);
 	prev_policy.min=current_policy->min;
 	prev_policy.max=current_policy->max;
