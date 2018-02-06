@@ -422,7 +422,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 
 	//
 	#ifdef EAR_EXTRA_METRICS
-	double pond_ops = (double) acum_event_values[EAR_ACUM_TOT_INS];
+	double pond_fops = (double) acum_event_values[EAR_ACUM_TOT_INS];
 	pond_fops += get_ponderated_ops_weight();
 
 	CPI  = (double) acum_event_values[EAR_ACUM_TOT_CYC] / (double) pond_fops;
