@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
     }
 
     //TODO: NEW
-    #if 0
+    #if 1
     application_t *apps;
 
     num_apps = read_application_text_file(argv[1], &apps);
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
     #endif
 
     //TODO: REMOVE
-    #if 1
+    #if 0
     // We read data from data file
     OPEN(fd, argv[1], O_RDONLY, 0);
 
