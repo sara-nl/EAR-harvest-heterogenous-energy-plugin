@@ -10,24 +10,22 @@
 #define EAR_FLOPS_EVENTS 4
 #define SP_OPS 0
 #define DP_OPS 1
+#define FP_ARITH_INST_RETIRED_PACKED_SINGLE_N		"FP_ARITH:SCALAR_SINGLE"
+#define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N	"FP_ARITH:128B_PACKED_SINGLE"
+#define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N	"FP_ARITH:256B_PACKED_SINGLE"
+#define FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE_N	"FP_ARITH:512B_PACKED_SINGLE"
+#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N 		"FP_ARITH:SCALAR_DOUBLE"
+#define FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N	"FP_ARITH:128B_PACKED_DOUBLE"
+#define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
+#define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
 
+static int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
 static int ear_flops_event_sets[EAR_FLOPS_EVENTS_SETS];
 static long long ear_flops_acum_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
 static long long ear_flops_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
 static int ear_flops_perf_event_cid;
 static PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
 static int flops_supported=0;
-
-static int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
-
-#define FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N 		"FP_ARITH:SCALAR_DOUBLE"
-#define FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N	"FP_ARITH:128B_PACKED_DOUBLE"
-#define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
-#define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
-#define FP_ARITH_INST_RETIRED_PACKED_SINGLE_N		"FP_ARITH:SCALAR_SINGLE"
-#define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N	"FP_ARITH:128B_PACKED_SINGLE"
-#define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N	"FP_ARITH:256B_PACKED_SINGLE"
-#define FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE_N	"FP_ARITH:512B_PACKED_SINGLE"
 
 int init_flops_metrics()
 {
@@ -70,7 +68,7 @@ int init_flops_metrics()
 		}
 		flops_attach_opt[sets].attach.eventset=ear_flops_event_sets[sets];
  		flops_attach_opt[sets].attach.tid=getpid();
-		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&flops_attach_opt[sets]))!=PAPI_OK){
+		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*) &flops_attach_opt[sets]))!=PAPI_OK){
 			ear_verbose(0,"FP_METRICS: PAPI_set_opt.%s\n",__FILE__,PAPI_strerror(retval));
 		}
 		retval = PAPI_set_multiplex(ear_flops_event_sets[sets]);
@@ -154,18 +152,25 @@ void start_flops_metrics()
 void stop_flops_metrics(long long *flops,long long *f_operations)
 {
 	int sets,ev,retval;
+
 	if (!flops_supported) return;
 	*flops=0;
-	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
-		if ((retval=PAPI_stop(ear_flops_event_sets[sets],(long long *)&ear_flops_values[sets]))!=PAPI_OK){
+
+	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++)
+	{
+		if ((retval=PAPI_stop(ear_flops_event_sets[sets],(long long *)&ear_flops_values[sets]))!=PAPI_OK)
+		{
 			ear_verbose(0,"FP_METRICS: StopFlopsMetrics.%s\n",PAPI_strerror(retval));
-		}else{
+		} else
+		{
 			if (sets==SP_OPS) ear_verbose(2,"fops_fp -->");
 			if (sets==DP_OPS) ear_verbose(2,"fops_dp -->");
-			for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){ 
-				f_operations[sets*EAR_FLOPS_EVENTS+ev]=ear_flops_values[sets][ev];
-				ear_flops_acum_values[sets][ev]+=ear_flops_values[sets][ev];
-				*flops+=(ear_flops_values[sets][ev]*FP_OPS_WEIGTH[sets][ev]);
+
+			for (ev=0; ev < EAR_FLOPS_EVENTS;ev++)
+			{
+				f_operations[sets*EAR_FLOPS_EVENTS+ev] = ear_flops_values[sets][ev];
+				ear_flops_acum_values[sets][ev] += ear_flops_values[sets][ev];
+				*flops += (ear_flops_values[sets][ev] * FP_OPS_WEIGTH[sets][ev]);
 				ear_verbose(2,"[%d]=%llu x %d, ",ev,ear_flops_values[sets][ev],FP_OPS_WEIGTH[sets][ev]);
 			}
 			ear_verbose(2,"\n");
@@ -173,6 +178,7 @@ void stop_flops_metrics(long long *flops,long long *f_operations)
 	}
 	ear_verbose(2,"\n");
 }
+
 void print_gflops(long long total_inst,unsigned long total_time,uint total_cores)
 {
 	int sets,ev;
@@ -230,14 +236,19 @@ void get_weigth_fops_instructions(int *weigth_vector)
 		}
 	}
 }
+
 void get_total_fops(long long *metrics)
 {
-	int sets,ev;
+	int sets, ev, i;
+
 	if (!flops_supported) return;
-	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++){
-		for (ev=0;ev<EAR_FLOPS_EVENTS;ev++){
-			metrics[sets*EAR_FLOPS_EVENTS+ev]=ear_flops_acum_values[sets][ev];
+
+	for (sets=0;sets < EAR_FLOPS_EVENTS_SETS; sets++)
+	{
+		for (ev=0;ev < EAR_FLOPS_EVENTS; ev++)
+		{
+			i = sets * EAR_FLOPS_EVENTS + ev;
+			metrics[i] = ear_flops_acum_values[sets][ev];
 		}
 	}
-	
 }
