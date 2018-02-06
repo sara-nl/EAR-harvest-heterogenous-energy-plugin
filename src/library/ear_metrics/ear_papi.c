@@ -359,11 +359,11 @@ void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned
 }
 
 // Called after metrics_stop
-application_t set_metrics(int period, int iteration, long long *counters, long long iter_time,
+application_t* set_metrics(int period, int iteration, long long *counters, long long iter_time,
 						  ulong *eru, uint N_iters)
 {
 	double CPI, GBS, seconds, TPI, POWER;
-	struct App_info *app_info;
+	application_t *app_info;
 
 	ear_debug(4,"EAR(%s): Setting DB metrics for period %d iteration %d\n",
 			  __FILE__,period,N_iters);

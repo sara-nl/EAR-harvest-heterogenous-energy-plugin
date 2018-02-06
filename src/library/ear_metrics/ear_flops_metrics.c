@@ -268,7 +268,6 @@ long long get_ponderated_floating_operations()
 	{
 		for (ev = 0; ev < EAR_FLOPS_EVENTS; ev++)
 		{
-			i = sets * EAR_FLOPS_EVENTS + ev;
 			pond_fops += ear_flops_acum_values[sets][ev] * FP_OPS_WEIGTH[sets][ev];
 		}
 	}
