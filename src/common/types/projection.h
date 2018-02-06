@@ -1,7 +1,7 @@
 #ifndef _EAR_TYPES_PROJECTION
 #define _EAR_TYPES_PROJECTION
 
-#include <generic.h>
+#include <types/generic.h>
 
 typedef struct Coefficients_info
 {

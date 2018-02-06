@@ -1,6 +1,10 @@
 DIR    = $(ROOTDIR)/src/common
 CFLAGS = -I$(DIR) -fPIC $(CONSTANTS)
 
+####### 
+
+export DIR
+
 ######## FILES
 
 BINARIES = ear_daemon_client.o environment.o hardware.o string_enhanced.o types.a
