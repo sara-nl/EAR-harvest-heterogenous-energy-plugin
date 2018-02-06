@@ -6,18 +6,21 @@ LDFLAGS = $(CPUF_LDFLAGS) $(GSL_LDFLAGS)
 
 BINARIES = compute_coefficients
 
+FOREIGN_LIBS = $(ROOTDIR)/src/common/types.a
+
 ######## RULES
 
 all: $(BINARIES)
 
-compute_coefficients: compute_coefficients.c
-	$(CC) $(CFLAGS) -o compute_coefficients compute_coefficients.c $(LDFLAGS)
+compute_coefficients: compute_coefficients.c $(FOREIGN_LIBS)
+	$(CC) $(CFLAGS) -o compute_coefficients compute_coefficients.c $(LDFLAGS) $(FOREIGN_LIBS)
 
 ######## OPTIONS
 
 install:
 	mv compute_coefficients $(DESTDIR)/bin
 	cp learning_phase_*.sh $(DESTDIR)/etc/scripts/learning
+
 clean:
 	rm -f $(BINARIES)
 	rm -f *.o

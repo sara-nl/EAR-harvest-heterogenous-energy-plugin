@@ -23,7 +23,6 @@
 #include <ear_verbose.h>
 #include <environment.h>
 #include <externs.h>
-#include <types.h>
 
 static application_t *apps;
 static ulong current_freq;

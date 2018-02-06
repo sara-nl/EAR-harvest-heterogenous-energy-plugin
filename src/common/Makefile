@@ -1,11 +1,18 @@
 DIR    = $(ROOTDIR)/src/common
 CFLAGS = -I$(DIR) -fPIC $(CONSTANTS)
 
+####### 
+
+export DIR
+
 ######## FILES
 
-BINARIES = ear_daemon_client.o environment.o hardware.o string_enhanced.o types.o
+BINARIES = ear_daemon_client.o environment.o hardware.o string_enhanced.o types.a
 
 ######## RULES
+
+%.o: %.c
+	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
 all: $(BINARIES)
 
@@ -21,8 +28,8 @@ hardware.o: hardware.c hardware.h
 string_enhanced.o: string_enhanced.c string_enhanced.h
 	$(CC) $(CFLAGS) -c string_enhanced.c
 
-types.o: types.c
-	$(CC) $(CFLAGS) -c types.c
+types.a: types/application.o types/projection.o
+	ar rvs types.a types/application.o types/projection.o
 
 install:
 

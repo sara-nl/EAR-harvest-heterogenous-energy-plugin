@@ -20,6 +20,7 @@ void get_total_fops(long long *metrics);
 
 #ifdef EAR_EXTRA_METRICS
 long long get_ponderated_floating_operations();
+double get_ponderated_ops_weight();
 #endif
 
 #else
