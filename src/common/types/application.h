@@ -85,6 +85,7 @@ typedef struct application
 } application_t;*/
 
 // Declarations
+int read_application_binary_file(char *path, application_t **apps);
 int read_application_text_file(char *path, application_t **apps);
 int append_application_binary_file(char *path, application_t *app);
 int append_application_text_file(char *path, application_t *app);

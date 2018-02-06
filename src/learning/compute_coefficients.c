@@ -231,6 +231,30 @@ int main(int argc, char *argv[])
         current[i] = 0;
     }
 
+    //TODO: NEW
+    application_t *apps;
+
+    num_apps = read_application_text_file(argv[1], &apps);
+    MALLOC(app_list, application_t, num_apps);
+
+    for (i = 0; i < num_apps; i++)
+    {
+        if (read_app.def_f >= min_freq) {
+
+            if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
+                // If APP exists, then accumulate its values in
+                accum_app(&app_list[index], &apps[i]);
+                samples_per_app[index]++;
+            } else {
+                write_app(&app_list[filtered_apps], &apps[i]);
+                samples_per_app[filtered_apps] = 1;
+                filtered_apps++;
+            }
+        }
+    }
+
+    //TODO: REMOVE
+    #if 0
     // We read data from data file
     OPEN(fd, argv[1], O_RDONLY, 0);
 
@@ -260,7 +284,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    //
     for (i = 0; i < num_apps; i++)
     {
         if (read(fd, &read_app, sizeof(application_t)) != sizeof(application_t))
@@ -282,6 +305,7 @@ int main(int argc, char *argv[])
             }
         }
     }
+    #endif
 
     // We will consider only applictions with f >= min_freq
     num_apps = filtered_apps;
@@ -293,7 +317,10 @@ int main(int argc, char *argv[])
 
     fprintf(stdout, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u\n",
             nodename, num_node_p_states, nom_freq, num_apps, min_freq);
+
+    #if 0
     close(fd);
+    #endif
 
     // We maintain the name's of applications to generate graphs
     for (current_app = 0; current_app < num_apps; current_app++) {

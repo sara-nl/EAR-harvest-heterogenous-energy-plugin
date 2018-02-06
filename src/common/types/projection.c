@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "../states.h"
+#include <states.h>
 #include "projection.h"
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH

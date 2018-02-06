@@ -53,6 +53,15 @@ libear.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
 	$(CC) $(CFLAGS) -o libear.so $(OBJS) $(OUTER_OBJS) $(LDFLAGS)
 
 libeart.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
+	touch ear_states/ear_states.c
+	touch ear_dyn_inst/process_MPI.c
+	touch ear_gui/ear_gui.c
+	$(MAKE) -C ear_states CFLAGS='$(CFLAGS) -DEAR_GUI' ear_states.o
+	$(MAKE) -C ear_gui CFLAGS='$(CFLAGS) -DEAR_GUI' ear_gui.o
+	$(MAKE) -C ear_dyn_inst CFLAGS='$(CFLAGS) -DEAR_GUI' process_MPI.o
+	touch ear_states/ear_states.c
+	touch ear_dyn_inst/process_MPI.c
+	touch ear_gui/ear_gui.c
 	$(CC) $(CFLAGS) -o libeart.so $(OBJS) $(OUTER_OBJS) $(LIBRARIES) $(LDFLAGS)
 
 ######## OPTIONS
