@@ -7,8 +7,8 @@
 
 */
 
-#ifndef _EAR_GUI_H_
-#define _EAR_GUI_H_
+#ifndef _EAR_TRACES_H_
+#define _EAR_TRACES_H_
 
 /*
         timestamp:1:            Period id
@@ -24,6 +24,9 @@
         timestamp:11:           Period power projection
         timestamp:12:           Frequency
 */
+
+#include <types/generic.h>
+
 #define PERIOD_ID               1
 #define PERIOD_LENGTH           2
 #define PERIOD_ITERATIONS       3
@@ -43,28 +46,32 @@
 #ifdef EAR_GUI
 
 // Executed at application start/end
-void gui_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis,int ppnode);
-void gui_end(int gwho,int lwho,unsigned long int total_ener);
+void traces_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis,int ppnode);
+void traces_end(int gwho,int lwho,unsigned long int total_ener);
 
 //Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states
-void gui_new_signature(int gwho,int lwho,double seconds,double CPI,double TPI,double GBS,double POWER);
-void gui_frequency(int gwho, int lwho,unsigned long f);
-void gui_PP(int gwho,int lwho,double seconds,double CPI,double POWER);
+void traces_new_signature(int gwho,int lwho,double seconds,double CPI,double TPI,double GBS,double POWER);
+void traces_frequency(int gwho, int lwho,unsigned long f);
+void traces_PP(int gwho,int lwho,double seconds,double CPI,double POWER);
 
 // Executed when each time a new loop is detected, the loop ends, or a new iteration are reported
-void gui_new_n_iter(int gwho,int lwho,int period_id,int period_size, int iterations,int my_state);
-void gui_new_period(int gwho,int lwho,int period_id);
-void gui_end_period(int gwho,int lwho);
+void traces_new_n_iter(int gwho,int lwho,int period_id,int period_size, int iterations,int my_state);
+void traces_new_period(int gwho,int lwho,int period_id);
+void traces_end_period(int gwho,int lwho);
+
+// Executed at each mpi_call
+void traces_mpi_call(int gwho,int lwho, ulong timestamp, ulong event, ulong arg1,ulong arg2,ulong arg3);
 
 #else
-#define gui_init(g,l,a,n,n1,m,p)
-#define gui_new_n_iter(g,l,p,s,i,st)
-#define gui_end(g,l,e)
-#define gui_new_signature(g,l,s,c,t,gb,p)
-#define gui_frequency(g,l,f)
-#define gui_PP(g,l,s,c,p)
-#define gui_new_period(g,l,p)
-#define gui_end_period(g,l)
+#define traces_init(g,l,a,n,n1,m,p)
+#define traces_new_n_iter(g,l,p,s,i,st)
+#define traces_end(g,l,e)
+#define traces_new_signature(g,l,s,c,t,gb,p)
+#define traces_frequency(g,l,f)
+#define traces_PP(g,l,s,c,p)
+#define traces_new_period(g,l,p)
+#define traces_end_period(g,l)
+#define traces_mpi_call(g,l,t,e,a1,a2,a3);
 #endif
 
 #else

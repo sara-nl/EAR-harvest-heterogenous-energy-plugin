@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <types/application.h>
+#include <types/projection.h>
 #include <string_enhanced.h>
-#include <types.h>
 
 typedef struct control
 {
@@ -341,7 +342,7 @@ int main(int argc, char *argv[])
     if (control.mode == 1 && (argc == 5 || argc == 6))
     {
         //
-        control.n_apps = read_summary_file(argv[3], &control.apps);
+        control.n_apps = read_application_text_file(argv[3], &control.apps);
         control.n_coeffs = read_coefficients_file(argv[2], &control.coeffs, 0);
         control.f0_mhz = (unsigned long) atoi(argv[4]);
         control.csv = argv[5];
@@ -373,7 +374,7 @@ int main(int argc, char *argv[])
     else if (control.mode == 3 && (argc == 3 || argc == 4))
     {
         //
-        control.n_apps = read_summary_file(argv[2], &control.apps);
+        control.n_apps = read_application_text_file(argv[2], &control.apps);
         control.csv = argv[3];
 
         //

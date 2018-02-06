@@ -1,6 +1,8 @@
 DIR     = $(ROOTDIR)/src/library
 LDFLAGS = -O2 -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
-CFLAGS  = -I$(DIR) $(PAPI_CFLAGS) $(CPUF_CFLAGS) -I$(ROOTDIR)/src/common -fPIC $(CONSTANTS) $(DEBUG)
+CFLAGS  = -fPIC $(CONSTANTS) $(DEBUG) -I$(DIR)
+CFLAGS += -I$(DIR)/common -I$(ROOTDIR)/src/common
+CFLAGS += $(PAPI_CFLAGS) $(CPUF_CFLAGS)
 
 ######## VARS
 
@@ -13,7 +15,7 @@ export LDFLAGS
 OUTER_OBJS = $(ROOTDIR)/src/common/ear_daemon_client.o \
              $(ROOTDIR)/src/common/environment.o \
              $(ROOTDIR)/src/common/hardware.o \
-             $(ROOTDIR)/src/common/types.o
+             $(ROOTDIR)/src/common/types.a
 
 OBJS = ear_states/ear_states.o           \
        ear_db/ear_db.o                   \
@@ -33,13 +35,14 @@ OBJS = ear_states/ear_states.o           \
        ear_metrics/ear_basic.o           \
        ear_metrics/ear_stalls.o
 
-BINARIES = libear.so
+BINARIES = libear.so libeart.so
 
 ######## RULES
 
 .PHONY:
 
-all: libear.so
+all: libear.so 
+traces: libeart.so
 
 %.a: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
@@ -49,15 +52,27 @@ all: libear.so
 
 libear.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
 	$(CC) $(CFLAGS) -o libear.so $(OBJS) $(OUTER_OBJS) $(LDFLAGS)
-	
 
 libeart.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
+	touch ear_states/ear_states.c
+	touch ear_dyn_inst/ear_api.c
+	touch ear_gui/ear_gui.c
+	$(MAKE) -C ear_states CFLAGS='$(CFLAGS) -DEAR_GUI' ear_states.o
+	$(MAKE) -C ear_gui CFLAGS='$(CFLAGS) -DEAR_GUI' ear_gui.o
+	$(MAKE) -C ear_dyn_inst CFLAGS='$(CFLAGS) -DEAR_GUI' ear_api.o
 	$(CC) $(CFLAGS) -o libeart.so $(OBJS) $(OUTER_OBJS) $(LIBRARIES) $(LDFLAGS)
+	touch ear_states/ear_states.c
+	touch ear_dyn_inst/ear_api.c
+	touch ear_gui/ear_gui.c
 
 ######## OPTIONS
 
 install:
 	mv libear.so $(DESTDIR)/lib/libear.so
+
+install_traces:
+	mv libeart.so $(DESTDIR)/lib/libeart.so
+	
 
 SUB_DIRS = ear_states    \
            ear_db        \

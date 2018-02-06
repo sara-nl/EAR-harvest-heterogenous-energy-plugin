@@ -7,18 +7,19 @@
 
 */
 
-#include <stdio.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_multifit.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
 #include <cpufreq.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_multifit.h>
+#include <types/application.h>
+#include <types/projection.h>
 #include <config.h>
-#include <types.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
@@ -230,6 +231,37 @@ int main(int argc, char *argv[])
         current[i] = 0;
     }
 
+    //TODO: NEW
+    #if 0
+    application_t *apps;
+
+    num_apps = read_application_text_file(argv[1], &apps);
+    MALLOC(app_list, application_t, num_apps);
+    MALLOC(samples_per_app, uint, num_apps);
+   
+    for (i = 0; i < num_apps; i++) {
+        samples_per_app[i] = 0;
+    }
+ 
+    for (i = 0; i < num_apps; i++)
+    {
+        if (apps[i].def_f >= min_freq) {
+
+            if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
+                // If APP exists, then accumulate its values in
+                accum_app(&app_list[index], &apps[i]);
+                samples_per_app[index]++;
+            } else {
+                write_app(&app_list[filtered_apps], &apps[i]);
+                samples_per_app[filtered_apps] = 1;
+                filtered_apps++;
+            }
+        }
+    }
+    #endif
+
+    //TODO: REMOVE
+    #if 1
     // We read data from data file
     OPEN(fd, argv[1], O_RDONLY, 0);
 
@@ -259,9 +291,10 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    //
-    for (i = 0; i < num_apps; i++) {
-        if (read(fd, &read_app, sizeof(application_t)) != sizeof(application_t)) {
+    for (i = 0; i < num_apps; i++)
+    {
+        if (read(fd, &read_app, sizeof(application_t)) != sizeof(application_t))
+        {
             perror("Error reading app info");
             exit(1);
         }
@@ -279,6 +312,7 @@ int main(int argc, char *argv[])
             }
         }
     }
+    #endif
 
     // We will consider only applictions with f >= min_freq
     num_apps = filtered_apps;
@@ -290,7 +324,10 @@ int main(int argc, char *argv[])
 
     fprintf(stdout, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u\n",
             nodename, num_node_p_states, nom_freq, num_apps, min_freq);
+
+    #if 0
     close(fd);
+    #endif
 
     // We maintain the name's of applications to generate graphs
     for (current_app = 0; current_app < num_apps; current_app++) {
