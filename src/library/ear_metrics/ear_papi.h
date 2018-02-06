@@ -10,7 +10,7 @@
 #ifndef _EAR_PAPI_H_
 #define _EAR_PAPI_H_
 
-#include <types/generic.h>
+#include <types/application.h>
 
 // Internals to ear_papi.c
 void copy_metrics_last_iter_counters();

@@ -1,15 +1,15 @@
 #define _GNU_SOURCE
 #include <math.h>
-#include <string.h>
+#include <sched.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <sched.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <assert.h>
+
 #include <emmintrin.h> // -msse2
 #include <immintrin.h> // -mavx -mfma -mfavx512
 #include <papi.h>
@@ -20,8 +20,8 @@
 #include <ear_metrics/ear_basic.h>
 #include <ear_frequency.h>
 #include <ear_turbo.h>
+#include <types/generic.h>
 #include <hardware.h>
-#include <types.h>
 
 #define INST_ITER   64.0
 
