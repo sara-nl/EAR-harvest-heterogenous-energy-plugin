@@ -24,7 +24,13 @@ typedef struct PerfProjection
     double CPI;
 } projection_t;
 
-// Declarations
+// Function declarations
+
+// Reads a file of coefficients saved in binary format. A block of memory
+// is allocated for this read coefficients, and is returned by the argument
+// 'coeffs'. The returned integer is the number of applications read. If the
+// integer is negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
+// EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
 int read_coefficients_file(char *path, coefficient_t **coeffs, int size);
 
 #endif
