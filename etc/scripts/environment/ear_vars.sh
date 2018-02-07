@@ -10,7 +10,7 @@ function safexport
 
 safexport EAR 1
 safexport EAR_DB_PATHNAME /home/xjaneas/ear/DBS/db
-safexport EAR_COEFF_DB_PATHNAME /home/xjaneas/ear/COEFFICIENTS/coeff
+safexport EAR_COEFF_DB_PATHNAME /home/xjaneas/ear/COEFFICIENTS/coeff.
 safexport EAR_USER_DB_PATHNAME /home/xjaneas/ear/SUMMARIES/sum
 safexport EAR_DYNAIS_LEVELS 4
 safexport EAR_DYNAIS_WINDOW_SIZE 500
