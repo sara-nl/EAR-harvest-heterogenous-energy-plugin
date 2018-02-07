@@ -232,110 +232,137 @@ void metrics_get_hw_info(int *sockets,int *cores_socket,unsigned long *max_f,uns
 ///////////////////////
 int metrics_init(int my_id,int pid)
 {
-	int retval,ret;
+	int retval, ret;
 	int sets,i;
-#ifdef EAR_EXTRA_METRICS
+
+	#ifdef EAR_EXTRA_METRICS
 	char extra_filename[MAX_APP_NAME];
-#endif
-	
+	#endif
 
 	if (my_id) return 1;
+
 	// This must be change to new EAR fucntion
 	ear_cache_line_size=get_cache_line_size();
 	ear_debug(2,"EAR(%s):: Cache line size %d\n",__FILE__,ear_cache_line_size);
+
 	// Init the PAPI library
-	if (PAPI_is_initialized()==PAPI_NOT_INITED){
-		retval=PAPI_library_init(PAPI_VER_CURRENT );
-		if ( retval != PAPI_VER_CURRENT ) {
+	if (PAPI_is_initialized()==PAPI_NOT_INITED)
+	{
+		retval = PAPI_library_init(PAPI_VER_CURRENT);
+
+		if (retval != PAPI_VER_CURRENT) {
 			ear_verbose(0,"EAR: Error intializing the PAPI library.Exiting\n");
 			exit(1);
  		}
-		if ((ret=PAPI_multiplex_init())!=PAPI_OK){
-			ear_verbose(0,"EAR: WARNING PAPI_multiplex_init fails: %s\n",PAPI_strerror(ret));
-		}	
+		if ((ret=PAPI_multiplex_init()) != PAPI_OK){
+			ear_verbose(0,"EAR: WARNING PAPI_multiplex_init fails: %s\n", PAPI_strerror(ret));
+		}
 	}
+
 	// Checking the perf_event component  component 
-	perf_cid=PAPI_get_component_index("perf_event");
-	if (perf_cid<0){
+	perf_cid = PAPI_get_component_index("perf_event");
+	if (perf_cid < 0) {
 		ear_verbose(0,"EAR: perf_event component not found(%s) .Exiting\n",PAPI_strerror(perf_cid));
 		exit(1);
 	}
+
 	// Checking HW info
-    	ear_hwinfo= PAPI_get_hardware_info();
-	if (ear_hwinfo==NULL){
+	ear_hwinfo = PAPI_get_hardware_info();
+
+	if (ear_hwinfo == NULL)
+	{
 		ear_verbose(0,"EAR: WARNING PAPI_get_hardware_info returns NULL\n");
-	}else{
+	} else {
     	ear_verbose(3,"EAR: %d CPUsPerNUMA-Node, \n \
                 %d Number of hdw threads per core\n \
                 %d Number of cores per socket \n \
                 %d Number of sockets \n \
                 %d Total Number of NUMA Nodes \n \
-                (max-mhz %d min-mhz %d)\n\
+                (max-mhz %d min-mhz %d) \n \
 				model %d model_name %s\n",
 				ear_hwinfo->ncpu,
                 ear_hwinfo->threads,
                 ear_hwinfo->cores,
                 ear_hwinfo->sockets,
                 ear_hwinfo->nnodes,
-                ear_hwinfo->cpu_max_mhz,ear_hwinfo->cpu_min_mhz,
-			ear_hwinfo->model,ear_hwinfo->model_string);
+				ear_hwinfo->cpu_max_mhz,ear_hwinfo->cpu_min_mhz,
+				ear_hwinfo->model,ear_hwinfo->model_string);
 	}
+
 	ear_node_size=ear_hwinfo->threads*ear_hwinfo->cores;
+
 	// This must be change to new EAR fucntion
 	init_basic_metrics();
+
 	// We ask for uncore and rapl metrics sizes
 	uncore_size=ear_daemon_client_get_data_size_uncore();
 	rapl_size=ear_daemon_client_get_data_size_rapl();
+
 	// We reserve memory for uncore and rapl metrics
 	event_values_uncore=malloc(uncore_size);
+
 	if (event_values_uncore==NULL){
 		ear_verbose(0,"EAR: Error, malloc returns NULL when reserving memory for uncore metrics.Exiting\n");
 		exit(1);
 	}
+
 	uncore_elements=uncore_size/sizeof(long long);
 	event_values_rapl=malloc(rapl_size);
+
 	if (event_values_rapl==NULL){
 		ear_verbose(0,"EAR: Error, malloc returns NULL when reserving memory for rapl metrics.Exiting\n");
 		exit(1);
 	}
+
 	rapl_elements=rapl_size/sizeof(long long);
-	for (i=0;i<TOTAL_EVENTS;i++){
+	for (i=0;i<TOTAL_EVENTS;i++)
+	{
 		acum_event_values[i]=0;
 		last_iter_event_values[i]=0;
 		diff_event_values[i]=0;
 	}
-#ifdef EAR_EXTRA_METRICS
+
+	#ifdef EAR_EXTRA_METRICS
 	init_turbo_metrics();
 	fops_supported=init_flops_metrics();
 	init_cache_metrics();
-	if (fops_supported){ 
-		flops_events=get_number_fops_events();
-		flops_metrics=(long long *) malloc(sizeof(long long)*flops_events);
-		if (flops_metrics==NULL){
+
+	if (fops_supported)
+	{
+		flops_events = get_number_fops_events();
+		flops_metrics = (long long *) malloc(sizeof(long long) * flops_events);
+
+		if (flops_metrics == NULL){
 			ear_verbose(0,"EAR: Error allocating memory for flops %s\n",strerror(errno));
 			exit(1);
 		}
-		flops_weigth=(int *)malloc(sizeof(int)*flops_events);
-		if (flops_weigth==NULL){
+
+		flops_weigth = (int *) malloc(sizeof(int)*flops_events);
+
+		if (flops_weigth == NULL) {
 			ear_verbose(0,"EAR: Error allocating memory for flops weigth %s\n",strerror(errno));
 			exit(1);
 		}
-		get_weigth_fops_instructions(flops_weigth);	
+
+		get_weigth_fops_instructions(flops_weigth);
 	}
+
+	// TODO: esto deberiamos verlo, me está creando ficheros sin nada.
 	sprintf(extra_filename,"%s.loop_info.csv",get_ear_app_name());
 	ear_verbose(1,"Opening/Creating %s file \n",extra_filename);
 	fd_extra=fopen(extra_filename,"w+");
+
 	if (fd_extra==NULL){
 		ear_verbose(0,"EAR: File for extra metrics can not be created %s\n",strerror(errno));
 	}else{
 		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512;ITERATIONS\n");
 	}
-#endif
+	#endif
+
 	reset_values();
 	metrics_reset();
 	metrics_start();
 	app_start_time=PAPI_get_real_usec();
-
 
 	return 0;
 }
@@ -620,6 +647,7 @@ void metrics_get_extra_metrics(struct App_info_extended *my_extra)
 	my_extra->L3_misses=l3;
 	for (i=0;i<flops_events;i++) my_extra->FLOPS[i]=flops_metrics[i];
 }
+
 void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extended *my_extra,int iterations,unsigned long loop_id,int period,unsigned int level)
 {
 	long long sp=0,dp=0;
@@ -631,6 +659,7 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 	for (i=flops_events/2;i<flops_events;i++){ 
 		dp+=my_extra->FLOPS[i];
 	}
+
 	fops_single=my_extra->FLOPS[flops_events/2]*flops_weigth[flops_events/2];
 	fops_128=my_extra->FLOPS[flops_events/2+1]*flops_weigth[flops_events/2+1];
 	fops_256=my_extra->FLOPS[flops_events/2+2]*flops_weigth[flops_events/2+2];
