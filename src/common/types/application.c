@@ -69,7 +69,7 @@ int append_application_text_file(char *path, application_t *app)
     close(fd);
 
     if (ret < 0) return EAR_ERROR;
-    return ret;
+    return EAR_SUCCESS;
 }
 
 int read_application_binary_file(char *path, application_t **apps)

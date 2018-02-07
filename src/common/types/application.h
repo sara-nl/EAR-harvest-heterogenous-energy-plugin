@@ -84,10 +84,28 @@ typedef struct application
 	void ext6;
 } application_t;*/
 
-// Declarations
+// Function declarations
+
+// Reads a file of applications saved in binary format. A memory block is
+// allocated for the read applications, and is returned by the argument 'apps'.
+// The returned integer is the number of applications read. If the integer is
+// negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
+// EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
 int read_application_binary_file(char *path, application_t **apps);
+
+// Reads a file of applications saved in CSV format. A block of memory is
+// allocated for this read applications, and is returned by the argument 'apps'.
+// The returned integer is the number of applications read. If the integer is
+// negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
+// EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
 int read_application_text_file(char *path, application_t **apps);
+
+// Appends in a file an application in binary format. The returned integer is
+// one of the following states: EAR_SUCCESS or EAR_ERROR.
 int append_application_binary_file(char *path, application_t *app);
+
+// Appends in a file an application in CSV format. The returned integer is one
+// of the following states: EAR_SUCCESS or EAR_ERROR.
 int append_application_text_file(char *path, application_t *app);
 
 #endif
