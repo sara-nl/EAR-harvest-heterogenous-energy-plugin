@@ -198,11 +198,12 @@ void metrics_reset()
 		ear_verbose(0,"EAR(%s): Reset uncore counters to compute MB is failing\n",ear_app_name);
 	}
 	reset_basic_metrics();
-#ifdef EAR_EXTRA_METRICS
+
+	#ifdef EAR_EXTRA_METRICS
 	reset_turbo_metrics();
 	reset_flops_metrics();
 	reset_cache_metrics();
-#endif
+	#endif
 }
 
 void reset_values()
@@ -227,9 +228,6 @@ void metrics_get_hw_info(int *sockets,int *cores_socket,unsigned long *max_f,uns
 	strcpy(CPU_name,ear_hwinfo->vendor_string);
 }
  
-///////////////////////
-/////// Init function
-///////////////////////
 int metrics_init(int my_id,int pid)
 {
 	int retval, ret;
@@ -423,36 +421,34 @@ application_t* set_metrics(int period, int iteration, long long *counters, long 
 
 void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 {
-	double CPI,GBS,GIBS,seconds,GIBS_ranks,TPI,POWER,POWER_DC,DRAM_POWER,PCK_POWER,CORE_POWER,GFLOPS,EDP;
-	double PP,TP,EP,perf_deg,power_sav,energy_sav,ener,new_EDP;
+	double CPI, GBS, seconds, TPI, POWER_DC, DRAM_POWER, PCK_POWER, GFLOPS, EDP;
+	double PP, TP, EP, perf_deg, power_sav, energy_sav, energy, new_EDP;
 	long long total_fops_instructions;
+	unsigned long f, optimal;
 	application_t *app_info;
 	application_t SIGNATURE;
-	unsigned long f, optimal;
-	unsigned int app_id;
 	char *app_name;
 	int i;
 
 	app_info = db_current_app();
 
 	// Compute signature
-	seconds= (double) app_exec_time / (double)1000000;
+	seconds = (double) app_exec_time / (double)1000000;
 
 	GBS  = ((double) (acum_event_values[EAR_ACUM_LD_INS] * ear_cache_line_size) / (seconds*(double)(1024*1024*1024)));
 	GBS += ((double) (acum_event_values[EAR_ACUM_SR_INS] * ear_cache_line_size) / (seconds*(double)(1024*1024*1024)));
-
 	CPI  = (double) acum_event_values[EAR_ACUM_TOT_CYC] / (double) acum_event_values[EAR_ACUM_TOT_INS];
 	TPI  = (double) (acum_event_values[EAR_ACUM_LD_INS] + acum_event_values[EAR_ACUM_SR_INS]);
 	TPI /= (double) (acum_event_values[EAR_ACUM_TOT_INS] / ear_cache_line_size);
+	GFLOPS = gflops(app_exec_time, get_total_resources());
 
-	GFLOPS = gflops(app_exec_time,get_total_resources());
-	POWER_DC = (double)acum_energy/(double)(seconds*1000000);
-	EDP = seconds*seconds*POWER_DC;
+	POWER_DC   = (double) acum_energy / (double) (seconds * 1000000);
+	EDP = seconds * seconds * POWER_DC;
+	DRAM_POWER = (double) (acum_event_values[EAR_ACUM_DRAM_ENER] / 1000000000) / seconds;
+	PCK_POWER  = (double) (acum_event_values[EAR_ACUM_PCKG_ENER] / 1000000000) / seconds;
 
-	DRAM_POWER =(double)(acum_event_values[EAR_ACUM_DRAM_ENER]/1000000000)/seconds;
-	PCK_POWER = (double)(acum_event_values[EAR_ACUM_PCKG_ENER]/1000000000)/seconds;
 	f = ear_daemon_client_end_app_compute_turbo_freq();
-	app_name=get_ear_app_name();
+	app_name = get_ear_app_name();
 
 	if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);
 	else strcpy(SIGNATURE.app_id,"NA");
@@ -485,58 +481,71 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	fprintf(stderr,"_______________________________\n");
 	#endif
 
-		// We can write summary metrics in any DB or any other place
+	// We can write summary metrics in any DB or any other place
 	#if 0
-		fprintf(stderr,"_____________________APP SUMMARY ___________________\n");
-		fprintf(stderr,"MPI_RANK= %d\n",my_id);
-		fprintf(stderr,"ACUM CYCLES %llu\n",acum_event_values[EAR_ACUM_TOT_CYC]);
-		fprintf(stderr,"ACUM INS %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
-		fprintf(stderr,"ACUM COUNT_CAS_RD %llu\n",acum_event_values[EAR_ACUM_LD_INS]);
-		fprintf(stderr,"ACUM COUNT_CAS_WR %llu\n",acum_event_values[EAR_ACUM_SR_INS]);
-		fprintf(stderr,"ACUM DC ENERGY %llu mJ\n",acum_energy);
-		fprintf(stderr,"ACUM RAPL DRAM ENERGY  %llu\n",acum_event_values[EAR_ACUM_DRAM_ENER]); 
-		fprintf(stderr,"ACUM RAPL PCKG ENERGY  %llu\n",acum_event_values[EAR_ACUM_PCKG_ENER]); 
+	fprintf(stderr,"_____________________APP SUMMARY ___________________\n");
+	fprintf(stderr,"MPI_RANK= %d\n",my_id);
+	fprintf(stderr,"ACUM CYCLES %llu\n",acum_event_values[EAR_ACUM_TOT_CYC]);
+	fprintf(stderr,"ACUM INS %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
+	fprintf(stderr,"ACUM COUNT_CAS_RD %llu\n",acum_event_values[EAR_ACUM_LD_INS]);
+	fprintf(stderr,"ACUM COUNT_CAS_WR %llu\n",acum_event_values[EAR_ACUM_SR_INS]);
+	fprintf(stderr,"ACUM DC ENERGY %llu mJ\n",acum_energy);
+	fprintf(stderr,"ACUM RAPL DRAM ENERGY  %llu\n",acum_event_values[EAR_ACUM_DRAM_ENER]);
+	fprintf(stderr,"ACUM RAPL PCKG ENERGY  %llu\n",acum_event_values[EAR_ACUM_PCKG_ENER]);
 	#endif
 
-		// Reporting application signature metrics at stderr
-		fprintf(stderr,"_____________________EAR Summary for %s ___________________\n",app_info->node_id);
-		fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,SIGNATURE.app_id,(double)app_exec_time/(double)1000000);
-		fprintf(stderr,"EAR CPI=%.3lf GBS=%.3lf GFlops=%.3lf\n",CPI,GBS,GFLOPS);
-		fprintf(stderr,"EAR avg. node power=%.3lfW, avg. RAPL dram power=%.3lfW, avg. RAPL pck. power=%.3lfW EDP=%.3lf GFlops/Watts=%.3lf\n",POWER_DC,DRAM_POWER,PCK_POWER,EDP,GFLOPS/POWER_DC);
-		fprintf(stderr,"EAR def. frequency %.3lf GHz avg. frequency %.3lf GHz\n",(double)app_info->def_f/(double)1000000,(double)f/(double)1000000);
+	// Reporting application signature metrics at stderr
+	fprintf(stderr,"_____________________EAR Summary for %s ___________________\n",app_info->node_id);
+	fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,SIGNATURE.app_id,(double)app_exec_time/(double)1000000);
+	fprintf(stderr,"EAR CPI=%.3lf GBS=%.3lf GFlops=%.3lf\n",CPI,GBS,GFLOPS);
+	fprintf(stderr,"EAR avg. node power=%.3lfW, avg. RAPL dram power=%.3lfW, avg. RAPL pck. power=%.3lfW EDP=%.3lf GFlops/Watts=%.3lf\n",POWER_DC,DRAM_POWER,PCK_POWER,EDP,GFLOPS/POWER_DC);
+	fprintf(stderr,"EAR def. frequency %.3lf GHz avg. frequency %.3lf GHz\n",(double)app_info->def_f/(double)1000000,(double)f/(double)1000000);
 
-		// app_info links to the DB information . Update SIGNATURE metrics to report it at user_db and system_db
-		strcpy(SIGNATURE.job_id,app_info->job_id);
-		strcpy(SIGNATURE.user_id,app_info->user_id);
-		strcpy(SIGNATURE.node_id,app_info->node_id);
-		db_set_GBS(&SIGNATURE,GBS);
-		db_set_POWER(&SIGNATURE,POWER_DC);
-		db_set_TPI(&SIGNATURE,TPI);
-		db_set_seconds(&SIGNATURE,seconds);
-		db_set_CPI(&SIGNATURE,CPI);
-		db_set_CYCLES(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_CYC]);
-		db_set_INSTRUCTIONS(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_INS]);
-		db_set_DRAM_POWER(&SIGNATURE,DRAM_POWER);
-		db_set_PCK_POWER(&SIGNATURE,PCK_POWER);
-		db_set_frequency(&SIGNATURE,f);
-		db_set_Gflops(&SIGNATURE,GFLOPS);
-		db_set_EDP(&SIGNATURE,EDP);
-		db_set_default(&SIGNATURE,app_info->def_f);
-		db_set_policy(&SIGNATURE,ear_policy_name);
-		db_set_th(&SIGNATURE,get_ear_power_policy_th());
-		if ((power_model_policy==MONITORING_ONLY) && (ear_my_rank==0) && (app_info->def_f==ear_get_freq(1))) {
-			optimal=optimal_freq_min_energy(0.1,&SIGNATURE,&PP,&TP);
-			perf_deg=((TP-seconds)/seconds)*100.0;
-			power_sav=((POWER_DC-PP)/POWER_DC)*100.0;
-			ener=POWER_DC*seconds;
-			EP=TP*PP;
-			new_EDP=TP*TP*PP;
-			energy_sav=((ener-EP)/ener)*100.0;
-			fprintf(stderr,"EAR hint. at %.3lfGHz application %s would degrade by %.1lf\%  (%.3lf sec.), avg.power would reduce by %.1lf\% (%.3lfW), saving %.1lf%s energy (estimated new EDP %.3lf)\n",(double)optimal/(double)1000000,SIGNATURE.app_id,perf_deg,TP,power_sav,PP,energy_sav,"%",new_EDP);
-		}
-		fprintf(stderr,"____________________________________________________\n");
-		// We save it in the historical DB
-		db_update_historical(whole_app,&SIGNATURE);
+	// app_info links to the DB information . Update SIGNATURE metrics to report it at user_db and system_db
+	strcpy(SIGNATURE.job_id,app_info->job_id);
+	strcpy(SIGNATURE.user_id,app_info->user_id);
+	strcpy(SIGNATURE.node_id,app_info->node_id);
+	db_set_GBS(&SIGNATURE,GBS);
+	db_set_POWER(&SIGNATURE,POWER_DC);
+	db_set_TPI(&SIGNATURE,TPI);
+	db_set_seconds(&SIGNATURE,seconds);
+	db_set_CPI(&SIGNATURE,CPI);
+	db_set_CYCLES(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_CYC]);
+	db_set_INSTRUCTIONS(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_INS]);
+	db_set_DRAM_POWER(&SIGNATURE,DRAM_POWER);
+	db_set_PCK_POWER(&SIGNATURE,PCK_POWER);
+	db_set_frequency(&SIGNATURE,f);
+	db_set_Gflops(&SIGNATURE,GFLOPS);
+	db_set_EDP(&SIGNATURE,EDP);
+	db_set_default(&SIGNATURE,app_info->def_f);
+	db_set_policy(&SIGNATURE,ear_policy_name);
+	db_set_th(&SIGNATURE,get_ear_power_policy_th());
+
+	if ((power_model_policy == MONITORING_ONLY) &&
+			(ear_my_rank == 0) &&
+			(app_info->def_f == ear_get_freq(1)))
+	{
+		optimal = optimal_freq_min_energy(0.1, &SIGNATURE, &PP, &TP);
+
+		perf_deg = ((TP - seconds) / seconds) * 100.0;
+		power_sav = ((POWER_DC-PP) / POWER_DC) * 100.0;
+		energy = POWER_DC * seconds;
+
+		EP = TP * PP;
+		new_EDP = TP * TP * PP;
+		energy_sav = ((energy - EP) / energy) * 100.0;
+
+		//TODO: ese '\%'
+		fprintf(stderr,"EAR hint. at %.3lfGHz application %s would degrade by %.1lf\% " \
+		"(%.3lf sec.), avg.power would reduce by %.1lf\% (%.3lfW), saving %.1lf%s energy" \
+		"(estimated new EDP %.3lf)\n", (double) optimal / (double) 1000000, SIGNATURE.app_id,
+				perf_deg,TP, power_sav, PP, energy_sav, "%", new_EDP);
+	}
+
+	fprintf(stderr,"____________________________________________________\n");
+
+	// We save it in the historical DB
+	db_update_historical(whole_app,&SIGNATURE);
 
 	append_application_text_file(summary_file, &SIGNATURE);
 }
