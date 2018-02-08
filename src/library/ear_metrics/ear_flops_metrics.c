@@ -149,12 +149,12 @@ void start_flops_metrics()
 	}
 }
 /* Stops includes accumulate metrics */
-void stop_flops_metrics(long long *flops,long long *f_operations)
+void stop_flops_metrics(long long *flops, long long *f_operations)
 {
 	int sets,ev,retval;
 
+	*flops = 0;
 	if (!flops_supported) return;
-	*flops=0;
 
 	for (sets=0;sets<EAR_FLOPS_EVENTS_SETS;sets++)
 	{
