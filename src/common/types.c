@@ -121,7 +121,7 @@ int read_summary_file(char *path, application_t **apps)
     return i;
 }
 
-int read_coefficients_file(char *path, coefficient_t **coeffs, int size)
+int read_coefficients_file(char *path, coefficient_t **coeffs)
 {
     coefficient_t *coeffs_aux;
     int ret, fd;
