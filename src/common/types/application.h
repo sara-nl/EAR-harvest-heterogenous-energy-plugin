@@ -6,15 +6,10 @@
         Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
-#ifndef _EAR_TYPES
-#define _EAR_TYPES
+#ifndef _EAR_TYPES_APPLICATION
+#define _EAR_TYPES_APPLICATION
 
-#include <linux/limits.h>
-
-typedef unsigned char uchar;
-typedef unsigned long long ull;
-typedef unsigned long ulong;
-typedef unsigned int uint;
+#include <types/generic.h>
 
 #define MAX_APP_NAME    1024
 #define FLOPS_EVENTS    8
@@ -54,7 +49,7 @@ typedef struct App_info
 } application_t;
 
 
-/*#define GENERIC_NAME	NAME_MAX
+/*#define GENERIC_NAME	256
 #define POLICY_NAME		32
 #define FLOPS_EVENTS    16
 
@@ -97,31 +92,28 @@ typedef struct application
 	void ext6;
 } application_t;*/
 
-typedef struct Coefficients_info
-{
-    unsigned long pstate;
-    unsigned int available;
-    // For power projection
-    double A;
-    double B;
-    double C;
-    // For CPI projection
-    double D;
-    double E;
-    double F;
-} coefficient_t;
+// Function declarations
 
-typedef struct PerfProjection
-{
-    double Time;
-    double Power;
-    double CPI;
-} projection_t;
+// Reads a file of applications saved in binary format. A memory block is
+// allocated for the read applications, and is returned by the argument 'apps'.
+// The returned integer is the number of applications read. If the integer is
+// negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
+// EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
+int read_application_binary_file(char *path, application_t **apps);
 
-// Declarations
-int read_summary_file(char *path, application_t **apps);
-int read_coefficients_file(char *path, coefficient_t **coeffs, int size);
+// Reads a file of applications saved in CSV format. A block of memory is
+// allocated for this read applications, and is returned by the argument 'apps'.
+// The returned integer is the number of applications read. If the integer is
+// negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
+// EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
+int read_application_text_file(char *path, application_t **apps);
+
+// Appends in a file an application in binary format. The returned integer is
+// one of the following states: EAR_SUCCESS or EAR_ERROR.
 int append_application_binary_file(char *path, application_t *app);
+
+// Appends in a file an application in CSV format. The returned integer is one
+// of the following states: EAR_SUCCESS or EAR_ERROR.
 int append_application_text_file(char *path, application_t *app);
 
 #endif
