@@ -257,7 +257,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
     for (k = 1; k <= limit; ++k)
     {
-        if (sample == samples[i] && sample_size == sizes[i])
+	if (sample == samples[i] && sample_size == sizes[i])
         {
             zeros[i] = zeros[m] + 1;
 
@@ -281,7 +281,10 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
             #endif
         }
         zeros[m] = 0;
+
+	#if ANALYSIS
         crcs[m] = 0;
+	#endif
 
         i = i + 1;
         i = i & ((i == _window) - 1);
