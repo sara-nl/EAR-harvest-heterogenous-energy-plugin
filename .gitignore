@@ -20,6 +20,7 @@ DB_Learning_phase/
 *romio_hints.txt
 *log.env
 *hostlist
+*sim_metrics.csv
 
 # Build
 etc/ear-1.0
