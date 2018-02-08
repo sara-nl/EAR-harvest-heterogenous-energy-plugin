@@ -59,6 +59,7 @@ void eard_close_comm();
 int is_new_application(int pid);
 int is_new_service(int req,int pid);
 int application_timeout();
+int RAPL_counting=0;
 
 // SIGNALS management
 void f_signals(int s)
@@ -241,7 +242,7 @@ void eard_exit()
         int i;
         unsigned long ack=0;
         char ear_commreq[MAX_PATH_SIZE];
-	ear_verbose(1,"eard_exit_________\n");
+		ear_verbose(1,"eard_exit_________\n");
         eard_unlock();
         dispose_uncores();
         print_rapl_metrics();
@@ -260,9 +261,15 @@ void eard_close_comm()
 {
 	int i;
 	unsigned long ack=0;
+	unsigned long long values[EAR_RAPL_EVENTS];
 	int dis_pid=application_id;
 	char ear_commack[MAX_PATH_SIZE];
 	ear_verbose(2,"eard: Closing comm in %s for %d\n",nodename,application_id);
+	if (RAPL_counting){
+		stop_rapl_metrics(values);
+		reset_rapl_metrics();
+		RAPL_counting=0;
+	}
 	for (i=0;i<ear_daemon_client_requests;i++){
 		close(ear_fd_ack[i]);
 		ear_fd_ack[i]=-1;
@@ -513,6 +520,7 @@ int eard_rapl(int must_read)
         case START_RAPL:
     		ear_debug(1,"EAR_daemon_server: start RAPL counters\n");
             start_rapl_metrics();
+			RAPL_counting=1;
             write(ear_fd_ack[comm_req],&ack,sizeof(ack));
             break;
         case RESET_RAPL:
@@ -523,6 +531,7 @@ int eard_rapl(int must_read)
         case READ_RAPL:
     		ear_debug(1,"EAR_daemon_server: read RAPL\n");
             stop_rapl_metrics(values);
+			RAPL_counting=0;
             write(ear_fd_ack[comm_req],values,sizeof(unsigned long long)*EAR_RAPL_EVENTS);
             break;
         case DATA_SIZE_RAPL:
