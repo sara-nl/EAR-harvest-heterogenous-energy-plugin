@@ -204,11 +204,12 @@ void usage(char *app)
 int main(int argc, char *argv[])
 {
     application_t read_app;
-    double power, cpi, tpi;
-    uint filtered_apps = 0;
-    uint f, pos, ref, i;
-    char coef_file[256];
     int fd, index;
+    uint f, pos, ref, i;
+    uint filtered_apps = 0;
+    double power, cpi, tpi;
+    char coef_file[256];
+    char men[128];
 
     if (argc < 5) {
         usage(argv[0]);
@@ -231,6 +232,7 @@ int main(int argc, char *argv[])
     }
 
     //TODO: NEW, using CSVS
+    #if 1
     application_t *apps;
 
     num_apps = read_application_text_file(argv[1], &apps);
@@ -256,7 +258,61 @@ int main(int argc, char *argv[])
             }
         }
     }
-    //TODO: END NEW
+    #endif
+
+    //TODO: REMOVE
+    #if 0
+    // We read data from data file
+    OPEN(fd, argv[1], O_RDONLY, 0);
+
+    // Number of apps (total instances, not different apps)
+    num_apps = (lseek(fd, 0, SEEK_END) / sizeof(application_t));
+
+    if (num_apps < 0) {
+        perror("Error calculating num apps");
+        exit(1);
+    }
+
+    // Allocating space for the list of applications
+    MALLOC(app_list, application_t, num_apps);
+
+    // Allocating space for an array of pointers, which each position
+    // is also an array pointing to the same application samples
+    //samples_per_app = (uint *) malloc(sizeof(uint) * num_apps);
+    MALLOC(samples_per_app, uint, num_apps);
+
+    for (i = 0; i < num_apps; i++) {
+        samples_per_app[i] = 0;
+    }
+
+    //
+    if (lseek(fd, 0, SEEK_SET) < 0) {
+        perror("Error while executing lseek to offset=0");
+        exit(1);
+    }
+
+    for (i = 0; i < num_apps; i++)
+    {
+        if (read(fd, &read_app, sizeof(application_t)) != sizeof(application_t))
+        {
+            perror("Error reading app info");
+            exit(1);
+        }
+
+        if (read_app.def_f >= min_freq) {
+
+            if ((index = app_exists(app_list, filtered_apps, &read_app)) >= 0) {
+                // If APP exists, then accumulate its values in
+                accum_app(&app_list[index], &read_app);
+                samples_per_app[index]++;
+            } else {
+                write_app(&app_list[filtered_apps], &read_app);
+                samples_per_app[filtered_apps] = 1;
+                filtered_apps++;
+            }
+        }
+    }
+    #endif
 
     // We will consider only applictions with f >= min_freq
     num_apps = filtered_apps;
@@ -268,6 +324,10 @@ int main(int argc, char *argv[])
 
     fprintf(stdout, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u\n",
             nodename, num_node_p_states, nom_freq, num_apps, min_freq);
+
+    #if 0
+    close(fd);
+    #endif
 
     // We maintain the name's of applications to generate graphs
     for (current_app = 0; current_app < num_apps; current_app++) {

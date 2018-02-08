@@ -1,6 +1,6 @@
 ######## FILES
 
-COMPONENTS = check functionals
+COMPONENTS = check
 
 ######## RULES
 

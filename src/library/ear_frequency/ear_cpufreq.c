@@ -16,14 +16,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <cpufreq.h>
 #include <papi.h>
+#include <cpufreq.h>
 
+#include <ear_frequency/ear_cpufreq.h>
 #include <ear_daemon_client.h>
 #include <ear_verbose.h>
+#include <types/generic.h>
 #include <externs.h>
-#include <types.h>
-#include <ear_frequency/ear_cpufreq.h>
 
 static uint ear_num_cpus;
 static uint ear_num_p_states = 0;

@@ -1,6 +1,8 @@
 DIR     = $(ROOTDIR)/src/library
 LDFLAGS = -O2 -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
-CFLAGS  = -I$(DIR) $(PAPI_CFLAGS) $(CPUF_CFLAGS) -I$(ROOTDIR)/src/common -fPIC $(CONSTANTS) $(DEBUG)
+CFLAGS  = -fPIC $(CONSTANTS) $(DEBUG) -I$(DIR)
+CFLAGS += -I$(DIR)/common -I$(ROOTDIR)/src/common
+CFLAGS += $(PAPI_CFLAGS) $(CPUF_CFLAGS)
 
 ######## VARS
 
@@ -13,7 +15,7 @@ export LDFLAGS
 OUTER_OBJS = $(ROOTDIR)/src/common/ear_daemon_client.o \
              $(ROOTDIR)/src/common/environment.o \
              $(ROOTDIR)/src/common/hardware.o \
-             $(ROOTDIR)/src/common/types.o
+             $(ROOTDIR)/src/common/types.a
 
 OBJS = ear_states/ear_states.o           \
        ear_db/ear_db.o                   \
@@ -50,7 +52,6 @@ traces: libeart.so
 
 libear.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
 	$(CC) $(CFLAGS) -o libear.so $(OBJS) $(OUTER_OBJS) $(LDFLAGS)
-	
 
 libeart.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
 	touch ear_states/ear_states.c

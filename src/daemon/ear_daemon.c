@@ -24,12 +24,13 @@
 #include <ear_node_energy_metrics.h>
 #include <ear_uncores.h>
 #include <ear_verbose.h>
+#include <types/generic.h>
 #include <environment.h>
 #include <hardware.h>
 #include <states.h>
-#include <types.h>
 
-char db_fullpath[PATH_MAX];
+char database_bin_path[PATH_MAX];
+char database_csv_path[PATH_MAX];
 
 char my_errno[1024];
 #define max(a,b) (a>b?a:b)
@@ -342,22 +343,26 @@ int open_db()
 
 }
 
-void form_db_fullpath()
+void form_database_paths()
 {
-        char node_name[PATH_MAX];
-        char *db_pathname;
-        int ret;
+	char node_name[PATH_MAX];
+	char *db_pathname;
+	int ret;
 
-        db_pathname = get_ear_db_pathname();
-        gethostname(node_name, sizeof(node_name));
-        sprintf(db_fullpath, "%s.%s.db", db_pathname, node_name);
-        ear_verbose(2, "ear_daemon is using %s file as DB\n", db_fullpath);
+	db_pathname = get_ear_db_pathname();
+	gethostname(node_name, sizeof(node_name));
+
+	sprintf(database_bin_path, "%s.%s.db.bin", db_pathname, node_name);
+	sprintf(database_csv_path, "%s.%s.db.csv", db_pathname, node_name);
+
+	ear_verbose(2, "EARD is using %s file as binary database\n", database_bin_path);
+	ear_verbose(2, "EARD is using %s file as plain-text database\n", database_csv_path);
 }
 
 int eard_system(int must_read)
 {
 	unsigned long ack;
-	 int ret, size;
+	 int ret1, ret2, size;
 
 	if (must_read)
 	{
@@ -371,22 +376,22 @@ int eard_system(int must_read)
 			connect_service(system_req,req.req_data.req_value);
 			break;
 		case WRITE_APP_SIGNATURE:
-                        ret = append_application_binary_file(db_fullpath, &req.req_data.app);
+			ret1 = append_application_binary_file(database_bin_path, &req.req_data.app);
+			ret2 = append_application_text_file(database_csv_path, &req.req_data.app);
 
-                        if (ret == EAR_SUCCESS)
-                        {
-                                ack = EAR_COM_OK;
-                                size = sizeof(unsigned long);
+			if (ret1 == EAR_SUCCESS && ret2 == EAR_SUCCESS)
+			{
+				ack = EAR_COM_OK;
+				size = sizeof(unsigned long);
 
-                                if (write(ear_fd_ack[system_req], &ack, size) != size)
-                                {
-                                        ear_verbose(0,"ear_daemon: invalid write to system_req ack\n");
-                                        eard_close_comm();
-                                }
-                        }
+				if (write(ear_fd_ack[system_req], &ack, size) != size)
+				{
+					ear_verbose(0,"ear_daemon: invalid write to system_req ack\n");
+					eard_close_comm();
+				}
+			}
 			break;
-		default:
-			return 0;
+		default: return 0;
 	}
 	return 1;
 }
@@ -692,7 +697,7 @@ void main(int argc,char *argv[])
 	energy_freq=node_energy_frequency();
 	ear_verbose(1,"eard min time between two dc node energy measurements is %lu usec., we recomend to use %lu usec.\n",energy_freq,energy_freq*2);
 	
-	form_db_fullpath();
+	form_database_paths();
 
 	// HW initialized HERE...creating communication channels
 	ear_verbose(2,"eard: Creating comm in %s for node %s\n",ear_tmp,nodename);

@@ -31,10 +31,10 @@
 #include <ear_states/ear_states.h>
 #include <ear_verbose.h>
 
+#include <types/application.h>
 #include <externs_alloc.h>
 #include <environment.h>
 #include <states.h>
-#include <types.h>
 
 #define BUFFSIZE 128
 

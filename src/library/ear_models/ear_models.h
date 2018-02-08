@@ -11,7 +11,8 @@
 #define EAR_MODELS_H_
 
 #include <environment.h>
-#include <types.h>
+#include <types/projection.h>
+#include <types/application.h>
 
 void set_performance_projection(int i, double TP, double PP, double CPI);
 
