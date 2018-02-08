@@ -76,7 +76,6 @@ static int ear_cpu_id;
 int papi_multiplex=1;
 #endif
 
-#ifdef EAR_EXTRA_METRICS
 static long long l1,l2,l3;
 static long long *flops_metrics;
 static int flops_events;
@@ -84,8 +83,6 @@ static int *flops_weigth;
 static long long total_flops;
 static FILE* fd_extra;
 static int fops_supported;
-#endif
-
 
 long long metrics_usecs_diff(long long end,long long init)
 {
@@ -155,11 +152,9 @@ void metrics_start()
 	ear_daemon_client_start_rapl();
 	start_basic_metrics();
 
-    #ifdef EAR_EXTRA_METRICS
 	start_turbo_metrics();
 	if (fops_supported) start_flops_metrics();
 	start_cache_metrics();
-	#endif
 }
 
 void metrics_stop()
@@ -176,14 +171,12 @@ void metrics_stop()
 	}
 	stop_basic_metrics(&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_CYC],&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_INS]);
 
-	#ifdef EAR_EXTRA_METRICS
 	stop_turbo_metrics();
 
 	// FLOPS are merged and returned
 	stop_flops_metrics(&total_flops, flops_metrics);
 
 	stop_cache_metrics(&l1, &l2, &l3);
-	#endif
 }
 
 void metrics_reset()
@@ -199,11 +192,9 @@ void metrics_reset()
 	}
 	reset_basic_metrics();
 
-	#ifdef EAR_EXTRA_METRICS
 	reset_turbo_metrics();
 	reset_flops_metrics();
 	reset_cache_metrics();
-	#endif
 }
 
 void reset_values()
@@ -232,10 +223,7 @@ int metrics_init(int my_id,int pid)
 {
 	int retval, ret;
 	int sets,i;
-
-	#ifdef EAR_EXTRA_METRICS
 	char extra_filename[MAX_APP_NAME];
-	#endif
 
 	if (my_id) return 1;
 
@@ -320,7 +308,6 @@ int metrics_init(int my_id,int pid)
 		diff_event_values[i]=0;
 	}
 
-	#ifdef EAR_EXTRA_METRICS
 	init_turbo_metrics();
 	fops_supported=init_flops_metrics();
 	init_cache_metrics();
@@ -355,7 +342,6 @@ int metrics_init(int my_id,int pid)
 	}else{
 		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512;ITERATIONS\n");
 	}
-	#endif
 
 	reset_values();
 	metrics_reset();
@@ -378,10 +364,8 @@ void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned
 
 	metrics_print_summary(whole_app, my_id, summary_file);
 	
-	#ifdef EAR_EXTRA_METRICS
 	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
 	//print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
-	#endif
 }
 
 // Called after metrics_stop
@@ -453,7 +437,6 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);
 	else strcpy(SIGNATURE.app_id,"NA");
 
-	#ifdef EAR_EXTRA_METRICS
 	get_cache_metrics(&l1, &l2, &l3);
 	fprintf(stderr,"_____________________EAR Extra Summary for %s ___________________\n",SIGNATURE.app_id);
 
@@ -479,7 +462,6 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 
 	ear_verbose(1,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
 	fprintf(stderr,"_______________________________\n");
-	#endif
 
 	// We can write summary metrics in any DB or any other place
 	#if 0
@@ -645,9 +627,6 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	return app;
 }
 
-
-
-#ifdef EAR_EXTRA_METRICS
 void metrics_get_extra_metrics(struct App_info_extended *my_extra)
 {
 	int i;
@@ -701,5 +680,3 @@ void metrics_end_loop_extra_metrics(int iters)
 {
 	fprintf(fd_extra,";%d\n",iters);
 }
-#endif
-

@@ -25,18 +25,16 @@
 #include <externs.h>
 
 // static defines
-#define NO_PERIOD                       0
+#define NO_PERIOD				0
 #define FIRST_ITERATION 		1
-#define EVALUATING_SIGNATURE            2
+#define EVALUATING_SIGNATURE	2
 #define SIGNATURE_STABLE 		3
 #define PROJECTION_ERROR 		4
 #define RECOMPUTING_N 			5
-#define SIGNATURE_HAS_CHANGED           6
+#define SIGNATURE_HAS_CHANGED   6
 #define DPD_NUM_STATES 			7
 
-#ifdef EAR_EXTRA_METRICS
 static application_ext_t my_extra_metrics;
-#endif
 
 static application_t *curr_signature;
 static application_t last_signature;
@@ -56,7 +54,6 @@ static int current_loop_id;
 void states_end_job(int  my_id, FILE *ear_fd,char *app_name)
 {
 	ear_verbose(1,"EAR(%s) Ends execution. \n",app_name);
-
 }
 
 void states_begin_job(int  my_id, FILE *ear_fd,char *app_name)
@@ -92,11 +89,9 @@ void  states_end_period(int my_id,FILE *ear_fd,unsigned int size,int iterations,
 	if (loop_with_signature)
 	{ 
 		ear_verbose(1,"EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",
-		current_loop_id,iterations, curr_signature->iter_time * (double)iterations);
+		current_loop_id, iterations, curr_signature->iter_time * (double) iterations);
 
-#ifdef EAR_EXTRA_METRICS
 		metrics_end_loop_extra_metrics(iterations);
-#endif
 	}
     
 	loop_with_signature=0;
@@ -180,9 +175,9 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 				POWER=db_get_POWER(curr_signature);
 				TPI=db_get_TPI(curr_signature);
 				TIME=db_get_seconds(curr_signature);
-#ifdef EAR_EXTRA_METRICS
+
 				metrics_get_extra_metrics(&my_extra_metrics);
-#endif
+
 				ENERGY=TIME*POWER;
 				EDP=ENERGY*TIME;
 				begin_iter=iterations;
@@ -210,9 +205,8 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 			 		ear_verbose(1,"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
 					ear_app_name,prev_f,event,period,level,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP);
 				}
-#ifdef EAR_EXTRA_METRICS
+
 				metrics_print_extra_metrics(curr_signature,&my_extra_metrics,N_iter,event,period,level);
-#endif
 			}
 		}
 		break;
@@ -274,8 +268,6 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 		break;
 	default:
 		break;
-		ear_verbose(0,"EAR(%s): PANIC:::::STATUS NON EXISTING::::::::::\n",ear_app_name);
-		exit(1);
 	}
 }
 
