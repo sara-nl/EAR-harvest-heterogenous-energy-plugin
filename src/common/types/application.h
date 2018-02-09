@@ -41,6 +41,7 @@ typedef struct application
 	double Gflops;
 	double time;
 	unsigned long long FLOPS[FLOPS_EVENTS];
+	unsigned long long WEIGHTS[FLOPS_EVENTS];
 	unsigned long long L1_misses;
 	unsigned long long L2_misses;
 	unsigned long long L3_misses;
@@ -53,6 +54,9 @@ typedef struct application
 } application_t;
 
 // Function declarations
+
+//TODO: app_init
+int print_application(application_t *app);
 
 // Reads a file of applications saved in binary format. A memory block is
 // allocated for the read applications, and is returned by the argument 'apps'.
