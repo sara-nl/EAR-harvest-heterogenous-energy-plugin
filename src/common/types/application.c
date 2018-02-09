@@ -85,7 +85,7 @@ int append_application_text_file(char *path, application_t *app)
         return EAR_ERROR;
     }
 
-    print_application_fd(fd);
+    print_application_fd(fd, app);
     close(fd);
 
     if (ret < 0) return EAR_ERROR;

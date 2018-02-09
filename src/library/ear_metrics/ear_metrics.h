@@ -54,11 +54,5 @@ long long metrics_usecs_diff(long long end,long long init);
 // stderr and in fd
 void metrics_print_summary(uint whole_app, int my_id, char* summary_file);
 
-//
-void metrics_end_loop_extra_metrics(int iters);
-void metrics_get_extra_metrics(application_ext_t *my_extra);
-void metrics_print_extra_metrics(application_t *my_sig, application_ext_t *my_extra,
-	int iterations, ulong loop_id, int period, uint level);
-
 #else
 #endif

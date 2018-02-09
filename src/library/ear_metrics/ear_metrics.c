@@ -627,8 +627,3 @@ application_t* metrics_end_compute_signature(int period,unsigned long int *eru,u
 	ear_verbose(3,"EAR______________Application signature ready __________\n");
 	return app;
 }
-
-void metrics_end_loop_extra_metrics(int iters)
-{
-	fprintf(fd_extra,";%d\n",iters);
-}
