@@ -85,7 +85,7 @@ void db_copy_app(application_t *A, application_t *B) {
     A->policy_th = B->policy_th;
     A->avg_f = B->avg_f;
     A->procs = B->procs;
-    A->iter_time = B->iter_time;
+    A->time = B->time;
     A->GBS = B->GBS;
     A->DC_power = B->DC_power;
     A->TPI = B->TPI;
@@ -208,7 +208,7 @@ void db_set_TPI(application_t *MY_APP, double tpi) {
 }
 
 void db_set_seconds(application_t *MY_APP, double seconds) {
-    MY_APP->iter_time = seconds;
+    MY_APP->time = seconds;
 }
 
 void db_set_CPI(application_t *MY_APP, double CPI) {
@@ -274,7 +274,7 @@ double db_get_TPI(application_t *MY_APP) {
 }
 
 double db_get_seconds(application_t *MY_APP) {
-    return MY_APP->iter_time;
+    return MY_APP->time;
 }
 
 double db_get_CPI(application_t *MY_APP) {
@@ -287,6 +287,6 @@ void db_print_app_info(application_t *APP)
                  "GBS_f0 %.5lf POWER_f0 %.5lf TPI_f0 %12.6lf seconds %12.6lf CPI %.5lf nominal %u" \
                  "CYCLES %llu INSTRUCTIONS %llu DRAM_POWER %.5lf PCK_POWER %12.6lf\n",
                  APP->job_id, APP->user_id, APP->node_id, APP->app_id, APP->avg_f, APP->procs,
-                 APP->GBS, APP->DC_power, APP->TPI, APP->iter_time, APP->CPI, APP->def_f,
+                 APP->GBS, APP->DC_power, APP->TPI, APP->time, APP->CPI, APP->def_f,
                  APP->cycles, APP->instructions, APP->DRAM_power, APP->PCK_power);
 }

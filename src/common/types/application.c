@@ -35,12 +35,35 @@ int append_application_binary_file(char *path, application_t *app)
     return EAR_SUCCESS;
 }
 
+
+int print_application(application_t *app)
+{
+
+}
+
+static int print_application_fd(int fd, application_t *app)
+{
+    application_t *a;
+
+    a = app;
+    dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
+    dprintf(fd, "%lu;%lu;", a->avg_f, a->def_f);
+    dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
+    dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
+    dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
+    dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
+    dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
+    dprintf(fd, "%lf;%llu;%llu", a->Gflops, (ull) 0,(ull) 0,(ull) 0,(ull) 0);
+    dprintf(fd, "\n");
+
+    return EAR_SUCCESS;
+}
+
 int append_application_text_file(char *path, application_t *app)
 {
-    // static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;" \
-    //    "GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH";
-	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;L2_MISSES;L3_MISSES;GFLOPS;DPSINGLE_OPS;DP128_OPS;DP256_OPS;DP512_OPS";
-    application_t *a;
+	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;DEF.FREQ;AVG.FREQ;TIME;CPI;TPI;GBS;" \
+        "DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
+        "L2_MISSES;L3_MISSES;GFLOPS;DPSINGLE_OPS;DP128_OPS;DP256_OPS;DP512_OPS";
     int fd, ret;
 
     fd = open(path, O_WRONLY | O_APPEND);
@@ -62,16 +85,7 @@ int append_application_text_file(char *path, application_t *app)
         return EAR_ERROR;
     }
 
-    a = app;
-    ret = dprintf(fd, "%s;%s;%s;%s;%lu;%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%s;%.3lf;%llu;%llu;%llu;%llu;%llu;%lf;%llu;%llu;%llu;%llu\n",
-           a->user_id, a->job_id, a->node_id, a->app_id, 
-		   a->avg_f, a->def_f, 
-		   a->iter_time, a->CPI, a->TPI, a->GBS, 
-		   a->DC_power, a->DRAM_power, a->PCK_power,
-           a->policy, a->policy_th,
-		   a->cycles,a->instructions,
-		   (ull)0,(ull)0,(ull)0,						
-		   a->Gflops,(ull)0,(ull)0,(ull)0,(ull)0);		
+    print_application_fd(fd);
     close(fd);
 
     if (ret < 0) return EAR_ERROR;
@@ -143,7 +157,7 @@ int read_application_text_file(char *path, application_t **apps)
 
     #define READ_SUMMARY()                                                                          \
     ret = fscanf(fd, "%[^;];%[^;];%[^;];%[^;];%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%[^;];%lf\n",  \
-          a->user_id, a->job_id, a->node_id, a->app_id, &a->avg_f, &a->iter_time, &a->CPI, &a->TPI, \
+          a->user_id, a->job_id, a->node_id, a->app_id, &a->avg_f, &a->time, &a->CPI, &a->TPI, \
           &a->GBS, &a->Gflops, &a->DC_power, &a->DRAM_power, &a->PCK_power, &a->def_f, a->policy,   \
           &a->policy_th)
 

@@ -17,7 +17,7 @@ void show_apps_num(application_t *apps, int n_apps)
     for (i = 0; i < n_apps; ++i)
     {
         app = &apps[i];
-        printf("%d %s %lf\n", i, app->app_id, app->iter_time);
+        printf("%d %s %lf\n", i, app->app_id, app->time);
     }
 }
 
