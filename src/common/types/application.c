@@ -35,12 +35,6 @@ int append_application_binary_file(char *path, application_t *app)
     return EAR_SUCCESS;
 }
 
-
-int print_application(application_t *app)
-{
-
-}
-
 static int print_application_fd(int fd, application_t *app)
 {
     application_t *a;
@@ -57,6 +51,12 @@ static int print_application_fd(int fd, application_t *app)
     dprintf(fd, "\n");
 
     return EAR_SUCCESS;
+}
+
+
+int print_application(application_t *app)
+{
+    return print_application_fd(STDOUT_FILENO, app);
 }
 
 int append_application_text_file(char *path, application_t *app)

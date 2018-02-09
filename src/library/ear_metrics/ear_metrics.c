@@ -346,49 +346,57 @@ void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned
 	//print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
 }
 
-// Called after metrics_stop
-application_t* set_metrics(int period, int iteration, long long *counters, long long iter_time,
-						  ulong *eru, uint N_iters)
+// TODO: PRINTED AT THE END OF THE LOOP (and after metrics_stop)
+application_t* set_metrics(const long long *counters, long long iter_time, ulong *eru, uint N_iters)
 {
-	double CPI, GBS, seconds, TPI, POWER,DRAM_POWER,PCK_POWER;
+	double CPI, GBS, TPI, POWER,DRAM_POWER, PCK_POWER, seconds, aux;
 	application_t *app_info;
-
-	ear_debug(4,"EAR(%s): Setting DB metrics for period %d iteration %d\n",
-			  __FILE__,period,N_iters);
+	int i;
 
 	seconds = (double) iter_time / (double) 1000000;
 
-	GBS  = ((double)(counters[EAR_ACUM_LD_INS]*ear_cache_line_size) / (seconds * (double) (1024*1024*1024)));
-	GBS += ((double)(counters[EAR_ACUM_SR_INS]*ear_cache_line_size) / (seconds * (double) (1024*1024*1024)));
-
-	CPI  = (double) counters[EAR_ACUM_TOT_CYC] / (double) counters[EAR_ACUM_TOT_INS];
+	aux = seconds * (double) (1024 * 1024 * 1024);
+	GBS  = ((double) (counters[EAR_ACUM_LD_INS] * ear_cache_line_size)) / aux;
+	GBS += ((double) (counters[EAR_ACUM_SR_INS] * ear_cache_line_size)) / aux;
+	CPI  = (double) (counters[EAR_ACUM_TOT_CYC] / (double) counters[EAR_ACUM_TOT_INS]);
 	TPI  = (double) (counters[EAR_ACUM_LD_INS] + counters[EAR_ACUM_SR_INS]);
 	TPI /= (double) (counters[EAR_ACUM_TOT_INS] / ear_cache_line_size);
 
 	POWER = (double) *eru / (double) (seconds * 1000000);
+	PCK_POWER  = (double) (counters[EAR_ACUM_PCKG_ENER] / 1000000000) / seconds;
+	DRAM_POWER = (double) (counters[EAR_ACUM_DRAM_ENER] / 1000000000) / seconds;
 
-	DRAM_POWER= (double) (counters[EAR_ACUM_DRAM_ENER]  / 1000000000) / seconds;;
-	PCK_POWER = (double) (counters[EAR_ACUM_PCKG_ENER] /  1000000000) / seconds;;
+	// TODO: MIRAR QUE HACE db_current_app
+	app_info = db_current_app();
+
+	app_info->time = seconds / (double) N_iters;
+
+	app_info->GBS = GBS;
+	app_info->TPI = TPI;
+	app_info->CPI = CPI;
+	app_info->avg_f = ear_daemon_client_end_compute_turbo_freq();
+	app_info->cycles = counters[EAR_ACUM_TOT_CYC];
+	app_info->instructions = counters[EAR_ACUM_TOT_INS];
+
+	app_info->DC_power = POWER;
+	app_info->DRAM_power = DRAM_POWER;
+	app_info->PCK_power = PCK_POWER;
+
+	app_info->L1_misses = l1;
+	app_info->L2_misses = l2;
+	app_info->L3_misses = l3;
+
+	for (i=0;i < flops_events; i++) {
+		app_info->FLOPS[i] = flops_metrics[i] * flops_weigth[i];
+	}
 
 	ear_debug(4,"EAR(%s):: Set_metrics: seconds %.5lf GBS %.5lf POWER %12.6f TPI %12.6f CPI %5lf\n",
 			  __FILE__, seconds / (double) N_iters, GBS, POWER, TPI, CPI);
 
-	app_info = db_current_app();
-
-	app_info->GBS=GBS;
-	app_info->DC_power=POWER;
-	app_info->TPI=TPI;
-	app_info->time=seconds/(double)N_iters;
-	app_info->CPI=CPI;
-	app_info->avg_f=ear_daemon_client_end_compute_turbo_freq();
-	app_info->cycles=counters[EAR_ACUM_TOT_CYC];
-	app_info->instructions=counters[EAR_ACUM_TOT_INS];
-	app_info->DRAM_power=DRAM_POWER;
-	app_info->PCK_power=PCK_POWER;
-
 	return app_info;
 }
 
+// TODO: PRINTED AT THE END OF THE EXECUTION
 void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 {
 	double CPI, GBS, seconds, TPI, POWER_DC, DRAM_POWER, PCK_POWER, GFLOPS, EDP;
@@ -446,7 +454,9 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
     	fops_256=flops_metrics[flops_events/2+2]*flops_weigth[flops_events/2+2];
     	fops_512=flops_metrics[flops_events/2+3]*flops_weigth[flops_events/2+3];
     	total_fops=fops_single+fops_128+fops_256+fops_512;
-		if (total_fops>0){
+
+		if (total_fops>0)
+		{
     		psingle=(double)fops_single/(double)total_fops;
     		p128=(double)fops_128/(double)total_fops;
     		p256=(double)fops_256/(double)total_fops;
@@ -592,10 +602,12 @@ void metrics_set_signature_start_time()
 {
 	start_time=PAPI_get_real_usec();
 }
-application_t* metrics_end_compute_signature(int period,unsigned long int *eru,unsigned int N_iters,long long min_t)
+
+application_t* metrics_end_compute_signature(int period, ulong *eru, uint N_iters, long long min_t)
 {
 	application_t *app;
 	unsigned long avg_f;
+
 	ear_verbose(3,"EAR______________metrics_end_compute_signature __________\n");
 	// POWER_DC is provided
 	// WE Get iteration TIme
@@ -618,7 +630,10 @@ application_t* metrics_end_compute_signature(int period,unsigned long int *eru,u
 	start_time=end_time;
 	acum_energy=acum_energy+*eru;
 
-	app = set_metrics(period, 0, diff_event_values, iter_time, eru, N_iters);
+	ear_debug(4,"EAR(%s): Setting DB metrics for period %d iteration %d\n",
+			  __FILE__,period,N_iters);
+
+	app = set_metrics(diff_event_values, iter_time, eru, N_iters);
 
 	// Once processes, we reset actual counters
 	reset_values();
