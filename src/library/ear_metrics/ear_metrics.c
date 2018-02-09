@@ -378,7 +378,7 @@ application_t* set_metrics(int period, int iteration, long long *counters, long 
 	app_info->GBS=GBS;
 	app_info->DC_power=POWER;
 	app_info->TPI=TPI;
-	app_info->iter_time=seconds/(double)N_iters;
+	app_info->time=seconds/(double)N_iters;
 	app_info->CPI=CPI;
 	app_info->avg_f=ear_daemon_client_end_compute_turbo_freq();
 	app_info->cycles=counters[EAR_ACUM_TOT_CYC];
@@ -477,7 +477,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	app_signature.GBS=GBS;
 	app_signature.DC_power=POWER_DC;
 	app_signature.TPI=TPI;
-	app_signature.iter_time=seconds;
+	app_signature.time=seconds;
 	app_signature.CPI=CPI;
 	app_signature.cycles=acum_event_values[EAR_ACUM_TOT_CYC];
 	app_signature.instructions=acum_event_values[EAR_ACUM_TOT_INS];
@@ -646,14 +646,14 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 	p128=(double)fops_128/(double)total_fops;
 	p256=(double)fops_256/(double)total_fops;
 	p512=(double)fops_512/(double)total_fops;
-	my_gflops=((double)(total_fops*get_total_resources())/(my_sig->iter_time*iterations))/(double)1000000000;
+	my_gflops=((double)(total_fops*get_total_resources())/(my_sig->time*iterations))/(double)1000000000;
 	ear_verbose(1,"\t\tEAR_extra: L1 misses %llu L2 misses %llu L3 misses %llu\n",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
 	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
 		my_gflops,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
 
 	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;CYCLES;INSTRUCTIONS;L1_MISSES;L2_MISSES;L3_MISSES;DPSINGLE;DP128;DP256;DP512;ITERATIONS\n");
 	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
-	fprintf(fd_extra,"%lu;%.5lf;%.5lf;%.5lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->iter_time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
+	fprintf(fd_extra,"%lu;%.5lf;%.5lf;%.5lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
 	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->DC_power,my_sig->DRAM_power,my_sig->PCK_power);
 	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->def_f,ear_policy_name,my_sig->policy_th);
 	fprintf(fd_extra,"%lu;%d;%u;",loop_id,period,level);

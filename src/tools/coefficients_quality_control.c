@@ -92,7 +92,7 @@ application_t *merge(control_t *control)
             memcpy(&apps_merged[j], &apps[i], sizeof(application_t));
 
             power = apps[i].DC_power;
-            time = apps[i].iter_time;
+            time = apps[i].time;
             tpi = apps[i].TPI;
             cpi = apps[i].CPI;
             counter = 1.0;
@@ -105,7 +105,7 @@ application_t *merge(control_t *control)
                 if (equal_id && equal_f)
                 {
                     power += apps[k].DC_power;
-                    time += apps[k].iter_time;
+                    time += apps[k].time;
                     tpi += apps[k].TPI;
                     cpi += apps[k].CPI;
                     counter += 1.0;
@@ -113,7 +113,7 @@ application_t *merge(control_t *control)
             }
 
             apps_merged[j].DC_power = power / counter;
-            apps_merged[j].iter_time = time / counter;
+            apps_merged[j].time = time / counter;
             apps_merged[j].TPI = tpi / counter;
             apps_merged[j].CPI = cpi / counter;
 
@@ -191,7 +191,7 @@ void evaluate(control_t *control)
 
             cpi0 = apps[j].CPI;
             tpi0 = apps[j].TPI;
-            time0 = apps[j].iter_time;
+            time0 = apps[j].time;
             power0 = apps[j].DC_power;
 
             for (i = 0; i < n_coeffs; i++)
@@ -216,12 +216,12 @@ void evaluate(control_t *control)
                     {
                         m = &apps[k];
 
-                        timee = fabs((1.0 - (m->iter_time / timep)) * 100.0);
+                        timee = fabs((1.0 - (m->time / timep)) * 100.0);
                         powere = fabs((1.0 - (m->DC_power / powerp)) * 100.0);
                         cpie = fabs((1.0 - (m->CPI / cpip)) * 100.0);
 
                         printf("| ");
-                        sprintf(buffer, "%0.2lf", m->iter_time);
+                        sprintf(buffer, "%0.2lf", m->time);
                         print_spacing_string(buffer);
 
                         sprintf(buffer, "%0.2lf", timep);
@@ -253,7 +253,7 @@ void evaluate(control_t *control)
 
                     if (fd >= 0) {
                         dprintf(fd, "%s;%u;%u;", apps[j].app_id, apps[j].def_f, m->def_f);
-                        dprintf(fd, "%lf;%lf;%lf;", m->iter_time, timep, timee);
+                        dprintf(fd, "%lf;%lf;%lf;", m->time, timep, timee);
                         dprintf(fd, "%lf;%lf;%lf;", m->DC_power, powerp, powere);
                         dprintf(fd, "%lf;%lf;%lf\n", m->CPI, cpip, cpie);
                     }

@@ -89,7 +89,7 @@ void  states_end_period(int my_id,FILE *ear_fd,unsigned int size,int iterations,
 	if (loop_with_signature)
 	{ 
 		ear_verbose(1,"EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",
-		current_loop_id, iterations, curr_signature->iter_time * (double) iterations);
+		current_loop_id, iterations, curr_signature->time * (double) iterations);
 
 		metrics_end_loop_extra_metrics(iterations);
 	}

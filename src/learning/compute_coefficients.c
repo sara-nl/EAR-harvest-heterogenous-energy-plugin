@@ -121,7 +121,7 @@ int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {
 void average_list_samples(application_t *current, uint samples)
 {
     double foravg = (double) samples;
-    current->iter_time = current->iter_time / foravg;
+    current->time = current->time / foravg;
     current->GBS = current->GBS / foravg;
     current->DC_power = current->DC_power / foravg;
     current->CPI = current->CPI / foravg;
@@ -131,7 +131,7 @@ void average_list_samples(application_t *current, uint samples)
 // A=A+B metrics
 void accum_app(application_t *A, application_t *B)
 {
-    A->iter_time += B->iter_time;
+    A->time += B->time;
     A->GBS += B->GBS;
     A->DC_power += B->DC_power;
     A->TPI += B->TPI;
@@ -143,7 +143,7 @@ void write_app(application_t *A, application_t *B)
     strcpy(A->app_id, B->app_id);
     A->def_f = B->def_f;
     A->procs = B->procs;
-    A->iter_time = B->iter_time;
+    A->time = B->time;
     A->GBS = B->GBS;
     A->DC_power = B->DC_power;
     A->TPI = B->TPI;
