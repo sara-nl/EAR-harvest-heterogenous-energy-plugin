@@ -176,7 +176,8 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 				TPI=db_get_TPI(curr_signature);
 				TIME=db_get_seconds(curr_signature);
 
-				metrics_get_extra_metrics(&my_extra_metrics);
+
+				// TODO: GET EXTRA METRICS
 
 				ENERGY=TIME*POWER;
 				EDP=ENERGY*TIME;
@@ -206,7 +207,7 @@ void states_new_iteration(int my_id,FILE *ear_fd,unsigned int period,int iterati
 					ear_app_name,prev_f,event,period,level,iterations,CPI,GBS,POWER,TIME,ENERGY,EDP);
 				}
 
-				metrics_print_extra_metrics(curr_signature,&my_extra_metrics,N_iter,event,period,level);
+				// TODO: PRINT EXTRA METRICS
 			}
 		}
 		break;

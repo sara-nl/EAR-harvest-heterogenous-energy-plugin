@@ -199,7 +199,7 @@ void set_performance_projection(int i,double TP,double PP,double CPIP)
 		projections[i].CPI=CPIP;
 }
 
-double power_projection(struct App_info *my_app,unsigned int Fi)
+double power_projection(application_t *my_app,unsigned int Fi)
 {
 	double POWER_F0,TPI_F0,pp;
 	unsigned int Fref;
@@ -219,7 +219,7 @@ double power_projection(struct App_info *my_app,unsigned int Fi)
 	return pp;
 }
 
-double cpi_projection(struct App_info *my_app,unsigned int Fi)
+double cpi_projection(application_t *my_app,unsigned int Fi)
 {
 	double CPI_F0,TPI_F0;
 	double cpi_pr;
@@ -239,7 +239,7 @@ double cpi_projection(struct App_info *my_app,unsigned int Fi)
 	coefficients[Fref][Fi].F);
 	return cpi_pr;
 }
-double time_projection(struct App_info *my_app,unsigned int Fi,double cpi_pr)
+double time_projection(application_t *my_app,unsigned int Fi,double cpi_pr)
 {
 	double CPI_F0,TIME_F0,timep;
 	unsigned int Fref;
@@ -255,9 +255,9 @@ double time_projection(struct App_info *my_app,unsigned int Fi,double cpi_pr)
 	return timep; 
 }
 
-unsigned long optimal_freq_min_energy(double th,struct App_info * SIGNATURE,double *bestPP,double *bestTP)
+unsigned long optimal_freq_min_energy(double th,application_t * SIGNATURE,double *bestPP,double *bestTP)
 {
-    struct App_info *my_app;
+    application_t *my_app;
     int i,min_pstate;
     unsigned int ref,try_next;
     double freq_gain,perf_gain;
@@ -314,10 +314,10 @@ unsigned long optimal_freq_min_energy(double th,struct App_info * SIGNATURE,doub
 
 }
 // This is the main function in this file, it implements power policy
-unsigned long policy_power_for_application(unsigned int whole_app,struct App_info * SIGNATURE)
+unsigned long policy_power_for_application(unsigned int whole_app,application_t * SIGNATURE)
 {
 	ear_debug(3,"EAR(%s):: EAR_PolicyPower_for_application %u\n",__FILE__,ear_frequency);
-	struct App_info *my_app;
+	application_t *my_app;
 	int i,min_pstate;
 	unsigned int ref,try_next;
 	double freq_gain,perf_gain;
@@ -456,7 +456,7 @@ unsigned int equal_with_th(double p,double r,double th)
 	if (diff<(th*r)) return 1;
 	else return 0;
 }
-unsigned int policy_ok(projection_t *PREDICTION,struct App_info *SIGNATURE,struct App_info *LAST_SIGNATURE)
+unsigned int policy_ok(projection_t *PREDICTION,application_t *SIGNATURE,application_t *LAST_SIGNATURE)
 {
 		ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",__FILE__,
 		PREDICTION->Time,PREDICTION->Power);
@@ -478,7 +478,7 @@ unsigned int policy_ok(projection_t *PREDICTION,struct App_info *SIGNATURE,struc
 			return 1;
 		}	
 }
-unsigned int performance_projection_ok(projection_t *PREDICTION,struct App_info *SIGNATURE)
+unsigned int performance_projection_ok(projection_t *PREDICTION,application_t *SIGNATURE)
 {
 	if (equal_with_th(PREDICTION->Time,SIGNATURE->time,performance_penalty_th) && equal_with_th(PREDICTION->Power,SIGNATURE->DC_power,performance_penalty_th)){
 		ear_debug(4,"EAR(%s):: Performance projection OK\n",__FILE__);
@@ -491,7 +491,7 @@ projection_t * performance_projection(unsigned long f)
 	return &projections[ear_get_pstate(f)];
 }
 
-unsigned long  policy_power(unsigned int whole_app,struct App_info* MY_SIGNATURE)
+unsigned long  policy_power(unsigned int whole_app,application_t* MY_SIGNATURE)
 {
 	ear_debug(4,"EAR(%s):: EAR_PolicyPower\n",__FILE__);
 	unsigned long optimal_freq=ear_frequency,max_freq;

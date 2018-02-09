@@ -592,9 +592,9 @@ void metrics_set_signature_start_time()
 {
 	start_time=PAPI_get_real_usec();
 }
-struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru,unsigned int N_iters,long long min_t)
+application_t* metrics_end_compute_signature(int period,unsigned long int *eru,unsigned int N_iters,long long min_t)
 {
-	struct App_info *app;
+	application_t *app;
 	unsigned long avg_f;
 	ear_verbose(3,"EAR______________metrics_end_compute_signature __________\n");
 	// POWER_DC is provided
@@ -626,57 +626,6 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	ear_verbose(3,"Signature: eneregy %ld Niters %u totalTime %llu \n",*eru,N_iters,iter_time);
 	ear_verbose(3,"EAR______________Application signature ready __________\n");
 	return app;
-}
-
-void metrics_get_extra_metrics(struct App_info_extended *my_extra)
-{
-	int i;
-	my_extra->L1_misses=l1;
-	my_extra->L2_misses=l2;
-	my_extra->L3_misses=l3;
-	for (i=0;i<flops_events;i++) my_extra->FLOPS[i]=flops_metrics[i];
-}
-
-void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extended *my_extra,int iterations,unsigned long loop_id,int period,unsigned int level)
-{
-	long long sp=0,dp=0;
-	long long fops_single,fops_128,fops_256,fops_512,total_fops,dp_fops;
-	double psingle,p128,p256,p512,my_gflops;
-	int i;
-
-	for (i=0;i<flops_events/2;i++) sp+=my_extra->FLOPS[i];
-	for (i=flops_events/2;i<flops_events;i++){ 
-		dp+=my_extra->FLOPS[i];
-	}
-
-	fops_single=my_extra->FLOPS[flops_events/2]*flops_weigth[flops_events/2];
-	fops_128=my_extra->FLOPS[flops_events/2+1]*flops_weigth[flops_events/2+1];
-	fops_256=my_extra->FLOPS[flops_events/2+2]*flops_weigth[flops_events/2+2];
-	fops_512=my_extra->FLOPS[flops_events/2+3]*flops_weigth[flops_events/2+3];
-	total_fops=fops_single+fops_128+fops_256+fops_512;
-	dp_fops=total_fops;
-	// SP are usually 0 but we have to include in total
-	total_fops+=my_extra->FLOPS[0]*flops_weigth[0]+my_extra->FLOPS[1]*flops_weigth[1]+my_extra->FLOPS[2]*flops_weigth[2]+my_extra->FLOPS[3]*flops_weigth[3];
-	psingle=(double)fops_single/(double)total_fops;
-	p128=(double)fops_128/(double)total_fops;
-	p256=(double)fops_256/(double)total_fops;
-	p512=(double)fops_512/(double)total_fops;
-
-	my_gflops=((double)(total_fops*get_total_resources())/(my_sig->time*iterations))/(double)1000000000;
-	ear_verbose(1,"\t\tEAR_extra: L1 misses %llu L2 misses %llu L3 misses %llu\n",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
-	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
-		my_gflops,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
-
-	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;CYCLES;INSTRUCTIONS;L1_MISSES;L2_MISSES;L3_MISSES;DPSINGLE;DP128;DP256;DP512;ITERATIONS\n");
-	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
-	fprintf(fd_extra,"%lu;%.5lf;%.5lf;%.5lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
-	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->DC_power,my_sig->DRAM_power,my_sig->PCK_power);
-	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->def_f,ear_policy_name,my_sig->policy_th);
-	fprintf(fd_extra,"%lu;%d;%u;",loop_id,period,level);
-	fprintf(fd_extra,"%llu;%llu;",my_sig->cycles,my_sig->instructions);
-	fprintf(fd_extra,"%llu;%llu;%llu;",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
-	fprintf(fd_extra,"%llu;%llu;%llu;%llu",fops_single,fops_128,fops_256,fops_512);	
-	
 }
 
 void metrics_end_loop_extra_metrics(int iters)

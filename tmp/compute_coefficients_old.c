@@ -23,8 +23,8 @@
 #include <ear_db_type.h>
 #include <ear_models/ear_models.h>
 
-struct App_info *apps;
-struct App_info **apps_ordered;
+application_t *apps;
+application_t **apps_ordered;
 unsigned int num_app,current_app=0;
 unsigned int *samples_f,i,*current,*samples_app;
 char *nodename;
@@ -298,7 +298,7 @@ unsigned int p_states()
     cpufreq_put_available_frequencies(first);
     return num_pstates;
 }
-int TestAlreadyExists(struct App_info *Applist,unsigned int total_apps, struct App_info *newApp)
+int TestAlreadyExists(application_t *Applist,unsigned int total_apps, application_t *newApp)
 {
     unsigned int pos=0,found=0;
     while((pos<total_apps) && (found==0)){
@@ -311,7 +311,7 @@ int TestAlreadyExists(struct App_info *Applist,unsigned int total_apps, struct A
     if (found==0) return -1;
     else return pos;
 }
-void AverageApplication(struct App_info * current,unsigned int samples)
+void AverageApplication(application_t * current,unsigned int samples)
 {
 #ifdef DEBUG
     fprintf(stdout,"Application %s with f=%lu has %d samples\n",current->app_id,current->nominal,samples);
@@ -324,7 +324,7 @@ void AverageApplication(struct App_info * current,unsigned int samples)
     current->CPI=current->CPI/foravg;
     current->TPI_f0=current->TPI_f0/foravg;
 }
-void AcumApp(struct App_info *A,struct App_info *B)// A=A+B metrics
+void AcumApp(application_t *A,application_t *B)// A=A+B metrics
 {
     A->seconds+=B->seconds;
     A->GIPS_f0+=B->GIPS_f0;
@@ -333,7 +333,7 @@ void AcumApp(struct App_info *A,struct App_info *B)// A=A+B metrics
     A->TPI_f0+=B->TPI_f0;
     A->CPI+=B->CPI;
 }
-void CopyApp(struct App_info *A,struct App_info *B)
+void CopyApp(application_t *A,application_t *B)
 {
     strcpy(A->app_id,B->app_id);
     A->nominal=B->nominal;
@@ -478,7 +478,7 @@ int main(int argc,char *argv[])
     double power,cpi,tpi;
     char coef_file[256];
     char men[128];
-    struct App_info test;
+    application_t test;
     int instances_fd;
     char instances_filename[256];
     char *header_instances="NAME;FREQ;TIME;CPI;TPI;GBS;POWER\n";
@@ -525,12 +525,12 @@ int main(int argc,char *argv[])
         exit(1);
     }
     // Number of app (total instances, not different apps)
-    num_app=(lseek(fd,0,SEEK_END)/sizeof(struct App_info));
+    num_app=(lseek(fd,0,SEEK_END)/sizeof(application_t));
     if (num_app<0){
         perror("Error calculating num apps");
         exit(1);
     }
-    apps=(struct App_info *)malloc(sizeof(struct App_info)*num_app);
+    apps=(application_t *)malloc(sizeof(application_t)*num_app);
     if (apps==NULL){
         fprintf(stderr,"Error allocating memory for apps\n");
         exit(1);
@@ -554,7 +554,7 @@ int main(int argc,char *argv[])
         exit(1);
     }
     for (i=0;i<num_app;i++){
-        if (read(fd,&test,sizeof(struct App_info))!=sizeof(struct App_info)){
+        if (read(fd,&test,sizeof(application_t))!=sizeof(application_t)){
             perror("Error reading app info");
             exit(1);
         }
@@ -595,13 +595,13 @@ int main(int argc,char *argv[])
     }
     fprintf(stdout,"Applications grouped by names\n");
     // We group applications with frequencies
-    apps_ordered=(struct App_info**)malloc(sizeof(struct App_info*)*num_f);
+    apps_ordered=(application_t**)malloc(sizeof(application_t*)*num_f);
     if (apps_ordered==NULL)	{
         fprintf(stderr,"Error allocating memory for apps_ordered\n");
         exit(1);
     }
     for (i=0;i<num_f;i++){
-        apps_ordered[i]=(struct App_info *)malloc(sizeof(struct App_info)*samples_f[i]);
+        apps_ordered[i]=(application_t *)malloc(sizeof(application_t)*samples_f[i]);
         if (apps_ordered[i]==NULL){
             fprintf(stderr,"Error allocating memory for apps_ordered[%u]\n",i);
             exit(1);

@@ -150,14 +150,14 @@ void ear_daemon_client_disconnect()
 	}
 }
 //////////////// SYSTEM REQUESTS
-unsigned long ear_daemon_client_write_app_signature(struct App_info *app_signature)
+unsigned long ear_daemon_client_write_app_signature(application_t *app_signature)
 {
 	int com_fd=system_req;
 	struct daemon_req req;
 	unsigned long ack=EAR_SUCCESS;
 	ear_debug(2,"EAR_daemon_client:asking ear_daemon to write app_signature\n");
 	req.req_service=WRITE_APP_SIGNATURE;
-	memcpy(&req.req_data.app, app_signature, sizeof(struct App_info));
+	memcpy(&req.req_data.app, app_signature, sizeof(application_t));
 	if (ear_fd_req[com_fd]>=0){
 		if (write(ear_fd_req[com_fd],&req,sizeof(req))!=sizeof(req)){
 			ear_verbose(0,"EAR: Error sending request ear_daemon_client_write_app_signature\n");

@@ -35,7 +35,7 @@ int ear_daemon_client_start_rapl();
 int ear_daemon_client_reset_rapl();
 unsigned long ear_daemon_client_get_data_size_rapl();
 // System services
-unsigned long ear_daemon_client_write_app_signature(struct App_info *app_signature);
+unsigned long ear_daemon_client_write_app_signature(application_t *app_signature);
 // Node energy services
 unsigned long ear_daemon_client_node_energy_data_size();
 int ear_daemon_client_node_dc_energy(unsigned long *energy);
