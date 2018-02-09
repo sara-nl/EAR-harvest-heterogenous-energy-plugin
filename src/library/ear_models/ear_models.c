@@ -99,7 +99,9 @@ void init_power_models(unsigned int p_states,unsigned long *p_states_list)
 	// Coefficient file
 	strcpy(coeff_file, get_ear_coeff_db_pathname());
 	gethostname(nodename, sizeof(nodename));
-	strcat(coeff_file, nodename);
+
+	// EAR_USER_DB_PATHNAME
+	sprintf(coeff_file, "%s%s", coeff_file, nodename);
 
 	ear_verbose(1, "EAR: Using coefficients %s\n", coeff_file);
 
@@ -149,6 +151,7 @@ void init_power_models(unsigned int p_states,unsigned long *p_states_list)
 	for (ref = begin_pstate; ref < end_pstate; ref++)
 	{
 		sprintf(coeff_file_fn, "%s.%d", coeff_file, p_states_list[ref]);
+
 		ear_verbose(2, "EAR: Opening (per node) coefficient file %s\n", coeff_file_fn);
 
 		size = sizeof(coefficient_t) * p_states;

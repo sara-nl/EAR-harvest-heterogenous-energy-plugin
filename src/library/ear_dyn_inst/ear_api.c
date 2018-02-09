@@ -230,19 +230,23 @@ void ear_finalize()
 
 	traces_end(ear_my_rank, my_id, app_eru_diff);
 
+	// Summary file
 	gethostname(node_name, sizeof(node_name));
 	summary_pathname = get_ear_user_db_pathname();
-	sprintf(summary_fullpath, "%s.%s", summary_pathname, node_name);
+
+	// EAR_COEFF_DB_PATHNAME
+	sprintf(summary_fullpath, "%s%s", summary_pathname, node_name);
+
 	metrics_end(ear_whole_app, my_id, summary_fullpath, &app_eru_diff);
 
 	db_end(ear_whole_app);
 	dynais_dispose();
+
 	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
     states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
 	end_dc_energy();
 	ear_daemon_client_disconnect();
-
 }
 
 

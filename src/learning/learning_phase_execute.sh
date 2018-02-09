@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Edit architecture values
-export CORES=28
+export CORES=40
 export SOCKETS=2
-export CORES_PER_SOCKET=14
+export CORES_PER_SOCKET=20
 
 # Edit learning phase parameters
 export EAR_MIN_P_STATE=1
@@ -35,4 +35,4 @@ done
 
 # Calculating coefficients
 $EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname`.db.csv" \
-     $EAR_COEFF_DB_PATHNAME.`hostname` 1000000 `hostname`
+     $EAR_COEFF_DB_PATHNAME`hostname` 1000000 `hostname`
