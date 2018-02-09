@@ -14,6 +14,13 @@
 #define MAX_APP_NAME    1024
 #define FLOPS_EVENTS    8
 
+typedef struct loop_info{
+	ulong loop_id;
+	uint  loop_size;
+	uint  level;
+	uint  iterations;
+}loop_info_t;
+
 typedef struct App_info_extended
 {
 	long long L1_misses;
