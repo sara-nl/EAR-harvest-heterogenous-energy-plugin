@@ -24,7 +24,7 @@
 // Data type to send the requests
 union daemon_req_opt{
     unsigned long req_value;
-    struct App_info app;    
+    application_t app;
 };
 
 struct daemon_req{

@@ -53,7 +53,7 @@ void main(int argc,char *argv[])
 	char line[1024];
 	long f0;
 	double cpi_f0,tpi_f0,time_f0,power_f0,cpi_p;
-	struct App_info app_data;
+	application_t app_data;
 	if (argc!=4) usage(argv[0]);
 	f0=atoi(argv[3]);
 	fprintf(stderr,"Nominal %u\n",f0);
