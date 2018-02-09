@@ -393,12 +393,15 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 {
 	double CPI, GBS, seconds, TPI, POWER_DC, DRAM_POWER, PCK_POWER, GFLOPS, EDP;
 	double PP, TP, EP, perf_deg, power_sav, energy_sav, energy, new_EDP;
-	long long total_fops_instructions;
+	long long total_fops_instructions,total_fops;
 	unsigned long f, optimal;
 	application_t *app_info;
 	application_t app_signature;
 	char *app_name;
 	int i;
+    long long fops_single,fops_128,fops_256,fops_512;
+    double psingle,p128,p256,p512;
+
 
 	app_info = db_current_app();
 
@@ -431,22 +434,34 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		// Application total FLOPS
 		get_total_fops(flops_metrics);
 		total_fops_instructions = 0;
+		total_fops=0;
 
 		for (i=0;i < flops_events;i++)
 		{
 			total_fops_instructions += flops_metrics[i];
 		}
 
-		ear_verbose(1,"EAR: Total FP instructions %llu \n",total_fops_instructions);
+    	fops_single=flops_metrics[flops_events/2]*flops_weigth[flops_events/2];
+    	fops_128=flops_metrics[flops_events/2+1]*flops_weigth[flops_events/2+1];
+    	fops_256=flops_metrics[flops_events/2+2]*flops_weigth[flops_events/2+2];
+    	fops_512=flops_metrics[flops_events/2+3]*flops_weigth[flops_events/2+3];
+    	total_fops=fops_single+fops_128+fops_256+fops_512;
+		if (total_fops>0){
+    		psingle=(double)fops_single/(double)total_fops;
+    		p128=(double)fops_128/(double)total_fops;
+    		p256=(double)fops_256/(double)total_fops;
+    		p512=(double)fops_512/(double)total_fops;
+			ear_verbose(1,"EAR FP_signature (Gflops %lf (single %lf , 128 %lf, 256 %lf ,512 %lf))\n",GFLOPS,psingle*100,p128*100,p256*100,p512*100);
 
-		//
-		ear_verbose(1,"EAR: AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
+			ear_verbose(2,"EAR: Total FP instructions %llu \n",total_fops_instructions);
+			ear_verbose(2,"EAR: AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
 					(double)flops_metrics[flops_events-1]/(double)total_fops_instructions);
-		ear_verbose(1,"EAR: Total instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
-		ear_verbose(1,"EAR: Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+			ear_verbose(2,"EAR: Total instructions %llu\n",acum_event_values[EAR_ACUM_TOT_INS]);
+			ear_verbose(2,"EAR: Percentage of AVX512 instructions %lf \n",(double)flops_metrics[flops_events-1]/(double)acum_event_values[EAR_ACUM_TOT_INS]);
+		}
 	}
 
-	ear_verbose(1,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
+	ear_verbose(2,"EAR: Cache misses L1 %llu ,L2 %llu, L3 %llu\n",l1,l2,l3);
 	fprintf(stderr,"_______________________________\n");
 
 	// We can write summary metrics in any DB or any other place
@@ -647,9 +662,9 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 	p256=(double)fops_256/(double)total_fops;
 	p512=(double)fops_512/(double)total_fops;
 	my_gflops=((double)(total_fops*get_total_resources())/(my_sig->iter_time*iterations))/(double)1000000000;
-	ear_verbose(1,"\t\tEAR_extra: L1 misses %llu L2 misses %llu L3 misses %llu\n",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
-	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
-		my_gflops,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
+	ear_verbose(2,"\t\t cache metrics: L1 misses %llu L2 misses %llu L3 misses %llu\n",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
+	ear_verbose(1,"\t\t FP_signature (GFlops %lf , (single %.2lf \%,128 %.2lf \%,256 %.2lf \%,512 %.2lf \%))\n",
+		my_gflops,psingle*100,p128*100,p256*100,p512*100);
 
 	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;CYCLES;INSTRUCTIONS;L1_MISSES;L2_MISSES;L3_MISSES;DPSINGLE;DP128;DP256;DP512;ITERATIONS\n");
 	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
