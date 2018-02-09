@@ -18,7 +18,7 @@
 
 #include <ear_daemon_client.h>
 #include <ear_db/ear_db.h>
-#include <ear_metrics/ear_papi.h>
+#include <ear_metrics/ear_metrics.h>
 #include <ear_metrics/ear_basic.h>
 #include <ear_metrics/ear_turbo_metrics.h>
 #include <ear_metrics/ear_flops_metrics.h>
@@ -114,28 +114,6 @@ void metrics_get_app_name(char *app_name)
 	strcpy(app_name,prginfo->fullname );
 }
 
-
-void ear_papi_error(int ret,char *m)
-{
-        if (ret!=PAPI_OK){
-                ear_verbose(0,"EAR(%s):%s -  %s\n",__FILE__,m,PAPI_strerror(ret));
-                exit(2);
-        }
-}
-// This function is not used at this moment
-void print_units(FILE* fd)
-{
-	int i;
-	for (i=0;i<NUM_EVENTS;i++){
-		ear_debug(4,"EAR(%s) EAR_Print_units : Units for %s is %s\n",__FILE__,event_names[i],units[i]);
-		if (data_type[i] == PAPI_DATATYPE_FP64){
-			ear_debug(4,"EAR(%s): Data type PAPI_DATATYPE_FP64,__FILE__\n");
-		}else{
-			ear_debug(4,"EAR(%s): Data type PAPI_DATATYPE_UINT64\n",__FILE__);
-		}
-
-	}
-}
 
 
 void init_basic_event_info(int ear_event,PAPI_event_info_t *info){
@@ -333,14 +311,14 @@ int metrics_init(int my_id,int pid)
 	}
 
 	// TODO: esto deberiamos verlo, me está creando ficheros sin nada.
-	sprintf(extra_filename,"%s.loop_info.csv",get_ear_app_name());
+	sprintf(extra_filename,"%s.loop_info.csv",get_ear_user_db_pathname());
 	ear_verbose(1,"Opening/Creating %s file \n",extra_filename);
 	fd_extra=fopen(extra_filename,"w+");
 
 	if (fd_extra==NULL){
 		ear_verbose(0,"EAR: File for extra metrics can not be created %s\n",strerror(errno));
 	}else{
-		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512;ITERATIONS\n");
+		fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;CYCLES;INSTRUCTIONS;L1_MISSES;L2_MISSES;L3_MISSES;DPSINGLE_OPS;DP128_OPS;DP256_OPS;DP512_OPS;ITERATIONS\n");
 	}
 
 	reset_values();
@@ -372,7 +350,7 @@ void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned
 application_t* set_metrics(int period, int iteration, long long *counters, long long iter_time,
 						  ulong *eru, uint N_iters)
 {
-	double CPI, GBS, seconds, TPI, POWER;
+	double CPI, GBS, seconds, TPI, POWER,DRAM_POWER,PCK_POWER;
 	application_t *app_info;
 
 	ear_debug(4,"EAR(%s): Setting DB metrics for period %d iteration %d\n",
@@ -389,16 +367,24 @@ application_t* set_metrics(int period, int iteration, long long *counters, long 
 
 	POWER = (double) *eru / (double) (seconds * 1000000);
 
+	DRAM_POWER= (double) (counters[EAR_ACUM_DRAM_ENER]  / 1000000000) / seconds;;
+	PCK_POWER = (double) (counters[EAR_ACUM_PCKG_ENER] /  1000000000) / seconds;;
+
 	ear_debug(4,"EAR(%s):: Set_metrics: seconds %.5lf GBS %.5lf POWER %12.6f TPI %12.6f CPI %5lf\n",
 			  __FILE__, seconds / (double) N_iters, GBS, POWER, TPI, CPI);
 
 	app_info = db_current_app();
-	db_set_GBS(app_info,GBS);
-	db_set_POWER(app_info,POWER);
-	db_set_TPI(app_info,TPI);
-	db_set_seconds(app_info,seconds/(double)N_iters);
-	db_set_CPI(app_info,CPI);
-	db_set_frequency(app_info,ear_daemon_client_end_compute_turbo_freq());
+
+	app_info->GBS=GBS;
+	app_info->DC_power=POWER;
+	app_info->TPI=TPI;
+	app_info->iter_time=seconds/(double)N_iters;
+	app_info->CPI=CPI;
+	app_info->avg_f=ear_daemon_client_end_compute_turbo_freq();
+	app_info->cycles=counters[EAR_ACUM_TOT_CYC];
+	app_info->instructions=counters[EAR_ACUM_TOT_INS];
+	app_info->DRAM_power=DRAM_POWER;
+	app_info->PCK_power=PCK_POWER;
 
 	return app_info;
 }
@@ -410,7 +396,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	long long total_fops_instructions;
 	unsigned long f, optimal;
 	application_t *app_info;
-	application_t SIGNATURE;
+	application_t app_signature;
 	char *app_name;
 	int i;
 
@@ -434,11 +420,11 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	f = ear_daemon_client_end_app_compute_turbo_freq();
 	app_name = get_ear_app_name();
 
-	if (app_name!=NULL) strcpy(SIGNATURE.app_id,app_name);
-	else strcpy(SIGNATURE.app_id,"NA");
+	if (app_name!=NULL) strcpy(app_signature.app_id,app_name);
+	else strcpy(app_signature.app_id,"NA");
 
 	get_cache_metrics(&l1, &l2, &l3);
-	fprintf(stderr,"_____________________EAR Extra Summary for %s ___________________\n",SIGNATURE.app_id);
+	fprintf(stderr,"_____________________EAR Extra Summary for %s ___________________\n",app_signature.app_id);
 
 	if (fops_supported)
 	{
@@ -478,36 +464,36 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 
 	// Reporting application signature metrics at stderr
 	fprintf(stderr,"_____________________EAR Summary for %s ___________________\n",app_info->node_id);
-	fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,SIGNATURE.app_id,(double)app_exec_time/(double)1000000);
+	fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,app_signature.app_id,(double)app_exec_time/(double)1000000);
 	fprintf(stderr,"EAR CPI=%.3lf GBS=%.3lf GFlops=%.3lf\n",CPI,GBS,GFLOPS);
 	fprintf(stderr,"EAR avg. node power=%.3lfW, avg. RAPL dram power=%.3lfW, avg. RAPL pck. power=%.3lfW EDP=%.3lf GFlops/Watts=%.3lf\n",POWER_DC,DRAM_POWER,PCK_POWER,EDP,GFLOPS/POWER_DC);
 	fprintf(stderr,"EAR def. frequency %.3lf GHz avg. frequency %.3lf GHz\n",(double)app_info->def_f/(double)1000000,(double)f/(double)1000000);
 
-	// app_info links to the DB information . Update SIGNATURE metrics to report it at user_db and system_db
-	strcpy(SIGNATURE.job_id,app_info->job_id);
-	strcpy(SIGNATURE.user_id,app_info->user_id);
-	strcpy(SIGNATURE.node_id,app_info->node_id);
-	db_set_GBS(&SIGNATURE,GBS);
-	db_set_POWER(&SIGNATURE,POWER_DC);
-	db_set_TPI(&SIGNATURE,TPI);
-	db_set_seconds(&SIGNATURE,seconds);
-	db_set_CPI(&SIGNATURE,CPI);
-	db_set_CYCLES(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_CYC]);
-	db_set_INSTRUCTIONS(&SIGNATURE,acum_event_values[EAR_ACUM_TOT_INS]);
-	db_set_DRAM_POWER(&SIGNATURE,DRAM_POWER);
-	db_set_PCK_POWER(&SIGNATURE,PCK_POWER);
-	db_set_frequency(&SIGNATURE,f);
-	db_set_Gflops(&SIGNATURE,GFLOPS);
-	db_set_EDP(&SIGNATURE,EDP);
-	db_set_default(&SIGNATURE,app_info->def_f);
-	db_set_policy(&SIGNATURE,ear_policy_name);
-	db_set_th(&SIGNATURE,get_ear_power_policy_th());
+	// app_info links to the DB information . Update app_signature metrics to report it at user_db and system_db
+	strcpy(app_signature.job_id,app_info->job_id);
+	strcpy(app_signature.user_id,app_info->user_id);
+	strcpy(app_signature.node_id,app_info->node_id);
+	strcpy(app_signature.policy,ear_policy_name);
+	app_signature.GBS=GBS;
+	app_signature.DC_power=POWER_DC;
+	app_signature.TPI=TPI;
+	app_signature.iter_time=seconds;
+	app_signature.CPI=CPI;
+	app_signature.cycles=acum_event_values[EAR_ACUM_TOT_CYC];
+	app_signature.instructions=acum_event_values[EAR_ACUM_TOT_INS];
+	app_signature.DRAM_power=DRAM_POWER;
+	app_signature.PCK_power=PCK_POWER;
+	app_signature.avg_f=f;
+	app_signature.Gflops=GFLOPS;
+	app_signature.EDP=EDP;
+	app_signature.def_f=app_info->def_f;
+	app_signature.policy_th=get_ear_power_policy_th();
 
 	if ((power_model_policy == MONITORING_ONLY) &&
 			(ear_my_rank == 0) &&
 			(app_info->def_f == ear_get_freq(1)))
 	{
-		optimal = optimal_freq_min_energy(0.1, &SIGNATURE, &PP, &TP);
+		optimal = optimal_freq_min_energy(0.1, &app_signature, &PP, &TP);
 
 		perf_deg = ((TP - seconds) / seconds) * 100.0;
 		power_sav = ((POWER_DC-PP) / POWER_DC) * 100.0;
@@ -520,16 +506,16 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 		//TODO: ese '\%'
 		fprintf(stderr,"EAR hint. at %.3lfGHz application %s would degrade by %.1lf\% " \
 		"(%.3lf sec.), avg.power would reduce by %.1lf\% (%.3lfW), saving %.1lf%s energy" \
-		"(estimated new EDP %.3lf)\n", (double) optimal / (double) 1000000, SIGNATURE.app_id,
+		"(estimated new EDP %.3lf)\n", (double) optimal / (double) 1000000, app_signature.app_id,
 				perf_deg,TP, power_sav, PP, energy_sav, "%", new_EDP);
 	}
 
 	fprintf(stderr,"____________________________________________________\n");
 
 	// We save it in the historical DB
-	db_update_historical(whole_app,&SIGNATURE);
+	db_update_historical(whole_app,&app_signature);
 
-	append_application_text_file(summary_file, &SIGNATURE);
+	append_application_text_file(summary_file, &app_signature);
 }
 
 void copy_last_iter_counters()
@@ -598,8 +584,8 @@ struct App_info* metrics_end_compute_signature(int period,unsigned long int *eru
 	ear_verbose(3,"EAR______________metrics_end_compute_signature __________\n");
 	// POWER_DC is provided
 	// WE Get iteration TIme
-    	end_time=PAPI_get_real_usec();
-    	iter_time=metrics_usecs_diff(end_time,start_time);
+    end_time=PAPI_get_real_usec();
+    iter_time=metrics_usecs_diff(end_time,start_time);
 	if (iter_time< min_t) return NULL;
 
 	// WE Get counters (Stop&Read)
@@ -665,14 +651,15 @@ void metrics_print_extra_metrics(struct App_info *my_sig,struct App_info_extende
 	ear_verbose(1,"\t\tEAR_extra: GFlops %lf --> SP inst %llu DP inst %llu SP ops %llu DP ops %llu DP_fops_perc_per_type (%.2lf \%,%.2lf \%,%.2lf \%,%.2lf \%)\n",
 		my_gflops,sp,dp,(total_fops-dp_fops),dp_fops,psingle*100,p128*100,p256*100,p512*100);
 
-	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;L1_MISSES;L2_MISSES;L3_MISSES;PERC_DPSINGLE;PERC_DP128;PERC_DP256;PERC_DP512;ITERATIONS\n");
+	// fprintf(fd_extra,"USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;LOOP_ID;SIZE;LEVEL;CYCLES;INSTRUCTIONS;L1_MISSES;L2_MISSES;L3_MISSES;DPSINGLE;DP128;DP256;DP512;ITERATIONS\n");
 	fprintf(fd_extra,"%s;%s;%s;%s;",my_sig->user_id,my_sig->job_id,my_sig->node_id,my_sig->app_id);
 	fprintf(fd_extra,"%lu;%.5lf;%.5lf;%.5lf;%.5lf;%.5lf;",my_sig->avg_f,my_sig->iter_time,my_sig->CPI,my_sig->TPI,my_sig->GBS,my_gflops);
 	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;",my_sig->DC_power,my_sig->DRAM_power,my_sig->PCK_power);
 	fprintf(fd_extra,"%u;%s;%.2lf;",my_sig->def_f,ear_policy_name,my_sig->policy_th);
 	fprintf(fd_extra,"%lu;%d;%u;",loop_id,period,level);
+	fprintf(fd_extra,"%llu;%llu;",my_sig->cycles,my_sig->instructions);
 	fprintf(fd_extra,"%llu;%llu;%llu;",my_extra->L1_misses,my_extra->L2_misses,my_extra->L3_misses);
-	fprintf(fd_extra,"%.2lf;%.2lf;%.2lf;%.2lf",psingle*100,p128*100,p256*100,p512*100);	
+	fprintf(fd_extra,"%llu;%llu;%llu;%llu",fops_single,fops_128,fops_256,fops_512);	
 	
 }
 

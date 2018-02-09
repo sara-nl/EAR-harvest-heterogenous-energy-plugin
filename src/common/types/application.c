@@ -37,8 +37,9 @@ int append_application_binary_file(char *path, application_t *app)
 
 int append_application_text_file(char *path, application_t *app)
 {
-    static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;" \
-        "GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH";
+    // static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;" \
+    //    "GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH";
+	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;L2_MISSES;L3_MISSES;GFLOPS;DPSINGLE_OPS;DP128_OPS;DP256_OPS;DP512_OPS";
     application_t *a;
     int fd, ret;
 
@@ -62,10 +63,15 @@ int append_application_text_file(char *path, application_t *app)
     }
 
     a = app;
-    ret = dprintf(fd, "%s;%s;%s;%s;%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%s;%.3lf\n",
-           a->user_id, a->job_id, a->node_id, a->app_id, a->avg_f, a->iter_time, a->CPI,
-           a->TPI, a->GBS, a->Gflops, a->DC_power, a->DRAM_power, a->PCK_power,
-           a->def_f, a->policy, a->policy_th);
+    ret = dprintf(fd, "%s;%s;%s;%s;%lu;%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%s;%.3lf;%llu;%llu;%llu;%llu;%llu;%lf;%llu;%llu;%llu;%llu\n",
+           a->user_id, a->job_id, a->node_id, a->app_id, 
+		   a->avg_f, a->def_f, 
+		   a->iter_time, a->CPI, a->TPI, a->GBS, 
+		   a->DC_power, a->DRAM_power, a->PCK_power,
+           a->policy, a->policy_th,
+		   a->cycles,a->instructions,
+		   (ull)0,(ull)0,(ull)0,						
+		   a->Gflops,(ull)0,(ull)0,(ull)0,(ull)0);		
     close(fd);
 
     if (ret < 0) return EAR_ERROR;
