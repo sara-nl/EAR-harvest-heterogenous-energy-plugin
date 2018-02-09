@@ -18,7 +18,7 @@
 #include <ear_gui/ear_gui.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_states/ear_states.h>
-#include <ear_metrics/ear_papi.h>
+#include <ear_metrics/ear_metrics.h>
 #include <ear_verbose.h>
 #include <types/generic.h>
 #include <environment.h>
