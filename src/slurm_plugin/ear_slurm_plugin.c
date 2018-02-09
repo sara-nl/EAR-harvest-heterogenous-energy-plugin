@@ -9,7 +9,6 @@
 #include <cpufreq.h>
 #include <config.h>
 #include <signal.h>
-
 #include <string_enhanced.h>
 #include <ear_slurm_plugin.h>
 

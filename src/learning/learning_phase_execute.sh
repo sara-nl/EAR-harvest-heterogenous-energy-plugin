@@ -22,14 +22,14 @@ do
     for (( j=0; j<$EAR_TIMES; j++ ))
     do
         export EAR_P_STATE=$i
-        #learning_phase lu-mpi C
-        #learning_phase ep D
-        #learning_phase bt-mz C
-        #learning_phase sp-mz C
-        #learning_phase lu-mz C
-        #learning_phase ua C
-        #learning_phase dgemm
-        #learning_phase stream
+        learning_phase lu-mpi C
+        learning_phase ep D
+        learning_phase bt-mz C
+        learning_phase sp-mz C
+        learning_phase lu-mz C
+        learning_phase ua C
+        learning_phase dgemm
+        learning_phase stream
     done
 done
 
