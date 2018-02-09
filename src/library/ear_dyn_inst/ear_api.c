@@ -23,7 +23,7 @@
 #include <ear_dyn_inst/MPI_calls_coded.h>
 #include <ear_dynais/ear_dynais.h>
 #include <ear_models/ear_models.h>
-#include <ear_metrics/ear_papi.h>
+#include <ear_metrics/ear_metrics.h>
 #include <ear_metrics/ear_node_energy.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_db/ear_db.h>
