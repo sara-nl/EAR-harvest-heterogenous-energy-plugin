@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Edit architecture values
-export CORES=28
+export CORES=40
 export SOCKETS=2
-export CORES_PER_SOCKET=14
+export CORES_PER_SOCKET=20
 
 # Update paths
 export EAR_SRC_PATH=$HOME/git/EAR
