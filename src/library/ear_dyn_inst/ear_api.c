@@ -161,7 +161,9 @@ if (!ear_whole_app){
         calls++;
         ear_acum=ear_acum+(end_ov-begin_ov);
 #endif
-	switch (ear_status){
+
+	switch (ear_status)
+	{
 	case NO_LOOP:
 	case IN_LOOP:
 		break;
@@ -182,15 +184,18 @@ if (!ear_whole_app){
 		break;
 	case NEW_ITERATION:
 		ear_iterations++;
-		//if (report==1){
-		//ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",ear_level,
-		//ear_event,ear_loop_size,ear_iterations);
-		//}
+
+		if (report==1)
+		{
+			ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",
+				ear_level, ear_event, ear_loop_size, ear_iterations);
+		}
+
 		traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());	
 		states_new_iteration(my_id, NULL, ear_loop_size, ear_iterations, ear_event, ear_level);
 		break;
 	case END_LOOP:
-		ear_verbose(4,"END_LOOP event %u\n",ear_event);
+		ear_debug(4,"END_LOOP event %u\n",ear_event);
 		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
 		traces_end_period(ear_my_rank,my_id);
 		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);

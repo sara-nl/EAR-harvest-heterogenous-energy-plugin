@@ -224,7 +224,6 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 					PP = performance_projection(policy_freq);
 
 					if (policy_freq != prev_f) {
-						//metrics_set_signature_start_time();
 						comp_N_begin = metrics_time();
 						EAR_STATE = RECOMPUTING_N;
 
@@ -319,6 +318,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 									"\n\nEAR(%s): Policy not ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
 									ear_app_name, TIME, POWER, ENERGY, PP->Time, PP->Power, PP->Time * PP->Power);
 
+						//TODO: DB COUPLED
 						if (db_signature_has_changed(curr_signature, &last_signature))
 						{
 							EAR_STATE = SIGNATURE_HAS_CHANGED;

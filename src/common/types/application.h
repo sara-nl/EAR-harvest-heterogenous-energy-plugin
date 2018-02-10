@@ -20,8 +20,8 @@ typedef struct loop_info
 } loop_info_t;
 
 #define GENERIC_NAME	256
-#define POLICY_NAME	32
-#define FLOPS_EVENTS    16
+#define POLICY_NAME		32
+#define FLOPS_EVENTS	16
 
 typedef struct application
 {
@@ -41,7 +41,6 @@ typedef struct application
 	double Gflops;
 	double time;
 	unsigned long long FLOPS[FLOPS_EVENTS];
-	unsigned long long WEIGHTS[FLOPS_EVENTS];
 	unsigned long long L1_misses;
 	unsigned long long L2_misses;
 	unsigned long long L3_misses;
