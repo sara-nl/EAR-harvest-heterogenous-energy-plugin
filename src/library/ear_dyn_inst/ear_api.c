@@ -80,7 +80,6 @@ int get_app_name_please(char *my_name)
 	return defined;
 }
 
-
 void ear_init()
 {
 	char node_name[BUFFSIZE];
@@ -93,6 +92,10 @@ void ear_init()
 	PMPI_Comm_rank(MPI_COMM_WORLD,&ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD,&my_size);
 
+	//
+	init_application(application);
+
+	//
 	ear_lib_environment();
 	set_ear_total_processes(my_size);
 	EAR_VERBOSE_LEVEL=get_ear_verbose();
