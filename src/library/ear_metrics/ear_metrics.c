@@ -202,11 +202,16 @@ void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *m
  
 int metrics_init(int my_id, int pid)
 {
-	int retval, ret;
-	int sets,i;
 	char extra_filename[MAX_APP_NAME];
+	int retval, ret;
+	int sets, i;
 
 	if (my_id) return 1;
+
+	init_application(app_temporal);
+	init_application(app_global);
+
+	// TODO: REVISION
 
 	// This must be change to new EAR fucntion
 	ear_cache_line_size=get_cache_line_size();

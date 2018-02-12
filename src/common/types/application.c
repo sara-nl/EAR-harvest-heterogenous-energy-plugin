@@ -10,6 +10,16 @@
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
 
+int init_application(application_t *app)
+{
+    memset(app, sizeof(application_t));
+    app->node_id[0] = '\0';
+    app->user_id[0] = '\0';
+    app->app_id[0] = '\0';
+    app->job_id[0] = '\0';
+    app->policy[0] = '\0';
+}
+
 int append_application_binary_file(char *path, application_t *app)
 {
     int fd, ret;

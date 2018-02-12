@@ -54,7 +54,8 @@ typedef struct application
 
 // Function declarations
 
-//TODO: app_init
+//TODO:
+int init_application(application_t *app);
 int print_application(application_t *app);
 
 // Reads a file of applications saved in binary format. A memory block is
