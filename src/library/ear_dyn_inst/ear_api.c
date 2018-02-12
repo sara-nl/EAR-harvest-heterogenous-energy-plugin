@@ -274,6 +274,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 void ear_finalize()
 {
+	application_t *global_metrics;
 	char summary_fullpath[BUFFSIZE];
 	char node_name[BUFFSIZE];
 	char *summary_pathname;
@@ -284,7 +285,6 @@ void ear_finalize()
 	#ifdef MEASURE_DYNAIS_OV
 	ear_verbose(0,"EAR:: Dynais algorithm consumes %llu usecs in %u calls\n",ear_acum,calls);
 	#endif
-	
 	
 	app_eru_end=read_dc_energy();
 	app_eru_diff=energy_diff(app_eru_end , app_eru_init);
@@ -302,19 +302,20 @@ void ear_finalize()
 	gethostname(node_name, sizeof(node_name));
 	summary_pathname = get_ear_user_db_pathname();
 
-	// EAR_COEFF_DB_PATHNAME
+	// TODO: SUMMARY
 	sprintf(summary_fullpath, "%s%s", summary_pathname, node_name);
 
-	metrics_end(ear_whole_app, my_id, summary_fullpath, &app_eru_diff);
+	// TODO: GLOBAL METRICS
+	global_metrics = metrics_end(app_eru_diff);
 
-	//
-	printf()
+	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
+	print_application(global_metrics);
 
 	// DynAIS
 	dynais_dispose();
 
 	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
-    states_end_job(my_id, NULL, ear_app_name);
+	states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
 	end_dc_energy();
 	ear_daemon_client_disconnect();
