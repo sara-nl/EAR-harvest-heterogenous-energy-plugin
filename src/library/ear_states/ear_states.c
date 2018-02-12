@@ -217,9 +217,12 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				eru_end = read_dc_energy();
 				eru_diff = energy_diff(eru_end, eru_init);
 
+				// TODO: (OK)
+				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
+						  __FILE__, period, N_iters);
+
 				N_iter = iterations - begin_iter;
-				curr_signature = metrics_end_compute_signature(period, &eru_diff, N_iter,
-															   perf_accuracy_min_time);
+				curr_signature = metrics_end_compute_signature(eru_diff, N_iter, perf_accuracy_min_time);
 
 				if (curr_signature == NULL) {
 					comp_N_begin = metrics_time();
@@ -295,18 +298,23 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				eru_end = read_dc_energy();
 				eru_diff = energy_diff(eru_end, eru_init);
 
+				// TODO: (OK)
+				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
+						  __FILE__, period, N_iters);
+
 				N_iter = iterations - begin_iter;
-				curr_signature = metrics_end_compute_signature(period, &eru_diff, N_iter,
-															   perf_accuracy_min_time);
+				curr_signature = metrics_end_compute_signature(eru_diff, N_iter, perf_accuracy_min_time);
 
 				// returns NULL if time is not enough for performance accuracy
-				if (curr_signature == NULL) {
+				if (curr_signature == NULL)
+				{
 					comp_N_begin = metrics_time();
 					EAR_STATE = SIGNATURE_HAS_CHANGED;
 					ear_verbose(3, "EAR(%s) SIGNATURE_STABLE(NULL) --> SIGNATURE_HAS_CHANGED \n", __FILE__);
-				} else
+				}
+				else
 				{
-					// TODO: DB COUPLED
+					// TODO: DB COUPLED (OK)
 					CPI = curr_signature->CPI;
 					GBS = curr_signature->GBS;
 					POWER = curr_signature->DC_power;

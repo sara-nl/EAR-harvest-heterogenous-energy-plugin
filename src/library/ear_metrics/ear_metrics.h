@@ -31,16 +31,6 @@ void metrics_get_app_name(char *name);
 // Returns real time counter value in microseconds
 long long metrics_time();
 
-// Starts performance/power counters and save values to start computing the
-// application signature
-void metrics_start_computing_signature();
-
-// Stops & reads performance/power counters and computes application signature.
-// This function also accumulates values to report application summary and
-// starts performance/power counters again. Returns the application signature.
-application_t *metrics_end_compute_signature(int period, ulong *eru_diff,
-	uint N_iters, long long min_t);
-
 //
 void metrics_set_signature_start_time();
 // Gets HW infor
@@ -53,6 +43,15 @@ long long metrics_usecs_diff(long long end,long long init);
 // Computes total application signature at application end and prints it at the
 // stderr and in fd
 void metrics_print_summary(uint whole_app, int my_id, char* summary_file);
+
+// Starts performance/power counters and save values to start computing the
+// application signature
+void metrics_start_computing_signature();
+
+// Stops & reads performance/power counters and computes application signature.
+// This function also accumulates values to report application summary and
+// starts performance/power counters again. Returns the application signature.
+application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulong min_time_us);
 
 #else
 #endif
