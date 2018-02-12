@@ -41,6 +41,7 @@ long long metrics_usecs_diff(long long end,long long init);
  * BIG BOOST
  */
 application_t* metrics_end(ulong energy_mj);
+void metrics_start();
 
 // Starts performance/power counters and save values to start computing the
 // application signature

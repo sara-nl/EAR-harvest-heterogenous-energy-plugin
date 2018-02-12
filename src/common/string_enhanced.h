@@ -6,7 +6,7 @@
 // Adds commas to numbers. It is printed in internal buffer and a pointer to
 // this buffer is returned. So do whatever you want before call again one
 // of these functions.
-char *add_comma_ull(ull number);
+char *add_point_ull(ull number);
 char *add_point_ulong(ulong number);
 char *add_point_uint(uint number);
 

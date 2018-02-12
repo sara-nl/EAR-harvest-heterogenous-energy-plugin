@@ -312,6 +312,7 @@ void copy_last_iter_counters()
 		last_iter_event_values[i]=acum_event_values[i];
 	}
 }
+
 void diff_counters()
 {
 	int i;
@@ -319,6 +320,7 @@ void diff_counters()
 		diff_event_values[i]=acum_event_values[i]-last_iter_event_values[i];
 	}
 }
+
 void acum_counters()
 {
 	int i,s;
@@ -387,24 +389,28 @@ static void fill_application_metrics(application_t *app, const long long *counte
 	app->DC_power = (double) energy_mj / (double) (time_s * 1000000);
 	app->PCK_power  = (double) (counters[EAR_ACUM_PCKG_ENER] / 1000000000) / time_s;
 	app->DRAM_power = (double) (counters[EAR_ACUM_DRAM_ENER] / 1000000000) / time_s;
-
-	// Time dependent
-	app->EDP = time_s * time_s * POWER_DC;
-	app->time = time_s / (double) N_iters;
+	app->EDP = time_s * time_s * app->DC_power;
 
 	// TODO: IF TEMPORAL (loop)
 	if (N_iters > 0) {
+		// Time
+		app->time = time_s / (double) N_iters;
+
 		// Frequency
 		app->avg_f = ear_daemon_client_end_compute_turbo_freq();
 	}
 	// TODO: IF GLOBAL (whole app)
 	else {
+		// Time
+		app->time = time_s;
+
 		// Frequency
 		app->avg_f = ear_daemon_client_end_app_compute_turbo_freq();
 
 		// Instructions
 		app->cycles = counters[EAR_ACUM_TOT_CYC];
 		app->instructions = counters[EAR_ACUM_TOT_INS];
+		app->procs = get_total_resources();
 
 		// Cache
 		get_cache_metrics(&l1, &l2, &l3);
@@ -413,13 +419,17 @@ static void fill_application_metrics(application_t *app, const long long *counte
 		app->L3_misses = l3;
 
 		// Flops
+		app->Gflops = 0.0;
+
 		for (i=0; i < flops_events; i++) {
 			app->FLOPS[i] = flops_metrics[i] * flops_weigth[i];
+			app->Gflops += (double) app->FLOPS[i];
 		}
-
-		report_application_data(app);
+		
+		app->Gflops = app->Gflops / ((double) time_s * 1000000000.0);
 	}
 }
+
 void metrics_stop()
 {
 	// We should ask for size when initializing and reserving memory with malloc
@@ -465,7 +475,7 @@ application_t *metrics_end(ulong energy_mj)
 	// TODO: This couldn't be done because it uses static app info
 	// metrics_print_summary(whole_app, my_id, summary_file);
 	// print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
-	fill_application_metrics(&app_global, acum_event_values, energy_mj, 1, app_exec_time);
+	fill_application_metrics(&app_global, acum_event_values, energy_mj, 0, app_exec_time);
 
 	return &app_global;
 }
@@ -526,7 +536,7 @@ application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulon
 	acum_energy = acum_energy + energy_mj;
 
 	// TODO: FUTURE
-	fill_application_metrics(&app_temporal, diff_event_values, energy_mj, N_iters, iter_time);
+	fill_application_metrics(&app_temporal, diff_event_values, energy_mj, N_iters, metrics_time);
 
 	// Once processes, we reset actual counters
 	reset_values();

@@ -307,9 +307,9 @@ void ear_finalize()
 
 	// TODO: GLOBAL METRICS
 	global_metrics = metrics_end(app_eru_diff);
-
+	
 	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
-	print_application(global_metrics);
+	report_application_data(global_metrics);
 
 	// DynAIS
 	dynais_dispose();

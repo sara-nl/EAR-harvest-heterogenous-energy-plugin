@@ -284,7 +284,6 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 					}
 
 					// TODO: PRINT EXTRA METRICS
-					print_application(curr_signature);
 				}
 			}
 			break;
