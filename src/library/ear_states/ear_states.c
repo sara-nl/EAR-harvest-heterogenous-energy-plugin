@@ -21,7 +21,6 @@
 #include <ear_metrics/ear_metrics.h>
 #include <ear_metrics/ear_node_energy.h>
 #include <ear_frequency/ear_cpufreq.h>
-#include <ear_db/ear_db.h>
 #include <externs.h>
 
 // static defines

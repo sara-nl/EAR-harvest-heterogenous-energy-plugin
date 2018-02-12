@@ -17,7 +17,6 @@
 #include <errno.h>
 
 #include <ear_daemon_client.h>
-#include <ear_db/ear_db.h>
 #include <ear_metrics/ear_metrics.h>
 #include <ear_metrics/ear_basic.h>
 #include <ear_metrics/ear_turbo_metrics.h>
@@ -433,12 +432,12 @@ static void fill_application_metrics(application_t *app, const long long *counte
 	app->TPI /= (double) (counters[EAR_ACUM_TOT_INS] / ear_cache_line_size);
 
 	// Energy metrics
-	app->DC_POWER = (double) energy_mj / (double) (time_s * 1000000);
-	app->PCK_POWER  = (double) (counters[EAR_ACUM_PCKG_ENER] / 1000000000) / time_s;
-	app->DRAM_POWER = (double) (counters[EAR_ACUM_DRAM_ENER] / 1000000000) / time_s;
+	app->DC_power = (double) energy_mj / (double) (time_s * 1000000);
+	app->PCK_power  = (double) (counters[EAR_ACUM_PCKG_ENER] / 1000000000) / time_s;
+	app->DRAM_power = (double) (counters[EAR_ACUM_DRAM_ENER] / 1000000000) / time_s;
 
 	// Frequency
-	app_info->avg_f = ear_daemon_client_end_compute_turbo_freq();
+	app->avg_f = ear_daemon_client_end_compute_turbo_freq();
 
 	// Instructions
 	app->cycles = counters[EAR_ACUM_TOT_CYC];
@@ -455,7 +454,7 @@ static void fill_application_metrics(application_t *app, const long long *counte
 	}
 
 	// TODO: IF TEMPORAL
-	app_info->time = time_s / (double) N_iters;
+	app->time = time_s / (double) N_iters;
 	// TODO: IF GLOBAL
 
 	print_application(app);
@@ -495,7 +494,7 @@ application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulon
 	acum_energy = acum_energy + energy_mj;
 
 	// TODO: FUTURE
-	app = fill_application_metrics(app_temporal, diff_event_values, energy_mj, N_iters, iter_time);
+	fill_application_metrics(&app_temporal, diff_event_values, energy_mj, N_iters, iter_time);
 
 	// Once processes, we reset actual counters
 	reset_values();
@@ -504,5 +503,5 @@ application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulon
 	ear_verbose(3, "Signature: eneregy %ld Niters %u totalTime %llu \n", energy_mj, N_iters, iter_time);
 	ear_verbose(3, "EAR______________Application signature ready __________\n");
 
-	return app;
+	return &app_temporal;
 }
