@@ -89,8 +89,8 @@ void ear_init()
 	int size;
 
 	// MPI
-	PMPI_Comm_rank(MPI_COMM_WORLD,&ear_my_rank);
-	PMPI_Comm_size(MPI_COMM_WORLD,&my_size);
+	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
+	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
 
 	//
 	init_application(&application);
