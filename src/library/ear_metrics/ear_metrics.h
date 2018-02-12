@@ -21,10 +21,6 @@ void acum_counters();
 // Returns 0 on success and 1 if id!=0 (not a "master"process)
 int metrics_init(int id, int pid);
 
-// Computes the application global metrics (whole application) and reports
-// the application summary. It calls metrics_print_summary
-void metrics_end(uint whole_app, int my_id, char *summary_file, ulong *eru);
-
 // updates name with the application name
 void metrics_get_app_name(char *name);
 
@@ -39,7 +35,6 @@ void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *m
 
 // Returns elapsed time (end-init)
 long long metrics_usecs_diff(long long end,long long init);
-
 // Computes total application signature at application end and prints it at the
 // stderr and in fd
 void metrics_print_summary(uint whole_app, int my_id, char* summary_file);
