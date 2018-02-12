@@ -433,7 +433,7 @@ static void fill_application_metrics(application_t *app, const long long *counte
 	// TODO: IF GLOBAL
 }
 
-application_t *metrics_end(unsigned int whole_app, int my_id, char* summary_file, ulong energy_mj)
+application_t *metrics_end(ulong energy_mj)
 {
 	//
 	metrics_stop();
@@ -451,6 +451,8 @@ application_t *metrics_end(unsigned int whole_app, int my_id, char* summary_file
 	// metrics_print_summary(whole_app, my_id, summary_file);
 	// print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
 	fill_application_metrics(&app_global, acum_event_values, energy_mj, 1, app_exec_time);
+
+	return &app_global;
 }
 
 void metrics_start_computing_signature()

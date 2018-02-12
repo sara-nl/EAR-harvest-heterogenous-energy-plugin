@@ -35,9 +35,11 @@ void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *m
 
 // Returns elapsed time (end-init)
 long long metrics_usecs_diff(long long end,long long init);
-// Computes total application signature at application end and prints it at the
-// stderr and in fd
-void metrics_print_summary(uint whole_app, int my_id, char* summary_file);
+
+/*
+ * BIG BOOST
+ */
+application_t* metrics_end(ulong energy_mj);
 
 // Starts performance/power counters and save values to start computing the
 // application signature
