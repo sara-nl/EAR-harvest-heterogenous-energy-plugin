@@ -46,7 +46,7 @@
 #define TOTAL_EVENTS 		6
 #define NUM_EVENTS 			2
 
-static long long start_time = 0, end_time = 0, iter_time = 0;
+static long long start_time = 0, end_time = 0;
 static long long app_start_time = 0, app_end_time = 0, app_exec_time = 0;
 static int ear_cache_line_size;
 static int ear_node_size;
@@ -424,18 +424,16 @@ static void fill_application_metrics(application_t *app, const long long *counte
 	app->L3_misses = l3;
 
 	// Flops
-	for (i=0;i < flops_events; i++) {
+	for (i=0; i < flops_events; i++) {
 		app->FLOPS[i] = flops_metrics[i] * flops_weigth[i];
 	}
 
 	// TODO: IF TEMPORAL
 	app->time = time_s / (double) N_iters;
 	// TODO: IF GLOBAL
-
-	print_application(app);
 }
 
-void metrics_end(unsigned int whole_app, int my_id, char* summary_file, ulong energy_mj)
+application_t *metrics_end(unsigned int whole_app, int my_id, char* summary_file, ulong energy_mj)
 {
 	//
 	metrics_stop();
@@ -481,14 +479,17 @@ void metrics_start_computing_signature()
 application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulong min_time_us)
 {
 	application_t *app;
-	unsigned long avg_f;
+	long long metrics_time = 0;
 
-	ear_verbose(3, "EAR______________metrics_end_compute_signature __________\n");
+	ear_verbose(3, "---------------- GET METRICS START ----------------\n");
 
 	// TIME SINCE LAST METRICS START
 	end_time = PAPI_get_real_usec();
-	iter_time = metrics_usecs_diff(end_time, start_time);
-	if (iter_time < min_time_us) return NULL;
+	metrics_time = metrics_usecs_diff(end_time, start_time);
+
+	if (metrics_time < min_time_us) {
+		return NULL;
+	}
 
 	// STOP ALL METRICS (AND SAVE)
 	metrics_stop();
@@ -502,7 +503,7 @@ application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulon
 	copy_last_iter_counters();
 
 	// acum_time_time is total, 
-	acum_iter_time = acum_iter_time + iter_time;
+	acum_iter_time = acum_iter_time + metrics_time;
 
 	// If application signature is correct, start time is set to current time
 	start_time = end_time;
@@ -517,8 +518,8 @@ application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulon
 	reset_values();
 	metrics_start();
 
-	ear_verbose(3, "Signature: eneregy %ld Niters %u totalTime %llu \n", energy_mj, N_iters, iter_time);
-	ear_verbose(3, "EAR______________Application signature ready __________\n");
+	ear_verbose(3, "SIGNATURE: energy %ld, iters %u, time %llu\n", energy_mj, N_iters, metrics_time);
+	ear_verbose(3, "---------------- GET METRICS END ----------------\n");
 
 	return &app_temporal;
 }

@@ -307,6 +307,9 @@ void ear_finalize()
 
 	metrics_end(ear_whole_app, my_id, summary_fullpath, &app_eru_diff);
 
+	//
+	printf()
+
 	// DynAIS
 	dynais_dispose();
 
