@@ -465,37 +465,38 @@ unsigned int equal_with_th(double p,double r,double th)
 	if (diff<(th*r)) return 1;
 	else return 0;
 }
-unsigned int policy_ok(projection_t *PREDICTION, application_t *SIGNATURE, application_t *LAST_SIGNATURE)
+
+uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig)
 {
 	double EP, ER;
 
-	ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",__FILE__,
-	PREDICTION->Time,PREDICTION->Power);
-	ear_debug(4,"EAR(%s):: Signature Time %12.6lf Power %12.6lf\n",__FILE__,
-	SIGNATURE->time,SIGNATURE->DC_power);
+	ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",
+			  __FILE__, proj->Time, proj->Power);
+	ear_debug(4,"EAR(%s):: Signature Time %12.6lf Power %12.6lf\n",
+			  __FILE__, curr_sig->time, curr_sig->DC_power);
 
 	if (power_model_policy == MIN_TIME_TO_SOLUTION)
 	{
-		if ((SIGNATURE->time>LAST_SIGNATURE->time) &&
-			(SIGNATURE->avg_f!=LAST_SIGNATURE->avg_f)) return 0;
+		if ((curr_sig->time > last_sig->time) &&
+			(curr_sig->avg_f != last_sig->avg_f)) return 0;
 
-		if (SIGNATURE->time<PREDICTION->Time) return 1;
+		if (curr_sig->time < proj->Time) return 1;
 		else return 0;
 	}
 	else if (power_model_policy == MIN_ENERGY_TO_SOLUTION)
 	{
-		EP = LAST_SIGNATURE->time*LAST_SIGNATURE->DC_power;
-		ER = SIGNATURE->time * SIGNATURE->DC_power;
+		EP = last_sig->time*last_sig->DC_power;
+		ER = curr_sig->time * curr_sig->DC_power;
 
 			ear_verbose(3,"CURRENT E=%lf (%lf x %lf) LAST E=%lf (%lf x %lf)\n",
-			ER,SIGNATURE->time,SIGNATURE->DC_power,EP,LAST_SIGNATURE->time,LAST_SIGNATURE->DC_power);
+			ER, curr_sig->time, curr_sig->DC_power, EP, last_sig->time, last_sig->DC_power);
 
-		if ((ER<EP)&&(SIGNATURE->time<T_max)) return 1;
+		if ((ER<EP)&&(curr_sig->time<T_max)) return 1;
 		else return 0;
 	}
-	else if (power_model_policy==MONITORING_ONLY){
-		return 1;
-	}
+
+	// TODO: else if (power_model_policy==MONITORING_ONLY) return 1;
+	return 1;
 }
 
 unsigned int performance_projection_ok(projection_t *PREDICTION,application_t *SIGNATURE)

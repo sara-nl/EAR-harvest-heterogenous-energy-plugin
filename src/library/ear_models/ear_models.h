@@ -44,7 +44,7 @@ uint performance_projection_ok(projection_t *PREDICTION, application_t *SIGNATUR
 // Given a performance projection, the actual application signature and the last
 // computed application signature values, returns true if policy decision has been
 // the correct ones.
-uint policy_ok(projection_t *PREDICTION, application_t *SIGNATURE, application_t *LAST_SIGNATURE);
+uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig);
 
 // Returns the performance projection for a given frequency
 projection_t *performance_projection(ulong f);
