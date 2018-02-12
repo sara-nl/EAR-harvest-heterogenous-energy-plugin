@@ -337,25 +337,6 @@ int metrics_init(int my_id, int pid)
 	return 0;
 }
 
-void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned long int *eru)
-{
-	//
-	metrics_stop();
-
-	// Save in global counters
-	acum_counters();
-
-	//
-	app_end_time = PAPI_get_real_usec();
-	app_exec_time = app_end_time-app_start_time;
-	acum_energy = *eru;
-
-	// This function computes metrics, signature etc
-	// TODO: This couldn't be done because it uses static app info
-	// metrics_print_summary(whole_app, my_id, summary_file);
-	// print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
-}
-
 void copy_last_iter_counters()
 {
 	int i;
@@ -397,31 +378,20 @@ long long  metrics_time()
 	return PAPI_get_real_usec();
 }
 
-void metrics_start_computing_signature()
-{
-	ear_debug(3,"EAR ______________metrics_start_computing_signature __________\n");
-
-	// TIME
-	start_time=PAPI_get_real_usec();
-
-	// We read and save actual counters
-	metrics_stop();
-
-	// Save in global counters
-	acum_counters();
-
-	// We save here values for last iteration
-	copy_last_iter_counters();
-	metrics_reset();
-	reset_values();
-
-	metrics_start();
-	ear_daemon_client_begin_compute_turbo_freq();
-}
-
+/*
+ *
+ *
+ *
+ *
+ * BIG BOOST
+ *
+ *
+ *
+ *
+ */
 // TODO: PRINTED AT THE END OF THE LOOP (and after metrics_stop)
 static void fill_application_metrics(application_t *app, const long long *counters,
-	ulong energy_mj, uint N_iters, ulong time_us)
+									 ulong energy_mj, uint N_iters, ulong time_us)
 {
 	double time_s, aux;
 	int i;
@@ -463,6 +433,48 @@ static void fill_application_metrics(application_t *app, const long long *counte
 	// TODO: IF GLOBAL
 
 	print_application(app);
+}
+
+void metrics_end(unsigned int whole_app, int my_id, char* summary_file, ulong energy_mj)
+{
+	//
+	metrics_stop();
+
+	// Save in global counters
+	acum_counters();
+
+	//
+	app_end_time = PAPI_get_real_usec();
+	app_exec_time = app_end_time-app_start_time;
+	acum_energy = energy_mj;
+
+	// This function computes metrics, signature etc
+	// TODO: This couldn't be done because it uses static app info
+	// metrics_print_summary(whole_app, my_id, summary_file);
+	// print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
+	fill_application_metrics(&app_global, acum_event_values, energy_mj, 1, app_exec_time);
+}
+
+void metrics_start_computing_signature()
+{
+	ear_debug(3,"EAR ______________metrics_start_computing_signature __________\n");
+
+	// TIME
+	start_time=PAPI_get_real_usec();
+
+	// We read and save actual counters
+	metrics_stop();
+
+	// Save in global counters
+	acum_counters();
+
+	// We save here values for last iteration
+	copy_last_iter_counters();
+	metrics_reset();
+	reset_values();
+
+	metrics_start();
+	ear_daemon_client_begin_compute_turbo_freq();
 }
 
 //TODO: CALLED AT THE END OF THE LOOP
