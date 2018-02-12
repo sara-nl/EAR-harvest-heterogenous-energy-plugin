@@ -57,7 +57,7 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	char *verbose, *loop_time, *who;
 
-	init_application(last_signature);
+	init_application(&last_signature);
 
 	if (my_id) return;
 

@@ -93,7 +93,7 @@ void ear_init()
 	PMPI_Comm_size(MPI_COMM_WORLD,&my_size);
 
 	//
-	init_application(application);
+	init_application(&application);
 
 	//
 	ear_lib_environment();
