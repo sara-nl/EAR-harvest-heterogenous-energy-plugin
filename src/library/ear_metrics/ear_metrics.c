@@ -71,11 +71,6 @@ static long long acum_iter_time=0;
 static long long acum_energy=0;
 static int ear_cpu_id;
 
-#define MULTIPLEX_PAPI
-#ifdef MULTIPLEX_PAPI
-int papi_multiplex=1;
-#endif
-
 static long long l1,l2,l3;
 static long long *flops_metrics;
 static int flops_events;
@@ -83,6 +78,15 @@ static int *flops_weigth;
 static long long total_flops;
 static FILE* fd_extra;
 static int fops_supported;
+
+//TODO: ADD APP INIT
+static application_t app_temporal;
+static application_t app_global;
+
+#define MULTIPLEX_PAPI
+#ifdef MULTIPLEX_PAPI
+int papi_multiplex=1;
+#endif
 
 long long metrics_usecs_diff(long long end,long long init)
 {
@@ -113,8 +117,6 @@ void metrics_get_app_name(char *app_name)
 	}
 	strcpy(app_name,prginfo->fullname );
 }
-
-
 
 void init_basic_event_info(int ear_event,PAPI_event_info_t *info){
 		strncpy(units[ear_event], info->units, sizeof( units[0] )-1 );
@@ -197,7 +199,7 @@ void metrics_get_hw_info(int *sockets,int *cores_socket,unsigned long *max_f,uns
 	strcpy(CPU_name,ear_hwinfo->vendor_string);
 }
  
-int metrics_init(int my_id,int pid)
+int metrics_init(int my_id, int pid)
 {
 	int retval, ret;
 	int sets,i;
@@ -331,19 +333,21 @@ int metrics_init(int my_id,int pid)
 
 void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned long int *eru)
 {
+	//
 	metrics_stop();
+
 	// Save in global counters
 	acum_counters();
 
-	app_end_time=PAPI_get_real_usec();
-	app_exec_time=app_end_time-app_start_time;
-	acum_energy=*eru;
-	// This function computes metrics, signature etc
+	//
+	app_end_time = PAPI_get_real_usec();
+	app_exec_time = app_end_time-app_start_time;
+	acum_energy = *eru;
 
-	metrics_print_summary(whole_app, my_id, summary_file);
-	
-	print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
-	//print_gflops(acum_event_values[EAR_ACUM_TOT_INS],app_exec_time);
+	// This function computes metrics, signature etc
+	// TODO: This couldn't be done because it uses static app info
+	// metrics_print_summary(whole_app, my_id, summary_file);
+	// print_turbo_metrics(acum_event_values[EAR_ACUM_TOT_INS]);
 }
 
 // TODO: PRINTED AT THE END OF THE EXECUTION
@@ -360,8 +364,8 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
     long long fops_single,fops_128,fops_256,fops_512;
     double psingle,p128,p256,p512;
 
-
-	app_info = db_current_app();
+	//TODO: DB COUPLED (app_info = db_current_app())
+	app_info = app_global;
 
 	// Compute signature
 	seconds = (double) app_exec_time / (double)1000000;
@@ -411,8 +415,9 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
     		p128=(double)fops_128/(double)total_fops;
     		p256=(double)fops_256/(double)total_fops;
     		p512=(double)fops_512/(double)total_fops;
-			ear_verbose(1,"EAR FP_signature (Gflops %lf (single %lf , 128 %lf, 256 %lf ,512 %lf))\n",GFLOPS,psingle*100,p128*100,p256*100,p512*100);
 
+			ear_verbose(1,"EAR FP_signature (Gflops %lf (single %lf , 128 %lf, 256 %lf ,512 %lf))\n",
+						GFLOPS,psingle*100,p128*100,p256*100,p512*100);
 			ear_verbose(2,"EAR: Total FP instructions %llu \n",total_fops_instructions);
 			ear_verbose(2,"EAR: AVX_512 instructions %llu (percentage from total %lf)\n",flops_metrics[flops_events-1],
 					(double)flops_metrics[flops_events-1]/(double)total_fops_instructions);
@@ -439,10 +444,13 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 
 	// Reporting application signature metrics at stderr
 	fprintf(stderr,"_____________________EAR Summary for %s ___________________\n",app_info->node_id);
-	fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",app_info->job_id,app_info->user_id,app_signature.app_id,(double)app_exec_time/(double)1000000);
+	fprintf(stderr,"EAR job_id %s user_id %s app_id %s exec_time %.3lf\n",
+			app_info->job_id,app_info->user_id,app_signature.app_id,
+			(double)app_exec_time / (double)1000000);
 	fprintf(stderr,"EAR CPI=%.3lf GBS=%.3lf GFlops=%.3lf\n",CPI,GBS,GFLOPS);
 	fprintf(stderr,"EAR avg. node power=%.3lfW, avg. RAPL dram power=%.3lfW, avg. RAPL pck. power=%.3lfW EDP=%.3lf GFlops/Watts=%.3lf\n",POWER_DC,DRAM_POWER,PCK_POWER,EDP,GFLOPS/POWER_DC);
-	fprintf(stderr,"EAR def. frequency %.3lf GHz avg. frequency %.3lf GHz\n",(double)app_info->def_f/(double)1000000,(double)f/(double)1000000);
+	fprintf(stderr,"EAR def. frequency %.3lf GHz avg. frequency %.3lf GHz\n",
+			(double) app_info->def_f / (double)1000000, (double) f / (double)1000000);
 
 	// app_info links to the DB information . Update app_signature metrics to report it at user_db and system_db
 	strcpy(app_signature.job_id,app_info->job_id);
@@ -488,8 +496,11 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	fprintf(stderr,"____________________________________________________\n");
 
 	// We save it in the historical DB
-	db_update_historical(whole_app,&app_signature);
+	//db_update_historical(whole_app,&app_signature);
+	//TODO: move this to ear_api
+	ear_daemon_client_write_app_signature(MY_APP);
 
+	//
 	append_application_text_file(summary_file, &app_signature);
 }
 
@@ -563,8 +574,8 @@ application_t* fill_application_metrics(const long long *counters, long long tim
 	int i;
 
 	time_s = (double) time_us / (double) 1000000;
-
 	aux = time_s * (double) (1024 * 1024 * 1024);
+
 	GBS  = ((double) (counters[EAR_ACUM_LD_INS] * ear_cache_line_size)) / aux;
 	GBS += ((double) (counters[EAR_ACUM_SR_INS] * ear_cache_line_size)) / aux;
 	CPI  = (double) (counters[EAR_ACUM_TOT_CYC] / (double) counters[EAR_ACUM_TOT_INS]);
@@ -575,8 +586,8 @@ application_t* fill_application_metrics(const long long *counters, long long tim
 	PCK_POWER  = (double) (counters[EAR_ACUM_PCKG_ENER] / 1000000000) / time_s;
 	DRAM_POWER = (double) (counters[EAR_ACUM_DRAM_ENER] / 1000000000) / time_s;
 
-	// TODO: MIRAR QUE HACE db_current_app
-	app_info = db_current_app();
+	//TODO: DB COUPLED (app_info = db_current_app())
+	app_info = app_temporal;
 
 	app_info->time = time_s / (double) N_iters;
 
@@ -606,7 +617,6 @@ application_t* fill_application_metrics(const long long *counters, long long tim
 }
 
 //TODO: CALLED AT THE END OF THE LOOP
-//
 application_t* metrics_end_compute_signature(int period, ulong *eru, uint N_iters, long long min_t)
 {
 	application_t *app;

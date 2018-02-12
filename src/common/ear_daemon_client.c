@@ -306,28 +306,37 @@ void ear_daemon_client_set_turbo()
 }
 unsigned long ear_daemon_client_change_freq(unsigned long newfreq)
 {
+	unsigned long real_freq = EAR_ERROR;
 	struct daemon_req req;
-	unsigned long real_freq=EAR_ERROR;
-	ear_debug(2,"EAR_daemon_client:NewFreq %u requested\n",newfreq);
-	req.req_service=SET_FREQ;
-	req.req_data.req_value=newfreq;
-        if (ear_fd_req[freq_req]>=0){
-        	if (write(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)){
-                	ear_verbose(0,"EAR: Error changing node frequency:%s\n",strerror(errno));
-                	_exit(1);
-        	}
-        	if (read(ear_fd_ack[freq_req],&real_freq,sizeof(unsigned long))!=sizeof(unsigned long)){
-                 	ear_verbose(0,"EAR: Error changing node frequency ACK:%s\n",strerror(errno));
-                 	_exit(1);
-        	}
-        	ear_verbose(3,"EAR_daemon_client: Frequency_changed to %u\n",real_freq);
-        }
-	else{
-		real_freq=0;
+
+	req.req_service = SET_FREQ;
+	req.req_data.req_value = newfreq;
+
+	ear_debug(2,"EAR_daemon_client:NewFreq %u requested\n", newfreq);
+
+	if (ear_fd_req[freq_req] >= 0)
+	{
+		if (write(ear_fd_req[freq_req],&req, sizeof(req)) != sizeof(req))
+		{
+			ear_verbose(0,"EAR: Error changing node frequency:%s\n", strerror(errno));
+			_exit(1);
+		}
+
+		if (read(ear_fd_ack[freq_req], &real_freq, sizeof(unsigned long)) != sizeof(unsigned long))
+		{
+			ear_verbose(0,"EAR: Error changing node frequency ACK:%s\n", strerror(errno));
+			_exit(1);
+		}
+
+		ear_verbose(3,"EAR_daemon_client: Frequency_changed to %u\n", real_freq);
+	} else {
+		real_freq = 0;
 		ear_debug(0,"EAR_daemon_client: change_freq service not provided\n");
 	}
+
 	return real_freq;
 }
+
 // END FREQUENCY SERVICES
 //////////////// UNCORE REQUESTS
 unsigned long ear_daemon_client_get_data_size_uncore()

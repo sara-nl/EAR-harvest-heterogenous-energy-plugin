@@ -409,6 +409,7 @@ void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 	ear_ok=ear_cpufreq_set_node(freq);
 	write(ear_fd_ack[freq_req],&ear_ok,sizeof(unsigned long));  
 }
+
 int eard_freq(int must_read)
 {
 	unsigned long ack;

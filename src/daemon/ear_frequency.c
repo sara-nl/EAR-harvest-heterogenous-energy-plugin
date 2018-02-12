@@ -229,35 +229,45 @@ unsigned int ear_is_valid_frequency(unsigned long f)
 	if (i<ear_num_p_states) return 1;
 	else return 0;
 }
+
 unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 {
+	//TODO: Why?
 	int EAR_VERBOSE_LEVEL = 0;
-
 	unsigned long ret;
-	if (cpuid>ear_num_cpus) return 0;
-	ret=ear_cpufreq[cpuid];
-	if (ear_is_valid_frequency(newfreq)){
-		ear_cpufreq[cpuid]=newfreq;
-		cpufreq_set_frequency(cpuid,newfreq);
-		ear_debug(1,"eard::: Setting cpu(%u) freq = %u\n",cpuid,newfreq);
-		return ret;
-	}else return 0;
 
+	if (cpuid>ear_num_cpus) return 0;
+	ret = ear_cpufreq[cpuid];
+
+	if (ear_is_valid_frequency(newfreq))
+	{
+		ear_cpufreq[cpuid] = newfreq;
+		cpufreq_set_frequency(cpuid, newfreq);
+		ear_debug(1,"eard::: Setting cpu(%u) freq = %u\n", cpuid,newfreq);
+
+		return ret;
+	}
+	return 0;
 }
 
 unsigned long ear_cpufreq_set_node(unsigned long newfreq)
 {
 	unsigned int i=0;
-	if (ear_is_valid_frequency(newfreq)){
+
+	if (ear_is_valid_frequency(newfreq))
+	{
 		ear_verbose(1,"eard: Setting node: freq = %u\n",newfreq);
-		for (i=0;i<ear_num_cpus;i++){
+
+		for (i = 0; i < ear_num_cpus; i++)
+		{
 			ear_cpufreq[i]=newfreq;
 			// This is a privileged function
-			cpufreq_set_frequency(i,newfreq);
+			cpufreq_set_frequency(i, newfreq);
 		}
 		
 		return newfreq;
-	}else return ear_cpufreq[0];
+	}
+	return ear_cpufreq[0];
 }
 
 
