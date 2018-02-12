@@ -30,7 +30,7 @@
 #include <states.h>
 
 #define MAX_SETS 			1
-#define EVENT_SET_PRESET 	0 //perf component
+#define EVENT_SET_PRESET 	0 // perf component
 #define	EAR_PAPI_TOT_CYC 	0 // Total Cycles
 #define EAR_PAPI_TOT_INS 	1 // Total instructions
 #define READS_OFFSET 		0
@@ -39,10 +39,10 @@
 #define PACK_OFFSET 		1
 #define	EAR_ACUM_TOT_CYC 	0 // Total Cycles
 #define EAR_ACUM_TOT_INS 	1 // Total instructions
-#define EAR_ACUM_LD_INS 	2 //Load instructions
-#define EAR_ACUM_SR_INS 	3 //Store instructions
-#define EAR_ACUM_DRAM_ENER 	4 //ENERGY  reported by rapl (DRAM)
-#define EAR_ACUM_PCKG_ENER 	5 //ENERGY  reported by rapl (CORES+CACHE)
+#define EAR_ACUM_LD_INS 	2 // Load instructions
+#define EAR_ACUM_SR_INS 	3 // Store instructions
+#define EAR_ACUM_DRAM_ENER 	4 // ENERGY reported by rapl (DRAM)
+#define EAR_ACUM_PCKG_ENER 	5 // ENERGY reported by rapl (CORES+CACHE)
 #define TOTAL_EVENTS 		6
 #define NUM_EVENTS 			2
 
@@ -124,54 +124,21 @@ void init_basic_event_info(int ear_event,PAPI_event_info_t *info){
         data_type[ear_event] = info->data_type;
 }
 
-void metrics_start()
-{
-	int sets;
-	char buff[128];
-	ear_daemon_client_start_uncore();
-	ear_daemon_client_start_rapl();
-	start_basic_metrics();
-
-	start_turbo_metrics();
-	if (fops_supported) start_flops_metrics();
-	start_cache_metrics();
-}
-
-void metrics_stop()
-{
-	int sets;
-	// We should ask for size when initializing and reserving memory with malloc
-	if (ear_daemon_client_read_uncore(event_values_uncore)<0){
-		// Should we exit??
-		ear_verbose(0,"EAR(%s): Reading uncore counters to compute MB is failing\n",ear_app_name);
-	}
-	if (ear_daemon_client_read_rapl(event_values_rapl)<0){
-		// Should we exit??
-		ear_verbose(0,"EAR(%s): Reading rapl is is failing\n",ear_app_name);
-	}
-	stop_basic_metrics(&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_CYC],&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_INS]);
-
-	stop_turbo_metrics();
-
-	// FLOPS are merged and returned
-	stop_flops_metrics(&total_flops, flops_metrics);
-
-	stop_cache_metrics(&l1, &l2, &l3);
-}
-
 void metrics_reset()
 {
 	int sets;
-	if (ear_daemon_client_reset_uncore()<0){
-		// Should we exit??
-		ear_verbose(0,"EAR(%s): Reset uncore counters to compute MB is failing\n",ear_app_name);
-	}
-	if (ear_daemon_client_reset_rapl()<0){
-		// Should we exit??
-		ear_verbose(0,"EAR(%s): Reset uncore counters to compute MB is failing\n",ear_app_name);
-	}
-	reset_basic_metrics();
 
+	//TODO: DAEMON COUPLED
+	if (ear_daemon_client_reset_uncore() < 0) {
+		// Should we exit??
+		ear_verbose(0,"EAR(%s): Reset uncore counters to compute MB is failing\n",ear_app_name);
+	}
+	if (ear_daemon_client_reset_rapl()<0) {
+		// Should we exit??
+		ear_verbose(0,"EAR(%s): Reset uncore counters to compute MB is failing\n",ear_app_name);
+	}
+
+	reset_basic_metrics();
 	reset_turbo_metrics();
 	reset_flops_metrics();
 	reset_cache_metrics();
@@ -271,7 +238,7 @@ int metrics_init(int my_id, int pid)
 	rapl_size=ear_daemon_client_get_data_size_rapl();
 
 	// We reserve memory for uncore and rapl metrics
-	event_values_uncore=malloc(uncore_size);
+	event_values_uncore = malloc(uncore_size);
 
 	if (event_values_uncore==NULL){
 		ear_verbose(0,"EAR: Error, malloc returns NULL when reserving memory for uncore metrics.Exiting\n");
@@ -332,7 +299,8 @@ int metrics_init(int my_id, int pid)
 	reset_values();
 	metrics_reset();
 	metrics_start();
-	app_start_time=PAPI_get_real_usec();
+
+	app_start_time = PAPI_get_real_usec();
 
 	return 0;
 }
@@ -391,13 +359,22 @@ long long  metrics_time()
  */
 // TODO: PRINTED AT THE END OF THE LOOP (and after metrics_stop)
 static void fill_application_metrics(application_t *app, const long long *counters,
-									 ulong energy_mj, uint N_iters, ulong time_us)
+	 ulong energy_mj, uint N_iters, ulong time_us)
 {
 	double time_s, aux;
 	int i;
 
 	time_s = (double) time_us / (double) 1000000;
 	aux = time_s * (double) (1024 * 1024 * 1024);
+
+	// Porque se utiliza el tiempo en global y no una división
+	// por iteraciones:
+	// 	- En las métricas básicas no importa, pues los bytes, cyclos e
+	//    instrucciones aumentan línealmente junto al tiempo.
+	//  - En las métricas de energía tampoco resulta relevante. Pues el coste
+	//    sólamente guardamos medidas de potencia, que no dejan de ser una
+	//    media de la energía por segundo.
+	// Si guardasemos datos de energía
 
 	// Basic metrics
 	app->GBS  = ((double) (counters[EAR_ACUM_LD_INS] * ear_cache_line_size)) / aux;
@@ -411,26 +388,64 @@ static void fill_application_metrics(application_t *app, const long long *counte
 	app->PCK_power  = (double) (counters[EAR_ACUM_PCKG_ENER] / 1000000000) / time_s;
 	app->DRAM_power = (double) (counters[EAR_ACUM_DRAM_ENER] / 1000000000) / time_s;
 
-	// Frequency
-	app->avg_f = ear_daemon_client_end_compute_turbo_freq();
+	// Time dependent
+	app->EDP = time_s * time_s * POWER_DC;
+	app->time = time_s / (double) N_iters;
 
-	// Instructions
-	app->cycles = counters[EAR_ACUM_TOT_CYC];
-	app->instructions = counters[EAR_ACUM_TOT_INS];
+	// TODO: IF TEMPORAL (loop)
+	if (N_iters > 0) {
+		// Frequency
+		app->avg_f = ear_daemon_client_end_compute_turbo_freq();
+	}
+	// TODO: IF GLOBAL (whole app)
+	else {
+		// Frequency
+		app->avg_f = ear_daemon_client_end_app_compute_turbo_freq();
 
-	// Cache
-	app->L1_misses = l1;
-	app->L2_misses = l2;
-	app->L3_misses = l3;
+		// Instructions
+		app->cycles = counters[EAR_ACUM_TOT_CYC];
+		app->instructions = counters[EAR_ACUM_TOT_INS];
 
-	// Flops
-	for (i=0; i < flops_events; i++) {
-		app->FLOPS[i] = flops_metrics[i] * flops_weigth[i];
+		// Cache
+		get_cache_metrics(&l1, &l2, &l3);
+		app->L1_misses = l1;
+		app->L2_misses = l2;
+		app->L3_misses = l3;
+
+		// Flops
+		for (i=0; i < flops_events; i++) {
+			app->FLOPS[i] = flops_metrics[i] * flops_weigth[i];
+		}
+
+		report_application_data(app);
+	}
+}
+void metrics_stop()
+{
+	// We should ask for size when initializing and reserving memory with malloc
+	if (ear_daemon_client_read_uncore(event_values_uncore)<0){
+		ear_verbose(0,"EAR(%s): Reading uncore counters to compute MB is failing\n", ear_app_name);
+	}
+	if (ear_daemon_client_read_rapl(event_values_rapl)<0){
+		ear_verbose(0,"EAR(%s): Reading rapl is is failing\n", ear_app_name);
 	}
 
-	// TODO: IF TEMPORAL
-	app->time = time_s / (double) N_iters;
-	// TODO: IF GLOBAL
+	stop_turbo_metrics();
+	stop_cache_metrics(&l1, &l2, &l3);
+	stop_flops_metrics(&total_flops, flops_metrics);
+	stop_basic_metrics(&events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_CYC],
+					   &events_values[EVENT_SET_PRESET][EAR_PAPI_TOT_INS]);
+}
+
+void metrics_start()
+{
+	ear_daemon_client_start_uncore();
+	ear_daemon_client_start_rapl();
+
+	start_basic_metrics();
+	start_turbo_metrics();
+	start_cache_metrics();
+	start_flops_metrics();
 }
 
 application_t *metrics_end(ulong energy_mj)
@@ -455,12 +470,13 @@ application_t *metrics_end(ulong energy_mj)
 	return &app_global;
 }
 
+//TODO: CALLED WHEN FIRST_ITERATION
 void metrics_start_computing_signature()
 {
 	ear_debug(3,"EAR ______________metrics_start_computing_signature __________\n");
 
 	// TIME
-	start_time=PAPI_get_real_usec();
+	start_time = PAPI_get_real_usec();
 
 	// We read and save actual counters
 	metrics_stop();
@@ -483,8 +499,6 @@ application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulon
 	application_t *app;
 	long long metrics_time = 0;
 
-	ear_verbose(3, "---------------- GET METRICS START ----------------\n");
-
 	// TIME SINCE LAST METRICS START
 	end_time = PAPI_get_real_usec();
 	metrics_time = metrics_usecs_diff(end_time, start_time);
@@ -495,8 +509,6 @@ application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulon
 
 	// STOP ALL METRICS (AND SAVE)
 	metrics_stop();
-
-	// RESET INTERNAL COUNTERS
 	metrics_reset();
 
 	// GLOBAL ACCUM COUNTERS FOR THE WHOLE APPLICATION
@@ -520,8 +532,8 @@ application_t* metrics_end_compute_signature(ulong energy_mj, uint N_iters, ulon
 	reset_values();
 	metrics_start();
 
-	ear_verbose(3, "SIGNATURE: energy %ld, iters %u, time %llu\n", energy_mj, N_iters, metrics_time);
-	ear_verbose(3, "---------------- GET METRICS END ----------------\n");
+	ear_verbose(3, "COMPUTED SIGNATURE: energy %ld, iters %u, time %llu\n",
+				energy_mj, N_iters, metrics_time);
 
 	return &app_temporal;
 }

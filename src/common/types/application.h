@@ -57,6 +57,7 @@ typedef struct application
 //TODO:
 int init_application(application_t *app);
 int print_application(application_t *app);
+void report_application_data(application_t *app);
 
 // Reads a file of applications saved in binary format. A memory block is
 // allocated for the read applications, and is returned by the argument 'apps'.

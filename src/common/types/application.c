@@ -20,6 +20,20 @@ int init_application(application_t *app)
     app->policy[0] = '\0';
 }
 
+void report_application_data(application_t *app)
+{
+    printf("-- Application Summary ---------------------------------------------\n");
+    printf("-- App/node id: %s/%s\n", app->app_id, app->node_id);
+    printf("-- User/job id: %s/%s\n", app->user_id, app->job_id);
+    printf("-- Execution time: %s/%s (us)\n", app->time);
+    printf("-- Nominal/Average frequency: %lu/%lu (MHz)\n", a->avg_f, a->def_f);
+    printf("-- Cycles/Instructions: %llu/%llu\n", app->CPI, app->TPI);
+    printf("-- CPI/TPI: %0.3lf/%0.3lf\n", app->CPI, app->TPI);
+    printf("-- Bandwidth: %llu (GB/s)\n", app->GBS);
+    printf("-- GFLOPS: %lf\n", app->Gflops);
+    printf("-- DC/DRAM/PCK power: %lf/%lf/%lf\n", a->DC_power, a->DRAM_power, a->PCK_power);
+}
+
 int append_application_binary_file(char *path, application_t *app)
 {
     int fd, ret;
@@ -62,7 +76,6 @@ static int print_application_fd(int fd, application_t *app)
 
     return EAR_SUCCESS;
 }
-
 
 int print_application(application_t *app)
 {
