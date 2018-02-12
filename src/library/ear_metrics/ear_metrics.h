@@ -29,6 +29,7 @@ long long metrics_time();
 
 //
 void metrics_set_signature_start_time();
+
 // Gets HW infor
 void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *min_f, ulong *nom_f,
 	char *CPU_model, char *CPU_name);
