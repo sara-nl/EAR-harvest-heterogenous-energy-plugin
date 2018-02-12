@@ -14,7 +14,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <ear_db/ear_db.h>
 #include <ear_models/ear_models.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_verbose.h>
