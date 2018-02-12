@@ -1,6 +1,9 @@
+#include <types/application.h>
+
 #define MAX_APP_NAME 1024
 
 int EAR_VERBOSE_LEVEL;
+application_t application;
 char ear_node_name[MAX_APP_NAME];
 char ear_app_name[MAX_APP_NAME];
 char ear_policy_name[MAX_APP_NAME];

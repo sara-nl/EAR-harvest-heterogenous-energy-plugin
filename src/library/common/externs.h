@@ -9,6 +9,8 @@
 #ifndef _EAR_GLOBAL_H
 #define _EAR_GLOBAL_H
 
+#include <types/application.h>
+
 #define MAX_APP_NAME 1024
 
 extern application_t *application;
@@ -19,6 +21,7 @@ extern unsigned long EAR_default_frequency; //TODO: CLEAN
 extern unsigned long ear_frequency;
 extern unsigned int EAR_default_pstate; //TODO: CLEAN
 extern unsigned int ear_resources;
+extern double performance_penalty_th; //TODO: CLEAN (from ear_models)
 extern int power_model_policy;
 extern int ear_use_turbo;
 extern int ear_whole_app;
