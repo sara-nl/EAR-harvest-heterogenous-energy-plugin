@@ -18,6 +18,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <papi.h> //TODO: remove
+
 // EAR includes
 #include <ear_dyn_inst/MPI_types.h>
 #include <ear_dyn_inst/MPI_calls_coded.h>
@@ -152,7 +154,7 @@ void ear_init()
 	user_id = getenv("LOGNAME");
 
 	// States
-    states_begin_job(my_id, NULL, ear_app_name);
+    	states_begin_job(my_id, NULL, ear_app_name);
 
 	// Policies
 	// TODO: ear_models call, EAR_default_frequency variable dependancy
@@ -160,15 +162,15 @@ void ear_init()
 	init_power_models(ear_get_num_p_states(), ear_get_pstate_list());
 
 	// TODO: (db_init(ear_whole_app, ear_app_name))
-	strcpy(application.app_id, app_name);
-	strcpy(application.user_id, logname);
+	strcpy(application.app_id, ear_app_name);
+	strcpy(application.user_id, user_id);
 	strcpy(application.node_id, ear_node_name);
 
-	if (job_id != NULL) strcpy(apps[i].job_id, job_id);
-	else sprintf(apps[i].job_id, "%d", getppid());
+	if (job_id != NULL) strcpy(application.job_id, job_id);
+	else sprintf(application.job_id, "%d", getppid());
 
 	application.def_f = EAR_default_frequency;
-	application.avg_f = ear_get_freq(i); //TODO: CPUFREQ coupled
+	application.avg_f = ear_get_freq(EAR_default_pstate); //TODO: CPUFREQ coupled
 
 	// TODO: ENERGY COUPLED
 	if(init_dc_energy()<0){

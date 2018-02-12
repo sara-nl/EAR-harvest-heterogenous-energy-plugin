@@ -351,7 +351,8 @@ void metrics_end(unsigned int whole_app, int my_id, char* summary_file, unsigned
 }
 
 // TODO: PRINTED AT THE END OF THE EXECUTION
-void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
+
+/*void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 {
 	double CPI, GBS, seconds, TPI, POWER_DC, DRAM_POWER, PCK_POWER, GFLOPS, EDP;
 	double PP, TP, EP, perf_deg, power_sav, energy_sav, energy, new_EDP;
@@ -361,11 +362,11 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	application_t app_signature;
 	char *app_name;
 	int i;
-    long long fops_single,fops_128,fops_256,fops_512;
-    double psingle,p128,p256,p512;
+    	long long fops_single,fops_128,fops_256,fops_512;
+	double psingle,p128,p256,p512;
 
 	//TODO: DB COUPLED (app_info = db_current_app())
-	app_info = app_global;
+	app_info = &app_global;
 
 	// Compute signature
 	seconds = (double) app_exec_time / (double)1000000;
@@ -502,7 +503,7 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 
 	//
 	append_application_text_file(summary_file, &app_signature);
-}
+}*/
 
 void copy_last_iter_counters()
 {
@@ -566,7 +567,7 @@ void metrics_start_computing_signature()
 }
 
 // TODO: PRINTED AT THE END OF THE LOOP (and after metrics_stop)
-application_t* fill_application_metrics(const long long *counters, long long time_us,
+application_t *fill_application_metrics(const long long *counters, long long time_us,
 	ulong energy_mj, uint N_iters)
 {
 	double CPI, GBS, TPI, POWER,DRAM_POWER, PCK_POWER, time_s, aux;
@@ -587,7 +588,7 @@ application_t* fill_application_metrics(const long long *counters, long long tim
 	DRAM_POWER = (double) (counters[EAR_ACUM_DRAM_ENER] / 1000000000) / time_s;
 
 	//TODO: DB COUPLED (app_info = db_current_app())
-	app_info = app_temporal;
+	app_info = &app_temporal;
 
 	app_info->time = time_s / (double) N_iters;
 
@@ -625,7 +626,7 @@ application_t* metrics_end_compute_signature(int period, ulong *eru, uint N_iter
 	ear_verbose(3,"EAR______________metrics_end_compute_signature __________\n");
 
 	// TIME SINCE LAST METRICS START
-    end_time = PAPI_get_real_usec();
+	end_time = PAPI_get_real_usec();
 	iter_time = metrics_usecs_diff(end_time,start_time);
 	if (iter_time <  min_t) return NULL;
 
@@ -654,7 +655,7 @@ application_t* metrics_end_compute_signature(int period, ulong *eru, uint N_iter
 	// TODO: obtenido en:
 	// TODO: 	- metrics_start_computing_signature
 	// TODO: por lo tanto en FIRST_ITERATION.
-	app = fill_application_metrics(diff_event_values, iter_time, eru, N_iters);
+	app = fill_application_metrics(diff_event_values, iter_time, *eru, N_iters);
 
 	// Once processes, we reset actual counters
 	reset_values();

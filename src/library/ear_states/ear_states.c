@@ -25,13 +25,13 @@
 #include <externs.h>
 
 // static defines
-#define NO_PERIOD				0
+#define NO_PERIOD			0
 #define FIRST_ITERATION			1
-#define EVALUATING_SIGNATURE	2
+#define EVALUATING_SIGNATURE		2
 #define SIGNATURE_STABLE		3
 #define PROJECTION_ERROR		4
 #define RECOMPUTING_N			5
-#define SIGNATURE_HAS_CHANGED	6
+#define SIGNATURE_HAS_CHANGED		6
 #define DPD_NUM_STATES			7
 
 static application_t *curr_signature;
@@ -253,7 +253,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n", ear_app_name);
 
 						// TODO: DB COUPLED (db_copy_app(&last_signature, curr_signature))
-						memcpy(last_signature, curr_signature, sizeof(application_t));
+						memcpy(&last_signature, curr_signature, sizeof(application_t));
 					}
 					else
 					{

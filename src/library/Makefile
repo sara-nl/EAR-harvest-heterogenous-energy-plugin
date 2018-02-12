@@ -18,7 +18,6 @@ OUTER_OBJS = $(ROOTDIR)/src/common/ear_daemon_client.o \
              $(ROOTDIR)/src/common/types.a
 
 OBJS = ear_states/ear_states.o           \
-       ear_db/ear_db.o                   \
        ear_dynais/ear_dynais.o           \
        ear_dyn_inst/process_MPI.o        \
        ear_dyn_inst/ear_api.o            \
