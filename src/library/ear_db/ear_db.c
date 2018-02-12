@@ -25,13 +25,14 @@
 #include <externs.h>
 
 static application_t *apps;
-static ulong current_freq;
+static ulong INDEX_current_freq;
 
 // TODO: remove
 extern double performance_penalty_th; // (-> ear_models <-)
 
 // This function initilices application information
-void db_init(unsigned int whole_app, char *app_name) {
+void db_init(unsigned int whole_app, char *app_name)
+{
     const char *ear_DB_name;
     char ear_db_def[128];
     char ear_db_his[128];
@@ -39,7 +40,7 @@ void db_init(unsigned int whole_app, char *app_name) {
     char *job_id, *logname;
 
     ear_debug(2, "EAR(%s): db_init. LEARNING_PHASE %d\n", __FILE__, whole_app);
-    current_freq = ear_cpufreq_get(0);
+    INDEX_current_freq = ear_cpufreq_get(0);
     // We reserve space for application signature
     apps = (application_t *) malloc(sizeof(application_t) * ear_get_num_p_states());
     if (apps == NULL) {
@@ -110,7 +111,8 @@ void init_current_app(char *app_name) {
     }
 }
 
-int db_get_app_name(char *my_name) {
+int db_get_app_name(char *my_name)
+{
     char *app_name;
     int defined = 0;
     app_name = get_ear_app_name();
@@ -129,11 +131,12 @@ int db_get_app_name(char *my_name) {
 
 
 // Sets the specified frequency f in all the cpus in the node (first version)
-unsigned long db_change_frequency(unsigned long f) {
+unsigned long db_change_frequency(unsigned long f)
+{
     unsigned int i;
     ear_debug(1, "EAR(%s) Setting node cpufrequency %u\n", __FILE__, f);
-    current_freq = ear_cpufreq_set_node(f);
-    return current_freq;
+    INDEX_current_freq = ear_cpufreq_set_node(f);
+    return INDEX_current_freq;
 }
 
 // Operations required at the begginning of a new period
@@ -151,8 +154,8 @@ unsigned int db_equal_with_th(double a, double b, double th) {
         else eq = 0;
     }
     if (eq == 0) {
-        ear_debug(4, "Values are diff:a %lf b %lf (a+%lf\%=%lf...b+%lf\%=%lf) \n", a, b, th, a * (1 + th), th,
-                  b * (1 + th));
+        ear_debug(4, "Values are diff:a %lf b %lf (a+%lf\%=%lf...b+%lf\%=%lf) \n",
+				  a, b, th, a * (1 + th), th, b * (1 + th));
     }
     return eq;
 }
@@ -168,8 +171,9 @@ int db_signature_has_changed(application_t *A, application_t *B)
     return 1;
 }
 
-application_t *db_current_app() {
-    return &apps[ear_get_pstate(current_freq)];
+application_t *db_current_app()
+{
+    return &apps[ear_get_pstate(INDEX_current_freq)];
 }
 
 //

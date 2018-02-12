@@ -56,96 +56,155 @@ static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;
 #endif
 
+int get_app_name_please(char *my_name)
+{
+	char *app_name;
+	int defined = 0;
+	app_name = get_ear_app_name();
+	if (app_name == NULL)
+	{
+		//TODO: METRICS COUPLED
+		if (PAPI_is_initialized() == PAPI_NOT_INITED)
+			strcpy(my_name, "UnknownApplication");
+		else
+			metrics_get_app_name(my_name);
+
+		set_ear_app_name(my_name);
+	} else {
+		defined = 1;
+		strcpy(my_name, app_name);
+	}
+
+	ear_verbose(1, "EAR: Application name is  %s\n", my_name);
+	return defined;
+}
+
+
 void ear_init()
 {
-	char file_name[BUFFSIZE],node_name[BUFFSIZE],*ear_summary_filename,my_name[BUFFSIZE];
-	char tmp[BUFFSIZE];
-	char *freq;
-	int size,node_name_length;
-	int local_id;	
-	unsigned long optimal_freq;
-	struct stat lock_st;
-	char *snum_nodes;
+	char node_name[BUFFSIZE];
 	unsigned int num_nodes,ppnode;
-    	char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;GFLOPS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH\n";
-    	//char *header_instances="USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;EDP;POLICY;POLICY_TH\n";
-	int new_fd=0,ret;
+	char *job_id, *user_id;
+	char *freq;
+	int size;
 
-
+	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD,&ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD,&my_size);
+
 	ear_lib_environment();
 	set_ear_total_processes(my_size);
 	EAR_VERBOSE_LEVEL=get_ear_verbose();
-	if (get_ear_app_name()!=NULL){
-		if (ear_my_rank==0) ear_verbose(1,"________ EAR: Application %s starts__________\n",get_ear_app_name());
+
+	if (get_ear_app_name() != NULL){
+		if (ear_my_rank==0)
+			ear_verbose(1, "________ EAR: Application %s starts__________\n", get_ear_app_name());
 	}else{
-		if (ear_my_rank==0) ear_verbose(1,"EAR: Application starts.....\n");
+		if (ear_my_rank==0)
+			ear_verbose(1,"EAR: Application starts.....\n");
 	}
+
 	ear_debug(2,"EAR Starting initialization\n");	
 	ear_whole_app=get_ear_learning_phase();
    	dynais_init(get_ear_dynais_window_size(),get_ear_dynais_levels());
 
-	gethostname(node_name,sizeof(node_name));
-	strcpy(ear_node_name,node_name);
+	//TODO: SWTICH TO APPLICATION
+	gethostname(node_name, sizeof(node_name));
+
 	my_id=get_ear_local_id();
-	if (my_id<0){
+	if (my_id<0)
+	{
 		num_nodes=get_ear_num_nodes();
         	ppnode=my_size/num_nodes;
         	my_id=(ear_my_rank%ppnode);
 	}
 	if (my_id) return;
-	ear_verbose(1,"EAR: Total resources %d\n",get_total_resources());
-	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",get_ear_dynais_levels(),get_ear_dynais_window_size());
+
+	ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
+	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
+				get_ear_dynais_levels(), get_ear_dynais_window_size());
 
 	// Connecting with ear_daemon
 	if (ear_daemon_client_connect()<0){
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
 		exit(1);
 	}
-	ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",ear_my_rank,ear_node_name, getpid());
+
+	ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
+				ear_my_rank, ear_node_name, getpid());
+
 	metrics_init(my_id,getpid()); // PAPI_init starts counters
 	ear_cpufreq_init(); //Initialize cpufreq info
-	if (ear_whole_app==1 && ear_use_turbo==1){
+
+	if (ear_whole_app==1 && ear_use_turbo==1)
+	{
 		ear_verbose(1,"EAR: Turbo learning phase, turbo selected and start computing\n");
 		ear_daemon_client_set_turbo();
-	}else ear_verbose(1,"EAR: learning phase %d, turbo %d\n",ear_whole_app,ear_use_turbo);
+	} else {
+		ear_verbose(1,"EAR: learning phase %d, turbo %d\n",ear_whole_app,ear_use_turbo);
+	}
 	ear_daemon_client_begin_app_compute_turbo_freq();
-	
-	db_get_app_name(ear_app_name);
+
+	// Getting environment data
+	get_app_name_please(ear_app_name);
+	ear_current_freq = ear_cpufreq_get(0);
+	job_id = getenv("SLURM_JOB_ID");
+	user_id = getenv("LOGNAME");
+
+	// States
     states_begin_job(my_id, NULL, ear_app_name);
-	ear_current_freq=ear_cpufreq_get(0);	
+
+	// Policies
+	// TODO: ear_models call, EAR_default_frequency variable dependancy
 	init_power_policy();
-	init_power_models(ear_get_num_p_states(),ear_get_pstate_list());
-	// Application info
-	db_init(ear_whole_app,ear_app_name);
-    	if(init_dc_energy()<0){
-    	    ear_verbose(0,"EAR:: Node Energy can not be measured, AEM is not loaded, exiting\n");
-    	    exit(1) ;
-    	}else{
+	init_power_models(ear_get_num_p_states(), ear_get_pstate_list());
+
+	// TODO: (db_init(ear_whole_app, ear_app_name))
+	strcpy(application.app_id, app_name);
+	strcpy(application.user_id, logname);
+	strcpy(application.node_id, ear_node_name);
+
+	if (job_id != NULL) strcpy(apps[i].job_id, job_id);
+	else sprintf(apps[i].job_id, "%d", getppid());
+
+	application.def_f = EAR_default_frequency;
+	application.avg_f = ear_get_freq(i); //TODO: CPUFREQ coupled
+
+	// TODO: ENERGY COUPLED
+	if(init_dc_energy()<0){
+		ear_verbose(0,"EAR:: Node Energy can not be measured, AEM is not loaded, exiting\n");
+		exit(1) ;
+	}else{
 		ear_debug(1,"EAR: init_dc_energy ok!\n");
 	}
-    	app_eru_init=read_dc_energy();
-	 
-	gettimeofday(&pmpi_app_begin_time,NULL);
+
+	app_eru_init=read_dc_energy();
+
+	//
+	gettimeofday(&pmpi_app_begin_time, NULL);
 	fflush(stderr);
+
 	traces_init(ear_my_rank,my_id,ear_app_name,ear_node_name,num_nodes,my_size,ppnode);
 	traces_frequency(ear_my_rank,my_id,ear_current_freq);
-	ear_debug(1,"EAR Initialized successfully\n");	
+
+	ear_debug(1,"EAR Initialized successfully\n");
 	ear_print_lib_environment();
 	ear_verbose(1,"______________EAR loaded___________________\n");
 }
-void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest){
+
+void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
+{
 	unsigned int ear_status;
 	int ret;
 	char men[128];
 	if (my_id) return;
-// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
-if (!ear_whole_app){
+
+	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
+	if (!ear_whole_app){
 	ear_debug(3,"EAR(%s) EAR executing before an MPI Call\n",__FILE__);
 	// Create the event for DynAIS
 	unsigned long ear_event = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
-    	unsigned int ear_size;
+	unsigned int ear_size;
 	unsigned int ear_level;
 	unsigned long trace_data[5];
     traces_mpi_call(ear_my_rank,my_id,(unsigned long)PAPI_get_real_usec(),(unsigned long)buf,(unsigned long)dest,(unsigned long)call_type,(unsigned long)ear_event);
@@ -244,7 +303,7 @@ void ear_finalize()
 
 	metrics_end(ear_whole_app, my_id, summary_fullpath, &app_eru_diff);
 
-	db_end(ear_whole_app);
+	// DynAIS
 	dynais_dispose();
 
 	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);

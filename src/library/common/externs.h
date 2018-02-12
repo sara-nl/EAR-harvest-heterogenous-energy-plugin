@@ -11,12 +11,13 @@
 
 #define MAX_APP_NAME 1024
 
-extern char ear_node_name[MAX_APP_NAME];
-extern char ear_app_name[MAX_APP_NAME];
-extern char ear_policy_name[MAX_APP_NAME];
-extern unsigned long EAR_default_frequency;
+extern application_t *application;
+extern char ear_node_name[MAX_APP_NAME]; //TODO: CLEAN
+extern char ear_app_name[MAX_APP_NAME]; //TODO: CLEAN
+extern char ear_policy_name[MAX_APP_NAME]; //TODO: CLEAN
+extern unsigned long EAR_default_frequency; //TODO: CLEAN
 extern unsigned long ear_frequency;
-extern unsigned int EAR_default_pstate;
+extern unsigned int EAR_default_pstate; //TODO: CLEAN
 extern unsigned int ear_resources;
 extern int power_model_policy;
 extern int ear_use_turbo;

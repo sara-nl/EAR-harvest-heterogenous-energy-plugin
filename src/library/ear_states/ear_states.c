@@ -78,10 +78,8 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
 	{
 		ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %d size %u_____BEGIN_____\n",
 					ear_app_name, event, size);
-		EAR_STATE = FIRST_ITERATION;
 
-		// TODO: DB COUPLED
-		db_new_period();
+		EAR_STATE = FIRST_ITERATION;
 
 		models_new_period();
 		comp_N_begin = metrics_time();
@@ -103,6 +101,29 @@ void states_end_period(int my_id, FILE *ear_fd, unsigned int size, int iteration
 	loop_with_signature = 0;
 	ear_verbose(4, "EAR(%s)::____________END_PERIOD: END loop detected (Loop ID: %u,size %u)______%d iters______ \n",
 				ear_app_name, event, size, iterations);
+}
+
+static unsigned int equal_with_th(double a, double b, double th)
+{
+	int eq;
+	if (a > b) {
+		if (a < (b * (1 + th))) eq = 1;
+		else eq = 0;
+	} else {
+		if ((a * (1 + th)) > b) eq = 1;
+		else eq = 0;
+	}
+	return eq;
+}
+
+static int signature_has_changed(application_t *A, application_t *B)
+{
+	if (equal_with_th(A->CPI, B->CPI, performance_penalty_th) &&
+		equal_with_th(A->GBS, B->GBS, performance_penalty_th))
+	{
+		return 0;
+	}
+	return 1;
 }
 
 void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, ulong event, uint level)
@@ -210,11 +231,12 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 
 					// TODO: DB COUPLED
 					current_loop_id = event;
-					CPI = db_get_CPI(curr_signature);
-					GBS = db_get_GBS(curr_signature);
-					POWER = db_get_POWER(curr_signature);
-					TPI = db_get_TPI(curr_signature);
-					TIME = db_get_seconds(curr_signature);;
+
+					CPI = curr_signature->CPI;
+					GBS = curr_signature->GBS;
+					POWER = curr_signature->DC_power;
+					TPI = curr_signature->TPI;
+					TIME = curr_signature->time;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
@@ -223,15 +245,18 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 					policy_freq = policy_power(0, curr_signature);
 					PP = performance_projection(policy_freq);
 
-					if (policy_freq != prev_f) {
+					if (policy_freq != prev_f)
+					{
 						comp_N_begin = metrics_time();
 						EAR_STATE = RECOMPUTING_N;
 
 						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n", ear_app_name);
 
-						// TODO: DB COUPLED
-						db_copy_app(&last_signature, curr_signature);
-					} else {
+						// TODO: DB COUPLED (db_copy_app(&last_signature, curr_signature))
+						memcpy(last_signature, curr_signature, sizeof(application_t));
+					}
+					else
+					{
 						EAR_STATE = SIGNATURE_STABLE;
 						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> SIGNATURE_STABLE \n",
 								  ear_app_name);
@@ -271,7 +296,8 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				eru_diff = energy_diff(eru_end, eru_init);
 
 				N_iter = iterations - begin_iter;
-				curr_signature = metrics_end_compute_signature(period, &eru_diff, N_iter, perf_accuracy_min_time);
+				curr_signature = metrics_end_compute_signature(period, &eru_diff, N_iter,
+															   perf_accuracy_min_time);
 
 				// returns NULL if time is not enough for performance accuracy
 				if (curr_signature == NULL) {
@@ -281,11 +307,11 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				} else
 				{
 					// TODO: DB COUPLED
-					CPI = db_get_CPI(curr_signature);
-					GBS = db_get_GBS(curr_signature);
-					POWER = db_get_POWER(curr_signature);
-					TPI = db_get_TPI(curr_signature);
-					TIME = db_get_seconds(curr_signature);
+					CPI = curr_signature->CPI;
+					GBS = curr_signature->GBS;
+					POWER = curr_signature->DC_power;
+					TPI = curr_signature->TPI;
+					TIME = curr_signature->time;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
@@ -305,13 +331,8 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 						ear_verbose(3,
 									"\n\nEAR(%s): Policy ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
 									ear_app_name, TIME, POWER, ENERGY, PP->Time, PP->Power, PP->Time * PP->Power);
-						/*
-						if (performance_projection_ok(PP,curr_signature)==0){
-							EAR_STATE=EVALUATING_SIGNATURE;
-							ear_debug(3,"EAR(%s) SIGNATURE_STABLE --> EVALUATING_SIGNATURE\n",__FILE__);
-						}
-						*/
-					} else
+					}
+					else
 					{
 						/** If we are not going better **/
 						ear_verbose(3,
@@ -319,15 +340,12 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 									ear_app_name, TIME, POWER, ENERGY, PP->Time, PP->Power, PP->Time * PP->Power);
 
 						//TODO: DB COUPLED
-						if (db_signature_has_changed(curr_signature, &last_signature))
+						if (signature_has_changed(curr_signature, &last_signature))
 						{
 							EAR_STATE = SIGNATURE_HAS_CHANGED;
 							ear_verbose(3, "EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",
 										ear_app_name);
 							comp_N_begin = metrics_time();
-
-							// TODO: DB COUPLED
-							db_new_period();
 
 							models_new_period();
 						} else {
@@ -340,7 +358,6 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 		default: break;
 	}
 }
-
 
 
 

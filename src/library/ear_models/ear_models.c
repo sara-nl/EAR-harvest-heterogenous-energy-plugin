@@ -51,34 +51,43 @@ void init_power_policy()
 
 	ear_verbose(2,"EAR(%s): EAR_init_power_policy\n",__FILE__);
 	
-	power_model_policy=get_ear_power_policy();
+	power_model_policy = get_ear_power_policy();
 	
-	switch(power_model_policy){
+	switch(power_model_policy)
+	{
 		case MIN_ENERGY_TO_SOLUTION:
 			strcpy(ear_policy_name,"min_energy");
 			performance_penalty=get_ear_power_policy_th();
-			break;
+		break;
 		case MIN_TIME_TO_SOLUTION:
 			strcpy(ear_policy_name,"min_time");
 			performance_gain=get_ear_power_policy_th();
-			break;
+		break;
 		case MONITORING_ONLY:
 			strcpy(ear_policy_name,"monitoring_only");
-				break;
+		break;
 	}
 
 	reset_freq_opt=get_ear_reset_freq();
 	EAR_default_pstate=get_ear_p_state();
 	if (EAR_default_pstate>=ear_get_num_p_states()) EAR_default_pstate=DEFAULT_P_STATE;
 	EAR_default_frequency=ear_get_freq(EAR_default_pstate);
-	def_freq=db_change_frequency(EAR_default_frequency);
-	if (def_freq!=EAR_default_frequency){
-		ear_verbose(0,"ear: warning max freq is limited by the system, using %u as default\n",def_freq);
-		EAR_default_frequency=def_freq;
+
+	// TODO: CPUFREQ COUPLED (old db_change_frequency(EAR_default_frequency))
+	def_freq = ear_cpufreq_set_node(EAR_default_frequency);
+
+	if (def_freq != EAR_default_frequency)
+	{
+		ear_verbose(0,"ear: warning max freq is limited by the system, using %u as default\n",
+					def_freq);
+		EAR_default_frequency = def_freq;
 	}
 
-	ear_verbose(1,"EAR: power policy configuration: policy %s performance penalty %lf accepted th %lf Reset_freq=%u performance gain %lf\n",  (power_model_policy==MONITORING_ONLY)?"MONITORING_ONLY":((power_model_policy==MIN_ENERGY_TO_SOLUTION)?"MIN_ENERGY_TO_SOLUTION":"MIN_TIME_TO_SOLUTION"),reset_freq_opt, performance_penalty,performance_penalty_th,performance_gain);
-	ear_verbose(1,"EAR: Default p_state %u Default frequency %lu\n",EAR_default_pstate,EAR_default_frequency);
+	// TODO: WTF
+	ear_verbose(1,"EAR: power policy configuration: policy %s performance penalty %lf accepted th %lf Reset_freq=%u performance gain %lf\n",
+				(power_model_policy==MONITORING_ONLY)?"MONITORING_ONLY":((power_model_policy==MIN_ENERGY_TO_SOLUTION)?"MIN_ENERGY_TO_SOLUTION":"MIN_TIME_TO_SOLUTION"),
+				reset_freq_opt, performance_penalty,performance_penalty_th,performance_gain);
+	ear_verbose(1,"EAR: Default p_state %u Default frequency %lu\n", EAR_default_pstate,EAR_default_frequency);
 }
 
 void init_power_models(unsigned int p_states,unsigned long *p_states_list)
@@ -456,28 +465,39 @@ unsigned int equal_with_th(double p,double r,double th)
 	if (diff<(th*r)) return 1;
 	else return 0;
 }
-unsigned int policy_ok(projection_t *PREDICTION,application_t *SIGNATURE,application_t *LAST_SIGNATURE)
+unsigned int policy_ok(projection_t *PREDICTION, application_t *SIGNATURE, application_t *LAST_SIGNATURE)
 {
-		ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",__FILE__,
-		PREDICTION->Time,PREDICTION->Power);
-		ear_debug(4,"EAR(%s):: Signature Time %12.6lf Power %12.6lf\n",__FILE__,
-		SIGNATURE->time,SIGNATURE->DC_power);
-		if (power_model_policy==MIN_TIME_TO_SOLUTION){
-			if ((SIGNATURE->time>LAST_SIGNATURE->time) && (SIGNATURE->avg_f!=LAST_SIGNATURE->avg_f)) return 0;
-			if (SIGNATURE->time<PREDICTION->Time) return 1;
-			else return 0;
-		}else if (power_model_policy==MIN_ENERGY_TO_SOLUTION){
-			double EP,ER;
-			EP=LAST_SIGNATURE->time*LAST_SIGNATURE->DC_power;
-			ER=SIGNATURE->time*SIGNATURE->DC_power;
+	double EP, ER;
+
+	ear_debug(4,"EAR(%s)::Projection TIME %12.6lf POWER %12.6lf\n",__FILE__,
+	PREDICTION->Time,PREDICTION->Power);
+	ear_debug(4,"EAR(%s):: Signature Time %12.6lf Power %12.6lf\n",__FILE__,
+	SIGNATURE->time,SIGNATURE->DC_power);
+
+	if (power_model_policy == MIN_TIME_TO_SOLUTION)
+	{
+		if ((SIGNATURE->time>LAST_SIGNATURE->time) &&
+			(SIGNATURE->avg_f!=LAST_SIGNATURE->avg_f)) return 0;
+
+		if (SIGNATURE->time<PREDICTION->Time) return 1;
+		else return 0;
+	}
+	else if (power_model_policy == MIN_ENERGY_TO_SOLUTION)
+	{
+		EP = LAST_SIGNATURE->time*LAST_SIGNATURE->DC_power;
+		ER = SIGNATURE->time * SIGNATURE->DC_power;
+
 			ear_verbose(3,"CURRENT E=%lf (%lf x %lf) LAST E=%lf (%lf x %lf)\n",
-				ER,SIGNATURE->time,SIGNATURE->DC_power,EP,LAST_SIGNATURE->time,LAST_SIGNATURE->DC_power);
-			if ((ER<EP)&&(SIGNATURE->time<T_max)) return 1;
-			else return 0;
-		}else if (power_model_policy==MONITORING_ONLY){
-			return 1;
-		}	
+			ER,SIGNATURE->time,SIGNATURE->DC_power,EP,LAST_SIGNATURE->time,LAST_SIGNATURE->DC_power);
+
+		if ((ER<EP)&&(SIGNATURE->time<T_max)) return 1;
+		else return 0;
+	}
+	else if (power_model_policy==MONITORING_ONLY){
+		return 1;
+	}
 }
+
 unsigned int performance_projection_ok(projection_t *PREDICTION,application_t *SIGNATURE)
 {
 	if (equal_with_th(PREDICTION->Time,SIGNATURE->time,performance_penalty_th) && equal_with_th(PREDICTION->Power,SIGNATURE->DC_power,performance_penalty_th)){
@@ -491,26 +511,44 @@ projection_t * performance_projection(unsigned long f)
 	return &projections[ear_get_pstate(f)];
 }
 
-unsigned long  policy_power(unsigned int whole_app,application_t* MY_SIGNATURE)
+unsigned long  policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
 {
+	unsigned long optimal_freq, max_freq;
+
 	ear_debug(4,"EAR(%s):: EAR_PolicyPower\n",__FILE__);
-	unsigned long optimal_freq=ear_frequency,max_freq;
-    optimal_freq=policy_power_for_application(whole_app,MY_SIGNATURE);
-	if (optimal_freq!=ear_frequency){
-        	ear_debug(3,"EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",__FILE__,optimal_freq);
-        	max_freq=db_change_frequency(optimal_freq);
-			if (max_freq!=optimal_freq) optimal_freq=max_freq;
+
+	optimal_freq = ear_frequency;
+    optimal_freq = policy_power_for_application(whole_app, MY_SIGNATURE);
+
+	if (optimal_freq != ear_frequency)
+	{
+		ear_debug(3,"EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
+				  __FILE__,optimal_freq);
+
+		// TODO: CPUFREQ COUPLED (old db_change_frequency)
+		max_freq = ear_cpufreq_set_node(optimal_freq);
+
+		if (max_freq != optimal_freq) {
+			optimal_freq = max_freq;
+		}
 	}
 	else{
 		ear_debug(4,"EAR(%s):: %u selected, no changes are required\n",__FILE__,optimal_freq);
 	}
+
 	return optimal_freq;
 
 }
 
 void models_new_period()
 {
-	ear_debug(4,"EAR(%s):: EAR_models_New_period\n",__FILE__);
-	if (reset_freq_opt) db_change_frequency(EAR_default_frequency);
+	ear_debug(4,"EAR(%s):: EAR_models_New_period\n", __FILE__);
+
+	if (reset_freq_opt)
+	{
+		// TODO: CPUFREQ COUPLED (db_change_frequency(EAR_default_frequency))
+		ear_cpufreq_set_node(EAR_default_frequency);
+	}
+
 	reset_performance_projection(ear_models_pstates);
 }
