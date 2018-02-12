@@ -305,13 +305,13 @@ void ear_finalize()
 	// EAR_COEFF_DB_PATHNAME
 	sprintf(summary_fullpath, "%s%s", summary_pathname, node_name);
 
-	metrics_end(ear_whole_app, my_id, summary_fullpath, &app_eru_diff);
+	metrics_end(ear_whole_app, my_id, summary_fullpath, app_eru_diff);
 
 	// DynAIS
 	dynais_dispose();
 
 	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
-    states_end_job(my_id, NULL, ear_app_name);
+	states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
 	end_dc_energy();
 	ear_daemon_client_disconnect();
