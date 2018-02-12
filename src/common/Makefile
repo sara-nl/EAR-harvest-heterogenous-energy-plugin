@@ -29,7 +29,7 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 	$(CC) $(CFLAGS) -c string_enhanced.c
 
 types.a: types/application.o types/projection.o
-	ar rvs types.a types/application.o types/projection.o
+	ar rvs types.a types/application.o types/projection.o string_enhanced.o
 
 install:
 

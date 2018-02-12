@@ -3,31 +3,33 @@
 #include <string.h>
 #include <string_enhanced.h>
 
-static char _buffer[32];
+static char _buffer[3][32];
 static uint _digits;
+static uint _i;
 
-static void _add_comma_ull (ull number)
+static void _add_point_ull (ull number)
 {
     if (number < 0) {
         printf ("-");
-        _add_comma_ull(-number);
+        _add_point_ull(-number);
         return;
     }
 
     if (number < 1000) {
-        sprintf(_buffer, "%s%llu", _buffer, number);
+        sprintf(_buffer[_i], "%s%llu", _buffer[_i], number);
         return;
     }
 
-    _add_comma_ull(number / 1000);
-    sprintf(_buffer, "%s,%03llu", _buffer, (number % 1000));
+    _add_point_ull(number / 1000);
+    sprintf(_buffer[_i], "%s.%03llu", _buffer[_i], (number % 1000));
 }
 
-char* add_comma_ull(ull number)
+char* add_point_ull(ull number)
 {
-    _buffer[0] = '\0';
-    _add_comma_ull(number);
-    return _buffer;
+	_i = _i + 1 - (_i == 2) * 3;
+	 _buffer[_i][0] = '\0';
+	_add_point_ull(number);
+	return _buffer[_i];
 }
 
 static void _add_point_ulong (ulong number)
@@ -39,19 +41,19 @@ static void _add_point_ulong (ulong number)
     }
 
     if (number < 1000) {
-        sprintf(_buffer, "%s%lu", _buffer, number);
+        sprintf(_buffer[_i], "%s%lu", _buffer[_i], number);
         return;
     }
 
     _add_point_ulong(number / 1000);
-    sprintf(_buffer, "%s.%03lu", _buffer, (number % 1000));
+    sprintf(_buffer[_i], "%s.%03lu", _buffer[_i], (number % 1000));
 }
 
 char* add_point_ulong(ulong number)
 {
-    _buffer[0] = '\0';
+    _buffer[_i][0] = '\0';
     _add_point_ulong(number);
-    return _buffer;
+    return _buffer[_i];
 }
 
 static void _add_point_uint (uint number)
@@ -63,19 +65,19 @@ static void _add_point_uint (uint number)
     }
 
     if (number < 1000) {
-        sprintf(_buffer, "%s%u", _buffer, number);
+        sprintf(_buffer[_i], "%s%u", _buffer[_i], number);
         return;
     }
 
     _add_point_uint(number / 1000);
-    sprintf(_buffer, "%s.%03u", _buffer, (number % 1000));
+    sprintf(_buffer[_i], "%s.%03u", _buffer[_i], (number % 1000));
 }
 
 char* add_point_uint(uint number)
 {
-    _buffer[0] = '\0';
+    _buffer[_i][0] = '\0';
     _add_point_uint(number);
-    return _buffer;
+    return _buffer[_i];
 }
 
 //TODO: remove

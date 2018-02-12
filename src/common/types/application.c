@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <states.h>
+#include <string_enhanced.h>
 #include <types/application.h>
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -22,16 +23,18 @@ int init_application(application_t *app)
 
 void report_application_data(application_t *app)
 {
-    printf("-- Application Summary ---------------------------------------------\n");
+    printf("--------------------------------------------- Application Summary --\n");
     printf("-- App/node id: %s/%s\n", app->app_id, app->node_id);
     printf("-- User/job id: %s/%s\n", app->user_id, app->job_id);
-    printf("-- Execution time: %s/%s (us)\n", app->time);
-    printf("-- Nominal/Average frequency: %lu/%lu (MHz)\n", a->avg_f, a->def_f);
-    printf("-- Cycles/Instructions: %llu/%llu\n", app->CPI, app->TPI);
+    printf("-- Detected processes: %u\n", app->procs);
+    printf("-- Execution time: %0.3lf (s)\n", app->time);
+    printf("-- Nominal/Average frequency: %lu/%s (MHz)\n", app->def_f, add_point_ulong(app->avg_f));
+    printf("-- Cycles/Instructions: %s/%s\n", add_point_ull(app->cycles), add_point_ull(app->instructions));
     printf("-- CPI/TPI: %0.3lf/%0.3lf\n", app->CPI, app->TPI);
-    printf("-- Bandwidth: %llu (GB/s)\n", app->GBS);
-    printf("-- GFLOPS: %lf\n", app->Gflops);
-    printf("-- DC/DRAM/PCK power: %lf/%lf/%lf\n", a->DC_power, a->DRAM_power, a->PCK_power);
+    printf("-- Bandwidth: %0.3lf (GB/s)\n", app->GBS);
+    printf("-- GFLOPS per core: %0.3lf\n", app->Gflops);
+    printf("-- DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->DC_power, app->DRAM_power, app->PCK_power);
+    printf("--------------------------------------------------------------------\n");
 }
 
 int append_application_binary_file(char *path, application_t *app)
@@ -71,7 +74,7 @@ static int print_application_fd(int fd, application_t *app)
     dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
     dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
     dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
-    dprintf(fd, "%lf;%llu;%llu", a->Gflops, (ull) 0,(ull) 0,(ull) 0,(ull) 0);
+    dprintf(fd, "%lf;%llu;%llu;%llu;%llu", a->Gflops, (ull) 0, (ull) 0, (ull) 0, (ull) 0);
     dprintf(fd, "\n");
 
     return EAR_SUCCESS;
