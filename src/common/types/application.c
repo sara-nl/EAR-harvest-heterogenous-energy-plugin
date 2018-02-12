@@ -12,7 +12,7 @@
 
 int init_application(application_t *app)
 {
-    memset(app, sizeof(application_t));
+    memset(app, 0, sizeof(application_t));
     app->node_id[0] = '\0';
     app->user_id[0] = '\0';
     app->app_id[0] = '\0';

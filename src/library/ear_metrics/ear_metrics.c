@@ -208,8 +208,8 @@ int metrics_init(int my_id, int pid)
 
 	if (my_id) return 1;
 
-	init_application(app_temporal);
-	init_application(app_global);
+	init_application(&app_temporal);
+	init_application(&app_global);
 
 	// TODO: REVISION
 
