@@ -251,12 +251,14 @@ int getenv_ear_verbose()
 	}	
 	return conf_ear_verbose;
 }
+
 int getenv_ear_local_id()
 {
 	char *my_local_id;
 	my_local_id=getenv("SLURM_LOCALID");
 	if (my_local_id==NULL) return conf_ear_local_id;
 }
+
 int getenv_ear_num_nodes()
 {
 	char *my_num_nodes;
@@ -268,8 +270,6 @@ int getenv_ear_num_nodes()
 	} else conf_ear_num_nodes=atoi(my_num_nodes);
 	return conf_ear_num_nodes;
 }
-
-
 
 int getenv_ear_dynais_levels()
 {

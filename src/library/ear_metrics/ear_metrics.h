@@ -12,6 +12,13 @@
 
 #include <types/application.h>
 
+// Returns real time counter value in microseconds
+long long metrics_time();
+
+/*
+ * BIG SHIT
+ */
+
 // Internals to ear_papi.c
 void copy_metrics_last_iter_counters();
 void diff_counters();
@@ -24,24 +31,20 @@ int metrics_init(int id, int pid);
 // updates name with the application name
 void metrics_get_app_name(char *name);
 
-// Returns real time counter value in microseconds
-long long metrics_time();
-
-//
-void metrics_set_signature_start_time();
 
 // Gets HW infor
 void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *min_f, ulong *nom_f,
 	char *CPU_model, char *CPU_name);
 
+//TODO: change the name
 // Returns elapsed time (end-init)
 long long metrics_usecs_diff(long long end,long long init);
 
 /*
  * BIG BOOST
  */
+//
 application_t* metrics_end(ulong energy_mj);
-void metrics_start();
 
 // Starts performance/power counters and save values to start computing the
 // application signature
