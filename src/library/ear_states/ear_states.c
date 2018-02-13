@@ -210,7 +210,8 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 			ear_debug(3, "EAR(%s): EVALUATING_SIGNATURE state LoopID %u LoopSize %u iterations %d\n",
 					  ear_app_name, event, period, iterations);
 
-			if ((((iterations - 1) % perf_count_period) == 0) && (iterations > 1)) {
+			if ((((iterations - 1) % perf_count_period) == 0) && (iterations > 1))
+			{
 				report = 1;
 
 				// TODO: acoplamiento de ear_daemon/ear_node_energy_metrics

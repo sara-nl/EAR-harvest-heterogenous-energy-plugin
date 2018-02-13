@@ -58,14 +58,14 @@ int ibmaem_read_dc_energy(unsigned long *energy)
 	unsigned int len;
 	char linebuf[MAX_LINE_LEN];
 	char *endp;
-	*energy=0;
+	*energy = 0;
 
-	if (ear_ibmaem<0){ 
+	if (ear_ibmaem < 0) {
 		ear_verbose(0,"EAR: IBMAEM not available in ibmaem_read_dc_energy\n");
 		return -1;
 	}
 
-	if ( ( len = sysfs_read_file(linebuf, sizeof(linebuf))) == 0 )
+	if ((len = sysfs_read_file(linebuf, sizeof(linebuf))) == 0)
 	{
 		ear_verbose(0,"EAR(%s): sys_read returns 0:%s\n",__FILE__,strerror(errno));
 		return -1;
