@@ -318,7 +318,7 @@ void ear_finalize()
 	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
 	ear_daemon_client_write_app_signature(global_metrics);
 
-	append_application_text_file(summary_file, global_metrics);
+	append_application_text_file(summary_fullpath, global_metrics);
 	report_application_data(global_metrics);
 
 	// DynAIS
