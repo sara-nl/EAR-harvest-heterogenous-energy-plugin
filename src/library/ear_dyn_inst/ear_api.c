@@ -302,13 +302,23 @@ void ear_finalize()
 	gethostname(node_name, sizeof(node_name));
 	summary_pathname = get_ear_user_db_pathname();
 
-	// TODO: SUMMARY
 	sprintf(summary_fullpath, "%s%s", summary_pathname, node_name);
 
 	// TODO: GLOBAL METRICS
 	global_metrics = metrics_end(app_eru_diff);
-	
+
+	// TODO: ADDING APPLICATION_T TO METRICS_T
+	strcpy(global_metrics->node_id, application.node_id);
+	strcpy(global_metrics->user_id, application.user_id);
+	strcpy(global_metrics->app_id, application.app_id);
+	strcpy(global_metrics->job_id, application.job_id);
+	strcpy(global_metrics->policy, application.policy);
+	global_metrics->avg_f = application.avg_f;
+
 	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
+	ear_daemon_client_write_app_signature(global_metrics);
+
+	append_application_text_file(summary_file, global_metrics);
 	report_application_data(global_metrics);
 
 	// DynAIS
