@@ -26,9 +26,8 @@ OBJS = ear_states/ear_states.o           \
        ear_frequency/ear_cpufreq.o       \
        ear_gui/ear_gui.o                 \
        ear_models/ear_models.o           \
-       ear_metrics/ear_metrics.o            \
+       ear_metrics/ear_metrics.o         \
        ear_metrics/ear_node_energy.o     \
-       ear_metrics/ear_turbo_metrics.o   \
        ear_metrics/ear_flops_metrics.o   \
        ear_metrics/ear_cache.o           \
        ear_metrics/ear_basic.o           \

@@ -393,7 +393,7 @@ static void fill_application_metrics(application_t *app, const long long *counte
 	app->TPI /= (double) (counters[EAR_ACUM_TOT_INS] / hw_cache_line_size);
 
 	// Energy metrics
-	app->DC_power = (double) energy_mj / (double) (time_s * 1000000);
+	app->DC_power = (double) energy_uj / (double) (time_s * 1000000);
 	app->PCK_power  = (double) (counters[EAR_ACUM_PCKG_ENER] / 1000000000) / time_s;
 	app->DRAM_power = (double) (counters[EAR_ACUM_DRAM_ENER] / 1000000000) / time_s;
 	app->EDP = time_s * time_s * app->DC_power;
@@ -477,7 +477,7 @@ application_t *metrics_end(ulong energy_uj)
 	//
 	app_end_time = PAPI_get_real_usec();
 	app_exec_time = app_end_time - app_start_time;
-	acum_energy = energy_mj;
+	acum_energy = energy_uj;
 
 	// This function computes metrics, signature etc
 	// TODO: This couldn't be done because it uses static app info
@@ -551,7 +551,7 @@ application_t* metrics_end_compute_signature(ulong energy_uj, uint N_iters, ulon
 	start_time = end_time;
 
 	// TODO: ENERGY
-	acum_energy = acum_energy + energy_mj;
+	acum_energy = acum_energy + energy_uj;
 
 	// TODO: FUTURE
 	fill_application_metrics(&app_temporal, accum_metrics_diff, energy_uj, N_iters, metrics_time);
@@ -561,7 +561,7 @@ application_t* metrics_end_compute_signature(ulong energy_uj, uint N_iters, ulon
 	metrics_start();
 
 	ear_verbose(3, "COMPUTED SIGNATURE: energy %ld, iters %u, time %llu\n",
-				energy_mj, N_iters, metrics_time);
+				energy_uj, N_iters, metrics_time);
 
 	return &app_temporal;
 }
