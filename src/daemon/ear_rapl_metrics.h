@@ -8,23 +8,21 @@
 */
 #ifndef _RAPL_METRICS_H_
 #define _RAPL_METRICS_H_
+
 #define EAR_RAPL_EVENTS 4
 
-// Initializes the PAPI library if needed and the rapl::DRAM_ENERGY:PACKAGE0, rapl:::DRAM_ENERGY:PACKAGE1, rapl:::PACKAGE_ENERGY:PACKAGE0, rapl:::PACKAGE_ENERGY:PACKAGE1 events
-// returns 0 on success and -1 on error
-
+// Initializes the PAPI library if needed and the "DRAM_ENERGY:PACKAGE0",
+// "DRAM_ENERGY:PACKAGE1", "PACKAGE_ENERGY:PACKAGE0", "PACKAGE_ENERGY:PACKAGE1"
+// events. Returns 0 on success and -1 on error.
 int init_rapl_metrics();
-// Resets (zeroes) rapl events
-// returns 0 on success and -1 on error
+// Resets (zeroes) rapl events. Returns 0 on success and -1 on error.
 int reset_rapl_metrics();
-// Starts rapl events
-// returns 0 on success and -1 on error
+// Starts rapl events. Returns 0 on success and -1 on error.
 int start_rapl_metrics();
-// Stops rapl events and copies events values in values array.
-// returns 0 on success and -1 on error
+// Stops rapl events and copies events values in values array. Returns 0 on
+// success and -1 on error.
 int stop_rapl_metrics(unsigned long long *values);
-// Prints rapl metrics in the stderr
-// returns 0 on success and -1 on error
+// Prints rapl metrics in the stderr. Returns 0 on success and -1 on error.
 void print_rapl_metrics();
 #else
 #endif

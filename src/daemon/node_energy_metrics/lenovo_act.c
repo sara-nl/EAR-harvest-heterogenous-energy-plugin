@@ -31,7 +31,6 @@ static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
 
-
 /* Specific functions for CPU XX PLATFORM YY */
 /* Grants access to ipmi device */
 int lenovo_act_node_energy_init()

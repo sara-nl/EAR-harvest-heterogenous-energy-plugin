@@ -8,14 +8,21 @@
 */
 #ifndef _FLOPS_METRICS_H_
 #define _FLOPS_METRICS_H_
+
 int init_flops_metrics();
 int reset_flops_metrics();
 int start_flops_metrics();
-int stop_flops_metrics(long long *total_flops,long long *f_operations);
-void print_gflops(long long total_inst,unsigned long total_time,uint total_cores);
-double gflops(unsigned long total_timei,uint total_cores);
+int stop_flops_metrics(long long *total_flops, long long *f_operations);
+
 int get_number_fops_events();
-void get_weigth_fops_instructions(int *weigth_vector);
+
 void get_total_fops(long long *metrics);
+
+double gflops(ulong total_timei, uint total_cores);
+
+void get_weigth_fops_instructions(int *weigth_vector);
+
+void print_gflops(long long total_inst, ulong total_time, uint total_cores);
+
 #else
 #endif

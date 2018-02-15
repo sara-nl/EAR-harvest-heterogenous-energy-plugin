@@ -115,7 +115,7 @@ void ear_init()
 	//TODO: SWTICH TO APPLICATION
 	gethostname(node_name, sizeof(node_name));
 
-	my_id=get_ear_local_id();
+	my_id = get_ear_local_id();
 	if (my_id<0)
 	{
 		num_nodes=get_ear_num_nodes();
@@ -129,7 +129,7 @@ void ear_init()
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
 
 	// Connecting with ear_daemon
-	if (ear_daemon_client_connect()<0){
+	if (ear_daemon_client_connect() < 0) {
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
 		exit(1);
 	}
@@ -137,17 +137,19 @@ void ear_init()
 	ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
 				ear_my_rank, ear_node_name, getpid());
 
-	metrics_init(my_id,getpid()); // PAPI_init starts counters
+	metrics_init(my_id); // PAPI_init starts counters
 	ear_cpufreq_init(); //Initialize cpufreq info
 
-	if (ear_whole_app==1 && ear_use_turbo==1)
+	if (ear_whole_app == 1 && ear_use_turbo == 1)
 	{
 		ear_verbose(1,"EAR: Turbo learning phase, turbo selected and start computing\n");
 		ear_daemon_client_set_turbo();
 	} else {
-		ear_verbose(1,"EAR: learning phase %d, turbo %d\n",ear_whole_app,ear_use_turbo);
+		ear_verbose(1,"EAR: learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
 	}
-	ear_daemon_client_begin_app_compute_turbo_freq();
+
+	// TODO: NO SENSE
+	// ear_daemon_client_begin_app_compute_turbo_freq();
 
 	// Getting environment data
 	get_app_name_please(ear_app_name);
@@ -305,10 +307,10 @@ void ear_finalize()
 	sprintf(summary_fullpath, "%s%s", summary_pathname, node_name);
 
 	// TODO: GLOBAL METRICS
-	global_metrics = metrics_end(app_eru_diff);
+	metrics_dispose(global_metrics);
 
 	// TODO: ADDING APPLICATION_T TO METRICS_T
-	strcpy(global_metrics->node_id, application.node_id);
+	/*strcpy(global_metrics->node_id, application.node_id);
 	strcpy(global_metrics->user_id, application.user_id);
 	strcpy(global_metrics->app_id, application.app_id);
 	strcpy(global_metrics->job_id, application.job_id);
@@ -319,7 +321,7 @@ void ear_finalize()
 	ear_daemon_client_write_app_signature(global_metrics);
 
 	append_application_text_file(summary_fullpath, global_metrics);
-	report_application_data(global_metrics);
+	report_application_data(global_metrics);*/
 
 	// DynAIS
 	dynais_dispose();

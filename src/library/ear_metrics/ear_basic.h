@@ -12,7 +12,7 @@
 void init_basic_metrics();
 void reset_basic_metrics();
 void start_basic_metrics();
-void stop_basic_metrics(long long *cycles,long long *instructions);
-void get_basic_metrics(long long *total_cycles,long long *instructions);
+void stop_basic_metrics(long long *cycles, long long *instructions);
+void get_basic_metrics(long long *total_cycles, long long *instructions);
 #else
 #endif

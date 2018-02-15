@@ -37,9 +37,6 @@ unsigned int ear_get_pstate(unsigned long f);
 //Selects the “userspace” governor.
 void ear_set_userspace();
 
-
-
-
 //Selects the “performance” governor.
 void ear_set_turbo();
 // Start computing the avg freq for the whole application

@@ -147,7 +147,7 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
 	// Last 4 bytes reports accumulated energy in Joules
 	energyp=(uint32_t *)&bytes_rs[rs_len-4];
 	// Energy values provided in this model are reported in Joules, the API returns uJ (multiply by 1.000.000)
-	*energy=(unsigned long)be32toh(*energyp)*1000000;
+	*energy=(unsigned long)be32toh(*energyp)*1000;
 	return EAR_SUCCESS;;
 }
 /* AC energy is not yet supported */

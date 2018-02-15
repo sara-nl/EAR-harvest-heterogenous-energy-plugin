@@ -35,6 +35,7 @@ void warning(int return_value, int expected, char *msg)
 	if (return_value!=expected) ear_verbose(0,"ear_daemon_client %s\n",msg);
 	if (return_value<0) 		ear_verbose(0,"ear_daemon_client %s\n",strerror(errno));
 }
+
 int ear_daemon_client_connect()
 {
         int status,i,retval;
@@ -218,19 +219,25 @@ void ear_daemon_client_begin_compute_turbo_freq()
    ear_debug(0,"EAR_daemon_client: ear_daemon_client_begin_compute_turbo_freq service not provided\n");
    return;
 }
+
 unsigned long ear_daemon_client_end_compute_turbo_freq()
 {
 	struct daemon_req req;
 	unsigned long ack=EAR_SUCCESS;
 	ear_debug(2,"EAR_daemon_client:end getting turbo freq \n");
     req.req_service=END_GET_FREQ;
+
         if (ear_fd_req[freq_req]>=0){
-            if (write(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)){
-                ear_verbose(0,"EAR: Error sending request ear_daemon_client_end_compute_turbo_freq:%s\n",strerror(errno));
+            if (write(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req))
+			{
+                ear_verbose(0,"EAR: Error sending request ear_daemon_client_end_compute_turbo_freq:%s\n",
+							strerror(errno));
 				return EAR_ERROR;
             }   
-            if (read(ear_fd_ack[freq_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
-                    ear_verbose(0,"EAR: Error ear_daemon_client_end_compute_turbo_freq ACK:%s\n",strerror(errno));
+            if (read(ear_fd_ack[freq_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long))
+			{
+                    ear_verbose(0,"EAR: Error ear_daemon_client_end_compute_turbo_freq ACK:%s\n",
+								strerror(errno));
 					return EAR_ERROR;
             }   
             ear_verbose(2,"EAR_daemon_client: TURBO freq computed as  %u\n",ack);
