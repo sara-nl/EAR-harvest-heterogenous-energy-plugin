@@ -217,6 +217,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 
 				N_iter = iterations - begin_iter;
 				result = metrics_compute_signature_finish(&curr_signature, N_iter, perf_accuracy_min_time);
+				print_application(&curr_signature);
 
 				if (result == EAR_NOT_READY)
 				{
