@@ -47,7 +47,12 @@ static int print_application_fd(int fd, application_t *app)
     dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
     dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
     dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
-    dprintf(fd, "%lf;%llu;%llu", a->Gflops, (ull) 0,(ull) 0,(ull) 0,(ull) 0);
+    dprintf(fd, "%lf;%llu", a->Gflops, app->FLOPS[0]);
+
+	for (i = 1; i < FLOPS_EVENTS; ++i) {
+		printf(";%ll", app->FLOPS[i]);
+	}
+
     dprintf(fd, "\n");
 
     return EAR_SUCCESS;
