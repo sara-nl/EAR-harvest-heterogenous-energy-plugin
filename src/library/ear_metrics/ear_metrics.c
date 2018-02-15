@@ -66,7 +66,7 @@
  * Cache      | ear_cache.c                   |
  * Cache      | ear_stalls.c                  |
  * Flops      | ear_flops_metrics.c           | Los weights se pueden descuadrar si falla un evento.
- * RAPL       | ear_rapl_metrics.c            |
+ * RAPL       | ear_rapl_metrics.c            | Las posiciones se pueden descuadrar si falla un evento.
  * IPMI       | ear_node_energy_metrics.c     | Tiene una función que devuelve el size, para que?
  * Bandwith   | ear_uncores.c                 | Per Integrated Memory Controller, PCI bus.
  * Avg. Freq. | ear_turbo.c (ear_frequency.c) | Per core, MSR registers. Hay que ver si acumula bien.
@@ -74,7 +74,7 @@
  */
 // Hardware
 static const PAPI_hw_info_t *hw_general = NULL;
-static int hw_cache_line_size;
+static double hw_cache_line_size;
 static int hw_node_size;
 
 // Options
@@ -131,8 +131,8 @@ int metrics_init(int my_id)
 	}
 
 	// Cache line (using custom hardware scanning)
-	hw_cache_line_size = get_cache_line_size();
-	ear_debug(2, "(%s): cache line size is %d bytes\n", __FILE__, hw_cache_line_size);
+	hw_cache_line_size = (double) get_cache_line_size();
+	ear_debug(2, "(%s): cache line size is %0.2lf bytes\n", __FILE__, hw_cache_line_size);
 
 	// Accessable metrics
 	init_basic_metrics();
@@ -140,17 +140,17 @@ int metrics_init(int my_id)
 	papi_flops_supported = init_flops_metrics();
 
 	// Through daemon metrics
-	uncore_size = ear_daemon_client_get_data_size_uncore();
 	rapl_size = ear_daemon_client_get_data_size_rapl();
+	bandwith_size = ear_daemon_client_get_data_size_uncore();
 	flops_elements = get_number_fops_events();
 
 	// Allocation
-	bandwith_elements = uncore_size / sizeof(long long);
 	rapl_elements = rapl_size / sizeof(long long);
+	bandwith_elements = bandwith_size / sizeof(long long);
 	flops_size = sizeof(long long) * flops_elements;
 
-	partial_bandwith = malloc(uncore_size);
-	global_bandwith = malloc(uncore_size);
+	partial_bandwith = malloc(bandwith_size);
+	global_bandwith = malloc(bandwith_size);
 	partial_rapl = malloc(rapl_size);
 	global_rapl = malloc(rapl_size);
 
@@ -286,12 +286,42 @@ void metrics_compute_signature_begin()
 	metrics_partial_start();
 }
 
-static void metrics_compute_signature_data(uint iterations)
+static void metrics_compute_signature_data(application_t *metrics, uint iterations)
 {
-	printf("-------------------------------\n");
-	printf("Partial time: %ll\n", partial_time);
-	printf("Partial iterations: %ll\n", iterations);
-	printf("-------------------------------\n");
+	double partial_time_s, cas_counter, aux;
+	int i;
+
+	partial_time_s = (double) partial_time / 1000000.0;
+
+	// Basic metrics
+	aux = partial_time_s * (double) (1024 * 1024 * 1024);
+	cas_counter = 0.0;
+
+	for (i = 0; i < bandwith_elements; ++i) {
+		cas_counter = (double) partial_bandwith[i];
+	}
+
+	metrics->GBS += cas_counter * hw_cache_line_size / aux;
+	metrics->CPI  = (double) partial_cycles / (double) partial_instructions;
+	metrics->TPI  = cas_counter * hw_cache_line_size / (double) partial_instructions;
+
+	// Energy IPMI
+	app->DC_power = (double) global_ipmi / ((double) time_s * 1000.0);
+	app->EDP = partial_time_s * partial_time_s * app->DC_power;
+
+	// Energy RAPL
+	app->PCK_power  = (double) (partial_rapl[RAPL_PACKAGE0] + artial_rapl[RAPL_PACKAGE1]);
+	app->PCK_power  = (app->PCK_power / 1000000000.0) / partial_time_s;
+	app->DRAM_power = (double) (partial_rapl[RAPL_DRAM0] + partial_rapl[RAPL_DRAM1]);
+	app->DRAM_power = (app->DRAM_power / 1000000000.0) / time_s;
+
+	// Basics
+	app->time = partial_time_s / (double) iterations;
+	app->instructions = partial_instructions;
+	app->cycles = partial_cycles;
+	app->L1_misses = partial_l1;
+	app->L2_misses = partial_l2;
+	app->L3_misses = partial_l3;
 }
 
 int metrics_compute_signature_finish(application_t *metrics, uint iterations, ulong min_time_us)
@@ -313,7 +343,6 @@ int metrics_compute_signature_finish(application_t *metrics, uint iterations, ul
 	//
 	metrics_partial_start();
 
-	return EAR_NOT_READY;
 	return EAR_SUCCESS;
 }
 

@@ -9,7 +9,11 @@
 #ifndef _RAPL_METRICS_H_
 #define _RAPL_METRICS_H_
 
-#define EAR_RAPL_EVENTS 4
+#define EAR_RAPL_EVENTS 	4
+#define RAPL_DRAM0 			0
+#define RAPL_DRAM1 			1
+#define RAPL_PACKAGE0 		2
+#define RAPL_PACKAGE1 		3
 
 // Initializes the PAPI library if needed and the "DRAM_ENERGY:PACKAGE0",
 // "DRAM_ENERGY:PACKAGE1", "PACKAGE_ENERGY:PACKAGE0", "PACKAGE_ENERGY:PACKAGE1"

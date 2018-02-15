@@ -32,7 +32,7 @@
 #define SIGNATURE_HAS_CHANGED		6
 #define DPD_NUM_STATES			7
 
-static application_t *curr_signature;
+static application_t curr_signature;
 static application_t last_signature;
 static projection_t *PP;
 
@@ -129,6 +129,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
 	unsigned long prev_f;
+	int result;
 
 	prev_f = ear_my_frequency();
 
@@ -215,17 +216,18 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 						  __FILE__, period, N_iters);
 
 				N_iter = iterations - begin_iter;
-				metrics_compute_signature_finish(curr_signature, N_iter, perf_accuracy_min_time);
+				result = metrics_compute_signature_finish(&curr_signature, N_iter, perf_accuracy_min_time);
 
-				if (curr_signature == NULL) {
+				if (result == EAR_NOT_READY)
+				{
 					comp_N_begin = metrics_time();
 					EAR_STATE = SIGNATURE_HAS_CHANGED;
 					ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE -> SIGNATURE_HAS_CHANGED\n",
 							  ear_app_name);
-				} else {
+				}
+				else
+				{
 					loop_with_signature = 1;
-
-					// TODO: DB COUPLED
 					current_loop_id = event;
 
 					CPI = curr_signature->CPI;
@@ -291,10 +293,10 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 						  __FILE__, period, N_iters);
 
 				N_iter = iterations - begin_iter;
-				metrics_compute_signature_finish(curr_signature, N_iter, perf_accuracy_min_time);
+				result = metrics_compute_signature_finish(&curr_signature, N_iter, perf_accuracy_min_time);
+				print_application(&curr_signature);
 
-				// returns NULL if time is not enough for performance accuracy
-				if (curr_signature == NULL)
+				if (result == EAR_NOT_READY)
 				{
 					comp_N_begin = metrics_time();
 					EAR_STATE = SIGNATURE_HAS_CHANGED;
