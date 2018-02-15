@@ -19,7 +19,6 @@
 #include <ear_states/ear_states.h>
 #include <ear_models/ear_models.h>
 #include <ear_metrics/ear_metrics.h>
-#include <ear_metrics/ear_node_energy.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <externs.h>
 
@@ -38,7 +37,6 @@ static application_t last_signature;
 static projection_t *PP;
 
 static long long comp_N_begin, comp_N_end, comp_N_time;
-static ulong eru_init, eru_end, eru_diff;
 static uint begin_iter, N_iter;
 static ulong policy_freq;
 
@@ -217,7 +215,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 						  __FILE__, period, N_iters);
 
 				N_iter = iterations - begin_iter;
-				metrics_end_compute_signature(curr_signature, N_iter, perf_accuracy_min_time);
+				metrics_compute_signature_finish(curr_signature, N_iter, perf_accuracy_min_time);
 
 				if (curr_signature == NULL) {
 					comp_N_begin = metrics_time();
@@ -239,7 +237,6 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					begin_iter = iterations;
-					eru_init = eru_end;
 					policy_freq = policy_power(0, curr_signature);
 					PP = performance_projection(policy_freq);
 
@@ -290,14 +287,11 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 			{
 				// TODO: metrics_end_compute_signature
 				// GET power consumption for this N iterations
-				eru_end = read_dc_energy();
-				eru_diff = energy_diff(eru_end, eru_init);
-
 				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
 						  __FILE__, period, N_iters);
 
 				N_iter = iterations - begin_iter;
-				curr_signature = metrics_end_compute_signature(eru_diff, N_iter, perf_accuracy_min_time);
+				metrics_compute_signature_finish(curr_signature, N_iter, perf_accuracy_min_time);
 
 				// returns NULL if time is not enough for performance accuracy
 				if (curr_signature == NULL)
@@ -317,7 +311,6 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
-					eru_init = eru_end;
 
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
 					traces_frequency(ear_my_rank, my_id, policy_freq);

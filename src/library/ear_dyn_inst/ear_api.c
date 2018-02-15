@@ -26,7 +26,6 @@
 #include <ear_dynais/ear_dynais.h>
 #include <ear_models/ear_models.h>
 #include <ear_metrics/ear_metrics.h>
-#include <ear_metrics/ear_node_energy.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <ear_gui/ear_gui.h>
 #include <ear_states/ear_states.h>
@@ -39,7 +38,6 @@
 
 #define BUFFSIZE 128
 
-static unsigned long int app_eru_init, app_eru_end, app_eru_diff;
 static unsigned int ear_loop_size;
 static struct timeval pmpi_app_begin_time, pmpi_app_end_time;
 static long long pmpi_app_total_time;
@@ -176,16 +174,6 @@ void ear_init()
 	application.def_f = EAR_default_frequency;
 	application.avg_f = ear_get_freq(EAR_default_pstate); //TODO: CPUFREQ coupled
 
-	// TODO: ENERGY COUPLED
-	if(init_dc_energy()<0){
-		ear_verbose(0,"EAR:: Node Energy can not be measured, AEM is not loaded, exiting\n");
-		exit(1) ;
-	}else{
-		ear_debug(1,"EAR: init_dc_energy ok!\n");
-	}
-
-	app_eru_init=read_dc_energy();
-
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);
 	fflush(stderr);
@@ -288,17 +276,12 @@ void ear_finalize()
 	ear_verbose(0,"EAR:: Dynais algorithm consumes %llu usecs in %u calls\n",ear_acum,calls);
 	#endif
 	
-	app_eru_end=read_dc_energy();
-	app_eru_diff=energy_diff(app_eru_end , app_eru_init);
 	gettimeofday(&pmpi_app_end_time,NULL);
 	
 	pmpi_app_total_time = (pmpi_app_end_time.tv_sec * 1000000 + pmpi_app_end_time.tv_usec) -
                               (pmpi_app_begin_time.tv_sec * 1000000 + pmpi_app_begin_time.tv_usec);
 
-	//ear_verbose(0,"EAR: Accumulated energy %llu J. Execution time %llu (usecs) Avg. Power %5.5lf (W)\n",app_eru_diff/1000000,
-	//	pmpi_app_total_time,(double)app_eru_diff/(double)pmpi_app_total_time);
-
-	traces_end(ear_my_rank, my_id, app_eru_diff);
+	traces_end(ear_my_rank, my_id, 0);
 
 	// Summary file
 	gethostname(node_name, sizeof(node_name));
