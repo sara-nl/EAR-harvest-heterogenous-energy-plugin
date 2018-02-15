@@ -75,8 +75,6 @@ unsigned long ear_end_app_compute_turbo_freq()
         return ear_nominal_freq;
 }
 
-
-
 void ear_begin_compute_turbo_freq()
 {
 	ear_debug(2,"EAR_DAEMON:: EAR_begin_compute_turbo_freq\n");

@@ -11,10 +11,10 @@
 #define L2 1
 #define L3 2
 
-static int cache_event_sets[EAR_CACHE_EVENTS_SETS];
+static PAPI_option_t cache_attach_opt[EAR_CACHE_EVENTS_SETS];
 static long long cache_acum_values[EAR_CACHE_EVENTS_SETS];
 static long long cache_values[EAR_CACHE_EVENTS_SETS][EAR_CACHE_EVENTS];
-static PAPI_option_t cache_attach_opt[EAR_CACHE_EVENTS_SETS];
+static int cache_event_sets[EAR_CACHE_EVENTS_SETS];
 static int ear_cache_perf_event_cid;
 
 int init_cache_metrics()

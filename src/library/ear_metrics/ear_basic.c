@@ -3,13 +3,13 @@
 #include <papi.h>
 #include <ear_metrics/ear_basic.h>
 
-#define EAR_BASIC_EVENTS_SETS 1
-#define EAR_BASIC_EVENTS 2
+#define EAR_BASIC_EVENTS_SETS	1
+#define EAR_BASIC_EVENTS		2
 
-static int basic_event_sets[EAR_BASIC_EVENTS_SETS];
-static long long basic_acum_values[EAR_BASIC_EVENTS];
-static long long basic_values[EAR_BASIC_EVENTS_SETS][EAR_BASIC_EVENTS];
 static PAPI_option_t basic_attach_opt[EAR_BASIC_EVENTS_SETS];
+static long long basic_values[EAR_BASIC_EVENTS_SETS][EAR_BASIC_EVENTS];
+static long long basic_acum_values[EAR_BASIC_EVENTS];
+static int basic_event_sets[EAR_BASIC_EVENTS_SETS];
 static int ear_basic_perf_event_cid;
 
 void init_basic_metrics()
@@ -18,10 +18,12 @@ void init_basic_metrics()
 	int sets;
 	int events;
 	int cpu_model;
-	if (PAPI_is_initialized()==PAPI_NOT_INITED){
-    		retval=PAPI_library_init(PAPI_VER_CURRENT );
-    		if ( retval != PAPI_VER_CURRENT ) {
-			fprintf(stderr,"Basic metrics: Error when initializing PAPI\n");
+
+	if (PAPI_is_initialized()==PAPI_NOT_INITED)
+	{
+    		retval = PAPI_library_init(PAPI_VER_CURRENT);
+    		if (retval != PAPI_VER_CURRENT) {
+				fprintf(stderr,"Basic metrics: Error when initializing PAPI\n");
         		exit(1);
     		}    
 	}
@@ -29,7 +31,8 @@ void init_basic_metrics()
 
 	ear_basic_perf_event_cid=PAPI_get_component_index("perf_event");
    	 if (ear_basic_perf_event_cid<0){
-   	     fprintf(stderr,"basic_metrics: perf_event component not found.Exiting:%s\n",PAPI_strerror(ear_basic_perf_event_cid));
+   	     fprintf(stderr,"basic_metrics: perf_event component not found.Exiting:%s\n",
+				 PAPI_strerror(ear_basic_perf_event_cid));
    	     exit(1);
    	 } 
 	for (sets=0;sets<EAR_BASIC_EVENTS_SETS;sets++){
@@ -96,9 +99,11 @@ void stop_basic_metrics(long long *cycles,long long *instructions)
 	*instructions=0;
 	// There is a single event set for basic instruction
 	for (sets=0;sets<EAR_BASIC_EVENTS_SETS;sets++){
-		if ((retval=PAPI_stop(basic_event_sets[sets],(long long *)&basic_values[sets]))!=PAPI_OK){
-			fprintf(stderr,"basic_metrics: stop_basic_metrics set %d.%s\n",basic_event_sets[sets],PAPI_strerror(retval));
-		}else{
+		if ((retval = PAPI_stop(basic_event_sets[sets], (long long *) &basic_values[sets])) != PAPI_OK)
+		{
+			fprintf(stderr,"basic_metrics: stop_basic_metrics set %d.%s\n",
+					basic_event_sets[sets], PAPI_strerror(retval));
+		} else {
 			*cycles=basic_values[sets][0];
 			*instructions=basic_values[sets][1];
 			basic_acum_values[0]=basic_acum_values[0]+basic_values[sets][0];

@@ -413,8 +413,10 @@ void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 int eard_freq(int must_read)
 {
 	unsigned long ack;
-	if (must_read){
-	if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at eard_freq (%s)\n",strerror(errno));
+	if (must_read)
+	{
+		if (read(ear_fd_req[freq_req],&req,sizeof(req)) != sizeof(req))
+			ear_verbose(0,"eard error when reading info at eard_freq (%s)\n", strerror(errno));
 	}
 	switch (req.req_service){
 		case CONNECT_FREQ:
@@ -474,7 +476,8 @@ int eard_uncore(int must_read)
 	if (read(ear_fd_req[uncore_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at eard_uncore \n");
 	}
 
-	switch (req.req_service){
+	switch (req.req_service)
+	{
 	    case CONNECT_UNCORE:
 			connect_service(uncore_req,req.req_data.req_value);
 			break;
@@ -494,8 +497,8 @@ int eard_uncore(int must_read)
 			int i;
 			ear_debug(1,"EAR_daemon_server: read uncore\n");
 			stop_uncores(values);
-			write(ear_fd_ack[uncore_req],values,sizeof(unsigned long long) * num_uncore_counters);
-			for (i=0; i < num_uncore_counters; i++) demon_cas+=values[i];
+			write(ear_fd_ack[uncore_req], values, sizeof(unsigned long long) * num_uncore_counters);
+			for (i=0; i < num_uncore_counters; i++) demon_cas += values[i];
 			ear_debug(3,"DAEMON cas %llu %d values\n", demon_cas, num_uncore_counters);
 		}
 			break;

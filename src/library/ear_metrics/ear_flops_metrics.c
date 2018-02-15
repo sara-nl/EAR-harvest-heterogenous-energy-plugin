@@ -14,10 +14,10 @@
 #include <hardware.h>
 #include <externs.h>
 
-#define EAR_FLOPS_EVENTS_SETS 2
-#define EAR_FLOPS_EVENTS 4
-#define SP_OPS 0
-#define DP_OPS 1
+#define EAR_FLOPS_EVENTS_SETS	2
+#define EAR_FLOPS_EVENTS		4
+#define SP_OPS					0
+#define DP_OPS					1
 #define FP_ARITH_INST_RETIRED_PACKED_SINGLE_N		"FP_ARITH:SCALAR_SINGLE"
 #define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N	"FP_ARITH:128B_PACKED_SINGLE"
 #define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N	"FP_ARITH:256B_PACKED_SINGLE"
@@ -27,12 +27,14 @@
 #define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
 #define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
 
-static int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS]={{1,4,8,16},{1,2,4,8}};
-static int ear_flops_event_sets[EAR_FLOPS_EVENTS_SETS];
+static int FP_OPS_WEIGTH[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS] = {{1,4,8,16}, {1,2,4,8}};
+
+static PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
+
 static long long ear_flops_acum_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
 static long long ear_flops_values[EAR_FLOPS_EVENTS_SETS][EAR_FLOPS_EVENTS];
+static int ear_flops_event_sets[EAR_FLOPS_EVENTS_SETS];
 static int ear_flops_perf_event_cid;
-static PAPI_option_t flops_attach_opt[EAR_FLOPS_EVENTS_SETS];
 static int flops_supported=0;
 
 int init_flops_metrics()
@@ -41,12 +43,19 @@ int init_flops_metrics()
 	int sets;
 	int events;
 	int cpu_model;
-	if (PAPI_is_initialized()==PAPI_NOT_INITED){
-    		retval=PAPI_library_init(PAPI_VER_CURRENT );
-    		if ( retval != PAPI_VER_CURRENT ) {
-        		ear_verbose(0,"FP_METRICS: Error intializing the PAPI library.%s\n",PAPI_strerror(retval));
-			return flops_supported;			
-    		}    
+
+	if (PAPI_is_initialized() == PAPI_NOT_INITED)
+	{
+		retval = PAPI_library_init(PAPI_VER_CURRENT);
+
+		if (retval != PAPI_VER_CURRENT)
+		{
+			ear_verbose(0,"FP_METRICS: Error intializing the PAPI library.%s\n",
+						PAPI_strerror(retval));
+
+			return flops_supported;
+		}
+
 		PAPI_multiplex_init();
 	}
 	// Here , papi is initialized
@@ -93,7 +102,9 @@ int init_flops_metrics()
 				break;
 			case CPU_SKYLAKE_X:
 				flops_supported=1;
-				switch (sets){
+
+				switch (sets)
+				{
 				case SP_OPS:
 				if ((retval=PAPI_add_named_event(ear_flops_event_sets[sets],FP_ARITH_INST_RETIRED_PACKED_SINGLE_N))!=PAPI_OK){
 					ear_verbose(0,"FP_METRICS: PAPI_add_named_event %s.%s\n",FP_ARITH_INST_RETIRED_PACKED_SINGLE_N,PAPI_strerror(retval));
@@ -177,8 +188,11 @@ void stop_flops_metrics(long long *flops, long long *f_operations)
 			for (ev=0; ev < EAR_FLOPS_EVENTS;ev++)
 			{
 				f_operations[sets*EAR_FLOPS_EVENTS+ev] = ear_flops_values[sets][ev];
+
 				ear_flops_acum_values[sets][ev] += ear_flops_values[sets][ev];
+
 				*flops += (ear_flops_values[sets][ev] * FP_OPS_WEIGTH[sets][ev]);
+
 				ear_verbose(2,"[%d]=%llu x %d, ",ev,ear_flops_values[sets][ev],FP_OPS_WEIGTH[sets][ev]);
 			}
 			ear_verbose(2,"\n");
@@ -232,7 +246,7 @@ double gflops(unsigned long total_time,uint total_cores)
 
 int get_number_fops_events()
 {
-	return (EAR_FLOPS_EVENTS_SETS*EAR_FLOPS_EVENTS);
+	return (EAR_FLOPS_EVENTS_SETS * EAR_FLOPS_EVENTS);
 }
 
 void get_weigth_fops_instructions(int *weigth_vector)

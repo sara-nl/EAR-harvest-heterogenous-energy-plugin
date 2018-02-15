@@ -158,11 +158,9 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 
 				// Once min iterations is computed for performance accuracy we start computing application signature
 				EAR_STATE = EVALUATING_SIGNATURE;
-				metrics_start_computing_signature();
+				metrics_compute_signature_begin();
 				begin_iter = iterations;
 
-				// TODO: acoplamiento de ear_daemon/ear_node_energy_metrics
-				eru_init = read_dc_energy(); // Read DC energy
 				ear_debug(3, "EAR(%s) FIRST_ITERATION -> EVALUATING_SIGNATURE\n", ear_app_name);
 			}
 			break;
@@ -214,17 +212,12 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 			{
 				report = 1;
 
-				// TODO: acoplamiento de ear_daemon/ear_node_energy_metrics
-				// GET power consumption for this N iterations
-				eru_end = read_dc_energy();
-				eru_diff = energy_diff(eru_end, eru_init);
-
 				// TODO: (OK)
 				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
 						  __FILE__, period, N_iters);
 
 				N_iter = iterations - begin_iter;
-				curr_signature = metrics_end_compute_signature(eru_diff, N_iter, perf_accuracy_min_time);
+				metrics_end_compute_signature(curr_signature, N_iter, perf_accuracy_min_time);
 
 				if (curr_signature == NULL) {
 					comp_N_begin = metrics_time();
@@ -295,11 +288,11 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 			// I have executed N iterations more with a new frequency, we must check the signature
 			if (((iterations - 1) % perf_count_period) == 0)
 			{
+				// TODO: metrics_end_compute_signature
 				// GET power consumption for this N iterations
 				eru_end = read_dc_energy();
 				eru_diff = energy_diff(eru_end, eru_init);
 
-				// TODO: (OK)
 				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
 						  __FILE__, period, N_iters);
 
