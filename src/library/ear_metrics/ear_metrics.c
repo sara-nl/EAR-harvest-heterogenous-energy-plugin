@@ -109,11 +109,16 @@ static long long partial_time; // uS
 
 // TODO: remove, dummy
 application_t dummy;
+#define RAPL_DRAM0 		0
+#define RAPL_DRAM1 		1
+#define RAPL_PACKAGE0 		2
+#define RAPL_PACKAGE1 		3
+
 
 int metrics_init(int my_id)
 {
 	ulong flops_size;
-	ulong uncore_size;
+	ulong bandwith_size;
 	ulong rapl_size;
 
 	init_application(&dummy);
@@ -306,22 +311,22 @@ static void metrics_compute_signature_data(application_t *metrics, uint iteratio
 	metrics->TPI  = cas_counter * hw_cache_line_size / (double) partial_instructions;
 
 	// Energy IPMI
-	app->DC_power = (double) global_ipmi / ((double) time_s * 1000.0);
-	app->EDP = partial_time_s * partial_time_s * app->DC_power;
+	metrics->DC_power = (double) global_ipmi / ((double) partial_time_s * 1000.0);
+	metrics->EDP = partial_time_s * partial_time_s * metrics->DC_power;
 
 	// Energy RAPL
-	app->PCK_power  = (double) (partial_rapl[RAPL_PACKAGE0] + artial_rapl[RAPL_PACKAGE1]);
-	app->PCK_power  = (app->PCK_power / 1000000000.0) / partial_time_s;
-	app->DRAM_power = (double) (partial_rapl[RAPL_DRAM0] + partial_rapl[RAPL_DRAM1]);
-	app->DRAM_power = (app->DRAM_power / 1000000000.0) / time_s;
+	metrics->PCK_power  = (double) (partial_rapl[RAPL_PACKAGE0] + partial_rapl[RAPL_PACKAGE1]);
+	metrics->PCK_power  = (metrics->PCK_power / 1000000000.0) / partial_time_s;
+	metrics->DRAM_power = (double) (partial_rapl[RAPL_DRAM0] + partial_rapl[RAPL_DRAM1]);
+	metrics->DRAM_power = (metrics->DRAM_power / 1000000000.0) / partial_time_s;
 
 	// Basics
-	app->time = partial_time_s / (double) iterations;
-	app->instructions = partial_instructions;
-	app->cycles = partial_cycles;
-	app->L1_misses = partial_l1;
-	app->L2_misses = partial_l2;
-	app->L3_misses = partial_l3;
+	metrics->time = partial_time_s / (double) iterations;
+	metrics->instructions = partial_instructions;
+	metrics->cycles = partial_cycles;
+	metrics->L1_misses = partial_l1;
+	metrics->L2_misses = partial_l2;
+	metrics->L3_misses = partial_l3;
 }
 
 int metrics_compute_signature_finish(application_t *metrics, uint iterations, ulong min_time_us)
@@ -337,7 +342,7 @@ int metrics_compute_signature_finish(application_t *metrics, uint iterations, ul
 
 	//
 	// THINGS
-	metrics_compute_signature_data(iterations);
+	metrics_compute_signature_data(metrics, iterations);
 	metrics = NULL;
 
 	//

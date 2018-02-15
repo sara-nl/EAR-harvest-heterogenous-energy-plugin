@@ -21,6 +21,7 @@
 #include <ear_metrics/ear_metrics.h>
 #include <ear_frequency/ear_cpufreq.h>
 #include <externs.h>
+#include <states.h>
 
 // static defines
 #define NO_PERIOD			0
@@ -92,7 +93,7 @@ void states_end_period(int my_id, FILE *ear_fd, unsigned int size, int iteration
 	if (loop_with_signature)
 	{
 		ear_verbose(1, "EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",
-					current_loop_id, iterations, curr_signature->time * (double) iterations);
+					current_loop_id, iterations, curr_signature.time * (double) iterations);
 
 		//TODO: metrics_end_loop_extra_metrics
 	}
@@ -231,16 +232,16 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 					loop_with_signature = 1;
 					current_loop_id = event;
 
-					CPI = curr_signature->CPI;
-					GBS = curr_signature->GBS;
-					POWER = curr_signature->DC_power;
-					TPI = curr_signature->TPI;
-					TIME = curr_signature->time;
+					CPI = curr_signature.CPI;
+					GBS = curr_signature.GBS;
+					POWER = curr_signature.DC_power;
+					TPI = curr_signature.TPI;
+					TIME = curr_signature.time;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					begin_iter = iterations;
-					policy_freq = policy_power(0, curr_signature);
+					policy_freq = policy_power(0, &curr_signature);
 					PP = performance_projection(policy_freq);
 
 					if (policy_freq != prev_f)
@@ -250,8 +251,8 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 
 						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n", ear_app_name);
 
-						// TODO: DB COUPLED (db_copy_app(&last_signature, curr_signature))
-						memcpy(&last_signature, curr_signature, sizeof(application_t));
+						// TODO: DB COUPLED (db_copy_app(&last_signature, &curr_signature))
+						memcpy(&last_signature, &curr_signature, sizeof(application_t));
 					}
 					else
 					{
@@ -306,11 +307,11 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				else
 				{
 					// TODO: DB COUPLED (OK)
-					CPI = curr_signature->CPI;
-					GBS = curr_signature->GBS;
-					POWER = curr_signature->DC_power;
-					TPI = curr_signature->TPI;
-					TIME = curr_signature->time;
+					CPI = curr_signature.CPI;
+					GBS = curr_signature.GBS;
+					POWER = curr_signature.DC_power;
+					TPI = curr_signature.TPI;
+					TIME = curr_signature.time;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
@@ -323,7 +324,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 					// We compare the projection with the signature and the old signature
 					PP = performance_projection(policy_freq);
 
-					if (policy_ok(PP, curr_signature, &last_signature))
+					if (policy_ok(PP, &curr_signature, &last_signature))
 					{
 						perf_count_period = perf_count_period * 2;
 						ear_verbose(3,
@@ -338,7 +339,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 									ear_app_name, TIME, POWER, ENERGY, PP->Time, PP->Power, PP->Time * PP->Power);
 
 						//TODO: DB COUPLED
-						if (signature_has_changed(curr_signature, &last_signature))
+						if (signature_has_changed(&curr_signature, &last_signature))
 						{
 							EAR_STATE = SIGNATURE_HAS_CHANGED;
 							ear_verbose(3, "EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",
