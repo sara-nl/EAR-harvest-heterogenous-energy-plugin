@@ -21,7 +21,7 @@ typedef struct loop_info
 
 #define GENERIC_NAME	256
 #define POLICY_NAME	32
-#define FLOPS_EVENTS    16
+#define FLOPS_EVENTS    8
 
 typedef struct application
 {
