@@ -1,10 +1,17 @@
 #ifndef EAR_EAR_METRICS_H
 #define EAR_EAR_METRICS_H
 
+#include <types/application.h>
+
 int metrics_init(int my_id);
 void metrics_dispose(application_t *metrics);
 void metrics_compute_signature_begin();
 int metrics_compute_signature_finish(application_t *metrics, uint iterations, ulong min_time_us);
+
+static void metrics_global_start();
+static void metrics_global_stop();
+static void metrics_partial_start();
+static void metrics_partial_stop();
 
 /*
  *

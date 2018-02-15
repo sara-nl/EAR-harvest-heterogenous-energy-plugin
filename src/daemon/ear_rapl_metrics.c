@@ -13,13 +13,13 @@
 #include <ear_verbose.h>
 #include <ear_rapl_metrics.h>
 
-#define EAR_RAPL_EVENTS_SETS 	1
-#define CORE_AND_DRAM_SET 		0
+#define EAR_RAPL_EVENTS_SETS			1
+#define CORE_AND_DRAM_SET			0
 #define DRAM0 					0
 #define DRAM1 					1
 #define CORE0 					2
 #define CORE1 					3
-#define MAX_RAPL_EVENTS 		64
+#define MAX_RAPL_EVENTS				64
 
 PAPI_attach_option_t rapl_attach_opt[EAR_RAPL_EVENTS_SETS];
 long long ear_rapl_acum_values[EAR_RAPL_EVENTS_SETS][EAR_RAPL_EVENTS];
@@ -29,7 +29,7 @@ int ear_RAPLEventSets[EAR_RAPL_EVENTS_SETS];
 
 const PAPI_component_info_t *ear_rapl_cmpinfo = NULL;
 int ear_rapl_perf_event_cid;
-int ear_rapl_num_event s =0;
+int ear_rapl_num_events =0;
 
 int init_rapl_metrics()
 {

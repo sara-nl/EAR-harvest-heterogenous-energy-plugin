@@ -18,6 +18,7 @@
 #include <ear_metrics/ear_metrics.h>
 #include <ear_metrics/ear_flops_metrics.h>
 #include <ear_metrics/papi_generics.h>
+#include <ear_verbose.h>
 #include <types/application.h>
 #include <states.h>
 
@@ -77,6 +78,7 @@ static int hw_cache_line_size;
 static int hw_node_size;
 
 // Options
+static int papi_flops_supported;
 static int bandwith_elements;
 static int flops_elements;
 static int rapl_elements;
@@ -119,6 +121,7 @@ int metrics_init(int my_id)
 	if (my_id) return 1;
 
 	PAPI_INIT_TEST(__FILE__);
+	PAPI_INIT_MULTIPLEX_TEST(__FILE__);
 
 	// General hardware info by PAPI
 	hw_general = PAPI_get_hardware_info();
@@ -142,7 +145,7 @@ int metrics_init(int my_id)
 	flops_elements = get_number_fops_events();
 
 	// Allocation
-	uncore_elements = uncore_size / sizeof(long long);
+	bandwith_elements = uncore_size / sizeof(long long);
 	rapl_elements = rapl_size / sizeof(long long);
 	flops_size = sizeof(long long) * flops_elements;
 
@@ -198,7 +201,7 @@ static void metrics_global_stop()
 	// Accum calls
 	get_cache_metrics(&global_l1, &global_l2, &global_l3);
 	get_basic_metrics(&global_cycles, &global_instructions);
-	get_total_fops(&temp_total_flops, metrics_flops);
+	get_total_fops(global_flops);
 }
 
 /*           | Glob | Part || Start | Stop | Read | Get accum | Reset | Size
@@ -228,17 +231,17 @@ static void metrics_partial_start()
 
 static void metrics_partial_stop()
 {
-	long long aux_time;
+	long long aux_time, aux_flops;
 	ulong aux_energy;
 	int i;
 
 	partial_avg_frequency = ear_daemon_client_end_compute_turbo_freq();
-	ear_daemon_client_read_uncore(metrics_bandwith);
-	ear_daemon_client_read_rapl(metrics_rapl);
+	ear_daemon_client_read_uncore(partial_bandwith);
+	ear_daemon_client_read_rapl(partial_rapl);
 
 	stop_cache_metrics(&partial_l1, &partial_l2, &partial_l3);
 	stop_basic_metrics(&partial_cycles, &partial_instructions);
-	stop_flops_metrics(&temp_total_flops, metrics_flops);
+	stop_flops_metrics(&aux_flops, partial_flops);
 
 	// Manual bandwith accumulation
 	for (i = 0; i < bandwith_elements; i++) {
@@ -258,7 +261,7 @@ static void metrics_partial_stop()
 	// Manual time accumulation
 	aux_time = metrics_time();
 	partial_time = metrics_usecs_diff(aux_time, partial_time);
-	global_time += metrics_time;
+	global_time += partial_time;
 }
 
 static void metrics_reset()
@@ -280,7 +283,7 @@ void metrics_compute_signature_begin()
 	metrics_reset();
 
 	//
-	metrics_global_start();
+	metrics_partial_start();
 }
 
 static void metrics_compute_signature_data(uint iterations)
@@ -308,7 +311,7 @@ int metrics_compute_signature_finish(application_t *metrics, uint iterations, ul
 	metrics = NULL;
 
 	//
-	metrics_global_start();
+	metrics_partial_start();
 
 	return EAR_NOT_READY;
 	return EAR_SUCCESS;
