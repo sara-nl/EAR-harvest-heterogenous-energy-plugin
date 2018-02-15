@@ -513,6 +513,13 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	app_signature.EDP=EDP;
 	app_signature.def_f=app_info->def_f;
 	app_signature.policy_th=get_ear_power_policy_th();
+	
+	if (fops_supported)
+	{
+		for (i = 0; i < flops_events; i++) {
+			app_signature.FLOPS[i] += flops_metrics[i] * flops_weigth[i];
+		}
+	}
 
 	if ((power_model_policy == MONITORING_ONLY) &&
 			(ear_my_rank == 0) &&
