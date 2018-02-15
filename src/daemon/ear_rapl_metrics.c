@@ -14,8 +14,8 @@
 #include <ear_rapl_metrics.h>
 
 #define EAR_RAPL_EVENTS_SETS	1
-#define CORE_AND_DRAM_SET		0
-#define MAX_RAPL_EVENTS			64
+#define CORE_AND_DRAM_SET	0
+#define MAX_RAPL_EVENTS		64
 
 PAPI_attach_option_t rapl_attach_opt[EAR_RAPL_EVENTS_SETS];
 long long ear_rapl_acum_values[EAR_RAPL_EVENTS_SETS][EAR_RAPL_EVENTS];
@@ -227,16 +227,16 @@ void print_rapl_metrics()
 			for (events=0;events<EAR_RAPL_EVENTS;events++){
 				switch (events){
 					case RAPL_DRAM0:
-						ear_verbose(2,"ear_daemon_rapl:: Energy used by DRAM on package 0 (units nJ) %llu\n",ear_rapl_acum_values[sets][DRAM0]);
+						ear_verbose(2,"ear_daemon_rapl:: Energy used by DRAM on package 0 (units nJ) %llu\n",ear_rapl_acum_values[sets][RAPL_DRAM0]);
 						break;
 					case RAPL_DRAM1:
-						ear_verbose(2,"ear_daemon_rapl:: Energy used by DRAM on package 1 (units nJ) %llu\n",ear_rapl_acum_values[sets][DRAM1]);
+						ear_verbose(2,"ear_daemon_rapl:: Energy used by DRAM on package 1 (units nJ) %llu\n",ear_rapl_acum_values[sets][RAPL_DRAM1]);
 						break;
 					case RAPL_PACKAGE0:
-						ear_verbose(2,"ear_daemon_rapl:: Energy used by all cores in package 0 (units nJ) %llu\n",ear_rapl_acum_values[sets][CORE0]);
+						ear_verbose(2,"ear_daemon_rapl:: Energy used by all cores in package 0 (units nJ) %llu\n",ear_rapl_acum_values[sets][RAPL_PACKAGE0]);
 						break;
 					case RAPL_PACKAGE1:
-						ear_verbose(2,"ear_daemon_rapl:: Energy used by all cores in package 1 (units nJ) %llu\n",ear_rapl_acum_values[sets][CORE1]);
+						ear_verbose(2,"ear_daemon_rapl:: Energy used by all cores in package 1 (units nJ) %llu\n",ear_rapl_acum_values[sets][RAPL_PACKAGE1]);
 						break;
 					default:
 						ear_verbose(0,"ear_daemon_rapl:: Event not supported\n");
