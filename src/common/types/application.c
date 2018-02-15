@@ -37,20 +37,21 @@ int append_application_binary_file(char *path, application_t *app)
 
 static int print_application_fd(int fd, application_t *app)
 {
-    application_t *a;
+	application_t *a;
+	int i;
 
-    a = app;
-    dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
-    dprintf(fd, "%lu;%lu;", a->avg_f, a->def_f);
-    dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
-    dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
-    dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
-    dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
-    dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
-    dprintf(fd, "%lf;%llu", a->Gflops, app->FLOPS[0]);
+	a = app;
+	dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
+	dprintf(fd, "%lu;%lu;", a->avg_f, a->def_f);
+	dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
+	dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
+	dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
+	dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
+	dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
+	dprintf(fd, "%lf;%llu", a->Gflops, app->FLOPS[0]);
 
 	for (i = 1; i < FLOPS_EVENTS; ++i) {
-		printf(";%ll", app->FLOPS[i]);
+		dprintf(fd, ";%llu", app->FLOPS[i]);
 	}
 
     dprintf(fd, "\n");
@@ -68,7 +69,7 @@ int append_application_text_file(char *path, application_t *app)
 {
 	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;DEF.FREQ;AVG.FREQ;TIME;CPI;TPI;GBS;" \
         "DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
-        "L2_MISSES;L3_MISSES;GFLOPS;DPSINGLE_OPS;DP128_OPS;DP256_OPS;DP512_OPS";
+        "L2_MISSES;L3_MISSES;GFLOPS;[AVX_ARRAY]";
     int fd, ret;
 
     fd = open(path, O_WRONLY | O_APPEND);
