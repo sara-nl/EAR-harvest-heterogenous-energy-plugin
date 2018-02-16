@@ -36,3 +36,5 @@ Functional tests and test tools list
 | intel_pci_uncores_stress | Gets the total bandwith readed in the uncore counters after the execution of a program. |
 | papi_cpu_gflops          | Tests the GFlops values given by PAPI.                                                  |
 | simd_power_metrics       | Stress the AVX CPU hardware and computes some performance and power metrics.            |
+| energy_1_second          | Reports the DC node energy consumed after 1 second                                      |
+| energy_update_freq       | Reports the frequency at which the DC node energy is updated                            |
