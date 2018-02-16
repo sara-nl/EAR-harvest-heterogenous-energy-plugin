@@ -131,7 +131,7 @@ void evaluate(control_t *control)
 {
     static char *HEADER = "application;time_real;time_proj;time_error;" \
                           "power_real;power_proj;power_error;" \
-                          "cpi_real:cpi_proj:cpi_error";
+                          "cpi_real;cpi_proj;cpi_error";
     char buffer[32];
     double cpi0, tpi0, time0, power0;
     double cpip, tpip, timep, powerp;
