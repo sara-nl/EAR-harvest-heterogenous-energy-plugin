@@ -69,7 +69,7 @@ int append_application_text_file(char *path, application_t *app)
 {
 	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;" \
         "DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
-        "L2_MISSES;L3_MISSES;GFLOPS;[AVX_ARRAY]";
+        "L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;DP_512";
     int fd, ret;
 
     fd = open(path, O_WRONLY | O_APPEND);

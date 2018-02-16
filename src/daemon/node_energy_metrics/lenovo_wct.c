@@ -124,7 +124,7 @@ int lenovo_wct_count_energy_data_length()
 int lenovo_wct_read_dc_energy(unsigned long *energy)
 {
 	int ret;
-	uint32_t *energyp;
+	uint32_t my_energy=0;
 	int rs_len;
 	if (ipmi_ctx==NULL){ 
 		ear_verbose(0,"lenovo_water_cooling: IPMI context not initiallized\n");
@@ -144,10 +144,17 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
 		ear_verbose(0,"lenovo_water_cooling: ipmi_cmd_raw fails\n");
 		return EAR_ERROR;
 	}
-	// Last 4 bytes reports accumulated energy in Joules
-	energyp=(uint32_t *)&bytes_rs[rs_len-4];
-	// Energy values provided in this model are reported in Joules, the API returns uJ (multiply by 1.000.000)
-	*energy=(unsigned long)be32toh(*energyp)*1000000;
+	// Add 2 bytes to this format
+	// Byte 0:3           Epoch time (LSB first)
+	// Byte 4:5           mS portion of time (LSB first)
+	// Byte 6:9           energy accumulated since node was powered on, rebooted, or since last exception (LSB first, J) --> 8:11
+	// Byte 10:11       incremental energy reading 1 (LSB first, J)
+	// …
+	// Byte 209:210   incremental energy reading 100 (LSB first, J)
+ 	// RObert code: tmp=rsp->data[9] << 24 | rsp->data[8] << 16 | rsp->data[7] << 8 | rsp->data[6];
+	my_energy=bytes_rs[11]<<24|bytes_rs[10]<<16|bytes_rs[9]<<8|bytes_rs[8];
+	// Energy values provided in this model are reported in Joules, the API returns mJ (multiply by 1.000)
+	*energy=(unsigned long)my_energy*1000;
 	return EAR_SUCCESS;;
 }
 /* AC energy is not yet supported */

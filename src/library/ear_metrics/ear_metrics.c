@@ -513,6 +513,10 @@ void metrics_print_summary(unsigned int whole_app,int my_id, char* summary_file)
 	app_signature.EDP=EDP;
 	app_signature.def_f=app_info->def_f;
 	app_signature.policy_th=get_ear_power_policy_th();
+	app_signature.L1_misses=l1;
+	app_signature.L2_misses=l2;
+	app_signature.L3_misses=l3;
+	
 	
 	if (fops_supported)
 	{
