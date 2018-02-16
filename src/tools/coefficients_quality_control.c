@@ -333,6 +333,10 @@ int main(int argc, char *argv[])
 {
     control_t control;
 
+    if (argc == 1) {
+	usage(argv[0]);
+    }
+
     // Mode
     control.mode  = 1 * (strcmp(argv[1], "evaluate_coefficients") == 0);
     control.mode += 2 * (strcmp(argv[1], "read_coefficients") == 0);

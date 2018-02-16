@@ -131,32 +131,40 @@ int read_application_binary_file(char *path, application_t **apps)
     return i;
 }
 
-void scan_application_fd(int fd, application_t *app)
+int scan_application_fd(FILE *fd, application_t *app)
 {
-	application_t a;
+	application_t *a;
 	int ret;
 
 	a = app;
-	ret = fscanf(fd, "%[^;];%[^;];%[^;];%[^;];" \
-			         "%lu;%lu;",                \
-				     "%lf;%lf;%lf;%lf;"         \
-				     "%lf;%lf;%lf;"             \
-				 	 "%[^;];%lf;"               \
-				     "%llu;%llu;"               \
-				     "%llu;%llu;%llu;"          \
-				     "%lf;%llu;%llu;%llu;%llu;" \
-				     "%llu;%llu;%llu;%llu\n",
-				 a->user_id, a->job_id, a->node_id, a->app_id,
-				 a->avg_f, a->def_f,
-				 a->time, a->CPI, a->TPI, a->GBS,
-				 a->DC_power, a->DRAM_power, a->PCK_power,
-				 a->policy, a->policy_th,
-				 a->cycles, a->instructions,
-				 a->L1_misses, a->L2_misses, a->L3_misses,
-				 a->Gflops, a->FLOPS[0], a->FLOPS[1], a->FLOPS[2], a->FLOPS[3],
-				 a->FLOPS[4], a->FLOPS[5], a->FLOPS[6], a->FLOPS[7]
-	);
-
+	ret = fscanf(fd, "%[^;];%[^;];%[^;];%[^;];" 	\
+			 "%u;%u;"			\
+			 "%lf;%lf;%lf;%lf;"         	\
+			 "%lf;%lf;%lf;"             	\
+			 "%[^;];%lf;"			\
+			 "%llu;%llu;"			\
+			 "%llu;%llu;%llu;"		\
+			 "%lf;%llu;%llu;%llu;%llu;"	\
+			 "%llu;%llu;%llu;%llu\n",
+			 a->user_id, a->job_id, a->node_id, a->app_id,
+			 &a->avg_f, &a->def_f,
+			 &a->time, &a->CPI, &a->TPI, &a->GBS,
+			 &a->DC_power, &a->DRAM_power, &a->PCK_power,
+			 a->policy, &a->policy_th,
+			 &a->cycles, &a->instructions,
+			 &a->L1_misses, &a->L2_misses, &a->L3_misses,
+			 &a->Gflops, &a->FLOPS[0], &a->FLOPS[1], &a->FLOPS[2], &a->FLOPS[3],
+			 &a->FLOPS[4], &a->FLOPS[5], &a->FLOPS[6], &a->FLOPS[7]);
+			//xjaneas;186050;cmp2732.hpc.eu.lenovo.com;lu.C.40;
+			//2391300;2400000;
+			//65.213525;0.630188;16.127928;56.196067;
+			//309.145365;28.583028;250.009488;
+			//monitoring_only;0.000;
+			//153757064352;243985998085;
+			//3416960722;57720496;57720496;
+			//88.355544;0;0;0;0;
+			//42523989213;101525422018;0;0
+	print_application(app);
 	return ret;
 }
 
