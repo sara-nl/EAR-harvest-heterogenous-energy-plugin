@@ -95,14 +95,14 @@ static ulong metrics_ipmi[2]; // mJ
 static ulong metrics_avg_frequency[2]; // MHz
 static long long metrics_instructions[2];
 static long long metrics_cycles[2];
-static long long metrics_time[2]; // uS
+static long long metrics_usecs[2]; // uS
 static long long metrics_l1[2];
 static long long metrics_l2[2];
 static long long metrics_l3[2];
 
 //TODO: remove when all metrics were unified
-#define RAPL_DRAM0 			0
-#define RAPL_DRAM1 			1
+#define RAPL_DRAM0 		0
+#define RAPL_DRAM1 		1
 #define RAPL_PACKAGE0 		2
 #define RAPL_PACKAGE1 		3
 
@@ -141,7 +141,7 @@ static void metrics_global_stop()
 
 static void metrics_partial_start()
 {
-	metrics_time[LOO] = metrics_time[APP];
+	metrics_usecs[LOO] = metrics_usecs[APP];
 	metrics_ipmi[LOO] = metrics_ipmi[APP];
 
 	ear_daemon_client_begin_compute_turbo_freq();
@@ -184,8 +184,8 @@ static void metrics_partial_stop()
 
 	// Manual time accumulation
 	aux_time = metrics_time();
-	metrics_time[LOO] = metrics_usecs_diff(aux_time, metrics_time[LOO]);
-	metrics_time[APP] += metrics_time[LOO];
+	metrics_usecs[LOO] = metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
+	metrics_usecs[APP] += metrics_usecs[LOO];
 }
 
 static void metrics_reset()
@@ -198,7 +198,6 @@ static void metrics_reset()
 	reset_cache_metrics();
 }
 
-
 static void metrics_compute_signature_data(uint global, application_t *metrics, uint iterations)
 {
 	double time_s, cas_counter, aux;
@@ -208,7 +207,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	// instead the small time metrics for loops. 's' is just a signature index.
 	s = global;
 
-	time_s = (double) metrics_time[s] / 1000000.0;
+	time_s = (double) metrics_usecs[s] / 1000000.0;
 
 	// Transactions and cycles
 	aux = time_s * (double) (1024 * 1024 * 1024);
@@ -245,11 +244,11 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 
 	// FLOPS
 	for (i = 0; i < flops_elements; i++) {
-		app_info->FLOPS[i] = metrics_flops[s][i] * metrics_flops_weights[i];
-		app_info->Gflops += (double) app_info->FLOPS[i];
+		metrics->FLOPS[i] = metrics_flops[s][i] * metrics_flops_weights[i];
+		metrics->Gflops += (double) metrics->FLOPS[i];
 	}
 
-	app_info->Gflops = app_info->Gflops / 1000000000.0;
+	metrics->Gflops = metrics->Gflops / 1000000000.0;
 }
 
 int metrics_init(int my_id)
@@ -257,8 +256,6 @@ int metrics_init(int my_id)
 	ulong flops_size;
 	ulong bandwith_size;
 	ulong rapl_size;
-
-	init_application(&dummy);
 
 	if (my_id) return 1;
 
@@ -331,7 +328,7 @@ void metrics_dispose(application_t *metrics)
 
 void metrics_compute_signature_begin()
 {
-	metrics_time[LOO] = metrics_time();
+	metrics_usecs[LOO] = metrics_time();
 
 	//
 	metrics_partial_stop();
@@ -348,7 +345,7 @@ int metrics_compute_signature_finish(application_t *metrics, uint iterations, ul
 	metrics_reset();
 
 	//
-	if (metrics_time[LOO] < min_time_us) {
+	if (metrics_usecs[LOO] < min_time_us) {
 		return EAR_NOT_READY;
 	}
 

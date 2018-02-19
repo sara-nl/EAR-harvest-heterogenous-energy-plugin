@@ -211,12 +211,12 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 			if ((((iterations - 1) % perf_count_period) == 0) && (iterations > 1))
 			{
 				report = 1;
+				N_iter = iterations - begin_iter;
 
 				// TODO: (OK)
 				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
-						  __FILE__, period, N_iters);
+						  __FILE__, period, N_iter);
 
-				N_iter = iterations - begin_iter;
 				result = metrics_compute_signature_finish(&curr_signature, N_iter, perf_accuracy_min_time);
 				print_application(&curr_signature);
 
@@ -289,12 +289,12 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 			// I have executed N iterations more with a new frequency, we must check the signature
 			if (((iterations - 1) % perf_count_period) == 0)
 			{
-				// TODO: metrics_end_compute_signature
+				N_iter = iterations - begin_iter;
+				
 				// GET power consumption for this N iterations
 				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
-						  __FILE__, period, N_iters);
+						  __FILE__, period, N_iter);
 
-				N_iter = iterations - begin_iter;
 				result = metrics_compute_signature_finish(&curr_signature, N_iter, perf_accuracy_min_time);
 				print_application(&curr_signature);
 

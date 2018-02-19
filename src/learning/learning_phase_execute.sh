@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Edit architecture values
-export CORES=40
+export CORES=8
 export SOCKETS=2
-export CORES_PER_SOCKET=20
+export CORES_PER_SOCKET=16
 
 # Edit learning phase parameters
 export EAR_MIN_P_STATE=1

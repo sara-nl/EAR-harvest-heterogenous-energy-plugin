@@ -643,30 +643,39 @@ void main(int argc,char *argv[])
 
 	// Default p_state is set in argv[2], it is mandatory 
 	if (argc<2) Usage(argv[0]);
-	ear_daemon_environment();
+	
+	//ear_daemon_environment();
+	//ear_print_daemon_environment();
+	
 	// checking verbose
 	if (argc>=4){
 		EAR_VERBOSE_LEVEL=atoi(argv[3]);
+		printf("EL VERBOSE OSTIA %d\n", EAR_VERBOSE_LEVEL);
 		if ((EAR_VERBOSE_LEVEL<0)||(EAR_VERBOSE_LEVEL>4)) Usage(argv[0]);
 		set_ear_verbose(EAR_VERBOSE_LEVEL);
 	}
+
 	catch_signals();
+
 	// Default p_state
 	// We initialize frecuency 
-	if (ear_cpufreq_init()<0){
+	if (ear_cpufreq_init() < 0) {
 		ear_verbose(0,"eard: frequency information can not be initilised\n");
 		exit(1);
 	}
+
 	eard_max_pstate=atoi(argv[1]);
 	if (eard_max_pstate<0) Usage(argv[0]);
 	if (eard_max_pstate>=ear_get_num_p_states()) Usage(argv[0]);
 	ear_node_freq=ear_get_freq(eard_max_pstate);
 	eard_max_freq=ear_node_freq;
+
 	// We get nodename to create per_node files 
 	if (gethostname(nodename,sizeof(nodename))<0){
        		ear_verbose(0,"eard:Error getting node name.%s\n.Exiting\n",strerror(errno));
-			_exit(1);
+		_exit(1);
 	}
+
     // Argv[2] is the path where eard will create files
     if (argc>=3){ 
 		my_ear_tmp=argv[2];
@@ -685,7 +694,6 @@ void main(int argc,char *argv[])
 		ear_verbose(0,"eard:Invalid frequency %u\n",ear_node_freq);
 		eard_close_comm();
 	}
-	ear_print_daemon_environment();
 
 	// We initiaize uncore counters
 	cpu_model = get_model();
