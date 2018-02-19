@@ -39,6 +39,16 @@ function launching
     $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 MONITORING_ONLY
 }
 
+function launching_no_ear
+{
+    # MPI options
+    export I_MPI_PIN=1
+    export I_MPI_PIN_DOMAIN=auto
+
+    # Non-edit region
+    mpiexec.hydra  -n $2 -ppn $2 $BENCHS_BIN_PATH/$1 
+}
+
 function learning_phase
 {
     case "$1" in
@@ -51,7 +61,6 @@ function learning_phase
                     configuring lu $BENCHS_SRC_PATH/NPB3.3.1/NPB3.3-MPI $2 $CORES
                 ;;
             esac
-
             if [ "$BENCHS_MODE" == "compile" ]; then
                 mkdir -p $BENCH_SRC_PATH/bin
                 cd $BENCH_SRC_PATH;make $BENCHMARK CLASS=$CLASS NPROCS=$MPIS
@@ -60,6 +69,10 @@ function learning_phase
             if [ "$BENCHS_MODE" == "test" ]; then
                 export OMP_NUM_THREADS=1
                 launching $BENCHMARK.$CLASS.$MPIS $MPIS
+            fi
+            if [ "$BENCHS_MODE" == "test_no_ear" ]; then
+                export OMP_NUM_THREADS=1
+                launching_no_ear $BENCHMARK.$CLASS.$MPIS $MPIS
             fi
         ;;
         lu-mz|sp-mz|bt-mz)
@@ -82,6 +95,9 @@ function learning_phase
             if [ "$BENCHS_MODE" == "test" ]; then
                 launching $BENCHMARK.$CLASS.$MPIS $MPIS
             fi
+            if [ "$BENCHS_MODE" == "test_no_ear" ]; then
+                launching_no_ear $BENCHMARK.$CLASS.$MPIS $MPIS
+            fi
         ;;
         ua)
             configuring $1 $BENCHS_SRC_PATH/NPB3.3.1/NPB3.3-OMP $2 1
@@ -94,6 +110,10 @@ function learning_phase
             if [ "$BENCHS_MODE" == "test" ]; then
                 export OMP_NUM_THREADS=$CORES
                 launching $BENCHMARK.$CLASS.x $MPIS
+            fi
+            if [ "$BENCHS_MODE" == "test_no_ear" ]; then
+                export OMP_NUM_THREADS=$CORES
+                launching_no_ear $BENCHMARK.$CLASS.x $MPIS
             fi
         ;;
         dgemm)
@@ -109,6 +129,11 @@ function learning_phase
                 export MKL_NUM_THREADS=$CORES
                 launching dgemm_example $MPIS
             fi
+            if [ "$BENCHS_MODE" == "test_no_ear" ]; then
+                export KMP_AFFINITY=granularity=fine,compact,1,0
+                export MKL_NUM_THREADS=$CORES
+                launching_no_ear dgemm_example $MPIS
+            fi
         ;;
         stream)
             configuring stream_mpi $BENCHS_SRC_PATH/STREAM X $CORES
@@ -118,8 +143,14 @@ function learning_phase
                 mv $BENCH_SRC_PATH/stream_mpi $BENCHS_BIN_PATH
             fi
             if [ "$BENCHS_MODE" == "test" ]; then
+				ulimit -s unlimited
                 export OMP_NUM_THREADS=1
                 launching stream_mpi $MPIS
+            fi
+            if [ "$BENCHS_MODE" == "test_no_ear" ]; then
+				ulimit -s unlimited
+                export OMP_NUM_THREADS=1
+                launching_no_ear stream_mpi $MPIS
             fi
         ;;
         *)

@@ -16,11 +16,15 @@ void main(int argc,char *argv[])
 	// Init 
 	node_energy_init();
 	energy_freq=node_energy_frequency();
-	fprintf(stderr,"Energy changes every %u usecs....testing...sleeping %lu usecs\n",energy_freq,energy_freq*2);
-	read_dc_energy(&init);
-	usleep(energy_freq*2);
-	read_dc_energy(&end);	
-	fprintf(stderr,"Energy after %lu usecs %lu mJ (%lu-%lu)\n",energy_freq*2,(end-init),end,init);
+	if (energy_freq>0){
+		fprintf(stderr,"Energy changes every %u usecs....testing...sleeping %lu usecs\n",energy_freq,energy_freq*2);
+		read_dc_energy(&init);
+		usleep(energy_freq*2);
+		read_dc_energy(&end);	
+		fprintf(stderr,"Energy after %lu usecs %lu mJ (%lu-%lu)\n",energy_freq*2,(end-init),end,init);
+	}else{
+		fprintf(stderr,"Warning...DC node energy seems not being supported\n");
+	}
 	node_energy_dispose();
 
 }
