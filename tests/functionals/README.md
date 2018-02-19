@@ -19,6 +19,7 @@ How to use these commands
 # sudo LD_LIBRARY_PATH=freeipmi_lib_path tests/functionals/freeipmi_overhead
 # sudo LD_LIBRARY_PATH=freeipmi_lib_path tests/functionals/energy_1_second
 # sudo LD_LIBRARY_PATH=freeipmi_lib_path tests/functionals/energy_updates_freq
+# sudo ./bandwith_monitor
 
 simd_power_metrics uses freeipmi and papi. It also needs som arguments
 
