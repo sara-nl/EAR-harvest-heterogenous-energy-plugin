@@ -104,99 +104,135 @@ void ear_set_turbo()
 	int i;
 	for (i=0;i<ear_num_cpus;i++) cpufreq_modify_policy_governor(i,"performance");
 }
+
 void ear_set_userspace()
 {
 	int i;
 	for (i=0;i<ear_num_cpus;i++) cpufreq_modify_policy_governor(i,"userspace");
 }
 
-
-
 // END TURBO FUNCTIONALLITY
-
-
 
 int ear_cpufreq_init()
 {
-	int EAR_VERBOSE_LEVEL = 0;
-
 	int status,i,retval;
 	struct cpufreq_available_frequencies *list_f,*first;
-		ear_debug(3,"eard:: Reading cpu frequencies information\n");
-        //Init the PAPI library
-		if (PAPI_is_initialized()==PAPI_NOT_INITED){
-        	retval=PAPI_library_init(PAPI_VER_CURRENT );
-        	if ( (retval != PAPI_VER_CURRENT ) && (retval>0)){
-				ear_verbose(0,"eard: Papi can not be initialised \n");
-				return -1;
+	ear_debug(3,"eard:: Reading cpu frequencies information\n");
+        
+	//Init the PAPI library
+	if (PAPI_is_initialized()==PAPI_NOT_INITED)
+	{
+        	retval=PAPI_library_init(PAPI_VER_CURRENT);
+
+        	if ((retval != PAPI_VER_CURRENT) && (retval>0))
+		{
+			ear_verbose(0,"eard: Papi can not be initialised \n");
+			return -1;
         	}
-		}
-		ear_cpufreq_hwinfo= PAPI_get_hardware_info();
-        if (ear_cpufreq_hwinfo==NULL){
+	}
+
+	printf("1 %d\n", EAR_VERBOSE_LEVEL);
+	ear_cpufreq_hwinfo = PAPI_get_hardware_info();
+        printf("2\n");
+
+	if (ear_cpufreq_hwinfo==NULL){
 			ear_verbose(0,"eard: PAPI_get_hardware_info \n");
 			return -1;
-        }else{
+        } else {
+		printf("3\n");
 		// 1- We detect the number of cpus based on papi information
 		ear_num_cpus=ear_cpufreq_hwinfo->sockets*ear_cpufreq_hwinfo->cores*ear_cpufreq_hwinfo->threads;
-		ear_verbose(2,"eard: %u cpus detected (sockets %u cores %u threads %u)\n",ear_num_cpus,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
-		}
-		ear_cpufreq=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus); 
-		if (ear_cpufreq==NULL){
-			ear_verbose(0,"eard: malloc return NULL in ear_cpufreq_init\n");
-			return -1;
-		}
-		// 2-We check all the cpus are online, we should detect cores but
-		// we start with this approach
-		for (i=0;i<ear_num_cpus;i++){
-        	        status=cpufreq_cpu_exists(i);
-					ear_cpufreq[i]=0;
-                	if (status==0){
-                	        ear_cpufreq[i]=cpufreq_get(i);
-                	}
-        }
-		// 3-We are assuming all the cpus supports the same set of frequencies
-		// we check for cpu 0
-        	list_f=cpufreq_get_available_frequencies(0);
-        	first=list_f;
-        	while(list_f!=NULL){
-               list_f=list_f->next;
-				ear_num_p_states++;
-        	}
-			ear_verbose(2,"eard: %d p_states available\n",ear_num_p_states);
-			// 4-Detecting the list of pstates available
-			ear_cpufreq_pstates=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_p_states);
-			if (ear_cpufreq_pstates==NULL){
-				ear_verbose(0,"eard: malloc return NULL in ear_cpufreq_init\n");
-				return -1;
-			}
+		
+		ear_verbose(2, "eard: %u cpus detected (sockets %u cores %u threads %u)\n",
+			ear_num_cpus, ear_cpufreq_hwinfo->sockets, ear_cpufreq_hwinfo->cores, ear_cpufreq_hwinfo->threads);
+	}
+	printf("3 - %u\n", ear_num_cpus);
+
+	ear_cpufreq = (unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus); 
+	printf("4\n");	
+
+	if (ear_cpufreq == NULL)
+	{
+		ear_verbose(0,"eard: malloc return NULL in ear_cpufreq_init\n");
+		return -1;
+	}
 	
-		list_f=first;
-		i=0;
-        	while(list_f!=NULL){
-			ear_cpufreq_pstates[i]=list_f->frequency;	
-                	list_f=list_f->next;
-			ear_debug(3,"eard::: P_state %d is %u\n",i,ear_cpufreq_pstates[i]);
-			i++;
-		}	
+	// 2-We check all the cpus are online, we should detect cores but
+	// we start with this approach
+	for (i=0;i<ear_num_cpus;i++)
+	{
+                status = cpufreq_cpu_exists(i);
+		ear_cpufreq[i]=0;
+
+               	if (status==0)
+		{
+               	        ear_cpufreq[i]=cpufreq_get(i);
+                }
+        }
+
+	// 3-We are assuming all the cpus supports the same set of frequencies
+	// we check for cpu 0
+        list_f = cpufreq_get_available_frequencies(0);
+	ear_verbose(2,"eard: %d p_states available\n",ear_num_p_states);
+        
+	if (ear_num_p_states == 0) {
+		ear_verbose(0, "%s: 0 P_STATEs detected, make sure the CPUPower driver is working properly\n", __FILE__);
+	}
+
+	first=list_f;
+        
+	while(list_f != NULL)
+	{
+		list_f=list_f->next;
+		ear_num_p_states++;
+        }
+	
+			
+	// 4-Detecting the list of pstates available
+	ear_cpufreq_pstates = (unsigned long *) malloc(sizeof(unsigned long) * ear_num_p_states);
+			
+	if (ear_cpufreq_pstates == NULL) {
+		ear_verbose(0," eard: malloc return NULL in ear_cpufreq_init\n");
+		return -1;
+	}
+	
+	list_f=first;
+	i=0;
+        	
+	while(list_f!=NULL)
+	{
+		ear_cpufreq_pstates[i]=list_f->frequency;	
+               	list_f=list_f->next;
+		ear_debug(3,"eard::: P_state %d is %u\n",i,ear_cpufreq_pstates[i]);
+		i++;
+	}
+
 		ear_nominal_freq=ear_cpufreq_pstates[1];
 		ear_verbose(2,"eard: Nominal frequency set to %u\n",ear_nominal_freq);
+
 		// this functions releases the memory allocated in cpufreq_get_available_frequencies function
 		cpufreq_put_available_frequencies(first);
+	
 		// we get (and latter put) the current policy=governor
+		
 		current_policy=cpufreq_get_policy(0);
 		prev_policy.min=current_policy->min;
 		prev_policy.max=current_policy->max;
+
 		prev_policy.governor=(char *)malloc(strlen(current_policy->governor)+1);
 		strcpy(prev_policy.governor,current_policy->governor);
+		
 		ear_verbose(1,"eard::: Saving current governor %s\n",current_policy->governor);
 		cpufreq_put_policy(current_policy);
 		ear_set_userspace();
-#ifdef EAR_BOOST
+
+	#ifdef EAR_BOOST
 		// Initializing code to estimate cpu frequency when turbo is activated
 		aperf_init(ear_num_cpus);
 		for (i=0;i<ear_num_cpus;i++) aperf_init_cpu(i,ear_nominal_freq);
-#endif
-		return 0;
+	#endif
+	
+	return 0;
 }
 
 unsigned long ear_max_f()
