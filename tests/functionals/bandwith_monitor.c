@@ -41,6 +41,13 @@ char* format_ull(ull n)
     return _buffer;
 }
 
+void usage(char *app)
+{
+	printf("Usage: sudo ./%s num_seconds\n",app);
+	printf("reports the memory bandwith every seconds during num_seconds seconds\n");
+	exit(0);
+}
+
 int main (int argc, char *argv[])
 {
     double gbytes;
@@ -50,6 +57,11 @@ int main (int argc, char *argv[])
     int num_counters;
     int cpu_model;
     int i, j = 0;
+	int num_steps;
+
+    if (argc<2) usage(argv[0]);
+
+    num_steps=atoi(argv[1]);
 
     printf("Testing %s\n", argv[1]);
     cpu_model = get_model(85);
@@ -57,8 +69,10 @@ int main (int argc, char *argv[])
     num_counters = init_uncores(cpu_model);
     printf("Uncores detected: \t%i\n", num_counters);
 
-    while(j < 10)
+    while(j < num_steps)
     {
+		total_bytes=0;
+		total_cas=0;
         printf("-------------------------- Working\n");
         start_uncores();
         reset_uncores();
@@ -75,7 +89,7 @@ int main (int argc, char *argv[])
         gbytes = ((double) total_bytes) / 1000000000.0;
 
         printf("-------------------------- Summary\n");
-        printf("Total Gbytes transferred: %0.3lf bytes\n", gbytes);
+        printf("%0.3lf GB/sec.\n", gbytes);
         ++j;
     }
 
