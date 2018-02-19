@@ -120,7 +120,6 @@ void ear_set_userspace()
 
 int ear_cpufreq_init()
 {
-	int EAR_VERBOSE_LEVEL = 0;
 
 	int status,i,retval;
 	struct cpufreq_available_frequencies *list_f,*first;
@@ -140,7 +139,7 @@ int ear_cpufreq_init()
         }else{
 		// 1- We detect the number of cpus based on papi information
 		ear_num_cpus=ear_cpufreq_hwinfo->sockets*ear_cpufreq_hwinfo->cores*ear_cpufreq_hwinfo->threads;
-		ear_verbose(2,"eard: %u cpus detected (sockets %u cores %u threads %u)\n",ear_num_cpus,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
+		printf("verbose %d eard: %u cpus detected (sockets %u cores %u threads %u)\n",EAR_VERBOSE_LEVEL,ear_num_cpus,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
 		}
 		ear_cpufreq=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus); 
 		if (ear_cpufreq==NULL){

@@ -314,11 +314,14 @@ unsigned long node_energy_frequency()
 {
 	unsigned long init, end,min_interval;
 	struct timeval begin_time,end_time;
+	int try=0;
 	if (node_energy_ops.read_dc_energy!=NULL){
 		node_energy_ops.read_dc_energy(&init);
 		do{		
 			node_energy_ops.read_dc_energy(&end);
-		}while(init==end);
+			try++;
+		}while((init==end) && (try<5000));
+		if (try==5000) return 0;
 		gettimeofday(&begin_time,NULL);
 		init=end;
 		do{
