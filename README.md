@@ -26,6 +26,7 @@ EAR requires some third party libraríes and headers to compile and run, in addi
 | FreeIPMI  | Yes                   | 1.5.7           | [Website](https://www.gnu.org/software/freeipmi/) |
 | SLURM     | Just for SLURM plugin | 17.02.6         | [Website](https://slurm.schedmd.com/)             |
 | MPI       | Yes                   | -               | -                                                 |
+| MPIIFORT  | Just for some benchs  | -               | -                                                 |
 
 Brief installation guide
 ------------------------
