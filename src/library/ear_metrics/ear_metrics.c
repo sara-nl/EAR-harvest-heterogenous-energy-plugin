@@ -88,7 +88,7 @@ static int rapl_elements;
 #define APP 1 // application
 
 static long long *metrics_flops[2]; // (vec)
-static long long *metrics_flops_weights; // (vec)
+static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[2]; // ops (vec)
 static ull *metrics_rapl[2]; // nJ (vec)
 static ulong metrics_ipmi[2]; // mJ
@@ -214,7 +214,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	cas_counter = 0.0;
 
 	for (i = 0; i < bandwith_elements; ++i) {
-		cas_counter = (double) metrics_bandwith[s][i];
+		cas_counter += (double) metrics_bandwith[s][i];
 	}
 
 	metrics->GBS += cas_counter * hw_cache_line_size / aux;
@@ -272,6 +272,7 @@ int metrics_init(int my_id)
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
 	ear_debug(2, "(%s): cache line size is %0.2lf bytes\n", __FILE__, hw_cache_line_size);
+	DEBUG_F(0, "detected cache line has a size %0.2lf bytes", hw_cache_line_size);
 
 	// Accessable metrics
 	init_basic_metrics();
@@ -287,6 +288,10 @@ int metrics_init(int my_id)
 	rapl_elements = rapl_size / sizeof(long long);
 	bandwith_elements = bandwith_size / sizeof(long long);
 	flops_size = sizeof(long long) * flops_elements;
+
+	DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
+	DEBUG_F(0, "detected %d FLOP counter", flops_elements);
+	DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);
 
 	metrics_bandwith[LOO] = malloc(bandwith_size);
 	metrics_bandwith[APP] = malloc(bandwith_size);
@@ -304,12 +309,15 @@ int metrics_init(int my_id)
 	{
 		metrics_flops[APP] = (long long *) malloc(flops_size);
 		metrics_flops[LOO] = (long long *) malloc(flops_size);
+		metrics_flops_weights = (int *) malloc(flops_size);
 
 		if (metrics_flops[LOO] == NULL || metrics_flops[APP] == NULL)
 		{
 			ear_verbose(0,"EAR: Error allocating memory in %s metrics\n", __FILE__);
 			exit(1);
 		}
+
+		get_weigth_fops_instructions(metrics_flops_weights);
 	}
 
 	metrics_global_start();
@@ -394,4 +402,19 @@ void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *m
 	*nom_f = ear_get_nominal_frequency();
 	strcpy(CPU_model,hw_general->model_string);
 	strcpy(CPU_name,hw_general->vendor_string);
+}
+
+void metrics_get_app_name(char *app_name)
+{
+	const PAPI_exe_info_t *prginfo = NULL;
+
+	PAPI_INIT_TEST(__FILE__);
+
+	if ((prginfo = PAPI_get_executable_info()) == NULL)
+	{
+		ear_verbose(0,"EAR(%s): Executable info not available. Exiting\n", __FILE__);
+		exit(2);
+	}
+
+	strcpy(app_name,prginfo->fullname);
 }
