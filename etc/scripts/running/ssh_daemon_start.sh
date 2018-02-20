@@ -32,7 +32,7 @@ source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
 
 for i in ${HOSTLIST}
 do
-        echo "Executing ear_daemon in node=${i} p_state=$2 tmpdir=${EAR_TMP} verbose=${EAR_VERBOSE}"
+    echo "Executing ear_daemon in node=${i} p_state=$2 tmpdir=${EAR_TMP} verbose=${EAR_VERBOSE}"
 
 	if [ "x$1" == "xlocal" ]
 	then

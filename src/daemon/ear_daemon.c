@@ -629,29 +629,36 @@ void Usage(char *app)
 	fprintf(stderr,"\tEAR_TMP is used as default path, then TMP or HOME, in this order\n"); 
 	_exit(1);
 }
+
 void main(int argc,char *argv[])
 {
-	char *my_ear_tmp;
-	fd_set rfds,rfds_basic;
-	int numfds_ready,numfds_req=0;
-	unsigned long ear_node_freq,ear_ok=1;
-	int i,  cpu_model,ret;
-	int max_fd=-1;
-	sigset_t eard_mask;
 	struct timeval tv,*my_to;
 	char ear_commreq[MAX_PATH_SIZE];
+	unsigned long ear_node_freq;
+	int numfds_ready, numfds_req = 0;
+	fd_set rfds, rfds_basic;
+	int i,  cpu_model, ret;
+	sigset_t eard_mask;
+	char *my_ear_tmp;
+	int max_fd = -1;
 
-	// Default p_state is set in argv[2], it is mandatory 
-	if (argc<2) Usage(argv[0]);
-	
-	//ear_daemon_environment();
-	//ear_print_daemon_environment();
-	
+	// binary P_STATE <path.to.tmp> verbosity_level
+	if (argc < 2) {
+		Usage(argv[0]);
+	}
+
+	//TODO: habría que revisar todo esto
+	ear_daemon_environment();
+
 	// checking verbose
-	if (argc>=4){
-		EAR_VERBOSE_LEVEL=atoi(argv[3]);
-		printf("EL VERBOSE OSTIA %d\n", EAR_VERBOSE_LEVEL);
-		if ((EAR_VERBOSE_LEVEL<0)||(EAR_VERBOSE_LEVEL>4)) Usage(argv[0]);
+	if (argc >= 4)
+	{
+		EAR_VERBOSE_LEVEL = atoi(argv[3]);
+
+		if ((EAR_VERBOSE_LEVEL < 0) || (EAR_VERBOSE_LEVEL > 4)) {
+			Usage(argv[0]);
+		}
+
 		set_ear_verbose(EAR_VERBOSE_LEVEL);
 	}
 
@@ -664,25 +671,26 @@ void main(int argc,char *argv[])
 		exit(1);
 	}
 
-	eard_max_pstate=atoi(argv[1]);
-	if (eard_max_pstate<0) Usage(argv[0]);
-	if (eard_max_pstate>=ear_get_num_p_states()) Usage(argv[0]);
-	ear_node_freq=ear_get_freq(eard_max_pstate);
-	eard_max_freq=ear_node_freq;
+	eard_max_pstate = atoi(argv[1]);
+	if (eard_max_pstate < 0) Usage(argv[0]);
+	if (eard_max_pstate >= ear_get_num_p_states()) Usage(argv[0]);
+	ear_node_freq = ear_get_freq(eard_max_pstate);
+	eard_max_freq = ear_node_freq;
 
 	// We get nodename to create per_node files 
-	if (gethostname(nodename,sizeof(nodename))<0){
-       		ear_verbose(0,"eard:Error getting node name.%s\n.Exiting\n",strerror(errno));
+	if (gethostname(nodename, sizeof(nodename)) < 0) {
+		ear_verbose(0, "%s: Error getting node name (%s)", __FILE__, strerror(errno));
 		_exit(1);
 	}
 
     // Argv[2] is the path where eard will create files
-    if (argc>=3){ 
-		my_ear_tmp=argv[2];
+    if (argc >= 3){
+		my_ear_tmp = argv[2];
 		set_ear_tmp(my_ear_tmp);
     }else{
-		my_ear_tmp=get_ear_tmp();
-    }   
+		my_ear_tmp = get_ear_tmp();
+    }
+
 	strcpy(ear_tmp,my_ear_tmp);
     eard_lock(ear_tmp,nodename);
 	// At this point, only one daemon is running
