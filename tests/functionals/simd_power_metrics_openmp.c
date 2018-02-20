@@ -22,11 +22,12 @@
 #include <papi.h>
 
 #include <ear_rapl_metrics.h>
-#include <ear_metrics/ear_flops_metrics.h>
-#include <ear_metrics/ear_stalls.h>
-#include <ear_metrics/ear_basic.h>
 #include <ear_frequency.h>
 #include <ear_turbo.h>
+
+#include <metrics/flops.h>
+#include <metrics/stalls.h>
+#include <metrics/instructions.h>
 #include <types/generic.h>
 #include <hardware.h>
 

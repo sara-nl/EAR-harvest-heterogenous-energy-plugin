@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <papi.h>
-#include <ear_metrics/ear_basic.h>
+
+#include <metrics/instructions.h>
 
 #define EAR_BASIC_EVENTS_SETS	1
 #define EAR_BASIC_EVENTS		2

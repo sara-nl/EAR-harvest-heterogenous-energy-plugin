@@ -13,13 +13,13 @@
 #include <papi.h>
 
 #include <ear_daemon_client.h>
-#include <ear_metrics/ear_basic.h>
-#include <ear_metrics/ear_cache.h>
-#include <ear_metrics/ear_metrics.h>
-#include <ear_metrics/ear_flops_metrics.h>
-#include <ear_metrics/papi_generics.h>
 #include <ear_verbose.h>
+
 #include <types/application.h>
+#include <metrics/instructions.h>
+#include <metrics/generics.h>
+#include <metrics/cache.h>
+#include <metrics/flops.h>
 #include <states.h>
 
 /*
@@ -27,7 +27,7 @@
  ********************
  *            | P?   | D | Type              | Size F.| Accum/Int. | Unit | Notes
  * ---------- | ---- | - | ----------------- | ------ | ---------- | ---- | ----------------------------
- * Basics     | PAPI | x | * long long (x2)  | No     | Yes/Yes    | num  | No read (just accum)
+ * Instructs  | PAPI | x | * long long (x2)  | No     | Yes/Yes    | num  | No read (just accum)
  * Cache      | PAPI | x | * long long (x3)  | No     | Yes/Yes    | num  | No read (just accum)
  * Stalls     | PAPI | x | * long long       | No     | Yes/Yes    | num  | No read (just accum)
  * Flops      | PAPI | x | * long long (vec) | Yes    | Yes/Yes    | ops  | No read (just accum)
@@ -62,10 +62,10 @@
  ********
  *            | File                          | Notes
  * ---------- | ----------------------------- | ----------------------------------------------------
- * Basics     | ear_basic.c                   |
- * Cache      | ear_cache.c                   |
- * Cache      | ear_stalls.c                  |
- * Flops      | ear_flops_metrics.c           | Los weights se pueden descuadrar si falla un evento.
+ * Basics     | instructions.c                |
+ * Cache      | cache.c                       |
+ * Cache      | stalls.c                      |
+ * Flops      | flops.c                       | Los weights se pueden descuadrar si falla un evento.
  * RAPL       | ear_rapl_metrics.c            | Las posiciones se pueden descuadrar si falla un evento.
  * IPMI       | ear_node_energy_metrics.c     | Tiene una función que devuelve el size, para que?
  * Bandwith   | ear_uncores.c                 | Per Integrated Memory Controller, PCI bus.
@@ -130,7 +130,7 @@ static void metrics_global_stop()
 
 /*           | Glob | Part || Start | Stop | Read | Get accum | Reset | Size
 * ---------- | ---- | ---- || ----- | ---- | ---- | --------- | ----- | ----
-* Basics     | v    | v    || v     | v    | x    | v         | v     | x
+* Instructs. | v    | v    || v     | v    | x    | v         | v     | x
 * Cache      | v    | v    || v     | v    | x    | v         | v     | x
 * Flops      | v    | v    || v     | v    | x    | v         | v     | x
 * RAPL       | v    | v    || v     | v    | x    | x         | x     | v* (daemon)
