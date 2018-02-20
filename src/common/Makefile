@@ -1,5 +1,4 @@
-DIR    = $(ROOTDIR)/src/common
-CFLAGS = -I$(DIR) -fPIC $(CONSTANTS)
+CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 
 ####### 
 
@@ -7,7 +6,10 @@ export DIR
 
 ######## FILES
 
-BINARIES = ear_daemon_client.o environment.o hardware.o string_enhanced.o types.a
+TYPES_OBJS = types/application.o \
+             types/projection.o
+
+BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a
 
 ######## RULES
 
@@ -22,16 +24,14 @@ ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
 environment.o: environment.c environment.h
 	$(CC) $(CFLAGS) -c environment.c
 
-hardware.o: hardware.c hardware.h
-	$(CC) $(CFLAGS) -c hardware.c
-
 string_enhanced.o: string_enhanced.c string_enhanced.h
 	$(CC) $(CFLAGS) -c string_enhanced.c
 
-types.a: types/application.o types/projection.o
-	ar rvs types.a types/application.o types/projection.o string_enhanced.o
+types.a: $(TYPES_OBJS)
+	ar rvs types.a $(TYPES_OBJS) string_enhanced.o
 
 install:
 
 clean:
-	rm -rf $(BINARIES)
+	rm -rf *.o *.so *.a
+	rm -f $(TYPES_OBJS)

@@ -15,11 +15,13 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <ear_verbose.h>
-#include <ear_daemon_common.h>
-#include <ear_daemon_client.h>
-#include <types/generic.h>
-#include <states.h>
+
+#include <common/ear_verbose.h>
+#include <common/ear_daemon_common.h>
+#include <common/ear_daemon_client.h>
+
+#include <common/types/generic.h>
+#include <common/states.h>
 
 static int ear_daemon_client_connected=0;
 static int ear_fd_req[ear_daemon_client_requests],ear_fd_ack[ear_daemon_client_requests];

@@ -19,18 +19,17 @@
 #include <sys/select.h>
 #include <linux/limits.h>
 
-#include <ear_daemon_common.h>
-#include <ear_frequency.h>
-#include <ear_node_energy_metrics.h>
-#include <ear_uncores.h>
-#include <ear_verbose.h>
+#include <daemon/ear_frequency.h>
 
-#include <types/generic.h>
+#include <metrics/ipmi/energy_node.h>
+#include <metrics/custom/bandwidth.h>
+#include <metrics/custom/hardware_info.h>
 #include <metrics/papi/energy_cpu.h>
-
-#include <environment.h>
-#include <hardware.h>
-#include <states.h>
+#include <common/ear_daemon_common.h>
+#include <common/ear_verbose.h>
+#include <common/types/generic.h>
+#include <common/environment.h>
+#include <common/states.h>
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)

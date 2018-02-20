@@ -1,8 +1,8 @@
 #ifndef _EAR_DAEMON_COMMON_H
 #define _EAR_DAEMON_COMMON_H
 
-#include <types/generic.h>
-#include <types/application.h>
+#include <common/types/generic.h>
+#include <common/types/application.h>
 
 // Data type to send the requests
 union daemon_req_opt {

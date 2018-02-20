@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <papi.h>
 
+#include <metrics/custom/hardware_info.h>
 #include <metrics/papi/cache.h>
-#include <common/hardware.h>
 #include <common/states.h>
 
 #define EAR_CACHE_EVENTS_SETS 3
