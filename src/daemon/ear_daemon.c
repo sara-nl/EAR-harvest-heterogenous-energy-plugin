@@ -34,7 +34,7 @@
 #define MAX_PATH_SIZE 	256
 #define RAPL_METRICS 	4
 
-const char *__NAME__ = "EARD";
+static const char *__NAME__ = "EARD";
 
 char database_bin_path[PATH_MAX];
 char database_csv_path[PATH_MAX];
