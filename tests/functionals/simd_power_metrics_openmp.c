@@ -1,3 +1,10 @@
+/*    This program is part of the Energy Aware Runtime (EAR).
+    It has been developed in the context of the BSC-Lenovo Collaboration project.
+    
+    Copyright (C) 2017  
+    BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
+        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
+*/
 #define _GNU_SOURCE
 #include <math.h>
 #include <sched.h>
@@ -31,8 +38,8 @@ uint test = 0;
 
 int open_csv()
 {
-    const char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;TPI;GBS;"  \
-        "GFLOPS_1_proces;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;POLICY;POLICY_TH;" \
+    const char *HEADER = "JOB_ID;NODENAME;APPNAME;AVG.FREQ;TIME;CPI;"  \
+        "GFLOPS_1_proces;DC-NODE-POWER;DRAM-POWER;PCK-POWER;DEF.FREQ;" \
         "TOTAL_INST;CORES\n";
     const char *FILE = "sim_metrics.csv";
 
@@ -140,6 +147,7 @@ int main (int argc, char *argv[])
         test = i_test;
         energy_raw = 0;
         energy_dram_raw = 0;
+		if (test_available(i_test,cpu)){
 
         #pragma omp parallel firstprivate(test) shared(dc_energy_init, dc_energy_end, exec_time, \
         frequency, metrics, papi_flops, total_flops,cycles,inst) num_threads(n_threads)
@@ -271,12 +279,18 @@ int main (int argc, char *argv[])
 
         if (csv)
         {
-            sprintf(buffer, "NA;%d;%s;%s;%lu;%lf;%lf;0.0;0.0;%lf;%lf;%lf;%lf;%lu;" \
-                "MONITORING_NO_EAR;0.0;%lu;%u\n", getpid(), nodename, get_test_name(test, cpu),
+            sprintf(buffer, "%d;%s;%s;%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lu;" \
+                "%lu;%u\n", getpid(), nodename, get_test_name(test, cpu),
                 frequency, time_s, (double) cycles / (double) inst, flops_m, power_dc_w,
                 power_dram_w, power_raw_w, F, (unsigned long) INST_ITER * n_iterations, n_threads);
             write(fd, buffer, strlen(buffer));
         }
+		}else{ // This test is not available
+            sprintf(buffer, "%d;%s;%s;%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lu;" \
+                "%lu;%u\n", getpid(), nodename, get_test_name(test, cpu),
+                0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, F, 0, 0);
+            write(fd, buffer, strlen(buffer));
+		}
     }
 
     ear_cpufreq_set_node(F_BASE);

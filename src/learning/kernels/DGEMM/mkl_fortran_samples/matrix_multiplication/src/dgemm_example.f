@@ -83,7 +83,7 @@
       PRINT *, "subroutine"
       endif
       CALL DGEMM('N','N',M,N,P,ALPHA,A,M,B,P,BETA,C,M)
-      DO I=1, 5
+      DO I=1, 9
       CALL DGEMM('N','N',M,N,P,ALPHA,A,M,B,P,BETA,C,M)
       END DO
       if (rank .eq. 0) then
