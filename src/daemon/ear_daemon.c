@@ -29,14 +29,16 @@
 #include <hardware.h>
 #include <states.h>
 
+#define max(a,b) (a>b?a:b)
+#define min(a,b) (a<b?a:b)
+#define MAX_PATH_SIZE 	256
+#define RAPL_METRICS 	4
+
+const char *__NAME__ = "EARD";
+
 char database_bin_path[PATH_MAX];
 char database_csv_path[PATH_MAX];
 
-char my_errno[1024];
-#define max(a,b) (a>b?a:b)
-#define min(a,b) (a<b?a:b)
-#define MAX_PATH_SIZE 256
-#define RAPL_METRICS 4
 int ear_fd_req[ear_daemon_client_requests];
 int ear_fd_ack[ear_daemon_client_requests];
 unsigned long eard_max_freq;
@@ -109,19 +111,25 @@ void eard_lock(char *tmp_dir,char *nodename)
 	}
 	chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
 	sprintf(eard_lock_file,"%s/%s.eard_lock",tmp_dir,nodename);
-	if ((eard_lockf=open(eard_lock_file,O_WRONLY|O_CREAT|O_EXCL,S_IRUSR|S_IWUSR))<0){ 
-		if (errno!=EEXIST){
-			ear_verbose(0,"eard: error, creating lock file %s fails: %s\n",eard_lock_file,strerror(errno));
+
+	if ((eard_lockf=open(eard_lock_file,O_WRONLY|O_CREAT|O_EXCL,S_IRUSR|S_IWUSR))<0)
+	{
+		if (errno!=EEXIST)
+		{
+			ear_verbose(0,"eard: error, creating lock file %s fails (%s)\n",
+						eard_lock_file, strerror(errno));
 		}
-		else {ear_verbose(0,"eard: Error opening daemon lock file in %s. Exiting.%s\n",nodename,strerror(errno));}
+		else {ear_verbose(0, "eard: Error opening daemon lock file in %s (%s)\n",
+						  nodename, strerror(errno));}
 		exit(0);
 	}
 }
+
 void eard_unlock()
 {
 	close(eard_lockf);
 	ear_verbose(2,"eard: removing file %s\n",eard_lock_file);
-	if (unlink(eard_lock_file)<0) ear_verbose(0,"eard error when removing lock file %s:%s\n",eard_lock_file,strerror(errno));
+	if (unlink(eard_lock_file)<0) ear_verbose(0, "eard error when removing lock file %s:%s\n",eard_lock_file,strerror(errno));
 }
 
 // Creates a pipe to receive requests for applications. eard creates 1 pipe (per node) and service to receive requests
@@ -664,10 +672,9 @@ void main(int argc,char *argv[])
 
 	catch_signals();
 
-	// Default p_state
-	// We initialize frecuency 
+	// We initialize frecuency
 	if (ear_cpufreq_init() < 0) {
-		ear_verbose(0,"eard: frequency information can not be initilised\n");
+		VERBOSE_N(0, "ERROR, frequency information can't be initialized");
 		exit(1);
 	}
 
@@ -678,8 +685,9 @@ void main(int argc,char *argv[])
 	eard_max_freq = ear_node_freq;
 
 	// We get nodename to create per_node files 
-	if (gethostname(nodename, sizeof(nodename)) < 0) {
-		ear_verbose(0, "%s: Error getting node name (%s)", __FILE__, strerror(errno));
+	if (gethostname(nodename, sizeof(nodename)) < 0)
+	{
+		VERBOSE_N(0, "Error getting node name (%s)", strerror(errno));
 		_exit(1);
 	}
 
@@ -696,7 +704,9 @@ void main(int argc,char *argv[])
 	// At this point, only one daemon is running
 
 	ear_verbose(1,"Starting eard...................pid %d\n",getpid());
-	ear_verbose(2,"eard: Creating comm files in %s with default freq %u verbose set to %d\n",nodename,ear_node_freq,EAR_VERBOSE_LEVEL);	
+	ear_verbose(2,"eard: Creating comm files in %s with default freq %u verbose set to %d\n",
+				nodename,ear_node_freq,EAR_VERBOSE_LEVEL);
+
 	// We set the default frequency
 	if (ear_cpufreq_set_node(ear_node_freq)==0){
 		ear_verbose(0,"eard:Invalid frequency %u\n",ear_node_freq);
