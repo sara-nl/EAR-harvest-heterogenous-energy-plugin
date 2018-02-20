@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Edit architecture values
-export CORES=8
+export CORES=16
 export SOCKETS=2
-export CORES_PER_SOCKET=16
+export CORES_PER_SOCKET=8
 
 # Update paths
 export EAR_SRC_PATH=$HOME/git/EAR
@@ -13,10 +13,11 @@ source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
 export BENCHS_MODE=$1
 export EAR_P_STATE=1
 
-if [ "$1" != "compile" ] && [ "$1" != "test" ]; then
-    echo $"Usage: $0 {compile|test}"
+if [ "$1" != "compile" ] && [ "$1" != "test" ] && [ "$1" != "test_no_ear" ]; then
+    echo $"Usage: $0 {compile|test|test_no_ear}"
     exit 0
 fi
+
 
 # Compiling or executing the different kernels
 learning_phase lu-mpi C

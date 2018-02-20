@@ -131,7 +131,7 @@ void evaluate(control_t *control)
 {
     static char *HEADER = "application;time_real;time_proj;time_error;" \
                           "power_real;power_proj;power_error;" \
-                          "cpi_real:cpi_proj:cpi_error";
+                          "cpi_real;cpi_proj;cpi_error";
     char buffer[32];
     double cpi0, tpi0, time0, power0;
     double cpip, tpip, timep, powerp;
@@ -332,6 +332,10 @@ void usage(char *app)
 int main(int argc, char *argv[])
 {
     control_t control;
+
+    if (argc == 1) {
+	usage(argv[0]);
+    }
 
     // Mode
     control.mode  = 1 * (strcmp(argv[1], "evaluate_coefficients") == 0);

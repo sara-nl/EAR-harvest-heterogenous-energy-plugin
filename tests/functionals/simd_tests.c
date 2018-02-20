@@ -1,3 +1,10 @@
+/*    This program is part of the Energy Aware Runtime (EAR).
+    It has been developed in the context of the BSC-Lenovo Collaboration project.
+    
+    Copyright (C) 2017  
+    BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
+        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
+*/
 #define _GNU_SOURCE
 #include <math.h>
 #include <string.h>
@@ -1288,4 +1295,20 @@ uint get_test_ops(int index,int cpu)
 
     }
 }
-
+int test_available(int i,int cpu)
+{
+	switch(i){
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+			return 1;
+		case 6:
+		case 7:
+		case 8:
+			 if ((cpu==CPU_SKYLAKE) || (cpu==CPU_SKYLAKE_X)) return 1;
+			else return 0;
+	}
+}

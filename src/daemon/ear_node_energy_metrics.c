@@ -249,6 +249,14 @@ int node_energy_init()
 			node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
 			node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
+		}else if (strstr(my_p_name,"SR650")!=NULL){
+			// It is an air colling system
+			ear_verbose(0,"ear_daemon: Product name %s detected \n",my_p_name);
+			node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
+			node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
+			node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
+			node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
+			node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}else if (strstr(my_p_name,"SD650")!=NULL){
 			//OceanCat
 			ear_verbose(0,"ear_daemon: Product name %s detected \n",my_p_name);
@@ -306,11 +314,14 @@ unsigned long node_energy_frequency()
 {
 	unsigned long init, end,min_interval;
 	struct timeval begin_time,end_time;
+	int try=0;
 	if (node_energy_ops.read_dc_energy!=NULL){
 		node_energy_ops.read_dc_energy(&init);
 		do{		
 			node_energy_ops.read_dc_energy(&end);
-		}while(init==end);
+			try++;
+		}while((init==end) && (try<5000));
+		if (try==5000) return 0;
 		gettimeofday(&begin_time,NULL);
 		init=end;
 		do{

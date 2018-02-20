@@ -64,17 +64,23 @@ int append_application_binary_file(char *path, application_t *app)
 
 static int print_application_fd(int fd, application_t *app)
 {
-    application_t *a;
+	application_t *a;
+	int i;
 
-    a = app;
-    dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
-    dprintf(fd, "%lu;%lu;", a->avg_f, a->def_f);
-    dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
-    dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
-    dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
-    dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
-    dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
-    dprintf(fd, "%lf;%llu;%llu;%llu;%llu", a->Gflops, (ull) 0, (ull) 0, (ull) 0, (ull) 0);
+	a = app;
+	dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
+	dprintf(fd, "%lu;%lu;", a->avg_f, a->def_f);
+	dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
+	dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
+	dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
+	dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
+	dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
+	dprintf(fd, "%lf;%llu", a->Gflops, app->FLOPS[0]);
+
+	for (i = 1; i < FLOPS_EVENTS; ++i) {
+		dprintf(fd, ";%llu", app->FLOPS[i]);
+	}
+
     dprintf(fd, "\n");
 
     return EAR_SUCCESS;
@@ -87,9 +93,9 @@ int print_application(application_t *app)
 
 int append_application_text_file(char *path, application_t *app)
 {
-	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;DEF.FREQ;AVG.FREQ;TIME;CPI;TPI;GBS;" \
+	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;" \
         "DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
-        "L2_MISSES;L3_MISSES;GFLOPS;DPSINGLE_OPS;DP128_OPS;DP256_OPS;DP512_OPS";
+        "L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;DP_512";
     int fd, ret;
 
     fd = open(path, O_WRONLY | O_APPEND);
@@ -151,6 +157,34 @@ int read_application_binary_file(char *path, application_t **apps)
     return i;
 }
 
+int scan_application_fd(FILE *fd, application_t *app)
+{
+	application_t *a;
+	int ret;
+
+	a = app;
+	ret = fscanf(fd, "%[^;];%[^;];%[^;];%[^;];" \
+			 "%u;%u;" \
+			 "%lf;%lf;%lf;%lf;" \
+			 "%lf;%lf;%lf;" \
+			 "%[^;];%lf;" \
+			 "%llu;%llu;" \
+			 "%llu;%llu;%llu;" \
+			 "%lf;%llu;%llu;%llu;%llu;"	\
+			 "%llu;%llu;%llu;%llu\n",
+			 a->user_id, a->job_id, a->node_id, a->app_id,
+			 &a->avg_f, &a->def_f,
+			 &a->time, &a->CPI, &a->TPI, &a->GBS,
+			 &a->DC_power, &a->DRAM_power, &a->PCK_power,
+			 a->policy, &a->policy_th,
+			 &a->cycles, &a->instructions,
+			 &a->L1_misses, &a->L2_misses, &a->L3_misses,
+			 &a->Gflops, &a->FLOPS[0], &a->FLOPS[1], &a->FLOPS[2], &a->FLOPS[3],
+			 &a->FLOPS[4], &a->FLOPS[5], &a->FLOPS[6], &a->FLOPS[7]);
+
+	return ret;
+}
+
 int read_application_text_file(char *path, application_t **apps)
 {
     char line[PIPE_BUF];
@@ -181,13 +215,7 @@ int read_application_text_file(char *path, application_t **apps)
     i = 0;
     a = apps_aux;
 
-    #define READ_SUMMARY()                                                                          \
-    ret = fscanf(fd, "%[^;];%[^;];%[^;];%[^;];%lu;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%u;%[^;];%lf\n",  \
-          a->user_id, a->job_id, a->node_id, a->app_id, &a->avg_f, &a->time, &a->CPI, &a->TPI, \
-          &a->GBS, &a->Gflops, &a->DC_power, &a->DRAM_power, &a->PCK_power, &a->def_f, a->policy,   \
-          &a->policy_th)
-
-    while((READ_SUMMARY()) > 0)
+    while(scan_application_fd(fd, a) > 0)
     {
         i += 1;
         a = &apps_aux[i];
