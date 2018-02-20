@@ -17,10 +17,10 @@
 #include <ear_verbose.h>
 
 #include <types/application.h>
-#include <metrics/instructions.h>
-#include <metrics/generics.h>
-#include <metrics/cache.h>
-#include <metrics/flops.h>
+#include <metrics/papi/instructions.h>
+#include <metrics/papi/generics.h>
+#include <metrics/papi/cache.h>
+#include <metrics/papi/flops.h>
 #include <states.h>
 
 /*

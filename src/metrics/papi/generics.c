@@ -3,6 +3,8 @@
 #include <string.h>
 #include <papi.h>
 
+#include <metrics/papi/generics.h>
+
 
 void metrics_get_app_name(char *app_name)
 {

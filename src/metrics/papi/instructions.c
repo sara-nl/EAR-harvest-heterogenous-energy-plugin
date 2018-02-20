@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <papi.h>
 
-#include <metrics/instructions.h>
+#include <metrics/papi/instructions.h>
 
 #define EAR_BASIC_EVENTS_SETS	1
 #define EAR_BASIC_EVENTS		2

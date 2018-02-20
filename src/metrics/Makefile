@@ -1,35 +1,23 @@
-CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS = $(PAPI_LDFLAGS)
-
 ######## FILES
 
-BINARIES = generics.o \
-           cache.o    \
-           flops.o    \
-           instructions.o \
-           stalls.o
+COMPONENTS = custom \
+             papi
 
 ######## RULES
 
-all: $(BINARIES)
+all:
+	@ for i in $(COMPONENTS); do \
+		$(MAKE) -C $${i} all || exit; \
+	done
 
-generics.o: generics.c generics.h
-	$(CC) $(CFLAGS) -c generics.c $(LDFLAGS)
-
-cache.o: cache.c cache.h
-	$(CC) $(CFLAGS) -c cache.c $(LDFLAGS)
-
-flops.o: flops.c flops.h
-	$(CC) $(CFLAGS) -c flops.c $(LDFLAGS)
-
-instructions.o: instructions.c instructions.h
-	$(CC) $(CFLAGS) -c instructions.c $(LDFLAGS)
-
-stalls.o: stalls.c stalls.h
-	$(CC) $(CFLAGS) -c stalls.c $(LDFLAGS)
+######## OPTIONS
 
 install:
+	@ for i in $(COMPONENTS); do \
+		$(MAKE) -S -C $${i} install; \
+	done
 
 clean:
-	rm -rf $(BINARIES)
-	rm -f *.so *.o
+	@ for i in $(COMPONENTS); do \
+		$(MAKE) -C $${i} clean; \
+	done

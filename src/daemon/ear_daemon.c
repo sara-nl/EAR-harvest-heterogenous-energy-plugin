@@ -7,24 +7,27 @@
 
 */
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/select.h>
 #include <string.h>
-#include <errno.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/select.h>
 #include <linux/limits.h>
+
 #include <ear_daemon_common.h>
 #include <ear_frequency.h>
-#include <ear_rapl_metrics.h>
 #include <ear_node_energy_metrics.h>
 #include <ear_uncores.h>
 #include <ear_verbose.h>
+
 #include <types/generic.h>
+#include <metrics/papi/energy_cpu.h>
+
 #include <environment.h>
 #include <hardware.h>
 #include <states.h>
