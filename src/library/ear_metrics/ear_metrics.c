@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <papi.h>
 
+#include <ear_metrics/ear_metrics.h>
 #include <ear_daemon_client.h>
 #include <ear_verbose.h>
 

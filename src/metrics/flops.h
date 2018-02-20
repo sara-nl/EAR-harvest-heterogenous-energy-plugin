@@ -11,11 +11,11 @@
 
 int init_flops_metrics();
 
-int reset_flops_metrics();
+void reset_flops_metrics();
 
-int start_flops_metrics();
+void start_flops_metrics();
 
-int stop_flops_metrics(long long *total_flops, long long *f_operations);
+void stop_flops_metrics(long long *total_flops, long long *f_operations);
 
 int get_number_fops_events();
 
