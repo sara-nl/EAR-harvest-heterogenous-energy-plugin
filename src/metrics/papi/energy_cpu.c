@@ -11,11 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ear_verbose.h>
-#include <ear_rapl_metrics.h>
+#include <metrics/papi/energy_cpu.h>
 
 #define EAR_RAPL_EVENTS_SETS	1
-#define CORE_AND_DRAM_SET	0
-#define MAX_RAPL_EVENTS		64
+#define CORE_AND_DRAM_SET		0
+#define MAX_RAPL_EVENTS			64
 
 PAPI_attach_option_t rapl_attach_opt[EAR_RAPL_EVENTS_SETS];
 long long ear_rapl_acum_values[EAR_RAPL_EVENTS_SETS][EAR_RAPL_EVENTS];

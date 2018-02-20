@@ -21,13 +21,13 @@
 #include <immintrin.h> // -mavx -mfma -mfavx512
 #include <papi.h>
 
-#include <ear_rapl_metrics.h>
 #include <ear_frequency.h>
 #include <ear_turbo.h>
 
-#include <metrics/flops.h>
-#include <metrics/stalls.h>
-#include <metrics/instructions.h>
+#include <metrics/papi/flops.h>
+#include <metrics/papi/stalls.h>
+#include <metrics/energy_cpu.h>
+#include <metrics/papi/instructions.h>
 #include <types/generic.h>
 #include <hardware.h>
 

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <papi.h>
 
-#include <metrics/stalls.h>
+#include <metrics/papi/stalls.h>
 
 #define EAR_STALL_EVENTS_SETS 1
 #define EAR_STALL_EVENTS 2

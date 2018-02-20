@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <papi.h>
 
-#include <metrics/cache.h>
+#include <metrics/papi/cache.h>
 #include <common/hardware.h>
 #include <common/states.h>
 

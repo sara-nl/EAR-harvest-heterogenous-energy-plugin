@@ -12,7 +12,7 @@
 
 #include <common/ear_verbose.h>
 
-#include <metrics/flops.h>
+#include <metrics/papi/flops.h>
 #include <common/environment.h>
 #include <common/hardware.h>
 

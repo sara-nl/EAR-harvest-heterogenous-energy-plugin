@@ -1,5 +1,5 @@
-DIR     = $(ROOTDIR)/src/daemon
-CFLAGS  = -I$(DIR) -I$(ROOTDIR)/src/common $(CONSTANTS)
+DIR     = $(SRCDIR)/daemon
+CFLAGS  = -I(SRCDIR) -I$(SRCDIR)/common $(CONSTANTS)
 LDFLAGS = $(PAPI_LDFLAGS) $(IPMI_LDFLAGS) $(CPUF_LDFLAGS) -ldl
 
 ######## VARS
@@ -10,12 +10,11 @@ export DIR
 
 COMPONENTS = uncore_architectures node_energy_metrics
 
-OUTER_OBJS = $(ROOTDIR)/src/common/environment.o \
-             $(ROOTDIR)/src/common/hardware.o \
-             $(ROOTDIR)/src/common/types.a
+OUTER_OBJS = $(SRCDIR)/common/environment.o \
+             $(SRCDIR)/common/hardware.o \
+             $(SRCDIR)/common/types.a
 
 OBJS = ear_frequency.o    \
-       ear_rapl_metrics.o \
        ear_turbo.o
 
 ENERGY_OBJS = node_energy_metrics/ibm.o        \
@@ -41,9 +40,6 @@ ear_turbo.o: ear_turbo.c ear_turbo.h
 
 ear_frequency.o: ear_frequency.c ear_frequency.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
-
-ear_rapl_metrics.o: ear_rapl_metrics.c ear_rapl_metrics.h
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c ear_rapl_metrics.c
 
 ear_node_energy_metrics.o: ear_node_energy_metrics.c ear_node_energy_metrics.h
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) $(IPMI_CFLAGS) -c ear_node_energy_metrics.c

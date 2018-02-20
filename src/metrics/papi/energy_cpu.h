@@ -28,5 +28,6 @@ int start_rapl_metrics();
 int stop_rapl_metrics(unsigned long long *values);
 // Prints rapl metrics in the stderr. Returns 0 on success and -1 on error.
 void print_rapl_metrics();
+
 #else
 #endif
