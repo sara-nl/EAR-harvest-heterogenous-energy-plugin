@@ -6,7 +6,6 @@ COMPONENTS = common   \
 #             learning \
 #             metrics  \
 #             tools
-
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
