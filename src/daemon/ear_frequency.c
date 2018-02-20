@@ -13,7 +13,7 @@
 #include <cpufreq.h>
 #define _GNU_SOURCE
 #define __USE_GNU
-#include <ear_turbo.h>
+#include "../metrics/custom/frequency.h"
 #include <ear_verbose.h>
 #include <states.h>
 

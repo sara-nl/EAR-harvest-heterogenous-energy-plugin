@@ -15,7 +15,6 @@
         ear_verbose(0,"%s: WARNING, %s\n", file, PAPI_strerror(papi_multi_test));	\
 	}
 
-
 //
 void metrics_get_app_name(char *app_name);
 

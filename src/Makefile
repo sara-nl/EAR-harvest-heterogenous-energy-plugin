@@ -1,11 +1,12 @@
 ######## FILES
 
 COMPONENTS = common   \
-             library  \
-             daemon   \
-             learning \
-             metrics  \
-             tools
+             library
+#             daemon   \
+#             learning \
+#             metrics  \
+#             tools
+
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif

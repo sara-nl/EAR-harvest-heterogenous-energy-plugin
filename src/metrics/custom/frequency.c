@@ -52,7 +52,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <ear_turbo.h>
+#include "frequency.h"
 
 // INTEL APERF/MPERF MSR registers
 //
