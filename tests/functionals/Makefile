@@ -10,7 +10,8 @@ BINARIES = bandwith_monitor       \
            freeipmi_overhead      \
            simd_power_metrics_openmp \
 		   energy_1_second \
-		   energy_updates_freq
+		   energy_updates_freq \
+		   test_architecture
 
 ######## RULES
 
@@ -49,6 +50,8 @@ energy_1_second:energy_1_second.c $(NODE_ENERGY_LIB)
 energy_updates_freq:energy_updates_freq.c $(NODE_ENERGY_LIB) 
 	gcc -o energy_updates_freq $(CFLAGS)  energy_updates_freq.c $(NODE_ENERGY_FLAGS)
 
+test_architecture:test_architecture.c $(ROOTDIR)/src/common/hardware.o
+	gcc $(PAPI_CFLAGS) $(CFLAGS) -o test_architecture test_architecture.c $(ROOTDIR)/src/common/hardware.o  $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 ######## OPTIONS
 
 clean:
