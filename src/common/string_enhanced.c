@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-#include <string_enhanced.h>
+#include <common/string_enhanced.h>
 
 static char _buffer[3][32];
 static uint _digits;

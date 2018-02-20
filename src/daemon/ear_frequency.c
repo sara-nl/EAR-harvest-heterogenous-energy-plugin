@@ -9,13 +9,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <papi.h>
 #include <cpufreq.h>
+#include <papi.h>
+
 #define _GNU_SOURCE
 #define __USE_GNU
-#include "../metrics/custom/frequency.h"
-#include <ear_verbose.h>
-#include <states.h>
+
+#include <daemon/ear_frequency.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
 
 static const char *__NAME__ = "EARD_FREQ";
 

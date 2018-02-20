@@ -8,16 +8,17 @@
 */
 
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 #include <sys/time.h>
 #include <freeipmi/freeipmi.h>
-#include "../custom/hardware_info.h"
-#include <node_energy_metrics/lenovo_act.h>
-#include <node_energy_metrics/lenovo_wct.h>
-#include <node_energy_metrics/ibm.h>
-#include <ear_verbose.h>
+
+#include <metrics/custom/hardware_info.h>
+#include <metrics/ipmi/energy_node/lenovo_act.h>
+#include <metrics/ipmi/energy_node/lenovo_wct.h>
+#include <metrics/ipmi/energy_node/ibm.h>
+#include <common/ear_verbose.h>
 
 #define FUNCVERB(function)                               \
     ear_debug(4, "ear_daemon(node_energy) " function "\n");

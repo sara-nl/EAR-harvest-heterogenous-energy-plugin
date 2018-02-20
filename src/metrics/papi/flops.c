@@ -10,11 +10,10 @@
 #include <stdlib.h>
 #include <papi.h>
 
-#include <common/ear_verbose.h>
-
+#include <metrics/custom/hardware_info.h>
 #include <metrics/papi/flops.h>
 #include <common/environment.h>
-#include <common/hardware.h>
+#include <common/ear_verbose.h>
 
 #define EAR_FLOPS_EVENTS_SETS		2
 #define EAR_FLOPS_EVENTS		4

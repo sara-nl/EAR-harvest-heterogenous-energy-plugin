@@ -9,7 +9,7 @@
 #ifndef _EAR_TYPES_APPLICATION
 #define _EAR_TYPES_APPLICATION
 
-#include <types/generic.h>
+#include <common/types/generic.h>
 
 typedef struct loop_info
 {

@@ -9,9 +9,8 @@
 #ifndef _EAR_DAEMON_CLIENT_H
 #define _EAR_DAEMON_CLIENT_H
 
-#include <ear_daemon_common.h>
-#include <types/generic.h>
-
+#include <common/ear_daemon_common.h>
+#include <common/types/generic.h>
 
 int ear_daemon_client_connect();
 void ear_daemon_client_disconnect();

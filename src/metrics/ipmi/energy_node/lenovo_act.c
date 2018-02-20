@@ -16,9 +16,10 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 #include <freeipmi/freeipmi.h>
-#include <ear_verbose.h>
-#include <hardware.h>
-#include <states.h>
+
+#include <metrics/custom/hardware_info.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 

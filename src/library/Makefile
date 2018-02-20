@@ -11,10 +11,16 @@ export LDFLAGS
 
 ######## FILES
 
-OUTER_OBJS = $(ROOTDIR)/src/common/ear_daemon_client.o \
-             $(ROOTDIR)/src/common/environment.o \
-             $(ROOTDIR)/src/common/hardware.o \
-             $(ROOTDIR)/src/common/types.a
+METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
+               $(SRCDIR)/metrics/papi/generics.o \
+               $(SRCDIR)/metrics/papi/cache.o \
+               $(SRCDIR)/metrics/papi/flops.o \
+               $(SRCDIR)/metrics/papi/instructions.o \
+               $(SRCDIR)/metrics/papi/stalls.o
+
+COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
+              $(SRCDIR)/common/environment.o \
+              $(SRCDIR)/common/types.a
 
 OBJS = ear_states/ear_states.o           \
        ear_dynais/ear_dynais.o           \
@@ -34,6 +40,7 @@ BINARIES = libear.so libeart.so
 .PHONY:
 
 all: libear.so 
+
 traces: libeart.so
 
 %.a: %.c
@@ -42,17 +49,17 @@ traces: libeart.so
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
-libear.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
-	$(CC) $(CFLAGS) -o libear.so $(OBJS) $(OUTER_OBJS) $(LDFLAGS)
+libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
+	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 
-libeart.so: $(OBJS) $(OUTER_OBJS) $(LIBRARIES)
+libeart.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 	touch ear_states/ear_states.c
 	touch ear_dyn_inst/ear_api.c
 	touch ear_gui/ear_gui.c
 	$(MAKE) -C ear_states CFLAGS='$(CFLAGS) -DEAR_GUI' ear_states.o
 	$(MAKE) -C ear_gui CFLAGS='$(CFLAGS) -DEAR_GUI' ear_gui.o
 	$(MAKE) -C ear_dyn_inst CFLAGS='$(CFLAGS) -DEAR_GUI' ear_api.o
-	$(CC) $(CFLAGS) -o libeart.so $(OBJS) $(OUTER_OBJS) $(LIBRARIES) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 	touch ear_states/ear_states.c
 	touch ear_dyn_inst/ear_api.c
 	touch ear_gui/ear_gui.c
@@ -65,16 +72,5 @@ install:
 install_traces:
 	mv libeart.so $(DESTDIR)/lib/libeart.so
 
-SUB_DIRS = ear_states    \
-           ear_dyn_inst  \
-           ear_dynais    \
-           ear_frequency \
-           ear_gui       \
-           ear_metrics   \
-           ear_models
-
 clean:
-	@ for i in $(SUB_DIRS); do  \
-		$(MAKE) -C $${i} clean; \
-	done
-	rm -f $(BINARIES)
+	rm -f $(BINARIES) $(OBJS)

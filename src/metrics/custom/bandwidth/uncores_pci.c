@@ -76,11 +76,12 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <linux/limits.h>
-#include <ear_verbose.h>
-#include <uncore_architectures/pci_uncores.h>
-#include <types/generic.h>
-#include <hardware.h>
-#include <states.h>
+
+#include <metrics/custom/hardware_info.h>
+#include <metrics/custom/bandwidth/uncores_pci.h>
+#include <common/types/generic.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
 
 #define IJKFOR(i_len, j_len, k_len) \
     for(i = 0; i < i_len; i++)      \
