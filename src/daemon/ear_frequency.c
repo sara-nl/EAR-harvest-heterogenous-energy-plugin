@@ -16,15 +16,17 @@
 #include <ear_turbo.h>
 #include <ear_verbose.h>
 
+const char *__NAME__ = "EARD_FREQ";
+
+static const PAPI_hw_info_t *hw_general_info;
+struct cpufreq_policy *current_policy;
+struct cpufreq_policy prev_policy;
 
 unsigned int ear_num_cpus;
 unsigned long *ear_cpufreq;
 unsigned int ear_num_p_states=0;
 unsigned long *ear_cpufreq_pstates;
 unsigned long ear_nominal_freq;
-const PAPI_hw_info_t *ear_cpufreq_hwinfo;
-struct cpufreq_policy *current_policy;
-struct cpufreq_policy prev_policy;
 
 unsigned int ear_get_pstate(unsigned long f)
 {
@@ -89,7 +91,7 @@ unsigned long ear_end_compute_turbo_freq()
 	unsigned long freq=0,new_freq;
 	int i;
 	ear_debug(2,"EAR_DAEMON:: EAR_end_compute_turbo_freq\n");
-	for (i=0;i<ear_num_cpus;i++){ 
+	for (i=0;i<ear_num_cpus;i++){
 		aperf_get_avg_frequency_end(i,&new_freq);
 		freq+=new_freq;
 	}
@@ -118,8 +120,6 @@ int ear_cpufreq_init()
 	struct cpufreq_available_frequencies *list_f, *first;
 	int status, i, retval;
 
-	ear_debug(3, "eard:: Reading cpu frequencies information\n");
-        
 	//TODO: generalize
 	if (PAPI_is_initialized()==PAPI_NOT_INITED)
 	{
@@ -128,32 +128,31 @@ int ear_cpufreq_init()
 		if ((retval != PAPI_VER_CURRENT) && (retval>0))
 		{
 			ear_verbose(0,"eard: Papi can not be initialised \n");
-			return -1;
+			return EAR_ERROR;
 		}
 	}
 
-	ear_cpufreq_hwinfo = PAPI_get_hardware_info();
-
-	if (ear_cpufreq_hwinfo == NULL)
+	// Reading hardware information
+	if ((hw_general_info = PAPI_get_hardware_info()) == NULL)
 	{
-		ear_verbose(0,"eard: PAPI_get_hardware_info \n");
-		return -1;
+		VERBOSE_N(0, "PAPI hardware scanning returned NULL");
+		return EAR_ERROR;
 	} else {
 		// 1- We detect the number of cpus based on papi information
-		ear_num_cpus = ear_cpufreq_hwinfo->sockets *
-					   ear_cpufreq_hwinfo->cores *
-					   ear_cpufreq_hwinfo->threads;
-		
-		ear_verbose(2, "eard: %u cpus detected (sockets %u cores %u threads %u)\n", ear_num_cpus,
-			ear_cpufreq_hwinfo->sockets, ear_cpufreq_hwinfo->cores, ear_cpufreq_hwinfo->threads);
+		ear_num_cpus = hw_general_info->sockets *
+					   hw_general_info->cores *
+					   hw_general_info->threads;
+
+		VERBOSE_N(2, "detected %u sockets, %u CPUs and %u threads", hw_general_info->sockets,
+				  hw_general_info->cores, hw_general_info->threads);
 	}
 
 	ear_cpufreq = (unsigned long *) malloc(sizeof(unsigned long) * ear_num_cpus);
 
 	if (ear_cpufreq == NULL)
 	{
-		ear_verbose(0,"eard: malloc return NULL in ear_cpufreq_init\n");
-		return -1;
+		VERBOSE_N(0, "ERROR, can't allocate memory");
+		return EAR_ERROR;
 	}
 	
 	// 2-We check all the cpus are online, we should detect cores but
@@ -171,8 +170,8 @@ int ear_cpufreq_init()
 	// 3-We are assuming all the cpus supports the same set of frequencies
 	// we check for cpu 0
 	list_f = cpufreq_get_available_frequencies(0);
-
 	first = list_f;
+
 	while(list_f != NULL)
 	{
 		list_f = list_f->next;
@@ -180,22 +179,22 @@ int ear_cpufreq_init()
 	}
 
 	if (ear_num_p_states == 0) {
-		ear_verbose(0, "%s: no P_STATEs detected, make sure the CPUPower driver is working properly\n", __FILE__);
+		VERBOSE_N(0, "ERROR, no P_STATEs detected, make sure the CPUPower driver is working properly");
 		return EAR_ERROR;
 	}
 	// else
-	ear_verbose(2, "%s: %d P_STATEs detected\n", __FILE__, ear_num_p_states);
+	VERBOSE_N(2, "%d P_STATEs detected", ear_num_p_states);
 
 	// 4-Detecting the list of pstates available
 	ear_cpufreq_pstates = (unsigned long *) malloc(sizeof(unsigned long) * ear_num_p_states);
 			
 	if (ear_cpufreq_pstates == NULL) {
-		ear_verbose(0," eard: malloc return NULL in ear_cpufreq_init\n");
-		return -1;
+		VERBOSE_N(0, "ERROR, can't allocate memory");
+		return EAR_ERROR;
 	}
 	
 	list_f = first;
-	i=0;
+	i = 0;
         	
 	while(list_f!=NULL)
 	{
