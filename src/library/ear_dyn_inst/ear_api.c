@@ -261,10 +261,8 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 } //ear_whole_app
 }
 
-
 void ear_finalize()
 {
-	application_t *global_metrics;
 	char summary_fullpath[BUFFSIZE];
 	char node_name[BUFFSIZE];
 	char *summary_pathname;
@@ -290,21 +288,13 @@ void ear_finalize()
 	sprintf(summary_fullpath, "%s%s", summary_pathname, node_name);
 
 	// TODO: GLOBAL METRICS
-	metrics_dispose(global_metrics);
-
-	// TODO: ADDING APPLICATION_T TO METRICS_T
-	/*strcpy(global_metrics->node_id, application.node_id);
-	strcpy(global_metrics->user_id, application.user_id);
-	strcpy(global_metrics->app_id, application.app_id);
-	strcpy(global_metrics->job_id, application.job_id);
-	strcpy(global_metrics->policy, application.policy);
-	global_metrics->avg_f = application.avg_f;
+	metrics_dispose(&application);
 
 	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
-	ear_daemon_client_write_app_signature(global_metrics);
+	ear_daemon_client_write_app_signature(&application);
 
-	append_application_text_file(summary_fullpath, global_metrics);
-	report_application_data(global_metrics);*/
+	append_application_text_file(summary_fullpath, &application);
+	report_application_data(&application);
 
 	// DynAIS
 	dynais_dispose();
@@ -315,6 +305,3 @@ void ear_finalize()
 	end_dc_energy();
 	ear_daemon_client_disconnect();
 }
-
-
-

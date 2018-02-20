@@ -33,6 +33,7 @@ etc/scripts/environment/lib_vars.sh
 *eard
 
 src/tools/input
+*compute_coefficients_remote
 *coefficients_quality_control
 *compute_coefficients
 *traces_to_paraver

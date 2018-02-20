@@ -31,4 +31,5 @@ int metrics_compute_signature_finish(application_t *metrics, uint iterations, ul
 long long metrics_usecs_diff(long long end, long long init);
 void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *min_f, ulong *nom_f,
 						 char *CPU_model, char *CPU_name);
+void metrics_get_app_name(char *app_name);
 #endif //EAR_EAR_METRICS_H

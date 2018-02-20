@@ -314,21 +314,31 @@ unsigned long node_energy_frequency()
 {
 	unsigned long init, end,min_interval;
 	struct timeval begin_time,end_time;
-	int try=0;
-	if (node_energy_ops.read_dc_energy!=NULL){
+	int intents = 0;
+
+	if (node_energy_ops.read_dc_energy != NULL)
+	{
 		node_energy_ops.read_dc_energy(&init);
-		do{		
+
+		do {
 			node_energy_ops.read_dc_energy(&end);
-			try++;
-		}while((init==end) && (try<5000));
-		if (try==5000) return 0;
+			intents++;
+		} while((init == end) && (intents < 5000));
+
+		if (intents == 5000) return 0;
+
 		gettimeofday(&begin_time,NULL);
-		init=end;
+		init = end;
+
 		do{
 			node_energy_ops.read_dc_energy(&end);
-		}while(init==end);
+		} while(init == end);
+
 		gettimeofday(&end_time,NULL);
-		min_interval=(end_time.tv_sec*1000000+end_time.tv_usec)-(begin_time.tv_sec*1000000+begin_time.tv_usec);
+		min_interval  = (end_time.tv_sec * 1000000 + end_time.tv_usec);
+		min_interval -= (begin_time.tv_sec *1000000 + begin_time.tv_usec);
+
 		return min_interval;
-	}else return 0;
+	}
+	return 0;
 }
