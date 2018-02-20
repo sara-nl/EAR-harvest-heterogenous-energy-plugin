@@ -6,9 +6,9 @@
         Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 */
 
-#include <papi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <papi.h>
 
 #include <common/ear_verbose.h>
 
@@ -16,10 +16,10 @@
 #include <common/environment.h>
 #include <common/hardware.h>
 
-#define EAR_FLOPS_EVENTS_SETS	2
+#define EAR_FLOPS_EVENTS_SETS		2
 #define EAR_FLOPS_EVENTS		4
-#define SP_OPS					0
-#define DP_OPS					1
+#define SP_OPS				0
+#define DP_OPS				1
 #define FP_ARITH_INST_RETIRED_PACKED_SINGLE_N		"FP_ARITH:SCALAR_SINGLE"
 #define FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N	"FP_ARITH:128B_PACKED_SINGLE"
 #define FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N	"FP_ARITH:256B_PACKED_SINGLE"

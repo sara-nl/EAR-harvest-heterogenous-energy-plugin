@@ -6,7 +6,7 @@ LDFLAGS = $(PAPI_LDFLAGS)
 BINARIES = generics.o \
            cache.o    \
            flops.o    \
-           intructions.o \
+           instructions.o \
            stalls.o
 
 ######## RULES
@@ -22,8 +22,8 @@ cache.o: cache.c cache.h
 flops.o: flops.c flops.h
 	$(CC) $(CFLAGS) -c flops.c $(LDFLAGS)
 
-intructions.o: intructions.c intructions.h
-	$(CC) $(CFLAGS) -c intructions.c $(LDFLAGS)
+instructions.o: instructions.c instructions.h
+	$(CC) $(CFLAGS) -c instructions.c $(LDFLAGS)
 
 stalls.o: stalls.c stalls.h
 	$(CC) $(CFLAGS) -c stalls.c $(LDFLAGS)
