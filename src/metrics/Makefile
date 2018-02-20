@@ -1,6 +1,8 @@
 ######## FILES
 
-COMPONENTS = custom \
+COMPONENTS = cpupower \
+             custom \
+             ipmi \
              papi
 
 ######## RULES

@@ -724,7 +724,7 @@ void main(int argc,char *argv[])
 	// We initialize rapl counters
 	init_rapl_metrics();
 
-	// We initilize node_energy_metrics
+	// We initilize energy_node
 	if (node_energy_init()<0){
 		ear_verbose(0,"eard: node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
 	}

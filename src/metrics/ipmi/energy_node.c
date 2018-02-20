@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <freeipmi/freeipmi.h>
-#include <hardware.h>
+#include "../custom/hardware_info.h"
 #include <node_energy_metrics/lenovo_act.h>
 #include <node_energy_metrics/lenovo_wct.h>
 #include <node_energy_metrics/ibm.h>

@@ -9,8 +9,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <hardware.h>
-#include <states.h>
+#include "hardware_info.h"
+#include "../../common/states.h"
 
 #define CREGS()           \
     unsigned int eax = 0; \

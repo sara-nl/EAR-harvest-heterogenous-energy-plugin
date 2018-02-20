@@ -1,4 +1,4 @@
-CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common $(IPMI_CFLAGS) $(CONSTANTS)
+CFLAGS = -I$(SRCDIR) -I$(SRCDIR)/common $(CONSTANTS) $(IPMI_CFLAGS)
 
 ######## RULES
 

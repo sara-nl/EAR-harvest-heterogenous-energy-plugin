@@ -24,7 +24,7 @@
  * When an error occurs, those calls returns -1.
  */
 #include <stdio.h>
-#include <hardware.h>
+#include "hardware_info.h"
 #include <uncore_architectures/pci_uncores.h>
 #include <ear_verbose.h>
 
