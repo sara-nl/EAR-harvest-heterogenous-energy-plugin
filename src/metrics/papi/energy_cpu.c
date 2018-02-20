@@ -10,10 +10,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ear_verbose.h>
+
+#include <common/ear_verbose.h>
 #include <metrics/papi/energy_cpu.h>
 
-#define EAR_RAPL_EVENTS_SETS	1
+#define EAR_RAPL_EVENTS_SETS		1
 #define CORE_AND_DRAM_SET		0
 #define MAX_RAPL_EVENTS			64
 
