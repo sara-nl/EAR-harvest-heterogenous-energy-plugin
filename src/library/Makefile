@@ -1,8 +1,7 @@
 DIR     = $(ROOTDIR)/src/library
-LDFLAGS = -O2 -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
+LDFLAGS = -O2 -shared $(CPUF_LDFLAGS)
 CFLAGS  = -fPIC $(CONSTANTS) $(DEBUG) -I$(DIR)
-CFLAGS += -I$(DIR)/common -I$(ROOTDIR)/src/common
-CFLAGS += $(PAPI_CFLAGS) $(CPUF_CFLAGS)
+CFLAGS += -I$(DIR)/common -I$(ROOTDIR)/src/common $(CPUF_CFLAGS)
 
 ######## VARS
 
@@ -26,11 +25,7 @@ OBJS = ear_states/ear_states.o           \
        ear_frequency/ear_cpufreq.o       \
        ear_gui/ear_gui.o                 \
        ear_models/ear_models.o           \
-       ear_metrics/ear_metrics.o         \
-       ear_metrics/ear_flops_metrics.o   \
-       ear_metrics/ear_cache.o           \
-       ear_metrics/ear_basic.o           \
-       ear_metrics/ear_stalls.o
+       ear_metrics/ear_metrics.o
 
 BINARIES = libear.so libeart.so
 
@@ -69,10 +64,8 @@ install:
 
 install_traces:
 	mv libeart.so $(DESTDIR)/lib/libeart.so
-	
 
 SUB_DIRS = ear_states    \
-           ear_db        \
            ear_dyn_inst  \
            ear_dynais    \
            ear_frequency \
@@ -81,7 +74,7 @@ SUB_DIRS = ear_states    \
            ear_models
 
 clean:
-	@ for i in $(SUB_DIRS); do    \
+	@ for i in $(SUB_DIRS); do  \
 		$(MAKE) -C $${i} clean; \
 	done
 	rm -f $(BINARIES)

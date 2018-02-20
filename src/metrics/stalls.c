@@ -9,7 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <papi.h>
-#include <ear_metrics/ear_stalls.h>
+
+#include <metrics/stalls.h>
 
 #define EAR_STALL_EVENTS_SETS 1
 #define EAR_STALL_EVENTS 2

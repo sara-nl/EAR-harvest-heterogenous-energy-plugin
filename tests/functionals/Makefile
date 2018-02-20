@@ -1,13 +1,17 @@
 DIR         = $(ROOTDIR)/tests/functionals
 CFLAGS      = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
-NODE_ENERGY_LIB = $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a $(ROOTDIR)/src/common/hardware.o
-NODE_ENERGY_FLAGS = $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a $(ROOTDIR)/src/common/hardware.o $(IPMI_LDFLAGS)
 
 ######## FILES
 
-BINARIES = bandwith_monitor       \
-           eard_monitor           \
-           freeipmi_overhead      \
+NODE_ENERGY_LIB = $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a
+                  $(ROOTDIR)/src/common/hardware.o
+
+NODE_ENERGY_FLAGS = $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a
+                    $(ROOTDIR)/src/common/hardware.o $(IPMI_LDFLAGS)
+
+BINARIES = bandwith_monitor \
+           eard_monitor \
+           freeipmi_overhead \
            simd_power_metrics_openmp \
 		   energy_1_second \
 		   energy_updates_freq \
@@ -32,16 +36,17 @@ freeipmi_overhead: freeipmi_overhead.c $(NODE_ENERGY_LIB)  $(ROOTDIR)/src/common
 simd_tests.o: simd_tests.c
 	gcc $(CFLAGS) -O0 -malign-double -march=native -c simd_tests.c
 
-simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o $(NODE_ENERGY_LIB) $(ROOTDIR)/src/daemon/ear_rapl_metrics.o $(ROOTDIR)/src/daemon/ear_frequency.o $(ROOTDIR)/src/daemon/ear_turbo.o $(ROOTDIR)/src/common/hardware.o $(ROOTDIR)/src/daemon/ear_rapl_metrics.o $(ROOTDIR)/src/library/ear_metrics/ear_flops_metrics.o $(ROOTDIR)/src/library/ear_metrics/ear_basic.o $(ROOTDIR)/src/library/ear_metrics/ear_stalls.o
+simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o $(NODE_ENERGY_LIB)
 	icc -qopenmp -axCORE_AVX512 $(CFLAGS) $(PAPI_CFLAGS) -I$(ROOTDIR)/src/library \
 	-o simd_power_metrics_openmp simd_power_metrics_openmp.c \
     $(PAPI_LDFLAGS) $(SIMD_CFLAGS) $(CPUF_LDFLAGS) simd_tests.o \
 	$(ROOTDIR)/src/daemon/ear_rapl_metrics.o \
 	$(ROOTDIR)/src/daemon/ear_frequency.o \
 	$(ROOTDIR)/src/daemon/ear_turbo.o \
-	$(ROOTDIR)/src/library/ear_metrics/ear_flops_metrics.o \
-	$(ROOTDIR)/src/library/ear_metrics/ear_basic.o \
-	$(ROOTDIR)/src/library/ear_metrics/ear_stalls.o \
+    $(ROOTDIR)/src/common/hardware.o \
+	$(ROOTDIR)/src/metrics/instructions.o \
+	$(ROOTDIR)/src/metrics/stalls.o \
+	$(ROOTDIR)/src/metrics/flops.o \
 	$(NODE_ENERGY_FLAGS)
 
 energy_1_second:energy_1_second.c $(NODE_ENERGY_LIB) 
@@ -51,7 +56,9 @@ energy_updates_freq:energy_updates_freq.c $(NODE_ENERGY_LIB)
 	gcc -o energy_updates_freq $(CFLAGS)  energy_updates_freq.c $(NODE_ENERGY_FLAGS)
 
 test_architecture:test_architecture.c $(ROOTDIR)/src/common/hardware.o
-	gcc $(PAPI_CFLAGS) $(CFLAGS) -o test_architecture test_architecture.c $(ROOTDIR)/src/common/hardware.o  $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
+	gcc $(PAPI_CFLAGS) $(CFLAGS) -o test_architecture test_architecture.c \
+	$(ROOTDIR)/src/common/hardware.o  $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
+
 ######## OPTIONS
 
 clean:

@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <papi.h>
+
+
 void metrics_get_app_name(char *app_name)
 {
 	const PAPI_exe_info_t *prginfo = NULL;

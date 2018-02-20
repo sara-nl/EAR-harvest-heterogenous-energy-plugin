@@ -10,8 +10,11 @@
 #define _FLOPS_METRICS_H_
 
 int init_flops_metrics();
+
 int reset_flops_metrics();
+
 int start_flops_metrics();
+
 int stop_flops_metrics(long long *total_flops, long long *f_operations);
 
 int get_number_fops_events();

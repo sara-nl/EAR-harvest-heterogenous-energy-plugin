@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <papi.h>
-#include <hardware.h>
-#include <ear_metrics/ear_cache.h>
-#include <states.h>
+
+#include <metrics/cache.h>
+#include <common/hardware.h>
+#include <common/states.h>
 
 #define EAR_CACHE_EVENTS_SETS 3
 #define EAR_CACHE_EVENTS 2
