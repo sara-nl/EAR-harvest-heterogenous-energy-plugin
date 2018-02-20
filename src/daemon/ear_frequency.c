@@ -15,8 +15,9 @@
 #define __USE_GNU
 #include <ear_turbo.h>
 #include <ear_verbose.h>
+#include <states.h>
 
-const char *__NAME__ = "EARD_FREQ";
+static const char *__NAME__ = "EARD_FREQ";
 
 static const PAPI_hw_info_t *hw_general_info;
 struct cpufreq_policy *current_policy;
