@@ -12,6 +12,7 @@ Functional tests and test tools list
 | simd_power_metrics       | Stress the AVX CPU hardware and computes some performance and power metrics.            |
 | energy_1_second          | Reports the DC node energy consumed after 1 second                                      |
 | energy_updates_freq       | Reports the frequency at which the DC node energy is updated                            |
+| test_architecture        | checks basic cpufreq functions are ok
 
 How to use these commands
 -------------------------
@@ -20,6 +21,7 @@ How to use these commands
 # sudo LD_LIBRARY_PATH=freeipmi_lib_path tests/functionals/energy_1_second
 # sudo LD_LIBRARY_PATH=freeipmi_lib_path tests/functionals/energy_updates_freq
 # sudo ./bandwith_monitor
+# sudo LD_LIBRARY_PATH=papi_lib_path tests/functionals/test_architecture
 
 simd_power_metrics uses freeipmi and papi. It also needs som arguments
 
