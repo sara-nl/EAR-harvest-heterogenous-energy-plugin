@@ -1,5 +1,5 @@
 DIR     = $(SRCDIR)/daemon
-CFLAGS  = -I(SRCDIR) -I$(SRCDIR)/common $(CONSTANTS)
+CFLAGS  = -I$(SRCDIR) -I$(DIR) -I$(SRCDIR)/common $(CONSTANTS)
 LDFLAGS = $(PAPI_LDFLAGS) $(IPMI_LDFLAGS) $(CPUF_LDFLAGS) -ldl
 
 ######## VARS
@@ -12,7 +12,8 @@ COMPONENTS = uncore_architectures node_energy_metrics
 
 OUTER_OBJS = $(SRCDIR)/common/environment.o \
              $(SRCDIR)/common/hardware.o \
-             $(SRCDIR)/common/types.a
+             $(SRCDIR)/common/types.a \
+             $(SRCDIR)/metrics/papi/energy_cpu.o
 
 OBJS = ear_frequency.o    \
        ear_turbo.o

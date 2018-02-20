@@ -26,7 +26,7 @@
 
 #include <metrics/papi/flops.h>
 #include <metrics/papi/stalls.h>
-#include <metrics/energy_cpu.h>
+#include <metrics/papi/energy_cpu.h>
 #include <metrics/papi/instructions.h>
 #include <types/generic.h>
 #include <hardware.h>

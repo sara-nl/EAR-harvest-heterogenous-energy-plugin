@@ -30,7 +30,7 @@ stalls.o: stalls.c stalls.h
 	$(CC) $(CFLAGS) -c stalls.c $(LDFLAGS)
 
 energy_cpu.o: energy_cpu.c energy_cpu.h
-	$(CC) $(CFLAGS) -c energy_cpu.c $(LDFLAGS
+	$(CC) $(CFLAGS) -c energy_cpu.c $(LDFLAGS)
 
 install:
 

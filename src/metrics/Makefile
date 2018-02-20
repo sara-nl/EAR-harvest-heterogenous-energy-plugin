@@ -1,7 +1,6 @@
 ######## FILES
 
-COMPONENTS = custom \
-             papi
+COMPONENTS = papi
 
 ######## RULES
 
