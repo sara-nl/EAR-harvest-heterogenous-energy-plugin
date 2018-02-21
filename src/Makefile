@@ -3,9 +3,9 @@
 COMPONENTS = common  \
              metrics \
              library \
-             daemon  
-#             learning \
-#             tools
+             daemon  \
+             learning \
+             tools
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
@@ -33,7 +33,7 @@ INSTALL_FOLDERS += $(DESTDIR)/DBS \
 
 all:
 	@ for i in $(COMPONENTS); do                         \
-	   	echo "===================================="; \
+		echo "===================================="; \
 		echo "= Compilling $$i";                     \
 		echo "===================================="; \
 		$(MAKE) -C $${i} all || exit;                \
