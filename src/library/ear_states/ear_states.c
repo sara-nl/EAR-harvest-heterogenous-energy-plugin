@@ -14,14 +14,15 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <ear_gui/ear_gui.h>
-#include <ear_verbose.h>
-#include <ear_states/ear_states.h>
-#include <ear_models/ear_models.h>
-#include <ear_metrics/ear_metrics.h>
-#include <ear_frequency/ear_cpufreq.h>
-#include <externs.h>
-#include <states.h>
+
+#include <library/common/externs.h>
+#include <library/ear_gui/ear_gui.h>
+#include <library/ear_states/ear_states.h>
+#include <library/ear_frequency/ear_cpufreq.h>
+#include <library/ear_metrics/ear_metrics.h>
+#include <library/ear_models/ear_models.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
 
 // static defines
 #define NO_PERIOD			0

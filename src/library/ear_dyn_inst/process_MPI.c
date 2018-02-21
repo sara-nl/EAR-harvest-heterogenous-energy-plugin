@@ -8,7 +8,7 @@
 */
 
 #include <mpi.h>
-#include <ear_dyn_inst/ear_api.h>
+#include <library/ear_dyn_inst/ear_api.h>
 
 void before_init(){
 }

@@ -12,16 +12,16 @@
 #include <errno.h>
 #include <papi.h>
 
-#include <ear_metrics/ear_metrics.h>
-#include <ear_daemon_client.h>
-#include <ear_verbose.h>
-
-#include <types/application.h>
+#include <library/ear_metrics/ear_metrics.h>
 #include <metrics/papi/instructions.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/cache.h>
 #include <metrics/papi/flops.h>
-#include <states.h>
+#include <common/types/application.h>
+#include <common/ear_daemon_client.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
+
 
 /*
  * Low level reading

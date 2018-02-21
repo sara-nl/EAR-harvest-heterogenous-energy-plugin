@@ -15,15 +15,14 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include <papi.h>
 #include <cpufreq.h>
+#include <papi.h>
 
-#include <ear_frequency/ear_cpufreq.h>
-#include <ear_daemon_client.h>
-#include <ear_verbose.h>
-#include <types/generic.h>
-#include <externs.h>
+#include <library/common/externs.h>
+#include <library/ear_frequency/ear_cpufreq.h>
+#include <common/ear_daemon_client.h>
+#include <common/types/generic.h>
+#include <common/ear_verbose.h>
 
 static uint ear_num_cpus;
 static uint ear_num_p_states = 0;

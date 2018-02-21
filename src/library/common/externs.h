@@ -9,7 +9,7 @@
 #ifndef _EAR_GLOBAL_H
 #define _EAR_GLOBAL_H
 
-#include <types/application.h>
+#include <common/types/application.h>
 
 #define MAX_APP_NAME 1024
 

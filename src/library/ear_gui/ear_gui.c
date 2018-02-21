@@ -15,14 +15,15 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <ear_gui/ear_gui.h>
-#include <ear_frequency/ear_cpufreq.h>
-#include <ear_states/ear_states.h>
-#include <ear_metrics/ear_metrics.h>
-#include <ear_verbose.h>
-#include <types/generic.h>
-#include <environment.h>
-#include <externs.h>
+
+#include <library/ear_gui/ear_gui.h>
+#include <library/ear_states/ear_states.h>
+#include <library/ear_frequency/ear_cpufreq.h>
+#include <library/ear_metrics/ear_metrics.h>
+#include <library/common/externs.h>
+#include <common/types/generic.h>
+#include <common/environment.h>
+#include <common/ear_verbose.h>
 
 // Move all the debug code here
 // #define GLOBAL_MASTER 0
