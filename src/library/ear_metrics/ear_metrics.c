@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <papi.h>
-
 #include <library/ear_metrics/ear_metrics.h>
 #include <metrics/papi/instructions.h>
 #include <metrics/papi/generics.h>
@@ -259,9 +258,6 @@ int metrics_init(int my_id)
 	ulong rapl_size;
 
 	if (my_id) return 1;
-
-	PAPI_INIT_TEST(__FILE__);
-	PAPI_INIT_MULTIPLEX_TEST(__FILE__);
 
 	// General hardware info by PAPI
 	hw_general = PAPI_get_hardware_info();
