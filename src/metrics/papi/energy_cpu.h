@@ -9,7 +9,7 @@
 #ifndef _RAPL_METRICS_H_
 #define _RAPL_METRICS_H_
 
-#define EAR_RAPL_EVENTS 	4
+#define RAPL_EVS 			4
 #define RAPL_DRAM0 			0
 #define RAPL_DRAM1 			1
 #define RAPL_PACKAGE0 		2

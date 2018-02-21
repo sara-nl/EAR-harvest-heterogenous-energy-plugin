@@ -20,22 +20,22 @@ extern int EAR_VERBOSE_LEVEL;
 #endif
 
 #ifdef DEBUG
-#define DEBUG_F(level, ...)                   \
-	if (level <= DEBUG) {                 \
+#define DEBUG_F(level, ...) \
+	if (level <= DEBUG) { \
 		fprintf(stderr, "%s: ", __FILE__); \
-		fprintf(stderr, __VA_ARGS__);     \
-		fprintf(stderr, "\n");            \
+		fprintf(stderr, __VA_ARGS__); \
+		fprintf(stderr, "\n"); \
 	}
 #else
 #define DEBUG_F(level, ...)
 #endif
 
 // Define __NAME__ constant before use this macro
-#define VERBOSE_N(level, ...)             \
-	if (level <= EAR_VERBOSE_LEVEL) {     \
+#define VERBOSE_N(level, ...) \
+	if (level <= EAR_VERBOSE_LEVEL) { \
 		fprintf(stderr, "%s: ", __NAME__); \
-		fprintf(stderr, __VA_ARGS__);     \
-		fprintf(stderr, "\n");            \
+		fprintf(stderr, __VA_ARGS__); \
+		fprintf(stderr, "\n"); \
 	}
 
 #else
