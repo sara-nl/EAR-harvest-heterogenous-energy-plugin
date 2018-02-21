@@ -1,117 +1,135 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <papi.h>
-
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
+#include <common/ear_verbose.h>
 
-#define EAR_BASIC_EVENTS_SETS		1
-#define EAR_BASIC_EVENTS		2
+#define BASIC_SETS		1
+#define BASIC_EVS		2
 
-static PAPI_option_t basic_attach_opt[EAR_BASIC_EVENTS_SETS];
-static long long basic_values[EAR_BASIC_EVENTS_SETS][EAR_BASIC_EVENTS];
-static long long basic_acum_values[EAR_BASIC_EVENTS];
-static int basic_event_sets[EAR_BASIC_EVENTS_SETS];
-static int ear_basic_perf_event_cid;
+static const char *__NAME__ = "METRICS_INSTRS";
+static long long values[BASIC_SETS][BASIC_EVS];
+static long long acum_values[BASIC_EVS];
+static int event_sets[BASIC_SETS];
 
 void init_basic_metrics()
 {
-	int retval;
-	int sets;
-	int events;
-	int cpu_model;
+	PAPI_option_t attach_op[BASIC_SETS];
+	int sets, events;
+	int cid, ret;
 
-        PAPI_INIT_TEST(__FILE__);
-        PAPI_INIT_MULTIPLEX_TEST(__FILE__);
+	PAPI_INIT_TEST(__NAME__);
+	PAPI_INIT_MULTIPLEX_TEST(__NAME__);
+	PAPI_GET_COMPONENT(cid, "perf_event", __NAME__);
 
-	// Here , papi is initialized
-	ear_basic_perf_event_cid=PAPI_get_component_index("perf_event");
-   	 if (ear_basic_perf_event_cid<0){
-   	     fprintf(stderr,"basic_metrics: perf_event component not found.Exiting:%s\n",
-				 PAPI_strerror(ear_basic_perf_event_cid));
-   	     exit(1);
-   	 }
- 
-	for (sets=0;sets<EAR_BASIC_EVENTS_SETS;sets++){
-		basic_acum_values[sets]=0;
+	for (sets=0;sets<BASIC_SETS;sets++)
+	{
+		acum_values[sets] = 0;
+
 		/* Event values set to 0 */
-		for (events=0;events<EAR_BASIC_EVENTS;events++) {
-			basic_values[sets][events]=0;
+		for (events = 0; events < BASIC_EVS; events++) {
+			values[sets][events] = 0;
 		}
+
 		/* Init event sets */
-	    	basic_event_sets[sets]=PAPI_NULL;
-	        if ((retval=PAPI_create_eventset(&basic_event_sets[sets]))!=PAPI_OK){
-			fprintf(stderr,"basic_metrics: Creating %d eventset.Exiting:%s\n",sets,PAPI_strerror(retval));
+		event_sets[sets]=PAPI_NULL;
+		if ((ret = PAPI_create_eventset(&event_sets[sets])) != PAPI_OK)
+		{
+			VERBOSE_N(0, "Creating %d eventset.Exiting:%s",
+					sets,PAPI_strerror(ret));
 			exit(1);
 		}
 
-		if ((retval=PAPI_assign_eventset_component(basic_event_sets[sets],ear_basic_perf_event_cid))!=PAPI_OK){		
-			fprintf(stderr,"basic_metrics: PAPI_assign_eventset_component.Exiting:%s\n",sets,PAPI_strerror(retval));
+		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid))!=PAPI_OK)
+		{
+			VERBOSE_N(0, "PAPI_assign_eventset_component.Exiting:%s",
+					sets,PAPI_strerror(ret));
 			exit(1);
 		}
-		basic_attach_opt[sets].attach.eventset=basic_event_sets[sets];
- 		basic_attach_opt[sets].attach.tid=getpid();
-		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&basic_attach_opt[sets]))!=PAPI_OK){
-			fprintf(stderr,"basic_metrics: PAPI_set_opt.%s\n",PAPI_strerror(retval));
+
+		attach_op[sets].attach.eventset=event_sets[sets];
+ 		attach_op[sets].attach.tid=getpid();
+		
+		if ((ret = PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*) &attach_op[sets])) != PAPI_OK){
+			VERBOSE_N(0, "PAPI_set_opt.%s", PAPI_strerror(ret));
 		}
-		retval = PAPI_set_multiplex(basic_event_sets[sets]);
-		if ((retval == PAPI_EINVAL) && (PAPI_get_multiplex(basic_event_sets[sets]) > 0)){
-			fprintf(stderr,"basic_metrics: Event set to compute BASIC already has multiplexing enabled\n");
-		}else if (retval != PAPI_OK){ 
-			fprintf(stderr,"basic_metrics: Error , event set to compute BASIC can not be multiplexed %s\n",PAPI_strerror(retval));
+		
+		ret = PAPI_set_multiplex(event_sets[sets]);
+		
+		if ((ret == PAPI_EINVAL) && (PAPI_get_multiplex(event_sets[sets]) > 0)){
+			VERBOSE_N(0, "Event set to compute BASIC already has multiplexing enabled");
+		}else if (ret != PAPI_OK) { 
+			VERBOSE_N(0, "Error, event set to compute BASIC can not be multiplexed %s",
+						PAPI_strerror(ret));
 		}
-		if ((retval=PAPI_add_named_event(basic_event_sets[sets],"PAPI_TOT_CYC"))!=PAPI_OK){
-				fprintf(stderr,"basic_metrics: PAPI_add_named_event %s.%s\n","ix86arch::UNHALTED_CORE_CYCLES",PAPI_strerror(retval));
+		
+		if ((ret = PAPI_add_named_event(event_sets[sets],"PAPI_TOT_CYC")) != PAPI_OK){
+			VERBOSE_N(0, "PAPI_add_named_event %s.%s",
+						"ix86arch::UNHALTED_CORE_CYCLES",PAPI_strerror(ret));
 		}
-		if ((retval=PAPI_add_named_event(basic_event_sets[sets],"PAPI_TOT_INS"))!=PAPI_OK){
-				fprintf(stderr,"basic_metrics: PAPI_add_named_event %s.%s\n","ix86arch::INSTRUCTION_RETIRED",PAPI_strerror(retval));
+		if ((ret = PAPI_add_named_event(event_sets[sets],"PAPI_TOT_INS")) != PAPI_OK){
+			VERBOSE_N(0, "PAPI_add_named_event %s.%s",
+						"ix86arch::INSTRUCTION_RETIRED", PAPI_strerror(ret));
 		}
 	}
 }
 void reset_basic_metrics()
 {
-	int sets,events,retval;
-	for (sets=0;sets<EAR_BASIC_EVENTS_SETS;sets++){
-		if ((retval=PAPI_reset(basic_event_sets[sets]))!=PAPI_OK){
-			fprintf(stderr,"basic_metrics: reset_basic_metrics set %d.%s\n",basic_event_sets[sets],PAPI_strerror(retval));
+	int sets,events,ret;
+
+	for (sets=0; sets < BASIC_SETS; sets++)
+	{
+		if ((ret=PAPI_reset(event_sets[sets]))!=PAPI_OK)
+		{
+			VERBOSE_N(0, "reset_basic_metrics set %d.%s",
+					  event_sets[sets],PAPI_strerror(ret));
 		}
-		for (events=0;events<EAR_BASIC_EVENTS;events++) basic_values[sets][events]=0;
-		
+
+		for (events = 0; events < BASIC_EVS; events++) {
+			values[sets][events] = 0;
+		}
 	}
 }
 void start_basic_metrics()
 {
-	int sets,retval;
-	for (sets=0;sets<EAR_BASIC_EVENTS_SETS;sets++){
-		if ((retval=PAPI_start(basic_event_sets[sets]))!=PAPI_OK){
-			fprintf(stderr,"basic_metrics:start_basic_metrics set %d .%s\n",basic_event_sets[sets],PAPI_strerror(retval));
+	int sets,ret;
+	for (sets=0;sets<BASIC_SETS;sets++)
+	{
+		if ((ret=PAPI_start(event_sets[sets])) != PAPI_OK)
+		{
+			VERBOSE_N(0, "start_basic_metrics set %d .%s",
+					  event_sets[sets],PAPI_strerror(ret));
 		}
 	}
 }
 /* Stops includes accumulate metrics */
 void stop_basic_metrics(long long *cycles,long long *instructions)
 {
-	int sets,ev,retval;
+	int sets,ev,ret;
+
 	*cycles=0;
 	*instructions=0;
+
 	// There is a single event set for basic instruction
-	for (sets=0;sets<EAR_BASIC_EVENTS_SETS;sets++){
-		if ((retval = PAPI_stop(basic_event_sets[sets], (long long *) &basic_values[sets])) != PAPI_OK)
+	for (sets=0;sets<BASIC_SETS;sets++)
+	{
+		if ((ret = PAPI_stop(event_sets[sets], (long long *) &values[sets])) != PAPI_OK)
 		{
-			fprintf(stderr,"basic_metrics: stop_basic_metrics set %d.%s\n",
-					basic_event_sets[sets], PAPI_strerror(retval));
-		} else {
-			*cycles=basic_values[sets][0];
-			*instructions=basic_values[sets][1];
-			basic_acum_values[0]=basic_acum_values[0]+basic_values[sets][0];
-			basic_acum_values[1]=basic_acum_values[1]+basic_values[sets][1];
+			VERBOSE_N(0, "stop_basic_metrics set %d.%s",
+					event_sets[sets], PAPI_strerror(ret));
+		} else
+		{
+			*cycles=values[sets][0];
+			*instructions=values[sets][1];
+			acum_values[0]=acum_values[0]+values[sets][0];
+			acum_values[1]=acum_values[1]+values[sets][1];
 		}
 	}
 }
 
 void get_basic_metrics(long long *total_cycles,long long * total_instructions)
 {
-	*total_cycles=basic_acum_values[0];
-	*total_instructions=basic_acum_values[1];
+	*total_cycles=acum_values[0];
+	*total_instructions=acum_values[1];
 }
-
