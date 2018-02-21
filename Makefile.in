@@ -1,6 +1,7 @@
 CC           = @CC@
 MPICC        = @MPICC@
 ROOTDIR      = $(shell pwd)
+SRCDIR       = $(ROOTDIR)/src
 DESTDIR      = @prefix@
 PAPI_BASE    = @PAPI_DIR@
 PAPI_CFLAGS  = @PAPI_CPPFLAGS@
@@ -24,6 +25,7 @@ DEBUG        =
 export CC
 export MPICC
 export ROOTDIR
+export SRCDIR
 export DESTDIR
 export PAPI_BASE
 export PAPI_CFLAGS
