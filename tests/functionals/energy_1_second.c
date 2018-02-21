@@ -5,10 +5,13 @@
     BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
         Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 */
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <ear_node_energy_metrics.h>
+#include <metrics/ipmi/energy_node.h>
+
 int EAR_VERBOSE_LEVEL=1;
+
 void main(int argc,char *argv[])
 {
 	unsigned long init, end;

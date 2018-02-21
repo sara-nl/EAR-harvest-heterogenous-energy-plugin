@@ -1,7 +1,7 @@
-#include <assert.h>
 #include <stdio.h>
-#include <hardware.h>
-#include <states.h>
+#include <assert.h>
+#include <metrics/custom/hardware_info.h>
+#include <common/states.h>
 
 int main ()
 {

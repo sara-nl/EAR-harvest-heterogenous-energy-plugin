@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
-#include <ear_uncores.h>
-#include <hardware.h>
-#include <states.h>
+#include <metrics/custom/bandwidth.h>
+#include <metrics/custom/hardware_info.h>
+#include <common/states.h>
 
 int EAR_VERBOSE_LEVEL = 4;
 

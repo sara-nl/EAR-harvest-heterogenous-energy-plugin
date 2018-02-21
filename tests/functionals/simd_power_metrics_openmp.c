@@ -21,15 +21,15 @@
 #include <immintrin.h> // -mavx -mfma -mfavx512
 #include <papi.h>
 
-#include <ear_frequency.h>
-#include <ear_turbo.h>
+#include <daemon/ear_frequency.h>
 
 #include <metrics/papi/flops.h>
 #include <metrics/papi/stalls.h>
 #include <metrics/papi/energy_cpu.h>
 #include <metrics/papi/instructions.h>
-#include <types/generic.h>
-#include <hardware.h>
+#include <metrics/custom/hardware_info.h>
+#include <metrics/custom/frequency.h>
+#include <common/types/generic.h>
 
 #define INST_ITER   64.0
 
