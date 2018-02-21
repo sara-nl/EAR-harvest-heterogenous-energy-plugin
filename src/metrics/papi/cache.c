@@ -13,13 +13,13 @@
 #define L3 2
 
 static const char *__NAME__ = "METRICS_CACHE";
-static long long values[BASIC_SETS][BASIC_EVS];
-static long long acum_values[BASIC_EVS];
-static int event_sets[BASIC_SETS];
+static long long values[CACHE_SETS][CACHE_EVS];
+static long long acum_values[CACHE_EVS];
+static int event_sets[CACHE_SETS];
 
 int init_cache_metrics()
 {
-	PAPI_option_t attach_op[BASIC_SETS];
+	PAPI_option_t attach_op[CACHE_SETS];
 	int sets, events;
 	int cid, ret;
 
