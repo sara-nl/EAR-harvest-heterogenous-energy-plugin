@@ -1,4 +1,4 @@
-#include <types/application.h>
+#include <common/types/application.h>
 
 #define MAX_APP_NAME 1024
 

@@ -1,6 +1,4 @@
-DIR     = $(ROOTDIR)/src/library
-CFLAGS  = -fPIC $(CONSTANTS) $(DEBUG) -I$(SRCDIR) -I$(DIR)
-CFLAGS += -I$(DIR)/common -I$(ROOTDIR)/src/common $(CPUF_CFLAGS)
+CFLAGS  = -fPIC -I$(SRCDIR) -I$(CONSTANTS)
 LDFLAGS = -O2 -shared $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
 ######## VARS

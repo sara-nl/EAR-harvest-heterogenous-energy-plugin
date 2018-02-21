@@ -21,20 +21,19 @@
 #include <papi.h> //TODO: remove
 
 // EAR includes
-#include <ear_dyn_inst/MPI_types.h>
-#include <ear_dyn_inst/MPI_calls_coded.h>
-#include <ear_dynais/ear_dynais.h>
-#include <ear_models/ear_models.h>
-#include <ear_metrics/ear_metrics.h>
-#include <ear_frequency/ear_cpufreq.h>
-#include <ear_gui/ear_gui.h>
-#include <ear_states/ear_states.h>
-#include <ear_verbose.h>
-
-#include <types/application.h>
-#include <externs_alloc.h>
-#include <environment.h>
-#include <states.h>
+#include <library/ear_dynais/ear_dynais.h>
+#include <library/ear_states/ear_states.h>
+#include <library/ear_dyn_inst/MPI_types.h>
+#include <library/ear_dyn_inst/MPI_calls_coded.h>
+#include <library/ear_frequency/ear_cpufreq.h>
+#include <library/ear_models/ear_models.h>
+#include <library/ear_metrics/ear_metrics.h>
+#include <library/ear_gui/ear_gui.h>
+#include <library/common/externs_alloc.h>
+#include <common/types/application.h>
+#include <common/ear_verbose.h>
+#include <common/environment.h>
+#include <common/states.h>
 
 #define BUFFSIZE 128
 

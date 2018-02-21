@@ -14,12 +14,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <ear_models/ear_models.h>
-#include <ear_frequency/ear_cpufreq.h>
-#include <ear_verbose.h>
-#include <types/application.h>
-#include <externs.h>
-#include <states.h>
+#include <library/common/externs.h>
+#include <library/ear_models/ear_models.h>
+#include <library/ear_frequency/ear_cpufreq.h>
+#include <common/types/application.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
 
 #define RESET_FREQ 			0
 #define PERFORMANCE_PENALTY 0.1

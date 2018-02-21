@@ -36,12 +36,12 @@
  * windows.
  */
 
+#include <time.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
-#include <fcntl.h>
-#include <ear_dynais/ear_dynais.h>
+#include <library/ear_dynais/ear_dynais.h>
 
 #if ANALYSIS
 #include <nmmintrin.h>

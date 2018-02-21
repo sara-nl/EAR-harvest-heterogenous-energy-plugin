@@ -1,4 +1,4 @@
-CFLAGS = -I$(SRCDIR) -I$(SRCDIR)/common $(CONSTANTS)
+CFLAGS = -I$(SRCDIR) $(CONSTANTS)
 
 ######## RULES
 

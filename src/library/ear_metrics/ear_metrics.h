@@ -1,7 +1,7 @@
 #ifndef EAR_EAR_METRICS_H
 #define EAR_EAR_METRICS_H
 
-#include <types/application.h>
+#include <common/types/application.h>
 
 //
 long long metrics_time();
