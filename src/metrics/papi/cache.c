@@ -19,7 +19,7 @@ static int event_sets[CACHE_SETS];
 
 int init_cache_metrics()
 {
-	PAPI_option_t attach_op[CACHE_SETS];
+	PAPI_option_t attach_opt[CACHE_SETS];
 	int sets, events;
 	int cid, ret;
 
