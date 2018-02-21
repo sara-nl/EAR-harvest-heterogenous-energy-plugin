@@ -4,8 +4,7 @@ CFLAGS = -I$(SRCDIR)
 
 HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
 
-BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
-                 $(SRCDIR)/metrics/custom/bandwidth.o 
+BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a
 
 BINARIES = cpu_examinable      \
            cpu_aperf           \
@@ -67,5 +66,4 @@ check:
 
 clean:
 	rm -f $(BINARIES)
-	rm -f *.o
-	rm -f core.*
+	rm -f *.o *.a *.so
