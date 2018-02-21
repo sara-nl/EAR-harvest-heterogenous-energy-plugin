@@ -7,14 +7,10 @@ export DIR
 
 ######## FILES
 
-METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
-               $(SRCDIR)/metrics/custom/bandwidth.o \
+METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a \
                $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o \
-               $(SRCDIR)/metrics/ipmi/energy_node.o \
+               $(SRCDIR)/metrics/ipmi/energy_node.a \
 	       $(SRCDIR)/metrics/papi/energy_cpu.o
 
 COMMON_OBJS = $(SRCDIR)/common/environment.o \

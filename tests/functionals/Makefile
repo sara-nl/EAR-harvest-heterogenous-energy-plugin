@@ -4,16 +4,13 @@ CFLAGS      = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
 
 HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
 
-BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
-                 $(SRCDIR)/metrics/custom/bandwidth.o
+BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a
+
+NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.a
 
 FREQUENCY_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
                  $(SRCDIR)/daemon/ear_frequency.o
 
-NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-                   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
-                   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o \
-                   $(SRCDIR)/metrics/ipmi/energy_node.o \
 
 PAPI_OBJS = $(SRCDIR)/metrics/papi/flops.o \
             $(SRCDIR)/metrics/papi/instructions.o \
@@ -65,4 +62,4 @@ test_architecture: test_architecture.c
 
 clean:
 	rm -f $(BINARIES)
-	rm -f *.o
+	rm -f *.o *.a *.so
