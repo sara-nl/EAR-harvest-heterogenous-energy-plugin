@@ -1,4 +1,4 @@
-CFLAGS = -I$(SRCDIR) $(CONSTANTS)
+CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## RULES
 
