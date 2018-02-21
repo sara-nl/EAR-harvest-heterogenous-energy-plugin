@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <papi.h>
 
+#include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
 
-#define EAR_BASIC_EVENTS_SETS	1
+#define EAR_BASIC_EVENTS_SETS		1
 #define EAR_BASIC_EVENTS		2
 
 static PAPI_option_t basic_attach_opt[EAR_BASIC_EVENTS_SETS];
@@ -20,22 +21,17 @@ void init_basic_metrics()
 	int events;
 	int cpu_model;
 
-	if (PAPI_is_initialized()==PAPI_NOT_INITED)
-	{
-    		retval = PAPI_library_init(PAPI_VER_CURRENT);
-    		if (retval != PAPI_VER_CURRENT) {
-				fprintf(stderr,"Basic metrics: Error when initializing PAPI\n");
-        		exit(1);
-    		}    
-	}
-	// Here , papi is initialized
+        PAPI_INIT_TEST(__FILE__);
+        PAPI_INIT_MULTIPLEX_TEST(__FILE__);
 
+	// Here , papi is initialized
 	ear_basic_perf_event_cid=PAPI_get_component_index("perf_event");
    	 if (ear_basic_perf_event_cid<0){
    	     fprintf(stderr,"basic_metrics: perf_event component not found.Exiting:%s\n",
 				 PAPI_strerror(ear_basic_perf_event_cid));
    	     exit(1);
-   	 } 
+   	 }
+ 
 	for (sets=0;sets<EAR_BASIC_EVENTS_SETS;sets++){
 		basic_acum_values[sets]=0;
 		/* Event values set to 0 */
