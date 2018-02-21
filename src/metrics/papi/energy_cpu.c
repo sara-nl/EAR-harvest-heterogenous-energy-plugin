@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <common/ear_verbose.h>
+#include <metrics/papi/generics.h>
 #include <metrics/papi/energy_cpu.h>
 
 #define RAPL_SETS			1
@@ -213,7 +214,7 @@ int start_rapl_metrics()
 }
 
 /* Stops includes accumulate metrics */
-int stop_rapl_metrics(unsigned long long *values)
+int stop_rapl_metrics(unsigned long long *_values)
 {
 	unsigned long long acum_rapl = 0;
 	int sets, counts, ret;
@@ -232,10 +233,10 @@ int stop_rapl_metrics(unsigned long long *values)
 			{
 				acum_values[sets][counts]+=values[sets][counts];
 
-				values[counts] = values[sets][counts];
-				DEBUG_F(4, "Value for event %d %llu", counts, values[counts]);
+				_values[counts] = values[sets][counts];
+				DEBUG_F(4, "Value for event %d %llu", counts, _values[counts]);
 
-				acum_rapl += values[counts];
+				acum_rapl += _values[counts];
 			}
 			DEBUG_F(3, "total energy %llu",acum_rapl);
 		}

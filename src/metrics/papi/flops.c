@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <papi.h>
+#include <metrics/papi/generics.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/papi/flops.h>
 #include <common/environment.h>

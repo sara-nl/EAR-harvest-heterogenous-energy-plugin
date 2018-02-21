@@ -22,7 +22,7 @@
 #include <papi.h>
 
 #include <daemon/ear_frequency.h>
-
+#include <metrics/papi/generics.h>
 #include <metrics/papi/flops.h>
 #include <metrics/papi/stalls.h>
 #include <metrics/papi/energy_cpu.h>
@@ -78,7 +78,7 @@ void usage()
 
 int main (int argc, char *argv[])
 {
-    ull metrics[EAR_RAPL_EVENTS];
+    ull metrics[RAPL_EVS];
     long long total_flops[8];
     char nodename[256];
     char buffer[1024];

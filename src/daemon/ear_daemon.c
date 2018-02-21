@@ -272,7 +272,7 @@ void eard_close_comm()
 {
 	int i;
 	unsigned long ack=0;
-	unsigned long long values[EAR_RAPL_EVENTS];
+	unsigned long long values[RAPL_EVS];
 	int dis_pid=application_id;
 	char ear_commack[MAX_PATH_SIZE];
 	ear_verbose(2,"eard: Closing comm in %s for %d\n",nodename,application_id);
@@ -529,7 +529,7 @@ int eard_rapl(int must_read)
 {
 	unsigned long comm_req=rapl_req;
     unsigned long ack=0;
-    unsigned long long values[EAR_RAPL_EVENTS];
+    unsigned long long values[RAPL_EVS];
 	if (must_read){
     	if (read(ear_fd_req[comm_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at eard_rapl\n");
 	}
@@ -552,10 +552,10 @@ int eard_rapl(int must_read)
     		ear_debug(1,"EAR_daemon_server: read RAPL\n");
             stop_rapl_metrics(values);
 			RAPL_counting=0;
-            write(ear_fd_ack[comm_req],values,sizeof(unsigned long long)*EAR_RAPL_EVENTS);
+            write(ear_fd_ack[comm_req],values,sizeof(unsigned long long)*RAPL_EVS);
             break;
         case DATA_SIZE_RAPL:
-            ack=sizeof(unsigned long long)*EAR_RAPL_EVENTS;
+            ack=sizeof(unsigned long long)*RAPL_EVS;
             write(ear_fd_ack[comm_req],&ack,sizeof(unsigned long));
             break;
         default:
