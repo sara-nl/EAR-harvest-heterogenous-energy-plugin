@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <emmintrin.h> // -msse2
 #include <immintrin.h> // -mavx -mfma
-#include <hardware.h>
+#include <metrics/custom/hardware_info.h>
 
 // HASWELL tests
 void sse2_dp_add128_hsw(ulong n_iterations)

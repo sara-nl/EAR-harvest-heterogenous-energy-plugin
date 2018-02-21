@@ -1,11 +1,24 @@
-DIR         = $(ROOTDIR)/tests/functionals
-CFLAGS      = -I$(SRCDIR) -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
+CFLAGS      = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
 
 ######## FILES
 
-NODE_ENERGY_LIB = $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a
+HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
 
-NODE_ENERGY_FLAGS = $(ROOTDIR)/src/daemon/ear_node_energy_metrics.a $(IPMI_LDFLAGS)
+BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
+                 $(SRCDIR)/metrics/custom/bandwidth.o
+
+FREQUENCY_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
+                 $(SRCDIR)/daemon/ear_frequency.o
+
+NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
+                   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
+                   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o \
+                   $(SRCDIR)/metrics/ipmi/energy_node.o \
+
+PAPI_OBJS = $(SRCDIR)/metrics/papi/flops.o \
+            $(SRCDIR)/metrics/papi/instructions.o \
+            $(SRCDIR)/metrics/papi/stalls.o \
+            $(SRCDIR)/metrics/papi/energy_cpu.o
 
 BINARIES = bandwith_monitor \
            eard_monitor \
@@ -19,46 +32,34 @@ BINARIES = bandwith_monitor \
 
 all: $(BINARIES)
 
-bandwith_monitor: bandwith_monitor.c $(ROOTDIR)/src/daemon/ear_uncores.a $(ROOTDIR)/src/common/hardware.o
-	$(CC) $(CFLAGS) -o bandwith_monitor bandwith_monitor.c \
-	$(ROOTDIR)/src/daemon/ear_uncores.a $(ROOTDIR)/src/common/hardware.o
+bandwith_monitor: bandwith_monitor.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
+	$(CC) $(CFLAGS) -o bandwith_monitor bandwith_monitor.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 
-eard_monitor: eard_monitor.c $(ROOTDIR)/src/common/ear_daemon_client.o
-	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c \
-	$(ROOTDIR)/src/common/ear_daemon_client.o
+eard_monitor: eard_monitor.c $(SRCDIR)/common/ear_daemon_client.o
+	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c $(SRCDIR)/common/ear_daemon_client.o
 
-freeipmi_overhead: freeipmi_overhead.c $(NODE_ENERGY_LIB)  $(ROOTDIR)/src/common/hardware.o
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) $(IPMI_CFLAGS) -o freeipmi_overhead freeipmi_overhead.c \
-	$(PAPI_LDFLAGS) $(NODE_ENERGY_FLAGS) $(ROOTDIR)/src/common/hardware.o
+freeipmi_overhead: freeipmi_overhead.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
+	$(CC) $(CFLAGS) -o freeipmi_overhead freeipmi_overhead.c $(IPMI_LDFLAGS) $(PAPI_LDFLAGS) \
+	$(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 
 simd_tests.o: simd_tests.c
 	gcc $(CFLAGS) -O0 -malign-double -march=native -c simd_tests.c
 
-simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o $(NODE_ENERGY_LIB)
-	icc -qopenmp -axCORE_AVX512 $(CFLAGS) $(PAPI_CFLAGS) -I$(ROOTDIR)/src/library \
-	-o simd_power_metrics_openmp simd_power_metrics_openmp.c \
-	$(PAPI_LDFLAGS) $(SIMD_CFLAGS) $(CPUF_LDFLAGS) simd_tests.o \
-	$(ROOTDIR)/src/daemon/ear_rapl_metrics.o \
-	$(ROOTDIR)/src/daemon/ear_frequency.o \
-	$(ROOTDIR)/src/daemon/ear_turbo.o \
-	$(ROOTDIR)/src/common/hardware.o \
-	$(ROOTDIR)/src/metrics/instructions.o \
-	$(ROOTDIR)/src/metrics/stalls.o \
-	$(ROOTDIR)/src/metrics/flops.o \
-	$(ROOTDIR)/src/daemon/ear_node_energy_metrics.a $(IPMI_LDFLAGS)
+# CONVERT TO GCC PLEASE
+simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o
+	icc -qopenmp -axCORE_AVX512 $(CFLAGS) -o simd_power_metrics_openmp simd_power_metrics_openmp.c \
+	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) simd_tests.o \
+	$(HARDWARE_OBJS) $(NODE_ENERGY_OBJS) $(PAPI_OBJS) $(FREQUENCY_OBJS)
 
-energy_1_second:energy_1_second.c $(NODE_ENERGY_LIB) 
-	gcc -o energy_1_second $(CFLAGS)  energy_1_second.c $(ROOTDIR)/src/common/hardware.o \
-	$(ROOTDIR)/src/daemon/ear_node_energy_metrics.a $(IPMI_LDFLAGS)
+energy_1_second: energy_1_second.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
+	gcc $(CFLAGS) -o energy_1_second energy_1_second.c $(IPMI_LDFLAGS) $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 
-energy_updates_freq:energy_updates_freq.c $(NODE_ENERGY_LIB) 
-	gcc -o energy_updates_freq $(CFLAGS)  energy_updates_freq.c $(ROOTDIR)/src/common/hardware.o \
-	$(ROOTDIR)/src/daemon/ear_node_energy_metrics.a $(IPMI_LDFLAGS)
+energy_updates_freq: energy_updates_freq.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
+	gcc $(CFLAGS) -o energy_updates_freq energy_updates_freq.c $(IPMI_LDFLAGS) $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 
-test_architecture:test_architecture.c $(ROOTDIR)/src/common/hardware.o
+test_architecture: test_architecture.c
 	gcc $(PAPI_CFLAGS) $(CFLAGS) -o test_architecture test_architecture.c \
-	$(ROOTDIR)/src/common/hardware.o $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) \
-	$(ROOTDIR)/src/daemon/ear_node_energy_metrics.a $(IPMI_LDFLAGS)
+	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 
 ######## OPTIONS
 

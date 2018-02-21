@@ -1,10 +1,11 @@
-DIR    = $(ROOTDIR)/tests
-CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/daemon
+CFLAGS = -I$(SRCDIR)
 
 ######## FILES
 
-OUTER_OBJS = $(ROOTDIR)/src/daemon/ear_uncores.a \
-             $(ROOTDIR)/src/common/hardware.o
+HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
+
+BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
+                 $(SRCDIR)/metrics/custom/bandwidth.o 
 
 BINARIES = cpu_examinable      \
            cpu_aperf           \
@@ -39,16 +40,16 @@ papi_comp_enabled: papi_comp_enabled.c
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_comp_enabled papi_comp_enabled.c $(PAPI_LDFLAGS)
 
 cpu_examinable: cpu_examinable.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -o cpu_examinable cpu_examinable.c $(OUTER_OBJS)
+	$(CC) $(CFLAGS) -o cpu_examinable cpu_examinable.c $(HARDWARE_OBJS)
 
 cpu_aperf: cpu_aperf.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -o cpu_aperf cpu_aperf.c $(OUTER_OBJS)
+	$(CC) $(CFLAGS) -o cpu_aperf cpu_aperf.c $(HARDWARE_OBJS)
 
 cpu_uncores: cpu_uncores.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -o cpu_uncores cpu_uncores.c $(OUTER_OBJS)
+	$(CC) $(CFLAGS) -o cpu_uncores cpu_uncores.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 
 cpu_uncores_all: cpu_uncores_all.c
-	$(CC) $(CFLAGS) -o cpu_uncores_all cpu_uncores_all.c $(OUTER_OBJS)
+	$(CC) $(CFLAGS) -o cpu_uncores_all cpu_uncores_all.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 
 gsl_version: gsl_version.c
 	$(CC) $(CFLAGS) $(GSL_CFLAGS) -o gsl_version gsl_version.c

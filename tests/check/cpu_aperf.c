@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <hardware.h>
+#include <metrics/custom/hardware_info.h>
 
 int main ()
 {

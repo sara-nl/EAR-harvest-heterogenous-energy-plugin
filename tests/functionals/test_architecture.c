@@ -9,12 +9,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <papi.h>
 #include <cpufreq.h>
+#include <papi.h>
+#include <metrics/custom/hardware_info.h>
+
 #define _GNU_SOURCE
 #define __USE_GNU
-#include <hardware.h>
 
+int EAR_VERBOSE_LEVEL = 0;
 
 int cpu_model;
 unsigned int ear_num_cpus;
