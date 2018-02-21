@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <papi.h>
 
-#include <metrics/custom/hardware_info.h>
 #include <metrics/papi/cache.h>
+#include <metrics/papi/generics.h>
+#include <metrics/custom/hardware_info.h>
 #include <common/states.h>
 
 #define CACHE_SETS 	3
