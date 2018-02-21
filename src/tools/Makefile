@@ -1,7 +1,9 @@
-DIR    = $(ROOTDIR)/src/tools
-CFLAGS = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/library
+CFLAGS = -I$(SRCDIR)
 
 ######## FILES
+
+COMMON_OBJS = $(ROOTDIR)/src/common/string_enhanced.o \
+              $(ROOTDIR)/src/common/types.a
 
 BINARIES = traces_to_paraver            \
            coefficients_quality_control
@@ -14,9 +16,7 @@ traces_to_paraver: traces_to_paraver.cpp
 	$(CC) $(CFLAGS) -o traces_to_paraver traces_to_paraver.cpp
 
 coefficients_quality_control: coefficients_quality_control.c
-	$(CC) $(CFLAGS) -o coefficients_quality_control coefficients_quality_control.c \
-	$(ROOTDIR)/src/common/string_enhanced.o \
-	$(ROOTDIR)/src/common/types.a
+	$(CC) $(CFLAGS) -o coefficients_quality_control coefficients_quality_control.c $(COMMON_OBJS)
 
 ######## MANUAL 
 

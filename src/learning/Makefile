@@ -1,21 +1,21 @@
-DIR     = $(ROOTDIR)/src/learning
-CFLAGS  = -I$(DIR) -I$(ROOTDIR)/src/common -I$(ROOTDIR)/src/library $(GSL_CFLAGS) $(CPUF_CLFAGS)
+CFLAGS  = -I$(SRCDIR) $(GSL_CFLAGS) $(CPUF_CLFAGS)
 LDFLAGS = $(CPUF_LDFLAGS) $(GSL_LDFLAGS)
 
 ######## FILES
 
-BINARIES = compute_coefficients compute_coefficients_remote
+COMMON_OBJS = $(SRCDIR)/common/types.a
 
-FOREIGN_LIBS = $(ROOTDIR)/src/common/types.a
+BINARIES = compute_coefficients compute_coefficients_remote
 
 ######## RULES
 
 all: $(BINARIES)
 
-compute_coefficients: compute_coefficients.c $(FOREIGN_LIBS)
-	$(CC) $(CFLAGS) -o compute_coefficients compute_coefficients.c $(LDFLAGS) $(FOREIGN_LIBS)
-compute_coefficients_remote: compute_coefficients_remote.c $(FOREIGN_LIBS)
-	$(CC) $(CFLAGS) -o compute_coefficients_remote compute_coefficients_remote.c  $(FOREIGN_LIBS) $(GSL_LDFLAGS)
+compute_coefficients: compute_coefficients.c
+	$(CC) $(CFLAGS) -o compute_coefficients compute_coefficients.c $(LDFLAGS) $(COMMON_OBJS)
+
+compute_coefficients_remote: compute_coefficients_remote.c
+	$(CC) $(CFLAGS) -o compute_coefficients_remote compute_coefficients_remote.c $(LDFLAGS) $(COMMON_OBJS)
 
 ######## OPTIONS
 
@@ -26,4 +26,4 @@ install:
 
 clean:
 	rm -f $(BINARIES)
-	rm -f *.o
+	rm -f *.o *.a *.so

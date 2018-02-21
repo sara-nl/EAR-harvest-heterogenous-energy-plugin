@@ -11,15 +11,16 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
-#include <cpufreq.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
-#include <types/application.h>
-#include <types/projection.h>
-#include <config.h>
+#include <cpufreq.h>
+
+#include <common/types/application.h>
+#include <common/types/projection.h>
+#include <common/config.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 

@@ -25,11 +25,11 @@
 
 struct node_energy_op
 {
-    int (*node_energy_init) ();
+	int (*node_energy_init) ();
 	int (*count_energy_data_length)();
-    int (*read_dc_energy) (unsigned long *energy);
-    int (*read_ac_energy) (unsigned long *energy);
-    int (*node_energy_dispose) ();
+	int (*read_dc_energy) (unsigned long *energy);
+	int (*read_ac_energy) (unsigned long *energy);
+	int (*node_energy_dispose) ();
 } node_energy_ops;
 
 // FRU data for Product name

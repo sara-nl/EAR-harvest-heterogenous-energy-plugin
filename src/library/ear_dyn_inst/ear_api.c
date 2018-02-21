@@ -302,6 +302,6 @@ void ear_finalize()
 	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
 	states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
-	end_dc_energy();
+	
 	ear_daemon_client_disconnect();
 }
