@@ -14,4 +14,4 @@ ibm.o: ibm.c ibm.h
 ######## OPTIONS
 
 clean:
-	rm -rf *.o
+	rm -rf *.o *.a *.so

@@ -34,3 +34,4 @@ install:
 
 clean:
 	rm -f *.o *.a *.so
+	$(MAKE) -C bandwidth clean

@@ -27,5 +27,6 @@ energy_node.a: energy_node.o $(ENERGY_NODE_OBJS)
 install:
 
 clean:
-	rm -rf $(BINARIES)
-	rm -f *.so *.o
+	rm -f $(BINARIES)
+	rm -f *.so *.a *.o
+	@ $(MAKE) -C energy_node clean
