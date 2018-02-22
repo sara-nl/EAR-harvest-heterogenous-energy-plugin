@@ -69,7 +69,6 @@ char * getenv_ear_tmp()
 char * getenv_ear_db_pathname()
 {
 	char *my_ear_db_pathname;
-	char *my_folder;
 	my_ear_db_pathname=getenv("EAR_DB_PATHNAME");
 	if (my_ear_db_pathname!=NULL){
 		// Empty string
@@ -129,7 +128,7 @@ char *getenv_ear_coeff_db_pathname()
 	my_coeff_db=getenv("EAR_COEFF_DB_PATHNAME");
 	if (my_coeff_db==NULL){
 		install_path=getenv("EAR_INSTALL_PATH");
-		if (install_path==NULL) return;
+		if (install_path==NULL) return NULL;
 		my_coeff_db=malloc(strlen(install_path)+strlen(DEFAULT_COEFF_PATHNAME)+2);
 		sprintf(my_coeff_db,"%s/%s",install_path,DEFAULT_COEFF_PATHNAME);	
 	}
@@ -252,12 +251,16 @@ int getenv_ear_verbose()
 	}	
 	return conf_ear_verbose;
 }
+
+//TODO: esto está mal
 int getenv_ear_local_id()
 {
 	char *my_local_id;
 	my_local_id=getenv("SLURM_LOCALID");
 	if (my_local_id==NULL) return conf_ear_local_id;
+	return -1;
 }
+
 int getenv_ear_num_nodes()
 {
 	char *my_num_nodes;

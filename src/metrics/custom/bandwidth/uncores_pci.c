@@ -250,8 +250,8 @@ static void pci_scan_uncores()
     short *ids;
 
     ids = get_arch_ids(&n_ids);
-    devs = get_arch_devices(&n_devs);
-    funcs = get_arch_functions(&n_funcs);
+    devs = (uchar *) get_arch_devices(&n_devs);
+    funcs = (uchar *)  get_arch_functions(&n_funcs);
     fd_functions = malloc(sizeof(int) * 256);
     bus = -1;
 
@@ -355,7 +355,6 @@ int pci_read_uncores(ull *values)
 {
     int i, j, k, res;
     int n_ctrs;
-    ull aux;
 
     uchar *ctrs = get_arch_read_counters(&n_ctrs);
 

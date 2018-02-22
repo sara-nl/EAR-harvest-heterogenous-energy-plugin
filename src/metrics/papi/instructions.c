@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <papi.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
@@ -73,6 +74,7 @@ void init_basic_metrics()
 		}
 	}
 }
+
 void reset_basic_metrics()
 {
 	int sets,events,ret;
@@ -105,7 +107,7 @@ void start_basic_metrics()
 /* Stops includes accumulate metrics */
 void stop_basic_metrics(long long *cycles,long long *instructions)
 {
-	int sets,ev,ret;
+	int sets, ret;
 
 	*cycles=0;
 	*instructions=0;
