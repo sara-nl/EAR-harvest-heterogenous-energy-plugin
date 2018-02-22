@@ -8,7 +8,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <papi.h>
+
 #include <metrics/papi/generics.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/papi/flops.h>
@@ -184,7 +186,6 @@ void stop_flops_metrics(long long *flops, long long *f_operations)
 void print_gflops(long long total_inst,unsigned long total_time,uint total_cores)
 {
 	int sets,ev;
-	int procs_per_node;
 	long long total=0;
 	if (!flops_supported) return;
 	for (sets=0;sets<FLOPS_SETS;sets++)
@@ -212,7 +213,6 @@ void print_gflops(long long total_inst,unsigned long total_time,uint total_cores
 double gflops(unsigned long total_time,uint total_cores)
 {
         int sets,ev;
-        int resources;
         long long total=0;
 	double Gflops;
         if (!flops_supported) return (double)0;

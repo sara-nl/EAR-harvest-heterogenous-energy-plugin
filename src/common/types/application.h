@@ -20,7 +20,7 @@ typedef struct loop_info
 } loop_info_t;
 
 #define GENERIC_NAME	256
-#define POLICY_NAME		32
+#define POLICY_NAME	32
 #define FLOPS_EVENTS	8
 
 typedef struct application
@@ -55,7 +55,7 @@ typedef struct application
 // Function declarations
 
 //TODO:
-int init_application(application_t *app);
+void init_application(application_t *app);
 int print_application(application_t *app);
 void report_application_data(application_t *app);
 

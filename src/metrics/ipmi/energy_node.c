@@ -7,10 +7,10 @@
 
 */
 
-
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include <freeipmi/freeipmi.h>
 
@@ -46,10 +46,8 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
 {
 	ipmi_ctx_t ipmi_ctx_pn = NULL;
 	ipmi_fru_ctx_t fru_ctx_pn=NULL;
-	ipmi_sdr_ctx_t sdr_ctx_pn=NULL;
 	unsigned int workaround_flags = 0;
 	uid_t uid;
-	int i;
 	int ret;
 	int ready=0;
 	uint8_t language_code;

@@ -11,7 +11,7 @@
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
 
-int init_application(application_t *app)
+void init_application(application_t *app)
 {
     memset(app, 0, sizeof(application_t));
     app->node_id[0] = '\0';
@@ -28,7 +28,7 @@ void report_application_data(application_t *app)
     printf("-- User/job id: %s/%s\n", app->user_id, app->job_id);
     printf("-- Detected processes: %u\n", app->procs);
     printf("-- Execution time: %0.3lf (s)\n", app->time);
-    printf("-- Nominal/Average frequency: %lu/%s (MHz)\n", app->def_f, add_point_ulong(app->avg_f));
+    printf("-- Nominal/Average frequency: %u/%s (MHz)\n", app->def_f, add_point_ulong(app->avg_f));
     printf("-- Cycles/Instructions: %s/%s\n", add_point_ull(app->cycles), add_point_ull(app->instructions));
     printf("-- CPI/TPI: %0.3lf/%0.3lf\n", app->CPI, app->TPI);
     printf("-- Bandwidth: %0.3lf (GB/s)\n", app->GBS);
@@ -69,7 +69,7 @@ static int print_application_fd(int fd, application_t *app)
 
 	a = app;
 	dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
-	dprintf(fd, "%lu;%lu;", a->avg_f, a->def_f);
+	dprintf(fd, "%u;%u;", a->avg_f, a->def_f);
 	dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
 	dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
 	dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
@@ -189,7 +189,7 @@ int read_application_text_file(char *path, application_t **apps)
 {
     char line[PIPE_BUF];
     application_t *apps_aux, *a;
-    int ret, lines, i;
+    int lines, i;
     FILE *fd;
 
     if ((fd = fopen(path, "r")) == NULL) {
