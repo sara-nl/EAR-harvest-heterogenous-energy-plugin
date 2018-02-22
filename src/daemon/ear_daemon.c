@@ -86,8 +86,7 @@ void f_signals(int s)
 }
 void catch_signals()
 {
-	struct  sigaction sa; 
-    sigset_t mask;
+    struct  sigaction sa; 
     int s;
     sigemptyset(&sa.sa_mask);
     sa.sa_handler = f_signals;
@@ -160,15 +159,16 @@ void connect_service(int req,unsigned long pid)
 		connect=1;
 	}else{	
 		connect=0;
+		//TODO: implicit
 		if (check_ping()) alive=application_timeout();	
 		if (alive==0) connect=1;
 		
 	}
 	if (connect){
-    sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,req,pid);
+    sprintf(ear_commack,"%s/.ear_comm.ack_%d.%lu",ear_tmp,req,pid);
     application_id=pid;
     // ear_commack will be used to send ack's or values (depending on the requests) from eard to the library
-    ear_verbose(3,"eard:creating ack comm %s pid=%d\n",ear_commack,pid);
+    ear_verbose(3,"eard:creating ack comm %s pid=%lu\n",ear_commack,pid);
     if (mknod(ear_commack,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,0)<0){
         if (errno!=EEXIST){
             ear_verbose(0,"eard:Error creating ear communicator for ack %s\n",strerror(errno));
@@ -179,9 +179,9 @@ void connect_service(int req,unsigned long pid)
 	// At first service connection, we use the ping conn file
     if (req==0){
         // We open ping connection  for writting
-		sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,pid);
-		ear_verbose(1,"eard application %d connected\n",pid);
-        ear_verbose(3,"eard: opening ping conn for %d\n",pid);
+		sprintf(ear_ping,"%s/.ear_comm.ping.%lu",ear_tmp,pid);
+		ear_verbose(1,"eard application %lu connected\n",pid);
+        ear_verbose(3,"eard: opening ping conn for %lu\n",pid);
         ear_ping_fd=open(ear_ping,O_WRONLY);
         if (ear_ping_fd<0){
             ear_verbose(0,"eard Error opening ping pipe (%s) %s\n",ear_ping,strerror(errno));
@@ -189,8 +189,7 @@ void connect_service(int req,unsigned long pid)
         }
     }   
 	ear_verbose(3,"eard sending ack for service %d\n",req);
-	if (write(ear_ping_fd,&ack,sizeof(ack))!=sizeof(ack)) ear_verbose(0,"eard: warning writting ping conn for %d\n",pid);
-
+	if (write(ear_ping_fd,&ack,sizeof(ack))!=sizeof(ack)) ear_verbose(0,"eard: warning writting ping conn for %lu\n",pid);
 
     ear_verbose(2,"connect_service %s\n",ear_commack);
     if ((ear_fd_ack[req]=open(ear_commack,O_WRONLY))<0){
@@ -199,7 +198,7 @@ void connect_service(int req,unsigned long pid)
     }
 	}else{
 		// eard only suppports one application connected, the second one will block
-		ear_verbose(0,"eard: application with pid %d rejected\n",pid);
+		ear_verbose(0,"eard: application with pid %lu rejected\n",pid);
 	}
 	ear_verbose(2,"eard service %d connected\n",req);
 }
@@ -251,7 +250,6 @@ int application_timeout()
 void eard_exit()
 {
         int i;
-        unsigned long ack=0;
         char ear_commreq[MAX_PATH_SIZE];
 		ear_verbose(1,"eard_exit_________\n");
         eard_unlock();
@@ -271,7 +269,6 @@ void eard_exit()
 void eard_close_comm()
 {
 	int i;
-	unsigned long ack=0;
 	unsigned long long values[RAPL_EVS];
 	int dis_pid=application_id;
 	char ear_commack[MAX_PATH_SIZE];
@@ -357,7 +354,6 @@ void form_database_paths()
 {
 	char node_name[PATH_MAX];
 	char *db_pathname;
-	int ret;
 
 	db_pathname = get_ear_db_pathname();
 	gethostname(node_name, sizeof(node_name));
@@ -413,7 +409,7 @@ void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 	unsigned long ear_ok,freq;
 	if (new_freq<=max_freq) freq=new_freq;
 	else{ 
-		ear_verbose(1,"eard: warning, maximum freq is limited to %u\n",max_freq);
+		ear_verbose(1,"eard: warning, maximum freq is limited to %lu\n",max_freq);
 		freq=max_freq;
 	}
 	ear_ok=ear_cpufreq_set_node(freq);
@@ -509,7 +505,7 @@ int eard_uncore(int must_read)
 			stop_uncores(values);
 			write(ear_fd_ack[uncore_req], values, sizeof(unsigned long long) * num_uncore_counters);
 			for (i=0; i < num_uncore_counters; i++) demon_cas += values[i];
-			ear_debug(3,"DAEMON cas %llu %d values\n", demon_cas, num_uncore_counters);
+			ear_debug(3,"DAEMON cas %lu %d values\n", demon_cas, num_uncore_counters);
 		}
 			break;
 		case DATA_SIZE_UNCORE:
@@ -647,7 +643,7 @@ void main(int argc,char *argv[])
 	unsigned long ear_node_freq;
 	int numfds_ready, numfds_req = 0;
 	fd_set rfds, rfds_basic;
-	int i,  cpu_model, ret;
+	int i,  cpu_model;
 	sigset_t eard_mask;
 	char *my_ear_tmp;
 	int max_fd = -1;
@@ -706,12 +702,12 @@ void main(int argc,char *argv[])
 	// At this point, only one daemon is running
 
 	ear_verbose(1,"Starting eard...................pid %d\n",getpid());
-	ear_verbose(2,"eard: Creating comm files in %s with default freq %u verbose set to %d\n",
+	ear_verbose(2,"eard: Creating comm files in %s with default freq %lu verbose set to %d\n",
 				nodename,ear_node_freq,EAR_VERBOSE_LEVEL);
 
 	// We set the default frequency
 	if (ear_cpufreq_set_node(ear_node_freq)==0){
-		ear_verbose(0,"eard:Invalid frequency %u\n",ear_node_freq);
+		ear_verbose(0,"eard:Invalid frequency %lu\n",ear_node_freq);
 		eard_close_comm();
 	}
 

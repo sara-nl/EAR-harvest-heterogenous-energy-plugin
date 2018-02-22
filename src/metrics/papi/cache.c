@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <papi.h>
 
 #include <metrics/papi/cache.h>
@@ -45,9 +46,9 @@ int init_cache_metrics()
 			exit(1);
 		}
 
-		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid)) != PAPI_OK){
+		if ((ret = PAPI_assign_eventset_component(event_sets[sets],cid)) != PAPI_OK){
 			VERBOSE_N(0, "ERROR while assigning event set component (%s), exiting",
-					  sets, PAPI_strerror(ret));
+				PAPI_strerror(ret));
 			exit(1);
 		}
 
@@ -127,7 +128,7 @@ void start_cache_metrics()
 /* Stops includes accumulate metrics */
 void stop_cache_metrics(long long *L1_misses,long long * L2_misses,long long * L3_misses)
 {
-	int sets,ev,ret;
+	int sets, ret;
 	*L1_misses=0;
 	*L2_misses=0;
 	*L3_misses=0;

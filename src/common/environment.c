@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <common/environment.h>
@@ -438,7 +439,7 @@ void ear_print_lib_environment()
 	write(fd,var,strlen(var));
 	sprintf(var,"EAR_RESET_FREQ=%d\n",get_ear_reset_freq());
 	write(fd,var,strlen(var));
-	sprintf(var,"EAR_P_STATE=%d\n",get_ear_p_state());
+	sprintf(var,"EAR_P_STATE=%lu\n",get_ear_p_state());
 	write(fd,var,strlen(var));
 	sprintf(var,"EAR_NUM_NODES=%d\n",get_ear_num_nodes());
 	write(fd,var,strlen(var));
