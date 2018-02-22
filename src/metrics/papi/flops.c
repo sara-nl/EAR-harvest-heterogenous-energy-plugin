@@ -61,15 +61,14 @@ int init_flops_metrics()
 		}
 
 		if ((retval=PAPI_assign_eventset_component(event_sets[sets],cid)) != PAPI_OK){
-			VERBOSE_N(0,"FP_METRICS: PAPI_assign_eventset_component.%s",
-				  sets,PAPI_strerror(retval));
+			VERBOSE_N(0,"FP_METRICS: PAPI_assign_eventset_component.%s", PAPI_strerror(retval));
 			return flops_supported;
 		}
 
 		attach_ops[sets].attach.eventset=event_sets[sets];
  		attach_ops[sets].attach.tid=getpid();
 		if ((retval=PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*) &attach_ops[sets]))!=PAPI_OK){
-			VERBOSE_N(0,"FP_METRICS: PAPI_set_opt.%s",__FILE__,PAPI_strerror(retval));
+			VERBOSE_N(0, "FP_METRICS: PAPI_set_opt.%s", PAPI_strerror(retval));
 		}
 		retval = PAPI_set_multiplex(event_sets[sets]);
 		if ((retval == PAPI_EINVAL) && (PAPI_get_multiplex(event_sets[sets]) > 0)){
@@ -176,12 +175,10 @@ void stop_flops_metrics(long long *flops, long long *f_operations)
 
 				*flops += (values[sets][ev] * weights[sets][ev]);
 
-				VERBOSE_N(2,"[%d]=%llu x %d, ",ev,values[sets][ev],weights[sets][ev]);
+				VERBOSE_N(2,"[%d]=%llu x %d, ", ev, values[sets][ev], weights[sets][ev]);
 			}
-			VERBOSE_N(2,"");
 		}
 	}
-	VERBOSE_N(2,"");
 }
 
 void print_gflops(long long total_inst,unsigned long total_time,uint total_cores)
@@ -190,7 +187,8 @@ void print_gflops(long long total_inst,unsigned long total_time,uint total_cores
 	int procs_per_node;
 	long long total=0;
 	if (!flops_supported) return;
-	for (sets=0;sets<FLOPS_SETS;sets++){
+	for (sets=0;sets<FLOPS_SETS;sets++)
+        {
 		if (sets==SP_OPS){
 			VERBOSE_N(1,"SP FOPS:");
 		}else{
@@ -200,12 +198,12 @@ void print_gflops(long long total_inst,unsigned long total_time,uint total_cores
 			total=total+(weights[sets][ev]*acum_values[sets][ev]);
 		}
 		if (total>0){
+
 		for (ev=0;ev<FLOPS_EVS;ev++){
-			VERBOSE_N(1,"[%d]=%llu x %d (%lf \%), ",ev,acum_values[sets][ev],weights[sets][ev],
+			VERBOSE_N(1,"[%d]=%llu x %d (%lf %%), ", ev, acum_values[sets][ev], weights[sets][ev],
 			(double)(weights[sets][ev]*acum_values[sets][ev]*100)/(double)total);
 		}
 		}
-		VERBOSE_N(1,"");
 	}
 	VERBOSE_N(1,"GFlops per process = %.3lf ", (double)(total)/(double)(total_time*1000));
 	VERBOSE_N(1,"GFlops per node    = %.3lf ", (double)(total*total_cores)/(double)(total_time*1000));
