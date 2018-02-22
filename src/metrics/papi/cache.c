@@ -5,6 +5,7 @@
 #include <metrics/papi/cache.h>
 #include <metrics/papi/generics.h>
 #include <metrics/custom/hardware_info.h>
+#include <common/ear_verbose.h>
 #include <common/states.h>
 
 #define CACHE_SETS 	3
@@ -46,8 +47,7 @@ int init_cache_metrics()
 		}
 
 		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid)) != PAPI_OK){
-			VERBOSE_N(0, "PAPI_assign_eventset_component.Exiting:%s",
-					sets,PAPI_strerror(ret));
+			VERBOSE_N(0, "PAPI_assign_eventset_component.Exiting:%s", PAPI_strerror(ret));
 			exit(1);
 		}
 

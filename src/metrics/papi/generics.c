@@ -3,18 +3,19 @@
 #include <string.h>
 #include <papi.h>
 #include <metrics/papi/generics.h>
+#include <common/ear_verbose.h>
 
-PAPI_hw_info_t *hw_general = NULL;
+static const char *__NAME__ = "METRICS_GENERICS";
 
 void metrics_get_app_name(char *app_name)
 {
-	const PAPI_exe_info_t *prginfo = NULL;
+	PAPI_exe_info_t *prginfo = NULL;
 
 	PAPI_INIT_TEST(__FILE__);
 
 	if ((prginfo = PAPI_get_executable_info()) == NULL)
 	{
-		ear_verbose(0,"EAR(%s): Executable info not available. Exiting\n", __FILE__);
+		VERBOSE_N(0, "executable info not available, exiting");
 		exit(2);
 	}
 

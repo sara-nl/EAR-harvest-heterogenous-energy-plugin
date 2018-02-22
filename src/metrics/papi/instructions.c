@@ -43,8 +43,7 @@ void init_basic_metrics()
 
 		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid))!=PAPI_OK)
 		{
-			VERBOSE_N(0, "PAPI_assign_eventset_component.Exiting:%s",
-					sets,PAPI_strerror(ret));
+			VERBOSE_N(0, "PAPI_assign_eventset_component.Exiting:%s", PAPI_strerror(ret));
 			exit(1);
 		}
 
