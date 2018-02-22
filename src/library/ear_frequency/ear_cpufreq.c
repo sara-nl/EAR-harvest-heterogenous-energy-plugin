@@ -173,8 +173,12 @@ unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 	if (ear_is_valid_frequency(newfreq)){
 		ear_cpufreq[cpuid]=newfreq;
 		// cpufreq_set_frequency(cpuid,newfreq);
-		ret=ear_daemon_client_change_freq(newfreq);
-		return ret;
+		if (!ear_my_local_id){ 
+			ret=ear_daemon_client_change_freq(newfreq);
+			return ret;
+		}else{
+			return ret;
+		}
 	}else return 0;
 
 }
@@ -182,7 +186,8 @@ unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 unsigned long ear_cpufreq_set_node(unsigned long newfreq)
 {
 	ear_verbose(4,"EAR: ear_cpufreq_set_node newfreq=%u\n", newfreq);
-	ear_frequency = ear_daemon_client_change_freq(newfreq);
+	if (!ear_my_local_id) ear_frequency = ear_daemon_client_change_freq(newfreq);
+	else ear_frequency=newfreq;
 	return ear_frequency;
 }
 
