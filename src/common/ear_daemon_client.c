@@ -23,7 +23,6 @@
 #include <common/types/generic.h>
 #include <common/states.h>
 
-static int ear_daemon_client_connected=0;
 static int ear_fd_req[ear_daemon_client_requests],ear_fd_ack[ear_daemon_client_requests];
 static unsigned long uncore_size,rapl_size,freq_size,energy_size;
 char ear_commreq[1024],ear_commack[1024];
@@ -40,11 +39,11 @@ void warning(int return_value, int expected, char *msg)
 
 int ear_daemon_client_connect()
 {
-        int status,i,retval;
         char nodename[256];
-		unsigned long ret,ack;
-		struct daemon_req req;
-		int tries=0,connected=0;
+	unsigned long ret,ack;
+	struct daemon_req req;
+	int tries=0,connected=0;
+        int i;
 
         // These files connect EAR with EAR_COMM
         ear_tmp=getenv("EAR_TMP");
@@ -202,9 +201,9 @@ unsigned long ear_daemon_client_get_data_size_frequency()
 }
 void ear_daemon_client_begin_compute_turbo_freq()
 {
-    unsigned long old_freq=EAR_ERROR;
 	struct daemon_req req;
 	unsigned long ack=EAR_SUCCESS;
+
 	ear_debug(2,"EAR_daemon_client:start getting turbo freq \n");
     req.req_service=START_GET_FREQ;
     if (ear_fd_req[freq_req]>=0){
@@ -241,8 +240,8 @@ unsigned long ear_daemon_client_end_compute_turbo_freq()
                     ear_verbose(0,"EAR: Error ear_daemon_client_end_compute_turbo_freq ACK:%s\n",
 								strerror(errno));
 					return EAR_ERROR;
-            }   
-            ear_verbose(2,"EAR_daemon_client: TURBO freq computed as  %u\n",ack);
+            }
+		ear_verbose(2,"EAR_daemon_client: TURBO freq computed as  %lu\n", ack);
         }else{
         	ear_debug(0,"EAR_daemon_client: ear_daemon_client_end_compute_turbo_freq service not provided\n");
     	}   
@@ -250,7 +249,6 @@ unsigned long ear_daemon_client_end_compute_turbo_freq()
 }
 void ear_daemon_client_begin_app_compute_turbo_freq()
 {
-    unsigned long old_freq=EAR_ERROR;
     struct daemon_req req;
     unsigned long ack=EAR_SUCCESS;
     ear_debug(2,"EAR_daemon_client:start getting turbo freq \n");
@@ -284,7 +282,7 @@ unsigned long ear_daemon_client_end_app_compute_turbo_freq()
                     ear_verbose(0,"EAR: Error ear_daemon_client_app_end_compute_turbo_freq ACK:%s\n",strerror(errno));
                     return EAR_ERROR;
             }
-            ear_verbose(2,"EAR_daemon_client: TURBO freq computed as  %u\n",ack);
+            ear_verbose(2,"EAR_daemon_client: TURBO freq computed as  %lu\n",ack);
         }else{
             ear_debug(0,"EAR_daemon_client: ear_daemon_client_end_app_compute_turbo_freq service not provided\n");
         }
@@ -337,7 +335,7 @@ unsigned long ear_daemon_client_change_freq(unsigned long newfreq)
 			_exit(1);
 		}
 
-		ear_verbose(3,"EAR_daemon_client: Frequency_changed to %u\n", real_freq);
+		ear_verbose(3,"EAR_daemon_client: Frequency_changed to %lu\n", real_freq);
 	} else {
 		real_freq = 0;
 		ear_debug(0,"EAR_daemon_client: change_freq service not provided\n");
@@ -421,10 +419,11 @@ int ear_daemon_client_start_uncore()
 int ear_daemon_client_read_uncore(unsigned long long *values)
 {
 	struct daemon_req req;
-    unsigned long ack;
+	unsigned long ack;
+	
 	req.req_service=READ_UNCORE;
-	unsigned long metrics;
-	ear_debug(2,"EAR_daemon_client:reading uncore counters\n");
+	ear_debug(2, "EAR_daemon_client:reading uncore counters\n");
+
 	if (ear_fd_req[uncore_req]>=0){
 		// There is not request for uncore...only answer
         	if (write(ear_fd_req[uncore_req],&req,sizeof(req))!=sizeof(req)){
@@ -526,9 +525,9 @@ int ear_daemon_client_start_rapl()
 int ear_daemon_client_read_rapl(unsigned long long *values)
 {
 	struct daemon_req req;
-    unsigned long ack;
+    	unsigned long ack;
+	
 	req.req_service=READ_RAPL;
-	unsigned long metrics;
 	
 	unsigned long long acum_energy=0;
 	int i;

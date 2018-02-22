@@ -323,10 +323,6 @@ cache.c:123:11: warning: unused variable ‘ev’ [-Wunused-variable]
   int sets,ev,ret;
            ^
 gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c energy_cpu.c -L/home/xjaneas/opt/lib -lpapi
-energy_cpu.c: In function ‘init_rapl_metrics’:
-energy_cpu.c:45:18: warning: assignment discards ‘const’ qualifier from pointer target type [enabled by default]
-  ear_rapl_cmpinfo=PAPI_get_component_info(cid);
-                  ^
 gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c flops.c -L/home/xjaneas/opt/lib -lpapi
 flops.c: In function ‘init_flops_metrics’:
 flops.c:69:4: warning: implicit declaration of function ‘getpid’ [-Wimplicit-function-declaration]
