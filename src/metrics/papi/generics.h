@@ -1,6 +1,7 @@
 #ifndef EAR_PAPI_MACROS_H
 #define EAR_PAPI_MACROS_H
 
+// Use along with <ear_verbose.h> and by defining
 #define PAPI_INIT_TEST(name) \
     int papi_init; \
     if (PAPI_is_initialized() == PAPI_NOT_INITED) { \
@@ -14,7 +15,7 @@
 #define PAPI_INIT_MULTIPLEX_TEST(name) \
 	int papi_multi; \
 	if ((papi_multi = PAPI_multiplex_init()) != PAPI_OK) { \
-		ear_verbose(0,"%s: WARNING,  %s\n", name, PAPI_strerror(papi_multi)); \
+		ear_verbose(0,"%s: WARNING, %s\n", name, PAPI_strerror(papi_multi)); \
 	}
 
 #define PAPI_GET_COMPONENT(cid, event, name) \
@@ -26,5 +27,6 @@
 
 //
 void metrics_get_app_name(char *app_name);
+PAPI_hw_info_t metrics_get_hw_info();
 
 #endif

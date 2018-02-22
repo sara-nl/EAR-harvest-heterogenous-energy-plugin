@@ -24,15 +24,15 @@
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 
-static uint ear_num_cpus;
-static uint ear_num_p_states = 0;
-static ulong *ear_cpufreq;
-static ulong *ear_cpufreq_pstates;
-static ulong ear_nominal_freq;
 static const PAPI_hw_info_t *ear_cpufreq_hwinfo;
 static struct cpufreq_policy *current_policy;
 static struct cpufreq_policy prev_policy;
+static ulong *ear_cpufreq_pstates;
+static ulong ear_nominal_freq;
 static ulong ear_prev_freq;
+static ulong *ear_cpufreq;
+static uint ear_num_p_states;
+static uint ear_num_cpus;
 
 unsigned int ear_get_pstate(unsigned long f)
 {
@@ -64,30 +64,24 @@ void ear_cpufreq_init()
 	char *ear_tmp;
 	char nodename[128];
 	char ear_commreq[128],ear_commack[128];
+
 	ear_verbose(4,"EAR: ear_cpufreq_init\n");
-    	//Init the PAPI library
-	if (PAPI_is_initialized()==PAPI_NOT_INITED){
-        	retval=PAPI_library_init(PAPI_VER_CURRENT );
-        	if ( (retval != PAPI_VER_CURRENT ) && (retval>0)){
-        		ear_verbose(0,"EAR: Error intializing the PAPI library init %d current %d.Exiting\n",retval,PAPI_VER_CURRENT);
-        		exit(1);
-        	}
-	}
-	ear_cpufreq_hwinfo= PAPI_get_hardware_info();
-    if (ear_cpufreq_hwinfo==NULL){
-        ear_verbose(0,"EAR: ERROR PAPI_get_hardware_info returns NULL.Exiting\n");
+
+	//
+	ear_cpufreq_hwinfo = metrics_get_hw_info();
+
+	// We should detect cpus
+	ear_num_cpus=ear_cpufreq_hwinfo->sockets*ear_cpufreq_hwinfo->cores*ear_cpufreq_hwinfo->threads;
+	ear_verbose(1,"EAR: %u cpus detected (sockets %u cores %u threads %u)\n",ear_cpufreq_hwinfo->ncpu,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
+	ear_cpufreq=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus);
+
+	if (ear_cpufreq==NULL){
+		ear_verbose(0,"EAR: malloc returns null for ear_cpulist.Exiting\n");
 		exit(1);
-     }else{
-		// We should detect cpus
-		ear_num_cpus=ear_cpufreq_hwinfo->sockets*ear_cpufreq_hwinfo->cores*ear_cpufreq_hwinfo->threads;
-		ear_verbose(1,"EAR: %u cpus detected (sockets %u cores %u threads %u)\n",ear_cpufreq_hwinfo->ncpu,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
-		ear_cpufreq=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus); 
-		if (ear_cpufreq==NULL){
-			ear_verbose(0,"EAR: malloc returns null for ear_cpulist.Exiting\n");
-			exit(1);
-		}
-		// We check all the cpus are online, we should detect cores but
-		// we start with this approach
+	}
+
+	// We check all the cpus are online, we should detect cores but
+	// we start with this approach
 		for (i=0;i<ear_num_cpus;i++){
         	status=cpufreq_cpu_exists(i);
 			ear_cpufreq[i]=0;
@@ -121,7 +115,7 @@ void ear_cpufreq_init()
 		i++;
 	}	
 	cpufreq_put_available_frequencies(first);
-	}
+
 	ear_nominal_freq=ear_cpufreq_pstates[1];
 	ear_verbose(2,"EAR: Nominal frequency detected %u\n",ear_nominal_freq);
 	current_policy=cpufreq_get_policy(0);
@@ -143,7 +137,6 @@ unsigned long ear_min_f()
 	return ear_cpufreq_pstates[ear_num_p_states-1];
 }
 
-
 unsigned long ear_cpufreq_get(unsigned int cpuid)
 {
 	unsigned long f;
@@ -155,7 +148,6 @@ unsigned long ear_cpufreq_get(unsigned int cpuid)
 	f=cpufreq_get(cpuid);
 	ear_verbose(4,"EAR: ear_cpufreq_get for cpu %u f=%u\n",cpuid,f);
 	return ear_cpufreq[cpuid]=f;
-
 }
 
 unsigned int ear_is_valid_frequency(unsigned long f)
@@ -165,6 +157,7 @@ unsigned int ear_is_valid_frequency(unsigned long f)
 	if (i<ear_num_p_states) return 1;
 	else return 0;
 }
+
 unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 {
 	unsigned long ret;

@@ -41,7 +41,7 @@ int init_cache_metrics()
 		/* Init event sets */
 	    	event_sets[sets]=PAPI_NULL;
 	        if ((ret=PAPI_create_eventset(&event_sets[sets])) != PAPI_OK){
-			VERBOSE_N(0, "Creating %d eventset.Exiting:%s", sets,PAPI_strerror(ret));
+			VERBOSE_N(0, "Creating %d eventset.Exiting:%s", sets, PAPI_strerror(ret));
 			exit(1);
 		}
 
