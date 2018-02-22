@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <papi.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/stalls.h>
@@ -103,7 +104,7 @@ void start_stall_metrics()
 /* Stops includes accumulate metrics */
 void stop_stall_metrics(long long *stall_cycles)
 {
-	int sets,ev,ret;
+	int sets, ret;
 	*stall_cycles=0;
 	// There is a single event set for stall instruction
 	for (sets=0;sets<STALL_SETS;sets++)

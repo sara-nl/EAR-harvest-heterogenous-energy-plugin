@@ -6,6 +6,7 @@
     	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,7 @@
 #define _GNU_SOURCE
 #define __USE_GNU
 
+#include <metrics/custom/frequency.h>
 #include <daemon/ear_frequency.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>

@@ -52,7 +52,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include "frequency.h"
+
+#include <metrics/custom/frequency.h>
+#include <metrics/custom/hardware_info.h>
+#include <common/states.h>
 
 // INTEL APERF/MPERF MSR registers
 //
@@ -156,13 +159,15 @@ int aperf_init(unsigned int num_cpus)
     return -(result != 0) ;
 }
 
-int aperf_init_cpu(unsigned int cpu,unsigned long max_freq)
+int aperf_init_cpu(unsigned int cpu, unsigned long max_freq)
 {
     if (cpu >= _num_cpus) {
-        return EAPERF;
+        return EAR_ERROR;
     }
     cpu_info[cpu].nominal_freq = max_freq;
     cpu_total_info[cpu].nominal_freq = max_freq;
+
+    return EAR_SUCCESS;
 }
 
 void aperf_dispose()

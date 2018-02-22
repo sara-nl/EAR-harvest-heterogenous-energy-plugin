@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <papi.h>
 
 #include <metrics/papi/cache.h>
@@ -120,7 +121,7 @@ void start_cache_metrics()
 /* Stops includes accumulate metrics */
 void stop_cache_metrics(long long *L1_misses, long long *L2_misses, long long *L3_misses)
 {
-	int sets,ev,ret;
+	int sets, ret;
 
 	*L1_misses=0;
 	*L2_misses=0;

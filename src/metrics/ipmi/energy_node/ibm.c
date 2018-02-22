@@ -26,7 +26,6 @@
 ear_debug(4, "ear_daemon(ibm) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
-static struct ipmi_raw_arguments *args;
 static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
@@ -143,15 +142,15 @@ int ibm_node_energy_init()
 	return 0;	
 		
 }
+
 int ibm_count_energy_data_length()
 {
-	int ret;
 	FUNCVERB("ibm_count_energy_data_length");
 	return sizeof(unsigned long);
 }
+
 int ibm_read_dc_energy(unsigned long *energy)
 {
-	int ret;
 	unsigned long *energyp;
 	int rs_len;
 	if (ipmi_ctx==NULL){ 
@@ -184,7 +183,6 @@ int ibm_read_ac_energy(unsigned long *energy)
 /* Release access to ipmi device */
 int ibm_node_energy_dispose()
 {
-	int ret;
 	FUNCVERB("ibm_node_energy_dispose");
 	if (ipmi_ctx==NULL){ 
 		ear_verbose(0,"ibm: IPMI context not initiallized\n");

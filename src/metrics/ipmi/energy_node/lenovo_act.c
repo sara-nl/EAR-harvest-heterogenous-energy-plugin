@@ -27,7 +27,6 @@
 ear_debug(4, "ear_daemon(lenovo_act) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
-static struct ipmi_raw_arguments *args;
 static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
@@ -143,15 +142,15 @@ int lenovo_act_node_energy_init()
 	return EAR_SUCCESS;	
 		
 }
+
 int lenovo_act_count_energy_data_length()
 {
-	int ret;
 	FUNCVERB("lenovo_count_energy_data_length");
 	return sizeof(unsigned long);
 }
+
 int lenovo_act_read_dc_energy(unsigned long *energy)
 {
-	int ret;
 	unsigned long *energyp;
 	int rs_len;
 	if (ipmi_ctx==NULL){ 
@@ -175,16 +174,17 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
 	*energy=(unsigned long)be64toh(*energyp);
 	return EAR_SUCCESS;
 }
+
 /* AC energy is not yet supported */
 int lenovo_act_read_ac_energy(unsigned long *energy)
 {
 	*energy=0;
 	return EAR_SUCCESS;
 }
+
 /* Release access to ipmi device */
 int lenovo_act_node_energy_dispose()
 {
-	int ret;
 	FUNCVERB("lenovo_node_energy_dispose");
 	if (ipmi_ctx==NULL){ 
 		ear_verbose(0,"lenovo_air_cooling: IPMI context not initiallized\n");
