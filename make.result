@@ -1,0 +1,551 @@
+make[1]: Entering directory `/home/xjaneas/git/EAR/src'
+====================================
+= Compilling common
+====================================
+make[2]: Entering directory `/home/xjaneas/git/EAR/src/common'
+gcc -I/home/xjaneas/git/EAR/src -fPIC -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c ear_daemon_client.c
+ear_daemon_client.c: In function ‘ear_daemon_client_connect’:
+ear_daemon_client.c:43:22: warning: unused variable ‘retval’ [-Wunused-variable]
+         int status,i,retval;
+                      ^
+ear_daemon_client.c:43:13: warning: unused variable ‘status’ [-Wunused-variable]
+         int status,i,retval;
+             ^
+ear_daemon_client.c: In function ‘ear_daemon_client_begin_compute_turbo_freq’:
+ear_daemon_client.c:205:19: warning: unused variable ‘old_freq’ [-Wunused-variable]
+     unsigned long old_freq=EAR_ERROR;
+                   ^
+ear_daemon_client.c: In function ‘ear_daemon_client_end_compute_turbo_freq’:
+ear_daemon_client.c:245:13: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+             ear_verbose(2,"EAR_daemon_client: TURBO freq computed as  %u\n",ack);
+             ^
+ear_daemon_client.c: In function ‘ear_daemon_client_begin_app_compute_turbo_freq’:
+ear_daemon_client.c:253:19: warning: unused variable ‘old_freq’ [-Wunused-variable]
+     unsigned long old_freq=EAR_ERROR;
+                   ^
+ear_daemon_client.c: In function ‘ear_daemon_client_end_app_compute_turbo_freq’:
+ear_daemon_client.c:287:13: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+             ear_verbose(2,"EAR_daemon_client: TURBO freq computed as  %u\n",ack);
+             ^
+ear_daemon_client.c: In function ‘ear_daemon_client_change_freq’:
+ear_daemon_client.c:340:3: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+   ear_verbose(3,"EAR_daemon_client: Frequency_changed to %u\n", real_freq);
+   ^
+ear_daemon_client.c: In function ‘ear_daemon_client_read_uncore’:
+ear_daemon_client.c:426:16: warning: unused variable ‘metrics’ [-Wunused-variable]
+  unsigned long metrics;
+                ^
+ear_daemon_client.c: In function ‘ear_daemon_client_read_rapl’:
+ear_daemon_client.c:531:16: warning: unused variable ‘metrics’ [-Wunused-variable]
+  unsigned long metrics;
+                ^
+ear_daemon_client.c: At top level:
+ear_daemon_client.c:26:12: warning: ‘ear_daemon_client_connected’ defined but not used [-Wunused-variable]
+ static int ear_daemon_client_connected=0;
+            ^
+gcc -I/home/xjaneas/git/EAR/src -fPIC -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c environment.c
+environment.c: In function ‘getenv_ear_db_pathname’:
+environment.c:72:8: warning: unused variable ‘my_folder’ [-Wunused-variable]
+  char *my_folder;
+        ^
+environment.c: In function ‘getenv_ear_coeff_db_pathname’:
+environment.c:132:27: warning: ‘return’ with no value, in function returning non-void [-Wreturn-type]
+   if (install_path==NULL) return;
+                           ^
+environment.c: In function ‘getenv_ear_local_id’:
+environment.c:260:1: warning: control reaches end of non-void function [-Wreturn-type]
+ }
+ ^
+gcc -I/home/xjaneas/git/EAR/src -fPIC -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c string_enhanced.c
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/common/types'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0   -c -o application.o application.c
+application.c: In function ‘report_application_data’:
+application.c:31:5: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘unsigned int’ [-Wformat=]
+     printf("-- Nominal/Average frequency: %lu/%s (MHz)\n", app->def_f, add_point_ulong(app->avg_f));
+     ^
+application.c: In function ‘print_application_fd’:
+application.c:72:2: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 3 has type ‘unsigned int’ [-Wformat=]
+  dprintf(fd, "%lu;%lu;", a->avg_f, a->def_f);
+  ^
+application.c:72:2: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 4 has type ‘unsigned int’ [-Wformat=]
+application.c: In function ‘read_application_binary_file’:
+application.c:129:31: warning: variable ‘a’ set but not used [-Wunused-but-set-variable]
+     application_t *apps_aux, *a;
+                               ^
+application.c: In function ‘read_application_text_file’:
+application.c:192:9: warning: unused variable ‘ret’ [-Wunused-variable]
+     int ret, lines, i;
+         ^
+application.c: In function ‘init_application’:
+application.c:22:1: warning: control reaches end of non-void function [-Wreturn-type]
+ }
+ ^
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/common/types'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/common/types'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0   -c -o projection.o projection.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/common/types'
+ar rvs types.a types/application.o types/projection.o string_enhanced.o
+ar: creating types.a
+a - types/application.o
+a - types/projection.o
+a - string_enhanced.o
+make[2]: Leaving directory `/home/xjaneas/git/EAR/src/common'
+====================================
+= Compilling metrics
+====================================
+make[2]: Entering directory `/home/xjaneas/git/EAR/src/metrics'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/metrics/custom'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c bandwidth.c 
+In file included from bandwidth.c:29:0:
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:11:14: warning: ‘HASWELL_X_IDS’ defined but not used [-Wunused-variable]
+ static short HASWELL_X_IDS[]      = { 0x2FB4, 0x2FB5, 0x2FB0, 0x2FB1, 0x2FD4, 0x2FD5, 0x2FD0, 0x2FD1 };
+              ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:12:13: warning: ‘HASWELL_X_STA_CTL’ defined but not used [-Wunused-variable]
+ static char HASWELL_X_STA_CTL[]   = { 0xF4 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:13:13: warning: ‘HASWELL_X_STA_CMD’ defined but not used [-Wunused-variable]
+ static int  HASWELL_X_STA_CMD[]   = { 0x30000 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:14:13: warning: ‘HASWELL_X_STO_CTL’ defined but not used [-Wunused-variable]
+ static char HASWELL_X_STO_CTL[]   = { 0xF4 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:15:13: warning: ‘HASWELL_X_STO_CMD’ defined but not used [-Wunused-variable]
+ static int  HASWELL_X_STO_CMD[]   = { 0x30100 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:16:13: warning: ‘HASWELL_X_RST_CTL’ defined but not used [-Wunused-variable]
+ static char HASWELL_X_RST_CTL[]   = { 0xF4, 0xD8, 0xDC };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:17:13: warning: ‘HASWELL_X_RST_CMD’ defined but not used [-Wunused-variable]
+ static int  HASWELL_X_RST_CMD[]   = { 0x30102, 0x420304, 0x420C04 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:18:13: warning: ‘HASWELL_X_RED_CTR’ defined but not used [-Wunused-variable]
+ static char HASWELL_X_RED_CTR[]   = { 0xA0, 0xA8 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:19:13: warning: ‘HASWELL_X_DEVICES’ defined but not used [-Wunused-variable]
+ static char HASWELL_X_DEVICES[]   = { 0x14, 0x15, 0x17, 0x18 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:20:13: warning: ‘HASWELL_X_FUNCTIONS’ defined but not used [-Wunused-variable]
+ static char HASWELL_X_FUNCTIONS[] = { 0x00, 0x01 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:21:13: warning: ‘HASWELL_X_N_FUNCTIONS’ defined but not used [-Wunused-variable]
+ static int  HASWELL_X_N_FUNCTIONS = 8;
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:23:14: warning: ‘SKYLAKE_X_IDS’ defined but not used [-Wunused-variable]
+ static short SKYLAKE_X_IDS[]      = { 0x2042, 0x2046, 0x204A };
+              ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:24:13: warning: ‘SKYLAKE_X_DEVICES’ defined but not used [-Wunused-variable]
+ static char SKYLAKE_X_DEVICES[]   = { 0x0A, 0x0B, 0x0C, 0x0D };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:25:13: warning: ‘SKYLAKE_X_REGISTERS’ defined but not used [-Wunused-variable]
+ static char SKYLAKE_X_REGISTERS[] = { 0xF8, 0xF4, 0xD8, 0xA0 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:26:13: warning: ‘SKYLAKE_X_FUNCTIONS’ defined but not used [-Wunused-variable]
+ static char SKYLAKE_X_FUNCTIONS[] = { 0x02, 0x06 };
+             ^
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:27:13: warning: ‘SKYLAKE_X_N_FUNCTIONS’ defined but not used [-Wunused-variable]
+ static int  SKYLAKE_X_N_FUNCTIONS = 6;
+             ^
+make[4]: Entering directory `/home/xjaneas/git/EAR/src/metrics/custom/bandwidth'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c uncores_pci.c
+uncores_pci.c: In function ‘pci_scan_uncores’:
+uncores_pci.c:253:10: warning: pointer targets in assignment differ in signedness [-Wpointer-sign]
+     devs = get_arch_devices(&n_devs);
+          ^
+uncores_pci.c:254:11: warning: pointer targets in assignment differ in signedness [-Wpointer-sign]
+     funcs = get_arch_functions(&n_funcs);
+           ^
+uncores_pci.c:262:9: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+         sprintf(path, "/proc/bus/pci/%x/%0.2x.%x", i, devs[j], funcs[k]);
+         ^
+uncores_pci.c: In function ‘pci_reset_uncores’:
+uncores_pci.c:330:2: warning: pointer targets in passing argument 1 of ‘write_command’ differ in signedness [-Wpointer-sign]
+  return write_command(ctl, cmd, n_ctl, n_cmd);
+  ^
+uncores_pci.c:217:12: note: expected ‘uchar *’ but argument is of type ‘char *’
+ static int write_command(uchar *ctl, int *cmd, int n_ctl, int n_cmd)
+            ^
+uncores_pci.c: In function ‘pci_start_uncores’:
+uncores_pci.c:339:5: warning: pointer targets in passing argument 1 of ‘write_command’ differ in signedness [-Wpointer-sign]
+     return write_command(ctl, cmd, n_ctl, n_cmd);
+     ^
+uncores_pci.c:217:12: note: expected ‘uchar *’ but argument is of type ‘char *’
+ static int write_command(uchar *ctl, int *cmd, int n_ctl, int n_cmd)
+            ^
+uncores_pci.c: In function ‘pci_stop_uncores’:
+uncores_pci.c:348:5: warning: pointer targets in passing argument 1 of ‘write_command’ differ in signedness [-Wpointer-sign]
+     res = write_command(ctl, cmd, n_ctl, n_cmd);
+     ^
+uncores_pci.c:217:12: note: expected ‘uchar *’ but argument is of type ‘char *’
+ static int write_command(uchar *ctl, int *cmd, int n_ctl, int n_cmd)
+            ^
+uncores_pci.c: In function ‘pci_read_uncores’:
+uncores_pci.c:360:19: warning: pointer targets in initialization differ in signedness [-Wpointer-sign]
+     uchar *ctrs = get_arch_read_counters(&n_ctrs);
+                   ^
+uncores_pci.c:358:9: warning: unused variable ‘aux’ [-Wunused-variable]
+     ull aux;
+         ^
+In file included from uncores_pci.c:81:0:
+uncores_pci.c: At top level:
+/home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h:25:13: warning: ‘SKYLAKE_X_REGISTERS’ defined but not used [-Wunused-variable]
+ static char SKYLAKE_X_REGISTERS[] = { 0xF8, 0xF4, 0xD8, 0xA0 };
+             ^
+make[4]: Leaving directory `/home/xjaneas/git/EAR/src/metrics/custom/bandwidth'
+ar rvs bandwidth.a bandwidth.o bandwidth/uncores_pci.o
+ar: creating bandwidth.a
+a - bandwidth.o
+a - bandwidth/uncores_pci.o
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c frequency.c 
+frequency.c: In function ‘aperf_init’:
+frequency.c:147:5: warning: implicit declaration of function ‘is_aperf_compatible’ [-Wimplicit-function-declaration]
+     if (!is_aperf_compatible()) {
+     ^
+frequency.c: In function ‘aperf_init_cpu’:
+frequency.c:166:1: warning: control reaches end of non-void function [-Wreturn-type]
+ }
+ ^
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c hardware_info.c 
+hardware_info.c: In function ‘get_cpu_logical_processors’:
+hardware_info.c:19:18: warning: unused variable ‘edx’ [-Wunused-variable]
+     unsigned int edx = 0;
+                  ^
+hardware_info.c:150:5: note: in expansion of macro ‘CREGS’
+     CREGS();
+     ^
+hardware_info.c:18:18: warning: unused variable ‘ecx’ [-Wunused-variable]
+     unsigned int ecx = 0; \
+                  ^
+hardware_info.c:150:5: note: in expansion of macro ‘CREGS’
+     CREGS();
+     ^
+hardware_info.c:17:18: warning: unused variable ‘ebx’ [-Wunused-variable]
+     unsigned int ebx = 0; \
+                  ^
+hardware_info.c:150:5: note: in expansion of macro ‘CREGS’
+     CREGS();
+     ^
+hardware_info.c:16:18: warning: unused variable ‘eax’ [-Wunused-variable]
+     unsigned int eax = 0; \
+                  ^
+hardware_info.c:150:5: note: in expansion of macro ‘CREGS’
+     CREGS();
+     ^
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/metrics/custom'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/metrics/ipmi'
+make[4]: Entering directory `/home/xjaneas/git/EAR/src/metrics/ipmi/energy_node'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c ibm.c
+ibm.c: In function ‘ibm_count_energy_data_length’:
+ibm.c:148:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+ibm.c: In function ‘ibm_read_dc_energy’:
+ibm.c:154:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+ibm.c: In function ‘ibm_node_energy_dispose’:
+ibm.c:187:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+ibm.c: At top level:
+ibm.c:29:35: warning: ‘args’ defined but not used [-Wunused-variable]
+ static struct ipmi_raw_arguments *args;
+                                   ^
+make[4]: Leaving directory `/home/xjaneas/git/EAR/src/metrics/ipmi/energy_node'
+make[4]: Entering directory `/home/xjaneas/git/EAR/src/metrics/ipmi/energy_node'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c lenovo_act.c
+lenovo_act.c: In function ‘lenovo_act_count_energy_data_length’:
+lenovo_act.c:148:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+lenovo_act.c: In function ‘lenovo_act_read_dc_energy’:
+lenovo_act.c:154:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+lenovo_act.c: In function ‘lenovo_act_node_energy_dispose’:
+lenovo_act.c:187:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+lenovo_act.c: At top level:
+lenovo_act.c:30:35: warning: ‘args’ defined but not used [-Wunused-variable]
+ static struct ipmi_raw_arguments *args;
+                                   ^
+make[4]: Leaving directory `/home/xjaneas/git/EAR/src/metrics/ipmi/energy_node'
+make[4]: Entering directory `/home/xjaneas/git/EAR/src/metrics/ipmi/energy_node'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c lenovo_wct.c
+lenovo_wct.c: In function ‘lenovo_wct_node_energy_init’:
+lenovo_wct.c:42:6: warning: unused variable ‘rs_len’ [-Wunused-variable]
+  int rs_len;
+      ^
+lenovo_wct.c: In function ‘lenovo_wct_count_energy_data_length’:
+lenovo_wct.c:121:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+lenovo_wct.c: In function ‘lenovo_wct_read_dc_energy’:
+lenovo_wct.c:127:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+lenovo_wct.c: In function ‘lenovo_wct_node_energy_dispose’:
+lenovo_wct.c:175:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+lenovo_wct.c: At top level:
+lenovo_wct.c:30:35: warning: ‘args’ defined but not used [-Wunused-variable]
+ static struct ipmi_raw_arguments *args;
+                                   ^
+make[4]: Leaving directory `/home/xjaneas/git/EAR/src/metrics/ipmi/energy_node'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c energy_node.c
+energy_node.c: In function ‘ipmi_get_product_name’:
+energy_node.c:73:2: warning: implicit declaration of function ‘getuid’ [-Wimplicit-function-declaration]
+  uid = getuid ();
+  ^
+energy_node.c:52:6: warning: unused variable ‘i’ [-Wunused-variable]
+  int i;
+      ^
+energy_node.c:49:17: warning: unused variable ‘sdr_ctx_pn’ [-Wunused-variable]
+  ipmi_sdr_ctx_t sdr_ctx_pn=NULL;
+                 ^
+ar rvs energy_node.a energy_node.o energy_node/ibm.o energy_node/lenovo_act.o energy_node/lenovo_wct.o
+ar: creating energy_node.a
+a - energy_node.o
+a - energy_node/ibm.o
+a - energy_node/lenovo_act.o
+a - energy_node/lenovo_wct.o
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/metrics/ipmi'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/metrics/papi'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c generics.c -L/home/xjaneas/opt/lib -lpapi
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c cache.c -L/home/xjaneas/opt/lib -lpapi
+cache.c: In function ‘init_cache_metrics’:
+cache.c:55:4: warning: implicit declaration of function ‘getpid’ [-Wimplicit-function-declaration]
+    attach_opt[sets].attach.tid=getpid();
+    ^
+cache.c: In function ‘stop_cache_metrics’:
+cache.c:123:11: warning: unused variable ‘ev’ [-Wunused-variable]
+  int sets,ev,ret;
+           ^
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c energy_cpu.c -L/home/xjaneas/opt/lib -lpapi
+energy_cpu.c: In function ‘init_rapl_metrics’:
+energy_cpu.c:45:18: warning: assignment discards ‘const’ qualifier from pointer target type [enabled by default]
+  ear_rapl_cmpinfo=PAPI_get_component_info(cid);
+                  ^
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c flops.c -L/home/xjaneas/opt/lib -lpapi
+flops.c: In function ‘init_flops_metrics’:
+flops.c:69:4: warning: implicit declaration of function ‘getpid’ [-Wimplicit-function-declaration]
+    attach_ops[sets].attach.tid=getpid();
+    ^
+flops.c: In function ‘print_gflops’:
+flops.c:187:6: warning: unused variable ‘procs_per_node’ [-Wunused-variable]
+  int procs_per_node;
+      ^
+flops.c: In function ‘gflops’:
+flops.c:215:13: warning: unused variable ‘resources’ [-Wunused-variable]
+         int resources;
+             ^
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c instructions.c -L/home/xjaneas/opt/lib -lpapi
+instructions.c: In function ‘init_basic_metrics’:
+instructions.c:51:4: warning: implicit declaration of function ‘getpid’ [-Wimplicit-function-declaration]
+    attach_op[sets].attach.tid=getpid();
+    ^
+instructions.c: In function ‘stop_basic_metrics’:
+instructions.c:108:11: warning: unused variable ‘ev’ [-Wunused-variable]
+  int sets,ev,ret;
+           ^
+gcc -fPIC -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -I/home/xjaneas/opt/include -c stalls.c -L/home/xjaneas/opt/lib -lpapi
+stalls.c: In function ‘init_stall_metrics’:
+stalls.c:54:4: warning: implicit declaration of function ‘getpid’ [-Wimplicit-function-declaration]
+    attach_opt[sets].attach.tid=getpid();
+    ^
+stalls.c: In function ‘stop_stall_metrics’:
+stalls.c:106:11: warning: unused variable ‘ev’ [-Wunused-variable]
+  int sets,ev,ret;
+           ^
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/metrics/papi'
+make[2]: Leaving directory `/home/xjaneas/git/EAR/src/metrics'
+====================================
+= Compilling library
+====================================
+make[2]: Entering directory `/home/xjaneas/git/EAR/src/library'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_states'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c -o ear_states.o ear_states.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_states'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_dynais'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c  -o ear_dynais.o ear_dynais.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_dynais'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_dyn_inst'
+/opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/mic/bin/mpicc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0  -c  -o process_MPI.o process_MPI.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_dyn_inst'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_dyn_inst'
+/opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/mic/bin/mpicc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0  -c  -o ear_api.o ear_api.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_dyn_inst'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_dyn_inst'
+/opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/mic/bin/mpicc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0  -c  -o MPI_intercept.o MPI_intercept.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_dyn_inst'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_dyn_inst'
+/opt/intel/compilers_and_libraries_2017.5.239/linux/mpi/mic/bin/mpicc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0  -c  -o MPI_interface.o MPI_interface.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_dyn_inst'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_frequency'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c  -o ear_cpufreq.o ear_cpufreq.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_frequency'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_gui'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c -o ear_gui.o ear_gui.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_gui'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_models'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c  -o ear_models.o ear_models.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_models'
+make[3]: Entering directory `/home/xjaneas/git/EAR/src/library/ear_metrics'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -c  -o ear_metrics.o ear_metrics.c
+make[3]: Leaving directory `/home/xjaneas/git/EAR/src/library/ear_metrics'
+gcc -fPIC -I/home/xjaneas/git/EAR/src -I-Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -o libear.so -L/home/xjaneas/opt/lib -lpapi -L/usr/lib64 -lcpupower -O2 -shared ear_states/ear_states.o ear_dynais/ear_dynais.o ear_dyn_inst/process_MPI.o ear_dyn_inst/ear_api.o ear_dyn_inst/MPI_intercept.o ear_dyn_inst/MPI_interface.o ear_frequency/ear_cpufreq.o ear_gui/ear_gui.o ear_models/ear_models.o ear_metrics/ear_metrics.o /home/xjaneas/git/EAR/src/common/ear_daemon_client.o /home/xjaneas/git/EAR/src/common/environment.o /home/xjaneas/git/EAR/src/common/types.a /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o /home/xjaneas/git/EAR/src/metrics/papi/generics.o /home/xjaneas/git/EAR/src/metrics/papi/cache.o /home/xjaneas/git/EAR/src/metrics/papi/flops.o /home/xjaneas/git/EAR/src/metrics/papi/instructions.o /home/xjaneas/git/EAR/src/metrics/papi/stalls.o
+make[2]: Leaving directory `/home/xjaneas/git/EAR/src/library'
+====================================
+= Compilling daemon
+====================================
+make[2]: Entering directory `/home/xjaneas/git/EAR/src/daemon'
+gcc -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0  -I/home/xjaneas/opt/include -c ear_frequency.c
+ear_frequency.c: In function ‘ear_cpufreq_end’:
+ear_frequency.c:52:2: warning: implicit declaration of function ‘aperf_dispose’ [-Wimplicit-function-declaration]
+  aperf_dispose();
+  ^
+ear_frequency.c: In function ‘ear_begin_app_compute_turbo_freq’:
+ear_frequency.c:63:2: warning: implicit declaration of function ‘aperf_start_computing_app_avg_freq’ [-Wimplicit-function-declaration]
+  for (i=0;i<ear_num_cpus;i++) aperf_start_computing_app_avg_freq(i);
+  ^
+ear_frequency.c: In function ‘ear_end_app_compute_turbo_freq’:
+ear_frequency.c:75:17: warning: implicit declaration of function ‘aperf_end_computing_app_avg_freq’ [-Wimplicit-function-declaration]
+                 aperf_end_computing_app_avg_freq(i,&new_freq);
+                 ^
+ear_frequency.c: In function ‘ear_begin_compute_turbo_freq’:
+ear_frequency.c:88:2: warning: implicit declaration of function ‘aperf_get_avg_frequency_init’ [-Wimplicit-function-declaration]
+  for (i=0;i<ear_num_cpus;i++) aperf_get_avg_frequency_init(i);
+  ^
+ear_frequency.c: In function ‘ear_end_compute_turbo_freq’:
+ear_frequency.c:98:3: warning: implicit declaration of function ‘aperf_get_avg_frequency_end’ [-Wimplicit-function-declaration]
+   aperf_get_avg_frequency_end(i,&new_freq);
+   ^
+ear_frequency.c: In function ‘ear_cpufreq_init’:
+ear_frequency.c:211:3: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+   ear_verbose(2,"eard: Nominal frequency set to %u\n",ear_nominal_freq);
+   ^
+ear_frequency.c:231:3: warning: implicit declaration of function ‘aperf_init’ [-Wimplicit-function-declaration]
+   aperf_init(ear_num_cpus);
+   ^
+ear_frequency.c:232:3: warning: implicit declaration of function ‘aperf_init_cpu’ [-Wimplicit-function-declaration]
+   for (i=0;i<ear_num_cpus;i++) aperf_init_cpu(i,ear_nominal_freq);
+   ^
+ear_frequency.c: In function ‘ear_cpufreq_set’:
+ear_frequency.c:270:6: warning: unused variable ‘EAR_VERBOSE_LEVEL’ [-Wunused-variable]
+  int EAR_VERBOSE_LEVEL = 0;
+      ^
+ear_frequency.c: In function ‘ear_cpufreq_set_node’:
+ear_frequency.c:293:3: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+   ear_verbose(1,"eard: Setting node: freq = %u\n",newfreq);
+   ^
+gcc -I/home/xjaneas/git/EAR/src -Wall -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.1 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -o eard ear_daemon.c /home/xjaneas/git/EAR/src/common/environment.o /home/xjaneas/git/EAR/src/common/types.a  /home/xjaneas/git/EAR/src/metrics/custom/bandwidth.a /home/xjaneas/git/EAR/src/metrics/custom/frequency.o /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o /home/xjaneas/git/EAR/src/metrics/ipmi/energy_node.a /home/xjaneas/git/EAR/src/metrics/papi/energy_cpu.o -L/home/xjaneas/opt/lib -lpapi -L/usr/lib64 -lcpupower -L/home/xjaneas/opt/lib -lfreeipmi -ldl ear_frequency.o
+ear_daemon.c: In function ‘catch_signals’:
+ear_daemon.c:90:14: warning: unused variable ‘mask’ [-Wunused-variable]
+     sigset_t mask;
+              ^
+ear_daemon.c: In function ‘connect_service’:
+ear_daemon.c:163:3: warning: implicit declaration of function ‘check_ping’ [-Wimplicit-function-declaration]
+   if (check_ping()) alive=application_timeout(); 
+   ^
+ear_daemon.c:168:5: warning: format ‘%d’ expects argument of type ‘int’, but argument 5 has type ‘long unsigned int’ [-Wformat=]
+     sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,req,pid);
+     ^
+ear_daemon.c:171:5: warning: format ‘%d’ expects argument of type ‘int’, but argument 4 has type ‘long unsigned int’ [-Wformat=]
+     ear_verbose(3,"eard:creating ack comm %s pid=%d\n",ear_commack,pid);
+     ^
+ear_daemon.c:182:3: warning: format ‘%d’ expects argument of type ‘int’, but argument 4 has type ‘long unsigned int’ [-Wformat=]
+   sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,pid);
+   ^
+ear_daemon.c:183:3: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+   ear_verbose(1,"eard application %d connected\n",pid);
+   ^
+ear_daemon.c:184:9: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+         ear_verbose(3,"eard: opening ping conn for %d\n",pid);
+         ^
+ear_daemon.c:192:2: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+  if (write(ear_ping_fd,&ack,sizeof(ack))!=sizeof(ack)) ear_verbose(0,"eard: warning writting ping conn for %d\n",pid);
+  ^
+ear_daemon.c:202:3: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+   ear_verbose(0,"eard: application with pid %d rejected\n",pid);
+   ^
+ear_daemon.c: In function ‘eard_exit’:
+ear_daemon.c:254:23: warning: unused variable ‘ack’ [-Wunused-variable]
+         unsigned long ack=0;
+                       ^
+ear_daemon.c: In function ‘eard_close_comm’:
+ear_daemon.c:274:16: warning: unused variable ‘ack’ [-Wunused-variable]
+  unsigned long ack=0;
+                ^
+ear_daemon.c: In function ‘form_database_paths’:
+ear_daemon.c:360:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
+ear_daemon.c: In function ‘eard_set_freq’:
+ear_daemon.c:416:3: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+   ear_verbose(1,"eard: warning, maximum freq is limited to %u\n",max_freq);
+   ^
+ear_daemon.c: At top level:
+ear_daemon.c:643:6: warning: return type of ‘main’ is not ‘int’ [-Wmain]
+ void main(int argc,char *argv[])
+      ^
+ear_daemon.c: In function ‘main’:
+ear_daemon.c:709:2: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 4 has type ‘long unsigned int’ [-Wformat=]
+  ear_verbose(2,"eard: Creating comm files in %s with default freq %u verbose set to %d\n",
+  ^
+ear_daemon.c:714:3: warning: format ‘%u’ expects argument of type ‘unsigned int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
+   ear_verbose(0,"eard:Invalid frequency %u\n",ear_node_freq);
+   ^
+ear_daemon.c:650:21: warning: unused variable ‘ret’ [-Wunused-variable]
+  int i,  cpu_model, ret;
+                     ^
+make[2]: Leaving directory `/home/xjaneas/git/EAR/src/daemon'
+====================================
+= Compilling learning
+====================================
+make[2]: Entering directory `/home/xjaneas/git/EAR/src/learning'
+gcc -I/home/xjaneas/git/EAR/src -I/usr/include/gsl  -o compute_coefficients compute_coefficients.c -L/usr/lib64 -lcpupower -L/usr/lib64 -lm -lgsl -lgslcblas /home/xjaneas/git/EAR/src/common/types.a
+gcc -I/home/xjaneas/git/EAR/src -I/usr/include/gsl  -o compute_coefficients_remote compute_coefficients_remote.c -L/usr/lib64 -lcpupower -L/usr/lib64 -lm -lgsl -lgslcblas /home/xjaneas/git/EAR/src/common/types.a
+make[2]: Leaving directory `/home/xjaneas/git/EAR/src/learning'
+====================================
+= Compilling tools
+====================================
+make[2]: Entering directory `/home/xjaneas/git/EAR/src/tools'
+gcc -I/home/xjaneas/git/EAR/src -o traces_to_paraver traces_to_paraver.cpp
+gcc -I/home/xjaneas/git/EAR/src -o coefficients_quality_control coefficients_quality_control.c /home/xjaneas/git/EAR/src/common/string_enhanced.o /home/xjaneas/git/EAR/src/common/types.a
+make[2]: Leaving directory `/home/xjaneas/git/EAR/src/tools'
+make[1]: Leaving directory `/home/xjaneas/git/EAR/src'
+make[1]: Entering directory `/home/xjaneas/git/EAR/tests'
+====================================
+= Compilling tests/check
+====================================
+make[2]: Entering directory `/home/xjaneas/git/EAR/tests/check'
+gcc -I/home/xjaneas/git/EAR/src -o cpu_examinable cpu_examinable.c /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+gcc -I/home/xjaneas/git/EAR/src -o cpu_aperf cpu_aperf.c /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+gcc -I/home/xjaneas/git/EAR/src -o cpu_uncores cpu_uncores.c /home/xjaneas/git/EAR/src/metrics/custom/bandwidth.a /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+gcc -I/home/xjaneas/git/EAR/src -o cpu_uncores_all cpu_uncores_all.c /home/xjaneas/git/EAR/src/metrics/custom/bandwidth.a /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -o papi_init papi_init.c -L/home/xjaneas/opt/lib -lpapi
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -o papi_version papi_version.c
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -o papi_comp_available papi_comp_available.c -L/home/xjaneas/opt/lib -lpapi
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -o papi_comp_enabled papi_comp_enabled.c -L/home/xjaneas/opt/lib -lpapi
+gcc -I/home/xjaneas/git/EAR/src -I/usr/include/gsl -o gsl_version gsl_version.c
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -o free_ipmi_version free_ipmi_version.c
+make[2]: Leaving directory `/home/xjaneas/git/EAR/tests/check'
+====================================
+= Compilling tests/functionals
+====================================
+make[2]: Entering directory `/home/xjaneas/git/EAR/tests/functionals'
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -I/home/xjaneas/opt/include -o bandwith_monitor bandwith_monitor.c /home/xjaneas/git/EAR/src/metrics/custom/bandwidth.a /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -I/home/xjaneas/opt/include -o eard_monitor eard_monitor.c /home/xjaneas/git/EAR/src/common/ear_daemon_client.o
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -I/home/xjaneas/opt/include -o freeipmi_overhead freeipmi_overhead.c -L/home/xjaneas/opt/lib -lfreeipmi -L/home/xjaneas/opt/lib -lpapi \
+/home/xjaneas/git/EAR/src/metrics/ipmi/energy_node.a /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -I/home/xjaneas/opt/include -O0 -malign-double -march=native -c simd_tests.c
+icc -qopenmp -axCORE_AVX512 -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -I/home/xjaneas/opt/include -o simd_power_metrics_openmp simd_power_metrics_openmp.c \
+-L/home/xjaneas/opt/lib -lpapi -L/usr/lib64 -lcpupower -L/home/xjaneas/opt/lib -lfreeipmi simd_tests.o \
+/home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o /home/xjaneas/git/EAR/src/metrics/ipmi/energy_node.a /home/xjaneas/git/EAR/src/metrics/papi/flops.o /home/xjaneas/git/EAR/src/metrics/papi/instructions.o /home/xjaneas/git/EAR/src/metrics/papi/stalls.o /home/xjaneas/git/EAR/src/metrics/papi/energy_cpu.o /home/xjaneas/git/EAR/src/metrics/custom/frequency.o /home/xjaneas/git/EAR/src/daemon/ear_frequency.o
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -I/home/xjaneas/opt/include -o energy_1_second energy_1_second.c -L/home/xjaneas/opt/lib -lfreeipmi /home/xjaneas/git/EAR/src/metrics/ipmi/energy_node.a /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+gcc -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -I/home/xjaneas/opt/include -o energy_updates_freq energy_updates_freq.c -L/home/xjaneas/opt/lib -lfreeipmi /home/xjaneas/git/EAR/src/metrics/ipmi/energy_node.a /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+gcc -I/home/xjaneas/opt/include -I/home/xjaneas/git/EAR/src -I/home/xjaneas/opt/include -I/home/xjaneas/opt/include -o test_architecture test_architecture.c \
+-L/home/xjaneas/opt/lib -lpapi -L/usr/lib64 -lcpupower -L/home/xjaneas/opt/lib -lfreeipmi /home/xjaneas/git/EAR/src/metrics/ipmi/energy_node.a /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.o
+make[2]: Leaving directory `/home/xjaneas/git/EAR/tests/functionals'
+make[1]: Leaving directory `/home/xjaneas/git/EAR/tests'

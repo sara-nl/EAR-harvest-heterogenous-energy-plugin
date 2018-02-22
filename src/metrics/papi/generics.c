@@ -4,7 +4,7 @@
 #include <papi.h>
 
 #include <metrics/papi/generics.h>
-
+#include <common/ear_verbose.h>
 
 void metrics_get_app_name(char *app_name)
 {
