@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <papi.h>
 
 #include <library/ear_gui/ear_gui.h>
 #include <library/ear_states/ear_states.h>
@@ -41,16 +42,17 @@ static char ear_gui_buffer[2048];
 static int trace_type=DYNAIS_TRACE;
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
+
 /*
 Appinfo.txt
 	Nodes			:
 	MPI proc		:
-	MPI proc/node		:
+	MPI proc/node	:
 	Policy			:
 
 Archinfo.txt
 	Sockets			:
-	Cores/socket		:
+	Cores/socket	:
 	Max freq		:
 	Min freq		:
 	Nom freq		:
@@ -58,7 +60,20 @@ Archinfo.txt
 	CPU name		:
 */
 
+void get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *min_f, ulong *nom_f,
+				 char *CPU_model, char *CPU_name)
+{
+	*nom_f = ear_get_nominal_frequency();
+	hw_general = metrics_get_hw_info();
 
+	*sockets = hw_general->sockets;
+	*cores_socket = hw_general->cores;
+	*max_f = hw_general->cpu_max_mhz;
+	*min_f = hw_general->cpu_min_mhz;
+
+	strcpy(CPU_model, hw_general->model_string);
+	strcpy(CPU_name, hw_general->vendor_string);
+}
 
 void traces_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis,int ppnode)
 {
@@ -69,15 +84,12 @@ void traces_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int m
 	char filenameEvents[128];
 	char *ear_gui_path;
 	char *my_trace_type;
-
-
-
 	int sockets,cores_per_socket;
 	unsigned long max_freq,min_freq,nom_freq;
 	char vendor[128],model[128];
+	int fd;
 
-	int fd;	
-    	ear_gui_path=get_ear_gui_pathname();
+	ear_gui_path=get_ear_gui_pathname();
 	ear_verbose(1,"EAR(%s) Using gui path %s\n",__FILE__,ear_gui_path);
 	if (gwho==0){ // By the moment, only the global master, node events must be replicated based on DEBUG options
 		my_trace_type=getenv("EAR_TRACE_TYPE");
@@ -105,7 +117,7 @@ void traces_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int m
                         ear_verbose(0,"EAR(%s)Creating EAR GUI arch file %s (%s)\n",__FILE__,filenameArch,strerror(errno));
                         exit(1);
         }
-		metrics_get_hw_info(&sockets,&cores_per_socket,&max_freq,&min_freq,&nom_freq,model,vendor);
+		get_hw_info(&sockets,&cores_per_socket,&max_freq,&min_freq,&nom_freq,model,vendor);
 		sprintf(ear_gui_buffer,"%d\n%d\n%u\n%u\n%u\n%s\n%s\n",
 			sockets,cores_per_socket,max_freq*1000,min_freq*1000,nom_freq,vendor,model);
         if (write(fd,ear_gui_buffer,strlen(ear_gui_buffer))!=strlen(ear_gui_buffer)){
@@ -149,9 +161,7 @@ void traces_end(int gwho,int lwho,unsigned long int total_energy)
 
 void traces_new_period(int gwho,int lwho,int period_id)
 {
-
 }
-
 
 void traces_new_n_iter(int gwho,int lwho,int period_id,int period_size, int iterations,int my_state)
 {

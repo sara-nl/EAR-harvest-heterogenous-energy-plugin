@@ -26,7 +26,7 @@ int event_sets[RAPL_SETS];
 int init_rapl_metrics()
 {
 	char units[MAX_RAPL_EVENTS][PAPI_MIN_STR_LEN];
-	PAPI_component_info_t *ear_rapl_cmpinfo = NULL;
+	const PAPI_component_info_t *ear_rapl_cmpinfo = NULL;
 	PAPI_granularity_option_t gran_opt;
 	PAPI_domain_option_t domain_opt;
 	PAPI_event_info_t rapl_evinfo;
@@ -42,7 +42,7 @@ int init_rapl_metrics()
 	VERBOSE_N(1, "rapl component found atd cid %d", cid);
 
 	// Checking RAPL is enabled
-	ear_rapl_cmpinfo=PAPI_get_component_info(cid);
+	ear_rapl_cmpinfo = PAPI_get_component_info(cid);
 
 	if (ear_rapl_cmpinfo == NULL) {
 		VERBOSE_N(0, "rapl component error when accessing component info");
