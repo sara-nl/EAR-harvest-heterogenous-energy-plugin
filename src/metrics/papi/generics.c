@@ -9,7 +9,7 @@ static const char *__NAME__ = "METRICS_GENERICS";
 
 void metrics_get_app_name(char *app_name)
 {
-	PAPI_exe_info_t *prginfo = NULL;
+	const PAPI_exe_info_t *prginfo = NULL;
 
 	PAPI_INIT_TEST(__FILE__);
 
@@ -22,7 +22,7 @@ void metrics_get_app_name(char *app_name)
 	strcpy(app_name, prginfo->fullname);
 }
 
-PAPI_hw_info_t metrics_get_hw_info()
+const PAPI_hw_info_t *metrics_get_hw_info()
 {
 	//
 	PAPI_INIT_TEST(__FILE__);

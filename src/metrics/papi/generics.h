@@ -1,6 +1,8 @@
 #ifndef EAR_PAPI_MACROS_H
 #define EAR_PAPI_MACROS_H
 
+#include <papi.h>
+
 // Use along with <ear_verbose.h> and by defining
 #define PAPI_INIT_TEST(name) \
     int papi_init; \
@@ -27,6 +29,6 @@
 
 //
 void metrics_get_app_name(char *app_name);
-PAPI_hw_info_t metrics_get_hw_info();
+const PAPI_hw_info_t *metrics_get_hw_info();
 
 #endif

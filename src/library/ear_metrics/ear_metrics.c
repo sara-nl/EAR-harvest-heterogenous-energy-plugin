@@ -257,7 +257,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 
 int metrics_init(int my_id)
 {
-	PAPI_hw_info_t *hw_general = NULL;
+	const PAPI_hw_info_t *hw_general = NULL;
 	ulong flops_size;
 	ulong bandwith_size;
 	ulong rapl_size;
