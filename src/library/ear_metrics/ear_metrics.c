@@ -6,22 +6,22 @@
     	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 */
 
-#include <string.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <string.h>
 #include <papi.h>
+
 #include <library/ear_metrics/ear_metrics.h>
 #include <library/common/externs.h>
-#include <metrics/papi/instructions.h>
-#include <metrics/papi/generics.h>
-#include <metrics/papi/cache.h>
 #include <metrics/papi/flops.h>
+#include <metrics/papi/cache.h>
+#include <metrics/papi/generics.h>
+#include <metrics/papi/instructions.h>
 #include <common/types/application.h>
 #include <common/ear_daemon_client.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
-
 
 /*
  * Low level reading
@@ -73,8 +73,11 @@
  * Avg. Freq. | ear_turbo.c (ear_frequency.c) | Per core, MSR registers. Hay que ver si acumula bien.
  *
  */
+
+// Verbosity
+static const char *__NAME__ = "EAR_METRICS";
+
 // Hardware
-static const PAPI_hw_info_t *hw_general = NULL;
 static double hw_cache_line_size;
 static int hw_node_size;
 
@@ -102,8 +105,8 @@ static long long metrics_l2[2];
 static long long metrics_l3[2];
 
 //TODO: remove when all metrics were unified
-#define RAPL_DRAM0 		0
-#define RAPL_DRAM1 		1
+#define RAPL_DRAM0 			0
+#define RAPL_DRAM1 			1
 #define RAPL_PACKAGE0 		2
 #define RAPL_PACKAGE1 		3
 
@@ -258,14 +261,13 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 
 int metrics_init(int my_id)
 {
+	const PAPI_hw_info_t *hw_general = NULL;
 	ulong flops_size;
 	ulong bandwith_size;
 	ulong rapl_size;
 
-	if (my_id) return 1;
-
 	// General hardware info by PAPI
-	hw_general = PAPI_get_hardware_info();
+	hw_general = metrics_get_hw_info();
 
 	if (hw_general != NULL) {
 		hw_node_size = hw_general->threads * hw_general->cores;
@@ -273,7 +275,6 @@ int metrics_init(int my_id)
 
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
-	ear_debug(2, "(%s): cache line size is %0.2lf bytes\n", __FILE__, hw_cache_line_size);
 	DEBUG_F(0, "detected cache line has a size %0.2lf bytes", hw_cache_line_size);
 
 	// Accessable metrics
@@ -311,7 +312,7 @@ int metrics_init(int my_id)
 	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL ||
 		metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL)
 	{
-		ear_verbose(0,"EAR: Error allocating memory in %s metrics\n", __FILE__);
+		VERBOSE_N(0,"EAR: Error allocating memory in %s metrics\n", __FILE__);
 		exit(1);
 	}
 	memset(metrics_bandwith[LOO],0,bandwith_size);
@@ -327,7 +328,7 @@ int metrics_init(int my_id)
 
 		if (metrics_flops[LOO] == NULL || metrics_flops[APP] == NULL)
 		{
-			ear_verbose(0,"EAR: Error allocating memory in %s metrics\n", __FILE__);
+			VERBOSE_N(0,"EAR: Error allocating memory in %s metrics\n", __FILE__);
 			exit(1);
 		}
 
@@ -404,16 +405,4 @@ long long metrics_usecs_diff(long long end, long long init)
 	}
 
 	return (end-init);
-}
-
-void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *min_f, ulong *nom_f,
-						 char *CPU_model, char *CPU_name)
-{
-	*sockets = hw_general->sockets;
-	*cores_socket = hw_general->cores;
-	*max_f = hw_general->cpu_max_mhz;
-	*min_f = hw_general->cpu_min_mhz;
-	*nom_f = ear_get_nominal_frequency();
-	strcpy(CPU_model,hw_general->model_string);
-	strcpy(CPU_name,hw_general->vendor_string);
 }

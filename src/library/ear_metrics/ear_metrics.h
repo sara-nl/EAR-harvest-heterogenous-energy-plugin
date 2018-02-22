@@ -7,6 +7,9 @@
 long long metrics_time();
 
 //
+long long metrics_usecs_diff(long long end, long long init);
+
+//
 int metrics_init(int my_id);
 
 //
@@ -17,18 +20,4 @@ void metrics_compute_signature_begin();
 
 //
 int metrics_compute_signature_finish(application_t *metrics, uint iterations, ulong min_time_us);
-
-/*
- *
- *
- *
- * LEGACY CODE
- *
- *
- *
- *
- */
-long long metrics_usecs_diff(long long end, long long init);
-void metrics_get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *min_f, ulong *nom_f,
-						 char *CPU_model, char *CPU_name);
 #endif //EAR_EAR_METRICS_H
