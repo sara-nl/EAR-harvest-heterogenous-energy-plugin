@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <papi.h>
-
 #include <metrics/papi/generics.h>
 
+PAPI_hw_info_t *hw_general = NULL;
 
 void metrics_get_app_name(char *app_name)
 {
@@ -18,5 +18,14 @@ void metrics_get_app_name(char *app_name)
 		exit(2);
 	}
 
-	strcpy(app_name,prginfo->fullname);
+	strcpy(app_name, prginfo->fullname);
+}
+
+PAPI_hw_info_t metrics_get_hw_info()
+{
+	//
+	PAPI_INIT_TEST(__FILE__);
+
+	// General hardware info by PAPI
+	return PAPI_get_hardware_info();
 }
