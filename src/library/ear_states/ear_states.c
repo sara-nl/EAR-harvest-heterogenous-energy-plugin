@@ -58,8 +58,9 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	char *verbose, *loop_time, *who;
 
 	init_application(&last_signature);
-
+#ifdef MASTER_ONLY
 	if (my_id) return;
+#endif
 
 	perf_accuracy_min_time = get_ear_performance_accuracy();
 	ear_debug(3, "EAR(%s) JOB %s STARTS EXECUTION. Performance accuracy set to (min) %.5lf usecs\n",
@@ -75,18 +76,15 @@ int states_my_state()
 
 void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
-	if (my_id == 0)
-	{
-		ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %d size %u_____BEGIN_____\n",
+	if (ear_my_local_id==0) ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %d size %u_____BEGIN_____\n",
 					ear_app_name, event, size);
 
-		EAR_STATE = FIRST_ITERATION;
+	EAR_STATE = FIRST_ITERATION;
 
-		models_new_period();
-		comp_N_begin = metrics_time();
-		traces_new_period(ear_my_rank, my_id, event);
-		loop_with_signature = 0;
-	}
+	models_new_period();
+	comp_N_begin = metrics_time();
+	traces_new_period(ear_my_rank, my_id, event);
+	loop_with_signature = 0;
 }
 
 void states_end_period(int my_id, FILE *ear_fd, unsigned int size, int iterations, unsigned long event)
