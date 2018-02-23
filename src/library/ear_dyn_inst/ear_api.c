@@ -35,6 +35,8 @@
 #include <common/environment.h>
 #include <common/states.h>
 
+static const char *__NAME__ = "API";
+
 #define BUFFSIZE 128
 
 static unsigned int ear_loop_size;
@@ -88,9 +90,6 @@ void ear_init()
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
-
-	//
-	init_application(&application);
 
 	//
 	ear_lib_environment();
@@ -162,16 +161,30 @@ void ear_init()
 	init_power_policy();
 	init_power_models(ear_get_num_p_states(), ear_get_pstate_list());
 
+	init_application(&application);
+
 	// TODO: (db_init(ear_whole_app, ear_app_name))
 	strcpy(application.app_id, ear_app_name);
 	strcpy(application.user_id, user_id);
-	strcpy(application.node_id, ear_node_name);
+	strcpy(application.node_id, node_name);
 
 	if (job_id != NULL) strcpy(application.job_id, job_id);
 	else sprintf(application.job_id, "%d", getppid());
 
-	application.def_f = EAR_default_frequency;
-	application.avg_f = ear_get_freq(EAR_default_pstate); //TODO: CPUFREQ coupled
+	application.def_f = EAR_default_frequency / 1000; // To MHz
+	//application.avg_f = ear_get_freq(EAR_default_pstate); //TODO: CPUFREQ coupled
+
+        // Summary files
+	char *summary_pathname;
+        summary_pathname = get_ear_user_db_pathname();
+        sprintf(app_summary_path, "%s%s", summary_pathname, node_name);
+        sprintf(loop_summary_path, "%s%s.loop_info", summary_pathname, node_name);
+
+        VERBOSE_N(0, "%s", application.app_id);
+        VERBOSE_N(0, "%s", application.user_id);
+        VERBOSE_N(0, "%s", application.node_id);
+        VERBOSE_N(0, "%s", application.job_id);
+        VERBOSE_N(0, "%u", application.avg_f);
 
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);
@@ -262,10 +275,6 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 void ear_finalize()
 {
-	char summary_fullpath[BUFFSIZE];
-	char node_name[BUFFSIZE];
-	char *summary_pathname;
-
 	if (my_id) return;
 	int iters=0;
 
@@ -280,19 +289,13 @@ void ear_finalize()
 
 	traces_end(ear_my_rank, my_id, 0);
 
-	// Summary file
-	gethostname(node_name, sizeof(node_name));
-	summary_pathname = get_ear_user_db_pathname();
-
-	sprintf(summary_fullpath, "%s%s", summary_pathname, node_name);
-
-	// TODO: GLOBAL METRICS
+	// Closing and obtaining global metrics
 	metrics_dispose(&application);
 
 	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
 	ear_daemon_client_write_app_signature(&application);
 
-	append_application_text_file(summary_fullpath, &application);
+	append_application_text_file(app_summary_path, &application);
 	report_application_data(&application);
 
 	// DynAIS
