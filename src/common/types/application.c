@@ -14,27 +14,16 @@
 void init_application(application_t *app)
 {
     memset(app, 0, sizeof(application_t));
-    app->node_id[0] = '\0';
-    app->user_id[0] = '\0';
-    app->app_id[0] = '\0';
-    app->job_id[0] = '\0';
-    app->policy[0] = '\0';
 }
 
 void report_application_data(application_t *app)
 {
-    printf("--------------------------------------------- Application Summary --\n");
-    printf("-- App/node id: %s/%s\n", app->app_id, app->node_id);
-    printf("-- User/job id: %s/%s\n", app->user_id, app->job_id);
-    printf("-- Detected processes: %u\n", app->procs);
-    printf("-- Execution time: %0.3lf (s)\n", app->time);
-    printf("-- Nominal/Average frequency: %u/%s (MHz)\n", app->def_f, add_point_ulong(app->avg_f));
-    printf("-- Cycles/Instructions: %s/%s\n", add_point_ull(app->cycles), add_point_ull(app->instructions));
-    printf("-- CPI/TPI: %0.3lf/%0.3lf\n", app->CPI, app->TPI);
-    printf("-- Bandwidth: %0.3lf (GB/s)\n", app->GBS);
-    printf("-- GFLOPS per core: %0.3lf\n", app->Gflops);
-    printf("-- DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->DC_power, app->DRAM_power, app->PCK_power);
-    printf("--------------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------ Application Summary --\n");
+    printf("-- App id: %s, node id: %s, user id: %s, job id: %s\n", app->app_id, app->node_id, app->user_id, app->job_id);
+    printf("-- E. time: %0.3lf (s), nom freq: %u (MHz), avg freq: %u (MHz)\n", app->time, app->def_f, app->avg_f);
+    printf("-- CPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->CPI, app->TPI, app->GBS, app->Gflops);
+    printf(   "DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->DC_power, app->DRAM_power, app->PCK_power);
+    printf("-----------------------------------------------------------------------------------------------\n");
 }
 
 int append_application_binary_file(char *path, application_t *app)
