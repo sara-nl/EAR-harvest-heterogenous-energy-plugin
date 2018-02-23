@@ -34,7 +34,6 @@
 #define SIGNATURE_HAS_CHANGED		6
 #define DPD_NUM_STATES			7
 
-static application_t curr_signature;
 static application_t last_signature;
 static projection_t *PP;
 

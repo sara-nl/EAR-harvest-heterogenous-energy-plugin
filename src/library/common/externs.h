@@ -12,7 +12,8 @@
 #include <common/types/application.h>
 #include <linux/limits.h>
 
-extern application_t *application;
+extern application_t curr_signature;
+extern application_t application;
 extern char loop_summary_path[PATH_MAX];
 extern char app_summary_path[PATH_MAX];
 extern unsigned long ear_frequency;

@@ -42,12 +42,12 @@ static const char *__NAME__ = "API";
 static unsigned int ear_loop_size;
 static struct timeval pmpi_app_begin_time, pmpi_app_end_time;
 static long long pmpi_app_total_time;
-static int period;
 static int my_id,my_size;
 static int ear_iterations = 0;
 static unsigned long ear_current_freq;
 static int ear_current_cpuid;
 static int in_loop=0;
+static int period;
 
 // #define MEASURE_DYNAIS_OV
 
@@ -144,9 +144,6 @@ void ear_init()
 		ear_verbose(1,"EAR: learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
 	}
 
-	// TODO: NO SENSE
-	// ear_daemon_client_begin_app_compute_turbo_freq();
-
 	// Getting environment data
 	get_app_name_please(ear_app_name);
 	ear_current_freq = ear_cpufreq_get(0);
@@ -161,6 +158,7 @@ void ear_init()
 	init_power_policy();
 	init_power_models(ear_get_num_p_states(), ear_get_pstate_list());
 
+	init_application(&curr_signature);
 	init_application(&application);
 
 	// TODO: (db_init(ear_whole_app, ear_app_name))
@@ -180,11 +178,11 @@ void ear_init()
         sprintf(app_summary_path, "%s%s", summary_pathname, node_name);
         sprintf(loop_summary_path, "%s%s.loop_info", summary_pathname, node_name);
 
-        VERBOSE_N(0, "%s", application.app_id);
-        VERBOSE_N(0, "%s", application.user_id);
-        VERBOSE_N(0, "%s", application.node_id);
-        VERBOSE_N(0, "%s", application.job_id);
-        VERBOSE_N(0, "%u", application.avg_f);
+        VERBOSE_N(0, "App id: '%s'", application.app_id);
+        VERBOSE_N(0, "User id: '%s'", application.user_id);
+        VERBOSE_N(0, "Node id: '%s'", application.node_id);
+        VERBOSE_N(0, "Job id: '%s'", application.job_id);
+        VERBOSE_N(0, "Default frequency: %u", application.def_f);
 
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);
