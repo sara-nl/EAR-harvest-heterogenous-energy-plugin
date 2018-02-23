@@ -217,7 +217,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 						  __FILE__, period, N_iter);
 
 				result = metrics_compute_signature_finish(&curr_signature, N_iter, perf_accuracy_min_time);
-				print_application(&curr_signature);
+				//print_application(&curr_signature);
 
 				if (result == EAR_NOT_READY)
 				{
@@ -228,6 +228,9 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				}
 				else
 				{
+					// Saving this loop info to its summary file
+					append_application_text_file(loop_summary_path, &curr_signature);
+					
 					loop_with_signature = 1;
 					current_loop_id = event;
 
@@ -295,7 +298,6 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 						  __FILE__, period, N_iter);
 
 				result = metrics_compute_signature_finish(&curr_signature, N_iter, perf_accuracy_min_time);
-				print_application(&curr_signature);
 
 				if (result == EAR_NOT_READY)
 				{
@@ -305,6 +307,9 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				}
 				else
 				{
+					// Saving this loop info to its summary file
+                                        append_application_text_file(loop_summary_path, &curr_signature);
+
 					// TODO: DB COUPLED (OK)
 					CPI = curr_signature.CPI;
 					GBS = curr_signature.GBS;

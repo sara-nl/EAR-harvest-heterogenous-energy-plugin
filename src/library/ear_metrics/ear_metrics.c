@@ -75,7 +75,7 @@
  */
 
 // Verbosity
-static const char *__NAME__ = "EAR_METRICS";
+static const char *__NAME__ = "METRICS";
 
 // Hardware
 static double hw_cache_line_size;
@@ -145,7 +145,8 @@ static void metrics_global_stop()
 
 static void metrics_partial_start()
 {
-	metrics_usecs[LOO] = metrics_usecs[APP];
+	//metrics_usecs[LOO] = metrics_usecs[APP];
+	metrics_usecs[LOO] = metrics_time();
 	metrics_ipmi[LOO] = metrics_ipmi[APP];
 	if (!ear_my_local_id){
 		ear_daemon_client_begin_compute_turbo_freq();
@@ -190,8 +191,10 @@ static void metrics_partial_stop()
 	}
 	// Manual time accumulation
 	aux_time = metrics_time();
+	//VERBOSE_N(0, "[[TIME 1]] = %lu %lu %lu", aux_time, metrics_usecs[LOO], metrics_usecs_diff(aux_time, metrics_usecs[LOO]));
 	metrics_usecs[LOO] = metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
 	metrics_usecs[APP] += metrics_usecs[LOO];
+	//VERBOSE_N(0, "[[TIME 2]] = %lu %lu", metrics_usecs[APP], metrics_usecs[LOO]);
 }
 
 static void metrics_reset()
@@ -215,6 +218,8 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	// instead the small time metrics for loops. 's' is just a signature index.
 	s = global;
 
+	//init_application(metrics);
+
 	time_s = (double) metrics_usecs[s] / 1000000.0;
 
 	// Transactions and cycles
@@ -225,7 +230,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 		cas_counter += (double) metrics_bandwith[s][i];
 	}
 
-	metrics->GBS += cas_counter * hw_cache_line_size / aux;
+	metrics->GBS  = cas_counter * hw_cache_line_size / aux;
 	metrics->CPI  = (double) metrics_cycles[s] / (double) metrics_instructions[s];
 	metrics->TPI  = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];
 
@@ -242,6 +247,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 
 	// Basics
+	metrics->avg_f = metrics_avg_frequency[LOO] / 1000;
 	metrics->time = time_s / (double) iterations;
 	metrics->instructions = metrics_instructions[s];
 	metrics->cycles = metrics_cycles[s];
@@ -257,6 +263,9 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	}
 
 	metrics->Gflops = metrics->Gflops / 1000000000.0;
+
+	VERBOSE_N(1, "LOOP :: Avg. freq: %u (MHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+		metrics->avg_f, metrics->CPI, metrics->TPI, metrics->GBS, metrics->DC_power, metrics->time, metrics->Gflops);
 }
 
 int metrics_init(int my_id)
@@ -335,6 +344,10 @@ int metrics_init(int my_id)
 		get_weigth_fops_instructions(metrics_flops_weights);
 	}
 
+	//TODO: REMOVE
+	metrics_usecs[APP] = 0.0;
+	metrics_usecs[LOO] = 0.0;
+
 	metrics_global_start();
 	metrics_partial_start();
 
@@ -351,7 +364,7 @@ void metrics_dispose(application_t *metrics)
 
 void metrics_compute_signature_begin()
 {
-	metrics_usecs[LOO] = metrics_time();
+	//metrics_usecs[LOO] = metrics_time();
 
 	//
 	metrics_partial_stop();

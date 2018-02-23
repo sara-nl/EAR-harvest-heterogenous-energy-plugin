@@ -10,18 +10,13 @@
 #define _EAR_GLOBAL_H
 
 #include <common/types/application.h>
-
-#define MAX_APP_NAME 1024
+#include <linux/limits.h>
 
 extern application_t *application;
-extern char ear_node_name[MAX_APP_NAME]; //TODO: CLEAN
-extern char ear_app_name[MAX_APP_NAME]; //TODO: CLEAN
-extern char ear_policy_name[MAX_APP_NAME]; //TODO: CLEAN
-extern unsigned long EAR_default_frequency; //TODO: CLEAN
+extern char loop_summary_path[PATH_MAX];
+extern char app_summary_path[PATH_MAX];
 extern unsigned long ear_frequency;
-extern unsigned int EAR_default_pstate; //TODO: CLEAN
 extern unsigned int ear_resources;
-extern double performance_penalty_th; //TODO: CLEAN (from ear_models)
 extern int power_model_policy;
 extern int ear_use_turbo;
 extern int ear_whole_app;
@@ -30,6 +25,14 @@ extern int ear_my_rank;
 extern int ear_my_local_id;
 extern int ear_my_rank_size;
 extern int report;
+
+#define MAX_APP_NAME 1024
+extern char ear_node_name[MAX_APP_NAME]; //TODO: CLEAN
+extern char ear_app_name[MAX_APP_NAME]; //TODO: CLEAN
+extern char ear_policy_name[MAX_APP_NAME]; //TODO: CLEAN
+extern unsigned long EAR_default_frequency; //TODO: CLEAN
+extern unsigned int EAR_default_pstate; //TODO: CLEAN
+extern double performance_penalty_th; //TODO: CLEAN (from ear_models)
 
 #else
 #endif
