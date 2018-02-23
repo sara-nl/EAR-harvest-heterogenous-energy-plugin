@@ -319,7 +319,7 @@ unsigned long ear_daemon_client_change_freq(unsigned long newfreq)
 	req.req_service = SET_FREQ;
 	req.req_data.req_value = newfreq;
 
-	ear_debug(2,"EAR_daemon_client:NewFreq %u requested\n", newfreq);
+	ear_debug(2,"EAR_daemon_client:NewFreq %lu requested\n", newfreq);
 
 	if (ear_fd_req[freq_req] >= 0)
 	{
@@ -439,7 +439,7 @@ int ear_daemon_client_read_uncore(unsigned long long *values)
 		int i;
 		unsigned long long cas_client=0;
 		for (i=0;i<uncore_size/sizeof(unsigned long long);i++) cas_client+=values[i];
-		ear_debug(4,"CLIENT UNCORE cas %llu values %d\n",cas_client,uncore_size/sizeof(unsigned long long));
+		ear_debug(4,"CLIENT UNCORE cas %llu values %lu\n",cas_client,uncore_size/sizeof(unsigned long long));
 	}else{
 		ack=EAR_ERROR;
 		ear_debug(0,"EAR_daemon_client: read uncore service not provided\n");

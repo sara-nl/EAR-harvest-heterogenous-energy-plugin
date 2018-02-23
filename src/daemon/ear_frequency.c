@@ -205,12 +205,12 @@ int ear_cpufreq_init()
 	{
 		ear_cpufreq_pstates[i]=list_f->frequency;	
 		list_f=list_f->next;
-		ear_debug(3,"eard::: P_state %d is %u\n",i,ear_cpufreq_pstates[i]);
+		ear_debug(3,"eard::: P_state %d is %lu\n", i, ear_cpufreq_pstates[i]);
 		i++;
 	}
 
 		ear_nominal_freq=ear_cpufreq_pstates[1];
-		ear_verbose(2,"eard: Nominal frequency set to %u\n",ear_nominal_freq);
+		ear_verbose(2,"eard: Nominal frequency set to %lu\n", ear_nominal_freq);
 
 		// this functions releases the memory allocated in cpufreq_get_available_frequencies function
 		cpufreq_put_available_frequencies(first);
@@ -253,7 +253,7 @@ unsigned long ear_cpufreq_get(unsigned int cpuid)
 	ear_debug(4,"eard::: cpufreq_get for cpu %u\n",cpuid);
 	if (cpuid>ear_num_cpus) return 0;
 	f=cpufreq_get(cpuid);
-	ear_debug(4,"eard::: getcpufreq cpu(%u) freq = %u\n",cpuid,f);
+	ear_debug(4,"eard::: getcpufreq cpu(%u) freq = %lu\n", cpuid, f);
 	return ear_cpufreq[cpuid]=f;
 
 }
@@ -268,8 +268,6 @@ unsigned int ear_is_valid_frequency(unsigned long f)
 
 unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 {
-	//TODO: Why?
-	int EAR_VERBOSE_LEVEL = 0;
 	unsigned long ret;
 
 	if (cpuid>ear_num_cpus) return 0;
@@ -279,7 +277,7 @@ unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 	{
 		ear_cpufreq[cpuid] = newfreq;
 		cpufreq_set_frequency(cpuid, newfreq);
-		ear_debug(1,"eard::: Setting cpu(%u) freq = %u\n", cpuid,newfreq);
+		ear_debug(1,"eard::: Setting cpu(%u) freq = %lu\n", cpuid, newfreq);
 
 		return ret;
 	}
@@ -292,7 +290,7 @@ unsigned long ear_cpufreq_set_node(unsigned long newfreq)
 
 	if (ear_is_valid_frequency(newfreq))
 	{
-		ear_verbose(1,"eard: Setting node: freq = %u\n",newfreq);
+		ear_verbose(1,"eard: Setting node: freq = %lu\n", newfreq);
 
 		for (i = 0; i < ear_num_cpus; i++)
 		{
