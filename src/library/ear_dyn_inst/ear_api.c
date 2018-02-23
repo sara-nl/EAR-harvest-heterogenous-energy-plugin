@@ -134,7 +134,7 @@ void ear_init()
 				ear_my_rank, ear_node_name, getpid());
 
 	metrics_init(my_id); // PAPI_init starts counters
-	ear_cpufreq_init(); //Initialize cpufreq info
+	ear_cpufreq_init(); //TODO: CPUFreq dependancy
 
 	if (ear_whole_app == 1 && ear_use_turbo == 1)
 	{
@@ -151,17 +151,16 @@ void ear_init()
 	user_id = getenv("LOGNAME");
 
 	// States
-    	states_begin_job(my_id, NULL, ear_app_name);
+	states_begin_job(my_id, NULL, ear_app_name);
 
 	// Policies
-	// TODO: ear_models call, EAR_default_frequency variable dependancy
 	init_power_policy();
 	init_power_models(ear_get_num_p_states(), ear_get_pstate_list());
 
-	init_application(&curr_signature);
+	// Application static data gathering
 	init_application(&application);
+	init_application(&loop_signature);
 
-	// TODO: (db_init(ear_whole_app, ear_app_name))
 	strcpy(application.app_id, ear_app_name);
 	strcpy(application.user_id, user_id);
 	strcpy(application.node_id, node_name);
@@ -169,20 +168,23 @@ void ear_init()
 	if (job_id != NULL) strcpy(application.job_id, job_id);
 	else sprintf(application.job_id, "%d", getppid());
 
-	application.def_f = EAR_default_frequency / 1000; // To MHz
-	//application.avg_f = ear_get_freq(EAR_default_pstate); //TODO: CPUFREQ coupled
+	// Passing the frequency in KHz to MHz
+	application.def_f = EAR_default_frequency / 1000;
 
-        // Summary files
+	// Copying static application info into the loop info
+	memcpy(&loop_signature, &application, sizeof(application_t));
+
+	// Summary files
 	char *summary_pathname;
-        summary_pathname = get_ear_user_db_pathname();
-        sprintf(app_summary_path, "%s%s", summary_pathname, node_name);
-        sprintf(loop_summary_path, "%s%s.loop_info", summary_pathname, node_name);
+	summary_pathname = get_ear_user_db_pathname();
+	sprintf(app_summary_path, "%s%s", summary_pathname, node_name);
+	sprintf(loop_summary_path, "%s%s.loop_info", summary_pathname, node_name);
 
-        VERBOSE_N(0, "App id: '%s'", application.app_id);
-        VERBOSE_N(0, "User id: '%s'", application.user_id);
-        VERBOSE_N(0, "Node id: '%s'", application.node_id);
-        VERBOSE_N(0, "Job id: '%s'", application.job_id);
-        VERBOSE_N(0, "Default frequency: %u", application.def_f);
+	VERBOSE_N(0, "App id: '%s'", application.app_id);
+	VERBOSE_N(0, "User id: '%s'", application.user_id);
+	VERBOSE_N(0, "Node id: '%s'", application.node_id);
+	VERBOSE_N(0, "Job id: '%s'", application.job_id);
+	VERBOSE_N(0, "Default frequency: %u", application.def_f);
 
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);

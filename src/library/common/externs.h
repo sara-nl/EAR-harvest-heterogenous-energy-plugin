@@ -12,7 +12,7 @@
 #include <common/types/application.h>
 #include <linux/limits.h>
 
-extern application_t curr_signature;
+extern application_t loop_signature;
 extern application_t application;
 extern char loop_summary_path[PATH_MAX];
 extern char app_summary_path[PATH_MAX];
@@ -25,8 +25,9 @@ extern int ear_papi_init;
 extern int ear_my_rank;
 extern int report;
 
+//TODO: CLEAN
 #define MAX_APP_NAME 1024
-extern char ear_node_name[MAX_APP_NAME]; //TODO: CLEAN
+extern char ear_node_name[MAX_APP_NAME];
 extern char ear_app_name[MAX_APP_NAME]; //TODO: CLEAN
 extern char ear_policy_name[MAX_APP_NAME]; //TODO: CLEAN
 extern unsigned long EAR_default_frequency; //TODO: CLEAN
