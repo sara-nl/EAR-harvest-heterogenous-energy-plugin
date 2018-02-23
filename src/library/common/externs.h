@@ -12,7 +12,8 @@
 #include <common/types/application.h>
 #include <linux/limits.h>
 
-extern application_t *application;
+extern application_t loop_signature;
+extern application_t application;
 extern char loop_summary_path[PATH_MAX];
 extern char app_summary_path[PATH_MAX];
 extern unsigned long ear_frequency;
@@ -26,8 +27,9 @@ extern int ear_my_local_id;
 extern int ear_my_rank_size;
 extern int report;
 
+//TODO: CLEAN
 #define MAX_APP_NAME 1024
-extern char ear_node_name[MAX_APP_NAME]; //TODO: CLEAN
+extern char ear_node_name[MAX_APP_NAME];
 extern char ear_app_name[MAX_APP_NAME]; //TODO: CLEAN
 extern char ear_policy_name[MAX_APP_NAME]; //TODO: CLEAN
 extern unsigned long EAR_default_frequency; //TODO: CLEAN
