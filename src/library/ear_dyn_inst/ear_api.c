@@ -170,7 +170,8 @@ void ear_init()
 
 	// Passing the frequency in KHz to MHz
 	application.def_f = EAR_default_frequency / 1000;
-
+	application.procs = get_total_resources();
+	
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
 
@@ -185,6 +186,7 @@ void ear_init()
 	VERBOSE_N(0, "Node id: '%s'", application.node_id);
 	VERBOSE_N(0, "Job id: '%s'", application.job_id);
 	VERBOSE_N(0, "Default frequency: %u", application.def_f);
+	VERBOSE_N(0, "Procs: %u", application.procs);
 
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);
