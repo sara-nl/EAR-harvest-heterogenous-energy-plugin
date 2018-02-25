@@ -486,9 +486,9 @@ void ear_print_daemon_environment()
 
 int check_threads()
 {
-        my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_max_threads");
+        my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_num_threads");
         if (my_omp_get_max_threads==NULL){
-                my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_max_threads");
+                my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_num_threads");
                 if (my_omp_get_max_threads==NULL) return 0;
                 else return 1;
         }
