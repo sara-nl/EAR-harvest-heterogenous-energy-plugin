@@ -145,9 +145,9 @@ static void metrics_global_stop()
 
 static void metrics_partial_start()
 {
-	//metrics_usecs[LOO] = metrics_usecs[APP];
 	metrics_usecs[LOO] = metrics_time();
-	metrics_ipmi[LOO] = metrics_ipmi[APP];
+	//metrics_ipmi[LOO] = metrics_ipmi[APP];
+	ear_daemon_client_node_dc_energy(&metrics_ipmi[LOO]);
 
 	ear_daemon_client_begin_compute_turbo_freq();
 	ear_daemon_client_start_uncore();
@@ -189,10 +189,8 @@ static void metrics_partial_stop()
 
 	// Manual time accumulation
 	aux_time = metrics_time();
-	//VERBOSE_N(0, "[[TIME 1]] = %lu %lu %lu", aux_time, metrics_usecs[LOO], metrics_usecs_diff(aux_time, metrics_usecs[LOO]));
 	metrics_usecs[LOO] = metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
 	metrics_usecs[APP] += metrics_usecs[LOO];
-	//VERBOSE_N(0, "[[TIME 2]] = %lu %lu", metrics_usecs[APP], metrics_usecs[LOO]);
 }
 
 static void metrics_reset()
@@ -259,7 +257,12 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 		metrics->Gflops += (double) metrics->FLOPS[i];
 	}
 
-	metrics->Gflops = (metrics->Gflops / 1000000000.0) * (double) metrics->procs;
+	metrics->Gflops = metrics->Gflops / time_s; // Floating ops to FLOPS
+	metrics->Gflops = metrics->Gflops / 1000000000.0; // FLOPS to GFLOPS
+	metrics->Gflops = metrics->Gflops * (double) metrics->procs; // Core GFLOPS to node GFLOPS
+		
+
+	report_application_data(metrics);
 }
 
 int metrics_init(int my_id)
@@ -360,14 +363,19 @@ void metrics_compute_signature_begin()
 
 int metrics_compute_signature_finish(application_t *metrics, uint iterations, ulong min_time_us)
 {
+    long long aux_time;
+
+	// Time requirements
+	aux_time = metrics_usecs_diff(metrics_time(), metrics_usecs[LOO]);
+
+	//
+	if (aux_time < min_time_us) {
+		return EAR_NOT_READY;
+	}
+
 	//
 	metrics_partial_stop();
 	metrics_reset();
-
-	//
-	if (metrics_usecs[LOO] < min_time_us) {
-		return EAR_NOT_READY;
-	}
 
 	//
 	metrics_compute_signature_data(LOO, metrics, iterations);
