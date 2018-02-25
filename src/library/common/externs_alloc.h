@@ -16,8 +16,9 @@ unsigned int ear_resources;
 int power_model_policy;
 int ear_use_turbo = USE_TURBO;
 int ear_whole_app;
-int ear_papi_init;
 int ear_my_rank;
+int ear_my_local_id;
+int ear_my_rank_size;
 int report;
 
 //TODO: clean

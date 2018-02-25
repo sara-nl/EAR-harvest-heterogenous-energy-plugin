@@ -13,7 +13,7 @@
 #include <papi.h>
 
 #include <library/ear_metrics/ear_metrics.h>
-
+#include <library/common/externs.h>
 #include <metrics/papi/flops.h>
 #include <metrics/papi/cache.h>
 #include <metrics/papi/generics.h>
@@ -118,13 +118,13 @@ long long metrics_time()
 static void metrics_global_start()
 {
 	//
-	ear_daemon_client_begin_app_compute_turbo_freq();
+	if (!ear_my_local_id) ear_daemon_client_begin_app_compute_turbo_freq();
 }
 
 static void metrics_global_stop()
 {
 	//
-	metrics_avg_frequency[APP] = ear_daemon_client_end_app_compute_turbo_freq();
+	if (!ear_my_local_id) metrics_avg_frequency[APP] = ear_daemon_client_end_app_compute_turbo_freq();
 
 	// Accum calls
 	get_cache_metrics(&metrics_l1[APP], &metrics_l2[APP], &metrics_l3[APP]);
@@ -148,10 +148,11 @@ static void metrics_partial_start()
 	//metrics_usecs[LOO] = metrics_usecs[APP];
 	metrics_usecs[LOO] = metrics_time();
 	metrics_ipmi[LOO] = metrics_ipmi[APP];
-
-	ear_daemon_client_begin_compute_turbo_freq();
-	ear_daemon_client_start_uncore();
-	ear_daemon_client_start_rapl();
+	if (!ear_my_local_id){
+		ear_daemon_client_begin_compute_turbo_freq();
+		ear_daemon_client_start_uncore();
+		ear_daemon_client_start_rapl();
+	}
 
 	start_basic_metrics();
 	start_cache_metrics();
@@ -164,29 +165,30 @@ static void metrics_partial_stop()
 	ulong aux_energy;
 	int i;
 
-	metrics_avg_frequency[LOO] = ear_daemon_client_end_compute_turbo_freq();
-	ear_daemon_client_read_uncore(metrics_bandwith[LOO]);
-	ear_daemon_client_read_rapl(metrics_rapl[LOO]);
-
+	if (!ear_my_local_id){ 
+		metrics_avg_frequency[LOO] = ear_daemon_client_end_compute_turbo_freq();
+		ear_daemon_client_read_uncore(metrics_bandwith[LOO]);
+		ear_daemon_client_read_rapl(metrics_rapl[LOO]);
+	}
 	stop_cache_metrics(&metrics_l1[LOO], &metrics_l2[LOO], &metrics_l3[LOO]);
 	stop_basic_metrics(&metrics_cycles[LOO], &metrics_instructions[LOO]);
 	stop_flops_metrics(&aux_flops, metrics_flops[LOO]);
+	if (!ear_my_local_id){
+		// Manual bandwith accumulation
+		for (i = 0; i < bandwith_elements; i++) {
+			metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
+		}
 
-	// Manual bandwith accumulation
-	for (i = 0; i < bandwith_elements; i++) {
-		metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
+		// Manual RAPL accumulation
+		for (i = 0; i < rapl_elements; i++) {
+			metrics_rapl[APP][i] += metrics_rapl[LOO][i];
+		}
+
+		// Manual IPMI accumulation
+		ear_daemon_client_node_dc_energy(&aux_energy);
+		metrics_ipmi[LOO] = aux_energy - metrics_ipmi[LOO];
+		metrics_ipmi[APP] += metrics_ipmi[LOO];
 	}
-
-	// Manual RAPL accumulation
-	for (i = 0; i < rapl_elements; i++) {
-		metrics_rapl[APP][i] += metrics_rapl[LOO][i];
-	}
-
-	// Manual IPMI accumulation
-	ear_daemon_client_node_dc_energy(&aux_energy);
-	metrics_ipmi[LOO] = aux_energy - metrics_ipmi[LOO];
-	metrics_ipmi[APP] += metrics_ipmi[LOO];
-
 	// Manual time accumulation
 	aux_time = metrics_time();
 	//VERBOSE_N(0, "[[TIME 1]] = %lu %lu %lu", aux_time, metrics_usecs[LOO], metrics_usecs_diff(aux_time, metrics_usecs[LOO]));
@@ -197,8 +199,10 @@ static void metrics_partial_stop()
 
 static void metrics_reset()
 {
-	ear_daemon_client_reset_uncore();
-	ear_daemon_client_reset_rapl();
+	if (!ear_my_local_id){
+		ear_daemon_client_reset_uncore();
+		ear_daemon_client_reset_rapl();
+	}
 
 	reset_basic_metrics();
 	reset_flops_metrics();
@@ -269,8 +273,6 @@ int metrics_init(int my_id)
 	ulong bandwith_size;
 	ulong rapl_size;
 
-	if (my_id) return 1;
-
 	// General hardware info by PAPI
 	hw_general = metrics_get_hw_info();
 
@@ -288,13 +290,20 @@ int metrics_init(int my_id)
 	papi_flops_supported = init_flops_metrics();
 
 	// Through daemon metrics (TODO: standarize data size)
-	rapl_size = ear_daemon_client_get_data_size_rapl();
-	bandwith_size = ear_daemon_client_get_data_size_uncore();
+	if (!ear_my_local_id){
+		rapl_size = ear_daemon_client_get_data_size_rapl();
+		bandwith_size = ear_daemon_client_get_data_size_uncore();
+	}else{
+		rapl_size = sizeof(long long);
+		bandwith_size = sizeof(long long);
+	}
 	flops_elements = get_number_fops_events();
 
 	// Allocation
-	rapl_elements = rapl_size / sizeof(long long);
-	bandwith_elements = bandwith_size / sizeof(long long);
+	if (!ear_my_local_id){
+		rapl_elements = rapl_size / sizeof(long long);
+		bandwith_elements = bandwith_size / sizeof(long long);
+	}
 	flops_size = sizeof(long long) * flops_elements;
 
 	DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
@@ -306,12 +315,17 @@ int metrics_init(int my_id)
 	metrics_rapl[LOO] = malloc(rapl_size);
 	metrics_rapl[APP] = malloc(rapl_size);
 
+
 	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL ||
 		metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL)
 	{
 		VERBOSE_N(0,"EAR: Error allocating memory in %s metrics\n", __FILE__);
 		exit(1);
 	}
+	memset(metrics_bandwith[LOO],0,bandwith_size);
+	memset(metrics_bandwith[APP],0,bandwith_size);
+	memset(metrics_rapl[LOO],0,rapl_size);
+	memset(metrics_rapl[APP],0,rapl_size);
 
 	if (papi_flops_supported)
 	{

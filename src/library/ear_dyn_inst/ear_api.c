@@ -90,6 +90,7 @@ void ear_init()
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
+	ear_my_rank_size=my_size;
 
 	//
 	ear_lib_environment();
@@ -118,31 +119,37 @@ void ear_init()
         	ppnode=my_size/num_nodes;
         	my_id=(ear_my_rank%ppnode);
 	}
-	if (my_id) return;
+	ear_my_local_id=my_id;
+#ifdef MASTER_ONLY
+	if (ear_my_local_id) return;
+#endif
 
 	ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
 	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
+	if (!ear_my_local_id){
+		// Only one process can connect with the daemon
+		// Connecting with ear_daemon
+		if (ear_daemon_client_connect() < 0) {
+			ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
+			exit(1);
+		}
 
-	// Connecting with ear_daemon
-	if (ear_daemon_client_connect() < 0) {
-		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
-		exit(1);
-	}
-
-	ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
+		ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
 				ear_my_rank, ear_node_name, getpid());
-
-	metrics_init(my_id); // PAPI_init starts counters
-	ear_cpufreq_init(); //TODO: CPUFreq dependancy
-
-	if (ear_whole_app == 1 && ear_use_turbo == 1)
-	{
-		ear_verbose(1,"EAR: Turbo learning phase, turbo selected and start computing\n");
-		ear_daemon_client_set_turbo();
-	} else {
-		ear_verbose(1,"EAR: learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
 	}
+	metrics_init(my_id); // PAPI_init starts counters
+	ear_cpufreq_init(); //Initialize cpufreq info
+	if (!ear_my_local_id){
+		if (ear_whole_app == 1 && ear_use_turbo == 1)
+		{
+			ear_verbose(1,"EAR: Turbo learning phase, turbo selected and start computing\n");
+			ear_daemon_client_set_turbo();
+		} else {
+			ear_verbose(1,"EAR: learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
+		}
+	}
+
 
 	// Getting environment data
 	get_app_name_please(ear_app_name);
@@ -151,7 +158,7 @@ void ear_init()
 	user_id = getenv("LOGNAME");
 
 	// States
-	states_begin_job(my_id, NULL, ear_app_name);
+    states_begin_job(my_id, NULL, ear_app_name);
 
 	// Policies
 	init_power_policy();
@@ -205,7 +212,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	unsigned int ear_status;
 	int ret;
 	char men[128];
-	if (my_id) return;
+#ifdef MASTER_ONLY
+	if (ear_my_local_id) return;
+#endif
 
 	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
 	if (!ear_whole_app){
@@ -277,7 +286,12 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 void ear_finalize()
 {
-	if (my_id) return;
+	char summary_fullpath[BUFFSIZE];
+	char node_name[BUFFSIZE];
+	char *summary_pathname;
+#ifdef MASTER_ONLY
+	if (ear_my_local_id) return;
+#endif
 	int iters=0;
 
 	#ifdef MEASURE_DYNAIS_OV
@@ -294,8 +308,10 @@ void ear_finalize()
 	// Closing and obtaining global metrics
 	metrics_dispose(&application);
 
-	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
-	ear_daemon_client_write_app_signature(&application);
+	if (!ear_my_local_id){
+		// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
+		ear_daemon_client_write_app_signature(&application);
+	}
 
 	append_application_text_file(app_summary_path, &application);
 	report_application_data(&application);
@@ -306,6 +322,5 @@ void ear_finalize()
 	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
 	states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
-	
-	ear_daemon_client_disconnect();
+	if (!ear_my_local_id)	ear_daemon_client_disconnect();
 }
