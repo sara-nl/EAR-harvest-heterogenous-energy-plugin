@@ -46,8 +46,8 @@ typedef struct application
 	unsigned long long L3_misses;
 	unsigned long long instructions;
 	unsigned long long cycles;
-	unsigned int avg_f;
-	unsigned int def_f;
+	unsigned int avg_f; // MHz
+	unsigned int def_f; // MHz
 	unsigned int procs; // not printed
 	unsigned int empty; // 64 bit alignment
 } application_t;
