@@ -18,12 +18,16 @@ void init_application(application_t *app)
 
 void report_application_data(application_t *app)
 {
-    printf("------------------------------------------------------------------------ Application Summary --\n");
-    printf("-- App id: %s, node id: %s, user id: %s, job id: %s\n", app->app_id, app->node_id, app->user_id, app->job_id);
-    printf("-- E. time: %0.3lf (s), nom freq: %u (MHz), avg freq: %u (MHz)\n", app->time, app->def_f, app->avg_f);
-    printf("-- CPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->CPI, app->TPI, app->GBS, app->Gflops);
-    printf(   "DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->DC_power, app->DRAM_power, app->PCK_power);
-    printf("-----------------------------------------------------------------------------------------------\n");
+	float avg_f = app->avg_f / 1000.0;
+	float def_f = app->def_f / 1000.0;
+
+	printf("------------------------------------------------------------------------ Application Summary --\n");
+	printf("-- App id: %s, node id: %s, user id: %s, job id: %s\n", app->app_id, app->node_id, app->user_id, app->job_id);
+	printf("-- E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->time, def_f, avg_f);
+	printf(   "procs: %u (s)\n", app->procs);
+	printf("-- CPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->CPI, app->TPI, app->GBS, app->Gflops);
+	printf(   "DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->DC_power, app->DRAM_power, app->PCK_power);
+	printf("-----------------------------------------------------------------------------------------------\n");
 }
 
 int append_application_binary_file(char *path, application_t *app)

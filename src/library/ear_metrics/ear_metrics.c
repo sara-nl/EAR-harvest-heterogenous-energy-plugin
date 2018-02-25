@@ -230,9 +230,9 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 		cas_counter += (double) metrics_bandwith[s][i];
 	}
 
-	metrics->GBS  = cas_counter * hw_cache_line_size / aux;
-	metrics->CPI  = (double) metrics_cycles[s] / (double) metrics_instructions[s];
-	metrics->TPI  = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];
+	metrics->GBS = cas_counter * hw_cache_line_size / aux;
+	metrics->CPI = (double) metrics_cycles[s] / (double) metrics_instructions[s];
+	metrics->TPI = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];
 
 	// Energy IPMI
 	metrics->DC_power = (double) metrics_ipmi[s] / (time_s * 1000.0);
@@ -247,14 +247,15 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 
 	// Basics
-	metrics->avg_f = metrics_avg_frequency[LOO] / 1000;
-	metrics->time = time_s / (double) iterations;
+    metrics->cycles = metrics_cycles[s];
 	metrics->instructions = metrics_instructions[s];
-	metrics->cycles = metrics_cycles[s];
-
 	metrics->L1_misses = metrics_l1[s];
 	metrics->L2_misses = metrics_l2[s];
 	metrics->L3_misses = metrics_l3[s];
+
+	metrics->avg_f = metrics_avg_frequency[s] / 1000;
+	metrics->time = time_s / (double) iterations;
+    metrics->Gflops = 0.0;
 
 	// FLOPS
 	for (i = 0; i < flops_elements; i++) {
@@ -262,10 +263,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 		metrics->Gflops += (double) metrics->FLOPS[i];
 	}
 
-	metrics->Gflops = metrics->Gflops / 1000000000.0;
-
-	VERBOSE_N(1, "LOOP :: Avg. freq: %u (MHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
-		metrics->avg_f, metrics->CPI, metrics->TPI, metrics->GBS, metrics->DC_power, metrics->time, metrics->Gflops);
+	metrics->Gflops = (metrics->Gflops / 1000000000.0) * (double) metrics->procs;
 }
 
 int metrics_init(int my_id)

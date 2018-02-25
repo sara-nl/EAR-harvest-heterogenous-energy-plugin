@@ -116,18 +116,18 @@ void eard_lock(char *tmp_dir,char *nodename)
 		ear_verbose(0,"eard: ear tmp dir cannot be created (%s)",strerror(errno));
 		exit(0);
 	}
-	chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
-	sprintf(eard_lock_file,"%s/%s.eard_lock",tmp_dir,nodename);
+	
+    chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+	sprintf(eard_lock_file, "%s/%s.eard_lock", tmp_dir, nodename);
 
 	if ((eard_lockf=open(eard_lock_file,O_WRONLY|O_CREAT|O_EXCL,S_IRUSR|S_IWUSR))<0)
 	{
-		if (errno!=EEXIST)
-		{
+		if (errno != EEXIST) {
 			ear_verbose(0,"eard: error, creating lock file %s fails (%s)\n",
 						eard_lock_file, strerror(errno));
-		}
-		else {ear_verbose(0, "eard: Error opening daemon lock file in %s (%s)\n",
-						  nodename, strerror(errno));}
+		} else {
+            ear_verbose(0, "eard: Error opening daemon lock file in %s (%s)\n",
+						eard_lock_file, strerror(errno));}
 		exit(0);
 	}
 }
