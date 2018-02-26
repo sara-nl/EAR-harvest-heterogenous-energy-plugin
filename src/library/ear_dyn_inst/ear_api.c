@@ -113,21 +113,26 @@ void ear_init()
 	gethostname(node_name, sizeof(node_name));
 
 	my_id = get_ear_local_id();
-	if (my_id<0)
+
+	if (my_id < 0)
 	{
-		num_nodes=get_ear_num_nodes();
-        	ppnode=my_size/num_nodes;
-        	my_id=(ear_my_rank%ppnode);
+		num_nodes = get_ear_num_nodes();
+		ppnode = my_size/num_nodes;
+		my_id = (ear_my_rank % ppnode);
 	}
-	ear_my_local_id=my_id;
-#ifdef MASTER_ONLY
+
+	ear_my_local_id = my_id;
+
+	#ifdef MASTER_ONLY
 	if (ear_my_local_id) return;
-#endif
+	#endif
 
 	ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
 	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
-	if (!ear_my_local_id){
+
+	if (!ear_my_local_id)
+	{
 		// Only one process can connect with the daemon
 		// Connecting with ear_daemon
 		if (ear_daemon_client_connect() < 0) {
@@ -138,18 +143,22 @@ void ear_init()
 		ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
 				ear_my_rank, ear_node_name, getpid());
 	}
-	metrics_init(my_id); // PAPI_init starts counters
+
+	// ear_my_local_id is 0 in case is not local. Metrics gets the value
+	// 'privileged_metrics'. This value has to be different to 0 when
+	// ear_my_local_id is different to 0.
+	metrics_init(!ear_my_local_id); // PAPI_init starts counters
 	ear_cpufreq_init(); //Initialize cpufreq info
-	if (!ear_my_local_id){
-		if (ear_whole_app == 1 && ear_use_turbo == 1)
-		{
-			ear_verbose(1,"EAR: Turbo learning phase, turbo selected and start computing\n");
+
+	if (!ear_my_local_id)
+	{
+		if (ear_whole_app == 1 && ear_use_turbo == 1) {
+			VERBOSE_N(1, "turbo learning phase, turbo selected and start computing\n");
 			ear_daemon_client_set_turbo();
 		} else {
-			ear_verbose(1,"EAR: learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
+			VERBOSE_N(1, "learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
 		}
 	}
-
 
 	// Getting environment data
 	get_app_name_please(ear_app_name);
