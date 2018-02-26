@@ -36,6 +36,11 @@
 #include <daemon/power_monitoring.h>
 unsigned int power_mon_freq=3000000;
 #endif
+#ifdef SHARED_MEMORY
+#include <pthread.h>
+#include <daemon/shared_configuration.h>
+#include <daemon/dynamic_configuration.h>
+#endif
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
@@ -71,6 +76,7 @@ int is_new_application(int pid);
 int is_new_service(int req,int pid);
 int application_timeout();
 int RAPL_counting=0;
+int eard_must_exit=0;
 
 // SIGNALS management
 void f_signals(int s)
@@ -80,12 +86,17 @@ void f_signals(int s)
 	}
 	// eard exits here
 	if ((s==SIGTERM)||(s==SIGINT)){
+		eard_must_exit=1;
 		if (s==SIGTERM) ear_verbose(0,"eard SIGTERM received.....\n");
 		if (s==SIGINT) ear_verbose(0,"eard SIGINT received.....\n");
 		if (ear_ping_fd>0){
 			ear_verbose(1,"eard application is still connected!.....\n");
 			eard_close_comm();
 		}
+		// Maybe we should just wait for threads
+#ifdef SHARED_MEMORY
+		ear_conf_shared_area_dispose(ear_tmp);
+#endif
 		eard_exit();
 		ear_verbose(0,"eard exits.....\n");
 	}	
@@ -653,9 +664,12 @@ void main(int argc,char *argv[])
 	sigset_t eard_mask;
 	char *my_ear_tmp;
 	int max_fd = -1;
+	int ret;
 #ifdef POWER_MONITORING
 	pthread_t power_mon_th;
-	int ret;
+#endif
+#ifdef SHARED_MEMORY
+	pthread_t dyn_conf_th;
 #endif
 
 	// binary P_STATE <path.to.tmp> verbosity_level
@@ -764,6 +778,13 @@ void main(int argc,char *argv[])
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
 		errno=ret;
 		ear_verbose(0,"eard: creating power_monitoring thread %s\n",strerror(errno));
+	}
+#endif
+#ifdef SHARED_MEMORY
+	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
+		ear_verbose(0,"eard: creating dynamic_configuration thread \n");
+	}else{
+		ear_verbose(0,"eard: eard_dynamic_configuration thread created\n");
 	}
 #endif
 	ear_verbose(1,"eard:Communicator for %s ON\n",nodename);

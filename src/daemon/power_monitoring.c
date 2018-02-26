@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+extern int eard_must_exit;
 // frequency_monitoring will be expressed in usecs
 void *eard_power_monitoring(void *frequency_monitoring)
 {
@@ -22,7 +23,7 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	t_ms=f_monitoring/1000;
 	// We will collect and report avg power until eard finishes
 	read_dc_energy(&begin);
-	while(1)
+	while(!eard_must_exit)
 	{
 		usleep(f_monitoring);
 		read_dc_energy(&end);
@@ -30,5 +31,5 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		printf("avg power: %lf\n",avg_dc_power);
 		begin=end;
 	}
-	return NULL;
+	pthread_exit(0);
 }
