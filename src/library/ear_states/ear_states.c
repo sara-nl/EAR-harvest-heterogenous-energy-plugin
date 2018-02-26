@@ -130,7 +130,7 @@ static void print_loop_signature(application_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000.0;
 
-	VERBOSE_N(1, "LOOP :: Avg. freq: %u (MHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+	VERBOSE_N(1, "LOOP :: Avg. freq: %f (MHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
