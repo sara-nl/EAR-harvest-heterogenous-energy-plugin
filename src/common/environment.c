@@ -253,13 +253,15 @@ int getenv_ear_verbose()
 	return conf_ear_verbose;
 }
 
-//TODO: esto está mal
 int getenv_ear_local_id()
 {
 	char *my_local_id;
 	my_local_id=getenv("SLURM_LOCALID");
-	if (my_local_id==NULL) return conf_ear_local_id;
-	return -1;
+	if (my_local_id!=NULL){ 
+		conf_ear_local_id=atoi(my_local_id);
+	}
+	// if not defined, it is computed later based on the number of total processes and EAR_NUM_NODES
+	return conf_ear_local_id;
 }
 
 int getenv_ear_num_nodes()
@@ -397,8 +399,8 @@ void ear_lib_environment()
 	getenv_ear_reset_freq();
 	getenv_ear_p_state();
 	getenv_ear_performance_accuracy();
-	getenv_ear_local_id();
 	getenv_ear_num_nodes();
+	getenv_ear_local_id();
 	getenv_ear_dynais_levels();
 	getenv_ear_dynais_window_size();
 }
