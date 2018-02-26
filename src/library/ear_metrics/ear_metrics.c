@@ -280,7 +280,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	}
 }
 
-int metrics_init(int just_local_metrics)
+int metrics_init(int privileged_metrics)
 {
 	const PAPI_hw_info_t *hw_general = NULL;
 	ulong flops_size;
@@ -289,7 +289,7 @@ int metrics_init(int just_local_metrics)
 
 	// General hardware info by PAPI
 	hw_general = metrics_get_hw_info();
-	daemon_metrics = !just_local_metrics;
+	daemon_metrics = privileged_metrics;
 
 	if (hw_general != NULL) {
 		hw_node_size = hw_general->threads * hw_general->cores;
