@@ -16,9 +16,9 @@ The library is designed to work together with SLURM, a popular cluster job manag
 
 Requirements
 ------------
-EAR requires some third party libraríes and headers to compile and run, in addition to the basic requirements such as the compiler and Autoconf. This is a list of this libraries and its references:
+EAR requires some third party libraríes and headers to compile and run, in addition to the basic requirements such as the compiler and Autoconf. This is a list of this **libraries** and its references:
 
-| Library   | Requirement / comment | Minimum version | References                                        |
+| Library   | Required / comment    | Minimum version | References                                        |
 | --------- | --------------------- | --------------- | ------------------------------------------------- |
 | PAPI      | Yes / with RAPL       | 5.4.3.0         | [Website](http://icl.utk.edu/papi/)               |
 | GSL       | Yes                   | 1.4             | [Website](https://www.gnu.org/software/gsl/)      |
@@ -26,7 +26,20 @@ EAR requires some third party libraríes and headers to compile and run, in addi
 | FreeIPMI  | Yes                   | 1.5.7           | [Website](https://www.gnu.org/software/freeipmi/) |
 | SLURM     | Just for SLURM plugin | 17.02.6         | [Website](https://slurm.schedmd.com/)             |
 | MPI       | Yes                   | -               | -                                                 |
-| MPIIFORT  | Just for some benchs  | -               | -                                                 |
+
+Also, some **drivers** has to be present and loaded in the system:
+
+| Driver      | File                                    | Kernel version | References      |
+| ----------- | --------------------------------------- | -------------- | --------------- |
+| CPUFreq     | kernel/drivers/cpufreq/acpi-cpufreq.ko  | 3.10           | [Information](https://wiki.archlinux.org/index.php/CPU_frequency_scaling) |
+| OPEN IPMI   | kernel/drivers/char/ipmi/*.ko           | 3.10           | [Information](https://docs.oracle.com/en/database/oracle/oracle-database/12.2/cwlin/configuring-the-open-ipmi-driver.html) |
+
+Lastly, the **compilers**:
+
+| Compiler                          | Comment                    | Minimum version | References      |
+| --------------------------------- | -------------------------- | --------------- | --------------- |
+| GNU Compiler Collection (GCC)     | For the library and daemon | 4.8.5           | [Website](https://gcc.gnu.org/) |
+| Intel Fortran Compiler (MPIIFort) | For some kernels           | 17.0.1          | [Website](https://software.intel.com/en-us/fortran-compilers) |
 
 Brief installation guide
 ------------------------
@@ -35,7 +48,7 @@ Brief installation guide
 
 Customize installation
 ----------------------
-Configure is based on shell variables which initial value could be given by setting variables in the command line, or in the environment. Take a look to the table with the most popular variables:
+`configure` is based on shell variables which initial value could be given by setting variables in the command line, or in the environment. Take a look to the table with the most popular variables:
 
 | Variable | Description                                                                                                  |
 | -------- | ------------------------------------------------------------------------------------------------------------ |
