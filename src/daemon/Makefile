@@ -1,5 +1,5 @@
-CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -DPOWER_MONITORING
-LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl -pthread
+CFLAGS  = -I$(SRCDIR) $(CONSTANTS) 
+LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl 
 
 ######## VARS
 
@@ -25,11 +25,9 @@ all: eard
 ear_frequency.o: ear_frequency.c ear_frequency.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
 
-eard: ear_daemon.c ear_frequency.o power_monitoring.o
-	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) ear_frequency.o power_monitoring.o
+eard: ear_daemon.c ear_frequency.o 
+	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) ear_frequency.o 
 
-power_monitoring.o:power_monitoring.c
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c
 
 ######## OPTIONS
 

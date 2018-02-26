@@ -77,7 +77,7 @@ int states_my_state()
 
 void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
-	if (ear_my_local_id==0) ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %d size %u_____BEGIN_____\n",
+	ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %d size %u_____BEGIN_____\n",
 					ear_app_name, event, size);
 
 	EAR_STATE = FIRST_ITERATION;
