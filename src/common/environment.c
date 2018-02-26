@@ -497,16 +497,31 @@ int check_threads()
         else return 1;
 }
 
+
+
+int get_num_threads()
+{
+    int num_th;
+    if (my_omp_get_max_threads!=NULL){
+        char *omp_numth=getenv("OMP_NUM_THREADS");
+        // we check first for openmp
+        if (omp_numth!=NULL){
+            return atoi(omp_numth);
+        }   
+        omp_numth=getenv("MKL_NUM_THREADS");
+        // we check for MKL
+        if (omp_numth!=NULL){
+            return atoi(omp_numth);
+        }   
+    }   
+    return 1;
+} 
+
 int get_total_resources()
 {
-	int procs_per_node;
-	check_threads();
-	procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
-	if (my_omp_get_max_threads!=NULL){
-                return procs_per_node*my_omp_get_max_threads();
-        }else{
-		return procs_per_node;
-        }
+    int procs_per_node;
+    check_threads();
+    procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
+    return procs_per_node*get_num_threads();
 }
-
 

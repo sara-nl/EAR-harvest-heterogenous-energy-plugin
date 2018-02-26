@@ -31,6 +31,8 @@ types.a: $(TYPES_OBJS)
 	ar rvs types.a $(TYPES_OBJS) string_enhanced.o
 
 install:
+	cp ear_daemon_client.o $(DESTDIR)/lib
+	cp ear_daemon_client.h $(DESTDIR)/include
 
 clean:
 	rm -rf *.o *.so *.a

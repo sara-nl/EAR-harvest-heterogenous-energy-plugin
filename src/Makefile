@@ -19,6 +19,7 @@ INSTALL_FOLDERS = $(DESTDIR)/bin \
                   $(DESTDIR)/etc/scripts/examples \
                   $(DESTDIR)/etc/scripts/learning \
                   $(DESTDIR)/etc/scripts/running \
+				  $(DESTDIR)/include \
                   $(DESTDIR)/sbin
 
 # JUST FOR US, TODO: REMOVE

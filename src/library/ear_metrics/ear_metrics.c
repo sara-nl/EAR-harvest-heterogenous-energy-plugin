@@ -40,22 +40,22 @@
  ******************
  * Client                                         | Req                 | Daemon
  * ---------------------------------------------- | ------------------- | -----------
- * ear_daemon_client_get_data_size_rapl           | DATA_SIZE_RAPL      | eard_rapl
- * ear_daemon_client_start_rapl                   | START_RAPL          |
- * ear_daemon_client_read_rapl                    | READ_RAPL           |
- * ear_daemon_client_reset_rapl                   | RESET_RAPL          |
+ * eards_get_data_size_rapl           | DATA_SIZE_RAPL      | eard_rapl
+ * eards_start_rapl                   | START_RAPL          |
+ * eards_read_rapl                    | READ_RAPL           |
+ * eards_reset_rapl                   | RESET_RAPL          |
  * ---------------------------------------------- | ------------------- | ----------------
- * ear_daemon_client_get_data_size_uncore         | DATA_SIZE_UNCORE    | eard_uncore
- * ear_daemon_client_start_uncore                 | START_UNCORE        |
- * ear_daemon_client_read_uncore                  | READ_UNCORE         |
- * ear_daemon_client_reset_uncore                 | RESET_UNCORE        |
+ * eards_get_data_size_uncore         | DATA_SIZE_UNCORE    | eard_uncore
+ * eards_start_uncore                 | START_UNCORE        |
+ * eards_read_uncore                  | READ_UNCORE         |
+ * eards_reset_uncore                 | RESET_UNCORE        |
  * ---------------------------------------------- | ------------------- | ----------------
- * ear_daemon_client_begin_compute_turbo_freq     | START_GET_FREQ      | eard_freq
- * ear_daemon_client_end_compute_turbo_freq       | END_GET_FREQ        |
- * ear_daemon_client_begin_app_compute_turbo_freq | START_APP_COMP_FREQ |
- * ear_daemon_client_end_app_compute_turbo_freq   | END_APP_COMP_FREQ   |
+ * eards_begin_compute_turbo_freq     | START_GET_FREQ      | eard_freq
+ * eards_end_compute_turbo_freq       | END_GET_FREQ        |
+ * eards_begin_app_compute_turbo_freq | START_APP_COMP_FREQ |
+ * eards_end_app_compute_turbo_freq   | END_APP_COMP_FREQ   |
  * ---------------------------------------------- | ------------------- | ----------------
- * ear_daemon_client_node_dc_energy               | READ_DC_ENERGY      | eard_node_energy
+ * eards_node_dc_energy               | READ_DC_ENERGY      | eard_node_energy
  *
  *
  * Files
@@ -119,7 +119,7 @@ static void metrics_global_start()
 {
 	//
 	if (daemon_metrics) {
-		ear_daemon_client_begin_app_compute_turbo_freq();
+		eards_begin_app_compute_turbo_freq();
 	}
 }
 
@@ -127,7 +127,7 @@ static void metrics_global_stop()
 {
 	//
 	if (daemon_metrics) {
-		metrics_avg_frequency[APP] = ear_daemon_client_end_app_compute_turbo_freq();
+		metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
 	}
 
 	// Accum calls
@@ -151,10 +151,10 @@ static void metrics_partial_start()
 {
 	if (daemon_metrics)
 	{
-		ear_daemon_client_node_dc_energy(&metrics_ipmi[LOO]);
-		ear_daemon_client_begin_compute_turbo_freq();
-		ear_daemon_client_start_uncore();
-		ear_daemon_client_start_rapl();
+		eards_node_dc_energy(&metrics_ipmi[LOO]);
+		eards_begin_compute_turbo_freq();
+		eards_start_uncore();
+		eards_start_rapl();
 	}
 
 	metrics_usecs[LOO] = metrics_time();
@@ -172,9 +172,9 @@ static void metrics_partial_stop()
 	if (daemon_metrics)
 	{
 		// Daemon metrics
-		metrics_avg_frequency[LOO] = ear_daemon_client_end_compute_turbo_freq();
-		ear_daemon_client_read_uncore(metrics_bandwith[LOO]);
-		ear_daemon_client_read_rapl(metrics_rapl[LOO]);
+		metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
+		eards_read_uncore(metrics_bandwith[LOO]);
+		eards_read_rapl(metrics_rapl[LOO]);
 
 		// Manual bandwith accumulation
 		for (i = 0; i < bandwith_elements; i++) {
@@ -187,7 +187,7 @@ static void metrics_partial_stop()
 		}
 
 		// Manual IPMI accumulation
-		ear_daemon_client_node_dc_energy(&aux_energy);
+		eards_node_dc_energy(&aux_energy);
 		metrics_ipmi[LOO] = aux_energy - metrics_ipmi[LOO];
 		metrics_ipmi[APP] += metrics_ipmi[LOO];
 	}
@@ -206,8 +206,8 @@ static void metrics_partial_stop()
 static void metrics_reset()
 {
 	if (daemon_metrics) {
-		ear_daemon_client_reset_uncore();
-		ear_daemon_client_reset_rapl();
+		eards_reset_uncore();
+		eards_reset_rapl();
 	}
 
 	reset_basic_metrics();
@@ -329,10 +329,10 @@ int metrics_init(int privileged_metrics)
 	// Daemon metrics allocation (TODO: standarize data size)
 	if (daemon_metrics)
 	{
-		rapl_size = ear_daemon_client_get_data_size_rapl();
+		rapl_size = eards_get_data_size_rapl();
 		rapl_elements = rapl_size / sizeof(long long);
 
-		bandwith_size = ear_daemon_client_get_data_size_uncore();
+		bandwith_size = eards_get_data_size_uncore();
 		bandwith_elements = bandwith_size / sizeof(long long);
 
 		metrics_bandwith[LOO] = malloc(bandwith_size);

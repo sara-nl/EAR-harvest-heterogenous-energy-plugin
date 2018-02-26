@@ -75,10 +75,10 @@ void main(int argc,char *argv[])
 		nsteps=atoi(argv[1]);
 	}
 	fprintf(stderr, "ear_daemon_test: Using %d steps every %d sec\n",nsteps,sleep_time);
-	ear_daemon_client_connect();
-	freq_events=ear_daemon_client_get_data_size_frequency();
-	uncore_events=ear_daemon_client_get_data_size_uncore();
-	rapl_events=ear_daemon_client_get_data_size_rapl();
+	eards_connect();
+	freq_events=eards_get_data_size_frequency();
+	uncore_events=eards_get_data_size_uncore();
+	rapl_events=eards_get_data_size_rapl();
 	fprintf(stdout,"Uncore counters provides %d events\n",uncore_events/sizeof(long long));	
 	fprintf(stdout,"RAPL counters provides %d events\n",rapl_events/sizeof(long long));	
 	uncore_values=(long long*)malloc(uncore_events);
@@ -86,16 +86,16 @@ void main(int argc,char *argv[])
 	for (i=0;i<nsteps;i++){
 		mem_bd=0;rapl_pack=0;rapl_memory=0;
 		// Start counters
-		ear_daemon_client_start_uncore();
-		ear_daemon_client_start_rapl();
+		eards_start_uncore();
+		eards_start_rapl();
 		gettimeofday(&begin_time,NULL);
 		// Wait
 		sleep(sleep_time);
 		// Stop and reset
-		ear_daemon_client_read_uncore(uncore_values);
-		ear_daemon_client_reset_uncore();	
-		ear_daemon_client_read_rapl(rapl_values);
-		ear_daemon_client_reset_rapl();
+		eards_read_uncore(uncore_values);
+		eards_reset_uncore();	
+		eards_read_rapl(rapl_values);
+		eards_reset_rapl();
 		gettimeofday(&end_time,NULL);
 		elapsed=(unsigned long)(end_time.tv_sec*1000000+end_time.tv_usec)-(begin_time.tv_sec*1000000+begin_time.tv_usec);
 		elapsed_sec=(double)elapsed/(double)1000000;
@@ -114,5 +114,5 @@ void main(int argc,char *argv[])
 		fprintf(stdout,"PACK ENERGY = %lf J \n",(double)rapl_pack/1.0e9);
 		fprintf(stdout,"DRAM ENERGY = %lf J \n",(double)rapl_memory/1.0e9);
 	}
-	ear_daemon_client_disconnect();
+	eards_disconnect();
 }	

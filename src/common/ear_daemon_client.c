@@ -33,11 +33,11 @@ char *ear_tmp;
 
 void warning(int return_value, int expected, char *msg)
 {
-	if (return_value!=expected) ear_verbose(0,"ear_daemon_client %s\n",msg);
-	if (return_value<0) 		ear_verbose(0,"ear_daemon_client %s\n",strerror(errno));
+	if (return_value!=expected) ear_verbose(0,"eards %s\n",msg);
+	if (return_value<0) 		ear_verbose(0,"eards %s\n",strerror(errno));
 }
 
-int ear_daemon_client_connect()
+int eards_connect()
 {
         char nodename[256];
 	unsigned long ret,ack;
@@ -115,7 +115,7 @@ int ear_daemon_client_connect()
 #endif
 			}
 			if (ear_fd_req[i]>0){ 
-				warning(write(ear_fd_req[i],&req,sizeof(req)),sizeof(req),"writting req_service in ear_daemon_client_connect");
+				warning(write(ear_fd_req[i],&req,sizeof(req)),sizeof(req),"writting req_service in eards_connect");
 			}
 			ear_verbose(2,"EAR_daemon_client:comm_req %s [%d] connected\n",nodename,i);
         	if (ear_fd_req[i]>=0){
@@ -136,13 +136,13 @@ int ear_daemon_client_connect()
 	return EAR_SUCCESS;
 
 }
-void ear_daemon_client_disconnect()
+void eards_disconnect()
 {
 	int i;
 	struct daemon_req req;
 	req.req_service=END_COMM;
 	ear_debug(1,"EAR_daemon_client:Disconnecting\n");
-    if (ear_fd_req[0]>=0) warning(write(ear_fd_req[0],&req,sizeof(req)),sizeof(req),"witting req in ear_daemon_client_disconnect");
+    if (ear_fd_req[0]>=0) warning(write(ear_fd_req[0],&req,sizeof(req)),sizeof(req),"witting req in eards_disconnect");
 	for (i=0;i<ear_daemon_client_requests;i++){
         	if (ear_fd_req[i]>=0){
        		 	close(ear_fd_req[i]);
@@ -152,7 +152,7 @@ void ear_daemon_client_disconnect()
 	}
 }
 //////////////// SYSTEM REQUESTS
-unsigned long ear_daemon_client_write_app_signature(application_t *app_signature)
+unsigned long eards_write_app_signature(application_t *app_signature)
 {
 	int com_fd=system_req;
 	struct daemon_req req;
@@ -176,7 +176,7 @@ unsigned long ear_daemon_client_write_app_signature(application_t *app_signature
 	return ack;
 }
 //////////////// FREQUENCY REQUESTS
-unsigned long ear_daemon_client_get_data_size_frequency()
+unsigned long eards_get_data_size_frequency()
 {
 	int com_fd=freq_req;
 	struct daemon_req req;
@@ -199,7 +199,7 @@ unsigned long ear_daemon_client_get_data_size_frequency()
 	freq_size=ack;	
     return ack;
 }
-void ear_daemon_client_begin_compute_turbo_freq()
+void eards_begin_compute_turbo_freq()
 {
 	struct daemon_req req;
 	unsigned long ack=EAR_SUCCESS;
@@ -221,7 +221,7 @@ void ear_daemon_client_begin_compute_turbo_freq()
    return;
 }
 
-unsigned long ear_daemon_client_end_compute_turbo_freq()
+unsigned long eards_end_compute_turbo_freq()
 {
 	struct daemon_req req;
 	unsigned long ack=EAR_SUCCESS;
@@ -247,7 +247,7 @@ unsigned long ear_daemon_client_end_compute_turbo_freq()
     	}   
     return ack;
 }
-void ear_daemon_client_begin_app_compute_turbo_freq()
+void eards_begin_app_compute_turbo_freq()
 {
     struct daemon_req req;
     unsigned long ack=EAR_SUCCESS;
@@ -267,7 +267,7 @@ void ear_daemon_client_begin_app_compute_turbo_freq()
    ear_debug(0,"EAR_daemon_client: ear_daemon_client_begin_app_compute_turbo_freq service not provided\n");
    return;
 }
-unsigned long ear_daemon_client_end_app_compute_turbo_freq()
+unsigned long eards_end_app_compute_turbo_freq()
 {
         struct daemon_req req;
         unsigned long ack=EAR_SUCCESS;
@@ -289,7 +289,7 @@ unsigned long ear_daemon_client_end_app_compute_turbo_freq()
         return ack;
 }
 
-void ear_daemon_client_set_turbo()
+void eards_set_turbo()
 {
 	struct daemon_req req;
 	unsigned long ack;
@@ -311,7 +311,7 @@ void ear_daemon_client_set_turbo()
     return;
 
 }
-unsigned long ear_daemon_client_change_freq(unsigned long newfreq)
+unsigned long eards_change_freq(unsigned long newfreq)
 {
 	unsigned long real_freq = EAR_ERROR;
 	struct daemon_req req;
@@ -346,7 +346,7 @@ unsigned long ear_daemon_client_change_freq(unsigned long newfreq)
 
 // END FREQUENCY SERVICES
 //////////////// UNCORE REQUESTS
-unsigned long ear_daemon_client_get_data_size_uncore()
+unsigned long eards_get_data_size_uncore()
 {
     int com_fd=uncore_req;
 	struct daemon_req req;
@@ -371,7 +371,7 @@ unsigned long ear_daemon_client_get_data_size_uncore()
 }
 
 
-int ear_daemon_client_reset_uncore()
+int eards_reset_uncore()
 {
    	struct daemon_req req;
 	unsigned long ack=EAR_SUCCESS;
@@ -393,7 +393,7 @@ int ear_daemon_client_reset_uncore()
 	return EAR_ERROR;
 }
 
-int ear_daemon_client_start_uncore()
+int eards_start_uncore()
 {
 	struct daemon_req req;
 	unsigned long ack;
@@ -416,7 +416,7 @@ int ear_daemon_client_start_uncore()
 	return EAR_ERROR;
 }
 
-int ear_daemon_client_read_uncore(unsigned long long *values)
+int eards_read_uncore(unsigned long long *values)
 {
 	struct daemon_req req;
 	unsigned long ack;
@@ -449,7 +449,7 @@ int ear_daemon_client_read_uncore(unsigned long long *values)
 // END UNCORE SERVICES
 
 //////////////// RAPL REQUESTS
-unsigned long ear_daemon_client_get_data_size_rapl() // size in bytes
+unsigned long eards_get_data_size_rapl() // size in bytes
 {
     int com_fd=rapl_req;
     struct daemon_req req;
@@ -476,7 +476,7 @@ unsigned long ear_daemon_client_get_data_size_rapl() // size in bytes
 }
 
 
-int ear_daemon_client_reset_rapl()
+int eards_reset_rapl()
 {
 	struct daemon_req req;
 	unsigned long ack=EAR_SUCCESS;
@@ -499,7 +499,7 @@ int ear_daemon_client_reset_rapl()
 
 }
 
-int ear_daemon_client_start_rapl()
+int eards_start_rapl()
 {
 	struct daemon_req req;
 	unsigned long ack;
@@ -522,7 +522,7 @@ int ear_daemon_client_start_rapl()
 	return EAR_ERROR;
 }
 
-int ear_daemon_client_read_rapl(unsigned long long *values)
+int eards_read_rapl(unsigned long long *values)
 {
 	struct daemon_req req;
     	unsigned long ack;
@@ -556,7 +556,7 @@ int ear_daemon_client_read_rapl(unsigned long long *values)
 }
 // END RAPL SERVICES
 // NODE ENERGY SERVICES
-unsigned long ear_daemon_client_node_energy_data_size()
+unsigned long eards_node_energy_data_size()
 {
     int com_fd=node_energy_req;
     struct daemon_req req;
@@ -580,7 +580,7 @@ unsigned long ear_daemon_client_node_energy_data_size()
     energy_size=ack;
     return ack;
 }
-int ear_daemon_client_node_dc_energy(unsigned long *energy)
+int eards_node_dc_energy(unsigned long *energy)
 {
     int com_fd=node_energy_req;
 	struct daemon_req req;

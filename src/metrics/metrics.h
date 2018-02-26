@@ -11,7 +11,7 @@
 
 
 #include <papi/cache.h>
-#include <papi/energy_cpu.h/>
+#include <papi/energy_cpu.h>
 #include <papi/flops.h>
 #include <papi/generics.h>
 #include <papi/instructions.h>

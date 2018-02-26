@@ -135,7 +135,7 @@ void ear_init()
 	{
 		// Only one process can connect with the daemon
 		// Connecting with ear_daemon
-		if (ear_daemon_client_connect() < 0) {
+		if (eards_connect() < 0) {
 			ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
 			exit(1);
 		}
@@ -154,7 +154,7 @@ void ear_init()
 	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
 			VERBOSE_N(1, "turbo learning phase, turbo selected and start computing\n");
-			ear_daemon_client_set_turbo();
+			eards_set_turbo();
 		} else {
 			VERBOSE_N(1, "learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
 		}
@@ -319,7 +319,7 @@ void ear_finalize()
 
 	if (!ear_my_local_id){
 		// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
-		ear_daemon_client_write_app_signature(&application);
+		eards_write_app_signature(&application);
 	}
 
 	append_application_text_file(app_summary_path, &application);
@@ -331,5 +331,5 @@ void ear_finalize()
 	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
 	states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
-	if (!ear_my_local_id)	ear_daemon_client_disconnect();
+	if (!ear_my_local_id)	eards_disconnect();
 }

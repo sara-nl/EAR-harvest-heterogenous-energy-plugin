@@ -32,6 +32,7 @@ install:
 		$(MAKE) -S -C $${i} install; \
 	done
 	mv libear_metrics.so $(DESTDIR)/lib/libear_metrics.so
+	cp metrics.h $(DESTDIR)/include
 
 clean:
 	@ for i in $(COMPONENTS); do \
