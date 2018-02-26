@@ -31,11 +31,6 @@
 #include <common/environment.h>
 #include <common/states.h>
 
-#ifdef POWER_MONITORING
-#include <pthread.h>
-#include <daemon/power_monitoring.h>
-unsigned int power_mon_freq=3000000;
-#endif
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
@@ -653,10 +648,6 @@ void main(int argc,char *argv[])
 	sigset_t eard_mask;
 	char *my_ear_tmp;
 	int max_fd = -1;
-#ifdef POWER_MONITORING
-	pthread_t power_mon_th;
-	int ret;
-#endif
 
 	// binary P_STATE <path.to.tmp> verbosity_level
 	if (argc < 2) {
@@ -760,12 +751,6 @@ void main(int argc,char *argv[])
 		ear_debug(3,"eard: fd %d added to rdfd mask max=%d FD_SETSIZE=%d\n",ear_fd_req[i],numfds_req,FD_SETSIZE);
 	}
 	rfds_basic=rfds;
-#ifdef POWER_MONITORING
-	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
-		errno=ret;
-		ear_verbose(0,"eard: creating power_monitoring thread %s\n",strerror(errno));
-	}
-#endif
 	ear_verbose(1,"eard:Communicator for %s ON\n",nodename);
 	// we wait until EAR daemon receives a request
 	// We support requests realted to frequency and to uncore counters
