@@ -59,9 +59,7 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	char *verbose, *loop_time, *who;
 
 	init_application(&last_signature);
-#ifdef MASTER_ONLY
 	if (my_id) return;
-#endif
 
 	perf_accuracy_min_time = get_ear_performance_accuracy();
 	ear_debug(3, "EAR(%s) JOB %s STARTS EXECUTION. Performance accuracy set to (min) %.5lf usecs\n",
@@ -128,7 +126,7 @@ static void print_loop_signature(application_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000.0;
 
-	VERBOSE_N(1, "LOOP :: Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+	VERBOSE_N(2, "LOOP :: Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
