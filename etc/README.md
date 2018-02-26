@@ -13,9 +13,9 @@ Defines the path to coefficients saved files. These files contains the coefficie
 **EAR_USER_DB_PATHNAME**<br />
 Defines the path to summary saved files. These files contains summaries of all executed applications as data historic. Can be read because they are plain text files.<br />
 **EAR_DYNAIS_LEVELS**<br />
-Number of levels of DynAIS algorithm (see [library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/ear_lib/README.md) for more information).<br />
+Number of levels of DynAIS algorithm (see [library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md) for more information).<br />
 **EAR_DYNAIS_WINDOW_SIZE**<br />
-Windows size of DynAIS algorithm (see [library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/ear_lib/README.md) for more information).<br />
+Windows size of DynAIS algorithm (see [library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md) for more information).<br />
 **EAR_LEARNING_PHASE**<br />
 Enables the learning phase.<br />
 **EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN**<br />
@@ -35,6 +35,6 @@ Default application name, used to save summarized metrics in DB.<br />
 **EAR_TMP**<br />
 Path were temporary files will be placed.<br />
 **EAR_GUI_PATH**<br />
-Path where the traces and graphic interface streaming files will be placed (see [library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/ear_lib/README.md) for more information about the traces or GUI).<br />
+Path where the traces and graphic interface streaming files will be placed (see [library page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md) for more information about the traces or GUI).<br />
 **EAR_VERBOSE**<br />
 Defines the debug level. Higher the level, more messages.<br />

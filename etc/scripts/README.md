@@ -2,8 +2,8 @@ Energy Aware Runtime scripts
 ----------------------------
 A set of bash scripts are provided to make some processes as simple and contained as possible. The two main goals of these scripts are the following:
 1) Automatize the learning phase process.
-2) If you are not using SLURM:
-    * Launch the EAR daemon through SSH.
+2) If you are not using *SLURM*:
+    * Launch the EAR daemon through *SSH*.
     * Launch jobs by MPI commands. In this case, the scripts are responsible of launching your applications together with EAR library.
 
 Subfolders and contents
@@ -35,4 +35,4 @@ Script dependancies
 -------------------
 The following picture shows the dependancies between these scripts. This way of organizing favors the simplicity of editing, allowing that smallest change to take effect on all scripts.
 
-<img src="https://github.com/BarcelonaSupercomputingCenter/EAR/blob/new_kernel_params/etc/images/scripts.png" align="left">
+<img src="https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/images/scripts.png" align="left">

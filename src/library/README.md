@@ -29,9 +29,9 @@ The first type, the **coefficient files**, contains EAR prediction model trined 
 
 In case a node doesn’t find its coefficients files, it will search in the location pointed by the environment variable plus the word default and node available frequencies suffixes: `$EAR_COEFF_DB_PATHNAME_default{frequency}`.
 
-The second type are **databases** which stores metrics about the previously executed applications as historic in binary form, meaning that new data is appendded by any normal user job submission (including learning phase). The coefficients files are generated from these database files when nothing more than learning phase benchmarking tools are registered in that files. Its storing path is defined by the environment variable `*EAR_DB_PATHNAME*`
+The second type are **databases** which stores metrics about the previously executed applications of all users as historic in plaintext form, meaning that new data is appendded by any normal user job submission (including learning phase). The coefficients files are generated from these database files when nothing more than learning phase benchmarking tools are registered in that files. Its storing path is defined by the environment variable `*EAR_DB_PATHNAME*`
 
-The third type of files are **plaintext summaries**, a record of the launched applications that can be consulted by users or administrators. Are generated, like the database files, on every user job submission. Its storing path is defined by the environment variable ’*EAR_USER_DB_PATHNAME*’, but if you are using SLURM, you can also use the argument `*--ear-user-db*`
+The third type of files are **plaintext summaries**, a record of the launched applications that by the user. Are generated, like the database files, on every user job submission. Its storing path is defined by the environment variable ’*EAR_USER_DB_PATHNAME*’, but if you are using SLURM, you can also use the argument `--ear-user-db`.
 
 Traces and graphical interface
 ------------------------------
