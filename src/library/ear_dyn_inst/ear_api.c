@@ -97,12 +97,12 @@ void ear_init()
 	set_ear_total_processes(my_size);
 	EAR_VERBOSE_LEVEL=get_ear_verbose();
 
-	if (get_ear_app_name() != NULL){
-		if (ear_my_rank==0)
+	if (ear_my_rank==0){
+		if (get_ear_app_name() != NULL){
 			ear_verbose(1, "________ EAR: Application %s starts__________\n", get_ear_app_name());
-	}else{
-		if (ear_my_rank==0)
+		}else{
 			ear_verbose(1,"EAR: Application starts.....\n");
+		}
 	}
 
 	ear_debug(2,"EAR Starting initialization\n");	
@@ -124,10 +124,11 @@ void ear_init()
 	ear_my_local_id = my_id;
 
 	if (ear_my_local_id) return;
-
-	ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
-	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
+	if (ear_my_rank==0){
+		ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
+		ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
+	}
 
 	// Only one process can connect with the daemon
 	// Connecting with ear_daemon
@@ -145,11 +146,13 @@ void ear_init()
 	metrics_init(!ear_my_local_id); // PAPI_init starts counters
 	ear_cpufreq_init(); //Initialize cpufreq info
 
-	if (ear_whole_app == 1 && ear_use_turbo == 1) {
+	if (ear_my_rank=00){
+		if (ear_whole_app == 1 && ear_use_turbo == 1) {
 			VERBOSE_N(1, "turbo learning phase, turbo selected and start computing\n");
 			ear_daemon_client_set_turbo();
-	} else {
+		} else {
 			VERBOSE_N(1, "learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
+		}
 	}
 
 	// Getting environment data
@@ -188,13 +191,14 @@ void ear_init()
 	summary_pathname = get_ear_user_db_pathname();
 	sprintf(app_summary_path, "%s%s", summary_pathname, node_name);
 	sprintf(loop_summary_path, "%s%s.loop_info", summary_pathname, node_name);
-
-	VERBOSE_N(0, "App id: '%s'", application.app_id);
-	VERBOSE_N(0, "User id: '%s'", application.user_id);
-	VERBOSE_N(0, "Node id: '%s'", application.node_id);
-	VERBOSE_N(0, "Job id: '%s'", application.job_id);
-	VERBOSE_N(0, "Default frequency: %u", application.def_f);
-	VERBOSE_N(0, "Procs: %u", application.procs);
+	if (ear_my_rank==0){
+		VERBOSE_N(2, "App id: '%s'", application.app_id);
+		VERBOSE_N(2, "User id: '%s'", application.user_id);
+		VERBOSE_N(2, "Node id: '%s'", application.node_id);
+		VERBOSE_N(2, "Job id: '%s'", application.job_id);
+		VERBOSE_N(2, "Default frequency: %u", application.def_f);
+		VERBOSE_N(2, "Procs: %u", application.procs);
+	}
 
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);
@@ -205,7 +209,7 @@ void ear_init()
 
 	ear_debug(1,"EAR Initialized successfully\n");
 	ear_print_lib_environment();
-	ear_verbose(1,"______________EAR loaded___________________\n");
+	if (ear_my_rank==0) ear_verbose(1,"______________EAR loaded___________________\n");
 }
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
