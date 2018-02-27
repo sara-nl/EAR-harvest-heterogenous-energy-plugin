@@ -163,6 +163,8 @@ static void metrics_partial_start()
 	start_flops_metrics();
 }
 
+ull cas = 0;
+
 static void metrics_partial_stop()
 {
 	long long aux_time, aux_flops;
@@ -179,6 +181,7 @@ static void metrics_partial_stop()
 		// Manual bandwith accumulation
 		for (i = 0; i < bandwith_elements; i++) {
 			metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
+			cas += metrics_bandwith[LOO][i];
 			VERBOSE_N(0, "cas: %llu", metrics_bandwith[LOO][i]);
 		}
 
@@ -281,7 +284,8 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 	}
 
-	report_application_data(metrics);
+	//VERBOSE_N(0, "CAS CAS CAS %llu", cas);
+	//report_application_data(metrics);
 }
 
 int metrics_init(int privileged_metrics)
