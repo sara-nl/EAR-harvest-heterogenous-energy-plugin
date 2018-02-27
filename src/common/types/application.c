@@ -86,8 +86,8 @@ void init_application(application_t *app)
 
 void report_application_data(application_t *app)
 {
-	float avg_f = app->avg_f / 1000.0;
-	float def_f = app->def_f / 1000.0;
+	float avg_f = ((double) app->avg_f) / 1000000.0;
+	float def_f = ((double) app->def_f) / 1000000.0;
 
 	printf("------------------------------------------------------------------------ Application Summary --\n");
 	printf("-- App id: %s, node id: %s, user id: %s, job id: %s\n", app->app_id, app->node_id, app->user_id, app->job_id);
