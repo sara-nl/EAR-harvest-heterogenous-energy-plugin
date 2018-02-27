@@ -86,12 +86,20 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
 	loop_with_signature = 0;
 }
 
-void states_end_period(int my_id, FILE *ear_fd, unsigned int size, int iterations, unsigned long event)
+void states_end_period(FILE *ear_fd, uint leve, uint size, uint iterations, ulong event)
 {
 	if (loop_with_signature)
 	{
 		ear_verbose(1, "EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",
 					current_loop_id, iterations, loop_signature.time * (double) iterations);
+
+
+		loop_t loop;
+		loop.metrics = &loop_signature;
+		loop.iterations = iterations;
+		loop.first_event = event;
+		loop.size = size;
+		loop.level = 0;
 	}
 
 	loop_with_signature = 0;
@@ -309,7 +317,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				}
 				else
 				{
-                                        print_loop_signature(&loop_signature);
+					print_loop_signature(&loop_signature);
 
 					// Saving this loop info to its summary file
 					append_application_text_file(loop_summary_path, &loop_signature);

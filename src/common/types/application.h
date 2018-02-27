@@ -11,16 +11,8 @@
 
 #include <common/types/generic.h>
 
-typedef struct loop_info
-{
-	ulong loop_id;
-	uint loop_size;
-	uint level;
-	uint iterations;
-} loop_info_t;
-
 #define GENERIC_NAME	256
-#define POLICY_NAME	32
+#define POLICY_NAME		32
 #define FLOPS_EVENTS	8
 
 typedef struct application
@@ -52,11 +44,31 @@ typedef struct application
 	unsigned int empty; // 64 bit alignment
 } application_t;
 
+typedef struct loop {
+	application_t *metrics;
+	ulong first_event;
+	uint iterations;
+	uint level;
+	uint size;
+} loop_t;
+
 // Function declarations
 
-//TODO:
+//TODO: COMMENT
+
+//
+void append_loop_text_file(char *path, loop_t *loop)
+{
+
+}
+
+//
 void init_application(application_t *app);
+
+//
 int print_application(application_t *app);
+
+//
 void report_application_data(application_t *app);
 
 // Reads a file of applications saved in binary format. A memory block is
