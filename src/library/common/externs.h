@@ -14,8 +14,11 @@
 
 extern application_t loop_signature;
 extern application_t application;
+extern loop_t loop;
+
 extern char loop_summary_path[PATH_MAX];
 extern char app_summary_path[PATH_MAX];
+
 extern unsigned long ear_frequency;
 extern unsigned int ear_resources;
 extern int power_model_policy;

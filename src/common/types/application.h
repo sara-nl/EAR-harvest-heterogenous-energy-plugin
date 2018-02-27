@@ -45,7 +45,7 @@ typedef struct application
 } application_t;
 
 typedef struct loop {
-	application_t *metrics;
+	application_t signature;
 	ulong first_event;
 	uint iterations;
 	uint level;
@@ -55,12 +55,11 @@ typedef struct loop {
 // Function declarations
 
 //TODO: COMMENT
+//
+void copy_application(application_t *destiny, application_t *source);
 
 //
-void append_loop_text_file(char *path, loop_t *loop)
-{
-
-}
+int append_loop_text_file(char *path, loop_t *loop);
 
 //
 void init_application(application_t *app);

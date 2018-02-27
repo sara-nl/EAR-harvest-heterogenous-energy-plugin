@@ -86,20 +86,19 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
 	loop_with_signature = 0;
 }
 
-void states_end_period(FILE *ear_fd, uint leve, uint size, uint iterations, ulong event)
+void states_end_period(uint level, uint size, uint iterations, ulong event)
 {
 	if (loop_with_signature)
 	{
 		ear_verbose(1, "EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",
 					current_loop_id, iterations, loop_signature.time * (double) iterations);
 
-
-		loop_t loop;
-		loop.metrics = &loop_signature;
 		loop.iterations = iterations;
 		loop.first_event = event;
 		loop.size = size;
 		loop.level = 0;
+
+		append_loop_text_file(loop_summary_path, &loop);
 	}
 
 	loop_with_signature = 0;
@@ -291,6 +290,9 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 									ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
 									ENERGY, EDP);
 					}
+
+
+					copy_application(&loop.signature, loop_signature);
 				}
 			}
 			break;

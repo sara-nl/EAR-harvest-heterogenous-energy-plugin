@@ -11,6 +11,11 @@
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
 
+void copy_application(application_t *destiny, application_t *source)
+{
+	memcpy(destiny, source, sizeof(application_t));
+}
+
 static int print_loop_fd(int fd, loop_t *loop)
 {
 	dprintf(fd, "%lu;%u;%u;%u;", first_event, a->level, a->iterations, a->size);
@@ -71,7 +76,7 @@ int append_loop_text_file(char *path, loop_t *loop)
 		return EAR_ERROR;
 	}
 
-	print_application_fd(fd, loop->metrics, 0);
+	print_application_fd(fd, loop->signature, 0);
 	print_loop_fd(fd, app);
 	close(fd);
 
