@@ -18,7 +18,9 @@ void copy_application(application_t *destiny, application_t *source)
 
 static int print_loop_fd(int fd, loop_t *loop)
 {
-	dprintf(fd, "%lu;%u;%u;%u;", first_event, a->level, a->iterations, a->size);
+	loop_t *l = loop;
+
+	dprintf(fd, ";%lu;%u;%u;%u\n", l->first_event, l->level, l->iterations, l->size);
 
 	return EAR_SUCCESS;
 }
@@ -76,8 +78,8 @@ int append_loop_text_file(char *path, loop_t *loop)
 		return EAR_ERROR;
 	}
 
-	print_application_fd(fd, loop->signature, 0);
-	print_loop_fd(fd, app);
+	print_application_fd(fd, &loop->signature, 0);
+	print_loop_fd(fd, loop);
 	close(fd);
 
 	if (ret < 0) return EAR_ERROR;

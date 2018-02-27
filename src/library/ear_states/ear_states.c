@@ -86,24 +86,15 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
 	loop_with_signature = 0;
 }
 
-void states_end_period(uint level, uint size, uint iterations, ulong event)
+void states_end_period(uint iterations)
 {
 	if (loop_with_signature)
 	{
-		ear_verbose(1, "EAR: Loop id %lu finished with %d iterations. Estimated time %lf sec.\n",
-					current_loop_id, iterations, loop_signature.time * (double) iterations);
-
 		loop.iterations = iterations;
-		loop.first_event = event;
-		loop.size = size;
-		loop.level = 0;
-
 		append_loop_text_file(loop_summary_path, &loop);
 	}
 
 	loop_with_signature = 0;
-	ear_verbose(4, "EAR(%s)::____________END_PERIOD: END loop detected (Loop ID: %u,size %u)______%d iters______ \n",
-				ear_app_name, event, size, iterations);
 }
 
 static unsigned int equal_with_th(double a, double b, double th)
@@ -129,15 +120,15 @@ static int signature_has_changed(application_t *A, application_t *B)
 	return 1;
 }
 
-static void print_loop_signature(application_t *loop)
+static void print_loop_signature(char *title, application_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000000.0;
 
-	VERBOSE_N(2, "LOOP :: Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
-                avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
+	VERBOSE_N(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+                title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
-void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, ulong event, uint level)
+void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
 	unsigned long prev_f;
@@ -173,6 +164,11 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				begin_iter = iterations;
 
 				ear_debug(3, "EAR(%s) FIRST_ITERATION -> EVALUATING_SIGNATURE\n", ear_app_name);
+			
+				// Loop printing algorithm
+				loop.first_event = event;
+				loop.level = level;
+				loop.size = period;
 			}
 			break;
 		case SIGNATURE_HAS_CHANGED:
@@ -238,11 +234,8 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				}
 				else
 				{
-					print_loop_signature(&loop_signature);
+					print_loop_signature("signature computed", &loop_signature);
 
-					// Saving this loop info to its summary file
-					append_application_text_file(loop_summary_path, &loop_signature);
-					
 					loop_with_signature = 1;
 					current_loop_id = event;
 
@@ -292,7 +285,8 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 					}
 
 
-					copy_application(&loop.signature, loop_signature);
+					// Loop printing algorithm
+					copy_application(&loop.signature, &loop_signature);
 				}
 			}
 			break;
@@ -319,10 +313,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				}
 				else
 				{
-					print_loop_signature(&loop_signature);
-
-					// Saving this loop info to its summary file
-					append_application_text_file(loop_summary_path, &loop_signature);
+					print_loop_signature("signature refreshed", &loop_signature);
 
 					CPI = loop_signature.CPI;
 					GBS = loop_signature.GBS;
