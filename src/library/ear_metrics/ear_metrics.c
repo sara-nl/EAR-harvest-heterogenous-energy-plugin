@@ -229,7 +229,8 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 
 	// Basics
 	metrics->time = time_s / (double) iterations;
-	metrics->avg_f = metrics_avg_frequency[s] / 1000;
+	metrics->avg_f = metrics_avg_frequency[s];
+
 	metrics->L1_misses = metrics_l1[s];
 	metrics->L2_misses = metrics_l2[s];
 	metrics->L3_misses = metrics_l3[s];
@@ -356,6 +357,7 @@ int metrics_init(int privileged_metrics)
 		DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);
 	}
 
+	metrics_reset();
 	metrics_global_start();
 	metrics_partial_start();
 

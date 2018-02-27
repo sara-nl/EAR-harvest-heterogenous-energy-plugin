@@ -239,6 +239,7 @@ int main(int argc, char *argv[])
     MALLOC(samples_per_app, uint, num_apps);
    
     for (i = 0; i < num_apps; i++) {
+	print_application(&apps[i]);
         samples_per_app[i] = 0;
     }
  

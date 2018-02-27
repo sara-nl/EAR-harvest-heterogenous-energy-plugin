@@ -92,6 +92,7 @@ void reset_basic_metrics()
 		}
 	}
 }
+
 void start_basic_metrics()
 {
 	int sets,ret;
@@ -104,6 +105,7 @@ void start_basic_metrics()
 		}
 	}
 }
+
 /* Stops includes accumulate metrics */
 void stop_basic_metrics(long long *cycles,long long *instructions)
 {
@@ -121,16 +123,16 @@ void stop_basic_metrics(long long *cycles,long long *instructions)
 					event_sets[sets], PAPI_strerror(ret));
 		} else
 		{
-			*cycles=values[sets][0];
-			*instructions=values[sets][1];
-			acum_values[0]=acum_values[0]+values[sets][0];
-			acum_values[1]=acum_values[1]+values[sets][1];
+			*cycles = *cycles + values[sets][0];
+			*instructions = *instructions + values[sets][1];
+			acum_values[0] = acum_values[0] + values[sets][0];
+			acum_values[1] = acum_values[1] + values[sets][1];
 		}
 	}
 }
 
-void get_basic_metrics(long long *total_cycles,long long * total_instructions)
+void get_basic_metrics(long long *total_cycles, long long *total_instructions)
 {
-	*total_cycles=acum_values[0];
-	*total_instructions=acum_values[1];
+	*total_cycles = acum_values[0];
+	*total_instructions = acum_values[1];
 }

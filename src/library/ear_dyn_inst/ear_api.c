@@ -21,6 +21,7 @@
 #include <papi.h> //TODO: remove
 
 // EAR includes
+#include <library/common/externs_alloc.h>
 #include <library/ear_dynais/ear_dynais.h>
 #include <library/ear_states/ear_states.h>
 #include <library/ear_dyn_inst/MPI_types.h>
@@ -29,7 +30,6 @@
 #include <library/ear_models/ear_models.h>
 #include <library/ear_metrics/ear_metrics.h>
 #include <library/ear_gui/ear_gui.h>
-#include <library/common/externs_alloc.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/environment.h>
@@ -162,7 +162,7 @@ void ear_init()
 	user_id = getenv("LOGNAME");
 
 	// States
-    states_begin_job(my_id, NULL, ear_app_name);
+	states_begin_job(my_id, NULL, ear_app_name);
 
 	// Policies
 	init_power_policy();
@@ -175,14 +175,16 @@ void ear_init()
 	strcpy(application.app_id, ear_app_name);
 	strcpy(application.user_id, user_id);
 	strcpy(application.node_id, node_name);
+	strcpy(application.policy, ear_policy_name);
 
 	if (job_id != NULL) strcpy(application.job_id, job_id);
 	else sprintf(application.job_id, "%d", getppid());
 
 	// Passing the frequency in KHz to MHz
-	application.def_f = EAR_default_frequency / 1000;
+	application.def_f = EAR_default_frequency;
 	application.procs = get_total_resources();
-	
+	application.policy_th = get_ear_power_policy_th();;	
+
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
 
@@ -191,13 +193,16 @@ void ear_init()
 	summary_pathname = get_ear_user_db_pathname();
 	sprintf(app_summary_path, "%s%s", summary_pathname, node_name);
 	sprintf(loop_summary_path, "%s%s.loop_info", summary_pathname, node_name);
+
 	if (ear_my_rank==0){
-		VERBOSE_N(2, "App id: '%s'", application.app_id);
-		VERBOSE_N(2, "User id: '%s'", application.user_id);
-		VERBOSE_N(2, "Node id: '%s'", application.node_id);
-		VERBOSE_N(2, "Job id: '%s'", application.job_id);
-		VERBOSE_N(2, "Default frequency: %u", application.def_f);
-		VERBOSE_N(2, "Procs: %u", application.procs);
+		VERBOSE_N(1, "App id: '%s'", application.app_id);
+		VERBOSE_N(1, "User id: '%s'", application.user_id);
+		VERBOSE_N(1, "Node id: '%s'", application.node_id);
+		VERBOSE_N(1, "Job id: '%s'", application.job_id);
+		VERBOSE_N(1, "Default frequency: %u", application.def_f);
+		VERBOSE_N(1, "Procs: %u", application.procs);
+		VERBOSE_N(1, "Policy: %s", application.policy);
+		VERBOSE_N(1, "Policy th: %lf", application.policy_th);
 	}
 
 	//
