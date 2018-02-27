@@ -5,8 +5,9 @@
 
 int EAR_VERBOSE_LEVEL;
 
-application_t loop_signature;
 application_t application;
+application_t loop_signature;
+loop_t loop;
 
 char loop_summary_path[PATH_MAX];
 char app_summary_path[PATH_MAX];

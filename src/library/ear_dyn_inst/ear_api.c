@@ -39,18 +39,19 @@ static const char *__NAME__ = "API";
 
 #define BUFFSIZE 128
 
-static unsigned int ear_loop_size;
 static struct timeval pmpi_app_begin_time, pmpi_app_end_time;
 static long long pmpi_app_total_time;
-static int my_id,my_size;
-static int ear_iterations = 0;
 static unsigned long ear_current_freq;
+static int my_id,my_size;
 static int ear_current_cpuid;
 static int in_loop=0;
 static int period;
 
-// #define MEASURE_DYNAIS_OV
+// Loop information
+static uint ear_loop_size;
+static uint ear_iterations;
 
+// #define MEASURE_DYNAIS_OV
 #ifdef MEASURE_DYNAIS_OV
 static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;
@@ -260,8 +261,8 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		break;
 	case END_NEW_LOOP:
 		ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
-		traces_end_period(ear_my_rank,my_id);
-		states_end_period(ear_level, ear_loop_size, ear_iterations, ear_event);
+		traces_end_period(ear_my_rank, my_id);
+		states_end_period(ear_iterations);
 		ear_iterations=0;
 		ear_loop_size=ear_size;
 		states_begin_period(my_id, NULL, ear_event, ear_size);
@@ -276,13 +277,13 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		}
 
 		traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());	
-		states_new_iteration(my_id, NULL, ear_loop_size, ear_iterations, ear_event, ear_level);
+		states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event);
 		break;
 	case END_LOOP:
 		ear_debug(4,"END_LOOP event %u\n",ear_event);
-		states_end_period(ear_level, ear_loop_size, ear_iterations, ear_event);
+		states_end_period(ear_iterations);
 		traces_end_period(ear_my_rank, my_id);
-		states_end_period(ear_level, ear_loop_size, ear_iterations, ear_event);
+		states_end_period(ear_iterations);
 		ear_iterations=0;
 		in_loop=0;
 		break;
@@ -323,7 +324,8 @@ void ear_finalize()
 	// DynAIS
 	dynais_dispose();
 
-	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
+	if (in_loop) states_end_period(ear_iterations);
+	
 	states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
 	ear_daemon_client_disconnect();
