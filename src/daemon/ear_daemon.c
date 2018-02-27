@@ -35,11 +35,13 @@
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
 unsigned int power_mon_freq=3000000;
+pthread_t power_mon_th;
 #endif
 #ifdef SHARED_MEMORY
 #include <pthread.h>
 #include <common/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
+pthread_t dyn_conf_th;
 #endif
 
 #define max(a,b) (a>b?a:b)
@@ -94,8 +96,11 @@ void f_signals(int s)
 			eard_close_comm();
 		}
 		// Maybe we should just wait for threads
+#ifdef POWER_MONITORING
+		pthread_join(power_mon_th,NULL);
+#endif
 #ifdef SHARED_MEMORY
-		ear_conf_shared_area_dispose(ear_tmp);
+		pthread_join(dyn_conf_th,NULL);
 #endif
 		eard_exit();
 		ear_verbose(0,"eard exits.....\n");
@@ -665,12 +670,6 @@ void main(int argc,char *argv[])
 	char *my_ear_tmp;
 	int max_fd = -1;
 	int ret;
-#ifdef POWER_MONITORING
-	pthread_t power_mon_th;
-#endif
-#ifdef SHARED_MEMORY
-	pthread_t dyn_conf_th;
-#endif
 
 	// binary P_STATE <path.to.tmp> verbosity_level
 	if (argc < 2) {

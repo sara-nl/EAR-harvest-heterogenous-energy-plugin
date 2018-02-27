@@ -37,6 +37,7 @@ void * eard_dynamic_configuration(void *tmp)
 		dyn_conf->force_rescheduling=1;
 		ear_verbose(0,"dynamic_conf: Max freq. set to %lu\n",dyn_conf->max_freq);
 	}
+	ear_conf_shared_area_dispose(my_tmp);
 	pthread_exit(0);
 
 }
