@@ -72,7 +72,7 @@ void ear_cpufreq_init()
 
 	// We should detect cpus
 	ear_num_cpus=ear_cpufreq_hwinfo->sockets*ear_cpufreq_hwinfo->cores*ear_cpufreq_hwinfo->threads;
-	ear_verbose(1,"EAR: %u cpus detected (sockets %u cores %u threads %u)\n",ear_cpufreq_hwinfo->ncpu,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
+	ear_verbose(2,"EAR: %u cpus detected (sockets %u cores %u threads %u)\n",ear_cpufreq_hwinfo->ncpu,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
 	ear_cpufreq=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus);
 
 	if (ear_cpufreq==NULL){

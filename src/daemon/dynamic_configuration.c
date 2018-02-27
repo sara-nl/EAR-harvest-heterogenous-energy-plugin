@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <common/ear_verbose.h>
-#include <daemon/shared_configuration.h>
+#include <common/shared_configuration.h>
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;

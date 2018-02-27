@@ -18,7 +18,8 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
 
 COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/environment.o \
-              $(SRCDIR)/common/types.a
+              $(SRCDIR)/common/types.a \
+			  $(SRCDIR)/common/shared_configuration.o
 
 OBJS = ear_states/ear_states.o           \
        ear_dynais/ear_dynais.o           \

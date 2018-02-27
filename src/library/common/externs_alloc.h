@@ -1,5 +1,14 @@
-#include <common/types/application.h>
+/*    This program is part of the Energy Aware Runtime (EAR).
+    It has been developed in the context of the BSC-Lenovo Collaboration project.
+
+    Copyright (C) 2017
+    BSC Contact Julita Corbalan (julita.corbalan@bsc.es)
+        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
+
+*/
 #include <linux/limits.h>
+#include <common/types/application.h>
+#include <common/shared_configuration.h>
 
 #define MAX_APP_NAME 1024
 
@@ -27,3 +36,4 @@ char ear_app_name[MAX_APP_NAME];
 char ear_policy_name[MAX_APP_NAME];
 unsigned long EAR_default_frequency;
 unsigned int EAR_default_pstate;
+ear_conf_t *system_conf;

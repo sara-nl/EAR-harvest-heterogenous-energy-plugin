@@ -9,8 +9,9 @@
 #ifndef _EAR_GLOBAL_H
 #define _EAR_GLOBAL_H
 
-#include <common/types/application.h>
 #include <linux/limits.h>
+#include <common/types/application.h>
+#include <common/shared_configuration.h>
 
 extern application_t loop_signature;
 extern application_t application;
@@ -35,6 +36,8 @@ extern char ear_policy_name[MAX_APP_NAME]; //TODO: CLEAN
 extern unsigned long EAR_default_frequency; //TODO: CLEAN
 extern unsigned int EAR_default_pstate; //TODO: CLEAN
 extern double performance_penalty_th; //TODO: CLEAN (from ear_models)
+
+extern ear_conf_t *system_conf;
 
 #else
 #endif

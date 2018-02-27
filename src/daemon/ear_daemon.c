@@ -38,7 +38,7 @@ unsigned int power_mon_freq=3000000;
 #endif
 #ifdef SHARED_MEMORY
 #include <pthread.h>
-#include <daemon/shared_configuration.h>
+#include <common/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
 #endif
 

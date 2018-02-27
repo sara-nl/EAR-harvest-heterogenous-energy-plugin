@@ -9,7 +9,7 @@ export DIR
 TYPES_OBJS = types/application.o \
              types/projection.o
 
-BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a
+BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o
 
 ######## RULES
 
@@ -20,6 +20,9 @@ all: $(BINARIES)
 
 ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
 	$(CC) $(CFLAGS) -c ear_daemon_client.c
+
+shared_configuration.o: shared_configuration.c shared_configuration.h ear_verbose.h
+	$(CC) $(CFLAGS) -c shared_configuration.c
 
 environment.o: environment.c environment.h
 	$(CC) $(CFLAGS) -c environment.c

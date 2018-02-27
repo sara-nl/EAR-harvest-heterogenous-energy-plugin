@@ -44,7 +44,7 @@ static uint begin_iter, N_iter;
 static ulong policy_freq;
 
 static double perf_accuracy_min_time = 1000000;
-static uint perf_count_period = 100;
+static uint perf_count_period = 100,loop_perf_count_period;
 static uint EAR_STATE = NO_PERIOD;
 static int loop_with_signature = 0;
 static int current_loop_id;
@@ -137,6 +137,25 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 	int result;
 
 	prev_f = ear_my_frequency();
+#ifdef SHARED_MEMORY
+    if (system_conf->force_rescheduling){
+        ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
+    }
+#endif
+#ifdef SHARED_MEMORY
+	if (system_conf->force_rescheduling){
+		// We set the default number of iterations to the default for this loop
+		perf_count_period=loop_perf_count_period;
+		system_conf->force_rescheduling=0;
+		// If the loop was already evaluated, we force the rescheduling
+		if (EAR_STATE==SIGNATURE_STABLE){ 
+			ear_verbose(0,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
+			EAR_STATE = EVALUATING_SIGNATURE;
+		}
+	}
+#endif
+
+
 
 	switch (EAR_STATE)
 	{
@@ -155,7 +174,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				} else {
 					perf_count_period = 1;
 				}
-
+				loop_perf_count_period=perf_count_period;
 				ear_verbose(3,
 							"\nEAR(%s) at %u, %d iterations are considered to compute app signature...start computing\n",
 							ear_app_name, prev_f, perf_count_period);
@@ -179,7 +198,8 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				perf_count_period = (perf_accuracy_min_time / comp_N_time) + 1;
 			} else {
 				perf_count_period = 1;
-			}
+			}                                        
+			loop_perf_count_period=perf_count_period;
 
 			ear_verbose(3,
 						"EAR(%s) at %u ::(SIGNATURE_HAS_CHANGED)Recomputing N because signature has changed, N set to %d\n",
@@ -202,6 +222,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 			} else {
 				perf_count_period = 1;
 			}
+			loop_perf_count_period=perf_count_period;
 
 			ear_verbose(3, "EAR(%s) at %u ::(RECOMPUTING_N)Recomputing N because F has changed, N set to %d\n",
 						ear_app_name, prev_f, perf_count_period);
@@ -309,7 +330,7 @@ void states_new_iteration(int my_id, FILE *ear_fd, uint period, int iterations, 
 				}
 				else
 				{
-                                        print_loop_signature(&loop_signature);
+					print_loop_signature(&loop_signature);
 
 					// Saving this loop info to its summary file
 					append_application_text_file(loop_summary_path, &loop_signature);

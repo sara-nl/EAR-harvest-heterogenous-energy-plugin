@@ -18,7 +18,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <papi.h> //TODO: remove
+
+#include <papi.h>
 
 // EAR includes
 #include <library/ear_dynais/ear_dynais.h>
@@ -34,6 +35,8 @@
 #include <common/ear_verbose.h>
 #include <common/environment.h>
 #include <common/states.h>
+#include <common/shared_configuration.h>
+
 
 static const char *__NAME__ = "API";
 
@@ -128,9 +131,12 @@ void ear_init()
 	#endif
 
 	ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
-	ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
+	ear_verbose(2,"EAR using %d levels in dynais with %d of window size \n",
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
 
+#ifdef SHARED_MEMORY
+	system_conf=attach_ear_conf_shared_area(get_ear_tmp());
+#endif
 	if (!ear_my_local_id)
 	{
 		// Only one process can connect with the daemon
@@ -153,10 +159,10 @@ void ear_init()
 	if (!ear_my_local_id)
 	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
-			VERBOSE_N(1, "turbo learning phase, turbo selected and start computing\n");
+			VERBOSE_N(2, "turbo learning phase, turbo selected and start computing\n");
 			eards_set_turbo();
 		} else {
-			VERBOSE_N(1, "learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
+			VERBOSE_N(2, "learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
 		}
 	}
 
@@ -197,12 +203,12 @@ void ear_init()
 	sprintf(app_summary_path, "%s%s", summary_pathname, node_name);
 	sprintf(loop_summary_path, "%s%s.loop_info", summary_pathname, node_name);
 
-	VERBOSE_N(0, "App id: '%s'", application.app_id);
-	VERBOSE_N(0, "User id: '%s'", application.user_id);
-	VERBOSE_N(0, "Node id: '%s'", application.node_id);
-	VERBOSE_N(0, "Job id: '%s'", application.job_id);
-	VERBOSE_N(0, "Default frequency: %u", application.def_f);
-	VERBOSE_N(0, "Procs: %u", application.procs);
+	VERBOSE_N(2, "App id: '%s'", application.app_id);
+	VERBOSE_N(2, "User id: '%s'", application.user_id);
+	VERBOSE_N(2, "Node id: '%s'", application.node_id);
+	VERBOSE_N(2, "Job id: '%s'", application.job_id);
+	VERBOSE_N(2, "Default frequency: %u", application.def_f);
+	VERBOSE_N(2, "Procs: %u", application.procs);
 
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);
@@ -331,5 +337,8 @@ void ear_finalize()
 	if (in_loop) states_end_period(my_id, NULL, 0, ear_iterations, 0);
 	states_end_job(my_id, NULL, ear_app_name);
 	ear_cpufreq_end();
+#ifdef SHARED_MEMORY
+	dettach_ear_conf_shared_area();	
+#endif
 	if (!ear_my_local_id)	eards_disconnect();
 }

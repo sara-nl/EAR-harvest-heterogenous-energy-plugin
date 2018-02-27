@@ -1,5 +1,5 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS)  -DSHARED_MEMORY -pthread
-CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -DPOWER_MONITORING -DSHARED_MEMORY -pthread
+CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -DPOWER_MONITORING -pthread
 LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl -pthread
 
 ######## VARS
@@ -15,6 +15,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a \
 	       $(SRCDIR)/metrics/papi/energy_cpu.o
 
 COMMON_OBJS = $(SRCDIR)/common/environment.o \
+			  $(SRCDIR)/common/shared_configuration.o \
               $(SRCDIR)/common/types.a \
 
 BINARIES  = eard
@@ -26,15 +27,12 @@ all: eard
 ear_frequency.o: ear_frequency.c ear_frequency.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
 
-eard: ear_daemon.c ear_frequency.o power_monitoring.o shared_configuration.o dynamic_configuration.o
+eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o
 	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) ear_frequency.o power_monitoring.o \
-		shared_configuration.o dynamic_configuration.o
+		dynamic_configuration.o
 
 power_monitoring.o:power_monitoring.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c
-
-shared_configuration.o:shared_configuration.c
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c shared_configuration.c
 
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
