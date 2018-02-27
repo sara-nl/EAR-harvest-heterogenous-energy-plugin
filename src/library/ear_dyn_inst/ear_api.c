@@ -261,7 +261,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	case END_NEW_LOOP:
 		ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
 		traces_end_period(ear_my_rank,my_id);
-		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
+		states_end_period(ear_level, ear_loop_size, ear_iterations, ear_event);
 		ear_iterations=0;
 		ear_loop_size=ear_size;
 		states_begin_period(my_id, NULL, ear_event, ear_size);
@@ -280,9 +280,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		break;
 	case END_LOOP:
 		ear_debug(4,"END_LOOP event %u\n",ear_event);
-		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
-		traces_end_period(ear_my_rank,my_id);
-		states_end_period(my_id, NULL, ear_loop_size, ear_iterations, ear_event);
+		states_end_period(ear_level, ear_loop_size, ear_iterations, ear_event);
+		traces_end_period(ear_my_rank, my_id);
+		states_end_period(ear_level, ear_loop_size, ear_iterations, ear_event);
 		ear_iterations=0;
 		in_loop=0;
 		break;
