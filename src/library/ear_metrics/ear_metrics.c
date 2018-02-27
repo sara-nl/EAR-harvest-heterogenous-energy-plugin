@@ -179,6 +179,7 @@ static void metrics_partial_stop()
 		// Manual bandwith accumulation
 		for (i = 0; i < bandwith_elements; i++) {
 			metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
+			VERBOSE_N(0, "cas: %llu", metrics_bandwith[LOO][i]);
 		}
 
 		// Manual RAPL accumulation
@@ -229,7 +230,8 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 
 	// Basics
 	metrics->time = time_s / (double) iterations;
-	metrics->avg_f = metrics_avg_frequency[s] / 1000;
+	metrics->avg_f = metrics_avg_frequency[s];
+
 	metrics->L1_misses = metrics_l1[s];
 	metrics->L2_misses = metrics_l2[s];
 	metrics->L3_misses = metrics_l3[s];
@@ -278,6 +280,8 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 		metrics->DRAM_power += (double) metrics_rapl[s][RAPL_DRAM1];
 		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 	}
+
+	report_application_data(metrics);
 }
 
 int metrics_init(int privileged_metrics)
