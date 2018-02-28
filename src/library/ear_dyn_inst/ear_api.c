@@ -95,7 +95,6 @@ void ear_init()
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
-	ear_my_rank_size=my_size;
 
 	//
 	ear_lib_environment();
@@ -171,13 +170,13 @@ void ear_init()
 	// States
 	states_begin_job(my_id, NULL, ear_app_name);
 
-	// Policies
-	init_power_policy();
-	init_power_models(ear_get_num_p_states(), ear_get_pstate_list());
-
 	// Application static data gathering
 	init_application(&application);
 	init_application(&loop_signature);
+	
+	// Policies
+	init_power_policy();
+	init_power_models(ear_get_num_p_states(), ear_get_pstate_list());
 
 	// Policy name is set in ear_models
 	strcpy(application.app_id, ear_app_name);
