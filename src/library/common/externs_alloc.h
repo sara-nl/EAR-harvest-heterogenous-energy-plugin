@@ -1,30 +1,30 @@
+/*    This program is part of the Energy Aware Runtime (EAR).
+    It has been developed in the context of the BSC-Lenovo Collaboration project.
+
+    Copyright (C) 2017
+        BSC Contact Julita Corbalan (julita.corbalan@bsc.es)
+        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
+
+*/
 #include <common/types/application.h>
 #include <linux/limits.h>
 
-#define MAX_APP_NAME 1024
-
-int EAR_VERBOSE_LEVEL;
+loop_t loop;
+application_t loop_signature;
+char loop_summary_path[PATH_MAX];
 
 application_t application;
-application_t loop_signature;
-loop_t loop;
-
-char loop_summary_path[PATH_MAX];
 char app_summary_path[PATH_MAX];
 
-unsigned long ear_frequency;
-unsigned int ear_resources;
-int power_model_policy;
-int ear_use_turbo = USE_TURBO;
+unsigned long EAR_default_frequency; // TODO: why ulong?
+unsigned long ear_frequency; // TODO: why ulong?
+int ear_use_turbo = USE_TURBO; // TODO: review
 int ear_whole_app;
 int ear_my_rank;
-int ear_my_local_id;
-int ear_my_rank_size;
-int report;
+int report; // TODO: what is its utility?
 
-//TODO: clean
-char ear_node_name[MAX_APP_NAME];
-char ear_app_name[MAX_APP_NAME];
-char ear_policy_name[MAX_APP_NAME];
-unsigned long EAR_default_frequency;
-unsigned int EAR_default_pstate;
+// http://dle.rae.es/srv/fetch?id=PZ2fjJW
+int EAR_VERBOSE_LEVEL;
+
+// TODO: CLEAN
+char ear_app_name[PATH_MAX]; //TODO: use application.app_id

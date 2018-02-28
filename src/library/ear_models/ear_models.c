@@ -31,10 +31,12 @@
 #define NOMINAL_CPI(app)    app->CPI
 
 // Extern
-int power_model_policy = MIN_ENERGY_TO_SOLUTION;
-double performance_penalty = PERFORMANCE_PENALTY;
-double performance_gain = PERFORMANCE_GAIN;
-double performance_penalty_th = EAR_ACCEPTED_TH;
+static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
+static double performance_penalty = PERFORMANCE_PENALTY;
+static double performance_gain = PERFORMANCE_GAIN;
+
+// Process
+static uint EAR_default_pstate;
 
 // Normals
 static projection_t *projections;
@@ -55,15 +57,15 @@ void init_power_policy()
 	switch(power_model_policy)
 	{
 		case MIN_ENERGY_TO_SOLUTION:
-			strcpy(ear_policy_name,"min_energy");
-			performance_penalty=get_ear_power_policy_th();
+			strcpy(application.policy,"min_energy");
+			performance_penalty = get_ear_power_policy_th();
 		break;
 		case MIN_TIME_TO_SOLUTION:
-			strcpy(ear_policy_name,"min_time");
-			performance_gain=get_ear_power_policy_th();
+			strcpy(application.policy,"min_time");
+			performance_gain = get_ear_power_policy_th();
 		break;
 		case MONITORING_ONLY:
-			strcpy(ear_policy_name,"monitoring_only");
+			strcpy(application.policy,"monitoring_only");
 		break;
 	}
 
@@ -82,11 +84,6 @@ void init_power_policy()
 		EAR_default_frequency = def_freq;
 	}
 
-	// TODO: WTF
-	ear_verbose(1,"EAR: power policy configuration: policy %s performance penalty %lf accepted th %lf Reset_freq=%u performance gain %lf\n",
-				(power_model_policy==MONITORING_ONLY)?"MONITORING_ONLY":((power_model_policy==MIN_ENERGY_TO_SOLUTION)?"MIN_ENERGY_TO_SOLUTION":"MIN_TIME_TO_SOLUTION"),
-				reset_freq_opt, performance_penalty,performance_penalty_th,performance_gain);
-	ear_verbose(1,"EAR: Default p_state %u Default frequency %lu\n", EAR_default_pstate,EAR_default_frequency);
 }
 
 void init_power_models(unsigned int p_states,unsigned long *p_states_list)
@@ -498,13 +495,7 @@ uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_
 	return 1;
 }
 
-unsigned int performance_projection_ok(projection_t *PREDICTION,application_t *SIGNATURE)
-{
-	if (equal_with_th(PREDICTION->Time,SIGNATURE->time,performance_penalty_th) && equal_with_th(PREDICTION->Power,SIGNATURE->DC_power,performance_penalty_th)){
-		ear_debug(4,"EAR(%s):: Performance projection OK\n",__FILE__);
-		return 1;
-	}else return 0;
-}
+
 projection_t * performance_projection(unsigned long f)
 {
 	ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,ear_get_pstate(f));

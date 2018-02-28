@@ -39,17 +39,20 @@ static const char *__NAME__ = "API";
 
 #define BUFFSIZE 128
 
-static struct timeval pmpi_app_begin_time, pmpi_app_end_time;
+// Una cosa que
+static struct timeval pmpi_app_begin_time;
+static struct timeval pmpi_app_end_time;
 static long long pmpi_app_total_time;
+
+// Process information
+static int my_id, my_size;
 static unsigned long ear_current_freq;
-static int my_id,my_size;
 static int ear_current_cpuid;
-static int in_loop=0;
-static int period;
 
 // Loop information
 static uint ear_loop_size;
 static uint ear_iterations;
+static int in_loop = 0;
 
 // #define MEASURE_DYNAIS_OV
 #ifdef MEASURE_DYNAIS_OV
@@ -57,6 +60,7 @@ static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;
 #endif
 
+// TODO: REFACTOR this function
 int get_app_name_please(char *my_name)
 {
 	char *app_name;
@@ -122,10 +126,12 @@ void ear_init()
 		my_id = (ear_my_rank % ppnode);
 	}
 
-	ear_my_local_id = my_id;
+	if (my_id) {
+		return;
+	}
 
-	if (ear_my_local_id) return;
-	if (ear_my_rank==0){
+	if (ear_my_rank==0)
+	{
 		ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
 		ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
@@ -139,12 +145,12 @@ void ear_init()
 	}
 
 	ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
-				ear_my_rank, ear_node_name, getpid());
+				ear_my_rank, application.node_id, getpid());
 
-	// ear_my_local_id is 0 in case is not local. Metrics gets the value
+	// my_id is 0 in case is not local. Metrics gets the value
 	// 'privileged_metrics'. This value has to be different to 0 when
-	// ear_my_local_id is different to 0.
-	metrics_init(!ear_my_local_id); // PAPI_init starts counters
+	// my_id is different to 0.
+	metrics_init(!my_id); // PAPI_init starts counters
 	ear_cpufreq_init(); //Initialize cpufreq info
 
 	if (ear_my_rank=00){
@@ -173,10 +179,10 @@ void ear_init()
 	init_application(&application);
 	init_application(&loop_signature);
 
+	// Policy name is set in ear_models
 	strcpy(application.app_id, ear_app_name);
 	strcpy(application.user_id, user_id);
 	strcpy(application.node_id, node_name);
-	strcpy(application.policy, ear_policy_name);
 
 	if (job_id != NULL) strcpy(application.job_id, job_id);
 	else sprintf(application.job_id, "%d", getppid());
@@ -192,8 +198,8 @@ void ear_init()
 	// Summary files
 	char *summary_pathname;
 	summary_pathname = get_ear_user_db_pathname();
-	sprintf(app_summary_path, "%s%s", summary_pathname, node_name);
-	sprintf(loop_summary_path, "%s%s.loop_info", summary_pathname, node_name);
+	sprintf(app_summary_path, "%s%s.csv", summary_pathname, node_name);
+	sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 
 	if (ear_my_rank==0){
 		VERBOSE_N(1, "App id: '%s'", application.app_id);
@@ -210,7 +216,7 @@ void ear_init()
 	gettimeofday(&pmpi_app_begin_time, NULL);
 	fflush(stderr);
 
-	traces_init(ear_my_rank,my_id,ear_app_name,ear_node_name,num_nodes,my_size,ppnode);
+	traces_init(ear_my_rank, my_id, ear_app_name, application.node_id, num_nodes, my_size, ppnode);
 	traces_frequency(ear_my_rank,my_id,ear_current_freq);
 
 	ear_debug(1,"EAR Initialized successfully\n");
@@ -223,74 +229,81 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	unsigned int ear_status;
 	int ret;
 	char men[128];
-	if (ear_my_local_id) return;
+
+	if (my_id) {
+		return;
+	}
 
 	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
-	if (!ear_whole_app){
-	ear_debug(3,"EAR(%s) EAR executing before an MPI Call\n",__FILE__);
-	// Create the event for DynAIS
-	unsigned long ear_event = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
-	unsigned int ear_size;
-	unsigned int ear_level;
-	unsigned long trace_data[5];
-    traces_mpi_call(ear_my_rank,my_id,(unsigned long)PAPI_get_real_usec(),(unsigned long)buf,(unsigned long)dest,(unsigned long)call_type,(unsigned long)ear_event);
-
-// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
-#ifdef MEASURE_DYNAIS_OV
-        begin_ov=PAPI_get_real_usec();
-#endif
-	// This is key to detect periods
-        ear_status=dynais(ear_event,&ear_size,&ear_level);
-#ifdef MEASURE_DYNAIS_OV
-        end_ov=PAPI_get_real_usec();
-        calls++;
-        ear_acum=ear_acum+(end_ov-begin_ov);
-#endif
-
-	switch (ear_status)
+	if (!ear_whole_app)
 	{
-	case NO_LOOP:
-	case IN_LOOP:
-		break;
-	case NEW_LOOP:
-		ear_verbose(4,"NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
-		ear_iterations=0;
-		states_begin_period(my_id, NULL, ear_event, ear_size);
-		ear_loop_size=ear_size;
-		in_loop=1;
-		break;
-	case END_NEW_LOOP:
-		ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
-		traces_end_period(ear_my_rank, my_id);
-		states_end_period(ear_iterations);
-		ear_iterations=0;
-		ear_loop_size=ear_size;
-		states_begin_period(my_id, NULL, ear_event, ear_size);
-		break;
-	case NEW_ITERATION:
-		ear_iterations++;
+		// Create the event for DynAIS
+		unsigned long ear_event = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
+		unsigned int ear_size;
+		unsigned int ear_level;
+		unsigned long trace_data[5];
 
-		if (report==1)
+		ear_debug(3,"EAR(%s) EAR executing before an MPI Call\n",__FILE__);
+
+		traces_mpi_call(ear_my_rank, my_id, (unsigned long) PAPI_get_real_usec(), (unsigned long) buf,
+						(unsigned long) dest, (unsigned long) call_type, (unsigned long) ear_event);
+
+		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
+		#ifdef MEASURE_DYNAIS_OV
+		begin_ov=PAPI_get_real_usec();
+		#endif
+		// This is key to detect periods
+		ear_status=dynais(ear_event,&ear_size,&ear_level);
+		#ifdef MEASURE_DYNAIS_OV
+		end_ov=PAPI_get_real_usec();
+		calls++;
+		ear_acum=ear_acum+(end_ov-begin_ov);
+		#endif
+
+		switch (ear_status)
 		{
-			ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",
-				ear_level, ear_event, ear_loop_size, ear_iterations);
-		}
+		case NO_LOOP:
+		case IN_LOOP:
+			break;
+		case NEW_LOOP:
+			ear_verbose(4,"NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
+			ear_iterations=0;
+			states_begin_period(my_id, NULL, ear_event, ear_size);
+			ear_loop_size=ear_size;
+			in_loop=1;
+			break;
+		case END_NEW_LOOP:
+			ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
+			traces_end_period(ear_my_rank, my_id);
+			states_end_period(ear_iterations);
+			ear_iterations=0;
+			ear_loop_size=ear_size;
+			states_begin_period(my_id, NULL, ear_event, ear_size);
+			break;
+		case NEW_ITERATION:
+			ear_iterations++;
 
-		traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());	
-		states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event);
-		break;
-	case END_LOOP:
-		ear_debug(4,"END_LOOP event %u\n",ear_event);
-		states_end_period(ear_iterations);
-		traces_end_period(ear_my_rank, my_id);
-		states_end_period(ear_iterations);
-		ear_iterations=0;
-		in_loop=0;
-		break;
-	default:
-		break;
-	}
-} //ear_whole_app
+			if (report==1)
+			{
+				ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",
+					ear_level, ear_event, ear_loop_size, ear_iterations);
+			}
+
+			traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());
+			states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event);
+			break;
+		case END_LOOP:
+			ear_debug(4,"END_LOOP event %u\n",ear_event);
+			states_end_period(ear_iterations);
+			traces_end_period(ear_my_rank, my_id);
+			states_end_period(ear_iterations);
+			ear_iterations=0;
+			in_loop=0;
+			break;
+		default:
+			break;
+		}
+	} //ear_whole_app
 }
 
 void ear_finalize()
@@ -298,8 +311,11 @@ void ear_finalize()
 	char summary_fullpath[BUFFSIZE];
 	char node_name[BUFFSIZE];
 	char *summary_pathname;
-	if (ear_my_local_id) return;
 	int iters=0;
+
+	if (my_id) {
+		return;
+	}
 
 	#ifdef MEASURE_DYNAIS_OV
 	ear_verbose(0,"EAR:: Dynais algorithm consumes %llu usecs in %u calls\n",ear_acum,calls);
