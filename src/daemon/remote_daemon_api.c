@@ -19,38 +19,85 @@
 #include <sys/select.h>
 #include <linux/limits.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netdb.h>
 
 #include <common/states.h>
+#include <common/remote_conf.h>
+#include <common/ear_verbose.h>
 
 // 2000 and 65535
-#define DAEMON_PORT_NUMBER 			5000
-#define DAEMON_EXTERNAL_CONNEXTIONS 10
+#define DAEMON_EXTERNAL_CONNEXIONS 1
 
+static  int sfd;
+// based on getaddrinfo man pages
 int create_server_socket()
 {
-     int eard_sockfd;
-     struct addr_in eard_server;
-     int n;
-     eard_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-     if (eard_sockfd < 0) return EAR_ERROR; 
-     memset((char *) &eards_server, 0,sizeof(eard_server));
-     eard_server.sin_family = AF_INET;
-     eard_server.sin_addr.s_addr = INADDR_ANY;
-     eard_server.sin_port = htons(DAEMON_PORT_NUMBER);
-     if (bind(eard_sockfd, (struct sockaddr *) &eard_server, sizeof(eard_serverserv_addr)) < 0) return EAR_ERROR;
-     if (listen(eard_sockfd,DAEMON_EXTERNAL_CONNEXTIONS)< 0) return EAR_ERROR;
-	 return eard_sockfd;
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int sfd, s;
+    struct sockaddr_storage peer_addr;
+    socklen_t peer_addr_len;
+    ssize_t nread;
+	char buff[50]; // This must be checked
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+	sprintf(buff,"%d",DAEMON_PORT_NUMBER);
+
+   	s = getaddrinfo(NULL, buff, &hints, &result);
+    if (s != 0) {
+		ear_verbose(0,"getaddrinfo fails\n");
+		return EAR_ERROR;
+    }
+
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        sfd = socket(rp->ai_family, rp->ai_socktype,
+                rp->ai_protocol);
+        if (sfd == -1)
+            continue;
+
+       if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
+            break;                  /* Success */
+
+       close(sfd);
+    }
+
+   	if (rp == NULL) {               /* No address succeeded */
+		ear_verbose(0,"bind fails for eards server\n");
+		return EAR_ERROR;
+    }
+
+   	freeaddrinfo(result);           /* No longer needed */
+
+   	if (listen(sfd,DAEMON_EXTERNAL_CONNEXIONS)< 0){
+		ear_verbose(0,"listen eards socket fails\n");
+		close(sfd);
+ 		return EAR_ERROR;
+	}
+ 	return sfd;
 }
-int wait_for_client(int sockfd,struct sockaddr_in *client)
+int wait_for_client(struct sockaddr_in *client)
 {
 	int new_sock;
-	int cllient_addr_size;
+	int client_addr_size;
 
-    cllient_addr_size = sizeof(struct sockaddr_in);
-	 do{
-     	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-     	if (newsockfd < 0) 
-          error("ERROR on accept");
-     	bzero(buffer,256);
+    client_addr_size = sizeof(struct sockaddr_in);
+    new_sock = accept(sfd, (struct sockaddr *) &client, &client_addr_size);
+    if (new_sock < 0) return EAR_ERROR;
+	return new_sock;
 }
+void close_server_socket(int sock)
+{
+	close(sock);
+}
+
+

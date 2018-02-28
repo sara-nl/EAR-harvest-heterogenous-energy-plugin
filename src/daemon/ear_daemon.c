@@ -95,11 +95,13 @@ void f_signals(int s)
 			ear_verbose(1,"eard application is still connected!.....\n");
 			eard_close_comm();
 		}
+	
 		// Maybe we should just wait for threads
 #ifdef POWER_MONITORING
 		pthread_join(power_mon_th,NULL);
 #endif
 #ifdef SHARED_MEMORY
+		pthread_kill(dyn_conf_th,SIGTERM);
 		pthread_join(dyn_conf_th,NULL);
 #endif
 		eard_exit();
@@ -110,6 +112,7 @@ void catch_signals()
 {
     struct  sigaction sa; 
     int s;
+	sigset_t set;
     sigemptyset(&sa.sa_mask);
     sa.sa_handler = f_signals;
     sa.sa_flags=0;
@@ -776,14 +779,12 @@ void main(int argc,char *argv[])
 #ifdef POWER_MONITORING
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
 		errno=ret;
-		ear_verbose(0,"eard: creating power_monitoring thread %s\n",strerror(errno));
+		ear_verbose(0,"eard: error creating power_monitoring thread %s\n",strerror(errno));
 	}
 #endif
 #ifdef SHARED_MEMORY
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
-		ear_verbose(0,"eard: creating dynamic_configuration thread \n");
-	}else{
-		ear_verbose(0,"eard: eard_dynamic_configuration thread created\n");
+		ear_verbose(0,"eard: error creating dynamic_configuration thread \n");
 	}
 #endif
 	ear_verbose(1,"eard:Communicator for %s ON\n",nodename);
@@ -791,11 +792,11 @@ void main(int argc,char *argv[])
 	// We support requests realted to frequency and to uncore counters
 	// rapl support is pending to be supported
 	// EAR daemon main loop
-	sigemptyset(&eard_mask);
-	sigaddset(&eard_mask,SIGPIPE);
-	sigaddset(&eard_mask,SIGTERM);
-	sigaddset(&eard_mask,SIGINT);
-	sigprocmask(SIG_UNBLOCK,&eard_mask,NULL);
+	sigfillset(&eard_mask);
+	sigdelset(&eard_mask,SIGPIPE);
+	sigdelset(&eard_mask,SIGTERM);
+	sigdelset(&eard_mask,SIGINT); 
+	sigprocmask(SIG_SETMASK,&eard_mask,NULL);
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;
 	ear_debug(1,"eard waiting.....\n");

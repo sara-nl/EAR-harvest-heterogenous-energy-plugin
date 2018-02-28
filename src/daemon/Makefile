@@ -26,13 +26,15 @@ all: eard
 ear_frequency.o: ear_frequency.c ear_frequency.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
 
-eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o
+eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o remote_daemon_api.o
 	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) ear_frequency.o power_monitoring.o \
-		dynamic_configuration.o
+		dynamic_configuration.o remote_daemon_api.o
 
 
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
+remote_daemon_api.o:remote_daemon_api.c
+	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c remote_daemon_api.c
 ######## OPTIONS
 
 install:

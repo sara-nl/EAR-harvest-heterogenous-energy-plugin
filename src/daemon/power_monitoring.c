@@ -10,16 +10,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
+#include <common/ear_verbose.h>
 
 extern int eard_must_exit;
+unsigned int f_monitoring;
 // frequency_monitoring will be expressed in usecs
 void *eard_power_monitoring(void *frequency_monitoring)
 {
 	unsigned int *f_monitoringp=(unsigned int *)frequency_monitoring;
-	unsigned int f_monitoring=*f_monitoringp;
 	unsigned long begin,end;	
 	unsigned long t_ms;
 	double avg_dc_power;
+	time_t t; 
+    struct tm *tm; 
+    char s[64];
+
+	ear_verbose(0,"power monitoring thread created\n");
+	f_monitoring=*f_monitoringp;
 	t_ms=f_monitoring/1000;
 	// We will collect and report avg power until eard finishes
 	read_dc_energy(&begin);
@@ -28,8 +36,11 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		usleep(f_monitoring);
 		read_dc_energy(&end);
 		avg_dc_power=(end-begin)/t_ms;
-		printf("avg power: %lf\n",avg_dc_power);
+		t = time(NULL);
+   		tm = localtime(&t);
+    	strftime(s, sizeof(s), "%c", tm);
 		begin=end;
+		printf("time %s: avg power: %lf\n",s,avg_dc_power);
 	}
 	pthread_exit(0);
 }

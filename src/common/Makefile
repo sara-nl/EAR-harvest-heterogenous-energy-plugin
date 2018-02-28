@@ -9,7 +9,7 @@ export DIR
 TYPES_OBJS = types/application.o \
              types/projection.o
 
-BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o
+BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o remote_daemon_client.o
 
 ######## RULES
 
@@ -23,6 +23,8 @@ ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
 
 shared_configuration.o: shared_configuration.c shared_configuration.h ear_verbose.h
 	$(CC) $(CFLAGS) -c shared_configuration.c
+remote_daemon_client.o: remote_daemon_client.c remote_conf.h ear_verbose.h
+	$(CC) $(CFLAGS) -c remote_daemon_client.c
 
 environment.o: environment.c environment.h
 	$(CC) $(CFLAGS) -c environment.c
@@ -35,6 +37,7 @@ types.a: $(TYPES_OBJS)
 
 install:
 	cp ear_daemon_client.o $(DESTDIR)/lib
+	cp remote_daemon_client.o $(DESTDIR)/lib
 	cp eards_api.h $(DESTDIR)/include
 	cp states.h $(DESTDIR)/include
 

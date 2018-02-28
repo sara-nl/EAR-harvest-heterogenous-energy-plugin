@@ -88,7 +88,7 @@ void ear_conf_shared_area_dispose(char * ear_conf_path)
 {
 	char buff[256];
     sprintf(buff,"%s/.ear_dyn_conf",ear_conf_path);
-
+	dyn_conf=NULL;
 	close(fd);
 	unlink(buff);
 }
