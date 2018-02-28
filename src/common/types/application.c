@@ -11,6 +11,81 @@
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
 
+void copy_application(application_t *destiny, application_t *source)
+{
+	memcpy(destiny, source, sizeof(application_t));
+}
+
+static int print_loop_fd(int fd, loop_t *loop)
+{
+	loop_t *l = loop;
+
+	dprintf(fd, ";%lu;%u;%u;%u\n", l->first_event, l->level, l->iterations, l->size);
+
+	return EAR_SUCCESS;
+}
+
+static int print_application_fd(int fd, application_t *app, int new_line)
+{
+	application_t *a;
+	int i;
+
+	a = app;
+	dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
+	dprintf(fd, "%u;%u;", a->avg_f, a->def_f);
+	dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
+	dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
+	dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
+	dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
+	dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
+	dprintf(fd, "%lf;%llu", a->Gflops, app->FLOPS[0]);
+
+	for (i = 1; i < FLOPS_EVENTS; ++i) {
+		dprintf(fd, ";%llu", app->FLOPS[i]);
+	}
+
+	if (new_line) {
+		dprintf(fd, "\n");
+	}
+
+	return EAR_SUCCESS;
+}
+
+int append_loop_text_file(char *path, loop_t *loop)
+{
+	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;" \
+        "DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
+        "L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;"     \
+        "DP_512;FIRST_EVENT;ITERATIONS;LEVEL;SIZE";
+	int fd, ret;
+
+	fd = open(path, O_WRONLY | O_APPEND);
+
+	if (fd < 0)
+	{
+		if (errno == ENOENT)
+		{
+			fd = open(path, OPTIONS, PERMISSION);
+
+			// Write header
+			if (fd >= 0) {
+				ret = dprintf(fd, "%s\n", HEADER);
+			}
+		}
+	}
+
+	if (fd < 0) {
+		return EAR_ERROR;
+	}
+
+	print_application_fd(fd, &loop->signature, 0);
+	print_loop_fd(fd, loop);
+	close(fd);
+
+	if (ret < 0) return EAR_ERROR;
+	return EAR_SUCCESS;
+}
+
 void init_application(application_t *app)
 {
     memset(app, 0, sizeof(application_t));
@@ -18,8 +93,8 @@ void init_application(application_t *app)
 
 void report_application_data(application_t *app)
 {
-	float avg_f = app->avg_f / 1000.0;
-	float def_f = app->def_f / 1000.0;
+	float avg_f = ((double) app->avg_f) / 1000000.0;
+	float def_f = ((double) app->def_f) / 1000000.0;
 
 	printf("------------------------------------------------------------------------ Application Summary --\n");
 	printf("-- App id: %s, node id: %s, user id: %s, job id: %s\n", app->app_id, app->node_id, app->user_id, app->job_id);
@@ -55,33 +130,9 @@ int append_application_binary_file(char *path, application_t *app)
     return EAR_SUCCESS;
 }
 
-static int print_application_fd(int fd, application_t *app)
-{
-	application_t *a;
-	int i;
-
-	a = app;
-	dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
-	dprintf(fd, "%u;%u;", a->avg_f, a->def_f);
-	dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
-	dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
-	dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
-	dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
-	dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
-	dprintf(fd, "%lf;%llu", a->Gflops, app->FLOPS[0]);
-
-	for (i = 1; i < FLOPS_EVENTS; ++i) {
-		dprintf(fd, ";%llu", app->FLOPS[i]);
-	}
-
-    dprintf(fd, "\n");
-
-    return EAR_SUCCESS;
-}
-
 int print_application(application_t *app)
 {
-    return print_application_fd(STDOUT_FILENO, app);
+    return print_application_fd(STDOUT_FILENO, app, 1);
 }
 
 int append_application_text_file(char *path, application_t *app)
@@ -110,7 +161,7 @@ int append_application_text_file(char *path, application_t *app)
         return EAR_ERROR;
     }
 
-    print_application_fd(fd, app);
+    print_application_fd(fd, app, 1);
     close(fd);
 
     if (ret < 0) return EAR_ERROR;

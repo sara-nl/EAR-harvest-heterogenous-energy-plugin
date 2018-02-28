@@ -105,7 +105,7 @@ void traces_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int m
 			ear_verbose(0,"EAR(%s) Creating EAR GUI app file %s (%s)\n",__FILE__,filenameApp,strerror(errno));
 			exit(1);
 		}
-		sprintf(ear_gui_buffer,"%s\n%d\n%d\n%d\n%s\n",appname,nodes,mpis,ppnode,ear_policy_name);
+		sprintf(ear_gui_buffer,"%s\n%d\n%d\n%d\n%s\n",appname,nodes,mpis,ppnode, application.policy);
 		if (write(fd,ear_gui_buffer,strlen(ear_gui_buffer))!=strlen(ear_gui_buffer)){
 			ear_verbose(0,"EAR(%s) error writting App info (%s) \n",__FILE__,strerror(errno));
 			exit(1);

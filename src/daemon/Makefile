@@ -30,8 +30,6 @@ eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o
 	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) ear_frequency.o power_monitoring.o \
 		dynamic_configuration.o
 
-power_monitoring.o:power_monitoring.c
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c
 
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
