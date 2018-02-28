@@ -49,6 +49,7 @@ void set_sigusr1()
 void process_remote_requests(int clientfd)
 {
 	ear_verbose(0,"connection received\n");
+	close(clientfd);
 }
 
 
@@ -77,9 +78,12 @@ void * eard_dynamic_configuration(void *tmp)
 	}
 	ear_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
 	do{
+		ear_verbose(0,"waiting for remote commands\n");
 		eards_client=wait_for_client(eards_remote_socket,&eards_remote_client);	
-		process_remote_requests(eards_client);
-	}while(eard_must_exit);
+		if (eards_client<0){	
+			ear_verbose(0,"dyn_conf: wait_for_client returns error\n");
+		}else process_remote_requests(eards_client);
+	}while(eard_must_exit==0);
     ear_verbose(0,"dyn_conf exiting\n");
     ear_conf_shared_area_dispose(my_tmp);
     close_server_socket(eards_remote_socket);

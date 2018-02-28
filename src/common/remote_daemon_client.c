@@ -34,7 +34,7 @@ int eards_remote_connect(char *nodename)
 	sprintf(port_number,"%d",DAEMON_PORT_NUMBER);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
-		ear_verbose(0,"getaddrinfo failt for %s and %s\n",nodename,port_number);
+		printf("getaddrinfo failt for %s and %s\n",nodename,port_number);
 		return EAR_ERROR;
     }
 
@@ -51,7 +51,7 @@ int eards_remote_connect(char *nodename)
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		ear_verbose(0,"Failing in connecting to remote erds\n");
+		printf("Failing in connecting to remote erds\n");
 		return EAR_ERROR;
     }
 

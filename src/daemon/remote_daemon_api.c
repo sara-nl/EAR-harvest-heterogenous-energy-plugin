@@ -54,7 +54,7 @@ int create_server_socket()
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {
-		ear_verbose(0,"getaddrinfo fails\n");
+		ear_verbose(0,"getaddrinfo fails for port %s \n",buff);
 		return EAR_ERROR;
     }
 
@@ -74,7 +74,9 @@ int create_server_socket()
    	if (rp == NULL) {               /* No address succeeded */
 		ear_verbose(0,"bind fails for eards server\n");
 		return EAR_ERROR;
-    }
+    }else{
+		ear_verbose(0,"socket and bind for erads socket success\n");
+	}
 
    	freeaddrinfo(result);           /* No longer needed */
 
@@ -83,16 +85,21 @@ int create_server_socket()
 		close(sfd);
  		return EAR_ERROR;
 	}
+	ear_verbose(0,"eards socket listen ready!\n");
  	return sfd;
 }
-int wait_for_client(struct sockaddr_in *client)
+int wait_for_client(int s,struct sockaddr_in *client)
 {
 	int new_sock;
 	int client_addr_size;
 
     client_addr_size = sizeof(struct sockaddr_in);
-    new_sock = accept(sfd, (struct sockaddr *) &client, &client_addr_size);
-    if (new_sock < 0) return EAR_ERROR;
+    new_sock = accept(s, (struct sockaddr *) &client, &client_addr_size);
+    if (new_sock < 0){ 
+		ear_verbose(0,"accept for eards socket fails %s\n",strerror(errno));
+		return EAR_ERROR;
+	}
+	ear_verbose(0,"eards new connection \n");
 	return new_sock;
 }
 void close_server_socket(int sock)
