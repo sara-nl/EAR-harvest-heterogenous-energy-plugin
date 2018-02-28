@@ -112,8 +112,8 @@ static unsigned int equal_with_th(double a, double b, double th)
 
 static int signature_has_changed(application_t *A, application_t *B)
 {
-	if (equal_with_th(A->CPI, B->CPI, performance_penalty_th) &&
-		equal_with_th(A->GBS, B->GBS, performance_penalty_th))
+	if (equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH) &&
+		equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH))
 	{
 		return 0;
 	}
