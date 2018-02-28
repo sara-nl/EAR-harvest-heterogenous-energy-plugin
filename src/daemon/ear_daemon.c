@@ -101,7 +101,7 @@ void f_signals(int s)
 		pthread_join(power_mon_th,NULL);
 #endif
 #ifdef SHARED_MEMORY
-		pthread_kill(dyn_conf_th,SIGTERM);
+		pthread_kill(dyn_conf_th,SIGUSR1);
 		pthread_join(dyn_conf_th,NULL);
 #endif
 		eard_exit();
