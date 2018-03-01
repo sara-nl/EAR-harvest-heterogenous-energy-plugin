@@ -8,6 +8,7 @@
 #include <common/types/application.h>
 #include <common/types/projection.h>
 #include <common/string_enhanced.h>
+#include <common/states.h>
 
 typedef struct control
 {
@@ -168,7 +169,7 @@ void evaluate(control_t *control)
     // Apps iteration
     for (j = 0; j < n_apps; ++j)
     {
-        if (apps[j].def_f == f0_mhz)
+	   if (apps[j].def_f == f0_mhz)
         {
             // Print content
             set_spacing_digits(18);
@@ -197,7 +198,7 @@ void evaluate(control_t *control)
 
             for (i = 0; i < n_coeffs; i++)
             {
-                if (coeffs[i].available)
+			    if (coeffs[i].available)
                 {
                     cpip = cpi_proj(cpi0, tpi0, &coeffs[i]);
                     timep = time_proj(time0, cpip, cpi0, f0_mhz, coeffs[i].pstate);
@@ -343,12 +344,18 @@ int main(int argc, char *argv[])
     control.mode += 2 * (strcmp(argv[1], "read_coefficients") == 0);
     control.mode += 3 * (strcmp(argv[1], "merge_summary") == 0);
 
+	#define READ_T(argument) \
+	if ((argument) == EAR_ERROR) { \
+		printf("Error while reading file (bad format)\n"); \
+		exit(1); \
+	}
+
     //
     if (control.mode == 1 && (argc == 5 || argc == 6))
     {
         //
-        control.n_apps = read_application_text_file(argv[3], &control.apps);
-        control.n_coeffs = read_coefficients_file(argv[2], &control.coeffs, 0);
+        READ_T(control.n_apps = read_application_text_file(argv[3], &control.apps));
+		control.n_coeffs = read_coefficients_file(argv[2], &control.coeffs, 0);
         control.f0_mhz = (unsigned long) atoi(argv[4]);
         control.csv = argv[5];
 
