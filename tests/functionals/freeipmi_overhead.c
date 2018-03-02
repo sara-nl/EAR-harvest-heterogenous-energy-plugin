@@ -15,6 +15,13 @@
 
 int EAR_VERBOSE_LEVEL = 4;
 
+void usage(char *bin)
+{
+    printf("Usage: %s n_iterations\n", bin);
+    printf("- n_iterations: number of executing iterations to determine the average overhead\n");
+    exit(1);
+}
+
 int main (int argc, char *argv[])
 {
     struct timespec requirement, remaining;
@@ -23,6 +30,10 @@ int main (int argc, char *argv[])
     unsigned long energy;
     int iterations;
     int i;
+
+	if (argc != 2) {
+		usage(argv[0]);
+	}
 
     if (node_energy_init() < 0)
     {
@@ -33,7 +44,7 @@ int main (int argc, char *argv[])
     // Initializations
     requirement.tv_sec  = 0;
     requirement.tv_nsec = 100000000L;
-    iterations          = 10000;
+    iterations          = atoi(argv[1]);
     call_time_us_dc     = 0;
     call_time_us_ac     = 0;
 

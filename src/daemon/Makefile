@@ -1,5 +1,5 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) 
-LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl 
+LDFLAGS = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(PAPI_LDFLAGS) -ldl 
 
 ######## VARS
 
@@ -26,7 +26,7 @@ ear_frequency.o: ear_frequency.c ear_frequency.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
 
 eard: ear_daemon.c ear_frequency.o 
-	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) ear_frequency.o 
+	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) ear_frequency.o $(LDFLAGS)
 
 
 ######## OPTIONS
