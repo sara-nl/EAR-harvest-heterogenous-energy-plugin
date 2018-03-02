@@ -5,7 +5,7 @@ LDFLAGS =
 
 BANDWIDTH_OBJS = bandwidth/uncores_pci.o
 
-LIBRARIES = bandwidth.a \
+LIBRARIES = bandwidth.so \
             frequency.o \
             hardware_info.o
 
@@ -19,8 +19,8 @@ all: $(LIBRARIES)
 bandwidth.o: bandwidth.c bandwidth.h
 	$(CC) $(CFLAGS) -c bandwidth.c $(LDFLAGS)
 
-bandwidth.a: bandwidth.o $(BANDWIDTH_OBJS)
-	ar rvs bandwidth.a bandwidth.o $(BANDWIDTH_OBJS)
+bandwidth.so: bandwidth.o $(BANDWIDTH_OBJS)
+	$(CC) -shared -o bandwidth.so bandwidth.o $(BANDWIDTH_OBJS)
 
 frequency.o: frequency.c frequency.h
 	$(CC) $(CFLAGS) -c frequency.c $(LDFLAGS)
@@ -31,7 +31,8 @@ hardware_info.o: hardware_info.c hardware_info.h
 ######## OPTIONS
 
 install:
+	cp *.h $(DESTDIR)/include/metrics/custom
 
 clean:
-	rm -f *.o *.a *.so
+	rm -f *.o  *.so
 	$(MAKE) -C bandwidth clean

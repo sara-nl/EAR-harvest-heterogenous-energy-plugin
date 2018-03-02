@@ -6,7 +6,6 @@
         Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
-#include <metrics/ipmi/energy_node.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -19,7 +18,7 @@ unsigned int f_monitoring;
 void *eard_power_monitoring(void *frequency_monitoring)
 {
 	unsigned int *f_monitoringp=(unsigned int *)frequency_monitoring;
-	unsigned long begin,end;	
+	unsigned long e_begin,e_end;	
 	unsigned long t_ms;
 	double avg_dc_power;
 	time_t t; 
@@ -30,16 +29,16 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	f_monitoring=*f_monitoringp;
 	t_ms=f_monitoring/1000;
 	// We will collect and report avg power until eard finishes
-	read_dc_energy(&begin);
+	read_dc_energy(&e_begin);
 	while(!eard_must_exit)
 	{
 		usleep(f_monitoring);
-		read_dc_energy(&end);
-		avg_dc_power=(end-begin)/t_ms;
+		read_dc_energy(&e_end);
+		avg_dc_power=(e_end-e_begin)/t_ms;
 		t = time(NULL);
    		tm = localtime(&t);
     	strftime(s, sizeof(s), "%c", tm);
-		begin=end;
+		e_begin=e_end;
 		printf("time %s: avg power: %lf\n",s,avg_dc_power);
 	}
 	pthread_exit(0);

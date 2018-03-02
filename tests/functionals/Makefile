@@ -4,9 +4,9 @@ CFLAGS      = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
 
 HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
 
-BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a
+BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.so
 
-NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.a
+NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.so
 
 FREQUENCY_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
                  $(SRCDIR)/daemon/ear_frequency.o

@@ -1,4 +1,5 @@
 CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
+export CFLAGS
 
 ####### 
 
@@ -9,7 +10,7 @@ export DIR
 TYPES_OBJS = types/application.o \
              types/projection.o
 
-BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o remote_daemon_client.o
+BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o remote_daemon_client.o 
 
 ######## RULES
 
@@ -34,6 +35,7 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 
 types.a: $(TYPES_OBJS)
 	ar rvs types.a $(TYPES_OBJS) string_enhanced.o
+	
 
 install:
 	cp ear_daemon_client.o $(DESTDIR)/lib

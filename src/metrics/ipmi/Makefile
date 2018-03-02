@@ -7,7 +7,7 @@ ENERGY_NODE_OBJS = energy_node/ibm.o \
                    energy_node/lenovo_act.o \
                    energy_node/lenovo_wct.o
 
-LIBRARIES = energy_node.a
+LIBRARIES = energy_node.so
 
 ######## RULES
 
@@ -19,14 +19,15 @@ all: $(LIBRARIES)
 energy_node.o: energy_node.c energy_node.h $(ENERGY_NODE_OBJS)
 	$(CC) $(CFLAGS) -c energy_node.c
 
-energy_node.a: energy_node.o $(ENERGY_NODE_OBJS)
-	ar rvs energy_node.a energy_node.o $(ENERGY_NODE_OBJS)
+energy_node.so: energy_node.o $(ENERGY_NODE_OBJS)
+	$(CC) -shared -o energy_node.so energy_node.o $(ENERGY_NODE_OBJS)
 
 ######## OPTIONS
 
 install:
+	cp *.h $(DESTDIR)/include/metrics/ipmi
 
 clean:
 	rm -f $(BINARIES)
-	rm -f *.so *.a *.o
+	rm -f *.so *.a *.o *.so
 	@ $(MAKE) -C energy_node clean

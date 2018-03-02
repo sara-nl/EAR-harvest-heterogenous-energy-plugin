@@ -348,6 +348,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
+					ear_verbose(1,
+					"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
+					ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
+					ENERGY, EDP);
 
 					begin_iter = iterations;
 					// We compare the projection with the signature and the old signature

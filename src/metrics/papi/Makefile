@@ -33,6 +33,7 @@ energy_cpu.o: energy_cpu.c energy_cpu.h
 	$(CC) $(CFLAGS) -c energy_cpu.c $(LDFLAGS)
 
 install:
+	cp *.h $(DESTDIR)/include/metrics/papi
 
 clean:
 	rm -rf $(BINARIES)

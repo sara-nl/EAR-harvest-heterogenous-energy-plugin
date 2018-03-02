@@ -1,3 +1,4 @@
+CFLAGS  = -I$(SRCDIR) $(CONSTANTS)  -pthread
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -DPOWER_MONITORING -pthread
 LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl -pthread
 
@@ -7,10 +8,10 @@ export DIR
 
 ######## FILES
 
-METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a \
+METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.so \
                $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
-               $(SRCDIR)/metrics/ipmi/energy_node.a \
+               $(SRCDIR)/metrics/ipmi/energy_node.so \
 	       $(SRCDIR)/metrics/papi/energy_cpu.o
 
 COMMON_OBJS = $(SRCDIR)/common/environment.o \

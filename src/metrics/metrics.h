@@ -10,16 +10,16 @@
 #define _METRICS_H
 
 
-#include <papi/cache.h>
-#include <papi/energy_cpu.h>
-#include <papi/flops.h>
-#include <papi/generics.h>
-#include <papi/instructions.h>
-#include <papi/stalls.h>
-#include <ipmi/energy_node.h>
-#include <custom/bandwidth.h>
-#include <custom/frequency.h>
-#include <custom/hardware_info.h>
+#include <metrics/papi/cache.h>
+#include <metrics/papi/energy_cpu.h>
+#include <metrics/papi/flops.h>
+#include <metrics/papi/generics.h>
+#include <metrics/papi/instructions.h>
+#include <metrics/papi/stalls.h>
+#include <metrics/ipmi/energy_node.h>
+#include <metrics/custom/bandwidth.h>
+#include <metrics/custom/frequency.h>
+#include <metrics/custom/hardware_info.h>
 
 
 
