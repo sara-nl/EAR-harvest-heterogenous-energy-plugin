@@ -5,7 +5,7 @@ The EAR package includes two type of tests. The **check tests**, prepared to be 
 When running a **check test**, 3 types of message are written in the output.
 1) **Error**: the hardware, software or libraries are incompatible with the library.
 2) **Warning**: it's possible that some componentes have to be loaded prior the execution (normally, the library would trye).
-3) **Ok**: your system is full compatible with the library.
+3) ![#c5f015](**Ok**): your system is full compatible with the library.
 
 Make check tests list
 ---------------------
