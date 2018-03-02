@@ -200,7 +200,8 @@ void ear_init()
 	sprintf(app_summary_path, "%s%s.csv", summary_pathname, node_name);
 	sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 
-	if (ear_my_rank==0){
+	if (ear_my_rank==0)
+	{
 		VERBOSE_N(1, "App id: '%s'", application.app_id);
 		VERBOSE_N(1, "User id: '%s'", application.user_id);
 		VERBOSE_N(1, "Node id: '%s'", application.node_id);

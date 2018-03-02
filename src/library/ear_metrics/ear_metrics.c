@@ -81,7 +81,6 @@ static double hw_cache_line_size;
 static int hw_node_size;
 
 // Options
-static int daemon_metrics;
 static int papi_flops_supported;
 static int bandwith_elements;
 static int flops_elements;
@@ -118,17 +117,13 @@ long long metrics_time()
 static void metrics_global_start()
 {
 	//
-	if (daemon_metrics) {
-		ear_daemon_client_begin_app_compute_turbo_freq();
-	}
+	ear_daemon_client_begin_app_compute_turbo_freq();
 }
 
 static void metrics_global_stop()
 {
 	//
-	if (daemon_metrics) {
-		metrics_avg_frequency[APP] = ear_daemon_client_end_app_compute_turbo_freq();
-	}
+	metrics_avg_frequency[APP] = ear_daemon_client_end_app_compute_turbo_freq();
 
 	// Accum calls
 	get_cache_metrics(&metrics_l1[APP], &metrics_l2[APP], &metrics_l3[APP]);
@@ -149,13 +144,10 @@ static void metrics_global_stop()
 
 static void metrics_partial_start()
 {
-	if (daemon_metrics)
-	{
-		ear_daemon_client_node_dc_energy(&metrics_ipmi[LOO]);
-		ear_daemon_client_begin_compute_turbo_freq();
-		ear_daemon_client_start_uncore();
-		ear_daemon_client_start_rapl();
-	}
+	ear_daemon_client_node_dc_energy(&metrics_ipmi[LOO]);
+	ear_daemon_client_begin_compute_turbo_freq();
+	ear_daemon_client_start_uncore();
+	ear_daemon_client_start_rapl();
 
 	metrics_usecs[LOO] = metrics_time();
 	start_basic_metrics();
@@ -169,28 +161,25 @@ static void metrics_partial_stop()
 	ulong aux_energy;
 	int i;
 
-	if (daemon_metrics)
-	{
-		// Daemon metrics
-		metrics_avg_frequency[LOO] = ear_daemon_client_end_compute_turbo_freq();
-		ear_daemon_client_read_uncore(metrics_bandwith[LOO]);
-		ear_daemon_client_read_rapl(metrics_rapl[LOO]);
+	// Daemon metrics
+	metrics_avg_frequency[LOO] = ear_daemon_client_end_compute_turbo_freq();
+	ear_daemon_client_read_uncore(metrics_bandwith[LOO]);
+	ear_daemon_client_read_rapl(metrics_rapl[LOO]);
 
-		// Manual bandwith accumulation
-		for (i = 0; i < bandwith_elements; i++) {
-			metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
-		}
-
-		// Manual RAPL accumulation
-		for (i = 0; i < rapl_elements; i++) {
-			metrics_rapl[APP][i] += metrics_rapl[LOO][i];
-		}
-
-		// Manual IPMI accumulation
-		ear_daemon_client_node_dc_energy(&aux_energy);
-		metrics_ipmi[LOO] = aux_energy - metrics_ipmi[LOO];
-		metrics_ipmi[APP] += metrics_ipmi[LOO];
+	// Manual bandwith accumulation
+	for (i = 0; i < bandwith_elements; i++) {
+		metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
 	}
+
+	// Manual RAPL accumulation
+	for (i = 0; i < rapl_elements; i++) {
+		metrics_rapl[APP][i] += metrics_rapl[LOO][i];
+	}
+
+	// Manual IPMI accumulation
+	ear_daemon_client_node_dc_energy(&aux_energy);
+	metrics_ipmi[LOO] = aux_energy - metrics_ipmi[LOO];
+	metrics_ipmi[APP] += metrics_ipmi[LOO];
 
 	// Local metrics
 	stop_cache_metrics(&metrics_l1[LOO], &metrics_l2[LOO], &metrics_l3[LOO]);
@@ -205,10 +194,8 @@ static void metrics_partial_stop()
 
 static void metrics_reset()
 {
-	if (daemon_metrics) {
-		ear_daemon_client_reset_uncore();
-		ear_daemon_client_reset_rapl();
-	}
+	ear_daemon_client_reset_uncore();
+	ear_daemon_client_reset_rapl();
 
 	reset_basic_metrics();
 	reset_flops_metrics();
@@ -266,22 +253,20 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	metrics->CPI = (double) metrics_cycles[s] / (double) metrics_instructions[s];
 	metrics->TPI = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];
 
-	if (daemon_metrics) {
-		// Energy IPMI
-		metrics->DC_power = (double) metrics_ipmi[s] / (time_s * 1000.0);
-		metrics->EDP = time_s * time_s * metrics->DC_power;
+	// Energy IPMI
+	metrics->DC_power = (double) metrics_ipmi[s] / (time_s * 1000.0);
+	metrics->EDP = time_s * time_s * metrics->DC_power;
 
-		// Energy RAPL (TODO: ask for the two individual energy types separately)
-		metrics->PCK_power   = (double) metrics_rapl[s][RAPL_PACKAGE0];
-		metrics->PCK_power  += (double) metrics_rapl[s][RAPL_PACKAGE1];
-		metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
-		metrics->DRAM_power  = (double) metrics_rapl[s][RAPL_DRAM0];
-		metrics->DRAM_power += (double) metrics_rapl[s][RAPL_DRAM1];
-		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
-	}
+	// Energy RAPL (TODO: ask for the two individual energy types separately)
+	metrics->PCK_power   = (double) metrics_rapl[s][RAPL_PACKAGE0];
+	metrics->PCK_power  += (double) metrics_rapl[s][RAPL_PACKAGE1];
+	metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
+	metrics->DRAM_power  = (double) metrics_rapl[s][RAPL_DRAM0];
+	metrics->DRAM_power += (double) metrics_rapl[s][RAPL_DRAM1];
+	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 }
 
-int metrics_init(int privileged_metrics)
+int metrics_init()
 {
 	const PAPI_hw_info_t *hw_general = NULL;
 	ulong flops_size;
@@ -290,7 +275,6 @@ int metrics_init(int privileged_metrics)
 
 	// General hardware info by PAPI
 	hw_general = metrics_get_hw_info();
-	daemon_metrics = privileged_metrics;
 
 	if (hw_general != NULL) {
 		hw_node_size = hw_general->threads * hw_general->cores;
@@ -328,34 +312,31 @@ int metrics_init(int privileged_metrics)
 	}
 
 	// Daemon metrics allocation (TODO: standarize data size)
-	if (daemon_metrics)
+	rapl_size = ear_daemon_client_get_data_size_rapl();
+	rapl_elements = rapl_size / sizeof(long long);
+
+	bandwith_size = ear_daemon_client_get_data_size_uncore();
+	bandwith_elements = bandwith_size / sizeof(long long);
+
+	metrics_bandwith[LOO] = malloc(bandwith_size);
+	metrics_bandwith[APP] = malloc(bandwith_size);
+	metrics_rapl[LOO] = malloc(rapl_size);
+	metrics_rapl[APP] = malloc(rapl_size);
+
+	memset(metrics_bandwith[LOO], 0, bandwith_size);
+	memset(metrics_bandwith[APP], 0, bandwith_size);
+	memset(metrics_rapl[LOO], 0, rapl_size);
+	memset(metrics_rapl[APP], 0, rapl_size);
+
+	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL ||
+		metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL)
 	{
-		rapl_size = ear_daemon_client_get_data_size_rapl();
-		rapl_elements = rapl_size / sizeof(long long);
-
-		bandwith_size = ear_daemon_client_get_data_size_uncore();
-		bandwith_elements = bandwith_size / sizeof(long long);
-
-		metrics_bandwith[LOO] = malloc(bandwith_size);
-		metrics_bandwith[APP] = malloc(bandwith_size);
-		metrics_rapl[LOO] = malloc(rapl_size);
-		metrics_rapl[APP] = malloc(rapl_size);
-
-		memset(metrics_bandwith[LOO], 0, bandwith_size);
-		memset(metrics_bandwith[APP], 0, bandwith_size);
-		memset(metrics_rapl[LOO], 0, rapl_size);
-		memset(metrics_rapl[APP], 0, rapl_size);
-
-		if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL ||
-			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL)
-		{
-			VERBOSE_N(0, "error allocating memory in metrics, exiting");
-			exit(1);
-		}
-
-		DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
-		DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);
+		VERBOSE_N(0, "error allocating memory in metrics, exiting");
+		exit(1);
 	}
+
+	DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
+	DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);
 
 	metrics_reset();
 	metrics_global_start();
@@ -407,28 +388,16 @@ int metrics_compute_signature_finish(application_t *metrics, uint iterations, ul
 	return EAR_SUCCESS;
 }
 
-/*
- *
- *
- *
- * LEGACY CODE
- *
- *
- *
- *
- */
-
 long long metrics_usecs_diff(long long end, long long init)
 {
 	long long to_max;
 
-	//LLONG_MAX
 	if (end < init)
 	{
-		ear_debug(0, "EAR(%s) UsecsDiff TIME END < INIT %ll - %ll\n", __FILE__, end, init);
+		EAR_DEBUG(0, "Timer overflow (end: %ll - init: %ll)\n", end, init);
 		to_max = LLONG_MAX - init;
 		return (to_max + end);
 	}
 
-	return (end-init);
+	return (end - init);
 }
