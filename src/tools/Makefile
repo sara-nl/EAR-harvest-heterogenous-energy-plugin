@@ -7,6 +7,7 @@ COMMON_OBJS = $(ROOTDIR)/src/common/string_enhanced.o \
 
 BINARIES = traces_to_paraver            \
            coefficients_quality_control
+BINARIES = coefficients_quality_control
 
 ######## RULES
 
@@ -29,7 +30,7 @@ dynais_graph: dynais_graph.c
 ######## OPTIONS
 
 install:
-	mv traces_to_paraver $(DESTDIR)/bin/
+	# mv traces_to_paraver $(DESTDIR)/bin/
 	mv coefficients_quality_control $(DESTDIR)/bin/
 
 clean:

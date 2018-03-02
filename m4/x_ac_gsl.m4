@@ -94,7 +94,7 @@ AC_DEFUN([X_AC_GSL],
     else
         GSL_DIR=$_cv_gsl_dir_root
         GSL_LIBDIR=$_x_ac_gsl_dir_lib
-        GSL_CPPFLAGS="-I$GSL_DIR/include/gsl"
+        GSL_CPPFLAGS="-I$GSL_DIR/include"
         GSL_LDFLAGS=$_x_ac_gsl_gcc_ldflags
         GSL_LIBS=$_x_ac_gsl_gcc_libs
         echo checking for GSL compiler link... yes

@@ -1,4 +1,4 @@
-#include <gsl_version.h>
+#include <gsl/gsl_version.h>
 #include <assert.h>
 
 // VERSION 1.4
