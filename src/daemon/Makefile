@@ -13,9 +13,9 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.so \
                $(SRCDIR)/metrics/ipmi/energy_node.so \
                $(SRCDIR)/metrics/papi/energy_cpu.o
 
-COMMON_OBJS = $(SRCDIR)/common/types.a
+COMMON_OBJS = $(SRCDIR)/common/types.a \
               $(SRCDIR)/common/environment.o \
-			  $(SRCDIR)/common/shared_configuration.o
+              $(SRCDIR)/common/shared_configuration.o
 
 OBJS = ear_frequency.o \
        power_monitoring.o \
