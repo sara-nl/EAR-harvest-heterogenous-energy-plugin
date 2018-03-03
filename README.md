@@ -22,10 +22,11 @@ EAR requires some third party libraríes and headers to compile and run, in addi
 | --------- | --------------------- | --------------- | ------------------------------------------------- |
 | PAPI      | Yes / with RAPL       | 5.4.3.0         | [Website](http://icl.utk.edu/papi/)               |
 | GSL       | Yes                   | 1.4             | [Website](https://www.gnu.org/software/gsl/)      |
-| CPUPower  | Yes                   | Kernel 3.10     | [Information](https://wiki.archlinux.org/index.php/CPU_frequency_scaling) |
+| CPUPower  | Yes                   | Kernel 3.10*    | [Information](https://wiki.archlinux.org/index.php/CPU_frequency_scaling) |
 | FreeIPMI  | Yes                   | 1.5.7           | [Website](https://www.gnu.org/software/freeipmi/) |
 | SLURM     | Just for SLURM plugin | 17.02.6         | [Website](https://slurm.schedmd.com/)             |
 | MPI       | Yes                   | -               | -                                                 |
+* Depending on the version, may you have to change the name of the library function call (or the parameter).
 
 Also, some **drivers** has to be present and loaded in the system:
 

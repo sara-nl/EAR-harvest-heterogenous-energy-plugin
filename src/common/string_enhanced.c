@@ -3,7 +3,7 @@
 #include <string.h>
 #include <common/string_enhanced.h>
 
-static char _buffer[3][32];
+static char _buffer[3][64];
 static uint _digits;
 static uint _i;
 
@@ -93,7 +93,7 @@ void set_spacing_digits(uint digits)
 
 void print_spacing_ull(ull number)
 {
-    uint digits = _digits;
+    int digits = _digits;
     printf("%llu", number);
 
     while(number > 9) {
@@ -108,7 +108,7 @@ void print_spacing_ull(ull number)
 
 void print_spacing_ulong(ulong number)
 {
-    uint digits = _digits;
+    int digits = _digits;
     printf("%lu", number);
 
     while(number > 9) {
@@ -123,7 +123,7 @@ void print_spacing_ulong(ulong number)
 
 void print_spacing_uint(uint number)
 {
-    uint digits = _digits;
+    int digits = _digits;
     printf("%u", number);
 
     while(number > 9) {
@@ -138,7 +138,7 @@ void print_spacing_uint(uint number)
 
 void print_spacing_int(int number)
 {
-    uint digits = _digits;
+    int digits = _digits;
     printf("%d", number);
 
     while(number > 9) {
@@ -153,8 +153,15 @@ void print_spacing_int(int number)
 
 void print_spacing_string(char* string)
 {
-    uint digits = _digits - strlen(string);
-    printf("%s", string);
+    int digits = _digits - strlen(string);
+    
+	if (digits < 0) {
+		printf("...");
+		string = &string[-digits + 4];
+		digits = 1;
+	}
+
+	printf("%s", string);
 
     while(digits > 0) {
         printf(" ");
@@ -164,7 +171,7 @@ void print_spacing_string(char* string)
 
 void print_spacing_string_align_left(char* string, uint left_spaces)
 {
-    uint digits = _digits - strlen(string);
+    int digits = _digits - strlen(string);
 
     while(digits > 0) {
         printf(" ");

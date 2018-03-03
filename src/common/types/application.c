@@ -203,6 +203,8 @@ int read_application_binary_file(char *path, application_t **apps)
 
 int scan_application_fd(FILE *fd, application_t *app)
 {
+	#define APP_TEXT_FILE_FIELDS 29
+
 	application_t *a;
 	int ret;
 
@@ -225,7 +227,7 @@ int scan_application_fd(FILE *fd, application_t *app)
 			 &a->L1_misses, &a->L2_misses, &a->L3_misses,
 			 &a->Gflops, &a->FLOPS[0], &a->FLOPS[1], &a->FLOPS[2], &a->FLOPS[3],
 			 &a->FLOPS[4], &a->FLOPS[5], &a->FLOPS[6], &a->FLOPS[7]);
-
+	
 	return ret;
 }
 
@@ -233,7 +235,7 @@ int read_application_text_file(char *path, application_t **apps)
 {
     char line[PIPE_BUF];
     application_t *apps_aux, *a;
-    int lines, i;
+    int lines, i, ret;
     FILE *fd;
 
     if ((fd = fopen(path, "r")) == NULL) {
@@ -258,14 +260,19 @@ int read_application_text_file(char *path, application_t **apps)
 
     i = 0;
     a = apps_aux;
-
-    while(scan_application_fd(fd, a) > 0)
+ 
+    while((ret = scan_application_fd(fd, a)) == APP_TEXT_FILE_FIELDS)
     {
         i += 1;
         a = &apps_aux[i];
     }
 
     fclose(fd);
+
+	if (ret >= 0 && ret < APP_TEXT_FILE_FIELDS) {
+		free(apps_aux);
+		return EAR_ERROR;
+	}
 
     *apps = apps_aux;
     return i;

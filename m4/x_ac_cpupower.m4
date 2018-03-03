@@ -74,7 +74,7 @@ AC_DEFUN([X_AC_CPUPOWER],
     )
 
     if test -z "$_cv_cpupower_dir_root"; then
-        echo checking for CPUPOWER compiler link... no
+        echo checking for CPUPower compiler link... no
     else
         CPUPOWER_DIR=$_cv_cpupower_dir_root
         CPUPOWER_LIBDIR=$_x_ac_cpupower_dir_lib
