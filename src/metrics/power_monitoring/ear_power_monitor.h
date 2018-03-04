@@ -18,6 +18,14 @@ typedef struct energy_mon_data{
 	rapl_data_t CPU_energy[NUM_SOCKETS];
 }energy_data_t;
 
+typedef struct power_data{
+    time_t begin,end;
+    double avg_dc,avg_ac;
+    double avg_dram[NUM_SOCKETS];
+    double avg_cpu[NUM_SOCKETS];
+}power_data_t;
+
+
 //  Starts power monitoring
 int init_power_ponitoring();
 // Ends power monitoring
@@ -26,7 +34,11 @@ void end_power_monitoring();
 // Energy is returned in mili Joules
 int read_enegy_data(energy_data_t *acc_energy);
 // Computes the difference between two energy measurements
-int diff_energy_data(energy_data_t *init,energy_data_t *end,energy_data_t *diff);
+int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff);
+
+void copy_energy_data(energy_data_t *dest,energy_data_t *src);
+void print_energy_data(energy_data_t *e);
+
 
 #else
 #endif

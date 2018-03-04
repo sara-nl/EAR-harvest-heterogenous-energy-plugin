@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -30,6 +31,7 @@ char ear_ping[1024];
 int ear_ping_fd;
 #define MAX_TRIES 5
 char *ear_tmp;
+static uint8_t app_connected=0;
 
 void warning(int return_value, int expected, char *msg)
 {
@@ -44,6 +46,7 @@ int eards_connect()
 	struct daemon_req req;
 	int tries=0,connected=0;
         int i;
+	if (app_connected) return EAR_SUCCESS;
 
         // These files connect EAR with EAR_COMM
         ear_tmp=getenv("EAR_TMP");
@@ -133,6 +136,7 @@ int eards_connect()
         	}
 	}
 	ear_debug(1,"EAR_daemon_client:Connected\n");
+	app_connected=1;
 	return EAR_SUCCESS;
 
 }

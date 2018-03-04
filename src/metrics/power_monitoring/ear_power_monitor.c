@@ -8,10 +8,26 @@
 #include <metrics/power_monitoring/ear_power_monitor.h>
 
 
-static uint8_t power_mon_connected=0; 
-static rapl_data_t *RAPL_metrics;
+uint8_t power_mon_connected=0; 
+rapl_data_t *RAPL_metrics;
 
 #define VERBOSE(msg) printf(msg)
+
+int pm_connect()
+{
+#ifdef EARDS
+	return EAR_SUCCESS;
+#endif
+#ifdef NO_EARDS
+	int r=node_energy_init();
+	if (r==EAR_SUCCESS) r=init_rapl_metrics();
+	return r;
+#endif
+#ifdef EAR_USER
+	return eards_connect();
+#endif
+
+}
 
 node_data_t diff_node_energy(node_data_t end,node_data_t init)
 {
@@ -50,12 +66,12 @@ int init_power_ponitoring()
 		pm_disconnect();
 		return POWER_MON_ERROR;
 	}
-	RAPL_metrics=malloc(rapl_size);
+	RAPL_metrics=(rapl_data_t *)malloc(rapl_size);
 	if (RAPL_metrics==NULL){
 		pm_disconnect();
 		return POWER_MON_ERROR;
 	}
-	memset(RAPL_metrics,0,rapl_size);
+	memset((char *)RAPL_metrics,0,rapl_size);
 	pm_start_rapl();
 	power_mon_connected=1;
 	return POWER_MON_OK;
@@ -93,8 +109,9 @@ int read_enegy_data(energy_data_t *acc_energy)
 }
 
 
-int diff_energy_data(energy_data_t *init,energy_data_t *end,energy_data_t *diff)
+int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff)
 {
+	diff->DC_node_energy=0;diff->DRAM_energy[0]=0;diff->DRAM_energy[1]=0;diff->CPU_energy[0]=0;diff->CPU_energy[1]=0;
 	if (power_mon_connected){
 		if ((init==NULL) || (end==NULL) || (diff==NULL)) return POWER_MON_ERROR;	
 		// overflows must be considered, this is a prototype
@@ -109,5 +126,20 @@ int diff_energy_data(energy_data_t *init,energy_data_t *end,energy_data_t *diff)
 	}else{
 		return POWER_MON_ERROR;
 	}
+}
+
+void copy_energy_data(energy_data_t *dest,energy_data_t *src)
+{
+	dest->AC_node_energy=src->AC_node_energy;
+	dest->DC_node_energy=src->DC_node_energy;
+	dest->DRAM_energy[0]=src->DRAM_energy[0];
+	dest->DRAM_energy[1]=src->DRAM_energy[1];
+	dest->CPU_energy[0]=src->CPU_energy[0];
+	dest->CPU_energy[1]=src->CPU_energy[1];
+}
+void print_energy_data(energy_data_t *e)
+{
+	printf("DC %lu DRAM %llu CPU %llu\n",e->DC_node_energy,e->DRAM_energy[0]+e->DRAM_energy[1],
+	e->CPU_energy[0]+e->CPU_energy[1]);
 }
 
