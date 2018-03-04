@@ -21,10 +21,14 @@ export DIR
 ######## FILES
 
 
+COMMON_OBJS = $(SRCDIR)/common/types.a \
+              $(SRCDIR)/common/environment.o \
+              $(SRCDIR)/common/shared_configuration.o
 
-COMMON_OBJS = $(SRCDIR)/common/environment.o \
-			  $(SRCDIR)/common/shared_configuration.o \
-              $(SRCDIR)/common/types.a \
+OBJS = ear_frequency.o \
+       power_monitoring.o \
+       dynamic_configuration.o \
+       remote_daemon_api.o
 
 BINARIES  = eard
 
@@ -42,7 +46,8 @@ eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o re
 
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
-remote_daemon_api.o:remote_daemon_api.c
+
+remote_daemon_api.o: remote_daemon_api.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c remote_daemon_api.c
 power_monitoring.o:power_monitoring.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c

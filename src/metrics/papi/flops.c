@@ -78,7 +78,7 @@ int init_flops_metrics()
 		}else if (retval != PAPI_OK){ 
 			VERBOSE_N(0,"FP_METRICS: Error , event set to compute FLOPS can not be multiplexed %s",PAPI_strerror(retval));
 		}
-		VERBOSE_N(2,"FP_METRICS: Set %d to compute flops has been multiplexed",event_sets[sets]);
+
 		cpu_model = get_model();
 		switch(cpu_model){
 			case CPU_HASWELL_X:
@@ -135,7 +135,7 @@ void reset_flops_metrics()
 	if (!flops_supported) return;
 	for (sets=0;sets<FLOPS_SETS;sets++){
 		if ((retval=PAPI_reset(event_sets[sets]))!=PAPI_OK){
-			VERBOSE_N(0,"FP_METRICS: ResetFlopsMetrics.%s",PAPI_strerror(retval));
+			VERBOSE_N(0,"FP_METRICS: ResetFlopsMetrics.%s", PAPI_strerror(retval));
 		}
 		for (events=0;events<FLOPS_EVS;events++) values[sets][events]=0;
 		
@@ -147,7 +147,7 @@ void start_flops_metrics()
 	if (!flops_supported) return;
 	for (sets=0;sets<FLOPS_SETS;sets++){
 		if ((retval=PAPI_start(event_sets[sets]))!=PAPI_OK){
-			VERBOSE_N(0,"FP_METRICS:StartFlopsMetrics.%s",PAPI_strerror(retval));
+			VERBOSE_N(0,"FP_METRICS:StartFlopsMetrics.%s", PAPI_strerror(retval));
 		}
 	}
 }
@@ -166,9 +166,6 @@ void stop_flops_metrics(long long *flops, long long *f_operations)
 			VERBOSE_N(0,"FP_METRICS: StopFlopsMetrics.%s",PAPI_strerror(retval));
 		} else
 		{
-			if (sets==SP_OPS) VERBOSE_N(2,"fops_fp -->");
-			if (sets==DP_OPS) VERBOSE_N(2,"fops_dp -->");
-
 			for (ev=0; ev < FLOPS_EVS;ev++)
 			{
 				f_operations[sets*FLOPS_EVS+ev] = values[sets][ev];
@@ -176,8 +173,6 @@ void stop_flops_metrics(long long *flops, long long *f_operations)
 				acum_values[sets][ev] += values[sets][ev];
 
 				*flops += (values[sets][ev] * weights[sets][ev]);
-
-				VERBOSE_N(2,"[%d]=%llu x %d, ", ev, values[sets][ev], weights[sets][ev]);
 			}
 		}
 	}
