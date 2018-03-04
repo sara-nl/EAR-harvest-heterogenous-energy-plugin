@@ -8,7 +8,7 @@
 #define POWER_MON_OK	EAR_SUCCESS
 #define POWER_MON_ERROR	EAR_ERROR
 
-typedef unsigned long long rapl_data_t;
+typedef long long rapl_data_t;
 typedef unsigned long node_data_t;
 
 typedef struct energy_mon_data{
@@ -38,6 +38,11 @@ int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff)
 
 void copy_energy_data(energy_data_t *dest,energy_data_t *src);
 void print_energy_data(energy_data_t *e);
+
+// Time must be passed in seconds
+void compute_power(energy_data_t *e_begin,energy_data_t *e_end,time_t t_begin,time_t t_end,double sec,power_data_t *my_power);
+void print_power(power_data_t *my_power);
+
 
 
 #else

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <limits.h>
 
 
 // eards_api is the ear daemon public api to be used by external apps
@@ -29,6 +31,40 @@ int pm_connect()
 
 }
 
+// POWER FUNCTIONS
+void compute_power(energy_data_t *e_begin,energy_data_t *e_end,time_t t_begin,time_t t_end,double sec, power_data_t *my_power)
+{
+    energy_data_t e_diff;
+    double t_diff;
+
+    // Compute the difference
+	print_energy_data(e_begin);
+	print_energy_data(e_end);
+    diff_energy_data(e_end,e_begin,&e_diff);
+	t_diff=sec;
+    my_power->begin=t_begin;
+    my_power->end=t_end;
+    my_power->avg_ac=0;
+    my_power->avg_dc=(double)(e_diff.DC_node_energy)/(t_diff*1000);
+    my_power->avg_dram[0]=(double)(e_diff.DRAM_energy[0])/(t_diff*1000000000);
+    my_power->avg_dram[1]=(double)(e_diff.DRAM_energy[1])/(t_diff*1000000000);
+    my_power->avg_cpu[0]=(double)(e_diff.CPU_energy[0])/(t_diff*1000000000);
+    my_power->avg_cpu[1]=(double)(e_diff.CPU_energy[1])/(t_diff*1000000000);
+}
+void print_power(power_data_t *my_power)
+{
+    struct tm *current_t;
+    char s[64];
+    // We format the end time into localtime and string
+    current_t=localtime(&(my_power->end));
+    strftime(s, sizeof(s), "%c", current_t);
+
+    printf("%s : Avg. DC node power %.2lf Avg. DRAM %.2lf Avg. CPU %.2lf\n",s,my_power->avg_dc,
+    my_power->avg_dram[0]+my_power->avg_dram[1],my_power->avg_cpu[0]+my_power->avg_cpu[1]);
+}
+// END POWER
+
+
 node_data_t diff_node_energy(node_data_t end,node_data_t init)
 {
 	node_data_t ret=0;
@@ -42,10 +78,13 @@ node_data_t diff_node_energy(node_data_t end,node_data_t init)
 rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init)
 {
 	rapl_data_t ret=0;
+	rapl_data_t aux;
 	if (end>init){
 		ret=end-init;
 	}else{
-		VERBOSE("OVERFLOW DETECTED RAPL!\n");
+		aux=(double)0xffffffff-init;
+		ret=aux+end;
+		printf("OVERFLOW DETECTED RAPL! %llu,%llu\n",init,end);
 	}
 	return ret;
 }
@@ -73,6 +112,8 @@ int init_power_ponitoring()
 	}
 	memset((char *)RAPL_metrics,0,rapl_size);
 	pm_start_rapl();
+	pm_read_rapl(RAPL_metrics);
+	pm_start_rapl();
 	power_mon_connected=1;
 	return POWER_MON_OK;
 }
@@ -98,10 +139,10 @@ int read_enegy_data(energy_data_t *acc_energy)
 		//pm_node_ac_energy(&ac); Not implemened yet
 		acc_energy->DC_node_energy=dc;
 		acc_energy->AC_node_energy=ac;
-		acc_energy->DRAM_energy[0]=RAPL_metrics[0]/1000000;
-		acc_energy->DRAM_energy[1]=RAPL_metrics[1]/1000000;
-		acc_energy->CPU_energy[0]=RAPL_metrics[2]/1000000;
-		acc_energy->CPU_energy[1]=RAPL_metrics[3]/1000000;
+		acc_energy->DRAM_energy[0]=RAPL_metrics[0];
+		acc_energy->DRAM_energy[1]=RAPL_metrics[1];
+		acc_energy->CPU_energy[0]=RAPL_metrics[2];
+		acc_energy->CPU_energy[1]=RAPL_metrics[3];
 		return POWER_MON_OK;
 	}else{
 		return POWER_MON_ERROR;
@@ -139,7 +180,7 @@ void copy_energy_data(energy_data_t *dest,energy_data_t *src)
 }
 void print_energy_data(energy_data_t *e)
 {
-	printf("DC %lu DRAM %llu CPU %llu\n",e->DC_node_energy,e->DRAM_energy[0]+e->DRAM_energy[1],
-	e->CPU_energy[0]+e->CPU_energy[1]);
+	printf("DC %lu DRAM (%llu+%llu) CPU (%llu+%llu) \n",e->DC_node_energy,e->DRAM_energy[0],e->DRAM_energy[1],
+	e->CPU_energy[0],e->CPU_energy[1]);
 }
 

@@ -233,7 +233,7 @@ int stop_rapl_metrics(unsigned long long *_values)
 			{
 				acum_values[sets][counts]+=values[sets][counts];
 
-				_values[counts] = values[sets][counts];
+				_values[counts] = (unsigned long long)values[sets][counts];
 				DEBUG_F(4, "Value for event %d %llu", counts, _values[counts]);
 
 				acum_rapl += _values[counts];

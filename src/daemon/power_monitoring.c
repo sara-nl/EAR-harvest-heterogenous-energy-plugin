@@ -20,12 +20,6 @@ extern int eard_must_exit;
 
 unsigned int f_monitoring;
 
-typedef struct power_data{
-    time_t begin,end;
-    double avg_dc,avg_ac;
-    double avg_dram[NUM_SOCKETS];
-    double avg_cpu[NUM_SOCKETS];
-}power_data_t;
 
 power_data_t *L1_samples,*L2_samples;
 int current_L1=0;
@@ -51,54 +45,17 @@ void update_historic_info(power_data_t *my_current_power)
 
 // END BUFFERS
 
-// POWER FUNCTIONS
-void compute_power(energy_data_t *e_begin,energy_data_t *e_end,time_t t_begin,time_t t_end,power_data_t *my_power)
-{
-	energy_data_t e_diff;
-	double t_diff;
-	// Compute the difference
-	diff_energy_data(e_end,e_begin,&e_diff);
-	t_diff=difftime(t_end,t_begin);
-	t_diff=t_diff*1000; // Because energy is returned in mJ
-	printf("EBEGIN :");
-	print_energy_data(e_begin);
-	printf("EEND :");
-	print_energy_data(e_end);
-	printf("EDIFF :");
-	print_energy_data(&e_diff);
-	printf("AVg. power after %.0lf msec\n",t_diff);
-
-	my_power->begin=t_begin;
-	my_power->end=t_end;
-	my_power->avg_ac=0;
-	my_power->avg_dc=(double)e_diff.DC_node_energy/t_diff;
-	my_power->avg_dram[0]=(double)e_diff.DRAM_energy[0]/t_diff;
-	my_power->avg_dram[1]=(double)e_diff.DRAM_energy[1]/t_diff;
-	my_power->avg_cpu[0]=(double)e_diff.CPU_energy[0]/t_diff;
-	my_power->avg_cpu[1]=(double)e_diff.CPU_energy[1]/t_diff;
-	
-}
-void print_power(power_data_t *my_power)
-{
-    struct tm *current_t; 
-    char s[64];
-	// We format the end time into localtime and string
-	current_t=localtime(&(my_power->end));
-    strftime(s, sizeof(s), "%c", current_t);
-
- 	printf("%s : Avg. DC node power %.2lf Avg. DRAM %.2lf Avg. CPU %.2lf\n",s,my_power->avg_dc,
-	my_power->avg_dram[0]+my_power->avg_dram[1],my_power->avg_cpu[0]+my_power->avg_cpu[1]);
-}
-// END POWER
 	
 
 // frequency_monitoring will be expressed in usecs
 void *eard_power_monitoring(void *frequency_monitoring)
 {
 	unsigned int *f_monitoringp=(unsigned int *)frequency_monitoring;
-	energy_data_t e_begin,e_end;	
+	energy_data_t e_begin;
+	energy_data_t e_end;	
 	unsigned long t_ms;
 	time_t t_begin,t_end; 
+	double t_diff;
 	power_data_t my_current_power;
 
 	ear_verbose(0,"power monitoring thread created\n");
@@ -129,9 +86,10 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		// Get time and Energy
 		time(&t_end);
 		read_enegy_data(&e_end);
-		
+		t_diff=difftime(t_end,t_begin);	
+	
 		// Compute the power
-		compute_power(&e_begin,&e_end,t_begin,t_end,&my_current_power);
+		compute_power(&e_begin,&e_end,t_begin,t_end,t_diff,&my_current_power);
 		// print basic data in stdout
 		print_power(&my_current_power);
 		// Save current power
