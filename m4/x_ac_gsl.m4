@@ -27,7 +27,7 @@ AC_DEFUN([X_AC_GSL],
     AC_ARG_WITH(
         [gsl],
         AS_HELP_STRING(--with-gsl=PATH,Specify path to gsl installation),
-        [_x_ac_gsl_dirs_root="$withval"]
+        [_x_ac_gsl_dirs_root="$withval", _x_ac_custom="yes"]
     )
 
     AC_CACHE_CHECK(
@@ -47,7 +47,10 @@ AC_DEFUN([X_AC_GSL],
                         # If exists, then its path and LDFLAGS are saved
                         if test -d "$d/$dir_lib"; then
                             _x_ac_gsl_dir_lib="$d/$dir_lib"
-                            _x_ac_gsl_gcc_ldflags=-L$_x_ac_gsl_dir_lib
+
+							if test "x$_x_ac_custom" = "xyes"; then
+                            	_x_ac_gsl_gcc_ldflags=-L$_x_ac_gsl_dir_lib
+							fi
                         fi
 
                         # Also its bin folder is saved
