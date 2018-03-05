@@ -7,11 +7,10 @@
 
 */
 #ifndef _METRICS_H_
-#define _METRICS_H
-
+#define _METRICS_H_
 
 #include <papi/cache.h>
-#include <papi/energy_cpu.h/>
+#include <papi/energy_cpu.h>
 #include <papi/flops.h>
 #include <papi/generics.h>
 #include <papi/instructions.h>
@@ -20,8 +19,6 @@
 #include <custom/bandwidth.h>
 #include <custom/frequency.h>
 #include <custom/hardware_info.h>
-
-
 
 #else
 #endif

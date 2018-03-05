@@ -149,7 +149,7 @@ void ear_init()
 	// my_id is 0 in case is not local. Metrics gets the value
 	// 'privileged_metrics'. This value has to be different to 0 when
 	// my_id is different to 0.
-	metrics_init(!my_id); // PAPI_init starts counters
+	metrics_init(); // PAPI_init starts counters
 	ear_cpufreq_init(); //Initialize cpufreq info
 
 	if (ear_my_rank=00){
