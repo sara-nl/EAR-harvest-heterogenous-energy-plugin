@@ -19,6 +19,7 @@ void eards_disconnect();
 
 int eards_read_rapl(unsigned long long *values);
 int eards_start_rapl();
+int eards_reset_rapl();
 
 unsigned long eards_get_data_size_rapl();
 unsigned long eards_node_energy_data_size();

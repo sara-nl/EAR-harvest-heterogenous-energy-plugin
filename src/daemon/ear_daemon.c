@@ -35,7 +35,8 @@
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
 unsigned int power_mon_freq=3000000;
-pthread_t power_mon_th;
+//pthread_t power_mon_th;
+int power_mon_th;
 #endif
 #ifdef SHARED_MEMORY
 #include <pthread.h>
@@ -98,7 +99,9 @@ void f_signals(int s)
 	
 		// Maybe we should just wait for threads
 #ifdef POWER_MONITORING
-		pthread_join(power_mon_th,NULL);
+		//pthread_join(power_mon_th,NULL);
+		kill(power_mon_th,SIGKILL);
+		waitpid(power_mon_th,NULL,0);
 #endif
 #ifdef SHARED_MEMORY
 		pthread_kill(dyn_conf_th,SIGUSR1);
@@ -777,10 +780,14 @@ void main(int argc,char *argv[])
 	}
 	rfds_basic=rfds;
 #ifdef POWER_MONITORING
+#if 0
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
 		errno=ret;
 		ear_verbose(0,"eard: error creating power_monitoring thread %s\n",strerror(errno));
 	}
+#endif
+	power_mon_th=fork();
+	if (power_mon_th==0) eard_power_monitoring(&power_mon_freq);
 #endif
 #ifdef SHARED_MEMORY
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){

@@ -67,12 +67,14 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	L1_samples=create_historic_buffer(NUM_SAMPLES_L1);
 	if (L1_samples==NULL){
 		ear_verbose(0,"power monitoring: error allocating memory for logs\n");
-		pthread_exit(0);
+		//pthread_exit(0);
+		exit(0);
 	}
 	L2_samples=create_historic_buffer(NUM_SAMPLES_L2);
 	if (L2_samples==NULL){
 		ear_verbose(0,"power monitoring: error allocating memory for logs\n");
-		pthread_exit(0);
+		//pthread_exit(0);
+		exit(0);
 	}
 
 	// We will collect and report avg power until eard finishes
@@ -98,5 +100,6 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		copy_energy_data(&e_begin,&e_end);
 		t_begin=t_end;
 	}
-	pthread_exit(0);
+	//pthread_exit(0);
+	exit(0);
 }

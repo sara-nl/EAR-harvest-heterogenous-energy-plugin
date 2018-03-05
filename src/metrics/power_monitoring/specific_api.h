@@ -9,6 +9,7 @@
 #define pm_read_rapl(rm)           	stop_rapl_metrics(rm)
 #define pm_node_dc_energy(dc)       read_dc_energy(dc)
 #define pm_node_ac_energy(ac)       read_ac_energy(ac)
+#define pm_reset_rapl()				reset_rapl_metrics()
 
 #endif
 
@@ -21,6 +22,7 @@
 #define pm_read_rapl(rm)            stop_rapl_metrics(rm)
 #define pm_node_dc_energy(dc)       read_dc_energy(dc)
 #define pm_node_ac_energy(ac)       read_ac_energy(ac)
+#define pm_reset_rapl()				reset_rapl_metrics()
 
 #endif
 
@@ -34,5 +36,6 @@
 #define pm_read_rapl(rm) 			eards_read_rapl(rm)
 #define pm_node_dc_energy(dc)		eards_node_dc_energy(dc)
 #define pm_node_ac_energy(ac)		eards_node_ac_energy(ac)
+#define pm_reset_rapl()				eards_reset_rapl()
 
 #endif

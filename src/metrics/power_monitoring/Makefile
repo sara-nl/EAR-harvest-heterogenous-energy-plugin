@@ -30,14 +30,15 @@ ear_power_monitor_priv.o:ear_power_monitor.c ear_power_monitor.h specific_api.h
 	$(CC) $(CFLAGS) -c ear_power_monitor.c -DNO_EARDS -o ear_power_monitor_priv.o
 
 ear_power_monitor.o:ear_power_monitor.c ear_power_monitor.h specific_api.h
-	$(CC) $(CFLAGS) -c ear_power_monitor.c -DEARDS -o ear_power_monitor.o
+	$(CC) $(CFLAGS) -c ear_power_monitor.c -DNO_EARDS -o ear_power_monitor.o
 
 
 install:
 	cp $(LIBNAME) $(DESTDIR)/lib
 	cp $(LIBNAME_PRIV) $(DESTDIR)/lib
-	cp ear_power_monitor.h $(DESTDIR)/include
-	cp specific_api.h $(DESTDIR)/include
+	mkdir -p $(DESTDIR)/include/metrics/power_monitoring
+	cp ear_power_monitor.h $(DESTDIR)/include/metrics/power_monitoring
+	cp specific_api.h $(DESTDIR)/include/metrics/power_monitoring
 
 
 clean:

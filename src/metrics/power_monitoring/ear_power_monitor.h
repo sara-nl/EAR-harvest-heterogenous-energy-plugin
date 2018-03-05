@@ -36,6 +36,8 @@ int read_enegy_data(energy_data_t *acc_energy);
 // Computes the difference between two energy measurements
 int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff);
 
+
+
 void copy_energy_data(energy_data_t *dest,energy_data_t *src);
 void print_energy_data(energy_data_t *e);
 

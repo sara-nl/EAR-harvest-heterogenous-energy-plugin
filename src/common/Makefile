@@ -41,8 +41,9 @@ install:
 	cp ear_daemon_client.o $(DESTDIR)/lib
 	cp remote_daemon_client.o $(DESTDIR)/lib
 	cp remote_daemon_client.h $(DESTDIR)/include
+	mkdir -p $(DESTDIR)/include/common
 	cp eards_api.h $(DESTDIR)/include
-	cp states.h $(DESTDIR)/include
+	cp states.h $(DESTDIR)/include/common
 
 clean:
 	rm -rf *.o *.so *.a

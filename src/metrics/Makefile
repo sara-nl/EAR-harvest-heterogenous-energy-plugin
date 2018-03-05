@@ -40,7 +40,7 @@ install:
 		$(MAKE) -S -C $${i} install; \
 	done
 	mv libear_metrics.so $(DESTDIR)/lib/libear_metrics.so
-	cp metrics.h $(DESTDIR)/include
+	cp metrics.h $(DESTDIR)/include/metrics
 	$(MAKE) -C power_monitoring install
 	
 
