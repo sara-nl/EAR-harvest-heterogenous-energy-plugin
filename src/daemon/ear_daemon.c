@@ -18,10 +18,8 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <linux/limits.h>
-#include <papi.h>
 
 #include <daemon/ear_frequency.h>
-#include <daemon/eard_constants.h>
 
 #include <metrics/ipmi/energy_node.h>
 #include <metrics/custom/bandwidth.h>
@@ -34,11 +32,11 @@
 #include <common/states.h>
 
 #ifdef POWER_MONITORING
-//#include <pthread.h>
+#include <pthread.h>
 #include <daemon/power_monitoring.h>
 unsigned int power_mon_freq=3000000;
-//pthread_t power_mon_th; // It is pending to see whether it works with threads
-int power_mon_th;
+pthread_t power_mon_th; // It is pending to see whether it works with threads
+//int power_mon_th;
 #endif
 #ifdef SHARED_MEMORY
 #include <pthread.h>
@@ -101,9 +99,9 @@ void f_signals(int s)
 	
 		// Maybe we should just wait for threads
 #ifdef POWER_MONITORING
-		//pthread_join(power_mon_th,NULL);
-		kill(power_mon_th,SIGKILL);
-		waitpid(power_mon_th,NULL,0);
+		pthread_join(power_mon_th,NULL);
+		//kill(power_mon_th,SIGKILL);
+		//waitpid(power_mon_th,NULL,0);
 #endif
 #ifdef SHARED_MEMORY
 		pthread_kill(dyn_conf_th,SIGUSR1);
@@ -576,7 +574,7 @@ int eard_rapl(int must_read)
             break;
         case READ_RAPL:
     		ear_debug(1,"EAR_daemon_server: read RAPL\n");
-            stop_rapl_metrics(values);
+            read_rapl_metrics(values);
 			RAPL_counting=0;
             write(ear_fd_ack[comm_req],values,sizeof(unsigned long long)*RAPL_EVS);
             break;
@@ -749,7 +747,6 @@ void main(int argc,char *argv[])
 
 	// We initialize rapl counters
 	init_rapl_metrics();
-	if (PAPI_thread_init(pthread_self) != PAPI_OK) exit(1);
 	// We initilize energy_node
 	if (node_energy_init()<0){
 		ear_verbose(0,"eard: node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
@@ -782,14 +779,14 @@ void main(int argc,char *argv[])
 	}
 	rfds_basic=rfds;
 #ifdef POWER_MONITORING
-#if 0
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
 		errno=ret;
 		ear_verbose(0,"eard: error creating power_monitoring thread %s\n",strerror(errno));
 	}
-#endif
+#if 0
 	power_mon_th=fork();
 	if (power_mon_th==0) eard_power_monitoring(&power_mon_freq);
+#endif
 #endif
 #ifdef SHARED_MEMORY
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){

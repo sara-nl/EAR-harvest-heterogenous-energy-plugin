@@ -62,6 +62,7 @@ int eards_connect()
 			ear_fd_req[i]=-1;
 			ear_fd_ack[i]=-1;
 		}
+		// This is the application ID, maybe we should pass that info as argument and use jobID or PID
 		req.req_data.req_value=getpid();
 		for (i=0;i<ear_daemon_client_requests;i++){
 			ear_debug(2,"ear_client connecting with service %d\n",i);

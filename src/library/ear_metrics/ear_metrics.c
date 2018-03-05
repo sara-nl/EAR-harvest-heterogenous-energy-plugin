@@ -94,6 +94,7 @@ static long long *metrics_flops[2]; // (vec)
 static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[2]; // ops (vec)
 static ull *metrics_rapl[2]; // nJ (vec)
+static ull *aux_rapl; // nJ (vec)
 static ulong metrics_ipmi[2]; // mJ
 static ulong metrics_avg_frequency[2]; // MHz
 static long long metrics_instructions[2];
@@ -147,7 +148,7 @@ static void metrics_partial_start()
 	eards_node_dc_energy(&metrics_ipmi[LOO]);
 	eards_begin_compute_turbo_freq();
 	eards_start_uncore();
-	eards_start_rapl();
+	eards_read_rapl(aux_rapl);
 
 	metrics_usecs[LOO] = metrics_time();
 	start_basic_metrics();
@@ -169,6 +170,10 @@ static void metrics_partial_stop()
 	// Manual bandwith accumulation
 	for (i = 0; i < bandwith_elements; i++) {
 			metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
+	}
+	// We read acuumulated energy
+	for (i = 0; i < rapl_elements; i++) {
+		metrics_rapl[LOO][i]=metrics_rapl[LOO][i]-aux_rapl[i];
 	}
 
 	// Manual RAPL accumulation
@@ -195,7 +200,7 @@ static void metrics_partial_stop()
 static void metrics_reset()
 {
 	eards_reset_uncore();
-	eards_reset_rapl();
+	//eards_reset_rapl();
 
 	reset_basic_metrics();
 	reset_flops_metrics();
@@ -322,18 +327,20 @@ int metrics_init(int privileged_metrics)
 	metrics_bandwith[APP] = malloc(bandwith_size);
 	metrics_rapl[LOO] = malloc(rapl_size);
 	metrics_rapl[APP] = malloc(rapl_size);
+	aux_rapl = malloc(rapl_size);
 
-	memset(metrics_bandwith[LOO], 0, bandwith_size);
-	memset(metrics_bandwith[APP], 0, bandwith_size);
-	memset(metrics_rapl[LOO], 0, rapl_size);
-	memset(metrics_rapl[APP], 0, rapl_size);
 
 	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL ||
-			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL)
+			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL)
 	{
 			VERBOSE_N(0, "error allocating memory in metrics, exiting");
 			exit(1);
 	}
+	memset(metrics_bandwith[LOO], 0, bandwith_size);
+	memset(metrics_bandwith[APP], 0, bandwith_size);
+	memset(metrics_rapl[LOO], 0, rapl_size);
+	memset(metrics_rapl[APP], 0, rapl_size);
+	memset(aux_rapl, 0, rapl_size);
 
 	DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
 	DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);

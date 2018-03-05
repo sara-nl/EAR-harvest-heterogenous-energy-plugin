@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <float.h>
 #include <common/ear_verbose.h>
 
 #include <metrics/power_monitoring/ear_power_monitor.h>
@@ -21,6 +22,9 @@ extern int eard_must_exit;
 
 unsigned int f_monitoring;
 
+extern int application_id;
+
+int idleNode=1;
 
 power_data_t *L1_samples,*L2_samples;
 int current_L1=0;
@@ -28,6 +32,13 @@ int num_L1=0;
 int current_L2=0;
 int num_L2=0;
 
+/* AVG, MAX, MIN for app */
+int samples=0;
+double max_dc=0,min_dc=DBL_MAX,avg_dc;
+int current_app_id=-1;
+
+#define max(X,Y) (((X) > (Y)) ? (X) : (Y))
+#define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
 // BUFFERS
 
@@ -38,8 +49,32 @@ power_data_t * create_historic_buffer(int samples)
 	if (mem!=NULL) memset(mem,0,sizeof(power_data_t)*samples);
 	return mem;
 }
-void update_historic_info(power_data_t *my_current_power)
+void update_historic_info(int appID,power_data_t *my_current_power)
 {
+    // print basic data in stdout
+	if (idleNode && (appID>0)){
+		// New application connected
+		idleNode=0;
+		avg_dc=0;max_dc=0;min_dc=DBL_MAX;
+		samples=0;
+		current_app_id=appID;
+	}
+	if (!idleNode && (appID<0)){
+		// Application disconnected 
+		idleNode=1;
+		printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",current_app_id,avg_dc/(double)samples,max_dc,min_dc);
+		current_app_id=-1;
+	}
+	if (!idleNode){
+		max_dc=max(max_dc,my_current_power->avg_dc);
+		min_dc=min(min_dc,my_current_power->avg_dc);
+		avg_dc+=my_current_power->avg_dc;
+		samples++;
+		
+		printf("Application id %d: ",appID);
+	}
+    print_power(my_current_power);
+
 	return;
 }
 
@@ -68,14 +103,14 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	L1_samples=create_historic_buffer(NUM_SAMPLES_L1);
 	if (L1_samples==NULL){
 		ear_verbose(0,"power monitoring: error allocating memory for logs\n");
-		//pthread_exit(0);
-		exit(0);
+		pthread_exit(0);
+		//exit(0);
 	}
 	L2_samples=create_historic_buffer(NUM_SAMPLES_L2);
 	if (L2_samples==NULL){
 		ear_verbose(0,"power monitoring: error allocating memory for logs\n");
-		//pthread_exit(0);
-		exit(0);
+		pthread_exit(0);
+		//exit(0);
 	}
 
 	// We will collect and report avg power until eard finishes
@@ -93,14 +128,12 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	
 		// Compute the power
 		compute_power(&e_begin,&e_end,t_begin,t_end,t_diff,&my_current_power);
-		// print basic data in stdout
-		print_power(&my_current_power);
 		// Save current power
-		update_historic_info(&my_current_power);
+		update_historic_info(application_id,&my_current_power);
 		// Set values for next iteration
 		copy_energy_data(&e_begin,&e_end);
 		t_begin=t_end;
 	}
-	//pthread_exit(0);
-	exit(0);
+	pthread_exit(0);
+	//exit(0);
 }

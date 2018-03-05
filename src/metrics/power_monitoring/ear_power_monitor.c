@@ -132,7 +132,7 @@ int read_enegy_data(energy_data_t *acc_energy)
 		if (acc_energy==NULL) return POWER_MON_ERROR;
 		// Contacting the eards api
 		pm_read_rapl(RAPL_metrics);
-		pm_start_rapl();
+		//pm_start_rapl();
 		pm_node_dc_energy(&dc);
 		//pm_node_ac_energy(&ac); Not implemened yet
 		acc_energy->DC_node_energy=dc;
@@ -157,17 +157,10 @@ int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff)
 		diff->DC_node_energy=diff_node_energy(end->DC_node_energy,init->DC_node_energy);
 		//diff->AC_node_energy=diff_node_energy(end->AC_node_energy,init->AC_node_energy);
 		diff->AC_node_energy=0;
-#if 0
 		diff->DRAM_energy[0]=diff_RAPL_energy(end->DRAM_energy[0],init->DRAM_energy[0]);
 		diff->DRAM_energy[1]=diff_RAPL_energy(end->DRAM_energy[1],init->DRAM_energy[1]);
 		diff->CPU_energy[0]=diff_RAPL_energy(end->CPU_energy[0],init->CPU_energy[0]);
 		diff->CPU_energy[1]=diff_RAPL_energy(end->CPU_energy[1],init->CPU_energy[1]);
-#endif		
-		diff->DRAM_energy[0]=end->DRAM_energy[0];
-		diff->DRAM_energy[1]=end->DRAM_energy[1];
-		diff->CPU_energy[0]=end->CPU_energy[0];
-		diff->CPU_energy[1]=end->CPU_energy[1];
-
 		return POWER_MON_OK;
 	}else{
 		return POWER_MON_ERROR;

@@ -198,6 +198,22 @@ int start_rapl_metrics()
 	}
 	return 0;
 }
+int read_rapl_metrics(unsigned long long *_values)
+{
+    unsigned long long acum_rapl = 0;
+    int sets=0;
+    int  counts, ret;
+    ret = PAPI_read(event_sets[sets], (long long *) _values);
+    if (ret != PAPI_OK)
+    {
+            VERBOSE_N(0, "ReadRAPLMetrics (%s)", PAPI_strerror(ret));
+            return -1;
+    }
+
+    return 0;
+}
+
+
 
 /* Stops includes accumulate metrics */
 int stop_rapl_metrics(unsigned long long *_values)
