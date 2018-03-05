@@ -13,9 +13,9 @@ fi
 
 if [ -z $EAR_INSTALL_PATH ]
 then
-        echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
-        echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
-        exit 1
+    echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
+    echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
+    exit 1
 fi
 
 if [[ "$5" != "MONITORING_ONLY" ]] && [[ "$5" != "MIN_ENERGY_TO_SOLUTION" ]] && [[ "$5" != "MIN_TIME_TO_SOLUTION" ]]

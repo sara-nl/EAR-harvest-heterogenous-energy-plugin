@@ -323,17 +323,17 @@ int metrics_init()
 	metrics_rapl[LOO] = malloc(rapl_size);
 	metrics_rapl[APP] = malloc(rapl_size);
 
-	memset(metrics_bandwith[LOO], 0, bandwith_size);
-	memset(metrics_bandwith[APP], 0, bandwith_size);
-	memset(metrics_rapl[LOO], 0, rapl_size);
-	memset(metrics_rapl[APP], 0, rapl_size);
-
 	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL ||
 		metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL)
 	{
 		VERBOSE_N(0, "error allocating memory in metrics, exiting");
 		exit(1);
 	}
+
+	memset(metrics_bandwith[LOO], 0, bandwith_size);
+	memset(metrics_bandwith[APP], 0, bandwith_size);
+	memset(metrics_rapl[LOO], 0, rapl_size);
+	memset(metrics_rapl[APP], 0, rapl_size);
 
 	DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
 	DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);
