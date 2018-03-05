@@ -13,8 +13,8 @@ source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
 export BENCHS_MODE=$1
 export EAR_P_STATE=1
 
-if [ "$1" != "compile" ] && [ "$1" != "test" ] && [ "$1" != "test_no_ear" ]; then
-    echo $"Usage: $0 {compile|test|test_no_ear}"
+if [ "$1" != "compile" ] && [ "$1" != "test" ]; then
+    echo $"Usage: $0 {compile|test}"
     exit 0
 fi
 
