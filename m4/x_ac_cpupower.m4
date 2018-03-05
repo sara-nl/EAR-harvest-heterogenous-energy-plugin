@@ -27,7 +27,7 @@ AC_DEFUN([X_AC_CPUPOWER],
     AC_ARG_WITH(
         [cpupower],
         AS_HELP_STRING(--with-cpupower=PATH,Specify path to CPUPower installation),
-        [_x_ac_cpupower_dirs_root="$withval"]
+        [_x_ac_cpupower_dirs_root="$withval", _x_ac_custom="yes"]
     )
 
     AC_CACHE_CHECK(
@@ -46,7 +46,10 @@ AC_DEFUN([X_AC_CPUPOWER],
                         # If exists, then its path and LDFLAGS are saved
                         if test -d "$d/$dir_lib"; then
                             _x_ac_cpupower_dir_lib="$d/$dir_lib"
-                            _x_ac_cpupower_gcc_ldflags=-L$_x_ac_cpupower_dir_lib
+
+							if test "x$_x_ac_custom" = "xyes"; then
+                            	_x_ac_cpupower_gcc_ldflags=-L$_x_ac_cpupower_dir_lib
+							fi
                         fi
 
                         X_AC_VAR_BACKUP([],[$_x_ac_cpupower_gcc_ldflags],[$_x_ac_cpupower_gcc_libs])
@@ -81,6 +84,7 @@ AC_DEFUN([X_AC_CPUPOWER],
         CPUPOWER_CPPFLAGS="-I$CPUPOWER_DIR/include"
         CPUPOWER_LDFLAGS=$_x_ac_cpupower_gcc_ldflags
         CPUPOWER_LIBS=$_x_ac_cpupower_gcc_libs
+
         echo checking for CPUPower compiler link... yes
         echo checking for CPUPower CPPFLAGS... $CPUPOWER_CPPFLAGS
         echo checking for CPUPower LDFLAGS... $CPUPOWER_LDFLAGS

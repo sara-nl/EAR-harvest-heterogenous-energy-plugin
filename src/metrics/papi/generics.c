@@ -87,7 +87,7 @@ int _papi_multiplex_init()
 	int papi_multi;
 
 	if ((papi_multi = PAPI_multiplex_init()) != PAPI_OK){
-		VERBOSE_N(0,"WARNING when multiplexing %s", name, PAPI_strerror(papi_multi));
+		VERBOSE_N(0,"WARNING when multiplexing %s", PAPI_strerror(papi_multi));
 		return 0;
 	}
 	return 1;

@@ -1,5 +1,5 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) 
-LDFLAGS = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(PAPI_LDFLAGS) -ldl 
+LDFLAGS = $(IPMI_LDFLAGS) $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) -ldl 
 
 ######## VARS
 
@@ -11,7 +11,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a \
                $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/ipmi/energy_node.a \
-	       $(SRCDIR)/metrics/papi/energy_cpu.o
+	           $(SRCDIR)/metrics/papi/energy_cpu.o
 
 COMMON_OBJS = $(SRCDIR)/common/environment.o \
               $(SRCDIR)/common/types.a \
