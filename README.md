@@ -16,7 +16,7 @@ The library is designed to work together with SLURM, a popular cluster job manag
 
 Requirements
 ------------
-EAR requires some third party libraríes and headers to compile and run, in addition to the basic requirements such as the compiler and Autoconf. This is a list of this **libraries** and its references:
+EAR requires some third party libraríes and headers to compile and run, in addition to the basic requirements such as the compiler and Autoconf. This is a list of this **libraries**, minimum **tested** versions and its references:
 
 | Library   | Required / comment    | Minimum version | References                                        |
 | --------- | --------------------- | --------------- | ------------------------------------------------- |
