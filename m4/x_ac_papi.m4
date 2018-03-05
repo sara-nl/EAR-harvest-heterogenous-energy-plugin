@@ -27,7 +27,10 @@ AC_DEFUN([X_AC_PAPI],
     AC_ARG_WITH(
         [papi],
         AS_HELP_STRING(--with-papi=PATH,Specify path to PAPI installation),
-        [_x_ac_papi_dirs_root="$withval", _x_ac_custom="yes"]
+        [
+			_x_ac_papi_dirs_root="$withval"
+			_x_ac_papi_custom="yes"
+		]
     )
 
     AC_CACHE_CHECK(
@@ -47,7 +50,7 @@ AC_DEFUN([X_AC_PAPI],
                         if test -d "$d/$dir_lib"; then
                             _x_ac_papi_dir_lib="$d/$dir_lib"
 
-							if test "x$_x_ac_custom" = "xyes"; then
+							if test "x$_x_ac_papi_custom" = "xyes"; then
                             	_x_ac_papi_gcc_ldflags=-L$_x_ac_papi_dir_lib
 							fi
                         fi
@@ -84,7 +87,8 @@ AC_DEFUN([X_AC_PAPI],
         PAPI_CPPFLAGS="-I$PAPI_DIR/include"
         PAPI_LDFLAGS=$_x_ac_papi_gcc_ldflags
         PAPI_LIBS=$_x_ac_papi_gcc_libs
-        echo checking for PAPI compiler link... yes
+        
+		echo checking for PAPI compiler link... yes
         echo checking for PAPI CPPFLAGS... $PAPI_CPPFLAGS
         echo checking for PAPI LDFLAGS... $PAPI_LDFLAGS
         echo checking for PAPI libraries... $PAPI_LIBS

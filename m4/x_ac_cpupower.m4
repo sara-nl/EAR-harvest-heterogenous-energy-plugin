@@ -27,7 +27,10 @@ AC_DEFUN([X_AC_CPUPOWER],
     AC_ARG_WITH(
         [cpupower],
         AS_HELP_STRING(--with-cpupower=PATH,Specify path to CPUPower installation),
-        [_x_ac_cpupower_dirs_root="$withval", _x_ac_custom="yes"]
+        [
+			_x_ac_cpupower_dirs_root="$withval"
+			_x_ac_cpupower_custom="yes"
+		]
     )
 
     AC_CACHE_CHECK(
@@ -47,7 +50,7 @@ AC_DEFUN([X_AC_CPUPOWER],
                         if test -d "$d/$dir_lib"; then
                             _x_ac_cpupower_dir_lib="$d/$dir_lib"
 
-							if test "x$_x_ac_custom" = "xyes"; then
+							if test "x$_x_ac_cpupower_custom" = "xyes"; then
                             	_x_ac_cpupower_gcc_ldflags=-L$_x_ac_cpupower_dir_lib
 							fi
                         fi
