@@ -24,6 +24,8 @@
 
 #define MAX_TRIES 5
 
+static const char *__NAME__ = "DAEMON_CLIENT";
+
 // Pipes
 static int ear_fd_req[ear_daemon_client_requests];
 static int ear_fd_ack[ear_daemon_client_requests];
