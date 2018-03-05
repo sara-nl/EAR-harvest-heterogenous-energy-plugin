@@ -30,7 +30,7 @@ ear_power_monitor_priv.o:ear_power_monitor.c ear_power_monitor.h specific_api.h
 	$(CC) $(CFLAGS) -c ear_power_monitor.c -DNO_EARDS -o ear_power_monitor_priv.o
 
 ear_power_monitor.o:ear_power_monitor.c ear_power_monitor.h specific_api.h
-	$(CC) $(CFLAGS) -c ear_power_monitor.c -DNO_EARDS -o ear_power_monitor.o
+	$(CC) $(CFLAGS) -c ear_power_monitor.c -DEARDS -o ear_power_monitor.o
 
 
 install:

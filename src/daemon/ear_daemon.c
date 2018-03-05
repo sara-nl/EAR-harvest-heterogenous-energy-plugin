@@ -18,8 +18,10 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <linux/limits.h>
+#include <papi.h>
 
 #include <daemon/ear_frequency.h>
+#include <daemon/eard_constants.h>
 
 #include <metrics/ipmi/energy_node.h>
 #include <metrics/custom/bandwidth.h>
@@ -32,7 +34,7 @@
 #include <common/states.h>
 
 #ifdef POWER_MONITORING
-#include <pthread.h>
+//#include <pthread.h>
 #include <daemon/power_monitoring.h>
 unsigned int power_mon_freq=3000000;
 //pthread_t power_mon_th; // It is pending to see whether it works with threads
@@ -303,7 +305,7 @@ void eard_close_comm()
 	ear_verbose(2,"eard: Closing comm in %s for %d\n",nodename,application_id);
 	if (RAPL_counting){
 		stop_rapl_metrics(values);
-		reset_rapl_metrics();
+		//reset_rapl_metrics();
 		RAPL_counting=0;
 	}
 	for (i=0;i<ear_daemon_client_requests;i++){
@@ -747,7 +749,7 @@ void main(int argc,char *argv[])
 
 	// We initialize rapl counters
 	init_rapl_metrics();
-
+	if (PAPI_thread_init(pthread_self) != PAPI_OK) exit(1);
 	// We initilize energy_node
 	if (node_energy_init()<0){
 		ear_verbose(0,"eard: node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");

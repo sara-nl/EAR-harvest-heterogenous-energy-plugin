@@ -12,6 +12,7 @@
 #include <string.h>
 #include <time.h>
 #include <common/ear_verbose.h>
+
 #include <metrics/power_monitoring/ear_power_monitor.h>
 
 extern int eard_must_exit;
@@ -100,6 +101,6 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		copy_energy_data(&e_begin,&e_end);
 		t_begin=t_end;
 	}
-	pthread_exit(0);
-	//exit(0);
+	//pthread_exit(0);
+	exit(0);
 }

@@ -112,8 +112,6 @@ int init_power_ponitoring()
 	}
 	memset((char *)RAPL_metrics,0,rapl_size);
 	pm_start_rapl();
-	pm_read_rapl(RAPL_metrics);
-	pm_start_rapl();
 	power_mon_connected=1;
 	return POWER_MON_OK;
 }
@@ -134,7 +132,6 @@ int read_enegy_data(energy_data_t *acc_energy)
 		if (acc_energy==NULL) return POWER_MON_ERROR;
 		// Contacting the eards api
 		pm_read_rapl(RAPL_metrics);
-		//pm_reset_rapl();
 		pm_start_rapl();
 		pm_node_dc_energy(&dc);
 		//pm_node_ac_energy(&ac); Not implemened yet
@@ -145,15 +142,6 @@ int read_enegy_data(energy_data_t *acc_energy)
 		acc_energy->CPU_energy[0]=RAPL_metrics[2];
 		acc_energy->CPU_energy[1]=RAPL_metrics[3];
 		return POWER_MON_OK;
-	}else{
-		return POWER_MON_ERROR;
-	}
-}
-
-int reset_energy_data()
-{
-	if (power_mon_connected){
-		pm_reset_rapl();
 	}else{
 		return POWER_MON_ERROR;
 	}

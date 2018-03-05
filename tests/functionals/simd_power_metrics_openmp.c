@@ -21,6 +21,7 @@
 #include <immintrin.h> // -mavx -mfma -mfavx512
 #include <papi.h>
 
+
 #include <daemon/ear_frequency.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/flops.h>

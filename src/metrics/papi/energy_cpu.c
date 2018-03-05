@@ -14,8 +14,7 @@
 #include <metrics/papi/generics.h>
 #include <metrics/papi/energy_cpu.h>
 
-#define RAPL_SETS			1
-#define CORE_AND_DRAM_SET	0
+#define RAPL_SETS		1
 #define MAX_RAPL_EVENTS		64
 
 static const char *__NAME__ = "METRICS_RAPL";
@@ -110,70 +109,62 @@ int init_rapl_metrics()
 			return -1;
 		}
 
-		switch(sets)
-		{
-		case CORE_AND_DRAM_SET:
-   			gran_opt.def_cidx=cid;
-   			gran_opt.eventset=event_sets[sets];
-   			gran_opt.granularity=PAPI_GRN_SYS;
+   		gran_opt.def_cidx=cid;
+   		gran_opt.eventset=event_sets[sets];
+   		gran_opt.granularity=PAPI_GRN_SYS;
 
-   			retval = PAPI_set_opt(PAPI_GRANUL,(PAPI_option_t*) &gran_opt);
-   			if (retval != PAPI_OK) {
+   		retval = PAPI_set_opt(PAPI_GRANUL,(PAPI_option_t*) &gran_opt);
+   		if (retval != PAPI_OK) {
 				VERBOSE_N(0, "PAPI_set_opt PAPI_GRANUL");
 				return -1;
-   			}   
+   		}   
 
-   			/* we need to set domain to be as inclusive as possible */
-   			domain_opt.def_cidx = cid;
-   			domain_opt.eventset = event_sets[sets];
-   			domain_opt.domain = PAPI_DOM_ALL;
+   		/* we need to set domain to be as inclusive as possible */
+   		domain_opt.def_cidx = cid;
+   		domain_opt.eventset = event_sets[sets];
+   		domain_opt.domain = PAPI_DOM_ALL;
 
-			//TODO: TODO ESTO ES GENERALIZABLE
-   			retval = PAPI_set_opt(PAPI_DOMAIN, (PAPI_option_t *) &domain_opt);
-   			if (retval != PAPI_OK) {
+   		retval = PAPI_set_opt(PAPI_DOMAIN, (PAPI_option_t *) &domain_opt);
+   		if (retval != PAPI_OK) {
 				VERBOSE_N(0, "PAPI_set_opt PAPI_DOMAIN");
 				return -1;
-   			}   
+   		}   
 
-			// rapl:::DRAM_ENERGY:PACKAGE0
-			ret = PAPI_add_named_event(event_sets[sets], "rapl:::DRAM_ENERGY:PACKAGE0");
-			if (ret != PAPI_OK){
+		// rapl:::DRAM_ENERGY:PACKAGE0
+		ret = PAPI_add_named_event(event_sets[sets], "rapl:::DRAM_ENERGY:PACKAGE0");
+		if (ret != PAPI_OK){
 				VERBOSE_N(0, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE0 (%s)",
-					PAPI_strerror(ret));
+				PAPI_strerror(ret));
 				return -1;
-			}
-			DEBUG_F(3, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE0 success");
-
-			// rapl:::DRAM_ENERGY:PACKAGE1
-			ret = PAPI_add_named_event(event_sets[sets],"rapl:::DRAM_ENERGY:PACKAGE1");
-			if (ret != PAPI_OK) {
-				VERBOSE_N(0, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1 (%s)",
-					PAPI_strerror(ret));
-				return -1;
-			}
-			DEBUG_F(3, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1  success");
-
-			// rapl:::PACKAGE_ENERGY:PACKAGE0
-			ret = PAPI_add_named_event(event_sets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE0");
-			if (ret != PAPI_OK){
-				VERBOSE_N(0, "PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0 (%s)",
-					PAPI_strerror(ret));
-				return -1;
-			}
-			DEBUG_F(3, "PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0 success");
-
-			// rapl:::PACKAGE_ENERGY:PACKAGE1
-			ret = PAPI_add_named_event(event_sets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE1");
-			if (ret != PAPI_OK){
-				VERBOSE_N(0, "PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1(%s)",
-					PAPI_strerror(ret));
-				return -1;
-			}
-			DEBUG_F(3, "PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1 success");
-		break;
-		default:
-			VERBOSE_N(0, "Error only one set is implemented at this moment, you must not see this message");
 		}
+		DEBUG_F(3, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE0 success");
+
+		// rapl:::DRAM_ENERGY:PACKAGE1
+		ret = PAPI_add_named_event(event_sets[sets],"rapl:::DRAM_ENERGY:PACKAGE1");
+		if (ret != PAPI_OK) {
+				VERBOSE_N(0, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1 (%s)",
+				PAPI_strerror(ret));
+				return -1;
+		}
+		DEBUG_F(3, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1  success");
+
+		// rapl:::PACKAGE_ENERGY:PACKAGE0
+		ret = PAPI_add_named_event(event_sets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE0");
+		if (ret != PAPI_OK){
+				VERBOSE_N(0, "PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0 (%s)",
+				PAPI_strerror(ret));
+				return -1;
+		}
+		DEBUG_F(3, "PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0 success");
+
+		// rapl:::PACKAGE_ENERGY:PACKAGE1
+		ret = PAPI_add_named_event(event_sets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE1");
+		if (ret != PAPI_OK){
+				VERBOSE_N(0, "PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1(%s)",
+				PAPI_strerror(ret));
+				return -1;
+		}
+		DEBUG_F(3, "PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1 success");
     }
 	VERBOSE_N(2, "METRICS ON");
 	return 0;
@@ -182,33 +173,28 @@ int init_rapl_metrics()
 
 int reset_rapl_metrics()
 {
-	int sets, events, ret;
-
-	for (sets=0;sets<RAPL_SETS;sets++)
+	int  events, ret;
+	int sets=0;
+	if ((ret = PAPI_reset(event_sets[sets])) != PAPI_OK)
 	{
-		if ((ret = PAPI_reset(event_sets[sets])) != PAPI_OK)
-		{
 			VERBOSE_N(0, "ResetRAPLMetrics (%s)", PAPI_strerror(ret));
 			return -1;
-		}
+	}
 
-		for (events = 0; events < RAPL_EVS; events++) {
+	for (events = 0; events < RAPL_EVS; events++) {
 			values[sets][events]=0;
-		}
 	}
 	return 0;
 }
 
 int start_rapl_metrics()
 {
-	int sets, ret;
+	int  ret;
+	int sets=0;
 
-	for (sets=0;sets<RAPL_SETS;sets++)
-	{
-		if ((ret = PAPI_start(event_sets[sets])) != PAPI_OK) {
+	if ((ret = PAPI_start(event_sets[sets])) != PAPI_OK) {
 			VERBOSE_N(0, "StartRAPLMetrics (%s)", PAPI_strerror(ret));
 			return -1;
-		}
 	}
 	return 0;
 }
@@ -217,18 +203,16 @@ int start_rapl_metrics()
 int stop_rapl_metrics(unsigned long long *_values)
 {
 	unsigned long long acum_rapl = 0;
-	int sets, counts, ret;
-
-	for (sets = 0; sets < RAPL_SETS; sets++)
+	int sets=0;
+	int  counts, ret;
+	ret = PAPI_stop(event_sets[sets], (long long *) &values[sets]);
+	if (ret != PAPI_OK)
 	{
-		ret = PAPI_stop(event_sets[sets], (long long *) &values[sets]);
-		if (ret != PAPI_OK)
-		{
 			VERBOSE_N(0, "StopRAPLMetrics (%s)", PAPI_strerror(ret));
 			return -1;
-		}
-		else
-		{
+	}
+	else
+	{
 			for (counts=0;counts<RAPL_EVS;counts++)
 			{
 				acum_values[sets][counts]+=values[sets][counts];
@@ -239,47 +223,37 @@ int stop_rapl_metrics(unsigned long long *_values)
 				acum_rapl += _values[counts];
 			}
 			DEBUG_F(3, "total energy %llu",acum_rapl);
-		}
-	
 	}
+	
 	return 0;
 }
 
 void print_rapl_metrics()
 {
-	int sets,events;
-	for (sets = 0; sets < RAPL_SETS; sets++)
-	{
-		switch (sets)
+	int events;
+	int sets=0;
+	for (events = 0; events < RAPL_EVS; events++)
+	{	
+		switch (events)
 		{
-			case CORE_AND_DRAM_SET:
-				for (events = 0; events < RAPL_EVS; events++)
-				{
-					switch (events)
-					{
-					case RAPL_DRAM0:
-						VERBOSE_N(2, "Energy used by DRAM on package 0 (units nJ) %llu",
-							acum_values[sets][RAPL_DRAM0]);
-						break;
-					case RAPL_DRAM1:
-						VERBOSE_N(2, "Energy used by DRAM on package 1 (units nJ) %llu",
-							acum_values[sets][RAPL_DRAM1]);
-						break;
-					case RAPL_PACKAGE0:
-						VERBOSE_N(2, "Energy used by all cores in package 0 (units nJ) %llu",
-							acum_values[sets][RAPL_PACKAGE0]);
-						break;
-					case RAPL_PACKAGE1:
-						VERBOSE_N(2, "Energy used by all cores in package 1 (units nJ) %llu",
-							acum_values[sets][RAPL_PACKAGE1]);
-						break;
-					default:
-						VERBOSE_N(0, "Event not supported");
-					}
-				}
-				break;
-			default:
-			VERBOSE_N(0, "rapl set not supported");
+				case RAPL_DRAM0:
+					VERBOSE_N(2, "Energy used by DRAM on package 0 (units nJ) %llu",
+					acum_values[sets][RAPL_DRAM0]);
+					break;
+				case RAPL_DRAM1:
+					VERBOSE_N(2, "Energy used by DRAM on package 1 (units nJ) %llu",
+					acum_values[sets][RAPL_DRAM1]);
+					break;
+				case RAPL_PACKAGE0:
+					VERBOSE_N(2, "Energy used by all cores in package 0 (units nJ) %llu",
+					acum_values[sets][RAPL_PACKAGE0]);
+					break;
+				case RAPL_PACKAGE1:
+					VERBOSE_N(2, "Energy used by all cores in package 1 (units nJ) %llu",
+					acum_values[sets][RAPL_PACKAGE1]);
+					break;
+				default:
+					VERBOSE_N(0, "Event not supported");
 		}
 	}
 }
