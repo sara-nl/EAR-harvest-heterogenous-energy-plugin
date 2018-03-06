@@ -11,18 +11,25 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <float.h>
+#include <errno.h>
+#include <pthread.h>
 #include <common/ear_verbose.h>
+#include <common/types/generic.h>
 
 #include <metrics/power_monitoring/ear_power_monitor.h>
 
 extern int eard_must_exit;
+
+//  That constant is replicated. We must fix that
+#define MAX_PATH_SIZE 256
 #define NUM_SAMPLES_L1 	1000 	// maximum number of samples saved every -frequency_monitoring- usecs
 #define NUM_SAMPLES_L2	100		// Every NUM_SAMPLES_L1 of L1 we will compute 1 sample of L2, 
 
 unsigned int f_monitoring;
-
-extern int application_id;
 
 int idleNode=1;
 
@@ -37,6 +44,22 @@ int samples=0;
 double max_dc=0,min_dc=DBL_MAX,avg_dc;
 int current_app_id=-1;
 
+extern char nodename[MAX_PATH_SIZE];
+int fd_powermon=-1;
+
+typedef struct powermon_app{
+    int job_id;
+	time_t begin_time;
+	time_t end_time;
+	time_t mpi_init_time;
+	time_t mpi_finalize_time;
+	double avg_dc_power;
+	double max_dc_power;
+	double min_dc_power;
+}powermon_app_t;
+
+powermon_app_t current_ear_app;
+
 #define max(X,Y) (((X) > (Y)) ? (X) : (Y))
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
@@ -49,38 +72,139 @@ power_data_t * create_historic_buffer(int samples)
 	if (mem!=NULL) memset(mem,0,sizeof(power_data_t)*samples);
 	return mem;
 }
-void update_historic_info(int appID,power_data_t *my_current_power)
+
+// END BUFFERS
+
+void reset_current_app()
 {
-    // print basic data in stdout
-	if (idleNode && (appID>0)){
-		// New application connected
+	current_ear_app.job_id=-1;
+}
+
+void mpi_init_powermon_app(int app_id)
+{
+	current_ear_app.avg_dc_power=0;
+	current_ear_app.max_dc_power=0;
+	current_ear_app.min_dc_power=DBL_MAX;
+	current_ear_app.job_id=app_id;
+	time(&current_ear_app.mpi_init_time);
+	// This is temporal
+	current_ear_app.begin_time=current_ear_app.mpi_init_time;
+}
+void mpi_finalize_powermon_app(int app_id,int samples)
+{
+	time(&current_ear_app.mpi_finalize_time);
+	current_ear_app.avg_dc_power=current_ear_app.avg_dc_power/(double)samples;
+	current_ear_app.end_time=current_ear_app.mpi_finalize_time;
+}
+
+void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
+{
+	bcopy(src,dest,sizeof(powermon_app_t));
+}
+
+void report_powermon_app(powermon_app_t *app)
+{
+	char buffer[1024];
+    struct tm *current_t;
+    char jbegin[64],jend[64],mpibegin[64],mpiend[64];
+    // We format the end time into localtime and string
+    current_t=localtime(&(app->begin_time));
+    strftime(jbegin, sizeof(jbegin), "%c", current_t);
+    current_t=localtime(&(app->end_time));
+    strftime(jend, sizeof(jend), "%c", current_t);
+    current_t=localtime(&(app->mpi_init_time));
+    strftime(mpibegin, sizeof(mpibegin), "%c", current_t);
+    current_t=localtime(&(app->mpi_finalize_time));
+    strftime(mpiend, sizeof(mpiend), "%c", current_t);
+
+	if (fd_powermon>=0){
+		//"job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
+
+		sprintf(buffer,"%d;%s;%s;%s;%s;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,mpibegin,mpiend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
+		write(fd_powermon,buffer,strlen(buffer));
+	}
+	
+}
+
+// That functions controls the init/end of jobs
+static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
+
+void powermon_mpi_init(int appID)
+{
+	// New application connected
+	while (pthread_mutex_trylock(&app_lock));
 		idleNode=0;
-		avg_dc=0;max_dc=0;min_dc=DBL_MAX;
+		mpi_init_powermon_app(appID);
 		samples=0;
-		current_app_id=appID;
-	}
-	if (!idleNode && (appID<0)){
-		// Application disconnected 
+	pthread_mutex_unlock(&app_lock);
+}
+
+void powermon_mpi_finalize(int appID)
+{
+	// Application disconnected
+	double lavg,lmax,lmin;
+	powermon_app_t summary;
+	int lsamples;
+	char buffer[128];
+	while (pthread_mutex_trylock(&app_lock));
 		idleNode=1;
-		printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",current_app_id,avg_dc/(double)samples,max_dc,min_dc);
-		current_app_id=-1;
+		mpi_finalize_powermon_app(appID,samples);
+		copy_powermon_app(&summary,&current_ear_app);
+		current_ear_app.job_id=-1;
+		lavg=current_ear_app.avg_dc_power;
+		lmax=current_ear_app.max_dc_power;
+		lmin=current_ear_app.min_dc_power;
+	pthread_mutex_unlock(&app_lock);
+	printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg/(double)lsamples,lmax,lmin);
+	report_powermon_app(&summary);
+}
+
+void powermon_new_job(int appID)
+{
+}
+
+void powermon_end_job(int appID)
+{
+}
+
+
+// Each sample is processed by this function
+void update_historic_info(power_data_t *my_current_power)
+{
+	while (pthread_mutex_trylock(&app_lock));
+	if (current_ear_app.job_id>0){
+			current_ear_app.max_dc_power=max(current_ear_app.max_dc_power,my_current_power->avg_dc);
+			current_ear_app.min_dc_power=min(current_ear_app.min_dc_power,my_current_power->avg_dc);
+			current_ear_app.avg_dc_power+=my_current_power->avg_dc;
+			samples++;
 	}
-	if (!idleNode){
-		max_dc=max(max_dc,my_current_power->avg_dc);
-		min_dc=min(min_dc,my_current_power->avg_dc);
-		avg_dc+=my_current_power->avg_dc;
-		samples++;
+	pthread_mutex_unlock(&app_lock);
 		
-		printf("Application id %d: ",appID);
-	}
+	if (current_ear_app.job_id!=-1)	printf("Application id %d: ",current_ear_app.job_id);
     print_power(my_current_power);
 
 	return;
 }
 
 
-// END BUFFERS
 
+void create_powermon_out()
+{
+	char output_name[MAX_PATH_SIZE];
+	char *header="job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
+	mode_t my_mask;
+	sprintf(output_name,"%s.pm_data.csv",nodename);
+	my_mask=umask(0);	
+	fd_powermon=open(output_name,O_WRONLY,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+	if (fd_powermon<0){
+		fd_powermon=open(output_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+		if (fd_powermon>=0) write(fd_powermon,header,strlen(header));
+	}
+	umask(my_mask);
+	if (fd_powermon<0){ 
+		ear_verbose(0,"powermon: Error creating output file %s\n",strerror(errno));
+	}	
+}
 	
 
 // frequency_monitoring will be expressed in usecs
@@ -98,6 +222,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	if (init_power_ponitoring()!=EAR_SUCCESS) ear_verbose(0,"Error in init_power_ponitoring\n");
 	f_monitoring=*f_monitoringp;
 	t_ms=f_monitoring/1000;
+
+	create_powermon_out();
+	reset_current_app();
 
 	// Create circular buffer for samples
 	L1_samples=create_historic_buffer(NUM_SAMPLES_L1);
@@ -129,7 +256,7 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		// Compute the power
 		compute_power(&e_begin,&e_end,t_begin,t_end,t_diff,&my_current_power);
 		// Save current power
-		update_historic_info(application_id,&my_current_power);
+		update_historic_info(&my_current_power);
 		// Set values for next iteration
 		copy_energy_data(&e_begin,&e_end);
 		t_begin=t_end;

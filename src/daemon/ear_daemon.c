@@ -215,6 +215,7 @@ void connect_service(int req,unsigned long pid)
             ear_verbose(0,"eard Error opening ping pipe (%s) %s\n",ear_ping,strerror(errno));
             eard_close_comm();
         }
+		powermon_mpi_init(pid);
     }   
 	ear_verbose(3,"eard sending ack for service %d\n",req);
 	if (write(ear_ping_fd,&ack,sizeof(ack))!=sizeof(ack)) ear_verbose(0,"eard: warning writting ping conn for %lu\n",pid);
@@ -314,6 +315,7 @@ void eard_close_comm()
 		if (unlink(ear_commack)<0) ear_verbose(0,"eard: error when removing ack file %s : %s\n",ear_commack,strerror(errno));
 	}
 	close(ear_ping_fd);
+	powermon_mpi_finalize(application_id);
 	ear_ping_fd=-1;
 	application_id=-1;
 	ear_verbose(2,"eard: removing file %s\n",ear_ping);
