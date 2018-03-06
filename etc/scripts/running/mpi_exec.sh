@@ -7,7 +7,7 @@ then
 	echo -e "\tbinary: name of local binary to run"
 	echo -e "\tmpi: number of total MPI tasks to use"
 	echo -e "\tppn: number of MPI tasks per node"
-  	echo -e "\tpolicy: MIN_ENERGY_TO_SOLUTION | MIN_TIME_TO_SOLUTION | MONITORING_ONLY"
+  	echo -e "\tpolicy: MIN_ENERGY_TO_SOLUTION | MIN_TIME_TO_SOLUTION | MONITORING_ONLY | NO_EAR"
   	exit 1
 fi
 
@@ -18,10 +18,16 @@ then
     exit 1
 fi
 
-if [[ "$5" != "MONITORING_ONLY" ]] && [[ "$5" != "MIN_ENERGY_TO_SOLUTION" ]] && [[ "$5" != "MIN_TIME_TO_SOLUTION" ]]
+if [[ "$5" != "MIN_ENERGY_TO_SOLUTION" ]] && [[ "$5" != "MIN_TIME_TO_SOLUTION" ]]  &&
+   [[ "$5" != "MONITORING_ONLY" ]] && [[ "$5" != "NO_EAR" ]]
 then
 	echo "ERROR: bad policy $5."
 	exit 1
+fi
+
+if [[ "$5" != "NO_EAR" ]]
+then
+    PRELOAD="LD_PRELOAD=${EAR_LIB_PATH}"
 fi
 
 if [ ! -f $1 ]
@@ -53,7 +59,7 @@ PPN=${4}
 A=$(date +%s) ; date
 
 ## Starting the application
-mpiexec.hydra -l -genv LD_PRELOAD=${EAR_LIB_PATH} -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
+mpiexec.hydra -l -genv $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
 
 B=$(date +%s) ; date
-echo "Total elapsed time = $(( B - A )) sec "
+echo "Total elapsed time = $(( B - A )) sec"
