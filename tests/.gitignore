@@ -7,6 +7,8 @@ core.*
 *cpu_aperf
 *cpu_uncores
 *cpu_uncores_all
+*module_acpi_cpufreq
+*module_ipmi_devintf
 *papi_version
 *papi_init
 *papi_comp_available
