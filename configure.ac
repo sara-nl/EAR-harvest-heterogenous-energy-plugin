@@ -135,10 +135,38 @@ AC_SUBST(MPICC)
 # OUTPUT #
 ##########
 
+COMPILABLE="yes"
+
+AC_DEFUN([AC_DEPENDANCY_CHECK],
+[
+	AC_MSG_CHECKING($2)
+
+	if test -n "$1"; then
+		AC_MSG_RESULT(yes)
+	else
+		if test $3 == 1; then
+			COMPILABLE=""
+		fi
+		AC_MSG_RESULT(no)
+	fi
+])
+
+echo "----------------------------------------------- Summary --"
+AC_DEPENDANCY_CHECK($PAPI_DIR, PAPI dependancy found, 1)
+AC_DEPENDANCY_CHECK($GSL_DIR, GSL dependancy found, 1)
+AC_DEPENDANCY_CHECK($CPUPOWER_DIR, CPUPower dependancy found, 1)
+AC_DEPENDANCY_CHECK($SLURM_DIR, SLURM dependancy found, 0)
+AC_DEPENDANCY_CHECK($FREEIPMI_DIR, FreeIPMI dependancy found, 1)
+echo "----------------------------------------------------------"
+
+if test -z $COMPILABLE; then
+	AC_MSG_ERROR(not compilable)
+fi
+
 AC_CONFIG_FILES([Makefile
                  etc/ear-1.0
                  src/common/config.h]) 
-AC_CONFIG_FILES([tests/check/check.sh], [chmod +x tests/check/check.sh])
+AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
 AC_CONFIG_FILES([etc/scripts/environment/lib_vars.sh], [chmod +x etc/scripts/environment/lib_vars.sh])
 AC_OUTPUT
 
