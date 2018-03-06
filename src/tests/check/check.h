@@ -12,6 +12,6 @@
 
 // Searchs the module name in /proc/modules file.
 // Returns 1 if found or 0 if doesn't.
-int find_module(char *path, char *module);
+int find_module(char *module);
 
 #endif //EAR_CHECK_H

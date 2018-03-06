@@ -7,7 +7,8 @@
 
 */
 
-#include <check.h>
+#include <assert.h>
+#include <tests/check/check.h>
 
 int main ()
 {

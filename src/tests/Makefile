@@ -7,12 +7,14 @@ COMPONENTS = check functionals
 .PHONY: check functionals
 
 all:
-	@ for i in $(COMPONENTS); do                         \
+	@ for i in $(COMPONENTS); do \
 		echo "===================================="; \
 		echo "= Compilling tests/$$i";               \
 		echo "===================================="; \
 		$(MAKE) -C $${i} all || exit;                \
 	done
+
+install:
 
 functionals:
 	@ $(MAKE) -C functionals all || exit

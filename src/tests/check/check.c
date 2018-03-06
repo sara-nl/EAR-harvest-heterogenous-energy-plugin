@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <linux/limits.h>
-#include <check.h>
+#include <tests/check/check.h>
 
 int find_module(char *module)
 {

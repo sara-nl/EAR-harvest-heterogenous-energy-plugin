@@ -1,4 +1,4 @@
-CFLAGS = -I$(SRCDIR) -I.
+CFLAGS = -I$(SRCDIR)
 
 ######## FILES
 
@@ -33,7 +33,7 @@ endif
 all: $(OBJS) $(BINARIES)
 
 check.o: check.h check.c
-    $(CC) $(CFLAGS) -c check.c
+	$(CC) $(CFLAGS) -c check.c
 
 papi_init: papi_init.c
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_init papi_init.c $(PAPI_LDFLAGS)
