@@ -13,6 +13,7 @@ BINARIES = cpu_examinable      \
            cpu_uncores         \
            cpu_uncores_all     \
            module_acpi_cpufreq \
+           module_ipmi_devintf \
            papi_init           \
            papi_version        \
            papi_comp_available \
@@ -43,6 +44,9 @@ papi_comp_enabled: papi_comp_enabled.c
 
 module_acpi_cpufreq: module_acpi_cpufreq.c $(MODULE_OBJS)
 	$(CC) $(CFLAGS) -o module_acpi_cpufreq module_acpi_cpufreq.c $(MODULE_OBJS)
+
+module_ipmi_devintf: module_ipmi_devintf.c $(MODULE_OBJS)
+	$(CC) $(CFLAGS) -o module_ipmi_devintf module_ipmi_devintf.c $(MODULE_OBJS)
 
 cpu_examinable: cpu_examinable.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o cpu_examinable cpu_examinable.c $(HARDWARE_OBJS)
