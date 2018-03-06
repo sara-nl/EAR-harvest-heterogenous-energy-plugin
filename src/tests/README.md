@@ -28,3 +28,5 @@ Make check tests list
 | gsl_version         | If the GSL version is greater or equal than the reference.       |
 | slurm_version       | If the SLURM version is greater or equal than the reference.     |
 | free_ipmi_version   | If the Free IPMI version is greater or equal than the reference. |
+| module_ipmi_devintf | If the `ipmi_devintf` (IPMI) driver is running.                  |
+| module_acpi_cpufreq | If the `acpi-cpufreq` (CPUFreq) driver is running.               |
