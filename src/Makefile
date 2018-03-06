@@ -1,11 +1,12 @@
 ######## FILES
 
-COMPONENTS = common  \
+COMPONENTS = common \
              metrics \
              library \
-             daemon  \
+             daemon \
              learning \
-             tools
+             tools \
+             tests
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
@@ -42,15 +43,18 @@ all:
 check:
 	@ $(MAKE) -C tests check
 
+functionals:
+	@ $(MAKE) -C tests functionals || exit
+
 ######## OPTIONS
 
 install:
 	@ mkdir -p ${INSTALL_FOLDERS}
-	@ for i in $(COMPONENTS); do      \
+	@ for i in $(COMPONENTS); do \
 		$(MAKE) -S -C $${i} install; \
 	done
 
 clean:
-	@ for i in $(COMPONENTS); do    \
+	@ for i in $(COMPONENTS); do \
 		$(MAKE) -C $${i} clean; \
 	done

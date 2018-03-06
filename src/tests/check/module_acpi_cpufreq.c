@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <linux/limits.h>
 #include <common/string_enhanced.h>
-#include <check.h>
+#include <tests/check/check.h>
 
 int main ()
 {

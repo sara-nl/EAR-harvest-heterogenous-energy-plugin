@@ -94,7 +94,7 @@ If unusual procedures must be done to compile the package, please try to figure 
 
 After the installation
 ----------------------
-You can test the installation by typing `make check`. For more info visit the [tests page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/tests/README.md).
+You can test the installation by typing `make check`. For more info visit the [tests page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/tests/README.md).
 
 First of all, make sure your linker is aware of the required libraries and the environment variable *EAR_INSTALL_PATH* is set. This variable defines the folder of the EAR binaries, libraries and tools. For the ease of use, an **environment module** is also configured next to the EAR compilation. So locate in `etc` folder the module file with name `ear-{version}`, and copy it to your module collection folder (e.g. `cp etc/ear-1.0 /hpc/base/ctt/modulefiles/libraries`).
 
