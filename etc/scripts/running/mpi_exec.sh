@@ -25,11 +25,6 @@ then
 	exit 1
 fi
 
-if [[ "$5" != "NO_EAR" ]]
-then
-    PRELOAD="LD_PRELOAD=${EAR_LIB_PATH}"
-fi
-
 if [ ! -f $1 ]
 then
 	if [ "x$1" != "xlocal" ]
@@ -50,6 +45,12 @@ source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
 export LD_LIBRARY_PATH="$FREEIPMI_LIB_PATH:$PAPI_LIB_PATH:$LD_LIBRARY_PATH:$CPUPOWER_LIB_PATH:$LD_LIBRARY_PATH"
 export EAR_POWER_POLICY="$5"
 
+# LD_PRELOAD if NO_EAR policy isn not selected
+if [[ "$5" != "NO_EAR" ]]
+then
+    PRELOAD="LD_PRELOAD=${EAR_LIB_PATH}"
+fi
+
 # Non-edit region
 BINARY=${2}
 MPI=${3}
@@ -59,7 +60,7 @@ PPN=${4}
 A=$(date +%s) ; date
 
 ## Starting the application
-mpiexec.hydra -l -genv $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
+echo mpiexec.hydra -l -genv $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
 
 B=$(date +%s) ; date
 echo "Total elapsed time = $(( B - A )) sec"
