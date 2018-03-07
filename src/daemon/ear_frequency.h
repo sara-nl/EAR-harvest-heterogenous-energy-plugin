@@ -37,3 +37,6 @@ void ear_begin_compute_turbo_freq();
 ulong ear_end_compute_turbo_freq();
 #else
 #endif
+
+//TODO: not for daemon
+unsigned long ear_cpufreq_get(unsigned int cpuid);

@@ -280,3 +280,15 @@ ulong ear_end_compute_turbo_freq()
 #endif
 	return ear_nominal_freq;
 }
+
+//TODO: Not for daemon
+unsigned long ear_cpufreq_get(unsigned int cpuid)
+{
+	unsigned long f;
+	ear_debug(4,"eard::: cpufreq_get for cpu %u\n",cpuid);
+	if (cpuid>ear_num_cpus) return 0;
+	f=cpufreq_get(cpuid);
+	ear_debug(4,"eard::: getcpufreq cpu(%u) freq = %lu\n", cpuid, f);
+	return ear_cpufreq[cpuid]=f;
+
+}
