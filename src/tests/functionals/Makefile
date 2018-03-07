@@ -10,7 +10,7 @@ HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
 
 BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.so
 
-NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.so
+NODE_ENERGY_LIBS = $(SRCDIR)/metrics/ipmi/energy_node.so
 
 FREQUENCY_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
                  $(SRCDIR)/daemon/ear_frequency.o
@@ -21,10 +21,16 @@ PAPI_OBJS = $(SRCDIR)/metrics/papi/flops.o \
             $(SRCDIR)/metrics/papi/stalls.o \
             $(SRCDIR)/metrics/papi/energy_cpu.o
 
+NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.o \
+			$(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
+		    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
+			$(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o
+
 BINARIES = bandwith_monitor \
            eard_monitor \
            freeipmi_overhead \
            simd_power_metrics_openmp \
+           simd_power_metrics_openmp_static \
            energy_1_second \
            energy_updates_freq \
 	   test_architecture
@@ -46,10 +52,14 @@ freeipmi_overhead: freeipmi_overhead.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 simd_tests.o: simd_tests.c
 	$(CC) $(CFLAGS) -O0 -malign-double -march=native -c simd_tests.c
 
-# CONVERT TO GCC PLEASE
-simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o
+simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o $(PAPI_OBJS) $(FREQUENCY_OBJS) $(HARDWARE_OBJS)
 	$(CC) -fopenmp -malign-double -march=native  $(CFLAGS) -o simd_power_metrics_openmp simd_power_metrics_openmp.c \
 	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) simd_tests.o \
+	$(HARDWARE_OBJS) $(NODE_ENERGY_LIBS) $(PAPI_OBJS) $(FREQUENCY_OBJS)
+
+simd_power_metrics_openmp_static:simd_power_metrics_openmp.c simd_tests.o $(PAPI_OBJS) $(FREQUENCY_OBJS) $(HARDWARE_OBJS) $(NODE_ENERGY_OBJS)
+	$(CC) -fopenmp -malign-double -march=native  $(CFLAGS) -o simd_power_metrics_openmp_static simd_power_metrics_openmp.c \
+	$(IPMI_LDFLAGS) $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)  simd_tests.o \
 	$(HARDWARE_OBJS) $(NODE_ENERGY_OBJS) $(PAPI_OBJS) $(FREQUENCY_OBJS)
 
 energy_1_second: energy_1_second.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)

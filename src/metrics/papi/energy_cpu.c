@@ -6,6 +6,7 @@
    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
+
 #include <papi.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -13,8 +13,10 @@
 #include <pthread.h>
 #include <signal.h>
 #include <common/ear_verbose.h>
+#include <common/remote_conf.h>
 #include <common/shared_configuration.h>
 #include <daemon/remote_daemon_api.h>
+#include <common/states.h>
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;
@@ -23,9 +25,12 @@ int eards_remote_socket,eards_client;
 struct sockaddr_in eards_remote_client;
 char *my_tmp;
 
+static const char *__NAME__ = "eards_rem_server";
+
+
 void my_sigusr1(int signun)
 {
-	ear_verbose(0,"dyn_conf thread receives sigusr1\n");
+	VERBOSE_N(0,"dyn_conf thread receives sigusr1\n");
 	ear_conf_shared_area_dispose(my_tmp);
 	close_server_socket(eards_remote_socket);
 	pthread_exit(0);
@@ -48,8 +53,25 @@ void set_sigusr1()
 
 void process_remote_requests(int clientfd)
 {
-	ear_verbose(0,"connection received\n");
-	close(clientfd);
+	request_t command;
+	uint req;
+	ulong ack=EAR_SUCCESS;
+	VERBOSE_N(0,"connection received\n");
+	req=read_command(clientfd,&command);
+	switch (req){
+		case EAR_RC_NEW_JOB:
+			VERBOSE_N(0,"new_job command received %d\n",command.my_req.job_id);
+			break;
+		case EAR_RC_END_JOB:
+			VERBOSE_N(0,"end_job command received %d\n",command.my_req.job_id);
+			break;
+		case EAR_RC_MAX_FREQ:
+			VERBOSE_N(0,"max_freq command received %lu\n",command.my_req.max_freq);
+			break;
+		default:
+			VERBOSE_N(0,"Invalid remote command\n");
+	}	
+	send_answer(clientfd,&ack);
 }
 
 
@@ -82,7 +104,10 @@ void * eard_dynamic_configuration(void *tmp)
 		eards_client=wait_for_client(eards_remote_socket,&eards_remote_client);	
 		if (eards_client<0){	
 			ear_verbose(0,"dyn_conf: wait_for_client returns error\n");
-		}else process_remote_requests(eards_client);
+		}else{ 
+			process_remote_requests(eards_client);
+			close(eards_client);
+		}
 	}while(eard_must_exit==0);
     ear_verbose(0,"dyn_conf exiting\n");
     ear_conf_shared_area_dispose(my_tmp);

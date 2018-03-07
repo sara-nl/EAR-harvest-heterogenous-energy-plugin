@@ -7,18 +7,19 @@ then
 	echo -e "\tbinary: name of local binary to run"
 	echo -e "\tmpi: number of total MPI tasks to use"
 	echo -e "\tppn: number of MPI tasks per node"
-  	echo -e "\tpolicy: MIN_ENERGY_TO_SOLUTION | MIN_TIME_TO_SOLUTION | MONITORING_ONLY"
+  	echo -e "\tpolicy: MIN_ENERGY_TO_SOLUTION | MIN_TIME_TO_SOLUTION | MONITORING_ONLY | NO_EAR"
   	exit 1
 fi
 
 if [ -z $EAR_INSTALL_PATH ]
 then
-        echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
-        echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
-        exit 1
+    echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
+    echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
+    exit 1
 fi
 
-if [[ "$5" != "MONITORING_ONLY" ]] && [[ "$5" != "MIN_ENERGY_TO_SOLUTION" ]] && [[ "$5" != "MIN_TIME_TO_SOLUTION" ]]
+if [[ "$5" != "MIN_ENERGY_TO_SOLUTION" ]] && [[ "$5" != "MIN_TIME_TO_SOLUTION" ]]  &&
+   [[ "$5" != "MONITORING_ONLY" ]] && [[ "$5" != "NO_EAR" ]]
 then
 	echo "ERROR: bad policy $5."
 	exit 1
@@ -44,6 +45,12 @@ source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
 export LD_LIBRARY_PATH="$FREEIPMI_LIB_PATH:$PAPI_LIB_PATH:$LD_LIBRARY_PATH:$CPUPOWER_LIB_PATH:$LD_LIBRARY_PATH"
 export EAR_POWER_POLICY="$5"
 
+# LD_PRELOAD if NO_EAR policy isn not selected
+if [[ "$5" != "NO_EAR" ]]
+then
+    PRELOAD="LD_PRELOAD=${EAR_LIB_PATH}"
+fi
+
 # Non-edit region
 BINARY=${2}
 MPI=${3}
@@ -53,7 +60,7 @@ PPN=${4}
 A=$(date +%s) ; date
 
 ## Starting the application
-mpiexec.hydra -l -genv LD_PRELOAD=${EAR_LIB_PATH} -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
+echo mpiexec.hydra -l -genv $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
 
 B=$(date +%s) ; date
-echo "Total elapsed time = $(( B - A )) sec "
+echo "Total elapsed time = $(( B - A )) sec"

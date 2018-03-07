@@ -27,7 +27,10 @@ AC_DEFUN([X_AC_FREEIPMI],
     AC_ARG_WITH(
         [freeipmi],
         AS_HELP_STRING(--with-freeipmi=PATH,Specify path to FreeIPMI installation),
-        [_x_ac_freeipmi_dirs_root="$withval"]
+        [
+			_x_ac_freeipmi_dirs_root="$withval"
+			_x_ac_freeipmi_custom="yes"
+		]
     )
 
     AC_CACHE_CHECK(
@@ -47,7 +50,10 @@ AC_DEFUN([X_AC_FREEIPMI],
                         # If exists, then its path and LDFLAGS are saved
                         if test -d "$d/$dir_lib"; then
                             _x_ac_freeipmi_dir_lib="$d/$dir_lib"
-                            _x_ac_freeipmi_gcc_ldflags=-L$_x_ac_freeipmi_dir_lib
+
+ 							if test "x$_x_ac_freeipmi_custom" = "xyes"; then
+                            	_x_ac_freeipmi_gcc_ldflags=-L$_x_ac_freeipmi_dir_lib
+							fi
                         fi
 
                         X_AC_VAR_BACKUP([],[$_x_ac_freeipmi_gcc_ldflags],[$_x_ac_freeipmi_gcc_libs])

@@ -12,5 +12,12 @@
 
 int eards_remote_connect(char *nodename);
 
+int eards_new_job(int job_id);
+int eards_end_job(int job_id);
+int eards_set_freq(unsigned long freq);
+
+int eards_remote_disconnect();
+
+
 #else
 #endif

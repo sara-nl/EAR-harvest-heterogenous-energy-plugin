@@ -271,7 +271,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 }
 
-int metrics_init(int privileged_metrics)
+int metrics_init()
 {
 	const PAPI_hw_info_t *hw_general = NULL;
 	ulong flops_size;
@@ -395,28 +395,16 @@ int metrics_compute_signature_finish(application_t *metrics, uint iterations, ul
 	return EAR_SUCCESS;
 }
 
-/*
- *
- *
- *
- * LEGACY CODE
- *
- *
- *
- *
- */
-
 long long metrics_usecs_diff(long long end, long long init)
 {
 	long long to_max;
 
-	//LLONG_MAX
 	if (end < init)
 	{
-		ear_debug(0, "EAR(%s) UsecsDiff TIME END < INIT %ll - %ll\n", __FILE__, end, init);
+		EAR_DEBUG(0, "Timer overflow (end: %ll - init: %ll)\n", end, init);
 		to_max = LLONG_MAX - init;
 		return (to_max + end);
 	}
 
-	return (end-init);
+	return (end - init);
 }

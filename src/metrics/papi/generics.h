@@ -27,8 +27,17 @@
 		exit(1); \
 	}
 
-//
+// Metrics generic functions
 void metrics_get_app_name(char *app_name);
 const PAPI_hw_info_t *metrics_get_hw_info();
+
+// PAPI control
+int _papi_init();
+int _papi_multiplex_init();
+int _papi_component_init(char *component_name);
+int _papi_event_add(int event_set, char *event_name);
+int _papi_counters_stop(int event_set, long long *event_values);
+int _papi_counters_read(int event_set, long long *event_values);
+int _papi_counters_start(int event_set);
 
 #endif

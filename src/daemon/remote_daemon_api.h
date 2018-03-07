@@ -12,11 +12,14 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <common/remote_conf.h>
 
 
 int create_server_socket();
 int wait_for_client(int sockfd,struct sockaddr_in *client);
 void close_server_socket(int sock);
 
+int read_command(int s,request_t *command);
+void send_answer(int s,ulong *ack);
 #else
 #endif

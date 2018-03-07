@@ -152,7 +152,7 @@ void ear_init()
 	// my_id is 0 in case is not local. Metrics gets the value
 	// 'privileged_metrics'. This value has to be different to 0 when
 	// my_id is different to 0.
-	metrics_init(!my_id); // PAPI_init starts counters
+	metrics_init(); // PAPI_init starts counters
 	ear_cpufreq_init(); //Initialize cpufreq info
 
 	if (ear_my_rank=00){
@@ -203,7 +203,8 @@ void ear_init()
 	sprintf(app_summary_path, "%s%s.csv", summary_pathname, node_name);
 	sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 
-	if (ear_my_rank==0){
+	if (ear_my_rank==0)
+	{
 		VERBOSE_N(1, "App id: '%s'", application.app_id);
 		VERBOSE_N(1, "User id: '%s'", application.user_id);
 		VERBOSE_N(1, "Node id: '%s'", application.node_id);

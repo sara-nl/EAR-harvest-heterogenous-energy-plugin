@@ -6,10 +6,16 @@ HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
 
 BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a
 
+MODULE_OBJS = $(SRCDIR)/common/string_enhanced.o
+
+OBJS = check.o
+
 BINARIES = cpu_examinable      \
            cpu_aperf           \
            cpu_uncores         \
            cpu_uncores_all     \
+           module_acpi_cpufreq \
+           module_ipmi_devintf \
            papi_init           \
            papi_version        \
            papi_comp_available \
@@ -24,7 +30,10 @@ endif
 
 .PHONY: check
 
-all: $(BINARIES)
+all: $(OBJS) $(BINARIES)
+
+check.o: check.h check.c
+	$(CC) $(CFLAGS) -c check.c
 
 papi_init: papi_init.c
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_init papi_init.c $(PAPI_LDFLAGS)
@@ -37,6 +46,12 @@ papi_comp_available: papi_comp_available.c
 
 papi_comp_enabled: papi_comp_enabled.c
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_comp_enabled papi_comp_enabled.c $(PAPI_LDFLAGS)
+
+module_acpi_cpufreq: module_acpi_cpufreq.c $(OBJS) $(MODULE_OBJS)
+	$(CC) $(CFLAGS) -o module_acpi_cpufreq module_acpi_cpufreq.c $(OBJS) $(MODULE_OBJS)
+
+module_ipmi_devintf: module_ipmi_devintf.c $(OBJS) $(MODULE_OBJS)
+	$(CC) $(CFLAGS) -o module_ipmi_devintf module_ipmi_devintf.c $(OBJS) $(MODULE_OBJS)
 
 cpu_examinable: cpu_examinable.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -o cpu_examinable cpu_examinable.c $(HARDWARE_OBJS)

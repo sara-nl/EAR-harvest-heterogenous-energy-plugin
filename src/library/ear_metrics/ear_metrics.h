@@ -10,7 +10,7 @@ long long metrics_time();
 long long metrics_usecs_diff(long long end, long long init);
 
 //
-int metrics_init(int my_id);
+int metrics_init();
 
 //
 void metrics_dispose(application_t *metrics);

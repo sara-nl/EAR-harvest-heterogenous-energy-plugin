@@ -28,6 +28,8 @@
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
+static const char *__NAME__ = "connexion-api";
+
 
 static  int sfd;
 // based on getaddrinfo man pages
@@ -54,7 +56,7 @@ int create_server_socket()
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {
-		ear_verbose(0,"getaddrinfo fails for port %s \n",buff);
+		VERBOSE_N(0,"getaddrinfo fails for port %s \n",buff);
 		return EAR_ERROR;
     }
 
@@ -72,20 +74,20 @@ int create_server_socket()
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		ear_verbose(0,"bind fails for eards server\n");
+		VERBOSE_N(0,"bind fails for eards server\n");
 		return EAR_ERROR;
     }else{
-		ear_verbose(0,"socket and bind for erads socket success\n");
+		VERBOSE_N(0,"socket and bind for erads socket success\n");
 	}
 
    	freeaddrinfo(result);           /* No longer needed */
 
    	if (listen(sfd,DAEMON_EXTERNAL_CONNEXIONS)< 0){
-		ear_verbose(0,"listen eards socket fails\n");
+		VERBOSE_N(0,"listen eards socket fails\n");
 		close(sfd);
  		return EAR_ERROR;
 	}
-	ear_verbose(0,"eards socket listen ready!\n");
+	VERBOSE_N(0,"eards socket listen ready!\n");
  	return sfd;
 }
 int wait_for_client(int s,struct sockaddr_in *client)
@@ -96,15 +98,32 @@ int wait_for_client(int s,struct sockaddr_in *client)
     client_addr_size = sizeof(struct sockaddr_in);
     new_sock = accept(s, (struct sockaddr *) &client, &client_addr_size);
     if (new_sock < 0){ 
-		ear_verbose(0,"accept for eards socket fails %s\n",strerror(errno));
+		VERBOSE_N(0,"accept for eards socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
-	ear_verbose(0,"eards new connection \n");
+	VERBOSE_N(0,"eards new connection \n");
 	return new_sock;
 }
 void close_server_socket(int sock)
 {
 	close(sock);
 }
+
+int read_command(int s,request_t *command)
+{
+	int ret;
+	ret=read(s,command,sizeof(request_t));
+	if ((ret<0) || (ret!=sizeof(request_t))){
+		VERBOSE_N(0,"Error reading remote command\n");
+		if (ret<0) VERBOSE_N(0,"errno %s\n",strerror(errno));	
+		command->req=NO_COMMAND;
+	}
+	return command->req;
+}
+void send_answer(int s,ulong *ack)
+{
+	if (write(s,ack,sizeof(ulong))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer\n");
+}
+
 
 

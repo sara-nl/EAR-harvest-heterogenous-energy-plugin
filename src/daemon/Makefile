@@ -47,7 +47,7 @@ eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o re
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
 
-remote_daemon_api.o: remote_daemon_api.c
+remote_daemon_api.o: remote_daemon_api.c $(SRCDIR)/common/remote_conf.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c remote_daemon_api.c
 power_monitoring.o:power_monitoring.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c

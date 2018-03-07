@@ -27,7 +27,10 @@ AC_DEFUN([X_AC_SLURM],
     AC_ARG_WITH(
         [slurm],
         AS_HELP_STRING(--with-slurm=PATH,Specify path to SLURM installation),
-        [_x_ac_slurm_dirs_root="$withval"]
+        [
+			_x_ac_slurm_dirs_root="$withval"
+			_x_ac_slurm_custom="yes"
+		]
     )
 
     AC_CACHE_CHECK(
@@ -48,7 +51,10 @@ AC_DEFUN([X_AC_SLURM],
                         # If exists, then its path and LDFLAGS are saved
                         if test -d "$d/$dir_lib"; then
                             _x_ac_slurm_dir_lib="$d/$dir_lib"
-                            _x_ac_slurm_gcc_ldflags=-L$_x_ac_slurm_dir_lib
+
+							if test "x$_x_ac_slurm_custom" = "xyes"; then
+                            	_x_ac_slurm_gcc_ldflags=-L$_x_ac_slurm_dir_lib
+							fi
                         fi
 
                         X_AC_VAR_BACKUP([],[$_x_ac_slurm_gcc_ldflags],[$_x_ac_slurm_gcc_libs])
