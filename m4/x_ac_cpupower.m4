@@ -63,7 +63,7 @@ AC_DEFUN([X_AC_CPUPOWER],
                         # and linker using LDFLAGS and LIBS.
                         #
                         AC_LINK_IFELSE(
-                            [AC_LANG_CALL([], cpufreq_cpu_exists)],
+                            [AC_LANG_CALL([], cpufreq_get_freq_kernel)],
                             [cpupower_cpu_exists=yes]
                         )
                         X_AC_VAR_UNBACKUP
