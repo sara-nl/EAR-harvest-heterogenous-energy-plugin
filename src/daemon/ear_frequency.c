@@ -10,11 +10,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <linux/version.h>
 #include <cpufreq.h>
 #include <papi.h>
 
 #define _GNU_SOURCE
 #define __USE_GNU
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
+#include <cpupower.h>
+#endif
 
 #include <metrics/custom/frequency.h>
 #include <daemon/ear_frequency.h>
@@ -164,8 +169,19 @@ int ear_cpufreq_init()
 	// we start with this approach
 	for (i = 0; i < ear_num_cpus; i++)
 	{
+		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
+		// Returns:
+		// X -> if not
+		// 0 -> if the specified CPU is present
 		status = cpufreq_cpu_exists(i);
-		ear_cpufreq[i]=0;
+		#else
+		// Returns:
+		// 1 -> if CPU is online
+		// 0 -> if CPU is offline
+		// negative errno values in error case
+		status = !cpupower_is_cpu_online(cpu);
+		#endif
+		ear_cpufreq[i] = 0;
 
 		if (status == 0) {
 			ear_cpufreq[i] = cpufreq_get(i);

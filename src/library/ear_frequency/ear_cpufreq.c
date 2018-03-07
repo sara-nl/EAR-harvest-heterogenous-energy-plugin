@@ -15,7 +15,12 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <linux/version.h>
 #include <cpufreq.h>
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
+#include <cpupower.h>
+#endif
 
 #include <metrics/papi/generics.h>
 #include <library/common/externs.h>
@@ -82,14 +87,28 @@ void ear_cpufreq_init()
 
 	// We check all the cpus are online, we should detect cores but
 	// we start with this approach
-		for (i=0;i<ear_num_cpus;i++){
-        	status=cpufreq_cpu_exists(i);
-			ear_cpufreq[i]=0;
-            if (status==0){
-            	ear_cpufreq[i]=cpufreq_get(i);
-            	ear_verbose(4,"EAR: Curent cpu frequency for cpu %u is %u \n",i,ear_cpufreq[i]);
-            }
-        }
+	for (i = 0; i < ear_num_cpus; i++)
+	{
+		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
+		// Returns:
+		// X -> if not
+		// 0 -> if the specified CPU is present
+		status = cpufreq_cpu_exists(i);
+		#else
+		// Returns:
+		// 1 -> if CPU is online
+		// 0 -> if CPU is offline
+		// negative errno values in error case
+		status = !cpupower_is_cpu_online(cpu);
+		#endif
+		ear_cpufreq[i] = 0;
+
+		if (status == 0) {
+			ear_cpufreq[i] = cpufreq_get(i);
+			ear_verbose(4,"EAR: Curent cpu frequency for cpu %u is %u \n", i, ear_cpufreq[i]);
+		}
+	}
+
 	ear_prev_freq=ear_cpufreq[0];
 	// We are assuming all the cpus supports the same set of frequencies
 	// we check for cpu 0
