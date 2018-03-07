@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <linux/version.h>
 #include <cpufreq.h>
 #include <papi.h>
 

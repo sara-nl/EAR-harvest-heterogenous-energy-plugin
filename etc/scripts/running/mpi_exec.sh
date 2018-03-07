@@ -60,7 +60,7 @@ PPN=${4}
 A=$(date +%s) ; date
 
 ## Starting the application
-echo mpiexec.hydra -l -genv $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
+mpiexec.hydra -l -genv $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
 
 B=$(date +%s) ; date
 echo "Total elapsed time = $(( B - A )) sec"
