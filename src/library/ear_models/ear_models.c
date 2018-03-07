@@ -86,7 +86,7 @@ void init_power_policy()
 
 }
 
-void init_power_models(unsigned int p_states,unsigned long *p_states_list)
+void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 {
 	char coeff_file[128];
 	char coeff_default_file[128];
