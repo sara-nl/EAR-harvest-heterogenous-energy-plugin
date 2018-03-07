@@ -15,6 +15,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <linux/version.h>
 #include <cpufreq.h>
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
