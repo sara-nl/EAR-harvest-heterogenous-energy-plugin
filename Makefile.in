@@ -48,13 +48,12 @@ export DEBUG
 
 all:
 	@ $(MAKE) -C src all || exit
-	@ $(MAKE) -C tests all || exit
 
 functionals:
-	@ $(MAKE) -C tests functionals || exit
+	@ $(MAKE) -C src functionals || exit
 
 check:
-	@ $(MAKE) -C tests check
+	@ $(MAKE) -C src check
 
 install:
 	@ $(MAKE) -C src install
@@ -62,4 +61,3 @@ install:
 
 clean:
 	@ $(MAKE) -C src clean
-	@ $(MAKE) -C tests clean
