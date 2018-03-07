@@ -13,7 +13,7 @@
 void *eard_power_monitoring(void *frequency_monitoring);
 void powermon_mpi_init(int appID);
 void powermon_mpi_finalize(int appID);
-void powermon_new_job(int appID);
+void powermon_new_job(int appID,uint from_mpi);
 void powermon_end_job(int appID);
 
 #else

@@ -21,8 +21,10 @@
 #include <common/types/generic.h>
 
 #include <metrics/power_monitoring/ear_power_monitor.h>
+#include <daemon/power_monitoring.h>
 
 extern int eard_must_exit;
+static const char *__NAME__ = "powermon: ";
 
 //  That constant is replicated. We must fix that
 #define MAX_PATH_SIZE 256
@@ -53,6 +55,7 @@ typedef struct powermon_app{
 	time_t end_time;
 	time_t mpi_init_time;
 	time_t mpi_finalize_time;
+	uint   job_created;
 	double avg_dc_power;
 	double max_dc_power;
 	double min_dc_power;
@@ -78,27 +81,23 @@ power_data_t * create_historic_buffer(int samples)
 void reset_current_app()
 {
 	current_ear_app.job_id=-1;
+	current_ear_app.job_created=0;
 }
 
 void mpi_init_powermon_app(int app_id)
 {
-	current_ear_app.avg_dc_power=0;
-	current_ear_app.max_dc_power=0;
-	current_ear_app.min_dc_power=DBL_MAX;
-	current_ear_app.job_id=app_id;
 	time(&current_ear_app.mpi_init_time);
-	// This is temporal
-	current_ear_app.begin_time=current_ear_app.mpi_init_time;
 }
-void job_init_powermon_app(int app_id)
+void job_init_powermon_app(int app_id,uint from_mpi)
 {
     current_ear_app.avg_dc_power=0;
     current_ear_app.max_dc_power=0;
     current_ear_app.min_dc_power=DBL_MAX;
     current_ear_app.job_id=app_id;
-    time(&current_ear_app.mpi_init_time);
-    // This is temporal
-    current_ear_app.begin_time=current_ear_app.mpi_init_time;
+	current_ear_app.job_created=!from_mpi;
+	current_ear_app.mpi_init_time=0;
+	current_ear_app.mpi_finalize_time=0;
+    time(&current_ear_app.begin_time);
 }
 
 void mpi_finalize_powermon_app(int app_id,int samples)
@@ -128,15 +127,20 @@ void report_powermon_app(powermon_app_t *app)
     strftime(jbegin, sizeof(jbegin), "%c", current_t);
     current_t=localtime(&(app->end_time));
     strftime(jend, sizeof(jend), "%c", current_t);
-    current_t=localtime(&(app->mpi_init_time));
-    strftime(mpibegin, sizeof(mpibegin), "%c", current_t);
-    current_t=localtime(&(app->mpi_finalize_time));
-    strftime(mpiend, sizeof(mpiend), "%c", current_t);
+	if (app->mpi_init_time){
+    	current_t=localtime(&(app->mpi_init_time));
+    	strftime(mpibegin, sizeof(mpibegin), "%c", current_t);
+    	current_t=localtime(&(app->mpi_finalize_time));
+    	strftime(mpiend, sizeof(mpiend), "%c", current_t);
+	}
 
 	if (fd_powermon>=0){
 		//"job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
-
-		sprintf(buffer,"%d;%s;%s;%s;%s;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,mpibegin,mpiend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
+		if (app->mpi_init_time){
+			sprintf(buffer,"%d;%s;%s;%s;%s;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,mpibegin,mpiend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
+		}else{
+			sprintf(buffer,"%d;%s;%s;not mpi;not mpi;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
+		}
 		write(fd_powermon,buffer,strlen(buffer));
 	}
 	
@@ -147,40 +151,40 @@ static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void powermon_mpi_init(int appID)
 {
-	// New application connected
-	while (pthread_mutex_trylock(&app_lock));
-		idleNode=0;
-		mpi_init_powermon_app(appID);
-		samples=0;
-	pthread_mutex_unlock(&app_lock);
+	VERBOSE_N(0,"powermon_mpi_init %d\n",appID);
+	// As special case, we will detect if not job init has been specified
+	if (!current_ear_app.job_created){	// If the job is nt submitted through slurm, new_job would not be submitted 
+		powermon_new_job(appID,1);
+	}
+	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
+	//while (pthread_mutex_trylock(&app_lock));
+	mpi_init_powermon_app(appID);
+	//pthread_mutex_unlock(&app_lock);
 }
 
 void powermon_mpi_finalize(int appID)
 {
-	// Application disconnected
+	// MPI_finalize: we don't need to acquire the lock
 	double lavg,lmax,lmin;
 	powermon_app_t summary;
 	int lsamples;
 	char buffer[128];
-	while (pthread_mutex_trylock(&app_lock));
-		idleNode=1;
+	VERBOSE_N(0,"powermon_mpi_finalize %d\n",appID);
+	//while (pthread_mutex_trylock(&app_lock));
 		mpi_finalize_powermon_app(appID,samples);
-		copy_powermon_app(&summary,&current_ear_app);
-		current_ear_app.job_id=-1;
-		lavg=current_ear_app.avg_dc_power;
-		lmax=current_ear_app.max_dc_power;
-		lmin=current_ear_app.min_dc_power;
-	pthread_mutex_unlock(&app_lock);
-	printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg/(double)lsamples,lmax,lmin);
-	report_powermon_app(&summary);
+	//pthread_mutex_unlock(&app_lock);
+	if (!current_ear_app.job_created){  // If the job is nt submitted through slurm, end_job would not be submitted 
+		powermon_end_job(appID);
+	}
 }
 
-void powermon_new_job(int appID)
+void powermon_new_job(int appID,uint from_mpi)
 {
     // New application connected
+	VERBOSE_N(0,"powermon_new_job %d\n",appID);
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
-        mpi_init_powermon_app(appID);
+        job_init_powermon_app(appID,from_mpi);
         samples=0;
     pthread_mutex_unlock(&app_lock);
 
@@ -193,18 +197,19 @@ void powermon_end_job(int appID)
     powermon_app_t summary;
     int lsamples;
     char buffer[128];
+	VERBOSE_N(0,"powermon_end_job %d\n",appID);
     while (pthread_mutex_trylock(&app_lock));
         idleNode=1;
-        mpi_finalize_powermon_app(appID,samples);
+        job_end_powermon_app(appID,samples);
         copy_powermon_app(&summary,&current_ear_app);
         current_ear_app.job_id=-1;
+		current_ear_app.job_created=0;
         lavg=current_ear_app.avg_dc_power;
         lmax=current_ear_app.max_dc_power;
         lmin=current_ear_app.min_dc_power;
     pthread_mutex_unlock(&app_lock);
     printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg/(double)lsamples,lmax,lmin);
     report_powermon_app(&summary);
-
 }
 
 
@@ -242,7 +247,7 @@ void create_powermon_out()
 	}
 	umask(my_mask);
 	if (fd_powermon<0){ 
-		ear_verbose(0,"powermon: Error creating output file %s\n",strerror(errno));
+		VERBOSE_N(0,"powermon: Error creating output file %s\n",strerror(errno));
 	}	
 }
 	
@@ -258,8 +263,8 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	double t_diff;
 	power_data_t my_current_power;
 
-	ear_verbose(0,"power monitoring thread created\n");
-	if (init_power_ponitoring()!=EAR_SUCCESS) ear_verbose(0,"Error in init_power_ponitoring\n");
+	VERBOSE_N(0,"power monitoring thread created\n");
+	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0,"Error in init_power_ponitoring\n");
 	f_monitoring=*f_monitoringp;
 	t_ms=f_monitoring/1000;
 
@@ -269,13 +274,13 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	// Create circular buffer for samples
 	L1_samples=create_historic_buffer(NUM_SAMPLES_L1);
 	if (L1_samples==NULL){
-		ear_verbose(0,"power monitoring: error allocating memory for logs\n");
+		VERBOSE_N(0,"power monitoring: error allocating memory for logs\n");
 		pthread_exit(0);
 		//exit(0);
 	}
 	L2_samples=create_historic_buffer(NUM_SAMPLES_L2);
 	if (L2_samples==NULL){
-		ear_verbose(0,"power monitoring: error allocating memory for logs\n");
+		VERBOSE_N(0,"power monitoring: error allocating memory for logs\n");
 		pthread_exit(0);
 		//exit(0);
 	}
