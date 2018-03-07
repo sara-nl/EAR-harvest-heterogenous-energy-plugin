@@ -90,12 +90,28 @@ void mpi_init_powermon_app(int app_id)
 	// This is temporal
 	current_ear_app.begin_time=current_ear_app.mpi_init_time;
 }
+void job_init_powermon_app(int app_id)
+{
+    current_ear_app.avg_dc_power=0;
+    current_ear_app.max_dc_power=0;
+    current_ear_app.min_dc_power=DBL_MAX;
+    current_ear_app.job_id=app_id;
+    time(&current_ear_app.mpi_init_time);
+    // This is temporal
+    current_ear_app.begin_time=current_ear_app.mpi_init_time;
+}
+
 void mpi_finalize_powermon_app(int app_id,int samples)
 {
 	time(&current_ear_app.mpi_finalize_time);
-	current_ear_app.avg_dc_power=current_ear_app.avg_dc_power/(double)samples;
-	current_ear_app.end_time=current_ear_app.mpi_finalize_time;
 }
+
+void job_end_powermon_app(int app_id,int samples)
+{
+    current_ear_app.avg_dc_power=current_ear_app.avg_dc_power/(double)samples;
+    time(&current_ear_app.end_time);
+}
+
 
 void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
 {
@@ -161,10 +177,34 @@ void powermon_mpi_finalize(int appID)
 
 void powermon_new_job(int appID)
 {
+    // New application connected
+    while (pthread_mutex_trylock(&app_lock));
+        idleNode=0;
+        mpi_init_powermon_app(appID);
+        samples=0;
+    pthread_mutex_unlock(&app_lock);
+
 }
 
 void powermon_end_job(int appID)
 {
+    // Application disconnected
+    double lavg,lmax,lmin;
+    powermon_app_t summary;
+    int lsamples;
+    char buffer[128];
+    while (pthread_mutex_trylock(&app_lock));
+        idleNode=1;
+        mpi_finalize_powermon_app(appID,samples);
+        copy_powermon_app(&summary,&current_ear_app);
+        current_ear_app.job_id=-1;
+        lavg=current_ear_app.avg_dc_power;
+        lmax=current_ear_app.max_dc_power;
+        lmin=current_ear_app.min_dc_power;
+    pthread_mutex_unlock(&app_lock);
+    printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg/(double)lsamples,lmax,lmin);
+    report_powermon_app(&summary);
+
 }
 
 
