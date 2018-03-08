@@ -18,7 +18,6 @@ if [ "$1" != "compile" ] && [ "$1" != "test" ]; then
     exit 0
 fi
 
-
 # Compiling or executing the different kernels
 learning_phase lu-mpi C
 learning_phase ep D

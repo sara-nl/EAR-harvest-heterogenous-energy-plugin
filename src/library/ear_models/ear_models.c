@@ -71,11 +71,11 @@ void init_power_policy()
 
 	reset_freq_opt=get_ear_reset_freq();
 	EAR_default_pstate=get_ear_p_state();
-	if (EAR_default_pstate>=ear_get_num_p_states()) EAR_default_pstate=DEFAULT_P_STATE;
-	EAR_default_frequency=ear_get_freq(EAR_default_pstate);
+	if (EAR_default_pstate>=frequency_get_num_pstates()) EAR_default_pstate=DEFAULT_P_STATE;
+	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
 
 	// TODO: CPUFREQ COUPLED (old db_change_frequency(EAR_default_frequency))
-	def_freq = ear_cpufreq_set_node(EAR_default_frequency);
+	def_freq = frequency_set_all_cpus(EAR_default_frequency);
 
 	if (def_freq != EAR_default_frequency)
 	{
@@ -211,7 +211,7 @@ double power_projection(application_t *my_app,unsigned int Fi)
 	ear_debug(4,"EAR(%s)::Computing power projection for nominal %u and f=%u\n",__FILE__,ear_frequency,Fi);
 	POWER_F0=NOMINAL_POWER(my_app);
 	TPI_F0=NOMINAL_TPI(my_app);
-	Fref=ear_get_pstate(ear_frequency);
+	Fref=frequency_freq_to_pstate(ear_frequency);
 	pp=coefficients[Fref][Fi].A*POWER_F0+coefficients[Fref][Fi].B*TPI_F0+coefficients[Fref][Fi].C;
 	ear_verbose(4,"EAR(%s):: POWER_PROJ=%.3lf=A(%.3lf)*POWERN(%.3lf)+B(%.3lf)*TPIN(%.3lf)+C(%.3lf)\n",
 	ear_app_name,
@@ -230,7 +230,7 @@ double cpi_projection(application_t *my_app,unsigned int Fi)
 	double cpi_pr;
 	unsigned int Fref;
 	ear_debug(4,"EAR(%s)::Computing cpi projection for nominal %u and f=%u\n",ear_app_name,ear_frequency,Fi);
-	Fref=ear_get_pstate(ear_frequency);
+	Fref=frequency_freq_to_pstate(ear_frequency);
 	TPI_F0=NOMINAL_TPI(my_app);
 	CPI_F0=NOMINAL_CPI(my_app);
 	cpi_pr=coefficients[Fref][Fi].F+coefficients[Fref][Fi].D*CPI_F0+coefficients[Fref][Fi].E*TPI_F0;
@@ -249,7 +249,7 @@ double time_projection(application_t *my_app,unsigned int Fi,double cpi_pr)
 	double CPI_F0,TIME_F0,timep;
 	unsigned int Fref;
 	ear_debug(4,"EAR(%s)::Computing time projection for nominal %u and f=%u\n",__FILE__,ear_frequency,Fi);
-	Fref=ear_get_pstate(ear_frequency);
+	Fref=frequency_freq_to_pstate(ear_frequency);
 	//TIME(fn) = TIME(f0) * CPI(fn)/CPI(f0) * (f0/fn)
 	CPI_F0=NOMINAL_CPI(my_app);
 	TIME_F0=NOMINAL_TIME(my_app);
@@ -272,7 +272,7 @@ unsigned long optimal_freq_min_energy(double th,application_t * SIGNATURE,double
     my_app=SIGNATURE;
     if (ear_use_turbo) min_pstate=0;
     else min_pstate=1;
-    ref=ear_get_pstate(ear_frequency);
+    ref=frequency_freq_to_pstate(ear_frequency);
     // My reference is the submission frequency
     if (ear_frequency!=EAR_default_frequency){
     	if (coefficients[ref][EAR_default_pstate].available){
@@ -332,7 +332,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 	my_app=SIGNATURE;
 	if (ear_use_turbo) min_pstate=0;
 	else min_pstate=1;	
-	ref=ear_get_pstate(ear_frequency);
+	ref=frequency_freq_to_pstate(ear_frequency);
 	// My reference is the submission frequency
 	if (power_model_policy==MONITORING_ONLY){
 		bestPstate=ear_frequency;
@@ -498,8 +498,8 @@ uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_
 
 projection_t * performance_projection(unsigned long f)
 {
-	ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,ear_get_pstate(f));
-	return &projections[ear_get_pstate(f)];
+	ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,frequency_freq_to_pstate(f));
+	return &projections[frequency_freq_to_pstate(f)];
 }
 
 unsigned long  policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
@@ -516,8 +516,7 @@ unsigned long  policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
 		ear_debug(3,"EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
 				  __FILE__,optimal_freq);
 
-		// TODO: CPUFREQ COUPLED (old db_change_frequency)
-		max_freq = ear_cpufreq_set_node(optimal_freq);
+		ear_frequency = max_freq = ear_daemon_client_change_freq(optimal_freq);
 
 		if (max_freq != optimal_freq) {
 			optimal_freq = max_freq;
@@ -537,8 +536,7 @@ void models_new_period()
 
 	if (reset_freq_opt)
 	{
-		// TODO: CPUFREQ COUPLED (db_change_frequency(EAR_default_frequency))
-		ear_cpufreq_set_node(EAR_default_frequency);
+		ear_frequency = ear_daemon_client_change_freq(EAR_default_frequency);
 	}
 
 	reset_performance_projection(ear_models_pstates);

@@ -111,7 +111,7 @@ struct avg_perf_cpu_info
     unsigned long saved_aperf;
     unsigned long saved_mperf;
     unsigned int snapped;
-} *cpu_info, *cpu_total_info;
+} *cpu_info, *cpu_info_global;
 
 inline static int read_ulong(int fd, unsigned int pos, unsigned long *value)
 {
@@ -155,7 +155,7 @@ int aperf_init(unsigned int num_cpus)
     int size = sizeof(struct avg_perf_cpu_info);
     int result = posix_memalign((void *) &cpu_info, size, size * num_cpus);
     if (result!=0) return EAPERF;
-    result = posix_memalign((void *) &cpu_total_info, size, size * num_cpus);
+    result = posix_memalign((void *) &cpu_info_global, size, size * num_cpus);
     return -(result != 0) ;
 }
 
@@ -165,7 +165,20 @@ int aperf_init_cpu(unsigned int cpu, unsigned long max_freq)
         return EAR_ERROR;
     }
     cpu_info[cpu].nominal_freq = max_freq;
-    cpu_total_info[cpu].nominal_freq = max_freq;
+    cpu_info_global[cpu].nominal_freq = max_freq;
+
+    return EAR_SUCCESS;
+}
+
+int apert_init_all_cpus(unsigned int num_cpus, unsigned long max_freq)
+{
+    int i;
+
+    aperf_init(num_cpus);
+
+    for (i = 0; i < num_cpus; i++) {
+        aperf_init_cpu(i, max_freq);
+    }
 
     return EAR_SUCCESS;
 }
@@ -173,7 +186,7 @@ int aperf_init_cpu(unsigned int cpu, unsigned long max_freq)
 void aperf_dispose()
 {
 	if (cpu_info != NULL) free(cpu_info);
-	if (cpu_total_info!=NULL) free(cpu_total_info);
+	if (cpu_info_global!=NULL) free(cpu_info_global);
 }
 
 int aperf_start_avg_freq(int cpu,struct avg_perf_cpu_info *my_cpu_info)
@@ -243,23 +256,77 @@ int aperf_end_avg_freq(unsigned int cpu, struct avg_perf_cpu_info *my_cpu_info, 
     return 0;
 }
 
-int aperf_start_computing_app_avg_freq(unsigned int cpu)
-{
-	return aperf_start_avg_freq(cpu, cpu_total_info);
-}
-
-int aperf_end_computing_app_avg_freq(unsigned int cpu, unsigned long *frequency)
-{
-	return aperf_end_avg_freq(cpu, cpu_total_info, frequency);
-}
-
+/*
+ *
+ * Extra functions
+ *
+ */
 int aperf_get_avg_frequency_init(unsigned int cpu)
 {
-	return aperf_start_avg_freq(cpu, cpu_info);
+    return aperf_start_avg_freq(cpu, cpu_info);
+}
+
+// ear_begin_compute_turbo_freq
+void aperf_get_avg_frequency_init_all_cpus(unsigned int num_cpus)
+{
+    int i;
+
+    for (i = 0; i < ear_num_cpus; i++) {
+        aperf_get_avg_frequency_init(i);
+    }
+}
+
+int aperf_get_global_avg_frequency_init(unsigned int cpu)
+{
+    return aperf_start_avg_freq(cpu, cpu_info_global);
+}
+
+// ear_begin_app_compute_turbo_freq
+void aperf_get_global_avg_frequency_init_all_cpus(unsigned int num_cpus)
+{
+    int i;
+
+    for (i = 0; i < num_cpus; i++) {
+        aperf_get_global_avg_frequency_init(i);
+    }
 }
 
 int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
 {
-	return aperf_end_avg_freq(cpu, cpu_info, frequency);
+    return aperf_end_avg_freq(cpu, cpu_info, frequency);
 }
 
+// ear_end_compute_turbo_freq
+unsigned long aperf_get_avg_frequency_end_all_cpus(unsigned int num_cpus)
+{
+    unsigned long new_freq, freq = 0;
+    int i;
+
+	for (i = 0; i < num_cpus; i++)
+	{
+        aperf_get_avg_frequency_end(i, &new_freq);
+		freq += new_freq;
+	}
+
+	return (freq / num_cpus);
+}
+
+int aperf_get_global_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
+{
+	return aperf_end_avg_freq(cpu, cpu_info_global, frequency);
+}
+
+// ear_end_app_compute_turbo_freq
+unsigned long aperf_get_global_avg_frequency_end_all_cpus(unsigned int num_cpus)
+{
+    unsigned long new_freq, freq = 0;
+    int i;
+
+    for (i = 0; i < num_cpus; i++)
+    {
+        aperf_get_global_avg_frequency_end(i, &new_freq);
+        freq += new_freq;
+    }
+
+    return (freq / num_cpus);
+}

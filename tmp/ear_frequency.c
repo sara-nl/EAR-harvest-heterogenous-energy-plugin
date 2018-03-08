@@ -10,13 +10,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <linux/version.h>
 #include <cpufreq.h>
 #include <papi.h>
 
 #define _GNU_SOURCE
 #define __USE_GNU
 
-#include <metrics/custom/frequency.h> // TODO: ?
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
+#include <cpupower.h>
+#endif
+
+#include <metrics/custom/frequency.h>
 #include <daemon/ear_frequency.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
@@ -76,8 +81,19 @@ int ear_cpufreq_init()
 	// we start with this approach
 	for (i = 0; i < ear_num_cpus; i++)
 	{
+		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
+		// Returns:
+		// X -> if not
+		// 0 -> if the specified CPU is present
 		status = cpufreq_cpu_exists(i);
-		ear_cpufreq[i]=0;
+		#else
+		// Returns:
+		// 1 -> if CPU is online
+		// 0 -> if CPU is offline
+		// negative errno values in error case
+		status = !cpupower_is_cpu_online(cpu);
+		#endif
+		ear_cpufreq[i] = 0;
 
 		if (status == 0) {
 			ear_cpufreq[i] = cpufreq_get(i);
@@ -221,6 +237,26 @@ void ear_set_turbo()
 	}
 }
 
+/*
+ *
+ *
+ * NO MORE
+ *
+ *
+ */
+void ear_begin_compute_turbo_freq()
+{
+	int i;
+
+	ear_debug(2,"EAR_DAEMON:: EAR_begin_compute_turbo_freq\n");
+
+#ifdef EAR_BOOST
+	for (i = 0; i < ear_num_cpus; i++) {
+		aperf_get_avg_frequency_init(i);
+	}
+#endif
+}
+
 void ear_begin_app_compute_turbo_freq()
 {
 	ear_debug(2,"EAR_DAEMON:: ear_begin_app_compute_turbo_freq\n");
@@ -231,6 +267,25 @@ void ear_begin_app_compute_turbo_freq()
 		aperf_start_computing_app_avg_freq(i);
 	}
 #endif
+}
+
+ulong ear_end_compute_turbo_freq()
+{
+	ulong new_freq, freq = 0;
+	int i;
+
+#ifdef EAR_BOOST
+	ear_debug(2,"EAR_DAEMON:: EAR_end_compute_turbo_freq\n");
+
+	for (i = 0; i < ear_num_cpus; i++)
+	{
+		aperf_get_avg_frequency_end(i,&new_freq);
+		freq += new_freq;
+	}
+
+	return (freq / ear_num_cpus);
+#endif
+	return ear_nominal_freq;
 }
 
 ulong ear_end_app_compute_turbo_freq()
@@ -250,36 +305,6 @@ ulong ear_end_app_compute_turbo_freq()
 	return ear_nominal_freq;
 }
 
-void ear_begin_compute_turbo_freq()
-{
-	int i;
-
-	ear_debug(2,"EAR_DAEMON:: EAR_begin_compute_turbo_freq\n");
-
-#ifdef EAR_BOOST
-	for (i = 0; i < ear_num_cpus; i++) {
-		aperf_get_avg_frequency_init(i);
-	}
-#endif
-}
-ulong ear_end_compute_turbo_freq()
-{
-	ulong new_freq, freq = 0;
-	int i;
-
-#ifdef EAR_BOOST
-	ear_debug(2,"EAR_DAEMON:: EAR_end_compute_turbo_freq\n");
-
-	for (i = 0; i < ear_num_cpus; i++)
-	{
-		aperf_get_avg_frequency_end(i,&new_freq);
-		freq += new_freq;
-	}
-
-	return (freq / ear_num_cpus);
-#endif
-	return ear_nominal_freq;
-}
 
 //TODO: Not for daemon
 unsigned long ear_cpufreq_get(unsigned int cpuid)

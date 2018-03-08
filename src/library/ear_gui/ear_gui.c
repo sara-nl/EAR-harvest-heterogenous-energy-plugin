@@ -63,7 +63,7 @@ Archinfo.txt
 void get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *min_f, ulong *nom_f,
 				 char *CPU_model, char *CPU_name)
 {
-	*nom_f = ear_get_nominal_frequency();
+	*nom_f = frequency_get_nominal_freq();
 	hw_general = metrics_get_hw_info();
 
 	*sockets = hw_general->sockets;
