@@ -60,7 +60,9 @@ static ulong *get_frequencies_cpu()
 
 		if (status == 0) {
 			freqs[i] = cpufreq_get(i);
-			VERBOSE_N(4, "current CPU %d frequency is %u \n", i, freqs[i]);
+			VERBOSE_N(0, "CPU %d is online and its frequency is %u \n", i, freqs[i]); // 4
+		} else {
+			VERBOSE_N(0, "CPU %d is offline\n", i; // 4
 		}
 	}
 
@@ -84,7 +86,7 @@ static ulong *get_frequencies_rank()
 		num_freqs++;
 	}
 
-	VERBOSE_N(2,"%d frequencies available", num_freqs);
+	VERBOSE_N(0, "%d frequencies available ", num_freqs); // 2
 
 	//
 	pointer = (ulong *) malloc(sizeof(ulong) * num_freqs);
@@ -118,7 +120,7 @@ int frequency_init()
 	struct cpufreq_policy *policy;
 	int status, i;
 
-	// TODO: metrics dependancy, remove and pass the number of cpus
+	// TODO: metrics (PAPI) dependancy, remove and pass the number of cpus
 	hwinfo = metrics_get_hw_info();
 
 	if (hwinfo == NULL) {
@@ -128,6 +130,7 @@ int frequency_init()
 
 	//
 	num_cpus = hwinfo->sockets * hwinfo->cores * hwinfo->threads;
+	VERBOSE_N(0, "detected %u CPUs");
 
 	//
 	freq_list_cpu = get_frequencies_cpu(num_cpus);
@@ -137,6 +140,7 @@ int frequency_init()
 
 	// Saving nominal freq = 1, because 0 is the turbo mode
 	freq_nom = freq_list_rank[1];
+	VERBOSE_N(0, "nominal frequency is %lu (KHz)", freq_nom);
 
 	// Saving previous policy data
 	previous_cpu0_freq = freq_list_cpu[0];
@@ -146,8 +150,12 @@ int frequency_init()
 
 	previous_cpu0_policy.min = policy->min;
 	previous_cpu0_policy.max = policy->max;
+
 	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
 	strcpy(previous_cpu0_policy.governor, policy->governor);
+
+	VERBOSE_N(0, "previous policy governor was %s", policy->governor);
+	VERBOSE_N(0, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
 
 	// Kernel dealloc
 	cpufreq_put_policy(policy);
@@ -266,6 +274,9 @@ ulong frequency_freq_to_pstate(uint freq)
 		if (freq_list_rank[i] != freq) i++;
 		else found = 1;
 	}
+
+	VERBOSE_N(0, "the P_STATE of %lu frequency is %u", freq, i);
+
 	return i;
 }
 
@@ -279,7 +290,7 @@ void frequency_set_performance_governor_all_cpus()
 	}
 }
 
-// ear_set_userspace TODO: ?? -> ponerlo después del init en el daemon
+// ear_set_userspace TODO: ??
 void frequency_set_userspace_governor_all_cpus()
 {
 	int i;
