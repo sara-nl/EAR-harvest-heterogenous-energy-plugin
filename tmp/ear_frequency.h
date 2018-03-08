@@ -26,6 +26,7 @@ ulong ear_get_freq(uint i);
 //Selects the “performance” governor.
 void ear_set_turbo();
 // Start computing the avg freq for the whole application
+
 void ear_begin_app_compute_turbo_freq();
 // Ends computing the avg freq for the whole application
 ulong ear_end_app_compute_turbo_freq();

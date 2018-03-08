@@ -250,21 +250,32 @@ int application_timeout()
 // releases eard resources
 void eard_exit()
 {
-        int i;
-        char ear_commreq[MAX_PATH_SIZE];
-		ear_verbose(1,"eard_exit_________\n");
-        eard_unlock();
-        dispose_uncores();
-        print_rapl_metrics();
-        ear_cpufreq_end();
-        node_energy_dispose();
-        for (i=0;i<ear_daemon_client_requests;i++){
-                close(ear_fd_req[i]);
-                sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
-                ear_verbose(2,"eard: removing file %s\n",ear_commreq);
-                if (unlink(ear_commreq)<0) ear_verbose(0,"eard: error when removing com file %s : %s\n",ear_commreq,strerror(errno));
-        }
-		exit(1);
+	int i;
+	char ear_commreq[MAX_PATH_SIZE];
+	ear_verbose(1,"eard_exit_________\n");
+	eard_unlock();
+	dispose_uncores();
+	print_rapl_metrics();
+
+	// CPUFreq end
+	frequency_dispose();
+
+	// Aperf end, later on inside frequency_dispose, but no more
+	aperf_dispose();
+
+	//
+	node_energy_dispose();
+
+	for (i=0;i<ear_daemon_client_requests;i++)
+	{
+		close(ear_fd_req[i]);
+		sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
+		ear_verbose(2,"eard: removing file %s\n",ear_commreq);
+		if (unlink(ear_commreq)<0)
+			ear_verbose(0,"eard: error when removing com file %s : %s\n",
+						ear_commreq,strerror(errno));
+	}
+	exit(1);
 }
 // closes communication with an application
 void eard_close_comm()
@@ -413,7 +424,7 @@ void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 		ear_verbose(1,"eard: warning, maximum freq is limited to %lu\n",max_freq);
 		freq=max_freq;
 	}
-	ear_ok=ear_cpufreq_set_node(freq);
+	ear_ok=frequency_set_all_cpus(freq);
 	write(ear_fd_ack[freq_req],&ear_ok,sizeof(unsigned long));  
 }
 
@@ -434,17 +445,17 @@ int eard_freq(int must_read)
 			eard_set_freq(req.req_data.req_value,eard_max_freq);
 			break;
 		case START_GET_FREQ:
-			ear_begin_compute_turbo_freq();
+			aperf_get_avg_frequency_init_all_cpus();
 			ack=EAR_COM_OK;
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case END_GET_FREQ:
 			ear_debug(1,"eard: get node frequency (trubo)\n");
-			ack=ear_end_compute_turbo_freq();
+			ack=aperf_get_avg_frequency_end_all_cpus();
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case SET_TURBO:
-			ear_set_turbo();	
+			frequency_set_performance_governor_all_cpus();
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case END_COMM:
@@ -456,13 +467,13 @@ int eard_freq(int must_read)
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case START_APP_COMP_FREQ:
-			ear_begin_app_compute_turbo_freq();
+			aperf_get_global_avg_frequency_init_all_cpus();
 			ack=EAR_COM_OK;
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case END_APP_COMP_FREQ:
 			ear_debug(1,"eard: get app node frequency (trubo)\n");
-			ack=ear_end_app_compute_turbo_freq();
+			ack=aperf_get_global_avg_frequency_end_all_cpus();
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 
@@ -672,16 +683,25 @@ void main(int argc,char *argv[])
 	catch_signals();
 
 	// We initialize frecuency
-	if (ear_cpufreq_init() < 0) {
+	if (frequency_init() < 0) {
 		VERBOSE_N(0, "ERROR, frequency information can't be initialized");
 		exit(1);
 	}
 
+	// Later on it was called inside frequency_init(), but no more.
+	frequency_set_userspace_governor_all_cpus();
+
+	//
 	eard_max_pstate = atoi(argv[1]);
 	if (eard_max_pstate < 0) Usage(argv[0]);
-	if (eard_max_pstate >= ear_get_num_p_states()) Usage(argv[0]);
-	ear_node_freq = ear_get_freq(eard_max_pstate);
+	if (eard_max_pstate >= frequency_get_num_pstates()) Usage(argv[0]);
+	ear_node_freq = frequency_pstate_to_freq(eard_max_pstate);
 	eard_max_freq = ear_node_freq;
+
+	// Aperf (later on inside frequency_init(), but no more
+	uint num_cpus = frequency_get_num_online_cpus();
+	uint max_freq = frequency_get_nominal_freq();
+	aperf_init_all_cpus(num_cpus, max_freq);
 
 	// We get nodename to create per_node files 
 	if (gethostname(nodename, sizeof(nodename)) < 0)
@@ -707,7 +727,7 @@ void main(int argc,char *argv[])
 				nodename,ear_node_freq,EAR_VERBOSE_LEVEL);
 
 	// We set the default frequency
-	if (ear_cpufreq_set_node(ear_node_freq)==0){
+	if (frequency_set_all_cpus(ear_node_freq)==0){
 		ear_verbose(0,"eard:Invalid frequency %lu\n",ear_node_freq);
 		eard_close_comm();
 	}

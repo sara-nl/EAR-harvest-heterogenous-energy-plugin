@@ -15,7 +15,12 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <linux/version.h>
 #include <cpufreq.h>
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
+#include <cpupower.h>
+#endif
 
 #include <metrics/papi/generics.h>
 #include <library/common/externs.h>
@@ -79,24 +84,38 @@ void ear_cpufreq_init()
 	// we start with this approach
 	for (i = 0; i < ear_num_cpus; i++)
 	{
+		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
+		// Returns:
+		// X -> if not
+		// 0 -> if the specified CPU is present
 		status = cpufreq_cpu_exists(i);
+		#else
+		// Returns:
+		// 1 -> if CPU is online
+		// 0 -> if CPU is offline
+		// negative errno values in error case
+		status = !cpupower_is_cpu_online(cpu);
+		#endif
 		ear_cpufreq[i] = 0;
 
 		if (status == 0) {
-			ear_cpufreq[i]=cpufreq_get(i);
-			ear_verbose(4, "EAR: Curent cpu frequency for cpu %u is %u \n",i,ear_cpufreq[i]);
+			ear_cpufreq[i] = cpufreq_get(i);
+			ear_verbose(4,"EAR: Curent cpu frequency for cpu %u is %u \n", i, ear_cpufreq[i]);
 		}
 	}
 
 	ear_prev_freq=ear_cpufreq[0];
+
 	// We are assuming all the cpus supports the same set of frequencies
 	// we check for cpu 0
-        list_f=cpufreq_get_available_frequencies(0);
-        first=list_f;
-        while(list_f!=NULL){
-        	list_f=list_f->next;
+	list_f=cpufreq_get_available_frequencies(0);
+	first=list_f;
+
+	while(list_f!=NULL){
+		list_f=list_f->next;
 		ear_num_p_states++;
-        }
+	}
+
 	ear_verbose(2,"EAR: %d p_states available\n",ear_num_p_states);
 	ear_cpufreq_pstates=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_p_states);
 	if (ear_cpufreq_pstates==NULL){
@@ -184,12 +203,11 @@ unsigned long ear_get_freq(unsigned int i)
 	return ear_cpufreq_pstates[i];
 }
 
-// TODO: v
+// TODO: WARNING
 unsigned long ear_my_frequency()
 {
 	return ear_frequency;
 }
-
 
 // TODO: v
 unsigned int ear_get_pstate(unsigned long f)

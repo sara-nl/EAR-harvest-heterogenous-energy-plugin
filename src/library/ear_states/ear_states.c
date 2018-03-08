@@ -134,7 +134,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	unsigned long prev_f;
 	int result;
 
-	prev_f = ear_my_frequency();
+	prev_f = last();
 
 	switch (EAR_STATE)
 	{
