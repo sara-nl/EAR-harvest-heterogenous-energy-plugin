@@ -60,9 +60,9 @@ static ulong *get_frequencies_cpu()
 
 		if (status == 0) {
 			freqs[i] = cpufreq_get(i);
-			VERBOSE_N(0, "CPU %d is online and its frequency is %u \n", i, freqs[i]); // 4
+			VERBOSE_N(0, "CPU %d is online and its frequency is %u", i, freqs[i]); // 4
 		} else {
-			VERBOSE_N(0, "CPU %d is offline\n", i; // 4
+			VERBOSE_N(0, "CPU %d is offline", i); // 4
 		}
 	}
 
@@ -134,6 +134,9 @@ int frequency_init()
 
 	//
 	freq_list_cpu = get_frequencies_cpu(num_cpus);
+	frequency_set_all_cpus(3200000);
+	freq_list_cpu = get_frequencies_cpu(num_cpus);
+
 
 	//
 	freq_list_rank = get_frequencies_rank();
