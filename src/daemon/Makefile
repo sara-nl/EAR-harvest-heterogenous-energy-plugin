@@ -1,17 +1,14 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) 
 LDFLAGS = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(PAPI_LDFLAGS) -ldl 
 
-######## VARS
-
-export DIR
-
 ######## FILES
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a \
                $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/ipmi/energy_node.a \
-	           $(SRCDIR)/metrics/papi/energy_cpu.o
+	           $(SRCDIR)/metrics/papi/energy_cpu.o \
+	           $(SRCDIR)/control/frequency.o
 
 COMMON_OBJS = $(SRCDIR)/common/environment.o \
               $(SRCDIR)/common/types.a \
@@ -22,11 +19,8 @@ BINARIES  = eard
 
 all: eard
 
-ear_frequency.o: ear_frequency.c ear_frequency.h
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
-
-eard: ear_daemon.c ear_frequency.o 
-	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) ear_frequency.o $(LDFLAGS)
+eard: ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS)
+	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS)
 
 
 ######## OPTIONS
