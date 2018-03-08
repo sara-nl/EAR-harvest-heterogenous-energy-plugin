@@ -19,7 +19,7 @@
 
 #include <library/ear_gui/ear_gui.h>
 #include <library/ear_states/ear_states.h>
-#include <library/ear_frequency/ear_cpufreq.h>
+#include <control/frequency.h>
 #include <library/ear_metrics/ear_metrics.h>
 #include <library/common/externs.h>
 #include <common/types/generic.h>

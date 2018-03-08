@@ -16,7 +16,7 @@
 
 #include <library/common/externs.h>
 #include <library/ear_models/ear_models.h>
-#include <library/ear_frequency/ear_cpufreq.h>
+#include <control/frequency.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
