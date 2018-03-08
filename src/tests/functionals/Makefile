@@ -13,21 +13,22 @@ BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a
 NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.a
 
 FREQUENCY_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
-                 $(SRCDIR)/daemon/ear_frequency.o
+                 $(SRCDIR)/control/frequency.o
 
 
 PAPI_OBJS = $(SRCDIR)/metrics/papi/flops.o \
             $(SRCDIR)/metrics/papi/instructions.o \
             $(SRCDIR)/metrics/papi/stalls.o \
-            $(SRCDIR)/metrics/papi/energy_cpu.o
+            $(SRCDIR)/metrics/papi/energy_cpu.o \
+            $(SRCDIR)/metrics/papi/generics.o
 
 BINARIES = bandwith_monitor \
            eard_monitor \
            freeipmi_overhead \
            simd_power_metrics_openmp \
            energy_1_second \
-           energy_updates_freq \
-	   test_architecture
+           energy_updates_freq
+	       # test_architecture
 
 ######## RULES
 
