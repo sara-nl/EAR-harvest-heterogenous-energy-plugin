@@ -60,9 +60,12 @@ static ulong *get_frequencies_cpu()
 
 		if (status == 0) {
 			freqs[i] = cpufreq_get(i);
-			VERBOSE_N(0, "CPU %d is online and its frequency is %u", i, freqs[i]); // 4
+
+			if (freqs[i] == 0) {
+				VERBOSE_N(0, "ERROR, CPU %d is online but the returned freq is 0", i);
+			}
 		} else {
-			VERBOSE_N(0, "CPU %d is offline", i); // 4
+			VERBOSE_N(0, "ERROR, CPU %d is offline", i); // 4
 		}
 	}
 
@@ -79,6 +82,10 @@ static ulong *get_frequencies_rank()
 	// Kernel alloc
 	list = cpufreq_get_available_frequencies(0);
 	first = list;
+
+	if (list == NULL) {
+		VERBOSE_N(0, "unable to find an available frequencies list");
+	}
 
 	while(list != NULL)
 	{
@@ -130,13 +137,10 @@ int frequency_init()
 
 	//
 	num_cpus = hwinfo->sockets * hwinfo->cores * hwinfo->threads;
-	VERBOSE_N(0, "detected %u CPUs");
+	VERBOSE_N(0, "detected %u CPUs", num_cpus);
 
 	//
 	freq_list_cpu = get_frequencies_cpu(num_cpus);
-	frequency_set_all_cpus(3200000);
-	freq_list_cpu = get_frequencies_cpu(num_cpus);
-
 
 	//
 	freq_list_rank = get_frequencies_rank();
@@ -169,12 +173,16 @@ int frequency_init()
 // ear_cpufreq_end
 void frequency_dispose()
 {
-	int i;
+	int status, i;
 
 	frequency_set_all_cpus(previous_cpu0_freq);
 
 	for (i = 0; i < num_cpus; i++) {
-		cpufreq_set_policy(i, &previous_cpu0_policy);
+		status = cpufreq_set_policy(i, &previous_cpu0_policy);
+		
+		if (status < 0) {
+			VERBOSE_N(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
+		}
 	}
 
 	free(freq_list_rank);
@@ -202,7 +210,7 @@ uint frequency_get_num_online_cpus()
 // ear_cpufreq_set_node
 ulong frequency_set_all_cpus(ulong freq)
 {
-	int i = 0;
+	int result, i = 0;
 
 	if (is_valid_frequency(freq))
 	{
@@ -213,7 +221,11 @@ ulong frequency_set_all_cpus(ulong freq)
 			freq_list_cpu[i] = freq;
 
 			// This is a privileged function
-			cpufreq_set_frequency(i, freq);
+			result = cpufreq_set_frequency(i, freq);
+
+			if (result < 0) {
+				VERBOSE_N(0, "ERROR while switching cpu %d frequency to %lu (%s)", i, freq, strerror(-result));
+			}
 		}
 
 		return freq;
