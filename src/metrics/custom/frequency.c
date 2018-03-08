@@ -271,7 +271,7 @@ void aperf_get_avg_frequency_init_all_cpus(unsigned int num_cpus)
 {
     int i;
 
-    for (i = 0; i < ear_num_cpus; i++) {
+    for (i = 0; i < num_cpus; i++) {
         aperf_get_avg_frequency_init(i);
     }
 }
