@@ -14,7 +14,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/papi/cache.o \
                $(SRCDIR)/metrics/papi/flops.o \
                $(SRCDIR)/metrics/papi/instructions.o \
-               $(SRCDIR)/metrics/papi/stalls.o
+               $(SRCDIR)/metrics/papi/stalls.o \
                $(SRCDIR)/control/frequency.o
 
 COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \

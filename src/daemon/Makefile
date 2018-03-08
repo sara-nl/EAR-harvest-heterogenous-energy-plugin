@@ -8,6 +8,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a \
                $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/ipmi/energy_node.a \
 	           $(SRCDIR)/metrics/papi/energy_cpu.o \
+	           $(SRCDIR)/metrics/papi/generics.o \
 	           $(SRCDIR)/control/frequency.o
 
 COMMON_OBJS = $(SRCDIR)/common/environment.o \

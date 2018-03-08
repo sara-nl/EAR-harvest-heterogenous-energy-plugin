@@ -170,7 +170,7 @@ int aperf_init_cpu(unsigned int cpu, unsigned long max_freq)
     return EAR_SUCCESS;
 }
 
-int apert_init_all_cpus(unsigned int num_cpus, unsigned long max_freq)
+int aperf_init_all_cpus(unsigned int num_cpus, unsigned long max_freq)
 {
     int i;
 

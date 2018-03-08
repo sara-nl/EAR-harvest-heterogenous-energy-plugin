@@ -163,7 +163,7 @@ int main (int argc, char *argv[])
                     start_stall_metrics();
                 }
 
-                aperf_get_avg_frequency_init_all_cpus();
+                aperf_get_avg_frequency_init_all_cpus(frequency_get_num_online_cpus());
                 read_dc_energy(&dc_energy_init);
                 start_time = PAPI_get_real_usec();
                 start_basic_metrics();
@@ -177,7 +177,7 @@ int main (int argc, char *argv[])
                 exec_time = (PAPI_get_real_usec() - start_time);
                 read_dc_energy(&dc_energy_end);
 
-                frequency = aperf_get_avg_frequency_end_all_cpus();
+                frequency = aperf_get_avg_frequency_end_all_cpus(frequency_get_num_online_cpus());
                 stop_rapl_metrics(metrics);
 
                 if (full_compatible)

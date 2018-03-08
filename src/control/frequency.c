@@ -2,11 +2,23 @@
 // Created by xgomez on 7/03/18.
 //
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <linux/version.h>
 #include <cpufreq.h>
+#include <papi.h>
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
 #endif
+
+#include <control/frequency.h>
+#include <metrics/papi/generics.h>
+#include <common/types/generic.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
 
 static struct cpufreq_policy previous_cpu0_policy;
 uint previous_cpu0_freq;
@@ -16,11 +28,13 @@ ulong freq_nom; // Nominal frequency (assuming CPU 0)
 uint num_freqs;
 uint num_cpus;
 
+static const char* __NAME__ = "FREQUENCY_CONTROL";
+
 //
-static void get_frequencies_cpu()
+static ulong *get_frequencies_cpu()
 {
 	ulong *freqs;
-	int i;
+	int status, i;
 
 	freqs = (ulong *) malloc(sizeof(ulong) * num_cpus);
 
@@ -88,8 +102,6 @@ static ulong *get_frequencies_rank()
 	{
 		pointer[i] = list->frequency;
 		list = list->next;
-
-		ear_verbose(4,"EAR: P_state %d is %u\n",i,ear_cpufreq_pstates[i]);
 		i++;
 	}
 
@@ -102,7 +114,8 @@ static ulong *get_frequencies_rank()
 // ear_cpufreq_init
 int frequency_init()
 {
-	static struct cpufreq_policy *policy;
+	const PAPI_hw_info_t *hwinfo;
+	struct cpufreq_policy *policy;
 	int status, i;
 
 	// TODO: metrics dependancy, remove and pass the number of cpus
@@ -126,18 +139,18 @@ int frequency_init()
 	freq_nom = freq_list_rank[1];
 
 	// Saving previous policy data
-	previous_cpu0_policy = freq_list_cpu[0];
+	previous_cpu0_freq = freq_list_cpu[0];
 
 	// Kernel alloc
 	policy = cpufreq_get_policy(0);
 
 	previous_cpu0_policy.min = policy->min;
 	previous_cpu0_policy.max = policy->max;
-	previous_cpu0_policy.governor = (char *) malloc(strlen(current_policy->governor) + 1);
-	strcpy(prev_policy.governor, current_policy->governor);
+	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
+	strcpy(previous_cpu0_policy.governor, policy->governor);
 
 	// Kernel dealloc
-	cpufreq_put_policy(current_policy);
+	cpufreq_put_policy(policy);
 
 	return EAR_SUCCESS;
 }
@@ -214,12 +227,12 @@ ulong frequency_get_cpu_freq(uint cpu)
 {
 	ulong f;
 
-	if (cp > num_cpus) {
+	if (cpu > num_cpus) {
 		return 0;
 	}
 
 	// Kernel asking (not hardware)
-	freq_list_cpu[cpu] = cpufreq_get(cpuid);
+	freq_list_cpu[cpu] = cpufreq_get(cpu);
 
 	return freq_list_cpu[cpu];
 }
@@ -250,7 +263,7 @@ ulong frequency_freq_to_pstate(uint freq)
 
 	while ((i < num_freqs) && (found == 0))
 	{
-		if (freq_list_rank[i] != f) i++;
+		if (freq_list_rank[i] != freq) i++;
 		else found = 1;
 	}
 	return i;
@@ -261,7 +274,7 @@ void frequency_set_performance_governor_all_cpus()
 {
 	int i;
 
-	for (i = 0; i < ear_num_cpus; i++) {
+	for (i = 0; i < num_cpus; i++) {
 		cpufreq_modify_policy_governor(i, "performance");
 	}
 }
@@ -271,7 +284,7 @@ void frequency_set_userspace_governor_all_cpus()
 {
 	int i;
 
-	for (i = 0; i < ear_num_cpus; i++) {
+	for (i = 0; i < num_cpus; i++) {
 		cpufreq_modify_policy_governor(i, "userspace");
 	}
 }
