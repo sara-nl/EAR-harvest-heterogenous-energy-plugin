@@ -79,7 +79,7 @@ int ear_daemon_client_connect()
 	}
 
 	req.req_data.req_value=getpid();
-	for (i=0;i<ear_daemon_client_requests;i++)
+	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);
 		sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
