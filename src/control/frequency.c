@@ -21,7 +21,7 @@
 #include <common/states.h>
 
 static struct cpufreq_policy previous_cpu0_policy;
-uint previous_cpu0_freq;
+ulong previous_cpu0_freq;
 ulong *freq_list_rank; // List of frequencies of the whole rank (KHz)
 ulong *freq_list_cpu; // List of frequencies of each CPU (KHz)
 ulong freq_nom; // Nominal frequency (assuming CPU 0)
@@ -125,7 +125,6 @@ int frequency_init()
 {
 	const PAPI_hw_info_t *hwinfo;
 	struct cpufreq_policy *policy;
-	int status, i;
 
 	// TODO: metrics (PAPI) dependancy, remove and pass the number of cpus
 	hwinfo = metrics_get_hw_info();
@@ -248,8 +247,6 @@ uint frequency_get_num_pstates()
 // ear_cpufreq_get
 ulong frequency_get_cpu_freq(uint cpu)
 {
-	ulong f;
-
 	if (cpu > num_cpus) {
 		return 0;
 	}
@@ -280,7 +277,7 @@ ulong frequency_pstate_to_freq(uint pstate)
 }
 
 // ear_get_pstate
-ulong frequency_freq_to_pstate(uint freq)
+uint frequency_freq_to_pstate(ulong freq)
 {
 	int i = 0, found = 0;
 
@@ -290,7 +287,7 @@ ulong frequency_freq_to_pstate(uint freq)
 		else found = 1;
 	}
 
-	VERBOSE_N(0, "the P_STATE of %lu frequency is %u", freq, i);
+	VERBOSE_N(0, "the P_STATE of the frequency %lu is %d", freq, i);
 
 	return i;
 }

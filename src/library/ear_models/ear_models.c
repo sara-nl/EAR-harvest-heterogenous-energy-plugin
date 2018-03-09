@@ -75,7 +75,7 @@ void init_power_policy()
 	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
 
 	// TODO: CPUFREQ COUPLED (old db_change_frequency(EAR_default_frequency))
-	def_freq = frequency_set_all_cpus(EAR_default_frequency);
+	ear_frequency = def_freq = ear_daemon_client_change_freq(EAR_default_frequency);
 
 	if (def_freq != EAR_default_frequency)
 	{

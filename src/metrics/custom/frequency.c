@@ -152,11 +152,16 @@ int aperf_init(unsigned int num_cpus)
     }
 
     _num_cpus = num_cpus;
+
     int size = sizeof(struct avg_perf_cpu_info);
     int result = posix_memalign((void *) &cpu_info, size, size * num_cpus);
-    if (result!=0) return EAPERF;
+
+    if (result!=0) {
+		return EAPERF;
+	}
+
     result = posix_memalign((void *) &cpu_info_global, size, size * num_cpus);
-    return -(result != 0) ;
+    return -(result != 0);
 }
 
 int aperf_init_cpu(unsigned int cpu, unsigned long max_freq)
@@ -164,6 +169,7 @@ int aperf_init_cpu(unsigned int cpu, unsigned long max_freq)
     if (cpu >= _num_cpus) {
         return EAR_ERROR;
     }
+
     cpu_info[cpu].nominal_freq = max_freq;
     cpu_info_global[cpu].nominal_freq = max_freq;
 
@@ -174,6 +180,7 @@ int aperf_init_all_cpus(unsigned int num_cpus, unsigned long max_freq)
 {
     int i;
 
+	_num_cpus = num_cpus;
     aperf_init(num_cpus);
 
     for (i = 0; i < num_cpus; i++) {
@@ -267,11 +274,11 @@ int aperf_get_avg_frequency_init(unsigned int cpu)
 }
 
 // ear_begin_compute_turbo_freq
-void aperf_get_avg_frequency_init_all_cpus(unsigned int num_cpus)
+void aperf_get_avg_frequency_init_all_cpus()
 {
     int i;
 
-    for (i = 0; i < num_cpus; i++) {
+    for (i = 0; i < _num_cpus; i++) {
         aperf_get_avg_frequency_init(i);
     }
 }
@@ -282,11 +289,11 @@ int aperf_get_global_avg_frequency_init(unsigned int cpu)
 }
 
 // ear_begin_app_compute_turbo_freq
-void aperf_get_global_avg_frequency_init_all_cpus(unsigned int num_cpus)
+void aperf_get_global_avg_frequency_init_all_cpus()
 {
     int i;
 
-    for (i = 0; i < num_cpus; i++) {
+    for (i = 0; i < _num_cpus; i++) {
         aperf_get_global_avg_frequency_init(i);
     }
 }
@@ -297,18 +304,18 @@ int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
 }
 
 // ear_end_compute_turbo_freq
-unsigned long aperf_get_avg_frequency_end_all_cpus(unsigned int num_cpus)
+unsigned long aperf_get_avg_frequency_end_all_cpus()
 {
     unsigned long new_freq, freq = 0;
     int i;
 
-	for (i = 0; i < num_cpus; i++)
+	for (i = 0; i < _num_cpus; i++)
 	{
         aperf_get_avg_frequency_end(i, &new_freq);
 		freq += new_freq;
 	}
 
-	return (freq / num_cpus);
+	return (freq / _num_cpus);
 }
 
 int aperf_get_global_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
@@ -317,16 +324,16 @@ int aperf_get_global_avg_frequency_end(unsigned int cpu, unsigned long *frequenc
 }
 
 // ear_end_app_compute_turbo_freq
-unsigned long aperf_get_global_avg_frequency_end_all_cpus(unsigned int num_cpus)
+unsigned long aperf_get_global_avg_frequency_end_all_cpus()
 {
     unsigned long new_freq, freq = 0;
     int i;
 
-    for (i = 0; i < num_cpus; i++)
+    for (i = 0; i < _num_cpus; i++)
     {
         aperf_get_global_avg_frequency_end(i, &new_freq);
         freq += new_freq;
     }
 
-    return (freq / num_cpus);
+    return (freq / _num_cpus);
 }

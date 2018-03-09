@@ -449,7 +449,7 @@ int eard_freq(int must_read)
 			break;
 		case END_GET_FREQ:
 			ear_debug(1,"eard: get node frequency (trubo)\n");
-			ack=aperf_get_avg_frequency_end_all_cpus();
+			ack = aperf_get_avg_frequency_end_all_cpus();
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case SET_TURBO:

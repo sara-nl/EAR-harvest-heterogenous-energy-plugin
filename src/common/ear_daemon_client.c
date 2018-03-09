@@ -216,7 +216,7 @@ unsigned long ear_daemon_client_write_app_signature(application_t *app_signature
 			VERBOSE_N(0, "ERROR writing request for app signature");
 			return EAR_ERROR;
 		}	
-        if (read(ear_fd_ack[com_fd],&ack,sizeof(unsigned long)) != sizeof(unsigned long)) {
+        if (read(ear_fd_ack[com_fd], &ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
         	VERBOSE_N(0, "ERROR reading ack for app signature (%s)", strerror(errno));
 			return EAR_ERROR;
         }   
