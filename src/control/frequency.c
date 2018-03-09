@@ -22,6 +22,9 @@
 
 static struct cpufreq_policy previous_cpu0_policy;
 ulong previous_cpu0_freq;
+int saved_previous_policy;
+int saved_previous_freq;
+
 ulong *freq_list_rank; // List of frequencies of the whole rank (KHz)
 ulong *freq_list_cpu; // List of frequencies of each CPU (KHz)
 ulong freq_nom; // Nominal frequency (assuming CPU 0)
@@ -241,7 +244,10 @@ ulong *frequency_get_freq_rank_list()
 // ear_get_freq
 ulong frequency_pstate_to_freq(uint pstate)
 {
-	if (pstate >= num_freqs) return 1;
+	if (pstate >= num_freqs) {
+		VERBOSE_N(0, "higher P_STATE (%u) than the maximum, returning nominal", pstate, num_freqs);
+		return 1;
+	}
 	return freq_list_rank[pstate];
 }
 
@@ -281,11 +287,26 @@ void frequency_set_userspace_governor_all_cpus()
 	}
 }
 
-void frequency_save_previous_configuration()
+void frequency_save_previous_frequency()
 {
 	// Saving previous policy data
 	previous_cpu0_freq = freq_list_cpu[0];
+	saved_previous_freq = 1;
+}
 
+void frequency_recover_previous_frequency()
+{
+	if (!saved_previous_freq) {
+		VERBOSE_N(0, "previous frequency not saved");
+		return;
+	}
+
+	frequency_set_all_cpus(previous_cpu0_freq);
+	saved_previous_freq = 0;
+}
+
+void frequency_save_previous_policy()
+{
 	// Kernel alloc
 	policy = cpufreq_get_policy(0);
 
@@ -300,13 +321,17 @@ void frequency_save_previous_configuration()
 
 	// Kernel dealloc
 	cpufreq_put_policy(policy);
+	saved_previous_policy = 1;
 }
 
-void frequency_recover_previous_configuration()
+void frequency_recover_previous_policy()
 {
 	int status, i;
 
-	frequency_set_all_cpus(previous_cpu0_freq);
+	if (!saved_previous_policy) {
+		VERBOSE_N(0, "previous policy not saved");
+		return;
+	}
 
 	for (i = 0; i < num_cpus; i++)
 	{
@@ -316,4 +341,7 @@ void frequency_recover_previous_configuration()
 			VERBOSE_N(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
 		}
 	}
+
+	free(previous_cpu0_policy.governor);
+	saved_previous_policy = 0;
 }

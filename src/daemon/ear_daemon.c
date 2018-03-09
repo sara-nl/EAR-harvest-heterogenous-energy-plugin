@@ -146,77 +146,79 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IRUSR|S_IWGRP|S_IROTH|S_IWOTH);
 }
 
-// Creates 1 pipe (per node) to send acks. 
 void connect_service(int req,unsigned long pid)
 {
 	char ear_commack[MAX_PATH_SIZE];
 	unsigned long ack;
 	int connect=1;
 	int alive;
+
 	// Let's check if there is another application
-	ear_verbose(2,"eard request for connection at service %d\n",req);
-	if (is_new_application(pid) || is_new_service(req,pid)){
+	VERBOSE_N(2, "request for connection at service %d", req);
+
+	if (is_new_application(pid) || is_new_service(req, pid)) {
 		connect=1;
-	}else{	
+	} else {
 		connect=0;
-		//TODO: implicit
-		if (check_ping()) alive=application_timeout();	
-		if (alive==0) connect=1;
-		
+
+		//FIXME: implicit
+		if (check_ping()) alive = application_timeout();
+		if (alive == 0) connect = 1;
 	}
 
+	// Creates 1 pipe (per node) to send acks.
 	if (connect)
 	{
-		sprintf(ear_commack,"%s/.ear_comm.ack_%d.%lu",ear_tmp,req,pid);
+		sprintf(ear_commack, "%s/.ear_comm.ack_%d.%lu", ear_tmp, req, pid);
 		application_id = pid;
 
 		// ear_commack will be used to send ack's or values (depending on the
 		// requests) from eard to the library
-		ear_verbose(3,"eard:creating ack comm %s pid=%lu\n",ear_commack,pid);
+		VERBOSE_N(3, "reating ack comm %s pid=%lu", ear_commack,pid);
 
 		if (mknod(ear_commack, S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,0) < 0)
 		{
 			if (errno != EEXIST){
-				ear_verbose(0,"eard:Error creating ear communicator for ack %s\n",strerror(errno));
+				VERBOSE_N(0, "ERROR WHEN creating ear communicator for ack %s", strerror(errno));
 				eard_close_comm();
 			}
 		}
+
 		chmod(ear_commack,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 
 		// At first service connection, we use the ping conn file
-		// TODO: create a standard connection function
 		if (req == 0)
 		{
 			// We open ping connection  for writting
-			sprintf(ear_ping,"%s/.ear_comm.ping.%lu", ear_tmp, pid);
-			ear_verbose(1,"eard application %lu connected\n",pid);
-			ear_verbose(3,"eard: opening ping conn for %lu\n",pid);
+			sprintf(ear_ping, "%s/.ear_comm.ping.%lu", ear_tmp, pid);
 
+			VERBOSE_N(1, "application %lu connected", pid);
+			VERBOSE_N(3, "opening ping conn for %lu", pid);
 			ear_ping_fd = open(ear_ping,O_WRONLY);
 
-			if (ear_ping_fd < 0) {
-				ear_verbose(0,"eard Error opening ping pipe (%s) %s\n",ear_ping,strerror(errno));
+			if (ear_ping_fd < 0)
+			{
+				VERBOSE_N(0,"ERROR while opening ping pipe %s (%s)", ear_ping, strerror(errno));
 				eard_close_comm();
 			}
 		}
 
-		ear_verbose(3,"eard sending ack for service %d\n",req);
-		if (write(ear_ping_fd,&ack,sizeof(ack))!=sizeof(ack)) {
-			ear_verbose(0,"eard: warning writting ping conn for %lu\n",pid);
+		VERBOSE_N(3, "sending ack for service %d",req);
+		if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
+			VERBOSE_N(0,"WARNING while writting for ping conn for %lu", pid);
 		}
 
-		ear_verbose(2,"connect_service %s\n",ear_commack);
-		if ((ear_fd_ack[req]=open(ear_commack,O_WRONLY))<0){
-			ear_verbose(0,"eard: Error opening ear communicator for ack %s\n",strerror(errno));
+		VERBOSE_N(2, "connecting service %s", ear_commack);
+		if ((ear_fd_ack[req]=open(ear_commack,O_WRONLY)) < 0){
+			VERBOSE_N(0,"ERROR when opening ear communicator for ack (%s)", strerror(errno));
 			eard_close_comm();
 		}
-	}else{
+	} else {
 		// eard only suppports one application connected, the second one will block
-		ear_verbose(0,"eard: application with pid %lu rejected\n",pid);
+		VERBOSE_N(0, "application with pid %lu rejected", pid);
 	}
-	ear_verbose(2,"eard service %d connected\n",req);
+	VERBOSE_N(2, "service %d connected", req);
 }
-
 
 // Checks application connections
 int is_new_application(pid)
@@ -257,51 +259,58 @@ int application_timeout()
 		}else alive=0;
     }else alive=0;   
 	return alive;
-
 }
 
-// releases eard resources
+// HIGHLIGHT: DAEMON EXIT
 void eard_exit()
 {
-	int i;
 	char ear_commreq[MAX_PATH_SIZE];
-	ear_verbose(1,"eard_exit_________\n");
+	int i;
+
+	VERBOSE_N(1, "EXITTING");
 	eard_unlock();
-	dispose_uncores();
+
+	// Come disposes
 	print_rapl_metrics();
 
-	// CPUFreq end
+	// Recovering old frequency and governor configurations.
+	frequency_recover_previous_policy();
 	frequency_dispose();
 
-	// Aperf end, later on inside frequency_dispose, but no more
+	// More disposes
+	node_energy_dispose();
+	dispose_uncores();
 	aperf_dispose();
 
-	//
-	node_energy_dispose();
-
-	for (i=0;i<ear_daemon_client_requests;i++)
+	// Removing files (services)
+	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		close(ear_fd_req[i]);
-		sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
-		ear_verbose(2,"eard: removing file %s\n",ear_commreq);
-		if (unlink(ear_commreq)<0)
-			ear_verbose(0,"eard: error when removing com file %s : %s\n",
-						ear_commreq,strerror(errno));
+
+		sprintf(ear_commreq, "%s/.ear_comm.req_%d", ear_tmp, i);
+		VERBOSE_N(2, "removing file %s", ear_commreq);
+
+		if (unlink(ear_commreq) < 0) {
+			VERBOSE_N(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
+		}
 	}
+
 	exit(1);
 }
-// closes communication with an application
+
+// HIGHLIGHT: LIBRARY DISPOSE (2/2)
 void eard_close_comm()
 {
-	int i;
 	unsigned long long values[RAPL_EVS];
 	char ear_commack[MAX_PATH_SIZE];
 	int dis_pid = application_id;
+	int i;
 
+	// closes communication with an application
 	VERBOSE_N(2, "closing comm in %s for %d", nodename, application_id);
 
-	// Returning frequency and policy to its previous state
-	frequency_recover_previous_configuration();
+	// Stop counting
+	frequency_recover_previous_frequency();
 
 	if (RAPL_counting)
 	{
@@ -316,7 +325,7 @@ void eard_close_comm()
 		ear_fd_ack[i] = -1;
 
 		sprintf(ear_commack, "%s/.ear_comm.ack_%d.%d", ear_tmp, i, application_id);
-		VERBOSE_N(2,"removing file %s", ear_commack);
+		VERBOSE_N(2, "removing file %s", ear_commack);
 
 		if (unlink(ear_commack) < 0) {
 			VERBOSE_N(0, "ERROR when removing ack file %s (%s)", ear_commack, strerror(errno));
@@ -358,37 +367,6 @@ int eard_node_energy(int must_read)
 			return 0;
     }
 	return 1;
-
-}
-// System services
-int open_db()
-{
-	int fd;
-	char *ear_DB_name;
-	char ear_db_def[MAX_PATH_SIZE];
-	char ear_node_name[MAX_PATH_SIZE];
-	gethostname(ear_node_name,sizeof(ear_node_name));
-	ear_DB_name=get_ear_db_pathname();
-    sprintf(ear_db_def,"%s.%s.db",ear_DB_name,ear_node_name);
-    ear_verbose(2,"eard  DB name %s\n",ear_db_def);
-    ear_DB_name=ear_db_def;
-    ear_verbose(2,"eard is using %s file as DB\n",ear_DB_name);
-    fd=open(ear_DB_name,O_WRONLY|O_APPEND);
-    if (fd<0){
-		ear_verbose(0,"eard warning opening DB %s(%s)\n",ear_DB_name,strerror(errno));
-    	if (errno==ENOENT){
-			ear_verbose(1,"eard creating syste, db %s\n",ear_DB_name);
-            fd=open(ear_DB_name,O_WRONLY|O_CREAT|O_TRUNC|O_APPEND,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-            if (fd<0){
-                ear_verbose(0,"eard WARNING...it was impossible to create the DB file for historical information (%s)\n",strerror(errno));
-				ear_verbose(0,"eard WARNING: check all the directories in %s exists\n",ear_DB_name);
-            }
-    	}else{
-            ear_verbose(0,"eard WARNING...it was impossible to create the DB file for historical information (%s)\n",strerror(errno));
-			ear_verbose(0,"eard WARNING: check all the directories in %s exists\n",ear_DB_name);
-    	}
-	}
-	return fd;
 
 }
 
@@ -461,14 +439,18 @@ void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 int eard_freq(int must_read)
 {
 	unsigned long ack;
+
 	if (must_read)
 	{
 		if (read(ear_fd_req[freq_req],&req,sizeof(req)) != sizeof(req))
-			ear_verbose(0,"eard error when reading info at eard_freq (%s)\n", strerror(errno));
+			ear_verbose(0, "eard error when reading info at eard_freq (%s)\n", strerror(errno));
 	}
-	switch (req.req_service){
+
+	switch (req.req_service) {
 		case CONNECT_FREQ:
-			connect_service(freq_req,req.req_data.req_value);		
+			// HIGHLIGHT: LIBRARY INIT
+			connect_service(freq_req,req.req_data.req_value);
+			frequency_save_previous_frequency();
 			break;
 		case SET_FREQ:
 			ear_debug(1,"eard: Setting node frequency\n");
@@ -490,6 +472,7 @@ int eard_freq(int must_read)
 			break;
 		case END_COMM:
 			ear_debug(1,"eard: Closing comunication\n");
+			// HIGHLIGHT: LIBRARY DISPOSE (1/2)
 			eard_close_comm();
 			break;
 		case DATA_SIZE_FREQ:
@@ -695,7 +678,7 @@ void main(int argc,char *argv[])
 		Usage(argv[0]);
 	}
 
-	//TODO: habría que revisar todo esto
+	//HIGHLIGHT: DAEMON INIT
 	ear_daemon_environment();
 
 	// checking verbose
@@ -718,14 +701,17 @@ void main(int argc,char *argv[])
 		exit(1);
 	}
 
-	// Later on it was called inside frequency_init(), but no more.
-	// TODO: for sure?
+	// It is assumed that no one will touch this governor. So it will
+	// remain the same during the daemon runtime.
+	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
 
 	//
 	eard_max_pstate = atoi(argv[1]);
+
 	if (eard_max_pstate < 0) Usage(argv[0]);
 	if (eard_max_pstate >= frequency_get_num_pstates()) Usage(argv[0]);
+
 	ear_node_freq = frequency_pstate_to_freq(eard_max_pstate);
 	eard_max_freq = ear_node_freq;
 
@@ -757,11 +743,7 @@ void main(int argc,char *argv[])
 	ear_verbose(2,"eard: Creating comm files in %s with default freq %lu verbose set to %d\n",
 				nodename,ear_node_freq,EAR_VERBOSE_LEVEL);
 
-	// We set the default frequency
-	if (frequency_set_all_cpus(ear_node_freq)==0){
-		ear_verbose(0,"eard:Invalid frequency %lu\n",ear_node_freq);
-		eard_close_comm();
-	}
+	// PAST: we had here a frequency set
 
 	// We initiaize uncore counters
 	cpu_model = get_model();

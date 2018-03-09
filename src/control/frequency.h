@@ -23,7 +23,9 @@ ulong frequency_pstate_to_freq(uint pstate);
 uint frequency_freq_to_pstate(ulong freq);
 void frequency_set_performance_governor_all_cpus();
 void frequency_set_userspace_governor_all_cpus();
+void frequency_save_previous_frequency();
 void frequency_save_previous_configuration();
+void frequency_recover_previous_frequency();
 void frequency_recover_previous_configuration();
 
 #endif //EAR_CONTROL_FREQUENCY_H
