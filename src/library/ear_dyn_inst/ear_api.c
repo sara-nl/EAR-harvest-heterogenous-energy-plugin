@@ -137,7 +137,7 @@ void ear_init()
 	}
 
 	// Only one process can connect with the daemon
-	// Connecting with ear_daemon
+	// Daemon ->
 	if (ear_daemon_client_connect() < 0) {
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
 		exit(1);
@@ -340,10 +340,12 @@ void ear_finalize()
 
 	// DynAIS
 	dynais_dispose();
-
+	//
 	if (in_loop) states_end_period(ear_iterations);
-	
+	//
 	states_end_job(my_id, NULL, ear_app_name);
+	//
 	frequency_dispose();
+	// Daemon -> eard_close_comm
 	ear_daemon_client_disconnect();
 }
