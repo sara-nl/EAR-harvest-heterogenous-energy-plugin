@@ -30,7 +30,7 @@
  * memory when at the end.
  *
  * Errors:
- * Non static functions return as an error EAPERF (-1).
+ * Non static functions return as an error EAR_ERROR (-1).
  *
  * Requirements:
  * - The MSR module has to be loaded (/modprobe msr).
@@ -55,6 +55,7 @@
 
 #include <metrics/custom/frequency.h>
 #include <metrics/custom/hardware_info.h>
+#include <common/ear_verbose.h>
 #include <common/states.h>
 
 // INTEL APERF/MPERF MSR registers
@@ -102,6 +103,7 @@
 // - Intel® 64 and IA-32 Architectures Software Developer’s Manual
 // chapter 35.
 
+static const char *__NAME__ = "BANDWIDTH_UNCORES";
 
 unsigned int _num_cpus;
 
@@ -117,7 +119,7 @@ inline static int read_ulong(int fd, unsigned int pos, unsigned long *value)
 {
     if (lseek(fd, pos, SEEK_SET) == -1) {
         close(fd);
-        return EAPERF;
+        return EAR_ERROR;
     }
 
     return read(fd, value, 8);
@@ -134,7 +136,7 @@ static int get_aperf_mperf(int cpu, unsigned long *aperf, unsigned long *mperf)
 
     if (fd < 0) {
 		perror("EAR_APERF: opening MSR file");
-        return EAPERF;
+        return EAR_ERROR;
     }
 
     result1 = read_ulong(fd, MSR_IA32_MPERF, mperf);
@@ -148,7 +150,7 @@ static int get_aperf_mperf(int cpu, unsigned long *aperf, unsigned long *mperf)
 int aperf_init(unsigned int num_cpus)
 {
     if (!is_aperf_compatible()) {
-        return EAPERF;
+        return EAR_ERROR;
     }
 
     _num_cpus = num_cpus;
@@ -157,7 +159,7 @@ int aperf_init(unsigned int num_cpus)
     int result = posix_memalign((void *) &cpu_info, size, size * num_cpus);
 
     if (result!=0) {
-		return EAPERF;
+		return EAR_ERROR;
 	}
 
     result = posix_memalign((void *) &cpu_info_global, size, size * num_cpus);
@@ -202,13 +204,13 @@ int aperf_start_avg_freq(int cpu,struct avg_perf_cpu_info *my_cpu_info)
     int result;
 	
     if (cpu >= _num_cpus) {
-        return EAPERF;
+        return EAR_ERROR;
     }
 
     result = get_aperf_mperf(cpu, &aperf, &mperf);
 
     if (result != 0) {
-        return EAPERF;
+        return EAR_ERROR;
     }
 
     my_cpu_info[cpu].saved_aperf = aperf;
@@ -226,17 +228,17 @@ int aperf_end_avg_freq(unsigned int cpu, struct avg_perf_cpu_info *my_cpu_info, 
     int result;
 
     if (cpu >= _num_cpus) {
-        return EAPERF;
+        return EAR_ERROR;
     }
 
     if (!my_cpu_info[cpu].snapped) {
-        return EAPERF;
+        return EAR_ERROR;
     }
 
     result = get_aperf_mperf(cpu, &current_aperf, &current_mperf);
 
     if (result != 0) {
-        return EAPERF;
+        return EAR_ERROR;
     }
 
     aperf_diff = current_aperf - my_cpu_info[cpu].saved_aperf;
@@ -278,8 +280,11 @@ void aperf_get_avg_frequency_init_all_cpus()
 {
     int i;
 
-    for (i = 0; i < _num_cpus; i++) {
-        aperf_get_avg_frequency_init(i);
+    for (i = 0; i < _num_cpus; i++)
+    {
+        if (aperf_get_avg_frequency_init(i)) {
+            VERBOSE_N(0, "ERROR while preparing %i CPU bandwidth reading", i);
+        }
     }
 }
 
@@ -293,8 +298,11 @@ void aperf_get_global_avg_frequency_init_all_cpus()
 {
     int i;
 
-    for (i = 0; i < _num_cpus; i++) {
-        aperf_get_global_avg_frequency_init(i);
+    for (i = 0; i < _num_cpus; i++)
+    {
+        if (aperf_get_global_avg_frequency_init(i)) {
+            VERBOSE_N(0, "ERROR while preparing %i CPU bandwidth reading", i);
+        }
     }
 }
 
@@ -306,13 +314,20 @@ int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
 // ear_end_compute_turbo_freq
 unsigned long aperf_get_avg_frequency_end_all_cpus()
 {
-    unsigned long new_freq, freq = 0;
+    unsigned long new_freq, freq;
     int i;
+
+    new_freq = 0;
+    freq = 0;
 
 	for (i = 0; i < _num_cpus; i++)
 	{
-        aperf_get_avg_frequency_end(i, &new_freq);
-		freq += new_freq;
+        if (aperf_get_avg_frequency_end(i, &new_freq)) {
+            VERBOSE_N(0, "ERROR while reading %i CPU bandwidth", i);
+        }
+
+        freq += new_freq;
+        new_freq = 0;
 	}
 
 	return (freq / _num_cpus);
@@ -326,13 +341,20 @@ int aperf_get_global_avg_frequency_end(unsigned int cpu, unsigned long *frequenc
 // ear_end_app_compute_turbo_freq
 unsigned long aperf_get_global_avg_frequency_end_all_cpus()
 {
-    unsigned long new_freq, freq = 0;
+    unsigned long new_freq, freq;
     int i;
+
+    new_freq = 0;
+    freq = 0;
 
     for (i = 0; i < _num_cpus; i++)
     {
-        aperf_get_global_avg_frequency_end(i, &new_freq);
+        if (aperf_get_global_avg_frequency_end(i, &new_freq)) {
+            VERBOSE_N(0, "ERROR while reading %i CPU bandwidth", i);
+        }
+
         freq += new_freq;
+        new_freq = 0;
     }
 
     return (freq / _num_cpus);
