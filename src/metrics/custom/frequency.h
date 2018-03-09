@@ -7,6 +7,9 @@
 
 */
 
+#ifndef EAR_METRICS_FREQUENCY_H
+#define EAR_METRICS_FREQUENCY_H
+
 #define MSR_IA32_APERF 0x000000E8
 #define MSR_IA32_MPERF 0x000000E7
 
@@ -29,3 +32,5 @@ int aperf_init(unsigned int num_cpus);
 int aperf_init_cpu(unsigned int cpu, unsigned long max_freq);
 int aperf_init_all_cpus(unsigned int num_cpus, unsigned long max_freq);
 void aperf_dispose();
+
+#endif

@@ -145,6 +145,7 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 	}
 	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IRUSR|S_IWGRP|S_IROTH|S_IWOTH);
 }
+
 // Creates 1 pipe (per node) to send acks. 
 void connect_service(int req,unsigned long pid)
 {
@@ -163,38 +164,52 @@ void connect_service(int req,unsigned long pid)
 		if (alive==0) connect=1;
 		
 	}
-	if (connect){
-    sprintf(ear_commack,"%s/.ear_comm.ack_%d.%lu",ear_tmp,req,pid);
-    application_id=pid;
-    // ear_commack will be used to send ack's or values (depending on the requests) from eard to the library
-    ear_verbose(3,"eard:creating ack comm %s pid=%lu\n",ear_commack,pid);
-    if (mknod(ear_commack,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,0)<0){
-        if (errno!=EEXIST){
-            ear_verbose(0,"eard:Error creating ear communicator for ack %s\n",strerror(errno));
-			eard_close_comm();
-        }
-    }  
-    chmod(ear_commack,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-	// At first service connection, we use the ping conn file
-    if (req==0){
-        // We open ping connection  for writting
-		sprintf(ear_ping,"%s/.ear_comm.ping.%lu",ear_tmp,pid);
-		ear_verbose(1,"eard application %lu connected\n",pid);
-        ear_verbose(3,"eard: opening ping conn for %lu\n",pid);
-        ear_ping_fd=open(ear_ping,O_WRONLY);
-        if (ear_ping_fd<0){
-            ear_verbose(0,"eard Error opening ping pipe (%s) %s\n",ear_ping,strerror(errno));
-            eard_close_comm();
-        }
-    }   
-	ear_verbose(3,"eard sending ack for service %d\n",req);
-	if (write(ear_ping_fd,&ack,sizeof(ack))!=sizeof(ack)) ear_verbose(0,"eard: warning writting ping conn for %lu\n",pid);
 
-    ear_verbose(2,"connect_service %s\n",ear_commack);
-    if ((ear_fd_ack[req]=open(ear_commack,O_WRONLY))<0){
-        ear_verbose(0,"eard: Error opening ear communicator for ack %s\n",strerror(errno));
-		eard_close_comm();
-    }
+	if (connect)
+	{
+		sprintf(ear_commack,"%s/.ear_comm.ack_%d.%lu",ear_tmp,req,pid);
+		application_id = pid;
+
+		// ear_commack will be used to send ack's or values (depending on the
+		// requests) from eard to the library
+		ear_verbose(3,"eard:creating ack comm %s pid=%lu\n",ear_commack,pid);
+
+		if (mknod(ear_commack, S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,0) < 0)
+		{
+			if (errno != EEXIST){
+				ear_verbose(0,"eard:Error creating ear communicator for ack %s\n",strerror(errno));
+				eard_close_comm();
+			}
+		}
+		chmod(ear_commack,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+
+		// At first service connection, we use the ping conn file
+		// TODO: create a standard connection function
+		if (req == 0)
+		{
+			// We open ping connection  for writting
+			sprintf(ear_ping,"%s/.ear_comm.ping.%lu", ear_tmp, pid);
+			ear_verbose(1,"eard application %lu connected\n",pid);
+			ear_verbose(3,"eard: opening ping conn for %lu\n",pid);
+
+			ear_ping_fd = open(ear_ping,O_WRONLY);
+
+			if (ear_ping_fd < 0) {
+				ear_verbose(0,"eard Error opening ping pipe (%s) %s\n",ear_ping,strerror(errno));
+				eard_close_comm();
+			}
+		}
+
+		ear_verbose(3,"eard sending ack for service %d\n",req);
+		if (write(ear_ping_fd,&ack,sizeof(ack))!=sizeof(ack)) {
+			ear_verbose(0,"eard: warning writting ping conn for %lu\n",pid);
+		}
+
+		ear_verbose(2,"connect_service %s\n",ear_commack);
+		if ((ear_fd_ack[req]=open(ear_commack,O_WRONLY))<0){
+			ear_verbose(0,"eard: Error opening ear communicator for ack %s\n",strerror(errno));
+			eard_close_comm();
+		}
 	}else{
 		// eard only suppports one application connected, the second one will block
 		ear_verbose(0,"eard: application with pid %lu rejected\n",pid);
@@ -280,27 +295,44 @@ void eard_close_comm()
 {
 	int i;
 	unsigned long long values[RAPL_EVS];
-	int dis_pid=application_id;
 	char ear_commack[MAX_PATH_SIZE];
-	ear_verbose(2,"eard: Closing comm in %s for %d\n",nodename,application_id);
-	if (RAPL_counting){
+	int dis_pid = application_id;
+
+	VERBOSE_N(2, "closing comm in %s for %d", nodename, application_id);
+
+	// Returning frequency and policy to its previous state
+	frequency_recover_previous_configuration();
+
+	if (RAPL_counting)
+	{
 		stop_rapl_metrics(values);
 		reset_rapl_metrics();
-		RAPL_counting=0;
+		RAPL_counting = 0;
 	}
-	for (i=0;i<ear_daemon_client_requests;i++){
+
+	for (i = 0; i < ear_daemon_client_requests; i++)
+	{
 		close(ear_fd_ack[i]);
-		ear_fd_ack[i]=-1;
-		sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,i,application_id);
-		ear_verbose(2,"eard: removing file %s\n",ear_commack);
-		if (unlink(ear_commack)<0) ear_verbose(0,"eard: error when removing ack file %s : %s\n",ear_commack,strerror(errno));
+		ear_fd_ack[i] = -1;
+
+		sprintf(ear_commack, "%s/.ear_comm.ack_%d.%d", ear_tmp, i, application_id);
+		VERBOSE_N(2,"removing file %s", ear_commack);
+
+		if (unlink(ear_commack) < 0) {
+			VERBOSE_N(0, "ERROR when removing ack file %s (%s)", ear_commack, strerror(errno));
+		}
 	}
+
 	close(ear_ping_fd);
-	ear_ping_fd=-1;
-	application_id=-1;
-	ear_verbose(2,"eard: removing file %s\n",ear_ping);
-	if (unlink(ear_ping)<0) ear_verbose(0,"eard: error when removing ping file %s : %s\n",ear_ping,strerror(errno));
-	ear_verbose(1,"eard application %d disconnected\n",dis_pid);
+	application_id = -1;
+	ear_ping_fd = -1;
+
+	VERBOSE_N(2, "removing file %s", ear_ping);
+
+	if (unlink(ear_ping) < 0) {
+		VERBOSE_N(0, "ERROR when removing ping file %s (%s)", ear_ping, strerror(errno));
+	}
+	VERBOSE_N(1, "application %d disconnected", dis_pid);
 }
 
 // Node_energy services
@@ -687,6 +719,7 @@ void main(int argc,char *argv[])
 	}
 
 	// Later on it was called inside frequency_init(), but no more.
+	// TODO: for sure?
 	frequency_set_userspace_governor_all_cpus();
 
 	//

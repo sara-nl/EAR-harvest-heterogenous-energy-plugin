@@ -148,46 +148,15 @@ int frequency_init()
 	freq_nom = freq_list_rank[1];
 	VERBOSE_N(0, "nominal frequency is %lu (KHz)", freq_nom);
 
-	// Saving previous policy data
-	previous_cpu0_freq = freq_list_cpu[0];
-
-	// Kernel alloc
-	policy = cpufreq_get_policy(0);
-
-	previous_cpu0_policy.min = policy->min;
-	previous_cpu0_policy.max = policy->max;
-
-	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
-	strcpy(previous_cpu0_policy.governor, policy->governor);
-
-	VERBOSE_N(0, "previous policy governor was %s", policy->governor);
-	VERBOSE_N(0, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
-
-	// Kernel dealloc
-	cpufreq_put_policy(policy);
-
 	return EAR_SUCCESS;
 }
 
 // ear_cpufreq_end
 void frequency_dispose()
 {
-	int status, i;
-
-	frequency_set_all_cpus(previous_cpu0_freq);
-
-	for (i = 0; i < num_cpus; i++) {
-		status = cpufreq_set_policy(i, &previous_cpu0_policy);
-		
-		if (status < 0) {
-			VERBOSE_N(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
-		}
-	}
-
 	free(freq_list_rank);
 	free(freq_list_cpu);
 }
-
 
 static int is_valid_frequency(ulong freq)
 {
@@ -309,5 +278,42 @@ void frequency_set_userspace_governor_all_cpus()
 
 	for (i = 0; i < num_cpus; i++) {
 		cpufreq_modify_policy_governor(i, "userspace");
+	}
+}
+
+void frequency_save_previous_configuration()
+{
+	// Saving previous policy data
+	previous_cpu0_freq = freq_list_cpu[0];
+
+	// Kernel alloc
+	policy = cpufreq_get_policy(0);
+
+	previous_cpu0_policy.min = policy->min;
+	previous_cpu0_policy.max = policy->max;
+
+	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
+	strcpy(previous_cpu0_policy.governor, policy->governor);
+
+	VERBOSE_N(0, "previous policy governor was %s", policy->governor);
+	VERBOSE_N(0, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
+
+	// Kernel dealloc
+	cpufreq_put_policy(policy);
+}
+
+void frequency_recover_previous_configuration()
+{
+	int status, i;
+
+	frequency_set_all_cpus(previous_cpu0_freq);
+
+	for (i = 0; i < num_cpus; i++)
+	{
+		status = cpufreq_set_policy(i, &previous_cpu0_policy);
+
+		if (status < 0) {
+			VERBOSE_N(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
+		}
 	}
 }
