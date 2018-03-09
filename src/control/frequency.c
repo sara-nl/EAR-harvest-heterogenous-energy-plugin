@@ -127,7 +127,6 @@ static ulong *get_frequencies_rank()
 int frequency_init()
 {
 	const PAPI_hw_info_t *hwinfo;
-	struct cpufreq_policy *policy;
 
 	// TODO: metrics (PAPI) dependancy, remove and pass the number of cpus
 	hwinfo = metrics_get_hw_info();
@@ -291,6 +290,9 @@ void frequency_save_previous_frequency()
 {
 	// Saving previous policy data
 	previous_cpu0_freq = freq_list_cpu[0];
+	
+	VERBOSE_N(0, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
+	
 	saved_previous_freq = 1;
 }
 
@@ -307,6 +309,8 @@ void frequency_recover_previous_frequency()
 
 void frequency_save_previous_policy()
 {
+	struct cpufreq_policy *policy;
+	
 	// Kernel alloc
 	policy = cpufreq_get_policy(0);
 
@@ -317,7 +321,6 @@ void frequency_save_previous_policy()
 	strcpy(previous_cpu0_policy.governor, policy->governor);
 
 	VERBOSE_N(0, "previous policy governor was %s", policy->governor);
-	VERBOSE_N(0, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
 
 	// Kernel dealloc
 	cpufreq_put_policy(policy);
