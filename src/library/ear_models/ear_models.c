@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/ear_models/ear_models.h>
 #include <control/frequency.h>
@@ -350,6 +351,8 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 	}
 	else if (power_model_policy==MIN_ENERGY_TO_SOLUTION)
 	{
+		// If is not the default P_STATE selected in the environment, a projection
+		// is made for the reference P_STATE in case the coefficents were available.
 		if (ear_frequency != EAR_default_frequency)
 		{
 			if (coefficients[ref][EAR_default_pstate].available)
@@ -362,7 +365,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 				bestPstate=EAR_default_frequency;
 			}
 			else
-			{ // If we can not project, we use current signature
+			{
 				T_ref=my_app->time;
 				P_ref=my_app->DC_power;
 				CPI_ref=my_app->CPI;
@@ -371,8 +374,10 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 				bestPstate=ear_frequency;
 			}
 		}
+		// If it is the default P_STATE selected in the environment, then a projection
+		// is not needed, so the signature will be enough as a reference. 
 		else
-		{ // if we are executing at submission freq
+		{
 			T_ref=my_app->time;
 			P_ref=my_app->DC_power;
 			CPI_ref=my_app->CPI;
@@ -381,7 +386,13 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 			bestPstate=ear_frequency;
 		}
 
-		T_max=T_ref+(T_ref*performance_penalty);
+		// The maximum performance loss
+		T_max = T_ref + (T_ref * performance_penalty);
+
+		RANK(0) {
+			VERBOSE_N(2, "Reference  (%u): [power: %lf, time: %lf, energy: %lf] (T_max: %lf)",
+				ear_frequency, P_ref, T_ref, E_ref, T_max);
+		}
 
 		// MIN_ENERGY_TO_SOLUTION BEGIN
 		for (i = min_pstate; i < ear_models_pstates;i++)
@@ -394,19 +405,9 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 				set_performance_projection(i,TP,PP,CPIP);
 				EP=PP*TP;
 
-				if (ear_my_rank==0)
-				{
-					if (ref == EAR_default_pstate)
-					{
-						VERBOSE_N(4, "EAR[mpi_rank=%d at %u] REFERENCE_COMPUTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)",
-								  ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
-
-						ear_debug(4,"EAR POLICY:::: EAR[mpi_rank=%d at %u] REFERENCE_COMPUTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)\n",
-								  ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
-					}else{
-						ear_debug(4,"EAR POLICY:::: EAR[mpi_rank=%d at %u] REFERENCE_PROJECTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)\n",
-								  ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
-					}
+				RANK(0) {
+					VERBOSE_N(2, "Projection (%u): [power: %lf, time: %lf, energy: %lf]",
+						coefficients[ref][i].pstate, PP, TP, EP);
 				}
 
 				if ((EP < bestSolution) && (TP < T_max))
