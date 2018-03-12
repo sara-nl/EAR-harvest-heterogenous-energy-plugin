@@ -29,7 +29,9 @@
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 
-static const PAPI_hw_info_t *ear_cpufreq_hwinfo;
+static const char *__NAME__ = "EARD_FREQ";
+
+static const PAPI_hw_info_t *hwinfo;
 static struct cpufreq_policy *current_policy;
 static struct cpufreq_policy prev_policy;
 static ulong *ear_cpufreq_pstates;
@@ -39,49 +41,57 @@ static ulong *ear_cpufreq;
 static uint ear_num_p_states;
 static uint ear_num_cpus;
 
-unsigned int ear_get_pstate(unsigned long f)
-{
-	unsigned int i=0,found=0;
-	while ((i<ear_num_p_states)&&(found==0)){
-		if (ear_cpufreq_pstates[i]!=f) i++;
-		else found=1;
-	}
-	return i;
-}
-
+// TODO: v
 void ear_cpufreq_end()
 {
 	int i;
+<<<<<<< HEAD:src/library/ear_frequency/ear_cpufreq.c
 
 	ear_cpufreq_set_node(ear_prev_freq);
 #if 0
 	ear_verbose(2,"EAR:  ear_cpufreq_end: Restoring previous governor %s and frequency %lu\n",
 				prev_policy.governor, ear_prev_freq);
 	for (i=0; i < ear_num_cpus; i++) {
+=======
+
+	ear_verbose(2,"EAR:  ear_cpufreq_end: Restoring previous governor %s and frequency %lu\n",
+				prev_policy.governor, ear_prev_freq);
+
+	ear_cpufreq_set_node(ear_prev_freq);
+
+	for (i = 0; i < ear_num_cpus; i++) {
+>>>>>>> 9c4d044029e8120a9f7d8dc43b23493220ec47f5:tmp/ear_frequency/ear_cpufreq.c
 		cpufreq_set_policy(i,&prev_policy);
 	}
 #endif
 }
 
+// TODO: v
 void ear_cpufreq_init()
 {
-	int status,i,retval;
-	struct cpufreq_available_frequencies *list_f,*first;
-	char *ear_tmp;
-	char nodename[128];
-	char ear_commreq[128],ear_commack[128];
+	struct cpufreq_available_frequencies *list_f, *first;
+	int status, i;
 
-	ear_verbose(4,"EAR: ear_cpufreq_init\n");
+	ear_verbose(4, "EAR: ear_cpufreq_init\n");
 
 	//
-	ear_cpufreq_hwinfo = metrics_get_hw_info();
+	hwinfo = metrics_get_hw_info();
 
 	// We should detect cpus
+<<<<<<< HEAD:src/library/ear_frequency/ear_cpufreq.c
 	ear_num_cpus=ear_cpufreq_hwinfo->sockets*ear_cpufreq_hwinfo->cores*ear_cpufreq_hwinfo->threads;
 	ear_verbose(2,"EAR: %u cpus detected (sockets %u cores %u threads %u)\n",ear_cpufreq_hwinfo->ncpu,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
 	ear_cpufreq=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus);
+=======
+	ear_num_cpus = hwinfo->sockets * hwinfo->cores * hwinfo->threads;
+>>>>>>> 9c4d044029e8120a9f7d8dc43b23493220ec47f5:tmp/ear_frequency/ear_cpufreq.c
 
-	if (ear_cpufreq==NULL){
+	ear_verbose(1,"EAR: %u cpus detected (sockets %u cores %u threads %u)\n",
+				hwinfo->ncpu, hwinfo->sockets, hwinfo->cores, hwinfo->threads);
+
+	ear_cpufreq = (unsigned long *) malloc(sizeof(unsigned long) * ear_num_cpus);
+
+	if (ear_cpufreq == NULL) {
 		ear_verbose(0,"EAR: malloc returns null for ear_cpulist.Exiting\n");
 		exit(1);
 	}
@@ -111,14 +121,17 @@ void ear_cpufreq_init()
 	}
 
 	ear_prev_freq=ear_cpufreq[0];
+
 	// We are assuming all the cpus supports the same set of frequencies
 	// we check for cpu 0
-        list_f=cpufreq_get_available_frequencies(0);
-        first=list_f;
-        while(list_f!=NULL){
-        	list_f=list_f->next;
+	list_f=cpufreq_get_available_frequencies(0);
+	first=list_f;
+
+	while(list_f!=NULL){
+		list_f=list_f->next;
 		ear_num_p_states++;
-        }
+	}
+
 	ear_verbose(2,"EAR: %d p_states available\n",ear_num_p_states);
 	ear_cpufreq_pstates=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_p_states);
 	if (ear_cpufreq_pstates==NULL){
@@ -126,11 +139,14 @@ void ear_cpufreq_init()
 			exit(1);
 	}
 	
-	list_f=first;
-	i=0;
-        while(list_f!=NULL){
+	list_f = first;
+	i = 0;
+
+	while(list_f!=NULL)
+	{
 		ear_cpufreq_pstates[i]=list_f->frequency;	
-        	list_f=list_f->next;
+		list_f=list_f->next;
+
 		ear_verbose(4,"EAR: P_state %d is %u\n",i,ear_cpufreq_pstates[i]);
 		i++;
 	}	
@@ -138,48 +154,43 @@ void ear_cpufreq_init()
 
 	ear_nominal_freq=ear_cpufreq_pstates[1];
 	ear_verbose(2,"EAR: Nominal frequency detected %u\n",ear_nominal_freq);
+<<<<<<< HEAD:src/library/ear_frequency/ear_cpufreq.c
 #if 0
+=======
+
+>>>>>>> 9c4d044029e8120a9f7d8dc43b23493220ec47f5:tmp/ear_frequency/ear_cpufreq.c
 	current_policy=cpufreq_get_policy(0);
 	prev_policy.min=current_policy->min;
 	prev_policy.max=current_policy->max;
+
 	prev_policy.governor=(char *)malloc(strlen(current_policy->governor)+1);
 	strcpy(prev_policy.governor,current_policy->governor);
+
 	ear_verbose(2,"EAR: Saving current governor %s\n",current_policy->governor);
 	cpufreq_put_policy(current_policy);
+<<<<<<< HEAD:src/library/ear_frequency/ear_cpufreq.c
 #endif
 	ear_verbose(4,"EAR: ear_cpufreq_init success\n");
 }
+=======
+>>>>>>> 9c4d044029e8120a9f7d8dc43b23493220ec47f5:tmp/ear_frequency/ear_cpufreq.c
 
-unsigned long ear_max_f()
-{
-	return ear_cpufreq_pstates[1];
-}
-unsigned long ear_min_f()
-{
-	return ear_cpufreq_pstates[ear_num_p_states-1];
+	ear_verbose(4,"EAR: ear_cpufreq_init success\n");
 }
 
+// TODO: v
 unsigned long ear_cpufreq_get(unsigned int cpuid)
 {
 	unsigned long f;
+
 	ear_verbose(4,"EAR: ear_cpufreq_get for cpu %u\n",cpuid);
-	if (cpuid>ear_num_cpus){ 
+
+	if (cpuid > ear_num_cpus) {
 		ear_verbose(0,"EAR: Invalid cpu number in ear_cpufreq_get (%s)\n",cpuid);
 		return 0;
 	}
-	f=cpufreq_get(cpuid);
-	ear_verbose(4,"EAR: ear_cpufreq_get for cpu %u f=%u\n",cpuid,f);
-	return ear_cpufreq[cpuid]=f;
-}
 
-unsigned int ear_is_valid_frequency(unsigned long f)
-{
-	unsigned int i=0;
-	while((i<ear_num_p_states) && (ear_cpufreq_pstates[i]!=f)) i++;
-	if (i<ear_num_p_states) return 1;
-	else return 0;
-}
-
+<<<<<<< HEAD:src/library/ear_frequency/ear_cpufreq.c
 unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 {
 	unsigned long ret;
@@ -191,9 +202,16 @@ unsigned long ear_cpufreq_set(unsigned int cpuid,unsigned long newfreq)
 		ret=eards_change_freq(newfreq);
 		return ret;
 	}else return 0;
+=======
+	// Kernel asking (not hardware)
+	f=cpufreq_get(cpuid);
+>>>>>>> 9c4d044029e8120a9f7d8dc43b23493220ec47f5:tmp/ear_frequency/ear_cpufreq.c
 
+	ear_verbose(4,"EAR: ear_cpufreq_get for cpu %u f=%u\n",cpuid,f);
+	return ear_cpufreq[cpuid] = f;
 }
 
+// TODO: esto aquí no va
 unsigned long ear_cpufreq_set_node(unsigned long newfreq)
 {
 	ear_verbose(4,"EAR: ear_cpufreq_set_node newfreq=%u\n", newfreq);
@@ -201,27 +219,45 @@ unsigned long ear_cpufreq_set_node(unsigned long newfreq)
 	return ear_frequency;
 }
 
+// TODO: v
 unsigned long ear_get_nominal_frequency()
 {
 	return ear_nominal_freq;
 }
 
+// TODO: v
 unsigned int ear_get_num_p_states()
 {
 	return ear_num_p_states;
 }
 
+// TODO: v
 unsigned long *ear_get_pstate_list()
 {
 	return ear_cpufreq_pstates;
 }
 
+// TODO: v
 unsigned long ear_get_freq(unsigned int i)
 {
 	return ear_cpufreq_pstates[i];
 }
 
+// TODO: WARNING
 unsigned long ear_my_frequency()
 {
 	return ear_frequency;
+}
+
+// TODO: v
+unsigned int ear_get_pstate(unsigned long f)
+{
+	unsigned int i=0, found=0;
+
+	while ((i<ear_num_p_states)&&(found == 0))
+	{
+		if (ear_cpufreq_pstates[i] != f) i++;
+		else found=1;
+	}
+	return i;
 }

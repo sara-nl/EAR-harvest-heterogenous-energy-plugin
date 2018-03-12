@@ -2,6 +2,7 @@
 
 COMPONENTS = common \
              metrics \
+             control \
              library \
              daemon \
              learning \

@@ -21,8 +21,7 @@
 #include <immintrin.h> // -mavx -mfma -mfavx512
 #include <papi.h>
 
-
-#include <daemon/ear_frequency.h>
+#include <control/frequency.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/flops.h>
 #include <metrics/papi/stalls.h>
@@ -137,13 +136,13 @@ int main (int argc, char *argv[])
     	init_stall_metrics();
     }
 
-    ear_cpufreq_init();
+    frequency_init();
     node_energy_init();
-	F_BASE=ear_cpufreq_get(0);
+	F_BASE=frequency_get_num_pstates(0);
     printf("Default frequency was %lu\n",F_BASE);
 	printf("Setting frequency to %lu\n",F);
 	printf("Using %d cores\n",n_threads);
-    ear_cpufreq_set_node(F);
+    frequency_set_all_cpus(F);
 
     // Creating the threads
     for (i_test = 0; i_test < 9; ++i_test)
@@ -167,7 +166,7 @@ int main (int argc, char *argv[])
                     start_stall_metrics();
                 }
 
-                ear_begin_compute_turbo_freq();
+                aperf_get_avg_frequency_init_all_cpus();
                 read_dc_energy(&dc_energy_init);
                 start_time = PAPI_get_real_usec();
                 start_basic_metrics();
@@ -181,7 +180,7 @@ int main (int argc, char *argv[])
                 exec_time = (PAPI_get_real_usec() - start_time);
                 read_dc_energy(&dc_energy_end);
 
-                frequency = ear_end_compute_turbo_freq();
+                frequency = aperf_get_avg_frequency_end_all_cpus();
                 stop_rapl_metrics(metrics);
 
                 if (full_compatible)
@@ -298,8 +297,8 @@ int main (int argc, char *argv[])
 		}
     }
 
-    ear_cpufreq_set_node(F_BASE);
-    ear_cpufreq_end();
+    frequency_set_all_cpus(F_BASE);
+    frequency_dispose();
     node_energy_dispose();
 
     return 0;

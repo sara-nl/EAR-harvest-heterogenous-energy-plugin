@@ -14,9 +14,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/ear_models/ear_models.h>
-#include <library/ear_frequency/ear_cpufreq.h>
+#include <control/frequency.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
@@ -29,7 +30,9 @@
 #define NOMINAL_TPI(app)    app->TPI
 #define NOMINAL_CPI(app)    app->CPI
 
-// Extern
+const char *__NAME__ = "MODELS";
+
+// Policy
 static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
 static double performance_penalty = PERFORMANCE_PENALTY;
 static double performance_gain = PERFORMANCE_GAIN;
@@ -115,12 +118,13 @@ void init_power_policy()
 
 	reset_freq_opt=get_ear_reset_freq();
 	EAR_default_pstate=get_ear_p_state();
+
 	if (EAR_default_pstate>=ear_get_num_p_states()) EAR_default_pstate=DEFAULT_P_STATE;
 	user_selected_freq=ear_get_freq(get_ear_p_state());
 	policy_global_reconfiguration();
 
-	// TODO: CPUFREQ COUPLED (old db_change_frequency(EAR_default_frequency))
-	def_freq = ear_cpufreq_set_node(EAR_default_frequency);
+	// IMPORTANT: here is where the environment first P_STATE is set.
+	ear_frequency = def_freq = ear_daemon_client_change_freq(EAR_default_frequency);
 
 	if (def_freq != EAR_default_frequency)
 	{
@@ -131,7 +135,7 @@ void init_power_policy()
 	print_energy_policy_configuration();
 }
 
-void init_power_models(unsigned int p_states,unsigned long *p_states_list)
+void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 {
 	char coeff_file[128];
 	char coeff_default_file[128];
@@ -255,7 +259,7 @@ double power_projection(application_t *my_app,unsigned int Fi)
 	unsigned int Fref;
 	POWER_F0=NOMINAL_POWER(my_app);
 	TPI_F0=NOMINAL_TPI(my_app);
-	Fref=ear_get_pstate(ear_frequency);
+	Fref=frequency_freq_to_pstate(ear_frequency);
 	pp=coefficients[Fref][Fi].A*POWER_F0+coefficients[Fref][Fi].B*TPI_F0+coefficients[Fref][Fi].C;
 
 	ear_debug(4,"EAR(%s):: POWER_PROJ=%.3lf=A(%.3lf)*POWERN(%.3lf)+B(%.3lf)*TPIN(%.3lf)+C(%.3lf)\n",
@@ -269,7 +273,9 @@ double cpi_projection(application_t *my_app,unsigned int Fi)
 	double CPI_F0,TPI_F0;
 	double cpi_pr;
 	unsigned int Fref;
-	Fref=ear_get_pstate(ear_frequency);
+
+	Fref=frequency_freq_to_pstate(ear_frequency);
+
 	TPI_F0=NOMINAL_TPI(my_app);
 	CPI_F0=NOMINAL_CPI(my_app);
 	cpi_pr=coefficients[Fref][Fi].F+coefficients[Fref][Fi].D*CPI_F0+coefficients[Fref][Fi].E*TPI_F0;
@@ -283,7 +289,8 @@ double time_projection(application_t *my_app,unsigned int Fi,double cpi_pr)
 {
 	double CPI_F0,TIME_F0,timep;
 	unsigned int Fref;
-	Fref=ear_get_pstate(ear_frequency);
+	Fref=frequency_freq_to_pstate(ear_frequency);
+
 	//TIME(fn) = TIME(f0) * CPI(fn)/CPI(f0) * (f0/fn)
 	CPI_F0=NOMINAL_CPI(my_app);
 	TIME_F0=NOMINAL_TIME(my_app);
@@ -307,7 +314,7 @@ unsigned long optimal_freq_min_energy(double th,application_t * SIGNATURE,double
     my_app=SIGNATURE;
     if (ear_use_turbo) min_pstate=0;
     else min_pstate=1;
-    ref=ear_get_pstate(ear_frequency);
+    ref=frequency_freq_to_pstate(ear_frequency);
     // My reference is the submission frequency
     if (ear_frequency!=EAR_default_frequency){
     	if (coefficients[ref][EAR_default_pstate].available){
@@ -353,6 +360,7 @@ unsigned long optimal_freq_min_energy(double th,application_t * SIGNATURE,double
 	return 	bestPstate;
 
 }
+
 // This is the main function in this file, it implements power policy
 unsigned long policy_power_for_application(unsigned int whole_app,application_t * SIGNATURE)
 {
@@ -367,139 +375,183 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 	my_app=SIGNATURE;
 
 	if (ear_use_turbo) min_pstate=0;
-	else min_pstate=get_global_min_pstate();	
+	else min_pstate=get_global_min_pstate();
 
 	// This is the frequency at which we were running
-	ref=ear_get_pstate(ear_frequency); 
+	ref = frequency_freq_to_pstate(ear_frequency);
 
 	// This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
 	// We must check this is ok changing these values at this point
 	policy_global_reconfiguration();
 
 	// My reference is the submission frequency
-	if (power_model_policy==MONITORING_ONLY){
+	if (power_model_policy == MONITORING_ONLY)
+	{
 		bestPstate=ear_frequency;
 		T_ref=my_app->time;
 		P_ref=my_app->DC_power;
 		CPI_ref=my_app->CPI;
-#ifdef SHARED_MEMORY
+
+		#ifdef SHARED_MEMORY
 		if (ear_frequency<system_conf->max_freq){
 			// if we are running at a lower frequency than the maximum allowed, we select the 
 			// minimum between the maximum and the selected by the user. It receives 2 freqs
 			bestPstate=min_freq(system_conf->max_freq,user_selected_freq);
 			ear_verbose(0,"EAR monitoring selects new freq based on power capping policies %lu\n",bestPstate);
 		}
-#endif
+		#endif
 		// Anyway this is correct, ref is the previous freq in any case
 		set_performance_projection(ref,T_ref,P_ref,CPI_ref);
-	}else if (power_model_policy==MIN_ENERGY_TO_SOLUTION){
-			// We compute the reference metrics
-        	if (ear_frequency!=EAR_default_frequency){
-                	if (coefficients[ref][EAR_default_pstate].available){
-                        	P_ref=power_projection(my_app,EAR_default_pstate);
-                        	CPI_ref=cpi_projection(my_app,EAR_default_pstate);
-                        	T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
-                        	E_ref=P_ref*T_ref;
-                        	bestSolution=E_ref;
-                        	bestPstate=EAR_default_frequency;
-                	}else{// If we can not project, we use current signature
-                        	T_ref=my_app->time;
-                        	P_ref=my_app->DC_power;
-                        	CPI_ref=my_app->CPI;
-                        	E_ref=P_ref*T_ref;
-                        	bestSolution=E_ref;
-                        	bestPstate=ear_frequency;
-                	}    
-        	}else{ // if we are executing at submission freq
-                	T_ref=my_app->time;
-                	P_ref=my_app->DC_power;
-                	CPI_ref=my_app->CPI;
-                	E_ref=P_ref*T_ref;
-                	bestSolution=E_ref;
-                	bestPstate=ear_frequency;
-        	}   
-		T_max=T_ref+(T_ref*performance_penalty);
-		// MIN_ENERGY_TO_SOLUTION ALGORITHM BEGINS
-		for (i=min_pstate;i<ear_models_pstates;i++){
-			if (coefficients[ref][i].available){
+	}
+	else if (power_model_policy==MIN_ENERGY_TO_SOLUTION)
+	{
+		// If is not the default P_STATE selected in the environment, a projection
+		// is made for the reference P_STATE in case the coefficents were available.
+		if (ear_frequency != EAR_default_frequency)
+		{
+			if (coefficients[ref][EAR_default_pstate].available)
+			{
+				P_ref=power_projection(my_app,EAR_default_pstate);
+				CPI_ref=cpi_projection(my_app,EAR_default_pstate);
+				T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
+				E_ref=P_ref*T_ref;
+				bestSolution=E_ref;
+				bestPstate=EAR_default_frequency;
+			}
+			else
+			{
+				T_ref=my_app->time;
+				P_ref=my_app->DC_power;
+				CPI_ref=my_app->CPI;
+				E_ref=P_ref*T_ref;
+				bestSolution=E_ref;
+				bestPstate=ear_frequency;
+			}
+		}
+		// If it is the default P_STATE selected in the environment, then a projection
+		// is not needed, so the signature will be enough as a reference. 
+		else
+		{
+			T_ref=my_app->time;
+			P_ref=my_app->DC_power;
+			CPI_ref=my_app->CPI;
+			E_ref=P_ref*T_ref;
+			bestSolution=E_ref;
+			bestPstate=ear_frequency;
+		}
+
+		// The maximum performance loss
+		T_max = T_ref + (T_ref * performance_penalty);
+
+		RANK(0) {
+			VERBOSE_N(2, "Reference  (%u): [power: %lf, time: %lf, energy: %lf] (T_max: %lf)",
+				ear_frequency, P_ref, T_ref, E_ref, T_max);
+		}
+
+		// MIN_ENERGY_TO_SOLUTION BEGIN
+		for (i = min_pstate; i < ear_models_pstates;i++)
+		{
+			if (coefficients[ref][i].available)
+			{
 				PP=power_projection(my_app,i);
 				CPIP=cpi_projection(my_app,i);
 				TP=time_projection(my_app,i,CPIP);
 				set_performance_projection(i,TP,PP,CPIP);
 				EP=PP*TP;
 
-				if ((EP<bestSolution) && (TP<T_max)){
-					bestPstate=coefficients[ref][i].pstate;
-					bestSolution=EP;
+				RANK(0) {
+					VERBOSE_N(2, "Projection (%u): [power: %lf, time: %lf, energy: %lf]",
+						coefficients[ref][i].pstate, PP, TP, EP);
 				}
 
+				if ((EP < bestSolution) && (TP < T_max))
+				{
+					bestPstate = coefficients[ref][i].pstate;
+					bestSolution = EP;
+				}
 			}
 		}
-	// MIN_ENERGY_TO_SOLUTION ALGORITHM ENDS
-	}else if (power_model_policy==MIN_TIME_TO_SOLUTION){
-		// MIN_TIME_TO_SOLUTION BEGIN
-
-        if (ear_frequency!=EAR_default_frequency){
-                        if (coefficients[ref][EAR_default_pstate].available){
-                                P_ref=power_projection(my_app,EAR_default_pstate);
-                                CPI_ref=cpi_projection(my_app,EAR_default_pstate);
-                                T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
-                                bestPstate=EAR_default_frequency;
-                        }else{// If we can not project, we use current signature
-                                T_ref=my_app->time;
-                                P_ref=my_app->DC_power;
-                                CPI_ref=my_app->CPI;
-                                bestPstate=ear_frequency;
-                        }
-        }else{ // if we are executing at submission freq
-                        T_ref=my_app->time;
-                        P_ref=my_app->DC_power;
-                        CPI_ref=my_app->CPI;
-                        bestPstate=ear_frequency;
-        }
+	}
+	else if (power_model_policy == MIN_TIME_TO_SOLUTION)
+	{
+		if (ear_frequency!=EAR_default_frequency)
+		{
+			if (coefficients[ref][EAR_default_pstate].available)
+			{
+				P_ref = power_projection(my_app,EAR_default_pstate);
+				CPI_ref = cpi_projection(my_app,EAR_default_pstate);
+				T_ref = time_projection(my_app,EAR_default_pstate,CPI_ref);
+				bestPstate = EAR_default_frequency;
+			} else {
+				// If we can not project, we use current signature
+				T_ref=my_app->time;
+				P_ref=my_app->DC_power;
+				CPI_ref=my_app->CPI;
+				bestPstate=ear_frequency;
+			}
+		} else { // if we are executing at submission freq
+				T_ref=my_app->time;
+				P_ref=my_app->DC_power;
+				CPI_ref=my_app->CPI;
+				bestPstate=ear_frequency;
+		}
 
 		set_performance_projection(EAR_default_pstate,T_ref,P_ref,CPI_ref);
-		if (bestPstate>min_pstate){ // ref=1 is nominal 0=turbo, we are not using it
+
+		// ref=1 is nominal 0=turbo, we are not using it
+		if (bestPstate>min_pstate)
+		{
 			try_next=1;
 			i=EAR_default_pstate-1;
 			T_current=T_ref;
-			while(try_next && (i>=min_pstate)){
-				if (coefficients[ref][i].available){
+
+			while(try_next && (i >= min_pstate))
+			{
+				if (coefficients[ref][i].available)
+				{
 					PP=power_projection(my_app,i);
 					CPIP=cpi_projection(my_app,i);
 					TP=time_projection(my_app,i,CPIP);
 					set_performance_projection(i,TP,PP,CPIP);
 					freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-bestPstate)/(double)bestPstate;
 					perf_gain=(T_current-TP)/T_current;
-					if (perf_gain>=freq_gain){ // OK
+
+					// OK
+					if (perf_gain>=freq_gain)
+					{
 						ear_debug(4,"EAR[MIN_TIME][rank %d] go on evaluating other frequencies current %u Tcurrent %lf Tproj %lf perf_gain %lf \n\
 						freq_gain %lf (current %u next %u) (cpi actual %lf cpi proj %lf) GBS %lf\n",
 						ear_my_rank,bestPstate,T_current,TP,perf_gain,freq_gain,bestPstate,coefficients[ref][i].pstate,my_app->CPI,CPIP,my_app->GBS);
 						bestPstate=coefficients[ref][i].pstate;
-						T_current=TP;
+
+						T_current = TP;
 						i--;
-					}else{
-						if ((bestPstate!=ear_frequency)||(bestPstate==EAR_default_frequency)){
-						ear_debug(4,"EAR[MIN_TIME][rank %d] Not scaling more than -> Tcurrent[%u]= %lf vs Tproj[%u]= %lf (perf_gain %lf) \n",
-						ear_my_rank,bestPstate,T_current,coefficients[ref][i].pstate,TP,perf_gain);
+					}
+					else
+					{
+						if ((bestPstate!=ear_frequency)||(bestPstate==EAR_default_frequency))
+						{
+							ear_debug(4,"EAR[MIN_TIME][rank %d] Not scaling more than -> Tcurrent[%u]= %lf vs Tproj[%u]= %lf (perf_gain %lf) \n",
+									  ear_my_rank,bestPstate,T_current,coefficients[ref][i].pstate,TP,perf_gain);
 						}
-						try_next=0;	
+						try_next = 0;
 					}
 				} // Coefficients available
 				else try_next=0;
 			}	
 		}
-		// MIN_TIME_TO_SOLUTION ENDS
 	}
+
 	// Coefficients were not available for this nominal frequency
-#ifdef SHARED_MEMORY
+	#ifdef SHARED_MEMORY
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (bestPstate>system_conf->max_freq){ 
 		ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
 		bestPstate,system_conf->max_freq);
 		bestPstate=system_conf->max_freq;
 	}
-#endif
+	#endif
+
 	return bestPstate;
 }
 
@@ -550,32 +602,33 @@ uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_
 
 projection_t * performance_projection(unsigned long f)
 {
-	ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,ear_get_pstate(f));
-	return &projections[ear_get_pstate(f)];
+	ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,frequency_freq_to_pstate(f));
+	return &projections[frequency_freq_to_pstate(f)];
 }
 
-unsigned long  policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
+// When 'evaluating signature', this function is called.
+unsigned long policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
 {
 	unsigned long optimal_freq, max_freq;
 
 	ear_debug(4,"EAR(%s):: EAR_PolicyPower\n",__FILE__);
 
-	optimal_freq = ear_frequency;
-    optimal_freq = policy_power_for_application(whole_app, MY_SIGNATURE);
+
+	//optimal_freq = ear_frequency;
+    // IMPORTANT: this call determines the best projected P_STATE
+	optimal_freq = policy_power_for_application(whole_app, MY_SIGNATURE);
 
 	if (optimal_freq != ear_frequency)
 	{
 		ear_debug(3,"EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
 				  __FILE__,optimal_freq);
 
-		// TODO: CPUFREQ COUPLED (old db_change_frequency)
-		max_freq = ear_cpufreq_set_node(optimal_freq);
+		ear_frequency = max_freq = ear_daemon_client_change_freq(optimal_freq);
 
 		if (max_freq != optimal_freq) {
 			optimal_freq = max_freq;
 		}
-	}
-	else{
+	} else {
 		ear_debug(4,"EAR(%s):: %u selected, no changes are required\n",__FILE__,optimal_freq);
 	}
 
@@ -589,8 +642,7 @@ void models_new_period()
 
 	if (reset_freq_opt)
 	{
-		// TODO: CPUFREQ COUPLED (db_change_frequency(EAR_default_frequency))
-		ear_cpufreq_set_node(EAR_default_frequency);
+		ear_frequency = ear_daemon_client_change_freq(EAR_default_frequency);
 	}
 
 	reset_performance_projection(ear_models_pstates);

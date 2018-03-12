@@ -18,7 +18,7 @@
 #include <library/common/externs.h>
 #include <library/ear_gui/ear_gui.h>
 #include <library/ear_states/ear_states.h>
-#include <library/ear_frequency/ear_cpufreq.h>
+#include <control/frequency.h>
 #include <library/ear_metrics/ear_metrics.h>
 #include <library/ear_models/ear_models.h>
 #include <common/ear_verbose.h>
@@ -134,14 +134,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	unsigned long prev_f;
 	int result;
 
-	prev_f = ear_my_frequency();
-#ifdef SHARED_MEMORY
-    if (system_conf->force_rescheduling){
-        ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
-    }
-#endif
-#ifdef SHARED_MEMORY
+	prev_f = ear_frequency;
+
+	#ifdef SHARED_MEMORY
 	if (system_conf->force_rescheduling){
+		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
+
 		// We set the default number of iterations to the default for this loop
 		perf_count_period=loop_perf_count_period;
 		system_conf->force_rescheduling=0;
@@ -151,9 +149,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			EAR_STATE = EVALUATING_SIGNATURE;
 		}
 	}
-#endif
-
-
+	#endif
 
 	switch (EAR_STATE)
 	{
