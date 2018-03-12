@@ -30,7 +30,9 @@
 #define NOMINAL_TPI(app)    app->TPI
 #define NOMINAL_CPI(app)    app->CPI
 
-// Extern
+const char *__NAME__ = "MODELS";
+
+// Policy
 static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
 static double performance_penalty = PERFORMANCE_PENALTY;
 static double performance_gain = PERFORMANCE_GAIN;
@@ -74,7 +76,7 @@ void init_power_policy()
 	if (EAR_default_pstate>=frequency_get_num_pstates()) EAR_default_pstate=DEFAULT_P_STATE;
 	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
 
-	// TODO: CPUFREQ COUPLED (old db_change_frequency(EAR_default_frequency))
+	// IMPORTANT: here is where the environment first P_STATE is set.
 	ear_frequency = def_freq = ear_daemon_client_change_freq(EAR_default_frequency);
 
 	if (def_freq != EAR_default_frequency)
@@ -318,6 +320,7 @@ unsigned long optimal_freq_min_energy(double th,application_t * SIGNATURE,double
 	return 	bestPstate;
 
 }
+
 // This is the main function in this file, it implements power policy
 unsigned long policy_power_for_application(unsigned int whole_app,application_t * SIGNATURE)
 {
@@ -330,123 +333,160 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 	double P_ref,CPI_ref,T_ref,E_ref,T_current;
 	unsigned long bestPstate;
 	my_app=SIGNATURE;
+
 	if (ear_use_turbo) min_pstate=0;
-	else min_pstate=1;	
-	ref=frequency_freq_to_pstate(ear_frequency);
+	else min_pstate=1;
+
+	ref = frequency_freq_to_pstate(ear_frequency);
+
 	// My reference is the submission frequency
-	if (power_model_policy==MONITORING_ONLY){
+	if (power_model_policy == MONITORING_ONLY)
+	{
 		bestPstate=ear_frequency;
 		T_ref=my_app->time;
 		P_ref=my_app->DC_power;
 		CPI_ref=my_app->CPI;
 		set_performance_projection(ref,T_ref,P_ref,CPI_ref);
-	}else if (power_model_policy==MIN_ENERGY_TO_SOLUTION){
-        	if (ear_frequency!=EAR_default_frequency){
-                	if (coefficients[ref][EAR_default_pstate].available){
-                        	P_ref=power_projection(my_app,EAR_default_pstate);
-                        	CPI_ref=cpi_projection(my_app,EAR_default_pstate);
-                        	T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
-                        	E_ref=P_ref*T_ref;
-                        	bestSolution=E_ref;
-                        	bestPstate=EAR_default_frequency;
-                	}else{// If we can not project, we use current signature
-                        	T_ref=my_app->time;
-                        	P_ref=my_app->DC_power;
-                        	CPI_ref=my_app->CPI;
-                        	E_ref=P_ref*T_ref;
-                        	bestSolution=E_ref;
-                        	bestPstate=ear_frequency;
-                	}    
-        	}else{ // if we are executing at submission freq
-                	T_ref=my_app->time;
-                	P_ref=my_app->DC_power;
-                	CPI_ref=my_app->CPI;
-                	E_ref=P_ref*T_ref;
-                	bestSolution=E_ref;
-                	bestPstate=ear_frequency;
-        	}   
+	}
+	else if (power_model_policy==MIN_ENERGY_TO_SOLUTION)
+	{
+		if (ear_frequency != EAR_default_frequency)
+		{
+			if (coefficients[ref][EAR_default_pstate].available)
+			{
+				P_ref=power_projection(my_app,EAR_default_pstate);
+				CPI_ref=cpi_projection(my_app,EAR_default_pstate);
+				T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
+				E_ref=P_ref*T_ref;
+				bestSolution=E_ref;
+				bestPstate=EAR_default_frequency;
+			}
+			else
+			{ // If we can not project, we use current signature
+				T_ref=my_app->time;
+				P_ref=my_app->DC_power;
+				CPI_ref=my_app->CPI;
+				E_ref=P_ref*T_ref;
+				bestSolution=E_ref;
+				bestPstate=ear_frequency;
+			}
+		}
+		else
+		{ // if we are executing at submission freq
+			T_ref=my_app->time;
+			P_ref=my_app->DC_power;
+			CPI_ref=my_app->CPI;
+			E_ref=P_ref*T_ref;
+			bestSolution=E_ref;
+			bestPstate=ear_frequency;
+		}
+
 		T_max=T_ref+(T_ref*performance_penalty);
+
 		// MIN_ENERGY_TO_SOLUTION BEGIN
-		for (i=min_pstate;i<ear_models_pstates;i++){
-		if (coefficients[ref][i].available){
-			PP=power_projection(my_app,i);
-			CPIP=cpi_projection(my_app,i);
-			TP=time_projection(my_app,i,CPIP);
-			set_performance_projection(i,TP,PP,CPIP);
-			EP=PP*TP;
-			if (ear_my_rank==0){
-				if (ref==EAR_default_pstate){
-				ear_debug(4,"EAR POLICY:::: EAR[mpi_rank=%d at %u] REFERENCE_COMPUTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)\n",
-				ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
-				}else{
-				ear_debug(4,"EAR POLICY:::: EAR[mpi_rank=%d at %u] REFERENCE_PROJECTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)\n",
-				ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
+		for (i = min_pstate; i < ear_models_pstates;i++)
+		{
+			if (coefficients[ref][i].available)
+			{
+				PP=power_projection(my_app,i);
+				CPIP=cpi_projection(my_app,i);
+				TP=time_projection(my_app,i,CPIP);
+				set_performance_projection(i,TP,PP,CPIP);
+				EP=PP*TP;
+
+				if (ear_my_rank==0)
+				{
+					if (ref == EAR_default_pstate)
+					{
+						VERBOSE_N(4, "EAR[mpi_rank=%d at %u] REFERENCE_COMPUTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)",
+								  ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
+
+						ear_debug(4,"EAR POLICY:::: EAR[mpi_rank=%d at %u] REFERENCE_COMPUTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)\n",
+								  ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
+					}else{
+						ear_debug(4,"EAR POLICY:::: EAR[mpi_rank=%d at %u] REFERENCE_PROJECTED ENERGY(%u) %lf (%lf,%lf) PROJECTED ENERGY(%u) %lf (%lf,%lf) (T_max %lf)\n",
+								  ear_my_rank,ear_frequency,EAR_default_frequency,E_ref,T_ref,P_ref,coefficients[ref][i].pstate,EP,TP,PP,T_max);
+					}
+				}
+
+				if ((EP < bestSolution) && (TP < T_max))
+				{
+					bestPstate = coefficients[ref][i].pstate;
+					bestSolution = EP;
 				}
 			}
-
-			if ((EP<bestSolution) && (TP<T_max)){
-					bestPstate=coefficients[ref][i].pstate;
-					bestSolution=EP;
+		}
+	}
+	else if (power_model_policy == MIN_TIME_TO_SOLUTION)
+	{
+		if (ear_frequency!=EAR_default_frequency)
+		{
+			if (coefficients[ref][EAR_default_pstate].available)
+			{
+				P_ref = power_projection(my_app,EAR_default_pstate);
+				CPI_ref = cpi_projection(my_app,EAR_default_pstate);
+				T_ref = time_projection(my_app,EAR_default_pstate,CPI_ref);
+				bestPstate = EAR_default_frequency;
+			} else {
+				// If we can not project, we use current signature
+				T_ref=my_app->time;
+				P_ref=my_app->DC_power;
+				CPI_ref=my_app->CPI;
+				bestPstate=ear_frequency;
 			}
-
+		} else { // if we are executing at submission freq
+				T_ref=my_app->time;
+				P_ref=my_app->DC_power;
+				CPI_ref=my_app->CPI;
+				bestPstate=ear_frequency;
 		}
-		}
-	// MIN_ENERGY_TO_SOLUTION END
-	}else if (power_model_policy==MIN_TIME_TO_SOLUTION){
-		// MIN_TIME_TO_SOLUTION BEGIN
-
-                if (ear_frequency!=EAR_default_frequency){
-                        if (coefficients[ref][EAR_default_pstate].available){
-                                P_ref=power_projection(my_app,EAR_default_pstate);
-                                CPI_ref=cpi_projection(my_app,EAR_default_pstate);
-                                T_ref=time_projection(my_app,EAR_default_pstate,CPI_ref);
-                                bestPstate=EAR_default_frequency;
-                        }else{// If we can not project, we use current signature
-                                T_ref=my_app->time;
-                                P_ref=my_app->DC_power;
-                                CPI_ref=my_app->CPI;
-                                bestPstate=ear_frequency;
-                        }
-                }else{ // if we are executing at submission freq
-                        T_ref=my_app->time;
-                        P_ref=my_app->DC_power;
-                        CPI_ref=my_app->CPI;
-                        bestPstate=ear_frequency;
-                }
 
 		set_performance_projection(EAR_default_pstate,T_ref,P_ref,CPI_ref);
-		if (bestPstate>min_pstate){ // ref=1 is nominal 0=turbo, we are not using it
+
+		// ref=1 is nominal 0=turbo, we are not using it
+		if (bestPstate>min_pstate)
+		{
 			try_next=1;
 			i=EAR_default_pstate-1;
 			T_current=T_ref;
-			while(try_next && (i>=min_pstate)){
-				if (coefficients[ref][i].available){
+
+			while(try_next && (i >= min_pstate))
+			{
+				if (coefficients[ref][i].available)
+				{
 					PP=power_projection(my_app,i);
 					CPIP=cpi_projection(my_app,i);
 					TP=time_projection(my_app,i,CPIP);
 					set_performance_projection(i,TP,PP,CPIP);
 					freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-bestPstate)/(double)bestPstate;
 					perf_gain=(T_current-TP)/T_current;
-					if (perf_gain>=freq_gain){ // OK
+
+					// OK
+					if (perf_gain>=freq_gain)
+					{
 						ear_debug(4,"EAR[MIN_TIME][rank %d] go on evaluating other frequencies current %u Tcurrent %lf Tproj %lf perf_gain %lf \n\
 						freq_gain %lf (current %u next %u) (cpi actual %lf cpi proj %lf) GBS %lf\n",
 						ear_my_rank,bestPstate,T_current,TP,perf_gain,freq_gain,bestPstate,coefficients[ref][i].pstate,my_app->CPI,CPIP,my_app->GBS);
 						bestPstate=coefficients[ref][i].pstate;
-						T_current=TP;
+
+						T_current = TP;
 						i--;
-					}else{
-						if ((bestPstate!=ear_frequency)||(bestPstate==EAR_default_frequency)){
-						ear_debug(4,"EAR[MIN_TIME][rank %d] Not scaling more than -> Tcurrent[%u]= %lf vs Tproj[%u]= %lf (perf_gain %lf) \n",
-						ear_my_rank,bestPstate,T_current,coefficients[ref][i].pstate,TP,perf_gain);
+					}
+					else
+					{
+						if ((bestPstate!=ear_frequency)||(bestPstate==EAR_default_frequency))
+						{
+							ear_debug(4,"EAR[MIN_TIME][rank %d] Not scaling more than -> Tcurrent[%u]= %lf vs Tproj[%u]= %lf (perf_gain %lf) \n",
+									  ear_my_rank,bestPstate,T_current,coefficients[ref][i].pstate,TP,perf_gain);
 						}
-						try_next=0;	
+						try_next = 0;
 					}
 				} // Coefficients available
 				else try_next=0;
 			}	
 		}
-		// MIN_TIME_TO_SOLUTION ENDS
 	}
+
 	// Coefficients were not available for this nominal frequency
 	return bestPstate;
 }
@@ -502,14 +542,17 @@ projection_t * performance_projection(unsigned long f)
 	return &projections[frequency_freq_to_pstate(f)];
 }
 
-unsigned long  policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
+// When 'evaluating signature', this function is called.
+unsigned long policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
 {
 	unsigned long optimal_freq, max_freq;
 
 	ear_debug(4,"EAR(%s):: EAR_PolicyPower\n",__FILE__);
 
-	optimal_freq = ear_frequency;
-    optimal_freq = policy_power_for_application(whole_app, MY_SIGNATURE);
+
+	//optimal_freq = ear_frequency;
+    // IMPORTANT: this call determines the best projected P_STATE
+	optimal_freq = policy_power_for_application(whole_app, MY_SIGNATURE);
 
 	if (optimal_freq != ear_frequency)
 	{
@@ -521,8 +564,7 @@ unsigned long  policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
 		if (max_freq != optimal_freq) {
 			optimal_freq = max_freq;
 		}
-	}
-	else{
+	} else {
 		ear_debug(4,"EAR(%s):: %u selected, no changes are required\n",__FILE__,optimal_freq);
 	}
 
