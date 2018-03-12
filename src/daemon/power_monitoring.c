@@ -28,8 +28,8 @@ static const char *__NAME__ = "powermon: ";
 
 //  That constant is replicated. We must fix that
 #define MAX_PATH_SIZE 256
-#define NUM_SAMPLES_L1 	1000 	// maximum number of samples saved every -frequency_monitoring- usecs
-#define NUM_SAMPLES_L2	100		// Every NUM_SAMPLES_L1 of L1 we will compute 1 sample of L2, 
+#define NUM_SAMPLES_L1 	10 	// maximum number of samples saved every -frequency_monitoring- usecs
+#define NUM_SAMPLES_L2	10		// Every NUM_SAMPLES_L1 of L1 we will compute 1 sample of L2, 
 
 unsigned int f_monitoring;
 
@@ -74,6 +74,16 @@ power_data_t * create_historic_buffer(int samples)
 	mem=malloc(sizeof(power_data_t)*samples);
 	if (mem!=NULL) memset(mem,0,sizeof(power_data_t)*samples);
 	return mem;
+}
+void add_power_sample(power_data_t *ps)
+{
+
+	copy_powermon_app(&L1_samples[current_L1],ps);
+	current_L1=(current_L1+1)%NUM_SAMPLES_L1;
+	num_L1++;
+	if (num_L1==NUM_SAMPLES_L1){ // We will flush 
+		compute_average_period(L1_samples,NUM_SAMPLES_L1);
+	}
 }
 
 // END BUFFERS
@@ -195,7 +205,6 @@ void powermon_end_job(int appID)
     // Application disconnected
     double lavg,lmax,lmin;
     powermon_app_t summary;
-    int lsamples;
     char buffer[128];
 	VERBOSE_N(0,"powermon_end_job %d\n",appID);
     while (pthread_mutex_trylock(&app_lock));
@@ -208,7 +217,7 @@ void powermon_end_job(int appID)
         lmax=current_ear_app.max_dc_power;
         lmin=current_ear_app.min_dc_power;
     pthread_mutex_unlock(&app_lock);
-    printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg/(double)lsamples,lmax,lmin);
+    printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg,lmax,lmin);
     report_powermon_app(&summary);
 }
 

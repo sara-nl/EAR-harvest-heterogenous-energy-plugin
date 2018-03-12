@@ -30,7 +30,6 @@ BINARIES = bandwith_monitor \
            eard_monitor \
            freeipmi_overhead \
            simd_power_metrics_openmp \
-           simd_power_metrics_openmp_static \
            energy_1_second \
            energy_updates_freq \
 	   test_architecture
@@ -57,10 +56,6 @@ simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o $(PAPI_OBJS)
 	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) simd_tests.o \
 	$(HARDWARE_OBJS) $(NODE_ENERGY_LIBS) $(PAPI_OBJS) $(FREQUENCY_OBJS)
 
-simd_power_metrics_openmp_static:simd_power_metrics_openmp.c simd_tests.o $(PAPI_OBJS) $(FREQUENCY_OBJS) $(HARDWARE_OBJS) $(NODE_ENERGY_OBJS)
-	$(CC) -fopenmp -malign-double -march=native  $(CFLAGS) -o simd_power_metrics_openmp_static simd_power_metrics_openmp.c \
-	$(IPMI_LDFLAGS) $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)  simd_tests.o \
-	$(HARDWARE_OBJS) $(NODE_ENERGY_OBJS) $(PAPI_OBJS) $(FREQUENCY_OBJS)
 
 energy_1_second: energy_1_second.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 	$(CC) $(CFLAGS) -o energy_1_second energy_1_second.c $(IPMI_LDFLAGS) $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)

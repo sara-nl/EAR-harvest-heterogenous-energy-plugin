@@ -100,7 +100,9 @@ int lenovo_wct_node_energy_init()
 		ipmi_ctx_destroy (ipmi_ctx);
 		return EAR_ERROR;
 	}	
-	// Robert Wolford provided command: ipmitool raw 0x3a 0x32 4 1 0 0 0
+	// Robert Wolford provided command: ipmitool raw 0x3a 0x32 4 1 0 0 0 --> low frequency command
+	// Robert Wolford provided command: raw 0x3a 0x32 4 2 0 0 0
+#ifdef LOW_FREQ_ENERGY_READINGS
 	bytes_rq[0]=(uint8_t)0x00;// lun
 	bytes_rq[1]=(uint8_t)0x3a;// netfn
 	bytes_rq[2]=(uint8_t)0x32;// cmd
@@ -109,6 +111,17 @@ int lenovo_wct_node_energy_init()
 	bytes_rq[5]=(uint8_t)0x0;
 	bytes_rq[6]=(uint8_t)0x0;
 	bytes_rq[7]=(uint8_t)0x0;
+#else
+    bytes_rq[0]=(uint8_t)0x00;// lun
+    bytes_rq[1]=(uint8_t)0x3a;// netfn
+    bytes_rq[2]=(uint8_t)0x32;// cmd
+    bytes_rq[3]=(uint8_t)0x4; // 5 args
+    bytes_rq[4]=(uint8_t)0x2;
+    bytes_rq[5]=(uint8_t)0x0;
+    bytes_rq[6]=(uint8_t)0x0;
+    bytes_rq[7]=(uint8_t)0x0;
+
+#endif
 
 
 	return EAR_SUCCESS;	

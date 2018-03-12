@@ -52,14 +52,15 @@ unsigned int ear_get_pstate(unsigned long f)
 void ear_cpufreq_end()
 {
 	int i;
-	ear_verbose(2,"EAR:  ear_cpufreq_end: Restoring previous governor %s and frequency %lu\n",
-				prev_policy.governor, ear_prev_freq);
 
 	ear_cpufreq_set_node(ear_prev_freq);
-
+#if 0
+	ear_verbose(2,"EAR:  ear_cpufreq_end: Restoring previous governor %s and frequency %lu\n",
+				prev_policy.governor, ear_prev_freq);
 	for (i=0; i < ear_num_cpus; i++) {
 		cpufreq_set_policy(i,&prev_policy);
 	}
+#endif
 }
 
 void ear_cpufreq_init()
@@ -137,6 +138,7 @@ void ear_cpufreq_init()
 
 	ear_nominal_freq=ear_cpufreq_pstates[1];
 	ear_verbose(2,"EAR: Nominal frequency detected %u\n",ear_nominal_freq);
+#if 0
 	current_policy=cpufreq_get_policy(0);
 	prev_policy.min=current_policy->min;
 	prev_policy.max=current_policy->max;
@@ -144,6 +146,7 @@ void ear_cpufreq_init()
 	strcpy(prev_policy.governor,current_policy->governor);
 	ear_verbose(2,"EAR: Saving current governor %s\n",current_policy->governor);
 	cpufreq_put_policy(current_policy);
+#endif
 	ear_verbose(4,"EAR: ear_cpufreq_init success\n");
 }
 

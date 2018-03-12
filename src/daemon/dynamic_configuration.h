@@ -10,5 +10,6 @@
 #ifndef _DYN_CONF_H
 #define _DYN_CONF_H
 void *eard_dynamic_configuration(void *no_args);
+ulong max_dyn_freq();
 #else
 #endif

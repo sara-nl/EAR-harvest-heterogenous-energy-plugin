@@ -460,7 +460,11 @@ int eard_freq(int must_read)
 			break;
 		case SET_FREQ:
 			ear_debug(1,"eard: Setting node frequency\n");
+#ifndef SHARED_MEMORY
 			eard_set_freq(req.req_data.req_value,eard_max_freq);
+#else
+			eard_set_freq(req.req_data.req_value,min(eard_max_freq,max_dyn_freq()));
+#endif	
 			break;
 		case START_GET_FREQ:
 			ear_begin_compute_turbo_freq();

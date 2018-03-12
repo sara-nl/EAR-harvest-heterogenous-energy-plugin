@@ -45,7 +45,7 @@ int send_command(request_t *command)
 	if (ret<0){
 		VERBOSE_N(0,"Error receiving ack %d\n",ret);
 	}
-	return (ret==sizeof(ulong));
+	return (ret==sizeof(ulong)); // Should we return ack ?
 }
 
 // based on getaddrinfo  mas page
@@ -119,6 +119,14 @@ int eards_set_freq(unsigned long freq)
 	command.req=EAR_RC_MAX_FREQ;
     command.my_req.max_freq=freq;
 	return send_command(&command);
+}
+// New th must be passed as % th=0.75 --> 75
+int eards_set_th(unsigned long th)
+{
+    request_t command;
+    command.req=EAR_RC_NEW_TH;
+    command.my_req.th=th;
+    return send_command(&command);
 }
 
 int eards_remote_disconnect()

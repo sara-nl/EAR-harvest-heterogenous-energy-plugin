@@ -15,6 +15,7 @@
 typedef union req_data{
         uint job_id;
         ulong max_freq;
+        ulong th;
 }req_data_t;
 
 
@@ -26,6 +27,7 @@ typedef struct request{
 #define EAR_RC_NEW_JOB     0
 #define EAR_RC_END_JOB     1
 #define EAR_RC_MAX_FREQ    100
+#define EAR_RC_NEW_TH	   101
 #define NO_COMMAND 100000
 
 

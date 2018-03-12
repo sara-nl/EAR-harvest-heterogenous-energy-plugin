@@ -15,6 +15,9 @@ int eards_remote_connect(char *nodename);
 int eards_new_job(int job_id);
 int eards_end_job(int job_id);
 int eards_set_freq(unsigned long freq);
+// New th must be passed as % th=0.75 --> 75
+int eards_set_th(unsigned long th);
+
 
 int eards_remote_disconnect();
 

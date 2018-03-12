@@ -25,7 +25,8 @@ int eards_remote_socket,eards_client;
 struct sockaddr_in eards_remote_client;
 char *my_tmp;
 
-static const char *__NAME__ = "eards_rem_server";
+static const char *__NAME__ = "dynamic_conf:";
+ear_conf_t *dyn_conf;
 
 
 void my_sigusr1(int signun)
@@ -51,6 +52,29 @@ void set_sigusr1()
 
 }
 
+ulong max_dyn_freq()
+{
+	return dyn_conf->max_freq;
+}
+
+
+int dynconf_max_freq(ulong max_freq)
+{
+	// we must check it is a valid freq: TODO
+	dyn_conf->max_freq=max_freq;
+	dyn_conf->force_rescheduling=1;
+	return EAR_SUCCESS;
+}
+
+int dynconf_set_th(ulong th)
+{
+	// we must check it is a valid th :TODO
+	dyn_conf->th=(double)th/100.0;
+	dyn_conf->force_rescheduling=1;	
+	return EAR_SUCCESS;
+}
+
+
 void process_remote_requests(int clientfd)
 {
 	request_t command;
@@ -61,12 +85,19 @@ void process_remote_requests(int clientfd)
 	switch (req){
 		case EAR_RC_NEW_JOB:
 			VERBOSE_N(0,"new_job command received %d\n",command.my_req.job_id);
+			powermon_new_job(command.my_req.job_id,0);		
 			break;
 		case EAR_RC_END_JOB:
 			VERBOSE_N(0,"end_job command received %d\n",command.my_req.job_id);
+			powermon_end_job(command.my_req.job_id);
 			break;
 		case EAR_RC_MAX_FREQ:
 			VERBOSE_N(0,"max_freq command received %lu\n",command.my_req.max_freq);
+			ack=dynconf_max_freq(command.my_req.max_freq);
+			break;
+		case EAR_RC_NEW_TH:
+			VERBOSE_N(0,"new_th command received %lu\n",command.my_req.th);
+			ack=dynconf_set_th(command.my_req.th);
 			break;
 		default:
 			VERBOSE_N(0,"Invalid remote command\n");
@@ -78,7 +109,6 @@ void process_remote_requests(int clientfd)
 void * eard_dynamic_configuration(void *tmp)
 {
 	my_tmp=(char *)tmp;
-	ear_conf_t *dyn_conf;
 	int change=0;
 	
 	ear_verbose(0,"dynamic_configration thread created\n");

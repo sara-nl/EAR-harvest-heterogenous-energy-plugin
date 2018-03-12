@@ -74,6 +74,8 @@ void usage()
     printf("- n_iterations: number of n_iterations to gather energy metrics\n");
     printf("- csv: print output in csv format (0,1)\n");
     printf("- frequency \n");
+	printf("This test needs root privileges, you are not allowed to run it\n");
+
     exit(1);
 }
 
@@ -105,6 +107,7 @@ int main (int argc, char *argv[])
     if (argc != 6) {
         usage();
     }
+	if (getuid()!=0) usage();
 
     // Options
     n_sockets = atoi(argv[1]);
