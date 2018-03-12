@@ -7,7 +7,7 @@ ENERGY_NODE_OBJS = energy_node/ibm.o \
                    energy_node/lenovo_act.o \
                    energy_node/lenovo_wct.o
 
-LIBRARIES = energy_node.so
+LIBRARIES = energy_node.a energy_node.so
 
 ######## RULES
 
@@ -21,6 +21,9 @@ energy_node.o: energy_node.c energy_node.h $(ENERGY_NODE_OBJS)
 
 energy_node.so: energy_node.o $(ENERGY_NODE_OBJS)
 	$(CC) -shared -o energy_node.so energy_node.o $(ENERGY_NODE_OBJS)
+
+energy_node.a: energy_node.o $(ENERGY_NODE_OBJS)
+	ar rvs energy_node.a energy_node.o $(ENERGY_NODE_OBJS)
 
 ######## OPTIONS
 

@@ -26,10 +26,10 @@ BINARIES  = eard
 
 all: eard
 
-eard: ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS)
-	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS)
+eard: ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(OBJS)
+	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(OBJS) $(LDFLAGS)
 
-dynamic_configuration.o:dynamic_configuration.c
+dynamic_configuration.o: dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
 
 remote_daemon_api.o: remote_daemon_api.c $(SRCDIR)/common/remote_conf.h
