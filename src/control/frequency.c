@@ -261,7 +261,7 @@ uint frequency_freq_to_pstate(ulong freq)
 		else found = 1;
 	}
 
-	VERBOSE_N(0, "the P_STATE of the frequency %lu is %d", freq, i);
+	VERBOSE_N(4, "the P_STATE of the frequency %lu is %d", freq, i);
 
 	return i;
 }
