@@ -48,7 +48,7 @@ export EAR_POWER_POLICY="$5"
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]
 then
-    PRELOAD="LD_PRELOAD=${EAR_LIB_PATH}"
+    PRELOAD="-genv LD_PRELOAD=${EAR_LIB_PATH}"
 fi
 
 # Non-edit region
@@ -60,7 +60,7 @@ PPN=${4}
 A=$(date +%s) ; date
 
 ## Starting the application
-mpiexec.hydra -l -genv $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
+mpiexec.hydra -l $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
 
 B=$(date +%s) ; date
 echo "Total elapsed time = $(( B - A )) sec"
