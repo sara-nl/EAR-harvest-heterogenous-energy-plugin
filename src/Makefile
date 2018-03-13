@@ -5,7 +5,6 @@ COMPONENTS = common \
              control \
              library \
              daemon \
-             learning \
              tools \
              tests
 ifdef SLURM_BASE
@@ -33,7 +32,6 @@ functionals:
 ######## OPTIONS
 
 install:
-	@ mkdir -p ${INSTALL_FOLDERS}
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -S -C $${i} install; \
 	done
