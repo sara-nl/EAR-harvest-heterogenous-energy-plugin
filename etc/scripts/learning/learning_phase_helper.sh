@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export BENCHS_SRC_PATH=$EAR_SRC_PATH/src/learning/kernels
+export BENCHS_SRC_PATH=$EAR_SRC_PATH/kernels
 export BENCHS_BIN_PATH=$EAR_INSTALL_PATH/bin/kernels
 export MPI_SCRIPT_PATH=$EAR_INSTALL_PATH/etc/scripts/running/mpi_exec.sh
 
@@ -15,7 +15,16 @@ function configuring
 	export MPIS=$4
 }
 
-function launching_disabled
+function launching
+{
+    if [[ -z "${SLURM_JOB_ID}" ]]; then
+      launching_mpi_script $1 $2
+    else
+      launching_slurm $1 $2
+    fi
+}
+
+function launching_slurm
 {
     # Update srun command for custom SLURM installations
     export SRUN_PATH=/home/xjaneas/slurm/bin/srun
@@ -28,7 +37,7 @@ function launching_disabled
         $BENCHS_BIN_PATH/$1
 }
 
-function launching
+function launching_mpi_script
 {
     # MPI options
     export I_MPI_PIN=1
