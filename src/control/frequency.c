@@ -177,7 +177,7 @@ uint frequency_get_num_online_cpus()
 	return num_cpus;
 }
 
-// ear_cpufreq_set_node
+// Privileged function
 ulong frequency_set_all_cpus(ulong freq)
 {
 	int result, i = 0;
@@ -266,7 +266,7 @@ uint frequency_freq_to_pstate(ulong freq)
 	return i;
 }
 
-// ear_set_turbo TODO: ??
+// Privileged function
 void frequency_set_performance_governor_all_cpus()
 {
 	int i;
@@ -276,7 +276,7 @@ void frequency_set_performance_governor_all_cpus()
 	}
 }
 
-// ear_set_userspace TODO: ??
+// Privileged function
 void frequency_set_userspace_governor_all_cpus()
 {
 	int i;
@@ -296,6 +296,7 @@ void frequency_save_previous_frequency()
 	saved_previous_freq = 1;
 }
 
+// Privileged function
 void frequency_recover_previous_frequency()
 {
 	if (!saved_previous_freq) {

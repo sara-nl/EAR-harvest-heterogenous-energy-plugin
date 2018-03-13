@@ -18,6 +18,8 @@ INSTALL_FOLDERS += $(DESTDIR)/DBS \
 
 install:
 	@ mkdir -p ${INSTALL_FOLDERS}
+	cp    slurm/ear.conf $(DESTDIR)/etc/slurm/
+	cp    slurm/plugstack.conf $(DESTDIR)/etc/slurm/
 	cp    scripts/environment/lib_vars.sh $(DESTDIR)/etc/scripts/environment/lib_vars.sh
 	cp -n scripts/environment/ear_vars.sh $(DESTDIR)/etc/scripts/environment/ear_vars.sh
 	cp -n scripts/learning/learning_phase_compile.sh $(DESTDIR)/etc/scripts/learning/learning_phase_compile.sh
@@ -25,4 +27,3 @@ install:
 	cp -n scripts/learning/learning_phase_helper.sh $(DESTDIR)/etc/scripts/learning/learning_phase_helper.sh
 	cp    scripts/examples/* $(DESTDIR)/etc/scripts/examples/
 	cp    scripts/running/* $(DESTDIR)/etc/scripts/running/
-	cp    slurm/* $(DESTDIR)/etc/slurm/
