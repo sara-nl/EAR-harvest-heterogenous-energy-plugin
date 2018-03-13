@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export BENCHS_SRC_PATH=$EAR_SRC_PATH/src/learning/kernels
+export BENCHS_SRC_PATH=$EAR_SRC_PATH/kernels
 export BENCHS_BIN_PATH=$EAR_INSTALL_PATH/bin/kernels
 export MPI_SCRIPT_PATH=$EAR_INSTALL_PATH/etc/scripts/running/mpi_exec.sh
 
@@ -15,7 +15,16 @@ function configuring
 	export MPIS=$4
 }
 
-function launching_disabled
+function launching
+{
+    if [[ -z "${SLURM_JOB_ID}" ]]; then
+      launching_mpi_script $1 $2
+    else
+      launching_slurm $1 $2
+    fi
+}
+
+function launching_slurm
 {
     # Update srun command for custom SLURM installations
     export SRUN_PATH=/home/xjaneas/slurm/bin/srun
@@ -28,15 +37,19 @@ function launching_disabled
         $BENCHS_BIN_PATH/$1
 }
 
-function launching
+function launching_mpi_script
 {
-    # MPI options
+	if [ "$EAR_POWER_POLICY" != "NO_EAR" ]; then
+    	export EAR_POWER_POLICY="MONITORING_ONLY"
+	fi	
+
+	# MPI options
     export I_MPI_PIN=1
     export I_MPI_PIN_DOMAIN=auto
 
     # Non-edit region
     export EAR_APP_NAME=$1
-    $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 MONITORING_ONLY
+    $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 $EAR_POWER_POLICY
 }
 
 function learning_phase
