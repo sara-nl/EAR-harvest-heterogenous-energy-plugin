@@ -165,6 +165,7 @@ fi
 
 AC_CONFIG_FILES([Makefile
                  etc/ear-1.0
+                 etc/slurm/plugstack.conf
                  src/common/config.h]) 
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
 AC_CONFIG_FILES([etc/scripts/environment/lib_vars.sh], [chmod +x etc/scripts/environment/lib_vars.sh])
