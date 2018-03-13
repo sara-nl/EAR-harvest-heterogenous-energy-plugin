@@ -287,12 +287,12 @@ void eard_exit()
 	{
 		close(ear_fd_req[i]);
 
-		sprintf(ear_commreq, "%s/.ear_comm.req_%d", ear_tmp, i);
-		VERBOSE_N(2, "removing file %s", ear_commreq);
+		//sprintf(ear_commreq, "%s/.ear_comm.req_%d", ear_tmp, i);
+		//VERBOSE_N(2, "removing file %s", ear_commreq);
 
-		if (unlink(ear_commreq) < 0) {
-			VERBOSE_N(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
-		}
+		//if (unlink(ear_commreq) < 0) {
+		//	VERBOSE_N(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
+		//}
 	}
 
 	exit(1);
