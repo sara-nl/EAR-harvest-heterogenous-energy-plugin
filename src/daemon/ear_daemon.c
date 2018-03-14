@@ -418,7 +418,7 @@ int eard_system(int must_read)
 
 			if (write(ear_fd_ack[system_req], &ack, size) != size)
 			{
-				VERBOSE_N(0, "invalid write for the system service ack, closing connection...");
+				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
 				eard_close_comm();
 			}
 			break;
