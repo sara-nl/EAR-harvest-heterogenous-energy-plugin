@@ -67,6 +67,11 @@ powermon_app_t current_ear_app;
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
 // BUFFERS
+void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
+{
+	bcopy(src,dest,sizeof(powermon_app_t));
+}
+
 
 power_data_t * create_historic_buffer(int samples)
 {
@@ -75,6 +80,7 @@ power_data_t * create_historic_buffer(int samples)
 	if (mem!=NULL) memset(mem,0,sizeof(power_data_t)*samples);
 	return mem;
 }
+#if 0
 void add_power_sample(power_data_t *ps)
 {
 
@@ -85,6 +91,7 @@ void add_power_sample(power_data_t *ps)
 		compute_average_period(L1_samples,NUM_SAMPLES_L1);
 	}
 }
+#endif
 
 // END BUFFERS
 
@@ -121,11 +128,6 @@ void job_end_powermon_app(int app_id,int samples)
     time(&current_ear_app.end_time);
 }
 
-
-void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
-{
-	bcopy(src,dest,sizeof(powermon_app_t));
-}
 
 void report_powermon_app(powermon_app_t *app)
 {
@@ -296,19 +298,20 @@ void *eard_power_monitoring(void *frequency_monitoring)
 
 	// We will collect and report avg power until eard finishes
 	// Get time and Energy
-	time(&t_begin);
+	//time(&t_begin);
 	read_enegy_data(&e_begin);
 	while(!eard_must_exit)
 	{
 		// Wait for N usecs
 		usleep(f_monitoring);
 		// Get time and Energy
-		time(&t_end);
+		//time(&t_end);
 		read_enegy_data(&e_end);
-		t_diff=difftime(t_end,t_begin);	
+		//t_diff=difftime(t_end,t_begin);	
 	
 		// Compute the power
-		compute_power(&e_begin,&e_end,t_begin,t_end,t_diff,&my_current_power);
+		//compute_power(&e_begin,&e_end,t_begin,t_end,t_diff,&my_current_power);
+		compute_power(&e_begin,&e_end,&my_current_power);
 		// Save current power
 		update_historic_info(&my_current_power);
 		// Set values for next iteration

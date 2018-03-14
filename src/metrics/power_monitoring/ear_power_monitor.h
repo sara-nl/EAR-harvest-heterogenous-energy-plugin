@@ -2,7 +2,8 @@
 #define _POWER_MON_H_
 
 #include <common/states.h>
-#include <metrics/power_monitoring/specific_api.h>
+#include <metrics/ipmi/energy_node.h>
+#include <metrics/papi/energy_cpu.h>
 
 #define NUM_SOCKETS 2
 #define POWER_MON_OK	EAR_SUCCESS
@@ -12,6 +13,7 @@ typedef long long rapl_data_t;
 typedef unsigned long node_data_t;
 
 typedef struct energy_mon_data{
+	time_t 		sample_time;
 	node_data_t AC_node_energy;
 	node_data_t DC_node_energy;
 	rapl_data_t DRAM_energy[NUM_SOCKETS];
@@ -42,7 +44,7 @@ void copy_energy_data(energy_data_t *dest,energy_data_t *src);
 void print_energy_data(energy_data_t *e);
 
 // Time must be passed in seconds
-void compute_power(energy_data_t *e_begin,energy_data_t *e_end,time_t t_begin,time_t t_end,double sec,power_data_t *my_power);
+void compute_power(energy_data_t *e_begin,energy_data_t *e_end,power_data_t *my_power);
 void print_power(power_data_t *my_power);
 
 

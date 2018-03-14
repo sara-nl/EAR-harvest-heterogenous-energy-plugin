@@ -23,6 +23,8 @@
 #define FUNCVERB(function)                               \
     ear_debug(4, "ear_daemon(node_energy) " function "\n");
 
+static int ear_energy_node_connected=0;
+static int ear_energy_node_status=0;
 struct node_energy_op
 {
 	int (*node_energy_init) ();
@@ -217,6 +219,8 @@ int node_energy_init()
 	int cpu_model;
 	int ret;
 
+	if (ear_energy_node_connected) return ear_energy_node_status;
+
     FUNCVERB("node_energy_init");
 	if ((ret=ipmi_get_product_name(my_p_manufacturer_name,my_p_name))<0){
 		return -1;
@@ -276,7 +280,9 @@ int node_energy_init()
 	default:
 		break;
 	}
-    return node_energy_ops.node_energy_init();
+	ear_energy_node_status=node_energy_ops.node_energy_init();
+	ear_energy_node_connected=1;
+    return ear_energy_node_status;
 }
 int count_energy_data_length()
 {
@@ -305,6 +311,7 @@ int read_ac_energy(unsigned long *energy)
 int node_energy_dispose()
 {
 	FUNCVERB("node_energy_dispose");
+	ear_energy_node_connected=0;
 	if (node_energy_ops.node_energy_dispose!=NULL) return node_energy_ops.node_energy_dispose();
 	else return -1;
 }

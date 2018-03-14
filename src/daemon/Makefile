@@ -1,17 +1,12 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS)  -pthread
-CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -DPOWER_MONITORING -pthread -DEARDS
-LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl -pthread 
+CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -DPOWER_MONITORING -pthread 
+LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl -pthread -L$(SRCDIR)/metrics/power_monitoring -lpowermon
 
 METRICS_DAEMON = $(SRCDIR)/metrics/custom/frequency.o \
-               $(SRCDIR)/metrics/custom/hardware_info.o \
-                $(SRCDIR)/metrics/papi/energy_cpu.o \
-               $(SRCDIR)/metrics/ipmi/energy_node.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o \
                $(SRCDIR)/metrics/custom/bandwidth.o \
-               $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
-			   $(SRCDIR)/metrics/power_monitoring/ear_power_monitor.o
+               $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o 
+
+POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a
 
 
 ######## VARS
@@ -36,19 +31,20 @@ BINARIES  = eard
 
 all: eard
 
-ear_frequency.o: ear_frequency.c ear_frequency.h
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
 
-eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o remote_daemon_api.o $(METRICS_DAEMON)
+eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o remote_daemon_api.o $(METRICS_DAEMON) $(POWERMONLIB)
 	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_DAEMON) $(LDFLAGS) ear_frequency.o power_monitoring.o \
 		dynamic_configuration.o remote_daemon_api.o
 
+ear_frequency.o: ear_frequency.c ear_frequency.h
+	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
 
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
 
 remote_daemon_api.o: remote_daemon_api.c $(SRCDIR)/common/remote_conf.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c remote_daemon_api.c
+
 power_monitoring.o:power_monitoring.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c
 
