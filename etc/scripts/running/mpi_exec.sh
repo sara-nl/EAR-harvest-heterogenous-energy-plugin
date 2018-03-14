@@ -11,13 +11,10 @@ then
   	exit 1
 fi
 
-# Environment
-module load ear
-
 if [ -z $EAR_INSTALL_PATH ]
 then
-    echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
-    echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
+    echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set."
+    echo -e "Load the EAR environment module with 'module load ear'."
     exit 1
 fi
 
@@ -43,7 +40,6 @@ then
 else 
 	MPI_HOST="-f $1"
 fi
-
 
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]
