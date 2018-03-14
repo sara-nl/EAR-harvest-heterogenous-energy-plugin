@@ -164,8 +164,10 @@ if test -z $COMPILABLE; then
 fi
 
 AC_CONFIG_FILES([Makefile
-                 etc/ear-1.0
-                 src/common/config.h]) 
+                 etc/module/ear-1.0
+                 etc/slurm/ear.conf
+                 etc/slurm/plugstack.conf
+                 src/common/config.h])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
 AC_CONFIG_FILES([etc/scripts/environment/lib_vars.sh], [chmod +x etc/scripts/environment/lib_vars.sh])
 AC_OUTPUT

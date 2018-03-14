@@ -1,8 +1,0 @@
-#!/bin/bash
-
-export CPUPOWER_LIB_PATH="@CPUPOWER_LIBDIR@"
-export FREEIPMI_LIB_PATH="@FREEIPMI_LIBDIR@"
-export PAPI_LIB_PATH="@PAPI_LIBDIR@"
-
-export EAR_LIB_PATH="${EAR_INSTALL_PATH}/lib/libear.so"
-export EAR_TRAC_LIB_PATH="${EAR_INSTALL_PATH}/lib/libeartrac.so"

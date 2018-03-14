@@ -39,10 +39,8 @@ else
 	MPI_HOST="-f $1"
 fi
 
-source $EAR_INSTALL_PATH/etc/scripts/environment/lib_vars.sh
-source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
-
-export LD_LIBRARY_PATH="$FREEIPMI_LIB_PATH:$PAPI_LIB_PATH:$LD_LIBRARY_PATH:$CPUPOWER_LIB_PATH:$LD_LIBRARY_PATH"
+# Environment
+module load ear
 export EAR_POWER_POLICY="$5"
 
 # LD_PRELOAD if NO_EAR policy isn not selected
