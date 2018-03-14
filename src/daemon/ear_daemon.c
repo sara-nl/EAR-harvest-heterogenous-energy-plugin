@@ -382,10 +382,10 @@ void form_database_paths()
 
 		sprintf(database_bin_path, "%s%s.db.bin", db_pathname, node_name);
 		sprintf(database_csv_path, "%s%s.db.csv", db_pathname, node_name);
-
-		VERBOSE_N(2, "DB binary file: %s", database_bin_path);
-		VERBOSE_N(2, "DB pain-text file: %s", database_csv_path);
 	}
+
+	VERBOSE_N(2, "DB binary file: %s", database_bin_path);
+	VERBOSE_N(2, "DB pain-text file: %s", database_csv_path);
 }
 
 int eard_system(int must_read)
