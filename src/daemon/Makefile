@@ -2,10 +2,6 @@ CFLAGS  = -I$(SRCDIR) $(CONSTANTS)  -pthread
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -DPOWER_MONITORING -pthread 
 LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl -pthread -L$(SRCDIR)/metrics/power_monitoring -lpowermon
 
-METRICS_DAEMON = $(SRCDIR)/metrics/custom/frequency.o \
-               $(SRCDIR)/metrics/custom/bandwidth.o \
-               $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o 
-
 POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a
 
 
@@ -15,13 +11,16 @@ export DIR
 
 ######## FILES
 
+METRICS_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a \
+               $(SRCDIR)/metrics/custom/frequency.o \
+	           $(SRCDIR)/metrics/papi/generics.o \
+	           $(SRCDIR)/control/frequency.o
 
 COMMON_OBJS = $(SRCDIR)/common/types.a \
               $(SRCDIR)/common/environment.o \
               $(SRCDIR)/common/shared_configuration.o
 
-OBJS = ear_frequency.o \
-       power_monitoring.o \
+OBJS = power_monitoring.o \
        dynamic_configuration.o \
        remote_daemon_api.o
 
@@ -32,12 +31,8 @@ BINARIES  = eard
 all: eard
 
 
-eard: ear_daemon.c ear_frequency.o power_monitoring.o dynamic_configuration.o remote_daemon_api.o $(METRICS_DAEMON) $(POWERMONLIB)
-	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_DAEMON) $(LDFLAGS) ear_frequency.o power_monitoring.o \
-		dynamic_configuration.o remote_daemon_api.o
-
-ear_frequency.o: ear_frequency.c ear_frequency.h
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) $(PAPI_CFLAGS) -c ear_frequency.c
+eard: ear_daemon.c $(OBJS) $(METRICS_OBJS) $(POWERMONLIB) $(COMMON_OBJS)
+	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) $(OBJS)
 
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c

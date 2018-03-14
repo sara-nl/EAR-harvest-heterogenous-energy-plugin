@@ -22,12 +22,12 @@
 #include <papi.h>
 
 // EAR includes
+#include <control/frequency.h>
 #include <library/common/externs_alloc.h>
 #include <library/ear_dynais/ear_dynais.h>
 #include <library/ear_states/ear_states.h>
 #include <library/ear_dyn_inst/MPI_types.h>
 #include <library/ear_dyn_inst/MPI_calls_coded.h>
-#include <library/ear_frequency/ear_cpufreq.h>
 #include <library/ear_models/ear_models.h>
 #include <library/ear_metrics/ear_metrics.h>
 #include <library/ear_gui/ear_gui.h>
@@ -139,11 +139,12 @@ void ear_init()
 #ifdef SHARED_MEMORY
 	system_conf=attach_ear_conf_shared_area(get_ear_tmp());
 #endif
-		// Only one process can connect with the daemon
-		// Connecting with ear_daemon
+
+	// Only one process can connect with the daemon
+	// Connecting with ear_daemon
 	if (eards_connect() < 0) {
-			ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
-			exit(1);
+		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
+		exit(1);
 	}
 
 	ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
@@ -153,9 +154,10 @@ void ear_init()
 	// 'privileged_metrics'. This value has to be different to 0 when
 	// my_id is different to 0.
 	metrics_init(); // PAPI_init starts counters
-	ear_cpufreq_init(); //Initialize cpufreq info
+	frequency_init(); //Initialize cpufreq info
 
-	if (ear_my_rank=00){
+	if (ear_my_rank=0)
+	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
 			VERBOSE_N(2, "turbo learning phase, turbo selected and start computing\n");
 			eards_set_turbo();
@@ -166,7 +168,7 @@ void ear_init()
 
 	// Getting environment data
 	get_app_name_please(ear_app_name);
-	ear_current_freq = ear_cpufreq_get(0);
+	ear_current_freq = frequency_get_num_pstates(0);
 	job_id = getenv("SLURM_JOB_ID");
 	user_id = getenv("LOGNAME");
 
@@ -179,7 +181,7 @@ void ear_init()
 	
 	// Policies
 	init_power_policy();
-	init_power_models(ear_get_num_p_states(), ear_get_pstate_list());
+	init_power_models(frequency_get_num_pstates(), frequency_get_freq_rank_list());
 
 	// Policy name is set in ear_models
 	strcpy(application.app_id, ear_app_name);
@@ -341,13 +343,16 @@ void ear_finalize()
 
 	// DynAIS
 	dynais_dispose();
-
+	//
 	if (in_loop) states_end_period(ear_iterations);
-	
+	//
 	states_end_job(my_id, NULL, ear_app_name);
-	ear_cpufreq_end();
-#ifdef SHARED_MEMORY
-	dettach_ear_conf_shared_area();	
-#endif
+
+	frequency_dispose();
+
+	#ifdef SHARED_MEMORY
+	dettach_ear_conf_shared_area();
+	#endif
+
 	eards_disconnect();
 }
