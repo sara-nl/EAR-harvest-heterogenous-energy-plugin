@@ -408,14 +408,18 @@ int eard_system(int must_read)
 
 			if (ret1 == EAR_SUCCESS && ret2 == EAR_SUCCESS)
 			{
+				DEBUG_F(1, "application signature correctly written");
 				ack = EAR_COM_OK;
-				size = sizeof(unsigned long);
+			} else {
+				VERBOSE_N(1, "ERROR while application signature writing");
+				ack = EAR_COM_ERROR;
+			}
+			size = sizeof(unsigned long);
 
-				if (write(ear_fd_ack[system_req], &ack, size) != size)
-				{
-					ear_verbose(0,"ear_daemon: invalid write to system_req ack\n");
-					eard_close_comm();
-				}
+			if (write(ear_fd_ack[system_req], &ack, size) != size)
+			{
+				VERBOSE_N(0, "invalid write for the system service ack, closing connection...");
+				eard_close_comm();
 			}
 			break;
 		default: return 0;

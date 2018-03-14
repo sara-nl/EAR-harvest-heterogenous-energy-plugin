@@ -21,7 +21,7 @@ install:
 	cp    slurm/ear.conf $(DESTDIR)/etc/slurm/
 	cp    slurm/plugstack.conf $(DESTDIR)/etc/slurm/
 	cp    scripts/examples/* $(DESTDIR)/etc/scripts/examples/
-	cp    scripts/running/* $(DESTDIR)/etc/scripts/running/
+	cp -n scripts/running/* $(DESTDIR)/etc/scripts/running/
 
 #cp -n scripts/learning/learning_phase_compile.sh $(DESTDIR)/etc/scripts/learning/learning_phase_compile.sh
 #cp -n scripts/learning/learning_phase_execute.sh $(DESTDIR)/etc/scripts/learning/learning_phase_execute.sh
