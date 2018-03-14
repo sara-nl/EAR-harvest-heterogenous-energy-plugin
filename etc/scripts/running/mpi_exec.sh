@@ -11,6 +11,9 @@ then
   	exit 1
 fi
 
+# Environment
+module load ear
+
 if [ -z $EAR_INSTALL_PATH ]
 then
     echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
@@ -23,6 +26,8 @@ if [[ "$5" != "MIN_ENERGY_TO_SOLUTION" ]] && [[ "$5" != "MIN_TIME_TO_SOLUTION" ]
 then
 	echo "ERROR: bad policy $5."
 	exit 1
+else
+	export EAR_POWER_POLICY="$5"
 fi
 
 if [ ! -f $1 ]
@@ -39,16 +44,6 @@ else
 	MPI_HOST="-f $1"
 fi
 
-# Environment
-module load ear
-export EAR_POWER_POLICY="$5"
-
-if [ -z $EAR_INSTALL_PATH ]
-then
-	echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
-	echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
-	exit 1
-fi
 
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]

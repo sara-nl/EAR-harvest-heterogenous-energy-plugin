@@ -59,6 +59,10 @@ int append_loop_text_file(char *path, loop_t *loop)
         "DP_512;FIRST_EVENT;ITERATIONS;LEVEL;SIZE";
 	int fd, ret;
 
+	if (path == NULL) {
+		return EAR_ERROR;
+	}
+
 	fd = open(path, O_WRONLY | O_APPEND);
 
 	if (fd < 0)
@@ -107,7 +111,12 @@ void report_application_data(application_t *app)
 
 int append_application_binary_file(char *path, application_t *app)
 {
-    int fd, ret;
+	int fd, ret;
+
+	if (path == NULL) {
+		return EAR_ERROR;
+	}
+
 
     fd = open(path, O_WRONLY | O_APPEND);
 
@@ -138,9 +147,13 @@ int print_application(application_t *app)
 int append_application_text_file(char *path, application_t *app)
 {
 	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;" \
-        "DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
-        "L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;DP_512";
-    int fd, ret;
+	"DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
+	"L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;DP_512";
+	int fd, ret;
+
+	if (path == NULL) {
+		return EAR_ERROR;
+	}
 
     fd = open(path, O_WRONLY | O_APPEND);
 
@@ -170,8 +183,12 @@ int append_application_text_file(char *path, application_t *app)
 
 int read_application_binary_file(char *path, application_t **apps)
 {
-    application_t *apps_aux, *a;
-    int fd, lines, i;
+	application_t *apps_aux, *a;
+	int fd, lines, i;
+
+	if (path == NULL) {
+		return EAR_ERROR;
+	}
 
     if ((fd = open(path, O_RDONLY)) < 0) {
         return EAR_FILE_NOT_FOUND;
@@ -233,10 +250,14 @@ int scan_application_fd(FILE *fd, application_t *app)
 
 int read_application_text_file(char *path, application_t **apps)
 {
-    char line[PIPE_BUF];
-    application_t *apps_aux, *a;
-    int lines, i, ret;
-    FILE *fd;
+	char line[PIPE_BUF];
+	application_t *apps_aux, *a;
+	int lines, i, ret;
+	FILE *fd;
+
+	if (path == NULL) {
+		return EAR_ERROR;
+	}
 
     if ((fd = fopen(path, "r")) == NULL) {
         return EAR_FILE_NOT_FOUND;

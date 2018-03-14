@@ -334,18 +334,19 @@ void ear_finalize()
 
 	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
 	ear_daemon_client_write_app_signature(&application);
-
 	append_application_text_file(app_summary_path, &application);
 	report_application_data(&application);
 
-	// DynAIS
+	// Releasing DynAIS algorithm memory
 	dynais_dispose();
-	//
+	
+	// Closing any remaining loop
 	if (in_loop) states_end_period(ear_iterations);
-	//
 	states_end_job(my_id, NULL, ear_app_name);
-	//
+
+	// Releasing frequency service
 	frequency_dispose();
+
 	// Daemon -> eard_close_comm
 	ear_daemon_client_disconnect();
 }
