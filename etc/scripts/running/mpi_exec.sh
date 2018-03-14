@@ -43,6 +43,13 @@ fi
 module load ear
 export EAR_POWER_POLICY="$5"
 
+if [ -z $EAR_INSTALL_PATH ]
+then
+	echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
+	echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
+	exit 1
+fi
+
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]
 then
