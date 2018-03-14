@@ -6,7 +6,6 @@ INSTALL_FOLDERS = $(DESTDIR)/bin \
                   $(DESTDIR)/etc/slurm \
                   $(DESTDIR)/etc/scripts \
                   $(DESTDIR)/etc/scripts/examples \
-                  $(DESTDIR)/etc/scripts/environment \
                   $(DESTDIR)/etc/scripts/learning \
                   $(DESTDIR)/etc/scripts/running \
                   $(DESTDIR)/sbin
@@ -18,12 +17,12 @@ INSTALL_FOLDERS += $(DESTDIR)/dbs \
 
 install:
 	@ mkdir -p ${INSTALL_FOLDERS}
+	cp    module/ear $(DESTDIR)/etc/module/
 	cp    slurm/ear.conf $(DESTDIR)/etc/slurm/
 	cp    slurm/plugstack.conf $(DESTDIR)/etc/slurm/
-	cp    scripts/environment/lib_vars.sh $(DESTDIR)/etc/scripts/environment/lib_vars.sh
-	cp -n scripts/environment/ear_vars.sh $(DESTDIR)/etc/scripts/environment/ear_vars.sh
-   #cp -n scripts/learning/learning_phase_compile.sh $(DESTDIR)/etc/scripts/learning/learning_phase_compile.sh
-   #cp -n scripts/learning/learning_phase_execute.sh $(DESTDIR)/etc/scripts/learning/learning_phase_execute.sh
-   #cp -n scripts/learning/learning_phase_helper.sh $(DESTDIR)/etc/scripts/learning/learning_phase_helper.sh
 	cp    scripts/examples/* $(DESTDIR)/etc/scripts/examples/
 	cp    scripts/running/* $(DESTDIR)/etc/scripts/running/
+
+#cp -n scripts/learning/learning_phase_compile.sh $(DESTDIR)/etc/scripts/learning/learning_phase_compile.sh
+#cp -n scripts/learning/learning_phase_execute.sh $(DESTDIR)/etc/scripts/learning/learning_phase_execute.sh
+#cp -n scripts/learning/learning_phase_helper.sh $(DESTDIR)/etc/scripts/learning/learning_phase_helper.sh
