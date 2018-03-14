@@ -6,7 +6,6 @@ INSTALL_FOLDERS = $(DESTDIR)/bin \
                   $(DESTDIR)/etc/slurm \
                   $(DESTDIR)/etc/scripts \
                   $(DESTDIR)/etc/scripts/examples \
-                  $(DESTDIR)/etc/scripts/environment \
                   $(DESTDIR)/etc/scripts/learning \
                   $(DESTDIR)/etc/scripts/running \
                   $(DESTDIR)/sbin
@@ -18,7 +17,7 @@ INSTALL_FOLDERS += $(DESTDIR)/dbs \
 
 install:
 	@ mkdir -p ${INSTALL_FOLDERS}
-	cp    module/ear-1.0 $(DESTDIR)/etc/modulei/
+	cp    module/ear $(DESTDIR)/etc/module/
 	cp    slurm/ear.conf $(DESTDIR)/etc/slurm/
 	cp    slurm/plugstack.conf $(DESTDIR)/etc/slurm/
 	cp    scripts/examples/* $(DESTDIR)/etc/scripts/examples/
