@@ -87,7 +87,8 @@ int get_app_name_please(char *my_name)
 void ear_init()
 {
 	char node_name[BUFFSIZE];
-	unsigned int num_nodes,ppnode;
+	unsigned int num_nodes, ppnode;
+	char *summary_pathname;
 	char *job_id, *user_id;
 	char *freq;
 	int size;
@@ -196,10 +197,12 @@ void ear_init()
 	memcpy(&loop_signature, &application, sizeof(application_t));
 
 	// Summary files
-	char *summary_pathname;
 	summary_pathname = get_ear_user_db_pathname();
-	sprintf(app_summary_path, "%s%s.csv", summary_pathname, node_name);
-	sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
+
+	if (summary_pathname != NULL) {
+		sprintf(app_summary_path, "%s%s.csv", summary_pathname, node_name);
+		sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
+	}
 
 	if (ear_my_rank==0)
 	{
