@@ -18,8 +18,8 @@ INSTALL_FOLDERS += $(DESTDIR)/dbs \
 install:
 	@ mkdir -p ${INSTALL_FOLDERS}
 	cp    module/ear $(DESTDIR)/etc/module/
-	cp    slurm/ear.conf $(DESTDIR)/etc/slurm/
-	cp    slurm/plugstack.conf $(DESTDIR)/etc/slurm/
+	cp -n slurm/ear.conf $(DESTDIR)/etc/slurm/
+	cp -n slurm/plugstack.conf $(DESTDIR)/etc/slurm/
 	cp    scripts/examples/* $(DESTDIR)/etc/scripts/examples/
 	cp -n scripts/running/* $(DESTDIR)/etc/scripts/running/
 
