@@ -211,9 +211,8 @@ void ear_init()
 	traces_init(ear_my_rank, my_id, ear_app_name, application.node_id, num_nodes, my_size, ppnode);
 	traces_frequency(ear_my_rank,my_id,ear_current_freq);
 
-	ear_debug(1,"EAR Initialized successfully\n");
 	ear_print_lib_environment();
-	if (ear_my_rank==0) ear_verbose(1,"______________EAR loaded___________________\n");
+	DEBUG_F(1, "EAR initialized successfully");
 }
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
