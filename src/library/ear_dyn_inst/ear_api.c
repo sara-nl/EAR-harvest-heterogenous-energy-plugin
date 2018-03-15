@@ -80,14 +80,14 @@ int get_app_name_please(char *my_name)
 		strcpy(my_name, app_name);
 	}
 
-	ear_verbose(1, "EAR: Application name is  %s\n", my_name);
 	return defined;
 }
 
 void ear_init()
 {
 	char node_name[BUFFSIZE];
-	unsigned int num_nodes,ppnode;
+	unsigned int num_nodes, ppnode;
+	char *summary_pathname;
 	char *job_id, *user_id;
 	char *freq;
 	int size;
@@ -96,32 +96,24 @@ void ear_init()
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
 
-	//
-	ear_lib_environment();
-	set_ear_total_processes(my_size);
-	EAR_VERBOSE_LEVEL=get_ear_verbose();
-
-	if (ear_my_rank==0){
-		if (get_ear_app_name() != NULL){
-			ear_verbose(1, "________ EAR: Application %s starts__________\n", get_ear_app_name());
-		}else{
-			ear_verbose(1,"EAR: Application starts.....\n");
-		}
-	}
-
-	ear_debug(2,"EAR Starting initialization\n");	
-	ear_whole_app=get_ear_learning_phase();
-   	dynais_init(get_ear_dynais_window_size(),get_ear_dynais_levels());
-
 	//TODO: SWTICH TO APPLICATION
 	gethostname(node_name, sizeof(node_name));
+	
+	// Environment initialization
+	ear_lib_environment();
+
+	//
+	EAR_VERBOSE_LEVEL = get_ear_verbose();
+	set_ear_total_processes(my_size);
+	ear_whole_app = get_ear_learning_phase();
+   	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
 	my_id = get_ear_local_id();
 
 	if (my_id < 0)
 	{
 		num_nodes = get_ear_num_nodes();
-		ppnode = my_size/num_nodes;
+		ppnode = my_size / num_nodes;
 		my_id = (ear_my_rank % ppnode);
 	}
 
@@ -129,22 +121,15 @@ void ear_init()
 		return;
 	}
 
-	if (ear_my_rank==0)
-	{
-		ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
-		ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
-				get_ear_dynais_levels(), get_ear_dynais_window_size());
-	}
-
+	VERBOSE_N(1, "MPI rank %d defined as node master for %s (pid: %d)",
+				ear_my_rank, node_name, getpid());
+	
 	// Only one process can connect with the daemon
 	// Daemon ->
 	if (ear_daemon_client_connect() < 0) {
-		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
+		VERBOSE_N(0, "ERROR, daemon connection failed in %s", node_name);
 		exit(1);
 	}
-
-	ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
-				ear_my_rank, application.node_id, getpid());
 
 	// my_id is 0 in case is not local. Metrics gets the value
 	// 'privileged_metrics'. This value has to be different to 0 when
@@ -152,13 +137,10 @@ void ear_init()
 	metrics_init(); // PAPI_init starts counters
 	frequency_init(); //Initialize cpufreq info
 
-	if (ear_my_rank=0)
+	if (ear_my_rank == 0)
 	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
-			VERBOSE_N(1, "turbo learning phase, turbo selected and start computing\n");
 			ear_daemon_client_set_turbo();
-		} else {
-			VERBOSE_N(1, "learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
 		}
 	}
 
@@ -196,21 +178,30 @@ void ear_init()
 	memcpy(&loop_signature, &application, sizeof(application_t));
 
 	// Summary files
-	char *summary_pathname;
 	summary_pathname = get_ear_user_db_pathname();
-	sprintf(app_summary_path, "%s%s.csv", summary_pathname, node_name);
-	sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 
-	if (ear_my_rank==0)
+	if (summary_pathname != NULL) {
+		sprintf(app_summary_path, "%s%s.csv", summary_pathname, node_name);
+		sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
+	}
+
+	if (ear_my_rank == 0)
 	{
+		VERBOSE_N(1, "--------------------------------");
 		VERBOSE_N(1, "App id: '%s'", application.app_id);
 		VERBOSE_N(1, "User id: '%s'", application.user_id);
 		VERBOSE_N(1, "Node id: '%s'", application.node_id);
 		VERBOSE_N(1, "Job id: '%s'", application.job_id);
 		VERBOSE_N(1, "Default frequency: %u", application.def_f);
 		VERBOSE_N(1, "Procs: %u", application.procs);
-		VERBOSE_N(1, "Policy: %s", application.policy);
-		VERBOSE_N(1, "Policy th: %lf", application.policy_th);
+		VERBOSE_N(1, "Nodes/PPN: %u/%u", num_nodes, ppnode);
+		VERBOSE_N(1, "Policy (th): %s (%lf)", application.policy, application.policy_th);
+		VERBOSE_N(1, "App summary file: %s", app_summary_path);
+		VERBOSE_N(1, "Loop summary file: %s", loop_summary_path);
+		VERBOSE_N(1, "DynAIS levels/window: %d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size());
+		VERBOSE_N(1, "Learning phase: %d", ear_whole_app);
+		VERBOSE_N(1, "Turbo enabled: %d", ear_use_turbo);
+		VERBOSE_N(1, "--------------------------------");
 	}
 
 	//
@@ -220,9 +211,8 @@ void ear_init()
 	traces_init(ear_my_rank, my_id, ear_app_name, application.node_id, num_nodes, my_size, ppnode);
 	traces_frequency(ear_my_rank,my_id,ear_current_freq);
 
-	ear_debug(1,"EAR Initialized successfully\n");
 	ear_print_lib_environment();
-	if (ear_my_rank==0) ear_verbose(1,"______________EAR loaded___________________\n");
+	DEBUG_F(1, "EAR initialized successfully");
 }
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
@@ -334,18 +324,19 @@ void ear_finalize()
 
 	// TODO: DAR ORDEN AL DAEMON DE ESCRIBIR LOS DBS
 	ear_daemon_client_write_app_signature(&application);
-
 	append_application_text_file(app_summary_path, &application);
 	report_application_data(&application);
 
-	// DynAIS
+	// Releasing DynAIS algorithm memory
 	dynais_dispose();
-	//
+	
+	// Closing any remaining loop
 	if (in_loop) states_end_period(ear_iterations);
-	//
 	states_end_job(my_id, NULL, ear_app_name);
-	//
+
+	// Releasing frequency service
 	frequency_dispose();
+
 	// Daemon -> eard_close_comm
 	ear_daemon_client_disconnect();
 }
