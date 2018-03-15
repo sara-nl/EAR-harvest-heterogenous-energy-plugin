@@ -376,14 +376,16 @@ void form_database_paths()
 	char *db_pathname;
 
 	db_pathname = get_ear_db_pathname();
-	gethostname(node_name, sizeof(node_name));
 
-	// EAR_DB_PATHNAME
-	sprintf(database_bin_path, "%s%s.db.bin", db_pathname, node_name);
-	sprintf(database_csv_path, "%s%s.db.csv", db_pathname, node_name);
+	if (db_pathname != NULL) {
+		gethostname(node_name, sizeof(node_name));
 
-	ear_verbose(2, "EARD is using %s file as binary database\n", database_bin_path);
-	ear_verbose(2, "EARD is using %s file as plain-text database\n", database_csv_path);
+		sprintf(database_bin_path, "%s%s.db.bin", db_pathname, node_name);
+		sprintf(database_csv_path, "%s%s.db.csv", db_pathname, node_name);
+	}
+
+	VERBOSE_N(2, "DB binary file: %s", database_bin_path);
+	VERBOSE_N(2, "DB pain-text file: %s", database_csv_path);
 }
 
 int eard_system(int must_read)

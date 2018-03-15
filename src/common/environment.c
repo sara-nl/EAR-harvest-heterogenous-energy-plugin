@@ -67,50 +67,32 @@ char * getenv_ear_tmp()
 	strcpy(conf_ear_tmp,my_ear_tmp);
 	return conf_ear_tmp;	
 }
-char * getenv_ear_db_pathname()
+char *getenv_ear_db_pathname()
 {
-	char *my_ear_db_pathname;
-	my_ear_db_pathname=getenv("EAR_DB_PATHNAME");
-	if (my_ear_db_pathname!=NULL){
-		// Empty string
-		if (strcmp(my_ear_db_pathname,"")==0){
-				conf_ear_db_pathname=malloc(strlen(DEFAULT_DB_PATHNAME)+1);
-				strcpy(conf_ear_db_pathname,DEFAULT_DB_PATHNAME);	
-		}else{
-			// defined
-			conf_ear_db_pathname=malloc(strlen(my_ear_db_pathname)+1);
-			strcpy(conf_ear_db_pathname,my_ear_db_pathname);
-		}
-	}else{
-		// not defined
-		conf_ear_db_pathname=malloc(strlen(DEFAULT_DB_PATHNAME)+1);
-		strcpy(conf_ear_db_pathname,DEFAULT_DB_PATHNAME);	
+	char *my_ear_db_pathname = getenv("EAR_DB_PATHNAME");
+
+	if (my_ear_db_pathname != NULL && strcmp(my_ear_db_pathname,"") != 0)
+	{
+		conf_ear_db_pathname=malloc(strlen(my_ear_db_pathname)+1);
+		strcpy(conf_ear_db_pathname,my_ear_db_pathname);
 	}
+
 	return conf_ear_db_pathname;
 }
+
 char *getenv_ear_user_db_pathname()
 {
-	char *my_user_db_pathname;
-	my_user_db_pathname=getenv("EAR_USER_DB_PATHNAME");
-    if (my_user_db_pathname!=NULL){
-        // Empty string
-        if (strcmp(my_user_db_pathname,"")==0){
-				my_user_db_pathname=getenv("HOME");
-                conf_ear_user_db_pathname=malloc(strlen(my_user_db_pathname)+1+strlen(DEFAULT_USER_DB_PATHNAME)+1);
-				sprintf(conf_ear_user_db_pathname,"%s/%s",my_user_db_pathname,DEFAULT_USER_DB_PATHNAME);
-        }else{
-            // defined
-            conf_ear_user_db_pathname=malloc(strlen(my_user_db_pathname)+1);
-            strcpy(conf_ear_user_db_pathname,my_user_db_pathname);
-        }   
-    }else{
-        // Not defined
-		my_user_db_pathname=getenv("HOME");
-        conf_ear_user_db_pathname=malloc(strlen(my_user_db_pathname)+1+strlen(DEFAULT_USER_DB_PATHNAME)+1);
-		sprintf(conf_ear_user_db_pathname,"%s/%s",my_user_db_pathname,DEFAULT_USER_DB_PATHNAME);
-    }   
+	char *my_user_db_pathname = getenv("EAR_USER_DB_PATHNAME");
+
+	if (my_user_db_pathname != NULL && strcmp(my_user_db_pathname, "") != 0)
+	{
+		conf_ear_user_db_pathname=malloc(strlen(my_user_db_pathname) + 1);
+		strcpy(conf_ear_user_db_pathname,my_user_db_pathname);
+	}
+
 	return conf_ear_user_db_pathname;
 }
+
 char *getenv_ear_gui_pathname()
 {
 	char *my_gui_path;
@@ -326,10 +308,12 @@ void set_ear_tmp(char *new_tmp)
 	conf_ear_tmp=malloc(strlen(new_tmp)+1);
 	strcpy(conf_ear_tmp,new_tmp);
 }
-char * get_ear_db_pathname()
+
+char *get_ear_db_pathname()
 {
 	return conf_ear_db_pathname;
 }
+
 char * get_ear_user_db_pathname()
 {
 	return conf_ear_user_db_pathname;
