@@ -205,25 +205,30 @@ unsigned long ear_daemon_client_write_app_signature(application_t *app_signature
 	struct daemon_req req;
 	unsigned long ack=EAR_SUCCESS;
 
-	DEBUG_F(2, "asking ear_daemon to write app_signature");
-	req.req_service=WRITE_APP_SIGNATURE;
+	DEBUG_F(2, "asking the daemon to write the whole application signature (DB)");
+
+	req.req_service = WRITE_APP_SIGNATURE;
 	memcpy(&req.req_data.app, app_signature, sizeof(application_t));
 
 	if (ear_fd_req[com_fd] >= 0)
 	{
-		if (write(ear_fd_req[com_fd],&req, sizeof(req)) != sizeof(req))
+		DEBUG_F(2, "writing request...");
+		if (write(ear_fd_req[com_fd], &req, sizeof(req)) != sizeof(req))
 		{
 			VERBOSE_N(0, "ERROR writing request for app signature");
 			return EAR_ERROR;
 		}	
-        if (read(ear_fd_ack[com_fd], &ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
-        	VERBOSE_N(0, "ERROR reading ack for app signature (%s)", strerror(errno));
+        
+		DEBUG_F(2, "reading ack...");
+		if (read(ear_fd_ack[com_fd], &ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
+        		VERBOSE_N(0, "ERROR reading ack for app signature (%s)", strerror(errno));
 			return EAR_ERROR;
-        }   
+        	}
 	}else{
-		DEBUG_F(0, "EAR_daemon_client ear_daemon_client_write_app_signature service not provided");
+		DEBUG_F(0, "writting application signature (DB) service unavailable");
 		ack=EAR_SUCCESS;
 	}
+
 	return ack;
 }
 

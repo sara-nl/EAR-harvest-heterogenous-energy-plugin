@@ -23,11 +23,11 @@ DB_Learning_phase/
 *sim_metrics.csv
 
 # Build
-etc/ear-1.0
+etc/module/ear
+etc/slurm/ear.conf
 etc/slurm/plugstack.conf
 src/common/config.h
 tests/check/check.sh
-etc/scripts/environment/lib_vars.sh
 
 *libear.so
 *libeart.so

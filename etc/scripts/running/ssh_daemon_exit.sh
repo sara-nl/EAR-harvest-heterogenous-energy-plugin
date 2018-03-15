@@ -21,7 +21,7 @@ fi
 
 for i in ${HOSTLIST}
 do
-        echo "Closing ear_daemon in ${i} with pid $DAEMON_PID"
+	echo "Closing ear_daemon in ${i} with pid $DAEMON_PID"
 
 	if [ "x$1" == "xlocal" ]
         then
@@ -30,5 +30,5 @@ do
         else
         	DAEMON_PID=`sudo ssh $i ps -eo pid,comm | grep eard | awk '{print $1}'`
         	ssh ${i} sudo kill -TERM $DAEMON_PID
-        fi
+		fi
 done

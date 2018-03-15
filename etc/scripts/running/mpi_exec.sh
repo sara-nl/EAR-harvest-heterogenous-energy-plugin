@@ -13,8 +13,8 @@ fi
 
 if [ -z $EAR_INSTALL_PATH ]
 then
-    echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
-    echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
+    echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set."
+    echo -e "Load the EAR environment module with 'module load ear'."
     exit 1
 fi
 
@@ -23,6 +23,8 @@ if [[ "$5" != "MIN_ENERGY_TO_SOLUTION" ]] && [[ "$5" != "MIN_TIME_TO_SOLUTION" ]
 then
 	echo "ERROR: bad policy $5."
 	exit 1
+else
+	export EAR_POWER_POLICY="$5"
 fi
 
 if [ ! -f $1 ]
@@ -30,20 +32,15 @@ then
 	if [ "x$1" != "xlocal" ]
 	then
 		MPI_HOST="-hosts $1"
-		export EAR_NUM_NODES=`wc -l <$1`
+		export EAR_NUM_NODES=`echo $1 | awk -F "," "{print NF}"`	
 	else
 		MPI_HOST=""
 		export EAR_NUM_NODES=1
 	fi
 else 
 	MPI_HOST="-f $1"
+	export EAR_NUM_NODES=`wc -l < $1`
 fi
-
-source $EAR_INSTALL_PATH/etc/scripts/environment/lib_vars.sh
-source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
-
-export LD_LIBRARY_PATH="$FREEIPMI_LIB_PATH:$PAPI_LIB_PATH:$LD_LIBRARY_PATH:$CPUPOWER_LIB_PATH:$LD_LIBRARY_PATH"
-export EAR_POWER_POLICY="$5"
 
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]
@@ -52,6 +49,7 @@ then
 fi
 
 # Non-edit region
+
 BINARY=${2}
 MPI=${3}
 PPN=${4}
