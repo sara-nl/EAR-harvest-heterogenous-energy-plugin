@@ -57,7 +57,6 @@ PPN=${4}
 ### BSC-Lenovo  Energy aware library:
 A=$(date +%s) ; date
 
-echo $EAR_NUM_NODES
 ## Starting the application
 mpiexec.hydra -l $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
 
