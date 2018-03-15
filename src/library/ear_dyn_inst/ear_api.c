@@ -98,20 +98,14 @@ void ear_init()
 
 	//
 	ear_lib_environment();
-	set_ear_total_processes(my_size);
+
+	//
 	EAR_VERBOSE_LEVEL=get_ear_verbose();
+	set_ear_total_processes(my_size);
 
-	if (ear_my_rank==0){
-		if (get_ear_app_name() != NULL){
-			ear_verbose(1, "________ EAR: Application %s starts__________\n", get_ear_app_name());
-		}else{
-			ear_verbose(1,"EAR: Application starts.....\n");
-		}
-	}
-
-	ear_debug(2,"EAR Starting initialization\n");	
-	ear_whole_app=get_ear_learning_phase();
-   	dynais_init(get_ear_dynais_window_size(),get_ear_dynais_levels());
+	//
+	ear_whole_app = get_ear_learning_phase();
+   	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
 	//TODO: SWTICH TO APPLICATION
 	gethostname(node_name, sizeof(node_name));
@@ -121,7 +115,7 @@ void ear_init()
 	if (my_id < 0)
 	{
 		num_nodes = get_ear_num_nodes();
-		ppnode = my_size/num_nodes;
+		ppnode = my_size / num_nodes;
 		my_id = (ear_my_rank % ppnode);
 	}
 
@@ -152,7 +146,7 @@ void ear_init()
 	metrics_init(); // PAPI_init starts counters
 	frequency_init(); //Initialize cpufreq info
 
-	if (ear_my_rank=0)
+	if (ear_my_rank = 0)
 	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
 			VERBOSE_N(1, "turbo learning phase, turbo selected and start computing\n");

@@ -267,12 +267,18 @@ int getenv_ear_local_id()
 int getenv_ear_num_nodes()
 {
 	char *my_num_nodes;
-	my_num_nodes=getenv("EAR_NUM_NODES");
-	if (my_num_nodes==NULL){ 
-		my_num_nodes=getenv("SLURM_STEP_NUM_NODES");
-		if (my_num_nodes==NULL) conf_ear_num_nodes=1;
-		else conf_ear_num_nodes=atoi(my_num_nodes);
-	} else conf_ear_num_nodes=atoi(my_num_nodes);
+
+	my_num_nodes = getenv("EAR_NUM_NODES");
+
+	if (my_num_nodes == NULL)
+	{ 
+		my_num_nodes = getenv("SLURM_STEP_NUM_NODES");
+
+		if (my_num_nodes == NULL) conf_ear_num_nodes=1;
+		else conf_ear_num_nodes = atoi(my_num_nodes);
+
+	} else conf_ear_num_nodes = atoi(my_num_nodes);
+
 	return conf_ear_num_nodes;
 }
 
