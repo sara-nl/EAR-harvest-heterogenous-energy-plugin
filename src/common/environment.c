@@ -248,9 +248,7 @@ int getenv_ear_local_id()
 
 int getenv_ear_num_nodes()
 {
-	char *my_num_nodes;
-
-	my_num_nodes = getenv("EAR_NUM_NODES");
+	char *my_num_nodes = getenv("EAR_NUM_NODES");
 
 	if (my_num_nodes == NULL)
 	{ 
@@ -508,8 +506,14 @@ int get_num_threads()
 int get_total_resources()
 {
 	int procs_per_node;
+
 	check_threads();
-	procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
+
+	procs_per_node = get_ear_total_processes()/get_ear_num_nodes();
+
+	// TODO: When an executable has the OpenMP symbols, the OMP_NUM_THREADS variable
+	// is taking into account. But maybe the executable is not using any OMP
+	// thread.
 	return procs_per_node*get_num_threads();
 }
 

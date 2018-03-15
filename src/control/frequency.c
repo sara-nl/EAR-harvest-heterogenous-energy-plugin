@@ -96,7 +96,7 @@ static ulong *get_frequencies_rank()
 		num_freqs++;
 	}
 
-	VERBOSE_N(0, "%d frequencies available ", num_freqs); // 2
+	VERBOSE_N(2, "%d frequencies available ", num_freqs); // 2
 
 	//
 	pointer = (ulong *) malloc(sizeof(ulong) * num_freqs);
@@ -138,7 +138,7 @@ int frequency_init()
 
 	//
 	num_cpus = hwinfo->sockets * hwinfo->cores * hwinfo->threads;
-	VERBOSE_N(0, "detected %u CPUs", num_cpus);
+	VERBOSE_N(2, "detected %u CPUs", num_cpus);
 
 	//
 	freq_list_cpu = get_frequencies_cpu(num_cpus);
@@ -148,7 +148,7 @@ int frequency_init()
 
 	// Saving nominal freq = 1, because 0 is the turbo mode
 	freq_nom = freq_list_rank[1];
-	VERBOSE_N(0, "nominal frequency is %lu (KHz)", freq_nom);
+	VERBOSE_N(2, "nominal frequency is %lu (KHz)", freq_nom);
 
 	return EAR_SUCCESS;
 }
@@ -291,7 +291,7 @@ void frequency_save_previous_frequency()
 	// Saving previous policy data
 	previous_cpu0_freq = freq_list_cpu[0];
 	
-	VERBOSE_N(0, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
+	VERBOSE_N(1, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
 	
 	saved_previous_freq = 1;
 }
@@ -299,7 +299,7 @@ void frequency_save_previous_frequency()
 void frequency_recover_previous_frequency()
 {
 	if (!saved_previous_freq) {
-		VERBOSE_N(0, "previous frequency not saved");
+		VERBOSE_N(2, "previous frequency not saved");
 		return;
 	}
 
@@ -320,7 +320,7 @@ void frequency_save_previous_policy()
 	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
 	strcpy(previous_cpu0_policy.governor, policy->governor);
 
-	VERBOSE_N(0, "previous policy governor was %s", policy->governor);
+	VERBOSE_N(2, "previous policy governor was %s", policy->governor);
 
 	// Kernel dealloc
 	cpufreq_put_policy(policy);
@@ -332,7 +332,7 @@ void frequency_recover_previous_policy()
 	int status, i;
 
 	if (!saved_previous_policy) {
-		VERBOSE_N(0, "previous policy not saved");
+		VERBOSE_N(2, "previous policy not saved");
 		return;
 	}
 
