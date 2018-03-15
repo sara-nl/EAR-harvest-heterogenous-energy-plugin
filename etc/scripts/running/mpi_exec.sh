@@ -32,13 +32,14 @@ then
 	if [ "x$1" != "xlocal" ]
 	then
 		MPI_HOST="-hosts $1"
-		export EAR_NUM_NODES=`wc -l <$1`
+		export EAR_NUM_NODES=`echo $1 | awk -F "," "{print NF}"`	
 	else
 		MPI_HOST=""
 		export EAR_NUM_NODES=1
 	fi
 else 
 	MPI_HOST="-f $1"
+	export EAR_NUM_NODES=`wc -l < $1`
 fi
 
 # LD_PRELOAD if NO_EAR policy isn not selected
@@ -56,6 +57,7 @@ PPN=${4}
 ### BSC-Lenovo  Energy aware library:
 A=$(date +%s) ; date
 
+echo $EAR_NUM_NODES
 ## Starting the application
 mpiexec.hydra -l $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
 

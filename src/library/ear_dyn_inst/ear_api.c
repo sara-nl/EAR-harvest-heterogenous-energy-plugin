@@ -80,7 +80,6 @@ int get_app_name_please(char *my_name)
 		strcpy(my_name, app_name);
 	}
 
-	ear_verbose(1, "EAR: Application name is  %s\n", my_name);
 	return defined;
 }
 
@@ -97,19 +96,17 @@ void ear_init()
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
 
-	//
+	//TODO: SWTICH TO APPLICATION
+	gethostname(node_name, sizeof(node_name));
+	
+	// Environment initialization
 	ear_lib_environment();
 
 	//
-	EAR_VERBOSE_LEVEL=get_ear_verbose();
+	EAR_VERBOSE_LEVEL = get_ear_verbose();
 	set_ear_total_processes(my_size);
-
-	//
 	ear_whole_app = get_ear_learning_phase();
    	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
-
-	//TODO: SWTICH TO APPLICATION
-	gethostname(node_name, sizeof(node_name));
 
 	my_id = get_ear_local_id();
 
@@ -124,22 +121,15 @@ void ear_init()
 		return;
 	}
 
-	if (ear_my_rank==0)
-	{
-		ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
-		ear_verbose(1,"EAR using %d levels in dynais with %d of window size \n",
-				get_ear_dynais_levels(), get_ear_dynais_window_size());
-	}
-
+	VERBOSE_N(1, "MPI rank %d defined as node master for %s (pid: %d)",
+				ear_my_rank, node_name, getpid());
+	
 	// Only one process can connect with the daemon
 	// Daemon ->
 	if (ear_daemon_client_connect() < 0) {
-		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
+		VERBOSE_N(0, "ERROR, daemon connection failed in %s", node_name);
 		exit(1);
 	}
-
-	ear_verbose(1,"EAR: MPI rank %d defined as node master for %s pid: %d\n",
-				ear_my_rank, application.node_id, getpid());
 
 	// my_id is 0 in case is not local. Metrics gets the value
 	// 'privileged_metrics'. This value has to be different to 0 when
@@ -147,13 +137,10 @@ void ear_init()
 	metrics_init(); // PAPI_init starts counters
 	frequency_init(); //Initialize cpufreq info
 
-	if (ear_my_rank = 0)
+	if (ear_my_rank == 0)
 	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
-			VERBOSE_N(1, "turbo learning phase, turbo selected and start computing\n");
 			ear_daemon_client_set_turbo();
-		} else {
-			VERBOSE_N(1, "learning phase %d, turbo %d\n", ear_whole_app, ear_use_turbo);
 		}
 	}
 
@@ -198,16 +185,23 @@ void ear_init()
 		sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 	}
 
-	if (ear_my_rank==0)
+	if (ear_my_rank == 0)
 	{
+		VERBOSE_N(1, "--------------------------------");
 		VERBOSE_N(1, "App id: '%s'", application.app_id);
 		VERBOSE_N(1, "User id: '%s'", application.user_id);
 		VERBOSE_N(1, "Node id: '%s'", application.node_id);
 		VERBOSE_N(1, "Job id: '%s'", application.job_id);
 		VERBOSE_N(1, "Default frequency: %u", application.def_f);
 		VERBOSE_N(1, "Procs: %u", application.procs);
-		VERBOSE_N(1, "Policy: %s", application.policy);
-		VERBOSE_N(1, "Policy th: %lf", application.policy_th);
+		VERBOSE_N(1, "Nodes/PPN: %u/%u", num_nodes, ppnode);
+		VERBOSE_N(1, "Policy (th): %s (%lf)", application.policy, application.policy_th);
+		VERBOSE_N(1, "App summary file: %s", app_summary_path);
+		VERBOSE_N(1, "Loop summary file: %s", loop_summary_path);
+		VERBOSE_N(1, "DynAIS levels/window: %d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size());
+		VERBOSE_N(1, "Learning phase: %d", ear_whole_app);
+		VERBOSE_N(1, "Turbo enabled: %d", ear_use_turbo);
+		VERBOSE_N(1, "--------------------------------");
 	}
 
 	//
