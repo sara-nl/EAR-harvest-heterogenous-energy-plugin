@@ -35,8 +35,8 @@ struct spank_option spank_options[] = {
       " {value=[0..1]}",
       1, 0, (spank_opt_cb_f) _opt_ear_threshold
     },
-    { "ear-user-db", "path",
-      "Specifies the path of ",
+    { "ear-user-db", "file",
+      "Specifies the file to save the user applications metrics summary",
       2, 0, (spank_opt_cb_f) _opt_ear_user_db
     },
     { "ear-verbose", "value",
@@ -48,9 +48,9 @@ struct spank_option spank_options[] = {
       "Enables the learning phase for a given P_STATE {value=[0..n]}",
       1, 0, (spank_opt_cb_f) _opt_ear_learning
     },
-    { "ear-traces", NULL, "Generates application traces with metrics and internal details",
-      0, 1, (spank_opt_cb_f) _opt_ear_traces
-    },
+    //{ "ear-traces", NULL, "Generates application traces with metrics and internal details",
+    //  0, 1, (spank_opt_cb_f) _opt_ear_traces
+    //},
     SPANK_OPTIONS_TABLE_END
 };
 
