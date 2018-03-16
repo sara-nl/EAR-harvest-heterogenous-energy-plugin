@@ -43,5 +43,3 @@ check w slurm_version "SLURM version >="
 check w free_ipmi_version "Free IPMI version >="
 check e module_ipmi_devintf "ipmi_devintf driver online"
 check e module_acpi_cpufreq "acpi-cpufreq driver online"
-
-rm core.*

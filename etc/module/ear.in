@@ -25,7 +25,7 @@ setenv			EAR_VERBOSE					0
 setenv			EAR_P_STATE					1
 
 prepend-path	PATH						@prefix@/bin
-prepend-path    LD_LIBRARY_PATH             @PAPI_LIBDIR@
+prepend-path    LD_LIBRARY_PATH             @GSL_LIBDIR@
 prepend-path    LD_LIBRARY_PATH             @CPUPOWER_LIBDIR@
 prepend-path    LD_LIBRARY_PATH             @FREEIPMI_LIBDIR@
-prepend-path    LD_LIBRARY_PATH             @GSL_LIBDIR@
+prepend-path    LD_LIBRARY_PATH             @PAPI_LIBDIR@
