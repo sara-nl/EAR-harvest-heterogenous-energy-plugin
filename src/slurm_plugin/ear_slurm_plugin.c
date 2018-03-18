@@ -317,8 +317,8 @@ static int local_update_ld_library_path()
 
     //
     appendenv(buffer, CPUPOWER_LIB_PATH);
-    appendenv(buffer, PAPI_LIB_PATH);
     appendenv(buffer, FREEIPMI_LIB_PATH);
+    appendenv(buffer, PAPI_LIB_PATH);
     
     //
     return setenv_local("LD_LIBRARY_PATH", buffer, 1);
