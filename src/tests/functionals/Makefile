@@ -72,7 +72,7 @@ test_architecture: test_architecture.c
 	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 
 ear_pm:ear_pm.c $(POWERMONLIB)
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) ear_pm.c $(POWERMONLIB)  $(IPMI_LDFLAGS) $(NODE_ENERGY_LIBS) $(PAPI_LDFLAGS)
+	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -o ear_pm ear_pm.c $(POWERMONLIB)  $(IPMI_LDFLAGS) $(NODE_ENERGY_LIBS) $(PAPI_LDFLAGS)
 
 
 ######## OPTIONS
