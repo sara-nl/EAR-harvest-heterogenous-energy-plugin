@@ -61,17 +61,21 @@ struct spank_option spank_options[] = {
  */
 static void appendenv(char *destiny, char *source)
 {
-    int length = strlen(destiny);
-    char *pointer;
+    char buffer[PATH_MAX];
+        int length = strlen(destiny);
+        char *pointer;
 
-    if (length > 0)
-    {
-        pointer = &destiny[length];
-        strcpy(&pointer[1], source);
-        pointer[0] = ':';
-    } else {
-        strcpy(destiny, source);
-    }
+        if (length > 0)
+        {
+            strcpy(buffer, destiny);
+            length = strlen(source);
+            pointer = &destiny[length];
+            strcpy(&pointer[1], buffer);
+            strcpy(destiny, source);
+            pointer[0] = ':';
+        } else {
+            strcpy(destiny, source);
+        }
 }
 
 static int setenv_local(const char *name, const char *value, int replace)
@@ -319,7 +323,8 @@ static int local_update_ld_library_path()
     appendenv(buffer, CPUPOWER_LIB_PATH);
     appendenv(buffer, FREEIPMI_LIB_PATH);
     appendenv(buffer, PAPI_LIB_PATH);
-    
+   
+    slurm_error("NOT AN ERROR: %s", buffer); 
     //
     return setenv_local("LD_LIBRARY_PATH", buffer, 1);
 }
