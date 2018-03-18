@@ -7,7 +7,8 @@ BANDWIDTH_OBJS = bandwidth/uncores_pci.o
 
 LIBRARIES = bandwidth.so \
             frequency.o \
-            hardware_info.o
+            hardware_info.o \
+			bandwidth.a
 
 ######## RULES
 
@@ -21,6 +22,9 @@ bandwidth.o: bandwidth.c bandwidth.h
 
 bandwidth.so: bandwidth.o $(BANDWIDTH_OBJS)
 	$(CC) -shared -o bandwidth.so bandwidth.o $(BANDWIDTH_OBJS)
+
+bandwidth.a:bandwidth.o $(BANDWIDTH_OBJS)
+	ar rcs bandwidth.a bandwidth.o $(BANDWIDTH_OBJS) 
 
 frequency.o: frequency.c frequency.h
 	$(CC) $(CFLAGS) -c frequency.c $(LDFLAGS)

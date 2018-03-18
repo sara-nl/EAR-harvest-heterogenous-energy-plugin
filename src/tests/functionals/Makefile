@@ -27,12 +27,15 @@ NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.o \
 		    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
 			$(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o
 
+POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a
+
 BINARIES = bandwith_monitor \
            eard_monitor \
            freeipmi_overhead \
            simd_power_metrics_openmp \
            energy_1_second \
-           energy_updates_freq
+           energy_updates_freq \
+		   ear_pm
 	       # test_architecture
 
 ######## RULES
@@ -67,6 +70,10 @@ energy_updates_freq: energy_updates_freq.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 test_architecture: test_architecture.c
 	$(CC) $(PAPI_CFLAGS) $(CFLAGS) -o test_architecture test_architecture.c \
 	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
+
+ear_pm:ear_pm.c $(POWERMONLIB)
+	$(CC) $(CFLAGS) $(CPUF_CFLAGS) ear_pm.c $(POWERMONLIB)  $(IPMI_LDFLAGS) $(NODE_ENERGY_LIBS) $(PAPI_LDFLAGS)
+
 
 ######## OPTIONS
 
