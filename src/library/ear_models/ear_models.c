@@ -119,7 +119,7 @@ void init_power_policy()
 	reset_freq_opt=get_ear_reset_freq();
 	EAR_default_pstate=get_ear_p_state();
 
-	if (EAR_default_pstate>=ear_get_num_p_states()) EAR_default_pstate=DEFAULT_P_STATE;
+	if (EAR_default_pstate>=frequency_get_num_pstates()) EAR_default_pstate=DEFAULT_P_STATE;
 	user_selected_freq=ear_get_freq(get_ear_p_state());
 	policy_global_reconfiguration();
 
