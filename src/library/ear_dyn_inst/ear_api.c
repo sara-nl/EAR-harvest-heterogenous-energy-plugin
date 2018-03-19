@@ -301,7 +301,6 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			ear_debug(4,"END_LOOP event %u\n",ear_event);
 			states_end_period(ear_iterations);
 			traces_end_period(ear_my_rank, my_id);
-			states_end_period(ear_iterations);
 			ear_iterations=0;
 			in_loop=0;
 			break;
