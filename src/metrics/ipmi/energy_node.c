@@ -269,12 +269,12 @@ int node_energy_init()
 			node_energy_ops.read_ac_energy=lenovo_wct_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_wct_node_energy_dispose;
 		}else{
-			ear_verbose(0,"ear_daemon: Product name %s detected (Not supported) \n",my_p_name);
-			node_energy_ops.node_energy_init=NULL;
-			node_energy_ops.count_energy_data_length=NULL;
-			node_energy_ops.read_dc_energy=NULL;
-			node_energy_ops.read_ac_energy=NULL;
-			node_energy_ops.node_energy_dispose=NULL;
+			ear_verbose(0,"ear_daemon: Product name %s detected (Not Known, using default) \n",my_p_name);
+            node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
+            node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
+            node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
+            node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
+            node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}
 		break;
 	default:

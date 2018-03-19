@@ -124,7 +124,7 @@ void init_power_policy()
 	policy_global_reconfiguration();
 
 	// IMPORTANT: here is where the environment first P_STATE is set.
-	ear_frequency = def_freq = ear_daemon_client_change_freq(EAR_default_frequency);
+	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);
 
 	if (def_freq != EAR_default_frequency)
 	{
@@ -623,7 +623,7 @@ unsigned long policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
 		ear_debug(3,"EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
 				  __FILE__,optimal_freq);
 
-		ear_frequency = max_freq = ear_daemon_client_change_freq(optimal_freq);
+		ear_frequency = max_freq = eards_change_freq(optimal_freq);
 
 		if (max_freq != optimal_freq) {
 			optimal_freq = max_freq;
@@ -642,7 +642,7 @@ void models_new_period()
 
 	if (reset_freq_opt)
 	{
-		ear_frequency = ear_daemon_client_change_freq(EAR_default_frequency);
+		ear_frequency = eards_change_freq(EAR_default_frequency);
 	}
 
 	reset_performance_projection(ear_models_pstates);
