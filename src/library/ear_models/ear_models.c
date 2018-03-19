@@ -79,17 +79,17 @@ void policy_global_reconfiguration()
 {
 #ifdef SHARED_MEMORY
     // We filter initial configuration
-    if (system_conf->max_freq<ear_get_freq(EAR_default_pstate)){
+    if (system_conf->max_freq<frequency_pstate_to_freq(EAR_default_pstate)){
         ear_verbose(0,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
-        EAR_default_pstate=ear_get_pstate(system_conf->max_freq);
+        EAR_default_pstate=frequency_freq_to_pstate(system_conf->max_freq);
     }
     if (performance_gain<system_conf->th){
         ear_verbose(0,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
         performance_gain=system_conf->th;
     }
-	EAR_default_frequency=ear_get_freq(EAR_default_pstate);
+	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
 #else
-	EAR_default_frequency=ear_get_freq(EAR_default_pstate);
+	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
 #endif
 }
 
@@ -97,7 +97,7 @@ void policy_global_reconfiguration()
 uint get_global_min_pstate()
 {
 #ifdef SHARED_MEMORY
-    ear_get_pstate(system_conf->max_freq);
+    frequency_freq_to_pstate(system_conf->max_freq);
 #else
 	return 1;
 #endif
@@ -119,12 +119,12 @@ void init_power_policy()
 	reset_freq_opt=get_ear_reset_freq();
 	EAR_default_pstate=get_ear_p_state();
 
-	if (EAR_default_pstate>=ear_get_num_p_states()) EAR_default_pstate=DEFAULT_P_STATE;
-	user_selected_freq=ear_get_freq(get_ear_p_state());
+	if (EAR_default_pstate>=frequency_get_num_pstates()) EAR_default_pstate=DEFAULT_P_STATE;
+	user_selected_freq=frequency_pstate_to_freq(get_ear_p_state());
 	policy_global_reconfiguration();
 
 	// IMPORTANT: here is where the environment first P_STATE is set.
-	ear_frequency = def_freq = ear_daemon_client_change_freq(EAR_default_frequency);
+	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);
 
 	if (def_freq != EAR_default_frequency)
 	{
@@ -623,7 +623,7 @@ unsigned long policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
 		ear_debug(3,"EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
 				  __FILE__,optimal_freq);
 
-		ear_frequency = max_freq = ear_daemon_client_change_freq(optimal_freq);
+		ear_frequency = max_freq = eards_change_freq(optimal_freq);
 
 		if (max_freq != optimal_freq) {
 			optimal_freq = max_freq;
@@ -642,7 +642,7 @@ void models_new_period()
 
 	if (reset_freq_opt)
 	{
-		ear_frequency = ear_daemon_client_change_freq(EAR_default_frequency);
+		ear_frequency = eards_change_freq(EAR_default_frequency);
 	}
 
 	reset_performance_projection(ear_models_pstates);
