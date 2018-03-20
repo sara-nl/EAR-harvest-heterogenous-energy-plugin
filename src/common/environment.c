@@ -238,10 +238,10 @@ int getenv_ear_verbose()
 int getenv_ear_local_id()
 {
 	char *my_local_id;
-	my_local_id=getenv("SLURM_LOCALID");
-	if (my_local_id!=NULL){ 
-		conf_ear_local_id=atoi(my_local_id);
-	}
+	//my_local_id=getenv("SLURM_LOCALID");
+	//if (my_local_id!=NULL){ 
+	//	conf_ear_local_id=atoi(my_local_id);
+	//}
 	// if not defined, it is computed later based on the number of total processes and EAR_NUM_NODES
 	return conf_ear_local_id;
 }
