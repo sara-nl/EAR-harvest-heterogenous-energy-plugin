@@ -38,7 +38,7 @@ BINARIES = libear.so libeart.so
 
 .PHONY:
 
-all: libear.so 
+all: $(BINARIES) 
 
 traces: libeart.so
 
