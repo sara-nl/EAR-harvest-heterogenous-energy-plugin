@@ -1,0 +1,2 @@
+#required?	plugin					args
+required	@prefix@/lib/earplug.so	ear_conf_file=@prefix@/etc/slurm/ear.conf

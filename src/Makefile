@@ -5,30 +5,11 @@ COMPONENTS = common \
              control \
              library \
              daemon \
-             learning \
              tools \
              tests
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
-
-INSTALL_FOLDERS = $(DESTDIR)/bin \
-                  $(DESTDIR)/bin/kernels \
-                  $(DESTDIR)/lib \
-                  $(DESTDIR)/etc \
-                  $(DESTDIR)/etc/scripts \
-                  $(DESTDIR)/etc/scripts/environment \
-                  $(DESTDIR)/etc/scripts/examples \
-                  $(DESTDIR)/etc/scripts/learning \
-                  $(DESTDIR)/etc/scripts/running \
-				  $(DESTDIR)/include \
-                  $(DESTDIR)/sbin
-
-# JUST FOR US, TODO: REMOVE
-INSTALL_FOLDERS += $(DESTDIR)/DBS \
-                   $(DESTDIR)/COEFFICIENTS \
-                   $(DESTDIR)/SUMMARIES \
-                   $(DESTDIR)/tmp
 
 ######## RULES
 
@@ -51,7 +32,6 @@ functionals:
 ######## OPTIONS
 
 install:
-	@ mkdir -p ${INSTALL_FOLDERS}
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -S -C $${i} install; \
 	done

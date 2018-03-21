@@ -1,14 +1,15 @@
 /* 
- * This utility configures a NPB to be built for a specific class. 
- * It creates a file "npbparams.h" 
+ * This utility configures a NPB to be built for a specific number
+ * of nodes and a specific class. It creates a file "npbparams.h" 
  * in the source directory. This file keeps state information about 
  * which size of benchmark is currently being built (so that nothing
  * if unnecessarily rebuilt) and defines (through PARAMETER statements)
  * the number of nodes and class for which a benchmark is being built. 
 
  * The utility takes 3 arguments: 
- *       setparams benchmark-name class
+ *       setparams benchmark-name nprocs class
  *    benchmark-name is "sp", "bt", etc
+ *    nprocs is the number of processors to run on
  *    class is the size of the benchmark
  * These parameters are checked for the current benchmark. If they
  * are invalid, this program prints a message and aborts. 
@@ -51,25 +52,33 @@
 /* #define VERBOSE */
 
 #define FILENAME "npbparams.h"
-#define DESC_LINE "c CLASS = %c\n"
+#define DESC_LINE "c NPROCS = %d CLASS = %c\n"
+#define BT_DESC_LINE "c NPROCS = %d CLASS = %c SUBTYPE = %s\n"
 #define DEF_CLASS_LINE     "#define CLASS '%c'\n"
+#define DEF_NUM_PROCS_LINE "#define NUM_PROCS %d\n"
 #define FINDENT  "        "
 #define CONTINUE "     > "
 
-void get_info(char *argv[], int *typep, char *classp);
-void check_info(int type, char class);
-void read_info(int type, char *classp);
-void write_info(int type, char class);
-void write_sp_info(FILE *fp, char class);
-void write_bt_info(FILE *fp, char class);
-void write_dc_info(FILE *fp, char class);
-void write_lu_info(FILE *fp, char class);
-void write_mg_info(FILE *fp, char class);
-void write_cg_info(FILE *fp, char class);
-void write_ft_info(FILE *fp, char class);
-void write_ep_info(FILE *fp, char class);
-void write_is_info(FILE *fp, char class);
-void write_ua_info(FILE *fp, char class);
+#ifdef FORTRAN_REC_SIZE
+int fortran_rec_size = FORTRAN_REC_SIZE;
+#else
+int fortran_rec_size = 4;
+#endif
+
+void get_info(int argc, char *argv[], int *typep, int *nprocsp, char *classp,
+	      int* subtypep);
+void check_info(int type, int nprocs, char class);
+void read_info(int type, int *nprocsp, char *classp, int *subtypep);
+void write_info(int type, int nprocs, char class, int subtype);
+void write_sp_info(FILE *fp, int nprocs, char class);
+void write_bt_info(FILE *fp, int nprocs, char class, int io);
+void write_lu_info(FILE *fp, int nprocs, char class);
+void write_mg_info(FILE *fp, int nprocs, char class);
+void write_cg_info(FILE *fp, int nprocs, char class);
+void write_ft_info(FILE *fp, int nprocs, char class);
+void write_ep_info(FILE *fp, int nprocs, char class);
+void write_is_info(FILE *fp, int nprocs, char class);
+void write_dt_info(FILE *fp, int nprocs, char class);
 void write_compiler_info(int type, FILE *fp);
 void write_convertdouble_info(int type, FILE *fp);
 void check_line(char *line, char *label, char *val);
@@ -77,62 +86,62 @@ int  check_include_line(char *line, char *filename);
 void put_string(FILE *fp, char *name, char *val);
 void put_def_string(FILE *fp, char *name, char *val);
 void put_def_variable(FILE *fp, char *name, char *val);
+int isqrt(int i);
 int ilog2(int i);
-double power(double base, int i);
+int ipow2(int i);
+int isqrt2(int i);
 
-enum benchmark_types {SP, BT, LU, MG, FT, IS, EP, CG, UA, DC};
+enum benchmark_types {SP, BT, LU, MG, FT, IS, DT, EP, CG};
+enum iotypes { NONE = 0, FULL, SIMPLE, EPIO, FORTRAN};
 
 int main(int argc, char *argv[])
 {
-  int type;
+  int nprocs, nprocs_old, type;
   char class, class_old;
+  int subtype = -1, old_subtype = -1;
   
-  if (argc != 3) {
-    printf("Usage: %s benchmark-name class\n", argv[0]);
-    exit(1);
-  }
-
   /* Get command line arguments. Make sure they're ok. */
-  get_info(argv, &type, &class);
+  get_info(argc, argv, &type, &nprocs, &class, &subtype);
   if (class != 'U') {
 #ifdef VERBOSE
-    printf("setparams: For benchmark %s: class = %c\n", 
-	   argv[1], class); 
+    printf("setparams: For benchmark %s: number of processors = %d class = %c\n", 
+	   argv[1], nprocs, class); 
 #endif
-    check_info(type, class);
+    check_info(type, nprocs, class);
   }
 
   /* Get old information. */
-  read_info(type, &class_old);
+  read_info(type, &nprocs_old, &class_old, &old_subtype);
   if (class != 'U') {
     if (class_old != 'X') {
 #ifdef VERBOSE
-      printf("setparams:     old settings: class = %c\n", 
-	     class_old); 
+      printf("setparams:     old settings: number of processors = %d class = %c\n", 
+	     nprocs_old, class_old); 
 #endif
     }
   } else {
     printf("setparams:\n\
   *********************************************************************\n\
-  * You must specify CLASS to build this benchmark                    *\n\
-  * For example, to build a class A benchmark, type                   *\n\
-  *       make {benchmark-name} CLASS=A                               *\n\
+  * You must specify NPROCS and CLASS to build this benchmark         *\n\
+  * For example, to build a class A benchmark for 4 processors, type  *\n\
+  *       make {benchmark-name} NPROCS=4 CLASS=A                      *\n\
   *********************************************************************\n\n"); 
 
     if (class_old != 'X') {
 #ifdef VERBOSE
-      printf("setparams: Previous settings were CLASS=%c \n", class_old); 
+      printf("setparams: Previous settings were CLASS=%c NPROCS=%d\n", 
+	     class_old, nprocs_old); 
 #endif
     }
     exit(1); /* exit on class==U */
   }
 
   /* Write out new information if it's different. */
-  if (class != class_old) {
+  if (nprocs != nprocs_old || class != class_old || subtype != old_subtype) {
 #ifdef VERBOSE
     printf("setparams: Writing %s\n", FILENAME); 
 #endif
-    write_info(type, class);
+    write_info(type, nprocs, class, subtype);
   } else {
 #ifdef VERBOSE
     printf("setparams: Settings unchanged. %s unmodified\n", FILENAME); 
@@ -147,22 +156,50 @@ int main(int argc, char *argv[])
  *  get_info(): Get parameters from command line 
  */
 
-void get_info(char *argv[], int *typep, char *classp) 
+void get_info(int argc, char *argv[], int *typep, int *nprocsp, char *classp,
+	      int *subtypep) 
 {
 
-  *classp = *argv[2];
+  if (argc < 4) {
+    printf("Usage: %s (%d) benchmark-name nprocs class\n", argv[0], argc);
+    exit(1);
+  }
+
+  *nprocsp = atoi(argv[2]);
+
+  *classp = *argv[3];
 
   if      (!strcmp(argv[1], "sp") || !strcmp(argv[1], "SP")) *typep = SP;
-  else if (!strcmp(argv[1], "bt") || !strcmp(argv[1], "BT")) *typep = BT;
   else if (!strcmp(argv[1], "ft") || !strcmp(argv[1], "FT")) *typep = FT;
   else if (!strcmp(argv[1], "lu") || !strcmp(argv[1], "LU")) *typep = LU;
   else if (!strcmp(argv[1], "mg") || !strcmp(argv[1], "MG")) *typep = MG;
   else if (!strcmp(argv[1], "is") || !strcmp(argv[1], "IS")) *typep = IS;
+  else if (!strcmp(argv[1], "dt") || !strcmp(argv[1], "DT")) *typep = DT;
   else if (!strcmp(argv[1], "ep") || !strcmp(argv[1], "EP")) *typep = EP;
   else if (!strcmp(argv[1], "cg") || !strcmp(argv[1], "CG")) *typep = CG;
-  else if (!strcmp(argv[1], "ua") || !strcmp(argv[1], "UA")) *typep = UA;
-  else if (!strcmp(argv[1], "dc") || !strcmp(argv[1], "DC")) *typep = DC;
-  else {
+  else if (!strcmp(argv[1], "bt") || !strcmp(argv[1], "BT")) {
+    *typep = BT;
+    if (argc != 5) {
+      /* printf("Usage: %s (%d) benchmark-name nprocs class\n", argv[0], argc); */
+      /* exit(1); */
+      *subtypep = NONE;
+    } else {
+      if (!strcmp(argv[4], "full") || !strcmp(argv[4], "FULL")) {
+        *subtypep = FULL;
+      } else if (!strcmp(argv[4], "simple") || !strcmp(argv[4], "SIMPLE")) {
+        *subtypep = SIMPLE;
+      } else if (!strcmp(argv[4], "epio") || !strcmp(argv[4], "EPIO")) {
+        *subtypep = EPIO;
+      } else if (!strcmp(argv[4], "fortran") || !strcmp(argv[4], "FORTRAN")) {
+        *subtypep = FORTRAN;
+      } else if (!strcmp(argv[4], "none") || !strcmp(argv[4], "NONE")) {
+        *subtypep = NONE;
+      } else {
+        printf("setparams: Error: unknown btio type %s\n", argv[4]);
+        exit(1);
+      }
+    }
+  } else {
     printf("setparams: Error: unknown benchmark type %s\n", argv[1]);
     exit(1);
   }
@@ -172,8 +209,62 @@ void get_info(char *argv[], int *typep, char *classp)
  *  check_info(): Make sure command line data is ok for this benchmark 
  */
 
-void check_info(int type, char class) 
+void check_info(int type, int nprocs, char class) 
 {
+  int rootprocs, logprocs; 
+
+  /* check number of processors */
+  if (nprocs <= 0) {
+    printf("setparams: Number of processors must be greater than zero\n");
+    exit(1);
+  }
+  switch(type) {
+
+  case SP:
+  case BT:
+    rootprocs = isqrt(nprocs);
+    if (rootprocs < 0) {
+      printf("setparams: Number of processors %d must be a square (1,4,9,...) for this benchmark", 
+              nprocs);
+      exit(1);
+    }
+    if (class == 'S' && nprocs > 16) {
+      printf("setparams: BT and SP sample sizes cannot be run on more\n");
+      printf("           than 16 processors because the cell size would be too small.\n");
+      exit(1);
+    }
+    break;
+
+  case LU:
+    rootprocs = isqrt2(nprocs);
+    if (rootprocs < 0) {
+      printf("setparams: Failed to determine proc_grid for nprocs=%d\n", 
+              nprocs);
+      exit(1);
+    }
+    break;
+
+  case CG:
+  case FT:
+  case MG:
+  case IS:
+    logprocs = ilog2(nprocs);
+    if (logprocs < 0) {
+      printf("setparams: Number of processors must be a power of two (1,2,4,...) for this benchmark\n");
+      exit(1);
+    }
+
+    break;
+
+  case EP:
+  case DT:
+    break;
+
+  default:
+    /* never should have gotten this far with a bad name */
+    printf("setparams: (Internal Error) Benchmark type %d unknown to this program\n", type); 
+    exit(1);
+  }
 
   /* check class */
   if (class != 'S' && 
@@ -188,12 +279,13 @@ void check_info(int type, char class)
     exit(1);
   }
 
-  if (class == 'E' && (type == IS || type == UA || type == DC)) {
-    printf("setparams: Benchmark class %c not defined for IS, UA, or DC\n", class);
+  if (class == 'E' && (type == IS || type == DT)) {
+    printf("setparams: Benchmark class %c not defined for IS or DT\n", class);
     exit(1);
   }
-  if ((class == 'C' || class == 'D') && type == DC) {
-    printf("setparams: Benchmark class %c not defined for DC\n", class);
+
+  if (class == 'D' && type == IS && nprocs < 4) {
+    printf("setparams: IS class D size cannot be run on less than 4 processors\n");
     exit(1);
   }
 }
@@ -207,9 +299,9 @@ void check_info(int type, char class)
  *              format that we understand (since we wrote it). 
  */
 
-void read_info(int type, char *classp)
+void read_info(int type, int *nprocsp, char *classp, int *subtypep)
 {
-  int nread;
+  int nread = 0;
   FILE *fp;
   fp = fopen(FILENAME, "r");
   if (fp == NULL) {
@@ -222,24 +314,50 @@ void read_info(int type, char *classp)
   /* first line of file contains info (fortran), first two lines (C) */
 
   switch(type) {
+      case BT: {
+	  char subtype_str[100];
+          nread = fscanf(fp, BT_DESC_LINE, nprocsp, classp, subtype_str);
+          if (nread != 3) {
+            if (nread != 2) {
+              printf("setparams: Error parsing config file %s. Ignoring previous settings\n", FILENAME);
+              goto abort;
+	    }
+	    *subtypep = 0;
+	    break;
+          }
+          if (!strcmp(subtype_str, "full") || !strcmp(subtype_str, "FULL")) {
+		*subtypep = FULL;
+          } else if (!strcmp(subtype_str, "simple") ||
+		     !strcmp(subtype_str, "SIMPLE")) {
+		*subtypep = SIMPLE;
+          } else if (!strcmp(subtype_str, "epio") || !strcmp(subtype_str, "EPIO")) {
+		*subtypep = EPIO;
+          } else if (!strcmp(subtype_str, "fortran") ||
+		     !strcmp(subtype_str, "FORTRAN")) {
+		*subtypep = FORTRAN;
+          } else {
+		*subtypep = -1;
+	  }
+          break;
+      }
+
       case SP:
-      case BT:
       case FT:
       case MG:
       case LU:
       case EP:
       case CG:
-      case UA:
-          nread = fscanf(fp, DESC_LINE, classp);
-          if (nread != 1) {
+          nread = fscanf(fp, DESC_LINE, nprocsp, classp);
+          if (nread != 2) {
             printf("setparams: Error parsing config file %s. Ignoring previous settings\n", FILENAME);
             goto abort;
           }
           break;
       case IS:
-      case DC:
+      case DT:
           nread = fscanf(fp, DEF_CLASS_LINE, classp);
-          if (nread != 1) {
+          nread += fscanf(fp, DEF_NUM_PROCS_LINE, nprocsp);
+          if (nread != 2) {
             printf("setparams: Error parsing config file %s. Ignoring previous settings\n", FILENAME);
             goto abort;
           }
@@ -256,7 +374,9 @@ void read_info(int type, char *classp)
   return;
 
  abort:
+  *nprocsp = -1;
   *classp = 'X';
+  *subtypep = -1;
   return;
 }
 
@@ -268,9 +388,11 @@ void read_info(int type, char *classp)
  *               specific to a particular benchmark. 
  */
 
-void write_info(int type, char class) 
+void write_info(int type, int nprocs, char class, int subtype) 
 {
   FILE *fp;
+  char *BT_TYPES[] = {"NONE", "FULL", "SIMPLE", "EPIO", "FORTRAN"};
+
   fp = fopen(FILENAME, "w");
   if (fp == NULL) {
     printf("setparams: Can't open file %s for writing\n", FILENAME);
@@ -278,16 +400,32 @@ void write_info(int type, char class)
   }
 
   switch(type) {
-      case SP:
       case BT:
+          /* Write out the header */
+	  if (subtype == -1 || subtype == 0) {
+            fprintf(fp, DESC_LINE, nprocs, class);
+	  } else {
+            fprintf(fp, BT_DESC_LINE, nprocs, class, BT_TYPES[subtype]);
+	  }
+          /* Print out a warning so bozos don't mess with the file */
+          fprintf(fp, "\
+c  \n\
+c  \n\
+c  This file is generated automatically by the setparams utility.\n\
+c  It sets the number of processors and the class of the NPB\n\
+c  in this directory. Do not modify it by hand.\n\
+c  \n");
+
+          break;
+	
+      case SP:
       case FT:
       case MG:
       case LU:
       case EP:
       case CG:
-      case UA:
           /* Write out the header */
-          fprintf(fp, DESC_LINE, class);
+          fprintf(fp, DESC_LINE, nprocs, class);
           /* Print out a warning so bozos don't mess with the file */
           fprintf(fp, "\
 c  \n\
@@ -299,23 +437,14 @@ c  \n");
 
           break;
       case IS:
+      case DT:
           fprintf(fp, DEF_CLASS_LINE, class);
+          fprintf(fp, DEF_NUM_PROCS_LINE, nprocs);
           fprintf(fp, "\
 /*\n\
    This file is generated automatically by the setparams utility.\n\
    It sets the number of processors and the class of the NPB\n\
    in this directory. Do not modify it by hand.   */\n\
-   \n");
-          break;
-      case DC:
-          fprintf(fp, DEF_CLASS_LINE, class);
-          fprintf(fp, "\
-/*\n\
-   This file is generated automatically by the setparams utility.\n\
-   It sets the number of processors and the class of the NPB\n\
-   in this directory. Do not modify it by hand.\n\
-   This file provided for backward compatibility.\n\
-   It is not used in DC benchmark.   */\n\
    \n");
           break;
       default:
@@ -327,34 +456,31 @@ c  \n");
   /* Now do benchmark-specific stuff */
   switch(type) {
   case SP:
-    write_sp_info(fp, class);
-    break;	      
-  case BT:	      
-    write_bt_info(fp, class);
+    write_sp_info(fp, nprocs, class);
     break;
- case DC:
-    write_dc_info(fp, class);
-    break;	      
-  case LU:	      
-    write_lu_info(fp, class);
-    break;	      
-  case MG:	      
-    write_mg_info(fp, class);
-    break;	      
-  case IS:	      
-    write_is_info(fp, class);  
-    break;	      
-  case FT:	      
-    write_ft_info(fp, class);
-    break;	      
-  case EP:	      
-    write_ep_info(fp, class);
-    break;	      
-  case CG:	      
-    write_cg_info(fp, class);
+  case LU:
+    write_lu_info(fp, nprocs, class);
     break;
-  case UA:	      
-    write_ua_info(fp, class);
+  case MG:
+    write_mg_info(fp, nprocs, class);
+    break;
+  case IS:
+    write_is_info(fp, nprocs, class);  
+    break;
+  case DT:
+    write_dt_info(fp, nprocs, class);  
+    break;
+  case FT:
+    write_ft_info(fp, nprocs, class);
+    break;
+  case EP:
+    write_ep_info(fp, nprocs, class);
+    break;
+  case CG:
+    write_cg_info(fp, nprocs, class);
+    break;
+  case BT:
+    write_bt_info(fp, nprocs, class, subtype);
     break;
   default:
     printf("setparams: (Internal error): Unknown benchmark type %d\n", type);
@@ -371,10 +497,11 @@ c  \n");
  * write_sp_info(): Write SP specific info to config file
  */
 
-void write_sp_info(FILE *fp, char class) 
+void write_sp_info(FILE *fp, int nprocs, char class) 
 {
-  int problem_size, niter;
+  int maxcells, problem_size, niter;
   char *dt;
+  maxcells = isqrt(nprocs);
   if      (class == 'S') { problem_size = 12;  dt = "0.015d0";   niter = 100; }
   else if (class == 'W') { problem_size = 36;  dt = "0.0015d0";  niter = 400; }
   else if (class == 'A') { problem_size = 64;  dt = "0.0015d0";  niter = 400; }
@@ -386,9 +513,9 @@ void write_sp_info(FILE *fp, char class)
     printf("setparams: Internal error: invalid class %c\n", class);
     exit(1);
   }
-  fprintf(fp, "%sinteger problem_size, niter_default\n", FINDENT);
-  fprintf(fp, "%sparameter (problem_size=%d, niter_default=%d)\n", 
-	       FINDENT, problem_size, niter);
+  fprintf(fp, "%sinteger maxcells, problem_size, niter_default\n", FINDENT);
+  fprintf(fp, "%sparameter (maxcells=%d, problem_size=%d, niter_default=%d)\n", 
+	       FINDENT, maxcells, problem_size, niter);
   fprintf(fp, "%sdouble precision dt_default\n", FINDENT);
   fprintf(fp, "%sparameter (dt_default = %s)\n", FINDENT, dt);
 }
@@ -397,78 +524,100 @@ void write_sp_info(FILE *fp, char class)
  * write_bt_info(): Write BT specific info to config file
  */
 
-void write_bt_info(FILE *fp, char class) 
+void write_bt_info(FILE *fp, int nprocs, char class, int io) 
 {
-  int problem_size, niter;
+  int maxcells, problem_size, niter, wr_interval;
   char *dt;
-  if      (class == 'S') { problem_size = 12;  dt = "0.010d0";   niter = 60; }
-  else if (class == 'W') { problem_size = 24;  dt = "0.0008d0";  niter = 200; }
-  else if (class == 'A') { problem_size = 64;  dt = "0.0008d0";  niter = 200; }
-  else if (class == 'B') { problem_size = 102; dt = "0.0003d0";  niter = 200; }
-  else if (class == 'C') { problem_size = 162; dt = "0.0001d0";  niter = 200; }
+  maxcells = isqrt(nprocs);
+  if      (class == 'S') { problem_size = 12;  dt = "0.010d0";    niter = 60;  }
+  else if (class == 'W') { problem_size = 24;  dt = "0.0008d0";   niter = 200; }
+  else if (class == 'A') { problem_size = 64;  dt = "0.0008d0";   niter = 200; }
+  else if (class == 'B') { problem_size = 102; dt = "0.0003d0";   niter = 200; }
+  else if (class == 'C') { problem_size = 162; dt = "0.0001d0";   niter = 200; }
   else if (class == 'D') { problem_size = 408; dt = "0.00002d0";  niter = 250; }
   else if (class == 'E') { problem_size = 1020; dt = "0.4d-5";    niter = 250; }
   else {
     printf("setparams: Internal error: invalid class %c\n", class);
     exit(1);
   }
-  fprintf(fp, "%sinteger problem_size, niter_default\n", FINDENT);
-  fprintf(fp, "%sparameter (problem_size=%d, niter_default=%d)\n", 
-	       FINDENT, problem_size, niter);
+  wr_interval = 5;
+  fprintf(fp, "%sinteger maxcells, problem_size, niter_default\n", FINDENT);
+  fprintf(fp, "%sparameter (maxcells=%d, problem_size=%d, niter_default=%d)\n", 
+	       FINDENT, maxcells, problem_size, niter);
   fprintf(fp, "%sdouble precision dt_default\n", FINDENT);
   fprintf(fp, "%sparameter (dt_default = %s)\n", FINDENT, dt);
+  fprintf(fp, "%sinteger wr_default\n", FINDENT);
+  fprintf(fp, "%sparameter (wr_default = %d)\n", FINDENT, wr_interval);
+  fprintf(fp, "%sinteger iotype\n", FINDENT);
+  fprintf(fp, "%sparameter (iotype = %d)\n", FINDENT, io);
+  if (io) {
+    fprintf(fp, "%scharacter*(*) filenm\n", FINDENT);
+    switch (io) {
+	case FULL:
+	    fprintf(fp, "%sparameter (filenm = 'btio.full.out')\n", FINDENT);
+	    break;
+	case SIMPLE:
+	    fprintf(fp, "%sparameter (filenm = 'btio.simple.out')\n", FINDENT);
+	    break;
+	case EPIO:
+	    fprintf(fp, "%sparameter (filenm = 'btio.epio.out')\n", FINDENT);
+	    break;
+	case FORTRAN:
+	    fprintf(fp, "%sparameter (filenm = 'btio.fortran.out')\n", FINDENT);
+	    fprintf(fp, "%sinteger fortran_rec_sz\n", FINDENT);
+	    fprintf(fp, "%sparameter (fortran_rec_sz = %d)\n",
+		    FINDENT, fortran_rec_size);
+	    break;
+	default:
+	    break;
+    }
+  }
 }
   
-/* 
- * write_dc_info(): Write DC specific info to config file
- */
-
-
-void write_dc_info(FILE *fp, char class)
-{
-  long int input_tuples, attrnum;
-  if      (class == 'S') { input_tuples = 1000;     attrnum = 5; }
-  else if (class == 'W') { input_tuples = 100000;   attrnum = 10; }
-  else if (class == 'A') { input_tuples = 1000000;  attrnum = 15; }
-  else if (class == 'B') { input_tuples = 10000000; attrnum = 20; }
-  else {
-    printf("setparams: Internal error: invalid class %c\n", class);
-    exit(1);
-  }
-  fprintf(fp, "long long int input_tuples=%ld, attrnum=%ld;\n",
-              input_tuples, attrnum);
-}
 
 
 /* 
- * write_lu_info(): Write LU specific info to config file
+ * write_lu_info(): Write SP specific info to config file
  */
 
-void write_lu_info(FILE *fp, char class) 
+void write_lu_info(FILE *fp, int nprocs, char class) 
 {
   int isiz1, isiz2, itmax, inorm, problem_size;
+  int xdiv, ydiv; /* number of cells in x and y direction */
   char *dt_default;
 
-  if      (class == 'S') { problem_size = 12;  dt_default = "0.5d0"; itmax = 50; }
+  if      (class == 'S') { problem_size = 12;  dt_default = "0.5d0";  itmax = 50; }
   else if (class == 'W') { problem_size = 33;  dt_default = "1.5d-3"; itmax = 300; }
-  else if (class == 'A') { problem_size = 64;  dt_default = "2.0d0"; itmax = 250; }
-  else if (class == 'B') { problem_size = 102; dt_default = "2.0d0"; itmax = 250; }
-  else if (class == 'C') { problem_size = 162; dt_default = "2.0d0"; itmax = 250; }
-  else if (class == 'D') { problem_size = 408; dt_default = "1.0d0"; itmax = 300; }
+  else if (class == 'A') { problem_size = 64;  dt_default = "2.0d0";  itmax = 250; }
+  else if (class == 'B') { problem_size = 102; dt_default = "2.0d0";  itmax = 250; }
+  else if (class == 'C') { problem_size = 162; dt_default = "2.0d0";  itmax = 750; }
+  else if (class == 'D') { problem_size = 408; dt_default = "1.0d0";  itmax = 300; }
   else if (class == 'E') { problem_size = 1020; dt_default = "0.5d0"; itmax = 300; }
   else {
     printf("setparams: Internal error: invalid class %c\n", class);
     exit(1);
   }
   inorm = itmax;
-  isiz1 = problem_size;
-  isiz2 = problem_size;
+  xdiv = isqrt2(nprocs);
+  ydiv = nprocs/xdiv;
+  isiz1 = problem_size/xdiv; if (isiz1*xdiv < problem_size) isiz1++;
+  isiz2 = problem_size/ydiv; if (isiz2*ydiv < problem_size) isiz2++;
   
 
+  fprintf(fp, "\nc number of nodes for which this version is compiled\n");
+  fprintf(fp, "%sinteger nnodes_compiled, nnodes_xdim\n", FINDENT);
+  fprintf(fp, "%sparameter (nnodes_compiled=%d, nnodes_xdim=%d)\n",
+          FINDENT, nprocs, xdiv);
+
   fprintf(fp, "\nc full problem size\n");
+  fprintf(fp, "%sinteger isiz01, isiz02, isiz03\n", FINDENT);
+  fprintf(fp, "%sparameter (isiz01=%d, isiz02=%d, isiz03=%d)\n", 
+	  FINDENT, problem_size, problem_size, problem_size);
+
+  fprintf(fp, "\nc sub-domain array size\n");
   fprintf(fp, "%sinteger isiz1, isiz2, isiz3\n", FINDENT);
-  fprintf(fp, "%sparameter (isiz1=%d, isiz2=%d, isiz3=%d)\n", 
-	       FINDENT, isiz1, isiz2, problem_size );
+  fprintf(fp, "%sparameter (isiz1=%d, isiz2=%d, isiz3=isiz03)\n", 
+	       FINDENT, isiz1, isiz2);
 
   fprintf(fp, "\nc number of iterations and how often to print the norm\n");
   fprintf(fp, "%sinteger itmax_default, inorm_default\n", FINDENT);
@@ -484,16 +633,15 @@ void write_lu_info(FILE *fp, char class)
  * write_mg_info(): Write MG specific info to config file
  */
 
-void write_mg_info(FILE *fp, char class) 
+void write_mg_info(FILE *fp, int nprocs, char class) 
 {
-  int problem_size, nit, log2_size, lt_default, lm;
+  int problem_size, nit, log2_size, log2_nprocs, lt_default, lm;
   int ndim1, ndim2, ndim3;
-  if      (class == 'S') { problem_size = 32; nit = 4; }
-/*  else if (class == 'W') { problem_size = 64; nit = 40; }*/
-  else if (class == 'W') { problem_size = 128; nit = 4; }
-  else if (class == 'A') { problem_size = 256; nit = 4; }
-  else if (class == 'B') { problem_size = 256; nit = 20; }
-  else if (class == 'C') { problem_size = 512; nit = 20; }
+  if      (class == 'S') { problem_size = 32;   nit = 4; }
+  else if (class == 'W') { problem_size = 128;  nit = 4; }
+  else if (class == 'A') { problem_size = 256;  nit = 4; }
+  else if (class == 'B') { problem_size = 256;  nit = 20; }
+  else if (class == 'C') { problem_size = 512;  nit = 20; }
   else if (class == 'D') { problem_size = 1024; nit = 50; }
   else if (class == 'E') { problem_size = 2048; nit = 50; }
   else {
@@ -501,14 +649,17 @@ void write_mg_info(FILE *fp, char class)
     exit(1);
   }
   log2_size = ilog2(problem_size);
+  log2_nprocs = ilog2(nprocs);
   /* lt is log of largest total dimension */
   lt_default = log2_size;
   /* log of log of maximum dimension on a node */
-  lm = log2_size;
+  lm = log2_size - log2_nprocs/3;
   ndim1 = lm;
-  ndim3 = log2_size;
-  ndim2 = log2_size;
+  ndim3 = log2_size - (log2_nprocs+2)/3;
+  ndim2 = log2_size - (log2_nprocs+1)/3;
 
+  fprintf(fp, "%sinteger nprocs_compiled\n", FINDENT);
+  fprintf(fp, "%sparameter (nprocs_compiled = %d)\n", FINDENT, nprocs);
   fprintf(fp, "%sinteger nx_default, ny_default, nz_default\n", FINDENT);
   fprintf(fp, "%sparameter (nx_default=%d, ny_default=%d, nz_default=%d)\n", 
 	  FINDENT, problem_size, problem_size, problem_size);
@@ -520,36 +671,54 @@ void write_mg_info(FILE *fp, char class)
   fprintf(fp, "%sinteger ndim1, ndim2, ndim3\n", FINDENT);
   fprintf(fp, "%sparameter (ndim1 = %d, ndim2 = %d, ndim3 = %d)\n", 
 	  FINDENT, ndim1, ndim2, ndim3);
-  fprintf(fp, "%sinteger%s one, nr, nv, ir\n", 
-          FINDENT, (problem_size > 1024)? "*8" : "");
-  fprintf(fp, "%sparameter (one=1)\n", FINDENT);
 }
 
+
+/* 
+ * write_dt_info(): Write DT specific info to config file
+ */
+
+void write_dt_info(FILE *fp, int nprocs, char class) 
+{
+  int num_samples,deviation,num_sources;
+  if      (class == 'S') { num_samples=1728; deviation=128; num_sources=4; }
+  else if (class == 'W') { num_samples=1728*8; deviation=128*2; num_sources=4*2; }
+  else if (class == 'A') { num_samples=1728*64; deviation=128*4; num_sources=4*4; }
+  else if (class == 'B') { num_samples=1728*512; deviation=128*8; num_sources=4*8; }
+  else if (class == 'C') { num_samples=1728*4096; deviation=128*16; num_sources=4*16; }
+  else if (class == 'D') { num_samples=1728*4096*8; deviation=128*32; num_sources=4*32; }
+  else {
+    printf("setparams: Internal error: invalid class type %c\n", class);
+    exit(1);
+  }
+  fprintf(fp, "#define NUM_SAMPLES %d\n", num_samples);
+  fprintf(fp, "#define STD_DEVIATION %d\n", deviation);
+  fprintf(fp, "#define NUM_SOURCES %d\n", num_sources);
+}
 
 /* 
  * write_is_info(): Write IS specific info to config file
  */
 
-void write_is_info(FILE *fp, char class) 
+void write_is_info(FILE *fp, int nprocs, char class) 
 {
   if( class != 'S' &&
       class != 'W' &&
       class != 'A' &&
       class != 'B' &&
       class != 'C' &&
-      class != 'D')
+      class != 'D' )
   {
     printf("setparams: Internal error: invalid class type %c\n", class);
     exit(1);
   }
 }
 
-
 /* 
  * write_cg_info(): Write CG specific info to config file
  */
 
-void write_cg_info(FILE *fp, char class) 
+void write_cg_info(FILE *fp, int nprocs, char class) 
 {
   int na,nonzer,niter;
   char *shift,*rcond="1.0d-1";
@@ -561,17 +730,19 @@ void write_cg_info(FILE *fp, char class)
        *shiftD="500.",
        *shiftE="1.5d3";
 
+  int num_proc_cols, num_proc_rows;
+
 
   if( class == 'S' )
-  { na=1400; nonzer=7; niter=15; shift=shiftS; }
+  { na=1400;    nonzer=7;  niter=15;  shift=shiftS; }
   else if( class == 'W' )
-  { na=7000; nonzer=8; niter=15; shift=shiftW; }
+  { na=7000;    nonzer=8;  niter=15;  shift=shiftW; }
   else if( class == 'A' )
-  { na=14000; nonzer=11; niter=15; shift=shiftA; }
+  { na=14000;   nonzer=11; niter=15;  shift=shiftA; }
   else if( class == 'B' )
-  { na=75000; nonzer=13; niter=75; shift=shiftB; }
+  { na=75000;   nonzer=13; niter=75;  shift=shiftB; }
   else if( class == 'C' )
-  { na=150000; nonzer=15; niter=75; shift=shiftC; }
+  { na=150000;  nonzer=15; niter=75;  shift=shiftC; }
   else if( class == 'D' )
   { na=1500000; nonzer=21; niter=100; shift=shiftD; }
   else if( class == 'E' )
@@ -588,52 +759,20 @@ void write_cg_info(FILE *fp, char class)
   fprintf( fp, "%s             niter=%d,\n", CONTINUE, niter );
   fprintf( fp, "%s             shift=%s,\n", CONTINUE, shift );
   fprintf( fp, "%s             rcond=%s )\n", CONTINUE, rcond );
+
+
+  num_proc_cols = num_proc_rows = ilog2(nprocs)/2;
+  if (num_proc_cols+num_proc_rows != ilog2(nprocs)) num_proc_cols += 1;
+  num_proc_cols = ipow2(num_proc_cols); num_proc_rows = ipow2(num_proc_rows);
   
-}
-
-
-
-/* 
- * write_ua_info(): Write UA specific info to config file
- */
-
-void write_ua_info(FILE *fp, char class) 
-{
-  int lelt, lmor,refine_max, niter, nmxh, fre;
-  char *alpha;
-
-  fre = 5;
-  if( class == 'S' )
-  { lelt=250;lmor=11600;       refine_max=4;  niter=50;  nmxh=10; alpha="0.040d0"; }
-  else if( class == 'W' )
-  { lelt=700;lmor=26700;       refine_max=5;  niter=100; nmxh=10; alpha="0.060d0"; }
-  else if( class == 'A' )
-  { lelt=2400;lmor=92700;      refine_max=6;  niter=200; nmxh=10; alpha="0.076d0"; }
-  else if( class == 'B' )
-  { lelt=8800;  lmor=334600;   refine_max=7;  niter=200; nmxh=10; alpha="0.076d0"; }
-  else if( class == 'C' )
-  { lelt=33500; lmor=1262100;  refine_max=8;  niter=200; nmxh=10; alpha="0.067d0"; }
-  else if( class == 'D' )
-  { lelt=515000;lmor=19500000; refine_max=10; niter=250; nmxh=10; alpha="0.046d0"; }
-  else
-  {
-    printf("setparams: Internal error: invalid class type %c\n", class);
-    exit(1);
-  }
-  
-  fprintf( fp, "%sinteger          lelt, lmor, refine_max, fre_default\n", FINDENT );
-  fprintf( fp, "%sinteger          niter_default, nmxh_default\n", FINDENT );
-  fprintf( fp, "%scharacter        class_default\n", FINDENT );
-  fprintf( fp, "%sdouble precision alpha_default\n", FINDENT );
-  fprintf( fp, "%sparameter(  lelt=%d,\n", FINDENT, lelt );
-  fprintf( fp, "%s            lmor=%d,\n", CONTINUE, lmor );
-  fprintf( fp, "%s             refine_max=%d,\n", CONTINUE, refine_max );
-  fprintf( fp, "%s             fre_default=%d,\n", CONTINUE, fre );
-  fprintf( fp, "%s             niter_default=%d,\n", CONTINUE, niter );
-  fprintf( fp, "%s             nmxh_default=%d,\n", CONTINUE, nmxh );
-  fprintf( fp, "%s             class_default=\"%c\",\n", CONTINUE, class );
-  fprintf( fp, "%s             alpha_default=%s )\n", CONTINUE, alpha );
-  
+  fprintf( fp, "\nc number of nodes for which this version is compiled\n" );
+  fprintf( fp, "%sinteger    nnodes_compiled\n", FINDENT );
+  fprintf( fp, "%sparameter( nnodes_compiled = %d)\n", FINDENT, nprocs );
+  fprintf( fp, "%sinteger    num_proc_cols, num_proc_rows\n", FINDENT );
+  fprintf( fp, "%sparameter( num_proc_cols=%d, num_proc_rows=%d )\n", 
+                                                          FINDENT,
+                                                          num_proc_cols,
+                                                          num_proc_rows );
 }
 
 
@@ -641,18 +780,18 @@ void write_ua_info(FILE *fp, char class)
  * write_ft_info(): Write FT specific info to config file
  */
 
-void write_ft_info(FILE *fp, char class) 
+void write_ft_info(FILE *fp, int nprocs, char class) 
 {
   /* easiest way (given the way the benchmark is written)
    * is to specify log of number of grid points in each
    * direction m1, m2, m3. nt is the number of iterations
    */
   int nx, ny, nz, maxdim, niter;
-  if      (class == 'S') { nx = 64; ny = 64; nz = 64; niter = 6;}
-  else if (class == 'W') { nx = 128; ny = 128; nz = 32; niter = 6;}
-  else if (class == 'A') { nx = 256; ny = 256; nz = 128; niter = 6;}
-  else if (class == 'B') { nx = 512; ny = 256; nz = 256; niter =20;}
-  else if (class == 'C') { nx = 512; ny = 512; nz = 512; niter =20;}
+  if      (class == 'S') { nx = 64;   ny = 64;   nz = 64;   niter = 6;}
+  else if (class == 'W') { nx = 128;  ny = 128;  nz = 32;   niter = 6;}
+  else if (class == 'A') { nx = 256;  ny = 256;  nz = 128;  niter = 6;}
+  else if (class == 'B') { nx = 512;  ny = 256;  nz = 256;  niter =20;}
+  else if (class == 'C') { nx = 512;  ny = 512;  nz = 512;  niter =20;}
   else if (class == 'D') { nx = 2048; ny = 1024; nz = 1024; niter =25;}
   else if (class == 'E') { nx = 4096; ny = 2048; nz = 2048; niter =25;}
   else {
@@ -662,23 +801,21 @@ void write_ft_info(FILE *fp, char class)
   maxdim = nx;
   if (ny > maxdim) maxdim = ny;
   if (nz > maxdim) maxdim = nz;
-  fprintf(fp, "%sinteger nx, ny, nz, maxdim, niter_default\n", FINDENT);
-  fprintf(fp, "%sinteger%s ntotal, nxp, nyp, ntotalp\n", FINDENT,
-          (nx > 1024)? "*8" : "");
+  fprintf(fp, "%sinteger nx, ny, nz, maxdim, niter_default, ntdivnp, np_min\n", FINDENT);
   fprintf(fp, "%sparameter (nx=%d, ny=%d, nz=%d, maxdim=%d)\n", 
           FINDENT, nx, ny, nz, maxdim);
   fprintf(fp, "%sparameter (niter_default=%d)\n", FINDENT, niter);
-  fprintf(fp, "%sparameter (nxp=nx+1, nyp=ny)\n", FINDENT);
-  fprintf(fp, "%sparameter (ntotal=nx*nyp*nz)\n", FINDENT);
-  fprintf(fp, "%sparameter (ntotalp=nxp*nyp*nz)\n", FINDENT);
-
+  fprintf(fp, "%sparameter (np_min = %d)\n", FINDENT, nprocs);
+  fprintf(fp, "%sparameter (ntdivnp=((nx*ny)/np_min)*nz)\n", FINDENT);
+  fprintf(fp, "%sdouble precision ntotal_f\n", FINDENT);
+  fprintf(fp, "%sparameter (ntotal_f=1.d0*nx*ny*nz)\n", FINDENT);
 }
 
 /*
  * write_ep_info(): Write EP specific info to config file
  */
 
-void write_ep_info(FILE *fp, char class)
+void write_ep_info(FILE *fp, int nprocs, char class)
 {
   /* easiest way (given the way the benchmark is written)
    * is to specify log of number of grid points in each
@@ -690,18 +827,21 @@ void write_ep_info(FILE *fp, char class)
   else if (class == 'A') { m = 28; }
   else if (class == 'B') { m = 30; }
   else if (class == 'C') { m = 32; }
-  else if (class == 'D') { m = 36; }
+  else if (class == 'D') { m = 37; }
   else if (class == 'E') { m = 40; }
   else {
     printf("setparams: Internal error: invalid class type %c\n", class);
     exit(1);
   }
+  /* number of processors given by "npm" */
+
 
   fprintf(fp, "%scharacter class\n",FINDENT);
   fprintf(fp, "%sparameter (class =\'%c\')\n",
                   FINDENT, class);
-  fprintf(fp, "%sinteger m\n", FINDENT);
-  fprintf(fp, "%sparameter (m=%d)\n", FINDENT, m);
+  fprintf(fp, "%sinteger m, npm\n", FINDENT);
+  fprintf(fp, "%sparameter (m=%d, npm=%d)\n",
+          FINDENT, m, nprocs);
 }
 
 
@@ -719,16 +859,17 @@ void write_ep_info(FILE *fp, char class)
 
 #define VERBOSE
 #define LL 400
+#include <stdio.h>
 #define DEFFILE "../config/make.def"
 #define DEFAULT_MESSAGE "(none)"
 FILE *deffile;
 void write_compiler_info(int type, FILE *fp)
 {
   char line[LL];
-  char f77[LL], flink[LL], f_lib[LL], f_inc[LL], fflags[LL], flinkflags[LL];
+  char mpif77[LL], flink[LL], fmpi_lib[LL], fmpi_inc[LL], fflags[LL], flinkflags[LL];
   char compiletime[LL], randfile[LL];
-  char cc[LL], cflags[LL], clink[LL], clinkflags[LL],
-       c_lib[LL], c_inc[LL];
+  char mpicc[LL], cflags[LL], clink[LL], clinkflags[LL],
+       cmpi_lib[LL], cmpi_inc[LL];
   struct tm *tmp;
   time_t t;
   deffile = fopen(DEFFILE, "r");
@@ -740,36 +881,44 @@ setparams: File %s doesn't exist. To build the NAS benchmarks\n\
            the file config/make.def.template\n", DEFFILE);
     exit(1);
   }
-  strcpy(f77, DEFAULT_MESSAGE);
+  strcpy(mpif77, DEFAULT_MESSAGE);
   strcpy(flink, DEFAULT_MESSAGE);
-  strcpy(f_lib, DEFAULT_MESSAGE);
-  strcpy(f_inc, DEFAULT_MESSAGE);
+  strcpy(fmpi_lib, DEFAULT_MESSAGE);
+  strcpy(fmpi_inc, DEFAULT_MESSAGE);
   strcpy(fflags, DEFAULT_MESSAGE);
   strcpy(flinkflags, DEFAULT_MESSAGE);
   strcpy(randfile, DEFAULT_MESSAGE);
-  strcpy(cc, DEFAULT_MESSAGE);
+  strcpy(mpicc, DEFAULT_MESSAGE);
   strcpy(cflags, DEFAULT_MESSAGE);
   strcpy(clink, DEFAULT_MESSAGE);
   strcpy(clinkflags, DEFAULT_MESSAGE);
-  strcpy(c_lib, DEFAULT_MESSAGE);
-  strcpy(c_inc, DEFAULT_MESSAGE);
+  strcpy(cmpi_lib, DEFAULT_MESSAGE);
+  strcpy(cmpi_inc, DEFAULT_MESSAGE);
 
   while (fgets(line, LL, deffile) != NULL) {
     if (*line == '#') continue;
     /* yes, this is inefficient. but it's simple! */
-    check_line(line, "F77", f77);
+    check_line(line, "MPIF77", mpif77);
     check_line(line, "FLINK", flink);
-    check_line(line, "F_LIB", f_lib);
-    check_line(line, "F_INC", f_inc);
+    check_line(line, "FMPI_LIB", fmpi_lib);
+    check_line(line, "FMPI_INC", fmpi_inc);
     check_line(line, "FFLAGS", fflags);
     check_line(line, "FLINKFLAGS", flinkflags);
     check_line(line, "RAND", randfile);
-    check_line(line, "CC", cc);
+    check_line(line, "MPICC", mpicc);
     check_line(line, "CFLAGS", cflags);
     check_line(line, "CLINK", clink);
     check_line(line, "CLINKFLAGS", clinkflags);
-    check_line(line, "C_LIB", c_lib);
-    check_line(line, "C_INC", c_inc);
+    check_line(line, "CMPI_LIB", cmpi_lib);
+    check_line(line, "CMPI_INC", cmpi_inc);
+    /* if the dummy library is used by including make.dummy, we set the
+       Fortran and C paths to libraries and headers accordingly     */
+    if(check_include_line(line, "../config/make.dummy")) {
+       strcpy(fmpi_lib, "-L../MPI_dummy -lmpi");
+       strcpy(fmpi_inc, "-I../MPI_dummy");
+       strcpy(cmpi_lib, "-L../MPI_dummy -lmpi");
+       strcpy(cmpi_inc, "-I../MPI_dummy");
+    }
   }
 
   
@@ -786,27 +935,26 @@ setparams: File %s doesn't exist. To build the NAS benchmarks\n\
       case LU:
       case EP:
       case CG:
-      case UA:
           put_string(fp, "compiletime", compiletime);
           put_string(fp, "npbversion", VERSION);
-          put_string(fp, "cs1", f77);
+          put_string(fp, "cs1", mpif77);
           put_string(fp, "cs2", flink);
-          put_string(fp, "cs3", f_lib);
-          put_string(fp, "cs4", f_inc);
+          put_string(fp, "cs3", fmpi_lib);
+          put_string(fp, "cs4", fmpi_inc);
           put_string(fp, "cs5", fflags);
           put_string(fp, "cs6", flinkflags);
 	  put_string(fp, "cs7", randfile);
           break;
       case IS:
-      case DC:
+      case DT:
           put_def_string(fp, "COMPILETIME", compiletime);
           put_def_string(fp, "NPBVERSION", VERSION);
-          put_def_string(fp, "CC", cc);
+          put_def_string(fp, "MPICC", mpicc);
           put_def_string(fp, "CFLAGS", cflags);
           put_def_string(fp, "CLINK", clink);
           put_def_string(fp, "CLINKFLAGS", clinkflags);
-          put_def_string(fp, "C_LIB", c_lib);
-          put_def_string(fp, "C_INC", c_inc);
+          put_def_string(fp, "CMPI_LIB", cmpi_lib);
+          put_def_string(fp, "CMPI_INC", cmpi_inc);
           break;
       default:
           printf("setparams: (Internal error): Unknown benchmark type %d\n", 
@@ -855,7 +1003,7 @@ void check_line(char *line, char *label, char *val)
      val[n] = '\0';
      n--;
   }
-/*  if (val[n] == '\\') {
+/*  if (val[strlen(val) - 1] == '\\') {
     printf("\n\
 setparams: Error in file make.def. Because of the way in which\n\
            command line arguments are incorporated into the\n\
@@ -906,7 +1054,7 @@ void put_string(FILE *fp, char *name, char *val)
     val[MAXL-3] = '.';
     len = MAXL;
   }
-  fprintf(fp, "%scharacter %s*%d\n", FINDENT, name, len);
+  fprintf(fp, "%scharacter*%d %s\n", FINDENT, len, name);
   fprintf(fp, "%sparameter (%s=\'%s\')\n", FINDENT, name, val);
 }
 
@@ -990,6 +1138,42 @@ void put_string(FILE *fp, char *name, char *val)
 #endif
 
 
+/* integer square root. Return error if argument isn't
+ * a perfect square or is less than or equal to zero 
+ */
+
+int isqrt(int i)
+{
+  int root, square;
+  if (i <= 0) return(-1);
+  square = 0;
+  for (root = 1; square <= i; root++) {
+    square = root*root;
+    if (square == i) return(root);
+  }
+  return(-1);
+}
+
+int isqrt2(int i)
+{
+  int xdim, ydim, square;
+  if (i <= 0) return(-1);
+  square = 0;
+  for (xdim = 1; square <= i; xdim++) {
+    square = xdim*xdim;
+    if (square == i) return(xdim);
+  }
+  ydim = i / (--xdim);
+  while (xdim*ydim != i && 2*ydim >= xdim) {
+    xdim++;
+    ydim = i / xdim;
+  }
+  if (xdim*ydim == i && 2*ydim >= xdim)
+    return(xdim);
+  return(-1);
+}
+  
+
 /* integer log base two. Return error is argument isn't
  * a power of two or is less than or equal to zero 
  */
@@ -1008,30 +1192,16 @@ int ilog2(int i)
   return(-1);
 }
 
-
-/* Power function. We could use pow from the math library, but then
- * we would have to insist on always linking with the math library, just
- * for this function. Since we only need pow with integer exponents,
- * we'll code it ourselves here.
- */
-
-double power(double base, int i)
+int ipow2(int i)
 {
-  double x;
-
-  if (i==0) return (1.0);
-  else if (i<0) {
-    base = 1.0/base;
-    i = -i;
-  }
-  x = 1.0;
-  while (i>0) {
-    x *=base;
-    i--;
-  }
-  return (x);
+  int pow2 = 1;
+  if (i < 0) return(-1);
+  if (i == 0) return(1);
+  while(i--) pow2 *= 2;
+  return(pow2);
 }
-    
+ 
+
 
 void write_convertdouble_info(int type, FILE *fp)
 {
@@ -1043,7 +1213,6 @@ void write_convertdouble_info(int type, FILE *fp)
   case MG:
   case EP:
   case CG:
-  case UA:
     fprintf(fp, "%slogical  convertdouble\n", FINDENT);
 #ifdef CONVERTDOUBLE
     fprintf(fp, "%sparameter (convertdouble = .true.)\n", FINDENT);

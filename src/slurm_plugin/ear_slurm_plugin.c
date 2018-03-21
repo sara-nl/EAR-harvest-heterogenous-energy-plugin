@@ -35,8 +35,8 @@ struct spank_option spank_options[] = {
       " {value=[0..1]}",
       1, 0, (spank_opt_cb_f) _opt_ear_threshold
     },
-    { "ear-user-db", "path",
-      "Specifies the path of ",
+    { "ear-user-db", "file",
+      "Specifies the file to save the user applications metrics summary",
       2, 0, (spank_opt_cb_f) _opt_ear_user_db
     },
     { "ear-verbose", "value",
@@ -48,9 +48,9 @@ struct spank_option spank_options[] = {
       "Enables the learning phase for a given P_STATE {value=[0..n]}",
       1, 0, (spank_opt_cb_f) _opt_ear_learning
     },
-    { "ear-traces", NULL, "Generates application traces with metrics and internal details",
-      0, 1, (spank_opt_cb_f) _opt_ear_traces
-    },
+    //{ "ear-traces", NULL, "Generates application traces with metrics and internal details",
+    //  0, 1, (spank_opt_cb_f) _opt_ear_traces
+    //},
     SPANK_OPTIONS_TABLE_END
 };
 
@@ -61,17 +61,21 @@ struct spank_option spank_options[] = {
  */
 static void appendenv(char *destiny, char *source)
 {
-    int length = strlen(destiny);
-    char *pointer;
+    char buffer[PATH_MAX];
+        int length = strlen(destiny);
+        char *pointer;
 
-    if (length > 0)
-    {
-        pointer = &destiny[length];
-        strcpy(&pointer[1], source);
-        pointer[0] = ':';
-    } else {
-        strcpy(destiny, source);
-    }
+        if (length > 0)
+        {
+            strcpy(buffer, destiny);
+            length = strlen(source);
+            pointer = &destiny[length];
+            strcpy(&pointer[1], buffer);
+            strcpy(destiny, source);
+            pointer[0] = ':';
+        } else {
+            strcpy(destiny, source);
+        }
 }
 
 static int setenv_local(const char *name, const char *value, int replace)
@@ -317,9 +321,10 @@ static int local_update_ld_library_path()
 
     //
     appendenv(buffer, CPUPOWER_LIB_PATH);
-    appendenv(buffer, PAPI_LIB_PATH);
     appendenv(buffer, FREEIPMI_LIB_PATH);
-    
+    appendenv(buffer, PAPI_LIB_PATH);
+   
+    slurm_error("NOT AN ERROR: %s", buffer); 
     //
     return setenv_local("LD_LIBRARY_PATH", buffer, 1);
 }

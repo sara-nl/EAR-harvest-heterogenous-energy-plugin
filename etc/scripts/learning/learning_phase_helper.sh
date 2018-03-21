@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export BENCHS_SRC_PATH=$EAR_SRC_PATH/src/learning/kernels
+export BENCHS_SRC_PATH=$EAR_SRC_PATH/kernels
 export BENCHS_BIN_PATH=$EAR_INSTALL_PATH/bin/kernels
 export MPI_SCRIPT_PATH=$EAR_INSTALL_PATH/etc/scripts/running/mpi_exec.sh
 
@@ -15,28 +15,51 @@ function configuring
 	export MPIS=$4
 }
 
-function launching_disabled
+function launching
+{
+    if [[ -z "${SLURM_JOB_ID}" ]]; then
+      launching_mpi_script $1 $2
+    else
+      launching_slurm $1 $2
+    fi
+}
+
+function launching_slurm
 {
     # Update srun command for custom SLURM installations
     export SRUN_PATH=/home/xjaneas/slurm/bin/srun
 
+    # Non-edit region
+	if [ "$EAR_POWER_POLICY" != "NO_EAR" ]; then
+    	export EAR_SLURM_POLICY="--ear-policy=MONITORING_ONLY"
+    else
+    	export EAR=0
+	fi
+
     echo "----------------------------------------------------------"
-    echo "Launching $1 $2"
+    echo "Launching (SLURM) $1 $2"
     echo "----------------------------------------------------------"
     $SRUN_PATH -N1 -n$2 -J $1.$EAR_P_STATE -w $SLURMD_NODENAME \
-        --jobid=$SLURM_JOBID --ear-policy=MONITORING_ONLY      \
-        $BENCHS_BIN_PATH/$1
+        --jobid=$SLURM_JOBID $EAR_SLURM_POLICY $BENCHS_BIN_PATH/$1
 }
 
-function launching
+function launching_mpi_script
 {
-    # MPI options
+	# MPI options
     export I_MPI_PIN=1
     export I_MPI_PIN_DOMAIN=auto
 
     # Non-edit region
     export EAR_APP_NAME=$1
-    $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 MONITORING_ONLY
+
+	if [ "$EAR_POWER_POLICY" != "NO_EAR" ]; then
+    	export EAR_POWER_POLICY="MONITORING_ONLY"
+	fi
+
+    echo "----------------------------------------------------------"
+    echo "Launching (script) $1 $2"
+    echo "----------------------------------------------------------"
+    $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 $EAR_POWER_POLICY
 }
 
 function learning_phase

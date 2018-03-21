@@ -10,12 +10,16 @@ export EAR_SRC_PATH=$HOME/git/EAR
 
 # Non edit region
 source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
-export BENCHS_MODE=$1
+export BENCHS_MODE="test"
 export EAR_P_STATE=1
 
-if [ "$1" != "compile" ] && [ "$1" != "test" ]; then
-    echo $"Usage: $0 {compile|test}"
+if [ "$1" != "ear" ] && [ "$1" != "no_ear" ]; then
+    echo $"Usage: $0 {ear | no_ear}"
     exit 0
+fi
+
+if [ "$1" == "no_ear" ]; then
+	export EAR_POWER_POLICY="NO_EAR"
 fi
 
 # Compiling or executing the different kernels

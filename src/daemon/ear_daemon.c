@@ -317,12 +317,12 @@ void eard_exit()
 	{
 		close(ear_fd_req[i]);
 
-		sprintf(ear_commreq, "%s/.ear_comm.req_%d", ear_tmp, i);
-		VERBOSE_N(2, "removing file %s", ear_commreq);
+		//sprintf(ear_commreq, "%s/.ear_comm.req_%d", ear_tmp, i);
+		//VERBOSE_N(2, "removing file %s", ear_commreq);
 
-		if (unlink(ear_commreq) < 0) {
-			VERBOSE_N(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
-		}
+		//if (unlink(ear_commreq) < 0) {
+		//	VERBOSE_N(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
+		//}
 	}
 
 	exit(1);
@@ -408,14 +408,16 @@ void form_database_paths()
 	char *db_pathname;
 
 	db_pathname = get_ear_db_pathname();
-	gethostname(node_name, sizeof(node_name));
 
-	// EAR_DB_PATHNAME
-	sprintf(database_bin_path, "%s%s.db.bin", db_pathname, node_name);
-	sprintf(database_csv_path, "%s%s.db.csv", db_pathname, node_name);
+	if (db_pathname != NULL) {
+		gethostname(node_name, sizeof(node_name));
 
-	ear_verbose(2, "EARD is using %s file as binary database\n", database_bin_path);
-	ear_verbose(2, "EARD is using %s file as plain-text database\n", database_csv_path);
+		sprintf(database_bin_path, "%s%s.db.bin", db_pathname, node_name);
+		sprintf(database_csv_path, "%s%s.db.csv", db_pathname, node_name);
+	}
+
+	VERBOSE_N(2, "DB binary file: %s", database_bin_path);
+	VERBOSE_N(2, "DB pain-text file: %s", database_csv_path);
 }
 
 int eard_system(int must_read)
@@ -440,14 +442,18 @@ int eard_system(int must_read)
 
 			if (ret1 == EAR_SUCCESS && ret2 == EAR_SUCCESS)
 			{
+				DEBUG_F(1, "application signature correctly written");
 				ack = EAR_COM_OK;
-				size = sizeof(unsigned long);
+			} else {
+				VERBOSE_N(1, "ERROR while application signature writing");
+				ack = EAR_COM_ERROR;
+			}
+			size = sizeof(unsigned long);
 
-				if (write(ear_fd_ack[system_req], &ack, size) != size)
-				{
-					ear_verbose(0,"ear_daemon: invalid write to system_req ack\n");
-					eard_close_comm();
-				}
+			if (write(ear_fd_ack[system_req], &ack, size) != size)
+			{
+				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
+				eard_close_comm();
 			}
 			break;
 		default: return 0;

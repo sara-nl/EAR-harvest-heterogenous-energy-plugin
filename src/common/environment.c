@@ -67,50 +67,32 @@ char * getenv_ear_tmp()
 	strcpy(conf_ear_tmp,my_ear_tmp);
 	return conf_ear_tmp;	
 }
-char * getenv_ear_db_pathname()
+char *getenv_ear_db_pathname()
 {
-	char *my_ear_db_pathname;
-	my_ear_db_pathname=getenv("EAR_DB_PATHNAME");
-	if (my_ear_db_pathname!=NULL){
-		// Empty string
-		if (strcmp(my_ear_db_pathname,"")==0){
-				conf_ear_db_pathname=malloc(strlen(DEFAULT_DB_PATHNAME)+1);
-				strcpy(conf_ear_db_pathname,DEFAULT_DB_PATHNAME);	
-		}else{
-			// defined
-			conf_ear_db_pathname=malloc(strlen(my_ear_db_pathname)+1);
-			strcpy(conf_ear_db_pathname,my_ear_db_pathname);
-		}
-	}else{
-		// not defined
-		conf_ear_db_pathname=malloc(strlen(DEFAULT_DB_PATHNAME)+1);
-		strcpy(conf_ear_db_pathname,DEFAULT_DB_PATHNAME);	
+	char *my_ear_db_pathname = getenv("EAR_DB_PATHNAME");
+
+	if (my_ear_db_pathname != NULL && strcmp(my_ear_db_pathname,"") != 0)
+	{
+		conf_ear_db_pathname=malloc(strlen(my_ear_db_pathname)+1);
+		strcpy(conf_ear_db_pathname,my_ear_db_pathname);
 	}
+
 	return conf_ear_db_pathname;
 }
+
 char *getenv_ear_user_db_pathname()
 {
-	char *my_user_db_pathname;
-	my_user_db_pathname=getenv("EAR_USER_DB_PATHNAME");
-    if (my_user_db_pathname!=NULL){
-        // Empty string
-        if (strcmp(my_user_db_pathname,"")==0){
-				my_user_db_pathname=getenv("HOME");
-                conf_ear_user_db_pathname=malloc(strlen(my_user_db_pathname)+1+strlen(DEFAULT_USER_DB_PATHNAME)+1);
-				sprintf(conf_ear_user_db_pathname,"%s/%s",my_user_db_pathname,DEFAULT_USER_DB_PATHNAME);
-        }else{
-            // defined
-            conf_ear_user_db_pathname=malloc(strlen(my_user_db_pathname)+1);
-            strcpy(conf_ear_user_db_pathname,my_user_db_pathname);
-        }   
-    }else{
-        // Not defined
-		my_user_db_pathname=getenv("HOME");
-        conf_ear_user_db_pathname=malloc(strlen(my_user_db_pathname)+1+strlen(DEFAULT_USER_DB_PATHNAME)+1);
-		sprintf(conf_ear_user_db_pathname,"%s/%s",my_user_db_pathname,DEFAULT_USER_DB_PATHNAME);
-    }   
+	char *my_user_db_pathname = getenv("EAR_USER_DB_PATHNAME");
+
+	if (my_user_db_pathname != NULL && strcmp(my_user_db_pathname, "") != 0)
+	{
+		conf_ear_user_db_pathname=malloc(strlen(my_user_db_pathname) + 1);
+		strcpy(conf_ear_user_db_pathname,my_user_db_pathname);
+	}
+
 	return conf_ear_user_db_pathname;
 }
+
 char *getenv_ear_gui_pathname()
 {
 	char *my_gui_path;
@@ -256,23 +238,27 @@ int getenv_ear_verbose()
 int getenv_ear_local_id()
 {
 	char *my_local_id;
-	my_local_id=getenv("SLURM_LOCALID");
-	if (my_local_id!=NULL){ 
-		conf_ear_local_id=atoi(my_local_id);
-	}
+	//my_local_id=getenv("SLURM_LOCALID");
+	//if (my_local_id!=NULL){ 
+	//	conf_ear_local_id=atoi(my_local_id);
+	//}
 	// if not defined, it is computed later based on the number of total processes and EAR_NUM_NODES
 	return conf_ear_local_id;
 }
 
 int getenv_ear_num_nodes()
 {
-	char *my_num_nodes;
-	my_num_nodes=getenv("EAR_NUM_NODES");
-	if (my_num_nodes==NULL){ 
-		my_num_nodes=getenv("SLURM_STEP_NUM_NODES");
-		if (my_num_nodes==NULL) conf_ear_num_nodes=1;
-		else conf_ear_num_nodes=atoi(my_num_nodes);
-	} else conf_ear_num_nodes=atoi(my_num_nodes);
+	char *my_num_nodes = getenv("EAR_NUM_NODES");
+
+	if (my_num_nodes == NULL)
+	{ 
+		my_num_nodes = getenv("SLURM_STEP_NUM_NODES");
+
+		if (my_num_nodes == NULL) conf_ear_num_nodes=1;
+		else conf_ear_num_nodes = atoi(my_num_nodes);
+
+	} else conf_ear_num_nodes = atoi(my_num_nodes);
+
 	return conf_ear_num_nodes;
 }
 
@@ -320,10 +306,12 @@ void set_ear_tmp(char *new_tmp)
 	conf_ear_tmp=malloc(strlen(new_tmp)+1);
 	strcpy(conf_ear_tmp,new_tmp);
 }
-char * get_ear_db_pathname()
+
+char *get_ear_db_pathname()
 {
 	return conf_ear_db_pathname;
 }
+
 char * get_ear_user_db_pathname()
 {
 	return conf_ear_user_db_pathname;
@@ -519,9 +507,15 @@ int get_num_threads()
 
 int get_total_resources()
 {
-    int procs_per_node;
-    check_threads();
-    procs_per_node=get_ear_total_processes()/get_ear_num_nodes();
-    return procs_per_node*get_num_threads();
+	int procs_per_node;
+
+	check_threads();
+
+	procs_per_node = get_ear_total_processes()/get_ear_num_nodes();
+
+	// TODO: When an executable has the OpenMP symbols, the OMP_NUM_THREADS
+	// variable is taking into account. But maybe the executable is not using
+	// any OMP thread.
+	return procs_per_node*get_num_threads();
 }
 
