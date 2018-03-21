@@ -46,12 +46,15 @@
 static clock_t chrono_start[100];
 static clock_t chrono_total[100];
 
+#if 0
 #define CHRONO_START(region) \
     chrono_start[region] = clock();
-
 #define CHRONO_END(region) \
     chrono_total[region] += (clock() - chrono_start[region]);
-
+#else
+#define CHRONO_START(region)
+#define CHRONO_END(region)
+#endif
 
 // General indexes.
 unsigned int _levels;
@@ -113,26 +116,30 @@ void dynais_dispose()
     free((void *) zero_vec[0]);
     free((void *) size_vec[0]);
 
-    #define NUM_REGIONS 6
+    #define NUM_REGIONS 7
+	double CLOCKS_PER_USEC = (double) CLOCKS_PER_SEC / 1000000.0;
+	double total_0, total, percent;
     clock_t others = 0;
-    double percent;
     int i = 0;
 
-    //printf("reg     \t\tus \t\t%%\n");
+    printf("reg     \t\tus \t\t%%\n");
+
+	total_0 = (double) chrono_total[0] / CLOCKS_PER_USEC;
 
     while(i != NUM_REGIONS)
     {
-        percent = ((double) chrono_total[i] / (double) chrono_total[0]) * 100.0;
-    //    printf("REGION %d:\t\t%ld \t\t%0.2lf\n", i, chrono_total[i], percent);
-        ++i;
+		total = (double) chrono_total[i] / CLOCKS_PER_USEC;
+        percent = (total / total_0) * 100.0;
+		printf("REGION %d:\t\t%0.lf \t\t%0.2lf\n", i, total, percent);
+		++i;
     }
 
     others += chrono_total[4];
     others += chrono_total[5];
     others = chrono_total[0] - others;
-
-    percent = ((double) others / (double) chrono_total[0]) * 100.0;
-    // printf("REGION o:\t\t%ld\t\t%0.2lf\n", others, percent);
+	total = (double) others / CLOCKS_PER_USEC;
+	percent = (total / total_0) * 100.0;
+    printf("REGION o:\t\t%0.lf\t\t%0.2lf\n", total, percent);
 }
 
 // How it works?
@@ -227,19 +234,14 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
     for (k = 1; k <= limit; ++k)
     {
-	if (sample == samples[i] && sample_size == sizes[i])
+		if (sample == samples[i] && sample_size == sizes[i])
         {
-            zeros[i] = zeros[m] + 1;
+			zeros[i] = zeros[m] + 1;
 
             if (zeros[i] > max_zeros && k < zeros[i])
             {
                 max_length = k;
                 max_zeros = zeros[i];
-
-                // Caution, CRC code isn't implemented inter-level.
-                // To do that there are two possibilities:
-                // - Use the CRC code as upper level sample.
-                // - Initialize CRC vector with the level number.
             }
         }
         zeros[m] = 0;

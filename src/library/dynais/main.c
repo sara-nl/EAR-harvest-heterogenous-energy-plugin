@@ -20,6 +20,8 @@ void usage()
 int main(int argc, char **argv)
 {
 	FILE *input;
+	double total_td;
+	clock_t init_t, total_t;
 	unsigned int level, size;
 	unsigned long value[5];
 	unsigned int i, panic;
@@ -41,22 +43,27 @@ int main(int argc, char **argv)
 	i = 0;
 
 	if (panic == 0) panic = UINT_MAX;
+	init_t = clock();
 
 	// Reading
 	while (fread(&value, 5, sizeof(unsigned long), input) > 0 && i < panic) {
 		result = dynais(value[3], &size, &level);
-		printf("%lu %u %u %d\n", value[3], size, level, result);
+		//printf("%lu %u %u %d\n", value[3], size, level, result);
 		++i;
 	}
 
-	//
-	printf("Read a total of %u inputs (max %u)\n", i, UINT_MAX);
-
+	total_t = clock() - init_t;
+	total_td = (double) total_t / ((double) CLOCKS_PER_SEC / 1000000.f);
 	//
 	fclose(input);
 
 	// Algorithms
 	dynais_dispose();
+
+	//
+	printf("----------------------------------\n");
+	printf("Total inputs: %u (max %u)\n", i, UINT_MAX);
+	printf("Total elapsed time: %0.lf us\n", total_td);
 
 	return 0;
 }
