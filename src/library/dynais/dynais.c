@@ -41,73 +41,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <library/ear_dynais/ear_dynais.h>
+#include <library/dynais/dynais.h>
 
-#if ANALYSIS
-#include <nmmintrin.h>
-#endif
+static clock_t chrono_start[100];
+static clock_t chrono_total[100];
+
+#define CHRONO_START(region) \
+    chrono_start[region] = clock();
+
+#define CHRONO_END(region) \
+    chrono_total[region] += (clock() - chrono_start[region]);
+
 
 // General indexes.
 unsigned int _levels;
 unsigned int _window;
-unsigned int calls;
 
 // Per level data
 unsigned long *sample_vec[MAX_LEVELS];
 unsigned int  *zero_vec[MAX_LEVELS];
 unsigned int  *size_vec[MAX_LEVELS];
 
-#if ANALYSIS
-unsigned int *crc_vec[MAX_LEVELS];
-#endif
-
 signed int   level_result[MAX_LEVELS];
 unsigned int level_previous_length[MAX_LEVELS];
 unsigned int level_length[MAX_LEVELS];
 unsigned int level_limit[MAX_LEVELS];
 unsigned int level_index[MAX_LEVELS];
-
-#if ANALYSIS
-unsigned int dynais_loop_data(unsigned long *_samples,
-    unsigned int *_sizes,
-    unsigned int *_crcs,
-    unsigned int level,
-    unsigned int size)
-{
-    unsigned long *samples;
-    unsigned int *sizes;
-    unsigned int *crcs;
-    unsigned int limit;
-    unsigned int index;
-    unsigned int i, k;
-
-    //
-    index = level_index[level];
-    limit = level_limit[level];
-
-    //
-    samples = sample_vec[level];
-    sizes = size_vec[level];
-    crcs = crc_vec[level];
-
-    // Indexing
-    i = index + 2;
-    i = (i & ((i >= _window) - 1)) + (i > _window);
-
-    // Copying the content
-    for (k = 0; k < size; ++k)
-    {
-        _samples[k] = samples[i];
-        _sizes[k] = sizes[i];
-        _crcs[k] = crcs[i];
-
-        i = i + 1;
-        i = i & ((i == _window) - 1);
-    }
-
-    return k;
-}
-#endif
 
 //
 //
@@ -119,7 +78,7 @@ int dynais_init(unsigned int window, unsigned int levels)
 {
     unsigned long *p_data;
     unsigned int *p_zero, *p_size, *p_crc;
-    int mem_res1, mem_res2, mem_res3, mem_res4 = 0;
+    int mem_res1, mem_res2, mem_res3;
     int i;
 
     _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
@@ -128,12 +87,8 @@ int dynais_init(unsigned int window, unsigned int levels)
     mem_res2 = posix_memalign((void *) &p_zero, sizeof(long), sizeof(int) * window * levels);
     mem_res3 = posix_memalign((void *) &p_size, sizeof(long), sizeof(int) * window * levels);
 
-    #if ANALYSIS
-    mem_res4 = posix_memalign((void *) &p_crc, sizeof(long), sizeof(int) * window * levels);
-    #endif
-
     //EINVAL = 22, ENOMEM = 12
-    if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
+    if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0) {
         return -1;
     }
 
@@ -147,10 +102,6 @@ int dynais_init(unsigned int window, unsigned int levels)
         sample_vec[i] = &p_data[i * window];
         zero_vec[i] = &p_zero[i * window];
         size_vec[i] = &p_size[i * window];
-
-        #if ANALYSIS
-        crc_vec[i] = &p_crc[i * window];
-        #endif
     }
 
     return 0;
@@ -162,9 +113,26 @@ void dynais_dispose()
     free((void *) zero_vec[0]);
     free((void *) size_vec[0]);
 
-    #if ANALYSIS
-    free((void *) crc_vec[0]);
-    #endif
+    #define NUM_REGIONS 6
+    clock_t others = 0;
+    double percent;
+    int i = 0;
+
+    //printf("reg     \t\tus \t\t%%\n");
+
+    while(i != NUM_REGIONS)
+    {
+        percent = ((double) chrono_total[i] / (double) chrono_total[0]) * 100.0;
+    //    printf("REGION %d:\t\t%ld \t\t%0.2lf\n", i, chrono_total[i], percent);
+        ++i;
+    }
+
+    others += chrono_total[4];
+    others += chrono_total[5];
+    others = chrono_total[0] - others;
+
+    percent = ((double) others / (double) chrono_total[0]) * 100.0;
+    // printf("REGION o:\t\t%ld\t\t%0.2lf\n", others, percent);
 }
 
 // How it works?
@@ -232,6 +200,8 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     unsigned int i, k, m;
     int result = 0;
 
+    CHRONO_START(1);
+
     // Getting level data (index, limit...)
     index = level_index[level];
     limit = level_limit[level];
@@ -241,19 +211,19 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     zeros = zero_vec[level];
     sizes = size_vec[level];
 
-    #if ANALYSIS
-    crcs = crc_vec[level];
-    #endif
-
     sample_size = size;
     sizes[index] = size;
     samples[index] = sample;
+
+    CHRONO_END(1);
 
     // Indexing
     i = index + 1;
     i = i & ((i == _window) - 1);
     m = i + 1;
     m = m & ((m == _window) - 1);
+
+    CHRONO_START(2);
 
     for (k = 1; k <= limit; ++k)
     {
@@ -270,27 +240,19 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
                 // To do that there are two possibilities:
                 // - Use the CRC code as upper level sample.
                 // - Initialize CRC vector with the level number.
-                #if ANALYSIS
-                crcs[i] = crcs[m];
-                #endif
             }
-            #if ANALYSIS
-            else {
-                crcs[i] = _mm_crc32_u32(crcs[m], sample);
-            }
-            #endif
         }
         zeros[m] = 0;
-
-	#if ANALYSIS
-        crcs[m] = 0;
-	#endif
 
         i = i + 1;
         i = i & ((i == _window) - 1);
         m = m + 1;
         m = m & ((m == _window) - 1);
     }
+
+    CHRONO_END(2);
+
+    CHRONO_START(3);
 
     // Mask is 0xFFFFFFFF (-1) when _index is greater than 0
     // or 0x00000000 when _index is equal to 0.
@@ -343,6 +305,8 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     level_index[level] = index;
     level_limit[level] = limit;
 
+    CHRONO_END(3);
+
     return result;
 }
 
@@ -383,13 +347,19 @@ static int dynais_hierarchical(unsigned long sample, unsigned int size, unsigned
         return level - 1;
     }
 
+    CHRONO_START(4);
+
     // DynAIS basic algorithm call.
     level_result[level] = dynais_basic(sample, size, level);
+
+    CHRONO_END(4);
 
     // If new loop is detected, the sample and the size
     // is passed recursively to dynais_hierarchical.
     if (level_result[level] >= NEW_LOOP)
     {
+        CHRONO_START(5);
+
         // Finding the correct size of the loop. If the level
         // is 0 then is not needed, because all level 0 inputs
         // size is 1, and then is equal to level size.
@@ -398,6 +368,8 @@ static int dynais_hierarchical(unsigned long sample, unsigned int size, unsigned
         } else {
             new_sample_size = level_length[level];
         }
+
+        CHRONO_END(5);
 
         return dynais_hierarchical(sample, new_sample_size, level + 1);
     }
@@ -413,6 +385,8 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
     int result;
     int reach;
     int l, ll;
+
+    CHRONO_START(0);
 
     // Hierarchical algorithm call. The maximum level
     // reached is returned. All those values were updated
@@ -448,6 +422,7 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
             // because the only way to break a loop is with the
             // detection of a new loop.
             if (end_loop) {
+                CHRONO_END(0);
                 return END_NEW_LOOP;
             }
 
@@ -463,18 +438,23 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
 
                     if (level_result[ll] < NEW_LOOP)
                     {
+                        CHRONO_END(0);
                         return IN_LOOP;
                     }
                 }
             }
 
             if (end_loop) {
+                CHRONO_END(0);
                 return END_NEW_LOOP;
             }
 
+            CHRONO_END(0);
             return level_result[l];
         }
     }
+
+    CHRONO_END(0);
 
     // In case no loop were found: NO_LOOP or END_LOOP
     // in level 0, size and government level are 0.
