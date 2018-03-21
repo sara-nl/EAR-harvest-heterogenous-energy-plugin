@@ -204,7 +204,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     unsigned int end_loop, in_loop, new_loop, new_iteration;
     unsigned int index, limit, previous_length, sample_size;
     unsigned int max_length = 0, max_zeros = 0, mask;
-    unsigned int i, k, m;
+    unsigned int i, j, k, m;
     int result = 0;
 
     CHRONO_START(1);
@@ -220,7 +220,6 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
     sample_size = size;
     sizes[index] = size;
-    samples[index] = sample;
 
     CHRONO_END(1);
 
@@ -232,25 +231,59 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
     CHRONO_START(2);
 
-    for (k = 1; k <= limit; ++k)
-    {
+	samples[index] = 0;
+
+	__m512i sample_comparer;
+	__m256i size_comparer;
+
+	sample_comparer = _mm512_set1_epi64(sample);
+	size_comparer = _mm256_set1_epi32(size);
+
+	__m512i sample_loader;
+	__m256i size_loader;
+	__mmask8 mask;
+
+	for (k = 0; k <= limit; k += 8)
+	{
+		sample_loader = _mm512_load_epi64(&samples[k]);
+		size_loader = _mm256_load_si256((__m256i *) &sizes[k]);
+
+		mask = _mm512_cmp_epu64_mask(sample_comparer, sample_loader, _MM_CMPINT_EQ);
+		mask = _mm256_mask_cmp_epi32_mask(mask, size_comparer, size_loader, _MM_CMPINT_EQ);
+
+		j = k + ((unsigned char) mask == 0) * 8;
+
+		for (; j < k + 8; ++j)
+		{
+			if (zeros[j] > max_zeros && k < zeros[j])
+			{
+				max_length = k;
+				max_zeros = zeros[j];
+			}
+		}
+	}
+
+	samples[index] = sample;
+
+	/*for (k = 1; k <= limit; ++k)
+	{
 		if (sample == samples[i] && sample_size == sizes[i])
-        {
+		{
 			zeros[i] = zeros[m] + 1;
 
-            if (zeros[i] > max_zeros && k < zeros[i])
-            {
-                max_length = k;
-                max_zeros = zeros[i];
-            }
-        }
-        zeros[m] = 0;
+			if (zeros[i] > max_zeros && k < zeros[i])
+			{
+				max_length = k;
+				max_zeros = zeros[i];
+			}
+		}
+		zeros[m] = 0;
 
-        i = i + 1;
-        i = i & ((i == _window) - 1);
-        m = m + 1;
-        m = m & ((m == _window) - 1);
-    }
+		i = i + 1;
+		i = i & ((i == _window) - 1);
+		m = m + 1;
+		m = m & ((m == _window) - 1);
+	}*/
 
     CHRONO_END(2);
 
