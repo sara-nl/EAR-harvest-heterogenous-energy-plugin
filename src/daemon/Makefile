@@ -1,5 +1,6 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS)  -pthread
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -DPOWER_MONITORING -pthread 
+CFLAGS  = -I$(SRCDIR) $(CONSTANTS)  -pthread 
 LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl -pthread -L$(SRCDIR)/metrics/power_monitoring -lpowermon
 
 POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a

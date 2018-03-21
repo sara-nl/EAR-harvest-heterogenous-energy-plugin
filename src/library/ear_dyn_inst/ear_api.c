@@ -126,7 +126,7 @@ void ear_init()
 	if (ear_my_rank == 0)
 	{
 		ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
-		ear_verbose(2,"EAR using %d levels in dynais with %d of window size \n",
+		ear_verbose(0,"EAR using %d levels in dynais with %d of window size \n",
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
 	}
 
@@ -136,6 +136,7 @@ void ear_init()
 
 	// Only one process can connect with the daemon
 	// Connecting with ear_daemon
+	ear_verbose(0,"EAR: Connecting with EARD\n");
 	if (eards_connect() < 0) {
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
 		exit(1);
@@ -198,8 +199,8 @@ void ear_init()
 		sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 	}
 
-	if (ear_my_rank == 0)
-	{
+	//if (ear_my_rank == 0)
+	//{
 		VERBOSE_N(1, "--------------------------------");
 		VERBOSE_N(1, "App/user id: '%s'/'%s'", application.app_id, application.user_id);
 		VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job_id);
@@ -209,7 +210,7 @@ void ear_init()
 		VERBOSE_N(1, "Policy/threshold/learning: %s/%lf/%d", application.policy, application.policy_th, ear_whole_app);
 		VERBOSE_N(1, "DynAIS levels/window: %d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size());
 		VERBOSE_N(1, "--------------------------------");
-	}
+//	}
 
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);

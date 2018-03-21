@@ -138,7 +138,7 @@ int frequency_init()
 
 	//
 	num_cpus = hwinfo->sockets * hwinfo->cores * hwinfo->threads;
-	VERBOSE_N(2, "detected %u CPUs", num_cpus);
+	VERBOSE_N(1, "detected %u CPUs", num_cpus);
 
 	//
 	freq_list_cpu = get_frequencies_cpu(num_cpus);
@@ -182,9 +182,9 @@ ulong frequency_set_all_cpus(ulong freq)
 {
 	int result, i = 0;
 
+	VERBOSE_N(1, "setting all cpus to %lu KHz", freq);
 	if (is_valid_frequency(freq))
 	{
-		VERBOSE_N(1, "setting all cpus to %lu KHz", freq);
 
 		for (i = 0; i < num_cpus; i++)
 		{
@@ -194,7 +194,8 @@ ulong frequency_set_all_cpus(ulong freq)
 			result = cpufreq_set_frequency(i, freq);
 
 			if (result < 0) {
-				VERBOSE_N(0, "ERROR while switching cpu %d frequency to %lu (%s)", i, freq, strerror(-result));
+				//VERBOSE_N(0, "ERROR while switching cpu %d frequency to %lu (%s)", i, freq, strerror(-result));
+				VERBOSE_N(0, "ERROR while switching cpu %d frequency to %lu ", i, freq);
 			}
 		}
 
@@ -342,7 +343,8 @@ void frequency_recover_previous_policy()
 		status = cpufreq_set_policy(i, &previous_cpu0_policy);
 
 		if (status < 0) {
-			VERBOSE_N(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
+			//VERBOSE_N(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
+			VERBOSE_N(0, "ERROR while switching policy for cpu %d ", i);
 		}
 	}
 

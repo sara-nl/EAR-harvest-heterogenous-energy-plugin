@@ -67,9 +67,8 @@ libeart.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 
 install:
 	mv libear.so $(DESTDIR)/lib/libear.so
-
-install_traces:
 	mv libeart.so $(DESTDIR)/lib/libeart.so
+
 
 clean:
 	rm -f $(BINARIES) $(OBJS)

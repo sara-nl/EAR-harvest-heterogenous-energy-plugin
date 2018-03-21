@@ -229,8 +229,9 @@ void connect_service(int req,unsigned long pid)
 				VERBOSE_N(0,"ERROR while opening ping pipe %s (%s)", ear_ping, strerror(errno));
 				eard_close_comm();
 			}
-
+#ifdef POWER_MONITORING
 			powermon_mpi_init(pid);
+#endif
 		}
 
 		VERBOSE_N(3, "sending ack for service %d",req);
@@ -297,20 +298,24 @@ void eard_exit()
 	char ear_commreq[MAX_PATH_SIZE];
 	int i;
 
-	VERBOSE_N(1, "EXITTING");
+	VERBOSE_N(1, "Exiting");
 	eard_unlock();
 
 	// Come disposes
 	print_rapl_metrics();
 
 	// Recovering old frequency and governor configurations.
+	VERBOSE_N(1,"frequency_recover_previous_policy");	
 	frequency_recover_previous_policy();
 	frequency_dispose();
 
+	VERBOSE_N(1,"Releasing node resources");
 	// More disposes
 	node_energy_dispose();
 	dispose_uncores();
 	aperf_dispose();
+
+	VERBOSE_N(1,"Releasing files");
 
 	// Removing files (services)
 	for (i = 0; i < ear_daemon_client_requests; i++)
@@ -363,7 +368,9 @@ void eard_close_comm()
 	}
 
 	close(ear_ping_fd);
+#ifdef POWER_MONITORING
 	powermon_mpi_finalize(application_id);
+#endif
 
 	application_id = -1;
 	ear_ping_fd = -1;
