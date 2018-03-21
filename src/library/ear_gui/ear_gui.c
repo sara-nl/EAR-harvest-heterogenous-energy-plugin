@@ -17,9 +17,10 @@
 #include <sys/types.h>
 #include <papi.h>
 
+#include <control/frequency.h>
+#include <metrics/papi/generics.h>
 #include <library/ear_gui/ear_gui.h>
 #include <library/ear_states/ear_states.h>
-#include <control/frequency.h>
 #include <library/ear_metrics/ear_metrics.h>
 #include <library/common/externs.h>
 #include <common/types/generic.h>
@@ -63,6 +64,7 @@ Archinfo.txt
 void get_hw_info(int *sockets, int *cores_socket, ulong *max_f, ulong *min_f, ulong *nom_f,
 				 char *CPU_model, char *CPU_name)
 {
+	const PAPI_hw_info_t *hw_general = NULL;
 	*nom_f = frequency_get_nominal_freq();
 	hw_general = metrics_get_hw_info();
 
