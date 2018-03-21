@@ -1,3 +1,5 @@
+src/library/dynais/inputs*
+
 # General
 /Makefile
 *.o
