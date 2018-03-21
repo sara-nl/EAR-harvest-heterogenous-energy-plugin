@@ -57,7 +57,7 @@ static uint ear_loop_size;
 static uint ear_iterations;
 static int in_loop = 0;
 
-// #define MEASURE_DYNAIS_OV
+#define MEASURE_DYNAIS_OV
 #ifdef MEASURE_DYNAIS_OV
 static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;

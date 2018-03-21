@@ -45,7 +45,7 @@ fi
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]
 then
-    PRELOAD="-genv LD_PRELOAD=${EAR_LIB_PATH}"
+    PRELOAD="-genv LD_PRELOAD=${EAR_INSTALL_PATH}/lib/libear.so"
 fi
 
 # Non-edit region

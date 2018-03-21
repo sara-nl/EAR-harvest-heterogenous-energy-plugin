@@ -1,0 +1,15 @@
+#%Module
+
+# CTT user environment
+#
+# Author                : Energy Aware Runtime BSC team
+# Created               : Mon  2 Nov 08:26:00 CEST 2017
+#
+
+module-whatis "Enable usage of Energy Aware Runtime"
+
+setenv          EAR_INSTALL_PATH    /home/xjcorbalan/my_ear
+prepend-path    LD_LIBRARY_PATH     /home/xjaneas/opt/lib
+prepend-path    LD_LIBRARY_PATH     /usr/lib64
+prepend-path    LD_LIBRARY_PATH     /home/xjaneas/opt/lib
+prepend-path    LD_LIBRARY_PATH     /usr/lib64

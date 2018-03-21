@@ -704,3 +704,29 @@ int eards_node_dc_energy(unsigned long *energy)
     }   
     return ack;
 }
+ulong eards_node_energy_frequency()
+{
+    int com_fd = node_energy_req;
+    unsigned long ack=EAR_ERROR;
+    struct daemon_req req;
+
+    DEBUG_F(2, "asking for dc node energy frequency ");
+    req.req_service=ENERGY_FREQ;
+    if (ear_fd_req[com_fd]>=0)
+    {
+        if (write(ear_fd_req[com_fd],&req,sizeof(req))!=sizeof(req)) {
+            VERBOSE_N(0, "ERROR writing request for energy freq of update (%s)", strerror(errno));
+            return EAR_ERROR;
+        }
+        if (read(ear_fd_ack[com_fd],&ack,sizeof(unsigned long))!=sizeof(unsigned long)) {
+            VERBOSE_N(0, "ERROR reading ack for energy freq of update (%s)", strerror(errno));
+            return ack;
+        }
+    } else
+    {
+        DEBUG_F(0, "eards_node_energy_frequency service not provided");
+        ack=EAR_ERROR;
+    }
+    return ack;
+
+}

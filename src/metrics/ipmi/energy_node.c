@@ -25,6 +25,11 @@
 
 static int ear_energy_node_connected=0;
 static int ear_energy_node_status=0;
+
+#define NODE_MANAGER	0
+#define INA226			1
+
+static int energy_interface=NODE_MANAGER;
 struct node_energy_op
 {
 	int (*node_energy_init) ();
@@ -262,6 +267,7 @@ int node_energy_init()
 			node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}else if (strstr(my_p_name,"SD650")!=NULL){
 			//OceanCat
+			energy_interface=INA226;
 			ear_verbose(0,"ear_daemon: Product name %s detected \n",my_p_name);
 			node_energy_ops.node_energy_init=lenovo_wct_node_energy_init;
 			node_energy_ops.count_energy_data_length=lenovo_wct_count_energy_data_length;
@@ -343,6 +349,16 @@ unsigned long node_energy_frequency()
 		gettimeofday(&end_time,NULL);
 		min_interval  = (end_time.tv_sec * 1000000 + end_time.tv_usec);
 		min_interval -= (begin_time.tv_sec *1000000 + begin_time.tv_usec);
+		switch (energy_interface){
+		case NODE_MANAGER:
+			min_interval=1000000;
+			break;
+		case INA226:
+			min_interval=10000;
+			break;
+		}		
+		min_interval=(min_interval/2)/MAX_POWER_ERROR;
+	
 
 		return min_interval;
 	}

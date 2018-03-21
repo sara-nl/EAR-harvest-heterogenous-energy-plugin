@@ -69,6 +69,7 @@ struct daemon_req {
 #define READ_DC_ENERGY 			400
 #define DATA_SIZE_ENERGY_NODE 	401
 #define CONNECT_ENERGY 			402
+#define ENERGY_FREQ				403
 
 #else
 #endif

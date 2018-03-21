@@ -395,6 +395,10 @@ int eard_node_energy(int must_read)
 			ack=(unsigned long)count_energy_data_length();
             write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
 			break;
+		case ENERGY_FREQ:
+			ack=(ulong)node_energy_frequency();
+            write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
+			break;
         default:
 			return 0;
     }
@@ -800,7 +804,7 @@ void main(int argc,char *argv[])
 		ear_verbose(0,"eard: node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
 	}
 	energy_freq=node_energy_frequency();
-	ear_verbose(1,"eard min time between two dc node energy measurements is %lu usec., we recomend to use %lu usec.\n",energy_freq,energy_freq*2);
+	ear_verbose(1,"eard suggested time between for power performance accuracy us %lu usec.\n",energy_freq);
 	
 	form_database_paths();
 

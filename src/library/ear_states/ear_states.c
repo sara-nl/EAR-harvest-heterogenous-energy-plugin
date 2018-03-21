@@ -57,13 +57,15 @@ void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	char *verbose, *loop_time, *who;
+	ulong	architecture_min_perf_accuracy_time;
 
 	init_application(&last_signature);
 	if (my_id) return;
 
 	perf_accuracy_min_time = get_ear_performance_accuracy();
-	ear_debug(3, "EAR(%s) JOB %s STARTS EXECUTION. Performance accuracy set to (min) %.5lf usecs\n",
-			  __FILE__, app_name, perf_accuracy_min_time);
+	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
+	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
+	ear_verbose(1, "EARLib JOB %s STARTS EXECUTION. Performance accuracy set to (min) %.5lf usecs\n",app_name, perf_accuracy_min_time);
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
 }

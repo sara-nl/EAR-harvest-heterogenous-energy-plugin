@@ -45,6 +45,7 @@ unsigned long eards_write_app_signature(application_t *app_signature);
 // Node energy services
 unsigned long eards_node_energy_data_size();
 int eards_node_dc_energy(unsigned long *energy);
+ulong eards_node_energy_frequency();
 
 
 #else
