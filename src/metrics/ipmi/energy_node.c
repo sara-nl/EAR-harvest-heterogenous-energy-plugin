@@ -328,6 +328,7 @@ unsigned long node_energy_frequency()
 	struct timeval begin_time,end_time;
 	int intents = 0;
 
+
 	if (node_energy_ops.read_dc_energy != NULL)
 	{
 		node_energy_ops.read_dc_energy(&init);

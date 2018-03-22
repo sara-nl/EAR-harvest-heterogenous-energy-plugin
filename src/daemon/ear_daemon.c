@@ -302,7 +302,7 @@ void eard_exit()
 	eard_unlock();
 
 	// Come disposes
-	print_rapl_metrics();
+	//print_rapl_metrics();
 
 	// Recovering old frequency and governor configurations.
 	VERBOSE_N(1,"frequency_recover_previous_policy");	

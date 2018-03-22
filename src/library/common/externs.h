@@ -25,7 +25,14 @@ extern unsigned long ear_frequency;
 extern int ear_use_turbo;
 extern int ear_whole_app;
 extern int ear_my_rank;
-extern int report;
+extern uint dynais_enabled;
+extern uint loop_with_signature;
+// To be removed with new dynais version
+extern ulong last_first_event;
+extern ulong last_calls_in_loop;
+extern ulong last_loop_size;
+extern ulong last_loop_level;
+
 
 extern ear_conf_t *system_conf;
 extern char ear_app_name[PATH_MAX];

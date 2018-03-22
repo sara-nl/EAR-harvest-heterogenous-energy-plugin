@@ -56,6 +56,7 @@ static int ear_current_cpuid;
 static uint ear_loop_size;
 static uint ear_iterations;
 static int in_loop = 0;
+static uint mpi_calls_per_loop=0;
 
 #define MEASURE_DYNAIS_OV
 #ifdef MEASURE_DYNAIS_OV
@@ -247,17 +248,37 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		traces_mpi_call(ear_my_rank, my_id, (unsigned long) PAPI_get_real_usec(), (unsigned long) buf,
 						(unsigned long) dest, (unsigned long) call_type, (unsigned long) ear_event);
 
-		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
-		#ifdef MEASURE_DYNAIS_OV
-		begin_ov=PAPI_get_real_usec();
-		#endif
-		// This is key to detect periods
-		ear_status=dynais(ear_event,&ear_size,&ear_level);
-		#ifdef MEASURE_DYNAIS_OV
-		end_ov=PAPI_get_real_usec();
-		calls++;
-		ear_acum=ear_acum+(end_ov-begin_ov);
-		#endif
+		mpi_calls_per_loop++;
+		if (dynais_enabled){
+			// DYNAIS ON
+			// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
+			#ifdef MEASURE_DYNAIS_OV
+			begin_ov=PAPI_get_real_usec();
+			#endif
+			// This is key to detect periods
+			ear_status=dynais(ear_event,&ear_size,&ear_level);
+			#ifdef MEASURE_DYNAIS_OV
+			end_ov=PAPI_get_real_usec();
+			calls++;
+			ear_acum=ear_acum+(end_ov-begin_ov);
+			#endif
+		}else{
+			// DYNAIS OFF
+			if (mpi_calls_per_loop==last_calls_in_loop){ // We must check if the event is the same as detected by dynais, otherwise we must enable dynais 
+				if (ear_event==last_first_event){
+					ear_size=last_loop_size;
+					ear_level=last_loop_level;
+					ear_status=NEW_ITERATION;
+					VERBOSE_N(1,"DYNAIS OFF and NEW_ITERATION %lu\n",ear_event);
+				}else{
+					ear_status=END_LOOP;	
+					dynais_enabled=1;
+					VERBOSE_N(1,"DYNAIS OFF and END_LOOP %lu \n",ear_event);
+				}
+			}else{
+				ear_status=IN_LOOP;
+			}
+		}
 
 		switch (ear_status)
 		{
@@ -270,33 +291,39 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			states_begin_period(my_id, NULL, ear_event, ear_size);
 			ear_loop_size=ear_size;
 			in_loop=1;
+			mpi_calls_per_loop=1;
 			break;
 		case END_NEW_LOOP:
 			ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
+			loop_with_signature=0;
 			traces_end_period(ear_my_rank, my_id);
 			states_end_period(ear_iterations);
 			ear_iterations=0;
+			mpi_calls_per_loop=1;
 			ear_loop_size=ear_size;
 			states_begin_period(my_id, NULL, ear_event, ear_size);
 			break;
 		case NEW_ITERATION:
 			ear_iterations++;
 
-			if (report==1)
+			if (loop_with_signature)
 			{
-				ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",
+				ear_verbose(1,"NEW_ITERATION level %u event %u size %u iterations %u\n",
 					ear_level, ear_event, ear_loop_size, ear_iterations);
 			}
 
 			traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());
-			states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event);
+			states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event,mpi_calls_per_loop);
+			mpi_calls_per_loop=1;
 			break;
 		case END_LOOP:
 			ear_debug(4,"END_LOOP event %u\n",ear_event);
+			loop_with_signature=0;
 			states_end_period(ear_iterations);
 			traces_end_period(ear_my_rank, my_id);
 			ear_iterations=0;
 			in_loop=0;
+			mpi_calls_per_loop=0;
 			break;
 		default:
 			break;

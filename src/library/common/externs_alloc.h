@@ -18,15 +18,20 @@ char loop_summary_path[PATH_MAX];
 application_t application;
 char app_summary_path[PATH_MAX];
 
-unsigned long EAR_default_frequency; // TODO: why ulong?
-unsigned long ear_frequency; // TODO: why ulong?
-int ear_use_turbo = USE_TURBO; // TODO: review
+ulong EAR_default_frequency; 
+ulong ear_frequency; 
+int ear_use_turbo = USE_TURBO; 
 int ear_whole_app;
 int ear_my_rank;
-int report; // TODO: what is its utility?
+uint dynais_enabled=1;
+uint loop_with_signature=0;
+// To be removed whith new dynais version
+ulong last_first_event;
+ulong last_calls_in_loop;
+ulong last_loop_size;
+ulong last_loop_level;
 
 int EAR_VERBOSE_LEVEL;
 
 ear_conf_t *system_conf;
-// TODO: CLEAN
 char ear_app_name[PATH_MAX]; //TODO: use application.app_id

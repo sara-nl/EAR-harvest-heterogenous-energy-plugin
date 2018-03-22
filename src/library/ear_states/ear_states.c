@@ -46,7 +46,6 @@ static ulong policy_freq;
 static double perf_accuracy_min_time = 1000000;
 static uint perf_count_period = 100,loop_perf_count_period;
 static uint EAR_STATE = NO_PERIOD;
-static int loop_with_signature = 0;
 static int current_loop_id;
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
@@ -130,11 +129,13 @@ static void print_loop_signature(char *title, application_t *loop)
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
-void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event)
+void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
 	unsigned long prev_f;
 	int result;
+	ulong dynais_overhead_usec=0;
+	double dynais_overhead_perc;
 
 	prev_f = ear_frequency;
 
@@ -236,7 +237,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			if ((((iterations - 1) % perf_count_period) == 0) && (iterations > 1))
 			{
-				report = 1;
 				N_iter = iterations - begin_iter;
 
 				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
@@ -256,6 +256,24 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					print_loop_signature("signature computed", &loop_signature);
 
 					loop_with_signature = 1;
+
+					// Computing dynais overhead
+					if (dynais_enabled){
+						dynais_overhead_usec=mpi_calls_iter*2;
+						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.time;
+						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
+							// Disable dynais : API is still pending
+							dynais_enabled=0;
+							VERBOSE_N(0,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
+						}
+						VERBOSE_N(1,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%lu",
+						loop_signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event);	
+						last_first_event=event;
+						last_calls_in_loop=mpi_calls_iter;
+						last_loop_size=period;
+						last_loop_level=level;
+					//end dynais overhead
+					}
 					current_loop_id = event;
 
 					CPI = loop_signature.CPI;
