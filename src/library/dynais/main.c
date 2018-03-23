@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 		//printf("-------------------------------------------------\n");
 		//printf("Sample %lu\n", value[3]);
 		result = dynais(value[3], &size, &level);
-		if (result >= 0) printf("Result in %u: l%u, s%u, r%d\n", i, level, size, result);
+		//if (result >= 0) printf("Result in %u: l%u, s%u, r%d\n", i, level, size, result);
 		++i;
 	}
 

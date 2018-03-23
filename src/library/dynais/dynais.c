@@ -268,10 +268,16 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		mmask = _mm512_cmp_epu64_mask(sample_static, sample_dynamic, _MM_CMPINT_EQ);
 		mmask = _mm256_mask_cmp_epi32_mask(mmask, size_static, size_dynamic, _MM_CMPINT_EQ);
 
+		// Se permutan los zeros cuyo bit en la máscara de comparación sea 1, es decir
+		// se toma el elemento siguiente (i + 1) y se le suma 1. Pero cuidado, porque
+		// porque esto va por bloques, y el último elemento del bloque de 8 puede solicitar
+		// el primer elemento del siguiente bloque.
 		zeros_dynamic = _mm256_load_si256((__m256i *) &zeros[k]);
-     	zeros_dynamic = _mm256_permutevar8x32_epi32(zeros_dynamic, shifts_static);
+     	
+		zeros_dynamic = _mm256_permutevar8x32_epi32(zeros_dynamic, shifts_static);
      	zeros_dynamic = _mm256_maskz_add_epi32(mmask, zeros_dynamic, ones_static);
-     	_mm256_store_si256 ((__m256i *) &zeros[k], zeros_dynamic);
+     	
+		_mm256_store_si256 ((__m256i *) &zeros[k], zeros_dynamic);
 
 		// 
 		locations[i] = ((char) mmask != 0);
@@ -288,6 +294,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		zeros[503] = 0;
 	}
 
+	/*
 	// Indexing
     i = index + 1;
     i = i & ((i == _window) - 1);
@@ -309,6 +316,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
         m = m + 1;
         m = m & ((m == _window) - 1);
     }
+	*/
 
     samples[index] = sample; 
     sizes[index] = size;
