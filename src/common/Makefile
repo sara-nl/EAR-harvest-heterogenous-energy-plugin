@@ -34,14 +34,15 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 	$(CC) $(CFLAGS) -c string_enhanced.c
 
 types.a: $(TYPES_OBJS)
-	ar rvs types.a $(TYPES_OBJS) string_enhanced.o
-	
+	ar rvs types.a $(TYPES_OBJS) string_enhanced.o	
+
+######## OPTIONS
 
 install:
+	mkdir -p $(DESTDIR)/include/common
 	cp ear_daemon_client.o $(DESTDIR)/lib
 	cp remote_daemon_client.o $(DESTDIR)/lib
 	cp remote_daemon_client.h $(DESTDIR)/include
-	mkdir -p $(DESTDIR)/include/common
 	cp eards_api.h $(DESTDIR)/include
 	cp states.h $(DESTDIR)/include/common
 
