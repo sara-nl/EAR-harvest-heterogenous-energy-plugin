@@ -45,10 +45,15 @@ int main(int argc, char **argv)
 	if (panic == 0) panic = UINT_MAX;
 	init_t = clock();
 
+	unsigned long fake_input[10] = { 1, 2, 3, 1, 2, 3, 1, 2, 3, 4 };
+
 	// Reading
 	while (fread(&value, 5, sizeof(unsigned long), input) > 0 && i < panic) {
+		//value[3] = fake_input[i];
+		//printf("-------------------------------------------------\n");
+		//printf("Sample %lu\n", value[3]);
 		result = dynais(value[3], &size, &level);
-		//printf("%lu %u %u %d\n", value[3], size, level, result);
+		//if (result >= 0) printf("Result in %u: l%u, s%u, r%d\n", i, level, size, result);
 		++i;
 	}
 

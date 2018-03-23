@@ -43,6 +43,11 @@
 #include <unistd.h>
 #include <library/dynais/dynais.h>
 
+#include <x86intrin.h>
+#include <emmintrin.h> // -msse2
+#include <immintrin.h> // -mavx -mfma
+
+
 static clock_t chrono_start[100];
 static clock_t chrono_total[100];
 
@@ -218,10 +223,99 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     zeros = zero_vec[level];
     sizes = size_vec[level];
 
-    sample_size = size;
-    sizes[index] = size;
-
     CHRONO_END(1);
+    CHRONO_START(2);
+
+#if 0
+	samples[index] = 0;
+	sizes[index] = 0;
+
+	// window 504 (63 blocks of 8)
+	static unsigned char locations[63];
+
+	__m512i sample_dynamic;
+	__m512i sample_static;
+	__m256i size_dynamic;
+	__m256i size_static;
+	__mmask8 mmask;
+
+    __m256i shifts_static;
+   	__m256i zeros_dynamic;
+    __m256i ones_static;
+
+	sample_static = _mm512_set1_epi64(sample);
+	size_static   = _mm256_set1_epi32(size);
+
+	static unsigned int shifts[8]    = {  1,  2,  3,  4,  5,  6,  7,  7  };
+	shifts_static = _mm256_load_si256((__m256i *) &shifts);
+    ones_static   = _mm256_set1_epi32(1);
+
+	unsigned int zeros_0 = zeros[0];
+
+	for (k = 0, i = 0; k < _window; k += 8, i += 1)
+	{
+		//printf("B%d ", i);
+		//for (j = k; j < k+8; ++j) printf("%lu ", samples[j]);
+
+		// Se cargan los datos de samples y los de sizes. Los samples son de 64 bits,
+		// mientras que los sizes son de 32. Próximamente se puede probar en dividir
+		// esto en dos vectores, un primer escaneo de 8 en 8, y un posterior cómputo
+		// de 16 en 16.
+		sample_dynamic = _mm512_load_epi64(&samples[k]);
+		size_dynamic   = _mm256_load_si256((__m256i *) &sizes[k]);
+
+		// Con estas comparación se busca descartar un bloque de 8 muestras.
+		mmask = _mm512_cmp_epu64_mask(sample_static, sample_dynamic, _MM_CMPINT_EQ);
+		mmask = _mm256_mask_cmp_epi32_mask(mmask, size_static, size_dynamic, _MM_CMPINT_EQ);
+
+		zeros_dynamic = _mm256_load_si256((__m256i *) &zeros[k]);
+     	zeros_dynamic = _mm256_permutevar8x32_epi32(zeros_dynamic, shifts_static);
+     	zeros_dynamic = _mm256_maskz_add_epi32(mmask, zeros_dynamic, ones_static);
+     	_mm256_store_si256 ((__m256i *) &zeros[k], zeros_dynamic);
+
+		// 
+		locations[i] = ((char) mmask != 0);
+
+		if (mmask & 0x80 && (k + 7) < 503) {
+			zeros[k + 7] = zeros[k + 8] + 1;
+		} else {
+			zeros[k + 7] = 0;
+		}
+	}
+	if (mmask & 0x80) {
+		zeros[503] = zeros_0 + 1;
+	} else {
+		zeros[503] = 0;
+	}
+
+	// Indexing
+    i = index + 1;
+    i = i & ((i == _window) - 1);
+    m = i + 1;
+    m = m & ((m == _window) - 1);
+
+   	for (k = 1; k <= limit; ++k)
+    {
+		//printf("%u ", zeros[i]);
+		
+		if (zeros[i] > max_zeros && k < zeros[i])
+        {
+			max_length = k;
+ 			max_zeros = zeros[i];
+        }
+
+        i = i + 1;
+        i = i & ((i == _window) - 1);
+        m = m + 1;
+        m = m & ((m == _window) - 1);
+    }
+
+    samples[index] = sample; 
+    sizes[index] = size;
+#else
+	sample_size = size;
+    sizes[index] = size;
+	samples[index] = sample;
 
     // Indexing
     i = index + 1;
@@ -229,47 +323,12 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     m = i + 1;
     m = m & ((m == _window) - 1);
 
-    CHRONO_START(2);
-
-	samples[index] = 0;
-
-	__m512i sample_comparer;
-	__m256i size_comparer;
-
-	sample_comparer = _mm512_set1_epi64(sample);
-	size_comparer = _mm256_set1_epi32(size);
-
-	__m512i sample_loader;
-	__m256i size_loader;
-	__mmask8 mask;
-
-	for (k = 0; k <= limit; k += 8)
+	for (k = 1; k <= limit; ++k)
 	{
-		sample_loader = _mm512_load_epi64(&samples[k]);
-		size_loader = _mm256_load_si256((__m256i *) &sizes[k]);
-
-		mask = _mm512_cmp_epu64_mask(sample_comparer, sample_loader, _MM_CMPINT_EQ);
-		mask = _mm256_mask_cmp_epi32_mask(mask, size_comparer, size_loader, _MM_CMPINT_EQ);
-
-		j = k + ((unsigned char) mask == 0) * 8;
-
-		for (; j < k + 8; ++j)
-		{
-			if (zeros[j] > max_zeros && k < zeros[j])
-			{
-				max_length = k;
-				max_zeros = zeros[j];
-			}
-		}
-	}
-
-	samples[index] = sample;
-
-	/*for (k = 1; k <= limit; ++k)
-	{
+		//printf("(%lu,%u,%u,%u) ", samples[i], sizes[i], zeros[i], zeros[m]);
 		if (sample == samples[i] && sample_size == sizes[i])
 		{
-			zeros[i] = zeros[m] + 1;
+			//zeros[i] = zeros[m] + 1;
 
 			if (zeros[i] > max_zeros && k < zeros[i])
 			{
@@ -279,11 +338,16 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		}
 		zeros[m] = 0;
 
+		//printf("%u ", zeros[i]);
+		
 		i = i + 1;
 		i = i & ((i == _window) - 1);
 		m = m + 1;
 		m = m & ((m == _window) - 1);
-	}*/
+	}
+	
+	//printf("max_length %d, max_zeros %d\n", max_length, max_zeros);	
+#endif
 
     CHRONO_END(2);
 
