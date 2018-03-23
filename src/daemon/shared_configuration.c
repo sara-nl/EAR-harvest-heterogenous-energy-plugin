@@ -19,7 +19,7 @@
 #include <common/ear_verbose.h>
 
 static int fd;
-static const char *__NAME__ = "shared_are_server:";
+static const char *__NAME__ = "EARLib shared memory:";
 
 
 // Creates a shared memory region between eard and ear_lib. returns NULL if error.

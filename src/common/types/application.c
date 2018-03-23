@@ -20,7 +20,7 @@ static int print_loop_fd(int fd, loop_t *loop)
 {
 	loop_t *l = loop;
 
-	dprintf(fd, ";%lu;%u;%u;%u\n", l->first_event, l->level, l->iterations, l->size);
+	dprintf(fd, ";%lu;%u;%u;%u\n", l->first_event, l->level, l->size, l->iterations);
 
 	return EAR_SUCCESS;
 }
@@ -56,7 +56,7 @@ int append_loop_text_file(char *path, loop_t *loop)
 	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;" \
         "DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
         "L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;"     \
-        "DP_512;FIRST_EVENT;ITERATIONS;LEVEL;SIZE";
+        "DP_512;FIRST_EVENT;LEVEL;SIZE;ITERATIONS";
 	int fd, ret;
 
 	if (path == NULL) {

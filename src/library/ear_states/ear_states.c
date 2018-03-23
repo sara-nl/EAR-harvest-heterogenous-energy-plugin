@@ -23,6 +23,7 @@
 #include <library/ear_models/ear_models.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/types/log.h>
 
 static const char *__NAME__ = "STATES";
 
@@ -34,7 +35,6 @@ static const char *__NAME__ = "STATES";
 #define PROJECTION_ERROR		4
 #define RECOMPUTING_N			5
 #define SIGNATURE_HAS_CHANGED	6
-#define DPD_NUM_STATES			7
 
 static application_t last_signature;
 static projection_t *PP;
@@ -42,15 +42,56 @@ static projection_t *PP;
 static long long comp_N_begin, comp_N_end, comp_N_time;
 static uint begin_iter, N_iter;
 static ulong policy_freq;
+static uint tries_current_loop=0;
 
-static double perf_accuracy_min_time = 1000000;
+static ulong perf_accuracy_min_time = 1000000;
 static uint perf_count_period = 100,loop_perf_count_period;
 static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
+static int my_job_id;
+
+void states_report_new_freq(ulong newf)
+{
+	ear_event_t new_event;
+	new_event.event=ENERGY_POLICY_NEW_FREQ;
+	new_event.job_id=my_job_id;
+	new_event.freq=newf	;
+	report_new_event(&new_event);
+	
+}
+
+void states_report_dynais_off()
+{
+    ear_event_t new_event;
+    new_event.event=DYNAIS_OFF;
+    new_event.job_id=my_job_id;
+    report_new_event(&new_event);
+   
+}
+
+
+void states_report_global_policy_freq(ulong newf)
+{
+	ear_event_t new_event;
+	new_event.event=GLOBAL_ENERGY_POLICY;
+	new_event.freq=newf;
+	new_event.job_id=my_job_id;
+	report_new_event(&new_event);
+}
+
+void states_report_max_tries(ulong newf)
+{
+	ear_event_t new_event;
+	new_event.event=ENERGY_POLICY_FAILS;
+	new_event.freq=newf;
+	new_event.job_id=my_job_id;
+	report_new_event(&new_event);
+}
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	ear_verbose(1, "EAR(%s) Ends execution. \n", app_name);
+	end_log();
 }
 
 void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
@@ -64,9 +105,12 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	perf_accuracy_min_time = get_ear_performance_accuracy();
 	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
-	ear_verbose(1, "EARLib JOB %s STARTS EXECUTION. Performance accuracy set to (min) %.5lf usecs\n",app_name, perf_accuracy_min_time);
+	ear_verbose(1, "EARLib JOB %s STARTS EXECUTION. Performance accuracy set to (min) %lu usecs\n",
+		app_name, perf_accuracy_min_time);
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
+	my_job_id=atoi(application.job_id);
+	init_log();
 }
 
 int states_my_state()
@@ -80,6 +124,7 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
 					ear_app_name, event, size);
 
 	EAR_STATE = FIRST_ITERATION;
+	tries_current_loop=0;
 
 	models_new_period();
 	comp_N_begin = metrics_time();
@@ -265,9 +310,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							// Disable dynais : API is still pending
 							dynais_enabled=0;
 							VERBOSE_N(0,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
+							states_report_dynais_off();
 						}
-						VERBOSE_N(1,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%lu",
-						loop_signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event);	
+						VERBOSE_N(1,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+						loop_signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
 						last_first_event=event;
 						last_calls_in_loop=mpi_calls_iter;
 						last_loop_size=period;
@@ -379,9 +425,16 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						ear_verbose(3,
 									"\n\nEAR(%s): Policy ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
 									ear_app_name, TIME, POWER, ENERGY, PP->Time, PP->Power, PP->Time * PP->Power);
+						tries_current_loop=0;
 					}
 					else
 					{
+						tries_current_loop++;
+						if (tries_current_loop==MAX_POLICY_TRIES){
+							// We must report a problem and go to the default configuration
+							states_report_max_tries(application.def_f);
+							EAR_STATE = PROJECTION_ERROR;
+						}else{
 						/** If we are not going better **/
 						ear_verbose(3,
 									"\n\nEAR(%s): Policy not ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
@@ -398,10 +451,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						} else {
 							EAR_STATE = EVALUATING_SIGNATURE;
 						}
-					}
+						}// tries_current_loop<MAX_POLICY_TRIES
+				    } 
 				}
 			}
 			break;
+		case PROJECTION_ERROR:break;
 		default: break;
 	}
 }

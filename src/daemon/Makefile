@@ -33,7 +33,7 @@ all: eard
 
 
 eard: ear_daemon.c $(OBJS) $(METRICS_OBJS) $(POWERMONLIB) $(COMMON_OBJS)
-	$(CC) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) $(OBJS)
+	$(CC) $(CFLAGS) -g -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) $(OBJS)
 
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c

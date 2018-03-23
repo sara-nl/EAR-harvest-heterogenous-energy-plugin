@@ -165,8 +165,6 @@ void ear_init()
 	job_id = getenv("SLURM_JOB_ID");
 	user_id = getenv("LOGNAME");
 
-	// States
-	states_begin_job(my_id, NULL, ear_app_name);
 
 	// Application static data gathering
 	init_application(&application);
@@ -191,6 +189,8 @@ void ear_init()
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
+	// States
+	states_begin_job(my_id, NULL, ear_app_name);
 
 	// Summary files
 	summary_pathname = get_ear_user_db_pathname();
@@ -249,36 +249,17 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 						(unsigned long) dest, (unsigned long) call_type, (unsigned long) ear_event);
 
 		mpi_calls_per_loop++;
-		if (dynais_enabled){
-			// DYNAIS ON
-			// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
-			#ifdef MEASURE_DYNAIS_OV
-			begin_ov=PAPI_get_real_usec();
-			#endif
-			// This is key to detect periods
-			ear_status=dynais(ear_event,&ear_size,&ear_level);
-			#ifdef MEASURE_DYNAIS_OV
-			end_ov=PAPI_get_real_usec();
-			calls++;
-			ear_acum=ear_acum+(end_ov-begin_ov);
-			#endif
-		}else{
-			// DYNAIS OFF
-			if (mpi_calls_per_loop==last_calls_in_loop){ // We must check if the event is the same as detected by dynais, otherwise we must enable dynais 
-				if (ear_event==last_first_event){
-					ear_size=last_loop_size;
-					ear_level=last_loop_level;
-					ear_status=NEW_ITERATION;
-					VERBOSE_N(1,"DYNAIS OFF and NEW_ITERATION %lu\n",ear_event);
-				}else{
-					ear_status=END_LOOP;	
-					dynais_enabled=1;
-					VERBOSE_N(1,"DYNAIS OFF and END_LOOP %lu \n",ear_event);
-				}
-			}else{
-				ear_status=IN_LOOP;
-			}
-		}
+		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
+		#ifdef MEASURE_DYNAIS_OV
+		begin_ov=PAPI_get_real_usec();
+		#endif
+		// This is key to detect periods
+		ear_status=dynais(ear_event,&ear_size,&ear_level);
+		#ifdef MEASURE_DYNAIS_OV
+		end_ov=PAPI_get_real_usec();
+		calls++;
+		ear_acum=ear_acum+(end_ov-begin_ov);
+		#endif
 
 		switch (ear_status)
 		{

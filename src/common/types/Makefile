@@ -8,6 +8,7 @@ types_application.o: types_application.h types_application.c
 types_projection.o: types_projection.c types_projection.h
 	$(CC) $(CFLAGS) -c types_projection.c
 
+
 ######## OPTIONS
 
 clean:
