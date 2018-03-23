@@ -226,7 +226,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     CHRONO_END(1);
     CHRONO_START(2);
 
-#if 0
+#if 1
 	samples[index] = 0;
 	sizes[index] = 0;
 
@@ -328,7 +328,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		//printf("(%lu,%u,%u,%u) ", samples[i], sizes[i], zeros[i], zeros[m]);
 		if (sample == samples[i] && sample_size == sizes[i])
 		{
-			//zeros[i] = zeros[m] + 1;
+			zeros[i] = zeros[m] + 1;
 
 			if (zeros[i] > max_zeros && k < zeros[i])
 			{
