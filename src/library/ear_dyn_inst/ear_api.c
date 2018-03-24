@@ -140,7 +140,6 @@ void ear_init()
 	ear_verbose(0,"EAR: Connecting with EARD\n");
 	if (eards_connect() < 0) {
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
-		exit(1);
 	}
 
 	// my_id is 0 in case is not local. Metrics gets the value

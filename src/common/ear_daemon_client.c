@@ -39,21 +39,28 @@ char *ear_tmp;
 static uint8_t app_connected=0;
 
 // Metrics
-static unsigned long uncore_size;
-static unsigned long energy_size;
-static unsigned long rapl_size;
-static unsigned long freq_size;
+static ulong uncore_size;
+static ulong energy_size;
+static ulong rapl_size;
+static ulong freq_size;
 
-void warning(int return_value, int expected, char *msg)
+uint warning(int return_value, int expected, char *msg)
 {
-	if (return_value!=expected) VERBOSE_N(0, "ear_daemon_client %s", msg);
-	if (return_value<0) VERBOSE_N(0, "ear_daemon_client %s", strerror(errno));
+	if (return_value!=expected){ 
+		app_connected=0;
+		VERBOSE_N(0, "eards: %s", msg);
+	}
+	if (return_value<0){ 
+		app_connected=0;
+		VERBOSE_N(0, "eards: %s (%s)", msg,strerror(errno));
+	}
+	return (return_value!=expected);
 }
 
 int eards_connect()
 {
 	char nodename[256];
-	unsigned long ret,ack;
+	ulong ret,ack;
 	struct daemon_req req;
 	int tries=0,connected=0;
 	int i;
@@ -88,7 +95,7 @@ int eards_connect()
 		sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
 		sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,i,getpid());
 
-		// Sometimes ear_daemon needs some time to startm we will wait for the first one
+		// Sometimes EARD needs some time to startm we will wait for the first one
 		if (i==0){
 			// First connection is special, we should wait
 			do{
@@ -114,6 +121,7 @@ int eards_connect()
 
 			if ((ear_ping_fd = open(ear_ping,O_RDWR)) < 0){
 				VERBOSE_N(0, "ERROR while opening ping pipe (%s)", strerror(errno));
+				ear_fd_req[i]=-1;
 				return EAR_ERROR;
 			}
 
@@ -151,17 +159,23 @@ int eards_connect()
 
 		if (ear_fd_req[i]>0)
 		{
-			//TODO: mirar
-			warning(write(ear_fd_req[i], &req, sizeof(req)), sizeof(req),
-					"writting req_service in ear_daemon_client_connect");
+			if (warning(write(ear_fd_req[i], &req, sizeof(req)), sizeof(req),
+					"writting req_service in ear_daemon_client_connect"))
+			{ 
+				ear_fd_req[i]=-1;
+				return EAR_ERROR;
+			}
 		}
 
 		VERBOSE_N(2, "req communicator %s [%d] connected", nodename, i);
 		if (ear_fd_req[i]>=0) {
 			// ear_demon sends an ack when ack pipe for specific service is created
 			DEBUG_F(1, "ear_client: waiting for ear_daemon ok");
-			if (read(ear_ping_fd,&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
-				VERBOSE_N(0, "ERROR while reading ping communicator (%d) (%s)", i, strerror(errno));
+			if (warning(read(ear_ping_fd,&ack,sizeof(ulong)),sizeof(ulong),
+				"ERROR while reading ping communicator "))
+			{ 
+				ear_fd_req[i]=-1;
+				return EAR_ERROR;
 			}
 			DEBUG_F(1, "ear_client: ear_daemon ok for service %d, opening ack", i);
 
@@ -169,6 +183,7 @@ int eards_connect()
 			{
 				VERBOSE_N(0, "ERROR while opening ack communicator (%s) (%s)",
 						  ear_commack, strerror(errno));
+				ear_fd_req[i]=-1;
 				return EAR_ERROR;
 			}
 			VERBOSE_N(2, "ack communicator %s [%d] connected", nodename, i);
@@ -186,9 +201,8 @@ void eards_disconnect()
 	req.req_service=END_COMM;
 
 	DEBUG_F(1, "Disconnecting");
-
+	if (!app_connected) return;
     if (ear_fd_req[0] >= 0) {
-		// TODO: mirar
 		warning(write(ear_fd_req[0], &req,sizeof(req)), sizeof(req),
 				"witting req in ear_daemon_client_disconnect");
 	}
@@ -203,12 +217,13 @@ void eards_disconnect()
 	}
 }
 //////////////// SYSTEM REQUESTS
-unsigned long eards_write_app_signature(application_t *app_signature)
+ulong eards_write_app_signature(application_t *app_signature)
 {
 	int com_fd=system_req;
 	struct daemon_req req;
-	unsigned long ack=EAR_SUCCESS;
+	ulong ack=EAR_SUCCESS;
 
+	if (!app_connected) return EAR_SUCCESS;
 	DEBUG_F(2, "asking the daemon to write the whole application signature (DB)");
 
 	req.req_service = WRITE_APP_SIGNATURE;
@@ -217,17 +232,12 @@ unsigned long eards_write_app_signature(application_t *app_signature)
 	if (ear_fd_req[com_fd] >= 0)
 	{
 		DEBUG_F(2, "writing request...");
-		if (write(ear_fd_req[com_fd], &req, sizeof(req)) != sizeof(req))
-		{
-			VERBOSE_N(0, "ERROR writing request for app signature");
-			return EAR_ERROR;
-		}	
+		if (warning(write(ear_fd_req[com_fd], &req, sizeof(req)), sizeof(req),
+			"ERROR writing request for app signature")) return EAR_ERROR;
         
 		DEBUG_F(2, "reading ack...");
-		if (read(ear_fd_ack[com_fd], &ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
-        		VERBOSE_N(0, "ERROR reading ack for app signature (%s)", strerror(errno));
-			return EAR_ERROR;
-        	}
+		if (warning(read(ear_fd_ack[com_fd], &ack, sizeof(ulong)),sizeof(ulong),
+        		"ERROR reading ack for app signature")) return EAR_ERROR;
 	}else{
 		DEBUG_F(0, "writting application signature (DB) service unavailable");
 		ack=EAR_SUCCESS;
@@ -236,25 +246,22 @@ unsigned long eards_write_app_signature(application_t *app_signature)
 	return ack;
 }
 //////////////// FREQUENCY REQUESTS
-unsigned long eards_get_data_size_frequency()
+ulong eards_get_data_size_frequency()
 {
 	int com_fd=freq_req;
 	struct daemon_req req;
-	unsigned long ack = EAR_SUCCESS;
+	ulong ack = EAR_SUCCESS;
 
+	if (!app_connected) return sizeof(ulong);
 	DEBUG_F(2, "asking for frequency data size ");
     req.req_service=DATA_SIZE_FREQ;
 
     if (ear_fd_req[com_fd] >= 0)
 	{
-		if (write(ear_fd_req[com_fd],&req,sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for frequency data size (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if (read(ear_fd_ack[com_fd],&ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for frequency data size (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
+		if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+			"ERROR writing request for frequency data size")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[com_fd],&ack, sizeof(ulong)) , sizeof(ulong),
+			"ERROR reading ack for frequency data size ")) return EAR_ERROR;
 	}
     else{
         DEBUG_F(0, "ear_daemon_client_get_data_size_frequency service not provided");
@@ -265,45 +272,39 @@ unsigned long eards_get_data_size_frequency()
 void eards_begin_compute_turbo_freq()
 {
 	struct daemon_req req;
-	unsigned long ack=EAR_SUCCESS;
-
+	ulong ack=EAR_SUCCESS;
+	if (!app_connected) return;
 	DEBUG_F(2, "start getting turbo freq ");
     req.req_service=START_GET_FREQ;
 
     if (ear_fd_req[freq_req]>=0)
 	{
-		if (write(ear_fd_req[freq_req],&req,sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for starting frequency (%s)", strerror(errno));
-			return ;
-		}
-		if (read(ear_fd_ack[freq_req],&ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for starting frequency (%s)", strerror(errno));
-			return ;
-		}
+		if (warning(write(ear_fd_req[freq_req],&req,sizeof(req)) , sizeof(req),
+			"ERROR writing request for starting frequency ")) return ;
+		if (warning(read(ear_fd_ack[freq_req],&ack, sizeof(ulong)) , sizeof(ulong),
+			 "ERROR reading ack for starting frequency ")) return ;
 		return;
    }   
    DEBUG_F(0, "ear_daemon_client_begin_compute_turbo_freq service not provided");
    return;
 }
 
-unsigned long eards_end_compute_turbo_freq()
+ulong eards_end_compute_turbo_freq()
 {
 	struct daemon_req req;
-	unsigned long ack=EAR_SUCCESS;
+	ulong ack=EAR_SUCCESS;
+
+	if (!app_connected) return 0;
 
 	DEBUG_F(2, "end getting turbo freq ");
     req.req_service = END_GET_FREQ;
 
 	if (ear_fd_req[freq_req] >= 0)
 	{
-		if (write(ear_fd_req[freq_req],&req, sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for finishing frequency (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if (read(ear_fd_ack[freq_req],&ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
-				VERBOSE_N(0, "ERROR reading ack for finishing frequency (%s)", strerror(errno));
-				return EAR_ERROR;
-		}
+		if (warning(write(ear_fd_req[freq_req],&req, sizeof(req)) ,sizeof(req),
+			 "ERROR writing request for finishing frequency")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[freq_req],&ack, sizeof(ulong)) , sizeof(ulong),
+				"ERROR reading ack for finishing frequency ")) return EAR_ERROR;
 
 		VERBOSE_N(2, "TURBO freq computed as  %lu",  ack);
 	} else {
@@ -314,44 +315,37 @@ unsigned long eards_end_compute_turbo_freq()
 void eards_begin_app_compute_turbo_freq()
 {
     struct daemon_req req;
-    unsigned long ack = EAR_SUCCESS;
+    ulong ack = EAR_SUCCESS;
+	if (!app_connected) return;
 
     DEBUG_F(2, "start getting turbo freq");
     req.req_service = START_APP_COMP_FREQ;
 
 	if (ear_fd_req[freq_req]>=0)
 	{
-		if (write(ear_fd_req[freq_req],&req, sizeof(req)) != sizeof(req)){
-			VERBOSE_N(0, "ERROR writing request for starting frequency for app (%s)", strerror(errno));
-			return;
-		}
-		if (read(ear_fd_ack[freq_req],&ack,sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for starting frequency (%s) for app", strerror(errno));
-			return;
-		}
+		if (warning(write(ear_fd_req[freq_req],&req, sizeof(req)) , sizeof(req),
+			"ERROR writing request for starting frequency for app")) return;
+		if (warning(read(ear_fd_ack[freq_req],&ack,sizeof(ulong)) , sizeof(ulong),
+			"ERROR reading ack for starting frequency")) return;
 		return;
    }
    DEBUG_F(0, "ear_daemon_client_begin_app_compute_turbo_freq service not provided");
    return;
 }
-unsigned long eards_end_app_compute_turbo_freq()
+ulong eards_end_app_compute_turbo_freq()
 {
 	struct daemon_req req;
-	unsigned long ack=EAR_SUCCESS;
-
+	ulong ack=EAR_SUCCESS;
+	if (!app_connected) return 0;
 	DEBUG_F(2, "end getting turbo freq");
 	req.req_service = END_APP_COMP_FREQ;
 
 	if (ear_fd_req[freq_req]>=0)
 	{
-		if (write(ear_fd_req[freq_req],&req,sizeof(req)) != sizeof(req)){
-			VERBOSE_N(0, "ERROR writing request for finishing frequency for app (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if (read(ear_fd_ack[freq_req],&ack,sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR writing ack for finishing frequency for app (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
+		if (warning(write(ear_fd_req[freq_req],&req,sizeof(req)) , sizeof(req),
+			 "ERROR writing request for finishing frequency for app")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[freq_req],&ack,sizeof(ulong)) , sizeof(ulong),
+			"ERROR writing ack for finishing frequency for app ")) return EAR_ERROR;
 
 		VERBOSE_N(2, "TURBO freq computed as  %lu", ack);
 	} else {
@@ -363,21 +357,18 @@ unsigned long eards_end_app_compute_turbo_freq()
 void eards_set_turbo()
 {
 	struct daemon_req req;
-	unsigned long ack;
+	ulong ack;
 
+	if (!app_connected) return;
 	req.req_service=SET_TURBO;
 	DEBUG_F(2, "Set turbo");
 
 	if (ear_fd_req[freq_req]>=0)
 	{
-		if (write(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)){
-			VERBOSE_N(0, "ERROR writing request for setting turbo (%s)", strerror(errno));
-			return;
-		}   
-		if (read(ear_fd_ack[freq_req],&ack,sizeof(unsigned long))!=sizeof(unsigned long)){
-			VERBOSE_N(0, "ERROR reading ack for setting turbo (%s)", strerror(errno));
-			return;
-		}   
+		if (warning(write(ear_fd_req[freq_req],&req,sizeof(req)),sizeof(req),
+			 "ERROR writing request for setting turbo")) return;
+		if (warning(read(ear_fd_ack[freq_req],&ack,sizeof(ulong)),sizeof(ulong),
+			 "ERROR reading ack for setting turbo ")) return;
 		VERBOSE_N(3, "turbo activated");
 		return;
 	}   
@@ -385,11 +376,11 @@ void eards_set_turbo()
     return;
 
 }
-unsigned long eards_change_freq(unsigned long newfreq)
+ulong eards_change_freq(ulong newfreq)
 {
-	unsigned long real_freq = EAR_ERROR;
+	ulong real_freq = EAR_ERROR;
 	struct daemon_req req;
-
+	if (!app_connected) return newfreq;
 	req.req_service = SET_FREQ;
 	req.req_data.req_value = newfreq;
 
@@ -397,16 +388,11 @@ unsigned long eards_change_freq(unsigned long newfreq)
 
 	if (ear_fd_req[freq_req] >= 0)
 	{
-		if (write(ear_fd_req[freq_req],&req, sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for changing frequency (%s)", strerror(errno));
-			_exit(1);
-		}
+		if (warning(write(ear_fd_req[freq_req],&req, sizeof(req)) , sizeof(req),
+			 "ERROR writing request for changing frequency")) return EAR_ERROR;
 
-		if (read(ear_fd_ack[freq_req], &real_freq, sizeof(unsigned long)) != sizeof(unsigned long))
-		{
-			VERBOSE_N(0, "ERROR reading ack for changing frequency (%s)", strerror(errno));
-			_exit(1);
-		}
+		if (warning(read(ear_fd_ack[freq_req], &real_freq, sizeof(ulong)) , sizeof(ulong),
+			"ERROR reading ack for changing frequency ")) return EAR_ERROR;
 
 		VERBOSE_N(3, "Frequency_changed to %lu",  real_freq);
 	} else {
@@ -419,24 +405,21 @@ unsigned long eards_change_freq(unsigned long newfreq)
 
 // END FREQUENCY SERVICES
 //////////////// UNCORE REQUESTS
-unsigned long eards_get_data_size_uncore()
+ulong eards_get_data_size_uncore()
 {
     int com_fd = uncore_req;
 	struct daemon_req req;
-	unsigned long ack = EAR_SUCCESS;
+	ulong ack = EAR_SUCCESS;
+	if (!app_connected) return sizeof(ulong);
 
 	DEBUG_F(2, "asking for uncore data size ");
     req.req_service=DATA_SIZE_UNCORE;
 
 	if (ear_fd_req[com_fd] >= 0) {
-		if (write(ear_fd_req[com_fd],&req, sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for uncore data size (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if (read(ear_fd_ack[com_fd],&ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for uncore data size (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
+		if (warning(write(ear_fd_req[com_fd],&req, sizeof(req)) , sizeof(req),
+			 "ERROR writing request for uncore data size ")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[com_fd],&ack, sizeof(ulong)) , sizeof(ulong),
+			 "ERROR reading ack for uncore data size ")) return EAR_ERROR;
 	} else {
 		DEBUG_F(0, "ear_daemon_client_get_data_size_uncore service not provided");
 		ack=EAR_ERROR;
@@ -449,21 +432,18 @@ unsigned long eards_get_data_size_uncore()
 int eards_reset_uncore()
 {
    	struct daemon_req req;
-	unsigned long ack = EAR_SUCCESS;
+	ulong ack = EAR_SUCCESS;
+	if (!app_connected) return EAR_SUCCESS;
 
 	req.req_service = RESET_UNCORE;
 	DEBUG_F(2, "reset uncore");
 
 	if (ear_fd_req[uncore_req] >= 0)
 	{
-		if (write(ear_fd_req[uncore_req],&req,sizeof(req))!=sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for resetting uncores (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if (read(ear_fd_ack[uncore_req],&ack,sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for resetting uncores (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
+		if (warning(write(ear_fd_req[uncore_req],&req,sizeof(req)), sizeof(req),
+			 "ERROR writing request for resetting uncores ")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[uncore_req],&ack,sizeof(ulong)) , sizeof(ulong),
+			 "ERROR reading ack for resetting uncores ")) return EAR_ERROR;
 		DEBUG_F(3, "RESET ACK Uncore counters received from daemon ");
 	    return EAR_SUCCESS;
     }
@@ -474,22 +454,18 @@ int eards_reset_uncore()
 int eards_start_uncore()
 {
 	struct daemon_req req;
-	unsigned long ack;
+	ulong ack;
 	int ret;
-
+	if (!app_connected) return EAR_SUCCESS;
     req.req_service=START_UNCORE;
 	DEBUG_F(2, "start uncore");
 
 	if (ear_fd_req[uncore_req]>=0)
 	{
-		if (write(ear_fd_req[uncore_req],&req, sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for starting uncores (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if ((ret=read(ear_fd_ack[uncore_req],&ack,sizeof(unsigned long)))!=sizeof(unsigned long)){
-			VERBOSE_N(0, "ERROR reading ack for starting uncores (ret: %d) (%s)", ret, strerror(errno));
-			return EAR_ERROR;
-		}
+		if (warning(write(ear_fd_req[uncore_req],&req, sizeof(req)) , sizeof(req),
+			 "ERROR writing request for starting uncores ")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[uncore_req],&ack,sizeof(ulong)) , sizeof(ulong),
+			 "ERROR reading ack for starting uncores ")) return EAR_ERROR;
 		DEBUG_F(3, "START ACK Uncore counters received from daemon ");
 		return EAR_SUCCESS;
     }
@@ -501,8 +477,10 @@ int eards_read_uncore(unsigned long long *values)
 {
 	struct daemon_req req;
 	unsigned long long cas_client=0;
-	unsigned long ack;
+	ulong ack;
 	int i;
+
+	if (!app_connected){ values[0]=0;return EAR_SUCCESS;}
 
 	req.req_service=READ_UNCORE;
 	DEBUG_F(2, "reading uncore counters");
@@ -510,23 +488,15 @@ int eards_read_uncore(unsigned long long *values)
 	if (ear_fd_req[uncore_req]>=0)
 	{
 		// There is not request for uncore...only answer
-		if (write(ear_fd_req[uncore_req], &req, sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for reading uncores (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if (read(ear_fd_ack[uncore_req],values,uncore_size) != uncore_size) {
-			VERBOSE_N(0, "ERROR reading ack for reading uncores (%s)", strerror(errno));
+		if (warning(write(ear_fd_req[uncore_req], &req, sizeof(req)) , sizeof(req),
+			"ERROR writing request for reading uncores ")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[uncore_req],values,uncore_size) , uncore_size, 
+			 "ERROR reading ack for reading uncores ")){ 
 			return EAR_ERROR;
 		} else {
 			ack = EAR_SUCCESS;
 		}
 
-		for (i = 0; i < uncore_size/sizeof(unsigned long long); i++) {
-			cas_client += values[i];
-		}
-
-		DEBUG_F(4, "CLIENT UNCORE cas %llu values %lu", cas_client,
-				uncore_size / sizeof(unsigned long long));
 	}else{
 		ack=EAR_ERROR;
 		DEBUG_F(0, "read uncore service not provided");
@@ -535,11 +505,12 @@ int eards_read_uncore(unsigned long long *values)
 }
 
 //////////////// RAPL REQUESTS
-unsigned long eards_get_data_size_rapl() // size in bytes
+ulong eards_get_data_size_rapl() // size in bytes
 {
     int com_fd=rapl_req;
     struct daemon_req req;
-	unsigned long ack;
+	ulong ack;
+	if (!app_connected) return sizeof(ulong);
 
     DEBUG_F(2, "asking for rapl data size ");
     req.req_service=DATA_SIZE_RAPL;
@@ -547,14 +518,10 @@ unsigned long eards_get_data_size_rapl() // size in bytes
 
     if (ear_fd_req[com_fd] >= 0)
 	{
-        if (write(ear_fd_req[com_fd],&req,sizeof(req))!=sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for RAPL data size (%s)", strerror(errno));
-			return EAR_ERROR;
-        }
-        if (read(ear_fd_ack[com_fd],&ack,sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for RAPL data size (%s)", strerror(errno));
-			return EAR_ERROR;
-        }
+        if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+			 "ERROR writing request for RAPL data size ")) return EAR_ERROR;
+        if (warning(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
+			"ERROR reading ack for RAPL data size ")) return EAR_ERROR;
     } else {
 		DEBUG_F(0, "ear_daemon_client_get_data_size_rapl service not provided");
 		ack=EAR_ERROR;
@@ -567,21 +534,17 @@ unsigned long eards_get_data_size_rapl() // size in bytes
 int eards_reset_rapl()
 {
 	struct daemon_req req;
-	unsigned long ack=EAR_SUCCESS;
-
+	ulong ack=EAR_SUCCESS;
+	if (!app_connected) return EAR_SUCCESS;
 	req.req_service = RESET_RAPL;
 	DEBUG_F(2, "reset rapl");
 
 	if (ear_fd_req[rapl_req]>=0)
 	{
-		if (write(ear_fd_req[rapl_req],&req,sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for resetting RAPL counters (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if (read(ear_fd_ack[rapl_req],&ack, sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for resetting RAPL counters (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
+		if (warning(write(ear_fd_req[rapl_req],&req,sizeof(req)) , sizeof(req),
+			 "ERROR writing request for resetting RAPL counters ")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[rapl_req],&ack, sizeof(ulong)) , sizeof(ulong),
+			 "ERROR reading ack for resetting RAPL counters ")) return EAR_ERROR;
 		DEBUG_F(3, "RESET ACK rapl counters received from daemon ");
 		return ack;
     }
@@ -592,23 +555,18 @@ int eards_reset_rapl()
 int eards_start_rapl()
 {
 	struct daemon_req req;
-	unsigned long ack;
+	ulong ack;
 	int ret;
-
+	if (!app_connected) return EAR_SUCCESS;
 	req.req_service=START_RAPL;
 	DEBUG_F(2, "start rapl");
 
     if (ear_fd_req[rapl_req]>=0)
 	{
-		if (write(ear_fd_req[rapl_req],&req,sizeof(req)) != sizeof(req)){
-			VERBOSE_N(0, "ERROR writing request for starting RAPL counters (%s)", strerror(errno));
-			return EAR_ERROR;
-		}
-		if ((ret=read(ear_fd_ack[rapl_req],&ack,sizeof(unsigned long))) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for starting RAPL counters (ret; %d) (%s)",
-					  ret, strerror(errno));
-			return EAR_ERROR;
-		}
+		if (warning(write(ear_fd_req[rapl_req],&req,sizeof(req)) , sizeof(req),
+			 "ERROR writing request for starting RAPL counters ")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[rapl_req],&ack,sizeof(ulong)) , sizeof(ulong),
+			 "ERROR reading ack for starting RAPL counters ")) return EAR_ERROR;
 		DEBUG_F(3, "START ACK rapl counters received from daemon ");
 		return EAR_SUCCESS;
     }
@@ -619,9 +577,10 @@ int eards_start_rapl()
 int eards_read_rapl(unsigned long long *values)
 {
 	struct daemon_req req;
-	unsigned long ack;
+	ulong ack;
 	unsigned long long acum_energy=0;
 	int i;
+	if (!app_connected){ values[0]=0;return EAR_SUCCESS;}
 
 	req.req_service=READ_RAPL;
 	DEBUG_F(2, "reading rapl counters");
@@ -629,21 +588,16 @@ int eards_read_rapl(unsigned long long *values)
 	if (ear_fd_req[rapl_req]>=0)
 	{
 		// There is not request for uncore...only answer
-		if (write(ear_fd_req[rapl_req],&req,sizeof(req)) != sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for stopping RAPL counters (%s)", strerror(errno));
+		if (warning(write(ear_fd_req[rapl_req],&req,sizeof(req)) , sizeof(req),
+			 "ERROR writing request for stopping RAPL counters ")) return EAR_ERROR;
+		if (warning(read(ear_fd_ack[rapl_req],values,rapl_size) , rapl_size,
+			 "ERROR reading ack for stopping RAPL counters "))
+		{ 
 			return EAR_ERROR;
-		}
-		if (read(ear_fd_ack[rapl_req],values,rapl_size)!=rapl_size){
-			VERBOSE_N(0, "ERROR reading ack for stopping RAPL counters (%s)", strerror(errno));
-			return EAR_ERROR;
-		} else {
+		}else{
 			ack = EAR_SUCCESS;
 		}
 
-		for (i = 0; i <rapl_size/sizeof(unsigned long long); i++) {
-			acum_energy+=values[i];
-		}
-		DEBUG_F(4, "EAR_RAPL_CLIENT acum energy %llu", acum_energy);
 	}else{
 		DEBUG_F(0, "read rapl service not provided");
 		ack = EAR_ERROR;
@@ -652,25 +606,23 @@ int eards_read_rapl(unsigned long long *values)
 }
 // END RAPL SERVICES
 // NODE ENERGY SERVICES
-unsigned long eards_node_energy_data_size()
+ulong eards_node_energy_data_size()
 {
     int com_fd =node_energy_req;
     struct daemon_req req;
-	unsigned long ack = EAR_SUCCESS;
+	ulong ack = EAR_SUCCESS;
+	
+	if (!app_connected) return sizeof(ulong);
 
     DEBUG_F(2, "asking for node energy data size ");
     req.req_service=DATA_SIZE_ENERGY_NODE;
 
     if (ear_fd_req[com_fd]>=0)
 	{
-        if (write(ear_fd_req[com_fd],&req,sizeof(req))!=sizeof(req)){
-			VERBOSE_N(0, "ERROR writing request for IPMI data size (%s)", strerror(errno));
-			return EAR_ERROR;
-        }   
-        if (read(ear_fd_ack[com_fd],&ack,sizeof(unsigned long)) != sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for IPMI data size (%s)", strerror(errno));
-			return EAR_ERROR;
-        }   
+        if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+			 "ERROR writing request for IPMI data size ")) return EAR_ERROR;
+        if (warning(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
+			 "ERROR reading ack for IPMI data size ")) return EAR_ERROR;
     } else {
 		DEBUG_F(0, "ear_daemon_client_node_energy_data_size service not provided");
 		ack=EAR_ERROR;
@@ -678,25 +630,23 @@ unsigned long eards_node_energy_data_size()
     energy_size=ack;
     return ack;
 }
-int eards_node_dc_energy(unsigned long *energy)
+int eards_node_dc_energy(ulong *energy)
 {
     int com_fd = node_energy_req;
-	unsigned long ack=EAR_SUCCESS;
+	ulong ack=EAR_SUCCESS;
 	struct daemon_req req;
+
+	if (!app_connected){*energy=0;return EAR_SUCCESS;}
 
     DEBUG_F(2, "asking for node dc energy ");
     req.req_service=READ_DC_ENERGY;
 
 	if (ear_fd_req[com_fd]>=0)
 	{
-        if (write(ear_fd_req[com_fd],&req,sizeof(req))!=sizeof(req)) {
-			VERBOSE_N(0, "ERROR writing request for IPMI data size (%s)", strerror(errno));
-			return EAR_ERROR;
-        }   
-        if (read(ear_fd_ack[com_fd],energy,sizeof(unsigned long))!=sizeof(unsigned long)) {
-			VERBOSE_N(0, "ERROR reading ack for IPMI data size (%s)", strerror(errno));
-			return EAR_ERROR;
-        }   
+        if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+			"ERROR writing request for IPMI data size ")) return EAR_ERROR;
+        if (warning(read(ear_fd_ack[com_fd],energy,sizeof(ulong)) , sizeof(ulong),
+			"ERROR reading ack for IPMI data size ")) return EAR_ERROR;
     } else
 	{
 		DEBUG_F(0, "ear_daemon_client_node_dc_energy service not provided");
@@ -707,21 +657,19 @@ int eards_node_dc_energy(unsigned long *energy)
 ulong eards_node_energy_frequency()
 {
     int com_fd = node_energy_req;
-    unsigned long ack=EAR_ERROR;
+    ulong ack=EAR_ERROR;
     struct daemon_req req;
+
+	if (!app_connected) return 10000000;
 
     DEBUG_F(2, "asking for dc node energy frequency ");
     req.req_service=ENERGY_FREQ;
     if (ear_fd_req[com_fd]>=0)
     {
-        if (write(ear_fd_req[com_fd],&req,sizeof(req))!=sizeof(req)) {
-            VERBOSE_N(0, "ERROR writing request for energy freq of update (%s)", strerror(errno));
-            return EAR_ERROR;
-        }
-        if (read(ear_fd_ack[com_fd],&ack,sizeof(unsigned long))!=sizeof(unsigned long)) {
-            VERBOSE_N(0, "ERROR reading ack for energy freq of update (%s)", strerror(errno));
-            return ack;
-        }
+        if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+             "ERROR writing request for energy freq of update ")) return EAR_ERROR;
+        if (warning(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
+            "ERROR reading ack for energy freq of update ")) return ack;
     } else
     {
         DEBUG_F(0, "eards_node_energy_frequency service not provided");

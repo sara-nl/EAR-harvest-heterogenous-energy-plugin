@@ -342,6 +342,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n", ear_app_name);
 
 						memcpy(&last_signature, &loop_signature, sizeof(application_t));
+						states_report_new_freq(policy_freq);
 					}
 					else
 					{
