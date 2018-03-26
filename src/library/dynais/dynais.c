@@ -93,9 +93,9 @@ int dynais_init(unsigned int window, unsigned int levels)
     _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
     _levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
     mem_res1 = posix_memalign((void *) &p_data, sizeof(long), sizeof(long) * window * levels);
-    mem_res2 = posix_memalign((void *) &p_zero, sizeof(long), sizeof(int) * window * levels);
-    mem_res3 = posix_memalign((void *) &p_size, sizeof(long), sizeof(int) * window * levels);
-    mem_res4 = posix_memalign((void *) &p_k, sizeof(long), sizeof(int) * window * levels + 8);
+    mem_res3 = posix_memalign((void *) &p_size, sizeof(long), sizeof(int)  * window * levels);
+    mem_res2 = posix_memalign((void *) &p_zero, sizeof(long), sizeof(int)  * window * levels + 8);
+    mem_res4 = posix_memalign((void *) &p_k,    sizeof(long), sizeof(int)  * window * levels + 8);
 
     //EINVAL = 22, ENOMEM = 12
     if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
@@ -110,9 +110,11 @@ int dynais_init(unsigned int window, unsigned int levels)
         level_length[i] = 0;
 
         sample_vec[i] = &p_data[i * window];
-        zero_vec[i] = &p_zero[i * window];
         size_vec[i] = &p_size[i * window];
-		k_vec[i] = &p_k[i * window];
+	
+		// Window extendend vectors	
+        zero_vec[i] = &p_zero[i * (window + 8)];
+		k_vec[i] = &p_k[i * (window + 8)];
 
 		for (k = 0; k < window; ++k) {
 			k_vec[i][k] = k-1;
@@ -235,7 +237,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     CHRONO_END(1);
     CHRONO_START(2);
 
-#if 1
+#if 0
 	samples[index] = 0;
 	sizes[index] = 0;
 
@@ -365,7 +367,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		}
 		zeros[m] = 0;
 
-		printf("(%u,%u) ", zeros[i], k);
+		//printf("(%u,%u) ", zeros[i], k);
 		
 		i = i + 1;
 		i = i & ((i == _window) - 1);
@@ -373,7 +375,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		m = m & ((m == _window) - 1);
 	}
 	
-	printf("max_length %d, max_zeros %d\n", max_length, max_zeros);	
+	//printf("max_length %d, max_zeros %d\n", max_length, max_zeros);	
 #endif
 
     CHRONO_END(2);
