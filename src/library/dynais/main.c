@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
 	if (panic == 0) panic = UINT_MAX;
 	init_t = clock();
-
+	
 	unsigned long fake_input[10] = { 1, 2, 3, 1, 2, 3, 1, 2, 3, 4 };
 
 	// Reading
