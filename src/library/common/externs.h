@@ -25,6 +25,7 @@ extern unsigned long ear_frequency;
 extern int ear_use_turbo;
 extern int ear_whole_app;
 extern int ear_my_rank;
+extern int my_job_id;
 extern uint dynais_enabled;
 extern uint loop_with_signature;
 // To be removed with new dynais version

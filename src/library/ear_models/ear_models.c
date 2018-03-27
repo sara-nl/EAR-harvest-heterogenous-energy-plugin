@@ -21,6 +21,8 @@
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/types/log.h>
+
 
 #define RESET_FREQ 			0
 #define PERFORMANCE_PENALTY 0.1
@@ -53,6 +55,7 @@ ulong min_freq(ulong a,ulong b)
 	if (a<b) return a;
 	return b;
 }
+
 
 void print_energy_policy_configuration()
 {
@@ -546,6 +549,7 @@ unsigned long policy_power_for_application(unsigned int whole_app,application_t 
 	#ifdef SHARED_MEMORY
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (bestPstate>system_conf->max_freq){ 
+		log_report_global_policy_freq(my_job_id,system_conf->max_freq);
 		ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
 		bestPstate,system_conf->max_freq);
 		bestPstate=system_conf->max_freq;

@@ -93,3 +93,44 @@ void report_new_event(ear_event_t *event)
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
 
 }
+
+void log_report_new_freq(int job,ulong newf)
+{
+    ear_event_t new_event;
+    new_event.event=ENERGY_POLICY_NEW_FREQ;
+    new_event.job_id=job;
+    new_event.freq=newf ;
+    report_new_event(&new_event);
+
+}
+
+
+void log_report_dynais_off(int job)
+{
+    ear_event_t new_event;
+    new_event.event=DYNAIS_OFF;
+    new_event.job_id=job;
+    report_new_event(&new_event);
+
+}
+
+
+
+void log_report_max_tries(int job,ulong newf)
+{
+    ear_event_t new_event;
+    new_event.event=ENERGY_POLICY_FAILS;
+    new_event.freq=newf;
+    new_event.job_id=job;
+    report_new_event(&new_event);
+}
+
+void log_report_global_policy_freq(int job,ulong newf)
+{
+    ear_event_t new_event;
+    new_event.event=GLOBAL_ENERGY_POLICY;
+    new_event.freq=newf;
+    new_event.job_id=job;
+    report_new_event(&new_event);
+}
+

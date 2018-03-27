@@ -142,6 +142,10 @@ void ear_init()
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
 	}
 
+	// Application static data gathering
+	init_application(&application);
+	init_application(&loop_signature);
+
 	// my_id is 0 in case is not local. Metrics gets the value
 	// 'privileged_metrics'. This value has to be different to 0 when
 	// my_id is different to 0.
@@ -163,12 +167,14 @@ void ear_init()
 	ear_current_freq = frequency_get_num_pstates(0);
 	job_id = getenv("SLURM_JOB_ID");
 	user_id = getenv("LOGNAME");
+	if (job_id != NULL){ 
+		strcpy(application.job_id, job_id);
+		my_job_id=atoi(job_id);
+	}else{ 
+		my_job_id=getppid();
+		sprintf(application.job_id, "%d", my_job_id);
+	}
 
-
-	// Application static data gathering
-	init_application(&application);
-	init_application(&loop_signature);
-	
 	// Policies
 	init_power_policy();
 	init_power_models(frequency_get_num_pstates(), frequency_get_freq_rank_list());
@@ -178,8 +184,6 @@ void ear_init()
 	strcpy(application.user_id, user_id);
 	strcpy(application.node_id, node_name);
 
-	if (job_id != NULL) strcpy(application.job_id, job_id);
-	else sprintf(application.job_id, "%d", getppid());
 
 	// Passing the frequency in KHz to MHz
 	application.def_f = EAR_default_frequency;

@@ -48,45 +48,7 @@ static ulong perf_accuracy_min_time = 1000000;
 static uint perf_count_period = 100,loop_perf_count_period;
 static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
-static int my_job_id;
 
-void states_report_new_freq(ulong newf)
-{
-	ear_event_t new_event;
-	new_event.event=ENERGY_POLICY_NEW_FREQ;
-	new_event.job_id=my_job_id;
-	new_event.freq=newf	;
-	report_new_event(&new_event);
-	
-}
-
-void states_report_dynais_off()
-{
-    ear_event_t new_event;
-    new_event.event=DYNAIS_OFF;
-    new_event.job_id=my_job_id;
-    report_new_event(&new_event);
-   
-}
-
-
-void states_report_global_policy_freq(ulong newf)
-{
-	ear_event_t new_event;
-	new_event.event=GLOBAL_ENERGY_POLICY;
-	new_event.freq=newf;
-	new_event.job_id=my_job_id;
-	report_new_event(&new_event);
-}
-
-void states_report_max_tries(ulong newf)
-{
-	ear_event_t new_event;
-	new_event.event=ENERGY_POLICY_FAILS;
-	new_event.freq=newf;
-	new_event.job_id=my_job_id;
-	report_new_event(&new_event);
-}
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
@@ -109,7 +71,6 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 		app_name, perf_accuracy_min_time);
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
-	my_job_id=atoi(application.job_id);
 	init_log();
 }
 
@@ -310,7 +271,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							// Disable dynais : API is still pending
 							dynais_enabled=0;
 							VERBOSE_N(0,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
-							states_report_dynais_off();
+							log_report_dynais_off(my_job_id);
 						}
 						VERBOSE_N(1,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
 						loop_signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
@@ -342,7 +303,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n", ear_app_name);
 
 						memcpy(&last_signature, &loop_signature, sizeof(application_t));
-						states_report_new_freq(policy_freq);
+						log_report_new_freq(my_job_id,policy_freq);
 					}
 					else
 					{
@@ -433,7 +394,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						tries_current_loop++;
 						if (tries_current_loop==MAX_POLICY_TRIES){
 							// We must report a problem and go to the default configuration
-							states_report_max_tries(application.def_f);
+							log_report_max_tries(my_job_id,application.def_f);
 							EAR_STATE = PROJECTION_ERROR;
 						}else{
 						/** If we are not going better **/

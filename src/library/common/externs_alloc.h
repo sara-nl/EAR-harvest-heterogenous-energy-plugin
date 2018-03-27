@@ -23,6 +23,7 @@ ulong ear_frequency;
 int ear_use_turbo = USE_TURBO; 
 int ear_whole_app;
 int ear_my_rank;
+int my_job_id;
 uint dynais_enabled=1;
 uint loop_with_signature=0;
 // To be removed whith new dynais version

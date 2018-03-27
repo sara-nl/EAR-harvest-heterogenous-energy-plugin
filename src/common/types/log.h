@@ -23,4 +23,8 @@ typedef struct ear_event{
 void init_log();
 void end_log();
 void report_new_event(ear_event_t *event);
+void log_report_new_freq(int job,ulong newf);
+void log_report_dynais_off(int job);
+void log_report_max_tries(int job,ulong newf);
+void log_report_global_policy_freq(int job,ulong newf);
 #endif

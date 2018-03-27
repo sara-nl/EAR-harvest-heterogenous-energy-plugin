@@ -33,7 +33,7 @@
 #ifdef POWER_MONITORING
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
-unsigned int power_mon_freq=3000000;
+unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 //int power_mon_th;
 #endif
