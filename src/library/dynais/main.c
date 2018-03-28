@@ -52,16 +52,14 @@ int main(int argc, char **argv)
 	// Reading
 	while (fread(&value, 5, sizeof(unsigned long), input) > 0 && i < panic)
 	{
-		if (i > 8000)
-		{
-			//value[3] = fake_input[i];
-			//printf("-------------------------------------------------\n");
+		//value[3] = fake_input[i];
+		//printf("-------------------------------------------------\n");
+		//printf("%u: sample %lu\n", i, value[3]);
 
-			result = dynais(value[3], &size, &level);
+		result = dynais(value[3], &size, &level);
 		
-			//if (result >= 0) printf("%u sample %lu result: l%u, s%u, r%d\n", i, value[3], level, size, result);
-			//if (result >= 0) printf("%lu %u %u %d\n", value[3], level, size, result);
-		}
+		//if (result >= 0) printf("%u sample %lu result: l%u, s%u, r%d\n", i, value[3], level, size, result);
+		//if (result >= 0) printf("%lu %u %u %d\n", value[3], level, size, result);
 		++i;
 	}
 

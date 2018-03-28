@@ -42,9 +42,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <library/dynais/dynais.h>
-
-#include <x86intrin.h>
-#include <emmintrin.h> // -msse2
 #include <immintrin.h> // -mavx -mfma
 
 
@@ -92,10 +89,11 @@ int dynais_init(unsigned int window, unsigned int levels)
 
     _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
     _levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
-    mem_res1 = posix_memalign((void *) &p_data, sizeof(long), sizeof(long) * window * levels);
-    mem_res3 = posix_memalign((void *) &p_size, sizeof(long), sizeof(int)  * window * levels);
-    mem_res2 = posix_memalign((void *) &p_zero, sizeof(long), sizeof(int)  * window * levels + 8);
-    mem_res4 = posix_memalign((void *) &p_k,    sizeof(long), sizeof(int)  * window * levels + 8);
+
+    mem_res1 = posix_memalign((void *) &p_data, sizeof(__m512i), sizeof(long) * window * levels);
+    mem_res3 = posix_memalign((void *) &p_size, sizeof(__m512i), sizeof(int)  * window * levels);
+    mem_res2 = posix_memalign((void *) &p_zero, sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
+    mem_res4 = posix_memalign((void *) &p_k,    sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
 
     //EINVAL = 22, ENOMEM = 12
     if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
@@ -130,31 +128,6 @@ void dynais_dispose()
     free((void *) sample_vec[0]);
     free((void *) zero_vec[0]);
     free((void *) size_vec[0]);
-
-    #define NUM_REGIONS 7
-	double CLOCKS_PER_USEC = (double) CLOCKS_PER_SEC / 1000000.0;
-	double total_0, total, percent;
-    clock_t others = 0;
-    int i = 0;
-
-    printf("reg     \t\tus \t\t%%\n");
-
-	total_0 = (double) chrono_total[0] / CLOCKS_PER_USEC;
-
-    while(i != NUM_REGIONS)
-    {
-		total = (double) chrono_total[i] / CLOCKS_PER_USEC;
-        percent = (total / total_0) * 100.0;
-		printf("REGION %d:\t\t%0.lf \t\t%0.2lf\n", i, total, percent);
-		++i;
-    }
-
-    others += chrono_total[4];
-    others += chrono_total[5];
-    others = chrono_total[0] - others;
-	total = (double) others / CLOCKS_PER_USEC;
-	percent = (total / total_0) * 100.0;
-    printf("REGION o:\t\t%0.lf\t\t%0.2lf\n", total, percent);
 }
 
 // How it works?
@@ -237,107 +210,118 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     CHRONO_END(1);
     CHRONO_START(2);
 
-#if 0
-	samples[index] = 0;
-	sizes[index] = 0;
-
-	static unsigned int shifts[8]    = {  1,  2,  3,  4,  5,  6,  7,  7  };
-	static unsigned int max_zeros_block[8];
-	static unsigned int max_ks_block[8];
-
-	unsigned int zeros_0 = zeros[0];
-	unsigned int ks_0 = ks[0];
-
-	__m512i sample_dynamic;
-	__m512i sample_static;
-	__m256i size_dynamic;
-	__m256i size_static;
-	__mmask8 mmask_test1;
-	__mmask8 mmask_test2;
-
-    __m256i shifts_static;
-   	__m256i zeros_dynamic;
-    __m256i ones_static;
-	__m256i ks_dynamic;
-
-	__m256i max_zeros_provisional;
-	__m256i max_ks_provisional;
-	__m256i max_zeros_dynamic;
-	__m256i max_ks_dynamic;
+#if 1
+	// NEW
+	static unsigned int shifts[16] __attribute__ ((aligned (64))) = {  1,  2,  3,  4,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 15  };
+	static unsigned int max_zeros_array[16] __attribute__ ((aligned (64)));
+	static unsigned int max_index_array[16] __attribute__ ((aligned (64)));
+	int mmask_operator;
 	
-	sample_static = _mm512_set1_epi64(sample);
-	size_static   = _mm256_set1_epi32(size);
+	__m512i max_zeros_block_aux;
+	__m512i max_index_block_aux;
+	__m512i max_zeros_block;
+	__m512i max_index_block;
+	__m512i samples_block_1;
+	__m512i samples_block_2;
+	__m512i sample_replica;
+	__m512i sizes_block;
+	__m512i size_replica;
+	__m512i zeros_block;
+	__m512i index_block;
+	__m512i shift_replica;
+	__m512i one_replica;
+	
+	__mmask8 mmask_test1_1;
+	__mmask8 mmask_test1_2;
+	__mmask16 mmask_test1;
+	__mmask16 mmask_test2;
 
-	shifts_static = _mm256_load_si256((__m256i *) &shifts);
-    ones_static   = _mm256_set1_epi32(1);
+	// Initializations
+	sample_replica  = _mm512_set1_epi64(sample);
+	size_replica    = _mm512_set1_epi32(size);
+	shift_replica   = _mm512_load_si512((__m512i *) &shifts);
+    one_replica     = _mm512_set1_epi32(1);	
+	max_zeros_block = _mm512_setzero_si512();
+	max_index_block = _mm512_set1_epi32(0xFFFFFFFF);
+	
+	samples[index]  = 0;
+	sizes[index]    = 0;
+	zeros[_window]  = zeros[0];
+	ks[_window]     = ks[0];
 
-	max_zeros_dynamic = _mm256_setzero_si256();
-	max_ks_dynamic = _mm256_set1_epi32(2147483647);
-
-	unsigned int block[8];
-	int b;
-
-	#define print_block(tag, B) \
-		_mm256_store_si256 ((__m256i *) block, B); \
-		printf("%s ", tag); \
-		for(b = 0; b < 8; ++b) printf("%u ", block[b]); \
-		printf("\n");
-
-	zeros[_window] = zeros[0];
-	ks[_window] = ks[0];
-
-	for (k = 0, i = 0; k < _window; k += 8, i += 1)
+	for (k = 0, i = 0; k < _window; k += 16, i += 1)
 	{
 		//
-		sample_dynamic = _mm512_load_epi64(&samples[k]);
-		size_dynamic   = _mm256_load_si256((__m256i *) &sizes[k]);
+		samples_block_1 = _mm512_load_si512((__m512i *) &samples[k]);
+		samples_block_2 = _mm512_load_si512((__m512i *) &samples[k + 8]);
+		sizes_block     = _mm512_load_si512((__m512i *) &sizes[k]);
 	
 		//	
-		mmask_test1 = _mm512_cmp_epu64_mask(sample_static, sample_dynamic, _MM_CMPINT_EQ);
-		mmask_test1 = _mm256_mask_cmp_epi32_mask(mmask_test1, size_static, size_dynamic, _MM_CMPINT_EQ);
-	
+		mmask_test1_1 = _mm512_cmp_epu64_mask(samples_block_1, sample_replica, _MM_CMPINT_EQ);
+		mmask_test1_2 = _mm512_cmp_epu64_mask(samples_block_2, sample_replica, _MM_CMPINT_EQ);
+		
 		//
-     	zeros_dynamic = _mm256_load_si256((__m256i *) &zeros[k]);
-		ks_dynamic    = _mm256_load_si256((__m256i *) &ks[k]);
+		mmask_operator = ((int) mmask_test1_2 << 8) | ((int) mmask_test1_1);	
+		mmask_test1    = _mm512_int2mask(mmask_operator);
 
+		//
+		mmask_test1 = _mm512_mask_cmp_epi32_mask(mmask_test1, sizes_block, size_replica, _MM_CMPINT_EQ);
+	
+		//if (mmask_test1 == 0) continue; 
+		
+		//
+     	zeros_block = _mm512_load_si512((__m512i *) &zeros[k]);
+		index_block = _mm512_load_si512((__m512i *) &ks[k]);
+		
         // Round buffer
-        zeros_dynamic = _mm256_permutevar8x32_epi32(zeros_dynamic, shifts_static);
-        ks_dynamic = _mm256_permutevar8x32_epi32(ks_dynamic, shifts_static);
+        zeros_block = _mm512_permutevar_epi32(shift_replica, zeros_block);
+        index_block = _mm512_permutevar_epi32(shift_replica, index_block);
 
-		zeros_dynamic = _mm256_mask_set1_epi32(zeros_dynamic, 0x80, zeros[k + 8]);
-		ks_dynamic = _mm256_mask_set1_epi32(ks_dynamic, 0x80, ks[k + 8]);
+		zeros_block = _mm512_mask_set1_epi32(zeros_block, 0x8000, zeros[k + 16]);
+		index_block = _mm512_mask_set1_epi32(index_block, 0x8000, ks[k + 16]);
 		
 		// 
-     	zeros_dynamic = _mm256_maskz_add_epi32(mmask_test1, zeros_dynamic, ones_static);
+     	zeros_block = _mm512_maskz_add_epi32(mmask_test1, zeros_block, one_replica);
 
-		_mm256_store_si256 ((__m256i *) &zeros[k], zeros_dynamic);
-        _mm256_store_si256 ((__m256i *) &ks[k], ks_dynamic);
+		_mm512_store_si512 ((__m512i *) &zeros[k], zeros_block);
+        _mm512_store_si512 ((__m512i *) &ks[k], index_block);
 
 		//
-		mmask_test2 = _mm256_cmp_epi32_mask(ks_dynamic, zeros_dynamic, _MM_CMPINT_LT);
-	
-		max_zeros_provisional = _mm256_maskz_mov_epi32(mmask_test2, zeros_dynamic);
-		max_ks_provisional    = _mm256_maskz_mov_epi32(mmask_test2, ks_dynamic); 
+		mmask_test2 = _mm512_cmp_epi32_mask(index_block, zeros_block, _MM_CMPINT_LT);
 
+		if (mmask_test2 == 0) continue;
+
+		//	
+		max_zeros_block_aux = _mm512_maskz_mov_epi32(mmask_test2, zeros_block);
+		max_index_block_aux = _mm512_maskz_mov_epi32(mmask_test2, index_block); 
+		
 		// - max_zeros_provisional[i]  > max_zeros[i]: obligadamente reemplazable
 		// - max_zeros_provisional[i] == max_zeros[i]: posiblemente reemplazable
-		mmask_test2 = _mm256_cmp_epi32_mask(max_zeros_dynamic, max_zeros_provisional, _MM_CMPINT_LT);	
-		mmask_test2 = _mm256_mask_cmp_epi32_mask(mmask_test2, max_ks_provisional, max_ks_dynamic, _MM_CMPINT_LT);
-		
-		max_zeros_dynamic = _mm256_mask_mov_epi32(max_zeros_dynamic, mmask_test2, max_zeros_provisional);
-		max_ks_dynamic = _mm256_mask_mov_epi32(max_ks_dynamic, mmask_test2, max_ks_provisional);
+		mmask_test2 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_LT);	
+		mmask_test2 = _mm512_mask_cmp_epu32_mask(mmask_test2, max_index_block_aux, max_index_block, _MM_CMPINT_LT);
+	
+		//	
+		max_zeros_block = _mm512_mask_mov_epi32(max_zeros_block, mmask_test2, max_zeros_block_aux);
+		max_index_block = _mm512_mask_mov_epi32(max_index_block, mmask_test2, max_index_block_aux);
 	}
 
-	_mm256_store_si256 ((__m256i *) max_zeros_block, max_zeros_dynamic);
-    _mm256_store_si256 ((__m256i *) max_ks_block, max_ks_dynamic);
+	max_zeros      		= _mm512_reduce_max_epu32(max_zeros_block);
+	max_zeros_block_aux	= _mm512_set1_epi32(max_zeros);
+	mmask_test2     	= _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_EQ);
+	max_length      	= _mm512_mask_reduce_min_epu32(mmask_test2, max_index_block);
 
-	for (i = 0; i < 8; ++i)
+	/*	
+	_mm512_store_si512 ((__m512i *) max_zeros_array, max_zeros_block);
+    _mm512_store_si512 ((__m512i *) max_index_array, max_index_block);
+
+	for (i = 0; i < 16; ++i)
 	{
-		if (max_zeros_block[i] > max_zeros) {
-			max_zeros = max_zeros_block[i];
-			max_length = max_ks_block[i];
+		if (max_zeros_array[i] > max_zeros) {
+			max_zeros  = max_zeros_array[i];
+			max_length = max_index_array[i];
 		}
 	}
+	*/
 
     samples[index] = sample; 
     sizes[index] = size;
