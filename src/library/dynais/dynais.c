@@ -224,7 +224,6 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	 * Phase 0, initialization
 	 */
 
-	previous_length = level_previous_length[level];
 	index   		= level_index[level];
 	limit   		= level_limit[level];
 	samples 		= samples_vec[level];
@@ -235,7 +234,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	samples[index]  = 0;
 	sizes[index]    = 0;
 	zeros[_window]  = zeros[0];
-	indes[_window]  = ks[0];
+	indes[_window]  = indes[0];
 
 	sample_replica  = _mm512_set1_epi64(sample);
 	size_replica    = _mm512_set1_epi32(size);
@@ -268,20 +267,20 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	
 		//
      	zeros_block = _mm512_load_si512((__m512i *) &zeros[k]);
-		index_block = _mm512_load_si512((__m512i *) &ks[k]);
+		index_block = _mm512_load_si512((__m512i *) &indes[k]);
 		
         // Round buffer
         zeros_block = _mm512_permutevar_epi32(shift_replica, zeros_block);
         index_block = _mm512_permutevar_epi32(shift_replica, index_block);
 
 		zeros_block = _mm512_mask_set1_epi32(zeros_block, 0x8000, zeros[k + 16]);
-		index_block = _mm512_mask_set1_epi32(index_block, 0x8000, ks[k + 16]);
+		index_block = _mm512_mask_set1_epi32(index_block, 0x8000, indes[k + 16]);
 		
 		// 
      	zeros_block = _mm512_maskz_add_epi32(mmask_test1, zeros_block, one_replica);
 
 		_mm512_store_si512 ((__m512i *) &zeros[k], zeros_block);
-        _mm512_store_si512 ((__m512i *) &ks[k], index_block);
+        _mm512_store_si512 ((__m512i *) &indes[k], index_block);
 
 		//
 		mmask_test2 = _mm512_cmp_epi32_mask(index_block, zeros_block, _MM_CMPINT_LT);
@@ -307,9 +306,6 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	mmask_test2     	= _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_EQ);
 	max_length      	= _mm512_mask_reduce_min_epu32(mmask_test2, max_indes_block);
 
-    samples[index] = sample; 
-    sizes[index] = size;
-
 	/*
 	 * Phase 2, evaluation
 	 */
@@ -317,6 +313,10 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	unsigned int end_loop, in_loop, new_loop, new_iteration;
 	unsigned int previous_length;
 	unsigned int mask;
+
+	previous_length = level_previous_length[level];
+    samples[index] = sample; 
+    sizes[index] = size;
 
 	// Mask is 0xFFFFFFFF (-1) when _index is greater than 0
     // or 0x00000000 when _index is equal to 0.
