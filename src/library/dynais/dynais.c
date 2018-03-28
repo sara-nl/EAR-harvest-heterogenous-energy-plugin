@@ -44,29 +44,19 @@
 #include <library/dynais/dynais.h>
 #include <immintrin.h> // -mavx -mfma
 
-
-static clock_t chrono_start[100];
-static clock_t chrono_total[100];
-
-#if 0
-#define CHRONO_START(region) \
-    chrono_start[region] = clock();
-#define CHRONO_END(region) \
-    chrono_total[region] += (clock() - chrono_start[region]);
-#else
-#define CHRONO_START(region)
-#define CHRONO_END(region)
-#endif
+// Local defines
+#define AVX_512 1
+#define ALI64 __attribute__ ((aligned (64)))
 
 // General indexes.
 unsigned int _levels;
 unsigned int _window;
 
 // Per level data
-unsigned long *sample_vec[MAX_LEVELS];
-unsigned int  *zero_vec[MAX_LEVELS];
-unsigned int  *size_vec[MAX_LEVELS];
-unsigned int  *k_vec[MAX_LEVELS];
+unsigned long *samples_vec[MAX_LEVELS];
+unsigned int  *zeros_vec[MAX_LEVELS];
+unsigned int  *sizes_vec[MAX_LEVELS];
+unsigned int  *indes_vec[MAX_LEVELS];
 
 signed int   level_result[MAX_LEVELS];
 unsigned int level_previous_length[MAX_LEVELS];
@@ -82,18 +72,22 @@ unsigned int level_index[MAX_LEVELS];
 
 int dynais_init(unsigned int window, unsigned int levels)
 {
-    unsigned long *p_data;
-    unsigned int *p_zero, *p_size, *p_k;
+    unsigned long *p_smpls;
+    unsigned int *p_zeros, *p_sizes, *p_indes;
     int mem_res1, mem_res2, mem_res3, mem_res4;
     int i, k;
 
     _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
     _levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
 
-    mem_res1 = posix_memalign((void *) &p_data, sizeof(__m512i), sizeof(long) * window * levels);
-    mem_res3 = posix_memalign((void *) &p_size, sizeof(__m512i), sizeof(int)  * window * levels);
-    mem_res2 = posix_memalign((void *) &p_zero, sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
-    mem_res4 = posix_memalign((void *) &p_k,    sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
+	#if !AVX_512
+	#define __m512i 8
+	#endif
+
+    mem_res1 = posix_memalign((void *) &p_smpls, sizeof(__m512i), sizeof(long) * window * levels);
+    mem_res3 = posix_memalign((void *) &p_sizes, sizeof(__m512i), sizeof(int)  * window * levels);
+    mem_res2 = posix_memalign((void *) &p_zeros, sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
+    mem_res4 = posix_memalign((void *) &p_indes, sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
 
     //EINVAL = 22, ENOMEM = 12
     if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
@@ -107,17 +101,18 @@ int dynais_init(unsigned int window, unsigned int levels)
         level_result[i] = NO_LOOP;
         level_length[i] = 0;
 
-        sample_vec[i] = &p_data[i * window];
-        size_vec[i] = &p_size[i * window];
+		// Normal window allocations
+        samples_vec[i] = &p_smpls[i * window];
+        sizes_vec[i] = &p_sizes[i * window];
 	
-		// Window extendend vectors	
-        zero_vec[i] = &p_zero[i * (window + 8)];
-		k_vec[i] = &p_k[i * (window + 8)];
+		// Extended window allocations
+        zeros_vec[i] = &p_zeros[i * (window + 8)];
+		indes_vec[i] = &p_indes[i * (window + 8)];
 
 		for (k = 0; k < window; ++k) {
-			k_vec[i][k] = k-1;
+			indes_vec[i][k] = k-1;
 		}
-		k_vec[i][0] = window - 1;
+		indes_vec[i][0] = window - 1;
     }
     
 	return 0;
@@ -125,9 +120,10 @@ int dynais_init(unsigned int window, unsigned int levels)
 
 void dynais_dispose()
 {
-    free((void *) sample_vec[0]);
-    free((void *) zero_vec[0]);
-    free((void *) size_vec[0]);
+    free((void *) samples_vec[0]);
+    free((void *) zeros_vec[0]);
+    free((void *) sizes_vec[0]);
+	free((void *) indes_vec[0]);
 }
 
 // How it works?
@@ -185,42 +181,30 @@ void dynais_dispose()
 //     But this fact just happens when two iterations
 //     of length N have passed.
 //
+#if AVX_512
 static int dynais_basic(unsigned long sample, unsigned int size, unsigned int level)
 {
-    unsigned long *samples;
-    unsigned int *zeros, *sizes, *ks;
-    unsigned int end_loop, in_loop, new_loop, new_iteration;
-    unsigned int index, limit, previous_length, sample_size;
-    unsigned int max_length = 0, max_zeros = 0, mask;
-    unsigned int i, j, k, m;
-    int result = 0;
+	static unsigned int shifts[16] ALI64 = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15 };
+	static unsigned int max_zeros_array[16] ALI64;
+	static unsigned int max_indes_array[16] ALI64;
 
-    CHRONO_START(1);
+	unsigned int mmask_operator;
+	unsigned int max_length = 0;
+	unsigned int max_zeros = 0;
+	unsigned int index;
+	unsigned int limit;
+	unsigned int i, k;
+	int result;
 
-    // Getting level data (index, limit...)
-    index = level_index[level];
-    limit = level_limit[level];
-    previous_length = level_previous_length[level];
+	unsigned long *samples;
+	unsigned int *sizes;
+	unsigned int *zeros;
+	unsigned int *indes;
 
-    samples = sample_vec[level];
-    zeros = zero_vec[level];
-    sizes = size_vec[level];
-	ks    = k_vec[level];
-
-    CHRONO_END(1);
-    CHRONO_START(2);
-
-#if 1
-	// NEW
-	static unsigned int shifts[16] __attribute__ ((aligned (64))) = {  1,  2,  3,  4,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 15  };
-	static unsigned int max_zeros_array[16] __attribute__ ((aligned (64)));
-	static unsigned int max_index_array[16] __attribute__ ((aligned (64)));
-	int mmask_operator;
-	
 	__m512i max_zeros_block_aux;
-	__m512i max_index_block_aux;
+	__m512i max_indes_block_aux;
 	__m512i max_zeros_block;
-	__m512i max_index_block;
+	__m512i max_indes_block;
 	__m512i samples_block_1;
 	__m512i samples_block_2;
 	__m512i sample_replica;
@@ -236,18 +220,33 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	__mmask16 mmask_test1;
 	__mmask16 mmask_test2;
 
-	// Initializations
-	sample_replica  = _mm512_set1_epi64(sample);
-	size_replica    = _mm512_set1_epi32(size);
-	shift_replica   = _mm512_load_si512((__m512i *) &shifts);
-    one_replica     = _mm512_set1_epi32(1);	
-	max_zeros_block = _mm512_setzero_si512();
-	max_index_block = _mm512_set1_epi32(0xFFFFFFFF);
-	
+	/*
+	 * Phase 0, initialization
+	 */
+
+	previous_length = level_previous_length[level];
+	index   		= level_index[level];
+	limit   		= level_limit[level];
+	samples 		= samples_vec[level];
+	sizes   		= sizes_vec[level];
+	zeros   		= zeros_vec[level];
+	indes   		= indes_vec[level];
+
 	samples[index]  = 0;
 	sizes[index]    = 0;
 	zeros[_window]  = zeros[0];
-	ks[_window]     = ks[0];
+	indes[_window]  = ks[0];
+
+	sample_replica  = _mm512_set1_epi64(sample);
+	size_replica    = _mm512_set1_epi32(size);
+	shift_replica   = _mm512_load_si512((__m512i *) &shifts);
+	one_replica     = _mm512_set1_epi32(1);
+	max_zeros_block = _mm512_setzero_si512();
+	max_indes_block = _mm512_set1_epi32(0xFFFFFFFF);
+
+	/*
+	 * Phase 1, computation
+	 */
 
 	for (k = 0, i = 0; k < _window; k += 16, i += 1)
 	{
@@ -267,8 +266,6 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		//
 		mmask_test1 = _mm512_mask_cmp_epi32_mask(mmask_test1, sizes_block, size_replica, _MM_CMPINT_EQ);
 	
-		//if (mmask_test1 == 0) continue; 
-		
 		//
      	zeros_block = _mm512_load_si512((__m512i *) &zeros[k]);
 		index_block = _mm512_load_si512((__m512i *) &ks[k]);
@@ -293,80 +290,35 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
 		//	
 		max_zeros_block_aux = _mm512_maskz_mov_epi32(mmask_test2, zeros_block);
-		max_index_block_aux = _mm512_maskz_mov_epi32(mmask_test2, index_block); 
+		max_indes_block_aux = _mm512_maskz_mov_epi32(mmask_test2, index_block); 
 		
 		// - max_zeros_provisional[i]  > max_zeros[i]: obligadamente reemplazable
 		// - max_zeros_provisional[i] == max_zeros[i]: posiblemente reemplazable
 		mmask_test2 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_LT);	
-		mmask_test2 = _mm512_mask_cmp_epu32_mask(mmask_test2, max_index_block_aux, max_index_block, _MM_CMPINT_LT);
+		mmask_test2 = _mm512_mask_cmp_epu32_mask(mmask_test2, max_indes_block_aux, max_indes_block, _MM_CMPINT_LT);
 	
 		//	
 		max_zeros_block = _mm512_mask_mov_epi32(max_zeros_block, mmask_test2, max_zeros_block_aux);
-		max_index_block = _mm512_mask_mov_epi32(max_index_block, mmask_test2, max_index_block_aux);
+		max_indes_block = _mm512_mask_mov_epi32(max_indes_block, mmask_test2, max_indes_block_aux);
 	}
 
 	max_zeros      		= _mm512_reduce_max_epu32(max_zeros_block);
 	max_zeros_block_aux	= _mm512_set1_epi32(max_zeros);
 	mmask_test2     	= _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_EQ);
-	max_length      	= _mm512_mask_reduce_min_epu32(mmask_test2, max_index_block);
-
-	/*	
-	_mm512_store_si512 ((__m512i *) max_zeros_array, max_zeros_block);
-    _mm512_store_si512 ((__m512i *) max_index_array, max_index_block);
-
-	for (i = 0; i < 16; ++i)
-	{
-		if (max_zeros_array[i] > max_zeros) {
-			max_zeros  = max_zeros_array[i];
-			max_length = max_index_array[i];
-		}
-	}
-	*/
+	max_length      	= _mm512_mask_reduce_min_epu32(mmask_test2, max_indes_block);
 
     samples[index] = sample; 
     sizes[index] = size;
-#else
-	sample_size = size;
-    sizes[index] = size;
-	samples[index] = sample;
 
-    // Indexing
-    i = index + 1;
-    i = i & ((i == _window) - 1);
-    m = i + 1;
-    m = m & ((m == _window) - 1);
+	/*
+	 * Phase 2, evaluation
+	 */
 
-	for (k = 1; k <= limit; ++k)
-	{
-		//printf("(%lu,%u,%u,%u) ", samples[i], sizes[i], zeros[i], zeros[m]);
-		if (sample == samples[i] && sample_size == sizes[i])
-		{
-			zeros[i] = zeros[m] + 1;
+	unsigned int end_loop, in_loop, new_loop, new_iteration;
+	unsigned int previous_length;
+	unsigned int mask;
 
-			if (zeros[i] > max_zeros && k < zeros[i])
-			{
-				max_length = k;
-				max_zeros = zeros[i];
-			}
-		}
-		zeros[m] = 0;
-
-		//printf("(%u,%u) ", zeros[i], k);
-		
-		i = i + 1;
-		i = i & ((i == _window) - 1);
-		m = m + 1;
-		m = m & ((m == _window) - 1);
-	}
-	
-	//printf("max_length %d, max_zeros %d\n", max_length, max_zeros);	
-#endif
-
-    CHRONO_END(2);
-
-    CHRONO_START(3);
-
-    // Mask is 0xFFFFFFFF (-1) when _index is greater than 0
+	// Mask is 0xFFFFFFFF (-1) when _index is greater than 0
     // or 0x00000000 when _index is equal to 0.
     mask = (index == 0) - 1;
     index = index + mask + (~mask & (_window - 1));
@@ -417,10 +369,113 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     level_index[level] = index;
     level_limit[level] = limit;
 
-    CHRONO_END(3);
-
     return result;
 }
+#else
+static int dynais_basic(unsigned long sample, unsigned int size, unsigned int level)
+{
+	unsigned long *samples;
+	unsigned int *zeros, *sizes, *ks;
+	unsigned int end_loop, in_loop, new_loop, new_iteration;
+	unsigned int index, limit, previous_length, sample_size;
+	unsigned int max_length = 0, max_zeros = 0, mask;
+	unsigned int i, j, k, m;
+	int result = 0;
+
+	// Getting level data (index, limit...)
+	index = level_index[level];
+	limit = level_limit[level];
+	previous_length = level_previous_length[level];
+
+	samples = samples_vec[level];
+	zeros = zeros_vec[level];
+	sizes = sizes_vec[level];
+	ks    = indes_vec[level];
+
+	sample_size = size;
+	sizes[index] = size;
+	samples[index] = sample;
+
+	// Indexing
+	i = index + 1;
+	i = i & ((i == _window) - 1);
+	m = i + 1;
+	m = m & ((m == _window) - 1);
+
+	for (k = 1; k <= limit; ++k)
+	{
+		if (sample == samples[i] && sample_size == sizes[i])
+		{
+			zeros[i] = zeros[m] + 1;
+
+			if (zeros[i] > max_zeros && k < zeros[i])
+			{
+				max_length = k;
+				max_zeros = zeros[i];
+			}
+		}
+		zeros[m] = 0;
+
+		i = i + 1;
+		i = i & ((i == _window) - 1);
+		m = m + 1;
+		m = m & ((m == _window) - 1);
+	}
+
+	// Mask is 0xFFFFFFFF (-1) when _index is greater than 0
+	// or 0x00000000 when _index is equal to 0.
+	mask = (index == 0) - 1;
+	index = index + mask + (~mask & (_window - 1));
+
+	// Mask is 0xFFFFFFFF (-1) when limit is inferior than
+	// window -1, and 0x00000000 when is equal.
+	mask = (limit == (_window - 1)) - 1;
+	limit = ((limit + 1) & mask) + ((_window - 1) & ~mask);
+
+	// STATUS is obtained. If max_length is greater than 0
+	// and if max_zeros is greater than the max_length, which
+	// means we are in a loop (equal is the last sample of the
+	// second iteration).
+	in_loop = max_length > 0 & (max_zeros > max_length);
+
+	// We know that we are at the begining of a loop or an
+	// iteration because the module between max_zeros and
+	// max_length is 1. We also protect this operation
+	// with the last boolean sample, because if max_length
+	// were 0, the application would crash.
+	new_iteration = in_loop && (max_length == 1 || (max_zeros % max_length) == 1);
+
+	// If max_zeros is equal to max_length plus one, means
+	// that we are exactly at the point that the loop starts
+	// not the iteration.
+	new_loop = new_iteration & (previous_length != max_length);
+
+	// If the last loop size is different than 0, which means
+	// that we come from another loop, and the detected size is
+	// different than the last saved size, it means that this is
+	// an end loop status.
+	end_loop = (previous_length != max_length && previous_length != 0);
+
+	result = 0;
+	result -= !in_loop & end_loop; // -1 = end lopp
+	result += in_loop;       // 1 = in loop
+	result += new_iteration; // 2 = new iteration
+	result += new_loop;      // 3 = new loop
+	result += new_loop & end_loop; // 4 = end and new loop
+
+	// Saving the loop length if we are in a loop.
+	if (result >= 3) previous_length = max_length;
+	else if (result <= 0) previous_length = 0;
+
+	// Length of the loop is obtained.
+	level_length[level] = max_length;
+	level_previous_length[level] = previous_length;
+	level_index[level] = index;
+	level_limit[level] = limit;
+
+	return result;
+}
+#endif
 
 static unsigned int dynais_add_samples_size(unsigned int amount, unsigned int level)
 {
@@ -432,7 +487,7 @@ static unsigned int dynais_add_samples_size(unsigned int amount, unsigned int le
     limit = level_limit[level];
 
     // Pointing to the selected level vector of sizes
-    sizes = size_vec[level];
+    sizes = sizes_vec[level];
 
     // Indexing
     i = index + 2;
@@ -459,19 +514,13 @@ static int dynais_hierarchical(unsigned long sample, unsigned int size, unsigned
         return level - 1;
     }
 
-    CHRONO_START(4);
-
     // DynAIS basic algorithm call.
     level_result[level] = dynais_basic(sample, size, level);
-
-    CHRONO_END(4);
 
     // If new loop is detected, the sample and the size
     // is passed recursively to dynais_hierarchical.
     if (level_result[level] >= NEW_LOOP)
     {
-        CHRONO_START(5);
-
         // Finding the correct size of the loop. If the level
         // is 0 then is not needed, because all level 0 inputs
         // size is 1, and then is equal to level size.
@@ -480,8 +529,6 @@ static int dynais_hierarchical(unsigned long sample, unsigned int size, unsigned
         } else {
             new_sample_size = level_length[level];
         }
-
-        CHRONO_END(5);
 
         return dynais_hierarchical(sample, new_sample_size, level + 1);
     }
@@ -497,8 +544,6 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
     int result;
     int reach;
     int l, ll;
-
-    CHRONO_START(0);
 
     // Hierarchical algorithm call. The maximum level
     // reached is returned. All those values were updated
@@ -534,7 +579,6 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
             // because the only way to break a loop is with the
             // detection of a new loop.
             if (end_loop) {
-                CHRONO_END(0);
                 return END_NEW_LOOP;
             }
 
@@ -550,27 +594,24 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
 
                     if (level_result[ll] < NEW_LOOP)
                     {
-                        CHRONO_END(0);
                         return IN_LOOP;
                     }
                 }
             }
 
             if (end_loop) {
-                CHRONO_END(0);
                 return END_NEW_LOOP;
             }
 
-            CHRONO_END(0);
             return level_result[l];
         }
     }
 
-    CHRONO_END(0);
 
     // In case no loop were found: NO_LOOP or END_LOOP
     // in level 0, size and government level are 0.
     *size = 0;
     *govern_level = 0;
+
     return -end_loop;
 }
