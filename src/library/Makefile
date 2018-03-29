@@ -1,5 +1,5 @@
-CFLAGS  = -fPIC -I$(SRCDIR) -I$(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) -O2 -shared
+CFLAGS  = -fPIC -O2 -I$(SRCDIR) $(PAPI_CFLAGS)
+LDFLAGS = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 
 ######## VARS
 
@@ -21,8 +21,8 @@ COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/environment.o \
               $(SRCDIR)/common/types.a
 
-OBJS = ear_states/ear_states.o           \
-       ear_dynais/ear_dynais.o           \
+OBJS = dynais/dynais.o                   \
+	   ear_states/ear_states.o           \
        ear_dyn_inst/process_MPI.o        \
        ear_dyn_inst/ear_api.o            \
        ear_dyn_inst/MPI_intercept.o      \

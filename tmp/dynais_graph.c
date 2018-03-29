@@ -13,6 +13,15 @@
 // ./dynais_input app.dynais.trace.bin 500 5
 // scp xjaneas@172.30.7.32:app.dynais.trace.bin .
 
+/*
+ * ######## MANUAL
+dynais_graph: dynais_graph.c
+	gcc -D ANALYSIS -I ../../src/library/ -c ../../src/library/ear_dynais/ear_dynais.c -msse4.2
+	gcc -I ../../src/common/ -c ../../src/common/string_enhanced.c
+	gcc -D ANALYSIS -I /usr/include/graphviz $(CFLAGS) -o dynais_graph dynais_graph.c \
+	-lgvc -lcgraph -lcdt ear_dynais.o string_enhanced.o
+ */
+
 typedef struct chunk {
     char label[4096];
     uint crc;
