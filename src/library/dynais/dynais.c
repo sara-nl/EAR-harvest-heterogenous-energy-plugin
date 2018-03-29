@@ -80,8 +80,11 @@ int dynais_init(unsigned int window, unsigned int levels)
     _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
     _levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
 
-	#if !AVX_512
-	#define __m512i 8
+	#if AVX_512
+	unsigned int multiple = _window / 16;
+	_window = 16 * (multiple + 1);
+	#else
+	#define __m512i long
 	#endif
 
     mem_res1 = posix_memalign((void *) &p_smpls, sizeof(__m512i), sizeof(long) * window * levels);
