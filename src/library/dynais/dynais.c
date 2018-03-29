@@ -41,73 +41,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <library/ear_dynais/ear_dynais.h>
+#include <library/dynais/dynais.h>
+#include <immintrin.h> // -mavx -mfma
 
-#if ANALYSIS
-#include <nmmintrin.h>
-#endif
+// Local defines
+#define AVX_512 1
+#define ALI64 __attribute__ ((aligned (64)))
 
 // General indexes.
 unsigned int _levels;
 unsigned int _window;
-unsigned int calls;
 
 // Per level data
-unsigned long *sample_vec[MAX_LEVELS];
-unsigned int  *zero_vec[MAX_LEVELS];
-unsigned int  *size_vec[MAX_LEVELS];
-
-#if ANALYSIS
-unsigned int *crc_vec[MAX_LEVELS];
-#endif
+unsigned long *samples_vec[MAX_LEVELS];
+unsigned int  *zeros_vec[MAX_LEVELS];
+unsigned int  *sizes_vec[MAX_LEVELS];
+unsigned int  *indes_vec[MAX_LEVELS];
 
 signed int   level_result[MAX_LEVELS];
 unsigned int level_previous_length[MAX_LEVELS];
 unsigned int level_length[MAX_LEVELS];
 unsigned int level_limit[MAX_LEVELS];
 unsigned int level_index[MAX_LEVELS];
-
-#if ANALYSIS
-unsigned int dynais_loop_data(unsigned long *_samples,
-    unsigned int *_sizes,
-    unsigned int *_crcs,
-    unsigned int level,
-    unsigned int size)
-{
-    unsigned long *samples;
-    unsigned int *sizes;
-    unsigned int *crcs;
-    unsigned int limit;
-    unsigned int index;
-    unsigned int i, k;
-
-    //
-    index = level_index[level];
-    limit = level_limit[level];
-
-    //
-    samples = sample_vec[level];
-    sizes = size_vec[level];
-    crcs = crc_vec[level];
-
-    // Indexing
-    i = index + 2;
-    i = (i & ((i >= _window) - 1)) + (i > _window);
-
-    // Copying the content
-    for (k = 0; k < size; ++k)
-    {
-        _samples[k] = samples[i];
-        _sizes[k] = sizes[i];
-        _crcs[k] = crcs[i];
-
-        i = i + 1;
-        i = i & ((i == _window) - 1);
-    }
-
-    return k;
-}
-#endif
 
 //
 //
@@ -117,20 +72,22 @@ unsigned int dynais_loop_data(unsigned long *_samples,
 
 int dynais_init(unsigned int window, unsigned int levels)
 {
-    unsigned long *p_data;
-    unsigned int *p_zero, *p_size, *p_crc;
-    int mem_res1, mem_res2, mem_res3, mem_res4 = 0;
-    int i;
+    unsigned long *p_smpls;
+    unsigned int *p_zeros, *p_sizes, *p_indes;
+    int mem_res1, mem_res2, mem_res3, mem_res4;
+    int i, k;
 
     _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
     _levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
-    mem_res1 = posix_memalign((void *) &p_data, sizeof(long), sizeof(long) * window * levels);
-    mem_res2 = posix_memalign((void *) &p_zero, sizeof(long), sizeof(int) * window * levels);
-    mem_res3 = posix_memalign((void *) &p_size, sizeof(long), sizeof(int) * window * levels);
 
-    #if ANALYSIS
-    mem_res4 = posix_memalign((void *) &p_crc, sizeof(long), sizeof(int) * window * levels);
-    #endif
+	#if !AVX_512
+	#define __m512i 8
+	#endif
+
+    mem_res1 = posix_memalign((void *) &p_smpls, sizeof(__m512i), sizeof(long) * window * levels);
+    mem_res3 = posix_memalign((void *) &p_sizes, sizeof(__m512i), sizeof(int)  * window * levels);
+    mem_res2 = posix_memalign((void *) &p_zeros, sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
+    mem_res4 = posix_memalign((void *) &p_indes, sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
 
     //EINVAL = 22, ENOMEM = 12
     if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
@@ -144,27 +101,29 @@ int dynais_init(unsigned int window, unsigned int levels)
         level_result[i] = NO_LOOP;
         level_length[i] = 0;
 
-        sample_vec[i] = &p_data[i * window];
-        zero_vec[i] = &p_zero[i * window];
-        size_vec[i] = &p_size[i * window];
+		// Normal window allocations
+        samples_vec[i] = &p_smpls[i * window];
+        sizes_vec[i] = &p_sizes[i * window];
+	
+		// Extended window allocations
+        zeros_vec[i] = &p_zeros[i * (window + 8)];
+		indes_vec[i] = &p_indes[i * (window + 8)];
 
-        #if ANALYSIS
-        crc_vec[i] = &p_crc[i * window];
-        #endif
+		for (k = 0; k < window; ++k) {
+			indes_vec[i][k] = k-1;
+		}
+		indes_vec[i][0] = window - 1;
     }
-
-    return 0;
+    
+	return 0;
 }
 
 void dynais_dispose()
 {
-    free((void *) sample_vec[0]);
-    free((void *) zero_vec[0]);
-    free((void *) size_vec[0]);
-
-    #if ANALYSIS
-    free((void *) crc_vec[0]);
-    #endif
+    free((void *) samples_vec[0]);
+    free((void *) zeros_vec[0]);
+    free((void *) sizes_vec[0]);
+	free((void *) indes_vec[0]);
 }
 
 // How it works?
@@ -222,77 +181,144 @@ void dynais_dispose()
 //     But this fact just happens when two iterations
 //     of length N have passed.
 //
+#if AVX_512
 static int dynais_basic(unsigned long sample, unsigned int size, unsigned int level)
 {
-    unsigned long *samples;
-    unsigned int *zeros, *sizes, *crcs;
-    unsigned int end_loop, in_loop, new_loop, new_iteration;
-    unsigned int index, limit, previous_length, sample_size;
-    unsigned int max_length = 0, max_zeros = 0, mask;
-    unsigned int i, k, m;
-    int result = 0;
+	static unsigned int shifts[16] ALI64 = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15 };
+	static unsigned int max_zeros_array[16] ALI64;
+	static unsigned int max_indes_array[16] ALI64;
 
-    // Getting level data (index, limit...)
-    index = level_index[level];
-    limit = level_limit[level];
-    previous_length = level_previous_length[level];
+	unsigned int mmask_operator;
+	unsigned int max_length = 0;
+	unsigned int max_zeros = 0;
+	unsigned int index;
+	unsigned int limit;
+	unsigned int i, k;
+	int result;
 
-    samples = sample_vec[level];
-    zeros = zero_vec[level];
-    sizes = size_vec[level];
+	unsigned long *samples;
+	unsigned int *sizes;
+	unsigned int *zeros;
+	unsigned int *indes;
 
-    #if ANALYSIS
-    crcs = crc_vec[level];
-    #endif
+	__m512i max_zeros_block_aux;
+	__m512i max_indes_block_aux;
+	__m512i max_zeros_block;
+	__m512i max_indes_block;
+	__m512i samples_block_1;
+	__m512i samples_block_2;
+	__m512i sample_replica;
+	__m512i sizes_block;
+	__m512i size_replica;
+	__m512i zeros_block;
+	__m512i index_block;
+	__m512i shift_replica;
+	__m512i one_replica;
+	
+	__mmask8 mmask_test1_1;
+	__mmask8 mmask_test1_2;
+	__mmask16 mmask_test1;
+	__mmask16 mmask_test2;
 
-    sample_size = size;
+	/*
+	 * Phase 0, initialization
+	 */
+
+	index   		= level_index[level];
+	limit   		= level_limit[level];
+	samples 		= samples_vec[level];
+	sizes   		= sizes_vec[level];
+	zeros   		= zeros_vec[level];
+	indes   		= indes_vec[level];
+
+	samples[index]  = 0;
+	sizes[index]    = 0;
+	zeros[_window]  = zeros[0];
+	indes[_window]  = indes[0];
+
+	sample_replica  = _mm512_set1_epi64(sample);
+	size_replica    = _mm512_set1_epi32(size);
+	shift_replica   = _mm512_load_si512((__m512i *) &shifts);
+	one_replica     = _mm512_set1_epi32(1);
+	max_zeros_block = _mm512_setzero_si512();
+	max_indes_block = _mm512_set1_epi32(0xFFFFFFFF);
+
+	/*
+	 * Phase 1, computation
+	 */
+
+	for (k = 0, i = 0; k < _window; k += 16, i += 1)
+	{
+		//
+		samples_block_1 = _mm512_load_si512((__m512i *) &samples[k]);
+		samples_block_2 = _mm512_load_si512((__m512i *) &samples[k + 8]);
+		sizes_block     = _mm512_load_si512((__m512i *) &sizes[k]);
+	
+		//	
+		mmask_test1_1 = _mm512_cmp_epu64_mask(samples_block_1, sample_replica, _MM_CMPINT_EQ);
+		mmask_test1_2 = _mm512_cmp_epu64_mask(samples_block_2, sample_replica, _MM_CMPINT_EQ);
+		
+		//
+		mmask_operator = ((int) mmask_test1_2 << 8) | ((int) mmask_test1_1);	
+		mmask_test1    = _mm512_int2mask(mmask_operator);
+
+		//
+		mmask_test1 = _mm512_mask_cmp_epi32_mask(mmask_test1, sizes_block, size_replica, _MM_CMPINT_EQ);
+	
+		//
+     	zeros_block = _mm512_load_si512((__m512i *) &zeros[k]);
+		index_block = _mm512_load_si512((__m512i *) &indes[k]);
+		
+        // Round buffer
+        zeros_block = _mm512_permutevar_epi32(shift_replica, zeros_block);
+        index_block = _mm512_permutevar_epi32(shift_replica, index_block);
+
+		zeros_block = _mm512_mask_set1_epi32(zeros_block, 0x8000, zeros[k + 16]);
+		index_block = _mm512_mask_set1_epi32(index_block, 0x8000, indes[k + 16]);
+		
+		// 
+     	zeros_block = _mm512_maskz_add_epi32(mmask_test1, zeros_block, one_replica);
+
+		_mm512_store_si512 ((__m512i *) &zeros[k], zeros_block);
+        _mm512_store_si512 ((__m512i *) &indes[k], index_block);
+
+		//
+		mmask_test2 = _mm512_cmp_epi32_mask(index_block, zeros_block, _MM_CMPINT_LT);
+
+		if (mmask_test2 == 0) continue;
+
+		//	
+		max_zeros_block_aux = _mm512_maskz_mov_epi32(mmask_test2, zeros_block);
+		max_indes_block_aux = _mm512_maskz_mov_epi32(mmask_test2, index_block); 
+		
+		// - max_zeros_provisional[i]  > max_zeros[i]: obligadamente reemplazable
+		// - max_zeros_provisional[i] == max_zeros[i]: posiblemente reemplazable
+		mmask_test2 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_LT);	
+		mmask_test2 = _mm512_mask_cmp_epu32_mask(mmask_test2, max_indes_block_aux, max_indes_block, _MM_CMPINT_LT);
+	
+		//	
+		max_zeros_block = _mm512_mask_mov_epi32(max_zeros_block, mmask_test2, max_zeros_block_aux);
+		max_indes_block = _mm512_mask_mov_epi32(max_indes_block, mmask_test2, max_indes_block_aux);
+	}
+
+	max_zeros      		= _mm512_reduce_max_epu32(max_zeros_block);
+	max_zeros_block_aux	= _mm512_set1_epi32(max_zeros);
+	mmask_test2     	= _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_EQ);
+	max_length      	= _mm512_mask_reduce_min_epu32(mmask_test2, max_indes_block);
+
+	/*
+	 * Phase 2, evaluation
+	 */
+
+	unsigned int end_loop, in_loop, new_loop, new_iteration;
+	unsigned int previous_length;
+	unsigned int mask;
+
+	previous_length = level_previous_length[level];
+    samples[index] = sample; 
     sizes[index] = size;
-    samples[index] = sample;
 
-    // Indexing
-    i = index + 1;
-    i = i & ((i == _window) - 1);
-    m = i + 1;
-    m = m & ((m == _window) - 1);
-
-    for (k = 1; k <= limit; ++k)
-    {
-	if (sample == samples[i] && sample_size == sizes[i])
-        {
-            zeros[i] = zeros[m] + 1;
-
-            if (zeros[i] > max_zeros && k < zeros[i])
-            {
-                max_length = k;
-                max_zeros = zeros[i];
-
-                // Caution, CRC code isn't implemented inter-level.
-                // To do that there are two possibilities:
-                // - Use the CRC code as upper level sample.
-                // - Initialize CRC vector with the level number.
-                #if ANALYSIS
-                crcs[i] = crcs[m];
-                #endif
-            }
-            #if ANALYSIS
-            else {
-                crcs[i] = _mm_crc32_u32(crcs[m], sample);
-            }
-            #endif
-        }
-        zeros[m] = 0;
-
-	#if ANALYSIS
-        crcs[m] = 0;
-	#endif
-
-        i = i + 1;
-        i = i & ((i == _window) - 1);
-        m = m + 1;
-        m = m & ((m == _window) - 1);
-    }
-
-    // Mask is 0xFFFFFFFF (-1) when _index is greater than 0
+	// Mask is 0xFFFFFFFF (-1) when _index is greater than 0
     // or 0x00000000 when _index is equal to 0.
     mask = (index == 0) - 1;
     index = index + mask + (~mask & (_window - 1));
@@ -345,6 +371,111 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
     return result;
 }
+#else
+static int dynais_basic(unsigned long sample, unsigned int size, unsigned int level)
+{
+	unsigned long *samples;
+	unsigned int *zeros, *sizes, *ks;
+	unsigned int end_loop, in_loop, new_loop, new_iteration;
+	unsigned int index, limit, previous_length, sample_size;
+	unsigned int max_length = 0, max_zeros = 0, mask;
+	unsigned int i, j, k, m;
+	int result = 0;
+
+	// Getting level data (index, limit...)
+	index = level_index[level];
+	limit = level_limit[level];
+	previous_length = level_previous_length[level];
+
+	samples = samples_vec[level];
+	zeros = zeros_vec[level];
+	sizes = sizes_vec[level];
+	ks    = indes_vec[level];
+
+	sample_size = size;
+	sizes[index] = size;
+	samples[index] = sample;
+
+	// Indexing
+	i = index + 1;
+	i = i & ((i == _window) - 1);
+	m = i + 1;
+	m = m & ((m == _window) - 1);
+
+	for (k = 1; k <= limit; ++k)
+	{
+		if (sample == samples[i] && sample_size == sizes[i])
+		{
+			zeros[i] = zeros[m] + 1;
+
+			if (zeros[i] > max_zeros && k < zeros[i])
+			{
+				max_length = k;
+				max_zeros = zeros[i];
+			}
+		}
+		zeros[m] = 0;
+
+		i = i + 1;
+		i = i & ((i == _window) - 1);
+		m = m + 1;
+		m = m & ((m == _window) - 1);
+	}
+
+	// Mask is 0xFFFFFFFF (-1) when _index is greater than 0
+	// or 0x00000000 when _index is equal to 0.
+	mask = (index == 0) - 1;
+	index = index + mask + (~mask & (_window - 1));
+
+	// Mask is 0xFFFFFFFF (-1) when limit is inferior than
+	// window -1, and 0x00000000 when is equal.
+	mask = (limit == (_window - 1)) - 1;
+	limit = ((limit + 1) & mask) + ((_window - 1) & ~mask);
+
+	// STATUS is obtained. If max_length is greater than 0
+	// and if max_zeros is greater than the max_length, which
+	// means we are in a loop (equal is the last sample of the
+	// second iteration).
+	in_loop = max_length > 0 & (max_zeros > max_length);
+
+	// We know that we are at the begining of a loop or an
+	// iteration because the module between max_zeros and
+	// max_length is 1. We also protect this operation
+	// with the last boolean sample, because if max_length
+	// were 0, the application would crash.
+	new_iteration = in_loop && (max_length == 1 || (max_zeros % max_length) == 1);
+
+	// If max_zeros is equal to max_length plus one, means
+	// that we are exactly at the point that the loop starts
+	// not the iteration.
+	new_loop = new_iteration & (previous_length != max_length);
+
+	// If the last loop size is different than 0, which means
+	// that we come from another loop, and the detected size is
+	// different than the last saved size, it means that this is
+	// an end loop status.
+	end_loop = (previous_length != max_length && previous_length != 0);
+
+	result = 0;
+	result -= !in_loop & end_loop; // -1 = end lopp
+	result += in_loop;       // 1 = in loop
+	result += new_iteration; // 2 = new iteration
+	result += new_loop;      // 3 = new loop
+	result += new_loop & end_loop; // 4 = end and new loop
+
+	// Saving the loop length if we are in a loop.
+	if (result >= 3) previous_length = max_length;
+	else if (result <= 0) previous_length = 0;
+
+	// Length of the loop is obtained.
+	level_length[level] = max_length;
+	level_previous_length[level] = previous_length;
+	level_index[level] = index;
+	level_limit[level] = limit;
+
+	return result;
+}
+#endif
 
 static unsigned int dynais_add_samples_size(unsigned int amount, unsigned int level)
 {
@@ -356,7 +487,7 @@ static unsigned int dynais_add_samples_size(unsigned int amount, unsigned int le
     limit = level_limit[level];
 
     // Pointing to the selected level vector of sizes
-    sizes = size_vec[level];
+    sizes = sizes_vec[level];
 
     // Indexing
     i = index + 2;
@@ -476,9 +607,11 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
         }
     }
 
+
     // In case no loop were found: NO_LOOP or END_LOOP
     // in level 0, size and government level are 0.
     *size = 0;
     *govern_level = 0;
+
     return -end_loop;
 }

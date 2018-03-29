@@ -1,9 +1,5 @@
 CFLAGS      = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
 
-IC = icc
-IC_FFLAS = -qopenmp -axCORE_AVX512
-
-
 ######## FILES
 
 HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
@@ -61,7 +57,6 @@ simd_power_metrics_openmp: simd_power_metrics_openmp.c simd_tests.o $(PAPI_OBJS)
 	$(CC) -fopenmp -malign-double -march=native  $(CFLAGS) -o simd_power_metrics_openmp simd_power_metrics_openmp.c \
 	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) simd_tests.o \
 	$(HARDWARE_OBJS) $(NODE_ENERGY_LIBS) $(PAPI_OBJS) $(FREQUENCY_OBJS)
-
 
 energy_1_second: energy_1_second.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 	$(CC) $(CFLAGS) -o energy_1_second energy_1_second.c $(IPMI_LDFLAGS) $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)

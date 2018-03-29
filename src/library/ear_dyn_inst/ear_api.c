@@ -24,7 +24,7 @@
 // EAR includes
 #include <control/frequency.h>
 #include <library/common/externs_alloc.h>
-#include <library/ear_dynais/ear_dynais.h>
+#include <library/dynais/dynais.h>
 #include <library/ear_states/ear_states.h>
 #include <library/ear_dyn_inst/MPI_types.h>
 #include <library/ear_dyn_inst/MPI_calls_coded.h>
