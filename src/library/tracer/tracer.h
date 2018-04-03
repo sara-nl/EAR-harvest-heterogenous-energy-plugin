@@ -44,21 +44,21 @@
 
 #ifdef EAR_GUI
 	// Executed at application start/end
-	void traces_init(int gwho,int lwho,char *appname,char *nodename,int nodes, int mpis,int ppnode);
-	void traces_end(int gwho,int lwho,unsigned long int total_ener);
+	void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn);
+	void traces_end(int global_rank,int local_rank, unsigned long int total_ener);
 
 	//Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states
-	void traces_new_signature(int gwho,int lwho,double seconds,double CPI,double TPI,double GBS,double POWER);
-	void traces_frequency(int gwho, int lwho,unsigned long f);
-	void traces_PP(int gwho,int lwho,double seconds,double CPI,double POWER);
+	void traces_frequency(int global_rank, int local_rank, unsigned long f);
+	void traces_new_signature(int global_rank, int local_rank, double seconds, double cpi, double tpi, double gbs, double power);
+	void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power);
 
 	// Executed when each time a new loop is detected, the loop ends, or a new iteration are reported
-	void traces_new_n_iter(int gwho,int lwho,int period_id,int period_size, int iterations,int my_state);
-	void traces_new_period(int gwho,int lwho,int period_id);
-	void traces_end_period(int gwho,int lwho);
+	void traces_new_n_iter(int global_rank, int local_rank, int period_id, int loop_size, int iterations);
+	void traces_new_period(int global_rank, int local_rank, int period_id);
+	void traces_end_period(int global_rank, int local_rank);
 
 	// Executed at each mpi_call
-	void traces_mpi_call(int gwho,int lwho, ulong timestamp, ulong event, ulong arg1,ulong arg2,ulong arg3);
+	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
 #else
 	#define traces_init(g,l,a,n,n1,m,p)
 	#define traces_new_n_iter(g,l,p,s,i,st)
