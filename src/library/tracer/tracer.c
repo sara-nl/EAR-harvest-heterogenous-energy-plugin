@@ -20,7 +20,7 @@
 
 #include <control/frequency.h>
 #include <metrics/papi/generics.h>
-#include <library/ear_gui/ear_gui.h>
+#include <library/tracer/tracer.h>
 #include <library/ear_states/ear_states.h>
 #include <library/ear_metrics/ear_metrics.h>
 #include <library/common/externs.h>

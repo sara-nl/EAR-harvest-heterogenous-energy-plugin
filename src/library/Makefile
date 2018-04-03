@@ -1,12 +1,12 @@
 CFLAGS  = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
 LDFLAGS = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
+DEBUG   = -DEAR_GUI
 
 ######## VARS
 
 export DIR
 export CFLAGS
 export LDFLAGS
-
 ######## FILES
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
@@ -23,15 +23,15 @@ COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
 
 TRACE_OBJS = ear_states/ear_states.o \
              ear_dyn_inst/ear_api.o \
-             ear_gui/ear_gui.o
+             tracer/tracer.o
 
 OBJS = dynais/dynais.o                   \
+       tracer/tracer.o                   \
 	   ear_states/ear_states.o           \
        ear_dyn_inst/process_MPI.o        \
        ear_dyn_inst/ear_api.o            \
        ear_dyn_inst/MPI_intercept.o      \
        ear_dyn_inst/MPI_interface.o      \
-       ear_gui/ear_gui.o                 \
        ear_models/ear_models.o           \
        ear_metrics/ear_metrics.o
 
@@ -41,7 +41,7 @@ BINARIES = libear.so libeart.so
 
 .PHONY:
 
-all: libear.so 
+all: libear.so libeart.so 
 
 traces: libeart.so
 
@@ -56,7 +56,6 @@ libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 
 touchy:
 	touch $(TRACE_OBJS)
-	DEBUG += -DEAR_GUI
 	export DEBUG
 
 libeart.so: touchy $(TRACE_OBJS)
