@@ -203,7 +203,7 @@ void ear_init()
 	gettimeofday(&pmpi_app_begin_time, NULL);
 	fflush(stderr);
 
-	traces_init(ear_my_rank, my_id, ear_app_name, application.node_id, num_nodes, my_size, ppnode);
+	traces_init(ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
 	ear_print_lib_environment();
@@ -279,7 +279,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 					ear_level, ear_event, ear_loop_size, ear_iterations);
 			}
 
-			traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());
+			traces_new_n_iter(ear_my_rank, my_id, ear_event, ear_loop_size, ear_iterations);
 			states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event);
 			break;
 		case END_LOOP:

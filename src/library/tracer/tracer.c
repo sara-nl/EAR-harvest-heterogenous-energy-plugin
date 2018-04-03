@@ -34,6 +34,7 @@
 #define APPLICATION_TRACE	1
 #define APP_INFO_FILE		"Appinfo.txt"
 #define ARCH_INFO_FILE		"Archinfo.txt"
+const char *__NAME__ =		"TRACER"
 
 static char write_buffer[4096];
 static long long first_sample, sample_time;
@@ -41,7 +42,7 @@ static long long sample, last_sample = 0;
 static int trace_type = DYNAIS_TRACE;
 static int fd_evs;
 
-#define CREATE_FLAGS 		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+#define CREATE_FLAGS S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
 
 #define OPEN_FILE(_filename, _fd) 															 \
 	if ((_fd = open(_filename, O_WRONLY | O_CREAT | O_TRUNC, CREATE_FLAGS)) < 0) {	         \													\
@@ -80,14 +81,14 @@ static void write_archinfo_info_file(char *pathname)
 
 	//
 	if (write(fd, write_buffer, strlen(write_buffer)) != strlen(write_buffer)) {
-		VERBOSE_N(0, "ERROR while writting trace file %s (%s)", filenameArch, strerror(errno));
+		VERBOSE_N(0, "ERROR while writting trace file %s (%s)", filename, strerror(errno));
 		exit(1);
 	}
 
 	close(fd);
 }
 
-static void write_app_info_file(char *pathname)
+static void write_app_info_file(char *pathname, int nodes, int mpis, int ppn)
 {
 	char filename[PATH_MAX];
 	int fd;
@@ -96,7 +97,7 @@ static void write_app_info_file(char *pathname)
 	OPEN_FILE(filename, fd);
 
 	//
-	sprintf(write_buffer, "%s\n%d\n%d\n%d\n%s\n", appname, nodes, mpis, ppnode, application.policy);
+	sprintf(write_buffer, "%s\n%d\n%d\n%d\n%s\n", appname, nodes, mpis, ppn, application.policy);
 
 	//
 	if (write(fd, write_buffer, strlen(write_buffer)) != strlen(write_buffer)) {
@@ -111,8 +112,7 @@ static void open_event_file_application(char *pathname)
 {
 	char filename[PATH_MAX];
 
-	// ev info
-	sprintf(filename, "%s/%d.%s.txt", pathname, global_rank, nodename);
+	sprintf(filename, "%s/%d.%s.txt", pathname, global_rank, application.node_id);
 	OPEN_FILE(filename, fd_evs);
 
 	sample_time = 0;
@@ -129,12 +129,12 @@ static void open_event_file_dynais(char *pathname)
 {
 	char filename[PATH_MAX];
 
-	sprintf(filename, "%s/%d.%s", pathname, global_rank, nodename);
-	OPEN_FILE(filename, fd_evs);
+	sprintf(filename, "%s/%d.%s", pathname, global_rank, application.nodename);
+	OPEN_FILE(filename, fd_evs_dyn);
 }
 
 // ear_api.c
-void traces_init(int global_rank, int local_rank, char *appname, char *nodename, int nodes, int mpis, int ppnode)
+void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
 	char *pathname;
 
@@ -143,7 +143,7 @@ void traces_init(int global_rank, int local_rank, char *appname, char *nodename,
 
 	if (global_rank == 0)
 	{
-		write_app_info_file(pathname);
+		write_app_info_file(pathname, nodes, mpis, ppn);
 		write_archinfo_info_file(pathname);
 	}
 
@@ -180,12 +180,12 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 }
 
 // ear_states.c
-void traces_new_period(int global_rank, int local_rank, int period_id)
+void traces_new_period(int global_rank, int local_rank, int loop_id)
 {
 }
 
 // ear_api.c
-void traces_new_n_iter(int global_rank,int local_rank, int period_id, int root_size, int iterations)
+void traces_new_n_iter(int global_rank, int local_rank, int period_id, int loop_size, int iterations)
 {
 	WHO_TRACES(0, APPLICATION_TRACE);
 
@@ -198,7 +198,7 @@ void traces_new_n_iter(int global_rank,int local_rank, int period_id, int root_s
 	{
 		sprintf(write_buffer,"%llu;%u;%u\n%llu;%u;%u\n%llu;%u;%u\n",
 			sample_time, PERIOD_ID, period_id, sample_time, PERIOD_LENGTH,
-			root_size, sample_time, PERIOD_ITERATIONS, iterations);
+			loop_size, sample_time, PERIOD_ITERATIONS, iterations);
 
 		write(fd_evs, write_buffer, strlen(write_buffer));
 		last_sample = sample_time;
@@ -218,23 +218,23 @@ void traces_end_period(int global_rank, int local_rank)
 
 // ear_states.c
 void traces_new_signature(int global_rank, int local_rank, double seconds,
-	double CPI, double TPI, double GBS, double POWER)
+	double cpi, double tpi, double gbs, double power)
 {
 	WHO_TRACES(0, APPLICATION_TRACE);
 
 	WRITE_TRACE("%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n",
-		sample_time, PERIOD_TIME, seconds*1000000, sample_time, PERIOD_CPI, CPI, sample_time,
-		PERIOD_TPI, TPI, sample_time, PERIOD_GBS, GBS, sample_time, PERIOD_POWER, POWER);
+		sample_time, PERIOD_TIME, seconds*1000000, sample_time, PERIOD_cpi, cpi, sample_time,
+		PERIOD_tpi, tpi, sample_time, PERIOD_gbs, gbs, sample_time, PERIOD_power, power);
 }
 
 // ear_states.c
-void traces_PP(int global_rank, int local_rank, double seconds, double CPI, double POWER)
+void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power)
 {
 	WHO_TRACES(0, APPLICATION_TRACE);
 
 	WRITE_TRACE("%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n",
 		sample_time, PERIOD_TIME_PROJ, seconds * 1000000, sample_time,
-		PERIOD_CPI_PROJ, CPI, sample_time, PERIOD_POWER_PROJ, POWER);
+		PERIOD_cpi_PROJ, cpi, sample_time, PERIOD_power_PROJ, power);
 }
 
 // ear_api.c, ear_states.c
@@ -257,6 +257,6 @@ void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulon
 	trace_data[2] = (unsigned long) a3;
 	trace_data[3] = (unsigned long) ev;
 	trace_data[4] = (unsigned long) time;
-	write(fd_evs, trace_data, sizeof(trace_data));
+	write(fd_evs_dyn, trace_data, sizeof(trace_data));
 }
 #endif
