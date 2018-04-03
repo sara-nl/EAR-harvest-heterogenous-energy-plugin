@@ -204,7 +204,7 @@ void ear_init()
 	fflush(stderr);
 
 	traces_init(ear_my_rank, my_id, ear_app_name, application.node_id, num_nodes, my_size, ppnode);
-	traces_frequency(ear_my_rank,my_id,ear_current_freq);
+	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
 	ear_print_lib_environment();
 	DEBUG_F(1, "EAR initialized successfully");
@@ -231,8 +231,12 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 		ear_debug(3,"EAR(%s) EAR executing before an MPI Call\n",__FILE__);
 
-		traces_mpi_call(ear_my_rank, my_id, (unsigned long) PAPI_get_real_usec(), (unsigned long) buf,
-						(unsigned long) dest, (unsigned long) call_type, (unsigned long) ear_event);
+		traces_mpi_call(ear_my_rank, my_id,
+						(unsigned long) PAPI_get_real_usec(),
+						(unsigned long) buf,
+						(unsigned long) dest,
+						(unsigned long) call_type,
+						(unsigned long) ear_event);
 
 		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
 		#ifdef MEASURE_DYNAIS_OV

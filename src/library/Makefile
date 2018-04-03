@@ -21,6 +21,10 @@ COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/environment.o \
               $(SRCDIR)/common/types.a
 
+TRACE_OBJS = ear_states/ear_states.o \
+             ear_dyn_inst/ear_api.o \
+             ear_gui/ear_gui.o
+
 OBJS = dynais/dynais.o                   \
 	   ear_states/ear_states.o           \
        ear_dyn_inst/process_MPI.o        \
@@ -50,17 +54,13 @@ traces: libeart.so
 libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 
-libeart.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
-	touch ear_states/ear_states.c
-	touch ear_dyn_inst/ear_api.c
-	touch ear_gui/ear_gui.c
-	$(MAKE) -C ear_states CFLAGS='$(CFLAGS) -DEAR_GUI' ear_states.o
-	$(MAKE) -C ear_gui CFLAGS='$(CFLAGS) -DEAR_GUI' ear_gui.o
-	$(MAKE) -C ear_dyn_inst CFLAGS='$(CFLAGS) -DEAR_GUI' ear_api.o
+touchy:
+	touch $(TRACE_OBJS)
+	DEBUG += -DEAR_GUI
+	export DEBUG
+
+libeart.so: touchy $(TRACE_OBJS)
 	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
-	touch ear_states/ear_states.c
-	touch ear_dyn_inst/ear_api.c
-	touch ear_gui/ear_gui.c
 
 ######## OPTIONS
 
