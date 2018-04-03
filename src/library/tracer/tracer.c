@@ -34,6 +34,7 @@
 #define APPLICATION_TRACE	1
 #define APP_INFO_FILE		"Appinfo.txt"
 #define ARCH_INFO_FILE		"Archinfo.txt"
+const char *__NAME__ =		"TRACER";
 
 static char write_buffer[4096];
 static long long first_sample, sample_time;
@@ -44,7 +45,7 @@ static int fd_evs;
 #define CREATE_FLAGS 		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
 
 #define OPEN_FILE(_filename, _fd) 															 \
-	if ((_fd = open(_filename, O_WRONLY | O_CREAT | O_TRUNC, CREATE_FLAGS)) < 0) {	         \													\
+	if ((_fd = open(_filename, O_WRONLY | O_CREAT | O_TRUNC, CREATE_FLAGS)) < 0) {	         \
 		VERBOSE_N(0, "ERROR while creating trace file %s (%s)", _filename, strerror(errno)); \
 		exit(1);																			 \
 	}
@@ -163,18 +164,16 @@ void traces_init(int global_rank, int local_rank, char *appname, char *nodename,
 	sample = PAPI_get_real_usec();							\
 	sample_time = metrics_usecs_diff(sample,first_sample);	\
 	sprintf(write_buffer, format, __VA_ARGS__);				\
-	write(fd_evs, write_buffer, strlen(write_buffer));	\
+	write(fd_evs, write_buffer, strlen(write_buffer));		\
 	last_sample = sample_time;								\
 }
-
-#define WHO_TRACES (_local_rank, _global_rank) \
-	if (local_rank != 0) return;               \
-	if (trace_type != APPLICATION_TRACE) return;
 
 // ear_api.c
 void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
-	WHO_TRACES(0, APPLICATION_TRACE);
+    if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
+        return; 
+    }
 
 	WRITE_TRACE("%llu;%u;%llu\n", sample_time, APP_ENERGY, total_energy);
 }
@@ -187,7 +186,9 @@ void traces_new_period(int global_rank, int local_rank, int period_id)
 // ear_api.c
 void traces_new_n_iter(int global_rank,int local_rank, int period_id, int root_size, int iterations)
 {
-	WHO_TRACES(0, APPLICATION_TRACE);
+	if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
+        return; 
+    }
 
 	//
 	sample = PAPI_get_real_usec();
@@ -210,7 +211,9 @@ void traces_new_n_iter(int global_rank,int local_rank, int period_id, int root_s
 // ear_api.c
 void traces_end_period(int global_rank, int local_rank)
 {
-	WHO_TRACES(0, APPLICATION_TRACE);
+    if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
+        return; 
+    }
 
 	WRITE_TRACE("%llu;%u;%u\n%llu;%u;%u\n%llu;%u;%u\n", sample_time,PERIOD_ID, 0,
 		sample_time, PERIOD_LENGTH,0,sample_time,PERIOD_ITERATIONS, 0);
@@ -220,7 +223,9 @@ void traces_end_period(int global_rank, int local_rank)
 void traces_new_signature(int global_rank, int local_rank, double seconds,
 	double CPI, double TPI, double GBS, double POWER)
 {
-	WHO_TRACES(0, APPLICATION_TRACE);
+    if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
+        return; 
+    }
 
 	WRITE_TRACE("%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n",
 		sample_time, PERIOD_TIME, seconds*1000000, sample_time, PERIOD_CPI, CPI, sample_time,
@@ -230,17 +235,21 @@ void traces_new_signature(int global_rank, int local_rank, double seconds,
 // ear_states.c
 void traces_PP(int global_rank, int local_rank, double seconds, double CPI, double POWER)
 {
-	WHO_TRACES(0, APPLICATION_TRACE);
+    if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
+        return; 
+    }
 
 	WRITE_TRACE("%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n",
 		sample_time, PERIOD_TIME_PROJ, seconds * 1000000, sample_time,
-		PERIOD_CPI_PROJ, CPI, sample_time, PERIOD_POWER_PROJ, POWER);
+		PERIOD_CPI_PROJ, cpi, sample_time, PERIOD_POWER_PROJ, power);
 }
 
 // ear_api.c, ear_states.c
 void traces_frequency(int global_rank, int local_rank, unsigned long f)
 {
-	WHO_TRACES(0, APPLICATION_TRACE);
+	if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
+		return;
+	}
 
 	WRITE_TRACE("%llu;%u;%u\n", sample_time, PERIOD_FREQ, f);
 }
@@ -250,7 +259,9 @@ void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulon
 {
 	ulong trace_data[5];
 
-	WHO_TRACES(0, DYNAIS_TRACE);
+	if (global_rank != 0 || trace_type != DYNAIS_TRACE) {
+		return;
+	}
 	
 	trace_data[0] = (unsigned long) a1;
 	trace_data[1] = (unsigned long) a2;
