@@ -286,7 +286,7 @@ static int local_update_ld_preload(spank_t sp)
 
     // Appending libraries to LD_PRELOAD
     if (isenv_local("EAR_TRACES", "1")) {
-        sprintf(buffer, "%s/%s", buffer, EAR_LIB_TRAC_PATH);
+        sprintf(buffer, "%s/%s", buffer, EAR_TRACE_LIB_PATH);
     } else {
         sprintf(buffer, "%s/%s", buffer, EAR_LIB_PATH);
     }

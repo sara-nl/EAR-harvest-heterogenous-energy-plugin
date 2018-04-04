@@ -129,7 +129,12 @@ if test -z "$MPICC"; then
     MPICC=mpicc
 fi
 
+if test -z "$VERSION_TYPE"; then
+	VERSION_TYPE=0
+fi
+
 AC_SUBST(MPICC)
+AC_SUBST(VERSION_TYPE)
 
 ##########
 # OUTPUT #

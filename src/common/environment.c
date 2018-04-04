@@ -205,13 +205,17 @@ unsigned long getenv_ear_p_state()
 			conf_ear_p_state = DEFAULT_MAX_P_STATE;
 			break;
 		case MIN_TIME_TO_SOLUTION:
-			conf_ear_p_state = getenv("EAR_MIN_P_STATE");
+			my_pstate = getenv("EAR_MIN_P_STATE");
 
-			if (conf_ear_p_state == NULL) {
+			if (my_pstate == NULL) {
 				conf_ear_p_state = DEFAULT_MIN_P_STATE;
+			} else {
+				conf_ear_p_state = atoi(my_pstate);
 			}
 			break;
 		case MONITORING_ONLY:
+			my_pstate = getenv("EAR_P_STATE");
+			
 			if (my_pstate != NULL)
 			{
 				conf_ear_p_state=atoi(my_pstate);
