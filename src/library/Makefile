@@ -31,6 +31,10 @@ OBJS = dynais/dynais.o               \
        tracer/tracer.o               \
 	   states/states.o               \
        models/models.o               \
+       models/monitoring.o               \
+       models/min_energy.o               \
+       models/min_time.o               \
+	   models/sig_projections.o		\
        metrics/metrics.o             \
        mpi_intercept/process_MPI.o   \
        mpi_intercept/MPI_intercept.o \

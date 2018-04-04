@@ -9,6 +9,7 @@ export DIR
 
 TYPES_OBJS = types/application.o \
              types/projection.o \
+             types/coefficient.o \
 			 types/log.o
 
 BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o remote_daemon_client.o 

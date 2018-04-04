@@ -37,11 +37,13 @@ void init_log()
 	time_t curr_time;
     struct tm *current_t;
     char s[64];
+	char nodename[128];
 
 	if (fd_log>=0) return;
 	time(&curr_time);
 	my_mask=umask(0);	
-	sprintf(log_name,"EAR.log");
+	gethostname(nodename, sizeof(nodename));
+	sprintf(log_name,"EAR.%s.log",nodename);
 	fprintf(stderr,"Creating %s log file\n",log_name);
 	fd_log=open(log_name,O_WRONLY|O_APPEND|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd_log<0){

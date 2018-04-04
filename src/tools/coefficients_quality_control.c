@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <common/types/application.h>
+#include <common/types/coefficient.h>
 #include <common/types/projection.h>
 #include <common/string_enhanced.h>
 #include <common/states.h>

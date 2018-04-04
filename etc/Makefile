@@ -22,7 +22,7 @@ install:
 	cp -n slurm/plugstack.conf $(DESTDIR)/etc/slurm/
 	cp    scripts/examples/* $(DESTDIR)/etc/scripts/examples/
 	cp    scripts/running/* $(DESTDIR)/etc/scripts/running/
-	ln -s $(DESTDIR)/etc/scripts/running/mpi_exec.sh $(DESTDIR)/bin/mpi_exec.sh
+	cp    scripts/running/mpi_exec.sh $(DESTDIR)/bin/mpi_exec.sh
 	cp 	  scripts/running/ssh_daemon_exit.sh $(DESTDIR)/sbin
 	cp 	  scripts/running/ssh_daemon_start.sh $(DESTDIR)/sbin
 	cp    scripts/learning/learning_phase_compile.sh $(DESTDIR)/etc/scripts/learning/learning_phase_compile.sh

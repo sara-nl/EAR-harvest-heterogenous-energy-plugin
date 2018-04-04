@@ -1,49 +1,80 @@
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
+/*    This program is part of the Energy Aware Runtime (EAR).
+    It has been developed in the context of the BSC-Lenovo Collaboration project.
+
+    Copyright (C) 2017
+        BSC Contact Julita Corbalan (julita.corbalan@bsc.es)
+        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
+
+*/
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 #include <common/types/projection.h>
-#include <common/states.h>
+#include <control/frequency.h>
 
-#define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
-#define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
 
-int read_coefficients_file(char *path, coefficient_t **coeffs, int size)
+
+// Function declarations
+static projection_t *projections;
+
+uint create_projections(uint p_states)
 {
-    coefficient_t *coeffs_aux;
-    int ret, fd;
+	// Projections allocation
+    projections = (projection_t *) malloc(sizeof(projection_t) * p_states);
 
-    if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+    if (projections == NULL) {
+        ear_verbose(0, "EAR: Error allocating memory for perf. projections\n");
+        exit(1);
     }
-
-    if (size <= 0) {
-        size = lseek(fd, 0, SEEK_END);
-        lseek(fd, 0, SEEK_SET);
-    }
-
-    // Allocating memory
-    coeffs_aux = (coefficient_t *) malloc(size);
-
-    if (coeffs_aux == NULL)
-    {
-        close(fd);
-        return EAR_ALLOC_ERROR;
-    }
-
-    // Reset the memory to zeroes
-    memset(coeffs_aux, 0, sizeof(coefficient_t));
-
-    if ((ret = read(fd, coeffs_aux, size)) != size)
-    {
-        close(fd);
-        free(coeffs_aux);
-        return EAR_READ_ERROR;
-    }
-    close(fd);
-
-    *coeffs = coeffs_aux;
-    return (size / sizeof(coefficient_t));
 }
+
+projection_t *performance_projection(ulong f)
+{
+    ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,frequency_freq_to_pstate(f));
+    return &projections[frequency_freq_to_pstate(f)];
+}
+void set_performance_projection(int i, double TP, double PP, double CPI)
+{
+        ear_debug(4,"EAR(%s):: Setting PP for entry %d (%lf,%lf,%lf)\n",__FILE__,i,TP,PP,CPI);
+        projections[i].Time=TP;
+        projections[i].Power=PP;
+        projections[i].CPI=CPI;
+
+}
+void reset_performance_projection(uint p_states)
+{
+    ear_debug(4,"EAR(%s) :: ResetperformanceProjection\n",__FILE__);
+    int i;
+    for (i=0;i<p_states;i++){
+        projections[i].Time=0;
+        projections[i].Power=0;
+        projections[i].CPI=0;
+    }
+
+}
+
+
+
+double power_projection(double power, double tpi,double A,double B, double C)
+{
+	double pp;
+    pp=A*power+B*tpi+C;
+    return pp;
+}
+
+double cpi_projection(double cpi,double tpi,double D,double E, double F)
+{
+    double cpi_pr;
+    cpi_pr=D*cpi+E*tpi+F;
+    return cpi_pr;
+}
+double time_projection(double F,double Fi,double T,double cpi,double cpi_pr)
+{
+    double timep;
+
+    //TIME(fn) = TIME(f0) * CPI(fn)/CPI(f0) * (f0/fn)
+    timep=T*(cpi_pr/cpi)*((double)F/(double)Fi);
+
+    return timep;
+}
+
+
+
