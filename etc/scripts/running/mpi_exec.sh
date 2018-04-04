@@ -1,13 +1,14 @@
 #!/bin/bash
 
-if [[ $# -ne 5 ]]
+if [[ $# -ne 6 ]]
 then
-	echo -e "Usage: mpi_exec.sh hostlist binary nmpi ppn policy"
+	echo -e "Usage: mpi_exec.sh hostlist binary nmpi ppn policy trace"
 	echo -e "\thostlist: a host name list file, a comma separated host name list or 'local'"
 	echo -e "\tbinary: name of local binary to run"
 	echo -e "\tmpi: number of total MPI tasks to use"
 	echo -e "\tppn: number of MPI tasks per node"
   	echo -e "\tpolicy: MIN_ENERGY_TO_SOLUTION | MIN_TIME_TO_SOLUTION | MONITORING_ONLY | NO_EAR"
+	echo -e "\ttrace: NO_TRACE | APPLICATION | DYNAIS
   	exit 1
 fi
 
@@ -45,7 +46,7 @@ fi
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]
 then
-	if [[ -z $EAR_TRACE_LIB_PATH ]]
+	if [[ "x$5" == "NO_TRACE" ]]
 	then
 		PRELOAD="-genv LD_PRELOAD=${EAR_LIB_PATH}"
 	else

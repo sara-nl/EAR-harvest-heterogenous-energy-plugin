@@ -180,7 +180,12 @@ static int file_to_environment(spank_t sp, const char *path)
             if (strlen(option) && strlen(++value))
             {
                 strtoup(option);
+
+                #if VERSION_TYPE(PRODUCTION_LRZ)
+                setenv_local(option, value, 1);
+				# else
                 setenv_local(option, value, 0);
+				#endif
                 //slurm_error("%s %s", option, value);
             }
         }
@@ -281,7 +286,7 @@ static int local_update_ld_preload(spank_t sp)
 
     // Appending libraries to LD_PRELOAD
     if (isenv_local("EAR_TRACES", "1")) {
-        sprintf(buffer, "%s/%s", buffer, EAR_LIB_TRAC_PATH);
+        sprintf(buffer, "%s/%s", buffer, EAR_TRACE_LIB_PATH);
     } else {
         sprintf(buffer, "%s/%s", buffer, EAR_LIB_PATH);
     }
