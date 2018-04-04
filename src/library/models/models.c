@@ -120,11 +120,15 @@ void init_power_policy()
 	else if (power_model_policy==MIN_TIME_TO_SOLUTION) performance_gain=get_ear_power_policy_th();	
 
 	reset_freq_opt=get_ear_reset_freq();
-	EAR_default_pstate=get_ear_p_state();
 
-	if (EAR_default_pstate>=frequency_get_num_pstates()) EAR_default_pstate=DEFAULT_P_STATE;
-	user_selected_freq=frequency_pstate_to_freq(get_ear_p_state());
-	policy_global_reconfiguration();
+	// This variable defines the first state in which a policy will start on.
+	EAR_default_pstate = get_ear_p_state();
+
+	if (EAR_default_pstate >= frequency_get_num_pstates()) {
+		EAR_default_pstate = DEFAULT_P_STATE;
+	}
+
+	user_selected_freq = frequency_pstate_to_freq(EAR_default_pstate);
 
 	// IMPORTANT: here is where the environment first P_STATE is set.
 	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);
@@ -133,6 +137,7 @@ void init_power_policy()
 	{
 		ear_verbose(0,"ear: warning max freq is limited by the system, using %u as default\n",
 					def_freq);
+
 		EAR_default_frequency = def_freq;
 	}
 	print_energy_policy_configuration();
