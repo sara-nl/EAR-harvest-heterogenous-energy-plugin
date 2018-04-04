@@ -8,7 +8,7 @@
 
 #define EAR_INSTALL_PATH    "@prefix@"
 #define EAR_LIB_PATH        "lib/libear.so"
-#define EAR_LIB_TRAC_PATH   "lib/libeartrac.so"
+#define EAR_TRACE_LIB_PATH  "lib/libeart.so"
 #define EAR_DAEMON_PATH     "sbin/eard"
 
 // Compile version type
