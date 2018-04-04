@@ -23,18 +23,18 @@ COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/types.a
 
 TRACE_OBJS = states/states.o \
-             ear_dyn_inst/ear_api.o \
-             tracer/tracer.o
+             tracer/tracer.o \
+             mpi_intercept/ear_api.o \
 
 OBJS = dynais/dynais.o               \
        tracer/tracer.o               \
 	   states/states.o               \
-       ear_dyn_inst/process_MPI.o    \
-       ear_dyn_inst/ear_api.o        \
-       ear_dyn_inst/MPI_intercept.o  \
-       ear_dyn_inst/MPI_interface.o  \
        models/models.o               \
-       metrics/metrics.o
+       metrics/metrics.o             \
+       mpi_intercept/process_MPI.o   \
+       mpi_intercept/MPI_intercept.o \
+       mpi_intercept/MPI_interface.o \
+       mpi_intercept/ear_api.o
 
 BINARIES = libear.so libeart.so
 
