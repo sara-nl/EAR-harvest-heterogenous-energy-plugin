@@ -190,31 +190,49 @@ int getenv_ear_reset_freq()
 	}
 	return conf_ear_reset_freq;
 }
+
 unsigned long getenv_ear_p_state()
 {
-	char *my_pstate=getenv("EAR_P_STATE");
+	char *my_pstate = getenv("EAR_P_STATE");
 	int max_p_state;
+
 	// p_state depends on policy it must be called before getenv_ear_p_state, but we check it
-	if (conf_ear_power_policy<0) getenv_ear_power_policy();
-	switch(conf_ear_power_policy){
+	if (conf_ear_power_policy < 0) getenv_ear_power_policy();
+
+	switch(conf_ear_power_policy)
+	{
 		case MIN_ENERGY_TO_SOLUTION:
-			conf_ear_p_state=DEFAULT_MAX_P_STATE;	
+			conf_ear_p_state = DEFAULT_MAX_P_STATE;
 			break;
 		case MIN_TIME_TO_SOLUTION:
-			conf_ear_p_state=DEFAULT_MIN_P_STATE;
+			conf_ear_p_state = getenv("EAR_MIN_P_STATE");
+
+			if (conf_ear_p_state == NULL) {
+				conf_ear_p_state = DEFAULT_MIN_P_STATE;
+			}
 			break;
 		case MONITORING_ONLY:
-			if (my_pstate!=NULL){	
+			if (my_pstate != NULL)
+			{
 				conf_ear_p_state=atoi(my_pstate);
+
 				// p_state[0] is turbo, p_state[1] is nominal, p_state[max_p_states-1] is the lower freq
-				if (!conf_ear_use_turbo) max_p_state=DEFAULT_MAX_P_STATE;	
+				if (!conf_ear_use_turbo) {
+					max_p_state=DEFAULT_MAX_P_STATE;
+				}
+
 				// Invalid value
-				if (conf_ear_p_state<max_p_state) conf_ear_p_state=DEFAULT_MAX_P_STATE;
-			}else conf_ear_p_state=DEFAULT_MAX_P_STATE;
+				if (conf_ear_p_state < max_p_state) {
+					conf_ear_p_state = DEFAULT_MAX_P_STATE;
+				}
+			} else {
+				conf_ear_p_state=DEFAULT_MAX_P_STATE;
+			}
 			break;
 	}
 	return conf_ear_p_state;
 }
+
 double getenv_ear_performance_accuracy()
 {
 	char *my_perf_acu=getenv("EAR_PERFORMANCE_ACCURACY");

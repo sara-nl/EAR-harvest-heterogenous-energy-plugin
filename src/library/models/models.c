@@ -73,9 +73,16 @@ void init_power_policy()
 	}
 
 	reset_freq_opt=get_ear_reset_freq();
-	EAR_default_pstate=get_ear_p_state();
-	if (EAR_default_pstate>=frequency_get_num_pstates()) EAR_default_pstate=DEFAULT_P_STATE;
-	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
+
+	// This variable defines the first state in which a policy will start on.
+	EAR_default_pstate = get_ear_p_state();
+
+	if (EAR_default_pstate >= frequency_get_num_pstates()) {
+		EAR_default_pstate = DEFAULT_P_STATE;
+	}
+
+	EAR_default_frequency = frequency_pstate_to_freq(EAR_default_pstate);
+	VERBOSE_N(0, "the current POLICY P_STATE is %u (%u)", EAR_default_pstate, EAR_default_frequency);
 
 	// IMPORTANT: here is where the environment first P_STATE is set.
 	ear_frequency = def_freq = ear_daemon_client_change_freq(EAR_default_frequency);
@@ -84,6 +91,7 @@ void init_power_policy()
 	{
 		ear_verbose(0,"ear: warning max freq is limited by the system, using %u as default\n",
 					def_freq);
+
 		EAR_default_frequency = def_freq;
 	}
 

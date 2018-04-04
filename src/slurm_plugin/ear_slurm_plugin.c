@@ -180,7 +180,12 @@ static int file_to_environment(spank_t sp, const char *path)
             if (strlen(option) && strlen(++value))
             {
                 strtoup(option);
+
+                #if VERSION_TYPE(PRODUCTION_LRZ)
+                setenv_local(option, value, 1);
+				# else
                 setenv_local(option, value, 0);
+				#endif
                 //slurm_error("%s %s", option, value);
             }
         }
