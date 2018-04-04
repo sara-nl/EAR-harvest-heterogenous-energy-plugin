@@ -8,7 +8,7 @@
 #ifndef PROCESS_MPI_H
 #define PROCESS_MPI_H
 
-#include <library/ear_dyn_inst/MPI_types.h>
+#include <library/mpi_intercept/MPI_types.h>
 
 // called before the MPI_init. Connects with ear_daemon
 void before_init();

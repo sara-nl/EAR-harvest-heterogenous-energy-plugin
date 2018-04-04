@@ -26,11 +26,12 @@
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
-#include <library/ear_states/ear_states.h>
-#include <library/ear_dyn_inst/MPI_types.h>
-#include <library/ear_dyn_inst/MPI_calls_coded.h>
-#include <library/ear_models/ear_models.h>
-#include <library/ear_metrics/ear_metrics.h>
+#include <library/states/states.h>
+#include <library/models/models.h>
+#include <library/metrics/metrics.h>
+#include <library/mpi_intercept/ear_api.h>
+#include <library/mpi_intercept/MPI_types.h>
+#include <library/mpi_intercept/MPI_calls_coded.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/environment.h>

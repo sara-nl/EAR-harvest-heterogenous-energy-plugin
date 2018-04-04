@@ -10,8 +10,8 @@
 #ifndef _EAR_API_H_
 #define _EAR_API_H_
 
-#include <library/ear_dyn_inst/MPI_types.h>
-#include <library/ear_dyn_inst/MPI_calls_coded.h>
+#include <library/mpi_intercept/MPI_types.h>
+#include <library/mpi_intercept/MPI_calls_coded.h>
 
 void ear_init();
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest);

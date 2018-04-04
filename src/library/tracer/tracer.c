@@ -20,10 +20,10 @@
 
 #include <control/frequency.h>
 #include <metrics/papi/generics.h>
-#include <library/tracer/tracer.h>
-#include <library/ear_states/ear_states.h>
-#include <library/ear_metrics/ear_metrics.h>
 #include <library/common/externs.h>
+#include <library/tracer/tracer.h>
+#include <library/states/states.h>
+#include <library/metrics/metrics.h>
 #include <common/types/generic.h>
 #include <common/environment.h>
 #include <common/ear_verbose.h>

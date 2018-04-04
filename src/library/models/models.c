@@ -14,10 +14,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <control/frequency.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
-#include <library/ear_models/ear_models.h>
-#include <control/frequency.h>
+#include <library/models/models.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
