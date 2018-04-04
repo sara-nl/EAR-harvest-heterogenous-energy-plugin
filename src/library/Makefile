@@ -7,6 +7,7 @@ DEBUG   = -DEAR_GUI
 export DIR
 export CFLAGS
 export LDFLAGS
+
 ######## FILES
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
@@ -43,8 +44,6 @@ BINARIES = libear.so libeart.so
 
 all: libear.so libeart.so 
 
-traces: libeart.so
-
 %.a: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
@@ -54,19 +53,17 @@ traces: libeart.so
 libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 
-touchy:
+update-trace-objs:
 	touch $(TRACE_OBJS)
 	export DEBUG
 
-libeart.so: touchy $(TRACE_OBJS)
+libeart.so: update-trace-objs $(TRACE_OBJS)
 	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 
 ######## OPTIONS
 
 install:
 	mv libear.so $(DESTDIR)/lib/libear.so
-
-install_traces:
 	mv libeart.so $(DESTDIR)/lib/libeart.so
 
 clean:

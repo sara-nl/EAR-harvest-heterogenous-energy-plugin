@@ -45,7 +45,12 @@ fi
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]
 then
-    PRELOAD="-genv LD_PRELOAD=${EAR_LIB_PATH}"
+	if [[ -z $EAR_TRACE_LIB_PATH ]]
+	then
+		PRELOAD="-genv LD_PRELOAD=${EAR_LIB_PATH}"
+	else
+    	PRELOAD="-genv LD_PRELOAD=${EAR_TRACE_LIB_PATH}"
+	fi
 fi
 
 # Non-edit region
