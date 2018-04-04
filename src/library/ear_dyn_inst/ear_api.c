@@ -25,12 +25,12 @@
 #include <control/frequency.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
+#include <library/tracer/tracer.h>
 #include <library/ear_states/ear_states.h>
 #include <library/ear_dyn_inst/MPI_types.h>
 #include <library/ear_dyn_inst/MPI_calls_coded.h>
 #include <library/ear_models/ear_models.h>
 #include <library/ear_metrics/ear_metrics.h>
-#include <library/ear_gui/ear_gui.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/environment.h>
@@ -220,8 +220,8 @@ void ear_init()
 	gettimeofday(&pmpi_app_begin_time, NULL);
 	fflush(stderr);
 
-	traces_init(ear_my_rank, my_id, ear_app_name, application.node_id, num_nodes, my_size, ppnode);
-	traces_frequency(ear_my_rank,my_id,ear_current_freq);
+	traces_init(ear_my_rank, my_id, num_nodes, my_size, ppnode);
+	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
 	ear_print_lib_environment();
 	DEBUG_F(1, "EAR initialized successfully");
@@ -248,8 +248,12 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 		ear_debug(3,"EAR(%s) EAR executing before an MPI Call\n",__FILE__);
 
-		traces_mpi_call(ear_my_rank, my_id, (unsigned long) PAPI_get_real_usec(), (unsigned long) buf,
-						(unsigned long) dest, (unsigned long) call_type, (unsigned long) ear_event);
+		traces_mpi_call(ear_my_rank, my_id,
+						(unsigned long) PAPI_get_real_usec(),
+						(unsigned long) buf,
+						(unsigned long) dest,
+						(unsigned long) call_type,
+						(unsigned long) ear_event);
 
 		mpi_calls_per_loop++;
 		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
@@ -296,8 +300,8 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 					ear_level, ear_event, ear_loop_size, ear_iterations);
 			}
 
-			traces_new_n_iter(ear_my_rank,my_id,ear_event,ear_loop_size,ear_iterations,states_my_state());
-			states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event,mpi_calls_per_loop);
+			traces_new_n_iter(ear_my_rank, my_id, ear_event, ear_loop_size, ear_iterations);
+			states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event, mpi_calls_per_loop);
 			mpi_calls_per_loop=1;
 			break;
 		case END_LOOP:

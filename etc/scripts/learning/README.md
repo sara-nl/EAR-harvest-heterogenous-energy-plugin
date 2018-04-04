@@ -112,7 +112,7 @@ The following table breaks down the key variables and its possible values to alt
 | sp-mz    | NPB3.3.1-MZ/NPB3.3-MZ-MPI/sys/setparams.c | write_sp_info | niter |
 | ep       | NPB3.3.1/NPB3.3-MPI/sys/setparams.c       | write_ep_info | m     |
 | lu       | NPB3.3.1/NPB3.3-MPI/sys/setparams.c       | write_lu_info | itmax |
-| ua       | NPB3.3.1/NPB3.3-OMP/sys/setparams.c       | write_lu_info | niter |
+| ua       | NPB3.3.1/NPB3.3-OMP/sys/setparams.c       | write_ua_info | niter |
 
 
 Depending on your system you have to increase or decrease its value. As a reference, it is provided a table containing the letter for the script and the value of the variable for a couple of CPU architectures:
