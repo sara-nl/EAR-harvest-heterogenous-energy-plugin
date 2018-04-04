@@ -18,7 +18,7 @@ Launching jobs calling MPI directly
 -----------------------------------
 This way doesn't make use of any cluster job scheduler, so a couple scripts are provided to make it easy that task. You can launch these scripts with empty parameters to view it's usage.
 
-0) In case the daemon is not running in the node, execute the script `etc/scripts/running/ssh_daemon_start` by typing `./ssh_daemon_start computing_node1 1`, where `computing_node1` is the node name where the daemon will be launched and the last number the default *P_STATE*. It also accepts a file containing the list of nodes where you want to wake that daemon.
+0) In case the daemon is not running in the node, execute the script `etc/scripts/running/ssh_daemon_start` by typing `./ssh_daemon_start computing_node1 1 /tmp`, where `computing_node1` is the node name where the daemon will be launched and the last number the default *P_STATE*. It also accepts a file containing the list of nodes where you want to wake that daemon. The last parameter is the place where the data base files will be stored.
 1) In the same folder, execute the `mpi_exec.sh` script to launch the job. In example `./mpi_exec.sh computing_node1 28 28 MONITORING_ONLY`, where both numbers are the MPI processes and the MPI's per node, an the last one is the policy.
 
 Stored files
