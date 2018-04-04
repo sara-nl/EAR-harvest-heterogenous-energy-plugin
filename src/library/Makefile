@@ -22,19 +22,19 @@ COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/environment.o \
               $(SRCDIR)/common/types.a
 
-TRACE_OBJS = ear_states/ear_states.o \
+TRACE_OBJS = states/states.o \
              ear_dyn_inst/ear_api.o \
              tracer/tracer.o
 
-OBJS = dynais/dynais.o                   \
-       tracer/tracer.o                   \
-	   ear_states/ear_states.o           \
-       ear_dyn_inst/process_MPI.o        \
-       ear_dyn_inst/ear_api.o            \
-       ear_dyn_inst/MPI_intercept.o      \
-       ear_dyn_inst/MPI_interface.o      \
-       ear_models/ear_models.o           \
-       ear_metrics/ear_metrics.o
+OBJS = dynais/dynais.o               \
+       tracer/tracer.o               \
+	   states/states.o               \
+       ear_dyn_inst/process_MPI.o    \
+       ear_dyn_inst/ear_api.o        \
+       ear_dyn_inst/MPI_intercept.o  \
+       ear_dyn_inst/MPI_interface.o  \
+       models/models.o               \
+       metrics/metrics.o
 
 BINARIES = libear.so libeart.so
 

@@ -16,7 +16,7 @@
 #include <metrics/papi/cache.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
-#include <library/ear_metrics/ear_metrics.h>
+#include <library/metrics/metrics.h>
 #include <common/types/application.h>
 #include <common/ear_daemon_client.h>
 #include <common/ear_verbose.h>
