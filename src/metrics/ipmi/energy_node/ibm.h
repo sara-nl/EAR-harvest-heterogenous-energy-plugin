@@ -9,14 +9,16 @@
 
 #ifndef _IBM_H_
 #define _IBM_H_
-/* Specific functions for CPU XX PLATFORM YY */
-/* Grants access to ipmi device */
+/** Specific functions for CPU XX PLATFORM YY 
+*   Grants access to ipmi device */
 int ibm_node_energy_init();
 int ibm_count_energy_data_length();
 int ibm_read_dc_energy(unsigned long *energy);
-/* AC energy is not yet supported */
+
+/** AC energy is not yet supported */
 int ibm_read_ac_energy(unsigned long *energy);
-/* Release access to ipmi device */
+
+/** Release access to ipmi device */
 int ibm_node_energy_dispose();
 
 
