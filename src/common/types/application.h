@@ -61,7 +61,7 @@ void copy_application(application_t *destiny, application_t *source);
 *	file given by parameter */
 int append_loop_text_file(char *path, loop_t *loop);
 
-/** Initializes the application*//
+/** Initializes the application*/
 void init_application(application_t *app);
 
 /** Outputs the application_t's data given by parameter to the file defined

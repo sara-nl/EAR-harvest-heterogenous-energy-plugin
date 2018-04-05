@@ -7,6 +7,13 @@
 
 */
 
+/**
+*    \file remote_conf.h
+*    \brief This file defines data types and constants shared by the client and server in the remote EAR API
+*
+*/
+
+
 
 #ifndef REMOTE_CONF_H
 #define REMOTE_CONF_H

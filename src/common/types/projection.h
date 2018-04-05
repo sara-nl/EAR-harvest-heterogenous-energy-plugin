@@ -6,6 +6,13 @@
         Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
+
+/**
+*    \file projection.h
+*    \brief Projections are used by time&power models. 
+*
+*/
+
 #ifndef _EAR_TYPES_PROJECTION
 #define _EAR_TYPES_PROJECTION
 
@@ -40,14 +47,21 @@ void set_performance_projection(int i, double TP, double PP, double CPI);
 /** Resets the projections for power, CPI and time to 0 */
 void reset_performance_projection(uint p_states);
 
-/** Creates a prediction for power with the associated formula and returns it*/
+/** Creates a prediction for power with the associated formula and returns it
+* @return power*A+tpi*B+C
+*/
 double power_projection(double power, double tpi,double A,double B, double C);
 
-/** Creates a prediction for CPI with the associated formula and returns it*/
+
+/** Creates a prediction for CPI with the associated formula and returns it
+* @return cpi*D+tpi*E+F
+*/
 double cpi_projection(double tpi,double cpi,double D,double E, double F);
 
-/** Creates a prediction for time with the associated formula and returns it*/
-double time_projection(double F,double Fi,double T,double cpi,double cpi_pr);
+/** Creates a prediction for time with the associated formula and returns it
+*	@return T * cpi_pr/cpi * (F/Fi)
+*/
+double time_projection(ulong F,ulong Fi,double T,double cpi,double cpi_pr);
 
 
 

@@ -21,8 +21,7 @@ COMMON_OBJS = $(SRCDIR)/common/types.a \
               $(SRCDIR)/common/shared_configuration.o
 
 OBJS = power_monitoring.o \
-       dynamic_configuration.o \
-       remote_daemon_api.o
+       dynamic_configuration.o 
 
 BINARIES  = eard
 
@@ -36,9 +35,6 @@ eard: ear_daemon.c $(OBJS) $(METRICS_OBJS) $(POWERMONLIB) $(COMMON_OBJS)
 
 dynamic_configuration.o:dynamic_configuration.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
-
-remote_daemon_api.o: remote_daemon_api.c $(SRCDIR)/common/remote_conf.h
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c remote_daemon_api.c
 
 power_monitoring.o:power_monitoring.c
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c

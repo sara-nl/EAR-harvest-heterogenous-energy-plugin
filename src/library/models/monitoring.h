@@ -6,6 +6,13 @@
     	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
+
+/**
+*    \file monitoring.h
+*    \brief This file implements the policy API for the monitoring_only policy
+*
+*/
+
 #ifndef _MONITORING_H
 #define _MONITORING_H
 

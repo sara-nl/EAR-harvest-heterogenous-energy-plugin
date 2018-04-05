@@ -1,3 +1,18 @@
+/*    This program is part of the Energy Aware Runtime (EAR).
+    It has been developed in the context of the BSC-Lenovo Collaboration project.
+    
+    Copyright (C) 2017  
+	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
+    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
+
+*/
+
+/**
+*    \file ear_power_monitor.h
+*    \brief This file include functions to simplify the work of power monitoring It can be used by privileged applications (such as eard)
+*	 \brief	or not-privileged applications such as the EARLib (or external commands)
+*
+*/
 #ifndef _POWER_MON_H_
 #define _POWER_MON_H_
 
@@ -41,7 +56,7 @@ int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff)
 
 /** Copies the energy measurement in *src to *dest */
 void copy_energy_data(energy_data_t *dest,energy_data_t *src);
-/* Prints the data from an energy measurement to stdout */
+/** Prints the data from an energy measurement to stdout */
 void print_energy_data(energy_data_t *e);
 
 /** Computes the power between two energy measurements */

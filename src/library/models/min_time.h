@@ -6,6 +6,12 @@
     	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
+/**
+*    \file min_time.h
+*    \brief This file implements the policy API for the minimize_time_to_solution policy
+*
+*/
+
 #ifndef _MIN_TIME_H
 #define _MIN_TIME_H
 

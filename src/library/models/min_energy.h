@@ -6,6 +6,12 @@
     	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
+/**
+*    \file min_energy.h
+*    \brief This file implements the policy API for the minimize_energy_to_solution policy
+*
+*/
+
 #ifndef _MIN_ENERGY_H
 #define _MIN_ENERGY_H
 

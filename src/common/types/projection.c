@@ -66,7 +66,7 @@ double cpi_projection(double cpi,double tpi,double D,double E, double F)
     cpi_pr=D*cpi+E*tpi+F;
     return cpi_pr;
 }
-double time_projection(double F,double Fi,double T,double cpi,double cpi_pr)
+double time_projection(ulong F,ulong Fi,double T,double cpi,double cpi_pr)
 {
     double timep;
 

@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include <daemon/shared_configuration.h>
+#include <common/shared_configuration.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
 

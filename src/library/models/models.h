@@ -22,7 +22,9 @@ void init_power_policy();
 /** Opens Coefficient db and reads coefficients */
 void init_power_models(uint p_states, ulong *p_states_list);
 
+/** Executed when a new_loop is reported by dyanis */
 void policy_new_loop();
+/** Executed when a end_loop is reported by dyanis */
 void policy_end_loop();
 
 /** Given the computed application signature, applies the selected power policy
