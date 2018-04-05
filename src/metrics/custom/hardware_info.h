@@ -27,17 +27,23 @@
 #define INTEL_VENDOR_NAME       "GenuineIntel"
 #define AMD_VENDOR_NAME         "AuthenticAMD"
 
-// Returns if the cpu is examinable by this library
+/** Returns if the cpu is examinable by this library */
 int is_cpu_examinable();
-// Returns the vendor ID
+
+/** Returns the vendor ID */
 int get_vendor_id(char *vendor_id);
-// Returns the family of the processor
+
+/** Returns the family of the processor */
 int get_family();
-// Returns 1 if the CPU is APERF/MPERF compatible.
+
+/** Returns 1 if the CPU is APERF/MPERF compatible. */
 int is_aperf_compatible();
-// Returns the size of a cache line of the higher cache level.
+
+/** Returns the size of a cache line of the higher cache level. */
 int get_cache_line_size();
-// Returns an EAR architecture index (top).
+
+/** Returns an EAR architecture index (top). */
 int get_model();
-// Returns if the processor is HTT capable
+
+/** Returns if the processor is HTT capable */
 int is_cpu_hyperthreading_capable();

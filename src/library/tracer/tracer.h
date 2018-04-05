@@ -43,21 +43,22 @@
 #define APP_ENERGY			13
 
 #ifdef EAR_GUI
-	// Executed at application start/end
-	void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn);
+	/** Executed at application start */
+ 	void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn);
+	/** Executed at application end */
 	void traces_end(int global_rank,int local_rank, unsigned long int total_ener);
 
-	//Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states
+	/**@{ Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states */
 	void traces_frequency(int global_rank, int local_rank, unsigned long f);
 	void traces_new_signature(int global_rank, int local_rank, double seconds, double cpi, double tpi, double gbs, double power);
-	void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power);
+	void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power); //!@}
 
-	// Executed when each time a new loop is detected, the loop ends, or a new iteration are reported
+	/**@{ Executed when each time a new loop is detected, the loop ends, or a new iteration are reported */
 	void traces_new_n_iter(int global_rank, int local_rank, int period_id, int loop_size, int iterations);
 	void traces_new_period(int global_rank, int local_rank, int period_id);
-	void traces_end_period(int global_rank, int local_rank);
+	void traces_end_period(int global_rank, int local_rank); //!@}
 
-	// Executed at each mpi_call
+	/** Executed at each mpi_call */
 	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
 #else
 	#define traces_init(g,l,a,n,n1,m,p)

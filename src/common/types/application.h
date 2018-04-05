@@ -54,42 +54,43 @@ typedef struct loop {
 
 // Function declarations
 
-//TODO: COMMENT
-//
+/** Replicates the application in *source to *destiny */
 void copy_application(application_t *destiny, application_t *source);
 
-//
+/** Appends the information of the application signature to the
+*	file given by parameter */
 int append_loop_text_file(char *path, loop_t *loop);
 
-//
+/** Initializes the application*//
 void init_application(application_t *app);
 
-//
+/** Outputs the application_t's data given by parameter to the file defined
+*   in by STDOUT_FILENO (default is stdout) */
 int print_application(application_t *app);
 
-//
+/** Outputs the application summary to stdout */
 void report_application_data(application_t *app);
 
-// Reads a file of applications saved in binary format. A memory block is
-// allocated for the read applications, and is returned by the argument 'apps'.
-// The returned integer is the number of applications read. If the integer is
-// negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
-// EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
+/** Reads a file of applications saved in binary format. A memory block is
+*	allocated for the read applications, and is returned by the argument 'apps'.
+*	The returned integer is the number of applications read. If the integer is
+*	negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
+*	EAR_READ_ERROR or EAR_FILE_NOT_FOUND. */
 int read_application_binary_file(char *path, application_t **apps);
 
-// Reads a file of applications saved in CSV format. A block of memory is
-// allocated for this read applications, and is returned by the argument 'apps'.
-// The returned integer is the number of applications read. If the integer is
-// negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
-// EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
+/** Reads a file of applications saved in CSV format. A block of memory is
+*	allocated for this read applications, and is returned by the argument 'apps'.
+*	The returned integer is the number of applications read. If the integer is
+*	negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
+*	EAR_READ_ERROR or EAR_FILE_NOT_FOUND. */
 int read_application_text_file(char *path, application_t **apps);
 
-// Appends in a file an application in binary format. The returned integer is
-// one of the following states: EAR_SUCCESS or EAR_ERROR.
+/** Appends in a file an application in binary format. The returned integer is
+*	one of the following states: EAR_SUCCESS or EAR_ERROR. */
 int append_application_binary_file(char *path, application_t *app);
 
-// Appends in a file an application in CSV format. The returned integer is one
-// of the following states: EAR_SUCCESS or EAR_ERROR.
+/** Appends in a file an application in CSV format. The returned integer is one
+*	of the following states: EAR_SUCCESS or EAR_ERROR. */
 int append_application_text_file(char *path, application_t *app);
 
 #endif

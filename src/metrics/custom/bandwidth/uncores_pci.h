@@ -26,31 +26,38 @@ static char SKYLAKE_X_REGISTERS[] = { 0xF8, 0xF4, 0xD8, 0xA0 };
 static char SKYLAKE_X_FUNCTIONS[] = { 0x02, 0x06 };
 static int  SKYLAKE_X_N_FUNCTIONS = 6;
 
-// Scans PCI buses and allocates file descriptors memory.
-// Returns the number of uncores counters on success or EAR_ERROR.
+/** Scans PCI buses and allocates file descriptors memory.
+*   Returns the number of uncores counters on success or EAR_ERROR. */
 int pci_init_uncores(int cpu_model);
-// Get the number of performance monitor counters. 
-// pci_init_uncores() have to be called before.
-// Returns the number of PCI uncore counters.
+
+/** Get the number of performance monitor counters. 
+*   pci_init_uncores() have to be called before.
+*   Returns the number of PCI uncore counters. */
 int pci_count_uncores();
-// Freezes and resets all performance monitor uncore counters.
-// Returns 0 on success or EAR_ERROR.
+
+/** Freezes and resets all performance monitor uncore counters.
+*   Returns 0 on success or EAR_ERROR. */
 int pci_reset_uncores();
-// Unfreezes all PCI uncore counters.
-// Returns 0 on success or EAR_ERROR.
+
+/** Unfreezes all PCI uncore counters.
+*   Returns 0 on success or EAR_ERROR. */
 int pci_start_uncores();
-// Freezes all PMON uncore counters and gets it's values. The array
-// has to be greater or equal than the number of PMON uncore counters
-// returned by count_uncores() function. The returned values are the
-// read and write bandwidth values in index [i] and [i+1] respectively.
-// Returns 0 on success or EAR_ERROR.
+
+/** Freezes all PMON uncore counters and gets it's values. The array
+*   has to be greater or equal than the number of PMON uncore counters
+*   returned by count_uncores() function. The returned values are the
+*   read and write bandwidth values in index [i] and [i+1] respectively.
+*   Returns 0 on success or EAR_ERROR. */
 int pci_stop_uncores(unsigned long long *values);
-// Gets uncore counters values.
-// Returns 0
+
+/** Gets uncore counters values.
+*   Returns 0. */
 int pci_read_uncores(unsigned long long *values);
-// Closes file descriptors and frees memory.
-// Returns 0 on success or EAR_ERROR.
+
+/** Closes file descriptors and frees memory.
+*   Returns 0 on success or EAR_ERROR. */
 int pci_dispose_uncores();
-// Checks if the found pci uncore functions have any abnormality.
-// Returned values are EAR_SUCCESS, EAR_WARNING or EAR_ERROR.
+
+/** Checks if the found pci uncore functions have any abnormality.
+*   Returned values are EAR_SUCCESS, EAR_WARNING or EAR_ERROR. */
 int pci_check_uncores();
