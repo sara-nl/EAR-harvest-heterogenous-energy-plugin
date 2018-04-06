@@ -18,15 +18,13 @@
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
+#include <library/models/sig_projections.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
-#include <library/models/sig_projections.h>
 #include <common/ear_verbose.h>
-#include <common/states.h>
 #include <common/types/log.h>
-
-
-
+#include <common/states.h>
+#include <common/config.h>
 
 static const char *__NAME__ = "min_time_policy";
 static uint mt_policy_pstates;

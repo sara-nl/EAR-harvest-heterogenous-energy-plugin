@@ -22,8 +22,9 @@
 #include <library/metrics/metrics.h>
 #include <library/models/models.h>
 #include <common/ear_verbose.h>
-#include <common/states.h>
 #include <common/types/log.h>
+#include <common/states.h>
+#include <common/config.h>
 
 static const char *__NAME__ = "STATES";
 

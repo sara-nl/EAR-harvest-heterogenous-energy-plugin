@@ -18,12 +18,13 @@
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
+#include <library/models/sig_projections.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
-#include <library/models/sig_projections.h>
 #include <common/ear_verbose.h>
-#include <common/states.h>
 #include <common/types/log.h>
+#include <common/states.h>
+#include <common/config.h>
 
 static uint me_policy_pstates;
 static uint me_reset_freq=RESET_FREQ;

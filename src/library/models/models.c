@@ -24,10 +24,9 @@
 #include <common/types/application.h>
 #include <common/types/projection.h>
 #include <common/ear_verbose.h>
-#include <common/states.h>
 #include <common/types/log.h>
-
-
+#include <common/states.h>
+#include <common/config.h>
 
 typedef struct policy
 {

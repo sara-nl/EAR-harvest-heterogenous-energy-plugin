@@ -32,11 +32,12 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
+#include <common/shared_configuration.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/environment.h>
 #include <common/states.h>
-#include <common/shared_configuration.h>
+#include <common/config.h>
 
 
 static const char *__NAME__ = "API";
