@@ -18,12 +18,13 @@
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
+#include <library/models/sig_projections.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
-#include <library/models/sig_projections.h>
 #include <common/ear_verbose.h>
-#include <common/states.h>
 #include <common/types/log.h>
+#include <common/states.h>
+#include <common/config.h>
 
 static uint me_policy_pstates;
 static uint me_reset_freq=RESET_FREQ;
@@ -149,7 +150,7 @@ ulong min_energy_policy(application_t *sig)
 	}
 
 	// Coefficients were not available for this nominal frequency
-	#ifdef SHARED_MEMORY
+	#if SHARED_MEMORY
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (best_pstate>system_conf->max_freq){ 
 		log_report_global_policy_freq(my_job_id,system_conf->max_freq);

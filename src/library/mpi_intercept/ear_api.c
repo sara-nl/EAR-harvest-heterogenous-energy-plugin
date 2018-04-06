@@ -32,11 +32,12 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
+#include <common/shared_configuration.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/environment.h>
 #include <common/states.h>
-#include <common/shared_configuration.h>
+#include <common/config.h>
 
 
 static const char *__NAME__ = "API";
@@ -132,7 +133,7 @@ void ear_init()
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
 	}
 
-	#ifdef SHARED_MEMORY
+	#if SHARED_MEMORY
 	system_conf=attach_ear_conf_shared_area(get_ear_tmp());
 	#endif
 
@@ -358,7 +359,7 @@ void ear_finalize()
 
 	frequency_dispose();
 
-	#ifdef SHARED_MEMORY
+	#if SHARED_MEMORY
 	dettach_ear_conf_shared_area();
 	#endif
 

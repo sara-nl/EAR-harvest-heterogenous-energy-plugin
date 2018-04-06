@@ -22,9 +22,10 @@
 #include <library/metrics/metrics.h>
 #include <library/models/models.h>
 #include <common/ear_verbose.h>
-#include <common/states.h>
 #include <common/types/log.h>
 #include <common/types/application.h>
+#include <common/states.h>
+#include <common/config.h>
 
 static const char *__NAME__ = "STATES";
 
@@ -147,7 +148,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 	prev_f = ear_frequency;
 
-	#ifdef SHARED_MEMORY
+	#if SHARED_MEMORY
 	if (system_conf->force_rescheduling){
 		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
 

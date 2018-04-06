@@ -29,15 +29,16 @@
 #include <common/environment.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/config.h>
 
-#ifdef POWER_MONITORING
+#if POWER_MONITORING
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 //int power_mon_th;
 #endif
-#ifdef SHARED_MEMORY
+#if SHARED_MEMORY
 #include <pthread.h>
 #include <common/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
@@ -97,12 +98,12 @@ void f_signals(int s)
 		}
 	
 		// Maybe we should just wait for threads
-#ifdef POWER_MONITORING
+#if POWER_MONITORING
 		pthread_join(power_mon_th,NULL);
 		//kill(power_mon_th,SIGKILL);
 		//waitpid(power_mon_th,NULL,0);
 #endif
-#ifdef SHARED_MEMORY
+#if SHARED_MEMORY
 		pthread_kill(dyn_conf_th,SIGUSR1);
 		pthread_join(dyn_conf_th,NULL);
 #endif
@@ -229,7 +230,7 @@ void connect_service(int req,unsigned long pid)
 				VERBOSE_N(0,"ERROR while opening ping pipe %s (%s)", ear_ping, strerror(errno));
 				eard_close_comm();
 			}
-#ifdef POWER_MONITORING
+#if POWER_MONITORING
 			powermon_mpi_init(pid);
 #endif
 		}
@@ -368,7 +369,7 @@ void eard_close_comm()
 	}
 
 	close(ear_ping_fd);
-#ifdef POWER_MONITORING
+#if POWER_MONITORING
 	powermon_mpi_finalize(application_id);
 #endif
 
@@ -503,7 +504,7 @@ int eard_freq(int must_read)
 			break;
 		case SET_FREQ:
 			ear_debug(1,"eard: Setting node frequency\n");
-#ifndef SHARED_MEMORY
+#if !SHARED_MEMORY
 			eard_set_freq(req.req_data.req_value,eard_max_freq);
 #else
 			eard_set_freq(req.req_data.req_value,min(eard_max_freq,max_dyn_freq()));
@@ -837,7 +838,7 @@ void main(int argc,char *argv[])
 		ear_debug(3,"eard: fd %d added to rdfd mask max=%d FD_SETSIZE=%d\n",ear_fd_req[i],numfds_req,FD_SETSIZE);
 	}
 	rfds_basic=rfds;
-#ifdef POWER_MONITORING
+#if POWER_MONITORING
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
 		errno=ret;
 		ear_verbose(0,"eard: error creating power_monitoring thread %s\n",strerror(errno));
@@ -847,7 +848,7 @@ void main(int argc,char *argv[])
 	if (power_mon_th==0) eard_power_monitoring(&power_mon_freq);
 #endif
 #endif
-#ifdef SHARED_MEMORY
+#if SHARED_MEMORY
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
 		ear_verbose(0,"eard: error creating dynamic_configuration thread \n");
 	}

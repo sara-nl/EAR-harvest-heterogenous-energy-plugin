@@ -24,10 +24,9 @@
 #include <common/types/application.h>
 #include <common/types/projection.h>
 #include <common/ear_verbose.h>
-#include <common/states.h>
 #include <common/types/log.h>
-
-
+#include <common/states.h>
+#include <common/config.h>
 
 typedef struct policy
 {
@@ -112,7 +111,7 @@ void init_policy_functions()
 // This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
 void policy_global_reconfiguration()
 {
-#ifdef SHARED_MEMORY
+#if SHARED_MEMORY
     // We filter initial configuration
     if (system_conf->max_freq<frequency_pstate_to_freq(EAR_default_pstate)){
         ear_verbose(0,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
@@ -131,7 +130,7 @@ void policy_global_reconfiguration()
 // This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
 uint get_global_min_pstate()
 {
-#ifdef SHARED_MEMORY
+#if SHARED_MEMORY
     frequency_freq_to_pstate(system_conf->max_freq);
 #else
 	return 1;
