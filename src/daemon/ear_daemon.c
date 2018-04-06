@@ -29,6 +29,7 @@
 #include <common/environment.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/config.h>
 
 #if POWER_MONITORING
 #include <pthread.h>

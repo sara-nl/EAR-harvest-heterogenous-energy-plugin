@@ -45,8 +45,8 @@ AC_DEFUN([AX_OPT_FEATURES],
 	# POWER MONITORING
 	#
 
-	# AC_ARG_ENABLE([shared-memory],
-	#	AS_HELP_STRING([--enable-shared-memory], [Enables the shared memory feature]))
+	AC_ARG_ENABLE([shared-memory],
+		AS_HELP_STRING([--enable-shared-memory], [Enables the shared memory feature]))
 
     AS_IF([test "x$enable_shared_memory" = "xyes"],
         [SHARED_MEMORY=1],[SHARED_MEMORY=0])
