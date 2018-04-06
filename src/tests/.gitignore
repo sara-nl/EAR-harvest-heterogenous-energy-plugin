@@ -28,3 +28,4 @@ functionals/inputs
 *freeipmi_overhead
 *bandwith_monitor
 *simd_power_metrics_openmp
+*ear_pm
