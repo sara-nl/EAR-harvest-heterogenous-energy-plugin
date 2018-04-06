@@ -9,16 +9,15 @@
 
 AC_DEFUN([AX_OPT_FEATURES],
 [
-	AC_ARG_VAR([BUILD_TYPE],[Defines the type of compilation: release (def), release-lrz,
-	development or debug])
+	AC_ARG_VAR([BUILD_TYPE],[Defines the type of compilation: release (def), release-lrz, development or debug])
 
     if test "x$BUILD_TYPE" = "xdevelopment"; then
     	BUILD_TYPE=0
-	else if test "x$BUILD_TYPE" = "xdebug"; then
+	elif test "x$BUILD_TYPE" = "xdebug"; then
 		BUILD_TYPE=1
-	else if test "x$BUILD_TYPE" = "xrelease"; then
+	elif test "x$BUILD_TYPE" = "xrelease"; then
 		BUILD_TYPE=2
-	else if test "x$BUILD_TYPE" = "xrelease-lrz"; then
+	elif test "x$BUILD_TYPE" = "xrelease-lrz"; then
 		BUILD_TYPE=3
 	else
 		BUILD_TYPE=2
