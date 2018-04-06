@@ -11,10 +11,13 @@
 #define EAR_TRACE_LIB_PATH  "lib/libeart.so"
 #define EAR_DAEMON_PATH     "sbin/eard"
 
-// Compile version type
-#define RESEARCH			0
-#define PRODUCTION			1
-#define PRODUCTION_LRZ		2
+#undef POWER_MONITORING
 
-#define VERSION_TYPE(_version_type) \
-	_version_type == @VERSION_TYPE@ 
+// Compile version type
+#define DEVELOPMENT			0
+#define DEBUG				1
+#define RELEASE				2
+#define RELEASE_LRZ			3
+
+#define BUILD_TYPE(_build_type) \
+	_build_type == @BUILD_TYPE@
