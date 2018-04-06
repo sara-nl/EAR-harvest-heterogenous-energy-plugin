@@ -17,5 +17,5 @@
 #define RELEASE				2
 #define RELEASE_LRZ			3
 
-#define VERSION_TYPE(_build_type) \
+#define BUILD_TYPE(_build_type) \
 	_build_type == @BUILD_TYPE@
