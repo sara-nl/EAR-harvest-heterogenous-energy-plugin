@@ -25,6 +25,8 @@ extern "C"
 {
 #endif
 
+/**@{ Each pair of functions are called before (enter function) and after (leave) a type MPI call. Which pair depends on the
+*   type of the call, and the functions called are EAR_MPY_<call>_enter and leave. */
 void EAR_MPI_Allgather_F_enter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror);
 void EAR_MPI_Allgather_F_leave(void);
 
@@ -260,7 +262,7 @@ void EAR_MPI_Win_start_F_enter(MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win,
 void EAR_MPI_Win_start_F_leave(void);
 
 void EAR_MPI_Win_wait_F_enter(MPI_Fint *win, MPI_Fint *ierror);
-void EAR_MPI_Win_wait_F_leave(void);
+void EAR_MPI_Win_wait_F_leave(void); /**@}*/ 
 
 
 #if MPI_VERSION >= 3

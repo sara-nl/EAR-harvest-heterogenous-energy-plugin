@@ -30,6 +30,10 @@
 #  endif
 #endif
 
+
+
+/**@{* Each pair of functions are called before (enter function) and after (leave) a type MPI call. Which pair depends on the
+*   type of the call, and the functions called are EAR_MPY_<call>_enter and leave. */
 void EAR_MPI_Allgather_enter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm);
 void EAR_MPI_Allgather_leave(void);
 
@@ -265,7 +269,8 @@ void EAR_MPI_Win_start_enter(MPI_Group group, int assert, MPI_Win win);
 void EAR_MPI_Win_start_leave(void);
 
 void EAR_MPI_Win_wait_enter(MPI_Win win);
-void EAR_MPI_Win_wait_leave(void);
+void EAR_MPI_Win_wait_leave(void); 
+/**@}*/ 
 
 
 #if MPI_VERSION >= 3
