@@ -11,6 +11,8 @@
 #define EAR_TRACE_LIB_PATH  "lib/libeart.so"
 #define EAR_DAEMON_PATH     "sbin/eard"
 
+#undef POWER_MONITORING
+
 // Compile version type
 #define DEVELOPMENT			0
 #define DEBUG				1
