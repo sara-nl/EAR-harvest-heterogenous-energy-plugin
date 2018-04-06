@@ -43,6 +43,8 @@
 #include <unistd.h>
 #include <library/dynais/dynais.h>
 #include <immintrin.h> // -mavx -mfma
+#include <emmintrin.h> // -msse2
+
 
 // Local defines
 #define AVX_512 1

@@ -20,16 +20,23 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
 
 COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/environment.o \
-              $(SRCDIR)/common/types.a \
 			  $(SRCDIR)/common/shared_configuration.o
 
-TRACE_OBJS = states/states.o \
+TYPES = $(SRCDIR)/common/types.a
+
+TRACE_ON_OBJS = states/states_trace.o \
+             tracer/tracer_trace.o \
+             mpi_intercept/ear_api_trace.o 
+
+TRACE_OFF_OBJS = states/states.o \
              tracer/tracer.o \
-             mpi_intercept/ear_api.o \
+             mpi_intercept/ear_api.o 
+
+TRACE_SRCS = states/states.c \
+			tracer/tracer.c \
+			mpi_intercept/ear_api.c
 
 OBJS = dynais/dynais.o               \
-       tracer/tracer.o               \
-	   states/states.o               \
        models/models.o               \
        models/monitoring.o               \
        models/min_energy.o               \
@@ -38,8 +45,7 @@ OBJS = dynais/dynais.o               \
        metrics/metrics.o             \
        mpi_intercept/process_MPI.o   \
        mpi_intercept/MPI_intercept.o \
-       mpi_intercept/MPI_interface.o \
-       mpi_intercept/ear_api.o
+       mpi_intercept/MPI_interface.o 
 
 BINARIES = libear.so libeart.so
 
@@ -55,15 +61,19 @@ all: $(BINARIES)
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
-libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
-	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
+%_trace.o:%.c
+	@ $(MAKE) -C `dirname $@` `basename $@` || exit
+
+libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TRACE_OFF_OBJS) $(TYPES)
+	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TRACE_OFF_OBJS) $(TYPES)
 
 update-trace-objs:
-	touch $(TRACE_OBJS)
+	touch $(TRACE_SRCS)
 	export DEBUG
 
-libeart.so: update-trace-objs $(TRACE_OBJS)
-	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
+libeart.so: update-trace-objs $(TRACE_ON_OBJS) $(TYPES)
+	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TRACE_ON_OBJS) $(TYPES)
+	touch $(TRACE_SRCS)
 
 ######## OPTIONS
 
@@ -73,4 +83,4 @@ install:
 
 
 clean:
-	rm -f $(BINARIES) $(OBJS)
+	rm -f $(BINARIES) $(OBJS) $(TRACE_OFF_OBJS) $(TRACE_ON_OBJS)

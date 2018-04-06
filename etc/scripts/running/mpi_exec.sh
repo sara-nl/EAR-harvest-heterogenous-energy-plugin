@@ -46,7 +46,7 @@ fi
 # LD_PRELOAD if NO_EAR policy isn not selected
 if [[ "$5" != "NO_EAR" ]]
 then
-	if [[ "x$5" == "NO_TRACE" ]]
+	if [[ "x$6" == "xNO_TRACE" ]]
 	then
 		PRELOAD="-genv LD_PRELOAD=${EAR_LIB_PATH}"
 	else
@@ -64,6 +64,7 @@ PPN=${4}
 A=$(date +%s) ; date
 
 ## Starting the application
+echo "mpiexec.hydra -l $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}"
 mpiexec.hydra -l $PRELOAD -genvall ${MPI_HOST} -n ${MPI} -ppn=${PPN} ${BINARY}
 
 B=$(date +%s) ; date

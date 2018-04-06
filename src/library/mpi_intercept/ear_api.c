@@ -275,7 +275,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		case IN_LOOP:
 			break;
 		case NEW_LOOP:
-			ear_verbose(4,"NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
+			ear_debug(4,"NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
 			ear_iterations=0;
 			states_begin_period(my_id, NULL, ear_event, ear_size);
 			ear_loop_size=ear_size;

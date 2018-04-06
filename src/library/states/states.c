@@ -24,6 +24,7 @@
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/types/log.h>
+#include <common/types/application.h>
 
 static const char *__NAME__ = "STATES";
 
@@ -266,7 +267,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					// Computing dynais overhead
 					if (dynais_enabled){
-						dynais_overhead_usec=mpi_calls_iter*2;
+						dynais_overhead_usec=mpi_calls_iter*0,5;
 						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.time;
 						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
 							// Disable dynais : API is still pending
@@ -274,7 +275,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							VERBOSE_N(0,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
 							log_report_dynais_off(my_job_id);
 						}
-						VERBOSE_N(1,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+						VERBOSE_N(0,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
 						loop_signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
 						last_first_event=event;
 						last_calls_in_loop=mpi_calls_iter;
@@ -319,12 +320,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					if (policy_freq != prev_f)
 					{
-						ear_verbose(1,
+						ear_verbose(0,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
 									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
 					} else {
-						ear_verbose(1,
+						ear_verbose(0,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
 									ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
 									ENERGY, EDP);

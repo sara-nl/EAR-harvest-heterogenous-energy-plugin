@@ -46,12 +46,12 @@ policy_t app_policy;
 static const char *__NAME__ = "MODELS";
 
 // Policy
-static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
-static double performance_penalty ;
-static double performance_gain ;
+int power_model_policy = MIN_ENERGY_TO_SOLUTION;
+double performance_penalty ;
+double performance_gain ;
 
 // Process
-static uint EAR_default_pstate;
+uint EAR_default_pstate;
 
 // Normals
 coefficient_t **coefficients;

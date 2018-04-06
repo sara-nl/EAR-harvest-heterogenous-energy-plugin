@@ -7,7 +7,9 @@
 
 */
 #include <stdlib.h>
+#include <stdio.h>
 #include <common/types/projection.h>
+#include <common/ear_verbose.h>
 #include <control/frequency.h>
 
 
