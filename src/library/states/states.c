@@ -146,7 +146,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 	prev_f = ear_frequency;
 
-	#ifdef SHARED_MEMORY
+	#if SHARED_MEMORY
 	if (system_conf->force_rescheduling){
 		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
 

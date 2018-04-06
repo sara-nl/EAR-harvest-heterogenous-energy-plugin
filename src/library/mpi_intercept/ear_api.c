@@ -132,7 +132,7 @@ void ear_init()
 				get_ear_dynais_levels(), get_ear_dynais_window_size());
 	}
 
-	#ifdef SHARED_MEMORY
+	#if SHARED_MEMORY
 	system_conf=attach_ear_conf_shared_area(get_ear_tmp());
 	#endif
 
@@ -358,7 +358,7 @@ void ear_finalize()
 
 	frequency_dispose();
 
-	#ifdef SHARED_MEMORY
+	#if SHARED_MEMORY
 	dettach_ear_conf_shared_area();
 	#endif
 
