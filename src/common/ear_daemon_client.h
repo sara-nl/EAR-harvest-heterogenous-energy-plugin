@@ -12,7 +12,7 @@
 #include <common/ear_daemon_common.h>
 #include <common/types/generic.h>
 
-/** Tries to connect with the deamon. Returns 0 on success and -1 otherwise. */
+/** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
 int eards_connect();
 /** Closes the connection with the daemon. */
 void eards_disconnect();
@@ -29,17 +29,28 @@ void eards_set_turbo();
 *   actual value otherwise. */
 unsigned long eards_get_data_size_frequency();
 
+/** Sends a request to read the CPU frequency. */
 void eards_begin_compute_turbo_freq();
+/** Requests to stop reading the CPU frequency. Returns the average frequency
+*   between the begin call and the end call on success, -1 otherwise. */
 unsigned long eards_end_compute_turbo_freq();
 
+/** Sends a request to read the global CPU frequency. */
 void eards_begin_app_compute_turbo_freq();
+/** Requests to stop reading the CPU global frequency. Returns the average 
+*   frequency between the begin call and the end call on success, -1 otherwise. */
 unsigned long eards_end_app_compute_turbo_freq();
 
 // Uncore services
-
+/** Sends a request to read the uncores. Returns -1 if there's an error, on
+*   success stores the uncores values' into *values and returns 0. */
 int eards_read_uncore(unsigned long long *values);
+/** Sends the request to start the uncores. Returns 0 on success, -1 on error */
 int eards_start_uncore();
+/** Sends a request to reset the uncores. Returns 0 on success, -1 on error */
 int eards_reset_uncore();
+/** Requests the uncore data size. Returns -1 if there's an error, and the
+*   actual value otherwise. */
 unsigned long eards_get_data_size_uncore();
 
 // RAPL services
