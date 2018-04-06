@@ -3,10 +3,10 @@
 COMPONENTS = common \
              metrics \
              control \
-             library \
-             daemon \
-             tools \
-             tests
+             library
+#             daemon \
+#             tools \
+#             tests
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif

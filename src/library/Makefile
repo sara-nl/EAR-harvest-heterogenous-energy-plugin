@@ -1,6 +1,5 @@
-CFLAGS  = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
-DEBUG   = -DEAR_GUI
+CFLAGS   = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
+LDFLAGS  = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 
 ######## VARS
 
@@ -24,7 +23,10 @@ COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
 
 TRACE_OBJS = states/states.o \
              tracer/tracer.o \
-             mpi_intercept/ear_api.o \
+             mpi_intercept/ear_api.o
+
+TRACE_SRCS = states/states.c tracer/trace.c mpi_intercept/mpi_intercept.c
+
 
 OBJS = dynais/dynais.o               \
        tracer/tracer.o               \
@@ -36,11 +38,7 @@ OBJS = dynais/dynais.o               \
        mpi_intercept/MPI_interface.o \
        mpi_intercept/ear_api.o
 
-BINARIES = libear.so libeart.so
-
 ######## RULES
-
-.PHONY:
 
 all: libear.so libeart.so 
 
@@ -54,8 +52,7 @@ libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
 
 update-trace-objs:
-	touch $(TRACE_OBJS)
-	export DEBUG
+	make -B $(TRACE_OBJS) CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 libeart.so: update-trace-objs $(TRACE_OBJS)
 	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
