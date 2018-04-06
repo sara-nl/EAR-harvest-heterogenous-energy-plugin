@@ -61,8 +61,8 @@
 	/** Executed at each mpi_call */
 	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
 #else
-	#define traces_init(g,l,a,n,n1,m,p)
-	#define traces_new_n_iter(g,l,p,s,i,st)
+	#define traces_init(g,l,n,m,p)
+	#define traces_new_n_iter(g,l,p,lo,i)
 	#define traces_end(g,l,e)
 	#define traces_new_signature(g,l,s,c,t,gb,p)
 	#define traces_frequency(g,l,f)

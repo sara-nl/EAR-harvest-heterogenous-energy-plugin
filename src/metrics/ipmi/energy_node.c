@@ -358,7 +358,7 @@ unsigned long node_energy_frequency()
 			min_interval=10000;
 			break;
 		}		
-		min_interval=(min_interval/2)/MAX_POWER_ERROR;
+		min_interval = (min_interval / 2) / MAX_POWER_ERROR;
 	
 
 		return min_interval;
