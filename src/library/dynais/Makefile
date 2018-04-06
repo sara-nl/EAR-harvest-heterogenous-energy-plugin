@@ -1,7 +1,5 @@
 .c.o :
-	icc $(CFLAGS) -c -o $@ $<
-	# Just provisional, please uncomment:
-	#  $(CC) $(CFLAGS) -c -o $@ $<
+	icc $(CFLAGS) -axMIC-AVX512 -c -o $@ $<
 
 clean:
 	rm -rf *.o

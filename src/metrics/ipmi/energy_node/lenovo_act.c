@@ -120,12 +120,13 @@ int lenovo_act_node_energy_init()
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-        ear_verbose(0,"lenovo_air_cooling: ipmi_cmd_raw fails\n");
-        return EAR_ERROR;
+        ear_verbose(0,"lenovo_air_cooling: ipmi_cmd_raw fails when reading the parameter\n");
+        //return EAR_ERROR;
     }
 	// sudo ./ipmi-raw 0x0 0x2e 0x81 0x66 0x4a 0x00 0x20 0x01 0x82 0x0 0x08
 	if (bytes_rs[8]!=0x20){
 		ear_verbose(0,"eard:lenovo_air_cooling warning raw argument != 0x20\n");
+		bytes_rs[8]=0x20;
 	}
 	bytes_rq[0]=(uint8_t)0x00;
 	bytes_rq[1]=(uint8_t)0x2E;

@@ -19,26 +19,24 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
 
 COMMON_OBJS = $(SRCDIR)/common/shared_configuration.o \
               $(SRCDIR)/common/ear_daemon_client.o \
-              $(SRCDIR)/common/environment.o \
-              $(SRCDIR)/common/types.a
+              $(SRCDIR)/common/environment.o
+
+TYPES = $(SRCDIR)/common/types.a
 
 TRACE_OBJS = states/states.o \
              tracer/tracer.o \
-             mpi_intercept/ear_api.o
+             mpi_intercept/ear_api.o 
 
-TRACE_SRCS = states/states.c tracer/trace.c mpi_intercept/mpi_intercept.c
-
-
-OBJS = dynais/dynais.o              \
-       tracer/tracer.o              \
-	   states/states.o              \
-       metrics/metrics.o            \
-       models/models.o              \
-       models/min_time.o            \
-       models/min_energy.o          \
-       models/monitoring.o          \
-	   models/sig_projections.o	    \
-       mpi_intercept/process_MPI.o  \
+OBJS = dynais/dynais.o               \
+       tracer/tracer.o               \
+       states/states.o               \
+       metrics/metrics.o             \
+       models/models.o               \
+       models/min_time.o             \
+       models/min_energy.o           \
+       models/monitoring.o           \
+       models/sig_projections.o	     \
+       mpi_intercept/process_MPI.o   \
        mpi_intercept/MPI_intercept.o \
        mpi_intercept/MPI_interface.o \
        mpi_intercept/ear_api.o
@@ -53,14 +51,14 @@ all: libear.so libeart.so
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
-libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
-	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
+libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
+	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 
 update-trace-objs:
 	@ make -B $(TRACE_OBJS) CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 libeart.so: update-trace-objs $(TRACE_OBJS)
-	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS)
+	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 
 ######## OPTIONS
 

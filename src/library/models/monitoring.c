@@ -17,7 +17,6 @@
 #include <common/types/projection.h>
 #include <library/common/externs.h>
 
-static const char *__NAME__ = "Monitoring";
 void monitoring_init()
 {
 }

@@ -1,5 +1,5 @@
 .c.o:
-	$(MPICC) $(CFLAGS) $(DEBUG) -c -o $@ $<
+	$(MPICC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -rf *.o
