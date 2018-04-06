@@ -8,7 +8,7 @@ then
 	echo -e "\tmpi: number of total MPI tasks to use"
 	echo -e "\tppn: number of MPI tasks per node"
   	echo -e "\tpolicy: MIN_ENERGY_TO_SOLUTION | MIN_TIME_TO_SOLUTION | MONITORING_ONLY | NO_EAR"
-	echo -e "\ttrace: NO_TRACE | APPLICATION | DYNAIS
+	echo -e "\ttrace: NO_TRACE | APPLICATION | DYNAIS"
   	exit 1
 fi
 
