@@ -181,7 +181,7 @@ static int file_to_environment(spank_t sp, const char *path)
             {
                 strtoup(option);
 
-                #if VERSION_TYPE(PRODUCTION_LRZ)
+                #if VERSION_TYPE(RELEASE_LRZ)
                 setenv_local(option, value, 1);
 				# else
                 setenv_local(option, value, 0);

@@ -1,5 +1,6 @@
 # INCLUDES
 m4_include([m4/ax_compare_version.m4])
+m4_include([m4/x_ac_opt_features.m4])
 m4_include([m4/x_ac_backup.m4])
 m4_include([m4/x_ac_cpupower.m4])
 m4_include([m4/x_ac_freeipmi.m4])
@@ -124,17 +125,13 @@ fi
 if test "x$sysconfdir" = "x\${exec_prefix}/etc"; then
     sysconfdir=$exec_prefix/etc
 fi
-
 if test -z "$MPICC"; then
     MPICC=mpicc
 fi
 
-if test -z "$VERSION_TYPE"; then
-	VERSION_TYPE=0
-fi
-
 AC_SUBST(MPICC)
-AC_SUBST(VERSION_TYPE)
+
+AX_OPT_FEATURES
 
 ##########
 # OUTPUT #
