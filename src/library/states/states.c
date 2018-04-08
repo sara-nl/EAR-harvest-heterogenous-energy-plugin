@@ -268,7 +268,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					// Computing dynais overhead
 					if (dynais_enabled){
-						dynais_overhead_usec=mpi_calls_iter*0,5;
+						dynais_overhead_usec=mpi_calls_iter;
 						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.time;
 						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
 							// Disable dynais : API is still pending

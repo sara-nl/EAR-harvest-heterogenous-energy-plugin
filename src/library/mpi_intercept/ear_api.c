@@ -60,7 +60,7 @@ static uint ear_iterations;
 static int in_loop = 0;
 static uint mpi_calls_per_loop=0;
 
-#define MEASURE_DYNAIS_OV
+//#define MEASURE_DYNAIS_OV
 #ifdef MEASURE_DYNAIS_OV
 static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;
@@ -263,7 +263,15 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		begin_ov=PAPI_get_real_usec();
 		#endif
 		// This is key to detect periods
-		ear_status=dynais(ear_event,&ear_size,&ear_level);
+		if (dynais_enabled){ 
+			ear_status=dynais(ear_event,&ear_size,&ear_level);
+		}else{
+			if (last_calls_in_loop==mpi_calls_per_loop){
+				ear_status=NEW_ITERATION;
+			}else{		
+				ear_status=IN_LOOP;
+			}
+		}
 		#ifdef MEASURE_DYNAIS_OV
 		end_ov=PAPI_get_real_usec();
 		calls++;
