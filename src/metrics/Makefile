@@ -3,7 +3,7 @@ CFLAGS  = -fPIC -shared
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
-          		$(SRCDIR)/metrics/papi/energy_cpu.o \
+               $(SRCDIR)/metrics/papi/energy_cpu.o \
                $(SRCDIR)/metrics/papi/generics.o \
                $(SRCDIR)/metrics/papi/cache.o \
                $(SRCDIR)/metrics/papi/flops.o \
@@ -15,7 +15,6 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
 			   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o \
 			   $(SRCDIR)/metrics/custom/bandwidth.o \
 			   $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o
- 
 
 COMPONENTS = custom \
              ipmi \
