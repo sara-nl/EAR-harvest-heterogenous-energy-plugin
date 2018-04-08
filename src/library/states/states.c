@@ -89,7 +89,7 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
 	EAR_STATE = FIRST_ITERATION;
 	tries_current_loop=0;
 
-	models_new_loop();
+	policy_new_loop();
 	comp_N_begin = metrics_time();
 	traces_new_period(ear_my_rank, my_id, event);
 	loop_with_signature = 0;
@@ -104,7 +104,7 @@ void states_end_period(uint iterations)
 	}
 
 	loop_with_signature = 0;
-	models_end_loop();
+	policy_end_loop();
 }
 
 static unsigned int equal_with_th(double a, double b, double th)
@@ -412,7 +412,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 										ear_app_name);
 							comp_N_begin = metrics_time();
 
-							models_new_period();
+							policy_new_loop();
 						} else {
 							EAR_STATE = EVALUATING_SIGNATURE;
 						}
@@ -421,7 +421,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 			}
 			break;
-		case PROJECTION_ERROR:break;
+		case PROJECTION_ERROR:
+				// Go to the default frequency: PENDING
+				break;
 		default: break;
 	}
 }

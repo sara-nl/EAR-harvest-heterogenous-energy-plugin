@@ -27,7 +27,7 @@ double sig_power_projection(application_t *my_app,ulong F,uint Fi)
 {
 	double power,tpi,pp;
 	uint Fref;
-	my_app->DC_power;
+	power=my_app->DC_power;
 	tpi=my_app->TPI;
 	// Fref is the index in the pstate list
 	// F was ear_frequency
@@ -45,7 +45,7 @@ double sig_cpi_projection(application_t *my_app,ulong F,uint Fi)
 	Fref=frequency_freq_to_pstate(F);
 	tpi=my_app->TPI;
 	cpi=my_app->CPI;
-	cpi_pr=cpi_projection(tpi,cpi,coefficients[Fref][Fi].D,coefficients[Fref][Fi].E,coefficients[Fref][Fi].F);
+	cpi_pr=cpi_projection(cpi,tpi,coefficients[Fref][Fi].D,coefficients[Fref][Fi].E,coefficients[Fref][Fi].F);
 	return cpi_pr;
 }
 double sig_time_projection(application_t *my_app,ulong F,uint Fi,double cpi_pr)

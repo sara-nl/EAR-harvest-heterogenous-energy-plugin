@@ -160,7 +160,7 @@ void init_power_policy()
 	}
 
 	user_selected_freq = frequency_pstate_to_freq(EAR_default_pstate);
-
+	ear_verbose(0,"User selected freq is %lu\n",user_selected_freq);
 	// IMPORTANT: here is where the environment first P_STATE is set.
 	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);
 
@@ -304,12 +304,12 @@ unsigned long policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
 
 }
 
-void models_new_loop()
+void policy_new_loop()
 {
 	app_policy.new_loop();
 }
 
-void models_end_loop()
+void policy_end_loop()
 {
     app_policy.end_loop();
 }

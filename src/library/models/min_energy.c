@@ -37,9 +37,8 @@ extern coefficient_t **coefficients;
 // Process
 extern uint EAR_default_pstate;
 
-static uint ear_models_pstates = 0;
 static double time_max;
-static ulong user_selected_freq;
+extern ulong user_selected_freq;
 
 
 void min_energy_init(uint num_pstates)
@@ -74,6 +73,7 @@ ulong min_energy_policy(application_t *sig)
 	ulong best_pstate;
 	my_app=sig;
 
+	ear_verbose(1,"min_energy_policy starts \n");
 	if (ear_use_turbo) min_pstate=0;
 	else min_pstate=get_global_min_pstate();
 
@@ -90,6 +90,7 @@ ulong min_energy_policy(application_t *sig)
 	// is made for the reference P_STATE in case the coefficents were available.
 	if (ear_frequency != EAR_default_frequency) // Use configuration when available
 	{
+		ear_verbose(1,"We are not running at default freq\n");
 		if (coefficients[ref][EAR_default_pstate].available)
 		{
 				power_ref=sig_power_projection(my_app,ear_frequency,EAR_default_pstate);
@@ -113,6 +114,7 @@ ulong min_energy_policy(application_t *sig)
 	// is not needed, so the signature will be enough as a reference. 
 	else
 	{ // we are running at default frequency , signature is our reference
+			ear_verbose(1,"We are running at default freq\n");
 			time_ref=my_app->time;
 			power_ref=my_app->DC_power;
 			cpi_ref=my_app->CPI;
@@ -124,8 +126,10 @@ ulong min_energy_policy(application_t *sig)
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * performance_penalty);
 
+	ear_verbose(1,"min_pstate %u max_pstate %u\n",min_pstate,me_policy_pstates);
+
 	// MIN_ENERGY_TO_SOLUTION BEGIN
-	for (i = min_pstate; i < ear_models_pstates;i++)
+	for (i = min_pstate; i < me_policy_pstates;i++)
 	{
 		// If coeffs are available
 		if (coefficients[ref][i].available)
@@ -137,10 +141,10 @@ ulong min_energy_policy(application_t *sig)
 				energy_proj=power_proj*time_proj;
 
 				RANK(0) {
-					VERBOSE_N(2, "Projection (%u): [power: %lf, time: %lf, energy: %lf]",
+					VERBOSE_N(1, "Projection (%u): [power: %lf, time: %lf, energy: %lf]",
 						coefficients[ref][i].pstate, power_proj, time_proj, energy_proj);
 				}
-
+			ear_verbose(1,"pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
 					best_pstate = coefficients[ref][i].pstate;
@@ -159,7 +163,7 @@ ulong min_energy_policy(application_t *sig)
 		best_pstate=system_conf->max_freq;
 	}
 	#endif
-
+	ear_verbose(1,"min_energy_policy ends ---> %lu\n",best_pstate);
 	return best_pstate;
 }
 

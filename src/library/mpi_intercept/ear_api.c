@@ -306,7 +306,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 			if (loop_with_signature)
 			{
-				ear_verbose(1,"NEW_ITERATION level %u event %u size %u iterations %u\n",
+				ear_verbose(2,"NEW_ITERATION level %u event %u size %u iterations %u\n",
 					ear_level, ear_event, ear_loop_size, ear_iterations);
 			}
 

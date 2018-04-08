@@ -477,8 +477,9 @@ int eard_system(int must_read)
 void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 {
 	unsigned long ear_ok,freq;
-	if (new_freq<=max_freq) freq=new_freq;
-	else{ 
+	if (new_freq<=max_freq){ 
+		freq=new_freq;
+	}else{ 
 		ear_verbose(1,"eard: warning, maximum freq is limited to %lu\n",max_freq);
 		freq=max_freq;
 	}
@@ -769,6 +770,7 @@ void main(int argc,char *argv[])
 
 	ear_node_freq = frequency_pstate_to_freq(eard_max_pstate);
 	eard_max_freq = ear_node_freq;
+	VERBOSE_N(0,"Default max frequency defined to %lu\n",eard_max_freq);
 
 	// Aperf (later on inside frequency_init(), but no more
 	uint num_cpus = frequency_get_num_online_cpus();
