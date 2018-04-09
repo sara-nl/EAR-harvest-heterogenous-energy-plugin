@@ -168,6 +168,7 @@ fi
 AC_CONFIG_FILES([Makefile
                  etc/module/ear
                  etc/slurm/ear.conf
+                 etc/slurm/ear.link
                  etc/slurm/plugstack.conf
                  src/common/config.h])
 #AC_CONFIG_HEADERS([src/common/config.h])
