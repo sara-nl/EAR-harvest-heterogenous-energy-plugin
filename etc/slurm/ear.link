@@ -1,0 +1,7 @@
+EAR_INSTALL_PATH=/home/xjaneas/ear
+CPUPOWER_LIB_PATH=/usr/lib64
+FREEIPMI_LIB_PATH=/home/xjcorbalan/lib
+SLURM_LIB_PATH=/home/xjaneas/slurm/lib
+PAPI_LIB_PATH=/hpc/base/ctt/packages/papi/5.4.3/lib
+GSL_LIB_PATH=/hpc/base/ctt/packages/gsl/1.16/lib
+EAR_TMP=/tmp
