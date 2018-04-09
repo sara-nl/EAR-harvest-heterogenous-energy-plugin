@@ -51,18 +51,14 @@ all: libear.so libeart.so
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
-
-update-traceoff-objs:
-	@ make -B $(TRACE_OBJS) 
-
-libear.so: update-traceoff-objs $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
+libear.so: $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 
 update-trace-objs:
 	@ make -B $(TRACE_OBJS) CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 libeart.so: update-trace-objs $(TRACE_OBJS)
-	$(CC) $(CFLAGS) -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
+	$(CC) $(CFLAGS) -DEAR_GUI -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 
 ######## OPTIONS
 
