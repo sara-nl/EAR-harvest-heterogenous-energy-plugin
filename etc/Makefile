@@ -19,6 +19,7 @@ install:
 	@ mkdir -p ${INSTALL_FOLDERS}
 	cp    module/ear $(DESTDIR)/etc/module/
 	cp -n slurm/ear.conf $(DESTDIR)/etc/slurm/
+	cp -n slurm/ear.link $(DESTDIR)/etc/slurm/
 	cp -n slurm/plugstack.conf $(DESTDIR)/etc/slurm/
 	cp    scripts/examples/* $(DESTDIR)/etc/scripts/examples/
 	cp    scripts/running/* $(DESTDIR)/etc/scripts/running/

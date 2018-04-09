@@ -1,15 +1,19 @@
 #include <linux/limits.h>
 
+// Emergency paths
 #define CPUPOWER_LIB_PATH   "@CPUPOWER_LIBDIR@"
 #define FREEIPMI_LIB_PATH   "@FREEIPMI_LIBDIR@"
 #define SLURM_LIB_PATH      "@SLURM_LIBDIR@"
 #define PAPI_LIB_PATH       "@PAPI_LIBDIR@"
 #define GSL_LIB_PATH        "@GSL_LIBDIR@"
-
 #define EAR_INSTALL_PATH    "@prefix@"
+
+// File names
 #define EAR_LIB_PATH        "lib/libear.so"
 #define EAR_TRACE_LIB_PATH  "lib/libeart.so"
 #define EAR_DAEMON_PATH     "sbin/eard"
+#define EAR_CONF_FILE		"ear.conf"
+#define EAR_LINK_FILE		"ear.link"
 
 // Compile version type
 #define DEVELOPMENT			0
