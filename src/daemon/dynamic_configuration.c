@@ -6,12 +6,14 @@
         Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
 
 */
+
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <pthread.h>
+#include <string.h>
 #include <signal.h>
+#include <pthread.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -24,8 +26,6 @@
 #include <common/shared_configuration.h>
 #include <common/states.h>
 #include <common/remote_conf.h>
-
-
 
 
 int create_server_socket();
