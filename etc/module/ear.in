@@ -11,7 +11,7 @@ module-whatis "Enable usage of Energy Aware Runtime"
 setenv			EAR_INSTALL_PATH			@prefix@
 setenv			EAR_LIB_PATH				@prefix@/lib/libear.so
 setenv			EAR_TRACE_LIB_PATH			@prefix@/lib/libeart.so
-setenv			EAR_TMP						@prefix@/tmp
+setenv			EAR_TMP						@localstatedir@
 setenv			EAR_LEARNING_PHASE			0
 setenv			EAR_POWER_POLICY			MONITORING_ONLY
 setenv			EAR_COEFF_DB_PATHNAME		@prefix@/coeffs/coeff.
