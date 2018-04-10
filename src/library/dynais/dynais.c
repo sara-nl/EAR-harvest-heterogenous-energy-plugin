@@ -47,7 +47,7 @@
 
 
 // Local defines
-#define AVX_512 1
+#define AVX_512 0
 #define ALI64 __attribute__ ((aligned (64)))
 
 // General indexes.

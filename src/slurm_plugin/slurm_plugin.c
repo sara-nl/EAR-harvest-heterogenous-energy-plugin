@@ -14,7 +14,7 @@
 #include <common/string_enhanced.h>
 #include <common/config.h>
 
-#define FUNCTION_INFO(function) 
+#define FUNCTION_INFO(function)
 #define SPANK_ERROR(string)                            \
     slurm_error(string);
 #define SPANK_STRERROR(string, var)                    \
@@ -179,9 +179,10 @@ static int local_update_ld_library_path()
     appendenv(buffer, FREEIPMI_LIB_PATH);
     appendenv(buffer, PAPI_LIB_PATH);
    
-    slurm_error("NOT AN ERROR: %s", buffer); 
+    //slurm_error("NOT AN ERROR: %s", buffer); 
     //
-    return setenv_local("LD_LIBRARY_PATH", buffer, 1);
+    
+	return setenv_local("LD_LIBRARY_PATH", buffer, 1);
 }
 
 //TODO: comprobar todos los tipos de --cpu-freq

@@ -1,6 +1,5 @@
-DIR          = $(ROOTDIR)/src/slurm_plugin
-CFLAGS       = -I$(DIR) -I$(ROOTDIR)/src/common $(CPUF_CFLAGS) $(SLURM_CFLAGS) -fPIC
-LDFLAGS      = -shared $(CPUF_LDFLAGS)
+CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(CPUF_CFLAGS) $(SLURM_CFLAGS)
+LDFLAGS = -shared $(CPUF_LDFLAGS)
 
 ######## FILES
 
@@ -12,10 +11,10 @@ OBJS = slurm_plugin_helper.o
 
 all: earplug.so
 
-%.o: %.c $(OUTER_OBJS)
+slurm_plugin_helper.o: slurm_plugin_helper.c $(OUTER_OBJS)
 	$(CC) $(CFLAGS) -c slurm_plugin_helper.c
 
-earplug.so: ear_slurm_plugin.c $(OBJS)
+earplug.so: slurm_plugin.c $(OBJS)
 	$(CC) $(CFLAGS) -o earplug.so slurm_plugin.c $(LDFLAGS) $(OBJS) $(OUTER_OBJS)
 
 ######## OPTIONS
