@@ -1,10 +1,30 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
 #include <mpi.h>
@@ -293,6 +313,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			break;
 		case END_NEW_LOOP:
 			ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
+			if (loop_with_signature) ear_verbose(1,"EAR:loop ends with %d iterations detected\n",ear_iterations);
 			loop_with_signature=0;
 			traces_end_period(ear_my_rank, my_id);
 			states_end_period(ear_iterations);
@@ -306,7 +327,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 			if (loop_with_signature)
 			{
-				ear_verbose(2,"NEW_ITERATION level %u event %u size %u iterations %u\n",
+				ear_verbose(1,"NEW_ITERATION level %u event %u size %u iterations %u\n",
 					ear_level, ear_event, ear_loop_size, ear_iterations);
 			}
 
@@ -316,6 +337,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			break;
 		case END_LOOP:
 			ear_debug(4,"END_LOOP event %u\n",ear_event);
+			if (loop_with_signature) ear_verbose(1,"EAR: loop ends with %d iterations detected\n",ear_iterations);
 			loop_with_signature=0;
 			states_end_period(ear_iterations);
 			traces_end_period(ear_my_rank, my_id);
@@ -362,6 +384,7 @@ void ear_finalize()
 	dynais_dispose();
 	
 	// Closing any remaining loop
+	if (loop_with_signature) ear_verbose(1,"EAR: loop ends with %d iterations detected\n",ear_iterations);
 	if (in_loop) states_end_period(ear_iterations);
 	states_end_job(my_id, NULL, ear_app_name);
 

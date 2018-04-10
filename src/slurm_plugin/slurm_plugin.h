@@ -27,13 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-#ifndef _MPI_TYPES_H_
-#define _MPI_TYPES_H
-
-#define p2i unsigned long
-
-#else
-#endif
-
-
+static int _opt_ear (int val, const char *optarg, int remote);
+static int _opt_ear_learning (int val, const char *optarg, int remote);
+static int _opt_ear_policy (int val, const char *optarg, int remote);
+static int _opt_ear_threshold (int val, const char *optarg, int remote);
+static int _opt_ear_user_db (int val, const char *optarg, int remote);
+static int _opt_ear_verbose (int val, const char *optarg, int remote);
+static int _opt_ear_traces (int val, const char *optarg, int remote);

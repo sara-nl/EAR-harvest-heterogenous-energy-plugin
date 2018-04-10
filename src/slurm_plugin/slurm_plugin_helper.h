@@ -27,13 +27,20 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#ifndef EAR_SLURM_PLUGIN_HELPER_H
+#define EAR_SLURM_PLUGIN_HELPER_H
 
-#ifndef _MPI_TYPES_H_
-#define _MPI_TYPES_H
+void appendenv(char *destiny, char *source);
+int setenv_local(const char *name, const char *value, int replace);
+int setenv_remote(spank_t sp, char *name, char *value, int replace);
+int getenv_remote(spank_t sp, char *name, char *value, int length);
+int existenv_local(char *name);
+int existenv_remote(spank_t sp, char *name);
+int isenv_local(char *name, char *value);
+int isenv_remote(spank_t sp, char *name, char *value);
 
-#define p2i unsigned long
+int freq_to_p_state(int freq);
+int file_to_environment(spank_t sp, const char *path);
+int find_ear_conf_file(spank_t sp, int ac, char **av);
 
-#else
-#endif
-
-
+#endif //EAR_SLURM_PLUGIN_HELPER_H

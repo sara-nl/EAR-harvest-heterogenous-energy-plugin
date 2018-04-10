@@ -21,10 +21,12 @@ DB_Learning_phase/
 *log.env
 *hostlist
 *sim_metrics.csv
+sim_metrics.csv
 
 # Build
 etc/module/ear
 etc/slurm/ear.conf
+etc/slurm/ear.link
 etc/slurm/plugstack.conf
 src/common/config.h
 tests/check/check.sh
@@ -32,6 +34,10 @@ tests/check/check.sh
 *libear.so
 *libeart.so
 *eard
+
+*ear_control
+*ear_get_node_freq
+*ear_set_node_freq
 
 src/tools/input
 *compute_coefficients_remote
@@ -49,5 +55,3 @@ CMake*
 # Kernels
 npbparams.h
 setparams
-
-sim_metrics.csv
