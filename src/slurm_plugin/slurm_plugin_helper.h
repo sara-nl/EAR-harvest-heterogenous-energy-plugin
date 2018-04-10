@@ -27,37 +27,20 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#ifndef EAR_SLURM_PLUGIN_HELPER_H
+#define EAR_SLURM_PLUGIN_HELPER_H
 
-/** This program sets the node frequency . It must be executed with privileges
-*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
+void appendenv(char *destiny, char *source);
+int setenv_local(const char *name, const char *value, int replace);
+int setenv_remote(spank_t sp, char *name, char *value, int replace);
+int getenv_remote(spank_t sp, char *name, char *value, int length);
+int existenv_local(char *name);
+int existenv_remote(spank_t sp, char *name);
+int isenv_local(char *name, char *value);
+int isenv_remote(spank_t sp, char *name, char *value);
 
-#include <control/frequency.h>
+int freq_to_p_state(int freq);
+int file_to_environment(spank_t sp, const char *path);
+int find_ear_conf_file(spank_t sp, int ac, char **av);
 
-int EAR_VERBOSE_LEVEL=1;
-void usage(char *app)
-{
-	printf("usage:%s node_freq (in MHz)\n",app);
-	printf("	requires root privileges\n");
-	printf("	execute it with sudo\n");
-	exit(1);
-}
-void main(int argc,char *argv[])
-{
-	int uid;
-	ulong f;
-	if (argc!=2) usage(argv[0]);
-	if (getuid()!=0) usage(argv[0]);
-	f=(ulong)atoi(argv[1]);	
-	printf("This program will change the governor to userspace and set the node f to %lu\n",f);
-	frequency_init();
-	frequency_set_userspace_governor_all_cpus();
-	if (frequency_set_all_cpus(f)!=f){
-		printf("warning, node freq was not changed correctly\n");
-	}
-	frequency_dispose();
-	
-}
+#endif //EAR_SLURM_PLUGIN_HELPER_H

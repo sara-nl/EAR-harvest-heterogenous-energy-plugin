@@ -1,5 +1,5 @@
 .c.o :
-	$(CC) $(CFLAGS) -qopt-prefetch -axMIC-AVX512 -O3 -c -funroll-loops -o $@ $<
+	$(CC) $(CFLAGS) -march=native -c -o $@ $<
 
 clean:
 	rm -rf *.o
