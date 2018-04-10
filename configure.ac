@@ -129,41 +129,29 @@ AC_DEFUN([AC_DEPENDANCY_CHECK],
 	fi
 ])
 
-AC_DEFUN([AC_DEPEND_CHECK],
+AC_DEFUN([AC_FEATURE_CHECK],
 [
-    AC_MSG_CHECKING($2)
+	AC_MSG(Enabled $2 feature...)
 
-    if test -n "$1"; then
+    if test -z "$1"; then
         AC_MSG_RESULT(yes)
     else    
-        if test $3 == 1; then 
-            COMPILABLE=""
-        fi
         AC_MSG_RESULT(no)
     fi
 ])
 
-echo "----------------------------------------Checking summary --"
+echo "---------------------------------------Checking summary --"
 AC_DEPENDANCY_CHECK($PAPI_DIR, PAPI dependancy found, 1)
 AC_DEPENDANCY_CHECK($GSL_DIR, GSL dependancy found, 1)
 AC_DEPENDANCY_CHECK($CPUPOWER_DIR, CPUPower dependancy found, 1)
 AC_DEPENDANCY_CHECK($SLURM_DIR, SLURM dependancy found, 0)
 AC_DEPENDANCY_CHECK($FREEIPMI_DIR, FreeIPMI dependancy found, 1)
-echo "----------------------------------------------------------"
 
 if test -z $COMPILABLE; then
 	AC_MSG_ERROR(not compilable)
 fi
 
-echo "---------------------------------------- Define summary --"
-echo CC $CC
-echo CFLAGS $CFLAGS
-echo LDFLAGS $LDFLAGS
-echo LIBS $LIBS
-echo CPPFLAGS $CPPFLAGS
-echo MPICC $MPICC
-echo TMP \t\t $localstatedir
-echo Defined variable BUILD_TYPE with value '$BUILD_TYPE'
+echo "-------------------------------------- Features summary --"
 echo "----------------------------------------------------------"
 
 AC_CONFIG_FILES([Makefile
