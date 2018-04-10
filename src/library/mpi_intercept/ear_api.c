@@ -293,6 +293,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			break;
 		case END_NEW_LOOP:
 			ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
+			if (loop_with_signature) ear_verbose(1,"EAR:loop ends with %d iterations detected\n",ear_iterations);
 			loop_with_signature=0;
 			traces_end_period(ear_my_rank, my_id);
 			states_end_period(ear_iterations);
@@ -306,7 +307,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 			if (loop_with_signature)
 			{
-				ear_verbose(2,"NEW_ITERATION level %u event %u size %u iterations %u\n",
+				ear_verbose(1,"NEW_ITERATION level %u event %u size %u iterations %u\n",
 					ear_level, ear_event, ear_loop_size, ear_iterations);
 			}
 
@@ -316,6 +317,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			break;
 		case END_LOOP:
 			ear_debug(4,"END_LOOP event %u\n",ear_event);
+			if (loop_with_signature) ear_verbose(1,"EAR: loop ends with %d iterations detected\n",ear_iterations);
 			loop_with_signature=0;
 			states_end_period(ear_iterations);
 			traces_end_period(ear_my_rank, my_id);
@@ -362,6 +364,7 @@ void ear_finalize()
 	dynais_dispose();
 	
 	// Closing any remaining loop
+	if (loop_with_signature) ear_verbose(1,"EAR: loop ends with %d iterations detected\n",ear_iterations);
 	if (in_loop) states_end_period(ear_iterations);
 	states_end_job(my_id, NULL, ear_app_name);
 

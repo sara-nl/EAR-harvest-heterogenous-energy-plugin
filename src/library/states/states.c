@@ -51,7 +51,7 @@ static uint perf_count_period = 100,loop_perf_count_period;
 static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
 
-#define DYNAIS_CUTOFF	0
+#define DYNAIS_CUTOFF	1
 
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
