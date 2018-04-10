@@ -1,7 +1,0 @@
-EAR_INSTALL_PATH=/home/xjaneas/ear
-CPUPOWER_LIB_PATH=/usr/lib64
-FREEIPMI_LIB_PATH=/home/xjaneas/opt/lib
-SLURM_LIB_PATH=
-PAPI_LIB_PATH=/home/xjaneas/opt/lib
-GSL_LIB_PATH=/usr/lib64
-EAR_TMP=/tmp
