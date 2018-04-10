@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "loop.h"
-#include "states.h"
+#include <common/types/loop.h>
+#include <common/states.h>
 
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH

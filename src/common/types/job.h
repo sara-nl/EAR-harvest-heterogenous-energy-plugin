@@ -2,7 +2,7 @@
 #define _EAR_TYPES_JOB
 #include <stdint.h>
 #include <time.h>
-#include "generic.h"
+#include <common/types/generic.h>
 
 typedef uint8_t	job_type;
 typedef ulong	job_id;

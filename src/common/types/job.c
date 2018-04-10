@@ -1,6 +1,7 @@
 #include <time.h>
 #include <string.h>
-#include "job.h"
+#include <stdio.h>
+#include <common/types/job.h>
 
 void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs)
 {
@@ -28,5 +29,5 @@ void copy_job(job_t *destiny, job_t *source)
 
 void print_job_fd(int fd, job_t *job)
 {
-    dprintf(fd, "%s;%ul;%s;%s;%lf", job->user_id, job->id, job->app_id, job->policy, job->th);
+    dprintf(fd, "%s;%lu;%s;%s;%lf", job->user_id, job->id, job->app_id, job->policy, job->th);
 }

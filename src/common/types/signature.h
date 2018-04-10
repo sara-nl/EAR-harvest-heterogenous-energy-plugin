@@ -2,7 +2,7 @@
 #ifndef _EAR_TYPES_SIGNATURE
 #define _EAR_TYPES_IGNATURE
 
-#include "generic.h"
+#include <common/types/generic.h>
 
 #define FLOPS_EVENTS 8
 
