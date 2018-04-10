@@ -22,10 +22,14 @@
 #define END_NEW_LOOP    4
 
 // Functions
+/** Given a sample and its size, returns the state the application is in (in
+*   a loop, in an iteration, etc.). */
 int dynais(unsigned long sample, unsigned int *size, unsigned int *level);
 
+/** Allocates memory in preparation to use dynais. Returns 0 on success */
 int dynais_init(unsigned int window, unsigned int levels);
 
+/** Frees the memory previously allocated */
 void dynais_dispose();
 
 #endif //EAR_DYNAIS_H
