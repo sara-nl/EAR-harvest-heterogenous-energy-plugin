@@ -12,6 +12,8 @@ AC_DEFUN([AX_OPT_FEATURES],
 	#
 	#
 	#
+	AC_ARG_VAR([MPICC],[Defines the MPI compiler (default: mpicc)])
+	AC_ARG_VAR([TMP],[Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear)])
 
 	if test "x$prefix" = "xNONE";then
     	prefix=/usr/local

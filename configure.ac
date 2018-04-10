@@ -129,17 +129,30 @@ AC_DEFUN([AC_DEPENDANCY_CHECK],
 	fi
 ])
 
-echo "----------------------------------------------- Summary --"
+AC_DEFUN([AC_FEATURE_CHECK],
+[
+ 	if test "x$1" = "xyes"; then
+        AC_MSG_RESULT(Enabled $2 feature... yes)
+    else    
+        AC_MSG_RESULT(Enabled $2 feature... no)
+    fi
+])
+
+echo "---------------------------------------Checking summary --"
 AC_DEPENDANCY_CHECK($PAPI_DIR, PAPI dependancy found, 1)
 AC_DEPENDANCY_CHECK($GSL_DIR, GSL dependancy found, 1)
 AC_DEPENDANCY_CHECK($CPUPOWER_DIR, CPUPower dependancy found, 1)
 AC_DEPENDANCY_CHECK($SLURM_DIR, SLURM dependancy found, 0)
 AC_DEPENDANCY_CHECK($FREEIPMI_DIR, FreeIPMI dependancy found, 1)
-echo "----------------------------------------------------------"
 
 if test -z $COMPILABLE; then
 	AC_MSG_ERROR(not compilable)
 fi
+
+echo "-------------------------------------- Features summary --"
+AC_FEATURE_CHECK($enable_power_monitoring, power monitoring)
+AC_FEATURE_CHECK($enable_shared_memory, shared memory)
+echo "----------------------------------------------------------"
 
 AC_CONFIG_FILES([Makefile
                  etc/module/ear
