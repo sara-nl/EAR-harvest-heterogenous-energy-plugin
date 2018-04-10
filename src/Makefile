@@ -6,7 +6,9 @@ COMPONENTS = common \
              library \
              daemon \
              tools \
-             tests
+             tests \
+			 commands
+
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif

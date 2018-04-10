@@ -477,6 +477,7 @@ int eard_system(int must_read)
 void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 {
 	unsigned long ear_ok,freq;
+	ear_verbose(1,"eard:setting node frequency . requested %lu, max %lu\n",new_freq,max_freq);
 	if (new_freq<=max_freq){ 
 		freq=new_freq;
 	}else{ 
@@ -484,6 +485,7 @@ void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 		freq=max_freq;
 	}
 	ear_ok=frequency_set_all_cpus(freq);
+	if (ear_ok!=freq) ear_verbose(1,"eard: warning, frequency is not correctly changed\n");
 	write(ear_fd_ack[freq_req],&ear_ok,sizeof(unsigned long));  
 }
 
@@ -642,42 +644,6 @@ int eard_rapl(int must_read)
 }
 /// END RAPL SERVICES
 
-// Depending on MULTIPLE_SERVICES we can have multiple entry points or just one
-#ifdef MULTIPLE_SERVICES
-void select_service(int i)
-{
-	int ret=0;
-	switch (i){
-		case freq_req:
-			ear_debug(1,"eard: frequency service\n");
-			ret=eard_freq(1);
-			break;
-		case uncore_req:
-			ear_debug(1,"eard uncore service\n");
-			ret=eard_uncore(1);
-			break;
-		case rapl_req:
-			ear_debug(1,"eard rapl service \n");
-			ret=eard_rapl(1);
-			break;  
-		case system_req:
-			ear_debug(1,"eard system service \n");
-			ret=eard_system(1);
-			break;
-		case node_energy_req:
-			ear_debug(1,"eard node_energy service\n");
-			ret=eard_node_energy(1);
-			break;
-		default:
-			ear_verbose(0,"eard: Error, request received not supported\n");
-			eard_close_comm();
-	}
-	if (ret==0){
-			ear_verbose(0,"eard: Error, request received not supported\n");
-			eard_close_comm();
-	}
-}
-#else
 void select_service(int fd)
 {
     if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at select_service\n");
@@ -704,7 +670,6 @@ void select_service(int fd)
 	ear_verbose(0,"eard: Error, request received not supported\n");
 	eard_close_comm();
 }
-#endif
 //
 // MAIN eard: eard default_freq [path for communication files]
 //

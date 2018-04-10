@@ -51,6 +51,8 @@ static uint perf_count_period = 100,loop_perf_count_period;
 static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
 
+#define DYNAIS_CUTOFF	0
+
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
@@ -272,7 +274,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.time;
 						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
 							// Disable dynais : API is still pending
+							#if DYNAIS_CUTOFF
 							dynais_enabled=0;
+							#endif
 							VERBOSE_N(0,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
 							log_report_dynais_off(my_job_id);
 						}
