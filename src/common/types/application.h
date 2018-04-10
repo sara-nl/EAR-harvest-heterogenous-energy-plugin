@@ -9,7 +9,11 @@
 #ifndef _EAR_TYPES_APPLICATION
 #define _EAR_TYPES_APPLICATION
 
+#ifdef _FINAL_
 #include <common/types/generic.h>
+#else
+#include "generic.h"
+#endif
 
 #define GENERIC_NAME	256
 #define POLICY_NAME		32

@@ -37,3 +37,23 @@ uint are_equal(signature_t *sig1, signature_t *sig2, double th)
     if (!equal_with_th(sig1->Gflops, sig2->Gflops, th)) return 0;    
     return 1;
 }
+
+void print_signature_fd(int fd, signature_t *sig)
+{
+    //print order: AVG.FREQ;DEF.FREQ;" \
+        "TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;CYCLES;INSTRUCTIONS;L1_MISSES;" \
+        "L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;" \
+        "DP_512;
+    int i;
+    
+	dprintf(fd, "%u;%u;", sig->avg_f, sig->def_f);
+	dprintf(fd, "%lf;%lf;%lf;%lf;", sig->time, sig->CPI, sig->TPI, sig->GBS);
+	dprintf(fd, "%lf;%lf;%lf;", sig->DC_power, sig->DRAM_power, sig->PCK_power);
+	dprintf(fd, "%llu;%llu;", sig->cycles, sig->instructions);
+	dprintf(fd, "%llu;%llu;%llu;", sig->L1_misses, sig->L2_misses, sig->L3_misses);
+	dprintf(fd, "%lf;%llu", sig->Gflops, sig->FLOPS[0]);
+
+    for (i = 1; i < FLOPS_EVENTS; ++i) {
+		dprintf(fd, ";%llu", sig->FLOPS[i]);
+	}
+}

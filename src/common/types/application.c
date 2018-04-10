@@ -4,9 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef _FINAL_
 #include <common/types/application.h>
 #include <common/string_enhanced.h>
 #include <common/states.h>
+#else
+#include "application.h"
+#include "string_enhanced.h"
+#include "states.h"
+#endif
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND

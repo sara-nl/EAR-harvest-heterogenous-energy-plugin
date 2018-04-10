@@ -34,7 +34,7 @@ typedef struct job
 
 
 // Must be called just once. memory is allocated if needed. values automatically initialized are (job_id, user_id, start_time,end_time,type). 
-void init_job(job_t *job,ulong def_f,char *policy,double th,ulong   procs);
+void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs);
 
 ulong start_mpi(job_t *job);
 ulong end_mpi(job_t *job);
@@ -43,5 +43,7 @@ ulong end_mpi(job_t *job);
 void copy_job(job_t *destiny, job_t *source);
 // ?? Really needed
 void end_job(job_t *job);
+
+void print_job_fd(int fd, job_t *job);
 
 #endif

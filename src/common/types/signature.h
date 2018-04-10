@@ -33,10 +33,14 @@ typedef struct signature
 //
 void copy_signature(signature_t *destiny, signature_t *source);
 
-// Resets values
+/** Resets values. */
 void init_signature(signature_t *sig);
 
-// returns true if basic values for sig1 and sig2 are equal with a maximum % of difference defined by th
+/** returns true if basic values for sig1 and sig2 are equal with a maximum %
+*   of difference defined by threshold (th) */
 uint are_equal(signature_t *sig1,signature_t *sig2,double th);
+
+/** Outputs the signature contents to the file pointed by the fd. */
+void print_signature_fd(int fd, signature_t *sig);
 
 #endif
