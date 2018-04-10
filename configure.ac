@@ -107,30 +107,6 @@ X_AC_FREEIPMI
 ####################
 #
 
-if test "x$prefix" = "xNONE";then
-    prefix=/usr/local
-fi
-if test "x$exec_prefix" = "xNONE"; then
-    exec_prefix=$prefix
-fi
-if test "x$libdir" = "x\${exec_prefix}/lib"; then
-    libdir=$exec_prefix/lib
-fi
-if test "x$bindir" = "x\${exec_prefix}/bin"; then
-    bindir=$exec_prefix/bin
-fi
-if test "x$sbindir" = "x\${exec_prefix}/sbin"; then
-    sbindir=$exec_prefix/sbin
-fi
-if test "x$sysconfdir" = "x\${exec_prefix}/etc"; then
-    sysconfdir=$exec_prefix/etc
-fi
-if test -z "$MPICC"; then
-    MPICC=mpicc
-fi
-
-AC_SUBST(MPICC)
-
 AX_OPT_FEATURES
 
 ##########
