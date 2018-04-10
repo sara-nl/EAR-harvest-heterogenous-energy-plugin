@@ -47,7 +47,7 @@
 
 
 // Local defines
-#define AVX_512 0
+#define AVX_512 1
 #define ALI64 __attribute__ ((aligned (64)))
 
 // General indexes.
@@ -79,20 +79,22 @@ int dynais_init(unsigned int window, unsigned int levels)
     int mem_res1, mem_res2, mem_res3, mem_res4;
     int i, k;
 
+	unsigned int multiple = window / 16;
+	window = 16 * (multiple + 1);
+	
+	#if AVX_512
+	#define __dyn_size __m512i
+	#else
+	#define __dyn_size long
+	#endif
+
     _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
     _levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
 
-	#if AVX_512
-	unsigned int multiple = _window / 16;
-	_window = 16 * (multiple + 1);
-	#else
-	#define __m512i long
-	#endif
-
-    mem_res1 = posix_memalign((void *) &p_smpls, sizeof(__m512i), sizeof(long) * window * levels);
-    mem_res3 = posix_memalign((void *) &p_sizes, sizeof(__m512i), sizeof(int)  * window * levels);
-    mem_res2 = posix_memalign((void *) &p_zeros, sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
-    mem_res4 = posix_memalign((void *) &p_indes, sizeof(__m512i), sizeof(int)  * (window + 8) * levels);
+	mem_res1 = posix_memalign((void *) &p_smpls, sizeof(__dyn_size), sizeof(long) * _window * levels);
+    mem_res3 = posix_memalign((void *) &p_sizes, sizeof(__dyn_size), sizeof(int)  * _window * levels);
+    mem_res2 = posix_memalign((void *) &p_zeros, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
+    mem_res4 = posix_memalign((void *) &p_indes, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
 
     //EINVAL = 22, ENOMEM = 12
     if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
@@ -107,17 +109,17 @@ int dynais_init(unsigned int window, unsigned int levels)
         level_length[i] = 0;
 
 		// Normal window allocations
-        samples_vec[i] = &p_smpls[i * window];
-        sizes_vec[i] = &p_sizes[i * window];
+        samples_vec[i] = &p_smpls[i * _window];
+        sizes_vec[i] = &p_sizes[i * _window];
 	
 		// Extended window allocations
-        zeros_vec[i] = &p_zeros[i * (window + 8)];
-		indes_vec[i] = &p_indes[i * (window + 8)];
+        zeros_vec[i] = &p_zeros[i * (_window + 8)];
+		indes_vec[i] = &p_indes[i * (_window + 8)];
 
-		for (k = 0; k < window; ++k) {
+		for (k = 0; k < _window; ++k) {
 			indes_vec[i][k] = k-1;
 		}
-		indes_vec[i][0] = window - 1;
+		indes_vec[i][0] = _window - 1;
     }
     
 	return 0;
@@ -224,6 +226,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	__mmask8 mmask_test1_2;
 	__mmask16 mmask_test1;
 	__mmask16 mmask_test2;
+	__mmask16 mmask_test3;
 
 	/*
 	 * Phase 0, initialization
@@ -299,8 +302,11 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		// - max_zeros_provisional[i]  > max_zeros[i]: obligadamente reemplazable
 		// - max_zeros_provisional[i] == max_zeros[i]: posiblemente reemplazable
 		mmask_test2 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_LT);	
-		mmask_test2 = _mm512_mask_cmp_epu32_mask(mmask_test2, max_indes_block_aux, max_indes_block, _MM_CMPINT_LT);
-	
+		mmask_test3 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_EQ);	
+		
+		mmask_test3 = _mm512_mask_cmp_epu32_mask(mmask_test3, max_indes_block_aux, max_indes_block, _MM_CMPINT_LT);
+		mmask_test2 = mmask_test2 | mmask_test3;
+
 		//	
 		max_zeros_block = _mm512_mask_mov_epi32(max_zeros_block, mmask_test2, max_zeros_block_aux);
 		max_indes_block = _mm512_mask_mov_epi32(max_indes_block, mmask_test2, max_indes_block_aux);
@@ -310,6 +316,8 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	max_zeros_block_aux	= _mm512_set1_epi32(max_zeros);
 	mmask_test2     	= _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_EQ);
 	max_length      	= _mm512_mask_reduce_min_epu32(mmask_test2, max_indes_block);
+
+    max_length = max_length & ((max_length == 0xFFFFFFFF) - 1);
 
 	/*
 	 * Phase 2, evaluation
