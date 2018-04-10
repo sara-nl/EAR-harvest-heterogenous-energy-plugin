@@ -141,7 +141,7 @@ int frequency_init()
 	VERBOSE_N(2, "detected %u CPUs", num_cpus);
 
 	//
-	freq_list_cpu = get_frequencies_cpu(num_cpus);
+	freq_list_cpu = get_frequencies_cpu();
 
 	//
 	freq_list_rank = get_frequencies_rank();
@@ -244,7 +244,7 @@ ulong *frequency_get_freq_rank_list()
 ulong frequency_pstate_to_freq(uint pstate)
 {
 	if (pstate >= num_freqs) {
-		VERBOSE_N(0, "higher P_STATE (%u) than the maximum, returning nominal", pstate, num_freqs);
+		VERBOSE_N(0, "higher P_STATE (%u) than the maximum (%u), returning nominal", pstate, num_freqs);
 		return 1;
 	}
 	return freq_list_rank[pstate];
