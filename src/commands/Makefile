@@ -17,7 +17,7 @@ ear_get_node_freq:ear_get_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_get_node_freq ear_get_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
 install:
-	cp $(BINARIES) $(EAR_INSTALL_PATH)/bin
+	cp $(BINARIES) $(DESTDIR)/bin
 
 clean:
 	rm -rf $(BINARIES)

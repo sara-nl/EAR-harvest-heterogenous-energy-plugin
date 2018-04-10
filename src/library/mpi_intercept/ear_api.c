@@ -132,7 +132,6 @@ void ear_init()
 	EAR_VERBOSE_LEVEL = get_ear_verbose();
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
-   	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
 	my_id = get_ear_local_id();
 
@@ -145,6 +144,7 @@ void ear_init()
 	}
 
 	if (my_id) return;
+   	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
 	if (ear_my_rank == 0)
 	{
