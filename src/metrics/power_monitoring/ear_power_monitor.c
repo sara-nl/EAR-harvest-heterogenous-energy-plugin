@@ -23,6 +23,7 @@ rapl_data_t *RAPL_metrics;
 static uint8_t rootp=0;
 static uint8_t pm_already_connected=0;
 static uint8_t pm_connected_status=0;
+static char my_buffer[1024];
 
 int pm_get_data_size_rapl()
 {
@@ -133,6 +134,20 @@ void print_power(power_data_t *my_power)
     printf("%s : Avg. DC node power %.2lf Avg. DRAM %.2lf Avg. CPU %.2lf\n",s,my_power->avg_dc,
     my_power->avg_dram[0]+my_power->avg_dram[1],my_power->avg_cpu[0]+my_power->avg_cpu[1]);
 }
+
+void report_periodic_power(int fd,power_data_t *my_power)
+{
+    struct tm *current_t;
+    char s[64];
+    // We format the end time into localtime and string
+    current_t=localtime(&(my_power->end));
+    strftime(s, sizeof(s), "%c", current_t);
+
+    sprintf(my_buffer,"%s : Avg. DC node power %.2lf Avg. DRAM %.2lf Avg. CPU %.2lf\n",s,my_power->avg_dc,
+    my_power->avg_dram[0]+my_power->avg_dram[1],my_power->avg_cpu[0]+my_power->avg_cpu[1]);
+	write(fd,my_buffer,strlen(my_buffer));
+}
+
 // END POWER
 
 
