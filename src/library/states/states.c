@@ -161,6 +161,14 @@ static void print_loop_signature(char *title, application_t *loop)
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
+static void report_loop_signature(uint iterations,loop_t *loop)
+{
+   loop->iterations = iterations;
+   append_loop_text_file(loop_summary_path, loop);
+	
+	
+}
+
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
@@ -285,7 +293,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
-					print_loop_signature("signature computed", &loop_signature);
+					//print_loop_signature("signature computed", &loop_signature);
 
 					loop_with_signature = 1;
 
@@ -360,6 +368,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					// Loop printing algorithm
 					copy_application(&loop.signature, &loop_signature);
+					report_loop_signature(iterations,&loop);
 				}
 			}
 			break;
@@ -386,7 +395,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
-					print_loop_signature("signature refreshed", &loop_signature);
+					//print_loop_signature("signature refreshed", &loop_signature);
 
 					CPI = loop_signature.CPI;
 					GBS = loop_signature.GBS;
@@ -396,6 +405,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
+
+					copy_application(&loop.signature, &loop_signature);
+					report_loop_signature(iterations,&loop);
 
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
@@ -448,7 +460,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			break;
 		case PROJECTION_ERROR:
-				// Go to the default frequency: PENDING
 				break;
 		default: break;
 	}
