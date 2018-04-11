@@ -38,7 +38,7 @@
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
 #include <library/metrics/metrics.h>
-#include <common/types/application.h>
+#include <common/types/signature.h>
 #include <common/ear_daemon_client.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
@@ -228,7 +228,7 @@ static void metrics_reset()
 	reset_cache_metrics();
 }
 
-static void metrics_compute_signature_data(uint global, application_t *metrics, uint iterations)
+static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)
 {
 	double time_s, cas_counter, aux;
 	int i, s;
@@ -260,7 +260,7 @@ static void metrics_compute_signature_data(uint global, application_t *metrics, 
 
 		metrics->Gflops = metrics->Gflops / time_s; // Floating ops to FLOPS
 		metrics->Gflops = metrics->Gflops / 1000000000.0; // FLOPS to GFLOPS
-		metrics->Gflops = metrics->Gflops * (double) metrics->procs; // Core GFLOPS to node GFLOPS
+		metrics->Gflops = metrics->Gflops * (double) procs; // Core GFLOPS to node GFLOPS
 	}
 
 	// Transactions and cycles
@@ -373,12 +373,12 @@ int metrics_init()
 	return EAR_SUCCESS;
 }
 
-void metrics_dispose(application_t *metrics)
+void metrics_dispose(signature_t *metrics, ulong procs)
 {
 	metrics_partial_stop();
 	metrics_global_stop();
 
-	metrics_compute_signature_data(APP, metrics, 1);
+	metrics_compute_signature_data(APP, metrics, 1, procs);
 }
 
 void metrics_compute_signature_begin()
@@ -391,7 +391,7 @@ void metrics_compute_signature_begin()
 	metrics_partial_start();
 }
 
-int metrics_compute_signature_finish(application_t *metrics, uint iterations, ulong min_time_us)
+int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulong min_time_us, ulong procs)
 {
     long long aux_time;
 
@@ -408,7 +408,7 @@ int metrics_compute_signature_finish(application_t *metrics, uint iterations, ul
 	metrics_reset();
 
 	//
-	metrics_compute_signature_data(LOO, metrics, iterations);
+	metrics_compute_signature_data(LOO, metrics, iterations, procs);
 
 	//
 	metrics_partial_start();

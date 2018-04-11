@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <common/types/loop.h>
 #include <common/states.h>
+#include <library/common/externs.h>
 
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -32,12 +33,13 @@ loop_t *create_loop(loop_id_t loop_id)
 void loop_init(loop_t *loop)
 {
     memset(loop, 0, sizeof(loop_t));
+    loop->job = &application.job;
 }
 
 
 void add_loop_signature(loop_t *loop,  signature_t *sig)
 {
-    loop->signatures = *sig;
+    loop->signature = *sig;
 }
 
 void end_loop(loop_t *loop, ulong iterations)
@@ -93,8 +95,8 @@ int append_loop_text_file(char *path, loop_t *loop)
 	}
 
     dprintf(fd, "%s;", loop->node_id);
-    print_job_fd(fd, &loop->job);
-    print_signature_fd(fd, &loop->signatures);
+    print_job_fd(fd, loop->job);
+    print_signature_fd(fd, &loop->signature);
     print_loop_id_fd(fd, &loop->id);
     dprintf(fd, "%lu\n", loop->total_iterations);
 

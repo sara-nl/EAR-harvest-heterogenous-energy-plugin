@@ -16,10 +16,10 @@ typedef struct loop_id
 typedef struct loop
 {
     loop_id_t id;
-    job_t job;
+    job_t *job;
     char node_id[GENERIC_NAME];
     ulong total_iterations;
-    signature_t signatures;
+    signature_t signature;
 } loop_t;
 
 // Function declarations

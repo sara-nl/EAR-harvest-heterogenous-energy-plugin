@@ -1,6 +1,6 @@
 
 #ifndef _EAR_TYPES_SIGNATURE
-#define _EAR_TYPES_IGNATURE
+#define _EAR_TYPES_SIGNATURE
 
 #include <common/types/generic.h>
 

@@ -42,10 +42,10 @@ long long metrics_usecs_diff(long long end, long long init);
 int metrics_init();
 
 /** Stops metrics collection and computes the accumulated data*/
-void metrics_dispose(application_t *metrics);
+void metrics_dispose(signature_t *metrics, ulong procs);
 
 /** Restarts the current metrics and recomputes the signature */
 void metrics_compute_signature_begin();
 
-int metrics_compute_signature_finish(application_t *metrics, uint iterations, ulong min_time_us);
+int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulong min_time_us, ulong procs);
 #endif //EAR_EAR_METRICS_H
