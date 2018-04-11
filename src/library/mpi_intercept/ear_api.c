@@ -374,7 +374,7 @@ void ear_finalize()
 	traces_end(ear_my_rank, my_id, 0);
 
 	// Closing and obtaining global metrics
-	metrics_dispose(&application);
+	metrics_dispose(&application.signature, application.job.procs);
 
 	eards_write_app_signature(&application);
 	append_application_text_file(app_summary_path, &application);
