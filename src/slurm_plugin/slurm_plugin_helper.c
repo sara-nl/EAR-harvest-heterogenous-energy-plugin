@@ -37,7 +37,8 @@
 #include <slurm/spank.h>
 #include <common/config.h>
 
-#define FUNCTION_INFO(function)
+#define FUNCTION_INFO(function) \
+	slurm_error(function)
 #define SPANK_ERROR(string)                            \
     slurm_error(string);
 #define SPANK_STRERROR(string, var)                    \
@@ -169,7 +170,8 @@ int freq_to_p_state(int freq)
 */
 
 int file_to_environment(spank_t sp, const char *path)
-{
+{	
+    FUNCTION_INFO("file_to_environment");
     const char *value = NULL;
     char option[512];
     FILE *file;
@@ -204,6 +206,7 @@ int file_to_environment(spank_t sp, const char *path)
 
 int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
+    FUNCTION_INFO("find_ear_conf_file");
 	char conf_path[PATH_MAX];
 	char link_path[PATH_MAX];
     int i, r;
