@@ -23,7 +23,7 @@
 #include <common/types/generic.h>
 #include <common/states.h>
 
-#define MAX_TRIES 5
+#define MAX_TRIES 1
 
 static const char *__NAME__ = "DAEMON_CLIENT";
 
@@ -101,7 +101,7 @@ int eards_connect()
 			do{
 				if ((ear_fd_req[i]=open(ear_commreq,O_WRONLY|O_NONBLOCK))<0) tries++;
 				else connected=1;
-				if (!connected) sleep(1);
+				if ((MAX_TRIES>1) && (!connected)) sleep(1);
 			}while ((tries<MAX_TRIES) && !connected);
 
 			if (!connected) {

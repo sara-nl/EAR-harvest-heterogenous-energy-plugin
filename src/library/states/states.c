@@ -424,6 +424,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							// We must report a problem and go to the default configuration
 							log_report_max_tries(my_job_id,application.def_f);
 							EAR_STATE = PROJECTION_ERROR;
+							policy_default_configuration();
 						}else{
 						/** If we are not going better **/
 						ear_verbose(3,
