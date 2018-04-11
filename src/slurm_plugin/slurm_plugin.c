@@ -43,7 +43,8 @@
 #include <common/string_enhanced.h>
 #include <common/config.h>
 
-#define FUNCTION_INFO(function)
+#define FUNCTION_INFO(function) \
+	slurm_error(function)
 #define SPANK_ERROR(string)                            \
     slurm_error(string);
 #define SPANK_STRERROR(string, var)                    \
@@ -149,6 +150,7 @@ static int fork_ear_daemon(spank_t sp)
 
 static int local_update_ld_preload(spank_t sp)
 {
+    FUNCTION_INFO("local_update_ld_preload");
     char *ld_preload, *ear_install_path;
     char buffer[PATH_MAX];
 
@@ -204,11 +206,12 @@ static int local_update_ld_library_path()
     }
 
     //
+    appendenv(buffer, "/hpc/base/intel/compilers_and_libraries_2018.1.163/linux/compiler/lib/intel64");
     appendenv(buffer, CPUPOWER_LIB_PATH);
     appendenv(buffer, FREEIPMI_LIB_PATH);
     appendenv(buffer, PAPI_LIB_PATH);
    
-    //slurm_error("NOT AN ERROR: %s", buffer); 
+    slurm_error("LD_LIBRARYPATH: %s", buffer); 
     //
     
 	return setenv_local("LD_LIBRARY_PATH", buffer, 1);
@@ -231,8 +234,9 @@ static void remote_update_slurm_vars(spank_t sp)
             // If this is passed SLURM's --cpu-freq argument
             if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 8))
             {
-                p_freq = atoi(p_state);
-                p_freq = freq_to_p_state(p_freq);
+                //p_freq = atoi(p_state);
+                //p_freq = freq_to_p_state(p_freq);
+		p_freq = 1;
 
                 sprintf(p_state, "%i", p_freq);
                 setenv_remote(sp, "EAR_P_STATE", p_state, 0);

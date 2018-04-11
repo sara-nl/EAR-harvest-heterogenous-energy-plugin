@@ -27,16 +27,37 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <errno.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <cpufreq.h>
 #include <slurm/spank.h>
-
-#include <common/string_enhanced.h>
 #include <common/config.h>
+
+#define FUNCTION_INFO(function)
+#define SPANK_ERROR(string)                            \
+    slurm_error(string);
+#define SPANK_STRERROR(string, var)                    \
+    slurm_error(string " (%s)", var, strerror(errno));
+
+void strtoup(char *string)
+{
+    while (*string) {
+        *string = toupper((unsigned char) *string);
+        string++;
+    }
+}
+
+char* strclean(char *string, char chr)
+{
+    char *index = strchr(string, chr);
+    if (index == NULL) return NULL;
+    string[index - string] = '\0';
+    return index;
+}
 
 /*
  *
@@ -122,6 +143,7 @@ int isenv_remote(spank_t sp, char *name, char *value)
  */
 
 //TODO: Utilizar un common para esto
+/*
 int freq_to_p_state(int freq)
 {
     struct cpufreq_available_frequencies *list_freqs;
@@ -144,6 +166,7 @@ int freq_to_p_state(int freq)
 
     return 1;
 }
+*/
 
 int file_to_environment(spank_t sp, const char *path)
 {
@@ -167,10 +190,10 @@ int file_to_environment(spank_t sp, const char *path)
 
                 #if BUILD_TYPE(RELEASE_LRZ)
                 setenv_local(option, value, 1);
-				# else
-                setenv_local(option, value, 0);
-				#endif
-                //slurm_error("%s %s", option, value);
+		# else
+                setenv_local(option, value, 1);
+		#endif
+                slurm_error("%s %s", option, value);
             }
         }
     }

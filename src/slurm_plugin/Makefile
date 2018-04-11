@@ -1,9 +1,8 @@
 CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(CPUF_CFLAGS) $(SLURM_CFLAGS)
 LDFLAGS = -shared $(CPUF_LDFLAGS)
+CC = gcc
 
 ######## FILES
-
-OUTER_OBJS = $(ROOTDIR)/src/common/string_enhanced.o
 
 OBJS = slurm_plugin_helper.o
 
@@ -11,11 +10,11 @@ OBJS = slurm_plugin_helper.o
 
 all: earplug.so
 
-slurm_plugin_helper.o: slurm_plugin_helper.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -c slurm_plugin_helper.c
+slurm_plugin_helper.o: slurm_plugin_helper.c
+	$(CC) -Wall $(CFLAGS) -c slurm_plugin_helper.c
 
 earplug.so: slurm_plugin.c $(OBJS)
-	$(CC) $(CFLAGS) -o earplug.so slurm_plugin.c $(LDFLAGS) $(OBJS) $(OUTER_OBJS)
+	$(CC) -Wall $(CFLAGS) -o earplug.so slurm_plugin.c $(LDFLAGS) $(OBJS)
 
 ######## OPTIONS
 
