@@ -190,11 +190,11 @@ void ear_init()
 	job_id = getenv("SLURM_JOB_ID");
 	user_id = getenv("LOGNAME");
 	if (job_id != NULL){ 
-		strcpy(application.job_id, job_id);
+		strcpy(application.job.id, job_id);
 		my_job_id=atoi(job_id);
 	}else{ 
 		my_job_id=getppid();
-		sprintf(application.job_id, "%d", my_job_id);
+		sprintf(application.job.id, "%d", my_job_id);
 	}
 
 	// Policies
@@ -202,15 +202,15 @@ void ear_init()
 	init_power_models(frequency_get_num_pstates(), frequency_get_freq_rank_list());
 
 	// Policy name is set in ear_models
-	strcpy(application.app_id, ear_app_name);
-	strcpy(application.user_id, user_id);
+	strcpy(application.job.app_id, ear_app_name);
+	strcpy(application.job.user_id, user_id);
 	strcpy(application.node_id, node_name);
 
 
 	// Passing the frequency in KHz to MHz
-	application.def_f = EAR_default_frequency;
-	application.procs = get_total_resources();
-	application.policy_th = get_ear_power_policy_th();;	
+	application.job.def_f = EAR_default_frequency;
+	application.job.procs = get_total_resources();
+	application.job.th = get_ear_power_policy_th();;	
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
@@ -228,12 +228,12 @@ void ear_init()
 	//if (ear_my_rank == 0)
 	//{
 		VERBOSE_N(1, "--------------------------------");
-		VERBOSE_N(1, "App/user id: '%s'/'%s'", application.app_id, application.user_id);
-		VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job_id);
+		VERBOSE_N(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
+		VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job.id);
 		VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
-		VERBOSE_N(1, "Default frequency (turbo): %u (%d)", application.def_f, ear_use_turbo);
-		VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.procs, num_nodes, ppnode);
-		VERBOSE_N(1, "Policy/threshold/learning: %s/%lf/%d", application.policy, application.policy_th, ear_whole_app);
+		VERBOSE_N(1, "Default frequency (turbo): %u (%d)", application.job.def_f, ear_use_turbo);
+		VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.job.procs, num_nodes, ppnode);
+		VERBOSE_N(1, "Policy/threshold/learning: %s/%lf/%d", application.job.policy, application.job.th, ear_whole_app);
 		VERBOSE_N(1, "DynAIS levels/window: %d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size());
 		VERBOSE_N(1, "--------------------------------");
 //	}
