@@ -40,8 +40,8 @@
 void min_time_init(uint pstates);
 void min_time_new_loop();
 void min_time_end_loop();
-ulong min_time_policy(application_t *sig);
-ulong min_time_policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig);
+ulong min_time_policy(signature_t *sig);
+ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
 
 #else
 #endif

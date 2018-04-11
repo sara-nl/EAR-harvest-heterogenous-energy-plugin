@@ -39,12 +39,13 @@
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <common/types/application.h>
+#include <common/types/signature.h>
 #include <common/types/projection.h>
 #include <common/types/coefficient.h>
 
 extern coefficient_t **coefficients;
 
-double sig_power_projection(application_t *my_app,ulong F,uint Fi)
+double sig_power_projection(signature_t *my_app,ulong F,uint Fi)
 {
 	double power,tpi,pp;
 	uint Fref;
@@ -57,7 +58,7 @@ double sig_power_projection(application_t *my_app,ulong F,uint Fi)
 	return pp;
 }
 
-double sig_cpi_projection(application_t *my_app,ulong F,uint Fi)
+double sig_cpi_projection(signature_t *my_app,ulong F,uint Fi)
 {
 	double cpi,tpi,cpi_pr;
 	uint Fref;
@@ -69,7 +70,7 @@ double sig_cpi_projection(application_t *my_app,ulong F,uint Fi)
 	cpi_pr=cpi_projection(cpi,tpi,coefficients[Fref][Fi].D,coefficients[Fref][Fi].E,coefficients[Fref][Fi].F);
 	return cpi_pr;
 }
-double sig_time_projection(application_t *my_app,ulong F,uint Fi,double cpi_pr)
+double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr)
 {
 	double cpi,my_time,timep;
 	uint Fref;

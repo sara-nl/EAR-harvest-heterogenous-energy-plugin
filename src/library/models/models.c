@@ -47,15 +47,15 @@
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
-#include <common/config.h>
+//#include <common/config.h>
 
 typedef struct policy
 {
 	void (*init)(uint num_pstates);
 	void (*new_loop)();
 	void (*end_loop)();
-	ulong (*policy)(application_t *sig);
-	ulong (*policy_ok)(projection_t *proj, application_t *curr_sig, application_t *last_sig);
+	ulong (*policy)(signature_t *sig);
+	ulong (*policy_ok)(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
 }policy_t;
 
 policy_t app_policy;
@@ -85,18 +85,18 @@ void print_energy_policy_configuration()
     switch(power_model_policy)
     {
         case MIN_ENERGY_TO_SOLUTION:
-            strcpy(application.policy,"min_energy");
+            strcpy(application.job.policy,"min_energy");
         break;
         case MIN_TIME_TO_SOLUTION:
-            strcpy(application.policy,"min_time");
+            strcpy(application.job.policy,"min_time");
         break;
         case MONITORING_ONLY:
-            strcpy(application.policy,"monitoring_only");
+            strcpy(application.job.policy,"monitoring_only");
         break;
     }
 
     ear_verbose(1,"EAR: power policy conf.: policy %s performance penalty %lf performance gain %lf\n",
-                application.policy,performance_penalty,performance_gain);
+                application.job.policy,performance_penalty,performance_gain);
     ear_verbose(1,"EAR: Default p_state %u Default frequency %lu\n", EAR_default_pstate,EAR_default_frequency);
 
 }
@@ -292,7 +292,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 
 
-uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig)
+uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
 	return app_policy.policy_ok(proj, curr_sig,last_sig);
 }
@@ -300,7 +300,7 @@ uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_
 
 
 // When 'evaluating signature', this function is called.
-unsigned long policy_power(unsigned int whole_app, application_t* MY_SIGNATURE)
+unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE)
 {
 	unsigned long optimal_freq, max_freq;
 

@@ -320,7 +320,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					begin_iter = iterations;
-					policy_freq = policy_power(0, &loop_signature);
+					policy_freq = policy_power(0, &loop_signature.signature);
 					PP = performance_projection(policy_freq);
 
 					if (policy_freq != prev_f)
@@ -409,7 +409,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					// We compare the projection with the signature and the old signature
 					PP = performance_projection(policy_freq);
 
-					if (policy_ok(PP, &loop_signature, &last_signature))
+					if (policy_ok(PP, &loop_signature.signature, &last_signature.signature))
 					{
 						perf_count_period = perf_count_period * 2;
 						ear_verbose(3,
@@ -422,7 +422,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						tries_current_loop++;
 						if (tries_current_loop==MAX_POLICY_TRIES){
 							// We must report a problem and go to the default configuration
-							log_report_max_tries(my_job_id,application.job.def_f);
+							log_report_max_tries(my_job_id, application.job.def_f);
 							EAR_STATE = PROJECTION_ERROR;
 						}else{
 						/** If we are not going better **/

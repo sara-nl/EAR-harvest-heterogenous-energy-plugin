@@ -75,9 +75,9 @@ void min_time_end_loop()
 
 
 // This is the main function in this file, it implements power policy
-ulong min_time_policy(application_t *sig)
+ulong min_time_policy(signature_t *sig)
 {
-    application_t *my_app;
+    signature_t *my_app;
     int i,min_pstate;
     unsigned int ref,try_next;
     double freq_gain,perf_gain;
@@ -182,7 +182,7 @@ ulong min_time_policy(application_t *sig)
 }
 
 
-ulong min_time_policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig)
+ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
 	double energy_proj, energy_real;
 
