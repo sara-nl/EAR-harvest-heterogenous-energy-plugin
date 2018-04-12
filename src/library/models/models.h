@@ -59,6 +59,11 @@ ulong policy_power(uint whole_app, application_t *sig);
 *   the correct ones. */
 uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig);
 
+/** Executed when we have done several "tries" and the policy is not able to select the "good" freq for this app
+*/
+void policy_default_configuration();
+
+
 
 #else
 #endif
