@@ -191,10 +191,10 @@ int file_to_environment(spank_t sp, const char *path)
                 strtoup(option);
 
                 #if BUILD_TYPE(RELEASE_LRZ)
-                setenv_local(option, value, 0);
-				# else
                 setenv_local(option, value, 1);
-				#endif
+		# else
+                setenv_local(option, value, 0);
+		#endif
                 DEBUGGING("%s %s", option, value);
             }
         }

@@ -225,6 +225,13 @@ void ear_init()
 		sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 	}
 
+	// Additionals
+	int avx512 = 0;
+
+	#ifdef _FEATURE_AVX512F
+	avx512 = 1;
+	#endif
+
 	//if (ear_my_rank == 0)
 	//{
 		VERBOSE_N(1, "--------------------------------");
@@ -235,8 +242,10 @@ void ear_init()
 		VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.procs, num_nodes, ppnode);
 		VERBOSE_N(1, "Policy/threshold/learning: %s/%lf/%d", application.policy, application.policy_th, ear_whole_app);
 		VERBOSE_N(1, "DynAIS levels/window: %d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size());
+		VERBOSE_N(1, "VAR path: %s", get_ear_tmp());
+		VERBOSE_N(1, "AVX-512: %d", avx512);
 		VERBOSE_N(1, "--------------------------------");
-//	}
+	//	}
 
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);

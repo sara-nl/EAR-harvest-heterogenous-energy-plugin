@@ -31,9 +31,9 @@
 #define EAR_SLURM_PLUGIN_HELPER_H
 
 #define DEBUGGING(string, ...)
-    //slurm_error(string, __VA_ARGS__)
+//    slurm_error(string, __VA_ARGS__)
 #define FUNCTION_INFO(function)
-    //slurm_error(function)
+//    slurm_error(function)
 #define SPANK_ERROR(string) \
     slurm_error(string);
 #define SPANK_STRERROR(string, var) \

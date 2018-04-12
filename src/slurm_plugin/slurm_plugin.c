@@ -186,7 +186,7 @@ static int local_update_ear_install_path()
 static int local_update_ld_library_path()
 {
     FUNCTION_INFO("local_update_ld_library_path");
-	char *ld_additional_path;
+    char *ld_additional_path;
     char *ld_library_path;
     char buffer[PATH_MAX];
 
@@ -200,15 +200,15 @@ static int local_update_ld_library_path()
     }
 
     //
-	appendenv(buffer, ld_additional_path);
-	appendenv(buffer, CPUPOWER_LIB_PATH);
+    appendenv(buffer, ld_additional_path);
+    appendenv(buffer, CPUPOWER_LIB_PATH);
     appendenv(buffer, FREEIPMI_LIB_PATH);
     appendenv(buffer, PAPI_LIB_PATH);
   
-	// 
+    // 
     DEBUGGING("LD_LIBRARY_PATH: %s", buffer); 
     
-	return setenv_local("LD_LIBRARY_PATH", buffer, 1);
+    return setenv_local("LD_LIBRARY_PATH", buffer, 1);
 }
 
 static void remote_update_slurm_vars(spank_t sp)
@@ -277,7 +277,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_task_init");
-
+    
     if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
     {
         remote_update_slurm_vars(sp);

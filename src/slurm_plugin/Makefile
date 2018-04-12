@@ -10,10 +10,10 @@ OBJS = slurm_plugin_helper.o
 
 all: earplug.so
 
-slurm_plugin_helper.o: slurm_plugin_helper.c
+slurm_plugin_helper.o: slurm_plugin_helper.h slurm_plugin_helper.c
 	$(CC) -Wall $(CFLAGS) -c slurm_plugin_helper.c
 
-earplug.so: slurm_plugin.c $(OBJS)
+earplug.so: slurm_plugin.h slurm_plugin.c $(OBJS)
 	$(CC) -Wall $(CFLAGS) -o earplug.so slurm_plugin.c $(LDFLAGS) $(OBJS)
 
 ######## OPTIONS
