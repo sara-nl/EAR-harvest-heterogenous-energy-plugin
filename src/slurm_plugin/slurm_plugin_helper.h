@@ -30,6 +30,15 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
+#define DEBUGGING(string, ...)
+    //slurm_error(string, __VA_ARGS__)
+#define FUNCTION_INFO(function)
+    //slurm_error(function)
+#define SPANK_ERROR(string) \
+    slurm_error(string);
+#define SPANK_STRERROR(string, var) \
+    slurm_error(string " (%s)", var, strerror(errno));
+
 void strtoup(char *string);
 char* strclean(char *string, char chr);
 

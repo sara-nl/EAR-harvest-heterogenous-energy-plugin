@@ -43,13 +43,6 @@
 #include <common/string_enhanced.h>
 #include <common/config.h>
 
-#define FUNCTION_INFO(function) \
-	slurm_error(function)
-#define SPANK_ERROR(string)                            \
-    slurm_error(string);
-#define SPANK_STRERROR(string, var)                    \
-    slurm_error(string " (%s)", var, strerror(errno));
-
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 pid_t daemon_pid = -1;
 
@@ -97,7 +90,6 @@ struct spank_option spank_options[] = {
 static void exec_ear_daemon(spank_t sp)
 {
     FUNCTION_INFO("exec_ear_daemon");
-
     char ear_lib[PATH_MAX];
     char *ear_install_path;
     char *ear_verbose;
@@ -194,32 +186,34 @@ static int local_update_ear_install_path()
 static int local_update_ld_library_path()
 {
     FUNCTION_INFO("local_update_ld_library_path");
+	char *ld_additional_path;
     char *ld_library_path;
     char buffer[PATH_MAX];
 
     //
     buffer[0] = '\0';
-    ld_library_path = getenv("LD_LIBRARY_PATH");
+    ld_additional_path = getenv("EAR_EXTRA_PATHS");
+    ld_library_path    = getenv("LD_LIBRARY_PATH");
     
     if (ld_library_path != NULL) {
         strcpy(buffer, ld_library_path);
     }
 
     //
-    appendenv(buffer, "/hpc/base/intel/compilers_and_libraries_2018.1.163/linux/compiler/lib/intel64");
-    appendenv(buffer, CPUPOWER_LIB_PATH);
+	appendenv(buffer, ld_additional_path);
+	appendenv(buffer, CPUPOWER_LIB_PATH);
     appendenv(buffer, FREEIPMI_LIB_PATH);
     appendenv(buffer, PAPI_LIB_PATH);
-   
-    slurm_error("LD_LIBRARYPATH: %s", buffer); 
-    //
+  
+	// 
+    DEBUGGING("LD_LIBRARY_PATH: %s", buffer); 
     
 	return setenv_local("LD_LIBRARY_PATH", buffer, 1);
 }
 
-//TODO: comprobar todos los tipos de --cpu-freq
 static void remote_update_slurm_vars(spank_t sp)
 {
+	FUNCTION_INFO("remote_update_slurm_vars");
     char buffer[PATH_MAX];
     char p_state[8];
     int p_freq = 1;
@@ -236,7 +230,7 @@ static void remote_update_slurm_vars(spank_t sp)
             {
                 //p_freq = atoi(p_state);
                 //p_freq = freq_to_p_state(p_freq);
-		p_freq = 1;
+				p_freq = 1;
 
                 sprintf(p_state, "%i", p_freq);
                 setenv_remote(sp, "EAR_P_STATE", p_state, 0);
@@ -339,7 +333,6 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
  *
  */
 
-//TODO: añadir más control de errores aquí
 static int _opt_ear (int val, const char *optarg, int remote)
 {
     FUNCTION_INFO("_opt_ear");

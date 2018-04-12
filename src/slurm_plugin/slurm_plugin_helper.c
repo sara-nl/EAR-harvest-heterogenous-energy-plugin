@@ -34,15 +34,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <linux/limits.h>
 #include <slurm/spank.h>
-#include <common/config.h>
 
-#define FUNCTION_INFO(function) \
-	slurm_error(function)
-#define SPANK_ERROR(string)                            \
-    slurm_error(string);
-#define SPANK_STRERROR(string, var)                    \
-    slurm_error(string " (%s)", var, strerror(errno));
+#include <slurm_plugin/slurm_plugin_helper.h>
+#include <common/config.h>
 
 void strtoup(char *string)
 {
@@ -67,9 +63,13 @@ char* strclean(char *string, char chr)
  */
 void appendenv(char *destiny, char *source)
 {
-    char buffer[PATH_MAX];
+   		char buffer[PATH_MAX];
         int length = strlen(destiny);
         char *pointer;
+
+		if (source == NULL) {
+			return;
+		}
 
         if (length > 0)
         {
@@ -173,7 +173,7 @@ int file_to_environment(spank_t sp, const char *path)
 {	
     FUNCTION_INFO("file_to_environment");
     const char *value = NULL;
-    char option[512];
+    char option[PATH_MAX];
     FILE *file;
 
     if ((file = fopen(path, "r")) == NULL)
@@ -182,7 +182,7 @@ int file_to_environment(spank_t sp, const char *path)
         return ESPANK_ERROR;
     }
 
-    while (fgets(option, 100, file) != NULL)
+    while (fgets(option, PATH_MAX, file) != NULL)
     {
         if (strclean(option, '\n') && (value = strclean(option, '=')))
         {
@@ -191,11 +191,11 @@ int file_to_environment(spank_t sp, const char *path)
                 strtoup(option);
 
                 #if BUILD_TYPE(RELEASE_LRZ)
+                setenv_local(option, value, 0);
+				# else
                 setenv_local(option, value, 1);
-		# else
-                setenv_local(option, value, 1);
-		#endif
-                slurm_error("%s %s", option, value);
+				#endif
+                DEBUGGING("%s %s", option, value);
             }
         }
     }
