@@ -407,7 +407,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 
-					copy_application(&loop.signature, &loop_signature);
+					copy_signature(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
 
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);

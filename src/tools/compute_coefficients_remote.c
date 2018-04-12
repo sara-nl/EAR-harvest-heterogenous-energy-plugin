@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
                 // If APP exists, then accumulate its values in
-                accum_app(&app_list[index], &apps[i]);
+                accum_app(&app_list[index].signature, &apps[i].signature);
                 samples_per_app[index]++;
             } else {
                 write_app(&app_list[filtered_apps], &apps[i]);
@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
 
     // We must compute the average per (app,f)
     for (i = 0; i < num_apps; i++) {
-        average_list_samples(&app_list[i], samples_per_app[i]);
+        average_list_samples(&app_list[i].signature, samples_per_app[i]);
     }
 
     fprintf(stdout, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u\n",
