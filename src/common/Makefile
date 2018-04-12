@@ -29,8 +29,10 @@ shared_configuration.o: shared_configuration.c shared_configuration.h ear_verbos
 remote_daemon_client.o: remote_daemon_client.c remote_conf.h ear_verbose.h
 	$(CC) $(CFLAGS) -c remote_daemon_client.c
 
-environment.o: environment.c environment.h
+environment.o: environment.c environment.h environment_common.h
 	$(CC) $(CFLAGS) -c environment.c
+environment_common.o: environment_common.c environment_common.h
+	$(CC) $(CFLAGS) -c environment_common.c
 
 string_enhanced.o: string_enhanced.c string_enhanced.h
 	$(CC) $(CFLAGS) -c string_enhanced.c

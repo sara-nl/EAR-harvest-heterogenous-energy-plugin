@@ -19,7 +19,8 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
 
 COMMON_OBJS = $(SRCDIR)/common/shared_configuration.o \
               $(SRCDIR)/common/ear_daemon_client.o \
-              $(SRCDIR)/common/environment.o
+			  $(SRCDIR)/common/environment_common.o \
+              $(SRCDIR)/common/environment.o 
 
 TYPES = $(SRCDIR)/common/types.a
 
