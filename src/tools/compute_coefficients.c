@@ -35,16 +35,16 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_multifit.h>
-#include <cpufreq.h>
+// #include <gsl/gsl_math.h>
+// #include <gsl/gsl_matrix.h>
+// #include <gsl/gsl_multifit.h>
+// #include <cpufreq.h>
 
 #include <common/types/application.h>
 #include <common/types/signature.h>
 #include <common/types/coefficient.h>
 #include <common/types/projection.h>
-#include <common/config.h>
+// #include <common/config.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
@@ -185,9 +185,9 @@ void nominal_for_power(uint ref, char *app_name, double *power, double *tpi)
 
     while ((i < samples_f[ref]) && (found == 0))
     {
-        if (strcmp(sorted_app_list[ref][i].app_id, app_name) == 0) {
-            *power = sorted_app_list[ref][i].DC_power;
-            *tpi = sorted_app_list[ref][i].TPI;
+        if (strcmp(sorted_app_list[ref][i].job.app_id, app_name) == 0) {
+            *power = sorted_app_list[ref][i].signature.DC_power;
+            *tpi = sorted_app_list[ref][i].signature.TPI;
             found = 1;
         } else i++;
     }
@@ -201,10 +201,10 @@ void nominal_for_cpi(uint ref, char *app_name, double *cpi, double *tpi)
 
     while ((i < samples_f[ref]) && (found == 0))
     {
-        if (strcmp(sorted_app_list[ref][i].app_id, app_name) == 0)
+        if (strcmp(sorted_app_list[ref][i].job.app_id, app_name) == 0)
         {
-            *cpi = sorted_app_list[ref][i].CPI;
-            *tpi = sorted_app_list[ref][i].TPI;
+            *cpi = sorted_app_list[ref][i].signature.CPI;
+            *tpi = sorted_app_list[ref][i].signature.TPI;
             found = 1;
         } else i++;
     }
@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
  
     for (i = 0; i < num_apps; i++)
     {
-        if (apps[i].def_f >= min_freq) {
+        if (apps[i].job.def_f >= min_freq) {
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
                 // If APP exists, then accumulate its values in
@@ -299,8 +299,8 @@ int main(int argc, char *argv[])
 
     // We maintain the name's of applications to generate graphs
     for (current_app = 0; current_app < num_apps; current_app++) {
-        if (app_list[current_app].def_f >= min_freq) {
-            index = freq_to_p_state(app_list[current_app].def_f);
+        if (app_list[current_app].job.def_f >= min_freq) {
+            index = freq_to_p_state(app_list[current_app].job.def_f);
             samples_f[index]++;
         }
     }
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 
     // Sorting applications by frequency
     for (current_app = 0; current_app < num_apps; current_app++) {
-        f = app_list[current_app].def_f;
+        f = app_list[current_app].job.def_f;
 
         if (f >= min_freq) {
             i = freq_to_p_state(f);
