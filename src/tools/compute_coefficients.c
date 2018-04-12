@@ -41,6 +41,7 @@
 #include <cpufreq.h>
 
 #include <common/types/application.h>
+#include <common/types/signature.h>
 #include <common/types/coefficient.h>
 #include <common/types/projection.h>
 #include <common/config.h>
@@ -131,8 +132,8 @@ int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {
     uint pos = 0, found = 0;
 
     while ((pos < total_apps) && (found == 0)) {
-        if ((strcmp(Applist[pos].app_id, newApp->app_id) == 0) &&
-            (Applist[pos].def_f == newApp->def_f)) {
+        if ((strcmp(Applist[pos].job.app_id, newApp->job.app_id) == 0) &&
+            (Applist[pos].job.def_f == newApp->job.def_f)) {
             found = 1;
         } else {
             pos++;
@@ -142,7 +143,7 @@ int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {
     else return pos;
 }
 
-void average_list_samples(application_t *current, uint samples)
+void average_list_samples(signature_t *current, uint samples)
 {
     double foravg = (double) samples;
     current->time = current->time / foravg;
@@ -153,7 +154,7 @@ void average_list_samples(application_t *current, uint samples)
 }
 
 // A=A+B metrics
-void accum_app(application_t *A, application_t *B)
+void accum_app(signature_t *A, signature_t *B)
 {
     A->time += B->time;
     A->GBS += B->GBS;
@@ -164,14 +165,16 @@ void accum_app(application_t *A, application_t *B)
 
 void write_app(application_t *A, application_t *B)
 {
-    strcpy(A->app_id, B->app_id);
-    A->def_f = B->def_f;
-    A->procs = B->procs;
-    A->time = B->time;
-    A->GBS = B->GBS;
-    A->DC_power = B->DC_power;
-    A->TPI = B->TPI;
-    A->CPI = B->CPI;
+    strcpy(A->job.app_id, B->job.app_id);
+    A->job.def_f = B->job.def_f;
+    A->job.procs = B->job.procs;
+    signature_t *sig_a = &A->signature;
+    signature_t *sig_b = &B->signature;
+    sig_a->time = sig_b->time;
+    sig_a->GBS = sig_b->GBS;
+    sig_a->DC_power = sig_b->DC_power;
+    sig_a->TPI = sig_b->TPI;
+    sig_a->CPI = sig_b->CPI;
 }
 
 void nominal_for_power(uint ref, char *app_name, double *power, double *tpi)
@@ -272,7 +275,7 @@ int main(int argc, char *argv[])
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
                 // If APP exists, then accumulate its values in
-                accum_app(&app_list[index], &apps[i]);
+                accum_app(&app_list[index].signature, &apps[i].signature);
                 samples_per_app[index]++;
             } else {
                 write_app(&app_list[filtered_apps], &apps[i]);
@@ -288,7 +291,7 @@ int main(int argc, char *argv[])
 
     // We must compute the average per (app,f)
     for (i = 0; i < num_apps; i++) {
-        average_list_samples(&app_list[i], samples_per_app[i]);
+        average_list_samples(&app_list[i].signature, samples_per_app[i]);
     }
 
     fprintf(stdout, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u\n",

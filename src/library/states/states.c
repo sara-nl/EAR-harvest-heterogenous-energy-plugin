@@ -46,7 +46,7 @@
 #include <common/types/log.h>
 #include <common/types/application.h>
 #include <common/states.h>
-// #include <common/config.h>
+#include <common/config.h>
 
 static const char *__NAME__ = "STATES";
 
