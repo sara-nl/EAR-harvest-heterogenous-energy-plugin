@@ -294,11 +294,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
-<<<<<<< HEAD
-					print_loop_signature("signature computed", &loop_signature.signature);
-=======
-					//print_loop_signature("signature computed", &loop_signature);
->>>>>>> development
+					//print_loop_signature("signature computed", &loop_signature.signature);
 
 					loop_with_signature = 1;
 
@@ -400,11 +396,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
-<<<<<<< HEAD
-					print_loop_signature("signature refreshed", &loop_signature.signature);
-=======
-					//print_loop_signature("signature refreshed", &loop_signature);
->>>>>>> development
+					//print_loop_signature("signature refreshed", &loop_signature.signature);
 
 					CPI = loop_signature.signature.CPI;
 					GBS = loop_signature.signature.GBS;
