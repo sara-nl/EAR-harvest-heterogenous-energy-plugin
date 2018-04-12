@@ -46,7 +46,7 @@
 #include <common/types/log.h>
 #include <common/types/application.h>
 #include <common/states.h>
-#include <common/config.h>
+// #include <common/config.h>
 
 static const char *__NAME__ = "STATES";
 
@@ -161,7 +161,16 @@ static void print_loop_signature(char *title, signature_t *loop)
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
-void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter)
+void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter);
+static void report_loop_signature(uint iterations,loop_t *loop)
+{
+   loop->total_iterations = iterations;
+   append_loop_text_file(loop_summary_path, loop);
+	
+	
+}
+
+void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
 	unsigned long prev_f;
@@ -285,7 +294,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
+<<<<<<< HEAD
 					print_loop_signature("signature computed", &loop_signature.signature);
+=======
+					//print_loop_signature("signature computed", &loop_signature);
+>>>>>>> development
 
 					loop_with_signature = 1;
 
@@ -360,6 +373,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					// Loop printing algorithm
 					copy_signature(&loop.signature, &loop_signature.signature);
+					report_loop_signature(iterations,&loop);
 				}
 			}
 			break;
@@ -386,7 +400,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
+<<<<<<< HEAD
 					print_loop_signature("signature refreshed", &loop_signature.signature);
+=======
+					//print_loop_signature("signature refreshed", &loop_signature);
+>>>>>>> development
 
 					CPI = loop_signature.signature.CPI;
 					GBS = loop_signature.signature.GBS;
@@ -396,6 +414,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
+
+					copy_application(&loop.signature, &loop_signature);
+					report_loop_signature(iterations,&loop);
 
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
@@ -424,6 +445,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							// We must report a problem and go to the default configuration
 							log_report_max_tries(my_job_id, application.job.def_f);
 							EAR_STATE = PROJECTION_ERROR;
+							policy_default_configuration();
 						}else{
 						/** If we are not going better **/
 						ear_verbose(3,
@@ -447,7 +469,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			break;
 		case PROJECTION_ERROR:
-				// Go to the default frequency: PENDING
 				break;
 		default: break;
 	}

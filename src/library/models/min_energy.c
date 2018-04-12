@@ -62,6 +62,8 @@ extern uint EAR_default_pstate;
 static double time_max;
 extern ulong user_selected_freq;
 
+#define MIN_ENERGY_VERBOSE 0
+
 
 void min_energy_init(uint num_pstates)
 {
@@ -94,8 +96,9 @@ ulong min_energy_policy(signature_t *sig)
 	double power_ref,cpi_ref,time_ref,time_current;
 	ulong best_pstate;
 	my_app=sig;
-
+	#if MIN_ENERGY_VERBOSE
 	ear_verbose(1,"min_energy_policy starts \n");
+	#endif
 	if (ear_use_turbo) min_pstate=0;
 	else min_pstate=get_global_min_pstate();
 
@@ -112,7 +115,6 @@ ulong min_energy_policy(signature_t *sig)
 	// is made for the reference P_STATE in case the coefficents were available.
 	if (ear_frequency != EAR_default_frequency) // Use configuration when available
 	{
-		ear_verbose(1,"We are not running at default freq\n");
 		if (coefficients[ref][EAR_default_pstate].available)
 		{
 				power_ref=sig_power_projection(my_app,ear_frequency,EAR_default_pstate);
@@ -136,7 +138,6 @@ ulong min_energy_policy(signature_t *sig)
 	// is not needed, so the signature will be enough as a reference. 
 	else
 	{ // we are running at default frequency , signature is our reference
-			ear_verbose(1,"We are running at default freq\n");
 			time_ref=my_app->time;
 			power_ref=my_app->DC_power;
 			cpi_ref=my_app->CPI;
@@ -148,7 +149,6 @@ ulong min_energy_policy(signature_t *sig)
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * performance_penalty);
 
-	ear_verbose(1,"min_pstate %u max_pstate %u\n",min_pstate,me_policy_pstates);
 
 	// MIN_ENERGY_TO_SOLUTION BEGIN
 	for (i = min_pstate; i < me_policy_pstates;i++)
@@ -161,12 +161,13 @@ ulong min_energy_policy(signature_t *sig)
 				time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
 				set_performance_projection(i,time_proj,power_proj,cpi_proj);
 				energy_proj=power_proj*time_proj;
-
+			#if MIN_ENERGY_VERBOSE
 				RANK(0) {
 					VERBOSE_N(1, "Projection (%u): [power: %lf, time: %lf, energy: %lf]",
 						coefficients[ref][i].pstate, power_proj, time_proj, energy_proj);
 				}
 			ear_verbose(1,"pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);
+			#endif
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
 					best_pstate = coefficients[ref][i].pstate;
@@ -185,7 +186,9 @@ ulong min_energy_policy(signature_t *sig)
 		best_pstate=system_conf->max_freq;
 	}
 	#endif
+	#if MIN_ENERGY_VERBOSE
 	ear_verbose(1,"min_energy_policy ends ---> %lu\n",best_pstate);
+	#endif
 	return best_pstate;
 }
 
@@ -203,3 +206,17 @@ ulong min_energy_policy_ok(projection_t *proj, signature_t *curr_sig, signature_
 
 
 
+ulong  min_energy_default_conf(ulong f)
+{
+    #if SHARED_MEMORY
+    // Just in case the bestPstate was the frequency at which the application was running
+    if (f>system_conf->max_freq){
+        log_report_global_policy_freq(my_job_id,system_conf->max_freq);
+        ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
+        best_pstate,system_conf->max_freq);
+		return system_conf->max_freq;
+    }else return f;
+	#else
+	return f;
+	#endif
+}

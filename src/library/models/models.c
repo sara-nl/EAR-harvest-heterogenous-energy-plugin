@@ -56,6 +56,7 @@ typedef struct policy
 	void (*end_loop)();
 	ulong (*policy)(signature_t *sig);
 	ulong (*policy_ok)(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
+	ulong (*default_conf)(ulong user_freq);
 }policy_t;
 
 policy_t app_policy;
@@ -111,6 +112,7 @@ void init_policy_functions()
 			app_policy.end_loop=min_energy_end_loop;
 			app_policy.policy=min_energy_policy;
 			app_policy.policy_ok=min_energy_policy_ok;
+			app_policy.default_conf=min_energy_default_conf;
         break;
         case MIN_TIME_TO_SOLUTION:
 			app_policy.init=min_time_init;
@@ -118,6 +120,7 @@ void init_policy_functions()
 			app_policy.end_loop=min_time_end_loop;
 			app_policy.policy=min_time_policy;
 			app_policy.policy_ok=min_time_policy_ok;
+			app_policy.default_conf=min_time_default_conf;
         break;
         case MONITORING_ONLY:
 			app_policy.init=monitoring_init;
@@ -125,6 +128,7 @@ void init_policy_functions()
 			app_policy.end_loop=monitoring_end_loop;
 			app_policy.policy=monitoring_policy;
 			app_policy.policy_ok=monitoring_policy_ok;
+			app_policy.default_conf=monitoring_default_conf;
         break;
     }
 
@@ -180,7 +184,7 @@ void init_power_policy()
 		EAR_default_pstate = DEFAULT_P_STATE;
 	}
 
-	user_selected_freq = frequency_pstate_to_freq(EAR_default_pstate);
+	user_selected_freq = EAR_default_frequency = frequency_pstate_to_freq(EAR_default_pstate);
 	ear_verbose(0,"User selected freq is %lu\n",user_selected_freq);
 	// IMPORTANT: here is where the environment first P_STATE is set.
 	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);
@@ -333,5 +337,12 @@ void policy_new_loop()
 void policy_end_loop()
 {
     app_policy.end_loop();
+}
+
+void policy_default_configuration()
+{
+	ear_frequency=app_policy.default_conf(user_selected_freq);
+	ear_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
+	eards_change_freq(ear_frequency);
 }
 

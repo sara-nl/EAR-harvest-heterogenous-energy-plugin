@@ -194,3 +194,18 @@ ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t 
 	else return 0;
 
 }
+ulong  min_time_default_conf(ulong f)
+{
+    #if SHARED_MEMORY
+    // Just in case the bestPstate was the frequency at which the application was running
+    if (f>system_conf->max_freq){
+        log_report_global_policy_freq(my_job_id,system_conf->max_freq);
+        ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
+        best_pstate,system_conf->max_freq);
+        return system_conf->max_freq;
+    }else return f;
+    #else
+    return f;
+    #endif
+}
+

@@ -57,3 +57,8 @@ ulong monitoring_policy_ok(projection_t *proj, application_t *curr_sig, applicat
 }
 
 
+ulong monitoring_default_conf(ulong f)
+{
+	return f;
+}
+
