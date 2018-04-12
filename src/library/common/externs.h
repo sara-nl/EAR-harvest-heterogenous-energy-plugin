@@ -43,6 +43,7 @@ extern application_t application;
 extern char app_summary_path[PATH_MAX];
 
 extern unsigned long EAR_default_frequency;
+extern unsigned int EAR_default_pstate;
 extern unsigned long ear_frequency;
 extern int ear_use_turbo;
 extern int ear_whole_app;
