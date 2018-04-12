@@ -1,10 +1,30 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-    BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*   Energy Aware Runtime (EAR)
+*   This program is part of the Energy Aware Runtime (EAR).
+*
+*   EAR provides a dynamic, dynamic and ligth-weigth solution for
+*   Energy management.
+*
+*       It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017
+*   BSC Contact     mailto:ear-support@bsc.es
+*   Lenovo contact  mailto:hpchelp@lenovo.com
+*
+*   EAR is free software; you can redistribute it and/or
+*   modify it under the terms of the GNU Lesser General Public
+*   License as published by the Free Software Foundation; either
+*   version 2.1 of the License, or (at your option) any later version.
+*
+*   EAR is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*   Lesser General Public License for more details.
+*
+*   You should have received a copy of the GNU Lesser General Public
+*   License along with EAR; if not, write to the Free Software
+*   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*   The GNU LEsser General Public License is contained in the file COPYING
 */
 
 #include <errno.h>
@@ -15,7 +35,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <common/environment.h>
+
+#define DEFAULT_VERBOSE                 0
+#define DEFAULT_DB_PATHNAME             ".ear_system_db"
 
 char *conf_ear_tmp=NULL;
 char *conf_ear_db_pathname=NULL;
@@ -86,5 +108,35 @@ int get_ear_verbose()
 void set_ear_verbose(int verb)
 {
 	conf_ear_verbose=verb;
+}
+
+void ear_daemon_environment()
+{
+    getenv_ear_verbose();
+    getenv_ear_tmp();
+    getenv_ear_db_pathname();
+}
+void ear_print_daemon_environment()
+{
+#ifdef DEBUG
+    char *tmp;
+    char environ[256];
+    char var[256];
+    int fd;
+    tmp=get_ear_tmp();
+    sprintf(environ,"%s/ear_daemon_environment.txt",tmp);
+    fd=open(environ,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    if (fd<0){
+        fprintf(stderr,"EAR error reporting environment variables %s\n",strerror(errno));
+        return;
+    }
+    sprintf(var,"EAR_TMP=%s\n",get_ear_tmp());
+    write(fd,var,strlen(var));
+    sprintf(var,"EAR_VERBOSE=%d\n",get_ear_verbose());
+    write(fd,var,strlen(var));
+    sprintf(var,"EAR_DB_PATHNAME=%s\n",get_ear_db_pathname());
+    write(fd,var,strlen(var));
+    close(fd);
+#endif
 }
 

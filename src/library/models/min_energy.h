@@ -42,7 +42,7 @@ void min_energy_new_loop();
 void min_energy_end_loop();
 ulong min_energy_policy(application_t *sig);
 ulong min_energy_policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig);
-void  min_energy_default_conf(ulong f);
+ulong  min_energy_default_conf(ulong f);
 
 #else
 #endif

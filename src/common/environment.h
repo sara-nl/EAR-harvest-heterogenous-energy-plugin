@@ -159,10 +159,6 @@ int get_ear_dynais_window_size();
 void ear_lib_environment();
 /** Writes ear library variables in $EAR_TMP/environment.txt file. */
 void ear_print_lib_environment();
-/** Reads and process all the environment variables involving the daemon. */
-void ear_daemon_environment();
-/** Writes ear daemon variables in $EAR_TMP/environment.txt file. */
-void ear_print_daemon_environment();
 
 /** Returns the number of processes per node. */
 int get_total_resources();
