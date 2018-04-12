@@ -35,16 +35,16 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-// #include <gsl/gsl_math.h>
-// #include <gsl/gsl_matrix.h>
-// #include <gsl/gsl_multifit.h>
-// #include <cpufreq.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_multifit.h>
+#include <cpufreq.h>
 
 #include <common/types/application.h>
 #include <common/types/signature.h>
 #include <common/types/coefficient.h>
 #include <common/types/projection.h>
-// #include <common/config.h>
+#include <common/config.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
@@ -369,9 +369,9 @@ int main(int argc, char *argv[])
 
                         for (i = 0; i < n; i++) {
                             // POWER
-                            gsl_vector_set(POWER, i, sorted_app_list[f][i].DC_power);
+                            gsl_vector_set(POWER, i, sorted_app_list[f][i].signature.DC_power);
 
-                            nominal_for_power(ref, sorted_app_list[f][i].app_id, &power, &tpi);
+                            nominal_for_power(ref, sorted_app_list[f][i].job.app_id, &power, &tpi);
 
                             // SIGNATURE VALUES
                             gsl_matrix_set(SIGNATURE_POWER, i, 0, 1);
@@ -410,9 +410,9 @@ int main(int argc, char *argv[])
                         for (i = 0; i < n; i++)
                         {
                             // CPI
-                            gsl_vector_set(CPI, i, sorted_app_list[f][i].CPI);
+                            gsl_vector_set(CPI, i, sorted_app_list[f][i].signature.CPI);
 
-                            nominal_for_cpi(ref, sorted_app_list[f][i].app_id, &cpi, &tpi);
+                            nominal_for_cpi(ref, sorted_app_list[f][i].job.app_id, &cpi, &tpi);
 
                             // SIGNATURE VALUES
                             gsl_matrix_set(SIGNATURE_CPI, i, 0, 1);
