@@ -61,15 +61,22 @@ char* strclean(char *string, char chr)
  * Environment
  *
  */
+void printenv_remote(spank_t sp, char *name)
+{
+	char value[PATH_MAX];
+	getenv_remote(sp, name, value, PATH_MAX);
+        slurm_error("%s %s", name, value);
+}
+
 void appendenv(char *destiny, char *source)
 {
-   		char buffer[PATH_MAX];
+   	char buffer[PATH_MAX];
         int length = strlen(destiny);
         char *pointer;
 
-		if (source == NULL) {
-			return;
-		}
+	if (source == NULL) {
+		return;
+	}
 
         if (length > 0)
         {
@@ -206,10 +213,10 @@ int file_to_environment(spank_t sp, const char *path)
 
 int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
-    FUNCTION_INFO("find_ear_conf_file");
+	FUNCTION_INFO("find_ear_conf_file");
 	char conf_path[PATH_MAX];
 	char link_path[PATH_MAX];
-    int i, r;
+	int i;
 
     for (i = 0; i < ac; ++i)
     {

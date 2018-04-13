@@ -151,7 +151,7 @@ static int local_update_ld_preload(spank_t sp)
     ear_install_path = getenv("EAR_INSTALL_PATH");
 
     if (ld_preload != NULL) {
-        strcpy(buffer, ld_preload);
+        //strcpy(buffer, ld_preload);
     }
 
     // Apending: x:y or y
@@ -185,30 +185,38 @@ static int local_update_ear_install_path()
 
 static int local_update_ld_library_path()
 {
-    FUNCTION_INFO("local_update_ld_library_path");
-    char *ld_additional_path;
-    char *ld_library_path;
-    char buffer[PATH_MAX];
+	FUNCTION_INFO("local_update_ld_library_path");
+	char buffer[PATH_MAX];
+	char *ld_additional_path;
+	char *ld_library_path;
+	char *ld_papi_path;
+	char *ld_ipmi_path;
+	char *ld_cpuf_path;
 
-    //
-    buffer[0] = '\0';
-    ld_additional_path = getenv("EAR_EXTRA_PATHS");
-    ld_library_path    = getenv("LD_LIBRARY_PATH");
-    
-    if (ld_library_path != NULL) {
-        strcpy(buffer, ld_library_path);
-    }
+	//
+	buffer[0] = '\0';
+	unsetenv("LD_LIBRARY_PATH");
+	ld_library_path    = getenv("LD_LIBRARY_PATH");
+	ld_additional_path = getenv("EAR_EXTRA_PATHS");
+	ld_cpuf_path       = getenv("EAR_CPUPOWER_LIB_PATH");
+	ld_ipmi_path       = getenv("EAR_FREEIPMI_LIB_PATH");
+	ld_papi_path       = getenv("EAR_PAPI_LIB_PATH");
 
-    //
-    appendenv(buffer, ld_additional_path);
-    appendenv(buffer, CPUPOWER_LIB_PATH);
-    appendenv(buffer, FREEIPMI_LIB_PATH);
-    appendenv(buffer, PAPI_LIB_PATH);
+	
+    	if (ld_library_path != NULL) {
+        	strcpy(buffer, ld_library_path);
+    	}
+
+    	//
+    	appendenv(buffer, ld_additional_path);
+    	//appendenv(buffer, ld_cpuf_path);
+    	//appendenv(buffer, ld_ipmi_path);
+    	appendenv(buffer, ld_papi_path);
   
-    // 
-    DEBUGGING("LD_LIBRARY_PATH: %s", buffer); 
+    	// 
+	DEBUGGING("LD_LIBRARY_PATH %s", buffer); 
     
-    return setenv_local("LD_LIBRARY_PATH", buffer, 1);
+	return setenv_local("LD_LIBRARY_PATH", buffer, 1);
 }
 
 static void remote_update_slurm_vars(spank_t sp)
@@ -277,9 +285,10 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_task_init");
-    
+   
     if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
     {
+	printenv_remote(sp, "LD_LIBRARY_PATH");
         remote_update_slurm_vars(sp);
     }
 
@@ -324,6 +333,15 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 
     return (ESPANK_SUCCESS);
 }
+
+int slurm_spank_job_prolog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
+int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_init_post_op"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init_privileged"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_init (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_exit"); return (ESPANK_SUCCESS); }
+int slurm_spank_job_epilog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_job_epilog"); return (ESPANK_SUCCESS); }
+int slurm_spank_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
 
 /*
  *
