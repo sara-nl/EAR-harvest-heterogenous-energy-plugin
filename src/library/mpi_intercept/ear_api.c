@@ -190,14 +190,15 @@ void ear_init()
 	job_id = getenv("SLURM_JOB_ID");
 	user_id = getenv("LOGNAME");
 	if (job_id != NULL){ 
-		strcpy(application.job.id, job_id);
 		my_job_id=atoi(job_id);
+		application.job.id = my_job_id;
 	}else{ 
 		my_job_id=getppid();
-		sprintf(application.job.id, "%d", my_job_id);
+		application.job.id = my_job_id;
 	}
 
 	// Policies
+	
 	init_power_policy();
 	init_power_models(frequency_get_num_pstates(), frequency_get_freq_rank_list());
 
@@ -205,7 +206,6 @@ void ear_init()
 	strcpy(application.job.app_id, ear_app_name);
 	strcpy(application.job.user_id, user_id);
 	strcpy(application.node_id, node_name);
-
 
 	// Passing the frequency in KHz to MHz
 	application.job.def_f = EAR_default_frequency;
@@ -216,7 +216,6 @@ void ear_init()
 	memcpy(&loop_signature, &application, sizeof(application_t));
 	// States
 	states_begin_job(my_id, NULL, ear_app_name);
-
 	// Summary files
 	summary_pathname = get_ear_user_db_pathname();
 
@@ -229,7 +228,7 @@ void ear_init()
 	//{
 		VERBOSE_N(1, "--------------------------------");
 		VERBOSE_N(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
-		VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job.id);
+		VERBOSE_N(1, "Node/job id: '%s'/'%lu'", application.node_id, application.job.id);
 		VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
 		VERBOSE_N(1, "Default frequency (turbo): %u (%d)", application.job.def_f, ear_use_turbo);
 		VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.job.procs, num_nodes, ppnode);
