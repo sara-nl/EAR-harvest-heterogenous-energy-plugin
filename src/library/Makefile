@@ -1,5 +1,5 @@
 CFLAGS   = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS  = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
+LDFLAGS  = -shared  $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 
 ######## VARS
 
@@ -20,6 +20,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
 COMMON_OBJS = $(SRCDIR)/common/shared_configuration.o \
               $(SRCDIR)/common/ear_daemon_client.o \
 			  $(SRCDIR)/common/environment_common.o \
+			  $(SRCDIR)/common/file_lock.o \
               $(SRCDIR)/common/environment.o 
 
 TYPES = $(SRCDIR)/common/types.a
@@ -59,7 +60,7 @@ update-trace-objs-gui:
 	@ $(MAKE) -B $(TRACE_OBJS) CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 libear.so: update-trace-objs $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
-	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
+	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES) 
 
 libeart.so: update-trace-objs-gui
 	$(CC) $(CFLAGS) -DEAR_GUI -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)

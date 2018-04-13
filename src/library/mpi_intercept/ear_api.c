@@ -58,11 +58,18 @@
 #include <common/environment.h>
 #include <common/states.h>
 #include <common/config.h>
+#define BUFFSIZE 128
+
+#define USE_LOCK_FILES 1
+#if USE_LOCK_FILES
+#include <common/file_lock.h>
+static int fd_master_lock;
+static char fd_lock_filename[BUFFSIZE];
+#endif
 
 
 static const char *__NAME__ = "API";
 
-#define BUFFSIZE 128
 
 // Una cosa que
 static struct timeval pmpi_app_begin_time;
@@ -133,17 +140,42 @@ void ear_init()
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
 
-	my_id = get_ear_local_id();
+    // Only one process can connect with the daemon
+    // Connecting with ear_daemon
+    job_id = getenv("SLURM_JOB_ID");
+    user_id = getenv("LOGNAME");
+    if (job_id != NULL){
+        my_job_id=atoi(job_id);
+    }else{
+        my_job_id=getppid();
+    }
+	num_nodes = get_ear_num_nodes();
+	ppnode = my_size / num_nodes;
 
-	// When SLURM is not found. TODO: maybe has to be fixed
+	#if USE_LOCK_FILES
+	sprintf(fd_lock_filename,"%s/.ear_app_lock.%d",get_ear_tmp(),my_job_id);
+	if ((fd_master_lock=lock_master(fd_lock_filename))<0) my_id=1;
+	else my_id=0;
+	if (my_id){ 	
+		ear_verbose(2,"Rank %d is not the master in node %s\n",ear_my_rank,node_name);
+	}else{ 		
+		ear_verbose(0,"Rank %d is the master in node %s\n",ear_my_rank,node_name);
+	}
+	// if we are not the master, we return
+	if (my_id) return;
+	#else
+	my_id = get_ear_local_id();
 	if (my_id < 0)
 	{
-		num_nodes = get_ear_num_nodes();
-		ppnode = my_size / num_nodes;
 		my_id = (ear_my_rank % ppnode);
 	}
-
 	if (my_id) return;
+	#endif
+    ear_verbose(0,"EAR: Connecting with EARD %d\n",ear_my_rank);
+    if (eards_connect() == EAR_SUCCESS) {
+        ear_verbose(0,"EAR: Rank %d connected with EARD\n",ear_my_rank);
+    }
+
    	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
 	if (ear_my_rank == 0)
@@ -156,13 +188,14 @@ void ear_init()
 	#if SHARED_MEMORY
 	system_conf=attach_ear_conf_shared_area(get_ear_tmp());
 	#endif
-
+	#if 0
 	// Only one process can connect with the daemon
 	// Connecting with ear_daemon
 	ear_verbose(0,"EAR: Connecting with EARD\n");
 	if (eards_connect() < 0) {
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
 	}
+	#endif
 
 	// Application static data gathering
 	init_application(&application);
@@ -187,13 +220,10 @@ void ear_init()
 	// Getting environment data
 	get_app_name_please(ear_app_name);
 	ear_current_freq = frequency_get_num_pstates(0);
-	job_id = getenv("SLURM_JOB_ID");
-	user_id = getenv("LOGNAME");
+	
 	if (job_id != NULL){ 
 		strcpy(application.job_id, job_id);
-		my_job_id=atoi(job_id);
 	}else{ 
-		my_job_id=getppid();
 		sprintf(application.job_id, "%d", my_job_id);
 	}
 
@@ -360,7 +390,13 @@ void ear_finalize()
 
 	if (my_id) {
 		return;
-	}
+	}	
+
+	#if USE_LOCK_FILES
+	ear_verbose(0,"Application master releasing the lock %d\n",ear_my_rank);
+	unlock_master(fd_master_lock,fd_lock_filename);
+	#endif
+
 
 	#ifdef MEASURE_DYNAIS_OV
 	ear_verbose(0,"EAR:: Dynais algorithm consumes %llu usecs in %u calls\n",ear_acum,calls);

@@ -163,20 +163,6 @@ int eards_connect()
 				// When using a single communicator, we should send only a frequency connection request 
 				req.req_service=CONNECT_FREQ; 
 				break;
-			#ifdef MULTIPLE_SERVICES
-			case uncore_req:
-				req.req_service=CONNECT_UNCORE;
-				break;
-			case rapl_req:
-				req.req_service=CONNECT_RAPL;
-				break;	
-			case system_req:
-				req.req_service=CONNECT_SYSTEM;
-				break;
-			case node_energy_req:
-				req.req_service=CONNECT_ENERGY;
-				break;
-			#endif
 		}
 
 		if (ear_fd_req[i]>0)
@@ -200,11 +186,11 @@ int eards_connect()
 				return EAR_ERROR;
 			}
 			DEBUG_F(1, "ear_client: ear_daemon ok for service %d, opening ack", i);
-
+			// At this point, if ear_commack doesn't exist, that means we are not the master
 			if ((ear_fd_ack[i]=open(ear_commack,O_RDONLY))<0)
 			{
-				VERBOSE_N(0, "ERROR while opening ack communicator (%s) (%s)",
-						  ear_commack, strerror(errno));
+				//VERBOSE_N(0, "ERROR while opening ack communicator (%s) (%s)",
+			    //			  ear_commack, strerror(errno));
 				ear_fd_req[i]=-1;
 				return EAR_ERROR;
 			}
