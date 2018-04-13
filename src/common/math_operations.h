@@ -27,49 +27,13 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+/** Given two doubles a and b, checks if they are equal within a margin of th.*/
+unsigned int equal_with_th(double a, double b, double th);
 
-#ifndef _EAR_TYPES_SIGNATURE
-#define _EAR_TYPES_SIGNATURE
+/** Given two unsigned long's, one before and one after overflow, returns the
+*   value added to the first to obtain the second.*/
+unsigned long ulong_diff_overflow(unsigned long a, unsigned long b);
 
-#include <common/types/generic.h>
-
-#define FLOPS_EVENTS 8
-
-typedef struct signature
-{
-    double DC_power;
-    double DRAM_power;
-    double PCK_power;
-    double EDP;
-    double GBS;
-    double TPI;
-    double CPI;
-    double Gflops;
-    double time;
-    ull FLOPS[FLOPS_EVENTS];
-    ull L1_misses;
-    ull L2_misses;
-    ull L3_misses;
-    ull instructions;
-    ull cycles;
-    ulong avg_f;
-    ulong def_f;
-} signature_t;
-
-
-// Function declarations
-
-//
-void copy_signature(signature_t *destiny, signature_t *source);
-
-/** Resets values. */
-void init_signature(signature_t *sig);
-
-/** returns true if basic values for sig1 and sig2 are equal with a maximum %
-*   of difference defined by threshold (th) */
-uint are_equal(signature_t *sig1,signature_t *sig2,double th);
-
-/** Outputs the signature contents to the file pointed by the fd. */
-void print_signature_fd(int fd, signature_t *sig);
-
-#endif
+/** Given two unsigned long's, one before and one after overflow, returns the
+*   value added to the first to obtain the second.*/
+unsigned long long ulong_diff_overflow(unsigned long long a, unsigned long long b)

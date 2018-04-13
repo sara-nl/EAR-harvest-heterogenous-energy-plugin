@@ -46,7 +46,8 @@
 #include <common/types/log.h>
 #include <common/types/application.h>
 #include <common/states.h>
-#include <common/config.h>
+// #include <common/config.h>
+#include <common/math_operations.h>
 
 static const char *__NAME__ = "STATES";
 
@@ -130,20 +131,8 @@ void states_end_period(uint iterations)
 	policy_end_loop();
 }
 
-static unsigned int equal_with_th(double a, double b, double th)
-{
-	int eq;
-	if (a > b) {
-		if (a < (b * (1 + th))) eq = 1;
-		else eq = 0;
-	} else {
-		if ((a * (1 + th)) > b) eq = 1;
-		else eq = 0;
-	}
-	return eq;
-}
 
-static int signature_has_changed(signature_t *A, signature_t *B)
+static int policy_had_effect(signature_t *A, signature_t *B)
 {
 	if (equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH) &&
 		equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH))
@@ -444,7 +433,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 									"\n\nEAR(%s): Policy not ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
 									ear_app_name, TIME, POWER, ENERGY, PP->Time, PP->Power, PP->Time * PP->Power);
 
-						if (signature_has_changed(&loop_signature.signature, &last_signature.signature))
+						if (policy_had_effect(&loop_signature.signature, &last_signature.signature))
 						{
 							EAR_STATE = SIGNATURE_HAS_CHANGED;
 							ear_verbose(3, "EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",

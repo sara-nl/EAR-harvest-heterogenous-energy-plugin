@@ -1,6 +1,36 @@
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
+*/
+
 #include <string.h>
 #include <stdio.h>
 #include <common/types/signature.h>
+#include <common/math_operations.h>
 
 
 void copy_signature(signature_t *destiny, signature_t *source)
@@ -11,19 +41,6 @@ void copy_signature(signature_t *destiny, signature_t *source)
 void init_signature(signature_t *sig)
 {
     memset(sig, 0, sizeof(signature_t));
-}
-
-static uint equal_with_th(double a, double b, double th)
-{
-	int eq;
-	if (a > b) {
-		if (a < (b * (1 + th))) eq = 1;
-		else eq = 0;
-	} else {
-		if ((a * (1 + th)) > b) eq = 1;
-		else eq = 0;
-	}
-	return eq;
 }
 
 uint are_equal(signature_t *sig1, signature_t *sig2, double th)
