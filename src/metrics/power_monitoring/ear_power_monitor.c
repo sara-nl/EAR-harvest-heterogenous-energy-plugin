@@ -35,7 +35,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <sys/types.h>
-
+#include <common/math_operations.h>
 
 
 
@@ -199,7 +199,9 @@ rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init)
 	}else{
 		aux=(double)0xffffffff-init;
 		ret=aux+end;
+		aux = ullong_diff_overflow(init, end);
 		printf("OVERFLOW DETECTED RAPL! %llu,%llu\n",init,end);
+		printf("Overflow_check old: %llu, new: %llu \n", ret, aux);
 	}
 	return ret;
 }

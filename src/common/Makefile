@@ -16,7 +16,7 @@ TYPES_OBJS = types/application.o \
 	     types/loop.o
 
 
-BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o remote_daemon_client.o 
+BINARIES = ear_daemon_client.o environment.o string_enhanced.o math_operations.o types.a shared_configuration.o remote_daemon_client.o 
 
 ######## RULES
 
@@ -41,8 +41,13 @@ environment_common.o: environment_common.c environment_common.h
 string_enhanced.o: string_enhanced.c string_enhanced.h
 	$(CC) $(CFLAGS) -c string_enhanced.c
 
+math_operations.o: math_operations.c math_operations.h
+	$(CC) $(CFLAGS) -c math_operations.c
+
 types.a: $(TYPES_OBJS)
-	ar rvs types.a $(TYPES_OBJS) string_enhanced.o	
+	ar rvs types.a $(TYPES_OBJS) string_enhanced.o math_operations.o	
+
+
 
 ######## OPTIONS
 

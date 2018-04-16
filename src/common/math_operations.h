@@ -36,4 +36,4 @@ unsigned long ulong_diff_overflow(unsigned long a, unsigned long b);
 
 /** Given two unsigned long's, one before and one after overflow, returns the
 *   value added to the first to obtain the second.*/
-unsigned long long ulong_diff_overflow(unsigned long long a, unsigned long long b)
+unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long b);
