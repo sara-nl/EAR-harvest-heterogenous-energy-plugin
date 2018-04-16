@@ -66,17 +66,14 @@ void main(int argc, char *argv[])
 	char **nodes;
     if (argc!=3) usage(argv[0]);
     job_id = atoi(argv[1]);
-    char *nodelist_file_path, *nodelog_file_path, *env;
+    char nodelist_file_path[256], *nodelog_file_path, *env;
     char line_buf[256];
     FILE *nodelist_file, *node_file;
 
 
-    // tmp = nodelist_file_path;
-    // env = getenv("EAR_INSTALL_PATH");
-    // strcpy(nodelist_file_path, tmp);
-    // strcat(nodelist_file_path, "/etc/sysconf/nodelist.conf");
+    strcpy(nodelist_file_path, EAR_INSTALL_PATH);
+    strcat(nodelist_file_path, "/etc/sysconf/nodelist.conf");
 
-    nodelist_file_path = "/home/bscuser/Projects/temp/ear_install_path/etc/sysconf/nodelist.conf";
     nodelist_file = fopen(nodelist_file_path, "r");
     if (nodelist_file == NULL)
     {
