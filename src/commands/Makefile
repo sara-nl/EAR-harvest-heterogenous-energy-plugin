@@ -4,7 +4,7 @@ LDFLAGS = $(CPUF_CFLAGS) $(PAPI_LDFLAGS)
 FREQ_OBJS= $(SRCDIR)/metrics/papi/generics.o $(SRCDIR)/control/frequency.o
 TYPES = $(SRCDIR)/common/types/application.o
 
-BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_acct.c
+BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report.c
 all: $(BINARIES)
 
 
