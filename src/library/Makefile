@@ -1,5 +1,5 @@
 CFLAGS   = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS  = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
+LDFLAGS  = -shared  $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 
 ######## VARS
 
@@ -20,6 +20,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
 COMMON_OBJS = $(SRCDIR)/common/shared_configuration.o \
               $(SRCDIR)/common/ear_daemon_client.o \
 			  $(SRCDIR)/common/environment_common.o \
+			  $(SRCDIR)/common/file_lock.o \
               $(SRCDIR)/common/environment.o 
 
 TYPES = $(SRCDIR)/common/types.a

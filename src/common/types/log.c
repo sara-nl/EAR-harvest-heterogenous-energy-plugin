@@ -57,12 +57,12 @@ static char my_log_buffer[1024];
 static char log_name[128];
 void init_log()
 {
+#if LOG_FILE
 	mode_t my_mask;
 	time_t curr_time;
     struct tm *current_t;
     char s[64];
 	char nodename[128];
-
 	if (fd_log>=0) return;
 	time(&curr_time);
 	my_mask=umask(0);	
@@ -78,12 +78,14 @@ void init_log()
     strftime(s, sizeof(s), "%c", current_t);
 	sprintf(my_log_buffer,"----------------------	EAR log created %s ------------------\n",s);
 	write(fd_log,my_log_buffer,strlen(my_log_buffer));
+#endif
 }
 void end_log()
 {
 	time_t curr_time;
     struct tm *current_t;
     char s[64];
+#if LOG_FILE
 	if (fd_log<0) return;
 	time(&curr_time);
     current_t=localtime(&curr_time);
@@ -91,9 +93,11 @@ void end_log()
 	sprintf(my_log_buffer,"----------------------	EAR log closed %s ------------------\n",s);
 	write(fd_log,my_log_buffer,strlen(my_log_buffer));
 	close(fd_log);
+#endif
 }
 void report_new_event(ear_event_t *event)
 {
+#if LOG_FILE
     time_t curr_time;
     struct tm *current_t;
     char s[64];
@@ -117,46 +121,52 @@ void report_new_event(ear_event_t *event)
 	}
 
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
-
+#endif
 }
 
 void log_report_new_freq(int job,ulong newf)
 {
+#if LOG_FILE
     ear_event_t new_event;
     new_event.event=ENERGY_POLICY_NEW_FREQ;
     new_event.job_id=job;
     new_event.freq=newf ;
     report_new_event(&new_event);
-
+#endif
 }
 
 
 void log_report_dynais_off(int job)
 {
+#if LOG_FILE
     ear_event_t new_event;
     new_event.event=DYNAIS_OFF;
     new_event.job_id=job;
     report_new_event(&new_event);
-
+#endif
 }
 
 
 
 void log_report_max_tries(int job,ulong newf)
 {
+#if LOG_FILE
     ear_event_t new_event;
     new_event.event=ENERGY_POLICY_FAILS;
     new_event.freq=newf;
     new_event.job_id=job;
     report_new_event(&new_event);
+#endif
 }
 
 void log_report_global_policy_freq(int job,ulong newf)
 {
+#if LOG_FILE
     ear_event_t new_event;
     new_event.event=GLOBAL_ENERGY_POLICY;
     new_event.freq=newf;
     new_event.job_id=job;
     report_new_event(&new_event);
+#endif
 }
 

@@ -103,6 +103,8 @@ int application_timeout();
 int RAPL_counting=0;
 int eard_must_exit=0;
 
+
+
 // SIGNALS management
 void f_signals(int s)
 {
@@ -203,10 +205,8 @@ void connect_service(int req,unsigned long pid)
 	unsigned long ack;
 	int connect=1;
 	int alive;
-
 	// Let's check if there is another application
 	VERBOSE_N(1, "request for connection at service %d", req);
-
 	if (is_new_application(pid) || is_new_service(req, pid)) {
 		connect=1;
 	} else {
@@ -216,6 +216,7 @@ void connect_service(int req,unsigned long pid)
 		if (check_ping()) alive = application_timeout();
 		if (alive == 0) connect = 1;
 	}
+	
 
 	// Creates 1 pipe (per node) to send acks.
 	if (connect)
@@ -267,10 +268,11 @@ void connect_service(int req,unsigned long pid)
 			VERBOSE_N(0,"ERROR when opening ear communicator for ack (%s)", strerror(errno));
 			eard_close_comm();
 		}
-	} else {
+	}else{ 
 		// eard only suppports one application connected, the second one will block
-		VERBOSE_N(0, "application with pid %lu rejected", pid);
+		VERBOSE_N(0, "Process pid %lu rejected as master", pid);
 	}
+	VERBOSE_N(0, "Process pid %lu selected as master", pid);
 	VERBOSE_N(1, "service %d connected", req);
 }
 

@@ -45,21 +45,12 @@ struct daemon_req {
 };
 
 // Number of services supported
-#ifdef MULTIPLE_SERVICES
-#define ear_daemon_client_requests	5
-#define freq_req 					0
-#define uncore_req 					1
-#define rapl_req 					2
-#define system_req 					3
-#define node_energy_req 			4
-#else
 #define ear_daemon_client_requests 	1
 #define freq_req 					0
 #define uncore_req 					0
 #define rapl_req 					0
 #define system_req 					0
 #define node_energy_req 			0
-#endif
 
 // Services related with frequency
 #define SET_FREQ 				0

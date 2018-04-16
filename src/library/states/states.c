@@ -451,6 +451,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							comp_N_begin = metrics_time();
 
 							policy_new_loop();
+                            #if DYNAIS_CUTOFF
+                            dynais_enabled=1;
+                            #endif
 						} else {
 							EAR_STATE = EVALUATING_SIGNATURE;
 						}

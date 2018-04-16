@@ -34,11 +34,11 @@
 //    	slurm_error(string, __VA_ARGS__)
 #define FUNCTION_INFO(function)
 //	slurm_error(function)
-#define FUNCTION_INFO_(function) \
-	if (isenv_local("EAR_VERBOSE", "1") || isenv_remote(sp, "EAR_VERBOSE", "1")) { \
-    		slurm_error(function); \
-		printenv_remote(sp, "LD_LIBRARY_PATH"); \
-	}
+#define FUNCTION_INFO_(function)
+//	if (isenv_local("EAR_VERBOSE", "1") || isenv_remote(sp, "EAR_VERBOSE", "1")) { \
+//    		slurm_error(function); \
+//		printenv_remote(sp, "LD_LIBRARY_PATH"); \
+//	}
 #define SPANK_ERROR(string) \
     slurm_error(string);
 #define SPANK_STRERROR(string, var) \
