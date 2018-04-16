@@ -178,13 +178,6 @@ void ear_init()
 
    	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
-	if (ear_my_rank == 0)
-	{
-		ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
-		ear_verbose(0,"EAR using %d levels in dynais with %d of window size \n",
-				get_ear_dynais_levels(), get_ear_dynais_window_size());
-	}
-
 	#if SHARED_MEMORY
 	system_conf=attach_ear_conf_shared_area(get_ear_tmp());
 	#endif
@@ -268,9 +261,10 @@ void ear_init()
 		VERBOSE_N(1, "App/user id: '%s'/'%s'", application.app_id, application.user_id);
 		VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job_id);
 		VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
-		VERBOSE_N(1, "Default frequency (turbo): %u (%d)", application.def_f, ear_use_turbo);
+		VERBOSE_N(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.def_f, ear_use_turbo);
 		VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.procs, num_nodes, ppnode);
-		VERBOSE_N(1, "Policy/threshold/learning: %s/%lf/%d", application.policy, application.policy_th, ear_whole_app);
+		VERBOSE_N(1, "Policy (learning): %s (%d)", application.policy, ear_whole_app);
+		VERBOSE_N(1, "Policy threshold/Perf accuracy: %lf/%lf", application.policy_th, get_ear_performance_accuracy());
 		VERBOSE_N(1, "DynAIS levels/window: %d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size());
 		VERBOSE_N(1, "VAR path: %s", get_ear_tmp());
 		VERBOSE_N(1, "AVX-512: %d", avx512);
