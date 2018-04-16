@@ -27,7 +27,7 @@ function launching
 function launching_slurm
 {
     # Update srun command for custom SLURM installations
-    export SRUN_PATH=/home/xjaneas/slurm/bin/srun
+    export SRUN_PATH=srun
 
     # Non-edit region
 	if [ "$EAR_POWER_POLICY" != "NO_EAR" ]; then

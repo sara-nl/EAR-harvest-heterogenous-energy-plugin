@@ -34,13 +34,33 @@
 
 extern int EAR_VERBOSE_LEVEL;
 
-#define ear_verbose(level,...) if (level<=EAR_VERBOSE_LEVEL) fprintf(stderr, __VA_ARGS__);
+/** Prints a formatted string in case the level passed is greater or equal than
+ *  the selected level of verbosity. */
+#define ear_verbose(level,...) \
+	if (leveli <= EAR_VERBOSE_LEVEL) fprintf(stderr, __VA_ARGS__);
+
+/** Prints a formatted string in case the level passed is greater or equal than
+ *  the selected level of verbosity. This function prints the prefix string
+ *  constant __NAME__, and a new line character as a suffix. */
+#define VERBOSE_N(level, ...) \
+        if (level <= EAR_VERBOSE_LEVEL) { \
+                fprintf(stderr, "%s: ", __NAME__); \
+                fprintf(stderr, __VA_ARGS__); \
+                fprintf(stderr, "\n"); \
+        }
+
+/** Prints a formatted string in case the level passed is greater or equal then
+ *  the selected level of debugging.*/
 #ifdef DEBUG
-#define ear_debug(level,...) if (level<=DEBUG) fprintf(stderr, __VA_ARGS__);
+#define ear_debug(level,...) \
+	if (level <= DEBUG) fprintf(stderr, __VA_ARGS__);
 #else
 #define ear_debug(level,...)
 #endif
 
+/** Prints a formatted string in case the level passed is greater or equal than
+ *  the selected level of debugging. This function prints the prefix string
+ *  constant __FILE__, and a new line character as a suffix. */
 #ifdef DEBUG
 #define DEBUG_F(level, ...) \
 	if (level <= DEBUG) { \
@@ -52,13 +72,4 @@ extern int EAR_VERBOSE_LEVEL;
 #define DEBUG_F(level, ...)
 #endif
 
-// Define __NAME__ constant before use this macro
-#define VERBOSE_N(level, ...) \
-	if (level <= EAR_VERBOSE_LEVEL) { \
-		fprintf(stderr, "%s: ", __NAME__); \
-		fprintf(stderr, __VA_ARGS__); \
-		fprintf(stderr, "\n"); \
-	}
-
-#else
 #endif

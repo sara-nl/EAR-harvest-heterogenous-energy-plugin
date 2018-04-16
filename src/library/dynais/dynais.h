@@ -34,13 +34,17 @@
 #define MAX_LEVELS      10
 #define METRICS_WINDOW  40000
 
-// Dynais output states
+// DynAIS output states
 #define END_LOOP       -1
 #define NO_LOOP         0
 #define IN_LOOP         1
 #define NEW_ITERATION   2
 #define NEW_LOOP        3
 #define END_NEW_LOOP    4
+
+// DynAIS build type
+#define DYNAIS_NORMAL	0
+#define DYNAIS_AVX512	1
 
 // Functions
 /** Given a sample and its size, returns the state the application is in (in
@@ -50,7 +54,10 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *level);
 /** Allocates memory in preparation to use dynais. Returns 0 on success */
 int dynais_init(unsigned int window, unsigned int levels);
 
-/** Frees the memory previously allocated */
+/** Frees the memory previously allocated. */
 void dynais_dispose();
+
+/** Returns the building type of dynais. */
+int dynais_build_type();
 
 #endif //EAR_DYNAIS_H

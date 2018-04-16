@@ -11,8 +11,8 @@ export EAR_MAX_P_STATE=6
 export EAR_TIMES=3
 
 # Non edit region
+module load $EAR_INSTALL_PATH/etc/module/ear
 source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
-source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
 export EAR_LEARNING_PHASE=1
 export BENCHS_MODE="test"
 

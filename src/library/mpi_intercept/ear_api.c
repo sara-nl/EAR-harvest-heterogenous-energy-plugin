@@ -248,29 +248,19 @@ void ear_init()
 		sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 	}
 
-	// Additionals
-	int avx512 = 0;
-
-	#ifdef _FEATURE_AVX512F
-	avx512 = 1;
-	#endif
-
-	//if (ear_my_rank == 0)
-	//{
-		VERBOSE_N(1, "--------------------------------");
-		VERBOSE_N(1, "App/user id: '%s'/'%s'", application.app_id, application.user_id);
-		VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job_id);
-		VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
-		VERBOSE_N(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.def_f, ear_use_turbo);
-		VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.procs, num_nodes, ppnode);
-		VERBOSE_N(1, "Policy (learning): %s (%d)", application.policy, ear_whole_app);
-		VERBOSE_N(1, "Policy threshold/Perf accuracy: %lf/%lf", application.policy_th, get_ear_performance_accuracy());
-		VERBOSE_N(1, "DynAIS levels/window: %d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size());
-		VERBOSE_N(1, "VAR path: %s", get_ear_tmp());
-		VERBOSE_N(1, "AVX-512: %d", avx512);
-		VERBOSE_N(1, "--------------------------------");
-	//	}
-
+	// Starting job summary
+	VERBOSE_N(1, "--------------------------------");
+	VERBOSE_N(1, "App/user id: '%s'/'%s'", application.app_id, application.user_id);
+	VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job_id);
+	VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
+	VERBOSE_N(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.def_f, ear_use_turbo);
+	VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.procs, num_nodes, ppnode);
+	VERBOSE_N(1, "Policy (learning): %s (%d)", application.policy, ear_whole_app);
+	VERBOSE_N(1, "Policy threshold/Perf accuracy: %lf/%lf", application.policy_th, get_ear_performance_accuracy());
+	VERBOSE_N(1, "DynAIS levels/window/AVX512: %d/%d/", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
+	VERBOSE_N(1, "VAR path: %s", get_ear_tmp());
+	VERBOSE_N(1, "--------------------------------");
+	
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);
 	fflush(stderr);
