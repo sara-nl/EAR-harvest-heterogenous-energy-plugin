@@ -208,13 +208,13 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	strcpy(coeff_file, get_ear_coeff_db_pathname());
 	gethostname(nodename, sizeof(nodename));
 
-	// EAR_USER_DB_PATHNAME
+	// Default coefficient file
+	sprintf(coeff_default_file, "%sdefault", coeff_file);
+
 	sprintf(coeff_file, "%s%s", coeff_file, nodename);
 
 	ear_verbose(2, "EAR: Using coefficients %s\n", coeff_file);
 
-	// Default coefficient file
-	sprintf(coeff_default_file, "%s.default", coeff_file);
 
 	// Coefficient pointers allocation
 	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * p_states);
