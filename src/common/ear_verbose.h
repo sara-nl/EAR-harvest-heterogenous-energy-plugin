@@ -37,7 +37,7 @@ extern int EAR_VERBOSE_LEVEL;
 /** Prints a formatted string in case the level passed is greater or equal than
  *  the selected level of verbosity. */
 #define ear_verbose(level,...) \
-	if (leveli <= EAR_VERBOSE_LEVEL) fprintf(stderr, __VA_ARGS__);
+	if (level <= EAR_VERBOSE_LEVEL) fprintf(stderr, __VA_ARGS__);
 
 /** Prints a formatted string in case the level passed is greater or equal than
  *  the selected level of verbosity. This function prints the prefix string
