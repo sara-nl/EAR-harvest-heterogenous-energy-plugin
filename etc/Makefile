@@ -1,5 +1,3 @@
-export ETC_DESTDIR = @sysconfdir@
-
 ######## FILES
 
 INSTALL_FOLDERS = $(DESTDIR)/bin \
@@ -28,7 +26,7 @@ install:
 	cp -n slurm/ear.link $(ETCDIR)/slurm/
 	cp -n slurm/plugstack.conf $(ETCDIR)/slurm/
 	cp -r scripts/* $(ETCDIR)/scripts/
-	rm    scripts/README.md scripts/learning/README.md
+	rm    $(ETCDIR)/scripts/README.md $(ETCDIR)/scripts/learning/README.md
 	
 	#cp   scripts/running/mpi_exec.sh $(DESTDIR)/bin/mpi_exec.sh
 	#cp   scripts/running/ssh_daemon_exit.sh $(DESTDIR)/sbin

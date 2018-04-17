@@ -3,6 +3,7 @@ MPICC        = @MPICC@
 ROOTDIR      = $(shell pwd)
 SRCDIR       = $(ROOTDIR)/src
 DESTDIR      = @prefix@
+ETCDIR       = @sysconfdir@
 PAPI_BASE    = @PAPI_DIR@
 PAPI_CFLAGS  = @PAPI_CPPFLAGS@
 PAPI_LDFLAGS = @PAPI_LDFLAGS@ @PAPI_LIBS@
@@ -28,6 +29,7 @@ export MPICC
 export ROOTDIR
 export SRCDIR
 export DESTDIR
+export ETCDIR
 export PAPI_BASE
 export PAPI_CFLAGS
 export PAPI_LDFLAGS
