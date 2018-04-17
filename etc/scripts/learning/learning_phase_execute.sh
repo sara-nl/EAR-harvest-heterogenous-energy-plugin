@@ -34,5 +34,5 @@ do
 done
 
 # Calculating coefficients
-$EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname`.db.csv" \
-     $EAR_COEFF_DB_PATHNAME`hostname` 1000000 `hostname`
+$EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname -a`.db.csv" \
+     $EAR_COEFF_DB_PATHNAME`hostname -a` 1000000 `hostname -a`

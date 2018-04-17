@@ -46,20 +46,20 @@ function launching_slurm
 function launching_mpi_script
 {
 	# MPI options
-    export I_MPI_PIN=1
-    export I_MPI_PIN_DOMAIN=auto
+	export I_MPI_PIN=1
+	export I_MPI_PIN_DOMAIN=auto
 
-    # Non-edit region
-    export EAR_APP_NAME=$1
+	# Non-edit region
+	export EAR_APP_NAME=$1
 
 	if [ "$EAR_POWER_POLICY" != "NO_EAR" ]; then
-    	export EAR_POWER_POLICY="MONITORING_ONLY"
+    		export EAR_POWER_POLICY="MONITORING_ONLY"
 	fi
 
-    echo "----------------------------------------------------------"
-    echo "Launching (script) $1 $2"
-    echo "----------------------------------------------------------"
-    $MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 $EAR_POWER_POLICY
+	echo "----------------------------------------------------------"
+	echo "Launching (script) $1 $2"
+	echo "----------------------------------------------------------"
+	$MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 $EAR_POWER_POLICY NO_TRACE
 }
 
 function learning_phase

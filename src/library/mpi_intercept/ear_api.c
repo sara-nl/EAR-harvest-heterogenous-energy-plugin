@@ -257,7 +257,7 @@ void ear_init()
 	VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.procs, num_nodes, ppnode);
 	VERBOSE_N(1, "Policy (learning): %s (%d)", application.policy, ear_whole_app);
 	VERBOSE_N(1, "Policy threshold/Perf accuracy: %lf/%lf", application.policy_th, get_ear_performance_accuracy());
-	VERBOSE_N(1, "DynAIS levels/window/AVX512: %d/%d/", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
+	VERBOSE_N(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
 	VERBOSE_N(1, "VAR path: %s", get_ear_tmp());
 	VERBOSE_N(1, "--------------------------------");
 	
