@@ -69,6 +69,7 @@ static char fd_lock_filename[BUFFSIZE];
 
 
 static const char *__NAME__ = "API";
+static uint ear_initialized=0;
 
 
 // Una cosa que
@@ -277,6 +278,7 @@ void ear_init()
 
 	ear_print_lib_environment();
 	DEBUG_F(1, "EAR initialized successfully");
+	ear_initialized=1;
 }
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
@@ -285,6 +287,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	int ret;
 	char men[128];
 
+	if (ear_initialized==0) ear_init();
 	if (my_id) {
 		return;
 	}
