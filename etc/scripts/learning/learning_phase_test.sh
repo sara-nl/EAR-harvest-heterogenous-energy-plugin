@@ -5,9 +5,6 @@ export CORES=16
 export SOCKETS=2
 export CORES_PER_SOCKET=8
 
-# Update paths
-export EAR_SRC_PATH=$HOME/git/EAR
-
 # Non edit region
 source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
 export BENCHS_MODE="test"

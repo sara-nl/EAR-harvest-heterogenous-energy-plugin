@@ -30,6 +30,24 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
+#define DEBUGGING(string, ...)
+//    	slurm_error(string, __VA_ARGS__)
+#define FUNCTION_INFO(function)
+//	slurm_error(function)
+#define FUNCTION_INFO_(function)
+//	if (isenv_local("EAR_VERBOSE", "1") || isenv_remote(sp, "EAR_VERBOSE", "1")) { \
+//    		slurm_error(function); \
+//		printenv_remote(sp, "LD_LIBRARY_PATH"); \
+//	}
+#define SPANK_ERROR(string) \
+    slurm_error(string);
+#define SPANK_STRERROR(string, var) \
+    slurm_error(string " (%s)", var, strerror(errno));
+
+void strtoup(char *string);
+char* strclean(char *string, char chr);
+
+void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source);
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
@@ -39,7 +57,7 @@ int existenv_remote(spank_t sp, char *name);
 int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
 
-int freq_to_p_state(int freq);
+//int freq_to_p_state(int freq);
 int file_to_environment(spank_t sp, const char *path);
 int find_ear_conf_file(spank_t sp, int ac, char **av);
 

@@ -1,12 +1,18 @@
-CFLAGS  = -I$(SRCDIR) 
-LDFLAGS = $(CPUF_CFLAGS) $(PAPI_LDFLAGS)
+CFLAGS    = -I$(SRCDIR) 
+LDFLAGS   = $(CPUF_CFLAGS) $(PAPI_LDFLAGS)
 
-FREQ_OBJS= $(SRCDIR)/metrics/papi/generics.o $(SRCDIR)/control/frequency.o
+######## FILES
+
+FREQ_OBJS = $(SRCDIR)/metrics/papi/generics.o \
+            $(SRCDIR)/control/frequency.o
+
 TYPES = $(SRCDIR)/common/types/application.o
 
-BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report.c
-all: $(BINARIES)
+BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report
 
+######## RULES
+
+all: $(BINARIES)
 
 ear_control:ear_control.c $(SRCDIR)/common/remote_daemon_client.o 
 	$(CC) $(CFLAGS) -o ear_control ear_control.c $(SRCDIR)/common/remote_daemon_client.o
@@ -17,8 +23,10 @@ ear_set_node_freq:ear_set_node_freq.c $(FREQ_OBJS)
 ear_get_node_freq:ear_get_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_get_node_freq ear_get_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
-ear_acct: ear_acct.c $(TYPES)
-	$(CC) $(CFLAGS) -o ear_acct ear_acct.c $(TYPES)
+ear_report: ear_report.c $(TYPES)
+	$(CC) $(CFLAGS) -o ear_report ear_report.c $(TYPES)
+
+######## OPTIONS
 
 install:
 	cp $(BINARIES) $(DESTDIR)/bin

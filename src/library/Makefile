@@ -60,10 +60,10 @@ update-trace-objs-gui:
 	@ $(MAKE) -B $(TRACE_OBJS) CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 libear.so: update-trace-objs $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
-	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES) 
+	$(CC) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES) -static-intel
 
 libeart.so: update-trace-objs-gui
-	$(CC) $(CFLAGS) -DEAR_GUI -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
+	$(CC) $(CFLAGS) -DEAR_GUI -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES) -static-intel
 
 ######## OPTIONS
 
@@ -72,4 +72,4 @@ install:
 	mv libeart.so $(DESTDIR)/lib/libeart.so
 
 clean:
-	rm -f $(BINARIES) $(OBJS)
+	rm -f *.so *.a *.o $(BINARIES) $(OBJS)

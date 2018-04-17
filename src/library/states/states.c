@@ -92,8 +92,7 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	perf_accuracy_min_time = get_ear_performance_accuracy();
 	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
-	ear_verbose(1, "EARLib JOB %s STARTS EXECUTION. Performance accuracy set to (min) %lu usecs\n",
-		app_name, perf_accuracy_min_time);
+	
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
 	init_log();

@@ -39,7 +39,7 @@ char *add_point_ull(ull number);
 char *add_point_ulong(ulong number);
 char *add_point_uint(uint number); /**@}*/
 
-/**@{ Prints a type splitter by columns. You have to call 'set_spacing_digits',
+/**@{ Prints a type splitted by columns. You have to call 'set_spacing_digits',
 *   every time you want to define the number of characters per column. You can
 *   define just once, or iteratively to use different column lengths. */
 void set_spacing_digits(uint digits);

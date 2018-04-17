@@ -27,11 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef _EARD_CONSTANT_H_
 #define _EARD_CONSTANT_H_
-#define EARDS_RAPL 		0
+
+#define EARDS_RAPL 	0
 #define POWERMON_RAPL	1
-#else
+
 #endif

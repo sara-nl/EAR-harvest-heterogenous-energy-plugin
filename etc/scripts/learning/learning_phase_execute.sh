@@ -11,8 +11,8 @@ export EAR_MAX_P_STATE=6
 export EAR_TIMES=3
 
 # Non edit region
+module load $EAR_INSTALL_PATH/etc/module/ear
 source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
-source $EAR_INSTALL_PATH/etc/scripts/environment/ear_vars.sh
 export EAR_LEARNING_PHASE=1
 export BENCHS_MODE="test"
 
@@ -34,5 +34,5 @@ do
 done
 
 # Calculating coefficients
-$EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname`.db.csv" \
-     $EAR_COEFF_DB_PATHNAME`hostname` 1000000 `hostname`
+$EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname -a`.db.csv" \
+     $EAR_COEFF_DB_PATHNAME`hostname -a` 1000000 `hostname -a`

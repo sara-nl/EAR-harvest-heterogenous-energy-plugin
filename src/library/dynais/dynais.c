@@ -94,10 +94,10 @@ unsigned int level_index[MAX_LEVELS];
 
 int dynais_init(unsigned int window, unsigned int levels)
 {
-    unsigned long *p_smpls;
-    unsigned int *p_zeros, *p_sizes, *p_indes;
-    int mem_res1, mem_res2, mem_res3, mem_res4;
-    int i, k;
+	unsigned long *p_smpls;
+	unsigned int *p_zeros, *p_sizes, *p_indes;
+	int mem_res1, mem_res2, mem_res3, mem_res4;
+	int i, k;
 
 	unsigned int multiple = window / 16;
 	window = 16 * (multiple + 1);
@@ -108,49 +108,58 @@ int dynais_init(unsigned int window, unsigned int levels)
 	#define __dyn_size long
 	#endif
 
-    _window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
-    _levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
+	_window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
+	_levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
 
 	mem_res1 = posix_memalign((void *) &p_smpls, sizeof(__dyn_size), sizeof(long) * _window * levels);
-    mem_res3 = posix_memalign((void *) &p_sizes, sizeof(__dyn_size), sizeof(int)  * _window * levels);
-    mem_res2 = posix_memalign((void *) &p_zeros, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
-    mem_res4 = posix_memalign((void *) &p_indes, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
+	mem_res3 = posix_memalign((void *) &p_sizes, sizeof(__dyn_size), sizeof(int)  * _window * levels);
+	mem_res2 = posix_memalign((void *) &p_zeros, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
+	mem_res4 = posix_memalign((void *) &p_indes, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
 
-    //EINVAL = 22, ENOMEM = 12
-    if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
-        return -1;
-    }
+    	//EINVAL = 22, ENOMEM = 12
+	if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
+        	return -1;
+	}
 
-    for (i = 0; i < levels; ++i)
-    {
-        level_limit[i] = 0;
-        level_index[i] = 0;
-        level_result[i] = NO_LOOP;
-        level_length[i] = 0;
+    	for (i = 0; i < levels; ++i)
+    	{
+        	level_limit[i] = 0;
+        	level_index[i] = 0;
+        	level_result[i] = NO_LOOP;
+        	level_length[i] = 0;
 
 		// Normal window allocations
-        samples_vec[i] = &p_smpls[i * _window];
-        sizes_vec[i] = &p_sizes[i * _window];
+        	samples_vec[i] = &p_smpls[i * _window];
+        	sizes_vec[i] = &p_sizes[i * _window];
 	
 		// Extended window allocations
-        zeros_vec[i] = &p_zeros[i * (_window + 8)];
+        	zeros_vec[i] = &p_zeros[i * (_window + 8)];
 		indes_vec[i] = &p_indes[i * (_window + 8)];
 
 		for (k = 0; k < _window; ++k) {
 			indes_vec[i][k] = k-1;
 		}
 		indes_vec[i][0] = _window - 1;
-    }
+	}
     
 	return 0;
 }
 
 void dynais_dispose()
 {
-    free((void *) samples_vec[0]);
-    free((void *) zeros_vec[0]);
-    free((void *) sizes_vec[0]);
+	free((void *) samples_vec[0]);
+	free((void *) zeros_vec[0]);
+	free((void *) sizes_vec[0]);
 	free((void *) indes_vec[0]);
+}
+
+int dynais_build_type()
+{
+	#if AVX_512
+	return 1;
+	#else
+        return 0;
+	#endif
 }
 
 // How it works?

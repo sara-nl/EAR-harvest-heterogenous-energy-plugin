@@ -31,6 +31,7 @@
 #ifndef _EAR_LIBRARY_MACROS_H
 #define _EAR_LIBRARY_MACROS_H
 
+/** Used to break a region of code for a specific local rank */
 #define RANK(_rank) \
 	if (ear_my_rank == _rank)
 
