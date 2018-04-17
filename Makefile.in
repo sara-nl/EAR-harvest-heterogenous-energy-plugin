@@ -1,5 +1,7 @@
 CC           = @CC@
 MPICC        = @MPICC@
+CC_FLAGS     =
+MPICC_FLAGS  = 
 ROOTDIR      = $(shell pwd)
 SRCDIR       = $(ROOTDIR)/src
 DESTDIR      = @prefix@
@@ -26,6 +28,8 @@ DEBUG        =
 
 export CC
 export MPICC
+export CC_FLAGS
+export MPICC_FLAGS
 export ROOTDIR
 export SRCDIR
 export DESTDIR
