@@ -82,11 +82,14 @@ AC_DEFUN([X_AC_CPUPOWER],
     if test -z "$_cv_cpupower_dir_root"; then
         echo checking for CPUPower compiler link... no
     else
-        CPUPOWER_DIR=$_cv_cpupower_dir_root
-        CPUPOWER_LIBDIR=$_x_ac_cpupower_dir_lib
-        CPUPOWER_CPPFLAGS="-I$CPUPOWER_DIR/include"
-        CPUPOWER_LDFLAGS=$_x_ac_cpupower_gcc_ldflags
+		CPUPOWER_DIR=$_cv_cpupower_dir_root
         CPUPOWER_LIBS=$_x_ac_cpupower_gcc_libs
+        
+		if test "x$_x_ac_cpupower_custom" = "xyes"; then
+        	CPUPOWER_LIBDIR=$_x_ac_cpupower_dir_lib
+        	CPUPOWER_CPPFLAGS="-I$CPUPOWER_DIR/include"
+        	CPUPOWER_LDFLAGS=$_x_ac_cpupower_gcc_ldflags
+		fi
 
         echo checking for CPUPower compiler link... yes
         echo checking for CPUPower CPPFLAGS... $CPUPOWER_CPPFLAGS
@@ -94,11 +97,11 @@ AC_DEFUN([X_AC_CPUPOWER],
         echo checking for CPUPower libraries... $CPUPOWER_LIBS
     fi
 
-    AC_SUBST(CPUPOWER_LIBS)
-    AC_SUBST(CPUPOWER_LIBDIR)
-    AC_SUBST(CPUPOWER_CPPFLAGS)
-    AC_SUBST(CPUPOWER_LDFLAGS)
-    AC_SUBST(CPUPOWER_DIR)
+	AC_SUBST(CPUPOWER_LDFLAGS)
+	AC_SUBST(CPUPOWER_LIBS)
+	AC_SUBST(CPUPOWER_LIBDIR)
+	AC_SUBST(CPUPOWER_CPPFLAGS)
+	AC_SUBST(CPUPOWER_DIR)
 
     AM_CONDITIONAL(WITH_CPUPOWER, test -n "$_cv_cpupower_dir_root")
 ])
