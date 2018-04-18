@@ -34,8 +34,8 @@ AC_DEFUN([AX_OPT_FEATURES],
 	if test -n "$ETC"; then
 		sysconfdir=$ETC	
 	fi
-	if test "x$sysconfdir" = "x\${exec_prefix}/etc" || test "x$libdir" = "x\${prefix}/lib"; then
-    	sysconfdir=$exec_prefix/etc
+	if test "x$sysconfdir" = "x\${exec_prefix}/etc" || test "x$sysconfdir" = "x\${prefix}/etc"; then
+    	sysconfdir=$prefix/etc
 	fi
 	if test -z "$MPICC"; then
     	MPICC=mpicc
