@@ -99,10 +99,14 @@ AC_DEFUN([X_AC_GSL],
         echo checking for GSL compiler link... no
     else
         GSL_DIR=$_cv_gsl_dir_root
-        GSL_LIBDIR=$_x_ac_gsl_dir_lib
-        GSL_CPPFLAGS="-I$GSL_DIR/include"
-        GSL_LDFLAGS=$_x_ac_gsl_gcc_ldflags
         GSL_LIBS=$_x_ac_gsl_gcc_libs
+        
+		if test "x$_x_ac_gsl_custom" = "xyes"; then
+        	GSL_LIBDIR=$_x_ac_gsl_dir_lib
+        	GSL_CPPFLAGS="-I$GSL_DIR/include"
+        	GSL_LDFLAGS=$_x_ac_gsl_gcc_ldflags
+		fi
+
         echo checking for GSL compiler link... yes
         echo checking for GSL CPPFLAGS... $GSL_CPPFLAGS
         echo checking for GSL LDFLAGS... $GSL_LDFLAGS

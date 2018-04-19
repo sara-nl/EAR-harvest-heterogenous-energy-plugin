@@ -19,10 +19,19 @@
 #define SHARED_MEMORY		@SHARED_MEMORY@
 
 // Compile version type
+#define BUILD_TYPE			@BUILD_TYPE@
 #define DEVELOPMENT			0
 #define DEBUG				1
 #define RELEASE				2
 #define RELEASE_LRZ			3
 
-#define BUILD_TYPE(_build_type) \
-	_build_type == @BUILD_TYPE@
+#define BUILD(type) \
+	type == BUILD_TYPE
+
+// Database
+#define DB_TYPE				@DATABASE@
+#define DB_FILES			0
+#define DB_MYSQL			1
+
+#define DATABASE(type) \
+	 type == DB_TYPE

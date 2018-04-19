@@ -34,8 +34,8 @@ AC_DEFUN([AX_OPT_FEATURES],
 	if test -n "$ETC"; then
 		sysconfdir=$ETC	
 	fi
-	if test "x$sysconfdir" = "x\${exec_prefix}/etc"; then
-    	sysconfdir=$exec_prefix/etc
+	if test "x$sysconfdir" = "x\${exec_prefix}/etc" || test "x$sysconfdir" = "x\${prefix}/etc"; then
+    	sysconfdir=$prefix/etc
 	fi
 	if test -z "$MPICC"; then
     	MPICC=mpicc
@@ -51,7 +51,7 @@ AC_DEFUN([AX_OPT_FEATURES],
 	AC_SUBST(MPICC)
 
 	#
-	#
+	# BUILD TYPE
 	#
 
 	AC_ARG_VAR([BUILD_TYPE],[Defines the type of compilation: release (def), release-lrz, development or debug])
@@ -83,7 +83,7 @@ AC_DEFUN([AX_OPT_FEATURES],
 	AC_SUBST(POWER_MONITORING)
 
 	#
-	# POWER MONITORING
+	# SHARED MEMORY
 	#
 
 	AC_ARG_ENABLE([shared-memory],
@@ -93,4 +93,21 @@ AC_DEFUN([AX_OPT_FEATURES],
         [SHARED_MEMORY=1],[SHARED_MEMORY=0])
 
     AC_SUBST(SHARED_MEMORY)
+
+	#
+	# DATABASE
+	#
+    AC_ARG_ENABLE([database],
+        AS_HELP_STRING([--disable-database], [Stores the execution data in files insted in a database]))
+
+	AS_IF([test "x$enable_database" = "xno"],
+        [
+			DB_TYPE=0
+		],[
+			DB_TYPE=1
+			enable_database="yes"
+		])
+
+    AC_SUBST(DATABASE)
+	
 ])
