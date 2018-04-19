@@ -12,7 +12,6 @@ AC_DEFUN([AX_OPT_FEATURES],
 	#
 	#
 	#
-	AC_ARG_VAR([MPICC],[Defines the MPI compiler (default: mpicc)])
 	AC_ARG_VAR([TMP],[Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear)])
 	AC_ARG_VAR([ETC],[Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc)])
 
@@ -37,9 +36,6 @@ AC_DEFUN([AX_OPT_FEATURES],
 	if test "x$sysconfdir" = "x\${exec_prefix}/etc" || test "x$sysconfdir" = "x\${prefix}/etc"; then
     	sysconfdir=$prefix/etc
 	fi
-	if test -z "$MPICC"; then
-    	MPICC=mpicc
-	fi
 	if test -n "$TMP"; then
 		localstatedir=$TMP
 	fi
@@ -48,7 +44,28 @@ AC_DEFUN([AX_OPT_FEATURES],
     fi
 
 	AC_SUBST(TMP)
+
+	#
+	# MPI
+	#
+	AC_ARG_VAR([IMPICC],[Defines the Intel MPI compiler])
+	AC_ARG_VAR([OMPICC],[Defines the Open MPI compiler])
+
+	MPI_NAME=libearimpi.so
+	OMPI_NAME=libearompi.so
+
+	if test -z "$IMPICC"; then
+		MPICC=mpicc
+		MPI_NAME=libear.so
+	fi
+	if test -z "$OMPICC"; then
+		OMPICC=
+	fi
+
 	AC_SUBST(MPICC)
+	AC_SUBST(MPI_NAME)
+	AC_SUBST(OMPICC)
+	AC_SUBST(OMPI_NAME)
 
 	#
 	# BUILD TYPE

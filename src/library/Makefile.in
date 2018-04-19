@@ -29,41 +29,35 @@ TRACE_OBJS = states/states.o \
              tracer/tracer.o \
              mpi_intercept/ear_api.o 
 
-OBJS = dynais/dynais.o               \
-       tracer/tracer.o               \
-       states/states.o               \
-       metrics/metrics.o             \
-       models/models.o               \
-       models/min_time.o             \
-       models/min_energy.o           \
-       models/monitoring.o           \
-       models/sig_projections.o	     \
-       mpi_intercept/process_MPI.o   \
-       mpi_intercept/MPI_intercept.o \
-       mpi_intercept/MPI_interface.o \
-       mpi_intercept/ear_api.o
+OBJS = dynais/dynais.o \
+       tracer/tracer.o \
+       states/states.o \
+       metrics/metrics.o \
+       models/models.o \
+       models/min_time.o \
+       models/min_energy.o \
+       models/monitoring.o \
+       models/sig_projections.o
+
+MPI_OBJS = mpi_intercept/process_MPI.o   \
+           mpi_intercept/MPI_intercept.o \
+           mpi_intercept/MPI_interface.o \
+           mpi_intercept/ear_api.o
+
+ALL_OBJS = $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 
 ######## RULES
 
-all: libear.so libeart.so 
-
-%.a: %.c
-	@ $(MAKE) -C `dirname $@` `basename $@` || exit
+all: @mpi_so@ @ompi_so@
 
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
-update-trace-objs:
-	@ $(MAKE) -B $(TRACE_OBJS)
+@mpi_so@: $(ALL_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(ALL_OBS)
 
-update-trace-objs-gui:
-	@ $(MAKE) -B $(TRACE_OBJS) CFLAGS='$(CFLAGS) -DEAR_GUI'
-
-libear.so: update-trace-objs $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o libear.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
-
-libeart.so: update-trace-objs-gui
-	$(CC) $(CC_FLAGS) $(CFLAGS) -DEAR_GUI -o libeart.so $(LDFLAGS) $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
+@ompi_so@: $(ALL_OBS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_so@ $(LDFLAGS) $(ALL_OBJS)
 
 ######## OPTIONS
 
