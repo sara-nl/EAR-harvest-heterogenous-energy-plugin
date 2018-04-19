@@ -2,7 +2,7 @@ CC           = @CC@
 CC_FLAGS     =
 MPICC        = @MPICC@
 MPICC_FLAGS  =
-OMPICC_      = @OMPICC@
+OMPICC       = @OMPICC@
 OMPICC_FLAGS =
 ROOTDIR      = $(shell pwd)
 SRCDIR       = $(ROOTDIR)/src
@@ -32,9 +32,11 @@ DEBUG        =
 ######## VARS
 
 export CC
-export MPICC
 export CC_FLAGS
+export MPICC
 export MPICC_FLAGS
+export OMPICC
+export OMPICC_FLAGS
 export ROOTDIR
 export SRCDIR
 export DESTDIR

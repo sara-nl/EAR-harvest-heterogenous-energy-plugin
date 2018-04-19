@@ -44,7 +44,7 @@ SEQ_OBJS = $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 
 ######## RULES
 
-all: @mpi_so@ @mpi_trace_so@ @ompi_so@ @ompi_trace_so@
+all:   libear_ompi.so libeart_ompi.so
 
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
@@ -59,11 +59,11 @@ update-mpi-objs:
 update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-@mpi_so@: update-mpi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+: update-mpi-objs $(SEQ_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
 
-@mpi_trace_so@: update-mpi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_trace_so@ $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+: update-mpi-objs-trace $(SEQ_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
 
 endif
 
@@ -77,19 +77,19 @@ update-ompi-objs:
 update-ompi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(OMPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-@ompi_so@: update-ompi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_so@ $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+libear_ompi.so: update-ompi-objs $(SEQ_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o libear_ompi.so $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
 
-@ompi_trace_so@: update-ompi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_trace_so@ $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+libeart_ompi.so: update-ompi-objs-trace $(SEQ_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o libeart_ompi.so $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
 
 endif
 
 ######## OPTIONS
 
 install:
-	mv @mpi_so@ $(DESTDIR)/lib/@mpi_so@
-	mv @ompi_so@ $(DESTDIR)/lib/@ompi_so@
+	mv  $(DESTDIR)/lib/
+	mv libear_ompi.so $(DESTDIR)/lib/libear_ompi.so
 
 clean:
 	rm -f *.so *.a *.o $(BINARIES) $(OBJS) $(TRACE_OBJS) $(MPI_OBJS)

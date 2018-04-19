@@ -3,14 +3,14 @@
 COMPONENTS = common \
              metrics \
              control \
-             library \
-             daemon \
-             tools \
-             tests \
-			 commands
-ifdef SLURM_BASE
-	COMPONENTS += slurm_plugin
-endif
+             library 
+#             daemon \
+#             tools \
+#             tests \
+#			 commands
+#ifdef SLURM_BASE
+#	COMPONENTS += slurm_plugin
+#endif
 
 ######## RULES
 
