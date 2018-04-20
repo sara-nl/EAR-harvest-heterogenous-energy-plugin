@@ -12,7 +12,6 @@ AC_DEFUN([AX_OPT_FEATURES],
 	#
 	#
 	#
-	AC_ARG_VAR([MPICC],[Defines the MPI compiler (default: mpicc)])
 	AC_ARG_VAR([TMP],[Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear)])
 	AC_ARG_VAR([ETC],[Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc)])
 
@@ -37,9 +36,6 @@ AC_DEFUN([AX_OPT_FEATURES],
 	if test "x$sysconfdir" = "x\${exec_prefix}/etc" || test "x$sysconfdir" = "x\${prefix}/etc"; then
     	sysconfdir=$prefix/etc
 	fi
-	if test -z "$MPICC"; then
-    	MPICC=mpicc
-	fi
 	if test -n "$TMP"; then
 		localstatedir=$TMP
 	fi
@@ -48,7 +44,37 @@ AC_DEFUN([AX_OPT_FEATURES],
     fi
 
 	AC_SUBST(TMP)
+
+	#
+	# MPI
+	#
+	AC_ARG_VAR([IMPICC],[Defines the Intel MPI compiler])
+	AC_ARG_VAR([OMPICC],[Defines the Open MPI compiler])
+
+	MPICC=mpicc
+	mpi_so=libear.so
+	mpi_trace_so=libeart.so
+	ompi_so=libear_ompi.so
+	ompi_trace_so=libeart_ompi.so
+
+	if test -n "$OMPICC" && test -z "$IMPICC"; then
+		MPICC=
+		mpi_so=
+		mpi_trace_so=
+	elif test -z "$OMPICC" && test -n "$IMPICC"; then
+		MPICC=$IMPICC
+		ompi_so=
+		ompi_trace_so=
+	elif test -n "$IMPICC"; then
+		MPICC=$IMPICC
+	fi
+
 	AC_SUBST(MPICC)
+	AC_SUBST(OMPICC)
+	AC_SUBST(mpi_so)
+	AC_SUBST(ompi_so)
+	AC_SUBST(mpi_trace_so)
+	AC_SUBST(ompi_trace_so)
 
 	#
 	# BUILD TYPE
@@ -100,11 +126,12 @@ AC_DEFUN([AX_OPT_FEATURES],
     AC_ARG_ENABLE([database],
         AS_HELP_STRING([--disable-database], [Stores the execution data in files insted in a database]))
 
-	AS_IF([test "x$enable_database" = "xno"],
+
+	AS_IF([test "x$enable_database" = "xno" || test -z "$enable_database"],
         [
-			DB_TYPE=0
+			DATABASE=0
 		],[
-			DB_TYPE=1
+			DATABASE=1
 			enable_database="yes"
 		])
 
