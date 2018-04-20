@@ -1,10 +1,30 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
 #include <mpi.h>
@@ -38,11 +58,19 @@
 #include <common/environment.h>
 #include <common/states.h>
 #include <common/config.h>
+#define BUFFSIZE 128
+
+#define USE_LOCK_FILES 1
+#if USE_LOCK_FILES
+#include <common/file_lock.h>
+static int fd_master_lock;
+static char fd_lock_filename[BUFFSIZE];
+#endif
 
 
 static const char *__NAME__ = "API";
+static uint ear_initialized=0;
 
-#define BUFFSIZE 128
 
 // Una cosa que
 static struct timeval pmpi_app_begin_time;
@@ -112,37 +140,56 @@ void ear_init()
 	EAR_VERBOSE_LEVEL = get_ear_verbose();
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
-   	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
+    // Only one process can connect with the daemon
+    // Connecting with ear_daemon
+    job_id = getenv("SLURM_JOB_ID");
+    user_id = getenv("LOGNAME");
+    if (job_id != NULL){
+        my_job_id=atoi(job_id);
+    }else{
+        my_job_id=getppid();
+    }
+	num_nodes = get_ear_num_nodes();
+	ppnode = my_size / num_nodes;
+
+	#if USE_LOCK_FILES
+	sprintf(fd_lock_filename,"%s/.ear_app_lock.%d",get_ear_tmp(),my_job_id);
+	if ((fd_master_lock=lock_master(fd_lock_filename))<0) my_id=1;
+	else my_id=0;
+	if (my_id){ 	
+		ear_verbose(2,"Rank %d is not the master in node %s\n",ear_my_rank,node_name);
+	}else{ 		
+		ear_verbose(0,"Rank %d is the master in node %s\n",ear_my_rank,node_name);
+	}
+	// if we are not the master, we return
+	if (my_id) return;
+	#else
 	my_id = get_ear_local_id();
-
-	// When SLURM is not found. TODO: maybe has to be fixed
 	if (my_id < 0)
 	{
-		num_nodes = get_ear_num_nodes();
-		ppnode = my_size / num_nodes;
 		my_id = (ear_my_rank % ppnode);
 	}
-
 	if (my_id) return;
+	#endif
+    ear_verbose(0,"EAR: Connecting with EARD %d\n",ear_my_rank);
+    if (eards_connect() == EAR_SUCCESS) {
+        ear_verbose(0,"EAR: Rank %d connected with EARD\n",ear_my_rank);
+    }
 
-	if (ear_my_rank == 0)
-	{
-		ear_verbose(1,"EAR: Total resources %d\n", get_total_resources());
-		ear_verbose(0,"EAR using %d levels in dynais with %d of window size \n",
-				get_ear_dynais_levels(), get_ear_dynais_window_size());
-	}
+   	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
 	#if SHARED_MEMORY
 	system_conf=attach_ear_conf_shared_area(get_ear_tmp());
 	#endif
-
+	#if 0
 	// Only one process can connect with the daemon
 	// Connecting with ear_daemon
 	ear_verbose(0,"EAR: Connecting with EARD\n");
 	if (eards_connect() < 0) {
 		ear_verbose(0,"EAR: Connect with EAR daemon fails\n");
 	}
+	#endif
 
 	// Application static data gathering
 	init_application(&application);
@@ -167,13 +214,10 @@ void ear_init()
 	// Getting environment data
 	get_app_name_please(ear_app_name);
 	ear_current_freq = frequency_get_num_pstates(0);
-	job_id = getenv("SLURM_JOB_ID");
-	user_id = getenv("LOGNAME");
+	
 	if (job_id != NULL){ 
 		strcpy(application.job_id, job_id);
-		my_job_id=atoi(job_id);
 	}else{ 
-		my_job_id=getppid();
 		sprintf(application.job_id, "%d", my_job_id);
 	}
 
@@ -205,19 +249,19 @@ void ear_init()
 		sprintf(loop_summary_path, "%s%s.loop_info.csv", summary_pathname, node_name);
 	}
 
-	//if (ear_my_rank == 0)
-	//{
-		VERBOSE_N(1, "--------------------------------");
-		VERBOSE_N(1, "App/user id: '%s'/'%s'", application.app_id, application.user_id);
-		VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job_id);
-		VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
-		VERBOSE_N(1, "Default frequency (turbo): %u (%d)", application.def_f, ear_use_turbo);
-		VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.procs, num_nodes, ppnode);
-		VERBOSE_N(1, "Policy/threshold/learning: %s/%lf/%d", application.policy, application.policy_th, ear_whole_app);
-		VERBOSE_N(1, "DynAIS levels/window: %d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size());
-		VERBOSE_N(1, "--------------------------------");
-//	}
-
+	// Starting job summary
+	VERBOSE_N(1, "--------------------------------");
+	VERBOSE_N(1, "App/user id: '%s'/'%s'", application.app_id, application.user_id);
+	VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job_id);
+	VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
+	VERBOSE_N(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.def_f, ear_use_turbo);
+	VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.procs, num_nodes, ppnode);
+	VERBOSE_N(1, "Policy (learning): %s (%d)", application.policy, ear_whole_app);
+	VERBOSE_N(1, "Policy threshold/Perf accuracy: %lf/%lf", application.policy_th, get_ear_performance_accuracy());
+	VERBOSE_N(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
+	VERBOSE_N(1, "VAR path: %s", get_ear_tmp());
+	VERBOSE_N(1, "--------------------------------");
+	
 	//
 	gettimeofday(&pmpi_app_begin_time, NULL);
 	fflush(stderr);
@@ -227,6 +271,7 @@ void ear_init()
 
 	ear_print_lib_environment();
 	DEBUG_F(1, "EAR initialized successfully");
+	ear_initialized=1;
 }
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
@@ -235,6 +280,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	int ret;
 	char men[128];
 
+	if (ear_initialized==0) ear_init();
 	if (my_id) {
 		return;
 	}
@@ -293,6 +339,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			break;
 		case END_NEW_LOOP:
 			ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
+			if (loop_with_signature) ear_verbose(1,"EAR:loop ends with %d iterations detected\n",ear_iterations);
 			loop_with_signature=0;
 			traces_end_period(ear_my_rank, my_id);
 			states_end_period(ear_iterations);
@@ -306,7 +353,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 			if (loop_with_signature)
 			{
-				ear_verbose(2,"NEW_ITERATION level %u event %u size %u iterations %u\n",
+				ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",
 					ear_level, ear_event, ear_loop_size, ear_iterations);
 			}
 
@@ -316,6 +363,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			break;
 		case END_LOOP:
 			ear_debug(4,"END_LOOP event %u\n",ear_event);
+			if (loop_with_signature) ear_verbose(1,"EAR: loop ends with %d iterations detected\n",ear_iterations);
 			loop_with_signature=0;
 			states_end_period(ear_iterations);
 			traces_end_period(ear_my_rank, my_id);
@@ -338,7 +386,13 @@ void ear_finalize()
 
 	if (my_id) {
 		return;
-	}
+	}	
+
+	#if USE_LOCK_FILES
+	ear_verbose(0,"Application master releasing the lock %d\n",ear_my_rank);
+	unlock_master(fd_master_lock,fd_lock_filename);
+	#endif
+
 
 	#ifdef MEASURE_DYNAIS_OV
 	ear_verbose(0,"EAR:: Dynais algorithm consumes %llu usecs in %u calls\n",ear_acum,calls);
@@ -362,6 +416,7 @@ void ear_finalize()
 	dynais_dispose();
 	
 	// Closing any remaining loop
+	if (loop_with_signature) ear_verbose(1,"EAR: loop ends with %d iterations detected\n",ear_iterations);
 	if (in_loop) states_end_period(ear_iterations);
 	states_end_job(my_id, NULL, ear_app_name);
 

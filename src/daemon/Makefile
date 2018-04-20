@@ -1,6 +1,6 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread -DPOWERMON_FREQ=30000000 
-LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -ldl -pthread 
+LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS)  -pthread 
 POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a
 
 ######## VARS
@@ -16,7 +16,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
 INTERNAL_EAR_LIBS = $(SRCDIR)/metrics/custom/bandwidth.a \
 				    $(SRCDIR)/common/types.a 
 
-COMMON_OBJS = $(SRCDIR)/common/environment.o \
+COMMON_OBJS = $(SRCDIR)/common/environment_common.o \
               $(SRCDIR)/common/shared_configuration.o
 
 OBJS = power_monitoring.o \

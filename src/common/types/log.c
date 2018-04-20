@@ -1,11 +1,35 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-
-    Copyright (C) 2017
-    BSC Contact Julita Corbalan (julita.corbalan@bsc.es)
-        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
+
+
+
 /*
 typedef struct ear_event{
 	uint job_id;
@@ -33,12 +57,12 @@ static char my_log_buffer[1024];
 static char log_name[128];
 void init_log()
 {
+#if LOG_FILE
 	mode_t my_mask;
 	time_t curr_time;
     struct tm *current_t;
     char s[64];
 	char nodename[128];
-
 	if (fd_log>=0) return;
 	time(&curr_time);
 	my_mask=umask(0);	
@@ -54,12 +78,14 @@ void init_log()
     strftime(s, sizeof(s), "%c", current_t);
 	sprintf(my_log_buffer,"----------------------	EAR log created %s ------------------\n",s);
 	write(fd_log,my_log_buffer,strlen(my_log_buffer));
+#endif
 }
 void end_log()
 {
 	time_t curr_time;
     struct tm *current_t;
     char s[64];
+#if LOG_FILE
 	if (fd_log<0) return;
 	time(&curr_time);
     current_t=localtime(&curr_time);
@@ -67,9 +93,11 @@ void end_log()
 	sprintf(my_log_buffer,"----------------------	EAR log closed %s ------------------\n",s);
 	write(fd_log,my_log_buffer,strlen(my_log_buffer));
 	close(fd_log);
+#endif
 }
 void report_new_event(ear_event_t *event)
 {
+#if LOG_FILE
     time_t curr_time;
     struct tm *current_t;
     char s[64];
@@ -93,46 +121,52 @@ void report_new_event(ear_event_t *event)
 	}
 
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
-
+#endif
 }
 
 void log_report_new_freq(int job,ulong newf)
 {
+#if LOG_FILE
     ear_event_t new_event;
     new_event.event=ENERGY_POLICY_NEW_FREQ;
     new_event.job_id=job;
     new_event.freq=newf ;
     report_new_event(&new_event);
-
+#endif
 }
 
 
 void log_report_dynais_off(int job)
 {
+#if LOG_FILE
     ear_event_t new_event;
     new_event.event=DYNAIS_OFF;
     new_event.job_id=job;
     report_new_event(&new_event);
-
+#endif
 }
 
 
 
 void log_report_max_tries(int job,ulong newf)
 {
+#if LOG_FILE
     ear_event_t new_event;
     new_event.event=ENERGY_POLICY_FAILS;
     new_event.freq=newf;
     new_event.job_id=job;
     report_new_event(&new_event);
+#endif
 }
 
 void log_report_global_policy_freq(int job,ulong newf)
 {
+#if LOG_FILE
     ear_event_t new_event;
     new_event.event=GLOBAL_ENERGY_POLICY;
     new_event.freq=newf;
     new_event.job_id=job;
     report_new_event(&new_event);
+#endif
 }
 

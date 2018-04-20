@@ -6,7 +6,8 @@ COMPONENTS = common \
              library \
              daemon \
              tools \
-             tests
+             tests \
+			 commands
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
@@ -16,7 +17,7 @@ endif
 .PHONY: check
 
 all:
-	@ for i in $(COMPONENTS); do                         \
+	@ for i in $(COMPONENTS); do                     \
 		echo "===================================="; \
 		echo "= Compilling $$i";                     \
 		echo "===================================="; \

@@ -1,11 +1,32 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,12 +56,10 @@ typedef struct policy
 	void (*end_loop)();
 	ulong (*policy)(application_t *sig);
 	ulong (*policy_ok)(projection_t *proj, application_t *curr_sig, application_t *last_sig);
+	ulong (*default_conf)(ulong user_freq);
 }policy_t;
 
 policy_t app_policy;
-
-
-
 
 static const char *__NAME__ = "MODELS";
 
@@ -48,9 +67,6 @@ static const char *__NAME__ = "MODELS";
 int power_model_policy = MIN_ENERGY_TO_SOLUTION;
 double performance_penalty ;
 double performance_gain ;
-
-// Process
-uint EAR_default_pstate;
 
 // Normals
 coefficient_t **coefficients;
@@ -73,11 +89,6 @@ void print_energy_policy_configuration()
             strcpy(application.policy,"monitoring_only");
         break;
     }
-
-    ear_verbose(1,"EAR: power policy conf.: policy %s performance penalty %lf performance gain %lf\n",
-                application.policy,performance_penalty,performance_gain);
-    ear_verbose(1,"EAR: Default p_state %u Default frequency %lu\n", EAR_default_pstate,EAR_default_frequency);
-
 }
 
 void init_policy_functions()
@@ -90,6 +101,7 @@ void init_policy_functions()
 			app_policy.end_loop=min_energy_end_loop;
 			app_policy.policy=min_energy_policy;
 			app_policy.policy_ok=min_energy_policy_ok;
+			app_policy.default_conf=min_energy_default_conf;
         break;
         case MIN_TIME_TO_SOLUTION:
 			app_policy.init=min_time_init;
@@ -97,6 +109,7 @@ void init_policy_functions()
 			app_policy.end_loop=min_time_end_loop;
 			app_policy.policy=min_time_policy;
 			app_policy.policy_ok=min_time_policy_ok;
+			app_policy.default_conf=min_time_default_conf;
         break;
         case MONITORING_ONLY:
 			app_policy.init=monitoring_init;
@@ -104,6 +117,7 @@ void init_policy_functions()
 			app_policy.end_loop=monitoring_end_loop;
 			app_policy.policy=monitoring_policy;
 			app_policy.policy_ok=monitoring_policy_ok;
+			app_policy.default_conf=monitoring_default_conf;
         break;
     }
 
@@ -159,8 +173,8 @@ void init_power_policy()
 		EAR_default_pstate = DEFAULT_P_STATE;
 	}
 
-	user_selected_freq = frequency_pstate_to_freq(EAR_default_pstate);
-	ear_verbose(0,"User selected freq is %lu\n",user_selected_freq);
+	user_selected_freq = EAR_default_frequency = frequency_pstate_to_freq(EAR_default_pstate);
+	
 	// IMPORTANT: here is where the environment first P_STATE is set.
 	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);
 
@@ -194,13 +208,13 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	strcpy(coeff_file, get_ear_coeff_db_pathname());
 	gethostname(nodename, sizeof(nodename));
 
-	// EAR_USER_DB_PATHNAME
+	// Default coefficient file
+	sprintf(coeff_default_file, "%sdefault", coeff_file);
+
 	sprintf(coeff_file, "%s%s", coeff_file, nodename);
 
 	ear_verbose(2, "EAR: Using coefficients %s\n", coeff_file);
 
-	// Default coefficient file
-	sprintf(coeff_default_file, "%s.default", coeff_file);
 
 	// Coefficient pointers allocation
 	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * p_states);
@@ -261,7 +275,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 		// If other king of error during the reading
 		if (state == EAR_ALLOC_ERROR || state == EAR_READ_ERROR) {
 			ear_verbose(0, "EAR: Error while reading coefficients for %s (%s) (%d)\n",
-						coeff_file_fn, strerror(errno),state);
+						coeff_file_fn, strerror(errno), state);
 			exit(1);
 		}
 	}
@@ -312,5 +326,12 @@ void policy_new_loop()
 void policy_end_loop()
 {
     app_policy.end_loop();
+}
+
+void policy_default_configuration()
+{
+	ear_frequency=app_policy.default_conf(user_selected_freq);
+	ear_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
+	eards_change_freq(ear_frequency);
 }
 

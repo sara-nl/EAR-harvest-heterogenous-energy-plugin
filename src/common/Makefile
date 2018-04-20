@@ -12,14 +12,18 @@ TYPES_OBJS = types/application.o \
              types/coefficient.o \
 			 types/log.o
 
-BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o remote_daemon_client.o 
+BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o remote_daemon_client.o file_lock.o
 
 ######## RULES
 
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
+
 all: $(BINARIES)
+
+file_lock.o:file_lock.c file_lock.h
+	$(CC) $(CFLAGS) -c file_lock.c
 
 ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
 	$(CC) $(CFLAGS) -c ear_daemon_client.c
@@ -29,8 +33,10 @@ shared_configuration.o: shared_configuration.c shared_configuration.h ear_verbos
 remote_daemon_client.o: remote_daemon_client.c remote_conf.h ear_verbose.h
 	$(CC) $(CFLAGS) -c remote_daemon_client.c
 
-environment.o: environment.c environment.h
+environment.o: environment.c environment.h environment_common.h
 	$(CC) $(CFLAGS) -c environment.c
+environment_common.o: environment_common.c environment_common.h
+	$(CC) $(CFLAGS) -c environment_common.c
 
 string_enhanced.o: string_enhanced.c string_enhanced.h
 	$(CC) $(CFLAGS) -c string_enhanced.c

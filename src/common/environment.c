@@ -1,11 +1,33 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-    BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
+
 
 #include <errno.h>
 #include <fcntl.h>
@@ -16,9 +38,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <common/environment.h>
+#include <common/environment_common.h>
 
-char *conf_ear_tmp=NULL;
-char *conf_ear_db_pathname=NULL;
 char *conf_ear_user_db_pathname=NULL;
 char *conf_ear_gui_pathname=NULL;
 char *conf_ear_coeff_db_pathname=NULL;
@@ -30,7 +51,6 @@ int conf_ear_reset_freq=DEFAULT_RESET_FREQ;
 unsigned long conf_ear_p_state=DEFAULT_MAX_P_STATE;
 unsigned long conf_ear_def_freq=0;
 double conf_ear_performance_accuracy=DEFAULT_PERFORMANCE_ACURACY;
-int conf_ear_verbose=DEFAULT_VERBOSE;
 int conf_ear_use_turbo=USE_TURBO;
 int conf_ear_local_id=-1;
 int conf_ear_num_nodes=0;
@@ -54,31 +74,6 @@ int get_ear_total_processes()
 	return conf_ear_total_processes;
 }
 
-char * getenv_ear_tmp()
-{
-	char *my_ear_tmp;
-	my_ear_tmp=getenv("EAR_TMP");
-	if (my_ear_tmp==NULL){
-		my_ear_tmp=getenv("TMP");
-		//??
-		if (my_ear_tmp==NULL) my_ear_tmp=getenv("HOME");
-	}
-	conf_ear_tmp=malloc(strlen(my_ear_tmp)+1);
-	strcpy(conf_ear_tmp,my_ear_tmp);
-	return conf_ear_tmp;	
-}
-char *getenv_ear_db_pathname()
-{
-	char *my_ear_db_pathname = getenv("EAR_DB_PATHNAME");
-
-	if (my_ear_db_pathname != NULL && strcmp(my_ear_db_pathname,"") != 0)
-	{
-		conf_ear_db_pathname=malloc(strlen(my_ear_db_pathname)+1);
-		strcpy(conf_ear_db_pathname,my_ear_db_pathname);
-	}
-
-	return conf_ear_db_pathname;
-}
 
 char *getenv_ear_user_db_pathname()
 {
@@ -246,16 +241,6 @@ double getenv_ear_performance_accuracy()
 	}
 	return conf_ear_performance_accuracy;
 }
-int getenv_ear_verbose()
-{
-	char *my_verbose;
-	my_verbose=getenv("EAR_VERBOSE");
-	if (my_verbose!=NULL){
-		conf_ear_verbose=atoi(my_verbose);
-		if ((conf_ear_verbose<0) || (conf_ear_verbose>4)) conf_ear_verbose=DEFAULT_VERBOSE;
-	}	
-	return conf_ear_verbose;
-}
 
 int getenv_ear_local_id()
 {
@@ -318,21 +303,6 @@ int get_ear_dynais_window_size()
 
 
 // get_ functions must be used after getenv_
-char * get_ear_tmp()
-{
-	return conf_ear_tmp;
-}
-void set_ear_tmp(char *new_tmp)
-{
-	if (conf_ear_tmp!=NULL) free(conf_ear_tmp);
-	conf_ear_tmp=malloc(strlen(new_tmp)+1);
-	strcpy(conf_ear_tmp,new_tmp);
-}
-
-char *get_ear_db_pathname()
-{
-	return conf_ear_db_pathname;
-}
 
 char * get_ear_user_db_pathname()
 {
@@ -373,14 +343,6 @@ unsigned long get_ear_p_state()
 double get_ear_performance_accuracy()
 {
 	return conf_ear_performance_accuracy;
-}
-int get_ear_verbose()
-{
-	return conf_ear_verbose;
-}
-void set_ear_verbose(int verb)
-{
-	conf_ear_verbose=verb;
 }
 int get_ear_local_id()
 {
@@ -463,35 +425,6 @@ void ear_print_lib_environment()
 	write(fd,var,strlen(var));
 
 	close(fd);	
-#endif
-}
-void ear_daemon_environment()
-{
-    getenv_ear_verbose();
-    getenv_ear_tmp();
-    getenv_ear_db_pathname();
-}
-void ear_print_daemon_environment()
-{
-#ifdef DEBUG
-    char *tmp;
-    char environ[256];
-    char var[256];
-    int fd;
-    tmp=get_ear_tmp();
-    sprintf(environ,"%s/ear_daemon_environment.txt",tmp);
-    fd=open(environ,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-    if (fd<0){
-        fprintf(stderr,"EAR error reporting environment variables %s\n",strerror(errno));
-        return;
-    }
-    sprintf(var,"EAR_TMP=%s\n",get_ear_tmp());
-    write(fd,var,strlen(var));
-    sprintf(var,"EAR_VERBOSE=%d\n",get_ear_verbose());
-    write(fd,var,strlen(var));
-    sprintf(var,"EAR_DB_PATHNAME=%s\n",get_ear_db_pathname());
-    write(fd,var,strlen(var));
-	close(fd);
 #endif
 }
 

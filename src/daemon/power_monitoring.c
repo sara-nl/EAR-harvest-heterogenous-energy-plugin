@@ -1,11 +1,34 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-
-    Copyright (C) 2017
-    BSC Contact Julita Corbalan (julita.corbalan@bsc.es)
-        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,6 +47,8 @@
 #include <daemon/power_monitoring.h>
 
 extern int eard_must_exit;
+#define MAX_PATH_SIZE 256
+extern char ear_tmp[MAX_PATH_SIZE];
 static const char *__NAME__ = "powermon: ";
 
 //  That constant is replicated. We must fix that
@@ -47,7 +72,8 @@ double max_dc=0,min_dc=DBL_MAX,avg_dc;
 int current_app_id=-1;
 
 extern char nodename[MAX_PATH_SIZE];
-int fd_powermon=-1;
+static int fd_powermon=-1;
+static int fd_periodic=-1;
 
 typedef struct powermon_app{
     int job_id;
@@ -163,15 +189,13 @@ static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void powermon_mpi_init(int appID)
 {
-	VERBOSE_N(0,"powermon_mpi_init %d\n",appID);
+	VERBOSE_N(1,"powermon_mpi_init %d\n",appID);
 	// As special case, we will detect if not job init has been specified
 	if (!current_ear_app.job_created){	// If the job is nt submitted through slurm, new_job would not be submitted 
 		powermon_new_job(appID,1);
 	}
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
-	//while (pthread_mutex_trylock(&app_lock));
 	mpi_init_powermon_app(appID);
-	//pthread_mutex_unlock(&app_lock);
 }
 
 void powermon_mpi_finalize(int appID)
@@ -182,9 +206,7 @@ void powermon_mpi_finalize(int appID)
 	int lsamples;
 	char buffer[128];
 	VERBOSE_N(0,"powermon_mpi_finalize %d\n",appID);
-	//while (pthread_mutex_trylock(&app_lock));
-		mpi_finalize_powermon_app(appID,samples);
-	//pthread_mutex_unlock(&app_lock);
+	mpi_finalize_powermon_app(appID,samples);
 	if (!current_ear_app.job_created){  // If the job is nt submitted through slurm, end_job would not be submitted 
 		powermon_end_job(appID);
 	}
@@ -219,7 +241,7 @@ void powermon_end_job(int appID)
         lmax=current_ear_app.max_dc_power;
         lmin=current_ear_app.min_dc_power;
     pthread_mutex_unlock(&app_lock);
-    printf("Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg,lmax,lmin);
+    VERBOSE_N(0,"Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg,lmax,lmin);
     report_powermon_app(&summary);
 }
 
@@ -237,7 +259,7 @@ void update_historic_info(power_data_t *my_current_power)
 	pthread_mutex_unlock(&app_lock);
 		
 	if (current_ear_app.job_id!=-1)	printf("Application id %d: ",current_ear_app.job_id);
-    print_power(my_current_power);
+    report_periodic_power(fd_periodic,my_current_power);
 
 	return;
 }
@@ -249,17 +271,31 @@ void create_powermon_out()
 	char output_name[MAX_PATH_SIZE];
 	char *header="job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
 	mode_t my_mask;
-	sprintf(output_name,"%s.pm_data.csv",nodename);
+	// We are using EAR_TMP but this info will go to the DB
 	my_mask=umask(0);	
+	sprintf(output_name,"%s/%s.pm_data.csv",ear_tmp,nodename);
 	fd_powermon=open(output_name,O_WRONLY,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd_powermon<0){
 		fd_powermon=open(output_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 		if (fd_powermon>=0) write(fd_powermon,header,strlen(header));
 	}
-	umask(my_mask);
 	if (fd_powermon<0){ 
-		VERBOSE_N(0,"powermon: Error creating output file %s\n",strerror(errno));
+		VERBOSE_N(0,"Error creating output file %s\n",strerror(errno));
+	}else{
+		VERBOSE_N(0,"Created job power monitoring  file %s\n",output_name);
 	}	
+    sprintf(output_name,"%s/%s.pm_periodic_data.txt",ear_tmp,nodename);
+    fd_periodic=open(output_name,O_WRONLY,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    if (fd_periodic<0){
+        fd_periodic=open(output_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    }
+    if (fd_periodic<0){
+        VERBOSE_N(0,"Error creating output file for periodic monitoring %s\n",strerror(errno));
+    }else{
+        VERBOSE_N(0,"Created power monitoring file for periodic information %s\n",output_name);
+    }
+
+	umask(my_mask);
 }
 	
 
@@ -287,30 +323,23 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	if (L1_samples==NULL){
 		VERBOSE_N(0,"power monitoring: error allocating memory for logs\n");
 		pthread_exit(0);
-		//exit(0);
 	}
 	L2_samples=create_historic_buffer(NUM_SAMPLES_L2);
 	if (L2_samples==NULL){
 		VERBOSE_N(0,"power monitoring: error allocating memory for logs\n");
 		pthread_exit(0);
-		//exit(0);
 	}
 
 	// We will collect and report avg power until eard finishes
 	// Get time and Energy
-	//time(&t_begin);
 	read_enegy_data(&e_begin);
 	while(!eard_must_exit)
 	{
 		// Wait for N usecs
 		usleep(f_monitoring);
 		// Get time and Energy
-		//time(&t_end);
 		read_enegy_data(&e_end);
-		//t_diff=difftime(t_end,t_begin);	
-	
 		// Compute the power
-		//compute_power(&e_begin,&e_end,t_begin,t_end,t_diff,&my_current_power);
 		compute_power(&e_begin,&e_end,&my_current_power);
 		// Save current power
 		update_historic_info(&my_current_power);

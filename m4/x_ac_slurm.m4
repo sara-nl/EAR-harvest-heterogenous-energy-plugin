@@ -85,10 +85,14 @@ AC_DEFUN([X_AC_SLURM],
         echo checking for SLURM compiler link... no
     else
         SLURM_DIR=$_cv_slurm_dir_root
-        SLURM_LIBDIR=$_x_ac_slurm_dir_lib
-        SLURM_CPPFLAGS="-I$SLURM_DIR/include/slurm"
-        SLURM_LDFLAGS=$_x_ac_slurm_gcc_ldflags
         SLURM_LIBS=$_x_ac_slurm_gcc_libs
+		
+		if test "x$_x_ac_slurm_custom" = "xyes"; then
+        	SLURM_LIBDIR=$_x_ac_slurm_dir_lib
+       		SLURM_CPPFLAGS="-I$SLURM_DIR/include/slurm"
+        	SLURM_LDFLAGS=$_x_ac_slurm_gcc_ldflags
+		fi
+
         echo checking for SLURM compiler link... yes
         echo checking for SLURM CPPFLAGS... $SLURM_CPPFLAGS
         echo checking for SLURM LDFLAGS... $SLURM_LDFLAGS

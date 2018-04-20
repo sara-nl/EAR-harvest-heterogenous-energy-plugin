@@ -1,11 +1,33 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
+
 
 #include <errno.h>
 #include <fcntl.h>
@@ -80,6 +102,8 @@ int is_new_service(int req,int pid);
 int application_timeout();
 int RAPL_counting=0;
 int eard_must_exit=0;
+
+
 
 // SIGNALS management
 void f_signals(int s)
@@ -181,10 +205,8 @@ void connect_service(int req,unsigned long pid)
 	unsigned long ack;
 	int connect=1;
 	int alive;
-
 	// Let's check if there is another application
 	VERBOSE_N(1, "request for connection at service %d", req);
-
 	if (is_new_application(pid) || is_new_service(req, pid)) {
 		connect=1;
 	} else {
@@ -194,6 +216,7 @@ void connect_service(int req,unsigned long pid)
 		if (check_ping()) alive = application_timeout();
 		if (alive == 0) connect = 1;
 	}
+	
 
 	// Creates 1 pipe (per node) to send acks.
 	if (connect)
@@ -245,10 +268,11 @@ void connect_service(int req,unsigned long pid)
 			VERBOSE_N(0,"ERROR when opening ear communicator for ack (%s)", strerror(errno));
 			eard_close_comm();
 		}
-	} else {
+	}else{ 
 		// eard only suppports one application connected, the second one will block
-		VERBOSE_N(0, "application with pid %lu rejected", pid);
+		VERBOSE_N(0, "Process pid %lu rejected as master", pid);
 	}
+	VERBOSE_N(0, "Process pid %lu selected as master", pid);
 	VERBOSE_N(1, "service %d connected", req);
 }
 
@@ -300,7 +324,9 @@ void eard_exit()
 	int i;
 
 	VERBOSE_N(1, "Exiting");
+	#if EARD_LOCK
 	eard_unlock();
+	#endif
 
 	// Come disposes
 	//print_rapl_metrics();
@@ -477,6 +503,7 @@ int eard_system(int must_read)
 void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 {
 	unsigned long ear_ok,freq;
+	ear_verbose(1,"eard:setting node frequency . requested %lu, max %lu\n",new_freq,max_freq);
 	if (new_freq<=max_freq){ 
 		freq=new_freq;
 	}else{ 
@@ -484,6 +511,7 @@ void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 		freq=max_freq;
 	}
 	ear_ok=frequency_set_all_cpus(freq);
+	if (ear_ok!=freq) ear_verbose(1,"eard: warning, frequency is not correctly changed\n");
 	write(ear_fd_ack[freq_req],&ear_ok,sizeof(unsigned long));  
 }
 
@@ -642,42 +670,6 @@ int eard_rapl(int must_read)
 }
 /// END RAPL SERVICES
 
-// Depending on MULTIPLE_SERVICES we can have multiple entry points or just one
-#ifdef MULTIPLE_SERVICES
-void select_service(int i)
-{
-	int ret=0;
-	switch (i){
-		case freq_req:
-			ear_debug(1,"eard: frequency service\n");
-			ret=eard_freq(1);
-			break;
-		case uncore_req:
-			ear_debug(1,"eard uncore service\n");
-			ret=eard_uncore(1);
-			break;
-		case rapl_req:
-			ear_debug(1,"eard rapl service \n");
-			ret=eard_rapl(1);
-			break;  
-		case system_req:
-			ear_debug(1,"eard system service \n");
-			ret=eard_system(1);
-			break;
-		case node_energy_req:
-			ear_debug(1,"eard node_energy service\n");
-			ret=eard_node_energy(1);
-			break;
-		default:
-			ear_verbose(0,"eard: Error, request received not supported\n");
-			eard_close_comm();
-	}
-	if (ret==0){
-			ear_verbose(0,"eard: Error, request received not supported\n");
-			eard_close_comm();
-	}
-}
-#else
 void select_service(int fd)
 {
     if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) ear_verbose(0,"eard error when reading info at select_service\n");
@@ -704,7 +696,6 @@ void select_service(int fd)
 	ear_verbose(0,"eard: Error, request received not supported\n");
 	eard_close_comm();
 }
-#endif
 //
 // MAIN eard: eard default_freq [path for communication files]
 //
@@ -793,7 +784,9 @@ void main(int argc,char *argv[])
     }
 
 	strcpy(ear_tmp,my_ear_tmp);
+	#if EARD_LOCK
     eard_lock(ear_tmp,nodename);
+	#endif
 	// At this point, only one daemon is running
 
 	ear_verbose(1,"Starting eard...................pid %d\n",getpid());
@@ -809,6 +802,7 @@ void main(int argc,char *argv[])
 
 	// We initialize rapl counters
 	init_rapl_metrics();
+	start_rapl_metrics();
 	// We initilize energy_node
 	if (node_energy_init()<0){
 		ear_verbose(0,"eard: node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");

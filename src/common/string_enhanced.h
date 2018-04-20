@@ -1,3 +1,32 @@
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
+*/
+
 #ifndef _STRING_ENHANCED_H_
 #define _STRING_ENHANCED_H_
 
@@ -10,7 +39,7 @@ char *add_point_ull(ull number);
 char *add_point_ulong(ulong number);
 char *add_point_uint(uint number); /**@}*/
 
-/**@{ Prints a type splitter by columns. You have to call 'set_spacing_digits',
+/**@{ Prints a type splitted by columns. You have to call 'set_spacing_digits',
 *   every time you want to define the number of characters per column. You can
 *   define just once, or iteratively to use different column lengths. */
 void set_spacing_digits(uint digits);

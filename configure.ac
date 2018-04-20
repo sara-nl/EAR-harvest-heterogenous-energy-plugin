@@ -4,6 +4,7 @@ m4_include([m4/x_ac_opt_features.m4])
 m4_include([m4/x_ac_backup.m4])
 m4_include([m4/x_ac_cpupower.m4])
 m4_include([m4/x_ac_freeipmi.m4])
+m4_include([m4/x_ac_mysql.m4])
 m4_include([m4/x_ac_slurm.m4])
 m4_include([m4/x_ac_papi.m4])
 m4_include([m4/x_ac_gsl.m4])
@@ -17,6 +18,13 @@ AC_LANG(C)
 AC_PROG_CC
 AC_PROG_AWK
 AC_PROG_GREP
+
+############
+# FEATURES #
+############
+#
+
+AX_OPT_FEATURES
 
 ##############
 # PAPIS TEST #
@@ -102,36 +110,11 @@ X_AC_SLURM
 
 X_AC_FREEIPMI
 
-####################
-# EAR INSTALLATION #
-####################
-#
+#########
+# MYSQL #
+#########
 
-if test "x$prefix" = "xNONE";then
-    prefix=/usr/local
-fi
-if test "x$exec_prefix" = "xNONE"; then
-    exec_prefix=$prefix
-fi
-if test "x$libdir" = "x\${exec_prefix}/lib"; then
-    libdir=$exec_prefix/lib
-fi
-if test "x$bindir" = "x\${exec_prefix}/bin"; then
-    bindir=$exec_prefix/bin
-fi
-if test "x$sbindir" = "x\${exec_prefix}/sbin"; then
-    sbindir=$exec_prefix/sbin
-fi
-if test "x$sysconfdir" = "x\${exec_prefix}/etc"; then
-    sysconfdir=$exec_prefix/etc
-fi
-if test -z "$MPICC"; then
-    MPICC=mpicc
-fi
-
-AC_SUBST(MPICC)
-
-AX_OPT_FEATURES
+X_AC_MYSQL
 
 ##########
 # OUTPUT #
@@ -153,23 +136,38 @@ AC_DEFUN([AC_DEPENDANCY_CHECK],
 	fi
 ])
 
-echo "----------------------------------------------- Summary --"
+AC_DEFUN([AC_FEATURE_CHECK],
+[
+ 	if test "x$1" = "xyes"; then
+        AC_MSG_RESULT(Enabled $2 feature... yes)
+    else    
+        AC_MSG_RESULT(Enabled $2 feature... no)
+    fi
+])
+
+echo "---------------------------------------Checking summary --"
 AC_DEPENDANCY_CHECK($PAPI_DIR, PAPI dependancy found, 1)
 AC_DEPENDANCY_CHECK($GSL_DIR, GSL dependancy found, 1)
 AC_DEPENDANCY_CHECK($CPUPOWER_DIR, CPUPower dependancy found, 1)
 AC_DEPENDANCY_CHECK($SLURM_DIR, SLURM dependancy found, 0)
 AC_DEPENDANCY_CHECK($FREEIPMI_DIR, FreeIPMI dependancy found, 1)
-echo "----------------------------------------------------------"
 
 if test -z $COMPILABLE; then
 	AC_MSG_ERROR(not compilable)
 fi
+
+echo "-------------------------------------- Features summary --"
+AC_FEATURE_CHECK($enable_power_monitoring, power monitoring)
+AC_FEATURE_CHECK($enable_shared_memory, shared memory)
+AC_FEATURE_CHECK($enable_database, database)
+echo "----------------------------------------------------------"
 
 AC_CONFIG_FILES([Makefile
                  etc/module/ear
                  etc/slurm/ear.conf
                  etc/slurm/ear.link
                  etc/slurm/plugstack.conf
+                 src/library/Makefile
                  src/common/config.h])
 #AC_CONFIG_HEADERS([src/common/config.h])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])

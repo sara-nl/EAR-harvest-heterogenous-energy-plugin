@@ -82,11 +82,14 @@ AC_DEFUN([X_AC_PAPI],
     if test -z "$_cv_papi_dir_root"; then
         echo checking for PAPI compiler link... no
     else
-        PAPI_DIR=$_cv_papi_dir_root
-        PAPI_LIBDIR=$_x_ac_papi_dir_lib
-        PAPI_CPPFLAGS="-I$PAPI_DIR/include"
-        PAPI_LDFLAGS=$_x_ac_papi_gcc_ldflags
+		PAPI_DIR=$_cv_papi_dir_root
         PAPI_LIBS=$_x_ac_papi_gcc_libs
+		
+		if test "x$_x_ac_papi_custom" = "xyes"; then
+        	PAPI_LIBDIR=$_x_ac_papi_dir_lib
+        	PAPI_CPPFLAGS="-I$PAPI_DIR/include"
+        	PAPI_LDFLAGS="$_x_ac_papi_gcc_ldflags -Wl,-rpath,$_x_ac_papi_dir_lib"
+		fi
         
 		echo checking for PAPI compiler link... yes
         echo checking for PAPI CPPFLAGS... $PAPI_CPPFLAGS

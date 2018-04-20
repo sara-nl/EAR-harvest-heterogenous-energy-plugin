@@ -1,11 +1,32 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-	BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-    	Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +72,8 @@ static uint perf_count_period = 100,loop_perf_count_period;
 static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
 
+#define DYNAIS_CUTOFF	1
+
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
@@ -69,8 +92,7 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	perf_accuracy_min_time = get_ear_performance_accuracy();
 	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
-	ear_verbose(1, "EARLib JOB %s STARTS EXECUTION. Performance accuracy set to (min) %lu usecs\n",
-		app_name, perf_accuracy_min_time);
+	
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
 	init_log();
@@ -136,6 +158,14 @@ static void print_loop_signature(char *title, application_t *loop)
 
 	VERBOSE_N(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
+}
+
+static void report_loop_signature(uint iterations,loop_t *loop)
+{
+   loop->iterations = iterations;
+   append_loop_text_file(loop_summary_path, loop);
+	
+	
 }
 
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
@@ -262,7 +292,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
-					print_loop_signature("signature computed", &loop_signature);
+					//print_loop_signature("signature computed", &loop_signature);
 
 					loop_with_signature = 1;
 
@@ -272,7 +302,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.time;
 						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
 							// Disable dynais : API is still pending
+							#if DYNAIS_CUTOFF
 							dynais_enabled=0;
+							#endif
 							VERBOSE_N(0,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
 							log_report_dynais_off(my_job_id);
 						}
@@ -335,6 +367,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					// Loop printing algorithm
 					copy_application(&loop.signature, &loop_signature);
+					report_loop_signature(iterations,&loop);
 				}
 			}
 			break;
@@ -361,7 +394,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
-					print_loop_signature("signature refreshed", &loop_signature);
+					//print_loop_signature("signature refreshed", &loop_signature);
 
 					CPI = loop_signature.CPI;
 					GBS = loop_signature.GBS;
@@ -371,6 +404,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
+
+					copy_application(&loop.signature, &loop_signature);
+					report_loop_signature(iterations,&loop);
 
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
@@ -399,6 +435,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							// We must report a problem and go to the default configuration
 							log_report_max_tries(my_job_id,application.def_f);
 							EAR_STATE = PROJECTION_ERROR;
+							policy_default_configuration();
 						}else{
 						/** If we are not going better **/
 						ear_verbose(3,
@@ -413,6 +450,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							comp_N_begin = metrics_time();
 
 							policy_new_loop();
+                            #if DYNAIS_CUTOFF
+                            dynais_enabled=1;
+                            #endif
 						} else {
 							EAR_STATE = EVALUATING_SIGNATURE;
 						}
@@ -422,7 +462,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			break;
 		case PROJECTION_ERROR:
-				// Go to the default frequency: PENDING
 				break;
 		default: break;
 	}

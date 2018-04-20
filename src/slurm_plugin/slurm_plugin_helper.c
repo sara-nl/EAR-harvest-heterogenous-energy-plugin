@@ -1,24 +1,82 @@
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
+*/
+
+#include <errno.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <cpufreq.h>
+#include <linux/limits.h>
 #include <slurm/spank.h>
 
-#include <common/string_enhanced.h>
+#include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>
+
+void strtoup(char *string)
+{
+    while (*string) {
+        *string = toupper((unsigned char) *string);
+        string++;
+    }
+}
+
+char* strclean(char *string, char chr)
+{
+    char *index = strchr(string, chr);
+    if (index == NULL) return NULL;
+    string[index - string] = '\0';
+    return index;
+}
 
 /*
  *
  * Environment
  *
  */
+void printenv_remote(spank_t sp, char *name)
+{
+	char value[PATH_MAX];
+	getenv_remote(sp, name, value, PATH_MAX);
+        slurm_error("%s %s", name, value);
+}
+
 void appendenv(char *destiny, char *source)
 {
-    char buffer[PATH_MAX];
+   	char buffer[PATH_MAX];
         int length = strlen(destiny);
         char *pointer;
+
+	if (source == NULL) {
+		return;
+	}
 
         if (length > 0)
         {
@@ -93,6 +151,7 @@ int isenv_remote(spank_t sp, char *name, char *value)
  */
 
 //TODO: Utilizar un common para esto
+/*
 int freq_to_p_state(int freq)
 {
     struct cpufreq_available_frequencies *list_freqs;
@@ -115,11 +174,13 @@ int freq_to_p_state(int freq)
 
     return 1;
 }
+*/
 
 int file_to_environment(spank_t sp, const char *path)
-{
+{	
+    FUNCTION_INFO("file_to_environment");
     const char *value = NULL;
-    char option[512];
+    char option[PATH_MAX];
     FILE *file;
 
     if ((file = fopen(path, "r")) == NULL)
@@ -128,7 +189,7 @@ int file_to_environment(spank_t sp, const char *path)
         return ESPANK_ERROR;
     }
 
-    while (fgets(option, 100, file) != NULL)
+    while (fgets(option, PATH_MAX, file) != NULL)
     {
         if (strclean(option, '\n') && (value = strclean(option, '=')))
         {
@@ -136,12 +197,12 @@ int file_to_environment(spank_t sp, const char *path)
             {
                 strtoup(option);
 
-                #if BUILD_TYPE(RELEASE_LRZ)
+                #if BUILD(RELEASE_LRZ)
                 setenv_local(option, value, 1);
-				# else
+				#else
                 setenv_local(option, value, 0);
 				#endif
-                //slurm_error("%s %s", option, value);
+                //DEBUGGING("%s %s", option, value);
             }
         }
     }
@@ -152,9 +213,10 @@ int file_to_environment(spank_t sp, const char *path)
 
 int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
+	FUNCTION_INFO("find_ear_conf_file");
 	char conf_path[PATH_MAX];
 	char link_path[PATH_MAX];
-    int i, r;
+	int i;
 
     for (i = 0; i < ac; ++i)
     {

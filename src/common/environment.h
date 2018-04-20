@@ -1,11 +1,33 @@
-/*    This program is part of the Energy Aware Runtime (EAR).
-    It has been developed in the context of the BSC-Lenovo Collaboration project.
-    
-    Copyright (C) 2017  
-    BSC Contact Julita Corbalan (julita.corbalan@bsc.es) 
-        Lenovo Contact Luigi Brochard (lbrochard@lenovo.com)
-
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
+
 
 #ifndef _EAR_CONFIGURATION_H_
 #define _EAR_CONFIGURATION_H_
@@ -137,10 +159,6 @@ int get_ear_dynais_window_size();
 void ear_lib_environment();
 /** Writes ear library variables in $EAR_TMP/environment.txt file. */
 void ear_print_lib_environment();
-/** Reads and process all the environment variables involving the daemon. */
-void ear_daemon_environment();
-/** Writes ear daemon variables in $EAR_TMP/environment.txt file. */
-void ear_print_daemon_environment();
 
 /** Returns the number of processes per node. */
 int get_total_resources();
