@@ -324,7 +324,9 @@ void eard_exit()
 	int i;
 
 	VERBOSE_N(1, "Exiting");
+	#if EARD_LOCK
 	eard_unlock();
+	#endif
 
 	// Come disposes
 	//print_rapl_metrics();
@@ -782,7 +784,9 @@ void main(int argc,char *argv[])
     }
 
 	strcpy(ear_tmp,my_ear_tmp);
+	#if EARD_LOCK
     eard_lock(ear_tmp,nodename);
+	#endif
 	// At this point, only one daemon is running
 
 	ear_verbose(1,"Starting eard...................pid %d\n",getpid());
