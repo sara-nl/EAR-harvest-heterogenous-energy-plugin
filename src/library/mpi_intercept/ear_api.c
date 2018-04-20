@@ -69,7 +69,6 @@ static char fd_lock_filename[BUFFSIZE];
 
 
 static const char *__NAME__ = "API";
-static uint ear_initialized=0;
 
 
 // Una cosa que
@@ -78,7 +77,7 @@ static struct timeval pmpi_app_end_time;
 static long long pmpi_app_total_time;
 
 // Process information
-static int my_id, my_size;
+static int my_id=1, my_size;
 static unsigned long ear_current_freq;
 static int ear_current_cpuid;
 
@@ -94,15 +93,13 @@ static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;
 #endif
 
-// TODO: REFACTOR this function
-int get_app_name_please(char *my_name)
+int get_app_name_api(char *my_name)
 {
 	char *app_name;
 	int defined = 0;
 	app_name = get_ear_app_name();
 	if (app_name == NULL)
 	{
-		//TODO: METRICS COUPLED
 		if (PAPI_is_initialized() == PAPI_NOT_INITED)
 			strcpy(my_name, "UnknownApplication");
 		else
@@ -212,7 +209,7 @@ void ear_init()
 	}
 
 	// Getting environment data
-	get_app_name_please(ear_app_name);
+	get_app_name_api(ear_app_name);
 	ear_current_freq = frequency_get_num_pstates(0);
 	
 	if (job_id != NULL){ 
@@ -271,7 +268,6 @@ void ear_init()
 
 	ear_print_lib_environment();
 	DEBUG_F(1, "EAR initialized successfully");
-	ear_initialized=1;
 }
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
@@ -280,7 +276,6 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	int ret;
 	char men[128];
 
-	if (ear_initialized==0) ear_init();
 	if (my_id) {
 		return;
 	}
