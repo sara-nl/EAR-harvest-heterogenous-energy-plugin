@@ -60,10 +60,10 @@ update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 @mpi_so@: update-mpi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 @mpi_trace_so@: update-mpi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_trace_so@ $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 endif
 
@@ -78,10 +78,10 @@ update-ompi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(OMPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 @ompi_so@: update-ompi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_so@ $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 @ompi_trace_so@: update-ompi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_trace_so@ $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 endif
 
