@@ -51,23 +51,29 @@ AC_DEFUN([AX_OPT_FEATURES],
 	AC_ARG_VAR([IMPICC],[Defines the Intel MPI compiler])
 	AC_ARG_VAR([OMPICC],[Defines the Open MPI compiler])
 
-	MPICC=mpicc
-	mpi_so=libear.so
-	mpi_trace_so=libeart.so
-	ompi_so=libear_ompi.so
-	ompi_trace_so=libeart_ompi.so
+	MPICC=
+	mpi_so=
+	mpi_trace_so=
+	ompi_so=
+	ompi_trace_so=
 
-	if test -n "$OMPICC" && test -z "$IMPICC"; then
-		MPICC=
-		mpi_so=
-		mpi_trace_so=
-	elif test -z "$OMPICC" && test -n "$IMPICC"; then
-		MPICC=$IMPICC
-		ompi_so=
-		ompi_trace_so=
-	elif test -n "$IMPICC"; then
-		MPICC=$IMPICC
+	# !I && !O
+	if test -z "$IMPICC" && test -z "$OMPICC"; then
+		IMPICC=mpicc
 	fi
+
+	# I 
+	if test -n "$IMPICC"; then
+		MPICC=$IMPICC
+		mpi_so=libear.so
+		mpi_trace_so=libeart.so	
+	fi
+
+	# O
+	if test -n "$OMPICC"; then
+        ompi_so=libear_ompi.so
+        ompi_trace_so=libeart_ompi.so
+    fi
 
 	AC_SUBST(MPICC)
 	AC_SUBST(OMPICC)

@@ -60,10 +60,10 @@ update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 libear.so: update-mpi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o libear.so $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o libear.so $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 libeart.so: update-mpi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o libeart.so $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o libeart.so $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 endif
 
@@ -78,10 +78,10 @@ update-ompi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(OMPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 : update-ompi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 : update-ompi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 endif
 
