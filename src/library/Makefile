@@ -44,7 +44,7 @@ SEQ_OBJS = $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 
 ######## RULES
 
-all:   libear_ompi.so libeart_ompi.so
+all: libear.so libeart.so libear_ompi.so libeart_ompi.so
 
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
@@ -59,11 +59,11 @@ update-mpi-objs:
 update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-: update-mpi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+libear.so: update-mpi-objs $(SEQ_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o libear.so $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
 
-: update-mpi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
+libeart.so: update-mpi-objs-trace $(SEQ_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o libeart.so $(LDFLAGS) $(SEQ_OBJS) $(REMAKE_OBJS)
 
 endif
 
@@ -88,8 +88,14 @@ endif
 ######## OPTIONS
 
 install:
-	mv  $(DESTDIR)/lib/
+ifdef MPICC
+	mv libear.so $(DESTDIR)/lib/libear.so
+	mv libeart.so $(DESTDIR)/lib/libeart.so
+endif
+ifdef OMPICC
 	mv libear_ompi.so $(DESTDIR)/lib/libear_ompi.so
+	mv libeart_ompi.so $(DESTDIR)/lib/libeart_ompi.so
+endif
 
 clean:
-	rm -f *.so *.a *.o $(BINARIES) $(OBJS) $(TRACE_OBJS) $(MPI_OBJS)
+	rm -f *.so *.a *.o

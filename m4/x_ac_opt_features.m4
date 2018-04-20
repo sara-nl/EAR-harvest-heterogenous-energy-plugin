@@ -61,6 +61,10 @@ AC_DEFUN([AX_OPT_FEATURES],
 		MPICC=
 		mpi_so=
 		mpi_trace_so=
+	elif test -z "$OMPICC" && test -n "$IMPICC"; then
+		MPICC=$IMPICC
+		ompi_so=
+		ompi_trace_so=
 	elif test -n "$IMPICC"; then
 		MPICC=$IMPICC
 	fi

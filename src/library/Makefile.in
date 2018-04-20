@@ -88,8 +88,14 @@ endif
 ######## OPTIONS
 
 install:
+ifdef MPICC
 	mv @mpi_so@ $(DESTDIR)/lib/@mpi_so@
+	mv @mpi_trace_so@ $(DESTDIR)/lib/@mpi_trace_so@
+endif
+ifdef OMPICC
 	mv @ompi_so@ $(DESTDIR)/lib/@ompi_so@
+	mv @ompi_trace_so@ $(DESTDIR)/lib/@ompi_trace_so@
+endif
 
 clean:
-	rm -f *.so *.a *.o $(BINARIES) $(OBJS) $(TRACE_OBJS) $(MPI_OBJS)
+	rm -f *.so *.a *.o
