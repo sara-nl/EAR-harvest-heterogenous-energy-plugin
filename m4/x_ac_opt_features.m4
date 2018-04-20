@@ -126,11 +126,12 @@ AC_DEFUN([AX_OPT_FEATURES],
     AC_ARG_ENABLE([database],
         AS_HELP_STRING([--disable-database], [Stores the execution data in files insted in a database]))
 
-	AS_IF([test "x$enable_database" = "xno"],
+
+	AS_IF([test "x$enable_database" = "xno" || test -z "$enable_database"],
         [
-			DB_TYPE=0
+			DATABASE=0
 		],[
-			DB_TYPE=1
+			DATABASE=1
 			enable_database="yes"
 		])
 
