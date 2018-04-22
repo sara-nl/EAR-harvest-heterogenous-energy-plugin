@@ -272,8 +272,6 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
         if (isenv_local("EAR", "1"))
         {
-            NO_OK(local_update_ear_install_path());
-            NO_OK(local_update_ld_library_path());
             NO_OK(local_update_ld_preload(sp));
         }
     }
@@ -312,8 +310,6 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
     if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
     {
         NO_OK(find_ear_conf_file(sp, ac, av));
-        NO_OK(local_update_ear_install_path());
-        NO_OK(local_update_ld_library_path());
         return fork_ear_daemon(sp);
     }
 
