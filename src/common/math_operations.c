@@ -74,6 +74,9 @@ unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long
     unsigned long long max_16 = USHRT_MAX;
     unsigned long long max_32 = ULONG_MAX;
     unsigned long long max_64 = ULLONG_MAX;
+    //max_48 was obtained empirically via monitoring the power results and checking
+    //when the overflow occured.
+    unsigned long long max_48 = 0xEE6B23392C68; 
 
     unsigned long long ret = 0;
 
@@ -84,6 +87,10 @@ unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long
     else if ( a < max_32 && b < max_32)
     {
         ret = max_32 - a + b;
+    }
+    else if (a > max_48 && b < max_48)
+    {
+        ret = max_48 - a + b;
     }
     else
     {
