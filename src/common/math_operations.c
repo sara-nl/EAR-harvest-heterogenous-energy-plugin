@@ -88,7 +88,7 @@ unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long
     {
         ret = max_32 - a + b;
     }
-    else if (a > max_48 && b < max_48)
+    else if (a < max_48 && b < max_48)
     {
         ret = max_48 - a + b;
     }
