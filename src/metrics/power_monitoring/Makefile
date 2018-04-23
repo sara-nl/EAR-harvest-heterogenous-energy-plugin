@@ -9,9 +9,8 @@ EAR_OBJECTS = $(SRCDIR)/common/ear_daemon_client.o \
                $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
                $(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o \
 			   $(SRCDIR)/metrics/papi/energy_cpu.o  \
-			   $(SRCDIR)/metrics/custom/hardware_info.o
-
-
+			   $(SRCDIR)/metrics/custom/hardware_info.o \
+			   $(SRCDIR)/common/math_operations.o
 
 
 
