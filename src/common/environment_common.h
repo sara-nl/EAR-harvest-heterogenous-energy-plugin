@@ -46,8 +46,9 @@ char * getenv_ear_db_pathname();
 *   it's a valid verbose level. Otherwise returns 0. */
 int getenv_ear_verbose();
 
-
 //  get_ functions must be used after the corresponding getenv_ function
+/** Returns the install path previously read. */
+char *get_ear_install_path();
 /** Returns the tmp path previously read.*/
 char * get_ear_tmp();
 /** Changes the tmp path to the one recieved by parameter. */

@@ -81,32 +81,37 @@ void appendenv(char *destiny, char *source)
 		return;
 	}
 
-        if (length > 0)
-        {
-            strcpy(buffer, destiny);
-            length = strlen(source);
-            pointer = &destiny[length];
-            strcpy(&pointer[1], buffer);
-            strcpy(destiny, source);
-            pointer[0] = ':';
-        } else {
-            strcpy(destiny, source);
-        }
+	if (length > 0)
+	{
+		strcpy(buffer, destiny);
+		length = strlen(source);
+		pointer = &destiny[length];
+		strcpy(&pointer[1], buffer);
+		strcpy(destiny, source);
+		pointer[0] = ':';
+	} else {
+		strcpy(destiny, source);
+	}
 }
 
 int setenv_local(const char *name, const char *value, int replace)
 {
     if (setenv (name, value, replace) == -1) {
         SPANK_STRERROR("Error while setting envar %s", name);
-        return ESPANK_ERROR;
+        return 0;
     }
-    return ESPANK_SUCCESS;
+    return 1;
 }
 
 int setenv_remote(spank_t sp, char *name, char *value, int replace)
 {
-    spank_unsetenv(sp, name);
     return spank_setenv (sp, name, value, replace) == ESPANK_SUCCESS;
+}
+
+int getenv_local(char *name, char *env)
+{
+	env = getenv(name);
+	return pointer != NULL && strlen(env) > 0;
 }
 
 int getenv_remote(spank_t sp, char *name, char *value, int length)
@@ -152,32 +157,6 @@ int isenv_remote(spank_t sp, char *name, char *value)
  * Functionality
  *
  */
-
-//TODO: Utilizar un common para esto
-/*
-int freq_to_p_state(int freq)
-{
-    struct cpufreq_available_frequencies *list_freqs;
-    list_freqs = cpufreq_get_available_frequencies(0);
-    int i = 0;
-
-    if (freq > (int) list_freqs->frequency) {
-        return 0;
-    }
-
-    while(list_freqs != NULL)
-    {
-        if (freq == (int) list_freqs->frequency) {
-            return i;
-        }
-
-        list_freqs = list_freqs->next;
-        i += 1;
-    }
-
-    return 1;
-}
-*/
 
 int file_to_environment(spank_t sp, const char *path)
 {	
@@ -237,3 +216,36 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
     }
     return ESPANK_ERROR;
 }
+
+/*
+ *
+ *
+ * Deprecated
+ *
+ *
+ */
+
+/*
+int freq_to_p_state(int freq)
+{
+    struct cpufreq_available_frequencies *list_freqs;
+    list_freqs = cpufreq_get_available_frequencies(0);
+    int i = 0;
+
+    if (freq > (int) list_freqs->frequency) {
+        return 0;
+    }
+
+    while(list_freqs != NULL)
+    {
+        if (freq == (int) list_freqs->frequency) {
+            return i;
+        }
+
+        list_freqs = list_freqs->next;
+        i += 1;
+    }
+
+    return 1;
+}
+*/

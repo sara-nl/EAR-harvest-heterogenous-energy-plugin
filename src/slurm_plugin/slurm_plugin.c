@@ -114,6 +114,7 @@ static int fork_ear_daemon(spank_t sp)
     FUNCTION_INFO("fork_ear_daemon");
 
     if (existenv_local("EAR_INSTALL_PATH") &&
+        existenv_local("EAR_DB_PATHNAME") &&
         existenv_local("EAR_VERBOSE") &&
         existenv_local("EAR_TMP"))
     {
@@ -145,77 +146,26 @@ static int local_update_ld_preload(spank_t sp)
     FUNCTION_INFO("local_update_ld_preload");
     char *ld_preload, *ear_install_path;
     char buffer[PATH_MAX];
-
     buffer[0] = '\0';
-    ld_preload = getenv("LD_PRELOAD");
-    ear_install_path = getenv("EAR_INSTALL_PATH");
 
-    if (ld_preload != NULL) {
-        //strcpy(buffer, ld_preload);
+    if (!getenv_local("EAR_INSTALL_PATH", ear_install_path)) {
+        return ESPANK_ERROR;
     }
 
-    // Apending: x:y or y
     appendenv(buffer, ear_install_path);
 
     // Appending libraries to LD_PRELOAD
     if (isenv_local("EAR_TRACES", "1")) {
-        sprintf(buffer, "%s/%s", buffer, EAR_TRACE_LIB_PATH);
+        sprintf(buffer, "%s/%s", buffer, IMPI_TRACE_LIB_PATH);
     } else {
-        sprintf(buffer, "%s/%s", buffer, EAR_LIB_PATH);
+        sprintf(buffer, "%s/%s", buffer, IMPI_LIB_PATH);
     }
 
     //
-    return setenv_local("LD_PRELOAD", buffer, 1);
-}
-
-
-static int local_update_ear_install_path()
-{
-    FUNCTION_INFO("local_update_ear_install_path");
-    char *ear_install_path = getenv("EAR_INSTALL_PATH");
-    
-    if (ear_install_path == NULL || strlen(ear_install_path) == 0)
-    {
-        slurm_error("Warning: $EAR_INSTALL_PATH not found, using %s", EAR_INSTALL_PATH);
-        slurm_error("Please, read the documentation and load the environment module.");
-        return setenv_local("EAR_INSTALL_PATH", EAR_INSTALL_PATH, 1);
+    if(setenv_local("LD_PRELOAD", buffer, 1)) {
+        return ESPANK_SUCCESS;
     }
-    return ESPANK_SUCCESS;
-}
-
-static int local_update_ld_library_path()
-{
-	FUNCTION_INFO("local_update_ld_library_path");
-	char buffer[PATH_MAX];
-	char *ld_additional_path;
-	char *ld_library_path;
-	char *ld_papi_path;
-	char *ld_ipmi_path;
-	char *ld_cpuf_path;
-
-	//
-	buffer[0] = '\0';
-	unsetenv("LD_LIBRARY_PATH");
-	ld_library_path    = getenv("LD_LIBRARY_PATH");
-	ld_additional_path = getenv("EAR_EXTRA_PATHS");
-	ld_cpuf_path       = getenv("EAR_CPUPOWER_LIB_PATH");
-	ld_ipmi_path       = getenv("EAR_FREEIPMI_LIB_PATH");
-	ld_papi_path       = getenv("EAR_PAPI_LIB_PATH");
-	
-    if (ld_library_path != NULL) {
-		strcpy(buffer, ld_library_path);
-    }
-
-    //
-    appendenv(buffer, ld_additional_path);
-    appendenv(buffer, ld_cpuf_path);
-    appendenv(buffer, ld_ipmi_path);
-    appendenv(buffer, ld_papi_path);
-  
-    // 
-	DEBUGGING("LD_LIBRARY_PATH %s", buffer); 
-    
-	return setenv_local("LD_LIBRARY_PATH", buffer, 1);
+    return ESPANK_ERROR;
 }
 
 static void remote_update_slurm_vars(spank_t sp)
@@ -237,7 +187,6 @@ static void remote_update_slurm_vars(spank_t sp)
             {
                 //p_freq = atoi(p_state);
                 //p_freq = freq_to_p_state(p_freq);
-				p_freq = 1;
 
                 sprintf(p_state, "%i", p_freq);
                 setenv_remote(sp, "EAR_P_STATE", p_state, 0);
@@ -327,15 +276,6 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 
     return (ESPANK_SUCCESS);
 }
-
-int slurm_spank_job_prolog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
-int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_init_post_op"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init_privileged"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_init (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_exit"); return (ESPANK_SUCCESS); }
-int slurm_spank_job_epilog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_job_epilog"); return (ESPANK_SUCCESS); }
-int slurm_spank_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
 
 /*
  *
@@ -483,3 +423,69 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
     }
     return (ESPANK_SUCCESS);
 }
+
+/*
+ *
+ * Deprecated functions
+ *
+ */
+
+/*
+int slurm_spank_job_prolog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
+int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_init_post_op"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init_privileged"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_init (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_exit"); return (ESPANK_SUCCESS); }
+int slurm_spank_job_epilog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_job_epilog"); return (ESPANK_SUCCESS); }
+int slurm_spank_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
+
+static int local_update_ear_install_path()
+{
+    FUNCTION_INFO("local_update_ear_install_path");
+    char *ear_install_path = getenv("EAR_INSTALL_PATH");
+
+    if (ear_install_path == NULL || strlen(ear_install_path) == 0)
+    {
+        slurm_error("Warning: $EAR_INSTALL_PATH not found, using %s", EAR_INSTALL_PATH);
+        slurm_error("Please, read the documentation and load the environment module.");
+        return setenv_local("EAR_INSTALL_PATH", EAR_INSTALL_PATH, 1);
+    }
+    return ESPANK_SUCCESS;
+}
+
+static int local_update_ld_library_path()
+{
+    FUNCTION_INFO("local_update_ld_library_path");
+    char buffer[PATH_MAX];
+    char *ld_additional_path;
+    char *ld_library_path;
+    char *ld_papi_path;
+    char *ld_ipmi_path;
+    char *ld_cpuf_path;
+
+    //
+    buffer[0] = '\0';
+    unsetenv("LD_LIBRARY_PATH");
+    ld_library_path    = getenv("LD_LIBRARY_PATH");
+    ld_additional_path = getenv("EAR_EXTRA_PATHS");
+    ld_cpuf_path       = getenv("EAR_CPUPOWER_LIB_PATH");
+    ld_ipmi_path       = getenv("EAR_FREEIPMI_LIB_PATH");
+    ld_papi_path       = getenv("EAR_PAPI_LIB_PATH");
+
+    if (ld_library_path != NULL) {
+        strcpy(buffer, ld_library_path);
+    }
+
+    //
+    appendenv(buffer, ld_additional_path);
+    appendenv(buffer, ld_cpuf_path);
+    appendenv(buffer, ld_ipmi_path);
+    appendenv(buffer, ld_papi_path);
+
+    //
+    DEBUGGING("LD_LIBRARY_PATH %s", buffer);
+
+    return setenv_local("LD_LIBRARY_PATH", buffer, 1);
+}
+*/

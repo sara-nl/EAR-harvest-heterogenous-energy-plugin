@@ -116,8 +116,6 @@ int getenv_ear_dynais_window_size();
 char * get_ear_tmp();
 /** Changes the tmp path to the one recieved by parameter. */
 void set_ear_tmp(char *new_tmp);
-/** Returns the install path previously read. */
-char * get_ear_install_pathname();
 /** Returns the db path previously read. */
 char * get_ear_db_pathname();
 /** Returns the user db path previously read. */

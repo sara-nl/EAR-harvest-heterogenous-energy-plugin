@@ -442,20 +442,29 @@ int eard_node_energy(int must_read)
 
 void form_database_paths()
 {
+	char aux_install_path[PATH_MAX];
 	char node_name[PATH_MAX];
+	char *install_path;
 	char *db_pathname;
 
 	db_pathname = get_ear_db_pathname();
+	install_path = get_ear_install_path();
 
-	if (db_pathname != NULL) {
+	if (db_pathname == NULL && install_path != NULL)
+	{
+		sprintf(aux_install_path, "%s/etc/dbs/db.", install_path);
+		db_pathname = aux_install_path;
+	}
+
+	if (db_pathname != NULL)
+	{
 		gethostname(node_name, sizeof(node_name));
-
 		sprintf(database_bin_path, "%s%s.db.bin", db_pathname, node_name);
 		sprintf(database_csv_path, "%s%s.db.csv", db_pathname, node_name);
 	}
 
-	VERBOSE_N(2, "DB binary file: %s", database_bin_path);
-	VERBOSE_N(2, "DB pain-text file: %s", database_csv_path);
+	VERBOSE_N(0, "DB binary file: %s", database_bin_path);
+	VERBOSE_N(0, "DB pain-text file: %s", database_csv_path);
 }
 
 int eard_system(int must_read)

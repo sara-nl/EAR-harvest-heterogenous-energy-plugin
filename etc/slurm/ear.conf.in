@@ -1,6 +1,6 @@
 EAR=0
-EAR_DB_PATHNAME=@prefix@/dbs/db.
-EAR_COEFF_DB_PATHNAME=@prefix@/coeffs/coeff.
+EAR_DB_PATHNAME=@sysconfdir@/dbs/db.
+EAR_COEFF_DB_PATHNAME=@sysconfdir@/coeffs/coeff.
 EAR_POWER_POLICY=MONITORING_ONLY
 EAR_LEARNING_PHASE=0
 EAR_MIN_P_STATE=3

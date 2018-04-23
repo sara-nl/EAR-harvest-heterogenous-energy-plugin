@@ -172,4 +172,3 @@ AC_CONFIG_FILES([Makefile
 #AC_CONFIG_HEADERS([src/common/config.h])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
 AC_OUTPUT
-
