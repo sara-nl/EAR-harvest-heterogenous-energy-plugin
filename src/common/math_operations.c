@@ -44,7 +44,7 @@ unsigned int equal_with_th(double a, double b, double th)
 
 //Unsigned long can be 16, 32 or 64 bits
 //a should be the old number, b the one after the overflow
-unsigned long ullong_diff_overflow(unsigned long a, unsigned long b)
+unsigned long ulong_diff_overflow(unsigned long a, unsigned long b)
 {
     unsigned long max_16 = USHRT_MAX;
     unsigned long max_32 = ULONG_MAX;
@@ -69,7 +69,7 @@ unsigned long ullong_diff_overflow(unsigned long a, unsigned long b)
 
 //Unsigned long can be 32 or 64 bits
 //a should be the old number, b the one after the overflow
-unsigned long long ulong_diff_overflow(unsigned long long a, unsigned long long b)
+unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long b)
 {
     unsigned long long max_16 = USHRT_MAX;
     unsigned long long max_32 = ULONG_MAX;
