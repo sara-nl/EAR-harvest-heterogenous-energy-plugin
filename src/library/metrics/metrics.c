@@ -42,6 +42,7 @@
 #include <common/ear_daemon_client.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/math_operations.h>
 
 /*
  * Low level reading
@@ -194,7 +195,13 @@ static void metrics_partial_stop()
 	}
 	// We read acuumulated energy
 	for (i = 0; i < rapl_elements; i++) {
-		metrics_rapl[LOO][i]=metrics_rapl[LOO][i]-aux_rapl[i];
+		if (metrics_rapl[LOO][i] < aux_rapl[i])
+		{
+			metrics_rapl[LOO][i] = ullong_diff_overflow(aux_rapl[i] - metrics_rapl[LOO][i]);
+		}
+		else {
+			metrics_rapl[LOO][i]=metrics_rapl[LOO][i]-aux_rapl[i];		
+		}
 	}
 
 	// Manual RAPL accumulation

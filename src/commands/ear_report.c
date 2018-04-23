@@ -42,24 +42,6 @@ void usage(char *app)
 	exit(1);
 }
 
-char check_job_id(FILE *node_file, char* job_id)
-{
-    char line_buf[256];
-    long line_length = 0;
-
-    while(fscanf(node_file, "%s\n", line_buf) > 0)
-    {
-        printf("Entra\n");
-        if (strstr(line_buf, job_id) != NULL)
-        {
-            line_length = -strlen(line_buf);
-            fseek(node_file, line_length, SEEK_CUR);
-            return 1;
-        }
-    }
-    return 0;
-}
-
 void main(int argc, char *argv[])
 {
 	int job_id, num_nodes, i;
@@ -115,7 +97,6 @@ void main(int argc, char *argv[])
 
         if (node_file == NULL)
         {
-            //printf("Error opening file %s%s%s\n",  nodename_prepend, nodes[i], nodename_extension);
             continue;
         }
 

@@ -21,7 +21,8 @@ COMMON_OBJS = $(SRCDIR)/common/shared_configuration.o \
               $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/environment_common.o \
               $(SRCDIR)/common/file_lock.o \
-              $(SRCDIR)/common/environment.o 
+              $(SRCDIR)/common/environment.o \
+              $(SRCDIR)/common/math_operations.o
 
 TYPES = $(SRCDIR)/common/types.a
 
