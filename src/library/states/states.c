@@ -47,6 +47,7 @@
 #include <common/types/application.h>
 #include <common/states.h>
 #include <common/config.h>
+#include <common/math_operations.h>
 
 static const char *__NAME__ = "STATES";
 
@@ -127,19 +128,6 @@ void states_end_period(uint iterations)
 
 	loop_with_signature = 0;
 	policy_end_loop();
-}
-
-static unsigned int equal_with_th(double a, double b, double th)
-{
-	int eq;
-	if (a > b) {
-		if (a < (b * (1 + th))) eq = 1;
-		else eq = 0;
-	} else {
-		if ((a * (1 + th)) > b) eq = 1;
-		else eq = 0;
-	}
-	return eq;
 }
 
 static int signature_has_changed(application_t *A, application_t *B)
