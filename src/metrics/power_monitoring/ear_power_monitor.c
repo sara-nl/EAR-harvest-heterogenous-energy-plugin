@@ -35,7 +35,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <sys/types.h>
-
+#include <common/math_operations.h>
 
 
 
@@ -186,7 +186,7 @@ node_data_t diff_node_energy(node_data_t end,node_data_t init)
 	if (end>init){ 
 		ret=end-init;
 	} else{
-		VERBOSE("OVERFLOW DETECTED!\n");
+		//VERBOSE("OVERFLOW DETECTED!\n");
 	}
 	return ret;
 }
@@ -197,9 +197,8 @@ rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init)
 	if (end>init){
 		ret=end-init;
 	}else{
-		aux=(long long)0xffffffffff-init;
-		ret=aux+end;
-		printf("OVERFLOW DETECTED RAPL! %llu,%llu\n",init,end);
+		ret = ullong_diff_overflow(init, end);
+		//printf("OVERFLOW DETECTED RAPL! %llu,%llu\n",init,end);
 	}
 	return ret;
 }

@@ -27,29 +27,13 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+/** Given two doubles a and b, checks if they are equal within a margin of th.*/
+unsigned int equal_with_th(double a, double b, double th);
 
+/** Given two unsigned long's, one before and one after overflow, returns the
+*   value added to the first to obtain the second.*/
+unsigned long ulong_diff_overflow(unsigned long a, unsigned long b);
 
-#ifndef _NODE_CONF_H_
-#define _NODE_CONF_H_
-
-#define TREE_WITH	5
-#define MAX_NODENAME_PATH 128
-typedef struct node_conf{
-	char *nodename;
-}node_conf_t;
-
-/** This function reads the list of nodes from the file and creates a node list, memory is allocated and must be released
- * with node_list_dispose function
-*/
-node_conf_t *read_node_list(char *node_conf_file);
-/** releases the memory previously allocated with read_node_list and/or create_forward_list function
- */
-void node_list_dispose(node_conf_t * node_list);
-
-/** Based on TREE_WITH, creates a list of nodes where messages must be forwarded (null if this node is a leaf). It allocates memory
- */
-node_conf_t *create_forward_list(node_conf_t * system_nodelist);
-
-
-#else
-#endif
+/** Given two unsigned long's, one before and one after overflow, returns the
+*   value added to the first to obtain the second.*/
+unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long b);

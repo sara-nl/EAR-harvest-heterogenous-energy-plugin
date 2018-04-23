@@ -64,8 +64,11 @@ char* strclean(char *string, char chr)
 void printenv_remote(spank_t sp, char *name)
 {
 	char value[PATH_MAX];
-	getenv_remote(sp, name, value, PATH_MAX);
-        slurm_error("%s %s", name, value);
+	
+	if(getenv_remote(sp, name, value, PATH_MAX))
+	{
+		slurm_error("%s %s", name, value);
+	}
 }
 
 void appendenv(char *destiny, char *source)
