@@ -197,7 +197,7 @@ rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init)
 	if (end>init){
 		ret=end-init;
 	}else{
-		aux=(double)0xffffffff-init;
+		aux=(long long)0xffffffffff-init;
 		ret=aux+end;
 		printf("OVERFLOW DETECTED RAPL! %llu,%llu\n",init,end);
 	}
@@ -274,6 +274,11 @@ int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff)
 		diff->DC_node_energy=diff_node_energy(end->DC_node_energy,init->DC_node_energy);
 		//diff->AC_node_energy=diff_node_energy(end->AC_node_energy,init->AC_node_energy);
 		diff->AC_node_energy=0;
+		printf("DRAM end( %#llx %#llx) init (%#llx %#llx)\n",
+		end->DRAM_energy[0],end->DRAM_energy[1],init->DRAM_energy[0],init->DRAM_energy[1]);
+		printf("CPU end( %#llx %#llx) init (%#llx %#llx)\n",
+		end->CPU_energy[0],end->CPU_energy[1],init->CPU_energy[0],init->CPU_energy[1]);
+	 
 		diff->DRAM_energy[0]=diff_RAPL_energy(end->DRAM_energy[0],init->DRAM_energy[0]);
 		diff->DRAM_energy[1]=diff_RAPL_energy(end->DRAM_energy[1],init->DRAM_energy[1]);
 		diff->CPU_energy[0]=diff_RAPL_energy(end->CPU_energy[0],init->CPU_energy[0]);
