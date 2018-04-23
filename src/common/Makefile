@@ -12,7 +12,7 @@ TYPES_OBJS = types/application.o \
              types/coefficient.o \
 			 types/log.o
 
-BINARIES = ear_daemon_client.o environment.o string_enhanced.o types.a shared_configuration.o remote_daemon_client.o file_lock.o
+BINARIES = ear_daemon_client.o environment.o string_enhanced.o math_operations.o types.a shared_configuration.o remote_daemon_client.o file_lock.o
 
 ######## RULES
 
