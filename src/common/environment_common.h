@@ -38,14 +38,11 @@
 /** Tries to get the EAR_TMP environment variable's value and returns it.
 *   If it fails, it defaults to TMP's value and then HOME's. */ 
 char * getenv_ear_tmp();
-
 /** Tries to get the EAR_DB_PATHNAME value and returns it.*/
 char * getenv_ear_db_pathname();
-
 /** Reads the VERBOSE's level set in the environment variable and returns its value if
 *   it's a valid verbose level. Otherwise returns 0. */
 int getenv_ear_verbose();
-
 //  get_ functions must be used after the corresponding getenv_ function
 /** Returns the install path previously read. */
 char *get_ear_install_path();
@@ -59,7 +56,6 @@ char * get_ear_db_pathname();
 int get_ear_verbose();
 /** Sets the verbosity level to the one recieved by parameter. */
 void set_ear_verbose(int verb);
-
 /** Reads and process all the environment variables involving the daemon. */
 void ear_daemon_environment();
 /** Writes ear daemon variables in $EAR_TMP/environment.txt file. */

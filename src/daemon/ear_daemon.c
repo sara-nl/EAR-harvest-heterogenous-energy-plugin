@@ -448,7 +448,7 @@ void form_database_paths()
 	char *db_pathname;
 
 	db_pathname = get_ear_db_pathname();
-	install_path = get_ear_install_path();
+	install_path = getenv("EAR_INSTALL_PATH");
 
 	if (db_pathname == NULL && install_path != NULL)
 	{

@@ -64,6 +64,11 @@ struct spank_option spank_options[] = {
       "Specifies the file to save the user applications metrics summary",
       2, 0, (spank_opt_cb_f) _opt_ear_user_db
     },
+	{ "ear-mpi-dist", "dist",
+      "Selects the MPI distribution for compatibility of your application" \
+	  "{dist=default|openmpi}",
+      2, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
+    },
     { "ear-verbose", "value",
       "Specifies the level of the verbosity\n" \
       "{value=[0..5]}; default is 0",
@@ -144,21 +149,34 @@ static int fork_ear_daemon(spank_t sp)
 static int local_update_ld_preload(spank_t sp)
 {
     FUNCTION_INFO("local_update_ld_preload");
-    char *ld_preload, *ear_install_path;
+	char *ear_install_path = NULL;
+    char *ld_preload = NULL;
     char buffer[PATH_MAX];
     buffer[0] = '\0';
 
-    if (!getenv_local("EAR_INSTALL_PATH", ear_install_path)) {
+    if (!getenv_local("EAR_INSTALL_PATH", &ear_install_path)) {
+		slurm_error("Error, missing EAR_INSTALL_PATH");
         return ESPANK_ERROR;
     }
 
     appendenv(buffer, ear_install_path);
-
-    // Appending libraries to LD_PRELOAD
-    if (isenv_local("EAR_TRACES", "1")) {
-        sprintf(buffer, "%s/%s", buffer, IMPI_TRACE_LIB_PATH);
-    } else {
-        sprintf(buffer, "%s/%s", buffer, IMPI_LIB_PATH);
+    
+	// Appending libraries to LD_PRELOAD
+    if (isenv_local("EAR_TRACES", "1"))
+	{
+		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
+        	sprintf(buffer, "%s/%s", buffer, OMPI_TRACE_LIB_PATH);
+		} else {
+        	sprintf(buffer, "%s/%s", buffer, IMPI_TRACE_LIB_PATH);
+		}
+    }
+	else
+	{	
+		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
+			sprintf(buffer, "%s/%s", buffer, OMPI_LIB_PATH);
+		} else { 
+			sprintf(buffer, "%s/%s", buffer, IMPI_LIB_PATH);
+		}
     }
 
     //
@@ -222,6 +240,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
         if (isenv_local("EAR", "1"))
         {
             NO_OK(local_update_ld_preload(sp));
+			printenv_remote(sp, "LD_PRELOAD");
         }
     }
 
@@ -422,6 +441,16 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
         setenv_local("EAR", "1", 1);
     }
     return (ESPANK_SUCCESS);
+}
+
+static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
+{
+    FUNCTION_INFO("_opt_mpi_dist");
+	if (!remote) {
+        if (optarg == NULL) return (ESPANK_BAD_ARG);
+		setenv_local("EAR_MPI_DIST", optarg, 1);
+	}
+	return (ESPANK_SUCCESS);
 }
 
 /*

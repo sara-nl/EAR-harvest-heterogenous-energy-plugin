@@ -51,6 +51,7 @@ void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source);
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
+int getenv_local(char *name, char **env);
 int getenv_remote(spank_t sp, char *name, char *value, int length);
 int existenv_local(char *name);
 int existenv_remote(spank_t sp, char *name);

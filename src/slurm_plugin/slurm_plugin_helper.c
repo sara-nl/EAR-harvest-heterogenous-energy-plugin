@@ -108,10 +108,10 @@ int setenv_remote(spank_t sp, char *name, char *value, int replace)
     return spank_setenv (sp, name, value, replace) == ESPANK_SUCCESS;
 }
 
-int getenv_local(char *name, char *env)
+int getenv_local(char *name, char **env)
 {
-	env = getenv(name);
-	return pointer != NULL && strlen(env) > 0;
+	*env = getenv(name);
+	return *env != NULL && strlen(*env) > 0;
 }
 
 int getenv_remote(spank_t sp, char *name, char *value, int length)
