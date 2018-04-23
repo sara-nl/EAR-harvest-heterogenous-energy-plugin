@@ -197,7 +197,7 @@ static void metrics_partial_stop()
 	for (i = 0; i < rapl_elements; i++) {
 		if (metrics_rapl[LOO][i] < aux_rapl[i])
 		{
-			metrics_rapl[LOO][i] = ullong_diff_overflow(aux_rapl[i] - metrics_rapl[LOO][i]);
+			metrics_rapl[LOO][i] = ullong_diff_overflow(aux_rapl[i], metrics_rapl[LOO][i]);
 		}
 		else {
 			metrics_rapl[LOO][i]=metrics_rapl[LOO][i]-aux_rapl[i];		
