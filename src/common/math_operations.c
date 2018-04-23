@@ -84,7 +84,7 @@ unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long
     {
         ret = max_16 - a + b;
     }
-    else if ( a < max_32 && b < max_32)
+    else if ( a < max_32 && b < max_32 && max_32 < max_64) //some architectures have the same size for ul and ull
     {
         ret = max_32 - a + b;
     }
