@@ -16,14 +16,18 @@ TYPES_OBJS = types/application.o \
 	     types/loop.o
 
 
-BINARIES = ear_daemon_client.o environment.o string_enhanced.o math_operations.o types.a shared_configuration.o remote_daemon_client.o 
+BINARIES = ear_daemon_client.o environment.o string_enhanced.o math_operations.o types.a shared_configuration.o remote_daemon_client.o file_lock.o
 
 ######## RULES
 
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
+
 all: $(BINARIES)
+
+file_lock.o:file_lock.c file_lock.h
+	$(CC) $(CFLAGS) -c file_lock.c
 
 ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
 	$(CC) $(CFLAGS) -c ear_daemon_client.c

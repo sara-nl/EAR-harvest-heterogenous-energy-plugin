@@ -12,8 +12,8 @@ AC_DEFUN([AX_OPT_FEATURES],
 	#
 	#
 	#
-	AC_ARG_VAR([MPICC],[Defines the MPI compiler (default: mpicc)])
 	AC_ARG_VAR([TMP],[Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear)])
+	AC_ARG_VAR([ETC],[Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc)])
 
 	if test "x$prefix" = "xNONE";then
     	prefix=/usr/local
@@ -30,11 +30,11 @@ AC_DEFUN([AX_OPT_FEATURES],
 	if test "x$sbindir" = "x\${exec_prefix}/sbin"; then
     	sbindir=$exec_prefix/sbin
 	fi
-	if test "x$sysconfdir" = "x\${exec_prefix}/etc"; then
-    	sysconfdir=$exec_prefix/etc
+	if test -n "$ETC"; then
+		sysconfdir=$ETC	
 	fi
-	if test -z "$MPICC"; then
-    	MPICC=mpicc
+	if test "x$sysconfdir" = "x\${exec_prefix}/etc" || test "x$sysconfdir" = "x\${prefix}/etc"; then
+    	sysconfdir=$prefix/etc
 	fi
 	if test -n "$TMP"; then
 		localstatedir=$TMP
@@ -44,10 +44,46 @@ AC_DEFUN([AX_OPT_FEATURES],
     fi
 
 	AC_SUBST(TMP)
-	AC_SUBST(MPICC)
 
 	#
+	# MPI
 	#
+	AC_ARG_VAR([IMPICC],[Defines the Intel MPI compiler])
+	AC_ARG_VAR([OMPICC],[Defines the Open MPI compiler])
+
+	MPICC=
+	mpi_so=
+	mpi_trace_so=
+	ompi_so=
+	ompi_trace_so=
+
+	# !I && !O
+	if test -z "$IMPICC" && test -z "$OMPICC"; then
+		IMPICC=mpicc
+	fi
+
+	# I 
+	if test -n "$IMPICC"; then
+		MPICC=$IMPICC
+		mpi_so=libear.so
+		mpi_trace_so=libeart.so	
+	fi
+
+	# O
+	if test -n "$OMPICC"; then
+        ompi_so=libear_ompi.so
+        ompi_trace_so=libeart_ompi.so
+    fi
+
+	AC_SUBST(MPICC)
+	AC_SUBST(OMPICC)
+	AC_SUBST(mpi_so)
+	AC_SUBST(ompi_so)
+	AC_SUBST(mpi_trace_so)
+	AC_SUBST(ompi_trace_so)
+
+	#
+	# BUILD TYPE
 	#
 
 	AC_ARG_VAR([BUILD_TYPE],[Defines the type of compilation: release (def), release-lrz, development or debug])
@@ -79,7 +115,7 @@ AC_DEFUN([AX_OPT_FEATURES],
 	AC_SUBST(POWER_MONITORING)
 
 	#
-	# POWER MONITORING
+	# SHARED MEMORY
 	#
 
 	AC_ARG_ENABLE([shared-memory],
@@ -89,4 +125,22 @@ AC_DEFUN([AX_OPT_FEATURES],
         [SHARED_MEMORY=1],[SHARED_MEMORY=0])
 
     AC_SUBST(SHARED_MEMORY)
+
+	#
+	# DATABASE
+	#
+    AC_ARG_ENABLE([database],
+        AS_HELP_STRING([--disable-database], [Stores the execution data in files insted in a database]))
+
+
+	AS_IF([test "x$enable_database" = "xno" || test -z "$enable_database"],
+        [
+			DATABASE=0
+		],[
+			DATABASE=1
+			enable_database="yes"
+		])
+
+    AC_SUBST(DATABASE)
+	
 ])

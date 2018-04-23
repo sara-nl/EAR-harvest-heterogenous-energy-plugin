@@ -42,6 +42,7 @@ application_t application;
 char app_summary_path[PATH_MAX];
 
 ulong EAR_default_frequency; 
+uint EAR_default_pstate;
 ulong ear_frequency; 
 int ear_use_turbo = USE_TURBO; 
 int ear_whole_app;

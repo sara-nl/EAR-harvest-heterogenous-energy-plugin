@@ -1,5 +1,6 @@
 # General
 /Makefile
+/src/library/Makefile
 *.o
 *.a
 *.so
@@ -38,8 +39,8 @@ tests/check/check.sh
 *ear_control
 *ear_get_node_freq
 *ear_set_node_freq
+*ear_report
 
-src/tools/input
 *compute_coefficients_remote
 *coefficients_quality_control
 *compute_coefficients

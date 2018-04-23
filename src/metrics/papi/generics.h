@@ -37,7 +37,7 @@
     int papi_init; \
     if (PAPI_is_initialized() == PAPI_NOT_INITED) { \
 		if ((papi_init = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) { \
-			ear_verbose(0, "%s: ERROR intializing the PAPI library (%s), exiting\n", \
+			ear_verbose(0, "%s: ERROR initializing the PAPI library (%s), exiting\n", \
 				name, PAPI_strerror(papi_init)); \
 			exit(1); \
         } \

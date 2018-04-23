@@ -4,6 +4,7 @@ m4_include([m4/x_ac_opt_features.m4])
 m4_include([m4/x_ac_backup.m4])
 m4_include([m4/x_ac_cpupower.m4])
 m4_include([m4/x_ac_freeipmi.m4])
+m4_include([m4/x_ac_mysql.m4])
 m4_include([m4/x_ac_slurm.m4])
 m4_include([m4/x_ac_papi.m4])
 m4_include([m4/x_ac_gsl.m4])
@@ -17,6 +18,13 @@ AC_LANG(C)
 AC_PROG_CC
 AC_PROG_AWK
 AC_PROG_GREP
+
+############
+# FEATURES #
+############
+#
+
+AX_OPT_FEATURES
 
 ##############
 # PAPIS TEST #
@@ -102,12 +110,11 @@ X_AC_SLURM
 
 X_AC_FREEIPMI
 
-####################
-# EAR INSTALLATION #
-####################
-#
+#########
+# MYSQL #
+#########
 
-AX_OPT_FEATURES
+X_AC_MYSQL
 
 ##########
 # OUTPUT #
@@ -152,6 +159,7 @@ fi
 echo "-------------------------------------- Features summary --"
 AC_FEATURE_CHECK($enable_power_monitoring, power monitoring)
 AC_FEATURE_CHECK($enable_shared_memory, shared memory)
+AC_FEATURE_CHECK($enable_database, database)
 echo "----------------------------------------------------------"
 
 AC_CONFIG_FILES([Makefile
@@ -159,6 +167,7 @@ AC_CONFIG_FILES([Makefile
                  etc/slurm/ear.conf
                  etc/slurm/ear.link
                  etc/slurm/plugstack.conf
+                 src/library/Makefile
                  src/common/config.h])
 #AC_CONFIG_HEADERS([src/common/config.h])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])

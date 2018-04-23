@@ -61,18 +61,12 @@ typedef struct policy
 
 policy_t app_policy;
 
-
-
-
 static const char *__NAME__ = "MODELS";
 
 // Policy
 int power_model_policy = MIN_ENERGY_TO_SOLUTION;
 double performance_penalty ;
 double performance_gain ;
-
-// Process
-uint EAR_default_pstate;
 
 // Normals
 coefficient_t **coefficients;
@@ -95,11 +89,6 @@ void print_energy_policy_configuration()
             strcpy(application.job.policy,"monitoring_only");
         break;
     }
-
-    ear_verbose(1,"EAR: power policy conf.: policy %s performance penalty %lf performance gain %lf\n",
-                application.job.policy,performance_penalty,performance_gain);
-    ear_verbose(1,"EAR: Default p_state %u Default frequency %lu\n", EAR_default_pstate,EAR_default_frequency);
-
 }
 
 void init_policy_functions()
@@ -185,7 +174,7 @@ void init_power_policy()
 	}
 
 	user_selected_freq = EAR_default_frequency = frequency_pstate_to_freq(EAR_default_pstate);
-	ear_verbose(0,"User selected freq is %lu\n",user_selected_freq);
+	
 	// IMPORTANT: here is where the environment first P_STATE is set.
 	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);
 
@@ -219,13 +208,13 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	strcpy(coeff_file, get_ear_coeff_db_pathname());
 	gethostname(nodename, sizeof(nodename));
 
-	// EAR_USER_DB_PATHNAME
+	// Default coefficient file
+	sprintf(coeff_default_file, "%sdefault", coeff_file);
+
 	sprintf(coeff_file, "%s%s", coeff_file, nodename);
 
 	ear_verbose(2, "EAR: Using coefficients %s\n", coeff_file);
 
-	// Default coefficient file
-	sprintf(coeff_default_file, "%s.default", coeff_file);
 
 	// Coefficient pointers allocation
 	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * p_states);
