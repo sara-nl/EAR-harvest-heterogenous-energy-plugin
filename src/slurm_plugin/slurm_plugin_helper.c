@@ -40,6 +40,14 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>
 
+static int auth_mode;
+
+/*
+ *
+ * Strings
+ *
+ */
+
 void strtoup(char *string)
 {
     while (*string) {
@@ -158,6 +166,20 @@ int isenv_remote(spank_t sp, char *name, char *value)
  *
  */
 
+static void setenv_if_authorized(char *option, char *value)
+{
+	// Mode 0: authorized
+	// Mode 1: normal user
+
+	if (auth_mode == 0) {
+		setenv_local(option, value, 1);
+	} else {
+		setenv_local(option, value, 0);
+	}
+
+	//DEBUGGING("%s %s", option, value);
+}
+
 int file_to_environment(spank_t sp, const char *path)
 {	
     FUNCTION_INFO("file_to_environment");
@@ -178,13 +200,7 @@ int file_to_environment(spank_t sp, const char *path)
             if (strlen(option) && strlen(++value))
             {
                 strtoup(option);
-
-                #if BUILD(RELEASE_LRZ)
-                setenv_local(option, value, 1);
-				#else
-                setenv_local(option, value, 0);
-				#endif
-                //DEBUGGING("%s %s", option, value);
+				setenv_if_authorized(option, value);
             }
         }
     }
@@ -215,6 +231,74 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
         }
     }
     return ESPANK_ERROR;
+}
+
+static int find_user_by_string(char *string, char *id)
+{
+	char *p = strtok (str,",");
+
+	while (p != NULL)
+	{
+		if (strcmp(p, id) == 0) {
+			return 1;
+		}
+
+		p = strtok (NULL, ",");
+	}
+	return 0;
+}
+
+static int find_user_by_uint(char *string, unsigned int id)
+{
+	char *p = strtok (str,",");
+	unsigned int nid;
+
+	while (p != NULL)
+	{
+		nid = (unsigned int) atoi(p);
+
+		if (id == nid) {
+			return 1;
+		}
+
+		p = strtok (NULL, ",");
+	}
+	return 0;
+}
+
+void find_ear_user_privileges(spank_t sp, int ac, char **av)
+{
+	FUNCTION_INFO("find_ear_user_privileges");
+	int i, res = 0;
+	char *aid;
+	uid_t uid;
+	gid_t gid;
+
+	spank_get_item(sp, S_JOB_UID, &uid);
+	spank_get_item(sp, S_JOB_GID, &uid);
+	aid = getenv("SLURM_JOB_ACCOUNT");
+
+	for (i = 0; i < ac; ++i)
+	{
+		if (strncmp ("auth_users=", av[i], 11) == 0 &&
+			find_user_by_uint(&av[i][11], uid))
+		{
+			auth_mode = 1;
+			return;
+		}
+		if (strncmp ("auth_groups=", av[i], 12) == 0 &&
+			find_user_by_uint(&av[i][12], gid))
+		{
+			auth_mode = 1;
+			return;
+		}
+		if (aid != NULL && strncmp ("auth_accounts=", av[i], 14) == 0 &&
+			find_user_by_string(&av[i][14], aid))
+		{
+			auth_mode = 1;
+			return;
+		}
+	}
 }
 
 /*
