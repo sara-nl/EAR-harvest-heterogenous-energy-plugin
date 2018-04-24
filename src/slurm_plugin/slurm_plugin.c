@@ -235,6 +235,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
+		NO_OK(find_ear_user_privileges(sp, ac, av));
         NO_OK(find_ear_conf_file(sp, ac, av));
 
         if (isenv_local("EAR", "1"))
