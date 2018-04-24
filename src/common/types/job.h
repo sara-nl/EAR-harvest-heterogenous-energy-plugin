@@ -42,6 +42,7 @@ typedef ulong	job_id;
 typedef struct job
 {
 	job_id 	id;
+	job_id 	step_id;
 	char 	user_id[GENERIC_NAME];
 	char 	app_id[GENERIC_NAME];
 	time_t 	start_time;
