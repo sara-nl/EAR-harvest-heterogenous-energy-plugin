@@ -100,3 +100,4 @@ endif
 
 clean:
 	rm -f *.so *.a *.o
+	rm $(REMAKE_OBJS) $(OBJS)
