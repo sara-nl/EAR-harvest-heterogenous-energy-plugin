@@ -38,6 +38,7 @@
 #include <control/frequency.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
+#include <common/math_operations.h>
 #include <common/types/application.h>
 #include <common/types/signature.h>
 #include <common/types/projection.h>
@@ -83,14 +84,4 @@ double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr)
 	return timep; 
 }
 
-uint equal_with_th(double p,double r,double th)
-{
-    double diff;
-    diff=r-p;
-    if (diff<0){// p>r
-        diff=diff*-1;
-    }
-    if (diff<(th*r)) return 1;
-    else return 0;
-}
 

@@ -10,23 +10,28 @@ export DIR
 TYPES_OBJS = types/application.o \
              types/projection.o \
              types/coefficient.o \
-	     types/log.o \
-	     types/job.o \
-	     types/signature.o \
-	     types/loop.o
+			 types/log.o \
+		     types/job.o \
+		     types/signature.o \
+	    	 types/loop.o
 
-
-BINARIES = ear_daemon_client.o environment.o string_enhanced.o math_operations.o types.a shared_configuration.o remote_daemon_client.o file_lock.o
+BINARIES = ear_daemon_client.o \
+           environment.o \
+           string_enhanced.o \
+           math_operations.o \
+           shared_configuration.o \
+           remote_daemon_client.o \
+           file_lock.o \
+           types.a
 
 ######## RULES
+
+all: $(BINARIES)
 
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
-
-all: $(BINARIES)
-
-file_lock.o:file_lock.c file_lock.h
+file_lock.o: file_lock.c file_lock.h
 	$(CC) $(CFLAGS) -c file_lock.c
 
 ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
@@ -34,11 +39,13 @@ ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
 
 shared_configuration.o: shared_configuration.c shared_configuration.h ear_verbose.h
 	$(CC) $(CFLAGS) -c shared_configuration.c
+
 remote_daemon_client.o: remote_daemon_client.c remote_conf.h ear_verbose.h
 	$(CC) $(CFLAGS) -c remote_daemon_client.c
 
 environment.o: environment.c environment.h environment_common.h
 	$(CC) $(CFLAGS) -c environment.c
+
 environment_common.o: environment_common.c environment_common.h
 	$(CC) $(CFLAGS) -c environment_common.c
 
@@ -65,4 +72,4 @@ install:
 
 clean:
 	rm -rf *.o *.so *.a
-	rm -f $(TYPES_OBJS)
+	rm $(BINARIES) $(TYPES_OBJS)

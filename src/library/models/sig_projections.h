@@ -36,10 +36,9 @@
 
 
 
-double sig_power_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_cpi_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr);
-uint equal_with_th(double p,double r,double th);
+double sig_power_projection(application_t *my_app,ulong F,uint Fi);
+double sig_cpi_projection(application_t *my_app,ulong F,uint Fi);
+double sig_time_projection(application_t *my_app,ulong F,uint Fi,double cpi_pr);
 
 #else
 #endif

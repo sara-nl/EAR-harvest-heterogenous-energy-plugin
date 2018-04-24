@@ -1,37 +1,36 @@
-LIBNAME=libpowermon.so 
-LIB=libpowermon.a
-
-
 CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
-EAR_OBJECTS = $(SRCDIR)/common/ear_daemon_client.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
-               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o \
-			   $(SRCDIR)/metrics/papi/energy_cpu.o  \
-			   $(SRCDIR)/metrics/custom/hardware_info.o \
-			   $(SRCDIR)/common/math_operations.o
 
+######## OBJS
 
+COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
+              $(SRCDIR)/common/math_operations.o
 
-all:$(LIBNAME) $(LIB)
+LIB_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.o \
+           $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
+           $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
+           $(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o \
+           $(SRCDIR)/metrics/papi/energy_cpu.o  \
+           $(SRCDIR)/metrics/custom/hardware_info.o
 
-$(LIBNAME):ear_power_monitor.o $(EAR_OBJECTS)
-	$(CC) -shared ear_power_monitor.o $(EAR_OBJECTS) -o $(LIBNAME)
+######## RULES
 
-$(LIB):ear_power_monitor.o $(EAR_OBJECTS)
-	ar rcs $(LIB) ear_power_monitor.o $(EAR_OBJECTS)
+all: libpowermon.a
 
+libpowermon.so: ear_power_monitor.o $(LIB_OBJS)
+	$(CC) -shared ear_power_monitor.o $(LIB_OBJS) -o libpowermon.so
 
-ear_power_monitor.o:ear_power_monitor.c ear_power_monitor.h 
+libpowermon.a: ear_power_monitor.o $(LIB_OBJS) $(COMMON_OBJS)
+	ar rcs libpowermon.a ear_power_monitor.o $(LIB_OBJS) $(COMMON_OBJS)
+
+ear_power_monitor.o: ear_power_monitor.c ear_power_monitor.h 
 	$(CC) $(CFLAGS) -c ear_power_monitor.c 
 
+######## OPTIONS
 
 install:
-	cp $(LIBNAME) $(DESTDIR)/lib
-	mkdir -p $(DESTDIR)/include/metrics/power_monitoring
-	cp ear_power_monitor.h $(DESTDIR)/include/metrics/power_monitoring
-
+	# mkdir -p $(DESTDIR)/include/metrics/power_monitoring
+	# cp ear_power_monitor.h $(DESTDIR)/include/metrics/power_monitoring
+	# cp $(LIBNAME) $(DESTDIR)/lib
 
 clean:
-	rm -rf $(LIBNAME) *.o
+	rm -f *.so *.a *.o
