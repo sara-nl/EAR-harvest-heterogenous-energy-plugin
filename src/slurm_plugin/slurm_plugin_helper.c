@@ -40,6 +40,14 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>
 
+static int auth_mode;
+
+/*
+ *
+ * Strings
+ *
+ */
+
 void strtoup(char *string)
 {
     while (*string) {
@@ -97,7 +105,7 @@ void appendenv(char *destiny, char *source)
 int setenv_local(const char *name, const char *value, int replace)
 {
     if (setenv (name, value, replace) == -1) {
-        SPANK_STRERROR("Error while setting envar %s", name);
+       	slurm_error("Error while setting envar %s (%s)", name, strerror(errno));
         return 0;
     }
     return 1;
@@ -158,6 +166,20 @@ int isenv_remote(spank_t sp, char *name, char *value)
  *
  */
 
+static void setenv_if_authorized(const char *option, const char *value)
+{
+	// Mode 0: authorized
+	// Mode 1: normal user
+
+	if (auth_mode == 0) {
+		setenv_local(option, value, 1);
+	} else {
+		setenv_local(option, value, 0);
+	}
+
+	DEBUGGING("%s %s", option, value);
+}
+
 int file_to_environment(spank_t sp, const char *path)
 {	
     FUNCTION_INFO("file_to_environment");
@@ -167,7 +189,7 @@ int file_to_environment(spank_t sp, const char *path)
 
     if ((file = fopen(path, "r")) == NULL)
     {
-        SPANK_STRERROR("Config file %s not found", path);
+        slurm_error("Config file %s not found (%s)", path, strerror(errno));
         return ESPANK_ERROR;
     }
 
@@ -178,13 +200,7 @@ int file_to_environment(spank_t sp, const char *path)
             if (strlen(option) && strlen(++value))
             {
                 strtoup(option);
-
-                #if BUILD(RELEASE_LRZ)
-                setenv_local(option, value, 1);
-				#else
-                setenv_local(option, value, 0);
-				#endif
-                //DEBUGGING("%s %s", option, value);
+				setenv_if_authorized(option, value);
             }
         }
     }
@@ -202,7 +218,7 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
 
     for (i = 0; i < ac; ++i)
     {
-        if (strncmp ("ear_conf_dir=", av[i], 13) == 0)
+        if (strncmp ("conf_dir=", av[i], 13) == 0)
         {
 			sprintf(link_path, "%s/%s", &av[i][13], EAR_LINK_FILE);
 			sprintf(conf_path, "%s/%s", &av[i][13], EAR_CONF_FILE);
@@ -215,6 +231,78 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
         }
     }
     return ESPANK_ERROR;
+}
+
+static int find_user_by_string(char *string, char *id)
+{
+	char *p = strtok (string, ",");
+
+	while (p != NULL)
+	{
+		DEBUGGING("%s %s", p, id);
+		
+		if (strcmp(p, id) == 0) {
+			return 1;
+		}
+
+		p = strtok (NULL, ",");
+	}
+	return 0;
+}
+
+static int find_user_by_uint(char *string, unsigned int id)
+{
+	char *p = strtok (string, ",");
+	unsigned int nid;
+
+	while (p != NULL)
+	{
+		nid = (unsigned int) atoi(p);
+		DEBUGGING("%u %u", id, nid);
+
+		if (id == nid) {
+			return 1;
+		}
+
+		p = strtok (NULL, ",");
+	}
+	return 0;
+}
+
+void find_ear_user_privileges(spank_t sp, int ac, char **av)
+{
+	FUNCTION_INFO("find_ear_user_privileges");
+	int i, res = 0;
+	char *aid;
+	uid_t uid;
+	gid_t gid;
+
+	spank_get_item(sp, S_JOB_UID, &uid);
+	spank_get_item(sp, S_JOB_GID, &gid);
+	aid = getenv("SLURM_JOB_ACCOUNT");
+
+	for (i = 0; i < ac; ++i)
+	{
+		if (strncmp ("auth_users=", av[i], 11) == 0 && (
+			find_user_by_string(&av[i][11], "all") ||
+			find_user_by_uint(&av[i][11], uid)))
+		{
+			auth_mode = 1;
+			return;
+		}
+		if (strncmp ("auth_groups=", av[i], 12) == 0 &&
+			find_user_by_uint(&av[i][12], gid))
+		{
+			auth_mode = 1;
+			return;
+		}
+		if (aid != NULL && strncmp ("auth_accounts=", av[i], 14) == 0 &&
+			find_user_by_string(&av[i][14], aid))
+		{
+			auth_mode = 1;
+			return;
+		}
+	}
 }
 
 /*

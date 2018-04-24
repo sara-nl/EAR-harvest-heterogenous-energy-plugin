@@ -35,16 +35,12 @@
 #define FUNCTION_INFO(function) \
 	slurm_error(function)
 #define FUNCTION_INFO_(function) \
-slurm_error(function); \
-find_ear_user_privileges(sp, ac, av) 
+//	slurm_error(function); \
+// 	find_ear_user_privileges(sp, ac, av) 
 //	if (isenv_local("EAR_VERBOSE", "1") || isenv_remote(sp, "EAR_VERBOSE", "1")) { \
 //		slurm_error(function); \
 //		printenv_remote(sp, "LD_LIBRARY_PATH"); \
 //	}
-#define SPANK_ERROR(string) \
-    slurm_error(string);
-#define SPANK_STRERROR(string, var) \
-    slurm_error(string " (%s)", var, strerror(errno));
 
 void strtoup(char *string);
 char* strclean(char *string, char chr);

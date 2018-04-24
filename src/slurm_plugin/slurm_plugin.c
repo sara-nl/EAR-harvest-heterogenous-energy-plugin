@@ -109,7 +109,7 @@ static void exec_ear_daemon(spank_t sp)
 
     // Executing EAR daemon
     if (execl(ear_lib, ear_lib, "1", ear_tmp, ear_verbose, (char *) 0) == -1) {
-        SPANK_STRERROR("Error while executing %s", ear_lib);
+        slurm_error("Error while executing %s (%s)", ear_lib, strerror(errno));
         exit(errno);
     }
 }
@@ -128,7 +128,7 @@ static int fork_ear_daemon(spank_t sp)
         if (daemon_pid == 0) {
             exec_ear_daemon(sp);
         } else if (daemon_pid < 0) {
-            SPANK_STRERROR("Fork returned %i", daemon_pid);
+            slurm_error("Fork returned %i (%s)", daemon_pid, strerror(errno));
             return ESPANK_ERROR;
         }
     } else {
@@ -235,7 +235,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
-		NO_OK(find_ear_user_privileges(sp, ac, av));
+		find_ear_user_privileges(sp, ac, av);
         NO_OK(find_ear_conf_file(sp, ac, av));
 
         if (isenv_local("EAR", "1"))

@@ -67,3 +67,4 @@ install:
 
 clean:
 	rm -rf *.o *.so *.a
+	rm $(BINARIES) $(TYPES_OBJS)
