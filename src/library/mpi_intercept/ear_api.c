@@ -157,7 +157,7 @@ void ear_init()
 	if (my_id){ 	
 		ear_verbose(2,"Rank %d is not the master in node %s\n",ear_my_rank,node_name);
 	}else{ 		
-		ear_verbose(0,"Rank %d is the master in node %s\n",ear_my_rank,node_name);
+		ear_verbose(1,"Rank %d is the master in node %s\n",ear_my_rank,node_name);
 	}
 	// if we are not the master, we return
 	if (my_id) return;
@@ -169,9 +169,9 @@ void ear_init()
 	}
 	if (my_id) return;
 	#endif
-    ear_verbose(0,"EAR: Connecting with EARD %d\n",ear_my_rank);
+    ear_verbose(1,"EAR: Connecting with EARD %d\n",ear_my_rank);
     if (eards_connect() == EAR_SUCCESS) {
-        ear_verbose(0,"EAR: Rank %d connected with EARD\n",ear_my_rank);
+        ear_verbose(1,"EAR: Rank %d connected with EARD\n",ear_my_rank);
     }
 
    	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
@@ -384,7 +384,7 @@ void ear_finalize()
 	}	
 
 	#if USE_LOCK_FILES
-	ear_verbose(0,"Application master releasing the lock %d\n",ear_my_rank);
+	ear_verbose(1,"Application master releasing the lock %d\n",ear_my_rank);
 	unlock_master(fd_master_lock,fd_lock_filename);
 	#endif
 

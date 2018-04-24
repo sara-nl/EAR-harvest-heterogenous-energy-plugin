@@ -121,7 +121,7 @@ int eards_connect()
 		if (i==0){
 			// First connection is special, we should wait
 			do{
-				VERBOSE_N(0,"Connecting with EARD using file %s\n",ear_commreq);
+				DEBUG_F(0,"Connecting with EARD using file %s\n",ear_commreq);
 				if ((ear_fd_req[i]=open(ear_commreq,O_WRONLY|O_NONBLOCK))<0) tries++;
 				else connected=1;
 				if ((MAX_TRIES>1) && (!connected)) sleep(1);
@@ -129,7 +129,7 @@ int eards_connect()
 
 			if (!connected) {
 				// Not possible to connect with ear_daemon
-				VERBOSE_N(0, "ERROR while opening the communicator for requests %s (%d attempts) (%s)",
+				VERBOSE_N(1, "ERROR while opening the communicator for requests %s (%d attempts) (%s)",
 						  ear_commreq, tries, strerror(errno));
 				return EAR_ERROR;
 			}
@@ -168,7 +168,7 @@ int eards_connect()
 
 		if (ear_fd_req[i]>0)
 		{
-			VERBOSE_N(1,"Sending connection request to EARD\n");
+			DEBUG_F(1,"Sending connection request to EARD\n");
 			if (warning(write(ear_fd_req[i], &req, sizeof(req)), sizeof(req),
 					"writting req_service in ear_daemon_client_connect"))
 			{ 
@@ -177,10 +177,10 @@ int eards_connect()
 			}
 		}
 
-		VERBOSE_N(2, "req communicator %s [%d] connected", nodename, i);
+		DEBUG_F(2, "req communicator %s [%d] connected", nodename, i);
 		if (ear_fd_req[i]>=0) {
 			// ear_demon sends an ack when ack pipe for specific service is created
-			VERBOSE_N(0, "ear_client: waiting for ear_daemon ok");
+			DEBUG_F(0, "ear_client: waiting for ear_daemon ok");
 			if (warning(read(ear_ping_fd,&ack,sizeof(ulong)),sizeof(ulong),
 				"ERROR while reading ping communicator "))
 			{ 
@@ -200,7 +200,7 @@ int eards_connect()
 		}
 	}
 	app_connected=1;
-	VERBOSE_N(1, "Connected");
+	VERBOSE_N(2, "Connected");
 	return EAR_SUCCESS;
 
 }
