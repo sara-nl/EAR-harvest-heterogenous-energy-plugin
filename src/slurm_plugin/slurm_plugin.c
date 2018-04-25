@@ -91,32 +91,6 @@ struct spank_option spank_options[] = {
  *
  *
  */
-#define WAIT_FOR_DAEMON 1
-
-#if WAIT_FOR_DAEMON
-void my_chld_f(int s)
-{
-    int ret, exit_code;
-
-    slurm_error("SIGCHLD reveived");
-    ret = waitpid(-1, &exit_code, 0);
-
-    if (ret != daemon_pid)
-    {
-        slurm_error("Unexpected pid");
-    }
-
-    if (ret > 0)
-    {
-        if (WIFEXITED(exit_code)) {
-            slurm_error("Process %d exits with exit code %d\n", ret, WEXITSTATUS(exit_code));
-        } else {
-            slurm_error("Process %d finsh because of signal %d\n", ret, WTERMSIG(exit_code));
-        }
-    }
-}
-#endif
-
 
 static void exec_ear_daemon(spank_t sp)
 {
@@ -140,6 +114,64 @@ static void exec_ear_daemon(spank_t sp)
     }
 }
 
+static void my_chld_f(int s)
+{
+	slurm_error("Intermediate: killing daemon %d", daemon_pid);
+    kill(daemon_pid, SIGTERM);
+}
+
+static void fork_intermediate_daemon(spank_t sp)
+{
+    int ret, exit_code;
+	daemon_pid = fork();
+
+	if (daemon_pid == 0) {
+		exec_ear_daemon(sp);
+	} else if (daemon_pid < 0) {
+		slurm_error("Intermediate fork returned %i (%s)", daemon_pid, strerror(errno));
+		exit(errno);
+	}
+
+	/*
+     * SIGNAL
+     */
+	struct sigaction my_sigchld;
+	sigset_t my_mask;
+
+	sigemptyset(&my_mask);
+	sigaddset(&my_mask, SIGTERM);
+
+	sigprocmask(SIG_UNBLOCK, &my_mask, NULL);
+    my_sigchld.sa_handler = my_chld_f;
+    sigemptyset(&my_sigchld.sa_mask);
+    my_sigchld.sa_flags = SA_RESTART;
+	
+	sigaction(SIGTERM, &my_sigchld, NULL);
+
+	/*
+ 	 * WAIT
+ 	 */
+	slurm_error("Intermediate: waiting for daemon %d", daemon_pid);
+	ret = waitpid(-1, &exit_code, 0);
+
+	if (ret != daemon_pid) {
+        slurm_error("Intermediate: unexpected pid");
+    } else {
+		slurm_error("Intermediate: wait pid success");
+	}
+
+    if (ret > 0)
+    {
+        if (WIFEXITED(exit_code)) {
+            slurm_error("Intermediate: process %d exits with exit code %d", ret, WEXITSTATUS(exit_code));
+        } else {
+            slurm_error("Intermediate: process %d finsh because of signal %d", ret, WTERMSIG(exit_code));
+        }
+    }
+
+	exit(ret);
+}
+
 static int fork_ear_daemon(spank_t sp)
 {
     FUNCTION_INFO("fork_ear_daemon");
@@ -152,29 +184,12 @@ static int fork_ear_daemon(spank_t sp)
         daemon_pid = fork();
 
         if (daemon_pid == 0) {
-            exec_ear_daemon(sp);
+            //exec_ear_daemon(sp);
+            fork_intermediate_daemon(sp);
         } else if (daemon_pid < 0) {
             slurm_error("Fork returned %i (%s)", daemon_pid, strerror(errno));
             return ESPANK_ERROR;
         }
-        #if WAIT_FOR_DAEMON
-        else {
-            struct sigaction_t my_sigchld;
-            sigset_t my_mask;
-
-            sigemptyset(&my_mask);
-            sigaddset(SIGCHLD, &my_mask);
-
-            // We unblock SIGCHLD
-            sigprocmask(SIG_UNBLOCK, &my_mask, NULL);
-            my_sigchld.sa_handler = my_chld_f;
-            sigemptyset(&my_sigchld.sa_mask);
-            my_sigchld.sa_flags = SA_RESTART;
-
-            // We catch SIGCHLD
-            sigaction(SIGCHLD, &my_sigchld, NULL);
-        }
-        #endif
     } else {
         slurm_error("Missing crucial environment variable");
         return ESPANK_ENV_NOEXIST;

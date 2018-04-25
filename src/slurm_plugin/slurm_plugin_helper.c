@@ -34,7 +34,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <linux/limits.h>
+
+#include <cpufreq.h>
 #include <slurm/spank.h>
 
 #include <slurm_plugin/slurm_plugin_helper.h>
@@ -68,7 +71,7 @@ char* strclean(char *string, char chr)
     	return NULL;
     }
 
-	*index = strchr(string, chr);
+	index = strchr(string, chr);
 
     if (index == NULL) {
     	return NULL;
@@ -163,7 +166,7 @@ int getenv_local(char *name, char **env)
 	if ((name == NULL) || (env == NULL)) {
 		return 0;
 	}
-	*p = getenv(name);
+	p = getenv(name);
 
 	if ((p == NULL) || (strlen(p) == 0)) {
 		return 0;
