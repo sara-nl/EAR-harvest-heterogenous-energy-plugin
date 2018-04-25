@@ -114,12 +114,13 @@ void main(int argc, char *argv[])
         
         apps[jobs_counter] = (application_t*) malloc(sizeof(application_t));
         init_application(apps[jobs_counter]);
+        if (verbose) printf("Checking node for signatures with %d job id.\n", job_id);
         while (scan_application_fd(node_file, apps[jobs_counter]) == APP_TEXT_FILE_FIELDS)
         {
             if (!strcmp(apps[jobs_counter]->job_id, argv[1]))
             {
+                printf("Found job_id %d in file %s\n", apps[jobs_counter]->job_id, nodelog_file_path);
                 jobs_counter++;
-                
                 break;
             }
         }
