@@ -49,7 +49,7 @@ void strtoup(char *string);
 char* strclean(char *string, char chr);
 
 void printenv_remote(spank_t sp, char *name);
-void appendenv(char *destiny, char *source);
+void appendenv(char *destiny, char *source, int destiny_length);
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
 int getenv_local(char *name, char **env);
@@ -59,7 +59,7 @@ int existenv_remote(spank_t sp, char *name);
 int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
 
-//int freq_to_p_state(int freq);
+int freq_to_p_state(int freq);
 static int file_to_environment(spank_t sp, const char *path);
 int find_ear_conf_file(spank_t sp, int ac, char **av);
 void find_ear_user_privileges(spank_t sp, int ac, char **av);

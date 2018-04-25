@@ -91,6 +91,32 @@ struct spank_option spank_options[] = {
  *
  *
  */
+#define WAIT_FOR_DAEMON 1
+
+#if WAIT_FOR_DAEMON
+void my_chld_f(int s)
+{
+    int ret, exit_code;
+
+    slurm_error("SIGCHLD reveived");
+    ret = waitpid(-1, &exit_code, 0);
+
+    if (ret != daemon_pid)
+    {
+        slurm_error("Unexpected pid");
+    }
+
+    if (ret > 0)
+    {
+        if (WIFEXITED(exit_code)) {
+            slurm_error("Process %d exits with exit code %d\n", ret, WEXITSTATUS(exit_code));
+        } else {
+            slurm_error("Process %d finsh because of signal %d\n", ret, WTERMSIG(exit_code));
+        }
+    }
+}
+#endif
+
 
 static void exec_ear_daemon(spank_t sp)
 {
@@ -118,10 +144,10 @@ static int fork_ear_daemon(spank_t sp)
 {
     FUNCTION_INFO("fork_ear_daemon");
 
-    if (existenv_local("EAR_INSTALL_PATH") &&
-        existenv_local("EAR_DB_PATHNAME") &&
-        existenv_local("EAR_VERBOSE") &&
-        existenv_local("EAR_TMP"))
+    if ((existenv_local("EAR_INSTALL_PATH") == 1) &&
+        (existenv_local("EAR_DB_PATHNAME") == 1) &&
+        (existenv_local("EAR_VERBOSE") == 1) &&
+        (existenv_local("EAR_TMP") == 1))
     {
         daemon_pid = fork();
 
@@ -131,8 +157,26 @@ static int fork_ear_daemon(spank_t sp)
             slurm_error("Fork returned %i (%s)", daemon_pid, strerror(errno));
             return ESPANK_ERROR;
         }
+        #if WAIT_FOR_DAEMON
+        else {
+            struct sigaction_t my_sigchld;
+            sigset_t my_mask;
+
+            sigemptyset(&my_mask);
+            sigaddset(SIGCHLD, &my_mask);
+
+            // We unblock SIGCHLD
+            sigprocmask(SIG_UNBLOCK, &my_mask, NULL);
+            my_sigchld.sa_handler = my_chld_f;
+            sigemptyset(&my_sigchld.sa_mask);
+            my_sigchld.sa_flags = SA_RESTART;
+
+            // We catch SIGCHLD
+            sigaction(SIGCHLD, &my_sigchld, NULL);
+        }
+        #endif
     } else {
-        SPANK_ERROR("Missing crucial environment variable");
+        slurm_error("Missing crucial environment variable");
         return ESPANK_ENV_NOEXIST;
     }
     return ESPANK_SUCCESS;
@@ -154,15 +198,16 @@ static int local_update_ld_preload(spank_t sp)
     char buffer[PATH_MAX];
     buffer[0] = '\0';
 
-    if (!getenv_local("EAR_INSTALL_PATH", &ear_install_path)) {
+    if (getenv_local("EAR_INSTALL_PATH", &ear_install_path) == 0)
+    {
 		slurm_error("Error, missing EAR_INSTALL_PATH");
         return ESPANK_ERROR;
     }
 
-    appendenv(buffer, ear_install_path);
+    appendenv(buffer, ear_install_path, PATH_MAX);
     
 	// Appending libraries to LD_PRELOAD
-    if (isenv_local("EAR_TRACES", "1"))
+    if (isenv_local("EAR_TRACES", "1") == 1)
 	{
 		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
         	sprintf(buffer, "%s/%s", buffer, OMPI_TRACE_LIB_PATH);
@@ -180,9 +225,10 @@ static int local_update_ld_preload(spank_t sp)
     }
 
     //
-    if(setenv_local("LD_PRELOAD", buffer, 1)) {
+    if(setenv_local("LD_PRELOAD", buffer, 1) == 1) {
         return ESPANK_SUCCESS;
     }
+
     return ESPANK_ERROR;
 }
 
@@ -190,21 +236,21 @@ static void remote_update_slurm_vars(spank_t sp)
 {
 	FUNCTION_INFO("remote_update_slurm_vars");
     char buffer[PATH_MAX];
-    char p_state[8];
+    char p_state[64];
     int p_freq = 1;
 
     // If policy is monitoring
-    if(isenv_remote(sp, "EAR_POWER_POLICY", "MONITORING_ONLY"))
+    if(isenv_remote(sp, "EAR_POWER_POLICY", "MONITORING_ONLY") == 1)
     {
         // If learning phase is not enabled
-        if (!existenv_remote(sp, "EAR_LEARNING_PHASE") ||
-            isenv_remote(sp, "EAR_LEARNING_PHASE", "0"))
+        if ((existenv_remote(sp, "EAR_LEARNING_PHASE") == 0) ||
+            (isenv_remote(sp, "EAR_LEARNING_PHASE", "0") == 1))
         {
             // If this is passed SLURM's --cpu-freq argument
-            if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 8))
+            if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 64) == 1)
             {
-                //p_freq = atoi(p_state);
-                //p_freq = freq_to_p_state(p_freq);
+                p_freq = atoi(p_state);
+                p_freq = freq_to_p_state(p_freq);
 
                 sprintf(p_state, "%i", p_freq);
                 setenv_remote(sp, "EAR_P_STATE", p_state, 0);
@@ -213,7 +259,7 @@ static void remote_update_slurm_vars(spank_t sp)
     }
 
     // Switching from SLURM_JOB_NAME to EAR_APP_NAME
-    if (getenv_remote(sp, "SLURM_JOB_NAME", buffer, PATH_MAX)) {
+    if (getenv_remote(sp, "SLURM_JOB_NAME", buffer, PATH_MAX) == 1) {
         setenv_remote(sp, "EAR_APP_NAME", buffer, 1);
     }
 }
@@ -225,9 +271,6 @@ static void remote_update_slurm_vars(spank_t sp)
  *
  *
  */
-#define NO_OK(function) \
-    if ((r = function) != ESPANK_SUCCESS) return r;
-
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
     FUNCTION_INFO("slurm_spank_local_user_init");
@@ -236,11 +279,16 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
     if(spank_context () == S_CTX_LOCAL)
     {
 		find_ear_user_privileges(sp, ac, av);
-        NO_OK(find_ear_conf_file(sp, ac, av));
+
+        if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
+            return r;
+        }
 
         if (isenv_local("EAR", "1"))
         {
-            NO_OK(local_update_ld_preload(sp));
+            if((r = local_update_ld_preload(sp)) != ESPANK_SUCCESS) {
+                return r;
+            }
         }
     }
 
@@ -277,7 +325,10 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 
     if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
     {
-        NO_OK(find_ear_conf_file(sp, ac, av));
+        if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
+            return r;
+        }
+
         return fork_ear_daemon(sp);
     }
 
