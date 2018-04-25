@@ -241,7 +241,6 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
         if (isenv_local("EAR", "1"))
         {
             NO_OK(local_update_ld_preload(sp));
-			printenv_remote(sp, "LD_PRELOAD");
         }
     }
 
