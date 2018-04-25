@@ -272,310 +272,143 @@ int read_application_binary_file(char *path, application_t **apps)
     return i;
 }
 
-#ifdef __OLD_TYPES__
+
+#if DB_MYSQL
+
+#include <mysql.h>
 
 
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <common/types/application.h>
-#include <common/string_enhanced.h>
-#include <common/states.h>
+#define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES \
+                            (?, ?, ?, ?)"
 
 
-#define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
-#define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
-
-void copy_application(application_t *destiny, application_t *source)
+int mysql_insert_application(MYSQL *connection, application_t *app)
 {
-	memcpy(destiny, source, sizeof(application_t));
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return 1;
+
+    if (mysql_stmt_prepare(statement, APPLICATION_QUERY, strlen(APPLICATION_QUERY))) return mysql_statement_error(statement);
+
+    MYSQL_BIND bind[4];
+    memset(bind, 0, sizeof(bind));
+
+    mysql_insert_job(connection, &app->job);
+    int sig_id = mysql_insert_signature(connection, &app->signature);
+
+    //integer types
+    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONG;
+    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].buffer_type = 1;
+
+    //string types
+    bind[2].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[2].buffer_length = strlen(app->node_id);
+
+    //storage variable assignation
+    bind[0].buffer = (char *)&app->job.id;
+    bind[1].buffer = (char *)&app->job.step_id;
+    bind[2].buffer = (char *)&app->node_id;
+    bind[3].buffer = (char *)&sig_id;
+
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+
+
+    if (mysql_stmt_close(statement)) return 1;
+
+    return 0;
 }
 
-static int print_loop_fd(int fd, loop_t *loop)
+int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps)
 {
-	loop_t *l = loop;
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return 1;
+    application_t *app_aux = calloc(1, sizeof(application_t));
+    application_t *apps_aux;
+    int status = 0;
+    int num_jobs;
 
-	dprintf(fd, ";%lu;%u;%u;%u\n", l->first_event, l->level, l->size, l->iterations);
+    if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
-	return EAR_SUCCESS;
-}
+    MYSQL_BIND bind[4];
+    unsigned long job_id, step_id, sig_id;
+    int num_apps;
+    memset(bind, 0, sizeof(bind));
 
-static int print_application_fd(int fd, application_t *app, int new_line)
-{
-	application_t *a;
-	int i;
+    //integer types
+    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONG;
+    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].buffer_type = 1;
 
-	a = app;
-	dprintf(fd, "%s;%s;%s;%s;", a->user_id, a->job_id, a->node_id, a->app_id);
-	dprintf(fd, "%u;%u;", a->avg_f, a->def_f);
-	dprintf(fd, "%lf;%lf;%lf;%lf;", a->time, a->CPI, a->TPI, a->GBS);
-	dprintf(fd, "%lf;%lf;%lf;", a->DC_power, a->DRAM_power, a->PCK_power);
-	dprintf(fd, "%s;%.3lf;", a->policy, a->policy_th);
-	dprintf(fd, "%llu;%llu;", a->cycles, a->instructions);
-	dprintf(fd, "%llu;%llu;%llu;", a->L1_misses, a->L2_misses, a->L3_misses);
-	dprintf(fd, "%lf;%llu", a->Gflops, app->FLOPS[0]);
+    //string types
+    bind[2].buffer_type = MYSQL_TYPE_VAR_STRING;
+    bind[2].buffer_length = 256;
 
-	for (i = 1; i < FLOPS_EVENTS; ++i) {
-		dprintf(fd, ";%llu", app->FLOPS[i]);
-	}
+    //reciever variables assignation
+    bind[0].buffer = &job_id;
+    bind[1].buffer = &step_id;
+    bind[2].buffer = &app_aux->node_id;
+    bind[3].buffer = &sig_id;
 
-	if (new_line) {
-		dprintf(fd, "\n");
-	}
-
-	return EAR_SUCCESS;
-}
-
-int append_loop_text_file(char *path, loop_t *loop)
-{
-	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;" \
-        "DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
-        "L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;"     \
-        "DP_512;FIRST_EVENT;LEVEL;SIZE;ITERATIONS";
-	int fd, ret;
-
-	if (path == NULL) {
-		return EAR_ERROR;
-	}
-
-	fd = open(path, O_WRONLY | O_APPEND);
-
-	if (fd < 0)
-	{
-		if (errno == ENOENT)
-		{
-			fd = open(path, OPTIONS, PERMISSION);
-
-			// Write header
-			if (fd >= 0) {
-				ret = dprintf(fd, "%s\n", HEADER);
-			}
-		}
-	}
-
-	if (fd < 0) {
-		return EAR_ERROR;
-	}
-
-	print_application_fd(fd, &loop->signature, 0);
-	print_loop_fd(fd, loop);
-	close(fd);
-
-	if (ret < 0) return EAR_ERROR;
-	return EAR_SUCCESS;
-}
-
-void init_application(application_t *app)
-{
-    memset(app, 0, sizeof(application_t));
-}
-
-void report_application_data(application_t *app)
-{
-	float avg_f = ((double) app->avg_f) / 1000000.0;
-	float def_f = ((double) app->def_f) / 1000000.0;
-
-	printf("------------------------------------------------------------------------ Application Summary --\n");
-	printf("-- App id: %s, node id: %s, user id: %s, job id: %s\n", app->app_id, app->node_id, app->user_id, app->job_id);
-	printf("-- E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->time, def_f, avg_f);
-	printf(   "procs: %u (s)\n", app->procs);
-	printf("-- CPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->CPI, app->TPI, app->GBS, app->Gflops);
-	printf(   "DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->DC_power, app->DRAM_power, app->PCK_power);
-	printf("-----------------------------------------------------------------------------------------------\n");
-}
-
-int append_application_binary_file(char *path, application_t *app)
-{
-	int fd, ret;
-
-	if (path == NULL) {
-		return EAR_ERROR;
-	}
-
-
-    fd = open(path, O_WRONLY | O_APPEND);
-
-    if (fd < 0)
+    if (mysql_stmt_bind_result(statement, bind))
     {
-        if (errno == ENOENT)
-        {
-            fd = open(path, OPTIONS, PERMISSION);
-        }
-    }
+        free(app_aux);
+        return mysql_statement_error(statement);
+    } 
 
-    if (fd < 0) {
-        return EAR_ERROR;
-    }
-
-    ret = write(fd, app, sizeof(application_t));
-    close(fd);
-
-    if (ret != sizeof(application_t)) return EAR_ERROR;
-    return EAR_SUCCESS;
-}
-
-int print_application(application_t *app)
-{
-    return print_application_fd(STDOUT_FILENO, app, 1);
-}
-
-int append_application_text_file(char *path, application_t *app)
-{
-	static char *HEADER = "USERNAME;JOB_ID;NODENAME;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;" \
-	"DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
-	"L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;DP_512";
-	int fd, ret;
-
-	if (path == NULL) {
-		return EAR_ERROR;
-	}
-
-    fd = open(path, O_WRONLY | O_APPEND);
-
-    if (fd < 0)
+    if (mysql_stmt_execute(statement))
     {
-        if (errno == ENOENT)
-        {
-            fd = open(path, OPTIONS, PERMISSION);
+        free(app_aux);
+        return mysql_statement_error(statement);
+    } 
 
-            // Write header
-            if (fd >= 0) {
-                ret = dprintf(fd, "%s\n", HEADER);
-            }
-        }
-    }
-
-    if (fd < 0) {
-        return EAR_ERROR;
-    }
-
-    print_application_fd(fd, app, 1);
-    close(fd);
-
-    if (ret < 0) return EAR_ERROR;
-    return EAR_SUCCESS;
-}
-
-int read_application_binary_file(char *path, application_t **apps)
-{
-	application_t *apps_aux, *a;
-	int fd, lines, i;
-
-	if (path == NULL) {
-		return EAR_ERROR;
-	}
-
-    if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
-    }
-
-    // Getting the number
-    lines = (lseek(fd, 0, SEEK_END) / sizeof(application_t));
-
-    // Allocating memory
-    apps_aux = (application_t *) malloc(lines * sizeof(application_t));
-    memset(apps_aux, 0, sizeof(application_t));
-
-    // Returning to the begining
-    lseek(fd, 0, SEEK_SET);
-    i = 0;
-
-    while (read(fd, &apps_aux[i], sizeof(application_t)) > 0)
+    if (mysql_stmt_store_result(statement))
     {
-        i += 1;
-        a = &apps_aux[i];
+        free(app_aux);
+        return mysql_statement_error(statement);
+    } 
+
+    num_apps = mysql_stmt_num_rows(statement);
+
+    if (num_apps < 1)
+    {
+        mysql_stmt_close(statement);
+        return -1;
     }
 
-    //
-    close(fd);
+    apps_aux = (application_t*) calloc(num_apps, sizeof(application_t));
+    int i = 0;
+    char job_query[128];
+    char sig_query[128];
+    job_t *job_aux;
+    signature_t *sig_aux;
+    //fetching and storing of jobs    
+    status = mysql_stmt_fetch(statement);
+    while (status == 0 || status == MYSQL_DATA_TRUNCATED)
+    {
+        sprintf(job_query, "SELECT * FROM Jobs WHERE id=%d AND step_id=%d", job_id, step_id);
+        num_jobs = mysql_retrieve_jobs(connection, job_query, &job_aux);
+        copy_job(&app_aux->job, job_aux);
+        free(job_aux);
+
+        sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
+        int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
+        copy_signature(&app_aux->signature, sig_aux);
+        free(sig_aux);
+
+        copy_application(&apps_aux[i], app_aux);
+        status = mysql_stmt_fetch(statement);
+        i++;
+    }
 
     *apps = apps_aux;
-    return i;
+
+    free(app_aux);
+
+    if (mysql_stmt_close(statement)) return 0;
+
+    return num_apps;
+
 }
 
-int scan_application_fd(FILE *fd, application_t *app)
-{
-	#define APP_TEXT_FILE_FIELDS 29
-
-	application_t *a;
-	int ret;
-
-	a = app;
-	ret = fscanf(fd, "%[^;];%[^;];%[^;];%[^;];" \
-			 "%u;%u;" \
-			 "%lf;%lf;%lf;%lf;" \
-			 "%lf;%lf;%lf;" \
-			 "%[^;];%lf;" \
-			 "%llu;%llu;" \
-			 "%llu;%llu;%llu;" \
-			 "%lf;%llu;%llu;%llu;%llu;"	\
-			 "%llu;%llu;%llu;%llu\n",
-			 a->user_id, a->job_id, a->node_id, a->app_id,
-			 &a->avg_f, &a->def_f,
-			 &a->time, &a->CPI, &a->TPI, &a->GBS,
-			 &a->DC_power, &a->DRAM_power, &a->PCK_power,
-			 a->policy, &a->policy_th,
-			 &a->cycles, &a->instructions,
-			 &a->L1_misses, &a->L2_misses, &a->L3_misses,
-			 &a->Gflops, &a->FLOPS[0], &a->FLOPS[1], &a->FLOPS[2], &a->FLOPS[3],
-			 &a->FLOPS[4], &a->FLOPS[5], &a->FLOPS[6], &a->FLOPS[7]);
-	
-	return ret;
-}
-
-int read_application_text_file(char *path, application_t **apps)
-{
-	char line[PIPE_BUF];
-	application_t *apps_aux, *a;
-	int lines, i, ret;
-	FILE *fd;
-
-	if (path == NULL) {
-		return EAR_ERROR;
-	}
-
-    if ((fd = fopen(path, "r")) == NULL) {
-        return EAR_FILE_NOT_FOUND;
-    }
-
-    // Reading the header
-    fscanf(fd, "%s\n", line);
-    lines = 0;
-
-    while(fscanf(fd, "%s\n", line) > 0) {
-        lines += 1;
-    }
-
-    // Allocating memory
-    apps_aux = (application_t *) malloc(lines * sizeof(application_t));
-    memset(apps_aux, 0, sizeof(application_t));
-
-    // Rewind
-    rewind(fd);
-    fscanf(fd, "%s\n", line);
-
-    i = 0;
-    a = apps_aux;
- 
-    while((ret = scan_application_fd(fd, a)) == APP_TEXT_FILE_FIELDS)
-    {
-        i += 1;
-        a = &apps_aux[i];
-    }
-
-    fclose(fd);
-
-	if (ret >= 0 && ret < APP_TEXT_FILE_FIELDS) {
-		free(apps_aux);
-		return EAR_ERROR;
-	}
-
-    *apps = apps_aux;
-    return i;
-}
 
 #endif

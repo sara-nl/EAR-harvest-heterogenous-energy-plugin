@@ -82,4 +82,12 @@ int append_loop_text_file(char *path, loop_t *loop);
 
 void print_loop_fd(int fd, loop_t *loop);
 
+#if DB_MYSQL
+
+int mysql_insert_loop(MYSQL *connection, loop_t *loop);
+
+int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops);
+
+#endif
+
 #endif

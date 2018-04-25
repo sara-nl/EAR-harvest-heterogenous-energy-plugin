@@ -76,4 +76,16 @@ void end_job(job_t *job);
 
 void print_job_fd(int fd, job_t *job);
 
+#if DB_MYSQL
+
+/** Given a DB connection and a job, inserts said job to the DB. Returns
+*	0 on success, -1 on error. */
+int mysql_insert_job(MYSQL *connection, job_t *job)
+/** Given a DB connection and a DB query, stores in jobs the jobs found
+*	that correspond to said query, if any. Returns the number of jobs
+*	found on success */
+int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
+#endif
+
+
 #endif
