@@ -114,6 +114,9 @@ static void exec_ear_daemon(spank_t sp)
     }
 }
 
+#define DAEMON_INTERMEDIATE 0
+
+#if DAEMON_INTERMEDIATE
 static void my_chld_f(int s)
 {
 	slurm_error("Intermediate: killing daemon %d", daemon_pid);
@@ -171,6 +174,7 @@ static void fork_intermediate_daemon(spank_t sp)
 
 	exit(ret);
 }
+#endif
 
 static int fork_ear_daemon(spank_t sp)
 {
@@ -184,8 +188,11 @@ static int fork_ear_daemon(spank_t sp)
         daemon_pid = fork();
 
         if (daemon_pid == 0) {
-            //exec_ear_daemon(sp);
-            fork_intermediate_daemon(sp);
+            #if DAEMON_INTERMEDIATE
+			fork_intermediate_daemon(sp);
+			#else
+            exec_ear_daemon(sp);
+            #endif
         } else if (daemon_pid < 0) {
             slurm_error("Fork returned %i (%s)", daemon_pid, strerror(errno));
             return ESPANK_ERROR;
@@ -261,14 +268,17 @@ static void remote_update_slurm_vars(spank_t sp)
         if ((existenv_remote(sp, "EAR_LEARNING_PHASE") == 0) ||
             (isenv_remote(sp, "EAR_LEARNING_PHASE", "0") == 1))
         {
+			printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
             // If this is passed SLURM's --cpu-freq argument
             if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 64) == 1)
             {
                 p_freq = atoi(p_state);
+				DEBUGGING("EAR_P_FREQ %d", p_freq);
                 p_freq = freq_to_p_state(p_freq);
 
-                sprintf(p_state, "%i", p_freq);
+                sprintf(p_state, "%d", p_freq);
                 setenv_remote(sp, "EAR_P_STATE", p_state, 0);
+				DEBUGGING("EAR_P_STATE %s", p_state);
             }
         }
     }
