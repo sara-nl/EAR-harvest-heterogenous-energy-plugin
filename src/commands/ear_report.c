@@ -45,8 +45,12 @@ void usage(char *app)
 void main(int argc, char *argv[])
 {
 	int job_id, num_nodes, i;
-	char **nodes;
-    if (argc!=3) usage(argv[0]);
+	char **nodes, verbose;
+    if (argc < 3) usage(argv[0]);
+    if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
+    else verbose = 0;
+
+
     job_id = atoi(argv[1]);
     char nodelist_file_path[256], *nodelog_file_path, *env;
     char line_buf[256];
@@ -63,12 +67,15 @@ void main(int argc, char *argv[])
         printf("Filepath: %s\n", nodelist_file_path);
         exit(1);
     }
+    if (verbose) printf("Nodelist found at: %s\n", nodelist_file_path);
     
     //count the total number of nodes
+    if (verbose) printf("Counting nodes...\n");
     while(fscanf(nodelist_file, "%s\n", line_buf) > 0) {
         num_nodes += 1;
     }
     rewind(nodelist_file);
+    if (verbose) printf("Found %d nodes.\n", num_nodes);
 
     //initialize memory for each 
     nodes = calloc(num_nodes, sizeof(char*));
@@ -85,6 +92,7 @@ void main(int argc, char *argv[])
     char *nodename_prepend = argv[2];
     nodelog_file_path = malloc(strlen(nodename_extension)+ strlen(nodename_prepend) + STANDARD_NODENAME_LENGTH + 1);
 
+
     //allocate memory to hold all possible found jobs
     application_t **apps = (application_t**) malloc(sizeof(application_t*)*num_nodes);
     int jobs_counter = 0;
@@ -99,6 +107,7 @@ void main(int argc, char *argv[])
         {
             continue;
         }
+        if (verbose) printf("File for node %s (%s) opened.\n", nodes[i], nodelog_file_path);
 
         //first line of each file is the header
         fscanf(node_file, "%s\n", line_buf);
@@ -110,6 +119,7 @@ void main(int argc, char *argv[])
             if (!strcmp(apps[jobs_counter]->job_id, argv[1]))
             {
                 jobs_counter++;
+                
                 break;
             }
         }
