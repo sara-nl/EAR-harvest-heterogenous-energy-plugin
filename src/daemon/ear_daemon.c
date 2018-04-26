@@ -493,6 +493,31 @@ int eard_system(int must_read)
 				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
 				eard_close_comm();
 			}
+
+			#if DATABASE(DB_MYSQL)
+			#define <mysql.h>
+			MYSQL *connection = mysql_init(NULL);
+			if (connection == NULL)
+			{
+				VERBOSE_N(0, "ERROR creating MYSQL object: %s", mysql_error(connection));
+				break;
+			}
+			
+			if (!mysql_real_connect(connection, MYSQL_IP, "ear_user", "", "Report", 0, NULL, 0))
+			{
+				VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+				mysql_close(connection);
+				break;
+			}
+
+			if (mysql_insert_application(connection, &req,req_data.app) < 0)
+			{
+				VERBOSE_N(0, "ERROR while writng signature to database.");
+			}
+			
+			mysql_close(connection);
+			
+			#endif
 			break;
 		default: return 0;
 	}
