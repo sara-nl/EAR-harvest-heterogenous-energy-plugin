@@ -31,9 +31,5 @@
 	type == BUILD_TYPE
 
 // Database
-#define DB_TYPE				@DATABASE@
-#define DB_FILES			0
-#define DB_MYSQL			1
-
-#define DATABASE(type) \
-	 type == DB_TYPE
+#define DB_FILES			@DB_FILES@
+#define DB_MYSQL			@DB_MYSQL@
