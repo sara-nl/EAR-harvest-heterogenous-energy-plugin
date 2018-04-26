@@ -71,6 +71,7 @@ void main(int argc, char *argv[])
     
     //count the total number of nodes
     if (verbose) printf("Counting nodes...\n");
+    num_nodes = 0;
     while(fscanf(nodelist_file, "%s\n", line_buf) > 0) {
         num_nodes += 1;
     }
