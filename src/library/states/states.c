@@ -46,11 +46,7 @@
 #include <common/types/log.h>
 #include <common/types/application.h>
 #include <common/states.h>
-<<<<<<< HEAD
-// #include <common/config.h>
-=======
 #include <common/config.h>
->>>>>>> development
 #include <common/math_operations.h>
 
 static const char *__NAME__ = "STATES";

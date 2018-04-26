@@ -32,6 +32,7 @@
 #define _EAR_TYPES_SIGNATURE
 
 #include <common/types/generic.h>
+#include <common/config.h>
 
 #define FLOPS_EVENTS 8
 
@@ -72,7 +73,7 @@ uint are_equal(signature_t *sig1,signature_t *sig2,double th);
 /** Outputs the signature contents to the file pointed by the fd. */
 void print_signature_fd(int fd, signature_t *sig);
 
-#if DB_MYSQL
+#if DATABASE(DB_MYSQL)
 int mysql_insert_signature(MYSQL *connection, signature_t *sig);
 
 int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs);

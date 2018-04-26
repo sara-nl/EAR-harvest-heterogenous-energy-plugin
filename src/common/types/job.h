@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <common/types/generic.h>
+#include <common/config.h>
 
 typedef uint8_t	job_type;
 typedef ulong	job_id;
@@ -76,7 +77,7 @@ void end_job(job_t *job);
 
 void print_job_fd(int fd, job_t *job);
 
-#if DB_MYSQL
+#if DATABASE(DB_MYSQL)
 
 /** Given a DB connection and a job, inserts said job to the DB. Returns
 *	0 on success, -1 on error. */

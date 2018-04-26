@@ -61,7 +61,7 @@ void print_job_fd(int fd, job_t *job)
     dprintf(fd, "%s;%lu;%s;%s;%lf", job->user_id, job->id, job->app_id, job->policy, job->th);
 }
 
-#if DB_MYSQL
+#if DATABASE(DB_MYSQL)
 
 #define JOB_QUERY           "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time, \
                             end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES \

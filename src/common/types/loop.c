@@ -136,7 +136,7 @@ int append_loop_text_file(char *path, loop_t *loop)
     return 0;
 }
 
-#if DB_MYSQL
+#if DATABASE(DB_MYSQL)
 
 #include <mysql.h>
 

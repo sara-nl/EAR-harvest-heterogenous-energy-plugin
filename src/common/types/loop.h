@@ -82,7 +82,7 @@ int append_loop_text_file(char *path, loop_t *loop);
 
 void print_loop_fd(int fd, loop_t *loop);
 
-#if DB_MYSQL
+#if DATABASE(DB_MYSQL)
 
 int mysql_insert_loop(MYSQL *connection, loop_t *loop);
 

@@ -33,6 +33,7 @@
 #define _EAR_TYPES_APPLICATION
 #include <common/types/job.h>
 #include <common/types/signature.h>
+#include <common/config.h>
 
 #define GENERIC_NAME 256
 
@@ -81,7 +82,7 @@ int append_application_text_file(char *path, application_t *app);
 /** Replicates the application in *source to *destiny */
 void copy_application(application_t *destiny, application_t *source);
 
-#if DB_MYSQL
+#if DATABASE(DB_MYSQL)
 
 
 int mysql_insert_application(MYSQL *connection, application_t *app);

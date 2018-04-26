@@ -75,7 +75,7 @@ void print_signature_fd(int fd, signature_t *sig)
 	}
 }
 
-#if DB_MYSQL
+#if DATABASE(DB_MYSQL)
 #include <mysql.h>
 
 #define SIGNATURE_QUERY     "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,\

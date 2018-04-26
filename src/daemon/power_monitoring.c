@@ -47,12 +47,8 @@
 #include <daemon/power_monitoring.h>
 
 extern int eard_must_exit;
-<<<<<<< HEAD
 #define MAX_PATH_SIZE 256
 extern char ear_tmp[MAX_PATH_SIZE];
-=======
-extern char ear_tmp[256];
->>>>>>> 4fc2576ebca0bf4e8bf72b8d84c45876ec54aead
 static const char *__NAME__ = "powermon: ";
 
 //  That constant is replicated. We must fix that

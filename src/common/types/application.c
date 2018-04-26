@@ -273,7 +273,7 @@ int read_application_binary_file(char *path, application_t **apps)
 }
 
 
-#if DB_MYSQL
+#if DATABASE(DB_MYSQL)
 
 #include <mysql.h>
 
