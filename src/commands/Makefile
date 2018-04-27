@@ -8,7 +8,7 @@ FREQ_OBJS = $(SRCDIR)/metrics/papi/generics.o \
 
 TYPES = $(SRCDIR)/common/types.a
 
-BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report
+BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report ear_create_database
 
 ######## RULES
 
@@ -25,6 +25,9 @@ ear_get_node_freq:ear_get_node_freq.c $(FREQ_OBJS)
 
 ear_report: ear_report.c $(TYPES)
 	$(CC) $(CFLAGS) -o ear_report ear_report.c $(TYPES)
+
+ear_create_database: ear_create_database.c
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
 
 ######## OPTIONS
 

@@ -28,38 +28,38 @@
 */
 
 #include <common/config.h>
-#include <common/types/job.h>
-#include <common/types/loop.h>
-#include <common/types/signature.h>
-#include <common/types/application.h>
+#include <common/ear_db_helper.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 #if DB_MYSQL
 
-#include <mysql.h>
 
 
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
                             "(?, ?, ?, ?)"
 
 
-#define LOOP_QUERY          "INSERT INTO Loops (event, size, level, job_id, step_id,  node_id, total_iterations, \
-                            signature_id) VALUES (?, ?, ?, ?, ?, ?, ? ,?)"
+#define LOOP_QUERY          "INSERT INTO Loops (event, size, level, job_id, step_id,  node_id, total_iterations," \
+                            "signature_id) VALUES (?, ?, ?, ?, ?, ?, ? ,?)"
 
 
-#define JOB_QUERY           "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time, \
-                            end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES \
-                            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#define JOB_QUERY           "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
+                            "end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES" \
+                            "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 
-#define SIGNATURE_QUERY     "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,\
-                            GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, \
-                            FLOPS5, FLOPS6, FLOPS7, FLOPS8, L1_misses, L2_misses, L3_misses, \
-                            instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, \
-                            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#define SIGNATURE_QUERY     "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+                            "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
+                            "FLOPS5, FLOPS6, FLOPS7, FLOPS8, L1_misses, L2_misses, L3_misses," \
+                            "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, "\
+                            "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
-    fprintf(stderr, "MYSQL statemnt error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(staetment));
+    fprintf(stderr, "MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
     return -1;
 }

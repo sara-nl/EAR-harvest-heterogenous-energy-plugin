@@ -59,7 +59,7 @@ typedef struct loop
 loop_id_t *create_loop_id(ulong event, ulong size, ulong level);
 
 /** Initalizes the loop given by parameter. */
-void init_loop(loop_t loop);
+void init_loop(loop_t *loop, job_t *job);
 
 /** Given a new loop detected by dynais returns either a new loop_id (if it is 
 *   really a new loop never detected) or the pointer to the already existing 

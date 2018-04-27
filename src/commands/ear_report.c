@@ -120,7 +120,7 @@ void main(int argc, char *argv[])
         {
             if (apps[jobs_counter]->job.id == job_id )
             {
-                printf("Found job_id %d in file %s\n", apps[jobs_counter]->job_id, nodelog_file_path);
+                printf("Found job_id %d in file %s\n", apps[jobs_counter]->job.id, nodelog_file_path);
                 jobs_counter++;
                 break;
             }

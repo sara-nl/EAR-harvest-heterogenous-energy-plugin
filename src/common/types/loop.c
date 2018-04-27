@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -35,7 +35,6 @@
 #include <unistd.h>
 #include <common/types/loop.h>
 #include <common/states.h>
-#include <library/common/externs.h>
 
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -59,10 +58,10 @@ loop_t *create_loop(loop_id_t loop_id)
     return loop;
 }
 
-void loop_init(loop_t *loop)
+void loop_init(loop_t *loop, job_t *job)
 {
     memset(loop, 0, sizeof(loop_t));
-    loop->job = &application.job;
+    loop->job = job;
 }
 
 

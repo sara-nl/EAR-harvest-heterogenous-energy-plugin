@@ -493,27 +493,36 @@ int eard_system(int must_read)
 				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
 				eard_close_comm();
 			}
-
 			#if DB_MYSQL
 
 			#include <mysql.h>
 			#include <common/ear_db_helper.h>
-			
+
 			MYSQL *connection = mysql_init(NULL);
 			if (connection == NULL)
 			{
 				VERBOSE_N(0, "ERROR creating MYSQL object: %s", mysql_error(connection));
 				break;
 			}
-			
-			if (!mysql_real_connect(connection, MYSQL_IP, "ear_user", "", "Report", 0, NULL, 0))
+            unsigned int db_port = 0;// atoi(getenv("EAR_DB_PORT"));
+            /*char *db_ip = getenv("EAR_DB_IP");
+            char *db_user = getenv("EAR_DB_USER");
+            char *db_pass = getenv("EAR_DB_PASS");
+            //db_pass = (db_pass == NULL) ? "": db_pass;
+            if (db_ip == NULL || db_user == NULL)
+            {
+                VERBOSE_N(0, "EAR_DB_IP and/or EAR_DB_USER not set");
+                mysql_close(connection);
+                break;
+            }*/
+			if (!mysql_real_connect(connection, "127.0.0.1", "root", "", "Report", db_port, NULL, 0))
 			{
 				VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
 				mysql_close(connection);
 				break;
 			}
 
-			if (mysql_insert_application(connection, &req,req_data.app) < 0)
+			if (mysql_insert_application(connection, &req.req_data.app) < 0)
 			{
 				VERBOSE_N(0, "ERROR while writng signature to database.");
 			}

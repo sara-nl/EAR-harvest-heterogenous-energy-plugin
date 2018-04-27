@@ -28,11 +28,14 @@
 */
 
 #include <common/config.h>
-
-
+#include <common/types/job.h>
+#include <common/types/application.h>
+#include <common/types/loop.h>
+#include <common/types/signature.h>
 
 #if DB_MYSQL
 
+#include <mysql.h>
 
 int mysql_insert_application(MYSQL *connection, application_t *app);
 
@@ -44,12 +47,12 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops);
 
 /** Given a DB connection and a job, inserts said job to the DB. Returns
 *	0 on success, -1 on error. */
-int mysql_insert_job(MYSQL *connection, job_t *job)
+int mysql_insert_job(MYSQL *connection, job_t *job);
 
 /** Given a DB connection and a DB query, stores in jobs the jobs found
 *	that correspond to said query, if any. Returns the number of jobs
 *	found on success */
-int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
+int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs);
 
 int mysql_insert_signature(MYSQL *connection, signature_t *sig);
 
