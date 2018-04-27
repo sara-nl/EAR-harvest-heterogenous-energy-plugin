@@ -92,6 +92,7 @@ static uint mpi_calls_per_loop=0;
 static long long begin_ov, end_ov, ear_acum = 0;
 static unsigned int calls = 0;
 #endif
+#define JOB_ID_OFFSET 100
 
 int get_app_name_api(char *my_name)
 {
@@ -119,7 +120,7 @@ void ear_init()
 	char node_name[BUFFSIZE];
 	unsigned int num_nodes, ppnode;
 	char *summary_pathname;
-	char *job_id, *user_id;
+	char *job_id=NULL, *user_id,*step_id=NULL;
 	char *freq;
 	int size;
 
@@ -140,10 +141,15 @@ void ear_init()
 
     // Only one process can connect with the daemon
     // Connecting with ear_daemon
+    // This part only affects to slurm environments
     job_id = getenv("SLURM_JOB_ID");
+    step_id = getenv("SLURM_STEP_ID");
     user_id = getenv("LOGNAME");
     if (job_id != NULL){
         my_job_id=atoi(job_id);
+		if (step_id!=NULL){
+			my_job_id=my_job_id*JOB_ID_OFFSET+atoi(step_id);	
+		}
     }else{
         my_job_id=getppid();
     }
