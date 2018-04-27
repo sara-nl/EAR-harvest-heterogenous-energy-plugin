@@ -33,7 +33,8 @@ AC_DEFUN([X_AC_MYSQL],
 		]
     )
 
-	if test "x$enable_database" != "xno"; then
+	AS_IF([test "x$DB_MYSQL" = "x1"],
+	[
     AC_CACHE_CHECK(
         [for MySQL root directory],
         [_cv_mysql_dir_root],
@@ -80,7 +81,7 @@ AC_DEFUN([X_AC_MYSQL],
 
     if test -z "$_cv_mysql_dir_root"; then
         echo checking for MySQL compiler link... no
-		enable_database=no
+		DB_MYSQL=0
     else
         DB_DIR=$_cv_mysql_dir_root
         DB_LIBS=$_x_ac_mysql_gcc_libs
@@ -96,7 +97,7 @@ AC_DEFUN([X_AC_MYSQL],
         echo checking for MySQL LDFLAGS... $DB_LDFLAGS
         echo checking for MySQL libraries... $DB_LIBS
     fi
-	fi
+	])
 
     AC_SUBST(DB_LIBS)
     AC_SUBST(DB_LIBDIR)
