@@ -125,6 +125,7 @@ static void my_chld_f(int s)
 
 static void fork_intermediate_daemon(spank_t sp)
 {
+    FUNCTION_INFO("fork_intermediate_daemon");
     int ret, exit_code;
 	daemon_pid = fork();
 
@@ -326,6 +327,11 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
    
     if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
     {
+		#if DAEMON_INTERMEDIATE
+        slurm_error("JOB NUEVO %d", daemon_pid);
+        #else
+        slurm_error("JOB VIEJO %d", daemon_pid);
+        #endif
         remote_update_slurm_vars(sp);
     }
 
@@ -366,7 +372,12 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 
     if(spank_context() == S_CTX_SLURMD && daemon_pid > 0)
     {
-        kill(daemon_pid, SIGTERM);
+		#if DAEMON_INTERMEDIATE
+		slurm_error("KILLING NUEVO %d", daemon_pid);
+        #else
+		slurm_error("KILLING VIEJO %d", daemon_pid);
+		#endif
+		kill(daemon_pid, SIGTERM);
     }
 
     return (ESPANK_SUCCESS);
