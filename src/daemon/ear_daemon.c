@@ -494,8 +494,11 @@ int eard_system(int must_read)
 				eard_close_comm();
 			}
 
-			#if DATABASE(DB_MYSQL)
-			#define <mysql.h>
+			#if DB_MYSQL
+
+			#include <mysql.h>
+			#include <common/ear_db_helper.h>
+			
 			MYSQL *connection = mysql_init(NULL);
 			if (connection == NULL)
 			{
@@ -514,7 +517,7 @@ int eard_system(int must_read)
 			{
 				VERBOSE_N(0, "ERROR while writng signature to database.");
 			}
-			
+
 			mysql_close(connection);
 			
 			#endif

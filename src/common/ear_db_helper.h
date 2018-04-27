@@ -27,55 +27,32 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _EAR_TYPES_JOB
-#define _EAR_TYPES_JOB
-#include <stdint.h>
-#include <time.h>
-#include <common/types/generic.h>
 #include <common/config.h>
 
-typedef uint8_t	job_type;
-typedef ulong	job_id;
-
-#define GENERIC_NAME 256
-#define POLICY_NAME 32
-
-typedef struct job
-{
-	job_id 	id;
-	job_id 	step_id;
-	char 	user_id[GENERIC_NAME];
-	char 	app_id[GENERIC_NAME];
-	time_t 	start_time;
-	time_t	end_time;
-	time_t 	start_mpi_time;
-	time_t	end_mpi_time;
-	char 	policy[POLICY_NAME];
-	double  th;
-	ulong 	procs; 
-	job_type	type;	
-	ulong 		def_f;
-} job_t;
 
 
-
-// Function declarations
-
-// MANAGEMENT
+#if DB_MYSQL
 
 
-// Must be called just once. memory is allocated if needed. values automatically initialized are (job_id, user_id, start_time,end_time,type). 
-void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs);
+int mysql_insert_application(MYSQL *connection, application_t *app);
 
-ulong start_mpi(job_t *job);
-ulong end_mpi(job_t *job);
+int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps);
 
-//
-void copy_job(job_t *destiny, job_t *source);
-// ?? Really needed
-void end_job(job_t *job);
+int mysql_insert_loop(MYSQL *connection, loop_t *loop);
 
-void print_job_fd(int fd, job_t *job);
+int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops);
 
+/** Given a DB connection and a job, inserts said job to the DB. Returns
+*	0 on success, -1 on error. */
+int mysql_insert_job(MYSQL *connection, job_t *job)
+
+/** Given a DB connection and a DB query, stores in jobs the jobs found
+*	that correspond to said query, if any. Returns the number of jobs
+*	found on success */
+int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
+
+int mysql_insert_signature(MYSQL *connection, signature_t *sig);
+
+int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs);
 
 #endif

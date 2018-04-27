@@ -82,13 +82,4 @@ int append_application_text_file(char *path, application_t *app);
 /** Replicates the application in *source to *destiny */
 void copy_application(application_t *destiny, application_t *source);
 
-#if DATABASE(DB_MYSQL)
-
-
-int mysql_insert_application(MYSQL *connection, application_t *app);
-
-int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps);
-
-#endif
-
 #endif
