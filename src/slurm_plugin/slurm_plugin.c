@@ -109,6 +109,7 @@ static void exec_ear_daemon(spank_t sp)
     }
 }
 
+
 static int fork_ear_daemon(spank_t sp)
 {
     FUNCTION_INFO("fork_ear_daemon");

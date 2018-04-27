@@ -126,7 +126,7 @@
 // - Intel® 64 and IA-32 Architectures Software Developer’s Manual
 // chapter 35.
 
-static const char *__NAME__ = "BANDWIDTH_UNCORES";
+static const char *__NAME__ = "AVG_FREQ_COMPUTATION";
 
 unsigned int _num_cpus;
 
