@@ -33,6 +33,7 @@
 #define DEBUGGING(string, ...)
 //	slurm_error(string, __VA_ARGS__)
 #define FUNCTION_INFO(function)
+//	slurm_error(function); 
 //	int _pid = getpid(); \
 //	int _ppid = getppid(); \
 //	slurm_error(function); \

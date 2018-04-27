@@ -114,19 +114,19 @@ static void exec_ear_daemon(spank_t sp)
     }
 }
 
-#define DAEMON_INTERMEDIATE 0
+#define DAEMON_INTERMEDIATE 1
 
 #if DAEMON_INTERMEDIATE
 static void my_chld_f(int s)
 {
 	slurm_error("Intermediate: killing daemon %d", daemon_pid);
-    kill(daemon_pid, SIGTERM);
+	kill(daemon_pid, SIGTERM);
 }
 
 static void fork_intermediate_daemon(spank_t sp)
 {
-    FUNCTION_INFO("fork_intermediate_daemon");
-    int ret, exit_code;
+	FUNCTION_INFO("fork_intermediate_daemon");
+	int ret, exit_code;
 	daemon_pid = fork();
 
 	if (daemon_pid == 0) {
@@ -137,8 +137,8 @@ static void fork_intermediate_daemon(spank_t sp)
 	}
 
 	/*
-     * SIGNAL
-     */
+     	 * SIGNAL
+     	 */
 	struct sigaction my_sigchld;
 	sigset_t my_mask;
 
@@ -146,9 +146,9 @@ static void fork_intermediate_daemon(spank_t sp)
 	sigaddset(&my_mask, SIGTERM);
 
 	sigprocmask(SIG_UNBLOCK, &my_mask, NULL);
-    my_sigchld.sa_handler = my_chld_f;
-    sigemptyset(&my_sigchld.sa_mask);
-    my_sigchld.sa_flags = SA_RESTART;
+	my_sigchld.sa_handler = my_chld_f;
+	sigemptyset(&my_sigchld.sa_mask);
+	my_sigchld.sa_flags = SA_RESTART;
 	
 	sigaction(SIGTERM, &my_sigchld, NULL);
 
@@ -159,21 +159,21 @@ static void fork_intermediate_daemon(spank_t sp)
 	ret = waitpid(-1, &exit_code, 0);
 
 	if (ret != daemon_pid) {
-        slurm_error("Intermediate: unexpected pid");
-    } else {
+        	slurm_error("Intermediate: unexpected pid");
+    	} else {
 		slurm_error("Intermediate: wait pid success");
 	}
 
-    if (ret > 0)
-    {
-        if (WIFEXITED(exit_code)) {
-            slurm_error("Intermediate: process %d exits with exit code %d", ret, WEXITSTATUS(exit_code));
-        } else {
-            slurm_error("Intermediate: process %d finsh because of signal %d", ret, WTERMSIG(exit_code));
-        }
-    }
+	if (ret > 0)
+    	{
+        	if (WIFEXITED(exit_code)) {
+			slurm_error("Intermediate: process %d exits with exit code %d", ret, WEXITSTATUS(exit_code));
+		} else {
+			slurm_error("Intermediate: process %d finsh because of signal %d", ret, WTERMSIG(exit_code));
+		}
+	}
 
-	exit(ret);
+	exit(0);
 }
 #endif
 
@@ -304,7 +304,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
-		find_ear_user_privileges(sp, ac, av);
+		//find_ear_user_privileges(sp, ac, av);
 
         if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
             return r;
@@ -323,19 +323,15 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
-    FUNCTION_INFO("slurm_spank_task_init");
-   
-    if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
-    {
-		#if DAEMON_INTERMEDIATE
-        slurm_error("JOB NUEVO %d", daemon_pid);
-        #else
-        slurm_error("JOB VIEJO %d", daemon_pid);
-        #endif
-        remote_update_slurm_vars(sp);
-    }
+	FUNCTION_INFO("slurm_spank_task_init");   
 
-    return (ESPANK_SUCCESS);
+	if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
+	{
+		remote_update_slurm_vars(sp);	
+		slurm_error("Launching job with plugin compiled in %s of type (%d)", __DATE__, DAEMON_INTERMEDIATE);
+	}
+
+	return (ESPANK_SUCCESS);
 }
 
 int slurm_spank_init (spank_t sp, int ac, char **av)
@@ -360,6 +356,7 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
             return r;
         }
 
+	slurm_error("Launching EARD with plugin compiled in %s of type (%d)", __DATE__, DAEMON_INTERMEDIATE);
         return fork_ear_daemon(sp);
     }
 
@@ -368,19 +365,15 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 {
-    FUNCTION_INFO("slurm_spank_slurmd_exit");
+	FUNCTION_INFO("slurm_spank_slurmd_exit");
 
-    if(spank_context() == S_CTX_SLURMD && daemon_pid > 0)
-    {
-		#if DAEMON_INTERMEDIATE
-		slurm_error("KILLING NUEVO %d", daemon_pid);
-        #else
-		slurm_error("KILLING VIEJO %d", daemon_pid);
-		#endif
+	if(spank_context() == S_CTX_SLURMD && daemon_pid > 0)
+	{
+		slurm_error("Closing EARD (%d) with plugin compiled in %s of type (%d)", daemon_pid, __DATE__, DAEMON_INTERMEDIATE);
 		kill(daemon_pid, SIGTERM);
-    }
+	}
 
-    return (ESPANK_SUCCESS);
+	return (ESPANK_SUCCESS);
 }
 
 /*

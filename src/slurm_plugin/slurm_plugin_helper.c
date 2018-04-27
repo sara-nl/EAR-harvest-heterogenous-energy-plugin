@@ -43,7 +43,7 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>
 
-static int auth_mode;
+static int auth_mode = 1;
 
 /*
  *
@@ -309,10 +309,10 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
 
     for (i = 0; i < ac; ++i)
     {
-        if (strncmp ("conf_dir=", av[i], 9) == 0)
+        if (strncmp ("ear_conf_dir=", av[i], 13) == 0)
         {
-			sprintf(link_path, "%s/%s", &av[i][9], EAR_LINK_FILE);
-			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
+			sprintf(link_path, "%s/%s", &av[i][13], EAR_LINK_FILE);
+			sprintf(conf_path, "%s/%s", &av[i][13], EAR_CONF_FILE);
 
 			if(file_to_environment(sp, (const char *) conf_path) != ESPANK_SUCCESS) {
 				return ESPANK_ERROR;
