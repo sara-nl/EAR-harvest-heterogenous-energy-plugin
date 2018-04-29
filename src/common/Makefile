@@ -56,9 +56,6 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
 
-ear_db_helper.o: ear_db_helper.c ear_db_helper.h
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -c ear_db_helper.c
-
 types.a: $(TYPES_OBJS)
 	ar rvs types.a $(TYPES_OBJS) string_enhanced.o math_operations.o	
 

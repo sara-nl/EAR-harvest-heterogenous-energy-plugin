@@ -28,7 +28,8 @@
 */
 
 #include <common/config.h>
-#include <common/ear_db_helper.h>
+#include <common/database/mysql_io_functions.h>
+#include <common/states.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,13 +62,13 @@ int mysql_statement_error(MYSQL_STMT *statement)
 {
     fprintf(stderr, "MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
-    return -1;
+    return EAR_MYSQL_STMT_ERROR;
 }
 
 int mysql_insert_application(MYSQL *connection, application_t *app)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
-    if (!statement) return 1;
+    if (!statement) return EAR_MYSQL_ERROR;
 
     if (mysql_stmt_prepare(statement, APPLICATION_QUERY, strlen(APPLICATION_QUERY))) return mysql_statement_error(statement);
 
@@ -96,15 +97,15 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
 
 
-    if (mysql_stmt_close(statement)) return 1;
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
-    return 0;
+    return EAR_SUCCESS;
 }
 
 int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
-    if (!statement) return 1;
+    if (!statement) return EAR_MYSQL_ERROR;
     application_t *app_aux = calloc(1, sizeof(application_t));
     application_t *apps_aux;
     int status = 0;
@@ -154,7 +155,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
     if (num_apps < 1)
     {
         mysql_stmt_close(statement);
-        return -1;
+        return EAR_ERROR;
     }
 
     apps_aux = (application_t*) calloc(num_apps, sizeof(application_t));
@@ -186,7 +187,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
 
     free(app_aux);
 
-    if (mysql_stmt_close(statement)) return 0;
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return num_apps;
 
@@ -196,7 +197,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
 int mysql_insert_loop(MYSQL *connection, loop_t *loop)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
-    if (!statement) return 1;
+    if (!statement) return EAR_MYSQL_ERROR;
     int i;
 
     if (mysql_stmt_prepare(statement, LOOP_QUERY, strlen(LOOP_QUERY))) return mysql_statement_error(statement);
@@ -233,16 +234,16 @@ int mysql_insert_loop(MYSQL *connection, loop_t *loop)
 
     if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
 
-    if (mysql_stmt_close(statement)) return 0;
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
-    return 1;
+    return EAR_SUCCESS;
 }
 
 int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
 {
     
     MYSQL_STMT *statement = mysql_stmt_init(connection);
-    if (!statement) return 1;
+    if (!statement) return EAR_MYSQL_ERROR;
     loop_t *loop_aux = calloc(1, sizeof(loop_t));
     loop_t *loops_aux;
     int status = 0;
@@ -302,7 +303,7 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     {
         mysql_stmt_close(statement);
         free(loop_aux);
-        return 1;
+        return EAR_ERROR;
     }
 
     loops_aux = (loop_t*) calloc(num_loops, sizeof(loop_t));
@@ -333,7 +334,7 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     *loops = loops_aux;
 
     free(loop_aux);
-    if (mysql_stmt_close(statement)) return 0;
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return num_loops;
 }
@@ -342,7 +343,7 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
 int mysql_insert_job(MYSQL *connection, job_t *job)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
-    if (!statement) return 1;
+    if (!statement) return EAR_MYSQL_ERROR;
 
     if (mysql_stmt_prepare(statement, JOB_QUERY, strlen(JOB_QUERY))) return mysql_statement_error(statement);
 
@@ -382,15 +383,15 @@ int mysql_insert_job(MYSQL *connection, job_t *job)
 
     if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
 
-    if (mysql_stmt_close(statement)) return 1;
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
-    return 0;
+    return EAR_SUCCESS;
 }
 
 int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
-    if (!statement) return -1;
+    if (!statement) return EAR_MYSQL_ERROR;
     job_t *job_aux = calloc(1, sizeof(job_t));
     job_t *jobs_aux;
     int status = 0;
@@ -439,7 +440,7 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
     if (num_jobs < 1)
     {
         mysql_stmt_close(statement);
-        return -1;
+        return EAR_ERROR;
     }
 
     jobs_aux = (job_t*) calloc(num_jobs, sizeof(job_t));
@@ -456,7 +457,7 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
 
     *jobs = jobs_aux;
 
-    if (mysql_stmt_close(statement)) return 0;
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     free(job_aux);
 
@@ -468,9 +469,9 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
 int mysql_insert_signature(MYSQL *connection, signature_t *sig)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
-    if (!statement) return 0;
+    if (!statement) return EAR_MYSQL_ERROR;
 
-    if (mysql_stmt_prepare(statement, SIGNATURE_QUERY, strlen(SIGNATURE_QUERY))) return 1;
+    if (mysql_stmt_prepare(statement, SIGNATURE_QUERY, strlen(SIGNATURE_QUERY))) return mysql_statement_error(statement);
 
     MYSQL_BIND bind[24];
     int i = 0;
@@ -524,9 +525,9 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig)
     bind[22].buffer = (char *)&sig->avg_f;
     bind[23].buffer = (char *)&sig->def_f;
 
-    if (mysql_stmt_bind_param(statement, bind)) return 0;
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
-    if (mysql_stmt_execute(statement)) return 0;
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
 
     int id = mysql_stmt_insert_id(statement);
 
@@ -534,7 +535,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig)
 
     if (affected_rows != 1) printf("ERROR: inserting signature failed.\n");
 
-    if (mysql_stmt_close(statement)) return 0;
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return id;
 }
@@ -551,7 +552,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     memset(bind, 0, sizeof(bind));
     
     MYSQL_STMT *statement = mysql_stmt_init(connection);
-    if (!statement) return 1;
+    if (!statement) return EAR_MYSQL_ERROR;
     
     int id = 0;
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
@@ -653,11 +654,11 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     *sigs = sigs_aux;
 
 
-    if (mysql_stmt_close(statement)) return 1;
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     free(sig_aux);
 
-    return (i == 1) ? 0: i;
+    return num_signatures;
 }
 
 #endif

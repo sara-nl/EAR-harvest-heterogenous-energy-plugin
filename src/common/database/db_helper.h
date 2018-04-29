@@ -27,17 +27,13 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef EAR_STATES_H
-#define EAR_STATES_H
 
-#define EAR_SUCCESS              0
-#define EAR_ERROR               -1
-#define EAR_WARNING             -2
-#define EAR_ALLOC_ERROR         -3
-#define EAR_READ_ERROR          -4
-#define EAR_FILE_NOT_FOUND      -5
-#define EAR_NOT_READY		    -6
-#define EAR_MYSQL_ERROR         -7
-#define EAR_MYSQL_STMT_ERROR    -8
+#include <common/types/application.h>
+#include <common/types/loop.h>
 
-#endif //EAR_STATES_H
+
+
+int db_insert_application(application_t *application);
+
+
+int db_insert_loop(loop_t *loop);

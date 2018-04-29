@@ -30,7 +30,7 @@ BINARIES  = eard
 all: eard
 
 eard: ear_daemon.c $(OBJS) $(METRICS_OBJS) $(POWERMONLIB) $(COMMON_OBJS) $(INTERNAL_EAR_LIBS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) $(OBJS) $(INTERNAL_EAR_LIBS) $(POWERMONLIB) $(DB_LDFLAGS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) $(OBJS) $(INTERNAL_EAR_LIBS) $(POWERMONLIB)
 
 dynamic_configuration.o: dynamic_configuration.c 
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
