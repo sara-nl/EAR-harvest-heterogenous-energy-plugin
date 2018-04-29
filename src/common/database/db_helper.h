@@ -27,7 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#ifndef __NAME__
+#define __NAME__ "db_helper"
+#endif
 #include <common/types/application.h>
 #include <common/types/loop.h>
 

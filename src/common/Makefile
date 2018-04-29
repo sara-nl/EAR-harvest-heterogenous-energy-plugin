@@ -22,9 +22,10 @@ BINARIES = ear_daemon_client.o \
            shared_configuration.o \
            remote_daemon_client.o \
            file_lock.o \
-		   ear_db_helper.o \
-		   types.a
-
+		   types.a \
+		   database/db_helper.o \
+		   database/mysql_io_functions.o
+			
 ######## RULES
 
 all: $(BINARIES)

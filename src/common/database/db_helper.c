@@ -29,7 +29,9 @@
 
 
 #include <mysql.h>
+#include <stdio.h>
 #include <common/states.h>
+#include <common/ear_verbose.h>
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
 
@@ -57,7 +59,7 @@ int db_insert_application(application_t *application)
 
     if (db_ip == NULL || db_user == NULL || db_pass == NULL)
     {
-        if (get_env_database() != EAR_SUCCESS)
+        if (getenv_database() != EAR_SUCCESS)
         {
             mysql_close(connection);
             return EAR_ERROR;
@@ -95,7 +97,7 @@ int db_insert_loop(loop_t *loop)
 
     if (db_ip == NULL || db_user == NULL || db_pass == NULL)
     {
-        if (get_env_database() != EAR_SUCCESS)
+        if (getenv_database() != EAR_SUCCESS)
         {
             mysql_close(connection);
             return EAR_ERROR;
