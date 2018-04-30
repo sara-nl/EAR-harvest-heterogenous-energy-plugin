@@ -30,21 +30,72 @@
 
 #include <mysql.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
+#include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
 
-static char *db_ip = NULL;
-static char *db_user = NULL;
-static char *db_pass = NULL;
-static char *database = "Report";
-static unsigned int db_port = 0;
-
+char *db_ip = NULL;
+char *db_user = NULL;
+char *db_pass = NULL;
+char *database = "Report";
+unsigned int db_port = 0;
 
 int getenv_database()
 {
+    if (!getenv("DB_IP") || !getenv("DB_USER")) 
+    {
+        if (readconf_database() != EAR_SUCCESS)
+        {
+            VERBOSE_N(0, "Erro reading db config file.");
+            return EAR_ERROR;
+        }
+    }
+
+    db_ip = getenv("DB_IP");
+    db_user = getenv("DB_USER");
+    db_pass = (!getenv("DB_PASS")) ? "" : getenv("DB_PASS");
+    database = (!getenv("DB_NAME")) ? database: getenv("DB_NAME");
+    db_port = (!getenv("DB_PORT")) ? 0 : atoi(getenv("DB_PORT"));
+
+    return EAR_SUCCESS;
+}
+
+int readconf_database()
+{
+    char conf_file_path[256], config[256];
+    char *value;
+    FILE *conf_file;
     
+    strcpy(conf_file_path, EAR_INSTALL_PATH);
+    strcat(conf_file_path, "/etc/sysconf/db.conf");
+
+    conf_file = fopen(conf_file_path, "r");
+    if (conf_file == NULL)
+    {
+        VERBOSE_N(0, "Error opening config file at \"$EAR_INSTALL_PATH/etc/sysconf/db.conf\".\n");
+        VERBOSE_N(0, "Filepath: %s\n", conf_file_path);
+        return EAR_ERROR;
+    }
+
+    while (fgets(config, 256, conf_file) != NULL)
+    {
+        if (strclean(config, '\n') && (value = strclean(config, '=')))
+        {
+            if (strlen(config) && strlen(++value))
+            {
+                strtoup(config);
+                if (setenv(config, value, 0) == -1) return EAR_ERROR;
+            }
+
+        }
+
+    }
+    return EAR_SUCCESS;
+
 }
 
 int db_insert_application(application_t *application)
@@ -62,6 +113,7 @@ int db_insert_application(application_t *application)
         if (getenv_database() != EAR_SUCCESS)
         {
             mysql_close(connection);
+            VERBOSE_N(0, "Error reading configuration file and setting environment variables.");
             return EAR_ERROR;
         }
     }

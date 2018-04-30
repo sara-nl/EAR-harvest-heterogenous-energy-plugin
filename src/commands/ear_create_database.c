@@ -91,8 +91,6 @@ void create_tables(MYSQL *connection)
 
 void main(int argc,char *argv[])
 {
-	int eards,job_id;
-	ulong f;
 	if (argc != 2) usage(argv[0]);
 	
     MYSQL *connection = mysql_init(NULL); 
