@@ -27,6 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+
+
 #include <common/database/mysql_io_functions.h>
 #include <common/config.h>
 #include <common/ear_verbose.h>
@@ -37,8 +39,6 @@
 
 
 #if DB_MYSQL
-
-
 
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
                             "(?, ?, ?, ?)"

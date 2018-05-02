@@ -32,10 +32,13 @@
 #endif
 #include <common/types/application.h>
 #include <common/types/loop.h>
-
+#include <common/config.h>
+#if DB_MYSQL
 
 
 int db_insert_application(application_t *application);
 
 
 int db_insert_loop(loop_t *loop);
+
+#endif

@@ -256,7 +256,7 @@ void ear_init()
 	// Starting job summary
 	VERBOSE_N(1, "--------------------------------");
 	VERBOSE_N(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
-	VERBOSE_N(1, "Node/job id: '%s'/'%s'", application.node_id, application.job.id);
+	VERBOSE_N(1, "Node/job id: '%s'/'%u'", application.node_id, application.job.id);
 	VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
 	VERBOSE_N(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
 	VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.job.procs, num_nodes, ppnode);
