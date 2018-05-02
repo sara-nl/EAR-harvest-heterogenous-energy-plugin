@@ -45,7 +45,7 @@ void usage(char *app)
 void main(int argc, char *argv[])
 {
 	int job_id, num_nodes, i;
-	char **nodes, verbose;
+	char **nodes, verbose = 0;
     if (argc < 3) usage(argv[0]);
     if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
     else verbose = 0;
@@ -120,7 +120,7 @@ void main(int argc, char *argv[])
         {
             if (!strcmp(apps[jobs_counter]->job_id, argv[1]))
             {
-                printf("Found job_id %d in file %s\n", apps[jobs_counter]->job_id, nodelog_file_path);
+                if (verbose) printf("Found job_id %d in file %s\n", apps[jobs_counter]->job_id, nodelog_file_path);
                 jobs_counter++;
                 break;
             }
