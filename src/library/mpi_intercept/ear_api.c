@@ -154,7 +154,7 @@ void ear_init()
 			if (step_id!=NULL){
 				my_job_id=my_job_id*JOB_ID_OFFSET+atoi(step_id);
 			}
-			else ear_verbose(1,"Neither SLURM_STEP_ID nor SLURM_STEPID are defined,using SLURM_JOB_ID\n");
+			else ear_verbose(0,"Neither SLURM_STEP_ID nor SLURM_STEPID are defined,using SLURM_JOB_ID\n");
 		}
     }else{
         my_job_id=getppid();
@@ -224,11 +224,7 @@ void ear_init()
 	get_app_name_api(ear_app_name);
 	ear_current_freq = frequency_get_num_pstates(0);
 	
-	if (job_id != NULL){ 
-		strcpy(application.job_id, job_id);
-	}else{ 
-		sprintf(application.job_id, "%d", my_job_id);
-	}
+	sprintf(application.job_id, "%d", my_job_id);
 
 	// Policies
 	init_power_policy();
