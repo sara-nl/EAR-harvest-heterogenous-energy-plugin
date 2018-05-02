@@ -92,34 +92,11 @@ powermon_app_t current_ear_app;
 #define max(X,Y) (((X) > (Y)) ? (X) : (Y))
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
-// BUFFERS
 void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
 {
 	bcopy(src,dest,sizeof(powermon_app_t));
 }
 
-
-power_data_t * create_historic_buffer(int samples)
-{
-	void *mem;
-	mem=malloc(sizeof(power_data_t)*samples);
-	if (mem!=NULL) memset(mem,0,sizeof(power_data_t)*samples);
-	return mem;
-}
-#if 0
-void add_power_sample(power_data_t *ps)
-{
-
-	copy_powermon_app(&L1_samples[current_L1],ps);
-	current_L1=(current_L1+1)%NUM_SAMPLES_L1;
-	num_L1++;
-	if (num_L1==NUM_SAMPLES_L1){ // We will flush 
-		compute_average_period(L1_samples,NUM_SAMPLES_L1);
-	}
-}
-#endif
-
-// END BUFFERS
 
 void reset_current_app()
 {
@@ -160,6 +137,9 @@ void report_powermon_app(powermon_app_t *app)
 	char buffer[1024];
     struct tm *current_t;
     char jbegin[64],jend[64],mpibegin[64],mpiend[64];
+
+	// This function will report values to EAR_DB
+
     // We format the end time into localtime and string
     current_t=localtime(&(app->begin_time));
     strftime(jbegin, sizeof(jbegin), "%c", current_t);
@@ -317,18 +297,6 @@ void *eard_power_monitoring(void *frequency_monitoring)
 
 	create_powermon_out();
 	reset_current_app();
-
-	// Create circular buffer for samples
-	L1_samples=create_historic_buffer(NUM_SAMPLES_L1);
-	if (L1_samples==NULL){
-		VERBOSE_N(0,"power monitoring: error allocating memory for logs\n");
-		pthread_exit(0);
-	}
-	L2_samples=create_historic_buffer(NUM_SAMPLES_L2);
-	if (L2_samples==NULL){
-		VERBOSE_N(0,"power monitoring: error allocating memory for logs\n");
-		pthread_exit(0);
-	}
 
 	// We will collect and report avg power until eard finishes
 	// Get time and Energy
