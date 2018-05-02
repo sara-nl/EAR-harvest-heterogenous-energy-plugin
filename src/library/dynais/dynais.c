@@ -63,11 +63,11 @@
 #include <unistd.h>
 #include <library/dynais/dynais.h>
 #include <immintrin.h> // -mavx -mfma
-#include <emmintrin.h> // -msse2
 
 
 // Local defines
 #define AVX_512 _FEATURE_AVX512F
+#define AVX_256 1
 #define ALI64 __attribute__ ((aligned (64)))
 
 // General indexes.
@@ -101,9 +101,11 @@ int dynais_init(unsigned int window, unsigned int levels)
 
 	unsigned int multiple = window / 16;
 	window = 16 * (multiple + 1);
-	
+
 	#if AVX_512
 	#define __dyn_size __m512i
+	#elif AVX_256
+	#define __dyn_size __m256i
 	#else
 	#define __dyn_size long
 	#endif
@@ -116,24 +118,24 @@ int dynais_init(unsigned int window, unsigned int levels)
 	mem_res2 = posix_memalign((void *) &p_zeros, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
 	mem_res4 = posix_memalign((void *) &p_indes, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
 
-    	//EINVAL = 22, ENOMEM = 12
+	//EINVAL = 22, ENOMEM = 12
 	if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
-        	return -1;
+		return -1;
 	}
 
-    	for (i = 0; i < levels; ++i)
-    	{
-        	level_limit[i] = 0;
-        	level_index[i] = 0;
-        	level_result[i] = NO_LOOP;
-        	level_length[i] = 0;
+	for (i = 0; i < levels; ++i)
+	{
+		level_limit[i] = 0;
+		level_index[i] = 0;
+		level_result[i] = NO_LOOP;
+		level_length[i] = 0;
 
 		// Normal window allocations
-        	samples_vec[i] = &p_smpls[i * _window];
-        	sizes_vec[i] = &p_sizes[i * _window];
-	
+		samples_vec[i] = &p_smpls[i * _window];
+		sizes_vec[i] = &p_sizes[i * _window];
+
 		// Extended window allocations
-        	zeros_vec[i] = &p_zeros[i * (_window + 8)];
+		zeros_vec[i] = &p_zeros[i * (_window + 8)];
 		indes_vec[i] = &p_indes[i * (_window + 8)];
 
 		for (k = 0; k < _window; ++k) {
@@ -141,7 +143,7 @@ int dynais_init(unsigned int window, unsigned int levels)
 		}
 		indes_vec[i][0] = _window - 1;
 	}
-    
+
 	return 0;
 }
 
@@ -157,8 +159,10 @@ int dynais_build_type()
 {
 	#if AVX_512
 	return 1;
+	#elif AVX_256
+	return 2;
 	#else
-        return 0;
+	return 0;
 	#endif
 }
 
@@ -221,8 +225,6 @@ int dynais_build_type()
 static int dynais_basic(unsigned long sample, unsigned int size, unsigned int level)
 {
 	static unsigned int shifts[16] ALI64 = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15 };
-	static unsigned int max_zeros_array[16] ALI64;
-	static unsigned int max_indes_array[16] ALI64;
 
 	unsigned int mmask_operator;
 	unsigned int max_length = 0;
@@ -290,30 +292,30 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		samples_block_1 = _mm512_load_si512((__m512i *) &samples[k]);
 		samples_block_2 = _mm512_load_si512((__m512i *) &samples[k + 8]);
 		sizes_block     = _mm512_load_si512((__m512i *) &sizes[k]);
-	
-		//	
+
+		//
 		mmask_test1_1 = _mm512_cmp_epu64_mask(samples_block_1, sample_replica, _MM_CMPINT_EQ);
 		mmask_test1_2 = _mm512_cmp_epu64_mask(samples_block_2, sample_replica, _MM_CMPINT_EQ);
-		
+
 		//
-		mmask_operator = ((int) mmask_test1_2 << 8) | ((int) mmask_test1_1);	
+		mmask_operator = ((int) mmask_test1_2 << 8) | ((int) mmask_test1_1);
 		mmask_test1    = _mm512_int2mask(mmask_operator);
 
 		//
 		mmask_test1 = _mm512_mask_cmp_epi32_mask(mmask_test1, sizes_block, size_replica, _MM_CMPINT_EQ);
-	
+
 		//
      	zeros_block = _mm512_load_si512((__m512i *) &zeros[k]);
 		index_block = _mm512_load_si512((__m512i *) &indes[k]);
-		
+
         // Round buffer
         zeros_block = _mm512_permutevar_epi32(shift_replica, zeros_block);
         index_block = _mm512_permutevar_epi32(shift_replica, index_block);
 
 		zeros_block = _mm512_mask_set1_epi32(zeros_block, 0x8000, zeros[k + 16]);
 		index_block = _mm512_mask_set1_epi32(index_block, 0x8000, indes[k + 16]);
-		
-		// 
+
+		//
      	zeros_block = _mm512_maskz_add_epi32(mmask_test1, zeros_block, one_replica);
 
 		_mm512_store_si512 ((__m512i *) &zeros[k], zeros_block);
@@ -324,19 +326,19 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
 		if (mmask_test2 == 0) continue;
 
-		//	
+		//
 		max_zeros_block_aux = _mm512_maskz_mov_epi32(mmask_test2, zeros_block);
-		max_indes_block_aux = _mm512_maskz_mov_epi32(mmask_test2, index_block); 
-		
+		max_indes_block_aux = _mm512_maskz_mov_epi32(mmask_test2, index_block);
+
 		// - max_zeros_provisional[i]  > max_zeros[i]: obligadamente reemplazable
 		// - max_zeros_provisional[i] == max_zeros[i]: posiblemente reemplazable
-		mmask_test2 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_LT);	
-		mmask_test3 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_EQ);	
-		
+		mmask_test2 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_LT);
+		mmask_test3 = _mm512_cmp_epu32_mask(max_zeros_block, max_zeros_block_aux, _MM_CMPINT_EQ);
+
 		mmask_test3 = _mm512_mask_cmp_epu32_mask(mmask_test3, max_indes_block_aux, max_indes_block, _MM_CMPINT_LT);
 		mmask_test2 = mmask_test2 | mmask_test3;
 
-		//	
+		//
 		max_zeros_block = _mm512_mask_mov_epi32(max_zeros_block, mmask_test2, max_zeros_block_aux);
 		max_indes_block = _mm512_mask_mov_epi32(max_indes_block, mmask_test2, max_indes_block_aux);
 	}
@@ -357,7 +359,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	unsigned int mask;
 
 	previous_length = level_previous_length[level];
-    samples[index] = sample; 
+    samples[index] = sample;
     sizes[index] = size;
 
 	// Mask is 0xFFFFFFFF (-1) when _index is greater than 0
@@ -412,6 +414,234 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
     level_limit[level] = limit;
 
     return result;
+}
+#elif AVX_256
+static int dynais_basic(unsigned long sample, unsigned int size, unsigned int level)
+{
+	static unsigned int shifts1_array[8] ALI64 = { 1,2,3,4,5,6,7,7 };
+	static unsigned int shifts2_array[8] ALI64 = { 0,2,4,6,7,7,7,7 };
+	static unsigned int aux_array1[8] ALI64;
+	static unsigned int aux_array2[8] ALI64;
+
+	// Normal declarations
+	unsigned int mmask_operator;
+	unsigned int max_length = 0;
+	unsigned int max_zeros = 0;
+	unsigned int index;
+	unsigned int limit;
+	unsigned int i, k;
+	int result;
+
+	unsigned long *samples;
+	unsigned int *sizes;
+	unsigned int *zeros;
+	unsigned int *indes;
+
+	// SIMD declarations
+	__m256i max_zeros_block;
+	__m256i max_indes_block;
+	__m256i samples_block_1;
+	__m256i samples_block_2;
+	__m256i sizes_block;
+	__m256i zeros_block;
+	__m256i index_block;
+
+	// Replicas
+	__m256i msample;
+	__m256i mmask;
+	__m256i msize;
+	__m256i mone;
+
+	// Auxiliars
+	__m256i aux1;
+	__m256i aux2;
+	__m256i aux3;
+	__m256i aux4;
+	__m256i aux5;
+
+	// Shits
+	__m256i shifts1;
+	__m256i shifts2;
+
+	#define _mm256_cmplt_epi32(src1, src2, dest) \
+	{ \
+		aux1 = _mm256_cmpgt_epi32(src1, src2); \
+		aux2 = _mm256_cmpeq_epi32(src1, src2); \
+		aux1 = _mm256_or_si256(aux1, aux2); \
+		dest = _mm256_andnot_si256(aux1, mone); \
+	}
+
+	/*
+	 * Phase 0, initialization
+	 */
+
+	// Non SIMD intializations
+	index   		= level_index[level];
+	limit   		= level_limit[level];
+	samples 		= samples_vec[level];
+	sizes   		= sizes_vec[level];
+	zeros   		= zeros_vec[level];
+	indes   		= indes_vec[level];
+	samples[index]  = 0;
+	sizes[index]    = 0;
+	zeros[_window]  = zeros[0];
+	indes[_window]  = indes[0];
+
+	// SIMD initializations
+	max_zeros_block  = _mm256_setzero_si256();
+	max_indes_block  = _mm256_set1_epi32(0xFFFFFFFF);
+	shifts2 = _mm256_load_si256((__m256i *) &shifts2);
+	shifts1 = _mm256_load_si256((__m256i *) &shifts1);
+	msample = _mm256_set1_epi64x(sample);
+	msize   = _mm256_set1_epi32(size);
+	mone    = _mm256_set1_epi32(1);
+
+	/*
+	 * Phase 1, computation
+	 */
+
+	for (k = 0, i = 0; k < _window; k += 8, i += 1)
+	{
+		// Loading samples and sizes (comparing phase)
+		samples_block_1 = _mm256_load_si256((__m256i *) &samples[k]);
+		samples_block_2 = _mm256_load_si256((__m256i *) &samples[k + 4]);
+		sizes_block     = _mm256_load_si256((__m256i *) &sizes[k]);
+
+		// Getting a mask of equal samples
+		aux1 = _mm256_cmpeq_epi64(samples_block_1, msample);
+		aux2 = _mm256_cmpeq_epi64(samples_block_2, msample);
+		aux1 = _mm256_permutevar8x32_epi32(aux1, shifts2);
+		aux2 = _mm256_permutevar8x32_epi32(aux2, shifts2);
+		aux1 = _mm256_permute2f128_si256(aux1, aux2, 32);
+
+		// Getting a mask of equal sizes
+		aux2 = _mm256_cmpeq_epi32(sizes_block, msize);
+
+		// Getting a final mask of equal samples and sizes
+		mmask = _mm256_and_si256(aux1, aux2);
+
+		// Loading zeros and indexes (circular phase)
+		zeros_block = _mm256_load_si256((__m256i *) &zeros[k]);
+		index_block = _mm256_load_si256((__m256i *) &indes[k]);
+
+		// Moving data to the left
+		zeros_block = _mm256_permutevar8x32_epi32(zeros_block, shifts1);
+		index_block = _mm256_permutevar8x32_epi32(index_block, shifts1);
+		zeros_block = _mm256_insert_epi32(zeros_block, zeros[k + 8], 8);
+		index_block = _mm256_insert_epi32(index_block, indes[k + 8], 8);
+
+		// Adding 1 to zeros block and cleaning
+		zeros_block = _mm256_add_epi32(zeros_block, mone );
+		zeros_block = _mm256_and_si256(zeros_block, mmask);
+
+		// Zeros and index storing
+		_mm256_store_si256 ((__m256i *) &zeros[k], zeros_block);
+		_mm256_store_si256 ((__m256i *) &indes[k], index_block);
+
+		// Comparing zeros with index (When index is less than zero)
+		_mm256_cmplt_epi32(index_block, zeros_block, mmask);
+
+		if (_mm256_testz_si256(mmask, mmask) == 1) continue;
+
+		//
+		aux4 = _mm256_and_si256(mmask, zeros_block);
+		aux5 = _mm256_and_si256(mmask, index_block);
+
+		// max_zeros_provisional[i] == max_zeros[i]: posiblemente reemplazable
+		aux3 = _mm256_cmpeq_epi32(max_zeros_block, aux4);
+		       _mm256_cmplt_epi32(aux5, max_indes_block, aux3);
+
+		// max_zeros_provisional[i]  > max_zeros[i]: obligadamente reemplazable
+		_mm256_cmplt_epi32(max_zeros_block, aux4, aux2);
+
+		// Getting final mask of saving results
+		mmask = _mm256_or_si256(aux2, aux3);
+
+		//	Saving results
+		aux4 = _mm256_and_si256(mmask, aux4);
+		aux5 = _mm256_and_si256(mmask, aux5);
+		max_zeros_block = _mm256_andnot_si256(mmask, max_zeros_block);
+		max_indes_block = _mm256_andnot_si256(mmask, max_indes_block);
+		max_zeros_block = _mm256_or_si256(aux4, max_zeros_block);
+		max_indes_block = _mm256_or_si256(aux5, max_indes_block);
+	}
+
+	_mm256_store_si256 ((__m256i *) aux_array1, max_zeros_block);
+	_mm256_store_si256 ((__m256i *) aux_array2, max_indes_block);
+
+	for (i = 0; i < 8; ++i)
+	{
+		if (aux_array1[i] > max_zeros)
+		{
+			max_zeros  = aux_array1[i];
+			max_length = aux_array2[i];
+		}
+	}
+
+	/*
+	 * Phase 2, evaluation
+	 */
+
+	unsigned int end_loop, in_loop, new_loop, new_iteration;
+	unsigned int previous_length;
+	unsigned int mask;
+
+	previous_length = level_previous_length[level];
+	samples[index] = sample;
+	sizes[index] = size;
+
+	// Mask is 0xFFFFFFFF (-1) when _index is greater than 0
+	// or 0x00000000 when _index is equal to 0.
+	mask = (index == 0) - 1;
+	index = index + mask + (~mask & (_window - 1));
+
+	// Mask is 0xFFFFFFFF (-1) when limit is inferior than
+	// window -1, and 0x00000000 when is equal.
+	mask = (limit == (_window - 1)) - 1;
+	limit = ((limit + 1) & mask) + ((_window - 1) & ~mask);
+
+	// STATUS is obtained. If max_length is greater than 0
+	// and if max_zeros is greater than the max_length, which
+	// means we are in a loop (equal is the last sample of the
+	// second iteration).
+	in_loop = max_length > 0 & (max_zeros > max_length);
+
+	// We know that we are at the begining of a loop or an
+	// iteration because the module between max_zeros and
+	// max_length is 1. We also protect this operation
+	// with the last boolean sample, because if max_length
+	// were 0, the application would crash.
+	new_iteration = in_loop && (max_length == 1 || (max_zeros % max_length) == 1);
+
+	// If max_zeros is equal to max_length plus one, means
+	// that we are exactly at the point that the loop starts
+	// not the iteration.
+	new_loop = new_iteration & (previous_length != max_length);
+
+	// If the last loop size is different than 0, which means
+	// that we come from another loop, and the detected size is
+	// different than the last saved size, it means that this is
+	// an end loop status.
+	end_loop = (previous_length != max_length && previous_length != 0);
+
+	result = 0;
+	result -= !in_loop & end_loop; // -1 = end lopp
+	result += in_loop;       // 1 = in loop
+	result += new_iteration; // 2 = new iteration
+	result += new_loop;      // 3 = new loop
+	result += new_loop & end_loop; // 4 = end and new loop
+
+	// Saving the loop length if we are in a loop.
+	if (result >= 3) previous_length = max_length;
+	else if (result <= 0) previous_length = 0;
+
+	// Length of the loop is obtained.
+	level_length[level] = max_length;
+	level_previous_length[level] = previous_length;
+	level_index[level] = index;
+	level_limit[level] = limit;
+
+	return result;
 }
 #else
 static int dynais_basic(unsigned long sample, unsigned int size, unsigned int level)
@@ -521,139 +751,139 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
 static unsigned int dynais_add_samples_size(unsigned int amount, unsigned int level)
 {
-    unsigned int *sizes, limit, index, total_size = 0;
-    unsigned int i, k;
+	unsigned int *sizes, limit, index, total_size = 0;
+	unsigned int i, k;
 
-    // Getting content index and limit
-    index = level_index[level];
-    limit = level_limit[level];
+	// Getting content index and limit
+	index = level_index[level];
+	limit = level_limit[level];
 
-    // Pointing to the selected level vector of sizes
-    sizes = sizes_vec[level];
+	// Pointing to the selected level vector of sizes
+	sizes = sizes_vec[level];
 
-    // Indexing
-    i = index + 2;
-    i = (i & ((i >= _window) - 1)) + (i > _window);
+	// Indexing
+	i = index + 2;
+	i = (i & ((i >= _window) - 1)) + (i > _window);
 
-    // Reading size vector
-    for (k = 0; k < amount; ++k)
-    {
-        total_size += sizes[i];
+	// Reading size vector
+	for (k = 0; k < amount; ++k)
+	{
+		total_size += sizes[i];
 
-        i = i + 1;
-        i = i & ((i == _window) - 1);
-    }
+		i = i + 1;
+		i = i & ((i == _window) - 1);
+	}
 
-    return total_size;
+	return total_size;
 }
 
 // Returns the highest level.
 static int dynais_hierarchical(unsigned long sample, unsigned int size, unsigned int level)
 {
-    unsigned int new_sample_size;
+	unsigned int new_sample_size;
 
-    if (level >= _levels) {
-        return level - 1;
-    }
+	if (level >= _levels) {
+		return level - 1;
+	}
 
-    // DynAIS basic algorithm call.
-    level_result[level] = dynais_basic(sample, size, level);
+	// DynAIS basic algorithm call.
+	level_result[level] = dynais_basic(sample, size, level);
 
-    // If new loop is detected, the sample and the size
-    // is passed recursively to dynais_hierarchical.
-    if (level_result[level] >= NEW_LOOP)
-    {
-        // Finding the correct size of the loop. If the level
-        // is 0 then is not needed, because all level 0 inputs
-        // size is 1, and then is equal to level size.
-        if (level > 0) {
-            new_sample_size = dynais_add_samples_size(level_length[level], level);
-        } else {
-            new_sample_size = level_length[level];
-        }
+	// If new loop is detected, the sample and the size
+	// is passed recursively to dynais_hierarchical.
+	if (level_result[level] >= NEW_LOOP)
+	{
+		// Finding the correct size of the loop. If the level
+		// is 0 then is not needed, because all level 0 inputs
+		// size is 1, and then is equal to level size.
+		if (level > 0) {
+			new_sample_size = dynais_add_samples_size(level_length[level], level);
+		} else {
+			new_sample_size = level_length[level];
+		}
 
-        return dynais_hierarchical(sample, new_sample_size, level + 1);
-    }
+		return dynais_hierarchical(sample, new_sample_size, level + 1);
+	}
 
-    // If is not a NEW_LOOP.
-    return level;
+	// If is not a NEW_LOOP.
+	return level;
 }
 
 int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
 {
-    int end_loop = 0;
-    int in_loop = 0;
-    int result;
-    int reach;
-    int l, ll;
+	int end_loop = 0;
+	int in_loop = 0;
+	int result;
+	int reach;
+	int l, ll;
 
-    // Hierarchical algorithm call. The maximum level
-    // reached is returned. All those values were updated
-    // by the basic DynAIS algorithm call.
-    reach = dynais_hierarchical(sample, 1, 0);
+	// Hierarchical algorithm call. The maximum level
+	// reached is returned. All those values were updated
+	// by the basic DynAIS algorithm call.
+	reach = dynais_hierarchical(sample, 1, 0);
 
-    // Cleans didn't reach levels. Cleaning means previous
-    // loops with a state greater than IN_LOOP have to be
-    // converted to IN_LOOP and also END_LOOP have to be
-    // converted to NO_LOOP.
-    for (l = _levels - 1; l > reach; --l)
-    {
-        result = level_result[l];
-        if (result > IN_LOOP) level_result[l] = IN_LOOP;
-        if (result < NO_LOOP) level_result[l] = NO_LOOP;
-    }
+	// Cleans didn't reach levels. Cleaning means previous
+	// loops with a state greater than IN_LOOP have to be
+	// converted to IN_LOOP and also END_LOOP have to be
+	// converted to NO_LOOP.
+	for (l = _levels - 1; l > reach; --l)
+	{
+		result = level_result[l];
+		if (result > IN_LOOP) level_result[l] = IN_LOOP;
+		if (result < NO_LOOP) level_result[l] = NO_LOOP;
+	}
 
-    // After cleaning, the highest IN_LOOP or greater
-    // level is returned with its state data. If an
-    // END_LOOP is detected before a NEW_LOOP,
-    // END_NEW_LOOP is returned.
-    for (l = _levels - 1; l >= 0; --l)
-    {
-        end_loop = end_loop | (level_result[l] == END_LOOP);
+	// After cleaning, the highest IN_LOOP or greater
+	// level is returned with its state data. If an
+	// END_LOOP is detected before a NEW_LOOP,
+	// END_NEW_LOOP is returned.
+	for (l = _levels - 1; l >= 0; --l)
+	{
+		end_loop = end_loop | (level_result[l] == END_LOOP);
 
-        if (level_result[l] >= IN_LOOP)
-        {
-            *govern_level = l;
-            *size = level_length[l];
+		if (level_result[l] >= IN_LOOP)
+		{
+			*govern_level = l;
+			*size = level_length[l];
 
-            // END_LOOP is detected above, it means that in this and
-            // below levels the status is NEW_LOOP or END_NEW_LOOP,
-            // because the only way to break a loop is with the
-            // detection of a new loop.
-            if (end_loop) {
-                return END_NEW_LOOP;
-            }
+			// END_LOOP is detected above, it means that in this and
+			// below levels the status is NEW_LOOP or END_NEW_LOOP,
+			// because the only way to break a loop is with the
+			// detection of a new loop.
+			if (end_loop) {
+				return END_NEW_LOOP;
+			}
 
-            // If the status of this level is NEW_LOOP, it means
-            // that the status in all below levels is NEW_LOOP or
-            // END_NEW_LOOP. If there is at least one END_NEW_LOOP
-            // the END part have to be propagated to this level.
-            if (level_result[l] == NEW_LOOP)
-            {
-                for (ll = l - 1; ll >= 0; --ll)
-                {
-                    end_loop |= level_result[ll] == END_NEW_LOOP;
+			// If the status of this level is NEW_LOOP, it means
+			// that the status in all below levels is NEW_LOOP or
+			// END_NEW_LOOP. If there is at least one END_NEW_LOOP
+			// the END part have to be propagated to this level.
+			if (level_result[l] == NEW_LOOP)
+			{
+				for (ll = l - 1; ll >= 0; --ll)
+				{
+					end_loop |= level_result[ll] == END_NEW_LOOP;
 
-                    if (level_result[ll] < NEW_LOOP)
-                    {
-                        return IN_LOOP;
-                    }
-                }
-            }
+					if (level_result[ll] < NEW_LOOP)
+					{
+						return IN_LOOP;
+					}
+				}
+			}
 
-            if (end_loop) {
-                return END_NEW_LOOP;
-            }
+			if (end_loop) {
+				return END_NEW_LOOP;
+			}
 
-            return level_result[l];
-        }
-    }
+			return level_result[l];
+		}
+	}
 
 
-    // In case no loop were found: NO_LOOP or END_LOOP
-    // in level 0, size and government level are 0.
-    *size = 0;
-    *govern_level = 0;
+	// In case no loop were found: NO_LOOP or END_LOOP
+	// in level 0, size and government level are 0.
+	*size = 0;
+	*govern_level = 0;
 
-    return -end_loop;
+	return -end_loop;
 }
