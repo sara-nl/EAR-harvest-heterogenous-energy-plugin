@@ -63,18 +63,19 @@ typedef struct job
 
 // MANAGEMENT
 
-
-// Must be called just once. memory is allocated if needed. values automatically initialized are (job_id, user_id, start_time,end_time,type). 
+/** Initializes all job variables at 0 with the exception of def_f, policy, th and procs,
+*	which take the value given by parameter. */ 
 void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs);
 
+/** Sets job->start_mpi_time to the current time */
 void start_mpi(job_t *job);
+/** Sets job->end_mpi_time to the current time */
 void end_mpi(job_t *job);
 
-//
+/** Copies the source job given by parameter into the destiny job.*/
 void copy_job(job_t *destiny, job_t *source);
-// ?? Really needed
-void end_job(job_t *job);
 
+/** Given a job_t and a file descriptor, outputs the contents of said job to the fd.*/
 void print_job_fd(int fd, job_t *job);
 
 

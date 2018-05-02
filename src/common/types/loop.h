@@ -73,13 +73,15 @@ void add_loop_signature(loop_t *loop,  signature_t *sig);
 /** Loop is finished, number of iterations is included. */
 void end_loop(loop_t *loop, ulong iterations);
 
-//
+/** Copies the source loop into the destiny one */
 void copy_loop(loop_t *destiny, loop_t *source);
 
 // REPORTING
-//
+/** Appends in a file a loop in CSV format. The returned integer is one
+*   of the following states: EAR_SUCCESS or EAR_ERROR. */
 int append_loop_text_file(char *path, loop_t *loop);
 
+/** Given a loop_t and a file descriptor, outputs the contents of said loop to the fd.*/
 void print_loop_fd(int fd, loop_t *loop);
 
 
