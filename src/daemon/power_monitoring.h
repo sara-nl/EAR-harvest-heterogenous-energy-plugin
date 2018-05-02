@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <common/types/job.h>
 
 /**
 *    \file power_monitoring.h
@@ -48,20 +48,20 @@ void *eard_power_monitoring(void *frequency_monitoring);
 /**  It must be called when EARLib contacts with EARD 
 */
 
-void powermon_mpi_init(int appID);
+void powermon_mpi_init(job_t *j);
 
 /**  It must be called when EARLib disconnects from EARD 
 */
-void powermon_mpi_finalize(int appID);
+void powermon_mpi_finalize();
 
 /** It must be called at when job starts 
 */
 
-void powermon_new_job(int appID,uint from_mpi);
+void powermon_new_job(job_t *j,uint from_mpi);
 
 /** It must be called at when job ends
 */
-void powermon_end_job(int appID);
+void powermon_end_job(job_id jid);
 
 #else
 #endif

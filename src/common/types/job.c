@@ -41,14 +41,15 @@ void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs)
     job->procs = procs;
 }
 
-ulong start_mpi(job_t *job)
+void start_mpi(job_t *job)
 {
-    job->start_mpi_time = time(&job->start_mpi_time);
+	
+    time(&job->start_mpi_time);
 }
 
-ulong end_mpi(job_t *job)
+void end_mpi(job_t *job)
 {
-    job->end_mpi_time = time(&job->start_mpi_time);
+    time(&job->end_mpi_time);
 }
 
 void copy_job(job_t *destiny, job_t *source)

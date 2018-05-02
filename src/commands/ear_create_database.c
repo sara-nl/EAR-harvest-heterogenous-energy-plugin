@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#if DB_MYSQL
 #include <mysql.h>
+#endif
 
 void usage(char *app)
 {
@@ -9,6 +11,7 @@ void usage(char *app)
 	exit(1);
 }
 
+#if DB_MYSQL
 void execute_on_error(MYSQL *connection)
 {
     fprintf(stderr, "Error: %s\n", mysql_error(connection));
@@ -86,12 +89,13 @@ void create_tables(MYSQL *connection)
                             avg_f INT unsigned,\
                             def_f INT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
-    
 }
+#endif 
 
 void main(int argc,char *argv[])
 {
 	if (argc != 2) usage(argv[0]);
+#if DB_MYSQL
 	
     MYSQL *connection = mysql_init(NULL); 
 
@@ -110,5 +114,5 @@ void main(int argc,char *argv[])
     mysql_close(connection);
 
 	exit(1);
-	
+#endif	
 }

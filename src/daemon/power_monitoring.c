@@ -42,6 +42,7 @@
 #include <pthread.h>
 #include <common/ear_verbose.h>
 #include <common/types/generic.h>
+#include <common/types/application.h>
 
 #include <metrics/power_monitoring/ear_power_monitor.h>
 #include <daemon/power_monitoring.h>
@@ -53,18 +54,11 @@ static const char *__NAME__ = "powermon: ";
 
 //  That constant is replicated. We must fix that
 #define MAX_PATH_SIZE 256
-#define NUM_SAMPLES_L1 	10 	// maximum number of samples saved every -frequency_monitoring- usecs
-#define NUM_SAMPLES_L2	10		// Every NUM_SAMPLES_L1 of L1 we will compute 1 sample of L2, 
 
 unsigned int f_monitoring;
 
 int idleNode=1;
 
-power_data_t *L1_samples,*L2_samples;
-int current_L1=0;
-int num_L1=0;
-int current_L2=0;
-int num_L2=0;
 
 /* AVG, MAX, MIN for app */
 int samples=0;
@@ -76,16 +70,12 @@ static int fd_powermon=-1;
 static int fd_periodic=-1;
 
 typedef struct powermon_app{
-    int job_id;
-	time_t begin_time;
-	time_t end_time;
-	time_t mpi_init_time;
-	time_t mpi_finalize_time;
+	application_t app;
 	uint   job_created;
-	double avg_dc_power;
-	double max_dc_power;
-	double min_dc_power;
 }powermon_app_t;
+
+#define JOB(x)	x.app.job
+#define SIGNATURE(x) x.app.signature
 
 powermon_app_t current_ear_app;
 
@@ -100,35 +90,57 @@ void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
 
 void reset_current_app()
 {
-	current_ear_app.job_id=-1;
+	JOB(current_ear_app).id=-1;
 	current_ear_app.job_created=0;
 }
 
-void mpi_init_powermon_app(int app_id)
+void mpi_init_powermon_app()
 {
+	start_mpi(&JOB(current_ear_app));
+	#if 0
 	time(&current_ear_app.mpi_init_time);
+	#endif
+	
 }
-void job_init_powermon_app(int app_id,uint from_mpi)
+void job_init_powermon_app(job_t *new_job,uint from_mpi)
 {
+	#if 0
     current_ear_app.avg_dc_power=0;
     current_ear_app.max_dc_power=0;
     current_ear_app.min_dc_power=DBL_MAX;
     current_ear_app.job_id=app_id;
-	current_ear_app.job_created=!from_mpi;
 	current_ear_app.mpi_init_time=0;
 	current_ear_app.mpi_finalize_time=0;
     time(&current_ear_app.begin_time);
+	#endif
+	current_ear_app.job_created=!from_mpi;
+	copy_job(&JOB(current_ear_app),new_job);	
+	time(&JOB(current_ear_app).start_time);	
+	JOB(current_ear_app).start_mpi_time=0;
+	JOB(current_ear_app).end_mpi_time=0;
+	JOB(current_ear_app).end_time=0;
+	// reset signature
+	// Initialize energy
+	
 }
 
-void mpi_finalize_powermon_app(int app_id,int samples)
+void mpi_finalize_powermon_app()
 {
+	#if 0
 	time(&current_ear_app.mpi_finalize_time);
+	#endif
+	end_mpi(&JOB(current_ear_app));
+	
 }
 
-void job_end_powermon_app(int app_id,int samples)
+void job_end_powermon_app()
 {
+	#if 0
     current_ear_app.avg_dc_power=current_ear_app.avg_dc_power/(double)samples;
     time(&current_ear_app.end_time);
+	#endif
+	time(&JOB(current_ear_app).end_time);
+	// we must get the energy here and compute the avg power
 }
 
 
@@ -141,33 +153,36 @@ void report_powermon_app(powermon_app_t *app)
 	// This function will report values to EAR_DB
 
     // We format the end time into localtime and string
-    current_t=localtime(&(app->begin_time));
+    current_t=localtime(&(app->app.job.start_time));
     strftime(jbegin, sizeof(jbegin), "%c", current_t);
-    current_t=localtime(&(app->end_time));
+    current_t=localtime(&(app->app.job.end_time));
     strftime(jend, sizeof(jend), "%c", current_t);
-	if (app->mpi_init_time){
-    	current_t=localtime(&(app->mpi_init_time));
+	if (app->app.job.start_mpi_time){
+    	current_t=localtime(&(app->app.job.start_mpi_time));
     	strftime(mpibegin, sizeof(mpibegin), "%c", current_t);
-    	current_t=localtime(&(app->mpi_finalize_time));
+    	current_t=localtime(&(app->app.job.end_mpi_time));
     	strftime(mpiend, sizeof(mpiend), "%c", current_t);
 	}
 
 	if (fd_powermon>=0){
 		//"job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
-		if (app->mpi_init_time){
+		#if 0
+		if (app->app.start_mpi_time){
 			sprintf(buffer,"%d;%s;%s;%s;%s;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,mpibegin,mpiend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
 		}else{
 			sprintf(buffer,"%d;%s;%s;not mpi;not mpi;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
 		}
 		write(fd_powermon,buffer,strlen(buffer));
+		#endif
 	}
+	// We can write here power information for this job
 	
 }
 
 // That functions controls the init/end of jobs
 static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
-void powermon_mpi_init(int appID)
+void powermon_mpi_init(job_t * appID)
 {
 	VERBOSE_N(1,"powermon_mpi_init %d\n",appID);
 	// As special case, we will detect if not job init has been specified
@@ -175,24 +190,24 @@ void powermon_mpi_init(int appID)
 		powermon_new_job(appID,1);
 	}
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
-	mpi_init_powermon_app(appID);
+	mpi_init_powermon_app();
 }
 
-void powermon_mpi_finalize(int appID)
+void powermon_mpi_finalize()
 {
 	// MPI_finalize: we don't need to acquire the lock
 	double lavg,lmax,lmin;
 	powermon_app_t summary;
 	int lsamples;
 	char buffer[128];
-	VERBOSE_N(0,"powermon_mpi_finalize %d\n",appID);
-	mpi_finalize_powermon_app(appID,samples);
+	VERBOSE_N(0,"powermon_mpi_finalize %d[%d]\n",JOB(current_ear_app).id,JOB(current_ear_app).step_id);
+	mpi_finalize_powermon_app();
 	if (!current_ear_app.job_created){  // If the job is nt submitted through slurm, end_job would not be submitted 
-		powermon_end_job(appID);
+		powermon_end_job(current_ear_app.app.job.id);
 	}
 }
 
-void powermon_new_job(int appID,uint from_mpi)
+void powermon_new_job(job_t* appID,uint from_mpi)
 {
     // New application connected
 	VERBOSE_N(0,"powermon_new_job %d\n",appID);
@@ -204,24 +219,33 @@ void powermon_new_job(int appID,uint from_mpi)
 
 }
 
-void powermon_end_job(int appID)
+void powermon_end_job(job_id jid)
 {
     // Application disconnected
     double lavg,lmax,lmin;
     powermon_app_t summary;
     char buffer[128];
-	VERBOSE_N(0,"powermon_end_job %d\n",appID);
+	if (jid!=JOB(current_ear_app).id){ 
+		VERBOSE_N(0,"powermon_end_job inicorrect jid %d\n",jid);
+		return;
+	}
+	VERBOSE_N(0,"powermon_end_job %d[%d]\n",JOB(current_ear_app).id,JOB(current_ear_app).step_id);
     while (pthread_mutex_trylock(&app_lock));
         idleNode=1;
-        job_end_powermon_app(appID,samples);
+        job_end_powermon_app();
+		// After that function, the avg power is computed
         copy_powermon_app(&summary,&current_ear_app);
-        current_ear_app.job_id=-1;
+        current_ear_app.app.job.id=-1;
 		current_ear_app.job_created=0;
+		#if 0
         lavg=current_ear_app.avg_dc_power;
         lmax=current_ear_app.max_dc_power;
         lmin=current_ear_app.min_dc_power;
+		#endif
     pthread_mutex_unlock(&app_lock);
+	#if 0
     VERBOSE_N(0,"Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg,lmax,lmin);
+	#endif
     report_powermon_app(&summary);
 }
 
@@ -230,16 +254,18 @@ void powermon_end_job(int appID)
 void update_historic_info(power_data_t *my_current_power)
 {
 	while (pthread_mutex_trylock(&app_lock));
-	if (current_ear_app.job_id>0){
+	if (current_ear_app.app.job.id>0){
+		#if 0
 			current_ear_app.max_dc_power=max(current_ear_app.max_dc_power,my_current_power->avg_dc);
 			current_ear_app.min_dc_power=min(current_ear_app.min_dc_power,my_current_power->avg_dc);
 			current_ear_app.avg_dc_power+=my_current_power->avg_dc;
 			samples++;
+		#endif
 	}
 	pthread_mutex_unlock(&app_lock);
 		
-	if (current_ear_app.job_id!=-1)	printf("Application id %d: ",current_ear_app.job_id);
-    	report_periodic_power(fd_periodic, my_current_power);
+	if (current_ear_app.app.job.id!=-1)	printf("Application id %d[%d]: ",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
+    report_periodic_power(fd_periodic, my_current_power);
 
 	return;
 }

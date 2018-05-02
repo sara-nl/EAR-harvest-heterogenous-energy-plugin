@@ -44,10 +44,12 @@
 #include <netinet/ip.h>
 #include <netdb.h>
 #include <common/ear_verbose.h>
+#include <common/types/job.h>
 #include <common/remote_conf.h>
 #include <common/shared_configuration.h>
 #include <common/states.h>
 #include <common/remote_conf.h>
+#include <daemon/power_monitoring.h>
 
 
 int create_server_socket();
@@ -125,7 +127,9 @@ void process_remote_requests(int clientfd)
 	switch (req){
 		case EAR_RC_NEW_JOB:
 			VERBOSE_N(0,"new_job command received %d\n",command.my_req.job_id);
-			powermon_new_job(command.my_req.job_id,0);		
+			job_t new_job;
+			new_job.id=command.my_req.job_id;
+			powermon_new_job(&new_job,0);		
 			break;
 		case EAR_RC_END_JOB:
 			VERBOSE_N(0,"end_job command received %d\n",command.my_req.job_id);

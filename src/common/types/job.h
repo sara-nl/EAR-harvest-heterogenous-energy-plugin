@@ -67,8 +67,8 @@ typedef struct job
 // Must be called just once. memory is allocated if needed. values automatically initialized are (job_id, user_id, start_time,end_time,type). 
 void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs);
 
-ulong start_mpi(job_t *job);
-ulong end_mpi(job_t *job);
+void start_mpi(job_t *job);
+void end_mpi(job_t *job);
 
 //
 void copy_job(job_t *destiny, job_t *source);

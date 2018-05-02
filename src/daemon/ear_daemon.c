@@ -154,16 +154,25 @@ void catch_signals()
 // END SIGNALS management
 
 // Lock unlock functions are used to be sure a single daemon is running per node
+
+void  create_tmp(char *tmp_dir)
+{
+    int ret;
+    ret=mkdir(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+    if ((ret<0) && (errno!=EEXIST)){
+        ear_verbose(0,"eard: ear tmp dir cannot be created (%s)",strerror(errno));
+        exit(0);
+    }
+
+    if (chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH)<0){
+		ear_verbose(0,"eard: ear_tmp permissions cannot be set (%s)",strerror(errno));
+        exit(0);
+	}
+}
+
 void eard_lock(char *tmp_dir,char *nodename)
 {
 	int ret;
-	ret=mkdir(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-	if ((ret<0) && (errno!=EEXIST)){
-		ear_verbose(0,"eard: ear tmp dir cannot be created (%s)",strerror(errno));
-		exit(0);
-	}
-	
-    chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
 	sprintf(eard_lock_file, "%s/%s.eard_lock", tmp_dir, nodename);
 
 	if ((eard_lockf=open(eard_lock_file,O_WRONLY|O_CREAT|O_EXCL,S_IRUSR|S_IWUSR))<0)
@@ -205,6 +214,7 @@ void connect_service(int req,unsigned long pid)
 	unsigned long ack;
 	int connect=1;
 	int alive;
+	job_t new_job;
 	// Let's check if there is another application
 	VERBOSE_N(1, "request for connection at service %d", req);
 	if (is_new_application(pid) || is_new_service(req, pid)) {
@@ -254,7 +264,9 @@ void connect_service(int req,unsigned long pid)
 				eard_close_comm();
 			}
 #if POWER_MONITORING
-			powermon_mpi_init(pid);
+			// We must modify the client api to send more information
+			new_job.id=pid;
+			powermon_mpi_init(&new_job);
 #endif
 		}
 
@@ -801,6 +813,7 @@ void main(int argc,char *argv[])
     }
 
 	strcpy(ear_tmp,my_ear_tmp);
+	create_tmp(ear_tmp);
 	#if EARD_LOCK
     eard_lock(ear_tmp,nodename);
 	#endif
