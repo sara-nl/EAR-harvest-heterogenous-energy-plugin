@@ -149,6 +149,12 @@ void ear_init()
         my_job_id=atoi(job_id);
 		if (step_id!=NULL){
 			my_job_id=my_job_id*JOB_ID_OFFSET+atoi(step_id);	
+		}else{
+			step_id = getenv("SLURM_STEPID");
+			if (step_id!=NULL){
+				my_job_id=my_job_id*JOB_ID_OFFSET+atoi(step_id);
+			}
+			else ear_verbose(0,"Neither SLURM_STEP_ID nor SLURM_STEPID are defined,using SLURM_JOB_ID\n");
 		}
     }else{
         my_job_id=getppid();
