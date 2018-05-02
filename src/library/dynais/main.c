@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	while (fread(&value, 5, sizeof(unsigned long), input) > 0 && i < panic) {
 		result = dynais(value[3], &size, &level);
 		//print_cosas();
-		//printf("| %d %lu %u %u %d\n", i, value[3], size, level, result);
+		printf("| %d %lu %u %u %d\n", i, value[3], size, level, result);
 		++i;
 	}
 

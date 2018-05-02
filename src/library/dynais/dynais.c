@@ -66,8 +66,8 @@
 
 
 // Local defines
-#define AVX_512 _FEATURE_AVX512F
-#define AVX_256 1
+#define AVX_512 0
+#define AVX_256 0
 #define ALI64 __attribute__ ((aligned (64)))
 
 // General indexes.
@@ -499,7 +499,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	/*
 	 * Phase 1, computation
 	 */
-
+	
 	for (k = 0, i = 0; k < _window; k += 8, i += 1)
 	{
 		// Loading samples and sizes (comparing phase)
@@ -527,8 +527,8 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 		// Moving data to the left
 		zeros_block = _mm256_permutevar8x32_epi32(zeros_block, shifts1);
 		index_block = _mm256_permutevar8x32_epi32(index_block, shifts1);
-		zeros_block = _mm256_insert_epi32(zeros_block, zeros[k + 8], 8);
-		index_block = _mm256_insert_epi32(index_block, indes[k + 8], 8);
+		zeros_block = _mm256_insert_epi32(zeros_block, zeros[k + 8], 7);
+		index_block = _mm256_insert_epi32(index_block, indes[k + 8], 7);
 
 		// Adding 1 to zeros block and cleaning
 		zeros_block = _mm256_add_epi32(zeros_block, mone );
@@ -568,7 +568,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
 	_mm256_store_si256 ((__m256i *) aux_array1, max_zeros_block);
 	_mm256_store_si256 ((__m256i *) aux_array2, max_indes_block);
-
+	
 	for (i = 0; i < 8; ++i)
 	{
 		if (aux_array1[i] > max_zeros)
@@ -577,6 +577,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 			max_length = aux_array2[i];
 		}
 	}
+	
 
 	/*
 	 * Phase 2, evaluation
