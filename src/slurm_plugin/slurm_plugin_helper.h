@@ -31,34 +31,38 @@
 #define EAR_SLURM_PLUGIN_HELPER_H
 
 #define DEBUGGING(string, ...)
-//    	slurm_error(string, __VA_ARGS__)
+//	slurm_error(string, __VA_ARGS__)
 #define FUNCTION_INFO(function)
-//	slurm_error(function)
+//	slurm_error(function); 
+//	int _pid = getpid(); \
+//	int _ppid = getppid(); \
+//	slurm_error(function); \
+//	slurm_error("pid %d ppid %d", _pid, _ppid);
 #define FUNCTION_INFO_(function)
+//	slurm_error(function); \
+// 	find_ear_user_privileges(sp, ac, av) 
 //	if (isenv_local("EAR_VERBOSE", "1") || isenv_remote(sp, "EAR_VERBOSE", "1")) { \
 //		slurm_error(function); \
 //		printenv_remote(sp, "LD_LIBRARY_PATH"); \
 //	}
-#define SPANK_ERROR(string) \
-    slurm_error(string);
-#define SPANK_STRERROR(string, var) \
-    slurm_error(string " (%s)", var, strerror(errno));
 
 void strtoup(char *string);
 char* strclean(char *string, char chr);
 
 void printenv_remote(spank_t sp, char *name);
-void appendenv(char *destiny, char *source);
+void appendenv(char *destiny, char *source, int destiny_length);
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
+int getenv_local(char *name, char **env);
 int getenv_remote(spank_t sp, char *name, char *value, int length);
 int existenv_local(char *name);
 int existenv_remote(spank_t sp, char *name);
 int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
 
-//int freq_to_p_state(int freq);
-int file_to_environment(spank_t sp, const char *path);
+int freq_to_p_state(int freq);
+static int file_to_environment(spank_t sp, const char *path);
 int find_ear_conf_file(spank_t sp, int ac, char **av);
+void find_ear_user_privileges(spank_t sp, int ac, char **av);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H

@@ -18,7 +18,8 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
 
 COMPONENTS = custom \
              ipmi \
-             papi 
+             papi \
+			 power_monitoring
 
 ######## RULES
 
@@ -27,7 +28,6 @@ all:
 		$(MAKE) -C $${i} all || exit; \
 	done 
 	$(CC) $(CFLAGS) -o libear_metrics.so $(METRICS_OBJS)
-	$(MAKE) -C power_monitoring all
 
 ######## OPTIONS
 
@@ -47,4 +47,4 @@ clean:
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -C $${i} clean; \
 	done
-	$(MAKE) -C power_monitoring clean
+	rm -rf *.so *.a *.o

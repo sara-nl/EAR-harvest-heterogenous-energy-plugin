@@ -7,7 +7,7 @@
 #  DESCRIPTION:
 ##*****************************************************************************
 
-AC_DEFUN([AX_OPT_FEATURES],
+AC_DEFUN([AX_PRE_OPT_FEATURES],
 [
 	#
 	#
@@ -130,17 +130,27 @@ AC_DEFUN([AX_OPT_FEATURES],
 	# DATABASE
 	#
     AC_ARG_ENABLE([database],
-        AS_HELP_STRING([--disable-database], [Stores the execution data in files insted in a database]))
+        AS_HELP_STRING([--enable-database], [Stores the execution data in the selected database]))
 
+	DB_MYSQL=0
+	DB_FILES=0
 
-	AS_IF([test "x$enable_database" = "xno" || test -z "$enable_database"],
-        [
-			DATABASE=0
-		],[
-			DATABASE=1
-			enable_database="yes"
-		])
+	AS_IF([test -z "$enable_database" || test "x$enable_database" = "xmysql"],
+	[
+			DB_MYSQL=1
+			DB_FILES=0
+	])
+	AS_IF([test "x$enable_database" = "xfiles"],
+    [
+            DB_MYSQL=0
+            DB_FILES=1
+    ])
+	AS_IF([test "x$enable_database" = "xboth"],
+    [
+            DB_MYSQL=1
+            DB_FILES=1
+    ])
 
-    AC_SUBST(DATABASE)
+    dnl AC_SUBST(DATABASE)
 	
 ])
