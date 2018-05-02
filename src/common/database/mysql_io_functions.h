@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -27,19 +27,35 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
-#ifndef _SIG_PROJ_H_
-#define _SIG_PROJ_H_
+#include <common/config.h>
+#include <common/types/job.h>
 #include <common/types/application.h>
+#include <common/types/loop.h>
 #include <common/types/signature.h>
 
+#if DB_MYSQL
 
+#include <mysql.h>
 
-double sig_power_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_cpi_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr);
+int mysql_insert_application(MYSQL *connection, application_t *app);
 
-#else
+int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps);
+
+int mysql_insert_loop(MYSQL *connection, loop_t *loop);
+
+int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops);
+
+/** Given a DB connection and a job, inserts said job to the DB. Returns
+*	0 on success, -1 on error. */
+int mysql_insert_job(MYSQL *connection, job_t *job);
+
+/** Given a DB connection and a DB query, stores in jobs the jobs found
+*	that correspond to said query, if any. Returns the number of jobs
+*	found on success */
+int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs);
+
+int mysql_insert_signature(MYSQL *connection, signature_t *sig);
+
+int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs);
+
 #endif
-

@@ -27,19 +27,18 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
-#ifndef _SIG_PROJ_H_
-#define _SIG_PROJ_H_
-#include <common/types/application.h>
-#include <common/types/signature.h>
-
-
-
-double sig_power_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_cpi_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr);
-
-#else
+#ifndef __NAME__
+#define __NAME__ "db_helper"
 #endif
+#include <common/types/application.h>
+#include <common/types/loop.h>
+#include <common/config.h>
+#if DB_MYSQL
 
+
+int db_insert_application(application_t *application);
+
+
+int db_insert_loop(loop_t *loop);
+
+#endif

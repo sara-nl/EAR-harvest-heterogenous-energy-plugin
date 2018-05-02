@@ -51,13 +51,13 @@ void policy_end_loop();
 
 /** Given the computed application signature, applies the selected power policy
 *   and returns the “optimal” frequency. */
-ulong policy_power(uint whole_app, application_t *sig);
+ulong policy_power(uint whole_app, signature_t *sig);
 
 
 /** Given a performance projection, the actual application signature and the last
 *   computed application signature values, returns true if policy decision has been
 *   the correct ones. */
-uint policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig);
+uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
 
 /** Executed when we have done several "tries" and the policy is not able to select the "good" freq for this app
 */

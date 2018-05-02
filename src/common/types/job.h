@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -27,19 +27,55 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#ifndef _EAR_TYPES_JOB
+#define _EAR_TYPES_JOB
+#include <stdint.h>
+#include <time.h>
+#include <common/types/generic.h>
+#include <common/config.h>
+
+typedef uint8_t	job_type;
+typedef ulong	job_id;
+
+#define GENERIC_NAME 256
+#define POLICY_NAME 32
+
+typedef struct job
+{
+	job_id 	id;
+	job_id 	step_id;
+	char 	user_id[GENERIC_NAME];
+	char 	app_id[GENERIC_NAME];
+	time_t 	start_time;
+	time_t	end_time;
+	time_t 	start_mpi_time;
+	time_t	end_mpi_time;
+	char 	policy[POLICY_NAME];
+	double  th;
+	ulong 	procs; 
+	job_type	type;	
+	ulong 		def_f;
+} job_t;
 
 
-#ifndef _SIG_PROJ_H_
-#define _SIG_PROJ_H_
-#include <common/types/application.h>
-#include <common/types/signature.h>
+
+// Function declarations
+
+// MANAGEMENT
 
 
+// Must be called just once. memory is allocated if needed. values automatically initialized are (job_id, user_id, start_time,end_time,type). 
+void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs);
 
-double sig_power_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_cpi_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr);
+ulong start_mpi(job_t *job);
+ulong end_mpi(job_t *job);
 
-#else
+//
+void copy_job(job_t *destiny, job_t *source);
+// ?? Really needed
+void end_job(job_t *job);
+
+void print_job_fd(int fd, job_t *job);
+
+
 #endif
-

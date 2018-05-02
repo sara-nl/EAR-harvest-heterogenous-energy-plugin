@@ -40,6 +40,7 @@ tests/check/check.sh
 *ear_get_node_freq
 *ear_set_node_freq
 *ear_report
+*ear_create_database
 
 *compute_coefficients_remote
 *coefficients_quality_control

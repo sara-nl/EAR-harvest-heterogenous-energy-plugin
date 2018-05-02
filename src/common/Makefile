@@ -10,7 +10,10 @@ export DIR
 TYPES_OBJS = types/application.o \
              types/projection.o \
              types/coefficient.o \
-             types/log.o
+			 types/log.o \
+		     types/job.o \
+		     types/signature.o \
+	    	 types/loop.o
 
 BINARIES = ear_daemon_client.o \
            environment.o \
@@ -19,8 +22,10 @@ BINARIES = ear_daemon_client.o \
            shared_configuration.o \
            remote_daemon_client.o \
            file_lock.o \
-           types.a
-
+		   types.a \
+		   database/db_helper.o \
+		   database/mysql_io_functions.o
+			
 ######## RULES
 
 all: $(BINARIES)
@@ -53,7 +58,9 @@ math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
 
 types.a: $(TYPES_OBJS)
-	ar rvs types.a $(TYPES_OBJS) string_enhanced.o	
+	ar rvs types.a $(TYPES_OBJS) string_enhanced.o math_operations.o	
+
+
 
 ######## OPTIONS
 

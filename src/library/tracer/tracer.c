@@ -122,7 +122,7 @@ static void write_app_info_file(char *pathname, int nodes, int mpis, int ppn)
 	OPEN_FILE(filename, fd);
 
 	//
-	sprintf(write_buffer, "%s\n%d\n%d\n%d\n%s\n", application.app_id, nodes, mpis, ppn, application.policy);
+	sprintf(write_buffer, "%s\n%d\n%d\n%d\n%s\n", application.job.app_id, nodes, mpis, ppn, application.job.policy);
 
 	//
 	if (write(fd, write_buffer, strlen(write_buffer)) != strlen(write_buffer)) {

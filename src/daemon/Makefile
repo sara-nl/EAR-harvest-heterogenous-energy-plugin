@@ -17,7 +17,10 @@ INTERNAL_EAR_LIBS = $(SRCDIR)/metrics/custom/bandwidth.a \
 				    $(SRCDIR)/common/types.a 
 
 COMMON_OBJS = $(SRCDIR)/common/environment_common.o \
-              $(SRCDIR)/common/shared_configuration.o
+              $(SRCDIR)/common/shared_configuration.o \
+			  $(SRCDIR)/common/database/db_helper.o \
+			  $(SRCDIR)/common/database/mysql_io_functions.o 
+
 
 OBJS = power_monitoring.o \
        dynamic_configuration.o 
@@ -29,7 +32,7 @@ BINARIES  = eard
 all: eard
 
 eard: ear_daemon.c $(OBJS) $(METRICS_OBJS) $(POWERMONLIB) $(COMMON_OBJS) $(INTERNAL_EAR_LIBS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) $(OBJS) $(INTERNAL_EAR_LIBS) $(POWERMONLIB)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) $(OBJS) $(INTERNAL_EAR_LIBS) $(DB_LDFLAGS) $(POWERMONLIB) 
 
 dynamic_configuration.o: dynamic_configuration.c 
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c

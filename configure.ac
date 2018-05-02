@@ -1,6 +1,7 @@
 # INCLUDES
 m4_include([m4/ax_compare_version.m4])
-m4_include([m4/x_ac_opt_features.m4])
+m4_include([m4/ax_post_opt_features.m4])
+m4_include([m4/ax_pre_opt_features.m4])
 m4_include([m4/x_ac_backup.m4])
 m4_include([m4/x_ac_cpupower.m4])
 m4_include([m4/x_ac_freeipmi.m4])
@@ -24,7 +25,7 @@ AC_PROG_GREP
 ############
 #
 
-AX_OPT_FEATURES
+AX_PRE_OPT_FEATURES
 
 ##############
 # PAPIS TEST #
@@ -116,6 +117,14 @@ X_AC_FREEIPMI
 
 X_AC_MYSQL
 
+
+############
+# FEATURES #
+############
+#
+
+AX_POST_OPT_FEATURES
+
 ##########
 # OUTPUT #
 ##########
@@ -138,10 +147,10 @@ AC_DEFUN([AC_DEPENDANCY_CHECK],
 
 AC_DEFUN([AC_FEATURE_CHECK],
 [
- 	if test "x$1" = "xyes"; then
-        AC_MSG_RESULT(Enabled $2 feature... yes)
+ 	if test "x$1" = "x$2"; then
+        AC_MSG_RESULT(Enabled $3 feature... yes)
     else    
-        AC_MSG_RESULT(Enabled $2 feature... no)
+        AC_MSG_RESULT(Enabled $3 feature... no)
     fi
 ])
 
@@ -157,9 +166,10 @@ if test -z $COMPILABLE; then
 fi
 
 echo "-------------------------------------- Features summary --"
-AC_FEATURE_CHECK($enable_power_monitoring, power monitoring)
-AC_FEATURE_CHECK($enable_shared_memory, shared memory)
-AC_FEATURE_CHECK($enable_database, database)
+AC_FEATURE_CHECK($enable_power_monitoring, "yes", power monitoring)
+AC_FEATURE_CHECK($enable_shared_memory, "yes", shared memory)
+AC_FEATURE_CHECK($DB_MYSQL, "1", MySQL as database)
+AC_FEATURE_CHECK($DB_FILES, "1",  text files as database)
 echo "----------------------------------------------------------"
 
 AC_CONFIG_FILES([Makefile
@@ -172,4 +182,3 @@ AC_CONFIG_FILES([Makefile
 #AC_CONFIG_HEADERS([src/common/config.h])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
 AC_OUTPUT
-

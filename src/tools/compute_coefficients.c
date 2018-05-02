@@ -41,6 +41,7 @@
 #include <cpufreq.h>
 
 #include <common/types/application.h>
+#include <common/types/signature.h>
 #include <common/types/coefficient.h>
 #include <common/types/projection.h>
 #include <common/config.h>
@@ -131,8 +132,8 @@ int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {
     uint pos = 0, found = 0;
 
     while ((pos < total_apps) && (found == 0)) {
-        if ((strcmp(Applist[pos].app_id, newApp->app_id) == 0) &&
-            (Applist[pos].def_f == newApp->def_f)) {
+        if ((strcmp(Applist[pos].job.app_id, newApp->job.app_id) == 0) &&
+            (Applist[pos].job.def_f == newApp->job.def_f)) {
             found = 1;
         } else {
             pos++;
@@ -142,7 +143,7 @@ int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {
     else return pos;
 }
 
-void average_list_samples(application_t *current, uint samples)
+void average_list_samples(signature_t *current, uint samples)
 {
     double foravg = (double) samples;
     current->time = current->time / foravg;
@@ -153,7 +154,7 @@ void average_list_samples(application_t *current, uint samples)
 }
 
 // A=A+B metrics
-void accum_app(application_t *A, application_t *B)
+void accum_app(signature_t *A, signature_t *B)
 {
     A->time += B->time;
     A->GBS += B->GBS;
@@ -164,14 +165,16 @@ void accum_app(application_t *A, application_t *B)
 
 void write_app(application_t *A, application_t *B)
 {
-    strcpy(A->app_id, B->app_id);
-    A->def_f = B->def_f;
-    A->procs = B->procs;
-    A->time = B->time;
-    A->GBS = B->GBS;
-    A->DC_power = B->DC_power;
-    A->TPI = B->TPI;
-    A->CPI = B->CPI;
+    strcpy(A->job.app_id, B->job.app_id);
+    A->job.def_f = B->job.def_f;
+    A->job.procs = B->job.procs;
+    signature_t *sig_a = &A->signature;
+    signature_t *sig_b = &B->signature;
+    sig_a->time = sig_b->time;
+    sig_a->GBS = sig_b->GBS;
+    sig_a->DC_power = sig_b->DC_power;
+    sig_a->TPI = sig_b->TPI;
+    sig_a->CPI = sig_b->CPI;
 }
 
 void nominal_for_power(uint ref, char *app_name, double *power, double *tpi)
@@ -182,9 +185,9 @@ void nominal_for_power(uint ref, char *app_name, double *power, double *tpi)
 
     while ((i < samples_f[ref]) && (found == 0))
     {
-        if (strcmp(sorted_app_list[ref][i].app_id, app_name) == 0) {
-            *power = sorted_app_list[ref][i].DC_power;
-            *tpi = sorted_app_list[ref][i].TPI;
+        if (strcmp(sorted_app_list[ref][i].job.app_id, app_name) == 0) {
+            *power = sorted_app_list[ref][i].signature.DC_power;
+            *tpi = sorted_app_list[ref][i].signature.TPI;
             found = 1;
         } else i++;
     }
@@ -198,10 +201,10 @@ void nominal_for_cpi(uint ref, char *app_name, double *cpi, double *tpi)
 
     while ((i < samples_f[ref]) && (found == 0))
     {
-        if (strcmp(sorted_app_list[ref][i].app_id, app_name) == 0)
+        if (strcmp(sorted_app_list[ref][i].job.app_id, app_name) == 0)
         {
-            *cpi = sorted_app_list[ref][i].CPI;
-            *tpi = sorted_app_list[ref][i].TPI;
+            *cpi = sorted_app_list[ref][i].signature.CPI;
+            *tpi = sorted_app_list[ref][i].signature.TPI;
             found = 1;
         } else i++;
     }
@@ -268,11 +271,11 @@ int main(int argc, char *argv[])
  
     for (i = 0; i < num_apps; i++)
     {
-        if (apps[i].def_f >= min_freq) {
+        if (apps[i].job.def_f >= min_freq) {
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
                 // If APP exists, then accumulate its values in
-                accum_app(&app_list[index], &apps[i]);
+                accum_app(&app_list[index].signature, &apps[i].signature);
                 samples_per_app[index]++;
             } else {
                 write_app(&app_list[filtered_apps], &apps[i]);
@@ -288,7 +291,7 @@ int main(int argc, char *argv[])
 
     // We must compute the average per (app,f)
     for (i = 0; i < num_apps; i++) {
-        average_list_samples(&app_list[i], samples_per_app[i]);
+        average_list_samples(&app_list[i].signature, samples_per_app[i]);
     }
 
     fprintf(stdout, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u\n",
@@ -296,8 +299,8 @@ int main(int argc, char *argv[])
 
     // We maintain the name's of applications to generate graphs
     for (current_app = 0; current_app < num_apps; current_app++) {
-        if (app_list[current_app].def_f >= min_freq) {
-            index = freq_to_p_state(app_list[current_app].def_f);
+        if (app_list[current_app].job.def_f >= min_freq) {
+            index = freq_to_p_state(app_list[current_app].job.def_f);
             samples_f[index]++;
         }
     }
@@ -311,7 +314,7 @@ int main(int argc, char *argv[])
 
     // Sorting applications by frequency
     for (current_app = 0; current_app < num_apps; current_app++) {
-        f = app_list[current_app].def_f;
+        f = app_list[current_app].job.def_f;
 
         if (f >= min_freq) {
             i = freq_to_p_state(f);
@@ -366,9 +369,9 @@ int main(int argc, char *argv[])
 
                         for (i = 0; i < n; i++) {
                             // POWER
-                            gsl_vector_set(POWER, i, sorted_app_list[f][i].DC_power);
+                            gsl_vector_set(POWER, i, sorted_app_list[f][i].signature.DC_power);
 
-                            nominal_for_power(ref, sorted_app_list[f][i].app_id, &power, &tpi);
+                            nominal_for_power(ref, sorted_app_list[f][i].job.app_id, &power, &tpi);
 
                             // SIGNATURE VALUES
                             gsl_matrix_set(SIGNATURE_POWER, i, 0, 1);
@@ -407,9 +410,9 @@ int main(int argc, char *argv[])
                         for (i = 0; i < n; i++)
                         {
                             // CPI
-                            gsl_vector_set(CPI, i, sorted_app_list[f][i].CPI);
+                            gsl_vector_set(CPI, i, sorted_app_list[f][i].signature.CPI);
 
-                            nominal_for_cpi(ref, sorted_app_list[f][i].app_id, &cpi, &tpi);
+                            nominal_for_cpi(ref, sorted_app_list[f][i].job.app_id, &cpi, &tpi);
 
                             // SIGNATURE VALUES
                             gsl_matrix_set(SIGNATURE_CPI, i, 0, 1);

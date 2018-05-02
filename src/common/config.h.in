@@ -9,8 +9,10 @@
 #define EAR_INSTALL_PATH    "@prefix@"
 
 // File names
-#define EAR_LIB_PATH        "lib/libear.so"
-#define EAR_TRACE_LIB_PATH  "lib/libeart.so"
+#define IMPI_LIB_PATH		"lib/libear.so"
+#define IMPI_TRACE_LIB_PATH	"lib/libeart.so"
+#define OMPI_LIB_PATH		"lib/libear_ompi.so"
+#define OMPI_TRACE_LIB_PATH	"lib/libeart_ompi.so"
 #define EAR_DAEMON_PATH     "sbin/eard"
 #define EAR_CONF_FILE		"ear.conf"
 #define EAR_LINK_FILE		"ear.link"
@@ -29,9 +31,5 @@
 	type == BUILD_TYPE
 
 // Database
-#define DB_TYPE				@DATABASE@
-#define DB_FILES			0
-#define DB_MYSQL			1
-
-#define DATABASE(type) \
-	 type == DB_TYPE
+#define DB_FILES			@DB_FILES@
+#define DB_MYSQL			@DB_MYSQL@

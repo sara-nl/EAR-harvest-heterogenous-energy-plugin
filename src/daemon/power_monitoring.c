@@ -239,7 +239,7 @@ void update_historic_info(power_data_t *my_current_power)
 	pthread_mutex_unlock(&app_lock);
 		
 	if (current_ear_app.job_id!=-1)	printf("Application id %d: ",current_ear_app.job_id);
-    report_periodic_power(fd_periodic,my_current_power);
+    	report_periodic_power(fd_periodic, my_current_power);
 
 	return;
 }
@@ -274,7 +274,6 @@ void create_powermon_out()
     }else{
         VERBOSE_N(0,"Created power monitoring file for periodic information %s\n",output_name);
     }
-
 	umask(my_mask);
 }
 	

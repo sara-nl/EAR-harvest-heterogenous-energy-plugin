@@ -64,7 +64,7 @@ char *getenv_ear_db_pathname()
 
 	if (my_ear_db_pathname != NULL && strcmp(my_ear_db_pathname,"") != 0)
 	{
-		conf_ear_db_pathname=malloc(strlen(my_ear_db_pathname)+1);
+		conf_ear_db_pathname = malloc(strlen(my_ear_db_pathname)+1);
 		strcpy(conf_ear_db_pathname,my_ear_db_pathname);
 	}
 
@@ -83,12 +83,17 @@ int getenv_ear_verbose()
 	return conf_ear_verbose;
 }
 
+char *get_ear_install_path()
+{
+	return getenv("EAR_INSTALL_PATH");
+}
 
 // get_ functions must be used after getenv_
 char * get_ear_tmp()
 {
 	return conf_ear_tmp;
 }
+
 void set_ear_tmp(char *new_tmp)
 {
 	if (conf_ear_tmp!=NULL) free(conf_ear_tmp);
@@ -105,6 +110,7 @@ int get_ear_verbose()
 {
 	return conf_ear_verbose;
 }
+
 void set_ear_verbose(int verb)
 {
 	conf_ear_verbose=verb;

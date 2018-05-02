@@ -39,4 +39,4 @@ install:
 
 clean:
 	rm -f *.o  *.so
-	$(MAKE) -C bandwidth clean
+	rm $(LIBRARIES) $(BANDWIDTH_OBJS)

@@ -118,7 +118,7 @@ void main(int argc, char *argv[])
         if (verbose) printf("Checking node for signatures with %d job id.\n", job_id);
         while (scan_application_fd(node_file, apps[jobs_counter]) == APP_TEXT_FILE_FIELDS)
         {
-            if (!strcmp(apps[jobs_counter]->job_id, argv[1]))
+            if (apps[jobs_counter]->job.id == job_id )
             {
                 if (verbose) printf("Found job_id %d in file %s\n", apps[jobs_counter]->job_id, nodelog_file_path);
                 jobs_counter++;
@@ -138,13 +138,14 @@ void main(int argc, char *argv[])
     total_energy = 0;
     for (i = 0; i < jobs_counter; i++)
     {
-        avg_f = (double) apps[i]->avg_f/1000000;
+        avg_f = (double) apps[i]->signature.avg_f/1000000;
         printf("%s \t%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n", 
-                apps[i]->job_id, apps[i]->node_id, apps[i]->time, apps[i]->DC_power, apps[i]->DC_power * apps[i]->time, avg_f);
+                apps[i]->job.id, apps[i]->node_id, apps[i]->signature.time, apps[i]->signature. DC_power, 
+		apps[i]->signature.DC_power * apps[i]->signature.time, avg_f);
         avg_frequency += avg_f;
-        avg_time += apps[i]->time;
-        avg_power += apps[i]->DC_power;
-        total_energy += apps[i]->time * apps[i]->DC_power;
+        avg_time += apps[i]->signature.time;
+        avg_power += apps[i]->signature. DC_power;
+        total_energy += apps[i]->signature.time * apps[i]->signature.DC_power;
 
     }
 

@@ -36,6 +36,8 @@
 #define EAR_ALLOC_ERROR         -3
 #define EAR_READ_ERROR          -4
 #define EAR_FILE_NOT_FOUND      -5
-#define EAR_NOT_READY		-6
+#define EAR_NOT_READY		    -6
+#define EAR_MYSQL_ERROR         -7
+#define EAR_MYSQL_STMT_ERROR    -8
 
 #endif //EAR_STATES_H

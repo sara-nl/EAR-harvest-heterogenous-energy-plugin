@@ -80,8 +80,8 @@ int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
 
     for(i = 0; i < n_apps; ++i)
     {
-        equal_id = strcmp(app_id, apps[i].app_id) == 0;
-        equal_f = f0_mhz == apps[i].def_f;
+        equal_id = strcmp(app_id, apps[i].job.app_id) == 0;
+        equal_f = f0_mhz == apps[i].job.def_f;
 
         if (equal_id && equal_f) {
             return i;
@@ -110,44 +110,44 @@ application_t *merge(control_t *control)
     // Initialization
     for(i = 0; i < n_apps; ++i)
     {
-        apps_merged[i].app_id[0] = '\0';
+        apps_merged[i].job.app_id[0] = '\0';
     }
 
     //
     for(i = 0, j = 0; i < n_apps; ++i)
     {
-        f0_mhz = apps[i].def_f;
-        app_id = apps[i].app_id;
+        f0_mhz = apps[i].job.def_f;
+        app_id = apps[i].job.app_id;
 
         if (find(apps_merged, j, app_id, f0_mhz) == -1)
         {
             memcpy(&apps_merged[j], &apps[i], sizeof(application_t));
 
-            power = apps[i].DC_power;
-            time = apps[i].time;
-            tpi = apps[i].TPI;
-            cpi = apps[i].CPI;
+            power = apps[i].signature.DC_power;
+            time = apps[i].signature.time;
+            tpi = apps[i].signature.TPI;
+            cpi = apps[i].signature.CPI;
             counter = 1.0;
 
             for(k = i + 1; k < n_apps; ++k)
             {
-                equal_id = strcmp(app_id, apps[k].app_id) == 0;
-                equal_f = f0_mhz == apps[k].def_f;
+                equal_id = strcmp(app_id, apps[k].job.app_id) == 0;
+                equal_f = f0_mhz == apps[k].job.def_f;
 
                 if (equal_id && equal_f)
                 {
-                    power += apps[k].DC_power;
-                    time += apps[k].time;
-                    tpi += apps[k].TPI;
-                    cpi += apps[k].CPI;
+                    power += apps[k].signature.DC_power;
+                    time += apps[k].signature.time;
+                    tpi += apps[k].signature.TPI;
+                    cpi += apps[k].signature.CPI;
                     counter += 1.0;
                 }
             }
 
-            apps_merged[j].DC_power = power / counter;
-            apps_merged[j].time = time / counter;
-            apps_merged[j].TPI = tpi / counter;
-            apps_merged[j].CPI = cpi / counter;
+            apps_merged[j].signature.DC_power = power / counter;
+            apps_merged[j].signature.time = time / counter;
+            apps_merged[j].signature.TPI = tpi / counter;
+            apps_merged[j].signature.CPI = cpi / counter;
 
             j += 1;
         }
@@ -199,15 +199,15 @@ void evaluate(control_t *control)
     // Apps iteration
     for (j = 0; j < n_apps; ++j)
     {
-	   if (apps[j].def_f == f0_mhz)
+	   if (apps[j].job.def_f == f0_mhz)
         {
             // Print content
             set_spacing_digits(18);
-            print_spacing_string(apps[j].app_id);
+            print_spacing_string(apps[j].job.app_id);
 
             set_spacing_digits(11);
             printf("@");
-            print_spacing_uint(apps[j].def_f);
+            print_spacing_uint(apps[j].job.def_f);
 
             set_spacing_digits(12);
             printf("| ");
@@ -221,10 +221,10 @@ void evaluate(control_t *control)
 
             printf("\n");
 
-            cpi0 = apps[j].CPI;
-            tpi0 = apps[j].TPI;
-            time0 = apps[j].time;
-            power0 = apps[j].DC_power;
+            cpi0 = apps[j].signature.CPI;
+            tpi0 = apps[j].signature.TPI;
+            time0 = apps[j].signature.time;
+            power0 = apps[j].signature.DC_power;
 
             for (i = 0; i < n_coeffs; i++)
             {
@@ -235,7 +235,7 @@ void evaluate(control_t *control)
                     powerp = power_proj(power0, tpi0, &coeffs[i]);
 
                     //
-                    k = find(apps, n_apps, apps[j].app_id, coeffs[i].pstate);
+                    k = find(apps, n_apps, apps[j].job.app_id, coeffs[i].pstate);
 
                     // Print content
                     set_spacing_digits(18);
@@ -248,12 +248,12 @@ void evaluate(control_t *control)
                     {
                         m = &apps[k];
 
-                        timee = fabs((1.0 - (m->time / timep)) * 100.0);
-                        powere = fabs((1.0 - (m->DC_power / powerp)) * 100.0);
-                        cpie = fabs((1.0 - (m->CPI / cpip)) * 100.0);
+                        timee = fabs((1.0 - (m->signature.time / timep)) * 100.0);
+                        powere = fabs((1.0 - (m->signature.DC_power / powerp)) * 100.0);
+                        cpie = fabs((1.0 - (m->signature.CPI / cpip)) * 100.0);
 
                         printf("| ");
-                        sprintf(buffer, "%0.2lf", m->time);
+                        sprintf(buffer, "%0.2lf", m->signature.time);
                         print_spacing_string(buffer);
 
                         sprintf(buffer, "%0.2lf", timep);
@@ -263,7 +263,7 @@ void evaluate(control_t *control)
                         print_spacing_string(buffer);
 
                         printf("| ");
-                        sprintf(buffer, "%0.2lf", m->DC_power);
+                        sprintf(buffer, "%0.2lf", m->signature.DC_power);
                         print_spacing_string(buffer);
 
                         sprintf(buffer, "%0.2lf", powerp);
@@ -284,10 +284,10 @@ void evaluate(control_t *control)
                     }
 
                     if (fd >= 0) {
-                        dprintf(fd, "%s;%u;%u;", apps[j].app_id, apps[j].def_f, m->def_f);
-                        dprintf(fd, "%lf;%lf;%lf;", m->time, timep, timee);
-                        dprintf(fd, "%lf;%lf;%lf;", m->DC_power, powerp, powere);
-                        dprintf(fd, "%lf;%lf;%lf\n", m->CPI, cpip, cpie);
+                        dprintf(fd, "%s;%u;%u;", apps[j].job.app_id, apps[j].job.def_f, m->job.def_f);
+                        dprintf(fd, "%lf;%lf;%lf;", m->signature.time, timep, timee);
+                        dprintf(fd, "%lf;%lf;%lf;", m->signature.DC_power, powerp, powere);
+                        dprintf(fd, "%lf;%lf;%lf\n", m->signature.CPI, cpip, cpie);
                     }
 
                     printf("\n");

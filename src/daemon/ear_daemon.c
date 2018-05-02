@@ -442,14 +442,23 @@ int eard_node_energy(int must_read)
 
 void form_database_paths()
 {
+	char aux_install_path[PATH_MAX];
 	char node_name[PATH_MAX];
+	char *install_path;
 	char *db_pathname;
 
 	db_pathname = get_ear_db_pathname();
+	install_path = getenv("EAR_INSTALL_PATH");
 
-	if (db_pathname != NULL) {
+	if (db_pathname == NULL && install_path != NULL)
+	{
+		sprintf(aux_install_path, "%s/etc/dbs/db.", install_path);
+		db_pathname = aux_install_path;
+	}
+
+	if (db_pathname != NULL)
+	{
 		gethostname(node_name, sizeof(node_name));
-
 		sprintf(database_bin_path, "%s%s.db.bin", db_pathname, node_name);
 		sprintf(database_csv_path, "%s%s.db.csv", db_pathname, node_name);
 	}
@@ -493,6 +502,14 @@ int eard_system(int must_read)
 				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
 				eard_close_comm();
 			}
+			#if DB_MYSQL
+
+			#include <common/database/db_helper.h>
+
+			if (!db_insert_application(&req.req_data.app)) DEBUG_F(1, "Application signature correctly written");
+
+
+			#endif
 			break;
 		default: return 0;
 	}

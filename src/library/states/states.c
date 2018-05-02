@@ -122,7 +122,7 @@ void states_end_period(uint iterations)
 {
 	if (loop_with_signature)
 	{
-		loop.iterations = iterations;
+		loop.total_iterations = iterations;
 		append_loop_text_file(loop_summary_path, &loop);
 	}
 
@@ -130,7 +130,8 @@ void states_end_period(uint iterations)
 	policy_end_loop();
 }
 
-static int signature_has_changed(application_t *A, application_t *B)
+
+static int policy_had_effect(signature_t *A, signature_t *B)
 {
 	if (equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH) &&
 		equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH))
@@ -140,7 +141,7 @@ static int signature_has_changed(application_t *A, application_t *B)
 	return 1;
 }
 
-static void print_loop_signature(char *title, application_t *loop)
+static void print_loop_signature(char *title, signature_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000000.0;
 
@@ -148,9 +149,10 @@ static void print_loop_signature(char *title, application_t *loop)
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
+void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter);
 static void report_loop_signature(uint iterations,loop_t *loop)
 {
-   loop->iterations = iterations;
+   loop->total_iterations = iterations;
    append_loop_text_file(loop_summary_path, loop);
 	
 	
@@ -211,9 +213,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				ear_debug(3, "EAR(%s) FIRST_ITERATION -> EVALUATING_SIGNATURE\n", ear_app_name);
 			
 				// Loop printing algorithm
-				loop.first_event = event;
-				loop.level = level;
-				loop.size = period;
+				loop.id.event = event;
+				loop.id.level = level;
+				loop.id.size = period;
 			}
 			break;
 		case SIGNATURE_HAS_CHANGED:
@@ -269,7 +271,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
 						  __FILE__, period, N_iter);
 
-				result = metrics_compute_signature_finish(&loop_signature, N_iter, perf_accuracy_min_time);	
+				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);	
 
 				if (result == EAR_NOT_READY)
 				{
@@ -280,14 +282,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
-					//print_loop_signature("signature computed", &loop_signature);
+					//print_loop_signature("signature computed", &loop_signature.signature);
 
 					loop_with_signature = 1;
 
 					// Computing dynais overhead
 					if (dynais_enabled){
 						dynais_overhead_usec=mpi_calls_iter;
-						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.time;
+						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.signature.time;
 						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
 							// Disable dynais : API is still pending
 							#if DYNAIS_CUTOFF
@@ -296,8 +298,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							VERBOSE_N(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
 							log_report_dynais_off(my_job_id);
 						}
-						VERBOSE_N(1,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
-						loop_signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
+						VERBOSE_N(0,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+						loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
 						last_first_event=event;
 						last_calls_in_loop=mpi_calls_iter;
 						last_loop_size=period;
@@ -306,16 +308,16 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					}
 					current_loop_id = event;
 
-					CPI = loop_signature.CPI;
-					GBS = loop_signature.GBS;
-					POWER = loop_signature.DC_power;
-					TPI = loop_signature.TPI;
-					TIME = loop_signature.time;
+					CPI = loop_signature.signature.CPI;
+					GBS = loop_signature.signature.GBS;
+					POWER = loop_signature.signature.DC_power;
+					TPI = loop_signature.signature.TPI;
+					TIME = loop_signature.signature.time;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					begin_iter = iterations;
-					policy_freq = policy_power(0, &loop_signature);
+					policy_freq = policy_power(0, &loop_signature.signature);
 					PP = performance_projection(policy_freq);
 
 					if (policy_freq != prev_f)
@@ -354,7 +356,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 
 					// Loop printing algorithm
-					copy_application(&loop.signature, &loop_signature);
+					copy_signature(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
 				}
 			}
@@ -372,7 +374,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
 						  __FILE__, period, N_iter);
 
-				result = metrics_compute_signature_finish(&loop_signature, N_iter, perf_accuracy_min_time);
+				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);
 
 				if (result == EAR_NOT_READY)
 				{
@@ -382,18 +384,18 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
-					//print_loop_signature("signature refreshed", &loop_signature);
+					//print_loop_signature("signature refreshed", &loop_signature.signature);
 
-					CPI = loop_signature.CPI;
-					GBS = loop_signature.GBS;
-					POWER = loop_signature.DC_power;
-					TPI = loop_signature.TPI;
-					TIME = loop_signature.time;
+					CPI = loop_signature.signature.CPI;
+					GBS = loop_signature.signature.GBS;
+					POWER = loop_signature.signature.DC_power;
+					TPI = loop_signature.signature.TPI;
+					TIME = loop_signature.signature.time;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 
-					copy_application(&loop.signature, &loop_signature);
+					copy_signature(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
 
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
@@ -408,7 +410,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					// We compare the projection with the signature and the old signature
 					PP = performance_projection(policy_freq);
 
-					if (policy_ok(PP, &loop_signature, &last_signature))
+					if (policy_ok(PP, &loop_signature.signature, &last_signature.signature))
 					{
 						perf_count_period = perf_count_period * 2;
 						ear_verbose(3,
@@ -421,7 +423,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						tries_current_loop++;
 						if (tries_current_loop==MAX_POLICY_TRIES){
 							// We must report a problem and go to the default configuration
-							log_report_max_tries(my_job_id,application.def_f);
+							log_report_max_tries(my_job_id, application.job.def_f);
 							EAR_STATE = PROJECTION_ERROR;
 							policy_default_configuration();
 						}else{
@@ -430,7 +432,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 									"\n\nEAR(%s): Policy not ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
 									ear_app_name, TIME, POWER, ENERGY, PP->Time, PP->Power, PP->Time * PP->Power);
 
-						if (signature_has_changed(&loop_signature, &last_signature))
+						if (policy_had_effect(&loop_signature.signature, &last_signature.signature))
 						{
 							EAR_STATE = SIGNATURE_HAS_CHANGED;
 							ear_verbose(3, "EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",

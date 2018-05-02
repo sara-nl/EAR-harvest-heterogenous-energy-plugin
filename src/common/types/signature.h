@@ -28,18 +28,49 @@
 */
 
 
+#ifndef _EAR_TYPES_SIGNATURE
+#define _EAR_TYPES_SIGNATURE
 
-#ifndef _SIG_PROJ_H_
-#define _SIG_PROJ_H_
-#include <common/types/application.h>
-#include <common/types/signature.h>
+#include <common/types/generic.h>
+#include <common/config.h>
+
+#define FLOPS_EVENTS 8
+
+typedef struct signature
+{
+    double DC_power;
+    double DRAM_power;
+    double PCK_power;
+    double EDP;
+    double GBS;
+    double TPI;
+    double CPI;
+    double Gflops;
+    double time;
+    ull FLOPS[FLOPS_EVENTS];
+    ull L1_misses;
+    ull L2_misses;
+    ull L3_misses;
+    ull instructions;
+    ull cycles;
+    ulong avg_f;
+    ulong def_f;
+} signature_t;
 
 
+// Function declarations
 
-double sig_power_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_cpi_projection(signature_t *my_app,ulong F,uint Fi);
-double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr);
+//
+void copy_signature(signature_t *destiny, signature_t *source);
 
-#else
+/** Resets values. */
+void init_signature(signature_t *sig);
+
+/** returns true if basic values for sig1 and sig2 are equal with a maximum %
+*   of difference defined by threshold (th) */
+uint are_equal(signature_t *sig1,signature_t *sig2,double th);
+
+/** Outputs the signature contents to the file pointed by the fd. */
+void print_signature_fd(int fd, signature_t *sig);
+
 #endif
-
