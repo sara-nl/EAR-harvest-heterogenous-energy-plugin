@@ -30,7 +30,7 @@ ear_get_node_freq:ear_get_node_freq.c $(FREQ_OBJS)
 ear_report: ear_report.c $(TYPES)
 	$(CC) $(CFLAGS) -o ear_report ear_report.c $(TYPES)
 
-ear_new_job:ear_new_job.c $(REMOTE_OBJS)
+ear_new_job:ear_new_job.c $(REMOTE_OBJS) 
 	$(CC) $(CFLAGS) -o ear_new_job ear_new_job.c  $(REMOTE_OBJS)
 
 ear_end_job:ear_end_job.c $(REMOTE_OBJS)

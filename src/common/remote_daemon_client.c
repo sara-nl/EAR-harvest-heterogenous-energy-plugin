@@ -41,6 +41,7 @@
 #include <common/remote_conf.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
+#include <common/types/job.h>
 int EAR_VERBOSE_LEVEL=1;
 
 
@@ -117,20 +118,21 @@ int eards_remote_connect(char *nodename)
 
 }
 
-int eards_new_job(int job_id)
+int eards_new_job(job_t *new_job)
 {
 	request_t command;
 	command.req=EAR_RC_NEW_JOB;
-	command.my_req.job_id=job_id;
-	VERBOSE_N(0,"command %u job_id %d\n",command.req,command.my_req.job_id);
+	copy_job(&command.my_req.new_job,new_job);
+	VERBOSE_N(0,"command %u job_id %d\n",command.req,command.my_req.new_job.id);
 	return send_command(&command);
 }
-int eards_end_job(int job_id)
+int eards_end_job(job_id job_id,job_id step_id)
 {
     request_t command;
     command.req=EAR_RC_END_JOB;
-	command.my_req.job_id=job_id;
-	VERBOSE_N(0,"command %u job_id %d\n",command.req,command.my_req.job_id);
+	command.my_req.end_job.jid=job_id;
+	command.my_req.end_job.sid=step_id;
+	VERBOSE_N(0,"command %u job_id %d step_id %d\n",command.req,command.my_req.end_job.jid,command.req,command.my_req.end_job.sid);
 	return send_command(&command);
 }
 
@@ -139,7 +141,7 @@ int eards_set_freq(unsigned long freq)
 {
 	request_t command;
 	command.req=EAR_RC_MAX_FREQ;
-    command.my_req.max_freq=freq;
+    command.my_req.ear_conf.max_freq=freq;
 	return send_command(&command);
 }
 // New th must be passed as % th=0.75 --> 75
@@ -147,7 +149,7 @@ int eards_set_th(unsigned long th)
 {
     request_t command;
     command.req=EAR_RC_NEW_TH;
-    command.my_req.th=th;
+    command.my_req.ear_conf.th=th;
     return send_command(&command);
 }
 

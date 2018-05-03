@@ -71,6 +71,8 @@ static int fd_periodic=-1;
 
 typedef struct powermon_app{
 	application_t app;
+	double max_dc_power;
+	double min_dc_power;
 	uint   job_created;
 }powermon_app_t;
 
@@ -106,14 +108,14 @@ void job_init_powermon_app(job_t *new_job,uint from_mpi)
 {
 	#if 0
     current_ear_app.avg_dc_power=0;
-    current_ear_app.max_dc_power=0;
-    current_ear_app.min_dc_power=DBL_MAX;
     current_ear_app.job_id=app_id;
 	current_ear_app.mpi_init_time=0;
 	current_ear_app.mpi_finalize_time=0;
     time(&current_ear_app.begin_time);
 	#endif
 	current_ear_app.job_created=!from_mpi;
+	current_ear_app.max_dc_power=0;
+	current_ear_app.min_dc_power=DBL_MAX;
 	copy_job(&JOB(current_ear_app),new_job);	
 	time(&JOB(current_ear_app).start_time);	
 	JOB(current_ear_app).start_mpi_time=0;
