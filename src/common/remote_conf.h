@@ -39,12 +39,25 @@
 
 #ifndef REMOTE_CONF_H
 #define REMOTE_CONF_H
+
+#include <common/types/job.h>
 #define DAEMON_PORT_NUMBER          50000
 
+typedef struct end_job_req{
+	job_id jid;
+	job_id sid;
+}end_job_req_t;
+
+typedef struct new_conf{
+	ulong max_freq;
+	ulong min_freq;
+	ulong th;
+}new_conf_t;
+
 typedef union req_data{
-        uint job_id;
-        ulong max_freq;
-        ulong th;
+		job_t 			new_job;
+		end_job_req_t 	end_job;
+		new_conf_t 		ear_conf;
 }req_data_t;
 
 

@@ -24,7 +24,7 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Connection error\n");
 		exit(1);
 	}
-	eards_end_job(job_id);
+	eards_end_job(job_id,0);
 	eards_remote_disconnect();
 	exit(0);
 	
