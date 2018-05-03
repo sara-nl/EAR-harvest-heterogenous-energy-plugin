@@ -213,7 +213,7 @@ ulong  min_energy_default_conf(ulong f)
     if (f>system_conf->max_freq){
         log_report_global_policy_freq(my_job_id,system_conf->max_freq);
         ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
-        best_pstate,system_conf->max_freq);
+        f,system_conf->max_freq);
 		return system_conf->max_freq;
     }else return f;
 	#else

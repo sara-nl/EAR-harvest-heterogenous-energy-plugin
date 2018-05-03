@@ -60,10 +60,10 @@ typedef struct signature
 
 // Function declarations
 
-//
+/** Replicates the signature in *source to *destiny */
 void copy_signature(signature_t *destiny, signature_t *source);
 
-/** Resets values. */
+/** Initializes all values of the signature to 0.*/
 void init_signature(signature_t *sig);
 
 /** returns true if basic values for sig1 and sig2 are equal with a maximum %

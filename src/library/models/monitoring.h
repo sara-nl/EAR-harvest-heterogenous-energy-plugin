@@ -41,8 +41,8 @@
 void monitoring_init();
 void monitoring_new_loop();
 void monitoring_end_loop();
-ulong monitoring_policy(application_t *sig);
-ulong monitoring_policy_ok(projection_t *proj, application_t *curr_sig, application_t *last_sig);
+ulong monitoring_policy(signature_t *sig);
+ulong monitoring_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
 ulong monitoring_default_conf(ulong f);
 
 

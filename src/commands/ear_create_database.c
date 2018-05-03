@@ -87,9 +87,8 @@ void create_tables(MYSQL *connection)
                             avg_f INT unsigned,\
                             def_f INT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
-    
 }
-#endif
+#endif 
 
 void main(int argc,char *argv[])
 {
@@ -112,7 +111,6 @@ void main(int argc,char *argv[])
 
     mysql_close(connection);
 
-	#endif
 	exit(1);
-	
+	#endif	
 }
