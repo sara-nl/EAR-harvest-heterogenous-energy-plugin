@@ -66,7 +66,7 @@ struct spank_option spank_options[] = {
     },
 	{ "ear-mpi-dist", "dist",
       "Selects the MPI distribution for compatibility of your application" \
-	  "{dist=default|openmpi}",
+	  "{dist=intel|openmpi}",
       2, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
     },
     { "ear-verbose", "value",
