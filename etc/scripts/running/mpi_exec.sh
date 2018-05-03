@@ -15,7 +15,12 @@ fi
 if [ -z $EAR_INSTALL_PATH ]
 then
     echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set."
-    echo -e "Load the EAR environment module with 'module load ear'."
+    exit 1
+fi
+
+if [ -z $EAR_TMP ]
+then
+    echo -e "ERROR: EAR_TMP_PATH environment variable is not set."
     exit 1
 fi
 
@@ -48,9 +53,9 @@ if [[ "$5" != "NO_EAR" ]]
 then
 	if [[ "x$6" == "xNO_TRACE" ]]
 	then
-		PRELOAD="-genv LD_PRELOAD=${EAR_LIB_PATH}"
+		PRELOAD="-genv LD_PRELOAD=${EAR_INSTALL_PATH}/lib/libear.so"
 	else
-    	PRELOAD="-genv LD_PRELOAD=${EAR_TRACE_LIB_PATH}"
+    	PRELOAD="-genv LD_PRELOAD=${EAR_INSTALL_PATH}/lib/libeart.so"
 	fi
 fi
 

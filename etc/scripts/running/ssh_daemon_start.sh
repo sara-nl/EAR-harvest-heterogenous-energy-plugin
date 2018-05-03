@@ -23,9 +23,20 @@ fi
 
 if [ -z $EAR_INSTALL_PATH ]
 then
-        echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set. Install EAR and"
-        echo -e "load EAR environment module or export EAR_INSTALL_PATH in your .bashrc."
-        exit 1
+	echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set."
+	exit 1
+fi
+
+if [ -z $EAR_TMP ]
+then
+	echo -e "ERROR: EAR_TMP environment variable is not set."
+	exit 1
+fi
+
+if [ -z $EAR_VERBOSE ]
+then
+	echo -e "ERROR: EAR_VERBOSE environment variable is not set. Using 0."
+	export EAR_VERBOSE=0	
 fi
 
 for i in ${HOSTLIST}
@@ -36,7 +47,7 @@ do
 	then
 		mkdir -p ${EAR_TMP}
 		sudo LD_LIBRARY_PATH="${FREEIPMI_LIB_PATH}:${PAPI_LIB_PATH}:${CPUPOWER_LIB_PATH}:${LD_LIBRARY_PATH}" \
-                EAR_DB_PATHNAME=${3} $EAR_INSTALL_PATH/sbin/eard $2 ${EAR_TMP} ${EAR_VERBOSE} &
+                EAR_DB_PATHNAME=${3} $EAR_INSTALL_PATH/sbin/eard $2 ${EAR_TMP} ${EAR_VERBOSE}
 	else
 		ssh ${i} mkdir -p ${EAR_TMP}
 	 	ssh ${i} sudo LD_LIBRARY_PATH="${FREEIPMI_LIB_PATH}:${PAPI_LIB_PATH}:${CPUPOWER_LIB_PATH}:${LD_LIBRARY_PATH}" \

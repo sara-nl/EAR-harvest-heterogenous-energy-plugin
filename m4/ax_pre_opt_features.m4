@@ -130,7 +130,7 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	# DATABASE
 	#
     AC_ARG_ENABLE([database],
-        AS_HELP_STRING([--enable-database], [Stores the execution data in the selected database]))
+        AS_HELP_STRING([--enable-database=TYPE], [Stores the execution data in the selected database type: mysql (def) or files]))
 
 	DB_MYSQL=0
 	DB_FILES=0
@@ -150,7 +150,4 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
             DB_MYSQL=1
             DB_FILES=1
     ])
-
-    dnl AC_SUBST(DATABASE)
-	
 ])
