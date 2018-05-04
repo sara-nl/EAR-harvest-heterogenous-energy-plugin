@@ -36,14 +36,9 @@ ear_report: ear_report.c $(TYPES) $(DB_OBJS)
 ear_new_job:ear_new_job.c $(REMOTE_OBJS) $(SRCDIR)/common/types.a
 	$(CC) $(CFLAGS) -o ear_new_job ear_new_job.c  $(REMOTE_OBJS) $(SRCDIR)/common/types.a
 
-<<<<<<< HEAD
-ear_end_job:ear_end_job.c $(REMOTE_OBJS)
-	$(CC) $(CFLAGS) -o ear_end_job ear_end_job.c $(REMOTE_OBJS)
-
-=======
 ear_end_job:ear_end_job.c $(REMOTE_OBJS) $(SRCDIR)/common/types.a
 	$(CC) $(CFLAGS) -o ear_end_job ear_end_job.c $(REMOTE_OBJS) $(SRCDIR)/common/types.a
->>>>>>> development
+	
 ear_create_database: ear_create_database.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
 
