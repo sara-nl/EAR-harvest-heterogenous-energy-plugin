@@ -61,13 +61,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <library/dynais/dynais.h>
 #include <immintrin.h> // -mavx -mfma
 
 
 // Local defines
 #define AVX_512 0
-#define AVX_256 0
+#define AVX_256 1
 #define ALI64 __attribute__ ((aligned (64)))
 
 // General indexes.
@@ -103,26 +104,34 @@ int dynais_init(unsigned int window, unsigned int levels)
 	window = 16 * (multiple + 1);
 
 	#if AVX_512
-	#define __dyn_size __m512i
+	#define __dyn_size sizeof(__m512i)
 	#elif AVX_256
-	#define __dyn_size __m256i
+	#define __dyn_size sizeof(__m256i)
 	#else
-	#define __dyn_size long
+	#define __dyn_size sizeof(long)
 	#endif
 
 	_window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
 	_levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
 
-	mem_res1 = posix_memalign((void *) &p_smpls, sizeof(__dyn_size), sizeof(long) * _window * levels);
-	mem_res3 = posix_memalign((void *) &p_sizes, sizeof(__dyn_size), sizeof(int)  * _window * levels);
-	mem_res2 = posix_memalign((void *) &p_zeros, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
-	mem_res4 = posix_memalign((void *) &p_indes, sizeof(__dyn_size), sizeof(int)  * (_window + 8) * levels);
+	// Allocating memory
+	mem_res1 = posix_memalign((void *) &p_smpls, __dyn_size, sizeof(long) * _window * levels);
+	mem_res3 = posix_memalign((void *) &p_sizes, __dyn_size, sizeof(int)  * _window * levels);
+	mem_res2 = posix_memalign((void *) &p_zeros, __dyn_size, sizeof(int)  * (_window + 8) * levels);
+	mem_res4 = posix_memalign((void *) &p_indes, __dyn_size, sizeof(int)  * (_window + 8) * levels);
 
 	//EINVAL = 22, ENOMEM = 12
 	if (mem_res1 != 0 || mem_res2 != 0 || mem_res3 != 0 || mem_res4 != 0) {
 		return -1;
 	}
 
+	// Setting memory to 0
+	memset((void *) p_smpls, 0, sizeof(long) * _window * levels);
+	memset((void *) p_sizes, 0, sizeof(int)  * _window * levels);
+	memset((void *) p_zeros, 0, sizeof(int)  * (_window + 8) * levels);
+	memset((void *) p_indes, 0, sizeof(int)  * (_window + 8) * levels);
+
+	// Storing levels references
 	for (i = 0; i < levels; ++i)
 	{
 		level_limit[i] = 0;
@@ -451,6 +460,7 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	__m256i mmask;
 	__m256i msize;
 	__m256i mone;
+	__m256i mmax;
 
 	// Auxiliars
 	__m256i aux1;
@@ -458,17 +468,23 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 	__m256i aux3;
 	__m256i aux4;
 	__m256i aux5;
+	__m256i aux6;
+	__m256i aux7;
 
 	// Shits
 	__m256i shifts1;
 	__m256i shifts2;
 
+	// Others
+	#define _mm256_blendv_epi32(src1, src2, mask) \
+	(__m256i) _mm256_blendv_ps((__m256) src1, (__m256) src2, (__m256) mask);
+
 	#define _mm256_cmplt_epi32(src1, src2, dest) \
 	{ \
-		aux1 = _mm256_cmpgt_epi32(src1, src2); \
-		aux2 = _mm256_cmpeq_epi32(src1, src2); \
-		aux1 = _mm256_or_si256(aux1, aux2); \
-		dest = _mm256_andnot_si256(aux1, mone); \
+		aux6 = _mm256_cmpgt_epi32(src1, src2); \
+		aux7 = _mm256_cmpeq_epi32(src1, src2); \
+		aux6 = _mm256_or_si256(aux6, aux7); \
+		dest = _mm256_andnot_si256(aux6, mmax); \
 	}
 
 	/*
@@ -489,17 +505,30 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
 	// SIMD initializations
 	max_zeros_block  = _mm256_setzero_si256();
-	max_indes_block  = _mm256_set1_epi32(0xFFFFFFFF);
-	shifts2 = _mm256_load_si256((__m256i *) &shifts2);
-	shifts1 = _mm256_load_si256((__m256i *) &shifts1);
+	max_indes_block  = _mm256_set1_epi32(0x7FFFFFFF);
+	shifts2 = _mm256_load_si256((__m256i *) shifts2_array);
+	shifts1 = _mm256_load_si256((__m256i *) shifts1_array);
 	msample = _mm256_set1_epi64x(sample);
 	msize   = _mm256_set1_epi32(size);
 	mone    = _mm256_set1_epi32(1);
+	mmax    = _mm256_set1_epi8(0xFF);
 
 	/*
 	 * Phase 1, computation
 	 */
-	
+
+	long unsigned int aux_pack_lu[8];
+	unsigned int aux_pack[8];
+	int aux_i;
+
+#define print_256(name, pack, i_min, i_max) \
+	if (i >= i_min && i <= i_max) { \
+	_mm256_store_si256 ((__m256i *) aux_pack, pack); \
+	printf(name); \
+	for (aux_i = 0; aux_i < 8; ++aux_i) printf(" %u", aux_pack[aux_i]); \
+	printf("\n"); \
+	}
+
 	for (k = 0, i = 0; k < _window; k += 8, i += 1)
 	{
 		// Loading samples and sizes (comparing phase)
@@ -543,28 +572,27 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 
 		if (_mm256_testz_si256(mmask, mmask) == 1) continue;
 
+		// zeros_block  > max_zeros_block: obligadamente reemplazable
+		// zeros_block == max_zeros_block: posiblemente reemplazable
+		aux1 = _mm256_cmpgt_epi32(zeros_block, max_zeros_block);
+		aux2 = _mm256_cmpeq_epi32(zeros_block, max_zeros_block);
+
+		// If index is less than the stored one but the zeros are equal (aux1)
+	  /*aux3  =*/ _mm256_cmplt_epi32(index_block, max_indes_block, aux3);
+		aux3  =   _mm256_and_si256(aux3, mmask);
+
+		// aux1 = masks of z greaters
+		// aux2 = masks of z equals
+		// aux3 = masks of i lessers
+		aux2 = _mm256_and_si256(aux2, aux3);
+		aux1 = _mm256_or_si256( aux1, aux2);
+
 		//
-		aux4 = _mm256_and_si256(mmask, zeros_block);
-		aux5 = _mm256_and_si256(mmask, index_block);
-
-		// max_zeros_provisional[i] == max_zeros[i]: posiblemente reemplazable
-		aux3 = _mm256_cmpeq_epi32(max_zeros_block, aux4);
-		       _mm256_cmplt_epi32(aux5, max_indes_block, aux3);
-
-		// max_zeros_provisional[i]  > max_zeros[i]: obligadamente reemplazable
-		_mm256_cmplt_epi32(max_zeros_block, aux4, aux2);
-
-		// Getting final mask of saving results
-		mmask = _mm256_or_si256(aux2, aux3);
-
-		//	Saving results
-		aux4 = _mm256_and_si256(mmask, aux4);
-		aux5 = _mm256_and_si256(mmask, aux5);
-		max_zeros_block = _mm256_andnot_si256(mmask, max_zeros_block);
-		max_indes_block = _mm256_andnot_si256(mmask, max_indes_block);
-		max_zeros_block = _mm256_or_si256(aux4, max_zeros_block);
-		max_indes_block = _mm256_or_si256(aux5, max_indes_block);
+		max_zeros_block = _mm256_blendv_epi32(max_zeros_block, zeros_block, aux1);
+		max_indes_block = _mm256_blendv_epi32(max_indes_block, index_block, aux1);
 	}
+	//if (level == 0) print_256(max_indes_block, 64, 64);
+	//if (level == 0) print_256(max_zeros_block, 64, 64);
 
 	_mm256_store_si256 ((__m256i *) aux_array1, max_zeros_block);
 	_mm256_store_si256 ((__m256i *) aux_array2, max_indes_block);
@@ -577,6 +605,8 @@ static int dynais_basic(unsigned long sample, unsigned int size, unsigned int le
 			max_length = aux_array2[i];
 		}
 	}
+
+	//if (level == 0) printf("max_zeros %u max_length %u\n", max_zeros, max_length);
 	
 
 	/*
