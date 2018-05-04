@@ -35,21 +35,25 @@
 #include <string.h>
 #include <common/config.h>
 #include <common/types/application.h>
+#if DB_MYSQL
+#include <mysql.h>
+#include <common/database/mysql_io_functions.h>
+#endif
+
 
 void usage(char *app)
 {
-	printf("Usage: %s job_id user_db_pathname\n",app);
+	printf("Usage: %s job_id user_db_pathname [-v]\n",app);
+    #if DB_MYSQL
+    printf("Usage: %s job_id db_ip", app);
+    #endif
 	exit(1);
 }
 
-void main(int argc, char *argv[])
+void read_from_files(int argc, char *argv[], char verbose)
 {
 	int job_id, num_nodes, i;
-	char **nodes, verbose = 0;
-    if (argc < 3) usage(argv[0]);
-    if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
-    else verbose = 0;
-
+	char **nodes;
 
     job_id = atoi(argv[1]);
     char nodelist_file_path[256], *nodelog_file_path, *env;
@@ -170,7 +174,92 @@ void main(int argc, char *argv[])
     for (i = 0; i < num_nodes; i++)
         free(nodes[i]);
     free(nodes);
-    
-    
+
+}
+
+#if DB_MYSQL
+void read_from_database(int argc, char *argv[])
+{
+    int num_apps;
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        exit(1);
+    }
+
+    mysql_real_connect(connection, argv[2], "root", "", NULL, 0, NULL, 0);
+
+    char query[256];
+
+    sprintf(query, "SELECT * FROM Applications WHERE job_id=%s", argv[1]);
+    application_t *apps;
+
+    if (num_apps = retrieve_applications(connection, query, &apps) == EAR_MYSQL_ERROR)
+    {
+        fprintf(stderr, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+        exit(1);
+    }
+
+    if (num_apps < 1)
+    {
+        printf("No jobs with %s job_id found. \n", argv[1]);
+        mysql_close(connection);
+        exit(1);
+    }
+
+
+    double avg_time, avg_power, total_energy, avg_f, avg_frequency;
+    avg_frequency = 0;
+    avg_time = 0;
+    avg_power = 0;
+    total_energy = 0;
+    for (i = 0; i < num_apps; i++)
+    {
+        avg_f = (double) apps[i]->signature.avg_f/1000000;
+        printf("%s \t%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n", 
+                apps[i]->job.id, apps[i]->node_id, apps[i]->signature.time, apps[i]->signature. DC_power, 
+		apps[i]->signature.DC_power * apps[i]->signature.time, avg_f);
+        avg_frequency += avg_f;
+        avg_time += apps[i]->signature.time;
+        avg_power += apps[i]->signature. DC_power;
+        total_energy += apps[i]->signature.time * apps[i]->signature.DC_power;
+
+    }
+
+    avg_frequency /= jobs_counter;
+    avg_time /= jobs_counter;
+    avg_power /= jobs_counter;
+
+    printf("\nApplication average:\nJob_id \tTime (secs.) \tDC Power (Watts) \tAccumulated Energy (Joules) \tAvg_freq (GHz)\n");
+
+    printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t\t%.2lf\n", 
+            argv[1], avg_time, avg_power, total_energy, avg_frequency);
+
+
+    for (i = 0; i < jobs_counter; i++)
+        free(apps[i]);
+    free(apps);
+
+    mysql_close(connection);
+}
+#endif
+
+void main(int argc, char *argv[])
+{
+    char verbose = 0;
+    if (argc < 3) usage(argv[0]);
+    if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
+    else verbose = 0;
+
+
+    #if DB_MYSQL
+        read_from_database(argc, argv);
+    #endif
+
+    read_from_files(argc, argv, verbose);
+
     exit(1);
 }

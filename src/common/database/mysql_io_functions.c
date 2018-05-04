@@ -156,7 +156,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
     if (num_apps < 1)
     {
         mysql_stmt_close(statement);
-        return EAR_ERROR;
+        return 0;
     }
 
     apps_aux = (application_t*) calloc(num_apps, sizeof(application_t));
