@@ -48,7 +48,10 @@ void usage(char *app)
 	printf("Usage: %s job_id user_db_pathname [-v]\n",app);
     #endif
     #if DB_MYSQL
-    printf("Usage: %s job_id db_ip", app);
+    printf("Usage: %s job_id db_ip [options]\n \
+                \tOptions: \
+                    \t\t-u\tspecifies the user that executes the query\
+                    \t\t-db\tspecifies the database on which the query is executed\n", app);
     #endif
 	exit(1);
 }
@@ -181,7 +184,7 @@ void read_from_files(int argc, char *argv[], char verbose)
 }
 
 #if DB_MYSQL
-void read_from_database(int argc, char *argv[])
+void read_from_database(int argc, char *argv[], char db, char user)
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -191,6 +194,8 @@ void read_from_database(int argc, char *argv[])
         fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
         exit(1);
     }
+    char *database = db > 0 ? argv[db] : "Report";
+    char *user = user > 0 ? argv[user] : "root";
 
     mysql_real_connect(connection, argv[2], "root", "", "Report", 0, NULL, 0);
 
@@ -256,17 +261,29 @@ void read_from_database(int argc, char *argv[])
 
 void main(int argc, char *argv[])
 {
-    char verbose = 0;
     if (argc < 3) usage(argv[0]);
+
+    #if DB_FILES
+    char verbose = 0;
     if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
     else verbose = 0;
-
+    read_from_files(argc, argv, verbose);
+    #endif
 
     #if DB_MYSQL
-    read_from_database(argc, argv);
-    #endif
-    #if DB_FILES
-    read_from_files(argc, argv, verbose);
+    char database = 0, user = 0;
+    int i = 0;
+    if (argc > 3)
+    {
+        for (i = 3; i < argc - 1; i++)
+        {
+            if (!strcmp("-db", argv[i]))
+                database = i++;
+            if (!strcmp("-u", argv[i]))
+                user = i++;
+        }
+    }
+    read_from_database(argc, argv, database, user);
     #endif
     exit(1);
 }

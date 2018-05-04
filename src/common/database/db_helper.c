@@ -119,7 +119,7 @@ int db_insert_application(application_t *application)
         }
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, database, db_port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
