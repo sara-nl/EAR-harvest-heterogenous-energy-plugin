@@ -89,6 +89,12 @@ void print_power(power_data_t *my_power);
 void report_periodic_power(int fd,power_data_t *my_power);
 
 
+/** Computes the difference betwen two node energy measurements */
+node_data_t diff_node_energy(node_data_t end,node_data_t init);
+/** Computes the difference betwen two RAPL energy measurements */
+rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init);
+
+
 
 #else
 #endif

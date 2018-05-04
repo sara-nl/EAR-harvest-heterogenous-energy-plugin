@@ -26,43 +26,44 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
-
-
-/**
-*    \file power_monitoring.h
-*    \brief This file offers the API for the periodic power monitoring. It is used by the power_monitoring thread created by EARD
-*
-*/
+#include <common/config.h>
 #if POWER_MONITORING
-#ifndef _POWER_MONITORING_H_
-#define _POWER_MONITORING_H_
 
-#include <common/types/job.h>
+#ifndef _EAR_TYPES_POWER_SIGNATURE
+#define _EAR_TYPES_POWER_SIGNATURE
 
-/** Periodically monitors the node power monitoring. 
-*
-*	@param frequency_monitoring sample period expressed in usecs. It is dessigned to be executed by a thread
-*/
-void *eard_power_monitoring(void *frequency_monitoring);
+#include <common/types/generic.h>
 
-/**  It must be called when EARLib contacts with EARD 
-*/
 
-void powermon_mpi_init(job_t *j);
+typedef struct power_signature
+{
+    double DC_power;
+    double DRAM_power;
+    double PCK_power;
+    double EDP;
+    double max_DC_power;
+    double min_DC_power;
+	double time;
+    ulong avg_f;
+    ulong def_f;
+} power_signature_t;
 
-/**  It must be called when EARLib disconnects from EARD 
-*/
-void powermon_mpi_finalize();
 
-/** It must be called at when job starts 
-*/
+// Function declarations
 
-void powermon_new_job(job_t *j,uint from_mpi);
+/** Replicates the power_signature in *source to *destiny */
+void copy_power_signature(power_signature_t *destiny, power_signature_t *source);
 
-/** It must be called at when job ends
-*/
-void powermon_end_job(job_id jid,job_id sid);
+/** Initializes all values of the power_signature to 0.*/
+void init_power_signature(power_signature_t *sig);
 
-#else
+/** returns true if basic values for sig1 and sig2 are equal with a maximum %
+*   of difference defined by threshold (th) */
+uint are_equal_power_sig(power_signature_t *sig1,power_signature_t *sig2,double th);
+
+/** Outputs the power_signature contents to the file pointed by the fd. */
+void print_power_signature_fd(int fd, power_signature_t *sig);
+
 #endif
+
 #endif

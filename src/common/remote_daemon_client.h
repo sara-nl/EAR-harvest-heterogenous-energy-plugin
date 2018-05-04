@@ -36,9 +36,11 @@
 * 	 Note:Specific functions could be substituted by a generic function passing a local_config_t
 */
 
-
+#include <common/config.h>
 #ifndef _REMOTE_CLIENT_API_H
 #define _REMOTE_CLIENT_API_H
+
+#if SHARED_MEMORY
 
 #include <common/types/job.h>
 
@@ -55,7 +57,7 @@ int eards_new_job(job_t *new_job);
 
 /** Notifies the EARD the job with job_id ends the execution. It is supposed to be used by the EAR slurm plugin
 */
-int eards_end_job(job_id job_id,job_id step_id);
+int eards_end_job(job_id jid,job_id sid);
 
 /**  Sets freq as the frequency to be used in the node where the API is connected with
 */
@@ -68,6 +70,7 @@ int eards_set_th(unsigned long th);
 /** Disconnect from the previously connected EARD
 */
 int eards_remote_disconnect();
+#endif
 
 
 #else

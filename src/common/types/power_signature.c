@@ -27,42 +27,43 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-/**
-*    \file power_monitoring.h
-*    \brief This file offers the API for the periodic power monitoring. It is used by the power_monitoring thread created by EARD
-*
-*/
+#include <common/config.h>
 #if POWER_MONITORING
-#ifndef _POWER_MONITORING_H_
-#define _POWER_MONITORING_H_
+#include <string.h>
+#include <stdio.h>
+#include <common/types/power_signature.h>
+#include <common/math_operations.h>
 
-#include <common/types/job.h>
 
-/** Periodically monitors the node power monitoring. 
-*
-*	@param frequency_monitoring sample period expressed in usecs. It is dessigned to be executed by a thread
-*/
-void *eard_power_monitoring(void *frequency_monitoring);
+void copy_power_signature(power_signature_t *destiny, power_signature_t *source)
+{
+    memcpy(destiny, source, sizeof(power_signature_t));
+}
 
-/**  It must be called when EARLib contacts with EARD 
-*/
+void init_power_signature(power_signature_t *sig)
+{
+    memset(sig, 0, sizeof(power_signature_t));
+}
 
-void powermon_mpi_init(job_t *j);
+uint are_equal_power_sig(power_signature_t *sig1, power_signature_t *sig2, double th)
+{
+    if (!equal_with_th(sig1->DC_power, sig2->DC_power, th)) return 0;
+    if (!equal_with_th(sig1->DRAM_power, sig2->DRAM_power, th)) return 0;
+    if (!equal_with_th(sig1->PCK_power, sig2->PCK_power, th)) return 0;
+    if (!equal_with_th(sig1->EDP, sig2->EDP, th)) return 0;    
+    return 1;
+}
 
-/**  It must be called when EARLib disconnects from EARD 
-*/
-void powermon_mpi_finalize();
+void print_power_signature_fd(int fd, power_signature_t *sig)
+{
+    /* print order: AVG.FREQ;DEF.FREQ;TIME;DC-NODE-POWER;DRAM-POWER;*/
+    int i;
+    
+	dprintf(fd, "%lu;%lu;", sig->avg_f, sig->def_f);
+	dprintf(fd, "%lf;", sig->time);
+	dprintf(fd, "%lf;%lf;%lf;", sig->DC_power, sig->DRAM_power, sig->PCK_power);
 
-/** It must be called at when job starts 
-*/
+}
 
-void powermon_new_job(job_t *j,uint from_mpi);
 
-/** It must be called at when job ends
-*/
-void powermon_end_job(job_id jid,job_id sid);
-
-#else
-#endif
 #endif
