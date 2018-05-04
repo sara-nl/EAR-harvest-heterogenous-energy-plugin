@@ -184,7 +184,7 @@ void read_from_files(int argc, char *argv[], char verbose)
 }
 
 #if DB_MYSQL
-void read_from_database(int argc, char *argv[], char db, char usr)
+void read_from_database(int argc, char *argv[], int db, int usr)
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -197,7 +197,12 @@ void read_from_database(int argc, char *argv[], char db, char usr)
     char *database = db > 0 ? argv[db] : "Report";
     char *user = usr > 0 ? argv[usr] : "root";
 
-    mysql_real_connect(connection, argv[2], "root", "", "Report", 0, NULL, 0);
+    if(!mysql_real_connect(connection, argv[2], user,"", database, 0, NULL, 0))
+    {
+        fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+        exit(1);
+    }
 
     char query[256];
 
@@ -271,16 +276,18 @@ void main(int argc, char *argv[])
     #endif
 
     #if DB_MYSQL
-    char database = 0, user = 0;
+    int database = 0, user = 0;
     int i = 0;
     if (argc > 3)
     {
         for (i = 3; i < argc - 1; i++)
         {
-            if (!strcmp("-db", argv[i]))
-                database = i++;
-            if (!strcmp("-u", argv[i]))
-                user = i++;
+            if (!strcmp("-db", argv[i])){
+                database = ++i;
+            }
+            if (!strcmp("-u", argv[i])){
+                user = ++i;
+            }
         }
     }
     read_from_database(argc, argv, database, user);
