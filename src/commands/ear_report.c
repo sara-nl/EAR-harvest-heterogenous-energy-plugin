@@ -37,13 +37,16 @@
 #include <common/types/application.h>
 #if DB_MYSQL
 #include <mysql.h>
+#include <common/states.h>
 #include <common/database/mysql_io_functions.h>
 #endif
 
 
 void usage(char *app)
 {
+    #if DB_FILES
 	printf("Usage: %s job_id user_db_pathname [-v]\n",app);
+    #endif
     #if DB_MYSQL
     printf("Usage: %s job_id db_ip", app);
     #endif
@@ -180,7 +183,7 @@ void read_from_files(int argc, char *argv[], char verbose)
 #if DB_MYSQL
 void read_from_database(int argc, char *argv[])
 {
-    int num_apps;
+    int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
@@ -189,14 +192,16 @@ void read_from_database(int argc, char *argv[])
         exit(1);
     }
 
-    mysql_real_connect(connection, argv[2], "root", "", NULL, 0, NULL, 0);
+    mysql_real_connect(connection, argv[2], "root", "", "Report", 0, NULL, 0);
 
     char query[256];
 
     sprintf(query, "SELECT * FROM Applications WHERE job_id=%s", argv[1]);
     application_t *apps;
 
-    if (num_apps = retrieve_applications(connection, query, &apps) == EAR_MYSQL_ERROR)
+    num_apps = mysql_retrieve_applications(connection, query, &apps);
+
+    if (num_apps == EAR_MYSQL_ERROR)
     {
         fprintf(stderr, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
@@ -216,22 +221,26 @@ void read_from_database(int argc, char *argv[])
     avg_time = 0;
     avg_power = 0;
     total_energy = 0;
+    int i = 0;    
+    
+    printf("Node information:\nJob_id \tNodename \t\t\tTime (secs) \tDC Power (Watts) \tEnergy (Joules) \tAvg_freq (GHz)\n");
+    
     for (i = 0; i < num_apps; i++)
     {
-        avg_f = (double) apps[i]->signature.avg_f/1000000;
-        printf("%s \t%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n", 
-                apps[i]->job.id, apps[i]->node_id, apps[i]->signature.time, apps[i]->signature. DC_power, 
-		apps[i]->signature.DC_power * apps[i]->signature.time, avg_f);
+        avg_f = (double) apps[i].signature.avg_f/1000000;
+        printf("%u \t%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n", 
+                apps[i].job.id, apps[i].node_id, apps[i].signature.time, apps[i].signature.DC_power, 
+		apps[i].signature.DC_power * apps[i].signature.time, avg_f);
         avg_frequency += avg_f;
-        avg_time += apps[i]->signature.time;
-        avg_power += apps[i]->signature. DC_power;
-        total_energy += apps[i]->signature.time * apps[i]->signature.DC_power;
+        avg_time += apps[i].signature.time;
+        avg_power += apps[i].signature. DC_power;
+        total_energy += apps[i].signature.time * apps[i].signature.DC_power;
 
     }
 
-    avg_frequency /= jobs_counter;
-    avg_time /= jobs_counter;
-    avg_power /= jobs_counter;
+    avg_frequency /= num_apps;
+    avg_time /= num_apps;
+    avg_power /= num_apps;
 
     printf("\nApplication average:\nJob_id \tTime (secs.) \tDC Power (Watts) \tAccumulated Energy (Joules) \tAvg_freq (GHz)\n");
 
@@ -239,8 +248,6 @@ void read_from_database(int argc, char *argv[])
             argv[1], avg_time, avg_power, total_energy, avg_frequency);
 
 
-    for (i = 0; i < jobs_counter; i++)
-        free(apps[i]);
     free(apps);
 
     mysql_close(connection);
@@ -256,10 +263,10 @@ void main(int argc, char *argv[])
 
 
     #if DB_MYSQL
-        read_from_database(argc, argv);
+    read_from_database(argc, argv);
     #endif
-
+    #if DB_FILES
     read_from_files(argc, argv, verbose);
-
+    #endif
     exit(1);
 }

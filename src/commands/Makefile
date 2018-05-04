@@ -10,7 +10,10 @@ REMOTE_OBJS=$(SRCDIR)/common/remote_daemon_client.o
 
 
 BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report ear_new_job ear_end_job
+
 TYPES = $(SRCDIR)/common/types.a
+DB_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o
+
 
 BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report ear_create_database ear_new_job ear_end_job
 
@@ -27,14 +30,15 @@ ear_set_node_freq:ear_set_node_freq.c $(FREQ_OBJS)
 ear_get_node_freq:ear_get_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_get_node_freq ear_get_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
-ear_report: ear_report.c $(TYPES)
-	$(CC) $(CFLAGS) -o ear_report ear_report.c $(TYPES)
+ear_report: ear_report.c $(TYPES) $(DB_OBJS)
+	$(CC) $(CFLAGS) $(DB_OBJS) $(TYPES) $(DB_CFLAGS) -o ear_report ear_report.c $(DB_LDFLAGS)
 
 ear_new_job:ear_new_job.c $(REMOTE_OBJS)
 	$(CC) $(CFLAGS) -o ear_new_job ear_new_job.c  $(REMOTE_OBJS)
 
 ear_end_job:ear_end_job.c $(REMOTE_OBJS)
 	$(CC) $(CFLAGS) -o ear_end_job ear_end_job.c $(REMOTE_OBJS)
+
 ear_create_database: ear_create_database.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
 

@@ -31,7 +31,7 @@ void create_tables(MYSQL *connection)
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Applications (\
                             job_id INT unsigned NOT NULL, \
                             step_id INT unsigned NOT NULL, \
-                            node_id VARCHAR(8), \
+                            node_id VARCHAR(256), \
                             signature_id INT unsigned,\
                             PRIMARY KEY(job_id, step_id, node_id))")) execute_on_error(connection);
 
