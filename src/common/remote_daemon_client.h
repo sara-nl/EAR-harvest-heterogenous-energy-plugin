@@ -37,12 +37,12 @@
 */
 
 #include <common/config.h>
+#include <common/types/job.h>
 #ifndef _REMOTE_CLIENT_API_H
 #define _REMOTE_CLIENT_API_H
 
 #if SHARED_MEMORY
 
-#include <common/types/job.h>
 
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection

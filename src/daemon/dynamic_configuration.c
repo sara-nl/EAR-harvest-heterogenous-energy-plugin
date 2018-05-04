@@ -43,6 +43,9 @@
 #include <linux/limits.h>
 #include <netinet/ip.h>
 #include <netdb.h>
+#include <common/config.h>
+
+#if SHARED_MEMORY
 #include <common/ear_verbose.h>
 #include <common/types/job.h>
 #include <common/remote_conf.h>
@@ -288,3 +291,4 @@ void send_answer(int s,ulong *ack)
 
 
 
+#endif
