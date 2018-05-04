@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <common/config.h>
 #include <common/remote_daemon_client.h>
 
 void usage(char *app)
@@ -13,6 +14,7 @@ void usage(char *app)
 #define NAME_SIZE 128
 void main(int argc,char *argv[])
 {
+#if SHARED_MEMORY
 	int eards,job_id;
 	char myhost[NAME_SIZE];
 	if (argc!=2) usage(argv[0]);
@@ -27,5 +29,5 @@ void main(int argc,char *argv[])
 	eards_end_job(job_id,0);
 	eards_remote_disconnect();
 	exit(0);
-	
+#endif	
 }
