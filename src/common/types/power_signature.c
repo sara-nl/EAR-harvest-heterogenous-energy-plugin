@@ -27,51 +27,43 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <common/config.h>
+#if POWER_MONITORING
+#include <string.h>
+#include <stdio.h>
+#include <common/types/power_signature.h>
+#include <common/math_operations.h>
 
 
-/**
-*    \file remote_conf.h
-*    \brief This file defines data types and constants shared by the client and server in the remote EAR API
-*
-*/
+void copy_power_signature(power_signature_t *destiny, power_signature_t *source)
+{
+    memcpy(destiny, source, sizeof(power_signature_t));
+}
+
+void init_power_signature(power_signature_t *sig)
+{
+    memset(sig, 0, sizeof(power_signature_t));
+}
+
+uint are_equal_power_sig(power_signature_t *sig1, power_signature_t *sig2, double th)
+{
+    if (!equal_with_th(sig1->DC_power, sig2->DC_power, th)) return 0;
+    if (!equal_with_th(sig1->DRAM_power, sig2->DRAM_power, th)) return 0;
+    if (!equal_with_th(sig1->PCK_power, sig2->PCK_power, th)) return 0;
+    if (!equal_with_th(sig1->EDP, sig2->EDP, th)) return 0;    
+    return 1;
+}
+
+void print_power_signature_fd(int fd, power_signature_t *sig)
+{
+    /* print order: AVG.FREQ;DEF.FREQ;TIME;DC-NODE-POWER;DRAM-POWER;*/
+    int i;
+    
+	dprintf(fd, "%lu;%lu;", sig->avg_f, sig->def_f);
+	dprintf(fd, "%lf;", sig->time);
+	dprintf(fd, "%lf;%lf;%lf;", sig->DC_power, sig->DRAM_power, sig->PCK_power);
+
+}
 
 
-
-#ifndef REMOTE_CONF_H
-#define REMOTE_CONF_H
-
-#include <common/types/job.h>
-#define DAEMON_PORT_NUMBER          50000
-
-typedef struct end_job_req{
-	job_id jid;
-	job_id sid;
-}end_job_req_t;
-
-typedef struct new_conf{
-	ulong max_freq;
-	ulong min_freq;
-	ulong th;
-}new_conf_t;
-
-typedef union req_data{
-		job_t 			new_job;
-		end_job_req_t 	end_job;
-		new_conf_t 		ear_conf;
-}req_data_t;
-
-
-typedef struct request{
-    uint        req;
-    req_data_t  my_req;
-}request_t;
-
-#define EAR_RC_NEW_JOB     0
-#define EAR_RC_END_JOB     1
-#define EAR_RC_MAX_FREQ    100
-#define EAR_RC_NEW_TH	   101
-#define NO_COMMAND 100000
-
-
-#else
 #endif

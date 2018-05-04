@@ -126,22 +126,20 @@ void process_remote_requests(int clientfd)
 	req=read_command(clientfd,&command);
 	switch (req){
 		case EAR_RC_NEW_JOB:
-			VERBOSE_N(0,"new_job command received %d\n",command.my_req.job_id);
-			job_t new_job;
-			new_job.id=command.my_req.job_id;
-			powermon_new_job(&new_job,0);		
+			VERBOSE_N(0,"new_job command received %d\n",command.my_req.new_job.id);
+			powermon_new_job(&command.my_req.new_job,0);		
 			break;
 		case EAR_RC_END_JOB:
-			VERBOSE_N(0,"end_job command received %d\n",command.my_req.job_id);
-			powermon_end_job(command.my_req.job_id);
+			VERBOSE_N(0,"end_job command received %d\n",command.my_req.end_job.jid);
+			powermon_end_job(command.my_req.end_job.jid,command.my_req.end_job.sid);
 			break;
 		case EAR_RC_MAX_FREQ:
-			VERBOSE_N(0,"max_freq command received %lu\n",command.my_req.max_freq);
-			ack=dynconf_max_freq(command.my_req.max_freq);
+			VERBOSE_N(0,"max_freq command received %lu\n",command.my_req.ear_conf.max_freq);
+			ack=dynconf_max_freq(command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_NEW_TH:
-			VERBOSE_N(0,"new_th command received %lu\n",command.my_req.th);
-			ack=dynconf_set_th(command.my_req.th);
+			VERBOSE_N(0,"new_th command received %lu\n",command.my_req.ear_conf.th);
+			ack=dynconf_set_th(command.my_req.ear_conf.th);
 			break;
 		default:
 			VERBOSE_N(0,"Invalid remote command\n");

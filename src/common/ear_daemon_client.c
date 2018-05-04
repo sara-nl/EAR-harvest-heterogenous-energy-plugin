@@ -44,6 +44,7 @@
 #include <common/ear_daemon_client.h>
 #include <common/types/generic.h>
 #include <common/states.h>
+#include <common/config.h>
 
 #define MAX_TRIES 1
 
@@ -109,8 +110,19 @@ int eards_connect()
 		ear_fd_req[i]=-1;
 		ear_fd_ack[i]=-1;
 	}
-
+	#if POWER_MONITORING
+	char *jid,*sid,*userid,*appid;
+	jid=getenv("SLURM_JOB_ID");
+	sid=getenv("SLURM_STEP_ID");
+	userid=getenv("LOGNAME");
+	appid=getenv("SLURM_JOB_NAME");
+	if (jid!=NULL) req.req_data.app.job.id=atoi(jid);
+	if (sid!=NULL) req.req_data.app.job.step_id=atoi(sid);
+	if (userid!=NULL) strcpy(req.req_data.app.job.user_id,userid);
+	if (appid!=NULL) strcpy(req.req_data.app.job.app_id,appid);
+	#else
 	req.req_data.req_value=getpid();
+	#endif
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);

@@ -13,6 +13,7 @@ TYPES_OBJS = types/application.o \
 			 types/log.o \
 		     types/job.o \
 		     types/signature.o \
+		     types/power_signature.o \
 	    	 types/loop.o
 
 BINARIES = ear_daemon_client.o \

@@ -48,6 +48,7 @@
 #include <metrics/papi/energy_cpu.h>
 #include <common/ear_daemon_common.h>
 #include <common/types/generic.h>
+#include <common/types/job.h>
 #include <common/environment.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
@@ -59,6 +60,7 @@
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 //int power_mon_th;
+job_t current_job;
 #endif
 #if SHARED_MEMORY
 #include <pthread.h>
@@ -208,6 +210,86 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IRUSR|S_IWGRP|S_IROTH|S_IWOTH);
 }
 
+#if POWER_MONITORING
+void connect_service(int req,job_t *new_job)
+{
+    char ear_commack[MAX_PATH_SIZE];
+    unsigned long ack;
+    int connect=1;
+    int alive;
+	int pid=new_job->id;
+    // Let's check if there is another application
+    VERBOSE_N(1, "request for connection at service %d", req);
+    if (is_new_application(pid) || is_new_service(req, pid)) {
+        connect=1;
+    } else {
+        connect=0;
+
+        //FIXME: implicit
+        if (check_ping()) alive = application_timeout();
+        if (alive == 0) connect = 1;
+    }
+
+
+    // Creates 1 pipe (per node) to send acks.
+    if (connect)
+    {
+        sprintf(ear_commack, "%s/.ear_comm.ack_%d.%lu", ear_tmp, req, pid);
+        application_id = pid;
+
+        // ear_commack will be used to send ack's or values (depending on the
+        // requests) from eard to the library
+        VERBOSE_N(1, "reating ack comm %s pid=%lu", ear_commack,pid);
+
+        if (mknod(ear_commack, S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,0) < 0)
+        {
+            if (errno != EEXIST){
+                VERBOSE_N(0, "ERROR WHEN creating ear communicator for ack %s", strerror(errno));
+                eard_close_comm();
+            }
+        }
+
+        chmod(ear_commack,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+
+        // At first service connection, we use the ping conn file
+        if (req == 0)
+        {
+            // We open ping connection  for writting
+            sprintf(ear_ping, "%s/.ear_comm.ping.%lu", ear_tmp, pid);
+
+            VERBOSE_N(1, "application %lu connected", pid);
+            VERBOSE_N(1, "opening ping conn for %lu", pid);
+            ear_ping_fd = open(ear_ping,O_WRONLY);
+
+            if (ear_ping_fd < 0)
+            {
+                VERBOSE_N(0,"ERROR while opening ping pipe %s (%s)", ear_ping, strerror(errno));
+                eard_close_comm();
+            }
+            // We must modify the client api to send more information
+            powermon_mpi_init(new_job);
+			copy_job(&current_job,new_job);
+        	VERBOSE_N(1, "sending ack for service %d",req);
+        	if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
+        	    VERBOSE_N(0,"WARNING while writting for ping conn for %lu", pid);
+        	}
+
+        	VERBOSE_N(1, "connecting service %s", ear_commack);
+        	if ((ear_fd_ack[req]=open(ear_commack,O_WRONLY)) < 0){
+        	    VERBOSE_N(0,"ERROR when opening ear communicator for ack (%s)", strerror(errno));
+        	    eard_close_comm();
+        	}
+    	}else{
+        	// eard only suppports one application connected, the second one will block
+        	VERBOSE_N(0, "Process pid %lu rejected as master", pid);
+    	}
+    	VERBOSE_N(0, "Process pid %lu selected as master", pid);
+    	VERBOSE_N(1, "service %d connected", req);
+	}
+}
+
+#else
+
 void connect_service(int req,unsigned long pid)
 {
 	char ear_commack[MAX_PATH_SIZE];
@@ -287,6 +369,7 @@ void connect_service(int req,unsigned long pid)
 	VERBOSE_N(0, "Process pid %lu selected as master", pid);
 	VERBOSE_N(1, "service %d connected", req);
 }
+#endif
 
 // Checks application connections
 int is_new_application(pid)
@@ -408,7 +491,8 @@ void eard_close_comm()
 
 	close(ear_ping_fd);
 #if POWER_MONITORING
-	powermon_mpi_finalize(application_id);
+	// We must send the app signature to the powermonitoring thread
+	powermon_mpi_finalize();
 #endif
 
 	application_id = -1;
@@ -431,7 +515,11 @@ int eard_node_energy(int must_read)
 	}
     switch (req.req_service){
 		case CONNECT_ENERGY:
+			#if POWER_MONITORING
+			connect_service(node_energy_req,&req.req_data.app.job);
+			#else
 			connect_service(node_energy_req,req.req_data.req_value);
+			#endif
 			break;
         case READ_DC_ENERGY:
 			read_dc_energy(&ack);
@@ -493,7 +581,11 @@ int eard_system(int must_read)
 	switch (req.req_service)
 	{
 		case CONNECT_SYSTEM:
+			#if POWER_MONITORING
+			connect_service(system_req,&req.req_data.app.job);
+			#else
 			connect_service(system_req,req.req_data.req_value);
+			#endif	
 			break;
 		case WRITE_APP_SIGNATURE:
 			ret1 = append_application_binary_file(database_bin_path, &req.req_data.app);
@@ -557,7 +649,11 @@ int eard_freq(int must_read)
 	switch (req.req_service) {
 		case CONNECT_FREQ:
 			// HIGHLIGHT: LIBRARY INIT
+			#if POWER_MONITORING
+			connect_service(freq_req,&req.req_data.app.job);
+			#else
 			connect_service(freq_req,req.req_data.req_value);
+			#endif
 			frequency_save_previous_frequency();
 			break;
 		case SET_FREQ:
@@ -622,7 +718,11 @@ int eard_uncore(int must_read)
 	switch (req.req_service)
 	{
 	    case CONNECT_UNCORE:
+			#if POWER_MONITORING
+			connect_service(uncore_req,&req.req_data.app.job);
+			#else
 			connect_service(uncore_req,req.req_data.req_value);
+			#endif
 			break;
 		case START_UNCORE:
 			ear_debug(1,"EAR_daemon_server: start uncore\n");
@@ -668,7 +768,11 @@ int eard_rapl(int must_read)
 	}
     switch (req.req_service){
 		case CONNECT_RAPL:
+			#if POWER_MONITORING
+			connect_service(rapl_req,&req.req_data.app.job);
+			#else
 			connect_service(rapl_req,req.req_data.req_value);
+			#endif
 			break;
         case START_RAPL:
     		ear_debug(1,"EAR_daemon_server: start RAPL counters\n");

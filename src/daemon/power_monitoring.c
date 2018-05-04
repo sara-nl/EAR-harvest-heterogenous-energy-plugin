@@ -72,10 +72,9 @@ static int fd_periodic=-1;
 typedef struct powermon_app{
 	application_t app;
 	uint   job_created;
+	node_data_t DC_energy_init,DC_energy_end;
 }powermon_app_t;
 
-#define JOB(x)	x.app.job
-#define SIGNATURE(x) x.app.signature
 
 powermon_app_t current_ear_app;
 
@@ -90,57 +89,54 @@ void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
 
 void reset_current_app()
 {
-	JOB(current_ear_app).id=-1;
+	current_ear_app.app.job.id=-1;
 	current_ear_app.job_created=0;
 }
 
 void mpi_init_powermon_app()
 {
-	start_mpi(&JOB(current_ear_app));
-	#if 0
-	time(&current_ear_app.mpi_init_time);
-	#endif
+	start_mpi(&current_ear_app.app.job);
 	
 }
 void job_init_powermon_app(job_t *new_job,uint from_mpi)
 {
-	#if 0
-    current_ear_app.avg_dc_power=0;
-    current_ear_app.max_dc_power=0;
-    current_ear_app.min_dc_power=DBL_MAX;
-    current_ear_app.job_id=app_id;
-	current_ear_app.mpi_init_time=0;
-	current_ear_app.mpi_finalize_time=0;
-    time(&current_ear_app.begin_time);
-	#endif
+	energy_data_t c_energy;
 	current_ear_app.job_created=!from_mpi;
-	copy_job(&JOB(current_ear_app),new_job);	
-	time(&JOB(current_ear_app).start_time);	
-	JOB(current_ear_app).start_mpi_time=0;
-	JOB(current_ear_app).end_mpi_time=0;
-	JOB(current_ear_app).end_time=0;
+	copy_job(&current_ear_app.app.job,new_job);	
+	current_ear_app.app.signature.max_DC_power=0;
+	current_ear_app.app.signature.min_DC_power=DBL_MAX;
+	time(&current_ear_app.app.job.start_time);	
+	current_ear_app.app.job.start_mpi_time=0;
+	current_ear_app.app.job.end_mpi_time=0;
+	current_ear_app.app.job.end_time=0;
 	// reset signature
+	init_signature(&current_ear_app.app.signature);
+	init_power_signature(&current_ear_app.app.power_sig);
 	// Initialize energy
-	
+	read_enegy_data(&c_energy);
+	current_ear_app.DC_energy_init=c_energy.DC_node_energy;	
 }
 
 void mpi_finalize_powermon_app()
 {
-	#if 0
-	time(&current_ear_app.mpi_finalize_time);
-	#endif
-	end_mpi(&JOB(current_ear_app));
+	end_mpi(&current_ear_app.app.job);
 	
 }
 
 void job_end_powermon_app()
 {
-	#if 0
-    current_ear_app.avg_dc_power=current_ear_app.avg_dc_power/(double)samples;
-    time(&current_ear_app.end_time);
-	#endif
-	time(&JOB(current_ear_app).end_time);
-	// we must get the energy here and compute the avg power
+	energy_data_t c_energy;
+	node_data_t app_total;
+	double exec_time;
+	time(&current_ear_app.app.job.end_time);
+	// Get the energy
+	read_enegy_data(&c_energy);
+	current_ear_app.DC_energy_end=c_energy.DC_node_energy;
+	// Compute the avg power	
+	app_total=diff_node_energy(current_ear_app.DC_energy_end,current_ear_app.DC_energy_init);	
+	exec_time=difftime(current_ear_app.app.job.end_time,current_ear_app.app.job.start_time);
+	current_ear_app.app.power_sig.DC_power=(double)app_total/(exec_time*1000);	
+	// Metrics are not reported in this function
 }
 
 
@@ -165,10 +161,10 @@ void report_powermon_app(powermon_app_t *app)
 	}
 
 	if (fd_powermon>=0){
-		//"job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
 		#if 0
-		if (app->app.start_mpi_time){
-			sprintf(buffer,"%d;%s;%s;%s;%s;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,mpibegin,mpiend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
+		//"job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
+		if (app->app.job.start_mpi_time){
+			sprintf(buffer,"%d;%s;%s;%s;%s;%.3lf;%.3lf;%.3lf\n",app->app.job.id,jbegin,jend,mpibegin,mpiend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
 		}else{
 			sprintf(buffer,"%d;%s;%s;not mpi;not mpi;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
 		}
@@ -195,15 +191,10 @@ void powermon_mpi_init(job_t * appID)
 
 void powermon_mpi_finalize()
 {
-	// MPI_finalize: we don't need to acquire the lock
-	double lavg,lmax,lmin;
-	powermon_app_t summary;
-	int lsamples;
-	char buffer[128];
-	VERBOSE_N(0,"powermon_mpi_finalize %d[%d]\n",JOB(current_ear_app).id,JOB(current_ear_app).step_id);
+	VERBOSE_N(0,"powermon_mpi_finalize %d[%d]\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
 	mpi_finalize_powermon_app();
-	if (!current_ear_app.job_created){  // If the job is nt submitted through slurm, end_job would not be submitted 
-		powermon_end_job(current_ear_app.app.job.id);
+	if (!current_ear_app.job_created){  // If the job is not submitted through slurm, end_job would not be submitted 
+		powermon_end_job(current_ear_app.app.job.id,current_ear_app.app.job.step_id);
 	}
 }
 
@@ -214,22 +205,21 @@ void powermon_new_job(job_t* appID,uint from_mpi)
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
-        samples=0;
     pthread_mutex_unlock(&app_lock);
 
 }
 
-void powermon_end_job(job_id jid)
+void powermon_end_job(job_id jid,job_id sid)
 {
     // Application disconnected
     double lavg,lmax,lmin;
     powermon_app_t summary;
     char buffer[128];
-	if (jid!=JOB(current_ear_app).id){ 
+	if ((jid!=current_ear_app.app.job.id) || (sid!=current_ear_app.app.job.step_id)){ 
 		VERBOSE_N(0,"powermon_end_job inicorrect jid %d\n",jid);
 		return;
 	}
-	VERBOSE_N(0,"powermon_end_job %d[%d]\n",JOB(current_ear_app).id,JOB(current_ear_app).step_id);
+	VERBOSE_N(0,"powermon_end_job %d[%d]\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
     while (pthread_mutex_trylock(&app_lock));
         idleNode=1;
         job_end_powermon_app();
@@ -255,12 +245,8 @@ void update_historic_info(power_data_t *my_current_power)
 {
 	while (pthread_mutex_trylock(&app_lock));
 	if (current_ear_app.app.job.id>0){
-		#if 0
-			current_ear_app.max_dc_power=max(current_ear_app.max_dc_power,my_current_power->avg_dc);
-			current_ear_app.min_dc_power=min(current_ear_app.min_dc_power,my_current_power->avg_dc);
-			current_ear_app.avg_dc_power+=my_current_power->avg_dc;
-			samples++;
-		#endif
+			current_ear_app.app.power_sig.max_DC_power=max(current_ear_app.app.power_sig.max_DC_power,my_current_power->avg_dc);
+			current_ear_app.app.power_sig.min_DC_power=min(current_ear_app.app.power_sig.min_DC_power,my_current_power->avg_dc);
 	}
 	pthread_mutex_unlock(&app_lock);
 		

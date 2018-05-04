@@ -120,7 +120,9 @@ void ear_init()
 	char node_name[BUFFSIZE];
 	unsigned int num_nodes, ppnode;
 	char *summary_pathname;
-	char *job_id=NULL, *user_id,*step_id=NULL;
+	char *step_id = NULL;
+	char *job_id = NULL;
+	char *user_id;
 	char *freq;
 	int size;
 
@@ -142,23 +144,28 @@ void ear_init()
     // Only one process can connect with the daemon
     // Connecting with ear_daemon
     // This part only affects to slurm environments
-    job_id = getenv("SLURM_JOB_ID");
+    
+	// Getting the job identification (job_id * 100 + job_step_id)
+    job_id  = getenv("SLURM_JOB_ID");
     step_id = getenv("SLURM_STEP_ID");
     user_id = getenv("LOGNAME");
-    if (job_id != NULL){
+
+    if (job_id != NULL) {
         my_job_id=atoi(job_id);
-		if (step_id!=NULL){
-			my_job_id=my_job_id*JOB_ID_OFFSET+atoi(step_id);	
-		}else{
+
+		if (step_id != NULL) {
+			my_job_id = my_job_id * JOB_ID_OFFSET + atoi(step_id);	
+		} else {
 			step_id = getenv("SLURM_STEPID");
-			if (step_id!=NULL){
-				my_job_id=my_job_id*JOB_ID_OFFSET+atoi(step_id);
+			if (step_id != NULL) {
+				my_job_id = my_job_id * JOB_ID_OFFSET + atoi(step_id);
 			}
 			else ear_verbose(0,"Neither SLURM_STEP_ID nor SLURM_STEPID are defined,using SLURM_JOB_ID\n");
 		}
-    }else{
-        my_job_id=getppid();
+    } else {
+        my_job_id = getppid();
     }
+
 	num_nodes = get_ear_num_nodes();
 	ppnode = my_size / num_nodes;
 
@@ -166,11 +173,13 @@ void ear_init()
 	sprintf(fd_lock_filename,"%s/.ear_app_lock.%d",get_ear_tmp(),my_job_id);
 	if ((fd_master_lock=lock_master(fd_lock_filename))<0) my_id=1;
 	else my_id=0;
-	if (my_id){ 	
-		ear_verbose(2,"Rank %d is not the master in node %s\n",ear_my_rank,node_name);
+	
+	if (my_id) { 	
+		VERBOSE_N(2,"Rank %d is not the master in node %s", ear_my_rank, node_name);
 	}else{ 		
-		ear_verbose(1,"Rank %d is the master in node %s\n",ear_my_rank,node_name);
+		VERBOSE_N(1,"Rank %d is the master in node %s", ear_my_rank, node_name);
 	}
+
 	// if we are not the master, we return
 	if (my_id) return;
 	#else
@@ -348,6 +357,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		case END_NEW_LOOP:
 			ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
 			if (loop_with_signature) ear_verbose(1,"EAR:loop ends with %d iterations detected\n",ear_iterations);
+			
 			loop_with_signature=0;
 			traces_end_period(ear_my_rank, my_id);
 			states_end_period(ear_iterations);
@@ -361,7 +371,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 			if (loop_with_signature)
 			{
-				ear_verbose(3,"NEW_ITERATION level %u event %u size %u iterations %u\n",
+				VERBOSE_N(4,"new iteration detected for level %u, event %u, size %u and iterations %u\n",
 					ear_level, ear_event, ear_loop_size, ear_iterations);
 			}
 

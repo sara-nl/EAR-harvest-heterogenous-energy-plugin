@@ -27,17 +27,17 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <common/types/job.h>
 
 /**
 *    \file power_monitoring.h
 *    \brief This file offers the API for the periodic power monitoring. It is used by the power_monitoring thread created by EARD
 *
 */
-
+#if POWER_MONITORING
 #ifndef _POWER_MONITORING_H_
 #define _POWER_MONITORING_H_
 
+#include <common/types/job.h>
 
 /** Periodically monitors the node power monitoring. 
 *
@@ -61,7 +61,8 @@ void powermon_new_job(job_t *j,uint from_mpi);
 
 /** It must be called at when job ends
 */
-void powermon_end_job(job_id jid);
+void powermon_end_job(job_id jid,job_id sid);
 
 #else
+#endif
 #endif
