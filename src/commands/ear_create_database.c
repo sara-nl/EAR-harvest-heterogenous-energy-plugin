@@ -18,6 +18,11 @@ void execute_on_error(MYSQL *connection)
     exit(1);
 }
 
+void create_user(MYSQL *connection)
+{
+    if (mysql_query(connection, "GRANT ALL ON Report.* TO ear_daemon")) execute_on_error(connection);
+}
+
 void create_db(MYSQL *connection)
 {
     if (mysql_query(connection, "CREATE DATABASE IF NOT EXISTS Report")) execute_on_error(connection);
@@ -112,6 +117,8 @@ void main(int argc,char *argv[])
 
     create_tables(connection);
 
+    create_user(connection);
+    
     mysql_close(connection);
 
     printf("Database successfully created\n");

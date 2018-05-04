@@ -49,9 +49,9 @@ void usage(char *app)
     #endif
     #if DB_MYSQL
     printf("Usage: %s job_id db_ip [options]\n \
-                \tOptions: \
-                    \t\t-u\tspecifies the user that executes the query\
-                    \t\t-db\tspecifies the database on which the query is executed\n", app);
+\tOptions: \n\
+\t\t-u\tspecifies the user that executes the query\n\
+\t\t-db\tspecifies the database on which the query is executed\n", app);
     #endif
 	exit(1);
 }
