@@ -184,7 +184,7 @@ void read_from_files(int argc, char *argv[], char verbose)
 }
 
 #if DB_MYSQL
-void read_from_database(int argc, char *argv[], char db, char user)
+void read_from_database(int argc, char *argv[], char db, char usr)
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -195,7 +195,7 @@ void read_from_database(int argc, char *argv[], char db, char user)
         exit(1);
     }
     char *database = db > 0 ? argv[db] : "Report";
-    char *user = user > 0 ? argv[user] : "root";
+    char *user = usr > 0 ? argv[usr] : "root";
 
     mysql_real_connect(connection, argv[2], "root", "", "Report", 0, NULL, 0);
 
