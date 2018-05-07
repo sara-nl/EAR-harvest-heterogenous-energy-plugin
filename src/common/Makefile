@@ -23,9 +23,9 @@ BINARIES = ear_daemon_client.o \
            shared_configuration.o \
            remote_daemon_client.o \
            file_lock.o \
-		   types.a \
-		   database/db_helper.o \
-		   database/mysql_io_functions.o
+	   types.a \
+	   database/db_helper.o \
+	   database/mysql_io_functions.o
 			
 ######## RULES
 

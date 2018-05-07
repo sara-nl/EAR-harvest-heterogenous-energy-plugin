@@ -55,9 +55,9 @@
 
 #define SIGNATURE_QUERY         "INSERT INTO Signatures (DC_power, max_DC_power, min_DC_power ,DRAM_power, PCK_power, EDP,"\
                                 "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
-                                "FLOPS5, FLOPS6, FLOPS7, FLOPS8, L1_misses, L2_misses, L3_misses," \
+                                "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
                                 "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
-                                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -669,6 +669,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     return num_signatures;
 }
 
+#if POWER_MONITORING
 int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -705,9 +706,12 @@ int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
 
     if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
 
+    int id = mysql_stmt_insert_id(statement);
+    
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
-    return EAR_SUCCESS;
+    return id;
 }
+#endif
 
 #endif

@@ -32,7 +32,9 @@
 #include <common/types/loop.h>
 #include <common/types/signature.h>
 #include <common/types/application.h>
+#if POWER_MONITORING
 #include <common/types/power_signature.h>
+#endif
 
 #if DB_MYSQL
 
@@ -73,10 +75,9 @@ int mysql_insert_job(MYSQL *connection, job_t *job);
 *   EAR_MYSQL_STMT_ERROR on error. */
 int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs);
 
-
 /** Given a MYSQL connection and a signature, inserts said signature into
-*   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
-*   EAR_MYSQL_STMT_ERROR on error.*/
+*   the database. Returns the signature's database id on success, and either 
+*   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_signature(MYSQL *connection, signature_t *sig);
 
 /** Given a MYSQL connection and a valid MYSQL query, stores in sigs the 
@@ -84,5 +85,12 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig);
 *   number of signatures found on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error. */
 int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs);
+
+#if POWER_MONITORING
+/** Given a MYSQL connection and a power_signature, inserts said power_signature into
+*   the database. Returns the power_signature's database id on success, and either 
+*   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig);
+#endif
 
 #endif

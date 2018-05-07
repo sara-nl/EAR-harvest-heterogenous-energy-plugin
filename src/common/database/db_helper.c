@@ -175,7 +175,8 @@ int db_insert_loop(loop_t *loop)
     return EAR_SUCCESS;
 }
 
-int db_insert_powersignature(power_signature_t *pow_sig)
+#if POWER_MONITORING
+int db_insert_power_signature(power_signature_t *pow_sig)
 {
         MYSQL *connection = mysql_init(NULL);
 
@@ -211,5 +212,6 @@ int db_insert_powersignature(power_signature_t *pow_sig)
     
     return EAR_SUCCESS;
 }
+#endif
 
 #endif
