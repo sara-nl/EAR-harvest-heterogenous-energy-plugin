@@ -30,6 +30,7 @@
 #ifndef __NAME__
 #define __NAME__ "db_helper"
 #endif
+#include <common/types/power_signature.h>
 #include <common/types/application.h>
 #include <common/types/loop.h>
 #include <common/config.h>
@@ -38,7 +39,8 @@
 /** Given an application, inserts it to the database currently selected */
 int db_insert_application(application_t *application);
 
-
 int db_insert_loop(loop_t *loop);
+
+int db_insert_powersignature(power_signature_t *pow_sig);
 
 #endif

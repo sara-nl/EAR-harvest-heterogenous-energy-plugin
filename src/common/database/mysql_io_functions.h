@@ -29,9 +29,10 @@
 
 #include <common/config.h>
 #include <common/types/job.h>
-#include <common/types/application.h>
 #include <common/types/loop.h>
 #include <common/types/signature.h>
+#include <common/types/application.h>
+#include <common/types/power_signature.h>
 
 #if DB_MYSQL
 

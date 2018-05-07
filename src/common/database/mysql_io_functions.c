@@ -40,24 +40,27 @@
 
 #if DB_MYSQL
 
-#define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
-                            "(?, ?, ?, ?)"
+#define APPLICATION_QUERY       "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
+                                "(?, ?, ?, ?)"
 
 
-#define LOOP_QUERY          "INSERT INTO Loops (event, size, level, job_id, step_id,  node_id, total_iterations," \
-                            "signature_id) VALUES (?, ?, ?, ?, ?, ?, ? ,?)"
+#define LOOP_QUERY              "INSERT INTO Loops (event, size, level, job_id, step_id,  node_id, total_iterations," \
+                                "signature_id) VALUES (?, ?, ?, ?, ?, ?, ? ,?)"
 
 
-#define JOB_QUERY           "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
-                            "end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES" \
-                            "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#define JOB_QUERY               "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
+                                "end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES" \
+                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 
-#define SIGNATURE_QUERY     "INSERT INTO Signatures (DC_power, max_DC_power, min_DC_power ,DRAM_power, PCK_power, EDP,"\
-                            "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
-                            "FLOPS5, FLOPS6, FLOPS7, FLOPS8, L1_misses, L2_misses, L3_misses," \
-                            "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
-                            "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#define SIGNATURE_QUERY         "INSERT INTO Signatures (DC_power, max_DC_power, min_DC_power ,DRAM_power, PCK_power, EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
+                                "FLOPS5, FLOPS6, FLOPS7, FLOPS8, L1_misses, L2_misses, L3_misses," \
+                                "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
+                                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+#define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
+                                "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
@@ -474,7 +477,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig)
 
     if (mysql_stmt_prepare(statement, SIGNATURE_QUERY, strlen(SIGNATURE_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[26];
+    MYSQL_BIND bind[23];
     int i = 0;
 
     //double storage
@@ -486,7 +489,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig)
     }
 
     //unsigned long long storage
-    for (i = 11; i < 24; i++)
+    for (i = 11; i < 23; i++)
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[i].length = 0;
@@ -495,10 +498,10 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig)
     }
 
     //unsigned long storage
-    bind[24].buffer_type = bind[25].buffer_type = MYSQL_TYPE_LONG;
-    bind[24].length = bind[25].length = 0;
-    bind[24].is_null = bind[25].is_null = 0;
-    bind[24].is_unsigned = bind[25].is_unsigned = 1;
+    // bind[24].buffer_type = bind[25].buffer_type = MYSQL_TYPE_LONG;
+    // bind[24].length = bind[25].length = 0;
+    // bind[24].is_null = bind[25].is_null = 0;
+    // bind[24].is_unsigned = bind[25].is_unsigned = 1;
 
     //storage variables assignation
     bind[0].buffer = (char *)&sig->DC_power;
@@ -520,13 +523,13 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig)
     bind[16].buffer = (char *)&sig->FLOPS[5];
     bind[17].buffer = (char *)&sig->FLOPS[6];
     bind[18].buffer = (char *)&sig->FLOPS[7];
-    bind[19].buffer = (char *)&sig->L1_misses;
-    bind[20].buffer = (char *)&sig->L2_misses;
-    bind[21].buffer = (char *)&sig->L3_misses;
-    bind[22].buffer = (char *)&sig->instructions;
-    bind[23].buffer = (char *)&sig->cycles;
-    bind[24].buffer = (char *)&sig->avg_f;
-    bind[25].buffer = (char *)&sig->def_f;
+    //bind[19].buffer = (char *)&sig->L1_misses;
+    //bind[20].buffer = (char *)&sig->L2_misses;
+    //bind[21].buffer = (char *)&sig->L3_misses;
+    bind[19].buffer = (char *)&sig->instructions;
+    bind[20].buffer = (char *)&sig->cycles;
+    bind[21].buffer = (char *)&sig->avg_f;
+    bind[22].buffer = (char *)&sig->def_f;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
@@ -551,7 +554,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     int i = 0;
     int status = 0;
 
-    MYSQL_BIND bind[27];
+    MYSQL_BIND bind[24];
     memset(bind, 0, sizeof(bind));
     
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -584,10 +587,10 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     }
 
     //unsigned long recievers
-    bind[24].buffer_type = bind[25].buffer_type = MYSQL_TYPE_LONG;
-    bind[24].buffer_length = bind[25].buffer_length = 4;
-    bind[24].is_null = bind[25].is_null = 0;
-    bind[24].is_unsigned = bind[25].is_unsigned = 1;
+    // bind[24].buffer_type = bind[25].buffer_type = MYSQL_TYPE_LONG;
+    // bind[24].buffer_length = bind[25].buffer_length = 4;
+    // bind[24].is_null = bind[25].is_null = 0;
+    // bind[24].is_unsigned = bind[25].is_unsigned = 1;
 
     //reciever variables assignation
     bind[0].buffer = &id;
@@ -610,13 +613,13 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[17].buffer = &sig_aux->FLOPS[5];
     bind[18].buffer = &sig_aux->FLOPS[6];
     bind[19].buffer = &sig_aux->FLOPS[7];
-    bind[20].buffer = &sig_aux->L1_misses;
-    bind[21].buffer = &sig_aux->L2_misses;
-    bind[22].buffer = &sig_aux->L3_misses;
-    bind[23].buffer = &sig_aux->instructions;
-    bind[24].buffer = &sig_aux->cycles;
-    bind[25].buffer = &sig_aux->avg_f;
-    bind[26].buffer = &sig_aux->def_f;
+    // bind[20].buffer = &sig_aux->L1_misses;
+    // bind[21].buffer = &sig_aux->L2_misses;
+    // bind[22].buffer = &sig_aux->L3_misses;
+    bind[20].buffer = &sig_aux->instructions;
+    bind[21].buffer = &sig_aux->cycles;
+    bind[22].buffer = &sig_aux->avg_f;
+    bind[23].buffer = &sig_aux->def_f;
 
     if (mysql_stmt_bind_result(statement, bind)) 
     {
@@ -664,6 +667,47 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     free(sig_aux);
 
     return num_signatures;
+}
+
+int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+
+    if (mysql_stmt_prepare(statement, POWER_SIGNATURE_QUERY, strlen(POWER_SIGNATURE_QUERY))) return mysql_statement_error(statement);
+
+    MYSQL_BIND bind[9];
+    memset(bind, 0, sizeof(bind));
+
+    //double types
+    int i;
+    for (int i = 0; i < 7; i++)
+    {
+        bind[i].buffer_type = MYSQL_TYPE_DOUBLE;
+    }
+
+    //integer types
+    bind[7].buffer_type = bind[8].buffer_type = MYSQL_TYPE_LONG;
+    bind[7].is_unsigned = bind[8].is_unsigned = 1;
+
+    //storage variable assignation
+    bind[0].buffer = (char *)&pow_sig->DC_power;
+    bind[1].buffer = (char *)&pow_sig->DRAM_power;
+    bind[2].buffer = (char *)&pow_sig->PCK_power;
+    bind[3].buffer = (char *)&pow_sig->EDP;
+    bind[4].buffer = (char *)&pow_sig->max_DC_power;
+    bind[5].buffer = (char *)&pow_sig->min_DC_power;
+    bind[6].buffer = (char *)&pow_sig->time;
+    bind[7].buffer = (char *)&pow_sig->avg_f;
+    bind[8].buffer = (char *)&pow_sig->def_f;
+
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return EAR_SUCCESS;
 }
 
 #endif

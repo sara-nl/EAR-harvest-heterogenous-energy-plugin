@@ -69,8 +69,8 @@ void create_tables(MYSQL *connection)
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Signatures (\
                             id INT unsigned NOT NULL AUTO_INCREMENT,\
                             DC_power DOUBLE,\
-    			    max_DC_power DOUBLE, \
-			    min_DC_power DOUBLE, \
+                            max_DC_power DOUBLE, \
+                            min_DC_power DOUBLE, \
                             DRAM_power DOUBLE,\
                             PCK_power DOUBLE,\
                             EDP DOUBLE,\
@@ -87,14 +87,35 @@ void create_tables(MYSQL *connection)
                             FLOPS6 BIGINT unsigned,\
                             FLOPS7 BIGINT unsigned,\
                             FLOPS8 BIGINT unsigned,\
-                            L1_misses BIGINT unsigned,\
-                            L2_misses BIGINT unsigned,\
-                            L3_misses BIGINT unsigned,\
+                            //L1_misses BIGINT unsigned,\
+                            //L2_misses BIGINT unsigned,\
+                            //L3_misses BIGINT unsigned,\
                             instructions BIGINT unsigned, \
                             cycles BIGINT unsigned,\
-                            avg_f INT unsigned,\
-                            def_f INT unsigned, \
+                            avg_f BIGINT unsigned,\
+                            def_f BIGINT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
+
+    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Idle_energy ( \
+                            id INT unsigned NOT NULL AUTO_INCREMENT, \
+                            start_time BIGINT NOT NULL, \
+                            end_time BIGINT NOT NULL, \
+                            dc_energy BIGINT unsigned NOT NULL, \
+                            PRIMARY KEY (id))")) execute_on_error(connection);
+
+    if (mysql_query(connecton, "CREATE TABLE IF NOT EXISTS Power_signatures (
+                            id INT unsigned NOT NULL AUTO_INCREMENT,
+                            DC_power DOUBLE NOT NULL, \
+                            DRAM_power DOUBLE NOT NULL, \
+                            PCK_power DOUBLE NOT NULL, \
+                            EDP DOUBLE NOT NULL, \
+                            max_DC_power DOUBLE NOT NULL, \
+                            min_DC_power DOUBLE NOT NULL, \
+                            time DOUBLE NOT NULL, \
+                            avg_f BIGINT unsigned NOT NULL, \ 
+                            def_f BIGINT unsigned NOT NULL, \
+                            PRIMARY KEY (id))")) execute_on_error(connection);
+
 }
 #endif 
 
