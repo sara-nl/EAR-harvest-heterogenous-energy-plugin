@@ -682,7 +682,7 @@ int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
 
     //double types
     int i;
-    for (int i = 0; i < 7; i++)
+    for (i = 0; i < 7; i++)
     {
         bind[i].buffer_type = MYSQL_TYPE_DOUBLE;
     }
