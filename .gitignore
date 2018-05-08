@@ -43,6 +43,7 @@ tests/check/check.sh
 *ear_create_database
 *ear_end_job
 *ear_new_job
+*ear_energy_over_time
 
 *compute_coefficients_remote
 *coefficients_quality_control

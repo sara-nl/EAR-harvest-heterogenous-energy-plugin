@@ -84,7 +84,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
 
     //integer types
     bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONG;
-    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].buffer_type = 1;
+    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].is_unsigned = 1;
 
     //string types
     bind[2].buffer_type = MYSQL_TYPE_VARCHAR;
