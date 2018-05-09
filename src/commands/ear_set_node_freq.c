@@ -34,30 +34,31 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-
 #include <control/frequency.h>
 
 int EAR_VERBOSE_LEVEL=1;
+
 void usage(char *app)
 {
-	printf("usage:%s node_freq (in MHz)\n",app);
+	printf("usage:%s node_freq (in MHz) num_cpus\n",app);
 	printf("	requires root privileges\n");
 	printf("	execute it with sudo\n");
 	exit(1);
 }
+
 void main(int argc,char *argv[])
 {
 	int uid;
 	ulong f;
-	if (argc!=2) usage(argv[0]);
+	if (argc!=3) usage(argv[0]);
 	if (getuid()!=0) usage(argv[0]);
-	f=(ulong)atoi(argv[1]);	
+	f=(ulong)atoi(argv[1]);
+	cpus=atoi(argv[2]);
 	printf("This program will change the governor to userspace and set the node f to %lu\n",f);
-	frequency_init();
+	frequency_init(cpus);
 	frequency_set_userspace_governor_all_cpus();
 	if (frequency_set_all_cpus(f)!=f){
 		printf("warning, node freq was not changed correctly\n");
 	}
 	frequency_dispose();
-	
 }

@@ -38,8 +38,6 @@
 #include <string.h>
 
 
-#if DB_MYSQL
-
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
                             "(?, ?, ?, ?)"
 
@@ -58,6 +56,7 @@
                             "FLOPS5, FLOPS6, FLOPS7, FLOPS8, L1_misses, L2_misses, L3_misses," \
                             "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
                             "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
@@ -665,5 +664,3 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
 
     return num_signatures;
 }
-
-#endif

@@ -97,7 +97,7 @@ void report_application_data(application_t *app)
 	float def_f = ((double) app->signature.def_f) / 1000000.0;
 
 	printf("------------------------------------------------------------------------ Application Summary --\n");
-	printf("-- App id: %s, user id: %s, job id: %u\n", app->job.app_id, app->job.user_id, app->job.id);
+	printf("-- App id: %s, user id: %s, job id: %lu\n", app->job.app_id, app->job.user_id, app->job.id);
 	printf("-- E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
 	printf(   "procs: %lu (s)\n", app->job.procs);
 	printf("-- CPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
@@ -132,7 +132,7 @@ int scan_application_fd(FILE *fd, application_t *app)
 	int ret;
 
 	a = app;
-	ret = fscanf(fd, "%[^;];%u;%[^;];" \
+	ret = fscanf(fd, "%[^;];%lu;%[^;];" \
 			 "%[^;];%lf;" \
 			 "%lu;%lu;" \
 			 "%lf;%lf;%lf;%lf;" \

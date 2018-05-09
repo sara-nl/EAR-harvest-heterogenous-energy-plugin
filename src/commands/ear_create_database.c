@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <common/config.h>
-#if DB_MYSQL
 #include <mysql.h>
 
 void usage(char *app)
@@ -91,11 +90,9 @@ void create_tables(MYSQL *connection)
                             def_f INT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 }
-#endif 
 
 void main(int argc,char *argv[])
 {
-    #if DB_MYSQL
     if (argc != 2) usage(argv[0]);
 	
     MYSQL *connection = mysql_init(NULL); 
@@ -117,5 +114,4 @@ void main(int argc,char *argv[])
     printf("Database successfully created\n");
 
     exit(1);
-    #endif	
 }

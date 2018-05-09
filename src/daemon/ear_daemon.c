@@ -876,7 +876,7 @@ void main(int argc,char *argv[])
 	catch_signals();
 
 	// We initialize frecuency
-	if (frequency_init() < 0) {
+	if (frequency_init(metrics_get_node_size()) < 0) {
 		VERBOSE_N(0, "ERROR, frequency information can't be initialized");
 		exit(1);
 	}

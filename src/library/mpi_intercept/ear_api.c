@@ -217,7 +217,7 @@ void ear_init()
 	// 'privileged_metrics'. This value has to be different to 0 when
 	// my_id is different to 0.
 	metrics_init(); // PAPI_init starts counters
-	frequency_init(); //Initialize cpufreq info
+	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
 
 	if (ear_my_rank == 0)
 	{
@@ -254,7 +254,7 @@ void ear_init()
 	// Passing the frequency in KHz to MHz
 	application.job.def_f = EAR_default_frequency;
 	application.job.procs = get_total_resources();
-	application.job.th = get_ear_power_policy_th();;	
+	application.job.th = get_ear_power_policy_th();
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));

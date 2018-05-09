@@ -57,10 +57,12 @@
 	}
 
 // Metrics generic functions
-/** Obtains the app name and puts it in the variable recieved by parameter */
+/** Obtains the app name and puts it in the variable received by parameter */
 void metrics_get_app_name(char *app_name);
-/** Returns information related to the hardware. */ 
+/** Returns information related to the hardware. */
 const PAPI_hw_info_t *metrics_get_hw_info();
+/** Gets the number of CPUs */
+int metrics_get_node_size();
 
 // PAPI control
 /** Initializes PAPI library. Returns 1 on success, exits on error. */

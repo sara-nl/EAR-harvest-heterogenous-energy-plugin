@@ -1,13 +1,13 @@
-CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread
-CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread -DPOWERMON_FREQ=30000000 
-LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS)  -pthread 
-POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a
+CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread -DPOWERMON_FREQ=30000000
+LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -pthread
 
 ######## VARS
 
 export DIR
 
 ######## FILES
+
+POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
 	           $(SRCDIR)/metrics/papi/generics.o \
@@ -32,7 +32,8 @@ BINARIES  = eard
 all: eard
 
 eard: ear_daemon.c $(OBJS) $(METRICS_OBJS) $(POWERMONLIB) $(COMMON_OBJS) $(INTERNAL_EAR_LIBS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) $(LDFLAGS) $(OBJS) $(INTERNAL_EAR_LIBS) $(DB_LDFLAGS) $(POWERMONLIB) 
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard ear_daemon.c $(COMMON_OBJS) $(METRICS_OBJS) \
+	 $(LDFLAGS) $(OBJS) $(INTERNAL_EAR_LIBS) $(DB_LDFLAGS) $(POWERMONLIB)
 
 dynamic_configuration.o: dynamic_configuration.c 
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c

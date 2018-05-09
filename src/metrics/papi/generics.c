@@ -60,6 +60,12 @@ const PAPI_hw_info_t *metrics_get_hw_info()
 	return PAPI_get_hardware_info();
 }
 
+int metrics_get_node_size()
+{
+	PAPI_hw_info_t *hwinfo = metrics_get_hw_info();
+	return hwinfo->sockets * hwinfo->cores * hwinfo->threads;
+}
+
 /*
  *
  * PAPI control (not static, but internal)
