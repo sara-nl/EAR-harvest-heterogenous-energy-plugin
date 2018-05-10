@@ -27,7 +27,7 @@ endif
 all: $(BINARIES)
 
 ear_control:ear_control.c $(REMOTE_OBJS)
-	$(CC) $(CFLAGS) -o ear_control ear_control.c $(REMOTE_OBJS)
+	$(CC) $(CFLAGS) -o ear_control ear_control.c $(REMOTE_OBJS) $(TYPES)
 
 ear_set_node_freq:ear_set_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_set_node_freq ear_set_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)

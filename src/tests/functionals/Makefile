@@ -32,8 +32,8 @@ BINARIES = bandwith_monitor \
            freeipmi_overhead \
            simd_power_metrics_openmp \
            energy_1_second \
-           energy_updates_freq \
-		   ear_pm
+           energy_updates_freq
+           # ear_pm
 	       # test_architecture
 
 ######## RULES

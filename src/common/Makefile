@@ -70,11 +70,11 @@ types.a: $(TYPES_OBJS)
 
 install:
 	mkdir -p $(DESTDIR)/include/common
-	cp ear_daemon_client.o $(DESTDIR)/lib
-	cp remote_daemon_client.o $(DESTDIR)/lib
-	cp remote_daemon_client.h $(DESTDIR)/include
-	cp eards_api.h $(DESTDIR)/include
-	cp states.h $(DESTDIR)/include/common
+	# cp ear_daemon_client.o $(DESTDIR)/lib
+	# cp remote_daemon_client.o $(DESTDIR)/lib
+	# cp remote_daemon_client.h $(DESTDIR)/include
+	# cp eards_api.h $(DESTDIR)/include
+	# cp states.h $(DESTDIR)/include/common
 
 clean:
 	rm $(BINARIES) $(TYPES_OBJS) || true

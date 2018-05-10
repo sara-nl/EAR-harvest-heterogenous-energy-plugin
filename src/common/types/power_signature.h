@@ -26,14 +26,12 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
-#include <common/config.h>
-#if POWER_MONITORING
 
 #ifndef _EAR_TYPES_POWER_SIGNATURE
 #define _EAR_TYPES_POWER_SIGNATURE
 
 #include <common/types/generic.h>
-
+#include <common/config.h>
 
 typedef struct power_signature
 {
@@ -63,7 +61,5 @@ uint are_equal_power_sig(power_signature_t *sig1,power_signature_t *sig2,double 
 
 /** Outputs the power_signature contents to the file pointed by the fd. */
 void print_power_signature_fd(int fd, power_signature_t *sig);
-
-#endif
 
 #endif

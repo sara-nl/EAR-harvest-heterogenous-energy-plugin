@@ -17,9 +17,6 @@
 #define EAR_CONF_FILE		"ear.conf"
 #define EAR_LINK_FILE		"ear.link"
 
-#define POWER_MONITORING 	@POWER_MONITORING@
-#define SHARED_MEMORY		@SHARED_MEMORY@
-
 // Compile version type
 #define BUILD_TYPE			@BUILD_TYPE@
 #define DEVELOPMENT			0

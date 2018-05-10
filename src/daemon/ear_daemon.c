@@ -658,10 +658,10 @@ int eard_freq(int must_read)
 			break;
 		case SET_FREQ:
 			ear_debug(1,"eard: Setting node frequency\n");
-#if !SHARED_MEMORY
-			eard_set_freq(req.req_data.req_value,eard_max_freq);
+#if SHARED_MEMORY
+	eard_set_freq(req.req_data.req_value,min(eard_max_freq,max_dyn_freq()));
 #else
-			eard_set_freq(req.req_data.req_value,min(eard_max_freq,max_dyn_freq()));
+	eard_set_freq(req.req_data.req_value,eard_max_freq);
 #endif	
 			break;
 		case START_GET_FREQ:

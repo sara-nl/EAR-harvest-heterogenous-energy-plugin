@@ -40,13 +40,11 @@
 #include <float.h>
 #include <errno.h>
 #include <pthread.h>
+
 #include <common/config.h>
 #include <common/ear_verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
-
-#if POWER_MONITORING
-
 #include <metrics/power_monitoring/ear_power_monitor.h>
 #include <daemon/power_monitoring.h>
 
@@ -332,5 +330,3 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	pthread_exit(0);
 	//exit(0);
 }
-
-#endif

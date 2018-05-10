@@ -18,16 +18,18 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
 
 COMPONENTS = custom \
              ipmi \
-             papi \
-			 power_monitoring
+             papi
+ifdef FEAT_SHRMEM
+COMPONENTS += power_monitoring
+endif
 
 ######## RULES
 
 all:
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -C $${i} all || exit; \
-	done 
-	$(CC) $(CFLAGS) -o libear_metrics.so $(METRICS_OBJS)
+	done
+	ar rvs metrics.a $(METRICS_OBJS)
 
 ######## OPTIONS
 
@@ -38,10 +40,6 @@ install:
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -S -C $${i} install; \
 	done
-	mv libear_metrics.so $(DESTDIR)/lib/libear_metrics.so
-	cp metrics.h $(DESTDIR)/include/metrics
-	$(MAKE) -C power_monitoring install
-	
 
 clean:
 	@ for i in $(COMPONENTS); do \

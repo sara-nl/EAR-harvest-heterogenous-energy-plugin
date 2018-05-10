@@ -27,13 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <common/config.h>
-#if POWER_MONITORING
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 #include <common/types/power_signature.h>
 #include <common/math_operations.h>
-
+#include <common/config.h>
 
 void copy_power_signature(power_signature_t *destiny, power_signature_t *source)
 {
@@ -62,8 +60,4 @@ void print_power_signature_fd(int fd, power_signature_t *sig)
 	dprintf(fd, "%lu;%lu;", sig->avg_f, sig->def_f);
 	dprintf(fd, "%lf;", sig->time);
 	dprintf(fd, "%lf;%lf;%lf;", sig->DC_power, sig->DRAM_power, sig->PCK_power);
-
 }
-
-
-#endif
