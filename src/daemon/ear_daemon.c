@@ -54,7 +54,7 @@
 #include <common/states.h>
 #include <common/config.h>
 
-#if POWER_MONITORING
+#if SHARED_MEMORY
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
 unsigned int power_mon_freq=POWERMON_FREQ;
@@ -124,7 +124,7 @@ void f_signals(int s)
 		}
 	
 		// Maybe we should just wait for threads
-#if POWER_MONITORING
+#if SHARED_MEMORY
 		pthread_join(power_mon_th,NULL);
 		//kill(power_mon_th,SIGKILL);
 		//waitpid(power_mon_th,NULL,0);
@@ -210,7 +210,7 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IRUSR|S_IWGRP|S_IROTH|S_IWOTH);
 }
 
-#if POWER_MONITORING
+#if SHARED_MEMORY
 void connect_service(int req,job_t *new_job)
 {
     char ear_commack[MAX_PATH_SIZE];
@@ -345,7 +345,7 @@ void connect_service(int req,unsigned long pid)
 				VERBOSE_N(0,"ERROR while opening ping pipe %s (%s)", ear_ping, strerror(errno));
 				eard_close_comm();
 			}
-#if POWER_MONITORING
+#if SHARED_MEMORY
 			// We must modify the client api to send more information
 			new_job.id=pid;
 			powermon_mpi_init(&new_job);
@@ -490,7 +490,7 @@ void eard_close_comm()
 	}
 
 	close(ear_ping_fd);
-#if POWER_MONITORING
+#if SHARED_MEMORY
 	// We must send the app signature to the powermonitoring thread
 	powermon_mpi_finalize();
 #endif
@@ -515,7 +515,7 @@ int eard_node_energy(int must_read)
 	}
     switch (req.req_service){
 		case CONNECT_ENERGY:
-			#if POWER_MONITORING
+			#if SHARED_MEMORY
 			connect_service(node_energy_req,&req.req_data.app.job);
 			#else
 			connect_service(node_energy_req,req.req_data.req_value);
@@ -581,7 +581,7 @@ int eard_system(int must_read)
 	switch (req.req_service)
 	{
 		case CONNECT_SYSTEM:
-			#if POWER_MONITORING
+			#if SHARED_MEMORY
 			connect_service(system_req,&req.req_data.app.job);
 			#else
 			connect_service(system_req,req.req_data.req_value);
@@ -649,7 +649,7 @@ int eard_freq(int must_read)
 	switch (req.req_service) {
 		case CONNECT_FREQ:
 			// HIGHLIGHT: LIBRARY INIT
-			#if POWER_MONITORING
+			#if SHARED_MEMORY
 			connect_service(freq_req,&req.req_data.app.job);
 			#else
 			connect_service(freq_req,req.req_data.req_value);
@@ -718,7 +718,7 @@ int eard_uncore(int must_read)
 	switch (req.req_service)
 	{
 	    case CONNECT_UNCORE:
-			#if POWER_MONITORING
+			#if SHARED_MEMORY
 			connect_service(uncore_req,&req.req_data.app.job);
 			#else
 			connect_service(uncore_req,req.req_data.req_value);
@@ -768,7 +768,7 @@ int eard_rapl(int must_read)
 	}
     switch (req.req_service){
 		case CONNECT_RAPL:
-			#if POWER_MONITORING
+			#if SHARED_MEMORY
 			connect_service(rapl_req,&req.req_data.app.job);
 			#else
 			connect_service(rapl_req,req.req_data.req_value);
@@ -968,15 +968,15 @@ void main(int argc,char *argv[])
 		ear_debug(3,"eard: fd %d added to rdfd mask max=%d FD_SETSIZE=%d\n",ear_fd_req[i],numfds_req,FD_SETSIZE);
 	}
 	rfds_basic=rfds;
-#if POWER_MONITORING
+#if SHARED_MEMORY
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
 		errno=ret;
 		ear_verbose(0,"eard: error creating power_monitoring thread %s\n",strerror(errno));
 	}
-#if 0
-	power_mon_th=fork();
-	if (power_mon_th==0) eard_power_monitoring(&power_mon_freq);
-#endif
+	#if 0
+		power_mon_th=fork();
+		if (power_mon_th==0) eard_power_monitoring(&power_mon_freq);
+	#endif
 #endif
 #if SHARED_MEMORY
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){

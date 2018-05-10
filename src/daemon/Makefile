@@ -12,12 +12,12 @@ COMMON_OBJS = $(SRCDIR)/metrics/metrics.a \
               $(SRCDIR)/common/environment_common.o \
               $(SRCDIR)/common/types.a 
 
-OBJS =
-
 ifdef DB_BASE
 COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
                $(SRCDIR)/common/database/mysql_io_functions.o 
 endif
+
+OBJS =
 
 ifdef FEAT_SHRMEM
 COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a \
@@ -27,8 +27,7 @@ OBJS += dynamic_configuration.o \
         power_monitoring.o
 endif
 
-
-BINARIES  = eard
+BINARIES = eard
 
 ######## RULES
 
