@@ -18,7 +18,7 @@
 AC_DEFUN([X_AC_MYSQL],
 [
 	_x_ac_mysql_dirs_root="/usr /usr/local /opt"
-	_x_ac_mysql_dirs_libs="lib64/mysql lib/mysql lib64 lib"
+	_x_ac_mysql_dirs_libs="lib64/mysql lib/mysql"
     _x_ac_mysql_gcc_libs="-lmysqlclient"
     _x_ac_mysql_gcc_ldflags=
     _x_ac_mysql_dir_bin=
@@ -85,11 +85,11 @@ AC_DEFUN([X_AC_MYSQL],
     else
         DB_DIR=$_cv_mysql_dir_root
         DB_LIBS=$_x_ac_mysql_gcc_libs
+       	DB_LDFLAGS=$_x_ac_mysql_gcc_ldflags
 
         if test "x$_x_ac_mysql_custom" = "xyes"; then
         	DB_LIBDIR=$_x_ac_mysql_dir_lib
         	DB_CPPFLAGS="-I$FREEIPMI_DIR/include"
-        	DB_LDFLAGS=$_x_ac_mysql_gcc_ldflags
 		fi
 
         echo checking for MySQL compiler link... yes

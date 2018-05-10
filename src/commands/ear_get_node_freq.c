@@ -48,10 +48,10 @@ void usage(char *app)
 void main(int argc,char *argv[])
 {
 	int i;
-	ulong cpus;
+	int cpus;
 	if (argc!=2) usage(argv[0]);
 	cpus=atoi(argv[1]);
-	frequency_init(num_cpus);
+	frequency_init(cpus);
 	for (i=0;i<cpus;i++){
 		printf("CPU freq for cpu %d is %lu\n",i,frequency_get_cpu_freq(i));
 	}	

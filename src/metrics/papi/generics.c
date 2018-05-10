@@ -62,7 +62,7 @@ const PAPI_hw_info_t *metrics_get_hw_info()
 
 int metrics_get_node_size()
 {
-	PAPI_hw_info_t *hwinfo = metrics_get_hw_info();
+	const PAPI_hw_info_t *hwinfo = metrics_get_hw_info();
 	return hwinfo->sockets * hwinfo->cores * hwinfo->threads;
 }
 

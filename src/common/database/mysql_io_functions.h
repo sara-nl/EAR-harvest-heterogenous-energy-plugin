@@ -27,15 +27,12 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <mysql/mysql.h>
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/application.h>
 #include <common/types/loop.h>
 #include <common/types/signature.h>
-
-#if DB_MYSQL
-
-#include <mysql.h>
 
 int mysql_insert_application(MYSQL *connection, application_t *app);
 
@@ -57,5 +54,3 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs);
 int mysql_insert_signature(MYSQL *connection, signature_t *sig);
 
 int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs);
-
-#endif

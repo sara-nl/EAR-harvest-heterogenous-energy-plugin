@@ -49,6 +49,7 @@ void usage(char *app)
 void main(int argc,char *argv[])
 {
 	int uid;
+	int cpus;
 	ulong f;
 	if (argc!=3) usage(argv[0]);
 	if (getuid()!=0) usage(argv[0]);

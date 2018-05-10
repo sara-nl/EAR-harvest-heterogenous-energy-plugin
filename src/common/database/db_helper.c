@@ -27,10 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <mysql.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
 #include <common/string_enhanced.h>

@@ -1,16 +1,19 @@
 ######## FILES
 
 COMPONENTS = common
-#             commands \
-#             tools \
-#             tests
 ifdef CPUF_BASE
 	COMPONENTS += control
-	ifdef PAPI_BASE
-	ifdef IPMI_BASE
-		COMPONENTS += metrics \
-        		      daemon
+	ifdef GSL_BASE
+		COMPONENTS += tools
 	endif
+	ifdef PAPI_BASE
+		COMPONENTS += library
+		ifdef IPMI_BASE
+			COMPONENTS += metrics \
+        		          daemon \
+                          commands \
+                          tests
+		endif
 	endif
 endif
 ifdef SLURM_BASE

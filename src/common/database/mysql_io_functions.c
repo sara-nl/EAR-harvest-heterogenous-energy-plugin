@@ -27,15 +27,13 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
-#include <common/database/mysql_io_functions.h>
-#include <common/config.h>
-#include <common/ear_verbose.h>
-#include <common/states.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <common/config.h>
+#include <common/states.h>
+#include <common/database/mysql_io_functions.h>
+#include <common/ear_verbose.h>
 
 
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
