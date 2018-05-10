@@ -6,13 +6,19 @@ LDFLAGS   = $(CPUF_CFLAGS) $(PAPI_LDFLAGS)
 FREQ_OBJS = $(SRCDIR)/metrics/papi/generics.o \
             $(SRCDIR)/control/frequency.o
 
-REMOTE_OBJS=$(SRCDIR)/common/remote_daemon_client.o
+REMOTE_OBJS = $(SRCDIR)/common/remote_daemon_client.o
 
-
-BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report ear_new_job ear_end_job
 TYPES = $(SRCDIR)/common/types.a
 
-BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report ear_create_database ear_new_job ear_end_job
+BINARIES = ear_control \
+           ear_set_node_freq \
+           ear_get_node_freq \
+           ear_report \
+           ear_new_job \
+           ear_end_job
+ifdef DB_BASE
+BINARIES += ear_create_database
+endif
 
 ######## RULES
 
@@ -35,6 +41,7 @@ ear_new_job:ear_new_job.c $(REMOTE_OBJS)
 
 ear_end_job:ear_end_job.c $(REMOTE_OBJS)
 	$(CC) $(CFLAGS) -o ear_end_job ear_end_job.c $(REMOTE_OBJS)
+
 ear_create_database: ear_create_database.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
 

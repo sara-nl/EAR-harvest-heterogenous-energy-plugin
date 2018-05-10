@@ -53,6 +53,9 @@ export IPMI_LDFLAGS
 export SLURM_BASE
 export SLURM_CFLAGS
 export CPUF_LDFLAGS
+export DB_BASE
+export DB_CFLAGS
+export DB_LDFLAGS
 export CONSTANTS
 export DEBUG
 

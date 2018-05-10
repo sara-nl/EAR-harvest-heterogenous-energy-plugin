@@ -38,29 +38,29 @@
 
 extern loop_t loop;
 extern application_t loop_signature;
-extern char loop_summary_path[PATH_MAX];
-
 extern application_t application;
-extern char app_summary_path[PATH_MAX];
+extern ear_conf_t *system_conf;
 
+extern char loop_summary_path[PATH_MAX];
+extern char app_summary_path[PATH_MAX];
+extern char ear_app_name[PATH_MAX];
+
+// Common variables
+extern unsigned long ear_frequency;
 extern unsigned long EAR_default_frequency;
 extern unsigned int EAR_default_pstate;
-extern unsigned long ear_frequency;
+
 extern int ear_use_turbo;
 extern int ear_whole_app;
 extern int ear_my_rank;
 extern int my_job_id;
-extern uint dynais_enabled;
+
+// DynAIS
 extern uint loop_with_signature;
-// To be removed with new dynais version
 extern ulong last_first_event;
 extern ulong last_calls_in_loop;
 extern ulong last_loop_size;
 extern ulong last_loop_level;
+extern uint dynais_enabled;
 
-
-extern ear_conf_t *system_conf;
-extern char ear_app_name[PATH_MAX];
-
-#else
 #endif
