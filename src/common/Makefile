@@ -20,13 +20,14 @@ BINARIES = ear_daemon_client.o \
            environment.o \
            string_enhanced.o \
            math_operations.o \
-           shared_configuration.o \
            file_lock.o \
 		   types.a
 
 ifdef FEAT_SHRMEM
-BINARIES += remote_daemon_client.o
+BINARIES += remote_daemon_client.o \
+            shared_configuration.o
 endif
+
 ifdef DB_BASE
 BINARIES += database/db_helper.o \
             database/mysql_io_functions.o

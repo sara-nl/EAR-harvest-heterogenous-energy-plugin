@@ -10,7 +10,6 @@ export DIR
 COMMON_OBJS = $(SRCDIR)/metrics/metrics.a \
 	          $(SRCDIR)/control/frequency.o \
               $(SRCDIR)/common/environment_common.o \
-              $(SRCDIR)/common/shared_configuration.o \
               $(SRCDIR)/common/types.a 
 
 OBJS =
@@ -21,7 +20,8 @@ COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
 endif
 
 ifdef FEAT_SHRMEM
-COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a
+COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a \
+               $(SRCDIR)/common/shared_configuration.o
 
 OBJS += dynamic_configuration.o \
         power_monitoring.o

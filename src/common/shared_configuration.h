@@ -36,6 +36,7 @@
 
 #ifndef _SHARED_CONF_H
 #define _SHARED_CONF_H
+
 #include <common/types/generic.h>
 
 typedef struct ear_conf{
@@ -64,7 +65,4 @@ void dettach_ear_conf_shared_area();
 */
 void ear_conf_shared_area_dispose(char * ear_conf_path);
 
-
-
-#else
 #endif
