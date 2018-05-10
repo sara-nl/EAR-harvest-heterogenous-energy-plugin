@@ -15,7 +15,7 @@ TYPES = $(SRCDIR)/common/types.a
 DB_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o
 
 
-BINARIES = ear_set_node_freq ear_get_node_freq ear_report ear_create_database ear_new_job ear_end_job ear_energy_over_time
+BINARIES = ear_set_node_freq ear_get_node_freq ear_report ear_create_database ear_new_job ear_end_job ear_energy_over_time ear_store_database
 
 ######## RULES
 
@@ -44,6 +44,9 @@ ear_create_database: ear_create_database.c
 
 ear_energy_over_time: ear_energy_over_time.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_energy_over_time ear_energy_over_time.c $(DB_LDFLAGS)
+
+ear_store_database: ear_store_database.c
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_store_database ear_store_database.c $(DB_LDFLAGS)
 
 ######## OPTIONS
 

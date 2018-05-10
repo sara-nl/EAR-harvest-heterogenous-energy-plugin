@@ -123,10 +123,17 @@ void main(int argc,char *argv[])
     int i;
     for (i = 3; i < argc -1; i++)
     {
-        if (!strcmp(argv[i], "-u"))
+        if (!strcmp(argv[i], "-d"))
             divisor = (atoi(argv[i+1]) > 0) ? atoi(argv[i+1]) : divisor;
+        if (!strcmp(argv[i], "-u"))
+            db_user = argv[i+1];
+        if (!strcmp(argv[i], "-db"))
+            db_ip = argv[i+1];
+        if (!strcmp(argv[i], "-p"))
+            db_pass = argv[i+1];
+          
     }
-
+    printf("User: %s\n", db_user);
     struct tm *start={0}, *end={0}; 
     time_t start_time, end_time;
     
@@ -134,7 +141,9 @@ void main(int argc,char *argv[])
     if (start == NULL)
     {
      //   printf("getdate error %d\n", getdate_err);
-        if (getdate_err == 7) printf("Unsupported date input.\n");
+        if (getdate_err == 7) fprintf(stderr, "Usupported date input. Please check your $DATEMSK file to see your defined inputs. \
+                                                If the environment variable is not set, please set it to a valid format file. \n");
+        else fprintf(stderr, "Error with date format.\n");
         exit(1);
     }
     start_time = mktime(start);
@@ -158,10 +167,13 @@ void main(int argc,char *argv[])
     }
     
     long long result = get_sum(connection, start_time, end_time, divisor);
-    
-    printf("Total energy spent: %lli\n", result);
-    
+
     mysql_close(connection);
+    
+    if (!result) printf("No results in that period of time found\n");
+    else if (result < 0) exit(1);
+    else printf("Total energy spent: %lli\n", result);
+    
 
 #endif
 
