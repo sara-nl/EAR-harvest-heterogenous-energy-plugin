@@ -3,9 +3,6 @@
 COMPONENTS = common
 ifdef CPUF_BASE
 	COMPONENTS += control
-	ifdef GSL_BASE
-		COMPONENTS += tools
-	endif
 	ifdef PAPI_BASE
 		COMPONENTS += library
 		ifdef IPMI_BASE
@@ -14,6 +11,9 @@ ifdef CPUF_BASE
                           commands \
                           tests
 		endif
+	endif
+	ifdef GSL_BASE
+		COMPONENTS += tools
 	endif
 endif
 ifdef SLURM_BASE

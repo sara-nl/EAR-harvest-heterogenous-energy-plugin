@@ -12,11 +12,14 @@ TYPES = $(SRCDIR)/common/types.a
 
 BINARIES = ear_set_node_freq \
            ear_get_node_freq \
-           ear_report \
+           ear_report
+ifdef FEAT_SHRMEM
+BINARIES += ear_control \
            ear_new_job \
            ear_end_job
+endif
 ifdef DB_BASE
-	BINARIES += ear_create_database
+BINARIES += ear_create_database
 endif
 
 ######## RULES
