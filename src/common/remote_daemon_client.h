@@ -42,8 +42,6 @@
 #include <common/config.h>
 #include <common/types/job.h>
 
-#if SHARED_MEMORY
-
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
 * 	@param the nodename to connect with
@@ -69,6 +67,5 @@ int eards_set_th(unsigned long th);
 /** Disconnect from the previously connected EARD
 */
 int eards_remote_disconnect();
-#endif
 
 #endif

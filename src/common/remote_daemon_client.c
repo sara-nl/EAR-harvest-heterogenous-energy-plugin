@@ -42,15 +42,13 @@
 #include <common/states.h>
 #include <common/ear_verbose.h>
 #include <common/types/job.h>
-int EAR_VERBOSE_LEVEL=1;
 
-#if SHARED_MEMORY
+// Verbosity
+static const char *__NAME__ = "eards_rem_client";
+int EAR_VERBOSE_LEVEL=1;
 
 static int eards_remote_connected=0;
 static int eards_sfd=-1;
-// Verbosity
-static const char *__NAME__ = "eards_rem_client";
-
 
 // Sends a command to eard
 int send_command(request_t *command)
@@ -127,6 +125,7 @@ int eards_new_job(job_t *new_job)
 	VERBOSE_N(0,"command %u job_id %d\n",command.req,command.my_req.new_job.id);
 	return send_command(&command);
 }
+
 int eards_end_job(job_id jid,job_id sid)
 {
     request_t command;
@@ -137,7 +136,6 @@ int eards_end_job(job_id jid,job_id sid)
 	return send_command(&command);
 }
 
-
 int eards_set_freq(unsigned long freq)
 {
 	request_t command;
@@ -145,6 +143,7 @@ int eards_set_freq(unsigned long freq)
     command.my_req.ear_conf.max_freq=freq;
 	return send_command(&command);
 }
+
 // New th must be passed as % th=0.75 --> 75
 int eards_set_th(unsigned long th)
 {
@@ -160,4 +159,3 @@ int eards_remote_disconnect()
 	close(eards_sfd);
 	return EAR_SUCCESS;
 }
-#endif
