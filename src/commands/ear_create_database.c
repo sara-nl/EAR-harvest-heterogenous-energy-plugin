@@ -48,7 +48,7 @@ void execute_on_error(MYSQL *connection)
 
 void create_user(MYSQL *connection)
 {
-    if (mysql_query(connection, "GRANT ALL ON Report.* TO ear_daemon")) execute_on_error(connection);
+    if (mysql_query(connection, "GRANT INSERT, SELECT ON Report.* TO ear_daemon")) execute_on_error(connection);
 }
 
 void create_db(MYSQL *connection)

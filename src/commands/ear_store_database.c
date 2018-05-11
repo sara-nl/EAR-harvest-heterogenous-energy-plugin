@@ -49,7 +49,7 @@ void execute_on_error(MYSQL *connection)
 
 void restore_privileges_user(MYSQL *connection)
 {
-    if (mysql_query(connection, "GRANT ALL ON Report.* TO ear_daemon")) execute_on_error(connection);
+    if (mysql_query(connection, "GRANT INSERT, SELECT ON Report.* TO ear_daemon")) execute_on_error(connection);
 }
 
 void rename_tables(MYSQL *connection, char *old_db, char *db_name)
