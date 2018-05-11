@@ -36,14 +36,11 @@
 * 	 Note:Specific functions could be substituted by a generic function passing a local_config_t
 */
 
-#include <common/config.h>
-#include <common/types/job.h>
 #ifndef _REMOTE_CLIENT_API_H
 #define _REMOTE_CLIENT_API_H
 
-#if SHARED_MEMORY
-
-
+#include <common/config.h>
+#include <common/types/job.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
@@ -70,8 +67,5 @@ int eards_set_th(unsigned long th);
 /** Disconnect from the previously connected EARD
 */
 int eards_remote_disconnect();
-#endif
 
-
-#else
 #endif

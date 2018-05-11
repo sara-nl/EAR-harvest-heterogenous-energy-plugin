@@ -34,11 +34,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/version.h>
-#include <cpufreq.h>
-#include <papi.h>
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
+#else
+#include <cpufreq.h>
 #endif
 
 #include <control/frequency.h>
@@ -151,21 +151,9 @@ static ulong *get_frequencies_rank()
 }
 
 // ear_cpufreq_init
-int frequency_init()
+int frequency_init(unsigned int _num_cpus)
 {
-	const PAPI_hw_info_t *hwinfo;
-
-	// TODO: metrics (PAPI) dependancy, remove and pass the number of cpus
-	hwinfo = metrics_get_hw_info();
-
-	if (hwinfo == NULL) {
-		VERBOSE_N(0, "PAPI hardware scanning returned NULL, exiting");
-		exit(1);
-	}
-
-	//
-	num_cpus = hwinfo->sockets * hwinfo->cores * hwinfo->threads;
-	VERBOSE_N(1, "detected %u CPUs", num_cpus);
+	num_cpus = _num_cpus;
 
 	//
 	freq_list_cpu = get_frequencies_cpu();

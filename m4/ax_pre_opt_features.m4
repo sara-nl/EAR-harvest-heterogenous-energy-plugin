@@ -102,18 +102,6 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 
 	AC_SUBST(BUILD_TYPE)
 
-    #
-    # POWER MONITORING
-    #
-
-	AC_ARG_ENABLE([power-monitoring],
-        AS_HELP_STRING([--enable-power-monitoring], [Enables the power monitoring feature]))
-
-	AS_IF([test "x$enable_power_monitoring" = "xyes"],
-		[POWER_MONITORING=1],[POWER_MONITORING=0])
-
-	AC_SUBST(POWER_MONITORING)
-
 	#
 	# SHARED MEMORY
 	#
@@ -122,7 +110,7 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		AS_HELP_STRING([--enable-shared-memory], [Enables the shared memory feature]))
 
     AS_IF([test "x$enable_shared_memory" = "xyes"],
-        [SHARED_MEMORY=1],[SHARED_MEMORY=0])
+        [SHARED_MEMORY="-DSHARED_MEMORY=1"],[SHARED_MEMORY=""])
 
     AC_SUBST(SHARED_MEMORY)
 

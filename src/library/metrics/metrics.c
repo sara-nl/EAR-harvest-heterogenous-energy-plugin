@@ -100,7 +100,6 @@ static const char *__NAME__ = "METRICS";
 
 // Hardware
 static double hw_cache_line_size;
-static int hw_node_size;
 
 // Options
 static int papi_flops_supported;
@@ -301,17 +300,9 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 
 int metrics_init()
 {
-	const PAPI_hw_info_t *hw_general = NULL;
 	ulong flops_size;
 	ulong bandwith_size;
 	ulong rapl_size;
-
-	// General hardware info by PAPI
-	hw_general = metrics_get_hw_info();
-
-	if (hw_general != NULL) {
-		hw_node_size = hw_general->threads * hw_general->cores;
-	}
 
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();

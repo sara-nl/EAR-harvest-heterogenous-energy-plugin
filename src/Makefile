@@ -1,13 +1,21 @@
 ######## FILES
 
-COMPONENTS = common \
-             metrics \
-             control \
-             library \
-             daemon \
-             tools \
-             tests \
-			 commands
+COMPONENTS = common
+ifdef CPUF_BASE
+	COMPONENTS += control
+	ifdef PAPI_BASE
+		COMPONENTS += library
+		ifdef IPMI_BASE
+			COMPONENTS += metrics \
+        		          daemon \
+                          commands \
+                          tests
+		endif
+	endif
+	ifdef GSL_BASE
+		COMPONENTS += tools
+	endif
+endif
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif

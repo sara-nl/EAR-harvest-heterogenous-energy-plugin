@@ -30,7 +30,7 @@
 #include <common/config.h>
 #include <time.h>
 
-#if POWER_MONITORING
+#if SHARED_MEMORY
 
 #ifndef _EAR_TYPES_POWER_SIGNATURE
 #define _EAR_TYPES_POWER_SIGNATURE

@@ -28,7 +28,7 @@
 */
 
 #include <common/config.h>
-#if POWER_MONITORING
+#if SHARED_MEMORY
 #include <time.h>
 #include <stdio.h>
 #include <string.h>

@@ -27,17 +27,15 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <common/database/mysql_io_functions.h>
-
-#if DB_MYSQL
-#include <mysql.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
 #include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
+#include <common/database/mysql_io_functions.h>
 
 char *db_ip = NULL;
 char *db_user = NULL;
@@ -175,7 +173,7 @@ int db_insert_loop(loop_t *loop)
     return EAR_SUCCESS;
 }
 
-#if POWER_MONITORING
+#if SHARED_MEMORY
 int db_insert_power_signature(power_signature_t *pow_sig)
 {
         MYSQL *connection = mysql_init(NULL);
@@ -214,4 +212,3 @@ int db_insert_power_signature(power_signature_t *pow_sig)
 }
 #endif
 
-#endif

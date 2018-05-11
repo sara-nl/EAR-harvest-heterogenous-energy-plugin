@@ -26,12 +26,15 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+
+#include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 
 static struct flock lock;
+
 int create_lock(char *lock_file_name)
 {
     int fd = open(lock_file_name, O_WRONLY|O_CREAT,S_IWUSR);

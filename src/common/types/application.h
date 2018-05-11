@@ -42,7 +42,7 @@ typedef struct application
 {
 	job_t job;	
 	char node_id[GENERIC_NAME];		
-	#if POWER_MONITORING
+	#if SHARED_MEMORY
 	power_signature_t power_sig; // power_sig are power metrics related to the whole job, not only the mpi part
 	#endif
 	signature_t	signature; 		// signature refers to the mpi part, it includes power metrics and performance metrics

@@ -27,21 +27,17 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
-#include <common/database/mysql_io_functions.h>
-#include <common/config.h>
-#include <common/ear_verbose.h>
-#include <common/states.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <common/config.h>
+#include <common/states.h>
+#include <common/database/mysql_io_functions.h>
+#include <common/ear_verbose.h>
 
 
-#if DB_MYSQL
-
-#define APPLICATION_QUERY       "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
-                                "(?, ?, ?, ?)"
+#define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
+                            "(?, ?, ?, ?)"
 
 
 #define LOOP_QUERY              "INSERT INTO Loops (event, size, level, job_id, step_id,  node_id, total_iterations," \
@@ -61,6 +57,7 @@
 
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
@@ -669,7 +666,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     return num_signatures;
 }
 
-#if POWER_MONITORING
+#if SHARED_MEMORY
 int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -714,4 +711,3 @@ int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
 }
 #endif
 
-#endif

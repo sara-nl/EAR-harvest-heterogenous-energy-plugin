@@ -50,5 +50,4 @@ void main(int argc,char *argv[])
 	eards_set_freq(f);
 	eards_remote_disconnect();
 	exit(1);
-	
 }

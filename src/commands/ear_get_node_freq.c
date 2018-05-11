@@ -33,27 +33,27 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <control/frequency.h>
 #include <unistd.h>
 #include <sys/types.h>
-int EAR_VERBOSE_LEVEL=1;
+#include <control/frequency.h>
 
+int EAR_VERBOSE_LEVEL=1;
 
 void usage(char *app)
 {
 	printf("usage:%s num_cpus\n",app);
 	exit(1);
 }
+
 void main(int argc,char *argv[])
 {
 	int i;
-	ulong cpus;
+	int cpus;
 	if (argc!=2) usage(argv[0]);
 	cpus=atoi(argv[1]);
-	frequency_init();
+	frequency_init(cpus);
 	for (i=0;i<cpus;i++){
 		printf("CPU freq for cpu %d is %lu\n",i,frequency_get_cpu_freq(i));
 	}	
 	frequency_dispose();
-	
 }

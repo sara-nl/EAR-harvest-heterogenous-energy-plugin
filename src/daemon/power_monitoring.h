@@ -33,7 +33,6 @@
 *    \brief This file offers the API for the periodic power monitoring. It is used by the power_monitoring thread created by EARD
 *
 */
-#if POWER_MONITORING
 #ifndef _POWER_MONITORING_H_
 #define _POWER_MONITORING_H_
 
@@ -63,6 +62,4 @@ void powermon_new_job(job_t *j,uint from_mpi);
 */
 void powermon_end_job(job_id jid,job_id sid);
 
-#else
-#endif
 #endif

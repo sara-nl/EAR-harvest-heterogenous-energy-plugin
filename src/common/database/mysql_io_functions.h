@@ -27,22 +27,16 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <mysql/mysql.h>
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/loop.h>
 #include <common/types/signature.h>
 #include <common/types/application.h>
-#if POWER_MONITORING
+#if SHARED_MEMORY
 #include <common/types/power_signature.h>
 #endif
 
-#if DB_MYSQL
-
-#include <mysql.h>
-
-/** Given a MYSQL connection and an application, inserts said application into
-*   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
-*   EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_application(MYSQL *connection, application_t *app);
 
 /** Given a MYSQL connection and a valid MYSQL query, stores in apps the 
@@ -86,11 +80,10 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig);
 *   EAR_MYSQL_STMT_ERROR on error. */
 int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs);
 
-#if POWER_MONITORING
+#if SHARED_MEMORY
 /** Given a MYSQL connection and a power_signature, inserts said power_signature into
 *   the database. Returns the power_signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig);
 #endif
 
-#endif

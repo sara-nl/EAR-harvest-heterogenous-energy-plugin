@@ -110,7 +110,7 @@ int eards_connect()
 		ear_fd_req[i]=-1;
 		ear_fd_ack[i]=-1;
 	}
-	#if POWER_MONITORING
+	#if SHARED_MEMORY
 	char *jid,*sid,*userid,*appid;
 	jid=getenv("SLURM_JOB_ID");
 	sid=getenv("SLURM_STEP_ID");

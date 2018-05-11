@@ -21,13 +21,19 @@ BINARIES = ear_daemon_client.o \
            environment.o \
            string_enhanced.o \
            math_operations.o \
-           shared_configuration.o \
-           remote_daemon_client.o \
            file_lock.o \
-		   types.a \
-		   database/db_helper.o \
-		   database/mysql_io_functions.o
-			
+		   types.a
+
+ifdef FEAT_SHRMEM
+BINARIES += remote_daemon_client.o \
+            shared_configuration.o
+endif
+
+ifdef DB_BASE
+BINARIES += database/db_helper.o \
+            database/mysql_io_functions.o
+endif
+
 ######## RULES
 
 all: $(BINARIES)
@@ -60,20 +66,18 @@ math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
 
 types.a: $(TYPES_OBJS)
-	ar rvs types.a $(TYPES_OBJS) string_enhanced.o math_operations.o	
-
-
+	ar rvs types.a $(TYPES_OBJS) string_enhanced.o math_operations.o
 
 ######## OPTIONS
 
 install:
 	mkdir -p $(DESTDIR)/include/common
-	cp ear_daemon_client.o $(DESTDIR)/lib
-	cp remote_daemon_client.o $(DESTDIR)/lib
-	cp remote_daemon_client.h $(DESTDIR)/include
-	cp eards_api.h $(DESTDIR)/include
-	cp states.h $(DESTDIR)/include/common
+	# cp ear_daemon_client.o $(DESTDIR)/lib
+	# cp remote_daemon_client.o $(DESTDIR)/lib
+	# cp remote_daemon_client.h $(DESTDIR)/include
+	# cp eards_api.h $(DESTDIR)/include
+	# cp states.h $(DESTDIR)/include/common
 
 clean:
+	rm $(BINARIES) $(TYPES_OBJS) || true
 	rm -rf *.o *.so *.a
-	rm $(BINARIES) $(TYPES_OBJS)
