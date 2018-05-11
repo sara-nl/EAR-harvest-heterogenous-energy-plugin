@@ -14,7 +14,8 @@ TYPES_OBJS = types/application.o \
 		     types/job.o \
 		     types/signature.o \
 		     types/power_signature.o \
-	    	 types/loop.o
+	    	 types/loop.o \
+			 types/periodic_metric.o
 
 BINARIES = ear_daemon_client.o \
            environment.o \
@@ -23,9 +24,9 @@ BINARIES = ear_daemon_client.o \
            shared_configuration.o \
            remote_daemon_client.o \
            file_lock.o \
-	   types.a \
-	   database/db_helper.o \
-	   database/mysql_io_functions.o
+		   types.a \
+		   database/db_helper.o \
+		   database/mysql_io_functions.o
 			
 ######## RULES
 
