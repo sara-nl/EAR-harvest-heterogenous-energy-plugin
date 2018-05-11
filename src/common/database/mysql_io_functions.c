@@ -32,8 +32,8 @@
 #include <string.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/database/mysql_io_functions.h>
 #include <common/ear_verbose.h>
+#include <common/database/mysql_io_functions.h>
 
 
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
