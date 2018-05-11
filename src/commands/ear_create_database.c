@@ -142,6 +142,65 @@ void create_tables(MYSQL *connection)
                             def_f BIGINT unsigned NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
+    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Events ( \
+                            id BIGINT unsigned NOT NULL AUTO_INCREMENT, \
+                            timestamp BIGINT NOT NULL, \
+                            event_type INT NOT NULL, \
+                            job_id INT NOT NULL, \
+                            freq BIGINT unsigned NOT NULL, \
+                            PRIMARY KEY (id))")) execute_on_error(connection);
+                            
+
+    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_applications (\
+                            job_id INT unsigned NOT NULL, \
+                            step_id INT unsigned NOT NULL, \
+                            node_id VARCHAR(256), \
+                            signature_id INT unsigned,\
+                            PRIMARY KEY(job_id, step_id, node_id))")) execute_on_error(connection);
+
+    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_jobs (\
+                            id INT unsigned NOT NULL,\
+                            step_id INT unsigned NOT NULL, \
+                            user_id VARCHAR(256),\
+                            app_id VARCHAR(256),\
+                            start_time INT NOT NULL,\
+                            end_time INT NOT NULL,\
+                            start_mpi_time INT NOT NULL,\
+                            end_mpi_time INT NOT NULL,\
+                            policy VARCHAR(256) NOT NULL,\
+                            threshold DOUBLE NOT NULL,\
+                            procs INT unsigned NOT NULL,\
+                            job_type SMALLINT unsigned NOT NULL,\
+                            def_f INT unsigned, \
+                            PRIMARY KEY(id, step_id))")) execute_on_error(connection);
+
+    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
+                            id INT unsigned NOT NULL AUTO_INCREMENT,\
+                            DC_power DOUBLE,\
+                            max_DC_power DOUBLE, \
+                            min_DC_power DOUBLE, \
+                            DRAM_power DOUBLE,\
+                            PCK_power DOUBLE,\
+                            EDP DOUBLE,\
+                            GBS DOUBLE,\
+                            TPI DOUBLE,\
+                            CPI DOUBLE,\
+                            Gflops DOUBLE,\
+                            time DOUBLE,\
+                            FLOPS1 BIGINT unsigned,\
+                            FLOPS2 BIGINT unsigned,\
+                            FLOPS3 BIGINT unsigned,\
+                            FLOPS4 BIGINT unsigned,\
+                            FLOPS5 BIGINT unsigned,\
+                            FLOPS6 BIGINT unsigned,\
+                            FLOPS7 BIGINT unsigned,\
+                            FLOPS8 BIGINT unsigned,\
+                            instructions BIGINT unsigned, \
+                            cycles BIGINT unsigned,\
+                            avg_f BIGINT unsigned,\
+                            def_f BIGINT unsigned, \
+                            PRIMARY KEY (id))")) execute_on_error(connection);
+
 }
 
 void main(int argc,char *argv[])
