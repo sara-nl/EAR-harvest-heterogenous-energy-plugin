@@ -8,22 +8,22 @@ FREQ_OBJS = $(SRCDIR)/metrics/papi/generics.o \
 
 REMOTE_OBJS = $(SRCDIR)/common/remote_daemon_client.o
 
-#BINARIES = ear_control ear_set_node_freq ear_get_node_freq ear_report ear_new_job ear_end_job ear_energy_over_time
-
 TYPES = $(SRCDIR)/common/types.a
-DB_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o
-
 
 BINARIES = ear_set_node_freq \
            ear_get_node_freq \
            ear_report
+
 ifdef FEAT_SHRMEM
 BINARIES += ear_control \
            ear_new_job \
            ear_end_job
 endif
+
 ifdef DB_BASE
 BINARIES += ear_create_database ear_energy_over_time ear_store_database
+
+DB_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o
 endif
 
 ######## RULES
@@ -40,7 +40,7 @@ ear_get_node_freq:ear_get_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_get_node_freq ear_get_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
 ear_report: ear_report.c $(TYPES) $(DB_OBJS)
-	$(CC) $(CFLAGS) $(DB_OBJS) $(TYPES) $(DB_CFLAGS) -o ear_report ear_report.c $(DB_LDFLAGS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_report ear_report.c $(DB_LDFLAGS) $(DB_OBJS) $(TYPES)
 
 ear_new_job: ear_new_job.c $(REMOTE_OBJS) $(TYPES)
 	$(CC) $(CFLAGS) -o ear_new_job ear_new_job.c  $(REMOTE_OBJS) $(TYPES)
@@ -48,9 +48,6 @@ ear_new_job: ear_new_job.c $(REMOTE_OBJS) $(TYPES)
 ear_end_job: ear_end_job.c $(REMOTE_OBJS) $(TYPES)
 	$(CC) $(CFLAGS) -o ear_end_job ear_end_job.c $(REMOTE_OBJS) $(TYPES)
 
-ear_end_job:ear_end_job.c $(REMOTE_OBJS) $(SRCDIR)/common/types.a
-	$(CC) $(CFLAGS) -o ear_end_job ear_end_job.c $(REMOTE_OBJS) $(SRCDIR)/common/types.a
-	
 ear_create_database: ear_create_database.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
 
