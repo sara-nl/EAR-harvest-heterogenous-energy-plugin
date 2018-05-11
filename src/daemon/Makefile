@@ -15,8 +15,7 @@ COMMON_OBJS = $(SRCDIR)/metrics/metrics.a \
 ifdef DB_BASE
 COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
                $(SRCDIR)/common/database/mysql_io_functions.o \
-			   $(SRCDIR)/common/string_enhanced.o \
-			   $(SRCDIR)/common/types.a
+			   $(SRCDIR)/common/string_enhanced.o
 endif
 
 OBJS =
