@@ -34,9 +34,14 @@
 #include <common/types/signature.h>
 #include <common/types/application.h>
 #if SHARED_MEMORY
+#include <common/types/periodic_metric.h>
 #include <common/types/power_signature.h>
 #endif
 
+
+/** Given a MYSQL connection and an application, inserts said application into
+*   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
+*   EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_application(MYSQL *connection, application_t *app);
 
 /** Given a MYSQL connection and a valid MYSQL query, stores in apps the 
@@ -85,5 +90,9 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
 *   the database. Returns the power_signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig);
-#endif
 
+/** Given a MYSQL connection and a power_signature, inserts said power_signature into
+*   the database. Returns the power_signature's database id on success, and either 
+*   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met);
+#endif

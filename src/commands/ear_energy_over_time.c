@@ -36,7 +36,7 @@
 
 #if DB_MYSQL
 #include <mysql.h>
-#define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Idle_energy WHERE start_time" \
+#define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
                     ">= ? AND end_time <= ?"
 #endif
 

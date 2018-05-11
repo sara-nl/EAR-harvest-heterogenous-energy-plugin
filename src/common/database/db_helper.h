@@ -45,6 +45,9 @@ int db_insert_loop(loop_t *loop);
 
 #if SHARED_MEMORY
 int db_insert_power_signature(power_signature_t *pow_sig);
+
+int db_insert_periodic_metric(periodic_metric_t *per_met);
+
 #endif
 
 #endif

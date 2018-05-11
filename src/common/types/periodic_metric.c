@@ -44,15 +44,16 @@ void copy_periodic_metric(periodic_metric_t *destiny, periodic_metric_t *source)
 void init_periodic_metric(periodic_metric_t *pm)
 {
     memset(pm, 0, sizeof(periodic_metric_t));
-    time(&pm->start_period);
+    time(&pm->start_time);
 }
 
 void print_periodic_metric_t(int fd, periodic_metric_t *pm)
 {
-    /* print order: START_TIME;END_TIME;ENERGY*/
+    /* print order: NODE_ID;START_TIME;END_TIME;ENERGY*/
     int i;
     
-	dprintf(fd, "%s;%s;", ctime(&pm->start_period), ctime(&pm->start_period));
+    dprintf(fd, "%s;", pm->node_id);
+	dprintf(fd, "%s;%s;", ctime(&pm->start_time), ctime(&pm->start_time));
     dprinft(fd, "%llu;", pm->DC_energy);
 }
 

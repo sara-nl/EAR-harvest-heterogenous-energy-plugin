@@ -121,11 +121,12 @@ void create_tables(MYSQL *connection)
                             def_f BIGINT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
-    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Idle_energy ( \
+    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
                             id INT unsigned NOT NULL AUTO_INCREMENT, \
                             start_time BIGINT NOT NULL, \
                             end_time BIGINT NOT NULL, \
                             dc_energy BIGINT unsigned NOT NULL, \
+                            node_id VARCHAR(256) NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Power_signatures (  \

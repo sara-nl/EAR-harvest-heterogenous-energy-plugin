@@ -58,6 +58,8 @@
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
+#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id) VALUES (?, ?, ?, ?)"
+
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
@@ -698,6 +700,44 @@ int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
     bind[6].buffer = (char *)&pow_sig->time;
     bind[7].buffer = (char *)&pow_sig->avg_f;
     bind[8].buffer = (char *)&pow_sig->def_f;
+
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+
+    int id = mysql_stmt_insert_id(statement);
+    
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return id;
+}
+
+int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+
+    if (mysql_stmt_prepare(statement, PERIODIC_METRIC_QUERY, strlen(PERIODIC_METRIC_QUERY))) return mysql_statement_error(statement);
+
+    MYSQL_BIND bind[4];
+    memset(bind, 0, sizeof(bind));
+
+    //double types
+    int i;
+    for (i = 0; i < 3; i++)
+    {
+        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+    }
+
+    //integer types
+    bind[3].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[3].buffer_length = strlen(per_met->node_id);
+
+    //storage variable assignation
+    bind[0].buffer = (char *)&per_met->start_time;
+    bind[1].buffer = (char *)&per_met->end_time;
+    bind[2].buffer = (char *)&per_met->DC_energy;
+    bind[3].buffer = (char *)&per_met->node_id;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
