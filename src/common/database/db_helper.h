@@ -32,6 +32,7 @@
 #endif
 #if SHARED_MEMORY
 #include <common/types/power_signature.h>
+#include <common/types/periodic_metric.h>
 #endif
 #include <common/types/application.h>
 #include <common/types/loop.h>

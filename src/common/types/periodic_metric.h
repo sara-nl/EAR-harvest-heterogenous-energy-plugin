@@ -32,8 +32,8 @@
 
 #if SHARED_MEMORY
 
-#ifndef _EAR_TYPES_POWER_SIGNATURE
-#define _EAR_TYPES_POWER_SIGNATURE
+#ifndef _EAR_TYPES_PERIODIC_METRIC
+#define _EAR_TYPES_PERIODIC_METRIC
 
 #include <common/types/generic.h>
 
