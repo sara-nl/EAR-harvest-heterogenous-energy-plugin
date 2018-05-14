@@ -7,10 +7,7 @@ export DIR
 
 ######## FILES
 
-COMMON_OBJS = $(SRCDIR)/metrics/metrics.a \
-	          $(SRCDIR)/control/frequency.o \
-              $(SRCDIR)/common/environment_common.o \
-              $(SRCDIR)/common/types.a 
+COMMON_OBJS = 
 
 ifdef DB_BASE
 COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
@@ -27,6 +24,11 @@ COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a \
 OBJS += dynamic_configuration.o \
         power_monitoring.o
 endif
+
+COMMON_OBJS += $(SRCDIR)/metrics/metrics.a \
+	           $(SRCDIR)/control/frequency.o \
+               $(SRCDIR)/common/environment_common.o \
+               $(SRCDIR)/common/types.a 
 
 BINARIES = eard
 
