@@ -31,7 +31,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <common/config.h>
-#include <mysql.h>
+#include <mysql/mysql.h>
 
 void usage(char *app)
 {

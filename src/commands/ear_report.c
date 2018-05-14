@@ -36,7 +36,7 @@
 #include <common/config.h>
 #include <common/types/application.h>
 #if DB_MYSQL
-#include <mysql.h>
+#include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/database/mysql_io_functions.h>
 #endif
