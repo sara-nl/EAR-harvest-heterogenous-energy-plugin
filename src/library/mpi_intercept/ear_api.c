@@ -118,7 +118,7 @@ static int get_local_id(char *node_name)
 		master = 0;
 	}
 
-	if (my_id) {
+	if (master) {
 		VERBOSE_N(2, "Rank %d is not the master in node %s", ear_my_rank, node_name);
 	}else{
 		VERBOSE_N(1, "Rank %d is the master in node %s", ear_my_rank, node_name);
