@@ -36,6 +36,7 @@
 #endif
 #include <common/types/application.h>
 #include <common/types/loop.h>
+#include <common/types/log.h>
 #include <common/config.h>
 #if DB_MYSQL
 
@@ -43,6 +44,8 @@
 int db_insert_application(application_t *application, char is_learning);
 
 int db_insert_loop(loop_t *loop);
+
+int db_insert_event(ear_event_t *ear_ev);
 
 #if SHARED_MEMORY
 int db_insert_power_signature(power_signature_t *pow_sig);

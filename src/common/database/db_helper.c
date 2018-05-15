@@ -249,3 +249,39 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
 }
 #endif
 
+int db_insert_ear_event(ear_event_t *ear_ev)
+{
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        VERBOSE_N(0, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    {
+        if (getenv_database() != EAR_SUCCESS)
+        {
+            mysql_close(connection);
+            return EAR_ERROR;
+        }
+    }
+
+    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    {
+        VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+    if (mysql_insert_periodic_metric(connection, ear_ev) < 0)
+    {
+        VERBOSE_N(0, "ERROR while writing periodic_metric to database.");
+        return EAR_ERROR;
+    }
+
+    mysql_close(connection);
+    
+    return EAR_SUCCESS;
+}
