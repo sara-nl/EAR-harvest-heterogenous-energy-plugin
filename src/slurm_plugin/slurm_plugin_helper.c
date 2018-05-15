@@ -51,6 +51,25 @@ static int auth_mode = 1;
  *
  */
 
+int verbosity_test(spank_t sp, int level)
+{
+	static int verbosity = -1;
+	char env_remote[8];
+	char *env_local;
+
+	if (verbosity == -1) {
+		if (getenv_remote(sp, "EAR_VERBOSE", env_remote, 8) == 1) {
+			verbosity = atoi(env_remote);
+		} else if (getenv_local("EAR_VERBOSE", &env_local) == 1) {
+			verbosity = atoi(env_local);
+		} else {
+			verbosity = 0;
+		}
+	}
+	
+	return verbosity >= level;
+}
+
 void strtoup(char *string)
 {
 	if (string == NULL) {
@@ -63,7 +82,7 @@ void strtoup(char *string)
     }
 }
 
-char* strclean(char *string, char chr)
+char *strclean(char *string, char chr)
 {
     char *index;
 
@@ -100,43 +119,37 @@ void printenv_remote(spank_t sp, char *name)
 	}
 }
 
-void appendenv(char *destiny, char *source, int destiny_length)
+void appendenv(char *dst, char *src, int dst_capacity)
 {
-   	char buffer[PATH_MAX];
+	static char buffer[PATH_MAX];
 	char *pointer;
-	int capacity;
-	int length;
+	int new_cap;
+	int len_src;
+	int len_dst;
 
-	if ((destiny == NULL) || (source == NULL) || (strlen(source) == 0)) {
+	if ((dst == NULL) || (src == NULL) || (strlen(src) == 0)) {
+		slurm_error("Something is null in appendenv");
 		return;
 	}
 
-	length = strlen(destiny);
-	capacity = strlen(source) + length + 2;
+	len_dst = strlen(dst);
+	len_src = strlen(src);
+	new_cap = len_dst + len_src + (len_dst > 0) + 1;
 
-	if (capacity > destiny_length) {
-		slurm_error("Variable could not be appended, too many characters");
+	if (new_cap > dst_capacity) {
+		slurm_error("Variable could not be appended, too many characters on %d");
 		return;
 	}
 
-	if (length > 0)
+	if (len_dst > 0)
 	{
-		//destiny = string1
-		//source  = string2
-		strcpy(buffer, destiny);
-		//buffer  = string1
-		length = strlen(source);
-		//length  = 7
-		pointer = &destiny[length];
-		//pointer = string1_<-
+		strcpy(buffer, dst);
+		pointer = &dst[len_src];
 		strcpy(&pointer[1], buffer);
-		//destiny = string1_string1
-		strcpy(destiny, source);
-		//destiny = string2_string1
+		strcpy(dst, src);
 		pointer[0] = ':';
-		//destiny = string2:string1
 	} else {
-		strcpy(destiny, source);
+		strcpy(dst, src);
 	}
 }
 
@@ -156,6 +169,10 @@ int setenv_local(const char *name, const char *value, int replace)
 
 int setenv_remote(spank_t sp, char *name, char *value, int replace)
 {
+	if (name == NULL || value == NULL) {
+		return 0;
+	}
+
     return (spank_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
 }
 
@@ -204,13 +221,13 @@ int existenv_local(char *name)
 int existenv_remote(spank_t sp, char *name)
 {
 	spank_err_t serrno;
-    char test[2];
+    char test[4];
 
 	if (name == NULL) {
 		return 0;
 	}
 
-    serrno = spank_getenv (sp, name, test, 2);
+    serrno = spank_getenv (sp, name, test, 4);
 
     return (serrno == ESPANK_SUCCESS || serrno == ESPANK_NOSPACE) &&
 			(test != NULL) && (strlen(test)) > 0;
@@ -252,25 +269,29 @@ int isenv_remote(spank_t sp, char *name, char *value)
  *
  */
 
-static void setenv_if_authorized(const char *option, const char *value)
+static void setenv_if_authorized(spank_t sp, const char *option, const char *value)
 {
+	int r;
+
 	// Mode 0: authorized
 	// Mode 1: normal user
-
 	if (auth_mode == 1) {
-		setenv_local(option, value, 0);
+		r = setenv_local(option, value, 0);
 	} else {
-		setenv_local(option, value, 0);
+		r = setenv_local(option, value, 0);
 	}
 
-	DEBUGGING("%s %s", option, value);
+	if (r == 1) {
+		verbose(sp, 3, "exported '%s' = '%s'", option, value);
+	}
 }
 
 int file_to_environment(spank_t sp, const char *path)
-{	
-    FUNCTION_INFO("file_to_environment");
+{
+	verbose(sp, 2, "function file_to_environment");
+
+    static char option[PATH_MAX];
     const char *value = NULL;
-    char option[PATH_MAX];
     FILE *file;
 
     if ((file = fopen(path, "r")) == NULL)
@@ -281,8 +302,9 @@ int file_to_environment(spank_t sp, const char *path)
 
     while (fgets(option, PATH_MAX, file) != NULL)
     {
-        if ((strclean(option, '\n') != NULL) &&
-			((value = strclean(option, '=')) != NULL))
+		strclean(option, '\n');
+        
+        if ((value = strclean(option, '=')) != NULL)
         {
             if ((strlen(option) > 0))
             {
@@ -290,7 +312,7 @@ int file_to_environment(spank_t sp, const char *path)
 
             	if (strlen(value) > 0) {
                 	strtoup(option);
-					setenv_if_authorized(option, value);
+					setenv_if_authorized(sp, option, value);
 				}
             }
         }
@@ -302,19 +324,22 @@ int file_to_environment(spank_t sp, const char *path)
 
 int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
-	FUNCTION_INFO("find_ear_conf_file");
-	char conf_path[PATH_MAX];
-	char link_path[PATH_MAX];
+	verbose(sp, 2, "function find_ear_conf_file");
+
+	static char conf_path[PATH_MAX];
+	static char link_path[PATH_MAX];
 	int i;
 
     for (i = 0; i < ac; ++i)
     {
-        if (strncmp ("ear_conf_dir=", av[i], 13) == 0)
+		if ((strlen(av[i]) > 9) && (strncmp ("conf_dir=", av[i], 9) == 0))
         {
-			sprintf(link_path, "%s/%s", &av[i][13], EAR_LINK_FILE);
-			sprintf(conf_path, "%s/%s", &av[i][13], EAR_CONF_FILE);
+			verbose(sp, 3, "looking for conf files in path '%s'", av[i]);
+			
+			sprintf(link_path, "%s/%s", &av[i][9], EAR_LINK_FILE);
+			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
 
-			if(file_to_environment(sp, (const char *) conf_path) != ESPANK_SUCCESS) {
+			if (file_to_environment(sp, (const char *) conf_path) != ESPANK_SUCCESS) {
 				return ESPANK_ERROR;
 			}
 
@@ -331,15 +356,13 @@ static int find_user_by_string(char *string, char *id)
 	if ((string == NULL) || (strlen(string) == 0) ||
 			(id == NULL) || (strlen(id) == 0))
 	{
-		return;
+		return 0;
 	}
 
 	p = strtok (string, ",");
 
 	while (p != NULL)
 	{
-		DEBUGGING("%s %s", p, id);
-		
 		if (strcmp(p, id) == 0) {
 			return 1;
 		}
@@ -355,7 +378,7 @@ static int find_user_by_uint(char *string, unsigned int id)
 	char *p;
 
 	if (string == NULL || strlen(string) == 0) {
-		return;
+		return 0;
 	}
 
 	p = strtok (string, ",");
@@ -363,7 +386,6 @@ static int find_user_by_uint(char *string, unsigned int id)
 	while (p != NULL)
 	{
 		nid = (unsigned int) atoi(p);
-		DEBUGGING("%u %u", id, nid);
 
 		if (id == nid) {
 			return 1;
@@ -371,12 +393,14 @@ static int find_user_by_uint(char *string, unsigned int id)
 
 		p = strtok (NULL, ",");
 	}
+
 	return 0;
 }
 
 void find_ear_user_privileges(spank_t sp, int ac, char **av)
 {
-	FUNCTION_INFO("find_ear_user_privileges");
+	verbose(sp, 2, "function find_ear_user_privileges");
+	
 	int i, ruid, rgid, res = 0;
 	char *aid;
 	uid_t uid;
@@ -384,28 +408,31 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 
 	ruid = spank_get_item(sp, S_JOB_UID, &uid);
 	rgid = spank_get_item(sp, S_JOB_GID, &gid);
-	aid = getenv("SLURM_JOB_ACCOUNT");
+	getenv_local("SLURM_JOB_ACCOUNT", &aid);
 
 	for (i = 0; i < ac; ++i)
 	{
-		if ((ruid == ESPANK_SUCCESS) &&
+		if ((ruid == ESPANK_SUCCESS) && (strlen(av[i]) > 11) &&
 			(strncmp ("auth_users=", av[i], 11) == 0) &&
 			(find_user_by_uint(&av[i][11], uid) ))
 		{
+			verbose(sp, 1, "authorized user found by UID");
 			auth_mode = 1;
 			return;
 		}
-		if ((rgid == ESPANK_SUCCESS) &&
+		if ((rgid == ESPANK_SUCCESS) && (strlen(av[i]) > 12) &&
 			(strncmp ("auth_groups=", av[i], 12) == 0) &&
 			(find_user_by_uint(&av[i][12], gid) ))
 		{
+			verbose(sp, 1, "authorized user found by GID");
 			auth_mode = 1;
 			return;
 		}
-		if ((aid != NULL) &&
+		if ((aid != NULL) && (strlen(av[i]) > 14) &&
 			(strncmp ("auth_accounts=", av[i], 14) == 0) &&
 			(find_user_by_string(&av[i][14], aid) ))
 		{
+			verbose(sp, 1, "authorized user found by SLURM account");
 			auth_mode = 1;
 			return;
 		}

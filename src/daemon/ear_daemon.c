@@ -107,54 +107,6 @@ int eard_must_exit=0;
 
 
 
-// SIGNALS management
-void f_signals(int s)
-{
-	if (s==SIGPIPE){
-		eard_close_comm();
-	}
-	// eard exits here
-	if ((s==SIGTERM)||(s==SIGINT)){
-		eard_must_exit=1;
-		if (s==SIGTERM) ear_verbose(0,"eard SIGTERM received.....\n");
-		if (s==SIGINT) ear_verbose(0,"eard SIGINT received.....\n");
-		if (ear_ping_fd>0){
-			ear_verbose(1,"eard application is still connected!.....\n");
-			eard_close_comm();
-		}
-	
-		// Maybe we should just wait for threads
-#if SHARED_MEMORY
-		pthread_join(power_mon_th,NULL);
-		//kill(power_mon_th,SIGKILL);
-		//waitpid(power_mon_th,NULL,0);
-#endif
-#if SHARED_MEMORY
-		pthread_kill(dyn_conf_th,SIGUSR1);
-		pthread_join(dyn_conf_th,NULL);
-#endif
-		eard_exit();
-		ear_verbose(0,"eard exits.....\n");
-	}	
-}
-void catch_signals()
-{
-    struct  sigaction sa; 
-    int s;
-	sigset_t set;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_handler = f_signals;
-    sa.sa_flags=0;
-    s=SIGPIPE;  
-    if (sigaction(s, &sa, NULL) < 0)  ear_verbose(0,"eard doing sigaction of signal s=%d, %s\n",s,strerror(errno));
-    s=SIGTERM;  
-    if (sigaction(s, &sa, NULL) < 0)  ear_verbose(0,"eard doing sigaction of signal s=%d, %s\n",s,strerror(errno));
-    s=SIGINT;  
-    if (sigaction(s, &sa, NULL) < 0)  ear_verbose(0,"eard doing sigaction of signal s=%d, %s\n",s,strerror(errno));
-
-}
-// END SIGNALS management
-
 // Lock unlock functions are used to be sure a single daemon is running per node
 
 void  create_tmp(char *tmp_dir)
@@ -835,25 +787,102 @@ void select_service(int fd)
 // eard creates different pipes to receive requests and to send values requested
 void Usage(char *app)
 {
-	fprintf(stderr,"Usage: %s default_pstate [path for communication files] [verbose_level] \n",app);
+	fprintf(stderr,"Usage: %s default_pstate [path for communication files] [verbose_level] \n", app);
 	fprintf(stderr,"\tEAR_TMP is used as default path, then TMP or HOME, in this order\n"); 
 	_exit(1);
 }
 
+//region SIGNALS
+void signal_handler(int signal)
+{
+	if (signal == SIGPIPE) VERBOSE_N(0, "signal SIGPIPE received");
+	if (signal == SIGTERM) VERBOSE_N(0, "signal SIGTERM received");
+	if (signal == SIGINT)  VERBOSE_N(0, "signal SIGINT received");
+
+	// The PIPE was closed, so the daemon connection ends
+	if (signal == SIGPIPE) {
+		eard_close_comm();
+	}
+
+	// Someone wants EARD to get closed
+	if ((signal == SIGTERM) || (signal == SIGINT))
+	{
+		eard_must_exit = 1;
+
+		if (ear_ping_fd > 0)
+		{
+			VERBOSE_N(1, "application status = connected");
+			eard_close_comm();
+		}
+
+		#if SHARED_MEMORY
+		// Power monitoring
+		pthread_join(power_mon_th,NULL);
+
+		// Maybe we should just wait for threads
+		//kill(power_mon_th,SIGKILL);
+		//waitpid(power_mon_th,NULL,0);
+
+		// Shared Memory
+		pthread_kill(dyn_conf_th, SIGUSR1);
+		pthread_join(dyn_conf_th, NULL);
+		#endif
+
+		eard_exit();
+		VERBOSE_N(0, "exitting");
+	}
+}
+
+void signal_catcher()
+{
+	struct sigaction action;
+	sigset_t set;
+	int signal;
+
+	sigemptyset(&action.sa_mask);
+	action.sa_handler = signal_handler;
+	action.sa_flags = 0;
+
+	signal = SIGPIPE;
+	if (sigaction(signal, &action, NULL) < 0) {
+		VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
+	}
+
+	signal = SIGTERM;
+	if (sigaction(signal, &action, NULL) < 0) {
+		VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
+	}
+
+	signal = SIGINT;
+	if (sigaction(signal, &action, NULL) < 0) {
+		VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
+	}
+}
+//endregion
+
 void main(int argc,char *argv[])
 {
-	struct timeval tv,*my_to;
+	struct timeval *my_to;
+	struct timeval tv;
+
 	char ear_commreq[MAX_PATH_SIZE];
-	unsigned long ear_node_freq;
-	int numfds_ready, numfds_req = 0;
-	fd_set rfds, rfds_basic;
-	int i,  cpu_model;
-	sigset_t eard_mask;
 	char *my_ear_tmp;
+
+	unsigned long ear_node_freq;
+	int cpu_model;
+
+	int numfds_ready;
+	int numfds_req = 0;
+
+	fd_set rfds;
+	fd_set rfds_basic;
+	sigset_t eard_mask;
+
 	int max_fd = -1;
 	int ret;
+	int i;
 
-	// binary P_STATE <path.to.tmp> verbosity_level
+	// Usage
 	if (argc < 2) {
 		Usage(argv[0]);
 	}
@@ -861,7 +890,6 @@ void main(int argc,char *argv[])
 	//HIGHLIGHT: DAEMON INIT
 	ear_daemon_environment();
 
-	// checking verbose
 	if (argc >= 4)
 	{
 		EAR_VERBOSE_LEVEL = atoi(argv[3]);
@@ -873,7 +901,7 @@ void main(int argc,char *argv[])
 		set_ear_verbose(EAR_VERBOSE_LEVEL);
 	}
 
-	catch_signals();
+	signal_catcher();
 
 	// We initialize frecuency
 	if (frequency_init(metrics_get_node_size()) < 0) {
@@ -894,7 +922,7 @@ void main(int argc,char *argv[])
 
 	ear_node_freq = frequency_pstate_to_freq(eard_max_pstate);
 	eard_max_freq = ear_node_freq;
-	VERBOSE_N(0,"Default max frequency defined to %lu\n",eard_max_freq);
+	VERBOSE_N(0, "Default max frequency defined to %lu\n",eard_max_freq);
 
 	// Aperf (later on inside frequency_init(), but no more
 	uint num_cpus = frequency_get_num_online_cpus();
