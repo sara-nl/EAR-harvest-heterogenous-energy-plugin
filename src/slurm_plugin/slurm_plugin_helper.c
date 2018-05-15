@@ -63,7 +63,7 @@ void strtoup(char *string)
     }
 }
 
-char* strclean(char *string, char chr)
+char *strclean(char *string, char chr)
 {
     char *index;
 
@@ -100,43 +100,37 @@ void printenv_remote(spank_t sp, char *name)
 	}
 }
 
-void appendenv(char *destiny, char *source, int destiny_length)
+void appendenv(char *dst, char *src, int dst_capacity)
 {
-   	char buffer[PATH_MAX];
+	static char auxiliar[PATH_MAX];
 	char *pointer;
-	int capacity;
-	int length;
+	int new_cap;
+	int len_src;
+	int len_dst;
 
-	if ((destiny == NULL) || (source == NULL) || (strlen(source) == 0)) {
+	if ((dst == NULL) || (src == NULL) || (strlen(src) == 0)) {
+		slurm_error("Something is null in appendenv");
 		return;
 	}
 
-	length = strlen(destiny);
-	capacity = strlen(source) + length + 2;
+	len_dst = strlen(dst);
+	len_src = strlen(src);
+	new_cap = len_dst + len_src + (len_dst > 0) + 1;
 
-	if (capacity > destiny_length) {
-		slurm_error("Variable could not be appended, too many characters");
+	if (new_cap > dst_capacity) {
+		slurm_error("Variable could not be appended, too many characters on %d\n", num);
 		return;
 	}
 
-	if (length > 0)
+	if (len_dst > 0)
 	{
-		//destiny = string1
-		//source  = string2
-		strcpy(buffer, destiny);
-		//buffer  = string1
-		length = strlen(source);
-		//length  = 7
-		pointer = &destiny[length];
-		//pointer = string1_<-
-		strcpy(&pointer[1], buffer);
-		//destiny = string1_string1
-		strcpy(destiny, source);
-		//destiny = string2_string1
+		strcpy(auxiliar, dst);
+		pointer = &dst[len_src];
+		strcpy(&pointer[1], auxiliar);
+		strcpy(dst, src);
 		pointer[0] = ':';
-		//destiny = string2:string1
 	} else {
-		strcpy(destiny, source);
+		strcpy(dst, src);
 	}
 }
 
@@ -156,6 +150,10 @@ int setenv_local(const char *name, const char *value, int replace)
 
 int setenv_remote(spank_t sp, char *name, char *value, int replace)
 {
+	if (name == NULL || value == NULL) {
+		return 0;
+	}
+
     return (spank_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
 }
 
@@ -204,13 +202,13 @@ int existenv_local(char *name)
 int existenv_remote(spank_t sp, char *name)
 {
 	spank_err_t serrno;
-    char test[2];
+    char test[4];
 
 	if (name == NULL) {
 		return 0;
 	}
 
-    serrno = spank_getenv (sp, name, test, 2);
+    serrno = spank_getenv (sp, name, test, 4);
 
     return (serrno == ESPANK_SUCCESS || serrno == ESPANK_NOSPACE) &&
 			(test != NULL) && (strlen(test)) > 0;
@@ -303,8 +301,8 @@ int file_to_environment(spank_t sp, const char *path)
 int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
 	FUNCTION_INFO("find_ear_conf_file");
-	char conf_path[PATH_MAX];
-	char link_path[PATH_MAX];
+	static char conf_path[PATH_MAX];
+	static char link_path[PATH_MAX];
 	int i;
 
     for (i = 0; i < ac; ++i)
@@ -331,7 +329,7 @@ static int find_user_by_string(char *string, char *id)
 	if ((string == NULL) || (strlen(string) == 0) ||
 			(id == NULL) || (strlen(id) == 0))
 	{
-		return;
+		return 0;
 	}
 
 	p = strtok (string, ",");
@@ -355,7 +353,7 @@ static int find_user_by_uint(char *string, unsigned int id)
 	char *p;
 
 	if (string == NULL || strlen(string) == 0) {
-		return;
+		return 0;
 	}
 
 	p = strtok (string, ",");
@@ -371,6 +369,7 @@ static int find_user_by_uint(char *string, unsigned int id)
 
 		p = strtok (NULL, ",");
 	}
+
 	return 0;
 }
 
@@ -384,7 +383,7 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 
 	ruid = spank_get_item(sp, S_JOB_UID, &uid);
 	rgid = spank_get_item(sp, S_JOB_GID, &gid);
-	aid = getenv("SLURM_JOB_ACCOUNT");
+	getenv_local("SLURM_JOB_ACCOUNT", &aid);
 
 	for (i = 0; i < ac; ++i)
 	{

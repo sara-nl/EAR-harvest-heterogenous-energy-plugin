@@ -30,21 +30,13 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
+#define verbose()
 #define DEBUGGING(string, ...)
 //	slurm_error(string, __VA_ARGS__)
 #define FUNCTION_INFO(function)
 //	slurm_error(function); 
-//	int _pid = getpid(); \
-//	int _ppid = getppid(); \
-//	slurm_error(function); \
-//	slurm_error("pid %d ppid %d", _pid, _ppid);
 #define FUNCTION_INFO_(function)
-//	slurm_error(function); \
-// 	find_ear_user_privileges(sp, ac, av) 
-//	if (isenv_local("EAR_VERBOSE", "1") || isenv_remote(sp, "EAR_VERBOSE", "1")) { \
-//		slurm_error(function); \
-//		printenv_remote(sp, "LD_LIBRARY_PATH"); \
-//	}
+
 
 void strtoup(char *string);
 char* strclean(char *string, char chr);
