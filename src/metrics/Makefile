@@ -25,21 +25,33 @@ endif
 
 ######## RULES
 
-all:
+all: components others
+
+components:
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -C $${i} all || exit; \
 	done
 	ar rvs metrics.a $(METRICS_OBJS)
 
+others: metrics.a
+	$(CC) $(CFLAGS) -o libear_metrics.so metrics.a
+
 ######## OPTIONS
 
-install:
+install: component-installs other-installs
+
+component-installs:
 	@ for i in $(COMPONENTS); do \
 		mkdir -p $(DESTDIR)/include/metrics/$${i} ; \
 	done
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -S -C $${i} install; \
 	done
+
+other-installs:
+	mv libear_metrics.so $(DESTDIR)/lib/libear_metrics.so
+	cp metrics.h $(DESTDIR)/include/metrics
+	$(MAKE) -C power_monitoring install
 
 clean:
 	@ for i in $(COMPONENTS); do \
