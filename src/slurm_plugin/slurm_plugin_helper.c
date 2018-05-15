@@ -121,7 +121,7 @@ void printenv_remote(spank_t sp, char *name)
 
 void appendenv(char *dst, char *src, int dst_capacity)
 {
-	static char auxiliar[PATH_MAX];
+	static char buffer[PATH_MAX];
 	char *pointer;
 	int new_cap;
 	int len_src;
@@ -143,9 +143,9 @@ void appendenv(char *dst, char *src, int dst_capacity)
 
 	if (len_dst > 0)
 	{
-		strcpy(auxiliar, dst);
+		strcpy(buffer, dst);
 		pointer = &dst[len_src];
-		strcpy(&pointer[1], auxiliar);
+		strcpy(&pointer[1], buffer);
 		strcpy(dst, src);
 		pointer[0] = ':';
 	} else {
@@ -269,27 +269,29 @@ int isenv_remote(spank_t sp, char *name, char *value)
  *
  */
 
-static void setenv_if_authorized(const char *option, const char *value)
+static void setenv_if_authorized(spank_t sp, const char *option, const char *value)
 {
+	int r;
+
 	// Mode 0: authorized
 	// Mode 1: normal user
-
 	if (auth_mode == 1) {
-		setenv_local(option, value, 0);
+		r = setenv_local(option, value, 0);
 	} else {
-		setenv_local(option, value, 0);
+		r = setenv_local(option, value, 0);
 	}
 
-	slurm_error("%s %s", option, value);
-
-	DEBUGGING("%s %s", option, value);
+	if (r == 1) {
+		verbose(sp, 3, "Exported '%s' = '%s'", option, value);
+	}
 }
 
 int file_to_environment(spank_t sp, const char *path)
 {	
     FUNCTION_INFO("file_to_environment");
+
+    static char option[PATH_MAX];
     const char *value = NULL;
-    char option[PATH_MAX];
     FILE *file;
 
     if ((file = fopen(path, "r")) == NULL)
@@ -304,14 +306,13 @@ int file_to_environment(spank_t sp, const char *path)
         
         if ((value = strclean(option, '=')) != NULL)
         {
-
             if ((strlen(option) > 0))
             {
             	value += 1;
 
             	if (strlen(value) > 0) {
                 	strtoup(option);
-					setenv_if_authorized(option, value);
+					setenv_if_authorized(sp, option, value);
 				}
             }
         }
@@ -324,23 +325,21 @@ int file_to_environment(spank_t sp, const char *path)
 int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
 	FUNCTION_INFO("find_ear_conf_file");
+
 	static char conf_path[PATH_MAX];
 	static char link_path[PATH_MAX];
 	int i;
 
     for (i = 0; i < ac; ++i)
     {
-		verbose(sp, 0, "Looking conf file in path'%s'", av[i]);
-        
 		if ((strlen(av[i]) > 9) && (strncmp ("conf_dir=", av[i], 9) == 0))
         {
+			verbose(sp, 3, "Looking for conf files in path '%s'", av[i]);
+			
 			sprintf(link_path, "%s/%s", &av[i][9], EAR_LINK_FILE);
 			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
 
-			verbose(sp, 0, "Looking conf file in file '%s'", conf_path);
-			verbose(sp, 0, "Looking conf file in file '%s'", link_path);
-
-			if(file_to_environment(sp, (const char *) conf_path) != ESPANK_SUCCESS) {
+			if (file_to_environment(sp, (const char *) conf_path) != ESPANK_SUCCESS) {
 				return ESPANK_ERROR;
 			}
 
@@ -364,8 +363,6 @@ static int find_user_by_string(char *string, char *id)
 
 	while (p != NULL)
 	{
-		DEBUGGING("%s %s", p, id);
-		
 		if (strcmp(p, id) == 0) {
 			return 1;
 		}
@@ -404,6 +401,7 @@ static int find_user_by_uint(char *string, unsigned int id)
 void find_ear_user_privileges(spank_t sp, int ac, char **av)
 {
 	FUNCTION_INFO("find_ear_user_privileges");
+	
 	int i, ruid, rgid, res = 0;
 	char *aid;
 	uid_t uid;
@@ -415,24 +413,27 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 
 	for (i = 0; i < ac; ++i)
 	{
-		if ((ruid == ESPANK_SUCCESS) &&
+		if ((ruid == ESPANK_SUCCESS) && (strlen(av[i]) > 11) &&
 			(strncmp ("auth_users=", av[i], 11) == 0) &&
 			(find_user_by_uint(&av[i][11], uid) ))
 		{
+			verbose(sp, 1, "Authorized user found by UID");
 			auth_mode = 1;
 			return;
 		}
-		if ((rgid == ESPANK_SUCCESS) &&
+		if ((rgid == ESPANK_SUCCESS) && (strlen(av[i]) > 12) &&
 			(strncmp ("auth_groups=", av[i], 12) == 0) &&
 			(find_user_by_uint(&av[i][12], gid) ))
 		{
+			verbose(sp, 1, "Authorized user found by GID");
 			auth_mode = 1;
 			return;
 		}
-		if ((aid != NULL) &&
+		if ((aid != NULL) && (strlen(av[i]) > 14) &&
 			(strncmp ("auth_accounts=", av[i], 14) == 0) &&
 			(find_user_by_string(&av[i][14], aid) ))
 		{
+			verbose(sp, 1, "Authorized user found by SLURM account");
 			auth_mode = 1;
 			return;
 		}

@@ -278,12 +278,12 @@ static void remote_update_slurm_vars(spank_t sp)
             if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 64) == 1)
             {
                 p_freq = atoi(p_state);
-				DEBUGGING("EAR_P_FREQ %d", p_freq);
                 p_freq = freq_to_p_state(p_freq);
 
                 sprintf(p_state, "%d", p_freq);
                 setenv_remote(sp, "EAR_P_STATE", p_state, 0);
-				DEBUGGING("EAR_P_STATE %s", p_state);
+
+				verbose(sp, 1, "Updating to P_STATE '%s' by '--cpu-freq=%d' command", p_state, p_freq);
             }
         }
     }
@@ -308,7 +308,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
-		//find_ear_user_privileges(sp, ac, av);
+		find_ear_user_privileges(sp, ac, av);
 
         if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {	
             return r;
