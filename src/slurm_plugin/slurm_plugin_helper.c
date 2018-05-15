@@ -282,13 +282,13 @@ static void setenv_if_authorized(spank_t sp, const char *option, const char *val
 	}
 
 	if (r == 1) {
-		verbose(sp, 3, "Exported '%s' = '%s'", option, value);
+		verbose(sp, 3, "exported '%s' = '%s'", option, value);
 	}
 }
 
 int file_to_environment(spank_t sp, const char *path)
-{	
-    FUNCTION_INFO("file_to_environment");
+{
+	verbose(sp, 2, "function file_to_environment");
 
     static char option[PATH_MAX];
     const char *value = NULL;
@@ -324,7 +324,7 @@ int file_to_environment(spank_t sp, const char *path)
 
 int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
-	FUNCTION_INFO("find_ear_conf_file");
+	verbose(sp, 2, "function find_ear_conf_file");
 
 	static char conf_path[PATH_MAX];
 	static char link_path[PATH_MAX];
@@ -334,7 +334,7 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
     {
 		if ((strlen(av[i]) > 9) && (strncmp ("conf_dir=", av[i], 9) == 0))
         {
-			verbose(sp, 3, "Looking for conf files in path '%s'", av[i]);
+			verbose(sp, 3, "looking for conf files in path '%s'", av[i]);
 			
 			sprintf(link_path, "%s/%s", &av[i][9], EAR_LINK_FILE);
 			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
@@ -399,7 +399,7 @@ static int find_user_by_uint(char *string, unsigned int id)
 
 void find_ear_user_privileges(spank_t sp, int ac, char **av)
 {
-	FUNCTION_INFO("find_ear_user_privileges");
+	verbose(sp, 2, "function find_ear_user_privileges");
 	
 	int i, ruid, rgid, res = 0;
 	char *aid;
@@ -416,7 +416,7 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 			(strncmp ("auth_users=", av[i], 11) == 0) &&
 			(find_user_by_uint(&av[i][11], uid) ))
 		{
-			verbose(sp, 1, "Authorized user found by UID");
+			verbose(sp, 1, "authorized user found by UID");
 			auth_mode = 1;
 			return;
 		}
@@ -424,7 +424,7 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 			(strncmp ("auth_groups=", av[i], 12) == 0) &&
 			(find_user_by_uint(&av[i][12], gid) ))
 		{
-			verbose(sp, 1, "Authorized user found by GID");
+			verbose(sp, 1, "authorized user found by GID");
 			auth_mode = 1;
 			return;
 		}
@@ -432,7 +432,7 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 			(strncmp ("auth_accounts=", av[i], 14) == 0) &&
 			(find_user_by_string(&av[i][14], aid) ))
 		{
-			verbose(sp, 1, "Authorized user found by SLURM account");
+			verbose(sp, 1, "authorized user found by SLURM account");
 			auth_mode = 1;
 			return;
 		}

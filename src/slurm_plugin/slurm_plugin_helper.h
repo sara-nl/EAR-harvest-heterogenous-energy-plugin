@@ -34,8 +34,8 @@
 	if (verbosity_test(sp, level) == 1) { \
 		slurm_error("EARPLUG " __VA_ARGS__); \
 	}	
-#define FUNCTION_INFO(function) \
-	slurm_error(function); 
+#define verbose_nude(...)
+//	slurm_error ("EARPLUG " __VA_ARGS__);
 
 int verbosity_test(spank_t sp, int level);
 

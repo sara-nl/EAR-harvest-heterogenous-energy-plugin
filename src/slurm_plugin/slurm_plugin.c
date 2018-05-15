@@ -395,7 +395,7 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 
 static int _opt_ear (int val, const char *optarg, int remote)
 {
-	slurm_error("function _opt_ear");
+	verbose_nude("function _opt_ear");
 
     if (!remote) {
     	if (setenv_local("EAR", "1", 1) != 1) {
@@ -408,7 +408,8 @@ static int _opt_ear (int val, const char *optarg, int remote)
 
 static int _opt_ear_learning (int val, const char *optarg, int remote)
 {
-	slurm_error("function _opt_ear_learning");
+	verbose_nude("function _opt_ear_learning");
+
     char p_state[2];
     int ioptarg;
 	int result;
@@ -438,7 +439,8 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 
 static int _opt_ear_policy (int val, const char *optarg, int remote)
 {
-	slurm_error("function _opt_ear_policy");
+	verbose_nude("function _opt_ear_policy");
+
     char policy[32];
     int index = 0;
 	int result;
@@ -480,7 +482,8 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 
 static int _opt_ear_user_db (int val, const char *optarg, int remote)
 {
-	slurm_error("function _opt_ear_user_db");
+	verbose_nude("function _opt_ear_user_db");
+
 	int result;
 
     if (!remote) {
@@ -499,7 +502,8 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
 
 static int _opt_ear_threshold (int val, const char *optarg, int remote)
 {
-	slurm_error("function _opt_ear_threshold");
+	verbose_nude("function _opt_ear_threshold");
+
 	char threshold[4];
     double foptarg = -1;
 	int result;
@@ -529,7 +533,7 @@ static int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 static int _opt_ear_verbose (int val, const char *optarg, int remote)
 {
-	slurm_error("function _opt_ear_verbose");
+	verbose_nude("function _opt_ear_verbose");
 
     char verbosity[1];
     int ioptarg;
@@ -559,7 +563,7 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 
 static int _opt_ear_traces (int val, const char *optarg, int remote)
 {
-	slurm_error("function _opt_ear_traces");
+	verbose_nude("function _opt_ear_traces");
     int result;
 
     if (!remote) {
@@ -576,7 +580,7 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 
 static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
-    slurm_error("function _opt_mpi_dist");
+	verbose_nude("function _opt_mpi_dist");
 
 	if (!remote)
 	{
