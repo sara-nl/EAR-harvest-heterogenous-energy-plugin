@@ -275,7 +275,7 @@ int db_insert_ear_event(ear_event_t *ear_ev)
         return EAR_ERROR;
     }
 
-    if (mysql_insert_periodic_metric(connection, ear_ev) < 0)
+    if (mysql_insert_ear_event(connection, ear_ev) < 0)
     {
         VERBOSE_N(0, "ERROR while writing periodic_metric to database.");
         return EAR_ERROR;
