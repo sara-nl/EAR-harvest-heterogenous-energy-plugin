@@ -129,6 +129,7 @@ void create_tables(MYSQL *connection)
                             dc_energy BIGINT unsigned NOT NULL, \
                             node_id VARCHAR(256) NOT NULL, \
                             job_id BIGINT NOT NULL, \
+                            step_id BIGINT NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Power_signatures (  \

@@ -57,8 +57,8 @@
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id)"\
-                                "VALUES (?, ?, ?, ?, ?)"
+#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id)"\
+                                "VALUES (?, ?, ?, ?, ?, ?)"
 
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, freq) VALUES (?, ?, ?, ?)"
 
@@ -764,7 +764,7 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 
     if (mysql_stmt_prepare(statement, PERIODIC_METRIC_QUERY, strlen(PERIODIC_METRIC_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[5];
+    MYSQL_BIND bind[6];
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -774,8 +774,8 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[i].is_unsigned = 1;
     }
-    bind[4].buffer_type = MYSQL_TYPE_LONGLONG;
-    bind[4].is_unsigned = 1;
+    bind[4].buffer_type = bind[5].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[4].is_unsigned = bind[5].is_unsigned = 1;
 
     //varchar types
     bind[3].buffer_type = MYSQL_TYPE_VARCHAR;
@@ -787,6 +787,7 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     bind[2].buffer = (char *)&per_met->DC_energy;
     bind[3].buffer = (char *)&per_met->node_id;
     bind[4].buffer = (char *)&per_met->job_id;
+    bind[5].buffer = (char *)&per_met->step_id;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
