@@ -36,7 +36,7 @@
 #include <common/config.h>
 #include <common/types/application.h>
 #if DB_MYSQL
-#include <mysql.h>
+#include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/database/mysql_io_functions.h>
 #endif
@@ -58,15 +58,21 @@ void usage(char *app)
 
 void read_from_files(int argc, char *argv[], char verbose)
 {
-	int job_id, num_nodes, i;
+	int job_id, num_nodes, i, step_id=0;
 	char **nodes;
 
-    job_id = atoi(argv[1]);
     char nodelist_file_path[256], *nodelog_file_path, *env;
     char line_buf[256];
     FILE *nodelist_file, *node_file;
-
-
+    
+    
+    char *token;
+    job_id = atoi(strtok(argv[1], "."));
+    token = strtok(NULL, ".");
+    if (token != NULL) step_id = atoi(token);
+    job_id = job_id * 100 + step_id;
+    
+    
     strcpy(nodelist_file_path, EAR_INSTALL_PATH);
     strcat(nodelist_file_path, "/etc/sysconf/nodelist.conf");
 
@@ -273,6 +279,7 @@ void main(int argc, char *argv[])
     if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
     else verbose = 0;
     read_from_files(argc, argv, verbose);
+    
     #endif
 
     #if DB_MYSQL

@@ -42,7 +42,7 @@
 /** Given a MYSQL connection and an application, inserts said application into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_application(MYSQL *connection, application_t *app);
+int mysql_insert_application(MYSQL *connection, application_t *app, char is_learning);
 
 /** Given a MYSQL connection and a valid MYSQL query, stores in apps the 
 *   applications found in the database corresponding to the query. Returns the 
@@ -66,7 +66,7 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops);
 /** Given a MYSQL connection and a job, inserts said job into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_job(MYSQL *connection, job_t *job);
+int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning);
 
 /** Given a MYSQL connection and a valid MYSQL query, stores in jobs the 
 *   jobs found in the database corresponding to the query. Returns the 
@@ -77,7 +77,7 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs);
 /** Given a MYSQL connection and a signature, inserts said signature into
 *   the database. Returns the signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_signature(MYSQL *connection, signature_t *sig);
+int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning);
 
 /** Given a MYSQL connection and a valid MYSQL query, stores in sigs the 
 *   signatures found in the database corresponding to the query. Returns the 

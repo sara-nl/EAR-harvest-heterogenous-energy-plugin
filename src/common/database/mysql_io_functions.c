@@ -35,7 +35,6 @@
 #include <common/ear_verbose.h>
 #include <common/database/mysql_io_functions.h>
 
-
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
                             "(?, ?, ?, ?)"
 
@@ -47,7 +46,6 @@
 #define JOB_QUERY               "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
                                 "end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES" \
                                 "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
 
 #define SIGNATURE_QUERY         "INSERT INTO Signatures (DC_power, max_DC_power, min_DC_power ,DRAM_power, PCK_power, EDP,"\
                                 "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
@@ -61,6 +59,20 @@
 #define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id) VALUES (?, ?, ?, ?)"
 
 
+//Learning_phase insert queries
+#define LEARNING_APPLICATION_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
+                                    "signature_id) VALUES (?, ?, ?, ?)"
+
+#define LEARNING_SIGNATURE_QUERY    "INSERT INTO Learning_signatures (DC_power, max_DC_power, min_DC_power ,DRAM_power,"\
+                                    "PCK_power, EDP, GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
+                                    "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
+                                    "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
+                                    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+#define LEARNING_JOB_QUERY          "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, "\
+                                    "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES" \
+                                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
 int mysql_statement_error(MYSQL_STMT *statement)
 {
     fprintf(stderr, "MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
@@ -68,18 +80,25 @@ int mysql_statement_error(MYSQL_STMT *statement)
     return EAR_MYSQL_STMT_ERROR;
 }
 
-int mysql_insert_application(MYSQL *connection, application_t *app)
+int mysql_insert_application(MYSQL *connection, application_t *app, char is_learning)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
-
-    if (mysql_stmt_prepare(statement, APPLICATION_QUERY, strlen(APPLICATION_QUERY))) return mysql_statement_error(statement);
-
+    
+    if (!is_learning)
+    {
+        if (mysql_stmt_prepare(statement, APPLICATION_QUERY, strlen(APPLICATION_QUERY))) return mysql_statement_error(statement);
+    }
+    else
+    {
+        if (mysql_stmt_prepare(statement, LEARNING_APPLICATION_QUERY, strlen(APPLICATION_QUERY))) return mysql_statement_error(statement);
+    }
+    
     MYSQL_BIND bind[4];
     memset(bind, 0, sizeof(bind));
 
-    mysql_insert_job(connection, &app->job);
-    int sig_id = mysql_insert_signature(connection, &app->signature);
+    mysql_insert_job(connection, &app->job, is_learning);
+    int sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
 
     //integer types
     bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONG;
@@ -208,9 +227,9 @@ int mysql_insert_loop(MYSQL *connection, loop_t *loop)
     MYSQL_BIND bind[8];
     memset(bind, 0, sizeof(bind));
 
-    mysql_insert_job(connection, loop->job);
+    mysql_insert_job(connection, loop->job, 0);
     
-    int sig_id = mysql_insert_signature(connection, &loop->signature);
+    int sig_id = mysql_insert_signature(connection, &loop->signature, 0);
 
     //integer types
     for (i = 0; i < 8; i++)
@@ -343,12 +362,19 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
 }
 
 
-int mysql_insert_job(MYSQL *connection, job_t *job)
+int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
-    if (mysql_stmt_prepare(statement, JOB_QUERY, strlen(JOB_QUERY))) return mysql_statement_error(statement);
+    if (!is_learning)
+    {
+        if (mysql_stmt_prepare(statement, JOB_QUERY, strlen(JOB_QUERY))) return mysql_statement_error(statement);
+    }
+    else
+    {
+        if (mysql_stmt_prepare(statement, LEARNING_JOB_QUERY, strlen(JOB_QUERY))) return mysql_statement_error(statement);
+    }
 
     MYSQL_BIND bind[13];
     memset(bind, 0, sizeof(bind));
@@ -469,12 +495,19 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
 }
 
 //returns id of the inserted signature
-int mysql_insert_signature(MYSQL *connection, signature_t *sig)
+int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
-    if (mysql_stmt_prepare(statement, SIGNATURE_QUERY, strlen(SIGNATURE_QUERY))) return mysql_statement_error(statement);
+    if (!is_learning)
+    {
+        if (mysql_stmt_prepare(statement, SIGNATURE_QUERY, strlen(SIGNATURE_QUERY))) return mysql_statement_error(statement);
+    }
+    else
+    {
+        if (mysql_stmt_prepare(statement, LEARNING_SIGNATURE_QUERY, strlen(SIGNATURE_QUERY))) return mysql_statement_error(statement);
+    }
 
     MYSQL_BIND bind[23];
     int i = 0;

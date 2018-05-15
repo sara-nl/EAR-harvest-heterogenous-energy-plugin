@@ -97,7 +97,7 @@ int readconf_database()
 
 }
 
-int db_insert_application(application_t *application)
+int db_insert_application(application_t *application, char is_learning)
 {
     MYSQL *connection = mysql_init(NULL);
 
@@ -124,7 +124,7 @@ int db_insert_application(application_t *application)
         return EAR_ERROR;
     }
 
-    if (mysql_insert_application(connection, application) < 0)
+    if (mysql_insert_application(connection, application, is_learning) < 0)
     {
         VERBOSE_N(0, "ERROR while writing signature to database.");
         return EAR_ERROR;
