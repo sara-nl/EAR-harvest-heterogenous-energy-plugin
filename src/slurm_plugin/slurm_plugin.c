@@ -308,12 +308,12 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
-		//return ESPANK_SUCCESS;
 		//find_ear_user_privileges(sp, ac, av);
 
         if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {	
             return r;
         }
+		return ESPANK_ERROR;
 
         if (isenv_local("EAR", "1"))
         {

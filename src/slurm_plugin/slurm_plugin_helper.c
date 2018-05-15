@@ -280,6 +280,8 @@ static void setenv_if_authorized(const char *option, const char *value)
 		setenv_local(option, value, 0);
 	}
 
+	slurm_error("%s %s", option, value);
+
 	DEBUGGING("%s %s", option, value);
 }
 
@@ -298,9 +300,11 @@ int file_to_environment(spank_t sp, const char *path)
 
     while (fgets(option, PATH_MAX, file) != NULL)
     {
-        if ((strclean(option, '\n') != NULL) &&
-			((value = strclean(option, '=')) != NULL))
+		strclean(option, '\n');
+        
+        if ((value = strclean(option, '=')) != NULL)
         {
+
             if ((strlen(option) > 0))
             {
             	value += 1;
@@ -326,10 +330,15 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
 
     for (i = 0; i < ac; ++i)
     {
-        if (strncmp ("conf_dir=", av[i], 9) == 0)
+		verbose(sp, 0, "Looking conf file in path'%s'", av[i]);
+        
+		if ((strlen(av[i]) > 9) && (strncmp ("conf_dir=", av[i], 9) == 0))
         {
 			sprintf(link_path, "%s/%s", &av[i][9], EAR_LINK_FILE);
 			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
+
+			verbose(sp, 0, "Looking conf file in file '%s'", conf_path);
+			verbose(sp, 0, "Looking conf file in file '%s'", link_path);
 
 			if(file_to_environment(sp, (const char *) conf_path) != ESPANK_SUCCESS) {
 				return ESPANK_ERROR;
