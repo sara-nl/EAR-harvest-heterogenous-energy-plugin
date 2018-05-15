@@ -217,6 +217,7 @@ static int fork_ear_daemon(spank_t sp)
 static int local_update_ld_preload(spank_t sp)
 {
     FUNCTION_INFO("local_update_ld_preload");
+	
 	static char buffer[PATH_MAX];
 	char *ear_install_path = NULL;
 	char *ld_preload = NULL;
@@ -228,7 +229,6 @@ static int local_update_ld_preload(spank_t sp)
 		slurm_error("Error, missing EAR_INSTALL_PATH");
         return ESPANK_ERROR;
     }
-
     appendenv(buffer, ear_install_path, PATH_MAX);
     
 	// Appending libraries to LD_PRELOAD
@@ -250,9 +250,11 @@ static int local_update_ld_preload(spank_t sp)
     }
 
     //
-    if(setenv_local("LD_PRELOAD", buffer, 1) == 1) {
+    if(setenv_local("LD_PRELOAD", buffer, 1) != 1) {
 		return ESPANK_ERROR;
 	}
+
+	verbose(sp, 1, "Updated LD_PRELOAD envar '%s'", buffer);
 
 	return ESPANK_SUCCESS;
 }
@@ -306,9 +308,10 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
+		//return ESPANK_SUCCESS;
 		//find_ear_user_privileges(sp, ac, av);
 
-        if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
+        if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {	
             return r;
         }
 
@@ -356,6 +359,7 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
     if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
     {
         if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
+			verbose(sp, 0, "Error while reading configuration file %d", r);
             return r;
         }
 
@@ -483,7 +487,7 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
         if (optarg == NULL) return (ESPANK_BAD_ARG);
 
 		result = setenv_local("EAR_USER_DB_PATHNAME", optarg, 1);
-		reuslt = result && setenv_local("EAR", "1", 1);
+		result = result && setenv_local("EAR", "1", 1);
 
 		if (result != 1) {
 			return (ESPANK_ERROR);

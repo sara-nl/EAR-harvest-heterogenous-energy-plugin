@@ -51,6 +51,25 @@ static int auth_mode = 1;
  *
  */
 
+int verbosity_test(spank_t sp, int level)
+{
+	static int verbosity = -1;
+	char env_remote[8];
+	char *env_local;
+
+	if (verbosity == -1) {
+		if (getenv_remote(sp, "EAR_VERBOSE", env_remote, 8) == 1) {
+			verbosity = atoi(env_remote);
+		} else if (getenv_local("EAR_VERBOSE", &env_local) == 1) {
+			verbosity = atoi(env_local);
+		} else {
+			verbosity = 0;
+		}
+	}
+	
+	return verbosity >= level;
+}
+
 void strtoup(char *string)
 {
 	if (string == NULL) {
@@ -118,7 +137,7 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	new_cap = len_dst + len_src + (len_dst > 0) + 1;
 
 	if (new_cap > dst_capacity) {
-		slurm_error("Variable could not be appended, too many characters on %d\n", num);
+		slurm_error("Variable could not be appended, too many characters on %d");
 		return;
 	}
 
@@ -307,10 +326,10 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
 
     for (i = 0; i < ac; ++i)
     {
-        if (strncmp ("ear_conf_dir=", av[i], 13) == 0)
+        if (strncmp ("conf_dir=", av[i], 9) == 0)
         {
-			sprintf(link_path, "%s/%s", &av[i][13], EAR_LINK_FILE);
-			sprintf(conf_path, "%s/%s", &av[i][13], EAR_CONF_FILE);
+			sprintf(link_path, "%s/%s", &av[i][9], EAR_LINK_FILE);
+			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
 
 			if(file_to_environment(sp, (const char *) conf_path) != ESPANK_SUCCESS) {
 				return ESPANK_ERROR;

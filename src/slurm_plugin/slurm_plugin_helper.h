@@ -30,13 +30,16 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
-#define verbose()
+#define verbose(sp, level, ...) \
+	if (verbosity_test(sp, level) == 1) { \
+		slurm_error("EARPLUG " __VA_ARGS__); \
+	}	
 #define DEBUGGING(string, ...)
-//	slurm_error(string, __VA_ARGS__)
-#define FUNCTION_INFO(function)
-//	slurm_error(function); 
+#define FUNCTION_INFO(function) \
+	slurm_error(function); 
 #define FUNCTION_INFO_(function)
 
+int verbosity_test(spank_t sp, int level);
 
 void strtoup(char *string);
 char* strclean(char *string, char chr);

@@ -792,43 +792,7 @@ void Usage(char *app)
 	_exit(1);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#region SIGNALS
+//region SIGNALS
 void signal_handler(int signal)
 {
 	if (signal == SIGPIPE) VERBOSE_N(0, "signal SIGPIPE received");
@@ -869,7 +833,6 @@ void signal_handler(int signal)
 	}
 }
 
-// DONE
 void signal_catcher()
 {
 	struct sigaction action;
@@ -895,7 +858,7 @@ void signal_catcher()
 		VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
 	}
 }
-#endregion
+//endregion
 
 void main(int argc,char *argv[])
 {
@@ -925,7 +888,6 @@ void main(int argc,char *argv[])
 	}
 
 	//HIGHLIGHT: DAEMON INIT
-	//TODO: PENDING
 	ear_daemon_environment();
 
 	if (argc >= 4)
@@ -936,20 +898,17 @@ void main(int argc,char *argv[])
 			Usage(argv[0]);
 		}
 
-		//TODO: PENDING
 		set_ear_verbose(EAR_VERBOSE_LEVEL);
 	}
 
 	signal_catcher();
 
-	//TODO: enhance control/frequency.c error handling
 	// We initialize frecuency
 	if (frequency_init(metrics_get_node_size()) < 0) {
 		VERBOSE_N(0, "ERROR, frequency information can't be initialized");
 		exit(1);
 	}
 
-	//TODO: enhance control/frequency.c error handling
 	// It is assumed that no one will touch this governor. So it will
 	// remain the same during the daemon runtime.
 	frequency_save_previous_policy();
@@ -961,7 +920,6 @@ void main(int argc,char *argv[])
 	if (eard_max_pstate < 0) Usage(argv[0]);
 	if (eard_max_pstate >= frequency_get_num_pstates()) Usage(argv[0]);
 
-	//TODO: enhance control/frequency.c error handling
 	ear_node_freq = frequency_pstate_to_freq(eard_max_pstate);
 	eard_max_freq = ear_node_freq;
 	VERBOSE_N(0, "Default max frequency defined to %lu\n",eard_max_freq);
