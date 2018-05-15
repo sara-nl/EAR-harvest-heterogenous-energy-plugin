@@ -262,7 +262,7 @@ static int local_update_ld_preload(spank_t sp)
 static void remote_update_slurm_vars(spank_t sp)
 {
 	verbose(sp, 2, "function remote_update_slurm_vars");
-	
+
     static char buffer[PATH_MAX];
     char p_state[64];
     int p_freq = 1;
@@ -395,7 +395,7 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 
 static int _opt_ear (int val, const char *optarg, int remote)
 {
-    verbose(sp, 2, "function _opt_ear");
+	slurm_error("function _opt_ear");
 
     if (!remote) {
     	if (setenv_local("EAR", "1", 1) != 1) {
@@ -408,7 +408,7 @@ static int _opt_ear (int val, const char *optarg, int remote)
 
 static int _opt_ear_learning (int val, const char *optarg, int remote)
 {
-    verbose(sp, 2, "function _opt_ear_learning");
+	slurm_error("function _opt_ear_learning");
     char p_state[2];
     int ioptarg;
 	int result;
@@ -438,7 +438,7 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 
 static int _opt_ear_policy (int val, const char *optarg, int remote)
 {
-    verbose(sp, 2, "function _opt_ear_policy");
+	slurm_error("function _opt_ear_policy");
     char policy[32];
     int index = 0;
 	int result;
@@ -480,7 +480,7 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 
 static int _opt_ear_user_db (int val, const char *optarg, int remote)
 {
-    verbose(sp, 2, "function _opt_ear_user_db");
+	slurm_error("function _opt_ear_user_db");
 	int result;
 
     if (!remote) {
@@ -499,7 +499,7 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
 
 static int _opt_ear_threshold (int val, const char *optarg, int remote)
 {
-    verbose(sp, 2, "function _opt_ear_threshold");
+	slurm_error("function _opt_ear_threshold");
 	char threshold[4];
     double foptarg = -1;
 	int result;
@@ -529,7 +529,8 @@ static int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 static int _opt_ear_verbose (int val, const char *optarg, int remote)
 {
-    verbose(sp, 2, "function _opt_ear_verbose");
+	slurm_error("function _opt_ear_verbose");
+
     char verbosity[1];
     int ioptarg;
     int result;
@@ -558,7 +559,7 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 
 static int _opt_ear_traces (int val, const char *optarg, int remote)
 {
-    verbose(sp, 2, "function _opt_ear_traces");
+	slurm_error("function _opt_ear_traces");
     int result;
 
     if (!remote) {
@@ -575,7 +576,7 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 
 static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
-    verbose(sp, 2, "function _opt_mpi_dist");
+    slurm_error("function _opt_mpi_dist");
 
 	if (!remote)
 	{
