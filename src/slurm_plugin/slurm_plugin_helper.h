@@ -34,10 +34,8 @@
 	if (verbosity_test(sp, level) == 1) { \
 		slurm_error("EARPLUG " __VA_ARGS__); \
 	}	
-#define DEBUGGING(string, ...)
 #define FUNCTION_INFO(function) \
 	slurm_error(function); 
-#define FUNCTION_INFO_(function)
 
 int verbosity_test(spank_t sp, int level);
 
@@ -56,8 +54,8 @@ int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
 
 int freq_to_p_state(int freq);
-static int file_to_environment(spank_t sp, const char *path);
 int find_ear_conf_file(spank_t sp, int ac, char **av);
+static int file_to_environment(spank_t sp, const char *path);
 void find_ear_user_privileges(spank_t sp, int ac, char **av);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H

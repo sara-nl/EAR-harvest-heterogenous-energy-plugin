@@ -386,7 +386,6 @@ static int find_user_by_uint(char *string, unsigned int id)
 	while (p != NULL)
 	{
 		nid = (unsigned int) atoi(p);
-		DEBUGGING("%u %u", id, nid);
 
 		if (id == nid) {
 			return 1;

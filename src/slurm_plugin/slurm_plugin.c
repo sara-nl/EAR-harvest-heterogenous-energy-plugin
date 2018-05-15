@@ -95,7 +95,7 @@ struct spank_option spank_options[] = {
 
 static void exec_ear_daemon(spank_t sp)
 {
-    FUNCTION_INFO("exec_ear_daemon");
+    verbose(sp, 2, "function exec_ear_daemon");
     static char buffer[PATH_MAX];
     char *ear_install_path;
     char *ear_verbose;
@@ -126,7 +126,7 @@ static void my_chld_f(int s)
 
 static void fork_intermediate_daemon(spank_t sp)
 {
-	FUNCTION_INFO("fork_intermediate_daemon");
+	verbose(sp, 2, "function fork_intermediate_daemon");
 	int ret, exit_code;
 	daemon_pid = fork();
 
@@ -180,7 +180,7 @@ static void fork_intermediate_daemon(spank_t sp)
 
 static int fork_ear_daemon(spank_t sp)
 {
-    FUNCTION_INFO("fork_ear_daemon");
+    verbose(sp, 2, "function fork_ear_daemon");
 
     if ((existenv_local("EAR_INSTALL_PATH") == 1) &&
         (existenv_local("EAR_DB_PATHNAME") == 1) &&
@@ -216,7 +216,7 @@ static int fork_ear_daemon(spank_t sp)
 
 static int local_update_ld_preload(spank_t sp)
 {
-    FUNCTION_INFO("local_update_ld_preload");
+    verbose(sp, 2, "function local_update_ld_preload");
 	
 	static char buffer[PATH_MAX];
 	char *ear_install_path = NULL;
@@ -261,7 +261,8 @@ static int local_update_ld_preload(spank_t sp)
 
 static void remote_update_slurm_vars(spank_t sp)
 {
-	FUNCTION_INFO("remote_update_slurm_vars");
+	verbose(sp, 2, "function remote_update_slurm_vars");
+	
     static char buffer[PATH_MAX];
     char p_state[64];
     int p_freq = 1;
@@ -303,7 +304,7 @@ static void remote_update_slurm_vars(spank_t sp)
  */
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
-    FUNCTION_INFO("slurm_spank_local_user_init");
+    verbose(sp, 2, "function slurm_spank_local_user_init");
     int r;
 
     if(spank_context () == S_CTX_LOCAL)
@@ -313,7 +314,6 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
         if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {	
             return r;
         }
-		return ESPANK_ERROR;
 
         if (isenv_local("EAR", "1"))
         {
@@ -328,7 +328,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
-	FUNCTION_INFO("slurm_spank_task_init");   
+	verbose(sp, 2, "function slurm_spank_task_init");   
 
 	if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
 	{
@@ -342,7 +342,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 int slurm_spank_init (spank_t sp, int ac, char **av)
 {
-    FUNCTION_INFO("slurm_spank_init");
+    verbose(sp, 2, "function slurm_spank_init");
 
     if(spank_context() == S_CTX_SLURMD) {
         return slurm_spank_slurmd_init(sp, ac, av);
@@ -353,7 +353,7 @@ int slurm_spank_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 {
-    FUNCTION_INFO("slurm_spank_slurmd_init");
+    verbose(sp, 2, "function slurm_spank_slurmd_init");
     int r;
 
     if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
@@ -373,7 +373,7 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 {
-	FUNCTION_INFO("slurm_spank_slurmd_exit");
+	verbose(sp, 2, "function slurm_spank_slurmd_exit");
 
 	if(spank_context() == S_CTX_SLURMD && daemon_pid > 0)
 	{
@@ -395,7 +395,7 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 
 static int _opt_ear (int val, const char *optarg, int remote)
 {
-    FUNCTION_INFO("_opt_ear");
+    verbose(sp, 2, "function _opt_ear");
 
     if (!remote) {
     	if (setenv_local("EAR", "1", 1) != 1) {
@@ -408,7 +408,7 @@ static int _opt_ear (int val, const char *optarg, int remote)
 
 static int _opt_ear_learning (int val, const char *optarg, int remote)
 {
-    FUNCTION_INFO("_opt_ear_learning");
+    verbose(sp, 2, "function _opt_ear_learning");
     char p_state[2];
     int ioptarg;
 	int result;
@@ -438,7 +438,7 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 
 static int _opt_ear_policy (int val, const char *optarg, int remote)
 {
-    FUNCTION_INFO("_opt_ear_policy");
+    verbose(sp, 2, "function _opt_ear_policy");
     char policy[32];
     int index = 0;
 	int result;
@@ -480,7 +480,7 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 
 static int _opt_ear_user_db (int val, const char *optarg, int remote)
 {
-    FUNCTION_INFO("_opt_ear_user_db");
+    verbose(sp, 2, "function _opt_ear_user_db");
 	int result;
 
     if (!remote) {
@@ -499,7 +499,7 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
 
 static int _opt_ear_threshold (int val, const char *optarg, int remote)
 {
-    FUNCTION_INFO("_opt_ear_threshold");
+    verbose(sp, 2, "function _opt_ear_threshold");
 	char threshold[4];
     double foptarg = -1;
 	int result;
@@ -529,7 +529,7 @@ static int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 static int _opt_ear_verbose (int val, const char *optarg, int remote)
 {
-    FUNCTION_INFO("_opt_ear_verbose");
+    verbose(sp, 2, "function _opt_ear_verbose");
     char verbosity[1];
     int ioptarg;
     int result;
@@ -558,7 +558,7 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 
 static int _opt_ear_traces (int val, const char *optarg, int remote)
 {
-    FUNCTION_INFO("_opt_ear_traces");
+    verbose(sp, 2, "function _opt_ear_traces");
     int result;
 
     if (!remote) {
@@ -575,7 +575,7 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 
 static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
-    FUNCTION_INFO("_opt_mpi_dist");
+    verbose(sp, 2, "function _opt_mpi_dist");
 
 	if (!remote)
 	{
