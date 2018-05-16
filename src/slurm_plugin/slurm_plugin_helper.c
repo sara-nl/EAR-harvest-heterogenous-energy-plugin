@@ -145,9 +145,9 @@ void appendenv(char *dst, char *src, int dst_capacity)
 
 	if (len_dst > 0)
 	{
-		strcpy(buffer, dst);
+		strcpy(buffer2, dst);
 		pointer = &dst[len_src];
-		strcpy(&pointer[1], buffer);
+		strcpy(&pointer[1], buffer2);
 		strcpy(dst, src);
 		pointer[0] = ':';
 	} else {
@@ -306,7 +306,7 @@ int file_to_environment(spank_t sp, const char *path)
 	plug_verbose(sp, 2, "function file_to_environment");
 
     const char *value = NULL;
-	char option = buffer1;
+	char *option = buffer2;
     FILE *file;
 
     if ((file = fopen(path, "r")) == NULL)
