@@ -32,8 +32,11 @@
 #ifndef _EAR_LOG_H
 #define _EAR_LOG_H
 
+#include <common/types/job.h>
+
 typedef struct ear_event{
-	uint job_id;
+	job_id  jid;
+    job_id  step_id;
 	uint event;
 	ulong freq;
 }ear_event_t;
@@ -54,13 +57,13 @@ void report_new_event(ear_event_t *event);
 
 /** Given a job id and a frequency value, reports to the log file the change
 *   of frequency because of the energy policy */
-void log_report_new_freq(int job,ulong newf);
+void log_report_new_freq(job_id id,job_id step_id,ulong newf);
 /** Given a job id, reports to the log file that the DynAIS has been turned off */
-void log_report_dynais_off(int job);
+void log_report_dynais_off(job_id id,job_id step_id);
 /** Given a job id and a frequency value, reports to the log file the change
 *   of frequency because of a policy projections failure */
-void log_report_max_tries(int job,ulong newf);
+void log_report_max_tries(job_id id,job_id step_id,ulong newf);
 /** Given a job id and a frequency value, reports to the log file the change
 *   of frequency because of Energy Budget*/
-void log_report_global_policy_freq(int job,ulong newf);
+void log_report_global_policy_freq(job_id id,job_id step_id,ulong newf);
 #endif

@@ -37,6 +37,8 @@
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
 
+static const char *__NAME__ = "db_helper";
+
 char *db_ip = NULL;
 char *db_user = NULL;
 char *db_pass = NULL;

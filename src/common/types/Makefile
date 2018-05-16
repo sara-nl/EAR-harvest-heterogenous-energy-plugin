@@ -2,7 +2,7 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## RULES
 .c.o :
-	$(CC) $(CFLAGS) -c -o $@ $< 
+	$(CC) $(CFLAGS) -c  $< 
 
 ######## OPTIONS
 

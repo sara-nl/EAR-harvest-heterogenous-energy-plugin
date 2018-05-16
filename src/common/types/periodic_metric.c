@@ -75,10 +75,10 @@ void print_periodic_metric_t(int fd, periodic_metric_t *pm)
 {
     /* print order: JOB_ID;STEP_ID;NODE_ID;START_TIME;END_TIME;ENERGY*/
     int i;
-	dprintf(fd, "%d;%d", pm ->job_id,pm->step_id);    
-    dprintf(fd, "%s;", pm->node_id);
-	dprintf(fd, "%s;%s;", ctime(&pm->start_time), ctime(&pm->start_time));
-    dprinft(fd, "%llu;", pm->DC_energy);
+	//dprintf(fd, "%d;%d", pm ->job_id,pm->step_id);    
+    //dprintf(fd, "%s;", pm->node_id);
+	//dprintf(fd, "%s;%s;", ctime(&pm->start_time), ctime(&pm->start_time));
+    //dprinft(fd, "%llu;", pm->DC_energy);
 }
 
 
