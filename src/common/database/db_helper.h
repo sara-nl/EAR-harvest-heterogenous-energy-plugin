@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-static const char *__NAME__ = "db_helper";
 #if SHARED_MEMORY
 #include <common/types/power_signature.h>
 #include <common/types/periodic_metric.h>

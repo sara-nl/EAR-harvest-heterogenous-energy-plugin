@@ -296,7 +296,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							dynais_enabled=0;
 							#endif
 							VERBOSE_N(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
-							log_report_dynais_off(my_job_id);
+							log_report_dynais_off(application.job.id,application.job.step_id);
 						}
 						VERBOSE_N(0,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
 						loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
@@ -329,7 +329,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n", ear_app_name);
 
 						memcpy(&last_signature, &loop_signature, sizeof(application_t));
-						log_report_new_freq(my_job_id,policy_freq);
+						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					}
 					else
 					{
@@ -425,7 +425,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					{
 						if (tries_current_loop==MAX_POLICY_TRIES){
 							// We must report a problem and go to the default configuration
-							log_report_max_tries(my_job_id, application.job.def_f);
+							log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
 							EAR_STATE = PROJECTION_ERROR;
 							policy_default_configuration();
 						}else{

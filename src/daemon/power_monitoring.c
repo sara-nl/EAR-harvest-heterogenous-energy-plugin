@@ -45,19 +45,21 @@
 #include <common/ear_verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
+#include <common/types/periodic_metric.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
 #include <daemon/power_monitoring.h>
+#include <common/database/db_helper.h>
+#if DB_MYSQL
+#include <common/database/db_helper.h>
+#endif
 
+#define MAX_PATH_SIZE 256
 extern int eard_must_exit;
-#define MAX_PATH_SIZE 256
 extern char ear_tmp[MAX_PATH_SIZE];
-static const char *__NAME__ = "powermon: ";
 
-//  That constant is replicated. We must fix that
-#define MAX_PATH_SIZE 256
+static const char *__NAME__="powermon: ";
 
 unsigned int f_monitoring;
-
 int idleNode=1;
 
 
@@ -72,7 +74,7 @@ static int fd_periodic=-1;
 
 typedef struct powermon_app{
 	application_t app;
-	uint   job_created;
+	ulong job_created;
 	node_data_t DC_energy_init,DC_energy_end;
 }powermon_app_t;
 
@@ -81,6 +83,7 @@ powermon_app_t current_ear_app;
 
 #define max(X,Y) (((X) > (Y)) ? (X) : (Y))
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
+periodic_metric_t current_sample;
 
 void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
 {
@@ -196,6 +199,8 @@ void powermon_new_job(job_t* appID,uint from_mpi)
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
+		// We must report the energy beforesetting the job_id: PENDING
+		new_job_for_period(&current_sample,appID->id,appID->step_id);
     pthread_mutex_unlock(&app_lock);
 
 }
@@ -218,6 +223,8 @@ void powermon_end_job(job_id jid,job_id sid)
         copy_powermon_app(&summary,&current_ear_app);
         current_ear_app.app.job.id=-1;
 		current_ear_app.job_created=0;
+		// we must report the current period for that job before the reset:PENDING
+		end_job_for_period(&current_sample);
     pthread_mutex_unlock(&app_lock);
     report_powermon_app(&summary);
 }
@@ -235,6 +242,14 @@ void update_historic_info(power_data_t *my_current_power)
 		
 	if (current_ear_app.app.job.id!=-1)	printf("Application id %d[%d]: ",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
     report_periodic_power(fd_periodic, my_current_power);
+
+	current_sample.start_time=my_current_power->begin;
+	current_sample.end_time=my_current_power->end;
+	current_sample.DC_energy=my_current_power->avg_dc*(ulong)difftime(my_current_power->end,my_current_power->begin);
+
+#if DB_MYSQL
+    if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
+#endif
 
 	return;
 }
@@ -288,7 +303,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0,"Error in init_power_ponitoring\n");
 	f_monitoring=*f_monitoringp;
 	t_ms=f_monitoring/1000;
-
+	// current_sample is the current powermonitoring period
+	init_periodic_metric(&current_sample);
+		
 	create_powermon_out();
 	reset_current_app();
 
@@ -305,21 +322,20 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		compute_power(&e_begin,&e_end,&my_current_power);
 		// Save current power
 		update_historic_info(&my_current_power);
+
+
 		// Set values for next iteration
 		copy_energy_data(&e_begin,&e_end);
 		t_begin=t_end;
+
 	}
 	pthread_exit(0);
 	//exit(0);
 }
 void powermon_mpi_signature(application_t *app)
 {
-
+// Esto no hay que hacerlo aqui, hay que copiarlo en la app y reportarlo alli
 #if DB_MYSQL
-
-#include <common/database/db_helper.h>
-
 	if (!db_insert_application(app)) DEBUG_F(1, "Application signature correctly written");
-
 #endif
 }

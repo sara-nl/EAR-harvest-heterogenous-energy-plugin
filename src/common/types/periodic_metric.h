@@ -36,16 +36,16 @@
 #define _EAR_TYPES_PERIODIC_METRIC
 
 #include <common/types/generic.h>
-
+#define NODE_SIZE 256
 
 typedef struct periodic_metric 
 {
-    unsigned long long DC_energy;
-    unsigned long job_id;
-    unsigned long step_id;
+    ulong DC_energy;
+    ulong job_id;
+    ulong step_id;
     time_t start_time;
     time_t end_time;
-    char *node_id;
+    char node_id[NODE_SIZE];
 } periodic_metric_t;
 
 
@@ -54,9 +54,24 @@ typedef struct periodic_metric
 /** Replicates the periodic_metric in *source to *destiny */
 void copy_periodic_metric(periodic_metric_t *destiny, periodic_metric_t *source);
 
-/** Initializes all values of the periodic_metric to 0 and initializes the period 
- *  setting the start_period to the current time. */
+/** Initializes all values of the periodic_metric to 0 , sets the nodename */
 void init_periodic_metric(periodic_metric_t *pm);
+
+/** Sets the time for a new period
+*/
+void init_sample_period(periodic_metric_t *pm);
+
+/** Sets the end time for the period and the energy
+*/
+void end_sample_period(periodic_metric_t *pm,ulong energy);
+
+/** Modifies jid, sid at new job
+*/
+void new_job_for_period(periodic_metric_t *pm,ulong job_id, ulong s_id);
+
+/** Sets to null job and sid
+*/
+void end_job_for_period(periodic_metric_t *pm);
 
 /** Outputs the power_signature contents to the file pointed by the fd. */
 void print_periodic_metric_fd(int fd, periodic_metric_t *pm);

@@ -60,7 +60,7 @@
 #define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id)"\
                                 "VALUES (?, ?, ?, ?, ?, ?)"
 
-#define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, freq) VALUES (?, ?, ?, ?)"
+#define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq) VALUES (?, ?, ?, ?, ?)"
 
 
 //Learning_phase insert queries
@@ -819,14 +819,14 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
 
     if (mysql_stmt_prepare(statement, EAR_EVENT_QUERY, strlen(EAR_EVENT_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[4];
+    MYSQL_BIND bind[5];
     memset(bind, 0, sizeof(bind));
 
     time_t timestamp = time(NULL);
 
     //integer types
     int i;
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 5; i++)
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
     }
@@ -834,8 +834,9 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     //storage variable assignation
     bind[0].buffer = (char *)&timestamp;
     bind[1].buffer = (char *)&ear_ev->event;
-    bind[2].buffer = (char *)&ear_ev->job_id;
-    bind[3].buffer = (char *)&ear_ev->freq;
+    bind[2].buffer = (char *)&ear_ev->jid;
+    bind[3].buffer = (char *)&ear_ev->step_id;
+    bind[4].buffer = (char *)&ear_ev->freq;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
