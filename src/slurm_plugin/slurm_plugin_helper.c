@@ -43,7 +43,8 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>
 
-static int auth_mode = 1;
+int auth_mode =  1;
+int verbosity = -1;
 
 /*
  *
@@ -291,7 +292,7 @@ static void setenv_if_authorized(spank_t sp, const char *option, const char *val
 	if (auth_mode == 1) {
 		r = setenv_local(option, value, 0);
 	} else {
-		r = setenv_local(option, value, 0);
+		r = setenv_local(option, value, 1);
 	}
 
 	if (r == 1) {

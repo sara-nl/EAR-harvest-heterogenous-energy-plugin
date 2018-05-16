@@ -34,11 +34,10 @@
 	if (verbosity_test(sp, level) == 1) { \
 		slurm_error("EARPLUG " __VA_ARGS__); \
 	}	
-#define verbose_nude(...)
-//	slurm_error ("EARPLUG " __VA_ARGS__);
 #define plug_verbose(sp, level, ...)
 #define plug_error(...) \
 	slurm_error("EARPLUG " __VA_ARGS__)
+#define plug_nude(...)
 
 int verbosity_test(spank_t sp, int level);
 
