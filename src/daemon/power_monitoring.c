@@ -161,18 +161,8 @@ void report_powermon_app(powermon_app_t *app)
     	strftime(mpiend, sizeof(mpiend), "%c", current_t);
 	}
 
-	if (fd_powermon>=0){
-		#if 0
-		//"job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
-		if (app->app.job.start_mpi_time){
-			sprintf(buffer,"%d;%s;%s;%s;%s;%.3lf;%.3lf;%.3lf\n",app->app.job.id,jbegin,jend,mpibegin,mpiend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
-		}else{
-			sprintf(buffer,"%d;%s;%s;not mpi;not mpi;%.3lf;%.3lf;%.3lf\n",app->job_id,jbegin,jend,app->avg_dc_power,app->max_dc_power,app->min_dc_power);
-		}
-		write(fd_powermon,buffer,strlen(buffer));
-		#endif
-	}
 	// We can write here power information for this job
+	report_application_data(&app->app);
 	
 }
 
@@ -228,15 +218,7 @@ void powermon_end_job(job_id jid,job_id sid)
         copy_powermon_app(&summary,&current_ear_app);
         current_ear_app.app.job.id=-1;
 		current_ear_app.job_created=0;
-		#if 0
-        lavg=current_ear_app.avg_dc_power;
-        lmax=current_ear_app.max_dc_power;
-        lmin=current_ear_app.min_dc_power;
-		#endif
     pthread_mutex_unlock(&app_lock);
-	#if 0
-    VERBOSE_N(0,"Application %d disconnected: DC node power metrics (avg. %lf max %lf min %lf)\n",appID,lavg,lmax,lmin);
-	#endif
     report_powermon_app(&summary);
 }
 

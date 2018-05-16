@@ -187,7 +187,7 @@ ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t 
 	double energy_proj, energy_real;
 
 	if ((curr_sig->time > last_sig->time) &&
-			(curr_sig->avg_f != last_sig->avg_f)) return 0;
+		(curr_sig->def_f > last_sig->def_f)) return 0;
 
 	// Check that efficiency is enough
 	if (curr_sig->time < last_sig->time) return 1;
