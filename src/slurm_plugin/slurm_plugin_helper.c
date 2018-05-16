@@ -43,7 +43,8 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>
 
-static int auth_mode = 1;
+int auth_mode =  1;
+int verbosity = -1;
 
 /*
  *

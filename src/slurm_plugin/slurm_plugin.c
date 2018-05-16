@@ -49,6 +49,7 @@
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 pid_t daemon_pid = -1;
+extern int verbosity;
 
 struct spank_option spank_options[] = {
     { "ear", "", "Enables Energy Aware Runtime",
@@ -415,7 +416,7 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 
 static int _opt_ear (int val, const char *optarg, int remote)
 {
-	plug_error("function _opt_ear");
+	plug_nude("function _opt_ear");
 
     if (!remote) {
     	if (setenv_local("EAR", "1", 1) != 1) {
@@ -428,7 +429,7 @@ static int _opt_ear (int val, const char *optarg, int remote)
 
 static int _opt_ear_learning (int val, const char *optarg, int remote)
 {
-	plug_error("function _opt_ear_learning");
+	plug_nude("function _opt_ear_learning");
 
     char p_state[2];
     int ioptarg;
@@ -459,7 +460,7 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 
 static int _opt_ear_policy (int val, const char *optarg, int remote)
 {
-	plug_error("function _opt_ear_policy");
+	plug_nude("function _opt_ear_policy");
 
     char policy[32];
     int index = 0;
@@ -502,7 +503,7 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 
 static int _opt_ear_user_db (int val, const char *optarg, int remote)
 {
-	plug_error("function _opt_ear_user_db");
+	plug_nude("function _opt_ear_user_db");
 
 	int result;
 
@@ -522,7 +523,7 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
 
 static int _opt_ear_threshold (int val, const char *optarg, int remote)
 {
-	plug_error("function _opt_ear_threshold");
+	plug_nude("function _opt_ear_threshold");
 
 	char threshold[4];
     double foptarg = -1;
@@ -553,9 +554,9 @@ static int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 static int _opt_ear_verbose (int val, const char *optarg, int remote)
 {
-	plug_error("function _opt_ear_verbose");
+	plug_nude("function _opt_ear_verbose");
 
-    char verbosity[1];
+    char c_verbosity[4];
     int ioptarg;
     int result;
 
@@ -569,9 +570,13 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
         if (ioptarg < 0) ioptarg = 0;
         if (ioptarg > 4) ioptarg = 4;
 
-        sprintf(verbosity, "%i", ioptarg);
-        result = setenv_local("EAR_VERBOSE", verbosity, 1);
+        sprintf(c_verbosity, "%i", ioptarg);
+        result = setenv_local("EAR_VERBOSE", c_verbosity, 1);
         result = result && setenv_local("EAR", "1", 1);
+
+		if (verbosity == -1) {
+			verbosity = ioptarg;
+		}
 
         if (result != 1) {
 			return (ESPANK_ERROR);
@@ -583,7 +588,7 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 
 static int _opt_ear_traces (int val, const char *optarg, int remote)
 {
-	plug_error("function _opt_ear_traces");
+	plug_nude("function _opt_ear_traces");
     int result;
 
     if (!remote) {
@@ -600,7 +605,7 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 
 static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
-	plug_error("function _opt_mpi_dist");
+	plug_nude("function _opt_mpi_dist");
 
 	if (!remote)
 	{
