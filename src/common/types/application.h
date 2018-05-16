@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -31,6 +31,7 @@
 
 #ifndef _EAR_TYPES_APPLICATION
 #define _EAR_TYPES_APPLICATION
+#include <stdint.h>
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/signature.h>
@@ -41,6 +42,8 @@
 typedef struct application
 {
 	job_t job;	
+	uint8_t is_mpi;
+	uint8_t is_learning;
 	char node_id[GENERIC_NAME];		
 	#if SHARED_MEMORY
 	power_signature_t power_sig; // power_sig are power metrics related to the whole job, not only the mpi part

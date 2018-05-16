@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -319,6 +319,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					begin_iter = iterations;
 					policy_freq = policy_power(0, &loop_signature.signature);
 					PP = performance_projection(policy_freq);
+					loop_signature.signature.def_f=prev_f;
 
 					if (policy_freq != prev_f)
 					{
@@ -347,6 +348,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
 									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
+						tries_current_loop++;
 					} else {
 						ear_verbose(1,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
@@ -391,6 +393,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					POWER = loop_signature.signature.DC_power;
 					TPI = loop_signature.signature.TPI;
 					TIME = loop_signature.signature.time;
+					loop_signature.signature.def_f=prev_f;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
@@ -420,7 +423,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					}
 					else
 					{
-						tries_current_loop++;
 						if (tries_current_loop==MAX_POLICY_TRIES){
 							// We must report a problem and go to the default configuration
 							log_report_max_tries(my_job_id, application.job.def_f);

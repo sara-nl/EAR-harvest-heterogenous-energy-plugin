@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -36,7 +36,7 @@
 #ifndef _POWER_MONITORING_H_
 #define _POWER_MONITORING_H_
 
-#include <common/types/job.h>
+#include <common/types/application.h>
 
 /** Periodically monitors the node power monitoring. 
 *
@@ -61,5 +61,9 @@ void powermon_new_job(job_t *j,uint from_mpi);
 /** It must be called at when job ends
 */
 void powermon_end_job(job_id jid,job_id sid);
+
+/** reports the application signature to the power_monitoring module 
+*/
+void powermon_mpi_signature(application_t *application);
 
 #endif

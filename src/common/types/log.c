@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -51,6 +51,8 @@ typedef struct ear_event{
 #include <fcntl.h>
 #include <errno.h>
 #include <common/types/log.h>
+
+#define LOG_FILE 1
 
 static int fd_log=-1;
 static char my_log_buffer[1024];

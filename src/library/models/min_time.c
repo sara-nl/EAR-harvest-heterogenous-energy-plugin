@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -187,7 +187,7 @@ ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t 
 	double energy_proj, energy_real;
 
 	if ((curr_sig->time > last_sig->time) &&
-			(curr_sig->avg_f != last_sig->avg_f)) return 0;
+		(curr_sig->def_f > last_sig->def_f)) return 0;
 
 	// Check that efficiency is enough
 	if (curr_sig->time < last_sig->time) return 1;

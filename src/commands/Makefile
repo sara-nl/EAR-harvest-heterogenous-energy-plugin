@@ -12,7 +12,7 @@ TYPES = $(SRCDIR)/common/types.a
 
 BINARIES = ear_set_node_freq \
            ear_get_node_freq \
-           ear_report
+           ereport
 
 ifdef FEAT_SHRMEM
 BINARIES += ear_control \
@@ -39,8 +39,8 @@ ear_set_node_freq:ear_set_node_freq.c $(FREQ_OBJS)
 ear_get_node_freq:ear_get_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_get_node_freq ear_get_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
-ear_report: ear_report.c $(TYPES) $(DB_OBJS)
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_report ear_report.c $(DB_LDFLAGS) $(DB_OBJS) $(TYPES)
+ereport: ear_report.c $(TYPES) $(DB_OBJS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ereport ear_report.c $(DB_LDFLAGS) $(DB_OBJS) $(TYPES)
 
 ear_new_job: ear_new_job.c $(REMOTE_OBJS) $(TYPES)
 	$(CC) $(CFLAGS) -o ear_new_job ear_new_job.c  $(REMOTE_OBJS) $(TYPES)
