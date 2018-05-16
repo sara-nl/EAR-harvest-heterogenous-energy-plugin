@@ -150,6 +150,7 @@ void create_tables(MYSQL *connection)
                             timestamp BIGINT NOT NULL, \
                             event_type INT NOT NULL, \
                             job_id INT NOT NULL, \
+                            step_id INT NOT NULL, \
                             freq BIGINT unsigned NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
                             
