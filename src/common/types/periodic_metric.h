@@ -41,6 +41,8 @@
 typedef struct periodic_metric 
 {
     unsigned long long DC_energy;
+    unsigned long job_id;
+    unsigned long step_id;
     time_t start_time;
     time_t end_time;
     char *node_id;

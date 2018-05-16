@@ -89,7 +89,7 @@ AC_DEFUN([X_AC_SLURM],
 		
 		if test "x$_x_ac_slurm_custom" = "xyes"; then
         	SLURM_LIBDIR=$_x_ac_slurm_dir_lib
-       		SLURM_CPPFLAGS="-I$SLURM_DIR/include/slurm"
+       		SLURM_CPPFLAGS="-I$SLURM_DIR/include"
         	SLURM_LDFLAGS=$_x_ac_slurm_gcc_ldflags
 		fi
 

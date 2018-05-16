@@ -35,7 +35,7 @@
 #include <common/config.h>
 
 #if DB_MYSQL
-#include <mysql.h>
+#include <mysql/mysql.h>
 #define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
                     ">= ? AND end_time <= ?"
 #endif

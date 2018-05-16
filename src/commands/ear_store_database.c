@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <common/config.h>
 #if DB_MYSQL
-#include <mysql.h>
+#include <mysql/mysql.h>
 
 void usage(char *app)
 {

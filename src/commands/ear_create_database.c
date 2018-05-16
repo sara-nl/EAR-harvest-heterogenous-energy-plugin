@@ -31,7 +31,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <common/config.h>
-#include <mysql.h>
+#include <mysql/mysql.h>
 
 void usage(char *app)
 {
@@ -65,7 +65,8 @@ void create_tables(MYSQL *connection)
                             job_id INT unsigned NOT NULL, \
                             step_id INT unsigned NOT NULL, \
                             node_id VARCHAR(256), \
-                            signature_id INT unsigned,\
+                            signature_id INT unsigned, \
+                            power_signature_id INT unsigned, \
                             PRIMARY KEY(job_id, step_id, node_id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Loops ( \
@@ -127,6 +128,8 @@ void create_tables(MYSQL *connection)
                             end_time BIGINT NOT NULL, \
                             dc_energy BIGINT unsigned NOT NULL, \
                             node_id VARCHAR(256) NOT NULL, \
+                            job_id BIGINT NOT NULL, \
+                            step_id BIGINT NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Power_signatures (  \
@@ -156,6 +159,7 @@ void create_tables(MYSQL *connection)
                             step_id INT unsigned NOT NULL, \
                             node_id VARCHAR(256), \
                             signature_id INT unsigned,\
+                            power_signature_id INT unsigned, \
                             PRIMARY KEY(job_id, step_id, node_id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_jobs (\

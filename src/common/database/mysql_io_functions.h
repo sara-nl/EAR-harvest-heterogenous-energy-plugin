@@ -33,6 +33,7 @@
 #include <common/types/loop.h>
 #include <common/types/signature.h>
 #include <common/types/application.h>
+#include <common/types/log.h>
 #if SHARED_MEMORY
 #include <common/types/periodic_metric.h>
 #include <common/types/power_signature.h>
@@ -91,8 +92,10 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig);
 
-/** Given a MYSQL connection and a power_signature, inserts said power_signature into
-*   the database. Returns the power_signature's database id on success, and either 
+/** Given a MYSQL connection and a periodic_metric, inserts said periodic_metric into
+*   the database. Returns the periodic_metric's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met);
+
+int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
 #endif

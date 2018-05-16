@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,8 +36,8 @@
 #include <common/ear_verbose.h>
 #include <common/database/mysql_io_functions.h>
 
-#define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id) VALUES" \
-                            "(?, ?, ?, ?)"
+#define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id, power_signature_id) VALUES" \
+                            "(?, ?, ?, ?, ?)"
 
 
 #define LOOP_QUERY              "INSERT INTO Loops (event, size, level, job_id, step_id,  node_id, total_iterations," \
@@ -56,12 +57,15 @@
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id) VALUES (?, ?, ?, ?)"
+#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id)"\
+                                "VALUES (?, ?, ?, ?, ?, ?)"
+
+#define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, freq) VALUES (?, ?, ?, ?)"
 
 
 //Learning_phase insert queries
 #define LEARNING_APPLICATION_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
-                                    "signature_id) VALUES (?, ?, ?, ?)"
+                                    "signature_id, power_signature_id) VALUES (?, ?, ?, ?, ?)"
 
 #define LEARNING_SIGNATURE_QUERY    "INSERT INTO Learning_signatures (DC_power, max_DC_power, min_DC_power ,DRAM_power,"\
                                     "PCK_power, EDP, GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
@@ -94,15 +98,21 @@ int mysql_insert_application(MYSQL *connection, application_t *app, char is_lear
         if (mysql_stmt_prepare(statement, LEARNING_APPLICATION_QUERY, strlen(APPLICATION_QUERY))) return mysql_statement_error(statement);
     }
     
-    MYSQL_BIND bind[4];
+    MYSQL_BIND bind[5];
     memset(bind, 0, sizeof(bind));
 
     mysql_insert_job(connection, &app->job, is_learning);
     int sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
+    int pow_sig_id = NULL;
+#if SHARED_MEMORY
+    pow_sig_id = mysql_insert_power_signature(connection, &app->power_sig);
+#else
+    bind[4].is_null = 1;
+#endif
 
     //integer types
-    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONG;
-    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].is_unsigned = 1;
+    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = bind[4].buffer_type = MYSQL_TYPE_LONG;
+    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].is_unsigned = bind[4].is_unsigned = 1;
 
     //string types
     bind[2].buffer_type = MYSQL_TYPE_VARCHAR;
@@ -113,6 +123,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app, char is_lear
     bind[1].buffer = (char *)&app->job.step_id;
     bind[2].buffer = (char *)&app->node_id;
     bind[3].buffer = (char *)&sig_id;
+    bind[4].buffer = (char *)&pow_sig_id;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
@@ -135,14 +146,14 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[4];
-    unsigned long job_id, step_id, sig_id;
+    MYSQL_BIND bind[5];
+    unsigned long job_id, step_id, sig_id, pow_sig_id;
     int num_apps;
     memset(bind, 0, sizeof(bind));
 
     //integer types
-    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONG;
-    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].buffer_type = 1;
+    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = bind[4].buffer_type = MYSQL_TYPE_LONG;
+    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].is_unsigned = bind[4].is_unsigned = 1;
 
     //string types
     bind[2].buffer_type = MYSQL_TYPE_VAR_STRING;
@@ -153,6 +164,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
     bind[1].buffer = &step_id;
     bind[2].buffer = &app_aux->node_id;
     bind[3].buffer = &sig_id;
+    bind[4].buffer = &pow_sig_id;
 
     if (mysql_stmt_bind_result(statement, bind))
     {
@@ -752,17 +764,20 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 
     if (mysql_stmt_prepare(statement, PERIODIC_METRIC_QUERY, strlen(PERIODIC_METRIC_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[4];
+    MYSQL_BIND bind[6];
     memset(bind, 0, sizeof(bind));
 
-    //double types
+    //integer types
     int i;
     for (i = 0; i < 3; i++)
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].is_unsigned = 1;
     }
+    bind[4].buffer_type = bind[5].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[4].is_unsigned = bind[5].is_unsigned = 1;
 
-    //integer types
+    //varchar types
     bind[3].buffer_type = MYSQL_TYPE_VARCHAR;
     bind[3].buffer_length = strlen(per_met->node_id);
 
@@ -771,6 +786,45 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     bind[1].buffer = (char *)&per_met->end_time;
     bind[2].buffer = (char *)&per_met->DC_energy;
     bind[3].buffer = (char *)&per_met->node_id;
+    bind[4].buffer = (char *)&per_met->job_id;
+    bind[5].buffer = (char *)&per_met->step_id;
+
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return -mysql_statement_error(statement);
+
+    int id = mysql_stmt_insert_id(statement);
+    
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return id;
+}
+#endif
+
+int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+
+    if (mysql_stmt_prepare(statement, EAR_EVENT_QUERY, strlen(EAR_EVENT_QUERY))) return mysql_statement_error(statement);
+
+    MYSQL_BIND bind[4];
+    memset(bind, 0, sizeof(bind));
+
+    time_t timestamp = time(NULL);
+
+    //integer types
+    int i;
+    for (i = 0; i < 4; i++)
+    {
+        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+    }
+
+    //storage variable assignation
+    bind[0].buffer = (char *)&timestamp;
+    bind[1].buffer = (char *)&ear_ev->event;
+    bind[2].buffer = (char *)&ear_ev->job_id;
+    bind[3].buffer = (char *)&ear_ev->freq;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
@@ -781,6 +835,5 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return id;
-}
-#endif
 
+}
