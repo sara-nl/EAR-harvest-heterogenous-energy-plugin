@@ -7,6 +7,7 @@ ifdef CPUF_BASE
 		COMPONENTS += library
 		ifdef IPMI_BASE
 			COMPONENTS += metrics \
+                          daemon \
                           commands \
                           tests
 		endif
