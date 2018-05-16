@@ -312,3 +312,14 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	pthread_exit(0);
 	//exit(0);
 }
+void powermon_mpi_signature(application_t *app)
+{
+
+#if DB_MYSQL
+
+#include <common/database/db_helper.h>
+
+	if (!db_insert_application(app, 0)) DEBUG_F(1, "Application signature correctly written");
+
+#endif
+}

@@ -42,6 +42,8 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/string_enhanced.h>
 #include <common/config.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 pid_t daemon_pid = -1;

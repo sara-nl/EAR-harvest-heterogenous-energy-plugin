@@ -555,14 +555,7 @@ int eard_system(int must_read)
 				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
 				eard_close_comm();
 			}
-			#if DB_MYSQL
-
-			#include <common/database/db_helper.h>
-
-			if (!db_insert_application(&req.req_data.app, 0)) DEBUG_F(1, "Application signature correctly written");
-
-
-			#endif
+			powermon_mpi_signature(&req.req_data.app);
 			break;
 		default: return 0;
 	}
