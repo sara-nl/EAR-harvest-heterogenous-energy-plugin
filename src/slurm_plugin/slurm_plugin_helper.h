@@ -36,6 +36,9 @@
 	}	
 #define verbose_nude(...)
 //	slurm_error ("EARPLUG " __VA_ARGS__);
+#define plug_verbose(sp, level, ...)
+#define plug_error(...) \
+	slurm_error("EARPLUG " __VA_ARGS__)
 
 int verbosity_test(spank_t sp, int level);
 

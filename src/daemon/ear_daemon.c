@@ -379,8 +379,7 @@ void eard_exit()
 	//print_rapl_metrics();
 
 	// Recovering old frequency and governor configurations.
-	VERBOSE_N(1,"frequency_recover_previous_policy");	
-	frequency_recover_previous_policy();
+	VERBOSE_N(1,"frequency_dispose");	
 	frequency_dispose();
 
 	VERBOSE_N(1,"Releasing node resources");
@@ -419,8 +418,6 @@ void eard_close_comm()
 	VERBOSE_N(2, "closing comm in %s for %d", nodename, application_id);
 
 	// Stop counting
-	frequency_recover_previous_frequency();
-
 	if (RAPL_counting)
 	{
 		stop_rapl_metrics(values);
@@ -558,14 +555,7 @@ int eard_system(int must_read)
 				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
 				eard_close_comm();
 			}
-			#if DB_MYSQL
-
-			#include <common/database/db_helper.h>
-
-			if (!db_insert_application(&req.req_data.app)) DEBUG_F(1, "Application signature correctly written");
-
-
-			#endif
+			powermon_mpi_signature(&req.req_data.app);
 			break;
 		default: return 0;
 	}
@@ -607,6 +597,8 @@ int eard_freq(int must_read)
 			connect_service(freq_req,req.req_data.req_value);
 			#endif
 			frequency_save_previous_frequency();
+			frequency_save_previous_policy();
+			frequency_set_userspace_governor_all_cpus();
 			break;
 		case SET_FREQ:
 			ear_debug(1,"eard: Setting node frequency\n");
@@ -634,6 +626,8 @@ int eard_freq(int must_read)
 			ear_debug(1,"eard: Closing comunication\n");
 			// HIGHLIGHT: LIBRARY DISPOSE (1/2)
 			eard_close_comm();
+			frequency_recover_previous_policy();
+			frequency_recover_previous_frequency();
 			break;
 		case DATA_SIZE_FREQ:
 			ack=sizeof(unsigned long);
@@ -909,11 +903,7 @@ void main(int argc,char *argv[])
 		exit(1);
 	}
 
-	// It is assumed that no one will touch this governor. So it will
-	// remain the same during the daemon runtime.
-	frequency_save_previous_policy();
-	frequency_set_userspace_governor_all_cpus();
-
+    
 	//
 	eard_max_pstate = atoi(argv[1]);
 

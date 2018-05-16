@@ -185,7 +185,10 @@ int getenv_local(char *name, char **env)
 	}
 	p = getenv(name);
 
-	if ((p == NULL) || (strlen(p) == 0)) {
+	if (p == NULL) {
+		return 0;
+	}
+	if (strlen(p) == 0) {
 		return 0;
 	}
 	*env = p;
@@ -203,7 +206,17 @@ int getenv_remote(spank_t sp, char *name, char *value, int length)
 
 	serrno = spank_getenv (sp, name, value, length);
 
-	return (serrno == ESPANK_SUCCESS) && (value != NULL) && (strlen(value) > 0);
+	if (serrno != ESPANK_SUCCESS) {
+		return 0;
+	}
+	if (value == NULL) {
+		return 0;
+	}
+	if (strlen(value) <= 0) {
+		return 0;
+	}
+
+	return 1;
 }
 
 int existenv_local(char *name)
@@ -306,11 +319,12 @@ int file_to_environment(spank_t sp, const char *path)
         
         if ((value = strclean(option, '=')) != NULL)
         {
-            if ((strlen(option) > 0))
+            if ((strlen(option) > 2))
             {
             	value += 1;
 
-            	if (strlen(value) > 0) {
+            	if (strlen(value) > 0)
+            	{
                 	strtoup(option);
 					setenv_if_authorized(sp, option, value);
 				}

@@ -52,6 +52,8 @@ typedef struct ear_event{
 #include <errno.h>
 #include <common/types/log.h>
 
+#define LOG_FILE 1
+
 static int fd_log=-1;
 static char my_log_buffer[1024];
 static char log_name[128];
