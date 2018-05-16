@@ -41,7 +41,7 @@
 #if DB_MYSQL
 
 /** Given an application, inserts it to the database currently selected */
-int db_insert_application(application_t *application, char is_learning);
+int db_insert_application(application_t *application);
 
 int db_insert_loop(loop_t *loop);
 

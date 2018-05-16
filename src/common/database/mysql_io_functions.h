@@ -43,7 +43,7 @@
 /** Given a MYSQL connection and an application, inserts said application into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_application(MYSQL *connection, application_t *app, char is_learning);
+int mysql_insert_application(MYSQL *connection, application_t *app);
 
 /** Given a MYSQL connection and a valid MYSQL query, stores in apps the 
 *   applications found in the database corresponding to the query. Returns the 

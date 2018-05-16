@@ -84,8 +84,10 @@ int mysql_statement_error(MYSQL_STMT *statement)
     return EAR_MYSQL_STMT_ERROR;
 }
 
-int mysql_insert_application(MYSQL *connection, application_t *app, char is_learning)
+int mysql_insert_application(MYSQL *connection, application_t *app)
 {
+    char is_learning = app->job.is_learning;
+    char is_mpi = app->job.is_mpi;
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
     
@@ -102,7 +104,16 @@ int mysql_insert_application(MYSQL *connection, application_t *app, char is_lear
     memset(bind, 0, sizeof(bind));
 
     mysql_insert_job(connection, &app->job, is_learning);
-    int sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
+
+    if (is_mpi)
+    {
+        int sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
+    }
+    else 
+    {
+        int sig_id = NULL;
+        bind[3].is_null = 1;
+    }
     int pow_sig_id = NULL;
 #if SHARED_MEMORY
     pow_sig_id = mysql_insert_power_signature(connection, &app->power_sig);

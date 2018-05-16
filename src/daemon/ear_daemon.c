@@ -562,7 +562,7 @@ int eard_system(int must_read)
 
 			#include <common/database/db_helper.h>
 
-			if (!db_insert_application(&req.req_data.app, 0)) DEBUG_F(1, "Application signature correctly written");
+			if (!db_insert_application(&req.req_data.app)) DEBUG_F(1, "Application signature correctly written");
 
 
 			#endif
