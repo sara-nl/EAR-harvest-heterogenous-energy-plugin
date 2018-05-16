@@ -319,7 +319,7 @@ void powermon_mpi_signature(application_t *app)
 
 #include <common/database/db_helper.h>
 
-	if (!db_insert_application(app, 0)) DEBUG_F(1, "Application signature correctly written");
+	if (!db_insert_application(app)) DEBUG_F(1, "Application signature correctly written");
 
 #endif
 }
