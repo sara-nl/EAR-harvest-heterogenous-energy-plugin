@@ -88,7 +88,7 @@ struct spank_option spank_options[] = {
 /*
  *
  *
- *
+ * Daemon execution
  *
  *
  */
@@ -96,6 +96,7 @@ struct spank_option spank_options[] = {
 static void exec_ear_daemon(spank_t sp)
 {
     verbose(sp, 2, "function exec_ear_daemon");
+
     static char buffer[PATH_MAX];
     char *ear_install_path;
     char *ear_verbose;
@@ -128,6 +129,7 @@ static void fork_intermediate_daemon(spank_t sp)
 {
 	verbose(sp, 2, "function fork_intermediate_daemon");
 	int ret, exit_code;
+
 	daemon_pid = fork();
 
 	if (daemon_pid == 0) {
@@ -138,8 +140,8 @@ static void fork_intermediate_daemon(spank_t sp)
 	}
 
 	/*
-     	 * SIGNAL
-     	 */
+	 * SIGNAL
+	 */
 	struct sigaction my_sigchld;
 	sigset_t my_mask;
 
@@ -254,7 +256,7 @@ static int local_update_ld_preload(spank_t sp)
 		return ESPANK_ERROR;
 	}
 
-	verbose(sp, 1, "Updated LD_PRELOAD envar '%s'", buffer);
+	verbose(sp, 1, "updated LD_PRELOAD envar '%s'", buffer);
 
 	return ESPANK_SUCCESS;
 }
@@ -295,6 +297,20 @@ static void remote_update_slurm_vars(spank_t sp)
     }
 }
 
+static void print_general_info(spank_t sp)
+{
+	verbose(sp, 2, "function print_general_info");
+
+	struct rlimit l;
+	int r;
+
+	r = getrlimit(RLIMIT_STACK, &l);
+
+	verbose(sp, 2, "plugin compiled in %s", __DATE__);
+	verbose(sp, 2, "stack size limit test (res %d, curr: %lld, max: %lld)",
+			r, (long long) l.rlim_cur, (long long) l.rlim_max);
+}
+
 /*
  *
  *
@@ -309,6 +325,9 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
+    	// Printing job local information
+		print_general_info(sp);
+
 		find_ear_user_privileges(sp, ac, av);
 
         if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {	
@@ -332,9 +351,10 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 	if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
 	{
+		// Printing job remote information
+		print_general_info(sp);
+
 		remote_update_slurm_vars(sp);	
-		slurm_error("Launching job with plugin compiled in %s of type (%d)",
-					__DATE__, DAEMON_INTERMEDIATE);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -363,8 +383,6 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
             return r;
         }
 
-		slurm_error("Launching EARD with plugin compiled in %s of type (%d)",
-				__DATE__, DAEMON_INTERMEDIATE);
         return fork_ear_daemon(sp);
     }
 
