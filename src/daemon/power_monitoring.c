@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -332,7 +332,7 @@ void powermon_mpi_signature(application_t *app)
 
 #include <common/database/db_helper.h>
 
-	if (!db_insert_application(app, 0)) DEBUG_F(1, "Application signature correctly written");
+	if (!db_insert_application(app)) DEBUG_F(1, "Application signature correctly written");
 
 #endif
 }

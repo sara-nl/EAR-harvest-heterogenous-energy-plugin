@@ -2,7 +2,7 @@
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
-*	EAR provides a dynamic, dynamic and ligth-weigth solution for
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
@@ -27,9 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef __NAME__
-#define __NAME__ "db_helper"
-#endif
+static const char *__NAME__ = "db_helper";
 #if SHARED_MEMORY
 #include <common/types/power_signature.h>
 #include <common/types/periodic_metric.h>
@@ -41,7 +39,7 @@
 #if DB_MYSQL
 
 /** Given an application, inserts it to the database currently selected */
-int db_insert_application(application_t *application, char is_learning);
+int db_insert_application(application_t *application);
 
 int db_insert_loop(loop_t *loop);
 

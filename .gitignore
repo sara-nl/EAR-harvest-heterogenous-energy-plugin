@@ -40,6 +40,7 @@ tests/check/check.sh
 *ear_get_node_freq
 *ear_set_node_freq
 *ear_report
+*ereport
 *ear_create_database
 *ear_end_job
 *ear_new_job
