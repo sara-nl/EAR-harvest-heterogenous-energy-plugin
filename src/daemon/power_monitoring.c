@@ -45,19 +45,18 @@
 #include <common/ear_verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
+#include <common/types/periodic_metric.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
 #include <daemon/power_monitoring.h>
+#include <common/database/db_helper.h>
 
+#define MAX_PATH_SIZE 256
 extern int eard_must_exit;
-#define MAX_PATH_SIZE 256
 extern char ear_tmp[MAX_PATH_SIZE];
-static const char *__NAME__ = "powermon: ";
 
-//  That constant is replicated. We must fix that
-#define MAX_PATH_SIZE 256
+static const char *__NAME__="powermon: ";
 
 unsigned int f_monitoring;
-
 int idleNode=1;
 
 
@@ -72,7 +71,7 @@ static int fd_periodic=-1;
 
 typedef struct powermon_app{
 	application_t app;
-	uint   job_created;
+	ulong job_created;
 	node_data_t DC_energy_init,DC_energy_end;
 }powermon_app_t;
 
@@ -81,6 +80,18 @@ powermon_app_t current_ear_app;
 
 #define max(X,Y) (((X) > (Y)) ? (X) : (Y))
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
+#if 0
+typedef struct periodic_metric
+{
+    unsigned long long DC_energy;
+    unsigned long job_id;
+    unsigned long step_id;
+    time_t start_time;
+    time_t end_time;
+    char *node_id;
+} periodic_metric_t;
+#endif
+periodic_metric_t current_sample;
 
 void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
 {
@@ -288,7 +299,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0,"Error in init_power_ponitoring\n");
 	f_monitoring=*f_monitoringp;
 	t_ms=f_monitoring/1000;
-
+	// current_sample is the current powermonitoring period
+	init_periodic_metric(&current_sample);
+		
 	create_powermon_out();
 	reset_current_app();
 
@@ -314,7 +327,7 @@ void *eard_power_monitoring(void *frequency_monitoring)
 }
 void powermon_mpi_signature(application_t *app)
 {
-
+// Esto no hay que hacerlo aqui, hay que copiarlo en la app y reportarlo alli
 #if DB_MYSQL
 
 #include <common/database/db_helper.h>

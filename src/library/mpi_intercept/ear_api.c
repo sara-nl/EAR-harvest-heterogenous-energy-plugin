@@ -221,6 +221,10 @@ void ear_init()
 	// Application static data and metrics
 	init_application(&application);
 	init_application(&loop_signature);
+	application.is_mpi=1;
+	loop_signature.is_mpi=1;
+	application.is_learning=ear_whole_app;
+	loop_signature.is_learning=ear_whole_app;
 
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
