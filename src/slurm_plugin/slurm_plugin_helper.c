@@ -265,14 +265,12 @@ int isenv_local(char *name, char *value)
 
 int isenv_remote(spank_t sp, char *name, char *value)
 {
-    char buffer[128];
-
     if (name == NULL || value == NULL) {
 		return 0;
 	}
 
-    if (getenv_remote(sp, name, buffer, 128)) {
-        return (strcmp(buffer, value) == 0);
+    if (getenv_remote(sp, name, buffer2, 128)) {
+        return (strcmp(buffer2, value) == 0);
     }
 
     return 0;

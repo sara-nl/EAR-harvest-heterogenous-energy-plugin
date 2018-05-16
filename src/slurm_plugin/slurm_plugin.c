@@ -232,6 +232,10 @@ static int local_update_ld_preload(spank_t sp)
 	buffer1[0] = '\0';
 	buffer2[0] = '\0';
 
+	/*if (getenv_local("LD_PRELOAD", &ld_preload) == 1) {
+		strcpy(buffer1, ld_preload);
+	}*/
+
     if (getenv_local("EAR_INSTALL_PATH", &ear_install_path) == 0)
     {
 		plug_error("Error, missing EAR_INSTALL_PATH");
@@ -262,7 +266,7 @@ static int local_update_ld_preload(spank_t sp)
 		return ESPANK_ERROR;
 	}
 
-	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer1);
+	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
 	return ESPANK_SUCCESS;
 }
@@ -291,14 +295,15 @@ static void remote_update_slurm_vars(spank_t sp)
                 sprintf(p_state, "%d", p_freq);
                 setenv_remote(sp, "EAR_P_STATE", p_state, 0);
 
-				plug_verbose(sp, 2, "Updating to P_STATE '%s' by '--cpu-freq=%d' command", p_state, p_freq);
+				plug_verbose(sp, 2, "Updating to P_STATE '%s' by '--cpu-freq=%d' command",
+							 p_state, p_freq);
             }
         }
     }
 
     // Switching from SLURM_JOB_NAME to EAR_APP_NAME
-    if (getenv_remote(sp, "SLURM_JOB_NAME", buffer1, PATH_MAX) == 1) {
-        setenv_remote(sp, "EAR_APP_NAME", buffer1, 1);
+    if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, PATH_MAX) == 1) {
+        setenv_remote(sp, "EAR_APP_NAME", buffer2, 1);
     }
 }
 
