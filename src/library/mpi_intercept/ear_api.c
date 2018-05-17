@@ -98,7 +98,7 @@ static void print_local_data()
 	VERBOSE_N(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
 	VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.job.procs, num_nodes, ppnode);
 	VERBOSE_N(1, "Policy (learning): %s (%d)", application.job.policy, ear_whole_app);
-	VERBOSE_N(1, "Policy threshold/Perf accuracy: %lf/%lf", application.job.th, get_ear_performance_accuracy());
+	VERBOSE_N(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());
 	VERBOSE_N(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
 	VERBOSE_N(1, "VAR path: %s", get_ear_tmp());
 	VERBOSE_N(1, "--------------------------------");

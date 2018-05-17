@@ -102,7 +102,7 @@ struct spank_option spank_options[] = {
 
 static void exec_ear_daemon(spank_t sp)
 {
-    plug_plug_verbose(sp, 2, "function exec_ear_daemon");
+    plug_verbose(sp, 2, "function exec_ear_daemon");
 
     char *ear_install_path;
     char *ear_verbose;
