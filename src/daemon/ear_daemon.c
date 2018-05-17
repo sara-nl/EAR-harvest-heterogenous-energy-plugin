@@ -219,8 +219,10 @@ void connect_service(int req,job_t *new_job)
                 eard_close_comm();
             }
             // We must modify the client api to send more information
-            powermon_mpi_init(new_job);
+            #if SHARED_MEMORY
+			powermon_mpi_init(new_job);
 			copy_job(&current_job,new_job);
+			#endif
         	VERBOSE_N(1, "sending ack for service %d",req);
         	if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
         	    VERBOSE_N(0,"WARNING while writting for ping conn for %lu", pid);
@@ -297,11 +299,11 @@ void connect_service(int req,unsigned long pid)
 				VERBOSE_N(0,"ERROR while opening ping pipe %s (%s)", ear_ping, strerror(errno));
 				eard_close_comm();
 			}
-#if SHARED_MEMORY
+			#if SHARED_MEMORY
 			// We must modify the client api to send more information
 			new_job.id=pid;
 			powermon_mpi_init(&new_job);
-#endif
+			#endif
 		}
 
 		VERBOSE_N(1, "sending ack for service %d",req);
@@ -439,10 +441,10 @@ void eard_close_comm()
 	}
 
 	close(ear_ping_fd);
-#if SHARED_MEMORY
+	#if SHARED_MEMORY
 	// We must send the app signature to the powermonitoring thread
 	powermon_mpi_finalize();
-#endif
+	#endif
 
 	application_id = -1;
 	ear_ping_fd = -1;
@@ -555,7 +557,9 @@ int eard_system(int must_read)
 				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
 				eard_close_comm();
 			}
+			#if SHARED_MEMORY
 			powermon_mpi_signature(&req.req_data.app);
+			#endif
 			break;
 		default: return 0;
 	}
