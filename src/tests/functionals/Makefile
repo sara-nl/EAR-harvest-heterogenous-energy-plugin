@@ -22,8 +22,8 @@ PAPI_OBJS = $(SRCDIR)/metrics/papi/flops.o \
 
 NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.o \
 			$(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-		    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_act.o \
-			$(SRCDIR)/metrics/ipmi/energy_node/lenovo_wct.o
+		    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
+			$(SRCDIR)/metrics/ipmi/energy_node/lenovo_ina226.o
 
 POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a
 

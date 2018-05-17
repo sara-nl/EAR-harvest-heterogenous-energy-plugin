@@ -43,6 +43,14 @@ int lenovo_wct_read_ac_energy(unsigned long *energy);
 /** Release access to ipmi device */
 int lenovo_wct_node_energy_dispose();
 
+#if DEBUG_INA226
+/** Energy and time is returned in a single ipmi command */
+int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,uint8_t *raw_out,ulong *seconds,ulong *ms);
+#else
+/** Energy and time is returned in a single ipmi command */
+int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms);
+#endif
+
 
 #else
 #endif

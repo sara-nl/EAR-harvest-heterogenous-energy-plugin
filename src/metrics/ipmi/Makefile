@@ -4,8 +4,8 @@ LDFLAGS =
 ######## FILES
 
 ENERGY_NODE_OBJS = energy_node/ibm.o \
-                   energy_node/lenovo_act.o \
-                   energy_node/lenovo_wct.o
+                   energy_node/lenovo_nm.o \
+                   energy_node/lenovo_ina226.o
 
 LIBRARIES = energy_node.a energy_node.so
 

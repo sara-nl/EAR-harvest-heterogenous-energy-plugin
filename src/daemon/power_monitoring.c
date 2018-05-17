@@ -46,6 +46,7 @@
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
+#include <control/frequency.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
 #include <daemon/power_monitoring.h>
 #include <common/database/db_helper.h>

@@ -37,8 +37,8 @@
 #include <freeipmi/freeipmi.h>
 
 #include <metrics/custom/hardware_info.h>
-#include <metrics/ipmi/energy_node/lenovo_act.h>
-#include <metrics/ipmi/energy_node/lenovo_wct.h>
+#include <metrics/ipmi/energy_node/lenovo_nm.h>
+#include <metrics/ipmi/energy_node/lenovo_ina226.h>
 #include <metrics/ipmi/energy_node/ibm.h>
 #include <common/ear_verbose.h>
 

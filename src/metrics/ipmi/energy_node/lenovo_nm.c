@@ -46,31 +46,31 @@
 #define IPMI_RAW_MAX_ARGS (1024)
 
 #define FUNCVERB(function)                               \
-ear_debug(4, "ear_daemon(lenovo_wct) " function "\n");
+ear_debug(4, "ear_daemon(lenovo_nm) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
 static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
 
-
 /* Specific functions for CPU XX PLATFORM YY */
 /* Grants access to ipmi device */
-int lenovo_wct_node_energy_init()
+int lenovo_act_node_energy_init()
 {
 	uid_t uid;
 	int ret=0;
+	int rs_len;
 	unsigned int workaround_flags = 0;
 	FUNCVERB("lenovo_node_energy_init");
 	//Creating the context
 	if (!(ipmi_ctx = ipmi_ctx_create ())){
-        ear_verbose(0,"lenovo_water_cooling:Error in ipmi_ctx_create %s\n",strerror(errno));
+        ear_verbose(0,"lenovo_air_cooling:Error in ipmi_ctx_create %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
 	// Checking for root
 	uid = getuid ();
 	if (uid != 0){ 
-		ear_verbose(0,"lenovo_water_cooling: No root permissions\n");
+		ear_verbose(0,"lenovo_air_cooling: No root permissions\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -86,7 +86,7 @@ int lenovo_wct_node_energy_init()
 					NULL, // driver_device
                     workaround_flags,
                     IPMI_FLAGS_DEFAULT)) < 0) {
-		ear_verbose(0,"lenovo_water_cooling: %s\n",strerror(errno));
+		ear_verbose(0,"lenovo_air_cooling: %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -94,7 +94,7 @@ int lenovo_wct_node_energy_init()
 		return EAR_ERROR;	
 	}
 	if (ret==0){
-		ear_verbose(0,"lenovo_water_cooling: Not inband device found\n");
+		ear_verbose(0,"lenovo_air_cooling: Not inband device found\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -102,11 +102,10 @@ int lenovo_wct_node_energy_init()
 		return EAR_ERROR;	
 	}
 	// This part is hardcoded since we are not supporting other commands rather than reading DC energy
-	// To support a generic API with more ipmi commands we must create commands inside each call
-	send_len=8;
+	send_len=11;
 	if (!(bytes_rq = calloc (send_len, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"lenovo_water_cooling: Allocating memory for request %s\n",strerror(errno));
+		ear_verbose(0,"lenovo_air_cooling: Allocating memory for request %s\n",strerror(errno));
         // Close context
         ipmi_ctx_close (ipmi_ctx);
         // delete context
@@ -115,56 +114,74 @@ int lenovo_wct_node_energy_init()
 	}
 	if (!(bytes_rs = calloc (IPMI_RAW_MAX_ARGS, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"lenovo_water_cooling: Allocating memory for recv data %s\n",strerror(errno));
+		ear_verbose(0,"lenovo_air_cooling: Allocating memory for recv data %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
 		ipmi_ctx_destroy (ipmi_ctx);
 		return EAR_ERROR;
 	}	
-	// Robert Wolford provided command: ipmitool raw 0x3a 0x32 4 1 0 0 0 --> low frequency command
-	// Robert Wolford provided command: raw 0x3a 0x32 4 2 0 0 0
-#ifdef LOW_FREQ_ENERGY_READINGS
-	bytes_rq[0]=(uint8_t)0x00;// lun
-	bytes_rq[1]=(uint8_t)0x3a;// netfn
-	bytes_rq[2]=(uint8_t)0x32;// cmd
-	bytes_rq[3]=(uint8_t)0x4; // 5 args
-	bytes_rq[4]=(uint8_t)0x1;
-	bytes_rq[5]=(uint8_t)0x0;
-	bytes_rq[6]=(uint8_t)0x0;
-	bytes_rq[7]=(uint8_t)0x0;
-#else
-    bytes_rq[0]=(uint8_t)0x00;// lun
-    bytes_rq[1]=(uint8_t)0x3a;// netfn
-    bytes_rq[2]=(uint8_t)0x32;// cmd
-    bytes_rq[3]=(uint8_t)0x4; // 5 args
-    bytes_rq[4]=(uint8_t)0x2;
-    bytes_rq[5]=(uint8_t)0x0;
-    bytes_rq[6]=(uint8_t)0x0;
-    bytes_rq[7]=(uint8_t)0x0;
-
-#endif
-
+	// ipmitool raw 0x2e 0x82 0x66 0x4a 0 0 0 1 --> Command to get the parameter (0x20 in Lenovo) bytes_rq[6]
+	// sudo ./ipmi-raw 0x0 0x2e 0x82 0x66 0x4a 0 0 0 1 
+	// byte number 8 with ipmi-raw command
+	bytes_rq[0]=(uint8_t)0x00;
+    bytes_rq[1]=(uint8_t)0x2E;
+    bytes_rq[2]=(uint8_t)0x82;
+    bytes_rq[3]=(uint8_t)0x66;
+    bytes_rq[4]=(uint8_t)0x4a;
+    bytes_rq[5]=(uint8_t)0x00;
+    bytes_rq[6]=(uint8_t)0x00;
+    bytes_rq[7]=(uint8_t)0x00;
+    bytes_rq[8]=(uint8_t)0x01;
+    // RAW CMD to get the parameter
+    if ((rs_len = ipmi_cmd_raw (ipmi_ctx,
+                              bytes_rq[0],
+                              bytes_rq[1],
+                              &bytes_rq[2],
+                              7,
+                              bytes_rs,
+                              IPMI_RAW_MAX_ARGS)) < 0)
+    {
+        ear_verbose(0,"lenovo_air_cooling: ipmi_cmd_raw fails when reading the parameter\n");
+        //return EAR_ERROR;
+    }
+	// sudo ./ipmi-raw 0x0 0x2e 0x81 0x66 0x4a 0x00 0x20 0x01 0x82 0x0 0x08
+	if (bytes_rs[8]!=0x20){
+		ear_verbose(0,"eard:lenovo_air_cooling warning raw argument != 0x20\n");
+		bytes_rs[8]=0x20;
+	}
+	bytes_rq[0]=(uint8_t)0x00;
+	bytes_rq[1]=(uint8_t)0x2E;
+	bytes_rq[2]=(uint8_t)0x81;
+	bytes_rq[3]=(uint8_t)0x66;
+	bytes_rq[4]=(uint8_t)0x4A;
+	bytes_rq[5]=(uint8_t)0x00;
+	bytes_rq[6]=bytes_rs[8];
+	bytes_rq[7]=(uint8_t)0x01;
+	bytes_rq[8]=(uint8_t)0x82;
+	bytes_rq[9]=(uint8_t)0x00;
+	bytes_rq[10]=(uint8_t)0x08;
 
 	return EAR_SUCCESS;	
 		
 }
-int lenovo_wct_count_energy_data_length()
+
+int lenovo_act_count_energy_data_length()
 {
 	FUNCVERB("lenovo_count_energy_data_length");
 	return sizeof(unsigned long);
 }
-int lenovo_wct_read_dc_energy(unsigned long *energy)
+
+int lenovo_act_read_dc_energy(unsigned long *energy)
 {
-	uint32_t my_energy=0;
+	unsigned long *energyp;
 	int rs_len;
 	if (ipmi_ctx==NULL){ 
-		ear_verbose(0,"lenovo_water_cooling: IPMI context not initiallized\n");
+		ear_verbose(0,"lenovo_air_cooling: IPMI context not initiallized\n");
 		return EAR_ERROR;
 	}
 	FUNCVERB("lenovo_read_dc_energy");
 	// RAW CMD
-	*energy=0;
 	if ((rs_len = ipmi_cmd_raw (ipmi_ctx,
                               bytes_rq[0],
                               bytes_rq[1],
@@ -173,39 +190,27 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-		ear_verbose(0,"lenovo_water_cooling: ipmi_cmd_raw fails\n");
+		ear_verbose(0,"lenovo_air_cooling: ipmi_cmd_raw fails\n");
 		return EAR_ERROR;
 	}
-
-	// Add 2 bytes to this format
-	// Byte 0:3		Epoch time (LSB first)
-	// Byte 4:5     mS portion of time (LSB first)
-	// Byte 6:9     energy accumulated since node was powered on, rebooted, or
-	// 				since last exception (LSB first, J) --> 8:11
-	// Byte 10:11   incremental energy reading 1 (LSB first, J)
-	// …
-	// Byte 209:210 incremental energy reading 100 (LSB first, J)
- 	// Robert code: tmp=rsp->data[9] << 24 | rsp->data[8] << 16 | rsp->data[7] << 8 | rsp->data[6];
-	my_energy=bytes_rs[11]<<24|bytes_rs[10]<<16|bytes_rs[9]<<8|bytes_rs[8];
-
-	// Energy values provided in this model are reported in Joules, the API
-	// returns mJ (multiply by 1.000)
-	*energy=(unsigned long)my_energy*1000;
-
-	return EAR_SUCCESS;;
+	energyp=(unsigned long *)&bytes_rs[rs_len-8];
+	*energy=(unsigned long)be64toh(*energyp);
+	return EAR_SUCCESS;
 }
+
 /* AC energy is not yet supported */
-int lenovo_wct_read_ac_energy(unsigned long *energy)
+int lenovo_act_read_ac_energy(unsigned long *energy)
 {
 	*energy=0;
 	return EAR_SUCCESS;
 }
+
 /* Release access to ipmi device */
-int lenovo_wct_node_energy_dispose()
+int lenovo_act_node_energy_dispose()
 {
 	FUNCVERB("lenovo_node_energy_dispose");
 	if (ipmi_ctx==NULL){ 
-		ear_verbose(0,"lenovo_water_cooling: IPMI context not initiallized\n");
+		ear_verbose(0,"lenovo_air_cooling: IPMI context not initiallized\n");
 		return EAR_ERROR;
 	}
 	// // Close context
