@@ -1,9 +1,9 @@
 CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
-export CFLAGS
 
 ####### 
 
 export DIR
+export CFLAGS
 
 ######## FILES
 
@@ -19,6 +19,7 @@ TYPES_OBJS = types/application.o \
 
 BINARIES = ear_daemon_client.o \
            environment.o \
+           environment_common.o \
            string_enhanced.o \
            math_operations.o \
            file_lock.o \

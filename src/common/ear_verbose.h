@@ -27,10 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef EAR_VERBOSE_H_
 #define EAR_VERBOSE_H
+
+#include <common/config.h>
 
 extern int EAR_VERBOSE_LEVEL;
 
@@ -51,25 +51,25 @@ extern int EAR_VERBOSE_LEVEL;
 
 /** Prints a formatted string in case the level passed is greater or equal then
  *  the selected level of debugging.*/
-#ifdef DEBUG
-#define ear_debug(level,...) \
-	if (level <= DEBUG) fprintf(stderr, __VA_ARGS__);
+#if BUILD(DEBUG)
+	#define ear_debug(level,...) \
+		if (level <= DEBUG) fprintf(stderr, __VA_ARGS__);
 #else
-#define ear_debug(level,...)
+	#define ear_debug(level,...)
 #endif
 
 /** Prints a formatted string in case the level passed is greater or equal than
  *  the selected level of debugging. This function prints the prefix string
  *  constant __FILE__, and a new line character as a suffix. */
-#ifdef DEBUG
-#define DEBUG_F(level, ...) \
-	if (level <= DEBUG) { \
-		fprintf(stderr, "%s: ", __FILE__); \
-		fprintf(stderr, __VA_ARGS__); \
-		fprintf(stderr, "\n"); \
-	}
+#if BUILD(DEBUG)
+	#define DEBUG_F(level, ...) \
+		if (level <= DEBUG) { \
+			fprintf(stderr, "%s: ", __FILE__); \
+			fprintf(stderr, __VA_ARGS__); \
+			fprintf(stderr, "\n"); \
+		}
 #else
-#define DEBUG_F(level, ...)
+	#define DEBUG_F(level, ...)
 #endif
 
 #endif

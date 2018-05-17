@@ -44,12 +44,14 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/string_enhanced.h>
 #include <common/config.h>
-#include <sys/time.h>
-#include <sys/resource.h>
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 pid_t daemon_pid = -1;
-extern int verbosity;
+
+char buffer1[PATH_MAX];
+char buffer2[PATH_MAX];
+int auth_mode =  1;
+int verbosity = -1;
 
 struct spank_option spank_options[] = {
     { "ear", "", "Enables Energy Aware Runtime",
@@ -100,9 +102,8 @@ struct spank_option spank_options[] = {
 
 static void exec_ear_daemon(spank_t sp)
 {
-    verbose(sp, 2, "function exec_ear_daemon");
+    plug_verbose(sp, 2, "function exec_ear_daemon");
 
-    static char buffer[PATH_MAX];
     char *ear_install_path;
     char *ear_verbose;
     char *ear_tmp;
@@ -112,27 +113,27 @@ static void exec_ear_daemon(spank_t sp)
 	ear_verbose      = getenv("EAR_VERBOSE");
 	ear_tmp          = getenv("EAR_TMP");
 
-    sprintf(buffer, "%s/%s", ear_install_path, EAR_DAEMON_PATH);
+    sprintf(buffer1, "%s/%s", ear_install_path, EAR_DAEMON_PATH);
 
     // Executing EAR daemon
-    if (execl(buffer, buffer, "1", ear_tmp, ear_verbose, (char *) 0) == -1) {
-        slurm_error("Error while executing %s (%s)", buffer, strerror(errno));
+    if (execl(buffer1, buffer1, "1", ear_tmp, ear_verbose, (char *) 0) == -1) {
+        plug_error("Error while executing %s (%s)", buffer1, strerror(errno));
         exit(errno);
     }
 }
 
-#define DAEMON_INTERMEDIATE 1
+#define DAEMON_INTERMEDIATE 0
 
 #if DAEMON_INTERMEDIATE
 static void my_chld_f(int s)
 {
-	slurm_error("Intermediate: killing daemon %d", daemon_pid);
+	plug_error("Intermediate: killing daemon %d", daemon_pid);
 	kill(daemon_pid, SIGTERM);
 }
 
 static void fork_intermediate_daemon(spank_t sp)
 {
-	verbose(sp, 2, "function fork_intermediate_daemon");
+	plug_verbose(sp, 2, "function fork_intermediate_daemon");
 	int ret, exit_code;
 
 	daemon_pid = fork();
@@ -140,7 +141,7 @@ static void fork_intermediate_daemon(spank_t sp)
 	if (daemon_pid == 0) {
 		exec_ear_daemon(sp);
 	} else if (daemon_pid < 0) {
-		slurm_error("Intermediate fork returned %i (%s)", daemon_pid, strerror(errno));
+		plug_error("Intermediate fork returned %i (%s)", daemon_pid, strerror(errno));
 		exit(errno);
 	}
 
@@ -163,21 +164,21 @@ static void fork_intermediate_daemon(spank_t sp)
 	/*
  	 * WAIT
  	 */
-	slurm_error("Intermediate: waiting for daemon %d", daemon_pid);
+	plug_error("Intermediate: waiting for daemon %d", daemon_pid);
 	ret = waitpid(-1, &exit_code, 0);
 
 	if (ret != daemon_pid) {
-        	slurm_error("Intermediate: unexpected pid");
+        	plug_error("Intermediate: unexpected pid");
     	} else {
-		slurm_error("Intermediate: wait pid success");
+		plug_error("Intermediate: wait pid success");
 	}
 
 	if (ret > 0)
     	{
         	if (WIFEXITED(exit_code)) {
-			slurm_error("Intermediate: process %d exits with exit code %d", ret, WEXITSTATUS(exit_code));
+			plug_error("Intermediate: process %d exits with exit code %d", ret, WEXITSTATUS(exit_code));
 		} else {
-			slurm_error("Intermediate: process %d finsh because of signal %d", ret, WTERMSIG(exit_code));
+			plug_error("Intermediate: process %d finsh because of signal %d", ret, WTERMSIG(exit_code));
 		}
 	}
 
@@ -187,7 +188,7 @@ static void fork_intermediate_daemon(spank_t sp)
 
 static int fork_ear_daemon(spank_t sp)
 {
-    verbose(sp, 2, "function fork_ear_daemon");
+    plug_verbose(sp, 2, "function fork_ear_daemon");
 
     if ((existenv_local("EAR_INSTALL_PATH") == 1) &&
         (existenv_local("EAR_DB_PATHNAME") == 1) &&
@@ -203,11 +204,11 @@ static int fork_ear_daemon(spank_t sp)
             exec_ear_daemon(sp);
             #endif
         } else if (daemon_pid < 0) {
-            slurm_error("Fork returned %i (%s)", daemon_pid, strerror(errno));
+            plug_error("Fork returned %i (%s)", daemon_pid, strerror(errno));
             return ESPANK_ERROR;
         }
     } else {
-        slurm_error("Missing crucial environment variable");
+        plug_error("Missing crucial environment variable");
         return ESPANK_ENV_NOEXIST;
     }
     return ESPANK_SUCCESS;
@@ -223,54 +224,57 @@ static int fork_ear_daemon(spank_t sp)
 
 static int local_update_ld_preload(spank_t sp)
 {
-    verbose(sp, 2, "function local_update_ld_preload");
+    plug_verbose(sp, 2, "function local_update_ld_preload");
 	
-	static char buffer[PATH_MAX];
 	char *ear_install_path = NULL;
 	char *ld_preload = NULL;
 
-	buffer[0] = '\0';
+	buffer1[0] = '\0';
+	buffer2[0] = '\0';
+
+	/*if (getenv_local("LD_PRELOAD", &ld_preload) == 1) {
+		strcpy(buffer1, ld_preload);
+	}*/
 
     if (getenv_local("EAR_INSTALL_PATH", &ear_install_path) == 0)
     {
-		slurm_error("Error, missing EAR_INSTALL_PATH");
+		plug_error("Error, missing EAR_INSTALL_PATH");
         return ESPANK_ERROR;
     }
-    appendenv(buffer, ear_install_path, PATH_MAX);
+    appendenv(buffer1, ear_install_path, PATH_MAX);
     
 	// Appending libraries to LD_PRELOAD
     if (isenv_local("EAR_TRACES", "1") == 1)
 	{
 		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-        	sprintf(buffer, "%s/%s", buffer, OMPI_TRACE_LIB_PATH);
+        	sprintf(buffer2, "%s/%s", buffer1, OMPI_TRACE_LIB_PATH);
 		} else {
-        	sprintf(buffer, "%s/%s", buffer, IMPI_TRACE_LIB_PATH);
+        	sprintf(buffer2, "%s/%s", buffer1, IMPI_TRACE_LIB_PATH);
 		}
     }
 	else
 	{	
 		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-			sprintf(buffer, "%s/%s", buffer, OMPI_LIB_PATH);
+			sprintf(buffer2, "%s/%s", buffer1, OMPI_LIB_PATH);
 		} else { 
-			sprintf(buffer, "%s/%s", buffer, IMPI_LIB_PATH);
+			sprintf(buffer2, "%s/%s", buffer1, IMPI_LIB_PATH);
 		}
     }
 
     //
-    if(setenv_local("LD_PRELOAD", buffer, 1) != 1) {
+    if(setenv_local("LD_PRELOAD", buffer2, 1) != 1) {
 		return ESPANK_ERROR;
 	}
 
-	verbose(sp, 1, "updated LD_PRELOAD envar '%s'", buffer);
+	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
 	return ESPANK_SUCCESS;
 }
 
 static void remote_update_slurm_vars(spank_t sp)
 {
-	verbose(sp, 2, "function remote_update_slurm_vars");
+	plug_verbose(sp, 2, "function remote_update_slurm_vars");
 
-    static char buffer[PATH_MAX];
     char p_state[64];
     int p_freq = 1;
 
@@ -291,29 +295,31 @@ static void remote_update_slurm_vars(spank_t sp)
                 sprintf(p_state, "%d", p_freq);
                 setenv_remote(sp, "EAR_P_STATE", p_state, 0);
 
-				verbose(sp, 1, "Updating to P_STATE '%s' by '--cpu-freq=%d' command", p_state, p_freq);
+				plug_verbose(sp, 2, "Updating to P_STATE '%s' by '--cpu-freq=%d' command",
+							 p_state, p_freq);
             }
         }
     }
 
     // Switching from SLURM_JOB_NAME to EAR_APP_NAME
-    if (getenv_remote(sp, "SLURM_JOB_NAME", buffer, PATH_MAX) == 1) {
-        setenv_remote(sp, "EAR_APP_NAME", buffer, 1);
+    if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, PATH_MAX) == 1) {
+        setenv_remote(sp, "EAR_APP_NAME", buffer2, 1);
     }
 }
 
 static void print_general_info(spank_t sp)
 {
-	verbose(sp, 2, "function print_general_info");
+	plug_verbose(sp, 2, "function print_general_info");
 
 	struct rlimit l;
 	int r;
 
 	r = getrlimit(RLIMIT_STACK, &l);
 
-	verbose(sp, 2, "plugin compiled in %s", __DATE__);
-	verbose(sp, 2, "stack size limit test (res %d, curr: %lld, max: %lld)",
+	plug_verbose(sp, 2, "plugin compiled in %s", __DATE__);
+	plug_verbose(sp, 2, "stack size limit test (res %d, curr: %lld, max: %lld)",
 			r, (long long) l.rlim_cur, (long long) l.rlim_max);
+	plug_verbose(sp, 2, "buffers size %d", PATH_MAX);
 }
 
 /*
@@ -325,14 +331,11 @@ static void print_general_info(spank_t sp)
  */
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
-    verbose(sp, 2, "function slurm_spank_local_user_init");
+    plug_verbose(sp, 2, "function slurm_spank_local_user_init");
     int r;
 
     if(spank_context () == S_CTX_LOCAL)
     {
-    	// Printing job local information
-		print_general_info(sp);
-
 		find_ear_user_privileges(sp, ac, av);
 
         if ((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {	
@@ -352,7 +355,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
-	verbose(sp, 2, "function slurm_spank_task_init");   
+	plug_verbose(sp, 2, "function slurm_spank_task_init");   
 
 	if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
 	{
@@ -367,7 +370,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 int slurm_spank_init (spank_t sp, int ac, char **av)
 {
-    verbose(sp, 2, "function slurm_spank_init");
+    plug_verbose(sp, 2, "function slurm_spank_init");
 
     if(spank_context() == S_CTX_SLURMD) {
         return slurm_spank_slurmd_init(sp, ac, av);
@@ -378,13 +381,16 @@ int slurm_spank_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 {
-    verbose(sp, 2, "function slurm_spank_slurmd_init");
+    plug_verbose(sp, 2, "function slurm_spank_slurmd_init");
     int r;
 
     if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
     {
+		// Printing job local information
+		print_general_info(sp);
+
         if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
-			verbose(sp, 0, "Error while reading configuration file %d", r);
+			plug_error("Error while reading configuration file %d", r);
             return r;
         }
 
@@ -396,7 +402,7 @@ int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 {
-	verbose(sp, 2, "function slurm_spank_slurmd_exit");
+	plug_verbose(sp, 2, "function slurm_spank_slurmd_exit");
 
 	if(spank_context() == S_CTX_SLURMD && daemon_pid > 0)
 	{

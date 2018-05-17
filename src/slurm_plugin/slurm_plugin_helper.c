@@ -43,8 +43,12 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>
 
-int auth_mode =  1;
-int verbosity = -1;
+char conf_path[PATH_MAX];
+char link_path[PATH_MAX];
+extern char buffer1[PATH_MAX];
+extern char buffer2[PATH_MAX];
+extern int auth_mode;
+extern int verbosity;
 
 /*
  *
@@ -109,27 +113,24 @@ char *strclean(char *string, char chr)
  */
 void printenv_remote(spank_t sp, char *name)
 {
-	char value[PATH_MAX];
-
 	if (name == NULL) {
 		return;
 	}
 	
-	if(getenv_remote(sp, name, value, PATH_MAX)) {
-		slurm_error("%s %s", name, value);
+	if(getenv_remote(sp, name, buffer1, PATH_MAX)) {
+		plug_error("%s %s", name, buffer1);
 	}
 }
 
 void appendenv(char *dst, char *src, int dst_capacity)
 {
-	static char buffer[PATH_MAX];
 	char *pointer;
 	int new_cap;
 	int len_src;
 	int len_dst;
 
 	if ((dst == NULL) || (src == NULL) || (strlen(src) == 0)) {
-		slurm_error("Something is null in appendenv");
+		plug_error("Something is null in appendenv");
 		return;
 	}
 
@@ -138,15 +139,15 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	new_cap = len_dst + len_src + (len_dst > 0) + 1;
 
 	if (new_cap > dst_capacity) {
-		slurm_error("Variable could not be appended, too many characters on %d");
+		plug_error("Variable could not be appended, too many characters on %d");
 		return;
 	}
 
 	if (len_dst > 0)
 	{
-		strcpy(buffer, dst);
+		strcpy(buffer2, dst);
 		pointer = &dst[len_src];
-		strcpy(&pointer[1], buffer);
+		strcpy(&pointer[1], buffer2);
 		strcpy(dst, src);
 		pointer[0] = ':';
 	} else {
@@ -161,7 +162,7 @@ int setenv_local(const char *name, const char *value, int replace)
 	}
 
     if (setenv (name, value, replace) == -1) {
-       	slurm_error("Error while setting envar %s (%s)", name, strerror(errno));
+       	plug_error("Error while setting envar %s (%s)", name, strerror(errno));
         return 0;
     }
 
@@ -264,14 +265,12 @@ int isenv_local(char *name, char *value)
 
 int isenv_remote(spank_t sp, char *name, char *value)
 {
-    char buffer[128];
-
     if (name == NULL || value == NULL) {
 		return 0;
 	}
 
-    if (getenv_remote(sp, name, buffer, 128)) {
-        return (strcmp(buffer, value) == 0);
+    if (getenv_remote(sp, name, buffer2, 128)) {
+        return (strcmp(buffer2, value) == 0);
     }
 
     return 0;
@@ -296,21 +295,21 @@ static void setenv_if_authorized(spank_t sp, const char *option, const char *val
 	}
 
 	if (r == 1) {
-		verbose(sp, 3, "exported '%s' = '%s'", option, value);
+		plug_verbose(sp, 3, "exported '%s' = '%s'", option, value);
 	}
 }
 
 int file_to_environment(spank_t sp, const char *path)
 {
-	verbose(sp, 2, "function file_to_environment");
+	plug_verbose(sp, 2, "function file_to_environment");
 
-    static char option[PATH_MAX];
     const char *value = NULL;
+	char *option = buffer2;
     FILE *file;
 
     if ((file = fopen(path, "r")) == NULL)
     {
-        slurm_error("Config file %s not found (%s)", path, strerror(errno));
+        plug_error("Config file %s not found (%s)", path, strerror(errno));
         return ESPANK_ERROR;
     }
 
@@ -339,17 +338,15 @@ int file_to_environment(spank_t sp, const char *path)
 
 int find_ear_conf_file(spank_t sp, int ac, char **av)
 {
-	verbose(sp, 2, "function find_ear_conf_file");
+	plug_verbose(sp, 2, "function find_ear_conf_file");
 
-	static char conf_path[PATH_MAX];
-	static char link_path[PATH_MAX];
 	int i;
 
     for (i = 0; i < ac; ++i)
     {
 		if ((strlen(av[i]) > 9) && (strncmp ("conf_dir=", av[i], 9) == 0))
         {
-			verbose(sp, 3, "looking for conf files in path '%s'", av[i]);
+			plug_verbose(sp, 3, "looking for conf files in path '%s'", av[i]);
 			
 			sprintf(link_path, "%s/%s", &av[i][9], EAR_LINK_FILE);
 			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
@@ -414,7 +411,7 @@ static int find_user_by_uint(char *string, unsigned int id)
 
 void find_ear_user_privileges(spank_t sp, int ac, char **av)
 {
-	verbose(sp, 2, "function find_ear_user_privileges");
+	plug_verbose(sp, 2, "function find_ear_user_privileges");
 	
 	int i, ruid, rgid, res = 0;
 	char *aid;
@@ -431,7 +428,7 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 			(strncmp ("auth_users=", av[i], 11) == 0) &&
 			(find_user_by_uint(&av[i][11], uid) ))
 		{
-			verbose(sp, 1, "authorized user found by UID");
+			plug_verbose(sp, 2, "authorized user found by UID");
 			auth_mode = 1;
 			return;
 		}
@@ -439,7 +436,7 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 			(strncmp ("auth_groups=", av[i], 12) == 0) &&
 			(find_user_by_uint(&av[i][12], gid) ))
 		{
-			verbose(sp, 1, "authorized user found by GID");
+			plug_verbose(sp, 2, "authorized user found by GID");
 			auth_mode = 1;
 			return;
 		}
@@ -447,7 +444,7 @@ void find_ear_user_privileges(spank_t sp, int ac, char **av)
 			(strncmp ("auth_accounts=", av[i], 14) == 0) &&
 			(find_user_by_string(&av[i][14], aid) ))
 		{
-			verbose(sp, 1, "authorized user found by SLURM account");
+			plug_verbose(sp, 2, "authorized user found by SLURM account");
 			auth_mode = 1;
 			return;
 		}

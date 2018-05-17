@@ -50,18 +50,22 @@ typedef struct ear_event{
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+
 #include <common/config.h>
 #include <common/types/log.h>
+#include <common/ear_verbose.h>
 
 #if DB_SQL
 #include <common/database/db_helper.h>
 #endif
-
 #define LOG_FILE 1
+
+const char *__NAME__ = "LOG";
 
 static int fd_log=-1;
 static char my_log_buffer[1024];
 static char log_name[128];
+
 void init_log()
 {
 #if LOG_FILE
@@ -76,10 +80,10 @@ void init_log()
 	my_mask=umask(0);	
 	gethostname(nodename, sizeof(nodename));
 	sprintf(log_name,"EAR.%s.log",nodename);
-	fprintf(stderr,"Creating %s log file\n",log_name);
+	VERBOSE_N(2, "creating %s log file", log_name);
 	fd_log=open(log_name,O_WRONLY|O_APPEND|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd_log<0){
-		fprintf(stderr,"EAR: Error creating EAR log file %s (%s)\n",log_name,strerror(errno));
+		VERBOSE_N(0, "ERROR while creating EAR log file %s (%s)", log_name, strerror(errno));
 	}
 	umask(my_mask);
     current_t=localtime(&curr_time);
