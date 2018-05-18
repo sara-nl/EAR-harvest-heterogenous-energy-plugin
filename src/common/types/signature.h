@@ -47,8 +47,6 @@ typedef struct signature
     double CPI;
     double Gflops;
     double time;
-    double max_DC_power;
-    double min_DC_power;
     ull FLOPS[FLOPS_EVENTS];
     ull L1_misses;
     ull L2_misses;
