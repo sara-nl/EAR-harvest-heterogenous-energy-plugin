@@ -87,6 +87,7 @@ int eards_connect()
 	struct daemon_req req;
 	int tries=0,connected=0;
 	int i;
+	int my_id;
 	if (app_connected) return EAR_SUCCESS;
 
 	// These files connect EAR with EAR_COMM
@@ -126,12 +127,13 @@ int eards_connect()
 	#else
 	req.req_data.req_value=getpid();
 	#endif
+	my_id=req.req_data.app.job.id*100+req.req_data.app.job.step_id;
 	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",req.req_data.app.job.id,req.req_data.app.job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);
 		sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
-		sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,i,getpid());
+		sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,i,my_id);
 
 		// Sometimes EARD needs some time to startm we will wait for the first one
 		if (i==0){
@@ -151,7 +153,7 @@ int eards_connect()
 			}
 
 			// ping pipe is used just for synchronization
-			sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,getpid());
+			sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,my_id);
 			ret=mknod(ear_ping,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH,0);
 
 			if (ret < 0) {
