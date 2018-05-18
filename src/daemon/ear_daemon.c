@@ -186,6 +186,7 @@ void connect_service(int req,job_t *new_job)
     // Creates 1 pipe (per node) to send acks.
     if (connect)
     {
+		VERBOSE_N(0,"Connected new job job_id=%d step_id=%d\n",new_job->id,new_job->step_id);
         sprintf(ear_commack, "%s/.ear_comm.ack_%d.%lu", ear_tmp, req, pid);
         application_id = pid;
 

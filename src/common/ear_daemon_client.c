@@ -117,12 +117,16 @@ int eards_connect()
 	userid=getenv("LOGNAME");
 	appid=getenv("SLURM_JOB_NAME");
 	if (jid!=NULL) req.req_data.app.job.id=atoi(jid);
+	else req.req_data.app.job.id=getppid();
 	if (sid!=NULL) req.req_data.app.job.step_id=atoi(sid);
+	else req.req_data.app.job.step_id=0;
 	if (userid!=NULL) strcpy(req.req_data.app.job.user_id,userid);
 	if (appid!=NULL) strcpy(req.req_data.app.job.app_id,appid);
+	else strcpy(req.req_data.app.job.app_id,"nose");
 	#else
 	req.req_data.req_value=getpid();
 	#endif
+	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",req.req_data.app.job.id,req.req_data.app.job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);
