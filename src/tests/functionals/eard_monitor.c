@@ -91,6 +91,10 @@ void main(int argc,char *argv[])
 	long long rapl_pack;
 	long long rapl_memory;
 	unsigned int sleep_time=5;
+	application_t  my_app;
+	
+	my_app.job.id=1;
+	my_app.job.step_id=0;
 
 	struct timeval begin_time, end_time;
 	fprintf(stderr, "ear_daemon_test usage: ear_daemon_test [nsteps, def=%d] \n",nsteps);
@@ -98,7 +102,7 @@ void main(int argc,char *argv[])
 		nsteps=atoi(argv[1]);
 	}
 	fprintf(stderr, "ear_daemon_test: Using %d steps every %d sec\n",nsteps,sleep_time);
-	eards_connect();
+	eards_connect(&my_app);
 	freq_events=eards_get_data_size_frequency();
 	uncore_events=eards_get_data_size_uncore();
 	rapl_events=eards_get_data_size_rapl();

@@ -43,8 +43,10 @@
 #include <common/ear_daemon_common.h>
 #include <common/ear_daemon_client.h>
 #include <common/types/generic.h>
+#include <common/types/application.h>
 #include <common/states.h>
 #include <common/config.h>
+
 
 #define MAX_TRIES 1
 
@@ -80,7 +82,7 @@ uint warning(int return_value, int expected, char *msg)
 	return (return_value!=expected);
 }
 
-int eards_connect()
+int eards_connect(application_t *my_app)
 {
 	char nodename[256];
 	ulong ret,ack;
@@ -113,10 +115,12 @@ int eards_connect()
 	}
 	#if !SHARED_MEMORY
 	req.req_data.req_value=getpid();
+	#else
+	copy_application(&req.req_data.app,my_app);
 	#endif
 	// We create a single ID 
-	my_id=create_ID(req.req_data.app.job.id,req.req_data.app.job.step_id);
-	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",req.req_data.app.job.id,req.req_data.app.job.step_id);
+	my_id=create_ID(my_app->job.id,my_app->job.step_id);
+	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);

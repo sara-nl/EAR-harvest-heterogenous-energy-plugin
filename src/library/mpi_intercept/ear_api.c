@@ -111,7 +111,7 @@ static void print_local_data()
 {
 	VERBOSE_N(1, "--------------------------------");
 	VERBOSE_N(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
-	VERBOSE_N(1, "Node/job id: '%s'/'%u'", application.node_id, application.job.id);
+	VERBOSE_N(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
 	VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
 	VERBOSE_N(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
 	VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.job.procs, num_nodes, ppnode);
@@ -165,12 +165,10 @@ static void get_job_identification()
 		my_job_id=atoi(job_id);
 		if (step_id != NULL) {
 			my_step_id=atoi(step_id);
-			my_job_id = my_job_id;
 		} else {
 			step_id = getenv("SLURM_STEPID");
 			if (step_id != NULL) {
 				my_step_id=atoi(step_id);
-				my_job_id = my_job_id;
 			} else {
 				VERBOSE_N(0, "Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using SLURM_JOB_ID");
 			}
@@ -256,7 +254,7 @@ void ear_init()
 	start_job(&application.job);
 
     VERBOSE_N(1, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
-    if (eards_connect() == EAR_SUCCESS) {
+    if (eards_connect(&application) == EAR_SUCCESS) {
         VERBOSE_N(1, "Rank %d connected with EARD", ear_my_rank);
     }
 	// Initializing sub systems
