@@ -47,7 +47,7 @@ void *eard_power_monitoring(void *frequency_monitoring);
 /**  It must be called when EARLib contacts with EARD 
 */
 
-void powermon_mpi_init(job_t *j);
+void powermon_mpi_init(application_t *j);
 
 /**  It must be called when EARLib disconnects from EARD 
 */
@@ -56,7 +56,7 @@ void powermon_mpi_finalize();
 /** It must be called at when job starts 
 */
 
-void powermon_new_job(job_t *j,uint from_mpi);
+void powermon_new_job(application_t *j,uint from_mpi);
 
 /** It must be called at when job ends
 */

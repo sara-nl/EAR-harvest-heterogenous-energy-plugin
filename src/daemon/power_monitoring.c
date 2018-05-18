@@ -102,11 +102,11 @@ void reset_current_app()
 *	BASIC FUNCTIONS
 *
 */
-void job_init_powermon_app(job_t *new_job,uint from_mpi)
+void job_init_powermon_app(application_t *new_app,uint from_mpi)
 {
 	energy_data_t c_energy;
 	current_ear_app.job_created=!from_mpi;
-	copy_job(&current_ear_app.app.job,new_job);	
+	copy_application(&current_ear_app.app,new_app);	
 	current_ear_app.app.power_sig.max_DC_power=0;
 	current_ear_app.app.power_sig.min_DC_power=DBL_MAX;
 	time(&current_ear_app.app.job.start_time);	
@@ -178,9 +178,9 @@ void report_powermon_app(powermon_app_t *app)
 // That functions controls the init/end of jobs
 static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
-void powermon_mpi_init(job_t * appID)
+void powermon_mpi_init(application_t * appID)
 {
-	VERBOSE_N(1,"powermon_mpi_init job_id %d step_id %d \n",appID->id,appID->step_id);
+	VERBOSE_N(1,"powermon_mpi_init job_id %d step_id %d \n",appID->job.id,appID->job.step_id);
 	// As special case, we will detect if not job init has been specified
 	if (!current_ear_app.job_created){	// If the job is nt submitted through slurm, new_job would not be submitted 
 		powermon_new_job(appID,1);
@@ -209,10 +209,10 @@ void powermon_mpi_finalize()
 
 /* This function is called by dynamic_configuration thread when a new_job command arrives */
 
-void powermon_new_job(job_t* appID,uint from_mpi)
+void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
-	VERBOSE_N(0,"powermon_new_job %d\n",appID);
+	VERBOSE_N(0,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
@@ -220,7 +220,7 @@ void powermon_new_job(job_t* appID,uint from_mpi)
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
 		// We must report the energy beforesetting the job_id: PENDING
-		new_job_for_period(&current_sample,appID->id,appID->step_id);
+		new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
     pthread_mutex_unlock(&app_lock);
 
 }
@@ -365,4 +365,5 @@ void powermon_mpi_signature(application_t *app)
 	current_ear_app.app.job.th=app->job.th;
 	current_ear_app.app.job.procs=app->job.procs;
 	strcpy(current_ear_app.app.job.policy,app->job.policy);
+	strcpy(current_ear_app.app.job.app_id,app->job.app_id);
 }

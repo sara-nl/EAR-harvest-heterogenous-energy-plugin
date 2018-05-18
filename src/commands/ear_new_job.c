@@ -17,7 +17,7 @@ void usage(char *app)
 void main(int argc,char *argv[])
 {
 	int eards,job_id;
-	job_t my_job;
+	application_t my_job;
 	char myhost[NAME_SIZE];
 	if (argc!=2) usage(argv[0]);
 	job_id=atoi(argv[1]);
@@ -31,8 +31,8 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Connection error\n");
 		exit(1);
 	}
-	my_job.id=job_id;
-	my_job.step_id=0;
+	my_job.job.id=job_id;
+	my_job.job.step_id=0;
 	eards_new_job(&my_job);
 	eards_remote_disconnect();
 }

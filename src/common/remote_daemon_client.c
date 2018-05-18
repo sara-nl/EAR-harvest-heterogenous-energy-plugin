@@ -117,12 +117,12 @@ int eards_remote_connect(char *nodename)
 
 }
 
-int eards_new_job(job_t *new_job)
+int eards_new_job(application_t *new_job)
 {
 	request_t command;
 	command.req=EAR_RC_NEW_JOB;
-	copy_job(&command.my_req.new_job,new_job);
-	VERBOSE_N(0,"command %u job_id %d\n",command.req,command.my_req.new_job.id);
+	copy_application(&command.my_req.new_job,new_job);
+	VERBOSE_N(0,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
 	return send_command(&command);
 }
 
