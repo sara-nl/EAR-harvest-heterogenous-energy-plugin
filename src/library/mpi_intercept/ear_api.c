@@ -87,10 +87,13 @@ static uint mpi_calls_per_loop;
 static uint ear_iterations;
 static uint ear_loop_size;
 static int in_loop;
+
+#define EAR_OVERHEAD_CONTROL 0
 #if EAR_OVERHEAD_CONTROL
 /* in us */
-#define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE	20000000
+#define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE	30000000
 #define MPI_CALLS_TO_CHECK_PERIODIC			1000
+#define PERIOD								20000000
 #define DYNAIS_ON 		0
 #define DYNAIS_OFF		1
 #define PERIODIC_MODE_ON	0
@@ -99,6 +102,7 @@ static int in_loop;
 uint ear_periodic_mode=PERIODIC_MODE_OFF;
 uint dynais_enabled=DYNAIS_ON;
 uint check_periodic_mode=1;
+uint mpi_calls_in_period=0;
 #endif
 
 //
@@ -357,8 +361,6 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 {
-	if (dynais_enabled)	ear_mpi_call_dynais_on(call_type,buf,dest);
-	else ear_mpi_call_dynais_off(call_type,buf,dest);
 
 #if EAR_OVERHEAD_CONTROL
 	switch(ear_periodic_mode){
