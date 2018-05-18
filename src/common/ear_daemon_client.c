@@ -111,23 +111,11 @@ int eards_connect()
 		ear_fd_req[i]=-1;
 		ear_fd_ack[i]=-1;
 	}
-	#if SHARED_MEMORY
-	char *jid,*sid,*userid,*appid;
-	jid=getenv("SLURM_JOB_ID");
-	sid=getenv("SLURM_STEP_ID");
-	userid=getenv("LOGNAME");
-	appid=getenv("SLURM_JOB_NAME");
-	if (jid!=NULL) req.req_data.app.job.id=atoi(jid);
-	else req.req_data.app.job.id=getppid();
-	if (sid!=NULL) req.req_data.app.job.step_id=atoi(sid);
-	else req.req_data.app.job.step_id=0;
-	if (userid!=NULL) strcpy(req.req_data.app.job.user_id,userid);
-	if (appid!=NULL) strcpy(req.req_data.app.job.app_id,appid);
-	else strcpy(req.req_data.app.job.app_id,"nose");
-	#else
+	#if !SHARED_MEMORY
 	req.req_data.req_value=getpid();
 	#endif
-	my_id=req.req_data.app.job.id*100+req.req_data.app.job.step_id;
+	// We create a single ID 
+	my_id=create_ID(req.req_data.app.job.id,req.req_data.app.job.step_id);
 	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",req.req_data.app.job.id,req.req_data.app.job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{

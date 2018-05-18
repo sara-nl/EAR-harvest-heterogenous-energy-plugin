@@ -53,6 +53,7 @@ int ear_use_turbo = USE_TURBO;
 int ear_whole_app;
 int ear_my_rank;
 int my_job_id;
+int my_step_id;
 
 // DynAIS
 uint loop_with_signature;

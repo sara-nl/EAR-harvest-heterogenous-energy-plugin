@@ -128,7 +128,7 @@ static int get_local_id(char *node_name)
 	int master = 1;
 
 	#if USE_LOCK_FILES
-	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), my_job_id);
+	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
 
 	if ((fd_master_lock = lock_master(fd_lock_filename)) < 0) {
 		master = 1;
@@ -157,21 +157,27 @@ static void get_job_identification()
 {
 	char *job_id  = getenv("SLURM_JOB_ID");
 	char *step_id = getenv("SLURM_STEP_ID");
+	char *account_id=getenv("SLURM_JOB_ACCOUNT");
+
+	// It is missing to use SLURM_JOB_ACCOUNT
 
 	if (job_id != NULL) {
 		my_job_id=atoi(job_id);
 		if (step_id != NULL) {
-			my_job_id = my_job_id * JOB_ID_OFFSET + atoi(step_id);
+			my_step_id=atoi(step_id);
+			my_job_id = my_job_id;
 		} else {
 			step_id = getenv("SLURM_STEPID");
 			if (step_id != NULL) {
-				my_job_id = my_job_id * JOB_ID_OFFSET + atoi(step_id);
+				my_step_id=atoi(step_id);
+				my_job_id = my_job_id;
 			} else {
 				VERBOSE_N(0, "Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using SLURM_JOB_ID");
 			}
 		}
 	} else {
 		my_job_id = getppid();
+		my_step_id=0;
 	}
 }
 
@@ -228,10 +234,6 @@ void ear_init()
 		return;
 	}
 
-    VERBOSE_N(1, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
-    if (eards_connect() == EAR_SUCCESS) {
-        VERBOSE_N(1, "Rank %d connected with EARD", ear_my_rank);
-    }
 
 	#if SHARED_MEMORY
 	system_conf = attach_ear_conf_shared_area(get_ear_tmp());
@@ -244,7 +246,19 @@ void ear_init()
 	loop_signature.is_mpi=1;
 	application.is_learning=ear_whole_app;
 	loop_signature.is_learning=ear_whole_app;
+	// Getting environment data
+	get_app_name(ear_app_name);
+	strcpy(application.job.user_id, getenv("LOGNAME"));
+	strcpy(application.node_id, node_name);
+	application.job.id = my_job_id;
+	application.job.step_id = my_step_id;
+	//sets the job start_time
+	start_job(&application.job);
 
+    VERBOSE_N(1, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
+    if (eards_connect() == EAR_SUCCESS) {
+        VERBOSE_N(1, "Rank %d connected with EARD", ear_my_rank);
+    }
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	metrics_init();
@@ -260,8 +274,6 @@ void ear_init()
 		}
 	}
 
-	// Getting environment data
-	get_app_name(ear_app_name);
 	ear_current_freq = frequency_get_num_pstates(0);
 
 	// Policies
@@ -269,20 +281,15 @@ void ear_init()
 	init_power_models(frequency_get_num_pstates(), frequency_get_freq_rank_list());
 
 	// Policy name is set in ear_models
-	strcpy(application.job.user_id, getenv("LOGNAME"));
 	strcpy(application.job.app_id, ear_app_name);
-	strcpy(application.node_id, node_name);
 
 	// Passing the frequency in KHz to MHz
-	application.job.id = my_job_id;
 	application.job.def_f = EAR_default_frequency;
 	application.job.procs = get_total_resources();
 	application.job.th = get_ear_power_policy_th();
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
-	//sets the job start_time
-	start_job(&application.job);
 
 	// States
 	states_begin_job(my_id, NULL, ear_app_name);

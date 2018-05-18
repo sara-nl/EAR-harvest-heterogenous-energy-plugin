@@ -160,7 +160,7 @@ void report_powermon_app(powermon_app_t *app)
 	}
 
 	// We can write here power information for this job
-#ifdef DB_FILES
+#if DB_FILES
 	report_application_data(&app->app);
 #endif
 #if DB_MYSQL
@@ -180,7 +180,7 @@ static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void powermon_mpi_init(job_t * appID)
 {
-	VERBOSE_N(1,"powermon_mpi_init %d\n",appID);
+	VERBOSE_N(1,"powermon_mpi_init job_id %d step_id %d \n",appID->id,appID->step_id);
 	// As special case, we will detect if not job init has been specified
 	if (!current_ear_app.job_created){	// If the job is nt submitted through slurm, new_job would not be submitted 
 		powermon_new_job(appID,1);
@@ -361,4 +361,8 @@ void *eard_power_monitoring(void *frequency_monitoring)
 void powermon_mpi_signature(application_t *app)
 {
 	copy_signature(&current_ear_app.app.signature,&app->signature);
+	current_ear_app.app.job.def_f=app->job.def_f;
+	current_ear_app.app.job.th=app->job.th;
+	current_ear_app.app.job.procs=app->job.procs;
+	strcpy(current_ear_app.app.job.policy,app->job.policy);
 }

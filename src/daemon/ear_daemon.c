@@ -169,7 +169,7 @@ void connect_service(int req,job_t *new_job)
     unsigned long ack;
     int connect=1;
     int alive;
-	int pid=new_job->id*100+new_job->step_id;
+	int pid=create_ID(new_job->id,new_job->step_id);
     // Let's check if there is another application
     VERBOSE_N(1, "request for connection at service %d", req);
     if (is_new_application(pid) || is_new_service(req, pid)) {
