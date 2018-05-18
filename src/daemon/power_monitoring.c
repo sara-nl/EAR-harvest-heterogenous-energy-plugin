@@ -75,41 +75,40 @@ static int fd_periodic=-1;
 
 typedef struct powermon_app{
 	application_t app;
-	ulong job_created;
+	uint job_created;
 	node_data_t DC_energy_init,DC_energy_end;
 }powermon_app_t;
 
 
 powermon_app_t current_ear_app;
+periodic_metric_t current_sample;
 
 #define max(X,Y) (((X) > (Y)) ? (X) : (Y))
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
-periodic_metric_t current_sample;
-
-void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
-{
-	bcopy(src,dest,sizeof(powermon_app_t));
-}
 
 
 void reset_current_app()
 {
+	memset(&current_ear_app,0,sizeof(application_t));
 	current_ear_app.app.job.id=-1;
 	current_ear_app.job_created=0;
 }
 
-void mpi_init_powermon_app()
-{
-	start_mpi(&current_ear_app.app.job);
-	
-}
+
+
+/*
+*
+*
+*	BASIC FUNCTIONS
+*
+*/
 void job_init_powermon_app(job_t *new_job,uint from_mpi)
 {
 	energy_data_t c_energy;
 	current_ear_app.job_created=!from_mpi;
 	copy_job(&current_ear_app.app.job,new_job);	
-	current_ear_app.app.signature.max_DC_power=0;
-	current_ear_app.app.signature.min_DC_power=DBL_MAX;
+	current_ear_app.app.power_sig.max_DC_power=0;
+	current_ear_app.app.power_sig.min_DC_power=DBL_MAX;
 	time(&current_ear_app.app.job.start_time);	
 	current_ear_app.app.job.start_mpi_time=0;
 	current_ear_app.app.job.end_mpi_time=0;
@@ -122,11 +121,6 @@ void job_init_powermon_app(job_t *new_job,uint from_mpi)
 	current_ear_app.DC_energy_init=c_energy.DC_node_energy;	
 }
 
-void mpi_finalize_powermon_app()
-{
-	end_mpi(&current_ear_app.app.job);
-	
-}
 
 void job_end_powermon_app()
 {
@@ -166,10 +160,21 @@ void report_powermon_app(powermon_app_t *app)
 	}
 
 	// We can write here power information for this job
+#ifdef DB_FILES
 	report_application_data(&app->app);
+#endif
+#if DB_MYSQL
+    if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
+#endif
 	
 }
 
+/*
+*
+*
+*	MPI PART
+*
+*/
 // That functions controls the init/end of jobs
 static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -181,17 +186,28 @@ void powermon_mpi_init(job_t * appID)
 		powermon_new_job(appID,1);
 	}
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
-	mpi_init_powermon_app();
+	start_mpi(&current_ear_app.app.job);
 }
 
 void powermon_mpi_finalize()
 {
 	VERBOSE_N(0,"powermon_mpi_finalize %d[%d]\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
-	mpi_finalize_powermon_app();
+	end_mpi(&current_ear_app.app.job);
 	if (!current_ear_app.job_created){  // If the job is not submitted through slurm, end_job would not be submitted 
 		powermon_end_job(current_ear_app.app.job.id,current_ear_app.app.job.step_id);
 	}
 }
+
+/*
+*
+*
+*   JOB PART
+*
+*
+/
+
+
+/* This function is called by dynamic_configuration thread when a new_job command arrives */
 
 void powermon_new_job(job_t* appID,uint from_mpi)
 {
@@ -200,7 +216,6 @@ void powermon_new_job(job_t* appID,uint from_mpi)
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
-
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
@@ -209,6 +224,7 @@ void powermon_new_job(job_t* appID,uint from_mpi)
     pthread_mutex_unlock(&app_lock);
 
 }
+/* This function is called by dynamic_configuration thread when a end_job command arrives */
 
 void powermon_end_job(job_id jid,job_id sid)
 {
@@ -225,7 +241,7 @@ void powermon_end_job(job_id jid,job_id sid)
         idleNode=1;
         job_end_powermon_app();
 		// After that function, the avg power is computed
-        copy_powermon_app(&summary,&current_ear_app);
+		bcopy(&current_ear_app,&summary,sizeof(powermon_app_t));
         current_ear_app.app.job.id=-1;
 		current_ear_app.job_created=0;
 		// we must report the current period for that job before the reset:PENDING
@@ -344,8 +360,5 @@ void *eard_power_monitoring(void *frequency_monitoring)
 }
 void powermon_mpi_signature(application_t *app)
 {
-// Esto no hay que hacerlo aqui, hay que copiarlo en la app y reportarlo alli
-#if DB_MYSQL
-	if (!db_insert_application(app)) DEBUG_F(1, "Application signature correctly written");
-#endif
+	copy_signature(&current_ear_app.app.signature,&app->signature);
 }

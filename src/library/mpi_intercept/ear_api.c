@@ -87,6 +87,19 @@ static uint mpi_calls_per_loop;
 static uint ear_iterations;
 static uint ear_loop_size;
 static int in_loop;
+#if EAR_OVERHEAD_CONTROL
+/* in us */
+#define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE	20000000
+#define MPI_CALLS_TO_CHECK_PERIODIC			1000
+#define DYNAIS_ON 		0
+#define DYNAIS_OFF		1
+#define PERIODIC_MODE_ON	0
+#define PERIODIC_MODE_OFF	1
+// These variables are shared
+uint ear_periodic_mode=PERIODIC_MODE_OFF;
+uint dynais_enabled=DYNAIS_ON;
+uint check_periodic_mode=1;
+#endif
 
 //
 static void print_local_data()
@@ -263,6 +276,8 @@ void ear_init()
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
+	//sets the job start_time
+	start_job(&application.job);
 
 	// States
 	states_begin_job(my_id, NULL, ear_app_name);
@@ -337,7 +352,50 @@ void ear_finalize()
 	eards_disconnect();
 }
 
+void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest);
+void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
+
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
+{
+	if (dynais_enabled)	ear_mpi_call_dynais_on(call_type,buf,dest);
+	else ear_mpi_call_dynais_off(call_type,buf,dest);
+
+#if EAR_OVERHEAD_CONTROL
+	switch(ear_periodic_mode){
+		case PERIODIC_MODE_OFF:
+			switch(dynais_enabled){
+				case DYNAIS_ON:
+					/** We must control here we are not consuming too much time tryng to detect a signature */
+					/*
+					if some signature has been detected --> nothing to check
+					else if num_mpis % MAX_TO_CHECK{ compute time, if time > MAX-TIME --> set periodic mode on
+					*/
+					if (!check_periodic_mode){  // check_periodic_mode=0 the first time a signature is computed
+						ear_mpi_call_dynais_on(call_type,buf,dest);
+					}else{
+						// Check here if we must move to p
+					}
+					break;
+				case DYNAIS_OFF:
+					/** That case means we have computed some signature and we have decided to set dynais disabled */
+					ear_mpi_call_dynais_off(call_type,buf,dest);
+			}
+			break;
+		case PERIODIC_MODE_ON:
+				/* first time compute number of mpicalls to be considered based on total mpi calls and time
+				call first iteration
+				after N mpi calls call new_periodic_iteration, never return to non-periodic mode
+				*/
+	}
+#else
+    if (dynais_enabled) ear_mpi_call_dynais_on(call_type,buf,dest);
+    else ear_mpi_call_dynais_off(call_type,buf,dest);
+#endif
+}
+
+
+
+void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 {
 	unsigned int ear_status;
 	int ret;
@@ -356,7 +414,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		unsigned int ear_level;
 		unsigned long trace_data[5];
 
-		ear_debug(3,"EAR(%s) EAR executing before an MPI Call\n",__FILE__);
+		ear_debug(3,"EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) PAPI_get_real_usec(),
@@ -373,15 +431,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		#endif
 
 		// This is key to detect periods
-		if (dynais_enabled){
-			ear_status=dynais(ear_event,&ear_size,&ear_level);
-		}else{
-			if (last_calls_in_loop==mpi_calls_per_loop){
-				ear_status=NEW_ITERATION;
-			}else{
-				ear_status=IN_LOOP;
-			}
-		}
+		ear_status=dynais(ear_event,&ear_size,&ear_level);
 
 		#if MEASURE_DYNAIS_OV
 		end_ov=PAPI_get_real_usec();
@@ -441,5 +491,96 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 				break;
 		}
 	} //ear_whole_app
+}
+
+void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
+{
+	unsigned int ear_status;
+	int ret;
+	char men[128];
+
+	if (my_id) {
+		return;
+	}
+
+	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
+	if (!ear_whole_app)
+	{
+		// Create the event for DynAIS: we will report anyway
+		unsigned long ear_event = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
+		unsigned int ear_size;
+		unsigned int ear_level;
+		unsigned long trace_data[5];
+
+		ear_debug(3,"EAR(%s) EAR executing before an MPI Call: DYNAIS ON \n",__FILE__);
+
+		traces_mpi_call(ear_my_rank, my_id,
+						(unsigned long) PAPI_get_real_usec(),
+						(unsigned long) buf,
+						(unsigned long) dest,
+						(unsigned long) call_type,
+						(unsigned long) ear_event);
+
+		mpi_calls_per_loop++;
+
+		if (last_calls_in_loop==mpi_calls_per_loop){
+				ear_status=NEW_ITERATION;
+		}else{
+				ear_status=IN_LOOP;
+		}
+
+
+		switch (ear_status)
+		{
+			case NO_LOOP:
+			case IN_LOOP:
+				break;
+			case NEW_LOOP:
+				ear_debug(4,"NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
+				ear_iterations=0;
+				states_begin_period(my_id, NULL, ear_event, ear_size);
+				ear_loop_size=ear_size;
+				in_loop=1;
+				mpi_calls_per_loop=1;
+				break;
+			case END_NEW_LOOP:
+				ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
+				if (loop_with_signature) VERBOSE_N(1, "loop ends with %d iterations detected", ear_iterations);
+
+				loop_with_signature=0;
+				traces_end_period(ear_my_rank, my_id);
+				states_end_period(ear_iterations);
+				ear_iterations=0;
+				mpi_calls_per_loop=1;
+				ear_loop_size=ear_size;
+				states_begin_period(my_id, NULL, ear_event, ear_size);
+				break;
+			case NEW_ITERATION:
+				ear_iterations++;
+
+				if (loop_with_signature)
+				{
+					VERBOSE_N(4,"new iteration detected for level %u, event %u, size %u and iterations %u",
+							  ear_level, ear_event, ear_loop_size, ear_iterations);
+				}
+
+				traces_new_n_iter(ear_my_rank, my_id, ear_event, ear_loop_size, ear_iterations);
+				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event, mpi_calls_per_loop);
+				mpi_calls_per_loop=1;
+				break;
+			case END_LOOP:
+				ear_debug(4,"END_LOOP event %u\n",ear_event);
+				if (loop_with_signature) VERBOSE_N(1, "loop ends with %d iterations detected", ear_iterations);
+				loop_with_signature=0;
+				states_end_period(ear_iterations);
+				traces_end_period(ear_my_rank, my_id);
+				ear_iterations=0;
+				in_loop=0;
+				mpi_calls_per_loop=0;
+				break;
+            default:
+                break;
+        }
+    } //ear_whole_app
 }
 

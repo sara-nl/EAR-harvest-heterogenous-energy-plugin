@@ -40,10 +40,19 @@ void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs)
     job->th = th;
     job->procs = procs;
 }
+void start_job(job_t *job)
+{
+   
+    time(&job->start_time);
+}
+
+void end_job(job_t *job)
+{
+    time(&job->end_time);
+}
 
 void start_mpi(job_t *job)
 {
-	
     time(&job->start_mpi_time);
 }
 

@@ -49,73 +49,28 @@
 #include <common/config.h>
 #include <common/math_operations.h>
 
-static const char *__NAME__ = "STATES";
+static const char *__NAME__ = "STATES_PERIODIC";
 
 // static defines
 #define NO_PERIOD				0
 #define FIRST_ITERATION			1
 #define EVALUATING_SIGNATURE	2
-#define SIGNATURE_STABLE		3
-#define PROJECTION_ERROR		4
-#define RECOMPUTING_N			5
-#define SIGNATURE_HAS_CHANGED	6
 
 static application_t last_signature;
-static projection_t *PP;
 
-static long long comp_N_begin, comp_N_end, comp_N_time;
-static uint begin_iter, N_iter;
 static ulong policy_freq;
-static uint tries_current_loop=0;
 
 static ulong perf_accuracy_min_time = 1000000;
 static uint perf_count_period = 100,loop_perf_count_period;
-static uint EAR_STATE = NO_PERIOD;
-static int current_loop_id;
-
-#define DYNAIS_CUTOFF	1
 
 
-#if EAR_OVERHEAD_CONTROL
-extern uint check_periodic_mode;
-#endif
 
 
-void states_end_job(int my_id, FILE *ear_fd, char *app_name)
+int states_compute_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
-	ear_verbose(1, "EAR(%s) Ends execution. \n", app_name);
-	end_log();
-}
 
-void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
-{
-	char *verbose, *loop_time, *who;
-	ulong	architecture_min_perf_accuracy_time;
-
-	init_application(&last_signature);
-	if (my_id) return;
-
-	perf_accuracy_min_time = get_ear_performance_accuracy();
-	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
-	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
-	
-	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
-	init_log();
-}
-
-int states_my_state()
-{
-	return EAR_STATE;
-}
-
-void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
-{
-	ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %lu size %u_____BEGIN_____\n",
-					ear_app_name, event, size);
-
 	EAR_STATE = FIRST_ITERATION;
-	tries_current_loop=0;
 
 	policy_new_loop();
 	comp_N_begin = metrics_time();
@@ -290,9 +245,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					//print_loop_signature("signature computed", &loop_signature.signature);
 
 					loop_with_signature = 1;
-					#if EAR_OVERHEAD_CONTROL
-					check_periodic_mode=0;
-					#endif
 
 					// Computing dynais overhead
 					// Change dynais_enabled to ear_tracing_status=DYNAIS_ON/DYNAIS_OFF
