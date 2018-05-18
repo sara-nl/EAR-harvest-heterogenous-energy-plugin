@@ -102,8 +102,12 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     
     MYSQL_BIND bind[5];
     memset(bind, 0, sizeof(bind));
-
+    
     mysql_insert_job(connection, &app->job, is_learning);
+
+    //integer types
+    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = bind[4].buffer_type = MYSQL_TYPE_LONG;
+    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].is_unsigned = bind[4].is_unsigned = 1;
 
     int sig_id = NULL;
     if (is_mpi)
@@ -112,6 +116,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     }
     else 
     {
+        bind[3].buffer_type = MYSQL_TYPE_NULL;
         bind[3].is_null = (my_bool*) 1;
     }
     int pow_sig_id = NULL;
@@ -119,11 +124,9 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     pow_sig_id = mysql_insert_power_signature(connection, &app->power_sig);
 #else
     bind[4].is_null = (my_bool*)1;
+    bind[4].buffer_type = MYSQL_TYPE_NULL;
 #endif
 
-    //integer types
-    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = bind[4].buffer_type = MYSQL_TYPE_LONG;
-    bind[0].is_unsigned = bind[1].is_unsigned = bind[3].is_unsigned = bind[4].is_unsigned = 1;
 
     //string types
     bind[2].buffer_type = MYSQL_TYPE_VARCHAR;
@@ -132,14 +135,14 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     //storage variable assignation
     bind[0].buffer = (char *)&app->job.id;
     bind[1].buffer = (char *)&app->job.step_id;
-    bind[2].buffer = (char *)&app->node_id;
     bind[3].buffer = (char *)&sig_id;
+    bind[2].buffer = (char *)&app->node_id;
     bind[4].buffer = (char *)&pow_sig_id;
+
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
     if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
-
 
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
