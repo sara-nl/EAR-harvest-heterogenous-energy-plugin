@@ -103,6 +103,7 @@ uint ear_periodic_mode=PERIODIC_MODE_OFF;
 uint dynais_enabled=DYNAIS_ON;
 uint check_periodic_mode=1;
 uint mpi_calls_in_period=0;
+uint total_mpi_calls=0;
 #endif
 
 //
@@ -218,6 +219,7 @@ void ear_init()
 	num_nodes = get_ear_num_nodes();
 	ppnode = my_size / num_nodes;
 
+	get_job_identification();
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
 
@@ -259,7 +261,6 @@ void ear_init()
 	}
 
 	// Getting environment data
-	get_job_identification();
 	get_app_name(ear_app_name);
 	ear_current_freq = frequency_get_num_pstates(0);
 
@@ -361,8 +362,25 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 {
-
 #if EAR_OVERHEAD_CONTROL
+	total_mpi_calls++;
+	// Just for debuggin, remove later
+	if ((total_mpi_calls%MPI_CALLS_TO_CHECK_PERIODIC)==0){
+		switch ear_periodic_mode){
+			case PERIODIC_MODE_OFF:
+				switch(dynais_enabled){
+                case DYNAIS_ON:
+					VERBOSE_N(0,"EAR overhead control: periodic mode OFF. DynAIS ON\n");
+					break;
+				case DYNAIS_OFF:
+					VERBOSE_N(0,"EAR overhead control: periodic mode OFF. DynAIS OFF\n");
+				}
+				break;
+			case PERIODIC_MODE_ON:
+					VERBOSE_N(0,"EAR overhead control: periodic mode ON\n");
+		}
+	}
+
 	switch(ear_periodic_mode){
 		case PERIODIC_MODE_OFF:
 			switch(dynais_enabled){
