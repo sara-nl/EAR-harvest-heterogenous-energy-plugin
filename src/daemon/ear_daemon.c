@@ -599,17 +599,17 @@ int eard_freq(int must_read)
 			connect_service(freq_req,&req.req_data.app.job);
 			#else
 			connect_service(freq_req,req.req_data.req_value);
-			#endif
 			frequency_save_previous_frequency();
 			frequency_save_previous_policy();
 			frequency_set_userspace_governor_all_cpus();
+			#endif
 			break;
 		case SET_FREQ:
 			ear_debug(1,"eard: Setting node frequency\n");
 #if SHARED_MEMORY
-	eard_set_freq(req.req_data.req_value,min(eard_max_freq,max_dyn_freq()));
+			eard_set_freq(req.req_data.req_value,min(eard_max_freq,max_dyn_freq()));
 #else
-	eard_set_freq(req.req_data.req_value,eard_max_freq);
+			eard_set_freq(req.req_data.req_value,eard_max_freq);
 #endif	
 			break;
 		case START_GET_FREQ:
@@ -630,8 +630,10 @@ int eard_freq(int must_read)
 			ear_debug(1,"eard: Closing comunication\n");
 			// HIGHLIGHT: LIBRARY DISPOSE (1/2)
 			eard_close_comm();
+			#if !SHARED_MEMORY
 			frequency_recover_previous_policy();
 			frequency_recover_previous_frequency();
+			#endif
 			break;
 		case DATA_SIZE_FREQ:
 			ack=sizeof(unsigned long);

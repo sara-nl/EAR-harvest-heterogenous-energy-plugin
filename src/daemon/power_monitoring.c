@@ -197,6 +197,10 @@ void powermon_new_job(job_t* appID,uint from_mpi)
 {
     // New application connected
 	VERBOSE_N(0,"powermon_new_job %d\n",appID);
+	frequency_save_previous_frequency();
+	frequency_save_previous_policy();
+	frequency_set_userspace_governor_all_cpus();
+
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
@@ -228,6 +232,9 @@ void powermon_end_job(job_id jid,job_id sid)
 		end_job_for_period(&current_sample);
     pthread_mutex_unlock(&app_lock);
     report_powermon_app(&summary);
+    frequency_recover_previous_policy();
+    frequency_recover_previous_frequency();
+
 }
 
 
@@ -249,6 +256,8 @@ void update_historic_info(power_data_t *my_current_power)
 	current_sample.DC_energy=my_current_power->avg_dc*(ulong)difftime(my_current_power->end,my_current_power->begin);
 
 #if DB_MYSQL
+	/* current sample reports the value of job_id and step_id active at this moment */
+	/* If we want to be strict, we must report intermediate samples at job start and job end */
     if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
 #endif
 
