@@ -14,13 +14,14 @@ void usage(char *app)
 	exit(1);
 }
 
+#define ID_SIZE 64
+
 void main(int argc,char *argv[])
 {
-	int eards,job_id;
+	int eards;
 	application_t my_job;
+	char *id,*sid,*myth,*myuser,*myname,*myacc,*mypolicy;
 	char myhost[NAME_SIZE];
-	if (argc!=2) usage(argv[0]);
-	job_id=atoi(argv[1]);
 	// NEW_JOB
 	if (gethostname(myhost,NAME_SIZE)<0){
 		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
@@ -31,8 +32,36 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Connection error\n");
 		exit(1);
 	}
-	my_job.job.id=job_id;
-	my_job.job.step_id=0;
+	id=getenv("SLURM_JOB_ID");
+	sid=getenv("SLURM_STEP_ID");
+	if ((id==NULL) || (sid==NULL)){
+		fprintf(stderr,"ear_new_job error: job id or step id have null values\n");
+		exit(1);
+	}
+	my_job.job.id=atoi(id);
+	my_job.job.step_id=atoi(sid);
+
+	myuser=getenv("LOGNAME");
+	myname=getenv("SLURM_JOB_NAME");
+	myacc=getenv("SLURM_JOB_ACCOUNT");
+	mypolicy=getenv("EAR_POWER_POLICY");
+	myth=getenv("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
+
+	if (myuser==NULL) 	strcpy(my_job.job.user_id,"");
+	else				strcpy(my_job.job.user_id,myuser);
+
+	if (myname==NULL) 	strcpy(my_job.job.app_id,"");
+	else 				strcpy(my_job.job.app_id,myname);
+
+	//if (myacc==NULL) 	strcpy(my_job.job.account,"");
+	//else 				strcpy(my_job.job.account,myacc);
+
+	if (mypolicy==NULL)	strcpy(my_job.job.policy,"");
+	else 				strcpy(my_job.job.policy,mypolicy);
+
+	if (myth==NULL) my_job.job.th=0;
+	else my_job.job.th=my_job.job.th=strtod(myth,NULL);
+
 	eards_new_job(&my_job);
 	eards_remote_disconnect();
 }
