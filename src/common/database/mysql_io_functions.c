@@ -45,8 +45,8 @@
 
 
 #define JOB_QUERY               "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
-                                "end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES" \
-                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                "end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
+                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 #define SIGNATURE_QUERY         "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
                                 "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
@@ -74,8 +74,8 @@
                                     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 #define LEARNING_JOB_QUERY          "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, "\
-                                    "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f) VALUES" \
-                                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                    "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
+                                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
@@ -402,7 +402,7 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
         if (mysql_stmt_prepare(statement, LEARNING_JOB_QUERY, strlen(JOB_QUERY))) return mysql_statement_error(statement);
     }
 
-    MYSQL_BIND bind[13];
+    MYSQL_BIND bind[14];
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -411,10 +411,13 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
     bind[0].is_unsigned = bind[10].is_unsigned = 1;
 
     //string types
-    bind[2].buffer_type = bind[3].buffer_type = bind[8].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[2].buffer_type = bind[3].buffer_type = bind[8].buffer_type = 
+    bind[13].buffer_type = MYSQL_TYPE_VARCHAR;
+
     bind[2].buffer_length = strlen(job->user_id);
     bind[3].buffer_length = strlen(job->app_id);
     bind[8].buffer_length = strlen(job->policy);
+    bind[13].buffer_length = strlen(job->user_acc);
 
     //double types
     bind[9].buffer_type = MYSQL_TYPE_DOUBLE;
@@ -433,6 +436,7 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
     bind[10].buffer = (char *)&job->procs;
     bind[11].buffer = (char *)&job->type;
     bind[12].buffer = (char *)&job->def_f;
+    bind[13].buffer = (char *)&job->user_acc;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
