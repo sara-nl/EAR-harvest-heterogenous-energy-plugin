@@ -76,7 +76,7 @@ static int fd_periodic=-1;
 typedef struct powermon_app{
 	application_t app;
 	uint job_created;
-	node_data_t DC_energy_init,DC_energy_end;
+	energy_data_t energy_init;
 }powermon_app_t;
 
 
@@ -108,7 +108,7 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	current_ear_app.job_created=!from_mpi;
 	copy_application(&current_ear_app.app,new_app);	
 	current_ear_app.app.power_sig.max_DC_power=0;
-	current_ear_app.app.power_sig.min_DC_power=DBL_MAX;
+	current_ear_app.app.power_sig.min_DC_power=500;
 	time(&current_ear_app.app.job.start_time);	
 	current_ear_app.app.job.start_mpi_time=0;
 	current_ear_app.app.job.end_mpi_time=0;
@@ -118,7 +118,7 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	init_power_signature(&current_ear_app.app.power_sig);
 	// Initialize energy
 	read_enegy_data(&c_energy);
-	current_ear_app.DC_energy_init=c_energy.DC_node_energy;	
+	copy_energy_data(&current_ear_app.energy_init,&c_energy);
 }
 
 
@@ -126,15 +126,20 @@ void job_end_powermon_app()
 {
 	energy_data_t c_energy;
 	node_data_t app_total;
+	power_data_t app_power;
 	double exec_time;
 	time(&current_ear_app.app.job.end_time);
 	// Get the energy
 	read_enegy_data(&c_energy);
-	current_ear_app.DC_energy_end=c_energy.DC_node_energy;
-	// Compute the avg power	
-	app_total=diff_node_energy(current_ear_app.DC_energy_end,current_ear_app.DC_energy_init);	
-	exec_time=difftime(current_ear_app.app.job.end_time,current_ear_app.app.job.start_time);
-	current_ear_app.app.power_sig.DC_power=(double)app_total/(exec_time*1000);	
+	compute_power(&current_ear_app.energy_init,&c_energy,&app_power);
+	
+    current_ear_app.app.power_sig.DC_power=app_power.avg_dc;
+    current_ear_app.app.power_sig.DRAM_power=app_power.avg_dram[0]+app_power.avg_dram[1];
+    current_ear_app.app.power_sig.PCK_power=app_power.avg_cpu[0]+app_power.avg_cpu[1];
+    current_ear_app.app.power_sig.time=difftime(app_power.end,app_power.begin);
+
+	// nominal, avgf, edp is still pending
+
 	// Metrics are not reported in this function
 }
 
@@ -146,7 +151,7 @@ void report_powermon_app(powermon_app_t *app)
     char jbegin[64],jend[64],mpibegin[64],mpiend[64];
 
 	// This function will report values to EAR_DB
-
+	#if 0
     // We format the end time into localtime and string
     current_t=localtime(&(app->app.job.start_time));
     strftime(jbegin, sizeof(jbegin), "%c", current_t);
@@ -158,11 +163,10 @@ void report_powermon_app(powermon_app_t *app)
     	current_t=localtime(&(app->app.job.end_mpi_time));
     	strftime(mpiend, sizeof(mpiend), "%c", current_t);
 	}
+	#endif
 
 	// We can write here power information for this job
-#if DB_FILES
 	report_application_data(&app->app);
-#endif
 #if DB_MYSQL
     if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
 #endif
@@ -264,7 +268,10 @@ void update_historic_info(power_data_t *my_current_power)
 	}
 	pthread_mutex_unlock(&app_lock);
 		
-	if (current_ear_app.app.job.id!=-1)	printf("Application id %d[%d]: ",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
+	if (current_ear_app.app.job.id!=-1){	
+		printf("Application id %d[%d]: ",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
+		printf("	max_power %lf min_power %lf\n",current_ear_app.app.power_sig.max_DC_power,current_ear_app.app.power_sig.min_DC_power);
+	}
     report_periodic_power(fd_periodic, my_current_power);
 
 	current_sample.start_time=my_current_power->begin;

@@ -61,7 +61,9 @@ void main(int argc,char *argv[])
 
 	if (myth==NULL) my_job.job.th=0;
 	else my_job.job.th=my_job.job.th=strtod(myth,NULL);
+	fprintf(stdout,"ear_new_job: id %d step_id %d appname %s user %s policy %s th %lf\n",
+	my_job.job.id,my_job.job.step_id,my_job.job.app_id,my_job.job.user_id,my_job.job.policy,my_job.job.th);
 
-	eards_new_job(&my_job);
+	if (!eards_new_job(&my_job)) fprintf(stderr,"ear_new_job error sending new_job command\n");
 	eards_remote_disconnect();
 }

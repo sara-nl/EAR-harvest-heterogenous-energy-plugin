@@ -88,20 +88,17 @@ static uint ear_iterations;
 static uint ear_loop_size;
 static int in_loop;
 
-#define EAR_OVERHEAD_CONTROL 0
 #if EAR_OVERHEAD_CONTROL
 /* in us */
-#define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE	30000000
+#define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE	30
 #define MPI_CALLS_TO_CHECK_PERIODIC			1000
-#define PERIOD								20000000
-#define DYNAIS_ON 		0
-#define DYNAIS_OFF		1
+#define PERIOD								30
+#define DYNAIS_ON 		1
+#define DYNAIS_OFF		0
 #define PERIODIC_MODE_ON	0
 #define PERIODIC_MODE_OFF	1
 // These variables are shared
 uint ear_periodic_mode=PERIODIC_MODE_OFF;
-uint dynais_enabled=DYNAIS_ON;
-uint check_periodic_mode=1;
 uint mpi_calls_in_period=0;
 uint total_mpi_calls=0;
 #endif
@@ -282,7 +279,7 @@ void ear_init()
 	strcpy(application.job.app_id, ear_app_name);
 
 	// Passing the frequency in KHz to MHz
-	application.job.def_f = EAR_default_frequency;
+	application.signature.def_f=application.job.def_f = EAR_default_frequency;
 	application.job.procs = get_total_resources();
 	application.job.th = get_ear_power_policy_th();
 
@@ -368,23 +365,12 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 {
 #if EAR_OVERHEAD_CONTROL
+	time_t curr_time;
+	double time_from_mpi_init;
+	
+	if (my_id) return;
+	
 	total_mpi_calls++;
-	// Just for debuggin, remove later
-	if ((total_mpi_calls%MPI_CALLS_TO_CHECK_PERIODIC)==0){
-		switch ear_periodic_mode){
-			case PERIODIC_MODE_OFF:
-				switch(dynais_enabled){
-                case DYNAIS_ON:
-					VERBOSE_N(0,"EAR overhead control: periodic mode OFF. DynAIS ON\n");
-					break;
-				case DYNAIS_OFF:
-					VERBOSE_N(0,"EAR overhead control: periodic mode OFF. DynAIS OFF\n");
-				}
-				break;
-			case PERIODIC_MODE_ON:
-					VERBOSE_N(0,"EAR overhead control: periodic mode ON\n");
-		}
-	}
 
 	switch(ear_periodic_mode){
 		case PERIODIC_MODE_OFF:
@@ -393,12 +379,29 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 					/** We must control here we are not consuming too much time tryng to detect a signature */
 					/*
 					if some signature has been detected --> nothing to check
-					else if num_mpis % MAX_TO_CHECK{ compute time, if time > MAX-TIME --> set periodic mode on
+					else if num_mpis % MAX_TO_CHECK compute time, if time > MAX-TIME --> set periodic mode on
 					*/
-					if (!check_periodic_mode){  // check_periodic_mode=0 the first time a signature is computed
+					if (check_periodic_mode==0){  // check_periodic_mode=0 the first time a signature is computed
 						ear_mpi_call_dynais_on(call_type,buf,dest);
-					}else{
+					}else{ // Check every N=MPI_CALLS_TO_CHECK_PERIODIC mpi calls
 						// Check here if we must move to p
+						if ((total_mpi_calls%MPI_CALLS_TO_CHECK_PERIODIC)==0){
+							VERBOSE_N(0,"No signature computed after %d mpi calls, checking periodic mode\n",total_mpi_calls);
+							time(&curr_time);
+							time_from_mpi_init=difftime(curr_time,application.job.start_time);
+							if (time_from_mpi_init >=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE){
+								VERBOSE_N(0,"Going to periodic mode %lf\n",time_from_mpi_init);
+								// we must compute N here
+								ear_periodic_mode=PERIODIC_MODE_ON;
+								mpi_calls_in_period=(uint)(total_mpi_calls/MAX_TIME_DYNAIS_WITHOUT_SIGNATURE)*PERIOD;
+								VERBOSE_N(0,"PERIOD=%u mpi calls\n",mpi_calls_in_period);
+							}else{
+								VERBOSE_N(0,"Go on with dynais time=%lf seconds\n",time_from_mpi_init);
+								ear_mpi_call_dynais_on(call_type,buf,dest);	
+							}
+						}else{	// We check the periodic mode every MPI_CALLS_TO_CHECK_PERIODIC mpi calls
+							ear_mpi_call_dynais_on(call_type,buf,dest);
+						}
 					}
 					break;
 				case DYNAIS_OFF:
@@ -411,6 +414,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 				call first iteration
 				after N mpi calls call new_periodic_iteration, never return to non-periodic mode
 				*/
+				if ((total_mpi_calls%mpi_calls_in_period)==0){
+					VERBOSE_N(0,"NEW EAR MODE : PERIODIC \n");
+				}
 	}
 #else
     if (dynais_enabled) ear_mpi_call_dynais_on(call_type,buf,dest);

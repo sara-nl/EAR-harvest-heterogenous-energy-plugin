@@ -70,7 +70,7 @@ int send_command(request_t *command)
 	return (ret==sizeof(ulong)); // Should we return ack ?
 }
 
-// based on getaddrinfo  mas page
+// based on getaddrinfo  man page
 int eards_remote_connect(char *nodename)
 {
     int client_sock ;

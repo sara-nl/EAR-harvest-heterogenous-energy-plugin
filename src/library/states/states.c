@@ -95,6 +95,9 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	init_application(&last_signature);
 	if (my_id) return;
 
+	loop_init(&loop,&loop_signature.job);	
+
+
 	perf_accuracy_min_time = get_ear_performance_accuracy();
 	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
@@ -292,6 +295,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					loop_with_signature = 1;
 					#if EAR_OVERHEAD_CONTROL
 					check_periodic_mode=0;
+					VERBOSE_N(0,"Switching check periodic mode to %d\n",check_periodic_mode);
 					#endif
 
 					// Computing dynais overhead

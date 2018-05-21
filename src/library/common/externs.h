@@ -63,5 +63,6 @@ extern ulong last_calls_in_loop;
 extern ulong last_loop_size;
 extern ulong last_loop_level;
 extern uint dynais_enabled;
+extern uint check_periodic_mode;
 
 #endif

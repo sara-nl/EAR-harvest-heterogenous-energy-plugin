@@ -94,16 +94,25 @@ int append_application_text_file(char *path, application_t *app)
 void report_application_data(application_t *app)
 {
 	float avg_f = ((double) app->signature.avg_f) / 1000000.0;
-	float def_f = ((double) app->signature.def_f) / 1000000.0;
+	float def_f = ((double) app->job.def_f) / 1000000.0;
 
 	printf("------------------------------------------------------------------------ Application Summary --\n");
 	printf("-- App id: %s, user id: %s, job id: %lu\n", app->job.app_id, app->job.user_id, app->job.id);
-	printf("-- E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
 	printf(   "procs: %lu (s)\n", app->job.procs);
-	printf("-- CPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
-                                                                        app->signature.GBS, app->signature.Gflops);
-	printf(   "DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power, 
-                                                               app->signature.PCK_power);
+	if (app->is_mpi){
+
+		printf("-- E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
+		printf(   "procs: %lu (s)\n", app->job.procs);
+		printf("-- CPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
+                                                                        	app->signature.GBS, app->signature.Gflops);
+		printf(   "DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power, 
+                                                               	app->signature.PCK_power);
+	}else{
+		printf("-- E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->power_sig.time, def_f, avg_f);
+		printf(   "DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->power_sig.DC_power, app->power_sig.DRAM_power, 
+                                                               	app->power_sig.PCK_power);
+		printf(	   "max_DC_power/min_DC_power: %0.3lf/%0.3lf (W)\n",app->power_sig.max_DC_power,app->power_sig.min_DC_power);
+	}
 	printf("-----------------------------------------------------------------------------------------------\n");
 }
 
