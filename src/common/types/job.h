@@ -46,7 +46,8 @@ typedef struct job
 	job_id 	step_id;
 	char 	user_id[GENERIC_NAME];
 	char 	app_id[GENERIC_NAME];
-	time_t 	start_time;
+	char    user_acc[GENERIC_NAME];
+    time_t 	start_time;
 	time_t	end_time;
 	time_t 	start_mpi_time;
 	time_t	end_mpi_time;
