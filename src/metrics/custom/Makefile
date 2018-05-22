@@ -5,9 +5,9 @@ LDFLAGS =
 
 BANDWIDTH_OBJS = bandwidth/uncores_pci.o
 
-LIBRARIES = bandwidth.so \
-            frequency.o \
+LIBRARIES = frequency.o \
             hardware_info.o \
+			bandwidth.so
 			bandwidth.a
 
 ######## RULES
@@ -20,11 +20,11 @@ all: $(LIBRARIES)
 bandwidth.o: bandwidth.c bandwidth.h
 	$(CC) $(CFLAGS) -c bandwidth.c $(LDFLAGS)
 
-bandwidth.so: bandwidth.o $(BANDWIDTH_OBJS)
-	$(CC) -shared -o bandwidth.so bandwidth.o $(BANDWIDTH_OBJS)
-
-bandwidth.a:bandwidth.o $(BANDWIDTH_OBJS)
+bandwidth.a: bandwidth.o $(BANDWIDTH_OBJS)
 	ar rcs bandwidth.a bandwidth.o $(BANDWIDTH_OBJS) 
+
+bandwidth.so: bandwidth.a $(BANDWIDTH_OBJS)
+	$(CC) -shared -o bandwidth.so bandwidth.a
 
 frequency.o: frequency.c frequency.h
 	$(CC) $(CFLAGS) -c frequency.c $(LDFLAGS)

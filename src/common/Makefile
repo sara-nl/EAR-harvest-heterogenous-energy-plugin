@@ -56,7 +56,7 @@ export HEADERS
 all: $(BINARIES)
 
 %.o: %.c %.h $(HEADERS)
-	@ $(MAKE) -C `dirname $@` `basename $@` || exit
+	@ $(MAKE) -C `dirname $@` `basename $@` DEPS='$(HEADERS)' || exit
 
 file_lock.o: file_lock.c file_lock.h
 	$(CC) $(CFLAGS) -c file_lock.c

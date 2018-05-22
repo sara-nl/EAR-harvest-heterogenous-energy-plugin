@@ -1,4 +1,4 @@
-.c.o :
+%.o: %.c %.h $(DEPS)
 	$(CC) $(CFLAGS) -march=native -c -o $@ $<
 
 clean:
