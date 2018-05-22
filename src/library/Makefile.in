@@ -1,11 +1,5 @@
 CFLAGS   = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS  = -shared  $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
-
-######## VARS
-
-export DIR
-export CFLAGS
-export LDFLAGS
+LDFLAGS  = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 
 ######## FILES
 
@@ -27,9 +21,10 @@ COMMON_OBJS = $(SRCDIR)/common/shared_configuration.o \
               $(SRCDIR)/common/environment_common.o \
               $(SRCDIR)/common/file_lock.o \
               $(SRCDIR)/common/environment.o \
-              $(SRCDIR)/common/math_operations.o
+              $(SRCDIR)/common/math_operations.o \
+              $(SRCDIR)/common/types.a
 
-TYPES = $(SRCDIR)/common/types.a
+OUTER_OBJS = $(COMMON_OBJS) $(METRICS_OBJS)
 
 REMAKE_OBJS = states/states.o \
               tracer/tracer.o \
@@ -46,7 +41,11 @@ OBJS = dynais/dynais.o \
        models/monitoring.o \
        models/sig_projections.o
 
-SEQ_OBJS = $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
+######## VARS
+
+export DIR
+export CFLAGS
+export LDFLAGS
 
 ######## RULES
 
@@ -65,11 +64,11 @@ update-mpi-objs:
 update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-@mpi_so@: update-mpi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
+@mpi_so@: update-mpi-objs $(OBJS) $(OUTER_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
-@mpi_trace_so@: update-mpi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
+@mpi_trace_so@: update-mpi-objs-trace $(OBJS) $(OUTER_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
 endif
 
@@ -83,11 +82,11 @@ update-ompi-objs:
 update-ompi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(OMPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-@ompi_so@: update-ompi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
+@ompi_so@: update-ompi-objs $(OBJS) $(OUTER_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
-@ompi_trace_so@: update-ompi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
+@ompi_trace_so@: update-ompi-objs-trace $(OBJS) $(OUTER_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
 endif
 

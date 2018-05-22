@@ -1,10 +1,5 @@
 CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 
-####### 
-
-export DIR
-export CFLAGS
-
 ######## FILES
 
 TYPES_OBJS = types/application.o \
@@ -28,6 +23,10 @@ TYPES_HEADERS = types/application.h \
                 types/projection.h \
                 types/signature.h
 
+HEADERS = $(SRCDIR)/common/ear_verbose.h \
+          $(SRCDIR)/common/states.h \
+          $(SRCDIR)/common/config.h
+
 BINARIES = ear_daemon_client.o \
            environment.o \
            environment_common.o \
@@ -46,23 +45,29 @@ BINARIES += database/db_helper.o \
             database/mysql_io_functions.o
 endif
 
+####### VAR PROPAGATION 
+
+export DIR
+export CFLAGS
+export HEADERS
+
 ######## RULES
 
 all: $(BINARIES)
 
-%.o: %.c
+%.o: %.c %.h $(HEADERS)
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
 file_lock.o: file_lock.c file_lock.h
 	$(CC) $(CFLAGS) -c file_lock.c
 
-ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_daemon_common.h states.h ear_verbose.h config.h
+ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_daemon_common.h $(HEADERS)
 	$(CC) $(CFLAGS) -c ear_daemon_client.c
 
-shared_configuration.o: shared_configuration.c shared_configuration.h ear_verbose.h
+shared_configuration.o: shared_configuration.c shared_configuration.h $(HEADERS)
 	$(CC) $(CFLAGS) -c shared_configuration.c
 
-remote_daemon_client.o: remote_daemon_client.c remote_daemon_client.h remote_conf.h ear_verbose.h config.h
+remote_daemon_client.o: remote_daemon_client.c remote_daemon_client.h remote_conf.h $(HEADERS)
 	$(CC) $(CFLAGS) -c remote_daemon_client.c
 
 environment.o: environment.c environment.h environment_common.h
@@ -77,7 +82,7 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
 
-types.a: $(TYPES_OBJS) $(TYPES_HEADERS) string_enhanced.o math_operations.o
+types.a: $(TYPES_OBJS) string_enhanced.o math_operations.o $(HEADERS)
 	ar rvs types.a $(TYPES_OBJS) string_enhanced.o math_operations.o
 
 ######## OPTIONS
