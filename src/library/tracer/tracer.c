@@ -45,7 +45,6 @@
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
-#include <common/types/generic.h>
 #include <common/environment.h>
 #include <common/ear_verbose.h>
 

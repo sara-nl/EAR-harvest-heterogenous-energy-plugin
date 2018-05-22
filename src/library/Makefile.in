@@ -9,6 +9,11 @@ export LDFLAGS
 
 ######## FILES
 
+HEADERS = $(SRCDIR)/library/common/externs.h \
+          $(SRCDIR)/common/ear_verbose.h \
+          $(SRCDIR)/common/states.h \
+          $(SRCDIR)/common/config.h
+
 METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/papi/generics.o \
                $(SRCDIR)/metrics/papi/cache.o \
@@ -47,7 +52,7 @@ SEQ_OBJS = $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
 
 all: @mpi_so@ @mpi_trace_so@ @ompi_so@ @ompi_trace_so@
 
-%.o: %.c
+%.o: %.c $(HEADERS)
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
 ######## MPI RULES
@@ -61,7 +66,7 @@ update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
 @mpi_so@: update-mpi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS)  $(REMAKE_OBJS) $(SEQ_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
 
 @mpi_trace_so@: update-mpi-objs-trace $(SEQ_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)

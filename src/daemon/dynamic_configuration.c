@@ -36,23 +36,22 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
+#include <linux/limits.h>
+
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <linux/limits.h>
 #include <netinet/ip.h>
 #include <netdb.h>
-#include <common/config.h>
 
-#include <common/ear_verbose.h>
-#include <common/types/job.h>
-#include <common/remote_conf.h>
-#include <common/shared_configuration.h>
-#include <common/states.h>
-#include <common/remote_conf.h>
 #include <daemon/power_monitoring.h>
-
+#include <common/shared_configuration.h>
+#include <common/remote_conf.h>
+#include <common/types/job.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
+#include <common/config.h>
 
 int create_server_socket();
 int wait_for_client(int sockfd,struct sockaddr_in *client);

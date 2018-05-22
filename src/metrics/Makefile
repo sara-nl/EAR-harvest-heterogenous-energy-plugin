@@ -25,16 +25,20 @@ endif
 
 ######## RULES
 
-all: components others
+all: components libs
 
 components:
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -C $${i} all || exit; \
 	done
-	ar rvs metrics.a $(METRICS_OBJS)
 
-others: metrics.a
-	$(CC) $(CFLAGS) -o libear_metrics.so metrics.a
+libs: metrics.a libear_metrics.so
+
+metrics.a: $(METRICS_OBJS)
+	@ ar rvs metrics.a $(METRICS_OBJS)
+
+libear_metrics.so: metrics.a
+	@ $(CC) $(CFLAGS) -o libear_metrics.so metrics.a
 
 ######## OPTIONS
 

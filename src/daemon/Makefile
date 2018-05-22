@@ -8,6 +8,8 @@ export DIR
 ######## FILES
 
 COMMON_OBJS = 
+OBJS =
+HEADERS =
 
 ifdef DB_BASE
 COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
@@ -15,14 +17,16 @@ COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
 			   $(SRCDIR)/common/string_enhanced.o
 endif
 
-OBJS =
-
 ifdef FEAT_SHRMEM
 COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a \
                $(SRCDIR)/common/shared_configuration.o
 
 OBJS += dynamic_configuration.o \
         power_monitoring.o
+
+HEADERS += $(SRCDIR)/common/remote_conf.h \
+           $(SRCDIR)/common/shared_configuration.h \ 
+           $(SRCDIR)/metrics/power_monitoring/ear_power_monitor.h
 endif
 
 COMMON_OBJS += $(SRCDIR)/metrics/metrics.a \
@@ -30,19 +34,24 @@ COMMON_OBJS += $(SRCDIR)/metrics/metrics.a \
                $(SRCDIR)/common/environment_common.o \
                $(SRCDIR)/common/types.a 
 
+HEADERS += $(SRCDIR)/common/ear_daemon_common.h \
+           $(SRCDIR)/common/ear_verbose.h \
+           $(SRCDIR)/common/states.h \
+           $(SRCDIR)/common/config.h
+
 BINARIES = eard
 
 ######## RULES
 
 all: eard
 
-eard: ear_daemon.c $(OBJS) $(COMMON_OBJS)
+eard: ear_daemon.c $(OBJS) $(COMMON_OBJS) $(HEADERS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard ear_daemon.c $(OBJS) $(COMMON_OBJS) $(LDFLAGS) $(DB_LDFLAGS)
 
-dynamic_configuration.o: dynamic_configuration.c 
+dynamic_configuration.o: dynamic_configuration.c power_monitoring.h $(HEADERS)
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
 
-power_monitoring.o: power_monitoring.c
+power_monitoring.o: power_monitoring.c power_monitoring.h $(HEADERS)
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c
 
 ######## OPTIONS

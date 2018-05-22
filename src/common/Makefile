@@ -8,14 +8,25 @@ export CFLAGS
 ######## FILES
 
 TYPES_OBJS = types/application.o \
-             types/projection.o \
              types/coefficient.o \
-			 types/log.o \
 		     types/job.o \
-		     types/signature.o \
-		     types/power_signature.o \
+			 types/log.o \
 	    	 types/loop.o \
-			 types/periodic_metric.o
+			 types/periodic_metric.o \
+		     types/power_signature.o \
+             types/projection.o \
+		     types/signature.o
+
+TYPES_HEADERS = types/application.h \
+                types/coefficient.h \
+                types/generic.h \
+                types/job.h \
+                types/log.h \
+                types/loop.h \
+                types/periodic_metric.h \
+                types/power_signature.h \
+                types/projection.h \
+                types/signature.h
 
 BINARIES = ear_daemon_client.o \
            environment.o \
@@ -45,13 +56,13 @@ all: $(BINARIES)
 file_lock.o: file_lock.c file_lock.h
 	$(CC) $(CFLAGS) -c file_lock.c
 
-ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_verbose.h
+ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_daemon_common.h states.h ear_verbose.h config.h
 	$(CC) $(CFLAGS) -c ear_daemon_client.c
 
 shared_configuration.o: shared_configuration.c shared_configuration.h ear_verbose.h
 	$(CC) $(CFLAGS) -c shared_configuration.c
 
-remote_daemon_client.o: remote_daemon_client.c remote_conf.h ear_verbose.h
+remote_daemon_client.o: remote_daemon_client.c remote_daemon_client.h remote_conf.h ear_verbose.h config.h
 	$(CC) $(CFLAGS) -c remote_daemon_client.c
 
 environment.o: environment.c environment.h environment_common.h
@@ -66,7 +77,7 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
 
-types.a: $(TYPES_OBJS)
+types.a: $(TYPES_OBJS) $(TYPES_HEADERS) string_enhanced.o math_operations.o
 	ar rvs types.a $(TYPES_OBJS) string_enhanced.o math_operations.o
 
 ######## OPTIONS

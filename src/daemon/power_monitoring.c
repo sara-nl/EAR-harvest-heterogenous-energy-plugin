@@ -29,11 +29,11 @@
 
 
 
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -41,15 +41,15 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include <common/config.h>
-#include <common/ear_verbose.h>
-#include <common/types/generic.h>
-#include <common/types/application.h>
-#include <common/types/periodic_metric.h>
 #include <control/frequency.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
 #include <daemon/power_monitoring.h>
-#include <common/database/db_helper.h>
+#include <common/types/periodic_metric.h>
+#include <common/types/application.h>
+#include <common/types/generic.h>
+#include <common/ear_verbose.h>
+#include <common/config.h>
+
 #if DB_MYSQL
 #include <common/database/db_helper.h>
 #endif

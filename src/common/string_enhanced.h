@@ -30,7 +30,7 @@
 #ifndef _STRING_ENHANCED_H_
 #define _STRING_ENHANCED_H_
 
-#include "types/generic.h"
+#include <common/types/generic.h>
 
 /**@{ Adds commas to numbers. It is printed in internal buffer and a pointer to
 *   this buffer is returned. So do whatever you want before call again one

@@ -27,14 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 /**
 *    \file dynamic_configurarion.h
 *    \brief exports the API to control the dynamic reconfiguration of EARlib arguments (at this moment frequency and min_tim eth)
 *
 */
-
 
 #ifndef _DYN_CONF_H
 #define _DYN_CONF_H
@@ -46,5 +43,5 @@ void *eard_dynamic_configuration(void *no_args);
 /** Returns the frequency defined dynamically
 */
 ulong max_dyn_freq();
-#else
+
 #endif

@@ -36,13 +36,11 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/resource.h>
-
-#include <cpufreq.h>
 #include <slurm/spank.h>
+#include <cpufreq.h>
 
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
-#include <common/string_enhanced.h>
 #include <common/config.h>
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)

@@ -1,7 +1,12 @@
 CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
+######## FILES
+
+HEADERS = $(SRCDIR)/common/config.h 
+
 ######## RULES
-.c.o :
+
+.c.o: $(HEADERS)
 	$(CC) $(CFLAGS) -c  $< 
 
 ######## OPTIONS
