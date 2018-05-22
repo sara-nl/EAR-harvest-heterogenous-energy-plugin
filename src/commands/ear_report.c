@@ -48,10 +48,12 @@ void usage(char *app)
 	printf("Usage: %s job_id user_db_pathname [-v]\n",app);
     #endif
     #if DB_MYSQL
-    printf("Usage: %s job_id db_ip [options]\n \
-\tOptions: \n\
-\t\t-u\tspecifies the user that executes the query\n\
-\t\t-db\tspecifies the database on which the query is executed\n", app);
+    printf("Usage: %s job_id [Optional parameters]\n \
+\tOptional parameters: \n\
+\t\t-v\tverbose mode for debugging purposes\n\
+\t\t-u\tspecifies the user that executes the query [default: root]\n\
+\t\t-db\tspecifies the database on which the query is executed [default: Report]\n\
+\t\t-ip\tspecifies the ip where the MySQL server can be found [default: 127.0.0.1]\n", app);
     #endif
 	exit(1);
 }
@@ -190,7 +192,7 @@ void read_from_files(int argc, char *argv[], char verbose)
 }
 
 #if DB_MYSQL
-void read_from_database(int argc, char *argv[], int db, int usr)
+void read_from_database(int argc, char *argv[], int db, int usr, int host, char verbose)
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -202,8 +204,9 @@ void read_from_database(int argc, char *argv[], int db, int usr)
     }
     char *database = db > 0 ? argv[db] : "Report";
     char *user = usr > 0 ? argv[usr] : "root";
+    char *ip = host > 0 ? argv[host] : "127.0.0.1";
 
-    if(!mysql_real_connect(connection, argv[2], user,"", database, 0, NULL, 0))
+    if(!mysql_real_connect(connection, ip, user,"", database, 0, NULL, 0))
     {
         fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
@@ -211,11 +214,21 @@ void read_from_database(int argc, char *argv[], int db, int usr)
     }
 
     char query[256];
-
-    sprintf(query, "SELECT * FROM Applications WHERE job_id=%s", argv[1]);
+    
+    int job_id, step_id = 0;
+    char *token;
+    job_id = atoi(strtok(argv[1], "."));
+    token = strtok(NULL, ".");
+    if (token != NULL) step_id = atoi(token);
+    //job_id = job_id * 100 + step_id;
+ 
+    if (verbose) fprintf(stderr, "Preparing query statement\n");
+    sprintf(query, "SELECT * FROM Applications WHERE job_id=%u and step_id=%u", job_id, step_id);
     application_t *apps;
 
+    if (verbose) fprintf(stderr, "Retrieving applications\n");
     num_apps = mysql_retrieve_applications(connection, query, &apps);
+    if (verbose) fprintf(stderr, "Finalized retrieving applications\n");
 
     if (num_apps == EAR_MYSQL_ERROR)
     {
@@ -224,44 +237,61 @@ void read_from_database(int argc, char *argv[], int db, int usr)
         exit(1);
     }
 
-    if (num_apps < 1)
+    else if (num_apps < 1)
     {
-        printf("No jobs with %s job_id found. \n", argv[1]);
+        printf("No jobs with %u job_id and %u step_id found. \n", job_id, step_id);
         mysql_close(connection);
         exit(1);
     }
 
 
-    double avg_time, avg_power, total_energy, avg_f, avg_frequency;
+    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI;
     avg_frequency = 0;
     avg_time = 0;
     avg_power = 0;
     total_energy = 0;
-    int i = 0;    
-    
-    printf("Node information:\nJob_id \tNodename \t\t\tTime (secs) \tDC Power (Watts) \tEnergy (Joules) \tAvg_freq (GHz)\n");
-    
-    for (i = 0; i < num_apps; i++)
-    {
-        avg_f = (double) apps[i].signature.avg_f/1000000;
-        printf("%u \t%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n", 
-                apps[i].job.id, apps[i].node_id, apps[i].signature.time, apps[i].signature.DC_power, 
-		apps[i].signature.DC_power * apps[i].signature.time, avg_f);
-        avg_frequency += avg_f;
-        avg_time += apps[i].signature.time;
-        avg_power += apps[i].signature. DC_power;
-        total_energy += apps[i].signature.time * apps[i].signature.DC_power;
+    avg_CPI = 0;
+    avg_GBS = 0;
 
+    int i = 0;    
+    if (apps[0].is_mpi)
+    {
+        printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\tCPI\tGBS\n\t");
+    
+        for (i = 0; i < num_apps; i++)
+        {
+            avg_f = (double) apps[i].signature.avg_f/1000000;
+            printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t%.2lf\t%.2lf\n\t", 
+                    strtok(apps[i].node_id, "."), apps[i].signature.time, apps[i].signature.DC_power, 
+		    apps[i].signature.DC_power * apps[i].signature.time, avg_f, apps[i].signature.CPI, apps[i].signature.GBS);
+            avg_frequency += avg_f;
+            avg_time += apps[i].signature.time;
+            avg_power += apps[i].signature.DC_power;
+            avg_GBS += apps[i].signature.GBS;
+            avg_CPI += apps[i].signature.CPI;
+            total_energy += apps[i].signature.time * apps[i].signature.DC_power;
+
+        }
+    }
+    else
+    {
+        printf("Node information:\nJob_id ");
     }
 
     avg_frequency /= num_apps;
     avg_time /= num_apps;
     avg_power /= num_apps;
+    avg_CPI /= num_apps;
+    avg_GBS /= num_apps;
 
-    printf("\nApplication average:\nJob_id \tTime (secs.) \tDC Power (Watts) \tAccumulated Energy (Joules) \tAvg_freq (GHz)\n");
+    i--;
+    printf("\nApplication summary\n\tApp_id: %s\n\tJob_id: %lu\n\tStep_id: %lu\n\tPolicy: %s\n\tPolicy threshold: %.2lf\n",
+            apps[i].job.app_id, apps[i].job.id, apps[i].job.step_id, apps[i].job.policy, apps[i].job.th);
 
-    printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t\t%.2lf\n", 
-            argv[1], avg_time, avg_power, total_energy, avg_frequency);
+    printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
+
+    printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t\t%.2lf\t\t%.2lf\t%.2lf\n", 
+            avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
 
 
     free(apps);
@@ -272,32 +302,44 @@ void read_from_database(int argc, char *argv[], int db, int usr)
 
 void main(int argc, char *argv[])
 {
-    if (argc < 3) usage(argv[0]);
 
-    #if DB_FILES
+#if DB_MYSQL
+    if (argc < 2) usage(argv[0]);
+#else
+    if (argc < 3) usage(argv[0]);
+#endif
     char verbose = 0;
+#if DB_FILES && !DB_MYSQL
     if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
     else verbose = 0;
     read_from_files(argc, argv, verbose);
     
-    #endif
+#endif
 
-    #if DB_MYSQL
-    int database = 0, user = 0;
+#if DB_MYSQL
+    int database = 0, user = 0, ip = 0;
     int i = 0;
-    if (argc > 3)
+    if (argc > 2)
     {
-        for (i = 3; i < argc - 1; i++)
+        for (i = 2; i < argc; i++)
         {
+            fprintf(stderr, "Processing arg %d: %s\n", i, argv[i]);
             if (!strcmp("-db", argv[i])){
                 database = ++i;
             }
-            if (!strcmp("-u", argv[i])){
+            else if (!strcmp("-u", argv[i])){
                 user = ++i;
+            }
+            else if (!strcmp("-ip", argv[i])){
+                ip = ++i;
+            }
+            else if (!strcmp("-v", argv[i])){
+                verbose = 1;
             }
         }
     }
-    read_from_database(argc, argv, database, user);
-    #endif
+    if (verbose) fprintf(stderr, "Initializing database reading.\n");
+    read_from_database(argc, argv, database, user, ip, verbose);
+#endif
     exit(1);
 }
