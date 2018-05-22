@@ -53,6 +53,7 @@ int ear_use_turbo = USE_TURBO;
 int ear_whole_app;
 int ear_my_rank;
 int my_job_id;
+int my_step_id;
 
 // DynAIS
 uint loop_with_signature;
@@ -61,3 +62,4 @@ ulong last_calls_in_loop;
 ulong last_loop_size;
 ulong last_loop_level;
 uint dynais_enabled = 1;
+uint check_periodic_mode=1;

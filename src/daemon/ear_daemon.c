@@ -60,7 +60,6 @@
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 //int power_mon_th;
-job_t current_job;
 #endif
 #if SHARED_MEMORY
 #include <pthread.h>
@@ -163,13 +162,14 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 }
 
 #if SHARED_MEMORY
-void connect_service(int req,job_t *new_job)
+void connect_service(int req,application_t *new_app)
 {
     char ear_commack[MAX_PATH_SIZE];
     unsigned long ack;
     int connect=1;
     int alive;
-	int pid=new_job->id;
+	job_t *new_job=&new_app->job;
+	int pid=create_ID(new_job->id,new_job->step_id);
     // Let's check if there is another application
     VERBOSE_N(1, "request for connection at service %d", req);
     if (is_new_application(pid) || is_new_service(req, pid)) {
@@ -186,6 +186,7 @@ void connect_service(int req,job_t *new_job)
     // Creates 1 pipe (per node) to send acks.
     if (connect)
     {
+		VERBOSE_N(0,"Connected new job job_id=%d step_id=%d\n",new_job->id,new_job->step_id);
         sprintf(ear_commack, "%s/.ear_comm.ack_%d.%lu", ear_tmp, req, pid);
         application_id = pid;
 
@@ -220,8 +221,7 @@ void connect_service(int req,job_t *new_job)
             }
             // We must modify the client api to send more information
             #if SHARED_MEMORY
-			powermon_mpi_init(new_job);
-			copy_job(&current_job,new_job);
+			powermon_mpi_init(new_app);
 			#endif
         	VERBOSE_N(1, "sending ack for service %d",req);
         	if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
@@ -467,7 +467,7 @@ int eard_node_energy(int must_read)
     switch (req.req_service){
 		case CONNECT_ENERGY:
 			#if SHARED_MEMORY
-			connect_service(node_energy_req,&req.req_data.app.job);
+			connect_service(node_energy_req,&req.req_data.app);
 			#else
 			connect_service(node_energy_req,req.req_data.req_value);
 			#endif
@@ -533,7 +533,7 @@ int eard_system(int must_read)
 	{
 		case CONNECT_SYSTEM:
 			#if SHARED_MEMORY
-			connect_service(system_req,&req.req_data.app.job);
+			connect_service(system_req,&req.req_data.app);
 			#else
 			connect_service(system_req,req.req_data.req_value);
 			#endif	
@@ -596,7 +596,7 @@ int eard_freq(int must_read)
 		case CONNECT_FREQ:
 			// HIGHLIGHT: LIBRARY INIT
 			#if SHARED_MEMORY
-			connect_service(freq_req,&req.req_data.app.job);
+			connect_service(freq_req,&req.req_data.app);
 			#else
 			connect_service(freq_req,req.req_data.req_value);
 			frequency_save_previous_frequency();
@@ -671,7 +671,7 @@ int eard_uncore(int must_read)
 	{
 	    case CONNECT_UNCORE:
 			#if SHARED_MEMORY
-			connect_service(uncore_req,&req.req_data.app.job);
+			connect_service(uncore_req,&req.req_data.app);
 			#else
 			connect_service(uncore_req,req.req_data.req_value);
 			#endif
@@ -721,7 +721,7 @@ int eard_rapl(int must_read)
     switch (req.req_service){
 		case CONNECT_RAPL:
 			#if SHARED_MEMORY
-			connect_service(rapl_req,&req.req_data.app.job);
+			connect_service(rapl_req,&req.req_data.app);
 			#else
 			connect_service(rapl_req,req.req_data.req_value);
 			#endif

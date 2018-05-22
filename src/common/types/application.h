@@ -89,4 +89,7 @@ int append_application_text_file(char *path, application_t *app);
 /** Replicates the application in *source to *destiny */
 void copy_application(application_t *destiny, application_t *source);
 
+
+#define create_ID(id,sid)	(id*100+sid)
+
 #endif

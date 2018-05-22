@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 #include <common/types/loop.h>
 #include <common/states.h>
 
@@ -62,6 +63,7 @@ void loop_init(loop_t *loop, job_t *job)
 {
     memset(loop, 0, sizeof(loop_t));
     loop->job = job;
+	gethostname(loop->node_id,sizeof(loop->node_id));
 }
 
 
@@ -121,7 +123,8 @@ int append_loop_text_file(char *path, loop_t *loop)
 	if (fd < 0) {
 		return EAR_ERROR;
 	}
-
+	assert(loop!=NULL);
+	assert(loop->node_id!=NULL);
     dprintf(fd, "%s;", loop->node_id);
     print_job_fd(fd, loop->job);
     print_signature_fd(fd, &loop->signature);

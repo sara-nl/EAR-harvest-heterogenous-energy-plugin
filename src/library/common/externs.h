@@ -54,6 +54,7 @@ extern int ear_use_turbo;
 extern int ear_whole_app;
 extern int ear_my_rank;
 extern int my_job_id;
+extern int my_step_id;
 
 // DynAIS
 extern uint loop_with_signature;
@@ -62,5 +63,6 @@ extern ulong last_calls_in_loop;
 extern ulong last_loop_size;
 extern ulong last_loop_level;
 extern uint dynais_enabled;
+extern uint check_periodic_mode;
 
 #endif

@@ -127,7 +127,7 @@ void process_remote_requests(int clientfd)
 	req=read_command(clientfd,&command);
 	switch (req){
 		case EAR_RC_NEW_JOB:
-			VERBOSE_N(0,"new_job command received %d\n",command.my_req.new_job.id);
+			VERBOSE_N(0,"new_job command received %d\n",command.my_req.new_job.job.id);
 			powermon_new_job(&command.my_req.new_job,0);		
 			break;
 		case EAR_RC_END_JOB:

@@ -11,6 +11,8 @@ NODE_ENERGY_LIBS = $(SRCDIR)/metrics/ipmi/energy_node.so
 FREQUENCY_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
                  $(SRCDIR)/control/frequency.o
 
+TYPES = $(SRCDIR)/common/types.a
+
 AVGFREQ_OBJS = $(SRCDIR)/metrics/custom/frequency.o
 
 
@@ -43,8 +45,8 @@ all: $(BINARIES)
 bandwith_monitor: bandwith_monitor.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 	$(CC) $(CFLAGS) -o bandwith_monitor bandwith_monitor.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 
-eard_monitor: eard_monitor.c $(SRCDIR)/common/ear_daemon_client.o
-	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c $(SRCDIR)/common/ear_daemon_client.o
+eard_monitor: eard_monitor.c $(SRCDIR)/common/ear_daemon_client.o $(TYPES)
+	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c $(SRCDIR)/common/ear_daemon_client.o $(TYPES)
 
 freeipmi_overhead: freeipmi_overhead.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 	$(CC) $(CFLAGS) -o freeipmi_overhead freeipmi_overhead.c $(IPMI_LDFLAGS) $(PAPI_LDFLAGS) \

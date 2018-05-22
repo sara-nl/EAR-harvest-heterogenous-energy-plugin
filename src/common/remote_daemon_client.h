@@ -40,7 +40,7 @@
 #define _REMOTE_CLIENT_API_H
 
 #include <common/config.h>
-#include <common/types/job.h>
+#include <common/types/application.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
@@ -50,7 +50,7 @@ int eards_remote_connect(char *nodename);
 
 /** Notifies the EARD the job with job_id starts the execution. It is supposed to be used by the EAR slurm plugin
 */
-int eards_new_job(job_t *new_job);
+int eards_new_job(application_t *new_job);
 
 /** Notifies the EARD the job with job_id ends the execution. It is supposed to be used by the EAR slurm plugin
 */

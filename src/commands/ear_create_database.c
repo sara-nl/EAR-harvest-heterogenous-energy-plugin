@@ -93,6 +93,7 @@ void create_tables(MYSQL *connection)
                             procs INT unsigned NOT NULL,\
                             job_type SMALLINT unsigned NOT NULL,\
                             def_f INT unsigned, \
+                            user_acc VARCHAR(256), \
                             PRIMARY KEY(id, step_id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Signatures (\
@@ -177,6 +178,7 @@ void create_tables(MYSQL *connection)
                             procs INT unsigned NOT NULL,\
                             job_type SMALLINT unsigned NOT NULL,\
                             def_f INT unsigned, \
+                            user_acc VARCHAR(256) NOT NULL, \
                             PRIMARY KEY(id, step_id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_signatures (\

@@ -40,7 +40,7 @@
 #ifndef REMOTE_CONF_H
 #define REMOTE_CONF_H
 
-#include <common/types/job.h>
+#include <common/types/application.h>
 #define DAEMON_PORT_NUMBER          50000
 
 typedef struct end_job_req{
@@ -55,7 +55,7 @@ typedef struct new_conf{
 }new_conf_t;
 
 typedef union req_data{
-		job_t 			new_job;
+		application_t 			new_job;
 		end_job_req_t 	end_job;
 		new_conf_t 		ear_conf;
 }req_data_t;

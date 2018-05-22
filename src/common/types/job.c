@@ -30,6 +30,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 #include <common/types/job.h>
 
 void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs)
@@ -40,10 +41,19 @@ void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs)
     job->th = th;
     job->procs = procs;
 }
+void start_job(job_t *job)
+{
+   
+    time(&job->start_time);
+}
+
+void end_job(job_t *job)
+{
+    time(&job->end_time);
+}
 
 void start_mpi(job_t *job)
 {
-	
     time(&job->start_mpi_time);
 }
 
@@ -59,5 +69,12 @@ void copy_job(job_t *destiny, job_t *source)
 
 void print_job_fd(int fd, job_t *job)
 {
-    dprintf(fd, "%s;%lu;%s;%s;%lf", job->user_id, job->id, job->app_id, job->policy, job->th);
+	char job_buff[1024];
+	assert(job!=NULL);
+	if ((job->user_id==NULL) || (job->app_id==NULL) || (job->policy==NULL)){
+		fprintf(stderr,"print_job_fd some of the args are null\n");
+		return;
+	}
+    sprintf(job_buff, "%s;%lu;%s;%s;%lf", job->user_id, job->id, job->app_id, job->policy, job->th);
+	write(fd,job_buff,strlen(job_buff));
 }

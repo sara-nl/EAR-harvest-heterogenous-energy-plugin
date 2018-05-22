@@ -75,41 +75,40 @@ static int fd_periodic=-1;
 
 typedef struct powermon_app{
 	application_t app;
-	ulong job_created;
-	node_data_t DC_energy_init,DC_energy_end;
+	uint job_created;
+	energy_data_t energy_init;
 }powermon_app_t;
 
 
 powermon_app_t current_ear_app;
+periodic_metric_t current_sample;
 
 #define max(X,Y) (((X) > (Y)) ? (X) : (Y))
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
-periodic_metric_t current_sample;
-
-void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
-{
-	bcopy(src,dest,sizeof(powermon_app_t));
-}
 
 
 void reset_current_app()
 {
+	memset(&current_ear_app,0,sizeof(application_t));
 	current_ear_app.app.job.id=-1;
 	current_ear_app.job_created=0;
 }
 
-void mpi_init_powermon_app()
-{
-	start_mpi(&current_ear_app.app.job);
-	
-}
-void job_init_powermon_app(job_t *new_job,uint from_mpi)
+
+
+/*
+*
+*
+*	BASIC FUNCTIONS
+*
+*/
+void job_init_powermon_app(application_t *new_app,uint from_mpi)
 {
 	energy_data_t c_energy;
 	current_ear_app.job_created=!from_mpi;
-	copy_job(&current_ear_app.app.job,new_job);	
-	current_ear_app.app.signature.max_DC_power=0;
-	current_ear_app.app.signature.min_DC_power=DBL_MAX;
+	copy_application(&current_ear_app.app,new_app);	
+	current_ear_app.app.power_sig.max_DC_power=0;
+	current_ear_app.app.power_sig.min_DC_power=500;
 	time(&current_ear_app.app.job.start_time);	
 	current_ear_app.app.job.start_mpi_time=0;
 	current_ear_app.app.job.end_mpi_time=0;
@@ -119,28 +118,28 @@ void job_init_powermon_app(job_t *new_job,uint from_mpi)
 	init_power_signature(&current_ear_app.app.power_sig);
 	// Initialize energy
 	read_enegy_data(&c_energy);
-	current_ear_app.DC_energy_init=c_energy.DC_node_energy;	
+	copy_energy_data(&current_ear_app.energy_init,&c_energy);
 }
 
-void mpi_finalize_powermon_app()
-{
-	end_mpi(&current_ear_app.app.job);
-	
-}
 
 void job_end_powermon_app()
 {
 	energy_data_t c_energy;
 	node_data_t app_total;
+	power_data_t app_power;
 	double exec_time;
 	time(&current_ear_app.app.job.end_time);
 	// Get the energy
 	read_enegy_data(&c_energy);
-	current_ear_app.DC_energy_end=c_energy.DC_node_energy;
-	// Compute the avg power	
-	app_total=diff_node_energy(current_ear_app.DC_energy_end,current_ear_app.DC_energy_init);	
-	exec_time=difftime(current_ear_app.app.job.end_time,current_ear_app.app.job.start_time);
-	current_ear_app.app.power_sig.DC_power=(double)app_total/(exec_time*1000);	
+	compute_power(&current_ear_app.energy_init,&c_energy,&app_power);
+	
+    current_ear_app.app.power_sig.DC_power=app_power.avg_dc;
+    current_ear_app.app.power_sig.DRAM_power=app_power.avg_dram[0]+app_power.avg_dram[1];
+    current_ear_app.app.power_sig.PCK_power=app_power.avg_cpu[0]+app_power.avg_cpu[1];
+    current_ear_app.app.power_sig.time=difftime(app_power.end,app_power.begin);
+
+	// nominal, avgf, edp is still pending
+
 	// Metrics are not reported in this function
 }
 
@@ -152,7 +151,7 @@ void report_powermon_app(powermon_app_t *app)
     char jbegin[64],jend[64],mpibegin[64],mpiend[64];
 
 	// This function will report values to EAR_DB
-
+	#if 0
     // We format the end time into localtime and string
     current_t=localtime(&(app->app.job.start_time));
     strftime(jbegin, sizeof(jbegin), "%c", current_t);
@@ -164,51 +163,72 @@ void report_powermon_app(powermon_app_t *app)
     	current_t=localtime(&(app->app.job.end_mpi_time));
     	strftime(mpiend, sizeof(mpiend), "%c", current_t);
 	}
+	#endif
 
 	// We can write here power information for this job
 	report_application_data(&app->app);
+#if DB_MYSQL
+    if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
+#endif
 	
 }
 
+/*
+*
+*
+*	MPI PART
+*
+*/
 // That functions controls the init/end of jobs
 static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
-void powermon_mpi_init(job_t * appID)
+void powermon_mpi_init(application_t * appID)
 {
-	VERBOSE_N(1,"powermon_mpi_init %d\n",appID);
+	VERBOSE_N(1,"powermon_mpi_init job_id %d step_id %d \n",appID->job.id,appID->job.step_id);
 	// As special case, we will detect if not job init has been specified
 	if (!current_ear_app.job_created){	// If the job is nt submitted through slurm, new_job would not be submitted 
 		powermon_new_job(appID,1);
 	}
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
-	mpi_init_powermon_app();
+	start_mpi(&current_ear_app.app.job);
 }
 
 void powermon_mpi_finalize()
 {
 	VERBOSE_N(0,"powermon_mpi_finalize %d[%d]\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
-	mpi_finalize_powermon_app();
+	end_mpi(&current_ear_app.app.job);
 	if (!current_ear_app.job_created){  // If the job is not submitted through slurm, end_job would not be submitted 
 		powermon_end_job(current_ear_app.app.job.id,current_ear_app.app.job.step_id);
 	}
 }
 
-void powermon_new_job(job_t* appID,uint from_mpi)
+/*
+*
+*
+*   JOB PART
+*
+*
+/
+
+
+/* This function is called by dynamic_configuration thread when a new_job command arrives */
+
+void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
-	VERBOSE_N(0,"powermon_new_job %d\n",appID);
+	VERBOSE_N(0,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
-
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
 		// We must report the energy beforesetting the job_id: PENDING
-		new_job_for_period(&current_sample,appID->id,appID->step_id);
+		new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
     pthread_mutex_unlock(&app_lock);
 
 }
+/* This function is called by dynamic_configuration thread when a end_job command arrives */
 
 void powermon_end_job(job_id jid,job_id sid)
 {
@@ -225,7 +245,7 @@ void powermon_end_job(job_id jid,job_id sid)
         idleNode=1;
         job_end_powermon_app();
 		// After that function, the avg power is computed
-        copy_powermon_app(&summary,&current_ear_app);
+		bcopy(&current_ear_app,&summary,sizeof(powermon_app_t));
         current_ear_app.app.job.id=-1;
 		current_ear_app.job_created=0;
 		// we must report the current period for that job before the reset:PENDING
@@ -248,7 +268,10 @@ void update_historic_info(power_data_t *my_current_power)
 	}
 	pthread_mutex_unlock(&app_lock);
 		
-	if (current_ear_app.app.job.id!=-1)	printf("Application id %d[%d]: ",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
+	if (current_ear_app.app.job.id!=-1){	
+		printf("Application id %d[%d]: ",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
+		printf("	max_power %lf min_power %lf\n",current_ear_app.app.power_sig.max_DC_power,current_ear_app.app.power_sig.min_DC_power);
+	}
     report_periodic_power(fd_periodic, my_current_power);
 
 	current_sample.start_time=my_current_power->begin;
@@ -344,8 +367,10 @@ void *eard_power_monitoring(void *frequency_monitoring)
 }
 void powermon_mpi_signature(application_t *app)
 {
-// Esto no hay que hacerlo aqui, hay que copiarlo en la app y reportarlo alli
-#if DB_MYSQL
-	if (!db_insert_application(app)) DEBUG_F(1, "Application signature correctly written");
-#endif
+	copy_signature(&current_ear_app.app.signature,&app->signature);
+	current_ear_app.app.job.def_f=app->job.def_f;
+	current_ear_app.app.job.th=app->job.th;
+	current_ear_app.app.job.procs=app->job.procs;
+	strcpy(current_ear_app.app.job.policy,app->job.policy);
+	strcpy(current_ear_app.app.job.app_id,app->job.app_id);
 }

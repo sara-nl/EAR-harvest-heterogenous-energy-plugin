@@ -43,8 +43,10 @@
 #include <common/ear_daemon_common.h>
 #include <common/ear_daemon_client.h>
 #include <common/types/generic.h>
+#include <common/types/application.h>
 #include <common/states.h>
 #include <common/config.h>
+
 
 #define MAX_TRIES 1
 
@@ -80,13 +82,14 @@ uint warning(int return_value, int expected, char *msg)
 	return (return_value!=expected);
 }
 
-int eards_connect()
+int eards_connect(application_t *my_app)
 {
 	char nodename[256];
 	ulong ret,ack;
 	struct daemon_req req;
 	int tries=0,connected=0;
 	int i;
+	int my_id;
 	if (app_connected) return EAR_SUCCESS;
 
 	// These files connect EAR with EAR_COMM
@@ -110,24 +113,19 @@ int eards_connect()
 		ear_fd_req[i]=-1;
 		ear_fd_ack[i]=-1;
 	}
-	#if SHARED_MEMORY
-	char *jid,*sid,*userid,*appid;
-	jid=getenv("SLURM_JOB_ID");
-	sid=getenv("SLURM_STEP_ID");
-	userid=getenv("LOGNAME");
-	appid=getenv("SLURM_JOB_NAME");
-	if (jid!=NULL) req.req_data.app.job.id=atoi(jid);
-	if (sid!=NULL) req.req_data.app.job.step_id=atoi(sid);
-	if (userid!=NULL) strcpy(req.req_data.app.job.user_id,userid);
-	if (appid!=NULL) strcpy(req.req_data.app.job.app_id,appid);
-	#else
+	#if !SHARED_MEMORY
 	req.req_data.req_value=getpid();
+	#else
+	copy_application(&req.req_data.app,my_app);
 	#endif
+	// We create a single ID 
+	my_id=create_ID(my_app->job.id,my_app->job.step_id);
+	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);
 		sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
-		sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,i,getpid());
+		sprintf(ear_commack,"%s/.ear_comm.ack_%d.%d",ear_tmp,i,my_id);
 
 		// Sometimes EARD needs some time to startm we will wait for the first one
 		if (i==0){
@@ -147,7 +145,7 @@ int eards_connect()
 			}
 
 			// ping pipe is used just for synchronization
-			sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,getpid());
+			sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,my_id);
 			ret=mknod(ear_ping,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH,0);
 
 			if (ret < 0) {
