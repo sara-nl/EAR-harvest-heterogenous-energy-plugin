@@ -28,27 +28,38 @@
 */
 
 
+/** This program sets the node frequency . It must be executed with privileges
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <control/frequency.h>
 
-#ifndef EAR_CONTROL_FREQUENCY_H
-#define EAR_CONTROL_FREQUENCY_H
+int EAR_VERBOSE_LEVEL=1;
 
-int frequency_init(uint cpus);
-void frequency_dispose();
-uint frequency_get_num_freqs();
-uint frequency_get_num_pstates();
-uint frequency_get_num_online_cpus();
-ulong frequency_get_cpu_freq(uint cpu);
-ulong frequency_get_nominal_freq();
-ulong *frequency_get_freq_rank_list();
-ulong frequency_set_all_cpus(ulong freq);
-ulong frequency_pstate_to_freq(uint pstate);
-uint frequency_freq_to_pstate(ulong freq);
-void frequency_set_performance_governor_all_cpus();
-void frequency_set_ondemand_governor_all_cpus();
-void frequency_set_userspace_governor_all_cpus();
-void frequency_save_previous_frequency();
-void frequency_save_previous_configuration();
-void frequency_recover_previous_frequency();
-void frequency_recover_previous_configuration();
-
-#endif //EAR_CONTROL_FREQUENCY_H
+void usage(char *prog)
+{
+	fprintf(stderr,"usage:%s cpus|[-h]\n",prog);
+	fprintf(stdout,"This program changes the governor to ondemand. You need root privileges\n");
+	exit(0);
+}
+void main(int argc,char *argv[])
+{
+	int uid;
+	int cpus;
+	if (argc==1) usage(argv[0]);
+	if (argc==2){
+		if (strcmp(argv[1],"-h")==0){
+			usage(argv[0]);
+		}else cpus=atoi(argv[1]);
+	}else usage(argv[0]);
+	
+	if (getuid()!=0){ 
+		usage(argv[0]);
+	}
+	printf("This program will change the governor to ondemand. CPUS %d\n",cpus);
+	frequency_init(cpus);
+	frequency_set_ondemand_governor_all_cpus();
+	frequency_dispose();
+}

@@ -54,6 +54,7 @@ int ear_whole_app;
 int ear_my_rank;
 int my_job_id;
 int my_step_id;
+char my_account[GENERIC_NAME];
 
 // DynAIS
 uint loop_with_signature;

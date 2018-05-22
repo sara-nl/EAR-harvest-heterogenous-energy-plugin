@@ -55,6 +55,7 @@ extern int ear_whole_app;
 extern int ear_my_rank;
 extern int my_job_id;
 extern int my_step_id;
+extern char my_account[GENERIC_NAME];
 
 // DynAIS
 extern uint loop_with_signature;
