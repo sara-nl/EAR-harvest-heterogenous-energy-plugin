@@ -29,27 +29,28 @@
 
 
 
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <float.h>
 #include <errno.h>
+#include <signal.h>
 #include <pthread.h>
 
-#include <common/config.h>
-#include <common/ear_verbose.h>
-#include <common/types/generic.h>
-#include <common/types/application.h>
-#include <common/types/periodic_metric.h>
 #include <control/frequency.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
 #include <daemon/power_monitoring.h>
-#include <common/database/db_helper.h>
+#include <common/types/periodic_metric.h>
+#include <common/types/application.h>
+#include <common/types/generic.h>
+#include <common/ear_verbose.h>
+#include <common/config.h>
+
 #if DB_MYSQL
 #include <common/database/db_helper.h>
 #endif
@@ -58,16 +59,12 @@
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
 
-static const char *__NAME__="powermon: ";
+static char *__NAME__="powermon: ";
 
 unsigned int f_monitoring;
 int idleNode=1;
 
 
-/* AVG, MAX, MIN for app */
-int samples=0;
-double max_dc=0,min_dc=DBL_MAX,avg_dc;
-int current_app_id=-1;
 
 extern char nodename[MAX_PATH_SIZE];
 static int fd_powermon=-1;
@@ -83,15 +80,32 @@ typedef struct powermon_app{
 powermon_app_t current_ear_app;
 periodic_metric_t current_sample;
 
-#define max(X,Y) (((X) > (Y)) ? (X) : (Y))
-#define min(X,Y) (((X) < (Y)) ? (X) : (Y))
+static void PM_my_sigusr1(int signun)
+{
+    VERBOSE_N(0," thread %u receives sigusr1\n",(uint)pthread_self());
+    pthread_exit(0);
+}
+
+static void PM_set_sigusr1()
+{
+    sigset_t set;
+    struct  sigaction sa;
+    sigemptyset(&set);
+    sigaddset(&set,SIGUSR1);
+    pthread_sigmask(SIG_UNBLOCK,&set,NULL); // unblocking SIGUSR1 for this thread
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = PM_my_sigusr1;
+    sa.sa_flags=0;
+    if (sigaction(SIGUSR1, &sa, NULL) < 0)
+        ear_verbose(0,"eard doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
+
+}
+
 
 
 void reset_current_app()
 {
 	memset(&current_ear_app,0,sizeof(application_t));
-	current_ear_app.app.job.id=-1;
-	current_ear_app.job_created=0;
 }
 
 
@@ -107,8 +121,6 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	energy_data_t c_energy;
 	current_ear_app.job_created=!from_mpi;
 	copy_application(&current_ear_app.app,new_app);	
-	current_ear_app.app.power_sig.max_DC_power=0;
-	current_ear_app.app.power_sig.min_DC_power=500;
 	time(&current_ear_app.app.job.start_time);	
 	current_ear_app.app.job.start_mpi_time=0;
 	current_ear_app.app.job.end_mpi_time=0;
@@ -116,6 +128,8 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	// reset signature
 	init_signature(&current_ear_app.app.signature);
 	init_power_signature(&current_ear_app.app.power_sig);
+	current_ear_app.app.power_sig.max_DC_power=0;
+	current_ear_app.app.power_sig.min_DC_power=500;
 	// Initialize energy
 	read_enegy_data(&c_energy);
 	copy_energy_data(&current_ear_app.energy_init,&c_energy);
@@ -146,25 +160,6 @@ void job_end_powermon_app()
 
 void report_powermon_app(powermon_app_t *app)
 {
-	char buffer[1024];
-    struct tm *current_t;
-    char jbegin[64],jend[64],mpibegin[64],mpiend[64];
-
-	// This function will report values to EAR_DB
-	#if 0
-    // We format the end time into localtime and string
-    current_t=localtime(&(app->app.job.start_time));
-    strftime(jbegin, sizeof(jbegin), "%c", current_t);
-    current_t=localtime(&(app->app.job.end_time));
-    strftime(jend, sizeof(jend), "%c", current_t);
-	if (app->app.job.start_mpi_time){
-    	current_t=localtime(&(app->app.job.start_mpi_time));
-    	strftime(mpibegin, sizeof(mpibegin), "%c", current_t);
-    	current_t=localtime(&(app->app.job.end_mpi_time));
-    	strftime(mpiend, sizeof(mpiend), "%c", current_t);
-	}
-	#endif
-
 	// We can write here power information for this job
 	report_application_data(&app->app);
 #if DB_MYSQL
@@ -184,7 +179,7 @@ static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void powermon_mpi_init(application_t * appID)
 {
-	VERBOSE_N(1,"powermon_mpi_init job_id %d step_id %d \n",appID->job.id,appID->job.step_id);
+	VERBOSE_N(0,"powermon_mpi_init job_id %d step_id %d (is_mpi %u)\n",appID->job.id,appID->job.step_id,appID->is_mpi);
 	// As special case, we will detect if not job init has been specified
 	if (!current_ear_app.job_created){	// If the job is nt submitted through slurm, new_job would not be submitted 
 		powermon_new_job(appID,1);
@@ -233,7 +228,6 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 void powermon_end_job(job_id jid,job_id sid)
 {
     // Application disconnected
-    double lavg,lmax,lmin;
     powermon_app_t summary;
     char buffer[128];
 	if ((jid!=current_ear_app.app.job.id) || (sid!=current_ear_app.app.job.step_id)){ 
@@ -246,12 +240,13 @@ void powermon_end_job(job_id jid,job_id sid)
         job_end_powermon_app();
 		// After that function, the avg power is computed
 		bcopy(&current_ear_app,&summary,sizeof(powermon_app_t));
-        current_ear_app.app.job.id=-1;
+        current_ear_app.app.job.id=0;
 		current_ear_app.job_created=0;
 		// we must report the current period for that job before the reset:PENDING
 		end_job_for_period(&current_sample);
     pthread_mutex_unlock(&app_lock);
     report_powermon_app(&summary);
+	reset_current_app();
     frequency_recover_previous_policy();
     frequency_recover_previous_frequency();
 
@@ -261,17 +256,17 @@ void powermon_end_job(job_id jid,job_id sid)
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power)
 {
+	printf("ID %u Current power %lf max %lf min %lf\n",current_ear_app.app.job.id,my_current_power->avg_dc,current_ear_app.app.power_sig.max_DC_power,
+		current_ear_app.app.power_sig.min_DC_power);
 	while (pthread_mutex_trylock(&app_lock));
 	if (current_ear_app.app.job.id>0){
-			current_ear_app.app.power_sig.max_DC_power=max(current_ear_app.app.power_sig.max_DC_power,my_current_power->avg_dc);
-			current_ear_app.app.power_sig.min_DC_power=min(current_ear_app.app.power_sig.min_DC_power,my_current_power->avg_dc);
+		if (my_current_power->avg_dc>current_ear_app.app.power_sig.max_DC_power) 
+			current_ear_app.app.power_sig.max_DC_power=my_current_power->avg_dc;
+		if (my_current_power->avg_dc<current_ear_app.app.power_sig.min_DC_power)
+			current_ear_app.app.power_sig.min_DC_power=my_current_power->avg_dc;
 	}
 	pthread_mutex_unlock(&app_lock);
 		
-	if (current_ear_app.app.job.id!=-1){	
-		printf("Application id %d[%d]: ",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
-		printf("	max_power %lf min_power %lf\n",current_ear_app.app.power_sig.max_DC_power,current_ear_app.app.power_sig.min_DC_power);
-	}
     report_periodic_power(fd_periodic, my_current_power);
 
 	current_sample.start_time=my_current_power->begin;
@@ -303,9 +298,9 @@ void create_powermon_out()
 		if (fd_powermon>=0) write(fd_powermon,header,strlen(header));
 	}
 	if (fd_powermon<0){ 
-		VERBOSE_N(0,"Error creating output file %s\n",strerror(errno));
+		VERBOSE_N(0," Error creating output file %s\n",strerror(errno));
 	}else{
-		VERBOSE_N(0,"Created job power monitoring  file %s\n",output_name);
+		VERBOSE_N(0," Created job power monitoring  file %s\n",output_name);
 	}	
     sprintf(output_name,"%s/%s.pm_periodic_data.txt",ear_tmp,nodename);
     fd_periodic=open(output_name,O_WRONLY,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -313,9 +308,9 @@ void create_powermon_out()
         fd_periodic=open(output_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     }
     if (fd_periodic<0){
-        VERBOSE_N(0,"Error creating output file for periodic monitoring %s\n",strerror(errno));
+        VERBOSE_N(0," Error creating output file for periodic monitoring %s\n",strerror(errno));
     }else{
-        VERBOSE_N(0,"Created power monitoring file for periodic information %s\n",output_name);
+        VERBOSE_N(0," Created power monitoring file for periodic information %s\n",output_name);
     }
 	umask(my_mask);
 }
@@ -332,8 +327,10 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	double t_diff;
 	power_data_t my_current_power;
 
-	VERBOSE_N(0,"power monitoring thread created\n");
-	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0,"Error in init_power_ponitoring\n");
+	PM_set_sigusr1();
+
+	VERBOSE_N(0," power monitoring thread created\n");
+	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0," Error in init_power_ponitoring\n");
 	f_monitoring=*f_monitoringp;
 	t_ms=f_monitoring/1000;
 	// current_sample is the current powermonitoring period

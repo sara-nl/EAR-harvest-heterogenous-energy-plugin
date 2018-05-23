@@ -1,7 +1,8 @@
 CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## RULES
-.c.o :
+
+%.o: %.c %.h $(DEPS)
 	$(CC) $(CFLAGS) -c  $< 
 
 ######## OPTIONS

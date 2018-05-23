@@ -42,23 +42,23 @@
 #endif
 
 #include <control/frequency.h>
-#include <metrics/papi/generics.h>
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
 
-static struct cpufreq_policy previous_cpu0_policy;
-ulong previous_cpu0_freq;
-int saved_previous_policy;
-int saved_previous_freq;
-
-ulong *freq_list_rank; // List of frequencies of the whole rank (KHz)
-ulong *freq_list_cpu; // List of frequencies of each CPU (KHz)
-ulong freq_nom; // Nominal frequency (assuming CPU 0)
-uint num_freqs;
-uint num_cpus;
-
 static const char* __NAME__ = "FREQUENCY_CONTROL";
+
+static struct cpufreq_policy previous_cpu0_policy;
+static ulong previous_cpu0_freq;
+static int saved_previous_policy;
+static int saved_previous_freq;
+
+static ulong *freq_list_rank; // List of frequencies of the whole rank (KHz)
+static ulong *freq_list_cpu; // List of frequencies of each CPU (KHz)
+static ulong freq_nom; // Nominal frequency (assuming CPU 0)
+static uint num_freqs;
+static uint num_cpus;
+
 
 //
 static ulong *get_frequencies_cpu()
@@ -291,6 +291,17 @@ void frequency_set_performance_governor_all_cpus()
 		cpufreq_modify_policy_governor(i, "performance");
 	}
 }
+
+// Privileged function
+void frequency_set_ondemand_governor_all_cpus()
+{
+    int i;
+
+    for (i = 0; i < num_cpus; i++) {
+        cpufreq_modify_policy_governor(i, "ondemand");
+    }
+}
+
 
 // Privileged function
 void frequency_set_userspace_governor_all_cpus()

@@ -36,23 +36,22 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
+#include <linux/limits.h>
+
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <linux/limits.h>
 #include <netinet/ip.h>
 #include <netdb.h>
-#include <common/config.h>
 
-#include <common/ear_verbose.h>
-#include <common/types/job.h>
-#include <common/remote_conf.h>
-#include <common/shared_configuration.h>
-#include <common/states.h>
-#include <common/remote_conf.h>
 #include <daemon/power_monitoring.h>
-
+#include <common/shared_configuration.h>
+#include <common/remote_conf.h>
+#include <common/types/job.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
+#include <common/config.h>
 
 int create_server_socket();
 int wait_for_client(int sockfd,struct sockaddr_in *client);
@@ -69,19 +68,19 @@ int eards_remote_socket,eards_client;
 struct sockaddr_in eards_remote_client;
 char *my_tmp;
 
-static const char *__NAME__ = "dynamic_conf:";
+static char *__NAME__ = "dynamic_conf:";
 ear_conf_t *dyn_conf;
 
 
-void my_sigusr1(int signun)
+static void DC_my_sigusr1(int signun)
 {
-	VERBOSE_N(0,"dyn_conf thread receives sigusr1\n");
+	VERBOSE_N(0,"thread %u receives sigusr1\n",(uint)pthread_self());
 	ear_conf_shared_area_dispose(my_tmp);
 	close_server_socket(eards_remote_socket);
 	pthread_exit(0);
 }
 
-void set_sigusr1()
+static void DC_set_sigusr1()
 {
     sigset_t set;
     struct  sigaction sa;
@@ -89,7 +88,7 @@ void set_sigusr1()
     sigaddset(&set,SIGUSR1);
     pthread_sigmask(SIG_UNBLOCK,&set,NULL); // unblocking SIGUSR1 for this thread
     sigemptyset(&sa.sa_mask);
-    sa.sa_handler = my_sigusr1;
+    sa.sa_handler = DC_my_sigusr1;
     sa.sa_flags=0;
     if (sigaction(SIGUSR1, &sa, NULL) < 0)  		
 		ear_verbose(0,"eard doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
@@ -157,7 +156,7 @@ void * eard_dynamic_configuration(void *tmp)
 	
 	ear_verbose(0,"dynamic_configration thread created\n");
 
-	set_sigusr1();
+	DC_set_sigusr1();
 
 
 	ear_verbose(0,"Creating scoket for remote commands\n");

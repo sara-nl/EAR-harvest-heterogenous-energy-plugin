@@ -1,13 +1,12 @@
 CFLAGS   = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS  = -shared  $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
-
-######## VARS
-
-export DIR
-export CFLAGS
-export LDFLAGS
+LDFLAGS  = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 
 ######## FILES
+
+HEADERS = $(SRCDIR)/library/common/externs.h \
+          $(SRCDIR)/common/ear_verbose.h \
+          $(SRCDIR)/common/states.h \
+          $(SRCDIR)/common/config.h
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/papi/generics.o \
@@ -17,14 +16,18 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/papi/stalls.o \
                $(SRCDIR)/control/frequency.o
 
-COMMON_OBJS = $(SRCDIR)/common/shared_configuration.o \
-              $(SRCDIR)/common/ear_daemon_client.o \
+COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/environment_common.o \
               $(SRCDIR)/common/file_lock.o \
               $(SRCDIR)/common/environment.o \
-              $(SRCDIR)/common/math_operations.o
+              $(SRCDIR)/common/math_operations.o \
+              $(SRCDIR)/common/types.a
 
-TYPES = $(SRCDIR)/common/types.a
+ifdef FEAT_SHRMEM
+COMMON_OBJS += $(SRCDIR)/common/shared_configuration.o
+endif
+
+OUTER_OBJS = $(COMMON_OBJS) $(METRICS_OBJS)
 
 REMAKE_OBJS = states/states.o \
               tracer/tracer.o \
@@ -41,11 +44,15 @@ OBJS = dynais/dynais.o \
        models/monitoring.o \
        models/sig_projections.o
 
-SEQ_OBJS = $(OBJS) $(COMMON_OBJS) $(METRICS_OBJS) $(TYPES)
+######## VARS
+
+export DIR
+export CFLAGS
+export LDFLAGS
 
 ######## RULES
 
-all: @mpi_so@ @mpi_trace_so@ @ompi_so@ @ompi_trace_so@
+all: $(OBJS) @mpi_so@ @mpi_trace_so@ @ompi_so@ @ompi_trace_so@
 
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
@@ -60,11 +67,11 @@ update-mpi-objs:
 update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-@mpi_so@: update-mpi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS)  $(REMAKE_OBJS) $(SEQ_OBJS)
+@mpi_so@: update-mpi-objs 
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
-@mpi_trace_so@: update-mpi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
+@mpi_trace_so@: update-mpi-objs-trace
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
 endif
 
@@ -78,11 +85,11 @@ update-ompi-objs:
 update-ompi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(OMPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-@ompi_so@: update-ompi-objs $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
+@ompi_so@: update-ompi-objs
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
-@ompi_trace_so@: update-ompi-objs-trace $(SEQ_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(SEQ_OBJS)
+@ompi_trace_so@: update-ompi-objs-trace
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o @ompi_trace_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
 endif
 
@@ -90,12 +97,12 @@ endif
 
 install:
 ifdef MPICC
-	mv @mpi_so@ $(DESTDIR)/lib/@mpi_so@
-	mv @mpi_trace_so@ $(DESTDIR)/lib/@mpi_trace_so@
+	@ mv @mpi_so@ $(DESTDIR)/lib/@mpi_so@
+	@ mv @mpi_trace_so@ $(DESTDIR)/lib/@mpi_trace_so@
 endif
 ifdef OMPICC
-	mv @ompi_so@ $(DESTDIR)/lib/@ompi_so@
-	mv @ompi_trace_so@ $(DESTDIR)/lib/@ompi_trace_so@
+	@ mv @ompi_so@ $(DESTDIR)/lib/@ompi_so@
+	@ mv @ompi_trace_so@ $(DESTDIR)/lib/@ompi_trace_so@
 endif
 
 clean:

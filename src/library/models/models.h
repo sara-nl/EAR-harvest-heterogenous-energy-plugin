@@ -53,7 +53,6 @@ void policy_end_loop();
 *   and returns the “optimal” frequency. */
 ulong policy_power(uint whole_app, signature_t *sig);
 
-
 /** Given a performance projection, the actual application signature and the last
 *   computed application signature values, returns true if policy decision has been
 *   the correct ones. */

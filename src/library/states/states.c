@@ -67,6 +67,7 @@ static long long comp_N_begin, comp_N_end, comp_N_time;
 static uint begin_iter, N_iter;
 static ulong policy_freq;
 static uint tries_current_loop=0;
+static uint tries_current_loop_same_freq=0;
 
 static ulong perf_accuracy_min_time = 1000000;
 static uint perf_count_period = 100,loop_perf_count_period;
@@ -119,6 +120,7 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
 
 	EAR_STATE = FIRST_ITERATION;
 	tries_current_loop=0;
+	tries_current_loop_same_freq=0;
 
 	policy_new_loop();
 	comp_N_begin = metrics_time();
@@ -311,7 +313,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							VERBOSE_N(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
 							log_report_dynais_off(application.job.id,application.job.step_id);
 						}
-						VERBOSE_N(0,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+						VERBOSE_N(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
 						loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
 						last_first_event=event;
 						last_calls_in_loop=mpi_calls_iter;
@@ -343,31 +345,28 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 						memcpy(&last_signature, &loop_signature, sizeof(application_t));
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
-					}
-					else
-					{
-						EAR_STATE = SIGNATURE_STABLE;
-						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> SIGNATURE_STABLE \n",
-								  ear_app_name);
-					}
-
-					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
-					traces_frequency(ear_my_rank, my_id, policy_freq);
-					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
-
-					if (policy_freq != prev_f)
-					{
+						tries_current_loop++;
 						ear_verbose(1,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
 									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
-						tries_current_loop++;
-					} else {
+					}
+					else
+					{
+						if (tries_current_loop_same_freq>=MAX_POLICY_TRIES){
+							EAR_STATE = SIGNATURE_STABLE;
+							ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> SIGNATURE_STABLE \n",
+								  ear_app_name);
+						}else tries_current_loop_same_freq++;
 						ear_verbose(1,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
 									ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
 									ENERGY, EDP);
 					}
+
+					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
+					traces_frequency(ear_my_rank, my_id, policy_freq);
+					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
 
 
 					// Loop printing algorithm

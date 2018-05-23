@@ -60,7 +60,7 @@ int conf_ear_dynais_window_size=DEFAULT_DYNAIS_WINDOW_SIZE;
 
 
 # define __USE_GNU
-# include <dlfcn.h>
+#include <dlfcn.h>
 # undef  __USE_GNU
 static int (*my_omp_get_max_threads)(void) = NULL;
 

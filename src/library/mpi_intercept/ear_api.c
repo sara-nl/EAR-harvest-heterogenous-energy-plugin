@@ -45,6 +45,7 @@
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
+#include <library/states/states_periodic.h>
 #include <library/models/models.h>
 #include <library/metrics/metrics.h>
 #include <library/mpi_intercept/ear_api.h>
@@ -174,6 +175,8 @@ static void get_job_identification()
 		my_job_id = getppid();
 		my_step_id=0;
 	}
+	if (account_id==NULL) strcpy(my_account,"NO_SLURM_ACCOUNT");	
+	else strcpy(my_account,account_id);
 }
 
 static void get_app_name(char *my_name)
@@ -245,6 +248,7 @@ void ear_init()
 	get_app_name(ear_app_name);
 	strcpy(application.job.user_id, getenv("LOGNAME"));
 	strcpy(application.node_id, node_name);
+	strcpy(application.job.user_acc,my_account);
 	application.job.id = my_job_id;
 	application.job.step_id = my_step_id;
 	//sets the job start_time
@@ -288,6 +292,7 @@ void ear_init()
 
 	// States
 	states_begin_job(my_id, NULL, ear_app_name);
+	states_periodic_begin_job(my_id, NULL, ear_app_name);
 
 	// Summary files
 	summary_pathname = get_ear_user_db_pathname();
@@ -346,10 +351,18 @@ void ear_finalize()
 	if (loop_with_signature) {
 		VERBOSE_N(1, "loop ends with %d iterations detected", ear_iterations);
 	}
-	if (in_loop) {
-		states_end_period(ear_iterations);
+	switch(ear_periodic_mode){
+	case PERIODIC_MODE_OFF:
+		if (in_loop) {
+			states_end_period(ear_iterations);
+		}
+		states_end_job(my_id, NULL, ear_app_name);
+		break;
+	case PERIODIC_MODE_ON:
+		states_periodic_end_period(ear_iterations);
+		states_periodic_end_job(my_id, NULL, ear_app_name);
+		break;
 	}
-	states_end_job(my_id, NULL, ear_app_name);
 
 	#if SHARED_MEMORY
 	dettach_ear_conf_shared_area();
@@ -371,32 +384,35 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	if (my_id) return;
 	
 	total_mpi_calls++;
-
+	/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
+	 * ear_periodic_mode can be ON or OFF 
+	 */
 	switch(ear_periodic_mode){
 		case PERIODIC_MODE_OFF:
 			switch(dynais_enabled){
 				case DYNAIS_ON:
-					/** We must control here we are not consuming too much time tryng to detect a signature */
-					/*
-					if some signature has been detected --> nothing to check
-					else if num_mpis % MAX_TO_CHECK compute time, if time > MAX-TIME --> set periodic mode on
-					*/
+					/* First time EAR computes a signature using dynais, check_periodic_mode is set to 0 */
 					if (check_periodic_mode==0){  // check_periodic_mode=0 the first time a signature is computed
 						ear_mpi_call_dynais_on(call_type,buf,dest);
 					}else{ // Check every N=MPI_CALLS_TO_CHECK_PERIODIC mpi calls
-						// Check here if we must move to p
+						/* Check here if we must move to periodic mode, do it every N mpicalls to reduce the overhead */
 						if ((total_mpi_calls%MPI_CALLS_TO_CHECK_PERIODIC)==0){
-							VERBOSE_N(0,"No signature computed after %d mpi calls, checking periodic mode\n",total_mpi_calls);
 							time(&curr_time);
 							time_from_mpi_init=difftime(curr_time,application.job.start_time);
+						
+							/* In that case, the maximum time without signature has been passed, go to set ear_periodic_mode ON */
 							if (time_from_mpi_init >=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE){
-								VERBOSE_N(0,"Going to periodic mode %lf\n",time_from_mpi_init);
 								// we must compute N here
 								ear_periodic_mode=PERIODIC_MODE_ON;
 								mpi_calls_in_period=(uint)(total_mpi_calls/MAX_TIME_DYNAIS_WITHOUT_SIGNATURE)*PERIOD;
-								VERBOSE_N(0,"PERIOD=%u mpi calls\n",mpi_calls_in_period);
+								VERBOSE_N(0,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
+									time_from_mpi_init,mpi_calls_in_period);
+								states_periodic_begin_period(my_id, NULL, 1, 1);
+								ear_iterations=0;
+								states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 							}else{
-								VERBOSE_N(0,"Go on with dynais time=%lf seconds\n",time_from_mpi_init);
+
+								/* We continue using dynais */
 								ear_mpi_call_dynais_on(call_type,buf,dest);	
 							}
 						}else{	// We check the periodic mode every MPI_CALLS_TO_CHECK_PERIODIC mpi calls
@@ -410,12 +426,10 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 			}
 			break;
 		case PERIODIC_MODE_ON:
-				/* first time compute number of mpicalls to be considered based on total mpi calls and time
-				call first iteration
-				after N mpi calls call new_periodic_iteration, never return to non-periodic mode
-				*/
+				/* EAR energy policy is called periodically */
 				if ((total_mpi_calls%mpi_calls_in_period)==0){
-					VERBOSE_N(0,"NEW EAR MODE : PERIODIC \n");
+					ear_iterations++;
+					states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 				}
 	}
 #else

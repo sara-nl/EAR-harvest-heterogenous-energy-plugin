@@ -36,13 +36,11 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/resource.h>
-
-#include <cpufreq.h>
 #include <slurm/spank.h>
+#include <cpufreq.h>
 
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
-#include <common/string_enhanced.h>
 #include <common/config.h>
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
@@ -54,8 +52,8 @@ int auth_mode =  1;
 int verbosity = -1;
 
 struct spank_option spank_options[] = {
-    { "ear", "", "Enables Energy Aware Runtime",
-      0, 0, (spank_opt_cb_f) _opt_ear
+    { "ear", "on/off", "Enables Energy Aware Runtime",
+      1, 0, (spank_opt_cb_f) _opt_ear
     },
     { "ear-policy", "type",
       "Selects an energy policy for EAR.\n" \
@@ -423,11 +421,24 @@ int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
 static int _opt_ear (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear");
+	char enabled[32];
+	int ienabled;
 
-    if (!remote) {
-    	if (setenv_local("EAR", "1", 1) != 1) {
-    		return (ESPANK_ERROR);
-    	}
+    if (!remote)
+	{
+		strncpy(enabled, optarg, 32);
+        strtoup(enabled);
+
+		if (strcmp(enabled, "ON") == 0)
+		{
+    		if (setenv_local("EAR", "1", 1) != 1) {
+    			return (ESPANK_ERROR);
+    		}
+		} else {
+			if (setenv_local("EAR", "0", 1) != 1) {
+                return (ESPANK_ERROR);
+            }
+		}
     }
 
     return (ESPANK_SUCCESS);
@@ -437,7 +448,7 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_learning");
 
-    char p_state[2];
+    char p_state[8];
     int ioptarg;
 	int result;
 

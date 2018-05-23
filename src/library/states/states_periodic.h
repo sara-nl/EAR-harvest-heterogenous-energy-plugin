@@ -27,35 +27,22 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _STRING_ENHANCED_H_
-#define _STRING_ENHANCED_H_
 
-#include <common/types/generic.h>
+#ifndef _STATES_PERIODIC_H_
+#define _STATES_PERIODIC_H_
 
-/**@{ Adds commas to numbers. It is printed in internal buffer and a pointer to
-*   this buffer is returned. So do whatever you want before call again one
-*   of these functions. */
-char *add_point_ull(ull number);
-char *add_point_ulong(ulong number);
-char *add_point_uint(uint number); /**@}*/
+/** Executed at job end */
+void states_periodic_end_job(int my_id, FILE *ear_fd, char *app_name);
 
-/**@{ Prints a type splitted by columns. You have to call 'set_spacing_digits',
-*   every time you want to define the number of characters per column. You can
-*   define just once, or iteratively to use different column lengths. */
-void set_spacing_digits(uint digits);
-void print_spacing_digits(uint digits);
-void print_spacing_ull(ull number);
-void print_spacing_ulong(ulong number);
-void print_spacing_uint(uint number);
-void print_spacing_int(int number);
-void print_spacing_string(char* string);
-void print_spacing_string_align_left(char* string, uint left_spaces); /**@}*/
+/** Executed at job end */
+void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name);
 
-/** Cleans the character pointed by 'chr', adding an '\0' in its position. */
-char* strclean(char *string, char chr);
+/** It must be executed when EAR goes to periodic mode. states_periodic_new_iteration must be executed after that when going to periodic mode */
+void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size);
 
-/** Converts a string to upper case. */
-void strtoup(char *string);
 
+/** Executed every N mpi calls */
+void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter);
 #else
 #endif
+

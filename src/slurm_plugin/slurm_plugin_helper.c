@@ -36,9 +36,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <linux/limits.h>
-
-#include <cpufreq.h>
 #include <slurm/spank.h>
+#include <cpufreq.h>
 
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>

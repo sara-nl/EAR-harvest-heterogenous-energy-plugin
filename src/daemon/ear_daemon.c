@@ -57,14 +57,10 @@
 #if SHARED_MEMORY
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
-unsigned int power_mon_freq=POWERMON_FREQ;
-pthread_t power_mon_th; // It is pending to see whether it works with threads
-//int power_mon_th;
-#endif
-#if SHARED_MEMORY
-#include <pthread.h>
 #include <common/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
+unsigned int power_mon_freq=POWERMON_FREQ;
+pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
 #endif
 
@@ -96,7 +92,7 @@ int application_id=-1;
 unsigned long energy_freq;
 struct daemon_req req;
 
-void eard_exit();
+void eard_exit(uint restart);
 void eard_close_comm();
 int is_new_application(int pid);
 int is_new_service(int req,int pid);
@@ -366,8 +362,31 @@ int application_timeout()
 	return alive;
 }
 
-// HIGHLIGHT: DAEMON EXIT
-void eard_exit()
+/*
+*	Restarts again EARD
+*/
+
+void eard_restart()
+{
+	char *ear_install;
+	char my_bin[MAX_PATH_SIZE];
+	ear_install=getenv("EAR_INSTALL_PATH");
+	if (ear_install==NULL){
+		VERBOSE_N(0,"EAR_INSTALL_PATH is NULL\n");
+		sprintf(my_bin,"eard");
+	}else sprintf(my_bin,"%s/sbin/eard",ear_install);
+	VERBOSE_N(0,"LD_LIBRARY_PATH=%s\n",getenv("LD_LIBRARY_PATH"));
+	VERBOSE_N(0,"EAR_DB_PATHNAME=%s\n",getenv("EAR_DB_PATHNAME"));
+	VERBOSE_N(0,"Restarting to %s p_state=1 ear_tmp=%s verbose=0\n",my_bin,ear_tmp);
+	execlp(my_bin,my_bin,"1",ear_tmp,"0",NULL);
+	VERBOSE_N(0,"Restarting EARD %s\n",strerror(errno));
+	exit(1);	
+}
+
+/*
+*	Depending on restart argument, exits eard or restart it
+*/
+void eard_exit(uint restart)
 {
 	char ear_commreq[MAX_PATH_SIZE];
 	int i;
@@ -405,7 +424,16 @@ void eard_exit()
 		//}
 	}
 
-	exit(1);
+	if (restart){ 
+		VERBOSE_N(0,"Restarting EARD\n");
+	}else{ 
+		VERBOSE_N(0,"Exiting EARD\n");
+	}
+	if (restart==0){ 
+		exit(0);
+	}else{
+		eard_restart();
+	}
 }
 
 // HIGHLIGHT: LIBRARY DISPOSE (2/2)
@@ -793,19 +821,21 @@ void Usage(char *app)
 }
 
 //region SIGNALS
-void signal_handler(int signal)
+void signal_handler(int sig)
 {
-	if (signal == SIGPIPE) VERBOSE_N(0, "signal SIGPIPE received");
-	if (signal == SIGTERM) VERBOSE_N(0, "signal SIGTERM received");
-	if (signal == SIGINT)  VERBOSE_N(0, "signal SIGINT received");
+	if (sig == SIGPIPE){ VERBOSE_N(0, "signal SIGPIPE received. Application terminated abnormally");}
+	if (sig == SIGTERM){ VERBOSE_N(0, "signal SIGTERM received. Finishing");}
+	if (sig == SIGINT){  VERBOSE_N(0, "signal SIGINT received. Finishing");}
+	if (sig == SIGHUP){  VERBOSE_N(0, "signal SIGHUP received. Restarting");}
 
 	// The PIPE was closed, so the daemon connection ends
-	if (signal == SIGPIPE) {
+	if (sig == SIGPIPE) {
 		eard_close_comm();
 	}
 
-	// Someone wants EARD to get closed
-	if ((signal == SIGTERM) || (signal == SIGINT))
+
+	// Someone wants EARD to get closed or restarted
+	if ((sig == SIGTERM) || (sig == SIGINT) || (sig == SIGHUP))
 	{
 		eard_must_exit = 1;
 
@@ -816,21 +846,22 @@ void signal_handler(int signal)
 		}
 
 		#if SHARED_MEMORY
-		// Power monitoring
-		pthread_join(power_mon_th,NULL);
-
-		// Maybe we should just wait for threads
-		//kill(power_mon_th,SIGKILL);
-		//waitpid(power_mon_th,NULL,0);
-
-		// Shared Memory
+		VERBOSE_N(0,"Sending SIGUSR1 to powermon %u and DC %u threads\n",(uint)power_mon_th,(uint)dyn_conf_th);
+		pthread_kill(power_mon_th, SIGUSR1);
 		pthread_kill(dyn_conf_th, SIGUSR1);
+		pthread_join(power_mon_th,NULL);
 		pthread_join(dyn_conf_th, NULL);
 		#endif
 
-		eard_exit();
-		VERBOSE_N(0, "exitting");
 	}
+	if ((sig == SIGTERM) || (sig == SIGINT)){
+		eard_exit(0);
+	}
+	if (sig == SIGHUP){ 
+		VERBOSE_N(0,"Restarting!\n");
+		eard_exit(1);
+	}
+	
 }
 
 void signal_catcher()
@@ -857,6 +888,12 @@ void signal_catcher()
 	if (sigaction(signal, &action, NULL) < 0) {
 		VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
 	}
+
+    signal = SIGHUP;
+    if (sigaction(signal, &action, NULL) < 0) {
+        VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
+    }
+
 }
 //endregion
 
@@ -1016,6 +1053,7 @@ void main(int argc,char *argv[])
 	sigdelset(&eard_mask,SIGPIPE);
 	sigdelset(&eard_mask,SIGTERM);
 	sigdelset(&eard_mask,SIGINT); 
+	sigdelset(&eard_mask,SIGHUP); 
 	sigprocmask(SIG_SETMASK,&eard_mask,NULL);
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;
@@ -1045,5 +1083,5 @@ void main(int argc,char *argv[])
 	//eard is closed by SIGTERM signal, we should not reach this point
 	ear_verbose(0,"eard: END\n");
 	eard_close_comm();	
-	eard_exit();
+	eard_exit(1);
 }

@@ -32,7 +32,7 @@
 #ifndef EAR_CONTROL_FREQUENCY_H
 #define EAR_CONTROL_FREQUENCY_H
 
-int frequency_init();
+int frequency_init(uint cpus);
 void frequency_dispose();
 uint frequency_get_num_freqs();
 uint frequency_get_num_pstates();
@@ -44,6 +44,7 @@ ulong frequency_set_all_cpus(ulong freq);
 ulong frequency_pstate_to_freq(uint pstate);
 uint frequency_freq_to_pstate(ulong freq);
 void frequency_set_performance_governor_all_cpus();
+void frequency_set_ondemand_governor_all_cpus();
 void frequency_set_userspace_governor_all_cpus();
 void frequency_save_previous_frequency();
 void frequency_save_previous_configuration();

@@ -4,7 +4,7 @@ CFLAGS      = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
 
 HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
 
-BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.so
+BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a
 
 NODE_ENERGY_LIBS = $(SRCDIR)/metrics/ipmi/energy_node.so
 

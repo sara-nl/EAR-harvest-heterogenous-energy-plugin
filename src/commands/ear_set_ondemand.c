@@ -27,35 +27,39 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _STRING_ENHANCED_H_
-#define _STRING_ENHANCED_H_
 
-#include <common/types/generic.h>
+/** This program sets the node frequency . It must be executed with privileges
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <control/frequency.h>
 
-/**@{ Adds commas to numbers. It is printed in internal buffer and a pointer to
-*   this buffer is returned. So do whatever you want before call again one
-*   of these functions. */
-char *add_point_ull(ull number);
-char *add_point_ulong(ulong number);
-char *add_point_uint(uint number); /**@}*/
+int EAR_VERBOSE_LEVEL=1;
 
-/**@{ Prints a type splitted by columns. You have to call 'set_spacing_digits',
-*   every time you want to define the number of characters per column. You can
-*   define just once, or iteratively to use different column lengths. */
-void set_spacing_digits(uint digits);
-void print_spacing_digits(uint digits);
-void print_spacing_ull(ull number);
-void print_spacing_ulong(ulong number);
-void print_spacing_uint(uint number);
-void print_spacing_int(int number);
-void print_spacing_string(char* string);
-void print_spacing_string_align_left(char* string, uint left_spaces); /**@}*/
-
-/** Cleans the character pointed by 'chr', adding an '\0' in its position. */
-char* strclean(char *string, char chr);
-
-/** Converts a string to upper case. */
-void strtoup(char *string);
-
-#else
-#endif
+void usage(char *prog)
+{
+	fprintf(stderr,"usage:%s cpus|[-h]\n",prog);
+	fprintf(stdout,"This program changes the governor to ondemand. You need root privileges\n");
+	exit(0);
+}
+void main(int argc,char *argv[])
+{
+	int uid;
+	int cpus;
+	if (argc==1) usage(argv[0]);
+	if (argc==2){
+		if (strcmp(argv[1],"-h")==0){
+			usage(argv[0]);
+		}else cpus=atoi(argv[1]);
+	}else usage(argv[0]);
+	
+	if (getuid()!=0){ 
+		usage(argv[0]);
+	}
+	printf("This program will change the governor to ondemand. CPUS %d\n",cpus);
+	frequency_init(cpus);
+	frequency_set_ondemand_governor_all_cpus();
+	frequency_dispose();
+}

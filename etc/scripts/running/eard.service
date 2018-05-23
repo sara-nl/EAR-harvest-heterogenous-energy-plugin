@@ -1,0 +1,21 @@
+[Unit]
+Description=EARD - Energy Aware Runtime node daemon
+ConditionPathExists=/var/ear
+
+[Service]
+Type=simple
+EnvironmentFile=/home/xjcorbalan/my_ear/etc/slurm/ear.conf
+EnvironmentFile=/home/xjcorbalan/my_ear/etc/slurm/ear.link
+ExecStart=/home/xjcorbalan/my_ear/sbin/eard 1 /var/ear 0
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+PIDFile=/var/ear/eard.pid
+KillMode=process
+Restart=on-failure
+RestartSec=30s
+LimitMEMLOCK=infinity
+LimitSTACK=infinity
+
+[Install]
+WantedBy=multi-user.target
+

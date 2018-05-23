@@ -53,8 +53,8 @@ void main(int argc,char *argv[])
 	if (myname==NULL) 	strcpy(my_job.job.app_id,"");
 	else 				strcpy(my_job.job.app_id,myname);
 
-	//if (myacc==NULL) 	strcpy(my_job.job.account,"");
-	//else 				strcpy(my_job.job.account,myacc);
+	if (myacc==NULL) 	strcpy(my_job.job.user_acc,"");
+	else 				strcpy(my_job.job.user_acc,myacc);
 
 	if (mypolicy==NULL)	strcpy(my_job.job.policy,"");
 	else 				strcpy(my_job.job.policy,mypolicy);
