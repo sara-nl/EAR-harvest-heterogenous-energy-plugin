@@ -99,8 +99,6 @@ void create_tables(MYSQL *connection)
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Signatures (\
                             id INT unsigned NOT NULL AUTO_INCREMENT,\
                             DC_power DOUBLE,\
-                            max_DC_power DOUBLE, \
-                            min_DC_power DOUBLE, \
                             DRAM_power DOUBLE,\
                             PCK_power DOUBLE,\
                             EDP DOUBLE,\

@@ -15,7 +15,8 @@ HEADERS = $(SRCDIR)/common/config.h \
 
 BINARIES = ear_set_node_freq \
            ear_get_node_freq \
-           ereport
+           ereport \
+		   ear_set_ondemand
 
 ifdef FEAT_SHRMEM
 BINARIES += ear_control \
@@ -40,6 +41,9 @@ ear_control: ear_control.c $(REMOTE_OBJS)
 
 ear_set_node_freq: ear_set_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_set_node_freq ear_set_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
+
+ear_set_ondemand: ear_set_ondemand.c $(FREQ_OBJS)
+	$(CC) $(CFLAGS) -o ear_set_ondemand ear_set_ondemand.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
 ear_get_node_freq: ear_get_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_get_node_freq ear_get_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)

@@ -160,7 +160,7 @@ int main (int argc, char *argv[])
     	init_stall_metrics();
     }
 
-    frequency_init();
+    frequency_init(n_threads);
     node_energy_init();
 	F_BASE=frequency_get_num_pstates(0);
     printf("Default frequency was %lu\n",F_BASE);

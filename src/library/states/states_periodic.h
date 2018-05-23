@@ -28,27 +28,21 @@
 */
 
 
+#ifndef _STATES_PERIODIC_H_
+#define _STATES_PERIODIC_H_
 
-#ifndef EAR_CONTROL_FREQUENCY_H
-#define EAR_CONTROL_FREQUENCY_H
+/** Executed at job end */
+void states_periodic_end_job(int my_id, FILE *ear_fd, char *app_name);
 
-int frequency_init(uint cpus);
-void frequency_dispose();
-uint frequency_get_num_freqs();
-uint frequency_get_num_pstates();
-uint frequency_get_num_online_cpus();
-ulong frequency_get_cpu_freq(uint cpu);
-ulong frequency_get_nominal_freq();
-ulong *frequency_get_freq_rank_list();
-ulong frequency_set_all_cpus(ulong freq);
-ulong frequency_pstate_to_freq(uint pstate);
-uint frequency_freq_to_pstate(ulong freq);
-void frequency_set_performance_governor_all_cpus();
-void frequency_set_ondemand_governor_all_cpus();
-void frequency_set_userspace_governor_all_cpus();
-void frequency_save_previous_frequency();
-void frequency_save_previous_configuration();
-void frequency_recover_previous_frequency();
-void frequency_recover_previous_configuration();
+/** Executed at job end */
+void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name);
 
-#endif //EAR_CONTROL_FREQUENCY_H
+/** It must be executed when EAR goes to periodic mode. states_periodic_new_iteration must be executed after that when going to periodic mode */
+void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size);
+
+
+/** Executed every N mpi calls */
+void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter);
+#else
+#endif
+
