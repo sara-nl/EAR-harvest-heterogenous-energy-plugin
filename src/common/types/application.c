@@ -54,8 +54,8 @@ void copy_application(application_t *destiny, application_t *source)
 int append_application_text_file(char *path, application_t *app)
 {
     //lacking: NODENAME(node_id in loop_t), not linked to any loop
-	static char *HEADER = "USERNAME;JOB_ID;APPNAME;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;" \
-	"DC-NODE-POWER;DRAM-POWER;PCK-POWER;POLICY;POLICY_TH;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
+	static char *HEADER = "USERNAME;JOB_ID;APPNAME;POLICY;POLICY_TH;AVG.FREQ;DEF.FREQ;TIME;"\
+    "CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
 	"L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;DP_512";
 	int fd, ret;
 
@@ -82,8 +82,9 @@ int append_application_text_file(char *path, application_t *app)
         return EAR_ERROR;
     }
 
-    print_job_fd(fd, &app->job);
-    print_signature_fd(fd, &app->signature);
+    //print_job_fd(fd, &app->job);
+    //print_signature_fd(fd, &app->signature);
+    print_application_fd(fd, app, 1);
 
     close(fd);
 
@@ -119,6 +120,7 @@ void report_application_data(application_t *app)
 int print_application_fd(int fd, application_t *app, int new_line)
 {
     print_job_fd(fd, &app->job);
+    dprintf(fd, ";"); 
     print_signature_fd(fd, &app->signature);
 
 	if (new_line) {
