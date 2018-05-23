@@ -1,0 +1,29 @@
+.\" Manpage for ereport.
+.TH man 1 "16 May 2018" "1.0" "ereport man page"
+.SH NAME
+ereport \- See a report of EAR's signatures for a particular job execution.
+.SH SYNOPSIS
+If EAR is using files as DB:
+ereport [job_id] [db files path] [options]
+
+If EAR is using MySQL as DB:
+ereport [job_id] [options]
+
+.SH DESCRIPTION
+ereport is a command used for accounting purposes of EAR's data. Given a job's id, ereport will report a detailed list of the nodes involved in said job's execution and EAR's metrics of each node. At he end it prints a summary of the job (including the job's application name, the policy used for its execution as well as its threshold) and the average of the previously displayed EAR's metrics. 
+.SH OPTIONS
+If EAR is using files as DB:
+    -v  Makes the command run in verbose mode, displaying additional information such as files being opened, number of jobs found per node, etc.
+
+If EAR is using MySQL as DB:
+    -u  Specifies the MySQL user that will execute the query to report jobs. If a user that does not exist or that does not have the sufficient permissions, an error will be thrown. The default option is "root".
+    -db Specifies the MySQL database from which data will be queried. If the database does not exist or does not contain the same structure as the default one, an error will be thrown. The default option is "Report".
+    -ip Specifies the ip where the MYSQL server can be found. The default option is 127.0.0.1
+    -v  Makes the command run in verbose mode, displaying what steps of the process are being executed.
+
+.SH SEE ALSO
+ecreate_database, eenergy_over_time, estore_database
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Lluís Alonso (lluis.alonso@bsc.es)
