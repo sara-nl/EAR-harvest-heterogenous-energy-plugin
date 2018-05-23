@@ -25,7 +25,7 @@ OBJS += dynamic_configuration.o \
         power_monitoring.o
 
 HEADERS += $(SRCDIR)/common/remote_conf.h \
-           $(SRCDIR)/common/shared_configuration.h \ 
+           $(SRCDIR)/common/shared_configuration.h \
            $(SRCDIR)/metrics/power_monitoring/ear_power_monitor.h
 endif
 

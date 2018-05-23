@@ -35,8 +35,8 @@ components:
 metrics.a: $(METRICS_OBJS)
 	ar rvs metrics.a $(METRICS_OBJS)
 
-libear_metrics.so: metrics.a
-	$(CC) $(CFLAGS) -o libear_metrics.so metrics.a
+libear_metrics.so: $(METRICS_OBJS)
+	$(CC) $(CFLAGS) -o libear_metrics.so $(METRICS_OBJS)
 
 ######## OPTIONS
 

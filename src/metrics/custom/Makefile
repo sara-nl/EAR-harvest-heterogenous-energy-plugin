@@ -7,8 +7,9 @@ BANDWIDTH_OBJS = bandwidth/uncores_pci.o
 
 LIBRARIES = frequency.o \
             hardware_info.o \
+			bandwidth.o \
+			bandwidth.a \
 			bandwidth.so
-			bandwidth.a
 
 ######## RULES
 
@@ -17,14 +18,14 @@ all: $(LIBRARIES)
 %.o: %.c
 	@ $(MAKE) -C `dirname $@` `basename $@` || exit
 
-bandwidth.o: bandwidth.c bandwidth.h
+bandwidth.o: bandwidth.c bandwidth.h $(BANDWIDTH_OBJS)
 	$(CC) $(CFLAGS) -c bandwidth.c $(LDFLAGS)
 
-bandwidth.a: bandwidth.o $(BANDWIDTH_OBJS)
+bandwidth.a: bandwidth.o
 	ar rcs bandwidth.a bandwidth.o $(BANDWIDTH_OBJS) 
 
-bandwidth.so: bandwidth.a $(BANDWIDTH_OBJS)
-	$(CC) -shared -o bandwidth.so bandwidth.a
+bandwidth.so: bandwidth.o
+	$(CC) -shared -o bandwidth.so bandwidth.o $(BANDWIDTH_OBJS)
 
 frequency.o: frequency.c frequency.h
 	$(CC) $(CFLAGS) -c frequency.c $(LDFLAGS)
