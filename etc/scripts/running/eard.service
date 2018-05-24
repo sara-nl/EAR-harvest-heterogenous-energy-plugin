@@ -4,8 +4,8 @@ ConditionPathExists=/var/ear
 
 [Service]
 Type=simple
-EnvironmentFile=/home/xjcorbalan/my_ear/etc/slurm/ear.conf
-EnvironmentFile=/home/xjcorbalan/my_ear/etc/slurm/ear.link
+EnvironmentFile=/home/xjcorbalan/my_ear/slurm/ear.conf
+EnvironmentFile=/home/xjcorbalan/my_ear/slurm/ear.link
 ExecStart=/home/xjcorbalan/my_ear/sbin/eard 1 $EAR_TMP 0
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID

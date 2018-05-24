@@ -55,6 +55,7 @@
 #include <common/config.h>
 
 #if SHARED_MEMORY
+#include <common/types/cluster_conf.h>
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
 #include <common/shared_configuration.h>
@@ -62,6 +63,8 @@
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
+cluster_conf_t	my_cluster_conf;
+node_conf_t 	*my_node_conf;
 #endif
 
 #define max(a,b) (a>b?a:b)
@@ -1034,14 +1037,18 @@ void main(int argc,char *argv[])
 		errno=ret;
 		ear_verbose(0,"eard: error creating power_monitoring thread %s\n",strerror(errno));
 	}
-	#if 0
-		power_mon_th=fork();
-		if (power_mon_th==0) eard_power_monitoring(&power_mon_freq);
-	#endif
-#endif
-#if SHARED_MEMORY
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
 		ear_verbose(0,"eard: error creating dynamic_configuration thread \n");
+	}
+	if (read_cluster_conf(NULL,&my_cluster_conf)!=EAR_SUCCESS){	
+		ear_verbose(0,"eard: Error reading cluster configuration\n");
+		exit(1);
+	}else{	
+		my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);	
+		if (my_node_conf==NULL){
+			ear_verbose(0,"eard: Error in cluster configuration, node %s not found\n",nodename);
+		}
+		else print_node_conf(my_node_conf);
 	}
 #endif
 	ear_verbose(1,"eard:Communicator for %s ON\n",nodename);

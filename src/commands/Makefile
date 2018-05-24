@@ -16,7 +16,8 @@ HEADERS = $(SRCDIR)/common/config.h \
 BINARIES = ear_set_node_freq \
            ear_get_node_freq \
            ereport \
-		   ear_set_ondemand
+		   ear_set_ondemand 
+		
 
 ifdef FEAT_SHRMEM
 BINARIES += ear_control \
@@ -27,6 +28,7 @@ endif
 ifdef DB_BASE
 BINARIES += ear_create_database \
             ear_energy_over_time \
+			eargmd \
             ear_store_database
 
 DB_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o
@@ -62,6 +64,9 @@ ear_create_database: ear_create_database.c $(HEADERS)
 
 ear_energy_over_time: ear_energy_over_time.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_energy_over_time ear_energy_over_time.c $(DB_LDFLAGS)
+
+eargmd: ear_gm.c $(HEADERS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd ear_gm.c $(DB_LDFLAGS)
 
 ear_store_database: ear_store_database.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_store_database ear_store_database.c $(DB_LDFLAGS)

@@ -351,6 +351,7 @@ void ear_finalize()
 	if (loop_with_signature) {
 		VERBOSE_N(1, "loop ends with %d iterations detected", ear_iterations);
 	}
+	#if EAR_OVERHEAD_CONTROL
 	switch(ear_periodic_mode){
 	case PERIODIC_MODE_OFF:
 		if (in_loop) {
@@ -363,6 +364,12 @@ void ear_finalize()
 		states_periodic_end_job(my_id, NULL, ear_app_name);
 		break;
 	}
+	#else
+	if (in_loop) {
+		states_end_period(ear_iterations);
+	}
+	states_end_job(my_id, NULL, ear_app_name);
+	#endif
 
 	#if SHARED_MEMORY
 	dettach_ear_conf_shared_area();

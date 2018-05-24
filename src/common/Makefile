@@ -10,7 +10,8 @@ TYPES_OBJS = types/application.o \
 			 types/periodic_metric.o \
 		     types/power_signature.o \
              types/projection.o \
-		     types/signature.o
+		     types/signature.o \
+			 types/cluster_conf.o
 
 TYPES_HEADERS = types/application.h \
                 types/coefficient.h \
@@ -21,7 +22,8 @@ TYPES_HEADERS = types/application.h \
                 types/periodic_metric.h \
                 types/power_signature.h \
                 types/projection.h \
-                types/signature.h
+                types/signature.h \
+				types/cluster_conf.h
 
 HEADERS = $(SRCDIR)/common/ear_verbose.h \
           $(SRCDIR)/common/states.h \
