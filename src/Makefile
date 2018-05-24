@@ -10,7 +10,7 @@ ifdef CPUF_BASE
                           commands \
                           tests
 		endif
-		#COMPONENTS += library
+		COMPONENTS += library
 	endif
 	ifdef GSL_BASE
 		COMPONENTS += tools

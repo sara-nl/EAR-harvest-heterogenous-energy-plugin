@@ -27,8 +27,10 @@ sim_metrics.csv
 # Build
 etc/module/ear
 etc/slurm/ear.conf
-etc/slurm/ear.link
 etc/slurm/plugstack.conf
+etc/systemd/eard.service
+etc/systemd/eardbd.service
+etc/systemd/eargmd.service
 src/common/config.h
 tests/check/check.sh
 
@@ -42,7 +44,6 @@ tests/check/check.sh
 *ear_set_ondemand
 *ereport
 *ear_report
-*ereport
 *ear_create_database
 *ear_end_job
 *ear_new_job

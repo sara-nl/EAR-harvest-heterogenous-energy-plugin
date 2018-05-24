@@ -80,6 +80,7 @@ check:
 install:
 	@ $(MAKE) -C etc install
 	@ $(MAKE) -C src install
+	@ $(MAKE) -C doc install
 
 clean:
 	@ $(MAKE) -C src clean
