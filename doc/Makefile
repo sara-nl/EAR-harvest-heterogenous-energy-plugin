@@ -1,4 +1,4 @@
 ######## OPTIONS
 
 install:
-	cp -r man $(ETCDIR)/
+	cp -r man $(DESTDIR)/
