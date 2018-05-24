@@ -33,11 +33,13 @@
 #define __CLUSTER_CONF_H
 #include <stdint.h>
 #include <common/config.h>
-#include <commion/environment.h>
+#include <common/environment.h>
 
 #define GENERIC_NAME 256
 #define USER		64
 #define ACC			64
+
+typedef unsigned int uint;
 
 typedef struct policy_conf
 {
@@ -48,7 +50,7 @@ typedef struct policy_conf
 
 typedef struct node_conf
 {
-	char name[GENERIC_NAME]
+	char name[GENERIC_NAME];
 	uint cpus;
 	uint island;	
 	uint num_special_node_conf;
@@ -72,9 +74,9 @@ typedef struct cluster_conf
 	uint default_policy;			// selecs one of the power_policies
 	// Lis of autorized users
 	uint num_priv_users;
-	char *priv_users[USER];
+	char **priv_users;
 	uint num_acc;
-	char *priv_acc[ACC];
+	char **priv_acc;
 	uint num_special;
 	special_app_t	*special;
 	// List of nodes
@@ -85,8 +87,18 @@ typedef struct cluster_conf
 
 // Function declarations
 
-
+// CLUSTER level functions
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
-uint read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+
+// NODE level functions
+
+/** returns the pointer to the information of nodename */
+node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
+/** printf in the stdout the node configuration */
+void print_node_conf(node_conf_t *my_node_conf);
+
+// POLICY level functions
+void print_policy_conf(policy_conf_t *p);
 #else
 #endif

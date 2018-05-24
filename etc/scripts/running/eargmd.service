@@ -1,15 +1,13 @@
 [Unit]
-Description=EARD - Energy Aware Runtime node daemon
-ConditionPathExists=/var/ear
+Description=EARGMD - EAR Global Manager
 
 [Service]
 Type=simple
 EnvironmentFile=/home/xjcorbalan/my_ear/slurm/ear.conf
 EnvironmentFile=/home/xjcorbalan/my_ear/slurm/ear.link
-ExecStart=/home/xjcorbalan/my_ear/sbin/eard 1 $EAR_TMP 0
+ExecStart=/home/xjcorbalan/my_ear/sbin/eargmd $PERIOD_T1 $PERIOD_T2 $MAX_ENERGY
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
-PIDFile=/var/ear/eard.pid
 KillMode=process
 Restart=on-failure
 RestartSec=30s

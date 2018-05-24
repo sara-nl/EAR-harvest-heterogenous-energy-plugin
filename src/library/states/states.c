@@ -297,7 +297,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					loop_with_signature = 1;
 					#if EAR_OVERHEAD_CONTROL
 					check_periodic_mode=0;
-					VERBOSE_N(0,"Switching check periodic mode to %d\n",check_periodic_mode);
+					VERBOSE_N(2,"Switching check periodic mode to %d\n",check_periodic_mode);
 					#endif
 
 					// Computing dynais overhead
