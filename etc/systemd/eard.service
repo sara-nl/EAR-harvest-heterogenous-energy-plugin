@@ -1,12 +1,14 @@
 [Unit]
 Description=EARD - Energy Aware Runtime node daemon
-ConditionPathExists=@tmpdir@
+ConditionPathExists=/var/ear
+Requires=mariadb.service
+Wants=slurmd.service
+After=mariadb.service,slurmd.service
 
 [Service]
 Type=simple
-EnvironmentFile=@destdir@/etc/slurm/ear.conf
-EnvironmentFile=@destdir@/etc/slurm/ear.link
-ExecStart=@destdir@/sbin/eard 1 $EAR_TMP 0
+EnvironmentFil/home/xjaneas/ear/etc/slurm/ear.conf
+ExecStart=/home/xjaneas/ear/sbin/eard 1 $EAR_TMP 0
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
 KillMode=process

@@ -175,8 +175,10 @@ echo "----------------------------------------------------------"
 AC_CONFIG_FILES([Makefile
                  etc/module/ear
                  etc/slurm/ear.conf
-                 etc/slurm/ear.link
                  etc/slurm/plugstack.conf
+                 etc/systemd/eard.service
+                 etc/systemd/eardbd.service
+                 etc/systemd/eargmd.service
                  src/library/Makefile
                  src/common/config.h])
 #AC_CONFIG_HEADERS([src/common/config.h])

@@ -43,7 +43,6 @@
 #include <common/config.h>
 
 char conf_path[PATH_MAX];
-char link_path[PATH_MAX];
 extern char buffer1[PATH_MAX];
 extern char buffer2[PATH_MAX];
 extern int auth_mode;
@@ -347,14 +346,8 @@ int find_ear_conf_file(spank_t sp, int ac, char **av)
         {
 			plug_verbose(sp, 3, "looking for conf files in path '%s'", av[i]);
 			
-			sprintf(link_path, "%s/%s", &av[i][9], EAR_LINK_FILE);
 			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
-
-			if (file_to_environment(sp, (const char *) conf_path) != ESPANK_SUCCESS) {
-				return ESPANK_ERROR;
-			}
-
-			return file_to_environment(sp, (const char *) link_path);
+			return file_to_environment(sp, (const char *) conf_path);
         }
     }
     return ESPANK_ERROR;

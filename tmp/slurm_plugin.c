@@ -93,6 +93,64 @@ struct spank_option spank_options[] = {
 /*
  *
  *
+ * Daemon execution
+ *
+ *
+ */
+
+static void exec_ear_daemon(spank_t sp)
+{
+    plug_verbose(sp, 2, "function exec_ear_daemon");
+
+    char *ear_install_path;
+    char *ear_verbose;
+    char *ear_tmp;
+
+    // Getting environment variables configuration
+    ear_install_path = getenv("EAR_INSTALL_PATH");
+	ear_verbose      = getenv("EAR_VERBOSE");
+	ear_tmp          = getenv("EAR_TMP");
+
+    sprintf(buffer1, "%s/%s", ear_install_path, EAR_DAEMON_PATH);
+
+    // Executing EAR daemon
+    if (execl(buffer1, buffer1, "1", ear_tmp, ear_verbose, (char *) 0) == -1) {
+        plug_error("Error while executing %s (%s)", buffer1, strerror(errno));
+        exit(errno);
+    }
+}
+
+static int fork_ear_daemon(spank_t sp)
+{
+    plug_verbose(sp, 2, "function fork_ear_daemon");
+
+    if ((existenv_local("EAR_INSTALL_PATH") == 1) &&
+        (existenv_local("EAR_DB_PATHNAME") == 1) &&
+        (existenv_local("EAR_VERBOSE") == 1) &&
+        (existenv_local("EAR_TMP") == 1))
+    {
+        daemon_pid = fork();
+
+        if (daemon_pid == 0) {
+            #if DAEMON_INTERMEDIATE
+			fork_intermediate_daemon(sp);
+			#else
+            exec_ear_daemon(sp);
+            #endif
+        } else if (daemon_pid < 0) {
+            plug_error("Fork returned %i (%s)", daemon_pid, strerror(errno));
+            return ESPANK_ERROR;
+        }
+    } else {
+        plug_error("Missing crucial environment variable");
+        return ESPANK_ENV_NOEXIST;
+    }
+    return ESPANK_SUCCESS;
+}
+
+/*
+ *
+ *
  *
  *
  *
@@ -239,6 +297,50 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		print_general_info(sp);
 
 		remote_update_slurm_vars(sp);	
+	}
+
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_init (spank_t sp, int ac, char **av)
+{
+    plug_verbose(sp, 2, "function slurm_spank_init");
+
+    if(spank_context() == S_CTX_SLURMD) {
+        return slurm_spank_slurmd_init(sp, ac, av);
+    }
+
+    return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
+{
+    plug_verbose(sp, 2, "function slurm_spank_slurmd_init");
+    int r;
+
+    if(spank_context() == S_CTX_SLURMD && daemon_pid < 0)
+    {
+		// Printing job local information
+		print_general_info(sp);
+
+        if((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
+			plug_error("Error while reading configuration file %d", r);
+            return r;
+        }
+
+        return fork_ear_daemon(sp);
+    }
+
+    return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_slurmd_exit");
+
+	if(spank_context() == S_CTX_SLURMD && daemon_pid > 0)
+	{
+		kill(daemon_pid, SIGTERM);
 	}
 
 	return (ESPANK_SUCCESS);

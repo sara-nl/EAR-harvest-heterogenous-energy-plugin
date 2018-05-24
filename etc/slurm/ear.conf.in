@@ -1,3 +1,5 @@
+EAR_INSTALL_PATH=@prefix@
+EAR_TMP=@localstatedir@
 EAR=0
 EAR_DB_PATHNAME=@sysconfdir@/dbs/db.
 EAR_COEFF_DB_PATHNAME=@sysconfdir@/coeffs/coeff.
