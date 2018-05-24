@@ -36,6 +36,7 @@
 #include <common/states.h>
 #include <common/environment.h>
 #include <common/types/cluster_conf.h>
+#include <common/ear_verbose.h>
 
 /*
     char DB_pathname[GENERIC_NAME];
@@ -73,16 +74,30 @@
 	policy_conf_t *special_node_conf;	
 */
 
+static const char *__NAME__ = "cluster_conf:";
+
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 {
 	int i;
 	char *db,*coeff,*tmp,*verbose;
 	db=getenv("EAR_DB_PATHNAME");
+	if (db==NULL){
+		VERBOSE_N(0,"EAR_DB_PATHNAME not defined\n");
+	}
 	coeff=getenv("EAR_COEFF_DB_PATHNAME");
+	if (coeff==NULL){
+		VERBOSE_N(0,"EAR_COEFF_DB_PATHNAME not defined\n");
+	}
 	tmp=getenv("EAR_TMP");
+	if (tmp==NULL){
+		VERBOSE_N(0,"EAR_TMP not defined\n");
+	}
 	verbose=getenv("EAR_VERBOSE");
-	if ((db==NULL) || (coeff=NULL) || (tmp==NULL) || (verbose==NULL)) return EAR_ERROR;
+	if (verbose==NULL){
+		VERBOSE_N(0,"EAR_VERBOSE not defined\n");
+	}
+	if ((db==NULL) || (coeff==NULL) || (tmp==NULL) || (verbose==NULL)) return EAR_ERROR;
 
 	// PATHS
 
