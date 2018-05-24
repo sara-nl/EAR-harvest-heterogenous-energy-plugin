@@ -144,6 +144,15 @@ int eards_set_freq(unsigned long freq)
 	return send_command(&command);
 }
 
+int eards_red_max_freq(uint p_states)
+{
+    request_t command;
+    command.req=EAR_RC_RED_PSTATE;
+    command.my_req.ear_conf.p_states=p_states;
+    return send_command(&command);
+}
+
+
 // New th must be passed as % th=0.75 --> 75
 int eards_set_th(unsigned long th)
 {
@@ -152,6 +161,16 @@ int eards_set_th(unsigned long th)
     command.my_req.ear_conf.th=th;
     return send_command(&command);
 }
+
+// New th must be passed as % th=0.05 --> 5
+int eards_inc_th(unsigned long th)
+{
+    request_t command;
+    command.req=EAR_RC_INC_TH;
+    command.my_req.ear_conf.th=th;
+    return send_command(&command);
+}
+
 
 int eards_remote_disconnect()
 {

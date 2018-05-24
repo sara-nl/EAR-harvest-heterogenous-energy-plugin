@@ -52,6 +52,7 @@ typedef struct new_conf{
 	ulong max_freq;
 	ulong min_freq;
 	ulong th;
+	uint p_states;
 }new_conf_t;
 
 typedef union req_data{
@@ -70,6 +71,8 @@ typedef struct request{
 #define EAR_RC_END_JOB     1
 #define EAR_RC_MAX_FREQ    100
 #define EAR_RC_NEW_TH	   101
+#define EAR_RC_INC_TH	   102
+#define EAR_RC_RED_PSTATE   103
 #define NO_COMMAND 100000
 
 

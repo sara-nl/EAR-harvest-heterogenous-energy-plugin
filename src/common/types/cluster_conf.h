@@ -95,10 +95,17 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
 
 /** returns the pointer to the information of nodename */
 node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
-/** printf in the stdout the node configuration */
+/** prints in the stdout the node configuration */
 void print_node_conf(node_conf_t *my_node_conf);
 
 // POLICY level functions
+/** prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p);
+
+/** Converts from policy name to policy_id */
+int policy_name_to_id(char *my_policy);
+
+/** Given a cluster, node and  policy, returns the policy configuration for that cluser,node,policy */
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_node,uint p_id);
 #else
 #endif

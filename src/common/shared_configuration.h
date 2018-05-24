@@ -41,6 +41,7 @@
 
 typedef struct ear_conf{
 	ulong 	max_freq;
+	ulong	def_freq;
 	double 	th;
 	int 	force_rescheduling;
 } ear_conf_t;

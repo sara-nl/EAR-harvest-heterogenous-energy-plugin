@@ -22,7 +22,10 @@ BINARIES = ear_set_node_freq \
 ifdef FEAT_SHRMEM
 BINARIES += ear_control \
             ear_new_job \
-            ear_end_job
+            ear_end_job \
+			ear_set_freq \
+			ear_red_freq \
+			ear_inc_th
 endif
 
 ifdef DB_BASE
@@ -55,6 +58,15 @@ ereport: ear_report.c $(DB_OBJS) $(TYPES_OBJS) $(HEADERS)
 
 ear_new_job: ear_new_job.c $(REMOTE_OBJS) $(TYPES_OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o ear_new_job ear_new_job.c  $(REMOTE_OBJS) $(TYPES_OBJS)
+
+ear_set_freq: ear_set_freq.c $(REMOTE_OBJS) $(TYPES_OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) -o ear_set_freq ear_set_freq.c  $(REMOTE_OBJS) $(TYPES_OBJS)
+
+ear_red_freq: ear_red_freq.c $(REMOTE_OBJS) $(TYPES_OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) -o ear_red_freq ear_red_freq.c  $(REMOTE_OBJS) $(TYPES_OBJS)
+
+ear_inc_th: ear_inc_th.c $(REMOTE_OBJS) $(TYPES_OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) -o ear_inc_th ear_inc_th.c  $(REMOTE_OBJS) $(TYPES_OBJS)
 
 ear_end_job: ear_end_job.c $(REMOTE_OBJS) $(TYPES_OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o ear_end_job ear_end_job.c $(REMOTE_OBJS) $(TYPES_OBJS)
