@@ -1,14 +1,14 @@
 [Unit]
 Description=EARD - Energy Aware Runtime node daemon
-# slurmd.service is not mandatory
-#After=slurmd.service
-#ConditionPathExists=@eartmpdir@
+ConditionPathExists=@tmpdir@
 
 [Service]
 Type=simple
-ExecStart=LD_LIBRARY_PATH=@papilib@:@cpupowerlib@:$LD_LIBRARY_PATH @sbindir@/eard 1 @tmpdir@ 0
+EnvironmentFile=@destdir@/etc/slurm/ear.conf
+EnvironmentFile=@destdir@/etc/slurm/ear.link
+ExecStart=@destdir@/sbin/eard 1 $EAR_TMP 0
 ExecReload=/bin/kill -HUP $MAINPID
-PIDFile=@tmpdir@/eard.pid
+ExecStop=/bin/kill -TERM $MAINPID
 KillMode=process
 Restart=on-failure
 RestartSec=30s
@@ -17,3 +17,4 @@ LimitSTACK=infinity
 
 [Install]
 WantedBy=multi-user.target
+

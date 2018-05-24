@@ -273,10 +273,6 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
 
         }
     }
-    else
-    {
-        printf("Node information:\nJob_id ");
-    }
 
     avg_frequency /= num_apps;
     avg_time /= num_apps;
@@ -288,11 +284,25 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     printf("\nApplication summary\n\tApp_id: %s\n\tJob_id: %lu\n\tStep_id: %lu\n\tPolicy: %s\n\tPolicy threshold: %.2lf\n",
             apps[i].job.app_id, apps[i].job.id, apps[i].job.step_id, apps[i].job.policy, apps[i].job.th);
 
-    printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
+    if (apps[0].is_mpi)
+    {
+        printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
 
-    printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t\t%.2lf\t\t%.2lf\t%.2lf\n", 
-            avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
-
+        printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t\t%.2lf\t\t%.2lf\t%.2lf\n", 
+                avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
+    }
+    else
+    {
+#if SHARED_MEMORY
+        printf("\nApplication information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\t Avg_freq (GHz)\n\t");
+        avg_f = (double) apps[0].power_sig.avg_f/1000000;
+        printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n",
+                strtok(apps[0].node_id, "."), apps[0].power_sig.time, apps[0].power_sig.DC_power,
+                apps[0].power_sig.DC_power * apps[0].power_sig.time, avg_f);
+#else
+        printf("Non-MPI application executed without shared memory in EAR, execution information cannot be retrieved.\n");
+#endif
+    }
 
     free(apps);
 
