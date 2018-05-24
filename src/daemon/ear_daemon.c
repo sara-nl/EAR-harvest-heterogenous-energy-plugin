@@ -628,7 +628,7 @@ int eard_freq(int must_read)
 			// HIGHLIGHT: LIBRARY INIT
 			#if SHARED_MEMORY
 			connect_service(freq_req,&req.req_data.app);
-			#else
+			#else // It is included in powermon_job_init
 			connect_service(freq_req,req.req_data.req_value);
 			frequency_save_previous_frequency();
 			frequency_save_previous_policy();
@@ -662,6 +662,7 @@ int eard_freq(int must_read)
 			// HIGHLIGHT: LIBRARY DISPOSE (1/2)
 			eard_close_comm();
 			#if !SHARED_MEMORY
+			// When ear_v3 is used, this is included in powermon_job_end
 			frequency_recover_previous_policy();
 			frequency_recover_previous_frequency();
 			#endif

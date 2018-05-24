@@ -113,7 +113,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	// MIN_ENERGY_TO_SOLUTION
 	my_conf->power_policies[0].policy=0;
 	my_conf->power_policies[0].th=0.1;
-	my_conf->power_policies[0].p_state=1;
+	my_conf->power_policies[0].p_state=DEFAULT_MAX_P_STATE;
 	// MIN_TIME_TO_SOLUTION
 	my_conf->power_policies[1].policy=1;
 	my_conf->power_policies[1].th=PERFORMANCE_GAIN;
@@ -178,7 +178,36 @@ void print_node_conf(node_conf_t *my_node_conf)
 /*
 * POLICY FUNCTIONS
 */
+
+/** Prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p)
 {
 	fprintf(stdout,"--> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
+}
+
+
+/** Converts from policy name to policy_id */
+int policy_name_to_id(char *my_policy)
+{
+    if (my_policy!=NULL){
+        if ((strcmp(my_policy,"MIN_ENERGY_TO_SOLUTION")==0) || (strcmp(my_policy,"min_energy_to_solution")==0)) return MIN_ENERGY_TO_SOLUTION;
+        else if ((strcmp(my_policy,"MIN_TIME_TO_SOLUTION")==0) || (strcmp(my_policy,"min_time_to_solution")==0)) return MIN_TIME_TO_SOLUTION;
+        else if ((strcmp(my_policy,"MONITORING_ONLY")==0) || (strcmp(my_policy,"monitoring_only")==0)) return MONITORING_ONLY;
+    }
+	return EAR_ERROR;
+}
+
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_node,uint p_id)
+{
+	policy_conf_t *my_policy=NULL;
+	uint i;
+	// We look first for special configurations
+	for(i=0;i<my_node->num_special_node_conf;i++){
+		if (my_node->special_node_conf[i].policy==p_id) return(&my_node->special_node_conf[i]);
+	}
+	// and now for default values
+	for(i=0;i<my_cluster->num_policies;i++){
+		if (my_cluster->power_policies[i].policy==p_id) return (&my_cluster->power_policies[i]);
+	}
+	return NULL;
 }

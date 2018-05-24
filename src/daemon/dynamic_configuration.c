@@ -45,6 +45,7 @@
 #include <netinet/ip.h>
 #include <netdb.h>
 
+#include <control/frequency.h>
 #include <daemon/power_monitoring.h>
 #include <common/shared_configuration.h>
 #include <common/remote_conf.h>
@@ -100,6 +101,15 @@ ulong max_dyn_freq()
 	return dyn_conf->max_freq;
 }
 
+int dynconf_inc_th(ulong th)
+{
+    // we must check it is a valid th :TODO
+    dyn_conf->th=dyn_conf->th+((double)th/100.0);
+    dyn_conf->force_rescheduling=1;
+    return EAR_SUCCESS;
+
+}
+
 
 int dynconf_max_freq(ulong max_freq)
 {
@@ -107,6 +117,14 @@ int dynconf_max_freq(ulong max_freq)
 	dyn_conf->max_freq=max_freq;
 	dyn_conf->force_rescheduling=1;
 	return EAR_SUCCESS;
+}
+
+int dynconf_red_max_freq(uint p_states)
+{
+	dyn_conf->max_freq=dyn_conf->max_freq-(p_states*100000);
+	VERBOSE_N(0,"New maximum frequency %lu\n",dyn_conf->max_freq);
+    dyn_conf->force_rescheduling=1;
+    return EAR_SUCCESS;
 }
 
 int dynconf_set_th(ulong th)
@@ -141,6 +159,14 @@ void process_remote_requests(int clientfd)
 		case EAR_RC_NEW_TH:
 			VERBOSE_N(0,"new_th command received %lu\n",command.my_req.ear_conf.th);
 			ack=dynconf_set_th(command.my_req.ear_conf.th);
+			break;
+		case EAR_RC_INC_TH:
+			VERBOSE_N(0,"inc_th command received, %lu\n",command.my_req.ear_conf.th);
+			ack=dynconf_inc_th(command.my_req.ear_conf.th);
+			break;
+		case EAR_RC_RED_PSTATE:
+			VERBOSE_N(0,"red_max_p_state command received\n");
+			ack=dynconf_red_max_freq(command.my_req.ear_conf.p_states);
 			break;
 		default:
 			VERBOSE_N(0,"Invalid remote command\n");

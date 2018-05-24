@@ -40,6 +40,9 @@ BINARIES = ear_daemon_client.o \
 ifdef FEAT_SHRMEM
 BINARIES += remote_daemon_client.o \
             shared_configuration.o
+
+HEADERS += $(SRCDIR)/common/shared_configuration.h \
+		   $(SRCDIR)/common/remote_conf.h
 endif
 
 ifdef DB_BASE

@@ -45,8 +45,10 @@
 #include <control/frequency.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
 #include <daemon/power_monitoring.h>
+#include <common/shared_configuration.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
+#include <common/types/cluster_conf.h>
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 #include <common/config.h>
@@ -58,7 +60,8 @@
 #define MAX_PATH_SIZE 256
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
-
+extern node_conf_t     *my_node_conf;
+extern cluster_conf_t my_cluster_conf;
 static char *__NAME__="powermon: ";
 
 unsigned int f_monitoring;
@@ -69,6 +72,7 @@ int idleNode=1;
 extern char nodename[MAX_PATH_SIZE];
 static int fd_powermon=-1;
 static int fd_periodic=-1;
+extern ear_conf_t *dyn_conf;
 
 typedef struct powermon_app{
 	application_t app;
@@ -210,11 +214,33 @@ void powermon_mpi_finalize()
 
 void powermon_new_job(application_t* appID,uint from_mpi)
 {
+	int p_id;
+	policy_conf_t *my_policy;
+	ulong	deff;
     // New application connected
 	VERBOSE_N(0,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
+	p_id=policy_name_to_id(appID->job.policy);
+	if (p_id==EAR_ERROR){
+		VERBOSE_N(0,"powermon_new_job Warning, power policy not defined,using default\n");
+		p_id=my_cluster_conf.default_policy;
+	}
+	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);	
+	if (my_policy==NULL){
+		VERBOSE_N(0,"PANIC policy configuration not found!\n");
+	}else{
+		VERBOSE_N(0,"Policy configuration for new job (%d,%d)\n",appID->job.id,appID->job.step_id);
+		print_policy_conf(my_policy);
+	}
+	deff=frequency_pstate_to_freq(my_policy->p_state);
+	VERBOSE_N(0,"Default frequency %ul changed,changing shared configuration EARD-EARLib\n",deff);
+	dyn_conf->def_freq=deff;
+	dyn_conf->th=my_policy->th;
+	frequency_set_all_cpus(dyn_conf->def_freq);
+	
+	
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
