@@ -52,11 +52,11 @@ int auth_mode =  1;
 int verbosity = -1;
 
 struct spank_option spank_options[] = {
-    { "ear", "on/off", "Enables Energy Aware Runtime",
+    { "ear", "on|off", "Enables/disables Energy Aware Runtime",
       1, 0, (spank_opt_cb_f) _opt_ear
     },
     { "ear-policy", "type",
-      "Selects an energy policy for EAR.\n" \
+      "Selects an energy policy for EAR\n" \
       "{type=MIN_ENERGY_TO_SOLUTION|MIN_TIME_TO_SOLUTION|MONITORING_ONLY}",
       1, 0, (spank_opt_cb_f) _opt_ear_policy
     },
@@ -66,7 +66,7 @@ struct spank_option spank_options[] = {
       1, 0, (spank_opt_cb_f) _opt_ear_threshold
     },
     { "ear-user-db", "file",
-      "Specifies the file to save the user applications metrics summary\n" \
+      "Specifies the file to save the user applications metrics summary" \
 	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
       2, 0, (spank_opt_cb_f) _opt_ear_user_db
     },
