@@ -88,10 +88,10 @@ typedef struct cluster_conf
 
 typedef struct db_conf
 {
-    ip[USER];
-    user[USER];
-    pass[USER];
-    database[USER];
+    char ip[USER];
+    char user[USER];
+    char pass[USER];
+    char database[USER];
     uint port;
 } db_conf_t;
 
@@ -100,6 +100,8 @@ typedef struct db_conf
 // CLUSTER level functions
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+
+void get_cluster_config(FILE *conf_file, cluster_conf_t *conf);
 
 // NODE level functions
 
