@@ -62,6 +62,7 @@ typedef struct special_app
 	char appname[GENERIC_NAME];
 	uint p_state;
 }special_app_t;
+
 typedef struct cluster_conf
 {
 	char DB_pathname[GENERIC_NAME];
@@ -78,12 +79,21 @@ typedef struct cluster_conf
 	uint num_acc;
 	char **priv_acc;
 	uint num_special;
+	uint min_time_perf_acc;
 	special_app_t	*special;
 	// List of nodes
 	uint num_nodes;
 	node_conf_t *nodes;
 } cluster_conf_t;
 
+typedef struct db_conf
+{
+    ip[USER];
+    user[USER];
+    pass[USER];
+    database[USER];
+    uint port;
+} db_conf_t;
 
 // Function declarations
 

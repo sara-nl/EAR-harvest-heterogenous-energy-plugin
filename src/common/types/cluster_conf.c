@@ -35,6 +35,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/environment.h>
+#include <common/string_enhanced.h>
 #include <common/types/cluster_conf.h>
 #include <common/ear_verbose.h>
 
@@ -79,6 +80,7 @@ static const char *__NAME__ = "cluster_conf:";
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 {
+	#ifdef __OLD__CONF__
 	int i;
 	char *db,*coeff,*tmp,*verbose;
 	db=getenv("EAR_DB_PATHNAME");
@@ -142,7 +144,15 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	my_conf->nodes[0].special_node_conf[0].policy=1;
 	my_conf->nodes[0].special_node_conf[0].th=PERFORMANCE_GAIN;
 	my_conf->nodes[0].special_node_conf[0].p_state=EAR_MIN_P_STATE+1;
-	
+	#else
+	FILE *conf_file = fopen(conf_path, "r");
+	if (conf_file == NULL)
+	{
+		fprintf(stderr, "ERROR opening file: %s\n", conf_path);
+		return EAR_ERROR;
+	}
+	get_cluster_config(conf_file, my_conf);
+	#endif
 	return EAR_SUCCESS;
 }
 
@@ -210,4 +220,372 @@ policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_nod
 		if (my_cluster->power_policies[i].policy==p_id) return (&my_cluster->power_policies[i]);
 	}
 	return NULL;
+}
+
+
+void insert_th_policy(cluster_conf_t *conf, char *token, int policy)
+{
+    int i;
+    for (i = 0; i < conf->num_policies; i++)
+    {
+        if (conf->power_policies[i].policy == policy)
+        conf->power_policies[i].th = atof(token);
+    }
+
+}
+
+int set_nodes_conf(cluster_conf_t *conf, char *namelist)
+{
+    char *buffer_ptr;
+    char *second_ptr;
+    char *token;
+    char *start;
+    int range_start, range_end;
+    char nodename[GENERIC_NAME];
+
+    start = strtok_r(namelist, "[", &buffer_ptr);
+    token = strtok_r(NULL, ",", &buffer_ptr);
+    //in this case, only one node is specified in the line
+    if (token == NULL)
+    {
+        conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+1));
+        sprintf(conf->nodes[conf->num_nodes].name, "%s", start);
+
+        return 1;
+    }
+    //at least one node if we reach this point
+    int node_count = 0;
+    while (token != NULL)
+    {
+        strclean(token, ']');
+        if (strchr(token, '-'))
+        {
+            char has_zero = strchr(token, '0') != NULL;
+            range_start = atoi(strtok_r(token, "-", &second_ptr));
+            range_end = atoi(strtok_r(NULL, "-", &second_ptr));
+            int i;
+            node_count++;
+            for (i = range_start; i <= range_end; i++, node_count++)
+            {
+                conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count));
+                //CASE FOR <10 numbers
+                if (i < 10 && has_zero)
+                    sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s0%u\0", start, i);
+
+                else
+                    sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s%u\0", start, i);
+
+            }
+        }
+        else
+        {
+            node_count++;
+            conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count));
+            sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s%s\0", start, token);
+        }
+        token = strtok_r(NULL, ",", &buffer_ptr);
+    }
+    return node_count;
+}
+
+
+/** Fills the cluster_conf_t from the info from the FILE */
+void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
+{
+    char line[256];
+    char *token;
+    while (fgets(line, 256, conf_file) != NULL)
+    {
+        if (line[0] == '#') continue;
+        token = strtok(line, "=");
+        strtoup(token);
+        
+        if (!strcmp(token, "DEFAULTPOWERPOLICY"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, "\n");
+            conf->default_policy = policy_name_to_id(token);
+        }
+        else if (!strcmp(token, "DATABASEPATHNAME"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, "\n");
+            strcpy(conf->DB_pathname, token);
+        }
+        else if (!strcmp(token, "COEFFICIENTSDB"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, "\n");
+            strcpy(conf->Coefficients_pathname, token);
+        }
+        else if (!strcmp(token, "TMPDIR"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, "\n");
+            strcpy(conf->tmp_dir, token);
+        }
+        else if (!strcmp(token, "VERBOSE"))
+        {
+            token = strtok(NULL, "=");
+            conf->verbose = atoi(token);
+        }
+        else if (!strcmp(token, "SUPPORTEDPOLICIES"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+            while (token != NULL)
+            {
+                conf->num_policies++;
+                strclean(token, '\n');
+                conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*conf->num_policies);
+                conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);
+                token = strtok(NULL, ",");
+            }
+        }
+        else if (!strcmp(token, "DEFAULTPSTATES"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+            int i;
+            for (i = 0; i < conf->num_policies && token != NULL; token =strtok(NULL, ","), i++) 
+            {
+                conf->power_policies[i].p_state = atoi(token);
+            }
+        }
+        else if (!strcmp(token, "MINEFFICIENCYGAIN"))
+        {
+            token = strtok(NULL, "=");
+            insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION);
+        }
+        else if (!strcmp(token, "MAXPERFORMANCEPENALTY"))
+        {
+            token = strtok(NULL, "=");
+            insert_th_policy(conf, token, MIN_ENERGY_TO_SOLUTION);
+        }
+        else if (!strcmp(token, "MINTIMEPERFORMANCEACCURACY"))
+        {
+            token = strtok(NULL, "=");
+            conf->min_time_perf_acc = atoi(token);
+        }
+        else if (!strcmp(token, "PRIVILEGEDUSERS"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+            while (token != NULL)
+            {
+                conf->num_priv_users++;
+                conf->priv_users = realloc(conf->priv_users, sizeof(char *)*conf->num_priv_users);
+                strclean(token, '\n');           
+                conf->priv_users[conf->num_priv_users-1] = malloc(sizeof(token)+1);
+                strcpy(conf->priv_users[conf->num_priv_users-1], token);
+                token = strtok(NULL, ",");
+            }
+        }
+        else if (!strcmp(token, "PRIVILEGEDACCOUNTS"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+            while (token != NULL)
+            {
+                conf->num_acc++;
+                conf->priv_acc = realloc(conf->priv_acc, sizeof(char *)*conf->num_acc);
+                strclean(token, '\n');
+                conf->priv_acc[conf->num_acc-1] = malloc(sizeof(token)+1);
+                strcpy(conf->priv_acc[conf->num_acc-1], token);
+                token = strtok(NULL, ",");
+            }
+        }
+        else if (!strcmp(token, "USERNAME"))
+        {
+            //special parsing on this one
+            token = strtok(NULL, "=");
+            char *token2 = strtok(NULL, "=");
+            char *token3 = strtok(NULL, "=");
+        
+            token = strtok(token, " ");
+            token2 = strtok(token2, " ");
+            token3 = strtok(token3, " ");
+            
+            conf->num_special++;
+            conf->special = realloc(conf->special, sizeof(special_app_t)*conf->num_special);
+            int i = conf->num_special - 1;
+            strcpy(conf->special[i].user, token);
+            strcpy(conf->special[i].appname, token2);
+            conf->special[i].p_state = atoi(token3);
+        }
+        else if (!strcmp(token, "ISLAND"))
+        {
+            int i = 0;
+            int island = 0;
+            int num_nodes = 0;
+            int num_cpus = 0;
+            //fully restore the line
+            line[strlen(line)] = '=';
+            char *primary_ptr;
+            char *secondary_ptr;
+            token = strtok_r(line, " ", &primary_ptr);
+            while (token != NULL)
+            {
+
+                //fetches the first half of the pair =
+                token = strtok_r(token, "=", &secondary_ptr);
+                strtoup(token);
+                if (!strcmp(token, "ISLAND"))
+                {
+                    //fetches the second half of the pair = 
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    island = atoi(token);
+                }
+                else if (!strcmp(token, "NODENAME"))
+                {
+                    //fetches the second half of the pair = 
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    num_nodes = set_nodes_conf(conf, token);
+                }
+                else if (!strcmp(token, "CPUS"))
+                {
+                    int i;
+                    num_cpus = atoi(strtok_r(NULL, "=", &secondary_ptr));
+                }
+                else if (!strcmp(token, "DEFAULTPSTATES"))
+                {
+                    //fetches the second half of the pair = 
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    char *tertiary_ptr;
+                    int i, j, k;
+                    char found = 0;
+                    token = strtok_r(token, ",", &tertiary_ptr);
+                    for (j = 0; j < conf->num_policies && token != NULL; j++)
+                    {
+                        for (i = 0; i < num_nodes; i++)
+                        {
+                            for (k = 0; k < conf->nodes[conf->num_nodes+i].num_special_node_conf; k++)
+                            {
+                                if (conf->nodes[conf->num_nodes+i].special_node_conf[k].policy ==
+                                        conf->power_policies[j].policy)
+                                {
+                                    found = 1;
+                                    conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state = atoi(token);
+                                    break;
+                                }
+                            }
+                            if (!found)
+                            {
+                                //if there is no such p_state and it's the same, we don't create a new one
+                                if (conf->power_policies[j].p_state == atoi(token))
+                                    break;
+
+                                k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
+                                conf->nodes[conf->num_nodes+i].special_node_conf = 
+                                            realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
+                                                sizeof(policy_conf_t)*k+1);
+                                conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = 
+                                    conf->power_policies[j].policy;
+                                conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state = atoi(token);
+                                conf->nodes[conf->num_nodes+i].num_special_node_conf++;
+                            }
+                        }
+                        token = strtok_r(NULL, ",", &tertiary_ptr);
+                    }
+                    
+
+                }
+                else if (!strcmp(token, "MINEFFICIENCYGAIN"))
+                {
+                    //fetches the second half of the pair = 
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    int i, k;
+                    char found = 0;
+                    for (i = 0; i < num_nodes; i++)
+                    {
+                        for (k = 0; k < conf->nodes[conf->num_nodes+i].num_special_node_conf; k++)
+                        {
+                            if (conf->nodes[conf->num_nodes+i].special_node_conf[k].policy ==
+                                    MIN_TIME_TO_SOLUTION)
+                            {
+                                found = 1;
+                                conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
+                                break;
+                            }
+                        }
+                        if (!found)
+                        {
+                            k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
+                            conf->nodes[conf->num_nodes+i].special_node_conf = 
+                                        realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
+                                                sizeof(policy_conf_t)*k+1);
+                            conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_TIME_TO_SOLUTION;
+                            conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
+                            conf->nodes[conf->num_nodes+i].num_special_node_conf++;
+
+                        }
+                    }
+                }
+                else if (!strcmp(token, "MAXPERFORMANCEPENALTY"))
+                {
+                    //fetches the second half of the pair = 
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    int i, k;
+                    char found = 0;
+                    for (i = 0; i < num_nodes; i++)
+                    {
+                        for (k = 0; k < conf->nodes[conf->num_nodes+i].num_special_node_conf; k++)
+                        {
+                            if (conf->nodes[conf->num_nodes+i].special_node_conf[k].policy ==
+                                    MIN_ENERGY_TO_SOLUTION)
+                            {
+                                found = 1;
+                                conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
+                                break;
+                            }
+                        }
+                        if (!found)
+                        {
+                            k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
+                            conf->nodes[conf->num_nodes+i].special_node_conf = 
+                                        realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
+                                                sizeof(policy_conf_t)*k+1);
+                            conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_ENERGY_TO_SOLUTION;
+                            conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
+                            conf->nodes[conf->num_nodes+i].num_special_node_conf++;
+                        }
+                    }
+                }
+
+                //fetches the second half of the pair = 
+                token = strtok_r(NULL, "=", &secondary_ptr);
+                token = strtok_r(NULL, " ", &primary_ptr);
+            }
+
+            //global data for all nodes in that line
+            for (i = 0; i < num_nodes; i++)
+            {
+                conf->nodes[conf->num_nodes+i].cpus = num_cpus;
+                conf->nodes[conf->num_nodes+i].island = island;
+            }
+            conf->num_nodes += num_nodes;
+            printf("\n");
+        }
+    }
+}
+
+/** frees a cluster_conf_t */
+void free_cluster_conf_t(cluster_conf_t *conf)
+{
+    int i;
+    for (i = 0; i < conf->num_priv_users; i++)
+        free(conf->priv_users[i]);
+    free(conf->priv_users);
+    
+    for (i = 0; i < conf->num_acc; i++)
+        free(conf->priv_acc[i]);
+    free(conf->priv_acc);
+
+    free(conf->special);
+    
+    free(conf->nodes);
+
+    free(conf->power_policies);
+
+	free(conf);
 }
