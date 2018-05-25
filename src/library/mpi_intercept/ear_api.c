@@ -232,7 +232,6 @@ void ear_init()
 		return;
 	}
 
-
 	#if SHARED_MEMORY
 	system_conf = attach_ear_conf_shared_area(get_ear_tmp());
 	#endif
@@ -244,6 +243,7 @@ void ear_init()
 	loop_signature.is_mpi=1;
 	application.is_learning=ear_whole_app;
 	loop_signature.is_learning=ear_whole_app;
+	
 	// Getting environment data
 	get_app_name(ear_app_name);
 	strcpy(application.job.user_id, getenv("LOGNAME"));
@@ -251,6 +251,7 @@ void ear_init()
 	strcpy(application.job.user_acc,my_account);
 	application.job.id = my_job_id;
 	application.job.step_id = my_step_id;
+	
 	//sets the job start_time
 	start_job(&application.job);
 

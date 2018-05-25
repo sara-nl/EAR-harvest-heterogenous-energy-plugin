@@ -7,7 +7,7 @@ After=mariadb.service,slurmd.service
 
 [Service]
 Type=simple
-EnvironmentFil@prefix@/etc/slurm/ear.conf
+EnvironmentFile=@prefix@/etc/slurm/ear.conf
 ExecStart=@prefix@/sbin/eard 1 $EAR_TMP 0
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID

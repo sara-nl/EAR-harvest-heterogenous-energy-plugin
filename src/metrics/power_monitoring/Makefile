@@ -14,13 +14,13 @@ LIB_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.o \
 
 ######## RULES
 
-all: libpowermon.a
-
-libpowermon.so: ear_power_monitor.o $(LIB_OBJS)
-	$(CC) -shared ear_power_monitor.o $(LIB_OBJS) -o libpowermon.so
+all: libpowermon.a libpowermon.so
 
 libpowermon.a: ear_power_monitor.o $(LIB_OBJS) $(COMMON_OBJS)
 	ar rcs libpowermon.a ear_power_monitor.o $(LIB_OBJS) $(COMMON_OBJS)
+
+libpowermon.so: ear_power_monitor.o $(LIB_OBJS)
+	$(CC) -shared ear_power_monitor.o $(LIB_OBJS) -o libpowermon.so
 
 ear_power_monitor.o: ear_power_monitor.c ear_power_monitor.h 
 	$(CC) $(CFLAGS) -c ear_power_monitor.c 
@@ -28,9 +28,9 @@ ear_power_monitor.o: ear_power_monitor.c ear_power_monitor.h
 ######## OPTIONS
 
 install:
-	# mkdir -p $(DESTDIR)/include/metrics/power_monitoring
-	# cp ear_power_monitor.h $(DESTDIR)/include/metrics/power_monitoring
-	# cp $(LIBNAME) $(DESTDIR)/lib
+	mkdir -p $(DESTDIR)/include/metrics/power_monitoring
+	cp ear_power_monitor.h $(DESTDIR)/include/metrics/power_monitoring
+	cp libpowermon.so $(DESTDIR)/lib
 
 clean:
 	rm -f *.so *.a *.o
