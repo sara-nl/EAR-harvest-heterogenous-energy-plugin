@@ -779,6 +779,7 @@ int eard_rapl(int must_read)
             write(ear_fd_ack[comm_req],values,sizeof(unsigned long long)*RAPL_EVS);
             break;
         case DATA_SIZE_RAPL:
+			VERBOSE_N(0,"DATA_SIZE_RAPL\n");
             ack=sizeof(unsigned long long)*RAPL_EVS;
             write(ear_fd_ack[comm_req],&ack,sizeof(unsigned long));
             break;
@@ -1094,10 +1095,11 @@ void main(int argc,char *argv[])
 	my_to=NULL;
 	ear_debug(1,"eard waiting.....\n");
 	while((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0){
-		ear_debug(1,"eard unblocked with %d readys.....\n",numfds_ready);
+		VERBOSE_N(1,"eard unblocked with %d readys.....\n",numfds_ready);
 		if (numfds_ready>0){
 		for (i=0;i<ear_daemon_client_requests;i++){
 			if (FD_ISSET(ear_fd_req[i],&rfds)){
+				VERBOSE_N(0,"new local request\n");
 				select_service(i);
 			}	// IF FD_ISSET
 		} //for

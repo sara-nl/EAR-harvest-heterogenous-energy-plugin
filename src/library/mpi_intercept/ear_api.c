@@ -51,6 +51,7 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
+#include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
@@ -312,7 +313,7 @@ void ear_init()
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
 	// All is OK :D
-	DEBUG_F(1, "EAR initialized successfully");
+	VERBOSE_N(1, "EAR initialized successfully");
 }
 
 void ear_finalize()
@@ -326,7 +327,7 @@ void ear_finalize()
 	}	
 
 	#if USE_LOCK_FILES
-	VERBOSE_N(1, "Application master releasing the lock %d", ear_my_rank);
+	VERBOSE_N(1, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
 	unlock_master(fd_master_lock,fd_lock_filename);
 	#endif
 

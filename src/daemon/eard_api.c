@@ -81,6 +81,11 @@ uint warning(int return_value, int expected, char *msg)
 	return (return_value!=expected);
 }
 
+int eards_connected()
+{
+	return app_connected;
+}
+
 int eards_connect(application_t *my_app)
 {
 	char nodename[256];
@@ -540,6 +545,7 @@ ulong eards_get_data_size_rapl() // size in bytes
 	{
         if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for RAPL data size ")) return EAR_ERROR;
+		VERBOSE_N(0,"waiting for eard_answer\n");
         if (warning(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for RAPL data size ")) return EAR_ERROR;
     } else {
@@ -547,6 +553,7 @@ ulong eards_get_data_size_rapl() // size in bytes
 		ack=EAR_ERROR;
 	}
     rapl_size=ack;
+	VERBOSE_N(0,"answer received\n");
     return ack;
 }
 

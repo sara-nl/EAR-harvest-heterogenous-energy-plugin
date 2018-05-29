@@ -83,11 +83,8 @@ types.a: $(TYPES_OBJS) string_enhanced.o math_operations.o $(HEADERS)
 
 install:
 	mkdir -p $(DESTDIR)/include/common
-	cp ear_daemon_client.o $(DESTDIR)/lib
 	cp eards_api.h $(DESTDIR)/include
 	cp states.h $(DESTDIR)/include/common
-ifdef FEAT_SHRMEM
-endif
 
 clean:
 	rm $(BINARIES) $(TYPES_OBJS) || true

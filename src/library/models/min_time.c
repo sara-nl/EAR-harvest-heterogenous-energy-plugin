@@ -35,17 +35,18 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <common/config.h>
 #include <control/frequency.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
 #include <library/models/sig_projections.h>
+#include <daemon/eard_api.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
-#include <common/config.h>
 
 static const char *__NAME__ = "min_time_policy";
 static uint mt_policy_pstates;
@@ -86,6 +87,7 @@ ulong min_time_policy(signature_t *sig)
     ulong best_pstate;
     my_app=sig;
 
+
     if (ear_use_turbo) min_pstate=0;
     else min_pstate=get_global_min_pstate();
 
@@ -95,6 +97,7 @@ ulong min_time_policy(signature_t *sig)
     // This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
     // We must check this is ok changing these values at this point
     policy_global_reconfiguration();
+	if (!eards_connected()) return EAR_default_frequency;
 
     // We compute here our reference
 
@@ -179,10 +182,12 @@ ulong min_time_policy(signature_t *sig)
 
 	// Coefficients were not available for this nominal frequency
 	#if SHARED_MEMORY
+	if (system_conf!=NULL){
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (best_pstate>system_conf->max_freq){ 
 		log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
 		best_pstate=system_conf->max_freq;
+	}
 	}
 	#endif
 
@@ -206,7 +211,7 @@ ulong  min_time_default_conf(ulong f)
 {
     #if SHARED_MEMORY
     // Just in case the bestPstate was the frequency at which the application was running
-    if (f>system_conf->max_freq){
+    if ((system_conf!=NULL) && (f>system_conf->max_freq)){
         log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
         ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
         f,system_conf->max_freq);

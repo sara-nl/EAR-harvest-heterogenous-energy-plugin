@@ -179,6 +179,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	prev_f = ear_frequency;
 
 	#if SHARED_MEMORY
+	if (system_conf!=NULL){
 	if (system_conf->force_rescheduling){
 		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
 
@@ -193,6 +194,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		// Should we reset these controls?
 		tries_current_loop_same_freq=0;
 		tries_current_loop=0;
+	}
 	}
 	#endif
 

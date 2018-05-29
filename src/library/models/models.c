@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <common/config.h>
 #include <control/frequency.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
@@ -47,7 +48,6 @@
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
-//#include <common/config.h>
 
 typedef struct policy
 {
@@ -127,6 +127,7 @@ void init_policy_functions()
 int policy_global_configuration(int p_state)
 {
 #if SHARED_MEMORY
+	if (system_conf!=NULL){
 	switch (power_model_policy){
 	case MIN_ENERGY_TO_SOLUTION:
 		return frequency_freq_to_pstate(system_conf->max_freq);
@@ -137,6 +138,7 @@ int policy_global_configuration(int p_state)
 		return frequency_freq_to_pstate(system_conf->def_freq);
 		break;
 	}
+	}else return p_state;
 #else 
 	return p_state;
 #endif
@@ -146,6 +148,7 @@ int policy_global_configuration(int p_state)
 void policy_global_reconfiguration()
 {
 #if SHARED_MEMORY
+	if (system_conf!=NULL){
 	VERBOSE_N(0,"policy_global_reconfiguration max %lu def %lu th %.2lf\n",
 	system_conf->max_freq,system_conf->def_freq,system_conf->th);
 	switch (power_model_policy){
@@ -169,6 +172,7 @@ void policy_global_reconfiguration()
         ear_verbose(0,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
         performance_gain=system_conf->th;
     }
+	}
 #else
 	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
 #endif
@@ -178,7 +182,8 @@ void policy_global_reconfiguration()
 uint get_global_min_pstate()
 {
 #if SHARED_MEMORY
-    frequency_freq_to_pstate(system_conf->max_freq);
+    if (system_conf!=NULL) return frequency_freq_to_pstate(system_conf->max_freq);
+	else return 1;
 #else
 	return 1;
 #endif
@@ -188,7 +193,8 @@ uint get_global_min_pstate()
 uint get_global_def_pstate()
 {
 #if SHARED_MEMORY
-    return frequency_freq_to_pstate(system_conf->def_freq);
+    if (system_conf!=NULL) return frequency_freq_to_pstate(system_conf->def_freq);
+	else return EAR_default_pstate;
 #else
     return EAR_default_pstate;
 #endif
@@ -209,7 +215,8 @@ double get_global_th()
 	switch (power_model_policy){
 		case MIN_TIME_TO_SOLUTION:
 			#if SHARED_MEMORY
-				return system_conf->th;
+				if (system_conf!=NULL) return system_conf->th;
+				else return performance_gain;
 			#else
 				return performance_gain;
 			#endif

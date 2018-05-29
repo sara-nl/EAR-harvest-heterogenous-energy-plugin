@@ -32,11 +32,12 @@
 #ifndef _EAR_DAEMON_CLIENT_H
 #define _EAR_DAEMON_CLIENT_H
 
-#include <daemon/eard_conf_api.h>
 #include <common/types/generic.h>
+#include <daemon/eard_conf_api.h>
 
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
 int eards_connect();
+int eards_connected();
 /** Closes the connection with the daemon. */
 void eards_disconnect();
 
