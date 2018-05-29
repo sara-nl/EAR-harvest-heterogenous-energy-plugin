@@ -69,7 +69,7 @@ void min_time_end_loop()
     if (mt_reset_freq)
     {
         // Use configuration when available
-        ear_frequency = eards_change_freq(EAR_default_frequency);
+        ear_frequency = eards_change_freq(get_global_def_freq());
     }
 }
 
@@ -136,8 +136,11 @@ ulong min_time_policy(signature_t *sig)
 	set_performance_projection(EAR_default_pstate,time_ref,power_ref,cpi_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
-	if (best_pstate>min_pstate)
+	VERBOSE_N(0,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
+	#if !SHARED_MEMORY
+	if (best_pstate>min_pstate)  
 	{
+	#endif
 		try_next=1;
 		i=EAR_default_pstate-1;
 		time_current=time_ref;
@@ -146,12 +149,15 @@ ulong min_time_policy(signature_t *sig)
 		{
 			if (coefficients[ref][i].available)
 			{
+				VERBOSE_N(0,"Comparing %u with %u",best_pstate,i);
 				power_proj=sig_power_projection(my_app,ear_frequency,i);
 				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
 				time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
 				set_performance_projection(i,time_proj,power_proj,cpi_proj);
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
+				
+				VERBOSE_N(0,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
 
 				// OK
 				if (perf_gain>=freq_gain)
@@ -167,7 +173,9 @@ ulong min_time_policy(signature_t *sig)
 			} // Coefficients available
 			else try_next=0;
 		}	
+	#if !SHARED_MEMORY
 	}
+	#endif
 
 	// Coefficients were not available for this nominal frequency
 	#if SHARED_MEMORY

@@ -31,7 +31,7 @@
 #include <linux/limits.h>
 #include <common/types/application.h>
 #include <common/types/loop.h>
-#include <common/shared_configuration.h>
+#include <daemon/shared_configuration.h>
 
 int EAR_VERBOSE_LEVEL;
 

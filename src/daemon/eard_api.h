@@ -32,7 +32,7 @@
 #ifndef _EAR_DAEMON_CLIENT_H
 #define _EAR_DAEMON_CLIENT_H
 
-#include <common/ear_daemon_common.h>
+#include <daemon/eard_conf_api.h>
 #include <common/types/generic.h>
 
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */

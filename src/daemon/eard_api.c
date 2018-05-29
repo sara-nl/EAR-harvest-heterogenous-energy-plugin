@@ -40,8 +40,7 @@
 #include <sys/types.h>
 
 #include <common/ear_verbose.h>
-#include <common/ear_daemon_common.h>
-#include <common/ear_daemon_client.h>
+#include <daemon/eard_api.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/states.h>
@@ -235,6 +234,7 @@ void eards_disconnect()
 			close(ear_fd_ack[i]);
 		}
 	}
+	app_connected=0;
 }
 //////////////// SYSTEM REQUESTS
 ulong eards_write_app_signature(application_t *app_signature)

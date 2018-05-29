@@ -138,8 +138,8 @@ void report_new_event(ear_event_t *event)
 
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
 #endif
-#if DB_SQL
-	db_insert_event(event);
+#if DB_MYSQL
+	//db_insert_ear_event(event);
 #endif
 #endif
 }

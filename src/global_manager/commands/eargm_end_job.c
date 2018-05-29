@@ -3,14 +3,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <common/config.h>
-#include <common/remote_daemon_client.h>
+#include <global_manager/eargm_api.h>
 
 #define NAME_SIZE 128
+int EAR_VERBOSE_LEVEL=0;
 
 void usage(char *app)
 {
-	printf("usage:%s new_freq (in KHz)\n",app);
+	printf("usage:%s num_nodes \n",app);
 	exit(1);
 }
 
@@ -18,24 +18,21 @@ void usage(char *app)
 
 void main(int argc,char *argv[])
 {
-	int eards;
-	unsigned long f;
-	
+	int eargms;
+	unsigned int num_nodes;
 	char myhost[NAME_SIZE];
 	if (argc!=2) usage(argv[0]);
-	f=atol(argv[1]);
-	// SET FREQ
+	num_nodes=(unsigned int)atoi(argv[1]);
+	// NEW_JOB
 	if (gethostname(myhost,NAME_SIZE)<0){
 		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
 		exit(1);
 	}
-	eards=eards_remote_connect(myhost);
-	if(eards<0){ 
+	eargms=eargm_connect(myhost);
+	if(eargms<0){ 
 		fprintf(stderr,"Connection error\n");
 		exit(1);
 	}
-	fprintf(stdout,"Setting the frequency in all the nodes to %lu\n",f);
-
-	if (!eards_set_freq(f)) fprintf(stderr,"ear_set_freq error sending eards_set_freq command\n");
-	eards_remote_disconnect();
+	if (!eargm_end_job(num_nodes)) fprintf(stderr,"eargm_end_job error sending new_job command\n");
+	eargm_disconnect();
 }

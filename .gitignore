@@ -52,6 +52,7 @@ tests/check/check.sh
 *ear_inc_th
 *ear_red_freq
 *ear_set_freq
+*ear_set_th
 *ear_set_ondemand
 
 *compute_coefficients_remote

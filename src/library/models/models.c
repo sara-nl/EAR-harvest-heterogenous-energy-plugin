@@ -64,7 +64,7 @@ policy_t app_policy;
 static const char *__NAME__ = "MODELS";
 
 // Policy
-int power_model_policy = MIN_ENERGY_TO_SOLUTION;
+static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
 double performance_penalty ;
 double performance_gain ;
 
@@ -122,20 +122,53 @@ void init_policy_functions()
     }
 
 }
+
+// This function sets the default freq based on the policy
+int policy_global_configuration(int p_state)
+{
+#if SHARED_MEMORY
+	switch (power_model_policy){
+	case MIN_ENERGY_TO_SOLUTION:
+		return frequency_freq_to_pstate(system_conf->max_freq);
+		break;
+	case MIN_TIME_TO_SOLUTION:
+		performance_penalty=system_conf->th;
+	case MONITORING_ONLY:
+		return frequency_freq_to_pstate(system_conf->def_freq);
+		break;
+	}
+#else 
+	return p_state;
+#endif
+}
+
 // This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
 void policy_global_reconfiguration()
 {
 #if SHARED_MEMORY
-    // We filter initial configuration
-    if (system_conf->max_freq<frequency_pstate_to_freq(EAR_default_pstate)){
-        ear_verbose(0,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
-        EAR_default_pstate=frequency_freq_to_pstate(system_conf->max_freq);
-    }
+	VERBOSE_N(0,"policy_global_reconfiguration max %lu def %lu th %.2lf\n",
+	system_conf->max_freq,system_conf->def_freq,system_conf->th);
+	switch (power_model_policy){
+	case MIN_ENERGY_TO_SOLUTION:
+	    // We filter initial configuration
+	    if (system_conf->max_freq<EAR_default_frequency){
+	        ear_verbose(0,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
+			EAR_default_frequency=system_conf->max_freq;
+	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
+	    }
+		break;
+	case MIN_TIME_TO_SOLUTION:
+    case MONITORING_ONLY:
+		if (system_conf->def_freq!=EAR_default_frequency){
+	        ear_verbose(0,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
+			EAR_default_frequency=system_conf->def_freq;
+	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
+		}
+	}
     if (performance_gain<system_conf->th){
         ear_verbose(0,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
         performance_gain=system_conf->th;
     }
-	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
 #else
 	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
 #endif
@@ -150,6 +183,47 @@ uint get_global_min_pstate()
 	return 1;
 #endif
 }
+
+// This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
+uint get_global_def_pstate()
+{
+#if SHARED_MEMORY
+    return frequency_freq_to_pstate(system_conf->def_freq);
+#else
+    return EAR_default_pstate;
+#endif
+}
+
+// This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
+ulong get_global_def_freq()
+{
+#if SHARED_MEMORY
+    return system_conf->def_freq;
+#else
+    return EAR_default_pstate;
+#endif
+}
+
+double get_global_th()
+{
+	switch (power_model_policy){
+		case MIN_TIME_TO_SOLUTION:
+			#if SHARED_MEMORY
+				return system_conf->th;
+			#else
+				return performance_gain;
+			#endif
+			break;
+		case MIN_ENERGY_TO_SOLUTION:
+			return performance_penalty;
+			break;
+		case MONITORING_ONLY:
+			return 0.0;
+	}
+}
+
+
+
 
 
 void init_power_policy()
@@ -173,7 +247,10 @@ void init_power_policy()
 		EAR_default_pstate = DEFAULT_P_STATE;
 	}
 
+	EAR_default_pstate=policy_global_configuration(EAR_default_pstate);
+
 	user_selected_freq = EAR_default_frequency = frequency_pstate_to_freq(EAR_default_pstate);
+
 	
 	// IMPORTANT: here is where the environment first P_STATE is set.
 	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);

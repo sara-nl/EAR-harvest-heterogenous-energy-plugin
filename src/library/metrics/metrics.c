@@ -39,7 +39,7 @@
 #include <metrics/papi/instructions.h>
 #include <library/metrics/metrics.h>
 #include <common/types/signature.h>
-#include <common/ear_daemon_client.h>
+#include <daemon/eard_api.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/math_operations.h>

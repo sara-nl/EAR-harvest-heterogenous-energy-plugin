@@ -190,6 +190,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			ear_verbose(0,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
 			EAR_STATE = EVALUATING_SIGNATURE;
 		}
+		// Should we reset these controls?
+		tries_current_loop_same_freq=0;
+		tries_current_loop=0;
 	}
 	#endif
 

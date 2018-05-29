@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <common/config.h>
-#include <common/remote_daemon_client.h>
+#include <daemon/eard_rapi.h>
 
 #define NAME_SIZE 128
 

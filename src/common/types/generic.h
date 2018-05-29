@@ -31,6 +31,7 @@
 #define _EAR_TYPES_GENERIC
 
 #include <linux/limits.h>
+#include <stdint.h>
 
 typedef unsigned char uchar;
 typedef unsigned long long ull;

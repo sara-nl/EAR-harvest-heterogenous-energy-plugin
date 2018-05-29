@@ -29,8 +29,7 @@ HEADERS = $(SRCDIR)/common/ear_verbose.h \
           $(SRCDIR)/common/states.h \
           $(SRCDIR)/common/config.h
 
-BINARIES = ear_daemon_client.o \
-           environment.o \
+BINARIES = environment.o \
            environment_common.o \
            string_enhanced.o \
            math_operations.o \
@@ -38,11 +37,9 @@ BINARIES = ear_daemon_client.o \
 		   types.a
 
 ifdef FEAT_SHRMEM
-BINARIES += remote_daemon_client.o \
-            shared_configuration.o
+BINARIES += 
 
-HEADERS += $(SRCDIR)/common/shared_configuration.h \
-		   $(SRCDIR)/common/remote_conf.h
+HEADERS += 
 endif
 
 ifdef DB_BASE
@@ -66,14 +63,6 @@ all: $(BINARIES)
 file_lock.o: file_lock.c file_lock.h
 	$(CC) $(CFLAGS) -c file_lock.c
 
-ear_daemon_client.o: ear_daemon_client.c ear_daemon_client.h ear_daemon_common.h $(HEADERS)
-	$(CC) $(CFLAGS) -c ear_daemon_client.c
-
-shared_configuration.o: shared_configuration.c shared_configuration.h $(HEADERS)
-	$(CC) $(CFLAGS) -c shared_configuration.c
-
-remote_daemon_client.o: remote_daemon_client.c remote_daemon_client.h remote_conf.h $(HEADERS)
-	$(CC) $(CFLAGS) -c remote_daemon_client.c
 
 environment.o: environment.c environment.h environment_common.h
 	$(CC) $(CFLAGS) -c environment.c
@@ -98,8 +87,6 @@ install:
 	cp eards_api.h $(DESTDIR)/include
 	cp states.h $(DESTDIR)/include/common
 ifdef FEAT_SHRMEM
-	cp remote_daemon_client.o $(DESTDIR)/lib
-	cp remote_daemon_client.h $(DESTDIR)/include
 endif
 
 clean:

@@ -51,7 +51,7 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
-#include <common/shared_configuration.h>
+#include <daemon/shared_configuration.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/environment.h>
@@ -273,7 +273,7 @@ void ear_init()
 		}
 	}
 
-	ear_current_freq = frequency_get_num_pstates(0);
+	ear_current_freq = frequency_get_cpu_freq(0);
 
 	// Policies
 	init_power_policy();
@@ -285,7 +285,7 @@ void ear_init()
 	// Passing the frequency in KHz to MHz
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
 	application.job.procs = get_total_resources();
-	application.job.th = get_ear_power_policy_th();
+	application.job.th =get_global_th();
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));

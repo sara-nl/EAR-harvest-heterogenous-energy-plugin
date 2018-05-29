@@ -46,25 +46,26 @@
 #include <metrics/custom/bandwidth.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/papi/energy_cpu.h>
-#include <common/ear_daemon_common.h>
 #include <common/types/generic.h>
 #include <common/types/job.h>
 #include <common/environment.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/config.h>
+#include <daemon/eard_api.h>
 
 #if SHARED_MEMORY
 #include <common/types/cluster_conf.h>
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
-#include <common/shared_configuration.h>
+#include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
 cluster_conf_t	my_cluster_conf;
 node_conf_t 	*my_node_conf;
+ear_conf_t *dyn_conf;
 #endif
 
 #define max(a,b) (a>b?a:b)
@@ -92,7 +93,8 @@ char eard_lock_file[MAX_PATH_SIZE];
 int EAR_VERBOSE_LEVEL=0;
 int application_id=-1;
 
-unsigned long energy_freq;
+ulong energy_freq;
+ulong current_node_freq;
 struct daemon_req req;
 
 void eard_exit(uint restart);
@@ -609,6 +611,7 @@ void eard_set_freq(unsigned long new_freq,unsigned long max_freq)
 		freq=max_freq;
 	}
 	ear_ok=frequency_set_all_cpus(freq);
+	current_node_freq=freq;
 	if (ear_ok!=freq) ear_verbose(1,"eard: warning, frequency is not correctly changed\n");
 	write(ear_fd_ack[freq_req],&ear_ok,sizeof(unsigned long));  
 }
@@ -901,6 +904,22 @@ void signal_catcher()
 }
 //endregion
 
+void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,node_conf_t *node)
+{
+	policy_conf_t *my_policy;
+	ulong deff;
+    my_policy=get_my_policy_conf(cluster,node,MIN_TIME_TO_SOLUTION);
+    if (my_policy==NULL){
+        VERBOSE_N(0,"PANIC policy configuration not found!\n");
+    }else{
+        print_policy_conf(my_policy);
+    }
+    deff=frequency_pstate_to_freq(my_policy->p_state);
+    dyn->def_freq=deff;
+    dyn->th=my_policy->th;
+	VERBOSE_N(0,"configure_default_values def_freq %lu th %.2lf\n",dyn->def_freq,dyn->th);
+}
+
 void main(int argc,char *argv[])
 {
 	struct timeval *my_to;
@@ -1034,6 +1053,13 @@ void main(int argc,char *argv[])
 	}
 	rfds_basic=rfds;
 #if SHARED_MEMORY
+    ear_verbose(0,"creating shared memory tmp=%s\n",ear_tmp);
+    dyn_conf=create_ear_conf_shared_area(ear_tmp,eard_max_freq);
+    if (dyn_conf==NULL){
+        ear_verbose(0,"Error creating shared memory\n");
+        exit(0);
+    }
+    ear_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
 		errno=ret;
 		ear_verbose(0,"eard: error creating power_monitoring thread %s\n",strerror(errno));
@@ -1051,6 +1077,7 @@ void main(int argc,char *argv[])
 		}
 		else print_node_conf(my_node_conf);
 	}
+	configure_default_values(dyn_conf,&my_cluster_conf,my_node_conf);
 #endif
 	ear_verbose(1,"eard:Communicator for %s ON\n",nodename);
 	// we wait until EAR daemon receives a request

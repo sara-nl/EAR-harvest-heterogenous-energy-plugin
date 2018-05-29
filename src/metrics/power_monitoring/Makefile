@@ -2,7 +2,7 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## OBJS
 
-COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
+COMMON_OBJS = $(SRCDIR)/daemon/eard_api.o \
               $(SRCDIR)/common/math_operations.o
 
 LIB_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.o \
@@ -22,7 +22,7 @@ libpowermon.so: ear_power_monitor.o $(LIB_OBJS)
 libpowermon.a: ear_power_monitor.o $(LIB_OBJS) $(COMMON_OBJS)
 	ar rcs libpowermon.a ear_power_monitor.o $(LIB_OBJS) $(COMMON_OBJS)
 
-ear_power_monitor.o: ear_power_monitor.c ear_power_monitor.h 
+ear_power_monitor.o: ear_power_monitor.c ear_power_monitor.h $(SRCDIR)/daemon/eard_api.h
 	$(CC) $(CFLAGS) -c ear_power_monitor.c 
 
 ######## OPTIONS

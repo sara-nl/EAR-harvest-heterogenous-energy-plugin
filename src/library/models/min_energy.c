@@ -79,7 +79,7 @@ void min_energy_end_loop()
     if (me_reset_freq)
     {
 		// Use configuration when available
-        ear_frequency = eards_change_freq(EAR_default_frequency);
+        ear_frequency = eards_change_freq(get_global_def_freq());
     }
 }
 
