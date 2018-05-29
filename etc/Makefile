@@ -14,7 +14,7 @@ ETC_FOLDERS = $(ETCDIR)/module \
               $(ETCDIR)/scripts/running \
               $(ETCDIR)/dbs \
               $(ETCDIR)/coeffs \
-              $(ETCDIR)/misc
+              $(ETCDIR)/systemd
 
 ######## OPTIONS
 
@@ -23,8 +23,10 @@ install:
 	@ mkdir -p ${ETC_FOLDERS}
 	cp    module/ear $(ETCDIR)/module/
 	cp -n slurm/ear.conf $(ETCDIR)/slurm/
-	cp -n slurm/ear.link $(ETCDIR)/slurm/
 	cp -n slurm/plugstack.conf $(ETCDIR)/slurm/
+	cp    systemd/eard.service $(ETCDIR)/systemd
+	cp    systemd/eardbd.service $(ETCDIR)/systemd
+	cp    systemd/eargmd.service $(ETCDIR)/systemd
 	cp -r scripts/* $(ETCDIR)/scripts/
 	@ rm  $(ETCDIR)/scripts/README.md $(ETCDIR)/scripts/learning/README.md
 	

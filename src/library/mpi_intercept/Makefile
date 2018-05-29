@@ -1,5 +1,4 @@
 .c.o:
-	echo $@
 	$(MPICC) $(CFLAGS) -c -o $@ $<
 
 clean:

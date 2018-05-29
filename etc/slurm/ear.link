@@ -1,0 +1,8 @@
+EAR_INSTALL_PATH=/home/xjcorbalan/my_ear
+EAR_EXTRA_PATHS=
+CPUPOWER_LIB_PATH=
+FREEIPMI_LIB_PATH=/home/xjaneas/opt/lib
+SLURM_LIB_PATH=/home/xjaneas/slurm//lib
+PAPI_LIB_PATH=/home/xjaneas/opt/lib
+GSL_LIB_PATH=
+EAR_TMP=/var/ear
