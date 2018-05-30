@@ -597,24 +597,26 @@ int eard_system(int must_read)
 			#endif
 			break;
 		case WRITE_EVENT:
+			ack=EAR_COM_OK;
+			#if DB_MYSQL
 			ret1=db_insert_ear_event(&req.req_data.event);
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
+			#endif
 			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
+
 			break;
+
 		case WRITE_LOOP_SIGNATURE:
+			ack=EAR_COM_OK;
 			#if DB_MYSQL
 			req.req_data.loop.loop.job=&req.req_data.loop.job;
 			ret1 = db_insert_loop (&req.req_data.loop.loop);
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
-            else ack=EAR_COM_ERROR;
-			VERBOSE_N(0,"Loop inserted in the DB ret=%d",ret1);
-            write(ear_fd_ack[system_req], &ack, sizeof(ulong));
+			else ack=EAR_COM_ERROR;
 			#endif
-			#if !DB_MYSQL
-			ack=EAR_COM_OK;
 			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
-			#endif
+
 		break;
 		default: return 0;
 	}

@@ -44,9 +44,7 @@ OBJS = dynais/dynais.o \
        models/min_time.o \
        models/min_energy.o \
        models/monitoring.o \
-       models/sig_projections.o \
-       states/states_periodic.o
-       states/states.o
+       models/sig_projections.o 
 
 ######## VARS
 

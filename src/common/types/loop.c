@@ -34,6 +34,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <common/config.h>
 #include <common/types/loop.h>
 #include <common/states.h>
