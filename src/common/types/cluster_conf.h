@@ -119,5 +119,8 @@ int policy_name_to_id(char *my_policy);
 
 /** Given a cluster, node and  policy, returns the policy configuration for that cluser,node,policy */
 policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_node,uint p_id);
+
+/** Prints in the stdout the whole cluster configuration */
+void print_cluster_conf(cluster_conf_t *conf);
 #else
 #endif

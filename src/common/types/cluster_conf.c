@@ -77,8 +77,6 @@
 	policy_conf_t *special_node_conf;	
 */
 
-#define __OLD__CONF__
-
 static const char *__NAME__ = "cluster_conf:";
 
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
@@ -156,6 +154,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		return EAR_ERROR;
 	}
 	get_cluster_config(conf_file, my_conf);
+    //print_cluster_conf(my_conf);
 	#endif
 	return EAR_SUCCESS;
 }
@@ -196,7 +195,7 @@ void print_node_conf(node_conf_t *my_node_conf)
 /** Prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p)
 {
-	fprintf(stdout,"--> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
+	fprintf(stdout,"---> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
 }
 
 
@@ -268,16 +267,15 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
             range_start = atoi(strtok_r(token, "-", &second_ptr));
             range_end = atoi(strtok_r(NULL, "-", &second_ptr));
             int i;
-            node_count++;
             for (i = range_start; i <= range_end; i++, node_count++)
             {
-                conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count));
+                conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count+1));
                 //CASE FOR <10 numbers
                 if (i < 10 && has_zero)
-                    sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s0%u\0", start, i);
+                    sprintf(conf->nodes[conf->num_nodes+node_count].name, "%s0%u\0", start, i);
 
                 else
-                    sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s%u\0", start, i);
+                    sprintf(conf->nodes[conf->num_nodes+node_count].name, "%s%u\0", start, i);
 
             }
         }
@@ -568,7 +566,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 conf->nodes[conf->num_nodes+i].island = island;
             }
             conf->num_nodes += num_nodes;
-            printf("\n");
         }
     }
 }
@@ -592,4 +589,35 @@ void free_cluster_conf_t(cluster_conf_t *conf)
     free(conf->power_policies);
 
 	free(conf);
+}
+
+void print_special_app(special_app_t *app)
+{
+    fprintf(stdout, "--->appname: %s\tuser: %s\t p_state: %u\n",
+            app->appname, app->user, app->p_state);
+}
+
+void print_cluster_conf(cluster_conf_t *conf)
+{
+    fprintf(stdout, "DIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n", 
+            conf->DB_pathname, conf->Coefficients_pathname, conf->tmp_dir);
+    fprintf(stdout, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %u\n--->Min_time_perf_acc: %u\n",
+            conf->verbose, conf->default_policy, conf->min_time_perf_acc);
+    int i;
+    fprintf(stdout, "\nAVAILABLE POLICIES\n");
+    for (i = 0; i < conf->num_policies; i++)
+        print_policy_conf(&conf->power_policies[i]);
+    fprintf(stdout, "\nPRIVILEGED USERS\n");
+    for (i = 0; i < conf->num_priv_users; i++)
+        fprintf(stdout, "--->user: %s\n", conf->priv_users[i]);
+    fprintf(stdout, "\nPRIVILEGED ACCOUNTS\n");
+    for (i = 0; i < conf->num_acc; i++)
+        fprintf(stdout, "--->acc: %s\n", conf->priv_acc[i]);
+    fprintf(stdout, "\nSPECIAL APPLICATIONS\n");
+    for (i = 0; i < conf->num_special; i++)
+        print_special_app(&conf->special[i]);
+    fprintf(stdout, "\nNODE CONFIGURATIONS\n");
+    for (i = 0; i < conf->num_nodes; i++)
+        print_node_conf(&conf->nodes[i]);
+
 }
