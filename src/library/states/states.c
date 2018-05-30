@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <common/config.h>
 #include <control/frequency.h>
 #include <library/common/externs.h>
 #include <library/tracer/tracer.h>
@@ -46,7 +47,6 @@
 #include <common/types/log.h>
 #include <common/types/application.h>
 #include <common/states.h>
-#include <common/config.h>
 #include <common/math_operations.h>
 
 static const char *__NAME__ = "STATES";
@@ -133,7 +133,12 @@ void states_end_period(uint iterations)
 	if (loop_with_signature)
 	{
 		loop.total_iterations = iterations;
+		#if DB_FILES
 		append_loop_text_file(loop_summary_path, &loop);
+		#endif
+		#if DB_MYSQL
+		eards_write_loop_signature(&loop);
+		#endif
 	}
 
 	loop_with_signature = 0;
@@ -160,10 +165,16 @@ static void print_loop_signature(char *title, signature_t *loop)
 }
 
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter);
-static void report_loop_signature(uint iterations,loop_t *loop)
+static void report_loop_signature(uint iterations,loop_t *my_loop)
 {
-   loop->total_iterations = iterations;
-   append_loop_text_file(loop_summary_path, loop);
+   	my_loop->total_iterations = iterations;
+	#if DB_FILES
+   	append_loop_text_file(loop_summary_path, my_loop);
+	#endif
+	#if DB_MYSQL
+    eards_write_loop_signature(my_loop);
+    #endif
+
 	
 	
 }

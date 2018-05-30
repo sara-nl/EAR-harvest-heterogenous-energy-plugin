@@ -41,6 +41,7 @@
 #include <sys/select.h>
 #include <linux/limits.h>
 
+#include <common/config.h>
 #include <control/frequency.h>
 #include <metrics/ipmi/energy_node.h>
 #include <metrics/custom/bandwidth.h>
@@ -48,11 +49,12 @@
 #include <metrics/papi/energy_cpu.h>
 #include <common/types/generic.h>
 #include <common/types/job.h>
+#include <common/types/log.h>
+#include <common/types/loop.h>
 #include <common/environment.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
-#include <common/config.h>
-#include <daemon/eard_api.h>
+#include <daemon/eard_conf_api.h>
 
 #if SHARED_MEMORY
 #include <common/types/cluster_conf.h>
@@ -600,6 +602,20 @@ int eard_system(int must_read)
 			else ack=EAR_COM_ERROR;
 			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
 			break;
+		case WRITE_LOOP_SIGNATURE:
+			#if DB_MYSQL
+			req.req_data.loop.loop.job=&req.req_data.loop.job;
+			ret1 = db_insert_loop (&req.req_data.loop.loop);
+			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
+            else ack=EAR_COM_ERROR;
+			VERBOSE_N(0,"Loop inserted in the DB ret=%d",ret1);
+            write(ear_fd_ack[system_req], &ack, sizeof(ulong));
+			#endif
+			#if !DB_MYSQL
+			ack=EAR_COM_OK;
+			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
+			#endif
+		break;
 		default: return 0;
 	}
 	return 1;

@@ -96,7 +96,10 @@ unsigned long eards_get_data_size_rapl();
 // System services
 /** Sends a request to the deamon to write the whole application signature.
 *   Returns 0 on success, -1 on error. */
-unsigned long eards_write_app_signature(application_t *app_signature);
+ulong eards_write_app_signature(application_t *app_signature);
+/** Sends a request to the deamon to write one loop  signature into the DB.
+*   Returns 0 on success, -1 on error. */
+ulong eards_write_loop_signature(loop_t *loop_signature);
 /** Reports a new EAR event */
 ulong eards_write_event(ear_event_t *event);
 

@@ -32,11 +32,19 @@
 
 #include <common/types/generic.h>
 #include <common/types/application.h>
+#include <common/types/job.h>
+#include <common/types/loop.h>
+
+typedef struct eard_loop{
+	loop_t loop;
+	job_t	job;
+}eard_loop_t;
 
 // Data type to send the requests
 union daemon_req_opt {
     unsigned long req_value;
     application_t app;
+	eard_loop_t		  loop;
 	ear_event_t event;
 };
 
@@ -86,6 +94,7 @@ struct daemon_req {
 #define WRITE_APP_SIGNATURE 	300
 #define CONNECT_SYSTEM 			301
 #define WRITE_EVENT				302
+#define WRITE_LOOP_SIGNATURE 	303
 
 // Services related to node energy management
 #define READ_DC_ENERGY 			400

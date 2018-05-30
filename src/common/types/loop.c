@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
+#include <common/config.h>
 #include <common/types/loop.h>
 #include <common/states.h>
 
@@ -94,6 +95,7 @@ void print_loop_fd(int fd, loop_t *loop)
 
 int append_loop_text_file(char *path, loop_t *loop)
 {
+	#if DB_FILES
     if (path == NULL) {
         return EAR_ERROR;
     }
@@ -135,5 +137,6 @@ int append_loop_text_file(char *path, loop_t *loop)
 
 	if (ret < 0) return EAR_ERROR;
 	return EAR_SUCCESS;
-    return 0;
+	#endif
+	
 }

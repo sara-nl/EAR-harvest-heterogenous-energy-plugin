@@ -100,6 +100,7 @@ void report_application_data(application_t *app)
 	printf("------------------------------------------------------------------------ Application Summary --\n");
 	printf("-- App id: %s, user id: %s, job id: %lu", app->job.app_id, app->job.user_id, app->job.id);
 	printf("   procs: %lu (s) acc %s\n", app->job.procs,app->job.user_acc);
+	printf("   start time %d end time %d start mpi %d end mpi %d\n",(int)app->job.start_time,(int)app->job.end_time,(int)app->job.start_mpi_time,(int)app->job.end_mpi_time);
 	printf("-- power_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->power_sig.time, def_f, avg_f);
 	printf("DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->power_sig.DC_power, app->power_sig.DRAM_power, 
                                                                	app->power_sig.PCK_power);
