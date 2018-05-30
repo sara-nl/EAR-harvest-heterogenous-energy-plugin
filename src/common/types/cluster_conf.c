@@ -154,7 +154,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		return EAR_ERROR;
 	}
 	get_cluster_config(conf_file, my_conf);
-    print_cluster_conf(my_conf);
+    //print_cluster_conf(my_conf);
 	#endif
 	return EAR_SUCCESS;
 }
@@ -195,7 +195,7 @@ void print_node_conf(node_conf_t *my_node_conf)
 /** Prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p)
 {
-	fprintf(stdout,"--> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
+	fprintf(stdout,"---> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
 }
 
 
