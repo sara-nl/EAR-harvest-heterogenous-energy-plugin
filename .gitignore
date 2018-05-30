@@ -56,6 +56,8 @@ tests/check/check.sh
 *ear_set_freq
 *ear_set_th
 *ear_set_ondemand
+*eargm_new_job
+*eargm_end_job
 
 *compute_coefficients_remote
 *coefficients_quality_control
