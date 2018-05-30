@@ -49,7 +49,7 @@
 
 #define MAX_TRIES 1
 
-static const char *__NAME__ = "DAEMON_CLIENT";
+static const char *__NAME__ = "eard_api_client:";
 
 // Pipes
 static int ear_fd_req[ear_daemon_client_requests];
@@ -269,6 +269,36 @@ ulong eards_write_app_signature(application_t *app_signature)
 	}
 
 	return ack;
+}
+
+ulong eards_write_event(ear_event_t *event)
+{
+	int com_fd=system_req;
+    struct daemon_req req;
+    ulong ack=EAR_SUCCESS;
+
+    if (!app_connected) return EAR_SUCCESS;
+    DEBUG_F(2, "asking the daemon to write an event)");
+
+    req.req_service = WRITE_EVENT;
+    memcpy(&req.req_data.event, event, sizeof(ear_event_t));
+
+    if (ear_fd_req[com_fd] >= 0)
+    {
+        DEBUG_F(2, "writing request...");
+        if (warning(write(ear_fd_req[com_fd], &req, sizeof(req)), sizeof(req),
+            "ERROR writing request for event")) return EAR_ERROR;
+
+        DEBUG_F(2, "reading ack...");
+        if (warning(read(ear_fd_ack[com_fd], &ack, sizeof(ulong)),sizeof(ulong),
+                "ERROR reading ack event")) return EAR_ERROR;
+    }else{
+        DEBUG_F(0, "writting application signature (DB) service unavailable");
+        ack=EAR_SUCCESS;
+    }
+
+    return ack;
+	
 }
 //////////////// FREQUENCY REQUESTS
 ulong eards_get_data_size_frequency()

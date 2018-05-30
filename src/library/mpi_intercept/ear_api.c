@@ -471,11 +471,11 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 		ear_debug(3,"EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
-						(unsigned long) PAPI_get_real_usec(),
-						(unsigned long) buf,
-						(unsigned long) dest,
-						(unsigned long) call_type,
-						(unsigned long) ear_event);
+						(ulong) PAPI_get_real_usec(),
+						(ulong) ear_event,
+						(ulong) buf,
+						(ulong) dest,
+						(ulong) call_type);
 
 		mpi_calls_per_loop++;
 		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm

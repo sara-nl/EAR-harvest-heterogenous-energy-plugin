@@ -33,6 +33,7 @@
 #define _EAR_DAEMON_CLIENT_H
 
 #include <common/types/generic.h>
+#include <common/types/log.h>
 #include <daemon/eard_conf_api.h>
 
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
@@ -96,6 +97,8 @@ unsigned long eards_get_data_size_rapl();
 /** Sends a request to the deamon to write the whole application signature.
 *   Returns 0 on success, -1 on error. */
 unsigned long eards_write_app_signature(application_t *app_signature);
+/** Reports a new EAR event */
+ulong eards_write_event(ear_event_t *event);
 
 // Node energy services
 /** Requests the IPMI data size. Returns -1 if there's an error, and the

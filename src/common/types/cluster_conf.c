@@ -77,6 +77,8 @@
 	policy_conf_t *special_node_conf;	
 */
 
+#define __OLD__CONF__
+
 static const char *__NAME__ = "cluster_conf:";
 
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */

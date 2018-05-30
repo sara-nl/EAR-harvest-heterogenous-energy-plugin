@@ -54,10 +54,8 @@ typedef struct ear_event{
 #include <common/config.h>
 #include <common/types/log.h>
 #include <common/ear_verbose.h>
+#include <daemon/eard_api.h>
 
-#if DB_SQL
-#include <common/database/db_helper.h>
-#endif
 #define LOG_FILE 1
 
 const char *__NAME__ = "LOG";
@@ -139,6 +137,8 @@ void report_new_event(ear_event_t *event)
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
 #endif
 #if DB_MYSQL
+	// we request the daemon to write the event in the DB
+	eards_write_event(event);
 	//db_insert_ear_event(event);
 #endif
 #endif

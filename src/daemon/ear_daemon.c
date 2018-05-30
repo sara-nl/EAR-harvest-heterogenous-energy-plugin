@@ -594,6 +594,12 @@ int eard_system(int must_read)
 			powermon_mpi_signature(&req.req_data.app);
 			#endif
 			break;
+		case WRITE_EVENT:
+			ret1=db_insert_ear_event(&req.req_data.event);
+			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
+			else ack=EAR_COM_ERROR;
+			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
+			break;
 		default: return 0;
 	}
 	return 1;
@@ -779,7 +785,6 @@ int eard_rapl(int must_read)
             write(ear_fd_ack[comm_req],values,sizeof(unsigned long long)*RAPL_EVS);
             break;
         case DATA_SIZE_RAPL:
-			VERBOSE_N(0,"DATA_SIZE_RAPL\n");
             ack=sizeof(unsigned long long)*RAPL_EVS;
             write(ear_fd_ack[comm_req],&ack,sizeof(unsigned long));
             break;
@@ -1068,7 +1073,7 @@ void main(int argc,char *argv[])
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
 		ear_verbose(0,"eard: error creating dynamic_configuration thread \n");
 	}
-	if (read_cluster_conf(NULL,&my_cluster_conf)!=EAR_SUCCESS){	
+	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){	
 		ear_verbose(0,"eard: Error reading cluster configuration\n");
 		exit(1);
 	}else{	
@@ -1095,11 +1100,10 @@ void main(int argc,char *argv[])
 	my_to=NULL;
 	ear_debug(1,"eard waiting.....\n");
 	while((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0){
-		VERBOSE_N(1,"eard unblocked with %d readys.....\n",numfds_ready);
+		VERBOSE_N(4,"eard unblocked with %d readys.....\n",numfds_ready);
 		if (numfds_ready>0){
 		for (i=0;i<ear_daemon_client_requests;i++){
 			if (FD_ISSET(ear_fd_req[i],&rfds)){
-				VERBOSE_N(0,"new local request\n");
 				select_service(i);
 			}	// IF FD_ISSET
 		} //for

@@ -37,6 +37,7 @@
 union daemon_req_opt {
     unsigned long req_value;
     application_t app;
+	ear_event_t event;
 };
 
 struct daemon_req {
@@ -84,6 +85,7 @@ struct daemon_req {
 // Services to contact with the rest of the system, such as writting data
 #define WRITE_APP_SIGNATURE 	300
 #define CONNECT_SYSTEM 			301
+#define WRITE_EVENT				302
 
 // Services related to node energy management
 #define READ_DC_ENERGY 			400
