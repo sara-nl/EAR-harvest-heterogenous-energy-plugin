@@ -276,7 +276,7 @@ int mysql_insert_loop(MYSQL *connection, loop_t *loop)
     MYSQL_BIND bind[8];
     memset(bind, 0, sizeof(bind));
 
-    mysql_insert_job(connection, loop->job, 0);
+//    mysql_insert_job(connection, loop->job, 0);
     
     int sig_id = mysql_insert_signature(connection, &loop->signature, 0);
 
