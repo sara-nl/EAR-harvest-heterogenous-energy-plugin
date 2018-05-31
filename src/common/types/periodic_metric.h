@@ -37,15 +37,15 @@
 
 #include <common/types/generic.h>
 #define NODE_SIZE 256
-
+#define DEMO 1
 typedef struct periodic_metric 
 {
     ulong DC_energy;
     ulong job_id;
     ulong step_id;
-	#if DEMO
-	ulong avg_f;
-	#endif
+#if DEMO
+    ulong avg_f;
+#endif
     time_t start_time;
     time_t end_time;
     char node_id[NODE_SIZE];
