@@ -204,7 +204,8 @@ uint get_global_def_pstate()
 ulong get_global_def_freq()
 {
 #if SHARED_MEMORY
-    return system_conf->def_freq;
+    if (system_conf!=NULL) return system_conf->def_freq;
+	else return EAR_default_pstate;
 #else
     return EAR_default_pstate;
 #endif
