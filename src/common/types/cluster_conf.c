@@ -78,7 +78,7 @@
 */
 
 static const char *__NAME__ = "cluster_conf:";
-#define __OLD__CONF__
+//#define __OLD__CONF__
 
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
@@ -155,7 +155,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		return EAR_ERROR;
 	}
 	get_cluster_config(conf_file, my_conf);
-    //print_cluster_conf(my_conf);
+    print_cluster_conf(my_conf);
 	#endif
 	return EAR_SUCCESS;
 }
@@ -215,10 +215,13 @@ policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_nod
 {
 	policy_conf_t *my_policy=NULL;
 	uint i;
-	// We look first for special configurations
-	for(i=0;i<my_node->num_special_node_conf;i++){
-		if (my_node->special_node_conf[i].policy==p_id) return(&my_node->special_node_conf[i]);
-	}
+    if (my_node != NULL)
+    {
+	    // We look first for special configurations
+    	for(i=0;i<my_node->num_special_node_conf;i++){
+		    if (my_node->special_node_conf[i].policy==p_id) return(&my_node->special_node_conf[i]);
+	    }
+    }
 	// and now for default values
 	for(i=0;i<my_cluster->num_policies;i++){
 		if (my_cluster->power_policies[i].policy==p_id) return (&my_cluster->power_policies[i]);
