@@ -89,18 +89,22 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	db=getenv("EAR_DB_PATHNAME");
 	if (db==NULL){
 		VERBOSE_N(0,"EAR_DB_PATHNAME not defined\n");
+        db="/home/xlalonso/";
 	}
 	coeff=getenv("EAR_COEFF_DB_PATHNAME");
 	if (coeff==NULL){
 		VERBOSE_N(0,"EAR_COEFF_DB_PATHNAME not defined\n");
+        coeff="/home/xlalonso/";
 	}
 	tmp=getenv("EAR_TMP");
 	if (tmp==NULL){
 		VERBOSE_N(0,"EAR_TMP not defined\n");
+        tmp="/var/ear";
 	}
 	verbose=getenv("EAR_VERBOSE");
 	if (verbose==NULL){
 		VERBOSE_N(0,"EAR_VERBOSE not defined\n");
+        verbose="2";
 	}
 	if ((db==NULL) || (coeff==NULL) || (tmp==NULL) || (verbose==NULL)) return EAR_ERROR;
 
@@ -382,7 +386,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 conf->num_priv_users++;
                 conf->priv_users = realloc(conf->priv_users, sizeof(char *)*conf->num_priv_users);
                 strclean(token, '\n');           
-                conf->priv_users[conf->num_priv_users-1] = malloc(sizeof(token)+1);
+                conf->priv_users[conf->num_priv_users-1] = malloc(strlen(token)+1);
                 strcpy(conf->priv_users[conf->num_priv_users-1], token);
                 token = strtok(NULL, ",");
             }
@@ -396,7 +400,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 conf->num_acc++;
                 conf->priv_acc = realloc(conf->priv_acc, sizeof(char *)*conf->num_acc);
                 strclean(token, '\n');
-                conf->priv_acc[conf->num_acc-1] = malloc(sizeof(token)+1);
+                conf->priv_acc[conf->num_acc-1] = malloc(strlen(token)+1);
                 strcpy(conf->priv_acc[conf->num_acc-1], token);
                 token = strtok(NULL, ",");
             }
@@ -484,7 +488,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                                 k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
                                 conf->nodes[conf->num_nodes+i].special_node_conf = 
                                             realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
-                                                sizeof(policy_conf_t)*k+1);
+                                                sizeof(policy_conf_t)*(k+1));
                                 conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = 
                                     conf->power_policies[j].policy;
                                 conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state = atoi(token);
@@ -519,7 +523,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
                             conf->nodes[conf->num_nodes+i].special_node_conf = 
                                         realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
-                                                sizeof(policy_conf_t)*k+1);
+                                                sizeof(policy_conf_t)*(k+1));
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_TIME_TO_SOLUTION;
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
                             conf->nodes[conf->num_nodes+i].num_special_node_conf++;
@@ -550,7 +554,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
                             conf->nodes[conf->num_nodes+i].special_node_conf = 
                                         realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
-                                                sizeof(policy_conf_t)*k+1);
+                                                sizeof(policy_conf_t)*(k+1));
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_ENERGY_TO_SOLUTION;
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
                             conf->nodes[conf->num_nodes+i].num_special_node_conf++;
