@@ -41,10 +41,25 @@
 #include <common/states.h>
 #include <common/ear_verbose.h>
 #include <global_manager/eargm_server_api.h>
+#include <daemon/eard_rapi.h>
+#include <common/types/cluster_conf.h>
 
-typedef unsigned int uint;
+/*
+*	EAR Global Manager constants
+*/
+
+#define NO_PROBLEM 	4
+#define WARNING_3	3
+#define WARNING_2	2
+#define PANIC		1
+
+#define DEFCON_L4 85.0
+#define DEFCON_L3 90.0
+#define DEFCON_L2 95.0
 
 pthread_t eargm_server_api_th;
+cluster_conf_t my_cluster_conf;
+uint total_nodes=0;
 static const char *__NAME__ = "EARGM";
 
 int EAR_VERBOSE_LEVEL=1;
@@ -126,7 +141,20 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
 static void my_signals_function(int s)
 {
 	if (s==SIGALRM)	return;
-	exit(0);
+	if (s==SIGHUP){
+	#if 0
+		// Reading the configuration
+    	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+        	VERBOSE_N(0," Error reading cluster configuration\n");
+    	}
+    	else{
+        	print_cluster_conf(&my_cluster_conf);
+    	}
+	#endif
+	}else{
+		VERBOSE_N(0,"Exiting");
+		exit(0);
+	}
 }
 
 void print_time(char *msg,time_t *t)
@@ -207,15 +235,14 @@ long long compute_energy_t2()
 	return energy;
 }
 
-#define DEFCON_L3 85.0
-#define DEFCON_L2 95.0
 
 
-uint defcon(double perc)
+uint defcon(double perc,ulong load)
 {
-	if (perc<DEFCON_L3) return 3;
-	if ((perc>=DEFCON_L3) && (perc<DEFCON_L2))	return 2;
-	return 1;
+	if (perc<DEFCON_L4) return NO_PROBLEM;
+	if ((perc>=DEFCON_L4) && (perc<DEFCON_L3))  return WARNING_3;
+	if ((perc>=DEFCON_L3) && (perc<DEFCON_L2))	return WARNING_2;
+	return PANIC;
 }
 
 /*
@@ -235,10 +262,12 @@ void process_remote_requests(int clientfd)
         case EARGM_NEW_JOB:
 			// Computes the total number of nodes in use
             VERBOSE_N(0,"new_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+			total_nodes+=command.num_nodes;
             break;
         case EARGM_END_JOB:
 			// Computes the total number of nodes in use
             VERBOSE_N(0,"end_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+			total_nodes-=command.num_nodes;
             break;
         default:
             VERBOSE_N(0,"Invalid remote command\n");
@@ -315,6 +344,12 @@ void main(int argc,char *argv[])
 		VERBOSE_N(0,"error creating eargm_server for external api %s\n",strerror(errno));
     }
 
+	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+        VERBOSE_N(0," Error reading cluster configuration\n");
+	}
+	else{
+		print_cluster_conf(&my_cluster_conf);
+	}
 	
 
 #if DB_MYSQL
@@ -360,23 +395,18 @@ void main(int argc,char *argv[])
 		time(&end_time);
 		start_time=end_time-period_t1;
 
-		#if 0
-		print_time("start_time",&start_time);
-		fprintf(stdout,"\n");
-		print_time("end_time",&end_time);
-		fprintf(stdout,"\n");
-		#endif
     
 	    long long result = get_sum(connection, start_time, end_time, divisor);
-	    if (!result) fprintf(stdout,"No results in that period of time found\n");
-	    else if (result < 0) exit(1);
+	    if (!result){ 
+			VERBOSE_N(2,"No results in that period of time found\n");
+	    }else{ 
+			if (result < 0) exit(1);
+		}
 
 		new_energy_sample(result);
 		total_energy_t2=compute_energy_t2();	
 		perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
 		perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
-	    //fprintf(stdout,"Total energy spent int last period_t1: %lli\n", result);
-	    //fprintf(stdout,"Total energy spent int last period_t2: %lli\n", total_energy_t2);
 		VERBOSE_N(0,"Percentage over energy budget %.2lf%% \n",perc_energy);
 		VERBOSE_N(0,"Percentage over the period_t2 %.2lf%% \n",perc_time);
 	
@@ -385,15 +415,20 @@ void main(int argc,char *argv[])
 				VERBOSE_N(0,"WARNING %.2lf%% of energy vs %.2lf%% of time!!\n",perc_energy,perc_time);
 			}
 		}
-		switch(defcon(perc_energy)){
-		case 3:
-			VERBOSE_N(0," Safe area. energy budget %.2lf%% \n",perc_energy);
+		switch(defcon(perc_energy,total_nodes)){
+		case NO_PROBLEM:
+			VERBOSE_N(1," Safe area. energy budget %.2lf%% \n",perc_energy);
 			break;
-		case 2:
+		case WARNING_3:
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+			Increase
 			break;
-		case 1:
-			fprintf(stderr,"eargmd: PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
+		case WARNING_2:
+			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+			Increase
+			break;
+		case PANIC:
+			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
 			break;
 		}
 	}

@@ -24,8 +24,8 @@ EARGM_API = eargm_api.o eargm_server_api.o
 
 all: $(BINARIES) $(EARGM_API) $(COMMANDS)
 
-eargmd: ear_gm.c $(HEADERS) eargm_server_api.o
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd ear_gm.c $(DB_LDFLAGS) eargm_server_api.o -lpthread
+eargmd: ear_gm.c $(HEADERS) eargm_server_api.o $(TYPES_OBJS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd ear_gm.c $(DB_LDFLAGS) eargm_server_api.o -lpthread $(TYPES_OBJS)
 
 eargm_api.o:eargm_api.c eargm_api.h
 	$(CC) $(CFLAGS) -c eargm_api.c
