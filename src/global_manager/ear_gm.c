@@ -66,7 +66,18 @@ cluster_conf_t my_cluster_conf;
 uint total_nodes=0;
 static const char *__NAME__ = "EARGM";
 
+/* 
+* EAR Global Manager global data
+*/
 int EAR_VERBOSE_LEVEL=1;
+uint period_t1,period_t2;
+ulong total_energy_t2;
+uint my_port;
+uint current_sample=0,total_samples=0;
+ulong *energy_consumed;
+ulong energy_budget;
+uint aggregate_samples;
+
 #if DB_MYSQL
 #include <mysql/mysql.h>
 #define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
@@ -80,9 +91,18 @@ void usage(char *app)
 	exit(1);
 }
 
+void update_eargm_configuration(cluster_conf_t *conf)
+{
+	EAR_VERBOSE_LEVEL=conf->eargm.verbose;
+	period_t1=conf->eargm.t1;
+	period_t2=conf->eargm.t2;
+	energy_budget=conf->eargm.energy;
+	my_port=conf->eargm.port;
+}
+
 #if DB_MYSQL
 
-long long stmt_error(MYSQL_STMT *statement)
+ulong stmt_error(MYSQL_STMT *statement)
 {
     fprintf(stderr, "Error preparing statement (%d): %s\n", 
             mysql_stmt_errno(statement), mysql_stmt_error(statement));
@@ -90,7 +110,7 @@ long long stmt_error(MYSQL_STMT *statement)
     return -1;
 }
 
-long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long long divisor)
+ulong get_sum(MYSQL *connection, int start_time, int end_time, ulong  divisor)
 {
 
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -123,7 +143,7 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     MYSQL_BIND res_bind[1];
     memset(res_bind, 0, sizeof(res_bind));
     res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
-    long long result = 0;
+    ulong result = 0;
     res_bind[0].buffer = &result;
 
     if (mysql_stmt_bind_param(statement, bind)) return stmt_error(statement);
@@ -154,6 +174,8 @@ static void my_signals_function(int s)
     	}
     	else{
         	print_cluster_conf(&my_cluster_conf);
+			energy_budget=my_cluster_conf.eargm.energy;
+			VERBOSE_N(0,"Using new energy limit %lu",energy_budget);
     	}
 	}else{
 		VERBOSE_N(0,"Exiting");
@@ -216,20 +238,16 @@ static void catch_signals()
 
 }
 
-uint current_sample=0,total_samples=0;
-long long *energy_consumed;
-long long energy_budget;
-uint aggregate_samples;
-void new_energy_sample(long long result)
+void new_energy_sample(ulong result)
 {
 	energy_consumed[current_sample]=result;
 	current_sample=(current_sample+1)%aggregate_samples;
 	if (total_samples<aggregate_samples) total_samples++;
 }
 
-long long compute_energy_t2()
+ulong compute_energy_t2()
 {
-	long long energy=0;
+	ulong energy=0;
 	uint i;
 	int limit=aggregate_samples;
 	if (total_samples<aggregate_samples) limit=total_samples;
@@ -284,14 +302,15 @@ void *eargm_server_api(void *p)
 {
 	int eargm_fd,eargm_client;
 	struct sockaddr_in eargm_con_client;
-    VERBOSE_N(0,"Creating scoket for remote commands\n");
-    eargm_fd=create_server_socket();
+
+    VERBOSE_N(0,"Creating scoket for remote commands,using port %u",my_port);
+    eargm_fd=create_server_socket(my_port);
     if (eargm_fd<0){
         VERBOSE_N(0,"Error creating socket\n");
         pthread_exit(0);
     }
     do{
-        VERBOSE_N(0,"waiting for remote commands\n");
+        VERBOSE_N(0,"waiting for remote commands port=%u\n",my_port);
         eargm_client=wait_for_client(eargm_fd,&eargm_con_client);
         if (eargm_client<0){
             VERBOSE_N(0,"eargm_server_api: wait_for_client returns error\n");
@@ -360,16 +379,23 @@ void reduce_frequencies_all_nodes(int level)
 
 void main(int argc,char *argv[])
 {
-	uint period_t1,period_t2;
 	sigset_t set;
-	unsigned long long divisor = 1000;
-	long long total_energy_t2;
+	ulong divisor = 1000;
 	int ret;
 
     if (argc !=4) usage(argv[0]);
 	period_t1=atoi(argv[1]);
 	period_t2=atoi(argv[2]);
-	energy_budget=atoll(argv[3]);
+	energy_budget=atol(argv[3]);
+
+    if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+        VERBOSE_N(0," Error reading cluster configuration\n");
+    }
+    else{
+        print_cluster_conf(&my_cluster_conf);
+    }
+    update_eargm_configuration(&my_cluster_conf);
+
 	if ((period_t1<=0) || (period_t2<=0) || (energy_budget<=0)) usage(argv[0]);
 
 	aggregate_samples=period_t2/period_t1;
@@ -378,7 +404,7 @@ void main(int argc,char *argv[])
 		aggregate_samples++;
 	}
 
-	energy_consumed=malloc(sizeof(long long)*aggregate_samples);
+	energy_consumed=malloc(sizeof(ulong)*aggregate_samples);
 
 
 
@@ -396,6 +422,7 @@ void main(int argc,char *argv[])
 	else{
 		print_cluster_conf(&my_cluster_conf);
 	}
+	update_eargm_configuration(&my_cluster_conf);
 	
 
 #if DB_MYSQL
@@ -442,7 +469,7 @@ void main(int argc,char *argv[])
 		start_time=end_time-period_t1;
 
     
-	    long long result = get_sum(connection, start_time, end_time, divisor);
+	    ulong result = get_sum(connection, start_time, end_time, divisor);
 	    if (!result){ 
 			VERBOSE_N(2,"No results in that period of time found\n");
 	    }else{ 
@@ -453,8 +480,7 @@ void main(int argc,char *argv[])
 		total_energy_t2=compute_energy_t2();	
 		perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
 		perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
-		VERBOSE_N(0,"Percentage over energy budget %.2lf%% \n",perc_energy);
-		VERBOSE_N(0,"Percentage over the period_t2 %.2lf%% \n",perc_time);
+		VERBOSE_N(0,"Percentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)\n",perc_energy,total_energy_t2,energy_budget);
 	
 		if (perc_time<100.0){	
 			if (perc_energy>perc_time){

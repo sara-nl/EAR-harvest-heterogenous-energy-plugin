@@ -41,7 +41,6 @@
 #define REMOTE_CONF_H
 
 #include <common/types/application.h>
-#define DAEMON_PORT_NUMBER          50000
 
 typedef struct end_job_req{
 	job_id jid;

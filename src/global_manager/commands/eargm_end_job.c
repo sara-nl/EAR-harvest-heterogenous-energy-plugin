@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <global_manager/eargm_api.h>
+#include <common/types/cluster_conf.h>
 
 #define NAME_SIZE 128
 int EAR_VERBOSE_LEVEL=0;
@@ -15,6 +16,7 @@ void usage(char *app)
 }
 
 #define ID_SIZE 64
+cluster_conf_t my_cluster;
 
 void main(int argc,char *argv[])
 {
@@ -28,7 +30,9 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
 		exit(1);
 	}
-	eargms=eargm_connect(myhost);
+	read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster);
+	fprintf(stderr,"Using port %u\n",my_cluster.eargm.port);
+	eargms=eargm_connect(myhost,my_cluster.eargm.port);
 	if(eargms<0){ 
 		fprintf(stderr,"Connection error\n");
 		exit(1);

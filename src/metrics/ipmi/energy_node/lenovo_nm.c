@@ -197,7 +197,7 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
 	}while((rs_len<0) && (tries<3));
     if (rs_len<0)
 	{
-		ear_verbose(0,"lenovo_NM: ipmi_cmd_raw fails\n");
+		ear_verbose(0,"lenovo_NM: ipmi_cmd_raw fails after %d attempts\n",tries);
 		return EAR_ERROR;
 	}
 	energyp=(unsigned long *)&bytes_rs[rs_len-8];

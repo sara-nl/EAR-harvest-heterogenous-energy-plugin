@@ -41,26 +41,6 @@
 #include <common/types/cluster_conf.h>
 #include <common/ear_verbose.h>
 
-/*
-    char DB_pathname[GENERIC_NAME];
-    char Coefficients_pathname[GENERIC_NAME];
-    char tmp_dir[GENERIC_NAME];
-    uint verbose;
-    // List of policies
-    uint num_policies;
-    policy_conf_t *power_policies;
-    uint default_policy;            // selecs one of the power_policies
-    // Lis of autorized users
-    uint num_priv_users;
-    char **priv_users;
-    uint num_acc;
-    char *priv_acc[ACC];
-    uint num_special;
-    special_app_t   *special;
-    // List of nodes
-    uint num_nodes;
-    node_conf_t *nodes;
-*/
 
 
 /*
@@ -69,13 +49,6 @@
 #define MONITORING_ONLY                 2
 */
 
-/*
-	char name[GENERIC_NAME]
-	uint cpus;
-	uint island;	
-	uint num_special_node_conf;
-	policy_conf_t *special_node_conf;	
-*/
 
 static const char *__NAME__ = "cluster_conf:";
 //#define __OLD__CONF__
@@ -576,6 +549,19 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             conf->num_nodes += num_nodes;
         }
     }
+	// Manually configured, provisional
+	// EARD configuration
+	conf->eard.verbose=1;
+	conf->eard.period_powermon=POWERMON_FREQ;
+	conf->eard.max_pstate=1;
+	conf->eard.turbo=0;
+	conf->eard.port=DAEMON_PORT_NUMBER;	
+	// EARGM configuration
+	conf->eargm.verbose=1;
+	conf->eargm.t1=DEFAULT_T1;
+	conf->eargm.t2=DEFAULT_T2;
+	conf->eargm.energy=MAX_ENERGY;
+	conf->eargm.port=EARGM_PORT_NUMBER;
 }
 
 /** frees a cluster_conf_t */
@@ -608,6 +594,21 @@ void print_special_app(special_app_t *app)
             app->appname, app->user, app->p_state);
 }
 
+void print_eard_conf(eard_conf_t *conf)
+{
+	fprintf(stderr,"--> EARD configuration\n");
+	fprintf(stderr,"\t eard: verbose %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
+	fprintf(stderr,"\t eard: turbo %u port %u\n",conf->turbo,conf->port);
+
+}
+
+void print_eargm_conf(eargm_conf_t *conf)
+{
+	fprintf(stderr,"--> EARGM configuration\n");
+	fprintf(stderr,"\t eargm: verbose %u t1 %lu t2 %lu energy limit %lu port %u\n",conf->verbose,conf->t1,conf->t2,conf->energy,conf->port);
+
+}
+
 void print_cluster_conf(cluster_conf_t *conf)
 {
     fprintf(stderr, "DIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n", 
@@ -630,5 +631,7 @@ void print_cluster_conf(cluster_conf_t *conf)
     fprintf(stderr, "\nNODE CONFIGURATIONS\n");
     for (i = 0; i < conf->num_nodes; i++)
         print_node_conf(&conf->nodes[i]);
+	print_eard_conf(&conf->eard);
+	print_eargm_conf(&conf->eargm);	
 
 }

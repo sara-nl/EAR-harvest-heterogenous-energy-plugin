@@ -69,6 +69,9 @@ void powermon_mpi_signature(application_t *application);
 /** if application is not mpi, automatically chages the node freq, it is called by dynamic_configuration API */
 void powermon_new_max_freq(ulong maxf);
 
+/** if application is not mpi, automatically chages the node freq, it is called by dynamic_configuration API */
+void powermon_new_def_freq(ulong def);
+
 /** Reduces the current freq based on new values. If application is not mpi, automatically chages the node freq if needed */
 void powermon_red_freq(ulong max_freq,ulong def_freq);
 

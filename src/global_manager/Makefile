@@ -35,11 +35,11 @@ eargm_api.o:eargm_api.c eargm_api.h
 eargm_server_api.o:eargm_server_api.c eargm_server_api.h
 	$(CC) $(CFLAGS) -c eargm_server_api.c
 
-eargm_new_job:commands/eargm_new_job.c eargm_api.o
-	$(CC) $(CFLAGS) -o eargm_new_job commands/eargm_new_job.c eargm_api.o
+eargm_new_job:commands/eargm_new_job.c eargm_api.o $(TYPES_OBJS)
+	$(CC) $(CFLAGS) -o eargm_new_job commands/eargm_new_job.c eargm_api.o $(TYPES_OBJS)
 
-eargm_end_job:commands/eargm_end_job.c eargm_api.o
-	$(CC) $(CFLAGS) -o eargm_end_job commands/eargm_end_job.c eargm_api.o
+eargm_end_job:commands/eargm_end_job.c eargm_api.o $(TYPES_OBJS)
+	$(CC) $(CFLAGS) -o eargm_end_job commands/eargm_end_job.c eargm_api.o $(TYPES_OBJS)
 
 
 ######## OPTIONS

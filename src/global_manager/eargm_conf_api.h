@@ -44,7 +44,6 @@ typedef struct eargm_request
     uint req;
     uint num_nodes;
 }eargm_request_t;
-#define EARGM_PORT_NUMBER          60000
 #define EARGM_NEW_JOB 100
 #define EARGM_END_JOB 200
 #define NO_COMMAND 100000
