@@ -146,6 +146,7 @@ static void my_signals_function(int s)
 {
 	if (s==SIGALRM)	return;
 	if (s==SIGHUP){
+		VERBOSE_N(0,"Reloading EAR configuration");
 		free_cluster_conf(&my_cluster_conf);
 		// Reading the configuration
     	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){

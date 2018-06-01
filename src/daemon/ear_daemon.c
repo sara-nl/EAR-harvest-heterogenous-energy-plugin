@@ -1108,13 +1108,13 @@ void main(int argc,char *argv[])
 		ear_verbose(0,"eard: error creating dynamic_configuration thread \n");
 	}
 	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){	
-		ear_verbose(0,"eard: Error reading cluster configuration\n");
+		VERBOSE_N(0," Error reading cluster configuration\n");
 		exit(1);
 	}else{	
 		print_cluster_conf(&my_cluster_conf);
 		my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);	
 		if (my_node_conf==NULL){
-			ear_verbose(0,"eard: Error in cluster configuration, node %s not found\n",nodename);
+			VERBOSE_N(0," Error in cluster configuration, node %s not found\n",nodename);
 		}
 		else print_node_conf(my_node_conf);
 	}
@@ -1130,6 +1130,7 @@ void main(int argc,char *argv[])
 	sigdelset(&eard_mask,SIGTERM);
 	sigdelset(&eard_mask,SIGINT); 
 	sigdelset(&eard_mask,SIGHUP); 
+	sigdelset(&eard_mask,SIGUSR1); 
 	sigprocmask(SIG_SETMASK,&eard_mask,NULL);
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;
