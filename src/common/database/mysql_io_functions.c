@@ -1017,7 +1017,7 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
 
 }
 
-int mysql_insert_warning(MYSQL *connection, gm_warning_t *warning)
+int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;

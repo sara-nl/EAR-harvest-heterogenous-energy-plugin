@@ -29,28 +29,22 @@
 
 #include <common/config.h>
 
-#ifndef _EAR_TYPES_GM_WARNING
-#define _EAR_TYPES_GM_WARNING
-
+#include <common/types/gm_warning.h>
+#include <string.h>
 #include <common/types/generic.h>
 #define NODE_SIZE 256
 
-typedef struct gm_warning 
-{
-    ulong level;
-    ulong new_p_state;
-    double energy_percent;
-    double inc_th;
-} gm_warning_t;
-
-
-// Function declarations
 
 /** Replicates the periodic_metric in *source to *destiny */
-void copy_gm_warning(gm_warning_t *destiny, gm_warning_t *source);
+void copy_gm_warning(gm_warning_t *destiny, gm_warning_t *source)
+{
+    memcpy(destiny, source, sizeof(gm_warning_t));
+}
 
-/** Initializes all values of the periodic_metric to 0 , sets the nodename */
-void init_gm_warning(gm_warning_t *pm);
+/** Initializes all values of the gm_warning to */
+void init_gm_warning(gm_warning_t *gmw)
+{
+    memset(gmw, 0, sizeof(gm_warning_t));
+}
 
 
-#endif

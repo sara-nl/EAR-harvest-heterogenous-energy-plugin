@@ -112,4 +112,4 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
 /** Given a MYSQL connection and an global manager warning, inserts said 
 *   warning into the database. Returns EAR_SUCCESS on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_warning(MYSQL *connection, gm_warning_t *warning);
+int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning);

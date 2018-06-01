@@ -32,6 +32,7 @@
 #include <common/types/periodic_metric.h>
 #endif
 #include <common/types/application.h>
+#include <common/types/gm_warning.h>
 #include <common/types/loop.h>
 #include <common/types/log.h>
 #include <common/config.h>
@@ -43,6 +44,8 @@ int db_insert_application(application_t *application);
 int db_insert_loop(loop_t *loop);
 
 int db_insert_event(ear_event_t *ear_ev);
+
+int db_insert_warning(gm_warning_t *warning);
 
 #if SHARED_MEMORY
 int db_insert_power_signature(power_signature_t *pow_sig);
