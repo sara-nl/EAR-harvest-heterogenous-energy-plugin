@@ -122,5 +122,8 @@ policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_nod
 
 /** Prints in the stdout the whole cluster configuration */
 void print_cluster_conf(cluster_conf_t *conf);
+
+void free_cluster_conf(cluster_conf_t *conf);
+
 #else
 #endif
