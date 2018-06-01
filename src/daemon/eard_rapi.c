@@ -45,7 +45,6 @@
 
 // Verbosity
 static const char *__NAME__ = "eards_rem_api";
-int EAR_VERBOSE_LEVEL=1;
 
 static int eards_remote_connected=0;
 static int eards_sfd=-1;

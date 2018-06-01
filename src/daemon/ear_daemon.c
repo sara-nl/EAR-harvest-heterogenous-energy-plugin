@@ -857,7 +857,8 @@ void signal_handler(int sig)
 	if (sig == SIGPIPE){ VERBOSE_N(0, "signal SIGPIPE received. Application terminated abnormally");}
 	if (sig == SIGTERM){ VERBOSE_N(0, "signal SIGTERM received. Finishing");}
 	if (sig == SIGINT){  VERBOSE_N(0, "signal SIGINT received. Finishing");}
-	if (sig == SIGHUP){  VERBOSE_N(0, "signal SIGHUP received. Restarting");}
+	if (sig == SIGHUP){  VERBOSE_N(0, "signal SIGHUP received. Reloading EAR conf");}
+	if (sig == SIGUSR1){  VERBOSE_N(0, "signal SIGUSR1 received. Restarting");}
 
 	// The PIPE was closed, so the daemon connection ends
 	if (sig == SIGPIPE) {
@@ -866,7 +867,7 @@ void signal_handler(int sig)
 
 
 	// Someone wants EARD to get closed or restarted
-	if ((sig == SIGTERM) || (sig == SIGINT) || (sig == SIGHUP))
+	if ((sig == SIGTERM) || (sig == SIGINT) || (sig == SIGUSR1))
 	{
 		eard_must_exit = 1;
 
@@ -888,9 +889,20 @@ void signal_handler(int sig)
 	if ((sig == SIGTERM) || (sig == SIGINT)){
 		eard_exit(0);
 	}
-	if (sig == SIGHUP){ 
+	if (sig == SIGUSR1){ 
 		VERBOSE_N(0,"Restarting!\n");
 		eard_exit(1);
+	}
+	if (sig == SIGHUP){
+        free_cluster_conf(&my_cluster_conf);
+        // Reading the configuration
+        if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+            VERBOSE_N(0," Error reading cluster configuration\n");
+        }
+        else{
+			VERBOSE_N(0,"Loading EAR configuration");
+            print_cluster_conf(&my_cluster_conf);
+        }
 	}
 	
 }
@@ -921,6 +933,10 @@ void signal_catcher()
 	}
 
     signal = SIGHUP;
+    if (sigaction(signal, &action, NULL) < 0) {
+        VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
+    }
+    signal = SIGUSR1;
     if (sigaction(signal, &action, NULL) < 0) {
         VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
     }
@@ -1095,6 +1111,7 @@ void main(int argc,char *argv[])
 		ear_verbose(0,"eard: Error reading cluster configuration\n");
 		exit(1);
 	}else{	
+		print_cluster_conf(&my_cluster_conf);
 		my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);	
 		if (my_node_conf==NULL){
 			ear_verbose(0,"eard: Error in cluster configuration, node %s not found\n",nodename);

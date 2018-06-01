@@ -48,14 +48,18 @@
 *	EAR Global Manager constants
 */
 
-#define NO_PROBLEM 	4
-#define WARNING_3	3
-#define WARNING_2	2
-#define PANIC		1
+#define NO_PROBLEM 	3
+#define WARNING_3	2
+#define WARNING_2	1
+#define PANIC		0
+#define NUM_LEVELS  4
 
 #define DEFCON_L4 85.0
 #define DEFCON_L3 90.0
 #define DEFCON_L2 95.0
+
+ulong th_level[NUM_LEVELS]={10,10,5,0};
+ulong pstate_level[NUM_LEVELS]={3,2,1,0};
 
 pthread_t eargm_server_api_th;
 cluster_conf_t my_cluster_conf;
@@ -142,7 +146,7 @@ static void my_signals_function(int s)
 {
 	if (s==SIGALRM)	return;
 	if (s==SIGHUP){
-	#if 0
+		free_cluster_conf(&my_cluster_conf);
 		// Reading the configuration
     	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
         	VERBOSE_N(0," Error reading cluster configuration\n");
@@ -150,7 +154,6 @@ static void my_signals_function(int s)
     	else{
         	print_cluster_conf(&my_cluster_conf);
     	}
-	#endif
 	}else{
 		VERBOSE_N(0,"Exiting");
 		exit(0);
@@ -302,6 +305,48 @@ void *eargm_server_api(void *p)
 
 }
 
+/*
+*	ACTIONS for WARNING and PANIC LEVELS
+*/
+void increase_th_all_nodes(int level)
+{
+	int i,rc;
+	ulong th;
+	for (i=0;i< my_cluster_conf.num_nodes;i++){
+    	rc=eards_remote_connect(my_cluster_conf.nodes[i].name);
+    	if (rc<0){
+			VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
+    	}else{
+
+			th=th_level[level];
+
+			VERBOSE_N(1,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n",my_cluster_conf.nodes[i].name,th);
+			if (!eards_inc_th(th)) VERBOSE_N(0,"Error increasing the th for node %s",my_cluster_conf.nodes[i].name);
+			eards_remote_disconnect();
+		}
+	}
+}
+void reduce_frequencies_all_nodes(int level)
+{
+    int i,rc;
+    ulong ps;
+    for (i=0;i< my_cluster_conf.num_nodes;i++){
+        rc=eards_remote_connect(my_cluster_conf.nodes[i].name);
+        if (rc<0){
+            VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
+        }else{
+
+        	ps=pstate_level[level];
+
+        	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n",my_cluster_conf.nodes[i].name,ps);
+        	if (!eards_inc_th(ps)) VERBOSE_N(0,"Error reducing the freq for node %s",my_cluster_conf.nodes[i].name);
+        	eards_remote_disconnect();
+		}
+    }
+
+}
+
+
 
 /*
 *
@@ -421,14 +466,17 @@ void main(int argc,char *argv[])
 			break;
 		case WARNING_3:
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
-			Increase
+			increase_th_all_nodes(WARNING_3);
 			break;
 		case WARNING_2:
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
-			Increase
+			increase_th_all_nodes(WARNING_2);
+			reduce_frequencies_all_nodes(WARNING_2);
 			break;
 		case PANIC:
 			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
+			increase_th_all_nodes(PANIC);
+			reduce_frequencies_all_nodes(PANIC);
 			break;
 		}
 	}
