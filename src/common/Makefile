@@ -11,6 +11,7 @@ TYPES_OBJS = types/application.o \
 		     types/power_signature.o \
              types/projection.o \
 		     types/signature.o \
+			 types/gm_warning.o \
 			 types/cluster_conf.o
 
 TYPES_HEADERS = types/application.h \
@@ -23,6 +24,7 @@ TYPES_HEADERS = types/application.h \
                 types/power_signature.h \
                 types/projection.h \
                 types/signature.h \
+				types/gm_warning.h \
 				types/cluster_conf.h
 
 HEADERS = $(SRCDIR)/common/ear_verbose.h \
