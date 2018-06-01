@@ -24,7 +24,7 @@ install:
 	cp    module/ear $(ETCDIR)/module/
 	cp -n slurm/ear.conf $(ETCDIR)/slurm/
 	cp -n slurm/plugstack.conf $(ETCDIR)/slurm/
-	cp    ear.conf $(ETCDIR)
+	cp    conf/ear.conf $(ETCDIR)
 	cp    systemd/eard.service $(ETCDIR)/systemd
 	cp    systemd/eardbd.service $(ETCDIR)/systemd
 	cp    systemd/eargmd.service $(ETCDIR)/systemd
