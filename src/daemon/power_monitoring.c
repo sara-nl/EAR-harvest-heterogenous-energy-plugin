@@ -44,14 +44,14 @@
 
 #include <control/frequency.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
-#include <daemon/power_monitoring.h>
-#include <common/shared_configuration.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
 #include <common/types/cluster_conf.h>
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 #include <common/config.h>
+#include <daemon/power_monitoring.h>
+#include <daemon/shared_configuration.h>
 
 #if DB_MYSQL
 #include <common/database/db_helper.h>
@@ -65,6 +65,7 @@ extern cluster_conf_t my_cluster_conf;
 static char *__NAME__="powermon: ";
 
 unsigned int f_monitoring;
+extern ulong current_node_freq;
 int idleNode=1;
 
 
@@ -190,6 +191,7 @@ void powermon_mpi_init(application_t * appID)
 	}
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
 	start_mpi(&current_ear_app.app.job);
+	current_ear_app.app.is_mpi=1;
 }
 
 void powermon_mpi_finalize()
@@ -214,39 +216,22 @@ void powermon_mpi_finalize()
 
 void powermon_new_job(application_t* appID,uint from_mpi)
 {
-	int p_id;
-	policy_conf_t *my_policy;
-	ulong	deff;
     // New application connected
 	VERBOSE_N(0,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
-	p_id=policy_name_to_id(appID->job.policy);
-	if (p_id==EAR_ERROR){
-		VERBOSE_N(0,"powermon_new_job Warning, power policy not defined,using default\n");
-		p_id=my_cluster_conf.default_policy;
-	}
-	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);	
-	if (my_policy==NULL){
-		VERBOSE_N(0,"PANIC policy configuration not found!\n");
-	}else{
-		VERBOSE_N(0,"Policy configuration for new job (%d,%d)\n",appID->job.id,appID->job.step_id);
-		print_policy_conf(my_policy);
-	}
-	deff=frequency_pstate_to_freq(my_policy->p_state);
-	VERBOSE_N(0,"Default frequency %ul changed,changing shared configuration EARD-EARLib\n",deff);
-	dyn_conf->def_freq=deff;
-	dyn_conf->th=my_policy->th;
+	// At this point, we assume MIN_TIME or MONITORING. It is pending to check about privileges and special cases
 	frequency_set_all_cpus(dyn_conf->def_freq);
-	
-	
+	current_node_freq=dyn_conf->def_freq;
+	appID->job.def_f=dyn_conf->def_freq;	
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
 		// We must report the energy beforesetting the job_id: PENDING
 		new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
     pthread_mutex_unlock(&app_lock);
+	VERBOSE_N(0,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
 
 }
 /* This function is called by dynamic_configuration thread when a end_job command arrives */
@@ -275,14 +260,37 @@ void powermon_end_job(job_id jid,job_id sid)
 	reset_current_app();
     frequency_recover_previous_policy();
     frequency_recover_previous_frequency();
+	current_node_freq=frequency_get_cpu_freq(0);	
 
+}
+
+void powermon_new_max_freq(ulong maxf)
+{
+	if (current_ear_app.app.is_mpi==0){
+		if (maxf<current_node_freq){
+			VERBOSE_N(0,"MaxFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,maxf);
+			frequency_set_all_cpus(maxf);
+			current_node_freq=maxf;		
+		}
+	}
+}
+
+void powermon_red_freq(ulong max_freq,ulong def_freq)
+{
+	if (current_ear_app.app.is_mpi==0){
+		if (def_freq<current_node_freq){
+			VERBOSE_N(0,"RedFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def_freq);
+			frequency_set_all_cpus(def_freq);
+			current_node_freq=def_freq;		
+		}
+	}
 }
 
 
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power)
 {
-	printf("ID %u Current power %lf max %lf min %lf\n",current_ear_app.app.job.id,my_current_power->avg_dc,current_ear_app.app.power_sig.max_DC_power,
+	printf("ID %u MPI=%u Current power %lf max %lf min %lf\n",current_ear_app.app.job.id,current_ear_app.app.is_mpi,my_current_power->avg_dc,current_ear_app.app.power_sig.max_DC_power,
 		current_ear_app.app.power_sig.min_DC_power);
 	while (pthread_mutex_trylock(&app_lock));
 	if (current_ear_app.app.job.id>0){

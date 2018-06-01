@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <common/config.h>
 #include <control/frequency.h>
 #include <library/common/externs.h>
 #include <library/tracer/tracer.h>
@@ -45,8 +46,8 @@
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/types/application.h>
+#include <common/types/loop.h>
 #include <common/states.h>
-#include <common/config.h>
 #include <common/math_operations.h>
 
 static const char *__NAME__ = "STATES_PERIOD";
@@ -94,7 +95,12 @@ void states_periodic_end_period(uint iterations)
 	if (loop_with_signature)
 	{
 		loop.total_iterations = iterations;
+		#if DB_FILES
 		append_loop_text_file(loop_summary_path, &loop);
+		#endif
+		#if DB_MYSQL
+		eards_write_loop_signature(&loop);
+		#endif
 	}
 
 	loop_with_signature = 0;
@@ -114,7 +120,12 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 static void report_loop_signature(uint iterations,loop_t *loop)
 {
    loop->total_iterations = iterations;
+   #if DB_FILES
    append_loop_text_file(loop_summary_path, loop);
+	#endif
+	#if DB_MYSQL
+    eards_write_loop_signature(loop);
+    #endif
 	
 	
 }

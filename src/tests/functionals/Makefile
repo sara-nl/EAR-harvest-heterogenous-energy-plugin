@@ -45,8 +45,8 @@ all: $(BINARIES)
 bandwith_monitor: bandwith_monitor.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 	$(CC) $(CFLAGS) -o bandwith_monitor bandwith_monitor.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 
-eard_monitor: eard_monitor.c $(SRCDIR)/common/ear_daemon_client.o $(TYPES)
-	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c $(SRCDIR)/common/ear_daemon_client.o $(TYPES)
+eard_monitor: eard_monitor.c $(SRCDIR)/daemon/eard_api.o $(TYPES)
+	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c $(SRCDIR)/daemon/eard_api.o $(TYPES)
 
 freeipmi_overhead: freeipmi_overhead.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 	$(CC) $(CFLAGS) -o freeipmi_overhead freeipmi_overhead.c $(IPMI_LDFLAGS) $(PAPI_LDFLAGS) \

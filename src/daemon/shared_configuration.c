@@ -40,8 +40,8 @@
 #include <errno.h>
 
 #include <common/ear_verbose.h>
-#include <common/shared_configuration.h>
 #include <common/states.h>
+#include <daemon/shared_configuration.h>
 
 static int fd;
 static const char *__NAME__ = "shared_area:";
@@ -118,3 +118,9 @@ void ear_conf_shared_area_dispose(char * ear_conf_path)
 	close(fd);
 	unlink(buff);
 }
+
+
+/*
+* Functions to be used by the library and daemon
+*/
+

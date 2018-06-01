@@ -49,6 +49,7 @@ int db_insert_power_signature(power_signature_t *pow_sig);
 
 int db_insert_periodic_metric(periodic_metric_t *per_met);
 
+int db_batch_insert_periodic_metrics(periodic_metric_t **per_mets, int num_mets);
 #endif
 
 #endif

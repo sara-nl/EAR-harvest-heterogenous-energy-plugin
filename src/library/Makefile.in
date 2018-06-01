@@ -6,6 +6,7 @@ LDFLAGS  = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 HEADERS = $(SRCDIR)/library/common/externs.h \
           $(SRCDIR)/common/ear_verbose.h \
           $(SRCDIR)/common/states.h \
+          $(SRCDIR)/common/states_periodic.h \
           $(SRCDIR)/common/config.h
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
@@ -16,7 +17,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/papi/stalls.o \
                $(SRCDIR)/control/frequency.o
 
-COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
+COMMON_OBJS = $(SRCDIR)/daemon/eard_api.o \
               $(SRCDIR)/common/environment_common.o \
               $(SRCDIR)/common/file_lock.o \
               $(SRCDIR)/common/environment.o \
@@ -24,12 +25,13 @@ COMMON_OBJS = $(SRCDIR)/common/ear_daemon_client.o \
               $(SRCDIR)/common/types.a
 
 ifdef FEAT_SHRMEM
-COMMON_OBJS += $(SRCDIR)/common/shared_configuration.o
+COMMON_OBJS += $(SRCDIR)/daemon/shared_configuration.o
 endif
 
 OUTER_OBJS = $(COMMON_OBJS) $(METRICS_OBJS)
 
 REMAKE_OBJS = states/states.o \
+			  states/states_periodic.o \
               tracer/tracer.o \
               mpi_intercept/ear_api.o \
               mpi_intercept/process_MPI.o \
@@ -42,8 +44,7 @@ OBJS = dynais/dynais.o \
        models/min_time.o \
        models/min_energy.o \
        models/monitoring.o \
-       models/sig_projections.o \
-       states/states_periodic.o
+       models/sig_projections.o 
 
 ######## VARS
 

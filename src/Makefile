@@ -19,6 +19,9 @@ endif
 ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
+ifdef DB_BASE
+	COMPONENTS += global_manager
+endif
 
 ######## RULES
 

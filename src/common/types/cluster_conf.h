@@ -62,6 +62,7 @@ typedef struct special_app
 	char appname[GENERIC_NAME];
 	uint p_state;
 }special_app_t;
+
 typedef struct cluster_conf
 {
 	char DB_pathname[GENERIC_NAME];
@@ -78,18 +79,29 @@ typedef struct cluster_conf
 	uint num_acc;
 	char **priv_acc;
 	uint num_special;
+	uint min_time_perf_acc;
 	special_app_t	*special;
 	// List of nodes
 	uint num_nodes;
 	node_conf_t *nodes;
 } cluster_conf_t;
 
+typedef struct db_conf
+{
+    char ip[USER];
+    char user[USER];
+    char pass[USER];
+    char database[USER];
+    uint port;
+} db_conf_t;
 
 // Function declarations
 
 // CLUSTER level functions
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+
+void get_cluster_config(FILE *conf_file, cluster_conf_t *conf);
 
 // NODE level functions
 
@@ -107,5 +119,8 @@ int policy_name_to_id(char *my_policy);
 
 /** Given a cluster, node and  policy, returns the policy configuration for that cluser,node,policy */
 policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_node,uint p_id);
+
+/** Prints in the stdout the whole cluster configuration */
+void print_cluster_conf(cluster_conf_t *conf);
 #else
 #endif

@@ -280,17 +280,25 @@ void traces_frequency(int global_rank, int local_rank, unsigned long f)
 // ear_api.c
 void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3)
 {
+	/*
+	        traces_mpi_call(ear_my_rank, my_id,
+                        (ulong) PAPI_get_real_usec(),
+                        (ulong) ear_event.
+                        (ulong) buf,
+                        (ulong) dest,
+                        (ulong) call_type);
+	*/
 	ulong trace_data[5];
 
 	if (global_rank != 0 || trace_type != DYNAIS_TRACE) {
 		return;
 	}
 	
-	trace_data[0] = (unsigned long) a1;
-	trace_data[1] = (unsigned long) a2;
-	trace_data[2] = (unsigned long) a3;
-	trace_data[3] = (unsigned long) ev;
-	trace_data[4] = (unsigned long) time;
+	trace_data[0] = (ulong) time;
+	trace_data[1] = (ulong) ev;
+	trace_data[2] = (ulong) a1;
+	trace_data[3] = (ulong) a2;
+	trace_data[4] = (ulong) a3;
 	write(fd_evs_dyn, trace_data, sizeof(trace_data));
 }
 #endif

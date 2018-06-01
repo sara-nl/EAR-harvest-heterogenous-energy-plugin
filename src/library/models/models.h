@@ -62,6 +62,11 @@ uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 */
 void policy_default_configuration();
 
+uint get_global_def_pstate();
+ulong get_global_def_freq();
+double get_global_th();
+void policy_global_reconfiguration();
+
 
 
 #else

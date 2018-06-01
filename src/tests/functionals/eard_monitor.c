@@ -31,7 +31,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <common/ear_daemon_client.h>
+#include <daemon/eard_api.h>
 
 #define MATRIX_SIZE 1024
 static double a[MATRIX_SIZE][MATRIX_SIZE];

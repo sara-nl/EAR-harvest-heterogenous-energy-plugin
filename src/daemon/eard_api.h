@@ -32,11 +32,13 @@
 #ifndef _EAR_DAEMON_CLIENT_H
 #define _EAR_DAEMON_CLIENT_H
 
-#include <common/ear_daemon_common.h>
 #include <common/types/generic.h>
+#include <common/types/log.h>
+#include <daemon/eard_conf_api.h>
 
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
 int eards_connect();
+int eards_connected();
 /** Closes the connection with the daemon. */
 void eards_disconnect();
 
@@ -94,7 +96,12 @@ unsigned long eards_get_data_size_rapl();
 // System services
 /** Sends a request to the deamon to write the whole application signature.
 *   Returns 0 on success, -1 on error. */
-unsigned long eards_write_app_signature(application_t *app_signature);
+ulong eards_write_app_signature(application_t *app_signature);
+/** Sends a request to the deamon to write one loop  signature into the DB.
+*   Returns 0 on success, -1 on error. */
+ulong eards_write_loop_signature(loop_t *loop_signature);
+/** Reports a new EAR event */
+ulong eards_write_event(ear_event_t *event);
 
 // Node energy services
 /** Requests the IPMI data size. Returns -1 if there's an error, and the

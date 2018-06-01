@@ -38,13 +38,13 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include <common/remote_conf.h>
+#include <daemon/eard_conf_rapi.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
 #include <common/types/job.h>
 
 // Verbosity
-static const char *__NAME__ = "eards_rem_client";
+static const char *__NAME__ = "eards_rem_api";
 int EAR_VERBOSE_LEVEL=1;
 
 static int eards_remote_connected=0;

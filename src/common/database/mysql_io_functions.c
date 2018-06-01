@@ -56,10 +56,13 @@
 
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
+#if DEMO
+#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id, avg_f)"\
+                                "VALUES (?, ?, ?, ?, ?, ?, ?)"
+#else
 #define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id)"\
                                 "VALUES (?, ?, ?, ?, ?, ?)"
-
+#endif
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq) VALUES (?, ?, ?, ?, ?)"
 
 
@@ -77,6 +80,8 @@
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
                                     "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
+//number of arguments inserted into periodic_metrics
+#define PERIODIC_METRIC_ARGS 6
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
@@ -274,7 +279,7 @@ int mysql_insert_loop(MYSQL *connection, loop_t *loop)
     MYSQL_BIND bind[8];
     memset(bind, 0, sizeof(bind));
 
-    mysql_insert_job(connection, loop->job, 0);
+//    mysql_insert_job(connection, loop->job, 0);
     
     int sig_id = mysql_insert_signature(connection, &loop->signature, 0);
 
@@ -876,7 +881,11 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 
     if (mysql_stmt_prepare(statement, PERIODIC_METRIC_QUERY, strlen(PERIODIC_METRIC_QUERY))) return mysql_statement_error(statement);
 
+#if DEMO
+    MYSQL_BIND bind[7];
+#else
     MYSQL_BIND bind[6];
+#endif
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -900,10 +909,15 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     bind[3].buffer = (char *)&per_met->node_id;
     bind[4].buffer = (char *)&per_met->job_id;
     bind[5].buffer = (char *)&per_met->step_id;
+#if DEMO
+    bind[6].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[6].is_unsigned = 1;
+    bind[6].buffer = (char *)&per_met->avg_f;
+#endif
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
-    if (mysql_stmt_execute(statement)) return -mysql_statement_error(statement);
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
 
     int id = mysql_stmt_insert_id(statement);
     
@@ -911,6 +925,57 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 
     return id;
 }
+
+int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **per_mets, int num_mets)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+
+    char *params = ", (?, ?, ?, ?, ?, ?)";
+    char *query = malloc(strlen(PERIODIC_METRIC_QUERY)+(num_mets)*strlen(params)+1);
+    strcpy(query, PERIODIC_METRIC_QUERY);
+
+    int i, j;
+    for (i = 1; i < num_mets; i++)
+    {
+        strcat(query, params);
+    }
+
+
+    if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement); 
+    
+
+    MYSQL_BIND *bind = calloc(num_mets*PERIODIC_METRIC_ARGS, sizeof(MYSQL_BIND));
+
+    for (i = 0; i < num_mets; i++)
+    {
+        int offset = i*PERIODIC_METRIC_ARGS;
+        for (j = 0; j < PERIODIC_METRIC_ARGS; j++)
+        {
+            bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
+            bind[offset+j].is_unsigned = 1;
+        }
+        bind[offset+3].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[offset+3].buffer_length = strlen(per_mets[i]->node_id);
+
+        bind[0+offset].buffer = (char *)&per_mets[i]->start_time;
+        bind[1+offset].buffer = (char *)&per_mets[i]->end_time;
+        bind[2+offset].buffer = (char *)&per_mets[i]->DC_energy;
+        bind[3+offset].buffer = (char *)&per_mets[i]->node_id;
+        bind[4+offset].buffer = (char *)&per_mets[i]->job_id;
+        bind[5+offset].buffer = (char *)&per_mets[i]->step_id;
+    }
+
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+
+    mysql_stmt_close(statement);
+    free(bind);
+    free(query);
+    return EAR_SUCCESS;
+}
+
 #endif
 
 int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)

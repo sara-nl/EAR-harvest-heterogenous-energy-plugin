@@ -51,7 +51,8 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
-#include <common/shared_configuration.h>
+#include <daemon/eard_api.h>
+#include <daemon/shared_configuration.h>
 #include <common/types/application.h>
 #include <common/ear_verbose.h>
 #include <common/environment.h>
@@ -274,7 +275,7 @@ void ear_init()
 		}
 	}
 
-	ear_current_freq = frequency_get_num_pstates(0);
+	ear_current_freq = frequency_get_cpu_freq(0);
 
 	// Policies
 	init_power_policy();
@@ -286,7 +287,7 @@ void ear_init()
 	// Passing the frequency in KHz to MHz
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
 	application.job.procs = get_total_resources();
-	application.job.th = get_ear_power_policy_th();
+	application.job.th =get_global_th();
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
@@ -313,7 +314,7 @@ void ear_init()
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
 	// All is OK :D
-	DEBUG_F(1, "EAR initialized successfully");
+	VERBOSE_N(1, "EAR initialized successfully");
 }
 
 void ear_finalize()
@@ -327,7 +328,7 @@ void ear_finalize()
 	}	
 
 	#if USE_LOCK_FILES
-	VERBOSE_N(1, "Application master releasing the lock %d", ear_my_rank);
+	VERBOSE_N(1, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
 	unlock_master(fd_master_lock,fd_lock_filename);
 	#endif
 
@@ -470,11 +471,11 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 		ear_debug(3,"EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
-						(unsigned long) PAPI_get_real_usec(),
-						(unsigned long) buf,
-						(unsigned long) dest,
-						(unsigned long) call_type,
-						(unsigned long) ear_event);
+						(ulong) PAPI_get_real_usec(),
+						(ulong) ear_event,
+						(ulong) buf,
+						(ulong) dest,
+						(ulong) call_type);
 
 		mpi_calls_per_loop++;
 		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm

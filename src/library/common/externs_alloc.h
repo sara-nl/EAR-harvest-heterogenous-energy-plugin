@@ -31,14 +31,14 @@
 #include <linux/limits.h>
 #include <common/types/application.h>
 #include <common/types/loop.h>
-#include <common/shared_configuration.h>
+#include <daemon/shared_configuration.h>
 
 int EAR_VERBOSE_LEVEL;
 
 loop_t loop;
 application_t loop_signature;
 application_t application;
-ear_conf_t *system_conf;
+ear_conf_t *system_conf=NULL;
 
 char loop_summary_path[PATH_MAX];
 char app_summary_path[PATH_MAX];

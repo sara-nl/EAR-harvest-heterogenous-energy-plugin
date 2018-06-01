@@ -40,8 +40,7 @@
 #include <sys/types.h>
 
 #include <common/ear_verbose.h>
-#include <common/ear_daemon_common.h>
-#include <common/ear_daemon_client.h>
+#include <daemon/eard_api.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/states.h>
@@ -50,7 +49,7 @@
 
 #define MAX_TRIES 1
 
-static const char *__NAME__ = "DAEMON_CLIENT";
+static const char *__NAME__ = "eard_api_client:";
 
 // Pipes
 static int ear_fd_req[ear_daemon_client_requests];
@@ -80,6 +79,11 @@ uint warning(int return_value, int expected, char *msg)
 		VERBOSE_N(0, "eards: %s (%s)", msg,strerror(errno));
 	}
 	return (return_value!=expected);
+}
+
+int eards_connected()
+{
+	return app_connected;
 }
 
 int eards_connect(application_t *my_app)
@@ -162,7 +166,7 @@ int eards_connect(application_t *my_app)
 		}else{
 			// ear_daemon will send an ack when pipe is created
 			if ((ear_fd_req[i]=open(ear_commreq,O_WRONLY)) < 0) {
-				VERBOSE_N(0, "ERROR while opening the communicator for requests %s",
+				VERBOSE_N(0, "ERROR while ipening the communicator for requests %s",
 							ear_commreq);
 				return EAR_ERROR;
 			}
@@ -235,6 +239,7 @@ void eards_disconnect()
 			close(ear_fd_ack[i]);
 		}
 	}
+	app_connected=0;
 }
 //////////////// SYSTEM REQUESTS
 ulong eards_write_app_signature(application_t *app_signature)
@@ -265,6 +270,70 @@ ulong eards_write_app_signature(application_t *app_signature)
 
 	return ack;
 }
+
+ulong eards_write_event(ear_event_t *event)
+{
+	int com_fd=system_req;
+    struct daemon_req req;
+    ulong ack=EAR_SUCCESS;
+
+    if (!app_connected) return EAR_SUCCESS;
+    DEBUG_F(2, "asking the daemon to write an event)");
+
+    req.req_service = WRITE_EVENT;
+    memcpy(&req.req_data.event, event, sizeof(ear_event_t));
+
+    if (ear_fd_req[com_fd] >= 0)
+    {
+        DEBUG_F(2, "writing request...");
+        if (warning(write(ear_fd_req[com_fd], &req, sizeof(req)), sizeof(req),
+            "ERROR writing request for event")) return EAR_ERROR;
+
+        DEBUG_F(2, "reading ack...");
+        if (warning(read(ear_fd_ack[com_fd], &ack, sizeof(ulong)),sizeof(ulong),
+                "ERROR reading ack event")) return EAR_ERROR;
+    }else{
+        DEBUG_F(0, "writting application signature (DB) service unavailable");
+        ack=EAR_SUCCESS;
+    }
+
+    return ack;
+	
+}
+ulong eards_write_loop_signature(loop_t *loop_signature)
+{
+    int com_fd=system_req;
+    struct daemon_req req;
+    ulong ack=EAR_SUCCESS;
+	eard_loop_t my_loop;
+
+    if (!app_connected) return EAR_SUCCESS;
+    DEBUG_F(2, "asking the daemon to write the loop signature (DB)");
+
+    req.req_service = WRITE_LOOP_SIGNATURE;
+    memcpy(&req.req_data.loop.loop, loop_signature, sizeof(loop_t));
+    memcpy(&req.req_data.loop.job, loop_signature->job, sizeof(job_t));
+
+	
+
+    if (ear_fd_req[com_fd] >= 0)
+    {
+        DEBUG_F(2, "writing request...");
+        if (warning(write(ear_fd_req[com_fd], &req, sizeof(req)), sizeof(req),
+            "ERROR writing request for loop signature")) return EAR_ERROR;
+
+        DEBUG_F(2, "reading ack...");
+        if (warning(read(ear_fd_ack[com_fd], &ack, sizeof(ulong)),sizeof(ulong),
+                "ERROR reading ack for loop signature")) return EAR_ERROR;
+    }else{
+        DEBUG_F(0, "writting loop signature (DB) service unavailable");
+        ack=EAR_SUCCESS;
+    }
+
+    return ack;
+}
+
+
 //////////////// FREQUENCY REQUESTS
 ulong eards_get_data_size_frequency()
 {
@@ -540,6 +609,7 @@ ulong eards_get_data_size_rapl() // size in bytes
 	{
         if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for RAPL data size ")) return EAR_ERROR;
+		VERBOSE_N(0,"waiting for eard_answer\n");
         if (warning(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for RAPL data size ")) return EAR_ERROR;
     } else {
@@ -547,6 +617,7 @@ ulong eards_get_data_size_rapl() // size in bytes
 		ack=EAR_ERROR;
 	}
     rapl_size=ack;
+	VERBOSE_N(0,"answer received\n");
     return ack;
 }
 

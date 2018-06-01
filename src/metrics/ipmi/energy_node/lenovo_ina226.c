@@ -62,16 +62,16 @@ int lenovo_wct_node_energy_init()
 	uid_t uid;
 	int ret=0;
 	unsigned int workaround_flags = 0;
-	FUNCVERB("lenovo_node_energy_init");
+	FUNCVERB("lenovo_SD650");
 	//Creating the context
 	if (!(ipmi_ctx = ipmi_ctx_create ())){
-        ear_verbose(0,"lenovo_water_cooling:Error in ipmi_ctx_create %s\n",strerror(errno));
+        ear_verbose(0,"lenovo_SD650:Error in ipmi_ctx_create %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
 	// Checking for root
 	uid = getuid ();
 	if (uid != 0){ 
-		ear_verbose(0,"lenovo_water_cooling: No root permissions\n");
+		ear_verbose(0,"lenovo_SD650: No root permissions\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -87,7 +87,7 @@ int lenovo_wct_node_energy_init()
 					NULL, // driver_device
                     workaround_flags,
                     IPMI_FLAGS_DEFAULT)) < 0) {
-		ear_verbose(0,"lenovo_water_cooling: %s\n",strerror(errno));
+		ear_verbose(0,"lenovo_SD650: %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -95,7 +95,7 @@ int lenovo_wct_node_energy_init()
 		return EAR_ERROR;	
 	}
 	if (ret==0){
-		ear_verbose(0,"lenovo_water_cooling: Not inband device found\n");
+		ear_verbose(0,"lenovo_SD650: Not inband device found\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -107,7 +107,7 @@ int lenovo_wct_node_energy_init()
 	send_len=8;
 	if (!(bytes_rq = calloc (send_len, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"lenovo_water_cooling: Allocating memory for request %s\n",strerror(errno));
+		ear_verbose(0,"lenovo_SD650: Allocating memory for request %s\n",strerror(errno));
         // Close context
         ipmi_ctx_close (ipmi_ctx);
         // delete context
@@ -116,7 +116,7 @@ int lenovo_wct_node_energy_init()
 	}
 	if (!(bytes_rs = calloc (IPMI_RAW_MAX_ARGS, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"lenovo_water_cooling: Allocating memory for recv data %s\n",strerror(errno));
+		ear_verbose(0,"lenovo_SD650: Allocating memory for recv data %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context

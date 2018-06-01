@@ -46,20 +46,14 @@
 #include <netdb.h>
 
 #include <control/frequency.h>
-#include <daemon/power_monitoring.h>
-#include <common/shared_configuration.h>
-#include <common/remote_conf.h>
 #include <common/types/job.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/config.h>
-
-int create_server_socket();
-int wait_for_client(int sockfd,struct sockaddr_in *client);
-void close_server_socket(int sock);
-
-int read_command(int s,request_t *command);
-void send_answer(int s,ulong *ack);
+#include <daemon/power_monitoring.h>
+#include <daemon/eard_server_api.h>
+#include <daemon/shared_configuration.h>
+#include <daemon/eard_conf_rapi.h>
 
 
 extern int eard_must_exit;
@@ -70,8 +64,29 @@ struct sockaddr_in eards_remote_client;
 char *my_tmp;
 
 static char *__NAME__ = "dynamic_conf:";
-ear_conf_t *dyn_conf;
+extern ear_conf_t *dyn_conf;
 
+static ulong* f_list;
+static uint num_f;
+
+void print_f_list(uint p_states,ulong *freql)
+{
+	int i;
+	for (i=0;i<p_states;i++) VERBOSE_N(0,"Freq %u= %lu\n",i,freql[i]);
+}
+
+uint is_valid(ulong f, uint p_states,ulong *freql)
+{
+	int i=0;
+	while (i<p_states){
+		if (freql[i]==f){
+			return 1;
+		}
+		i++;
+	}
+	return 0;
+	
+}
 
 static void DC_my_sigusr1(int signun)
 {
@@ -114,17 +129,36 @@ int dynconf_inc_th(ulong th)
 int dynconf_max_freq(ulong max_freq)
 {
 	// we must check it is a valid freq: TODO
-	dyn_conf->max_freq=max_freq;
-	dyn_conf->force_rescheduling=1;
-	return EAR_SUCCESS;
+	if (is_valid(max_freq, num_f,f_list)){
+		dyn_conf->max_freq=max_freq;
+		dyn_conf->force_rescheduling=1;
+		powermon_new_max_freq(max_freq);
+		return EAR_SUCCESS;
+	}else{
+		VERBOSE_N(0,"Invalid frequencies\n");
+		return EAR_ERROR;
+	}
 }
 
-int dynconf_red_max_freq(uint p_states)
+int dynconf_red_pstates(uint p_states)
 {
-	dyn_conf->max_freq=dyn_conf->max_freq-(p_states*100000);
-	VERBOSE_N(0,"New maximum frequency %lu\n",dyn_conf->max_freq);
-    dyn_conf->force_rescheduling=1;
-    return EAR_SUCCESS;
+	// Reduces p_states both the maximum and the default
+	ulong max,def;
+	max=dyn_conf->max_freq-(p_states*100000);
+	def=dyn_conf->def_freq-(p_states*100000);
+	
+	if (is_valid(max,num_f,f_list) && is_valid(def,num_f,f_list)){
+		dyn_conf->max_freq=max;
+		dyn_conf->def_freq=def;
+		VERBOSE_N(0,"New maximum frequency %lu\n",dyn_conf->max_freq);
+		VERBOSE_N(0,"New default frequency %lu\n",dyn_conf->def_freq);
+    	dyn_conf->force_rescheduling=1;
+		powermon_red_freq(dyn_conf->max_freq,dyn_conf->def_freq);
+    	return EAR_SUCCESS;
+	}else{ 
+		VERBOSE_N(0,"Invalid frequencies\n");
+		return EAR_ERROR;
+	}
 }
 
 int dynconf_set_th(ulong th)
@@ -166,7 +200,7 @@ void process_remote_requests(int clientfd)
 			break;
 		case EAR_RC_RED_PSTATE:
 			VERBOSE_N(0,"red_max_p_state command received\n");
-			ack=dynconf_red_max_freq(command.my_req.ear_conf.p_states);
+			ack=dynconf_red_pstates(command.my_req.ear_conf.p_states);
 			break;
 		default:
 			VERBOSE_N(0,"Invalid remote command\n");
@@ -184,6 +218,12 @@ void * eard_dynamic_configuration(void *tmp)
 
 	DC_set_sigusr1();
 
+	num_f=frequency_get_num_pstates();
+	f_list=frequency_get_freq_rank_list();
+	print_f_list(num_f,f_list);
+	VERBOSE_N(0,"We have %u valid p_states\n",num_f);
+	
+
 
 	ear_verbose(0,"Creating scoket for remote commands\n");
 	eards_remote_socket=create_server_socket();
@@ -191,13 +231,6 @@ void * eard_dynamic_configuration(void *tmp)
 		ear_verbose(0,"Error creating socket\n");
 		pthread_exit(0);
 	}
-	ear_verbose(0,"creating shared memory tmp=%s\n",my_tmp);
-	dyn_conf=create_ear_conf_shared_area(my_tmp,eard_max_freq);
-	if (dyn_conf==NULL){
-		ear_verbose(0,"Error creating shared memory\n");
-		pthread_exit(0);
-	}
-	ear_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
 	do{
 		ear_verbose(0,"waiting for remote commands\n");
 		eards_client=wait_for_client(eards_remote_socket,&eards_remote_client);	
@@ -209,106 +242,9 @@ void * eard_dynamic_configuration(void *tmp)
 		}
 	}while(eard_must_exit==0);
     ear_verbose(0,"dyn_conf exiting\n");
-    ear_conf_shared_area_dispose(my_tmp);
+    //ear_conf_shared_area_dispose(my_tmp);
     close_server_socket(eards_remote_socket);
     pthread_exit(0);
 	
 }
 
-// 2000 and 65535
-#define DAEMON_EXTERNAL_CONNEXIONS 1
-
-
-static  int sfd;
-// based on getaddrinfo man pages
-int create_server_socket()
-{
-    struct addrinfo hints;
-    struct addrinfo *result, *rp;
-    int sfd, s;
-    struct sockaddr_storage peer_addr;
-    socklen_t peer_addr_len;
-    ssize_t nread;
-	char buff[50]; // This must be checked
-
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
-    hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
-    hints.ai_protocol = 0;          /* Any protocol */
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
-
-	sprintf(buff,"%d",DAEMON_PORT_NUMBER);
-
-   	s = getaddrinfo(NULL, buff, &hints, &result);
-    if (s != 0) {
-		VERBOSE_N(0,"getaddrinfo fails for port %s \n",buff);
-		return EAR_ERROR;
-    }
-
-
-   	for (rp = result; rp != NULL; rp = rp->ai_next) {
-        sfd = socket(rp->ai_family, rp->ai_socktype,
-                rp->ai_protocol);
-        if (sfd == -1)
-            continue;
-
-       if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
-            break;                  /* Success */
-
-       close(sfd);
-    }
-
-   	if (rp == NULL) {               /* No address succeeded */
-		VERBOSE_N(0,"bind fails for eards server\n");
-		return EAR_ERROR;
-    }else{
-		VERBOSE_N(0,"socket and bind for erads socket success\n");
-	}
-
-   	freeaddrinfo(result);           /* No longer needed */
-
-   	if (listen(sfd,DAEMON_EXTERNAL_CONNEXIONS)< 0){
-		VERBOSE_N(0,"listen eards socket fails\n");
-		close(sfd);
- 		return EAR_ERROR;
-	}
-	VERBOSE_N(0,"eards socket listen ready!\n");
- 	return sfd;
-}
-int wait_for_client(int s,struct sockaddr_in *client)
-{
-	int new_sock;
-	int client_addr_size;
-
-    client_addr_size = sizeof(struct sockaddr_in);
-    new_sock = accept(s, (struct sockaddr *) &client, &client_addr_size);
-    if (new_sock < 0){ 
-		VERBOSE_N(0,"accept for eards socket fails %s\n",strerror(errno));
-		return EAR_ERROR;
-	}
-	VERBOSE_N(0,"eards new connection \n");
-	return new_sock;
-}
-void close_server_socket(int sock)
-{
-	close(sock);
-}
-
-int read_command(int s,request_t *command)
-{
-	int ret;
-	ret=read(s,command,sizeof(request_t));
-	if ((ret<0) || (ret!=sizeof(request_t))){
-		VERBOSE_N(0,"Error reading remote command\n");
-		if (ret<0) VERBOSE_N(0,"errno %s\n",strerror(errno));	
-		command->req=NO_COMMAND;
-	}
-	return command->req;
-}
-void send_answer(int s,ulong *ack)
-{
-	if (write(s,ack,sizeof(ulong))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer\n");
-}

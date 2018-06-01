@@ -34,9 +34,20 @@
 #include <time.h>
 #include <signal.h>
 #include <errno.h>
+#include <stdint.h>
+#include <pthread.h>
 #include <common/config.h>
+#include <common/types/generic.h>
+#include <common/states.h>
+#include <common/ear_verbose.h>
+#include <global_manager/eargm_server_api.h>
 
 typedef unsigned int uint;
+
+pthread_t eargm_server_api_th;
+static const char *__NAME__ = "EARGM";
+
+int EAR_VERBOSE_LEVEL=1;
 #if DB_MYSQL
 #include <mysql/mysql.h>
 #define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
@@ -66,7 +77,7 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement)
     {
-        fprintf(stderr, "Error creating statement (%d): %s\n", mysql_errno(connection), 
+        VERBOSE_N(0, "Error creating statement (%d): %s\n", mysql_errno(connection), 
                 mysql_error(connection));
         return -1;
     }
@@ -147,7 +158,7 @@ static void catch_signals()
     sigaddset(&set,SIGINT);
     sigaddset(&set,SIGALRM);
     if (sigprocmask(SIG_SETMASK,&set,NULL)<0){
-        fprintf(stderr,"eargmd: setting signal mask (%s)\n",strerror(errno));
+        VERBOSE_N(0,"etting signal mask (%s)\n",strerror(errno));
         exit(1);
     }
 
@@ -155,19 +166,19 @@ static void catch_signals()
     sigemptyset(&my_action.sa_mask);
     my_action.sa_flags=0;
     if (sigaction(SIGHUP,&my_action,NULL)<0){
-        fprintf(stderr,"eargmd: sigaction for SIGINT (%s)\n",strerror(errno));
+        VERBOSE_N(0," sigaction for SIGINT (%s)\n",strerror(errno));
         exit(1);
     }
     if (sigaction(SIGTERM,&my_action,NULL)<0){
-        fprintf(stderr,"eargmd: sigaction for SIGINT (%s)\n",strerror(errno));
+        VERBOSE_N(0,"sigaction for SIGINT (%s)\n",strerror(errno));
         exit(1);
     }
     if (sigaction(SIGINT,&my_action,NULL)<0){
-        fprintf(stderr,"eargmd: sigaction for SIGINT (%s)\n",strerror(errno));
+        VERBOSE_N(0," sigaction for SIGINT (%s)\n",strerror(errno));
         exit(1);
     }
     if (sigaction(SIGALRM,&my_action,NULL)<0){
-        fprintf(stderr,"eargmd: sigaction for SIGALRM (%s)\n",strerror(errno));
+        VERBOSE_N(0," sigaction for SIGALRM (%s)\n",strerror(errno));
         exit(1);
     }
 
@@ -207,6 +218,70 @@ uint defcon(double perc)
 	return 1;
 }
 
+/*
+*
+*	THREAD attending external commands. 
+*
+*/
+
+void process_remote_requests(int clientfd)
+{
+    eargm_request_t command;
+    uint req;
+    ulong ack=EAR_SUCCESS;
+    VERBOSE_N(0,"connection received\n");
+    req=read_command(clientfd,&command);
+    switch (req){
+        case EARGM_NEW_JOB:
+			// Computes the total number of nodes in use
+            VERBOSE_N(0,"new_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+            break;
+        case EARGM_END_JOB:
+			// Computes the total number of nodes in use
+            VERBOSE_N(0,"end_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+            break;
+        default:
+            VERBOSE_N(0,"Invalid remote command\n");
+    }  
+    send_answer(clientfd,&ack);
+}
+
+
+void *eargm_server_api(void *p)
+{
+	int eargm_fd,eargm_client;
+	struct sockaddr_in eargm_con_client;
+    VERBOSE_N(0,"Creating scoket for remote commands\n");
+    eargm_fd=create_server_socket();
+    if (eargm_fd<0){
+        VERBOSE_N(0,"Error creating socket\n");
+        pthread_exit(0);
+    }
+    do{
+        VERBOSE_N(0,"waiting for remote commands\n");
+        eargm_client=wait_for_client(eargm_fd,&eargm_con_client);
+        if (eargm_client<0){
+            VERBOSE_N(0,"eargm_server_api: wait_for_client returns error\n");
+        }else{
+            process_remote_requests(eargm_client);
+            close(eargm_client);
+        }
+    }while(1);
+    VERBOSE_N(0,"eargm_server_api exiting\n");
+    close_server_socket(eargm_fd);
+	return NULL;
+
+}
+
+
+/*
+*
+*	EAR GLOBAL MANAGER
+*
+*
+*/
+
+
 
 void main(int argc,char *argv[])
 {
@@ -214,6 +289,7 @@ void main(int argc,char *argv[])
 	sigset_t set;
 	unsigned long long divisor = 1000;
 	long long total_energy_t2;
+	int ret;
 
     if (argc !=4) usage(argv[0]);
 	period_t1=atoi(argv[1]);
@@ -223,13 +299,22 @@ void main(int argc,char *argv[])
 
 	aggregate_samples=period_t2/period_t1;
 	if ((period_t2%period_t1)!=0){
-		fprintf(stderr,"eargmd: warning period_t2 is not multiple of period_t1\n");
+		VERBOSE_N(0,"warning period_t2 is not multiple of period_t1\n");
 		aggregate_samples++;
 	}
 
 	energy_consumed=malloc(sizeof(long long)*aggregate_samples);
 
+
+
 	catch_signals();
+
+	/* This thread accepts external commands */
+    if (ret=pthread_create(&eargm_server_api_th, NULL, eargm_server_api, NULL)){
+        errno=ret;
+		VERBOSE_N(0,"error creating eargm_server for external api %s\n",strerror(errno));
+    }
+
 	
 
 #if DB_MYSQL
@@ -239,7 +324,7 @@ void main(int argc,char *argv[])
     char *db_pass = "";
     
 
-    fprintf(stdout,"eargmd: Using user: %s\n", db_user);
+    VERBOSE_N(0,"Using user: %s\n", db_user);
     time_t start_time, end_time;
 	double perc_energy,perc_time;
    	
@@ -255,13 +340,13 @@ void main(int argc,char *argv[])
     MYSQL *connection = mysql_init(NULL);
     if (!connection)
     {
-        fprintf(stderr, "Error creating MYSQL object\n");
+        VERBOSE_N(0, "Error creating MYSQL object\n");
         exit(1);
     }
 
     if (!mysql_real_connect(connection, db_ip, db_user, db_pass, NULL, 0, NULL, 0))
     {
-        fprintf(stderr, "Error connecting to the database (%d) :%s\n",
+        VERBOSE_N(0, "Error connecting to the database (%d) :%s\n",
                 mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
         exit(1);
@@ -292,20 +377,20 @@ void main(int argc,char *argv[])
 		perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
 	    //fprintf(stdout,"Total energy spent int last period_t1: %lli\n", result);
 	    //fprintf(stdout,"Total energy spent int last period_t2: %lli\n", total_energy_t2);
-		fprintf(stdout,"Percentage over energy budget %.2lf%% \n",perc_energy);
-		fprintf(stdout,"Percentage over the period_t2 %.2lf%% \n",perc_time);
+		VERBOSE_N(0,"Percentage over energy budget %.2lf%% \n",perc_energy);
+		VERBOSE_N(0,"Percentage over the period_t2 %.2lf%% \n",perc_time);
 	
 		if (perc_time<100.0){	
 			if (perc_energy>perc_time){
-				fprintf(stderr,"eargmd: WARNING %.2lf%% of energy vs %.2lf%% of time!!\n",perc_energy,perc_time);
+				VERBOSE_N(0,"WARNING %.2lf%% of energy vs %.2lf%% of time!!\n",perc_energy,perc_time);
 			}
 		}
 		switch(defcon(perc_energy)){
 		case 3:
-			fprintf(stderr,"eargmd: Safe area. energy budget %.2lf%% \n",perc_energy);
+			VERBOSE_N(0," Safe area. energy budget %.2lf%% \n",perc_energy);
 			break;
 		case 2:
-			fprintf(stderr,"eargmd: WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
 			break;
 		case 1:
 			fprintf(stderr,"eargmd: PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);

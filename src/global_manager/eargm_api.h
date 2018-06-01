@@ -27,27 +27,35 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <daemon/eard_rapi.h>
 
-void usage(char *app)
-{
-	printf("usage:%s nodename freq\n",app);
-	exit(1);
-}
-void main(int argc,char *argv[])
-{
-	int eards,job_id;
-	ulong f;
-	if (argc!=3) usage(argv[0]);
-	// MAX_FREQ
-	f=(ulong)atol(argv[2]);
-	printf("-->reducing freq to %lu\n",f);
-	eards=eards_remote_connect(argv[1]);
-	if(eards<0) printf("Connection error\n");
-	eards_set_freq(f);
-	eards_remote_disconnect();
-	exit(1);
-}
+
+/**
+*    \file remote_daemon_client.h
+*    \brief This file defines the client side of the remote EAR API
+*
+* 	 Note:Specific functions could be substituted by a generic function passing a local_config_t
+*/
+
+#ifndef _EARGM_API_H
+#define _EARGM_API_H
+
+
+/** Connects with the EARGM.
+*	The sequence must be : connect +  command + disconnect
+* 	@param the nodename to connect with
+*/
+int eargm_connect(char *nodename);
+
+/** Notifies the EARGM a new job using N nodes will start. It is supposed to be used by the EAR slurm plugin
+*/
+int eargm_new_job(uint num_nodes);
+
+/** Notifies the EARGM  a job using N nodes is finishing
+*/
+int eargm_end_job(uint num_nodes);
+
+/** Disconnect from the previously connected EARGM
+*/
+int eargm_disconnect();
+
+#endif

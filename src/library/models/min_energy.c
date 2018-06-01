@@ -35,18 +35,19 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <common/config.h>
 #include <control/frequency.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
 #include <library/models/sig_projections.h>
+#include <daemon/eard_api.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
 #include <common/types/signature.h>
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
-#include <common/config.h>
 
 static uint me_policy_pstates;
 static uint me_reset_freq=RESET_FREQ;
@@ -79,7 +80,7 @@ void min_energy_end_loop()
     if (me_reset_freq)
     {
 		// Use configuration when available
-        ear_frequency = eards_change_freq(EAR_default_frequency);
+        ear_frequency = eards_change_freq(get_global_def_freq());
     }
 }
 
@@ -108,6 +109,7 @@ ulong min_energy_policy(signature_t *sig)
 	// This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
 	// We must check this is ok changing these values at this point
 	policy_global_reconfiguration();
+	if (!eards_connected()) return EAR_default_frequency;
 	
 	// We compute here our reference
 
