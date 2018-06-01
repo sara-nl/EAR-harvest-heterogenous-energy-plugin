@@ -39,15 +39,15 @@ static char buffer_time[64];
 
 #define verbose(...) \
 	update_time_buffer(); \
-	fprintf(stdout, "%s message, ", buffer_time); \
-	fprintf(stdout, __VA_ARGS__); \
-	fprintf(stdout, "\n");
+	fprintf(stderr, "%s message, ", buffer_time); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n");
 
 #define error(...) \
 	update_time_buffer(); \
-	fprintf(stdout, "%s ERROR, ", buffer_time); \
-	fprintf(stdout, __VA_ARGS__); \
-	fprintf(stdout, "\n"); \
+	fprintf(stderr, "%s ERROR, ", buffer_time); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
 	exit(1);
 
 static void update_time_buffer()
