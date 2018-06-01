@@ -1,7 +1,6 @@
 #EAR DB configuration
 
 #Default Power Policies Configuration
-
 DefaultPowerPolicy=MONITORING_ONLY
 SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
 DefaultPstates=5,5,1
@@ -20,9 +19,13 @@ PrivilegedAccounts=COLBSC
 #Special cases
 Username=pmayers Application=GROMACS p_state=2 
 Username=xjcorbalan Application=SUSPENSE p_state=2 
-
-
-#Node Configuration
-
+#
+#
+# DATABASE 
+AggregationTime=1800
+PortTCP=4711
+PortUDP=4712
+#
+#
+# ISLAND CONFIGURATION
 Island=0 NodeName=cae2306 CPUs=16 MinEfficiencyGain=0.8 MaxPerformancePenalty=0.15 DefaultPstates=5,5 
-

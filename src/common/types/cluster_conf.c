@@ -78,7 +78,7 @@
 */
 
 static const char *__NAME__ = "cluster_conf:";
-//#define __OLD__CONF__
+#define __OLD__CONF__
 
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
