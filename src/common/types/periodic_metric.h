@@ -30,8 +30,6 @@
 #include <common/config.h>
 #include <time.h>
 
-#if SHARED_MEMORY
-
 #ifndef _EAR_TYPES_PERIODIC_METRIC
 #define _EAR_TYPES_PERIODIC_METRIC
 
@@ -75,7 +73,5 @@ void end_job_for_period(periodic_metric_t *pm);
 
 /** Outputs the power_signature contents to the file pointed by the fd. */
 void print_periodic_metric_fd(int fd, periodic_metric_t *pm);
-
-#endif
 
 #endif
