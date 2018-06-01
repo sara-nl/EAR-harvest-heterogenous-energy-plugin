@@ -35,17 +35,17 @@ static uint mets_i;
 static uint apps_i;
 
 static char buffer[4096];
-static char buffer_time[64];
+static char buffer_aux[64];
 
 #define verbose(...) \
 	update_time_buffer(); \
-	fprintf(stdout, "%s message, ", buffer_time); \
+	fprintf(stdout, "%s message, ", buffer_aux); \
 	fprintf(stdout, __VA_ARGS__); \
 	fprintf(stdout, "\n");
 
 #define error(...) \
 	update_time_buffer(); \
-	fprintf(stdout, "%s ERROR, ", buffer_time); \
+	fprintf(stdout, "%s ERROR, ", buffer_aux); \
 	fprintf(stdout, __VA_ARGS__); \
 	fprintf(stdout, "\n"); \
 	exit(1);
@@ -54,18 +54,20 @@ static void update_time_buffer()
 {
 	time_t timer = time(NULL);
 	struct tm* tm_info = localtime(&timer);
-	strftime(buffer_time, 64, "%H:%M:%S (%d-%m-%y)", tm_info);
+	strftime(buffer_aux, 64, "%H:%M:%S (%d-%m-%y)", tm_info);
 }
 
-static void print_sockaddr(struct sockaddr *host_addr)
+static void sprint_sockaddr(struct sockaddr *host_addr, char *buffer, size_t size)
 {
 	char *ip_version;
 	void *address;
+	int port;
 
 	// IPv4
 	if (host_addr->sa_family == AF_INET)
 	{
 		struct sockaddr_in *ipv4 = (struct sockaddr_in *) host_addr;
+		port = (int) ntohs(ipv4->sin_port);
 		address = &(ipv4->sin_addr);
 		ip_version = "IPv4";
 	}
@@ -73,27 +75,37 @@ static void print_sockaddr(struct sockaddr *host_addr)
 	else
 	{
 		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
+		port = (int) ntohs(ipv6->sin6_port);
 		address = &(ipv6->sin6_addr);
 		ip_version = "IPv6";
 	}
 
-	// convert the IP to a string and print it:
-	inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
+	// convert the IP to a string and print it
+	inet_ntop(host_addr->sa_family, address, buffer, size);
 
 	if (buffer[0] != ':') {
-		verbose("%s (%s)", buffer, ip_version);
+		sprintf(buffer, "%s:%d", buffer, port);
 	}
 }
 
+/*
 static void print_addrinfo(struct addrinfo *host_info)
 {
 	struct addrinfo *p;
 
 	for(p = host_info; p != NULL; p = p->ai_next)
 	{
-		print_sockaddr(p->ai_addr);
+		sprint_sockaddr(p->ai_addr);
 	}
+
+	struct sockaddr cli_addr;
+	socklen_t cli_size;
+	char address[128];
+	address[0] = '\0';
+	getsockname(fd, &cli_addr, &cli_size);
+	sprint_sockaddr(&cli_addr, address, cli_size);
 }
+ */
 
 /*
  * Signal processing
@@ -134,7 +146,7 @@ static void process_timeout_data()
 	aggr.n_samples  = 0;
 }
 
-static void process_incoming_data(char *buffer, size_t size)
+static void process_incoming_data(int fd, char *buffer, size_t size)
 {
 	char *file;
 	char *type;
@@ -166,13 +178,11 @@ static void process_incoming_data(char *buffer, size_t size)
 			//database_store();
 			mets_i = 0;
 		}
-	}
-	else
-	{
+	} else {
 		type = "unknown";
 	}
 
-	verbose("received an object type '%s' from the node ''", type);
+	verbose("received an object type '%s' from the socket %d", type, fd);
 }
 
 /*
@@ -181,6 +191,7 @@ static void process_incoming_data(char *buffer, size_t size)
 
 static int _accept(int fd)
 {
+	char address[128];
 	struct sockaddr_storage cli_addr;
 	socklen_t size;
 	int fd_cli;
@@ -194,6 +205,7 @@ static int _accept(int fd)
 		return EAR_ERROR;
 	}
 
+	verbose("accepted connection from socket %d", fd_cli);
 	return fd_cli;
 }
 
@@ -205,7 +217,7 @@ static ssize_t _receive(int fd)
 	if (bytes <= 0)
 	{
 		if (bytes == 0) {
-			verbose("socket %d hung up", fd);
+			verbose("disconnected from socket %d", fd);
 		} else {
 			error("on reception (%s)", strerror(errno));
 		}
@@ -411,7 +423,7 @@ int main(int argc, char **argv)
 					size = _receive(i);
 
 					if (size >= 0) {
-						process_incoming_data(buffer, size);
+						process_incoming_data(i, buffer, size);
 					} else {
 						FD_CLR(i, &fds_active);
 						close(i);

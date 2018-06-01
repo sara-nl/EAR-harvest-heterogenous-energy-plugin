@@ -16,9 +16,9 @@
 
 static char buffer[4096];
 static struct addrinfo *srv_info;
-static int connected;
-static int _protocol;
-static int srv_fd;
+static int _protocol = -1;
+static int connected = -1;
+static int fd_srv    = -1;
 
 #define verbose(...) \
 	fprintf(stdout, "EARDBD_API, "); \
@@ -32,14 +32,44 @@ static int srv_fd;
 	exit(1);
 
 #define CONNECTION_TEST() \
-	if (connected == 0) { \
+	if (fd_srv == -1 || _protocol == -1 || (_protocol == TCP && connected == -1)) { \
 		return EAR_ERROR; \
 	}
-
 
 /*
  * Generic functions
  */
+
+static void print_sockaddr(struct sockaddr *host_addr)
+{
+	char *ip_version;
+	void *address;
+	int port;
+
+
+	// IPv4
+	if (host_addr->sa_family == AF_INET)
+	{
+		struct sockaddr_in *ipv4 = (struct sockaddr_in *) host_addr;
+		address = &(ipv4->sin_addr);
+		port = (int) ntohs(ipv4->sin_port);
+		ip_version = "IPv4";
+	}
+		// IPv6
+	else
+	{
+		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
+		address = &(ipv6->sin6_addr);
+		ip_version = "IPv6";
+	}
+
+	// convert the IP to a string and print it
+	inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
+
+	if (buffer[0] != ':') {
+		verbose("%s:%d", buffer, port);
+	}
+}
 
 static int _send(void *object, size_t size)
 {
@@ -50,13 +80,11 @@ static int _send(void *object, size_t size)
 	while(bytes_sent < size)
 	{
 		if (_protocol == TCP) {
-			verbose("sending by TCP an object of size %lu by socket %d", bytes_left, srv_fd);
-
-			n = send(srv_fd, object + bytes_sent, bytes_left, 0);
+			verbose("sending by TCP an object of size %lu by socket %d", bytes_left, fd_srv);
+			n = send(fd_srv, object + bytes_sent, bytes_left, 0);
 		} else {
-			verbose("sending UDP an object of size %lu using socket %d", bytes_left, srv_fd);
-
-			n = sendto(srv_fd, object + bytes_sent, bytes_left, 0, srv_info->ai_addr, srv_info->ai_addrlen);
+			verbose("sending UDP an object of size %lu using socket %d", bytes_left, fd_srv);
+			n = sendto(fd_srv, object + bytes_sent, bytes_left, 0, srv_info->ai_addr, srv_info->ai_addrlen);
 		}
 
 		if (n == -1) {
@@ -88,9 +116,9 @@ static int _socket(char *host, char *port, int protocol)
 		return EAR_ERROR;
 	}
 
-	srv_fd = socket(srv_info->ai_family, srv_info->ai_socktype, srv_info->ai_protocol);
+	fd_srv = socket(srv_info->ai_family, srv_info->ai_socktype, srv_info->ai_protocol);
 
-	if (srv_fd < 0) {
+	if (fd_srv < 0) {
 		return EAR_ERROR;
 	}
 
@@ -99,12 +127,12 @@ static int _socket(char *host, char *port, int protocol)
 
 static int _disconnect()
 {
-	if (srv_fd > 0) {
-		close(srv_fd);
+	if (fd_srv > 0) {
+		close(fd_srv);
 	}
 
-	connected = 0;
-	srv_fd = 0;
+	connected = -1;
+	fd_srv    = -1;
 
 	return EAR_SUCCESS;
 }
@@ -123,7 +151,7 @@ static int _connect(char *host)
 	verbose("openned socket");
 
 	// Assign to the socket the address and port
-	status = connect(srv_fd, srv_info->ai_addr, srv_info->ai_addrlen);
+	status = connect(fd_srv, srv_info->ai_addr, srv_info->ai_addrlen);
 
 	if (status < 0) {
 		error("conecting socket");
@@ -135,6 +163,8 @@ static int _connect(char *host)
 	freeaddrinfo(srv_info);
 	connected = 1;
 
+	print_sockaddr(srv_info->ai_addr);
+
 	return EAR_SUCCESS;
 }
 
@@ -144,55 +174,56 @@ static int _connect(char *host)
 
 int eardbd_send_application(void *app)
 {
-	//CONNECTION_TEST();
-
+	CONNECTION_TEST();
 	verbose("sending application");
-
 	return _send((application_t *) app, sizeof(application_t));
 }
 
 int eardbd_send_periodic_metric(void *met)
 {
-	//CONNECTION_TEST();
-
+	CONNECTION_TEST();
 	verbose("sending application");
-
 	return _send((periodic_metric_t *) met, sizeof(periodic_metric_t));
 }
 
 int eardbd_ping()
 {
+	CONNECTION_TEST();
 	verbose("sending ping");
-
 	return _send("EAR", 4);
 }
 
-int eardbd_start(char *host, int protocol)
+int eardbd_is_connected()
+{
+	CONNECTION_TEST();
+	return EAR_SUCCESS;
+}
+
+int eardbd_connect(char *host, int protocol)
 {
 	int status;
 
-	_protocol = protocol;
-
-	if (_protocol == TCP) {
+	if (protocol == TCP) {
 		status = _connect(host);
-	} else if (_protocol == UDP) {
+	} else if (protocol == UDP) {
 		status = _socket(host, PORT_UDP, UDP);
 	} else {
 		error("unknown protocol");
 		return EAR_ERROR;
 	}
 
-	if (srv_fd < 0) {
+	if (status < EAR_SUCCESS) {
 		_disconnect();
 		return EAR_ERROR;
 	}
 
-	verbose("using %d fd", srv_fd);
+	_protocol = protocol;
+	verbose("using %d fd", fd_srv);
 
 	return EAR_SUCCESS;
 }
 
-int eardbd_dispose()
+int eardbd_disconnect()
 {
 	return _disconnect();
 }
