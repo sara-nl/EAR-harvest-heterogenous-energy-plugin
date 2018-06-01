@@ -37,9 +37,9 @@ int main(int argc, char **argv)
 	sprintf(app.node_id, "cmp000.lenovo.hpc");
 
 	// Testing API
-	eardbd_start(argv[1], TCP);
+	eardbd_connect(argv[1], TCP);
 	eardbd_send_application(&app);
-	eardbd_dispose();
+	eardbd_disconnect();
 
 	return 0;
 }
