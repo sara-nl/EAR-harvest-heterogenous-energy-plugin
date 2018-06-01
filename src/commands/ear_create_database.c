@@ -152,6 +152,14 @@ void create_tables(MYSQL *connection)
                             step_id INT NOT NULL, \
                             freq BIGINT unsigned NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
+
+    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Warnings ( \
+                            energy_percent DOUBLE, \
+                            warning_level INT UNSIGNED NOT NULL, \
+                            time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, \
+                            inc_th DOUBLE, \
+                            p_state INT, \
+                            PRIMARY KEY (time))")) execute_on_error(connection);
                             
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_applications (\
