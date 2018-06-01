@@ -579,7 +579,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 }
 
 /** frees a cluster_conf_t */
-void free_cluster_conf_t(cluster_conf_t *conf)
+void free_cluster_conf(cluster_conf_t *conf)
 {
     int i;
     for (i = 0; i < conf->num_priv_users; i++)
@@ -592,11 +592,12 @@ void free_cluster_conf_t(cluster_conf_t *conf)
 
     free(conf->special);
     
+    for (i = 0; i < conf->num_nodes; i++)
+        free(conf->nodes[i].special_node_conf);
     free(conf->nodes);
 
     free(conf->power_policies);
 
-	free(conf);
 }
 
 void print_special_app(special_app_t *app)
