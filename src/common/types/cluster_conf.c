@@ -592,11 +592,13 @@ void free_cluster_conf(cluster_conf_t *conf)
 
     free(conf->special);
     
-   // for (i = 0; i < conf->num_nodes; i++)
-     //   free(conf->nodes[i].special_node_conf);
+    for (i = 0; i < conf->num_nodes; i++)
+        free(conf->nodes[i].special_node_conf);
     free(conf->nodes);
 
     free(conf->power_policies);
+
+    memset(conf, 0, sizeof(cluster_conf_t));
 
 }
 
