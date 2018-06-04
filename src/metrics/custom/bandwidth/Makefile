@@ -8,4 +8,4 @@ uncores_pci.o: uncores_pci.c uncores_pci.h
 ######## OPTIONS
 
 clean:
-	rm -rf *.o *.a *.so
+	rm -f *.o *.a *.so

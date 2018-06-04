@@ -78,7 +78,7 @@ install-subfolders:
 	$(MAKE) -C power_monitor install
 
 clean: clean-subfolders
-	rm -f *.o *.a *.so
+	rm -f *.o *.a *.so eard
 
 clean-subfolders:
 	$(MAKE) -C commands clean
