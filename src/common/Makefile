@@ -81,5 +81,5 @@ install:
 	cp states.h $(DESTDIR)/include/common
 
 clean:
-	rm $(BINARIES) $(TYPES_OBJS) || true
+	rm -f $(BINARIES) $(TYPES_OBJS) || true
 	rm -f *.o *.so *.a

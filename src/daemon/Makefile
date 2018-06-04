@@ -40,7 +40,7 @@ BINARIES = eard_client_api.o \
 
 ######## RULES
 
-.PHONY: commands
+.PHONY: components commands
 
 all: components $(BINARIES) commands
 
@@ -77,7 +77,7 @@ install-subfolders:
 	$(MAKE) -C commands install
 	$(MAKE) -C power_monitor install
 
-clean:
+clean: clean-subfolders
 	rm -f *.o *.a *.so
 
 clean-subfolders:

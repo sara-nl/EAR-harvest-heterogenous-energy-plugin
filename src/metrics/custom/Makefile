@@ -39,5 +39,4 @@ install:
 	cp *.h $(DESTDIR)/include/metrics/custom
 
 clean:
-	rm -f *.o  *.so
-	rm $(LIBRARIES) $(BANDWIDTH_OBJS)
+	rm -f *.o  *.so *.a
