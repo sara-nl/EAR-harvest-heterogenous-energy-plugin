@@ -71,7 +71,7 @@ static int send_command(eargm_request_t *command)
 }
 
 // based on getaddrinfo  man page
-int eargm_connect(char *nodename)
+int eargm_connect(char *nodename,uint use_port)
 {
     int client_sock ;
     struct addrinfo hints;
@@ -86,7 +86,7 @@ int eargm_connect(char *nodename)
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
-	sprintf(port_number,"%d",EARGM_PORT_NUMBER);
+	sprintf(port_number,"%u",use_port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
 		printf("getaddrinfo failt for %s and %s\n",nodename,port_number);

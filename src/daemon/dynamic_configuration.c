@@ -75,7 +75,7 @@ void print_f_list(uint p_states,ulong *freql)
 	for (i=0;i<p_states;i++) VERBOSE_N(0,"Freq %u= %lu\n",i,freql[i]);
 }
 
-uint is_valid(ulong f, uint p_states,ulong *freql)
+uint is_valid_freq(ulong f, uint p_states,ulong *freql)
 {
 	int i=0;
 	while (i<p_states){
@@ -86,6 +86,19 @@ uint is_valid(ulong f, uint p_states,ulong *freql)
 	}
 	return 0;
 	
+}
+ulong lower_valid_freq(ulong f, uint p_states,ulong *freql)
+{
+	ulong freq=f-100000;
+	while(!is_valid_freq(freq,p_states,freql)) freq=freq-100000;
+	if (freq>=freql[p_states-1]){
+		VERBOSE_N(0,"Invalid frequencies selecting the lower one valid: requested %lu selected %lu\n",f,freq);
+		return freq;
+	}else{
+		VERBOSE_N(0,"PANIC no alternative freq can be selected for %lu\n",f);
+		return -1;
+	}
+
 }
 
 static void DC_my_sigusr1(int signun)
@@ -129,14 +142,20 @@ int dynconf_inc_th(ulong th)
 int dynconf_max_freq(ulong max_freq)
 {
 	// we must check it is a valid freq: TODO
-	if (is_valid(max_freq, num_f,f_list)){
+	if (is_valid_freq(max_freq, num_f,f_list)){
 		dyn_conf->max_freq=max_freq;
 		dyn_conf->force_rescheduling=1;
 		powermon_new_max_freq(max_freq);
 		return EAR_SUCCESS;
 	}else{
-		VERBOSE_N(0,"Invalid frequencies\n");
-		return EAR_ERROR;
+		
+		int freq=lower_valid_freq(max_freq,num_f,f_list);
+		if (freq>0){
+			dyn_conf->max_freq=freq;
+			dyn_conf->force_rescheduling=1;
+			powermon_new_max_freq(freq);
+			return EAR_SUCCESS;
+		}else return EAR_ERROR;
 	}
 }
 
@@ -146,18 +165,34 @@ int dynconf_red_pstates(uint p_states)
 	ulong max,def;
 	max=dyn_conf->max_freq-(p_states*100000);
 	def=dyn_conf->def_freq-(p_states*100000);
-	
-	if (is_valid(max,num_f,f_list) && is_valid(def,num_f,f_list)){
+
+	// reducing the maximum freq in N p_states
+	if (is_valid_freq(max,num_f,f_list)){
 		dyn_conf->max_freq=max;
-		dyn_conf->def_freq=def;
-		VERBOSE_N(0,"New maximum frequency %lu\n",dyn_conf->max_freq);
-		VERBOSE_N(0,"New default frequency %lu\n",dyn_conf->def_freq);
     	dyn_conf->force_rescheduling=1;
-		powermon_red_freq(dyn_conf->max_freq,dyn_conf->def_freq);
+		powermon_new_max_freq(max);
+	}else{
+		int freq=lower_valid_freq(max,num_f,f_list);
+		if (freq>0){
+			dyn_conf->max_freq=freq;
+			dyn_conf->force_rescheduling=1;
+			powermon_new_max_freq(freq);
+		}else	return EAR_ERROR;
+	}
+	// reducing the default freq in N p_states
+	if (is_valid_freq(def,num_f,f_list)){
+		dyn_conf->def_freq=def;
+		dyn_conf->force_rescheduling=1;
+		powermon_new_def_freq(def);
     	return EAR_SUCCESS;
 	}else{ 
-		VERBOSE_N(0,"Invalid frequencies\n");
-		return EAR_ERROR;
+		int freq=lower_valid_freq(def,num_f,f_list);
+		if (freq>0){
+			dyn_conf->def_freq=freq;
+			dyn_conf->force_rescheduling=1;
+			powermon_new_def_freq(freq);
+    		return EAR_SUCCESS;
+		}else return EAR_ERROR;
 	}
 }
 

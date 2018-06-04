@@ -40,7 +40,7 @@
 #include <global_manager/eargm_conf_api.h>
 
 
-int create_server_socket();
+int create_server_socket(uint use_port);
 int wait_for_client(int sockfd,struct sockaddr_in *client);
 void close_server_socket(int sock);
 

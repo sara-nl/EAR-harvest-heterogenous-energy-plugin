@@ -41,13 +41,43 @@
 #include <common/states.h>
 #include <common/ear_verbose.h>
 #include <global_manager/eargm_server_api.h>
+#include <daemon/eard_rapi.h>
+#include <common/types/cluster_conf.h>
 
-typedef unsigned int uint;
+/*
+*	EAR Global Manager constants
+*/
+
+#define NO_PROBLEM 	3
+#define WARNING_3	2
+#define WARNING_2	1
+#define PANIC		0
+#define NUM_LEVELS  4
+
+#define DEFCON_L4 85.0
+#define DEFCON_L3 90.0
+#define DEFCON_L2 95.0
+
+ulong th_level[NUM_LEVELS]={10,10,5,0};
+ulong pstate_level[NUM_LEVELS]={3,2,1,0};
 
 pthread_t eargm_server_api_th;
+cluster_conf_t my_cluster_conf;
+uint total_nodes=0;
 static const char *__NAME__ = "EARGM";
 
+/* 
+* EAR Global Manager global data
+*/
 int EAR_VERBOSE_LEVEL=1;
+uint period_t1,period_t2;
+ulong total_energy_t2;
+uint my_port;
+uint current_sample=0,total_samples=0;
+ulong *energy_consumed;
+ulong energy_budget;
+uint aggregate_samples;
+
 #if DB_MYSQL
 #include <mysql/mysql.h>
 #define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
@@ -61,9 +91,18 @@ void usage(char *app)
 	exit(1);
 }
 
+void update_eargm_configuration(cluster_conf_t *conf)
+{
+	EAR_VERBOSE_LEVEL=conf->eargm.verbose;
+	period_t1=conf->eargm.t1;
+	period_t2=conf->eargm.t2;
+	energy_budget=conf->eargm.energy;
+	my_port=conf->eargm.port;
+}
+
 #if DB_MYSQL
 
-long long stmt_error(MYSQL_STMT *statement)
+ulong stmt_error(MYSQL_STMT *statement)
 {
     fprintf(stderr, "Error preparing statement (%d): %s\n", 
             mysql_stmt_errno(statement), mysql_stmt_error(statement));
@@ -71,7 +110,7 @@ long long stmt_error(MYSQL_STMT *statement)
     return -1;
 }
 
-long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long long divisor)
+ulong get_sum(MYSQL *connection, int start_time, int end_time, ulong  divisor)
 {
 
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -104,7 +143,7 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     MYSQL_BIND res_bind[1];
     memset(res_bind, 0, sizeof(res_bind));
     res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
-    long long result = 0;
+    ulong result = 0;
     res_bind[0].buffer = &result;
 
     if (mysql_stmt_bind_param(statement, bind)) return stmt_error(statement);
@@ -126,7 +165,22 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
 static void my_signals_function(int s)
 {
 	if (s==SIGALRM)	return;
-	exit(0);
+	if (s==SIGHUP){
+		VERBOSE_N(0,"Reloading EAR configuration");
+		free_cluster_conf(&my_cluster_conf);
+		// Reading the configuration
+    	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+        	VERBOSE_N(0," Error reading cluster configuration\n");
+    	}
+    	else{
+        	print_cluster_conf(&my_cluster_conf);
+			energy_budget=my_cluster_conf.eargm.energy;
+			VERBOSE_N(0,"Using new energy limit %lu",energy_budget);
+    	}
+	}else{
+		VERBOSE_N(0,"Exiting");
+		exit(0);
+	}
 }
 
 void print_time(char *msg,time_t *t)
@@ -184,20 +238,16 @@ static void catch_signals()
 
 }
 
-uint current_sample=0,total_samples=0;
-long long *energy_consumed;
-long long energy_budget;
-uint aggregate_samples;
-void new_energy_sample(long long result)
+void new_energy_sample(ulong result)
 {
 	energy_consumed[current_sample]=result;
 	current_sample=(current_sample+1)%aggregate_samples;
 	if (total_samples<aggregate_samples) total_samples++;
 }
 
-long long compute_energy_t2()
+ulong compute_energy_t2()
 {
-	long long energy=0;
+	ulong energy=0;
 	uint i;
 	int limit=aggregate_samples;
 	if (total_samples<aggregate_samples) limit=total_samples;
@@ -207,15 +257,14 @@ long long compute_energy_t2()
 	return energy;
 }
 
-#define DEFCON_L3 85.0
-#define DEFCON_L2 95.0
 
 
-uint defcon(double perc)
+uint defcon(double perc,ulong load)
 {
-	if (perc<DEFCON_L3) return 3;
-	if ((perc>=DEFCON_L3) && (perc<DEFCON_L2))	return 2;
-	return 1;
+	if (perc<DEFCON_L4) return NO_PROBLEM;
+	if ((perc>=DEFCON_L4) && (perc<DEFCON_L3))  return WARNING_3;
+	if ((perc>=DEFCON_L3) && (perc<DEFCON_L2))	return WARNING_2;
+	return PANIC;
 }
 
 /*
@@ -235,10 +284,12 @@ void process_remote_requests(int clientfd)
         case EARGM_NEW_JOB:
 			// Computes the total number of nodes in use
             VERBOSE_N(0,"new_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+			total_nodes+=command.num_nodes;
             break;
         case EARGM_END_JOB:
 			// Computes the total number of nodes in use
             VERBOSE_N(0,"end_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+			total_nodes-=command.num_nodes;
             break;
         default:
             VERBOSE_N(0,"Invalid remote command\n");
@@ -251,14 +302,15 @@ void *eargm_server_api(void *p)
 {
 	int eargm_fd,eargm_client;
 	struct sockaddr_in eargm_con_client;
-    VERBOSE_N(0,"Creating scoket for remote commands\n");
-    eargm_fd=create_server_socket();
+
+    VERBOSE_N(0,"Creating scoket for remote commands,using port %u",my_port);
+    eargm_fd=create_server_socket(my_port);
     if (eargm_fd<0){
         VERBOSE_N(0,"Error creating socket\n");
         pthread_exit(0);
     }
     do{
-        VERBOSE_N(0,"waiting for remote commands\n");
+        VERBOSE_N(0,"waiting for remote commands port=%u\n",my_port);
         eargm_client=wait_for_client(eargm_fd,&eargm_con_client);
         if (eargm_client<0){
             VERBOSE_N(0,"eargm_server_api: wait_for_client returns error\n");
@@ -273,6 +325,48 @@ void *eargm_server_api(void *p)
 
 }
 
+/*
+*	ACTIONS for WARNING and PANIC LEVELS
+*/
+void increase_th_all_nodes(int level)
+{
+	int i,rc;
+	ulong th;
+	for (i=0;i< my_cluster_conf.num_nodes;i++){
+    	rc=eards_remote_connect(my_cluster_conf.nodes[i].name);
+    	if (rc<0){
+			VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
+    	}else{
+
+			th=th_level[level];
+
+			VERBOSE_N(1,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n",my_cluster_conf.nodes[i].name,th);
+			if (!eards_inc_th(th)) VERBOSE_N(0,"Error increasing the th for node %s",my_cluster_conf.nodes[i].name);
+			eards_remote_disconnect();
+		}
+	}
+}
+void reduce_frequencies_all_nodes(int level)
+{
+    int i,rc;
+    ulong ps;
+    for (i=0;i< my_cluster_conf.num_nodes;i++){
+        rc=eards_remote_connect(my_cluster_conf.nodes[i].name);
+        if (rc<0){
+            VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
+        }else{
+
+        	ps=pstate_level[level];
+
+        	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n",my_cluster_conf.nodes[i].name,ps);
+        	if (!eards_inc_th(ps)) VERBOSE_N(0,"Error reducing the freq for node %s",my_cluster_conf.nodes[i].name);
+        	eards_remote_disconnect();
+		}
+    }
+
+}
+
+
 
 /*
 *
@@ -285,16 +379,23 @@ void *eargm_server_api(void *p)
 
 void main(int argc,char *argv[])
 {
-	uint period_t1,period_t2;
 	sigset_t set;
-	unsigned long long divisor = 1000;
-	long long total_energy_t2;
+	ulong divisor = 1000;
 	int ret;
 
     if (argc !=4) usage(argv[0]);
 	period_t1=atoi(argv[1]);
 	period_t2=atoi(argv[2]);
-	energy_budget=atoll(argv[3]);
+	energy_budget=atol(argv[3]);
+
+    if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+        VERBOSE_N(0," Error reading cluster configuration\n");
+    }
+    else{
+        print_cluster_conf(&my_cluster_conf);
+    }
+    update_eargm_configuration(&my_cluster_conf);
+
 	if ((period_t1<=0) || (period_t2<=0) || (energy_budget<=0)) usage(argv[0]);
 
 	aggregate_samples=period_t2/period_t1;
@@ -303,7 +404,7 @@ void main(int argc,char *argv[])
 		aggregate_samples++;
 	}
 
-	energy_consumed=malloc(sizeof(long long)*aggregate_samples);
+	energy_consumed=malloc(sizeof(ulong)*aggregate_samples);
 
 
 
@@ -315,6 +416,13 @@ void main(int argc,char *argv[])
 		VERBOSE_N(0,"error creating eargm_server for external api %s\n",strerror(errno));
     }
 
+	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+        VERBOSE_N(0," Error reading cluster configuration\n");
+	}
+	else{
+		print_cluster_conf(&my_cluster_conf);
+	}
+	update_eargm_configuration(&my_cluster_conf);
 	
 
 #if DB_MYSQL
@@ -360,40 +468,42 @@ void main(int argc,char *argv[])
 		time(&end_time);
 		start_time=end_time-period_t1;
 
-		#if 0
-		print_time("start_time",&start_time);
-		fprintf(stdout,"\n");
-		print_time("end_time",&end_time);
-		fprintf(stdout,"\n");
-		#endif
     
-	    long long result = get_sum(connection, start_time, end_time, divisor);
-	    if (!result) fprintf(stdout,"No results in that period of time found\n");
-	    else if (result < 0) exit(1);
+	    ulong result = get_sum(connection, start_time, end_time, divisor);
+	    if (!result){ 
+			VERBOSE_N(2,"No results in that period of time found\n");
+	    }else{ 
+			if (result < 0) exit(1);
+		}
 
 		new_energy_sample(result);
 		total_energy_t2=compute_energy_t2();	
 		perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
 		perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
-	    //fprintf(stdout,"Total energy spent int last period_t1: %lli\n", result);
-	    //fprintf(stdout,"Total energy spent int last period_t2: %lli\n", total_energy_t2);
-		VERBOSE_N(0,"Percentage over energy budget %.2lf%% \n",perc_energy);
-		VERBOSE_N(0,"Percentage over the period_t2 %.2lf%% \n",perc_time);
+		VERBOSE_N(0,"Percentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)\n",perc_energy,total_energy_t2,energy_budget);
 	
 		if (perc_time<100.0){	
 			if (perc_energy>perc_time){
 				VERBOSE_N(0,"WARNING %.2lf%% of energy vs %.2lf%% of time!!\n",perc_energy,perc_time);
 			}
 		}
-		switch(defcon(perc_energy)){
-		case 3:
-			VERBOSE_N(0," Safe area. energy budget %.2lf%% \n",perc_energy);
+		switch(defcon(perc_energy,total_nodes)){
+		case NO_PROBLEM:
+			VERBOSE_N(1," Safe area. energy budget %.2lf%% \n",perc_energy);
 			break;
-		case 2:
+		case WARNING_3:
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+			increase_th_all_nodes(WARNING_3);
 			break;
-		case 1:
-			fprintf(stderr,"eargmd: PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
+		case WARNING_2:
+			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+			increase_th_all_nodes(WARNING_2);
+			reduce_frequencies_all_nodes(WARNING_2);
+			break;
+		case PANIC:
+			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
+			increase_th_all_nodes(PANIC);
+			reduce_frequencies_all_nodes(PANIC);
 			break;
 		}
 	}

@@ -65,6 +65,7 @@
 #endif
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq) VALUES (?, ?, ?, ?, ?)"
 
+#define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state) VALUES (?, ?, ?, ?)"
 
 //Learning_phase insert queries
 #define LEARNING_APPLICATION_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
@@ -1013,5 +1014,34 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return id;
+
+}
+
+int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+
+    if (mysql_stmt_prepare(statement, EAR_WARNING_QUERY, strlen(EAR_WARNING_QUERY))) return mysql_statement_error(statement);
+
+    MYSQL_BIND bind[4];
+    memset(bind, 0, sizeof(bind));
+
+    bind[0].buffer_type = bind[2].buffer_type = MYSQL_TYPE_DOUBLE;
+    bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONG;
+    bind[1].is_unsigned = 1;
+
+    bind[0].buffer = (char *)&warning->energy_percent;
+    bind[1].buffer = (char *)&warning->level;
+    bind[2].buffer = (char *)&warning->inc_th;
+    bind[3].buffer = (char *)&warning->new_p_state;
+
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return EAR_SUCCESS;
 
 }

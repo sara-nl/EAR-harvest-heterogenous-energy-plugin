@@ -857,7 +857,8 @@ void signal_handler(int sig)
 	if (sig == SIGPIPE){ VERBOSE_N(0, "signal SIGPIPE received. Application terminated abnormally");}
 	if (sig == SIGTERM){ VERBOSE_N(0, "signal SIGTERM received. Finishing");}
 	if (sig == SIGINT){  VERBOSE_N(0, "signal SIGINT received. Finishing");}
-	if (sig == SIGHUP){  VERBOSE_N(0, "signal SIGHUP received. Restarting");}
+	if (sig == SIGHUP){  VERBOSE_N(0, "signal SIGHUP received. Reloading EAR conf");}
+	if (sig == SIGUSR2){  VERBOSE_N(0, "signal SIGUSR2 received. Restarting");}
 
 	// The PIPE was closed, so the daemon connection ends
 	if (sig == SIGPIPE) {
@@ -866,7 +867,7 @@ void signal_handler(int sig)
 
 
 	// Someone wants EARD to get closed or restarted
-	if ((sig == SIGTERM) || (sig == SIGINT) || (sig == SIGHUP))
+	if ((sig == SIGTERM) || (sig == SIGINT) || (sig == SIGUSR2))
 	{
 		eard_must_exit = 1;
 
@@ -888,9 +889,21 @@ void signal_handler(int sig)
 	if ((sig == SIGTERM) || (sig == SIGINT)){
 		eard_exit(0);
 	}
-	if (sig == SIGHUP){ 
+	if (sig == SIGUSR2){ 
 		VERBOSE_N(0,"Restarting!\n");
 		eard_exit(1);
+	}
+	if (sig == SIGHUP){
+        free_cluster_conf(&my_cluster_conf);
+		VERBOSE_N(0,"Memory released");
+        // Reading the configuration
+        if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+            VERBOSE_N(0," Error reading cluster configuration\n");
+        }
+        else{
+			VERBOSE_N(0,"Loading EAR configuration");
+            print_cluster_conf(&my_cluster_conf);
+        }
 	}
 	
 }
@@ -924,6 +937,10 @@ void signal_catcher()
     if (sigaction(signal, &action, NULL) < 0) {
         VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
     }
+    signal = SIGUSR2;
+    if (sigaction(signal, &action, NULL) < 0) {
+        VERBOSE_N(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
+    }
 
 }
 //endregion
@@ -935,8 +952,6 @@ void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,node_conf_
     my_policy=get_my_policy_conf(cluster,node,MIN_TIME_TO_SOLUTION);
     if (my_policy==NULL){
         VERBOSE_N(0,"PANIC policy configuration not found!\n");
-    }else{
-        print_policy_conf(my_policy);
     }
     deff=frequency_pstate_to_freq(my_policy->p_state);
     dyn->def_freq=deff;
@@ -1092,14 +1107,14 @@ void main(int argc,char *argv[])
 		ear_verbose(0,"eard: error creating dynamic_configuration thread \n");
 	}
 	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){	
-		ear_verbose(0,"eard: Error reading cluster configuration\n");
+		VERBOSE_N(0," Error reading cluster configuration\n");
 		exit(1);
 	}else{	
+		print_cluster_conf(&my_cluster_conf);
 		my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);	
 		if (my_node_conf==NULL){
-			ear_verbose(0,"eard: Error in cluster configuration, node %s not found\n",nodename);
+			VERBOSE_N(0," Error in cluster configuration, node %s not found\n",nodename);
 		}
-		else print_node_conf(my_node_conf);
 	}
 	configure_default_values(dyn_conf,&my_cluster_conf,my_node_conf);
 #endif
@@ -1113,6 +1128,7 @@ void main(int argc,char *argv[])
 	sigdelset(&eard_mask,SIGTERM);
 	sigdelset(&eard_mask,SIGINT); 
 	sigdelset(&eard_mask,SIGHUP); 
+	sigdelset(&eard_mask,SIGUSR2); 
 	sigprocmask(SIG_SETMASK,&eard_mask,NULL);
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;

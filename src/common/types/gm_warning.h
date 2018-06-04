@@ -27,32 +27,30 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#if SHARED_MEMORY
-#include <common/types/power_signature.h>
-#include <common/types/periodic_metric.h>
-#endif
-#include <common/types/application.h>
-#include <common/types/gm_warning.h>
-#include <common/types/loop.h>
-#include <common/types/log.h>
 #include <common/config.h>
-#if DB_MYSQL
 
-/** Given an application, inserts it to the database currently selected */
-int db_insert_application(application_t *application);
+#ifndef _EAR_TYPES_GM_WARNING
+#define _EAR_TYPES_GM_WARNING
 
-int db_insert_loop(loop_t *loop);
+#include <common/types/generic.h>
+#define NODE_SIZE 256
 
-int db_insert_event(ear_event_t *ear_ev);
+typedef struct gm_warning 
+{
+    ulong level;
+    ulong new_p_state;
+    double energy_percent;
+    double inc_th;
+} gm_warning_t;
 
-int db_insert_warning(gm_warning_t *warning);
 
-#if SHARED_MEMORY
-int db_insert_power_signature(power_signature_t *pow_sig);
+// Function declarations
 
-int db_insert_periodic_metric(periodic_metric_t *per_met);
+/** Replicates the periodic_metric in *source to *destiny */
+void copy_gm_warning(gm_warning_t *destiny, gm_warning_t *source);
 
-int db_batch_insert_periodic_metrics(periodic_metric_t **per_mets, int num_mets);
-#endif
+/** Initializes all values of the periodic_metric to 0 , sets the nodename */
+void init_gm_warning(gm_warning_t *pm);
+
 
 #endif

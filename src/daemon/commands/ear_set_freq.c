@@ -7,6 +7,7 @@
 #include <daemon/eard_rapi.h>
 
 #define NAME_SIZE 128
+int EAR_VERBOSE_LEVEL=1;
 
 void usage(char *app)
 {

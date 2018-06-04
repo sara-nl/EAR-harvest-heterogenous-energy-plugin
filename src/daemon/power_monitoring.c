@@ -274,6 +274,17 @@ void powermon_new_max_freq(ulong maxf)
 	}
 }
 
+void powermon_new_def_freq(ulong def)
+{
+    if (current_ear_app.app.is_mpi==0){
+        if (def<current_node_freq){
+            VERBOSE_N(1,"DefFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def);
+            frequency_set_all_cpus(def);
+            current_node_freq=def;
+        }
+    }
+}
+
 void powermon_red_freq(ulong max_freq,ulong def_freq)
 {
 	if (current_ear_app.app.is_mpi==0){

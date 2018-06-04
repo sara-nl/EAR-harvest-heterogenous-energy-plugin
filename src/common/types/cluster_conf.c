@@ -41,26 +41,6 @@
 #include <common/types/cluster_conf.h>
 #include <common/ear_verbose.h>
 
-/*
-    char DB_pathname[GENERIC_NAME];
-    char Coefficients_pathname[GENERIC_NAME];
-    char tmp_dir[GENERIC_NAME];
-    uint verbose;
-    // List of policies
-    uint num_policies;
-    policy_conf_t *power_policies;
-    uint default_policy;            // selecs one of the power_policies
-    // Lis of autorized users
-    uint num_priv_users;
-    char **priv_users;
-    uint num_acc;
-    char *priv_acc[ACC];
-    uint num_special;
-    special_app_t   *special;
-    // List of nodes
-    uint num_nodes;
-    node_conf_t *nodes;
-*/
 
 
 /*
@@ -69,16 +49,9 @@
 #define MONITORING_ONLY                 2
 */
 
-/*
-	char name[GENERIC_NAME]
-	uint cpus;
-	uint island;	
-	uint num_special_node_conf;
-	policy_conf_t *special_node_conf;	
-*/
 
 static const char *__NAME__ = "cluster_conf:";
-#define __OLD__CONF__
+//#define __OLD__CONF__
 
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
@@ -159,7 +132,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		return EAR_ERROR;
 	}
 	get_cluster_config(conf_file, my_conf);
-    print_cluster_conf(my_conf);
+    //print_cluster_conf(my_conf);
 	#endif
 	return EAR_SUCCESS;
 }
@@ -184,7 +157,7 @@ node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 void print_node_conf(node_conf_t *my_node_conf)
 {
 	int i;
-	fprintf(stdout,"--> nodename %s cpus %u island %u \n",my_node_conf->name,my_node_conf->cpus,my_node_conf->island);
+	fprintf(stderr,"--> nodename %s cpus %u island %u \n",my_node_conf->name,my_node_conf->cpus,my_node_conf->island);
 	if (my_node_conf->num_special_node_conf>0){
 		for (i=0;i<my_node_conf->num_special_node_conf;i++){
 			print_policy_conf(&my_node_conf->special_node_conf[i]);
@@ -197,10 +170,10 @@ void print_node_conf(node_conf_t *my_node_conf)
 * POLICY FUNCTIONS
 */
 
-/** Prints in the stdout policy configuration */
+/** Prints in the stderr policy configuration */
 void print_policy_conf(policy_conf_t *p)
 {
-	fprintf(stdout,"---> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
+	fprintf(stderr,"---> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
 }
 
 
@@ -576,6 +549,19 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             conf->num_nodes += num_nodes;
         }
     }
+	// Manually configured, provisional
+	// EARD configuration
+	conf->eard.verbose=1;
+	conf->eard.period_powermon=POWERMON_FREQ;
+	conf->eard.max_pstate=1;
+	conf->eard.turbo=0;
+	conf->eard.port=DAEMON_PORT_NUMBER;	
+	// EARGM configuration
+	conf->eargm.verbose=1;
+	conf->eargm.t1=DEFAULT_T1;
+	conf->eargm.t2=DEFAULT_T2;
+	conf->eargm.energy=MAX_ENERGY;
+	conf->eargm.port=EARGM_PORT_NUMBER;
 }
 
 /** frees a cluster_conf_t */
@@ -598,35 +584,54 @@ void free_cluster_conf(cluster_conf_t *conf)
 
     free(conf->power_policies);
 
+    memset(conf, 0, sizeof(cluster_conf_t));
+
 }
 
 void print_special_app(special_app_t *app)
 {
-    fprintf(stdout, "--->appname: %s\tuser: %s\t p_state: %u\n",
+    fprintf(stderr, "--->appname: %s\tuser: %s\t p_state: %u\n",
             app->appname, app->user, app->p_state);
+}
+
+void print_eard_conf(eard_conf_t *conf)
+{
+	fprintf(stderr,"--> EARD configuration\n");
+	fprintf(stderr,"\t eard: verbose %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
+	fprintf(stderr,"\t eard: turbo %u port %u\n",conf->turbo,conf->port);
+
+}
+
+void print_eargm_conf(eargm_conf_t *conf)
+{
+	fprintf(stderr,"--> EARGM configuration\n");
+	fprintf(stderr,"\t eargm: verbose %u t1 %lu t2 %lu energy limit %lu port %u\n",conf->verbose,conf->t1,conf->t2,conf->energy,conf->port);
+
 }
 
 void print_cluster_conf(cluster_conf_t *conf)
 {
-    fprintf(stdout, "DIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n", 
+    fprintf(stderr, "DIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n", 
             conf->DB_pathname, conf->Coefficients_pathname, conf->tmp_dir);
-    fprintf(stdout, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %u\n--->Min_time_perf_acc: %u\n",
+    fprintf(stderr, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %u\n--->Min_time_perf_acc: %u\n",
             conf->verbose, conf->default_policy, conf->min_time_perf_acc);
     int i;
-    fprintf(stdout, "\nAVAILABLE POLICIES\n");
+    fprintf(stderr, "\nAVAILABLE POLICIES\n");
     for (i = 0; i < conf->num_policies; i++)
         print_policy_conf(&conf->power_policies[i]);
-    fprintf(stdout, "\nPRIVILEGED USERS\n");
+    fprintf(stderr, "\nPRIVILEGED USERS\n");
     for (i = 0; i < conf->num_priv_users; i++)
-        fprintf(stdout, "--->user: %s\n", conf->priv_users[i]);
-    fprintf(stdout, "\nPRIVILEGED ACCOUNTS\n");
+        fprintf(stderr, "--->user: %s\n", conf->priv_users[i]);
+    fprintf(stderr, "\nPRIVILEGED ACCOUNTS\n");
     for (i = 0; i < conf->num_acc; i++)
-        fprintf(stdout, "--->acc: %s\n", conf->priv_acc[i]);
-    fprintf(stdout, "\nSPECIAL APPLICATIONS\n");
+        fprintf(stderr, "--->acc: %s\n", conf->priv_acc[i]);
+    fprintf(stderr, "\nSPECIAL APPLICATIONS\n");
     for (i = 0; i < conf->num_special; i++)
         print_special_app(&conf->special[i]);
-    fprintf(stdout, "\nNODE CONFIGURATIONS\n");
+    fprintf(stderr, "\nNODE CONFIGURATIONS\n");
     for (i = 0; i < conf->num_nodes; i++)
         print_node_conf(&conf->nodes[i]);
+	print_eard_conf(&conf->eard);
+	print_eargm_conf(&conf->eargm);	
 
 }

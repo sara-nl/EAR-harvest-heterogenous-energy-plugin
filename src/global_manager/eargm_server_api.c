@@ -65,7 +65,7 @@ static char *__NAME__ = "eargm_server_api:";
 
 static  int sfd;
 // based on getaddrinfo man pages
-int create_server_socket()
+int create_server_socket(uint use_port)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -84,7 +84,7 @@ int create_server_socket()
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
 
-	sprintf(buff,"%d",EARGM_PORT_NUMBER);
+	sprintf(buff,"%u",use_port);
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {

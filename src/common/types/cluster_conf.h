@@ -34,12 +34,49 @@
 #include <stdint.h>
 #include <common/config.h>
 #include <common/environment.h>
+#include <common/types/generic.h>
 
 #define GENERIC_NAME 256
 #define USER		64
 #define ACC			64
 
-typedef unsigned int uint;
+/*
+* EARD configuration
+
+/*
+* EARDVerbose=
+* EARDPerdiocPowermon=
+* EARDMaxPstate=
+* EARDTurbo=
+* EARDPort=
+*/
+typedef struct eard_conf
+{
+	uint verbose;			/* default 1 */
+	ulong period_powermon;	/* default 30000000 (30secs) */
+	ulong max_pstate; 		/* default 1 */
+	uint turbo;				/* Fixed to 0 by the moment */
+	uint port;				/* mandatory */
+}eard_conf_t;
+
+/*
+* Global manager configuration
+*/
+
+/*
+* EARGMVerbose=
+* EARGMT1=
+* EARGMT2=
+* EARGMEnergy=
+* EARGMPort=
+*/
+typedef struct eargm_conf{
+	uint 	verbose;		/* default 1 */
+	ulong	t1;				/* default 60 seconds */
+	ulong	t2;				/* default 600 seconds */
+	ulong 	energy;			/* mandatory */
+	uint 	port;			/* mandatory */
+}eargm_conf_t;
 
 typedef struct policy_conf
 {
@@ -65,10 +102,13 @@ typedef struct special_app
 
 typedef struct cluster_conf
 {
-	char DB_pathname[GENERIC_NAME];
+	// Library & common conf
 	char Coefficients_pathname[GENERIC_NAME];
 	char tmp_dir[GENERIC_NAME];
+	char DB_pathname[GENERIC_NAME];
 	uint verbose;
+	eard_conf_t		eard;
+	eargm_conf_t 	eargm;
 	// List of policies	
 	uint num_policies;
 	policy_conf_t *power_policies;
@@ -78,6 +118,7 @@ typedef struct cluster_conf
 	char **priv_users;
 	uint num_acc;
 	char **priv_acc;
+	// Special cases
 	uint num_special;
 	uint min_time_perf_acc;
 	special_app_t	*special;

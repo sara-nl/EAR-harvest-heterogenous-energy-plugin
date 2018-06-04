@@ -44,7 +44,7 @@
 *	The sequence must be : connect +  command + disconnect
 * 	@param the nodename to connect with
 */
-int eargm_connect(char *nodename);
+int eargm_connect(char *nodename,uint use_port);
 
 /** Notifies the EARGM a new job using N nodes will start. It is supposed to be used by the EAR slurm plugin
 */

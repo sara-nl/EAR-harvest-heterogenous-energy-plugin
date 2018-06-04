@@ -29,11 +29,12 @@
 
 #include <mysql/mysql.h>
 #include <common/config.h>
+#include <common/types/log.h>
 #include <common/types/job.h>
 #include <common/types/loop.h>
 #include <common/types/signature.h>
+#include <common/types/gm_warning.h>
 #include <common/types/application.h>
-#include <common/types/log.h>
 #if SHARED_MEMORY
 #include <common/types/periodic_metric.h>
 #include <common/types/power_signature.h>
@@ -101,6 +102,14 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met);
 *   periodic_metrics into the database. Returns EAR_SUCCESS on success, and either
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. */
 int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **per_mets, int num_mets);
-
-int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
 #endif
+
+/** Given a MYSQL connection and an EAR event, inserts said event into
+*   the database. Returns the event's database id on success, and either 
+*   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
+
+/** Given a MYSQL connection and an global manager warning, inserts said 
+*   warning into the database. Returns EAR_SUCCESS on success, and either 
+*   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning);
