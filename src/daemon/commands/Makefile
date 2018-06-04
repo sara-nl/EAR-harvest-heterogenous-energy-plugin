@@ -15,18 +15,13 @@ HEADERS = $(SRCDIR)/common/config.h \
 
 BINARIES = ear_set_node_freq \
            ear_get_node_freq \
-		   ear_set_ondemand 
-		
-
-ifdef FEAT_SHRMEM
-BINARIES += ear_new_job \
-            ear_end_job \
-			ear_set_freq \
-			ear_red_freq \
-			ear_inc_th \
-			ear_set_th
-
-endif
+		   ear_set_ondemand \
+		   ear_new_job \
+           ear_end_job \
+           ear_set_freq \
+           ear_red_freq \
+           ear_inc_th \
+           ear_set_th
 
 ######## RULES
 

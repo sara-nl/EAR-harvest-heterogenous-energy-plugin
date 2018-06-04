@@ -117,12 +117,10 @@ int eards_connect(application_t *my_app)
 		ear_fd_req[i]=-1;
 		ear_fd_ack[i]=-1;
 	}
-	#if !SHARED_MEMORY
-	req.req_data.req_value=getpid();
-	#else
+
 	copy_application(&req.req_data.app,my_app);
-	#endif
-	// We create a single ID 
+
+	// We create a single ID
 	my_id=create_ID(my_app->job.id,my_app->job.step_id);
 	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)

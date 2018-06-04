@@ -7,19 +7,18 @@ export DIR
 
 ######## FILES
 
-COMMON_OBJS = 
-OBJS =
-HEADERS =
-
 ifdef DB_BASE
 COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
                $(SRCDIR)/common/database/mysql_io_functions.o \
                $(SRCDIR)/common/string_enhanced.o
 endif
 
-ifdef FEAT_SHRMEM
 COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a \
-               $(SRCDIR)/database_daemon/eardbd_api.o
+               $(SRCDIR)/metrics/metrics.a \
+               $(SRCDIR)/database_daemon/eardbd_api.o \
+               $(SRCDIR)/control/frequency.o \
+               $(SRCDIR)/common/environment_common.o \
+               $(SRCDIR)/common/types.a
 
 OBJS += dynamic_configuration.o \
         shared_configuration.o \
@@ -31,15 +30,8 @@ EARD_API= eard_api.o \
 
 HEADERS += $(SRCDIR)/daemon/eard_conf_rapi.h \
            $(SRCDIR)/daemon/shared_configuration.h \
-           $(SRCDIR)/metrics/power_monitoring/ear_power_monitor.h
-endif
-
-COMMON_OBJS += $(SRCDIR)/metrics/metrics.a \
-               $(SRCDIR)/control/frequency.o \
-               $(SRCDIR)/common/environment_common.o \
-               $(SRCDIR)/common/types.a 
-
-HEADERS += $(SRCDIR)/daemon/eard_conf_api.h \
+           $(SRCDIR)/metrics/power_monitoring/ear_power_monitor.h \
+           $(SRCDIR)/daemon/eard_conf_api.h \
            $(SRCDIR)/common/ear_verbose.h \
            $(SRCDIR)/common/states.h \
            $(SRCDIR)/common/config.h

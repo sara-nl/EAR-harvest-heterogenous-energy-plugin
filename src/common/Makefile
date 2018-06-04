@@ -38,12 +38,6 @@ BINARIES = environment.o \
            file_lock.o \
 		   types.a
 
-ifdef FEAT_SHRMEM
-BINARIES += 
-
-HEADERS += 
-endif
-
 ifdef DB_BASE
 BINARIES += database/db_helper.o \
             database/mysql_io_functions.o

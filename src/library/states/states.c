@@ -174,9 +174,6 @@ static void report_loop_signature(uint iterations,loop_t *my_loop)
 	#if DB_MYSQL
     eards_write_loop_signature(my_loop);
     #endif
-
-	
-	
 }
 
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
@@ -189,7 +186,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 	prev_f = ear_frequency;
 
-	#if SHARED_MEMORY
 	if (system_conf!=NULL){
 	if (system_conf->force_rescheduling){
 		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
@@ -207,7 +203,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		tries_current_loop=0;
 	}
 	}
-	#endif
 
 	switch (EAR_STATE)
 	{

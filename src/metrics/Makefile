@@ -1,4 +1,5 @@
 CFLAGS  = -fPIC -shared
+
 ######## FILES
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
@@ -18,10 +19,8 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
 
 COMPONENTS = custom \
              ipmi \
-             papi
-ifdef FEAT_SHRMEM
-COMPONENTS += power_monitoring
-endif
+             papi \
+             power_monitoring
 
 ######## RULES
 

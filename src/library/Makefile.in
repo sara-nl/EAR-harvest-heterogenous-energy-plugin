@@ -22,11 +22,8 @@ COMMON_OBJS = $(SRCDIR)/daemon/eard_api.o \
               $(SRCDIR)/common/file_lock.o \
               $(SRCDIR)/common/environment.o \
               $(SRCDIR)/common/math_operations.o \
-              $(SRCDIR)/common/types.a
-
-ifdef FEAT_SHRMEM
-COMMON_OBJS += $(SRCDIR)/daemon/shared_configuration.o
-endif
+              $(SRCDIR)/common/types.a \
+              $(SRCDIR)/daemon/shared_configuration.o
 
 OUTER_OBJS = $(COMMON_OBJS) $(METRICS_OBJS)
 

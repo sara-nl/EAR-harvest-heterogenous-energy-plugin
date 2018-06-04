@@ -175,7 +175,6 @@ int db_insert_loop(loop_t *loop)
     return EAR_SUCCESS;
 }
 
-#if SHARED_MEMORY
 int db_insert_power_signature(power_signature_t *pow_sig)
 {
     MYSQL *connection = mysql_init(NULL);
@@ -286,8 +285,6 @@ int db_batch_insert_periodic_metrics(periodic_metric_t **per_mets, int num_mets)
 
     return EAR_SUCCESS;
 }
-
-#endif
 
 int db_insert_ear_event(ear_event_t *ear_ev)
 {
