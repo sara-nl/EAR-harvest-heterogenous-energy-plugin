@@ -49,7 +49,7 @@ component-installs:
 	done
 
 other-installs:
-	mv libear_metrics.so $(DESTDIR)/lib/libear_metrics.so
+	mv libmetrics.so $(DESTDIR)/lib/libmetrics.so
 	cp metrics.h $(DESTDIR)/include/metrics
 
 clean:

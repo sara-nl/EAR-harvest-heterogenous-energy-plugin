@@ -18,14 +18,13 @@ HEADERS     = $(SRCDIR)/common/config.h \
               $(SRCDIR)/common/states.h
 
 ######## FILES
-
 		
 ifdef DB_BASE
 BINARIES = ereport 
+
 SBINARIES += ear_create_database \
              ear_energy_over_time \
              ear_store_database
-
 endif
 
 ######## RULES
@@ -38,7 +37,6 @@ ear_control: ear_control.c $(REMOTE_OBJS)
 ereport: ear_report.c $(DB_OBJS) $(TYPES_OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ereport ear_report.c $(DB_LDFLAGS) $(DB_OBJS) $(TYPES_OBJS)
 
-
 ear_create_database: ear_create_database.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
 
@@ -48,12 +46,13 @@ ear_energy_over_time: ear_energy_over_time.c $(HEADERS)
 ear_store_database: ear_store_database.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_store_database ear_store_database.c $(DB_LDFLAGS)
 
-
 ######## OPTIONS
 
 install:
-	@ cp $(BINARIES) $(DESTDIR)/bin
-	@ cp $(SBINARIES) $(DESTDIR)/sbin
+ifdef DB_BASE
+	@ cp $(BINARIES) $(DESTDIR)/bin/
+	@ cp $(SBINARIES) $(DESTDIR)/sbin/
+endif
 
 clean:
 	rm -rf $(BINARIES) $(SBINARIES)

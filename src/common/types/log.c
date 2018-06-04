@@ -27,9 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
-
 /*
 typedef struct ear_event{
 	job_id jid,step_id;
@@ -41,6 +38,7 @@ typedef struct ear_event{
 #define GLOBAL_ENERGY_POLICY	1
 #define ENERGY_POLICY_FAILS		2
 */
+
 #include <time.h>
 #include <string.h>
 #include <unistd.h>

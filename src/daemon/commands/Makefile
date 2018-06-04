@@ -60,4 +60,4 @@ install:
 	cp $(BINARIES) $(DESTDIR)/bin
 
 clean:
-	rm -rf $(BINARIES)
+	rm -f $(BINARIES)

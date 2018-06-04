@@ -59,7 +59,6 @@ all: $(BINARIES)
 file_lock.o: file_lock.c file_lock.h
 	$(CC) $(CFLAGS) -c file_lock.c
 
-
 environment.o: environment.c environment.h environment_common.h
 	$(CC) $(CFLAGS) -c environment.c
 
@@ -79,9 +78,8 @@ types.a: $(TYPES_OBJS) string_enhanced.o math_operations.o $(HEADERS)
 
 install:
 	mkdir -p $(DESTDIR)/include/common
-	cp eards_api.h $(DESTDIR)/include
 	cp states.h $(DESTDIR)/include/common
 
 clean:
 	rm $(BINARIES) $(TYPES_OBJS) || true
-	rm -rf *.o *.so *.a
+	rm -f *.o *.so *.a

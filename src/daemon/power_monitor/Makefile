@@ -36,8 +36,8 @@ install: install-others
 	cp libpowermon.so $(DESTDIR)/lib
 
 install-others:
-	mkdir -p $(DESTDIR)/include/daemon/power_monitoring
-	cp ear_power_monitor.h $(DESTDIR)/include/daemon/power_monitoring
+	mkdir -p $(DESTDIR)/include/daemon/power_monitor
+	cp power_monitor.h $(DESTDIR)/include/daemon/power_monitor
 
 clean:
 	rm -f *.so *.a *.o

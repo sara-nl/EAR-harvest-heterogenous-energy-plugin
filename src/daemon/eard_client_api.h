@@ -32,7 +32,7 @@
 
 #include <common/types/generic.h>
 #include <common/types/log.h>
-#include <daemon/eard_conf_api.h>
+#include <daemon/eard_api_conf.h>
 
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
 int eards_connect();

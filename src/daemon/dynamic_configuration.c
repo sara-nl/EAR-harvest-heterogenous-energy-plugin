@@ -46,15 +46,14 @@
 #include <netdb.h>
 
 #include <control/frequency.h>
-#include <common/types/job.h>
+#include <daemon/eard_server_api.h>
+#include <daemon/eard_command_api_conf.h>
+#include <daemon/shared_configuration.h>
+#include <daemon/power_monitor/power_monitor_api.h>
 #include <common/ear_verbose.h>
+#include <common/types/job.h>
 #include <common/states.h>
 #include <common/config.h>
-#include <daemon/power_monitoring.h>
-#include <daemon/eard_server_api.h>
-#include <daemon/shared_configuration.h>
-#include <daemon/eard_conf_rapi.h>
-
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;

@@ -16,18 +16,19 @@ endif
 COMMON_OBJS += $(SRCDIR)/common/environment_common.o \
                $(SRCDIR)/common/types.a
 
-OUTER_OBJS += $(SRCDIR)/control/frequency.o \
+OUTER_OBJS += $(SRCDIR)/database_cache/eardbd_api.o \
               $(SRCDIR)/metrics/libmetrics.a \
-              $(SRCDIR)/database_daemon/eardbd_api.o
+              $(SRCDIR)/control/frequency.o
 
 OBJS += power_monitor/libpowermon.a \
         dynamic_configuration.o \
         shared_configuration.o \
+        eard_client_api.o \
         eard_server_api.o
 
-HEADERS += $(SRCDIR)/daemon/eard_conf_rapi.h \
+HEADERS += $(SRCDIR)/daemon/eard_api_conf.h \
+           $(SRCDIR)/daemon/eard_command_api_conf.h \
            $(SRCDIR)/daemon/shared_configuration.h \
-           $(SRCDIR)/daemon/eard_conf_api.h \
            $(SRCDIR)/common/ear_verbose.h \
            $(SRCDIR)/common/states.h \
            $(SRCDIR)/common/config.h
@@ -39,14 +40,18 @@ BINARIES = eard_client_api.o \
 
 ######## RULES
 
-all: all-subfolders $(BINARIES)
+.PHONY: commands
 
-all-subfolders:
+all: components $(BINARIES) commands
+
+components:
 	$(MAKE) -C power_monitor all
+
+commands:
 	$(MAKE) -C commands all
 
-eard: eard.c $(OBJS) $(COMMON_OBJS) $(HEADERS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(OBJS) $(COMMON_OBJS) $(LDFLAGS) $(DB_LDFLAGS)
+eard: eard.c $(OBJS) $(COMMON_OBJS) $(OUTER_OBJS) $(HEADERS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(OBJS) $(COMMON_OBJS) $(OUTER_OBJS) $(LDFLAGS) $(DB_LDFLAGS)
 
 dynamic_configuration.o: dynamic_configuration.c $(HEADERS) eard_server_api.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c

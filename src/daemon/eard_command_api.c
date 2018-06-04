@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -38,10 +36,10 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include <daemon/eard_conf_rapi.h>
-#include <common/states.h>
+#include <daemon/eard_command_api_conf.h>
 #include <common/ear_verbose.h>
 #include <common/types/job.h>
+#include <common/states.h>
 
 // Verbosity
 static const char *__NAME__ = "eards_rem_api";

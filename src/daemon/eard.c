@@ -34,17 +34,22 @@
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
+#include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/select.h>
 #include <linux/limits.h>
 
-#include <common/config.h>
 #include <control/frequency.h>
 #include <metrics/ipmi/energy_node.h>
 #include <metrics/custom/bandwidth.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/papi/energy_cpu.h>
+#include <daemon/power_monitor/power_monitor_api.h>
+#include <daemon/dynamic_configuration.h>
+#include <daemon/shared_configuration.h>
+#include <daemon/eard_api_conf.h>
+#include <common/types/cluster_conf.h>
 #include <common/types/generic.h>
 #include <common/types/job.h>
 #include <common/types/log.h>
@@ -52,13 +57,7 @@
 #include <common/environment.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
-#include <daemon/eard_conf_api.h>
-
-#include <common/types/cluster_conf.h>
-#include <pthread.h>
-#include <daemon/power_monitoring.h>
-#include <daemon/shared_configuration.h>
-#include <daemon/dynamic_configuration.h>
+#include <common/config.h>
 
 unsigned int power_mon_freq = POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads

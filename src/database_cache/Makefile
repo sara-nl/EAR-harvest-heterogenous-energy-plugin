@@ -8,7 +8,7 @@ eardbd_api.o:
 	$(CC) $(CFLAGS) -c eardbd_api.c
 
 client_api_test:
-	$(CC) $(CFLAGS) -o client_api_test test/client_api_test.c eardbd_api.o
+	$(CC) $(CFLAGS) -o client_api_test tests/client_api_test.c eardbd_api.o
 
 eardbd:
 	$(CC) $(CFLAGS) -o eardbd eardbd.c

@@ -28,23 +28,23 @@
 */
 
 #include <time.h>
+#include <errno.h>
 #include <stdio.h>
+#include <fcntl.h>
+#include <float.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <float.h>
-#include <errno.h>
-#include <signal.h>
 #include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <control/frequency.h>
-#include <daemon/power_monitoring.h>
+#include <database_cache/eardbd_api.h>
 #include <daemon/shared_configuration.h>
-#include <daemon/power_monitoring/ear_power_monitor.h>
-#include <database_cache/eardbd_api/eardbd_api.h>
+#include <daemon/power_monitor/power_monitor.h>
+#include <daemon/power_monitor/power_monitor_api.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
 #include <common/types/cluster_conf.h>
