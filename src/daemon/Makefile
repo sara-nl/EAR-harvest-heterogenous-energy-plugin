@@ -14,19 +14,20 @@ HEADERS =
 ifdef DB_BASE
 COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
                $(SRCDIR)/common/database/mysql_io_functions.o \
-			   $(SRCDIR)/common/string_enhanced.o
+               $(SRCDIR)/common/string_enhanced.o
 endif
 
 ifdef FEAT_SHRMEM
-COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a 
+COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a \
+               $(SRCDIR)/database_daemon/eardbd_api.o
 
 OBJS += dynamic_configuration.o \
+        shared_configuration.o \
         power_monitoring.o \
-	    eard_server_api.o \
-	    shared_configuration.o
+        eard_server_api.o \
 
 EARD_API= eard_api.o \
-		  eard_rapi.o
+          eard_rapi.o
 
 HEADERS += $(SRCDIR)/daemon/eard_conf_rapi.h \
            $(SRCDIR)/daemon/shared_configuration.h \
@@ -34,7 +35,7 @@ HEADERS += $(SRCDIR)/daemon/eard_conf_rapi.h \
 endif
 
 COMMON_OBJS += $(SRCDIR)/metrics/metrics.a \
-	           $(SRCDIR)/control/frequency.o \
+               $(SRCDIR)/control/frequency.o \
                $(SRCDIR)/common/environment_common.o \
                $(SRCDIR)/common/types.a 
 

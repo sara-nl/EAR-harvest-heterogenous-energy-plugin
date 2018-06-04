@@ -132,15 +132,15 @@ static void make_periodic_aggregation(periodic_metric_t *met)
 		aggr.start_time = met->start_time;
 	}
 
-	if (met->start_time == 0) {
+	if (aggr.start_time == 0) {
 		aggr.start_time = met->start_time;
 	}
 }
 
 static void process_timeout_data()
 {
-	verbose("Finished aggregation, consumed %lu energy from %lu to %lu,",
-			aggr.DC_energy, aggr.start_time, aggr.end_time)
+	verbose("Finished aggregation, consumed %lu energy (?J) from %lu to %lu,",
+			aggr.DC_energy, aggr.start_time, aggr.end_time);
 
 	aggr.start_time = 0;
 	aggr.n_samples  = 0;
@@ -171,6 +171,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 		type = "periodic_metric_t";
 
 		memcpy (&mets[mets_i], buffer, size);
+		make_periodic_aggregation(&mets[mets_i]);
 		mets_i += 1;
 
 		if (mets_i == mets_len)
@@ -178,7 +179,8 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 			//database_store();
 			mets_i = 0;
 		}
-	} else {
+	}
+	else {
 		type = "unknown";
 	}
 
@@ -389,16 +391,18 @@ int main(int argc, char **argv)
 	while(1)
 	{
 		fds_incoming = fds_active;
-		timeout.tv_sec = merge_time;
-		timeout.tv_usec = 0L;
 
 		if (select(fd_srv_max + 1, &fds_incoming, NULL, NULL, &timeout) == -1) {
 			error("select");
 		}
 
 		// If timeout, data processing
-		if (timeout.tv_sec == 0 && timeout.tv_usec == 0) {
+		if (timeout.tv_sec == 0 && timeout.tv_usec == 0)
+		{
 			process_timeout_data();
+		
+			timeout.tv_sec = merge_time;
+			timeout.tv_usec = 0L;
 		}
 
 		// run through the existing connections looking for data to read

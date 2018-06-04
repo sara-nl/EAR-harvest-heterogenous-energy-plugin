@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,15 +41,16 @@
 #include <pthread.h>
 
 #include <control/frequency.h>
+#include <daemon/power_monitoring.h>
+#include <daemon/shared_configuration.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
+#include <database_daemon/client_api/eardbd_api.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
 #include <common/types/cluster_conf.h>
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 #include <common/config.h>
-#include <daemon/power_monitoring.h>
-#include <daemon/shared_configuration.h>
 
 #if DB_MYSQL
 #include <common/database/db_helper.h>
@@ -286,19 +285,22 @@ void powermon_red_freq(ulong max_freq,ulong def_freq)
 	}
 }
 
-
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 {
-	VERBOSE_N(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf\n",current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,current_ear_app.app.power_sig.max_DC_power,
-		current_ear_app.app.power_sig.min_DC_power);
+	VERBOSE_N(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf\n",
+		current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,
+		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power);
+	
 	while (pthread_mutex_trylock(&app_lock));
+	
 	if (current_ear_app.app.job.id>0){
 		if (my_current_power->avg_dc>current_ear_app.app.power_sig.max_DC_power) 
 			current_ear_app.app.power_sig.max_DC_power=my_current_power->avg_dc;
 		if (my_current_power->avg_dc<current_ear_app.app.power_sig.min_DC_power)
 			current_ear_app.app.power_sig.min_DC_power=my_current_power->avg_dc;
 	}
+
 	pthread_mutex_unlock(&app_lock);
 		
     report_periodic_power(fd_periodic, my_current_power);
@@ -306,20 +308,21 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	current_sample.start_time=my_current_power->begin;
 	current_sample.end_time=my_current_power->end;
 	current_sample.DC_energy=my_current_power->avg_dc*(ulong)difftime(my_current_power->end,my_current_power->begin);
+	
 	#if DEMO
 	current_sample.avg_f=avg_f;
 	#endif	
 
-#if DB_MYSQL
+	#if DB_MYSQL
 	/* current sample reports the value of job_id and step_id active at this moment */
 	/* If we want to be strict, we must report intermediate samples at job start and job end */
     if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
-#endif
+	#endif
+
+	eardbd_send_periodic_metric(&current_sample);
 
 	return;
 }
-
-
 
 void create_powermon_out()
 {
@@ -395,24 +398,35 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	// Get time and Energy
 	read_enegy_data(&e_begin);
 	aperf_periodic_avg_frequency_init_all_cpus();
+
+	// Database cache daemon
+	eardbd_connect("cae2306.hpc.eu.lenovo.com", UDP);
+
 	while(!eard_must_exit)
 	{
 		// Wait for N usecs
 		usleep(f_monitoring);
+		
 		// Get time and Energy
 		read_enegy_data(&e_end);
 		avg_f=aperf_periodic_avg_frequency_end_all_cpus();
+		
 		// Compute the power
 		compute_power(&e_begin,&e_end,&my_current_power);
+		
 		// Save current power
 		update_historic_info(&my_current_power,avg_f);
 
 
 		// Set values for next iteration
 		copy_energy_data(&e_begin,&e_end);
+		
 		t_begin=t_end;
-
 	}
+
+	// Database cache daemon disconnect
+	eardbd_disconnect();
+
 	pthread_exit(0);
 	//exit(0);
 }
