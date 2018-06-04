@@ -45,9 +45,11 @@ void eards_disconnect();
 *   and on success returns 0 and fills the array given by parameter with the
 *   counters' values. */
 int eards_read_rapl(unsigned long long *values);
+
 /** Sends the request to start the RAPL counters. Returns 0 on success or if
 *   the application is not connected, -1 if there's an error. */
 int eards_start_rapl();
+
 /** Sends the request to reset the RAPL counters. Returns 0 on success or if
 *    the application is not connected, -1 if there's an error. */
 int eards_reset_rapl();
@@ -55,6 +57,7 @@ int eards_reset_rapl();
 /** Requests the rapl data size. Returns -1 if there's an error, and the
 *   actual value otherwise. */
 unsigned long eards_get_data_size_rapl();
+
 /** Requests the IPMI data size. Returns -1 if there's an error, and the
 *   actual value otherwise. */
 unsigned long eards_node_energy_data_size();

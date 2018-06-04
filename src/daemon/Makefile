@@ -13,64 +13,68 @@ COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
                $(SRCDIR)/common/string_enhanced.o
 endif
 
-COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a \
-               $(SRCDIR)/metrics/metrics.a \
-               $(SRCDIR)/database_daemon/eardbd_api.o \
-               $(SRCDIR)/control/frequency.o \
-               $(SRCDIR)/common/environment_common.o \
+COMMON_OBJS += $(SRCDIR)/common/environment_common.o \
                $(SRCDIR)/common/types.a
 
-OBJS += dynamic_configuration.o \
-        shared_configuration.o \
-        power_monitoring.o \
-        eard_server_api.o \
+OUTER_OBJS += $(SRCDIR)/control/frequency.o \
+              $(SRCDIR)/metrics/libmetrics.a \
+              $(SRCDIR)/database_daemon/eardbd_api.o
 
-EARD_API= eard_api.o \
-          eard_rapi.o
+OBJS += power_monitor/libpowermon.a \
+        dynamic_configuration.o \
+        shared_configuration.o \
+        eard_server_api.o
 
 HEADERS += $(SRCDIR)/daemon/eard_conf_rapi.h \
            $(SRCDIR)/daemon/shared_configuration.h \
-           $(SRCDIR)/metrics/power_monitoring/ear_power_monitor.h \
            $(SRCDIR)/daemon/eard_conf_api.h \
            $(SRCDIR)/common/ear_verbose.h \
            $(SRCDIR)/common/states.h \
            $(SRCDIR)/common/config.h
 
-BINARIES = eard
+BINARIES = eard_client_api.o \
+           eard_server_api.o \
+           eard_command_api.o \
+           eard
 
 ######## RULES
 
-all: eard $(EARD_API) 
+all: all-subfolders $(BINARIES)
+
+all-subfolders:
+	$(MAKE) -C power_monitor all
 	$(MAKE) -C commands all
 
-eard: ear_daemon.c $(OBJS) $(COMMON_OBJS) $(HEADERS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard ear_daemon.c $(OBJS) $(COMMON_OBJS) $(LDFLAGS) $(DB_LDFLAGS)
+eard: eard.c $(OBJS) $(COMMON_OBJS) $(HEADERS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(OBJS) $(COMMON_OBJS) $(LDFLAGS) $(DB_LDFLAGS)
 
-dynamic_configuration.o: dynamic_configuration.c power_monitoring.h $(HEADERS) eard_server_api.h
+dynamic_configuration.o: dynamic_configuration.c $(HEADERS) eard_server_api.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
-
-power_monitoring.o: power_monitoring.c power_monitoring.h $(HEADERS)
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitoring.c
-
-eard_server_api.o:eard_server_api.c eard_server_api.h
-	$(CC) $(CFLAGS) -c eard_server_api.c
-
-eard_api.o:eard_api.c eard_api.h eard_conf_api.h
-	$(CC) -fPIC $(CFLAGS) -c eard_api.c
-
-eard_rapi.o:eard_rapi.c eard_rapi.h eard_conf_rapi.h
-	$(CC) -fPIC $(CFLAGS) -c eard_rapi.c 
 
 shared_configuration.o: shared_configuration.c shared_configuration.h $(HEADERS)
 	$(CC) -fPIC $(CFLAGS) -c shared_configuration.c
 
+eard_server_api.o: eard_server_api.c eard_server_api.h
+	$(CC) $(CFLAGS) -c eard_server_api.c
+
+eard_client_api.o: eard_client_api.c eard_client_api.h eard_api_conf.h
+	$(CC) -fPIC $(CFLAGS) -c eard_client_api.c
+
+eard_command_api.o: eard_command_api.c eard_command_api.h eard_api_conf.h
+	$(CC) -fPIC $(CFLAGS) -c eard_command_api.c
 
 ######## OPTIONS
 
-install:
+install: install-subfolders
 	mv eard $(DESTDIR)/sbin
+
+install-subfolders:
 	$(MAKE) -C commands install
+	$(MAKE) -C power_monitor install
 
 clean:
 	rm -f *.o *.a *.so
+
+clean-subfolders:
 	$(MAKE) -C commands clean
+	$(MAKE) -C power_monitor clean

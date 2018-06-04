@@ -43,8 +43,8 @@
 #include <control/frequency.h>
 #include <daemon/power_monitoring.h>
 #include <daemon/shared_configuration.h>
-#include <metrics/power_monitoring/ear_power_monitor.h>
-#include <database_daemon/client_api/eardbd_api.h>
+#include <daemon/power_monitoring/ear_power_monitor.h>
+#include <database_cache/eardbd_api/eardbd_api.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
 #include <common/types/cluster_conf.h>

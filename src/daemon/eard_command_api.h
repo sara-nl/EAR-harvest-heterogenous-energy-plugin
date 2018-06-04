@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 /**
 *    \file remote_daemon_client.h
 *    \brief This file defines the client side of the remote EAR API
@@ -36,26 +34,44 @@
 * 	 Note:Specific functions could be substituted by a generic function passing a local_config_t
 */
 
-#ifndef _EARGM_API_H
-#define _EARGM_API_H
+#ifndef _REMOTE_CLIENT_API_H
+#define _REMOTE_CLIENT_API_H
 
+#include <common/config.h>
+#include <common/types/application.h>
 
-/** Connects with the EARGM.
+/** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
 * 	@param the nodename to connect with
 */
-int eargm_connect(char *nodename,uint use_port);
+int eards_remote_connect(char *nodename);
 
-/** Notifies the EARGM a new job using N nodes will start. It is supposed to be used by the EAR slurm plugin
+/** Notifies the EARD the job with job_id starts the execution. It is supposed to be used by the EAR slurm plugin
 */
-int eargm_new_job(uint num_nodes);
+int eards_new_job(application_t *new_job);
 
-/** Notifies the EARGM  a job using N nodes is finishing
+/** Notifies the EARD the job with job_id ends the execution. It is supposed to be used by the EAR slurm plugin
 */
-int eargm_end_job(uint num_nodes);
+int eards_end_job(job_id jid,job_id sid);
 
-/** Disconnect from the previously connected EARGM
+/**  Sets freq as the frequency to be used in the node where the API is connected with
 */
-int eargm_disconnect();
+int eards_set_freq(ulong freq);
+
+/**  Reduce the maximum freq by the given number of p_states
+*/
+int eards_red_max_freq(uint p_states);
+
+/** Sets th as the new threashold to be used by the policy. New th must be passed as % th=0.75 --> 75. It is designed to be used by the min_time_to_solution policy
+*/
+int eards_set_th(ulong th);
+
+/** Increases the current threshold by th units.New th must be passed as % th=0.05 --> 5. It is designed to be used by the min_time_to_solution policy
+*/
+int eards_inc_th(ulong th);
+
+/** Disconnect from the previously connected EARD
+*/
+int eards_remote_disconnect();
 
 #endif

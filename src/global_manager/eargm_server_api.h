@@ -27,18 +27,15 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
 #ifndef _EARGM_SERVER_API_H
 #define _EARGM_SERVER_API_H
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/socket.h>
+
+#include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <netdb.h>
-
+#include <sys/socket.h>
+#include <sys/select.h>
 #include <global_manager/eargm_conf_api.h>
-
 
 int create_server_socket(uint use_port);
 int wait_for_client(int sockfd,struct sockaddr_in *client);

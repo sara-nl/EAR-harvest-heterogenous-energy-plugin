@@ -20,19 +20,18 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
 COMPONENTS = custom \
              ipmi \
              papi \
-             power_monitoring
 
 ######## RULES
 
-all: components metrics.a libmetrics.so
+all: components libmetrics.a libmetrics.so
 
 components:
 	@ for i in $(COMPONENTS); do \
 		$(MAKE) -C $${i} all || exit; \
 	done
 
-metrics.a: $(METRICS_OBJS)
-	ar rvs metrics.a $(METRICS_OBJS)
+libmetrics.a: $(METRICS_OBJS)
+	ar rvs libmetrics.a $(METRICS_OBJS)
 
 libmetrics.so: $(METRICS_OBJS)
 	$(CC) $(CFLAGS) -o libmetrics.so $(METRICS_OBJS)
@@ -52,7 +51,6 @@ component-installs:
 other-installs:
 	mv libear_metrics.so $(DESTDIR)/lib/libear_metrics.so
 	cp metrics.h $(DESTDIR)/include/metrics
-	$(MAKE) -C power_monitoring install
 
 clean:
 	@ for i in $(COMPONENTS); do \

@@ -5,10 +5,10 @@ CFLAGS  = -I$(SRCDIR) $(CONSTANTS)
 all: eardbd_api.o client_api_test eardbd
 
 eardbd_api.o:
-	$(CC) $(CFLAGS) -c client_api/eardbd_api.c
+	$(CC) $(CFLAGS) -c eardbd_api.c
 
 client_api_test:
-	$(CC) $(CFLAGS) -o client_api_test client_api_test.c eardbd_api.o
+	$(CC) $(CFLAGS) -o client_api_test test/client_api_test.c eardbd_api.o
 
 eardbd:
 	$(CC) $(CFLAGS) -o eardbd eardbd.c

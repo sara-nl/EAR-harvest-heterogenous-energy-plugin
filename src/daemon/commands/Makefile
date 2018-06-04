@@ -6,7 +6,7 @@ LDFLAGS   =
 FREQ_OBJS = $(SRCDIR)/metrics/papi/generics.o \
             $(SRCDIR)/control/frequency.o
 
-REMOTE_OBJS = $(SRCDIR)/daemon/eard_rapi.o
+REMOTE_OBJS = $(SRCDIR)/daemon/eard_command_api.o
 
 TYPES_OBJS = $(SRCDIR)/common/types.a
 
@@ -27,7 +27,6 @@ BINARIES = ear_set_node_freq \
 
 all: $(BINARIES)
 
-
 ear_set_node_freq: ear_set_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_set_node_freq ear_set_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
@@ -36,7 +35,6 @@ ear_set_ondemand: ear_set_ondemand.c $(FREQ_OBJS)
 
 ear_get_node_freq: ear_get_node_freq.c $(FREQ_OBJS)
 	$(CC) $(CFLAGS) -o ear_get_node_freq ear_get_node_freq.c $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
-
 
 ear_new_job: ear_new_job.c $(REMOTE_OBJS) $(TYPES_OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o ear_new_job ear_new_job.c  $(REMOTE_OBJS) $(TYPES_OBJS)
@@ -55,7 +53,6 @@ ear_set_th: ear_set_th.c $(REMOTE_OBJS) $(TYPES_OBJS) $(HEADERS)
 
 ear_end_job: ear_end_job.c $(REMOTE_OBJS) $(TYPES_OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o ear_end_job ear_end_job.c $(REMOTE_OBJS) $(TYPES_OBJS)
-
 
 ######## OPTIONS
 

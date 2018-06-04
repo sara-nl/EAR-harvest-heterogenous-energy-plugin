@@ -6,7 +6,7 @@ LDFLAGS   =
 FREQ_OBJS   = $(SRCDIR)/metrics/papi/generics.o \
               $(SRCDIR)/control/frequency.o
 
-REMOTE_OBJS = $(SRCDIR)/daemon/eard_rapi.o
+REMOTE_OBJS = $(SRCDIR)/daemon/eard_command_api.o
 
 TYPES_OBJS  = $(SRCDIR)/common/types.a
 

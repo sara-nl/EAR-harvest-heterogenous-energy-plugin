@@ -38,7 +38,7 @@
 #include <common/math_operations.h>
 
 // eards_api is the ear daemon public api to be used by external apps
-#include <metrics/power_monitoring/ear_power_monitor.h>
+#include <daemon/power_monitoring/ear_power_monitor.h>
 #include <common/eards_api.h>
 
 uint8_t power_mon_connected=0; 

@@ -41,7 +41,7 @@
 #include <library/common/externs.h>
 #include <library/models/models.h>
 #include <library/models/sig_projections.h>
-#include <daemon/eard_api.h>
+#include <daemon/eard_client_api.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
 #include <common/types/signature.h>

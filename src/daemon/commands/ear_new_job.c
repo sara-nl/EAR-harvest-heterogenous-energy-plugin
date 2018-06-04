@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <common/config.h>
-#include <daemon/eard_rapi.h>
+#include <daemon/eard_command_api.h>
 
 #define NAME_SIZE 128
 int EAR_VERBOSE_LEVEL=1;

@@ -27,7 +27,7 @@ NODE_ENERGY_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.o \
 		    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
 			$(SRCDIR)/metrics/ipmi/energy_node/lenovo_ina226.o
 
-POWERMONLIB = $(SRCDIR)/metrics/power_monitoring/libpowermon.a
+POWERMONLIB = $(SRCDIR)/daemon/power_monitoring/libpowermon.a
 
 BINARIES = bandwith_monitor \
            eard_monitor \
@@ -45,8 +45,8 @@ all: $(BINARIES)
 bandwith_monitor: bandwith_monitor.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 	$(CC) $(CFLAGS) -o bandwith_monitor bandwith_monitor.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
 
-eard_monitor: eard_monitor.c $(SRCDIR)/daemon/eard_api.o $(TYPES)
-	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c $(SRCDIR)/daemon/eard_api.o $(TYPES)
+eard_monitor: eard_monitor.c $(SRCDIR)/daemon/eard_client_api.o $(TYPES)
+	$(CC) $(CFLAGS) -o eard_monitor eard_monitor.c $(SRCDIR)/daemon/eard_client_api.o $(TYPES)
 
 freeipmi_overhead: freeipmi_overhead.c $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 	$(CC) $(CFLAGS) -o freeipmi_overhead freeipmi_overhead.c $(IPMI_LDFLAGS) $(PAPI_LDFLAGS) \

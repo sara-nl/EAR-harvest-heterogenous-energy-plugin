@@ -40,7 +40,7 @@
 #include <sys/types.h>
 
 #include <common/ear_verbose.h>
-#include <daemon/eard_api.h>
+#include <daemon/eard_client_api.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/states.h>

@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <daemon/eard_rapi.h>
+#include <daemon/eard_command_api.h>
 
 void usage(char *app)
 {

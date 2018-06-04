@@ -27,10 +27,24 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _EARD_CONSTANT_H_
-#define _EARD_CONSTANT_H_
+/**
+*    \file remote_daemon_client.h
+*    \brief This file defines the client side of the remote EAR API
+*
+* 	 Note:Specific functions could be substituted by a generic function passing a local_config_t
+*/
 
-#define EARDS_RAPL 	0
-#define POWERMON_RAPL	1
+#ifndef _EARGM_COMMON_API_H
+#define _EARGM_COMMON_API_H
+
+#define EARGM_NEW_JOB	100
+#define EARGM_END_JOB	200
+#define NO_COMMAND		100000
+
+typedef struct eargm_request
+{
+    uint req;
+    uint num_nodes;
+} eargm_request_t;
 
 #endif
