@@ -249,17 +249,16 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
             range_start = atoi(strtok_r(token, "-", &second_ptr));
             range_end = atoi(strtok_r(NULL, "-", &second_ptr));
             int i;
-            node_count++;
             for (i = range_start; i <= range_end; i++, node_count++)
             {
-                conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count));
-                memset(&conf->nodes[conf->num_nodes+node_count-1], 0, sizeof(node_conf_t));
+                conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count+1));
+                memset(&conf->nodes[conf->num_nodes+node_count], 0, sizeof(node_conf_t));
                 //CASE FOR <10 numbers
                 if (i < 10 && has_zero)
-                    sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s0%u\0", start, i);
+                    sprintf(conf->nodes[conf->num_nodes+node_count].name, "%s0%u\0", start, i);
 
                 else
-                    sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s%u\0", start, i);
+                    sprintf(conf->nodes[conf->num_nodes+node_count].name, "%s%u\0", start, i);
 
             }
         }
