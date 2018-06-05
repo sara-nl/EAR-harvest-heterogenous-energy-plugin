@@ -36,7 +36,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include <daemon/power_monitor/eard_client_api_public.h>
+#include <daemon/eard_client_api_public.h>
 #include <daemon/power_monitor/power_monitor.h>
 #include <common/math_operations.h>
 

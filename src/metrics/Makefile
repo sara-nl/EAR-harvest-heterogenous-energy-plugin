@@ -4,14 +4,18 @@ CFLAGS  = -fPIC -shared
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
-               $(SRCDIR)/metrics/custom/bandwidth.a \
-			   $(SRCDIR)/metrics/ipmi/energy_node.a
                $(SRCDIR)/metrics/papi/energy_cpu.o \
                $(SRCDIR)/metrics/papi/generics.o \
                $(SRCDIR)/metrics/papi/cache.o \
                $(SRCDIR)/metrics/papi/flops.o \
                $(SRCDIR)/metrics/papi/instructions.o \
-               $(SRCDIR)/metrics/papi/stalls.o
+               $(SRCDIR)/metrics/papi/stalls.o \
+               $(SRCDIR)/metrics/ipmi/energy_node.o \
+               $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
+               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
+               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_ina226.o \
+               $(SRCDIR)/metrics/custom/bandwidth.o \
+               $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o
 
 ######## RULES
 
@@ -31,8 +35,8 @@ install.others:
 	mkdir -p $(DESTDIR)/include/metrics/custom
 	mkdir -p $(DESTDIR)/include/metrics/ipmi
 	mkdir -p $(DESTDIR)/include/metrics/papi
-	mv libmetrics.so $(DESTDIR)/lib/libmetrics.so
 	cp metrics.h $(DESTDIR)/include/metrics
+	mv libmetrics.so $(DESTDIR)/lib/libmetrics.so
 
 clean: clean.components
 	rm -rf *.so *.a *.o
@@ -40,6 +44,6 @@ clean: clean.components
 ######## SUBFOLDERS
 
 %.components:
-	$(MAKE) -C 'custom' $*
-	$(MAKE) -C 'ipmi' $*
-	$(MAKE) -C 'papi' $*
+	@ $(MAKE) -C 'custom' $* || exit
+	@ $(MAKE) -C 'ipmi' $* || exit
+	@ $(MAKE) -C 'papi' $* || exit

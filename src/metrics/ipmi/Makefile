@@ -3,12 +3,11 @@ LDFLAGS =
 
 ######## FILES
 
-INTERN_OBJS = energy_node/ibm.o \
+ENERGY_OBJS = energy_node/ibm.o \
               energy_node/lenovo_nm.o \
               energy_node/lenovo_ina226.o
 
-OBJS = energy_node.o \
-       energy_node.a
+OBJS = energy_node.a
 
 ######## RULES
 
@@ -17,8 +16,8 @@ all: all.components $(OBJS)
 energy_node.o: energy_node.c energy_node.h
 	$(CC) $(CFLAGS) -c energy_node.c
 
-energy_node.a: $(INTERN_OBJS)
-	$(AR) rvs energy_node.a $(INTERN_OBJS)
+energy_node.a: energy_node.o $(ENERGY_OBJS)
+	$(AR) rvs energy_node.a energy_node.o $(ENERGY_OBJS)
 
 ######## OPTIONS
 

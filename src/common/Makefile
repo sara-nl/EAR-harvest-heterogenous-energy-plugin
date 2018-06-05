@@ -8,9 +8,11 @@ HEADERS = $(SRCDIR)/common/ear_verbose.h \
 
 OBJS = environment.o \
        environment_common.o \
-       string_enhanced.o \
-       math_operations.o \
-       file_lock.o
+       file_lock.o \
+       types.a
+
+EXTRA_OBJS = string_enhanced.o \
+             math_operations.o
 
 ####### VAR PROPAGATION 
 
@@ -37,6 +39,9 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
 
+types.a: $(EXTRA_OBJS)
+	$(AR) rvs types.a $(wildcard ./types/*.o) $(EXTRA_OBJS)
+
 ######## OPTIONS
 
 install: install.components install.others
@@ -48,7 +53,7 @@ clean: clean.components clean.others
 ######## SUBFOLDERS
 
 %.components:
-	$(MAKE) -C 'types' $*
+	@ $(MAKE) -C 'types' $* || exit
 
 %.others:
-	$(MAKE) -C 'database' $*
+	@ $(MAKE) -C 'database' $* || exit

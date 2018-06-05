@@ -58,6 +58,7 @@ tests/check/check.sh
 *ear_set_ondemand
 *eargm_new_job
 *eargm_end_job
+*eardbd
 
 *compute_coefficients_remote
 *coefficients_quality_control

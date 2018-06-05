@@ -27,12 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <stdio.h>
 #include <string.h>
 
-#include <hardware_info.h>
+#include <metrics/custom/hardware_info.h>
 #include <common/states.h>
 
 #define CREGS()           \

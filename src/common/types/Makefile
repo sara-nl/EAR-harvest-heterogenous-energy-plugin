@@ -16,13 +16,10 @@ OBJS = application.o \
 
 ######## RULES
 
-all: types.a
+all: $(OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
-
-types.a: $(OBJS)
-	$(AR) rvs ../types.a $(OBJS)
 
 ######## OPTIONS
 

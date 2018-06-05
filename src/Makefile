@@ -1,7 +1,7 @@
 ######## FILES
 
 COMPONENTS = common
-ifdef CPUF_BASEA
+ifdef CPUF_BASE
 	COMPONENTS += control
 	ifdef PAPI_BASE
 		ifdef IPMI_BASE
@@ -11,15 +11,16 @@ ifdef CPUF_BASEA
                           commands \
                           tests
 		endif
+		COMPONENTS += library
 	endif
 	ifdef GSL_BASE
 		COMPONENTS += tools
 	endif
 endif
-ifdef SLURM_BASEA
+ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
-ifdef DB_BASEA
+ifdef DB_BASE
 	COMPONENTS += global_manager
 endif
 
@@ -27,28 +28,23 @@ endif
 
 .PHONY: check
 
-all:
-	@ for i in $(COMPONENTS); do                     \
-		echo "===================================="; \
-		echo "= Compilling $$i";                     \
-		echo "===================================="; \
-		$(MAKE) -C $${i} all || exit;                \
-	done
+all: all.components
 
 check:
 	@ $(MAKE) -C tests check
 
-functionals:
-	@ $(MAKE) -C tests functionals || exit
-
 ######## OPTIONS
 
-install:
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -S -C $${i} install; \
-	done
+install: install.components
 
-clean:
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -C $${i} clean; \
+clean: clean.components
+
+######## SUBFOLDERS
+
+%.components:
+	@ for i in $(COMPONENTS); do                     \
+		echo "===================================="; \
+		echo "= Compilling $$i";                     \
+		echo "===================================="; \
+		$(MAKE) -C $${i} $* || exit;                 \
 	done
