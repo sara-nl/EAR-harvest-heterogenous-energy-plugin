@@ -2,19 +2,20 @@ CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 
 ######## FILES
 
-HEADERS = $(SRCDIR)/common/ear_verbose.h \
-          $(SRCDIR)/common/states.h \
-          $(SRCDIR)/common/config.h
+#HEADERS = $(SRCDIR)/common/ear_verbose.h \
+#          $(SRCDIR)/common/states.h \
+#          $(SRCDIR)/common/config.h
 
 OBJS = environment.o \
        environment_common.o \
        file_lock.o \
        types.a
 
-EXTRA_OBJS = string_enhanced.o \
+EXTRA_OBJS = $(wildcard ./types/*.o) \
+			 string_enhanced.o \
              math_operations.o
 
-####### VAR PROPAGATION 
+####### VAR PROPAGATION
 
 export DIR
 export CFLAGS
@@ -40,15 +41,17 @@ math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
 
 types.a: $(EXTRA_OBJS)
-	$(AR) rvs types.a $(wildcard ./types/*.o) $(EXTRA_OBJS)
+	$(AR) rvs types.a $(EXTRA_OBJS)
 
 ######## OPTIONS
+
+depend: depend.components
 
 install: install.components install.others
 	cp states.h $(DESTDIR)/include/common
 
 clean: clean.components clean.others
-	rm -f *.o *.a *.so
+	rm -f *.o *.a *.so .depend
 
 ######## SUBFOLDERS
 
@@ -57,3 +60,7 @@ clean: clean.components clean.others
 
 %.others:
 	@ $(MAKE) -C 'database' $* || exit
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

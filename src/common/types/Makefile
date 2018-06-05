@@ -24,4 +24,8 @@ all: $(OBJS)
 ######## OPTIONS
 
 clean:
-	rm -f *.o *.a *.so
+	rm -f *.o *.a *.so .depend
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

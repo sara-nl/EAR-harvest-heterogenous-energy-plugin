@@ -47,3 +47,7 @@ endif
 
 clean:
 	rm -f $(BINARIES) $(SBINARIES)
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend
