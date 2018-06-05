@@ -1,0 +1,11 @@
+CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
+
+######## RULES
+
+depend: .depend
+
+.depend: $(wildcard ./*.c)
+	@ rm -f ./.depend
+	@ $(CC) $(CFLAGS) -MM $^ >> ./.depend;
+
+-include .depend

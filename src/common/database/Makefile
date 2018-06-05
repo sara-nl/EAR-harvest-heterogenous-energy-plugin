@@ -20,3 +20,7 @@ all: $(OBJS)
 
 clean:
 	rm -f *.o *.so *.a
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend
