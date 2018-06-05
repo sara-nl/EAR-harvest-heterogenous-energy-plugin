@@ -2,6 +2,7 @@
 
 INSTALL_FOLDERS = $(DESTDIR)/bin \
                   $(DESTDIR)/bin/kernels \
+                  $(DESTDIR)/include
                   $(DESTDIR)/lib \
                   $(DESTDIR)/etc \
                   $(DESTDIR)/sbin
@@ -16,10 +17,13 @@ ETC_FOLDERS = $(ETCDIR)/module \
               $(ETCDIR)/coeffs \
               $(ETCDIR)/systemd
 
+INCLUDE_FOLDERS = $(DESTDIR)/include/common
+
 ######## OPTIONS
 
 install:
 	@ mkdir -p ${INSTALL_FOLDERS}
+	@ mkdir -p ${INCLUDE_FOLDERS}
 	@ mkdir -p ${ETC_FOLDERS}
 	cp    module/ear $(ETCDIR)/module/
 	cp -n slurm/ear.conf $(ETCDIR)/slurm/
@@ -30,11 +34,3 @@ install:
 	cp    systemd/eargmd.service $(ETCDIR)/systemd
 	cp -r scripts/* $(ETCDIR)/scripts/
 	@ rm  $(ETCDIR)/scripts/README.md $(ETCDIR)/scripts/learning/README.md
-	
-	#cp   scripts/running/mpi_exec.sh $(DESTDIR)/bin/mpi_exec.sh
-	#cp   scripts/running/ssh_daemon_exit.sh $(DESTDIR)/sbin
-	#cp   scripts/running/ssh_daemon_start.sh $(DESTDIR)/sbin
-	#cp   scripts/learning/learning_phase_compile.sh $(DESTDIR)/sbin
-	#cp   scripts/learning/learning_phase_execute.sh $(DESTDIR)/sbin
-	#cp   scripts/learning/learning_phase_helper.sh $(DESTDIR)/sbin
-

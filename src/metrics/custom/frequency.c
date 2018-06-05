@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 /*
  * Usage:
  * This library gets the average frequency of a physical core

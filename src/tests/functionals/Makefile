@@ -1,4 +1,4 @@
-CFLAGS      = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
+CFLAGS = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
 
 ######## FILES
 
@@ -14,7 +14,6 @@ FREQUENCY_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
 TYPES = $(SRCDIR)/common/types.a
 
 AVGFREQ_OBJS = $(SRCDIR)/metrics/custom/frequency.o
-
 
 PAPI_OBJS = $(SRCDIR)/metrics/papi/flops.o \
             $(SRCDIR)/metrics/papi/instructions.o \
@@ -71,8 +70,7 @@ test_architecture: test_architecture.c
 	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(NODE_ENERGY_OBJS) $(HARDWARE_OBJS)
 
 ear_pm:ear_pm.c $(POWERMONLIB)
-	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -o ear_pm ear_pm.c $(POWERMONLIB)  $(IPMI_LDFLAGS) $(NODE_ENERGY_LIBS) $(PAPI_LDFLAGS) $(AVGFREQ_OBJS)
-
+	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -o ear_pm ear_pm.c $(POWERMONLIB) $(IPMI_LDFLAGS) $(NODE_ENERGY_LIBS) $(PAPI_LDFLAGS) $(AVGFREQ_OBJS)
 
 ######## OPTIONS
 

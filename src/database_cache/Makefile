@@ -1,17 +1,23 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS)
 
+######## FILES
+
+OBJS = eardbd_api.o
+
+BINARIES = eardbd
+
 ######## RULES
 
-all: eardbd_api.o client_api_test eardbd
+all: $(OBJS) $(BINARIES) client_api_test
 
 eardbd_api.o:
 	$(CC) $(CFLAGS) -c eardbd_api.c
 
-client_api_test:
-	$(CC) $(CFLAGS) -o client_api_test tests/client_api_test.c eardbd_api.o
-
 eardbd:
 	$(CC) $(CFLAGS) -o eardbd eardbd.c
+
+client_api_test: eardbd_api.o
+	$(CC) $(CFLAGS) -o client_api_test tests/client_api_test.c eardbd_api.o
 
 ######## OPTIONS
 
@@ -19,5 +25,4 @@ install:
 	mv eardbd $(DESTDIR)/sbin
 
 clean:
-	rm -f eardbd client_api_test
-	rm -f *.o *.a *.so
+	rm -f *.o *.a *.so eardbd client_api_test

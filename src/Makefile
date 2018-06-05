@@ -1,7 +1,7 @@
 ######## FILES
 
 COMPONENTS = common
-ifdef CPUF_BASE
+ifdef CPUF_BASEA
 	COMPONENTS += control
 	ifdef PAPI_BASE
 		ifdef IPMI_BASE
@@ -16,10 +16,10 @@ ifdef CPUF_BASE
 		COMPONENTS += tools
 	endif
 endif
-ifdef SLURM_BASE
+ifdef SLURM_BASEA
 	COMPONENTS += slurm_plugin
 endif
-ifdef DB_BASE
+ifdef DB_BASEA
 	COMPONENTS += global_manager
 endif
 

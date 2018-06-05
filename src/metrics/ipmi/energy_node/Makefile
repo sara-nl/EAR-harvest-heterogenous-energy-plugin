@@ -1,7 +1,14 @@
-CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS) -DLOW_FREQ_ENERGY_READINGS
 CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 
+######## FILES
+
+INTERN_OBJS = energy_node/ibm.o \
+              energy_node/lenovo_nm.o \
+              energy_node/lenovo_ina226.o
+
 ######## RULES
+
+all:
 
 lenovo_nm.o: lenovo_nm.c lenovo_nm.h
 	$(CC) $(CFLAGS) -c lenovo_nm.c

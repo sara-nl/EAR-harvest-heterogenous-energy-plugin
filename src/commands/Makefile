@@ -3,19 +3,13 @@ LDFLAGS   =
 
 ######## DEPENDENCIES
 
-FREQ_OBJS   = $(SRCDIR)/metrics/papi/generics.o \
-              $(SRCDIR)/control/frequency.o
-
-REMOTE_OBJS = $(SRCDIR)/daemon/eard_command_api.o
-
-TYPES_OBJS  = $(SRCDIR)/common/types.a
+HEADERS = $(SRCDIR)/common/config.h \
+          $(SRCDIR)/common/states.h
 
 ifdef DB_BASE
-DB_OBJS     = $(SRCDIR)/common/database/mysql_io_functions.o
+EREP_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o \
+          $(SRCDIR)/common/types.a
 endif
-
-HEADERS     = $(SRCDIR)/common/config.h \
-              $(SRCDIR)/common/states.h
 
 ######## FILES
 		
@@ -31,11 +25,8 @@ endif
 
 all: $(BINARIES) $(SBINARIES) $(COMPONENTS)
 
-ear_control: ear_control.c $(REMOTE_OBJS)
-	$(CC) $(CFLAGS) -o ear_control ear_control.c $(REMOTE_OBJS) $(TYPES_OBJS)
-
-ereport: ear_report.c $(DB_OBJS) $(TYPES_OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ereport ear_report.c $(DB_LDFLAGS) $(DB_OBJS) $(TYPES_OBJS)
+ereport: ear_report.c $(EREP_OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ereport ear_report.c $(DB_LDFLAGS) $(EREP_OBJS)
 
 ear_create_database: ear_create_database.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
@@ -55,4 +46,4 @@ ifdef DB_BASE
 endif
 
 clean:
-	rm -rf $(BINARIES) $(SBINARIES)
+	rm -f $(BINARIES) $(SBINARIES)

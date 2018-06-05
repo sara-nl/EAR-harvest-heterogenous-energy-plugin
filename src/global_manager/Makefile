@@ -1,44 +1,36 @@
-CFLAGS    = -I$(SRCDIR) 
-LDFLAGS   =
+CFLAGS  = -I$(SRCDIR)
+LDFLAGS = $(DB_LDFLAGS) -lpthread
 
 ######## FILES
 
-TYPES_OBJS = $(SRCDIR)/common/types.a
+HEADERS = $(SRCDIR)/common/config.h \
+          $(SRCDIR)/daemon/eard_command_api.h \
+          $(SRCDIR)/daemon/eard_command_api_conf.h
 
-HEADERS = $(SRCDIR)/common/config.h $(SRCDIR)/daemon/eard_command_api.h $(SRCDIR)/daemon/eard_conf_rapi.h
+DAEMON_OBJS = $(SRCDIR)/common/types.a \
+              eargm_server_api.o
+
+OBJS = eargm_client_api.o \
+       eargm_server_api.o
 
 ifdef DB_BASE
-BINARIES += eargmd \
-		eargm_new_job \
-		eargm_end_job
+BINARIES += eargmd
 
 DB_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o
 endif
 
-EARD_OBJ = $(SRCDIR)/daemon/eard_command_api.o
-
-
-EARGM_API = eargm_client_api.o eargm_server_api.o
-
 ######## RULES
 
-all: $(BINARIES) $(EARGM_API) $(COMMANDS)
+all: $(OBJS) $(BINARIES)
 
-eargmd: ear_gm.c $(HEADERS) eargm_server_api.o $(TYPES_OBJS) $(EARD_OBJ) 
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd ear_gm.c $(DB_LDFLAGS) eargm_server_api.o -lpthread  $(EARD_OBJ) $(TYPES_OBJS)
+eargmd: eargm.c $(DAEMON_OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(DAEMON_OBJS) $(LDFLAGS)
 
-eargm_client_api.o:eargm_client_api.c eargm_client_api.h
+eargm_client_api.o: %.c %.h $(HEADERS)
 	$(CC) $(CFLAGS) -c eargm_client_api.c
 
-eargm_server_api.o:eargm_server_api.c eargm_server_api.h
+eargm_server_api.o: %.c %.h $(HEADERS)
 	$(CC) $(CFLAGS) -c eargm_server_api.c
-
-eargm_new_job:commands/eargm_new_job.c eargm_client_api.o $(TYPES_OBJS)
-	$(CC) $(CFLAGS) -o eargm_new_job commands/eargm_new_job.c eargm_client_api.o $(TYPES_OBJS)
-
-eargm_end_job:commands/eargm_end_job.c eargm_client_api.o $(TYPES_OBJS)
-	$(CC) $(CFLAGS) -o eargm_end_job commands/eargm_end_job.c eargm_client_api.o $(TYPES_OBJS)
-
 
 ######## OPTIONS
 

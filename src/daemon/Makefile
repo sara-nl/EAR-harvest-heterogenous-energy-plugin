@@ -1,5 +1,5 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread 
-LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) -pthread
+LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -pthread
 
 ######## VARS
 
@@ -7,24 +7,23 @@ export DIR
 
 ######## FILES
 
+DAEMON_OBJS += power_monitor/libpowermon.a \
+               dynamic_configuration.o \
+               shared_configuration.o \
+               eard_client_api.o \
+               eard_server_api.o
+
 ifdef DB_BASE
-COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
+DAEMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
                $(SRCDIR)/common/database/mysql_io_functions.o \
                $(SRCDIR)/common/string_enhanced.o
 endif
 
-COMMON_OBJS += $(SRCDIR)/common/environment_common.o \
-               $(SRCDIR)/common/types.a
-
-OUTER_OBJS += $(SRCDIR)/database_cache/eardbd_api.o \
-              $(SRCDIR)/metrics/libmetrics.a \
-              $(SRCDIR)/control/frequency.o
-
-OBJS += power_monitor/libpowermon.a \
-        dynamic_configuration.o \
-        shared_configuration.o \
-        eard_client_api.o \
-        eard_server_api.o
+DAEMON_OBJS += $(SRCDIR)/common/types.a \
+               $(SRCDIR)/common/environment_common.o \
+               $(SRCDIR)/control/frequency.o \
+               $(SRCDIR)/metrics/libmetrics.a \
+               $(SRCDIR)/database_cache/eardbd_api.o
 
 HEADERS += $(SRCDIR)/daemon/eard_api_conf.h \
            $(SRCDIR)/daemon/eard_command_api_conf.h \
@@ -42,18 +41,12 @@ BINARIES = eard_client_api.o \
 
 .PHONY: components commands
 
-all: components $(BINARIES) commands
+all: all.components $(BINARIES) all.others
 
-components:
-	$(MAKE) -C power_monitor all
+eard: eard.c $(DAEMON_OBJS) $(HEADERS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(DAEMON_OBJS) $(LDFLAGS)
 
-commands:
-	$(MAKE) -C commands all
-
-eard: eard.c $(OBJS) $(COMMON_OBJS) $(OUTER_OBJS) $(HEADERS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(OBJS) $(COMMON_OBJS) $(OUTER_OBJS) $(LDFLAGS) $(DB_LDFLAGS)
-
-dynamic_configuration.o: dynamic_configuration.c $(HEADERS) eard_server_api.h
+dynamic_configuration.o: dynamic_configuration.c eard_server_api.h $(HEADERS)
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
 
 shared_configuration.o: shared_configuration.c shared_configuration.h $(HEADERS)
@@ -70,16 +63,16 @@ eard_command_api.o: eard_command_api.c eard_command_api.h eard_api_conf.h
 
 ######## OPTIONS
 
-install: install-subfolders
+install: install.components install.others
 	mv eard $(DESTDIR)/sbin
 
-install-subfolders:
-	$(MAKE) -C commands install
-	$(MAKE) -C power_monitor install
-
-clean: clean-subfolders
+clean: clean.components clean.others
 	rm -f *.o *.a *.so eard
 
-clean-subfolders:
-	$(MAKE) -C commands clean
-	$(MAKE) -C power_monitor clean
+######## SUBFOLDERS
+
+%.components:
+	$(MAKE) -C 'power_monitor' $*
+
+%.others:
+	$(MAKE) -C 'commands' $*

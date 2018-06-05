@@ -44,26 +44,19 @@
 */
 void *eard_power_monitoring(void *frequency_monitoring);
 
-/**  It must be called when EARLib contacts with EARD 
-*/
-
+/**  It must be called when EARLib contacts with EARD */
 void powermon_mpi_init(application_t *j);
 
-/**  It must be called when EARLib disconnects from EARD 
-*/
+/**  It must be called when EARLib disconnects from EARD */
 void powermon_mpi_finalize();
 
-/** It must be called at when job starts 
-*/
-
+/** It must be called at when job starts */
 void powermon_new_job(application_t *j,uint from_mpi);
 
-/** It must be called at when job ends
-*/
+/** It must be called at when job ends */
 void powermon_end_job(job_id jid,job_id sid);
 
-/** reports the application signature to the power_monitoring module 
-*/
+/** reports the application signature to the power_monitoring module */
 void powermon_mpi_signature(application_t *application);
 
 /** if application is not mpi, automatically chages the node freq, it is called by dynamic_configuration API */

@@ -1,40 +1,40 @@
 CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS = $(PAPI_LDFLAGS)
 
 ######## FILES
 
-BINARIES = generics.o \
-           cache.o    \
-           energy_cpu.o   \
-           flops.o    \
-           instructions.o \
-           stalls.o
+OBJS = flops.o \
+       cache.o \
+       generics.o \
+       energy_cpu.o \
+       instructions.o \
+       stalls.o
 
 ######## RULES
 
-all: $(BINARIES)
+all: $(OBJS)
 
 generics.o: generics.c generics.h
-	$(CC) $(CFLAGS) -c generics.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -c generics.c
 
 cache.o: cache.c cache.h
-	$(CC) $(CFLAGS) -c cache.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -c cache.c
 
 flops.o: flops.c flops.h
-	$(CC) $(CFLAGS) -c flops.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -c flops.c
 
 instructions.o: instructions.c instructions.h
-	$(CC) $(CFLAGS) -c instructions.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -c instructions.c
 
 stalls.o: stalls.c stalls.h
-	$(CC) $(CFLAGS) -c stalls.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -c stalls.c
 
 energy_cpu.o: energy_cpu.c energy_cpu.h
-	$(CC) $(CFLAGS) -c energy_cpu.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -c energy_cpu.c
+
+######## OPTIONS
 
 install:
 	cp *.h $(DESTDIR)/include/metrics/papi
 
 clean:
-	rm -rf $(BINARIES)
-	rm -f *.so *.o
+	rm -f *.o *.a *.so

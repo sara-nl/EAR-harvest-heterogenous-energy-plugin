@@ -25,17 +25,17 @@ power_monitor_api.o: power_monitor_api.c power_monitor_api.h $(HEADERS)
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitor_api.c
 
 libpowermon.a: $(OBJS) $(LIB_OBJS) $(COMMON_OBJS)
-	ar rcs libpowermon.a $(OBJS) $(LIB_OBJS) $(COMMON_OBJS)
+	$(AR) rcs libpowermon.a $(OBJS) $(LIB_OBJS) $(COMMON_OBJS)
 
 libpowermon.so: $(OBJS) $(LIB_OBJS) $(COMMON_OBJS)
 	$(CC) -shared $(OBJS) $(LIB_OBJS) $(COMMON_OBJS) -o libpowermon.so
 
 ######## OPTIONS
 
-install: install-others
+install: install.others
 	cp libpowermon.so $(DESTDIR)/lib
 
-install-others:
+install.others:
 	mkdir -p $(DESTDIR)/include/daemon/power_monitor
 	cp power_monitor.h $(DESTDIR)/include/daemon/power_monitor
 

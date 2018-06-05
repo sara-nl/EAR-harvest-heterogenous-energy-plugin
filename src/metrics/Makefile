@@ -4,56 +4,42 @@ CFLAGS  = -fPIC -shared
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
+               $(SRCDIR)/metrics/custom/bandwidth.a \
+			   $(SRCDIR)/metrics/ipmi/energy_node.a
                $(SRCDIR)/metrics/papi/energy_cpu.o \
                $(SRCDIR)/metrics/papi/generics.o \
                $(SRCDIR)/metrics/papi/cache.o \
                $(SRCDIR)/metrics/papi/flops.o \
                $(SRCDIR)/metrics/papi/instructions.o \
-               $(SRCDIR)/metrics/papi/stalls.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_ina226.o \
-			   $(SRCDIR)/metrics/custom/bandwidth.o \
-			   $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o
-
-COMPONENTS = custom \
-             ipmi \
-             papi \
+               $(SRCDIR)/metrics/papi/stalls.o
 
 ######## RULES
 
-all: components libmetrics.a libmetrics.so
-
-components:
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -C $${i} all || exit; \
-	done
+all: all.components libmetrics.a libmetrics.so
 
 libmetrics.a: $(METRICS_OBJS)
-	ar rvs libmetrics.a $(METRICS_OBJS)
+	$(AR) rvs libmetrics.a $(METRICS_OBJS)
 
 libmetrics.so: $(METRICS_OBJS)
 	$(CC) $(CFLAGS) -o libmetrics.so $(METRICS_OBJS)
 
 ######## OPTIONS
 
-install: component-installs other-installs
+install: install.others install.components
 
-component-installs:
-	@ for i in $(COMPONENTS); do \
-		mkdir -p $(DESTDIR)/include/metrics/$${i} ; \
-	done
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -S -C $${i} install; \
-	done
-
-other-installs:
+install.others:
+	mkdir -p $(DESTDIR)/include/metrics/custom
+	mkdir -p $(DESTDIR)/include/metrics/ipmi
+	mkdir -p $(DESTDIR)/include/metrics/papi
 	mv libmetrics.so $(DESTDIR)/lib/libmetrics.so
 	cp metrics.h $(DESTDIR)/include/metrics
 
-clean:
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -C $${i} clean; \
-	done
+clean: clean.components
 	rm -rf *.so *.a *.o
+
+######## SUBFOLDERS
+
+%.components:
+	$(MAKE) -C 'custom' $*
+	$(MAKE) -C 'ipmi' $*
+	$(MAKE) -C 'papi' $*

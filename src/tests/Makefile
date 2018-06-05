@@ -6,13 +6,7 @@ COMPONENTS = check functionals
 
 .PHONY: check functionals
 
-all:
-	@ for i in $(COMPONENTS); do \
-		echo "===================================="; \
-		echo "= Compilling tests/$$i";               \
-		echo "===================================="; \
-		$(MAKE) -C $${i} all || exit;                \
-	done
+all: all.components
 
 install:
 
@@ -22,11 +16,12 @@ functionals:
 ######## OPTIONS
 
 check:
-	@ $(MAKE) -C check check
+	@ $(MAKE) -C check check || exit
 
-clean:
-	@ for i in $(COMPONENTS); do    \
-		$(MAKE) -C $${i} clean; \
-	done
-	@ $(MAKE) -C functionals clean
+clean: clean.components
 
+######## SUBFOLDERS
+
+%.components:
+	$(MAKE) -C 'check' $* || exit
+	$(MAKE) -C 'functionals' $* || exit

@@ -27,17 +27,16 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef _EARD_API_H
 #define _EARD_API_H
 
-#define EAR_SUCCESS 			0
+#define EAR_SUCCESS 			 0
 #define EAR_ALREADY_CONNECTED 	-1
 #define EARDS_NOT_READY			-2
 
 /** Tries to connect with the deamon. Returns 0 on success and -1 otherwise. */
 int eards_connect();
+
 /** Closes the connection with the daemon. */
 void eards_disconnect();
 
@@ -62,6 +61,4 @@ unsigned long eards_get_data_size_rapl();
 *   actual value otherwise. */
 unsigned long eards_node_energy_data_size();
 
-
-#else
 #endif
