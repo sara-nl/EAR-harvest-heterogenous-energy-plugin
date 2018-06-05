@@ -233,6 +233,7 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
     if (token == NULL)
     {
         conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+1));
+        memset(&conf->nodes[conf->num_nodes], 0, sizeof(node_conf_t));
         sprintf(conf->nodes[conf->num_nodes].name, "%s", start);
 
         return 1;
@@ -248,15 +249,17 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
             range_start = atoi(strtok_r(token, "-", &second_ptr));
             range_end = atoi(strtok_r(NULL, "-", &second_ptr));
             int i;
+            node_count++;
             for (i = range_start; i <= range_end; i++, node_count++)
             {
-                conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count+1));
+                conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count));
+                memset(&conf->nodes[conf->num_nodes+node_count-1], 0, sizeof(node_conf_t));
                 //CASE FOR <10 numbers
                 if (i < 10 && has_zero)
-                    sprintf(conf->nodes[conf->num_nodes+node_count].name, "%s0%u\0", start, i);
+                    sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s0%u\0", start, i);
 
                 else
-                    sprintf(conf->nodes[conf->num_nodes+node_count].name, "%s%u\0", start, i);
+                    sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s%u\0", start, i);
 
             }
         }
@@ -264,6 +267,7 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
         {
             node_count++;
             conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count));
+            memset(&conf->nodes[conf->num_nodes+node_count-1], 0, sizeof(node_conf_t));
             sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s%s\0", start, token);
         }
         token = strtok_r(NULL, ",", &buffer_ptr);
@@ -275,6 +279,7 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
 /** Fills the cluster_conf_t from the info from the FILE */
 void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 {
+    memset(conf, 0, sizeof(cluster_conf_t));
     char line[256];
     char *token;
     while (fgets(line, 256, conf_file) != NULL)
@@ -320,7 +325,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             {
                 conf->num_policies++;
                 strclean(token, '\n');
+                if (conf->num_policies == 1)
+                    conf->power_policies = NULL;
+                    //conf->power_policies = malloc(sizeof(policy_conf_t));
                 conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*conf->num_policies);
+
                 conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);
                 token = strtok(NULL, ",");
             }
@@ -459,6 +468,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                                     break;
 
                                 k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
+                                if (k == 0)
+                                    conf->nodes[conf->num_nodes+i].special_node_conf = NULL;
                                 conf->nodes[conf->num_nodes+i].special_node_conf = 
                                             realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
                                                 sizeof(policy_conf_t)*(k+1));
@@ -494,13 +505,14 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                         if (!found)
                         {
                             k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
+                            if (k == 0)
+                                conf->nodes[conf->num_nodes+i].special_node_conf = NULL;
                             conf->nodes[conf->num_nodes+i].special_node_conf = 
                                         realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
                                                 sizeof(policy_conf_t)*(k+1));
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_TIME_TO_SOLUTION;
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
                             conf->nodes[conf->num_nodes+i].num_special_node_conf++;
-
                         }
                     }
                 }
@@ -525,6 +537,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                         if (!found)
                         {
                             k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
+                            if (k == 0)
+                                conf->nodes[conf->num_nodes+i].special_node_conf = NULL;
                             conf->nodes[conf->num_nodes+i].special_node_conf = 
                                         realloc(conf->nodes[conf->num_nodes+i].special_node_conf, 
                                                 sizeof(policy_conf_t)*(k+1));
@@ -549,6 +563,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             conf->num_nodes += num_nodes;
         }
     }
+
 	// Manually configured, provisional
 	// EARD configuration
 	conf->eard.verbose=1;
