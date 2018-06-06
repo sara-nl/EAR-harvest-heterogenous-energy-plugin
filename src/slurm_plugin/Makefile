@@ -1,15 +1,11 @@
 CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS) $(CPUF_CFLAGS)
 LDFLAGS = $(CPUF_LDFLAGS)
 
-######## FILES
-
-HEADERS = $(SRCDIR)/common/config.h
-
 ######## RULES
 
 all: earplug.so
 
-earplug.so: slurm_plugin.h slurm_plugin.c slurm_plugin_helper.c slurm_plugin_helper.h $(HEADERS)
+earplug.so: slurm_plugin.h slurm_plugin.c slurm_plugin_helper.c slurm_plugin_helper.h
 	$(CC) $(CFLAGS) -shared -o earplug.so slurm_plugin.c slurm_plugin_helper.c $(LDFLAGS)
 
 ######## OPTIONS
