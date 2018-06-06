@@ -1,7 +1,0 @@
-uncores_pci.o: uncores_pci.c \
- /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
- /home/xjaneas/git/EAR/src/metrics/custom/bandwidth/uncores_pci.h \
- /home/xjaneas/git/EAR/src/common/types/generic.h \
- /home/xjaneas/git/EAR/src/common/ear_verbose.h \
- /home/xjaneas/git/EAR/src/common/config.h \
- /home/xjaneas/git/EAR/src/common/states.h

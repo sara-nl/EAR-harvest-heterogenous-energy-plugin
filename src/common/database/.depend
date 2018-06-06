@@ -1,29 +1,16 @@
-db_helper.o: db_helper.c /home/xjaneas/git/EAR/src/common/states.h \
- /home/xjaneas/git/EAR/src/common/ear_verbose.h \
- /home/xjaneas/git/EAR/src/common/config.h \
- /home/xjaneas/git/EAR/src/common/string_enhanced.h \
- /home/xjaneas/git/EAR/src/common/types/generic.h \
- /home/xjaneas/git/EAR/src/common/database/db_helper.h \
- /home/xjaneas/git/EAR/src/common/types/power_signature.h \
- /home/xjaneas/git/EAR/src/common/types/periodic_metric.h \
- /home/xjaneas/git/EAR/src/common/types/application.h \
- /home/xjaneas/git/EAR/src/common/types/job.h \
- /home/xjaneas/git/EAR/src/common/types/signature.h \
- /home/xjaneas/git/EAR/src/common/types/gm_warning.h \
- /home/xjaneas/git/EAR/src/common/types/loop.h \
- /home/xjaneas/git/EAR/src/common/types/log.h \
- /home/xjaneas/git/EAR/src/common/database/mysql_io_functions.h
-mysql_io_functions.o: mysql_io_functions.c \
- /home/xjaneas/git/EAR/src/common/config.h \
- /home/xjaneas/git/EAR/src/common/states.h \
- /home/xjaneas/git/EAR/src/common/ear_verbose.h \
- /home/xjaneas/git/EAR/src/common/database/mysql_io_functions.h \
- /home/xjaneas/git/EAR/src/common/types/log.h \
- /home/xjaneas/git/EAR/src/common/types/job.h \
- /home/xjaneas/git/EAR/src/common/types/generic.h \
- /home/xjaneas/git/EAR/src/common/types/loop.h \
- /home/xjaneas/git/EAR/src/common/types/signature.h \
- /home/xjaneas/git/EAR/src/common/types/gm_warning.h \
- /home/xjaneas/git/EAR/src/common/types/application.h \
- /home/xjaneas/git/EAR/src/common/types/power_signature.h \
- /home/xjaneas/git/EAR/src/common/types/periodic_metric.h
+db_helper.o: db_helper.c ../../common/states.h ../../common/ear_verbose.h \
+ ../../common/config.h ../../common/string_enhanced.h \
+ ../../common/types/generic.h ../../common/database/db_helper.h \
+ ../../common/types/power_signature.h \
+ ../../common/types/periodic_metric.h ../../common/types/application.h \
+ ../../common/types/job.h ../../common/types/signature.h \
+ ../../common/types/gm_warning.h ../../common/types/loop.h \
+ ../../common/types/log.h ../../common/database/mysql_io_functions.h
+mysql_io_functions.o: mysql_io_functions.c ../../common/config.h \
+ ../../common/states.h ../../common/ear_verbose.h \
+ ../../common/database/mysql_io_functions.h ../../common/types/log.h \
+ ../../common/types/job.h ../../common/types/generic.h \
+ ../../common/types/loop.h ../../common/types/signature.h \
+ ../../common/types/gm_warning.h ../../common/types/application.h \
+ ../../common/types/power_signature.h \
+ ../../common/types/periodic_metric.h

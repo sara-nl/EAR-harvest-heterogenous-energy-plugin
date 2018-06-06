@@ -1,2 +1,0 @@
-dynais.o: dynais.c /home/xjaneas/git/EAR/src/library/dynais/dynais.h
-main.o: main.c /home/xjaneas/git/EAR/src/library/dynais/dynais.h

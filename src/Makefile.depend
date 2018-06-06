@@ -1,4 +1,6 @@
-#CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
+CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
+RLPATH = $(subst $(SRCDIR),.,$(shell pwd))
+RLPATH = $(shell realpath $(SRCDIR) --relative-to=$(shell pwd))
 
 ######## RULES
 
@@ -6,6 +8,7 @@ depend: rdepend
 
 rdepend: $(wildcard ./*.c)
 	@ rm -f ./.depend
-	@ $(CC) $(CFLAGS) -MM $^ >> ./.depend;
+	@ $(CC) -I $(RLPATH) -MM $^ >> ./.depend;
+
 
 -include .depend
