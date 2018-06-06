@@ -2,9 +2,9 @@
 
 ######## RULES
 
-depend: .depend
+depend: rdepend
 
-.depend: $(wildcard ./*.c)
+rdepend: $(wildcard ./*.c)
 	@ rm -f ./.depend
 	@ $(CC) $(CFLAGS) -MM $^ >> ./.depend;
 

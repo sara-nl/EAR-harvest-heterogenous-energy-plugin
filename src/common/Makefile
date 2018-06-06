@@ -2,10 +2,6 @@ CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 
 ######## FILES
 
-#HEADERS = $(SRCDIR)/common/ear_verbose.h \
-#          $(SRCDIR)/common/states.h \
-#          $(SRCDIR)/common/config.h
-
 OBJS = environment.o \
        environment_common.o \
        file_lock.o \
@@ -51,7 +47,7 @@ install: install.components install.others
 clean: clean.components clean.others
 	rm -f *.o *.a *.so
 
-depend: depend.components
+depend: depend.components depend.others
 
 ######## SUBFOLDERS
 

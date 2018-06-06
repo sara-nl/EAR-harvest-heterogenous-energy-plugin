@@ -69,7 +69,7 @@ install: install.components install.others
 clean: clean.components clean.others
 	rm -f *.o *.a *.so eard
 
-depend: depend.components
+depend: depend.components depend.others
 
 ######## DEPENDENCIES
 

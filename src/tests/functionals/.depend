@@ -1,6 +1,9 @@
-test_architecture.o: test_architecture.c \
+test_architecture.o: test_architecture.c /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
  /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h
 simd_power_metrics_openmp.o: simd_power_metrics_openmp.c \
+ /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
  /home/xjaneas/git/EAR/src/control/frequency.h \
  /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
  /home/xjaneas/git/EAR/src/metrics/papi/flops.h \

@@ -1,28 +1,39 @@
-generics.o: generics.c /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
- /home/xjaneas/git/EAR/src/common/ear_verbose.h \
- /home/xjaneas/git/EAR/src/common/config.h
-instructions.o: instructions.c \
+instructions.o: instructions.c /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
  /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
  /home/xjaneas/git/EAR/src/metrics/papi/instructions.h \
  /home/xjaneas/git/EAR/src/common/ear_verbose.h \
  /home/xjaneas/git/EAR/src/common/config.h
-flops.o: flops.c /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
+flops.o: flops.c /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
+ /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
  /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
  /home/xjaneas/git/EAR/src/metrics/papi/flops.h \
  /home/xjaneas/git/EAR/src/common/environment.h \
  /home/xjaneas/git/EAR/src/common/ear_verbose.h \
  /home/xjaneas/git/EAR/src/common/config.h
-stalls.o: stalls.c /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
+generics.o: generics.c /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
+ /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/common/config.h
+stalls.o: stalls.c /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
+ /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
  /home/xjaneas/git/EAR/src/metrics/papi/stalls.h \
  /home/xjaneas/git/EAR/src/common/ear_verbose.h \
  /home/xjaneas/git/EAR/src/common/config.h
-cache.o: cache.c /home/xjaneas/git/EAR/src/metrics/papi/cache.h \
+cache.o: cache.c /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
+ /home/xjaneas/git/EAR/src/metrics/papi/cache.h \
  /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
  /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
  /home/xjaneas/git/EAR/src/common/ear_verbose.h \
  /home/xjaneas/git/EAR/src/common/config.h \
  /home/xjaneas/git/EAR/src/common/states.h
-energy_cpu.o: energy_cpu.c /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+energy_cpu.o: energy_cpu.c /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
  /home/xjaneas/git/EAR/src/common/config.h \
  /home/xjaneas/git/EAR/src/common/states.h \
  /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
