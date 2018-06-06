@@ -1,3 +1,8 @@
+generics.o: generics.c /home/xjaneas/opt/include/papi.h \
+ /home/xjaneas/opt/include/papiStdEventDefs.h \
+ /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/common/config.h
 instructions.o: instructions.c /home/xjaneas/opt/include/papi.h \
  /home/xjaneas/opt/include/papiStdEventDefs.h \
  /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
@@ -10,11 +15,6 @@ flops.o: flops.c /home/xjaneas/opt/include/papi.h \
  /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
  /home/xjaneas/git/EAR/src/metrics/papi/flops.h \
  /home/xjaneas/git/EAR/src/common/environment.h \
- /home/xjaneas/git/EAR/src/common/ear_verbose.h \
- /home/xjaneas/git/EAR/src/common/config.h
-generics.o: generics.c /home/xjaneas/opt/include/papi.h \
- /home/xjaneas/opt/include/papiStdEventDefs.h \
- /home/xjaneas/git/EAR/src/metrics/papi/generics.h \
  /home/xjaneas/git/EAR/src/common/ear_verbose.h \
  /home/xjaneas/git/EAR/src/common/config.h
 stalls.o: stalls.c /home/xjaneas/opt/include/papi.h \

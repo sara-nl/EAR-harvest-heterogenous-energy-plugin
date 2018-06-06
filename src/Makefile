@@ -8,10 +8,10 @@ ifdef CPUF_BASE
 			COMPONENTS += metrics \
                           database_cache \
                           daemon \
-                          commands \
-                          tests
+                          commands
+                          #tests
 		endif
-		#COMPONENTS += library
+		COMPONENTS += library
 	endif
 	ifdef GSL_BASE
 		COMPONENTS += tools

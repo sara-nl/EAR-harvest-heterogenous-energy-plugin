@@ -179,7 +179,6 @@ AC_CONFIG_FILES([Makefile
                  etc/systemd/eard.service
                  etc/systemd/eardbd.service
                  etc/systemd/eargmd.service
-                 src/library/Makefile
                  src/common/config.h])
 #AC_CONFIG_HEADERS([src/common/config.h])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])

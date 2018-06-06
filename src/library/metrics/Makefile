@@ -1,5 +1,13 @@
-.c.o :
-	$(CC) $(CFLAGS) -c  -o $@ $<
+all: metrics.o
+
+metrics.o: metrics.c metrics.h
+	$(CC) $(CFLAGS) -c metrics.c
+
+######## OPTIONS 
 
 clean:
-	rm -rf *.o
+	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend
