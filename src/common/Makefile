@@ -11,7 +11,7 @@ OBJS = environment.o \
        file_lock.o \
        types.a
 
-EXTRA_OBJS = $(wildcard ./types/*.o) \
+EXTRA_OBJS = $(patsubst %.c, %.o, $(wildcard ./types/*.c)) \
 			 string_enhanced.o \
              math_operations.o
 
