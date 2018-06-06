@@ -25,7 +25,7 @@ endif
 
 ######## RULES
 
-all: components metrics.a libear_metrics.so
+all: components metrics.a libmetrics.so
 
 components:
 	@ for i in $(COMPONENTS); do \
@@ -35,8 +35,8 @@ components:
 metrics.a: $(METRICS_OBJS)
 	ar rvs metrics.a $(METRICS_OBJS)
 
-libear_metrics.so: $(METRICS_OBJS)
-	$(CC) $(CFLAGS) -o libear_metrics.so $(METRICS_OBJS)
+libmetrics.so: $(METRICS_OBJS)
+	$(CC) $(CFLAGS) -o libmetrics.so $(METRICS_OBJS)
 
 ######## OPTIONS
 

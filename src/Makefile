@@ -7,10 +7,10 @@ ifdef CPUF_BASE
 		ifdef IPMI_BASE
 			COMPONENTS += metrics \
                           daemon \
+                          database_daemon \
                           commands \
                           tests
 		endif
-		COMPONENTS += library
 	endif
 	ifdef GSL_BASE
 		COMPONENTS += tools

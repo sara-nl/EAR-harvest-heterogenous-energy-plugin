@@ -6,7 +6,7 @@ After=mariadb.service
 
 [Service]
 Type=simple
-ExecStart=@prefix@/sbin/eard 60
+ExecStart=@prefix@/sbin/eardbd 60
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
 KillMode=process
