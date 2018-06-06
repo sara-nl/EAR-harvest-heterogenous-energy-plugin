@@ -336,7 +336,6 @@ int metrics_init()
 	}
 
 	// Daemon metrics allocation (TODO: standarize data size)
-	VERBOSE_N(1,"Connecting EARD metrics\n");
 	rapl_size = eards_get_data_size_rapl();
 	rapl_elements = rapl_size / sizeof(long long);
 
@@ -368,7 +367,6 @@ int metrics_init()
 	metrics_reset();
 	metrics_global_start();
 	metrics_partial_start();
-	VERBOSE_N(2,"Metrics initialised\n");
 
 	return EAR_SUCCESS;
 }

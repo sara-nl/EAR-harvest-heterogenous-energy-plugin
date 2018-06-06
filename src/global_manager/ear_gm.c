@@ -58,6 +58,8 @@
 #define DEFCON_L3 90.0
 #define DEFCON_L2 95.0
 
+#define T1_WAIT 3
+
 ulong th_level[NUM_LEVELS]={10,10,5,0};
 ulong pstate_level[NUM_LEVELS]={3,2,1,0};
 
@@ -77,6 +79,7 @@ uint current_sample=0,total_samples=0;
 ulong *energy_consumed;
 ulong energy_budget;
 uint aggregate_samples;
+uint in_action=0;
 
 #if DB_MYSQL
 #include <mysql/mysql.h>
@@ -212,7 +215,7 @@ static void catch_signals()
     sigaddset(&set,SIGINT);
     sigaddset(&set,SIGALRM);
     if (sigprocmask(SIG_SETMASK,&set,NULL)<0){
-        VERBOSE_N(0,"etting signal mask (%s)\n",strerror(errno));
+        VERBOSE_N(0,"Setting signal mask (%s)\n",strerror(errno));
         exit(1);
     }
 
@@ -267,6 +270,19 @@ uint defcon(double perc,ulong load)
 	return PANIC;
 }
 
+void fill_periods(ulong energy)
+{
+	int i;
+	ulong e_persample;
+	e_persample=energy/aggregate_samples;
+	for (i=0;i<aggregate_samples;i++){
+		energy_consumed[i]=e_persample;
+	}
+	total_samples=aggregate_samples;
+	current_sample=0;
+	VERBOSE_N(1,"Initializing T2 period with %lu Joules, each sample with %lu Joules",energy,e_persample);
+}
+
 /*
 *
 *	THREAD attending external commands. 
@@ -278,17 +294,17 @@ void process_remote_requests(int clientfd)
     eargm_request_t command;
     uint req;
     ulong ack=EAR_SUCCESS;
-    VERBOSE_N(0,"connection received\n");
+    VERBOSE_N(2,"connection received\n");
     req=read_command(clientfd,&command);
     switch (req){
         case EARGM_NEW_JOB:
 			// Computes the total number of nodes in use
-            VERBOSE_N(0,"new_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+            VERBOSE_N(1,"new_job command received %d num_nodes %u\n",command.req,command.num_nodes);
 			total_nodes+=command.num_nodes;
             break;
         case EARGM_END_JOB:
 			// Computes the total number of nodes in use
-            VERBOSE_N(0,"end_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+            VERBOSE_N(1,"end_job command received %d num_nodes %u\n",command.req,command.num_nodes);
 			total_nodes-=command.num_nodes;
             break;
         default:
@@ -303,23 +319,23 @@ void *eargm_server_api(void *p)
 	int eargm_fd,eargm_client;
 	struct sockaddr_in eargm_con_client;
 
-    VERBOSE_N(0,"Creating scoket for remote commands,using port %u",my_port);
+    VERBOSE_N(2,"Creating scoket for remote commands,using port %u",my_port);
     eargm_fd=create_server_socket(my_port);
     if (eargm_fd<0){
         VERBOSE_N(0,"Error creating socket\n");
         pthread_exit(0);
     }
     do{
-        VERBOSE_N(0,"waiting for remote commands port=%u\n",my_port);
+        VERBOSE_N(2,"waiting for remote commands port=%u\n",my_port);
         eargm_client=wait_for_client(eargm_fd,&eargm_con_client);
         if (eargm_client<0){
-            VERBOSE_N(0,"eargm_server_api: wait_for_client returns error\n");
+            VERBOSE_N(0," wait_for_client returns error\n");
         }else{
             process_remote_requests(eargm_client);
             close(eargm_client);
         }
     }while(1);
-    VERBOSE_N(0,"eargm_server_api exiting\n");
+    VERBOSE_N(0,"exiting\n");
     close_server_socket(eargm_fd);
 	return NULL;
 
@@ -359,7 +375,7 @@ void reduce_frequencies_all_nodes(int level)
         	ps=pstate_level[level];
 
         	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n",my_cluster_conf.nodes[i].name,ps);
-        	if (!eards_inc_th(ps)) VERBOSE_N(0,"Error reducing the freq for node %s",my_cluster_conf.nodes[i].name);
+        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the freq for node %s",my_cluster_conf.nodes[i].name);
         	eards_remote_disconnect();
 		}
     }
@@ -382,6 +398,7 @@ void main(int argc,char *argv[])
 	sigset_t set;
 	ulong divisor = 1000;
 	int ret;
+	ulong result;
 
     if (argc !=4) usage(argv[0]);
 	period_t1=atoi(argv[1]);
@@ -400,7 +417,7 @@ void main(int argc,char *argv[])
 
 	aggregate_samples=period_t2/period_t1;
 	if ((period_t2%period_t1)!=0){
-		VERBOSE_N(0,"warning period_t2 is not multiple of period_t1\n");
+		VERBOSE_N(2,"warning period_t2 is not multiple of period_t1\n");
 		aggregate_samples++;
 	}
 
@@ -432,7 +449,7 @@ void main(int argc,char *argv[])
     char *db_pass = "";
     
 
-    VERBOSE_N(0,"Using user: %s\n", db_user);
+    VERBOSE_N(2,"Using user: %s\n", db_user);
     time_t start_time, end_time;
 	double perc_energy,perc_time;
    	
@@ -459,6 +476,11 @@ void main(int argc,char *argv[])
         mysql_close(connection);
         exit(1);
     }
+	
+	time(&end_time);
+	start_time=end_time-period_t2;
+	result = get_sum(connection, start_time, end_time, divisor);
+	fill_periods(result);
 	while(1){
 		// Waiting a for period_t1
 		alarm(period_t1);
@@ -469,7 +491,7 @@ void main(int argc,char *argv[])
 		start_time=end_time-period_t1;
 
     
-	    ulong result = get_sum(connection, start_time, end_time, divisor);
+	    result = get_sum(connection, start_time, end_time, divisor);
 	    if (!result){ 
 			VERBOSE_N(2,"No results in that period of time found\n");
 	    }else{ 
@@ -487,25 +509,36 @@ void main(int argc,char *argv[])
 				VERBOSE_N(0,"WARNING %.2lf%% of energy vs %.2lf%% of time!!\n",perc_energy,perc_time);
 			}
 		}
+		if (!in_action){
 		switch(defcon(perc_energy,total_nodes)){
 		case NO_PROBLEM:
-			VERBOSE_N(1," Safe area. energy budget %.2lf%% \n",perc_energy);
+			VERBOSE_N(2," Safe area. energy budget %.2lf%% \n",perc_energy);
 			break;
 		case WARNING_3:
+			in_action+=T1_WAIT;
+			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+			VERBOSE_N(0,"****************************************************************");
 			increase_th_all_nodes(WARNING_3);
 			break;
 		case WARNING_2:
+			in_action+=T1_WAIT;
+			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+			VERBOSE_N(0,"****************************************************************");
 			increase_th_all_nodes(WARNING_2);
 			reduce_frequencies_all_nodes(WARNING_2);
 			break;
 		case PANIC:
+			in_action+=T1_WAIT;
+			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
+			VERBOSE_N(0,"****************************************************************");
 			increase_th_all_nodes(PANIC);
 			reduce_frequencies_all_nodes(PANIC);
 			break;
 		}
+		}else in_action--;
 	}
 
     mysql_close(connection);

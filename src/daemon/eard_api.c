@@ -124,7 +124,7 @@ int eards_connect(application_t *my_app)
 	#endif
 	// We create a single ID 
 	my_id=create_ID(my_app->job.id,my_app->job.step_id);
-	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
+	VERBOSE_N(2,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);
@@ -609,7 +609,6 @@ ulong eards_get_data_size_rapl() // size in bytes
 	{
         if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for RAPL data size ")) return EAR_ERROR;
-		VERBOSE_N(0,"waiting for eard_answer\n");
         if (warning(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for RAPL data size ")) return EAR_ERROR;
     } else {
@@ -617,7 +616,6 @@ ulong eards_get_data_size_rapl() // size in bytes
 		ack=EAR_ERROR;
 	}
     rapl_size=ack;
-	VERBOSE_N(0,"answer received\n");
     return ack;
 }
 

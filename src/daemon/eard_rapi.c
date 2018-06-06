@@ -54,7 +54,7 @@ int send_command(request_t *command)
 {
 	ulong ack;
 	int ret;
-	VERBOSE_N(0,"Sending command %u\n",command->req);
+	VERBOSE_N(2,"Sending command %u\n",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
 			VERBOSE_N(0,"Error sending command %s\n",strerror(errno));
@@ -121,7 +121,7 @@ int eards_new_job(application_t *new_job)
 	request_t command;
 	command.req=EAR_RC_NEW_JOB;
 	copy_application(&command.my_req.new_job,new_job);
-	VERBOSE_N(0,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
+	VERBOSE_N(1,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
 	return send_command(&command);
 }
 
@@ -131,7 +131,7 @@ int eards_end_job(job_id jid,job_id sid)
     command.req=EAR_RC_END_JOB;
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
-	VERBOSE_N(0,"command %u job_id %d step_id %d\n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
+	VERBOSE_N(1,"command %u job_id %d step_id %d\n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
 	return send_command(&command);
 }
 

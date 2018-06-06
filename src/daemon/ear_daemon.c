@@ -174,7 +174,7 @@ void connect_service(int req,application_t *new_app)
 	job_t *new_job=&new_app->job;
 	int pid=create_ID(new_job->id,new_job->step_id);
     // Let's check if there is another application
-    VERBOSE_N(1, "request for connection at service %d", req);
+    VERBOSE_N(2, "request for connection at service %d", req);
     if (is_new_application(pid) || is_new_service(req, pid)) {
         connect=1;
     } else {
@@ -189,18 +189,18 @@ void connect_service(int req,application_t *new_app)
     // Creates 1 pipe (per node) to send acks.
     if (connect)
     {
-		VERBOSE_N(0,"Connected new job job_id=%d step_id=%d\n",new_job->id,new_job->step_id);
+		VERBOSE_N(2,"Connected new job job_id=%d step_id=%d\n",new_job->id,new_job->step_id);
         sprintf(ear_commack, "%s/.ear_comm.ack_%d.%lu", ear_tmp, req, pid);
         application_id = pid;
 
         // ear_commack will be used to send ack's or values (depending on the
         // requests) from eard to the library
-        VERBOSE_N(1, "reating ack comm %s pid=%lu", ear_commack,pid);
+        VERBOSE_N(2, "Creating ack comm %s pid=%lu", ear_commack,pid);
 
         if (mknod(ear_commack, S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,0) < 0)
         {
             if (errno != EEXIST){
-                VERBOSE_N(0, "ERROR WHEN creating ear communicator for ack %s", strerror(errno));
+                VERBOSE_N(0, "Error when creating ear communicator for ack %s", strerror(errno));
                 eard_close_comm();
             }
         }
@@ -213,8 +213,8 @@ void connect_service(int req,application_t *new_app)
             // We open ping connection  for writting
             sprintf(ear_ping, "%s/.ear_comm.ping.%lu", ear_tmp, pid);
 
-            VERBOSE_N(1, "application %lu connected", pid);
-            VERBOSE_N(1, "opening ping conn for %lu", pid);
+            VERBOSE_N(2, "application %lu connected", pid);
+            VERBOSE_N(2, "opening ping conn for %lu", pid);
             ear_ping_fd = open(ear_ping,O_WRONLY);
 
             if (ear_ping_fd < 0)
@@ -226,22 +226,22 @@ void connect_service(int req,application_t *new_app)
             #if SHARED_MEMORY
 			powermon_mpi_init(new_app);
 			#endif
-        	VERBOSE_N(1, "sending ack for service %d",req);
+        	VERBOSE_N(2, "sending ack for service %d",req);
         	if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
         	    VERBOSE_N(0,"WARNING while writting for ping conn for %lu", pid);
         	}
 
-        	VERBOSE_N(1, "connecting service %s", ear_commack);
+        	VERBOSE_N(2, "connecting service %s", ear_commack);
         	if ((ear_fd_ack[req]=open(ear_commack,O_WRONLY)) < 0){
         	    VERBOSE_N(0,"ERROR when opening ear communicator for ack (%s)", strerror(errno));
         	    eard_close_comm();
         	}
     	}else{
         	// eard only suppports one application connected, the second one will block
-        	VERBOSE_N(0, "Process pid %lu rejected as master", pid);
+        	VERBOSE_N(2, "Process pid %lu rejected as master", pid);
     	}
-    	VERBOSE_N(0, "Process pid %lu selected as master", pid);
-    	VERBOSE_N(1, "service %d connected", req);
+    	VERBOSE_N(2, "Process pid %lu selected as master", pid);
+    	VERBOSE_N(2, "service %d connected", req);
 	}
 }
 

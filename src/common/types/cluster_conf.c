@@ -51,7 +51,7 @@
 
 
 static const char *__NAME__ = "cluster_conf:";
-//#define __OLD__CONF__
+#define __OLD__CONF__
 
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
@@ -124,6 +124,21 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	my_conf->nodes[0].special_node_conf[0].policy=1;
 	my_conf->nodes[0].special_node_conf[0].th=PERFORMANCE_GAIN;
 	my_conf->nodes[0].special_node_conf[0].p_state=EAR_MIN_P_STATE+1;
+
+    // Manually configured, provisional
+    // EARD configuration
+    my_conf->eard.verbose=1;
+    my_conf->eard.period_powermon=POWERMON_FREQ;
+    my_conf->eard.max_pstate=1;
+    my_conf->eard.turbo=0;
+    my_conf->eard.port=DAEMON_PORT_NUMBER;
+    // EARGM configuration
+    my_conf->eargm.verbose=1;
+    my_conf->eargm.t1=DEFAULT_T1;
+    my_conf->eargm.t2=DEFAULT_T2;
+    my_conf->eargm.energy=MAX_ENERGY;
+    my_conf->eargm.port=EARGM_PORT_NUMBER;
+
 	#else
 	FILE *conf_file = fopen(conf_path, "r");
 	if (conf_file == NULL)

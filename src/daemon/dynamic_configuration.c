@@ -72,7 +72,7 @@ static uint num_f;
 void print_f_list(uint p_states,ulong *freql)
 {
 	int i;
-	for (i=0;i<p_states;i++) VERBOSE_N(0,"Freq %u= %lu\n",i,freql[i]);
+	for (i=0;i<p_states;i++) VERBOSE_N(2,"Freq %u= %lu\n",i,freql[i]);
 }
 
 uint is_valid_freq(ulong f, uint p_states,ulong *freql)
@@ -103,7 +103,7 @@ ulong lower_valid_freq(ulong f, uint p_states,ulong *freql)
 
 static void DC_my_sigusr1(int signun)
 {
-	VERBOSE_N(0,"thread %u receives sigusr1\n",(uint)pthread_self());
+	VERBOSE_N(1,"thread %u receives sigusr1\n",(uint)pthread_self());
 	ear_conf_shared_area_dispose(my_tmp);
 	close_server_socket(eards_remote_socket);
 	pthread_exit(0);
@@ -120,7 +120,7 @@ static void DC_set_sigusr1()
     sa.sa_handler = DC_my_sigusr1;
     sa.sa_flags=0;
     if (sigaction(SIGUSR1, &sa, NULL) < 0)  		
-		ear_verbose(0,"eard doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
+		VERBOSE_N(0," doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
 
 }
 
@@ -210,31 +210,31 @@ void process_remote_requests(int clientfd)
 	request_t command;
 	uint req;
 	ulong ack=EAR_SUCCESS;
-	VERBOSE_N(0,"connection received\n");
+	VERBOSE_N(2,"connection received\n");
 	req=read_command(clientfd,&command);
 	switch (req){
 		case EAR_RC_NEW_JOB:
-			VERBOSE_N(0,"new_job command received %d\n",command.my_req.new_job.job.id);
+			VERBOSE_N(1,"new_job command received %d\n",command.my_req.new_job.job.id);
 			powermon_new_job(&command.my_req.new_job,0);		
 			break;
 		case EAR_RC_END_JOB:
-			VERBOSE_N(0,"end_job command received %d\n",command.my_req.end_job.jid);
+			VERBOSE_N(1,"end_job command received %d\n",command.my_req.end_job.jid);
 			powermon_end_job(command.my_req.end_job.jid,command.my_req.end_job.sid);
 			break;
 		case EAR_RC_MAX_FREQ:
-			VERBOSE_N(0,"max_freq command received %lu\n",command.my_req.ear_conf.max_freq);
+			VERBOSE_N(1,"max_freq command received %lu\n",command.my_req.ear_conf.max_freq);
 			ack=dynconf_max_freq(command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_NEW_TH:
-			VERBOSE_N(0,"new_th command received %lu\n",command.my_req.ear_conf.th);
+			VERBOSE_N(1,"new_th command received %lu\n",command.my_req.ear_conf.th);
 			ack=dynconf_set_th(command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_INC_TH:
-			VERBOSE_N(0,"inc_th command received, %lu\n",command.my_req.ear_conf.th);
+			VERBOSE_N(1,"inc_th command received, %lu\n",command.my_req.ear_conf.th);
 			ack=dynconf_inc_th(command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_RED_PSTATE:
-			VERBOSE_N(0,"red_max_p_state command received\n");
+			VERBOSE_N(1,"red_max_p_state command received\n");
 			ack=dynconf_red_pstates(command.my_req.ear_conf.p_states);
 			break;
 		default:
@@ -249,34 +249,34 @@ void * eard_dynamic_configuration(void *tmp)
 	my_tmp=(char *)tmp;
 	int change=0;
 	
-	ear_verbose(0,"dynamic_configration thread created\n");
+	VERBOSE_N(2,"thread created\n");
 
 	DC_set_sigusr1();
 
 	num_f=frequency_get_num_pstates();
 	f_list=frequency_get_freq_rank_list();
 	print_f_list(num_f,f_list);
-	VERBOSE_N(0,"We have %u valid p_states\n",num_f);
+	VERBOSE_N(2,"We have %u valid p_states\n",num_f);
 	
 
 
-	ear_verbose(0,"Creating scoket for remote commands\n");
+	VERBOSE_N(2,"Creating socket for remote commands\n");
 	eards_remote_socket=create_server_socket();
 	if (eards_remote_socket<0){ 
-		ear_verbose(0,"Error creating socket\n");
+		VERBOSE_N(0,"Error creating socket\n");
 		pthread_exit(0);
 	}
 	do{
-		ear_verbose(0,"waiting for remote commands\n");
+		VERBOSE_N(2,"waiting for remote commands\n");
 		eards_client=wait_for_client(eards_remote_socket,&eards_remote_client);	
 		if (eards_client<0){	
-			ear_verbose(0,"dyn_conf: wait_for_client returns error\n");
+			VERBOSE_N(0," wait_for_client returns error\n");
 		}else{ 
 			process_remote_requests(eards_client);
 			close(eards_client);
 		}
 	}while(eard_must_exit==0);
-    ear_verbose(0,"dyn_conf exiting\n");
+    VERBOSE_N(0,"exiting\n");
     //ear_conf_shared_area_dispose(my_tmp);
     close_server_socket(eards_remote_socket);
     pthread_exit(0);

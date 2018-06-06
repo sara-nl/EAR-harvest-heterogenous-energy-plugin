@@ -102,7 +102,7 @@ static void PM_set_sigusr1()
     sa.sa_handler = PM_my_sigusr1;
     sa.sa_flags=0;
     if (sigaction(SIGUSR1, &sa, NULL) < 0)
-        ear_verbose(0,"eard doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
+        VERBOSE_N(0," doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
 
 }
 
@@ -135,9 +135,11 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	init_power_signature(&current_ear_app.app.power_sig);
 	current_ear_app.app.power_sig.max_DC_power=0;
 	current_ear_app.app.power_sig.min_DC_power=500;
+	current_ear_app.app.power_sig.def_f=dyn_conf->def_freq;
 	// Initialize energy
 	read_enegy_data(&c_energy);
 	copy_energy_data(&current_ear_app.energy_init,&c_energy);
+	aperf_job_avg_frequency_init_all_cpus();
 }
 
 
@@ -153,11 +155,14 @@ void job_end_powermon_app()
 	compute_power(&current_ear_app.energy_init,&c_energy,&app_power);
 	
     current_ear_app.app.power_sig.DC_power=app_power.avg_dc;
+	if (app_power.avg_dc>current_ear_app.app.power_sig.max_DC_power) current_ear_app.app.power_sig.max_DC_power=app_power.avg_dc;
+	if (app_power.avg_dc<current_ear_app.app.power_sig.min_DC_power) current_ear_app.app.power_sig.min_DC_power=app_power.avg_dc;
     current_ear_app.app.power_sig.DRAM_power=app_power.avg_dram[0]+app_power.avg_dram[1];
     current_ear_app.app.power_sig.PCK_power=app_power.avg_cpu[0]+app_power.avg_cpu[1];
     current_ear_app.app.power_sig.time=difftime(app_power.end,app_power.begin);
+	current_ear_app.app.power_sig.avg_f=aperf_job_avg_frequency_end_all_cpus();
 
-	// nominal, avgf, edp is still pending
+	// nominal is still pending
 
 	// Metrics are not reported in this function
 }
@@ -266,6 +271,7 @@ void powermon_end_job(job_id jid,job_id sid)
 
 void powermon_new_max_freq(ulong maxf)
 {
+	VERBOSE_N(1,"New max frequency %lu",maxf);
 	if (current_ear_app.app.is_mpi==0){
 		if (maxf<current_node_freq){
 			VERBOSE_N(1,"MaxFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,maxf);
@@ -277,6 +283,7 @@ void powermon_new_max_freq(ulong maxf)
 
 void powermon_new_def_freq(ulong def)
 {
+	VERBOSE_N(1,"New default frequency %lu",def);
     if (current_ear_app.app.is_mpi==0){
         if (def<current_node_freq){
             VERBOSE_N(1,"DefFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def);

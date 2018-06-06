@@ -109,7 +109,7 @@ int create_server_socket(uint use_port)
 		VERBOSE_N(0,"bind fails for eargm server\n");
 		return EAR_ERROR;
     }else{
-		VERBOSE_N(0,"socket and bind for erads socket success\n");
+		VERBOSE_N(2,"socket and bind for erads socket success\n");
 	}
 
    	freeaddrinfo(result);           /* No longer needed */
@@ -119,7 +119,7 @@ int create_server_socket(uint use_port)
 		close(sfd);
  		return EAR_ERROR;
 	}
-	VERBOSE_N(0,"eargm socket listen ready!\n");
+	VERBOSE_N(1,"socket listen ready!\n");
  	return sfd;
 }
 int wait_for_client(int s,struct sockaddr_in *client)
@@ -133,7 +133,7 @@ int wait_for_client(int s,struct sockaddr_in *client)
 		VERBOSE_N(0,"accept for eargm socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
-	VERBOSE_N(0,"eargm new connection \n");
+	VERBOSE_N(1,"new connection \n");
 	return new_sock;
 }
 void close_server_socket(int sock)
