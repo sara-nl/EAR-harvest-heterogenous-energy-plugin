@@ -51,6 +51,7 @@
 #include <common/types/job.h>
 #include <common/types/log.h>
 #include <common/types/loop.h>
+#include <common/types/services.h>
 #include <common/environment.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
@@ -385,6 +386,7 @@ void eard_restart()
 	VERBOSE_N(0,"LD_LIBRARY_PATH=%s\n",getenv("LD_LIBRARY_PATH"));
 	VERBOSE_N(0,"EAR_DB_PATHNAME=%s\n",getenv("EAR_DB_PATHNAME"));
 	VERBOSE_N(0,"Restarting to %s p_state=1 ear_tmp=%s verbose=0\n",my_bin,ear_tmp);
+	end_service("eard");
 	execlp(my_bin,my_bin,"1",ear_tmp,"0",NULL);
 	VERBOSE_N(0,"Restarting EARD %s\n",strerror(errno));
 	exit(1);	
@@ -437,6 +439,7 @@ void eard_exit(uint restart)
 		VERBOSE_N(0,"Exiting EARD\n");
 	}
 	if (restart==0){ 
+		end_service("eard");
 		exit(0);
 	}else{
 		eard_restart();
@@ -959,6 +962,16 @@ void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,node_conf_
 	VERBOSE_N(0,"configure_default_values def_freq %lu th %.2lf\n",dyn->def_freq,dyn->th);
 }
 
+
+
+/*
+*
+*
+*	EARD MAIN
+*
+*
+*/
+
 void main(int argc,char *argv[])
 {
 	struct timeval *my_to;
@@ -986,8 +999,14 @@ void main(int argc,char *argv[])
 		Usage(argv[0]);
 	}
 
+
+	
 	//HIGHLIGHT: DAEMON INIT
 	ear_daemon_environment();
+	int must_recover=new_service("eard");
+	if (must_recover){
+		VERBOSE_N(0,"We must recover from a crash");
+	}
 
 	if (argc >= 4)
 	{

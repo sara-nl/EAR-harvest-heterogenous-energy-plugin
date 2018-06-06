@@ -44,7 +44,9 @@
 #include <daemon/power_monitoring.h>
 #include <daemon/shared_configuration.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
+#if EARDB
 #include <database_daemon/client_api/eardbd_api.h>
+#endif
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
 #include <common/types/cluster_conf.h>
@@ -337,7 +339,9 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
     if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
 	#endif
 
+	#if EARDB
 	eardbd_send_periodic_metric(&current_sample);
+	#endif
 
 	return;
 }
@@ -418,7 +422,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	aperf_periodic_avg_frequency_init_all_cpus();
 
 	// Database cache daemon
+	#if EARDB
 	eardbd_connect("cae2306.hpc.eu.lenovo.com", UDP);
+	#endif
 
 	while(!eard_must_exit)
 	{
@@ -443,7 +449,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	}
 
 	// Database cache daemon disconnect
+	#if EARDB
 	eardbd_disconnect();
+	#endif
 
 	pthread_exit(0);
 	//exit(0);

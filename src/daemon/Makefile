@@ -18,8 +18,8 @@ COMMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
 endif
 
 ifdef FEAT_SHRMEM
-COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a \
-               $(SRCDIR)/database_daemon/eardbd_api.o
+COMMON_OBJS += $(SRCDIR)/metrics/power_monitoring/libpowermon.a 
+# $(SRCDIR)/database_daemon/eardbd_api.o
 
 OBJS += dynamic_configuration.o \
         shared_configuration.o \

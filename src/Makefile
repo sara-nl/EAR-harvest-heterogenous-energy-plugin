@@ -6,8 +6,8 @@ ifdef CPUF_BASE
 	ifdef PAPI_BASE
 		ifdef IPMI_BASE
 			COMPONENTS += metrics \
-                          daemon \
                           database_daemon \
+                          daemon \
                           commands \
                           tests
 		endif
