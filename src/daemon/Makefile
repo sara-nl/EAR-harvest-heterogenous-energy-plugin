@@ -1,36 +1,23 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread 
 LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -pthread
 
-######## VARS
-
-export DIR
-
 ######## FILES
 
-DAEMON_OBJS += power_monitor/libpowermon.a \
-               dynamic_configuration.o \
-               shared_configuration.o \
-               eard_client_api.o \
-               eard_server_api.o
-
+eard_OBJS += power_monitor/libpowermon.a \
+             dynamic_configuration.o \
+             shared_configuration.o \
+             eard_client_api.o \
+             eard_server_api.o
 ifdef DB_BASE
-DAEMON_OBJS += $(SRCDIR)/common/database/db_helper.o \
-               $(SRCDIR)/common/database/mysql_io_functions.o \
-               $(SRCDIR)/common/string_enhanced.o
+eard_OBJS += $(SRCDIR)/common/database/db_helper.o \
+             $(SRCDIR)/common/database/mysql_io_functions.o \
+             $(SRCDIR)/common/string_enhanced.o
 endif
-
-DAEMON_OBJS += $(SRCDIR)/common/types.a \
-               $(SRCDIR)/common/environment_common.o \
-               $(SRCDIR)/control/frequency.o \
-               $(SRCDIR)/metrics/libmetrics.a \
-               $(SRCDIR)/database_cache/eardbd_api.o
-
-HEADERS += $(SRCDIR)/daemon/eard_api_conf.h \
-           $(SRCDIR)/daemon/eard_command_api_conf.h \
-           $(SRCDIR)/daemon/shared_configuration.h \
-           $(SRCDIR)/common/ear_verbose.h \
-           $(SRCDIR)/common/states.h \
-           $(SRCDIR)/common/config.h
+eard_OBJS += $(SRCDIR)/common/types.a \
+             $(SRCDIR)/common/environment_common.o \
+             $(SRCDIR)/control/frequency.o \
+             $(SRCDIR)/metrics/libmetrics.a \
+             $(SRCDIR)/database_cache/eardbd_api.o
 
 BINARIES = eard_client_api.o \
            eard_server_api.o \
@@ -39,17 +26,15 @@ BINARIES = eard_client_api.o \
 
 ######## RULES
 
-.PHONY: components commands
-
 all: all.components $(BINARIES) all.others
 
-eard: eard.c $(DAEMON_OBJS) $(HEADERS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(DAEMON_OBJS) $(LDFLAGS)
+eard: eard.c $(eard_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
 
-dynamic_configuration.o: dynamic_configuration.c eard_server_api.h $(HEADERS)
+dynamic_configuration.o: dynamic_configuration.c eard_server_api.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
 
-shared_configuration.o: shared_configuration.c shared_configuration.h $(HEADERS)
+shared_configuration.o: shared_configuration.c shared_configuration.h
 	$(CC) -fPIC $(CFLAGS) -c shared_configuration.c
 
 eard_server_api.o: eard_server_api.c eard_server_api.h

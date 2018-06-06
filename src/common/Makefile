@@ -1,5 +1,10 @@
 CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 
+####### VARS
+
+export DIR
+export CFLAGS
+
 ######## FILES
 
 OBJS = environment.o \
@@ -7,15 +12,9 @@ OBJS = environment.o \
        file_lock.o \
        types.a
 
-EXTRA_OBJS = $(patsubst %.c, %.o, $(wildcard ./types/*.c)) \
+types_OBJS = $(patsubst %.c, %.o, $(wildcard ./types/*.c)) \
 			 string_enhanced.o \
              math_operations.o
-
-####### VAR PROPAGATION
-
-export DIR
-export CFLAGS
-export HEADERS
 
 ######## RULES
 
@@ -36,8 +35,8 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
 
-types.a: $(EXTRA_OBJS)
-	$(AR) rvs types.a $(EXTRA_OBJS)
+types.a: $(types_OBJS)
+	$(AR) rvs types.a $(types_OBJS)
 
 ######## OPTIONS
 

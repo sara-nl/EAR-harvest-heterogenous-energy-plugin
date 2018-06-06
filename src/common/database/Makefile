@@ -2,8 +2,6 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(DB_CFLAGS)
 
 ######## FILES
 
-HEADERS = $(SRCDIR)/common/config.h
-
 ifdef DB_BASE
 OBJS = db_helper.o \
        mysql_io_functions.o
@@ -13,7 +11,7 @@ endif
 
 all: $(OBJS)
 
-%.o: %.c %.h $(HEADERS)
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c  $<
 
 ######## OPTIONS

@@ -66,18 +66,18 @@ export DEBUG
 .PHONY: check functionals
 
 all:
-	@ $(MAKE) -C src all || exit
-
-functionals:
-	@ $(MAKE) -C src functionals || exit
+	@ $(MAKE) -C 'src' all || exit
 
 check:
-	@ $(MAKE) -C src check
+	@ $(MAKE) -C 'src' check
 
 install:
-	@ $(MAKE) -C etc install
-	@ $(MAKE) -C src install
-	@ $(MAKE) -C doc install
+	@ $(MAKE) -C 'etc' install
+	@ $(MAKE) -C 'src' install
+	@ $(MAKE) -C 'doc' install
 
 clean:
-	@ $(MAKE) -C src clean
+	@ $(MAKE) -C 'src' clean
+
+depend:
+	@ $(MAKE) -C 'src' depend || exit

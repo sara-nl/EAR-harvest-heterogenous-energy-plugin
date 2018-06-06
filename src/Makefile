@@ -9,7 +9,7 @@ ifdef CPUF_BASE
                           database_cache \
                           daemon \
                           commands
-                          #tests
+                          tests
 		endif
 		COMPONENTS += library
 	endif
