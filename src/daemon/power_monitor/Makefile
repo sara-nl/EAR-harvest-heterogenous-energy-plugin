@@ -40,4 +40,8 @@ install.others:
 	cp power_monitor.h $(DESTDIR)/include/daemon/power_monitor
 
 clean:
-	rm -f *.so *.a *.o
+	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

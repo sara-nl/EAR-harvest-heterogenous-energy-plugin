@@ -41,6 +41,8 @@ install.others:
 clean: clean.components
 	rm -rf *.so *.a *.o
 
+depend: depend.components
+
 ######## SUBFOLDERS
 
 %.components:

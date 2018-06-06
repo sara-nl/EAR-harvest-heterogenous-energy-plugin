@@ -61,3 +61,7 @@ install:
 
 clean:
 	rm -f $(BINARIES)
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

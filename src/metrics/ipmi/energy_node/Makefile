@@ -23,3 +23,7 @@ ibm.o: ibm.c ibm.h
 
 clean:
 	rm -rf *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

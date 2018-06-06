@@ -53,7 +53,8 @@ energy_updates_freq: energy_updates_freq.c \
 test_architecture: test_architecture.c \
         $(SRCDIR)/metrics/ipmi/energy_node.a \
         $(SRCDIR)/metrics/custom/hardware_info.o
-	$(CC) $(PAPI_CFLAGS) $(CFLAGS) -o test_architecture $? $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS)
+	$(CC) $(PAPI_CFLAGS) $(CFLAGS) -o test_architecture $? \
+	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS)
 
 ear_pm: ear_pm.c \
         $(SRCDIR)/daemon/power_monitoring/libpowermon.a \
@@ -66,3 +67,7 @@ ear_pm: ear_pm.c \
 clean:
 	rm -f $(BINARIES)
 	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

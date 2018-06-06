@@ -45,13 +45,13 @@ types.a: $(EXTRA_OBJS)
 
 ######## OPTIONS
 
-depend: depend.components
-
 install: install.components install.others
 	cp states.h $(DESTDIR)/include/common
 
 clean: clean.components clean.others
-	rm -f *.o *.a *.so .depend
+	rm -f *.o *.a *.so
+
+depend: depend.components
 
 ######## SUBFOLDERS
 

@@ -33,13 +33,13 @@ all: all.components
 check:
 	@ $(MAKE) -C tests check
 
-depend: depend.components
-
 ######## OPTIONS
 
 install: install.components
 
 clean: clean.components
+
+depend: depend.components
 
 ######## SUBFOLDERS
 

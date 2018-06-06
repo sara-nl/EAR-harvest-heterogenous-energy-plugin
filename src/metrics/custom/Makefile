@@ -33,6 +33,12 @@ install: install.components
 clean: clean.components
 	rm -f *.o *.a *.so
 
+depend: depend.components
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend
+
 ######## SUBFOLDERS
 
 %.components:

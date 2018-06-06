@@ -38,3 +38,7 @@ install:
 clean:
 	rm -rf $(BINARIES)
 	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

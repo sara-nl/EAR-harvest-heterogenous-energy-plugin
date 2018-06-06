@@ -21,7 +21,7 @@ endif
 
 ######## RULES
 
-all: $(OBJS) $(BINARIES)
+all: $(OBJS) $(BINARIES) all.others
 
 eargmd: eargm.c $(DAEMON_OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(DAEMON_OBJS) $(LDFLAGS)
@@ -34,8 +34,19 @@ eargm_server_api.o: %.c %.h $(HEADERS)
 
 ######## OPTIONS
 
-install:
+install: install.others
 	cp $(BINARIES) $(DESTDIR)/sbin
 
-clean:
+clean: clean.others
 	rm -rf $(BINARIES)
+
+depend: depend.others
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend
+
+######## SUBFOLDERS
+
+%.others:
+	$(MAKE) -C 'commands' $*

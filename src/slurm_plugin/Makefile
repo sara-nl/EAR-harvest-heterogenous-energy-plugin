@@ -19,3 +19,7 @@ install:
 
 clean:
 	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

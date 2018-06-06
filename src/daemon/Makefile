@@ -69,6 +69,12 @@ install: install.components install.others
 clean: clean.components clean.others
 	rm -f *.o *.a *.so eard
 
+depend: depend.components
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend
+
 ######## SUBFOLDERS
 
 %.components:

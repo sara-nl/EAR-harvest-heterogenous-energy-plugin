@@ -82,3 +82,7 @@ check:
 clean:
 	rm -f $(BINARIES)
 	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

@@ -10,15 +10,14 @@ all: all.components
 
 install:
 
-functionals:
-	@ $(MAKE) -C functionals all || exit
-
 ######## OPTIONS
 
 check:
 	@ $(MAKE) -C check check || exit
 
 clean: clean.components
+
+depend: depend.components
 
 ######## SUBFOLDERS
 

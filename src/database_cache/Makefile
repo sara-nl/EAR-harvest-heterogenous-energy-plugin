@@ -8,7 +8,7 @@ BINARIES = eardbd
 
 ######## RULES
 
-all: $(OBJS) $(BINARIES) client_api_test
+all: $(OBJS) $(BINARIES)
 
 eardbd_api.o:
 	$(CC) $(CFLAGS) -c eardbd_api.c
@@ -25,4 +25,9 @@ install:
 	mv eardbd $(DESTDIR)/sbin
 
 clean:
-	rm -f *.o *.a *.so eardbd client_api_test
+	rm -f $(BINARIES)
+	rm -f *.o *.a *.so eardbd
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

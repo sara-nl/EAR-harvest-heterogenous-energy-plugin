@@ -24,7 +24,7 @@ all: $(OBJS)
 ######## OPTIONS
 
 clean:
-	rm -f *.o *.a *.so .depend
+	rm -f *.o *.a *.so
 
 ######## DEPENDENCIES
 
