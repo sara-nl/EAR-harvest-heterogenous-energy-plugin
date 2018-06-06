@@ -66,7 +66,7 @@ update-mpi-objs:
 update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-@mpi_so@: update-mpi-objs 
+@mpi_so@: update-mpi-objs
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
 @mpi_trace_so@: update-mpi-objs-trace

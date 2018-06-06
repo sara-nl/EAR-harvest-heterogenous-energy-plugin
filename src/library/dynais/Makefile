@@ -1,3 +1,5 @@
+all:
+
 %.o: %.c %.h $(DEPS)
 	$(CC) $(CFLAGS) -march=native -c -o $@ $<
 
