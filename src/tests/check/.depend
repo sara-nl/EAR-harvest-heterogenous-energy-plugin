@@ -1,0 +1,27 @@
+check.o: check.c /home/xjaneas/git/EAR/src/tests/check/check.h
+cpu_aperf.o: cpu_aperf.c \
+ /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h
+cpu_uncores_all.o: cpu_uncores_all.c \
+ /home/xjaneas/git/EAR/src/metrics/custom/bandwidth.h \
+ /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
+ /home/xjaneas/git/EAR/src/common/states.h
+cpu_examinable.o: cpu_examinable.c \
+ /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
+ /home/xjaneas/git/EAR/src/common/states.h
+free_ipmi_version.o: free_ipmi_version.c
+slurm_version.o: slurm_version.c
+papi_comp_available.o: papi_comp_available.c
+module_ipmi_devintf.o: module_ipmi_devintf.c \
+ /home/xjaneas/git/EAR/src/tests/check/check.h
+papi_version.o: papi_version.c
+gsl_version.o: gsl_version.c
+cpu_uncores.o: cpu_uncores.c \
+ /home/xjaneas/git/EAR/src/metrics/custom/bandwidth.h \
+ /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
+ /home/xjaneas/git/EAR/src/common/states.h
+module_acpi_cpufreq.o: module_acpi_cpufreq.c \
+ /home/xjaneas/git/EAR/src/common/string_enhanced.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/tests/check/check.h
+papi_init.o: papi_init.c
+papi_comp_enabled.o: papi_comp_enabled.c

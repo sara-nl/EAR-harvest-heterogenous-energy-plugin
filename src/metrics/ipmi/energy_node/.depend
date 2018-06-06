@@ -1,0 +1,13 @@
+ibm.o: ibm.c /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/common/config.h
+lenovo_ina226.o: lenovo_ina226.c \
+ /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/states.h
+lenovo_nm.o: lenovo_nm.c \
+ /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/states.h

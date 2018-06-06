@@ -1,0 +1,9 @@
+environment.o: environment.c \
+ /home/xjaneas/git/EAR/src/common/environment.h \
+ /home/xjaneas/git/EAR/src/common/environment_common.h
+environment_common.o: environment_common.c
+file_lock.o: file_lock.c
+math_operations.o: math_operations.c
+string_enhanced.o: string_enhanced.c \
+ /home/xjaneas/git/EAR/src/common/string_enhanced.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h

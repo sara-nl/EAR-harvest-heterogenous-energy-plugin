@@ -1,0 +1,5 @@
+frequency.o: frequency.c /home/xjaneas/git/EAR/src/control/frequency.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/states.h

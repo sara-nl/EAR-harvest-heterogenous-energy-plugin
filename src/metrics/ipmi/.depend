@@ -1,0 +1,7 @@
+energy_node.o: energy_node.c \
+ /home/xjaneas/git/EAR/src/metrics/custom/hardware_info.h \
+ /home/xjaneas/git/EAR/src/metrics/ipmi/energy_node/lenovo_nm.h \
+ /home/xjaneas/git/EAR/src/metrics/ipmi/energy_node/lenovo_ina226.h \
+ /home/xjaneas/git/EAR/src/metrics/ipmi/energy_node/ibm.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/common/config.h

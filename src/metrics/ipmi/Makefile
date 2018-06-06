@@ -36,4 +36,4 @@ include $(SRCDIR)/Makefile.depend
 ######## SUBFOLDERS
 
 %.components:
-	$(MAKE) -C 'energy_node' $*
+	@ $(MAKE) -C 'energy_node' $* || exit

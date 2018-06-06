@@ -1,0 +1,21 @@
+eardbd.o: eardbd.c /home/xjaneas/git/EAR/src/database_cache/eardbd.h \
+ /home/xjaneas/git/EAR/src/database_cache/eardbd_api.h \
+ /home/xjaneas/git/EAR/src/common/types/periodic_metric.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/types/application.h \
+ /home/xjaneas/git/EAR/src/common/types/job.h \
+ /home/xjaneas/git/EAR/src/common/types/signature.h \
+ /home/xjaneas/git/EAR/src/common/types/power_signature.h \
+ /home/xjaneas/git/EAR/src/common/states.h
+eardbd_api.o: eardbd_api.c \
+ /home/xjaneas/git/EAR/src/database_cache/eardbd_api.h \
+ /home/xjaneas/git/EAR/src/database_cache/eardbd.h \
+ /home/xjaneas/git/EAR/src/common/types/periodic_metric.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/types/application.h \
+ /home/xjaneas/git/EAR/src/common/types/job.h \
+ /home/xjaneas/git/EAR/src/common/types/signature.h \
+ /home/xjaneas/git/EAR/src/common/types/power_signature.h \
+ /home/xjaneas/git/EAR/src/common/states.h

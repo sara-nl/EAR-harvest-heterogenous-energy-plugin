@@ -1,0 +1,62 @@
+log.o: log.c /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/types/log.h \
+ /home/xjaneas/git/EAR/src/common/types/job.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/daemon/eard_client_api.h \
+ /home/xjaneas/git/EAR/src/daemon/eard_api_conf.h \
+ /home/xjaneas/git/EAR/src/common/types/application.h \
+ /home/xjaneas/git/EAR/src/common/types/signature.h \
+ /home/xjaneas/git/EAR/src/common/types/power_signature.h \
+ /home/xjaneas/git/EAR/src/common/types/loop.h
+signature.o: signature.c \
+ /home/xjaneas/git/EAR/src/common/types/signature.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/math_operations.h
+gm_warning.o: gm_warning.c /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/types/gm_warning.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h
+application.o: application.c /home/xjaneas/git/EAR/src/common/states.h \
+ /home/xjaneas/git/EAR/src/common/types/application.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/types/job.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/types/signature.h \
+ /home/xjaneas/git/EAR/src/common/types/power_signature.h
+coefficient.o: coefficient.c \
+ /home/xjaneas/git/EAR/src/common/types/coefficient.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/states.h
+cluster_conf.o: cluster_conf.c /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/states.h \
+ /home/xjaneas/git/EAR/src/common/environment.h \
+ /home/xjaneas/git/EAR/src/common/string_enhanced.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/types/cluster_conf.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h
+projection.o: projection.c \
+ /home/xjaneas/git/EAR/src/common/types/projection.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/ear_verbose.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/control/frequency.h
+periodic_metric.o: periodic_metric.c \
+ /home/xjaneas/git/EAR/src/common/math_operations.h \
+ /home/xjaneas/git/EAR/src/common/types/periodic_metric.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h
+job.o: job.c /home/xjaneas/git/EAR/src/common/types/job.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/config.h
+power_signature.o: power_signature.c \
+ /home/xjaneas/git/EAR/src/common/types/power_signature.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/math_operations.h
+loop.o: loop.c /home/xjaneas/git/EAR/src/common/config.h \
+ /home/xjaneas/git/EAR/src/common/types/loop.h \
+ /home/xjaneas/git/EAR/src/common/types/generic.h \
+ /home/xjaneas/git/EAR/src/common/types/signature.h \
+ /home/xjaneas/git/EAR/src/common/types/job.h \
+ /home/xjaneas/git/EAR/src/common/states.h
