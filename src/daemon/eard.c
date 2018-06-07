@@ -57,7 +57,6 @@
 #include <common/states.h>
 #include <daemon/eard_conf_api.h>
 
-#if SHARED_MEMORY
 #include <common/types/cluster_conf.h>
 #include <pthread.h>
 #include <daemon/power_monitoring.h>
@@ -69,7 +68,6 @@ pthread_t dyn_conf_th;
 cluster_conf_t	my_cluster_conf;
 node_conf_t 	*my_node_conf;
 ear_conf_t *dyn_conf;
-#endif
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
@@ -165,7 +163,6 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IRUSR|S_IWGRP|S_IROTH|S_IWOTH);
 }
 
-#if SHARED_MEMORY
 void connect_service(int req,application_t *new_app)
 {
     char ear_commack[MAX_PATH_SIZE];
@@ -224,9 +221,8 @@ void connect_service(int req,application_t *new_app)
                 eard_close_comm();
             }
             // We must modify the client api to send more information
-            #if SHARED_MEMORY
 			powermon_mpi_init(new_app);
-			#endif
+
         	VERBOSE_N(2, "sending ack for service %d",req);
         	if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
         	    VERBOSE_N(0,"WARNING while writting for ping conn for %lu", pid);
@@ -245,89 +241,6 @@ void connect_service(int req,application_t *new_app)
     	VERBOSE_N(2, "service %d connected", req);
 	}
 }
-
-#else
-
-void connect_service(int req,unsigned long pid)
-{
-	char ear_commack[MAX_PATH_SIZE];
-	unsigned long ack;
-	int connect=1;
-	int alive;
-	job_t new_job;
-	// Let's check if there is another application
-	VERBOSE_N(1, "request for connection at service %d", req);
-	if (is_new_application(pid) || is_new_service(req, pid)) {
-		connect=1;
-	} else {
-		connect=0;
-
-		//FIXME: implicit
-		if (check_ping()) alive = application_timeout();
-		if (alive == 0) connect = 1;
-	}
-	
-
-	// Creates 1 pipe (per node) to send acks.
-	if (connect)
-	{
-		sprintf(ear_commack, "%s/.ear_comm.ack_%d.%lu", ear_tmp, req, pid);
-		application_id = pid;
-
-		// ear_commack will be used to send ack's or values (depending on the
-		// requests) from eard to the library
-		VERBOSE_N(1, "reating ack comm %s pid=%lu", ear_commack,pid);
-
-		if (mknod(ear_commack, S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,0) < 0)
-		{
-			if (errno != EEXIST){
-				VERBOSE_N(0, "ERROR WHEN creating ear communicator for ack %s", strerror(errno));
-				eard_close_comm();
-			}
-		}
-
-		chmod(ear_commack,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-
-		// At first service connection, we use the ping conn file
-		if (req == 0)
-		{
-			// We open ping connection  for writting
-			sprintf(ear_ping, "%s/.ear_comm.ping.%lu", ear_tmp, pid);
-
-			VERBOSE_N(1, "application %lu connected", pid);
-			VERBOSE_N(1, "opening ping conn for %lu", pid);
-			ear_ping_fd = open(ear_ping,O_WRONLY);
-
-			if (ear_ping_fd < 0)
-			{
-				VERBOSE_N(0,"ERROR while opening ping pipe %s (%s)", ear_ping, strerror(errno));
-				eard_close_comm();
-			}
-			#if SHARED_MEMORY
-			// We must modify the client api to send more information
-			new_job.id=pid;
-			powermon_mpi_init(&new_job);
-			#endif
-		}
-
-		VERBOSE_N(1, "sending ack for service %d",req);
-		if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
-			VERBOSE_N(0,"WARNING while writting for ping conn for %lu", pid);
-		}
-
-		VERBOSE_N(1, "connecting service %s", ear_commack);
-		if ((ear_fd_ack[req]=open(ear_commack,O_WRONLY)) < 0){
-			VERBOSE_N(0,"ERROR when opening ear communicator for ack (%s)", strerror(errno));
-			eard_close_comm();
-		}
-	}else{ 
-		// eard only suppports one application connected, the second one will block
-		VERBOSE_N(0, "Process pid %lu rejected as master", pid);
-	}
-	VERBOSE_N(0, "Process pid %lu selected as master", pid);
-	VERBOSE_N(1, "service %d connected", req);
-}
-#endif
 
 // Checks application connections
 int is_new_application(pid)
@@ -479,10 +392,9 @@ void eard_close_comm()
 	}
 
 	close(ear_ping_fd);
-	#if SHARED_MEMORY
+
 	// We must send the app signature to the powermonitoring thread
 	powermon_mpi_finalize();
-	#endif
 
 	application_id = -1;
 	ear_ping_fd = -1;
@@ -504,11 +416,7 @@ int eard_node_energy(int must_read)
 	}
     switch (req.req_service){
 		case CONNECT_ENERGY:
-			#if SHARED_MEMORY
 			connect_service(node_energy_req,&req.req_data.app);
-			#else
-			connect_service(node_energy_req,req.req_data.req_value);
-			#endif
 			break;
         case READ_DC_ENERGY:
 			read_dc_energy(&ack);
@@ -570,11 +478,7 @@ int eard_system(int must_read)
 	switch (req.req_service)
 	{
 		case CONNECT_SYSTEM:
-			#if SHARED_MEMORY
 			connect_service(system_req,&req.req_data.app);
-			#else
-			connect_service(system_req,req.req_data.req_value);
-			#endif	
 			break;
 		case WRITE_APP_SIGNATURE:
 			ret1 = append_application_binary_file(database_bin_path, &req.req_data.app);
@@ -595,9 +499,8 @@ int eard_system(int must_read)
 				VERBOSE_N(0, "ERROR while writing system service ack, closing connection...");
 				eard_close_comm();
 			}
-			#if SHARED_MEMORY
+
 			powermon_mpi_signature(&req.req_data.app);
-			#endif
 			break;
 		case WRITE_EVENT:
 			ack=EAR_COM_OK;
@@ -656,22 +559,11 @@ int eard_freq(int must_read)
 	switch (req.req_service) {
 		case CONNECT_FREQ:
 			// HIGHLIGHT: LIBRARY INIT
-			#if SHARED_MEMORY
 			connect_service(freq_req,&req.req_data.app);
-			#else // It is included in powermon_job_init
-			connect_service(freq_req,req.req_data.req_value);
-			frequency_save_previous_frequency();
-			frequency_save_previous_policy();
-			frequency_set_userspace_governor_all_cpus();
-			#endif
 			break;
 		case SET_FREQ:
 			ear_debug(1,"eard: Setting node frequency\n");
-#if SHARED_MEMORY
 			eard_set_freq(req.req_data.req_value,min(eard_max_freq,max_dyn_freq()));
-#else
-			eard_set_freq(req.req_data.req_value,eard_max_freq);
-#endif	
 			break;
 		case START_GET_FREQ:
 			aperf_get_avg_frequency_init_all_cpus();
@@ -691,10 +583,6 @@ int eard_freq(int must_read)
 			ear_debug(1,"eard: Closing comunication\n");
 			// HIGHLIGHT: LIBRARY DISPOSE (1/2)
 			eard_close_comm();
-			#if !SHARED_MEMORY
-			// When ear_v3 is used, this is included in powermon_job_end
-			frequency_recover_previous_policy();
-			frequency_recover_previous_frequency();
 			#endif
 			break;
 		case DATA_SIZE_FREQ:
@@ -732,11 +620,7 @@ int eard_uncore(int must_read)
 	switch (req.req_service)
 	{
 	    case CONNECT_UNCORE:
-			#if SHARED_MEMORY
 			connect_service(uncore_req,&req.req_data.app);
-			#else
-			connect_service(uncore_req,req.req_data.req_value);
-			#endif
 			break;
 		case START_UNCORE:
 			ear_debug(1,"EAR_daemon_server: start uncore\n");
@@ -782,11 +666,7 @@ int eard_rapl(int must_read)
 	}
     switch (req.req_service){
 		case CONNECT_RAPL:
-			#if SHARED_MEMORY
 			connect_service(rapl_req,&req.req_data.app);
-			#else
-			connect_service(rapl_req,req.req_data.req_value);
-			#endif
 			break;
         case START_RAPL:
     		ear_debug(1,"EAR_daemon_server: start RAPL counters\n");
@@ -880,14 +760,11 @@ void signal_handler(int sig)
 			eard_close_comm();
 		}
 
-		#if SHARED_MEMORY
 		VERBOSE_N(0,"Sending SIGUSR1 to powermon %u and DC %u threads\n",(uint)power_mon_th,(uint)dyn_conf_th);
 		pthread_kill(power_mon_th, SIGUSR1);
 		pthread_kill(dyn_conf_th, SIGUSR1);
 		pthread_join(power_mon_th,NULL);
 		pthread_join(dyn_conf_th, NULL);
-		#endif
-
 	}
 	if ((sig == SIGTERM) || (sig == SIGINT)){
 		eard_exit(0);
@@ -1110,7 +987,6 @@ void main(int argc,char *argv[])
 		ear_debug(3,"eard: fd %d added to rdfd mask max=%d FD_SETSIZE=%d\n",ear_fd_req[i],numfds_req,FD_SETSIZE);
 	}
 	rfds_basic=rfds;
-#if SHARED_MEMORY
     ear_verbose(0,"creating shared memory tmp=%s\n",ear_tmp);
     dyn_conf=create_ear_conf_shared_area(ear_tmp,eard_max_freq);
     if (dyn_conf==NULL){
@@ -1136,7 +1012,7 @@ void main(int argc,char *argv[])
 		}
 	}
 	configure_default_values(dyn_conf,&my_cluster_conf,my_node_conf);
-#endif
+
 	ear_verbose(1,"eard:Communicator for %s ON\n",nodename);
 	// we wait until EAR daemon receives a request
 	// We support requests realted to frequency and to uncore counters
