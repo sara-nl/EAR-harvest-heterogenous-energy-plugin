@@ -14,8 +14,8 @@ min_time.o: min_time.c ../../common/config.h ../../control/frequency.h \
  ../../daemon/shared_configuration.h ../../library/models/models.h \
  ../../common/environment.h ../../common/types/coefficient.h \
  ../../common/types/projection.h ../../library/models/sig_projections.h \
- ../../daemon/eard_client_api.h ../../common/types/log.h \
- ../../daemon/eard_api_conf.h ../../common/ear_verbose.h \
+ ../../daemon/eard_api.h ../../common/types/log.h \
+ ../../daemon/eard_conf_api.h ../../common/ear_verbose.h \
  ../../common/states.h
 monitoring.o: monitoring.c ../../common/types/application.h \
  ../../common/config.h ../../common/types/job.h \
@@ -42,6 +42,6 @@ min_energy.o: min_energy.c ../../common/config.h \
  ../../common/types/loop.h ../../daemon/shared_configuration.h \
  ../../library/models/models.h ../../common/environment.h \
  ../../common/types/coefficient.h ../../common/types/projection.h \
- ../../library/models/sig_projections.h ../../daemon/eard_client_api.h \
- ../../common/types/log.h ../../daemon/eard_api_conf.h \
+ ../../library/models/sig_projections.h ../../daemon/eard_api.h \
+ ../../common/types/log.h ../../daemon/eard_conf_api.h \
  ../../common/ear_verbose.h ../../common/states.h

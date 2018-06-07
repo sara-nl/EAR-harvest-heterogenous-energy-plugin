@@ -13,10 +13,10 @@ bandwith_monitor.o: bandwith_monitor.c ../../metrics/custom/bandwidth.h \
 energy_1_second.o: energy_1_second.c ../../metrics/ipmi/energy_node.h
 freeipmi_overhead.o: freeipmi_overhead.c ../../metrics/ipmi/energy_node.h \
  ../../common/config.h
-eard_monitor.o: eard_monitor.c ../../daemon/eard_client_api.h \
+eard_monitor.o: eard_monitor.c ../../daemon/eard_api.h \
  ../../common/types/generic.h ../../common/types/log.h \
  ../../common/types/job.h ../../common/config.h \
- ../../daemon/eard_api_conf.h ../../common/types/application.h \
+ ../../daemon/eard_conf_api.h ../../common/types/application.h \
  ../../common/types/signature.h ../../common/types/power_signature.h \
  ../../common/types/loop.h
 simd_tests.o: simd_tests.c ../../metrics/custom/hardware_info.h

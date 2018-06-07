@@ -1,7 +1,7 @@
 log.o: log.c ../../common/config.h ../../common/types/log.h \
  ../../common/types/job.h ../../common/types/generic.h \
- ../../common/ear_verbose.h ../../daemon/eard_client_api.h \
- ../../daemon/eard_api_conf.h ../../common/types/application.h \
+ ../../common/ear_verbose.h ../../daemon/eard_api.h \
+ ../../daemon/eard_conf_api.h ../../common/types/application.h \
  ../../common/types/signature.h ../../common/types/power_signature.h \
  ../../common/types/loop.h
 signature.o: signature.c ../../common/types/signature.h \

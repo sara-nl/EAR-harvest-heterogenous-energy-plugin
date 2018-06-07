@@ -27,6 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+
+
 /**
 *    \file remote_daemon_client.h
 *    \brief This file defines the client side of the remote EAR API
@@ -62,6 +64,7 @@ int eards_set_freq(ulong freq);
 */
 int eards_red_max_freq(uint p_states);
 
+
 /** Sets th as the new threashold to be used by the policy. New th must be passed as % th=0.75 --> 75. It is designed to be used by the min_time_to_solution policy
 */
 int eards_set_th(ulong th);
@@ -69,6 +72,7 @@ int eards_set_th(ulong th);
 /** Increases the current threshold by th units.New th must be passed as % th=0.05 --> 5. It is designed to be used by the min_time_to_solution policy
 */
 int eards_inc_th(ulong th);
+
 
 /** Disconnect from the previously connected EARD
 */

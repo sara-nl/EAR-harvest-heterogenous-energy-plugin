@@ -21,7 +21,7 @@ bandwith_monitor: bandwith_monitor.c \
 	$(CC) $(CFLAGS) -o bandwith_monitor $^
 
 eard_monitor: eard_monitor.c \
-        $(SRCDIR)/daemon/eard_client_api.o \
+        $(SRCDIR)/daemon/eard_api.o \
         $(SRCDIR)/common/types.a
 	$(CC) $(CFLAGS) -o eard_monitor $^
 

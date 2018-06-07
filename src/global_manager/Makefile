@@ -4,8 +4,8 @@ LDFLAGS = $(DB_LDFLAGS) -lpthread
 ######## FILES
 
 HEADERS = $(SRCDIR)/common/config.h \
-          $(SRCDIR)/daemon/eard_command_api.h \
-          $(SRCDIR)/daemon/eard_command_api_conf.h
+          $(SRCDIR)/daemon/eard_rapi.h \
+          $(SRCDIR)/daemon/eard_conf_rapi.h
 
 DAEMON_OBJS = $(SRCDIR)/common/types.a \
               eargm_server_api.o

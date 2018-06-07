@@ -27,6 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,11 +45,13 @@
 #include <netinet/ip.h>
 #include <netdb.h>
 
-#include <daemon/eard_command_api_conf.h>
-#include <common/ear_verbose.h>
 #include <common/types/job.h>
+#include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/config.h>
+#include <daemon/eard_conf_rapi.h>
+
+
 
 static char *__NAME__ = "eard_server_api:";
 

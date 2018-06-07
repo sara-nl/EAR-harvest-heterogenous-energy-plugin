@@ -30,15 +30,14 @@
 
 #ifndef _EARD_SERVER_API_H
 #define _EARD_SERVER_API_H
-
-
-#include <netdb.h>
+#include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <netdb.h>
+#include <daemon/eard_conf_rapi.h>
 
-#include <daemon/eard_command_api_conf.h>
 
 int create_server_socket();
 int wait_for_client(int sockfd,struct sockaddr_in *client);

@@ -16,7 +16,7 @@ lib_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
            $(SRCDIR)/metrics/papi/instructions.o \
            $(SRCDIR)/metrics/papi/stalls.o \
            $(SRCDIR)/control/frequency.o \
-           $(SRCDIR)/daemon/eard_client_api.o \
+           $(SRCDIR)/daemon/eard_api.o \
            $(SRCDIR)/daemon/shared_configuration.o \
            $(SRCDIR)/common/environment_common.o \
            $(SRCDIR)/common/file_lock.o \

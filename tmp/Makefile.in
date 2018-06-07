@@ -17,7 +17,7 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/papi/stalls.o \
                $(SRCDIR)/control/frequency.o
 
-COMMON_OBJS = $(SRCDIR)/daemon/eard_client_api.o \
+COMMON_OBJS = $(SRCDIR)/daemon/eard_api.o \
               $(SRCDIR)/common/environment_common.o \
               $(SRCDIR)/common/file_lock.o \
               $(SRCDIR)/common/environment.o \

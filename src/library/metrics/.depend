@@ -4,7 +4,7 @@ metrics.o: metrics.c ../../metrics/papi/flops.h \
  ../../common/types/application.h ../../common/config.h \
  ../../common/types/job.h ../../common/types/generic.h \
  ../../common/types/signature.h ../../common/types/power_signature.h \
- ../../daemon/eard_client_api.h ../../common/types/log.h \
- ../../daemon/eard_api_conf.h ../../common/types/loop.h \
+ ../../daemon/eard_api.h ../../common/types/log.h \
+ ../../daemon/eard_conf_api.h ../../common/types/loop.h \
  ../../common/ear_verbose.h ../../common/states.h \
  ../../common/math_operations.h

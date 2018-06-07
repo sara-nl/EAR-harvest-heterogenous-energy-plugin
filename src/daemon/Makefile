@@ -1,4 +1,4 @@
-CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread 
+CFLAGS  = -I$(SRCDIR) $(CONSTANTS) -pthread
 LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -pthread
 
 ######## FILES
@@ -6,12 +6,11 @@ LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -pthread
 eard_OBJS += power_monitor/libpowermon.a \
              dynamic_configuration.o \
              shared_configuration.o \
-             eard_client_api.o \
+             eard_api.o \
              eard_server_api.o
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database/db_helper.o \
-             $(SRCDIR)/common/database/mysql_io_functions.o \
-             $(SRCDIR)/common/string_enhanced.o
+             $(SRCDIR)/common/database/mysql_io_functions.o
 endif
 eard_OBJS += $(SRCDIR)/common/types.a \
              $(SRCDIR)/common/environment_common.o \
@@ -19,9 +18,9 @@ eard_OBJS += $(SRCDIR)/common/types.a \
              $(SRCDIR)/metrics/libmetrics.a \
              $(SRCDIR)/database_cache/eardbd_api.o
 
-BINARIES = eard_client_api.o \
+BINARIES = eard_api.o \
+           eard_rapi.o \
            eard_server_api.o \
-           eard_command_api.o \
            eard
 
 ######## RULES
@@ -31,7 +30,7 @@ all: all.components $(BINARIES) all.others
 eard: eard.c $(eard_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
 
-dynamic_configuration.o: dynamic_configuration.c eard_server_api.h
+dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
 
 shared_configuration.o: shared_configuration.c shared_configuration.h
@@ -40,11 +39,11 @@ shared_configuration.o: shared_configuration.c shared_configuration.h
 eard_server_api.o: eard_server_api.c eard_server_api.h
 	$(CC) $(CFLAGS) -c eard_server_api.c
 
-eard_client_api.o: eard_client_api.c eard_client_api.h eard_api_conf.h
-	$(CC) -fPIC $(CFLAGS) -c eard_client_api.c
+eard_api.o: eard_api.c eard_api.h
+	$(CC) -fPIC $(CFLAGS) -c eard_api.c
 
-eard_command_api.o: eard_command_api.c eard_command_api.h eard_api_conf.h
-	$(CC) -fPIC $(CFLAGS) -c eard_command_api.c
+eard_rapi.o: eard_rapi.c eard_rapi.h
+	$(CC) -fPIC $(CFLAGS) -c eard_rapi.c
 
 ######## OPTIONS
 
