@@ -1,7 +1,14 @@
-CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS) -DLOW_FREQ_ENERGY_READINGS
 CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 
+######## FILES
+
+OBJS = ibm.o \
+       lenovo_nm.o \
+       lenovo_ina226.o
+
 ######## RULES
+
+all: $(OBJS)
 
 lenovo_nm.o: lenovo_nm.c lenovo_nm.h
 	$(CC) $(CFLAGS) -c lenovo_nm.c
@@ -14,5 +21,11 @@ ibm.o: ibm.c ibm.h
 
 ######## OPTIONS
 
+install:
+
 clean:
 	rm -rf *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

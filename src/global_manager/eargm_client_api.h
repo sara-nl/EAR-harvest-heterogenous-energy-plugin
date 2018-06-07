@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 /**
 *    \file remote_daemon_client.h
 *    \brief This file defines the client side of the remote EAR API
@@ -38,7 +36,6 @@
 
 #ifndef _EARGM_API_H
 #define _EARGM_API_H
-
 
 /** Connects with the EARGM.
 *	The sequence must be : connect +  command + disconnect

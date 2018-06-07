@@ -1,42 +1,28 @@
 CFLAGS   = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
 LDFLAGS  = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 
+######## VARS
+
+export DIR
+export CFLAGS
+export LDFLAGS
+
 ######## FILES
 
-HEADERS = $(SRCDIR)/library/common/externs.h \
-          $(SRCDIR)/common/ear_verbose.h \
-          $(SRCDIR)/common/states.h \
-          $(SRCDIR)/common/states_periodic.h \
-          $(SRCDIR)/common/config.h
-
-METRICS_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
-               $(SRCDIR)/metrics/papi/generics.o \
-               $(SRCDIR)/metrics/papi/cache.o \
-               $(SRCDIR)/metrics/papi/flops.o \
-               $(SRCDIR)/metrics/papi/instructions.o \
-               $(SRCDIR)/metrics/papi/stalls.o \
-               $(SRCDIR)/control/frequency.o
-
-COMMON_OBJS = $(SRCDIR)/daemon/eard_api.o \
-              $(SRCDIR)/common/environment_common.o \
-              $(SRCDIR)/common/file_lock.o \
-              $(SRCDIR)/common/environment.o \
-              $(SRCDIR)/common/math_operations.o \
-              $(SRCDIR)/common/types.a
-
-ifdef FEAT_SHRMEM
-COMMON_OBJS += $(SRCDIR)/daemon/shared_configuration.o
-endif
-
-OUTER_OBJS = $(COMMON_OBJS) $(METRICS_OBJS)
-
-REMAKE_OBJS = states/states.o \
-			  states/states_periodic.o \
-              tracer/tracer.o \
-              mpi_intercept/ear_api.o \
-              mpi_intercept/process_MPI.o \
-              mpi_intercept/MPI_intercept.o \
-              mpi_intercept/MPI_interface.o
+lib_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
+           $(SRCDIR)/metrics/papi/generics.o \
+           $(SRCDIR)/metrics/papi/cache.o \
+           $(SRCDIR)/metrics/papi/flops.o \
+           $(SRCDIR)/metrics/papi/instructions.o \
+           $(SRCDIR)/metrics/papi/stalls.o \
+           $(SRCDIR)/control/frequency.o \
+           $(SRCDIR)/daemon/eard_api.o \
+           $(SRCDIR)/daemon/shared_configuration.o \
+           $(SRCDIR)/common/environment_common.o \
+           $(SRCDIR)/common/file_lock.o \
+           $(SRCDIR)/common/environment.o \
+           $(SRCDIR)/common/math_operations.o \
+           $(SRCDIR)/common/types.a
 
 OBJS = dynais/dynais.o \
        metrics/metrics.o \
@@ -44,69 +30,57 @@ OBJS = dynais/dynais.o \
        models/min_time.o \
        models/min_energy.o \
        models/monitoring.o \
-       models/sig_projections.o 
+       models/sig_projections.o \
+       states/states.o \
+       states/states_periodic.o \
+       tracer/tracer.o \
+       mpi_intercept/ear_api.o \
+       mpi_intercept/process_MPI.o \
+       mpi_intercept/MPI_intercept.o \
+       mpi_intercept/MPI_interface.o
 
-######## VARS
+ifdef MPICC
+libs_ALL += libear.so libeart.so
+impi_ALL = all.impi.components libear.so \
+           allt.impi.components libeart.so
+endif
 
-export DIR
-export CFLAGS
-export LDFLAGS
+ifdef OMPICC
+libs_ALL += libear_ompi.so libeart_ompi.so
+ompi_ALL = all.ompi.components libear_ompi.so \
+           allt.ompi.components libeart_ompi.so
+endif
 
 ######## RULES
 
-all: $(OBJS) libear.so libeart.so  
+all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 
-%.o: %.c
-	@ $(MAKE) -C `dirname $@` `basename $@` || exit
-
-######## MPI RULES
-
-ifdef MPICC
-
-update-mpi-objs:
-	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)'
-
-update-mpi-objs-trace:
-	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
-
-libear.so: update-mpi-objs 
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o libear.so $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
-
-libeart.so: update-mpi-objs-trace
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o libeart.so $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
-
-endif
-
-######## SPECIFIC OPEN MPI RULES
-
-ifdef OMPICC
-
-update-ompi-objs:
-	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(OMPICC)'
-
-update-ompi-objs-trace:
-	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(OMPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
-
-: update-ompi-objs
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
-
-: update-ompi-objs-trace
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o  $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
-
-endif
+%.so: $(OBJS) $(lib_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $(LDFLAGS) $(OBJS) $(lib_OBJS)
 
 ######## OPTIONS
 
 install:
-ifdef MPICC
-	@ mv libear.so $(DESTDIR)/lib/libear.so
-	@ mv libeart.so $(DESTDIR)/lib/libeart.so
-endif
-ifdef OMPICC
-	@ mv  $(DESTDIR)/lib/
-	@ mv  $(DESTDIR)/lib/
-endif
+	cp $(libs_ALL) $(DESTDIR)/lib/
 
-clean:
-	rm -f *.so *.a *.o
-	rm $(REMAKE_OBJS) $(OBJS)
+clean: clean.gnrc.components clean.impi.components
+	rm -f *.o *.a *.so
+
+depend: depend.gnrc.components depend.impi.components
+
+######## SUBFOLDERS
+
+%.gnrc.components:
+	@ $(MAKE) -C 'dynais' $* || exit
+	@ $(MAKE) -C 'metrics' $* || exit
+	@ $(MAKE) -C 'models' $* || exit
+
+%.impi.components:
+	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
+	@ $(MAKE) -B -C 'states' $* MPICC='$(MPICC)' || exit
+	@ $(MAKE) -B -C 'tracer' $* MPICC='$(MPICC)' || exit
+
+%.ompi.components:
+	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(OMPICC)' || exit
+	@ $(MAKE) -B -C 'states' $* MPICC='$(OMPICC)' || exit
+	@ $(MAKE) -B -C 'tracer' $* MPICC='$(OMPICC)' || exit

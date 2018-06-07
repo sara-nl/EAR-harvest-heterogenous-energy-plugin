@@ -293,15 +293,11 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     }
     else
     {
-#if SHARED_MEMORY
         printf("\nApplication information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\t Avg_freq (GHz)\n\t");
         avg_f = (double) apps[0].power_sig.avg_f/1000000;
         printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n",
                 strtok(apps[0].node_id, "."), apps[0].power_sig.time, apps[0].power_sig.DC_power,
                 apps[0].power_sig.DC_power * apps[0].power_sig.time, avg_f);
-#else
-        printf("Non-MPI application executed without shared memory in EAR, execution information cannot be retrieved.\n");
-#endif
     }
 
     free(apps);

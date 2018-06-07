@@ -233,9 +233,7 @@ void ear_init()
 		return;
 	}
 
-	#if SHARED_MEMORY
 	system_conf = attach_ear_conf_shared_area(get_ear_tmp());
-	#endif
 
 	// Application static data and metrics
 	init_application(&application);
@@ -373,9 +371,7 @@ void ear_finalize()
 	states_end_job(my_id, NULL, ear_app_name);
 	#endif
 
-	#if SHARED_MEMORY
 	dettach_ear_conf_shared_area();
-	#endif
 
 	// Cest fini
 	eards_disconnect();

@@ -126,7 +126,6 @@ void init_policy_functions()
 // This function sets the default freq based on the policy
 int policy_global_configuration(int p_state)
 {
-#if SHARED_MEMORY
 	if (system_conf!=NULL){
 	switch (power_model_policy){
 	case MIN_ENERGY_TO_SOLUTION:
@@ -139,15 +138,11 @@ int policy_global_configuration(int p_state)
 		break;
 	}
 	}else return p_state;
-#else 
-	return p_state;
-#endif
 }
 
 // This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
 void policy_global_reconfiguration()
 {
-#if SHARED_MEMORY
 	if (system_conf!=NULL){
 	#if DEMO
 	VERBOSE_N(1,"policy_global_reconfiguration max %lu def %lu th %.2lf\n",
@@ -175,54 +170,36 @@ void policy_global_reconfiguration()
         performance_gain=system_conf->th;
     }
 	}
-#else
-	EAR_default_frequency=frequency_pstate_to_freq(EAR_default_pstate);
-#endif
 }
 
 // This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
 uint get_global_min_pstate()
 {
-#if SHARED_MEMORY
     if (system_conf!=NULL) return frequency_freq_to_pstate(system_conf->max_freq);
 	else return 1;
-#else
-	return 1;
-#endif
 }
 
 // This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
 uint get_global_def_pstate()
 {
-#if SHARED_MEMORY
     if (system_conf!=NULL) return frequency_freq_to_pstate(system_conf->def_freq);
 	else return EAR_default_pstate;
-#else
-    return EAR_default_pstate;
-#endif
 }
 
 // This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
 ulong get_global_def_freq()
 {
-#if SHARED_MEMORY
     if (system_conf!=NULL) return system_conf->def_freq;
 	else return EAR_default_pstate;
-#else
-    return EAR_default_pstate;
-#endif
 }
 
 double get_global_th()
 {
-	switch (power_model_policy){
+	switch (power_model_policy)
+	{
 		case MIN_TIME_TO_SOLUTION:
-			#if SHARED_MEMORY
-				if (system_conf!=NULL) return system_conf->th;
-				else return performance_gain;
-			#else
-				return performance_gain;
-			#endif
+			if (system_conf!=NULL) return system_conf->th;
+			else return performance_gain;
 			break;
 		case MIN_ENERGY_TO_SOLUTION:
 			return performance_penalty;
@@ -231,10 +208,6 @@ double get_global_th()
 			return 0.0;
 	}
 }
-
-
-
-
 
 void init_power_policy()
 {
@@ -421,4 +394,3 @@ void policy_default_configuration()
 	ear_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
 	eards_change_freq(ear_frequency);
 }
-

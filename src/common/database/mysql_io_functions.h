@@ -35,11 +35,8 @@
 #include <common/types/signature.h>
 #include <common/types/gm_warning.h>
 #include <common/types/application.h>
-#if SHARED_MEMORY
 #include <common/types/periodic_metric.h>
 #include <common/types/power_signature.h>
-#endif
-
 
 /** Given a MYSQL connection and an application, inserts said application into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
@@ -52,7 +49,6 @@ int mysql_insert_application(MYSQL *connection, application_t *app);
 *   EAR_MYSQL_STMT_ERROR on error. */
 int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps);
 
-
 /** Given a MYSQL connection and a loop, inserts said loop into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
@@ -63,7 +59,6 @@ int mysql_insert_loop(MYSQL *connection, loop_t *loop);
 *   number of loops found on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error. */
 int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops);
-
 
 /** Given a MYSQL connection and a job, inserts said job into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
@@ -87,7 +82,6 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
 *   EAR_MYSQL_STMT_ERROR on error. */
 int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs);
 
-#if SHARED_MEMORY
 /** Given a MYSQL connection and a power_signature, inserts said power_signature into
 *   the database. Returns the power_signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
@@ -102,7 +96,6 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met);
 *   periodic_metrics into the database. Returns EAR_SUCCESS on success, and either
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. */
 int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **per_mets, int num_mets);
-#endif
 
 /** Given a MYSQL connection and an EAR event, inserts said event into
 *   the database. Returns the event's database id on success, and either 

@@ -27,15 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <common/config.h>
-#if SHARED_MEMORY
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
 #include <common/math_operations.h>
 #include <common/types/periodic_metric.h>
-
+#include <common/config.h>
 
 void copy_periodic_metric(periodic_metric_t *destiny, periodic_metric_t *source)
 {
@@ -80,6 +79,3 @@ void print_periodic_metric_t(int fd, periodic_metric_t *pm)
 	//dprintf(fd, "%s;%s;", ctime(&pm->start_time), ctime(&pm->start_time));
     //dprinft(fd, "%llu;", pm->DC_energy);
 }
-
-
-#endif

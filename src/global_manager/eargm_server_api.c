@@ -50,7 +50,7 @@ extern int EAR_VERBOSE_LEVEL;
 #include <common/states.h>
 #include <common/config.h>
 #include <global_manager/eargm_conf_api.h>
-#include <global_manager/eargm_api.h>
+#include <global_manager/eargm_client_api.h>
 
 
 

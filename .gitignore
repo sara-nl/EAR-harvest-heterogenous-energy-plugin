@@ -37,26 +37,27 @@ tests/check/check.sh
 *libeart.so
 *eard
 
+*ereport
 *ear_control
 *ear_get_node_freq
 *ear_set_node_freq
 *ear_set_ondemand
-*ereport
 *ear_report
 *ear_create_database
 *ear_end_job
 *ear_new_job
 *ear_energy_over_time
 *ear_store_database
-*eargmd
-*ear_gm
 *ear_inc_th
 *ear_red_freq
 *ear_set_freq
 *ear_set_th
 *ear_set_ondemand
+*ear_gm
+*eargmd
 *eargm_new_job
 *eargm_end_job
+*eardbd
 
 *compute_coefficients_remote
 *coefficients_quality_control

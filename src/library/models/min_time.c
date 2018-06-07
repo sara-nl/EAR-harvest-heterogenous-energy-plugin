@@ -142,10 +142,7 @@ ulong min_time_policy(signature_t *sig)
 	#if DEMO
 	VERBOSE_N(1,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
 	#endif
-	#if !SHARED_MEMORY
-	if (best_pstate>min_pstate)  
-	{
-	#endif
+
 		try_next=1;
 		i=EAR_default_pstate-1;
 		time_current=time_ref;
@@ -181,12 +178,8 @@ ulong min_time_policy(signature_t *sig)
 			} // Coefficients available
 			else try_next=0;
 		}	
-	#if !SHARED_MEMORY
-	}
-	#endif
 
 	// Coefficients were not available for this nominal frequency
-	#if SHARED_MEMORY
 	if (system_conf!=NULL){
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (best_pstate>system_conf->max_freq){ 
@@ -194,7 +187,6 @@ ulong min_time_policy(signature_t *sig)
 		best_pstate=system_conf->max_freq;
 	}
 	}
-	#endif
 
 	return best_pstate;
 }
@@ -214,7 +206,6 @@ ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t 
 }
 ulong  min_time_default_conf(ulong f)
 {
-    #if SHARED_MEMORY
     // Just in case the bestPstate was the frequency at which the application was running
     if ((system_conf!=NULL) && (f>system_conf->max_freq)){
         log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
@@ -222,8 +213,5 @@ ulong  min_time_default_conf(ulong f)
         f,system_conf->max_freq);
         return system_conf->max_freq;
     }else return f;
-    #else
-    return f;
-    #endif
 }
 

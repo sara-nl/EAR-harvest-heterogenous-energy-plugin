@@ -27,27 +27,24 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <daemon/eard_rapi.h>
+/**
+*    \file remote_daemon_client.h
+*    \brief This file defines the client side of the remote EAR API
+*
+* 	 Note:Specific functions could be substituted by a generic function passing a local_config_t
+*/
 
-void usage(char *app)
+#ifndef _EARGM_COMMON_API_H
+#define _EARGM_COMMON_API_H
+
+#define EARGM_NEW_JOB	100
+#define EARGM_END_JOB	200
+#define NO_COMMAND		100000
+
+typedef struct eargm_request
 {
-	printf("usage:%s nodename freq\n",app);
-	exit(1);
-}
-void main(int argc,char *argv[])
-{
-	int eards,job_id;
-	ulong f;
-	if (argc!=3) usage(argv[0]);
-	// MAX_FREQ
-	f=(ulong)atol(argv[2]);
-	printf("-->reducing freq to %lu\n",f);
-	eards=eards_remote_connect(argv[1]);
-	if(eards<0) printf("Connection error\n");
-	eards_set_freq(f);
-	eards_remote_disconnect();
-	exit(1);
-}
+    uint req;
+    uint num_nodes;
+} eargm_request_t;
+
+#endif

@@ -45,15 +45,11 @@ typedef struct application
 	uint8_t is_mpi;
 	uint8_t is_learning;
 	char node_id[GENERIC_NAME];		
-	#if SHARED_MEMORY
 	power_signature_t power_sig; // power_sig are power metrics related to the whole job, not only the mpi part
-	#endif
-	signature_t	signature; 		// signature refers to the mpi part, it includes power metrics and performance metrics
+	signature_t	signature; 		 // signature refers to the mpi part, it includes power metrics and performance metrics
 } application_t;
 
-
 // Function declarations
-
 
 /** Resets the data. */
 void init_application(application_t *app);

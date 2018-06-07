@@ -5,9 +5,9 @@
 *	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
 *
-*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*   It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*   Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -27,15 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#if SHARED_MEMORY
 #include <common/types/power_signature.h>
 #include <common/types/periodic_metric.h>
-#endif
 #include <common/types/application.h>
 #include <common/types/gm_warning.h>
 #include <common/types/loop.h>
 #include <common/types/log.h>
 #include <common/config.h>
+
 #if DB_MYSQL
 
 /** Given an application, inserts it to the database currently selected */
@@ -47,12 +46,10 @@ int db_insert_event(ear_event_t *ear_ev);
 
 int db_insert_warning(gm_warning_t *warning);
 
-#if SHARED_MEMORY
 int db_insert_power_signature(power_signature_t *pow_sig);
 
 int db_insert_periodic_metric(periodic_metric_t *per_met);
 
 int db_batch_insert_periodic_metrics(periodic_metric_t **per_mets, int num_mets);
-#endif
 
 #endif

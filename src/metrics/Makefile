@@ -1,4 +1,5 @@
 CFLAGS  = -fPIC -shared
+
 ######## FILES
 
 METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
@@ -9,54 +10,42 @@ METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/papi/flops.o \
                $(SRCDIR)/metrics/papi/instructions.o \
                $(SRCDIR)/metrics/papi/stalls.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
-			   $(SRCDIR)/metrics/ipmi/energy_node/lenovo_ina226.o \
-			   $(SRCDIR)/metrics/custom/bandwidth.o \
-			   $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o
-
-COMPONENTS = custom \
-             ipmi \
-             papi
-ifdef FEAT_SHRMEM
-COMPONENTS += power_monitoring
-endif
+               $(SRCDIR)/metrics/ipmi/energy_node.o \
+               $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
+               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
+               $(SRCDIR)/metrics/ipmi/energy_node/lenovo_ina226.o \
+               $(SRCDIR)/metrics/custom/bandwidth.o \
+               $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o
 
 ######## RULES
 
-all: components metrics.a libmetrics.so
+all: all.components libmetrics.a libmetrics.so
 
-components:
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -C $${i} all || exit; \
-	done
-
-metrics.a: $(METRICS_OBJS)
-	ar rvs metrics.a $(METRICS_OBJS)
+libmetrics.a: $(METRICS_OBJS)
+	$(AR) rvs libmetrics.a $(METRICS_OBJS)
 
 libmetrics.so: $(METRICS_OBJS)
 	$(CC) $(CFLAGS) -o libmetrics.so $(METRICS_OBJS)
 
 ######## OPTIONS
 
-install: component-installs other-installs
+install: install.others install.components
 
-component-installs:
-	@ for i in $(COMPONENTS); do \
-		mkdir -p $(DESTDIR)/include/metrics/$${i} ; \
-	done
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -S -C $${i} install; \
-	done
-
-other-installs:
-	mv libear_metrics.so $(DESTDIR)/lib/libear_metrics.so
+install.others:
+	mkdir -p $(DESTDIR)/include/metrics/custom
+	mkdir -p $(DESTDIR)/include/metrics/ipmi
+	mkdir -p $(DESTDIR)/include/metrics/papi
 	cp metrics.h $(DESTDIR)/include/metrics
-	$(MAKE) -C power_monitoring install
+	cp libmetrics.so $(DESTDIR)/lib/libmetrics.so
 
-clean:
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -C $${i} clean; \
-	done
-	rm -rf *.so *.a *.o
+clean: clean.components
+	rm -f *.o *.a *.so
+
+depend: depend.components
+
+######## SUBFOLDERS
+
+%.components:
+	@ $(MAKE) -C 'custom' $* || exit
+	@ $(MAKE) -C 'ipmi' $* || exit
+	@ $(MAKE) -C 'papi' $* || exit

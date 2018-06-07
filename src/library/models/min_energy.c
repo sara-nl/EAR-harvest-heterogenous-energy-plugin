@@ -179,7 +179,6 @@ ulong min_energy_policy(signature_t *sig)
 	}
 
 	// Coefficients were not available for this nominal frequency
-	#if SHARED_MEMORY
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (best_pstate>system_conf->max_freq){ 
 		log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
@@ -187,7 +186,6 @@ ulong min_energy_policy(signature_t *sig)
 		best_pstate,system_conf->max_freq);
 		best_pstate=system_conf->max_freq;
 	}
-	#endif
 	#if MIN_ENERGY_VERBOSE
 	ear_verbose(1,"min_energy_policy ends ---> %lu\n",best_pstate);
 	#endif
@@ -206,19 +204,13 @@ ulong min_energy_policy_ok(projection_t *proj, signature_t *curr_sig, signature_
 	else return 0;
 }
 
-
-
 ulong  min_energy_default_conf(ulong f)
 {
-    #if SHARED_MEMORY
     // Just in case the bestPstate was the frequency at which the application was running
     if (f>system_conf->max_freq){
         log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
         ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
         f,system_conf->max_freq);
 		return system_conf->max_freq;
-    }else return f;
-	#else
-	return f;
-	#endif
+    } else return f;
 }

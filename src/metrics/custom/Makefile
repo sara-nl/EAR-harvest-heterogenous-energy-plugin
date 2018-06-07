@@ -1,43 +1,45 @@
 CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
-LDFLAGS =
 
 ######## FILES
 
-BANDWIDTH_OBJS = bandwidth/uncores_pci.o
+INTERN_OBJS = bandwidth/uncores_pci.o
 
-LIBRARIES = frequency.o \
-            hardware_info.o \
-			bandwidth.o \
-			bandwidth.a \
-			bandwidth.so
+OBJS = frequency.o \
+       hardware_info.o \
+       bandwidth.o \
+       bandwidth.a
 
 ######## RULES
 
-all: $(LIBRARIES)
-
-%.o: %.c
-	@ $(MAKE) -C `dirname $@` `basename $@` || exit
-
-bandwidth.o: bandwidth.c bandwidth.h $(BANDWIDTH_OBJS)
-	$(CC) $(CFLAGS) -c bandwidth.c $(LDFLAGS)
-
-bandwidth.a: bandwidth.o
-	ar rcs bandwidth.a bandwidth.o $(BANDWIDTH_OBJS) 
-
-bandwidth.so: bandwidth.o
-	$(CC) -shared -o bandwidth.so bandwidth.o $(BANDWIDTH_OBJS)
+all: all.components $(OBJS)
 
 frequency.o: frequency.c frequency.h
-	$(CC) $(CFLAGS) -c frequency.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -c frequency.c
 
 hardware_info.o: hardware_info.c hardware_info.h
-	$(CC) $(CFLAGS) -c hardware_info.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -c hardware_info.c
+
+bandwidth.o: bandwidth.c bandwidth.h
+	$(CC) $(CFLAGS) -c bandwidth.c
+
+bandwidth.a: bandwidth.o $(INTERN_OBJS)
+	$(AR) rcs bandwidth.a bandwidth.o $(INTERN_OBJS)
 
 ######## OPTIONS
 
-install:
+install: install.components
 	cp *.h $(DESTDIR)/include/metrics/custom
 
-clean:
-	rm -f *.o  *.so
-	rm $(LIBRARIES) $(BANDWIDTH_OBJS)
+clean: clean.components
+	rm -f *.o *.a *.so
+
+depend: depend.components
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend
+
+######## SUBFOLDERS
+
+%.components:
+	@ $(MAKE) -C 'bandwidth' $* || exit

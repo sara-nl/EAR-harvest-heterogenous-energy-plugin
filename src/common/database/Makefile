@@ -2,18 +2,25 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(DB_CFLAGS)
 
 ######## FILES
 
-HEADERS = $(SRCDIR)/common/config.h
+ifdef DB_BASE
+OBJS = db_helper.o \
+       mysql_io_functions.o
+endif
 
 ######## RULES
 
-mysql_io_functions.o: mysql_io_functions.c mysql_io_functions.h $(HEADERS)
-	$(CC) $(CFLAGS) -c mysql_io_functions.c
+all: $(OBJS)
 
-db_helper.o: db_helper.c db_helper.h mysql_io_functions.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DB_LDFLAGS) -c db_helper.c mysql_io_functions.c 
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c  $<
 
 ######## OPTIONS
 
-clean:
-	rm -rf *.o *.so *.a
+install:
 
+clean:
+	rm -f *.o *.so *.a
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

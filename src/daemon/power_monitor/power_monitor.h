@@ -64,37 +64,37 @@ typedef struct power_data{
     double avg_cpu[NUM_SOCKETS];
 }power_data_t;
 
-
 /**  Starts power monitoring */
 int init_power_ponitoring();
+
 /** Ends power monitoring */
 void end_power_monitoring();
 
 /** Energy is returned in mili Joules */
 int read_enegy_data(energy_data_t *acc_energy);
+
 /** Computes the difference between two energy measurements */
 int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff);
 
-
 /** Copies the energy measurement in *src to *dest */
 void copy_energy_data(energy_data_t *dest,energy_data_t *src);
+
 /** Prints the data from an energy measurement to stdout */
 void print_energy_data(energy_data_t *e);
 
 /** Computes the power between two energy measurements */
 void compute_power(energy_data_t *e_begin,energy_data_t *e_end,power_data_t *my_power);
+
 /** Prints power information to the stdout */
 void print_power(power_data_t *my_power);
+
 /** Write (text mode) the power information in the provided file descriptor */
 void report_periodic_power(int fd,power_data_t *my_power);
 
-
 /** Computes the difference betwen two node energy measurements */
 node_data_t diff_node_energy(node_data_t end,node_data_t init);
+
 /** Computes the difference betwen two RAPL energy measurements */
 rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init);
 
-
-
-#else
 #endif

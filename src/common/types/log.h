@@ -27,19 +27,17 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef _EAR_LOG_H
 #define _EAR_LOG_H
 
 #include <common/types/job.h>
 
-typedef struct ear_event{
-	job_id  jid;
-    job_id  step_id;
+typedef struct ear_event {
+	job_id jid;
+    job_id step_id;
 	uint event;
 	ulong freq;
-}ear_event_t;
+} ear_event_t;
 
 #define ENERGY_POLICY_NEW_FREQ	0
 #define GLOBAL_ENERGY_POLICY	1

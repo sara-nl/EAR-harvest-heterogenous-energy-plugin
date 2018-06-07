@@ -1,7 +1,7 @@
 #ifndef EAR_EARDBD_API_H
 #define EAR_EARDBD_API_H
 
-#include <database_daemon/eardbd.h>
+#include <database_cache/eardbd.h>
 
 int eardbd_connect(char *host, int protocol);
 int eardbd_is_connected();

@@ -25,10 +25,8 @@ IPMI_LDFLAGS = @FREEIPMI_LDFLAGS@ @FREEIPMI_LIBS@
 DB_BASE      = @DB_DIR@
 DB_CFLAGS    = @DB_CPPFLAGS@
 DB_LDFLAGS   = @DB_LDFLAGS@ @DB_LIBS@
-FEAT_SHRMEM  = @SHARED_MEMORY@
-FEAT_POWMON  =
 CONSTANTS    = -DEAR_BOOST -DPERFORMANCE_GAIN=0.75 -DEAR_ACCEPTED_TH=0.05 -DEAR_MIN_P_STATE=3 -DUSE_TURBO=0 -DRESET_FREQ=0
-CONSTANTS   += -DMAX_POWER_ERROR=0.05 -DMAX_DYNAIS_OVERHEAD=5 -DMAX_POLICY_TRIES=3 $(FEAT_SHRMEM) $(FEAT_POWMON) -DDEMO=1 -DPOWERMON_FREQ=30000000
+CONSTANTS   += -DMAX_POWER_ERROR=0.05 -DMAX_DYNAIS_OVERHEAD=5 -DMAX_POLICY_TRIES=3 -DDEMO=1 -DPOWERMON_FREQ=30000000
 CONSTANTS   += -DDAEMON_PORT_NUMBER=50000 -DDEFAULT_T1=60 -DDEFAULT_T2=600 -DMAX_ENERGY=300 -DEARGM_PORT_NUMBER=60000
 DEBUG        = 
 
@@ -60,8 +58,6 @@ export CPUF_LDFLAGS
 export DB_BASE
 export DB_CFLAGS
 export DB_LDFLAGS
-export FEAT_SHRMEM
-export FEAT_POWMON
 export CONSTANTS
 export DEBUG
 
@@ -70,18 +66,18 @@ export DEBUG
 .PHONY: check functionals
 
 all:
-	@ $(MAKE) -C src all || exit
-
-functionals:
-	@ $(MAKE) -C src functionals || exit
+	@ $(MAKE) -C 'src' all || exit
 
 check:
-	@ $(MAKE) -C src check
+	@ $(MAKE) -C 'src' check
 
 install:
-	@ $(MAKE) -C etc install
-	@ $(MAKE) -C src install
-	@ $(MAKE) -C doc install
+	@ $(MAKE) -C 'etc' install
+	@ $(MAKE) -C 'src' install
+	@ $(MAKE) -C 'doc' install
 
 clean:
-	@ $(MAKE) -C src clean
+	@ $(MAKE) -C 'src' clean
+
+depend:
+	@ $(MAKE) -C 'src' depend || exit

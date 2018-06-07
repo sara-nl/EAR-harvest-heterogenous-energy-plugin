@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -37,14 +35,14 @@
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
+
 #include <global_manager/eargm_conf_api.h>
-#include <global_manager/eargm_api.h>
-#include <common/states.h>
+#include <global_manager/eargm_client_api.h>
 #include <common/ear_verbose.h>
+#include <common/states.h>
 
 // Verbosity
-static const char *__NAME__ = "eargm_api";
-
+static const char *__NAME__ = "eargm_client_api";
 
 extern int EAR_VERBOSE_LEVEL;
 static int eargm_sfd;

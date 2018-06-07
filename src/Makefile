@@ -6,11 +6,12 @@ ifdef CPUF_BASE
 	ifdef PAPI_BASE
 		ifdef IPMI_BASE
 			COMPONENTS += metrics \
-                          database_daemon \
+                          database_cache \
                           daemon \
                           commands \
                           tests
 		endif
+		COMPONENTS += library
 	endif
 	ifdef GSL_BASE
 		COMPONENTS += tools
@@ -27,28 +28,25 @@ endif
 
 .PHONY: check
 
-all:
-	@ for i in $(COMPONENTS); do                     \
-		echo "===================================="; \
-		echo "= Compilling $$i";                     \
-		echo "===================================="; \
-		$(MAKE) -C $${i} all || exit;                \
-	done
+all: all.components
 
 check:
 	@ $(MAKE) -C tests check
 
-functionals:
-	@ $(MAKE) -C tests functionals || exit
-
 ######## OPTIONS
 
-install:
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -S -C $${i} install; \
-	done
+install: install.components
 
-clean:
-	@ for i in $(COMPONENTS); do \
-		$(MAKE) -C $${i} clean; \
+clean: clean.components
+
+depend: depend.components
+
+######## SUBFOLDERS
+
+%.components:
+	@ for i in $(COMPONENTS); do                     \
+		echo "===================================="; \
+		echo "= Compilling $$i";                     \
+		echo "===================================="; \
+		$(MAKE) -C $${i} $* || exit;                 \
 	done

@@ -1,59 +1,46 @@
 CFLAGS    = -I$(SRCDIR) 
 LDFLAGS   =
 
-######## DEPENDENCIES
-
-FREQ_OBJS   = $(SRCDIR)/metrics/papi/generics.o \
-              $(SRCDIR)/control/frequency.o
-
-REMOTE_OBJS = $(SRCDIR)/daemon/eard_rapi.o
-
-TYPES_OBJS  = $(SRCDIR)/common/types.a
-
-ifdef DB_BASE
-DB_OBJS     = $(SRCDIR)/common/database/mysql_io_functions.o
-endif
-
-HEADERS     = $(SRCDIR)/common/config.h \
-              $(SRCDIR)/common/states.h
-
 ######## FILES
 
-		
+erport_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o \
+              $(SRCDIR)/common/types.a
+
 ifdef DB_BASE
 BINARIES = ereport 
+
 SBINARIES += ear_create_database \
              ear_energy_over_time \
              ear_store_database
-
 endif
 
 ######## RULES
 
 all: $(BINARIES) $(SBINARIES) $(COMPONENTS)
 
-ear_control: ear_control.c $(REMOTE_OBJS)
-	$(CC) $(CFLAGS) -o ear_control ear_control.c $(REMOTE_OBJS) $(TYPES_OBJS)
+ereport: ear_report.c $(erport_OBJS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ereport ear_report.c $(DB_LDFLAGS) $(erport_OBJS)
 
-ereport: ear_report.c $(DB_OBJS) $(TYPES_OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ereport ear_report.c $(DB_LDFLAGS) $(DB_OBJS) $(TYPES_OBJS)
-
-
-ear_create_database: ear_create_database.c $(HEADERS)
+ear_create_database: ear_create_database.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
 
-ear_energy_over_time: ear_energy_over_time.c $(HEADERS)
+ear_energy_over_time: ear_energy_over_time.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_energy_over_time ear_energy_over_time.c $(DB_LDFLAGS)
 
-ear_store_database: ear_store_database.c $(HEADERS)
+ear_store_database: ear_store_database.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_store_database ear_store_database.c $(DB_LDFLAGS)
-
 
 ######## OPTIONS
 
 install:
-	@ cp $(BINARIES) $(DESTDIR)/bin
-	@ cp $(SBINARIES) $(DESTDIR)/sbin
+ifdef DB_BASE
+	@ cp $(BINARIES) $(DESTDIR)/bin/
+	@ cp $(SBINARIES) $(DESTDIR)/sbin/
+endif
 
 clean:
-	rm -rf $(BINARIES) $(SBINARIES)
+	rm -f $(BINARIES) $(SBINARIES)
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend

@@ -3,8 +3,8 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <database_daemon/eardbd.h>
-#include <database_daemon/client_api/eardbd_api.h>
+#include <database_cache/eardbd.h>
+#include <database_cache/eardbd_api.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
 #include <common/states.h>

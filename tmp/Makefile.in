@@ -22,11 +22,8 @@ COMMON_OBJS = $(SRCDIR)/daemon/eard_api.o \
               $(SRCDIR)/common/file_lock.o \
               $(SRCDIR)/common/environment.o \
               $(SRCDIR)/common/math_operations.o \
-              $(SRCDIR)/common/types.a
-
-ifdef FEAT_SHRMEM
-COMMON_OBJS += $(SRCDIR)/daemon/shared_configuration.o
-endif
+              $(SRCDIR)/common/types.a \
+              $(SRCDIR)/daemon/shared_configuration.o
 
 OUTER_OBJS = $(COMMON_OBJS) $(METRICS_OBJS)
 
@@ -69,7 +66,7 @@ update-mpi-objs:
 update-mpi-objs-trace:
 	@ $(MAKE) -B $(REMAKE_OBJS) MPICC='$(MPICC)' CFLAGS='$(CFLAGS) -DEAR_GUI'
 
-@mpi_so@: update-mpi-objs 
+@mpi_so@: update-mpi-objs
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o @mpi_so@ $(LDFLAGS) $(REMAKE_OBJS) $(OBJS) $(OUTER_OBJS)
 
 @mpi_trace_so@: update-mpi-objs-trace

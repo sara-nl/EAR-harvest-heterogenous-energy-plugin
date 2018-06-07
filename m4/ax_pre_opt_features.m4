@@ -103,18 +103,6 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	AC_SUBST(BUILD_TYPE)
 
 	#
-	# SHARED MEMORY
-	#
-
-	AC_ARG_ENABLE([shared-memory],
-		AS_HELP_STRING([--enable-shared-memory], [Enables the shared memory feature]))
-
-    AS_IF([test "x$enable_shared_memory" = "xyes"],
-        [SHARED_MEMORY="-DSHARED_MEMORY=1"],[SHARED_MEMORY=""])
-
-    AC_SUBST(SHARED_MEMORY)
-
-	#
 	# DATABASE
 	#
     AC_ARG_ENABLE([database],

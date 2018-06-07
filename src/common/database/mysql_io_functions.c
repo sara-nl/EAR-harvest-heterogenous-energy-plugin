@@ -125,14 +125,9 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
         bind[3].buffer_type = MYSQL_TYPE_NULL;
         bind[3].is_null = (my_bool*) 1;
     }
-    int pow_sig_id = NULL;
-#if SHARED_MEMORY
-    pow_sig_id = mysql_insert_power_signature(connection, &app->power_sig);
-#else
-    bind[4].is_null = (my_bool*)1;
-    bind[4].buffer_type = MYSQL_TYPE_NULL;
-#endif
 
+    int pow_sig_id = NULL;
+    pow_sig_id = mysql_insert_power_signature(connection, &app->power_sig);
 
     //string types
     bind[2].buffer_type = MYSQL_TYPE_VARCHAR;
@@ -215,10 +210,9 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
     int i = 0;
     char job_query[128];
     char sig_query[128];
-#if SHARED_MEMORY
     char pow_sig_query[128];
     power_signature_t *pow_sig_aux;
-#endif
+
     job_t *job_aux;
     signature_t *sig_aux;
     //fetching and storing of jobs    
@@ -247,12 +241,10 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         }
         else app_aux->is_mpi = 0;
 
-#if SHARED_MEMORY
         sprintf(pow_sig_query, "SELECT * FROM Power_signatures WHERE id=%d", pow_sig_id);
         int num_pow_sigs = mysql_retrieve_power_signatures(connection, pow_sig_query, &pow_sig_aux);
         if (num_pow_sigs > 0) copy_power_signature(&app_aux->power_sig, pow_sig_aux);
         free(pow_sig_aux);
-#endif
 
         copy_application(&apps_aux[i], app_aux);
         status = mysql_stmt_fetch(statement);
@@ -265,9 +257,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return num_apps;
-
 }
-
 
 int mysql_insert_loop(MYSQL *connection, loop_t *loop)
 {
@@ -758,7 +748,6 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     return num_signatures;
 }
 
-#if SHARED_MEMORY
 int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -976,8 +965,6 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **p
     free(query);
     return EAR_SUCCESS;
 }
-
-#endif
 
 int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
 {

@@ -1,27 +1,21 @@
-CFLAGS  = -g -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS) $(CPUF_CFLAGS)
-LDFLAGS = -shared $(CPUF_LDFLAGS)
-CC = gcc
-
-######## FILES
-
-OBJS = slurm_plugin_helper.o
-
-HEADERS = $(SRCDIR)/common/config.h
+CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS) $(CPUF_CFLAGS)
+LDFLAGS = $(CPUF_LDFLAGS)
 
 ######## RULES
 
 all: earplug.so
 
-slurm_plugin_helper.o: slurm_plugin_helper.h slurm_plugin_helper.c $(HEADERS)
-	$(CC) $(CFLAGS) -c slurm_plugin_helper.c
-
-earplug.so: slurm_plugin.h slurm_plugin.c $(OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) -o earplug.so slurm_plugin.c $(LDFLAGS) $(OBJS)
+earplug.so: slurm_plugin.h slurm_plugin.c slurm_plugin_helper.c slurm_plugin_helper.h
+	$(CC) $(CFLAGS) -shared -o earplug.so slurm_plugin.c slurm_plugin_helper.c $(LDFLAGS)
 
 ######## OPTIONS
 
 install:
-	mv earplug.so $(DESTDIR)/lib
+	cp earplug.so $(DESTDIR)/lib
 
 clean:
-	rm -f *.so *.o
+	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.depend
