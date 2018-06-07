@@ -2,7 +2,7 @@
 
 INSTALL_FOLDERS = $(DESTDIR)/bin \
                   $(DESTDIR)/bin/kernels \
-                  $(DESTDIR)/include
+                  $(DESTDIR)/include \
                   $(DESTDIR)/lib \
                   $(DESTDIR)/etc \
                   $(DESTDIR)/sbin

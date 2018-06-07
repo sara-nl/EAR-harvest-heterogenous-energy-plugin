@@ -40,11 +40,13 @@ OBJS = dynais/dynais.o \
        mpi_intercept/MPI_interface.o
 
 ifdef MPICC
+libs_ALL += libear.so libeart.so
 impi_ALL = all.impi.components libear.so \
            allt.impi.components libeart.so
 endif
 
 ifdef OMPICC
+libs_ALL += libear_ompi.so libeart_ompi.so
 ompi_ALL = all.ompi.components libear_ompi.so \
            allt.ompi.components libeart_ompi.so
 endif
@@ -59,6 +61,7 @@ all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 ######## OPTIONS
 
 install:
+	cp $(libs_ALL) $(DESTDIR)/lib/
 
 clean: clean.gnrc.components clean.impi.components
 	rm -f *.o *.a *.so
@@ -68,16 +71,16 @@ depend: depend.gnrc.components depend.impi.components
 ######## SUBFOLDERS
 
 %.gnrc.components:
-	$(MAKE) -C 'dynais' $*
-	$(MAKE) -C 'metrics' $*
-	$(MAKE) -C 'models' $*
+	@ $(MAKE) -C 'dynais' $* || exit
+	@ $(MAKE) -C 'metrics' $* || exit
+	@ $(MAKE) -C 'models' $* || exit
 
 %.impi.components:
-	$(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)'
-	$(MAKE) -B -C 'states' $* MPICC='$(MPICC)'
-	$(MAKE) -B -C 'tracer' $* MPICC='$(MPICC)'
+	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
+	@ $(MAKE) -B -C 'states' $* MPICC='$(MPICC)' || exit
+	@ $(MAKE) -B -C 'tracer' $* MPICC='$(MPICC)' || exit
 
 %.ompi.components:
-	$(MAKE) -B -C 'mpi_intercept' $* MPICC='$(OMPICC)'
-	$(MAKE) -B -C 'states' $* MPICC='$(OMPICC)'
-	$(MAKE) -B -C 'tracer' $* MPICC='$(OMPICC)'
+	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(OMPICC)' || exit
+	@ $(MAKE) -B -C 'states' $* MPICC='$(OMPICC)' || exit
+	@ $(MAKE) -B -C 'tracer' $* MPICC='$(OMPICC)' || exit

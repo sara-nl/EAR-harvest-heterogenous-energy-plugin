@@ -23,6 +23,8 @@ all: $(OBJS)
 
 ######## OPTIONS
 
+install:
+
 clean:
 	rm -f *.o *.a *.so
 

@@ -36,10 +36,10 @@ install.others:
 	mkdir -p $(DESTDIR)/include/metrics/ipmi
 	mkdir -p $(DESTDIR)/include/metrics/papi
 	cp metrics.h $(DESTDIR)/include/metrics
-	mv libmetrics.so $(DESTDIR)/lib/libmetrics.so
+	cp libmetrics.so $(DESTDIR)/lib/libmetrics.so
 
 clean: clean.components
-	rm -rf *.so *.a *.o
+	rm -f *.o *.a *.so
 
 depend: depend.components
 

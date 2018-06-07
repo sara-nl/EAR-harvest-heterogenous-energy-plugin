@@ -48,7 +48,7 @@ eard_rapi.o: eard_rapi.c eard_rapi.h
 ######## OPTIONS
 
 install: install.components install.others
-	mv eard $(DESTDIR)/sbin
+	cp eard $(DESTDIR)/sbin
 
 clean: clean.components clean.others
 	rm -f *.o *.a *.so eard

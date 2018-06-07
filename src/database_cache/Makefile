@@ -22,7 +22,7 @@ client_api_test: eardbd_api.o
 ######## OPTIONS
 
 install:
-	mv eardbd $(DESTDIR)/sbin
+	cp eardbd $(DESTDIR)/sbin
 
 clean:
 	rm -f $(BINARIES)

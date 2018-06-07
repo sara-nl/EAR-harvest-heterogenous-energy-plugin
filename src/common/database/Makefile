@@ -16,6 +16,8 @@ all: $(OBJS)
 
 ######## OPTIONS
 
+install:
+
 clean:
 	rm -f *.o *.so *.a
 

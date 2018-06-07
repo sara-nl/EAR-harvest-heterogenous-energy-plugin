@@ -42,4 +42,4 @@ include $(SRCDIR)/Makefile.depend
 ######## SUBFOLDERS
 
 %.components:
-	$(MAKE) -C 'bandwidth' $*
+	@ $(MAKE) -C 'bandwidth' $* || exit

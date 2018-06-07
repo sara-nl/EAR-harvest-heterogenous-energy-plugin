@@ -29,8 +29,8 @@ traces_to_paraver: traces_to_paraver.cpp
 ######## OPTIONS
 
 install:
-	mv compute_coefficients $(DESTDIR)/bin
-	mv coefficients_quality_control $(DESTDIR)/bin/
+	cp compute_coefficients $(DESTDIR)/bin
+	cp coefficients_quality_control $(DESTDIR)/bin/
 
 clean:
 	rm -f $(BINARIES)

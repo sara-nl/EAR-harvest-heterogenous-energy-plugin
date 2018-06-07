@@ -11,7 +11,7 @@ earplug.so: slurm_plugin.h slurm_plugin.c slurm_plugin_helper.c slurm_plugin_hel
 ######## OPTIONS
 
 install:
-	mv earplug.so $(DESTDIR)/lib
+	cp earplug.so $(DESTDIR)/lib
 
 clean:
 	rm -f *.o *.a *.so
