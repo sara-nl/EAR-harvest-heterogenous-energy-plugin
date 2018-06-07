@@ -13,7 +13,7 @@ ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
 KillMode=process
 Restart=on-failure
-RestartSec=30s
+#RestartSec=1s
 LimitMEMLOCK=infinity
 LimitSTACK=infinity
 
