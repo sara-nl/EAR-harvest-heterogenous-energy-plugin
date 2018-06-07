@@ -1,0 +1,27 @@
+process_MPI.o: process_MPI.c ../../library/mpi_intercept/ear_api.h \
+ ../../library/mpi_intercept/MPI_types.h \
+ ../../library/mpi_intercept/MPI_calls_coded.h
+MPI_interceptF.o: MPI_interceptF.c MPI_interfaceF.h
+MPI_intercept.o: MPI_intercept.c MPI_interface.h
+MPI_interface.o: MPI_interface.c process_MPI.h \
+ ../../library/mpi_intercept/MPI_types.h MPI_calls_coded.h \
+ MPI_interface.h
+ear_api.o: ear_api.c ../../control/frequency.h \
+ ../../library/common/externs_alloc.h ../../common/types/application.h \
+ ../../common/config.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h ../../common/types/loop.h \
+ ../../daemon/shared_configuration.h ../../library/dynais/dynais.h \
+ ../../library/tracer/tracer.h ../../library/states/states.h \
+ ../../library/states/states_periodic.h ../../library/models/models.h \
+ ../../common/environment.h ../../common/types/coefficient.h \
+ ../../common/types/projection.h ../../library/metrics/metrics.h \
+ ../../library/mpi_intercept/ear_api.h \
+ ../../library/mpi_intercept/MPI_types.h \
+ ../../library/mpi_intercept/MPI_calls_coded.h \
+ ../../daemon/eard_client_api.h ../../common/types/log.h \
+ ../../daemon/eard_api_conf.h ../../common/ear_verbose.h \
+ ../../common/states.h ../../common/file_lock.h
+MPI_interfaceF.o: MPI_interfaceF.c process_MPI.h \
+ ../../library/mpi_intercept/MPI_types.h MPI_calls_coded.h \
+ MPI_interfaceF.h

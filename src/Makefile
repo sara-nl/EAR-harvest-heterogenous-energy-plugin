@@ -8,7 +8,7 @@ ifdef CPUF_BASE
 			COMPONENTS += metrics \
                           database_cache \
                           daemon \
-                          commands
+                          commands \
                           tests
 		endif
 		COMPONENTS += library

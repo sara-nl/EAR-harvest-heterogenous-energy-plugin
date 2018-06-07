@@ -1,0 +1,24 @@
+test_architecture.o: test_architecture.c \
+ ../../metrics/custom/hardware_info.h
+simd_power_metrics_openmp.o: simd_power_metrics_openmp.c \
+ ../../control/frequency.h ../../metrics/papi/generics.h \
+ ../../metrics/papi/flops.h ../../metrics/papi/stalls.h \
+ ../../metrics/papi/energy_cpu.h ../../metrics/papi/instructions.h \
+ ../../metrics/custom/hardware_info.h ../../metrics/custom/frequency.h \
+ ../../common/types/generic.h
+energy_updates_freq.o: energy_updates_freq.c \
+ ../../metrics/ipmi/energy_node.h
+bandwith_monitor.o: bandwith_monitor.c ../../metrics/custom/bandwidth.h \
+ ../../metrics/custom/hardware_info.h ../../common/types/generic.h
+energy_1_second.o: energy_1_second.c ../../metrics/ipmi/energy_node.h
+freeipmi_overhead.o: freeipmi_overhead.c ../../metrics/ipmi/energy_node.h \
+ ../../common/config.h
+eard_monitor.o: eard_monitor.c ../../daemon/eard_client_api.h \
+ ../../common/types/generic.h ../../common/types/log.h \
+ ../../common/types/job.h ../../common/config.h \
+ ../../daemon/eard_api_conf.h ../../common/types/application.h \
+ ../../common/types/signature.h ../../common/types/power_signature.h \
+ ../../common/types/loop.h
+simd_tests.o: simd_tests.c ../../metrics/custom/hardware_info.h
+ear_pm.o: ear_pm.c ../../common/ear_verbose.h ../../common/config.h \
+ ../../common/types/generic.h ../../metrics/custom/frequency.h

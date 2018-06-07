@@ -2,13 +2,13 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 
 ######## FILES
 
-OBJS = energy_node/ibm.o \
-       energy_node/lenovo_nm.o \
-       energy_node/lenovo_ina226.o
+OBJS = ibm.o \
+       lenovo_nm.o \
+       lenovo_ina226.o
 
 ######## RULES
 
-all:
+all: $(OBJS)
 
 lenovo_nm.o: lenovo_nm.c lenovo_nm.h
 	$(CC) $(CFLAGS) -c lenovo_nm.c

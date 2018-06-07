@@ -1,0 +1,4 @@
+slurm_plugin.o: slurm_plugin.c ../slurm_plugin/slurm_plugin.h \
+ ../slurm_plugin/slurm_plugin_helper.h ../common/config.h
+slurm_plugin_helper.o: slurm_plugin_helper.c \
+ ../slurm_plugin/slurm_plugin_helper.h ../common/config.h

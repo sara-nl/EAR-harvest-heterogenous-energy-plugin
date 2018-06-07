@@ -1,0 +1,12 @@
+eardbd.o: eardbd.c ../database_cache/eardbd.h \
+ ../database_cache/eardbd_api.h ../common/types/periodic_metric.h \
+ ../common/config.h ../common/types/generic.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../common/states.h
+eardbd_api.o: eardbd_api.c ../database_cache/eardbd_api.h \
+ ../database_cache/eardbd.h ../common/types/periodic_metric.h \
+ ../common/config.h ../common/types/generic.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../common/states.h

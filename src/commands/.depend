@@ -1,0 +1,8 @@
+ear_energy_over_time.o: ear_energy_over_time.c ../common/config.h
+ear_options_test.o: ear_options_test.c
+ear_store_database.o: ear_store_database.c ../common/config.h
+ear_create_database.o: ear_create_database.c ../common/config.h
+ear_report.o: ear_report.c ../common/config.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/generic.h ../common/types/signature.h \
+ ../common/types/power_signature.h

@@ -4,15 +4,15 @@ log.o: log.c ../../common/config.h ../../common/types/log.h \
  ../../daemon/eard_api_conf.h ../../common/types/application.h \
  ../../common/types/signature.h ../../common/types/power_signature.h \
  ../../common/types/loop.h
+signature.o: signature.c ../../common/types/signature.h \
+ ../../common/types/generic.h ../../common/config.h \
+ ../../common/math_operations.h
 gm_warning.o: gm_warning.c ../../common/config.h \
  ../../common/types/gm_warning.h ../../common/types/generic.h
 application.o: application.c ../../common/states.h \
  ../../common/types/application.h ../../common/config.h \
  ../../common/types/job.h ../../common/types/generic.h \
  ../../common/types/signature.h ../../common/types/power_signature.h
-power_signature.o: power_signature.c ../../common/types/power_signature.h \
- ../../common/types/generic.h ../../common/config.h \
- ../../common/math_operations.h
 coefficient.o: coefficient.c ../../common/types/coefficient.h \
  ../../common/types/generic.h ../../common/states.h
 cluster_conf.o: cluster_conf.c ../../common/config.h \
@@ -27,7 +27,7 @@ periodic_metric.o: periodic_metric.c ../../common/math_operations.h \
  ../../common/types/generic.h
 job.o: job.c ../../common/types/job.h ../../common/types/generic.h \
  ../../common/config.h
-signature.o: signature.c ../../common/types/signature.h \
+power_signature.o: power_signature.c ../../common/types/power_signature.h \
  ../../common/types/generic.h ../../common/config.h \
  ../../common/math_operations.h
 loop.o: loop.c ../../common/config.h ../../common/types/loop.h \

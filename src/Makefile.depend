@@ -1,4 +1,3 @@
-CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 RLPATH = $(subst $(SRCDIR),.,$(shell pwd))
 RLPATH = $(shell realpath $(SRCDIR) --relative-to=$(shell pwd))
 
