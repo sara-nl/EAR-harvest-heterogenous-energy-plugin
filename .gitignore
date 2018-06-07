@@ -1,6 +1,5 @@
 # General
 /Makefile
-/src/library/Makefile
 *.o
 *.a
 *.so
