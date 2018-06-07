@@ -134,7 +134,7 @@ struct avg_perf_cpu_info
     unsigned long saved_aperf;
     unsigned long saved_mperf;
     unsigned int snapped;
-} *cpu_info, *cpu_info_global,*avg_node;
+} *cpu_info, *cpu_info_global,*avg_node,*job_node;
 
 inline static int read_ulong(int fd, unsigned int pos, unsigned long *value)
 {
@@ -187,6 +187,12 @@ int aperf_init(unsigned int num_cpus)
     if (result!=0) {
 		return EAR_ERROR;
 	}
+    result = posix_memalign((void *) &job_node, size, size * num_cpus);
+
+    if (result!=0) {
+        return EAR_ERROR;
+    }
+
 
     result = posix_memalign((void *) &cpu_info_global, size, size * num_cpus);
     return -(result != 0);
@@ -201,6 +207,7 @@ int aperf_init_cpu(unsigned int cpu, unsigned long max_freq)
     cpu_info[cpu].nominal_freq = max_freq;
     cpu_info_global[cpu].nominal_freq = max_freq;
 	avg_node[cpu].nominal_freq = max_freq;
+	job_node[cpu].nominal_freq = max_freq;
 
     return EAR_SUCCESS;
 }
@@ -224,6 +231,7 @@ void aperf_dispose()
 	if (cpu_info != NULL) free(cpu_info);
 	if (cpu_info_global!=NULL) free(cpu_info_global);
 	if (avg_node!=NULL) free(avg_node);
+	if (job_node!=NULL) free(job_node);
 }
 
 int aperf_start_avg_freq(int cpu,struct avg_perf_cpu_info *my_cpu_info)
@@ -432,6 +440,60 @@ unsigned long aperf_periodic_avg_frequency_end_all_cpus()
     for (i = 0; i < _num_cpus; i++)
     {
         if (aperf_periodic_avg_frequency_end(i, &new_freq)) {
+            VERBOSE_N(0, "ERROR while reading %i APERF VALUES", i);
+        }
+
+        freq += new_freq;
+        new_freq = 0;
+    }
+
+    return (freq / _num_cpus);
+}
+
+/////////////////////////////////////////
+// To be used by powermon, to report the avg_f of jobs
+/////////////////////////////////////////
+/*
+* INIT
+*/
+int aperf_job_avg_frequency_init(unsigned int cpu)
+{
+    return aperf_start_avg_freq(cpu, job_node);
+}
+
+// power_monitoring will call this function to initialize
+void aperf_job_avg_frequency_init_all_cpus()
+{
+    int i;
+
+    for (i = 0; i < _num_cpus; i++)
+    {
+        if (aperf_job_avg_frequency_init(i)) {
+            VERBOSE_N(0, "ERROR while preparing %i APERF VALUES", i);
+        }
+    }
+}
+
+/*
+* END
+*/
+int aperf_job_avg_frequency_end(unsigned int cpu, unsigned long *frequency)
+{
+    return aperf_end_avg_freq(cpu, job_node, frequency);
+}
+
+// Power monitoring will use this function
+unsigned long aperf_job_avg_frequency_end_all_cpus()
+{
+    unsigned long new_freq, freq;
+    int i;
+
+    new_freq = 0;
+    freq = 0;
+
+    for (i = 0; i < _num_cpus; i++)
+    {
+        if (aperf_job_avg_frequency_end(i, &new_freq)) {
             VERBOSE_N(0, "ERROR while reading %i APERF VALUES", i);
         }
 

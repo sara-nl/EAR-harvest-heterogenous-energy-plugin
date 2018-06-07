@@ -37,7 +37,7 @@
 #include <daemon/eard_conf_api.h>
 
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
-int eards_connect();
+int eards_connect(application_t *my_app);
 int eards_connected();
 /** Closes the connection with the daemon. */
 void eards_disconnect();

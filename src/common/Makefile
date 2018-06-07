@@ -1,10 +1,5 @@
 CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 
-####### VARS
-
-export DIR
-export CFLAGS
-
 ######## FILES
 
 OBJS = environment.o \

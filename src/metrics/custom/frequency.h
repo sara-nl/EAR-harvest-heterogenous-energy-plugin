@@ -77,9 +77,13 @@ int aperf_init_cpu(unsigned int cpu, unsigned long max_freq);
 int aperf_init_all_cpus(unsigned int num_cpus, unsigned long max_freq);
 
 
-/* To be used by power monitoring */
+/** To be used by power monitoring for periodic metrics*/
 void aperf_periodic_avg_frequency_init_all_cpus();
 unsigned long aperf_periodic_avg_frequency_end_all_cpus();
+
+/** To be used by power monitoring for power signatures */
+void aperf_job_avg_frequency_init_all_cpus();
+unsigned long aperf_job_avg_frequency_end_all_cpus();
 
 
 /** Frees the memory allocated to hold the CPU information regarding their frequency. */

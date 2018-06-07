@@ -100,25 +100,27 @@ void report_application_data(application_t *app)
 {
 	float avg_f = ((double) app->signature.avg_f) / 1000000.0;
 	float def_f = ((double) app->job.def_f) / 1000000.0;
+	float pavg_f = ((double) app->power_sig.avg_f) / 1000000.0;
+	float pdef_f = ((double) app->power_sig.def_f) / 1000000.0;
 
-	printf("------------------------------------------------------------------------ Application Summary --\n");
-	printf("-- App id: %s, user id: %s, job id: %lu", app->job.app_id, app->job.user_id, app->job.id);
-	printf("   procs: %lu (s) acc %s\n", app->job.procs,app->job.user_acc);
-	printf("   start time %d end time %d start mpi %d end mpi %d\n",(int)app->job.start_time,(int)app->job.end_time,(int)app->job.start_mpi_time,(int)app->job.end_mpi_time);
-	printf("-- power_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->power_sig.time, def_f, avg_f);
-	printf("DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->power_sig.DC_power, app->power_sig.DRAM_power, 
+	fprintf(stderr,"------------------------------------------------------------------------ Application Summary --\n");
+	fprintf(stderr,"-- App id: %s, user id: %s, job id: %lu", app->job.app_id, app->job.user_id, app->job.id);
+	fprintf(stderr,"   procs: %lu (s) acc %s\n", app->job.procs,app->job.user_acc);
+	fprintf(stderr,"   start time %d end time %d start mpi %d end mpi %d\n",(int)app->job.start_time,(int)app->job.end_time,(int)app->job.start_mpi_time,(int)app->job.end_mpi_time);
+	fprintf(stderr,"-- power_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->power_sig.time, pdef_f, pavg_f);
+	fprintf(stderr,"DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->power_sig.DC_power, app->power_sig.DRAM_power, 
                                                                	app->power_sig.PCK_power);
-	printf("\tmax_DC_power/min_DC_power: %0.3lf/%0.3lf (W)\n",app->power_sig.max_DC_power,app->power_sig.min_DC_power);
+	fprintf(stderr,"\tmax_DC_power/min_DC_power: %0.3lf/%0.3lf (W)\n",app->power_sig.max_DC_power,app->power_sig.min_DC_power);
 	if (app->is_mpi){
 
-		printf("-- mpi_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
-		printf("   procs: %lu (s)\n", app->job.procs);
-		printf("\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
+		fprintf(stderr,"-- mpi_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
+		fprintf(stderr,"   procs: %lu (s)\n", app->job.procs);
+		fprintf(stderr,"\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
                                                                         	app->signature.GBS, app->signature.Gflops);
-		printf("  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power, 
+		fprintf(stderr,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power, 
                                                                	app->signature.PCK_power);
 	}
-	printf("-----------------------------------------------------------------------------------------------\n");
+	fprintf(stderr,"-----------------------------------------------------------------------------------------------\n");
 }
 
 int print_application_fd(int fd, application_t *app, int new_line)

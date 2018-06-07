@@ -48,7 +48,7 @@
 #include <common/types/log.h>
 #include <common/states.h>
 
-static const char *__NAME__ = "min_time_policy";
+static const char *__NAME__ = "min_time_to_solution:";
 static uint mt_policy_pstates;
 static uint mt_reset_freq=RESET_FREQ;
 extern coefficient_t **coefficients;
@@ -139,52 +139,58 @@ ulong min_time_policy(signature_t *sig)
 	set_performance_projection(EAR_default_pstate,time_ref,power_ref,cpi_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
-	VERBOSE_N(0,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
+	#if DEMO
+	VERBOSE_N(1,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
+	#endif
 
-	try_next=1;
-	i=EAR_default_pstate-1;
-	time_current=time_ref;
+		try_next=1;
+		i=EAR_default_pstate-1;
+		time_current=time_ref;
 
-	while(try_next && (i >= min_pstate))
-	{
-		if (coefficients[ref][i].available)
+		while(try_next && (i >= min_pstate))
 		{
-			VERBOSE_N(0,"Comparing %u with %u",best_pstate,i);
-			power_proj=sig_power_projection(my_app,ear_frequency,i);
-			cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
-			time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
-			set_performance_projection(i,time_proj,power_proj,cpi_proj);
-			freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
-			perf_gain=(time_current-time_proj)/time_current;
-
-			VERBOSE_N(0,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
-
-			// OK
-			if (perf_gain>=freq_gain)
+			if (coefficients[ref][i].available)
 			{
-				best_pstate=coefficients[ref][i].pstate;
-				time_current = time_proj;
-				i--;
-			}
-			else
-			{
-				try_next = 0;
-			}
-		} // Coefficients available
-		else try_next=0;
-	}
+				#if DEMO
+				VERBOSE_N(1,"Comparing %u with %u",best_pstate,i);
+				#endif
+				power_proj=sig_power_projection(my_app,ear_frequency,i);
+				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
+				time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
+				set_performance_projection(i,time_proj,power_proj,cpi_proj);
+				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
+				perf_gain=(time_current-time_proj)/time_current;
+				#if DEMO	
+				VERBOSE_N(1,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
+				#endif
+
+				// OK
+				if (perf_gain>=freq_gain)
+				{
+					best_pstate=coefficients[ref][i].pstate;
+					time_current = time_proj;
+					i--;
+				}
+				else
+				{
+					try_next = 0;
+				}
+			} // Coefficients available
+			else try_next=0;
+		}	
 
 	// Coefficients were not available for this nominal frequency
 	if (system_conf!=NULL){
-		// Just in case the bestPstate was the frequency at which the application was running
-		if (best_pstate>system_conf->max_freq){
-			log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-			best_pstate=system_conf->max_freq;
-		}
+	// Just in case the bestPstate was the frequency at which the application was running
+	if (best_pstate>system_conf->max_freq){ 
+		log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
+		best_pstate=system_conf->max_freq;
+	}
 	}
 
 	return best_pstate;
 }
+
 
 ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
@@ -198,7 +204,6 @@ ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t 
 	else return 0;
 
 }
-
 ulong  min_time_default_conf(ulong f)
 {
     // Just in case the bestPstate was the frequency at which the application was running

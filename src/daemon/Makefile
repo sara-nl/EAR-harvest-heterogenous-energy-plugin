@@ -6,8 +6,8 @@ LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -pthread
 eard_OBJS += power_monitor/libpowermon.a \
              dynamic_configuration.o \
              shared_configuration.o \
-             eard_api.o \
-             eard_server_api.o
+             eard_server_api.o \
+             eard_api.o
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database/db_helper.o \
              $(SRCDIR)/common/database/mysql_io_functions.o
@@ -15,8 +15,8 @@ endif
 eard_OBJS += $(SRCDIR)/common/types.a \
              $(SRCDIR)/common/environment_common.o \
              $(SRCDIR)/control/frequency.o \
-             $(SRCDIR)/metrics/libmetrics.a \
-             $(SRCDIR)/database_cache/eardbd_api.o
+             $(SRCDIR)/metrics/libmetrics.a
+#             $(SRCDIR)/database_cache/eardbd_api.o
 
 BINARIES = eard_api.o \
            eard_rapi.o \

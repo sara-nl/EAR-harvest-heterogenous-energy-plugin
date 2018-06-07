@@ -144,7 +144,9 @@ int policy_global_configuration(int p_state)
 void policy_global_reconfiguration()
 {
 	if (system_conf!=NULL){
-	VERBOSE_N(0,"policy_global_reconfiguration max %lu def %lu th %.2lf\n",
+	#if DEMO
+	VERBOSE_N(1,"policy_global_reconfiguration max %lu def %lu th %.2lf\n",
+	#endif
 	system_conf->max_freq,system_conf->def_freq,system_conf->th);
 	switch (power_model_policy){
 	case MIN_ENERGY_TO_SOLUTION:

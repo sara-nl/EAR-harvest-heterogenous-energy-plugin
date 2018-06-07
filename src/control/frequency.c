@@ -210,7 +210,7 @@ ulong frequency_set_all_cpus(ulong freq)
 
 			if (result < 0) {
 				//VERBOSE_N(0, "ERROR while switching cpu %d frequency to %lu (%s)", i, freq, strerror(-result));
-				VERBOSE_N(0, "ERROR while switching cpu %d frequency to %lu ", i, freq);
+				VERBOSE_N(2, "ERROR while switching cpu %d frequency to %lu ", i, freq);
 			}
 		}
 

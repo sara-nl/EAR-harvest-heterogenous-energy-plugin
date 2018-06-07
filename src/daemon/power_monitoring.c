@@ -44,7 +44,9 @@
 #include <daemon/power_monitoring.h>
 #include <daemon/shared_configuration.h>
 #include <metrics/power_monitoring/ear_power_monitor.h>
+#if EARDB
 #include <database_daemon/client_api/eardbd_api.h>
+#endif
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
 #include <common/types/cluster_conf.h>
@@ -101,7 +103,7 @@ static void PM_set_sigusr1()
     sa.sa_handler = PM_my_sigusr1;
     sa.sa_flags=0;
     if (sigaction(SIGUSR1, &sa, NULL) < 0)
-        ear_verbose(0,"eard doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
+        VERBOSE_N(0," doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
 
 }
 
@@ -134,9 +136,11 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	init_power_signature(&current_ear_app.app.power_sig);
 	current_ear_app.app.power_sig.max_DC_power=0;
 	current_ear_app.app.power_sig.min_DC_power=500;
+	current_ear_app.app.power_sig.def_f=dyn_conf->def_freq;
 	// Initialize energy
 	read_enegy_data(&c_energy);
 	copy_energy_data(&current_ear_app.energy_init,&c_energy);
+	aperf_job_avg_frequency_init_all_cpus();
 }
 
 
@@ -152,11 +156,14 @@ void job_end_powermon_app()
 	compute_power(&current_ear_app.energy_init,&c_energy,&app_power);
 	
     current_ear_app.app.power_sig.DC_power=app_power.avg_dc;
+	if (app_power.avg_dc>current_ear_app.app.power_sig.max_DC_power) current_ear_app.app.power_sig.max_DC_power=app_power.avg_dc;
+	if (app_power.avg_dc<current_ear_app.app.power_sig.min_DC_power) current_ear_app.app.power_sig.min_DC_power=app_power.avg_dc;
     current_ear_app.app.power_sig.DRAM_power=app_power.avg_dram[0]+app_power.avg_dram[1];
     current_ear_app.app.power_sig.PCK_power=app_power.avg_cpu[0]+app_power.avg_cpu[1];
     current_ear_app.app.power_sig.time=difftime(app_power.end,app_power.begin);
+	current_ear_app.app.power_sig.avg_f=aperf_job_avg_frequency_end_all_cpus();
 
-	// nominal, avgf, edp is still pending
+	// nominal is still pending
 
 	// Metrics are not reported in this function
 }
@@ -265,6 +272,7 @@ void powermon_end_job(job_id jid,job_id sid)
 
 void powermon_new_max_freq(ulong maxf)
 {
+	VERBOSE_N(1,"New max frequency %lu",maxf);
 	if (current_ear_app.app.is_mpi==0){
 		if (maxf<current_node_freq){
 			VERBOSE_N(1,"MaxFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,maxf);
@@ -276,6 +284,7 @@ void powermon_new_max_freq(ulong maxf)
 
 void powermon_new_def_freq(ulong def)
 {
+	VERBOSE_N(1,"New default frequency %lu",def);
     if (current_ear_app.app.is_mpi==0){
         if (def<current_node_freq){
             VERBOSE_N(1,"DefFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def);
@@ -330,7 +339,9 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
     if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
 	#endif
 
+	#if EARDB
 	eardbd_send_periodic_metric(&current_sample);
+	#endif
 
 	return;
 }
@@ -411,7 +422,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	aperf_periodic_avg_frequency_init_all_cpus();
 
 	// Database cache daemon
+	#if EARDB
 	eardbd_connect("cae2306.hpc.eu.lenovo.com", UDP);
+	#endif
 
 	while(!eard_must_exit)
 	{
@@ -436,7 +449,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	}
 
 	// Database cache daemon disconnect
+	#if EARDB
 	eardbd_disconnect();
+	#endif
 
 	pthread_exit(0);
 	//exit(0);

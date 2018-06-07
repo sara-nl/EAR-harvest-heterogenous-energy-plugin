@@ -52,7 +52,7 @@ static int send_command(eargm_request_t *command)
 {
 	ulong ack;
 	int ret;
-	VERBOSE_N(0,"Sending command %u\n",command->req);
+	VERBOSE_N(2,"Sending command %u\n",command->req);
 	if (!eargm_remote_connected) return 0;
 	if ((ret=write(eargm_sfd,command,sizeof(eargm_request_t)))!=sizeof(eargm_request_t)){
 		if (ret<0){ 
@@ -120,7 +120,7 @@ int eargm_new_job(uint num_nodes)
 	eargm_request_t command;
 	command.req=EARGM_NEW_JOB;
 	command.num_nodes=num_nodes;
-	VERBOSE_N(0,"command %u num_nodes %u\n",command.req,command.num_nodes);
+	VERBOSE_N(2,"command %u num_nodes %u\n",command.req,command.num_nodes);
 	return send_command(&command);
 }
 
@@ -129,7 +129,7 @@ int eargm_end_job(uint num_nodes)
     eargm_request_t command;
     command.req=EARGM_END_JOB;
 	command.num_nodes=num_nodes;
-	VERBOSE_N(0,"command %u num_nodes %u\n",command.req,command.num_nodes);
+	VERBOSE_N(2,"command %u num_nodes %u\n",command.req,command.num_nodes);
 	return send_command(&command);
 }
 

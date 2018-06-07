@@ -53,7 +53,7 @@
 
 
 
-static char *__NAME__ = "eard_server_api:";
+static char *__NAME__ = "EARD_API:";
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
@@ -84,7 +84,7 @@ int create_server_socket()
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {
-		VERBOSE_N(0,"getaddrinfo fails for port %s \n",buff);
+		VERBOSE_N(0,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
 		return EAR_ERROR;
     }
 
@@ -102,20 +102,20 @@ int create_server_socket()
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		VERBOSE_N(0,"bind fails for eards server\n");
+		VERBOSE_N(0,"bind fails for eards server (%s) ",strerror(errno));
 		return EAR_ERROR;
     }else{
-		VERBOSE_N(0,"socket and bind for erads socket success\n");
+		VERBOSE_N(1,"socket and bind for erads socket success");
 	}
 
    	freeaddrinfo(result);           /* No longer needed */
 
    	if (listen(sfd,DAEMON_EXTERNAL_CONNEXIONS)< 0){
-		VERBOSE_N(0,"listen eards socket fails\n");
+		VERBOSE_N(0,"listen eards socket fails (%s)",strerror(errno));
 		close(sfd);
  		return EAR_ERROR;
 	}
-	VERBOSE_N(0,"eards socket listen ready!\n");
+	VERBOSE_N(1,"socket listen ready!");
  	return sfd;
 }
 int wait_for_client(int s,struct sockaddr_in *client)
@@ -129,7 +129,7 @@ int wait_for_client(int s,struct sockaddr_in *client)
 		VERBOSE_N(0,"accept for eards socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
-	VERBOSE_N(0,"eards new connection \n");
+	VERBOSE_N(2,"new connection ");
 	return new_sock;
 }
 void close_server_socket(int sock)
@@ -142,13 +142,15 @@ int read_command(int s,request_t *command)
 	int ret;
 	ret=read(s,command,sizeof(request_t));
 	if ((ret<0) || (ret!=sizeof(request_t))){
-		VERBOSE_N(0,"Error reading remote command\n");
-		if (ret<0) VERBOSE_N(0,"errno %s\n",strerror(errno));	
+		VERBOSE_N(0,"Error reading remote command ");
+		if (ret<0) VERBOSE_N(0,"errno %s",strerror(errno));	
 		command->req=NO_COMMAND;
 	}
 	return command->req;
 }
 void send_answer(int s,ulong *ack)
 {
-	if (write(s,ack,sizeof(ulong))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer\n");
+	int ret;
+	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer");
+	if (ret<0) VERBOSE_N(0,"(%s)",strerror(errno));
 }
