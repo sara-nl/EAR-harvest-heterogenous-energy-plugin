@@ -50,9 +50,9 @@
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/config.h>
-#include <daemon/power_monitoring.h>
 #include <daemon/eard_server_api.h>
 #include <daemon/shared_configuration.h>
+#include <daemon/power_monitor/power_monitor_api.h>
 #include <daemon/eard_conf_rapi.h>
 
 

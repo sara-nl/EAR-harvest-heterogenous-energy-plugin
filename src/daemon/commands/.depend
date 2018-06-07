@@ -2,15 +2,15 @@ ear_new_job.o: ear_new_job.c ../../common/config.h \
  ../../daemon/eard_rapi.h ../../common/types/application.h \
  ../../common/types/job.h ../../common/types/generic.h \
  ../../common/types/signature.h ../../common/types/power_signature.h
-ear_set_th.o: ear_set_th.c ../../common/config.h ../../daemon/eard_rapi.h \
- ../../common/types/application.h ../../common/types/job.h \
- ../../common/types/generic.h ../../common/types/signature.h \
- ../../common/types/power_signature.h
 ear_set_ondemand.o: ear_set_ondemand.c ../../control/frequency.h
 ear_control.o: ear_control.c ../../daemon/eard_rapi.h \
  ../../common/config.h ../../common/types/application.h \
  ../../common/types/job.h ../../common/types/generic.h \
  ../../common/types/signature.h ../../common/types/power_signature.h
+ear_set_th.o: ear_set_th.c ../../common/config.h ../../daemon/eard_rapi.h \
+ ../../common/types/application.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h
 ear_set_freq.o: ear_set_freq.c ../../common/config.h \
  ../../daemon/eard_rapi.h ../../common/types/application.h \
  ../../common/types/job.h ../../common/types/generic.h \

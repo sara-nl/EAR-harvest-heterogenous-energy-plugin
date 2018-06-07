@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -40,6 +38,7 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <linux/limits.h>
+#include <pthread.h>
 
 #include <common/config.h>
 #include <control/frequency.h>
@@ -58,10 +57,10 @@
 #include <daemon/eard_conf_api.h>
 
 #include <common/types/cluster_conf.h>
-#include <pthread.h>
-#include <daemon/power_monitoring.h>
-#include <daemon/shared_configuration.h>
+#include <daemon/power_monitor/power_monitor_api.h>
 #include <daemon/dynamic_configuration.h>
+#include <daemon/shared_configuration.h>
+
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
@@ -583,7 +582,6 @@ int eard_freq(int must_read)
 			ear_debug(1,"eard: Closing comunication\n");
 			// HIGHLIGHT: LIBRARY DISPOSE (1/2)
 			eard_close_comm();
-			#endif
 			break;
 		case DATA_SIZE_FREQ:
 			ack=sizeof(unsigned long);

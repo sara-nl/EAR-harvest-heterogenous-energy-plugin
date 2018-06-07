@@ -41,9 +41,9 @@
 #include <pthread.h>
 
 #include <control/frequency.h>
-#include <daemon/power_monitoring.h>
 #include <daemon/shared_configuration.h>
-#include <metrics/power_monitoring/ear_power_monitor.h>
+#include <daemon/power_monitor/power_monitor.h>
+#include <daemon/power_monitor/power_monitor_api.h>
 #if EARDB
 #include <database_daemon/client_api/eardbd_api.h>
 #endif
