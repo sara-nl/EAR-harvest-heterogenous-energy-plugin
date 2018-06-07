@@ -18,10 +18,10 @@ ear_api.o: ear_api.c ../../control/frequency.h \
  ../../common/types/projection.h ../../library/metrics/metrics.h \
  ../../library/mpi_intercept/ear_api.h \
  ../../library/mpi_intercept/MPI_types.h \
- ../../library/mpi_intercept/MPI_calls_coded.h \
- ../../daemon/eard_api.h ../../common/types/log.h \
- ../../daemon/eard_conf_api.h ../../common/ear_verbose.h \
- ../../common/states.h ../../common/file_lock.h
+ ../../library/mpi_intercept/MPI_calls_coded.h ../../daemon/eard_api.h \
+ ../../common/types/log.h ../../daemon/eard_conf_api.h \
+ ../../common/ear_verbose.h ../../common/states.h \
+ ../../common/file_lock.h
 MPI_interfaceF.o: MPI_interfaceF.c process_MPI.h \
  ../../library/mpi_intercept/MPI_types.h MPI_calls_coded.h \
  MPI_interfaceF.h
