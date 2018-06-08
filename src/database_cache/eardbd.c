@@ -18,7 +18,6 @@
 #include <common/types/application.h>
 #include <common/states.h>
 
-
 #define mets_len 4096
 #define apps_len 1024
 
@@ -128,7 +127,9 @@ static void process_timeout_data()
 	verbose("Finished aggregation, consumed %lu energy (?J) from %lu to %lu,",
 			aggr.DC_energy, aggr.start_time, aggr.end_time);
 
-	db_store_periodic_metrics();
+	//db_store_applications();
+	//db_store_periodic_metrics();
+	//db_store_events();
 
 	aggr.start_time = 0;
 	aggr.n_samples  = 0;
