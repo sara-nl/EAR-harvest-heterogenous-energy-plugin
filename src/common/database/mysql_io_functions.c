@@ -1015,7 +1015,7 @@ int mysql_batch_insert_ear_event(MYSQL *connection, ear_event_t **ear_ev, int nu
     char *query = malloc(strlen(EAR_EVENT_QUERY)+(num_evs)*strlen(params)+1);
     strcpy(query, EAR_EVENT_QUERY);
 
-    int i, j;
+    int i, j, offset;
     for (i = 1; i < num_evs; i++)
     {
         strcat(query, params);
@@ -1027,13 +1027,11 @@ int mysql_batch_insert_ear_event(MYSQL *connection, ear_event_t **ear_ev, int nu
 
     time_t timestamp = time(NULL);
 
-    //integer types
-    int i, j, offset;
     for (i = 0; i < num_evs; i++)
     {
-        offset = i*NUM_EAR_EVENTS_ARGS;
+        offset = i*EAR_EVENTS_ARGS;
 
-        for (j = 0; j < NUM_EAR_EVENTS_ARGS; j++)
+        for (j = 0; j < EAR_EVENTS_ARGS; j++)
         {
             bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
         }
