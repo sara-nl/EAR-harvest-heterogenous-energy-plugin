@@ -34,6 +34,8 @@ typedef struct periodic_aggregation {
 	ulong DC_energy;
 	time_t start_time;
 	time_t end_time;
+	uint n_samples;
+	uint id_isle;
 } periodic_aggregation_t;
 
 typedef periodic_aggregation_t peraggr_t;

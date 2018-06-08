@@ -16,19 +16,11 @@
 #include <common/types/application.h>
 #include <common/states.h>
 
-typedef struct periodic_energy_aggregation
-{
-	ulong DC_energy;
-	ulong n_samples;
-	time_t start_time;
-	time_t   end_time;
-	char node_id[128];
-} periodic_energy_aggregation_t;
 
 #define mets_len 4096
 #define apps_len 1024
 
-static periodic_energy_aggregation_t aggr;
+static periodic_aggregation_t aggr;
 static periodic_metric_t mets[mets_len];
 static     application_t apps[apps_len];
 static uint mets_i;
@@ -115,32 +107,26 @@ static void print_addrinfo(struct addrinfo *host_info)
  * Data storing/loading
  */
 
+static void db_store_periodic_metrics()
+{
+	db_batch_insert_periodic_metrics(&mets, mets_i);
+}
+
 /*
  * Data processing
  */
 
 static void make_periodic_aggregation(periodic_metric_t *met)
 {
-	aggr.DC_energy += met->DC_energy;
-	aggr.n_samples += 1;
-
-	if (met->end_time > aggr.end_time) {
-		aggr.end_time = met->end_time;
-	}
-
-	if (met->start_time < aggr.start_time) {
-		aggr.start_time = met->start_time;
-	}
-
-	if (aggr.start_time == 0) {
-		aggr.start_time = met->start_time;
-	}
+	add_periodic_aggregation(aggr, met->DC_energy, met->start_time, met->end_time);
 }
 
 static void process_timeout_data()
 {
 	verbose("Finished aggregation, consumed %lu energy (?J) from %lu to %lu,",
 			aggr.DC_energy, aggr.start_time, aggr.end_time);
+
+	db_store_periodic_metrics();
 
 	aggr.start_time = 0;
 	aggr.n_samples  = 0;
@@ -176,7 +162,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 
 		if (mets_i == mets_len)
 		{
-			//database_store();
+			db_store_periodic_metrics();
 			mets_i = 0;
 		}
 	}

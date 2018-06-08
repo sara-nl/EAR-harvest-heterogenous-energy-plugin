@@ -32,7 +32,20 @@ void init_periodic_aggregation(peraggr_t *aggr)
 	memset(aggr, 0, sizeof(peraggr_t));
 }
 
-void add_periodic_aggregation(peraggr_t *destiny, peraggr_t *source)
+void add_periodic_aggregation(peraggr_t *aggr, ulong DC_energy, time_t end_time, time_t start_time)
 {
+	aggr.DC_energy += DC_energy;
+	aggr.n_samples += 1;
 
+	if (end_time > aggr.end_time) {
+		aggr.end_time = end_time;
+	}
+
+	if (start_time < aggr.start_time) {
+		aggr.start_time = start_time;
+	}
+
+	if (aggr.start_time == 0) {
+		aggr.start_time = start_time;
+	}
 }
