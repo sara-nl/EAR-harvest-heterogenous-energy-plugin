@@ -15,8 +15,8 @@ endif
 eard_OBJS += $(SRCDIR)/common/types.a \
              $(SRCDIR)/common/environment_common.o \
              $(SRCDIR)/control/frequency.o \
-             $(SRCDIR)/metrics/libmetrics.a
-#             $(SRCDIR)/database_cache/eardbd_api.o
+             $(SRCDIR)/metrics/libmetrics.a \
+             $(SRCDIR)/database_cache/eardbd_api.o
 
 BINARIES = eard_api.o \
            eard_rapi.o \

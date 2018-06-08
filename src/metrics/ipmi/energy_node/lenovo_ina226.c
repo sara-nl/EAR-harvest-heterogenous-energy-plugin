@@ -312,6 +312,17 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
     return EAR_SUCCESS;;
 }
 
+int lenovo_wct_read_dc_energy_time(ulong *energy_mj,ulong *ms)
+{
+	ulong ej,emj,ts,tms;
+	int ret;
+	ret=lenovo_wct_read_dc_energy_and_time(&ej,&emj,&ts,&tms);
+	*energy_mj=ej*1000+emj;
+	*ms=ts*1000+tms;
+	return ret;
+}
+
+
 /* Release access to ipmi device */
 int lenovo_wct_node_energy_dispose()
 {

@@ -333,13 +333,15 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	current_sample.avg_f=avg_f;
 	#endif	
 
+
+	#if !EARDB
 	#if DB_MYSQL
 	/* current sample reports the value of job_id and step_id active at this moment */
 	/* If we want to be strict, we must report intermediate samples at job start and job end */
     if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
 	#endif
 
-	#if EARDB
+	#else
 	eardbd_send_periodic_metric(&current_sample);
 	#endif
 

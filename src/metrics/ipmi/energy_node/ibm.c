@@ -196,6 +196,18 @@ int ibm_read_dc_energy(unsigned long *energy)
 	*energy=(unsigned long)be64toh(*energyp);
 	return 0;
 }
+
+int ibm_read_dc_energy_time(ulong *energy,ulong *ms)
+{
+    int ret;
+    struct timeval t;
+    ret=ibm_read_dc_energy(energy);
+    gettimeofday(&t, NULL);
+    *ms=t.tv_sec*1000+t.tv_usec/1000;
+    return ret;
+}
+
+
 /* AC energy is not yet supported */
 int ibm_read_ac_energy(unsigned long *energy)
 {

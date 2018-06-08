@@ -267,6 +267,7 @@ int node_energy_init()
 		node_energy_ops.node_energy_init=ibm_node_energy_init;
 		node_energy_ops.count_energy_data_length=ibm_count_energy_data_length;
 		node_energy_ops.read_dc_energy=ibm_read_dc_energy;
+		node_energy_ops.read_dc_energy_time=ibm_read_dc_energy_time;
 		node_energy_ops.read_ac_energy=ibm_read_ac_energy;
 		node_energy_ops.node_energy_dispose=ibm_node_energy_dispose;
 		break;	
@@ -305,7 +306,7 @@ int node_energy_init()
             node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
             node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
             node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
-            node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
+            node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy_time;
             node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
             node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}
@@ -332,6 +333,18 @@ int read_dc_energy(unsigned long *energy)
 		return -1;
 	}
 }
+
+int read_dc_energy_time(ulong *energy,ulong *time_ms)
+{
+    FUNCVERB("read_dc_energy_time");
+    if (node_energy_ops.read_dc_energy_time!=NULL) return node_energy_ops.read_dc_energy_time(energy,time_ms);
+    else{
+        *energy=0;
+		*time_ms=0;
+        return -1;
+    }
+}
+
 int read_ac_energy(unsigned long *energy)
 {
 	FUNCVERB("read_ac_energy");

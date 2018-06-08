@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 #include <freeipmi/freeipmi.h>
+#include <sys/time.h>
 
 #include <metrics/custom/hardware_info.h>
 #include <common/ear_verbose.h>
@@ -203,6 +204,16 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
 	energyp=(unsigned long *)&bytes_rs[rs_len-8];
 	*energy=(unsigned long)be64toh(*energyp);
 	return EAR_SUCCESS;
+}
+
+int lenovo_act_read_dc_energy_time(ulong *energy,ulong *ms)
+{
+	int ret;
+	struct timeval t;
+	ret=lenovo_act_read_dc_energy(energy);
+	gettimeofday(&t, NULL);
+	*ms=t.tv_sec*1000+t.tv_usec/1000;
+	return ret;
 }
 
 /* AC energy is not yet supported */

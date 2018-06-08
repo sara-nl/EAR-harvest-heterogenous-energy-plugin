@@ -44,6 +44,10 @@ int count_energy_data_length();
 *   Returns 0 on success and -1 on error */
 int read_dc_energy(unsigned long *energy);
 
+/** Update energy with the accumulated node DC energy in mJ and time in ms
+*   Returns 0 on success and -1 on error */
+int read_dc_energy_time(ulong *energy,ulong *time_ms);
+
 /** Update energy with the accumulated node AC energy in mJ 
 *   Returns 0 on success and -1 on error */
 int read_ac_energy(unsigned long *energy);
