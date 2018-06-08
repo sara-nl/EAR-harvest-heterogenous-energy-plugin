@@ -12,6 +12,8 @@
 
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>
+
+#include <common/types/periodic_aggregation.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
 #include <common/states.h>
@@ -118,7 +120,7 @@ static void db_store_periodic_metrics()
 
 static void make_periodic_aggregation(periodic_metric_t *met)
 {
-	add_periodic_aggregation(aggr, met->DC_energy, met->start_time, met->end_time);
+	add_periodic_aggregation(&aggr, met->DC_energy, met->start_time, met->end_time);
 }
 
 static void process_timeout_data()
@@ -330,7 +332,6 @@ int main(int argc, char **argv)
 
 	// Format
 	merge_time = atol(argv[1]);
-	gethostname(aggr.node_id, 128);
 
 	FD_ZERO(&fds_incoming);
 	FD_ZERO(&fds_active);

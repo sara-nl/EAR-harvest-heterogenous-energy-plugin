@@ -37,7 +37,7 @@
 #include <errno.h>
 
 #include <global_manager/eargm_conf_api.h>
-#include <global_manager/eargm_client_api.h>
+#include <global_manager/eargm_rapi.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
 

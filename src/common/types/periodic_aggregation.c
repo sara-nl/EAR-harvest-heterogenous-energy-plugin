@@ -27,6 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <string.h>
+#include <common/types/periodic_aggregation.h>
+
 void init_periodic_aggregation(peraggr_t *aggr)
 {
 	memset(aggr, 0, sizeof(peraggr_t));
@@ -34,18 +37,18 @@ void init_periodic_aggregation(peraggr_t *aggr)
 
 void add_periodic_aggregation(peraggr_t *aggr, ulong DC_energy, time_t end_time, time_t start_time)
 {
-	aggr.DC_energy += DC_energy;
-	aggr.n_samples += 1;
+	aggr->DC_energy += DC_energy;
+	aggr->n_samples += 1;
 
-	if (end_time > aggr.end_time) {
-		aggr.end_time = end_time;
+	if (end_time > aggr->end_time) {
+		aggr->end_time = end_time;
 	}
 
-	if (start_time < aggr.start_time) {
-		aggr.start_time = start_time;
+	if (start_time < aggr->start_time) {
+		aggr->start_time = start_time;
 	}
 
-	if (aggr.start_time == 0) {
-		aggr.start_time = start_time;
+	if (aggr->start_time == 0) {
+		aggr->start_time = start_time;
 	}
 }

@@ -5,7 +5,10 @@ CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 OBJS = environment.o \
        environment_common.o \
        file_lock.o \
+       database.a \
        types.a
+
+database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
 
 types_OBJS = $(patsubst %.c, %.o, $(wildcard ./types/*.c)) \
 			 string_enhanced.o \
@@ -29,6 +32,9 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 
 math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c math_operations.c
+
+database.a: $(database_OBJS)
+	$(AR) rvs database.a $(database_OBJS)
 
 types.a: $(types_OBJS)
 	$(AR) rvs types.a $(types_OBJS)

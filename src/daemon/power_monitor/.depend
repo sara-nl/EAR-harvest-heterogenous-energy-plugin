@@ -7,7 +7,9 @@ power_monitor_api.o: power_monitor_api.c ../../control/frequency.h \
  ../../common/types/job.h ../../common/types/signature.h \
  ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h ../../common/types/cluster_conf.h \
- ../../common/environment.h ../../common/ear_verbose.h
+ ../../common/environment.h ../../common/ear_verbose.h \
+ ../../common/database/db_helper.h ../../common/types/gm_warning.h \
+ ../../common/types/loop.h ../../common/types/log.h
 power_monitor.o: power_monitor.c ../../daemon/eards_api.h \
  ../../daemon/power_monitor/power_monitor.h ../../common/states.h \
  ../../metrics/ipmi/energy_node.h ../../metrics/papi/energy_cpu.h \

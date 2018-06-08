@@ -34,3 +34,5 @@ application.o: application.c ../../common/states.h \
  ../../common/types/application.h ../../common/config.h \
  ../../common/types/job.h ../../common/types/generic.h \
  ../../common/types/signature.h ../../common/types/power_signature.h
+periodic_aggregation.o: periodic_aggregation.c \
+ ../../common/types/periodic_aggregation.h ../../common/types/generic.h

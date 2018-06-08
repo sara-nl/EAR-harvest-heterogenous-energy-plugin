@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <global_manager/eargm_client_api.h>
+#include <global_manager/eargm_rapi.h>
 #include <common/types/cluster_conf.h>
 
 #define NAME_SIZE 128

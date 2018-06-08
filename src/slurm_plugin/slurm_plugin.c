@@ -51,7 +51,8 @@ char buffer2[PATH_MAX];
 int auth_mode =  1;
 int verbosity = -1;
 
-struct spank_option spank_options[] = {
+struct spank_option spank_options_manual[8] =
+{
     { "ear", "on|off", "Enables/disables Energy Aware Runtime",
       1, 0, (spank_opt_cb_f) _opt_ear
     },
@@ -86,8 +87,7 @@ struct spank_option spank_options[] = {
     },
     { "ear-traces", "", "Generates application traces with metrics and internal details",
       0, 0, (spank_opt_cb_f) _opt_ear_traces
-    },
-    SPANK_OPTIONS_TABLE_END
+    }
 };
 
 /*
@@ -205,6 +205,20 @@ static void print_general_info(spank_t sp)
  *
  *
  */
+int slurm_spank_init(spank_t sp, int ac, char **av)
+{
+	int i;
+
+	for (i = 0; i < 8; ++i)
+	{
+		if (ESPANK_SUCCESS != spank_option_register(sp, &spank_options_manual[i]))
+		{
+        	slurm_error("singularity: Unable to register a new option.");
+        	return -1;
+    	}
+	}
+}
+
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
     plug_verbose(sp, 2, "function slurm_spank_local_user_init");

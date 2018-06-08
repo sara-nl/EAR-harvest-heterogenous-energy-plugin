@@ -3,14 +3,11 @@ LDFLAGS = $(DB_LDFLAGS) -lpthread
 
 ######## FILES
 
-HEADERS = $(SRCDIR)/common/config.h \
-          $(SRCDIR)/daemon/eard_rapi.h \
-          $(SRCDIR)/daemon/eard_conf_rapi.h
-
-DAEMON_OBJS = $(SRCDIR)/common/types.a \
+daemon_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
+              $(SRCDIR)/common/types.a \
               eargm_server_api.o
 
-OBJS = eargm_client_api.o \
+OBJS = eargm_rapi.o \
        eargm_server_api.o
 
 ifdef DB_BASE
@@ -23,14 +20,11 @@ endif
 
 all: $(OBJS) $(BINARIES) all.others
 
-eargmd: eargm.c $(DAEMON_OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(DAEMON_OBJS) $(LDFLAGS)
+eargmd: eargm.c $(daemon_OBJS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(LDFLAGS) $(daemon_OBJS)
 
-eargm_client_api.o: %.c %.h $(HEADERS)
-	$(CC) $(CFLAGS) -c eargm_client_api.c
-
-eargm_server_api.o: %.c %.h $(HEADERS)
-	$(CC) $(CFLAGS) -c eargm_server_api.c
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c $<
 
 ######## OPTIONS
 
@@ -38,7 +32,8 @@ install: install.others
 	cp $(BINARIES) $(DESTDIR)/sbin
 
 clean: clean.others
-	rm -rf $(BINARIES)
+	rm -f $(BINARIES)
+	rm -f *.o *.a *.so
 
 depend: depend.others
 

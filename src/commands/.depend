@@ -5,4 +5,7 @@ ear_create_database.o: ear_create_database.c ../common/config.h
 ear_report.o: ear_report.c ../common/config.h \
  ../common/types/application.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \
- ../common/types/power_signature.h
+ ../common/types/power_signature.h ../common/states.h \
+ ../common/database/mysql_io_functions.h ../common/types/log.h \
+ ../common/types/loop.h ../common/types/gm_warning.h \
+ ../common/types/periodic_metric.h

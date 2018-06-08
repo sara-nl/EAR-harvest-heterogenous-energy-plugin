@@ -4,6 +4,9 @@ CFLAGS  = -I$(SRCDIR) $(CONSTANTS)
 
 OBJS = eardbd_api.o
 
+eardbd_OBJS = $(SRCDIR)/common/types.a \
+              $(SRCDIR)/common/database.a
+
 BINARIES = eardbd
 
 ######## RULES
@@ -14,7 +17,7 @@ eardbd_api.o:
 	$(CC) $(CFLAGS) -c eardbd_api.c
 
 eardbd:
-	$(CC) $(CFLAGS) -o eardbd eardbd.c
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eardbd eardbd.c $(DB_LDFLAGS) $(eardbd_OBJS)
 
 client_api_test: eardbd_api.o
 	$(CC) $(CFLAGS) -o client_api_test tests/client_api_test.c eardbd_api.o
