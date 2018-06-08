@@ -56,8 +56,9 @@ struct node_energy_op
 {
 	int (*node_energy_init) ();
 	int (*count_energy_data_length)();
-	int (*read_dc_energy) (unsigned long *energy);
-	int (*read_ac_energy) (unsigned long *energy);
+	int (*read_dc_energy) (ulong *energy);
+	int (*read_dc_energy_time) (ulong *energy,ulong *time);
+	int (*read_ac_energy) (ulong *energy);
 	int (*node_energy_dispose) ();
 } node_energy_ops;
 
@@ -277,6 +278,7 @@ int node_energy_init()
 			node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
 			node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
+			node_energy_ops.read_dc_energy_time=lenovo_act_read_dc_energy_time;
 			node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}else if (strstr(my_p_name,"SR650")!=NULL){
@@ -285,6 +287,7 @@ int node_energy_init()
 			node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
 			node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
+			node_energy_ops.read_dc_energy_time=lenovo_act_read_dc_energy_time;
 			node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}else if (strstr(my_p_name,"SD650")!=NULL){
@@ -294,12 +297,14 @@ int node_energy_init()
 			node_energy_ops.node_energy_init=lenovo_wct_node_energy_init;
 			node_energy_ops.count_energy_data_length=lenovo_wct_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_wct_read_dc_energy;
+			node_energy_ops.read_dc_energy_time=lenovo_wct_read_dc_energy_time;
 			node_energy_ops.read_ac_energy=lenovo_wct_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_wct_node_energy_dispose;
 		}else{
 			ear_verbose(0,"ear_daemon: Product name %s detected (Not Known, using default) \n",my_p_name);
             node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
             node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
+            node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
             node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
             node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
             node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
