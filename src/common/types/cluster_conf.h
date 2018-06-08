@@ -39,10 +39,9 @@
 #define GENERIC_NAME 256
 #define USER		64
 #define ACC			64
-
 /*
 * EARD configuration
-
+*/
 /*
 * EARDVerbose=
 * EARDPerdiocPowermon=
@@ -57,7 +56,7 @@ typedef struct eard_conf
 	ulong max_pstate; 		/* default 1 */
 	uint turbo;				/* Fixed to 0 by the moment */
 	uint port;				/* mandatory */
-}eard_conf_t;
+} eard_conf_t;
 
 /*
 * Global manager configuration
@@ -70,20 +69,30 @@ typedef struct eard_conf
 * EARGMEnergy=
 * EARGMPort=
 */
-typedef struct eargm_conf{
+typedef struct eargm_conf
+{
 	uint 	verbose;		/* default 1 */
 	ulong	t1;				/* default 60 seconds */
 	ulong	t2;				/* default 600 seconds */
 	ulong 	energy;			/* mandatory */
 	uint 	port;			/* mandatory */
-}eargm_conf_t;
+	uint 	mode;
+	char 	mail[GENERIC_NAME];
+} eargm_conf_t;
+
+typedef struct eardb_conf 
+{
+	uint aggr_time;
+	uint tcp_port;
+	uint udp_port;
+} eardb_conf_t;
 
 typedef struct policy_conf
 {
     uint policy; // from environment.h
     double th;
     uint p_state;
-}policy_conf_t;
+} policy_conf_t;
 
 typedef struct node_conf
 {
@@ -91,20 +100,53 @@ typedef struct node_conf
 	uint cpus;
 	uint island;	
 	uint num_special_node_conf;
-	policy_conf_t *special_node_conf;	
-}node_conf_t;
+	policy_conf_t *special_node_conf;
+	char *coef_file;
+	ulong db_ip;
+} node_conf_t;
+
 typedef struct special_app
 {
 	char user[USER];
-	char appname[GENERIC_NAME];
 	uint p_state;
-}special_app_t;
+} special_app_t;
+
+typedef struct energy_tag
+{
+	char tag[USER];
+	uint p_state;
+} energy_tag_t;
+
+typedef struct db_conf
+{
+    char ip[USER];
+    char user[USER];
+    char pass[USER];
+    char database[USER];
+    uint port;
+} db_conf_t;
+
+typedef struct node_range
+{
+	char prefix[USER];
+	uint start;
+	uint end;
+} node_range_t;
+
+typedef struct node_island
+{
+	uint id;
+	uint num_ranges;
+	node_range_t *ranges;
+	char db_ip[GENERIC_NAME];
+} node_island_t;
 
 typedef struct cluster_conf
 {
 	// Library & common conf
 	char Coefficients_pathname[GENERIC_NAME];
 	char tmp_dir[GENERIC_NAME];
+	char etc_dir[GENERIC_NAME];
 	char DB_pathname[GENERIC_NAME];
 	uint verbose;
 	eard_conf_t		eard;
@@ -125,16 +167,13 @@ typedef struct cluster_conf
 	// List of nodes
 	uint num_nodes;
 	node_conf_t *nodes;
+	db_conf_t database;
+	eardb_conf_t db_manager;
+	uint num_tags;
+	energy_tag_t *e_tags;
+	uint num_islands;
+	node_island_t *islands;
 } cluster_conf_t;
-
-typedef struct db_conf
-{
-    char ip[USER];
-    char user[USER];
-    char pass[USER];
-    char database[USER];
-    uint port;
-} db_conf_t;
 
 // Function declarations
 

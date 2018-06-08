@@ -124,21 +124,6 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	my_conf->nodes[0].special_node_conf[0].policy=1;
 	my_conf->nodes[0].special_node_conf[0].th=PERFORMANCE_GAIN;
 	my_conf->nodes[0].special_node_conf[0].p_state=EAR_MIN_P_STATE+1;
-
-    // Manually configured, provisional
-    // EARD configuration
-    my_conf->eard.verbose=1;
-    my_conf->eard.period_powermon=POWERMON_FREQ;
-    my_conf->eard.max_pstate=1;
-    my_conf->eard.turbo=0;
-    my_conf->eard.port=DAEMON_PORT_NUMBER;
-    // EARGM configuration
-    my_conf->eargm.verbose=1;
-    my_conf->eargm.t1=DEFAULT_T1;
-    my_conf->eargm.t2=DEFAULT_T2;
-    my_conf->eargm.energy=MAX_ENERGY;
-    my_conf->eargm.port=EARGM_PORT_NUMBER;
-
 	#else
 	FILE *conf_file = fopen(conf_path, "r");
 	if (conf_file == NULL)
@@ -147,6 +132,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		return EAR_ERROR;
 	}
 	get_cluster_config(conf_file, my_conf);
+    fclose(conf_file);
     //print_cluster_conf(my_conf);
 	#endif
 	return EAR_SUCCESS;
@@ -172,7 +158,7 @@ node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 void print_node_conf(node_conf_t *my_node_conf)
 {
 	int i;
-	fprintf(stderr,"--> nodename %s cpus %u island %u \n",my_node_conf->name,my_node_conf->cpus,my_node_conf->island);
+	fprintf(stderr,"--> nodename %s cpus %u island %u def_file: %s\n",my_node_conf->name,my_node_conf->cpus,my_node_conf->island, my_node_conf->coef_file);
 	if (my_node_conf->num_special_node_conf>0){
 		for (i=0;i<my_node_conf->num_special_node_conf;i++){
 			print_policy_conf(&my_node_conf->special_node_conf[i]);
@@ -239,6 +225,7 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
     char *second_ptr;
     char *token;
     char *start;
+    char *next_token;
     int range_start, range_end;
     char nodename[GENERIC_NAME];
 
@@ -257,7 +244,13 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
     int node_count = 0;
     while (token != NULL)
     {
-        strclean(token, ']');
+        if (strchr(token, ']'))
+        {
+            next_token = strtok_r(NULL, "[", &buffer_ptr);
+            strclean(token, ']');
+        }
+        else next_token = NULL; 
+        
         if (strchr(token, '-'))
         {
             char has_zero = strchr(token, '0') != NULL;
@@ -285,10 +278,63 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
             sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s%s\0", start, token);
         }
         token = strtok_r(NULL, ",", &buffer_ptr);
+        if (next_token != NULL) start = next_token;
     }
     return node_count;
 }
 
+void generate_node_ranges(node_island_t *island, char *nodelist)
+{
+    char *buffer_ptr;
+    char *second_ptr;
+    char *token;
+    char *start;
+    char *next_token;
+    int range_start, range_end;
+    char nodename[GENERIC_NAME];
+
+    start = strtok_r(nodelist, "[", &buffer_ptr);
+    token = strtok_r(NULL, ",", &buffer_ptr);
+    //in this case, only one node is specified in the line
+    if (token == NULL)
+    {
+        island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+1));
+        memset(&island->ranges[island->num_ranges], 0, sizeof(node_range_t));
+        sprintf(island->ranges[island->num_ranges].prefix, "%s", start);
+        island->ranges[island->num_ranges].start = island->ranges[island->num_ranges].start = -1;
+        island->num_ranges++;
+    }
+    //at least one range if we reach this point
+    int range_count = 0;
+    while (token != NULL)
+    {
+        island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+range_count+1));
+        memset(&island->ranges[island->num_ranges+range_count], 0, sizeof(node_range_t));
+        strcpy(island->ranges[island->num_ranges+range_count].prefix, start);
+        if (strchr(token, ']'))
+        {
+            next_token = strtok_r(NULL, "[", &buffer_ptr);
+            strclean(token, ']');
+        }
+        else next_token = NULL; 
+        
+        if (strchr(token, '-'))
+        {
+            island->ranges[island->num_ranges+range_count].start = atoi(strtok_r(token, "-", &second_ptr));
+            island->ranges[island->num_ranges+range_count].end = atoi(strtok_r(NULL, "-", &second_ptr));
+            range_count++;
+        }
+        else
+        {
+            island->ranges[island->num_ranges+range_count].start = island->ranges[island->num_ranges+range_count].end = 
+                atoi(token);
+            range_count++;
+        }
+        token = strtok_r(NULL, ",", &buffer_ptr);
+        if (next_token != NULL) start = next_token;
+    }
+    island->num_ranges += range_count;
+}
 
 /** Fills the cluster_conf_t from the info from the FILE */
 void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
@@ -314,7 +360,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(token, "\n");
             strcpy(conf->DB_pathname, token);
         }
-        else if (!strcmp(token, "COEFFICIENTSDB"))
+        else if (!strcmp(token, "COEFFICIENTSDIR"))
         {
             token = strtok(NULL, "=");
             token = strtok(token, "\n");
@@ -325,6 +371,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             token = strtok(token, "\n");
             strcpy(conf->tmp_dir, token);
+        }
+        else if (!strcmp(token, "ETCDIR"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, "\n");
+            strcpy(conf->etc_dir, token);
         }
         else if (!strcmp(token, "VERBOSE"))
         {
@@ -401,25 +453,31 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 token = strtok(NULL, ",");
             }
         }
-        else if (!strcmp(token, "USERNAME"))
+        else if (!strcmp(token, "USERSWITHENERGYTAG"))
         {
             //special parsing on this one
             token = strtok(NULL, "=");
-            char *token2 = strtok(NULL, "=");
-            char *token3 = strtok(NULL, "=");
-        
-            token = strtok(token, " ");
-            token2 = strtok(token2, " ");
-            token3 = strtok(token3, " ");
-            
-            conf->num_special++;
-            conf->special = realloc(conf->special, sizeof(special_app_t)*conf->num_special);
-            int i = conf->num_special - 1;
-            strcpy(conf->special[i].user, token);
-            strcpy(conf->special[i].appname, token2);
-            conf->special[i].p_state = atoi(token3);
+            token = strtok(token, ",");
+            while (token != NULL)
+            {
+                strclean(token, '\n');
+                conf->num_special++;
+                conf->special = realloc(conf->special, sizeof(special_app_t)*conf->num_special);
+                strcpy(conf->special[conf->num_special - 1].user, token);
+                token = strtok(NULL, ",");            
+            }
         }
-        else if (!strcmp(token, "ISLAND"))
+        else if (!strcmp(token, "ENERGYTAG"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+            conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t)*(conf->num_tags+1));
+            strcpy(conf->e_tags[conf->num_tags].tag, token);
+            token = strtok(NULL, ",");
+            conf->e_tags[conf->num_tags].p_state = atoi(token);
+            conf->num_tags++;
+        }
+        else if (!strcmp(token, "NODENAME"))
         {
             int i = 0;
             int island = 0;
@@ -429,6 +487,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             line[strlen(line)] = '=';
             char *primary_ptr;
             char *secondary_ptr;
+            char *coef_file = NULL;
             token = strtok_r(line, " ", &primary_ptr);
             while (token != NULL)
             {
@@ -563,6 +622,14 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                     }
                 }
 
+                else if (!strcmp(token, "DEFCOEFFICIENTSFILE"))
+                {
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    strclean(token, '\n');
+                    coef_file = malloc(sizeof(char)*strlen(token)+1);
+                    strcpy(coef_file, token);
+                }
+
                 //fetches the second half of the pair = 
                 token = strtok_r(NULL, "=", &secondary_ptr);
                 token = strtok_r(NULL, " ", &primary_ptr);
@@ -574,23 +641,169 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 conf->nodes[conf->num_nodes+i].cpus = num_cpus;
                 conf->nodes[conf->num_nodes+i].island = island;
             }
+            if (coef_file != NULL)
+                for (i = 0; i < num_nodes; i++)
+                    conf->nodes[conf->num_nodes+i].coef_file = coef_file;
             conf->num_nodes += num_nodes;
         }
+
+        //EARD conf
+        else if (!strcmp(token, "NODEDAEMONVERBOSE"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.verbose = atoi(token);
+        }
+        else if (!strcmp(token, "NODEDAEMONPOWERMONFREQ"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.period_powermon = atoi(token);
+        }
+        else if (!strcmp(token, "NODEDAEMONMAXPSTATE"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.max_pstate = atoi(token);
+        }
+        else if (!strcmp(token, "NODEDAEMONTURBO"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.turbo = atoi(token);
+        }
+        else if (!strcmp(token, "NODEDAEMONPORT"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.port = atoi(token);
+        }
+
+        //DB MANAGER
+        else if (!strcmp(token, "AGGREGATIONTIME"))
+        {
+            token = strtok(NULL, "=");
+            conf->db_manager.aggr_time = atoi(token);
+        }
+        else if (!strcmp(token, "PORTTCP"))
+        {
+            token = strtok(NULL, "=");
+            conf->db_manager.tcp_port = atoi(token);
+        }
+        else if (!strcmp(token, "PORTUDP"))
+        {
+            token = strtok(NULL, "=");
+            conf->db_manager.udp_port = atoi(token);
+        }
+
+        //GLOBAL MANAGER
+        else if (!strcmp(token, "GLOBALMANAGERVERBOSE"))
+        {
+            token = strtok(NULL, "=");
+            conf->eargm.verbose = atoi(token);
+        }
+        else if (!strcmp(token, "GLOBALMANAGERPERIODT1"))
+        {
+            token = strtok(NULL, "=");
+            conf->eargm.t1 = atoi(token);
+        }
+        else if (!strcmp(token, "GLOBALMANAGERPERIODT2"))
+        {
+            token = strtok(NULL, "=");
+            conf->eargm.t2 = atoi(token);
+        }
+        else if (!strcmp(token, "GLOBALMANAGERENERGYLIMIT"))
+        {
+            token = strtok(NULL, "=");
+            conf->eargm.energy = atoi(token);
+        }
+        else if (!strcmp(token, "GLOBALMANAGERPORT"))
+        {
+            token = strtok(NULL, "=");
+            conf->eargm.port = atoi(token);
+        }
+        else if (!strcmp(token, "GLOBALMANAGERMODE"))
+        {
+            token = strtok(NULL, "=");
+            conf->eargm.mode = atoi(token);
+        }
+        else if (!strcmp(token, "GLOBALMANAGERMAIL"))
+        {
+            token = strtok(NULL, "=");
+            strclean(token, '\n');
+            strcpy(conf->eargm.mail, token);
+        }
+
+        //MARIADB/MYSQL config
+        else if (!strcmp(token, "MARIADBIP"))
+        {
+            token = strtok(NULL, "=");
+            strclean(token, '\n');
+            strcpy(conf->database.ip, token);
+        }
+        else if (!strcmp(token, "MARIADBUSER"))
+        {
+            token = strtok(NULL, "=");
+            strclean(token, '\n');
+            strcpy(conf->database.user, token);
+        }
+        else if (!strcmp(token, "MARIADBPASSW"))
+        {
+            token = strtok(NULL, "=");
+            strclean(token, '\n');
+            strcpy(conf->database.pass, token);
+        }
+        else if (!strcmp(token, "MARIADBHOST"))
+        {
+            token = strtok(NULL, "=");
+            strclean(token, '\n');
+            strcpy(conf->database.database, token);
+        }
+        else if (!strcmp(token, "MARIADBPORT"))
+        {
+            token = strtok(NULL, "=");
+            conf->database.port = atoi(token);
+        }
+
+        //ISLES config
+        else if (!strcmp(token, "ISLAND"))
+        {
+
+            int i = 0;
+            int island = 0;
+            int num_nodes = 0;
+            int num_cpus = 0;
+            //fully restore the line
+            line[strlen(line)] = '=';
+
+            if (conf->num_islands == 0)
+                conf->islands = NULL;
+            conf->islands = realloc(conf->islands, sizeof(node_island_t)*(conf->num_islands+1));
+            memset(&conf->islands[conf->num_islands], 0, sizeof(node_island_t));
+
+            //token = strtok_r(line, " ", &primary_ptr); 
+            token = strtok(line, "=");
+            while (token != NULL)
+            {
+                strtoup(token);
+                if (!strcmp(token, "ISLAND"))
+                {
+                    token = strtok(NULL, " ");
+                    conf->islands[conf->num_islands].id = atoi(token);
+                }
+                else if (!strcmp(token, "DATABASECACHEIP"))
+                {
+                    token = strtok(NULL, " ");
+                    strclean(token, '\n');
+                    strcpy(conf->islands[conf->num_islands].db_ip, token);
+                }
+                else if (!strcmp(token, "NODES"))
+                {
+                    token = strtok(NULL, " ");
+                    generate_node_ranges(&conf->islands[conf->num_islands], token);
+                }
+                token = strtok(NULL, "=");
+            }
+            conf->num_islands++;
+        }
+
     }
 
-	// Manually configured, provisional
-	// EARD configuration
-	conf->eard.verbose=1;
-	conf->eard.period_powermon=POWERMON_FREQ;
-	conf->eard.max_pstate=1;
-	conf->eard.turbo=0;
-	conf->eard.port=DAEMON_PORT_NUMBER;	
-	// EARGM configuration
-	conf->eargm.verbose=1;
-	conf->eargm.t1=DEFAULT_T1;
-	conf->eargm.t2=DEFAULT_T2;
-	conf->eargm.energy=MAX_ENERGY;
-	conf->eargm.port=EARGM_PORT_NUMBER;
 }
 
 /** frees a cluster_conf_t */
@@ -609,9 +822,22 @@ void free_cluster_conf(cluster_conf_t *conf)
     
     for (i = 0; i < conf->num_nodes; i++)
         free(conf->nodes[i].special_node_conf);
+
+    char *prev_file = NULL;
+    for (i = 0; i < conf->num_nodes; i++) {
+        if (conf->nodes[i].coef_file != NULL && conf->nodes[i].coef_file != prev_file)  {
+            prev_file = conf->nodes[i].coef_file;
+            free(conf->nodes[i].coef_file);
+        }
+    }
+    
     free(conf->nodes);
 
     free(conf->power_policies);
+
+    free(conf->e_tags);
+
+    free(conf->islands);
 
     memset(conf, 0, sizeof(cluster_conf_t));
 
@@ -619,13 +845,18 @@ void free_cluster_conf(cluster_conf_t *conf)
 
 void print_special_app(special_app_t *app)
 {
-    fprintf(stderr, "--->appname: %s\tuser: %s\t p_state: %u\n",
-            app->appname, app->user, app->p_state);
+    fprintf(stderr, "--->user: %s\tpstate: %u\n",
+            app->user, app->p_state);
+}
+
+void print_energy_tag(energy_tag_t *tag)
+{
+    fprintf(stderr, "---->tag: %s\tpstate: %u\n",
+            tag->tag, tag->p_state);
 }
 
 void print_eard_conf(eard_conf_t *conf)
 {
-	fprintf(stderr,"--> EARD configuration\n");
 	fprintf(stderr,"\t eard: verbose %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
 	fprintf(stderr,"\t eard: turbo %u port %u\n",conf->turbo,conf->port);
 
@@ -634,14 +865,36 @@ void print_eard_conf(eard_conf_t *conf)
 void print_eargm_conf(eargm_conf_t *conf)
 {
 	fprintf(stderr,"--> EARGM configuration\n");
-	fprintf(stderr,"\t eargm: verbose %u t1 %lu t2 %lu energy limit %lu port %u\n",conf->verbose,conf->t1,conf->t2,conf->energy,conf->port);
+	fprintf(stderr,"\t eargm: verbose %u t1 %lu t2 %lu energy limit %lu port %u mode: %u\tmail: %s\n",
+                    conf->verbose,conf->t1,conf->t2,conf->energy,conf->port, conf->mode, conf->mail);
+}
 
+void print_db_manager(eardb_conf_t *conf)
+{
+    fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tUDP port: %u\n",
+            conf->aggr_time, conf->tcp_port, conf->udp_port);
+}
+
+void print_database_conf(db_conf_t *conf)
+{
+    fprintf(stderr, "---> IP: %s\tUser: %s\tPort:%u\tHost:%s\n",
+        conf->ip, conf->user, conf->port, conf->database);
+}
+
+void print_islands_conf(node_island_t *conf)
+{
+    fprintf(stderr, "--->id: %u\tip: %s\n", conf->id, conf->db_ip);
+    int i;
+    for (i = 0; i < conf->num_ranges; i++)
+    {
+        fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\n", conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end);
+    }
 }
 
 void print_cluster_conf(cluster_conf_t *conf)
 {
-    fprintf(stderr, "DIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n", 
-            conf->DB_pathname, conf->Coefficients_pathname, conf->tmp_dir);
+    fprintf(stderr, "\nDIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n", 
+            conf->DB_pathname, conf->Coefficients_pathname, conf->tmp_dir, conf->etc_dir);
     fprintf(stderr, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %u\n--->Min_time_perf_acc: %u\n",
             conf->verbose, conf->default_policy, conf->min_time_perf_acc);
     int i;
@@ -657,10 +910,22 @@ void print_cluster_conf(cluster_conf_t *conf)
     fprintf(stderr, "\nSPECIAL APPLICATIONS\n");
     for (i = 0; i < conf->num_special; i++)
         print_special_app(&conf->special[i]);
+    for (i = 0; i < conf->num_tags; i++)
+        print_energy_tag(&conf->e_tags[i]);
     fprintf(stderr, "\nNODE CONFIGURATIONS\n");
     for (i = 0; i < conf->num_nodes; i++)
         print_node_conf(&conf->nodes[i]);
+    fprintf(stderr, "\nDB MANAGER\n");
+    print_db_manager(&conf->db_manager);
+    fprintf(stderr, "\nEARD CONFIGURATION\n");
 	print_eard_conf(&conf->eard);
+    fprintf(stderr, "\nEARGM CONFIGURATION\n");
 	print_eargm_conf(&conf->eargm);	
+    print_database_conf(&conf->database);
+
+    fprintf(stderr, "\nISLES\n");
+    for (i = 0; i < conf->num_islands; i++)
+        print_islands_conf(&conf->islands[i]);
+    fprintf(stderr, "\n");
 
 }
