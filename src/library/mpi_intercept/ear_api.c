@@ -92,9 +92,6 @@ static int in_loop;
 
 #if EAR_OVERHEAD_CONTROL
 /* in us */
-#define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE	30
-#define MPI_CALLS_TO_CHECK_PERIODIC			1000
-#define PERIOD								30
 #define DYNAIS_ON 		1
 #define DYNAIS_OFF		0
 #define PERIODIC_MODE_ON	0
