@@ -80,6 +80,13 @@ typedef struct eargm_conf
 	char 	mail[GENERIC_NAME];
 } eargm_conf_t;
 
+typedef struct node_range
+{
+	char prefix[USER];
+	uint start;
+	uint end;
+} node_range_t;
+
 typedef struct eardb_conf 
 {
 	uint aggr_time;
@@ -96,7 +103,9 @@ typedef struct policy_conf
 
 typedef struct node_conf
 {
-	char name[GENERIC_NAME];
+	//char name[GENERIC_NAME];
+	node_range_t *range;
+	uint range_count;
 	uint cpus;
 	uint island;	
 	uint num_special_node_conf;
@@ -125,13 +134,6 @@ typedef struct db_conf
     char database[USER];
     uint port;
 } db_conf_t;
-
-typedef struct node_range
-{
-	char prefix[USER];
-	uint start;
-	uint end;
-} node_range_t;
 
 typedef struct node_island
 {

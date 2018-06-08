@@ -138,6 +138,31 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	return EAR_SUCCESS;
 }
 
+char range_conf_contains_node(node_conf_t *node, char *nodename)
+{
+    char aux_name[64];
+    int i, j;
+    for (i = 0; i < node->range_count; i++)
+    {
+        if (node->range[i].end == node->range[i].start)
+        {
+            sprintf(aux_name, "%s%u", node->range[i].prefix, node->range[i].start);
+            if (!strcmp(aux_name, nodename)) return 1;
+            else continue;
+        }
+        for (j = node->range[i].end; j >= node->range[i].start && j > 0; j--)
+        {
+            if (j < 10 && node->range[i].end > 10)
+                sprintf(aux_name, "%s0%u", node->range[i].prefix, j);
+            else
+                sprintf(aux_name, "%s%u", node->range[i].prefix, j);
+            if (!strcmp(aux_name, nodename)) return 1;
+        }
+    }
+
+    return 0;
+}
+
 
 /*
 * NODE FUNCTIONS
@@ -147,8 +172,9 @@ node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 	int i=0;
 	node_conf_t *n=NULL;
 	do{ // At least one node is assumed
-		if (strcmp(my_conf->nodes[i].name,nodename)==0){	
-			n=&my_conf->nodes[i];
+		//if (strcmp(my_conf->nodes[i].name,nodename)==0){	
+		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
+        	n=&my_conf->nodes[i];
 		}
 		i++;
 	}while((n==NULL) && (i<my_conf->num_nodes));
@@ -158,12 +184,12 @@ node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 void print_node_conf(node_conf_t *my_node_conf)
 {
 	int i;
-	fprintf(stderr,"--> nodename %s cpus %u island %u def_file: %s\n",my_node_conf->name,my_node_conf->cpus,my_node_conf->island, my_node_conf->coef_file);
-	if (my_node_conf->num_special_node_conf>0){
-		for (i=0;i<my_node_conf->num_special_node_conf;i++){
-			print_policy_conf(&my_node_conf->special_node_conf[i]);
-		}
-	}
+	fprintf(stderr,"-->cpus %u island %u def_file: %s\n", my_node_conf->cpus, my_node_conf->island, my_node_conf->coef_file);
+    for (i = 0; i < my_node_conf->range_count; i++)
+        printf("---->prefix: %s\tstart: %u\tend: %u\n", my_node_conf->range[i].prefix, my_node_conf->range[i].start, my_node_conf->range[i].end);
+    for (i=0;i<my_node_conf->num_special_node_conf;i++){
+        print_policy_conf(&my_node_conf->special_node_conf[i]);
+    }
 }
 
 
@@ -231,12 +257,20 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
 
     start = strtok_r(namelist, "[", &buffer_ptr);
     token = strtok_r(NULL, ",", &buffer_ptr);
+    
+    conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+1));
+    memset(&conf->nodes[conf->num_nodes], 0, sizeof(node_conf_t));
+
     //in this case, only one node is specified in the line
     if (token == NULL)
     {
-        conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+1));
-        memset(&conf->nodes[conf->num_nodes], 0, sizeof(node_conf_t));
-        sprintf(conf->nodes[conf->num_nodes].name, "%s", start);
+
+        conf->nodes[conf->num_nodes].range = realloc(conf->nodes[conf->num_nodes].range, sizeof(node_range_t)*(conf->nodes[conf->num_nodes].range_count+1));
+        memset(&conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count], 0, sizeof(node_range_t));
+        sprintf(conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].prefix, "%s", start);
+        conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start =
+            conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end = -1;
+        conf->nodes[conf->num_nodes].range_count++;
 
         return 1;
     }
@@ -244,6 +278,11 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
     int node_count = 0;
     while (token != NULL)
     {
+
+        conf->nodes[conf->num_nodes].range = realloc(conf->nodes[conf->num_nodes].range, sizeof(node_range_t)*(conf->nodes[conf->num_nodes].range_count+1));
+        memset(&conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count], 0, sizeof(node_range_t));
+        sprintf(conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].prefix, "%s", start);
+
         if (strchr(token, ']'))
         {
             next_token = strtok_r(NULL, "[", &buffer_ptr);
@@ -253,34 +292,21 @@ int set_nodes_conf(cluster_conf_t *conf, char *namelist)
         
         if (strchr(token, '-'))
         {
-            char has_zero = strchr(token, '0') != NULL;
-            range_start = atoi(strtok_r(token, "-", &second_ptr));
-            range_end = atoi(strtok_r(NULL, "-", &second_ptr));
-            int i;
-            for (i = range_start; i <= range_end; i++, node_count++)
-            {
-                conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count+1));
-                memset(&conf->nodes[conf->num_nodes+node_count], 0, sizeof(node_conf_t));
-                //CASE FOR <10 numbers
-                if (i < 10 && has_zero)
-                    sprintf(conf->nodes[conf->num_nodes+node_count].name, "%s0%u\0", start, i);
-
-                else
-                    sprintf(conf->nodes[conf->num_nodes+node_count].name, "%s%u\0", start, i);
-
-            }
+            conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start = atoi(strtok_r(token, "-", &second_ptr));
+            conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end = atoi(strtok_r(NULL, "-", &second_ptr));
+            
         }
         else
         {
-            node_count++;
-            conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+node_count));
-            memset(&conf->nodes[conf->num_nodes+node_count-1], 0, sizeof(node_conf_t));
-            sprintf(conf->nodes[conf->num_nodes+node_count-1].name, "%s%s\0", start, token);
+            conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end =
+                conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start =
+                    atoi(token);
         }
         token = strtok_r(NULL, ",", &buffer_ptr);
         if (next_token != NULL) start = next_token;
+        conf->nodes[conf->num_nodes].range_count++;
     }
-    return node_count;
+    return 1;
 }
 
 void generate_node_ranges(node_island_t *island, char *nodelist)
@@ -477,6 +503,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             conf->e_tags[conf->num_tags].p_state = atoi(token);
             conf->num_tags++;
         }
+
+        //HARDWARE NODE CONFIG
         else if (!strcmp(token, "NODENAME"))
         {
             int i = 0;
@@ -829,6 +857,7 @@ void free_cluster_conf(cluster_conf_t *conf)
             prev_file = conf->nodes[i].coef_file;
             free(conf->nodes[i].coef_file);
         }
+            free(conf->nodes[i].range);
     }
     
     free(conf->nodes);
@@ -836,8 +865,8 @@ void free_cluster_conf(cluster_conf_t *conf)
     free(conf->power_policies);
 
     free(conf->e_tags);
-
-    for (i = 0; i <conf->num_islands; i++)
+    
+    for (i = 0; i < conf->num_islands; i++)
         free(conf->islands[i].ranges);
 
     free(conf->islands);
@@ -932,3 +961,4 @@ void print_cluster_conf(cluster_conf_t *conf)
     fprintf(stderr, "\n");
 
 }
+
