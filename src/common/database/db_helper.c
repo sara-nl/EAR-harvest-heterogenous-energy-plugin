@@ -239,7 +239,7 @@ int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg)
         return EAR_ERROR;
     }
 
-    if (mysql_insert_periodic_aggregation(connection, per_aggr) < 0)
+    if (mysql_insert_periodic_aggregation(connection, per_agg) < 0)
     {
         VERBOSE_N(0, "ERROR while writing periodic_aggregation to database.");
         return EAR_ERROR;
