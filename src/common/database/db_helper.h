@@ -44,12 +44,14 @@ int db_insert_loop(loop_t *loop);
 
 int db_insert_event(ear_event_t *ear_ev);
 
-int db_insert_warning(gm_warning_t *warning);
+int db_insert_gm_warning(gm_warning_t *warning);
 
 int db_insert_power_signature(power_signature_t *pow_sig);
 
 int db_insert_periodic_metric(periodic_metric_t *per_met);
 
 int db_batch_insert_periodic_metrics(periodic_metric_t **per_mets, int num_mets);
+
+int db_batch_insert_ear_event(ear_event_t **ear_evs, int num_events);
 
 #endif

@@ -102,6 +102,11 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **p
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
 
+/** Given a MYSQL connection and num_evs EAR events, inserts said events into
+*   the database. Returns the EAR_SUCCESS success, and either 
+*   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_batch_insert_ear_event(MYSQL *connection, ear_event_t **ear_ev, int num_evs);
+
 /** Given a MYSQL connection and an global manager warning, inserts said 
 *   warning into the database. Returns EAR_SUCCESS on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
