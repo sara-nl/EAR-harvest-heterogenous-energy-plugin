@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <common/types/periodic_aggregation.h>
 #include <common/types/power_signature.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
@@ -49,6 +50,8 @@ int db_insert_gm_warning(gm_warning_t *warning);
 int db_insert_power_signature(power_signature_t *pow_sig);
 
 int db_insert_periodic_metric(periodic_metric_t *per_met);
+
+int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg);
 
 int db_batch_insert_periodic_metrics(periodic_metric_t **per_mets, int num_mets);
 

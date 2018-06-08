@@ -97,6 +97,11 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met);
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. */
 int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **per_mets, int num_mets);
 
+/** Given a MYSQL connection and a periodic_aggregation, inserts said periodic_aggregation
+*   into the database. Returns the periodic_aggregation's database id on success, and 
+*   either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t *per_agg);
+
 /** Given a MYSQL connection and an EAR event, inserts said event into
 *   the database. Returns the event's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/

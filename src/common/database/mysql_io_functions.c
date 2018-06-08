@@ -63,6 +63,9 @@
 #define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id)"\
                                 "VALUES (?, ?, ?, ?, ?, ?)"
 #endif
+
+#define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_time, start_time, end_time) VALUES (?, ?, ?)"
+
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq) VALUES (?, ?, ?, ?, ?)"
 
 #define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state) VALUES (?, ?, ?, ?)"
@@ -916,6 +919,40 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return id;
+}
+
+int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t *per_agg)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+
+    if (mysql_stmt_prepare(statement, PERIODIC_AGGREGATION_QUERY, strlen(PERIODIC_AGGREGATION_QUERY))) return mysql_statement_error(statement);
+
+    MYSQL_BIND bind[3];
+    memset(bind, 0, sizeof(bind));
+
+    //integer types
+    int i;
+    for (i = 0; i < 3; i++)
+    {
+        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+    }
+
+    //storage variable assignation
+    bind[0].buffer = (char *)&per_agg->DC_energy;
+    bind[1].buffer = (char *)&per_agg->start_time;
+    bind[2].buffer = (char *)&per_agg->end_time;
+
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+
+    int id = mysql_stmt_insert_id(statement);
+    
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return id;
+
 }
 
 int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **per_mets, int num_mets)

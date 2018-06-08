@@ -187,6 +187,13 @@ void create_tables(MYSQL *connection)
                             user_acc VARCHAR(256) NOT NULL, \
                             PRIMARY KEY(id, step_id))")) execute_on_error(connection);
 
+    if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Periodic_aggregations (\
+                            id INT unsigned NOT NULL AUTO_INCREMENT,\
+                            start_time BIGINT,\
+                            end_time BIGINT,\
+                            DC_energy BIGINT unsigned, \
+                            PRIMARY KEY(id))")) execute_on_error(connection);
+
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
                             id INT unsigned NOT NULL AUTO_INCREMENT,\
                             DC_power DOUBLE,\
