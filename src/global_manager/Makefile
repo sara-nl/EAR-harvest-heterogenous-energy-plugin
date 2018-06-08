@@ -13,15 +13,15 @@ OBJS = eargm_rapi.o \
 ifdef DB_BASE
 BINARIES += eargmd
 
-DB_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o
+DB_OBJS = $(SRCDIR)/common/database.a
 endif
 
 ######## RULES
 
-all: $(OBJS) $(BINARIES) all.others
+all: $(OBJS) $(BINARIES) all.others 
 
-eargmd: eargm.c $(daemon_OBJS)
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(LDFLAGS) $(daemon_OBJS)
+eargmd: eargm.c $(daemon_OBJS) $(DB_OBJS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(LDFLAGS) $(DB_OBJS) $(daemon_OBJS) 
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

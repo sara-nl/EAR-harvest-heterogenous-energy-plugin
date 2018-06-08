@@ -9,8 +9,7 @@ eard_OBJS += power_monitor/libpowermon.a \
              eard_server_api.o \
              eard_api.o
 ifdef DB_BASE
-eard_OBJS += $(SRCDIR)/common/database/db_helper.o \
-             $(SRCDIR)/common/database/mysql_io_functions.o
+eard_OBJS += $(SRCDIR)/common/database.a
 endif
 eard_OBJS += $(SRCDIR)/common/types.a \
              $(SRCDIR)/common/environment_common.o \

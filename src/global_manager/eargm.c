@@ -43,6 +43,8 @@
 #include <global_manager/eargm_server_api.h>
 #include <daemon/eard_rapi.h>
 #include <common/types/cluster_conf.h>
+#include <common/types/gm_warning.h>
+#include <common/database/db_helper.h>
 
 /*
 *	EAR Global Manager constants
@@ -344,7 +346,7 @@ void *eargm_server_api(void *p)
 /*
 *	ACTIONS for WARNING and PANIC LEVELS
 */
-void increase_th_all_nodes(int level)
+ulong increase_th_all_nodes(int level)
 {
 	int i,rc;
 	ulong th;
@@ -361,8 +363,9 @@ void increase_th_all_nodes(int level)
 			eards_remote_disconnect();
 		}
 	}
+	return th_level[level];
 }
-void reduce_frequencies_all_nodes(int level)
+ulong reduce_frequencies_all_nodes(int level)
 {
     int i,rc;
     ulong ps;
@@ -379,7 +382,7 @@ void reduce_frequencies_all_nodes(int level)
         	eards_remote_disconnect();
 		}
     }
-
+	return pstate_level[level];
 }
 
 
@@ -399,6 +402,7 @@ void main(int argc,char *argv[])
 	ulong divisor = 1000;
 	int ret;
 	ulong result;
+	gm_warning_t my_warning;
 
     if (argc !=4) usage(argv[0]);
 	period_t1=atoi(argv[1]);
@@ -519,23 +523,39 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
-			increase_th_all_nodes(WARNING_3);
+
+			my_warning.level=WARNING_3;
+			my_warning.inc_th=increase_th_all_nodes(WARNING_3);            
+			my_warning.energy_percent=perc_energy;
+			#if DB_MYSQL	
+			db_insert_gm_warning(&my_warning);
+			#endif
 			break;
 		case WARNING_2:
 			in_action+=T1_WAIT;
 			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
-			increase_th_all_nodes(WARNING_2);
-			reduce_frequencies_all_nodes(WARNING_2);
+			my_warning.level=WARNING_2;
+			my_warning.new_p_state=reduce_frequencies_all_nodes(WARNING_2);
+			my_warning.inc_th=increase_th_all_nodes(WARNING_2);            
+			my_warning.energy_percent=perc_energy;
+			#if DB_MYSQL	
+			db_insert_gm_warning(&my_warning);
+			#endif
 			break;
 		case PANIC:
 			in_action+=T1_WAIT;
 			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
-			increase_th_all_nodes(PANIC);
-			reduce_frequencies_all_nodes(PANIC);
+			my_warning.level=PANIC;
+			my_warning.new_p_state=reduce_frequencies_all_nodes(PANIC);
+			my_warning.inc_th=increase_th_all_nodes(PANIC);            
+			my_warning.energy_percent=perc_energy;
+			#if DB_MYSQL	
+			db_insert_gm_warning(&my_warning);
+			#endif
 			break;
 		}
 		}else in_action--;
