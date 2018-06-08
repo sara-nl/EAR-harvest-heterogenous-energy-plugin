@@ -30,3 +30,30 @@
 // Database
 #define DB_FILES			@DB_FILES@
 #define DB_MYSQL			@DB_MYSQL@
+
+// EARL Default values and configuration
+#define EAR_BOOST
+#define PERFORMANCE_GAIN 	0.75  	// minimum performance efficiency gain for min_time to solution power policy
+#define EAR_ACCEPTED_TH 	0.05 	// Accepted th when comparing not discrete values , for instance power. 5% is allowed in this case
+#define EAR_MIN_P_STATE 	3 		// Default p_state used with min_time_to_solution power policy
+#define USE_TURBO			0 		// Turbo allowed or not. Turbo on is not supported in this version
+#define RESET_FREQ			0		// Default frequency is reset between two consequtive loops or not. 0 means not reset
+#define MAX_POWER_ERROR		0.05 	// used to configure the frequency for power measurements. Configure the min time between measurements to have a maximum % of error
+#define MAX_DYNAIS_OVERHEAD	5 		// Maximum % of overhead allowed for dynais overhead. If overhead > MAX_DYNAIS_OVERHEAD dynais is set off after computing the first signature
+#define MAX_POLICY_TRIES	3 		// Maximum number of tries (per loop) before going to default frequency
+#define DEMO				1 		// Used when doing EAR demos. More information is reported
+#define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE   30		// Maximum time, in seconds, EAR will run in dynais driven mode before going to periodic mode 
+#define MPI_CALLS_TO_CHECK_PERIODIC         1000	// EAR will check periodically (every N mpi calls) 
+#define PERIOD                              30		// Period (in seconds) to compute the signature used in periodic mode
+
+
+// EARD default values and configuration
+#define POWERMON_FREQ		30000000 	// Frequency for periodic power monitoring
+#define DAEMON_PORT_NUMBER	50000 		// Default port used by the power monitoring
+
+// EARGMD default values and configuration
+#define DEFAULT_T1			60 			// Default period T1 used by the global mamager in seconds 
+#define DEFAULT_T2			600			// Default period T2 used by the global mamager in seconds. T2 should be multiple of T1 
+#define MAX_ENERGY			300 		// Energy limit (in Joules) consumed by the cluster during period T2
+#define EARGM_PORT_NUMBER	60000		// Default port used by the global manager
+

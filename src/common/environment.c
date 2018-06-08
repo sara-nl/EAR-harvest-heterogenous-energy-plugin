@@ -37,6 +37,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <common/config.h>
 #include <common/environment.h>
 #include <common/environment_common.h>
 
