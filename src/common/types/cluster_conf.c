@@ -51,7 +51,7 @@
 
 
 static const char *__NAME__ = "cluster_conf:";
-#define __OLD__CONF__
+//#define __OLD__CONF__
 
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
@@ -836,6 +836,9 @@ void free_cluster_conf(cluster_conf_t *conf)
     free(conf->power_policies);
 
     free(conf->e_tags);
+
+    for (i = 0; i <conf->num_islands; i++)
+        free(conf->islands[i].ranges);
 
     free(conf->islands);
 
