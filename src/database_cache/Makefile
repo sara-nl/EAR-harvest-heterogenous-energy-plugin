@@ -4,8 +4,8 @@ CFLAGS  = -I$(SRCDIR) $(CONSTANTS)
 
 OBJS = eardbd_api.o
 
-eardbd_OBJS = $(SRCDIR)/common/types.a \
-              $(SRCDIR)/common/database.a
+eardbd_OBJS = $(SRCDIR)/common/database.a \
+			  $(SRCDIR)/common/types.a
 
 BINARIES = eardbd
 

@@ -45,7 +45,7 @@
 #include <daemon/power_monitor/power_monitor.h>
 #include <daemon/power_monitor/power_monitor_api.h>
 #if EARDB
-#include <database_daemon/client_api/eardbd_api.h>
+#include <database_cache/eardbd_api.h>
 #endif
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>

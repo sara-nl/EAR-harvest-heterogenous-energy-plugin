@@ -306,7 +306,7 @@ int node_energy_init()
             node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
             node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
             node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
-            node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy_time;
+            node_energy_ops.read_dc_energy_time=lenovo_act_read_dc_energy_time;
             node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
             node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}
