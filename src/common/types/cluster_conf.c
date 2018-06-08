@@ -144,6 +144,12 @@ char range_conf_contains_node(node_conf_t *node, char *nodename)
     int i, j;
     for (i = 0; i < node->range_count; i++)
     {
+        if (node->range[i].end == -1)
+        {
+            sprintf(aux_name, "%s", node->range[i].prefix);
+            if (!strcmp(aux_name, nodename)) return 1;
+            else continue;
+        }
         if (node->range[i].end == node->range[i].start)
         {
             sprintf(aux_name, "%s%u", node->range[i].prefix, node->range[i].start);
