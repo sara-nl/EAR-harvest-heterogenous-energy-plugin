@@ -434,3 +434,93 @@ int db_insert_gm_warning(gm_warning_t *warning)
     
     return EAR_SUCCESS;
 }
+
+ulong stmt_error(MYSQL_STMT *statement)
+{
+    fprintf(stderr, "Error preparing statement (%d): %s\n",
+            mysql_stmt_errno(statement), mysql_stmt_error(statement));
+    mysql_stmt_close(statement);
+    return -1;
+}
+
+#define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
+                    ">= ? AND end_time <= ?"
+
+ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
+{
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        VERBOSE_N(0, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    {
+        if (getenv_database() != EAR_SUCCESS)
+        {
+            mysql_close(connection);
+            return EAR_ERROR;
+        }
+    }
+
+    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    {
+        VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+
+
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement)
+    {
+        VERBOSE_N(0, "Error creating statement (%d): %s\n", mysql_errno(connection),
+                mysql_error(connection));
+        return -1;
+    }
+
+    if (mysql_stmt_prepare(statement, SUM_QUERY, strlen(SUM_QUERY)))
+                                                return stmt_error(statement);
+
+
+    //Query parameters binding
+    MYSQL_BIND bind[3];
+    memset(bind, 0, sizeof(bind));
+
+    bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[0].is_unsigned = 1;
+
+    bind[1].buffer_type = bind[2].buffer_type = MYSQL_TYPE_LONG;
+
+    bind[0].buffer = (char *)&divisor;
+    bind[1].buffer = (char *)&start_time;
+    bind[2].buffer = (char *)&end_time;
+
+
+    //Result parameters
+    MYSQL_BIND res_bind[1];
+    memset(res_bind, 0, sizeof(res_bind));
+    res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
+    ulong result = 0;
+    res_bind[0].buffer = &result;
+
+    if (mysql_stmt_bind_param(statement, bind)) return stmt_error(statement);
+    if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(statement);
+    if (mysql_stmt_execute(statement)) return stmt_error(statement);
+    if (mysql_stmt_store_result(statement)) return stmt_error(statement);
+
+    int status = mysql_stmt_fetch(statement);
+    if (status != 0 && status != MYSQL_DATA_TRUNCATED)
+        result = -2;
+
+    mysql_stmt_close(statement);
+    mysql_close(connection);
+
+    return result;
+
+
+}
+
