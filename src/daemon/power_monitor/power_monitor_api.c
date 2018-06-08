@@ -40,11 +40,12 @@
 #include <signal.h>
 #include <pthread.h>
 
+#include <common/config.h>
 #include <control/frequency.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/power_monitor/power_monitor.h>
 #include <daemon/power_monitor/power_monitor_api.h>
-#if EARDB
+#if USE_EARDB
 #include <database_cache/eardbd_api.h>
 #endif
 #include <common/types/periodic_metric.h>
@@ -52,7 +53,6 @@
 #include <common/types/cluster_conf.h>
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
-#include <common/config.h>
 
 #if DB_MYSQL
 #include <common/database/db_helper.h>
@@ -173,9 +173,15 @@ void report_powermon_app(powermon_app_t *app)
 {
 	// We can write here power information for this job
 	report_application_data(&app->app);
-#if DB_MYSQL
+	#if !USE_EARDB
+	#if DB_MYSQL
     if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
-#endif
+	#endif
+	#else
+    if (eardbd_send_application(&app->app)!=EAR_SUCCESS){
+        VERBOSE_N(0,"Error when sending application to eardb");
+    }
+	#endif
 	
 }
 
@@ -334,7 +340,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 
-	#if !EARDB
+	#if !USE_EARDB
 	#if DB_MYSQL
 	/* current sample reports the value of job_id and step_id active at this moment */
 	/* If we want to be strict, we must report intermediate samples at job start and job end */
@@ -342,7 +348,9 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif
 
 	#else
-	eardbd_send_periodic_metric(&current_sample);
+	if (eardbd_send_periodic_metric(&current_sample)!=EAR_SUCCESS){
+		VERBOSE_N(0,"Error when sending periodic power metric to eardb");
+	}
 	#endif
 
 	return;
@@ -423,10 +431,6 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	read_enegy_data(&e_begin);
 	aperf_periodic_avg_frequency_init_all_cpus();
 
-	// Database cache daemon
-	#if EARDB
-	eardbd_connect("cae2306.hpc.eu.lenovo.com", UDP);
-	#endif
 
 	while(!eard_must_exit)
 	{
@@ -450,10 +454,6 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		t_begin=t_end;
 	}
 
-	// Database cache daemon disconnect
-	#if EARDB
-	eardbd_disconnect();
-	#endif
 
 	pthread_exit(0);
 	//exit(0);

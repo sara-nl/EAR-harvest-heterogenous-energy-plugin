@@ -60,6 +60,10 @@
 #include <daemon/power_monitor/power_monitor_api.h>
 #include <daemon/dynamic_configuration.h>
 #include <daemon/shared_configuration.h>
+#if USE_EARDB
+#include <database_cache/eardbd_api.h>
+#endif
+
 
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
@@ -329,6 +333,11 @@ void eard_exit(uint restart)
 	node_energy_dispose();
 	dispose_uncores();
 	aperf_dispose();
+    // Database cache daemon disconnect
+    #if USE_EARDB
+    eardbd_disconnect();
+    #endif
+
 
 	VERBOSE_N(1,"Releasing files");
 
@@ -503,23 +512,31 @@ int eard_system(int must_read)
 			break;
 		case WRITE_EVENT:
 			ack=EAR_COM_OK;
+			#if !USE_EARDB
 			#if DB_MYSQL
 			ret1=db_insert_ear_event(&req.req_data.event);
+			#endif
+			#else
+			ret1=eardbd_send_event(&req.req_data.event);
+			#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
-			#endif
 			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
 
 			break;
 
 		case WRITE_LOOP_SIGNATURE:
 			ack=EAR_COM_OK;
+			#if !USE_EARDB
 			#if DB_MYSQL
 			req.req_data.loop.loop.job=&req.req_data.loop.job;
 			ret1 = db_insert_loop (&req.req_data.loop.loop);
+			#endif
+			#else
+			ret1=eardbd_send_loop(&req.req_data.loop.loop);
+			#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
-			#endif
 			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
 
 		break;
@@ -991,6 +1008,14 @@ void main(int argc,char *argv[])
         ear_verbose(0,"Error creating shared memory\n");
         exit(0);
     }
+    // Database cache daemon
+    #if USE_EARDB
+	// use eardb configuration is pending
+    if (eardbd_connect("cae2306.hpc.eu.lenovo.com", UDP)!=EAR_SUCCESS){
+		VERBOSE_N(0,"Error connecting with EARDB");
+	}
+    #endif
+
     ear_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
 		errno=ret;
