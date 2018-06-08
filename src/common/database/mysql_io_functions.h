@@ -37,6 +37,7 @@
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/power_signature.h>
+#include <common/types/periodic_aggregation.h>
 
 /** Given a MYSQL connection and an application, inserts said application into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
@@ -97,10 +98,20 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met);
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. */
 int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **per_mets, int num_mets);
 
+/** Given a MYSQL connection and a periodic_aggregation, inserts said periodic_aggregation
+*   into the database. Returns the periodic_aggregation's database id on success, and 
+*   either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t *per_agg);
+
 /** Given a MYSQL connection and an EAR event, inserts said event into
 *   the database. Returns the event's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
+
+/** Given a MYSQL connection and num_evs EAR events, inserts said events into
+*   the database. Returns the EAR_SUCCESS success, and either 
+*   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_batch_insert_ear_event(MYSQL *connection, ear_event_t **ear_ev, int num_evs);
 
 /** Given a MYSQL connection and an global manager warning, inserts said 
 *   warning into the database. Returns EAR_SUCCESS on success, and either 

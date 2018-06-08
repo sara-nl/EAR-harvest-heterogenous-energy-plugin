@@ -103,7 +103,7 @@ typedef struct policy_conf
 
 typedef struct node_conf
 {
-	//char name[GENERIC_NAME];
+	char name[GENERIC_NAME];
 	node_range_t *range;
 	uint range_count;
 	uint cpus;
