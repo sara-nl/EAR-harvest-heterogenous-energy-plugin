@@ -44,21 +44,26 @@
 
 void usage(char *app)
 {
-    #if DB_FILES
+    #if DB_FILES && !DB_MYSQL
 	printf("Usage: %s job_id user_db_pathname [-v]\n",app);
     #endif
     #if DB_MYSQL
-    printf("Usage: %s job_id [Optional parameters]\n \
-\tOptional parameters: \n\
-\t\t-v\tverbose mode for debugging purposes\n\
-\t\t-u\tspecifies the user that executes the query [default: root]\n\
-\t\t-db\tspecifies the database on which the query is executed [default: Report]\n\
-\t\t-ip\tspecifies the ip where the MySQL server can be found [default: 127.0.0.1]\n", app);
+    printf("Usage: %s job_id [Optional parameters]\n"\
+"\tOptional parameters: \n" \
+"\t\t-v\tverbose mode for debugging purposes\n" \
+"\t\t-u\tspecifies the user that executes the query [default: root]\n" \
+"\t\t-db\tspecifies the database on which the query is executed [default: Report]\n" \
+"\t\t-ip\tspecifies the ip where the MySQL server can be found [default: 127.0.0.1]\n" \
+"", app);
+
+#if DB_FILES
+    printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
+#endif
     #endif
 	exit(1);
 }
 
-void read_from_files(int argc, char *argv[], char verbose)
+void read_from_files(int argc, char *argv[], char verbose, char file_location)
 {
 	int job_id, num_nodes, i, step_id=0;
 	char **nodes;
@@ -72,7 +77,7 @@ void read_from_files(int argc, char *argv[], char verbose)
     job_id = atoi(strtok(argv[1], "."));
     token = strtok(NULL, ".");
     if (token != NULL) step_id = atoi(token);
-    job_id = job_id * 100 + step_id;
+    //job_id = job_id * 100 + step_id;
     
     
     strcpy(nodelist_file_path, EAR_INSTALL_PATH);
@@ -94,6 +99,13 @@ void read_from_files(int argc, char *argv[], char verbose)
         num_nodes += 1;
     }
     rewind(nodelist_file);
+    
+    if (num_nodes == 0)
+    {
+        fprintf(stderr, "No nodes found.\n");
+        return;
+    }
+    
     if (verbose) printf("Found %d nodes.\n", num_nodes);
 
     //initialize memory for each 
@@ -108,7 +120,7 @@ void read_from_files(int argc, char *argv[], char verbose)
 
 
     char *nodename_extension = ".hpc.eu.lenovo.com.csv";
-    char *nodename_prepend = argv[2];
+    char *nodename_prepend = (file_location > 0) ? argv[file_location] : argv[2];
     nodelog_file_path = malloc(strlen(nodename_extension)+ strlen(nodename_prepend) + STANDARD_NODENAME_LENGTH + 1);
 
 
@@ -120,6 +132,7 @@ void read_from_files(int argc, char *argv[], char verbose)
     for (i = 0; i < num_nodes; i++)
     {
         sprintf(nodelog_file_path, "%s%s%s", nodename_prepend, nodes[i], nodename_extension);
+        if (verbose) printf("Opening file for node %s (%s).\n", nodes[i], nodelog_file_path);
         node_file = fopen(nodelog_file_path, "r");
 
         if (node_file == NULL)
@@ -136,7 +149,7 @@ void read_from_files(int argc, char *argv[], char verbose)
         if (verbose) printf("Checking node for signatures with %d job id.\n", job_id);
         while (scan_application_fd(node_file, apps[jobs_counter]) == APP_TEXT_FILE_FIELDS)
         {
-            if (apps[jobs_counter]->job.id == job_id )
+            if (apps[jobs_counter]->job.id == job_id && apps[jobs_counter]->job.step_id == step_id)
             {
                 if (verbose) printf("Found job_id %d in file %s\n", apps[jobs_counter]->job.id, nodelog_file_path);
                 jobs_counter++;
@@ -145,6 +158,16 @@ void read_from_files(int argc, char *argv[], char verbose)
         }
 
         fclose(node_file);
+    }
+
+    if (i == 1)
+    {
+        fprintf(stderr, "No jobs were found with id: %u.\n", job_id);
+        free(nodelog_file_path);
+        for (i = 0; i < num_nodes; i++)
+            free(nodes[i]);
+        free(nodes);
+        return;
     }
 
     printf("Node information:\nJob_id \tNodename \t\t\tTime (secs) \tDC Power (Watts) \tEnergy (Joules) \tAvg_freq (GHz)\n");
@@ -315,21 +338,22 @@ void main(int argc, char *argv[])
     if (argc < 3) usage(argv[0]);
 #endif
     char verbose = 0;
+
 #if DB_FILES && !DB_MYSQL
     if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
     else verbose = 0;
-    read_from_files(argc, argv, verbose);
-    
+    read_from_files(argc, argv, verbose, 0);
+    exit(1);
 #endif
 
 #if DB_MYSQL
-    int database = 0, user = 0, ip = 0;
+    int database = 0, user = 0, ip = 0, files = 0;
     int i = 0;
     if (argc > 2)
     {
         for (i = 2; i < argc; i++)
         {
-            fprintf(stderr, "Processing arg %d: %s\n", i, argv[i]);
+            //fprintf(stderr, "Processing arg %d: %s\n", i, argv[i]);
             if (!strcmp("-db", argv[i])){
                 database = ++i;
             }
@@ -342,10 +366,23 @@ void main(int argc, char *argv[])
             else if (!strcmp("-v", argv[i])){
                 verbose = 1;
             }
+#if DB_FILES
+            else if (!strcmp("-f", argv[i])){
+                files = ++i;
+            }
+#endif
         }
     }
-    if (verbose) fprintf(stderr, "Initializing database reading.\n");
-    read_from_database(argc, argv, database, user, ip, verbose);
+    if (!files)
+    {
+        if (verbose) fprintf(stderr, "Initializing database reading.\n");
+        read_from_database(argc, argv, database, user, ip, verbose);
+    }
+    else 
+    {
+        if (verbose) fprintf(stderr, "Reading from file.\n");
+        read_from_files(argc, argv, verbose, files);
+    }
 #endif
     exit(1);
 }

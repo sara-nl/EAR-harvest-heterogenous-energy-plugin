@@ -79,3 +79,6 @@ clean:
 
 depend:
 	@ $(MAKE) -C 'src' depend || exit
+
+depend-clean:
+	@ $(MAKE) -C 'src' depend-clean || exit

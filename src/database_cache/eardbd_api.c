@@ -45,11 +45,11 @@
 #include <common/types/log.h>
 #include <common/states.h>
 
-static char buffer[4096];
-static struct addrinfo *srv_info;
-static int _protocol = -1;
-static int connected = -1;
-static int fd_srv    = -1;
+char buffer[4096];
+struct addrinfo *srv_info;
+int _protocol = -1;
+int connected = -1;
+int fd_srv    = -1;
 
 #define verbose(...) \
 	fprintf(stdout, "EARDBD_API, "); \

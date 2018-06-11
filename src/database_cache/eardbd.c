@@ -26,6 +26,7 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -146,6 +147,26 @@ static void print_addrinfo(struct addrinfo *host_info)
  * Data storing/loading
  */
 
+static void db_store_events()
+{
+	if (eves_i <= 0) {
+		return;
+	}
+
+    verbose("Trying to insert in DB %d event samples", eves_i);
+    db_batch_insert_ear_event(eves, eves_i);
+}
+
+static void db_store_loops()
+{
+   if (lops_i <= 0) {
+        return; 
+    }
+
+    verbose("Trying to insert in DB %d loop samples", lops_i);
+    //db_batch_insert_loops(lops, lops_i);
+}
+
 static void db_store_periodic_metrics()
 {
 	if (mets_i <= 0) {
@@ -153,7 +174,7 @@ static void db_store_periodic_metrics()
 	}
 
 	verbose("Trying to insert in DB %d periodic metric samples", mets_i);
-	db_batch_insert_periodic_metrics(&mets, mets_i);
+	db_batch_insert_periodic_metrics(mets, mets_i);
 }
 
 static void db_store_periodic_aggregation()
@@ -191,12 +212,10 @@ static void process_timeout_data()
 
 static void process_incoming_data(int fd, char *buffer, size_t size)
 {
-	char *file;
 	char *type;
 
 	if (size == sizeof(application_t))
 	{
-		file = "applications.buf";
 		type = "application_t";
 
 		memcpy (&apps[apps_i], buffer, size);
@@ -210,7 +229,6 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 	}
 	else if (size == sizeof(periodic_metric_t))
 	{
-		file = "periodic.metrics.buf";
 		type = "periodic_metric_t";
 
 		memcpy (&mets[mets_i], buffer, size);
@@ -221,8 +239,29 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 			db_store_periodic_metrics();
 			mets_i = 0;
 		}
-	}
-	else {
+	} else if (size == sizeof(ear_event_t))
+	{
+		type = "ear_event_t";
+		
+		memcpy(&eves[eves_i], buffer, size);
+		eves_i += 1;
+
+		if (eves_i == eves_len) {
+			db_store_events();
+			eves_i = 0;
+		}
+	} else if (size = sizeof(loop_t))
+	{
+		type = "loop_t";
+
+		memcpy(&lops[lops_i], buffer, size);
+		lops_i += 1;
+
+		if (lops_i == eves_len) {
+			db_store_loops();
+			lops_i = 0;
+		}
+	} else {
 		type = "unknown";
 	}
 

@@ -44,6 +44,8 @@ clean: clean.components
 
 depend: depend.components
 
+depend-clean: depend-clean.components
+
 ######## SUBFOLDERS
 
 %.components:

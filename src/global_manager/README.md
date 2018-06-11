@@ -7,7 +7,7 @@ EAR is a framework to control the energy at different contexts. The EAR Global M
 Requirements
 ------------
 
-EAR Global Manager uses periodic power metrics reported by [EARD](../daemon/README.md). EARD is a per-node daemon and it periodically reports the dc energy consumed in the node, including job identification details (job id, step id when executed in a slurm system). These metrics are stored and aggregated in a MariaDB DB through the [EAR DB Manager](../database_daemon/REAME.md).
+EAR Global Manager uses periodic power metrics reported by [EARD](../daemon/README.md). EARD is a per-node daemon and it periodically reports the dc energy consumed in the node, including job identification details (job id, step id when executed in a slurm system). These metrics are stored and aggregated in a MariaDB DB through the [EAR DB Manager](../database_cache/REAME.md).
 
 Brief installation guide
 ------------------------
