@@ -965,7 +965,7 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
     if (!statement) return EAR_MYSQL_ERROR;
 
 #if DEMO
-    char *params = ", (?, ?, ?, ?, ?, ?, ?)"
+    char *params = ", (?, ?, ?, ?, ?, ?, ?)";
 #else
     char *params = ", (?, ?, ?, ?, ?, ?)";
 #endif
