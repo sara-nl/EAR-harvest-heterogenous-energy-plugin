@@ -3,8 +3,7 @@ LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -pthread
 
 ######## FILES
 
-eard_OBJS += metrics/power_metrics/libpowermetrics.a \
-			 power_monitor.o \
+eard_OBJS += power_monitor.o \
              dynamic_configuration.o \
              shared_configuration.o \
              eard_server_api.o \
@@ -25,7 +24,7 @@ BINARIES = eard_api.o \
 
 ######## RULES
 
-all: all.components $(BINARIES) all.others
+all: $(BINARIES) all.others
 
 eard: eard.c $(eard_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
@@ -50,10 +49,10 @@ eard_rapi.o: eard_rapi.c eard_rapi.h
 
 ######## OPTIONS
 
-install: install.components install.others
+install: install.others
 	cp eard $(DESTDIR)/sbin
 
-clean: clean.components clean.others
+clean: clean.others
 	rm -f *.o *.a *.so eard
 
 depend: depend.others

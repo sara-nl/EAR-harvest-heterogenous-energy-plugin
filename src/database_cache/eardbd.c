@@ -44,16 +44,24 @@
 #include <common/types/periodic_aggregation.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
+#include <common/types/loop.h>
+#include <common/types/log.h>
 #include <common/states.h>
 
 #define mets_len 4096
+#define lops_len 4096
+#define eves_len 4096
 #define apps_len 1024
 
 static periodic_aggregation_t aggr;
 static periodic_metric_t mets[mets_len];
-static     application_t apps[apps_len];
+static application_t apps[apps_len];
+static ear_event_t eves[apps_len];
+static loop_t lops[apps_len];
 static uint mets_i;
 static uint apps_i;
+static uint eves_i;
+static uint lops_i;
 
 static char buffer[4096];
 static char buffer_aux[64];
@@ -144,15 +152,17 @@ static void db_store_periodic_metrics()
 		return;
 	}
 
+	verbose("Trying to insert in DB %d periodic metric samples", mets_i);
 	db_batch_insert_periodic_metrics(&mets, mets_i);
 }
 
 static void db_store_periodic_aggregation()
 {
-	if (n_samples <= 0) {
+	if (aggr.n_samples <= 0) {
 		return;
 	}
 
+	verbose("Trying to insert in DB an aggregation of %d samples", aggr.n_samples);
 	db_insert_periodic_aggregation(&aggr);
 }
 
@@ -376,6 +386,8 @@ int main(int argc, char **argv)
 
 	// Format
 	merge_time = atol(argv[1]);
+	timeout.tv_sec = merge_time;
+	timeout.tv_usec = 0L;
 
 	FD_ZERO(&fds_incoming);
 	FD_ZERO(&fds_active);
@@ -417,7 +429,7 @@ int main(int argc, char **argv)
 		fd_srv_max = fd_srv_tcp;
 	}
 
-	verbose("phase 2: listening");
+	verbose("phase 2: listening (processing every %d s)", merge_time);
 
 	while(1)
 	{
