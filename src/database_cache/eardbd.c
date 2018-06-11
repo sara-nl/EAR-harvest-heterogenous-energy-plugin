@@ -140,7 +140,20 @@ static void print_addrinfo(struct addrinfo *host_info)
 
 static void db_store_periodic_metrics()
 {
+	if (mets_i <= 0) {
+		return;
+	}
+
 	db_batch_insert_periodic_metrics(&mets, mets_i);
+}
+
+static void db_store_periodic_aggregation()
+{
+	if (n_samples <= 0) {
+		return;
+	}
+
+	db_insert_periodic_aggregation(&aggr);
 }
 
 /*
@@ -158,11 +171,12 @@ static void process_timeout_data()
 			aggr.DC_energy, aggr.start_time, aggr.end_time);
 
 	//db_store_applications();
-	//db_store_periodic_metrics();
-	//db_store_events();
-
+	db_store_periodic_aggregation();
 	aggr.start_time = 0;
 	aggr.n_samples  = 0;
+
+	db_store_periodic_metrics();
+	mets_i = 0;
 }
 
 static void process_incoming_data(int fd, char *buffer, size_t size)
@@ -193,8 +207,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 		make_periodic_aggregation(&mets[mets_i]);
 		mets_i += 1;
 
-		if (mets_i == mets_len)
-		{
+		if (mets_i == mets_len) {
 			db_store_periodic_metrics();
 			mets_i = 0;
 		}
