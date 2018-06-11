@@ -1,5 +1,0 @@
-energy_node.o: energy_node.c ../../metrics/custom/hardware_info.h \
- ../../metrics/ipmi/energy_node/lenovo_nm.h \
- ../../metrics/ipmi/energy_node/lenovo_ina226.h \
- ../../metrics/ipmi/energy_node/ibm.h ../../common/ear_verbose.h \
- ../../common/config.h

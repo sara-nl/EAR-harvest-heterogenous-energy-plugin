@@ -64,7 +64,6 @@ void pm_disconnect()
 	if (rootp){
 		node_energy_dispose();
 	}else{
-		return EAR_ERROR;
 		//eards_disconnect();
 	}
 }             

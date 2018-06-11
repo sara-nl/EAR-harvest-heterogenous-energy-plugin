@@ -64,7 +64,7 @@
                                 "VALUES (?, ?, ?, ?, ?, ?)"
 #endif
 
-#define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_time, start_time, end_time) VALUES (?, ?, ?)"
+#define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time) VALUES (?, ?, ?)"
 
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq) VALUES (?, ?, ?, ?, ?)"
 

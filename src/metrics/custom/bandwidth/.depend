@@ -1,4 +1,0 @@
-uncores_pci.o: uncores_pci.c ../../../metrics/custom/hardware_info.h \
- ../../../metrics/custom/bandwidth/uncores_pci.h \
- ../../../common/types/generic.h ../../../common/ear_verbose.h \
- ../../../common/config.h ../../../common/states.h
