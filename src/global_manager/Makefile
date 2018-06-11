@@ -44,4 +44,4 @@ include $(SRCDIR)/Makefile.depend
 ######## SUBFOLDERS
 
 %.others:
-	$(MAKE) -C 'commands' $*
+	@ $(MAKE) -C 'commands' $* || exit

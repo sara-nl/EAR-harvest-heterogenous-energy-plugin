@@ -44,6 +44,8 @@
 #include <common/types/periodic_aggregation.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
+#include <common/types/loop.h>
+#include <common/types/log.h>
 #include <common/states.h>
 
 #define mets_len 4096
