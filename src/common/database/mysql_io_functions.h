@@ -96,7 +96,7 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met);
 /** Given a MYSQL connection and num_mets periodic_metrics, inserts said 
 *   periodic_metrics into the database. Returns EAR_SUCCESS on success, and either
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. */
-int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **per_mets, int num_mets);
+int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *per_mets, int num_mets);
 
 /** Given a MYSQL connection and a periodic_aggregation, inserts said periodic_aggregation
 *   into the database. Returns the periodic_aggregation's database id on success, and 
