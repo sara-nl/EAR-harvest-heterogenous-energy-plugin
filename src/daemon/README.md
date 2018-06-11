@@ -19,15 +19,15 @@ EARD is configured by modifying the ear.conf file. Fields used to configure EARD
 
 #EARD configuration
 
-# verbose level
+#verbose level
 NodeDaemonVerbose=1
-# frequency used by power monitoing service (in seconds)
+#frequency used by power monitoing service (in seconds)
 NodeDaemonPowermonFreq=10
-# maximum p_state supported (1=nominal)
+#maximum p_state supported (1=nominal)
 NodeDaemonMaxPstate=1
-# turbo frequencies supported 0=no 
+#turbo frequencies supported 0=no 
 NodeDaemonTurbo=0
-# port to be used by the remote API
+#port to be used by the remote API
 NodeDaemonPort=5000
 
 
@@ -52,12 +52,12 @@ $journalctl -u eard -f
 EARD API
 --------
 The EARD provides three types of API:
-- Local API to be used by [EARL] (../library/README.md) (or any other runtime). It can be found in (eard_api.h). This API uses data types such as applications_t and it is not public. 
+- Local API to be used by [EARL](../library/README.md) (or any other runtime). It can be found in [eard_api.h](eard_api.h). This API uses data types such as applications_t and it is not public. 
 - Local API to be used by applications. It is a subset of the EARD api and designed to be used by any applications to contact the privileged metric service offered by EARD. This API doesn't include functions to change the frequency. This API is public and can be used without restrictions. It can be found at (TDB)
-- Remote API to be used by the [EAR Global Manager] (../global_manager/README.md) or system commands and tools such as the econtrol. It can be found at (eard_rapi.h). It is not a public API. 
+- Remote API to be used by the [EAR Global Manager](../global_manager/README.md) or system commands and tools such as the econtrol. It can be found at [eard_rapi.h](eard_rapi.h). It is not a public API. 
 
 Daemon testing
 --------------
 
-Look into the [EAR test folder] (../tests/README.md)
+Look into the [EAR test folder](../tests/README.md)
 
