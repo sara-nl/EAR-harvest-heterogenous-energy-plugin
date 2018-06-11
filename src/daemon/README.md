@@ -21,12 +21,16 @@ EARD is configured by modifying the ear.conf file. Fields used to configure EARD
 
 #verbose level
 NodeDaemonVerbose=1
+
 #frequency used by power monitoing service (in seconds)
 NodeDaemonPowermonFreq=10
+
 #maximum p_state supported (1=nominal)
 NodeDaemonMaxPstate=1
+
 #turbo frequencies supported 0=no 
 NodeDaemonTurbo=0
+
 #port to be used by the remote API
 NodeDaemonPort=5000
 
