@@ -85,7 +85,11 @@
                                     "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 //number of arguments inserted into periodic_metrics
+#if DEMO
+#define PERIODIC_METRIC_ARGS 7
+#else
 #define PERIODIC_METRIC_ARGS 6
+#endif
 
 #define EAR_EVENTS_ARGS 5
 
@@ -960,7 +964,11 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
+#if DEMO
+    char *params = ", (?, ?, ?, ?, ?, ?, ?)";
+#else
     char *params = ", (?, ?, ?, ?, ?, ?)";
+#endif
     char *query = malloc(strlen(PERIODIC_METRIC_QUERY)+(num_mets)*strlen(params)+1);
     strcpy(query, PERIODIC_METRIC_QUERY);
 
@@ -993,6 +1001,11 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
         bind[3+offset].buffer = (char *)&per_mets[i].node_id;
         bind[4+offset].buffer = (char *)&per_mets[i].job_id;
         bind[5+offset].buffer = (char *)&per_mets[i].step_id;
+#if DEMO
+        bind[6+offset].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[6+offset].is_unsigned = 1;
+        bind[6+offset].buffer = (char *)&per_mets[i].avg_f;
+#endif
     }
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
