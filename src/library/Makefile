@@ -68,6 +68,8 @@ clean: clean.gnrc.components clean.impi.components
 
 depend: depend.gnrc.components depend.impi.components
 
+depend-clean: depend-clean.gnrc.components depend-clean.impi.components
+
 ######## SUBFOLDERS
 
 %.gnrc.components:

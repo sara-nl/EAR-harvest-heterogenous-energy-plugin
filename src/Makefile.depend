@@ -7,7 +7,9 @@ depend: rdepend
 
 rdepend: $(wildcard ./*.c)
 	@ rm -f ./.depend
-	@ $(CC) -I $(RLPATH) -MM $^ >> ./.depend;
+	@ $(CC) -I $(RLPATH) -MM -MG $^ >> ./.depend;
 
+depend-clean:
+	@ rm -f .depend
 
 -include .depend
