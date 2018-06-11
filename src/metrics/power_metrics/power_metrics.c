@@ -36,8 +36,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include <daemon/eards_api.h>
-#include <daemon/power_monitor/power_monitor.h>
+#include <metrics/power_metrics/power_metrics.h>
 #include <common/math_operations.h>
 
 uint8_t power_mon_connected=0; 
@@ -56,7 +55,8 @@ int pm_get_data_size_rapl()
 		// Check that 
 		return RAPL_EVS*sizeof(rapl_data_t);
 	}else{
-		return eards_get_data_size_rapl();
+		return EAR_ERROR;
+		//return eards_get_data_size_rapl();
 	}
 }     
 void pm_disconnect()
@@ -64,7 +64,8 @@ void pm_disconnect()
 	if (rootp){
 		node_energy_dispose();
 	}else{
-		eards_disconnect();
+		return EAR_ERROR;
+		//eards_disconnect();
 	}
 }             
 int pm_start_rapl()
@@ -72,7 +73,8 @@ int pm_start_rapl()
 	if (rootp){
 		return start_rapl_metrics();
 	}else{
-		return eards_start_rapl();
+		return EAR_ERROR;
+		//return eards_start_rapl();
 	}
 }            
 int pm_stop_rapl(rapl_data_t *rm)
@@ -80,8 +82,8 @@ int pm_stop_rapl(rapl_data_t *rm)
 	if (rootp){
 		return stop_rapl_metrics(rm);
 	}else{
-		// Check that
-		return eards_read_rapl(rm);
+		return EAR_ERROR;
+		//return eards_read_rapl(rm);
 	}
 }            
 int pm_read_rapl(rapl_data_t *rm)
@@ -89,7 +91,8 @@ int pm_read_rapl(rapl_data_t *rm)
 	if (rootp){
 		return read_rapl_metrics(rm);
 	}else{
-		return eards_read_rapl(rm);
+		return EAR_ERROR;
+		//return eards_read_rapl(rm);
 	}
 }            
 int pm_node_dc_energy(node_data_t *dc)
@@ -97,7 +100,9 @@ int pm_node_dc_energy(node_data_t *dc)
 	if (rootp){
 		return read_dc_energy(dc);
 	}else{
-		return eards_node_dc_energy(dc);
+		*dc=0;
+		return EAR_ERROR;
+		//return eards_node_dc_energy(dc);
 	}
 }
 int pm_node_ac_energy(node_data_t *ac)
@@ -121,9 +126,13 @@ int pm_connect()
 		pm_already_connected=1;
 		return pm_connected_status;
 	}else{
+		return EAR_ERROR;
+		// User API is being redesigned
+		#if 0
 		pm_already_connected=1;
 		pm_connected_status=eards_connect();
 		return pm_connected_status;
+		#endif
 	}	
 		
 }

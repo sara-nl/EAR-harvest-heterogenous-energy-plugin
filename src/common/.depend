@@ -1,4 +1,4 @@
-environment.o: environment.c ../common/environment.h \
+environment.o: environment.c ../common/config.h ../common/environment.h \
  ../common/environment_common.h
 environment_common.o: environment_common.c
 file_lock.o: file_lock.c

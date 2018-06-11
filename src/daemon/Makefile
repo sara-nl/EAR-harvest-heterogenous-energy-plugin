@@ -3,7 +3,8 @@ LDFLAGS = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -pthread
 
 ######## FILES
 
-eard_OBJS += power_monitor/libpowermon.a \
+eard_OBJS += metrics/power_metrics/libpowermetrics.a \
+			 power_monitor.o \
              dynamic_configuration.o \
              shared_configuration.o \
              eard_server_api.o \
@@ -29,6 +30,9 @@ all: all.components $(BINARIES) all.others
 eard: eard.c $(eard_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
 
+power_monitor.o: power_monitor.c power_monitor.h
+	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitor.c
+
 dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c dynamic_configuration.c
 
@@ -52,7 +56,7 @@ install: install.components install.others
 clean: clean.components clean.others
 	rm -f *.o *.a *.so eard
 
-depend: depend.components depend.others
+depend: depend.others
 
 ######## DEPENDENCIES
 
@@ -60,8 +64,6 @@ include $(SRCDIR)/Makefile.depend
 
 ######## SUBFOLDERS
 
-%.components:
-	$(MAKE) -C 'power_monitor' $*
-
 %.others:
 	$(MAKE) -C 'commands' $*
+
