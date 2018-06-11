@@ -44,6 +44,7 @@
 
 #include <common/types/periodic_aggregation.h>
 #include <common/types/periodic_metric.h>
+#include <common/types/cluster_conf.c>
 #include <common/types/application.h>
 #include <common/types/loop.h>
 #include <common/types/log.h>
@@ -390,6 +391,9 @@ int main(int argc, char **argv)
 	struct addrinfo *srv_info_tcp;
 	struct addrinfo *srv_info_udp;
 
+	cluster_conf_t config;
+	char *conf_path;
+
 	long merge_time;
 	float mb_apps;
 	float mb_mets;
@@ -424,12 +428,16 @@ int main(int argc, char **argv)
 	verbose("reserving %0.2f MBytes for power metrics", mb_mets);
 
 	// Format
-	merge_time = atol(argv[1]);
+	conf_path  = argv[1];
+	merge_time = atol(argv[2]);
 	timeout.tv_sec = merge_time;
 	timeout.tv_usec = 0L;
 
 	FD_ZERO(&fds_incoming);
 	FD_ZERO(&fds_active);
+
+	//
+	read_cluster_conf(conf_path, &config);
 
 	// Opening socket
 	fd_srv_tcp = _socket(NULL, PORT_TCP, TCP, &srv_info_tcp);
