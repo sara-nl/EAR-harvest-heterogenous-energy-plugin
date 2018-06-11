@@ -35,6 +35,7 @@
 #include <common/ear_verbose.h>
 #include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
+#include <src/common/types/cluster_conf.h>
 #include <common/database/mysql_io_functions.h>
 
 static const char *__NAME__ = "db_helper";
@@ -43,24 +44,35 @@ char *db_ip = NULL;
 char *db_user = NULL;
 char *db_pass = NULL;
 char *database = "Report";
+cluster_conf_t global_conf = NULL;
 unsigned int db_port = 0;
 
 int getenv_database()
 {
-    if (!getenv("DB_IP") || !getenv("DB_USER")) 
+    if (global_conf == NULL) 
     {
-        if (readconf_database() != EAR_SUCCESS)
+        char conf_file_path[256];
+        strcpy(conf_file_path, EAR_INSTALL_PATH);
+        strcat(conf_file_path, "/etc/sysconf/ear.conf");
+
+        if (read_cluster_conf(conf_file_path, &global_conf) != EAR_SUCCESS)
         {
             VERBOSE_N(0, "Erro reading db config file.");
             return EAR_ERROR;
         }
     }
 
-    db_ip = getenv("DB_IP");
-    db_user = getenv("DB_USER");
-    db_pass = (!getenv("DB_PASS")) ? "" : getenv("DB_PASS");
-    database = (!getenv("DB_NAME")) ? database: getenv("DB_NAME");
-    db_port = (!getenv("DB_PORT")) ? 0 : atoi(getenv("DB_PORT"));
+    db_ip = global_conf.database.ip;
+    db_user = global_conf.database.user;
+    db_pass = global_conf.database.pass;
+    database = global_conf.database.database;
+    db_port = global_conf.database.port;
+
+    // db_ip = getenv("DB_IP");
+    // db_user = getenv("DB_USER");
+    // db_pass = (!getenv("DB_PASS")) ? "" : getenv("DB_PASS");
+    // database = (!getenv("DB_NAME")) ? database: getenv("DB_NAME");
+    // db_port = (!getenv("DB_PORT")) ? 0 : atoi(getenv("DB_PORT"));
 
     return EAR_SUCCESS;
 }
