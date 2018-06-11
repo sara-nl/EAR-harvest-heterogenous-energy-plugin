@@ -955,7 +955,7 @@ int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t 
 
 }
 
-int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **per_mets, int num_mets)
+int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *per_mets, int num_mets)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
@@ -985,14 +985,14 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t **p
             bind[offset+j].is_unsigned = 1;
         }
         bind[offset+3].buffer_type = MYSQL_TYPE_VARCHAR;
-        bind[offset+3].buffer_length = strlen(per_mets[i]->node_id);
+        bind[offset+3].buffer_length = strlen(per_mets[i].node_id);
 
-        bind[0+offset].buffer = (char *)&per_mets[i]->start_time;
-        bind[1+offset].buffer = (char *)&per_mets[i]->end_time;
-        bind[2+offset].buffer = (char *)&per_mets[i]->DC_energy;
-        bind[3+offset].buffer = (char *)&per_mets[i]->node_id;
-        bind[4+offset].buffer = (char *)&per_mets[i]->job_id;
-        bind[5+offset].buffer = (char *)&per_mets[i]->step_id;
+        bind[0+offset].buffer = (char *)&per_mets[i].start_time;
+        bind[1+offset].buffer = (char *)&per_mets[i].end_time;
+        bind[2+offset].buffer = (char *)&per_mets[i].DC_energy;
+        bind[3+offset].buffer = (char *)&per_mets[i].node_id;
+        bind[4+offset].buffer = (char *)&per_mets[i].job_id;
+        bind[5+offset].buffer = (char *)&per_mets[i].step_id;
     }
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);

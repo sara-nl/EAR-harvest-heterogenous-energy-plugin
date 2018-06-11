@@ -296,7 +296,7 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
     return EAR_SUCCESS;
 }
 
-int db_batch_insert_periodic_metrics(periodic_metric_t **per_mets, int num_mets)
+int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 {
     MYSQL *connection = mysql_init(NULL);
 
