@@ -42,9 +42,9 @@
 
 #include <common/config.h>
 #include <control/frequency.h>
+#include <daemon/power_monitor.h>
 #include <daemon/shared_configuration.h>
-#include <daemon/power_monitor/power_monitor.h>
-#include <daemon/power_monitor/power_monitor_api.h>
+#include <metrics/power_metrics/power_metrics.h>
 #if USE_EARDB
 #include <database_cache/eardbd_api.h>
 #endif
