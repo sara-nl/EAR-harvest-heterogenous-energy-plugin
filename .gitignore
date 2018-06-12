@@ -38,6 +38,7 @@ tests/check/check.sh
 *eard
 
 *ereport
+*econtrol
 *ear_control
 *ear_get_node_freq
 *ear_set_node_freq

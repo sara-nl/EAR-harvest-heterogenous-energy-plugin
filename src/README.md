@@ -5,7 +5,7 @@ Energy Aware Runtime (EAR) is a framework to provide an energy efficient solutio
 
 EAR is composed by four main components: EAR library, EAR (node) Daemon, EAR Global Manager, and EAR DataBase.
 
-EAR library. [EARL](./library/README.md) and EAR Daemon [EARD](./daemon/README.md) together are the core of the EAR framework. They provide the power policies used by mpi applications to automatically select the "best" frequency (given the policy and policy settings). In actual HPC systems, they can be configured to run the MIN_TIME_TO_SOLUTION policy, starting applications at a lower frequency than nominla but boosting "efficient" applications up to the nominal frequency (or even turbo frequency if specified by sysadmins).
+EAR library. [EARL](./library/README.md) and EAR Daemon [EARD](./daemon/README.md) together are the core of the EAR framework. They provide the power policies used by mpi applications to automatically select the "best" frequency (given the policy and policy settings). In actual HPC systems, they can be configured to run the MIN_TIME_TO_SOLUTION policy, starting applications at a lower frequency than nominla but boosting "efficient" applications up to the nominal frequency (or even turbo frequency if specified by sysadmins). EARL uses performance and power models to select the "best" frequency. These models use as input, the system signature and the application signature. The system signature is computed once (at EAR installation time, or each time the system changed some relevant characteristic that could affect power or performance). The application signature is computed at runtime since it characterizes the application. The system signature computation requires the execution of a set of pre-selected benchmarks (included in EAR distribution) and the computation of the system signature (we referalso as coefficients). This process is known as _the learning phase_ .
 
 EAR Global Manager.[EARGM](./global_manager/README.md) is a step beyond than only a single library. All the HPC clusters must control the energy consumed and, moreover, some others have limitations beacuse of the infrastructure (or will have limitations). The EAR Global Manager can be used in **passive** mode or **active** mode.
 
@@ -16,4 +16,15 @@ EAR Database. [EARDB](./database_cache/README.md) includes a MySQL data base and
 
 
 
+EAR main directories
+--------------------
+* library: EARL source code
+* database_cache: EARDBD source code
+* daemon: EARD source code
+* global_manager: EARGM source code  
+* commands: EAR includes some basic commands to get the metrics reported by EAR in the DB and change cluster and node power and policy settings.
+* slurm_plugin: EAR Slurm plugin. It simplifies the execution of MPI applications with EARL.  
+* tools: Additional programs used by EAR during the learning phase.
+* metrics and common are internals to EAR
+* tests
 
