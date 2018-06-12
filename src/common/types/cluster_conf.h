@@ -83,8 +83,8 @@ typedef struct eargm_conf
 typedef struct node_range
 {
 	char prefix[USER];
-	uint start;
-	uint end;
+	int start;
+	int end;
 } node_range_t;
 
 typedef struct eardb_conf 
