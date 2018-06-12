@@ -41,17 +41,20 @@
 
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
+#include <common/types/application.h>
+#include <common/types/job.h>
 #include <common/config.h>
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 pid_t daemon_pid = -1;
+application_t app;
 
 char buffer1[PATH_MAX];
 char buffer2[PATH_MAX];
 int auth_mode =  1;
 int verbosity = -1;
 
-struct spank_option spank_options_manual[8] =
+struct spank_option spank_options_manual[9] =
 {
     { "ear", "on|off", "Enables/disables Energy Aware Runtime",
       1, 0, (spank_opt_cb_f) _opt_ear
@@ -87,6 +90,9 @@ struct spank_option spank_options_manual[8] =
     },
     { "ear-traces", "", "Generates application traces with metrics and internal details",
       0, 0, (spank_opt_cb_f) _opt_ear_traces
+    },
+	{ "ear-tag", "tag", "Sets an energy tag",
+	 2, 0, (spank_opt_cb_f) _opt_ear_tag
     }
 };
 
@@ -209,7 +215,7 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	int i;
 
-	for (i = 0; i < 8; ++i)
+	for (i = 0; i < 9; ++i)
 	{
 		if (ESPANK_SUCCESS != spank_option_register(sp, &spank_options_manual[i]))
 		{
@@ -245,7 +251,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "function slurm_spank_task_init");   
+	plug_verbose(sp, 2, "function slurm_spank_user_init");   
 
 	if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
 	{
@@ -254,6 +260,72 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 		remote_update_slurm_vars(sp);	
 	}
+
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_task_init(spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_task_init");   
+
+	char buffer[64];
+	char host[128];
+
+    gethostname(host, 128);
+	init_application(&app);	
+	
+	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer, 64)) {
+		app.job.id = 0;
+	} else {
+		app.job.id = atoi(buffer);
+	}
+	if (!getenv_remote(sp, "SLURM_STEP_ID", buffer, 64)) {
+		app.job.step_id = 0;
+	} else {
+		app.job.step_id = atoi(buffer);
+	}
+	if (!getenv_remote(sp, "SLURM_JOB_USER", app.job.user_id, GENERIC_NAME)) {
+		strcpy(app.job.user_id, "");
+	}
+	if (!getenv_remote(sp, "SLURM_JOB_NAME",  app.job.app_id, GENERIC_NAME)) {
+		strcpy(app.job.app_id, "");
+	}
+	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", app.job.user_acc, GENERIC_NAME)) {
+		strcpy(app.job.user_acc, "");
+	}
+	if (!getenv_remote(sp, "EAR_POWER_POLICY", app.job.policy, GENERIC_NAME)) {
+		strcpy(app.job.policy, "");
+	}
+	if (!getenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer, 64)) {
+		app.job.th = 0;
+	} else {
+		app.job.th = atof(buffer);
+	}
+
+	if (eards_remote_connect(host) <= 0) {
+		plug_error("ERROR while connecting with EAR daemon");		
+	}
+	if (!eards_new_job(&app)) {
+		plug_error("ERROR while connecting with EAR daemon");		
+	}
+	eards_remote_disconnect();
+	
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_task_exit (spank_t sp, int ac, char **av)
+{
+	FUNCTION_INFO_("slurm_spank_task_exit");
+	
+	char host[128];
+
+	gethostname(host, 128);
+
+	if (eards_remote_connect(host) <= 0) { 
+        plug_error("ERROR while connecting with EAR daemon");       
+    }
+	eards_end_job(app.job.id, app.job.step_id);
+	eards_remote_disconnect();
 
 	return (ESPANK_SUCCESS);
 }
@@ -484,3 +556,28 @@ static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 
 	return (ESPANK_SUCCESS);
 }
+
+static int _opt_ear_tag(int val, const char *optarg, int remote) 
+{
+    plug_nude("function _opt_tag");
+    return (ESPANK_SUCCESS);
+}
+
+#define FUNCTION_INFO_(string) \
+	slurm_error(string);
+
+int slurm_spank_job_prolog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
+int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) {
+	FUNCTION_INFO_("slurm_spank_init_post_op");
+
+	if (isenv_local("EAR_DISABLE", "1") == 1)
+    {
+    	return -1;
+    }
+
+	return (ESPANK_SUCCESS);
+}
+int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init_privileged"); return (ESPANK_SUCCESS); }
+int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
+int slurm_spank_job_epilog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_job_epilog"); return (ESPANK_SUCCESS); }
+int slurm_spank_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }

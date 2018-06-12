@@ -188,6 +188,16 @@ static void db_store_periodic_aggregation()
 	db_insert_periodic_aggregation(&aggr);
 }
 
+static void db_store_applications()
+{
+	if (apps_i <= 0) {
+		return;
+	}
+
+	verbose("Trying to insert in DB %d applications samples", apps_i);
+	//db_batch_insert_applications(apps, apps_i);
+}
+
 /*
  * Data processing
  */
@@ -202,13 +212,20 @@ static void process_timeout_data()
 	verbose("Finished aggregation, consumed %lu energy (?J) from %lu to %lu,",
 			aggr.DC_energy, aggr.start_time, aggr.end_time);
 
-	//db_store_applications();
 	db_store_periodic_aggregation();
-	aggr.start_time = 0;
-	aggr.n_samples  = 0;
+	init_periodic_aggregation(&aggr);
 
 	db_store_periodic_metrics();
 	mets_i = 0;
+
+	db_store_applications();
+	apps_i = 0;
+	
+	db_store_events();
+	eves_i = 0;
+
+	db_store_loops();
+	lops_i = 0;
 }
 
 static void process_incoming_data(int fd, char *buffer, size_t size)
@@ -224,7 +241,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 
 		if (apps_i == apps_len)
 		{
-			//database_store();
+			db_store_applications();
 			apps_i = 0;
 		}
 	}
@@ -377,9 +394,10 @@ static int _listen(int fd, struct addrinfo *info)
 
 void usage(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc != 3)
 	{
-		printf("Usage: %s agg.time\n", argv[0]);
+		printf("Usage: %s conf.path agg.time\n", argv[0]);
+		printf("\tconf.path: EAR configuration file\n");
 		printf("\tagg.time: aggregation time in seconds\n");
 		exit(1);
 	}
