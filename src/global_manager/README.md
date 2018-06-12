@@ -15,8 +15,8 @@ Brief installation guide
 EAR includes service files to be used to start/stop the components. Global Manager can be started with the $ETCDIR/systemd/eargmd.service file. By executing the traditional "make install" command, EAR service files are copied in the /etc/systemd/system folder.
 
 sudo systemctl start eargmd --> will start the service 
-sudo systemctl stop eargmd --> will stop the service 
-sudo systemctl reload eargmd --> will force to reload the configuration  
+</br>sudo systemctl stop eargmd --> will stop the service 
+</br>sudo systemctl reload eargmd --> will force to reload the configuration  
 
 Customize installation
 ----------------------
