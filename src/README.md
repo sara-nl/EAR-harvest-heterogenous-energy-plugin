@@ -1,7 +1,6 @@
 # Energy Aware Runtime
 Description
 -----------
-<img src="etc/images/logo.png" align="right" width="140">
 Energy Aware Runtime (EAR) is a framework to provide an energy efficient solution targeted (but not limited to) MPI applications. It aims at finding the optimal frequency for a job according to its selected energy policy, being totally dynamic and transparent.
 
 EAR is composed by four main components: EAR library, EAR (node) Daemon, EAR Global Manager, and EAR DataBase.
