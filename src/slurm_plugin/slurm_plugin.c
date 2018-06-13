@@ -210,7 +210,7 @@ static void print_general_info(spank_t sp)
 	plug_verbose(sp, 2, "buffers size %d", PATH_MAX);
 }
 
-/*
+	/*
  *
  *
  *
