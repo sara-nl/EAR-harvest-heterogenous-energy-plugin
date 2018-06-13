@@ -36,6 +36,9 @@
 #include <errno.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <common/config.h>
 #include <common/types/generic.h>
 #include <common/states.h>
@@ -224,10 +227,20 @@ void send_mail(uint level, double energy)
 {
 	char buff[128];
 	char command[1024];
+	char mail_filename[128];
+	int fd;
 	sprintf(buff,"Detected WARNING level %u, %lf of energy from the total energy limit\n",level,energy);
-	sprintf(command,"mail -s \"Energy limit warning\" %s \"%s\"",my_cluster_conf.eargm.mail,buff);
+	sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.tmp_dir);
+	fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
+	if (fd<0){
+		VERBOSE_N(0,"Warning mail file cannot be created at %s (%s)",mail_filename,strerror(errno));
+		return;
+	}
+	write(fd,buff,strlen(buff));
+	close(fd);
+	sprintf(command,"mail -s \"Energy limit warning\" %s -a %s",my_cluster_conf.eargm.mail,mail_filename);
 	printf("%s",command);
-	//system(command);
+	system(command);
 }
 
 /*
