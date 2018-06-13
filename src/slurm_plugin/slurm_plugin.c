@@ -222,7 +222,7 @@ int read_cluster_configuration_file()
 	return (ESPANK_SUCCESS);
 }
 
-int eard_connection()
+int eard_connection(spank_t sp)
 {
 	char buffer[64];
 
@@ -383,7 +383,7 @@ int slurm_spank_task_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_task_init");   
 
-	return eard_connection();
+	return eard_connection(sp);
 }
 
 int slurm_spank_task_exit (spank_t sp, int ac, char **av)

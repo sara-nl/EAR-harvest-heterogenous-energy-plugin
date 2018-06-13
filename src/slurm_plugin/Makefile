@@ -4,6 +4,7 @@ LDFLAGS = $(CPUF_LDFLAGS)
 ######## FILES
 
 plugin_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
+              $(SRCDIR)/global_manager/eargm_rapi.o \
               $(SRCDIR)/common/types.a
 
 ######## RULES

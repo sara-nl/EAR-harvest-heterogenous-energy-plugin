@@ -24,7 +24,7 @@ eargmd: eargm.c $(daemon_OBJS) $(DB_OBJS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(LDFLAGS) $(DB_OBJS) $(daemon_OBJS) 
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) -fPIC $(CFLAGS) -c $<
 
 ######## OPTIONS
 
