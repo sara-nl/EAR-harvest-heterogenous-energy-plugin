@@ -30,19 +30,22 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
+// Verbosity
 #define plug_verbose(sp, level, ...) \
 	if (verbosity_test(sp, level) == 1) { \
-		slurm_error("EARPLUG " __VA_ARGS__); \
+		slurm_error("EARPLUG, " __VA_ARGS__); \
 	}	
 #define plug_error(...) \
-	slurm_error("EARPLUG " __VA_ARGS__)
+	slurm_error("EARPLUG ERROR," __VA_ARGS__)
 #define plug_nude(...)
 
 int verbosity_test(spank_t sp, int level);
 
+// String
 void strtoup(char *string);
 char* strclean(char *string, char chr);
 
+// Environment variables
 void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source, int destiny_length);
 int setenv_local(const char *name, const char *value, int replace);
@@ -54,9 +57,8 @@ int existenv_remote(spank_t sp, char *name);
 int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
 
+// Others
+void print_general_info(spank_t sp);
 int freq_to_p_state(int freq);
-int find_ear_conf_file(spank_t sp, int ac, char **av);
-static int file_to_environment(spank_t sp, const char *path);
-void find_ear_user_privileges(spank_t sp, int ac, char **av);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H

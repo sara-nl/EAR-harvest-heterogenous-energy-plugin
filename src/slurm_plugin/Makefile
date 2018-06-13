@@ -7,12 +7,16 @@ plugin_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
               $(SRCDIR)/global_manager/eargm_rapi.o \
               $(SRCDIR)/common/types.a
 
+plugin_SOURCES = slurm_plugin.c \
+                 slurm_plugin_helper.c \
+                 slurm_plugin_options.c
+
 ######## RULES
 
 all: earplug.so
 
-earplug.so: slurm_plugin.h slurm_plugin.c slurm_plugin_helper.c slurm_plugin_helper.h
-	$(CC) $(CFLAGS) -shared -o earplug.so slurm_plugin.c slurm_plugin_helper.c $(plugin_OBJS) $(LDFLAGS)
+earplug.so: $(plugin_SOURCES) slurm_plugin.h slurm_plugin_helper.h
+	$(CC) $(CFLAGS) -shared -o earplug.so $(plugin_SOURCES) $(plugin_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 

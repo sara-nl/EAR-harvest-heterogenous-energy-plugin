@@ -1,2 +1,2 @@
 #required?	plugin					args
-required	@prefix@/lib/earplug.so	conf_dir=@sysconfdir@/slurm
+required	@prefix@/lib/earplug.so	rootdir=@prefix@ sysconfdir=@sysconfdir@
