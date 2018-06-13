@@ -35,6 +35,8 @@
 #include <common/config.h>
 #include <common/environment.h>
 #include <common/types/generic.h>
+#include <common/states.h>
+#include <common/ear_verbose.h>
 
 #define GENERIC_NAME 256
 #define USER		64

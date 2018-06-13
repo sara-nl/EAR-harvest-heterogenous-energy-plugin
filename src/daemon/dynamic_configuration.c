@@ -47,6 +47,7 @@
 
 #include <control/frequency.h>
 #include <common/types/job.h>
+#include <common/types/cluster_conf.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/config.h>
@@ -62,6 +63,7 @@ extern unsigned long eard_max_freq;
 int eards_remote_socket,eards_client;
 struct sockaddr_in eards_remote_client;
 char *my_tmp;
+extern cluster_conf_t my_cluster_conf;
 
 static char *__NAME__ = "dynamic_conf:";
 extern ear_conf_t *dyn_conf;
@@ -260,7 +262,7 @@ void * eard_dynamic_configuration(void *tmp)
 
 
 	VERBOSE_N(2,"Creating socket for remote commands\n");
-	eards_remote_socket=create_server_socket();
+	eards_remote_socket=create_server_socket(my_cluster_conf.eard.port);
 	if (eards_remote_socket<0){ 
 		VERBOSE_N(0,"Error creating socket\n");
 		pthread_exit(0);

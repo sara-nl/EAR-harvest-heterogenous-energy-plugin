@@ -285,7 +285,7 @@ ulong increase_th_all_nodes(int level)
 	int i,rc;
 	ulong th;
 	for (i=0;i< my_cluster_conf.num_nodes;i++){
-    	rc=eards_remote_connect(my_cluster_conf.nodes[i].name);
+    	rc=eards_remote_connect(my_cluster_conf.nodes[i].name,my_cluster_conf.eard.port);
     	if (rc<0){
 			VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
     	}else{
@@ -304,7 +304,7 @@ ulong reduce_frequencies_all_nodes(int level)
     int i,rc;
     ulong ps;
     for (i=0;i< my_cluster_conf.num_nodes;i++){
-        rc=eards_remote_connect(my_cluster_conf.nodes[i].name);
+        rc=eards_remote_connect(my_cluster_conf.nodes[i].name,my_cluster_conf.eard.port);
         if (rc<0){
             VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
         }else{

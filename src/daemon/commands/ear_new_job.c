@@ -5,9 +5,11 @@
 #include <errno.h>
 #include <common/config.h>
 #include <daemon/eard_rapi.h>
+#include <common/types/cluster_conf.h>
 
 #define NAME_SIZE 128
 int EAR_VERBOSE_LEVEL=1;
+static const char *__NAME__ = "new_job->eard";
 
 void usage(char *app)
 {
@@ -16,6 +18,7 @@ void usage(char *app)
 }
 
 #define ID_SIZE 64
+cluster_conf_t my_cluster_conf;
 
 void main(int argc,char *argv[])
 {
@@ -23,12 +26,22 @@ void main(int argc,char *argv[])
 	application_t my_job;
 	char *id,*sid,*myth,*myuser,*myname,*myacc,*mypolicy;
 	char myhost[NAME_SIZE];
+	char my_ear_conf_path[NAME_SIZE];
 	// NEW_JOB
 	if (gethostname(myhost,NAME_SIZE)<0){
 		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
 		exit(1);
 	}
-	eards=eards_remote_connect(myhost);
+    if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
+        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        exit(0);
+    }
+    VERBOSE_N(0,"Using %s as EARGM configuration file",my_ear_conf_path);
+    if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
+        VERBOSE_N(0," Error reading cluster configuration\n");
+    }
+
+	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
 	if(eards<0){ 
 		fprintf(stderr,"Connection error\n");
 		exit(1);

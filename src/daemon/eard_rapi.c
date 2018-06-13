@@ -70,7 +70,7 @@ int send_command(request_t *command)
 }
 
 // based on getaddrinfo  man page
-int eards_remote_connect(char *nodename)
+int eards_remote_connect(char *nodename,uint port)
 {
     int client_sock ;
     struct addrinfo hints;
@@ -85,7 +85,7 @@ int eards_remote_connect(char *nodename)
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
-	sprintf(port_number,"%d",DAEMON_PORT_NUMBER);
+	sprintf(port_number,"%d",port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
 		printf("getaddrinfo failt for %s and %s\n",nodename,port_number);

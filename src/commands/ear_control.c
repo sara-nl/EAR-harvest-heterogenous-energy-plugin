@@ -56,7 +56,7 @@ ulong increase_th_all_nodes(int level)
                     else 
                         sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
                 }
-    	        rc=eards_remote_connect(node_name);
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 printf("i: %d; j:%d; k:%d\n", i, j, k);
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
@@ -94,7 +94,7 @@ void red_max_freq(int level)
                     else 
                         sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
                 }
-    	        rc=eards_remote_connect(node_name);
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
@@ -129,7 +129,7 @@ void red_def_freq(int level)
                     else 
                         sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
                 }
-    	        rc=eards_remote_connect(node_name);
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
@@ -169,7 +169,7 @@ ulong reduce_frequencies_all_nodes(int level)
                     
                 }
 
-                rc=eards_remote_connect(node_name);
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
                     VERBOSE_N(0,"Error connecting with node %s",node_name);
                 }else{
