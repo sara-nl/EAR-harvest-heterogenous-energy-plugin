@@ -118,7 +118,7 @@ typedef struct my_node_conf
 {
 	uint cpus;
 	uint island;
-	ulong db_ip;
+	char db_ip[USER];
 	char *coef_file;
 	uint num_policies;
 	policy_conf_t *policies;
