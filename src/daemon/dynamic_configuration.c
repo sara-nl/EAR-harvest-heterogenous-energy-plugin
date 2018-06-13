@@ -104,7 +104,6 @@ ulong lower_valid_freq(ulong f, uint p_states,ulong *freql)
 static void DC_my_sigusr1(int signun)
 {
 	VERBOSE_N(1,"thread %u receives sigusr1\n",(uint)pthread_self());
-	ear_conf_shared_area_dispose(my_tmp);
 	close_server_socket(eards_remote_socket);
 	pthread_exit(0);
 }

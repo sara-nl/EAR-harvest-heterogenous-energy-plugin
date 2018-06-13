@@ -133,11 +133,11 @@ void states_end_period(uint iterations)
 	if (loop_with_signature)
 	{
 		loop.total_iterations = iterations;
-		#if DB_FILES
 		append_loop_text_file(loop_summary_path, &loop);
-		#endif
+		#if !LARGE_CLUSTERS
 		#if DB_MYSQL
 		eards_write_loop_signature(&loop);
+		#endif
 		#endif
 	}
 

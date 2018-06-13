@@ -114,6 +114,38 @@ void reset_current_app()
 	memset(&current_ear_app,0,sizeof(application_t));
 }
 
+#if DB_FILES
+char database_bin_path[PATH_MAX];
+char database_csv_path[PATH_MAX];
+
+void report_application_in_file(application_t *app)
+{
+	int ret1,ret2;
+	ret1 = append_application_binary_file(database_bin_path, app);
+	ret2 = append_application_text_file(database_csv_path, app);
+	if (ret1 == EAR_SUCCESS && ret2 == EAR_SUCCESS)
+	{
+		DEBUG_F(1, "application signature correctly written");
+	} else {
+		VERBOSE_N(1, "ERROR while application signature writing");
+	}
+}
+
+void form_database_paths()
+{
+  	sprintf(database_bin_path, "%s%s.db.bin", my_cluster_conf.DB_pathname, nodename);
+	sprintf(database_csv_path, "%s%s.db.csv", my_cluster_conf.DB_pathname, nodename);
+
+	VERBOSE_N(2, "DB binary file: %s", database_bin_path);
+	VERBOSE_N(2, "DB pain-text file: %s", database_csv_path);
+}
+
+#else
+#define form_database_paths()
+#define report_application_in_file(x)
+#endif
+
+
 
 
 /*
@@ -173,6 +205,7 @@ void report_powermon_app(powermon_app_t *app)
 {
 	// We can write here power information for this job
 	report_application_data(&app->app);
+	report_application_in_file(&app->app);
 	#if !USE_EARDB
 	#if DB_MYSQL
     if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
@@ -182,7 +215,6 @@ void report_powermon_app(powermon_app_t *app)
         VERBOSE_N(0,"Error when sending application to eardb");
     }
 	#endif
-	
 }
 
 /*
@@ -229,14 +261,27 @@ void powermon_mpi_finalize()
 void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
+	int p_id;
+	policy_conf_t *my_policy;
+	ulong f;
 	VERBOSE_N(2,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
-	// At this point, we assume MIN_TIME or MONITORING. It is pending to check about privileges and special cases
-	frequency_set_all_cpus(dyn_conf->def_freq);
-	current_node_freq=dyn_conf->def_freq;
-	appID->job.def_f=dyn_conf->def_freq;	
+	// Checking the specific policy settings. It is pending to configure for special users
+	p_id=policy_name_to_id(appID->job.policy);
+	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
+	if (my_policy==NULL){
+		VERBOSE_N(0,"Node configuration returns NULL in powermon_new_job");		
+	}else{
+		VERBOSE_N(1,"Node configuration for policy %s p_state %d th %lf",appID->job.policy,my_policy->p_state,my_policy->th);
+		f=frequency_pstate_to_freq(my_policy->p_state);
+		dyn_conf->def_freq=f;
+		dyn_conf->th=my_policy->th;
+		frequency_set_all_cpus(f);
+		current_node_freq=f;
+		appID->job.def_f=dyn_conf->def_freq;	
+	}
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
@@ -409,17 +454,17 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	ulong avg_f;
 	energy_data_t e_begin;
 	energy_data_t e_end;	
-	unsigned long t_ms;
 	time_t t_begin,t_end; 
 	double t_diff;
 	power_data_t my_current_power;
 
 	PM_set_sigusr1();
+	form_database_paths();
+	
 
 	VERBOSE_N(2," power monitoring thread created\n");
 	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0," Error in init_power_ponitoring\n");
 	f_monitoring=*f_monitoringp;
-	t_ms=f_monitoring/1000;
 	// current_sample is the current powermonitoring period
 	init_periodic_metric(&current_sample);
 		
@@ -435,7 +480,7 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	while(!eard_must_exit)
 	{
 		// Wait for N usecs
-		usleep(f_monitoring);
+		sleep(f_monitoring);
 		
 		// Get time and Energy
 		read_enegy_data(&e_end);
