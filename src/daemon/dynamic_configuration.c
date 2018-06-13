@@ -132,10 +132,14 @@ ulong max_dyn_freq()
 
 int dynconf_inc_th(ulong th)
 {
-    // we must check it is a valid th :TODO
-    dyn_conf->th=dyn_conf->th+((double)th/100.0);
-    dyn_conf->force_rescheduling=1;
-    return EAR_SUCCESS;
+	double dth;
+	dth=(double)th/100.0;
+	if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
+    	dyn_conf->th=dyn_conf->th+dth;
+    	dyn_conf->force_rescheduling=1;
+		powermon_set_th(dyn_conf->th);
+    	return EAR_SUCCESS;
+	}else return EAR_ERROR;
 
 }
 
@@ -196,13 +200,17 @@ int dynconf_red_pstates(uint p_states)
 		}else return EAR_ERROR;
 	}
 }
-
+/** This function is supposed to affect only to MIN_TIME_TO_SOLUTION */
 int dynconf_set_th(ulong th)
 {
-	// we must check it is a valid th :TODO
-	dyn_conf->th=(double)th/100.0;
-	dyn_conf->force_rescheduling=1;	
-	return EAR_SUCCESS;
+	double dth;
+	dth=(double)th/100.0;
+	if ((dth > 0 ) && (dth <=1.0 )){
+		dyn_conf->th=dth;
+		dyn_conf->force_rescheduling=1;	
+		powermon_set_th(dyn_conf->th);
+		return EAR_SUCCESS;
+	}else return EAR_ERROR;
 }
 
 
@@ -243,7 +251,9 @@ void process_remote_requests(int clientfd)
 	}	
 	send_answer(clientfd,&ack);
 }
-
+/*
+*	THREAD to process remote queries
+*/
 
 void * eard_dynamic_configuration(void *tmp)
 {
@@ -267,6 +277,9 @@ void * eard_dynamic_configuration(void *tmp)
 		VERBOSE_N(0,"Error creating socket\n");
 		pthread_exit(0);
 	}
+	/*
+	*	MAIN LOOP
+	*/
 	do{
 		VERBOSE_N(2,"waiting for remote commands\n");
 		eards_client=wait_for_client(eards_remote_socket,&eards_remote_client);	

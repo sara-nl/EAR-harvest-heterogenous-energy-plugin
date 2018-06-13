@@ -329,22 +329,16 @@ int policy_name_to_id(char *my_policy)
 	return EAR_ERROR;
 }
 
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_node,uint p_id)
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
 {
 	policy_conf_t *my_policy=NULL;
 	uint i;
-    if (my_node != NULL)
-    {
-	    // We look first for special configurations
-    	for(i=0;i<my_node->num_special_node_conf;i++){
-		    if (my_node->special_node_conf[i].policy==p_id) return(&my_node->special_node_conf[i]);
-	    }
+	uint nump=0;
+    while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
+    if (nump<my_node->num_policies){
+        my_policy=&my_node->policies[nump];
     }
-	// and now for default values
-	for(i=0;i<my_cluster->num_policies;i++){
-		if (my_cluster->power_policies[i].policy==p_id) return (&my_cluster->power_policies[i]);
-	}
-	return NULL;
+	return my_policy;
 }
 
 
