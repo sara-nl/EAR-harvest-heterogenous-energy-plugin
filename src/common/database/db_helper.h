@@ -30,6 +30,7 @@
 #include <common/types/periodic_aggregation.h>
 #include <common/types/power_signature.h>
 #include <common/types/periodic_metric.h>
+#include <common/types/cluster_conf.h>
 #include <common/types/application.h>
 #include <common/types/gm_warning.h>
 #include <common/types/loop.h>
@@ -37,6 +38,8 @@
 #include <common/config.h>
 
 #if DB_MYSQL
+
+void init_db_helper(db_conf_t *conf);
 
 /** Given an application, inserts it to the database currently selected */
 int db_insert_application(application_t *application);

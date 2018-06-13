@@ -35,7 +35,6 @@
 #include <common/ear_verbose.h>
 #include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
-#include <common/types/cluster_conf.h>
 #include <common/database/mysql_io_functions.h>
 
 static const char *__NAME__ = "db_helper";

@@ -30,7 +30,7 @@
 
 
 #ifndef _CLUSTER_CONF_H
-#define __CLUSTER_CONF_H
+#define _CLUSTER_CONF_H
 #include <stdint.h>
 #include <common/config.h>
 #include <common/environment.h>
