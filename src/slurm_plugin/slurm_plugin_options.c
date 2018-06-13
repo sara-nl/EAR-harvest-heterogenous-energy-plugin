@@ -27,6 +27,24 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <ctype.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/resource.h>
+#include <linux/limits.h>
+#include <slurm/spank.h>
+
+#include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_helper.h>
+#include <slurm_plugin/slurm_plugin_options.h>
+
+extern char buffer1[PATH_MAX];
+extern char buffer2[PATH_MAX];
+extern int verbosity;
+
 struct spank_option spank_options_manual[9] =
 {
 	{ "ear", "on|off", "Enables/disables Energy Aware Runtime",

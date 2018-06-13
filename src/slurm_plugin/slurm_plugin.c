@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/resource.h>
+#include <linux/limits.h>
 #include <slurm/spank.h>
 #include <cpufreq.h>
 
