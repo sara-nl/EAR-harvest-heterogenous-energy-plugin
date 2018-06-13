@@ -234,7 +234,7 @@ char island_range_conf_contains_node(node_island_t *node, char *nodename)
 /*
 * NODE FUNCTIONS
 */
-node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
+node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 {
 	int i=0;
 	node_conf_t *n=NULL;
@@ -249,7 +249,7 @@ node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 }
 
 
-my_node_conf_t *get_newmy_node_conf(cluster_conf_t *my_conf,char *nodename)
+my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 {
 	int i=0, j=0;
 	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));

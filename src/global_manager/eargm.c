@@ -67,6 +67,7 @@ ulong pstate_level[NUM_LEVELS]={3,2,1,0};
 
 pthread_t eargm_server_api_th;
 cluster_conf_t my_cluster_conf;
+char my_ear_conf_path[GENERIC_NAME];	
 uint total_nodes=0;
 static const char *__NAME__ = "EARGM";
 
@@ -108,7 +109,7 @@ static void my_signals_function(int s)
 		VERBOSE_N(0,"Reloading EAR configuration");
 		free_cluster_conf(&my_cluster_conf);
 		// Reading the configuration
-    	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+    	if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         	VERBOSE_N(0," Error reading cluster configuration\n");
     	}
     	else{
@@ -225,7 +226,8 @@ void send_mail(uint level, double energy)
 	char command[1024];
 	sprintf(buff,"Detected WARNING level %u, %lf of energy from the total energy limit\n",level,energy);
 	sprintf(command,"mail -s \"Energy limit warning\" %s \"%s\"",my_cluster_conf.eargm.mail,buff);
-	system(command);
+	printf("%s",command);
+	//system(command);
 }
 
 /*
@@ -346,7 +348,6 @@ void main(int argc,char *argv[])
 	int ret;
 	ulong result;
 	gm_warning_t my_warning;
-	char my_ear_conf_path[GENERIC_NAME];	
 
     if (argc !=4) usage(argv[0]);
 	period_t1=atoi(argv[1]);

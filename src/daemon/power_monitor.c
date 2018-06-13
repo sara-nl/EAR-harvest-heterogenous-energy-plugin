@@ -61,7 +61,7 @@
 #define MAX_PATH_SIZE 256
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
-extern node_conf_t     *my_node_conf;
+extern my_node_conf_t     *my_node_conf;
 extern cluster_conf_t my_cluster_conf;
 static char *__NAME__="powermon: ";
 
@@ -262,6 +262,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
 	int p_id;
+	uint nump=0;
 	policy_conf_t *my_policy;
 	ulong f;
 	VERBOSE_N(2,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
@@ -270,7 +271,15 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	frequency_set_userspace_governor_all_cpus();
 	// Checking the specific policy settings. It is pending to configure for special users
 	p_id=policy_name_to_id(appID->job.policy);
-	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
+	// Use cluster conf function
+    while((nump<my_node_conf->num_policies) && (my_node_conf->policies[nump].policy!=p_id)) nump++;
+    if (nump<my_node_conf->num_policies){
+        VERBOSE_N(0,"Default policy configuration found at pos %u.policy %u",nump,my_node_conf->policies[nump].policy);
+        my_policy=&my_node_conf->policies[nump];
+    }else{
+        VERBOSE_N(0,"Error: Default policy configuration not found , using policy %u",my_node_conf->policies[0].policy);
+        my_policy=&my_node_conf->policies[0];
+    }
 	if (my_policy==NULL){
 		VERBOSE_N(0,"Node configuration returns NULL in powermon_new_job");		
 	}else{

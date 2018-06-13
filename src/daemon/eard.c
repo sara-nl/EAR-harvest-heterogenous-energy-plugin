@@ -70,7 +70,7 @@ pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
 char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t	my_cluster_conf;
-node_conf_t 	*my_node_conf;
+my_node_conf_t 	*my_node_conf;
 ear_conf_t *dyn_conf;
 
 #define max(a,b) (a>b?a:b)
@@ -815,14 +815,20 @@ void signal_catcher()
 }
 //endregion
 
-void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,node_conf_t *node)
+void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
 {
 	policy_conf_t *my_policy;
 	ulong deff;
-    my_policy=get_my_policy_conf(cluster,node,MIN_TIME_TO_SOLUTION);
-    if (my_policy==NULL){
-        eard_verbose(0,"PANIC policy configuration not found!\n");
-    }
+	uint nump=0;
+	while((nump<node->num_policies) && (node->policies[nump].policy!=cluster->default_policy)) nump++;
+	if (nump<node->num_policies){
+		eard_verbose(0,"Default policy configuration found at pos %u.policy %u",nump,node->policies[nump].policy);
+		my_policy=&node->policies[nump];
+	}else{
+		eard_verbose(0,"Error: Default policy configuration not found , using policy %u",node->policies[0].policy);
+		my_policy=&node->policies[0];
+	}
+	
     deff=frequency_pstate_to_freq(my_policy->p_state);
 	dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
     dyn->def_freq=deff;
@@ -998,7 +1004,7 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
-    if (eardbd_connect("cae2306.hpc.eu.lenovo.com", UDP)!=EAR_SUCCESS){
+    if (eardbd_connect(my_node_conf->db_ip, UDP)!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif
