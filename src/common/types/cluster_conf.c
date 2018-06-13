@@ -361,7 +361,7 @@ void generate_node_ranges(node_island_t *island, char *nodelist)
         island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+1));
         memset(&island->ranges[island->num_ranges], 0, sizeof(node_range_t));
         sprintf(island->ranges[island->num_ranges].prefix, "%s", start);
-        island->ranges[island->num_ranges].start = island->ranges[island->num_ranges].start = -1;
+        island->ranges[island->num_ranges].start = island->ranges[island->num_ranges].end = -1;
         island->num_ranges++;
     }
     //at least one range if we reach this point

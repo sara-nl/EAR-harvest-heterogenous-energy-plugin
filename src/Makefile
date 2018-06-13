@@ -8,6 +8,7 @@ ifdef CPUF_BASE
 			COMPONENTS += metrics \
 						  database_cache \
                           daemon \
+                          global_manager \
                           commands \
                           tests
 		endif
