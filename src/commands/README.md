@@ -35,3 +35,4 @@ Options are:
 If EAR is compiled with both database support and file saving support, the default behaviour of **ereport** will be the one with MySQL querying. If a file wants to be used as input a new option can be used:
 - -f specifies the file to be used as input to ereport.
 
+Note that when using this option, all options other than _verbose_ will be ignored.
