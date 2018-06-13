@@ -1002,6 +1002,10 @@ void main(int argc,char *argv[])
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif
+	#if !USE_EARDB && DB_MYSQL
+	eard_verbose(1,"Connecting with EAR DB");
+	init_db_helper(&my_cluster_conf.database);
+	#endif
 
     eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
 	power_mon_freq=my_cluster_conf.eard.period_powermon;

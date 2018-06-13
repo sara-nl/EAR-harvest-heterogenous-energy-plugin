@@ -219,6 +219,15 @@ void fill_periods(ulong energy)
 	VERBOSE_N(1,"Initializing T2 period with %lu Joules, each sample with %lu Joules",energy,e_persample);
 }
 
+void send_mail(uint level, double energy)
+{
+	char buff[128];
+	char command[1024];
+	sprintf(buff,"Detected WARNING level %u, %lf of energy from the total energy limit\n",level,energy);
+	sprintf(command,"mail -s \"Energy limit warning\" %s \"%s\"",my_cluster_conf.eargm.mail,buff);
+	system(command);
+}
+
 /*
 *
 *	THREAD attending external commands. 
@@ -388,6 +397,10 @@ void main(int argc,char *argv[])
 	sigdelset(&set,SIGTERM);
 	sigdelset(&set,SIGINT);
 
+    #if DB_MYSQL
+    VERBOSE_N(1,"Connecting with EAR DB");
+    init_db_helper(&my_cluster_conf.database);
+    #endif
 	
     
 	
@@ -395,6 +408,11 @@ void main(int argc,char *argv[])
 	start_time=end_time-period_t2;
 	result = db_select_acum_energy( start_time, end_time, divisor);
 	fill_periods(result);
+	/*
+	*
+	*	MAIN LOOP
+	*			
+	*/
 	while(1){
 		// Waiting a for period_t1
 		alarm(period_t1);
@@ -435,8 +453,13 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"****************************************************************");
 
 			my_warning.level=WARNING_3;
-			my_warning.inc_th=increase_th_all_nodes(WARNING_3);            
+			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				my_warning.inc_th=increase_th_all_nodes(WARNING_3);            
+			}else{
+				my_warning.inc_th=0;
+			}
 			my_warning.energy_percent=perc_energy;
+			send_mail(WARNING_3,perc_energy);
 			#if DB_MYSQL	
 			db_insert_gm_warning(&my_warning);
 			#endif
@@ -447,9 +470,14 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
 			my_warning.level=WARNING_2;
-			my_warning.new_p_state=reduce_frequencies_all_nodes(WARNING_2);
-			my_warning.inc_th=increase_th_all_nodes(WARNING_2);            
+			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				my_warning.new_p_state=reduce_frequencies_all_nodes(WARNING_2);
+				my_warning.inc_th=increase_th_all_nodes(WARNING_2);            
+			}else{
+				my_warning.inc_th=0;my_warning.new_p_state=0;
+			}
 			my_warning.energy_percent=perc_energy;
+			send_mail(WARNING_2,perc_energy);
 			#if DB_MYSQL	
 			db_insert_gm_warning(&my_warning);
 			#endif
@@ -460,9 +488,14 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
 			my_warning.level=PANIC;
-			my_warning.new_p_state=reduce_frequencies_all_nodes(PANIC);
-			my_warning.inc_th=increase_th_all_nodes(PANIC);            
+			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				my_warning.new_p_state=reduce_frequencies_all_nodes(PANIC);
+				my_warning.inc_th=increase_th_all_nodes(PANIC);            
+			}else{
+				my_warning.inc_th=0;my_warning.new_p_state=0;
+			}
 			my_warning.energy_percent=perc_energy;
+			send_mail(PANIC,perc_energy);
 			#if DB_MYSQL	
 			db_insert_gm_warning(&my_warning);
 			#endif
