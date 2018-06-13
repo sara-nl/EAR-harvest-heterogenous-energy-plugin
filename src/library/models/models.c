@@ -267,6 +267,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	// Coefficient file
 	strcpy(coeff_file, get_ear_coeff_db_pathname());
 	gethostname(nodename, sizeof(nodename));
+	strtok(nodename,".");
 
 	// Default coefficient file
 	sprintf(coeff_default_file, "%sdefault", coeff_file);

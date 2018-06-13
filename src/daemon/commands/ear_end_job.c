@@ -5,9 +5,13 @@
 #include <errno.h>
 #include <common/config.h>
 #include <daemon/eard_rapi.h>
+#include <common/types/cluster_conf.h>
 
 #define NAME_SIZE 128
 int EAR_VERBOSE_LEVEL=1;
+static const char *__NAME__ = "end_job->eard";
+cluster_conf_t my_cluster_conf;
+
 
 
 void main(int argc,char *argv[])
@@ -15,7 +19,7 @@ void main(int argc,char *argv[])
 	int eards;
 	char *id,*sid;
 	job_id jid,step_id;
-	char myhost[NAME_SIZE];
+	char myhost[NAME_SIZE],my_ear_conf_path[NAME_SIZE];
 
     id=getenv("SLURM_JOB_ID");
     sid=getenv("SLURM_STEP_ID");
@@ -31,8 +35,18 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
+    if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
+        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        exit(0);
+    }
+    VERBOSE_N(0,"Using %s as EARGM configuration file",my_ear_conf_path);
+    if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
+        VERBOSE_N(0," Error reading cluster configuration\n");
+    }
+
+
 	// END_JOB
-	eards=eards_remote_connect(myhost);
+	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
 	if(eards<0){ 
 		fprintf(stderr,"Connection error\n");
 		exit(1);
