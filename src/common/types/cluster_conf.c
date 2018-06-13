@@ -145,6 +145,7 @@ void cae_conf(cluster_conf_t *my_conf)
 
 }
 
+
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 {
@@ -197,6 +198,38 @@ char range_conf_contains_node(node_conf_t *node, char *nodename)
     return 0;
 }
 
+char island_range_conf_contains_node(node_island_t *node, char *nodename)
+{
+    char aux_name[64];
+    int i, j;
+    for (i = 0; i < node->num_ranges; i++)
+    {
+        if (node->ranges[i].end == -1)
+        {
+            sprintf(aux_name, "%s", node->ranges[i].prefix);
+            if (!strcmp(aux_name, nodename)) return 1;
+            else continue;
+        }
+        if (node->ranges[i].end == node->ranges[i].start)
+        {
+            sprintf(aux_name, "%s%u", node->ranges[i].prefix, node->ranges[i].start);
+            if (!strcmp(aux_name, nodename)) return 1;
+            else continue;
+        }
+        for (j = node->ranges[i].end; j >= node->ranges[i].start && j > 0; j--)
+        {
+            if (j < 10 && node->ranges[i].end > 10)
+                sprintf(aux_name, "%s0%u", node->ranges[i].prefix, j);
+            else
+                sprintf(aux_name, "%s%u", node->ranges[i].prefix, j);
+            if (!strcmp(aux_name, nodename)) return 1;
+        }
+    }
+
+    return 0;
+}
+
+
 
 /*
 * NODE FUNCTIONS
@@ -212,6 +245,53 @@ node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 		}
 		i++;
 	}while((n==NULL) && (i<my_conf->num_nodes));
+	return n;
+}
+
+
+my_node_conf_t *get_newmy_node_conf(cluster_conf_t *my_conf,char *nodename)
+{
+	int i=0, j=0;
+	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
+    n->num_policies = my_conf->num_policies;
+    n->policies = calloc(n->num_policies, sizeof(policy_conf_t));
+    int num_spec_nodes = 0;
+
+	do{ // At least one node is assumed
+		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
+        	//n=&my_conf->nodes[i];
+            n->cpus = my_conf->nodes[i].cpus;
+            n->coef_file = my_conf->nodes[i].coef_file;
+            num_spec_nodes = my_conf->nodes[i].num_special_node_conf;
+            //n->policies = my_conf->nodes[i].special_node_conf;
+            memcpy(n->policies, my_conf->nodes[i].special_node_conf, num_spec_nodes * sizeof(policy_conf_t));
+		}
+		i++;
+	}while (i<my_conf->num_nodes);
+   
+    i = 0;
+    do{ // At least one node is assumed
+		if (island_range_conf_contains_node(&my_conf->islands[i], nodename)) {
+            n->island = my_conf->islands[i].id;
+            strcpy(n->db_ip, my_conf->islands[i].db_ip);
+		}
+		i++;
+	}while(i<my_conf->num_islands);
+
+    //pending checks for policies
+    for (i = 0; i < my_conf->num_policies; i++)
+    {
+        char found = 0;
+        for (j = 0; j < num_spec_nodes; j++)
+            if (my_conf->power_policies[i].policy == n->policies[j].policy) found = 1;
+        
+        if (!found)
+        {
+            memcpy(&n->policies[num_spec_nodes], &my_conf->power_policies[i], sizeof(policy_conf_t));
+            num_spec_nodes++;
+        }
+    }
+
 	return n;
 }
 

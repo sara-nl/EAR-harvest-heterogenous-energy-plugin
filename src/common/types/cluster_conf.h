@@ -30,7 +30,7 @@
 
 
 #ifndef _CLUSTER_CONF_H
-#define __CLUSTER_CONF_H
+#define _CLUSTER_CONF_H
 #include <stdint.h>
 #include <common/config.h>
 #include <common/environment.h>
@@ -120,7 +120,7 @@ typedef struct my_node_conf
 {
 	uint cpus;
 	uint island;
-	ulong db_ip;
+	char db_ip[USER];
 	char *coef_file;
 	uint num_policies;
 	policy_conf_t *policies;
