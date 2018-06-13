@@ -2,7 +2,8 @@
 
 all: tracer.o
 
-allt: $(eval DEFINES=-DEAR_GUI) tracer.o
+allt: DEFINES=-DEAR_GUI
+allt: tracer.o
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) $(DEFINES) -c $<
