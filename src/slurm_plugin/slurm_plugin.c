@@ -41,66 +41,23 @@
 
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
+#include <slurm_plugin/slurm_plugin_options.h>
 #include <common/types/application.h>
 #include <common/types/job.h>
 #include <common/config.h>
 
 int EAR_VERBOSE_LEVEL = 0;
+int verbosity = -1;
+
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 pid_t daemon_pid = -1;
 
-unsigned int port_eargmd = 6000;
-unsigned int num_nodes;
-char host_eargmd[128];
-char   host_eard[128];
-application_t app;
-
 char buffer1[PATH_MAX];
 char buffer2[PATH_MAX];
-int auth_mode =  1;
-int verbosity = -1;
+unsigned int num_nodes;
+application_t app;
 
-struct spank_option spank_options_manual[9] =
-{
-    { "ear", "on|off", "Enables/disables Energy Aware Runtime",
-      1, 0, (spank_opt_cb_f) _opt_ear
-    },
-    { "ear-policy", "type",
-      "Selects an energy policy for EAR\n" \
-      "{type=MIN_ENERGY_TO_SOLUTION|MIN_TIME_TO_SOLUTION|MONITORING_ONLY}",
-      1, 0, (spank_opt_cb_f) _opt_ear_policy
-    },
-    { "ear-policy-th", "value",
-      "Specifies the threshold to be used by EAR policy" \
-      " {value=[0..1]}",
-      1, 0, (spank_opt_cb_f) _opt_ear_threshold
-    },
-    { "ear-user-db", "file",
-      "Specifies the file to save the user applications metrics summary" \
-	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
-      2, 0, (spank_opt_cb_f) _opt_ear_user_db
-    },
-	{ "ear-mpi-dist", "dist",
-      "Selects the MPI distribution for compatibility of your application" \
-	  "{dist=intel|openmpi}",
-      2, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
-    },
-    { "ear-verbose", "value",
-      "Specifies the level of the verbosity\n" \
-      "{value=[0..5]}; default is 0",
-      2, 0, (spank_opt_cb_f) _opt_ear_verbose
-    },
-    { "ear-learning-phase", "value",
-      "Enables the learning phase for a given P_STATE {value=[0..n]}",
-      1, 0, (spank_opt_cb_f) _opt_ear_learning
-    },
-    { "ear-traces", "", "Generates application traces with metrics and internal details",
-      0, 0, (spank_opt_cb_f) _opt_ear_traces
-    },
-	{ "ear-tag", "tag", "Sets an energy tag",
-	 2, 0, (spank_opt_cb_f) _opt_ear_tag
-    }
-};
+#define ESPANK_STOP -1
 
 /*
  *
@@ -114,7 +71,7 @@ static int local_update_ld_preload(spank_t sp)
 {
     plug_verbose(sp, 2, "function local_update_ld_preload");
 	
-	char *ear_install_path = NULL;
+	char *ear_root_dir = NULL;
 	char *ld_preload = NULL;
 
 	buffer1[0] = '\0';
@@ -124,12 +81,12 @@ static int local_update_ld_preload(spank_t sp)
 		strcpy(buffer1, ld_preload);
 	}*/
 
-    if (getenv_local("EAR_INSTALL_PATH", &ear_install_path) == 0)
+    if (getenv_local("EAR_ROOT_DIR", &ear_root_dir) == 0)
     {
-		plug_error("Error, missing EAR_INSTALL_PATH");
+		plug_error("Error, missing EAR_ROOT_DIR");
         return ESPANK_ERROR;
     }
-    appendenv(buffer1, ear_install_path, PATH_MAX);
+    appendenv(buffer1, ear_root_dir, PATH_MAX);
     
 	// Appending libraries to LD_PRELOAD
     if (isenv_local("EAR_TRACES", "1") == 1)
@@ -195,32 +152,96 @@ static void remote_update_slurm_vars(spank_t sp)
     }
 }
 
-static void print_general_info(spank_t sp)
-{
-	plug_verbose(sp, 2, "function print_general_info");
-
-	struct rlimit l;
-	int r;
-
-	r = getrlimit(RLIMIT_STACK, &l);
-
-	plug_verbose(sp, 2, "plugin compiled in %s", __DATE__);
-	plug_verbose(sp, 2, "stack size limit test (res %d, curr: %lld, max: %lld)",
-			r, (long long) l.rlim_cur, (long long) l.rlim_max);
-	plug_verbose(sp, 2, "buffers size %d", PATH_MAX);
-}
-
-	/*
+/*
  *
- *
- *
- *
+ * Configuration
  *
  */
+int read_old_configuration_file(spank_t sp)
+{
+	plug_verbose(sp, 2, "function file_to_environment");
+
+
+	const char *value = NULL;
+	char *option = buffer2;
+	char *path = buffer1;
+	FILE *file;
+	int r;
+
+	if (!getenv_local("EAR_ETCDIR", &path)) {
+		plug_error("while searching configuration file", path);
+		return ESPANK_ERROR;
+	}
+
+	if ((file = fopen(path, "r")) == NULL)
+	{
+		plug_error("Config file %s not found (%s)", path, strerror(errno));
+		return ESPANK_ERROR;
+	}
+
+	while (fgets(option, PATH_MAX, file) != NULL)
+	{
+		strclean(option, '\n');
+
+		if ((value = strclean(option, '=')) != NULL)
+		{
+			if ((strlen(option) > 2))
+			{
+				value += 1;
+
+				if (strlen(value) > 0)
+				{
+					strtoup(option);
+					setenv_local(option, value, 0);
+				}
+			}
+		}
+	}
+
+	fclose(file);
+	return ESPANK_SUCCESS;
+}
+
 int read_cluster_configuration_file()
 {
+	//read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+
 	return (ESPANK_SUCCESS);
 }
+
+int find_paths(spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function find_ear_conf_file");
+
+	int i;
+
+	for (i = 0; i < ac; ++i)
+	{
+		if ((strlen(av[i]) > 11) && (strncmp ("sysconfdir=", av[i], 11) == 0))
+		{
+			plug_verbose(sp, 3, "looking for configuration files in path '%s'", av[i]);
+			setenv_local("EAR_ETCDIR", &av[i][11], 1);
+		}
+		if ((strlen(av[i]) > 8) && (strncmp ("rootdir=", av[i], 8) == 0))
+		{
+			plug_verbose(sp, 3, "looking for library files in path '%s'", av[i]);
+			setenv_local("EAR_ROOT_DIR", &av[i][8], 1);
+
+		}
+	}
+	return ESPANK_ERROR;
+}
+
+int library_disable()
+{
+	setenv_local("EAR", "0", 1);
+}
+
+/*
+ *
+ * Services
+ *
+ */
 
 int eard_connection(spank_t sp)
 {
@@ -314,7 +335,7 @@ int eargmd_disconnection()
 /*
  *
  *
- * SLURM FRAMEWORK
+ * Framework
  *
  *
  */
@@ -326,7 +347,7 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 	{
 		if (ESPANK_SUCCESS != spank_option_register(sp, &spank_options_manual[i]))
 		{
-        	slurm_error("singularity: Unable to register a new option.");
+        	slurm_error("unable to register a new option.");
         	return -1;
     	}
 	}
@@ -335,30 +356,43 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
     plug_verbose(sp, 2, "function slurm_spank_local_user_init");
+
     int r;
 
     if(spank_context () == S_CTX_LOCAL)
     {
+		if ((r = find_paths(sp, ac, av)) != ESPANK_SUCCESS)
+		{
+			plug_error("plugstack.conf arguments are incorrect, disabling EAR");
+			library_disable();
+
+			return r;
+		}
+
+		//
+		if ((r = read_cluster_configuration_file()) != ESPANK_SUCCESS) {
+			plug_error("while reading configuration file, disabling EAR");
+			library_disable();
+		}
+
+		//
+		read_old_configuration_file(sp);
+
     	//
-		eargmd_connection();
+		if (isenv_local("EAR", "1"))
+		{
+			//
+			eargmd_connection();
 
-		//
-		find_ear_user_privileges(sp, ac, av);
+			//
+			if ((r = local_update_ld_preload(sp)) != ESPANK_SUCCESS)
+			{
+				plug_error("unable to set LD_PRELOAD, disabling EAR");
+				library_disable();
 
-		//
-		//read_cluster_configuration_file();
-
-		// Obsolete
-		if ((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
-            return r;
-        }
-
-        if (isenv_local("EAR", "1"))
-        {
-            if ((r = local_update_ld_preload(sp)) != ESPANK_SUCCESS) {
-                return r;
-            }
-        }
+				return r;
+			}
+		}
     }
 
     return (ESPANK_SUCCESS);
@@ -366,13 +400,14 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "function slurm_spank_user_init");   
+	plug_verbose(sp, 2, "function slurm_spank_user_init");
 
 	if(spank_context() == S_CTX_REMOTE && isenv_remote(sp, "EAR", "1"))
 	{
 		// Printing job remote information
 		print_general_info(sp);
 
+		//
 		remote_update_slurm_vars(sp);	
 	}
 
@@ -381,262 +416,30 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 int slurm_spank_task_init(spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "function slurm_spank_task_init");   
+	plug_verbose(sp, 2, "function slurm_spank_task_init");
 
-	return eard_connection(sp);
+	if (spank_context() == S_CTX_REMOTE) {
+		return eard_connection(sp);
+	}
+	return (ESPANK_SUCCESS);
 }
 
 int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 {
 	FUNCTION_INFO_("slurm_spank_task_exit");
 
-	return eard_disconnection();
-}
-
-int slurm_spank_exit (spank_t sp, int ac, char **av) {
-	FUNCTION_INFO_("slurm_spank_exit");
-
-	return eargmd_disconnection();
-}
-
-/*
- *
- *
- *
- *
- *
- */
-
-static int _opt_ear (int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_ear");
-	char enabled[32];
-	int ienabled;
-
-    if (!remote)
-	{
-		strncpy(enabled, optarg, 32);
-        strtoup(enabled);
-
-		if (strcmp(enabled, "ON") == 0)
-		{
-    		if (setenv_local("EAR", "1", 1) != 1) {
-    			return (ESPANK_ERROR);
-    		}
-		} else {
-			if (setenv_local("EAR", "0", 1) != 1) {
-                return (ESPANK_ERROR);
-            }
-		}
-    }
-
-    return (ESPANK_SUCCESS);
-}
-
-static int _opt_ear_learning (int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_ear_learning");
-
-    char p_state[8];
-    int ioptarg;
-	int result;
-
-    if (!remote)
-    {
-        if (optarg == NULL) {
-            return (ESPANK_BAD_ARG);
-        }
-        if ((ioptarg = atoi(optarg)) < 0) {
-            return (ESPANK_BAD_ARG);
-        }
-
-        sprintf(p_state, "%d", ioptarg);
-
-		result = setenv_local("EAR_LEARNING_PHASE", "1", 1);
-		result = result && setenv_local("EAR_P_STATE", p_state, 1);
-		result = result && setenv_local("EAR", "1", 1);
-
-		if (result != 1) {
-			return (ESPANK_ERROR);
-		}
-    }
-
-    return (ESPANK_SUCCESS);
-}
-
-static int _opt_ear_policy (int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_ear_policy");
-
-    char policy[32];
-    int index = 0;
-	int result;
-
-    if (!remote)
-    {
-        if (optarg == NULL) {
-            return (ESPANK_BAD_ARG);
-        }
-
-        strncpy(policy, optarg, 32);
-        strtoup(policy);
-
-        index += (strcmp(policy, "MIN_ENERGY_TO_SOLUTION") == 0);
-        index += (strcmp(policy, "MIN_TIME_TO_SOLUTION") == 0) * 2;
-        index += (strcmp(policy, "MONITORING_ONLY") == 0) * 3;
-
-        if (index == 0) {
-            return (ESPANK_BAD_ARG);
-        }
-
-		result = setenv_local("EAR_POWER_POLICY", policy, 1);
-		result = result && setenv_local("EAR", "1", 1);
-
-        if (index == 1 || index == 2) {
-            result = result && setenv_local("EAR_P_STATE", "1", 1);
-        }
-        if (index == 3) {
-			result = result && setenv_local("EAR_P_STATE", "1", 0);
-        }
-
-		if (result != 1) {
-			return (ESPANK_ERROR);
-		}
-    }
-
-    return (ESPANK_SUCCESS);
-}
-
-static int _opt_ear_user_db (int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_ear_user_db");
-
-	int result;
-
-    if (!remote) {
-        if (optarg == NULL) return (ESPANK_BAD_ARG);
-
-		result = setenv_local("EAR_USER_DB_PATHNAME", optarg, 1);
-		result = result && setenv_local("EAR", "1", 1);
-
-		if (result != 1) {
-			return (ESPANK_ERROR);
-		}
-    }
-
-    return (ESPANK_SUCCESS);
-}
-
-static int _opt_ear_threshold (int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_ear_threshold");
-
-	char threshold[4];
-    double foptarg = -1;
-	int result;
-
-    if (!remote)
-    {
-        if (optarg == NULL) {
-            return (ESPANK_BAD_ARG);
-        }
-        if ((foptarg = atof(optarg)) < 0.0 || foptarg > 1.0) {
-            return (ESPANK_BAD_ARG);
-        }
-
-        sprintf(threshold, "%0.2f", foptarg);
-
-        result = setenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", threshold, 1);
-		result = result && setenv_local("EAR_PERFORMANCE_PENALTY", threshold, 1);
-		result = result && setenv_local("EAR", "1", 1) != 1;
-
-		if (result != 1) {
-			return (ESPANK_ERROR);
-		}
-    }
-
-    return (ESPANK_SUCCESS);
-}
-
-static int _opt_ear_verbose (int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_ear_verbose");
-
-    char c_verbosity[4];
-    int ioptarg;
-    int result;
-
-    if (!remote)
-    {
-        if (optarg == NULL) {
-            return (ESPANK_BAD_ARG);
-        }
-
-        ioptarg = atoi(optarg);
-        if (ioptarg < 0) ioptarg = 0;
-        if (ioptarg > 4) ioptarg = 4;
-
-        sprintf(c_verbosity, "%i", ioptarg);
-        result = setenv_local("EAR_VERBOSE", c_verbosity, 1);
-        result = result && setenv_local("EAR", "1", 1);
-
-		if (verbosity == -1) {
-			verbosity = ioptarg;
-		}
-
-        if (result != 1) {
-			return (ESPANK_ERROR);
-		}
-    }
-
-    return (ESPANK_SUCCESS);
-}
-
-static int _opt_ear_traces (int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_ear_traces");
-    int result;
-
-    if (!remote) {
-        result = setenv_local("EAR_TRACES", "1", 1);
-        result = result && setenv_local("EAR", "1", 1);
-
-		if (result != 1) {
-			return (ESPANK_ERROR);
-		}
-    }
-
-    return (ESPANK_SUCCESS);
-}
-
-static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_mpi_dist");
-
-	if (!remote)
-	{
-        if (optarg == NULL) {
-        	return (ESPANK_BAD_ARG);
-        }
-		if (setenv_local("EAR_MPI_DIST", optarg, 1) != 1) {
-			return (ESPANK_ERROR);
-        }
+	if (spank_context() == S_CTX_REMOTE) {
+		return eard_disconnection();
 	}
-
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_tag(int val, const char *optarg, int remote) 
+int slurm_spank_exit (spank_t sp, int ac, char **av)
 {
-    plug_nude("function _opt_tag");
-    return (ESPANK_SUCCESS);
+	FUNCTION_INFO_("slurm_spank_exit");
+
+	if (spank_context() == S_CTX_LOCAL) {
+		return eargmd_disconnection();
+	}
+	return (ESPANK_SUCCESS);
 }
-
-#define FUNCTION_INFO_(string) \
-	slurm_error(string);
-
-int slurm_spank_job_prolog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_job_prolog"); return (ESPANK_SUCCESS); }
-int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_init_post_op"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init_privileged"); return (ESPANK_SUCCESS); }
-int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
-int slurm_spank_job_epilog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_job_epilog"); return (ESPANK_SUCCESS); }

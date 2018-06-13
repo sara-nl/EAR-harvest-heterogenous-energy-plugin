@@ -42,15 +42,13 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/config.h>
 
-char conf_path[PATH_MAX];
 extern char buffer1[PATH_MAX];
 extern char buffer2[PATH_MAX];
-extern int auth_mode;
 extern int verbosity;
 
 /*
  *
- * Strings
+ * Verbosity
  *
  */
 
@@ -69,9 +67,15 @@ int verbosity_test(spank_t sp, int level)
 			verbosity = 0;
 		}
 	}
-	
+
 	return verbosity >= level;
 }
+
+/*
+ *
+ * Strings
+ *
+ */
 
 void strtoup(char *string)
 {
@@ -276,171 +280,22 @@ int isenv_remote(spank_t sp, char *name, char *value)
 
 /*
  *
- * Functionality
+ * Others
  *
  */
-
-static void setenv_if_authorized(spank_t sp, const char *option, const char *value)
+void print_general_info(spank_t sp)
 {
+	plug_verbose(sp, 2, "function print_general_info");
+
+	struct rlimit l;
 	int r;
 
-	// Mode 0: authorized
-	// Mode 1: normal user
-	if (auth_mode == 1) {
-		r = setenv_local(option, value, 0);
-	} else {
-		r = setenv_local(option, value, 1);
-	}
+	r = getrlimit(RLIMIT_STACK, &l);
 
-	if (r == 1) {
-		plug_verbose(sp, 3, "exported '%s' = '%s'", option, value);
-	}
-}
-
-int file_to_environment(spank_t sp, const char *path)
-{
-	plug_verbose(sp, 2, "function file_to_environment");
-
-    const char *value = NULL;
-	char *option = buffer2;
-    FILE *file;
-
-    if ((file = fopen(path, "r")) == NULL)
-    {
-        plug_error("Config file %s not found (%s)", path, strerror(errno));
-        return ESPANK_ERROR;
-    }
-
-    while (fgets(option, PATH_MAX, file) != NULL)
-    {
-		strclean(option, '\n');
-        
-        if ((value = strclean(option, '=')) != NULL)
-        {
-            if ((strlen(option) > 2))
-            {
-            	value += 1;
-
-            	if (strlen(value) > 0)
-            	{
-                	strtoup(option);
-					setenv_if_authorized(sp, option, value);
-				}
-            }
-        }
-    }
-
-    fclose(file);
-    return ESPANK_SUCCESS;
-}
-
-int find_ear_conf_file(spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function find_ear_conf_file");
-
-	int i;
-
-    for (i = 0; i < ac; ++i)
-    {
-		if ((strlen(av[i]) > 9) && (strncmp ("conf_dir=", av[i], 9) == 0))
-        {
-			plug_verbose(sp, 3, "looking for conf files in path '%s'", av[i]);
-			
-			sprintf(conf_path, "%s/%s", &av[i][9], EAR_CONF_FILE);
-			return file_to_environment(sp, (const char *) conf_path);
-        }
-    }
-    return ESPANK_ERROR;
-}
-
-static int find_user_by_string(char *string, char *id)
-{
-	char *p;
-
-	if ((string == NULL) || (strlen(string) == 0) ||
-			(id == NULL) || (strlen(id) == 0))
-	{
-		return 0;
-	}
-
-	p = strtok (string, ",");
-
-	while (p != NULL)
-	{
-		if (strcmp(p, id) == 0) {
-			return 1;
-		}
-
-		p = strtok (NULL, ",");
-	}
-	return 0;
-}
-
-static int find_user_by_uint(char *string, unsigned int id)
-{
-	unsigned int nid;
-	char *p;
-
-	if (string == NULL || strlen(string) == 0) {
-		return 0;
-	}
-
-	p = strtok (string, ",");
-
-	while (p != NULL)
-	{
-		nid = (unsigned int) atoi(p);
-
-		if (id == nid) {
-			return 1;
-		}
-
-		p = strtok (NULL, ",");
-	}
-
-	return 0;
-}
-
-void find_ear_user_privileges(spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function find_ear_user_privileges");
-	
-	int i, ruid, rgid, res = 0;
-	char *aid;
-	uid_t uid;
-	gid_t gid;
-
-	ruid = spank_get_item(sp, S_JOB_UID, &uid);
-	rgid = spank_get_item(sp, S_JOB_GID, &gid);
-	getenv_local("SLURM_JOB_ACCOUNT", &aid);
-
-	for (i = 0; i < ac; ++i)
-	{
-		if ((ruid == ESPANK_SUCCESS) && (strlen(av[i]) > 11) &&
-			(strncmp ("auth_users=", av[i], 11) == 0) &&
-			(find_user_by_uint(&av[i][11], uid) ))
-		{
-			plug_verbose(sp, 2, "authorized user found by UID");
-			auth_mode = 1;
-			return;
-		}
-		if ((rgid == ESPANK_SUCCESS) && (strlen(av[i]) > 12) &&
-			(strncmp ("auth_groups=", av[i], 12) == 0) &&
-			(find_user_by_uint(&av[i][12], gid) ))
-		{
-			plug_verbose(sp, 2, "authorized user found by GID");
-			auth_mode = 1;
-			return;
-		}
-		if ((aid != NULL) && (strlen(av[i]) > 14) &&
-			(strncmp ("auth_accounts=", av[i], 14) == 0) &&
-			(find_user_by_string(&av[i][14], aid) ))
-		{
-			plug_verbose(sp, 2, "authorized user found by SLURM account");
-			auth_mode = 1;
-			return;
-		}
-	}
+	plug_verbose(sp, 2, "plugin compiled in %s", __DATE__);
+	plug_verbose(sp, 2, "stack size limit test (res %d, curr: %lld, max: %lld)",
+				 r, (long long) l.rlim_cur, (long long) l.rlim_max);
+	plug_verbose(sp, 2, "buffers size %d", PATH_MAX);
 }
 
 int freq_to_p_state(int freq)
