@@ -7,13 +7,17 @@ BINARIES = bandwith_monitor \
            freeipmi_overhead \
            simd_power_metrics_openmp \
            energy_1_second \
-           energy_updates_freq
+           energy_updates_freq \
+		   ear_conf
 # ear_pm
 # test_architecture
 
 ######## RULES
 
 all: $(BINARIES)
+
+ear_conf:ear_conf.c $(SRCDIR)/common/types.a
+	$(CC) $(CFLAGS) -o ear_conf $^ $(SRCDIR)/common/types.a
 
 bandwith_monitor: bandwith_monitor.c \
         $(SRCDIR)/metrics/custom/hardware_info.o \

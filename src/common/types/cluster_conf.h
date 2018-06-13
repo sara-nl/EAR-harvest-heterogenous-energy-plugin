@@ -30,7 +30,7 @@
 
 
 #ifndef _CLUSTER_CONF_H
-#define __CLUSTER_CONF_H
+#define _CLUSTER_CONF_H
 #include <stdint.h>
 #include <common/config.h>
 #include <common/environment.h>
@@ -114,6 +114,16 @@ typedef struct node_conf
 	ulong db_ip;
 } node_conf_t;
 
+typedef struct my_node_conf
+{
+	uint cpus;
+	uint island;
+	char db_ip[USER];
+	char *coef_file;
+	uint num_policies;
+	policy_conf_t *policies;
+}my_node_conf_t;
+
 typedef struct special_app
 {
 	char user[USER];
@@ -188,7 +198,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf);
 // NODE level functions
 
 /** returns the pointer to the information of nodename */
-node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
+node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
+my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
 /** prints in the stdout the node configuration */
 void print_node_conf(node_conf_t *my_node_conf);
 
@@ -206,6 +217,10 @@ policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_nod
 void print_cluster_conf(cluster_conf_t *conf);
 
 void free_cluster_conf(cluster_conf_t *conf);
+
+/** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/sysconf/ear.conf */
+int get_ear_conf_path(char *ear_conf_path);
+
 
 #else
 #endif

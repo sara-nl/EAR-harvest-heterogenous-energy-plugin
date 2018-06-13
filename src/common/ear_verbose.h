@@ -49,6 +49,14 @@ extern int EAR_VERBOSE_LEVEL;
                 fprintf(stderr, "\n"); \
         }
 
+#define eard_verbose(level, ...) \
+        if (level <= EAR_VERBOSE_LEVEL) { \
+                fprintf(stderr, "%s[%s]: ", __NAME__,__HOST__); \
+                fprintf(stderr, __VA_ARGS__); \
+                fprintf(stderr, "\n"); \
+        }
+
+
 /** Prints a formatted string in case the level passed is greater or equal then
  *  the selected level of debugging.*/
 #if BUILD(DEBUG)

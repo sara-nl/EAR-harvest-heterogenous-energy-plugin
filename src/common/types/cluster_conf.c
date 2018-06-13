@@ -53,77 +53,106 @@
 static const char *__NAME__ = "cluster_conf:";
 //#define __OLD__CONF__
 
+void cae_conf(cluster_conf_t *my_conf)
+{
+    int i;
+    char *db=NULL,*coeff=NULL,*tmp=NULL,*verbose=NULL,*etc=NULL;
+    db=getenv("EAR_DB_PATHNAME");
+    if (db==NULL){
+        VERBOSE_N(0,"EAR_DB_PATHNAME not defined\n");
+        //db="/home/xlalonso/";
+        db="/home/xjcorbalan/my_ear/dbs/db.";
+    }
+    coeff=getenv("EAR_COEFF_DB_PATHNAME");
+    if (coeff==NULL){
+        VERBOSE_N(0,"EAR_COEFF_DB_PATHNAME not defined\n");
+        //coeff="/home/xlalonso/";
+        coeff="/home/xjcorbalan/my_ear/coeffs/coeff.";
+    }
+    tmp=getenv("EAR_TMP");
+    if (tmp==NULL){
+        VERBOSE_N(0,"EAR_TMP not defined\n");
+        tmp="/var/ear";
+    }
+    etc=getenv("ETC");
+    if (etc==NULL){
+        VERBOSE_N(0,"ETC not defined\n");
+        etc="/etc";
+    }
+    verbose=getenv("EAR_VERBOSE");
+    if (verbose==NULL){
+        VERBOSE_N(0,"EAR_VERBOSE not defined\n");
+        verbose="1";
+    }
+
+    if ((db==NULL) || (coeff==NULL) || (tmp==NULL) || (verbose==NULL) || (etc==NULL)) return;
+
+    // PATHS
+    strcpy(my_conf->DB_pathname,db);
+    strcpy(my_conf->Coefficients_pathname,coeff);
+    strcpy(my_conf->tmp_dir,tmp);
+    my_conf->verbose=atoi(verbose);
+    // POLICIES
+
+    my_conf->num_policies=3;
+    my_conf->power_policies=malloc(sizeof(policy_conf_t)*my_conf->num_policies);
+    // MIN_ENERGY_TO_SOLUTION
+    my_conf->power_policies[0].policy=0;
+    my_conf->power_policies[0].th=0.1;
+    my_conf->power_policies[0].p_state=DEFAULT_MAX_P_STATE;
+    // MIN_TIME_TO_SOLUTION
+    my_conf->power_policies[1].policy=1;
+    my_conf->power_policies[1].th=PERFORMANCE_GAIN;
+    my_conf->power_policies[1].p_state=EAR_MIN_P_STATE;
+    // MONITORING_ONLY
+    my_conf->power_policies[2].policy=2;
+    my_conf->power_policies[2].th=0;
+    my_conf->power_policies[2].p_state=EAR_MIN_P_STATE;
+    my_conf->default_policy=1;
+    // PRIVILEGED USERS
+    my_conf->num_priv_users=0;
+    my_conf->priv_users=NULL;
+    my_conf->num_special=0;
+    my_conf->special=NULL;
+
+    // NODES
+    my_conf->num_nodes=1;
+    my_conf->nodes=malloc(sizeof(node_conf_t)*my_conf->num_nodes);
+
+    gethostname(my_conf->nodes[0].name,sizeof(my_conf->nodes[0].name));
+    my_conf->nodes[0].cpus=16;
+    my_conf->nodes[0].island=0;
+    my_conf->nodes[0].num_special_node_conf=1;
+    my_conf->nodes[0].special_node_conf=malloc(sizeof(policy_conf_t)*my_conf->nodes[0].num_special_node_conf);
+    my_conf->nodes[0].special_node_conf[0].policy=1;
+    my_conf->nodes[0].special_node_conf[0].th=PERFORMANCE_GAIN;
+    my_conf->nodes[0].special_node_conf[0].p_state=EAR_MIN_P_STATE+1;
+
+	// ISLANDS
+	
+
+	//EARD
+	my_conf->eard.verbose=1;
+	my_conf->eard.period_powermon=POWERMON_FREQ;
+	my_conf->eard.max_pstate=1;
+	my_conf->eard.turbo=0;
+	my_conf->eard.port=DAEMON_PORT_NUMBER;
+	
+	//EARGM
+	
+	//EARDB
+
+
+}
+
+
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 {
+
+
 	#ifdef __OLD__CONF__
-	int i;
-	char *db,*coeff,*tmp,*verbose;
-	db=getenv("EAR_DB_PATHNAME");
-	if (db==NULL){
-		VERBOSE_N(0,"EAR_DB_PATHNAME not defined\n");
-        db="/home/xlalonso/";
-	}
-	coeff=getenv("EAR_COEFF_DB_PATHNAME");
-	if (coeff==NULL){
-		VERBOSE_N(0,"EAR_COEFF_DB_PATHNAME not defined\n");
-        coeff="/home/xlalonso/";
-	}
-	tmp=getenv("EAR_TMP");
-	if (tmp==NULL){
-		VERBOSE_N(0,"EAR_TMP not defined\n");
-        tmp="/var/ear";
-	}
-	verbose=getenv("EAR_VERBOSE");
-	if (verbose==NULL){
-		VERBOSE_N(0,"EAR_VERBOSE not defined\n");
-        verbose="2";
-	}
-	if ((db==NULL) || (coeff==NULL) || (tmp==NULL) || (verbose==NULL)) return EAR_ERROR;
-
-	// PATHS
-
-	strcpy(my_conf->DB_pathname,db);
-	strcpy(my_conf->Coefficients_pathname,coeff);
-	strcpy(my_conf->tmp_dir,tmp);
-	my_conf->verbose=atoi(verbose);
-
-	// POLICIES
-
-	my_conf->num_policies=3;
-	my_conf->power_policies=malloc(sizeof(policy_conf_t)*my_conf->num_policies);
-	// MIN_ENERGY_TO_SOLUTION
-	my_conf->power_policies[0].policy=0;
-	my_conf->power_policies[0].th=0.1;
-	my_conf->power_policies[0].p_state=DEFAULT_MAX_P_STATE;
-	// MIN_TIME_TO_SOLUTION
-	my_conf->power_policies[1].policy=1;
-	my_conf->power_policies[1].th=PERFORMANCE_GAIN;
-	my_conf->power_policies[1].p_state=EAR_MIN_P_STATE;
-	// MONITORING_ONLY
-	my_conf->power_policies[2].policy=2;
-	my_conf->power_policies[2].th=0;
-	my_conf->power_policies[2].p_state=EAR_MIN_P_STATE;
-	my_conf->default_policy=1;
-
-	// PRIVILEGED USERS
-	my_conf->num_priv_users=0;
-	my_conf->priv_users=NULL;
-	my_conf->num_special=0;
-	my_conf->special=NULL;
-
-	// NODES
-	my_conf->num_nodes=1;
-	my_conf->nodes=malloc(sizeof(node_conf_t)*my_conf->num_nodes);
-	
-	gethostname(my_conf->nodes[0].name,sizeof(my_conf->nodes[0].name));
-	my_conf->nodes[0].cpus=16;
-	my_conf->nodes[0].island=0;
-	my_conf->nodes[0].num_special_node_conf=1;
-	my_conf->nodes[0].special_node_conf=malloc(sizeof(policy_conf_t)*my_conf->nodes[0].num_special_node_conf);
-	my_conf->nodes[0].special_node_conf[0].policy=1;
-	my_conf->nodes[0].special_node_conf[0].th=PERFORMANCE_GAIN;
-	my_conf->nodes[0].special_node_conf[0].p_state=EAR_MIN_P_STATE+1;
+	cae_conf(my_conf);	
 	#else
 	FILE *conf_file = fopen(conf_path, "r");
 	if (conf_file == NULL)
@@ -169,11 +198,43 @@ char range_conf_contains_node(node_conf_t *node, char *nodename)
     return 0;
 }
 
+char island_range_conf_contains_node(node_island_t *node, char *nodename)
+{
+    char aux_name[64];
+    int i, j;
+    for (i = 0; i < node->num_ranges; i++)
+    {
+        if (node->ranges[i].end == -1)
+        {
+            sprintf(aux_name, "%s", node->ranges[i].prefix);
+            if (!strcmp(aux_name, nodename)) return 1;
+            else continue;
+        }
+        if (node->ranges[i].end == node->ranges[i].start)
+        {
+            sprintf(aux_name, "%s%u", node->ranges[i].prefix, node->ranges[i].start);
+            if (!strcmp(aux_name, nodename)) return 1;
+            else continue;
+        }
+        for (j = node->ranges[i].end; j >= node->ranges[i].start && j > 0; j--)
+        {
+            if (j < 10 && node->ranges[i].end > 10)
+                sprintf(aux_name, "%s0%u", node->ranges[i].prefix, j);
+            else
+                sprintf(aux_name, "%s%u", node->ranges[i].prefix, j);
+            if (!strcmp(aux_name, nodename)) return 1;
+        }
+    }
+
+    return 0;
+}
+
+
 
 /*
 * NODE FUNCTIONS
 */
-node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
+node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 {
 	int i=0;
 	node_conf_t *n=NULL;
@@ -184,6 +245,53 @@ node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 		}
 		i++;
 	}while((n==NULL) && (i<my_conf->num_nodes));
+	return n;
+}
+
+
+my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
+{
+	int i=0, j=0;
+	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
+    n->num_policies = my_conf->num_policies;
+    n->policies = calloc(n->num_policies, sizeof(policy_conf_t));
+    int num_spec_nodes = 0;
+
+	do{ // At least one node is assumed
+		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
+        	//n=&my_conf->nodes[i];
+            n->cpus = my_conf->nodes[i].cpus;
+            n->coef_file = my_conf->nodes[i].coef_file;
+            num_spec_nodes = my_conf->nodes[i].num_special_node_conf;
+            //n->policies = my_conf->nodes[i].special_node_conf;
+            memcpy(n->policies, my_conf->nodes[i].special_node_conf, num_spec_nodes * sizeof(policy_conf_t));
+		}
+		i++;
+	}while (i<my_conf->num_nodes);
+   
+    i = 0;
+    do{ // At least one node is assumed
+		if (island_range_conf_contains_node(&my_conf->islands[i], nodename)) {
+            n->island = my_conf->islands[i].id;
+            strcpy(n->db_ip, my_conf->islands[i].db_ip);
+		}
+		i++;
+	}while(i<my_conf->num_islands);
+
+    //pending checks for policies
+    for (i = 0; i < my_conf->num_policies; i++)
+    {
+        char found = 0;
+        for (j = 0; j < num_spec_nodes; j++)
+            if (my_conf->power_policies[i].policy == n->policies[j].policy) found = 1;
+        
+        if (!found)
+        {
+            memcpy(&n->policies[num_spec_nodes], &my_conf->power_policies[i], sizeof(policy_conf_t));
+            num_spec_nodes++;
+        }
+    }
+
 	return n;
 }
 
@@ -709,17 +817,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
         }
 
         //DB MANAGER
-        else if (!strcmp(token, "AGGREGATIONTIME"))
+        else if (!strcmp(token, "DATABASECACHEAGGREGATIONTIME"))
         {
             token = strtok(NULL, "=");
             conf->db_manager.aggr_time = atoi(token);
         }
-        else if (!strcmp(token, "PORTTCP"))
+        else if (!strcmp(token, "DATABASECACHEPORTTCP"))
         {
             token = strtok(NULL, "=");
             conf->db_manager.tcp_port = atoi(token);
         }
-        else if (!strcmp(token, "PORTUDP"))
+        else if (!strcmp(token, "DATABASECACHEPORTUDP"))
         {
             token = strtok(NULL, "=");
             conf->db_manager.udp_port = atoi(token);
@@ -966,5 +1074,27 @@ void print_cluster_conf(cluster_conf_t *conf)
         print_islands_conf(&conf->islands[i]);
     fprintf(stderr, "\n");
 
+}
+/** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/s
+ysconf/ear.conf */
+int get_ear_conf_path(char *ear_conf_path)
+{
+	char *ear_install;
+	char my_path[GENERIC_NAME];
+	int fd;
+	fd=open("/etc/ear/ear.conf",O_RDONLY);
+	if (fd>0){
+		strcpy(ear_conf_path,"/etc/ear/ear.conf");
+		return EAR_SUCCESS;
+	}
+	ear_install=getenv("ETC");
+	if (ear_install==NULL) return EAR_ERROR;
+	sprintf(my_path,"%s/ear/ear.conf",ear_install);
+	fd=open(my_path,O_RDONLY);
+    if (fd>0){
+        strcpy(ear_conf_path,my_path);
+        return EAR_SUCCESS;
+    }
+	return EAR_ERROR;
 }
 

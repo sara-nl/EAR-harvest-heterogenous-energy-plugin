@@ -88,7 +88,7 @@ uint in_action=0;
 void usage(char *app)
 {
 	printf("Usage: %s period_t1 (in secs) period_t2 (in seconds) max_energy (in Joules) \n", app);
-	exit(1);
+	exit(0);
 }
 
 void update_eargm_configuration(cluster_conf_t *conf)
@@ -337,13 +337,19 @@ void main(int argc,char *argv[])
 	int ret;
 	ulong result;
 	gm_warning_t my_warning;
+	char my_ear_conf_path[GENERIC_NAME];	
 
     if (argc !=4) usage(argv[0]);
 	period_t1=atoi(argv[1]);
 	period_t2=atoi(argv[2]);
 	energy_budget=atol(argv[3]);
-
-    if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+    // We read the cluster configuration and sets default values in the shared memory
+    if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
+        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        exit(0);
+    }
+	VERBOSE_N(0,"Using %s as EARGM configuration file",my_ear_conf_path);
+    if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         VERBOSE_N(0," Error reading cluster configuration\n");
     }
     else{
@@ -371,13 +377,6 @@ void main(int argc,char *argv[])
 		VERBOSE_N(0,"error creating eargm_server for external api %s\n",strerror(errno));
     }
 
-	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
-        VERBOSE_N(0," Error reading cluster configuration\n");
-	}
-	else{
-		print_cluster_conf(&my_cluster_conf);
-	}
-	update_eargm_configuration(&my_cluster_conf);
 	
     time_t start_time, end_time;
 	double perc_energy,perc_time;

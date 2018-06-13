@@ -35,78 +35,18 @@
 #include <common/ear_verbose.h>
 #include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
-#include <common/types/cluster_conf.h>
 #include <common/database/mysql_io_functions.h>
 
 static const char *__NAME__ = "db_helper";
 
-char *db_ip = NULL;
-char *db_user = NULL;
-char *db_pass = NULL;
-char *database = "Report";
-cluster_conf_t global_conf;
-unsigned int db_port = {0};
+db_conf_t *db_config = NULL;
 
-int getenv_database()
+
+void init_db_helper(db_conf_t *conf)
 {
-    char conf_file_path[256];
-    strcpy(conf_file_path, EAR_INSTALL_PATH);
-    strcat(conf_file_path, "/etc/sysconf/ear.conf");
-    
-    if (read_cluster_conf(conf_file_path, &global_conf) != EAR_SUCCESS)
-    {
-        VERBOSE_N(0, "Erro reading db config file.");
-        return EAR_ERROR;
-    }
-    
-    db_ip = global_conf.database.ip;
-    db_user = global_conf.database.user;
-    db_pass = global_conf.database.pass;
-    database = global_conf.database.database;
-    db_port = global_conf.database.port;
-
-    // db_ip = getenv("DB_IP");
-    // db_user = getenv("DB_USER");
-    // db_pass = (!getenv("DB_PASS")) ? "" : getenv("DB_PASS");
-    // database = (!getenv("DB_NAME")) ? database: getenv("DB_NAME");
-    // db_port = (!getenv("DB_PORT")) ? 0 : atoi(getenv("DB_PORT"));
-
-    return EAR_SUCCESS;
+    db_config = conf;
 }
 
-int readconf_database()
-{
-    char conf_file_path[256], config[256];
-    char *value;
-    FILE *conf_file;
-    
-    strcpy(conf_file_path, EAR_INSTALL_PATH);
-    strcat(conf_file_path, "/etc/sysconf/db.conf");
-
-    conf_file = fopen(conf_file_path, "r");
-    if (conf_file == NULL)
-    {
-        VERBOSE_N(0, "Error opening config file at \"$EAR_INSTALL_PATH/etc/sysconf/db.conf\".\n");
-        VERBOSE_N(0, "Filepath: %s\n", conf_file_path);
-        return EAR_ERROR;
-    }
-
-    while (fgets(config, 256, conf_file) != NULL)
-    {
-        if (strclean(config, '\n') && (value = strclean(config, '=')))
-        {
-            if (strlen(config) && strlen(++value))
-            {
-                strtoup(config);
-                if (setenv(config, value, 0) == -1) return EAR_ERROR;
-            }
-
-        }
-
-    }
-    return EAR_SUCCESS;
-
-}
 
 int db_insert_application(application_t *application)
 {
@@ -118,17 +58,13 @@ int db_insert_application(application_t *application)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            VERBOSE_N(0, "Error reading configuration file and setting environment variables.");
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, database, db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -157,16 +93,13 @@ int db_insert_loop(loop_t *loop)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -193,17 +126,14 @@ int db_insert_power_signature(power_signature_t *pow_sig)
         VERBOSE_N(0, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
-
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, "Report", db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -232,16 +162,14 @@ int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -269,16 +197,13 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -306,16 +231,13 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close (connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -343,16 +265,13 @@ int db_insert_ear_event(ear_event_t *ear_ev)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, "Report", db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -380,16 +299,13 @@ int db_batch_insert_ear_event(ear_event_t **ear_evs, int num_events)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -417,16 +333,13 @@ int db_insert_gm_warning(gm_warning_t *warning)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -465,16 +378,13 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
         return EAR_ERROR;
     }
 
-    if (db_ip == NULL || db_user == NULL || db_pass == NULL)
+    if (db_config == NULL)
     {
-        if (getenv_database() != EAR_SUCCESS)
-        {
-            mysql_close(connection);
-            return EAR_ERROR;
-        }
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, "Report", db_port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);

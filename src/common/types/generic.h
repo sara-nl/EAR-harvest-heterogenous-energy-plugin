@@ -32,10 +32,22 @@
 
 #include <linux/limits.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <sys/types.h>
+
 
 typedef unsigned char uchar;
 typedef unsigned long long ull;
 typedef unsigned long ulong;
 typedef unsigned int uint;
+
+typedef uint8_t job_type;
+typedef ulong   job_id;
+
+#define GENERIC_NAME 		256
+#define	UID_NAME			8
+#define POLICY_NAME 		32
+#define ENERGY_TAG_SIZE		32
+
 
 #endif
