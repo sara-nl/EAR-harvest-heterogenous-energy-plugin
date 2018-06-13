@@ -14,9 +14,6 @@
 
 int EAR_VERBOSE_LEVEL = 1;
 
-ulong th_level[NUM_LEVELS]={10,10,5,0};
-ulong pstate_level[NUM_LEVELS]={3,2,1,0}; 
-
 
 cluster_conf_t my_cluster_conf;
 
@@ -35,11 +32,10 @@ void usage(char *app)
 /*
 *	ACTIONS for WARNING and PANIC LEVELS
 */
-ulong increase_th_all_nodes(int level)
+void increase_th_all_nodes(ulong  th)
 {
 	int i, j, k, rc;
     char node_name[256];
-	ulong th;
 
     for (i=0;i < my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -62,7 +58,6 @@ ulong increase_th_all_nodes(int level)
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
     
-        			th=th_level[level];
     
 	        		VERBOSE_N(1,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
 		        	if (!eards_inc_th(th)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
@@ -71,14 +66,12 @@ ulong increase_th_all_nodes(int level)
 	        }
         }
     }
-	return th_level[level];
 }
 
-void red_max_freq(int level)
+void red_max_freq(ulong ps)
 {
 	int i, j, k, rc;
     char node_name[256];
-    ulong ps;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {
@@ -99,7 +92,6 @@ void red_max_freq(int level)
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
     
-                    ps = pstate_level[level];
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
 		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
 			        eards_remote_disconnect();
@@ -109,11 +101,10 @@ void red_max_freq(int level)
     }
 }
 
-void red_def_freq(int level)
+void red_def_freq(ulong ps)
 {
 	int i, j, k, rc;
     char node_name[256];
-    ulong ps;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {
@@ -133,8 +124,6 @@ void red_def_freq(int level)
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
-    
-                    ps = pstate_level[level];
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
 		        	if (!eards_set_freq(ps)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
 			        eards_remote_disconnect();
@@ -146,11 +135,10 @@ void red_def_freq(int level)
 
 
 
-ulong reduce_frequencies_all_nodes(int level)
+void reduce_frequencies_all_nodes(ulong ps)
 {
     int i, j, k, rc;
     char node_name[256];
-    ulong ps;
 
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -173,9 +161,6 @@ ulong reduce_frequencies_all_nodes(int level)
                 if (rc<0){
                     VERBOSE_N(0,"Error connecting with node %s",node_name);
                 }else{
-
-                	ps=pstate_level[level];
-
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
                 	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the freq for node %s", node_name);
             	    eards_remote_disconnect();
@@ -183,7 +168,6 @@ ulong reduce_frequencies_all_nodes(int level)
             }
         }
     }
-	return pstate_level[level];
 }
 
 
