@@ -45,8 +45,14 @@
 #include <common/types/job.h>
 #include <common/config.h>
 
+int EAR_VERBOSE_LEVEL = 0;
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 pid_t daemon_pid = -1;
+
+unsigned int port_eargmd = 6000;
+unsigned int num_nodes;
+char host_eargmd[128];
+char   host_eard[128];
 application_t app;
 
 char buffer1[PATH_MAX];
@@ -207,6 +213,107 @@ static void print_general_info(spank_t sp)
 /*
  *
  *
+ *
+ *
+ *
+ */
+int read_cluster_configuration_file()
+{
+	return (ESPANK_SUCCESS);
+}
+
+int eard_connection()
+{
+	char buffer[64];
+
+	gethostname(host_eard, 128);
+	init_application(&app);
+
+	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer, 64)) {
+		app.job.id = 0;
+	} else {
+		app.job.id = atoi(buffer);
+	}
+	if (!getenv_remote(sp, "SLURM_STEP_ID", buffer, 64)) {
+		app.job.step_id = 0;
+	} else {
+		app.job.step_id = atoi(buffer);
+	}
+	if (!getenv_remote(sp, "SLURM_JOB_USER", app.job.user_id, GENERIC_NAME)) {
+		strcpy(app.job.user_id, "");
+	}
+	if (!getenv_remote(sp, "SLURM_JOB_NAME",  app.job.app_id, GENERIC_NAME)) {
+		strcpy(app.job.app_id, "");
+	}
+	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", app.job.user_acc, GENERIC_NAME)) {
+		strcpy(app.job.user_acc, "");
+	}
+	if (!getenv_remote(sp, "EAR_POWER_POLICY", app.job.policy, GENERIC_NAME)) {
+		strcpy(app.job.policy, "");
+	}
+	if (!getenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer, 64)) {
+		app.job.th = 0;
+	} else {
+		app.job.th = atof(buffer);
+	}
+
+	if (eards_remote_connect(host_eard) < 0) {
+		plug_error("ERROR while connecting with EAR daemon");
+	}
+	if (!eards_new_job(&app)) {
+		plug_error("ERROR while connecting with EAR daemon");
+	}
+	eards_remote_disconnect();
+
+	return (ESPANK_SUCCESS);
+}
+
+int eard_disconnection()
+{
+	if (eards_remote_connect(host_eard) < 0) {
+		plug_error("ERROR while connecting with EAR daemon");
+	}
+	eards_end_job(app.job.id, app.job.step_id);
+	eards_remote_disconnect();
+
+	return (ESPANK_SUCCESS);
+}
+
+int eargmd_connection()
+{
+	char *c_num_nodes;
+
+	gethostname(host_eargmd, 128);
+	getenv_local("SLURM_NNODES", &c_num_nodes);
+	num_nodes = atoi(c_num_nodes);
+
+	if (eargm_connect(host_eargmd, port_eargmd) < 0) {
+		plug_error("ERROR while connecting with EAR global manager daemon");
+	}
+	if (!eargm_new_job(num_nodes)) {
+		plug_error("ERROR while connecting with EAR global manager daemon");
+	}
+	eargm_disconnect();
+
+	return (ESPANK_SUCCESS);
+}
+
+int eargmd_disconnection()
+{
+	if (eargm_connect(host_eargmd, port_eargmd) < 0) {
+		plug_error("ERROR while connecting with EAR global manager daemon");
+	}
+	if (!eargm_end_job(num_nodes)) {
+		plug_error("ERROR while connecting with EAR global manager daemon");
+	}
+	eargm_disconnect();
+
+	return (ESPANK_SUCCESS);
+}
+
+/*
+ *
+ *
  * SLURM FRAMEWORK
  *
  *
@@ -232,9 +339,17 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
+    	//
+		eargmd_connection();
+
+		//
 		find_ear_user_privileges(sp, ac, av);
 
-        if ((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {	
+		//
+		//read_cluster_configuration_file();
+
+		// Obsolete
+		if ((r = find_ear_conf_file(sp, ac, av)) != ESPANK_SUCCESS) {
             return r;
         }
 
@@ -268,66 +383,20 @@ int slurm_spank_task_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_task_init");   
 
-	char buffer[64];
-	char host[128];
-
-    gethostname(host, 128);
-	init_application(&app);	
-	
-	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer, 64)) {
-		app.job.id = 0;
-	} else {
-		app.job.id = atoi(buffer);
-	}
-	if (!getenv_remote(sp, "SLURM_STEP_ID", buffer, 64)) {
-		app.job.step_id = 0;
-	} else {
-		app.job.step_id = atoi(buffer);
-	}
-	if (!getenv_remote(sp, "SLURM_JOB_USER", app.job.user_id, GENERIC_NAME)) {
-		strcpy(app.job.user_id, "");
-	}
-	if (!getenv_remote(sp, "SLURM_JOB_NAME",  app.job.app_id, GENERIC_NAME)) {
-		strcpy(app.job.app_id, "");
-	}
-	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", app.job.user_acc, GENERIC_NAME)) {
-		strcpy(app.job.user_acc, "");
-	}
-	if (!getenv_remote(sp, "EAR_POWER_POLICY", app.job.policy, GENERIC_NAME)) {
-		strcpy(app.job.policy, "");
-	}
-	if (!getenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer, 64)) {
-		app.job.th = 0;
-	} else {
-		app.job.th = atof(buffer);
-	}
-
-	if (eards_remote_connect(host) <= 0) {
-		plug_error("ERROR while connecting with EAR daemon");		
-	}
-	if (!eards_new_job(&app)) {
-		plug_error("ERROR while connecting with EAR daemon");		
-	}
-	eards_remote_disconnect();
-	
-	return (ESPANK_SUCCESS);
+	return eard_connection();
 }
 
 int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 {
 	FUNCTION_INFO_("slurm_spank_task_exit");
-	
-	char host[128];
 
-	gethostname(host, 128);
+	return eard_disconnection();
+}
 
-	if (eards_remote_connect(host) <= 0) { 
-        plug_error("ERROR while connecting with EAR daemon");       
-    }
-	eards_end_job(app.job.id, app.job.step_id);
-	eards_remote_disconnect();
+int slurm_spank_exit (spank_t sp, int ac, char **av) {
+	FUNCTION_INFO_("slurm_spank_exit");
 
-	return (ESPANK_SUCCESS);
+	return eargmd_disconnection();
 }
 
 /*
@@ -566,18 +635,8 @@ static int _opt_ear_tag(int val, const char *optarg, int remote)
 #define FUNCTION_INFO_(string) \
 	slurm_error(string);
 
-int slurm_spank_job_prolog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
-int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) {
-	FUNCTION_INFO_("slurm_spank_init_post_op");
-
-	if (isenv_local("EAR_DISABLE", "1") == 1)
-    {
-    	return -1;
-    }
-
-	return (ESPANK_SUCCESS);
-}
+int slurm_spank_job_prolog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_job_prolog"); return (ESPANK_SUCCESS); }
+int slurm_spank_init_post_opt (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_init_post_op"); return (ESPANK_SUCCESS); }
 int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_init_privileged"); return (ESPANK_SUCCESS); }
 int slurm_spank_task_post_fork (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_task_post_fork"); return (ESPANK_SUCCESS); }
 int slurm_spank_job_epilog (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_job_epilog"); return (ESPANK_SUCCESS); }
-int slurm_spank_exit (spank_t sp, int ac, char **av) { FUNCTION_INFO_("slurm_spank_slurmd_exit"); return (ESPANK_SUCCESS); }
