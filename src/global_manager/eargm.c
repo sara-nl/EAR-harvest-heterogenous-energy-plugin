@@ -229,16 +229,16 @@ void send_mail(uint level, double energy)
 	char command[1024];
 	char mail_filename[128];
 	int fd;
-	sprintf(buff,"Detected WARNING level %u, %lf of energy from the total energy limit\n",level,energy);
+	sprintf(buff,"Detected WARNING level %u, %lfi %% of energy from the total energy limit\n",level,energy);
 	sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.tmp_dir);
-	fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
+	fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd<0){
 		VERBOSE_N(0,"Warning mail file cannot be created at %s (%s)",mail_filename,strerror(errno));
 		return;
 	}
 	write(fd,buff,strlen(buff));
 	close(fd);
-	sprintf(command,"mail -s \"Energy limit warning\" %s -a %s",my_cluster_conf.eargm.mail,mail_filename);
+	sprintf(command,"mail -s \"Energy limit warning\" %s < %s",my_cluster_conf.eargm.mail,mail_filename);
 	if (strcmp(my_cluster_conf.eargm.mail,"nomail")) system(command);
 	else{VERBOSE_N(1,"%s",command);}
 	
