@@ -66,7 +66,7 @@ EARD basic commands
 
 EARD includes some basic commands to be used in the same node eard is running. These commands change/get specific settings in the current node. They are not designaed to be used as system tools, just under development systems. We are offering:
 
-*Commands using the eard local api:
+* Commands using the eard local api:
 ** commands/ear_get_node_freq: Usage: ./ear_get_node_freq num_cpus
 ** commands/ear_set_ondemand: Usage:ear_set_ondemand cpus|[-h]. Changes the current governor to ondemand
 ** commands/ear_set_node_freq: Usage: ear_set_node_freq node_freq (in MHz) num_cpus 
