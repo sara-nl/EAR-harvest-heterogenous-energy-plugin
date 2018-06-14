@@ -159,7 +159,7 @@ void reduce_frequencies_all_nodes(ulong freq)
                 if (rc<0){
                     VERBOSE_N(0,"Error connecting with node %s",node_name);
                 }else{
-                	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
+                	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name, freq);
                 	if (!eards_set_freq(freq)) VERBOSE_N(0,"Error reducing the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
