@@ -239,8 +239,9 @@ void send_mail(uint level, double energy)
 	write(fd,buff,strlen(buff));
 	close(fd);
 	sprintf(command,"mail -s \"Energy limit warning\" %s -a %s",my_cluster_conf.eargm.mail,mail_filename);
-	printf("%s",command);
-	system(command);
+	if (strcmp(my_cluster_conf.eargm.mail,"nomail")) system(command);
+	else{VERBOSE_N(1,"%s",command);}
+	
 }
 
 /*

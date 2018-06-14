@@ -474,7 +474,7 @@ int eard_system(int must_read)
 			break;
 		case WRITE_APP_SIGNATURE:
 			powermon_mpi_signature(&req.req_data.app);
-            ack=EAR_COM_ERROR;
+            ack=EAR_COM_OK;
             if (write(ear_fd_ack[system_req], &ack, size) != size)
             {
                 eard_verbose(0, "ERROR while writing system service ack, closing connection...");

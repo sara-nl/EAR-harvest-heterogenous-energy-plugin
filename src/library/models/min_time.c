@@ -152,7 +152,7 @@ ulong min_time_policy(signature_t *sig)
 			if (coefficients[ref][i].available)
 			{
 				#if DEMO
-				VERBOSE_N(1,"Comparing %u with %u",best_pstate,i);
+				VERBOSE_N(2,"Comparing %u with %u",best_pstate,i);
 				#endif
 				power_proj=sig_power_projection(my_app,ear_frequency,i);
 				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
@@ -161,7 +161,7 @@ ulong min_time_policy(signature_t *sig)
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
 				#if DEMO	
-				VERBOSE_N(1,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
+				VERBOSE_N(2,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
 				#endif
 
 				// OK
