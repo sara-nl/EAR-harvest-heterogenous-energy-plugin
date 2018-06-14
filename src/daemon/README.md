@@ -66,20 +66,20 @@ EARD basic commands
 
 EARD includes some basic commands to be used in the same node eard is running. These commands change/get specific settings in the current node. They are not designaed to be used as system tools, just under development systems. We are offering:
 
-* Commands using the eard local api:
-** commands/ear_get_node_freq: Usage: ./ear_get_node_freq num_cpus
-** commands/ear_set_ondemand: Usage:ear_set_ondemand cpus|[-h]. Changes the current governor to ondemand
-** commands/ear_set_node_freq: Usage: ear_set_node_freq node_freq (in MHz) num_cpus 
+ - Commands using the eard local api:
+  - commands/ear_get_node_freq: Usage: ./ear_get_node_freq num_cpus
+  - commands/ear_set_ondemand: Usage:ear_set_ondemand cpus|[-h]. Changes the current governor to ondemand
+  - commands/ear_set_node_freq: Usage: ear_set_node_freq node_freq (in MHz) num_cpus 
 
-* Commands using the remote api (can be connected from a different node) to notify new job/end job. They do the same functionality than EAR slurm plugin does
-** commands/ear_new_job:Connects with eard and sends a new_job requests. It automatically reads ear.conf file and sets application details based on environment variables.Only needed when slurm is not installed. 
-** commands/ear_end_job: Connects with eard and sends an end_job request. It automatically reads ear.conf file and sets application details based on environmen t variables.  Only needed when slurm is not installed. 
+ - Commands using the remote api (can be connected from a different node) to notify new job/end job. They do the same functionality than EAR slurm plugin does
+  - commands/ear_new_job:Connects with eard and sends a new_job requests. It automatically reads ear.conf file and sets application details based on environment variables.Only needed when slurm is not installed. 
+  - commands/ear_end_job: Connects with eard and sends an end_job request. It automatically reads ear.conf file and sets application details based on environmen t variables.  Only needed when slurm is not installed. 
 
-* Commands using the remote api (can be connected from a different node) to change node settings (defaul/max frequencies and th (for min_time))
-** commands/ear_set_freq: usage:ear_set_freq new_freq (in KHz)
-** commands/ear_inc_th: usage:./ear_inc_th perc to be added to current PerformanceEfficiencyGain (5 means 5%)        
-** commands/ear_red_freq: usage:./ear_red_freq p_states 
-** commands/ear_set_th: usage:./ear_set_th MinPerformanceEfficiencyGain (75 means 0.75%)
+ - Commands using the remote api (can be connected from a different node) to change node settings (defaul/max frequencies and th (for min_time))
+  - commands/ear_set_freq: usage:ear_set_freq new_freq (in KHz)
+  - commands/ear_inc_th: usage:./ear_inc_th perc to be added to current PerformanceEfficiencyGain (5 means 5%)        
+  - commands/ear_red_freq: usage:./ear_red_freq p_states 
+  - commands/ear_set_th: usage:./ear_set_th MinPerformanceEfficiencyGain (75 means 0.75%)
 
 Daemon testing
 --------------
