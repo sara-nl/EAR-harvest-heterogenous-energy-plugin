@@ -11,6 +11,7 @@
 #include <common/types/cluster_conf.h>
                    
 #define NUM_LEVELS  4
+#define MAX_PSTATE 16
 
 int EAR_VERBOSE_LEVEL = 1;
 
@@ -53,7 +54,6 @@ void increase_th_all_nodes(ulong th)
                         sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
                 }
     	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
-                printf("i: %d; j:%d; k:%d\n", i, j, k);
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
@@ -197,19 +197,39 @@ void main(int argc, char *argv[])
         if (c == -1)
             break;
 
+        ulong arg;
+
         switch(c)
         {
             case 0:
                 reduce_frequencies_all_nodes(atoi(optarg));
                 break;
             case 1:
-                red_def_freq(atoi(optarg));
+                arg = atoi(optarg);
+                if (arg > MAX_PSTATE)
+                {
+                    VERBOSE_N(0, "Indicated p_state to reduce def freq above the maximum (%d)", MAX_PSTATE);
+                    break;
+                }
+                red_def_freq(arg);
                 break;
             case 2:
-                red_max_freq(atoi(optarg));
+                arg = atoi(optarg);
+                if (arg > MAX_PSTATE)
+                {
+                    VERBOSE_N(0, "Indicated p_state to reduce max freq above the maximum (%d)", MAX_PSTATE);
+                    break;
+                }
+                red_max_freq(arg);
                 break;
             case 3:
-                increase_th_all_nodes(atoi(optarg));
+                arg = atoi(optarg);
+                if (arg > 100)
+                {
+                    VERBOSE_N(0, "Indicated threshold increase above theoretical maximum (100%)");
+                    break;
+                }
+                increase_th_all_nodes(arg);
                 break;
         }
     }
