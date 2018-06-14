@@ -32,7 +32,7 @@ void usage(char *app)
 /*
 *	ACTIONS for WARNING and PANIC LEVELS
 */
-void increase_th_all_nodes(ulong  th)
+void increase_th_all_nodes(ulong th)
 {
 	int i, j, k, rc;
     char node_name[256];
@@ -57,8 +57,6 @@ void increase_th_all_nodes(ulong  th)
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
-    
-    
 	        		VERBOSE_N(1,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
 		        	if (!eards_inc_th(th)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
 			        eards_remote_disconnect();
@@ -93,7 +91,7 @@ void red_max_freq(ulong ps)
             	}else{
     
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
+		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the max freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -125,7 +123,7 @@ void red_def_freq(ulong ps)
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_set_freq(ps)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
+		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the default freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -135,7 +133,7 @@ void red_def_freq(ulong ps)
 
 
 
-void reduce_frequencies_all_nodes(ulong ps)
+void reduce_frequencies_all_nodes(ulong freq)
 {
     int i, j, k, rc;
     char node_name[256];
@@ -162,7 +160,7 @@ void reduce_frequencies_all_nodes(ulong ps)
                     VERBOSE_N(0,"Error connecting with node %s",node_name);
                 }else{
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-                	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the freq for node %s", node_name);
+                	if (!eards_set_freq(freq)) VERBOSE_N(0,"Error reducing the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
             }
