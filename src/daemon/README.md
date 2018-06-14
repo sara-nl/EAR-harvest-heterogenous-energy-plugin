@@ -1,67 +1,58 @@
-Energy Aware Runtime: EARD
----------------------------
-EAR daemon is the EAR component in charge of providing any kind of service that requires privileged capabilities. Current version is conceived as an external process executed with root privileges. The EARD provides three basic services, each one covered by one thread:
-- Provides privileged metrics such as average frequency, uncore imc counters to compute the memory bandwith, and energy metrics (DC node, DRAM and package energy)
-- Implements a periodic power monitoring service. This service allows EAR to control the total energy consumed in the system
-- Implements an external API (implemented through sockets) to accept external requests to change the frequency, modify the current node settings temporally, reload the system configuration (ear.conf), etc.
+Energy Aware Runtime: (Node) Daemon
+-----------------------------------
+The node daemon is the component in charge of providing any kind of service that requires privileged capabilities. Current version is conceived as an external process executed with root privileges. The EARD provides two basic services, each one covered by one thread:
+- Provides privileged metrics such as average frequency, uncore integrated memory controller counters to compute the memory bandwidth, and also energy metrics (DC node, DRAM and package energy).
+- Implements a periodic power monitoring service. This service allows EAR package to control the total energy consumed in the system.
 
-EARD requirements
------------------
+Requirements
+------------
+EARD uses CPUPower, FreeIPMI and PAPI (with RAPL component enabled). Paths to these libraries must be specified during the configure process when they are not installed in defaults paths.
 
-EARD uses the libcpupower, freeipmi and libpapi (with RAPL component enabled). Paths to these libraries must be specified during the configure process when they are not installed in defaults paths. 
+When executed in production, EARD connects with [EARDBD](../database_cache/REAME.md), service that have to be up before starting the node daemon, otherwise values reported by EARD to the EAR database will be lost.
 
-When executed in production, EARD connects with EARDBD [EAR DB Daemon](../database_cache/REAME.md). EARDBD service must be up before starting EARD, otherwise values reported by EARD to the EAR-DB will be lost.
+Configuration
+-------------
+The EAR Daemon uses the `$(ETC)/ear.conf` file to be configured. It can be dynamically configured by reloading the service.
 
-EARD configuration
-------------------
+```
+# Fields related to the Daemon
+# Lines starting with # are comments
 
-EARD is configured by modifying the ear.conf file. Fields used to configure EARD are the following ones: (lines starting with # are comments)
-
-#EARD configuration
-
-#verbose level
+# Verbose level
 NodeDaemonVerbose=1
 
-#frequency used by power monitoing service (in seconds)
+# Frequency used by power monitoing service (in seconds)
 NodeDaemonPowermonFreq=10
 
-#maximum p_state supported (1=nominal)
+# Maximum p_state supported (1 nominal)
 NodeDaemonMaxPstate=1
 
-#turbo frequencies supported 0=no 
+# Turbo frequencies supported (0 no)
 NodeDaemonTurbo=0
 
-#port to be used by the remote API
+# Port to be used by the remote API
 NodeDaemonPort=5000
+```
 
+Execution
+---------
+To execute this component, this `systemctl` command examples are provided:
+- `sudo systemctl start eard` to start the EARD service.
+- `sudo systemctl stop eard` to stop the EARD service.
+- `sudo systemctl reload eard` to force to reload the configuration of the EARD service.
 
+API
+---
+The (node) Daemon offers a simple API to request changes on the frequency, modify the current node settings, and reload the system configuration by reading `$(ETC)/ear.conf`
 
-EARD execution
---------------
+Three APIs are provided:
+- Local API, to be used by [EARL](../library/README.md) (or any other runtime). It can be found in [eard_api.h](eard_api.h). This API involves complex data types and is not public.
 
-EAR includes a set of services to automatically start/stop/reload EAR services. These files are copied at $EAR_INSTALL_PATH/systemd folder when executing make install. To make it system accessible the eard.service must be copied at /etc/systemd/service or the specific path. This operation requires root privileges. 
-eard accepts as single parameter the verbose level.
+- Local API, to be used by applications. It is a subset of the EARD api and designed to be used by any applications to contact the privileged metric service offered by EARD. This API is public and can be used without restrictinos, so doesn't include functions to change the frequency. It can be found at [TBD](.).
 
-To start/stop/reload EARD, use systemctl commands such as:
-$sudo systemctl start eard
-$sudo systemctl stop eard
-$sudo systemctl reload eard
+- Remote API, to be used by the [EARGMD](../global_manager/README.md) or system commands and tools such as the `econtrol`. Can be found at [eard_rapi.h](eard_rapi.h) and is not public.
 
-When using systemctl commands you can check messages reported at the stderr using journalctl. For instance:
-
-$journalctl -u eard -f 
-
-"Follows" the stderr messages generated by EARD.
-
-EARD API
---------
-The EARD provides three types of API:
-- Local API to be used by [EARL](../library/README.md) (or any other runtime). It can be found in [eard_api.h](eard_api.h). This API uses data types such as applications_t and it is not public. 
-- Local API to be used by applications. It is a subset of the EARD api and designed to be used by any applications to contact the privileged metric service offered by EARD. This API doesn't include functions to change the frequency. This API is public and can be used without restrictions. It can be found at (TDB)
-- Remote API to be used by the [EAR Global Manager](../global_manager/README.md) or system commands and tools such as the econtrol. It can be found at [eard_rapi.h](eard_rapi.h). It is not a public API. 
-
-Daemon testing
---------------
-
-Look into the [EAR test folder](../tests/README.md)
+License
+-------
+All the files in the EAR framework are under the LGPLv2.1 license. See the [COPYING](../../COPYING) file in the EAR root directory.
 

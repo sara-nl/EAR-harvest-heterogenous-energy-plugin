@@ -1,18 +1,12 @@
 # Energy Aware Runtime
-Description
------------
-<img src="etc/images/logo.png" align="right" width="140">
-Energy Aware Runtime (EAR) library is designed to provide an energy efficient solution for MPI applications. It aims at finding the optimal frequency for a job according to its selected energy policy, being totally dynamic and transparent.
-
 Overview
 --------
-EAR library interceps the Profiling MPI Interface (PMPI) symbols using the dynamic loader environment variable LD_PRELOAD. The intercepted call is then saved in an internal, fast and small historic buffer. This allows the powerfull DynAIS algorithm to detect the tipical repetitive sequences of code found in the regular HPC applications. Once found a new repetitive sequence, metrics like CPI, bandwith and power are calculated and stored.
+<img src="etc/images/logo.png" align="right" width="140">
+Energy Aware Runtime (EAR) package provides an energy efficient solution for clusters of nodes.
 
-This data allows the library to predict the best frequency for the upcoming iterations and in this way, set the proper CPU clock. I.e, if a detected bucle iteration is memory intensive, setting lower clocks holds the performance but saves a lot of power consumption. Because of that, the CPU frequency is constantly switching, maximizing the efficiency of the cluster. For all that privileged functions, the lightweight daemon is provided and must be running in the cluster nodes.
+The package includes some daemons to account, control and limit the power of the whole cluster. However, the core of EAR is the library, which aims at finding the optimal frequency for MPI applications for a job according to its selected energy policy, being totally dynamic and transparent.
 
-In order to be able to provide good predictions, the library must be trained to obtain good EAR model coefficients. This training is done through a simple and fast tool provided that stresses the nodes and computes their coefficients.
-
-The library is designed to work together with SLURM, a popular cluster job manager. Even so, a couple of scripts are provided in case you want to use directly MPI commands.
+Please visit [the main components page](./src/README.md) for a detailed description of each of the main components of EAR.
 
 Requirements
 ------------
@@ -25,7 +19,8 @@ EAR requires some third party libraríes and headers to compile and run, in addi
 | CPUPower  | Yes                   | Kernel 3.10*    | [Information](https://wiki.archlinux.org/index.php/CPU_frequency_scaling) |
 | FreeIPMI  | Yes                   | 1.5.7           | [Website](https://www.gnu.org/software/freeipmi/) |
 | SLURM     | Just for SLURM plugin | 17.02.6         | [Website](https://slurm.schedmd.com/)             |
-| MPI       | Yes                   | -               | -                                                 |
+| MPI       | Yes                   | -               | -                                                  |
+| MySQL     | No                    | -               | -                                                  |
 * Depending on the version, may you have to change the name of the library function call (or the parameter).
 
 Also, some **drivers** has to be present and loaded in the system:
@@ -54,27 +49,36 @@ Customize installation
 | Variable | Description                                                                                                  |
 | -------- | ------------------------------------------------------------------------------------------------------------ |
 | DEBUG    | Enables debug messages [0..4]. Debug messages with lower or equal level are printed.                         |
-| MPICC    | MPI compiler command.                                                                                        |
+| MPICC    | Intel MPI compiler command.                                                                                        |
+| OMPICC   | OpenMPI compiler command.                                                                                        |
 | CC       | C compiler command.                                                                                          |
 | CFLAGS   | C compiler flags.                                                                                            |
 | LDFLAGS  | Linker flags. E.g. ‘-L\<lib dir\>’ if you have libraries in a nonstandard directory \<lib dir\>.             |
 | LIBS     | Libraries to pass to the linker. E.g. ‘-l<library>’.                                                         |
 | CPPFLAGS | C/C++ preprocessor flags, e.g. -I\<include dir\> if you have headers in a nonstandard directory \<include dir\>. |
+| TMP      | Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear) (you can alo use --localstatedir=DIR) |
+| ETC      | Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc) (you can also use --sharedstatedir=DIR)            |
+| MAN      | Defines the documentation directory (default: PREFIX/man) (you can use also --mandir=DIR)                    |
+| COEFFS   | Defines the coefficients store directory                                                                     |
 - This is an example of `CC`, `CFLAGS` and `DEBUG` variables overwriting:</ br>
 `./configure CC=c99 CFLAGS=-g DEBUG=4`
 
 You can choose the root folder by typing `./configure --PREFIX=<path>`. But there is another option `---exec-prefix=<path>` or *EPREFIX*, which by default equals *PREFIX*, which also its default value is `/usr/local/`. You have more installation options information by typing `./configure --help`.
 
-This is the list of installation folder and their content:
+This is the list of installation folders and their content:
 
-| Root          | Directory    | Content / description                |
-| ------------- | ------------ | ------------------------------------ |
-| \<*PREFIX*\>  | .            | Root folder.                         |
-| \<*EPREFIX*\> | /lib         | Libraries.                           |
-| \<*EPREFIX*\> | /bin         | Tools and benchmark kernels.         |
-| \<*EPREFIX*\> | /bin/kernels | Benchmarks (or stress tests).        |
-| \<*EPREFIX*\> | /sbin        | Node daemon.                         |
-| \<*PREFIX*\>  | /etc         | Scripts and configuration examples.  |
+| Root                 | Directory    | Content / description                |
+| -------------------- | ------------ | ------------------------------------ |
+| \<*PREFIX*\>    | .            | Root folder.                         |
+| \<*EPREFIX*\>   | /lib         | Libraries.                           |
+| \<*EPREFIX*\>   | /bin         | Tools and benchmark kernels.         |
+| \<*EPREFIX*\>   | /bin/kernels | Benchmarks (or stress tests).        |
+| \<*EPREFIX*\>   | /sbin        | Node daemon.                         |
+| \<*ETC*\>       | /slurm       | plugstack.conf.                      |
+| \<*ETC*\>       | /systemd     | Unit services.                       |
+| \<*ETC*\>       | /scripts     | Scripts.                             |
+| \<*mandir*\>    | /man         | Documentation.                       |
+| \<*TMP*\>       | /var         | Pipes and temporal files.            |
 
 Adding required libraries installed in custom locations
 -------------------------------------------------------
@@ -84,19 +88,23 @@ You can help `configure` to find PAPI, SLURM, or other required libraries in cas
 | ------------------------ | -------------------------------------------- |
 | --with-papi=\<path\>     | Specifies the path to PAPI installation.     |
 | --with-gsl=\<path\>      | Specifies the path to GSL installation.      |
-| --with-cpupower=\<path\> | Specifies the path to CPUPower installation.  |
+| --with-cpupower=\<path\> | Specifies the path to CPUPower installation. |
 | --with-slurm=\<path\>    | Specifies the path to SLURM installation.    |
 | --with-freeipmi=\<path\> | Specifies the path to FreeIPMI installation. |
+| --with-mysql=\<path\>    | Specify path to MySQL installation.          |
 * This is an example of ‘CC‘ overwriting and PAPI path specification:<br />
 `./configure --with-papi=/path/to/PAPI`
 
 If unusual procedures must be done to compile the package, please try to figure out how `configure` could check whether to do them and contact the team to be considered for the next release. In the meantime, you can overwrite shell variables or export its paths to the environment (e.g. LD_LIBRARY).
 
-After the installation
-----------------------
-You can test the installation by typing `make check`. For more info visit the [tests page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/tests/README.md).
+Unit services
+-------------
+The way to launch the EAR daemons is by unit services method. The generated unit services for the EAR Daemon, EAR Global Manager Daemon and EAR Database Daemon are generated and installed in `$(ETC)/systemd`. You have to copy those unit service files to your `systemd` operating system folder. Once copied, use the `systemctl` command to run the daemons.
 
-First of all, make sure your linker is aware of the required libraries and the environment variable *EAR_INSTALL_PATH* is set. This variable defines the folder of the EAR binaries, libraries and tools. For the ease of use, an **environment module** is also configured next to the EAR compilation. So locate in `etc` folder the module file with name `ear-{version}`, and copy it to your module collection folder (e.g. `cp etc/ear-1.0 /hpc/base/ctt/modulefiles/libraries`).
+Check the [EARD](./src/daemon/README.md), [EARDBD](./src/database_cache/README.md), [EARGMD](./src/global_manager/README.md) pages to find the precise execution commands.
+
+Finally, when using `systemctl` commands, you can check messages reported by the stderr using journalctl. For instance:
+`journalctl -u eard -f`
 
 Configuration
 -------------
@@ -109,8 +117,6 @@ User guide
 ----------
 Finally, you can launch any MPI application next to EAR library by following the [library user guide](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
 
-Changelog
----------
-
 License
 -------
+All the files in the EAR framework are under the LGPLv2.1 license. See the [COPYING](../../COPYING) file in the EAR root directory.

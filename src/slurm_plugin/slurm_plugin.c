@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
 #include <sys/resource.h>
 #include <slurm/spank.h>
 #include <cpufreq.h>

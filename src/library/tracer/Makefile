@@ -5,7 +5,7 @@ all: tracer.o
 allt: $(eval DEFINES=-DEAR_GUI) tracer.o
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) $(DEFINES) -c $<
+	$(MPICC) $(CFLAGS) $(DEFINES) -c $<
 
 ######## OPTIONS
 

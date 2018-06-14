@@ -10,7 +10,7 @@ all: $(OBJS)
 allt: $(eval DEFINES=-DEAR_GUI) $(OBJS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) $(DEFINES) -c $<
+	$(MPICC) $(CFLAGS) $(DEFINES) -c $<
 
 ######## OPTIONS 
 
