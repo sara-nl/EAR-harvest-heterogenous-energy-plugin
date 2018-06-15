@@ -9,7 +9,8 @@ OBJS = ear_api.o \
 
 all: $(OBJS)
 
-allt: $(eval DEFINES=-DEAR_GUI) $(OBJS)
+allt: DEFINES=-DEAR_GUI
+allt: $(OBJS)
 
 %.o: %.c %.h
 	$(MPICC) $(CFLAGS) $(DEFINES) -c $<

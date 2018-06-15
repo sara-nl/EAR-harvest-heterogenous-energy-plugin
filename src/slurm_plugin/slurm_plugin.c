@@ -35,6 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <linux/limits.h>
 #include <slurm/spank.h>
 #include <cpufreq.h>
 
@@ -168,7 +169,7 @@ int read_old_configuration_file(spank_t sp)
 	int r;
 
 	if (!getenv_local("EAR_ETCDIR", &path)) {
-		plug_error("while searching configuration file", path);
+		plug_error("while searching configuration file %s", path);
 		return ESPANK_ERROR;
 	}
 

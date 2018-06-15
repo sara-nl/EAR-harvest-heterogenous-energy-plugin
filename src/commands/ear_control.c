@@ -11,11 +11,9 @@
 #include <common/types/cluster_conf.h>
                    
 #define NUM_LEVELS  4
+#define MAX_PSTATE 16
 
 int EAR_VERBOSE_LEVEL = 1;
-
-ulong th_level[NUM_LEVELS]={10,10,5,0};
-ulong pstate_level[NUM_LEVELS]={3,2,1,0}; 
 
 
 cluster_conf_t my_cluster_conf;
@@ -35,11 +33,10 @@ void usage(char *app)
 /*
 *	ACTIONS for WARNING and PANIC LEVELS
 */
-ulong increase_th_all_nodes(int level)
+void increase_th_all_nodes(ulong th)
 {
 	int i, j, k, rc;
     char node_name[256];
-	ulong th;
 
     for (i=0;i < my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -56,13 +53,10 @@ ulong increase_th_all_nodes(int level)
                     else 
                         sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
                 }
-    	        rc=eards_remote_connect(node_name);
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
-    
-        			th=th_level[level];
-    
 	        		VERBOSE_N(1,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
 		        	if (!eards_inc_th(th)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
 			        eards_remote_disconnect();
@@ -70,14 +64,12 @@ ulong increase_th_all_nodes(int level)
 	        }
         }
     }
-	return th_level[level];
 }
 
-void red_max_freq(int level)
+void red_max_freq(ulong ps)
 {
 	int i, j, k, rc;
     char node_name[256];
-    ulong ps;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {
@@ -93,14 +85,13 @@ void red_max_freq(int level)
                     else 
                         sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
                 }
-    	        rc=eards_remote_connect(node_name);
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
     
-                    ps = pstate_level[level];
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
+		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the max freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -108,11 +99,10 @@ void red_max_freq(int level)
     }
 }
 
-void red_def_freq(int level)
+void red_def_freq(ulong ps)
 {
 	int i, j, k, rc;
     char node_name[256];
-    ulong ps;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {
@@ -128,14 +118,12 @@ void red_def_freq(int level)
                     else 
                         sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
                 }
-    	        rc=eards_remote_connect(node_name);
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
-    
-                    ps = pstate_level[level];
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_set_freq(ps)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
+		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the default freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -145,11 +133,10 @@ void red_def_freq(int level)
 
 
 
-ulong reduce_frequencies_all_nodes(int level)
+void reduce_frequencies_all_nodes(ulong freq)
 {
     int i, j, k, rc;
     char node_name[256];
-    ulong ps;
 
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -168,21 +155,17 @@ ulong reduce_frequencies_all_nodes(int level)
                     
                 }
 
-                rc=eards_remote_connect(node_name);
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
                     VERBOSE_N(0,"Error connecting with node %s",node_name);
                 }else{
-
-                	ps=pstate_level[level];
-
-                	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-                	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the freq for node %s", node_name);
+                	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name, freq);
+                	if (!eards_set_freq(freq)) VERBOSE_N(0,"Error reducing the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
             }
         }
     }
-	return pstate_level[level];
 }
 
 
@@ -214,19 +197,39 @@ void main(int argc, char *argv[])
         if (c == -1)
             break;
 
+        ulong arg;
+
         switch(c)
         {
             case 0:
                 reduce_frequencies_all_nodes(atoi(optarg));
                 break;
             case 1:
-                red_def_freq(atoi(optarg));
+                arg = atoi(optarg);
+                if (arg > MAX_PSTATE)
+                {
+                    VERBOSE_N(0, "Indicated p_state to reduce def freq above the maximum (%d)", MAX_PSTATE);
+                    break;
+                }
+                red_def_freq(arg);
                 break;
             case 2:
-                red_max_freq(atoi(optarg));
+                arg = atoi(optarg);
+                if (arg > MAX_PSTATE)
+                {
+                    VERBOSE_N(0, "Indicated p_state to reduce max freq above the maximum (%d)", MAX_PSTATE);
+                    break;
+                }
+                red_max_freq(arg);
                 break;
             case 3:
-                increase_th_all_nodes(atoi(optarg));
+                arg = atoi(optarg);
+                if (arg > 100)
+                {
+                    VERBOSE_N(0, "Indicated threshold increase above theoretical maximum (100%)");
+                    break;
+                }
+                increase_th_all_nodes(arg);
                 break;
         }
     }

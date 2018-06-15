@@ -61,8 +61,9 @@
 #define MAX_PATH_SIZE 256
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
-extern node_conf_t     *my_node_conf;
+extern my_node_conf_t     *my_node_conf;
 extern cluster_conf_t my_cluster_conf;
+extern policy_conf_t default_policy_context;
 static char *__NAME__="powermon: ";
 
 unsigned int f_monitoring;
@@ -151,7 +152,7 @@ void form_database_paths()
 /*
 *
 *
-*	BASIC FUNCTIONS
+*	BASIC FUNCTIONS 
 *
 */
 void job_init_powermon_app(application_t *new_app,uint from_mpi)
@@ -223,7 +224,7 @@ void report_powermon_app(powermon_app_t *app)
 *	MPI PART
 *
 */
-// That functions controls the init/end of jobs
+// That functions controls the mpi init/end of jobs . These functions are called by eard when application executes mpi_init/mpi_finalized and contacts eard
 static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void powermon_mpi_init(application_t * appID)
@@ -270,18 +271,23 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	frequency_set_userspace_governor_all_cpus();
 	// Checking the specific policy settings. It is pending to configure for special users
 	p_id=policy_name_to_id(appID->job.policy);
+	// Use cluster conf function
 	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
 	if (my_policy==NULL){
-		VERBOSE_N(0,"Node configuration returns NULL in powermon_new_job");		
-	}else{
-		VERBOSE_N(1,"Node configuration for policy %s p_state %d th %lf",appID->job.policy,my_policy->p_state,my_policy->th);
-		f=frequency_pstate_to_freq(my_policy->p_state);
-		dyn_conf->def_freq=f;
-		dyn_conf->th=my_policy->th;
-		frequency_set_all_cpus(f);
-		current_node_freq=f;
-		appID->job.def_f=dyn_conf->def_freq;	
+		VERBOSE_N(0,"Node configuration returns NULL in powermon_new_job, using default");		
+		my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+		if (my_policy==NULL){	
+			VERBOSE_N(0,"Default policy configuration returns NULL!!");
+			my_policy=&default_policy_context;
+		}
 	}
+	VERBOSE_N(1,"Node configuration for policy %s p_state %d th %lf",appID->job.policy,my_policy->p_state,my_policy->th);
+	f=frequency_pstate_to_freq(my_policy->p_state);
+	dyn_conf->def_freq=f;
+	dyn_conf->th=my_policy->th;
+	frequency_set_all_cpus(f);
+	current_node_freq=f;
+	appID->job.def_f=dyn_conf->def_freq;	
     while (pthread_mutex_trylock(&app_lock));
         idleNode=0;
         job_init_powermon_app(appID,from_mpi);
@@ -321,9 +327,24 @@ void powermon_end_job(job_id jid,job_id sid)
 
 }
 
+/*
+* These functions are called by dynamic_configuration thread: Used to notify when a configuracion setting is changed
+*
+*/
+void powermon_set_th(double th)
+{
+	policy_conf_t *min_time_p;
+	min_time_p=get_my_policy_conf(&my_cluster_conf,my_node_conf,MIN_TIME_TO_SOLUTION);
+	if (min_time_p==NULL){
+		VERBOSE_N(1,"MIN_TIME_TO_SOLUTION not supported, th setting has no effect");
+	}else{
+		min_time_p->th=th;
+	}
+}
+
 void powermon_new_max_freq(ulong maxf)
 {
-	VERBOSE_N(1,"New max frequency %lu",maxf);
+	uint ps;
 	if (current_ear_app.app.is_mpi==0){
 		if (maxf<current_node_freq){
 			VERBOSE_N(1,"MaxFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,maxf);
@@ -331,11 +352,16 @@ void powermon_new_max_freq(ulong maxf)
 			current_node_freq=maxf;		
 		}
 	}
+	ps=frequency_freq_to_pstate(maxf);
+	VERBOSE_N(1,"Max pstate set to %u freq=%lu",ps,maxf);
+	my_cluster_conf.eard.max_pstate=ps;
 }
 
 void powermon_new_def_freq(ulong def)
 {
-	VERBOSE_N(1,"New default frequency %lu",def);
+	int nump;
+	uint ps;
+	ps=frequency_freq_to_pstate(def);
     if (current_ear_app.app.is_mpi==0){
         if (def<current_node_freq){
             VERBOSE_N(1,"DefFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def);
@@ -343,10 +369,18 @@ void powermon_new_def_freq(ulong def)
             current_node_freq=def;
         }
     }
+	for (nump=0;nump<my_node_conf->num_policies;nump++){
+		VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[nump].policy,def);
+		my_node_conf->policies[nump].p_state=ps;
+	}
 }
 
 void powermon_red_freq(ulong max_freq,ulong def_freq)
 {
+	int nump;
+    uint ps_def,ps_max;
+	ps_def=frequency_freq_to_pstate(def_freq);
+	ps_max=frequency_freq_to_pstate(max_freq);
 	if (current_ear_app.app.is_mpi==0){
 		if (def_freq<current_node_freq){
 			VERBOSE_N(1,"RedFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def_freq);
@@ -354,6 +388,11 @@ void powermon_red_freq(ulong max_freq,ulong def_freq)
 			current_node_freq=def_freq;		
 		}
 	}
+	my_cluster_conf.eard.max_pstate=ps_max;
+    for (nump=0;nump<my_node_conf->num_policies;nump++){
+        VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps_def,my_node_conf->policies[nump].policy,def_freq);
+        my_node_conf->policies[nump].p_state=ps_def;
+    }
 }
 
 // Each sample is processed by this function
@@ -475,6 +514,10 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	// Get time and Energy
 	read_enegy_data(&e_begin);
 	aperf_periodic_avg_frequency_init_all_cpus();
+
+	/*
+	*	MAIN LOOP
+	*/
 
 
 	while(!eard_must_exit)

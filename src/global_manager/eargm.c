@@ -36,6 +36,9 @@
 #include <errno.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <common/config.h>
 #include <common/types/generic.h>
 #include <common/states.h>
@@ -67,6 +70,7 @@ ulong pstate_level[NUM_LEVELS]={3,2,1,0};
 
 pthread_t eargm_server_api_th;
 cluster_conf_t my_cluster_conf;
+char my_ear_conf_path[GENERIC_NAME];	
 uint total_nodes=0;
 static const char *__NAME__ = "EARGM";
 
@@ -108,7 +112,7 @@ static void my_signals_function(int s)
 		VERBOSE_N(0,"Reloading EAR configuration");
 		free_cluster_conf(&my_cluster_conf);
 		// Reading the configuration
-    	if (read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster_conf)!=EAR_SUCCESS){
+    	if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         	VERBOSE_N(0," Error reading cluster configuration\n");
     	}
     	else{
@@ -219,6 +223,27 @@ void fill_periods(ulong energy)
 	VERBOSE_N(1,"Initializing T2 period with %lu Joules, each sample with %lu Joules",energy,e_persample);
 }
 
+void send_mail(uint level, double energy)
+{
+	char buff[128];
+	char command[1024];
+	char mail_filename[128];
+	int fd;
+	sprintf(buff,"Detected WARNING level %u, %lfi %% of energy from the total energy limit\n",level,energy);
+	sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.tmp_dir);
+	fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+	if (fd<0){
+		VERBOSE_N(0,"Warning mail file cannot be created at %s (%s)",mail_filename,strerror(errno));
+		return;
+	}
+	write(fd,buff,strlen(buff));
+	close(fd);
+	sprintf(command,"mail -s \"Energy limit warning\" %s < %s",my_cluster_conf.eargm.mail,mail_filename);
+	if (strcmp(my_cluster_conf.eargm.mail,"nomail")) system(command);
+	else{VERBOSE_N(1,"%s",command);}
+	
+}
+
 /*
 *
 *	THREAD attending external commands. 
@@ -285,7 +310,7 @@ ulong increase_th_all_nodes(int level)
 	int i,rc;
 	ulong th;
 	for (i=0;i< my_cluster_conf.num_nodes;i++){
-    	rc=eards_remote_connect(my_cluster_conf.nodes[i].name);
+    	rc=eards_remote_connect(my_cluster_conf.nodes[i].name,my_cluster_conf.eard.port);
     	if (rc<0){
 			VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
     	}else{
@@ -304,7 +329,7 @@ ulong reduce_frequencies_all_nodes(int level)
     int i,rc;
     ulong ps;
     for (i=0;i< my_cluster_conf.num_nodes;i++){
-        rc=eards_remote_connect(my_cluster_conf.nodes[i].name);
+        rc=eards_remote_connect(my_cluster_conf.nodes[i].name,my_cluster_conf.eard.port);
         if (rc<0){
             VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
         }else{
@@ -337,7 +362,6 @@ void main(int argc,char *argv[])
 	int ret;
 	ulong result;
 	gm_warning_t my_warning;
-	char my_ear_conf_path[GENERIC_NAME];	
 
     if (argc !=4) usage(argv[0]);
 	period_t1=atoi(argv[1]);
@@ -388,6 +412,10 @@ void main(int argc,char *argv[])
 	sigdelset(&set,SIGTERM);
 	sigdelset(&set,SIGINT);
 
+    #if DB_MYSQL
+    VERBOSE_N(1,"Connecting with EAR DB");
+    init_db_helper(&my_cluster_conf.database);
+    #endif
 	
     
 	
@@ -395,6 +423,11 @@ void main(int argc,char *argv[])
 	start_time=end_time-period_t2;
 	result = db_select_acum_energy( start_time, end_time, divisor);
 	fill_periods(result);
+	/*
+	*
+	*	MAIN LOOP
+	*			
+	*/
 	while(1){
 		// Waiting a for period_t1
 		alarm(period_t1);
@@ -435,8 +468,13 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"****************************************************************");
 
 			my_warning.level=WARNING_3;
-			my_warning.inc_th=increase_th_all_nodes(WARNING_3);            
+			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				my_warning.inc_th=increase_th_all_nodes(WARNING_3);            
+			}else{
+				my_warning.inc_th=0;
+			}
 			my_warning.energy_percent=perc_energy;
+			send_mail(WARNING_3,perc_energy);
 			#if DB_MYSQL	
 			db_insert_gm_warning(&my_warning);
 			#endif
@@ -447,9 +485,14 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
 			my_warning.level=WARNING_2;
-			my_warning.new_p_state=reduce_frequencies_all_nodes(WARNING_2);
-			my_warning.inc_th=increase_th_all_nodes(WARNING_2);            
+			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				my_warning.new_p_state=reduce_frequencies_all_nodes(WARNING_2);
+				my_warning.inc_th=increase_th_all_nodes(WARNING_2);            
+			}else{
+				my_warning.inc_th=0;my_warning.new_p_state=0;
+			}
 			my_warning.energy_percent=perc_energy;
+			send_mail(WARNING_2,perc_energy);
 			#if DB_MYSQL	
 			db_insert_gm_warning(&my_warning);
 			#endif
@@ -460,9 +503,14 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
 			my_warning.level=PANIC;
-			my_warning.new_p_state=reduce_frequencies_all_nodes(PANIC);
-			my_warning.inc_th=increase_th_all_nodes(PANIC);            
+			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				my_warning.new_p_state=reduce_frequencies_all_nodes(PANIC);
+				my_warning.inc_th=increase_th_all_nodes(PANIC);            
+			}else{
+				my_warning.inc_th=0;my_warning.new_p_state=0;
+			}
 			my_warning.energy_percent=perc_energy;
+			send_mail(PANIC,perc_energy);
 			#if DB_MYSQL	
 			db_insert_gm_warning(&my_warning);
 			#endif

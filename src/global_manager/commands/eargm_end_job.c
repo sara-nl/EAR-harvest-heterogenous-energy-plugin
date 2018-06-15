@@ -9,6 +9,7 @@
 
 #define NAME_SIZE 128
 int EAR_VERBOSE_LEVEL=0;
+static const char *__NAME__ = "end_job->eargmd";
 
 void usage(char *app)
 {
@@ -23,7 +24,7 @@ void main(int argc,char *argv[])
 {
 	int eargms;
 	unsigned int num_nodes;
-	char myhost[NAME_SIZE];
+	char myhost[NAME_SIZE],my_ear_conf_path[NAME_SIZE];
 	if (argc!=2) usage(argv[0]);
 	num_nodes=(unsigned int)atoi(argv[1]);
 	// NEW_JOB
@@ -31,7 +32,7 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
 		exit(1);
 	}
-	read_cluster_conf("/home/xjcorbalan/ear.conf",&my_cluster);
+	read_cluster_conf(my_ear_conf_path,&my_cluster);
 	fprintf(stderr,"Using port %u\n",my_cluster.eargm.port);
 	eargms=eargm_connect(myhost,my_cluster.eargm.port);
 	if(eargms<0){ 

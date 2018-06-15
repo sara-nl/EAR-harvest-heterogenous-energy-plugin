@@ -46,7 +46,7 @@
 *	The sequence must be : connect +  command + disconnect
 * 	@param the nodename to connect with
 */
-int eards_remote_connect(char *nodename);
+int eards_remote_connect(char *nodename,uint port);
 
 /** Notifies the EARD the job with job_id starts the execution. It is supposed to be used by the EAR slurm plugin
 */

@@ -70,7 +70,8 @@ pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
 char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t	my_cluster_conf;
-node_conf_t 	*my_node_conf;
+my_node_conf_t 	*my_node_conf;
+policy_conf_t default_policy_context;
 ear_conf_t *dyn_conf;
 
 #define max(a,b) (a>b?a:b)
@@ -473,7 +474,7 @@ int eard_system(int must_read)
 			break;
 		case WRITE_APP_SIGNATURE:
 			powermon_mpi_signature(&req.req_data.app);
-            ack=EAR_COM_ERROR;
+            ack=EAR_COM_OK;
             if (write(ear_fd_ack[system_req], &ack, size) != size)
             {
                 eard_verbose(0, "ERROR while writing system service ack, closing connection...");
@@ -815,14 +816,22 @@ void signal_catcher()
 }
 //endregion
 
-void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,node_conf_t *node)
+void set_default_policy(policy_conf_t *policy)
+{
+	policy->th=1;
+	policy->p_state=EAR_MIN_P_STATE;
+}
+
+void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
 {
 	policy_conf_t *my_policy;
 	ulong deff;
-    my_policy=get_my_policy_conf(cluster,node,MIN_TIME_TO_SOLUTION);
-    if (my_policy==NULL){
-        eard_verbose(0,"PANIC policy configuration not found!\n");
-    }
+	my_policy=get_my_policy_conf(cluster,node,cluster->default_policy);
+	if (my_policy==NULL){
+		// This should not happen
+		eard_verbose(0,"Default policy  not found in ear.conf");
+		my_policy=&default_policy_context;
+	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
 	dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
     dyn->def_freq=deff;
@@ -877,6 +886,7 @@ void main(int argc,char *argv[])
 	*shortnode='\0';
 	__HOST__=nodename;
 	eard_verbose(1,"Executed in node name %s",nodename);
+	/** CONFIGURATION **/
 	// We read the cluster configuration and sets default values in the shared memory
 	if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
 		eard_verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
@@ -894,6 +904,7 @@ void main(int argc,char *argv[])
     }
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
+	/** Shared memory is used between EARD and EARL **/
     eard_verbose(0,"creating shared memory tmp=%s\n",ear_tmp);
     dyn_conf=create_ear_conf_shared_area(ear_tmp,eard_max_freq);
     if (dyn_conf==NULL){
@@ -905,11 +916,11 @@ void main(int argc,char *argv[])
 		eard_verbose(0, "ERROR, frequency information can't be initialized");
 		exit(1);
 	}
-
+	set_default_policy(&default_policy_context);
     configure_default_values(dyn_conf,&my_cluster_conf,my_node_conf);
-	
-	//HIGHLIGHT: DAEMON INIT
-	// ear_daemon_environment(); /** This function read eard environment variables old way, it must be replaced by ear.conf values */
+    eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
+
+	/** We must control if we are come from a crash **/	
 	// We check if we are recovering from a crash
 	int must_recover=new_service("eard");
 	if (must_recover){
@@ -998,12 +1009,15 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
-    if (eardbd_connect("cae2306.hpc.eu.lenovo.com", UDP)!=EAR_SUCCESS){
+    if (eardbd_connect(my_node_conf->db_ip, UDP)!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif
+	#if !USE_EARDB && DB_MYSQL
+	eard_verbose(1,"Connecting with EAR DB");
+	init_db_helper(&my_cluster_conf.database);
+	#endif
 
-    eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
 	power_mon_freq=my_cluster_conf.eard.period_powermon;
 	eard_verbose(1,"Using  %d seconds for periodic power monitoring",power_mon_freq);
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
@@ -1029,6 +1043,11 @@ void main(int argc,char *argv[])
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;
 	ear_debug(1,"eard waiting.....\n");
+	/*
+	*
+	*	MAIN LOOP 
+	*
+	*/
 	while((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0){
 		eard_verbose(4,"eard unblocked with %d readys.....\n",numfds_ready);
 		if (numfds_ready>0){

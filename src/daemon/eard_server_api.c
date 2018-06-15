@@ -61,7 +61,7 @@ static char *__NAME__ = "EARD_API:";
 
 static  int sfd;
 // based on getaddrinfo man pages
-int create_server_socket()
+int create_server_socket(uint port)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -80,7 +80,7 @@ int create_server_socket()
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
 
-	sprintf(buff,"%d",DAEMON_PORT_NUMBER);
+	sprintf(buff,"%d",port);
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {

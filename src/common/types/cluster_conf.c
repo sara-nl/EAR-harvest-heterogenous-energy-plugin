@@ -329,22 +329,16 @@ int policy_name_to_id(char *my_policy)
 	return EAR_ERROR;
 }
 
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,node_conf_t *my_node,uint p_id)
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
 {
 	policy_conf_t *my_policy=NULL;
 	uint i;
-    if (my_node != NULL)
-    {
-	    // We look first for special configurations
-    	for(i=0;i<my_node->num_special_node_conf;i++){
-		    if (my_node->special_node_conf[i].policy==p_id) return(&my_node->special_node_conf[i]);
-	    }
+	uint nump=0;
+    while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
+    if (nump<my_node->num_policies){
+        my_policy=&my_node->policies[nump];
     }
-	// and now for default values
-	for(i=0;i<my_cluster->num_policies;i++){
-		if (my_cluster->power_policies[i].policy==p_id) return (&my_cluster->power_policies[i]);
-	}
-	return NULL;
+	return my_policy;
 }
 
 
@@ -474,6 +468,17 @@ void generate_node_ranges(node_island_t *island, char *nodelist)
         if (next_token != NULL) start = next_token;
     }
     island->num_ranges += range_count;
+}
+
+int get_default_pstate(policy_conf_t *pow_pol, int num_pol, int policy)
+{
+    int i;
+    for (i = 0; i < num_pol; i++)
+    {
+        if (pow_pol[i].policy == policy)
+            return pow_pol[i].p_state;
+    }
+    return 0;
 }
 
 /** Fills the cluster_conf_t from the info from the FILE */
@@ -666,6 +671,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                     {
                         for (i = 0; i < num_nodes; i++)
                         {
+                            found = 0;
                             for (k = 0; k < conf->nodes[conf->num_nodes+i].num_special_node_conf; k++)
                             {
                                 if (conf->nodes[conf->num_nodes+i].special_node_conf[k].policy ==
@@ -681,7 +687,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                                 //if there is no such p_state and it's the same, we don't create a new one
                                 if (conf->power_policies[j].p_state == atoi(token))
                                     break;
-
+                                
                                 k = conf->nodes[conf->num_nodes+i].num_special_node_conf;
                                 if (k == 0)
                                     conf->nodes[conf->num_nodes+i].special_node_conf = NULL;
@@ -691,6 +697,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                                 conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = 
                                     conf->power_policies[j].policy;
                                 conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state = atoi(token);
+                                conf->nodes[conf->num_nodes+i].special_node_conf[k].th = 
+                                    conf->power_policies[j].th;
                                 conf->nodes[conf->num_nodes+i].num_special_node_conf++;
                             }
                         }
@@ -728,6 +736,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_TIME_TO_SOLUTION;
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
                             conf->nodes[conf->num_nodes+i].num_special_node_conf++;
+                            conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state = 
+                                get_default_pstate(conf->power_policies, conf->num_policies, MIN_TIME_TO_SOLUTION);
                         }
                     }
                 }
@@ -760,6 +770,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_ENERGY_TO_SOLUTION;
                             conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
                             conf->nodes[conf->num_nodes+i].num_special_node_conf++;
+                            conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state = 
+                                get_default_pstate(conf->power_policies, conf->num_policies, MIN_TIME_TO_SOLUTION);
                         }
                     }
                 }

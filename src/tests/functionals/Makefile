@@ -8,13 +8,17 @@ BINARIES = bandwith_monitor \
            simd_power_metrics_openmp \
            energy_1_second \
            energy_updates_freq \
-		   ear_conf
+		   ear_conf \
+		   my_node_conf
 # ear_pm
 # test_architecture
 
 ######## RULES
 
 all: $(BINARIES)
+
+my_node_conf: my_node_conf.c $(SRCDIR)/common/types.a
+	$(CC) $(CFLAGS) -o my_node_conf  $^ $(SRCDIR)/common/types.a
 
 ear_conf:ear_conf.c $(SRCDIR)/common/types.a
 	$(CC) $(CFLAGS) -o ear_conf $^ $(SRCDIR)/common/types.a

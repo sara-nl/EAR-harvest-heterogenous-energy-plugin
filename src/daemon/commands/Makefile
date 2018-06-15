@@ -44,6 +44,7 @@ ear_red_freq: ear_red_freq.c $(REMOTE_OBJS) $(TYPES_OBJS)
 ear_inc_th: ear_inc_th.c $(REMOTE_OBJS) $(TYPES_OBJS)
 	$(CC) $(CFLAGS) -o ear_inc_th ear_inc_th.c  $(REMOTE_OBJS) $(TYPES_OBJS)
 
+
 ear_set_th: ear_set_th.c $(REMOTE_OBJS) $(TYPES_OBJS)
 	$(CC) $(CFLAGS) -o ear_set_th ear_set_th.c  $(REMOTE_OBJS) $(TYPES_OBJS)
 
