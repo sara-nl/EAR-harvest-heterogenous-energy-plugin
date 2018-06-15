@@ -161,13 +161,6 @@ static void remote_update_slurm_vars(spank_t sp)
  * Configuration
  *
  */
-int local_environment_variables_process()
-{
-	//setenv_local("EAR_POWER_POLICY", conf_node., 0);
-	//setenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", TBD, 0);
-	//setenv_local("EAR_PERFORMANCE_PENALTY", TBD, 0);
-	//EAR_POWER_POLICY_TH
-}
 
 int local_read_cluster_conf_file()
 {
@@ -184,6 +177,15 @@ int local_read_cluster_conf_file()
 	}
 
 	return (ESPANK_SUCCESS);
+}
+
+int local_environment_post_process()
+{
+	// It means that the user has already set up
+	if(existenv_local("EAR_POWER_POLICY")) {
+		if(existenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN")) {}
+		if(existenv_local("EAR_PERFORMANCE_PENALTY")) {}
+	}
 }
 
 int find_paths(spank_t sp, int ac, char **av)
@@ -319,12 +321,37 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 
 	for (i = 0; i < 9; ++i)
 	{
-		if (ESPANK_SUCCESS != spank_option_register(sp, &spank_options_manual[i]))
+		if (spank_option_register(sp, &spank_options_manual[i]) != ESPANK_SUCCESS)
 		{
         	slurm_error("unable to register a new option.");
         	return -1;
     	}
 	}
+}
+
+int slurm_spank_init_post_op(spank_t sp, int ac, char **av)
+{
+	if(spank_context () == S_CTX_LOCAL)
+	{
+		if ((r = find_paths(sp, ac, av)) != ESPANK_SUCCESS)
+		{
+			plug_error("plugstack.conf arguments are incorrect, disabling EAR");
+			local_library_disable();
+
+			return r;
+		}
+
+		//
+		if ((r = local_read_cluster_conf_file()) != ESPANK_SUCCESS)
+		{
+			plug_error("while reading configuration file, disabling EAR");
+			local_library_disable();
+
+			return r;
+		}
+	}
+
+	return (ESPANK_SUCCESS);
 }
 
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
@@ -335,26 +362,12 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
-		if ((r = find_paths(sp, ac, av)) != ESPANK_SUCCESS)
-		{
-			plug_error("plugstack.conf arguments are incorrect, disabling EAR");
-			local_library_disable();
-
-			return r;
-		}
+		//
+		local_eargmd_report_start();
 
 		//
-		if ((r = local_read_cluster_conf_file()) != ESPANK_SUCCESS) {
-			plug_error("while reading configuration file, disabling EAR");
-			local_library_disable();
-		}
-
-    	//
 		if (isenv_local("EAR", "1"))
 		{
-			//
-			local_eargmd_report_start();
-
 			//
 			if ((r = local_update_ld_preload(sp)) != ESPANK_SUCCESS)
 			{
@@ -367,6 +380,16 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
     }
 
     return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_exit (spank_t sp, int ac, char **av)
+{
+	FUNCTION_INFO_("slurm_spank_exit");
+
+	if (spank_context() == S_CTX_LOCAL) {
+		return local_eargmd_report_finish();
+	}
+	return (ESPANK_SUCCESS);
 }
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
@@ -401,16 +424,6 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 
 	if (spank_context() == S_CTX_REMOTE) {
 		return remote_eard_report_finish();
-	}
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_exit (spank_t sp, int ac, char **av)
-{
-	FUNCTION_INFO_("slurm_spank_exit");
-
-	if (spank_context() == S_CTX_LOCAL) {
-		return local_eargmd_report_finish();
 	}
 	return (ESPANK_SUCCESS);
 }
