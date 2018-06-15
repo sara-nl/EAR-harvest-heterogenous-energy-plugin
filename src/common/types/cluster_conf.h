@@ -80,6 +80,7 @@ typedef struct eargm_conf
 	uint 	port;			/* mandatory */
 	uint 	mode;
 	char 	mail[GENERIC_NAME];
+    char    host[GENERIC_NAME];
 } eargm_conf_t;
 
 typedef struct node_range
