@@ -9,13 +9,12 @@
 #define EAR_INSTALL_PATH    "@prefix@"
 
 // File names
+#define EAR_DAEMON_PATH     "sbin/eard"
 #define IMPI_LIB_PATH		"lib/libear.so"
 #define IMPI_TRACE_LIB_PATH	"lib/libeart.so"
 #define OMPI_LIB_PATH		"lib/libear_ompi.so"
 #define OMPI_TRACE_LIB_PATH	"lib/libeart_ompi.so"
-#define EAR_DAEMON_PATH     "sbin/eard"
-#define EAR_CONF_FILE		"ear.conf"
-#define EAR_LINK_FILE		"ear.link"
+#define EAR_CONF_FILE		"sysconf/ear.conf"
 
 // Compile version type
 #define BUILD_TYPE			@BUILD_TYPE@
