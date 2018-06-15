@@ -882,6 +882,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             strclean(token, '\n');
             strcpy(conf->eargm.mail, token);
         }
+        else if (!strcmp(token, "GLOBALMANAGERHOST"))
+        {
+            token = strtok(NULL, "=");
+            strclean(token, '\n');
+            strcpy(conf->eargm.host, token);
+        }
 
         //MARIADB/MYSQL config
         else if (!strcmp(token, "MARIADBIP"))
@@ -1023,8 +1029,8 @@ void print_eard_conf(eard_conf_t *conf)
 void print_eargm_conf(eargm_conf_t *conf)
 {
 	fprintf(stderr,"--> EARGM configuration\n");
-	fprintf(stderr,"\t eargm: verbose %u t1 %lu t2 %lu energy limit %lu port %u mode: %u\tmail: %s\n",
-                    conf->verbose,conf->t1,conf->t2,conf->energy,conf->port, conf->mode, conf->mail);
+	fprintf(stderr,"\t eargm: verbose %u \tt1 %lu \tt2 %lu \tenergy limit: %lu \tport: %u \tmode: %u\tmail: %s\thost: %s\n",
+                    conf->verbose,conf->t1,conf->t2,conf->energy,conf->port, conf->mode, conf->mail, conf->host);
 }
 
 void print_db_manager(eardb_conf_t *conf)
