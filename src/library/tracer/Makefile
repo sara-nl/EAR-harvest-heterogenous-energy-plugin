@@ -6,7 +6,7 @@ allt: DEFINES=-DEAR_GUI
 allt: tracer.o
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) $(DEFINES) -c $<
+	$(MPICC) $(CFLAGS) $(DEFINES) -c $<
 
 ######## OPTIONS
 

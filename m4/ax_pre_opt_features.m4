@@ -12,8 +12,10 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	#
 	#
 	#
-	AC_ARG_VAR([TMP],[Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear)])
-	AC_ARG_VAR([ETC],[Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc)])
+	AC_ARG_VAR([TMP],[Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear) (you can alo use --localstatedir=DIR)])
+	AC_ARG_VAR([ETC],[Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc) (you can also use --sharedstatedir=DIR)])
+	AC_ARG_VAR([MAN],[Defines the documentation directory (default: PREFIX/man) (you can use also --mandir=DIR)])
+	AC_ARG_VAR([COEFFS],[Defines the coefficients store directory (default: EPREFIX/etc)])
 
 	if test "x$prefix" = "xNONE";then
     	prefix=/usr/local
@@ -48,7 +50,7 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	#
 	# MPI
 	#
-	AC_ARG_VAR([IMPICC],[Defines the Intel MPI compiler])
+	AC_ARG_VAR([MPICC],[Defines the Intel MPI compiler])
 	AC_ARG_VAR([OMPICC],[Defines the Open MPI compiler])
 
 	MPICC=
@@ -58,13 +60,13 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	ompi_trace_so=
 
 	# !I && !O
-	if test -z "$IMPICC" && test -z "$OMPICC"; then
-		IMPICC=mpicc
+	if test -z "$MPICC" && test -z "$OMPICC"; then
+		MPICC=mpicc
 	fi
 
 	# I 
-	if test -n "$IMPICC"; then
-		MPICC=$IMPICC
+	if test -n "$MPICC"; then
+		MPICC=$MPICC
 		mpi_so=libear.so
 		mpi_trace_so=libeart.so	
 	fi

@@ -80,6 +80,7 @@ typedef struct eargm_conf
 	uint 	port;			/* mandatory */
 	uint 	mode;
 	char 	mail[GENERIC_NAME];
+    char    host[GENERIC_NAME];
 } eargm_conf_t;
 
 typedef struct node_range
@@ -198,10 +199,11 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
 void get_cluster_config(FILE *conf_file, cluster_conf_t *conf);
 
 // NODE level functions
-
 /** returns the pointer to the information of nodename */
 node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
+
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
+
 /** prints in the stdout the node configuration */
 void print_node_conf(node_conf_t *my_node_conf);
 
@@ -212,7 +214,7 @@ void print_policy_conf(policy_conf_t *p);
 /** Converts from policy name to policy_id */
 int policy_name_to_id(char *my_policy);
 
-/** Given a cluster, node and  policy, returns the policy configuration for that cluser,node,policy */
+/** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
 policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
 
 /** Prints in the stdout the whole cluster configuration */
@@ -222,7 +224,6 @@ void free_cluster_conf(cluster_conf_t *conf);
 
 /** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/sysconf/ear.conf */
 int get_ear_conf_path(char *ear_conf_path);
-
 
 #else
 #endif

@@ -1078,10 +1078,7 @@ void main(int argc,char *argv[])
 	*	MAIN LOOP 
 	*
 	*/
-	while(((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0) || ((errno==EINTR) && signal_sighup)){
-		if (signal_sighup){ 
-			signal_sighup=0;
-		}else{
+	while((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0){
 			eard_verbose(4,"eard unblocked with %d readys.....\n",numfds_ready);
 			if (numfds_ready>0){
 			for (i=0;i<ear_daemon_client_requests;i++){
@@ -1102,7 +1099,6 @@ void main(int argc,char *argv[])
 			}else my_to=NULL;
 			rfds=rfds_basic;
 			ear_debug(1,"eard waiting.....\n");
-		}
 	}//while
 	//eard is closed by SIGTERM signal, we should not reach this point
 	eard_verbose(0,"END\n");

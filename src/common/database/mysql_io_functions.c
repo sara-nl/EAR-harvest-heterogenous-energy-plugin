@@ -446,7 +446,7 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
     bind[13].buffer_length = strlen(job->user_acc);
 
     //double types
-    bind[9].buffer_type = MYSQL_TYPE_DOUBLE;
+    bind[9].buffer_type = MYSQL_TYPE_FLOAT;
 
     //storage variable assignation
     bind[0].buffer = (char *)&job->id;
@@ -496,7 +496,7 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
     bind[2].buffer_length = bind[3].buffer_length = bind[8].buffer_length = 256;
 
     //double types
-    bind[9].buffer_type = MYSQL_TYPE_DOUBLE;
+    bind[9].buffer_type = MYSQL_TYPE_FLOAT;
 
     //varchar types
     bind[13].buffer_type = MYSQL_TYPE_VAR_STRING;
@@ -573,7 +573,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     //double storage
     for (i = 0; i < 9; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_DOUBLE;
+        bind[i].buffer_type = MYSQL_TYPE_FLOAT;
         bind[i].length = 0;
         bind[i].is_null = 0;
     }
@@ -581,7 +581,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     //unsigned long long storage
     for (i = 9; i < 21; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].buffer_type = MYSQL_TYPE_LONG;
         bind[i].length = 0;
         bind[i].is_null = 0;
         bind[i].is_unsigned = 1;
@@ -654,7 +654,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
     //id reciever
-    bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[0].buffer_type = MYSQL_TYPE_LONG;
     bind[0].buffer_length= 4;
     bind[0].is_null = 0;
     bind[0].is_unsigned = 1;
@@ -662,14 +662,14 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     //double recievers
     for (i = 1; i < 10; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_DOUBLE;
+        bind[i].buffer_type = MYSQL_TYPE_FLOAT;
         bind[i].buffer_length = 8;
     }
 
     //unsigned long long recievers
     for (i = 10; i < 22; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].buffer_type = MYSQL_TYPE_LONG;
         bind[i].buffer_length = 8;
         bind[i].is_unsigned = 1;
     }
@@ -771,7 +771,7 @@ int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig)
     int i;
     for (i = 0; i < 7; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_DOUBLE;
+        bind[i].buffer_type = MYSQL_TYPE_FLOAT;
     }
 
     //integer types
@@ -819,7 +819,7 @@ int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signat
     int i;
     for (i = 1; i < 8; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_DOUBLE;
+        bind[i].buffer_type = MYSQL_TYPE_FLOAT;
     }
 
     //integer types
@@ -891,10 +891,10 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     int i;
     for (i = 0; i < 3; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].buffer_type = MYSQL_TYPE_LONG;
         bind[i].is_unsigned = 1;
     }
-    bind[4].buffer_type = bind[5].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[4].buffer_type = bind[5].buffer_type = MYSQL_TYPE_LONG;
     bind[4].is_unsigned = bind[5].is_unsigned = 1;
 
     //varchar types
@@ -909,7 +909,7 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     bind[4].buffer = (char *)&per_met->job_id;
     bind[5].buffer = (char *)&per_met->step_id;
 #if DEMO
-    bind[6].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[6].buffer_type = MYSQL_TYPE_LONG;
     bind[6].is_unsigned = 1;
     bind[6].buffer = (char *)&per_met->avg_f;
 #endif
@@ -939,7 +939,7 @@ int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t 
     int i;
     for (i = 0; i < 3; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].buffer_type = MYSQL_TYPE_LONG;
     }
 
     //storage variable assignation
@@ -989,7 +989,7 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
         int offset = i*PERIODIC_METRIC_ARGS;
         for (j = 0; j < PERIODIC_METRIC_ARGS; j++)
         {
-            bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
+            bind[offset+j].buffer_type = MYSQL_TYPE_LONG;
             bind[offset+j].is_unsigned = 1;
         }
         bind[offset+3].buffer_type = MYSQL_TYPE_VARCHAR;
@@ -1002,7 +1002,7 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
         bind[4+offset].buffer = (char *)&per_mets[i].job_id;
         bind[5+offset].buffer = (char *)&per_mets[i].step_id;
 #if DEMO
-        bind[6+offset].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[6+offset].buffer_type = MYSQL_TYPE_LONG;
         bind[6+offset].is_unsigned = 1;
         bind[6+offset].buffer = (char *)&per_mets[i].avg_f;
 #endif
@@ -1034,7 +1034,7 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     int i;
     for (i = 0; i < 5; i++)
     {
-        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].buffer_type = MYSQL_TYPE_LONG;
     }
 
     //storage variable assignation
@@ -1083,7 +1083,7 @@ int mysql_batch_insert_ear_event(MYSQL *connection, ear_event_t **ear_ev, int nu
 
         for (j = 0; j < EAR_EVENTS_ARGS; j++)
         {
-            bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
+            bind[offset+j].buffer_type = MYSQL_TYPE_LONG;
         }
 
         //storage variable assignation
@@ -1116,7 +1116,7 @@ int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
     MYSQL_BIND bind[4];
     memset(bind, 0, sizeof(bind));
 
-    bind[0].buffer_type = bind[2].buffer_type = MYSQL_TYPE_DOUBLE;
+    bind[0].buffer_type = bind[2].buffer_type = MYSQL_TYPE_FLOAT;
     bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONG;
     bind[1].is_unsigned = 1;
 

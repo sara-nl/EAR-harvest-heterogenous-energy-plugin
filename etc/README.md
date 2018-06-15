@@ -1,9 +1,16 @@
-Environment variables configuration
------------------------------------
-The EAR library and daemon behaviour is defined by a set of enviroment variables. You can define this environment variables before launching a job. Also, the SLURM plugin and the scripts provided for launching jobs directly calling MPI, makes use of a default configuration file, which gives value to these environment variables if aren't set before.
+Configuration
+-------------
+All EAR package component behaviour is defined by a set of variables defined in the file $(ETC)/ear.conf. The components which allows parameters as an input will have priority against the configuration written in this file.
 
-Environment variables list
---------------------------
+Configuration variables
+-----------------------
+```
+```
+
+Environment variables list (obsolete)
+-------------------------------------
+This is the old way to define the EAR behaviour. Its functionality is not guaranteed.
+
 **EAR**<br />
 Enables or disables EAR by default.<br />
 **EAR_DB_PATHNAME**<br />

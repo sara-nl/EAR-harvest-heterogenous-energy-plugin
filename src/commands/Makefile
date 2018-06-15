@@ -27,8 +27,8 @@ ereport: ear_report.c $(erport_OBJS)
 econtrol: ear_control.c $(econtrol_OBJS) 
 	$(CC) $(CFLAGS) -o econtrol ear_control.c $(econtrol_OBJS) 
 
-ear_create_database: ear_create_database.c
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS)
+ear_create_database: ear_create_database.c $(SRCDIR)/common/types.a
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS) $(SRCDIR)/common/types.a
 
 ear_energy_over_time: ear_energy_over_time.c
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_energy_over_time ear_energy_over_time.c $(DB_LDFLAGS)
