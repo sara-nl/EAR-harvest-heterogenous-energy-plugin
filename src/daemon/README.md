@@ -86,3 +86,8 @@ Daemon testing
 
 Look into the [EAR test folder](../tests/README.md)
 
+License
+-------
+All the files in the EAR framework are under the LGPLv2.1 license. See the [COPYING](../../COPYING) file in the EAR root directory.
+
+

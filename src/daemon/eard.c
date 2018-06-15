@@ -73,6 +73,7 @@ cluster_conf_t	my_cluster_conf;
 my_node_conf_t 	*my_node_conf;
 policy_conf_t default_policy_context;
 ear_conf_t *dyn_conf;
+uint signal_sighup=0;
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
@@ -108,6 +109,8 @@ void eard_close_comm();
 int is_new_application(int pid);
 int is_new_service(int req,int pid);
 int application_timeout();
+void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node);
+void set_default_policy(policy_conf_t *policy);
 int RAPL_counting=0;
 int eard_must_exit=0;
 
@@ -731,7 +734,7 @@ void signal_handler(int sig)
 	if (sig == SIGPIPE){ eard_verbose(0, "signal SIGPIPE received. Application terminated abnormally");}
 	if (sig == SIGTERM){ eard_verbose(0, "signal SIGTERM received. Finishing");}
 	if (sig == SIGINT){  eard_verbose(0, "signal SIGINT received. Finishing");}
-	if (sig == SIGHUP){  eard_verbose(0, "signal SIGHUP received. Reloading EAR conf");}
+	if (sig == SIGHUP){  eard_verbose(0, "signal SIGHUP received. Reloading EAR conf");signal_sighup=1;}
 	if (sig == SIGUSR2){  eard_verbose(0, "signal SIGUSR2 received. Restarting");}
 
 	// The PIPE was closed, so the daemon connection ends
@@ -774,6 +777,16 @@ void signal_handler(int sig)
         else{
 			eard_verbose(0,"Loading EAR configuration");
             print_cluster_conf(&my_cluster_conf);
+	        my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);
+	        if (my_node_conf==NULL){
+     	       eard_verbose(0," Error in cluster configuration, node %s not found\n",nodename);
+     	   	}else{
+				set_global_eard_variables();
+    			set_default_policy(&default_policy_context);
+    			configure_new_values(dyn_conf,&my_cluster_conf,my_node_conf);
+    			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
+			}
+
         }
 	}
 	
@@ -820,6 +833,23 @@ void set_default_policy(policy_conf_t *policy)
 {
 	policy->th=1;
 	policy->p_state=EAR_MIN_P_STATE;
+}
+void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
+{
+    policy_conf_t *my_policy;
+    ulong deff;
+    my_policy=get_my_policy_conf(cluster,node,cluster->default_policy);
+    if (my_policy==NULL){
+        // This should not happen
+        eard_verbose(0,"Default policy  not found in ear.conf");
+        my_policy=&default_policy_context;
+    }
+    deff=frequency_pstate_to_freq(my_policy->p_state);
+    dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
+    dyn->def_freq=deff;
+    dyn->th=my_policy->th;
+	dyn->force_rescheduling=1;
+    eard_verbose(0,"configure_new_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
 }
 
 void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
@@ -1048,27 +1078,31 @@ void main(int argc,char *argv[])
 	*	MAIN LOOP 
 	*
 	*/
-	while((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0){
-		eard_verbose(4,"eard unblocked with %d readys.....\n",numfds_ready);
-		if (numfds_ready>0){
-		for (i=0;i<ear_daemon_client_requests;i++){
-			if (FD_ISSET(ear_fd_req[i],&rfds)){
-				select_service(i);
-			}	// IF FD_ISSET
-		} //for
-		// We have to check if there is something else
-		}else{ //timeout
-				eard_verbose(2,"eard timeout...checking for application status\n");
-				eard_verbose(2,"eard...application connected\n");	
-				if (check_ping()) application_timeout();
+	while(((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0) || ((errno==EINTR) && signal_sighup)){
+		if (signal_sighup){ 
+			signal_sighup=0;
+		}else{
+			eard_verbose(4,"eard unblocked with %d readys.....\n",numfds_ready);
+			if (numfds_ready>0){
+			for (i=0;i<ear_daemon_client_requests;i++){
+				if (FD_ISSET(ear_fd_req[i],&rfds)){
+					select_service(i);
+				}	// IF FD_ISSET
+			} //for
+			// We have to check if there is something else
+			}else{ //timeout
+					eard_verbose(2,"eard timeout...checking for application status\n");
+					eard_verbose(2,"eard...application connected\n");	
+					if (check_ping()) application_timeout();
+			}
+			// If application is disconnected, we wait for a new connection
+			if (check_ping()){
+				tv.tv_sec=20;tv.tv_usec=0;
+				my_to=&tv;
+			}else my_to=NULL;
+			rfds=rfds_basic;
+			ear_debug(1,"eard waiting.....\n");
 		}
-		// If application is disconnected, we wait for a new connection
-		if (check_ping()){
-			tv.tv_sec=20;tv.tv_usec=0;
-			my_to=&tv;
-		}else my_to=NULL;
-		rfds=rfds_basic;
-		ear_debug(1,"eard waiting.....\n");
 	}//while
 	//eard is closed by SIGTERM signal, we should not reach this point
 	eard_verbose(0,"END\n");

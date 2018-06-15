@@ -16,7 +16,7 @@ EAR includes service files to be used to start/stop the components. Global Manag
 
 sudo systemctl start eargmd --> will start the service 
 </br>sudo systemctl stop eargmd --> will stop the service 
-</br>sudo systemctl reload eargmd --> will force to reload the configuration  
+</br>sudo systemctl reload eargmd --> will force to reload the configuration  (ear.conf file)
 
 Customize installation
 ----------------------
@@ -33,11 +33,11 @@ GlobalManagerPeriodT1=600
 GlobalManagerPeriodT2=2592000   
 #Abosolut value , in Joules  
 GlobalManagerEnergyLimit=756000   
-GlobalManagerPort=6000   
+GlobalManagerPort=60000
 #Two modes are supported 0=pasive 1= means active (automatic)   
-GlobalManagerMode=  
-#Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode)   
-#GlobalManagerMail=  
+GlobalManagerMode=0
+#Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode) . When using nomail as email address we can also disable that option
+GlobalManagerMail=nomail 
 
 
 
@@ -46,7 +46,10 @@ Global Manager commands
 
 The Global Manager  offers a simple API (to be used by the SLURM plugin) to be notified about the execution/finalization of jobs. The APi simple notifies the Global Manager about the number of nodes to be used/released by the node. The API is implemented in the eargm_api.c file.
 
-commands/eargm_new_job and commands/eargm_end_job are very simple commands that implements the two functions offered by the Global Manager API.
+ - commands/eargm_new_job 
+ - commands/eargm_end_job 
+
+are very simple commands that implements the two functions offered by the Global Manager API.
 
 
 License
