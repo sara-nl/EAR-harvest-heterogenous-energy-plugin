@@ -478,7 +478,7 @@ int eard_system(int must_read)
 		case WRITE_APP_SIGNATURE:
 			powermon_mpi_signature(&req.req_data.app);
             ack=EAR_COM_OK;
-            if (write(ear_fd_ack[system_req], &ack, size) != size)
+            if (write(ear_fd_ack[system_req], &ack, sizeof(ulong)) != sizeof(ulong))
             {
                 eard_verbose(0, "ERROR while writing system service ack, closing connection...");
                 eard_close_comm();
@@ -735,7 +735,6 @@ void signal_handler(int sig)
 	if (sig == SIGTERM){ eard_verbose(0, "signal SIGTERM received. Finishing");}
 	if (sig == SIGINT){  eard_verbose(0, "signal SIGINT received. Finishing");}
 	if (sig == SIGHUP){  eard_verbose(0, "signal SIGHUP received. Reloading EAR conf");signal_sighup=1;}
-	if (sig == SIGUSR2){  eard_verbose(0, "signal SIGUSR2 received. Restarting");}
 
 	// The PIPE was closed, so the daemon connection ends
 	if (sig == SIGPIPE) {
@@ -798,7 +797,7 @@ void signal_catcher()
 	sigset_t set;
 	int signal;
 
-	sigemptyset(&action.sa_mask);
+	sigfillset(&action.sa_mask);
 	action.sa_handler = signal_handler;
 	action.sa_flags = 0;
 
@@ -818,10 +817,6 @@ void signal_catcher()
 	}
 
     signal = SIGHUP;
-    if (sigaction(signal, &action, NULL) < 0) {
-        eard_verbose(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
-    }
-    signal = SIGUSR2;
     if (sigaction(signal, &action, NULL) < 0) {
         eard_verbose(0, "sigaction error on signal s=%d (%s)", signal, strerror(errno));
     }
@@ -912,8 +907,7 @@ void main(int argc,char *argv[])
         eard_verbose(0, "Error getting node name (%s)", strerror(errno));
         _exit(1);
     }
-	shortnode=strchr(nodename,'.');
-	*shortnode='\0';
+	strtok(nodename, ".");
 	__HOST__=nodename;
 	eard_verbose(1,"Executed in node name %s",nodename);
 	/** CONFIGURATION **/
@@ -946,7 +940,6 @@ void main(int argc,char *argv[])
 		eard_verbose(0, "ERROR, frequency information can't be initialized");
 		exit(1);
 	}
-	set_default_policy(&default_policy_context);
     configure_default_values(dyn_conf,&my_cluster_conf,my_node_conf);
     eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
 
@@ -1068,7 +1061,6 @@ void main(int argc,char *argv[])
 	sigdelset(&eard_mask,SIGTERM);
 	sigdelset(&eard_mask,SIGINT); 
 	sigdelset(&eard_mask,SIGHUP); 
-	sigdelset(&eard_mask,SIGUSR2); 
 	sigprocmask(SIG_SETMASK,&eard_mask,NULL);
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;
@@ -1078,8 +1070,9 @@ void main(int argc,char *argv[])
 	*	MAIN LOOP 
 	*
 	*/
-	while((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0){
+	while (((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0) || ((numfds_ready<0) && (errno==EINTR))){
 			eard_verbose(4,"eard unblocked with %d readys.....\n",numfds_ready);
+			if (numfds_ready<0){ //Signal received
 			if (numfds_ready>0){
 			for (i=0;i<ear_daemon_client_requests;i++){
 				if (FD_ISSET(ear_fd_req[i],&rfds)){
@@ -1097,11 +1090,12 @@ void main(int argc,char *argv[])
 				tv.tv_sec=20;tv.tv_usec=0;
 				my_to=&tv;
 			}else my_to=NULL;
+			}
 			rfds=rfds_basic;
 			ear_debug(1,"eard waiting.....\n");
 	}//while
 	//eard is closed by SIGTERM signal, we should not reach this point
 	eard_verbose(0,"END\n");
 	eard_close_comm();	
-	eard_exit(1);
+	eard_exit(0);
 }
