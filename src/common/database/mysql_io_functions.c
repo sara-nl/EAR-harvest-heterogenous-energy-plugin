@@ -124,18 +124,9 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = bind[4].buffer_type = MYSQL_TYPE_LONG;
     bind[0].is_unsigned = bind[1].is_unsigned = bind[3].is_unsigned = bind[4].is_unsigned = 1;
 
-    int sig_id = NULL;
-    if (is_mpi)
-    {
-        sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
-    }
-    else 
-    {
-        bind[3].buffer_type = MYSQL_TYPE_NULL;
-        bind[3].is_null = (my_bool*) 1;
-    }
+    int pow_sig_id = 0;
+    int sig_id = 0;
 
-    int pow_sig_id = NULL;
     pow_sig_id = mysql_insert_power_signature(connection, &app->power_sig);
 
     //string types
@@ -149,6 +140,16 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     bind[2].buffer = (char *)&app->node_id;
     bind[4].buffer = (char *)&pow_sig_id;
 
+    if (is_mpi)
+    {
+        sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
+    }
+    else 
+    {
+        bind[3].buffer_type = MYSQL_TYPE_NULL;
+        bind[3].is_null = (my_bool*) 1;
+        bind[3].buffer = (char *) NULL;
+    }
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
