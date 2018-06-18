@@ -14,6 +14,7 @@ ifdef CPUF_BASE
 		endif
 		COMPONENTS += library
 	endif
+	COMPONENTS += slurm_plugin
 	ifdef GSL_BASE
 		COMPONENTS += tools
 	endif
