@@ -84,6 +84,20 @@ struct spank_option spank_options_manual[9] =
 	}
 };
 
+int slurm_spank_init(spank_t sp, int ac, char **av)
+{
+    int i;
+
+    for (i = 0; i < 9; ++i)
+    {   
+        if (spank_option_register(sp, &spank_options_manual[i]) != ESPANK_SUCCESS)
+        {
+            slurm_error("unable to register a new option.");
+            return -1; 
+        }
+    }   
+}
+
 /*
  * Plugin intern environment variables:
  * - EAR_INSTALL_DIR
