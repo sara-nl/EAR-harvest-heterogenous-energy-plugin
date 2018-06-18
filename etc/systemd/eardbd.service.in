@@ -1,12 +1,13 @@
 [Unit]
 Description=EARD - Energy Aware Runtime database cache daemon
 ConditionPathExists=@localstatedir@
-Requires=mariadb.service
-After=mariadb.service
+# Requires=mariadb.service
+# After=mariadb.service
 
 [Service]
 Type=simple
-ExecStart=@prefix@/sbin/eardbd @sysconfdir@ 60
+Environment="ETC=@sysconfdir@"
+ExecStart=@prefix@/sbin/eardbd
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
 KillMode=process
