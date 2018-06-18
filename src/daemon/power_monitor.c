@@ -272,14 +272,14 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	// Checking the specific policy settings. It is pending to configure for special users
 	p_id=policy_name_to_id(appID->job.policy);
 	// Use cluster conf function
-	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
-	if (my_policy==NULL){
-		VERBOSE_N(0,"Node configuration returns NULL in powermon_new_job, using default");		
+	if (p_id!=EAR_ERROR){
+		my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
+	}else{
 		my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
-		if (my_policy==NULL){	
-			VERBOSE_N(0,"Default policy configuration returns NULL!!");
-			my_policy=&default_policy_context;
-		}
+	}
+	if (my_policy==NULL){
+		VERBOSE_N(0,"Default policy configuration returns NULL!!");
+		my_policy=&default_policy_context;
 	}
 	VERBOSE_N(1,"Node configuration for policy %s p_state %d th %lf",appID->job.policy,my_policy->p_state,my_policy->th);
 	f=frequency_pstate_to_freq(my_policy->p_state);

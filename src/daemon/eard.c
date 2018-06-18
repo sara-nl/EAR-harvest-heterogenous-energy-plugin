@@ -779,6 +779,7 @@ void signal_handler(int sig)
 	        if (my_node_conf==NULL){
      	       eard_verbose(0," Error in cluster configuration, node %s not found\n",nodename);
      	   	}else{
+				print_my_node_conf(my_node_conf);
 				set_global_eard_variables();
     			set_default_policy(&default_policy_context);
     			configure_new_values(dyn_conf,&my_cluster_conf,my_node_conf);
@@ -925,6 +926,7 @@ void main(int argc,char *argv[])
         if (my_node_conf==NULL){
             eard_verbose(0," Error in cluster configuration, node %s not found\n",nodename);
         }
+		print_my_node_conf(my_node_conf);
     }
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
