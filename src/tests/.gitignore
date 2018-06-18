@@ -29,3 +29,6 @@ functionals/inputs
 *bandwith_monitor
 *simd_power_metrics_openmp
 *ear_pm
+*configuration_check
+*ear_conf
+*my_node_conf
