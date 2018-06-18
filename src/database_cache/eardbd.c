@@ -398,9 +398,9 @@ static int _listen(int fd, struct addrinfo *info)
 
 void usage(int argc, char **argv)
 {
-	if (argc != 3)
+	if (0)
 	{
-		printf("Usage: %s conf.path agg.time\n", argv[0]);
+		printf("Usage: %s\n", argv[0]);
 		exit(1);
 	}
 }
@@ -412,8 +412,6 @@ int main(int argc, char **argv)
 	struct addrinfo *srv_info_udp;
 
 	char conf_path[PATH_MAX];
-	cluster_conf_t config;
-	my_node_conf_t *conf_node;
 	cluster_conf_t conf_clus;
 
 	long merge_time;
@@ -448,6 +446,7 @@ int main(int argc, char **argv)
 		error("Error getting ear.conf path");
 	}
 
+	verbose("Reading '%s' configuration file", conf_path);
 	read_cluster_conf(conf_path, &conf_clus);
 
 	// Format
@@ -460,12 +459,11 @@ int main(int argc, char **argv)
 	FD_ZERO(&fds_active);
 
 	// Opening socket
-
 	fd_srv_tcp = _socket(NULL, conf_clus.db_manager.tcp_port, TCP, &srv_info_tcp);
 	fd_srv_udp = _socket(NULL, conf_clus.db_manager.udp_port, UDP, &srv_info_udp);
 
-	verbose ("opened socket %d for TCP packets on port %s", fd_srv_tcp, conf_clus.db_manager.tcp_port);
-	verbose ("opened socket %d for UDP packets on port %s", fd_srv_udp, conf_clus.db_manager.udp_port);
+	verbose ("opened socket %d for TCP packets on port %u", fd_srv_tcp, conf_clus.db_manager.tcp_port);
+	verbose ("opened socket %d for UDP packets on port %u", fd_srv_udp, conf_clus.db_manager.udp_port);
 
 	if (fd_srv_tcp < 0 || fd_srv_udp < 0) {
 		exit(1);
