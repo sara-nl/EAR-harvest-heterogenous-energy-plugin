@@ -1072,24 +1072,29 @@ void main(int argc,char *argv[])
 	*/
 	while (((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0) || ((numfds_ready<0) && (errno==EINTR))){
 			eard_verbose(4,"eard unblocked with %d readys.....\n",numfds_ready);
-			if (numfds_ready<0){ //Signal received
-			if (numfds_ready>0){
-			for (i=0;i<ear_daemon_client_requests;i++){
-				if (FD_ISSET(ear_fd_req[i],&rfds)){
-					select_service(i);
-				}	// IF FD_ISSET
-			} //for
-			// We have to check if there is something else
-			}else{ //timeout
-					eard_verbose(2,"eard timeout...checking for application status\n");
-					eard_verbose(2,"eard...application connected\n");	
-					if (check_ping()) application_timeout();
-			}
-			// If application is disconnected, we wait for a new connection
-			if (check_ping()){
-				tv.tv_sec=20;tv.tv_usec=0;
-				my_to=&tv;
-			}else my_to=NULL;
+			if (numfds_ready>=0){ 
+				if (numfds_ready>0){
+					for (i=0;i<ear_daemon_client_requests;i++){
+						if (FD_ISSET(ear_fd_req[i],&rfds)){
+							select_service(i);
+						}	// IF FD_ISSET
+					} //for
+				// We have to check if there is something else
+				}else{ //timeout
+						eard_verbose(2,"eard timeout...checking for application status\n");
+						eard_verbose(2,"eard...application connected\n");	
+						if (check_ping()) application_timeout();
+				}
+				// If application is disconnected, we wait for a new connection
+				if (check_ping()){
+					tv.tv_sec=20;tv.tv_usec=0;
+					my_to=&tv;
+				}else{ 
+					my_to=NULL;
+				}
+			}else{// Signal received
+				my_to=NULL;
+				eard_verbose(0,"signal received");
 			}
 			rfds=rfds_basic;
 			ear_debug(1,"eard waiting.....\n");
