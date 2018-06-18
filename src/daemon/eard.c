@@ -131,12 +131,12 @@ void  create_tmp(char *tmp_dir)
     ret=mkdir(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
     if ((ret<0) && (errno!=EEXIST)){
         eard_verbose(0,"ear tmp dir cannot be created (%s)",strerror(errno));
-        exit(0);
+        _exit(0);
     }
 
     if (chmod(tmp_dir,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH)<0){
 		eard_verbose(0,"ear_tmp permissions cannot be set (%s)",strerror(errno));
-        exit(0);
+        _exit(0);
 	}
 }
 
@@ -153,7 +153,7 @@ void eard_lock(char *tmp_dir,char *nodename)
 		} else {
             eard_verbose(0, "Error opening daemon lock file in %s (%s)\n",
 						eard_lock_file, strerror(errno));}
-		exit(0);
+		_exit(0);
 	}
 }
 
@@ -317,7 +317,7 @@ void eard_restart()
 	// Do we want to maintain verbose level?
 	execlp(my_bin,my_bin,"1",NULL);
 	eard_verbose(0,"Restarting EARD %s\n",strerror(errno));
-	exit(1);	
+	_exit(1);	
 }
 
 /*
@@ -374,7 +374,7 @@ void eard_exit(uint restart)
 	}
 	if (restart==0){ 
 		end_service("eard");
-		exit(0);
+		_exit(0);
 	}else{
 		eard_restart();
 	}
@@ -723,8 +723,7 @@ void Usage(char *app)
 {
 	fprintf(stderr,"Usage: %s [-h|verbose_level] \n", app);
 	fprintf(stderr,"\tear.conf file is used to define node settings. It must be available at\n"); 
-	fprintf(stderr,"\t/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf\n");
-	fprintf(stderr,"\tin that second case, EAR_INSTALL_PATH environment variable must be defined\n"); 
+	fprintf(stderr,"\t $ETC/ear/ear.conf \n");
 	_exit(1);
 }
 
@@ -915,11 +914,11 @@ void main(int argc,char *argv[])
 	// We read the cluster configuration and sets default values in the shared memory
 	if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
 		eard_verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
-		exit(0);
+		_exit(0);
 	}
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         eard_verbose(0," Error reading cluster configuration\n");
-        exit(1);
+        _exit(1);
     }else{
         print_cluster_conf(&my_cluster_conf);
         my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);
@@ -935,12 +934,12 @@ void main(int argc,char *argv[])
     dyn_conf=create_ear_conf_shared_area(ear_tmp,eard_max_freq);
     if (dyn_conf==NULL){
         eard_verbose(0,"Error creating shared memory\n");
-        exit(0);
+        _exit(0);
     }
 	// We initialize frecuency
 	if (frequency_init(metrics_get_node_size()) < 0) {
 		eard_verbose(0, "ERROR, frequency information can't be initialized");
-		exit(1);
+		_exit(1);
 	}
     configure_default_values(dyn_conf,&my_cluster_conf,my_node_conf);
     eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
