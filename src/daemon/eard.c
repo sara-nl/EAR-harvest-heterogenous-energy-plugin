@@ -1032,7 +1032,7 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
-    if (eardbd_connect(my_node_conf->db_ip, UDP)!=EAR_SUCCESS){
+    if (eardbd_connect(my_node_conf->db_ip, my_cluster_conf.db_manager.tcp_port, UDP)!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif

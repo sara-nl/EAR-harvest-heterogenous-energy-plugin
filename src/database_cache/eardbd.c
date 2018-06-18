@@ -329,20 +329,24 @@ static ssize_t _receive(int fd)
 	return bytes;
 }
 
-static int _socket(char *host, char *port, int protocol, struct addrinfo **info)
+static int _socket(char *host, unsigned int port, int protocol, struct addrinfo **info)
 {
 	struct addrinfo *info_aux;
 	struct addrinfo hints;
+
+	char c_port[16];
 	int status;
 	int fd;
 
 	// Format
+	sprintf(c_port, "%u", port);
 	memset(&hints, 0, sizeof (hints));
+	
 	hints.ai_socktype = protocol;	// TCP stream sockets
 	hints.ai_family = AF_UNSPEC;	// Don't care IPv4 or IPv6
 	hints.ai_flags = AI_PASSIVE;    // Fill in my IP for me
 
-	if ((status = getaddrinfo(host, port, &hints, info)) != 0)
+	if ((status = getaddrinfo(host, c_port, &hints, info)) != 0)
 	{
 		error("getaddrinfo error (%s)", gai_strerror(status));
 		return EAR_ERROR;
@@ -441,7 +445,7 @@ int main(int argc, char **argv)
 
 	// Configuration file
 	if (get_ear_conf_path(conf_path) == EAR_ERROR) {
-		error(stderr, "Error getting ear.conf path");
+		error("Error getting ear.conf path");
 	}
 
 	read_cluster_conf(conf_path, &conf_clus);
@@ -460,8 +464,8 @@ int main(int argc, char **argv)
 	fd_srv_tcp = _socket(NULL, conf_clus.db_manager.tcp_port, TCP, &srv_info_tcp);
 	fd_srv_udp = _socket(NULL, conf_clus.db_manager.udp_port, UDP, &srv_info_udp);
 
-	verbose ("opened socket %d for TCP packets on port %s", fd_srv_tcp, PORT_TCP);
-	verbose ("opened socket %d for UDP packets on port %s", fd_srv_udp, PORT_UDP);
+	verbose ("opened socket %d for TCP packets on port %s", fd_srv_tcp, conf_clus.db_manager.tcp_port);
+	verbose ("opened socket %d for UDP packets on port %s", fd_srv_udp, conf_clus.db_manager.udp_port);
 
 	if (fd_srv_tcp < 0 || fd_srv_udp < 0) {
 		exit(1);
