@@ -9,13 +9,17 @@ BINARIES = bandwith_monitor \
            energy_1_second \
            energy_updates_freq \
 		   ear_conf \
-		   my_node_conf
+		   my_node_conf \
+		   configuration_check
 # ear_pm
 # test_architecture
 
 ######## RULES
 
 all: $(BINARIES)
+
+configuration_check: configuration_check.c $(SRCDIR)/common/types.a
+	$(CC) $(CFLAGS) -o configuration_check $^ $(SRCDIR)/common/types.a
 
 my_node_conf: my_node_conf.c $(SRCDIR)/common/types.a
 	$(CC) $(CFLAGS) -o my_node_conf  $^ $(SRCDIR)/common/types.a
