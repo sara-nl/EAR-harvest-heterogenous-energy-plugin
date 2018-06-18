@@ -769,7 +769,6 @@ void signal_handler(int sig)
 	}
 	if (sig == SIGHUP){
         free_cluster_conf(&my_cluster_conf);
-		eard_verbose(0,"Memory released");
         // Reading the configuration
         if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
             eard_verbose(0," Error reading cluster configuration\n");
@@ -789,6 +788,7 @@ void signal_handler(int sig)
 
         }
 	}
+	eard_verbose(0,"Configuration reloaded");
 	
 }
 

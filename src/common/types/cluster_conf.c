@@ -1097,17 +1097,12 @@ void print_cluster_conf(cluster_conf_t *conf)
 ysconf/ear.conf */
 int get_ear_conf_path(char *ear_conf_path)
 {
-	char *ear_install;
 	char my_path[GENERIC_NAME];
+	char *my_etc;
 	int fd;
-	fd=open("/etc/ear/ear.conf",O_RDONLY);
-	if (fd>0){
-		strcpy(ear_conf_path,"/etc/ear/ear.conf");
-		return EAR_SUCCESS;
-	}
-	ear_install=getenv("ETC");
-	if (ear_install==NULL) return EAR_ERROR;
-	sprintf(my_path,"%s/ear/ear.conf",ear_install);
+	my_etc=getenv("ETC");
+	if (my_etc==NULL) return EAR_ERROR;	
+	sprintf(my_path,"%s/ear/ear.conf",my_etc);
 	fd=open(my_path,O_RDONLY);
     if (fd>0){
         strcpy(ear_conf_path,my_path);

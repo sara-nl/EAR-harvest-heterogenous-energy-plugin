@@ -28,13 +28,9 @@ void main(int argc,char *argv[])
 	if (argc!=2) usage(argv[0]);
 	num_nodes=(unsigned int)atoi(argv[1]);
 	// NEW_JOB
-	if (gethostname(myhost,NAME_SIZE)<0){
-		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
-		exit(1);
-	}
 	read_cluster_conf(my_ear_conf_path,&my_cluster);
 	fprintf(stderr,"Using port %u\n",my_cluster.eargm.port);
-	eargms=eargm_connect(myhost,my_cluster.eargm.port);
+	eargms=eargm_connect(my_cluster.eargm.host,my_cluster.eargm.port);
 	if(eargms<0){ 
 		fprintf(stderr,"Connection error\n");
 		exit(1);
