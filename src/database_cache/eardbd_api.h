@@ -32,7 +32,7 @@
 
 #include <database_cache/eardbd.h>
 
-int eardbd_connect(char *host, int protocol);
+int eardbd_connect(char *host, unsigned int port, int protocol);
 int eardbd_is_connected();
 int eardbd_disconnect();
 

@@ -168,11 +168,11 @@ static int _disconnect()
 	return EAR_SUCCESS;
 }
 
-static int _connect(char *host)
+static int _connect(char *host, unsigned int port)
 {
 	int status;
 
-	status = _socket(host, PORT_TCP, TCP);
+	status = _socket(host, port, TCP);
 
 	if (status < 0) {
 		error("opening socket");
@@ -231,7 +231,6 @@ int eardbd_send_loop(void *loop)
     return _send((loop_t *) loop, sizeof(loop_t));
 }
 
-
 int eardbd_ping()
 {
 	CONNECTION_TEST();
@@ -245,14 +244,14 @@ int eardbd_is_connected()
 	return EAR_SUCCESS;
 }
 
-int eardbd_connect(char *host, int protocol)
+int eardbd_connect(char *host, unsigned int port, int protocol)
 {
 	int status;
 
 	if (protocol == TCP) {
-		status = _connect(host);
+		status = _connect(host, port);
 	} else if (protocol == UDP) {
-		status = _socket(host, PORT_UDP, UDP);
+		status = _socket(host, port, UDP);
 	} else {
 		error("unknown protocol");
 		return EAR_ERROR;
