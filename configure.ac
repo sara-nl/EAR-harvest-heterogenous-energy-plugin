@@ -166,8 +166,6 @@ AC_DEPENDANCY_CHECK($FREEIPMI_DIR, FreeIPMI dependancy found, 1)
 #fi
 
 echo "-------------------------------------- Features summary --"
-AC_FEATURE_CHECK($enable_power_monitoring, "yes", power monitoring)
-AC_FEATURE_CHECK($enable_shared_memory, "yes", shared memory)
 AC_FEATURE_CHECK($DB_MYSQL, "1", MySQL as database)
 AC_FEATURE_CHECK($DB_FILES, "1",  text files as database)
 echo "----------------------------------------------------------"
