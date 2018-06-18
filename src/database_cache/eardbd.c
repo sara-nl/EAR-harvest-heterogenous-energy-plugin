@@ -397,8 +397,6 @@ void usage(int argc, char **argv)
 	if (argc != 3)
 	{
 		printf("Usage: %s conf.path agg.time\n", argv[0]);
-		printf("\tconf.path: EAR configuration file\n");
-		printf("\tagg.time: aggregation time in seconds\n");
 		exit(1);
 	}
 }
@@ -409,8 +407,10 @@ int main(int argc, char **argv)
 	struct addrinfo *srv_info_tcp;
 	struct addrinfo *srv_info_udp;
 
+	char conf_path[PATH_MAX];
 	cluster_conf_t config;
-	char *conf_path;
+	my_node_conf_t *conf_node;
+	cluster_conf_t conf_clus;
 
 	long merge_time;
 	float mb_apps;
@@ -430,12 +430,6 @@ int main(int argc, char **argv)
 
 	usage(argc, argv);
 
-	// READ CONFIG FILE
-	// agreggation time in seconds
-	// disk buffering time in seconds
-	// TCP port
-	// UDP port
-
 	//
 	verbose("phase 1: starting");
 
@@ -445,21 +439,26 @@ int main(int argc, char **argv)
 	verbose("reserving %0.2f MBytes for applications", mb_apps);
 	verbose("reserving %0.2f MBytes for power metrics", mb_mets);
 
+	// Configuration file
+	if (get_ear_conf_path(conf_path) == EAR_ERROR) {
+		error(stderr, "Error getting ear.conf path");
+	}
+
+	read_cluster_conf(conf_path, &conf_clus);
+
 	// Format
-	conf_path  = argv[1];
-	merge_time = atol(argv[2]);
+	merge_time = (long) conf_clus.db_manager.aggr_time;
+
 	timeout.tv_sec = merge_time;
 	timeout.tv_usec = 0L;
 
 	FD_ZERO(&fds_incoming);
 	FD_ZERO(&fds_active);
 
-	//
-	read_cluster_conf(conf_path, &config);
-
 	// Opening socket
-	fd_srv_tcp = _socket(NULL, PORT_TCP, TCP, &srv_info_tcp);
-	fd_srv_udp = _socket(NULL, PORT_UDP, UDP, &srv_info_udp);
+
+	fd_srv_tcp = _socket(NULL, conf_clus.db_manager.tcp_port, TCP, &srv_info_tcp);
+	fd_srv_udp = _socket(NULL, conf_clus.db_manager.udp_port, UDP, &srv_info_udp);
 
 	verbose ("opened socket %d for TCP packets on port %s", fd_srv_tcp, PORT_TCP);
 	verbose ("opened socket %d for UDP packets on port %s", fd_srv_udp, PORT_UDP);
