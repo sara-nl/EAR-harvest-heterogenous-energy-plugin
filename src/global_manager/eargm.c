@@ -78,6 +78,7 @@ static const char *__NAME__ = "EARGM";
 * EAR Global Manager global data
 */
 int EAR_VERBOSE_LEVEL=1;
+int verbose_arg=-1;
 uint period_t1,period_t2;
 ulong total_energy_t2;
 uint my_port;
@@ -89,15 +90,11 @@ uint in_action=0;
 
 
 
-void usage(char *app)
-{
-	printf("Usage: %s period_t1 (in secs) period_t2 (in seconds) max_energy (in Joules) \n", app);
-	exit(0);
-}
 
 void update_eargm_configuration(cluster_conf_t *conf)
 {
 	EAR_VERBOSE_LEVEL=conf->eargm.verbose;
+	if (verbose_arg>0) EAR_VERBOSE_LEVEL=verbose_arg;
 	period_t1=conf->eargm.t1;
 	period_t2=conf->eargm.t2;
 	energy_budget=conf->eargm.energy;
@@ -352,7 +349,24 @@ ulong reduce_frequencies_all_nodes(int level)
 *
 *
 */
+void usage(char *app)
+{
+    printf("Usage: %s [-h]|[--help]|verbose_level] \n", app);
+	printf("This program controls the energy consumed in a period T2 seconds defined in $ETC/ear/ear.conf file\n");
+	printf("energy is checked every T1 seconds interval\n");
+	printf("Global manager can be configured in active or passive mode. Automatic actions are taken in active mode (defined in ear.conf file)\n");
+    exit(0);
+}
 
+
+void parse_args(char *argv[])
+{
+	if (strcmp(argv[1],"-h")==0 || strcmp(argv[1],"--help")==0){
+		usage(argv[0]);
+		exit(0);
+	}
+	verbose_arg=atoi(argv[1]);	
+}
 
 
 void main(int argc,char *argv[])
@@ -363,10 +377,8 @@ void main(int argc,char *argv[])
 	ulong result;
 	gm_warning_t my_warning;
 
-    if (argc !=4) usage(argv[0]);
-	period_t1=atoi(argv[1]);
-	period_t2=atoi(argv[2]);
-	energy_budget=atol(argv[3]);
+    if (argc > 2) usage(argv[0]);
+	if (argc==2) parse_args(argv);
     // We read the cluster configuration and sets default values in the shared memory
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
         VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
