@@ -204,8 +204,11 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
 
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
 
-/** prints in the stdout the node configuration */
-void print_node_conf(node_conf_t *my_node_conf);
+/** prints in the stderr the node configuration */
+void print_node_conf(node_conf_t *node_conf);
+/** prints in the stderr the specific node configuration */
+void print_my_node_conf(my_node_conf_t *my_node_conf);
+
 
 // POLICY level functions
 /** prints in the stdout policy configuration */

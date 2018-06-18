@@ -98,7 +98,7 @@ void create_tables(MYSQL *connection)
                             start_mpi_time INT NOT NULL,\
                             end_mpi_time INT NOT NULL,\
                             policy VARCHAR(256) NOT NULL,\
-                            threshold FLOAT NOT NULL,\
+                            threshold DOUBLE NOT NULL,\
                             procs INT unsigned NOT NULL,\
                             job_type SMALLINT unsigned NOT NULL,\
                             def_f INT unsigned, \
@@ -107,50 +107,50 @@ void create_tables(MYSQL *connection)
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Signatures (\
                             id INT unsigned NOT NULL AUTO_INCREMENT,\
-                            DC_power FLOAT,\
-                            DRAM_power FLOAT,\
-                            PCK_power FLOAT,\
-                            EDP FLOAT,\
-                            GBS FLOAT,\
-                            TPI FLOAT,\
-                            CPI FLOAT,\
-                            Gflops FLOAT,\
-                            time FLOAT,\
-                            FLOPS1 INT unsigned,\
-                            FLOPS2 INT unsigned,\
-                            FLOPS3 INT unsigned,\
-                            FLOPS4 INT unsigned,\
-                            FLOPS5 INT unsigned,\
-                            FLOPS6 INT unsigned,\
-                            FLOPS7 INT unsigned,\
-                            FLOPS8 INT unsigned,\
-                            instructions INT unsigned, \
-                            cycles INT unsigned,\
-                            avg_f INT unsigned,\
-                            def_f INT unsigned, \
+                            DC_power DOUBLE,\
+                            DRAM_power DOUBLE,\
+                            PCK_power DOUBLE,\
+                            EDP DOUBLE,\
+                            GBS DOUBLE,\
+                            TPI DOUBLE,\
+                            CPI DOUBLE,\
+                            Gflops DOUBLE,\
+                            time DOUBLE,\
+                            FLOPS1 BIGINT unsigned,\
+                            FLOPS2 BIGINT unsigned,\
+                            FLOPS3 BIGINT unsigned,\
+                            FLOPS4 BIGINT unsigned,\
+                            FLOPS5 BIGINT unsigned,\
+                            FLOPS6 BIGINT unsigned,\
+                            FLOPS7 BIGINT unsigned,\
+                            FLOPS8 BIGINT unsigned,\
+                            instructions BIGINT unsigned, \
+                            cycles BIGINT unsigned,\
+                            avg_f BIGINT unsigned,\
+                            def_f BIGINT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
                             id INT unsigned NOT NULL AUTO_INCREMENT, \
-                            start_time INT NOT NULL, \
-                            end_time INT NOT NULL, \
-                            dc_energy INT unsigned NOT NULL, \
+                            start_time BIGINT NOT NULL, \
+                            end_time BIGINT NOT NULL, \
+                            dc_energy BIGINT unsigned NOT NULL, \
                             node_id VARCHAR(256) NOT NULL, \
-                            job_id INT NOT NULL, \
-                            step_id INT NOT NULL, \
+                            job_id BIGINT NOT NULL, \
+                            step_id BIGINT NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Power_signatures (  \
                             id INT unsigned NOT NULL AUTO_INCREMENT, \
-                            DC_power FLOAT NOT NULL, \
-                            DRAM_power FLOAT NOT NULL, \
-                            PCK_power FLOAT NOT NULL, \
-                            EDP FLOAT NOT NULL, \
-                            max_DC_power FLOAT NOT NULL, \
-                            min_DC_power FLOAT NOT NULL, \
-                            time FLOAT NOT NULL, \
-                            avg_f INT unsigned NOT NULL, \
-                            def_f INT unsigned NOT NULL, \
+                            DC_power DOUBLE NOT NULL, \
+                            DRAM_power DOUBLE NOT NULL, \
+                            PCK_power DOUBLE NOT NULL, \
+                            EDP DOUBLE NOT NULL, \
+                            max_DC_power DOUBLE NOT NULL, \
+                            min_DC_power DOUBLE NOT NULL, \
+                            time DOUBLE NOT NULL, \
+                            avg_f BIGINT unsigned NOT NULL, \
+                            def_f BIGINT unsigned NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Events ( \
@@ -159,14 +159,14 @@ void create_tables(MYSQL *connection)
                             event_type INT NOT NULL, \
                             job_id INT NOT NULL, \
                             step_id INT NOT NULL, \
-                            freq INT unsigned NOT NULL, \
+                            freq BIGINT unsigned NOT NULL, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Warnings ( \
-                            energy_percent FLOAT, \
+                            energy_percent DOUBLE, \
                             warning_level INT UNSIGNED NOT NULL, \
                             time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, \
-                            inc_th FLOAT, \
+                            inc_th DOUBLE, \
                             p_state INT, \
                             PRIMARY KEY (time))")) execute_on_error(connection);
                             
@@ -189,7 +189,7 @@ void create_tables(MYSQL *connection)
                             start_mpi_time INT NOT NULL,\
                             end_mpi_time INT NOT NULL,\
                             policy VARCHAR(256) NOT NULL,\
-                            threshold FLOAT NOT NULL,\
+                            threshold DOUBLE NOT NULL,\
                             procs INT unsigned NOT NULL,\
                             job_type SMALLINT unsigned NOT NULL,\
                             def_f INT unsigned, \
@@ -198,36 +198,36 @@ void create_tables(MYSQL *connection)
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Periodic_aggregations (\
                             id INT unsigned NOT NULL AUTO_INCREMENT,\
-                            start_time INT,\
-                            end_time INT,\
-                            DC_energy INT unsigned, \
+                            start_time BIGINT,\
+                            end_time BIGINT,\
+                            DC_energy BIGINT unsigned, \
                             PRIMARY KEY(id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
                             id INT unsigned NOT NULL AUTO_INCREMENT,\
-                            DC_power FLOAT,\
-                            max_DC_power FLOAT, \
-                            min_DC_power FLOAT, \
-                            DRAM_power FLOAT,\
-                            PCK_power FLOAT,\
-                            EDP FLOAT,\
-                            GBS FLOAT,\
-                            TPI FLOAT,\
-                            CPI FLOAT,\
-                            Gflops FLOAT,\
-                            time FLOAT,\
-                            FLOPS1 INT unsigned,\
-                            FLOPS2 INT unsigned,\
-                            FLOPS3 INT unsigned,\
-                            FLOPS4 INT unsigned,\
-                            FLOPS5 INT unsigned,\
-                            FLOPS6 INT unsigned,\
-                            FLOPS7 INT unsigned,\
-                            FLOPS8 INT unsigned,\
-                            instructions INT unsigned, \
-                            cycles INT unsigned,\
-                            avg_f INT unsigned,\
-                            def_f INT unsigned, \
+                            DC_power DOUBLE,\
+                            max_DC_power DOUBLE, \
+                            min_DC_power DOUBLE, \
+                            DRAM_power DOUBLE,\
+                            PCK_power DOUBLE,\
+                            EDP DOUBLE,\
+                            GBS DOUBLE,\
+                            TPI DOUBLE,\
+                            CPI DOUBLE,\
+                            Gflops DOUBLE,\
+                            time DOUBLE,\
+                            FLOPS1 BIGINT unsigned,\
+                            FLOPS2 BIGINT unsigned,\
+                            FLOPS3 BIGINT unsigned,\
+                            FLOPS4 BIGINT unsigned,\
+                            FLOPS5 BIGINT unsigned,\
+                            FLOPS6 BIGINT unsigned,\
+                            FLOPS7 BIGINT unsigned,\
+                            FLOPS8 BIGINT unsigned,\
+                            instructions BIGINT unsigned, \
+                            cycles BIGINT unsigned,\
+                            avg_f BIGINT unsigned,\
+                            def_f BIGINT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
 }

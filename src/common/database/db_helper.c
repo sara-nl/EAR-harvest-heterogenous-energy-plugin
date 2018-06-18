@@ -133,7 +133,7 @@ int db_insert_power_signature(power_signature_t *pow_sig)
         return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, "Report", db_config->port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
@@ -271,7 +271,7 @@ int db_insert_ear_event(ear_event_t *ear_ev)
         return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, "Report", db_config->port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
