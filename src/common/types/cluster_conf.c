@@ -908,7 +908,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             strclean(token, '\n');
             strcpy(conf->database.pass, token);
         }
-        else if (!strcmp(token, "MARIADBHOST"))
+        else if (!strcmp(token, "MARIADBDATABASE"))
         {
             token = strtok(NULL, "=");
             strclean(token, '\n');
