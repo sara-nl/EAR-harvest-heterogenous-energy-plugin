@@ -1,0 +1,22 @@
+[Unit]
+Description=EARGMD - EAR Global Manager
+ConditionPathExists=@localstatedir@
+Requires=mariadb.service
+Wants=slurmd.service
+After=mariadb.service,slurmd.service
+
+[Service]
+Type=simple
+EnvironmentFile=@prefix@/etc/slurm/ear.conf
+Environment="ETC=@sysconfdir@"
+ExecStart=@prefix@/sbin/eargmd $PERIOD_T1 $PERIOD_T2 $MAX_ENERGY
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+KillMode=process
+Restart=on-failure
+LimitMEMLOCK=infinity
+LimitSTACK=infinity
+
+[Install]
+WantedBy=multi-user.target
+
