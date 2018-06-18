@@ -131,17 +131,20 @@ static int _send(void *object, size_t size)
 	return EAR_SUCCESS;
 }
 
-static int _socket(char *host, char *port, int protocol)
+static int _socket(char *host, unsigned int port, int protocol)
 {
 	static struct addrinfo hints;
+	char c_port[16];
 	int status;
 
 	// Format
+	sprintf(c_port, "%u", port);
 	memset(&hints, 0, sizeof hints);
+	
 	hints.ai_socktype = protocol;	// TCP stream sockets
 	hints.ai_family = AF_UNSPEC;	// Don't care IPv4 or IPv6
 
-	if ((status = getaddrinfo(host, port, &hints, &srv_info)) != 0)
+	if ((status = getaddrinfo(host, c_port, &hints, &srv_info)) != 0)
 	{
 		error("getaddrinfo error (%s)", gai_strerror(status));
 		return EAR_ERROR;

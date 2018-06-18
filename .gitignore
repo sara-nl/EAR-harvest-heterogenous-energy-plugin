@@ -65,6 +65,7 @@ tests/check/check.sh
 *compute_coefficients
 *traces_to_paraver
 *database_eraser
+*configuration_check
 
 # IDE
 cmake*
