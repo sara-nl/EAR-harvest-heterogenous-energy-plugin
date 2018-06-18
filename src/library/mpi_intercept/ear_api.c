@@ -340,7 +340,9 @@ void ear_finalize()
 	frequency_dispose();
 
 	// Writing application data
+	VERBOSE_N(0,"writting signature");
 	eards_write_app_signature(&application);
+	VERBOSE_N(0,"done signature");
 	append_application_text_file(app_summary_path, &application);
 	report_application_data(&application);
 

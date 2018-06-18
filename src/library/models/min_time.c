@@ -140,7 +140,7 @@ ulong min_time_policy(signature_t *sig)
 
 	// ref=1 is nominal 0=turbo, we are not using it
 	#if DEMO
-	VERBOSE_N(1,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
+	VERBOSE_N(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
 	#endif
 
 		try_next=1;
