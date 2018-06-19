@@ -127,24 +127,28 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     int pow_sig_id = 0;
     int sig_id = 0;
 
+    fprintf(stderr, "Inserting power_signature to database\n");
     pow_sig_id = mysql_insert_power_signature(connection, &app->power_sig);
-
+    fprintf(stderr, "Inserted power_signature to database with id: %u\n", pow_sig_id);
+    
     if (pow_sig_id < 0)
     {
-        if (pow_sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing power_signature to database.");
-        else if (pow_sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing power_signature to database.");
-        else fprintf(stderr,"Unknown error when writing power_signature to database.");
+        if (pow_sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing power_signature to database.\n");
+        else if (pow_sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing power_signature to database.\n");
+        else fprintf(stderr,"Unknown error when writing power_signature to database.\n");
     }
 
     if (is_mpi)
     {
+        fprintf(stderr, "Application is mpi, inserting signature\n");
         sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
+        fprintf(stderr, "Inserted signature to database with id: %u\n", sig_id);
 
         if (sig_id < 0)
         {
-            if (sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing power_signature to database.");
-            else if (sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing power_signature to database.");
-            else fprintf(stderr,"Unknown error when writing power_signature to database.");
+            if (sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing signature to database.\n");
+            else if (sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing signature to database.\n");
+            else fprintf(stderr,"Unknown error when writing signature to database.\n");
         }
 
     }
@@ -162,9 +166,10 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     bind[0].buffer = (char *)&app->job.id;
     bind[1].buffer = (char *)&app->job.step_id;
     bind[2].buffer = (char *)&app->node_id;
+    bind[4].buffer = (char *)&pow_sig_id;
+    
     if (is_mpi) bind[3].buffer = (char *)&sig_id;
     else bind[3].buffer = (char *) NULL;
-    bind[4].buffer = (char *)&pow_sig_id;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
