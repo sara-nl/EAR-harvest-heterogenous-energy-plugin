@@ -83,7 +83,6 @@ void main(int argc,char *argv[])
 	my_job.job.id,my_job.job.step_id,my_job.job.app_id,my_job.job.user_id,my_job.job.policy,my_job.job.th);
 	if (learning!=NULL){
 		my_job.is_learning=(uint8_t)atoi(learning);
-		fprintf(stdout,"learning phase\n");
 	}
 	if (p_state!=NULL) {
 		my_job.job.def_f=(ulong)atoi(p_state);

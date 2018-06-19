@@ -245,7 +245,6 @@ void ear_init()
 	get_app_name(ear_app_name);
 	if (application.is_learning){
 		VERBOSE_N(1,"Learning phase app %s p_state %lu\n",ear_app_name,application.job.def_f);
-		VERBOSE_N(1,"Learning phase app %s p_state %lu\n",ear_app_name,application.job.def_f);
 	}
 	strcpy(application.job.user_id, getenv("LOGNAME"));
 	strcpy(application.node_id, node_name);
