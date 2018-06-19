@@ -59,8 +59,7 @@ int fd_srv    = -1;
 #define error(...) \
 	fprintf(stdout, "EARDBD_API ERROR, "); \
 	fprintf(stdout, __VA_ARGS__); \
-	fprintf(stdout, "\n"); \
-	exit(1);
+	fprintf(stdout, "\n");
 
 #define CONNECTION_TEST() \
 	if (fd_srv == -1 || _protocol == -1 || (_protocol == TCP && connected == -1)) { \
@@ -141,8 +140,8 @@ static int _socket(char *host, unsigned int port, int protocol)
 	sprintf(c_port, "%u", port);
 	memset(&hints, 0, sizeof hints);
 	
-	hints.ai_socktype = protocol;	// TCP stream sockets
-	hints.ai_family = AF_UNSPEC;	// Don't care IPv4 or IPv6
+	hints.ai_socktype = protocol;
+	hints.ai_family = AF_UNSPEC; // Don't care IPv4 or IPv6
 
 	if ((status = getaddrinfo(host, c_port, &hints, &srv_info)) != 0)
 	{

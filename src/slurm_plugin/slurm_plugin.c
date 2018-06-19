@@ -171,7 +171,7 @@ int local_read_cluster_conf_file()
 
 	gethostname(host_name, 128);
 	getenv_local("EAR_ETCDIR", &conf_path);
-	sprintf(buffer1, "%s/%s", conf_path, EAR_CONF_FILE);
+	sprintf(buffer1, "%s/%s", conf_path, "/ear/ear.conf");
 	conf_path = buffer1;
 
 	plug_verbose(0, 2, "Trying to read '%s' config file for node '%s'", conf_path, host_name);
@@ -232,7 +232,7 @@ int local_library_disable()
 
 int remote_eard_report_start(spank_t sp)
 {
-	return ESPANK_SUCCESS;
+	//return ESPANK_SUCCESS;
 
 	gethostname(host_name, 128);
 	init_application(&app);
@@ -265,7 +265,7 @@ int remote_eard_report_start(spank_t sp)
 		app.job.th = atof(buffer1);
 	}
 
-	if (eards_remote_connect(host_name) < 0) {
+	if (eards_remote_connect("cae2306") < 0) {
 		plug_error("ERROR while connecting with EAR daemon");
 	}
 	if (!eards_new_job(&app)) {
@@ -278,9 +278,9 @@ int remote_eard_report_start(spank_t sp)
 
 int remote_eard_report_finish()
 {
-	return ESPANK_SUCCESS;
+	//return ESPANK_SUCCESS;
 	
-if (eards_remote_connect(host_name) < 0) {
+	if (eards_remote_connect(host_name) < 0) {
 		plug_error("ERROR while connecting with EAR daemon");
 	}
 	eards_end_job(app.job.id, app.job.step_id);
@@ -400,6 +400,11 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 	if (spank_context() == S_CTX_LOCAL && job_created == 1) {
 		return local_eargmd_report_finish();
 	}
+
+    if (spank_context() == S_CTX_REMOTE) {
+        return remote_eard_report_finish();
+    } 
+
 	return (ESPANK_SUCCESS);
 }
 
@@ -416,25 +421,15 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		remote_update_slurm_vars(sp);
 	}
 
+	if (spank_context() == S_CTX_REMOTE) {
+		return remote_eard_report_start(sp);
+	}
+
 	return (ESPANK_SUCCESS);
 }
 
 int slurm_spank_task_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_task_init");
-
-	if (spank_context() == S_CTX_REMOTE) {
-		return remote_eard_report_start(sp);
-	}
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_task_exit (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "slurm_spank_task_exit");
-
-	if (spank_context() == S_CTX_REMOTE) {
-		return remote_eard_report_finish();
-	}
 	return (ESPANK_SUCCESS);
 }

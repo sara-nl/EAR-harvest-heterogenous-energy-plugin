@@ -34,10 +34,10 @@ int main(int argc, char **argv)
 	memset(&met, 0, sizeof (periodic_metric_t));
 
 	app.is_mpi = 1;
-	sprintf(app.node_id, "cmp000.lenovo.hpc");
+	sprintf(app.node_id, "cae2306");
 
 	// Testing API
-	eardbd_connect(argv[1], TCP);
+	eardbd_connect(argv[1], 4712, UDP);
 	eardbd_send_application(&app);
 	eardbd_disconnect();
 
