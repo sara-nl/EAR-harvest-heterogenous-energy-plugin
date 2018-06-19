@@ -238,10 +238,14 @@ void ear_init()
 	application.is_mpi=1;
 	loop_signature.is_mpi=1;
 	application.is_learning=ear_whole_app;
+	application.job.def_f=getenv_ear_p_state();
 	loop_signature.is_learning=ear_whole_app;
 	
 	// Getting environment data
 	get_app_name(ear_app_name);
+	if (application.is_learning){
+		VERBOSE_N(1,"Learning phase app %s p_state %lu\n",ear_app_name,application.job.def_f);
+	}
 	strcpy(application.job.user_id, getenv("LOGNAME"));
 	strcpy(application.node_id, node_name);
 	strcpy(application.job.user_acc,my_account);

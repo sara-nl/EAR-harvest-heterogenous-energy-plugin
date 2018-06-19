@@ -41,7 +41,7 @@
 #define RAPL_SETS		1
 #define MAX_RAPL_EVENTS		64
 
-static const char *__NAME__ = "METRICS_RAPL";
+static const char *__NAME__ = "metrics[rapl]";
 long long acum_values[RAPL_SETS][RAPL_EVS];
 long long values[RAPL_SETS][RAPL_EVS];
 int event_sets[RAPL_SETS];

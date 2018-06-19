@@ -46,7 +46,7 @@
 #include <common/ear_verbose.h>
 #include <common/states.h>
 
-static const char* __NAME__ = "FREQUENCY_CONTROL";
+static const char* __NAME__ = "frequency:";
 
 static struct cpufreq_policy previous_cpu0_policy;
 static ulong previous_cpu0_freq;

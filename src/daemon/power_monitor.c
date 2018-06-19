@@ -263,23 +263,31 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
 	int p_id;
-	policy_conf_t *my_policy;
+	policy_conf_t *my_policy,learning_policy;
 	ulong f;
 	VERBOSE_N(2,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
 	// Checking the specific policy settings. It is pending to configure for special users
-	p_id=policy_name_to_id(appID->job.policy);
-	// Use cluster conf function
-	if (p_id!=EAR_ERROR){
-		my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
+	if (appID->is_learning){
+		learning_policy.p_state=appID->job.def_f;
+		learning_policy.th=0;
+		learning_policy.policy=MONITORING_ONLY;
+		my_policy=&learning_policy;
+		VERBOSE_N(0,"Executing learning phase for job (%d,%d) p_state %lu\n",appID->job.id,appID->job.step_id,learning_policy.p_state);
 	}else{
-		my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
-	}
-	if (my_policy==NULL){
-		VERBOSE_N(0,"Default policy configuration returns NULL!!");
-		my_policy=&default_policy_context;
+		p_id=policy_name_to_id(appID->job.policy);
+		// Use cluster conf function
+		if (p_id!=EAR_ERROR){
+			my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
+		}else{
+			my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+		}
+		if (my_policy==NULL){
+			VERBOSE_N(0,"Default policy configuration returns NULL!!");
+			my_policy=&default_policy_context;
+		}
 	}
 	VERBOSE_N(1,"Node configuration for policy %s p_state %d th %lf",appID->job.policy,my_policy->p_state,my_policy->th);
 	f=frequency_pstate_to_freq(my_policy->p_state);

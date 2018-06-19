@@ -7,8 +7,8 @@
 # The class is one of "S", "W", and "A" through "F". 
 # No blank lines. 
 # The following example builds serial sample sizes of all benchmarks. 
-sp-mz	C	16
+sp-mz	C	24
 lu-mz	C	2
-bt-mz	C	16
+bt-mz	C	24
 
 
