@@ -167,15 +167,26 @@ static void remote_update_slurm_vars(spank_t sp)
 
 int local_read_cluster_conf_file()
 {
-	char *conf_path;
+	char *conf_path = buffer1;
+	char *eard_port = buffer2;
 
+	// Getting hostname
 	gethostname(host_name, 128);
+
+	// Getting cluster configuration
 	getenv_local("EAR_ETCDIR", &conf_path);
-	sprintf(buffer1, "%s/%s", conf_path, "/ear/ear.conf");
-	conf_path = buffer1;
 
-	plug_verbose(0, 2, "Trying to read '%s' config file for node '%s'", conf_path, host_name);
+	//sprintf(buffer1, "%s/%s", conf_path, "ear/ear.conf");
+	plug_verbose(0, 2, "Trying to read config file in '%s' for node '%s'", conf_path, host_name);
 
+	// Passing parameters to get_ear_conf_path (LOL)
+	setenv_local("ETC", conf_path, 1);
+	conf_path[0] = '\0';	
+
+	if (get_ear_conf_path(conf_path) == EAR_ERROR) {
+		return (ESPANK_ERROR);
+	}
+	
 	if (read_cluster_conf(conf_path, &conf_clus) != EAR_SUCCESS) {
 		return (ESPANK_ERROR);
 	}
@@ -183,6 +194,11 @@ int local_read_cluster_conf_file()
 	if ((conf_node = get_my_node_conf(&conf_clus, host_name)) == NULL) {
 		return (ESPANK_ERROR);
 	}
+	
+	// Setting variables for EARD connection
+	sprintf(eard_port, "%u", conf_clus.eard.port);
+	setenv_local("EARD_NODE", host_name, 1);
+	setenv_local("EARD_PORT", eard_port, 1);
 
 	return (ESPANK_SUCCESS);
 }
@@ -213,7 +229,6 @@ int find_paths(spank_t sp, int ac, char **av)
 		{
 			plug_verbose(sp, 3, "looking for library files in path '%s'", &av[i][7]);
 			setenv_local("EAR_PREDIR", &av[i][7], 1);
-
 		}
 	}
 	return (ESPANK_SUCCESS);
@@ -232,9 +247,8 @@ int local_library_disable()
 
 int remote_eard_report_start(spank_t sp)
 {
-	//return ESPANK_SUCCESS;
+	unsigned int eard_port;
 
-	gethostname(host_name, 128);
 	init_application(&app);
 
 	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer1, 64)) {
@@ -264,8 +278,19 @@ int remote_eard_report_start(spank_t sp)
 	} else {
 		app.job.th = atof(buffer1);
 	}
+	if (!getenv_remote(sp, "EARD_HOST", host_name, GENERIC_NAME)) {
+		return (ESPANK_ERROR);	
+	}	
+	if (!getenv_remote(sp, "EARD_HOST", buffer1, GENERIC_NAME)) {
+		return (ESPANK_ERROR);
+	} else {
+		eard_port = (unsigned int) atoi(buffer1);
+	}
 
-	if (eards_remote_connect("cae2306") < 0) {
+	plug_verbose(sp, 2, "EARD host: %s", host_name);
+	plug_verbose(sp, 2, "EARD port: %u", eard_port);
+
+	if (eards_remote_connect(host_name, eard_port) < 0) {
 		plug_error("ERROR while connecting with EAR daemon");
 	}
 	if (!eards_new_job(&app)) {
@@ -278,8 +303,6 @@ int remote_eard_report_start(spank_t sp)
 
 int remote_eard_report_finish()
 {
-	//return ESPANK_SUCCESS;
-	
 	if (eards_remote_connect(host_name) < 0) {
 		plug_error("ERROR while connecting with EAR daemon");
 	}
@@ -289,12 +312,15 @@ int remote_eard_report_finish()
 	return (ESPANK_SUCCESS);
 }
 
-int local_eargmd_report_start()
+int local_eargmd_report_start(spank_t sp)
 {
 	char *c_num_nodes;
 
 	getenv_local("SLURM_NNODES", &c_num_nodes);
 	num_nodes = atoi(c_num_nodes);
+	
+	plug_verbose(sp, 2, "EARGMD host: %s", conf_clus.eargm.host);
+	plug_verbose(sp, 2, "EARGMD port: %d", conf_clus.eargm.port);
 
 	if (eargm_connect(conf_clus.eargm.host, conf_clus.eargm.port) < 0) {
 		plug_error("ERROR while connecting with EAR global manager daemon");
@@ -355,10 +381,6 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 		}
 	}
 
-	plug_verbose(sp, 2, "EARD host: %s", host_name);
-	plug_verbose(sp, 2, "EARD port: %d", conf_clus.eard.port);
-	plug_verbose(sp, 2, "EARGMD host: %s", conf_clus.eargm.host);
-	plug_verbose(sp, 2, "EARGMD port: %d", conf_clus.eargm.port);
 	//print_cluster_conf(&conf_clus);
 
 	return (ESPANK_SUCCESS);
@@ -374,7 +396,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 		job_created = 1;
 
 		//
-		local_eargmd_report_start();
+		local_eargmd_report_start(sp);
 
 		//
 		if (isenv_local("EAR", "1"))
