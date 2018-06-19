@@ -276,6 +276,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 		learning_policy.policy=MONITORING_ONLY;
 		my_policy=&learning_policy;
 		VERBOSE_N(0,"Executing learning phase for job (%d,%d) p_state %lu\n",appID->job.id,appID->job.step_id,learning_policy.p_state);
+		VERBOSE_N(0,"Executing learning phase for job (%d,%d) p_state %lu\n",appID->job.id,appID->job.step_id,learning_policy.p_state);
 	}else{
 		p_id=policy_name_to_id(appID->job.policy);
 		// Use cluster conf function
