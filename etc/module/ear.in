@@ -9,5 +9,6 @@
 module-whatis "Enable usage of Energy Aware Runtime"
 
 setenv			EAR_INSTALL_PATH	@prefix@
+setenv 			ETC					@sysconfdir@
 prepend-path	PATH				"@prefix@/bin"
 prepend-path	MANPATH				"@prefix@/man"
