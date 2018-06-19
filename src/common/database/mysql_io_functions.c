@@ -129,6 +129,31 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
 
     pow_sig_id = mysql_insert_power_signature(connection, &app->power_sig);
 
+    if (pow_sig_id < 0)
+    {
+        if (pow_sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing power_signature to database.");
+        else if (pow_sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing power_signature to database.");
+        else fprintf(stderr,"Unknown error when writing power_signature to database.");
+    }
+
+    if (is_mpi)
+    {
+        sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
+
+        if (pow_sig_id < 0)
+        {
+            if (pow_sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing power_signature to database.");
+            else if (pow_sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing power_signature to database.");
+            else fprintf(stderr,"Unknown error when writing power_signature to database.");
+        }
+
+    }
+    else 
+    {
+        bind[3].buffer_type = MYSQL_TYPE_NULL;
+        bind[3].is_null = (my_bool*) 1;
+    }
+
     //string types
     bind[2].buffer_type = MYSQL_TYPE_VARCHAR;
     bind[2].buffer_length = strlen(app->node_id);
@@ -136,20 +161,10 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     //storage variable assignation
     bind[0].buffer = (char *)&app->job.id;
     bind[1].buffer = (char *)&app->job.step_id;
-    bind[3].buffer = (char *)&sig_id;
     bind[2].buffer = (char *)&app->node_id;
+    if (is_mpi) bind[3].buffer = (char *)&sig_id;
+    else bind[3].buffer = (char *) NULL;
     bind[4].buffer = (char *)&pow_sig_id;
-
-    if (is_mpi)
-    {
-        sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
-    }
-    else 
-    {
-        bind[3].buffer_type = MYSQL_TYPE_NULL;
-        bind[3].is_null = (my_bool*) 1;
-        bind[3].buffer = (char *) NULL;
-    }
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
