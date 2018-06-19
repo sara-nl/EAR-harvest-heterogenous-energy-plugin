@@ -27,7 +27,10 @@ void main(int argc,char *argv[])
 	char myhost[NAME_SIZE],my_ear_conf_path[NAME_SIZE];
 	if (argc!=2) usage(argv[0]);
 	num_nodes=(unsigned int)atoi(argv[1]);
-	// NEW_JOB
+    if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
+        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        exit(0);
+    }
 	read_cluster_conf(my_ear_conf_path,&my_cluster);
 	fprintf(stderr,"Using port %u\n",my_cluster.eargm.port);
 	eargms=eargm_connect(my_cluster.eargm.host,my_cluster.eargm.port);
