@@ -256,10 +256,10 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     n->num_policies = my_conf->num_policies;
     n->policies = calloc(n->num_policies, sizeof(policy_conf_t));
     int num_spec_nodes = 0;
-
-	do{ // At least one node is assumed
+    
+    while(i<my_conf->num_nodes)
+    {
 		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
-        	//n=&my_conf->nodes[i];
             n->cpus = my_conf->nodes[i].cpus;
             n->coef_file = my_conf->nodes[i].coef_file;
             num_spec_nodes = my_conf->nodes[i].num_special_node_conf;
@@ -267,8 +267,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
             memcpy(n->policies, my_conf->nodes[i].special_node_conf, num_spec_nodes * sizeof(policy_conf_t));
 		}
 		i++;
-	}while (i<my_conf->num_nodes);
-   
+    }
+    
     i = 0;
     do{ // At least one node is assumed
 		if (island_range_conf_contains_node(&my_conf->islands[i], nodename)) {
@@ -277,6 +277,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 		}
 		i++;
 	}while(i<my_conf->num_islands);
+
 
     //pending checks for policies
     for (i = 0; i < my_conf->num_policies; i++)
