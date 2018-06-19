@@ -140,10 +140,10 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     {
         sig_id = mysql_insert_signature(connection, &app->signature, is_learning);
 
-        if (pow_sig_id < 0)
+        if (sig_id < 0)
         {
-            if (pow_sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing power_signature to database.");
-            else if (pow_sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing power_signature to database.");
+            if (sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing power_signature to database.");
+            else if (sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing power_signature to database.");
             else fprintf(stderr,"Unknown error when writing power_signature to database.");
         }
 
