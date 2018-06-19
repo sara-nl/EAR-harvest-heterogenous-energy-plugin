@@ -113,7 +113,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     }
     else
     {
-        if (mysql_stmt_prepare(statement, LEARNING_APPLICATION_QUERY, strlen(APPLICATION_QUERY))) return mysql_statement_error(statement);
+        if (mysql_stmt_prepare(statement, LEARNING_APPLICATION_QUERY, strlen(LEARNING_APPLICATION_QUERY))) return mysql_statement_error(statement);
     }
     
     MYSQL_BIND bind[5];
@@ -446,7 +446,7 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
     }
     else
     {
-        if (mysql_stmt_prepare(statement, LEARNING_JOB_QUERY, strlen(JOB_QUERY))) return mysql_statement_error(statement);
+        if (mysql_stmt_prepare(statement, LEARNING_JOB_QUERY, strlen(LEARNING_JOB_QUERY))) return mysql_statement_error(statement);
     }
 
     MYSQL_BIND bind[14];
@@ -585,7 +585,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     }
     else
     {
-        if (mysql_stmt_prepare(statement, LEARNING_SIGNATURE_QUERY, strlen(SIGNATURE_QUERY))) return mysql_statement_error(statement);
+        if (mysql_stmt_prepare(statement, LEARNING_SIGNATURE_QUERY, strlen(LEARNING_SIGNATURE_QUERY))) return mysql_statement_error(statement);
     }
 
     MYSQL_BIND bind[21];
