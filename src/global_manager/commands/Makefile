@@ -24,6 +24,7 @@ eargm_end_job: eargm_end_job.c $(extern_OBJS)
 ######## OPTIONS
 
 install:
+	cp $(BINARIES) $(DESTDIR)/sbin 
 
 clean:
 	rm -f $(BINARIES)
