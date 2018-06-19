@@ -121,7 +121,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
    
     mysql_insert_job(connection, &app->job, is_learning);
     //integer types
-    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = bind[4].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[0].buffer_type = bind[1].buffer_type = bind[3].buffer_type = bind[4].buffer_type = MYSQL_TYPE_LONG;
     bind[0].is_unsigned = bind[1].is_unsigned = bind[3].is_unsigned = bind[4].is_unsigned = 1;
 
     int pow_sig_id = 0;
