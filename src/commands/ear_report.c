@@ -288,7 +288,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
         for (i = 0; i < num_apps; i++)
         {
             avg_f = (double) apps[i].signature.avg_f/1000000;
-            printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t%.2lf\t%.2lf\n\t", 
+            printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t%.2lf\t%.2lf\n\t", 
                     strtok(apps[i].node_id, "."), apps[i].signature.time, apps[i].signature.DC_power, 
 		    apps[i].signature.DC_power * apps[i].signature.time, avg_f, apps[i].signature.CPI, apps[i].signature.GBS);
             avg_frequency += avg_f;
@@ -315,7 +315,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     {
         printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
 
-        printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t\t%.2lf\t\t%.2lf\t%.2lf\n", 
+        printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t%.2lf\t%.2lf\n", 
                 avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
     }
     else
