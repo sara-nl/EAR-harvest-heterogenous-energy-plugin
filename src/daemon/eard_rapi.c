@@ -44,7 +44,7 @@
 #include <common/types/job.h>
 
 // Verbosity
-static const char *__NAME__ = "eards_rem_api";
+static const char *__NAME__ = "eard_rapi";
 
 static int eards_remote_connected=0;
 static int eards_sfd=-1;
@@ -88,7 +88,9 @@ int eards_remote_connect(char *nodename,uint port)
 	sprintf(port_number,"%d",port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
-		printf("getaddrinfo failt for %s and %s\n",nodename,port_number);
+		#if API_DEBUG
+		fprintf(stderr,"getaddrinfo failt for %s and %s\n",nodename,port_number);
+		#endif
 		return EAR_ERROR;
     }
 
@@ -105,7 +107,9 @@ int eards_remote_connect(char *nodename,uint port)
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		printf("Failing in connecting to remote erds\n");
+		#if API_DEBUG
+		fprintf(stderr,"Failing in connecting to remote erds\n");
+		#endif
 		return EAR_ERROR;
     }
 
@@ -121,7 +125,7 @@ int eards_new_job(application_t *new_job)
 	request_t command;
 	command.req=EAR_RC_NEW_JOB;
 	copy_application(&command.my_req.new_job,new_job);
-	VERBOSE_N(1,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
+	VERBOSE_N(2,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
 	return send_command(&command);
 }
 
@@ -131,7 +135,7 @@ int eards_end_job(job_id jid,job_id sid)
     command.req=EAR_RC_END_JOB;
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
-	VERBOSE_N(1,"command %u job_id %d step_id %d\n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
+	VERBOSE_N(2,"command %u job_id %d step_id %d\n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
 	return send_command(&command);
 }
 

@@ -124,7 +124,7 @@ void ear_daemon_environment()
 }
 void ear_print_daemon_environment()
 {
-#ifdef DEBUG
+#if DEBUG
     char *tmp;
     char environ[256];
     char var[256];

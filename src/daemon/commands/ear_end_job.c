@@ -39,7 +39,7 @@ void main(int argc,char *argv[])
         VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }
-    VERBOSE_N(0,"Using %s as EARGM configuration file",my_ear_conf_path);
+    VERBOSE_N(2,"Using %s as eard configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         VERBOSE_N(0," Error reading cluster configuration\n");
     }
@@ -51,8 +51,9 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Connection error\n");
 		exit(1);
 	}
-
+	#if DEBUG
 	fprintf(stdout,"ear_end_job id %d step_id %d\n",jid,step_id);
+	#endif
 	eards_end_job(jid,step_id);
 	eards_remote_disconnect();
 	exit(0);

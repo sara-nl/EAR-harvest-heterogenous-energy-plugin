@@ -742,7 +742,7 @@ void signal_handler(int sig)
 
 
 	// Someone wants EARD to get closed or restarted
-	if ((sig == SIGTERM) || (sig == SIGINT) || (sig == SIGUSR2))
+	if ((sig == SIGTERM) || (sig == SIGINT) )
 	{
 		eard_must_exit = 1;
 
@@ -751,19 +751,16 @@ void signal_handler(int sig)
 			eard_verbose(1, "application status = connected");
 			eard_close_comm();
 		}
-
+		#if 0
 		eard_verbose(0,"Sending SIGUSR1 to powermon %u and dyn_conf %u threads\n",(uint)power_mon_th,(uint)dyn_conf_th);
 		pthread_kill(power_mon_th, SIGUSR1);
 		pthread_kill(dyn_conf_th, SIGUSR1);
 		pthread_join(power_mon_th,NULL);
 		pthread_join(dyn_conf_th, NULL);
+		#endif
 	}
 	if ((sig == SIGTERM) || (sig == SIGINT)){
 		eard_exit(0);
-	}
-	if (sig == SIGUSR2){ 
-		eard_verbose(0,"Restarting!\n");
-		eard_exit(1);
 	}
 	if (sig == SIGHUP){
         free_cluster_conf(&my_cluster_conf);
@@ -796,8 +793,18 @@ void signal_catcher()
 	struct sigaction action;
 	sigset_t set;
 	int signal;
+	sigset_t eard_mask;
 
-	sigfillset(&action.sa_mask);
+    sigfillset(&eard_mask);
+    sigdelset(&eard_mask,SIGPIPE);
+    sigdelset(&eard_mask,SIGTERM);
+    sigdelset(&eard_mask,SIGINT);
+    sigdelset(&eard_mask,SIGHUP);
+    //sigprocmask(SIG_SETMASK,&eard_mask,NULL);
+    pthread_sigmask(SIG_SETMASK,&eard_mask,NULL);
+
+
+	sigemptyset(&action.sa_mask);
 	action.sa_handler = signal_handler;
 	action.sa_flags = 0;
 
@@ -890,7 +897,6 @@ void main(int argc,char *argv[])
 
 	fd_set rfds;
 	fd_set rfds_basic;
-	sigset_t eard_mask;
 
 	int max_fd = -1;
 	int ret;
@@ -1057,12 +1063,6 @@ void main(int argc,char *argv[])
 	// We support requests realted to frequency and to uncore counters
 	// rapl support is pending to be supported
 	// EAR daemon main loop
-	sigfillset(&eard_mask);
-	sigdelset(&eard_mask,SIGPIPE);
-	sigdelset(&eard_mask,SIGTERM);
-	sigdelset(&eard_mask,SIGINT); 
-	sigdelset(&eard_mask,SIGHUP); 
-	sigprocmask(SIG_SETMASK,&eard_mask,NULL);
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;
 	ear_debug(1,"eard waiting.....\n");

@@ -137,7 +137,7 @@ int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {
 
     while ((pos < total_apps) && (found == 0)) {
         if ((strcmp(Applist[pos].job.app_id, newApp->job.app_id) == 0) &&
-            (Applist[pos].job.def_f == newApp->job.def_f)) {
+            (Applist[pos].signature.def_f == newApp->signature.def_f)) {
             found = 1;
         } else {
             pos++;
@@ -170,7 +170,7 @@ void accum_app(signature_t *A, signature_t *B)
 void write_app(application_t *A, application_t *B)
 {
     strcpy(A->job.app_id, B->job.app_id);
-    A->job.def_f = B->job.def_f;
+    A->signature.def_f = B->signature.def_f;
     A->job.procs = B->job.procs;
     signature_t *sig_a = &A->signature;
     signature_t *sig_b = &B->signature;
@@ -275,7 +275,8 @@ int main(int argc, char *argv[])
  
     for (i = 0; i < num_apps; i++)
     {
-        if (apps[i].job.def_f >= min_freq) {
+		printf("APP SIGNATURE %lu\n", apps[i].signature.def_f);
+        if (apps[i].signature.def_f >= min_freq) {
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
                 // If APP exists, then accumulate its values in
@@ -303,8 +304,8 @@ int main(int argc, char *argv[])
 
     // We maintain the name's of applications to generate graphs
     for (current_app = 0; current_app < num_apps; current_app++) {
-        if (app_list[current_app].job.def_f >= min_freq) {
-            index = freq_to_p_state(app_list[current_app].job.def_f);
+        if (app_list[current_app].signature.def_f >= min_freq) {
+            index = freq_to_p_state(app_list[current_app].signature.def_f);
             samples_f[index]++;
         }
     }
@@ -318,7 +319,7 @@ int main(int argc, char *argv[])
 
     // Sorting applications by frequency
     for (current_app = 0; current_app < num_apps; current_app++) {
-        f = app_list[current_app].job.def_f;
+        f = app_list[current_app].signature.def_f;
 
         if (f >= min_freq) {
             i = freq_to_p_state(f);
@@ -453,6 +454,7 @@ int main(int argc, char *argv[])
                 perror("Error writting coefficients file\n");
                 exit(1);
             }
+			printf("Writed coefficients file");
 
             close(fd);
         }

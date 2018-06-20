@@ -97,9 +97,10 @@ static void PM_set_sigusr1()
 {
     sigset_t set;
     struct  sigaction sa;
-    sigemptyset(&set);
-    sigaddset(&set,SIGUSR1);
-    pthread_sigmask(SIG_UNBLOCK,&set,NULL); // unblocking SIGUSR1 for this thread
+    sigfillset(&set);
+    sigdelset(&set,SIGUSR1);
+    sigdelset(&set,SIGALRM);
+    pthread_sigmask(SIG_SETMASK,&set,NULL); // unblocking SIGUSR1 and SIGALRM for this thread
     sigemptyset(&sa.sa_mask);
     sa.sa_handler = PM_my_sigusr1;
     sa.sa_flags=0;

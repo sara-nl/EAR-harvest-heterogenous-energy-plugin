@@ -34,7 +34,9 @@ void main(int argc,char *argv[])
     }
 
 	read_cluster_conf(my_ear_conf_path,&my_cluster);
+	#if API_DEBUG
 	fprintf(stderr,"Using port %u\n",my_cluster.eargm.port);
+	#endif
 	eargms=eargm_connect(my_cluster.eargm.host,my_cluster.eargm.port);
 	if(eargms<0){ 
 		fprintf(stderr,"Connection error\n");

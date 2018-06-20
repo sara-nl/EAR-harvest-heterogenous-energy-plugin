@@ -81,7 +81,7 @@ int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
     for(i = 0; i < n_apps; ++i)
     {
         equal_id = strcmp(app_id, apps[i].job.app_id) == 0;
-        equal_f = f0_mhz == apps[i].job.def_f;
+        equal_f = f0_mhz == apps[i].signature.def_f;
 
         if (equal_id && equal_f) {
             return i;
@@ -116,7 +116,7 @@ application_t *merge(control_t *control)
     //
     for(i = 0, j = 0; i < n_apps; ++i)
     {
-        f0_mhz = apps[i].job.def_f;
+        f0_mhz = apps[i].signature.def_f;
         app_id = apps[i].job.app_id;
 
         if (find(apps_merged, j, app_id, f0_mhz) == -1)
@@ -132,7 +132,7 @@ application_t *merge(control_t *control)
             for(k = i + 1; k < n_apps; ++k)
             {
                 equal_id = strcmp(app_id, apps[k].job.app_id) == 0;
-                equal_f = f0_mhz == apps[k].job.def_f;
+                equal_f = f0_mhz == apps[k].signature.def_f;
 
                 if (equal_id && equal_f)
                 {
@@ -199,7 +199,7 @@ void evaluate(control_t *control)
     // Apps iteration
     for (j = 0; j < n_apps; ++j)
     {
-	   if (apps[j].job.def_f == f0_mhz)
+	   if (apps[j].signature.def_f == f0_mhz)
         {
             // Print content
             set_spacing_digits(18);
@@ -207,7 +207,7 @@ void evaluate(control_t *control)
 
             set_spacing_digits(11);
             printf("@");
-            print_spacing_uint(apps[j].job.def_f);
+            print_spacing_uint(apps[j].signature.def_f);
 
             set_spacing_digits(12);
             printf("| ");
@@ -284,7 +284,7 @@ void evaluate(control_t *control)
                     }
 
                     if (fd >= 0) {
-                        dprintf(fd, "%s;%u;%u;", apps[j].job.app_id, apps[j].job.def_f, m->job.def_f);
+                        dprintf(fd, "%s;%u;%u;", apps[j].job.app_id, apps[j].signature.def_f, m->signature.def_f);
                         dprintf(fd, "%lf;%lf;%lf;", m->signature.time, timep, timee);
                         dprintf(fd, "%lf;%lf;%lf;", m->signature.DC_power, powerp, powere);
                         dprintf(fd, "%lf;%lf;%lf\n", m->signature.CPI, cpip, cpie);

@@ -60,7 +60,7 @@
 #include <common/config.h>
 
 // Statics
-static const char *__NAME__ = "API";
+static const char *__NAME__ = "EARL";
 
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
@@ -108,9 +108,9 @@ static void print_local_data()
 	VERBOSE_N(1, "--------------------------------");
 	VERBOSE_N(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	VERBOSE_N(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
-	VERBOSE_N(1, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
+	VERBOSE_N(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
 	VERBOSE_N(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
-	VERBOSE_N(1, "Procs/nodes/ppn: %u/%d/%d", application.job.procs, num_nodes, ppnode);
+	VERBOSE_N(2, "Procs/nodes/ppn: %u/%d/%d", application.job.procs, num_nodes, ppnode);
 	VERBOSE_N(1, "Policy (learning): %s (%d)", application.job.policy, ear_whole_app);
 	VERBOSE_N(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());
 	VERBOSE_N(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
@@ -135,7 +135,7 @@ static int get_local_id(char *node_name)
 	if (master) {
 		VERBOSE_N(2, "Rank %d is not the master in node %s", ear_my_rank, node_name);
 	}else{
-		VERBOSE_N(1, "Rank %d is the master in node %s", ear_my_rank, node_name);
+		VERBOSE_N(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
 	}
 	#else
 	master = get_ear_local_id();
@@ -255,7 +255,7 @@ void ear_init()
 	//sets the job start_time
 	start_job(&application.job);
 
-    VERBOSE_N(1, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
+    VERBOSE_N(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
     if (eards_connect(&application) == EAR_SUCCESS) {
         VERBOSE_N(1, "Rank %d connected with EARD", ear_my_rank);
     }
@@ -327,7 +327,7 @@ void ear_finalize()
 	}	
 
 	#if USE_LOCK_FILES
-	VERBOSE_N(1, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
+	VERBOSE_N(2, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
 	unlock_master(fd_master_lock,fd_lock_filename);
 	#endif
 
@@ -344,9 +344,7 @@ void ear_finalize()
 	frequency_dispose();
 
 	// Writing application data
-	VERBOSE_N(0,"writting signature");
 	eards_write_app_signature(&application);
-	VERBOSE_N(0,"done signature");
 	append_application_text_file(app_summary_path, &application);
 	report_application_data(&application);
 
