@@ -29,11 +29,14 @@ void main(int argc,char *argv[])
     }
     jid=atoi(id);
     step_id=atoi(sid);
-
-    if (gethostname(myhost,NAME_SIZE)<0){
-        fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
-        exit(1);
-    }
+	if (argc==1){
+    	if (gethostname(myhost,NAME_SIZE)<0){
+    	    fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
+    	    exit(1);
+    	}
+	}else{
+		strcpy(myhost,argv[1]);
+	}
 
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
         VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
@@ -51,7 +54,7 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Connection error\n");
 		exit(1);
 	}
-	#if DEBUG
+	#if API_DEBUG
 	fprintf(stdout,"ear_end_job id %d step_id %d\n",jid,step_id);
 	#endif
 	eards_end_job(jid,step_id);
