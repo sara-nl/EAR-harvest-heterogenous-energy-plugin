@@ -45,7 +45,6 @@
 
 extern char buffer1[PATH_MAX];
 extern char buffer2[PATH_MAX];
-extern int verbosity;
 
 /*
  *

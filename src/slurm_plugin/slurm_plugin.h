@@ -26,3 +26,10 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
+#ifndef EAR_SLURM_PLUGIN_H
+#define EAR_SLURM_PLUGIN_H
+
+#define ESPANK_STOP -1
+
+#endif
