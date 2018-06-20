@@ -42,7 +42,7 @@
 #include <common/states.h>
 
 // Verbosity
-static const char *__NAME__ = "eargm_client_api";
+static const char *__NAME__ = "eargm_api";
 
 extern int EAR_VERBOSE_LEVEL;
 static int eargm_sfd;
@@ -87,7 +87,9 @@ int eargm_connect(char *nodename,uint use_port)
 	sprintf(port_number,"%u",use_port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
+		#if DEBUG
 		printf("getaddrinfo failt for %s and %s\n",nodename,port_number);
+		#endif
 		return EAR_ERROR;
     }
 
@@ -104,7 +106,9 @@ int eargm_connect(char *nodename,uint use_port)
     }
 
    	if (rp == NULL) {               /* No address succeeded */
+		#if DEBUG
 		printf("Failing in connecting to remote erds\n");
+		#endif
 		return EAR_ERROR;
     }
 

@@ -49,7 +49,7 @@
 
 #define MAX_TRIES 1
 
-static const char *__NAME__ = "eard_api_client:";
+static const char *__NAME__ = "EARL->EARD";
 
 // Pipes
 static int ear_fd_req[ear_daemon_client_requests];
@@ -122,7 +122,7 @@ int eards_connect(application_t *my_app)
 
 	// We create a single ID
 	my_id=create_ID(my_app->job.id,my_app->job.step_id);
-	VERBOSE_N(0,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
+	VERBOSE_N(2,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);

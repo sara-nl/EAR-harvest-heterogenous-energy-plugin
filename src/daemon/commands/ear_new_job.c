@@ -38,7 +38,7 @@ void main(int argc,char *argv[])
         VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }
-    VERBOSE_N(0,"Using %s as EARGM configuration file",my_ear_conf_path);
+    VERBOSE_N(2,"Using %s as EARD configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         VERBOSE_N(0," Error reading cluster configuration\n");
     }
@@ -79,8 +79,10 @@ void main(int argc,char *argv[])
 
 	if (myth==NULL) my_job.job.th=0;
 	else my_job.job.th=my_job.job.th=strtod(myth,NULL);
+	#if API_DEBUG
 	fprintf(stdout,"ear_new_job: id %d step_id %d appname %s user %s policy %s th %lf\n",
 	my_job.job.id,my_job.job.step_id,my_job.job.app_id,my_job.job.user_id,my_job.job.policy,my_job.job.th);
+	#endif
 	if (learning!=NULL){
 		my_job.is_learning=(uint8_t)atoi(learning);
 	}else{

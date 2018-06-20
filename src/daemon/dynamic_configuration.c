@@ -114,9 +114,10 @@ static void DC_set_sigusr1()
 {
     sigset_t set;
     struct  sigaction sa;
-    sigemptyset(&set);
+    sigfillset(&set);
     sigaddset(&set,SIGUSR1);
-    pthread_sigmask(SIG_UNBLOCK,&set,NULL); // unblocking SIGUSR1 for this thread
+    sigaddset(&set,SIGALRM);
+    pthread_sigmask(SIG_SETMASK,&set,NULL); // unblocking SIGUSR1 for this thread
     sigemptyset(&sa.sa_mask);
     sa.sa_handler = DC_my_sigusr1;
     sa.sa_flags=0;

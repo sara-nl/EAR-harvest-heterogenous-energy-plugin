@@ -1,5 +1,6 @@
-CFLAGS  = -I$(SRCDIR)
+API_DEBUG=
 LDFLAGS =
+CFLAGS  = -I$(SRCDIR) $(API_DEBUG)
 
 ######## FILES
 
