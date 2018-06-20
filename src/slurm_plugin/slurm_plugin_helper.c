@@ -45,6 +45,7 @@
 
 extern char buffer1[PATH_MAX];
 extern char buffer2[PATH_MAX];
+extern int verbosity;
 
 /*
  *
@@ -54,7 +55,6 @@ extern char buffer2[PATH_MAX];
 
 int verbosity_test(spank_t sp, int level)
 {
-	static int verbosity = -1;
 	char env_remote[8];
 	char *env_local;
 
