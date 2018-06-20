@@ -161,6 +161,7 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	energy_data_t c_energy;
 	current_ear_app.job_created=!from_mpi;
 	copy_application(&current_ear_app.app,new_app);	
+	strcpy(current_ear_app.app.node_id,nodename);
 	time(&current_ear_app.app.job.start_time);	
 	current_ear_app.app.job.start_mpi_time=0;
 	current_ear_app.app.job.end_mpi_time=0;

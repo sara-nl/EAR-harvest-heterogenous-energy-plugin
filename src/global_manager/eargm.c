@@ -456,6 +456,7 @@ void main(int argc,char *argv[])
 	    }else{ 
 			if (result < 0) exit(1);
 		}
+		VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t1,result);
 
 		new_energy_sample(result);
 		total_energy_t2=compute_energy_t2();	

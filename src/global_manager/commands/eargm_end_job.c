@@ -32,7 +32,7 @@ void main(int argc,char *argv[])
         exit(0);
     }
 	read_cluster_conf(my_ear_conf_path,&my_cluster);
-	#if DEBUG
+	#if API_DEBUG
 	fprintf(stderr,"Using port %u\n",my_cluster.eargm.port);
 	#endif
 	eargms=eargm_connect(my_cluster.eargm.host,my_cluster.eargm.port);
