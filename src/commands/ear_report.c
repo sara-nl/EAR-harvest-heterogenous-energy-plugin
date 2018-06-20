@@ -38,7 +38,10 @@
 #if DB_MYSQL
 #include <mysql/mysql.h>
 #include <common/states.h>
+#include <common/types/cluster_conf.h>
 #include <common/database/mysql_io_functions.h>
+cluster_conf_t my_conf;
+int EAR_VERBOSE_LEVEL=0;
 #endif
 
 
@@ -225,9 +228,10 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
         fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
         exit(1);
     }
-    char *database = db > 0 ? argv[db] : "Report";
-    char *user = usr > 0 ? argv[usr] : "root";
-    char *ip = host > 0 ? argv[host] : "127.0.0.1";
+
+    char *database = db > 0 ? argv[db] : my_conf.database.database;
+    char *user = usr > 0 ? argv[usr] : my_conf.database.user;
+    char *ip = host > 0 ? argv[host] : my_conf.database.ip;
 
     if(!mysql_real_connect(connection, ip, user,"", database, 0, NULL, 0))
     {
@@ -375,6 +379,12 @@ void main(int argc, char *argv[])
     }
     if (!files)
     {
+        char ear_path[256];
+        if (get_ear_conf_path(ear_path)==EAR_ERROR){
+            printf("Error getting ear.conf path\n");
+            exit(0);
+        }
+        read_cluster_conf(ear_path,&my_conf);  
         if (verbose) fprintf(stderr, "Initializing database reading.\n");
         read_from_database(argc, argv, database, user, ip, verbose);
     }

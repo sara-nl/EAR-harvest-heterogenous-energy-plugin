@@ -88,9 +88,9 @@ static int local_update_ld_preload(spank_t sp)
 		strcpy(buffer1, ld_preload);
 	}*/
 
-    if (getenv_local("EAR_ROOT_DIR", &ear_root_dir) == 0)
+    if (getenv_local("EAR_PREDIR", &ear_root_dir) == 0)
     {
-		plug_error("Error, missing EAR_ROOT_DIR");
+		plug_error("Error, wrong environment for setting LD_PRELOAD");
         return ESPANK_ERROR;
     }
     appendenv(buffer1, ear_root_dir, PATH_MAX);
@@ -197,7 +197,7 @@ int local_read_cluster_conf_file()
 	
 	// Setting variables for EARD connection
 	sprintf(eard_port, "%u", conf_clus.eard.port);
-	setenv_local("EARD_NODE", host_name, 1);
+	setenv_local("EARD_HOST", host_name, 1);
 	setenv_local("EARD_PORT", eard_port, 1);
 
 	return (ESPANK_SUCCESS);
@@ -279,9 +279,11 @@ int remote_eard_report_start(spank_t sp)
 		app.job.th = atof(buffer1);
 	}
 	if (!getenv_remote(sp, "EARD_HOST", host_name, GENERIC_NAME)) {
+		plug_error("1");
 		return (ESPANK_ERROR);	
 	}	
-	if (!getenv_remote(sp, "EARD_HOST", buffer1, GENERIC_NAME)) {
+	if (!getenv_remote(sp, "EARD_PORT", buffer1, GENERIC_NAME)) {
+		plug_error("2");
 		return (ESPANK_ERROR);
 	} else {
 		eard_port = (unsigned int) atoi(buffer1);
