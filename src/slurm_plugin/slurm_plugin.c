@@ -180,7 +180,7 @@ int local_read_cluster_conf_file(spank_t sp, int ac, char **av)
 		if ((strlen(av[i]) > 11) && (strncmp ("sysconfdir=", av[i], 11) == 0))
 		{
 			hetc_path = &av[i][11];
-			plug_verbose(sp, 3, "looking for configuration files in path '%s'", &av[i][11]);
+			plug_verbose(sp, 3, "looking for configuration files in path '%s'", hetc_path);
 			setenv_local("EAR_ETCDIR", hetc_path, 1);
 			found_etcdir = 1;
 
@@ -319,8 +319,7 @@ int remote_eard_report_start(spank_t sp)
 	}
 
 	// Verbosity
-	plug_verbose(sp, 2, "EARD host: %s", host_name);
-	plug_verbose(sp, 2, "EARD port: %u", eard_port);
+	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", host_name, eard_port);
 
 	if (eards_remote_connect(host_name, eard_port) < 0) {
 		plug_error("ERROR while connecting with EAR daemon");
@@ -335,8 +334,6 @@ int remote_eard_report_start(spank_t sp)
 
 int remote_eard_report_finish()
 {
-	return (ESPANK_SUCCESS);	
-	
 	if (eards_remote_connect(host_name) < 0) {
 		plug_error("while connecting with EAR daemon");
 	}
