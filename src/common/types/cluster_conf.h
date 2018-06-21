@@ -217,6 +217,9 @@ void print_policy_conf(policy_conf_t *p);
 /** Converts from policy name to policy_id */
 int policy_name_to_id(char *my_policy);
 
+/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
+int policy_id_to_name(int policy_id,char *my_policy);
+
 /** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
 policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
 
