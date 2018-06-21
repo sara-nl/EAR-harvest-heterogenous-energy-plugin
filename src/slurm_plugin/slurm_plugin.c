@@ -64,9 +64,9 @@ static unsigned int  eargmd_port;
 static unsigned int  eargmd_nods;
 
 // EARD variables
-static unsigned char eard_host[NAME_MAX+1];
-static unsigned int  eard_port;
-static application_t eard_appl;
+unsigned char eard_host[NAME_MAX+1];
+unsigned int  eard_port;
+application_t eard_appl;
 
 /*
  *
@@ -167,7 +167,7 @@ static void remote_update_slurm_vars(spank_t sp)
     }
 }
 
-static int plugstack_process()
+static int plugstack_process(spank_t sp, int ac, char **av)
 {
 	int found_predir = 0;
 	int found_etcdir = 0;
@@ -212,7 +212,7 @@ static int local_configuration(spank_t sp, int ac, char **av)
 	int r;
 
 	//
-	if ((r = plugstack_process(sp, ac, av)) != ESPANK_SUCCEESS) {
+	if ((r = plugstack_process(sp, ac, av)) != ESPANK_SUCCESS) {
 		return r;
 	}
 
@@ -328,7 +328,7 @@ int remote_eard_report_start(spank_t sp)
 	//eard.job.def_f =
 
 	// Verbosity
-	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", host_name, eard_port);
+	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
 
 	if (eards_remote_connect(eard_host, eard_port) < 0) {
 		plug_error("while connecting with EAR daemon");

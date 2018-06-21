@@ -7,12 +7,22 @@
 #include <unistd.h>
 #include <sys/resource.h>
 #include <linux/limits.h>
+#include <slurm/spank.h>
+
+#include <slurm_plugin/slurm_plugin_user_system.h>
+#include <common/types/cluster_conf.h>
+#include <common/types/application.h>
 
 extern char buffer1[PATH_MAX];
 extern char buffer2[PATH_MAX];
 extern int verbosity;
 
-static int is_user_privileged(cluster_conf_t conf_clus)
+// EARD variables
+extern unsigned char eard_host[NAME_MAX+1];
+extern unsigned int  eard_port;
+extern application_t eard_appl;
+
+static int is_user_privileged(cluster_conf_t *conf_clus)
 {
 	char *aid;
 	char *uid;
@@ -21,14 +31,14 @@ static int is_user_privileged(cluster_conf_t conf_clus)
 	getenv_local("SLURM_JOB_ACCOUNT", &aid);
 	getenv_local("SLURM_JOB_USER", &uid);
 
-	for (i = 0; i < conf_clus.num_priv_users; ++i) {
-		if (strcmp(uid, conf_clus.priv_users[i]) == 0) {
+	for (i = 0; i < conf_clus->num_priv_users; ++i) {
+		if (strcmp(uid, conf_clus->priv_users[i]) == 0) {
 			return 1;
 		}
 	}
 
-	for (i = 0; i < conf_clus.num_acc; ++i) {
-		if (strcmp(aid, conf_clus.priv_acc[i]) == 0) {
+	for (i = 0; i < conf_clus->num_acc; ++i) {
+		if (strcmp(aid, conf_clus->priv_acc[i]) == 0) {
 			return 1;
 		}
 	}
@@ -58,11 +68,11 @@ static int local_configuration_user_unprivileged(cluster_conf_t *conf_clus)
 	my_node_conf_t *conf_node;
 	policy_conf_t  *conf_plcy;
 
-	if ((conf_node = get_my_node_conf(&conf_clus, eard_host)) == NULL) {
+	if ((conf_node = get_my_node_conf(conf_clus, eard_host)) == NULL) {
 		return (ESPANK_ERROR);
 	}
 
-	if ((conf_plcy = get_my_policy_conf(&conf_clus, conf_node, conf_clus->default_policy)) == NULL) {
+	if ((conf_plcy = get_my_policy_conf(conf_clus, conf_node, conf_clus->default_policy)) == NULL) {
 		return (ESPANK_ERROR);
 	}
 
@@ -96,7 +106,7 @@ static int local_configuration_user_privileged(cluster_conf_t *conf_clus)
 	char *c_plcy;
 
 	// Getting node configuration
-	if ((conf_node = get_my_node_conf(&conf_clus, eard_host)) == NULL) {
+	if ((conf_node = get_my_node_conf(conf_clus, eard_host)) == NULL) {
 		return (ESPANK_ERROR);
 	}
 
@@ -109,7 +119,7 @@ static int local_configuration_user_privileged(cluster_conf_t *conf_clus)
 	}
 
 	// Getting policy configuration based on the policy selected of the user
-	if ((conf_plcy = get_my_policy_conf(&conf_clus, conf_node, id_plcy)) == NULL) {
+	if ((conf_plcy = get_my_policy_conf(conf_clus, conf_node, id_plcy)) == NULL) {
 		return (ESPANK_ERROR);
 	}
 
@@ -143,8 +153,8 @@ static int local_configuration_user_privileged(cluster_conf_t *conf_clus)
 int local_user_system_configuration(cluster_conf_t *conf_clus)
 {
 	if (is_user_privileged(conf_clus)) {
-		return local_configuration_user_privileged();
+		return local_configuration_user_privileged(conf_clus);
 	}
 
-	return local_configuration_user_unprivileged();
+	return local_configuration_user_unprivileged(conf_clus);
 }
