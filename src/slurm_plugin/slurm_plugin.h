@@ -30,6 +30,7 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
+#define PRODUCTION		 1
 #define ESPANK_STOP 	-1
 
 #endif

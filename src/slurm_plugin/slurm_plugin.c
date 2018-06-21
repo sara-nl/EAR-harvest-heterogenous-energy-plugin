@@ -71,10 +71,65 @@ application_t eard_appl;
 /*
  *
  * Environment variables list
- *
+
+ *   environment variable                   new
+ * ----------------------------------------------------------------------
+ * - EAR
+ * - EAR_LEARNING_PHASE
+ * - EAR_VERBOSE
+ * - EAR_POWER_POLICY
+ * - EAR_P_STATE
+ * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN
+ * - EAR_PERFORMANCE_PENALTY
+ * - EAR_TRACES          
+ * - EAR_MPI_DIST
+ * - EAR_USER_DB_PATHNAME
+ * - EAR_POWER_POLICY_TH					x
+ * - EAR_PREDIR
+ * - EAR_ETCDIR
+ * - EAR_TMP
+ * - EAR_APP_NAME
+ * - LD_PRELOAD
+ * - SLURM_CPU_FREQ_REQ
+ * - SLURM_NNODES
+ * - SLURM_JOB_ID
+ * - SLURM_STEP_ID
+ * - SLURM_JOB_USER
+ * - SLURM_JOB_NAME
+ * - SLURM_JOB_ACCOUNT
  */
 
+static void remote_print_environment(spank_t sp)
+{
+	plug_verbose(sp, 2, "remote_print_environment");
 
+	if (verbosity_test(sp, 2) == 1)
+	{	
+	printenv_remote(sp, "EAR");
+	printenv_remote(sp, "EAR_LEARNING_PHASE");
+	printenv_remote(sp, "EAR_VERBOSE");
+	printenv_remote(sp, "EAR_POWER_POLICY");
+	printenv_remote(sp, "EAR_P_STATE");
+	printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
+	printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
+	printenv_remote(sp, "EAR_POWER_POLICY_TH");
+	printenv_remote(sp, "EAR_TRACES");
+	printenv_remote(sp, "EAR_MPI_DIST");
+	printenv_remote(sp, "EAR_USER_DB_PATHNAME");
+	printenv_remote(sp, "EAR_PREDIR");
+	printenv_remote(sp, "EAR_ETCDIR");
+	printenv_remote(sp, "EAR_TMP");
+	printenv_remote(sp, "EAR_APP_NAME");
+	printenv_remote(sp, "LD_PRELOAD");
+	printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
+	printenv_remote(sp, "SLURM_NNODES");
+	printenv_remote(sp, "SLURM_JOB_ID");
+	printenv_remote(sp, "SLURM_STEP_ID");
+	printenv_remote(sp, "SLURM_JOB_USER");
+	printenv_remote(sp, "SLURM_JOB_NAME");
+	printenv_remote(sp, "SLURM_JOB_ACCOUNT");
+	}
+}
 
 /*
  *
@@ -285,6 +340,10 @@ int remote_eard_report_start(spank_t sp)
 {
 	unsigned int eard_port;
 
+	#if PRODUCTION
+	return ESPANK_SUCCESS;
+	#endif
+
 	init_application(&eard_appl);
 
 	// Gathering variables
@@ -343,6 +402,10 @@ int remote_eard_report_start(spank_t sp)
 
 int remote_eard_report_finish()
 {
+    #if PRODUCTION
+    return ESPANK_SUCCESS;
+    #endif
+
 	if (eards_remote_connect(eard_host) < 0) {
 		plug_error("while connecting with EAR daemon");
 	}
@@ -354,6 +417,10 @@ int remote_eard_report_finish()
 
 int local_eargmd_report_start(spank_t sp)
 {
+    #if PRODUCTION
+    return ESPANK_SUCCESS;
+    #endif
+
 	char *c_num_nodes;
 
 	// Gathering variables
@@ -377,6 +444,10 @@ int local_eargmd_report_start(spank_t sp)
 
 int local_eargmd_report_finish()
 {
+    #if PRODUCTION
+    return ESPANK_SUCCESS;
+    #endif
+
 	if (eargm_connect(eargmd_host, eargmd_port) < 0) {
 		plug_error("while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
@@ -471,11 +542,14 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	{
 		if(isenv_remote(sp, "EAR", "1"))
 		{
-			// Printing job remote information
-			print_general_info(sp);
-
 			//
 			remote_update_slurm_vars(sp);
+
+			// Printing job remote information
+			print_general_info(sp);
+			
+			//
+			remote_print_environment(sp);
 		}
 
 		if ((r = remote_eard_report_start(sp)) != ESPANK_SUCCESS)
