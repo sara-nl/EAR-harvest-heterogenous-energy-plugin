@@ -328,14 +328,13 @@ int remote_eard_report_start(spank_t sp)
 	//eard.job.def_f =
 
 	// Verbosity
-	plug_verbose(sp, 2, "EARD host: %s", eard_host);
-	plug_verbose(sp, 2, "EARD port: %u", eard_port);
+	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", host_name, eard_port);
 
 	if (eards_remote_connect(eard_host, eard_port) < 0) {
-		plug_error("ERROR while connecting with EAR daemon");
+		plug_error("while connecting with EAR daemon");
 	}
 	if (!eards_new_job(&eard_appl)) {
-		plug_error("ERROR while connecting with EAR daemon");
+		plug_error("while connecting with EAR daemon");
 	}
 	eards_remote_disconnect();
 
@@ -362,8 +361,7 @@ int local_eargmd_report_start(spank_t sp)
 	eargmd_nods = atoi(c_num_nodes);
 
 	// Verbosity
-	plug_verbose(sp, 2, "EARGMD host: %s", eargmd_host);
-	plug_verbose(sp, 2, "EARGMD port: %u", eargmd_port);
+	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s' and port '%u'", eargmd_host, eargmd_port);
 
 	if (eargm_connect(eargmd_host, eargmd_port) < 0) {
 		plug_error("while connecting with EAR global manager daemon");

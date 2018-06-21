@@ -80,8 +80,31 @@ void check_invalid_ports(FILE *conf_file)
         if (rtoken == NULL) continue;
         port_num = atoi(rtoken);
         if (port_num < 0)
-            printf("WARNING: negative port number at line %d beginning with %s\n", curr_line, ltoken);
+            printf("ERROR: negative port number at line %d beginning with %s\n", curr_line, ltoken);
     }
+}
+
+void check_mandatory_statements(FILE *conf_file)
+{
+    char line[256];
+    char *ltoken, *rtoken;
+    int curr_line = 0;
+    int port_num = 0;
+    char def_pol_check = 0;
+    while (fgets(line, 256, conf_file) != NULL)
+    {
+        curr_line++;
+        if (line[0] == '#') continue;
+        
+        ltoken = strtok(line, "=");
+
+        if (!strcmp(ltoken, "\n")) continue;
+        strtoup(ltoken);
+        if (!strcmp(ltoken, "DEFAULTPOWERPOLICY")) def_pol_check = 1;
+    }
+    if (!def_pol_check)
+        printf("ERROR: missing mandatory DefaultPowerPolicy statement.\n");
+    
 }
 
 void main(int argc,char *argv[])
@@ -105,6 +128,8 @@ void main(int argc,char *argv[])
     check_incomplete_statements(conf_file);
     rewind(conf_file);
     check_invalid_ports(conf_file);
+    rewind(conf_file);
+    check_mandatory_statements(conf_file);
     fclose(conf_file);
 
 
