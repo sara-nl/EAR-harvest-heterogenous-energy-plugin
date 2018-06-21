@@ -69,11 +69,10 @@ unsigned int  eard_port;
 application_t eard_appl;
 
 /*
- *
  * Environment variables list
 
  *   environment variable                   new
- * ----------------------------------------------------------------------
+ * --------------------------------------------
  * - EAR
  * - EAR_LEARNING_PHASE
  * - EAR_VERBOSE
@@ -224,6 +223,8 @@ static void remote_update_slurm_vars(spank_t sp)
 
 static int plugstack_process(spank_t sp, int ac, char **av)
 {
+	plug_verbose(sp, 2, "function plugstack_process");
+
 	int found_predir = 0;
 	int found_etcdir = 0;
 	char *etc_dir;
@@ -261,6 +262,8 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 
 static int local_configuration(spank_t sp, int ac, char **av)
 {
+	plug_verbose(sp, 2, "function local_configuration");
+
 	static cluster_conf_t conf_clus;
 	char *conf_path = buffer1;
 	char *etc_dir;
@@ -338,6 +341,8 @@ int remote_library_disable(spank_t sp)
 
 int remote_eard_report_start(spank_t sp)
 {
+	plug_verbose(sp, 2, "function remote_eard_report_finish");
+
 	unsigned int eard_port;
 
 	#if PRODUCTION
@@ -400,9 +405,11 @@ int remote_eard_report_start(spank_t sp)
 	return (ESPANK_SUCCESS);
 }
 
-int remote_eard_report_finish()
+int remote_eard_report_finish(spank_t sp)
 {
-    #if PRODUCTION
+	plug_verbose(sp, 2, "function remote_eard_report_finish");
+
+	#if PRODUCTION
     return ESPANK_SUCCESS;
     #endif
 
@@ -417,11 +424,13 @@ int remote_eard_report_finish()
 
 int local_eargmd_report_start(spank_t sp)
 {
-    #if PRODUCTION
-    return ESPANK_SUCCESS;
-    #endif
+	plug_verbose(sp, 2, "function local_eargmd_report_start");
 
 	char *c_num_nodes;
+
+	#if PRODUCTION
+    return ESPANK_SUCCESS;
+    #endif
 
 	// Gathering variables
 	getenv_local("SLURM_NNODES", &c_num_nodes);
@@ -442,9 +451,11 @@ int local_eargmd_report_start(spank_t sp)
 	return (ESPANK_SUCCESS);
 }
 
-int local_eargmd_report_finish()
+int local_eargmd_report_finish(spank_t sp)
 {
-    #if PRODUCTION
+	plug_verbose(sp, 2, "function local_eargmd_report_finish");
+
+	#if PRODUCTION
     return ESPANK_SUCCESS;
     #endif
 
