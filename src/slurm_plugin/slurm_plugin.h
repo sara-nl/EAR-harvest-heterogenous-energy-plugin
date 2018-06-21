@@ -30,6 +30,7 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
-#define ESPANK_STOP -1
+#define ESPANK_STOP 	-1
+#define NAME_MAX
 
 #endif

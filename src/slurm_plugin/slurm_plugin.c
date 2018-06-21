@@ -42,6 +42,7 @@
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
+#include <slurm_plugin/slurm_plugin_user_system.h>
 #include <common/types/cluster_conf.h>
 #include <common/types/application.h>
 #include <common/types/job.h>
@@ -55,19 +56,29 @@ int verbosity = -1;
 
 char buffer1[PATH_MAX];
 char buffer2[PATH_MAX];
+static int job_created;
 
-static unsigned char host_name[256];
-
-static unsigned char eargmd_host[256];
+// EARGMD variables
+static unsigned char eargmd_host[NAME_MAX+1];
 static unsigned int  eargmd_port;
 static unsigned int  eargmd_nods;
 
-static application_t app;
-static int job_created;
+// EARD variables
+static unsigned char eard_host[NAME_MAX+1];
+static unsigned int  eard_port;
+static application_t eard_appl;
 
 /*
  *
+ * Environment variables list
  *
+ */
+
+
+
+/*
+ *
+ * Configuration
  *
  */
 
@@ -156,77 +167,77 @@ static void remote_update_slurm_vars(spank_t sp)
     }
 }
 
-/*
- *
- * Configuration
- *
- */
-
-int local_read_cluster_conf_file(spank_t sp, int ac, char **av)
+static int plugstack_process()
 {
-	static cluster_conf_t conf_clus;
-	my_node_conf_t *conf_node;
-	policy_conf_t  *conf_plcy;
-	
-	char *conf_path = buffer1;
-	char *hetc_path;
-	
 	int found_predir = 0;
 	int found_etcdir = 0;
+	char *etc_dir;
+	char *pre_dir;
 	int i;
 
 	for (i = 0; i < ac; ++i)
 	{
+		if ((strlen(av[i]) > 8) && (strncmp ("default=on", av[i], 10) == 0))
+		{
+			setenv_local("EAR", "1", 1);
+		}
 		if ((strlen(av[i]) > 11) && (strncmp ("sysconfdir=", av[i], 11) == 0))
 		{
-			hetc_path = &av[i][11];
-			plug_verbose(sp, 3, "looking for configuration files in path '%s'", &av[i][11]);
-			setenv_local("EAR_ETCDIR", hetc_path, 1);
+			etc_dir = &av[i][11];
 			found_etcdir = 1;
 
+			plug_verbose(sp, 3, "looking for configuration files in path '%s'", etc_dir);
+			setenv_local("EAR_ETCDIR", etc_dir, 1);
 		}
 		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
 		{
-			plug_verbose(sp, 3, "looking for library files in path '%s'", &av[i][7]);
-			setenv_local("EAR_PREDIR", &av[i][7], 1);
+			pre_dir = &av[i][7];
 			found_predir = 1;
+
+			plug_verbose(sp, 3, "looking for library files in path '%s'", pre_dir);
+			setenv_local("EAR_PREDIR", pre_dir, 1);
 		}
 	}
 
 	if (!found_etcdir || !found_predir) {
 		return (ESPANK_ERROR);
 	}
+}
 
-	// Getting hostname
-	gethostname(host_name, 128);
+static int local_configuration(spank_t sp, int ac, char **av)
+{
+	static cluster_conf_t conf_clus;
+	char *conf_path = buffer1;
+	char *etc_dir;
+	int r;
 
-	//sprintf(buffer1, "%s/%s", conf_path, "ear/ear.conf");
-	plug_verbose(0, 2, "Trying to read config file in '%s' for node '%s'", conf_path, host_name);
+	//
+	if ((r = plugstack_process(sp, ac, av)) != ESPANK_SUCCEESS) {
+		return r;
+	}
+
+	// Getting variables
+	gethostname(eard_host, NAME_MAX);
+	getenv_local("ETC_DIR", &etc_dir);
+
+	plug_verbose(0, 2, "Trying to read config file in '%s' for node '%s'", etc_dir, eard_host);
 
 	// Passing parameters to get_ear_conf_path (LOL)
-	setenv_local("ETC", hetc_path, 1);
-	conf_path[0] = '\0';	
+	setenv_local("ETC", etc_dir, 1);
+	conf_path[0] = '\0';
 
 	// Gathering data
 	if (get_ear_conf_path(conf_path) == EAR_ERROR) {
 		return (ESPANK_ERROR);
 	}
-	
+
 	if (read_cluster_conf(conf_path, &conf_clus) != EAR_SUCCESS) {
-		return (ESPANK_ERROR);
-	}
-
-	if ((conf_node = get_my_node_conf(&conf_clus, host_name)) == NULL) {
-		return (ESPANK_ERROR);
-	}
-
-	if ((conf_plcy = get_my_policy_conf(&conf_clus, conf_node, conf_clus.default_policy)) == NULL) {
 		return (ESPANK_ERROR);
 	}
 
 	// Setting variables for EARD connection
 	sprintf(buffer1, "%u", conf_clus.eard.port);
-	setenv_local("EARD_HOST", host_name, 1);
+	setenv_local("EARD_HOST", eard_host, 1);
 	setenv_local("EARD_PORT", buffer1,   1);
 
 	// Setting variables for EARGMD connection
@@ -236,19 +247,13 @@ int local_read_cluster_conf_file(spank_t sp, int ac, char **av)
 	// Setting LIBEAR variables
 	setenv_local("EAR_TMP", conf_clus.tmp_dir, 1);
 
-	//
+	// User system for LIBEAR
+	local_user_system_configuration(&conf_clus);
+
+	// Freeing cluster configuration resources
 	free_cluster_conf(&conf_clus);
 
 	return (ESPANK_SUCCESS);
-}
-
-int local_environment_post_process()
-{
-	// It means that the user has already set up
-	if(existenv_local("EAR_POWER_POLICY")) {
-		if(existenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN")) {}
-		if(existenv_local("EAR_PERFORMANCE_PENALTY")) {}
-	}
 }
 
 /*
@@ -280,52 +285,56 @@ int remote_eard_report_start(spank_t sp)
 {
 	unsigned int eard_port;
 
-	init_application(&app);
+	init_application(&eard_appl);
 
+	// Gathering variables
 	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer1, 64)) {
-		app.job.id = 0;
+		eard_appl.job.id = 0;
 	} else {
-		app.job.id = atoi(buffer1);
+		eard_appl.job.id = atoi(buffer1);
 	}
 	if (!getenv_remote(sp, "SLURM_STEP_ID", buffer1, 64)) {
-		app.job.step_id = 0;
+		eard_appl.job.step_id = 0;
 	} else {
-		app.job.step_id = atoi(buffer1);
+		eard_appl.job.step_id = atoi(buffer1);
 	}
-	if (!getenv_remote(sp, "SLURM_JOB_USER", app.job.user_id, GENERIC_NAME)) {
-		strcpy(app.job.user_id, "");
+	if (!getenv_remote(sp, "SLURM_JOB_USER", eard_appl.job.user_id, GENERIC_NAME)) {
+		strcpy(eard_appl.job.user_id, "");
 	}
-	if (!getenv_remote(sp, "SLURM_JOB_NAME",  app.job.app_id, GENERIC_NAME)) {
-		strcpy(app.job.app_id, "");
+	if (!getenv_remote(sp, "SLURM_JOB_NAME",  eard_appl.job.app_id, GENERIC_NAME)) {
+		strcpy(eard_appl.job.app_id, "");
 	}
-	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", app.job.user_acc, GENERIC_NAME)) {
-		strcpy(app.job.user_acc, "");
+	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", eard_appl.job.user_acc, GENERIC_NAME)) {
+		strcpy(eard_appl.job.user_acc, "");
 	}
-	if (!getenv_remote(sp, "EAR_POWER_POLICY", app.job.policy, GENERIC_NAME)) {
-		strcpy(app.job.policy, "");
+	if (!getenv_remote(sp, "EAR_POWER_POLICY", eard_appl.job.policy, GENERIC_NAME)) {
+		strcpy(eard_appl.job.policy, "");
 	}
 	if (!getenv_remote(sp, "EAR_POWER_POLICY_TH", buffer1, 64)) {
-		app.job.th = 0;
+		eard_appl.job.th = 0;
 	} else {
-		app.job.th = atof(buffer1);
+		eard_appl.job.th = atof(buffer1);
 	}
-	if (!getenv_remote(sp, "EARD_HOST", host_name, GENERIC_NAME)) {
+	if (!getenv_remote(sp, "EARD_HOST", eard_host, NAME_MAX)) {
 		return (ESPANK_ERROR);
 	}	
-	if (!getenv_remote(sp, "EARD_PORT", buffer1, GENERIC_NAME)) {
+	if (!getenv_remote(sp, "EARD_PORT", buffer1, NAME_MAX)) {
 		return (ESPANK_ERROR);
 	} else {
 		eard_port = (unsigned int) atoi(buffer1);
 	}
+	// TODO:
+	//eard_appl.is_learning =
+	//eard.job.def_f =
 
 	// Verbosity
-	plug_verbose(sp, 2, "EARD host: %s", host_name);
+	plug_verbose(sp, 2, "EARD host: %s", eard_host);
 	plug_verbose(sp, 2, "EARD port: %u", eard_port);
 
-	if (eards_remote_connect(host_name, eard_port) < 0) {
+	if (eards_remote_connect(eard_host, eard_port) < 0) {
 		plug_error("ERROR while connecting with EAR daemon");
 	}
-	if (!eards_new_job(&app)) {
+	if (!eards_new_job(&eard_appl)) {
 		plug_error("ERROR while connecting with EAR daemon");
 	}
 	eards_remote_disconnect();
@@ -335,12 +344,10 @@ int remote_eard_report_start(spank_t sp)
 
 int remote_eard_report_finish()
 {
-	return (ESPANK_SUCCESS);	
-	
-	if (eards_remote_connect(host_name) < 0) {
+	if (eards_remote_connect(eard_host) < 0) {
 		plug_error("while connecting with EAR daemon");
 	}
-	eards_end_job(app.job.id, app.job.step_id);
+	eards_end_job(eard_appl.job.id, eard_appl.job.step_id);
 	eards_remote_disconnect();
 
 	return (ESPANK_SUCCESS);
@@ -350,6 +357,7 @@ int local_eargmd_report_start(spank_t sp)
 {
 	char *c_num_nodes;
 
+	// Gathering variables
 	getenv_local("SLURM_NNODES", &c_num_nodes);
 	eargmd_nods = atoi(c_num_nodes);
 
@@ -399,7 +407,7 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 
 	if(spank_context () == S_CTX_LOCAL)
 	{
-		if ((r = local_read_cluster_conf_file(sp, ac, av)) != ESPANK_SUCCESS)
+		if ((r = local_configuration(sp, ac, av)) != ESPANK_SUCCESS)
 		{
 			plug_error("while reading configuration file, disabling EAR");
 			local_library_disable();

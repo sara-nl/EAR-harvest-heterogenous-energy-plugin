@@ -9,7 +9,8 @@ plugin_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
 
 plugin_SOURCES = slurm_plugin.c \
                  slurm_plugin_helper.c \
-                 slurm_plugin_options.c
+                 slurm_plugin_options.c \
+                 slurm_plugin_user_system.c
 
 ######## RULES
 

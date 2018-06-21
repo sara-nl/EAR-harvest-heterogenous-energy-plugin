@@ -99,19 +99,9 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 }
 
 /*
- * Plugin intern environment variables:
- * - EAR_INSTALL_DIR
- * - EAR_ETC_DIR
- * - EAR
- * - EAR_LEARNING_PHASE
- * - EAR_VERBOSE
- * - EAR_POWER_POLICY
- * - EAR_DB_PSTATE
- * - EAR_USER_DB_PATHNAME
- * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN
- * - EAR_PERFORMANCE_PENALTY
- * - EAR_TRACES
- * - EAR_MPI_DIST
+ *
+ *
+ *
  */
 
 static int _opt_ear (int val, const char *optarg, int remote)
