@@ -75,7 +75,7 @@ static uint ear_models_pstates = 0;
 static ulong user_selected_freq;
 
 
-void print_energy_policy_configuration()
+void set_energy_policy_name()
 {
     switch(power_model_policy)
     {
@@ -245,7 +245,7 @@ void init_power_policy()
 
 		EAR_default_frequency = def_freq;
 	}
-	print_energy_policy_configuration();
+	set_energy_policy_name();
 	init_policy_functions();
 }
 
