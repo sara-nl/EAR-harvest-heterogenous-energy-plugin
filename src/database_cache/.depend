@@ -1,0 +1,15 @@
+eardbd.o: eardbd.c ../database_cache/eardbd.h \
+ ../database_cache/eardbd_api.h ../common/types/periodic_aggregation.h \
+ ../common/types/generic.h ../common/types/periodic_metric.h \
+ ../common/config.h ../common/types/cluster_conf.c ../common/states.h \
+ ../common/environment.h ../common/string_enhanced.h \
+ ../common/types/cluster_conf.h ../common/ear_verbose.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../common/types/loop.h ../common/types/log.h
+eardbd_api.o: eardbd_api.c ../database_cache/eardbd_api.h \
+ ../database_cache/eardbd.h ../common/types/periodic_metric.h \
+ ../common/config.h ../common/types/generic.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../common/types/loop.h ../common/types/log.h ../common/states.h

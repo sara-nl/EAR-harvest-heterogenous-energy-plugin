@@ -7,10 +7,10 @@
 #include <unistd.h>
 #include <sys/resource.h>
 #include <linux/limits.h>
-#include <slurm/spank.h>
 
+#include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_user_system.h>
-#include <common/types/cluster_conf.h>
 #include <common/types/application.h>
 
 extern char buffer1[PATH_MAX];
@@ -22,24 +22,31 @@ extern unsigned char eard_host[NAME_MAX+1];
 extern unsigned int  eard_port;
 extern application_t eard_appl;
 
-static int is_user_privileged(cluster_conf_t *conf_clus)
+static int is_user_privileged(spank_t sp, cluster_conf_t *conf_clus)
 {
 	char *aid;
 	char *uid;
 	int i;
 
-	getenv_local("SLURM_JOB_ACCOUNT", &aid);
-	getenv_local("SLURM_JOB_USER", &uid);
+	if (getenv_local("SLURM_JOB_USER", &uid))
+	{
+		plug_verbose(sp, 2, "looking for privileges for user '%s'", uid);
 
-	for (i = 0; i < conf_clus->num_priv_users; ++i) {
-		if (strcmp(uid, conf_clus->priv_users[i]) == 0) {
-			return 1;
+		for (i = 0; i < conf_clus->num_priv_users; ++i) {
+			if (strcmp(uid, conf_clus->priv_users[i]) == 0) {
+				return 1;
+			}
 		}
 	}
 
-	for (i = 0; i < conf_clus->num_acc; ++i) {
-		if (strcmp(aid, conf_clus->priv_acc[i]) == 0) {
-			return 1;
+	if (getenv_local("SLURM_JOB_ACCOUNT", &aid))
+	{
+		plug_verbose(sp, 2, "looking for privileges for account '%s'", aid);
+		
+		for (i = 0; i < conf_clus->num_acc; ++i) {
+			if (strcmp(aid, conf_clus->priv_acc[i]) == 0) {
+				return 1;
+			}
 		}
 	}
 
@@ -63,8 +70,10 @@ static int is_user_privileged(cluster_conf_t *conf_clus)
  * - EAR_USER_DB_PATHNAME					no privileged	no controlled
  */
 
-static int local_configuration_user_unprivileged(cluster_conf_t *conf_clus)
+static int local_configuration_user_unprivileged(spank_t sp, cluster_conf_t *conf_clus)
 {
+	plug_verbose(sp, 2, "function local_configuration_user_unprivileged");
+	
 	my_node_conf_t *conf_node;
 	policy_conf_t  *conf_plcy;
 
@@ -98,8 +107,10 @@ static int local_configuration_user_unprivileged(cluster_conf_t *conf_clus)
 	return (ESPANK_SUCCESS);
 }
 
-static int local_configuration_user_privileged(cluster_conf_t *conf_clus)
+static int local_configuration_user_privileged(spank_t sp, cluster_conf_t *conf_clus)
 {
+	plug_verbose(sp, 2, "function local_configuration_user_privileged");
+	
 	my_node_conf_t *conf_node;
 	policy_conf_t  *conf_plcy;
 	unsigned int id_plcy;
@@ -107,19 +118,23 @@ static int local_configuration_user_privileged(cluster_conf_t *conf_clus)
 
 	// Getting node configuration
 	if ((conf_node = get_my_node_conf(conf_clus, eard_host)) == NULL) {
+		plug_error("while getting node configuration");
 		return (ESPANK_ERROR);
 	}
 
 	// Testing EAR_POWER_POLICY
-	if (!existenv_local("EAR_POWER_POLICY")) {
+	if (existenv_local("EAR_POWER_POLICY")) {
+		plug_verbose(sp, 2, "Setting environment policy");
 		getenv_local("EAR_POWER_POLICY", &c_plcy);
 		id_plcy = policy_name_to_id(c_plcy);
 	} else {
 		id_plcy = conf_clus->default_policy;
+		plug_verbose(sp, 2, "Setting default policy %u", id_plcy);
 	}
 
 	// Getting policy configuration based on the policy selected of the user
 	if ((conf_plcy = get_my_policy_conf(conf_clus, conf_node, id_plcy)) == NULL) {
+		plug_error("while getting policy configuration");
 		return (ESPANK_ERROR);
 	}
 
@@ -136,12 +151,12 @@ static int local_configuration_user_privileged(cluster_conf_t *conf_clus)
 
 	// Testing EAR_THRESHOLD
 	if (!existenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN")) {
-		sprintf(buffer1, "%d", conf_plcy->th);
+		sprintf(buffer1, "%lf", conf_plcy->th);
 		setenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer1, 1);
 	}
 
 	if (!existenv_local("EAR_PERFORMANCE_PENALTY")) {
-		sprintf(buffer1, "%d", conf_plcy->th);
+		sprintf(buffer1, "%lf", conf_plcy->th);
 		setenv_local("EAR_PERFORMANCE_PENALTY", buffer1, 1);
 	} else {
 		//TODO: is valid
@@ -150,11 +165,17 @@ static int local_configuration_user_privileged(cluster_conf_t *conf_clus)
 	return (ESPANK_SUCCESS);
 }
 
-int local_user_system_configuration(cluster_conf_t *conf_clus)
+int local_user_system_configuration(spank_t sp, cluster_conf_t *conf_clus)
 {
-	if (is_user_privileged(conf_clus)) {
-		return local_configuration_user_privileged(conf_clus);
+	plug_verbose(sp, 2, "function local_user_system_configuration");
+
+	#if 1
+	return local_configuration_user_privileged(sp, conf_clus);
+	#endif
+
+	if (is_user_privileged(sp, conf_clus)) {
+		return local_configuration_user_privileged(sp, conf_clus);
 	}
 
-	return local_configuration_user_unprivileged(conf_clus);
+	return local_configuration_user_unprivileged(sp, conf_clus);
 }

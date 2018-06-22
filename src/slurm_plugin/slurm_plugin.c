@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <time.h>
 #include <errno.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -36,6 +37,7 @@
 #include <unistd.h>
 #include <sys/resource.h>
 #include <linux/limits.h>
+#include <slurm/slurm.h>
 #include <slurm/spank.h>
 #include <cpufreq.h>
 
@@ -98,35 +100,71 @@ application_t eard_appl;
  * - SLURM_JOB_ACCOUNT
  */
 
+void print_general_info(spank_t sp) 
+{
+    plug_verbose(sp, 2, "function print_general_info");
+
+    struct rlimit sta, mem;
+    int r_sta, r_mem;
+
+    r_sta = getrlimit(RLIMIT_STACK, &sta);
+    r_mem = getrlimit(RLIMIT_MEMLOCK, &mem);
+
+    plug_verbose(sp, 2, "plugin compiled in %s", __DATE__);
+    plug_verbose(sp, 2, "stack size limit test (res %d, curr: %lld, max: %lld)",
+                 r_sta, (long long) sta.rlim_cur, (long long) sta.rlim_max);
+    plug_verbose(sp, 2, "memlock size limit test (res %d, curr: %lld, max: %lld)",
+                 r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
+    plug_verbose(sp, 2, "buffers size %d", PATH_MAX);
+}
+
+static void local_print_environment(spank_t sp)
+{
+	job_info_msg_t * msg;
+	int i;
+
+	if (slurm_load_jobs (0, &msg, 0) < 0) {
+        slurm_error ("auto-affinity: slurm_load_jobs: %m\n");
+        return;
+    }
+
+	for (i = 0; i < msg->record_count; i++)
+	{
+        job_info_t *j = &msg->job_array[i];
+		plug_verbose(sp, 2, "MSG JOBID %u", j->job_id);
+		plug_verbose(sp, 2, "MSG ACCOUNT %s", j->account);
+    }
+}
+
 static void remote_print_environment(spank_t sp)
 {
-	plug_verbose(sp, 2, "remote_print_environment");
+	plug_verbose(sp, 2, "function remote_print_environment");
 
 	if (verbosity_test(sp, 2) == 1)
 	{	
-	printenv_remote(sp, "EAR");
-	printenv_remote(sp, "EAR_LEARNING_PHASE");
-	printenv_remote(sp, "EAR_VERBOSE");
-	printenv_remote(sp, "EAR_POWER_POLICY");
-	printenv_remote(sp, "EAR_P_STATE");
-	printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
-	printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
-	printenv_remote(sp, "EAR_POWER_POLICY_TH");
-	printenv_remote(sp, "EAR_TRACES");
-	printenv_remote(sp, "EAR_MPI_DIST");
-	printenv_remote(sp, "EAR_USER_DB_PATHNAME");
-	printenv_remote(sp, "EAR_PREDIR");
-	printenv_remote(sp, "EAR_ETCDIR");
-	printenv_remote(sp, "EAR_TMP");
-	printenv_remote(sp, "EAR_APP_NAME");
-	printenv_remote(sp, "LD_PRELOAD");
-	printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
-	printenv_remote(sp, "SLURM_NNODES");
-	printenv_remote(sp, "SLURM_JOB_ID");
-	printenv_remote(sp, "SLURM_STEP_ID");
-	printenv_remote(sp, "SLURM_JOB_USER");
-	printenv_remote(sp, "SLURM_JOB_NAME");
-	printenv_remote(sp, "SLURM_JOB_ACCOUNT");
+		printenv_remote(sp, "EAR");
+		printenv_remote(sp, "EAR_LEARNING_PHASE");
+		printenv_remote(sp, "EAR_VERBOSE");
+		printenv_remote(sp, "EAR_POWER_POLICY");
+		printenv_remote(sp, "EAR_P_STATE");
+		printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
+		printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
+		printenv_remote(sp, "EAR_POWER_POLICY_TH");
+		printenv_remote(sp, "EAR_TRACES");
+		printenv_remote(sp, "EAR_MPI_DIST");
+		printenv_remote(sp, "EAR_USER_DB_PATHNAME");
+		printenv_remote(sp, "EAR_PREDIR");
+		printenv_remote(sp, "EAR_ETCDIR");
+		printenv_remote(sp, "EAR_TMP");
+		printenv_remote(sp, "EAR_APP_NAME");
+		printenv_remote(sp, "LD_PRELOAD");
+		printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
+		printenv_remote(sp, "SLURM_NNODES");
+		printenv_remote(sp, "SLURM_JOB_ID");
+		printenv_remote(sp, "SLURM_STEP_ID");
+		printenv_remote(sp, "SLURM_JOB_USER");
+		printenv_remote(sp, "SLURM_JOB_NAME");
+		printenv_remote(sp, "SLURM_JOB_ACCOUNT");
 	}
 }
 
@@ -139,7 +177,7 @@ static void remote_print_environment(spank_t sp)
 static int local_update_ld_preload(spank_t sp)
 {
     plug_verbose(sp, 2, "function local_update_ld_preload");
-	
+
 	char *ear_root_dir = NULL;
 	char *ld_preload = NULL;
 
@@ -256,8 +294,11 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 	}
 
 	if (!found_etcdir || !found_predir) {
+		plug_error("missing plugstack parameters");	
 		return (ESPANK_ERROR);
 	}
+
+	return (ESPANK_SUCCESS);
 }
 
 static int local_configuration(spank_t sp, int ac, char **av)
@@ -276,9 +317,9 @@ static int local_configuration(spank_t sp, int ac, char **av)
 
 	// Getting variables
 	gethostname(eard_host, NAME_MAX);
-	getenv_local("ETC_DIR", &etc_dir);
+	getenv_local("EAR_ETCDIR", &etc_dir);
 
-	plug_verbose(0, 2, "Trying to read config file in '%s' for node '%s'", etc_dir, eard_host);
+	plug_verbose(0, 2, "trying to read config file in '%s' for node '%s'", etc_dir, eard_host);
 
 	// Passing parameters to get_ear_conf_path (LOL)
 	setenv_local("ETC", etc_dir, 1);
@@ -286,10 +327,14 @@ static int local_configuration(spank_t sp, int ac, char **av)
 
 	// Gathering data
 	if (get_ear_conf_path(conf_path) == EAR_ERROR) {
+		plug_error("while looking for configuration file");	
 		return (ESPANK_ERROR);
 	}
+	
+	plug_verbose(0, 2, "found file in '%s'", conf_path);
 
 	if (read_cluster_conf(conf_path, &conf_clus) != EAR_SUCCESS) {
+		plug_error("while reading configuration file");	
 		return (ESPANK_ERROR);
 	}
 
@@ -297,7 +342,7 @@ static int local_configuration(spank_t sp, int ac, char **av)
 	sprintf(buffer1, "%u", conf_clus.eard.port);
 	setenv_local("EARD_HOST", eard_host, 1);
 	setenv_local("EARD_PORT", buffer1,   1);
-
+	
 	// Setting variables for EARGMD connection
 	sprintf(eargmd_host, "%s", conf_clus.eargm.host);
 	eargmd_port = conf_clus.eargm.port;
@@ -306,7 +351,7 @@ static int local_configuration(spank_t sp, int ac, char **av)
 	setenv_local("EAR_TMP", conf_clus.tmp_dir, 1);
 
 	// User system for LIBEAR
-	local_user_system_configuration(&conf_clus);
+	local_user_system_configuration(sp, &conf_clus);
 
 	// Freeing cluster configuration resources
 	free_cluster_conf(&conf_clus);
@@ -348,6 +393,7 @@ int remote_eard_report_start(spank_t sp)
 	#if PRODUCTION
 	return ESPANK_SUCCESS;
 	#endif
+	
 
 	init_application(&eard_appl);
 
@@ -387,10 +433,19 @@ int remote_eard_report_start(spank_t sp)
 	} else {
 		eard_port = (unsigned int) atoi(buffer1);
 	}
-	// TODO:
-	//eard_appl.is_learning =
-	//eard.job.def_f =
+	if (!getenv_remote(sp, "EAR_LEARNING_PHASE", buffer1, NAME_MAX)) {
+		eard_appl.is_learning = 0;
+	} else {
+		eard_appl.is_learning = atoi(buffer1);
+	}
+	if (!getenv_remote(sp, "EAR_P_STATE", buffer1, NAME_MAX)) {
+		return (ESPANK_ERROR);	
+	} else {
+		eard_appl.job.def_f = atoi(buffer1);
+	}
 
+	gethostname(eard_host, NAME_MAX);
+	
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
 
@@ -487,9 +542,9 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 
 	if(spank_context () == S_CTX_LOCAL)
 	{
+		local_print_environment(sp);
 		if ((r = local_configuration(sp, ac, av)) != ESPANK_SUCCESS)
 		{
-			plug_error("while reading configuration file, disabling EAR");
 			local_library_disable();
 
 			return r;
@@ -533,12 +588,12 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 	plug_verbose(sp, 2, "slurm_spank_exit");
 
 	if (spank_context() == S_CTX_LOCAL && job_created == 1) {
-		local_eargmd_report_finish();
+		local_eargmd_report_finish(sp);
 		return ESPANK_SUCCESS;
 	}
 
     if (spank_context() == S_CTX_REMOTE) {
-        return remote_eard_report_finish();
+        return remote_eard_report_finish(sp);
     }
 
 	return (ESPANK_SUCCESS);
@@ -555,13 +610,12 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		{
 			//
 			remote_update_slurm_vars(sp);
-
-			// Printing job remote information
-			print_general_info(sp);
-			
-			//
-			remote_print_environment(sp);
 		}
+		
+		// Printing job remote information
+		print_general_info(sp);
+		// 
+		remote_print_environment(sp);
 
 		if ((r = remote_eard_report_start(sp)) != ESPANK_SUCCESS)
 		{

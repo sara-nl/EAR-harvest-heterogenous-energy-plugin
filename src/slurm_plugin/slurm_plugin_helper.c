@@ -120,7 +120,9 @@ void printenv_remote(spank_t sp, char *name)
 	}
 	
 	if(getenv_remote(sp, name, buffer1, PATH_MAX)) {
-		plug_error("%s %s", name, buffer1);
+		plug_verbose(sp, 2, "%s '%s'", name, buffer1);
+	} else {
+		plug_verbose(sp, 2, "%s '%s'", name, "NULL");
 	}
 }
 
@@ -283,23 +285,6 @@ int isenv_remote(spank_t sp, char *name, char *value)
  * Others
  *
  */
-void print_general_info(spank_t sp)
-{
-	plug_verbose(sp, 2, "function print_general_info");
-
-	struct rlimit sta, mem;
-	int r_sta, r_mem;
-
-	r_sta = getrlimit(RLIMIT_STACK, &sta);
-	r_mem = rgetrlimit(RLIMIT_MEMLOCK, &mem);
-
-	plug_verbose(sp, 2, "plugin compiled in %s", __DATE__);
-	plug_verbose(sp, 2, "stack size limit test (res %d, curr: %lld, max: %lld)",
-				 r_sta, (long long) sta.rlim_cur, (long long) sta.rlim_max);
-	plug_verbose(sp, 2, "memlock size limit test (res %d, curr: %lld, max: %lld)",
-				 r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
-	plug_verbose(sp, 2, "buffers size %d", PATH_MAX);
-}
 
 int freq_to_p_state(int freq)
 {

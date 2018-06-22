@@ -30,6 +30,8 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
+#include <slurm/spank.h>
+
 // Verbosity
 #define plug_verbose(sp, level, ...) \
 	if (verbosity_test(sp, level) == 1) { \
@@ -60,7 +62,6 @@ int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
 
 // Others
-void print_general_info(spank_t sp);
 int freq_to_p_state(int freq);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H
