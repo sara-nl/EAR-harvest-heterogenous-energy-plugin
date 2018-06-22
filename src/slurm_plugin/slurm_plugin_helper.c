@@ -120,9 +120,9 @@ void printenv_remote(spank_t sp, char *name)
 	}
 	
 	if(getenv_remote(sp, name, buffer1, PATH_MAX)) {
-		plug_verbose(sp, 2, "%s '%s'", name, buffer1);
+		plug_verbose_0("%s '%s'", name, buffer1);
 	} else {
-		plug_verbose(sp, 2, "%s '%s'", name, "NULL");
+		plug_verbose_0("%s '%s'", name, "NULL");
 	}
 }
 
