@@ -287,14 +287,17 @@ void print_general_info(spank_t sp)
 {
 	plug_verbose(sp, 2, "function print_general_info");
 
-	struct rlimit l;
-	int r;
+	struct rlimit sta, mem;
+	int r_sta, r_mem;
 
-	r = getrlimit(RLIMIT_STACK, &l);
+	r_sta = getrlimit(RLIMIT_STACK, &sta);
+	r_mem = rgetrlimit(RLIMIT_MEMLOCK, &mem);
 
 	plug_verbose(sp, 2, "plugin compiled in %s", __DATE__);
 	plug_verbose(sp, 2, "stack size limit test (res %d, curr: %lld, max: %lld)",
-				 r, (long long) l.rlim_cur, (long long) l.rlim_max);
+				 r_sta, (long long) sta.rlim_cur, (long long) sta.rlim_max);
+	plug_verbose(sp, 2, "memlock size limit test (res %d, curr: %lld, max: %lld)",
+				 r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
 	plug_verbose(sp, 2, "buffers size %d", PATH_MAX);
 }
 

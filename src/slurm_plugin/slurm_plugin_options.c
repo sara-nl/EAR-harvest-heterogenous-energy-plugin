@@ -86,7 +86,9 @@ struct spank_option spank_options_manual[9] =
 
 int slurm_spank_init(spank_t sp, int ac, char **av)
 {
-    int i;
+	plug_verbose(sp, 2, "function slurm_spank_init");
+
+	int i;
 
     for (i = 0; i < 9; ++i)
     {   
@@ -99,19 +101,9 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 }
 
 /*
- * Plugin intern environment variables:
- * - EAR_INSTALL_DIR
- * - EAR_ETC_DIR
- * - EAR
- * - EAR_LEARNING_PHASE
- * - EAR_VERBOSE
- * - EAR_POWER_POLICY
- * - EAR_DB_PSTATE
- * - EAR_USER_DB_PATHNAME
- * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN
- * - EAR_PERFORMANCE_PENALTY
- * - EAR_TRACES
- * - EAR_MPI_DIST
+ *
+ *
+ *
  */
 
 static int _opt_ear (int val, const char *optarg, int remote)
@@ -338,3 +330,59 @@ static int _opt_ear_tag(int val, const char *optarg, int remote)
 	plug_nude("function _opt_tag");
 	return (ESPANK_SUCCESS);
 }
+
+/*
+ *
+ * SLURM framework
+ *
+ */
+
+#if PRODUCTION
+int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_slurmd_init");
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_slurmd_exit");
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_job_prolog (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_job_prolog");
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_task_init_privileged");
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_task_init (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_task_init");
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_task_post_fork (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_task_post_fork");
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_task_exit (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_task_exit");
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_job_epilog (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_job_epilog");
+	return (ESPANK_SUCCESS);
+}
+#endif
