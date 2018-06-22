@@ -177,8 +177,11 @@ void main(int argc, char *argv[])
     
     if (argc < 3) usage(argv[0]);
 
-    strcpy(path_name, EAR_INSTALL_PATH);
-    strcat(path_name, "/etc/sysconf/ear.conf");
+    if (get_ear_conf_path(path_name)==EAR_ERROR){
+        printf("Error getting ear.conf path\n");
+        exit(0);
+    }
+
     if (read_cluster_conf(path_name, &my_cluster_conf) != EAR_SUCCESS) VERBOSE_N(0, "ERROR reading cluster configuration\n");
     
     while (1)

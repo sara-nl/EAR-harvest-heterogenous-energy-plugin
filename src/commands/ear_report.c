@@ -300,16 +300,32 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
 
         }
     }
+    //case mpi without ear
+    else if (num_apps > 1)
+    {
+        printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\n\t");
 
+        for (i = 0; i < num_apps; i++)
+        {
+            avg_f = (double) apps[i].power_sig.avg_f/1000000;
+            printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t\n\t", 
+                    strtok(apps[i].node_id, "."), apps[i].power_sig.time, apps[i].power_sig.DC_power, 
+		    apps[i].signature.DC_power * apps[i].signature.time, avg_f);
+            avg_frequency += avg_f;
+            avg_time += apps[i].power_sig.time;
+            avg_power += apps[i].power_sig.DC_power;
+            total_energy += apps[i].power_sig.time * apps[i].power_sig.DC_power;
+        }
+    }
     avg_frequency /= num_apps;
     avg_time /= num_apps;
     avg_power /= num_apps;
     avg_CPI /= num_apps;
     avg_GBS /= num_apps;
 
-    i--;
+    i=0;
     printf("\nApplication summary\n\tApp_id: %s\n\tJob_id: %lu\n\tStep_id: %lu\n\tPolicy: %s\n\tPolicy threshold: %.2lf\n",
-            apps[i].job.app_id, apps[i].job.id, apps[i].job.step_id, apps[i].job.policy, apps[i].job.th);
+            apps[0].job.app_id, apps[0].job.id, apps[0].job.step_id, apps[0].job.policy, apps[0].job.th);
 
     if (apps[0].is_mpi)
     {
@@ -317,6 +333,13 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
 
         printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t%.2lf\t%.2lf\n", 
                 avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
+    }
+    else if (num_apps > 1)
+    {
+        printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\n\t");
+
+        printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t\n", 
+                avg_time, avg_power, total_energy, avg_frequency);
     }
     else
     {
