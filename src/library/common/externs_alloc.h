@@ -31,6 +31,7 @@
 #include <linux/limits.h>
 #include <common/types/application.h>
 #include <common/types/loop.h>
+#include <common/states.h>
 #include <daemon/shared_configuration.h>
 
 int EAR_VERBOSE_LEVEL;
@@ -62,5 +63,5 @@ ulong last_first_event;
 ulong last_calls_in_loop;
 ulong last_loop_size;
 ulong last_loop_level;
-uint dynais_enabled = 1;
+uint dynais_enabled = DYNAIS_ENABLED;
 uint check_periodic_mode=1;

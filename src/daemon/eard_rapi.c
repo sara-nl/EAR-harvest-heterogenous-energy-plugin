@@ -49,6 +49,8 @@ static const char *__NAME__ = "eard_rapi";
 static int eards_remote_connected=0;
 static int eards_sfd=-1;
 
+//#define API_DEBUG 1
+
 // Sends a command to eard
 int send_command(request_t *command)
 {

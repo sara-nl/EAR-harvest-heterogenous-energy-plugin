@@ -375,7 +375,7 @@ int policy_id_to_name(int policy_id,char *my_policy)
             strcpy(my_policy,"MIN_ENERGY_TO_SOLUTION");
         	break;
         case MIN_TIME_TO_SOLUTION:
-            strcpy(my_policy,"MIN_ENERGY_TO_SOLUTION");
+            strcpy(my_policy,"MIN_TIME_TO_SOLUTION");
         	break;
         case MONITORING_ONLY:
             strcpy(my_policy,"MONITORING_ONLY");

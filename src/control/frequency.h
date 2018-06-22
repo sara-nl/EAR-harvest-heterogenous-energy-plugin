@@ -50,5 +50,7 @@ void frequency_save_previous_frequency();
 void frequency_save_previous_configuration();
 void frequency_recover_previous_frequency();
 void frequency_recover_previous_configuration();
+int frequency_is_valid_frequency(ulong freq);
+int frequency_is_valid_pstate(uint pstate);
 
 #endif //EAR_CONTROL_FREQUENCY_H

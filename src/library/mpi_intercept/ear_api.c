@@ -92,10 +92,6 @@ static int in_loop;
 
 #if EAR_OVERHEAD_CONTROL
 /* in us */
-#define DYNAIS_ON 		1
-#define DYNAIS_OFF		0
-#define PERIODIC_MODE_ON	0
-#define PERIODIC_MODE_OFF	1
 // These variables are shared
 uint ear_periodic_mode=PERIODIC_MODE_OFF;
 uint mpi_calls_in_period=0;
@@ -396,7 +392,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	switch(ear_periodic_mode){
 		case PERIODIC_MODE_OFF:
 			switch(dynais_enabled){
-				case DYNAIS_ON:
+				case DYNAIS_ENABLED:
 					/* First time EAR computes a signature using dynais, check_periodic_mode is set to 0 */
 					if (check_periodic_mode==0){  // check_periodic_mode=0 the first time a signature is computed
 						ear_mpi_call_dynais_on(call_type,buf,dest);
@@ -426,7 +422,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 						}
 					}
 					break;
-				case DYNAIS_OFF:
+				case DYNAIS_DISABLED:
 					/** That case means we have computed some signature and we have decided to set dynais disabled */
 					ear_mpi_call_dynais_off(call_type,buf,dest);
 			}
@@ -439,7 +435,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 				}
 	}
 #else
-    if (dynais_enabled) ear_mpi_call_dynais_on(call_type,buf,dest);
+    if (dynais_enabled==DYNAIS_ENABLED) ear_mpi_call_dynais_on(call_type,buf,dest);
     else ear_mpi_call_dynais_off(call_type,buf,dest);
 #endif
 }
