@@ -301,6 +301,11 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 	return (ESPANK_SUCCESS);
 }
 
+static int remote_configuration(spank_t sp, int ac, char **av)
+{
+	setenv_remote(sp, "EAR_COEFF_DB_PATHNAME", "/etc/ear/coeffs/coeffs.", 1);
+}
+
 static int local_configuration(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function local_configuration");
@@ -408,6 +413,11 @@ int remote_eard_report_start(spank_t sp)
 	} else {
 		eard_appl.job.step_id = atoi(buffer1);
 	}
+    if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", buffer1, 64)) {
+		strcpy(eard_appl.job.user_acc, "");
+    } else {
+		strcpy(eard_appl.job.user_acc, buffer1);
+    }	
 	if (!getenv_remote(sp, "SLURM_JOB_USER", eard_appl.job.user_id, GENERIC_NAME)) {
 		strcpy(eard_appl.job.user_id, "");
 	}
@@ -464,11 +474,23 @@ int remote_eard_report_finish(spank_t sp)
 {
 	plug_verbose(sp, 2, "function remote_eard_report_finish");
 
+	char hostname[256];
+	gethostname(hostname, 256);
+	char command[512];
+	sprintf(command, "echo end_job %s %u >> /home/xjcorbalan/eard_exit.%s", hostname, hostname);
+	system(command);
+
+    if (!getenv_remote(sp, "EARD_PORT", buffer1, NAME_MAX)) {
+        return (ESPANK_ERROR);
+    } else {
+        eard_port = (unsigned int) atoi(buffer1);
+    }
+
 	#if PRODUCTION
     return ESPANK_SUCCESS;
     #endif
 
-	if (eards_remote_connect(eard_host) < 0) {
+	if (eards_remote_connect(hostname, eard_port) < 0) {
 		plug_error("while connecting with EAR daemon");
 	}
 	eards_end_job(eard_appl.job.id, eard_appl.job.step_id);
@@ -608,6 +630,9 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	{
 		if(isenv_remote(sp, "EAR", "1"))
 		{
+			//
+			remote_configuration(sp, ac, av);
+
 			//
 			remote_update_slurm_vars(sp);
 		}
