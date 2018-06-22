@@ -40,4 +40,11 @@
 #define EAR_MYSQL_ERROR         -7
 #define EAR_MYSQL_STMT_ERROR    -8
 
+
+#define DYNAIS_ENABLED      1
+#define DYNAIS_DISABLED     0
+#define PERIODIC_MODE_ON    1
+#define PERIODIC_MODE_OFF   0
+
+
 #endif //EAR_STATES_H

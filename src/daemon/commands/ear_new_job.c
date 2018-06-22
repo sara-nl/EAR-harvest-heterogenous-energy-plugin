@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #define NAME_SIZE 128
-int EAR_VERBOSE_LEVEL=1;
+int EAR_VERBOSE_LEVEL=0;
 static const char *__NAME__ = "new_job->eard";
 
 void usage(char *app)
@@ -53,6 +53,7 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Connection error\n");
 		exit(1);
 	}
+	VERBOSE_N(2,"Connected to host %s",myhost);
 	id=getenv("SLURM_JOB_ID");
 	sid=getenv("SLURM_STEP_ID");
 	if ((id==NULL) || (sid==NULL)){

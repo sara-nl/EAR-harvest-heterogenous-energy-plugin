@@ -187,6 +187,17 @@ static int is_valid_frequency(ulong freq)
 	else return 0;
 }
 
+int frequency_is_valid_frequency(ulong freq)
+{
+	return is_valid_frequency(freq);
+}
+
+int frequency_is_valid_pstate(uint pstate)
+{
+	if (pstate<num_freqs) return 1;
+	else return 0;
+}
+
 uint frequency_get_num_online_cpus()
 {
 	return num_cpus;

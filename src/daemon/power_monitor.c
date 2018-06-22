@@ -273,11 +273,17 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	frequency_set_userspace_governor_all_cpus();
 	// Checking the specific policy settings. It is pending to configure for special users
 	if (appID->is_learning){
-		learning_policy.p_state=appID->job.def_f;
-		learning_policy.th=0;
-		learning_policy.policy=MONITORING_ONLY;
-		my_policy=&learning_policy;
-		VERBOSE_N(0,"Executing learning phase for job (%d,%d) p_state %lu\n",appID->job.id,appID->job.step_id,learning_policy.p_state);
+		if (frequency_is_valid_pstate(appID->job.def_f)){
+			learning_policy.p_state=appID->job.def_f;
+			learning_policy.th=0;
+			learning_policy.policy=MONITORING_ONLY;
+			my_policy=&learning_policy;
+			VERBOSE_N(0,"Executing learning phase for job (%d,%d) p_state %lu\n",appID->job.id,appID->job.step_id,learning_policy.p_state);
+		}else{
+			my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+			VERBOSE_N(0,"Executing learning phase for job (%d,%d)  with invalid pstate %d, using default policy with pstate %d",
+			appID->job.id,appID->job.step_id,appID->job.def_f,my_policy->p_state);
+		}
 	}else{
 		p_id=policy_name_to_id(appID->job.policy);
 		// Use cluster conf function
@@ -287,7 +293,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 			my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
 		}
 		if (my_policy==NULL){
-			VERBOSE_N(0,"Default policy configuration returns NULL!!");
+			VERBOSE_N(0,"Default policy configuration returns NULL,invalid policy");
 			my_policy=&default_policy_context;
 		}
 	}

@@ -313,13 +313,13 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					// Computing dynais overhead
 					// Change dynais_enabled to ear_tracing_status=DYNAIS_ON/DYNAIS_OFF
-					if (dynais_enabled){
+					if (dynais_enabled==DYNAIS_ENABLED){
 						dynais_overhead_usec=mpi_calls_iter;
 						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.signature.time;
 						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
 							// Disable dynais : API is still pending
 							#if DYNAIS_CUTOFF
-							dynais_enabled=0;
+							dynais_enabled=DYNAIS_DISABLED;
 							#endif
 							VERBOSE_N(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
 							log_report_dynais_off(application.job.id,application.job.step_id);
@@ -466,7 +466,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 							policy_new_loop();
                             #if DYNAIS_CUTOFF
-                            dynais_enabled=1;
+							ear_verbose(1,"Dynais ON \n");
+                            dynais_enabled=DYNAIS_ENABLED;
                             #endif
 						} else {
 							EAR_STATE = EVALUATING_SIGNATURE;

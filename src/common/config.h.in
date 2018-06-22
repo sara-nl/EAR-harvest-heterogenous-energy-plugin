@@ -39,6 +39,7 @@
 #define RESET_FREQ			0		// Default frequency is reset between two consequtive loops or not. 0 means not reset
 #define MAX_POWER_ERROR		0.05 	// used to configure the frequency for power measurements. Configure the min time between measurements to have a maximum % of error
 #define MAX_DYNAIS_OVERHEAD	5 		// Maximum % of overhead allowed for dynais overhead. If overhead > MAX_DYNAIS_OVERHEAD dynais is set off after computing the first signature
+#define EAR_OVERHEAD_CONTROL 1
 #define MAX_POLICY_TRIES	3 		// Maximum number of tries (per loop) before going to default frequency
 #define DEMO				1 		// Used when doing EAR demos. More information is reported
 #define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE   30		// Maximum time, in seconds, EAR will run in dynais driven mode before going to periodic mode 
