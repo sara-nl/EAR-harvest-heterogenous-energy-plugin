@@ -1,8 +1,0 @@
-hardware_info.o: hardware_info.c ../../metrics/custom/hardware_info.h \
- ../../common/states.h
-bandwidth.o: bandwidth.c ../../metrics/custom/hardware_info.h \
- ../../metrics/custom/bandwidth/uncores_pci.h ../../common/ear_verbose.h \
- ../../common/config.h
-frequency.o: frequency.c ../../metrics/custom/frequency.h \
- ../../metrics/custom/hardware_info.h ../../common/ear_verbose.h \
- ../../common/config.h ../../common/states.h

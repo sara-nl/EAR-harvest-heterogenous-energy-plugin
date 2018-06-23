@@ -375,7 +375,7 @@ void main(int argc,char *argv[])
 	sigset_t set;
 	ulong divisor = 1000;
 	int ret;
-	ulong result;
+	ulong result,result2;
 	gm_warning_t my_warning;
 
     if (argc > 2) usage(argv[0]);
@@ -460,11 +460,9 @@ void main(int argc,char *argv[])
 		VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t1,result);
 
 		new_energy_sample(result);
-		#if GM_DEBUG
 		start_time=end_time-period_t2;
-    	result = db_select_acum_energy( start_time, end_time, divisor);
-        VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t2,result);
-		#endif
+    	result2 = db_select_acum_energy( start_time, end_time, divisor);
+        VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t2,result2);
 		total_energy_t2=compute_energy_t2();	
 		perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
 		perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
