@@ -368,6 +368,7 @@ void parse_args(char *argv[])
 	verbose_arg=atoi(argv[1]);	
 }
 
+#define GM_DEBUG 1
 
 void main(int argc,char *argv[])
 {
@@ -459,6 +460,11 @@ void main(int argc,char *argv[])
 		VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t1,result);
 
 		new_energy_sample(result);
+		#if GM_DEBUG
+		start_time=end_time-period_t2;
+    	result = db_select_acum_energy( start_time, end_time, divisor);
+        VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t2,result);
+		#endif
 		total_energy_t2=compute_energy_t2();	
 		perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
 		perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
