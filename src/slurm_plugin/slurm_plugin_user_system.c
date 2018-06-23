@@ -324,7 +324,6 @@ void remote_update_slurm_vars(spank_t sp)
 		if ((existenv_remote(sp, "EAR_LEARNING_PHASE") == 0) ||
 			(isenv_remote(sp, "EAR_LEARNING_PHASE", "0") == 1))
 		{
-			printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
 			// If this is passed SLURM's --cpu-freq argument
 			if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 64) == 1)
 			{
