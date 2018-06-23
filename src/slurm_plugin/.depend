@@ -1,0 +1,21 @@
+slurm_plugin_user_system.o: slurm_plugin_user_system.c \
+ ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
+ ../slurm_plugin/slurm_plugin_user_system.h \
+ ../common/types/cluster_conf.h ../common/config.h \
+ ../common/environment.h ../common/types/generic.h ../common/states.h \
+ ../common/ear_verbose.h ../common/types/application.h \
+ ../common/types/job.h ../common/types/signature.h \
+ ../common/types/power_signature.h
+slurm_plugin_options.o: slurm_plugin_options.c \
+ ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
+ ../slurm_plugin/slurm_plugin_options.h
+slurm_plugin_helper.o: slurm_plugin_helper.c \
+ ../slurm_plugin/slurm_plugin_helper.h ../common/config.h
+slurm_plugin.o: slurm_plugin.c ../slurm_plugin/slurm_plugin.h \
+ ../slurm_plugin/slurm_plugin_options.h \
+ ../slurm_plugin/slurm_plugin_user_system.h \
+ ../common/types/cluster_conf.h ../common/config.h \
+ ../common/environment.h ../common/types/generic.h ../common/states.h \
+ ../common/ear_verbose.h ../slurm_plugin/slurm_plugin_helper.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/signature.h ../common/types/power_signature.h

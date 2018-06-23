@@ -92,8 +92,10 @@ static int local_configuration_user_privileged(spank_t sp, cluster_conf_t *conf_
 
 	my_node_conf_t *conf_node;
 	policy_conf_t  *conf_plcy;
+	unsigned int id_plcy_aux;
 	unsigned int id_plcy;
 	char *c_plcy;
+	int i;
 
 	// Getting node configuration
 	if ((conf_node = get_my_node_conf(conf_clus, eard_host)) == NULL) {
@@ -101,12 +103,21 @@ static int local_configuration_user_privileged(spank_t sp, cluster_conf_t *conf_
 		return (ESPANK_ERROR);
 	}
 
+	// Selecting default policy by default
+	id_plcy = conf_clus->default_policy;
+
 	// Testing EAR_POWER_POLICY
 	if (existenv_local("EAR_POWER_POLICY")) {
 		getenv_local("EAR_POWER_POLICY", &c_plcy);
-		id_plcy = policy_name_to_id(c_plcy);
-	} else {
-		id_plcy = conf_clus->default_policy;
+		id_plcy_aux = policy_name_to_id(c_plcy);
+		
+		for(i = 0; i < conf_clus->num_policies; ++i)
+		{
+			if (conf_clus->power_policies[i].policy == id_plcy_aux)
+			{
+				id_plcy = id_plcy_aux;
+			}	
+		} 
 	}
 
 	// Getting policy configuration based on the policy selected of the user
