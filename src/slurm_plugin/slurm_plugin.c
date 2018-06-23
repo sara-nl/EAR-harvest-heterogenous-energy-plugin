@@ -61,9 +61,9 @@ char buffer2[PATH_MAX];
 static int job_created;
 
 // EARGMD variables
-static unsigned char eargmd_host[NAME_MAX+1];
-static unsigned int  eargmd_port;
-static unsigned int  eargmd_nods;
+unsigned char eargmd_host[NAME_MAX+1];
+unsigned int  eargmd_port;
+unsigned int  eargmd_nods;
 
 // EARD variables
 unsigned char eard_host[NAME_MAX+1];
@@ -108,7 +108,7 @@ static void remote_print_environment(spank_t sp)
 	struct rlimit sta, mem;
 	int r_sta, r_mem;
 
-	if (verbosity_test(sp, 2) == 1) {
+	if (verbosity_test(sp, 2) == 0) {
 		return;
 	}
 
@@ -123,8 +123,6 @@ static void remote_print_environment(spank_t sp)
     plug_verbose_0("memlock size limit test (res %d, curr: %lld, max: %lld)",
                  r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
 
-	if (verbosity_test(sp, 2) == 1)
-	{	
 		printenv_remote(sp, "EAR");
 		printenv_remote(sp, "EAR_LEARNING_PHASE");
 		printenv_remote(sp, "EAR_VERBOSE");
@@ -148,7 +146,6 @@ static void remote_print_environment(spank_t sp)
 		printenv_remote(sp, "SLURM_JOB_USER");
 		printenv_remote(sp, "SLURM_JOB_NAME");
 		printenv_remote(sp, "SLURM_JOB_ACCOUNT");
-	}
 }
 
 /*
@@ -234,7 +231,7 @@ int remote_eard_report_start(spank_t sp)
 	gethostname(eard_host, NAME_MAX);
 
 	if (!getenv_remote(sp, "EARD_PORT", buffer1, NAME_MAX)) {
-		plug_error(sp, 2, "EARD port not found");
+		plug_error("EARD port not found");
 		return (ESPANK_ERROR);
 	} else {
 		eard_port = (unsigned int) atoi(buffer1);
@@ -268,7 +265,7 @@ int remote_eard_report_finish(spank_t sp)
 	gethostname(eard_host, NAME_MAX);
 
 	if (!getenv_remote(sp, "EARD_PORT", buffer1, NAME_MAX)) {
-		plug_error(sp, 2, "EARD port not found");
+		plug_error("EARD port not found");
 		return (ESPANK_ERROR);
 	} else {
 		eard_port = (unsigned int) atoi(buffer1);
@@ -289,14 +286,15 @@ int remote_eard_report_finish(spank_t sp)
 int local_eargmd_report_start(spank_t sp)
 {
 	plug_verbose(sp, 2, "function local_eargmd_report_start");
-
+	char *c_eargmd_nods;
+	
 	#if PRODUCTION
     return ESPANK_SUCCESS;
     #endif
 
 	// Gathering variables
-	getenv_local("SLURM_NNODES", buffer1);
-	eargmd_nods = atoi(buffer1);
+	getenv_local("SLURM_NNODES", &c_eargmd_nods);
+	eargmd_nods = atoi(c_eargmd_nods);
 
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",

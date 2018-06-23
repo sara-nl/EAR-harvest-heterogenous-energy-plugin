@@ -22,6 +22,11 @@ extern unsigned char eard_host[NAME_MAX+1];
 extern unsigned int  eard_port;
 extern application_t eard_appl;
 
+// EARGMD variables
+extern unsigned char eargmd_host[NAME_MAX+1];
+extern unsigned int  eargmd_port;
+extern unsigned int  eargmd_nods;
+
 //
 char *etc_dir;
 char *pre_dir;
@@ -232,7 +237,6 @@ int local_configuration(spank_t sp, int ac, char **av)
 
 	static cluster_conf_t conf_clus;
 	char *conf_path = buffer1;
-	char *etc_dir;
 	int r;
 
 	//
@@ -277,7 +281,7 @@ int local_configuration(spank_t sp, int ac, char **av)
 	setenv_local("EAR_DYNAIS_WINDOW_SIZE", "500", 1);
 	setenv_local("EAR_DYNAIS_LEVELS", "4", 1);
 
-	sprintf(buffer1, "%u", conf_plcy.min_time_perf_acc);
+	sprintf(buffer1, "%u", conf_clus.min_time_perf_acc);
 	setenv_local("EAR_PERFORMANCE_ACCURACY", buffer1, 1);
 
 	// User system for LIBEAR

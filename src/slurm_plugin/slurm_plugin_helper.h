@@ -37,7 +37,7 @@
 	if (verbosity_test(sp, level) == 1) { \
 		slurm_error("EARPLUG, " __VA_ARGS__); \
 	}
-#define plug_verbose_0() \
+#define plug_verbose_0(...) \
 		slurm_error("EARPLUG, " __VA_ARGS__);
 #define plug_error(...) \
 	slurm_error("EARPLUG ERROR, " __VA_ARGS__)
