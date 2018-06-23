@@ -342,7 +342,7 @@ void ear_finalize()
 	// Writing application data
 	eards_write_app_signature(&application);
 	append_application_text_file(app_summary_path, &application);
-	report_application_data(&application);
+	report_mpi_application_data(&application);
 
 	// Closing any remaining loop
 	if (loop_with_signature) {
