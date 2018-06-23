@@ -123,6 +123,29 @@ void report_application_data(application_t *app)
 	fprintf(stderr,"-----------------------------------------------------------------------------------------------\n");
 }
 
+void report_mpi_application_data(application_t *app)
+{
+    float avg_f = ((double) app->signature.avg_f) / 1000000.0;
+    float def_f = ((double) app->job.def_f) / 1000000.0;
+    float pavg_f = ((double) app->power_sig.avg_f) / 1000000.0;
+    float pdef_f = ((double) app->power_sig.def_f) / 1000000.0;
+
+    fprintf(stderr,"------------------------------------------------------------------------ Application Summary --\n");
+    fprintf(stderr,"-- App id: %s, user id: %s, job id: %lu", app->job.app_id, app->job.user_id, app->job.id);
+    fprintf(stderr,"   acc %s\n", app->job.user_acc);
+    if (app->is_mpi){
+
+        fprintf(stderr,"-- mpi_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
+        fprintf(stderr,"   procs: %lu (s)\n", app->job.procs);
+        fprintf(stderr,"\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
+                                                                            app->signature.GBS, app->signature.Gflops);
+        fprintf(stderr,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power,
+                                                                app->signature.PCK_power);
+    }
+    fprintf(stderr,"-----------------------------------------------------------------------------------------------\n");
+}
+
+
 int print_application_fd(int fd, application_t *app, int new_line)
 {
     print_job_fd(fd, &app->job);
