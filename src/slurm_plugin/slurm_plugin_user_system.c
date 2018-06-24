@@ -214,7 +214,7 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 	{
 		if ((strlen(av[i]) > 8) && (strncmp ("default=on", av[i], 10) == 0))
 		{
-			setenv_local("EAR", "1", 1);
+			setenv_local("EAR", "1", 0);
 		}
 		if ((strlen(av[i]) > 11) && (strncmp ("sysconfdir=", av[i], 11) == 0))
 		{
