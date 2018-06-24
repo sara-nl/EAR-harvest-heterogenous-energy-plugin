@@ -272,7 +272,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     }
 
 
-    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI;
+    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy;
     avg_frequency = 0;
     avg_time = 0;
     avg_power = 0;
@@ -310,7 +310,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
             printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t\n\t", 
                     strtok(apps[i].node_id, "."), apps[i].power_sig.time, apps[i].power_sig.DC_power, 
-		    apps[i].signature.DC_power * apps[i].signature.time, avg_f);
+                    apps[i].power_sig.DC_power * apps[i].power_sig.time, avg_f);
             avg_frequency += avg_f;
             avg_time += apps[i].power_sig.time;
             avg_power += apps[i].power_sig.DC_power;
