@@ -58,6 +58,8 @@ clean: clean.others
 
 depend: depend.others
 
+depend-clean: depend-clean.others
+
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend

@@ -245,8 +245,7 @@ static int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 		sprintf(threshold, "%0.2f", foptarg);
 
-		result = setenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", threshold, 1);
-		result = result && setenv_local("EAR_PERFORMANCE_PENALTY", threshold, 1);
+		result = setenv_local("EAR_POWER_POLICY_TH", threshold, 1);
 		result = result && setenv_local("EAR", "1", 1) != 1;
 
 		if (result != 1) {

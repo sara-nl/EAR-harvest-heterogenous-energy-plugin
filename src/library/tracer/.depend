@@ -1,0 +1,9 @@
+tracer.o: tracer.c ../../control/frequency.h \
+ ../../metrics/papi/generics.h ../../library/common/externs.h \
+ ../../common/types/application.h ../../common/config.h \
+ ../../common/types/job.h ../../common/types/generic.h \
+ ../../common/types/signature.h ../../common/types/power_signature.h \
+ ../../common/types/loop.h ../../daemon/shared_configuration.h \
+ ../../library/tracer/tracer.h ../../library/states/states.h \
+ ../../library/metrics/metrics.h ../../common/environment.h \
+ ../../common/ear_verbose.h

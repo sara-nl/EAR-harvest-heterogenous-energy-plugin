@@ -59,6 +59,8 @@ int print_application(application_t *app);
 
 /** Prints a summary of the application to STDOUT */
 void report_application_data(application_t *app);
+/** Prints a summary of the application (only mpi part,power signature is not reported) to STDOUT */
+void report_mpi_application_data(application_t *app);
 
 /** Reads a file of applications saved in binary format. A memory block is
     allocated for the read applications, and is returned by the argument 'apps'.

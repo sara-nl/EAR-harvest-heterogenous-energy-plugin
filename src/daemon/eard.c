@@ -110,7 +110,6 @@ int is_new_application(int pid);
 int is_new_service(int req,int pid);
 int application_timeout();
 void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node);
-void set_default_policy(policy_conf_t *policy);
 int RAPL_counting=0;
 int eard_must_exit=0;
 
@@ -777,7 +776,6 @@ void signal_handler(int sig)
      	   	}else{
 				print_my_node_conf(my_node_conf);
 				set_global_eard_variables();
-    			set_default_policy(&default_policy_context);
     			configure_new_values(dyn_conf,&my_cluster_conf,my_node_conf);
     			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
 			}
@@ -831,21 +829,24 @@ void signal_catcher()
 }
 //endregion
 
-void set_default_policy(policy_conf_t *policy)
-{
-	policy->th=1;
-	policy->p_state=EAR_MIN_P_STATE;
-}
 void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
 {
     policy_conf_t *my_policy;
     ulong deff;
+	// Default policy is just in case
+    default_policy_context.policy=MONITORING_ONLY;
+    default_policy_context.p_state=EAR_MIN_P_STATE;
+    default_policy_context.th=0;
     my_policy=get_my_policy_conf(cluster,node,cluster->default_policy);
     if (my_policy==NULL){
         // This should not happen
         eard_verbose(0,"Default policy  not found in ear.conf");
         my_policy=&default_policy_context;
-    }
+    }else{
+		default_policy_context.policy=my_policy->policy;
+		default_policy_context.p_state=my_policy->p_state;
+		default_policy_context.th=my_policy->th;
+	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
     dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
     dyn->def_freq=deff;
@@ -858,11 +859,19 @@ void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_co
 {
 	policy_conf_t *my_policy;
 	ulong deff;
+	// Default policy is just in case
+	default_policy_context.policy=MONITORING_ONLY;
+	default_policy_context.p_state=EAR_MIN_P_STATE;
+	default_policy_context.th=0;
 	my_policy=get_my_policy_conf(cluster,node,cluster->default_policy);
 	if (my_policy==NULL){
 		// This should not happen
 		eard_verbose(0,"Default policy  not found in ear.conf");
 		my_policy=&default_policy_context;
+	}else{
+		default_policy_context.policy=my_policy->policy;
+		default_policy_context.p_state=my_policy->p_state;
+		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
 	dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);

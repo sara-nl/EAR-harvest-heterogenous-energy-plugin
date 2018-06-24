@@ -10,11 +10,9 @@ daemon_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
 OBJS = eargm_rapi.o \
        eargm_server_api.o
 
-ifdef DB_BASE
-BINARIES += eargmd
+BINARIES = eargmd
 
 DB_OBJS = $(SRCDIR)/common/database.a
-endif
 
 ######## RULES
 
@@ -36,6 +34,8 @@ clean: clean.others
 	rm -f *.o *.a *.so
 
 depend: depend.others
+
+depend-clean: depend-clean.others
 
 ######## DEPENDENCIES
 
