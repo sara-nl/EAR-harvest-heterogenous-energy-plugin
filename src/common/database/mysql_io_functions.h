@@ -48,7 +48,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app);
 *   applications found in the database corresponding to the query. Returns the 
 *   number of applications found on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error. */
-int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps);
+int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps, char is_learning);
 
 /** Given a MYSQL connection and a loop, inserts said loop into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
