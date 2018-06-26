@@ -71,7 +71,66 @@ unsigned int  eard_port;
 application_t eard_appl;
 
 /*
- * Environment variables list
+ * Manual
+ * ------
+ * SRUN pipeline:
+ * srun   -> slurm_spank_init()
+ * srun   -> srun arguments are received int ‘opt()’ functions arguments
+ *           are transformed into environment variables if the values are
+ *           in the correct range.
+ * srun   -> slurm_spank_init_post_op()
+ * srun   -> job is created and queued
+ * srun   -> job is launched
+ * srun   -> slurm_spank_srun _user_init()
+ * srun   -> environment variables are serialized and transformed into
+ *           spank remote variables
+ * remote -> processes are spawned into remote nodes
+ * remote -> slurm_spank_user_init()
+ * remote -> running task
+ * remote -> job exit functions
+ * srun   -> job exit functions
+ *
+ * SBATCH pipeline:
+ * The same of the SRUN pipeline, except that it returns inmediately after the
+ * job is created, queued and launched. SRUN waits until the end.
+ *
+ * SBATCH launching processes step by step:
+ * 1) Process 38966 launches sbatch
+ * 2) It creates the job process 41186 and its local context returns inmediately
+ * 3) Job process 41186 contacts with a node nxt0347
+ * 4) Node nxt0347 SLURMD process 18432 creates a sbatch read process 19668
+ * 5) Read process 19668 reads the SBATCH script file
+ * 6) Read process 19668 finds and SRUN command in the sbatch script file and
+ *    it creates the job process 19676 which starts with the SRUN local pipeline
+ *    whie the 19668 waits.
+ * 7) It is a two task job so the processes 19688 and 41930 processes are
+ *    spawned in the nodes nxt0347 and nxt0348 respectively, following the
+ *    SRUN remote pipeline.
+ * 8) The running processes 19693 and 41935, children of 19688 and 41930
+ *    respectively are created and runs the application while the parents
+ *    wait.
+ * 9) The app ends and the parents call the exit remote pipeline functions.
+ * 10) The read process 19668 continue the reading of the SBATCH.
+ *
+ * FAQ:
+ * - The environment is propagated when the flag is set in the SBATCH (i.e.
+ *   sbatch --ear=on)?
+ * + Yes.
+ * - The environment is propagated when the flag is set in #SBATCH script
+ *   options (i.e. #SBATCH --ear=on)?
+ * + Yes.
+ * - It is called the respective option function (i.e. function '_opt_ear') when
+ *   the #SBATCH script option is set?
+ * + Is called in the SBATCH context, not in the SRUN context.
+ * - Is called the EARD and EARGMD job connection functions in every SRUN and
+ *   SBATCH remote conext?
+ * + Yes, so we have to control it.
+ * - It is possible to identify when is SRUN and when is SBATCH/SALLOC?
+ * + Yes. The local context in SBATCH/SALLOC is defined as 'S_CTX_ALLOCATOR'
+ *   while in SRUN is defined as 'S_CTX_LOCAL'. So in remote context some
+ *   control have to be added.
+ *
+ * Environment variables list:
 
  *   environment variable                   new
  * --------------------------------------------
