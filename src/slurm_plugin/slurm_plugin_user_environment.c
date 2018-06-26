@@ -10,7 +10,7 @@
 
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
-#include <slurm_plugin/slurm_plugin_user_system.h>
+#include <slurm_plugin/slurm_plugin_user_environment.h>
 #include <common/types/application.h>
 
 extern char buffer1[PATH_MAX];
