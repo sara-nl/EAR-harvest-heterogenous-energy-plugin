@@ -58,10 +58,7 @@ void usage(char *app)
 "\t\t-db\tspecifies the database on which the query is executed [default: Report]\n" \
 "\t\t-ip\tspecifies the ip where the MySQL server can be found [default: 127.0.0.1]\n" \
 "", app);
-
-#if DB_FILES
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
-#endif
     #endif
 	exit(1);
 }
@@ -409,11 +406,9 @@ void main(int argc, char *argv[])
             else if (!strcmp("-v", argv[i])){
                 verbose = 1;
             }
-#if DB_FILES
             else if (!strcmp("-f", argv[i])){
                 files = ++i;
             }
-#endif
         }
     }
     if (!files)
