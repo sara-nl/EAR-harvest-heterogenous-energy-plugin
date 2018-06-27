@@ -70,6 +70,10 @@ unsigned char eard_host[NAME_MAX+1];
 unsigned int  eard_port;
 application_t eard_appl;
 
+// Contexts
+#define S_CTX_SRUN 		S_CTX_LOCAL
+#define S_CTX_SBATCH	S_CTX_ALLOCATOR
+
 /*
  * Manual
  * ------
@@ -131,33 +135,62 @@ application_t eard_appl;
  *   control have to be added.
  *
  * Environment variables list:
-
- *   environment variable                   new
- * --------------------------------------------
- * - EAR
- * - EAR_LEARNING_PHASE
- * - EAR_VERBOSE
- * - EAR_POWER_POLICY
- * - EAR_P_STATE
- * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN
- * - EAR_PERFORMANCE_PENALTY
- * - EAR_TRACES          
- * - EAR_MPI_DIST
- * - EAR_USER_DB_PATHNAME
- * - EAR_POWER_POLICY_TH					x
- * - EAR_PREDIR
- * - EAR_ETCDIR
- * - EAR_TMPDIR                             x
- * - EAR_TMP
- * - EAR_APP_NAME
- * - LD_PRELOAD
- * - SLURM_CPU_FREQ_REQ
- * - SLURM_NNODES
- * - SLURM_JOB_ID
- * - SLURM_STEP_ID
- * - SLURM_JOB_USER
- * - SLURM_JOB_NAME
- * - SLURM_JOB_ACCOUNT
+ *   Var                                    | Opt | Local | Local Job | Remote
+ * ---------------------------------------------------------------------------
+ * - EAR									| x   | x     |           |
+ * - EAR_LEARNING_PHASE						| x   |       |           |
+ * - EAR_VERBOSE							| x   | x     |           |
+ * - EAR_POWER_POLICY						| x   | x     |           |
+ * - EAR_P_STATE							| x   | x     |           | t
+ * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN	| -   | -     | -         | -
+ * - EAR_PERFORMANCE_PENALTY				| -   | -     | -         | -
+ * - EAR_POWER_POLICY_TH					| x   | x     |           | t
+ * - EAR_TRACES          					| x   |       |           |
+ * - EAR_MPI_DIST                           | x   |       |           |
+ * - EAR_USER_DB_PATHNAME                   | x   |       |           |
+ * - EAR_DB_PATHNAME                   		|     | x     |           |
+ * - EAR_COEFF_PATHNAME                     |     | x     |           |
+ * - EAR_PREDIR								|     | x     |           |
+ * - EAR_ETCDIR								|     | x     |           |
+ * - EAR_TMPDIR                             |     | x     |           |
+ * - EAR_TMP								| -   | -     | -         | -
+ * - TMP									| -   | -     | -         | -
+ * - EAR_APP_NAME							|     | x     |           |
+ * - LD_PRELOAD                             |     | x     |           |
+ * - SLURM_CPU_FREQ_REQ                     |     |       | x         |
+ * - SLURM_NNODES                           |     |       | x         |
+ * - SLURM_JOB_ID							|     |       | x         |
+ * - SLURM_STEP_ID							|     |       | x         |
+ * - SLURM_JOB_USER							|     |       | x         |
+ * - SLURM_JOB_NAME							|     |       | x         |
+ * - SLURM_JOB_ACCOUNT						|     |       | x         |
+ *
+ * Reasons to stop the job:
+ * 1) The P_STATE is not found in 'ear.conf' P_STATE list.
+ * 2) Unprivileged user trying to use privileged options: EAR, EAR_VERBOSE,
+ *    EAR_LEARNING_PHASE, EAR_POWER_POLICY, EAR_P_STATE, EAR_POWER_POLICY_TH,
+ *    EAR_TRACES, EAR_DB_PATHNAME, EAR_COEFF_PATHNAME
+ *
+ * Reasons to disable EAR:
+ * 1) Set environment variable fails.
+ *
+ * Reading configuration times:
+ * 1) In local context, prior to job creation
+ * 2) In remote context, for specific node configuration
+ *
+ * Preguntas:
+ * 1) Que pasa con el threshold? Si cada nodo tiene uno, que ocurre cuando
+ *    se escribe uno manualmente con la opción? Lo mismo para el P_STATE. Ello
+ *    implica la relectura de la configuración.
+ * 2) Que variables son estrictamente necesarias tanto de EAR, como de EARD
+ *    y EARGMD? Que hacer en caso de no encontrarse.
+ *
+ * Under construction:
+ * 1) Energy tag
+ * 2) User system
+ * 3) Detection system to avoid EARD and EARGMD job end functions if there
+ *    were an error in the job start functions.
+ *
  */
 
 static void remote_print_environment(spank_t sp)
@@ -182,29 +215,29 @@ static void remote_print_environment(spank_t sp)
     plug_verbose_0("memlock size limit test (res %d, curr: %lld, max: %lld)",
                  r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
 
-		printenv_remote(sp, "EAR");
-		printenv_remote(sp, "EAR_LEARNING_PHASE");
-		printenv_remote(sp, "EAR_VERBOSE");
-		printenv_remote(sp, "EAR_POWER_POLICY");
-		printenv_remote(sp, "EAR_P_STATE");
-		printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
-		printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
-		printenv_remote(sp, "EAR_POWER_POLICY_TH");
-		printenv_remote(sp, "EAR_TRACES");
-		printenv_remote(sp, "EAR_MPI_DIST");
-		printenv_remote(sp, "EAR_USER_DB_PATHNAME");
-		printenv_remote(sp, "EAR_PREDIR");
-		printenv_remote(sp, "EAR_ETCDIR");
-		printenv_remote(sp, "EAR_TMP");
-		printenv_remote(sp, "EAR_APP_NAME");
-		printenv_remote(sp, "LD_PRELOAD");
-		printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
-		printenv_remote(sp, "SLURM_NNODES");
-		printenv_remote(sp, "SLURM_JOB_ID");
-		printenv_remote(sp, "SLURM_STEP_ID");
-		printenv_remote(sp, "SLURM_JOB_USER");
-		printenv_remote(sp, "SLURM_JOB_NAME");
-		printenv_remote(sp, "SLURM_JOB_ACCOUNT");
+	printenv_remote(sp, "EAR");
+	printenv_remote(sp, "EAR_LEARNING_PHASE");
+	printenv_remote(sp, "EAR_VERBOSE");
+	printenv_remote(sp, "EAR_POWER_POLICY");
+	printenv_remote(sp, "EAR_P_STATE");
+	printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
+	printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
+	printenv_remote(sp, "EAR_POWER_POLICY_TH");
+	printenv_remote(sp, "EAR_TRACES");
+	printenv_remote(sp, "EAR_MPI_DIST");
+	printenv_remote(sp, "EAR_USER_DB_PATHNAME");
+	printenv_remote(sp, "EAR_PREDIR");
+	printenv_remote(sp, "EAR_ETCDIR");
+	printenv_remote(sp, "EAR_TMP");
+	printenv_remote(sp, "EAR_APP_NAME");
+	printenv_remote(sp, "LD_PRELOAD");
+	printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
+	printenv_remote(sp, "SLURM_NNODES");
+	printenv_remote(sp, "SLURM_JOB_ID");
+	printenv_remote(sp, "SLURM_STEP_ID");
+	printenv_remote(sp, "SLURM_JOB_USER");
+	printenv_remote(sp, "SLURM_JOB_NAME");
+	printenv_remote(sp, "SLURM_JOB_ACCOUNT");
 }
 
 /*
@@ -410,10 +443,9 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 
 	if(spank_context () == S_CTX_LOCAL)
 	{
-		if ((r = local_configuration(sp, ac, av)) != ESPANK_SUCCESS)
+		if ((r = local_pre_job_configuration(sp, ac, av)) != ESPANK_SUCCESS)
 		{
 			local_library_disable();
-
 			return r;
 		}
 	}
@@ -437,11 +469,9 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 		if (isenv_local("EAR", "1"))
 		{
 			//
-			if ((r = local_update_ld_preload(sp)) != ESPANK_SUCCESS)
+			if ((r = local_post_job_configuration(sp)) != ESPANK_SUCCESS)
 			{
-				plug_error("unable to set LD_PRELOAD, disabling EAR");
 				local_library_disable();
-
 				return r;
 			}
 		}
@@ -475,8 +505,11 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	{
 		if(isenv_remote(sp, "EAR", "1"))
 		{
-			//
-			remote_update_slurm_vars(sp);
+			if ((r = remote_configuration(sp)) != ESPANK_SUCCESS)
+			{
+				remote_library_disable(sp);
+				return (ESPANK_ERROR);
+			}
 		}
 		
 		// Printing job remote information
@@ -485,8 +518,8 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		//
 		if ((r = remote_eard_report_start(sp)) != ESPANK_SUCCESS)
 		{
-			plug_error("unable to report to EAR node daemon, disabling EAR");
 			remote_library_disable(sp);
+			return (ESPANK_ERROR);
 		}
 	}
 

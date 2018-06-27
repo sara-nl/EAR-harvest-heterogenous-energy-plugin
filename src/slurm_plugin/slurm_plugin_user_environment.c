@@ -82,13 +82,55 @@ static int is_user_privileged(spank_t sp, cluster_conf_t *conf_clus)
 
 /*
  *
- * Local configuration
+ * Local user system configuration
  *
  */
 
-static int local_configuration_user_privileged(spank_t sp, cluster_conf_t *conf_clus)
+static int local_user_configuration_unprivileged(cluster_conf_t *conf_clus)
 {
-	plug_verbose(sp, 2, "function local_configuration_user_privileged");
+	my_node_conf_t *conf_node;
+	policy_conf_t  *conf_plcy;
+
+	// Getting node configuration
+	if ((conf_node = get_my_node_conf(conf_clus, eard_host)) == NULL) {
+		plug_error("while getting node configuration");
+		return (ESPANK_ERROR);
+	}
+
+	// Getting node policy
+	if ((conf_plcy = get_my_policy_conf(conf_clus, conf_node, conf_clus->default_policy)) == NULL) {
+		plug_error("while getting policy configuration");
+		return (ESPANK_ERROR);
+	}
+
+	// Forcing EAR_POWER_POLICY
+	policy_id_to_name(conf_clus->default_policy, buffer1);
+	SETENV_LOCAL_RET_ERR("EAR_POWER_POLICY", buffer1, 1);
+
+	//TODO: Depends on the node, future placement in remote_configuration_user_unprivileged
+	#if 1
+	// Forcing EAR_P_STATE
+	sprintf(buffer1, "%u", conf_plcy->p_state);
+	setenv_local("EAR_P_STATE", buffer1, 1);
+
+	// Forcing EAR_THRESHOLD
+	sprintf(buffer1, "%d", conf_plcy->th);
+	setenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer1, 1);
+	setenv_local("EAR_PERFORMANCE_PENALTY", buffer1, 1);
+	#endif
+
+	// Forcing EAR_TRACES
+	SETENV_LOCAL_RET_ERR("EAR_TRACES", "0", 1);
+
+	// Forcing EAR_LEARNING_PHASE
+	SETENV_LOCAL_RET_ERR("EAR_LEARNING_PHASE", "0", 1);
+
+	return (ESPANK_SUCCESS);
+}
+
+static int local_user_configuration_privileged(spank_t sp, cluster_conf_t *conf_clus)
+{
+	plug_verbose(sp, 2, "function local_user_configuration_privileged");
 
 	my_node_conf_t *conf_node;
 	policy_conf_t  *conf_plcy;
@@ -107,8 +149,9 @@ static int local_configuration_user_privileged(spank_t sp, cluster_conf_t *conf_
 	id_plcy = conf_clus->default_policy;
 
 	// Testing EAR_POWER_POLICY
-	if (existenv_local("EAR_POWER_POLICY")) {
-		getenv_local("EAR_POWER_POLICY", &c_plcy);
+	if (existenv_local("EAR_POWER_POLICY") &&
+		getenv_local("EAR_POWER_POLICY", &c_plcy))
+	{
 		id_plcy_aux = policy_name_to_id(c_plcy);
 		
 		for(i = 0; i < conf_clus->num_policies; ++i)
@@ -126,34 +169,48 @@ static int local_configuration_user_privileged(spank_t sp, cluster_conf_t *conf_
 		return (ESPANK_ERROR);
 	}
 
-	policy_id_to_name(id_plcy, buffer1);
-	setenv_local("EAR_POWER_POLICY", buffer1, 1);
-
-	// Testing EAR_P_STATE (TODO: just taking the srun node P_STATE threshold by now)
+	//TODO: Depends on the node, future placement in remote_configuration_user_privileged
+	#if 1
+	// Testing EAR_P_STATE
 	if (!existenv_local("EAR_P_STATE")) {
 		sprintf(buffer1, "%u", conf_plcy->p_state);
 		setenv_local("EAR_P_STATE", buffer1, 1);
 	} else {
-		//TODO: is valid
+		//TODO: is valid?
 	}
 
-	// Testing EAR_THRESHOLD (TODO: just taking the srun node policy threshold by now)
+	// Testing EAR_THRESHOLD
 	if (!existenv_local("EAR_POWER_POLICY_TH")) {
 		sprintf(buffer1, "%lf", conf_plcy->th);
 		setenv_local("EAR_POWER_POLICY_TH", buffer1, 1);
+	} else {
+		//TODO: is valid?
 	}
+	#endif
+
+	policy_id_to_name(id_plcy, buffer1);
+	SETENV_LOCAL_RET_ERR("EAR_POWER_POLICY", buffer1, 1);
 
 	return (ESPANK_SUCCESS);
 }
 
-int local_user_system_configuration(spank_t sp, cluster_conf_t *conf_clus)
+static int local_configuration_user(spank_t sp, cluster_conf_t *conf_clus)
 {
-	plug_verbose(sp, 2, "function local_user_system_configuration");
+	plug_verbose(sp, 2, "function local_configuration_user");
 
-	return local_configuration_user_privileged(sp, conf_clus);
-}
+	if (is_user_privileged(conf_clus)) {
+		return local_user_configuration_privileged();
+	}
 
-int local_update_ld_preload(spank_t sp)
+	return local_user_configuration_unprivileged();}
+
+/*
+ *
+ * Local configuration (all nodes)
+ *
+ */
+
+int local_post_job_configuration(spank_t sp)
 {
 	plug_verbose(sp, 2, "function local_update_ld_preload");
 
@@ -193,7 +250,7 @@ int local_update_ld_preload(spank_t sp)
 	}
 
 	//
-	if(setenv_local("LD_PRELOAD", buffer2, 1) != 1) {
+	if(SETENV_LOCAL_RET_ERR("LD_PRELOAD", buffer2, 1) != 1) {
 		return ESPANK_ERROR;
 	}
 
@@ -214,7 +271,7 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 	{
 		if ((strlen(av[i]) > 8) && (strncmp ("default=on", av[i], 10) == 0))
 		{
-			setenv_local("EAR", "1", 0);
+			SETENV_LOCAL_RET_ERR("EAR", "1", 0);
 		}
 		if ((strlen(av[i]) > 11) && (strncmp ("sysconfdir=", av[i], 11) == 0))
 		{
@@ -222,7 +279,7 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 			found_etcdir = 1;
 
 			plug_verbose(sp, 3, "looking for configuration files in path '%s'", etc_dir);
-			setenv_local("EAR_ETCDIR", etc_dir, 1);
+			SETENV_LOCAL_RET_ERR("EAR_ETCDIR", etc_dir, 1);
 		}
 		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
 		{
@@ -230,7 +287,7 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 			found_predir = 1;
 
 			plug_verbose(sp, 3, "looking for library files in path '%s'", pre_dir);
-			setenv_local("EAR_PREDIR", pre_dir, 1);
+			SETENV_LOCAL_RET_ERR("EAR_PREDIR", pre_dir, 1);
 		}
 	}
 
@@ -242,7 +299,32 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 	return (ESPANK_SUCCESS);
 }
 
-int local_configuration(spank_t sp, int ac, char **av)
+static int local_pre_job_configuration_general(spank_t sp, cluster_conf_t *conf_clus)
+{
+	plug_verbose(sp, 2, "function local_pre_job_configuration_general");
+
+	// Setting variables for EARGMD connection
+	sprintf(eargmd_host, "%s", conf_clus.eargm.host);
+	eargmd_port = conf_clus.eargm.port;
+
+	// Setting variables for EARD connection
+	sprintf(buffer1, "%u", conf_clus.eard.port);
+	SETENV_LOCAL_RET_ERR("EARD_PORT", buffer1, 1);
+
+	// Setting LIBEAR variables
+	SETENV_LOCAL_RET_ERR("EAR_TMPDIR", conf_clus.tmp_dir, 1);
+	SETENV_LOCAL_RET_ERR("EAR_COEFF_DB_PATHNAME", conf_clus.Coefficients_pathname, 1);
+
+	SETENV_LOCAL_RET_ERR("EAR_DYNAIS_WINDOW_SIZE", "500", 1);
+	SETENV_LOCAL_RET_ERR("EAR_DYNAIS_LEVELS", "4", 1);
+
+	sprintf(buffer1, "%u", conf_clus.min_time_perf_acc);
+	SETENV_LOCAL_RET_ERR("EAR_PERFORMANCE_ACCURACY", buffer1, 1);
+
+	return (ESPANK_SUCCESS);
+}
+
+int local_pre_job_configuration(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function local_configuration");
 
@@ -261,7 +343,7 @@ int local_configuration(spank_t sp, int ac, char **av)
 	// Passing parameters to get_ear_conf_path (LOL)
 	plug_verbose(0, 2, "trying to read config file in '%s' for node '%s'", etc_dir, eard_host);
 
-	setenv_local("ETC", etc_dir, 1);
+	SETENV_LOCAL_RET_ERR("ETC", etc_dir, 1);
 	conf_path[0] = '\0';
 
 	if (get_ear_conf_path(conf_path) == EAR_ERROR) {
@@ -277,26 +359,12 @@ int local_configuration(spank_t sp, int ac, char **av)
 		return (ESPANK_ERROR);
 	}
 
-	// Setting variables for EARGMD connection
-	sprintf(eargmd_host, "%s", conf_clus.eargm.host);
-	eargmd_port = conf_clus.eargm.port;
 
-	// Setting variables for EARD connection
-	sprintf(buffer1, "%u", conf_clus.eard.port);
-	setenv_local("EARD_PORT", buffer1,   1);
+	// General environment
+	IF_RET_ERR(local_pre_job_configuration_general(sp, &conf_clus));
 
-	// Setting LIBEAR variables
-	setenv_local("EAR_TMPDIR", conf_clus.tmp_dir, 1);
-	setenv_local("EAR_COEFF_DB_PATHNAME", conf_clus.Coefficients_pathname, 1);
-
-	setenv_local("EAR_DYNAIS_WINDOW_SIZE", "500", 1);
-	setenv_local("EAR_DYNAIS_LEVELS", "4", 1);
-
-	sprintf(buffer1, "%u", conf_clus.min_time_perf_acc);
-	setenv_local("EAR_PERFORMANCE_ACCURACY", buffer1, 1);
-
-	// User system for LIBEAR
-	local_user_system_configuration(sp, &conf_clus);
+	// User specific environment
+	IF_RET_ERR(local_configuration_user(sp, &conf_clus));
 
 	// Freeing cluster configuration resources
 	free_cluster_conf(&conf_clus);
@@ -306,19 +374,42 @@ int local_configuration(spank_t sp, int ac, char **av)
 
 /*
  *
- * Remote configuration
+ * Remote user system
  *
  */
 
-void remote_update_slurm_vars(spank_t sp)
+static int remote_configuration_user_unprivileged(cluster_conf_t *conf_clus)
 {
-	plug_verbose(sp, 2, "function remote_update_slurm_vars");
+	return ESPANK_SUCCESS;
+}
+
+static int remote_configuration_user_privileged(spank_t sp, cluster_conf_t *conf_clus)
+{
+	return ESPANK_SUCCESS;
+}
+
+static int remote_configuration_user(spank_t sp, cluster_conf_t *conf_clus)
+{
+	plug_verbose(sp, 2, "function remote_configuration_user");
+
+	return ESPANK_SUCCESS;
+}
+
+/*
+ *
+ * Remote configuration (single node)
+ *
+ */
+
+int remote_configuration(spank_t sp)
+{
+	plug_verbose(sp, 2, "function remote_configuration");
 
 	char p_state[64];
 	int p_freq = 1;
 
 	// If policy is monitoring
-	if(isenv_remote(sp, "EAR_POWER_POLICY", "MONITORING_ONLY") == 1)
+	if (isenv_remote(sp, "EAR_POWER_POLICY", "MONITORING_ONLY") == 1)
 	{
 		// If learning phase is not enabled
 		if ((existenv_remote(sp, "EAR_LEARNING_PHASE") == 0) ||
@@ -331,7 +422,7 @@ void remote_update_slurm_vars(spank_t sp)
 				p_freq = freq_to_p_state(p_freq);
 
 				sprintf(p_state, "%d", p_freq);
-				setenv_remote(sp, "EAR_P_STATE", p_state, 0);
+				SETENV_REMOTE_RET_ERR(sp, "EAR_P_STATE", p_state, 0);
 
 				plug_verbose(sp, 2, "Updating to P_STATE '%s' by '--cpu-freq=%d' command",
 							 p_state, p_freq);
@@ -339,19 +430,22 @@ void remote_update_slurm_vars(spank_t sp)
 		}
 	}
 
-	// Switching from SLURM_JOB_NAME to EAR_APP_NAME
-	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, PATH_MAX) == 1) {
-		setenv_remote(sp, "EAR_APP_NAME", buffer2, 1);
-	}
+	// User system for LIBEAR
+	IF_RET_ERR(remote_configuration_user(sp, &conf_clus));
 
 	// Remote switch
+	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, PATH_MAX) == 1) {
+		SETENV_REMOTE_RET_ERR(sp, "EAR_APP_NAME", buffer2, 1);
+	}
 	if (getenv_remote(sp, "EAR_TMPDIR", buffer2, PATH_MAX) == 1) {
-		setenv_remote(sp, "EAR_TMP", buffer2, 1);
+		SETENV_REMOTE_RET_ERR(sp, "EAR_TMP", buffer2, 1);
 	}
 	if (getenv_remote(sp, "EAR_POWER_POLICY_TH", buffer2, PATH_MAX) == 1) {
-		setenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
+		SETENV_REMOTE_RET_ERR(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
 	}
 	if (getenv_remote(sp, "EAR_POWER_POLICY_TH", buffer2, PATH_MAX) == 1) {
-		setenv_remote(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
+		SETENV_REMOTE_RET_ERR(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
 	}
+
+	return (ESPANK_SUCCESS);
 }

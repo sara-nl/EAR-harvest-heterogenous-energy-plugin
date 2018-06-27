@@ -162,11 +162,12 @@ void appendenv(char *dst, char *src, int dst_capacity)
 int setenv_local(const char *name, const char *value, int replace)
 {
 	if (name == NULL || value == NULL) {
+		plug_error("NULL environment variable", name, strerror(errno));
 		return 0;
 	}
 
     if (setenv (name, value, replace) == -1) {
-       	plug_error("Error while setting envar %s (%s)", name, strerror(errno));
+       	plug_error("while setting envar %s (%s)", name, strerror(errno));
         return 0;
     }
 
