@@ -43,7 +43,7 @@
 
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_options.h>
-#include <slurm_plugin/slurm_plugin_user_system.h>
+#include <slurm_plugin/slurm_plugin_user_environment.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <common/types/cluster_conf.h>
 #include <common/types/application.h>
