@@ -1,3 +1,4 @@
+#include <pwd.h>
 #include <errno.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -88,8 +89,11 @@ static int is_user_privileged(spank_t sp, cluster_conf_t *conf_clus)
 
 static int local_user_configuration_unprivileged(spank_t sp, cluster_conf_t *conf_clus)
 {
+	plug_verbose(sp, 2, "function local_user_configuration_unprivileged");
+
 	my_node_conf_t *conf_node;
 	policy_conf_t  *conf_plcy;
+	char *ear_default;
 
 	// Getting node configuration
 	if ((conf_node = get_my_node_conf(conf_clus, eard_host)) == NULL) {
@@ -103,6 +107,10 @@ static int local_user_configuration_unprivileged(spank_t sp, cluster_conf_t *con
 		return (ESPANK_ERROR);
 	}
 
+	// Applying the default value
+	getenv_local("EAR_DEFAULT", &ear_default);
+	SETENV_LOCAL_RET_ERR("EAR", ear_default, 1);
+
 	// Forcing EAR_POWER_POLICY
 	policy_id_to_name(conf_clus->default_policy, buffer1);
 	SETENV_LOCAL_RET_ERR("EAR_POWER_POLICY", buffer1, 1);
@@ -111,12 +119,11 @@ static int local_user_configuration_unprivileged(spank_t sp, cluster_conf_t *con
 	#if 1
 	// Forcing EAR_P_STATE
 	sprintf(buffer1, "%u", conf_plcy->p_state);
-	setenv_local("EAR_P_STATE", buffer1, 1);
+	SETENV_LOCAL_RET_ERR("EAR_P_STATE", buffer1, 1);
 
 	// Forcing EAR_THRESHOLD
-	sprintf(buffer1, "%d", conf_plcy->th);
-	setenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer1, 1);
-	setenv_local("EAR_PERFORMANCE_PENALTY", buffer1, 1);
+	sprintf(buffer1, "%lf", conf_plcy->th);
+	SETENV_LOCAL_RET_ERR("EAR_POWER_POLICY_TH", buffer1, 1);
 	#endif
 
 	// Forcing EAR_TRACES
@@ -266,11 +273,14 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 	int found_etcdir = 0;
 	int i;
 
+	// Removing possible intent of hacking
+	SETENV_LOCAL_RET_ERR("EAR_DEFAULT", "0", 1);
+	
 	for (i = 0; i < ac; ++i)
 	{
 		if ((strlen(av[i]) > 8) && (strncmp ("default=on", av[i], 10) == 0))
 		{
-			SETENV_LOCAL_RET_ERR("EAR", "1", 0);
+			SETENV_LOCAL_RET_ERR("EAR_DEFAULT", "1", 1);
 		}
 		if ((strlen(av[i]) > 11) && (strncmp ("sysconfdir=", av[i], 11) == 0))
 		{
@@ -301,6 +311,21 @@ static int plugstack_process(spank_t sp, int ac, char **av)
 static int local_pre_job_configuration_general(spank_t sp, cluster_conf_t *conf_clus)
 {
 	plug_verbose(sp, 2, "function local_pre_job_configuration_general");
+
+    struct passwd *upw;
+	uid_t uid;
+
+	// Getting user id
+	uid = geteuid();
+	upw = getpwuid(uid);
+	
+	if (upw == NULL) {
+		plug_error("converting UID in username");
+		return (ESPANK_ERROR);
+	}
+
+	plug_verbose(sp, 2, "user detected '%u -> %s'", uid, upw->pw_name);
+	SETENV_LOCAL_RET_ERR("EAR_USER", upw->pw_name, 1);
 
 	// Setting variables for EARGMD connection
 	sprintf(eargmd_host, "%s", conf_clus->eargm.host);
@@ -357,7 +382,6 @@ int local_pre_job_configuration(spank_t sp, int ac, char **av)
 		plug_error("while reading configuration file");
 		return (ESPANK_ERROR);
 	}
-
 
 	// General environment
 	IF_RET_ERR(local_pre_job_configuration_general(sp, &conf_clus));

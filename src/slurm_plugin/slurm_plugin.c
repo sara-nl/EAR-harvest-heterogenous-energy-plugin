@@ -135,35 +135,37 @@ application_t eard_appl;
  *   control have to be added.
  *
  * Environment variables list:
- *   Var                                    | Opt | Local | Local Job | Remote
- * ---------------------------------------------------------------------------
- * - EAR									| x   | x     |           |
- * - EAR_LEARNING_PHASE						| x   |       |           |
- * - EAR_VERBOSE							| x   | x     |           |
- * - EAR_POWER_POLICY						| x   | x     |           |
- * - EAR_P_STATE							| x   | x     |           | t
- * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN	| -   | -     | -         | -
- * - EAR_PERFORMANCE_PENALTY				| -   | -     | -         | -
- * - EAR_POWER_POLICY_TH					| x   | x     |           | t
- * - EAR_TRACES          					| x   |       |           |
- * - EAR_MPI_DIST                           | x   |       |           |
- * - EAR_USER_DB_PATHNAME                   | x   |       |           |
- * - EAR_DB_PATHNAME                   		|     | x     |           |
- * - EAR_COEFF_PATHNAME                     |     | x     |           |
- * - EAR_PREDIR								|     | x     |           |
- * - EAR_ETCDIR								|     | x     |           |
- * - EAR_TMPDIR                             |     | x     |           |
- * - EAR_TMP								| -   | -     | -         | -
- * - TMP									| -   | -     | -         | -
- * - EAR_APP_NAME							|     | x     |           |
- * - LD_PRELOAD                             |     | x     |           |
- * - SLURM_CPU_FREQ_REQ                     |     |       | x         |
- * - SLURM_NNODES                           |     |       | x         |
- * - SLURM_JOB_ID							|     |       | x         |
- * - SLURM_STEP_ID							|     |       | x         |
- * - SLURM_JOB_USER							|     |       | x         |
- * - SLURM_JOB_NAME							|     |       | x         |
- * - SLURM_JOB_ACCOUNT						|     |       | x         |
+ *   Var                                    | Opt | Local | Local Job | Remote | Remote PU
+ * ---------------------------------------------------------------------------------------
+ * - EAR									| x   | x     |           |        |
+ * - EAR_DEFAULT							|     | x     |           |        |
+ * - EAR_USER                               |     | x     |           |        |
+ * - EAR_LEARNING_PHASE						| x   |       |           |        |
+ * - EAR_VERBOSE							| x   | x     |           |        |
+ * - EAR_POWER_POLICY						| x   | x     |           |        |
+ * - EAR_P_STATE							| x   | x     |           | t      |
+ * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN	| -   | -     | -         | -      |
+ * - EAR_PERFORMANCE_PENALTY				| -   | -     | -         | -      |
+ * - EAR_POWER_POLICY_TH					| x   | x     |           | t      |
+ * - EAR_TRACES          					| x   |       |           |        |
+ * - EAR_MPI_DIST                           | x   |       |           |        |
+ * - EAR_USER_DB_PATHNAME                   | x   |       |           |        |
+ * - EAR_DB_PATHNAME                   		|     | x     |           |        |
+ * - EAR_COEFF_PATHNAME                     |     | x     |           |        |
+ * - EAR_PREDIR								|     | x     |           |        |
+ * - EAR_ETCDIR								|     | x     |           |        |
+ * - EAR_TMPDIR                             |     | x     |           |        |
+ * - EAR_TMP								| -   | -     | -         | -      |
+ * - TMP									| -   | -     | -         | -      |
+ * - EAR_APP_NAME							|     | x     |           |        |
+ * - LD_PRELOAD                             |     | x     |           |        |
+ * - SLURM_CPU_FREQ_REQ                     |     |       | x         |        |
+ * - SLURM_NNODES                           |     |       | x         |        |
+ * - SLURM_JOB_ID							|     |       | x         |        |
+ * - SLURM_STEP_ID							|     |       | x         |        | 
+ * - SLURM_JOB_USER							|     |       |           |        | x
+ * - SLURM_JOB_NAME							|     |       | x         |        | 
+ * - SLURM_JOB_ACCOUNT						|     |       | x         |        | 
  *
  * Reasons to stop the job:
  * 1) The P_STATE is not found in 'ear.conf' P_STATE list.
@@ -291,7 +293,7 @@ int remote_eard_report_start(spank_t sp)
     } else {
 		strcpy(eard_appl.job.user_acc, buffer1);
     }	
-	if (!getenv_remote(sp, "SLURM_JOB_USER", eard_appl.job.user_id, GENERIC_NAME)) {
+	if (!getenv_remote(sp, "EAR_USER", eard_appl.job.user_id, GENERIC_NAME)) {
 		strcpy(eard_appl.job.user_id, "");
 	}
 	if (!getenv_remote(sp, "SLURM_JOB_NAME",  eard_appl.job.app_id, GENERIC_NAME)) {
@@ -443,6 +445,8 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 
 	if(spank_context () == S_CTX_LOCAL)
 	{
+		plug_verbose(sp, 2, "SLURM_INIT_POST_OPT");
+		print_local_environment(sp);
 		if ((r = local_pre_job_configuration(sp, ac, av)) != ESPANK_SUCCESS)
 		{
 			local_library_disable();
@@ -460,6 +464,8 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
+		plug_verbose(sp, 2, "SLURM_LOCAL_USER_INIT");
+		print_local_environment(sp);
 		job_created = 1;
 
 		//
@@ -503,6 +509,11 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 	if (spank_context() == S_CTX_REMOTE)
 	{
+		plug_verbose(sp, 2, "SLURM_LOCAL_USER_INIT");
+		print_remote_environment(sp);	
+		plug_verbose(sp, 2, "SLURM_LOCAL_USER_INIT");
+		print_local_environment(sp);
+
 		if(isenv_remote(sp, "EAR", "1"))
 		{
 			if ((r = remote_configuration(sp)) != ESPANK_SUCCESS)
