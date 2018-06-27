@@ -62,7 +62,7 @@ char* strclean(char *string, char chr);
 		return (ESPANK_ERROR);
 
 #define SETENV_REMOTE_RET_ERR(sp, p_name, p_value, replace) \
-	if(!setenv_remote(spank_t sp, char *name, char *value, int replace) \
+	if(!setenv_remote(sp, p_name, p_value, replace)) \
 		return (ESPANK_ERROR);
 
 void printenv_remote(spank_t sp, char *name);

@@ -86,7 +86,7 @@ static int is_user_privileged(spank_t sp, cluster_conf_t *conf_clus)
  *
  */
 
-static int local_user_configuration_unprivileged(cluster_conf_t *conf_clus)
+static int local_user_configuration_unprivileged(spank_t sp, cluster_conf_t *conf_clus)
 {
 	my_node_conf_t *conf_node;
 	policy_conf_t  *conf_plcy;
@@ -198,11 +198,12 @@ static int local_configuration_user(spank_t sp, cluster_conf_t *conf_clus)
 {
 	plug_verbose(sp, 2, "function local_configuration_user");
 
-	if (is_user_privileged(conf_clus)) {
-		return local_user_configuration_privileged();
+	if (is_user_privileged(sp, conf_clus)) {
+		return local_user_configuration_privileged(sp, conf_clus);
 	}
 
-	return local_user_configuration_unprivileged();}
+	return local_user_configuration_unprivileged(sp, conf_clus);
+}
 
 /*
  *
@@ -250,9 +251,7 @@ int local_post_job_configuration(spank_t sp)
 	}
 
 	//
-	if(SETENV_LOCAL_RET_ERR("LD_PRELOAD", buffer2, 1) != 1) {
-		return ESPANK_ERROR;
-	}
+	SETENV_LOCAL_RET_ERR("LD_PRELOAD", buffer2, 1);
 
 	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
@@ -304,21 +303,21 @@ static int local_pre_job_configuration_general(spank_t sp, cluster_conf_t *conf_
 	plug_verbose(sp, 2, "function local_pre_job_configuration_general");
 
 	// Setting variables for EARGMD connection
-	sprintf(eargmd_host, "%s", conf_clus.eargm.host);
-	eargmd_port = conf_clus.eargm.port;
+	sprintf(eargmd_host, "%s", conf_clus->eargm.host);
+	eargmd_port = conf_clus->eargm.port;
 
 	// Setting variables for EARD connection
-	sprintf(buffer1, "%u", conf_clus.eard.port);
+	sprintf(buffer1, "%u", conf_clus->eard.port);
 	SETENV_LOCAL_RET_ERR("EARD_PORT", buffer1, 1);
 
 	// Setting LIBEAR variables
-	SETENV_LOCAL_RET_ERR("EAR_TMPDIR", conf_clus.tmp_dir, 1);
-	SETENV_LOCAL_RET_ERR("EAR_COEFF_DB_PATHNAME", conf_clus.Coefficients_pathname, 1);
+	SETENV_LOCAL_RET_ERR("EAR_TMPDIR", conf_clus->tmp_dir, 1);
+	SETENV_LOCAL_RET_ERR("EAR_COEFF_DB_PATHNAME", conf_clus->Coefficients_pathname, 1);
 
 	SETENV_LOCAL_RET_ERR("EAR_DYNAIS_WINDOW_SIZE", "500", 1);
 	SETENV_LOCAL_RET_ERR("EAR_DYNAIS_LEVELS", "4", 1);
 
-	sprintf(buffer1, "%u", conf_clus.min_time_perf_acc);
+	sprintf(buffer1, "%u", conf_clus->min_time_perf_acc);
 	SETENV_LOCAL_RET_ERR("EAR_PERFORMANCE_ACCURACY", buffer1, 1);
 
 	return (ESPANK_SUCCESS);
@@ -431,7 +430,7 @@ int remote_configuration(spank_t sp)
 	}
 
 	// User system for LIBEAR
-	IF_RET_ERR(remote_configuration_user(sp, &conf_clus));
+	IF_RET_ERR(remote_configuration_user(sp, NULL));
 
 	// Remote switch
 	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, PATH_MAX) == 1) {
