@@ -660,13 +660,82 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
         }
         else if (!strcmp(token, "ENERGYTAG"))
         {
-            token = strtok(NULL, "=");
-            token = strtok(token, ",");
-            conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t)*(conf->num_tags+1));
-            strcpy(conf->e_tags[conf->num_tags].tag, token);
-            token = strtok(NULL, ",");
-            conf->e_tags[conf->num_tags].p_state = atoi(token);
-            conf->num_tags++;
+            // token = strtok(NULL, "=");
+            // token = strtok(token, ",");
+            // conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t)*(conf->num_tags+1));
+            // strcpy(conf->e_tags[conf->num_tags].tag, token);
+            // token = strtok(NULL, ",");
+            // conf->e_tags[conf->num_tags].p_state = atoi(token);
+            // conf->num_tags++;
+
+            //fully restore the line as we need 2 buffer pointers for this task
+            line[strlen(line)] = '=';
+            char *primary_ptr;
+            char *secondary_ptr;
+            token = strtok_r(line, " ", &primary_ptr);
+            while (token != NULL)
+            {
+                token = strtok_r(token, "=", &secondary_ptr);
+                strtop(token);
+
+                //this must always be the first one
+                if (!strcmp(token, "ENERGYTAG"))
+                {
+                    conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_tags+1));
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    memcpy(&conf->e_tags[conf->num_tags], 0, sizeof(energy_tag_t));
+                    strcpy(conf->e_tags[conf->num_tags].tag, token);
+                    conf->e_tags[conf->num_tags].users = NULL;
+                    conf->e_tags[conf->num_tags].groups = NULL;
+                    conf->e_tags[conf->num_tags].accounts = NULL;
+                    conf->num_tags++;
+                }
+                else if (!strcmp(token, "FREQ"))
+                {
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    conf->e_tags[conf->num_tags-1].p_state = atoi(token);
+                }
+                else if (!strcmp(token, "USERS"))
+                {
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    token = strtok_r(token, ",", &secondary_ptr);
+                    while (token != NULL)
+                    {
+                        conf->e_tags[conf->num_tags-1].users = realloc(conf->e_tags[conf->num_tags-1].users, 
+                                                                       sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_users+1));
+                        conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users] = malloc(strlen(token)+1);
+                        strcpy(conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users], token);
+                        conf->e_tags[conf->num_tags-1].num_users++;
+                    }
+                }
+                else if (!strcmp(token, "GROUPS"))
+                {
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    token = strtok_r(token, ",", &secondary_ptr);
+                    while (token != NULL)
+                    {
+                        conf->e_tags[conf->num_tags-1].groups = realloc(conf->e_tags[conf->num_tags-1].groups, 
+                                                                       sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_groups+1));
+                        conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups] = malloc(strlen(token)+1);
+                        strcpy(conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups], token);
+                        conf->e_tags[conf->num_tags-1].num_groups++;
+                    }
+                }
+                else if (!strcmp(token, "ACCOUNTS"))
+                {
+                    token = strtok_r(NULL, "=", &secondary_ptr);
+                    token = strtok_r(token, ",", &secondary_ptr);
+                    while (token != NULL)
+                    {
+                        conf->e_tags[conf->num_tags-1].accounts = realloc(conf->e_tags[conf->num_tags-1].accounts, 
+                                                                       sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_accounts+1));
+                        conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts] = malloc(strlen(token)+1);
+                        strcpy(conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts], token);
+                        conf->e_tags[conf->num_tags-1].num_accounts++;
+                    }
+                }
+                token = strtok_r(NULL, " ", &primary_ptr);
+            }
         }
 
         //HARDWARE NODE CONFIG
