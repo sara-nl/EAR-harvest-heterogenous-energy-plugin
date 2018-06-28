@@ -49,7 +49,7 @@
 #include <common/states.h>
 #include <common/math_operations.h>
 
-static const char *__NAME__ = "STATES";
+static const char *__NAME__ = "ear/states";
 
 // static defines
 #define NO_PERIOD				0
@@ -102,6 +102,7 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	perf_accuracy_min_time = get_ear_performance_accuracy();
 	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
+	//printf("min_hw %lu min_env %lu \n",architecture_min_perf_accuracy_time,perf_accuracy_min_time);
 	
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
@@ -151,9 +152,9 @@ static int policy_had_effect(signature_t *A, signature_t *B)
 	if (equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH) &&
 		equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH))
 	{
-		return 0;
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 
 static void print_loop_signature(char *title, signature_t *loop)
@@ -358,8 +359,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 						tries_current_loop++;
 						ear_verbose(1,
-									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
-									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
+									"\n\nEAR(%s @ %s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
+									ear_app_name, application.node_id,prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
 					}
 					else
@@ -370,8 +371,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 								  ear_app_name);
 						}else tries_current_loop_same_freq++;
 						ear_verbose(1,
-									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
-									ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
+									"\n\nEAR(%s @ %s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
+									ear_app_name, application.node_id,prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
 									ENERGY, EDP);
 					}
 
@@ -428,8 +429,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
 					ear_verbose(1,
-					"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
-					ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
+					"\n\nEAR(%s @ %s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
+					ear_app_name, application.node_id, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
 					ENERGY, EDP);
 
 					begin_iter = iterations;
@@ -457,7 +458,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 									"\n\nEAR(%s): Policy not ok Signature (Time %lf Power %lf Energy %lf) Projection(Time %lf Power %lf Energy %lf)\n",
 									ear_app_name, TIME, POWER, ENERGY, PP->Time, PP->Power, PP->Time * PP->Power);
 
-						if (policy_had_effect(&loop_signature.signature, &last_signature.signature))
+						if (!policy_had_effect(&loop_signature.signature, &last_signature.signature))
 						{
 							EAR_STATE = SIGNATURE_HAS_CHANGED;
 							ear_verbose(3, "EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",
@@ -466,8 +467,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 							policy_new_loop();
                             #if DYNAIS_CUTOFF
-							ear_verbose(1,"Dynais ON \n");
-                            dynais_enabled=DYNAIS_ENABLED;
+							 ear_verbose(1,"Dynais ON \n");
+                             dynais_enabled=DYNAIS_ENABLED;
                             #endif
 						} else {
 							EAR_STATE = EVALUATING_SIGNATURE;
