@@ -32,11 +32,13 @@
 
 #include <stdint.h>
 
-#include <common/config.h>
-#include <common/states.h>
+//#include <common/types/configuration/cluster_conf_read.h>
+//#include <common/types/configuration/cluster_conf_verbose.h>
+#include <common/types/generic.h>
 #include <common/ear_verbose.h>
 #include <common/environment.h>
-#include <common/types/generic.h>
+#include <common/config.h>
+#include <common/states.h>
 
 #define GENERIC_NAME	256
 #define USER			64

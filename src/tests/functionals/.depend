@@ -1,29 +1,30 @@
 test_architecture.o: test_architecture.c \
  ../../metrics/custom/hardware_info.h
-energy_updates_freq.o: energy_updates_freq.c \
- ../../metrics/ipmi/energy_node.h
-bandwith_monitor.o: bandwith_monitor.c ../../metrics/custom/bandwidth.h \
- ../../metrics/custom/hardware_info.h ../../common/types/generic.h
-ear_conf.o: ear_conf.c ../../common/config.h ../../common/states.h \
- ../../common/types/configuration/cluster_conf.h ../../common/environment.h \
- ../../common/types/generic.h ../../common/ear_verbose.h
-energy_1_second.o: energy_1_second.c ../../metrics/ipmi/energy_node.h
-my_node_conf.o: my_node_conf.c ../../common/config.h \
- ../../common/states.h ../../common/types/configuration/cluster_conf.h \
- ../../common/environment.h ../../common/types/generic.h \
- ../../common/ear_verbose.h
 simd_power_metrics_openmp.o: simd_power_metrics_openmp.c \
  ../../control/frequency.h ../../metrics/papi/generics.h \
  ../../metrics/papi/flops.h ../../metrics/papi/stalls.h \
  ../../metrics/papi/energy_cpu.h ../../metrics/papi/instructions.h \
  ../../metrics/custom/hardware_info.h ../../metrics/custom/frequency.h \
  ../../common/types/generic.h
+energy_updates_freq.o: energy_updates_freq.c \
+ ../../metrics/ipmi/energy_node.h
+bandwith_monitor.o: bandwith_monitor.c ../../metrics/custom/bandwidth.h \
+ ../../metrics/custom/hardware_info.h ../../common/types/generic.h
+energy_1_second.o: energy_1_second.c ../../metrics/ipmi/energy_node.h
+my_node_conf.o: my_node_conf.c ../../common/config.h \
+ ../../common/states.h ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/generic.h ../../common/ear_verbose.h \
+ ../../common/environment.h
 freeipmi_overhead.o: freeipmi_overhead.c ../../metrics/ipmi/energy_node.h \
  ../../common/config.h
 configuration_check.o: configuration_check.c ../../common/config.h \
  ../../common/states.h ../../common/types/configuration/cluster_conf.h \
- ../../common/environment.h ../../common/types/generic.h \
- ../../common/ear_verbose.h
+ ../../common/types/generic.h ../../common/ear_verbose.h \
+ ../../common/environment.h
+ear_conf.o: ear_conf.c ../../common/config.h ../../common/states.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/generic.h ../../common/ear_verbose.h \
+ ../../common/environment.h
 eard_monitor.o: eard_monitor.c ../../daemon/eard_api.h \
  ../../common/types/generic.h ../../common/types/log.h \
  ../../common/types/job.h ../../common/config.h \

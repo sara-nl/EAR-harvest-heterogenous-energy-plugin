@@ -37,7 +37,7 @@ database.a: $(database_OBJS)
 	$(AR) rvs database.a $(database_OBJS)
 
 types.a: $(types_OBJS)
-	$(AR) rvs types.a $(types_OBJS)
+	$(AR) rvs types.a $(shell find ./types/ -type f -name '*.o')
 
 ######## OPTIONS
 

@@ -27,6 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <common/types/configuration/cluster_conf_read.h>
+
 static void cae_conf(cluster_conf_t *my_conf)
 {
 	int i;

@@ -1,8 +1,8 @@
 eargm_new_job.o: eargm_new_job.c ../../global_manager/eargm_rapi.h \
- ../../common/types/configuration/cluster_conf.h ../../common/config.h \
- ../../common/environment.h ../../common/types/generic.h \
- ../../common/states.h ../../common/ear_verbose.h
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/generic.h ../../common/ear_verbose.h \
+ ../../common/config.h ../../common/environment.h ../../common/states.h
 eargm_end_job.o: eargm_end_job.c ../../global_manager/eargm_rapi.h \
- ../../common/types/configuration/cluster_conf.h ../../common/config.h \
- ../../common/environment.h ../../common/types/generic.h \
- ../../common/states.h ../../common/ear_verbose.h
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/generic.h ../../common/ear_verbose.h \
+ ../../common/config.h ../../common/environment.h ../../common/states.h

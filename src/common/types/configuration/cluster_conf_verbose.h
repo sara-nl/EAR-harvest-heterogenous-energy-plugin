@@ -30,6 +30,8 @@
 #ifndef EAR_CLUSTER_CONF_VERBOSE_H
 #define EAR_CLUSTER_CONF_VERBOSE_H
 
+#include <common/types/configuration/cluster_conf.h>
+
 /** prints in the stderr the node configuration */
 void print_node_conf(node_conf_t *node_conf);
 

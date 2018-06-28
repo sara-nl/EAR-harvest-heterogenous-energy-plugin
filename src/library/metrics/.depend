@@ -1,10 +1,10 @@
-metrics.o: metrics.c ../../metrics/papi/flops.h \
+metrics.o: metrics.c ../../common/config.h ../../metrics/papi/flops.h \
  ../../metrics/papi/cache.h ../../metrics/papi/generics.h \
  ../../metrics/papi/instructions.h ../../library/metrics/metrics.h \
- ../../common/types/application.h ../../common/config.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h \
- ../../daemon/eard_api.h ../../common/types/log.h \
- ../../daemon/eard_conf_api.h ../../common/types/loop.h \
- ../../common/ear_verbose.h ../../common/states.h \
- ../../common/math_operations.h
+ ../../common/types/application.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h ../../daemon/eard_api.h \
+ ../../common/types/log.h ../../daemon/eard_conf_api.h \
+ ../../common/types/loop.h ../../common/ear_verbose.h \
+ ../../common/states.h ../../common/math_operations.h \
+ ../../library/common/externs.h ../../daemon/shared_configuration.h
