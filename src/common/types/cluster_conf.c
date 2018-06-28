@@ -1111,12 +1111,28 @@ void free_cluster_conf(cluster_conf_t *conf)
 
     free(conf->power_policies);
 
-    free(conf->e_tags);
-    
     for (i = 0; i < conf->num_islands; i++)
         free(conf->islands[i].ranges);
 
     free(conf->islands);
+
+    int j;
+    for (i = 0; i < conf->num_tags; i++)
+    {
+        for (j = 0; j < conf->e_tags[i].num_users; j++)
+            free(conf->e_tags[i].users[j]);
+
+        for (j = 0; j < conf->e_tags[i].num_groups; j++)
+            free(conf->e_tags[i].groups[j]);
+
+        for (j = 0; j < conf->e_tags[i].num_accounts; j++)
+            free(conf->e_tags[i].accounts[j]);
+
+        free(conf->e_tags[i].users);
+        free(conf->e_tags[i].groups);
+        free(conf->e_tags[i].accounts);
+    }
+    free(conf->e_tags);
 
     memset(conf, 0, sizeof(cluster_conf_t));
 
