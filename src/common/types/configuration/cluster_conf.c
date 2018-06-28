@@ -27,36 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <common/config.h>
-#include <common/states.h>
-#include <common/environment.h>
-#include <common/string_enhanced.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <common/ear_verbose.h>
 
 
-
-/*
-#define MIN_ENERGY_TO_SOLUTION          0
-#define MIN_TIME_TO_SOLUTION            1
-#define MONITORING_ONLY                 2
-*/
-
-
-static const char *__NAME__ = "configuration:";
 //#define __OLD__CONF__
-
-
-
-
-
 
 char range_conf_contains_node(node_conf_t *node, char *nodename)
 {

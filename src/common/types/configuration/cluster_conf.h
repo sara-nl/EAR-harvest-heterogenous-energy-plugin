@@ -30,19 +30,25 @@
 #ifndef _CLUSTER_CONF_H
 #define _CLUSTER_CONF_H
 
+#include <stdio.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 
-//#include <common/types/configuration/cluster_conf_read.h>
-//#include <common/types/configuration/cluster_conf_verbose.h>
 #include <common/types/generic.h>
-#include <common/ear_verbose.h>
+#include <common/string_enhanced.h>
 #include <common/environment.h>
-#include <common/config.h>
+#include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/config.h>
 
 #define GENERIC_NAME	256
 #define USER			64
 #define ACC				64
+
+static const char *__NAME__ = "configuration";
 
 /*
  *
@@ -215,5 +221,27 @@ int policy_name_to_id(char *my_policy);
 
 /** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
 int policy_id_to_name(int policy_id,char *my_policy);
+
+// Cluster configuration read
+
+/** read the cluster configuration from the ear_cluster.conf pointed by conf path */
+int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+
+/** frees a cluster_conf_t */
+void free_cluster_conf(cluster_conf_t *conf);
+
+// Cluster configuration verbose
+
+/** prints in the stderr the node configuration */
+void print_node_conf(node_conf_t *node_conf);
+
+/** prints in the stderr the specific node configuration */
+void print_my_node_conf(my_node_conf_t *my_node_conf);
+
+/** prints in the stdout policy configuration */
+void print_policy_conf(policy_conf_t *p);
+
+/** Prints in the stdout the whole cluster configuration */
+void print_cluster_conf(cluster_conf_t *conf);
 
 #endif

@@ -10,7 +10,7 @@ SRCS = cluster_conf.c \
 
 all: cluster_conf.o
 
-cluster_conf.o:
+cluster_conf.o: $(SRCS) cluster_conf.h
 	$(CC) $(CFLAGS) -c $(SRCS)
 
 ######## OPTIONS
