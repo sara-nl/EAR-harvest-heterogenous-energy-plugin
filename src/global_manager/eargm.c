@@ -114,7 +114,7 @@ static void my_signals_function(int s)
     	}
     	else{
         	print_cluster_conf(&my_cluster_conf);
-			energy_budget=my_cluster_conf.eargm.energy;
+			update_eargm_configuration(&my_cluster_conf);
 			VERBOSE_N(0,"Using new energy limit %lu",energy_budget);
     	}
 	}else{
@@ -462,8 +462,9 @@ void main(int argc,char *argv[])
 		new_energy_sample(result);
 		start_time=end_time-period_t2;
     	result2 = db_select_acum_energy( start_time, end_time, divisor);
-        VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t2,result2);
-		total_energy_t2=compute_energy_t2();	
+		// This code needs to be done since global manager is not running for time enough
+		//total_energy_t2=compute_energy_t2();	
+		total_energy_t2=result2;
 		perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
 		perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
 		VERBOSE_N(0,"Percentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)\n",perc_energy,total_energy_t2,energy_budget);

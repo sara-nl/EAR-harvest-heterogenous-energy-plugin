@@ -76,6 +76,7 @@ extern char nodename[MAX_PATH_SIZE];
 static int fd_powermon=-1;
 static int fd_periodic=-1;
 extern ear_conf_t *dyn_conf;
+static int sig_reported=0;
 
 typedef struct powermon_app{
 	application_t app;
@@ -207,8 +208,12 @@ void job_end_powermon_app()
 void report_powermon_app(powermon_app_t *app)
 {
 	// We can write here power information for this job
+	if (sig_reported==0){
+		app->app.is_mpi=0;
+	}
 	report_application_data(&app->app);
 	report_application_in_file(&app->app);
+	
 	#if !USE_EARDB
 	#if DB_MYSQL
     if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
@@ -311,6 +316,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 		new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
     pthread_mutex_unlock(&app_lock);
 	VERBOSE_N(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
+	sig_reported=0;
 
 }
 /* This function is called by dynamic_configuration thread when a end_job command arrives */
@@ -495,6 +501,7 @@ void powermon_mpi_signature(application_t *app)
     current_ear_app.app.job.procs=app->job.procs;
     strcpy(current_ear_app.app.job.policy,app->job.policy);
     strcpy(current_ear_app.app.job.app_id,app->job.app_id);
+	sig_reported=1;
 }
 
 /*

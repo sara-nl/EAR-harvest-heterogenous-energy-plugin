@@ -33,6 +33,7 @@
 #include <string.h>
 #include <papi.h>
 
+#include <common/config.h>
 #include <metrics/papi/flops.h>
 #include <metrics/papi/cache.h>
 #include <metrics/papi/generics.h>
@@ -43,6 +44,7 @@
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/math_operations.h>
+#include <library/common/externs.h>
 
 /*
  * Low level reading
@@ -96,7 +98,7 @@
  */
 
 // Verbosity
-static const char *__NAME__ = "METRICS";
+static const char *__NAME__ = "ear/metrics";
 
 // Hardware
 static double hw_cache_line_size;
@@ -111,6 +113,9 @@ static int rapl_elements;
 #define LOO 0 // loop
 #define APP 1 // application
 
+#define SIG_BEGIN 	0
+#define SIG_END		1
+
 static long long *metrics_flops[2]; // (vec)
 static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[2]; // ops (vec)
@@ -124,6 +129,8 @@ static long long metrics_usecs[2]; // uS
 static long long metrics_l1[2];
 static long long metrics_l2[2];
 static long long metrics_l3[2];
+
+static int NI=0;
 
 //TODO: remove when all metrics were unified
 #define RAPL_DRAM0 			0
@@ -148,7 +155,9 @@ static void metrics_global_stop()
 	metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
 
 	// Accum calls
+	#if 0
 	get_cache_metrics(&metrics_l1[APP], &metrics_l2[APP], &metrics_l3[APP]);
+	#endif
 	get_basic_metrics(&metrics_cycles[APP], &metrics_instructions[APP]);
 	get_total_fops(metrics_flops[APP]);
 }
@@ -167,22 +176,34 @@ static void metrics_global_stop()
 static void metrics_partial_start()
 {
 	eards_node_dc_energy(&metrics_ipmi[LOO]);
+	metrics_usecs[LOO] = metrics_time();
 	eards_begin_compute_turbo_freq();
 	eards_start_uncore();
 	eards_read_rapl(aux_rapl);
 
-	metrics_usecs[LOO] = metrics_time();
 	start_basic_metrics();
+	#if 0
 	start_cache_metrics();
+	#endif
 	start_flops_metrics();
 }
 
-static void metrics_partial_stop()
+static int metrics_partial_stop(uint where)
 {
 	long long aux_time, aux_flops;
 	ulong aux_energy;
 	int i;
 
+	// Manual IPMI accumulation
+	eards_node_dc_energy(&aux_energy);
+	if ((where==SIG_END) && (aux_energy==metrics_ipmi[LOO])) return EAR_NOT_READY;
+	metrics_ipmi[LOO] = aux_energy - metrics_ipmi[LOO];
+	metrics_ipmi[APP] += metrics_ipmi[LOO];
+	// Manual time accumulation
+	aux_time = metrics_time();
+	metrics_usecs[LOO] = metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
+	metrics_usecs[APP] += metrics_usecs[LOO];
+	
 	// Daemon metrics
 	metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
 	eards_read_uncore(metrics_bandwith[LOO]);
@@ -208,20 +229,15 @@ static void metrics_partial_stop()
 			metrics_rapl[APP][i] += metrics_rapl[LOO][i];
 	}
 
-	// Manual IPMI accumulation
-	eards_node_dc_energy(&aux_energy);
-	metrics_ipmi[LOO] = aux_energy - metrics_ipmi[LOO];
-	metrics_ipmi[APP] += metrics_ipmi[LOO];
 
 	// Local metrics
+	#if 0
 	stop_cache_metrics(&metrics_l1[LOO], &metrics_l2[LOO], &metrics_l3[LOO]);
+	#endif
 	stop_basic_metrics(&metrics_cycles[LOO], &metrics_instructions[LOO]);
 	stop_flops_metrics(&aux_flops, metrics_flops[LOO]);
 
-	// Manual time accumulation
-	aux_time = metrics_time();
-	metrics_usecs[LOO] = metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
-	metrics_usecs[APP] += metrics_usecs[LOO];
+	return EAR_SUCCESS;
 }
 
 static void metrics_reset()
@@ -231,7 +247,9 @@ static void metrics_reset()
 
 	reset_basic_metrics();
 	reset_flops_metrics();
+	#if 0
 	reset_cache_metrics();
+	#endif
 }
 
 static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)
@@ -250,9 +268,11 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	metrics->time = time_s / (double) iterations;
 	metrics->avg_f = metrics_avg_frequency[s];
 
+	#if 0
 	metrics->L1_misses = metrics_l1[s];
 	metrics->L2_misses = metrics_l2[s];
 	metrics->L3_misses = metrics_l3[s];
+	#endif
 
 	// FLOPS
 	if (papi_flops_supported)
@@ -310,7 +330,9 @@ int metrics_init()
 
 	// Local metrics initialization
 	init_basic_metrics();
+	#if 0
 	init_cache_metrics();
+	#endif
 	papi_flops_supported = init_flops_metrics();
 
 	if (papi_flops_supported)
@@ -373,7 +395,7 @@ int metrics_init()
 
 void metrics_dispose(signature_t *metrics, ulong procs)
 {
-	metrics_partial_stop();
+	metrics_partial_stop(SIG_BEGIN);
 	metrics_global_stop();
 
 	metrics_compute_signature_data(APP, metrics, 1, procs);
@@ -382,7 +404,7 @@ void metrics_dispose(signature_t *metrics, ulong procs)
 void metrics_compute_signature_begin()
 {
 	//
-	metrics_partial_stop();
+	metrics_partial_stop(SIG_BEGIN);
 	metrics_reset();
 
 	//
@@ -393,6 +415,8 @@ int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulon
 {
     long long aux_time;
 
+	NI=iterations;
+
 	// Time requirements
 	aux_time = metrics_usecs_diff(metrics_time(), metrics_usecs[LOO]);
 
@@ -402,7 +426,7 @@ int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulon
 	}
 
 	//
-	metrics_partial_stop();
+	if (metrics_partial_stop(SIG_END)==EAR_NOT_READY) return EAR_NOT_READY;
 	metrics_reset();
 
 	//
