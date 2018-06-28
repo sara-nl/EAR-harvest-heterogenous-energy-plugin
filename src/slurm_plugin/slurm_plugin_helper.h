@@ -31,19 +31,20 @@
 #define EAR_SLURM_PLUGIN_HELPER_H
 
 #include <slurm/spank.h>
+//#include <slurm_plugin/slurm_plugin.h>
 
 // Misc
 #define IF_RET_ERR(condition) \
 	if (condition) \
 		return (ESPANK_ERROR);
 
-#define SNPRINTF_RET_ERR(buffer, format, ...) \
+#define SNPRINTF_RET_ERR(buffer, ...) \
 	if (snprintf(buffer, sizeof(buffer), __VA_ARGS__) < 0) { \
         plug_error("while writing a formatted output to sized buffer"); \
 		return (ESPANK_ERROR); \
 	}
 
-#define SNPRINTF_RET_STP(buffer, format, ...) \
+#define SNPRINTF_RET_STP(buffer, ...) \
 	if (snprintf(buffer, sizeof(buffer), __VA_ARGS__) < 0) { \
         plug_error("while writing a formatted output to sized buffer"); \
 		return (ESPANK_STOP); \
