@@ -120,11 +120,11 @@ static int _opt_ear (int val, const char *optarg, int remote)
 		if (strcmp(enabled, "ON") == 0)
 		{
 			if (setenv_local("EAR", "1", 1) != 1) {
-				return (ESPANK_ERROR);
+				return (ESPANK_STOP);
 			}
 		} else {
 			if (setenv_local("EAR", "0", 1) != 1) {
-				return (ESPANK_ERROR);
+				return (ESPANK_STOP);
 			}
 		}
 	}
@@ -149,14 +149,14 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		sprintf(p_state, "%d", ioptarg);
+		SNPRINTF_RET_STP(p_state, "%d", ioptarg);
 
 		result = setenv_local("EAR_LEARNING_PHASE", "1", 1);
 		result = result && setenv_local("EAR_P_STATE", p_state, 1);
 		result = result && setenv_local("EAR", "1", 0);
 
 		if (result != 1) {
-			return (ESPANK_ERROR);
+			return (ESPANK_STOP);
 		}
 	}
 
@@ -199,7 +199,7 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 		}
 
 		if (result != 1) {
-			return (ESPANK_ERROR);
+			return (ESPANK_STOP);
 		}
 	}
 
@@ -219,7 +219,7 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
 		result = result && setenv_local("EAR", "1", 0);
 
 		if (result != 1) {
-			return (ESPANK_ERROR);
+			return (ESPANK_STOP);
 		}
 	}
 
@@ -243,13 +243,13 @@ static int _opt_ear_threshold (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		sprintf(threshold, "%0.2f", foptarg);
+		SNPRINTF_RET_STP(threshold, "%0.2f", foptarg);
 
 		result = setenv_local("EAR_POWER_POLICY_TH", threshold, 1);
 		result = result && setenv_local("EAR", "1", 0) != 1;
 
 		if (result != 1) {
-			return (ESPANK_ERROR);
+			return (ESPANK_STOP);
 		}
 	}
 
@@ -274,7 +274,7 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 		if (ioptarg < 0) ioptarg = 0;
 		if (ioptarg > 4) ioptarg = 4;
 
-		sprintf(c_verbosity, "%i", ioptarg);
+		SNPRINTF_RET_STP(c_verbosity, "%i", ioptarg);
 		result = setenv_local("EAR_VERBOSE", c_verbosity, 1);
 		result = result && setenv_local("EAR", "1", 0);
 
@@ -283,7 +283,7 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 		}
 
 		if (result != 1) {
-			return (ESPANK_ERROR);
+			return (ESPANK_STOP);
 		}
 	}
 
@@ -300,7 +300,7 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 		result = result && setenv_local("EAR", "1", 0);
 
 		if (result != 1) {
-			return (ESPANK_ERROR);
+			return (ESPANK_STOP);
 		}
 	}
 
@@ -317,7 +317,7 @@ static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 		if (setenv_local("EAR_MPI_DIST", optarg, 1) != 1) {
-			return (ESPANK_ERROR);
+			return (ESPANK_STOP);
 		}
 	}
 
@@ -327,7 +327,7 @@ static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 static int _opt_ear_tag(int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_tag");
-	return (ESPANK_SUCCESS);
+	return (ESPANK_STOP);
 }
 
 /*

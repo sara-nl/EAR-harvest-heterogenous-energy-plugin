@@ -37,6 +37,18 @@
 	if (condition) \
 		return (ESPANK_ERROR);
 
+#define SNPRINTF_RET_ERR(buffer, format, ...) \
+	if (snprintf(buffer, sizeof(buffer), __VA_ARGS__) < 0) { \
+        plug_error("while writing a formatted output to sized buffer"); \
+		return (ESPANK_ERROR); \
+	}
+
+#define SNPRINTF_RET_STP(buffer, format, ...) \
+	if (snprintf(buffer, sizeof(buffer), __VA_ARGS__) < 0) { \
+        plug_error("while writing a formatted output to sized buffer"); \
+		return (ESPANK_STOP); \
+	}
+
 // Verbosity
 #define plug_verbose(sp, level, ...) \
 	if (verbosity_test(sp, level) == 1) { \

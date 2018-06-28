@@ -121,8 +121,6 @@ void print_local_environment(spank_t sp)
 	char *env = *environ;
 	int i = 1;
 	
-	return;
-
 	for (; env; i++) {
         plug_verbose(sp, 2, "env %s", env);
     	env = *(environ + i);
@@ -134,8 +132,6 @@ void print_local_environment(spank_t sp)
 void print_remote_environment(spank_t sp)
 {
 	const char **env = NULL;
-
-	return;
 
     if (spank_get_item (sp, S_JOB_ENV, &env) != ESPANK_SUCCESS) {
         return;

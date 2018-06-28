@@ -168,13 +168,15 @@ application_t eard_appl;
  * - SLURM_JOB_ACCOUNT						|     |       | x         |        | 
  *
  * Reasons to stop the job:
- * 1) The P_STATE is not found in 'ear.conf' P_STATE list.
- * 2) Unprivileged user trying to use privileged options: EAR, EAR_VERBOSE,
+ * 1) A problem inside option functions.
+ * 2) The P_STATE is not found in 'ear.conf' P_STATE list.
+ * 3) Unprivileged USER trying to use privileged options: EAR, EAR_VERBOSE,
  *    EAR_LEARNING_PHASE, EAR_POWER_POLICY, EAR_P_STATE, EAR_POWER_POLICY_TH,
  *    EAR_TRACES, EAR_DB_PATHNAME, EAR_COEFF_PATHNAME
  *
  * Reasons to disable EAR:
  * 1) Set environment variable fails.
+ * 2) Writing in a sized buffer fails.
  *
  * Reading configuration times:
  * 1) In local context, prior to job creation
@@ -189,9 +191,9 @@ application_t eard_appl;
  *
  * Under construction:
  * 1) Energy tag
- * 2) User system
- * 3) Detection system to avoid EARD and EARGMD job end functions if there
+ * 2) Detection system to avoid EARD and EARGMD job end functions if there
  *    were an error in the job start functions.
+ * 3) SBATCH/SALLOC context detection system.
  *
  */
 
@@ -445,8 +447,6 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 
 	if(spank_context () == S_CTX_LOCAL)
 	{
-		plug_verbose(sp, 2, "SLURM_INIT_POST_OPT");
-		print_local_environment(sp);
 		if ((r = local_pre_job_configuration(sp, ac, av)) != ESPANK_SUCCESS)
 		{
 			local_library_disable();
@@ -464,8 +464,6 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 
     if(spank_context () == S_CTX_LOCAL)
     {
-		plug_verbose(sp, 2, "SLURM_LOCAL_USER_INIT");
-		print_local_environment(sp);
 		job_created = 1;
 
 		//
@@ -509,11 +507,6 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 	if (spank_context() == S_CTX_REMOTE)
 	{
-		plug_verbose(sp, 2, "SLURM_LOCAL_USER_INIT");
-		print_remote_environment(sp);	
-		plug_verbose(sp, 2, "SLURM_LOCAL_USER_INIT");
-		print_local_environment(sp);
-
 		if(isenv_remote(sp, "EAR", "1"))
 		{
 			if ((r = remote_configuration(sp)) != ESPANK_SUCCESS)

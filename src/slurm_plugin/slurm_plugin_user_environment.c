@@ -118,11 +118,11 @@ static int local_user_configuration_unprivileged(spank_t sp, cluster_conf_t *con
 	//TODO: Depends on the node, future placement in remote_configuration_user_unprivileged
 	#if 1
 	// Forcing EAR_P_STATE
-	sprintf(buffer1, "%u", conf_plcy->p_state);
+	SNPRINTF_RET_ERR(buffer1, "%u", conf_plcy->p_state);
 	SETENV_LOCAL_RET_ERR("EAR_P_STATE", buffer1, 1);
 
 	// Forcing EAR_THRESHOLD
-	sprintf(buffer1, "%lf", conf_plcy->th);
+	SNPRINTF_RET_ERR(buffer1, "%lf", conf_plcy->th);
 	SETENV_LOCAL_RET_ERR("EAR_POWER_POLICY_TH", buffer1, 1);
 	#endif
 
@@ -180,7 +180,7 @@ static int local_user_configuration_privileged(spank_t sp, cluster_conf_t *conf_
 	#if 1
 	// Testing EAR_P_STATE
 	if (!existenv_local("EAR_P_STATE")) {
-		sprintf(buffer1, "%u", conf_plcy->p_state);
+		SNPRINTF_RET_ERR(buffer1, "%u", conf_plcy->p_state);
 		setenv_local("EAR_P_STATE", buffer1, 1);
 	} else {
 		//TODO: is valid?
@@ -188,7 +188,7 @@ static int local_user_configuration_privileged(spank_t sp, cluster_conf_t *conf_
 
 	// Testing EAR_THRESHOLD
 	if (!existenv_local("EAR_POWER_POLICY_TH")) {
-		sprintf(buffer1, "%lf", conf_plcy->th);
+		SNPRINTF_RET_ERR(buffer1, "%lf", conf_plcy->th);
 		setenv_local("EAR_POWER_POLICY_TH", buffer1, 1);
 	} else {
 		//TODO: is valid?
@@ -243,17 +243,17 @@ int local_post_job_configuration(spank_t sp)
 	if (isenv_local("EAR_TRACES", "1") == 1)
 	{
 		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-			sprintf(buffer2, "%s/%s", buffer1, OMPI_TRACE_LIB_PATH);
+			SNPRINTF_RET_ERR(buffer2, "%s/%s", buffer1, OMPI_TRACE_LIB_PATH);
 		} else {
-			sprintf(buffer2, "%s/%s", buffer1, IMPI_TRACE_LIB_PATH);
+			SNPRINTF_RET_ERR(buffer2, "%s/%s", buffer1, IMPI_TRACE_LIB_PATH);
 		}
 	}
 	else
 	{
 		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-			sprintf(buffer2, "%s/%s", buffer1, OMPI_LIB_PATH);
+			SNPRINTF_RET_ERR(buffer2, "%s/%s", buffer1, OMPI_LIB_PATH);
 		} else {
-			sprintf(buffer2, "%s/%s", buffer1, IMPI_LIB_PATH);
+			SNPRINTF_RET_ERR(buffer2, "%s/%s", buffer1, IMPI_LIB_PATH);
 		}
 	}
 
@@ -328,11 +328,11 @@ static int local_pre_job_configuration_general(spank_t sp, cluster_conf_t *conf_
 	SETENV_LOCAL_RET_ERR("EAR_USER", upw->pw_name, 1);
 
 	// Setting variables for EARGMD connection
-	sprintf(eargmd_host, "%s", conf_clus->eargm.host);
+	SNPRINTF_RET_ERR(eargmd_host, "%s", conf_clus->eargm.host);
 	eargmd_port = conf_clus->eargm.port;
 
 	// Setting variables for EARD connection
-	sprintf(buffer1, "%u", conf_clus->eard.port);
+	SNPRINTF_RET_ERR(buffer1, "%u", conf_clus->eard.port);
 	SETENV_LOCAL_RET_ERR("EARD_PORT", buffer1, 1);
 
 	// Setting LIBEAR variables
@@ -342,7 +342,7 @@ static int local_pre_job_configuration_general(spank_t sp, cluster_conf_t *conf_
 	SETENV_LOCAL_RET_ERR("EAR_DYNAIS_WINDOW_SIZE", "500", 1);
 	SETENV_LOCAL_RET_ERR("EAR_DYNAIS_LEVELS", "4", 1);
 
-	sprintf(buffer1, "%u", conf_clus->min_time_perf_acc);
+	SNPRINTF_RET_ERR(buffer1, "%u", conf_clus->min_time_perf_acc);
 	SETENV_LOCAL_RET_ERR("EAR_PERFORMANCE_ACCURACY", buffer1, 1);
 
 	return (ESPANK_SUCCESS);
@@ -442,9 +442,11 @@ int remote_configuration(spank_t sp)
 			if (getenv_remote(sp, "SLURM_CPU_FREQ_REQ", p_state, 64) == 1)
 			{
 				p_freq = atoi(p_state);
+
+				//TODO: ?
 				p_freq = freq_to_p_state(p_freq);
 
-				sprintf(p_state, "%d", p_freq);
+				SNPRINTF_RET_ERR(p_state, "%d", p_freq);
 				SETENV_REMOTE_RET_ERR(sp, "EAR_P_STATE", p_state, 0);
 
 				plug_verbose(sp, 2, "Updating to P_STATE '%s' by '--cpu-freq=%d' command",
