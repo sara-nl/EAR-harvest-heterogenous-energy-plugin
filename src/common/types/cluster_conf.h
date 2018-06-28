@@ -137,6 +137,12 @@ typedef struct energy_tag
 {
 	char tag[USER];
 	uint p_state;
+	char **users;
+	uint num_users;
+	char **groups;
+	uint num_groups;
+	char **accounts;
+	uint num_accounts;
 } energy_tag_t;
 
 typedef struct db_conf

@@ -5,13 +5,11 @@
 2. Modify the /etc/ear/ear.conf file to specify the name of the database that will be created and the name of the user that EAR will use.
 
 3. Run the command $EAR_INSTALL_PATH/sbin/ear_create_database with the IP 
-   address to the MySQL location. MySQL's root user needs permission to log 
-   from the location in which the command is being executed (if it's being 
-   executed locally nothing needs to be done). If the root user has a password, it must be specified in the command with the _-p_ option.
+   address of the MySQL's server location. MySQL's root user needs permission to log from the location in which the command is being executed (if it's being executed locally nothing needs to be done). If the root user has a password, it must be specified in the command with the _-p_ option.
 
 4. Modify the file /etc/ear/ear.conf to specify in the database section the     IP of the MySQL server as well as the user if you want to use another user. Make sure that the said user (which may or may not have been created with the ear_create_database command) has the proper permissions towards the database created (only INSERT and SELECT privileges are needed) as well as permission to access the database from foreign IPs (such as the ones from the computation nodes).
 
-5. Start either the EAR daemon or the slurm controller and daemon with the      EAR plugin.
+5. Start either the EAR daemon, the slurm controller and daemon with the      EAR plugin or the _eard_ service.
 
 6. Run the jobs. The data should be successfully stored when a job is completed
 
@@ -22,10 +20,14 @@
 The main tables in the database Report and each of their rows are:
 
    - Applications:  Contains basic information about where the application was executed (node_id) and the id's of the executed job and the final computated application signature.
+
     - Jobs:  Contains the information about a job execution [user_id, app_id,start_time, end_time], as well as the EAR parameters defined executon (policy, threshold) and node information (procs, def_f). 
+
     - Signatures: Contains the information of an application signature computed and used by EAR.
+
     - Loops: Contains the information of an application loop, its identifying characteristics (type of event, size, level and total iterations), the job it belongs to and the computed signature of
     the loop.
+
     - Power_signatures: Contains power metrics of an application.
     
     - Periodic_metrics: Contains information about a node's energy consumption with the purpose of monitoring it.
