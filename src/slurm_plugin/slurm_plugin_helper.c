@@ -59,9 +59,9 @@ int verbosity_test(spank_t sp, int level)
 	char *env_local;
 
 	if (verbosity == -1) {
-		if (getenv_remote(sp, "EAR_VERBOSE", env_remote, 8) == 1) {
+		if (getenv_remote(sp, "EAR_PLUGIN_VERBOSE", env_remote, 8) == 1) {
 			verbosity = atoi(env_remote);
-		} else if (getenv_local("EAR_VERBOSE", &env_local) == 1) {
+		} else if (getenv_local("EAR_PLUGIN_VERBOSE", &env_local) == 1) {
 			verbosity = atoi(env_local);
 		} else {
 			verbosity = 0;
@@ -113,6 +113,40 @@ char *strclean(char *string, char chr)
  * Environment
  *
  */
+
+extern char **environ;
+
+void print_local_environment(spank_t sp)
+{
+	char *env = *environ;
+	int i = 1;
+	
+	return;
+
+	for (; env; i++) {
+        plug_verbose(sp, 2, "env %s", env);
+    	env = *(environ + i);
+	}
+
+	return;
+}
+
+void print_remote_environment(spank_t sp)
+{
+	const char **env = NULL;
+
+	return;
+
+    if (spank_get_item (sp, S_JOB_ENV, &env) != ESPANK_SUCCESS) {
+        return;
+    }
+
+    while (*env != NULL) {
+        plug_verbose(sp, 2, "env %s", *env);
+        ++env;
+    }
+}
+
 void printenv_remote(spank_t sp, char *name)
 {
 	if (name == NULL) {
@@ -162,11 +196,12 @@ void appendenv(char *dst, char *src, int dst_capacity)
 int setenv_local(const char *name, const char *value, int replace)
 {
 	if (name == NULL || value == NULL) {
+		plug_error("NULL environment variable", name, strerror(errno));
 		return 0;
 	}
 
     if (setenv (name, value, replace) == -1) {
-       	plug_error("Error while setting envar %s (%s)", name, strerror(errno));
+       	plug_error("while setting envar %s (%s)", name, strerror(errno));
         return 0;
     }
 

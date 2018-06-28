@@ -58,10 +58,7 @@ void usage(char *app)
 "\t\t-db\tspecifies the database on which the query is executed [default: Report]\n" \
 "\t\t-ip\tspecifies the ip where the MySQL server can be found [default: 127.0.0.1]\n" \
 "", app);
-
-#if DB_FILES
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
-#endif
     #endif
 	exit(1);
 }
@@ -243,6 +240,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     char query[256];
     
     int job_id, step_id = 0;
+    char is_learning = 0;
     char *token;
     job_id = atoi(strtok(argv[1], "."));
     token = strtok(NULL, ".");
@@ -254,7 +252,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     application_t *apps;
 
     if (verbose) fprintf(stderr, "Retrieving applications\n");
-    num_apps = mysql_retrieve_applications(connection, query, &apps);
+    num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
     if (verbose) fprintf(stderr, "Finalized retrieving applications\n");
 
     if (num_apps == EAR_MYSQL_ERROR)
@@ -266,13 +264,28 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
 
     else if (num_apps < 1)
     {
-        printf("No jobs with %u job_id and %u step_id found. \n", job_id, step_id);
-        mysql_close(connection);
-        exit(1);
+        printf("No jobs with %u job_id and %u step_id found, trying with learning database. \n", job_id, step_id);
+        if (verbose) printf("Creating new query...\n");
+        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id=%u and step_id=%u", job_id, step_id);
+        if (verbose) printf("Retrieving applications\n");
+        num_apps = mysql_retrieve_applications(connection, query, &apps, 1);
+        if (num_apps == EAR_MYSQL_ERROR)
+        {
+            fprintf(stderr, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
+            mysql_close(connection);
+            exit(1);
+        }
+        else if (num_apps < 1)
+        {
+            printf("No jobs with %u job_id and %u step_id found in the learning database. \n", job_id, step_id);
+            mysql_close(connection);
+            exit(1);
+        }
+        is_learning = 1;
     }
 
 
-    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI;
+    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy;
     avg_frequency = 0;
     avg_time = 0;
     avg_power = 0;
@@ -281,7 +294,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     avg_GBS = 0;
 
     int i = 0;    
-    if (apps[0].is_mpi)
+    if (apps[0].is_mpi && !is_learning)
     {
         printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\tCPI\tGBS\n\t");
     
@@ -310,7 +323,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
             printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t\n\t", 
                     strtok(apps[i].node_id, "."), apps[i].power_sig.time, apps[i].power_sig.DC_power, 
-		    apps[i].signature.DC_power * apps[i].signature.time, avg_f);
+                    apps[i].power_sig.DC_power * apps[i].power_sig.time, avg_f);
             avg_frequency += avg_f;
             avg_time += apps[i].power_sig.time;
             avg_power += apps[i].power_sig.DC_power;
@@ -327,7 +340,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     printf("\nApplication summary\n\tApp_id: %s\n\tJob_id: %lu\n\tStep_id: %lu\n\tPolicy: %s\n\tPolicy threshold: %.2lf\n",
             apps[0].job.app_id, apps[0].job.id, apps[0].job.step_id, apps[0].job.policy, apps[0].job.th);
 
-    if (apps[0].is_mpi)
+    if (apps[0].is_mpi && !is_learning)
     {
         printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
 
@@ -393,11 +406,9 @@ void main(int argc, char *argv[])
             else if (!strcmp("-v", argv[i])){
                 verbose = 1;
             }
-#if DB_FILES
             else if (!strcmp("-f", argv[i])){
                 files = ++i;
             }
-#endif
         }
     }
     if (!files)

@@ -1,10 +1,3 @@
-dynamic_configuration.o: dynamic_configuration.c ../control/frequency.h \
- ../common/types/job.h ../common/types/generic.h ../common/config.h \
- ../common/types/cluster_conf.h ../common/environment.h \
- ../common/states.h ../common/ear_verbose.h ../daemon/eard_server_api.h \
- ../daemon/eard_conf_rapi.h ../common/types/application.h \
- ../common/types/signature.h ../common/types/power_signature.h \
- ../daemon/shared_configuration.h ../daemon/power_monitor.h
 eard_api.o: eard_api.c ../common/ear_verbose.h ../common/config.h \
  ../daemon/eard_api.h ../common/types/generic.h ../common/types/log.h \
  ../common/types/job.h ../daemon/eard_conf_api.h \
@@ -30,6 +23,13 @@ eard_server_api.o: eard_server_api.c ../common/types/job.h \
  ../common/states.h ../daemon/eard_conf_rapi.h \
  ../common/types/application.h ../common/types/signature.h \
  ../common/types/power_signature.h
+dynamic_configuration.o: dynamic_configuration.c ../control/frequency.h \
+ ../common/types/job.h ../common/types/generic.h ../common/config.h \
+ ../common/types/cluster_conf.h ../common/environment.h \
+ ../common/states.h ../common/ear_verbose.h ../daemon/eard_server_api.h \
+ ../daemon/eard_conf_rapi.h ../common/types/application.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../daemon/shared_configuration.h ../daemon/power_monitor.h
 power_monitor.o: power_monitor.c ../common/config.h \
  ../control/frequency.h ../daemon/power_monitor.h \
  ../common/types/application.h ../common/types/job.h \

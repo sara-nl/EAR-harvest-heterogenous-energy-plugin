@@ -153,7 +153,7 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 
 		result = setenv_local("EAR_LEARNING_PHASE", "1", 1);
 		result = result && setenv_local("EAR_P_STATE", p_state, 1);
-		result = result && setenv_local("EAR", "1", 1);
+		result = result && setenv_local("EAR", "1", 0);
 
 		if (result != 1) {
 			return (ESPANK_ERROR);
@@ -189,7 +189,7 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 		}
 
 		result = setenv_local("EAR_POWER_POLICY", policy, 1);
-		result = result && setenv_local("EAR", "1", 1);
+		result = result && setenv_local("EAR", "1", 0);
 
 		if (index == 1 || index == 2) {
 			result = result && setenv_local("EAR_P_STATE", "1", 1);
@@ -216,7 +216,7 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
 		if (optarg == NULL) return (ESPANK_BAD_ARG);
 
 		result = setenv_local("EAR_USER_DB_PATHNAME", optarg, 1);
-		result = result && setenv_local("EAR", "1", 1);
+		result = result && setenv_local("EAR", "1", 0);
 
 		if (result != 1) {
 			return (ESPANK_ERROR);
@@ -246,7 +246,7 @@ static int _opt_ear_threshold (int val, const char *optarg, int remote)
 		sprintf(threshold, "%0.2f", foptarg);
 
 		result = setenv_local("EAR_POWER_POLICY_TH", threshold, 1);
-		result = result && setenv_local("EAR", "1", 1) != 1;
+		result = result && setenv_local("EAR", "1", 0) != 1;
 
 		if (result != 1) {
 			return (ESPANK_ERROR);
@@ -276,7 +276,7 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 
 		sprintf(c_verbosity, "%i", ioptarg);
 		result = setenv_local("EAR_VERBOSE", c_verbosity, 1);
-		result = result && setenv_local("EAR", "1", 1);
+		result = result && setenv_local("EAR", "1", 0);
 
 		if (verbosity == -1) {
 			verbosity = ioptarg;
@@ -297,7 +297,7 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 
 	if (!remote) {
 		result = setenv_local("EAR_TRACES", "1", 1);
-		result = result && setenv_local("EAR", "1", 1);
+		result = result && setenv_local("EAR", "1", 0);
 
 		if (result != 1) {
 			return (ESPANK_ERROR);

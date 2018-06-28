@@ -32,6 +32,11 @@
 
 #include <slurm/spank.h>
 
+// Misc
+#define IF_RET_ERR(condition) \
+	if (condition) \
+		return (ESPANK_ERROR);
+
 // Verbosity
 #define plug_verbose(sp, level, ...) \
 	if (verbosity_test(sp, level) == 1) { \
@@ -52,6 +57,16 @@ void strtoup(char *string);
 char* strclean(char *string, char chr);
 
 // Environment variables
+#define SETENV_LOCAL_RET_ERR(p_name, p_value, replace) \
+	if (!setenv_local(p_name, p_value, replace)) \
+		return (ESPANK_ERROR);
+
+#define SETENV_REMOTE_RET_ERR(sp, p_name, p_value, replace) \
+	if(!setenv_remote(sp, p_name, p_value, replace)) \
+		return (ESPANK_ERROR);
+
+void print_local_environment(spank_t sp);
+void print_remote_environment(spank_t sp);
 void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source, int destiny_length);
 int setenv_local(const char *name, const char *value, int replace);

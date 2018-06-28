@@ -180,7 +180,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     return EAR_SUCCESS;
 }
 
-int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps)
+int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps, char is_learning)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
@@ -190,7 +190,6 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
     int num_jobs;
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
-
     MYSQL_BIND bind[5];
     unsigned long job_id, step_id, sig_id, pow_sig_id;
     int num_apps;
@@ -235,7 +234,6 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         mysql_stmt_close(statement);
         return 0;
     }
-
     apps_aux = (application_t*) calloc(num_apps, sizeof(application_t));
     int i = 0;
     char job_query[128];
@@ -254,14 +252,20 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
     
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
     {
-        sprintf(job_query, "SELECT * FROM Jobs WHERE id=%d AND step_id=%d", job_id, step_id);
+        if (is_learning)
+            sprintf(job_query, "SELECT * FROM Learning_jobs WHERE id=%d AND step_id=%d", job_id, step_id);
+        else
+            sprintf(job_query, "SELECT * FROM Jobs WHERE id=%d AND step_id=%d", job_id, step_id);
         num_jobs = mysql_retrieve_jobs(connection, job_query, &job_aux);
         copy_job(&app_aux->job, job_aux);
         free(job_aux);
 
         if (is_mpi)
         {
-            sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
+            if (is_learning)
+                sprintf(sig_query, "SELECT * FROM Learning_jobs WHERE id=%d AND step_id=%d", job_id, step_id);
+            else
+                sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
             int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
             if (num_sigs > 0) {
                 copy_signature(&app_aux->signature, sig_aux);

@@ -35,6 +35,8 @@
 #include <common/types/cluster_conf.h>
 
 int EAR_VERBOSE_LEVEL=1;
+int total_errors = 0;
+int total_warnings = 0;
 
 void check_incomplete_statements(FILE *conf_file)
 {
@@ -54,7 +56,10 @@ void check_incomplete_statements(FILE *conf_file)
         if (rtoken == NULL) continue;
 
         if (strlen(rtoken) < 1 || !strcmp(rtoken, "\n"))
-            printf("WARNING: empty statement at line %d beginning with %s\n", curr_line, ltoken);
+        {
+            printf("ERROR: empty statement at line %d beginning with %s\n", curr_line, ltoken);
+            total_errors++;
+        }
             
     }
 }
@@ -80,7 +85,10 @@ void check_invalid_ports(FILE *conf_file)
         if (rtoken == NULL) continue;
         port_num = atoi(rtoken);
         if (port_num < 0)
+        {
             printf("ERROR: negative port number at line %d beginning with %s\n", curr_line, ltoken);
+            total_errors++;
+        }
     }
 }
 
@@ -103,8 +111,62 @@ void check_mandatory_statements(FILE *conf_file)
         if (!strcmp(ltoken, "DEFAULTPOWERPOLICY")) def_pol_check = 1;
     }
     if (!def_pol_check)
+    {
         printf("ERROR: missing mandatory DefaultPowerPolicy statement.\n");
+        total_errors++;
+    }
     
+}
+
+void check_policies(FILE *conf_file)
+{
+    char line[256];
+    char *ltoken, *rtoken;
+    int curr_line = 0;
+    char def_pol_check = 0;
+    int pol_count = 0;
+    int pstate_count = 0;
+    while (fgets(line, 256, conf_file) != NULL)
+    {
+        curr_line++;
+        if (line[0] == '#') continue;
+        
+        ltoken = strtok(line, "=");
+        if (!strcmp(ltoken, "\n")) continue;
+        strtoup(ltoken);
+
+        if (!strcmp(ltoken, "SUPPORTEDPOLICIES"))
+        {
+            rtoken = strtok(NULL, "=");
+            rtoken = strtok(rtoken, ",");
+            while(rtoken != NULL)
+            {
+                rtoken = strtok(NULL, ",");
+                pol_count++;
+            }
+        }
+        else if (!strcmp(ltoken, "DEFAULTPSTATES"))
+        {
+            rtoken = strtok(NULL, "=");
+            rtoken = strtok(rtoken, ",");
+            while (rtoken != NULL)
+            {
+                rtoken = strtok(NULL, ",");
+                pstate_count++;
+            }
+        }
+    }
+    if (pstate_count > pol_count)
+    {
+        printf("WARNING: more pstates specifeid than policies. Additional pstates will be disregarded and not linked to any policy.\n"); 
+        total_warnings++;
+    }
+    else if (pstate_count < pol_count)
+    {
+        printf("WARNING: not enough pstates specified for all the policies. Policies without a default pstate will default to 0.\n");
+        total_warnings++;
+    }
+
 }
 
 void main(int argc,char *argv[])
@@ -124,15 +186,16 @@ void main(int argc,char *argv[])
         exit(0);
     }
     
-    printf("Checking statements\n");
     check_incomplete_statements(conf_file);
     rewind(conf_file);
     check_invalid_ports(conf_file);
     rewind(conf_file);
     check_mandatory_statements(conf_file);
+    rewind(conf_file);
+    check_policies(conf_file);
     fclose(conf_file);
 
-
+    printf("\nFinished with %d warnings and %d errors.\n", total_warnings, total_errors);
 
     /*read_cluster_conf(ear_path,&my_cluster);
 	print_cluster_conf(&my_cluster);
