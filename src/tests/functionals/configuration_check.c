@@ -187,23 +187,22 @@ void main(int argc,char *argv[])
     }
     
     check_incomplete_statements(conf_file);
+    
     rewind(conf_file);
     check_invalid_ports(conf_file);
+    
     rewind(conf_file);
     check_mandatory_statements(conf_file);
+    
     rewind(conf_file);
     check_policies(conf_file);
+    
+    
+    
+    
     fclose(conf_file);
+
 
     printf("\nFinished with %d warnings and %d errors.\n", total_warnings, total_errors);
 
-    /*read_cluster_conf(ear_path,&my_cluster);
-	print_cluster_conf(&my_cluster);
-    my_node_conf_t *my = get_my_node_conf(&my_cluster, "cae2306");
-    
-    int i;
-    for (i = 0; i < my->num_policies; i++)
-    {
-        print_policy_conf(&my->policies[i]);
-    }*/
 }

@@ -676,14 +676,14 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             while (token != NULL)
             {
                 token = strtok_r(token, "=", &secondary_ptr);
-                strtop(token);
+                strtoup(token);
 
                 //this must always be the first one
                 if (!strcmp(token, "ENERGYTAG"))
                 {
                     conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_tags+1));
                     token = strtok_r(NULL, "=", &secondary_ptr);
-                    memcpy(&conf->e_tags[conf->num_tags], 0, sizeof(energy_tag_t));
+                    memset(&conf->e_tags[conf->num_tags], 0, sizeof(energy_tag_t));
                     strcpy(conf->e_tags[conf->num_tags].tag, token);
                     conf->e_tags[conf->num_tags].users = NULL;
                     conf->e_tags[conf->num_tags].groups = NULL;
