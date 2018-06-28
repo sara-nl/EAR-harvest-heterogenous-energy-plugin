@@ -5,7 +5,7 @@
 #include <errno.h>
 
 #include <global_manager/eargm_rapi.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 
 #define NAME_SIZE 128
 int EAR_VERBOSE_LEVEL=1;

@@ -20,7 +20,7 @@ coefficient.o: coefficient.c ../../common/types/coefficient.h \
 cluster_conf.o: cluster_conf.c ../../common/config.h \
  ../../common/states.h ../../common/environment.h \
  ../../common/string_enhanced.h ../../common/types/generic.h \
- ../../common/types/cluster_conf.h ../../common/ear_verbose.h
+ ../../common/types/configuration/cluster_conf.h ../../common/ear_verbose.h
 periodic_metric.o: periodic_metric.c ../../common/math_operations.h \
  ../../common/types/periodic_metric.h ../../common/config.h \
  ../../common/types/generic.h

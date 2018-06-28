@@ -30,7 +30,7 @@
 #include <common/types/periodic_aggregation.h>
 #include <common/types/power_signature.h>
 #include <common/types/periodic_metric.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <common/types/application.h>
 #include <common/types/gm_warning.h>
 #include <common/types/loop.h>

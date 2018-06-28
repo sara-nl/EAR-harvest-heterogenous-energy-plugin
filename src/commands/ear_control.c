@@ -8,7 +8,7 @@
 #include <daemon/eard_rapi.h>
 #include <common/ear_verbose.h>
 #include <common/types/application.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
                    
 #define NUM_LEVELS  4
 #define MAX_PSTATE 16
