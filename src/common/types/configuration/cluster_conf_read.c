@@ -116,6 +116,145 @@ static void cae_conf(cluster_conf_t *my_conf)
 	//EARDB
 }
 
+static void insert_th_policy(cluster_conf_t *conf, char *token, int policy)
+{
+	int i;
+	for (i = 0; i < conf->num_policies; i++)
+	{
+		if (conf->power_policies[i].policy == policy)
+			conf->power_policies[i].th = atof(token);
+	}
+
+}
+
+static int set_nodes_conf(cluster_conf_t *conf, char *namelist)
+{
+	char *buffer_ptr;
+	char *second_ptr;
+	char *token;
+	char *start;
+	char *next_token;
+	int range_start, range_end;
+	char nodename[GENERIC_NAME];
+
+	start = strtok_r(namelist, "[", &buffer_ptr);
+	token = strtok_r(NULL, ",", &buffer_ptr);
+
+	conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+1));
+	memset(&conf->nodes[conf->num_nodes], 0, sizeof(node_conf_t));
+
+	//in this case, only one node is specified in the line
+	if (token == NULL)
+	{
+
+		conf->nodes[conf->num_nodes].range = realloc(conf->nodes[conf->num_nodes].range, sizeof(node_range_t)*(conf->nodes[conf->num_nodes].range_count+1));
+		memset(&conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count], 0, sizeof(node_range_t));
+		sprintf(conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].prefix, "%s", start);
+		conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start =
+		conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end = -1;
+		conf->nodes[conf->num_nodes].range_count++;
+
+		return 1;
+	}
+	//at least one node if we reach this point
+	int node_count = 0;
+	while (token != NULL)
+	{
+
+		conf->nodes[conf->num_nodes].range = realloc(conf->nodes[conf->num_nodes].range, sizeof(node_range_t)*(conf->nodes[conf->num_nodes].range_count+1));
+		memset(&conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count], 0, sizeof(node_range_t));
+		sprintf(conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].prefix, "%s", start);
+
+		if (strchr(token, ']'))
+		{
+			next_token = strtok_r(NULL, "[", &buffer_ptr);
+			strclean(token, ']');
+		}
+		else next_token = NULL;
+
+		if (strchr(token, '-'))
+		{
+			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start = atoi(strtok_r(token, "-", &second_ptr));
+			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end = atoi(strtok_r(NULL, "-", &second_ptr));
+
+		}
+		else
+		{
+			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end =
+			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start =
+					atoi(token);
+		}
+		token = strtok_r(NULL, ",", &buffer_ptr);
+		if (next_token != NULL) start = next_token;
+		conf->nodes[conf->num_nodes].range_count++;
+	}
+	return 1;
+}
+
+static int get_default_pstate(policy_conf_t *pow_pol, int num_pol, int policy)
+{
+	int i;
+	for (i = 0; i < num_pol; i++)
+	{
+		if (pow_pol[i].policy == policy)
+			return pow_pol[i].p_state;
+	}
+	return 0;
+}
+
+static void generate_node_ranges(node_island_t *island, char *nodelist)
+{
+	char *buffer_ptr;
+	char *second_ptr;
+	char *token;
+	char *start;
+	char *next_token;
+	int range_start, range_end;
+	char nodename[GENERIC_NAME];
+
+	start = strtok_r(nodelist, "[", &buffer_ptr);
+	token = strtok_r(NULL, ",", &buffer_ptr);
+	//in this case, only one node is specified in the line
+	if (token == NULL)
+	{
+		island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+1));
+		memset(&island->ranges[island->num_ranges], 0, sizeof(node_range_t));
+		sprintf(island->ranges[island->num_ranges].prefix, "%s", start);
+		island->ranges[island->num_ranges].start = island->ranges[island->num_ranges].end = -1;
+		island->num_ranges++;
+	}
+	//at least one range if we reach this point
+	int range_count = 0;
+	while (token != NULL)
+	{
+		island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+range_count+1));
+		memset(&island->ranges[island->num_ranges+range_count], 0, sizeof(node_range_t));
+		strcpy(island->ranges[island->num_ranges+range_count].prefix, start);
+		if (strchr(token, ']'))
+		{
+			next_token = strtok_r(NULL, "[", &buffer_ptr);
+			strclean(token, ']');
+		}
+		else next_token = NULL;
+
+		if (strchr(token, '-'))
+		{
+			island->ranges[island->num_ranges+range_count].start = atoi(strtok_r(token, "-", &second_ptr));
+			island->ranges[island->num_ranges+range_count].end = atoi(strtok_r(NULL, "-", &second_ptr));
+			range_count++;
+		}
+		else
+		{
+			island->ranges[island->num_ranges+range_count].start = island->ranges[island->num_ranges+range_count].end =
+					atoi(token);
+			range_count++;
+		}
+		token = strtok_r(NULL, ",", &buffer_ptr);
+		if (next_token != NULL) start = next_token;
+	}
+	island->num_ranges += range_count;
+}
+
 static void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 {
 	memset(conf, 0, sizeof(cluster_conf_t));

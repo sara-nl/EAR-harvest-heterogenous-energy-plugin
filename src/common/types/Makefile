@@ -2,8 +2,6 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-CONF_OBJS = all.components configuration/cluster_conf.o
-
 OBJS = application.o \
        coefficient.o \
        job.o \
@@ -22,13 +20,11 @@ all: all.components $(OBJS)
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-types.o: $(OBJS) $(CONF_OBJS)
-
 ######## OPTIONS
 
-install:
+install: install.components
 
-clean:
+clean: clean.components
 	rm -f *.o *.a *.so
 
 depend: depend.components

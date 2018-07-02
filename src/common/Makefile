@@ -5,7 +5,7 @@ CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 OBJS = environment.o \
        environment_common.o \
        file_lock.o \
-       database.a \
+#       database.a \
        types.a
 
 database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
