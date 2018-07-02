@@ -31,93 +31,6 @@
 
 static char *__NAME__ = "CONFIGURATION";
 
-static void cae_conf(cluster_conf_t *my_conf)
-{
-	int i;
-	char *db=NULL,*coeff=NULL,*tmp=NULL,*verbose=NULL,*etc=NULL;
-	db=getenv("EAR_DB_PATHNAME");
-	if (db==NULL){
-		VERBOSE_N(0,"EAR_DB_PATHNAME not defined\n");
-		//db="/home/xlalonso/";
-		db="/home/xjcorbalan/my_ear/dbs/db.";
-	}
-	coeff=getenv("EAR_COEFF_DB_PATHNAME");
-	if (coeff==NULL){
-		VERBOSE_N(0,"EAR_COEFF_DB_PATHNAME not defined\n");
-		//coeff="/home/xlalonso/";
-		coeff="/home/xjcorbalan/my_ear/coeffs/coeff.";
-	}
-	tmp=getenv("EAR_TMP");
-	if (tmp==NULL){
-		VERBOSE_N(0,"EAR_TMP not defined\n");
-		tmp="/var/ear";
-	}
-	etc=getenv("ETC");
-	if (etc==NULL){
-		VERBOSE_N(0,"ETC not defined\n");
-		etc="/etc";
-	}
-	verbose=getenv("EAR_VERBOSE");
-	if (verbose==NULL){
-		VERBOSE_N(0,"EAR_VERBOSE not defined\n");
-		verbose="1";
-	}
-
-	if ((db==NULL) || (coeff==NULL) || (tmp==NULL) || (verbose==NULL) || (etc==NULL)) return;
-
-	// PATHS
-	strcpy(my_conf->DB_pathname,db);
-	strcpy(my_conf->Coefficients_pathname,coeff);
-	strcpy(my_conf->tmp_dir,tmp);
-	my_conf->verbose=atoi(verbose);
-	// POLICIES
-	my_conf->num_policies=3;
-	my_conf->power_policies=malloc(sizeof(policy_conf_t)*my_conf->num_policies);
-	// MIN_ENERGY_TO_SOLUTION
-	my_conf->power_policies[0].policy=0;
-	my_conf->power_policies[0].th=0.1;
-	my_conf->power_policies[0].p_state=DEFAULT_MAX_P_STATE;
-	// MIN_TIME_TO_SOLUTION
-	my_conf->power_policies[1].policy=1;
-	my_conf->power_policies[1].th=PERFORMANCE_GAIN;
-	my_conf->power_policies[1].p_state=EAR_MIN_P_STATE;
-	// MONITORING_ONLY
-	my_conf->power_policies[2].policy=2;
-	my_conf->power_policies[2].th=0;
-	my_conf->power_policies[2].p_state=EAR_MIN_P_STATE;
-	my_conf->default_policy=1;
-	// PRIVILEGED USERS
-	my_conf->num_priv_users=0;
-	my_conf->priv_users=NULL;
-	my_conf->num_special=0;
-	my_conf->special=NULL;
-
-	// NODES
-	my_conf->num_nodes=1;
-	my_conf->nodes=malloc(sizeof(node_conf_t)*my_conf->num_nodes);
-
-	gethostname(my_conf->nodes[0].name,sizeof(my_conf->nodes[0].name));
-	my_conf->nodes[0].cpus=16;
-	my_conf->nodes[0].island=0;
-	my_conf->nodes[0].num_special_node_conf=1;
-	my_conf->nodes[0].special_node_conf=malloc(sizeof(policy_conf_t)*my_conf->nodes[0].num_special_node_conf);
-	my_conf->nodes[0].special_node_conf[0].policy=1;
-	my_conf->nodes[0].special_node_conf[0].th=PERFORMANCE_GAIN;
-	my_conf->nodes[0].special_node_conf[0].p_state=EAR_MIN_P_STATE+1;
-
-	// ISLANDS
-
-	//EARD
-	my_conf->eard.verbose=1;
-	my_conf->eard.period_powermon=POWERMON_FREQ;
-	my_conf->eard.max_pstate=1;
-	my_conf->eard.turbo=0;
-	my_conf->eard.port=DAEMON_PORT_NUMBER;
-
-	//EARGM
-	//EARDB
-}
-
 static void insert_th_policy(cluster_conf_t *conf, char *token, int policy)
 {
 	int i;
@@ -769,6 +682,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 
 			int i = 0;
+            int idx = -1;
 			int island = 0;
 			int num_nodes = 0;
 			int num_cpus = 0;
@@ -777,8 +691,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 			if (conf->num_islands == 0)
 				conf->islands = NULL;
-			conf->islands = realloc(conf->islands, sizeof(node_island_t)*(conf->num_islands+1));
-			memset(&conf->islands[conf->num_islands], 0, sizeof(node_island_t));
 
 			//token = strtok_r(line, " ", &primary_ptr);
 			token = strtok(line, "=");
@@ -788,22 +700,39 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				if (!strcmp(token, "ISLAND"))
 				{
 					token = strtok(NULL, " ");
-					conf->islands[conf->num_islands].id = atoi(token);
+                    int aux = atoi(token);
+                    idx = -1;
+                    for (i = 0; i < conf->num_islands; i++)
+                        if (conf->islands[i].id == aux) idx = i;
+
+                    if (idx < 0)
+                    {
+			            conf->islands = realloc(conf->islands, sizeof(node_island_t)*(conf->num_islands+1));
+            			memset(&conf->islands[conf->num_islands], 0, sizeof(node_island_t));
+	    				conf->islands[conf->num_islands].id = atoi(token);
+                    }
 				}
 				else if (!strcmp(token, "DATABASECACHEIP"))
 				{
 					token = strtok(NULL, " ");
 					strclean(token, '\n');
-					strcpy(conf->islands[conf->num_islands].db_ip, token);
+                    if (idx < 0)
+    					strcpy(conf->islands[conf->num_islands].db_ip, token);
+                    else
+                        strcpy(conf->islands[idx].db_ip, token);
 				}
 				else if (!strcmp(token, "NODES"))
 				{
 					token = strtok(NULL, " ");
-					generate_node_ranges(&conf->islands[conf->num_islands], token);
+                    if (idx < 0)
+					    generate_node_ranges(&conf->islands[conf->num_islands], token);
+                    else
+                        generate_node_ranges(&conf->islands[idx], token);
 				}
 				token = strtok(NULL, "=");
 			}
-			conf->num_islands++;
+            if (idx < 0)
+    			conf->num_islands++;
 		}
 
 	}
@@ -812,9 +741,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 {
-#ifdef __OLD__CONF__
-	cae_conf(my_conf);
-#else
 	FILE *conf_file = fopen(conf_path, "r");
 	if (conf_file == NULL)
 	{
@@ -824,7 +750,6 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	get_cluster_config(conf_file, my_conf);
 	fclose(conf_file);
 	//print_cluster_conf(my_conf);
-#endif
 	return EAR_SUCCESS;
 }
 
