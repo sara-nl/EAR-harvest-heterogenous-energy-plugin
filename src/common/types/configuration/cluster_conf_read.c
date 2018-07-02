@@ -255,7 +255,7 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 	island->num_ranges += range_count;
 }
 
-static void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
+void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 {
 	memset(conf, 0, sizeof(cluster_conf_t));
 	char line[256];
@@ -387,16 +387,84 @@ static void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}
 		else if (!strcmp(token, "ENERGYTAG"))
 		{
-			token = strtok(NULL, "=");
-			token = strtok(token, ",");
-			conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t)*(conf->num_tags+1));
-			strcpy(conf->e_tags[conf->num_tags].tag, token);
-			token = strtok(NULL, ",");
-			conf->e_tags[conf->num_tags].p_state = atoi(token);
-			conf->num_tags++;
-		}
+			// token = strtok(NULL, "=");
+			// token = strtok(token, ",");
+			// conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t)*(conf->num_tags+1));
+			// strcpy(conf->e_tags[conf->num_tags].tag, token);
+			// token = strtok(NULL, ",");
+			// conf->e_tags[conf->num_tags].p_state = atoi(token);
+			// conf->num_tags++;
 
-			//HARDWARE NODE CONFIG
+			//fully restore the line as we need 2 buffer pointers for this task
+			line[strlen(line)] = '=';
+			char *primary_ptrfree_cluster_conf
+			char *secondary_ptr;
+			token = strtok_r(line, " ", &primary_ptr);
+			while (token != NULL)
+			{
+				token = strtok_r(token, "=", &secondary_ptr);
+				strtoup(token);
+
+				//this must always be the first one
+				if (!strcmp(token, "ENERGYTAG"))
+				{
+					conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_tags+1));
+					token = strtok_r(NULL, "=", &secondary_ptr);
+					memset(&conf->e_tags[conf->num_tags], 0, sizeof(energy_tag_t));
+					strcpy(conf->e_tags[conf->num_tags].tag, token);
+					conf->e_tags[conf->num_tags].users = NULL;
+					conf->e_tags[conf->num_tags].groups = NULL;
+					conf->e_tags[conf->num_tags].accounts = NULL;
+					conf->num_tags++;
+				}
+				else if (!strcmp(token, "FREQ"))
+				{
+					token = strtok_r(NULL, "=", &secondary_ptr);
+					conf->e_tags[conf->num_tags-1].p_state = atoi(token);
+				}
+				else if (!strcmp(token, "USERS"))
+				{
+					token = strtok_r(NULL, "=", &secondary_ptr);
+					token = strtok_r(token, ",", &secondary_ptr);
+					while (token != NULL)
+					{
+						conf->e_tags[conf->num_tags-1].users = realloc(conf->e_tags[conf->num_tags-1].users,
+																	   sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_users+1));
+						conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users] = malloc(strlen(token)+1);
+						strcpy(conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users], token);
+						conf->e_tags[conf->num_tags-1].num_users++;
+					}
+				}
+				else if (!strcmp(token, "GROUPS"))
+				{
+					token = strtok_r(NULL, "=", &secondary_ptr);
+					token = strtok_r(token, ",", &secondary_ptr);
+					while (token != NULL)
+					{
+						conf->e_tags[conf->num_tags-1].groups = realloc(conf->e_tags[conf->num_tags-1].groups,
+																		sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_groups+1));
+						conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups] = malloc(strlen(token)+1);
+						strcpy(conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups], token);
+						conf->e_tags[conf->num_tags-1].num_groups++;
+					}
+				}
+				else if (!strcmp(token, "ACCOUNTS"))
+				{
+					token = strtok_r(NULL, "=", &secondary_ptr);
+					token = strtok_r(token, ",", &secondary_ptr);
+					while (token != NULL)
+					{
+						conf->e_tags[conf->num_tags-1].accounts = realloc(conf->e_tags[conf->num_tags-1].accounts,
+																		  sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_accounts+1));
+						conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts] = malloc(strlen(token)+1);
+						strcpy(conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts], token);
+						conf->e_tags[conf->num_tags-1].num_accounts++;
+					}
+				}
+				token = strtok_r(NULL, " ", &primary_ptr);
+			}
+		}
+		//HARDWARE NODE CONFIG
 		else if (!strcmp(token, "NODENAME"))
 		{
 			int i = 0;
@@ -784,12 +852,28 @@ void free_cluster_conf(cluster_conf_t *conf)
 
 	free(conf->power_policies);
 
-	free(conf->e_tags);
-
 	for (i = 0; i < conf->num_islands; i++)
 		free(conf->islands[i].ranges);
 
 	free(conf->islands);
 
-	memset(conf, 0, sizeof(cluster_conf_t));
+	int j;
+	for (i = 0; i < conf->num_tags; i++)
+	{
+		for (j = 0; j < conf->e_tags[i].num_users; j++)
+			free(conf->e_tags[i].users[j]);
+
+		for (j = 0; j < conf->e_tags[i].num_groups; j++)
+			free(conf->e_tags[i].groups[j]);
+
+		for (j = 0; j < conf->e_tags[i].num_accounts; j++)
+			free(conf->e_tags[i].accounts[j]);
+
+		free(conf->e_tags[i].users);
+		free(conf->e_tags[i].groups);
+		free(conf->e_tags[i].accounts);
+	}
+	free(conf->e_tags);
+
+	memset(conf, 0, sizeof(cluster_conf_t));	
 }

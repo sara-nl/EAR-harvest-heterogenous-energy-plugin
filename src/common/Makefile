@@ -2,16 +2,20 @@ CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 
 ######## FILES
 
-OBJS = environment.o \
+OBJS = string_enhanced.o \
+       math_operations.o \
+       environment.o \
        environment_common.o \
        file_lock.o \
-#       database.a \
+       database.a \
        types.a
 
 database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
 
-types_OBJS = $(patsubst %.c, %.o, $(wildcard ./types/*.c)) \
-			 string_enhanced.o \
+types_SRCS = $(shell find ./types/ -type f -name '*.c' -o -name '*.h')
+
+types_OBJS = $(shell find ./types/ -type f -name '*.o') \
+             string_enhanced.o \
              math_operations.o
 
 ######## RULES
@@ -36,8 +40,8 @@ math_operations.o: math_operations.c math_operations.h
 database.a: $(database_OBJS)
 	$(AR) rvs database.a $(database_OBJS)
 
-types.a: $(types_OBJS)
-	$(AR) rvs types.a $(shell find ./types/ -type f -name '*.o')
+types.a: $(types_SRCS)
+	$(AR) rvs types.a $(types_OBJS)
 
 ######## OPTIONS
 
