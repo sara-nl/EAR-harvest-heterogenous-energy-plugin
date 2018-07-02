@@ -397,7 +397,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 			//fully restore the line as we need 2 buffer pointers for this task
 			line[strlen(line)] = '=';
-			char *primary_ptrfree_cluster_conf
+			char *primary_ptr;
 			char *secondary_ptr;
 			token = strtok_r(line, " ", &primary_ptr);
 			while (token != NULL)
@@ -464,7 +464,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				token = strtok_r(NULL, " ", &primary_ptr);
 			}
 		}
-		//HARDWARE NODE CONFIG
+
+			//HARDWARE NODE CONFIG
 		else if (!strcmp(token, "NODENAME"))
 		{
 			int i = 0;
@@ -802,7 +803,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			}
 			conf->num_islands++;
 		}
+
 	}
+
 }
 
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
@@ -875,5 +878,5 @@ void free_cluster_conf(cluster_conf_t *conf)
 	}
 	free(conf->e_tags);
 
-	memset(conf, 0, sizeof(cluster_conf_t));	
+	memset(conf, 0, sizeof(cluster_conf_t));
 }
