@@ -45,7 +45,7 @@
 #include <common/ear_verbose.h>
 #include <global_manager/eargm_server_api.h>
 #include <daemon/eard_rapi.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <common/types/gm_warning.h>
 #include <common/database/db_helper.h>
 

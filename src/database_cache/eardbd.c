@@ -42,9 +42,9 @@
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>
 
+#include <common/types/configuration/cluster_conf.h>
 #include <common/types/periodic_aggregation.h>
 #include <common/types/periodic_metric.h>
-#include <common/types/cluster_conf.c>
 #include <common/types/application.h>
 #include <common/types/loop.h>
 #include <common/types/log.h>

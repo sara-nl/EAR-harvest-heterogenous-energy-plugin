@@ -38,7 +38,7 @@
 #if DB_MYSQL
 #include <mysql/mysql.h>
 #include <common/states.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <common/database/mysql_io_functions.h>
 cluster_conf_t my_conf;
 int EAR_VERBOSE_LEVEL=0;

@@ -55,6 +55,19 @@ void copy_application(application_t *destiny, application_t *source)
 	memcpy(destiny, source, sizeof(application_t));
 }
 
+static int print_application_fd(int fd, application_t *app, int new_line)
+{
+	print_job_fd(fd, &app->job);
+	dprintf(fd, ";");
+	print_signature_fd(fd, &app->signature);
+
+	if (new_line) {
+		dprintf(fd, "\n");
+	}
+
+	return EAR_SUCCESS;
+}
+
 int append_application_text_file(char *path, application_t *app)
 {
     //lacking: NODENAME(node_id in loop_t), not linked to any loop
@@ -143,20 +156,6 @@ void report_mpi_application_data(application_t *app)
                                                                 app->signature.PCK_power);
     }
     fprintf(stderr,"-----------------------------------------------------------------------------------------------\n");
-}
-
-
-int print_application_fd(int fd, application_t *app, int new_line)
-{
-    print_job_fd(fd, &app->job);
-    dprintf(fd, ";"); 
-    print_signature_fd(fd, &app->signature);
-
-	if (new_line) {
-		dprintf(fd, "\n");
-	}
-
-	return EAR_SUCCESS;
 }
 
 int print_application(application_t *app)

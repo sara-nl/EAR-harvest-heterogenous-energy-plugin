@@ -2,7 +2,9 @@ CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS)
 
 ######## FILES
 
-OBJS = environment.o \
+OBJS = string_enhanced.o \
+       math_operations.o \
+       environment.o \
        environment_common.o \
        file_lock.o \
        database.a \
@@ -10,13 +12,15 @@ OBJS = environment.o \
 
 database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
 
-types_OBJS = $(patsubst %.c, %.o, $(wildcard ./types/*.c)) \
-			 string_enhanced.o \
+types_SRCS = $(shell find ./types/ -type f -name '*.c' -o -name '*.h')
+
+types_OBJS = $(shell find ./types/ -type f -name '*.o') \
+             string_enhanced.o \
              math_operations.o
 
 ######## RULES
 
-all: all.components $(OBJS) all.others
+all: all.components $(OBJS)
 
 file_lock.o: file_lock.c file_lock.h
 	$(CC) $(CFLAGS) -c file_lock.c
@@ -36,7 +40,7 @@ math_operations.o: math_operations.c math_operations.h
 database.a: $(database_OBJS)
 	$(AR) rvs database.a $(database_OBJS)
 
-types.a: $(types_OBJS)
+types.a: $(types_SRCS)
 	$(AR) rvs types.a $(types_OBJS)
 
 ######## OPTIONS
@@ -55,6 +59,7 @@ depend-clean: depend-clean.components depend-clean.others
 
 %.components:
 	@ $(MAKE) -C 'types' $* || exit
+	@ $(MAKE) -C 'database' $* || exit
 
 %.others:
 	@ $(MAKE) -C 'database' $* || exit
