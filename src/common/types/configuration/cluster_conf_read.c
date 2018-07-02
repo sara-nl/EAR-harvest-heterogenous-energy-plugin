@@ -29,6 +29,8 @@
 
 #include <common/types/configuration/cluster_conf.h>
 
+static char *__NAME__ = "CONFIGURATION";
+
 static void cae_conf(cluster_conf_t *my_conf)
 {
 	int i;

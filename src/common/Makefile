@@ -7,8 +7,8 @@ OBJS = string_enhanced.o \
        environment.o \
        environment_common.o \
        file_lock.o \
-       database.a \
        types.a
+       database.a \
 
 database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
 
@@ -20,7 +20,7 @@ types_OBJS = $(shell find ./types/ -type f -name '*.o') \
 
 ######## RULES
 
-all: all.components $(OBJS) all.others
+all: all.components $(OBJS)
 
 file_lock.o: file_lock.c file_lock.h
 	$(CC) $(CFLAGS) -c file_lock.c
@@ -59,6 +59,7 @@ depend-clean: depend-clean.components depend-clean.others
 
 %.components:
 	@ $(MAKE) -C 'types' $* || exit
+	@ $(MAKE) -C 'database' $* || exit
 
 %.others:
 	@ $(MAKE) -C 'database' $* || exit

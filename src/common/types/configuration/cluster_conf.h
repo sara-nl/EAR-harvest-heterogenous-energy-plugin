@@ -48,8 +48,6 @@
 #define USER			64
 #define ACC				64
 
-static const char *__NAME__ = "configuration";
-
 /*
  *
  * Types
