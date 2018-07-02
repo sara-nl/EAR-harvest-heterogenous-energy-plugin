@@ -7,11 +7,13 @@ OBJS = application.o \
        job.o \
        log.o \
        loop.o \
+       periodic_aggregation.o \
        periodic_metric.o \
        power_signature.o \
        projection.o \
        signature.o \
-       gm_warning.o
+       gm_warning.o \
+       services.o
 
 ######## RULES
 
