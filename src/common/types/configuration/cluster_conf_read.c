@@ -601,6 +601,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->db_manager.udp_port = atoi(token);
 		}
+        else if (!strcmp(token, "DATABASECACHEMEMORYSIZE"))
+        {
+            token = strtok(NULL, "=");
+            conf->db_manager.udp_port = atoi(token);
+        }
 
 			//GLOBAL MANAGER
 		else if (!strcmp(token, "GLOBALMANAGERVERBOSE"))
@@ -721,6 +726,16 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                     else
                         strcpy(conf->islands[idx].db_ip, token);
 				}
+                else if (!strcmp(token, "DATABASECACHEBACKUPIP"))
+                {
+					token = strtok(NULL, " ");
+					strclean(token, '\n');
+                    if (idx < 0)
+    					strcpy(conf->islands[conf->num_islands].backup_ip, token);
+                    else
+                        strcpy(conf->islands[idx].backup_ip, token);
+
+                }
 				else if (!strcmp(token, "NODES"))
 				{
 					token = strtok(NULL, " ");

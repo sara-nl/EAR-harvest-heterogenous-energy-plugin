@@ -102,6 +102,7 @@ typedef struct eardb_conf
 	uint aggr_time;
 	uint tcp_port;
 	uint udp_port;
+    uint mem_size;
 } eardb_conf_t;
 
 typedef struct policy_conf
@@ -167,6 +168,7 @@ typedef struct node_island
 	uint num_ranges;
 	node_range_t *ranges;
 	char db_ip[GENERIC_NAME];
+	char backup_ip[GENERIC_NAME];
 } node_island_t;
 
 typedef struct cluster_conf
