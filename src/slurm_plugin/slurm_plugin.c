@@ -53,7 +53,6 @@
 int EAR_VERBOSE_LEVEL = 0;
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
-static pid_t daemon_pid = -1;
 int verbosity = -1;
 
 char buffer1[PATH_MAX];
