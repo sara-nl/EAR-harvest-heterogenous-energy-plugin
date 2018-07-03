@@ -44,4 +44,5 @@ void main(int argc,char *argv[])
 	}
 	read_cluster_conf(ear_path,&my_cluster);
 	print_cluster_conf(&my_cluster);
+    free_cluster_conf(&my_cluster);
 }
