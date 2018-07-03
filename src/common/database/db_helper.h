@@ -60,6 +60,8 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets);
 
 int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events);
 
+int db_batch_insert_applications(application_t *applications, int num_apps);
+
 /** Returns the accumulated energy (units depend on divisor, divisor=1 means mJ) for a given period */
 ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor);
 

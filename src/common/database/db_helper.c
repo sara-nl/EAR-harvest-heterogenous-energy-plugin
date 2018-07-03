@@ -73,7 +73,42 @@ int db_insert_application(application_t *application)
 
     if (mysql_insert_application(connection, application) < 0)
     {
-        VERBOSE_N(0, "ERROR while writing signature to database.");
+        VERBOSE_N(0, "ERROR while writing application to database.");
+        return EAR_ERROR;
+    }
+
+    mysql_close(connection);
+    
+    return EAR_SUCCESS;
+
+}
+
+int db_batch_insert_applications(application_t *applications, int num_apps)
+{
+        MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        VERBOSE_N(0, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+    if (mysql_batch_insert_applications(connection, applications, num_apps) < 0)
+    {
+        VERBOSE_N(0, "ERROR while batch writing applications to database.");
         return EAR_ERROR;
     }
 
