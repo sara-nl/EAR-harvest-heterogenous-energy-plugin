@@ -604,7 +604,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
         else if (!strcmp(token, "DATABASECACHEMEMORYSIZE"))
         {
             token = strtok(NULL, "=");
-            conf->db_manager.udp_port = atoi(token);
+            conf->db_manager.mem_size = atoi(token);
         }
 
 			//GLOBAL MANAGER
