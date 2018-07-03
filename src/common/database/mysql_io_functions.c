@@ -214,7 +214,7 @@ int mysql_batch_insert_application(MYSQL *connection, application_t *app, int nu
     int *sigs_ids = calloc(num_apps, sizeof(int));
     
     //inserting all powersignatures (always present)
-    pow_sig_id = mysql_batch_insert_power_signatures(connection, &app, num_apps);
+    pow_sig_id = mysql_batch_insert_power_signatures(connection, app, num_apps);
     
     if (pow_sig_id < 0)
         fprintf(stderr,"Unknown error when writing power_signature to database.\n");
@@ -227,7 +227,7 @@ int mysql_batch_insert_application(MYSQL *connection, application_t *app, int nu
     //inserting signatures (if the application is mpi)
     if (is_mpi)
     {
-        sig_id = mysql_batch_insert_signatures(connection, &app, is_learning, num_apps);
+        sig_id = mysql_batch_insert_signatures(connection, app, is_learning, num_apps);
 
         if (sig_id < 0)
             fprintf(stderr,"Unknown error when writing signature to database.\n");

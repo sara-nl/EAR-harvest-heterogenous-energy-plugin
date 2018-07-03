@@ -289,7 +289,7 @@ int db_insert_ear_event(ear_event_t *ear_ev)
     return EAR_SUCCESS;
 }
 
-int db_batch_insert_ear_event(ear_event_t **ear_evs, int num_events)
+int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 {
     MYSQL *connection = mysql_init(NULL);
 
@@ -312,7 +312,7 @@ int db_batch_insert_ear_event(ear_event_t **ear_evs, int num_events)
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_ear_event(connection, ear_evs, num_events) < 0)
+    if (mysql_batch_insert_ear_events(connection, ear_evs, num_events) < 0)
     {
         VERBOSE_N(0, "ERROR while batch writing ear_event to database.");
         return EAR_ERROR;
