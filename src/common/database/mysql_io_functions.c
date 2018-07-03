@@ -182,7 +182,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     return EAR_SUCCESS;
 }
 
-int mysql_batch_insert_application(MYSQL *connection, application_t *app, int num_apps)
+int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int num_apps)
 {
     char is_learning = app->is_learning;
     char is_mpi = app->is_mpi;
