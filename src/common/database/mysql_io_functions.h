@@ -39,6 +39,16 @@
 #include <common/types/power_signature.h>
 #include <common/types/periodic_aggregation.h>
 
+#define EAR_TYPE_APPLICATION    1
+#define EAR_TYPE_LOOP           2
+
+typedef struct
+{
+    char type;
+    application_t *app;
+    loop_t *loop;
+} signature_container_t;
+
 /** Given a MYSQL connection and an application, inserts said application into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
@@ -85,7 +95,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
 /** Given a MYSQL connection and an array of applications, inserts said application's
 *   signatures into the database. Returns the first signature's database id on 
 *   success, and either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_batch_insert_signatures(MYSQL *connection, application_t *sig, char is_learning, int num_sigs);
+int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont, char is_learning, int num_sigs);
 
 /** Given a MYSQL connection and a valid MYSQL query, stores in sigs the 
 *   signatures found in the database corresponding to the query. Returns the 
