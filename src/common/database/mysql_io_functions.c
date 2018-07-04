@@ -227,7 +227,10 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     //inserting signatures (if the application is mpi)
     if (is_mpi)
     {
-        sig_id = mysql_batch_insert_signatures(connection, app, is_learning, num_apps);
+        signature_container_t cont;
+        cont.type == EAR_TYPE_APPLICATION;
+        cont.app = app;
+        sig_id = mysql_batch_insert_signatures(connection, cont, is_learning, num_apps);
 
         if (sig_id < 0)
             fprintf(stderr,"Unknown error when writing signature to database.\n");
@@ -762,9 +765,10 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
 }
 
 //returns id of the first inserted signature
-int mysql_batch_insert_signatures(MYSQL *connection, application_t *sig, char is_learning, int num_sigs)
+int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont, char is_learning, int num_sigs)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
+
     if (!statement) return EAR_MYSQL_ERROR;
     char *params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     char *query;
@@ -811,28 +815,54 @@ int mysql_batch_insert_signatures(MYSQL *connection, application_t *sig, char is
 
 
         //storage variables assignation
-        bind[0+offset].buffer = (char *)&sig[i].signature.DC_power;
-        bind[1+offset].buffer = (char *)&sig[i].signature.DRAM_power;
-        bind[2+offset].buffer = (char *)&sig[i].signature.PCK_power;
-        bind[3+offset].buffer = (char *)&sig[i].signature.EDP;
-        bind[4+offset].buffer = (char *)&sig[i].signature.GBS;
-        bind[5+offset].buffer = (char *)&sig[i].signature.TPI;
-        bind[6+offset].buffer = (char *)&sig[i].signature.CPI;
-        bind[7+offset].buffer = (char *)&sig[i].signature.Gflops;
-        bind[8+offset].buffer = (char *)&sig[i].signature.time;
-        bind[9+offset].buffer = (char *)&sig[i].signature.FLOPS[0];
-        bind[10+offset].buffer = (char *)&sig[i].signature.FLOPS[1];
-        bind[11+offset].buffer = (char *)&sig[i].signature.FLOPS[2];
-        bind[12+offset].buffer = (char *)&sig[i].signature.FLOPS[3];
-        bind[13+offset].buffer = (char *)&sig[i].signature.FLOPS[4];
-        bind[14+offset].buffer = (char *)&sig[i].signature.FLOPS[5];
-        bind[15+offset].buffer = (char *)&sig[i].signature.FLOPS[6];
-        bind[16+offset].buffer = (char *)&sig[i].signature.FLOPS[7];
-        bind[17+offset].buffer = (char *)&sig[i].signature.instructions;
-        bind[18+offset].buffer = (char *)&sig[i].signature.cycles;
-        bind[19+offset].buffer = (char *)&sig[i].signature.avg_f;
-        bind[20+offset].buffer = (char *)&sig[i].signature.def_f;
-
+        if (cont.type == EAR_TYPE_APPLICATION)
+        {
+            bind[0+offset].buffer = (char *)&cont.app[i].signature.DC_power;
+            bind[1+offset].buffer = (char *)&cont.app[i].signature.DRAM_power;
+            bind[2+offset].buffer = (char *)&cont.app[i].signature.PCK_power;
+            bind[3+offset].buffer = (char *)&cont.app[i].signature.EDP;
+            bind[4+offset].buffer = (char *)&cont.app[i].signature.GBS;
+            bind[5+offset].buffer = (char *)&cont.app[i].signature.TPI;
+            bind[6+offset].buffer = (char *)&cont.app[i].signature.CPI;
+            bind[7+offset].buffer = (char *)&cont.app[i].signature.Gflops;
+            bind[8+offset].buffer = (char *)&cont.app[i].signature.time;
+            bind[9+offset].buffer = (char *)&cont.app[i].signature.FLOPS[0];
+            bind[10+offset].buffer = (char *)&cont.app[i].signature.FLOPS[1];
+            bind[11+offset].buffer = (char *)&cont.app[i].signature.FLOPS[2];
+            bind[12+offset].buffer = (char *)&cont.app[i].signature.FLOPS[3];
+            bind[13+offset].buffer = (char *)&cont.app[i].signature.FLOPS[4];
+            bind[14+offset].buffer = (char *)&cont.app[i].signature.FLOPS[5];
+            bind[15+offset].buffer = (char *)&cont.app[i].signature.FLOPS[6];
+            bind[16+offset].buffer = (char *)&cont.app[i].signature.FLOPS[7];
+            bind[17+offset].buffer = (char *)&cont.app[i].signature.instructions;
+            bind[18+offset].buffer = (char *)&cont.app[i].signature.cycles;
+            bind[19+offset].buffer = (char *)&cont.app[i].signature.avg_f;
+            bind[20+offset].buffer = (char *)&cont.app[i].signature.def_f;
+        }
+        else if (cont.type == EAR_TYPE_LOOP)
+        {
+            bind[0+offset].buffer = (char *)&cont.loop[i].signature.DC_power;
+            bind[1+offset].buffer = (char *)&cont.loop[i].signature.DRAM_power;
+            bind[2+offset].buffer = (char *)&cont.loop[i].signature.PCK_power;
+            bind[3+offset].buffer = (char *)&cont.loop[i].signature.EDP;
+            bind[4+offset].buffer = (char *)&cont.loop[i].signature.GBS;
+            bind[5+offset].buffer = (char *)&cont.loop[i].signature.TPI;
+            bind[6+offset].buffer = (char *)&cont.loop[i].signature.CPI;
+            bind[7+offset].buffer = (char *)&cont.loop[i].signature.Gflops;
+            bind[8+offset].buffer = (char *)&cont.loop[i].signature.time;
+            bind[9+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[0];
+            bind[10+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[1];
+            bind[11+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[2];
+            bind[12+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[3];
+            bind[13+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[4];
+            bind[14+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[5];
+            bind[15+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[6];
+            bind[16+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[7];
+            bind[17+offset].buffer = (char *)&cont.loop[i].signature.instructions;
+            bind[18+offset].buffer = (char *)&cont.loop[i].signature.cycles;
+            bind[19+offset].buffer = (char *)&cont.loop[i].signature.avg_f;
+            bind[20+offset].buffer = (char *)&cont.loop[i].signature.def_f;
+        }
     }
 
 
