@@ -133,7 +133,7 @@ typedef struct my_node_conf
 	char db_ip[USER];
 	char *coef_file;
 	uint num_policies;
-	policy_conf_t *policies;
+	policy_conf_t policies[TOTAL_POLICIES];
 }my_node_conf_t;
 
 typedef struct energy_tag
@@ -184,7 +184,7 @@ typedef struct cluster_conf
 	eargm_conf_t 	eargm;
 	// List of policies	
 	uint num_policies;
-	policy_conf_t power_policies[3];
+	policy_conf_t power_policies[TOTAL_POLICIES];
 	uint default_policy;			// selecs one of the power_policies
 	// Lis of autorized users
 	uint num_priv_users;
