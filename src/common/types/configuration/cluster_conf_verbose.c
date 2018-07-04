@@ -65,12 +65,6 @@ static void print_special_app(special_app_t *app)
 			app->user, app->p_state);
 }
 
-static void print_energy_tag(energy_tag_t *tag)
-{
-	fprintf(stderr, "---->tag: %s\tpstate: %u\n",
-			tag->tag, tag->p_state);
-}
-
 static void print_eard_conf(eard_conf_t *conf)
 {
 	fprintf(stderr,"\t eard: verbose %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
@@ -158,7 +152,7 @@ void print_cluster_conf(cluster_conf_t *conf)
 	for (i = 0; i < conf->num_islands; i++)
 		print_islands_conf(&conf->islands[i]);
 	
-	frpintf(stderr, "\nENERGY TAGS\n");
+	fprintf(stderr, "\nENERGY TAGS\n");
 	for (i = 0; i < conf->num_tags; i++)
 		print_energy_tag(&conf->e_tags[i]);
 
