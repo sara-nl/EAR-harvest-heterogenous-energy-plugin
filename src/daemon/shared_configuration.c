@@ -42,7 +42,7 @@
 
 #include <common/ear_verbose.h>
 #include <common/states.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <daemon/shared_configuration.h>
 
 static int fd;

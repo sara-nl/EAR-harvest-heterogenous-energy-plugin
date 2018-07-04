@@ -38,7 +38,7 @@
 #define _SHARED_CONF_H
 
 #include <common/types/generic.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 
 typedef struct settings_conf{
 	ulong 	max_freq;
