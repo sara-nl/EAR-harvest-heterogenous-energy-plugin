@@ -39,32 +39,16 @@
 #include <netdb.h>
 
 #include <database_cache/eardbd_api.h>
-#include <common/types/periodic_metric.h>
-#include <common/types/application.h>
-#include <common/types/loop.h>
-#include <common/types/log.h>
 #include <common/states.h>
 
-char buffer[4096];
-struct addrinfo *srv_info;
+static char buffer_gen[4096];
+static char buffer_pck[MAX_PACKET_SIZE()];
+
+static struct addrinfo *srv_info;
+
 int _protocol = -1;
 int connected = -1;
 int fd_srv    = -1;
-
-#define verbose(...) \
-	fprintf(stdout, "EARDBD_API, "); \
-	fprintf(stdout, __VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define error(...) \
-	fprintf(stdout, "EARDBD_API ERROR, "); \
-	fprintf(stdout, __VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define CONNECTION_TEST() \
-	if (fd_srv == -1 || _protocol == -1 || (_protocol == TCP && connected == -1)) { \
-		return EAR_ERROR; \
-	}
 
 /*
  * Generic functions
@@ -76,7 +60,6 @@ static void print_sockaddr(struct sockaddr *host_addr)
 	void *address;
 	int port;
 
-
 	// IPv4
 	if (host_addr->sa_family == AF_INET)
 	{
@@ -85,7 +68,7 @@ static void print_sockaddr(struct sockaddr *host_addr)
 		port = (int) ntohs(ipv4->sin_port);
 		ip_version = "IPv4";
 	}
-		// IPv6
+	// IPv6
 	else
 	{
 		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
@@ -94,14 +77,14 @@ static void print_sockaddr(struct sockaddr *host_addr)
 	}
 
 	// convert the IP to a string and print it
-	inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
+	inet_ntop(host_addr->sa_family, address, buffer_gen, INET6_ADDRSTRLEN);
 
-	if (buffer[0] != ':') {
-		verbose("%s:%d", buffer, port);
+	if (buffer_gen[0] != ':') {
+		verbose("%s:%d", buffer_gen, port);
 	}
 }
 
-static int _send(void *object, size_t size)
+static int _send(int fd, void *object, size_t size)
 {
 	size_t bytes_left = size;
 	size_t bytes_sent = 0;
@@ -110,11 +93,11 @@ static int _send(void *object, size_t size)
 	while(bytes_sent < size)
 	{
 		if (_protocol == TCP) {
-			verbose("sending by TCP an object of size %lu by socket %d", bytes_left, fd_srv);
-			n = send(fd_srv, object + bytes_sent, bytes_left, 0);
+			verbose("sending by TCP an object of size %lu by socket %d", bytes_left, fd);
+			n = send(fd, object + bytes_sent, bytes_left, 0);
 		} else {
-			verbose("sending UDP an object of size %lu using socket %d", bytes_left, fd_srv);
-			n = sendto(fd_srv, object + bytes_sent, bytes_left, 0, srv_info->ai_addr, srv_info->ai_addrlen);
+			verbose("sending UDP an object of size %lu using socket %d", bytes_left, fd);
+			n = sendto(fd, object + bytes_sent, bytes_left, 0, srv_info->ai_addr, srv_info->ai_addrlen);
 		}
 
 		if (n == -1) {
@@ -204,40 +187,77 @@ static int _connect(char *host, unsigned int port)
 /*
  * API
  */
+#define CONNECTION_TEST(pass_text) \
+	if (fd_srv == -1 || _protocol == -1 || (_protocol == TCP && connected == -1)) { \
+		return EAR_ERROR; \
+	} \
 
-int eardbd_send_application(void *app)
+static size_t prepare_packet(char *buffer, unsigned char type, void *object, size_t object_size)
 {
-	CONNECTION_TEST();
-	verbose("sending application");
-	return _send((application_t *) app, sizeof(application_t));
+	packet_header_t *header = P_HEADER(buffer);
+	void *content = P_CONTENT(buffer);
+
+	header->content_type = type;
+	memcpy (content, object, sizeof(object_size));
+
+	return sizeof(packet_header_t) + object_size;
 }
 
-int eardbd_send_periodic_metric(void *met)
+int eardbd_send_application(application_t *app)
 {
+	unsigned char type = CONTENT_TYPE_APP;
+	size_t size_pck;
+
 	CONNECTION_TEST();
-	verbose("sending application");
-	return _send((periodic_metric_t *) met, sizeof(periodic_metric_t));
+	verbose("sending application %lu", sizeof(application_t));
+
+	size_pck = prepare_packet(buffer_pck, type, (void *) app, sizeof(application_t));
+	return _send(fd_srv, (void *) buffer_pck, size_pck);
 }
 
-int eardbd_send_event(void *ev)
+int eardbd_send_periodic_metric(periodic_metric_t *met)
 {
-    CONNECTION_TEST();
+	unsigned char type = CONTENT_TYPE_PER;
+	size_t size_pck;
+
+	CONNECTION_TEST("sending application");
+
+	size_pck = prepare_packet(buffer_pck, type, (void *) met, sizeof(periodic_metric_t));
+	return _send(fd_srv, (void *) buffer_pck, size_pck);
+}
+
+int eardbd_send_event(ear_event_t *eve)
+{
+	unsigned char type = CONTENT_TYPE_EVE;
+	size_t size_pck;
+
+	CONNECTION_TEST();
     verbose("sending event");
-    return _send((ear_event_t *) ev, sizeof(ear_event_t));
+
+	size_pck = prepare_packet(buffer_pck, type, (void *) eve, sizeof(ear_event_t));
+	return _send(fd_srv, (void *) buffer_pck, size_pck);
 }
 
-int eardbd_send_loop(void *loop)
+int eardbd_send_loop(loop_t *loop)
 {
+	unsigned char type = CONTENT_TYPE_LOO;
+	size_t size_pck;
+
     CONNECTION_TEST();
     verbose("sending loop");
-    return _send((loop_t *) loop, sizeof(loop_t));
+
+	size_pck = prepare_packet(buffer_pck, type, (void *) loop, sizeof(loop_t));
+	return _send(fd_srv, (void *) buffer_pck, size_pck);
 }
 
 int eardbd_ping()
 {
+	char ping[] = "ping";
+
 	CONNECTION_TEST();
 	verbose("sending ping");
-	return _send("EAR", 4);
+
+	return _send(fd_srv, ping, sizeof(ping));
 }
 
 int eardbd_is_connected()
@@ -252,8 +272,10 @@ int eardbd_connect(char *host, unsigned int port, int protocol)
 
 	if (protocol == TCP) {
 		status = _connect(host, port);
+		//status = _connect(host_aux, port);
 	} else if (protocol == UDP) {
 		status = _socket(host, port, UDP);
+		//status = _socket(host_aux, port, UDP);
 	} else {
 		error("unknown protocol");
 		return EAR_ERROR;

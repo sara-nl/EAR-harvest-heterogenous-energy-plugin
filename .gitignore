@@ -60,6 +60,7 @@ tests/check/check.sh
 *eargm_end_job
 *eardbd
 
+*client_api_test
 *compute_coefficients_remote
 *coefficients_quality_control
 *compute_coefficients

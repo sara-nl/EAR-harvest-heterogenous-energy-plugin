@@ -41,13 +41,6 @@
 
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>
-
-#include <common/types/configuration/cluster_conf.h>
-#include <common/types/periodic_aggregation.h>
-#include <common/types/periodic_metric.h>
-#include <common/types/application.h>
-#include <common/types/loop.h>
-#include <common/types/log.h>
 #include <common/states.h>
 
 #define mets_len 4096
@@ -55,40 +48,27 @@
 #define eves_len 4096
 #define apps_len 1024
 
+static char buffer_pck[MAX_PACKET_SIZE()];
+static char buffer_gen[PATH_MAX];
+
 static periodic_aggregation_t aggr;
 static periodic_metric_t mets[mets_len];
 static application_t apps[apps_len];
 static ear_event_t eves[apps_len];
 static loop_t lops[apps_len];
+
 static uint mets_i;
 static uint apps_i;
 static uint eves_i;
 static uint lops_i;
 
-static char buffer[4096];
-static char buffer_aux[64];
-
 int EAR_VERBOSE_LEVEL=1;
 
-#define verbose(...) \
-	update_time_buffer(); \
-	fprintf(stderr, "%s message, ", buffer_aux); \
-	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, "\n");
-
-#define error(...) \
-	update_time_buffer(); \
-	fprintf(stderr, "%s ERROR, ", buffer_aux); \
-	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, "\n"); \
-	exit(1);
-
-static void update_time_buffer()
-{
-	time_t timer = time(NULL);
-	struct tm* tm_info = localtime(&timer);
-	strftime(buffer_aux, 64, "%H:%M:%S (%d-%m-%y)", tm_info);
-}
+/*
+ *
+ * Functions
+ *
+ */
 
 static void sprint_sockaddr(struct sockaddr *host_addr, char *buffer, size_t size)
 {
@@ -122,25 +102,6 @@ static void sprint_sockaddr(struct sockaddr *host_addr, char *buffer, size_t siz
 }
 
 /*
-static void print_addrinfo(struct addrinfo *host_info)
-{
-	struct addrinfo *p;
-
-	for(p = host_info; p != NULL; p = p->ai_next)
-	{
-		sprint_sockaddr(p->ai_addr);
-	}
-
-	struct sockaddr cli_addr;
-	socklen_t cli_size;
-	char address[128];
-	address[0] = '\0';
-	getsockname(fd, &cli_addr, &cli_size);
-	sprint_sockaddr(&cli_addr, address, cli_size);
-}
- */
-
-/*
  * Signal processing
  */
 
@@ -155,7 +116,7 @@ static void db_store_events()
 	}
 
     verbose("Trying to insert in DB %d event samples", eves_i);
-    db_batch_insert_ear_event(eves, eves_i);
+    //db_batch_insert_ear_event(eves, eves_i);
 }
 
 static void db_store_loops()
@@ -175,7 +136,7 @@ static void db_store_periodic_metrics()
 	}
 
 	verbose("Trying to insert in DB %d periodic metric samples", mets_i);
-	db_batch_insert_periodic_metrics(mets, mets_i);
+	//db_batch_insert_periodic_metrics(mets, mets_i);
 }
 
 static void db_store_periodic_aggregation()
@@ -185,7 +146,7 @@ static void db_store_periodic_aggregation()
 	}
 
 	verbose("Trying to insert in DB an aggregation of %d samples", aggr.n_samples);
-	db_insert_periodic_aggregation(&aggr);
+	//db_insert_periodic_aggregation(&aggr);
 }
 
 static void db_store_applications()
@@ -228,15 +189,19 @@ static void process_timeout_data()
 	lops_i = 0;
 }
 
-static void process_incoming_data(int fd, char *buffer, size_t size)
+static void process_incoming_data(int fd, char *buffer)
 {
+	packet_header_t *header;
+	char *content;
 	char *type;
 
-	if (size == sizeof(application_t))
-	{
+	header = (packet_header_t *) buffer;
+	content = &buffer[sizeof(packet_header_t)];
+
+	if (header->content_type == CONTENT_TYPE_APP) {
 		type = "application_t";
 
-		memcpy (&apps[apps_i], buffer, size);
+		memcpy (&apps[apps_i], content, sizeof(application_t));
 		apps_i += 1;
 
 		if (apps_i == apps_len)
@@ -245,11 +210,10 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 			apps_i = 0;
 		}
 	}
-	else if (size == sizeof(periodic_metric_t))
-	{
+	else if (header->content_type == CONTENT_TYPE_PER) {
 		type = "periodic_metric_t";
 
-		memcpy (&mets[mets_i], buffer, size);
+		memcpy (&mets[mets_i], content, sizeof(periodic_metric_t));
 		make_periodic_aggregation(&mets[mets_i]);
 		mets_i += 1;
 
@@ -257,22 +221,20 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 			db_store_periodic_metrics();
 			mets_i = 0;
 		}
-	} else if (size == sizeof(ear_event_t))
-	{
+	} else if (header->content_type == CONTENT_TYPE_EVE) {
 		type = "ear_event_t";
-		
-		memcpy(&eves[eves_i], buffer, size);
+
+		memcpy (&eves[eves_i], content, sizeof(ear_event_t));
 		eves_i += 1;
 
 		if (eves_i == eves_len) {
 			db_store_events();
 			eves_i = 0;
 		}
-	} else if (size = sizeof(loop_t))
-	{
+	} else if (header->content_type == CONTENT_TYPE_LOO) {
 		type = "loop_t";
 
-		memcpy(&lops[lops_i], buffer, size);
+		memcpy (&lops[lops_i], content, sizeof(loop_t));
 		lops_i += 1;
 
 		if (lops_i == eves_len) {
@@ -310,7 +272,7 @@ static int _accept(int fd)
 	return fd_cli;
 }
 
-static ssize_t _receive(int fd)
+static ssize_t _receive(int fd, char *buffer)
 {
 	ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
 
@@ -410,8 +372,6 @@ int main(int argc, char **argv)
 	struct timeval timeout;
 	struct addrinfo *srv_info_tcp;
 	struct addrinfo *srv_info_udp;
-
-	char conf_path[PATH_MAX];
 	cluster_conf_t conf_clus;
 
 	long merge_time;
@@ -440,14 +400,27 @@ int main(int argc, char **argv)
 
 	verbose("reserving %0.2f MBytes for applications", mb_apps);
 	verbose("reserving %0.2f MBytes for power metrics", mb_mets);
+	verbose("reserving %lu bytes for packet buffer", sizeof(buffer_pck));
 
-	// Configuration file
-	if (get_ear_conf_path(conf_path) == EAR_ERROR) {
+	verbose("app %lu", sizeof(application_t));
+	verbose("met %lu", sizeof(periodic_metric_t));
+	verbose("eve %lu", sizeof(ear_event_t));
+	verbose("loo %lu", sizeof(loop_t));
+
+	// Configuration file (TODO)
+
+	#if 0
+	if (get_ear_conf_path(buffer_gen) == EAR_ERROR) {
 		error("Error getting ear.conf path");
 	}
 
-	verbose("Reading '%s' configuration file", conf_path);
-	read_cluster_conf(conf_path, &conf_clus);
+	verbose("Reading '%s' configuration file", buffer_gen);
+	read_cluster_conf(buffer_gen, &conf_clus);
+	#else
+	conf_clus.db_manager.aggr_time = 3000;
+	conf_clus.db_manager.tcp_port = 4711;
+	conf_clus.db_manager.udp_port = 4712;
+	#endif
 
 	// Format
 	merge_time = (long) conf_clus.db_manager.aggr_time;
@@ -495,7 +468,7 @@ int main(int argc, char **argv)
 		fd_srv_max = fd_srv_tcp;
 	}
 
-	verbose("phase 2: listening (processing every %d s)", merge_time);
+	verbose("phase 2: listening (processing every %lu s)", merge_time);
 
 	while(1)
 	{
@@ -533,10 +506,10 @@ int main(int argc, char **argv)
 						}
 					}
 				} else {
-					size = _receive(i);
+					size = _receive(i, buffer_pck);
 
 					if (size >= 0) {
-						process_incoming_data(i, buffer, size);
+						process_incoming_data(i, buffer_pck);
 					} else {
 						FD_CLR(i, &fds_active);
 						close(i);

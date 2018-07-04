@@ -37,10 +37,9 @@ int eardbd_is_connected();
 int eardbd_disconnect();
 
 int eardbd_send_ping();
-int eardbd_send_periodic_metric(void *met);
-int eardbd_send_loop(void *loop);
-int eardbd_send_event(void *ev);
-int eardbd_send_application(void *app);
-
+int eardbd_send_periodic_metric(periodic_metric_t *met);
+int eardbd_send_application(application_t *app);
+int eardbd_send_loop(loop_t *loop);
+int eardbd_send_event(ear_event_t *ev);
 
 #endif //EAR_EARDBD_API_H

@@ -1,12 +1,11 @@
 ######## FILES
 
-COMPONENTS = common
+COMPONENTS = common database_cache
 ifdef CPUF_BASE
 	COMPONENTS += control
 	ifdef PAPI_BASE
 		ifdef IPMI_BASE
 			COMPONENTS += metrics \
-						  database_cache \
                           daemon \
                           global_manager \
                           commands \
@@ -14,16 +13,16 @@ ifdef CPUF_BASE
 		endif
 		COMPONENTS += library
 	endif
-	COMPONENTS += slurm_plugin
 	ifdef GSL_BASE
 		COMPONENTS += tools
 	endif
 endif
-#ifdef SLURM_BASE
-#	COMPONENTS += slurm_plugin
-#endif
+ifdef SLURM_BASE
+	COMPONENTS += slurm_plugin
+endif
 ifdef DB_BASE
-	COMPONENTS += global_manager
+	COMPONENTS += global_manager \
+				  database_cache
 endif
 
 ######## RULES

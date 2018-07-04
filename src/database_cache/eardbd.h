@@ -30,9 +30,51 @@
 #define EAR_EARDBD_H
 
 #include <netdb.h>
+#include <common/types/configuration/cluster_conf.h>
+#include <common/types/periodic_aggregation.h>
+#include <common/types/periodic_metric.h>
+#include <common/types/application.h>
+#include <common/types/loop.h>
+#include <common/types/log.h>
+#include <common/config.h>
 
-#define BACKLOG		10
-#define TCP			SOCK_STREAM
-#define UDP			SOCK_DGRAM
+#define verbose(...) \
+	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
+	fprintf(stderr, "\n");
+
+#define error(...) \
+	fprintf(stderr, "EARDBD ERROR, " __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+	exit(1);
+
+// Base macros
+#define _MAX(X,Y) sizeof(X) > sizeof(Y) ? sizeof(X) : sizeof(Y)
+#define _MMAAXX(W,X,Y,Z) _MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z)
+
+// Compile time macros
+#define MAX_PACKET_SIZE() \
+	_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t) + sizeof(packet_header_t)
+
+#define P_HEADER(buffer) \
+		(packet_header_t *) buffer;
+
+#define P_CONTENT(buffer) \
+		(void *) &buffer[sizeof(packet_header_t)];
+
+// Types
+#define BACKLOG				10
+#define TCP					SOCK_STREAM
+#define UDP					SOCK_DGRAM
+#define CONTENT_TYPE_PIN	0
+#define CONTENT_TYPE_PER	1
+#define CONTENT_TYPE_APP	2
+#define CONTENT_TYPE_LOO	3
+#define CONTENT_TYPE_EVE	4
+
+typedef struct packet_header {
+	//char sender_hostname[SIZE_NAME];
+	unsigned char content_type;
+	//size_t content_size;
+} packet_header_t;
 
 #endif //EAR_EARDBD_H

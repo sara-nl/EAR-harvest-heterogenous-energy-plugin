@@ -7,8 +7,11 @@ OBJS = string_enhanced.o \
        environment.o \
        environment_common.o \
        file_lock.o \
-       database.a \
        types.a
+
+ifdef DB_BASE
+OBJS += database.a
+endif
 
 database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
 
@@ -45,24 +48,23 @@ types.a: $(types_SRCS)
 
 ######## OPTIONS
 
-install: install.components install.others
+install: install.components
 	cp states.h $(DESTDIR)/include/common
 
-clean: clean.components clean.others
+clean: clean.components
 	rm -f *.o *.a *.so
 
-depend: depend.components depend.others
+depend: depend.components
 
-depend-clean: depend-clean.components depend-clean.others
+depend-clean: depend-clean.components
 
 ######## SUBFOLDERS
 
 %.components:
 	@ $(MAKE) -C 'types' $* || exit
+ifdef DB_BASE
 	@ $(MAKE) -C 'database' $* || exit
-
-%.others:
-	@ $(MAKE) -C 'database' $* || exit
+endif
 
 ######## DEPENDENCIES
 
