@@ -44,6 +44,11 @@
 *   EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_application(MYSQL *connection, application_t *app);
 
+/** Given a MYSQL connection and an array of applications, insert said applications
+*   into the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR
+*   or EAR_MYSQL_STMT_ERROR on error. */ 
+int mysql_batch_insert_applications(MYSQL *connection, application_t *apps, int num_apps);
+
 /** Given a MYSQL connection and a valid MYSQL query, stores in apps the 
 *   applications found in the database corresponding to the query. Returns the 
 *   number of applications found on success, and either EAR_MYSQL_ERROR or
@@ -77,6 +82,11 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs);
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning);
 
+/** Given a MYSQL connection and an array of applications, inserts said application's
+*   signatures into the database. Returns the first signature's database id on 
+*   success, and either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_batch_insert_signatures(MYSQL *connection, application_t *sig, char is_learning, int num_sigs);
+
 /** Given a MYSQL connection and a valid MYSQL query, stores in sigs the 
 *   signatures found in the database corresponding to the query. Returns the 
 *   number of signatures found on success, and either EAR_MYSQL_ERROR or
@@ -87,6 +97,11 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
 *   the database. Returns the power_signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig);
+
+/** Given a MYSQL connection and an array of aplications , inserts said application's
+*   power_signatures into the database. Returns the first power_signature's database
+*   id on success, and either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_batch_insert_power_signatures(MYSQL *connection, application_t *pow_sig, int num_sigs);
 
 /** Given a MYSQL connection and a periodic_metric, inserts said periodic_metric into
 *   the database. Returns the periodic_metric's database id on success, and either 
@@ -111,7 +126,7 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
 /** Given a MYSQL connection and num_evs EAR events, inserts said events into
 *   the database. Returns the EAR_SUCCESS success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_batch_insert_ear_event(MYSQL *connection, ear_event_t **ear_ev, int num_evs);
+int mysql_batch_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev, int num_evs);
 
 /** Given a MYSQL connection and an global manager warning, inserts said 
 *   warning into the database. Returns EAR_SUCCESS on success, and either 

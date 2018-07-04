@@ -87,8 +87,8 @@ static void print_eargm_conf(eargm_conf_t *conf)
 
 static void print_db_manager(eardb_conf_t *conf)
 {
-	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tUDP port: %u\n",
-			conf->aggr_time, conf->tcp_port, conf->udp_port);
+	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tUDP port: %u\tCacheSize: %u\n",
+			conf->aggr_time, conf->tcp_port, conf->udp_port, conf->mem_size);
 }
 
 static void print_database_conf(db_conf_t *conf)
@@ -99,7 +99,7 @@ static void print_database_conf(db_conf_t *conf)
 
 static void print_islands_conf(node_island_t *conf)
 {
-	fprintf(stderr, "--->id: %u\tip: %s\n", conf->id, conf->db_ip);
+	fprintf(stderr, "--->id: %u\tip: %s\tbackup: %s\n", conf->id, conf->db_ip, conf->backup_ip);
 	int i;
 	for (i = 0; i < conf->num_ranges; i++)
 	{
