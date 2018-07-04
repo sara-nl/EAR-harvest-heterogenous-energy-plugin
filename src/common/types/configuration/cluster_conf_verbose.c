@@ -107,6 +107,21 @@ static void print_islands_conf(node_island_t *conf)
 	}
 }
 
+static void print_energy_tag(energy_tag_t *etag)
+{
+	fprintf(stderr, "--> Tag: %s\t P_STATE: %u\n", etag->tag, etag->p_state);
+	int i;
+	for (i = 0; i < etag->num_users; i++)
+		fprintf(stderr, "---> user: %s\n", etag->users[i]);
+
+	for (i = 0; i < etag->num_accounts; i++)
+		fprintf(stderr, "---> accounts: %s\n", etag->accounts[i]);
+	
+	for (i = 0; i < etag->num_groups; i++)
+		fprintf(stderr, "---> user: %s\n", etag->groups[i]);
+
+}
+
 void print_cluster_conf(cluster_conf_t *conf)
 {
 	fprintf(stderr, "\nDIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n",
@@ -142,5 +157,10 @@ void print_cluster_conf(cluster_conf_t *conf)
 	fprintf(stderr, "\nISLES\n");
 	for (i = 0; i < conf->num_islands; i++)
 		print_islands_conf(&conf->islands[i]);
+	
+	frpintf(stderr, "\nENERGY TAGS\n");
+	for (i = 0; i < conf->num_tags; i++)
+		print_energy_tag(&conf->e_tags[i]);
+
 	fprintf(stderr, "\n");
 }
