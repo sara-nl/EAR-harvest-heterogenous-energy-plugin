@@ -47,7 +47,7 @@
 #define EAR_MYSQL_ERROR         -14
 #define EAR_MYSQL_STMT_ERROR    -15
 
-typedef state_t int;
+typedef int state_t;
 
 // TODO: this is a config not a state
 

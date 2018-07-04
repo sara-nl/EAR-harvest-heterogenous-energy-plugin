@@ -27,10 +27,13 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <common/sizes.h>
 #include <metrics/common/msr.h>

@@ -6,7 +6,7 @@ OBJS = msr.o
 
 ######## RULES
 
-all: all.components $(OBJS)
+all: $(OBJS)
 
 msr.o: msr.c msr.h
 	$(CC) $(CFLAGS) -c msr.c

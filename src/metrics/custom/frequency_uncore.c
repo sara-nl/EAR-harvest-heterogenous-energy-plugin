@@ -34,22 +34,23 @@
 
 #include <metrics/common/msr.h>
 #include <metrics/custom/hardware_info.h>
+#include <metrics/custom/frequency_uncore.h>
 
 static uint64_t *_clocks_start = NULL;
 static uint64_t *_clocks_stop = NULL;
 static int *_fds = NULL;
 
-static const uint64_t _cmdsta;
-static const uint64_t _cmdsto;
+static uint64_t _cmdsta;
+static uint64_t _cmdsto;
 static off_t _offctl;
 static off_t _offctr;
 
 static uint _cpus_num = 0;
 static uint _init = 0;
 
-static uint _supported_architecture(uint cpu_model)
+static uint _supported_architecture(uint cpus_model)
 {
-	switch (cpu_model)
+	switch (cpus_model)
 	{
 		case CPU_HASWELL_X:
 		case CPU_BROADWELL_X:
@@ -61,7 +62,7 @@ static uint _supported_architecture(uint cpu_model)
 	}
 }
 
-static uint _fill_architecture_bits(uint cpu_model)
+static uint _fill_architecture_bits(uint cpus_model)
 {
 	_cmdsto = U_MSR_PMON_FIXED_CTL_STO;
 	_cmdsta = U_MSR_PMON_FIXED_CTL_STA;
@@ -78,7 +79,7 @@ state_t frequency_uncore_init(uint cpus_num, uint cpus_model)
 		return EAR_BUSY;
 	}
 
-	if (!_supported_architecture(cpu_model)) {
+	if (!_supported_architecture(cpus_model)) {
 		return EAR_ARCH_NOT_SUPPORTED;
 	}
 
@@ -117,6 +118,7 @@ state_t frequency_uncore_dispose()
 
 state_t frequency_uncore_counters_start()
 {
+	state_t r;
 	int i;
 
 	if (!_init) {
@@ -126,11 +128,11 @@ state_t frequency_uncore_counters_start()
 	for (i = 0; i < _cpus_num; ++i)
 	{
 		// Read
-		if ((r = msr_read(&_fds[i]), &_clocks_start, sizeof(uint64_t), _offctr) != EAR_SUCCESS) {
+		if ((r = msr_read(&_fds[i], &_clocks_start, sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
 			return r;
 		}
 		// Start
-		if ((r = msr_write(&_fds[i]), &_cmdsta, sizeof(uint64_t), _offctl) != EAR_SUCCESS) {
+		if ((r = msr_write(&_fds[i], &_cmdsta, sizeof(uint64_t), _offctl)) != EAR_SUCCESS) {
 			return r;
 		}
 	}
@@ -140,6 +142,7 @@ state_t frequency_uncore_counters_start()
 
 state_t frequency_uncore_counters_stop(uint64_t *buffer)
 {
+	state_t r;
 	int i;
 
 	if (!_init) {
@@ -149,11 +152,11 @@ state_t frequency_uncore_counters_stop(uint64_t *buffer)
 	for (i = 0; i < _cpus_num; ++i)
 	{
 		// Stop
-		if ((r = msr_write(&_fds[i]), &_cmdsto, sizeof(uint64_t), _offctl) != EAR_SUCCESS) {
+		if ((r = msr_write(&_fds[i], &_cmdsto, sizeof(uint64_t), _offctl)) != EAR_SUCCESS) {
 			return r;
 		}
 		// Read
-		if ((r = msr_read(&_fds[i]), &_clocks_start, sizeof(uint64_t), _offctr) != EAR_SUCCESS) {
+		if ((r = msr_read(&_fds[i], &_clocks_start, sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
 			return r;
 		}
 
