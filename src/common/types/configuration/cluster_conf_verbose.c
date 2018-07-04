@@ -116,10 +116,16 @@ static void print_energy_tag(energy_tag_t *etag)
 
 }
 
+static void print_earlib_conf(earlib_conf_t *conf)
+{
+    fprintf(stderr, "-->Coefficients path: %s\n-->DynAIS levels: %u\n-->DynAIS window size: %u\n",
+            conf->coefficients_pathname, conf->dynais_levels, conf->dynais_window);
+}
+
 void print_cluster_conf(cluster_conf_t *conf)
 {
-	fprintf(stderr, "\nDIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n",
-			conf->DB_pathname, conf->Coefficients_pathname, conf->tmp_dir, conf->etc_dir);
+	fprintf(stderr, "\nDIRECTORIES\n--->DB_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n",
+			conf->DB_pathname, conf->tmp_dir, conf->etc_dir);
 	fprintf(stderr, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %u\n--->Min_time_perf_acc: %u\n",
 			conf->verbose, conf->default_policy, conf->min_time_perf_acc);
 	int i;
@@ -155,6 +161,9 @@ void print_cluster_conf(cluster_conf_t *conf)
 	fprintf(stderr, "\nENERGY TAGS\n");
 	for (i = 0; i < conf->num_tags; i++)
 		print_energy_tag(&conf->e_tags[i]);
+
+    fprintf(stderr, "\nLIBRARY CONF\n");
+    print_earlib_conf(&conf->earlib);
 
 	fprintf(stderr, "\n");
 }

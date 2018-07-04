@@ -171,10 +171,16 @@ typedef struct node_island
 	char backup_ip[GENERIC_NAME];
 } node_island_t;
 
+typedef struct earlib_conf
+{
+	char coefficients_pathname[GENERIC_NAME];
+    uint dynais_levels;
+    uint dynais_window;
+} earlib_conf_t;
+
 typedef struct cluster_conf
 {
 	// Library & common conf
-	char Coefficients_pathname[GENERIC_NAME];
 	char tmp_dir[GENERIC_NAME];
 	char etc_dir[GENERIC_NAME];
 	char DB_pathname[GENERIC_NAME];
@@ -203,6 +209,7 @@ typedef struct cluster_conf
 	energy_tag_t *e_tags;
 	uint num_islands;
 	node_island_t *islands;
+    earlib_conf_t earlib;
 } cluster_conf_t;
 
 /*

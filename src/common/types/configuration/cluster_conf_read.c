@@ -193,12 +193,25 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
 			strcpy(conf->DB_pathname, token);
 		}
+
+            //EARLIB CONF
 		else if (!strcmp(token, "COEFFICIENTSDIR"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
-			strcpy(conf->Coefficients_pathname, token);
+			strcpy(conf->earlib.coefficients_pathname, token);
 		}
+        else if (!strcmp(token, "DYNAISLEVELS"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.dynais_levels = atoi(token);
+        }
+        else if (!strcmp(token, "DYNAISWINDOWSIZE"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.dynais_window = atoi(token);
+        }
+
 		else if (!strcmp(token, "TMPDIR"))
 		{
 			token = strtok(NULL, "=");
@@ -302,15 +315,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}
 		else if (!strcmp(token, "ENERGYTAG"))
 		{
-			// token = strtok(NULL, "=");
-			// token = strtok(token, ",");
-			// conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t)*(conf->num_tags+1));
-			// strcpy(conf->e_tags[conf->num_tags].tag, token);
-			// token = strtok(NULL, ",");
-			// conf->e_tags[conf->num_tags].p_state = atoi(token);
-			// conf->num_tags++;
-
-			//fully restore the line as we need 2 buffer pointers for this task
 			line[strlen(line)] = '=';
 			char *primary_ptr;
 			char *secondary_ptr;
