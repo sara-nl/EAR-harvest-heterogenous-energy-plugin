@@ -47,6 +47,7 @@
 #define GENERIC_NAME	256
 #define USER			64
 #define ACC				64
+#define TOTAL_POLICIES  3
 
 /*
  *
@@ -110,6 +111,7 @@ typedef struct policy_conf
     uint policy; // from environment.h
     double th;
     uint p_state;
+    char is_available; //default at 0, not available
 } policy_conf_t;
 
 typedef struct node_conf
@@ -134,12 +136,6 @@ typedef struct my_node_conf
 	uint num_policies;
 	policy_conf_t *policies;
 }my_node_conf_t;
-
-typedef struct special_app
-{
-	char user[USER];
-	uint p_state;
-} special_app_t;
 
 typedef struct energy_tag
 {
@@ -189,7 +185,7 @@ typedef struct cluster_conf
 	eargm_conf_t 	eargm;
 	// List of policies	
 	uint num_policies;
-	policy_conf_t *power_policies;
+	policy_conf_t power_policies[3];
 	uint default_policy;			// selecs one of the power_policies
 	// Lis of autorized users
 	uint num_priv_users;
@@ -197,9 +193,7 @@ typedef struct cluster_conf
 	uint num_acc;
 	char **priv_acc;
 	// Special cases
-	uint num_special;
 	uint min_time_perf_acc;
-	special_app_t	*special;
 	// List of nodes
 	uint num_nodes;
 	node_conf_t *nodes;

@@ -59,12 +59,6 @@ void print_policy_conf(policy_conf_t *p)
 	fprintf(stderr,"---> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
 }
 
-static void print_special_app(special_app_t *app)
-{
-	fprintf(stderr, "--->user: %s\tpstate: %u\n",
-			app->user, app->p_state);
-}
-
 static void print_eard_conf(eard_conf_t *conf)
 {
 	fprintf(stderr,"\t eard: verbose %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
@@ -138,9 +132,6 @@ void print_cluster_conf(cluster_conf_t *conf)
 	fprintf(stderr, "\nPRIVILEGED ACCOUNTS\n");
 	for (i = 0; i < conf->num_acc; i++)
 		fprintf(stderr, "--->acc: %s\n", conf->priv_acc[i]);
-	fprintf(stderr, "\nSPECIAL APPLICATIONS\n");
-	for (i = 0; i < conf->num_special; i++)
-		print_special_app(&conf->special[i]);
 	for (i = 0; i < conf->num_tags; i++)
 		print_energy_tag(&conf->e_tags[i]);
 	fprintf(stderr, "\nNODE CONFIGURATIONS\n");

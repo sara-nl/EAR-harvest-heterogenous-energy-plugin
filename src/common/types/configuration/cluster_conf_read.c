@@ -237,12 +237,15 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			{
 				conf->num_policies++;
 				strclean(token, '\n');
-				if (conf->num_policies == 1)
+				/*if (conf->num_policies == 1)
 					conf->power_policies = NULL;
 				//conf->power_policies = malloc(sizeof(policy_conf_t));
 				conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*conf->num_policies);
 
-				conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);
+				conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);*/
+                int i;
+                for (i = 0; TOTAL_POLICIES; i++)
+                    if (conf->power_policies[i].policy == policy_name_to_id(token)) conf->power_policies[i].is_available = 1;
 				token = strtok(NULL, ",");
 			}
 		}
@@ -296,20 +299,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				strclean(token, '\n');
 				conf->priv_acc[conf->num_acc-1] = malloc(strlen(token)+1);
 				strcpy(conf->priv_acc[conf->num_acc-1], token);
-				token = strtok(NULL, ",");
-			}
-		}
-		else if (!strcmp(token, "USERSWITHENERGYTAG"))
-		{
-			//special parsing on this one
-			token = strtok(NULL, "=");
-			token = strtok(token, ",");
-			while (token != NULL)
-			{
-				strclean(token, '\n');
-				conf->num_special++;
-				conf->special = realloc(conf->special, sizeof(special_app_t)*conf->num_special);
-				strcpy(conf->special[conf->num_special - 1].user, token);
 				token = strtok(NULL, ",");
 			}
 		}
@@ -786,8 +775,6 @@ void free_cluster_conf(cluster_conf_t *conf)
 		free(conf->priv_acc[i]);
 	free(conf->priv_acc);
 
-	free(conf->special);
-
 	for (i = 0; i < conf->num_nodes; i++)
 		free(conf->nodes[i].special_node_conf);
 
@@ -801,8 +788,6 @@ void free_cluster_conf(cluster_conf_t *conf)
 	}
 
 	free(conf->nodes);
-
-	free(conf->power_policies);
 
 	for (i = 0; i < conf->num_islands; i++)
 		free(conf->islands[i].ranges);
