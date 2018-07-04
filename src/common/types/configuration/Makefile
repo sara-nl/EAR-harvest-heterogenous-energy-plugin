@@ -4,7 +4,8 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 SRCS = cluster_conf.c \
        cluster_conf_read.c \
-       cluster_conf_verbose.c
+       cluster_conf_verbose.c \
+	   policy_conf.c
 
 ######## RULES
 

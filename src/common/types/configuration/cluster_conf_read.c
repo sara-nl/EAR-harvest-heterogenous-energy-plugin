@@ -117,6 +117,13 @@ static int get_default_pstate(policy_conf_t *pow_pol, int num_pol, int policy)
 	return 0;
 }
 
+static void fill_policies(cluster_conf_t *conf)
+{
+	int i;
+	for (i = 0; i < TOTAL_POLICIES; i++)
+		conf->power_policies[i].policy = i;
+}
+
 static void generate_node_ranges(node_island_t *island, char *nodelist)
 {
 	char *buffer_ptr;
@@ -175,6 +182,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	memset(conf, 0, sizeof(cluster_conf_t));
 	char line[256];
 	char *token;
+
+	//filling the default policies before starting
+	fill_policies(conf);
+	
 	while (fgets(line, 256, conf_file) != NULL)
 	{
 		if (line[0] == '#') continue;
