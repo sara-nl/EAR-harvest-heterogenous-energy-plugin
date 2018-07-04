@@ -44,7 +44,7 @@
 #include <common/states.h>
 #include <common/config.h>
 
-#define GENERIC_NAME	128
+#define GENERIC_NAME	256
 #define USER			64
 #define ACC				64
 
@@ -240,5 +240,8 @@ void print_policy_conf(policy_conf_t *p);
 
 /** Prints in the stdout the whole cluster configuration */
 void print_cluster_conf(cluster_conf_t *conf);
+
+/** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
 
 #endif

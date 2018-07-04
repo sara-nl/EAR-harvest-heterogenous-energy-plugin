@@ -40,9 +40,6 @@
 #define MONITORING_ONLY         2
 
 
-/** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
-
 /** Converts from policy name to policy_id */
 int policy_name_to_id(char *my_policy);
 

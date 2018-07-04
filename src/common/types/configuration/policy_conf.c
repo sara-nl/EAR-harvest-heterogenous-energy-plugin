@@ -41,17 +41,6 @@ int policy_name_to_id(char *my_policy)
 	return EAR_ERROR;
 }
 
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
-{
-	policy_conf_t *my_policy=NULL;
-	uint i;
-	uint nump=0;
-    while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
-    if (nump<my_node->num_policies){
-        my_policy=&my_node->policies[nump];
-    }
-	return my_policy;
-}
 
 /** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
 int policy_id_to_name(int policy_id,char *my_policy)
