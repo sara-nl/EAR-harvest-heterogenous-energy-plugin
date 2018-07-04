@@ -50,7 +50,7 @@
 #endif
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 

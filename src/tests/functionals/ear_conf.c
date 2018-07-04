@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 
 int EAR_VERBOSE_LEVEL=1;
 
@@ -44,4 +44,5 @@ void main(int argc,char *argv[])
 	}
 	read_cluster_conf(ear_path,&my_cluster);
 	print_cluster_conf(&my_cluster);
+    free_cluster_conf(&my_cluster);
 }

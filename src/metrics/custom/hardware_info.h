@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 // Intel models, Based on arch/x86/include/asm/intel-family.h
 // Tip: X means E, EP, ED and Server.
 #define CPU_UNIDENTIFIED        -1

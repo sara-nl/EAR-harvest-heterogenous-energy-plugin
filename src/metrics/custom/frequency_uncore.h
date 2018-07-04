@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,39 +15,36 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef _EAR_TYPES_GENERIC
-#define _EAR_TYPES_GENERIC
+#ifndef EAR_FREQUENCY_UNCORE_H
+#define EAR_FREQUENCY_UNCORE_H
 
-#include <stdint.h>
+#define U_MSR_PMON_FIXED_CTR_OFF	0x000704
+#define U_MSR_PMON_FIXED_CTL_OFF	0x000703
+#define U_MSR_PMON_FIXED_CTL_STA	0x400000
+#define U_MSR_PMON_FIXED_CTL_STO	0x000000
 
-typedef unsigned char uchar;
-typedef unsigned long long ull;
-typedef unsigned long ulong;
-typedef unsigned int uint;
+/* */
+state_t frequency_uncore_init(uint cpus_num, uint cpus_model);
 
-// TODO: this is not generic
-//#include <unistd.h>
-//#include <sys/types.h>
-//#include <linux/limits.h>
+/* */
+state_t frequency_uncore_dispose();
 
-typedef uint8_t job_type;
-typedef ulong   job_id;
+/* */
+state_t frequency_uncore_counters_start();
 
-#define GENERIC_NAME 		256
-#define	UID_NAME			8
-#define POLICY_NAME 		32
-#define ENERGY_TAG_SIZE		32
+/* */
+state_t frequency_uncore_counters_stop(uint64_t *buffer);
 
-#endif
+#endif //EAR_FREQUENCY_UNCORE_H

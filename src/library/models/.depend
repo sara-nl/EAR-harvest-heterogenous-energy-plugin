@@ -17,6 +17,17 @@ min_time.o: min_time.c ../../common/config.h ../../control/frequency.h \
  ../../daemon/eard_api.h ../../common/types/log.h \
  ../../daemon/eard_conf_api.h ../../common/ear_verbose.h \
  ../../common/states.h
+power_capping.o: power_capping.c ../../common/config.h \
+ ../../control/frequency.h ../../library/common/macros.h \
+ ../../library/common/externs.h ../../common/types/application.h \
+ ../../common/types/job.h ../../common/types/generic.h \
+ ../../common/types/signature.h ../../common/types/power_signature.h \
+ ../../common/types/loop.h ../../daemon/shared_configuration.h \
+ ../../library/models/models.h ../../common/environment.h \
+ ../../common/types/coefficient.h ../../common/types/projection.h \
+ ../../library/models/sig_projections.h ../../daemon/eard_api.h \
+ ../../common/types/log.h ../../daemon/eard_conf_api.h \
+ ../../common/ear_verbose.h ../../common/states.h
 models.o: models.c ../../common/config.h ../../control/frequency.h \
  ../../library/common/macros.h ../../library/common/externs.h \
  ../../common/types/application.h ../../common/types/job.h \

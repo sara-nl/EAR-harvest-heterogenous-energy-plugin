@@ -42,6 +42,7 @@
 #include <common/environment_common.h>
 #include <common/types/generic.h>
 #include <common/types/cluster_conf.h>
+#include <common/types/configuration/policy_conf.h>
 
 extern char *conf_ear_tmp;
 char *conf_ear_user_db_pathname=NULL;

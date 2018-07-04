@@ -27,27 +27,38 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _EAR_TYPES_GENERIC
-#define _EAR_TYPES_GENERIC
+#include <common/types/configuration/policy_conf.h>
 
-#include <stdint.h>
 
-typedef unsigned char uchar;
-typedef unsigned long long ull;
-typedef unsigned long ulong;
-typedef unsigned int uint;
+/** Converts from policy name to policy_id */
+int policy_name_to_id(char *my_policy)
+{
+    if (my_policy!=NULL){
+        if ((strcmp(my_policy,"MIN_ENERGY_TO_SOLUTION")==0) || (strcmp(my_policy,"min_energy_to_solution")==0)) return MIN_ENERGY_TO_SOLUTION;
+        else if ((strcmp(my_policy,"MIN_TIME_TO_SOLUTION")==0) || (strcmp(my_policy,"min_time_to_solution")==0)) return MIN_TIME_TO_SOLUTION;
+        else if ((strcmp(my_policy,"MONITORING_ONLY")==0) || (strcmp(my_policy,"monitoring_only")==0)) return MONITORING_ONLY;
+    }
+	return EAR_ERROR;
+}
 
-// TODO: this is not generic
-//#include <unistd.h>
-//#include <sys/types.h>
-//#include <linux/limits.h>
 
-typedef uint8_t job_type;
-typedef ulong   job_id;
+/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
+int policy_id_to_name(int policy_id,char *my_policy)
+{
+	int ret=EAR_SUCCESS;
+	switch(policy_id)
+    {
+        case MIN_ENERGY_TO_SOLUTION:
+            strcpy(my_policy,"MIN_ENERGY_TO_SOLUTION");
+        	break;
+        case MIN_TIME_TO_SOLUTION:
+            strcpy(my_policy,"MIN_TIME_TO_SOLUTION");
+        	break;
+        case MONITORING_ONLY:
+            strcpy(my_policy,"MONITORING_ONLY");
+        	break;
+		default: ret=EAR_ERROR;
+    }
+	return ret;
 
-#define GENERIC_NAME 		256
-#define	UID_NAME			8
-#define POLICY_NAME 		32
-#define ENERGY_TAG_SIZE		32
-
-#endif
+}

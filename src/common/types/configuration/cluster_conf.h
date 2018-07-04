@@ -27,23 +27,33 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef _CLUSTER_CONF_H
 #define _CLUSTER_CONF_H
-#include <stdint.h>
-#include <common/config.h>
-#include <common/environment.h>
-#include <common/types/generic.h>
-#include <common/states.h>
-#include <common/ear_verbose.h>
 
-#define GENERIC_NAME 256
-#define USER		64
-#define ACC			64
+#include <stdio.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
+#include <common/types/configuration/policy_conf.h>
+#include <common/string_enhanced.h>
+#include <common/types/generic.h>
+#include <common/ear_verbose.h>
+#include <common/states.h>
+#include <common/config.h>
+
+#define GENERIC_NAME	256
+#define USER			64
+#define ACC				64
+
 /*
-* EARD configuration
-*/
+ *
+ * Types
+ *
+ */
+
 /*
 * EARDVerbose=
 * EARDPerdiocPowermon=
@@ -51,6 +61,7 @@
 * EARDTurbo=
 * EARDPort=
 */
+
 typedef struct eard_conf
 {
 	uint verbose;			/* default 1 */
@@ -59,10 +70,6 @@ typedef struct eard_conf
 	uint turbo;				/* Fixed to 0 by the moment */
 	uint port;				/* mandatory */
 } eard_conf_t;
-
-/*
-* Global manager configuration
-*/
 
 /*
 * EARGMVerbose=
@@ -95,6 +102,7 @@ typedef struct eardb_conf
 	uint aggr_time;
 	uint tcp_port;
 	uint udp_port;
+    uint mem_size;
 } eardb_conf_t;
 
 typedef struct policy_conf
@@ -102,6 +110,7 @@ typedef struct policy_conf
     uint policy; // from environment.h
     double th;
     uint p_state;
+    char is_available; //default at 0, not available
 } policy_conf_t;
 
 typedef struct node_conf
@@ -126,12 +135,6 @@ typedef struct my_node_conf
 	uint num_policies;
 	policy_conf_t *policies;
 }my_node_conf_t;
-
-typedef struct special_app
-{
-	char user[USER];
-	uint p_state;
-} special_app_t;
 
 typedef struct energy_tag
 {
@@ -160,12 +163,19 @@ typedef struct node_island
 	uint num_ranges;
 	node_range_t *ranges;
 	char db_ip[GENERIC_NAME];
+	char backup_ip[GENERIC_NAME];
 } node_island_t;
+
+typedef struct earlib_conf
+{
+	char coefficients_pathname[GENERIC_NAME];
+    uint dynais_levels;
+    uint dynais_window;
+} earlib_conf_t;
 
 typedef struct cluster_conf
 {
 	// Library & common conf
-	char Coefficients_pathname[GENERIC_NAME];
 	char tmp_dir[GENERIC_NAME];
 	char etc_dir[GENERIC_NAME];
 	char DB_pathname[GENERIC_NAME];
@@ -174,7 +184,7 @@ typedef struct cluster_conf
 	eargm_conf_t 	eargm;
 	// List of policies	
 	uint num_policies;
-	policy_conf_t *power_policies;
+	policy_conf_t power_policies[3];
 	uint default_policy;			// selecs one of the power_policies
 	// Lis of autorized users
 	uint num_priv_users;
@@ -182,9 +192,7 @@ typedef struct cluster_conf
 	uint num_acc;
 	char **priv_acc;
 	// Special cases
-	uint num_special;
 	uint min_time_perf_acc;
-	special_app_t	*special;
 	// List of nodes
 	uint num_nodes;
 	node_conf_t *nodes;
@@ -194,48 +202,46 @@ typedef struct cluster_conf
 	energy_tag_t *e_tags;
 	uint num_islands;
 	node_island_t *islands;
+    earlib_conf_t earlib;
 } cluster_conf_t;
 
-// Function declarations
+/*
+ *
+ * Functions
+ *
+ */
 
-// CLUSTER level functions
-/** read the cluster configuration from the ear_cluster.conf pointed by conf path */
-int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+/** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/sysconf/ear.conf */
+int get_ear_conf_path(char *ear_conf_path);
 
-void get_cluster_config(FILE *conf_file, cluster_conf_t *conf);
-
-// NODE level functions
 /** returns the pointer to the information of nodename */
 node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
 
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
 
+// Cluster configuration read
+
+/** read the cluster configuration from the ear_cluster.conf pointed by conf path */
+int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+
+/** frees a cluster_conf_t */
+void free_cluster_conf(cluster_conf_t *conf);
+
+// Cluster configuration verbose
+
 /** prints in the stderr the node configuration */
 void print_node_conf(node_conf_t *node_conf);
+
 /** prints in the stderr the specific node configuration */
 void print_my_node_conf(my_node_conf_t *my_node_conf);
 
-
-// POLICY level functions
 /** prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p);
-
-/** Converts from policy name to policy_id */
-int policy_name_to_id(char *my_policy);
-
-/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
-int policy_id_to_name(int policy_id,char *my_policy);
-
-/** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
 
 /** Prints in the stdout the whole cluster configuration */
 void print_cluster_conf(cluster_conf_t *conf);
 
-void free_cluster_conf(cluster_conf_t *conf);
+/** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
 
-/** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/sysconf/ear.conf */
-int get_ear_conf_path(char *ear_conf_path);
-
-#else
 #endif

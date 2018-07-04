@@ -56,7 +56,7 @@
 #include <common/states.h>
 #include <daemon/eard_conf_api.h>
 
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <daemon/power_monitor.h>
 #include <daemon/dynamic_configuration.h>
 #include <daemon/shared_configuration.h>

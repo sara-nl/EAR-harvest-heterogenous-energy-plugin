@@ -27,13 +27,16 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <common/ear_verbose.h>
+
 static const char *__NAME__ = "services.pid";
 int new_service(char *service)
 {

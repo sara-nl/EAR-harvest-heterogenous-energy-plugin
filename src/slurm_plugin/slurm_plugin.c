@@ -45,7 +45,7 @@
 #include <slurm_plugin/slurm_plugin_options.h>
 #include <slurm_plugin/slurm_plugin_user_environment.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <common/types/application.h>
 #include <common/types/job.h>
 #include <common/config.h>
@@ -53,7 +53,6 @@
 int EAR_VERBOSE_LEVEL = 0;
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
-static pid_t daemon_pid = -1;
 int verbosity = -1;
 
 char buffer1[PATH_MAX];

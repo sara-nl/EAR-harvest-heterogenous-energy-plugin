@@ -2,7 +2,9 @@ CFLAGS  = -fPIC -shared
 
 ######## FILES
 
-METRICS_OBJS = $(SRCDIR)/metrics/custom/frequency.o \
+METRICS_OBJS = $(SRCDIR)/metrics/common/msr.o \
+               $(SRCDIR)/metrics/custom/frequency.o \
+               $(SRCDIR)/metrics/custom/frequency_uncore.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
                $(SRCDIR)/metrics/papi/energy_cpu.o \
                $(SRCDIR)/metrics/papi/generics.o \
@@ -49,6 +51,7 @@ depend-clean: depend-clean.components
 ######## SUBFOLDERS
 
 %.components:
+	@ $(MAKE) -C 'common' $* || exit
 	@ $(MAKE) -C 'custom' $* || exit
 	@ $(MAKE) -C 'ipmi' $* || exit
 	@ $(MAKE) -C 'papi' $* || exit

@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <common/config.h>
 #include <daemon/eard_rapi.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 static const char *__NAME__ = "red_freq-->eard";
 cluster_conf_t my_cluster_conf;
 
