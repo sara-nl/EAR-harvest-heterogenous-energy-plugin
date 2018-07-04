@@ -106,7 +106,7 @@ static void print_energy_tag(energy_tag_t *etag)
 		fprintf(stderr, "---> accounts: %s\n", etag->accounts[i]);
 	
 	for (i = 0; i < etag->num_groups; i++)
-		fprintf(stderr, "---> user: %s\n", etag->groups[i]);
+		fprintf(stderr, "---> group: %s\n", etag->groups[i]);
 
 }
 
@@ -129,11 +129,12 @@ void print_cluster_conf(cluster_conf_t *conf)
 	fprintf(stderr, "\nPRIVILEGED USERS\n");
 	for (i = 0; i < conf->num_priv_users; i++)
 		fprintf(stderr, "--->user: %s\n", conf->priv_users[i]);
+	fprintf(stderr, "\nPRIVILEGED GROUPS\n");
+	for (i = 0; i < conf->num_priv_groups; i++)
+		fprintf(stderr, "--->groups: %s\n", conf->priv_groups[i]);
 	fprintf(stderr, "\nPRIVILEGED ACCOUNTS\n");
 	for (i = 0; i < conf->num_acc; i++)
 		fprintf(stderr, "--->acc: %s\n", conf->priv_acc[i]);
-	for (i = 0; i < conf->num_tags; i++)
-		print_energy_tag(&conf->e_tags[i]);
 	fprintf(stderr, "\nNODE CONFIGURATIONS\n");
 	for (i = 0; i < conf->num_nodes; i++)
 		print_node_conf(&conf->nodes[i]);

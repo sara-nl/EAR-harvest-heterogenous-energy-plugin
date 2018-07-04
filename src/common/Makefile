@@ -12,9 +12,10 @@ OBJS = string_enhanced.o \
 
 database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
 
-types_SRCS = $(shell find ./types/ -type f -name '*.c' -o -name '*.h')
+types_SRCS = $(shell find ./types/ -type f -name '*.c' -o -name '*.h') $(shell find ./types/configuration/ -type f -name '*.c' -o -name '*.h')
 
 types_OBJS = $(shell find ./types/ -type f -name '*.o') \
+		     $(shell find ./types/configuration/ -type f -name '*.o') \
              string_enhanced.o \
              math_operations.o
 

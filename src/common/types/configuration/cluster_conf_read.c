@@ -120,8 +120,10 @@ static int get_default_pstate(policy_conf_t *pow_pol, int num_pol, int policy)
 static void fill_policies(cluster_conf_t *conf)
 {
 	int i;
-	for (i = 0; i < TOTAL_POLICIES; i++)
+	for (i = 0; i < TOTAL_POLICIES; i++){
 		conf->power_policies[i].policy = i;
+		conf->power_policies[i].is_available=0;
+	}
 }
 
 static void generate_node_ranges(node_island_t *island, char *nodelist)
@@ -244,9 +246,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
+			conf->num_policies=TOTAL_POLICIES;
 			while (token != NULL)
 			{
-				conf->num_policies++;
 				strclean(token, '\n');
 				/*if (conf->num_policies == 1)
 					conf->power_policies = NULL;
@@ -285,7 +287,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->min_time_perf_acc = atoi(token);
 		}
-		else if (!strcmp(token, "PRIVILEGEDUSERS"))
+		else if (!strcmp(token, "AUTHORIZEDUSERS"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
@@ -299,7 +301,21 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				token = strtok(NULL, ",");
 			}
 		}
-		else if (!strcmp(token, "PRIVILEGEDACCOUNTS"))
+        else if (!strcmp(token, "AUTHORIZEDGROUPS"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+            while (token != NULL)
+            {
+                conf->num_priv_groups++;
+                conf->priv_groups = realloc(conf->priv_groups, sizeof(char *)*conf->num_priv_groups);
+                strclean(token, '\n');
+                conf->priv_groups[conf->num_priv_groups-1] = malloc(strlen(token)+1);
+                strcpy(conf->priv_groups[conf->num_priv_groups-1], token);
+                token = strtok(NULL, ",");
+            }
+        }
+		else if (!strcmp(token, "AUTHORIZEDACCOUNTS"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
@@ -593,22 +609,22 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}
 
 			//DB MANAGER
-		else if (!strcmp(token, "DATABASECACHEAGGREGATIONTIME"))
+		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.aggr_time = atoi(token);
 		}
-		else if (!strcmp(token, "DATABASECACHEPORTTCP"))
+		else if (!strcmp(token, "DBDAEMONPORTTCP"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.tcp_port = atoi(token);
 		}
-		else if (!strcmp(token, "DATABASECACHEPORTUDP"))
+		else if (!strcmp(token, "DBDAEMONPORTUDP"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.udp_port = atoi(token);
 		}
-        else if (!strcmp(token, "DATABASECACHEMEMORYSIZE"))
+        else if (!strcmp(token, "DBDAEMONMEMORYSIZE"))
         {
             token = strtok(NULL, "=");
             conf->db_manager.mem_size = atoi(token);
@@ -724,7 +740,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	    				conf->islands[conf->num_islands].id = atoi(token);
                     }
 				}
-				else if (!strcmp(token, "DATABASECACHEIP"))
+				else if (!strcmp(token, "DBIP"))
 				{
 					token = strtok(NULL, " ");
 					strclean(token, '\n');
@@ -733,7 +749,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                     else
                         strcpy(conf->islands[idx].db_ip, token);
 				}
-                else if (!strcmp(token, "DATABASECACHEBACKUPIP"))
+                else if (!strcmp(token, "DBSECIP"))
                 {
 					token = strtok(NULL, " ");
 					strclean(token, '\n');
@@ -781,6 +797,10 @@ void free_cluster_conf(cluster_conf_t *conf)
 	for (i = 0; i < conf->num_priv_users; i++)
 		free(conf->priv_users[i]);
 	free(conf->priv_users);
+
+	for (i = 0; i < conf->num_priv_groups; i++)
+		free(conf->priv_groups[i]);
+	free(conf->priv_groups);
 
 	for (i = 0; i < conf->num_acc; i++)
 		free(conf->priv_acc[i]);

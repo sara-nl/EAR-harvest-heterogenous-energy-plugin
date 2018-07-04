@@ -192,7 +192,7 @@ void appendenv(char *dst, char *src, int dst_capacity)
 int setenv_local(const char *name, const char *value, int replace)
 {
 	if (name == NULL || value == NULL) {
-		plug_error("NULL environment variable", name, strerror(errno));
+		plug_error("NULL environment variable");
 		return 0;
 	}
 

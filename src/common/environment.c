@@ -40,11 +40,8 @@
 #include <common/config.h>
 #include <common/environment.h>
 #include <common/types/generic.h>
-<<<<<<< HEAD
 #include <common/types/configuration/cluster_conf.h>
-=======
 #include <common/environment_common.h>
->>>>>>> ce994f164e5a8b89b60b3d04326114b9dbc8eb2f
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/cluster_conf.h>
 

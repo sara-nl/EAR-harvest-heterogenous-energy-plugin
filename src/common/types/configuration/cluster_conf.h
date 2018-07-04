@@ -189,6 +189,8 @@ typedef struct cluster_conf
 	// Lis of autorized users
 	uint num_priv_users;
 	char **priv_users;
+	uint num_priv_groups;
+	char **priv_groups;
 	uint num_acc;
 	char **priv_acc;
 	// Special cases
