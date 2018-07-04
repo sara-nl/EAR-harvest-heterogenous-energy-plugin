@@ -255,7 +255,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 				conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);*/
                 int i;
-                for (i = 0; TOTAL_POLICIES; i++)
+                for (i = 0; i < TOTAL_POLICIES; i++)
                     if (conf->power_policies[i].policy == policy_name_to_id(token)) conf->power_policies[i].is_available = 1;
 				token = strtok(NULL, ",");
 			}

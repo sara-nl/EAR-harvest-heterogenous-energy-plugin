@@ -386,8 +386,11 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
 
         sprintf(pow_sig_query, "SELECT * FROM Power_signatures WHERE id=%d", pow_sig_id);
         int num_pow_sigs = mysql_retrieve_power_signatures(connection, pow_sig_query, &pow_sig_aux);
-        if (num_pow_sigs > 0) copy_power_signature(&app_aux->power_sig, pow_sig_aux);
-        free(pow_sig_aux);
+        if (num_pow_sigs > 0)
+        {
+            copy_power_signature(&app_aux->power_sig, pow_sig_aux);
+            free(pow_sig_aux);
+        }
 
         copy_application(&apps_aux[i], app_aux);
         status = mysql_stmt_fetch(statement);

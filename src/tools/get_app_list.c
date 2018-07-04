@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <common/database/db_helper.h>
 #include <common/types/application.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 
 int EAR_VERBOSE_LEVEL=1;
 
@@ -59,4 +59,5 @@ void main(int argc,char *argv[])
 	for (i=0;i<num_apps;i++){
 		report_application_data(&apps[i]);
 	}
+    free(apps);
 }

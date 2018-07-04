@@ -39,10 +39,14 @@
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/environment.h>
-#include <common/environment_common.h>
 #include <common/types/generic.h>
+<<<<<<< HEAD
 #include <common/types/configuration/cluster_conf.h>
+=======
+#include <common/environment_common.h>
+>>>>>>> ce994f164e5a8b89b60b3d04326114b9dbc8eb2f
 #include <common/types/configuration/policy_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 
 extern char *conf_ear_tmp;
 char *conf_ear_user_db_pathname=NULL;
@@ -397,7 +401,7 @@ void ear_lib_environment()
     }
 	// That part will be initialized from cluster_conf
 	conf_ear_tmp=my_cluster_conf.tmp_dir;
-	conf_ear_coeff_db_pathname=my_cluster_conf.earlib.Coefficients_pathname;
+	conf_ear_coeff_db_pathname=my_cluster_conf.earlib.coefficients_pathname;
 	//conf_ear_dynais_levels=;
 	//conf_ear_dynais_window_size=
 	#if 0
