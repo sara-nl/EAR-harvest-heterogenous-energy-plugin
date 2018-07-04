@@ -40,6 +40,7 @@
 #include <common/config.h>
 #include <common/environment.h>
 #include <common/environment_common.h>
+#include <common/types/configuration/policy_conf.h>
 
 char *conf_ear_user_db_pathname=NULL;
 char *conf_ear_gui_pathname=NULL;

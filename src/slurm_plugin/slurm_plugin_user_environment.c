@@ -337,7 +337,7 @@ static int local_pre_job_configuration_general(spank_t sp, cluster_conf_t *conf_
 
 	// Setting LIBEAR variables
 	SETENV_LOCAL_RET_ERR("EAR_TMPDIR", conf_clus->tmp_dir, 1);
-	SETENV_LOCAL_RET_ERR("EAR_COEFF_DB_PATHNAME", conf_clus->Coefficients_pathname, 1);
+	SETENV_LOCAL_RET_ERR("EAR_COEFF_DB_PATHNAME", conf_clus->earlib.coefficients_pathname, 1);
 
 	SETENV_LOCAL_RET_ERR("EAR_DYNAIS_WINDOW_SIZE", "500", 1);
 	SETENV_LOCAL_RET_ERR("EAR_DYNAIS_LEVELS", "4", 1);
