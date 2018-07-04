@@ -43,16 +43,16 @@ state_t msr_open(uint cpu, int *fd)
 {
 	char msr_file_name[SZ_PATH_KERNEL];
 
-	if (fd != -1) {
+	if (*fd != -1) {
 		return EAR_BUSY;
 	}
 
 	sprintf(msr_file_name, "/dev/cpu/%d/msr", cpu);
-	fd = open(msr_file_name, O_RDWR);
+	*fd = open(msr_file_name, O_RDWR);
 
 	if (fd < 0)
 	{
-		fd = -1;
+		*fd = -1;
 		return EAR_OPEN_ERROR;
 	}
 
@@ -62,12 +62,12 @@ state_t msr_open(uint cpu, int *fd)
 /* */
 int msr_close(int *fd)
 {
-	if (fd == -1) {
+	if (*fd == -1) {
 		return EAR_ALREADY_CLOSED;
 	}
 
-	close(fd);
-	fd = -1;
+	close(*fd);
+	*fd = -1;
 
 	return EAR_SUCCESS;
 }
@@ -75,11 +75,11 @@ int msr_close(int *fd)
 /* */
 int msr_read(int *fd, void *buffer, size_t size, off_t offset)
 {
-	if (fd == -1) {
+	if (*fd == -1) {
 		return EAR_NOT_INITIALIZED;
 	}
 
-	if (pread(fd, buffer, size, offset) != size) {
+	if (pread(*fd, buffer, size, offset) != size) {
 		return EAR_READ_ERROR;
 	}
 
@@ -89,11 +89,11 @@ int msr_read(int *fd, void *buffer, size_t size, off_t offset)
 /* */
 int msr_write(int *fd, const void *buffer, size_t size, off_t offset)
 {
-	if (fd == -1) {
+	if (*fd == -1) {
 		return EAR_NOT_INITIALIZED;
 	}
 
-	if (pwrite(fd, buffer, size, offset) != size)
+	if (pwrite(*fd, buffer, size, offset) != size)
 	{
 		return EAR_ERROR;
 	}
