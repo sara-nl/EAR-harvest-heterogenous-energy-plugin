@@ -443,3 +443,39 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
 
 }
 
+
+int db_read_applications(application_t **apps,uint is_learning)
+{
+    int num_apps = 0;
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        exit(1);
+    }
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+		return num_apps;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+		return num_apps;
+    }
+
+    char query[256];
+    sprintf(query, "SELECT * FROM Applications ");
+    
+   	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
+   
+  	if (num_apps == EAR_MYSQL_ERROR){
+        VERBOSE_N(0, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+		return num_apps;
+    }
+	return num_apps;
+}

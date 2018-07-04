@@ -22,6 +22,7 @@ DB_Learning_phase/
 *hostlist
 *sim_metrics.csv
 sim_metrics.csv
+tmp/*
 
 # Build
 etc/module/ear
@@ -62,6 +63,8 @@ tests/check/check.sh
 
 *compute_coefficients_remote
 *coefficients_quality_control
+*compute_coefficients_v3
+*get_app_list
 *compute_coefficients
 *traces_to_paraver
 *database_eraser

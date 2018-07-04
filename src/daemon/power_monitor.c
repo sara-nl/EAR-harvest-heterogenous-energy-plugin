@@ -75,7 +75,8 @@ int idleNode=1;
 extern char nodename[MAX_PATH_SIZE];
 static int fd_powermon=-1;
 static int fd_periodic=-1;
-extern ear_conf_t *dyn_conf;
+extern settings_conf_t *dyn_conf;
+extern resched_t *resched_conf;
 static int sig_reported=0;
 
 typedef struct powermon_app{

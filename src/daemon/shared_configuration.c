@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -41,21 +42,44 @@
 
 #include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/types/cluster_conf.h>
 #include <daemon/shared_configuration.h>
 
 static int fd;
 static const char *__NAME__ = "shared_area:";
 
-// Creates a shared memory region between eard and ear_lib. returns NULL if error.
-ear_conf_t * create_ear_conf_shared_area(char * ear_conf_path, ulong max_freq)  
-{      	
+/** These functions created path names, just to avoid problems if changing the path name in the future */
+/** This functions creates the name of the file mapping the shared memory for the dynamic power settings, it is placed at TMP 
+ */
+int  get_settings_conf_path(char *tmp,char *path)
+{
+	sprintf(path,"%s/.ear_settings_conf",tmp);
+	
+}
+/** This functions creates the name of the file mapping the shared memory for the resched flag, it is placed at TMP 
+ */
+int  get_resched_path(char *tmp,char *path)
+{
+	sprintf(path,"%s/.ear_resched",tmp);
+}
+/** This functions creates the name of the file mapping the shared memory for the cluster_conf, it is placed at TMP 
+ */
+int  get_cluster_conf_path(char *tmp,char *path)
+{
+	sprintf(path,"%s/.ear_cluster_conf",tmp);
+}
+
+/** BASIC FUNCTIONS */
+
+void *create_shared_area(char *path,char *data,int area_size,int *shared_fd)
+{
+	/* This function creates a shared memory region based on files and mmap */
 	int ret;
 	void * my_shared_region=NULL;		
-	ear_conf_t my_conf;
 	char buff[256];
 	mode_t my_mask;
 	my_mask=umask(0);
-	sprintf(buff,"%s/.ear_dyn_conf",ear_conf_path);
+	strcpy(buff,path);
 	VERBOSE_N(0,"creating file %s for shared memory\n",buff);
 	fd=open(buff,O_CREAT|O_RDWR|O_TRUNC,S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 	if (fd<0){
@@ -66,61 +90,132 @@ ear_conf_t * create_ear_conf_shared_area(char * ear_conf_path, ulong max_freq)
 	VERBOSE_N(0,"shared file for mmap created\n");
 	umask(my_mask);
 	// Default values
-	my_conf.max_freq=max_freq;
-	my_conf.th=PERFORMANCE_GAIN;
-	my_conf.force_rescheduling=0;
+	bzero(data,area_size);
+	//my_conf.force_rescheduling=0;
 	VERBOSE_N(0,"writting default values\n");
-	ret=write(fd,&my_conf,sizeof(my_conf));
+	ret=write(fd,data,area_size);
 	if (ret<0){
 		VERBOSE_N(0,"error creating sharing memory (%s)\n",strerror(errno));
 		close(fd);
 		return NULL;
 	}
 	VERBOSE_N(0,"mapping shared memory\n");
-	my_shared_region= mmap(NULL, sizeof(my_conf),PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);                                     
+	my_shared_region= mmap(NULL, area_size,PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);                                     
 	if ((my_shared_region == MAP_FAILED) || (my_shared_region == NULL)){
 		VERBOSE_N(0," error creating sharing memory (%s)\n",strerror(errno));
 		close(fd);
 		return NULL;
 	}
-	return (ear_conf_t *)my_shared_region;
+	*shared_fd=fd;
+	return my_shared_region;
 }
 
-ear_conf_t * attach_ear_conf_shared_area(char * ear_conf_path)
+void * attach_shared_area(char *path,int area_size,uint perm,int *shared_fd)
 {
     int ret;
     void * my_shared_region=NULL;
-    ear_conf_t my_conf;
 	char buff[256];
-	sprintf(buff,"%s/.ear_dyn_conf",ear_conf_path);
-    fd=open(buff,O_RDWR);
+	int flags;
+	strcpy(buff,path);
+    fd=open(buff,perm);
     if (fd<0){
         VERBOSE_N(0,"error attaching to sharing memory (%s)\n",strerror(errno));
         return NULL;
     }
-    my_shared_region= mmap(NULL, sizeof(my_conf),PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (perm==O_RDWR){
+		flags=PROT_READ|PROT_WRITE;
+	}else{
+		flags=PROT_READ;
+	}
+    my_shared_region= mmap(NULL, area_size,flags, MAP_SHARED, fd, 0);
     if ((my_shared_region == MAP_FAILED) || (my_shared_region == NULL)){
         VERBOSE_N(0,"error attaching to sharing memory (%s)\n",strerror(errno));
         close(fd);
         return NULL;
     }
-    return (ear_conf_t *)my_shared_region;
+	*shared_fd=fd;
+    return my_shared_region;
+}
+
+void dettach_shared_area(int fd)
+{
+	close(fd);
+}
+void dispose_shared_area(char *path,int fd)
+{
+	close(fd);
+	unlink(path);
+}
+
+/***** SPECIFIC FUNCTIONS *******************/
+
+static int fd_cluster,fd_settings,fd_resched;
+
+//// SETTINGS
+
+// Creates a shared memory region between eard and ear_lib. returns NULL if error.
+settings_conf_t * create_settings_conf_shared_area(char * path)  
+{      	
+	settings_conf_t my_settings;
+	
+	return (settings_conf_t *)create_shared_area(path,(char *)&my_settings,sizeof(my_settings),&fd_settings);
+	
+}
+
+settings_conf_t * attach_settings_conf_shared_area(char * path)
+{
+    return (settings_conf_t *)attach_shared_area(path,sizeof(settings_conf_t),O_RDONLY,&fd_settings);
 }                                
-void dettach_ear_conf_shared_area()
+void dettach_settings_conf_shared_area()
 {
-	close(fd);
+	dettach_shared_area(fd_settings);
 }
-void ear_conf_shared_area_dispose(char * ear_conf_path)
+void settings_conf_shared_area_dispose(char * path)
 {
-	char buff[256];
-    sprintf(buff,"%s/.ear_dyn_conf",ear_conf_path);
-
-	close(fd);
-	unlink(buff);
+	dispose_shared_area(path,fd_settings);
 }
 
+/// RESCHED
 
-/*
-* Functions to be used by the library and daemon
-*/
+// Creates a shared memory region between eard and ear_lib. returns NULL if error.
+resched_t * create_resched_shared_area(char * path)  
+{      	
+	resched_t my_settings;
+	
+	return (resched_t *)create_shared_area(path,(char *)&my_settings,sizeof(my_settings),&fd_resched);
+	
+}
 
+resched_t * attach_resched_shared_area(char * path)
+{
+    return (resched_t *)attach_shared_area(path,sizeof(resched_t),O_RDWR,&fd_resched);
+}                                
+void dettach_resched_shared_area()
+{
+	dettach_shared_area(fd_resched);
+}
+void resched_shared_area_dispose(char * path)
+{
+	dispose_shared_area(path,fd_resched);
+}
+// Creates a shared memory region between eard and ear_lib. returns NULL if error.
+cluster_conf_t * create_cluster_conf_shared_area(char * path)  
+{      	
+	cluster_conf_t my_settings;
+	
+	return (cluster_conf_t *)create_shared_area(path,(char *)&my_settings,sizeof(my_settings),&fd_cluster);
+	
+}
+
+cluster_conf_t * attach_cluster_conf_shared_area(char * path)
+{
+    return (cluster_conf_t *)attach_shared_area(path,sizeof(cluster_conf_t),O_RDONLY,&fd_cluster);
+}                                
+void dettach_cluster_conf_shared_area()
+{
+	dettach_shared_area(fd_cluster);
+}
+void cluster_conf_shared_area_dispose(char * path)
+{
+	dispose_shared_area(path,fd_cluster);
+}

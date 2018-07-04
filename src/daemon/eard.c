@@ -72,7 +72,10 @@ char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t	my_cluster_conf;
 my_node_conf_t 	*my_node_conf;
 policy_conf_t default_policy_context;
-ear_conf_t *dyn_conf;
+settings_conf_t *dyn_conf;
+resched_t *resched_conf;
+char dyn_conf_path[GENERIC_NAME];
+char resched_path[GENERIC_NAME];
 uint signal_sighup=0;
 
 #define max(a,b) (a>b?a:b)
@@ -109,7 +112,7 @@ void eard_close_comm();
 int is_new_application(int pid);
 int is_new_service(int req,int pid);
 int application_timeout();
-void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node);
+void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node);
 int RAPL_counting=0;
 int eard_must_exit=0;
 
@@ -364,7 +367,8 @@ void eard_exit(uint restart)
 		//	eard_verbose(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
 		//}
 	}
-	ear_conf_shared_area_dispose(ear_tmp);
+	settings_conf_shared_area_dispose(dyn_conf_path);
+	resched_shared_area_dispose(resched_path);
 
 	if (restart){ 
 		eard_verbose(0,"Restarting EARD\n");
@@ -776,8 +780,8 @@ void signal_handler(int sig)
      	   	}else{
 				print_my_node_conf(my_node_conf);
 				set_global_eard_variables();
-    			configure_new_values(dyn_conf,&my_cluster_conf,my_node_conf);
-    			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
+    			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
+    			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
 			}
 
         }
@@ -829,7 +833,7 @@ void signal_catcher()
 }
 //endregion
 
-void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
+void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node)
 {
     policy_conf_t *my_policy;
     ulong deff;
@@ -851,11 +855,11 @@ void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t
     dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
-	dyn->force_rescheduling=1;
+	resched->force_rescheduling=1;
     eard_verbose(0,"configure_new_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
 }
 
-void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
+void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node)
 {
 	policy_conf_t *my_policy;
 	ulong deff;
@@ -877,6 +881,7 @@ void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_co
 	dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
+	resched_conf->force_rescheduling=0;
 	eard_verbose(0,"configure_default_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
 }
 
@@ -945,9 +950,18 @@ void main(int argc,char *argv[])
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
 	/** Shared memory is used between EARD and EARL **/
-    eard_verbose(0,"creating shared memory tmp=%s\n",ear_tmp);
-    dyn_conf=create_ear_conf_shared_area(ear_tmp,eard_max_freq);
+    eard_verbose(0,"creating shared memory regions");
+	get_settings_conf_path(my_cluster_conf.tmp_dir,dyn_conf_path);
+	eard_verbose(1,"Using %s as settings path (shared memory region)",dyn_conf_path);
+    dyn_conf=create_settings_conf_shared_area(dyn_conf_path);
     if (dyn_conf==NULL){
+        eard_verbose(0,"Error creating shared memory\n");
+        _exit(0);
+    }
+	get_resched_path(my_cluster_conf.tmp_dir,resched_path);
+	eard_verbose(1,"Using %s as resched path (shared memory region)",resched_path);
+    resched_conf=create_resched_shared_area(resched_path);
+    if (resched_conf==NULL){
         eard_verbose(0,"Error creating shared memory\n");
         _exit(0);
     }
@@ -956,8 +970,8 @@ void main(int argc,char *argv[])
 		eard_verbose(0, "ERROR, frequency information can't be initialized");
 		_exit(1);
 	}
-    configure_default_values(dyn_conf,&my_cluster_conf,my_node_conf);
-    eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
+    configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
+    eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
 
 	/** We must control if we are come from a crash **/	
 	// We check if we are recovering from a crash

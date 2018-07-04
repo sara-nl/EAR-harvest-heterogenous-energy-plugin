@@ -225,8 +225,10 @@ void ear_init()
 	if (my_id != 0) {
 		return;
 	}
-
-	system_conf = attach_ear_conf_shared_area(get_ear_tmp());
+	get_settings_conf_path(get_ear_tmp(),system_conf_path);
+	system_conf = attach_settings_conf_shared_area(system_conf_path);
+	get_resched_path(get_ear_tmp(),resched_conf_path);
+	resched_conf = attach_resched_shared_area(resched_conf_path);
 
 	// Application static data and metrics
 	init_application(&application);
@@ -368,7 +370,8 @@ void ear_finalize()
 	states_end_job(my_id, NULL, ear_app_name);
 	#endif
 
-	dettach_ear_conf_shared_area();
+	dettach_settings_conf_shared_area();
+	dettach_resched_shared_area();
 
 	// Cest fini
 	eards_disconnect();

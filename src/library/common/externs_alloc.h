@@ -39,7 +39,10 @@ int EAR_VERBOSE_LEVEL;
 loop_t loop;
 application_t loop_signature;
 application_t application;
-ear_conf_t *system_conf=NULL;
+settings_conf_t *system_conf=NULL;
+resched_t *resched_conf=NULL;
+char system_conf_path[PATH_MAX];
+char resched_conf_path[PATH_MAX];
 
 char loop_summary_path[PATH_MAX];
 char app_summary_path[PATH_MAX];

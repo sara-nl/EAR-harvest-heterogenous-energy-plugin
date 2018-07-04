@@ -63,4 +63,8 @@ int db_batch_insert_ear_event(ear_event_t **ear_evs, int num_events);
 /** Returns the accumulated energy (units depend on divisor, divisor=1 means mJ) for a given period */
 ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor);
 
+/** Reads applications from the normal DB or the learning DB depending on is_learning. It allocates memory for apps. Returns the number of applications readed */
+int db_read_applications(application_t **apps,uint is_learning);
+
+
 #endif
