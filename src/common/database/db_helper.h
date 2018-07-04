@@ -62,6 +62,8 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events);
 
 int db_batch_insert_applications(application_t *applications, int num_apps);
 
+int db_batch_insert_loops(loop_t *loops, int num_loops);
+
 /** Returns the accumulated energy (units depend on divisor, divisor=1 means mJ) for a given period */
 ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor);
 

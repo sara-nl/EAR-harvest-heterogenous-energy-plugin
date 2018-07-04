@@ -70,6 +70,11 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
 *   EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_loop(MYSQL *connection, loop_t *loop);
 
+/** Given a MYSQL connection and an array of loops, inserts said loops into
+*   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
+*   EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops);
+
 /** Given a MYSQL connection and a valid MYSQL query, stores in loops the 
 *   loops found in the database corresponding to the query. Returns the 
 *   number of loops found on success, and either EAR_MYSQL_ERROR or

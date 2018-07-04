@@ -152,6 +152,40 @@ int db_insert_loop(loop_t *loop)
     return EAR_SUCCESS;
 }
 
+int db_batch_insert_loops(loop_t *loops, int num_loops)
+{    
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        VERBOSE_N(0, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+    if (mysql_batch_insert_loops(connection, loops, num_loops) < 0)
+    {
+        VERBOSE_N(0, "ERROR while batch writing loop signature to database.");
+        return EAR_ERROR;
+    }
+
+    mysql_close(connection);
+    
+    return EAR_SUCCESS;
+}
+
 int db_insert_power_signature(power_signature_t *pow_sig)
 {
     MYSQL *connection = mysql_init(NULL);
