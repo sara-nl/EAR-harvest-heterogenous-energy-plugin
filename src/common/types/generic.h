@@ -30,16 +30,17 @@
 #ifndef _EAR_TYPES_GENERIC
 #define _EAR_TYPES_GENERIC
 
-#include <linux/limits.h>
 #include <stdint.h>
-#include <unistd.h>
-#include <sys/types.h>
-
 
 typedef unsigned char uchar;
 typedef unsigned long long ull;
 typedef unsigned long ulong;
 typedef unsigned int uint;
+
+// TODO: this is not generic
+//#include <unistd.h>
+//#include <sys/types.h>
+//#include <linux/limits.h>
 
 typedef uint8_t job_type;
 typedef ulong   job_id;
@@ -48,6 +49,5 @@ typedef ulong   job_id;
 #define	UID_NAME			8
 #define POLICY_NAME 		32
 #define ENERGY_TAG_SIZE		32
-
 
 #endif

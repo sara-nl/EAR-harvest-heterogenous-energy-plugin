@@ -38,6 +38,7 @@
 /** Starts tracking frequency for the whole app in the selected CPU. Returns 0
 *   on success and -1 on error. */
 int aperf_get_global_avg_frequency_init(unsigned int cpu);
+
 /** Ends the tracking previously started and puts the average frequency for the 
 *   whole app during the period between this call and the preivous 
 *   aperf_get_global_avg_frequency_init() call in *frequency. Returns 0 on
@@ -46,6 +47,7 @@ int aperf_get_global_avg_frequency_end(unsigned int cpu, unsigned long *frequenc
 
 /** Starts tracking the frequency for all CPUs. */
 void aperf_get_avg_frequency_init_all_cpus();
+
 /** Starts tracking the frequency for all CPUs for the whole app. */
 void aperf_get_global_avg_frequency_init_all_cpus();
 
@@ -53,6 +55,7 @@ void aperf_get_global_avg_frequency_init_all_cpus();
 /** Starts tracking the frequency in the selected CPU. Returns 0 on success and -1
 *   on error. */
 int aperf_get_avg_frequency_init(unsigned int cpu);
+
 /** Ends the tracking previously started and puts the average frequency during the
 *   period between this call and the previous aperf_get_avg_frequency_init() and
 *   puts it in *frequency. Returns 0 on success and -1 on error. */
@@ -62,6 +65,7 @@ int aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency);
 *   and returns the average frequency for all CPUs between this call and the previous
 *   one. */ 
 unsigned long aperf_get_avg_frequency_end_all_cpus();
+
 /** Ends the tracking previously started with aperf_get_global_avg_frequency_init_all_cpus()
 *   and returns the average frequency for all CPUs for the whole app between
 *   this call and the previous one. */
@@ -71,11 +75,12 @@ unsigned long aperf_get_global_avg_frequency_end_all_cpus();
 /** Allocates memory to hold the information of num_cpus CPUs regarding their frequency.
 *   Returns 0 on success, -1 on error. */
 int aperf_init(unsigned int num_cpus);
+
 /** Initializes the frequency value of the CPU cpu at the value given by parameter. */
 int aperf_init_cpu(unsigned int cpu, unsigned long max_freq);
+
 /** Initializes the frequency value of all CPUs at the value given by max_freq. */
 int aperf_init_all_cpus(unsigned int num_cpus, unsigned long max_freq);
-
 
 /** To be used by power monitoring for periodic metrics*/
 void aperf_periodic_avg_frequency_init_all_cpus();
@@ -84,7 +89,6 @@ unsigned long aperf_periodic_avg_frequency_end_all_cpus();
 /** To be used by power monitoring for power signatures */
 void aperf_job_avg_frequency_init_all_cpus();
 unsigned long aperf_job_avg_frequency_end_all_cpus();
-
 
 /** Frees the memory allocated to hold the CPU information regarding their frequency. */
 void aperf_dispose();
