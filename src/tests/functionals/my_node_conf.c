@@ -43,12 +43,13 @@ void main(int argc,char *argv[])
 		exit(0);
 	}
 	read_cluster_conf(ear_path,&my_cluster);
-	print_cluster_conf(&my_cluster);
-    my_node_conf_t *my = get_my_node_conf(&my_cluster, "cae2306");
+    print_cluster_conf(&my_cluster);
+    my_node_conf_t *my = get_my_node_conf(&my_cluster, "r22u21");
     
     int i;
     for (i = 0; i < my->num_policies; i++)
     {
         print_policy_conf(&my->policies[i]);
     }
+    printf("Nodeconf_ip: %s\n", my->db_ip);
 }

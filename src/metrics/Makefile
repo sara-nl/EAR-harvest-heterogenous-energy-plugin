@@ -28,7 +28,7 @@ libmetrics.a: $(METRICS_OBJS)
 	$(AR) rvs libmetrics.a $(METRICS_OBJS)
 
 libmetrics.so: $(METRICS_OBJS)
-	$(CC) $(CFLAGS) -o libmetrics.so $(METRICS_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o libmetrics.so $(METRICS_OBJS)
 
 ######## OPTIONS
 

@@ -19,7 +19,7 @@ DB_OBJS = $(SRCDIR)/common/database.a
 all: $(OBJS) $(BINARIES) all.others 
 
 eargmd: eargm.c $(daemon_OBJS) $(DB_OBJS)
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(LDFLAGS) $(DB_OBJS) $(daemon_OBJS) 
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(LDFLAGS) $(DB_OBJS) $(daemon_OBJS) 
 
 %.o: %.c %.h
 	$(CC) -fPIC $(CFLAGS) -c $<

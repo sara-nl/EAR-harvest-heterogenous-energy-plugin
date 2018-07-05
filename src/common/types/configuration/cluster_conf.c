@@ -72,13 +72,13 @@ char island_range_conf_contains_node(node_island_t *node, char *nodename)
         if (node->ranges[i].end == -1)
         {
             sprintf(aux_name, "%s", node->ranges[i].prefix);
-            if (!strcmp(aux_name, nodename)) return 1;
+            if (!strcmp(aux_name, nodename)) return i;
             else continue;
         }
         if (node->ranges[i].end == node->ranges[i].start)
         {
             sprintf(aux_name, "%s%u", node->ranges[i].prefix, node->ranges[i].start);
-            if (!strcmp(aux_name, nodename)) return 1;
+            if (!strcmp(aux_name, nodename)) return i;
             else continue;
         }
         for (j = node->ranges[i].end; j >= node->ranges[i].start && j > 0; j--)
@@ -87,11 +87,11 @@ char island_range_conf_contains_node(node_island_t *node, char *nodename)
                 sprintf(aux_name, "%s0%u", node->ranges[i].prefix, j);
             else
                 sprintf(aux_name, "%s%u", node->ranges[i].prefix, j);
-            if (!strcmp(aux_name, nodename)) return 1;
+            if (!strcmp(aux_name, nodename)) return i;
         }
     }
 
-    return 0;
+    return -1;
 }
 
 
@@ -120,7 +120,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
     n->num_policies = my_conf->num_policies;
     int num_spec_nodes = 0;
-    
+    int range_id = -1;
     while(i<my_conf->num_nodes)
     {
 		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
@@ -135,9 +135,9 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     
     i = 0;
     do{ // At least one node is assumed
-		if (island_range_conf_contains_node(&my_conf->islands[i], nodename)) {
+		if ((range_id = island_range_conf_contains_node(&my_conf->islands[i], nodename)) >= 0) {
             n->island = my_conf->islands[i].id;
-            strcpy(n->db_ip, my_conf->islands[i].db_ip);
+            strcpy(n->db_ip, my_conf->islands[i].db_ips[my_conf->islands[i].ranges[range_id].db_ip]);
 		}
 		i++;
 	}while(i<my_conf->num_islands);
