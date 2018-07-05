@@ -30,13 +30,16 @@
 #ifndef EAR_FREQUENCY_UNCORE_H
 #define EAR_FREQUENCY_UNCORE_H
 
+#include <common/states.h>
+#include <common/types/generic.h>
+
 #define U_MSR_PMON_FIXED_CTR_OFF	0x000704
 #define U_MSR_PMON_FIXED_CTL_OFF	0x000703
 #define U_MSR_PMON_FIXED_CTL_STA	0x400000
 #define U_MSR_PMON_FIXED_CTL_STO	0x000000
 
 /* */
-state_t frequency_uncore_init(uint cpus_num, uint cpus_model);
+state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model);
 
 /* */
 state_t frequency_uncore_dispose();

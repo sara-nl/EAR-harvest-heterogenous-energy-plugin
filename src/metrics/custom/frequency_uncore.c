@@ -70,30 +70,36 @@ static uint _fill_architecture_bits(uint cpus_model)
 	_offctr = U_MSR_PMON_FIXED_CTR_OFF;
 }
 
-state_t frequency_uncore_init(uint cpus_num, uint cpus_model)
+state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model)
 {
 	state_t r;
-	int i;
+	uint offset_cpu;
+	uint i_socket;
+	uint i_cpu;
 
 	if (_init) {
 		return EAR_BUSY;
 	}
 
-	if (!_supported_architecture(cpus_model)) {
+	if (!_supported_architecture(cores_model)) {
 		return EAR_ARCH_NOT_SUPPORTED;
 	}
 
-	if (cpus_num == 0) {
+	if (cores_num == 0 || sockets_num > 2) {
 		return EAR_BAD_ARGUMENT;
 	}
 
-	_fds = malloc(sizeof(int) * cpus_num);
-	_clocks_start = malloc(sizeof(uint64_t) * cpus_num);
-	_clocks_stop  = malloc(sizeof(uint64_t) * cpus_num);
+	_fds  = malloc(sizeof(int) * sockets_num);
+	_clocks_start = malloc(sizeof(uint64_t) * sockets_num);
+	_clocks_stop  = malloc(sizeof(uint64_t) * sockets_num);
 
-	for (i = 0; i < cpus_num; ++i)
+	offset_cpu = cores_num / sockets_num;
+
+	for (i_socket = 0, i_cpu = 0; i_socket < sockets_num; ++i_socket, i_cpu += offset_cpu)
 	{
-		if ((r = msr_open(i, &_fds[i])) != EAR_SUCCESS)
+		_fds[i_socket] = -1;
+
+		if ((r = msr_open(i_cpu, &_fds[i_socket])) != EAR_SUCCESS)
 		{
 			frequency_uncore_dispose();
 			return r;
@@ -101,19 +107,31 @@ state_t frequency_uncore_init(uint cpus_num, uint cpus_model)
 	}
 
 	_init = 1;
-	_cpus_num = cpus_num;
-	_fill_architecture_bits(cpus_num);
+	_cpus_num = sockets_num;
+	_fill_architecture_bits(cores_model);
 
 	return EAR_SUCCESS;
 }
 
 state_t frequency_uncore_dispose()
 {
+	int i;
+
+	if (!_init) {
+		return EAR_NOT_INITIALIZED;
+	}
+
+	for (i = 0; i < _cpus_num; ++i) {
+		msr_close(&_fds[i]);
+	}
+
 	free(_clocks_start);
 	free(_clocks_stop);
 
 	_init = 0;
 	_cpus_num = 0;
+
+	return EAR_SUCCESS;
 }
 
 state_t frequency_uncore_counters_start()
@@ -128,7 +146,7 @@ state_t frequency_uncore_counters_start()
 	for (i = 0; i < _cpus_num; ++i)
 	{
 		// Read
-		if ((r = msr_read(&_fds[i], &_clocks_start, sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
+		if ((r = msr_read(&_fds[i], &_clocks_start[i], sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
 			return r;
 		}
 		// Start
@@ -156,7 +174,7 @@ state_t frequency_uncore_counters_stop(uint64_t *buffer)
 			return r;
 		}
 		// Read
-		if ((r = msr_read(&_fds[i], &_clocks_start, sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
+		if ((r = msr_read(&_fds[i], &_clocks_stop[i], sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
 			return r;
 		}
 

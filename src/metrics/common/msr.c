@@ -43,13 +43,13 @@ state_t msr_open(uint cpu, int *fd)
 {
 	char msr_file_name[SZ_PATH_KERNEL];
 
-	if (*fd != -1) {
+	if (*fd < 0) {
 		return EAR_BUSY;
 	}
 
 	sprintf(msr_file_name, "/dev/cpu/%d/msr", cpu);
 	*fd = open(msr_file_name, O_RDWR);
-
+	
 	if (fd < 0)
 	{
 		*fd = -1;
@@ -60,9 +60,9 @@ state_t msr_open(uint cpu, int *fd)
 }
 
 /* */
-int msr_close(int *fd)
+state_t msr_close(int *fd)
 {
-	if (*fd == -1) {
+	if (*fd < 0) {
 		return EAR_ALREADY_CLOSED;
 	}
 
@@ -73,9 +73,9 @@ int msr_close(int *fd)
 }
 
 /* */
-int msr_read(int *fd, void *buffer, size_t size, off_t offset)
+state_t msr_read(int *fd, void *buffer, size_t size, off_t offset)
 {
-	if (*fd == -1) {
+	if (*fd < 0) {
 		return EAR_NOT_INITIALIZED;
 	}
 
@@ -87,9 +87,9 @@ int msr_read(int *fd, void *buffer, size_t size, off_t offset)
 }
 
 /* */
-int msr_write(int *fd, const void *buffer, size_t size, off_t offset)
+state_t msr_write(int *fd, const void *buffer, size_t size, off_t offset)
 {
-	if (*fd == -1) {
+	if (*fd < 0) {
 		return EAR_NOT_INITIALIZED;
 	}
 
