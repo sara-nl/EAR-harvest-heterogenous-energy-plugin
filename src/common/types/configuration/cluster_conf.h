@@ -106,7 +106,6 @@ typedef struct eardb_conf
 	uint udp_port;
     uint mem_size;
 } eardb_conf_t;
-
 typedef struct policy_conf
 {
     uint policy; // from environment.h
@@ -114,6 +113,7 @@ typedef struct policy_conf
     uint p_state;
     char is_available; //default at 0, not available
 } policy_conf_t;
+
 
 typedef struct node_conf
 {
@@ -127,6 +127,8 @@ typedef struct node_conf
 	char *coef_file;
 	ulong db_ip;
 } node_conf_t;
+
+
 
 typedef struct my_node_conf
 {
@@ -249,5 +251,13 @@ void print_cluster_conf(cluster_conf_t *conf);
 
 /** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
 policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
+
+
+/** returns  the energy tag entry if the username, group and/or accounts is in the list of the users/groups/acc authorized to use the given energy-tag, NULL otherwise */
+energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc,char *energy_tag);
+
+/** returns true if the username, group and/or accounts is presents in the list of authorized users/groups/accounts */
+int is_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc);
+
 
 #endif

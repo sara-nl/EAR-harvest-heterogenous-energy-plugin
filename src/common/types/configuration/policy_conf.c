@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/types/configuration/policy_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 
 
 /*
