@@ -160,21 +160,6 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 	return n;
 }
 
-/*
- * POLICY FUNCTIONS
- */
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
-{
-	policy_conf_t *my_policy=NULL;
-	uint i;
-	uint nump=0;
-    while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
-    if (nump<my_node->num_policies){
-        my_policy=&my_node->policies[nump];
-    }
-	return my_policy;
-}
-
 
 
 /** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/s

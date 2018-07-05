@@ -38,7 +38,7 @@
 #define MIN_TIME_TO_SOLUTION    1
 #define MONITORING_ONLY         2
 
-
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
 /** Converts from policy name to policy_id */
 int policy_name_to_id(char *my_policy);
 
