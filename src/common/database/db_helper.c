@@ -537,7 +537,10 @@ int db_read_applications(application_t **apps,uint is_learning)
     }
 
     char query[256];
-    sprintf(query, "SELECT * FROM Applications ");
+    if (is_learning)
+        sprintf(query, "SELECT * FROM Learning_applications");
+    else
+        sprintf(query, "SELECT * FROM Applications ");
     
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    

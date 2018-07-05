@@ -362,9 +362,9 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
     {
         if (is_learning)
-            sprintf(job_query, "SELECT * FROM Learning_jobs WHERE id=%d AND step_id=%d", job_id, step_id);
+            sprintf(job_query, "SELECT * FROM Learning_jobs WHERE id=%lu AND step_id=%lu", job_id, step_id);
         else
-            sprintf(job_query, "SELECT * FROM Jobs WHERE id=%d AND step_id=%d", job_id, step_id);
+            sprintf(job_query, "SELECT * FROM Jobs WHERE id=%lu AND step_id=%lu", job_id, step_id);
         num_jobs = mysql_retrieve_jobs(connection, job_query, &job_aux);
         copy_job(&app_aux->job, job_aux);
         free(job_aux);
@@ -372,14 +372,14 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         if (is_mpi)
         {
             if (is_learning)
-                sprintf(sig_query, "SELECT * FROM Learning_jobs WHERE id=%d AND step_id=%d", job_id, step_id);
+                sprintf(sig_query, "SELECT * FROM Learning_signatures WHERE id=%d", sig_id);
             else
                 sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
             int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
             if (num_sigs > 0) {
                 copy_signature(&app_aux->signature, sig_aux);
-                free(sig_aux);
             }
+            //free(sig_aux);
             app_aux->is_mpi = 1;
         }
         else app_aux->is_mpi = 0;
