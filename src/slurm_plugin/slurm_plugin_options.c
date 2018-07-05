@@ -327,7 +327,17 @@ static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 static int _opt_ear_tag(int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_tag");
-	return (ESPANK_STOP);
+
+	if (!remote)
+	{
+		if (optarg == NULL) {
+			return (ESPANK_BAD_ARG);
+		}
+		if (setenv_local("EAR_ENERGY_TAG", optarg, 1) != 1) {
+			return (ESPANK_STOP);
+		}
+	}
+	return (ESPANK_SUCCESS);
 }
 
 /*

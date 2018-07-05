@@ -40,15 +40,15 @@
 #include <slurm/slurm.h>
 #include <slurm/spank.h>
 #include <cpufreq.h>
-
+#include <common/sizes.h>
+#include <common/config.h>
+#include <common/types/job.h>
+#include <common/types/application.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 #include <slurm_plugin/slurm_plugin_user_environment.h>
-#include <slurm_plugin/slurm_plugin_helper.h>
-#include <common/types/configuration/cluster_conf.h>
-#include <common/types/application.h>
-#include <common/types/job.h>
-#include <common/config.h>
 
 int EAR_VERBOSE_LEVEL = 0;
 
@@ -233,6 +233,7 @@ static void remote_print_environment(spank_t sp)
 	printenv_remote(sp, "EAR_ETCDIR");
 	printenv_remote(sp, "EAR_TMP");
 	printenv_remote(sp, "EAR_APP_NAME");
+	printenv_remote(sp, "EAR_ENERGY_TAG");
 	printenv_remote(sp, "LD_PRELOAD");
 	printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
 	printenv_remote(sp, "SLURM_NNODES");
@@ -279,47 +280,48 @@ int remote_eard_report_start(spank_t sp)
 	init_application(&eard_appl);
 
 	// Gathering variables
-	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer1, 64)) {
+	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer1, SZ_NAME_SHORT)) {
 		eard_appl.job.id = 0;
 	} else {
 		eard_appl.job.id = atoi(buffer1);
 	}
-	if (!getenv_remote(sp, "SLURM_STEP_ID", buffer1, 64)) {
+	if (!getenv_remote(sp, "SLURM_STEP_ID", buffer1, SZ_NAME_SHORT)) {
 		eard_appl.job.step_id = 0;
 	} else {
 		eard_appl.job.step_id = atoi(buffer1);
 	}
-    if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", buffer1, 64)) {
+    if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", eard_appl.job.user_acc, SZ_NAME_SHORT)) {
 		strcpy(eard_appl.job.user_acc, "");
-    } else {
-		strcpy(eard_appl.job.user_acc, buffer1);
-    }	
-	if (!getenv_remote(sp, "EAR_USER", eard_appl.job.user_id, GENERIC_NAME)) {
+    }
+	if (!getenv_remote(sp, "EAR_USER", eard_appl.job.user_id, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.user_id, "");
 	}
-	if (!getenv_remote(sp, "SLURM_JOB_NAME",  eard_appl.job.app_id, GENERIC_NAME)) {
+	if (!getenv_remote(sp, "SLURM_JOB_NAME",  eard_appl.job.app_id, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.app_id, "");
 	}
-	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", eard_appl.job.user_acc, GENERIC_NAME)) {
+	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", eard_appl.job.user_acc, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.user_acc, "");
 	}
-	if (!getenv_remote(sp, "EAR_POWER_POLICY", eard_appl.job.policy, GENERIC_NAME)) {
+	if (!getenv_remote(sp, "EAR_POWER_POLICY", eard_appl.job.policy, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.policy, "");
 	}
-	if (!getenv_remote(sp, "EAR_POWER_POLICY_TH", buffer1, 64)) {
+	if (!getenv_remote(sp, "EAR_POWER_POLICY_TH", buffer1, SZ_NAME_SHORT)) {
 		eard_appl.job.th = 0;
 	} else {
 		eard_appl.job.th = atof(buffer1);
 	}
-	if (!getenv_remote(sp, "EAR_LEARNING_PHASE", buffer1, NAME_MAX)) {
+	if (!getenv_remote(sp, "EAR_LEARNING_PHASE", buffer1, SZ_NAME_MEDIUM)) {
 		eard_appl.is_learning = 0;
 	} else {
 		eard_appl.is_learning = atoi(buffer1);
 	}
-	if (!getenv_remote(sp, "EAR_P_STATE", buffer1, NAME_MAX)) {
+	if (!getenv_remote(sp, "EAR_P_STATE", buffer1, SZ_NAME_MEDIUM)) {
 		return (ESPANK_ERROR);	
 	} else {
 		eard_appl.job.def_f = atoi(buffer1);
+	}
+	if (!getenv_remote(sp, "EAR_ENERGY_TAG", eard_appl.job.energy_tag, SZ_NAME_SHORT)) {
+		strcpy(eard_appl.job.energy_tag, "");
 	}
 
 	// Getting EARD connection variables
@@ -334,7 +336,6 @@ int remote_eard_report_start(spank_t sp)
 
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
-
 
 	// Connection
 	if (eards_remote_connect(eard_host, eard_port) < 0) {
