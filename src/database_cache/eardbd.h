@@ -30,13 +30,23 @@
 #define EAR_EARDBD_H
 
 #include <netdb.h>
-#include <common/types/configuration/cluster_conf.h>
-#include <common/types/periodic_aggregation.h>
-#include <common/types/periodic_metric.h>
-#include <common/types/application.h>
-#include <common/types/loop.h>
-#include <common/types/log.h>
 #include <common/config.h>
+#include <common/types/log.h>
+#include <common/types/loop.h>
+#include <common/types/generic.h>
+#include <common/types/application.h>
+#include <common/types/periodic_metric.h>
+#include <common/types/periodic_aggregation.h>
+#include <common/types/configuration/cluster_conf.h>
+
+#define BACKLOG				10
+#define TCP					SOCK_STREAM
+#define UDP					SOCK_DGRAM
+#define CONTENT_TYPE_PIN	0
+#define CONTENT_TYPE_PER	1
+#define CONTENT_TYPE_APP	2
+#define CONTENT_TYPE_LOO	3
+#define CONTENT_TYPE_EVE	4
 
 #define verbose(...) \
 	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
@@ -61,20 +71,15 @@
 #define P_CONTENT(buffer) \
 		(void *) &buffer[sizeof(packet_header_t)];
 
-// Types
-#define BACKLOG				10
-#define TCP					SOCK_STREAM
-#define UDP					SOCK_DGRAM
-#define CONTENT_TYPE_PIN	0
-#define CONTENT_TYPE_PER	1
-#define CONTENT_TYPE_APP	2
-#define CONTENT_TYPE_LOO	3
-#define CONTENT_TYPE_EVE	4
+/* Types */
 
 typedef struct packet_header {
-	//char sender_hostname[SIZE_NAME];
-	unsigned char content_type;
-	//size_t content_size;
+	time_t timestamp;
+	uchar content_type;
+	uchar mirroring;
 } packet_header_t;
+
+//char sender_hostname[SIZE_NAME];
+//size_t content_size;
 
 #endif //EAR_EARDBD_H

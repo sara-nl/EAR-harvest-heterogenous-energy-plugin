@@ -370,24 +370,33 @@ void usage(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	struct timeval timeout;
-	struct addrinfo *srv_info_tcp;
-	struct addrinfo *srv_info_udp;
 	cluster_conf_t conf_clus;
+
+	char *mirror_main_hostname;
+	int mirror_me;
+
+	struct addrinfo *srv_info_metr_tcp;
+	struct addrinfo *srv_info_metr_udp;
+	struct addrinfo *srv_info_sync_tcp;
+	int fd_metr_tcp;
+	int fd_metr_udp;
+	int fd_sync_tcp;
+	
+	fd_set fds_incoming;
+	fd_set fds_active;
+	int fd_max;
+	int fd_cli;
 
 	long merge_time;
 	float mb_apps;
 	float mb_mets;
-
-	fd_set fds_incoming;
-	fd_set fds_active;
-	int fd_srv_tcp;
-	int fd_srv_udp;
-	int fd_srv_max;
-	int fd_cli;
+	float mb_lops;
+	float mb_eves;
 
 	ssize_t size;
 	int status_1;
 	int status_2;
+	int status_3;
 	int i;
 
 	usage(argc, argv);
@@ -401,11 +410,6 @@ int main(int argc, char **argv)
 	verbose("reserving %0.2f MBytes for applications", mb_apps);
 	verbose("reserving %0.2f MBytes for power metrics", mb_mets);
 	verbose("reserving %lu bytes for packet buffer", sizeof(buffer_pck));
-
-	verbose("app %lu", sizeof(application_t));
-	verbose("met %lu", sizeof(periodic_metric_t));
-	verbose("eve %lu", sizeof(ear_event_t));
-	verbose("loo %lu", sizeof(loop_t));
 
 	// Configuration file (TODO)
 
@@ -432,40 +436,47 @@ int main(int argc, char **argv)
 	FD_ZERO(&fds_active);
 
 	// Opening socket
-	fd_srv_tcp = _socket(NULL, conf_clus.db_manager.tcp_port, TCP, &srv_info_tcp);
-	fd_srv_udp = _socket(NULL, conf_clus.db_manager.udp_port, UDP, &srv_info_udp);
+	fd_metr_tcp = _socket(NULL, conf_clus.db_manager.tcp_port, TCP, &srv_info_metr_tcp);
+	fd_metr_udp = _socket(NULL, conf_clus.db_manager.udp_port, UDP, &srv_info_metr_udp);
+	fd_sync_tcp = _socket(NULL, 4713, TCP, &srv_info_sync_tcp);
 
-	verbose ("opened socket %d for TCP packets on port %u", fd_srv_tcp, conf_clus.db_manager.tcp_port);
-	verbose ("opened socket %d for UDP packets on port %u", fd_srv_udp, conf_clus.db_manager.udp_port);
+	verbose ("opened socket %d for TCP packets on port %u", fd_metr_tcp, conf_clus.db_manager.tcp_port);
+	verbose ("opened socket %d for UDP packets on port %u", fd_metr_udp, conf_clus.db_manager.udp_port);
 
-	if (fd_srv_tcp < 0 || fd_srv_udp < 0) {
+	if (fd_metr_tcp < 0 || fd_metr_udp < 0) {
 		exit(1);
 	}
 
 	// Binding socket
-	status_1 = _bind(fd_srv_tcp, srv_info_tcp);
-	status_2 = _bind(fd_srv_udp, srv_info_udp);
+	status_1 = _bind(fd_metr_tcp, srv_info_metr_tcp);
+	status_2 = _bind(fd_metr_udp, srv_info_metr_udp);
+	status_3 = _bind(fd_sync_tcp, srv_info_sync_tcp);
 
-	if (status_1 < 0 || status_2 < 0) {
-		exit(1);
+	if (status_1 < 0 || status_2 < 0 || status_3 < 0) {
+		error("while binding sockets (%d, %d, %d)", fd_metr_tcp, fd_metr_udp, fd_sync_tcp);
 	}
 
 	// Listening socket
-	status_1 = _listen(fd_srv_tcp, srv_info_tcp);
+	status_1 = _listen(fd_metr_tcp, srv_info_metr_tcp);
+	status_3 = _listen(fd_sync_tcp, srv_info_sync_tcp);
 
 	if (status_1 < 0) {
 		exit(1);
 	}
 
 	// Add the listener to the ready set
-	FD_SET(fd_srv_tcp, &fds_active);
-	FD_SET(fd_srv_udp, &fds_active);
+	FD_SET(fd_metr_tcp, &fds_active);
+	FD_SET(fd_metr_udp, &fds_active);
+	FD_SET(fd_sync_tcp, &fds_active);
 
 	// Keep track of the biggest file descriptor
-	fd_srv_max = fd_srv_udp;
+	fd_max = fd_sync_tcp;
 
-	if (fd_srv_tcp > fd_srv_udp) {
-		fd_srv_max = fd_srv_tcp;
+	if (fd_metr_tcp > fd_max) {
+		fd_max = fd_metr_tcp;
+	}
+	if (fd_metr_udp > fd_max) {
+		fd_max = fd_metr_udp;
 	}
 
 	verbose("phase 2: listening (processing every %lu s)", merge_time);
@@ -474,7 +485,7 @@ int main(int argc, char **argv)
 	{
 		fds_incoming = fds_active;
 
-		if (select(fd_srv_max + 1, &fds_incoming, NULL, NULL, &timeout) == -1) {
+		if (select(fd_max + 1, &fds_incoming, NULL, NULL, &timeout) == -1) {
 			error("select");
 		}
 
@@ -488,23 +499,24 @@ int main(int argc, char **argv)
 		}
 
 		// run through the existing connections looking for data to read
-		for(i = 0; i <= fd_srv_max; i++)
+		for(i = 0; i <= fd_max; i++)
 		{
 			if (FD_ISSET(i, &fds_incoming)) // we got one!!
 			{
 				// Handle new connections
-				if (i == fd_srv_tcp)
+				if (i == fd_metr_tcp)
 				{
-					fd_cli = _accept(fd_srv_tcp);
+					fd_cli = _accept(fd_metr_tcp);
 
 					if (fd_cli != -1)
 					{
 						FD_SET(fd_cli, &fds_active);
 
-						if (fd_cli > fd_srv_max) {
-							fd_srv_max = fd_cli;
+						if (fd_cli > fd_max) {
+							fd_max = fd_cli;
 						}
 					}
+				// Handle data transfers
 				} else {
 					size = _receive(i, buffer_pck);
 
