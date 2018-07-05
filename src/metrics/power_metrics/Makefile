@@ -24,7 +24,7 @@ libpowermetrics.a: $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
 	$(AR) rcs libpowermetrics.a $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
 
 libpowermetrics.so: $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
-	$(CC) -shared $(OBJS) $(lib_OBJS) $(COMMON_OBJS) -o libpowermetrics.so
+	$(CC) $(CC_FLAGS) -shared $(OBJS) $(lib_OBJS) $(COMMON_OBJS) -o libpowermetrics.so
 
 ######## OPTIONS
 
