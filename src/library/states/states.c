@@ -188,12 +188,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	prev_f = ear_frequency;
 
 	if (system_conf!=NULL){
-	if (system_conf->force_rescheduling){
+	if (resched_conf->force_rescheduling){
 		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
 
 		// We set the default number of iterations to the default for this loop
 		perf_count_period=loop_perf_count_period;
-		system_conf->force_rescheduling=0;
+		resched_conf->force_rescheduling=0;
 		// If the loop was already evaluated, we force the rescheduling
 		if (EAR_STATE==SIGNATURE_STABLE){ 
 			ear_verbose(0,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");

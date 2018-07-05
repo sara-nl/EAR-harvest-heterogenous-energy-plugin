@@ -28,43 +28,21 @@
 */
 
 
-#include <linux/limits.h>
-#include <common/types/application.h>
-#include <common/types/loop.h>
-#include <common/states.h>
-#include <daemon/shared_configuration.h>
+#ifndef _POLICY_CONF_H
+#define _POLICY_CONF_H
 
-int EAR_VERBOSE_LEVEL;
 
-loop_t loop;
-application_t loop_signature;
-application_t application;
-settings_conf_t *system_conf=NULL;
-resched_t *resched_conf=NULL;
-char system_conf_path[PATH_MAX];
-char resched_conf_path[PATH_MAX];
+#define TOTAL_POLICIES          3
 
-char loop_summary_path[PATH_MAX];
-char app_summary_path[PATH_MAX];
-char ear_app_name[PATH_MAX]; //TODO: use application.app_id
+#define MIN_ENERGY_TO_SOLUTION  0
+#define MIN_TIME_TO_SOLUTION    1
+#define MONITORING_ONLY         2
 
-// Common variables
-ulong ear_frequency; 
-ulong EAR_default_frequency; 
-uint EAR_default_pstate;
 
-int ear_use_turbo = USE_TURBO; 
-int ear_whole_app;
-int ear_my_rank;
-int my_job_id;
-int my_step_id;
-char my_account[GENERIC_NAME];
+/** Converts from policy name to policy_id */
+int policy_name_to_id(char *my_policy);
 
-// DynAIS
-uint loop_with_signature;
-ulong last_first_event;
-ulong last_calls_in_loop;
-ulong last_loop_size;
-ulong last_loop_level;
-uint dynais_enabled = DYNAIS_ENABLED;
-uint check_periodic_mode=1;
+/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
+int policy_id_to_name(int policy_id,char *my_policy);
+
+#endif

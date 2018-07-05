@@ -27,44 +27,43 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-#include <linux/limits.h>
-#include <common/types/application.h>
-#include <common/types/loop.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <common/config.h>
 #include <common/states.h>
-#include <daemon/shared_configuration.h>
+#include <common/types/configuration/policy_conf.h>
 
-int EAR_VERBOSE_LEVEL;
 
-loop_t loop;
-application_t loop_signature;
-application_t application;
-settings_conf_t *system_conf=NULL;
-resched_t *resched_conf=NULL;
-char system_conf_path[PATH_MAX];
-char resched_conf_path[PATH_MAX];
 
-char loop_summary_path[PATH_MAX];
-char app_summary_path[PATH_MAX];
-char ear_app_name[PATH_MAX]; //TODO: use application.app_id
+/** Converts from policy name to policy_id */
+int policy_name_to_id(char *my_policy)
+{
+    if (my_policy!=NULL){
+        if ((strcmp(my_policy,"MIN_ENERGY_TO_SOLUTION")==0) || (strcmp(my_policy,"min_energy_to_solution")==0)) return MIN_ENERGY_TO_SOLUTION;
+        else if ((strcmp(my_policy,"MIN_TIME_TO_SOLUTION")==0) || (strcmp(my_policy,"min_time_to_solution")==0)) return MIN_TIME_TO_SOLUTION;
+        else if ((strcmp(my_policy,"MONITORING_ONLY")==0) || (strcmp(my_policy,"monitoring_only")==0)) return MONITORING_ONLY;
+    }
+	return EAR_ERROR;
+}
 
-// Common variables
-ulong ear_frequency; 
-ulong EAR_default_frequency; 
-uint EAR_default_pstate;
 
-int ear_use_turbo = USE_TURBO; 
-int ear_whole_app;
-int ear_my_rank;
-int my_job_id;
-int my_step_id;
-char my_account[GENERIC_NAME];
+/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
+int policy_id_to_name(int policy_id,char *my_policy)
+{
+	int ret=EAR_SUCCESS;
+	switch(policy_id)
+    {
+        case MIN_ENERGY_TO_SOLUTION:
+            strcpy(my_policy,"MIN_ENERGY_TO_SOLUTION");
+        	break;
+        case MIN_TIME_TO_SOLUTION:
+            strcpy(my_policy,"MIN_TIME_TO_SOLUTION");
+        	break;
+        case MONITORING_ONLY:
+            strcpy(my_policy,"MONITORING_ONLY");
+        	break;
+		default: ret=EAR_ERROR;
+    }
+	return ret;
 
-// DynAIS
-uint loop_with_signature;
-ulong last_first_event;
-ulong last_calls_in_loop;
-ulong last_loop_size;
-ulong last_loop_level;
-uint dynais_enabled = DYNAIS_ENABLED;
-uint check_periodic_mode=1;
+}

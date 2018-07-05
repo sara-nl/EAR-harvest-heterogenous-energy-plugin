@@ -37,9 +37,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <common/types/generic.h>
+#include <common/types/configuration/policy_conf.h>
 #include <common/string_enhanced.h>
-#include <common/environment.h>
+#include <common/types/generic.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/config.h>
@@ -110,6 +110,7 @@ typedef struct policy_conf
     uint policy; // from environment.h
     double th;
     uint p_state;
+    char is_available; //default at 0, not available
 } policy_conf_t;
 
 typedef struct node_conf
@@ -132,14 +133,8 @@ typedef struct my_node_conf
 	char db_ip[USER];
 	char *coef_file;
 	uint num_policies;
-	policy_conf_t *policies;
+	policy_conf_t policies[TOTAL_POLICIES];
 }my_node_conf_t;
-
-typedef struct special_app
-{
-	char user[USER];
-	uint p_state;
-} special_app_t;
 
 typedef struct energy_tag
 {
@@ -171,10 +166,16 @@ typedef struct node_island
 	char backup_ip[GENERIC_NAME];
 } node_island_t;
 
+typedef struct earlib_conf
+{
+	char coefficients_pathname[GENERIC_NAME];
+    uint dynais_levels;
+    uint dynais_window;
+} earlib_conf_t;
+
 typedef struct cluster_conf
 {
 	// Library & common conf
-	char Coefficients_pathname[GENERIC_NAME];
 	char tmp_dir[GENERIC_NAME];
 	char etc_dir[GENERIC_NAME];
 	char DB_pathname[GENERIC_NAME];
@@ -183,17 +184,17 @@ typedef struct cluster_conf
 	eargm_conf_t 	eargm;
 	// List of policies	
 	uint num_policies;
-	policy_conf_t *power_policies;
+	policy_conf_t power_policies[TOTAL_POLICIES];
 	uint default_policy;			// selecs one of the power_policies
 	// Lis of autorized users
 	uint num_priv_users;
 	char **priv_users;
+	uint num_priv_groups;
+	char **priv_groups;
 	uint num_acc;
 	char **priv_acc;
 	// Special cases
-	uint num_special;
 	uint min_time_perf_acc;
-	special_app_t	*special;
 	// List of nodes
 	uint num_nodes;
 	node_conf_t *nodes;
@@ -203,6 +204,7 @@ typedef struct cluster_conf
 	energy_tag_t *e_tags;
 	uint num_islands;
 	node_island_t *islands;
+    earlib_conf_t earlib;
 } cluster_conf_t;
 
 /*
@@ -218,15 +220,6 @@ int get_ear_conf_path(char *ear_conf_path);
 node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
 
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
-
-/** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
-
-/** Converts from policy name to policy_id */
-int policy_name_to_id(char *my_policy);
-
-/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
-int policy_id_to_name(int policy_id,char *my_policy);
 
 // Cluster configuration read
 
@@ -249,5 +242,8 @@ void print_policy_conf(policy_conf_t *p);
 
 /** Prints in the stdout the whole cluster configuration */
 void print_cluster_conf(cluster_conf_t *conf);
+
+/** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
 
 #endif

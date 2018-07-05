@@ -117,6 +117,15 @@ static int get_default_pstate(policy_conf_t *pow_pol, int num_pol, int policy)
 	return 0;
 }
 
+static void fill_policies(cluster_conf_t *conf)
+{
+	int i;
+	for (i = 0; i < TOTAL_POLICIES; i++){
+		conf->power_policies[i].policy = i;
+		conf->power_policies[i].is_available=0;
+	}
+}
+
 static void generate_node_ranges(node_island_t *island, char *nodelist)
 {
 	char *buffer_ptr;
@@ -175,6 +184,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	memset(conf, 0, sizeof(cluster_conf_t));
 	char line[256];
 	char *token;
+
+	//filling the default policies before starting
+	fill_policies(conf);
+	
 	while (fgets(line, 256, conf_file) != NULL)
 	{
 		if (line[0] == '#') continue;
@@ -193,12 +206,25 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
 			strcpy(conf->DB_pathname, token);
 		}
+
+            //EARLIB CONF
 		else if (!strcmp(token, "COEFFICIENTSDIR"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
-			strcpy(conf->Coefficients_pathname, token);
+			strcpy(conf->earlib.coefficients_pathname, token);
 		}
+        else if (!strcmp(token, "DYNAISLEVELS"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.dynais_levels = atoi(token);
+        }
+        else if (!strcmp(token, "DYNAISWINDOWSIZE"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.dynais_window = atoi(token);
+        }
+
 		else if (!strcmp(token, "TMPDIR"))
 		{
 			token = strtok(NULL, "=");
@@ -220,16 +246,19 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
+			conf->num_policies=TOTAL_POLICIES;
 			while (token != NULL)
 			{
-				conf->num_policies++;
 				strclean(token, '\n');
-				if (conf->num_policies == 1)
+				/*if (conf->num_policies == 1)
 					conf->power_policies = NULL;
 				//conf->power_policies = malloc(sizeof(policy_conf_t));
 				conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*conf->num_policies);
 
-				conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);
+				conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);*/
+                int i;
+                for (i = 0; i < TOTAL_POLICIES; i++)
+                    if (conf->power_policies[i].policy == policy_name_to_id(token)) conf->power_policies[i].is_available = 1;
 				token = strtok(NULL, ",");
 			}
 		}
@@ -258,7 +287,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->min_time_perf_acc = atoi(token);
 		}
-		else if (!strcmp(token, "PRIVILEGEDUSERS"))
+		else if (!strcmp(token, "AUTHORIZEDUSERS"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
@@ -272,7 +301,21 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				token = strtok(NULL, ",");
 			}
 		}
-		else if (!strcmp(token, "PRIVILEGEDACCOUNTS"))
+        else if (!strcmp(token, "AUTHORIZEDGROUPS"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+            while (token != NULL)
+            {
+                conf->num_priv_groups++;
+                conf->priv_groups = realloc(conf->priv_groups, sizeof(char *)*conf->num_priv_groups);
+                strclean(token, '\n');
+                conf->priv_groups[conf->num_priv_groups-1] = malloc(strlen(token)+1);
+                strcpy(conf->priv_groups[conf->num_priv_groups-1], token);
+                token = strtok(NULL, ",");
+            }
+        }
+		else if (!strcmp(token, "AUTHORIZEDACCOUNTS"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
@@ -286,31 +329,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				token = strtok(NULL, ",");
 			}
 		}
-		else if (!strcmp(token, "USERSWITHENERGYTAG"))
-		{
-			//special parsing on this one
-			token = strtok(NULL, "=");
-			token = strtok(token, ",");
-			while (token != NULL)
-			{
-				strclean(token, '\n');
-				conf->num_special++;
-				conf->special = realloc(conf->special, sizeof(special_app_t)*conf->num_special);
-				strcpy(conf->special[conf->num_special - 1].user, token);
-				token = strtok(NULL, ",");
-			}
-		}
 		else if (!strcmp(token, "ENERGYTAG"))
 		{
-			// token = strtok(NULL, "=");
-			// token = strtok(token, ",");
-			// conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t)*(conf->num_tags+1));
-			// strcpy(conf->e_tags[conf->num_tags].tag, token);
-			// token = strtok(NULL, ",");
-			// conf->e_tags[conf->num_tags].p_state = atoi(token);
-			// conf->num_tags++;
-
-			//fully restore the line as we need 2 buffer pointers for this task
 			line[strlen(line)] = '=';
 			char *primary_ptr;
 			char *secondary_ptr;
@@ -348,6 +368,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users] = malloc(strlen(token)+1);
 						strcpy(conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users], token);
 						conf->e_tags[conf->num_tags-1].num_users++;
+                        token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
 				else if (!strcmp(token, "GROUPS"))
@@ -361,6 +382,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups] = malloc(strlen(token)+1);
 						strcpy(conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups], token);
 						conf->e_tags[conf->num_tags-1].num_groups++;
+                        token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
 				else if (!strcmp(token, "ACCOUNTS"))
@@ -374,6 +396,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts] = malloc(strlen(token)+1);
 						strcpy(conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts], token);
 						conf->e_tags[conf->num_tags-1].num_accounts++;
+                        token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
 				token = strtok_r(NULL, " ", &primary_ptr);
@@ -586,22 +609,22 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}
 
 			//DB MANAGER
-		else if (!strcmp(token, "DATABASECACHEAGGREGATIONTIME"))
+		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.aggr_time = atoi(token);
 		}
-		else if (!strcmp(token, "DATABASECACHEPORTTCP"))
+		else if (!strcmp(token, "DBDAEMONPORTTCP"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.tcp_port = atoi(token);
 		}
-		else if (!strcmp(token, "DATABASECACHEPORTUDP"))
+		else if (!strcmp(token, "DBDAEMONPORTUDP"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.udp_port = atoi(token);
 		}
-        else if (!strcmp(token, "DATABASECACHEMEMORYSIZE"))
+        else if (!strcmp(token, "DBDAEMONMEMORYSIZE"))
         {
             token = strtok(NULL, "=");
             conf->db_manager.mem_size = atoi(token);
@@ -717,7 +740,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	    				conf->islands[conf->num_islands].id = atoi(token);
                     }
 				}
-				else if (!strcmp(token, "DATABASECACHEIP"))
+				else if (!strcmp(token, "DBIP"))
 				{
 					token = strtok(NULL, " ");
 					strclean(token, '\n');
@@ -726,7 +749,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                     else
                         strcpy(conf->islands[idx].db_ip, token);
 				}
-                else if (!strcmp(token, "DATABASECACHEBACKUPIP"))
+                else if (!strcmp(token, "DBSECIP"))
                 {
 					token = strtok(NULL, " ");
 					strclean(token, '\n');
@@ -775,11 +798,13 @@ void free_cluster_conf(cluster_conf_t *conf)
 		free(conf->priv_users[i]);
 	free(conf->priv_users);
 
+	for (i = 0; i < conf->num_priv_groups; i++)
+		free(conf->priv_groups[i]);
+	free(conf->priv_groups);
+
 	for (i = 0; i < conf->num_acc; i++)
 		free(conf->priv_acc[i]);
 	free(conf->priv_acc);
-
-	free(conf->special);
 
 	for (i = 0; i < conf->num_nodes; i++)
 		free(conf->nodes[i].special_node_conf);
@@ -794,8 +819,6 @@ void free_cluster_conf(cluster_conf_t *conf)
 	}
 
 	free(conf->nodes);
-
-	free(conf->power_policies);
 
 	for (i = 0; i < conf->num_islands; i++)
 		free(conf->islands[i].ranges);
