@@ -95,6 +95,8 @@ typedef struct node_range
 	char prefix[USER];
 	int start;
 	int end;
+    int db_ip;
+    int sec_ip;
 } node_range_t;
 
 typedef struct eardb_conf 
@@ -162,8 +164,10 @@ typedef struct node_island
 	uint id;
 	uint num_ranges;
 	node_range_t *ranges;
-	char db_ip[GENERIC_NAME];
-	char backup_ip[GENERIC_NAME];
+	char **db_ips;
+    uint num_ips;
+	char **backup_ips;
+    uint num_backups;
 } node_island_t;
 
 typedef struct earlib_conf

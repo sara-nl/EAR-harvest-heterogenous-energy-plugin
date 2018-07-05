@@ -87,11 +87,18 @@ static void print_database_conf(db_conf_t *conf)
 
 static void print_islands_conf(node_island_t *conf)
 {
-	fprintf(stderr, "--->id: %u\tip: %s\tbackup: %s\n", conf->id, conf->db_ip, conf->backup_ip);
+	fprintf(stderr, "--->id: %u\n", conf->id);
 	int i;
 	for (i = 0; i < conf->num_ranges; i++)
 	{
-		fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\n", conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end);
+       
+        if (conf->ranges[i].sec_ip < 0)
+		    fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\tip: %s\n",
+                conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end, conf->db_ips[conf->ranges[i].db_ip]);
+    
+        else
+		    fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\tip: %s\tbackup: %s\n",
+                conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end, conf->db_ips[conf->ranges[i].db_ip], conf->backup_ips[conf->ranges[i].sec_ip]);
 	}
 }
 
