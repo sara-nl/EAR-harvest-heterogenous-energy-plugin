@@ -33,13 +33,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
-
-#include <database_cache/eardbd_api.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 #include <common/states.h>
+#include <database_cache/eardbd_api.h>
 
 static char buffer_gen[4096];
 static char buffer_pck[MAX_PACKET_SIZE()];
