@@ -515,10 +515,16 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
 }
 
 
-int db_read_applications(application_t **apps,uint is_learning)
+int db_read_applications(application_t **apps,uint is_learning, int max_apps)
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
+
+    if (max_apps < 1)
+    {
+        fprintf(stderr, "ERROR: querying less than 1 app is not possible (%d requested).\n", max_apps);
+        return EAR_ERROR;
+    }
 
     if (connection == NULL)
     {
@@ -538,11 +544,12 @@ int db_read_applications(application_t **apps,uint is_learning)
 		return num_apps;
     }
 
+
     char query[256];
     if (is_learning)
-        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id > %d ORDER BY job_id LIMIT 50", current_job_id);
+        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
     else
-        sprintf(query, "SELECT * FROM Applications WHERE job_id > %d ORDER BY job_id LIMIT 50", current_job_id);
+        sprintf(query, "SELECT * FROM Applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
     printf("QUERY: %s\n", query); 
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
