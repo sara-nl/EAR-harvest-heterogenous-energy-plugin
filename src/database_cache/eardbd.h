@@ -39,9 +39,6 @@
 #include <common/types/periodic_aggregation.h>
 #include <common/types/configuration/cluster_conf.h>
 
-#define BACKLOG				10
-#define TCP					SOCK_STREAM
-#define UDP					SOCK_DGRAM
 #define CONTENT_TYPE_PIN	0
 #define CONTENT_TYPE_PER	1
 #define CONTENT_TYPE_APP	2

@@ -2,18 +2,23 @@ CFLAGS  = -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-OBJS = eardbd_api.o
-
 #eardbd_OBJS = $(SRCDIR)/common/database.a \
-#			  $(SRCDIR)/common/types.a
+#			   $(SRCDIR)/common/types.a
 
-eardbd_OBJS = $(SRCDIR)/common/types.a
+eardbd_OBJS = $(SRCDIR)/common/types.a \
+              sockets.o
+
+OBJS = sockets.o \
+       eardbd_api.o
 
 BINARIES = eardbd
 
 ######## RULES
 
 all: $(OBJS) $(BINARIES)
+
+sockets.o: sockets.c sockets.h
+	$(CC) $(CFLAGS) -c sockets.c
 
 eardbd_api.o: eardbd_api.c eardbd_api.h
 	$(CC) $(CFLAGS) -c eardbd_api.c

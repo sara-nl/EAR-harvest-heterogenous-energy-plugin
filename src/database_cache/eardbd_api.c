@@ -33,11 +33,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <common/states.h>
+#include <database_cache/sockets.h>
 #include <database_cache/eardbd_api.h>
 
 static char buffer_gen[4096];
@@ -121,7 +117,7 @@ static int _socket(char *host, unsigned int port, int protocol)
 	// Format
 	sprintf(c_port, "%u", port);
 	memset(&hints, 0, sizeof hints);
-	
+
 	hints.ai_socktype = protocol;
 	hints.ai_family = AF_UNSPEC; // Don't care IPv4 or IPv6
 

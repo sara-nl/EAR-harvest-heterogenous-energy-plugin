@@ -34,14 +34,8 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-
+#include <database_cache/sockets.h>
 #include <database_cache/eardbd.h>
-#include <database_cache/eardbd_api.h>
-#include <common/states.h>
 
 #define mets_len 4096
 #define lops_len 4096
@@ -63,43 +57,6 @@ static uint eves_i;
 static uint lops_i;
 
 int EAR_VERBOSE_LEVEL=1;
-
-/*
- *
- * Functions
- *
- */
-
-static void sprint_sockaddr(struct sockaddr *host_addr, char *buffer, size_t size)
-{
-	char *ip_version;
-	void *address;
-	int port;
-
-	// IPv4
-	if (host_addr->sa_family == AF_INET)
-	{
-		struct sockaddr_in *ipv4 = (struct sockaddr_in *) host_addr;
-		port = (int) ntohs(ipv4->sin_port);
-		address = &(ipv4->sin_addr);
-		ip_version = "IPv4";
-	}
-	// IPv6
-	else
-	{
-		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
-		port = (int) ntohs(ipv6->sin6_port);
-		address = &(ipv6->sin6_addr);
-		ip_version = "IPv6";
-	}
-
-	// convert the IP to a string and print it
-	inet_ntop(host_addr->sa_family, address, buffer, size);
-
-	if (buffer[0] != ':') {
-		sprintf(buffer, "%s:%d", buffer, port);
-	}
-}
 
 /*
  * Signal processing
@@ -252,108 +209,6 @@ static void process_incoming_data(int fd, char *buffer)
  * Server managing
  */
 
-static int _accept(int fd)
-{
-	char address[128];
-	struct sockaddr_storage cli_addr;
-	socklen_t size;
-	int fd_cli;
-
-	size = sizeof (cli_addr);
-	fd_cli = accept(fd, (struct sockaddr *) &cli_addr, &size);
-
-	if (fd_cli == -1)
-	{
-		error("on accept (%s)", strerror(errno));
-		return EAR_ERROR;
-	}
-
-	verbose("accepted connection from socket %d", fd_cli);
-	return fd_cli;
-}
-
-static ssize_t _receive(int fd, char *buffer)
-{
-	ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
-
-	// Handle data from a client
-	if (bytes <= 0)
-	{
-		if (bytes == 0) {
-			verbose("disconnected from socket %d", fd);
-		} else {
-			error("on reception (%s)", strerror(errno));
-		}
-
-		return EAR_ERROR;
-	}
-
-	return bytes;
-}
-
-static int _socket(char *host, unsigned int port, int protocol, struct addrinfo **info)
-{
-	struct addrinfo *info_aux;
-	struct addrinfo hints;
-
-	char c_port[16];
-	int status;
-	int fd;
-
-	// Format
-	sprintf(c_port, "%u", port);
-	memset(&hints, 0, sizeof (hints));
-	
-	hints.ai_socktype = protocol;	// TCP stream sockets
-	hints.ai_family = AF_UNSPEC;	// Don't care IPv4 or IPv6
-	hints.ai_flags = AI_PASSIVE;    // Fill in my IP for me
-
-	if ((status = getaddrinfo(host, c_port, &hints, info)) != 0)
-	{
-		error("getaddrinfo error (%s)", gai_strerror(status));
-		return EAR_ERROR;
-	}
-
-	//
-	info_aux = *info;
-
-	//
-	fd = socket(info_aux->ai_family, info_aux->ai_socktype, info_aux->ai_protocol);
-
-	if (fd < 0) {
-		error("opening socket %d (%s)", fd, strerror(errno));
-		return EAR_ERROR;
-	}
-
-	return fd;
-}
-
-static int _bind(int fd, struct addrinfo *info)
-{
-	// Assign to the socket the address and port
-	int status = bind(fd, info->ai_addr, info->ai_addrlen);
-
-	if (status < 0) {
-		error("binding socket %d (%s)", fd, strerror(errno));
-		return EAR_ERROR;
-	}
-
-	return EAR_SUCCESS;
-}
-
-static int _listen(int fd, struct addrinfo *info)
-{
-	// Listening the port
-	int status = listen(fd, BACKLOG);
-
-	if (status < 0) {
-		error("listening socket %d (%s)", fd, strerror(errno));
-		return EAR_ERROR;
-	}
-
-	return EAR_SUCCESS;
-}
-
 /*
  * Main
  */
@@ -369,36 +224,34 @@ void usage(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-	struct timeval timeout;
 	cluster_conf_t conf_clus;
-
-	char *mirror_main_hostname;
-	int mirror_me;
-
-	struct addrinfo *srv_info_metr_tcp;
-	struct addrinfo *srv_info_metr_udp;
-	struct addrinfo *srv_info_sync_tcp;
-	int fd_metr_tcp;
-	int fd_metr_udp;
-	int fd_sync_tcp;
-	
-	fd_set fds_incoming;
-	fd_set fds_active;
-	int fd_max;
-	int fd_cli;
+	struct timeval timeout;
 
 	long merge_time;
 	float mb_apps;
 	float mb_mets;
 	float mb_lops;
 	float mb_eves;
-
 	ssize_t size;
 	int status_1;
 	int status_2;
 	int status_3;
 	int i;
 
+	char *mirror_main_hostname;
+	int mirror_me;
+
+	socket_t sockets[3];
+	fd_set fds_incoming;
+	fd_set fds_active;
+	int fd_max;
+	int fd_cli;
+
+	socket_t *sock_metr_tcp = &sockets[0];
+	socket_t *sock_metr_udp = &sockets[1];
+	socket_t *sock_sync_tcp = &sockets[2];
+
+	//
 	usage(argc, argv);
 
 	//
@@ -436,47 +289,53 @@ int main(int argc, char **argv)
 	FD_ZERO(&fds_active);
 
 	// Opening socket
-	fd_metr_tcp = _socket(NULL, conf_clus.db_manager.tcp_port, TCP, &srv_info_metr_tcp);
-	fd_metr_udp = _socket(NULL, conf_clus.db_manager.udp_port, UDP, &srv_info_metr_udp);
-	fd_sync_tcp = _socket(NULL, 4713, TCP, &srv_info_sync_tcp);
+	socket_init(sock_metr_tcp, NULL, conf_clus.db_manager.tcp_port, TCP);
+	socket_init(sock_metr_udp, NULL, conf_clus.db_manager.udp_port, UDP);
+	socket_init(sock_sync_tcp, NULL, 4713, TCP);
 
-	verbose ("opened socket %d for TCP packets on port %u", fd_metr_tcp, conf_clus.db_manager.tcp_port);
-	verbose ("opened socket %d for UDP packets on port %u", fd_metr_udp, conf_clus.db_manager.udp_port);
+	status_1 = sockets_socket(sock_metr_tcp);
+	status_2 = sockets_socket(sock_metr_udp);
+	status_3 = sockets_socket(sock_sync_tcp);
 
-	if (fd_metr_tcp < 0 || fd_metr_udp < 0) {
-		exit(1);
+	verbose ("opened metrics socket %d for TCP packets on port %u", sock_metr_tcp->fd, sock_metr_tcp->port);
+	verbose ("opened metrics socket %d for UDP packets on port %u", sock_metr_udp->fd, sock_metr_udp->port);
+	verbose ("opened sync socket %d for TCP packets on port %u", sock_sync_tcp->fd, sock_sync_tcp->port);
+
+	if (status_1 < 0 || status_2 < 0 || status_3 < 0) {
+		error("while creating sockets (%d, %d, %d)", status_1, status_2, status_3);
 	}
 
 	// Binding socket
-	status_1 = _bind(fd_metr_tcp, srv_info_metr_tcp);
-	status_2 = _bind(fd_metr_udp, srv_info_metr_udp);
-	status_3 = _bind(fd_sync_tcp, srv_info_sync_tcp);
+	status_1 = sockets_bind(sock_metr_tcp);
+	status_2 = sockets_bind(sock_metr_udp);
+	status_3 = sockets_bind(sock_sync_tcp);
 
 	if (status_1 < 0 || status_2 < 0 || status_3 < 0) {
-		error("while binding sockets (%d, %d, %d)", fd_metr_tcp, fd_metr_udp, fd_sync_tcp);
+		error("while binding sockets (%d, %d, %d)", status_1, status_2, status_3);
 	}
 
 	// Listening socket
-	status_1 = _listen(fd_metr_tcp, srv_info_metr_tcp);
-	status_3 = _listen(fd_sync_tcp, srv_info_sync_tcp);
+	status_1 = sockets_listen(sock_metr_tcp);
+	status_3 = sockets_listen(sock_sync_tcp);
 
 	if (status_1 < 0) {
+		error("while listening sockets (%d, -, %d)", status_1, status_3);
 		exit(1);
 	}
 
 	// Add the listener to the ready set
-	FD_SET(fd_metr_tcp, &fds_active);
-	FD_SET(fd_metr_udp, &fds_active);
-	FD_SET(fd_sync_tcp, &fds_active);
+	FD_SET(sock_metr_tcp->fd, &fds_active);
+	FD_SET(sock_metr_udp->fd, &fds_active);
+	FD_SET(sock_sync_tcp->fd, &fds_active);
 
 	// Keep track of the biggest file descriptor
-	fd_max = fd_sync_tcp;
+	fd_max = sock_sync_tcp->fd;
 
-	if (fd_metr_tcp > fd_max) {
-		fd_max = fd_metr_tcp;
+	if (sock_metr_tcp->fd > fd_max) {
+		fd_max = sock_metr_tcp->fd;
 	}
-	if (fd_metr_udp > fd_max) {
-		fd_max = fd_metr_udp;
+	if (sock_metr_udp->fd > fd_max) {
+		fd_max = sock_metr_udp->fd;
 	}
 
 	verbose("phase 2: listening (processing every %lu s)", merge_time);
@@ -504,9 +363,9 @@ int main(int argc, char **argv)
 			if (FD_ISSET(i, &fds_incoming)) // we got one!!
 			{
 				// Handle new connections
-				if (i == fd_metr_tcp)
+				if (i == sock_metr_tcp->fd)
 				{
-					fd_cli = _accept(fd_metr_tcp);
+					sockets_accept(i, &fd_cli);
 
 					if (fd_cli != -1)
 					{
@@ -518,7 +377,7 @@ int main(int argc, char **argv)
 					}
 				// Handle data transfers
 				} else {
-					size = _receive(i, buffer_pck);
+					size = sockets_receive(i, buffer_pck, sizeof(buffer_pck));
 
 					if (size >= 0) {
 						process_incoming_data(i, buffer_pck);

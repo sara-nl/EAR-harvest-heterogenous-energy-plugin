@@ -30,6 +30,43 @@
 #ifndef EAR_SOCKETS_H
 #define EAR_SOCKETS_H
 
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+//#include <common/sizes.h>
+#include <common/states.h>
+#include <common/types/generic.h>
+
+#define BACKLOG				10
+#define TCP					SOCK_STREAM
+#define UDP					SOCK_DGRAM
+#define SZ_NAME_MEDIUM		256
+
+/* types */
+typedef struct socket
+{
+	char hostname[SZ_NAME_MEDIUM];
+	struct addrinfo *info;
+	char *host;
+	uint protocol;
+	uint port;
+	uint type;
+	int fd;
+} socket_t;
+
+/* functions */
+state_t socket_init(socket_t *socket, char *host, uint port, uint protocol);
+
+state_t sockets_socket(socket_t *socket);
+
+state_t sockets_bind(socket_t *socket);
+
+state_t sockets_listen(socket_t *socket);
+
+state_t sockets_accept(int fd_req, int *fd_cli);
+
+state_t sockets_receive(int fd, char *buffer, ssize_t size);
 
 
 #endif //EAR_SOCKETS_H
