@@ -57,36 +57,23 @@
 #define PERIODIC_MODE_OFF   0
 
 /* type & functions */
-//typedef int state_t;
+typedef int state_t;
 
-typedef struct state {
-	char *error;
-	void *data;
-	int no;
-} state_t;
-
-#define state_is(state, _no) \
-	(state.no == _no)
-
-#define state_isnt(state, _no) \
-	(state.no != _no)
+/* global data */
+char *state_error;
 
 #define state_ok(state) \
-	state_is(state, EAR_SUCCESS)
+	state == EAR_SUCCESS
 
-#define state_ko(state) \
-	state_isnt(state, EAR_SUCCESS)
+#define state_fail(state) \
+	state != EAR_SUCCESS
 
-#define state_init(state, _no, _error, _data) \
-	state.data = (void *) _data; \
-	state.error = _error; \
-	state.no = _no;
+#define state_init(state, no, error) \
+	state_error = error; \
+	state = no;
 
-#define state_return(state, _no, _error, _data) \
-	state_init(state, _no, _error, _data); \
+#define state_return(state, error) \
+	state_error = error; \
 	return state;
-
-#define state_print(state) \
-	printf("state (%d, '%s', %lu)\n", state.no, state.error, (uint64_t) state.data);
 
 #endif //EAR_STATES_H

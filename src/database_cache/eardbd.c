@@ -303,8 +303,8 @@ int main(int argc, char **argv)
 	verbose ("opened metrics socket %d for UDP packets on port %u", sock_metr_udp->fd, sock_metr_udp->port);
 	verbose ("opened sync socket %d for TCP packets on port %u", sock_sync_tcp->fd, sock_sync_tcp->port);
 
-	if (state_ko(state1) || state_ko(state2) || state_ko(state3)) {
-		error("while creating sockets (%s)", state1.error);
+	if (state_fail(state1) || state_fail(state2) || state_fail(state3)) {
+		error("while creating sockets (%s)", state_error);
 	}
 
 	// Binding socket
@@ -312,16 +312,16 @@ int main(int argc, char **argv)
 	state2 = sockets_bind(sock_metr_udp);
 	state3 = sockets_bind(sock_sync_tcp);
 
-	if (state_ko(state1) || state_ko(state2) || state_ko(state3)) {
-		error("while binding sockets (%s)", state1.error);
+	if (state_fail(state1) || state_fail(state2) || state_fail(state3)) {
+		error("while binding sockets (%s)", state_error);
 	}
 
 	// Listening socket
 	state1 = sockets_listen(sock_metr_tcp);
 	state3 = sockets_listen(sock_sync_tcp);
 
-	if (state_ko(state1) || state_ko(state3)) {
-		error("while listening sockets (%s)", state1.error);
+	if (state_fail(state1) || state_fail(state3)) {
+		error("while listening sockets (%s)", state_error);
 	}
 
 	// Add the listener to the ready set
@@ -378,8 +378,7 @@ int main(int argc, char **argv)
 					}
 				// Handle data transfers
 				} else {
-					state1 = sockets_receive(i, buffer_pck, sizeof(buffer_pck));
-					size = (ssize_t) state1.data;
+					state1 = sockets_receive(i, buffer_pck, sizeof(buffer_pck), &size);
 
 					if (state_ok(state1) && size > 0) {
 						process_incoming_data(i, buffer_pck, size);

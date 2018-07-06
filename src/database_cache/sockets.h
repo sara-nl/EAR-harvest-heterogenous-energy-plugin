@@ -72,10 +72,10 @@ state_t sockets_disconnect(int *fd);
 
 state_t sockets_send(socket_t *socket, char *buffer, ssize_t size);
 
-state_t sockets_receive(int fd, char *buffer, ssize_t size);
+state_t sockets_receive(int fd, char *buffer, ssize_t size_buffer, ssize_t *size_read);
 
 void sockets_print_socket(socket_t *socket);
 
-
+void sockets_print_sockaddr(struct sockaddr *host_addr);
 
 #endif //EAR_SOCKETS_H

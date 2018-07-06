@@ -43,7 +43,7 @@ state_t sockets_disconnect(int *fd)
 	}
 	*fd = -1;
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
 state_t sockets_connect(socket_t *socket)
@@ -54,10 +54,10 @@ state_t sockets_connect(socket_t *socket)
 	r = connect(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
 
 	if (r < 0) {
-		state_return(s, EAR_SOCK_CONN_ERROR, strerror(errno), NULL);
+		state_return(EAR_SOCK_CONN_ERROR, strerror(errno));
 	}
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
 state_t sockets_accept(int fd_req, int *fd_cli)
@@ -68,10 +68,10 @@ state_t sockets_accept(int fd_req, int *fd_cli)
 	*fd_cli = accept(fd_req, (struct sockaddr *) &cli_addr, &size);
 
 	if (*fd_cli == -1) {
-		state_return(s, EAR_SOCK_ACCEPT_ERROR, strerror(errno), NULL);
+		state_return(EAR_SOCK_ACCEPT_ERROR, strerror(errno));
 	}
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
 state_t sockets_send(socket_t *socket, char *buffer, ssize_t size)
@@ -89,47 +89,47 @@ state_t sockets_send(socket_t *socket, char *buffer, ssize_t size)
 		}
 
 		if (n == -1) {
-			state_return(s, EAR_SOCK_SEND_ERROR, strerror(errno), NULL);
+			state_return(EAR_SOCK_SEND_ERROR, strerror(errno));
 		}
 
 		bytes_sent += n;
 		bytes_left -= n;
 	}
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
-state_t sockets_receive(int fd, char *buffer, ssize_t size)
+state_t sockets_receive(int fd, char *buffer, ssize_t size_buffer, ssize_t *size_read)
 {
-	ssize_t bytes = recv(fd, buffer, size, 0);
+	*size_read = recv(fd, buffer, size_buffer, 0);
 
 	// Handle data from a client
-	if (bytes <= 0)
+	if (*size_read <= 0)
 	{
-		if (bytes == 0) {
-			state_return(s, EAR_SOCK_RECV_ERROR, "disconnected from socket", NULL);
+		if (*size_read == 0) {
+			state_return(EAR_SOCK_RECV_ERROR, "disconnected from socket");
 		} else {
-			state_return(s, EAR_SOCK_RECV_ERROR, strerror(errno), NULL);
+			state_return(EAR_SOCK_RECV_ERROR, strerror(errno));
 		}
 	}
 
-	state_return(s, EAR_SUCCESS, "", bytes);
+	state_return(EAR_SUCCESS, "");
 }
 
 state_t sockets_listen(socket_t *socket)
 {
 	if (socket->protocol == UDP) {
-		state_return(s, EAR_SOCK_LISTEN_ERROR, "UDP port can't be listened", NULL);
+		state_return(EAR_SOCK_LISTEN_ERROR, "UDP port can't be listened");
 	}
 
 	// Listening the port
 	int r = listen(socket->fd, BACKLOG);
 
 	if (r < 0) {
-		state_return(s, EAR_SOCK_LISTEN_ERROR, strerror(errno), NULL);
+		state_return(EAR_SOCK_LISTEN_ERROR, strerror(errno));
 	}
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
 state_t sockets_bind(socket_t *socket)
@@ -138,10 +138,10 @@ state_t sockets_bind(socket_t *socket)
 	int r = bind(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
 
 	if (r < 0) {
-		state_return(s, EAR_SOCK_BIND_ERROR, (char *) strerror(errno), NULL);
+		state_return(EAR_SOCK_BIND_ERROR, (char *) strerror(errno));
 	}
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
 state_t sockets_socket(socket_t *sock)
@@ -163,17 +163,17 @@ state_t sockets_socket(socket_t *sock)
 	}
 
 	if ((r = getaddrinfo(sock->host, c_port, &hints, &sock->info)) != 0) {
-		state_return(s, EAR_ADDR_NOT_FOUND, (char *) gai_strerror(r), NULL);
+		state_return(EAR_ADDR_NOT_FOUND, (char *) gai_strerror(r));
 	}
 
 	//
 	sock->fd = socket(sock->info->ai_family, sock->info->ai_socktype, sock->info->ai_protocol);
 
 	if (sock->fd < 0) {
-		state_return(s, EAR_SOCK_CREAT_ERROR, strerror(errno), NULL);
+		state_return(EAR_SOCK_CREAT_ERROR, strerror(errno));
 	}
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
 state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
@@ -181,7 +181,7 @@ state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
 	state_t s;
 
 	if (protocol != TCP && protocol != UDP) {
-		state_return(s, EAR_SOCK_BAD_PROTOCOL, "", NULL);
+		state_return(EAR_SOCK_BAD_PROTOCOL, "");
 	}
 
 	if (host != NULL) {
@@ -195,7 +195,7 @@ state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
 	socket->info = NULL;
 	socket->protocol = protocol;
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
 state_t sockets_dispose(socket_t *socket)
@@ -209,7 +209,7 @@ state_t sockets_dispose(socket_t *socket)
 		socket->info = NULL;
 	}
 
-	state_return(s, EAR_SUCCESS, "", NULL);
+	state_return(EAR_SUCCESS, "");
 }
 
 void sockets_print_socket(socket_t *socket)
@@ -218,7 +218,7 @@ void sockets_print_socket(socket_t *socket)
 }
 
 
-void print_sockaddr(struct sockaddr *host_addr)
+void sockets_print_sockaddr(struct sockaddr *host_addr)
 {
 	char buffer[512];
 	char *ip_version;
