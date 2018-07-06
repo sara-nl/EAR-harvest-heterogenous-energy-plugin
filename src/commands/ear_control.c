@@ -169,6 +169,75 @@ void reduce_frequencies_all_nodes(ulong freq)
     }
 }
 
+void set_def_freq(ulong freq)
+{
+    int i, j, k, rc;
+    char node_name[256];
+
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {
+                if (k == -1)
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    
+                }
+
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+                if (rc<0){
+                    VERBOSE_N(0,"Error connecting with node %s",node_name);
+                }else{
+                	VERBOSE_N(1,"Setting  the frequency in node %s to %lu\n", node_name, freq);
+                	if (!eards_set_def_freq(freq)) VERBOSE_N(0,"Error setting the freq for node %s", node_name);
+            	    eards_remote_disconnect();
+		        }
+            }
+        }
+    }
+}
+
+void restore_conf()
+{
+    int i, j, k, rc;
+    char node_name[256];
+
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {
+                if (k == -1)
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    
+                }
+
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+                if (rc<0){
+                    VERBOSE_N(0,"Error connecting with node %s",node_name);
+                }else{
+                	VERBOSE_N(1,"Restoring the configuartion in node %s\n", node_name);
+                	if (!eards_restore_conf()) VERBOSE_N(0,"Error restoring the configuration for node %s", node_name);
+            	    eards_remote_disconnect();
+		        }
+            }
+        }
+    }
+}
 
 void main(int argc, char *argv[])
 {
@@ -204,10 +273,12 @@ void main(int argc, char *argv[])
         int option_optidx = optidx ? optidx : 1;
         int option_idx = 0;
         static struct option long_options[] = {
-            {"set-freq", required_argument, 0, 0},
+            {"set-freq",     required_argument, 0, 0},
             {"red-def-freq", required_argument, 0, 1},
             {"red-max-freq", required_argument, 0, 2},
-            {"inc-th", required_argument, 0, 3}
+            {"inc-th",       required_argument, 0, 3},
+            {"set-def-freq", required_argument, 0, 4},
+            {"restore-conf", no_argument, 0, 5}
         };
 
         c = getopt_long(argc, argv, "", long_options, &option_idx);
@@ -249,6 +320,17 @@ void main(int argc, char *argv[])
                 }
                 increase_th_all_nodes(arg);
                 break;
+            case 4:
+                arg = atoi(optarg);
+                if (arg > MAX_PSTATE)
+                {
+                    VERBOSE_N(0, "Indicated p_state to set is above the maximum (%d)", MAX_PSTATE);
+                    break;
+                }
+                set_def_freq(arg);
+                break;
+            case 5:
+                restore_conf();
         }
     }
 
