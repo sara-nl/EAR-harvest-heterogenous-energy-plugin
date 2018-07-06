@@ -121,7 +121,6 @@ void set_global_eard_variables()
 {
 	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	EAR_VERBOSE_LEVEL=my_cluster_conf.eard.verbose;
-	eard_max_pstate=my_node_conf->max_pstate;
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -837,6 +836,7 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
 {
     policy_conf_t *my_policy;
     ulong deff;
+	eard_max_pstate=node->max_pstate;
 	// Default policy is just in case
     default_policy_context.policy=MONITORING_ONLY;
     default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -864,6 +864,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 {
 	policy_conf_t *my_policy;
 	ulong deff;
+	eard_max_pstate=node->max_pstate;
 	// Default policy is just in case
 	default_policy_context.policy=MONITORING_ONLY;
 	default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -980,9 +981,8 @@ void main(int argc,char *argv[])
 	if (must_recover){
 		eard_verbose(0,"We must recover from a crash");
 		restore_eard_conf(&eard_dyn_conf);
-	}else{
-    	configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
 	}
+    configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
     eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
 
 	// Check
