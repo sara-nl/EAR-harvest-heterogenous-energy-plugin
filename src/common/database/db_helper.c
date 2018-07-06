@@ -41,6 +41,8 @@ static const char *__NAME__ = "db_helper";
 
 db_conf_t *db_config = NULL;
 
+int current_job_id = 0;
+int current_step_id = 0;
 
 void init_db_helper(db_conf_t *conf)
 {
@@ -513,10 +515,16 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
 }
 
 
-int db_read_applications(application_t **apps,uint is_learning)
+int db_read_applications(application_t **apps,uint is_learning, int max_apps)
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
+
+    if (max_apps < 1)
+    {
+        fprintf(stderr, "ERROR: querying less than 1 app is not possible (%d requested).\n", max_apps);
+        return EAR_ERROR;
+    }
 
     if (connection == NULL)
     {
@@ -536,12 +544,13 @@ int db_read_applications(application_t **apps,uint is_learning)
 		return num_apps;
     }
 
+
     char query[256];
     if (is_learning)
-        sprintf(query, "SELECT * FROM Learning_applications");
+        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
     else
-        sprintf(query, "SELECT * FROM Applications ");
-    
+        sprintf(query, "SELECT * FROM Applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
+    printf("QUERY: %s\n", query); 
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
@@ -549,5 +558,9 @@ int db_read_applications(application_t **apps,uint is_learning)
         mysql_close(connection);
 		return num_apps;
     }
+
+    current_step_id = apps[num_apps - 1]->job.step_id;
+    current_job_id = apps[num_apps - 1]->job.id;
+
 	return num_apps;
 }

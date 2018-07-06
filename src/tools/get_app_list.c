@@ -55,9 +55,10 @@ void main(int argc,char *argv[])
 	printf("Initializinf DB\n");
 	init_db_helper(&my_conf.database);
 	printf("reading apps\n");
-	num_apps=db_read_applications(&apps,is_learning);
+	num_apps=db_read_applications(&apps,is_learning, 50);
 	for (i=0;i<num_apps;i++){
 		report_application_data(&apps[i]);
 	}
-    free(apps);
+    if (num_apps > 0)
+        free(apps);
 }

@@ -379,7 +379,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
             if (num_sigs > 0) {
                 copy_signature(&app_aux->signature, sig_aux);
             }
-            //free(sig_aux);
+            free(sig_aux);
             app_aux->is_mpi = 1;
         }
         else app_aux->is_mpi = 0;
@@ -391,10 +391,17 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
             copy_power_signature(&app_aux->power_sig, pow_sig_aux);
             free(pow_sig_aux);
         }
-
+        
+        sig_id = 0;
         copy_application(&apps_aux[i], app_aux);
         status = mysql_stmt_fetch(statement);
         i++;
+        
+        is_mpi = 1;
+        if (sig_id < 1 || bind[3].is_null)
+            is_mpi = 0;
+    
+
     }
     *apps = apps_aux;
 
@@ -784,16 +791,8 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
         bind[i].is_unsigned = 1;
     }
 
-    //unsigned long storage
-    // bind[24].buffer_type = bind[25].buffer_type = MYSQL_TYPE_LONGLONG;
-    // bind[24].length = bind[25].length = 0;
-    // bind[24].is_null = bind[25].is_null = 0;
-    // bind[24].is_unsigned = bind[25].is_unsigned = 1;
-
     //storage variables assignation
     bind[0].buffer = (char *)&sig->DC_power;
-    //bind[1].buffer = (char *)&sig->max_DC_power;
-    //bind[2].buffer = (char *)&sig->min_DC_power;
     bind[1].buffer = (char *)&sig->DRAM_power;
     bind[2].buffer = (char *)&sig->PCK_power;
     bind[3].buffer = (char *)&sig->EDP;
@@ -810,9 +809,6 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     bind[14].buffer = (char *)&sig->FLOPS[5];
     bind[15].buffer = (char *)&sig->FLOPS[6];
     bind[16].buffer = (char *)&sig->FLOPS[7];
-    //bind[19].buffer = (char *)&sig->L1_misses;
-    //bind[20].buffer = (char *)&sig->L2_misses;
-    //bind[21].buffer = (char *)&sig->L3_misses;
     bind[17].buffer = (char *)&sig->instructions;
     bind[18].buffer = (char *)&sig->cycles;
     bind[19].buffer = (char *)&sig->avg_f;

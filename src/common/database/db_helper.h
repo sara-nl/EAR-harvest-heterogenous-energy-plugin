@@ -68,7 +68,7 @@ int db_batch_insert_loops(loop_t *loops, int num_loops);
 ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor);
 
 /** Reads applications from the normal DB or the learning DB depending on is_learning. It allocates memory for apps. Returns the number of applications readed */
-int db_read_applications(application_t **apps,uint is_learning);
+int db_read_applications(application_t **apps,uint is_learning, int max_apps);
 
 
 #endif
