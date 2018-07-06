@@ -59,5 +59,6 @@ void main(int argc,char *argv[])
 	for (i=0;i<num_apps;i++){
 		report_application_data(&apps[i]);
 	}
-    free(apps);
+    if (num_apps > 0)
+        free(apps);
 }

@@ -41,6 +41,8 @@ static const char *__NAME__ = "db_helper";
 
 db_conf_t *db_config = NULL;
 
+int current_job_id = 0;
+int current_step_id = 0;
 
 void init_db_helper(db_conf_t *conf)
 {
@@ -538,10 +540,10 @@ int db_read_applications(application_t **apps,uint is_learning)
 
     char query[256];
     if (is_learning)
-        sprintf(query, "SELECT * FROM Learning_applications");
+        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id > %d ORDER BY job_id LIMIT 50", current_job_id);
     else
-        sprintf(query, "SELECT * FROM Applications ");
-    
+        sprintf(query, "SELECT * FROM Applications WHERE job_id > %d ORDER BY job_id LIMIT 50", current_job_id);
+    printf("QUERY: %s\n", query); 
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
@@ -549,5 +551,9 @@ int db_read_applications(application_t **apps,uint is_learning)
         mysql_close(connection);
 		return num_apps;
     }
+
+    current_step_id = apps[num_apps - 1]->job.step_id;
+    current_job_id = apps[num_apps - 1]->job.id;
+
 	return num_apps;
 }

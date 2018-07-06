@@ -379,7 +379,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
             if (num_sigs > 0) {
                 copy_signature(&app_aux->signature, sig_aux);
             }
-            //free(sig_aux);
+            free(sig_aux);
             app_aux->is_mpi = 1;
         }
         else app_aux->is_mpi = 0;
