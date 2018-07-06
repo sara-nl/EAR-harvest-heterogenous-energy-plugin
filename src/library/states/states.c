@@ -50,6 +50,7 @@
 #include <common/math_operations.h>
 
 static const char *__NAME__ = "ear/states";
+static const char *__HOST__ ;
 
 // static defines
 #define NO_PERIOD				0
@@ -92,6 +93,8 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	char *verbose, *loop_time, *who;
 	ulong	architecture_min_perf_accuracy_time;
+    __HOST__=node_name;
+
 
 	init_application(&last_signature);
 	if (my_id) return;
@@ -161,7 +164,7 @@ static void print_loop_signature(char *title, signature_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000000.0;
 
-	VERBOSE_N(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+	earl_verbose(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
@@ -309,7 +312,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					loop_with_signature = 1;
 					#if EAR_OVERHEAD_CONTROL
 					check_periodic_mode=0;
-					VERBOSE_N(2,"Switching check periodic mode to %d\n",check_periodic_mode);
+					earl_verbose(2,"Switching check periodic mode to %d\n",check_periodic_mode);
 					#endif
 
 					// Computing dynais overhead
@@ -322,10 +325,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 							#if DYNAIS_CUTOFF
 							dynais_enabled=DYNAIS_DISABLED;
 							#endif
-							VERBOSE_N(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
+							earl_verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
 							log_report_dynais_off(application.job.id,application.job.step_id);
 						}
-						VERBOSE_N(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+						earl_verbose(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
 						loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
 						last_first_event=event;
 						last_calls_in_loop=mpi_calls_iter;

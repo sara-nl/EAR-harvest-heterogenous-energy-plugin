@@ -44,8 +44,8 @@ PluginVerbose=0
 PluginAcceptedPstates=1,2,3
 
 ### COMMON Configuration
-TmpDir=/var/ear
-EtcDir=/etc
+TmpDir=@localstatedir@
+EtcDir=@sysconfdir@
 DataBasePathName=/etc/ear/dbs/dbs.
 Verbose=0
 
@@ -68,7 +68,7 @@ MinTimePerformanceAccuracy=10000000
 # Authorized users,accounts and groups are allowed to change policies, thresholds, frequencies etc
 # they are supposed to be admins 
 
-AuthorizedUsers=xjaneas,xjcorbalan
+AuthorizedUsers=user1,user2
 # AuthorizedAccounts=acc1,acc2,acc3
 # AuthorizedGroups=xx,yy
 

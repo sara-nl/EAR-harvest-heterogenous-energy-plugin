@@ -43,6 +43,7 @@ extern settings_conf_t *system_conf;
 extern resched_t *resched_conf;
 extern char system_conf_path[PATH_MAX];
 extern char resched_conf_path[PATH_MAX];
+extern char node_name[PATH_MAX];
 
 
 extern char loop_summary_path[PATH_MAX];

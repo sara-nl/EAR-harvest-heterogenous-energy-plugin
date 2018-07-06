@@ -43,6 +43,7 @@ settings_conf_t *system_conf=NULL;
 resched_t *resched_conf=NULL;
 char system_conf_path[PATH_MAX];
 char resched_conf_path[PATH_MAX];
+char node_name[PATH_MAX];
 
 char loop_summary_path[PATH_MAX];
 char app_summary_path[PATH_MAX];
