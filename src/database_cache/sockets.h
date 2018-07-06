@@ -74,4 +74,8 @@ state_t sockets_send(socket_t *socket, char *buffer, ssize_t size);
 
 state_t sockets_receive(int fd, char *buffer, ssize_t size);
 
+void sockets_print_socket(socket_t *socket);
+
+
+
 #endif //EAR_SOCKETS_H

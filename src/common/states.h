@@ -30,6 +30,7 @@
 #ifndef EAR_STATES_H
 #define EAR_STATES_H
 
+/* error definitions */
 #define EAR_SUCCESS              0
 #define EAR_ERROR               -1
 #define EAR_WARNING             -2
@@ -55,18 +56,37 @@
 #define PERIODIC_MODE_ON    1
 #define PERIODIC_MODE_OFF   0
 
-typedef int state_t;
-
-/*#define state_is(state, state_no) \
-	state.no == state_no
-
-#define state_isnt(state, state_no) \
-	state.no != state_no
+/* type & functions */
+//typedef int state_t;
 
 typedef struct state {
 	char *error;
 	void *data;
 	int no;
 } state_t;
-*/
+
+#define state_is(state, _no) \
+	(state.no == _no)
+
+#define state_isnt(state, _no) \
+	(state.no != _no)
+
+#define state_ok(state) \
+	state_is(state, EAR_SUCCESS)
+
+#define state_ko(state) \
+	state_isnt(state, EAR_SUCCESS)
+
+#define state_init(state, _no, _error, _data) \
+	state.data = (void *) _data; \
+	state.error = _error; \
+	state.no = _no;
+
+#define state_return(state, _no, _error, _data) \
+	state_init(state, _no, _error, _data); \
+	return state;
+
+#define state_print(state) \
+	printf("state (%d, '%s', %lu)\n", state.no, state.error, (uint64_t) state.data);
+
 #endif //EAR_STATES_H

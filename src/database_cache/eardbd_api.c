@@ -68,11 +68,11 @@ int eardbd_send_application(application_t *app)
 	unsigned char type = CONTENT_TYPE_APP;
 	size_t size_pck;
 
-	CONNECTION_TEST();
+	//CONNECTION_TEST();
 	verbose("sending application (size: %lu)", sizeof(application_t));
 
 	size_pck = prepare_packet(buffer_pck, type, (void *) app, sizeof(application_t));
-	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	return sockets_send(&sock_main, (void *) buffer_pck, size_pck).no;
 }
 
 int eardbd_send_periodic_metric(periodic_metric_t *met)
@@ -80,11 +80,11 @@ int eardbd_send_periodic_metric(periodic_metric_t *met)
 	unsigned char type = CONTENT_TYPE_PER;
 	size_t size_pck;
 
-	CONNECTION_TEST();
-	verbose("sending periodic metric (size: %lu)", sizeof(application_t));
+	//CONNECTION_TEST();
+	verbose("sending periodic metric (size: %lu) %d", sizeof(periodic_metric_t), type);
 
 	size_pck = prepare_packet(buffer_pck, type, (void *) met, sizeof(periodic_metric_t));
-	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	return sockets_send(&sock_main, (void *) buffer_pck, size_pck).no;
 }
 
 int eardbd_send_event(ear_event_t *eve)
@@ -96,7 +96,7 @@ int eardbd_send_event(ear_event_t *eve)
     verbose("sending event");
 
 	size_pck = prepare_packet(buffer_pck, type, (void *) eve, sizeof(ear_event_t));
-	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	return sockets_send(&sock_main, (void *) buffer_pck, size_pck).no;
 }
 
 int eardbd_send_loop(loop_t *loop)
@@ -108,7 +108,7 @@ int eardbd_send_loop(loop_t *loop)
     verbose("sending loop");
 
 	size_pck = prepare_packet(buffer_pck, type, (void *) loop, sizeof(loop_t));
-	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	return sockets_send(&sock_main, (void *) buffer_pck, size_pck).no;
 }
 
 int eardbd_ping()
@@ -118,7 +118,7 @@ int eardbd_ping()
 	CONNECTION_TEST();
 	verbose("sending ping");
 
-	return sockets_send(&sock_main, ping, sizeof(ping));
+	return sockets_send(&sock_main, ping, sizeof(ping)).no;
 }
 
 int eardbd_is_connected()
@@ -133,9 +133,9 @@ int eardbd_connect(char *host, uint port, uint protocol)
 
 	r = sockets_init(&sock_main, host, port, protocol);
 
-	if (r != EAR_SUCCESS) {
+	if (state_ko(r)) {
 		sockets_dispose(&sock_main);
-		return r;
+		return r.no;
 	}
 
 	r = sockets_socket(&sock_main);
@@ -144,16 +144,16 @@ int eardbd_connect(char *host, uint port, uint protocol)
 	{
 		r = sockets_connect(&sock_main);
 
-		if (r != EAR_SUCCESS) {
+		if (state_ko(r)) {
 			sockets_dispose(&sock_main);
-			return r;
+			return r.no;
 		}
 	}
 
-	return r;
+	return r.no;
 }
 
 int eardbd_disconnect()
 {
-	return sockets_dispose(&sock_main);
+	return sockets_dispose(&sock_main).no;
 }

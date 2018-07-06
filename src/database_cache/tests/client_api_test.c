@@ -33,13 +33,13 @@ int main(int argc, char **argv)
 
 	app.is_mpi = 1;
 	sprintf(app.node_id, "cae2306");
+	sprintf(met.node_id, "cae2306");
 
 	// Testing API
-	eardbd_connect(argv[1], 4712, UDP);
+	eardbd_connect(argv[1], 4711, TCP);
 	eardbd_send_application(&app);
+	eardbd_send_periodic_metric(&met);
 	eardbd_disconnect();
-
-	printf("void %lu", sizeof(void));
 
 	return 0;
 }

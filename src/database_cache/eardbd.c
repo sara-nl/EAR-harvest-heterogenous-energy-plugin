@@ -146,14 +146,16 @@ static void process_timeout_data()
 	lops_i = 0;
 }
 
-static void process_incoming_data(int fd, char *buffer)
+static void process_incoming_data(int fd, char *buffer, ssize_t size)
 {
 	packet_header_t *header;
-	char *content;
+	void *content;
 	char *type;
 
-	header = (packet_header_t *) buffer;
-	content = &buffer[sizeof(packet_header_t)];
+	header = P_HEADER(buffer);
+	content = P_CONTENT(buffer);
+
+	printf("CONTENT TAIP %u\n", header->content_type);
 
 	if (header->content_type == CONTENT_TYPE_APP) {
 		type = "application_t";
@@ -202,7 +204,7 @@ static void process_incoming_data(int fd, char *buffer)
 		type = "unknown";
 	}
 
-	verbose("received an object type '%s' from the socket %d", type, fd);
+	verbose("received an object type '%s' from the socket %d of size %ld", type, fd, size);
 }
 
 /*
@@ -232,11 +234,10 @@ int main(int argc, char **argv)
 	float mb_mets;
 	float mb_lops;
 	float mb_eves;
-	state_t state;
 	ssize_t size;
-	int status_1;
-	int status_2;
-	int status_3;
+	state_t state1;
+	state_t state2;
+	state_t state3;
 	int i;
 
 	char *mirror_main_hostname;
@@ -261,8 +262,8 @@ int main(int argc, char **argv)
 	mb_apps = (double) (sizeof(application_t)     * apps_len) / 1000000.0;
 	mb_mets = (double) (sizeof(periodic_metric_t) * mets_len) / 1000000.0;
 
-	verbose("reserving %0.2f MBytes for applications", mb_apps);
-	verbose("reserving %0.2f MBytes for power metrics", mb_mets);
+	verbose("reserving %0.2f MBytes for applications (%ld)", mb_apps, sizeof(application_t));
+	verbose("reserving %0.2f MBytes for power metrics (%ld)", mb_mets, sizeof(periodic_metric_t));
 	verbose("reserving %lu bytes for packet buffer", sizeof(buffer_pck));
 
 	// Configuration file (TODO)
@@ -294,34 +295,33 @@ int main(int argc, char **argv)
 	sockets_init(sock_metr_udp, NULL, conf_clus.db_manager.udp_port, UDP);
 	sockets_init(sock_sync_tcp, NULL, 4713, TCP);
 
-	status_1 = sockets_socket(sock_metr_tcp);
-	status_2 = sockets_socket(sock_metr_udp);
-	status_3 = sockets_socket(sock_sync_tcp);
+	state1 = sockets_socket(sock_metr_tcp);
+	state2 = sockets_socket(sock_metr_udp);
+	state3 = sockets_socket(sock_sync_tcp);
 
 	verbose ("opened metrics socket %d for TCP packets on port %u", sock_metr_tcp->fd, sock_metr_tcp->port);
 	verbose ("opened metrics socket %d for UDP packets on port %u", sock_metr_udp->fd, sock_metr_udp->port);
 	verbose ("opened sync socket %d for TCP packets on port %u", sock_sync_tcp->fd, sock_sync_tcp->port);
 
-	if (status_1 < 0 || status_2 < 0 || status_3 < 0) {
-		error("while creating sockets (%d, %d, %d)", status_1, status_2, status_3);
+	if (state_ko(state1) || state_ko(state2) || state_ko(state3)) {
+		error("while creating sockets (%s)", state1.error);
 	}
 
 	// Binding socket
-	status_1 = sockets_bind(sock_metr_tcp);
-	status_2 = sockets_bind(sock_metr_udp);
-	status_3 = sockets_bind(sock_sync_tcp);
+	state1 = sockets_bind(sock_metr_tcp);
+	state2 = sockets_bind(sock_metr_udp);
+	state3 = sockets_bind(sock_sync_tcp);
 
-	if (status_1 < 0 || status_2 < 0 || status_3 < 0) {
-		error("while binding sockets (%d, %d, %d)", status_1, status_2, status_3);
+	if (state_ko(state1) || state_ko(state2) || state_ko(state3)) {
+		error("while binding sockets (%s)", state1.error);
 	}
 
 	// Listening socket
-	status_1 = sockets_listen(sock_metr_tcp);
-	status_3 = sockets_listen(sock_sync_tcp);
+	state1 = sockets_listen(sock_metr_tcp);
+	state3 = sockets_listen(sock_sync_tcp);
 
-	if (status_1 < 0) {
-		error("while listening sockets (%d, -, %d)", status_1, status_3);
-		exit(1);
+	if (state_ko(state1) || state_ko(state3)) {
+		error("while listening sockets (%s)", state1.error);
 	}
 
 	// Add the listener to the ready set
@@ -378,10 +378,11 @@ int main(int argc, char **argv)
 					}
 				// Handle data transfers
 				} else {
-					state = sockets_receive(i, buffer_pck, sizeof(buffer_pck));
+					state1 = sockets_receive(i, buffer_pck, sizeof(buffer_pck));
+					size = (ssize_t) state1.data;
 
-					if (state == EAR_SUCCESS) {
-						process_incoming_data(i, buffer_pck);
+					if (state_ok(state1) && size > 0) {
+						process_incoming_data(i, buffer_pck, size);
 					} else {
 						FD_CLR(i, &fds_active);
 						close(i);

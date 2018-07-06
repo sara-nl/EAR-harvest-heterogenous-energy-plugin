@@ -60,7 +60,7 @@
 
 // Compile time macros
 #define MAX_PACKET_SIZE() \
-	_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t) + sizeof(packet_header_t)
+	(_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t)) + sizeof(packet_header_t)
 
 #define P_HEADER(buffer) \
 		(packet_header_t *) buffer;
@@ -69,7 +69,6 @@
 		(void *) &buffer[sizeof(packet_header_t)];
 
 /* Types */
-
 typedef struct packet_header {
 	time_t timestamp;
 	uchar content_type;
