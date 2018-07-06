@@ -39,6 +39,7 @@
 #include <stdint.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <signal.h>
 
 #include <common/ear_verbose.h>
 #include <daemon/eard_api.h>
@@ -68,6 +69,30 @@ static ulong uncore_size;
 static ulong energy_size;
 static ulong rapl_size;
 static ulong freq_size;
+
+void signal_handler(int s)
+{
+	VERBOSE_N(0,"EARD has been disconnected");
+	app_connected=0;
+}
+void signal_catcher()
+{
+    struct sigaction action,old_action;
+    sigset_t set;
+    sigset_t earl_mask;
+    
+    sigfillset(&earl_mask);
+    sigdelset(&earl_mask,SIGPIPE);
+    sigprocmask(SIG_UNBLOCK,&earl_mask,NULL);
+    sigemptyset(&action.sa_mask);
+    action.sa_handler = signal_handler;
+    action.sa_flags = 0;
+    
+    if (sigaction(SIGPIPE, &action, NULL) < 0) {
+    	VERBOSE_N(0, "sigaction error on signal s=%d (%s)", SIGPIPE, strerror(errno));
+    }
+}    
+
 
 // If this approach is selected, we will substitute the function call by the key
 ulong create_sec_tag()
@@ -232,6 +257,7 @@ int eards_connect(application_t *my_app)
 		}
 	}
 	app_connected=1;
+	signal_catcher();
 	VERBOSE_N(2, "Connected");
 	return EAR_SUCCESS;
 

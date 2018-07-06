@@ -99,6 +99,9 @@ uint mpi_calls_in_period=0;
 uint total_mpi_calls=0;
 #endif
 
+    
+
+
 //
 static void print_local_data()
 {

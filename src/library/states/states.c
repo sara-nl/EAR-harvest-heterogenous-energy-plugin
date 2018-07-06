@@ -149,7 +149,37 @@ void states_end_period(uint iterations)
 	policy_end_loop();
 }
 
+static void check_dynais_on(signature_t *A, signature_t *B)
+{
+	if (!equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH*2) || !equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH*2)){
+		dynais_enabled=DYNAIS_ENABLED;
+		earl_verbose(1,"Dynais ON \n");
+	}
+}
 
+static check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
+{
+	ulong dynais_overhead_usec=0;
+    double dynais_overhead_perc;
+
+    dynais_overhead_usec=mpi_calls_iter;
+    dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.signature.time;
+    if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
+    // Disable dynais : API is still pending
+    	#if DYNAIS_CUTOFF
+    	dynais_enabled=DYNAIS_DISABLED;
+    	#endif
+    	earl_verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
+    	log_report_dynais_off(application.job.id,application.job.step_id);
+    }
+    earl_verbose(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+    loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
+    last_first_event=event;
+    last_calls_in_loop=mpi_calls_iter;
+    last_loop_size=period;
+    last_loop_level=level;
+    
+}
 static int policy_had_effect(signature_t *A, signature_t *B)
 {
 	if (equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH) &&
@@ -185,8 +215,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
 	unsigned long prev_f;
 	int result;
-	ulong dynais_overhead_usec=0;
-	double dynais_overhead_perc;
 
 	prev_f = ear_frequency;
 
@@ -318,23 +346,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					// Computing dynais overhead
 					// Change dynais_enabled to ear_tracing_status=DYNAIS_ON/DYNAIS_OFF
 					if (dynais_enabled==DYNAIS_ENABLED){
-						dynais_overhead_usec=mpi_calls_iter;
-						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.signature.time;
-						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
-							// Disable dynais : API is still pending
-							#if DYNAIS_CUTOFF
-							dynais_enabled=DYNAIS_DISABLED;
-							#endif
-							earl_verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
-							log_report_dynais_off(application.job.id,application.job.step_id);
-						}
-						earl_verbose(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
-						loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
-						last_first_event=event;
-						last_calls_in_loop=mpi_calls_iter;
-						last_loop_size=period;
-						last_loop_level=level;
-					//end dynais overhead
+						check_dynais_off(mpi_calls_iter,period,level,event);
+
 					}
 					current_loop_id = event;
 
@@ -470,8 +483,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 							policy_new_loop();
                             #if DYNAIS_CUTOFF
-							 ear_verbose(1,"Dynais ON \n");
-                             dynais_enabled=DYNAIS_ENABLED;
+							 check_dynais_on(&loop_signature.signature, &last_signature.signature);
                             #endif
 						} else {
 							EAR_STATE = EVALUATING_SIGNATURE;
