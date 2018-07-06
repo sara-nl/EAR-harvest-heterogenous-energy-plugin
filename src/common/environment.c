@@ -433,7 +433,7 @@ void ear_lib_environment()
 // This function writes ear variables in $EAR_TMP/environment.txt file
 void ear_print_lib_environment()
 {
-#if DEBUG
+#if EAR_DEBUG
 	char *tmp;
 	char environ[256];
 	char var[256];

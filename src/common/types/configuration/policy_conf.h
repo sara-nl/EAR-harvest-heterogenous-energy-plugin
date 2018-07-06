@@ -31,18 +31,12 @@
 #ifndef _POLICY_CONF_H
 #define _POLICY_CONF_H
 
-
+#include <common/types/configuration/cluster_conf.h>
 #define TOTAL_POLICIES          3
 
 #define MIN_ENERGY_TO_SOLUTION  0
 #define MIN_TIME_TO_SOLUTION    1
 #define MONITORING_ONLY         2
 
-
-/** Converts from policy name to policy_id */
-int policy_name_to_id(char *my_policy);
-
-/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
-int policy_id_to_name(int policy_id,char *my_policy);
 
 #endif

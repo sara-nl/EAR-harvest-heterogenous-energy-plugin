@@ -32,8 +32,23 @@
 #include <stdlib.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/types/configuration/policy_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 
+
+/*
+ *  * POLICY FUNCTIONS
+ *   */
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
+{
+    policy_conf_t *my_policy=NULL;
+    uint i;
+    uint nump=0;
+    while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
+    if (nump<my_node->num_policies){
+        my_policy=&my_node->policies[nump];
+    }
+    return my_policy;
+}
 
 
 /** Converts from policy name to policy_id */

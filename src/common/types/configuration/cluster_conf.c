@@ -160,21 +160,6 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 	return n;
 }
 
-/*
- * POLICY FUNCTIONS
- */
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
-{
-	policy_conf_t *my_policy=NULL;
-	uint i;
-	uint nump=0;
-    while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
-    if (nump<my_node->num_policies){
-        my_policy=&my_node->policies[nump];
-    }
-	return my_policy;
-}
-
 
 
 /** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/s
@@ -194,4 +179,75 @@ int get_ear_conf_path(char *ear_conf_path)
     }
 	return EAR_ERROR;
 }
+
+/** CHECKING USER TYPE */
+/* returns true if the username, group and/or accounts is presents in the list of authorized users/groups/accounts */
+int is_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc)
+{
+	int i;
+	int found=0;
+	if (user!=NULL){
+		for (i=0;(i<my_conf->num_priv_users) && (!found);i++){
+			if (strcmp(user,my_conf->priv_users[i])==0) found=1;
+		}
+	}
+	if (found)	return found;
+	if (group!=NULL){
+		for (i=0;(i<my_conf->num_priv_groups) && (!found);i++){
+			if (strcmp(group,my_conf->priv_groups[i])==0) found=1;
+		}
+	}
+	if (found)	return found;
+	if (acc!=NULL){
+		for (i=0;(i<my_conf->num_acc) && (!found);i++){
+        	if (strcmp(acc,my_conf->priv_acc[i])==0) found=1;
+    	}
+	}
+	return found;
+}
+
+/* returns true if the username, group and/or accounts can use the given energy_tag_t */
+energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t *my_tag)
+{
+	int i;
+    int found=0;
+    if (user!=NULL){
+        for (i=0;(i<my_tag->num_users) && (!found);i++){
+            if (strcmp(user,my_tag->users[i])==0) found=1;
+        }
+    }
+    if (found)  return my_tag;
+    if (group!=NULL){
+        for (i=0;(i<my_tag->num_groups) && (!found);i++){
+            if (strcmp(group,my_tag->groups[i])==0) found=1;
+        }
+    }
+    if (found)  return my_tag;
+    if (acc!=NULL){
+        for (i=0;(i<my_tag->num_accounts) && (!found);i++){
+            if (strcmp(acc,my_tag->accounts[i])==0) found=1;
+        }
+    }
+	if (found) return my_tag;
+	return NULL;
+}
+
+/* returns  the energy tag entry if the username, group and/or accounts is in the list of the users/groups/acc authorized to use the given energy-tag, NULL otherwise */
+energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc,char *energy_tag)
+{
+	int i;
+	int found=0;
+	energy_tag_t *my_tag;
+	if (energy_tag==NULL) return NULL;
+	for (i=0;(i<my_conf->num_tags) && (!found);i++){
+		if (strcmp(energy_tag,my_conf->e_tags[i].tag)==0){
+			found=1;
+			my_tag=&my_conf->e_tags[i];	
+		}
+	}	
+	if (!found)	return NULL;
+	return can_use_energy_tag(user,group,acc,my_tag);
+}
+
+
 

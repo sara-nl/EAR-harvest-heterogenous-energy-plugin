@@ -35,7 +35,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <common/types/configuration/policy_conf.h>
 #include <common/config.h>
 #include <control/frequency.h>
 #include <library/common/macros.h>

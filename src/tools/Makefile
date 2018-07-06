@@ -32,7 +32,7 @@ traces_to_paraver: traces_to_paraver.cpp
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o traces_to_paraver traces_to_paraver.cpp
 
 get_app_list: get_app_list.c $(ROOTDIR)/src/common/types.a 
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o get_app_list get_app_list.c $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(ROOTDIR)/src/common/types.a
+	$(CC) $(CC_FLAGS) $(CFLAGS) -O0 -o get_app_list get_app_list.c $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(ROOTDIR)/src/common/types.a
 
 ######## OPTIONS
 
