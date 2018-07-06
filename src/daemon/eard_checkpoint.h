@@ -27,10 +27,16 @@
  * *   The GNU LEsser General Public License is contained in the file COPYING  
  */
 
-#ifndef _EARD_CONF_H_
-#define _EARD_CONF_H_
+#ifndef _EARD_CHECKPOINT_H_
+#define _EARD_CHECKPOINT_H_
 
-void save_eard_coonf();
-void restore_eard_conf();
+#include <common/types/configuration/cluster_conf.h>
+typedef struct eard_dyn_conf{
+	cluster_conf_t *cconf;
+	my_node_conf_t *nconf;
+}eard_dyn_conf_t;
+
+void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf);
+void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf);
 #else
 #endif

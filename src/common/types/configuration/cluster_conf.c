@@ -156,6 +156,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
             num_spec_nodes++;
         }
     }
+	n->max_pstate=my_conf->eard.max_pstate;
 
 	return n;
 }

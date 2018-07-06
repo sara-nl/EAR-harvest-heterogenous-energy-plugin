@@ -44,7 +44,7 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 {
 	int i;
 	if (my_node_conf!=NULL){
-		fprintf(stderr,"My node: cpus %u island %u ip %s ",my_node_conf->cpus,my_node_conf->island,my_node_conf->db_ip);
+		fprintf(stderr,"My node: cpus %u max_pstate %lu island %u ip %s ",my_node_conf->cpus,my_node_conf->max_pstate,my_node_conf->island,my_node_conf->db_ip);
 		if (my_node_conf->coef_file!=NULL){
 			fprintf(stderr,"coeffs %s \n",my_node_conf->coef_file);
 		}

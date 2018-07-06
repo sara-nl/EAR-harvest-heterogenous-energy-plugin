@@ -49,5 +49,6 @@ typedef ulong   job_id;
 #define	UID_NAME			8
 #define POLICY_NAME 		32
 #define ENERGY_TAG_SIZE		32
+#define MAX_PATH_SIZE   256
 
 #endif

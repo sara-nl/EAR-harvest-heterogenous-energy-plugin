@@ -43,7 +43,7 @@
 #include <common/config.h>
 #include <control/frequency.h>
 #include <daemon/power_monitor.h>
-#include <daemon/eard_conf.h>
+#include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <metrics/power_metrics/power_metrics.h>
 #if USE_EARDB
@@ -64,6 +64,7 @@ extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
 extern my_node_conf_t     *my_node_conf;
 extern cluster_conf_t my_cluster_conf;
+extern eard_dyn_conf_t eard_dyn_conf;
 extern policy_conf_t default_policy_context;
 static char *__NAME__="powermon: ";
 
@@ -364,6 +365,7 @@ void powermon_set_th(double th)
 	}else{
 		min_time_p->th=th;
 	}
+	save_eard_conf(&eard_dyn_conf);
 }
 
 void powermon_new_max_freq(ulong maxf)
@@ -378,7 +380,8 @@ void powermon_new_max_freq(ulong maxf)
 	}
 	ps=frequency_freq_to_pstate(maxf);
 	VERBOSE_N(1,"Max pstate set to %u freq=%lu",ps,maxf);
-	my_cluster_conf.eard.max_pstate=ps;
+	my_node_conf->max_pstate=ps;
+	save_eard_conf(&eard_dyn_conf);
 }
 
 void powermon_new_def_freq(ulong def)
@@ -397,6 +400,7 @@ void powermon_new_def_freq(ulong def)
 		VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[nump].policy,def);
 		my_node_conf->policies[nump].p_state=ps;
 	}
+	save_eard_conf(&eard_dyn_conf);
 }
 
 /** Reduces the current freq (default and max) based on new values. If application is not mpi, automatically chages the node freq if needed */
@@ -414,11 +418,12 @@ void powermon_red_freq(ulong max_freq,ulong def_freq)
 			current_node_freq=def_freq;		
 		}
 	}
-	my_cluster_conf.eard.max_pstate=ps_max;
+	my_node_conf->max_pstate=ps_max;
     for (nump=0;nump<my_node_conf->num_policies;nump++){
         VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps_def,my_node_conf->policies[nump].policy,def_freq);
         my_node_conf->policies[nump].p_state=ps_def;
     }
+	save_eard_conf(&eard_dyn_conf);
 }
 
 /** Sets temporally the default and max frequency to the same value. When application is not mpi, automatically chages the node freq if needed */
@@ -435,15 +440,19 @@ void powermon_set_freq(ulong freq)
             current_node_freq=freq;
         }
     }
-    my_cluster_conf.eard.max_pstate=ps;
+    my_node_conf->max_pstate=ps;
     for (nump=0;nump<my_node_conf->num_policies;nump++){
         VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[nump].policy,freq);
         my_node_conf->policies[nump].p_state=ps;
     }
+	save_eard_conf(&eard_dyn_conf);
 }
 
 /** Restores values from ear.conf (not reloads the file). When application is not mpi, automatically chages the node freq if needed */
-void powermon_restore_conf();
+void powermon_restore_conf()
+{
+	save_eard_conf(&eard_dyn_conf);
+}
 
 
 // Each sample is processed by this function

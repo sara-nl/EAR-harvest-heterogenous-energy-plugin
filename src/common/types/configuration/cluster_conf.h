@@ -134,6 +134,7 @@ typedef struct my_node_conf
 {
 	uint cpus;
 	uint island;
+	ulong max_pstate;
 	char db_ip[USER];
 	char *coef_file;
 	uint num_policies;

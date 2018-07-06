@@ -58,7 +58,7 @@
 
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/power_monitor.h>
-#include <daemon/eard_conf.h>
+#include <daemon/eard_checkpoint.h>
 #include <daemon/dynamic_configuration.h>
 #include <daemon/shared_configuration.h>
 #if USE_EARDB
@@ -72,6 +72,7 @@ pthread_t dyn_conf_th;
 char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t	my_cluster_conf;
 my_node_conf_t 	*my_node_conf;
+eard_dyn_conf_t eard_dyn_conf; // This variable is for eard checkpoint
 policy_conf_t default_policy_context;
 settings_conf_t *dyn_conf;
 resched_t *resched_conf;
@@ -81,7 +82,6 @@ uint signal_sighup=0;
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
-#define MAX_PATH_SIZE 	256
 #define RAPL_METRICS 	4
 
 // These two variables are used by the verbosity macros
@@ -121,9 +121,7 @@ void set_global_eard_variables()
 {
 	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	EAR_VERBOSE_LEVEL=my_cluster_conf.eard.verbose;
-	eard_max_pstate=my_cluster_conf.eard.max_pstate;
-	
-	
+	eard_max_pstate=my_node_conf->max_pstate;
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -783,7 +781,7 @@ void signal_handler(int sig)
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
     			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
-				save_eard_conf();
+				save_eard_conf(&eard_dyn_conf);
 			}
 
         }
@@ -854,12 +852,12 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
 		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
-    dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
+    dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
 	resched->force_rescheduling=1;
     eard_verbose(0,"configure_new_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
-	save_eard_conf();
+	save_eard_conf(&eard_dyn_conf);
 }
 
 void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node)
@@ -881,12 +879,12 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
-	dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
+	dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
 	resched_conf->force_rescheduling=0;
 	eard_verbose(0,"configure_default_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
-	save_eard_conf();
+	save_eard_conf(&eard_dyn_conf);
 }
 
 
@@ -951,6 +949,8 @@ void main(int argc,char *argv[])
         }
 		print_my_node_conf(my_node_conf);
     }
+	eard_dyn_conf.cconf=&my_cluster_conf;
+	eard_dyn_conf.nconf=my_node_conf;
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
 	/** Shared memory is used between EARD and EARL **/
@@ -979,7 +979,7 @@ void main(int argc,char *argv[])
 	int must_recover=new_service("eard");
 	if (must_recover){
 		eard_verbose(0,"We must recover from a crash");
-		restore_eard_conf();
+		restore_eard_conf(&eard_dyn_conf);
 	}else{
     	configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
 	}

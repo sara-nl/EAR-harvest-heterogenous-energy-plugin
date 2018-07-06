@@ -45,12 +45,12 @@
 #include <netinet/ip.h>
 #include <netdb.h>
 
+#include <common/config.h>
 #include <control/frequency.h>
 #include <common/types/job.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
-#include <common/config.h>
 #include <daemon/eard_server_api.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
@@ -140,7 +140,6 @@ int dynconf_inc_th(ulong th)
     	dyn_conf->th=dyn_conf->th+dth;
     	resched_conf->force_rescheduling=1;
 		powermon_set_th(dyn_conf->th);
-		save_eard_conf();
     	return EAR_SUCCESS;
 	}else return EAR_ERROR;
 
@@ -152,7 +151,6 @@ int dynconf_max_freq(ulong max_freq)
 	if (is_valid_freq(max_freq, num_f,f_list)){
 		dyn_conf->max_freq=max_freq;
 		resched_conf->force_rescheduling=1;
-		save_eard_conf();
 		powermon_new_max_freq(max_freq);
 		return EAR_SUCCESS;
 	}else{
@@ -161,7 +159,6 @@ int dynconf_max_freq(ulong max_freq)
 		if (freq>0){
 			dyn_conf->max_freq=freq;
 			resched_conf->force_rescheduling=1;
-			save_eard_conf();
 			powermon_new_max_freq(freq);
 			return EAR_SUCCESS;
 		}else return EAR_ERROR;
@@ -173,7 +170,6 @@ int dynconf_def_freq(ulong def)
     if (is_valid_freq(def,num_f,f_list)){
         dyn_conf->def_freq=def;
         resched_conf->force_rescheduling=1;
-        save_eard_conf();
         powermon_new_def_freq(def);
         return EAR_SUCCESS;
     }else{
@@ -181,7 +177,6 @@ int dynconf_def_freq(ulong def)
         if (freq>0){
             dyn_conf->def_freq=freq;
             resched_conf->force_rescheduling=1;
-            save_eard_conf();
             powermon_new_def_freq(freq);
             return EAR_SUCCESS;
         }else return EAR_ERROR;
@@ -195,7 +190,6 @@ int dynconf_set_freq(ulong freq)
 		dyn_conf->max_freq=freq;
 		dyn_conf->def_freq=freq;
 		resched_conf->force_rescheduling=1;
-		save_eard_conf();
 		powermon_set_freq(freq);
 		return EAR_SUCCESS;
 	}else{
@@ -204,7 +198,6 @@ int dynconf_set_freq(ulong freq)
 			dyn_conf->max_freq=freq2;
 			dyn_conf->def_freq=freq2;
 			resched_conf->force_rescheduling=1;
-			save_eard_conf();
 			powermon_set_freq(freq2);
 			return EAR_SUCCESS;
 		}else return EAR_ERROR;
@@ -231,14 +224,12 @@ int dynconf_red_pstates(uint p_states)
 	if (is_valid_freq(max,num_f,f_list)){
 		dyn_conf->max_freq=max;
     	resched_conf->force_rescheduling=1;
-		save_eard_conf();
 		powermon_new_max_freq(max);
 	}else{
 		int freq=lower_valid_freq(max,num_f,f_list);
 		if (freq>0){
 			dyn_conf->max_freq=freq;
 			resched_conf->force_rescheduling=1;
-			save_eard_conf();
 			powermon_new_max_freq(freq);
 		}else	return EAR_ERROR;
 	}
@@ -246,7 +237,6 @@ int dynconf_red_pstates(uint p_states)
 	if (is_valid_freq(def,num_f,f_list)){
 		dyn_conf->def_freq=def;
 		resched_conf->force_rescheduling=1;
-		save_eard_conf();
 		powermon_new_def_freq(def);
     	return EAR_SUCCESS;
 	}else{ 
@@ -254,7 +244,6 @@ int dynconf_red_pstates(uint p_states)
 		if (freq>0){
 			dyn_conf->def_freq=freq;
 			resched_conf->force_rescheduling=1;
-			save_eard_conf();
 			powermon_new_def_freq(freq);
     		return EAR_SUCCESS;
 		}else return EAR_ERROR;
@@ -268,7 +257,6 @@ int dynconf_set_th(ulong th)
 	if ((dth > 0 ) && (dth <=1.0 )){
 		dyn_conf->th=dth;
 		resched_conf->force_rescheduling=1;	
-		save_eard_conf();
 		powermon_set_th(dyn_conf->th);
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
