@@ -36,30 +36,6 @@
 
 static state_t s;
 
-state_t sockets_disconnect(int *fd)
-{
-	if (*fd > 0) {
-		close(*fd);
-	}
-	*fd = -1;
-
-	state_return(EAR_SUCCESS, "");
-}
-
-state_t sockets_connect(socket_t *socket)
-{
-	int r;
-
-	// Assign to the socket the address and port
-	r = connect(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
-
-	if (r < 0) {
-		state_return(EAR_SOCK_CONN_ERROR, strerror(errno));
-	}
-
-	state_return(EAR_SUCCESS, "");
-}
-
 state_t sockets_accept(int fd_req, int *fd_cli)
 {
 	struct sockaddr_storage cli_addr;
@@ -212,11 +188,34 @@ state_t sockets_dispose(socket_t *socket)
 	state_return(EAR_SUCCESS, "");
 }
 
+state_t sockets_connect(socket_t *socket)
+{
+	int r;
+
+	// Assign to the socket the address and port
+	r = connect(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
+
+	if (r < 0) {
+		state_return(EAR_SOCK_CONN_ERROR, strerror(errno));
+	}
+
+	state_return(EAR_SUCCESS, "");
+}
+
+state_t sockets_disconnect(int *fd)
+{
+	if (*fd > 0) {
+		close(*fd);
+	}
+	*fd = -1;
+
+	state_return(EAR_SUCCESS, "");
+}
+
 void sockets_print_socket(socket_t *socket)
 {
 	printf("socket (%d, %u, %u, '%s')\n", socket->fd, socket->port, socket->protocol, socket->host);
 }
-
 
 void sockets_print_sockaddr(struct sockaddr *host_addr)
 {

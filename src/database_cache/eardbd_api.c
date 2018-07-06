@@ -63,7 +63,7 @@ static size_t prepare_packet(char *buffer, unsigned char type, void *object, siz
 	return sizeof(packet_header_t) + object_size;
 }
 
-int eardbd_send_application(application_t *app)
+state_t eardbd_send_application(application_t *app)
 {
 	unsigned char type = CONTENT_TYPE_APP;
 	size_t size_pck;
@@ -75,7 +75,7 @@ int eardbd_send_application(application_t *app)
 	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
 }
 
-int eardbd_send_periodic_metric(periodic_metric_t *met)
+state_t eardbd_send_periodic_metric(periodic_metric_t *met)
 {
 	unsigned char type = CONTENT_TYPE_PER;
 	size_t size_pck;
@@ -87,7 +87,7 @@ int eardbd_send_periodic_metric(periodic_metric_t *met)
 	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
 }
 
-int eardbd_send_event(ear_event_t *eve)
+state_t eardbd_send_event(ear_event_t *eve)
 {
 	unsigned char type = CONTENT_TYPE_EVE;
 	size_t size_pck;
@@ -99,7 +99,7 @@ int eardbd_send_event(ear_event_t *eve)
 	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
 }
 
-int eardbd_send_loop(loop_t *loop)
+state_t eardbd_send_loop(loop_t *loop)
 {
 	unsigned char type = CONTENT_TYPE_LOO;
 	size_t size_pck;
@@ -111,7 +111,7 @@ int eardbd_send_loop(loop_t *loop)
 	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
 }
 
-int eardbd_ping()
+state_t eardbd_ping()
 {
 	char ping[] = "ping";
 
@@ -121,39 +121,66 @@ int eardbd_ping()
 	return sockets_send(&sock_main, ping, sizeof(ping));
 }
 
-int eardbd_is_connected()
+state_t eardbd_is_connected()
 {
 	CONNECTION_TEST();
 	return EAR_SUCCESS;
 }
 
-int eardbd_connect(char *host, uint port, uint protocol)
+static state_t _eardbd_socket(socket_t *socket, char *host, uint port, uint protocol)
 {
-	state_t r;
+	state_t s;
+	s = sockets_init(&sock_main, host, port, protocol);
 
-	r = sockets_init(&sock_main, host, port, protocol);
-
-	if (state_fail(r)) {
-		sockets_dispose(&sock_main);
-		return r;
+	if (state_fail(s)) {
+		return s;
 	}
 
-	r = sockets_socket(&sock_main);
+	s = sockets_socket(&sock_main);
 
 	if (protocol == TCP)
 	{
-		r = sockets_connect(&sock_main);
+		s = sockets_connect(&sock_main);
 
-		if (state_fail(r)) {
-			sockets_dispose(&sock_main);
-			return r;
+		if (state_fail(s)) {
+			return s;
 		}
 	}
 
-	return r;
+	return EAR_SUCCESS;
 }
 
-int eardbd_disconnect()
+state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint protocol)
+{
+	state_t s;
+
+	if (host_main == NULL) {
+		return EAR_ERROR;
+	}
+
+	s = _eardbd_socket(&sock_main, host_main, port, protocol);
+
+	if (state_fail(s)) {
+		sockets_dispose(&sock_main);
+		return s;
+	}
+
+	if (host_mirror == NULL) {
+		return EAR_SUCCESS;
+	}
+
+	s = _eardbd_socket(&sock_mirr, host_mirror, port, protocol);
+
+	if (state_fail(s)) {
+		sockets_dispose(&sock_main);
+		sockets_dispose(&sock_mirr);
+		return s;
+	}
+
+	return EAR_SUCCESS;
+}
+
+state_t eardbd_disconnect()
 {
 	return sockets_dispose(&sock_main);
 }

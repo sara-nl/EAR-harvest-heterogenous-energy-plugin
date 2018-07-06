@@ -155,8 +155,6 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 	header = P_HEADER(buffer);
 	content = P_CONTENT(buffer);
 
-	printf("CONTENT TAIP %u\n", header->content_type);
-
 	if (header->content_type == CONTENT_TYPE_APP) {
 		type = "application_t";
 

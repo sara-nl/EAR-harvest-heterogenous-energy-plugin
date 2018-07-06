@@ -38,14 +38,14 @@
 #include <common/types/periodic_aggregation.h>
 #include <database_cache/eardbd.h>
 
-int eardbd_connect(char *host, uint port, uint protocol);
-int eardbd_is_connected();
-int eardbd_disconnect();
+state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint protocol);
+state_t eardbd_is_connected();
+state_t eardbd_disconnect();
 
-int eardbd_send_ping();
-int eardbd_send_periodic_metric(periodic_metric_t *met);
-int eardbd_send_application(application_t *app);
-int eardbd_send_loop(loop_t *loop);
-int eardbd_send_event(ear_event_t *ev);
+state_t eardbd_send_ping();
+state_t eardbd_send_periodic_metric(periodic_metric_t *met);
+state_t eardbd_send_application(application_t *app);
+state_t eardbd_send_loop(loop_t *loop);
+state_t eardbd_send_event(ear_event_t *ev);
 
 #endif //EAR_EARDBD_API_H
