@@ -24,8 +24,8 @@ void usage(char *app)
 {
 	printf("Usage: %s [options]"\
             "\n\t--set-freq sets the frequency of all nodes to the requested one"\
-            "\n\t--red-def-freq reduces default frequency"\
-            "\n\t--red-max-freq reduces maximum frequency"\
+            "\n\t--set-def-freq sets the default frequency"\
+            "\n\t--set-max-freq sets the maximum frequency"\
             "\n\t--inc-th increases the threshold for all nodes\n", app);
 	exit(1);
 }
@@ -91,7 +91,7 @@ void red_max_freq(ulong ps)
             	}else{
     
                 	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the max freq for node %s", node_name);
+		        	if (!eards_red_max_and_def_freq(ps)) VERBOSE_N(0,"Error reducing the max freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -122,8 +122,8 @@ void red_def_freq(ulong ps)
         	    if (rc<0){
 	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
             	}else{
-                	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the default freq for node %s", node_name);
+                	VERBOSE_N(1,"Reducing  the default and maximumfrequency in node %s by %lu\n", node_name,ps);
+		        	if (!eards_red_max_and_def_freq(ps)) VERBOSE_N(0,"Error reducing the default freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -159,7 +159,7 @@ void reduce_frequencies_all_nodes(ulong freq)
                 if (rc<0){
                     VERBOSE_N(0,"Error connecting with node %s",node_name);
                 }else{
-                	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name, freq);
+                	VERBOSE_N(1,"Setting  the frequency in node %s to %lu\n", node_name, freq);
                 	if (!eards_set_freq(freq)) VERBOSE_N(0,"Error reducing the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }

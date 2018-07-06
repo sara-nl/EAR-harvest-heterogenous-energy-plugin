@@ -58,6 +58,7 @@
 
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/power_monitor.h>
+#include <daemon/eard_conf.h>
 #include <daemon/dynamic_configuration.h>
 #include <daemon/shared_configuration.h>
 #if USE_EARDB
@@ -782,6 +783,7 @@ void signal_handler(int sig)
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
     			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
+				save_eard_conf();
 			}
 
         }
@@ -857,6 +859,7 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
     dyn->th=my_policy->th;
 	resched->force_rescheduling=1;
     eard_verbose(0,"configure_new_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
+	save_eard_conf();
 }
 
 void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node)
@@ -883,6 +886,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
     dyn->th=my_policy->th;
 	resched_conf->force_rescheduling=0;
 	eard_verbose(0,"configure_default_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
+	save_eard_conf();
 }
 
 
@@ -970,15 +974,17 @@ void main(int argc,char *argv[])
 		eard_verbose(0, "ERROR, frequency information can't be initialized");
 		_exit(1);
 	}
-    configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
-    eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
-
 	/** We must control if we are come from a crash **/	
 	// We check if we are recovering from a crash
 	int must_recover=new_service("eard");
 	if (must_recover){
 		eard_verbose(0,"We must recover from a crash");
+		restore_eard_conf();
+	}else{
+    	configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
 	}
+    eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
+
 	// Check
 	if (argc == 2)
 	{

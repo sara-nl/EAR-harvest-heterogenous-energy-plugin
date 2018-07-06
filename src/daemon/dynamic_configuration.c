@@ -140,6 +140,7 @@ int dynconf_inc_th(ulong th)
     	dyn_conf->th=dyn_conf->th+dth;
     	resched_conf->force_rescheduling=1;
 		powermon_set_th(dyn_conf->th);
+		save_eard_conf();
     	return EAR_SUCCESS;
 	}else return EAR_ERROR;
 
@@ -148,10 +149,10 @@ int dynconf_inc_th(ulong th)
 
 int dynconf_max_freq(ulong max_freq)
 {
-	// we must check it is a valid freq: TODO
 	if (is_valid_freq(max_freq, num_f,f_list)){
 		dyn_conf->max_freq=max_freq;
 		resched_conf->force_rescheduling=1;
+		save_eard_conf();
 		powermon_new_max_freq(max_freq);
 		return EAR_SUCCESS;
 	}else{
@@ -160,10 +161,63 @@ int dynconf_max_freq(ulong max_freq)
 		if (freq>0){
 			dyn_conf->max_freq=freq;
 			resched_conf->force_rescheduling=1;
+			save_eard_conf();
 			powermon_new_max_freq(freq);
 			return EAR_SUCCESS;
 		}else return EAR_ERROR;
 	}
+}
+
+int dynconf_def_freq(ulong def)
+{
+    if (is_valid_freq(def,num_f,f_list)){
+        dyn_conf->def_freq=def;
+        resched_conf->force_rescheduling=1;
+        save_eard_conf();
+        powermon_new_def_freq(def);
+        return EAR_SUCCESS;
+    }else{
+        int freq=lower_valid_freq(def,num_f,f_list);
+        if (freq>0){
+            dyn_conf->def_freq=freq;
+            resched_conf->force_rescheduling=1;
+            save_eard_conf();
+            powermon_new_def_freq(freq);
+            return EAR_SUCCESS;
+        }else return EAR_ERROR;
+    }
+
+}
+
+int dynconf_set_freq(ulong freq)
+{
+	if (is_valid_freq(freq,num_f,f_list)){
+		dyn_conf->max_freq=freq;
+		dyn_conf->def_freq=freq;
+		resched_conf->force_rescheduling=1;
+		save_eard_conf();
+		powermon_set_freq(freq);
+		return EAR_SUCCESS;
+	}else{
+        int freq2=lower_valid_freq(freq,num_f,f_list);
+		if (freq2>0){
+			dyn_conf->max_freq=freq2;
+			dyn_conf->def_freq=freq2;
+			resched_conf->force_rescheduling=1;
+			save_eard_conf();
+			powermon_set_freq(freq2);
+			return EAR_SUCCESS;
+		}else return EAR_ERROR;
+	}
+	
+
+
+}
+
+int dyncon_restore_conf()
+{
+	/* PENDING */
+	return EAR_SUCCESS;
 }
 
 int dynconf_red_pstates(uint p_states)
@@ -177,12 +231,14 @@ int dynconf_red_pstates(uint p_states)
 	if (is_valid_freq(max,num_f,f_list)){
 		dyn_conf->max_freq=max;
     	resched_conf->force_rescheduling=1;
+		save_eard_conf();
 		powermon_new_max_freq(max);
 	}else{
 		int freq=lower_valid_freq(max,num_f,f_list);
 		if (freq>0){
 			dyn_conf->max_freq=freq;
 			resched_conf->force_rescheduling=1;
+			save_eard_conf();
 			powermon_new_max_freq(freq);
 		}else	return EAR_ERROR;
 	}
@@ -190,6 +246,7 @@ int dynconf_red_pstates(uint p_states)
 	if (is_valid_freq(def,num_f,f_list)){
 		dyn_conf->def_freq=def;
 		resched_conf->force_rescheduling=1;
+		save_eard_conf();
 		powermon_new_def_freq(def);
     	return EAR_SUCCESS;
 	}else{ 
@@ -197,6 +254,7 @@ int dynconf_red_pstates(uint p_states)
 		if (freq>0){
 			dyn_conf->def_freq=freq;
 			resched_conf->force_rescheduling=1;
+			save_eard_conf();
 			powermon_new_def_freq(freq);
     		return EAR_SUCCESS;
 		}else return EAR_ERROR;
@@ -210,6 +268,7 @@ int dynconf_set_th(ulong th)
 	if ((dth > 0 ) && (dth <=1.0 )){
 		dyn_conf->th=dth;
 		resched_conf->force_rescheduling=1;	
+		save_eard_conf();
 		powermon_set_th(dyn_conf->th);
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
@@ -245,8 +304,20 @@ void process_remote_requests(int clientfd)
 			ack=dynconf_inc_th(command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_RED_PSTATE:
-			VERBOSE_N(1,"red_max_p_state command received\n");
+			VERBOSE_N(1,"red_max_and_def_p_state command received\n");
 			ack=dynconf_red_pstates(command.my_req.ear_conf.p_states);
+			break;
+		case EAR_RC_SET_FREQ:
+			VERBOSE_N(1,"set freq command received\n");
+			ack=dynconf_set_freq(command.my_req.ear_conf.max_freq);
+			break;
+		case EAR_RC_DEF_FREQ:
+			VERBOSE_N(1,"set def freq command received\n");
+			ack=dynconf_def_freq(command.my_req.ear_conf.max_freq);
+			break;
+		case EAR_RC_REST_CONF:
+			VERBOSE_N(1,"restore conf command received\n");
+			ack=dyncon_restore_conf();
 			break;
 		default:
 			VERBOSE_N(0,"Invalid remote command\n");

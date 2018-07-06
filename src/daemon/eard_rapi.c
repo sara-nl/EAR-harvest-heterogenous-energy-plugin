@@ -141,7 +141,7 @@ int eards_end_job(job_id jid,job_id sid)
 	return send_command(&command);
 }
 
-int eards_set_freq(unsigned long freq)
+int eards_set_max_freq(unsigned long freq)
 {
 	request_t command;
 	command.req=EAR_RC_MAX_FREQ;
@@ -149,13 +149,37 @@ int eards_set_freq(unsigned long freq)
 	return send_command(&command);
 }
 
-int eards_red_max_freq(uint p_states)
+int eards_set_freq(unsigned long freq)
+{
+    request_t command;
+    command.req=EAR_RC_SET_FREQ;
+    command.my_req.ear_conf.max_freq=freq;
+    return send_command(&command);
+}
+int eards_set_def_freq(unsigned long freq)
+{
+    request_t command;
+    command.req=EAR_RC_DEF_FREQ;
+    command.my_req.ear_conf.max_freq=freq;
+    return send_command(&command);
+}
+
+
+int eards_red_max_and_def_freq(uint p_states)
 {
     request_t command;
     command.req=EAR_RC_RED_PSTATE;
     command.my_req.ear_conf.p_states=p_states;
     return send_command(&command);
 }
+
+int eards_restore_conf()
+{
+    request_t command;
+    command.req=EAR_RC_REST_CONF;
+    return send_command(&command);
+}
+
 
 
 // New th must be passed as % th=0.75 --> 75

@@ -334,7 +334,7 @@ ulong reduce_frequencies_all_nodes(int level)
         	ps=pstate_level[level];
 
         	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n",my_cluster_conf.nodes[i].name,ps);
-        	if (!eards_red_max_freq(ps)) VERBOSE_N(0,"Error reducing the freq for node %s",my_cluster_conf.nodes[i].name);
+        	if (!eards_red_max_and_def_freq(ps)) VERBOSE_N(0,"Error reducing the freq for node %s",my_cluster_conf.nodes[i].name);
         	eards_remote_disconnect();
 		}
     }

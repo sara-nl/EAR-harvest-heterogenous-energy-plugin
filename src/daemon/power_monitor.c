@@ -43,6 +43,7 @@
 #include <common/config.h>
 #include <control/frequency.h>
 #include <daemon/power_monitor.h>
+#include <daemon/eard_conf.h>
 #include <daemon/shared_configuration.h>
 #include <metrics/power_metrics/power_metrics.h>
 #if USE_EARDB
@@ -398,6 +399,8 @@ void powermon_new_def_freq(ulong def)
 	}
 }
 
+/** Reduces the current freq (default and max) based on new values. If application is not mpi, automatically chages the node freq if needed */
+
 void powermon_red_freq(ulong max_freq,ulong def_freq)
 {
 	int nump;
@@ -417,6 +420,31 @@ void powermon_red_freq(ulong max_freq,ulong def_freq)
         my_node_conf->policies[nump].p_state=ps_def;
     }
 }
+
+/** Sets temporally the default and max frequency to the same value. When application is not mpi, automatically chages the node freq if needed */
+
+void powermon_set_freq(ulong freq)
+{
+    int nump;
+    uint ps;
+    ps=frequency_freq_to_pstate(freq);
+    if (current_ear_app.app.is_mpi==0){
+        if (freq!=current_node_freq){
+            VERBOSE_N(1,"SetFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,freq);
+            frequency_set_all_cpus(freq);
+            current_node_freq=freq;
+        }
+    }
+    my_cluster_conf.eard.max_pstate=ps;
+    for (nump=0;nump<my_node_conf->num_policies;nump++){
+        VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[nump].policy,freq);
+        my_node_conf->policies[nump].p_state=ps;
+    }
+}
+
+/** Restores values from ear.conf (not reloads the file). When application is not mpi, automatically chages the node freq if needed */
+void powermon_restore_conf();
+
 
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power,ulong avg_f)

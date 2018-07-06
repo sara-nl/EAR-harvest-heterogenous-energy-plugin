@@ -8,6 +8,7 @@ eard_OBJS += power_monitor.o \
              dynamic_configuration.o \
              shared_configuration.o \
              eard_server_api.o \
+			 eard_conf.o\
              eard_api.o
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database.a
@@ -47,6 +48,9 @@ eard_api.o: eard_api.c eard_api.h
 
 eard_rapi.o: eard_rapi.c eard_rapi.h
 	$(CC) -fPIC $(CFLAGS) -c eard_rapi.c
+
+eard_conf.o:eard_conf.c eard_conf.h
+	$(CC) -fPIC $(CFLAGS) -c eard_conf.c
 
 ######## OPTIONS
 
