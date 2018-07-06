@@ -391,10 +391,17 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
             copy_power_signature(&app_aux->power_sig, pow_sig_aux);
             free(pow_sig_aux);
         }
-
+        
+        sig_id = 0;
         copy_application(&apps_aux[i], app_aux);
         status = mysql_stmt_fetch(statement);
         i++;
+        
+        is_mpi = 1;
+        if (sig_id < 1 || bind[3].is_null)
+            is_mpi = 0;
+    
+
     }
     *apps = apps_aux;
 
