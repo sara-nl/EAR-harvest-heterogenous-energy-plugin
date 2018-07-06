@@ -44,8 +44,11 @@
 #define EAR_SOCK_CREAT_ERROR	-20
 #define EAR_SOCK_BIND_ERROR		-21
 #define EAR_SOCK_LISTEN_ERROR	-22
-#define EAR_SOCK_RECV_ERROR		-23
-#define EAR_SOCK_ACCEPT_ERROR	-24
+#define EAR_SOCK_SEND_ERROR		-23
+#define EAR_SOCK_RECV_ERROR		-24
+#define EAR_SOCK_ACCEPT_ERROR	-25
+#define EAR_SOCK_CONN_ERROR		-26
+#define EAR_SOCK_BAD_PROTOCOL	-27
 
 #define DYNAIS_ENABLED      1
 #define DYNAIS_DISABLED     0
@@ -54,10 +57,16 @@
 
 typedef int state_t;
 
-/*typedef struct state {
+/*#define state_is(state, state_no) \
+	state.no == state_no
+
+#define state_isnt(state, state_no) \
+	state.no != state_no
+
+typedef struct state {
 	char *error;
 	void *data;
 	int no;
-} state_t;*/
-
+} state_t;
+*/
 #endif //EAR_STATES_H

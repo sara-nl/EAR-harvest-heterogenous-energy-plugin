@@ -7,7 +7,6 @@
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
 
-
 void usage(int argc, char **argv)
 {
 	if (argc != 2)
@@ -39,6 +38,8 @@ int main(int argc, char **argv)
 	eardbd_connect(argv[1], 4712, UDP);
 	eardbd_send_application(&app);
 	eardbd_disconnect();
+
+	printf("void %lu", sizeof(void));
 
 	return 0;
 }

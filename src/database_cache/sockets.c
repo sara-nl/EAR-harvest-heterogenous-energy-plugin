@@ -36,7 +36,7 @@
 
 char *error;
 
-static void sprint_sockaddr(struct sockaddr *host_addr, char *buffer, size_t size)
+static void sockets_sprint_sockaddr(struct sockaddr *host_addr, char *buffer, size_t size)
 {
 	char *ip_version;
 	void *address;
@@ -67,6 +67,31 @@ static void sprint_sockaddr(struct sockaddr *host_addr, char *buffer, size_t siz
 	}
 }
 
+state_t sockets_disconnect(int *fd)
+{
+	if (*fd > 0) {
+		close(*fd);
+	}
+	*fd = -1;
+
+	return EAR_SUCCESS;
+}
+
+state_t sockets_connect(socket_t *socket)
+{
+	int r;
+
+	// Assign to the socket the address and port
+	r = connect(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
+
+	if (r < 0) {
+		error = strerror(errno);
+		return EAR_SOCK_CONN_ERROR;
+	}
+
+	return EAR_SUCCESS;
+}
+
 state_t sockets_accept(int fd_req, int *fd_cli)
 {
 	struct sockaddr_storage cli_addr;
@@ -78,6 +103,31 @@ state_t sockets_accept(int fd_req, int *fd_cli)
 	{
 		error = strerror(errno);
 		return EAR_SOCK_ACCEPT_ERROR;
+	}
+
+	return EAR_SUCCESS;
+}
+
+state_t sockets_send(socket_t *socket, char *buffer, ssize_t size)
+{
+	size_t bytes_left = size;
+	size_t bytes_sent = 0;
+	int n;
+
+	while(bytes_sent < size)
+	{
+		if (socket->protocol == TCP) {
+			n = send(socket->fd, buffer + bytes_sent, bytes_left, 0);
+		} else {
+			n = sendto(socket->fd, buffer + bytes_sent, bytes_left, 0, socket->info->ai_addr, socket->info->ai_addrlen);
+		}
+
+		if (n == -1) {
+			return EAR_SOCK_SEND_ERROR;
+		}
+
+		bytes_sent += n;
+		bytes_left -= n;
 	}
 
 	return EAR_SUCCESS;
@@ -143,9 +193,13 @@ state_t sockets_socket(socket_t *sock)
 	sprintf(c_port, "%u", sock->port);
 	memset(&hints, 0, sizeof (hints));
 
+	//
 	hints.ai_socktype = sock->protocol; // TCP stream sockets
-	hints.ai_family = AF_UNSPEC;	// Don't care IPv4 or IPv6
-	hints.ai_flags = AI_PASSIVE;    // Fill in my IP for me
+	hints.ai_family = AF_UNSPEC;		// Don't care IPv4 or IPv6
+
+	if (sock->host == NULL) {
+		hints.ai_flags = AI_PASSIVE;    // Fill in my IP for me
+	}
 
 	if ((r = getaddrinfo(sock->host, c_port, &hints, &sock->info)) != 0)
 	{
@@ -164,17 +218,35 @@ state_t sockets_socket(socket_t *sock)
 	return EAR_SUCCESS;
 }
 
-state_t socket_init(socket_t *socket, char *host, uint port, uint protocol)
+state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
 {
+	if (protocol != TCP && protocol != UDP) {
+		return EAR_SOCK_BAD_PROTOCOL;
+	}
+
 	if (host != NULL) {
 		socket->host = strcpy(socket->hostname, host);
 	} else {
 		socket->host = NULL;
 	}
 
+	socket->fd = -1;
 	socket->port = port;
+	socket->info = NULL;
 	socket->protocol = protocol;
 
 	return EAR_SUCCESS;
 }
 
+state_t sockets_dispose(socket_t *socket)
+{
+	if (socket->fd >= 0) {
+		sockets_disconnect(&socket->fd);
+	}
+
+	if (socket->info != NULL) {
+		freeaddrinfo(socket->info);
+	}
+
+	return EAR_SUCCESS;
+}

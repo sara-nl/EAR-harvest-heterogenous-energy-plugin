@@ -30,9 +30,15 @@
 #ifndef EAR_EARDBD_API_H
 #define EAR_EARDBD_API_H
 
+#include <common/types/log.h>
+#include <common/types/loop.h>
+#include <common/types/generic.h>
+#include <common/types/application.h>
+#include <common/types/periodic_metric.h>
+#include <common/types/periodic_aggregation.h>
 #include <database_cache/eardbd.h>
 
-int eardbd_connect(char *host, unsigned int port, int protocol);
+int eardbd_connect(char *host, uint port, uint protocol);
 int eardbd_is_connected();
 int eardbd_disconnect();
 

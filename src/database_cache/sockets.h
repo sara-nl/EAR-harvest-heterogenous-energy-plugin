@@ -44,19 +44,19 @@
 #define SZ_NAME_MEDIUM		256
 
 /* types */
-typedef struct socket
-{
+typedef struct socket {
 	char hostname[SZ_NAME_MEDIUM];
 	struct addrinfo *info;
 	char *host;
 	uint protocol;
 	uint port;
-	uint type;
 	int fd;
 } socket_t;
 
 /* functions */
-state_t socket_init(socket_t *socket, char *host, uint port, uint protocol);
+state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol);
+
+state_t sockets_dispose(socket_t *socket);
 
 state_t sockets_socket(socket_t *socket);
 
@@ -66,7 +66,12 @@ state_t sockets_listen(socket_t *socket);
 
 state_t sockets_accept(int fd_req, int *fd_cli);
 
-state_t sockets_receive(int fd, char *buffer, ssize_t size);
+state_t sockets_connect(socket_t *socket);
 
+state_t sockets_disconnect(int *fd);
+
+state_t sockets_send(socket_t *socket, char *buffer, ssize_t size);
+
+state_t sockets_receive(int fd, char *buffer, ssize_t size);
 
 #endif //EAR_SOCKETS_H

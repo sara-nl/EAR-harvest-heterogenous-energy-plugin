@@ -232,6 +232,7 @@ int main(int argc, char **argv)
 	float mb_mets;
 	float mb_lops;
 	float mb_eves;
+	state_t state;
 	ssize_t size;
 	int status_1;
 	int status_2;
@@ -289,9 +290,9 @@ int main(int argc, char **argv)
 	FD_ZERO(&fds_active);
 
 	// Opening socket
-	socket_init(sock_metr_tcp, NULL, conf_clus.db_manager.tcp_port, TCP);
-	socket_init(sock_metr_udp, NULL, conf_clus.db_manager.udp_port, UDP);
-	socket_init(sock_sync_tcp, NULL, 4713, TCP);
+	sockets_init(sock_metr_tcp, NULL, conf_clus.db_manager.tcp_port, TCP);
+	sockets_init(sock_metr_udp, NULL, conf_clus.db_manager.udp_port, UDP);
+	sockets_init(sock_sync_tcp, NULL, 4713, TCP);
 
 	status_1 = sockets_socket(sock_metr_tcp);
 	status_2 = sockets_socket(sock_metr_udp);
@@ -377,9 +378,9 @@ int main(int argc, char **argv)
 					}
 				// Handle data transfers
 				} else {
-					size = sockets_receive(i, buffer_pck, sizeof(buffer_pck));
+					state = sockets_receive(i, buffer_pck, sizeof(buffer_pck));
 
-					if (size >= 0) {
+					if (state == EAR_SUCCESS) {
 						process_incoming_data(i, buffer_pck);
 					} else {
 						FD_CLR(i, &fds_active);
