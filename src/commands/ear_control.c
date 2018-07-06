@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>
@@ -184,6 +185,20 @@ void main(int argc, char *argv[])
 
     if (read_cluster_conf(path_name, &my_cluster_conf) != EAR_SUCCESS) VERBOSE_N(0, "ERROR reading cluster configuration\n");
     
+    char *user = getlogin();
+    if (user == NULL)
+    {
+        fprintf(stderr, "ERROR getting username, cannot verify identity of user executing the command. Exiting...\n");
+        free_cluster_conf(&my_cluster_conf);
+        exit(1);
+    }
+    else if (!is_privileged(&my_cluster_conf, user, NULL, NULL))
+    {
+        fprintf(stderr, "This command can only be executed by privileged users, and the current one (%s) is not. Contact your admin for more info.\n", user);
+        free_cluster_conf(&my_cluster_conf);
+        exit(1);
+    }
+
     while (1)
     {
         int option_optidx = optidx ? optidx : 1;
