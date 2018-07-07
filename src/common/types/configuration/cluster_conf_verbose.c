@@ -102,7 +102,7 @@ static void print_islands_conf(node_island_t *conf)
 	}
 }
 
-static void print_energy_tag(energy_tag_t *etag)
+void print_energy_tag(energy_tag_t *etag)
 {
 	fprintf(stderr, "--> Tag: %s\t P_STATE: %u\n", etag->tag, etag->p_state);
 	int i;

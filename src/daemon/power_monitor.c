@@ -59,6 +59,8 @@
 #include <common/database/db_helper.h>
 #endif
 
+#define REPORT_UNCORE	0
+uint64_t uncore_freq[2]={0,0};
 #define MAX_PATH_SIZE 256
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
@@ -273,12 +275,17 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
 	int p_id;
+	energy_tag_t *my_tag;
 	policy_conf_t *my_policy,learning_policy;
 	ulong f;
+	uint user_type;
 	VERBOSE_N(2,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
+	user_type=get_user_type(&my_cluster_conf,appID->job.energy_tag,appID->job.user_id,appID->job.group_id,appID->job.user_acc,&my_tag);
+	VERBOSE_N(0,"New job USER type is %u",user_type);
+	if (my_tag!=NULL) print_energy_tag(my_tag);
 	// Checking the specific policy settings. It is pending to configure for special users
 	if (appID->is_learning){
 		if (frequency_is_valid_pstate(appID->job.def_f)){
@@ -458,9 +465,9 @@ void powermon_restore_conf()
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 {
-	VERBOSE_N(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf\n",
+	VERBOSE_N(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%lu,%lu)\n",
 		current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,
-		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power);
+		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,uncore_freq[0],uncore_freq[1]);
 	
 	while (pthread_mutex_trylock(&app_lock));
 	
@@ -560,7 +567,11 @@ void *eard_power_monitoring(void *frequency_monitoring)
 
 	PM_set_sigusr1();
 	form_database_paths();
-	
+
+	#if REPORT_UNCORE
+	state_t st= frequency_uncore_init(2, 24, 85);
+	VERBOSE_N(0,"frequency_uncore_init returns %d",st);	
+	#endif	
 
 	VERBOSE_N(2," power monitoring thread created\n");
 	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0," Error in init_power_ponitoring\n");
@@ -575,6 +586,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	// Get time and Energy
 	read_enegy_data(&e_begin);
 	aperf_periodic_avg_frequency_init_all_cpus();
+	#if REPORT_UNCORE
+	frequency_uncore_counters_start();
+	#endif
 
 	/*
 	*	MAIN LOOP
@@ -589,6 +603,10 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		// Get time and Energy
 		read_enegy_data(&e_end);
 		avg_f=aperf_periodic_avg_frequency_end_all_cpus();
+		#if REPORT_UNCORE
+		frequency_uncore_counters_stop(uncore_freq);
+		frequency_uncore_counters_start();
+		#endif
 		
 		// Compute the power
 		compute_power(&e_begin,&e_end,&my_current_power);
@@ -602,6 +620,10 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		
 		t_begin=t_end;
 	}
+	#if REPORT_UNCORE
+	st = frequency_uncore_dispose();
+	VERBOSE_N(0,"frequency_uncore_dispose returns %d",st);	
+	#endif
 
 
 	pthread_exit(0);

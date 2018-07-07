@@ -373,6 +373,7 @@ my_node_conf_t *my_node_conf;
 // This function reads and process environment variable It must be called before using get_ functions
 void ear_lib_environment()
 {
+	#if 0
 	char nodename[GENERIC_NAME];
     if (gethostname(nodename, sizeof(nodename)) < 0)
     {
@@ -396,15 +397,14 @@ void ear_lib_environment()
         }
         print_my_node_conf(my_node_conf);
     }
+	#endif
 	// That part will be initialized from cluster_conf
-	conf_ear_tmp=my_cluster_conf.tmp_dir;
-	conf_ear_coeff_db_pathname=my_cluster_conf.earlib.coefficients_pathname;
+	//conf_ear_tmp=my_cluster_conf.tmp_dir;
+	//conf_ear_coeff_db_pathname=my_cluster_conf.earlib.coefficients_pathname;
 	//conf_ear_dynais_levels=;
 	//conf_ear_dynais_window_size=
-	#if 0
 	getenv_ear_performance_accuracy();
 	getenv_ear_dynais_levels();
-	#endif
 	// This part will be moved to cluster conf
 	getenv_ear_dynais_window_size();
 	getenv_ear_coeff_db_pathname();
@@ -414,7 +414,7 @@ void ear_lib_environment()
 	getenv_ear_user_db_pathname();
 	getenv_ear_verbose();
 	// from cluster_conf
-	//getenv_ear_tmp();
+	getenv_ear_tmp();
 	// Not needed
 	//getenv_ear_db_pathname();
 	getenv_ear_user_db_pathname();
