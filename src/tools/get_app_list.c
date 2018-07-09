@@ -66,5 +66,6 @@ void main(int argc,char *argv[])
         total_apps += num_apps;
 	    num_apps=db_read_applications(&apps,is_learning, 50);
     }
-    printf("Total apps:%d\n", total_apps);
+    printf("Total apps from queries: %d\n", total_apps);
+    printf("Total apps from DB: %d\n", get_num_applications(is_learning)); 
 }
