@@ -552,10 +552,15 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps)
 
     char query[256];
     if (is_learning)
-        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
+        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
+                        "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
+                        "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
+                        "job_id > %d", current_job_id, max_apps, current_job_id);
     else
-        sprintf(query, "SELECT * FROM Applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
-    printf("QUERY: %s\n", query); 
+        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
+                        "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
+                        "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
+                        "job_id > %d", current_job_id, max_apps, current_job_id);
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
@@ -564,8 +569,7 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps)
 		return num_apps;
     }
 
-    current_step_id = apps[num_apps - 1]->job.step_id;
-    current_job_id = apps[num_apps - 1]->job.id;
-
+    current_job_id = (*apps)[num_apps - 1].job.id;
+    mysql_close(connection);
 	return num_apps;
 }

@@ -36,6 +36,7 @@ int EAR_VERBOSE_LEVEL=1;
 void main(int argc,char *argv[])
 {
 	int num_apps, is_learning=0;
+    int total_apps = 0;
 	int i;
 	application_t *apps;
 	if (argc==2){
@@ -56,9 +57,14 @@ void main(int argc,char *argv[])
 	init_db_helper(&my_conf.database);
 	printf("reading apps\n");
 	num_apps=db_read_applications(&apps,is_learning, 50);
-	for (i=0;i<num_apps;i++){
-		report_application_data(&apps[i]);
-	}
-    if (num_apps > 0)
+    while (num_apps > 0)
+    {
+	    for (i=0;i<num_apps;i++){
+		    report_application_data(&apps[i]);
+	    }
         free(apps);
+        total_apps += num_apps;
+	    num_apps=db_read_applications(&apps,is_learning, 50);
+    }
+    printf("Total apps:%d\n", total_apps);
 }
