@@ -63,6 +63,7 @@
 #include <daemon/shared_configuration.h>
 #if USE_EARDB
 #include <database_cache/eardbd_api.h>
+#include <daemon/eard_utils.h>
 #endif
 
 
@@ -73,7 +74,7 @@ char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t	my_cluster_conf;
 my_node_conf_t 	*my_node_conf;
 eard_dyn_conf_t eard_dyn_conf; // This variable is for eard checkpoint
-policy_conf_t default_policy_context;
+policy_conf_t default_policy_context,energy_tag_context,authorized_context;
 settings_conf_t *dyn_conf;
 resched_t *resched_conf;
 char dyn_conf_path[GENERIC_NAME];
@@ -512,7 +513,10 @@ int eard_system(int must_read)
 			ret1=db_insert_ear_event(&req.req_data.event);
 			#endif
 			#else
-			ret1=eardbd_send_event(&req.req_data.event);
+			if ((ret1=eardbd_send_event(&req.req_data.event))!=EAR_SUCCESS){
+				VERBOSE_N(0,"Error sending event to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
 			#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
@@ -529,7 +533,10 @@ int eard_system(int must_read)
 			ret1 = db_insert_loop (&req.req_data.loop.loop);
 			#endif
 			#else
-			ret1=eardbd_send_loop(&req.req_data.loop.loop);
+			if ((ret1=eardbd_send_loop(&req.req_data.loop.loop))!=EAR_SUCCESS){
+				VERBOSE_N(0,"Error sending loop to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
 			#endif
 			#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
