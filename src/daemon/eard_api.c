@@ -29,6 +29,7 @@
 
 
 
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -38,6 +39,7 @@
 #include <stdint.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <signal.h>
 
 #include <common/ear_verbose.h>
 #include <daemon/eard_api.h>
@@ -67,6 +69,47 @@ static ulong uncore_size;
 static ulong energy_size;
 static ulong rapl_size;
 static ulong freq_size;
+
+void signal_handler(int s)
+{
+	VERBOSE_N(0,"EARD has been disconnected");
+	app_connected=0;
+}
+void signal_catcher()
+{
+    struct sigaction action,old_action;
+    sigset_t set;
+    sigset_t earl_mask;
+    
+    sigfillset(&earl_mask);
+    sigdelset(&earl_mask,SIGPIPE);
+    sigprocmask(SIG_UNBLOCK,&earl_mask,NULL);
+    sigemptyset(&action.sa_mask);
+    action.sa_handler = signal_handler;
+    action.sa_flags = 0;
+    
+    if (sigaction(SIGPIPE, &action, NULL) < 0) {
+    	VERBOSE_N(0, "sigaction error on signal s=%d (%s)", SIGPIPE, strerror(errno));
+    }
+}    
+
+
+// If this approach is selected, we will substitute the function call by the key
+ulong create_sec_tag()
+{
+#if 0
+    ulong i,sec_key=0;
+    ulong *my_date=(ulong *)__DATE__;
+    ulong *my_time=(ulong *)__TIME__;
+    sec_key=my_date[0]+my_date[1]+my_time[0]+my_time[1];
+    return sec_key;
+#endif
+#if 1
+    // You make define a constant at makefile time called SEC_KEY to use that option
+    return (ulong)SEC_KEY;
+#endif
+}
+
 
 uint warning(int return_value, int expected, char *msg)
 {
@@ -175,6 +218,8 @@ int eards_connect(application_t *my_app)
 			case freq_req:
 				// When using a single communicator, we should send only a frequency connection request 
 				req.req_service=CONNECT_FREQ; 
+				req.sec=create_sec_tag();
+				//VERBOSE_N(0,"Using sec_key for connection %lu",req.sec);
 				break;
 		}
 
@@ -212,6 +257,7 @@ int eards_connect(application_t *my_app)
 		}
 	}
 	app_connected=1;
+	signal_catcher();
 	VERBOSE_N(2, "Connected");
 	return EAR_SUCCESS;
 
@@ -221,6 +267,7 @@ void eards_disconnect()
 	int i;
 	struct daemon_req req;
 	req.req_service=END_COMM;
+	req.sec=create_sec_tag();
 
 	DEBUG_F(1, "Disconnecting");
 	if (!app_connected) return;
@@ -250,6 +297,7 @@ ulong eards_write_app_signature(application_t *app_signature)
 	DEBUG_F(2, "asking the daemon to write the whole application signature (DB)");
 
 	req.req_service = WRITE_APP_SIGNATURE;
+	req.sec=create_sec_tag();
 	memcpy(&req.req_data.app, app_signature, sizeof(application_t));
 
 	if (ear_fd_req[com_fd] >= 0)
@@ -279,6 +327,7 @@ ulong eards_write_event(ear_event_t *event)
     DEBUG_F(2, "asking the daemon to write an event)");
 
     req.req_service = WRITE_EVENT;
+	req.sec=create_sec_tag();
     memcpy(&req.req_data.event, event, sizeof(ear_event_t));
 
     if (ear_fd_req[com_fd] >= 0)
@@ -309,6 +358,7 @@ ulong eards_write_loop_signature(loop_t *loop_signature)
     DEBUG_F(2, "asking the daemon to write the loop signature (DB)");
 
     req.req_service = WRITE_LOOP_SIGNATURE;
+	req.sec=create_sec_tag();
     memcpy(&req.req_data.loop.loop, loop_signature, sizeof(loop_t));
     memcpy(&req.req_data.loop.job, loop_signature->job, sizeof(job_t));
 
@@ -342,6 +392,7 @@ ulong eards_get_data_size_frequency()
 	if (!app_connected) return sizeof(ulong);
 	DEBUG_F(2, "asking for frequency data size ");
     req.req_service=DATA_SIZE_FREQ;
+	req.sec=create_sec_tag();
 
     if (ear_fd_req[com_fd] >= 0)
 	{
@@ -363,7 +414,7 @@ void eards_begin_compute_turbo_freq()
 	if (!app_connected) return;
 	DEBUG_F(2, "start getting turbo freq ");
     req.req_service=START_GET_FREQ;
-
+	req.sec=create_sec_tag();
     if (ear_fd_req[freq_req]>=0)
 	{
 		if (warning(write(ear_fd_req[freq_req],&req,sizeof(req)) , sizeof(req),
@@ -385,7 +436,7 @@ ulong eards_end_compute_turbo_freq()
 
 	DEBUG_F(2, "end getting turbo freq ");
     req.req_service = END_GET_FREQ;
-
+	req.sec=create_sec_tag();
 	if (ear_fd_req[freq_req] >= 0)
 	{
 		if (warning(write(ear_fd_req[freq_req],&req, sizeof(req)) ,sizeof(req),
@@ -407,6 +458,7 @@ void eards_begin_app_compute_turbo_freq()
 
     DEBUG_F(2, "start getting turbo freq");
     req.req_service = START_APP_COMP_FREQ;
+	req.sec=create_sec_tag();
 
 	if (ear_fd_req[freq_req]>=0)
 	{
@@ -426,6 +478,7 @@ ulong eards_end_app_compute_turbo_freq()
 	if (!app_connected) return 0;
 	DEBUG_F(2, "end getting turbo freq");
 	req.req_service = END_APP_COMP_FREQ;
+	req.sec=create_sec_tag();
 
 	if (ear_fd_req[freq_req]>=0)
 	{
@@ -448,6 +501,7 @@ void eards_set_turbo()
 
 	if (!app_connected) return;
 	req.req_service=SET_TURBO;
+	req.sec=create_sec_tag();
 	DEBUG_F(2, "Set turbo");
 
 	if (ear_fd_req[freq_req]>=0)
@@ -469,6 +523,7 @@ ulong eards_change_freq(ulong newfreq)
 	struct daemon_req req;
 	if (!app_connected) return newfreq;
 	req.req_service = SET_FREQ;
+	req.sec=create_sec_tag();
 	req.req_data.req_value = newfreq;
 
 	DEBUG_F(2, "NewFreq %lu requested",  newfreq);
@@ -501,6 +556,7 @@ ulong eards_get_data_size_uncore()
 
 	DEBUG_F(2, "asking for uncore data size ");
     req.req_service=DATA_SIZE_UNCORE;
+	req.sec=create_sec_tag();
 
 	if (ear_fd_req[com_fd] >= 0) {
 		if (warning(write(ear_fd_req[com_fd],&req, sizeof(req)) , sizeof(req),
@@ -523,6 +579,7 @@ int eards_reset_uncore()
 	if (!app_connected) return EAR_SUCCESS;
 
 	req.req_service = RESET_UNCORE;
+	req.sec=create_sec_tag();
 	DEBUG_F(2, "reset uncore");
 
 	if (ear_fd_req[uncore_req] >= 0)
@@ -545,6 +602,7 @@ int eards_start_uncore()
 	int ret;
 	if (!app_connected) return EAR_SUCCESS;
     req.req_service=START_UNCORE;
+	req.sec=create_sec_tag();
 	DEBUG_F(2, "start uncore");
 
 	if (ear_fd_req[uncore_req]>=0)
@@ -570,6 +628,7 @@ int eards_read_uncore(unsigned long long *values)
 	if (!app_connected){ values[0]=0;return EAR_SUCCESS;}
 
 	req.req_service=READ_UNCORE;
+	req.sec=create_sec_tag();
 	DEBUG_F(2, "reading uncore counters");
 
 	if (ear_fd_req[uncore_req]>=0)
@@ -601,6 +660,7 @@ ulong eards_get_data_size_rapl() // size in bytes
 
     DEBUG_F(2, "asking for rapl data size ");
     req.req_service=DATA_SIZE_RAPL;
+	req.sec=create_sec_tag();
     ack=EAR_SUCCESS;
 
     if (ear_fd_req[com_fd] >= 0)
@@ -624,6 +684,7 @@ int eards_reset_rapl()
 	ulong ack=EAR_SUCCESS;
 	if (!app_connected) return EAR_SUCCESS;
 	req.req_service = RESET_RAPL;
+	req.sec=create_sec_tag();
 	DEBUG_F(2, "reset rapl");
 
 	if (ear_fd_req[rapl_req]>=0)
@@ -646,6 +707,7 @@ int eards_start_rapl()
 	int ret;
 	if (!app_connected) return EAR_SUCCESS;
 	req.req_service=START_RAPL;
+	req.sec=create_sec_tag();
 	DEBUG_F(2, "start rapl");
 
     if (ear_fd_req[rapl_req]>=0)
@@ -670,6 +732,7 @@ int eards_read_rapl(unsigned long long *values)
 	if (!app_connected){ values[0]=0;return EAR_SUCCESS;}
 
 	req.req_service=READ_RAPL;
+	req.sec=create_sec_tag();
 	DEBUG_F(2, "reading rapl counters");
 
 	if (ear_fd_req[rapl_req]>=0)
@@ -703,6 +766,7 @@ ulong eards_node_energy_data_size()
 
     DEBUG_F(2, "asking for node energy data size ");
     req.req_service=DATA_SIZE_ENERGY_NODE;
+	req.sec=create_sec_tag();
 
     if (ear_fd_req[com_fd]>=0)
 	{
@@ -727,6 +791,7 @@ int eards_node_dc_energy(ulong *energy)
 
     DEBUG_F(2, "asking for node dc energy ");
     req.req_service=READ_DC_ENERGY;
+	req.sec=create_sec_tag();
 
 	if (ear_fd_req[com_fd]>=0)
 	{
@@ -751,6 +816,7 @@ ulong eards_node_energy_frequency()
 
     DEBUG_F(2, "asking for dc node energy frequency ");
     req.req_service=ENERGY_FREQ;
+	req.sec=create_sec_tag();
     if (ear_fd_req[com_fd]>=0)
     {
         if (warning(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),

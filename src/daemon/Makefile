@@ -8,8 +8,7 @@ eard_OBJS += power_monitor.o \
              dynamic_configuration.o \
              shared_configuration.o \
              eard_server_api.o \
-			 eard_checkpoint.o\
-             eard_api.o
+			 eard_checkpoint.o
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database.a
 endif
@@ -28,7 +27,7 @@ BINARIES = eard_api.o \
 
 all: $(BINARIES) all.others
 
-eard: eard.c $(eard_OBJS)
+eard: eard.c $(eard_OBJS) ../../Makefile
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
 
 power_monitor.o: power_monitor.c power_monitor.h
@@ -43,7 +42,7 @@ shared_configuration.o: shared_configuration.c shared_configuration.h
 eard_server_api.o: eard_server_api.c eard_server_api.h
 	$(CC) $(CFLAGS) -c eard_server_api.c
 
-eard_api.o: eard_api.c eard_api.h
+eard_api.o: eard_api.c eard_api.h ../../Makefile
 	$(CC) -fPIC $(CFLAGS) -c eard_api.c
 
 eard_rapi.o: eard_rapi.c eard_rapi.h

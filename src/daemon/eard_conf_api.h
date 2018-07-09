@@ -49,7 +49,8 @@ union daemon_req_opt {
 };
 
 struct daemon_req {
-    unsigned long req_service;
+    ulong req_service;
+	ulong  sec;
     union daemon_req_opt req_data;
 };
 

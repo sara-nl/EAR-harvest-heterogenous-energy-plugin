@@ -37,8 +37,9 @@
 #include <daemon/eard_checkpoint.h>
 
 extern char nodename[MAX_PATH_SIZE];
-static const char *__NAME__ = "EARD ";
+static const char *__NAME__ = "checkpoint:";
 static const char *__HOST__=nodename;
+extern ulong eard_max_pstate;
 
 
 
@@ -57,6 +58,8 @@ void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 		eard_verbose(0,"Error creating checkpoint file (%s)",strerror(errno));
 		return;
 	}	
+	eard_verbose(0,"saving node conf");
+	print_my_node_conf(eard_dyn_conf->nconf);
 	if (write(fd,eard_dyn_conf->nconf,sizeof(my_node_conf_t))!=sizeof(my_node_conf_t)){
 		eard_verbose(0,"Error writting checkpoint file (%s)",strerror(errno));
 		return;
@@ -80,5 +83,8 @@ void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
         eard_verbose(0,"Error reading checkpoint file (%s)",strerror(errno));
         return;
     }
+	eard_verbose(0,"restoring node conf");
+	eard_max_pstate=eard_dyn_conf->nconf->max_pstate;
+	print_my_node_conf(eard_dyn_conf->nconf);
 	close(fd);
 }

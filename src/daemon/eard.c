@@ -117,11 +117,29 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
 int RAPL_counting=0;
 int eard_must_exit=0;
 
+int is_valid_sec_tag(ulong tag)
+{
+#if 0
+    ulong i,sec_key=0;
+    ulong *my_date=(ulong *)__DATE__;
+    ulong *my_time=(ulong *)__TIME__;
+    sec_key=my_date[0]+my_date[1]+my_time[0]+my_time[1];
+	eard_verbose(0,"validating tag=%lu with sec=%lu",tag,sec_key);
+
+	return (tag==sec_key);
+#endif
+#if 1
+    // You make define a constant at makefile time called SEC_KEY to use that option
+	//eard_verbose(0,"validating tag=%lu with sec=%lu",tag,(ulong)SEC_KEY);
+    return ((ulong)SEC_KEY==tag);
+#endif
+}
+
+
 void set_global_eard_variables()
 {
 	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	EAR_VERBOSE_LEVEL=my_cluster_conf.eard.verbose;
-	eard_max_pstate=my_node_conf->max_pstate;
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -694,6 +712,11 @@ int eard_rapl(int must_read)
 void select_service(int fd)
 {
     if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) eard_verbose(0,"eard error when reading info at select_service\n");
+	if (!is_valid_sec_tag(req.sec)){
+		eard_verbose(0,"Invalid connection with eard %lu",req.sec);
+		return;
+	}
+	//eard_verbose(0,"Sec check ok %d",req.sec);
 	if (eard_freq(0)){ 
 		ear_debug(0,"eard frequency service\n");
 		return;
@@ -837,6 +860,7 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
 {
     policy_conf_t *my_policy;
     ulong deff;
+	eard_max_pstate=node->max_pstate;
 	// Default policy is just in case
     default_policy_context.policy=MONITORING_ONLY;
     default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -864,6 +888,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 {
 	policy_conf_t *my_policy;
 	ulong deff;
+	eard_max_pstate=node->max_pstate;
 	// Default policy is just in case
 	default_policy_context.policy=MONITORING_ONLY;
 	default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -980,9 +1005,8 @@ void main(int argc,char *argv[])
 	if (must_recover){
 		eard_verbose(0,"We must recover from a crash");
 		restore_eard_conf(&eard_dyn_conf);
-	}else{
-    	configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
 	}
+    configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
     eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
 
 	// Check
@@ -1068,7 +1092,7 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
-    if (eardbd_connect(my_node_conf->db_ip, my_cluster_conf.db_manager.udp_port, UDP)!=EAR_SUCCESS){
+    if (eardbd_connect(my_node_conf->db_ip, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif

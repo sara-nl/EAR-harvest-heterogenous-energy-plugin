@@ -250,5 +250,41 @@ energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char
 	return can_use_energy_tag(user,group,acc,my_tag);
 }
 
+/** Returns true if the energy tag exists */
+energy_tag_t * energy_tag_exists(cluster_conf_t *my_conf,char *etag)
+{
+	int i;
+	int found=0;
+	if (etag==NULL)	return NULL;
+	for (i=0;(i<my_conf->num_tags) && (!found);i++){
+		if (strcmp(etag,my_conf->e_tags[i].tag)==0)	found=1;
+	}
+	if (found) return &my_conf->e_tags[i];
+	return NULL;
+}
 
+/** returns the user type: NORMAL, AUTHORIZED, ENERGY_TAG */
+uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *group, char *acc,energy_tag_t **my_tag)
+{
+	uint type=NORMAL;
+	energy_tag_t *is_tag;
+	int flag;
+	*my_tag=NULL;
+	fprintf(stderr,"Checking user %s group %s acc %s etag %s\n",user,group,acc,energy_tag);	
+	/* We first check if it is authorized user */
+	flag=is_privileged(my_conf,user,group,acc);
+	if (flag){
+		if (energy_tag!=NULL){
+			is_tag=energy_tag_exists(my_conf,energy_tag); 
+			if (is_tag!=NULL){ *my_tag=is_tag;return ENERGY_TAG;}
+			else return AUTHORIZED;
+		}else return AUTHORIZED;
+	}
+	/* It is an energy tag user ? */
+	is_tag=is_energy_tag_privileged(my_conf, user,group,acc,energy_tag);
+	if (is_tag!=NULL){ 
+		*my_tag=is_tag;
+		return ENERGY_TAG;
+	} else return NORMAL;
+}
 

@@ -48,6 +48,10 @@
 #define USER			64
 #define ACC				64
 
+#define NORMAL 		0
+#define AUTHORIZED	1
+#define ENERGY_TAG	2
+
 /*
  *
  * Types
@@ -250,6 +254,9 @@ void print_policy_conf(policy_conf_t *p);
 /** Prints in the stdout the whole cluster configuration */
 void print_cluster_conf(cluster_conf_t *conf);
 
+/** Prints in the stdout the energy_tag settings */
+void print_energy_tag(energy_tag_t *etag);
+
 /** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
 policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
 
@@ -259,6 +266,11 @@ energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char
 
 /** returns true if the username, group and/or accounts is presents in the list of authorized users/groups/accounts */
 int is_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc);
+
+
+
+/** returns the user type: NORMAL, AUTHORIZED, ENERGY_TAG */
+uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *group, char *acc,energy_tag_t **my_tag);
 
 
 #endif
