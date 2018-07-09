@@ -57,10 +57,10 @@
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 #if DEMO
-#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id, avg_f)"\
+#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f)"\
                                 "VALUES (?, ?, ?, ?, ?, ?, ?)"
 #else
-#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id)"\
+#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
                                 "VALUES (?, ?, ?, ?, ?, ?)"
 #endif
 
@@ -343,7 +343,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         mysql_stmt_close(statement);
         return 0;
     }
-    apps_aux = (application_t*) calloc(num_apps, sizeof(application_t));
+    apps_aux = calloc(num_apps, sizeof(application_t));
     int i = 0;
     char job_query[128];
     char sig_query[128];
@@ -378,8 +378,8 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
             int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
             if (num_sigs > 0) {
                 copy_signature(&app_aux->signature, sig_aux);
+                free(sig_aux);
             }
-            free(sig_aux);
             app_aux->is_mpi = 1;
         }
         else app_aux->is_mpi = 0;
@@ -1045,12 +1045,13 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     if (num_signatures < 1)
     {
         mysql_stmt_close(statement);
-        return 1;
+        free(sig_aux);
+        return EAR_ERROR;
     }
 
     sigs_aux = (signature_t*) calloc(num_signatures, sizeof(signature_t));
-    i = 0; 
-    
+
+    i = 0;
     //fetching and storing of signatures
     status = mysql_stmt_fetch(statement);
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
@@ -1059,9 +1060,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
         status = mysql_stmt_fetch(statement);
         i++;
     }
-
     *sigs = sigs_aux;
-
 
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 

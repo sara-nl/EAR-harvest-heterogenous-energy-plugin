@@ -219,6 +219,8 @@ static void remote_print_environment(spank_t sp)
                  r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
 
 	printenv_remote(sp, "EAR");
+	printenv_remote(sp, "EAR_USER");
+	printenv_remote(sp, "EAR_GROUP");
 	printenv_remote(sp, "EAR_LEARNING_PHASE");
 	printenv_remote(sp, "EAR_VERBOSE");
 	printenv_remote(sp, "EAR_POWER_POLICY");
@@ -295,6 +297,9 @@ int remote_eard_report_start(spank_t sp)
     }
 	if (!getenv_remote(sp, "EAR_USER", eard_appl.job.user_id, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.user_id, "");
+	}
+	if (!getenv_remote(sp, "EAR_GROUP", eard_appl.job.group_id, SZ_NAME_MEDIUM)) {
+		strcpy(eard_appl.job.group_id, "");
 	}
 	if (!getenv_remote(sp, "SLURM_JOB_NAME",  eard_appl.job.app_id, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.app_id, "");

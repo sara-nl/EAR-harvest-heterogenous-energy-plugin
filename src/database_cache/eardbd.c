@@ -165,7 +165,7 @@ static void db_store_loops()
     }
 
     verbose("Trying to insert in DB %d loop samples", lops_i);
-    //db_batch_insert_loops(lops, lops_i);
+    db_batch_insert_loops(lops, lops_i);
 }
 
 static void db_store_periodic_metrics()
@@ -195,7 +195,7 @@ static void db_store_applications()
 	}
 
 	verbose("Trying to insert in DB %d applications samples", apps_i);
-	//db_batch_insert_applications(apps, apps_i);
+	db_batch_insert_applications(apps, apps_i);
 }
 
 /*
@@ -448,6 +448,9 @@ int main(int argc, char **argv)
 
 	verbose("Reading '%s' configuration file", conf_path);
 	read_cluster_conf(conf_path, &conf_clus);
+
+	// Database
+	init_db_helper(&conf_clus.database);
 
 	// Format
 	merge_time = (long) conf_clus.db_manager.aggr_time;

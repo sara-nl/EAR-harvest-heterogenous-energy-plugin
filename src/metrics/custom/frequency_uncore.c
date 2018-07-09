@@ -46,6 +46,7 @@ static off_t _offctl;
 static off_t _offctr;
 
 static uint _cpus_num = 0;
+static uint _start = 0;
 static uint _init = 0;
 
 static uint _supported_architecture(uint cpus_model)
@@ -107,6 +108,7 @@ state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model
 	}
 
 	_init = 1;
+	_start = 0;
 	_cpus_num = sockets_num;
 	_fill_architecture_bits(cores_model);
 
@@ -143,6 +145,10 @@ state_t frequency_uncore_counters_start()
 		return EAR_NOT_INITIALIZED;
 	}
 
+	if (_start) {
+		return EAR_BUSY;
+	}
+
 	for (i = 0; i < _cpus_num; ++i)
 	{
 		// Read
@@ -155,6 +161,7 @@ state_t frequency_uncore_counters_start()
 		}
 	}
 
+	_start = 1;
 	return EAR_SUCCESS;
 }
 
@@ -165,6 +172,10 @@ state_t frequency_uncore_counters_stop(uint64_t *buffer)
 
 	if (!_init) {
 		return EAR_NOT_INITIALIZED;
+	}
+
+	if (!_start) {
+		return EAR_NOT_READY;
 	}
 
 	for (i = 0; i < _cpus_num; ++i)
@@ -181,5 +192,6 @@ state_t frequency_uncore_counters_stop(uint64_t *buffer)
 		buffer[i] = _clocks_stop[i] - _clocks_start[i];
 	}
 
+	_start = 0;
 	return EAR_SUCCESS;
 }

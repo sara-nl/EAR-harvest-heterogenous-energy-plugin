@@ -436,10 +436,12 @@ ulong stmt_error(MYSQL_STMT *statement)
     return -1;
 }
 
-#define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
-                    ">= ? AND end_time <= ?"
+#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
+                                ">= ? AND end_time <= ?"
+#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? FROM Report.Periodic_aggregations WHERE start_time"\
+                                ">= ? AND end_time <= ?"
 
-ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
+ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated)
 {
     MYSQL *connection = mysql_init(NULL);
 
@@ -472,9 +474,12 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
         return -1;
     }
 
-    if (mysql_stmt_prepare(statement, SUM_QUERY, strlen(SUM_QUERY)))
+    if (is_aggregated)
+        if (mysql_stmt_prepare(statement, AGGREGATED_SUM_QUERY, strlen(AGGREGATED_SUM_QUERY)))
                                                 return stmt_error(statement);
-
+    else
+        if (mysql_stmt_prepare(statement, METRICS_SUM_QUERY, strlen(METRICS_SUM_QUERY)))
+                                                return stmt_error(statement);
 
     //Query parameters binding
     MYSQL_BIND bind[3];
@@ -547,10 +552,15 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps)
 
     char query[256];
     if (is_learning)
-        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
+        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
+                        "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
+                        "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
+                        "job_id > %d", current_job_id, max_apps, current_job_id);
     else
-        sprintf(query, "SELECT * FROM Applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
-    printf("QUERY: %s\n", query); 
+        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
+                        "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
+                        "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
+                        "job_id > %d", current_job_id, max_apps, current_job_id);
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
@@ -559,8 +569,7 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps)
 		return num_apps;
     }
 
-    current_step_id = apps[num_apps - 1]->job.step_id;
-    current_job_id = apps[num_apps - 1]->job.id;
-
+    current_job_id = (*apps)[num_apps - 1].job.id;
+    mysql_close(connection);
 	return num_apps;
 }
