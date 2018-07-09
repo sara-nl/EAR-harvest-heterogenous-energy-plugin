@@ -434,7 +434,7 @@ void main(int argc,char *argv[])
 	
 	time(&end_time);
 	start_time=end_time-period_t2;
-	result = db_select_acum_energy( start_time, end_time, divisor);
+	result = db_select_acum_energy( start_time, end_time, divisor, 0);
 	fill_periods(result);
 	/*
 	*
@@ -451,7 +451,7 @@ void main(int argc,char *argv[])
 		start_time=end_time-period_t1;
 
     
-	    result = db_select_acum_energy( start_time, end_time, divisor);
+	    result = db_select_acum_energy( start_time, end_time, divisor, 0);
 	    if (!result){ 
 			VERBOSE_N(2,"No results in that period of time found\n");
 	    }else{ 
@@ -461,7 +461,7 @@ void main(int argc,char *argv[])
 
 		new_energy_sample(result);
 		start_time=end_time-period_t2;
-    	result2 = db_select_acum_energy( start_time, end_time, divisor);
+    	result2 = db_select_acum_energy( start_time, end_time, divisor, 0);
 		// This code needs to be done since global manager is not running for time enough
 		//total_energy_t2=compute_energy_t2();	
 		total_energy_t2=result2;

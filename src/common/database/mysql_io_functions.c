@@ -57,10 +57,10 @@
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 #if DEMO
-#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id, avg_f)"\
+#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f)"\
                                 "VALUES (?, ?, ?, ?, ?, ?, ?)"
 #else
-#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, dc_energy, node_id, job_id, step_id)"\
+#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
                                 "VALUES (?, ?, ?, ?, ?, ?)"
 #endif
 

@@ -134,7 +134,7 @@ void create_tables(MYSQL *connection)
                             id INT unsigned NOT NULL AUTO_INCREMENT, \
                             start_time BIGINT NOT NULL, \
                             end_time BIGINT NOT NULL, \
-                            dc_energy BIGINT unsigned NOT NULL, \
+                            DC_energy BIGINT unsigned NOT NULL, \
                             node_id VARCHAR(256) NOT NULL, \
                             job_id BIGINT NOT NULL, \
                             step_id BIGINT NOT NULL, \
