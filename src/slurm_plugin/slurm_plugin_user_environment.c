@@ -1,4 +1,5 @@
 #include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -313,19 +314,33 @@ static int local_pre_job_configuration_general(spank_t sp, cluster_conf_t *conf_
 	plug_verbose(sp, 2, "function local_pre_job_configuration_general");
 
     struct passwd *upw;
+    struct group *gpw;
 	uid_t uid;
+	gid_t gid;
 
-	// Getting user id
+	// Getting ids
 	uid = geteuid();
+	gid = getgid();
+
+	// Getting names
 	upw = getpwuid(uid);
+	gpw = getgrgid(gid);
 	
 	if (upw == NULL) {
 		plug_error("converting UID in username");
 		return (ESPANK_ERROR);
 	}
 
+	if (gpw == NULL) {
+		plug_error("converting GID in groupname");
+		return (ESPANK_ERROR);
+	}
+
 	plug_verbose(sp, 2, "user detected '%u -> %s'", uid, upw->pw_name);
 	SETENV_LOCAL_RET_ERR("EAR_USER", upw->pw_name, 1);
+
+	plug_verbose(sp, 2, "group detected '%u -> %s'", gid, gpw->gr_name);
+	SETENV_LOCAL_RET_ERR("EAR_GROUP", gpw->gr_name, 1);
 
 	// Setting variables for EARGMD connection
 	SNPRINTF_RET_ERR(eargmd_host, "%s", conf_clus->eargm.host);
