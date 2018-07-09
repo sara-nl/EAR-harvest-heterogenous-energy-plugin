@@ -59,7 +59,7 @@ coefficient_t **coeffs_list;
 uint *samples_per_app;
 uint num_diff_apps;
 
-char *nodename;
+char *nodename,*island,*coeff_root;
 uint *node_freq_list;
 uint num_node_p_states;
 uint min_freq;
@@ -228,7 +228,7 @@ void init_list_coeffs(uint ref, uint i, uint f, double A, double B, double C, do
 
 void usage(char *app)
 {
-    fprintf(stdout, "Usage: %s db_name coefficients_db min_freq nodename\n", app);
+    fprintf(stdout, "Usage: %s db_name coefficients_db min_freq nodename island\n", app);
     exit(1);
 }
 
@@ -236,18 +236,21 @@ int main(int argc, char *argv[])
 {
     application_t read_app;
     double power, cpi, tpi;
-    uint filtered_apps = 0;
+    uint filtered_apps = 0, ret,is_learning=1;
     uint f, pos, ref, i;
+	char path_coef_file[256];
     char coef_file[256];
     int fd, index;
 
-    if (argc < 5) {
+    if (argc < 6) {
         usage(argv[0]);
     }
 
     //
     min_freq = (uint) atoi(argv[3]);
     nodename = argv[4];
+	island=argv[5];
+	coeff_root=argv[2];
 
     // We get how many samples per frequency we have
     num_node_p_states = fill_list_p_states();
@@ -263,9 +266,32 @@ int main(int argc, char *argv[])
 
     //TODO: NEW, using CSVS
     application_t *apps;
-
+	#if 0
     num_apps = read_application_text_file(argv[1], &apps);
-    MALLOC(app_list, application_t, num_apps);
+	#endif
+	num_apps =;
+	uint total_apps=0;
+ 	MALLOC(app_list, application_t, num_apps);
+	
+  	car ear_path[256];
+    cluster_conf_t my_conf;
+    if (get_ear_conf_path(ear_path)==EAR_ERROR){
+            printf("Error getting ear.conf path\n");
+            exit(0);
+    }
+    read_cluster_conf(ear_path,&my_conf);
+    init_db_helper(&my_conf.database);
+    ret=db_read_applications(&apps,is_learning, 50);
+    while (ret > 0)
+    {
+        for (i=0;i<ret;i++){
+            copy_application(&app_list[total_apps+i],&apps[i]);
+        }
+        free(apps);
+        total_apps += ret;
+        ret=db_read_applications(&apps,is_learning, 50);
+    }
+    printf("Total apps:%d, expected %d\n", total_apps,num_apps);
     MALLOC(samples_per_app, uint, num_apps);
    
     for (i = 0; i < num_apps; i++) {
@@ -344,8 +370,16 @@ int main(int argc, char *argv[])
     init_list_coeffs(0, 0, nom_freq, 1, 0, 0, 1, 0, 0);
     double A, B, C, D, E, F;
 
-    // We compute regression
-    sprintf(coef_file, "%s", argv[2]);
+    /* We compute regression */
+	sprintf(path_coef_file,"%s/%s",coeff_root,island);
+	if (mkdir (path_coef_file)<0){
+		if (errno!=EEXIST){
+			fprintf(stderr,"Error , path %s cannot be created (%s)\n",path_coef_file,strerror(errno));
+			exit(1);
+		}
+	}
+    
+    sprintf(coef_file, "%s/coeffs.%s", path_coef_file,nodename);
     OPEN(fd, coef_file, O_WRONLY | O_CREAT | O_TRUNC, CREATE_FLAGS);
     for (ref = 0; ref < num_node_p_states; ref++)
     {
