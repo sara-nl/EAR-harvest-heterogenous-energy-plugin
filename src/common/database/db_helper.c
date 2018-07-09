@@ -436,10 +436,12 @@ ulong stmt_error(MYSQL_STMT *statement)
     return -1;
 }
 
-#define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
-                    ">= ? AND end_time <= ?"
+#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
+                                ">= ? AND end_time <= ?"
+#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? FROM Report.Periodic_aggregations WHERE start_time"\
+                                ">= ? AND end_time <= ?"
 
-ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
+ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated)
 {
     MYSQL *connection = mysql_init(NULL);
 
@@ -472,9 +474,12 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor)
         return -1;
     }
 
-    if (mysql_stmt_prepare(statement, SUM_QUERY, strlen(SUM_QUERY)))
+    if (is_aggregated)
+        if (mysql_stmt_prepare(statement, AGGREGATED_SUM_QUERY, strlen(AGGREGATED_SUM_QUERY)))
                                                 return stmt_error(statement);
-
+    else
+        if (mysql_stmt_prepare(statement, METRICS_SUM_QUERY, strlen(METRICS_SUM_QUERY)))
+                                                return stmt_error(statement);
 
     //Query parameters binding
     MYSQL_BIND bind[3];
