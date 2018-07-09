@@ -17,13 +17,16 @@ void usage(int argc, char **argv)
 }
 
 /*
- *
+ gcc -I/home/xgomez/Desktop/git/EAR/src \
+ -DUSE_TURBO=1 -DPERFORMANCE_GAIN=1 -DEAR_MIN_P_STATE=1 -DPOWERMON_FREQ=1 -DDAEMON_PORT_NUMBER=1 \
+ -o client_api_test client_api_test.c ../eardbd_api.o ../sockets.o
  */
 
 int main(int argc, char **argv)
 {
 	periodic_metric_t met;
 	application_t app;
+	state_t s;
 
 	usage(argc, argv);
 
@@ -36,10 +39,14 @@ int main(int argc, char **argv)
 	sprintf(met.node_id, "cae2306");
 
 	// Testing API
-	eardbd_connect(argv[1], 4711, TCP);
-	eardbd_send_application(&app);
-	eardbd_send_periodic_metric(&met);
-	eardbd_disconnect();
+	s = eardbd_connect(argv[1], argv[1], 4711, UDP);
+	printf("con = %d (%s)\n", s, state_error);
+	s = eardbd_send_application(&app);
+	printf("sen = %d (%s)\n", s, state_error);
+	s = eardbd_send_periodic_metric(&met);
+	printf("sen = %d (%s)\n", s, state_error);
+	//s = eardbd_disconnect();
+	//printf("dis = %d (%s)\n", s, state_error);
 
 	return 0;
 }

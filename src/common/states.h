@@ -68,11 +68,10 @@ char *state_error;
 #define state_fail(state) \
 	state != EAR_SUCCESS
 
-#define state_init(state, no, error) \
-	state_error = error; \
-	state = no;
+#define state_return(state) \
+	return state;
 
-#define state_return(state, error) \
+#define state_return_msg(state, error) \
 	state_error = error; \
 	return state;
 

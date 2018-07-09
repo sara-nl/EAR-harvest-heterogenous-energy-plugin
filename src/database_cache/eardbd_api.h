@@ -46,6 +46,6 @@ state_t eardbd_send_ping();
 state_t eardbd_send_periodic_metric(periodic_metric_t *met);
 state_t eardbd_send_application(application_t *app);
 state_t eardbd_send_loop(loop_t *loop);
-state_t eardbd_send_event(ear_event_t *ev);
+state_t eardbd_send_event(ear_event_t *eve);
 
 #endif //EAR_EARDBD_API_H

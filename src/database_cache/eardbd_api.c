@@ -38,93 +38,90 @@
 
 static socket_t sock_main;
 static socket_t sock_mirr;
-static int connected = -1;
+static int _connected = -1;
 
 static char buffer_gen[4096];
 static char buffer_pck[MAX_PACKET_SIZE()];
 
 /*
+ *
  * API
+ *
  */
 
-#define CONNECTION_TEST(pass_text) \
-	if (sock_main.fd == -1 || sock_main.protocol == -1 || (sock_main.protocol == TCP && connected == -1)) { \
-		return EAR_ERROR; \
-	} \
+static int is_connected(socket_t *socket)
+{
+	int connected = 0;
+	connected |= socket->fd >= 0 && socket->protocol == TCP;
+	connected |= socket->fd
+}
 
-static size_t prepare_packet(char *buffer, unsigned char type, void *object, size_t object_size)
+static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
 {
 	packet_header_t *header = P_HEADER(buffer);
 	void *content = P_CONTENT(buffer);
+	size_t size_pck;
+	state_t s;
 
+	// Header process
 	header->content_type = type;
-	memcpy (content, object, sizeof(object_size));
+	header->timestamp = time(NULL);
+	header->mirroring = 0;
 
-	return sizeof(packet_header_t) + object_size;
+	// Content process
+	memcpy (content, object, sizeof(size));
+
+	// Sending to main
+	verbose("sending packet type %d to %s (size: %lu)", type, sock_main.host, size);
+	s = sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+
+	if (state_fail(s)) {
+		eardbd_disconnect();
+		return s;
+	}
+
+	// Sending to mirror
+	if (sock_mirr.fd == -1) {
+		return EAR_SUCCESS;
+	}
+
+	header->mirroring = 1;
+
+	verbose("sending mirror packet type %d to %s (size: %lu)", type, sock_mirr.host, size);
+	s = sockets_send(&sock_mirr, (void *) buffer_pck, size_pck);
+
+	if (state_fail(s)) {
+		eardbd_disconnect();
+		return s;
+	}
+
+	return EAR_SUCCESS;
 }
 
 state_t eardbd_send_application(application_t *app)
 {
-	unsigned char type = CONTENT_TYPE_APP;
-	size_t size_pck;
-
-	//CONNECTION_TEST();
-	verbose("sending application (size: %lu)", sizeof(application_t));
-
-	size_pck = prepare_packet(buffer_pck, type, (void *) app, sizeof(application_t));
-	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	return _packet_send(buffer_pck, (void *) app, sizeof(application_t), CONTENT_TYPE_APP);
 }
 
 state_t eardbd_send_periodic_metric(periodic_metric_t *met)
 {
-	unsigned char type = CONTENT_TYPE_PER;
-	size_t size_pck;
-
-	//CONNECTION_TEST();
-	verbose("sending periodic metric (size: %lu) %d", sizeof(periodic_metric_t), type);
-
-	size_pck = prepare_packet(buffer_pck, type, (void *) met, sizeof(periodic_metric_t));
-	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	return _packet_send(buffer_pck, (void *) met, sizeof(periodic_metric_t), CONTENT_TYPE_PER);
 }
 
 state_t eardbd_send_event(ear_event_t *eve)
 {
-	unsigned char type = CONTENT_TYPE_EVE;
-	size_t size_pck;
-
-	CONNECTION_TEST();
-    verbose("sending event");
-
-	size_pck = prepare_packet(buffer_pck, type, (void *) eve, sizeof(ear_event_t));
-	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	return _packet_send(buffer_pck, (void *) eve, sizeof(ear_event_t), CONTENT_TYPE_EVE);
 }
 
 state_t eardbd_send_loop(loop_t *loop)
 {
-	unsigned char type = CONTENT_TYPE_LOO;
-	size_t size_pck;
-
-    CONNECTION_TEST();
-    verbose("sending loop");
-
-	size_pck = prepare_packet(buffer_pck, type, (void *) loop, sizeof(loop_t));
-	return sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	return _packet_send(buffer_pck, (void *) loop, sizeof(loop_t), CONTENT_TYPE_LOO);
 }
 
 state_t eardbd_ping()
 {
 	char ping[] = "ping";
-
-	CONNECTION_TEST();
-	verbose("sending ping");
-
-	return sockets_send(&sock_main, ping, sizeof(ping));
-}
-
-state_t eardbd_is_connected()
-{
-	CONNECTION_TEST();
-	return EAR_SUCCESS;
+	return _packet_send(buffer_pck, (void *) ping, sizeof(ping), CONTENT_TYPE_PIN);
 }
 
 static state_t _eardbd_socket(socket_t *socket, char *host, uint port, uint protocol)
@@ -141,6 +138,7 @@ static state_t _eardbd_socket(socket_t *socket, char *host, uint port, uint prot
 	if (protocol == TCP)
 	{
 		s = sockets_connect(&sock_main);
+		printf("api = %d (%s) %p\n", s, state_error, &state_error);
 
 		if (state_fail(s)) {
 			return s;
@@ -161,7 +159,7 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 	s = _eardbd_socket(&sock_main, host_main, port, protocol);
 
 	if (state_fail(s)) {
-		sockets_dispose(&sock_main);
+		eardbd_disconnect();
 		return s;
 	}
 
@@ -172,8 +170,7 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 	s = _eardbd_socket(&sock_mirr, host_mirror, port, protocol);
 
 	if (state_fail(s)) {
-		sockets_dispose(&sock_main);
-		sockets_dispose(&sock_mirr);
+		eardbd_disconnect();
 		return s;
 	}
 
@@ -182,5 +179,8 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 
 state_t eardbd_disconnect()
 {
-	return sockets_dispose(&sock_main);
+	printf("eardbd_disconnect\n");
+	sockets_dispose(&sock_main);
+	sockets_dispose(&sock_mirr);
+	return EAR_SUCCESS;
 }
