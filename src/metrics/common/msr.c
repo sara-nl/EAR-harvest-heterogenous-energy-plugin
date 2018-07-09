@@ -43,7 +43,7 @@ state_t msr_open(uint cpu, int *fd)
 {
 	char msr_file_name[SZ_PATH_KERNEL];
 
-	if (*fd < 0) {
+	if (*fd >= 0) {
 		return EAR_BUSY;
 	}
 
