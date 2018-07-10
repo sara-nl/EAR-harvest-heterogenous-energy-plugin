@@ -73,7 +73,7 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
 
 /** Reads applications from the normal DB or the learning DB depending on is_learning. It allocates 
 *   memory for apps. Returns the number of applications readed */
-int db_read_applications(application_t **apps,uint is_learning, int max_apps);
+int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name);
 
 /** Reads from DB the number of applications that can be found in the corresponding tables. */
 ulong get_num_applications(char is_learning);

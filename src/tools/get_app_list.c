@@ -56,7 +56,7 @@ void main(int argc,char *argv[])
 	printf("Initializinf DB\n");
 	init_db_helper(&my_conf.database);
 	printf("reading apps\n");
-	num_apps=db_read_applications(&apps,is_learning, 50);
+	num_apps=db_read_applications(&apps,is_learning, 50, "r22u21");
     while (num_apps > 0)
     {
 	    for (i=0;i<num_apps;i++){
@@ -64,7 +64,7 @@ void main(int argc,char *argv[])
 	    }
         free(apps);
         total_apps += num_apps;
-	    num_apps=db_read_applications(&apps,is_learning, 50);
+	    num_apps=db_read_applications(&apps,is_learning, 50, "r22u21");
     }
     printf("Total apps from queries: %d\n", total_apps);
     printf("Total apps from DB: %d\n", get_num_applications(is_learning)); 
