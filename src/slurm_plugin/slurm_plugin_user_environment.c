@@ -40,7 +40,7 @@ static int is_user_privileged(spank_t sp, cluster_conf_t *conf_clus)
 	char *uid;
 	int i;
 
-	if (getenv_local("SLURM_JOB_USER", &uid))
+	if (getenv_local("EAR_USER", &uid))
 	{
 		plug_verbose(sp, 2, "looking for privileges for user '%s'", uid);
 
@@ -110,7 +110,7 @@ static int local_user_configuration_unprivileged(spank_t sp, cluster_conf_t *con
 
 	// Applying the default value
 	getenv_local("EAR_DEFAULT", &ear_default);
-	SETENV_LOCAL_RET_ERR("EAR", ear_default, 1);
+	SETENV_LOCAL_RET_ERR("EAR", ear_default, 0);
 
 	// Forcing EAR_POWER_POLICY
 	policy_id_to_name(conf_clus->default_policy, buffer1);
@@ -160,15 +160,11 @@ static int local_user_configuration_privileged(spank_t sp, cluster_conf_t *conf_
 	if (existenv_local("EAR_POWER_POLICY") &&
 		getenv_local("EAR_POWER_POLICY", &c_plcy))
 	{
-		id_plcy_aux = policy_name_to_id(c_plcy);
-		
-		for(i = 0; i < conf_clus->num_policies; ++i)
-		{
-			if (conf_clus->power_policies[i].policy == id_plcy_aux)
-			{
-				id_plcy = id_plcy_aux;
-			}	
-		} 
+		id_plcy = policy_name_to_id(c_plcy);
+
+		if (id_plcy == EAR_ERROR) {
+			return EAR_ERROR;
+		}	
 	}
 
 	// Getting policy configuration based on the policy selected of the user
