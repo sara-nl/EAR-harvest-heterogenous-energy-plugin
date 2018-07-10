@@ -42,9 +42,11 @@
 #include <common/types/coefficient.h>
 
 typedef struct settings_conf{
+	uint 	policy;
 	ulong 	max_freq;
 	ulong	def_freq;
 	double 	th;
+	earlib_conf_t lib_info;
 } settings_conf_t;
 
 typedef struct resched{
