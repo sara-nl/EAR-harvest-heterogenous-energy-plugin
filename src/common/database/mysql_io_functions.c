@@ -197,12 +197,12 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     if (!is_learning)
     {
-        query = malloc(strlen(APPLICATION_QUERY)+strlen(params)*num_apps);
+        query = malloc(strlen(APPLICATION_QUERY)+strlen(params)*num_apps+1);
         strcpy(query, APPLICATION_QUERY);
     }
     else
     {
-        query = malloc(strlen(LEARNING_APPLICATION_QUERY)+strlen(params)*num_apps);
+        query = malloc(strlen(LEARNING_APPLICATION_QUERY)+strlen(params)*num_apps+1);
         strcpy(query, LEARNING_APPLICATION_QUERY);
     }
 
@@ -1118,7 +1118,7 @@ int mysql_batch_insert_power_signatures(MYSQL *connection, application_t *pow_si
     if (!statement) return EAR_MYSQL_ERROR;
 
     char *params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    char *query = malloc(strlen(POWER_SIGNATURE_QUERY + strlen(params)*num_sigs));
+    char *query = malloc(strlen(POWER_SIGNATURE_QUERY + strlen(params)*num_sigs + 1));
     strcpy(query, POWER_SIGNATURE_QUERY);
     int i, j;
     for (i = 1; i < num_sigs; i++)
