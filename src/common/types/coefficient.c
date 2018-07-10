@@ -40,6 +40,24 @@
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
+int read_coefficients_file_v3(char *path, coefficient_t *coeffs, int size)
+{   
+    int ret, fd;
+    
+    if ((fd = open(path, O_RDONLY)) < 0) {
+        return EAR_FILE_NOT_FOUND;
+    }   
+    
+    if ((ret = read(fd, coeffs, size)) != size)
+    {
+        close(fd);
+        return EAR_READ_ERROR;
+    }
+    close(fd);
+    
+    return (size / sizeof(coefficient_t));
+}
+
 
 int read_coefficients_file(char *path, coefficient_t **coeffs, int size)
 {
@@ -55,7 +73,7 @@ int read_coefficients_file(char *path, coefficient_t **coeffs, int size)
         lseek(fd, 0, SEEK_SET);
     }
 
-    // Allocating memory
+    /* Allocating memory*/
     coeffs_aux = (coefficient_t *) malloc(size);
 
     if (coeffs_aux == NULL)
@@ -64,7 +82,7 @@ int read_coefficients_file(char *path, coefficient_t **coeffs, int size)
         return EAR_ALLOC_ERROR;
     }
 
-    // Reset the memory to zeroes
+    /* Reset the memory to zeroes*/
     memset(coeffs_aux, 0, sizeof(coefficient_t));
 
     if ((ret = read(fd, coeffs_aux, size)) != size)
@@ -78,3 +96,23 @@ int read_coefficients_file(char *path, coefficient_t **coeffs, int size)
     *coeffs = coeffs_aux;
     return (size / sizeof(coefficient_t));
 }
+
+int check_file(char *path)
+{
+    int ret, fd;
+
+    if ((fd = open(path, O_RDONLY)) < 0) {
+        return EAR_FILE_NOT_FOUND;
+    }
+
+    ret = lseek(fd, 0, SEEK_END);
+	close(fd);
+	return ret;
+}
+
+void print_coefficient(coefficient_t *coeff)
+{
+	fprintf(stderr,"pstate %lu avail %u A %lf B %lf C %lf D %lf E %lf F %lf\n",
+	coeff->pstate,coeff->available,coeff->A,coeff->B,coeff->C,coeff->D,coeff->E,coeff->F);
+}
+

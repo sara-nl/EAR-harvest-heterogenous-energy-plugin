@@ -188,20 +188,26 @@ int is_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc)
 	int i;
 	int found=0;
 	if (user!=NULL){
-		for (i=0;(i<my_conf->num_priv_users) && (!found);i++){
+		i=0;
+		while((i<my_conf->num_priv_users) && (!found)){
 			if (strcmp(user,my_conf->priv_users[i])==0) found=1;
+			else i++;
 		}
 	}
 	if (found)	return found;
 	if (group!=NULL){
-		for (i=0;(i<my_conf->num_priv_groups) && (!found);i++){
+		i=0;
+		while((i<my_conf->num_priv_groups) && (!found)){
 			if (strcmp(group,my_conf->priv_groups[i])==0) found=1;
+			else i++;
 		}
 	}
 	if (found)	return found;
 	if (acc!=NULL){
-		for (i=0;(i<my_conf->num_acc) && (!found);i++){
+		i=0;
+		while((i<my_conf->num_acc) && (!found)){
         	if (strcmp(acc,my_conf->priv_acc[i])==0) found=1;
+			else i++;
     	}
 	}
 	return found;
@@ -213,20 +219,26 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
 	int i;
     int found=0;
     if (user!=NULL){
-        for (i=0;(i<my_tag->num_users) && (!found);i++){
+		i=0;
+        while((i<my_tag->num_users) && (!found)){
             if (strcmp(user,my_tag->users[i])==0) found=1;
+			else i++;
         }
     }
     if (found)  return my_tag;
     if (group!=NULL){
-        for (i=0;(i<my_tag->num_groups) && (!found);i++){
+		i=0;
+        while((i<my_tag->num_groups) && (!found)){
             if (strcmp(group,my_tag->groups[i])==0) found=1;
+			else i++;
         }
     }
     if (found)  return my_tag;
     if (acc!=NULL){
-        for (i=0;(i<my_tag->num_accounts) && (!found);i++){
+		i=0;
+        while((i<my_tag->num_accounts) && (!found)){
             if (strcmp(acc,my_tag->accounts[i])==0) found=1;
+			else i++;
         }
     }
 	if (found) return my_tag;
@@ -240,11 +252,12 @@ energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char
 	int found=0;
 	energy_tag_t *my_tag;
 	if (energy_tag==NULL) return NULL;
-	for (i=0;(i<my_conf->num_tags) && (!found);i++){
+	i=0;
+	while((i<my_conf->num_tags) && (!found)){
 		if (strcmp(energy_tag,my_conf->e_tags[i].tag)==0){
 			found=1;
 			my_tag=&my_conf->e_tags[i];	
-		}
+		}else i++;
 	}	
 	if (!found)	return NULL;
 	return can_use_energy_tag(user,group,acc,my_tag);
@@ -256,8 +269,10 @@ energy_tag_t * energy_tag_exists(cluster_conf_t *my_conf,char *etag)
 	int i;
 	int found=0;
 	if (etag==NULL)	return NULL;
-	for (i=0;(i<my_conf->num_tags) && (!found);i++){
+	i=0;
+	while ((i<my_conf->num_tags) && (!found)){
 		if (strcmp(etag,my_conf->e_tags[i].tag)==0)	found=1;
+		else i++;
 	}
 	if (found) return &my_conf->e_tags[i];
 	return NULL;

@@ -39,6 +39,7 @@
 
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/types/coefficient.h>
 
 typedef struct settings_conf{
 	ulong 	max_freq;
@@ -101,30 +102,16 @@ void dettach_resched_shared_area();
  * */
 void resched_shared_area_dispose(char * path);
 
-/************ CLUSTER CONF **********************/
-/** Sets in path the filename for the shared memory area between EARD and EARL
- *  * @param path (output)
- *   */
-int get_cluster_conf_shared_path(char *tmp,char *path);
+/***************** COEFFICIENTS **********/
+int get_coeffs_path(char *tmp,char *path);
 
-/** Creates the shared mmemory. It is used by EARD (server)
- * *   @param ear_conf_path specifies the path (folder) to create the file used by mmap
- * */
+coefficient_t * create_coeffs_shared_area(char * path,coefficient_t *coeffs,int size);
 
-cluster_conf_t * create_cluster_conf_shared_area(char * path);
+coefficient_t * attach_coeffs_shared_area(char * path,int *size);
 
-/** Connects with a previously created shared memory region. It is used by clients
- * *   @param ear_conf_path specifies the path (folder) where the mapped file were created
- * */
-cluster_conf_t * attach_cluster_conf_shared_area(char * path);
+void coeffs_shared_area_dispose(char * path);
 
-/** Disconnect from a previously connected shared memory region. It is used by clients
- * */
-void dettach_cluster_conf_shared_area();
-
-/** Releases a shared memory area previously created. It is used by EARD (server)
- * */
-void cluster_conf_shared_area_dispose(char * path);
+void dettach_coeffs_shared_area();
 
 
 #endif

@@ -379,6 +379,13 @@ int main(int argc, char *argv[])
 
         for (i = 0; i < num_node_p_states; i++) {
             coeffs_list[f][i].available = 0;
+            coeffs_list[f][i].pstate = p_state_to_freq(i);
+			coeffs_list[f][i].A=0;
+			coeffs_list[f][i].B=0;
+			coeffs_list[f][i].C=0;
+			coeffs_list[f][i].D=0;
+			coeffs_list[f][i].E=0;
+			coeffs_list[f][i].F=0;
         }
     }
 
@@ -419,7 +426,7 @@ int main(int argc, char *argv[])
 
                     if (n > 0)
                     {
-                        #ifdef DEBUG
+                        #if CC_DEBUG
                         fprintf(stdout, "Computing POWER regression for freq %u with %u samples (REF=%u)\n",
                                 p_state_to_freq(f), samples_f[f], p_state_to_freq(ref));
                         #endif
@@ -444,7 +451,7 @@ int main(int argc, char *argv[])
                         gsl_multifit_linear_workspace *wspc = gsl_multifit_linear_alloc(n, 3);
                         gsl_multifit_linear(SIGNATURE_POWER, POWER, COEFFS, cov, &chisq, wspc);
 
-                        #ifdef DEBUG
+                        #if CC_DEBUG
                         fprintf(stdout, "Coefficient for power: %g*DC_power + %g*TPI_f0 + %g\n",
                                 gsl_vector_get(COEFFS, 1), gsl_vector_get(COEFFS, 2), gsl_vector_get(COEFFS, 0));
                         #endif
@@ -459,7 +466,7 @@ int main(int argc, char *argv[])
                     }
                     if (n > 0)
                     {
-                        #ifdef DEBUG
+                        #if CC_DEBUG
                         fprintf(stdout, "Computing CPI regression for freq %u with %u samples (REF=%u)\n",
                                 p_state_to_freq(f), samples_f[f], p_state_to_freq(ref));
                         #endif
@@ -485,7 +492,7 @@ int main(int argc, char *argv[])
                         gsl_multifit_linear_workspace *wspc = gsl_multifit_linear_alloc(n, 3);
                         gsl_multifit_linear(SIGNATURE_CPI, CPI, COEFFS, cov, &chisq, wspc);
 
-                        #ifdef DEBUG
+                        #if CC_DEBUG
                         fprintf(stdout, "Coefficient for cpi: %g*CPI_f0 + %g*TPI_f0 + %g\n",
                                 gsl_vector_get(COEFFS, 1), gsl_vector_get(COEFFS, 2), gsl_vector_get(COEFFS, 0));
                         #endif
@@ -515,11 +522,10 @@ int main(int argc, char *argv[])
                 }
             }
 
-			printf("Writed coefficients file");
 
         }else{
-			fprintf(stdout,"Writting NULL coeffs for freq=%lu projection %lu\n",ref,f);
-            if (write(fd, &coeffs_list[ref][1], sizeof(coefficient_t)* p_state_max) != sizeof(coefficient_t)*p_state_max ) {
+			fprintf(stdout,"Writting NULL coeffs for freq=%lu projections %lu\n",ref,p_state_max);
+            if (write(fd, &coeffs_list[ref][0], sizeof(coefficient_t)* p_state_max) != sizeof(coefficient_t)*p_state_max ) {
             	perror("Error writting coefficients file\n");
             	exit(1);
             }
