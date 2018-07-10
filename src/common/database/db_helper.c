@@ -559,7 +559,7 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
 }
 
 
-int db_read_applications(application_t **apps,uint is_learning, int max_apps)
+int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name)
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -594,12 +594,13 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps)
         sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
                         "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
-                        "job_id > %d", current_job_id, max_apps, current_job_id);
+                        "job_id > %d AND node_id='%s'", current_job_id, max_apps, current_job_id, node_name);
     else
         sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
-                        "job_id > %d", current_job_id, max_apps, current_job_id);
+                        "job_id > %d AND node_id='%s'", current_job_id, max_apps, current_job_id, node_name);
+
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
