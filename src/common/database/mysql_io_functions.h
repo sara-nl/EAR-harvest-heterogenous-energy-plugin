@@ -59,6 +59,12 @@ int mysql_insert_application(MYSQL *connection, application_t *app);
 *   or EAR_MYSQL_STMT_ERROR on error. */ 
 int mysql_batch_insert_applications(MYSQL *connection, application_t *apps, int num_apps);
 
+
+/** Given a MYSQL connection and an array of applications, insert said applications
+*   into the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR
+*   or EAR_MYSQL_STMT_ERROR on error. Used for non-mpi applications. */ 
+int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *apps, int num_apps);
+
 /** Given a MYSQL connection and a valid MYSQL query, stores in apps the 
 *   applications found in the database corresponding to the query. Returns the 
 *   number of applications found on success, and either EAR_MYSQL_ERROR or
