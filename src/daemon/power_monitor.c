@@ -225,24 +225,26 @@ void report_powermon_app(powermon_app_t *app)
 	report_application_data(&app->app);
 	report_application_in_file(&app->app);
 	
-	//#if !USE_EARDB
+	#if !USE_EARDB
 	#if DB_MYSQL
     if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
 	#endif
-	//#else
+	#else
     if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
         eard_verbose(0,"Error when sending application to eardb");
 		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
     }
-	//#endif
+	#endif
 }
 
 policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,application_t * appID)
 {
 	policy_conf_t * my_policy;
 	int p_id;
+	eard_verbose(0,"configuring policy for user %u policy %s",user_type,appID->job.policy);
 	switch (user_type){
 	case NORMAL:
+		appID->is_learning=0;
         p_id=policy_name_to_id(appID->job.policy);
         /* Use cluster conf function */
         if (p_id!=EAR_ERROR){
@@ -286,6 +288,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 		}
 		break;
 	case ENERGY_TAG:
+		appID->is_learning=0;
 		energy_tag_context.policy=MONITORING_ONLY;
 		energy_tag_context.p_state=frequency_freq_to_pstate(my_tag->p_state);
 		energy_tag_context.th=0;
@@ -354,12 +357,14 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	if (my_tag!=NULL) print_energy_tag(my_tag);
 	/* Given a user type, application, and energy_tag, my_policy is the cofiguration for this user and application */
 	my_policy=configure_context(user_type, my_tag, appID);
-	eard_verbose(1,"Node configuration for policy %s p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->th);
+	eard_verbose(1,"Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->th);
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
+	dyn_conf->user_type=user_type;
 	dyn_conf->policy=my_policy->policy;
 	dyn_conf->def_freq=f;
 	dyn_conf->th=my_policy->th;
+	/* End app configuration */
 	frequency_set_all_cpus(f);
 	current_node_freq=f;
 	appID->job.def_f=dyn_conf->def_freq;	
@@ -537,19 +542,19 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 
-	//#if !USE_EARDB
+	#if !USE_EARDB
 	#if DB_MYSQL
 	/* current sample reports the value of job_id and step_id active at this moment */
 	/* If we want to be strict, we must report intermediate samples at job start and job end */
     if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
 	#endif
 
-	//#else
+	#else
 	if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
 		eard_verbose(0,"Error when sending periodic power metric to eardb");
 		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
 	}
-	//#endif
+	#endif
 
 	return;
 }

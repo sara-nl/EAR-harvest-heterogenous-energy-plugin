@@ -152,9 +152,8 @@ int getenv_ear_power_policy()
 	conf_ear_power_policy=DEFAULT_POWER_POLICY;
 	my_policy=getenv("EAR_POWER_POLICY");
 	if (my_policy!=NULL){
-		if ((strcmp(my_policy,"MIN_ENERGY_TO_SOLUTION")==0) || (strcmp(my_policy,"min_energy_to_solution")==0)) conf_ear_power_policy=MIN_ENERGY_TO_SOLUTION;
-		else if ((strcmp(my_policy,"MIN_TIME_TO_SOLUTION")==0) || (strcmp(my_policy,"min_time_to_solution")==0)) conf_ear_power_policy=MIN_TIME_TO_SOLUTION;
-		else if ((strcmp(my_policy,"MONITORING_ONLY")==0) || (strcmp(my_policy,"monitoring_only")==0)) conf_ear_power_policy=MONITORING_ONLY;
+		conf_ear_power_policy=policy_name_to_id(my_policy);
+		if (conf_ear_power_policy==EAR_ERROR)	conf_ear_power_policy=DEFAULT_POWER_POLICY;
 	}	
 	return conf_ear_power_policy;
 }
@@ -303,9 +302,18 @@ int get_ear_dynais_levels()
 {
 	return conf_ear_dynais_levels;
 }
+
+void set_ear_dynais_levels(int levels)
+{
+	conf_ear_dynais_levels=levels;
+}
 int get_ear_dynais_window_size()
 {
 	return conf_ear_dynais_window_size;
+}
+void set_ear_dynais_window_size(int size)
+{
+	conf_ear_dynais_window_size=size;
 }
 
 
@@ -323,6 +331,15 @@ char * get_ear_coeff_db_pathname()
 {
 	return conf_ear_coeff_db_pathname;
 }
+
+void set_ear_coeff_db_pathname(char *path)
+{
+	if (path!=NULL){
+		if (conf_ear_coeff_db_pathname!=NULL) free(conf_ear_coeff_db_pathname);
+		conf_ear_coeff_db_pathname=malloc(strlen(path)+1);
+		strcpy(conf_ear_coeff_db_pathname,path);
+	}
+}
 char * get_ear_app_name()
 {
 	return conf_ear_app_name;
@@ -335,9 +352,19 @@ int get_ear_power_policy()
 {
 	return conf_ear_power_policy;
 }
+
+void set_ear_power_policy(int pid)
+{
+	conf_ear_power_policy=pid;
+}
 double get_ear_power_policy_th()
 {
 	return conf_ear_power_policy_th;
+}
+
+void set_ear_power_policy_th(double th)
+{
+	conf_ear_power_policy_th=th;
 }
 int get_ear_reset_freq()
 {
@@ -346,6 +373,11 @@ int get_ear_reset_freq()
 unsigned long get_ear_p_state()
 {
 	return conf_ear_p_state;
+}
+
+void set_ear_p_state(ulong pstate)
+{
+	conf_ear_p_state=pstate;
 }
 double get_ear_performance_accuracy()
 {
@@ -373,36 +405,7 @@ my_node_conf_t *my_node_conf;
 // This function reads and process environment variable It must be called before using get_ functions
 void ear_lib_environment()
 {
-	#if 0
-	char nodename[GENERIC_NAME];
-    if (gethostname(nodename, sizeof(nodename)) < 0)
-    {
-        fprintf(stderr, "Error getting node name (%s)", strerror(errno));
-        _exit(1);
-    }
-    strtok(nodename, ".");
-
- 	if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-        fprintf(stderr,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)\n");
-        _exit(0);
-    }
-    if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
-        fprintf(stderr," Error reading cluster configuration\n");
-        _exit(1);
-    }else{
-        print_cluster_conf(&my_cluster_conf);
-        my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);
-        if (my_node_conf==NULL){
-            fprintf(stderr," Error in cluster configuration, node %s not found\n",nodename);
-        }
-        print_my_node_conf(my_node_conf);
-    }
-	#endif
 	// That part will be initialized from cluster_conf
-	//conf_ear_tmp=my_cluster_conf.tmp_dir;
-	//conf_ear_coeff_db_pathname=my_cluster_conf.earlib.coefficients_pathname;
-	//conf_ear_dynais_levels=;
-	//conf_ear_dynais_window_size=
 	getenv_ear_performance_accuracy();
 	getenv_ear_dynais_levels();
 	// This part will be moved to cluster conf

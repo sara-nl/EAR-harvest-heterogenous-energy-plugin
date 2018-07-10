@@ -198,6 +198,25 @@ static void get_app_name(char *my_name)
 	}
 }
 
+
+/*** We update EARL configuration based on shared memory information **/
+void update_configuration()
+{
+	
+	earl_verbose(1,"---- Validating shared memory information ----\n");
+	print_ear_lib_conf(&system_conf->lib_info);
+	earl_verbose(1,"User type: %d Policy %u, max_freq %lu, def_freq %lu th %lf",
+	system_conf->user_type,system_conf->policy,system_conf->max_freq,system_conf->def_freq,system_conf->th);
+	earl_verbose(1,"-----------------------------");
+	set_ear_power_policy(system_conf->policy);
+	set_ear_power_policy_th(system_conf->th);
+	set_ear_p_state(system_conf->def_freq);
+	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
+	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
+	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
+
+}
+
 void ear_init()
 {
 	unsigned long ear_current_freq;
@@ -235,6 +254,14 @@ void ear_init()
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
 	resched_conf = attach_resched_shared_area(resched_conf_path);
+
+	/* Updating configuration */
+	if ((system_conf!=NULL) && (resched_conf!=NULL)){
+		update_configuration();	
+	}else{
+		earl_verbose(0,"Shared memory not present, not connecting with EARD");
+		my_id=1;
+	}	
 
 	// Application static data and metrics
 	init_application(&application);

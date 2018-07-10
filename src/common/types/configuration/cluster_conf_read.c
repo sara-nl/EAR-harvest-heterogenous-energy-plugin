@@ -660,6 +660,23 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->eargm.energy = atoi(token);
 		}
+        else if (!strcmp(token, "GLOBALMANAGERWARNINGSPERC"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+		    int perc=0;
+            while (token != NULL)
+            {
+            	conf->eargm.defcon_limits[perc++] = atoi(token);
+                token = strtok(NULL, ",");
+            }
+        }
+
+		else if (!strcmp(token, "GLOBALMANAGERGRACEPERIODS"))
+		{
+			token = strtok(NULL, "=");
+			conf->eargm.grace_periods = atoi(token);
+		}
 		else if (!strcmp(token, "GLOBALMANAGERPORT"))
 		{
 			token = strtok(NULL, "=");

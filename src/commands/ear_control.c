@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>

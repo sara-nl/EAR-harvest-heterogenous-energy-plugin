@@ -427,7 +427,7 @@ void main(int argc,char *argv[])
 
     #if DB_MYSQL
     VERBOSE_N(1,"Connecting with EAR DB");
-	strcpy(my_cluster_conf.database.database,"Report2");
+	/*strcpy(my_cluster_conf.database.database,"Report2");*/
     init_db_helper(&my_cluster_conf.database);
     #endif
 	

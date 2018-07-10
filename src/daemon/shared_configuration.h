@@ -42,6 +42,7 @@
 #include <common/types/coefficient.h>
 
 typedef struct settings_conf{
+	uint 	user_type;
 	uint 	policy;
 	ulong 	max_freq;
 	ulong	def_freq;

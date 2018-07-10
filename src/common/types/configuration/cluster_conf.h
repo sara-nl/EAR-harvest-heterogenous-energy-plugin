@@ -82,6 +82,7 @@ typedef struct eard_conf
 * EARGMEnergy=
 * EARGMPort=
 */
+#define DECON_LIMITS	3
 typedef struct eargm_conf
 {
 	uint 	verbose;		/* default 1 */
@@ -90,6 +91,8 @@ typedef struct eargm_conf
 	ulong 	energy;			/* mandatory */
 	uint 	port;			/* mandatory */
 	uint 	mode;
+	uint	defcon_limits[3];
+	uint	grace_periods;
 	char 	mail[GENERIC_NAME];
     char    host[GENERIC_NAME];
 } eargm_conf_t;
