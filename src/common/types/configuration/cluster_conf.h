@@ -273,4 +273,20 @@ int is_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc);
 uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *group, char *acc,energy_tag_t **my_tag);
 
 
+/* Given a cluser, node and policy_id, returns the policy configuration (or NULL) */
+policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
+
+/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
+int policy_name_to_id(char *my_policy);
+
+/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
+int policy_id_to_name(int policy_id,char *my_policy);
+
+/* Copy src in dest */
+void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src);
+/* Prints the given library conf */
+void print_ear_lib_conf(earlib_conf_t *libc);
+
+
+
 #endif

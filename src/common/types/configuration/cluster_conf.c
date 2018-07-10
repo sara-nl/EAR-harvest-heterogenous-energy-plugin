@@ -303,3 +303,22 @@ uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *g
 	} else return NORMAL;
 }
 
+/* Copy src in dest */
+void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src)
+{
+	if ((dest!=NULL) && (src!=NULL)){
+		strcpy(dest->coefficients_pathname,src->coefficients_pathname);
+		dest->dynais_levels=src->dynais_levels;
+		dest->dynais_window=src->dynais_window;
+	}
+}
+
+/* Prints the given library conf */
+void print_ear_lib_conf(earlib_conf_t *libc)
+{
+	if (libc!=NULL){
+		fprintf(stderr,"coeffs %s dynais level %u dynais window_size %u\n",
+		libc->coefficients_pathname,libc->dynais_levels,libc->dynais_window);
+	}
+}
+

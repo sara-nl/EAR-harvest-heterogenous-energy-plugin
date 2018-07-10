@@ -919,9 +919,11 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
+	dyn->policy=cluster->default_policy;
 	dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
+	copy_ear_lib_conf(&dyn->,&lib_info,cluster->earlib);
 	resched_conf->force_rescheduling=0;
 	eard_verbose(0,"configure_default_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
 	save_eard_conf(&eard_dyn_conf);
@@ -1036,6 +1038,7 @@ void main(int argc,char *argv[])
         }
 		print_my_node_conf(my_node_conf);
     }
+	/* This info is used for eard checkpointing */
 	eard_dyn_conf.cconf=&my_cluster_conf;
 	eard_dyn_conf.nconf=my_node_conf;
 	set_global_eard_variables();
@@ -1082,6 +1085,7 @@ void main(int argc,char *argv[])
 		eard_verbose(0,"We must recover from a crash");
 		restore_eard_conf(&eard_dyn_conf);
 	}
+	/* After potential recoveries, we set the info in the shared memory */
     configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
     eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
 

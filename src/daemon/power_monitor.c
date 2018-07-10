@@ -354,8 +354,10 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	if (my_tag!=NULL) print_energy_tag(my_tag);
 	/* Given a user type, application, and energy_tag, my_policy is the cofiguration for this user and application */
 	my_policy=configure_context(user_type, my_tag, appID);
-	eard_verbose(1,"Node configuration for policy %s p_state %d th %lf",appID->job.policy,my_policy->p_state,my_policy->th);
+	eard_verbose(1,"Node configuration for policy %s p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->th);
+	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
+	dyn_conf->policy=my_policy->policy;
 	dyn_conf->def_freq=f;
 	dyn_conf->th=my_policy->th;
 	frequency_set_all_cpus(f);
