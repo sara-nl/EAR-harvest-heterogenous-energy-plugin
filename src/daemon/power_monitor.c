@@ -70,6 +70,7 @@ extern cluster_conf_t my_cluster_conf;
 extern eard_dyn_conf_t eard_dyn_conf;
 extern policy_conf_t default_policy_context,energy_tag_context,authorized_context;
 static char *__NAME__="powermon: ";
+extern char *__HOST__;
 
 unsigned int f_monitoring;
 extern ulong current_node_freq;
@@ -116,7 +117,10 @@ static void PM_set_sigusr1()
 
 }
 
-
+void clean_job_environment()
+{
+	eard_verbose(0,"You must clean the environment");
+}
 
 void reset_current_app()
 {
@@ -221,16 +225,16 @@ void report_powermon_app(powermon_app_t *app)
 	report_application_data(&app->app);
 	report_application_in_file(&app->app);
 	
-	#if !USE_EARDB
+	//#if !USE_EARDB
 	#if DB_MYSQL
     if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
 	#endif
-	#else
+	//#else
     if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
         VERBOSE_N(0,"Error when sending application to eardb");
 		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
     }
-	#endif
+	//#endif
 }
 
 policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,application_t * appID)
@@ -258,25 +262,32 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 		break;
 
 	case AUTHORIZED:
-		p_id=policy_name_to_id(appID->job.policy);
-		if (p_id!=EAR_ERROR){
-			authorized_context.policy=p_id;
+		if (appID->is_learning){
+			authorized_context.policy=MONITORING_ONLY;
 			authorized_context.p_state=appID->job.def_f;
-			authorized_context.th=appID->job.th;
+			authorized_context.th=0;
 			my_policy=&authorized_context;
 		}else{
-			/* This should neve happen, just in case */
-			VERBOSE_N(0,"Error, authorized user is executing non-existing policy, using default");
-			my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
-			if (my_policy==NULL){
-				VERBOSE_N(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf");
-	            my_policy=&default_policy_context;
+			p_id=policy_name_to_id(appID->job.policy);
+			if (p_id!=EAR_ERROR){
+				authorized_context.policy=p_id;
+				authorized_context.p_state=appID->job.def_f;
+				authorized_context.th=appID->job.th;
+				my_policy=&authorized_context;
+			}else{
+				/* This should neve happen, just in case */
+				VERBOSE_N(0,"Error, authorized user is executing non-existing policy, using default");
+				my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+				if (my_policy==NULL){
+					VERBOSE_N(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf");
+	            	my_policy=&default_policy_context;
+				}
 			}
 		}
 		break;
 	case ENERGY_TAG:
 		energy_tag_context.policy=MONITORING_ONLY;
-		energy_tag_context.p_state=my_tag->p_state;
+		energy_tag_context.p_state=frequency_freq_to_pstate(my_tag->p_state);
 		energy_tag_context.th=0;
 		my_policy=&energy_tag_context;
 		break;
@@ -415,6 +426,7 @@ void powermon_end_job(job_id jid,job_id sid)
     frequency_recover_previous_policy();
     frequency_recover_previous_frequency();
 	current_node_freq=frequency_get_cpu_freq(0);	
+	clean_job_environment();
 
 }
 
@@ -551,19 +563,19 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 
-	#if !USE_EARDB
+	//#if !USE_EARDB
 	#if DB_MYSQL
 	/* current sample reports the value of job_id and step_id active at this moment */
 	/* If we want to be strict, we must report intermediate samples at job start and job end */
     if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
 	#endif
 
-	#else
+	//#else
 	if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
 		VERBOSE_N(0,"Error when sending periodic power metric to eardb");
 		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
 	}
-	#endif
+	//#endif
 
 	return;
 }
