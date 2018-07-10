@@ -353,7 +353,6 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
     free(bind);
     free(query);
     free(pow_sigs_ids);
-    free(sigs_ids);
 
     return EAR_SUCCESS;
 }
