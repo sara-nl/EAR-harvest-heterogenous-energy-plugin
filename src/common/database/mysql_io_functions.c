@@ -36,6 +36,8 @@
 #include <common/ear_verbose.h>
 #include <common/database/mysql_io_functions.h>
 
+static char *__NAME__ = "MYSQL_IO: ";
+
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id, power_signature_id) VALUES" \
                             "(?, ?, ?, ?, ?)"
 
