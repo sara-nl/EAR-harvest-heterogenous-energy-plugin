@@ -213,7 +213,9 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     MYSQL_BIND *bind = calloc(num_apps*APPLICATION_ARGS, sizeof(bind));
    
     //job only needs to be inserted once
-    mysql_insert_job(connection, &app->job, is_learning);
+    for (i = 0; i < num_apps; i++)
+        mysql_insert_job(connection, &app[i].job, is_learning);
+    
     int pow_sig_id = 0;
     int sig_id = 0;
     int *pow_sigs_ids = calloc(num_apps, sizeof(int));
@@ -307,7 +309,8 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
     MYSQL_BIND *bind = calloc(num_apps*APPLICATION_ARGS, sizeof(bind));
    
     //job only needs to be inserted once
-    mysql_insert_job(connection, &app->job, is_learning);
+    for (i = 0; i < num_apps; i++)
+        mysql_insert_job(connection, &app[i].job, is_learning);
     int pow_sig_id = 0;
     int sig_id = 0;
     int *pow_sigs_ids = calloc(num_apps, sizeof(int));
