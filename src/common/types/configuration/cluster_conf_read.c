@@ -233,7 +233,21 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->earlib.dynais_window = atoi(token);
         }
-
+        else if (!strcmp(token, "DYNAISTIMEOUT"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.dynais_timeout = atoi(token);
+        }
+        else if (!strcmp(token, "LIBRARYPERIOD"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.lib_period = atoi(token);
+        }
+        else if (!strcmp(token, "CHECKEARMODEEVERY"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.check_every = atoi(token);
+        }
 		else if (!strcmp(token, "TMPDIR"))
 		{
 			token = strtok(NULL, "=");

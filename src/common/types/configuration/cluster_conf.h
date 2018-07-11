@@ -185,6 +185,9 @@ typedef struct earlib_conf
 	char coefficients_pathname[GENERIC_NAME];
     uint dynais_levels;
     uint dynais_window;
+	uint dynais_timeout;
+	uint lib_period;
+	uint check_every;
 } earlib_conf_t;
 
 typedef struct cluster_conf

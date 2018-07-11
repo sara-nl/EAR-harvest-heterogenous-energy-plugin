@@ -891,11 +891,12 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
 		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
+	dyn->policy=cluster->default_policy;
     dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
 	resched->force_rescheduling=1;
-    eard_verbose(0,"configure_new_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
+	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
 	save_eard_conf(&eard_dyn_conf);
 }
 
@@ -925,7 +926,6 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
     dyn->th=my_policy->th;
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
 	resched_conf->force_rescheduling=0;
-	eard_verbose(0,"configure_default_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
 	save_eard_conf(&eard_dyn_conf);
 }
 

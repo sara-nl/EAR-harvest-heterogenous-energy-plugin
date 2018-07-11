@@ -123,6 +123,8 @@ static void print_earlib_conf(earlib_conf_t *conf)
 {
     fprintf(stderr, "-->Coefficients path: %s\n-->DynAIS levels: %u\n-->DynAIS window size: %u\n",
             conf->coefficients_pathname, conf->dynais_levels, conf->dynais_window);
+	fprintf(stderr, "-->dynais timeout %u ear period %u check every %u\n",
+		conf->dynais_timeout,conf->lib_period,conf->check_every);
 }
 
 void print_cluster_conf(cluster_conf_t *conf)

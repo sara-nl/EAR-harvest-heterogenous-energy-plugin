@@ -51,10 +51,12 @@ int _protocol = -1;
 int connected = -1;
 int fd_srv    = -1;
 
-#define verbose(...) \
+#define verbose(...) 
+#if 0
 	fprintf(stderr, "EARDBD_API, "); \
 	fprintf(stderr, __VA_ARGS__); \
 	fprintf(stderr, "\n");
+#endif
 
 #define error(...) \
 	fprintf(stderr, "EARDBD_API ERROR, "); \

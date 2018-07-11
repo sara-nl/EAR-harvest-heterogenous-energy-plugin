@@ -420,7 +420,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	double time_from_mpi_init;
 	
 	if (my_id) return;
-	
+	/* The learning phase avoids EAR internals ear_whole_app is set to 1 when learning-phase is set */
+	if (!ear_whole_app)
+	{
 	total_mpi_calls++;
 	/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
 	 * ear_periodic_mode can be ON or OFF 
@@ -469,6 +471,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 					ear_iterations++;
 					states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 				}
+	}
 	}
 #else
     if (dynais_enabled==DYNAIS_ENABLED) ear_mpi_call_dynais_on(call_type,buf,dest);
