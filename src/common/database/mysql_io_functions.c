@@ -564,7 +564,7 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
-    MYSQL_BIND *bind = calloc(num_loops*LOOP_ARGS, sizeof(bind));
+    MYSQL_BIND *bind = calloc(num_loops*LOOP_ARGS, sizeof(MYSQL_BIND));
     
     signature_container_t cont;
     cont.type = EAR_TYPE_LOOP;
