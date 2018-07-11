@@ -50,18 +50,27 @@
 #include <common/types/log.h>
 #include <common/states.h>
 
-#define mets_len 4096
-#define lops_len 4096
-#define eves_len 4096
-#define apps_len 1024
+//#define lops_len 128 * 512
+//#define mets_len 32 * 512
+//#define eves_len 32 * 512
+//#define apps_len 32 * 512
+
+#define lops_len 2
+#define mets_len 2
+#define eves_len 2
+#define apps_len 2
 
 static periodic_aggregation_t aggr;
+static application_t apps_mpi[apps_len];
+static application_t apps_nor[apps_len];
+static application_t apps_ler[apps_len];
 static periodic_metric_t mets[mets_len];
-static application_t apps[apps_len];
 static ear_event_t eves[apps_len];
 static loop_t lops[apps_len];
+static uint apps_mpi_i;
+static uint apps_nor_i;
+static uint apps_ler_i;
 static uint mets_i;
-static uint apps_i;
 static uint eves_i;
 static uint lops_i;
 
@@ -148,34 +157,38 @@ static void print_addrinfo(struct addrinfo *host_info)
  * Data storing/loading
  */
 
-static void db_store_events()
+static periodic_metric_t mets[mets_len];
+
+static periodic_aggregation_t aggr;
+
+static void db_store_events(ear_event_t *eves, uint n_eves)
 {
-	if (eves_i <= 0) {
+	if (n_eves <= 0) {
 		return;
 	}
 
-    verbose("Trying to insert in DB %d event samples", eves_i);
-    db_batch_insert_ear_event(eves, eves_i);
+    verbose("Trying to insert in DB %d event samples", n_eves);
+    db_batch_insert_ear_event(eves, n_eves);
 }
 
-static void db_store_loops()
+static void db_store_loops(loop_t *lops, uint n_lops)
 {
-   if (lops_i <= 0) {
+   if (n_lops <= 0) {
         return; 
     }
 
-    verbose("Trying to insert in DB %d loop samples", lops_i);
-   //db_batch_insert_loops(lops, lops_i);
+    verbose("Trying to insert in DB %d loop samples", n_lops);
+   //db_batch_insert_loops(lops, n_lops);
 }
 
-static void db_store_periodic_metrics()
+static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
 {
-	if (mets_i <= 0) {
+	if (n_mets <= 0) {
 		return;
 	}
 
-	verbose("Trying to insert in DB %d periodic metric samples", mets_i);
-	db_batch_insert_periodic_metrics(mets, mets_i);
+	verbose("Trying to insert in DB %d periodic metric samples", n_mets);
+	db_batch_insert_periodic_metrics(mets, n_mets);
 }
 
 static void db_store_periodic_aggregation()
@@ -188,14 +201,24 @@ static void db_store_periodic_aggregation()
 	db_insert_periodic_aggregation(&aggr);
 }
 
-static void db_store_applications()
+static void db_store_applications_mpi(application_t *apps, uint n_apps)
 {
-	if (apps_i <= 0) {
+	if (n_apps == 0) {
 		return;
 	}
 
-	verbose("Trying to insert in DB %d applications samples", apps_i);
-	//db_batch_insert_applications(apps, apps_i);
+	verbose("Trying to insert in DB %d mpi application samples", n_apps);
+	db_batch_insert_applications(apps, n_apps);
+}
+
+static void db_store_applications(application_t *apps, uint n_apps)
+{
+	if (n_apps == 0) {
+		return;
+	}
+
+	verbose("Trying to insert in DB %d non-mpi application samples", n_apps);
+	db_batch_insert_applications_no_mpi(apps, n_apps);
 }
 
 /*
@@ -215,16 +238,22 @@ static void process_timeout_data()
 	db_store_periodic_aggregation();
 	init_periodic_aggregation(&aggr);
 
-	db_store_periodic_metrics();
+	db_store_periodic_metrics(mets, mets_i);
 	mets_i = 0;
 
-	db_store_applications();
-	apps_i = 0;
+	db_store_applications_mpi(apps_ler, apps_ler_i);
+	apps_ler_i = 0;
+
+	db_store_applications_mpi(apps_mpi, apps_mpi_i);
+	apps_mpi_i = 0;
+
+	db_store_applications(apps_nor, apps_nor_i);
+	apps_nor_i = 0;
 	
-	db_store_events();
+	db_store_events(eves, eves_i);
 	eves_i = 0;
 
-	db_store_loops();
+	db_store_loops(lops, lops_i);
 	lops_i = 0;
 }
 
@@ -234,15 +263,42 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 
 	if (size == sizeof(application_t))
 	{
-		type = "application_t";
+		application_t *app = (application_t *) buffer;
+		report_application_data(app);
 
-		memcpy (&apps[apps_i], buffer, size);
-		apps_i += 1;
-
-		if (apps_i == apps_len)
+		if (app->is_learning)
 		{
-			db_store_applications();
-			apps_i = 0;
+			type = "learning application_t";
+			memcpy (&apps_ler[apps_ler_i], buffer, size);
+			apps_ler_i += 1;
+
+			if (apps_ler_i == apps_len)
+			{
+				db_store_applications_mpi(apps_ler, apps_ler_i);
+				apps_ler_i = 0;
+			}
+		} else if (app->is_mpi)
+		{
+			type = "mpi application_t";
+			memcpy (&apps_mpi[apps_mpi_i], buffer, size);
+			apps_mpi_i += 1;
+
+			if (apps_mpi_i == apps_len)
+			{
+				db_store_applications_mpi(apps_mpi, apps_mpi_i);
+				apps_mpi_i = 0;
+			}
+		} else
+		{
+			type = "non-mpi application_t";
+			memcpy (&apps_nor[apps_nor_i], buffer, size);
+			apps_nor_i += 1;
+
+			if (apps_nor_i == apps_len)
+			{
+				db_store_applications_mpi(apps_nor, apps_nor_i);
+				apps_nor_i = 0;
+			}
 		}
 	}
 	else if (size == sizeof(periodic_metric_t))
@@ -254,7 +310,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 		mets_i += 1;
 
 		if (mets_i == mets_len) {
-			db_store_periodic_metrics();
+			db_store_periodic_metrics(mets, mets_i);
 			mets_i = 0;
 		}
 	} else if (size == sizeof(ear_event_t))
@@ -265,7 +321,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 		eves_i += 1;
 
 		if (eves_i == eves_len) {
-			db_store_events();
+			db_store_events(eves, eves_i);
 			eves_i = 0;
 		}
 	} else if (size = sizeof(loop_t))
@@ -276,7 +332,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 		lops_i += 1;
 
 		if (lops_i == eves_len) {
-			db_store_loops();
+			db_store_loops(lops, lops_i);
 			lops_i = 0;
 		}
 	} else {
@@ -415,6 +471,7 @@ int main(int argc, char **argv)
 	cluster_conf_t conf_clus;
 
 	long merge_time;
+	float mb_totl;
 	float mb_apps;
 	float mb_lops;
 	float mb_eves;
@@ -441,9 +498,15 @@ int main(int argc, char **argv)
 	mb_mets = (double) (sizeof(periodic_metric_t) * mets_len) / 1000000.0;
 	mb_lops = (double) (sizeof(loop_t)            * lops_len) / 1000000.0;
 	mb_eves = (double) (sizeof(ear_event_t)       * mets_len) / 1000000.0;
+	mb_totl = (mb_apps * 3) + mb_mets + mb_lops + mb_eves;
 
+	verbose("reserving %0.2f MBytes for mpi applications", mb_apps);
+	verbose("reserving %0.2f MBytes for learning applications", mb_apps);
 	verbose("reserving %0.2f MBytes for applications", mb_apps);
 	verbose("reserving %0.2f MBytes for power metrics", mb_mets);
+	verbose("reserving %0.2f MBytes for loops", mb_lops);
+	verbose("reserving %0.2f MBytes for events", mb_eves);
+	verbose("total memory allocated: %0.2f MBytes", mb_totl);
 
 	// Configuration file
 	if (get_ear_conf_path(conf_path) == EAR_ERROR) {
