@@ -215,7 +215,7 @@ int eardbd_send_application(void *app)
 int eardbd_send_periodic_metric(void *met)
 {
 	CONNECTION_TEST();
-	verbose("sending application");
+	verbose("sending periodic_metric");
 	return _send((periodic_metric_t *) met, sizeof(periodic_metric_t));
 }
 

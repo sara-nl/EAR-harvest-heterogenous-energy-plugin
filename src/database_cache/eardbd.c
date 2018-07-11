@@ -55,10 +55,10 @@
 //#define eves_len 32 * 512
 //#define apps_len 32 * 512
 
-#define lops_len 2
+#define lops_len 1
 #define mets_len 2
 #define eves_len 2
-#define apps_len 2
+#define apps_len 1
 
 static periodic_aggregation_t aggr;
 static application_t apps_mpi[apps_len];
@@ -157,10 +157,6 @@ static void print_addrinfo(struct addrinfo *host_info)
  * Data storing/loading
  */
 
-static periodic_metric_t mets[mets_len];
-
-static periodic_aggregation_t aggr;
-
 static void db_store_events(ear_event_t *eves, uint n_eves)
 {
 	if (n_eves <= 0) {
@@ -173,12 +169,13 @@ static void db_store_events(ear_event_t *eves, uint n_eves)
 
 static void db_store_loops(loop_t *lops, uint n_lops)
 {
-   if (n_lops <= 0) {
-        return; 
+	if (n_lops <= 0) {
+		return; 
     }
 
-    verbose("Trying to insert in DB %d loop samples", n_lops);
-   //db_batch_insert_loops(lops, n_lops);
+	verbose("Trying to insert in DB %d loop samples", n_lops);
+	//db_batch_insert_loops(lops, n_lops);
+	db_insert_loop(lops);	
 }
 
 static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
@@ -208,7 +205,8 @@ static void db_store_applications_mpi(application_t *apps, uint n_apps)
 	}
 
 	verbose("Trying to insert in DB %d mpi application samples", n_apps);
-	db_batch_insert_applications(apps, n_apps);
+	//db_batch_insert_applications(apps, n_apps);
+	db_insert_application(apps);
 }
 
 static void db_store_applications(application_t *apps, uint n_apps)
@@ -218,7 +216,8 @@ static void db_store_applications(application_t *apps, uint n_apps)
 	}
 
 	verbose("Trying to insert in DB %d non-mpi application samples", n_apps);
-	db_batch_insert_applications_no_mpi(apps, n_apps);
+	//db_batch_insert_applications_no_mpi(apps, n_apps);
+	db_insert_application(apps);
 }
 
 /*
@@ -324,7 +323,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 			db_store_events(eves, eves_i);
 			eves_i = 0;
 		}
-	} else if (size = sizeof(loop_t))
+	} else if (size == sizeof(loop_t))
 	{
 		type = "loop_t";
 
