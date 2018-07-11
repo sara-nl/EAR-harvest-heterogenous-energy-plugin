@@ -23,6 +23,7 @@ DB_Learning_phase/
 *sim_metrics.csv
 sim_metrics.csv
 tmp/*
+slurm-*.out
 
 # Build
 etc/module/ear
