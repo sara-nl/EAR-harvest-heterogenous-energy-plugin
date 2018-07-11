@@ -1,7 +1,8 @@
 eardbd.o: eardbd.c ../database_cache/eardbd.h \
  ../database_cache/eardbd_api.h \
- ../common/types/configuration/cluster_conf.h ../common/types/generic.h \
- ../common/ear_verbose.h ../common/config.h ../common/environment.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/generic.h ../common/ear_verbose.h ../common/config.h \
  ../common/states.h ../common/types/periodic_aggregation.h \
  ../common/types/periodic_metric.h ../common/types/application.h \
  ../common/types/job.h ../common/types/signature.h \

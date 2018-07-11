@@ -50,10 +50,15 @@
 #include <common/types/log.h>
 #include <common/states.h>
 
-#define lops_len 128 * 512
-#define mets_len 32 * 512
-#define eves_len 32 * 512
-#define apps_len 32 * 512
+//#define lops_len 128 * 512
+//#define mets_len 32 * 512
+//#define eves_len 32 * 512
+//#define apps_len 32 * 512
+
+#define lops_len 2
+#define mets_len 2
+#define eves_len 2
+#define apps_len 2
 
 static periodic_aggregation_t aggr;
 static application_t apps_mpi[apps_len];
@@ -173,7 +178,7 @@ static void db_store_loops(loop_t *lops, uint n_lops)
     }
 
     verbose("Trying to insert in DB %d loop samples", n_lops);
-   db_batch_insert_loops(lops, n_lops);
+   //db_batch_insert_loops(lops, n_lops);
 }
 
 static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
@@ -202,7 +207,7 @@ static void db_store_applications_mpi(application_t *apps, uint n_apps)
 		return;
 	}
 
-	verbose("Trying to insert in DB %d mpi applications samples", n_apps);
+	verbose("Trying to insert in DB %d mpi application samples", n_apps);
 	db_batch_insert_applications(apps, n_apps);
 }
 
@@ -212,7 +217,7 @@ static void db_store_applications(application_t *apps, uint n_apps)
 		return;
 	}
 
-	verbose("Trying to insert in DB %d applications samples", n_apps);
+	verbose("Trying to insert in DB %d non-mpi application samples", n_apps);
 	db_batch_insert_applications_no_mpi(apps, n_apps);
 }
 
@@ -259,10 +264,11 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 	if (size == sizeof(application_t))
 	{
 		application_t *app = (application_t *) buffer;
-		type = "application_t";
+		report_application_data(app);
 
 		if (app->is_learning)
 		{
+			type = "learning application_t";
 			memcpy (&apps_ler[apps_ler_i], buffer, size);
 			apps_ler_i += 1;
 
@@ -273,6 +279,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 			}
 		} else if (app->is_mpi)
 		{
+			type = "mpi application_t";
 			memcpy (&apps_mpi[apps_mpi_i], buffer, size);
 			apps_mpi_i += 1;
 
@@ -283,6 +290,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 			}
 		} else
 		{
+			type = "non-mpi application_t";
 			memcpy (&apps_nor[apps_nor_i], buffer, size);
 			apps_nor_i += 1;
 

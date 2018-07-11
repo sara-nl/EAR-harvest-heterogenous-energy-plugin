@@ -52,14 +52,14 @@ int connected = -1;
 int fd_srv    = -1;
 
 #define verbose(...) \
-	fprintf(stdout, "EARDBD_API, "); \
-	fprintf(stdout, __VA_ARGS__); \
-	fprintf(stdout, "\n");
+	fprintf(stderr, "EARDBD_API, "); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n");
 
 #define error(...) \
-	fprintf(stdout, "EARDBD_API ERROR, "); \
-	fprintf(stdout, __VA_ARGS__); \
-	fprintf(stdout, "\n");
+	fprintf(stderr, "EARDBD_API ERROR, "); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n");
 
 #define CONNECTION_TEST() \
 	if (fd_srv == -1 || _protocol == -1 || (_protocol == TCP && connected == -1)) { \

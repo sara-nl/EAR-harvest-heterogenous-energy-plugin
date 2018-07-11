@@ -13,18 +13,21 @@ bandwith_monitor.o: bandwith_monitor.c ../../metrics/custom/bandwidth.h \
 energy_1_second.o: energy_1_second.c ../../metrics/ipmi/energy_node.h
 my_node_conf.o: my_node_conf.c ../../common/config.h \
  ../../common/states.h ../../common/types/configuration/cluster_conf.h \
- ../../common/types/generic.h ../../common/ear_verbose.h \
- ../../common/environment.h
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/string_enhanced.h ../../common/types/generic.h \
+ ../../common/ear_verbose.h
 freeipmi_overhead.o: freeipmi_overhead.c ../../metrics/ipmi/energy_node.h \
  ../../common/config.h
 configuration_check.o: configuration_check.c ../../common/config.h \
  ../../common/states.h ../../common/types/configuration/cluster_conf.h \
- ../../common/types/generic.h ../../common/ear_verbose.h \
- ../../common/environment.h
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/string_enhanced.h ../../common/types/generic.h \
+ ../../common/ear_verbose.h
 ear_conf.o: ear_conf.c ../../common/config.h ../../common/states.h \
  ../../common/types/configuration/cluster_conf.h \
- ../../common/types/generic.h ../../common/ear_verbose.h \
- ../../common/environment.h
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/string_enhanced.h ../../common/types/generic.h \
+ ../../common/ear_verbose.h
 eard_monitor.o: eard_monitor.c ../../daemon/eard_api.h \
  ../../common/types/generic.h ../../common/types/log.h \
  ../../common/types/job.h ../../common/config.h \
