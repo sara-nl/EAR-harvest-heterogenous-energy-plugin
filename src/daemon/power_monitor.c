@@ -220,6 +220,7 @@ void report_powermon_app(powermon_app_t *app)
 	int ret1;
 	// We can write here power information for this job
 	if (sig_reported==0){
+		eard_verbose(0,"Reporting not mpi application");
 		app->app.is_mpi=0;
 	}
 	report_application_data(&app->app);
