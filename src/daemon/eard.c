@@ -85,6 +85,7 @@ char resched_path[GENERIC_NAME];
 char coeffs_path[GENERIC_NAME];
 int coeffs_size;
 uint signal_sighup=0;
+uint f_monitoring;
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
@@ -897,6 +898,7 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
     dyn->th=my_policy->th;
 	resched->force_rescheduling=1;
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
+	f_monitoring=my_cluster_conf.eard.period_powermon;
 	save_eard_conf(&eard_dyn_conf);
 }
 
@@ -925,6 +927,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
+	f_monitoring=my_cluster_conf.eard.period_powermon;
 	resched_conf->force_rescheduling=0;
 	save_eard_conf(&eard_dyn_conf);
 }
@@ -1188,9 +1191,8 @@ void main(int argc,char *argv[])
 	init_db_helper(&my_cluster_conf.database);
 	#endif
 
-	power_mon_freq=my_cluster_conf.eard.period_powermon;
 	eard_verbose(1,"Using  %d seconds for periodic power monitoring",power_mon_freq);
-	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *)&power_mon_freq)){
+	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL)){
 		errno=ret;
 		eard_verbose(0,"error creating power_monitoring thread %s\n",strerror(errno));
 	}

@@ -72,7 +72,8 @@ extern policy_conf_t default_policy_context,energy_tag_context,authorized_contex
 static char *__NAME__="powermon: ";
 extern char *__HOST__;
 
-unsigned int f_monitoring;
+/* This variable controls the frequency for periodic power monitoring */
+extern uint f_monitoring;
 extern ulong current_node_freq;
 int idleNode=1;
 
@@ -608,9 +609,8 @@ void powermon_mpi_signature(application_t *app)
 	
 
 // frequency_monitoring will be expressed in usecs
-void *eard_power_monitoring(void *frequency_monitoring)
+void *eard_power_monitoring(void *noinfo)
 {
-	unsigned int *f_monitoringp=(unsigned int *)frequency_monitoring;
 	ulong avg_f;
 	energy_data_t e_begin;
 	energy_data_t e_end;	
@@ -628,7 +628,6 @@ void *eard_power_monitoring(void *frequency_monitoring)
 
 	eard_verbose(2," power monitoring thread created\n");
 	if (init_power_ponitoring()!=EAR_SUCCESS) eard_verbose(0," Error in init_power_ponitoring\n");
-	f_monitoring=*f_monitoringp;
 	// current_sample is the current powermonitoring period
 	init_periodic_metric(&current_sample);
 		

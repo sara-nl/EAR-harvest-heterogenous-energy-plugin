@@ -325,6 +325,8 @@ void print_ear_lib_conf(earlib_conf_t *libc)
 	if (libc!=NULL){
 		fprintf(stderr,"coeffs %s dynais level %u dynais window_size %u\n",
 		libc->coefficients_pathname,libc->dynais_levels,libc->dynais_window);
+		fprintf(stderr,"dynais timeout %u lib_period %u check_every %u\n",
+		libc->dynais_timeout,libc->lib_period,libc->check_every);
 	}
 }
 

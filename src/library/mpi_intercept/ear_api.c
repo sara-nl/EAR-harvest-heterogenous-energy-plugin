@@ -97,6 +97,9 @@ static int in_loop;
 uint ear_periodic_mode=PERIODIC_MODE_OFF;
 uint mpi_calls_in_period=0;
 uint total_mpi_calls=0;
+static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
+static uint lib_period=PERIOD;
+static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 #endif
 
     
@@ -205,7 +208,7 @@ void update_configuration()
 	
 	earl_verbose(1,"---- Validating shared memory information ----\n");
 	print_ear_lib_conf(&system_conf->lib_info);
-	earl_verbose(1,"User type: %d Policy %u, max_freq %lu, def_freq %lu th %lf",
+	earl_verbose(1,"User type: %d Policy %u, max_freq %lu, def_freq %lu th %lf\n",
 	system_conf->user_type,system_conf->policy,system_conf->max_freq,system_conf->def_freq,system_conf->th);
 	earl_verbose(1,"-----------------------------");
 	set_ear_power_policy(system_conf->policy);
@@ -214,7 +217,9 @@ void update_configuration()
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
-
+	dynais_timeout=system_conf->lib_info.dynais_timeout;
+	lib_period=system_conf->lib_info.lib_period;
+	check_every=system_conf->lib_info.check_every;
 }
 
 void ear_init()
@@ -434,17 +439,17 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 					/* First time EAR computes a signature using dynais, check_periodic_mode is set to 0 */
 					if (check_periodic_mode==0){  // check_periodic_mode=0 the first time a signature is computed
 						ear_mpi_call_dynais_on(call_type,buf,dest);
-					}else{ // Check every N=MPI_CALLS_TO_CHECK_PERIODIC mpi calls
+					}else{ // Check every N=check_every mpi calls
 						/* Check here if we must move to periodic mode, do it every N mpicalls to reduce the overhead */
-						if ((total_mpi_calls%MPI_CALLS_TO_CHECK_PERIODIC)==0){
+						if ((total_mpi_calls%check_every)==0){
 							time(&curr_time);
 							time_from_mpi_init=difftime(curr_time,application.job.start_time);
 						
 							/* In that case, the maximum time without signature has been passed, go to set ear_periodic_mode ON */
-							if (time_from_mpi_init >=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE){
+							if (time_from_mpi_init >=dynais_timeout){
 								// we must compute N here
 								ear_periodic_mode=PERIODIC_MODE_ON;
-								mpi_calls_in_period=(uint)(total_mpi_calls/MAX_TIME_DYNAIS_WITHOUT_SIGNATURE)*PERIOD;
+								mpi_calls_in_period=(uint)(total_mpi_calls/dynais_timeout)*lib_period;
 								earl_verbose(0,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
 									time_from_mpi_init,mpi_calls_in_period);
 								states_periodic_begin_period(my_id, NULL, 1, 1);
@@ -455,7 +460,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 								/* We continue using dynais */
 								ear_mpi_call_dynais_on(call_type,buf,dest);	
 							}
-						}else{	// We check the periodic mode every MPI_CALLS_TO_CHECK_PERIODIC mpi calls
+						}else{	// We check the periodic mode every check_every mpi calls
 							ear_mpi_call_dynais_on(call_type,buf,dest);
 						}
 					}
