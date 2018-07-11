@@ -50,18 +50,22 @@
 #include <common/types/log.h>
 #include <common/states.h>
 
-#define mets_len 4096
-#define lops_len 4096
-#define eves_len 4096
-#define apps_len 1024
+#define lops_len 128 * 512
+#define mets_len 32 * 512
+#define eves_len 32 * 512
+#define apps_len 32 * 512
 
 static periodic_aggregation_t aggr;
+static application_t apps_mpi[apps_len];
+static application_t apps_nor[apps_len];
+static application_t apps_ler[apps_len];
 static periodic_metric_t mets[mets_len];
-static application_t apps[apps_len];
 static ear_event_t eves[apps_len];
 static loop_t lops[apps_len];
+static uint apps_mpi_i;
+static uint apps_nor_i;
+static uint apps_ler_i;
 static uint mets_i;
-static uint apps_i;
 static uint eves_i;
 static uint lops_i;
 
@@ -188,14 +192,24 @@ static void db_store_periodic_aggregation()
 	db_insert_periodic_aggregation(&aggr);
 }
 
-static void db_store_applications()
+static void db_store_applications(application_t *apps, uint n_apps)
 {
-	if (apps_i <= 0) {
+	if (n_apps == 0) {
 		return;
 	}
 
-	verbose("Trying to insert in DB %d applications samples", apps_i);
-	db_batch_insert_applications(apps, apps_i);
+	verbose("Trying to insert in DB %d applications samples", n_apps);
+	db_batch_insert_applications(apps, n_apps);
+}
+
+static void db_store_applications(application_t *apps, uint n_apps)
+{
+	if (n_apps == 0) {
+		return;
+	}
+
+	verbose("Trying to insert in DB %d applications samples", n_apps);
+	db_batch_insert_applications(apps, n_apps);
 }
 
 /*
