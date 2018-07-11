@@ -20,7 +20,7 @@ compute_coefficients: compute_coefficients.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o compute_coefficients compute_coefficients.c $(LDFLAGS) $(COMMON_OBJS)
 
 compute_coefficients_v3: compute_coefficients_v3.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o compute_coefficients_v3 compute_coefficients_v3.c $(LDFLAGS) $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o compute_coefficients_v3 compute_coefficients_v3.c $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS)  $(COMMON_OBJS) 
 
 compute_coefficients_remote: compute_coefficients_remote.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o compute_coefficients_remote compute_coefficients_remote.c $(LDFLAGS) $(COMMON_OBJS)

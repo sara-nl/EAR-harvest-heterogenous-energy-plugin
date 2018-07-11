@@ -27,7 +27,10 @@ void usage(char *app)
             "\n\t--set-freq sets the frequency of all nodes to the requested one"\
             "\n\t--set-def-freq sets the default frequency"\
             "\n\t--set-max-freq sets the maximum frequency"\
-            "\n\t--inc-th increases the threshold for all nodes\n", app);
+            "\n\t--inc-th increases the threshold for all nodes"\
+            "\n\t--red-def-freq reduces the default frequency"\
+            "\n\t--restore-conf restores the configuration to all nodes"\
+            "\n\nThis app requires root permission to execute.\n", app);
 	exit(1);
 }
 
@@ -244,7 +247,9 @@ void main(int argc, char *argv[])
     int optidx = 0;
     int c = 0;
     char path_name[128];
-    
+   
+    if (getuid()!=0) usage(argv[0]);
+
     if (argc < 3) usage(argv[0]);
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){

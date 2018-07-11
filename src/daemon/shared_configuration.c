@@ -43,6 +43,7 @@
 #include <common/ear_verbose.h>
 #include <common/states.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/types/coefficient.h>
 #include <daemon/shared_configuration.h>
 
 static int fd;
@@ -62,16 +63,15 @@ int  get_resched_path(char *tmp,char *path)
 {
 	sprintf(path,"%s/.ear_resched",tmp);
 }
-/** This functions creates the name of the file mapping the shared memory for the cluster_conf, it is placed at TMP 
- */
-int  get_cluster_conf_path(char *tmp,char *path)
+
+int get_coeffs_path(char *tmp,char *path)
 {
-	sprintf(path,"%s/.ear_cluster_conf",tmp);
+	sprintf(path,"%s/.ear_coeffs",tmp);
 }
 
 /** BASIC FUNCTIONS */
 
-void *create_shared_area(char *path,char *data,int area_size,int *shared_fd)
+void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int must_clean)
 {
 	/* This function creates a shared memory region based on files and mmap */
 	int ret;
@@ -90,8 +90,7 @@ void *create_shared_area(char *path,char *data,int area_size,int *shared_fd)
 	VERBOSE_N(0,"shared file for mmap created\n");
 	umask(my_mask);
 	// Default values
-	bzero(data,area_size);
-	//my_conf.force_rescheduling=0;
+	if (must_clean) bzero(data,area_size);
 	VERBOSE_N(0,"writting default values\n");
 	ret=write(fd,data,area_size);
 	if (ret<0){
@@ -110,18 +109,26 @@ void *create_shared_area(char *path,char *data,int area_size,int *shared_fd)
 	return my_shared_region;
 }
 
-void * attach_shared_area(char *path,int area_size,uint perm,int *shared_fd)
+void * attach_shared_area(char *path,int area_size,uint perm,int *shared_fd,int *s)
 {
     int ret;
     void * my_shared_region=NULL;
 	char buff[256];
 	int flags;
+	int size;
 	strcpy(buff,path);
     fd=open(buff,perm);
     if (fd<0){
         VERBOSE_N(0,"error attaching to sharing memory (%s)\n",strerror(errno));
         return NULL;
     }
+	if (area_size==0){
+		size=lseek(fd,0,SEEK_END);
+		if (size<0){
+			VERBOSE_N(0,"Error computing shared memory size (%s) ",strerror(errno));
+		}else area_size=size;
+		if (s!=NULL) *s=size;
+	}
 	if (perm==O_RDWR){
 		flags=PROT_READ|PROT_WRITE;
 	}else{
@@ -149,7 +156,7 @@ void dispose_shared_area(char *path,int fd)
 
 /***** SPECIFIC FUNCTIONS *******************/
 
-static int fd_cluster,fd_settings,fd_resched;
+static int fd_cluster,fd_settings,fd_resched,fd_coeffs;
 
 //// SETTINGS
 
@@ -158,22 +165,24 @@ settings_conf_t * create_settings_conf_shared_area(char * path)
 {      	
 	settings_conf_t my_settings;
 	
-	return (settings_conf_t *)create_shared_area(path,(char *)&my_settings,sizeof(my_settings),&fd_settings);
+	return (settings_conf_t *)create_shared_area(path,(char *)&my_settings,sizeof(my_settings),&fd_settings,1);
 	
 }
 
 settings_conf_t * attach_settings_conf_shared_area(char * path)
 {
-    return (settings_conf_t *)attach_shared_area(path,sizeof(settings_conf_t),O_RDONLY,&fd_settings);
+    return (settings_conf_t *)attach_shared_area(path,sizeof(settings_conf_t),O_RDONLY,&fd_settings,NULL);
 }                                
 void dettach_settings_conf_shared_area()
 {
 	dettach_shared_area(fd_settings);
 }
+
 void settings_conf_shared_area_dispose(char * path)
 {
 	dispose_shared_area(path,fd_settings);
 }
+
 
 /// RESCHED
 
@@ -182,13 +191,13 @@ resched_t * create_resched_shared_area(char * path)
 {      	
 	resched_t my_settings;
 	
-	return (resched_t *)create_shared_area(path,(char *)&my_settings,sizeof(my_settings),&fd_resched);
+	return (resched_t *)create_shared_area(path,(char *)&my_settings,sizeof(my_settings),&fd_resched,1);
 	
 }
 
 resched_t * attach_resched_shared_area(char * path)
 {
-    return (resched_t *)attach_shared_area(path,sizeof(resched_t),O_RDWR,&fd_resched);
+    return (resched_t *)attach_shared_area(path,sizeof(resched_t),O_RDWR,&fd_resched,NULL);
 }                                
 void dettach_resched_shared_area()
 {
@@ -198,24 +207,30 @@ void resched_shared_area_dispose(char * path)
 {
 	dispose_shared_area(path,fd_resched);
 }
-// Creates a shared memory region between eard and ear_lib. returns NULL if error.
-cluster_conf_t * create_cluster_conf_shared_area(char * path)  
-{      	
-	cluster_conf_t my_settings;
-	
-	return (cluster_conf_t *)create_shared_area(path,(char *)&my_settings,sizeof(my_settings),&fd_cluster);
-	
+
+/* COEFFS */
+
+coefficient_t * create_coeffs_shared_area(char * path,coefficient_t *coeffs,int size)
+{
+
+    return (coefficient_t *)create_shared_area(path,(char *)coeffs,size,&fd_coeffs,0);
+
 }
 
-cluster_conf_t * attach_cluster_conf_shared_area(char * path)
+coefficient_t * attach_coeffs_shared_area(char * path,int *size)
 {
-    return (cluster_conf_t *)attach_shared_area(path,sizeof(cluster_conf_t),O_RDONLY,&fd_cluster);
-}                                
-void dettach_cluster_conf_shared_area()
-{
-	dettach_shared_area(fd_cluster);
+    return (coefficient_t *)attach_shared_area(path,0,O_RDONLY,&fd_coeffs,size);
 }
-void cluster_conf_shared_area_dispose(char * path)
+
+void coeffs_shared_area_dispose(char * path)
 {
-	dispose_shared_area(path,fd_cluster);
+    dispose_shared_area(path,fd_coeffs);
 }
+
+void dettach_coeffs_shared_area()
+{
+    dettach_shared_area(fd_coeffs);
+}
+
+
+

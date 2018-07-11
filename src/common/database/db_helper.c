@@ -120,6 +120,41 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
 
 }
 
+int db_batch_insert_applications_no_mpi(application_t *applications, int num_apps)
+{
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        VERBOSE_N(0, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+    if (mysql_batch_insert_applications_no_mpi(connection, applications, num_apps) < 0)
+    {
+        VERBOSE_N(0, "ERROR while batch writing applications to database.");
+        return EAR_ERROR;
+    }
+
+    mysql_close(connection);
+    
+    return EAR_SUCCESS;
+
+}
+
 int db_insert_loop(loop_t *loop)
 {    
     MYSQL *connection = mysql_init(NULL);
@@ -475,11 +510,15 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
     }
 
     if (is_aggregated)
+    {
         if (mysql_stmt_prepare(statement, AGGREGATED_SUM_QUERY, strlen(AGGREGATED_SUM_QUERY)))
                                                 return stmt_error(statement);
+    }
     else
+    {
         if (mysql_stmt_prepare(statement, METRICS_SUM_QUERY, strlen(METRICS_SUM_QUERY)))
                                                 return stmt_error(statement);
+    }
 
     //Query parameters binding
     MYSQL_BIND bind[3];
@@ -520,7 +559,7 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
 }
 
 
-int db_read_applications(application_t **apps,uint is_learning, int max_apps)
+int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name)
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -552,10 +591,16 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps)
 
     char query[256];
     if (is_learning)
-        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
+        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
+                        "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
+                        "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
+                        "job_id > %d AND node_id='%s'", current_job_id, max_apps, current_job_id, node_name);
     else
-        sprintf(query, "SELECT * FROM Applications WHERE job_id > %d ORDER BY job_id LIMIT %u", current_job_id, max_apps);
-    printf("QUERY: %s\n", query); 
+        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
+                        "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
+                        "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
+                        "job_id > %d AND node_id='%s'", current_job_id, max_apps, current_job_id, node_name);
+
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
@@ -564,8 +609,77 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps)
 		return num_apps;
     }
 
-    current_step_id = apps[num_apps - 1]->job.step_id;
-    current_job_id = apps[num_apps - 1]->job.id;
-
+    current_job_id = (*apps)[num_apps - 1].job.id;
+    mysql_close(connection);
 	return num_apps;
 }
+
+#define LEARNING_APPS_QUERY "SELECT COUNT(*) FROM Learning_applications"
+#define APPS_QUERY          "SELECT COUNT(*) FROM Applications"
+
+ulong get_num_applications(char is_learning)
+{
+    
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        VERBOSE_N(0, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+
+
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement)
+    {
+        VERBOSE_N(0, "Error creating statement (%d): %s\n", mysql_errno(connection),
+                mysql_error(connection));
+        return -1;
+    }
+
+    if (is_learning)
+    {
+        if (mysql_stmt_prepare(statement, LEARNING_APPS_QUERY, strlen(LEARNING_APPS_QUERY)))
+                                                return mysql_statement_error(statement);
+    }
+    else
+    {
+        if (mysql_stmt_prepare(statement, APPS_QUERY, strlen(APPS_QUERY)))
+                                                return mysql_statement_error(statement);
+    }
+    //Result parameters
+    MYSQL_BIND res_bind[1];
+    memset(res_bind, 0, sizeof(res_bind));
+    res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
+    ulong result = 0;
+    res_bind[0].buffer = &result;
+
+    if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(statement);
+    if (mysql_stmt_execute(statement)) return stmt_error(statement);
+    if (mysql_stmt_store_result(statement)) return stmt_error(statement);
+
+    int status = mysql_stmt_fetch(statement);
+    if (status != 0 && status != MYSQL_DATA_TRUNCATED)
+        result = -2;
+
+    mysql_stmt_close(statement);
+    mysql_close(connection);
+
+    return result;
+
+}
+

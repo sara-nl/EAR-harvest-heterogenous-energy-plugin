@@ -57,27 +57,33 @@
 #include <daemon/eard_conf_api.h>
 
 #include <common/types/configuration/cluster_conf.h>
+#include <common/types/coefficient.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/dynamic_configuration.h>
 #include <daemon/shared_configuration.h>
 #if USE_EARDB
 #include <database_cache/eardbd_api.h>
+#include <daemon/eard_utils.h>
 #endif
 
 
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
-char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t	my_cluster_conf;
 my_node_conf_t 	*my_node_conf;
 eard_dyn_conf_t eard_dyn_conf; // This variable is for eard checkpoint
-policy_conf_t default_policy_context;
+policy_conf_t default_policy_context,energy_tag_context,authorized_context;
 settings_conf_t *dyn_conf;
 resched_t *resched_conf;
+coefficient_t *my_coefficients;
+coefficient_t *coeffs_conf;
+char my_ear_conf_path[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
+char coeffs_path[GENERIC_NAME];
+int coeffs_size;
 uint signal_sighup=0;
 
 #define max(a,b) (a>b?a:b)
@@ -86,7 +92,7 @@ uint signal_sighup=0;
 
 // These two variables are used by the verbosity macros
 static const char *__NAME__ = "EARD ";
-static const char *__HOST__;
+char *__HOST__;
 
 
 int ear_fd_req[ear_daemon_client_requests];
@@ -96,9 +102,9 @@ int eard_max_pstate;
 int num_uncore_counters;
 
 char ear_ping[MAX_PATH_SIZE];
-int ear_ping_fd=-1;
 char ear_tmp[MAX_PATH_SIZE];
 char nodename[MAX_PATH_SIZE];
+int ear_ping_fd=-1;
 int eard_lockf;
 char eard_lock_file[MAX_PATH_SIZE];
 int EAR_VERBOSE_LEVEL=0;
@@ -386,6 +392,9 @@ void eard_exit(uint restart)
 	}
 	settings_conf_shared_area_dispose(dyn_conf_path);
 	resched_shared_area_dispose(resched_path);
+	#if COEFFS_V3
+	coeffs_shared_area_dispose(coeffs_path);
+	#endif
 
 	if (restart){ 
 		eard_verbose(0,"Restarting EARD\n");
@@ -507,13 +516,16 @@ int eard_system(int must_read)
 			break;
 		case WRITE_EVENT:
 			ack=EAR_COM_OK;
-			#if !USE_EARDB
+			// #if !USE_EARDB
 			#if DB_MYSQL
 			ret1=db_insert_ear_event(&req.req_data.event);
 			#endif
-			#else
-			ret1=eardbd_send_event(&req.req_data.event);
-			#endif
+			// #else
+			if ((ret1=eardbd_send_event(&req.req_data.event))!=EAR_SUCCESS){
+				VERBOSE_N(0,"Error sending event to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
+			//#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
 			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
@@ -523,14 +535,17 @@ int eard_system(int must_read)
 		case WRITE_LOOP_SIGNATURE:
 			ack=EAR_COM_OK;
 			#if !LARGE_CLUSTER
-			#if !USE_EARDB
+			//#if !USE_EARDB
 			#if DB_MYSQL
 			req.req_data.loop.loop.job=&req.req_data.loop.job;
 			ret1 = db_insert_loop (&req.req_data.loop.loop);
 			#endif
-			#else
-			ret1=eardbd_send_loop(&req.req_data.loop.loop);
-			#endif
+			//#else
+			if ((ret1=eardbd_send_loop(&req.req_data.loop.loop))!=EAR_SUCCESS){
+				VERBOSE_N(0,"Error sending loop to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
+			//#endif
 			#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
@@ -912,6 +927,53 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	save_eard_conf(&eard_dyn_conf);
 }
 
+/* Read coefficients for node X */
+int read_coefficients()
+{
+	char my_coefficients_file[GENERIC_NAME];
+	int state,i;
+	int file_size=0;
+	sprintf(my_coefficients_file,"%s/island%d/coeffs.%s",my_cluster_conf.earlib.coefficients_pathname,
+	my_node_conf->island,nodename);
+	eard_verbose(0,"Looking for %s coefficients file",my_coefficients_file);
+	file_size=check_file(my_coefficients_file);
+	if (file_size == EAR_FILE_NOT_FOUND){
+		if (my_node_conf->coef_file!=NULL){
+			sprintf(my_coefficients_file,"%s/island%d/%s",my_cluster_conf.earlib.coefficients_pathname,
+			my_node_conf->island,my_node_conf->coef_file);
+			eard_verbose(0,"Not found.Looking for special %s coefficients file",my_coefficients_file);
+			file_size=check_file(my_coefficients_file);
+			if (file_size==EAR_FILE_NOT_FOUND){
+				sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,
+				my_node_conf->island);
+				eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
+				file_size=check_file(my_coefficients_file);
+				if (file_size==EAR_FILE_NOT_FOUND){
+					eard_verbose(0,"Warning, coefficients not found");
+					return 0;
+				}
+			}
+		} else{
+			sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,
+			my_node_conf->island);
+			eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
+			file_size=check_file(my_coefficients_file);
+			if (file_size==EAR_FILE_NOT_FOUND){
+				eard_verbose(0,"Warning, coefficients not found");
+				return 0;
+			}
+		}
+	}
+	int entries=file_size/sizeof(coefficient_t);
+	eard_verbose(0,"%d coefficients found",entries);
+	my_coefficients=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
+	state=read_coefficients_file_v3(my_coefficients_file, my_coefficients,file_size);
+	for (i=0;i<entries;i++){
+		print_coefficient(&my_coefficients[i]);
+	}
+	return file_size;
+}
+
 
 
 /*
@@ -978,7 +1040,13 @@ void main(int argc,char *argv[])
 	eard_dyn_conf.nconf=my_node_conf;
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
+	/* We initialize frecuency */
+	if (frequency_init(metrics_get_node_size()) < 0) {
+		eard_verbose(0, "ERROR, frequency information can't be initialized");
+		_exit(1);
+	}
 	/** Shared memory is used between EARD and EARL **/
+	/* This area is for shared info */
     eard_verbose(0,"creating shared memory regions");
 	get_settings_conf_path(my_cluster_conf.tmp_dir,dyn_conf_path);
 	eard_verbose(1,"Using %s as settings path (shared memory region)",dyn_conf_path);
@@ -987,6 +1055,7 @@ void main(int argc,char *argv[])
         eard_verbose(0,"Error creating shared memory\n");
         _exit(0);
     }
+	/* This area indicates EARL must resched */
 	get_resched_path(my_cluster_conf.tmp_dir,resched_path);
 	eard_verbose(1,"Using %s as resched path (shared memory region)",resched_path);
     resched_conf=create_resched_shared_area(resched_path);
@@ -994,11 +1063,18 @@ void main(int argc,char *argv[])
         eard_verbose(0,"Error creating shared memory\n");
         _exit(0);
     }
-	// We initialize frecuency
-	if (frequency_init(metrics_get_node_size()) < 0) {
-		eard_verbose(0, "ERROR, frequency information can't be initialized");
-		_exit(1);
-	}
+	/* Coefficients */
+	#if COEFFS_V3
+	coeffs_size=read_coefficients();
+	eard_verbose(0,"Coefficients loaded");
+	get_coeffs_path(my_cluster_conf.tmp_dir,coeffs_path);
+	eard_verbose(1,"Using %s as coeff path (shared memory region)",coeffs_path);
+    coeffs_conf=create_coeffs_shared_area(coeffs_path,my_coefficients,coeffs_size);
+    if (coeffs_conf==NULL){
+        eard_verbose(0,"Error creating shared memory\n");
+        _exit(0);
+    }
+	#endif
 	/** We must control if we are come from a crash **/	
 	// We check if we are recovering from a crash
 	int must_recover=new_service("eard");
@@ -1096,8 +1172,10 @@ void main(int argc,char *argv[])
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif
-	#if !USE_EARDB && DB_MYSQL
+	/* #if !USE_EARDB && DB_MYSQL */
+	#if DB_MYSQL
 	eard_verbose(1,"Connecting with EAR DB");
+	strcpy(my_cluster_conf.database.database,"Report2");
 	init_db_helper(&my_cluster_conf.database);
 	#endif
 

@@ -377,7 +377,7 @@ void main(int argc,char *argv[])
 	int ret;
 	ulong result,result2;
 	gm_warning_t my_warning;
-
+	int aggregation=0; /* 0=no aggregation */
     if (argc > 2) usage(argv[0]);
 	if (argc==2) parse_args(argv);
     // We read the cluster configuration and sets default values in the shared memory
@@ -427,6 +427,7 @@ void main(int argc,char *argv[])
 
     #if DB_MYSQL
     VERBOSE_N(1,"Connecting with EAR DB");
+	strcpy(my_cluster_conf.database.database,"Report2");
     init_db_helper(&my_cluster_conf.database);
     #endif
 	
@@ -451,7 +452,7 @@ void main(int argc,char *argv[])
 		start_time=end_time-period_t1;
 
     
-	    result = db_select_acum_energy( start_time, end_time, divisor, 0);
+	    result = db_select_acum_energy( start_time, end_time, divisor, aggregation);
 	    if (!result){ 
 			VERBOSE_N(2,"No results in that period of time found\n");
 	    }else{ 
@@ -461,7 +462,7 @@ void main(int argc,char *argv[])
 
 		new_energy_sample(result);
 		start_time=end_time-period_t2;
-    	result2 = db_select_acum_energy( start_time, end_time, divisor, 0);
+    	result2 = db_select_acum_energy( start_time, end_time, divisor, aggregation);
 		// This code needs to be done since global manager is not running for time enough
 		//total_energy_t2=compute_energy_t2();	
 		total_energy_t2=result2;

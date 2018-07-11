@@ -27,10 +27,10 @@ BINARIES = eard_api.o \
 
 all: $(BINARIES) all.others
 
-eard: eard.c $(eard_OBJS) ../../Makefile
+eard: eard.c $(eard_OBJS) ../../Makefile 
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
 
-power_monitor.o: power_monitor.c power_monitor.h
+power_monitor.o: power_monitor.c power_monitor.h 
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitor.c
 
 dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h

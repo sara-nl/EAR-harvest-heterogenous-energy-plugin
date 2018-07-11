@@ -169,7 +169,7 @@ static void db_store_loops()
     }
 
     verbose("Trying to insert in DB %d loop samples", lops_i);
-    db_batch_insert_loops(lops, lops_i);
+   //db_batch_insert_loops(lops, lops_i);
 }
 
 static void db_store_periodic_metrics()
@@ -430,6 +430,8 @@ int main(int argc, char **argv)
 
 	long merge_time;
 	float mb_apps;
+	float mb_lops;
+	float mb_eves;
 	float mb_mets;
 
 	fd_set fds_incoming;
@@ -451,6 +453,8 @@ int main(int argc, char **argv)
 
 	mb_apps = (double) (sizeof(application_t)     * apps_len) / 1000000.0;
 	mb_mets = (double) (sizeof(periodic_metric_t) * mets_len) / 1000000.0;
+	mb_lops = (double) (sizeof(loop_t)            * lops_len) / 1000000.0;
+	mb_eves = (double) (sizeof(ear_event_t)       * mets_len) / 1000000.0;
 
 	verbose("reserving %0.2f MBytes for applications", mb_apps);
 	verbose("reserving %0.2f MBytes for power metrics", mb_mets);

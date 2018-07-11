@@ -37,6 +37,7 @@ NodeDaemonPort=5000
 DBDaemonAggregationTime=300
 DBDaemonPortTCP=4711
 DBDaemonPortUDP=4712
+# Memory size expressed in MB
 DBDaemonMemorySize=120
 
 # Plugin configuration
