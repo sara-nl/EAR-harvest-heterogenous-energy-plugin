@@ -328,7 +328,7 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
-    MYSQL_BIND *bind = calloc(num_apps*APPLICATION_ARGS, sizeof(bind));
+    MYSQL_BIND *bind = calloc(num_apps*APPLICATION_ARGS, sizeof(MYSQL_BIND));
    
     //job only needs to be inserted once
     for (i = 0; i < num_apps; i++)
