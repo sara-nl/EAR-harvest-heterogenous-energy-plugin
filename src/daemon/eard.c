@@ -92,7 +92,7 @@ uint f_monitoring;
 #define RAPL_METRICS 	4
 
 // These two variables are used by the verbosity macros
-static const char *__NAME__ = "EARD ";
+static const char *__NAME__ = "EARD";
 char *__HOST__;
 
 
