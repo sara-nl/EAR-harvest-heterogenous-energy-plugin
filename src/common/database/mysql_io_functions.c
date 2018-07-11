@@ -1215,7 +1215,7 @@ int mysql_batch_insert_power_signatures(MYSQL *connection, application_t *pow_si
     if (!statement) return EAR_MYSQL_ERROR;
 
     char *params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    char *query = malloc(strlen(POWER_SIGNATURE_QUERY + strlen(params)*num_sigs + 1));
+    char *query = malloc(strlen(POWER_SIGNATURE_QUERY + strlen(params)*(num_sigs-1) + 1));
     strcpy(query, POWER_SIGNATURE_QUERY);
     int i, j;
     for (i = 1; i < num_sigs; i++)
@@ -1258,7 +1258,9 @@ int mysql_batch_insert_power_signatures(MYSQL *connection, application_t *pow_si
     
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
+    VERBOSE_N(0, "Freeing binding (pow_sig).");
     free(bind);
+    VERBOSE_N(0, "Freeing query (pow_sig).");
     free(query);
 
     return id;
@@ -1433,7 +1435,7 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
 #else
     char *params = ", (?, ?, ?, ?, ?, ?)";
 #endif
-    char *query = malloc(strlen(PERIODIC_METRIC_QUERY)+(num_mets)*strlen(params)+1);
+    char *query = malloc(strlen(PERIODIC_METRIC_QUERY)+(num_mets-1)*strlen(params)+1);
     strcpy(query, PERIODIC_METRIC_QUERY);
 
     int i, j;
