@@ -230,7 +230,7 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
     if (group!=NULL){
 		i=0;
         while((i<my_tag->num_groups) && (!found)){
-			fprintf(stderr,"Can_use_energy_tag group %s vs %s\n",group,my_tag->groups[i]);
+			fprintf(stderr,"Can_use_energy_tag group %s(%d) vs %s(%d)\n",group,strlen(group),my_tag->groups[i],strlen(my_tag->groups[i]));
             if (strcmp(group,my_tag->groups[i])==0) found=1;
 			else i++;
         }

@@ -118,9 +118,21 @@ static void PM_set_sigusr1()
 
 }
 
-void clean_job_environment()
+void clean_job_environment(int id,int step_id)
 {
-	eard_verbose(0,"You must clean the environment");
+	char ear_ping[MAX_PATH_SIZE],fd_lock_filename[MAX_PATH_SIZE],ear_commack[MAX_PATH_SIZE];
+	uint pid=create_ID(id,step_id);
+
+	sprintf(ear_ping,"%s/.ear_comm.ping.%u",ear_tmp,pid);
+    sprintf(fd_lock_filename, "%s/.ear_app_lock.%u", ear_tmp, pid);
+    sprintf(ear_commack, "%s/.ear_comm.ack_0.%u",ear_tmp, pid);
+	eard_verbose(0,"Cleanning the environment");
+	eard_verbose(0,"Releasing %s - %s - %s ",ear_ping,fd_lock_filename,ear_commack);
+	unlink(ear_ping);
+	unlink(fd_lock_filename);
+	unlink(ear_commack);
+	
+
 }
 
 void reset_current_app()
@@ -407,7 +419,7 @@ void powermon_end_job(job_id jid,job_id sid)
     frequency_recover_previous_policy();
     frequency_recover_previous_frequency();
 	current_node_freq=frequency_get_cpu_freq(0);	
-	clean_job_environment();
+	clean_job_environment(jid,sid);
 
 }
 
