@@ -199,25 +199,28 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
         VERBOSE_N(0, "Num_apps < 1 (%d)", num_apps);
         return EAR_ERROR;
     }
+    
+    int i;
+    for (i = 0; i < num_apps; i++)
+        report_application_data(&app[i]);
 
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
     char *params = ", (?, ?, ?, ?, ?)";
     char *query;
-    int i;
 
     char is_learning = app[0].is_learning;
 
     VERBOSE_N(0, "Allocating query memory.");
     if (!is_learning)
     {
-        query = malloc(strlen(APPLICATION_QUERY)+strlen(params)*num_apps+1);
+        query = malloc(strlen(APPLICATION_QUERY)+strlen(params)*(num_apps-1)+1);
         strcpy(query, APPLICATION_QUERY);
     }
     else
     {
-        query = malloc(strlen(LEARNING_APPLICATION_QUERY)+strlen(params)*num_apps+1);
+        query = malloc(strlen(LEARNING_APPLICATION_QUERY)+strlen(params)*(num_apps-1)+1);
         strcpy(query, LEARNING_APPLICATION_QUERY);
     }
 
