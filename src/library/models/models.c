@@ -351,9 +351,11 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	coefficients_v3=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
 	num_coeffs=num_coeffs/sizeof(coefficient_t);
 	ear_verbose(0,"Coefficients v3 %d coefficients found",num_coeffs);
+	#if 0
 	for (i=0;i<num_coeffs;i++){
 		print_coefficient(&coefficients_v3[i]);
 	}
+	#endif
 	#endif
 	app_policy.init(p_states);
 }

@@ -38,6 +38,8 @@
 /*
  *  * POLICY FUNCTIONS
  *   */
+
+/* Given a cluser, node and policy_id, returns the policy configuration (or NULL) */
 policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
 {
     policy_conf_t *my_policy=NULL;
@@ -51,7 +53,7 @@ policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_
 }
 
 
-/** Converts from policy name to policy_id */
+/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
 int policy_name_to_id(char *my_policy)
 {
     if (my_policy!=NULL){

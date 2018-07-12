@@ -59,11 +59,10 @@
 #define PANIC		0
 #define NUM_LEVELS  4
 
-#define DEFCON_L4 85.0
-#define DEFCON_L3 90.0
-#define DEFCON_L2 95.0
+#define DEFCON_L4 0
+#define DEFCON_L3 1
+#define DEFCON_L2 2
 
-#define T1_WAIT 3
 
 ulong th_level[NUM_LEVELS]={10,10,5,0};
 ulong pstate_level[NUM_LEVELS]={3,2,1,0};
@@ -201,9 +200,9 @@ ulong compute_energy_t2()
 
 uint defcon(double perc,ulong load)
 {
-	if (perc<DEFCON_L4) return NO_PROBLEM;
-	if ((perc>=DEFCON_L4) && (perc<DEFCON_L3))  return WARNING_3;
-	if ((perc>=DEFCON_L3) && (perc<DEFCON_L2))	return WARNING_2;
+	if (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L4]) return NO_PROBLEM;
+	if ((perc>=my_cluster_conf.eargm.defcon_limits[DEFCON_L4]) && (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L3]))  return WARNING_3;
+	if ((perc>=my_cluster_conf.eargm.defcon_limits[DEFCON_L3]) && (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L2]))	return WARNING_2;
 	return PANIC;
 }
 
@@ -427,7 +426,7 @@ void main(int argc,char *argv[])
 
     #if DB_MYSQL
     VERBOSE_N(1,"Connecting with EAR DB");
-	strcpy(my_cluster_conf.database.database,"Report2");
+	/*strcpy(my_cluster_conf.database.database,"Report2");*/
     init_db_helper(&my_cluster_conf.database);
     #endif
 	
@@ -481,7 +480,7 @@ void main(int argc,char *argv[])
 			VERBOSE_N(2," Safe area. energy budget %.2lf%% \n",perc_energy);
 			break;
 		case WARNING_3:
-			in_action+=T1_WAIT;
+			in_action+=my_cluster_conf.eargm.grace_periods;
 			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
@@ -499,7 +498,7 @@ void main(int argc,char *argv[])
 			#endif
 			break;
 		case WARNING_2:
-			in_action+=T1_WAIT;
+			in_action+=my_cluster_conf.eargm.grace_periods;
 			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");
@@ -517,7 +516,7 @@ void main(int argc,char *argv[])
 			#endif
 			break;
 		case PANIC:
-			in_action+=T1_WAIT;
+			in_action+=my_cluster_conf.eargm.grace_periods;
 			VERBOSE_N(0,"****************************************************************");
 			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
 			VERBOSE_N(0,"****************************************************************");

@@ -158,5 +158,18 @@ void ear_print_lib_environment();
 /** Returns the number of processes per node. */
 int get_total_resources();
 
+
+
+void set_ear_power_policy(int pid);
+void set_ear_power_policy_th(double th);
+void set_ear_p_state(ulong pstate);
+void set_ear_coeff_db_pathname(char *path);
+void set_ear_dynais_levels(int levels);
+void set_ear_dynais_window_size(int size);
+
+
+
+
+
 #else
 #endif

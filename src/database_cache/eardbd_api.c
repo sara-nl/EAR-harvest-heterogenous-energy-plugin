@@ -51,10 +51,12 @@ int _protocol = -1;
 int connected = -1;
 int fd_srv    = -1;
 
-#define verbose(...) \
+#define verbose(...) 
+#if 0
 	fprintf(stderr, "EARDBD_API, "); \
 	fprintf(stderr, __VA_ARGS__); \
 	fprintf(stderr, "\n");
+#endif
 
 #define error(...) \
 	fprintf(stderr, "EARDBD_API ERROR, "); \
@@ -215,7 +217,7 @@ int eardbd_send_application(void *app)
 int eardbd_send_periodic_metric(void *met)
 {
 	CONNECTION_TEST();
-	verbose("sending application");
+	verbose("sending periodic_metric");
 	return _send((periodic_metric_t *) met, sizeof(periodic_metric_t));
 }
 
