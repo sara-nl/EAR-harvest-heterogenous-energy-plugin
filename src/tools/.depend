@@ -16,3 +16,21 @@ compute_coefficients.o: compute_coefficients.c \
  ../common/types/generic.h ../common/types/signature.h \
  ../common/types/power_signature.h ../common/types/coefficient.h \
  ../common/types/projection.h
+get_app_list.o: get_app_list.c ../common/database/db_helper.h \
+ ../common/types/periodic_aggregation.h ../common/types/generic.h \
+ ../common/types/power_signature.h ../common/config.h \
+ ../common/types/periodic_metric.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h ../common/types/application.h \
+ ../common/types/job.h ../common/types/signature.h \
+ ../common/types/gm_warning.h ../common/types/loop.h \
+ ../common/types/log.h
+compute_coefficients_v3.o: compute_coefficients_v3.c ../common/config.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/generic.h ../common/types/signature.h \
+ ../common/types/power_signature.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h ../common/types/coefficient.h \
+ ../common/types/projection.h

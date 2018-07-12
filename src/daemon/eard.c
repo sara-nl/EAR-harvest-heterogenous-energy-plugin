@@ -62,26 +62,34 @@
 
 #if USE_EARDB
 #include <database_cache/eardbd_api.h>
+#include <daemon/eard_utils.h>
 #endif
 
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
-char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t	my_cluster_conf;
 my_node_conf_t 	*my_node_conf;
-policy_conf_t default_policy_context;
-ear_conf_t *dyn_conf;
+eard_dyn_conf_t eard_dyn_conf; // This variable is for eard checkpoint
+policy_conf_t default_policy_context,energy_tag_context,authorized_context;
+settings_conf_t *dyn_conf;
+resched_t *resched_conf;
+coefficient_t *my_coefficients;
+coefficient_t *coeffs_conf;
+char my_ear_conf_path[GENERIC_NAME];
+char dyn_conf_path[GENERIC_NAME];
+char resched_path[GENERIC_NAME];
+char coeffs_path[GENERIC_NAME];
+int coeffs_size;
 uint signal_sighup=0;
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
-#define MAX_PATH_SIZE 	256
 #define RAPL_METRICS 	4
 
 // These two variables are used by the verbosity macros
 static const char *__NAME__ = "EARD ";
-static const char *__HOST__;
+char *__HOST__;
 
 
 int ear_fd_req[ear_daemon_client_requests];
@@ -91,9 +99,9 @@ int eard_max_pstate;
 int num_uncore_counters;
 
 char ear_ping[MAX_PATH_SIZE];
-int ear_ping_fd=-1;
 char ear_tmp[MAX_PATH_SIZE];
 char nodename[MAX_PATH_SIZE];
+int ear_ping_fd=-1;
 int eard_lockf;
 char eard_lock_file[MAX_PATH_SIZE];
 int EAR_VERBOSE_LEVEL=0;
@@ -108,17 +116,33 @@ void eard_close_comm();
 int is_new_application(int pid);
 int is_new_service(int req,int pid);
 int application_timeout();
-void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node);
+void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node);
 int RAPL_counting=0;
 int eard_must_exit=0;
+
+int is_valid_sec_tag(ulong tag)
+{
+#if 0
+    ulong i,sec_key=0;
+    ulong *my_date=(ulong *)__DATE__;
+    ulong *my_time=(ulong *)__TIME__;
+    sec_key=my_date[0]+my_date[1]+my_time[0]+my_time[1];
+	eard_verbose(0,"validating tag=%lu with sec=%lu",tag,sec_key);
+
+	return (tag==sec_key);
+#endif
+#if 1
+    // You make define a constant at makefile time called SEC_KEY to use that option
+	//eard_verbose(0,"validating tag=%lu with sec=%lu",tag,(ulong)SEC_KEY);
+    return ((ulong)SEC_KEY==tag);
+#endif
+}
+
 
 void set_global_eard_variables()
 {
 	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	EAR_VERBOSE_LEVEL=my_cluster_conf.eard.verbose;
-	eard_max_pstate=my_cluster_conf.eard.max_pstate;
-	
-	
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -363,7 +387,11 @@ void eard_exit(uint restart)
 		//	eard_verbose(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
 		//}
 	}
-	ear_conf_shared_area_dispose(ear_tmp);
+	settings_conf_shared_area_dispose(dyn_conf_path);
+	resched_shared_area_dispose(resched_path);
+	#if COEFFS_V3
+	coeffs_shared_area_dispose(coeffs_path);
+	#endif
 
 	if (restart){ 
 		eard_verbose(0,"Restarting EARD\n");
@@ -485,13 +513,16 @@ int eard_system(int must_read)
 			break;
 		case WRITE_EVENT:
 			ack=EAR_COM_OK;
-			#if !USE_EARDB
+			// #if !USE_EARDB
 			#if DB_MYSQL
 			ret1=db_insert_ear_event(&req.req_data.event);
 			#endif
-			#else
-			ret1=eardbd_send_event(&req.req_data.event);
-			#endif
+			// #else
+			if ((ret1=eardbd_send_event(&req.req_data.event))!=EAR_SUCCESS){
+				VERBOSE_N(0,"Error sending event to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
+			//#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
 			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
@@ -501,14 +532,17 @@ int eard_system(int must_read)
 		case WRITE_LOOP_SIGNATURE:
 			ack=EAR_COM_OK;
 			#if !LARGE_CLUSTER
-			#if !USE_EARDB
+			//#if !USE_EARDB
 			#if DB_MYSQL
 			req.req_data.loop.loop.job=&req.req_data.loop.job;
 			ret1 = db_insert_loop (&req.req_data.loop.loop);
 			#endif
-			#else
-			ret1=eardbd_send_loop(&req.req_data.loop.loop);
-			#endif
+			//#else
+			if ((ret1=eardbd_send_loop(&req.req_data.loop.loop))!=EAR_SUCCESS){
+				VERBOSE_N(0,"Error sending loop to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
+			//#endif
 			#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
@@ -690,6 +724,11 @@ int eard_rapl(int must_read)
 void select_service(int fd)
 {
     if (read(ear_fd_req[freq_req],&req,sizeof(req))!=sizeof(req)) eard_verbose(0,"eard error when reading info at select_service\n");
+	if (!is_valid_sec_tag(req.sec)){
+		eard_verbose(0,"Invalid connection with eard %lu",req.sec);
+		return;
+	}
+	//eard_verbose(0,"Sec check ok %d",req.sec);
 	if (eard_freq(0)){ 
 		ear_debug(0,"eard frequency service\n");
 		return;
@@ -775,8 +814,9 @@ void signal_handler(int sig)
      	   	}else{
 				print_my_node_conf(my_node_conf);
 				set_global_eard_variables();
-    			configure_new_values(dyn_conf,&my_cluster_conf,my_node_conf);
-    			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
+    			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
+    			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
+				save_eard_conf(&eard_dyn_conf);
 			}
 
         }
@@ -828,10 +868,11 @@ void signal_catcher()
 }
 //endregion
 
-void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
+void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node)
 {
     policy_conf_t *my_policy;
     ulong deff;
+	eard_max_pstate=node->max_pstate;
 	// Default policy is just in case
     default_policy_context.policy=MONITORING_ONLY;
     default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -847,17 +888,19 @@ void configure_new_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t
 		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
-    dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
+    dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
-	dyn->force_rescheduling=1;
+	resched->force_rescheduling=1;
     eard_verbose(0,"configure_new_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
+	save_eard_conf(&eard_dyn_conf);
 }
 
-void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_conf_t *node)
+void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node)
 {
 	policy_conf_t *my_policy;
 	ulong deff;
+	eard_max_pstate=node->max_pstate;
 	// Default policy is just in case
 	default_policy_context.policy=MONITORING_ONLY;
 	default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -873,10 +916,59 @@ void configure_default_values(ear_conf_t *dyn,cluster_conf_t *cluster,my_node_co
 		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
-	dyn->max_freq=frequency_pstate_to_freq(my_cluster_conf.eard.max_pstate);
+	dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
+	resched_conf->force_rescheduling=0;
 	eard_verbose(0,"configure_default_values max_freq %lu def_freq %lu th %.2lf\n",dyn->max_freq,dyn->def_freq,dyn->th);
+	save_eard_conf(&eard_dyn_conf);
+}
+
+/* Read coefficients for node X */
+int read_coefficients()
+{
+	char my_coefficients_file[GENERIC_NAME];
+	int state,i;
+	int file_size=0;
+	sprintf(my_coefficients_file,"%s/island%d/coeffs.%s",my_cluster_conf.earlib.coefficients_pathname,
+	my_node_conf->island,nodename);
+	eard_verbose(0,"Looking for %s coefficients file",my_coefficients_file);
+	file_size=check_file(my_coefficients_file);
+	if (file_size == EAR_FILE_NOT_FOUND){
+		if (my_node_conf->coef_file!=NULL){
+			sprintf(my_coefficients_file,"%s/island%d/%s",my_cluster_conf.earlib.coefficients_pathname,
+			my_node_conf->island,my_node_conf->coef_file);
+			eard_verbose(0,"Not found.Looking for special %s coefficients file",my_coefficients_file);
+			file_size=check_file(my_coefficients_file);
+			if (file_size==EAR_FILE_NOT_FOUND){
+				sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,
+				my_node_conf->island);
+				eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
+				file_size=check_file(my_coefficients_file);
+				if (file_size==EAR_FILE_NOT_FOUND){
+					eard_verbose(0,"Warning, coefficients not found");
+					return 0;
+				}
+			}
+		} else{
+			sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,
+			my_node_conf->island);
+			eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
+			file_size=check_file(my_coefficients_file);
+			if (file_size==EAR_FILE_NOT_FOUND){
+				eard_verbose(0,"Warning, coefficients not found");
+				return 0;
+			}
+		}
+	}
+	int entries=file_size/sizeof(coefficient_t);
+	eard_verbose(0,"%d coefficients found",entries);
+	my_coefficients=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
+	state=read_coefficients_file_v3(my_coefficients_file, my_coefficients,file_size);
+	for (i=0;i<entries;i++){
+		print_coefficient(&my_coefficients[i]);
+	}
+	return file_size;
 }
 
 
@@ -941,29 +1033,55 @@ void main(int argc,char *argv[])
         }
 		print_my_node_conf(my_node_conf);
     }
+	eard_dyn_conf.cconf=&my_cluster_conf;
+	eard_dyn_conf.nconf=my_node_conf;
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
-	/** Shared memory is used between EARD and EARL **/
-    eard_verbose(0,"creating shared memory tmp=%s\n",ear_tmp);
-    dyn_conf=create_ear_conf_shared_area(ear_tmp,eard_max_freq);
-    if (dyn_conf==NULL){
-        eard_verbose(0,"Error creating shared memory\n");
-        _exit(0);
-    }
-	// We initialize frecuency
+	/* We initialize frecuency */
 	if (frequency_init(metrics_get_node_size()) < 0) {
 		eard_verbose(0, "ERROR, frequency information can't be initialized");
 		_exit(1);
 	}
-    configure_default_values(dyn_conf,&my_cluster_conf,my_node_conf);
-    eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,dyn_conf->force_rescheduling);
-
+	/** Shared memory is used between EARD and EARL **/
+	/* This area is for shared info */
+    eard_verbose(0,"creating shared memory regions");
+	get_settings_conf_path(my_cluster_conf.tmp_dir,dyn_conf_path);
+	eard_verbose(1,"Using %s as settings path (shared memory region)",dyn_conf_path);
+    dyn_conf=create_settings_conf_shared_area(dyn_conf_path);
+    if (dyn_conf==NULL){
+        eard_verbose(0,"Error creating shared memory\n");
+        _exit(0);
+    }
+	/* This area indicates EARL must resched */
+	get_resched_path(my_cluster_conf.tmp_dir,resched_path);
+	eard_verbose(1,"Using %s as resched path (shared memory region)",resched_path);
+    resched_conf=create_resched_shared_area(resched_path);
+    if (resched_conf==NULL){
+        eard_verbose(0,"Error creating shared memory\n");
+        _exit(0);
+    }
+	/* Coefficients */
+	#if COEFFS_V3
+	coeffs_size=read_coefficients();
+	eard_verbose(0,"Coefficients loaded");
+	get_coeffs_path(my_cluster_conf.tmp_dir,coeffs_path);
+	eard_verbose(1,"Using %s as coeff path (shared memory region)",coeffs_path);
+    coeffs_conf=create_coeffs_shared_area(coeffs_path,my_coefficients,coeffs_size);
+    if (coeffs_conf==NULL){
+        eard_verbose(0,"Error creating shared memory\n");
+        _exit(0);
+    }
+	#endif
 	/** We must control if we are come from a crash **/	
 	// We check if we are recovering from a crash
 	int must_recover=new_service("eard");
 	if (must_recover){
 		eard_verbose(0,"We must recover from a crash");
+		restore_eard_conf(&eard_dyn_conf);
 	}
+    configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
+    eard_verbose(0,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
+
 	// Check
 	if (argc == 2)
 	{
@@ -1047,12 +1165,18 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
+<<<<<<< HEAD
     if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.udp_port, UDP)!=EAR_SUCCESS){
+=======
+    if (eardbd_connect(my_node_conf->db_ip, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
+>>>>>>> e07fb227fdd0f5c4ad86ad01b461050f305b4d14
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif
-	#if !USE_EARDB && DB_MYSQL
+	/* #if !USE_EARDB && DB_MYSQL */
+	#if DB_MYSQL
 	eard_verbose(1,"Connecting with EAR DB");
+	strcpy(my_cluster_conf.database.database,"Report2");
 	init_db_helper(&my_cluster_conf.database);
 	#endif
 

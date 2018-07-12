@@ -38,32 +38,80 @@
 #define _SHARED_CONF_H
 
 #include <common/types/generic.h>
+#include <common/types/configuration/cluster_conf.h>
+#include <common/types/coefficient.h>
 
-typedef struct ear_conf{
+typedef struct settings_conf{
 	ulong 	max_freq;
 	ulong	def_freq;
 	double 	th;
+} settings_conf_t;
+
+typedef struct resched{
 	int 	force_rescheduling;
-} ear_conf_t;
+}resched_t;
+
+/*********** SETTINGS configuration *******************/
+
+/** Sets in path the filename for the shared memory area between EARD and EARL
+ * @param path (output)
+ */
+int get_settings_conf_path(char *tmp,char *path);
 
 /** Creates the shared mmemory. It is used by EARD (server)
 *	@param ear_conf_path specifies the path (folder) to create the file used by mmap
-* 	@param max_freq is used to initialize the default freq. th is set by default to PERFORMANCE_GAIN (compilation option)
 */
 
-ear_conf_t * create_ear_conf_shared_area(char * ear_conf_path, ulong max_freq);
+settings_conf_t * create_settings_conf_shared_area(char * path);
 
 /** Connects with a previously created shared memory region. It is used by EARLib (client)
 *	@param ear_conf_path specifies the path (folder) where the mapped file were created
 */
-ear_conf_t * attach_ear_conf_shared_area(char * ear_conf_path);
+settings_conf_t * attach_settings_conf_shared_area(char * path);
 
 /** Disconnect from a previously connected shared memory region. It is used by EARLib (client)
 */
-void dettach_ear_conf_shared_area();
+void dettach_settings_conf_shared_area();
 
 /** Releases a shared memory area previously created. It is used by EARD (server)
 */
-void ear_conf_shared_area_dispose(char * ear_conf_path);
+void settings_conf_shared_area_dispose(char * path);
+
+/*********** RESCHED ****************************/
+/** Sets in path the filename for the shared memory area between EARD and EARL
+ *  * @param path (output)
+ *   */
+int get_resched_path(char *tmp,char *path);
+
+/** Creates the shared mmemory. It is used by EARD (server)
+ * *   @param ear_conf_path specifies the path (folder) to create the file used by mmap
+ * */
+
+resched_t * create_resched_shared_area(char *path);
+
+/** Connects with a previously created shared memory region. It is used by EARLib (client)
+ * *   @param ear_conf_path specifies the path (folder) where the mapped file were created
+ * */
+resched_t * attach_resched_shared_area(char * path);
+
+/** Disconnect from a previously connected shared memory region. It is used by EARLib (client)
+ * */
+void dettach_resched_shared_area();
+
+/** Releases a shared memory area previously created. It is used by EARD (server)
+ * */
+void resched_shared_area_dispose(char * path);
+
+/***************** COEFFICIENTS **********/
+int get_coeffs_path(char *tmp,char *path);
+
+coefficient_t * create_coeffs_shared_area(char * path,coefficient_t *coeffs,int size);
+
+coefficient_t * attach_coeffs_shared_area(char * path,int *size);
+
+void coeffs_shared_area_dispose(char * path);
+
+void dettach_coeffs_shared_area();
+
 
 #endif

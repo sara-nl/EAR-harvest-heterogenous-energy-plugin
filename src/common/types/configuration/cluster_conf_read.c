@@ -117,6 +117,15 @@ static int get_default_pstate(policy_conf_t *pow_pol, int num_pol, int policy)
 	return 0;
 }
 
+static void fill_policies(cluster_conf_t *conf)
+{
+	int i;
+	for (i = 0; i < TOTAL_POLICIES; i++){
+		conf->power_policies[i].policy = i;
+		conf->power_policies[i].is_available=0;
+	}
+}
+
 static void generate_node_ranges(node_island_t *island, char *nodelist)
 {
 	char *buffer_ptr;
@@ -129,14 +138,20 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 
 	start = strtok_r(nodelist, "[", &buffer_ptr);
 	token = strtok_r(NULL, ",", &buffer_ptr);
-	//in this case, only one node is specified in the line
+	//in this case, no node ranges are specified in the line
 	if (token == NULL)
 	{
-		island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+1));
-		memset(&island->ranges[island->num_ranges], 0, sizeof(node_range_t));
-		sprintf(island->ranges[island->num_ranges].prefix, "%s", start);
-		island->ranges[island->num_ranges].start = island->ranges[island->num_ranges].end = -1;
-		island->num_ranges++;
+        token = strtok_r(start, ",", &buffer_ptr);
+        while (token != NULL)
+        {
+	    	island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+1));
+    		memset(&island->ranges[island->num_ranges], 0, sizeof(node_range_t));
+		    sprintf(island->ranges[island->num_ranges].prefix, "%s", token);
+    		island->ranges[island->num_ranges].start = island->ranges[island->num_ranges].end = -1;
+            island->ranges[island->num_ranges].db_ip = island->ranges[island->num_ranges].sec_ip = -1;
+		    island->num_ranges++;
+            token = strtok_r(NULL, ",", &buffer_ptr);
+        }
 	}
 	//at least one range if we reach this point
 	int range_count = 0;
@@ -167,6 +182,9 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 		token = strtok_r(NULL, ",", &buffer_ptr);
 		if (next_token != NULL) start = next_token;
 	}
+    int i;
+    for (i = island->num_ranges; i < island->num_ranges + range_count; i++)
+        island->ranges[i].db_ip = island->ranges[i].sec_ip = -1;
 	island->num_ranges += range_count;
 }
 
@@ -175,6 +193,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	memset(conf, 0, sizeof(cluster_conf_t));
 	char line[256];
 	char *token;
+
+	//filling the default policies before starting
+	fill_policies(conf);
+	
 	while (fgets(line, 256, conf_file) != NULL)
 	{
 		if (line[0] == '#') continue;
@@ -193,12 +215,25 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
 			strcpy(conf->DB_pathname, token);
 		}
+
+            //EARLIB CONF
 		else if (!strcmp(token, "COEFFICIENTSDIR"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
-			strcpy(conf->Coefficients_pathname, token);
+			strcpy(conf->earlib.coefficients_pathname, token);
 		}
+        else if (!strcmp(token, "DYNAISLEVELS"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.dynais_levels = atoi(token);
+        }
+        else if (!strcmp(token, "DYNAISWINDOWSIZE"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.dynais_window = atoi(token);
+        }
+
 		else if (!strcmp(token, "TMPDIR"))
 		{
 			token = strtok(NULL, "=");
@@ -220,16 +255,19 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
+			conf->num_policies=TOTAL_POLICIES;
 			while (token != NULL)
 			{
-				conf->num_policies++;
 				strclean(token, '\n');
-				if (conf->num_policies == 1)
+				/*if (conf->num_policies == 1)
 					conf->power_policies = NULL;
 				//conf->power_policies = malloc(sizeof(policy_conf_t));
 				conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*conf->num_policies);
 
-				conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);
+				conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);*/
+                int i;
+                for (i = 0; i < TOTAL_POLICIES; i++)
+                    if (conf->power_policies[i].policy == policy_name_to_id(token)) conf->power_policies[i].is_available = 1;
 				token = strtok(NULL, ",");
 			}
 		}
@@ -258,7 +296,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->min_time_perf_acc = atoi(token);
 		}
-		else if (!strcmp(token, "PRIVILEGEDUSERS"))
+		else if (!strcmp(token, "AUTHORIZEDUSERS"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
@@ -272,7 +310,21 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				token = strtok(NULL, ",");
 			}
 		}
-		else if (!strcmp(token, "PRIVILEGEDACCOUNTS"))
+        else if (!strcmp(token, "AUTHORIZEDGROUPS"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+            while (token != NULL)
+            {
+                conf->num_priv_groups++;
+                conf->priv_groups = realloc(conf->priv_groups, sizeof(char *)*conf->num_priv_groups);
+                strclean(token, '\n');
+                conf->priv_groups[conf->num_priv_groups-1] = malloc(strlen(token)+1);
+                strcpy(conf->priv_groups[conf->num_priv_groups-1], token);
+                token = strtok(NULL, ",");
+            }
+        }
+		else if (!strcmp(token, "AUTHORIZEDACCOUNTS"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, ",");
@@ -286,31 +338,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				token = strtok(NULL, ",");
 			}
 		}
-		else if (!strcmp(token, "USERSWITHENERGYTAG"))
-		{
-			//special parsing on this one
-			token = strtok(NULL, "=");
-			token = strtok(token, ",");
-			while (token != NULL)
-			{
-				strclean(token, '\n');
-				conf->num_special++;
-				conf->special = realloc(conf->special, sizeof(special_app_t)*conf->num_special);
-				strcpy(conf->special[conf->num_special - 1].user, token);
-				token = strtok(NULL, ",");
-			}
-		}
 		else if (!strcmp(token, "ENERGYTAG"))
 		{
-			// token = strtok(NULL, "=");
-			// token = strtok(token, ",");
-			// conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t)*(conf->num_tags+1));
-			// strcpy(conf->e_tags[conf->num_tags].tag, token);
-			// token = strtok(NULL, ",");
-			// conf->e_tags[conf->num_tags].p_state = atoi(token);
-			// conf->num_tags++;
-
-			//fully restore the line as we need 2 buffer pointers for this task
 			line[strlen(line)] = '=';
 			char *primary_ptr;
 			char *secondary_ptr;
@@ -348,6 +377,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users] = malloc(strlen(token)+1);
 						strcpy(conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users], token);
 						conf->e_tags[conf->num_tags-1].num_users++;
+                        token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
 				else if (!strcmp(token, "GROUPS"))
@@ -361,6 +391,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups] = malloc(strlen(token)+1);
 						strcpy(conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups], token);
 						conf->e_tags[conf->num_tags-1].num_groups++;
+                        token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
 				else if (!strcmp(token, "ACCOUNTS"))
@@ -374,6 +405,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts] = malloc(strlen(token)+1);
 						strcpy(conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts], token);
 						conf->e_tags[conf->num_tags-1].num_accounts++;
+                        token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
 				token = strtok_r(NULL, " ", &primary_ptr);
@@ -586,21 +618,26 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}
 
 			//DB MANAGER
-		else if (!strcmp(token, "DATABASECACHEAGGREGATIONTIME"))
+		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.aggr_time = atoi(token);
 		}
-		else if (!strcmp(token, "DATABASECACHEPORTTCP"))
+		else if (!strcmp(token, "DBDAEMONPORTTCP"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.tcp_port = atoi(token);
 		}
-		else if (!strcmp(token, "DATABASECACHEPORTUDP"))
+		else if (!strcmp(token, "DBDAEMONPORTUDP"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.udp_port = atoi(token);
 		}
+        else if (!strcmp(token, "DBDAEMONMEMORYSIZE"))
+        {
+            token = strtok(NULL, "=");
+            conf->db_manager.mem_size = atoi(token);
+        }
 
 			//GLOBAL MANAGER
 		else if (!strcmp(token, "GLOBALMANAGERVERBOSE"))
@@ -692,6 +729,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			if (conf->num_islands == 0)
 				conf->islands = NULL;
 
+            int current_ranges = 0;
 			//token = strtok_r(line, " ", &primary_ptr);
 			token = strtok(line, "=");
 			while (token != NULL)
@@ -712,22 +750,122 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	    				conf->islands[conf->num_islands].id = atoi(token);
                     }
 				}
-				else if (!strcmp(token, "DATABASECACHEIP"))
+				else if (!strcmp(token, "DBIP"))
 				{
 					token = strtok(NULL, " ");
 					strclean(token, '\n');
+                    int ip_id = -1;
                     if (idx < 0)
-    					strcpy(conf->islands[conf->num_islands].db_ip, token);
+                    {
+                        if (conf->islands[conf->num_islands].num_ips < 1)
+                            conf->islands[conf->num_islands].db_ips = NULL;
+                        for (i = 0; i < conf->islands[conf->num_islands].num_ips; i++)
+                            if (!strcmp(conf->islands[conf->num_islands].db_ips[i], token)) ip_id = i;
+                        if (ip_id < 0)
+                        {
+                            conf->islands[conf->num_islands].db_ips = realloc(conf->islands[conf->num_islands].db_ips,
+                                                                            (conf->islands[conf->num_islands].num_ips+1)*sizeof(char *));
+                            conf->islands[conf->num_islands].db_ips[conf->islands[conf->num_islands].num_ips] = malloc(strlen(token)+1);
+                            strcpy(conf->islands[conf->num_islands].db_ips[conf->islands[conf->num_islands].num_ips], token);
+                            for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
+                                conf->islands[conf->num_islands].ranges[i].db_ip = conf->islands[conf->num_islands].num_ips;
+                            conf->islands[conf->num_islands].num_ips++;
+                        }
+                        else
+                        {
+                            for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
+                                conf->islands[conf->num_islands].ranges[i].db_ip = ip_id;
+                        }
+
+                    }
                     else
-                        strcpy(conf->islands[idx].db_ip, token);
+                    {
+                        if (conf->islands[idx].num_ips < 1)
+                            conf->islands[idx].db_ips = NULL;
+                        for (i = 0; i < conf->islands[idx].num_ips; i++)
+                            if (!strcmp(conf->islands[idx].db_ips[i], token)) ip_id = i;
+                        if (ip_id < 0)
+                        {
+                            conf->islands[idx].db_ips = realloc(conf->islands[idx].db_ips,
+                                                                            (conf->islands[idx].num_ips+1)*sizeof(char *));
+                            conf->islands[idx].db_ips[conf->islands[idx].num_ips] = malloc(strlen(token)+1);
+                            strcpy(conf->islands[idx].db_ips[conf->islands[idx].num_ips], token);
+                            for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)
+                                conf->islands[idx].ranges[i].db_ip = conf->islands[idx].num_ips;
+                            conf->islands[idx].num_ips++;
+                        }
+                        else
+                        {
+                            for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)
+                                conf->islands[idx].ranges[i].db_ip = ip_id;
+                        }
+                    }
 				}
+                else if (!strcmp(token, "DBSECIP"))
+                {
+					token = strtok(NULL, " ");
+					strclean(token, '\n');
+                    int ip_id = -1;
+                    if (idx < 0)
+                    {
+                        if (conf->islands[conf->num_islands].num_backups < 1)
+                            conf->islands[conf->num_islands].backup_ips = NULL;
+                        for (i = 0; i < conf->islands[conf->num_islands].num_backups; i++)
+                            if (!strcmp(conf->islands[conf->num_islands].backup_ips[i], token)) ip_id = i;
+                        if (ip_id < 0)
+                        {
+                            conf->islands[conf->num_islands].backup_ips = realloc(conf->islands[conf->num_islands].backup_ips,
+                                                                            (conf->islands[conf->num_islands].num_backups+1)*sizeof(char *));
+                            conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups] = malloc(strlen(token)+1);
+                            strcpy(conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups], token);
+                            for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
+                                conf->islands[conf->num_islands].ranges[i].sec_ip = conf->islands[conf->num_islands].num_backups;
+                            conf->islands[conf->num_islands].num_backups++;
+                        }
+                        else
+                        {
+                            for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
+                                conf->islands[conf->num_islands].ranges[i].sec_ip = ip_id;
+                        }
+
+                    }
+                    else
+                    {
+                        if (conf->islands[idx].num_backups < 1)
+                            conf->islands[idx].backup_ips = NULL;
+                        for (i = 0; i < conf->islands[idx].num_backups; i++)
+                            if (!strcmp(conf->islands[idx].backup_ips[i], token)) ip_id = i;
+                        if (ip_id < 0)
+                        {
+                            conf->islands[idx].backup_ips = realloc(conf->islands[idx].backup_ips,
+                                                                            (conf->islands[idx].num_backups+1)*sizeof(char *));
+                            conf->islands[idx].backup_ips[conf->islands[idx].num_backups] = malloc(strlen(token)+1);
+                            strcpy(conf->islands[idx].backup_ips[conf->islands[idx].num_backups], token);
+                            for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)
+                                conf->islands[idx].ranges[i].sec_ip = conf->islands[idx].num_backups;
+                            conf->islands[idx].num_backups++;
+                        }
+                        else
+                        {
+                            for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)
+                                conf->islands[idx].ranges[i].sec_ip = ip_id;
+                        }
+                    }
+
+                }
 				else if (!strcmp(token, "NODES"))
 				{
 					token = strtok(NULL, " ");
                     if (idx < 0)
-					    generate_node_ranges(&conf->islands[conf->num_islands], token);
+                    {
+					    current_ranges = conf->islands[conf->num_islands].num_ranges; 
+                        generate_node_ranges(&conf->islands[conf->num_islands], token);
+                    }
                     else
+                    {
+                        current_ranges = conf->islands[idx].num_ranges;
                         generate_node_ranges(&conf->islands[idx], token);
+                    }
 				}
 				token = strtok(NULL, "=");
 			}
@@ -760,11 +898,13 @@ void free_cluster_conf(cluster_conf_t *conf)
 		free(conf->priv_users[i]);
 	free(conf->priv_users);
 
+	for (i = 0; i < conf->num_priv_groups; i++)
+		free(conf->priv_groups[i]);
+	free(conf->priv_groups);
+
 	for (i = 0; i < conf->num_acc; i++)
 		free(conf->priv_acc[i]);
 	free(conf->priv_acc);
-
-	free(conf->special);
 
 	for (i = 0; i < conf->num_nodes; i++)
 		free(conf->nodes[i].special_node_conf);
@@ -780,14 +920,21 @@ void free_cluster_conf(cluster_conf_t *conf)
 
 	free(conf->nodes);
 
-	free(conf->power_policies);
-
+	int j;
 	for (i = 0; i < conf->num_islands; i++)
+    {
+        for (j = 0; j < conf->islands[i].num_ips; j++)
+            free(conf->islands[i].db_ips[j]);
+        for (j = 0; j < conf->islands[i].num_backups; j++)
+            free(conf->islands[i].backup_ips[j]);
+
 		free(conf->islands[i].ranges);
+        free(conf->islands[i].db_ips);
+        free(conf->islands[i].backup_ips);
+    }
 
 	free(conf->islands);
 
-	int j;
 	for (i = 0; i < conf->num_tags; i++)
 	{
 		for (j = 0; j < conf->e_tags[i].num_users; j++)

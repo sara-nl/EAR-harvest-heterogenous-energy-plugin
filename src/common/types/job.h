@@ -63,6 +63,7 @@ typedef struct job
 	job_id 	id;
 	job_id 	step_id;
 	char 	user_id[GENERIC_NAME];
+	char 	group_id[GENERIC_NAME];
 	char 	app_id[GENERIC_NAME];
 	char    user_acc[GENERIC_NAME];
 	char	energy_tag[ENERGY_TAG_SIZE];

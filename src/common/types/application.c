@@ -116,7 +116,7 @@ void report_application_data(application_t *app)
 	float pavg_f = ((double) app->power_sig.avg_f) / 1000000.0;
 	float pdef_f = ((double) app->power_sig.def_f) / 1000000.0;
 
-	fprintf(stderr,"------------------------------------------------------------------------ Application Summary --\n");
+	fprintf(stderr,"----------------------------------- Application Summary[%s] --\n",app->node_id);
 	fprintf(stderr,"-- App id: %s, user id: %s, job id: %lu", app->job.app_id, app->job.user_id, app->job.id);
 	fprintf(stderr,"   procs: %lu (s) acc %s\n", app->job.procs,app->job.user_acc);
 	fprintf(stderr,"   start time %d end time %d start mpi %d end mpi %d\n",(int)app->job.start_time,(int)app->job.end_time,(int)app->job.start_mpi_time,(int)app->job.end_mpi_time);
@@ -143,7 +143,7 @@ void report_mpi_application_data(application_t *app)
     float pavg_f = ((double) app->power_sig.avg_f) / 1000000.0;
     float pdef_f = ((double) app->power_sig.def_f) / 1000000.0;
 
-    fprintf(stderr,"------------------------------------------------------------------------ Application Summary --\n");
+    fprintf(stderr,"---------------------------------------------- Application Summary [%s] --\n",app->node_id);
     fprintf(stderr,"-- App id: %s, user id: %s, job id: %lu", app->job.app_id, app->job.user_id, app->job.id);
     fprintf(stderr,"   acc %s\n", app->job.user_acc);
     if (app->is_mpi){

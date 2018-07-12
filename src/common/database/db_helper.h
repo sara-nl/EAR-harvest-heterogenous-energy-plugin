@@ -58,9 +58,24 @@ int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg);
 
 int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets);
 
-int db_batch_insert_ear_event(ear_event_t **ear_evs, int num_events);
+int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events);
 
-/** Returns the accumulated energy (units depend on divisor, divisor=1 means mJ) for a given period */
-ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor);
+int db_batch_insert_applications(application_t *applications, int num_apps);
+
+int db_batch_insert_applications_no_mpi(application_t *applications, int num_apps);
+
+int db_batch_insert_loops(loop_t *loops, int num_loops);
+
+/** Returns the accumulated energy (units depend on divisor, divisor=1 means mJ) for a given period.
+*   The is_aggregated parameter indicates if the data is to be retrieved from the aggregated table 
+*   or the individual one.*/
+ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated);
+
+/** Reads applications from the normal DB or the learning DB depending on is_learning. It allocates 
+*   memory for apps. Returns the number of applications readed */
+int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name);
+
+/** Reads from DB the number of applications that can be found in the corresponding tables. */
+ulong get_num_applications(char is_learning);
 
 #endif

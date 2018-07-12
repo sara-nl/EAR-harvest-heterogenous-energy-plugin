@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef EAR_STATES_H
-#define EAR_STATES_H
+#ifndef STATES_H
+#define STATES_H
 
 /* error definitions */
 #define EAR_SUCCESS              0
@@ -36,11 +36,17 @@
 #define EAR_WARNING             -2
 #define EAR_ALLOC_ERROR         -3
 #define EAR_READ_ERROR          -4
-#define EAR_FILE_NOT_FOUND      -5
-#define EAR_NOT_READY		    -6
-#define EAR_MYSQL_ERROR         -7
-#define EAR_MYSQL_STMT_ERROR    -8
-
+#define EAR_OPEN_ERROR			-5
+#define EAR_WRITE_ERROR			-6
+#define EAR_FILE_NOT_FOUND      -7
+#define EAR_NOT_INITIALIZED		-8
+#define EAR_NOT_READY		    -9
+#define EAR_BUSY				-10
+#define EAR_ALREADY_CLOSED		-11
+#define EAR_ARCH_NOT_SUPPORTED	-12
+#define EAR_BAD_ARGUMENT		-13
+#define EAR_MYSQL_ERROR         -14
+#define EAR_MYSQL_STMT_ERROR    -15
 #define EAR_ADDR_NOT_FOUND		-19
 #define EAR_SOCK_CREAT_ERROR	-20
 #define EAR_SOCK_BIND_ERROR		-21
@@ -51,6 +57,7 @@
 #define EAR_SOCK_CONN_ERROR		-26
 #define EAR_SOCK_BAD_PROTOCOL	-27
 
+// TODO: this is a config not a state
 #define DYNAIS_ENABLED      1
 #define DYNAIS_DISABLED     0
 #define PERIODIC_MODE_ON    1
@@ -75,4 +82,4 @@ char *state_error;
 	state_error = error; \
 	return state;
 
-#endif //EAR_STATES_H
+#endif //STATES_H

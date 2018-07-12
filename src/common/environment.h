@@ -49,9 +49,6 @@
 #define DEFAULT_DYNAIS_LEVELS           4
 #define DEFAULT_DYNAIS_WINDOW_SIZE      300
 #define DYNAIS_TIMEOUT                  30
-#define MIN_ENERGY_TO_SOLUTION          0
-#define MIN_TIME_TO_SOLUTION            1
-#define MONITORING_ONLY                 2
 
 /** Tries to get the EAR_TMP environment variable's value and returns it.
 *   If it fails, it defaults to TMP's value and then HOME's. */ 

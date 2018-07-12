@@ -40,10 +40,10 @@
 #define DEFAULT_DB_PATHNAME             ".ear_system_db"
 
 char *conf_ear_tmp=NULL;
+#if 0
 char *conf_ear_db_pathname=NULL;
+#endif
 int conf_ear_verbose=DEFAULT_VERBOSE;
-
-
 
 char * getenv_ear_tmp()
 {
@@ -58,6 +58,7 @@ char * getenv_ear_tmp()
 	strcpy(conf_ear_tmp,my_ear_tmp);
 	return conf_ear_tmp;	
 }
+#if 0
 char *getenv_ear_db_pathname()
 {
 	char *my_ear_db_pathname = getenv("EAR_DB_PATHNAME");
@@ -70,7 +71,7 @@ char *getenv_ear_db_pathname()
 
 	return conf_ear_db_pathname;
 }
-
+#endif
 
 int getenv_ear_verbose()
 {
@@ -93,18 +94,18 @@ char * get_ear_tmp()
 {
 	return conf_ear_tmp;
 }
-
 void set_ear_tmp(char *new_tmp)
 {
 	if (conf_ear_tmp!=NULL) free(conf_ear_tmp);
 	conf_ear_tmp=malloc(strlen(new_tmp)+1);
 	strcpy(conf_ear_tmp,new_tmp);
 }
-
+#if 0
 char *get_ear_db_pathname()
 {
 	return conf_ear_db_pathname;
 }
+#endif
 
 int get_ear_verbose()
 {
@@ -120,7 +121,7 @@ void ear_daemon_environment()
 {
     getenv_ear_verbose();
     getenv_ear_tmp();
-    getenv_ear_db_pathname();
+    // getenv_ear_db_pathname();
 }
 void ear_print_daemon_environment()
 {
@@ -140,8 +141,10 @@ void ear_print_daemon_environment()
     write(fd,var,strlen(var));
     sprintf(var,"EAR_VERBOSE=%d\n",get_ear_verbose());
     write(fd,var,strlen(var));
+	#if 0
     sprintf(var,"EAR_DB_PATHNAME=%s\n",get_ear_db_pathname());
     write(fd,var,strlen(var));
+	#endif
     close(fd);
 #endif
 }

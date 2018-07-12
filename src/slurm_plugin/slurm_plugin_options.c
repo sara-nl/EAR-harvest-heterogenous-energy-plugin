@@ -180,27 +180,8 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 		strncpy(policy, optarg, 32);
 		strtoup(policy);
 
-		index += (strcmp(policy, "MIN_ENERGY_TO_SOLUTION") == 0);
-		index += (strcmp(policy, "MIN_TIME_TO_SOLUTION") == 0) * 2;
-		index += (strcmp(policy, "MONITORING_ONLY") == 0) * 3;
-
-		if (index == 0) {
-			return (ESPANK_BAD_ARG);
-		}
-
 		result = setenv_local("EAR_POWER_POLICY", policy, 1);
 		result = result && setenv_local("EAR", "1", 0);
-
-		if (index == 1 || index == 2) {
-			result = result && setenv_local("EAR_P_STATE", "1", 1);
-		}
-		if (index == 3) {
-			result = result && setenv_local("EAR_P_STATE", "1", 0);
-		}
-
-		if (result != 1) {
-			return (ESPANK_STOP);
-		}
 	}
 
 	return (ESPANK_SUCCESS);
@@ -327,7 +308,17 @@ static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 static int _opt_ear_tag(int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_tag");
-	return (ESPANK_STOP);
+
+	if (!remote)
+	{
+		if (optarg == NULL) {
+			return (ESPANK_BAD_ARG);
+		}
+		if (setenv_local("EAR_ENERGY_TAG", optarg, 1) != 1) {
+			return (ESPANK_STOP);
+		}
+	}
+	return (ESPANK_SUCCESS);
 }
 
 /*

@@ -5,6 +5,7 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 INTERN_OBJS = bandwidth/uncores_pci.o
 
 OBJS = frequency.o \
+       frequency_uncore.o \
        hardware_info.o \
        bandwidth.o \
        bandwidth.a
@@ -15,6 +16,9 @@ all: all.components $(OBJS)
 
 frequency.o: frequency.c frequency.h
 	$(CC) $(CFLAGS) -c frequency.c
+
+frequency_uncore.o: frequency_uncore.c frequency_uncore.h
+	$(CC) $(CFLAGS) -c frequency_uncore.c
 
 hardware_info.o: hardware_info.c hardware_info.h
 	$(CC) $(CFLAGS) -c hardware_info.c

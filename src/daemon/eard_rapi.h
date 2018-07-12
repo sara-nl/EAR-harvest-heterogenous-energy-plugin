@@ -31,9 +31,9 @@
 
 /**
 *    \file remote_daemon_client.h
-*    \brief This file defines the client side of the remote EAR API
+*    \brief This file defines the client side of the remote EARD API
 *
-* 	 Note:Specific functions could be substituted by a generic function passing a local_config_t
+* 	 Note:All these funcions applies to a single node . Global commands must be applying by sending commands to all nodes. 
 */
 
 #ifndef _REMOTE_CLIENT_API_H
@@ -56,13 +56,23 @@ int eards_new_job(application_t *new_job);
 */
 int eards_end_job(job_id jid,job_id sid);
 
-/**  Sets freq as the frequency to be used in the node where the API is connected with
+/**  Sets freq as the maximim frequency to be used in the node where the API is connected with
 */
-int eards_set_freq(ulong freq);
+int eards_set_max_freq(ulong freq);
 
-/**  Reduce the maximum freq by the given number of p_states
+/** Sets the frequency of all the cores to freq */
+int eards_set_freq(unsigned long freq);
+
+/** Sets temporally the default frequency of all the policies to freq */
+int eards_set_def_freq(unsigned long freq);
+
+
+/**  Reduce the maximum and default freq by the given number of p_states
 */
-int eards_red_max_freq(uint p_states);
+int eards_red_max_and_def_freq(uint p_states);
+
+/** Restores the configuration originally set in ear.conf (it doesn´t read the file again)*/
+int eards_restore_conf();
 
 
 /** Sets th as the new threashold to be used by the policy. New th must be passed as % th=0.75 --> 75. It is designed to be used by the min_time_to_solution policy

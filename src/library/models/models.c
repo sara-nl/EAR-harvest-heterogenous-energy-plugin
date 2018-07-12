@@ -70,6 +70,8 @@ double performance_gain ;
 
 // Normals
 coefficient_t **coefficients;
+coefficient_t *coefficients_v3;
+int num_coeffs;
 static uint reset_freq_opt = RESET_FREQ;
 static uint ear_models_pstates = 0;
 static ulong user_selected_freq;
@@ -249,6 +251,8 @@ void init_power_policy()
 	init_policy_functions();
 }
 
+
+
 void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 {
 	char coeff_file[128];
@@ -310,6 +314,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	if (ear_use_turbo) begin_pstate = 0;
 	end_pstate = p_states;
 
+
 	for (ref = begin_pstate; ref < end_pstate; ref++)
 	{
 		sprintf(coeff_file_fn, "%s.%d", coeff_file, p_states_list[ref]);
@@ -340,6 +345,16 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 			exit(1);
 		}
 	}
+	#if COEFFS_V3
+	char coeffs_path[GENERIC_NAME];
+	get_coeffs_path(get_ear_tmp(),coeffs_path);	
+	coefficients_v3=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
+	num_coeffs=num_coeffs/sizeof(coefficient_t);
+	ear_verbose(0,"Coefficients v3 %d coefficients found",num_coeffs);
+	for (i=0;i<num_coeffs;i++){
+		print_coefficient(&coefficients_v3[i]);
+	}
+	#endif
 	app_policy.init(p_states);
 }
 

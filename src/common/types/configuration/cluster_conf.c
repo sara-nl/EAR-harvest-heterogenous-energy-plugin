@@ -72,13 +72,13 @@ char island_range_conf_contains_node(node_island_t *node, char *nodename)
         if (node->ranges[i].end == -1)
         {
             sprintf(aux_name, "%s", node->ranges[i].prefix);
-            if (!strcmp(aux_name, nodename)) return 1;
+            if (!strcmp(aux_name, nodename)) return i;
             else continue;
         }
         if (node->ranges[i].end == node->ranges[i].start)
         {
             sprintf(aux_name, "%s%u", node->ranges[i].prefix, node->ranges[i].start);
-            if (!strcmp(aux_name, nodename)) return 1;
+            if (!strcmp(aux_name, nodename)) return i;
             else continue;
         }
         for (j = node->ranges[i].end; j >= node->ranges[i].start && j > 0; j--)
@@ -87,11 +87,11 @@ char island_range_conf_contains_node(node_island_t *node, char *nodename)
                 sprintf(aux_name, "%s0%u", node->ranges[i].prefix, j);
             else
                 sprintf(aux_name, "%s%u", node->ranges[i].prefix, j);
-            if (!strcmp(aux_name, nodename)) return 1;
+            if (!strcmp(aux_name, nodename)) return i;
         }
     }
 
-    return 0;
+    return -1;
 }
 
 
@@ -119,9 +119,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 	int i=0, j=0;
 	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
     n->num_policies = my_conf->num_policies;
-    n->policies = calloc(n->num_policies, sizeof(policy_conf_t));
     int num_spec_nodes = 0;
-    
+    int range_id = -1;
     while(i<my_conf->num_nodes)
     {
 		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
@@ -136,9 +135,9 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     
     i = 0;
     do{ // At least one node is assumed
-		if (island_range_conf_contains_node(&my_conf->islands[i], nodename)) {
+		if ((range_id = island_range_conf_contains_node(&my_conf->islands[i], nodename)) >= 0) {
             n->island = my_conf->islands[i].id;
-            strcpy(n->db_ip, my_conf->islands[i].db_ip);
+            strcpy(n->db_ip, my_conf->islands[i].db_ips[my_conf->islands[i].ranges[range_id].db_ip]);
 		}
 		i++;
 	}while(i<my_conf->num_islands);
@@ -157,58 +156,12 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
             num_spec_nodes++;
         }
     }
+	n->max_pstate=my_conf->eard.max_pstate;
 
 	return n;
 }
 
-/*
- * POLICY FUNCTIONS
- */
 
-
-/** Converts from policy name to policy_id */
-int policy_name_to_id(char *my_policy)
-{
-    if (my_policy!=NULL){
-        if ((strcmp(my_policy,"MIN_ENERGY_TO_SOLUTION")==0) || (strcmp(my_policy,"min_energy_to_solution")==0)) return MIN_ENERGY_TO_SOLUTION;
-        else if ((strcmp(my_policy,"MIN_TIME_TO_SOLUTION")==0) || (strcmp(my_policy,"min_time_to_solution")==0)) return MIN_TIME_TO_SOLUTION;
-        else if ((strcmp(my_policy,"MONITORING_ONLY")==0) || (strcmp(my_policy,"monitoring_only")==0)) return MONITORING_ONLY;
-    }
-	return EAR_ERROR;
-}
-
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
-{
-	policy_conf_t *my_policy=NULL;
-	uint i;
-	uint nump=0;
-    while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
-    if (nump<my_node->num_policies){
-        my_policy=&my_node->policies[nump];
-    }
-	return my_policy;
-}
-
-/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
-int policy_id_to_name(int policy_id,char *my_policy)
-{
-	int ret=EAR_SUCCESS;
-	switch(policy_id)
-    {
-        case MIN_ENERGY_TO_SOLUTION:
-            strcpy(my_policy,"MIN_ENERGY_TO_SOLUTION");
-        	break;
-        case MIN_TIME_TO_SOLUTION:
-            strcpy(my_policy,"MIN_TIME_TO_SOLUTION");
-        	break;
-        case MONITORING_ONLY:
-            strcpy(my_policy,"MONITORING_ONLY");
-        	break;
-		default: ret=EAR_ERROR;
-    }
-	return ret;
-
-}
 
 /** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/s
 ysconf/ear.conf */
@@ -226,5 +179,127 @@ int get_ear_conf_path(char *ear_conf_path)
         return EAR_SUCCESS;
     }
 	return EAR_ERROR;
+}
+
+/** CHECKING USER TYPE */
+/* returns true if the username, group and/or accounts is presents in the list of authorized users/groups/accounts */
+int is_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc)
+{
+	int i;
+	int found=0;
+	if (user!=NULL){
+		i=0;
+		while((i<my_conf->num_priv_users) && (!found)){
+			if (strcmp(user,my_conf->priv_users[i])==0) found=1;
+			else i++;
+		}
+	}
+	if (found)	return found;
+	if (group!=NULL){
+		i=0;
+		while((i<my_conf->num_priv_groups) && (!found)){
+			if (strcmp(group,my_conf->priv_groups[i])==0) found=1;
+			else i++;
+		}
+	}
+	if (found)	return found;
+	if (acc!=NULL){
+		i=0;
+		while((i<my_conf->num_acc) && (!found)){
+        	if (strcmp(acc,my_conf->priv_acc[i])==0) found=1;
+			else i++;
+    	}
+	}
+	return found;
+}
+
+/* returns true if the username, group and/or accounts can use the given energy_tag_t */
+energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t *my_tag)
+{
+	int i;
+    int found=0;
+    if (user!=NULL){
+		i=0;
+        while((i<my_tag->num_users) && (!found)){
+            if (strcmp(user,my_tag->users[i])==0) found=1;
+			else i++;
+        }
+    }
+    if (found)  return my_tag;
+    if (group!=NULL){
+		i=0;
+        while((i<my_tag->num_groups) && (!found)){
+            if (strcmp(group,my_tag->groups[i])==0) found=1;
+			else i++;
+        }
+    }
+    if (found)  return my_tag;
+    if (acc!=NULL){
+		i=0;
+        while((i<my_tag->num_accounts) && (!found)){
+            if (strcmp(acc,my_tag->accounts[i])==0) found=1;
+			else i++;
+        }
+    }
+	if (found) return my_tag;
+	return NULL;
+}
+
+/* returns  the energy tag entry if the username, group and/or accounts is in the list of the users/groups/acc authorized to use the given energy-tag, NULL otherwise */
+energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc,char *energy_tag)
+{
+	int i;
+	int found=0;
+	energy_tag_t *my_tag;
+	if (energy_tag==NULL) return NULL;
+	i=0;
+	while((i<my_conf->num_tags) && (!found)){
+		if (strcmp(energy_tag,my_conf->e_tags[i].tag)==0){
+			found=1;
+			my_tag=&my_conf->e_tags[i];	
+		}else i++;
+	}	
+	if (!found)	return NULL;
+	return can_use_energy_tag(user,group,acc,my_tag);
+}
+
+/** Returns true if the energy tag exists */
+energy_tag_t * energy_tag_exists(cluster_conf_t *my_conf,char *etag)
+{
+	int i;
+	int found=0;
+	if (etag==NULL)	return NULL;
+	i=0;
+	while ((i<my_conf->num_tags) && (!found)){
+		if (strcmp(etag,my_conf->e_tags[i].tag)==0)	found=1;
+		else i++;
+	}
+	if (found) return &my_conf->e_tags[i];
+	return NULL;
+}
+
+/** returns the user type: NORMAL, AUTHORIZED, ENERGY_TAG */
+uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *group, char *acc,energy_tag_t **my_tag)
+{
+	uint type=NORMAL;
+	energy_tag_t *is_tag;
+	int flag;
+	*my_tag=NULL;
+	fprintf(stderr,"Checking user %s group %s acc %s etag %s\n",user,group,acc,energy_tag);	
+	/* We first check if it is authorized user */
+	flag=is_privileged(my_conf,user,group,acc);
+	if (flag){
+		if (energy_tag!=NULL){
+			is_tag=energy_tag_exists(my_conf,energy_tag); 
+			if (is_tag!=NULL){ *my_tag=is_tag;return ENERGY_TAG;}
+			else return AUTHORIZED;
+		}else return AUTHORIZED;
+	}
+	/* It is an energy tag user ? */
+	is_tag=is_energy_tag_privileged(my_conf, user,group,acc,energy_tag);
+	if (is_tag!=NULL){ 
+		*my_tag=is_tag;
+		return ENERGY_TAG;
+	} else return NORMAL;
 }
 

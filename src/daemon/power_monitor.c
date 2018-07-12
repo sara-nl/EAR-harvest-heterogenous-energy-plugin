@@ -43,10 +43,12 @@
 #include <common/config.h>
 #include <control/frequency.h>
 #include <daemon/power_monitor.h>
+#include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <metrics/power_metrics/power_metrics.h>
 #if USE_EARDB
 #include <database_cache/eardbd_api.h>
+#include <daemon/eard_utils.h>
 #endif
 #include <common/types/periodic_metric.h>
 #include <common/types/application.h>
@@ -58,13 +60,17 @@
 #include <common/database/db_helper.h>
 #endif
 
+#define REPORT_UNCORE	0
+uint64_t uncore_freq[2]={0,0};
 #define MAX_PATH_SIZE 256
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
 extern my_node_conf_t     *my_node_conf;
 extern cluster_conf_t my_cluster_conf;
-extern policy_conf_t default_policy_context;
+extern eard_dyn_conf_t eard_dyn_conf;
+extern policy_conf_t default_policy_context,energy_tag_context,authorized_context;
 static char *__NAME__="powermon: ";
+extern char *__HOST__;
 
 unsigned int f_monitoring;
 extern ulong current_node_freq;
@@ -75,7 +81,8 @@ int idleNode=1;
 extern char nodename[MAX_PATH_SIZE];
 static int fd_powermon=-1;
 static int fd_periodic=-1;
-extern ear_conf_t *dyn_conf;
+extern settings_conf_t *dyn_conf;
+extern resched_t *resched_conf;
 static int sig_reported=0;
 
 typedef struct powermon_app{
@@ -110,7 +117,10 @@ static void PM_set_sigusr1()
 
 }
 
-
+void clean_job_environment()
+{
+	eard_verbose(0,"You must clean the environment");
+}
 
 void reset_current_app()
 {
@@ -207,6 +217,7 @@ void job_end_powermon_app()
 
 void report_powermon_app(powermon_app_t *app)
 {
+	int ret1;
 	// We can write here power information for this job
 	if (sig_reported==0){
 		app->app.is_mpi=0;
@@ -214,16 +225,76 @@ void report_powermon_app(powermon_app_t *app)
 	report_application_data(&app->app);
 	report_application_in_file(&app->app);
 	
-	#if !USE_EARDB
+	//#if !USE_EARDB
 	#if DB_MYSQL
     if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
 	#endif
-	#else
-    if (eardbd_send_application(&app->app)!=EAR_SUCCESS){
+	//#else
+    if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
         VERBOSE_N(0,"Error when sending application to eardb");
+		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
     }
-	#endif
+	//#endif
 }
+
+policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,application_t * appID)
+{
+	policy_conf_t * my_policy;
+	int p_id;
+	switch (user_type){
+	case NORMAL:
+        p_id=policy_name_to_id(appID->job.policy);
+        /* Use cluster conf function */
+        if (p_id!=EAR_ERROR){
+            my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
+			if (!my_policy->is_available){
+				VERBOSE_N(0,"User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
+				my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+			}
+        }else{
+			VERBOSE_N(0,"Invalid policy %s ",appID->job.policy);
+            my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+        }
+        if (my_policy==NULL){
+            VERBOSE_N(0,"Default policy configuration returns NULL,invalid policy, check ear.conf");
+            my_policy=&default_policy_context;
+        }
+		break;
+
+	case AUTHORIZED:
+		if (appID->is_learning){
+			authorized_context.policy=MONITORING_ONLY;
+			authorized_context.p_state=appID->job.def_f;
+			authorized_context.th=0;
+			my_policy=&authorized_context;
+		}else{
+			p_id=policy_name_to_id(appID->job.policy);
+			if (p_id!=EAR_ERROR){
+				authorized_context.policy=p_id;
+				authorized_context.p_state=appID->job.def_f;
+				authorized_context.th=appID->job.th;
+				my_policy=&authorized_context;
+			}else{
+				/* This should neve happen, just in case */
+				VERBOSE_N(0,"Error, authorized user is executing non-existing policy, using default");
+				my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+				if (my_policy==NULL){
+					VERBOSE_N(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf");
+	            	my_policy=&default_policy_context;
+				}
+			}
+		}
+		break;
+	case ENERGY_TAG:
+		energy_tag_context.policy=MONITORING_ONLY;
+		energy_tag_context.p_state=frequency_freq_to_pstate(my_tag->p_state);
+		energy_tag_context.th=0;
+		my_policy=&energy_tag_context;
+		break;
+	}
+	return my_policy;
+}
+
 
 /*
 *
@@ -270,13 +341,21 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
 	int p_id;
-	policy_conf_t *my_policy,learning_policy;
+	energy_tag_t *my_tag;
+	policy_conf_t *my_policy;
 	ulong f;
+	uint user_type;
 	VERBOSE_N(2,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
 	frequency_save_previous_frequency();
 	frequency_save_previous_policy();
 	frequency_set_userspace_governor_all_cpus();
-	// Checking the specific policy settings. It is pending to configure for special users
+	user_type=get_user_type(&my_cluster_conf,appID->job.energy_tag,appID->job.user_id,appID->job.group_id,appID->job.user_acc,&my_tag);
+	VERBOSE_N(0,"New job USER type is %u",user_type);
+	if (my_tag!=NULL) print_energy_tag(my_tag);
+	/* Given a user type, application, and energy_tag, my_policy is the cofiguration for this user and application */
+	my_policy=configure_context(user_type, my_tag, appID);
+	/* Checking the specific policy settings. It is pending to configure for special users */
+	#if 0
 	if (appID->is_learning){
 		if (frequency_is_valid_pstate(appID->job.def_f)){
 			learning_policy.p_state=appID->job.def_f;
@@ -291,7 +370,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 		}
 	}else{
 		p_id=policy_name_to_id(appID->job.policy);
-		// Use cluster conf function
+		/* Use cluster conf function */
 		if (p_id!=EAR_ERROR){
 			my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
 		}else{
@@ -302,6 +381,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 			my_policy=&default_policy_context;
 		}
 	}
+	#endif
 	VERBOSE_N(1,"Node configuration for policy %s p_state %d th %lf",appID->job.policy,my_policy->p_state,my_policy->th);
 	f=frequency_pstate_to_freq(my_policy->p_state);
 	dyn_conf->def_freq=f;
@@ -310,10 +390,10 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	current_node_freq=f;
 	appID->job.def_f=dyn_conf->def_freq;	
     while (pthread_mutex_trylock(&app_lock));
-        idleNode=0;
-        job_init_powermon_app(appID,from_mpi);
-		// We must report the energy beforesetting the job_id: PENDING
-		new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
+    idleNode=0;
+    job_init_powermon_app(appID,from_mpi);
+	/* We must report the energy beforesetting the job_id: PENDING */
+	new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
     pthread_mutex_unlock(&app_lock);
 	VERBOSE_N(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
 	sig_reported=0;
@@ -346,6 +426,7 @@ void powermon_end_job(job_id jid,job_id sid)
     frequency_recover_previous_policy();
     frequency_recover_previous_frequency();
 	current_node_freq=frequency_get_cpu_freq(0);	
+	clean_job_environment();
 
 }
 
@@ -362,6 +443,7 @@ void powermon_set_th(double th)
 	}else{
 		min_time_p->th=th;
 	}
+	save_eard_conf(&eard_dyn_conf);
 }
 
 void powermon_new_max_freq(ulong maxf)
@@ -376,7 +458,8 @@ void powermon_new_max_freq(ulong maxf)
 	}
 	ps=frequency_freq_to_pstate(maxf);
 	VERBOSE_N(1,"Max pstate set to %u freq=%lu",ps,maxf);
-	my_cluster_conf.eard.max_pstate=ps;
+	my_node_conf->max_pstate=ps;
+	save_eard_conf(&eard_dyn_conf);
 }
 
 void powermon_new_def_freq(ulong def)
@@ -395,7 +478,10 @@ void powermon_new_def_freq(ulong def)
 		VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[nump].policy,def);
 		my_node_conf->policies[nump].p_state=ps;
 	}
+	save_eard_conf(&eard_dyn_conf);
 }
+
+/** Reduces the current freq (default and max) based on new values. If application is not mpi, automatically chages the node freq if needed */
 
 void powermon_red_freq(ulong max_freq,ulong def_freq)
 {
@@ -410,19 +496,50 @@ void powermon_red_freq(ulong max_freq,ulong def_freq)
 			current_node_freq=def_freq;		
 		}
 	}
-	my_cluster_conf.eard.max_pstate=ps_max;
+	my_node_conf->max_pstate=ps_max;
     for (nump=0;nump<my_node_conf->num_policies;nump++){
         VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps_def,my_node_conf->policies[nump].policy,def_freq);
         my_node_conf->policies[nump].p_state=ps_def;
     }
+	save_eard_conf(&eard_dyn_conf);
 }
+
+/** Sets temporally the default and max frequency to the same value. When application is not mpi, automatically chages the node freq if needed */
+
+void powermon_set_freq(ulong freq)
+{
+    int nump;
+    uint ps;
+    ps=frequency_freq_to_pstate(freq);
+    if (current_ear_app.app.is_mpi==0){
+        if (freq!=current_node_freq){
+            VERBOSE_N(1,"SetFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,freq);
+            frequency_set_all_cpus(freq);
+            current_node_freq=freq;
+        }
+    }
+    my_node_conf->max_pstate=ps;
+    for (nump=0;nump<my_node_conf->num_policies;nump++){
+        VERBOSE_N(1,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[nump].policy,freq);
+        my_node_conf->policies[nump].p_state=ps;
+    }
+	save_eard_conf(&eard_dyn_conf);
+}
+
+/** Restores values from ear.conf (not reloads the file). When application is not mpi, automatically chages the node freq if needed */
+void powermon_restore_conf()
+{
+	save_eard_conf(&eard_dyn_conf);
+}
+
 
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 {
-	VERBOSE_N(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf\n",
+	int ret1;
+	VERBOSE_N(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%lu,%lu)\n",
 		current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,
-		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power);
+		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,uncore_freq[0],uncore_freq[1]);
 	
 	while (pthread_mutex_trylock(&app_lock));
 	
@@ -446,18 +563,19 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 
-	#if !USE_EARDB
+	//#if !USE_EARDB
 	#if DB_MYSQL
 	/* current sample reports the value of job_id and step_id active at this moment */
 	/* If we want to be strict, we must report intermediate samples at job start and job end */
     if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
 	#endif
 
-	#else
-	if (eardbd_send_periodic_metric(&current_sample)!=EAR_SUCCESS){
+	//#else
+	if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
 		VERBOSE_N(0,"Error when sending periodic power metric to eardb");
+		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
 	}
-	#endif
+	//#endif
 
 	return;
 }
@@ -522,7 +640,11 @@ void *eard_power_monitoring(void *frequency_monitoring)
 
 	PM_set_sigusr1();
 	form_database_paths();
-	
+
+	#if REPORT_UNCORE
+	state_t st= frequency_uncore_init(2, 24, 85);
+	VERBOSE_N(0,"frequency_uncore_init returns %d",st);	
+	#endif	
 
 	VERBOSE_N(2," power monitoring thread created\n");
 	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0," Error in init_power_ponitoring\n");
@@ -537,6 +659,9 @@ void *eard_power_monitoring(void *frequency_monitoring)
 	// Get time and Energy
 	read_enegy_data(&e_begin);
 	aperf_periodic_avg_frequency_init_all_cpus();
+	#if REPORT_UNCORE
+	frequency_uncore_counters_start();
+	#endif
 
 	/*
 	*	MAIN LOOP
@@ -551,6 +676,10 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		// Get time and Energy
 		read_enegy_data(&e_end);
 		avg_f=aperf_periodic_avg_frequency_end_all_cpus();
+		#if REPORT_UNCORE
+		frequency_uncore_counters_stop(uncore_freq);
+		frequency_uncore_counters_start();
+		#endif
 		
 		// Compute the power
 		compute_power(&e_begin,&e_end,&my_current_power);
@@ -564,6 +693,10 @@ void *eard_power_monitoring(void *frequency_monitoring)
 		
 		t_begin=t_end;
 	}
+	#if REPORT_UNCORE
+	st = frequency_uncore_dispose();
+	VERBOSE_N(0,"frequency_uncore_dispose returns %d",st);	
+	#endif
 
 
 	pthread_exit(0);

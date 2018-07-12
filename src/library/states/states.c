@@ -50,6 +50,7 @@
 #include <common/math_operations.h>
 
 static const char *__NAME__ = "ear/states";
+static const char *__HOST__ ;
 
 // static defines
 #define NO_PERIOD				0
@@ -92,6 +93,8 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	char *verbose, *loop_time, *who;
 	ulong	architecture_min_perf_accuracy_time;
+    __HOST__=node_name;
+
 
 	init_application(&last_signature);
 	if (my_id) return;
@@ -146,7 +149,37 @@ void states_end_period(uint iterations)
 	policy_end_loop();
 }
 
+static void check_dynais_on(signature_t *A, signature_t *B)
+{
+	if (!equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH*2) || !equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH*2)){
+		dynais_enabled=DYNAIS_ENABLED;
+		earl_verbose(1,"Dynais ON \n");
+	}
+}
 
+static check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
+{
+	ulong dynais_overhead_usec=0;
+    double dynais_overhead_perc;
+
+    dynais_overhead_usec=mpi_calls_iter;
+    dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.signature.time;
+    if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
+    // Disable dynais : API is still pending
+    	#if DYNAIS_CUTOFF
+    	dynais_enabled=DYNAIS_DISABLED;
+    	#endif
+    	earl_verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
+    	log_report_dynais_off(application.job.id,application.job.step_id);
+    }
+    earl_verbose(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+    loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
+    last_first_event=event;
+    last_calls_in_loop=mpi_calls_iter;
+    last_loop_size=period;
+    last_loop_level=level;
+    
+}
 static int policy_had_effect(signature_t *A, signature_t *B)
 {
 	if (equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH) &&
@@ -161,7 +194,7 @@ static void print_loop_signature(char *title, signature_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000000.0;
 
-	VERBOSE_N(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+	earl_verbose(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
@@ -182,18 +215,16 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
 	unsigned long prev_f;
 	int result;
-	ulong dynais_overhead_usec=0;
-	double dynais_overhead_perc;
 
 	prev_f = ear_frequency;
 
 	if (system_conf!=NULL){
-	if (system_conf->force_rescheduling){
+	if (resched_conf->force_rescheduling){
 		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
 
 		// We set the default number of iterations to the default for this loop
 		perf_count_period=loop_perf_count_period;
-		system_conf->force_rescheduling=0;
+		resched_conf->force_rescheduling=0;
 		// If the loop was already evaluated, we force the rescheduling
 		if (EAR_STATE==SIGNATURE_STABLE){ 
 			ear_verbose(0,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
@@ -309,29 +340,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					loop_with_signature = 1;
 					#if EAR_OVERHEAD_CONTROL
 					check_periodic_mode=0;
-					VERBOSE_N(2,"Switching check periodic mode to %d\n",check_periodic_mode);
+					earl_verbose(2,"Switching check periodic mode to %d\n",check_periodic_mode);
 					#endif
 
 					// Computing dynais overhead
 					// Change dynais_enabled to ear_tracing_status=DYNAIS_ON/DYNAIS_OFF
 					if (dynais_enabled==DYNAIS_ENABLED){
-						dynais_overhead_usec=mpi_calls_iter;
-						dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.signature.time;
-						if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
-							// Disable dynais : API is still pending
-							#if DYNAIS_CUTOFF
-							dynais_enabled=DYNAIS_DISABLED;
-							#endif
-							VERBOSE_N(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
-							log_report_dynais_off(application.job.id,application.job.step_id);
-						}
-						VERBOSE_N(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
-						loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);	
-						last_first_event=event;
-						last_calls_in_loop=mpi_calls_iter;
-						last_loop_size=period;
-						last_loop_level=level;
-					//end dynais overhead
+						check_dynais_off(mpi_calls_iter,period,level,event);
+
 					}
 					current_loop_id = event;
 
@@ -467,8 +483,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 							policy_new_loop();
                             #if DYNAIS_CUTOFF
-							 ear_verbose(1,"Dynais ON \n");
-                             dynais_enabled=DYNAIS_ENABLED;
+							 check_dynais_on(&loop_signature.signature, &last_signature.signature);
                             #endif
 						} else {
 							EAR_STATE = EVALUATING_SIGNATURE;

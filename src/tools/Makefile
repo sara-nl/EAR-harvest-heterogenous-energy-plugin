@@ -8,23 +8,31 @@ COMMON_OBJS = $(ROOTDIR)/src/common/string_enhanced.o \
 
 BINARIES = compute_coefficients \
            compute_coefficients_remote \
-           coefficients_quality_control
+           coefficients_quality_control \
+		   compute_coefficients_v3 \
+		   get_app_list
 
 ######## RULES
 
 all: $(BINARIES)
 
 compute_coefficients: compute_coefficients.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) -o compute_coefficients compute_coefficients.c $(LDFLAGS) $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o compute_coefficients compute_coefficients.c $(LDFLAGS) $(COMMON_OBJS)
+
+compute_coefficients_v3: compute_coefficients_v3.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o compute_coefficients_v3 compute_coefficients_v3.c $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS)  $(COMMON_OBJS) 
 
 compute_coefficients_remote: compute_coefficients_remote.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) -o compute_coefficients_remote compute_coefficients_remote.c $(LDFLAGS) $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o compute_coefficients_remote compute_coefficients_remote.c $(LDFLAGS) $(COMMON_OBJS)
 
 coefficients_quality_control: coefficients_quality_control.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) -o coefficients_quality_control coefficients_quality_control.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o coefficients_quality_control coefficients_quality_control.c $(COMMON_OBJS)
 
 traces_to_paraver: traces_to_paraver.cpp
-	$(CC) $(CFLAGS) -o traces_to_paraver traces_to_paraver.cpp
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o traces_to_paraver traces_to_paraver.cpp
+
+get_app_list: get_app_list.c $(ROOTDIR)/src/common/types.a 
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o get_app_list get_app_list.c $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(ROOTDIR)/src/common/types.a
 
 ######## OPTIONS
 

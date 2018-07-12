@@ -1,4 +1,4 @@
-CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS) $(CPUF_CFLAGS)
+CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS) $(CPUF_CFLAGS) -O0
 LDFLAGS = $(CPUF_LDFLAGS)
 
 ######## FILES
@@ -17,7 +17,7 @@ plugin_SOURCES = slurm_plugin.c \
 all: earplug.so
 
 earplug.so: $(plugin_SOURCES) slurm_plugin.h slurm_plugin_helper.h
-	$(CC) $(CFLAGS) -shared -o earplug.so $(plugin_SOURCES) $(plugin_OBJS) $(LDFLAGS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared -o earplug.so $(plugin_SOURCES) $(plugin_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 

@@ -72,7 +72,16 @@ void powermon_new_max_freq(ulong maxf);
 /** if application is not mpi, automatically chages the node freq, it is called by dynamic_configuration API */
 void powermon_new_def_freq(ulong def);
 
-/** Reduces the current freq based on new values. If application is not mpi, automatically chages the node freq if needed */
+/** Reduces, temporally, the current freq (default and max) based on new values. If application is not mpi, automatically chages the node freq if needed */
 void powermon_red_freq(ulong max_freq,ulong def_freq);
+
+/** Sets temporally the default and max frequency to the same value. When application is not mpi, automatically chages the node freq if needed */
+void powermon_set_freq(ulong freq);
+
+/** Restores values from ear.conf (not reloads the file). When application is not mpi, automatically chages the node freq if needed */
+void powermon_restore_conf();
+
+/** Sets temporally the policy th */
+void powermon_set_th(double th);
 
 #endif

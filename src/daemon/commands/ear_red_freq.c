@@ -50,6 +50,6 @@ void main(int argc,char *argv[])
 	}
 	fprintf(stdout,"Reducing the frequency in all the nodes by %u p_states\n",p_states);
 
-	if (!eards_red_max_freq(p_states)) fprintf(stderr,"ear_red_freq error sending eards_red_freq command\n");
+	if (!eards_red_max_and_def_freq(p_states)) fprintf(stderr,"ear_red_freq error sending eards_red_freq command\n");
 	eards_remote_disconnect();
 }

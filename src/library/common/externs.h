@@ -39,7 +39,12 @@
 extern loop_t loop;
 extern application_t loop_signature;
 extern application_t application;
-extern ear_conf_t *system_conf;
+extern settings_conf_t *system_conf;
+extern resched_t *resched_conf;
+extern char system_conf_path[PATH_MAX];
+extern char resched_conf_path[PATH_MAX];
+extern char node_name[PATH_MAX];
+
 
 extern char loop_summary_path[PATH_MAX];
 extern char app_summary_path[PATH_MAX];

@@ -44,7 +44,7 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 {
 	int i;
 	if (my_node_conf!=NULL){
-		fprintf(stderr,"My node: cpus %u island %u ip %s ",my_node_conf->cpus,my_node_conf->island,my_node_conf->db_ip);
+		fprintf(stderr,"My node: cpus %u max_pstate %lu island %u ip %s ",my_node_conf->cpus,my_node_conf->max_pstate,my_node_conf->island,my_node_conf->db_ip);
 		if (my_node_conf->coef_file!=NULL){
 			fprintf(stderr,"coeffs %s \n",my_node_conf->coef_file);
 		}
@@ -57,18 +57,6 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 void print_policy_conf(policy_conf_t *p)
 {
 	fprintf(stderr,"---> policy %u th %.2lf p_state %u\n",p->policy,p->th,p->p_state);
-}
-
-static void print_special_app(special_app_t *app)
-{
-	fprintf(stderr, "--->user: %s\tpstate: %u\n",
-			app->user, app->p_state);
-}
-
-static void print_energy_tag(energy_tag_t *tag)
-{
-	fprintf(stderr, "---->tag: %s\tpstate: %u\n",
-			tag->tag, tag->p_state);
 }
 
 static void print_eard_conf(eard_conf_t *conf)
@@ -87,8 +75,8 @@ static void print_eargm_conf(eargm_conf_t *conf)
 
 static void print_db_manager(eardb_conf_t *conf)
 {
-	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tUDP port: %u\n",
-			conf->aggr_time, conf->tcp_port, conf->udp_port);
+	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tUDP port: %u\tCacheSize: %u\n",
+			conf->aggr_time, conf->tcp_port, conf->udp_port, conf->mem_size);
 }
 
 static void print_database_conf(db_conf_t *conf)
@@ -99,18 +87,46 @@ static void print_database_conf(db_conf_t *conf)
 
 static void print_islands_conf(node_island_t *conf)
 {
-	fprintf(stderr, "--->id: %u\tip: %s\n", conf->id, conf->db_ip);
+	fprintf(stderr, "--->id: %u\n", conf->id);
 	int i;
 	for (i = 0; i < conf->num_ranges; i++)
 	{
-		fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\n", conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end);
+       
+        if (conf->ranges[i].sec_ip < 0)
+		    fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\tip: %s\n",
+                conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end, conf->db_ips[conf->ranges[i].db_ip]);
+    
+        else
+		    fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\tip: %s\tbackup: %s\n",
+                conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end, conf->db_ips[conf->ranges[i].db_ip], conf->backup_ips[conf->ranges[i].sec_ip]);
 	}
+}
+
+void print_energy_tag(energy_tag_t *etag)
+{
+	fprintf(stderr, "--> Tag: %s\t P_STATE: %u\n", etag->tag, etag->p_state);
+	int i;
+	for (i = 0; i < etag->num_users; i++)
+		fprintf(stderr, "---> user: %s\n", etag->users[i]);
+
+	for (i = 0; i < etag->num_accounts; i++)
+		fprintf(stderr, "---> accounts: %s\n", etag->accounts[i]);
+	
+	for (i = 0; i < etag->num_groups; i++)
+		fprintf(stderr, "---> group: %s\n", etag->groups[i]);
+
+}
+
+static void print_earlib_conf(earlib_conf_t *conf)
+{
+    fprintf(stderr, "-->Coefficients path: %s\n-->DynAIS levels: %u\n-->DynAIS window size: %u\n",
+            conf->coefficients_pathname, conf->dynais_levels, conf->dynais_window);
 }
 
 void print_cluster_conf(cluster_conf_t *conf)
 {
-	fprintf(stderr, "\nDIRECTORIES\n--->DB_pathname: %s\n--->Coefficients_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n",
-			conf->DB_pathname, conf->Coefficients_pathname, conf->tmp_dir, conf->etc_dir);
+	fprintf(stderr, "\nDIRECTORIES\n--->DB_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n",
+			conf->DB_pathname, conf->tmp_dir, conf->etc_dir);
 	fprintf(stderr, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %u\n--->Min_time_perf_acc: %u\n",
 			conf->verbose, conf->default_policy, conf->min_time_perf_acc);
 	int i;
@@ -120,14 +136,12 @@ void print_cluster_conf(cluster_conf_t *conf)
 	fprintf(stderr, "\nPRIVILEGED USERS\n");
 	for (i = 0; i < conf->num_priv_users; i++)
 		fprintf(stderr, "--->user: %s\n", conf->priv_users[i]);
+	fprintf(stderr, "\nPRIVILEGED GROUPS\n");
+	for (i = 0; i < conf->num_priv_groups; i++)
+		fprintf(stderr, "--->groups: %s\n", conf->priv_groups[i]);
 	fprintf(stderr, "\nPRIVILEGED ACCOUNTS\n");
 	for (i = 0; i < conf->num_acc; i++)
 		fprintf(stderr, "--->acc: %s\n", conf->priv_acc[i]);
-	fprintf(stderr, "\nSPECIAL APPLICATIONS\n");
-	for (i = 0; i < conf->num_special; i++)
-		print_special_app(&conf->special[i]);
-	for (i = 0; i < conf->num_tags; i++)
-		print_energy_tag(&conf->e_tags[i]);
 	fprintf(stderr, "\nNODE CONFIGURATIONS\n");
 	for (i = 0; i < conf->num_nodes; i++)
 		print_node_conf(&conf->nodes[i]);
@@ -142,5 +156,13 @@ void print_cluster_conf(cluster_conf_t *conf)
 	fprintf(stderr, "\nISLES\n");
 	for (i = 0; i < conf->num_islands; i++)
 		print_islands_conf(&conf->islands[i]);
+	
+	fprintf(stderr, "\nENERGY TAGS\n");
+	for (i = 0; i < conf->num_tags; i++)
+		print_energy_tag(&conf->e_tags[i]);
+
+    fprintf(stderr, "\nLIBRARY CONF\n");
+    print_earlib_conf(&conf->earlib);
+
 	fprintf(stderr, "\n");
 }
