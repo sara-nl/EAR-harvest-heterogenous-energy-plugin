@@ -12,7 +12,7 @@ endif
 all: $(OBJS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c  $<
+	$(CC) $(CFLAGS) -c $<
 
 ######## OPTIONS
 

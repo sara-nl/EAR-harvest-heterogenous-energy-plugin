@@ -10,13 +10,19 @@ BINARIES = bandwith_monitor \
            energy_updates_freq \
 		   ear_conf \
 		   my_node_conf \
-		   configuration_check
+		   configuration_check \
+		   batch_insert
 # ear_pm
 # test_architecture
 
 ######## RULES
 
 all: $(BINARIES)
+
+batch_insert: batch_insert.c \
+	$(SRCDIR)/common/types.a \
+	$(SRCDIR)/common/database.a
+	$(CC) $(CC_FLAGS) $(DB_LDFLAGS) $(CFLAGS) -o batch_insert $^ $(SRCDIR)/common/types.a $(SRCDIR)/common/database.a
 
 configuration_check: configuration_check.c $(SRCDIR)/common/types.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o configuration_check $^ $(SRCDIR)/common/types.a
