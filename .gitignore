@@ -37,6 +37,7 @@ etc/systemd/eargmd.service
 src/common/config.h
 tests/check/check.sh
 *coefficients_to_csv
+*coefficients_v2_to_v3
 
 *libear.so
 *libeart.so

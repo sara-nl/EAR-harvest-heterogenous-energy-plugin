@@ -40,7 +40,7 @@
 
 #define PERMISSION S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
-int read_coefficients_file_v3(char *path, coefficient_t *coeffs, int size)
+int read_coefficients_file_v3(char *path, coefficient_v3_t *coeffs, int size)
 {   
     int ret, fd;
     
@@ -55,7 +55,7 @@ int read_coefficients_file_v3(char *path, coefficient_t *coeffs, int size)
     }
     close(fd);
     
-    return (size / sizeof(coefficient_t));
+    return (size / sizeof(coefficient_v3_t));
 }
 
 
@@ -115,4 +115,11 @@ void print_coefficient(coefficient_t *coeff)
 	fprintf(stderr,"pstate %lu avail %u A %lf B %lf C %lf D %lf E %lf F %lf\n",
 	coeff->pstate,coeff->available,coeff->A,coeff->B,coeff->C,coeff->D,coeff->E,coeff->F);
 }
+
+void print_coefficient_v3(coefficient_v3_t *coeff)
+{
+    fprintf(stderr,"ref %lu pstate %lu avail %u A %lf B %lf C %lf D %lf E %lf F %lf\n",
+    coeff->pstate_ref,coeff->pstate,coeff->available,coeff->A,coeff->B,coeff->C,coeff->D,coeff->E,coeff->F);
+}
+
 

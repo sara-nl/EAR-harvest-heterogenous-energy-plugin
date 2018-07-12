@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <math.h>
 
 #include <linux/limits.h>
 #include <common/types/coefficient.h>
@@ -43,7 +44,7 @@ int strlst(const char *string, char c)
 }
 
 
-void read_file(const char *path, char *node,int wfd,ulong ref)
+void read_file_v2(const char *path, char *node,int wfd,ulong ref)
 {
     coefficient_t *coeffs;
 	int size;
@@ -79,6 +80,44 @@ void read_file(const char *path, char *node,int wfd,ulong ref)
     close(rfd);
 }
 
+void read_file_v3(char *path,char * node,int wfd)
+{
+    coefficient_v3_t *coeffs;
+    int size;
+    int pstates,ncoeffs;
+    char buffer[256];
+
+    int rfd = open(path, O_RDONLY);
+    if (rfd<0){
+        printf("Error opening file %s\n",strerror(errno));
+        return;
+    }   
+    /* Size */
+    size=lseek(rfd,0,SEEK_END);
+	printf("File size %d\n",size);
+    lseek(rfd,0,SEEK_SET);
+	ncoeffs=size/sizeof(coefficient_v3_t);
+    printf("%d ncoeffs found in %s\n",ncoeffs,path);
+    
+    coeffs = (coefficient_v3_t *) malloc(size);
+    
+
+    if (read(rfd, coeffs, size)!=size){
+        printf("Error reading coefficients (%s)\n",strerror(errno));
+    }   
+	int i;
+	for (i=0;i<ncoeffs;i++){
+        print_coefficient_v3(&coeffs[i]);
+        dprintf(wfd,"%s;%lu;%lu;%u;%lf;%lf;%lf;%lf;%lf;%lf\n",
+        node,coeffs[i].pstate_ref,coeffs[i].pstate,coeffs[i].available,coeffs[i].A,coeffs[i].B,coeffs[i].C,coeffs[i].D,coeffs[i].E,coeffs[i].F);
+
+	}
+
+    close(rfd);
+
+}
+
+
 int main(int argc, char *argv[])
 {
     struct dirent *directory = NULL;
@@ -95,10 +134,11 @@ int main(int argc, char *argv[])
 	ulong max_freq,min_freq;
 
     if (!((argc == 6 ) || (argc == 7))){ 
-        printf("Usage: coefficients_to_csv version=2,3 path nodename max_freq min_freq [island_number]\n");
+        printf("Usage: %s version=2,3 path nodename max_freq min_freq [island_number]\n",argv[0]);
 		printf("\t Version is EAR version: 2 or 3\n");
         printf("\t- path: the coefficients path (root for v2, folder for v3)\n");
         printf("\tnodename is short version of hostname\n");
+		printf("\tmax_freq min_freq are range of freqs to be considered, 0 for v3 coeffs\n");
 		printf("\t island_number is only mandatory for v3 version\n");
 		printf("\t coefficients are reported both in stdout and csv file \n");
         exit(1);
@@ -135,17 +175,27 @@ int main(int argc, char *argv[])
             sprintf(rfile_path, "%s%s.%lu", dir_path, nodename,cfreq);
             if (is_regular_file(rfile_path)) {
 				printf("Processing %s file\n",rfile_path);
-                read_file(rfile_path, nodename,wfd,cfreq);
+                read_file_v2(rfile_path, nodename,wfd,cfreq);
             }else{
 				printf("%s not a regular file, ignoring it\n",rfile_path);
 			}
         }
 
-        close(wfd);
         printf("Reading completed, saved csv '%s'\n", wfile_path);
 	}else{
-		printf("V3 not supported yet\n");
+        dprintf(wfd, "nodename;F_ref;F_n;AVAIL;A;B;C;D;E;F\n");
+		ulong cfreq;
+        sprintf(rfile_path, "%s/island%d/coeffs.%s", dir_path,island, nodename);
+        if (is_regular_file(rfile_path)) {
+			printf("Processing %s file\n",rfile_path);
+           read_file_v3(rfile_path, nodename,wfd);
+        }else{
+			printf("%s not a regular file, ignoring it\n",rfile_path);
+		}
+
+        printf("Reading completed, saved csv '%s'\n", wfile_path);
 	}
+    close(wfd);
 
     return 0;
 }
