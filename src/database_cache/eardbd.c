@@ -206,7 +206,7 @@ static void db_store_applications_mpi(application_t *apps, uint n_apps)
 
 	verbose("Trying to insert in DB %d mpi application samples", n_apps);
 	//db_batch_insert_applications(apps, n_apps);
-	db_insert_application(apps);
+	//db_insert_application(apps);
 }
 
 static void db_store_applications(application_t *apps, uint n_apps)
@@ -217,7 +217,7 @@ static void db_store_applications(application_t *apps, uint n_apps)
 
 	verbose("Trying to insert in DB %d non-mpi application samples", n_apps);
 	//db_batch_insert_applications_no_mpi(apps, n_apps);
-	db_insert_application(apps);
+	//db_insert_application(apps);
 }
 
 /*
@@ -263,7 +263,8 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 	if (size == sizeof(application_t))
 	{
 		application_t *app = (application_t *) buffer;
-		report_application_data(app);
+		//report_application_data(app);
+		//fprintf(stderr, "application job id %u from node %s\n", app->job.id, app->node_id);
 
 		if (app->is_learning)
 		{
@@ -338,7 +339,7 @@ static void process_incoming_data(int fd, char *buffer, size_t size)
 		type = "unknown";
 	}
 
-	verbose("received an object type '%s' from the socket %d", type, fd);
+	verbose("received an object type '%s' and size '%lu' from the socket %d", type, size, fd);
 }
 
 /*
@@ -369,7 +370,6 @@ static ssize_t _receive(int fd)
 {
 	ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
 
-	// Handle data from a client
 	if (bytes <= 0)
 	{
 		if (bytes == 0) {
