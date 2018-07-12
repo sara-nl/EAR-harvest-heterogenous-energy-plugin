@@ -143,7 +143,7 @@ static void db_store_applications(application_t *apps, uint n_apps)
 
 static size_t extract_packet_size(char *buffer)
 {
-	packet_header_t *header = buffer;
+	packet_header_t *header;
 	header = P_HEADER(buffer);
 
 	return sizeof(packet_header_t) + header->content_size;
@@ -238,7 +238,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		mets_i += 1;
 
 		if (mets_i == mets_len) {
-			db_store_periodic_metrics();
+			db_store_periodic_metrics(mets, mets_i);
 			mets_i = 0;
 		}
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
@@ -248,7 +248,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		eves_i += 1;
 
 		if (eves_i == eves_len) {
-			db_store_events();
+			db_store_events(eves, eves_i);
 			eves_i = 0;
 		}
 	} else if (header->content_type == CONTENT_TYPE_LOO) {
@@ -258,7 +258,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		lops_i += 1;
 
 		if (lops_i == eves_len) {
-			db_store_loops();
+			db_store_loops(lops, lops_i);
 			lops_i = 0;
 		}
 	} else {
