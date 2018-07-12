@@ -13,10 +13,10 @@ BINARIES = eardbd
 
 all: $(OBJS) $(BINARIES)
 
-eardbd_api.o:
+eardbd_api.o: eardbd_api.c eardbd_api.h
 	$(CC) $(CFLAGS) -c eardbd_api.c
 
-eardbd:
+eardbd: eardbd.c eardbd.h
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eardbd eardbd.c $(DB_LDFLAGS) $(eardbd_OBJS)
 
 client_api_test: eardbd_api.o

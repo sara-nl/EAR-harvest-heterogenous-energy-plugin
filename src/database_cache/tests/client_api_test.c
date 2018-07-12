@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 
 #include <database_cache/eardbd.h>
@@ -26,6 +27,8 @@ int main(int argc, char **argv)
 {
 	periodic_metric_t met;
 	application_t app;
+	int job_id = 0;
+	state_t s;
 
 	usage(argc, argv);
 
@@ -34,11 +37,19 @@ int main(int argc, char **argv)
 	memset(&met, 0, sizeof (periodic_metric_t));
 
 	app.is_mpi = 1;
-	sprintf(app.node_id, "cae2306");
+	gethostname(app.node_id, 128);
 
 	// Testing API
-	eardbd_connect(argv[1], 4712, UDP);
-	eardbd_send_application(&app);
+	eardbd_connect(argv[1], 4711, TCP);
+	
+	while(1) {
+		s = eardbd_send_application(&app);
+		printf("SEND RETURNED %d\n", s);
+		sleep(4);
+		job_id += 1;
+		app.job.id = job_id;
+	}
+
 	eardbd_disconnect();
 
 	return 0;
