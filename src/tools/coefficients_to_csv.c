@@ -15,6 +15,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
+
 #include <linux/limits.h>
 #include <common/types/coefficient.h>
 
@@ -40,57 +42,39 @@ int strlst(const char *string, char c)
     return last_i;
 }
 
-int strpcmp(const char *string1, const char *string2)
-{
-    int i = 0;
 
-    while (string1[i] != '\0' && string2[i] != '\0')
-    {
-        if (string1[i] != string2[i]) {
-            return -1;
-        }
-        i++;
-    }
-
-    return 0;
-}
-
-void read_file(const char *path, char *nodename,int wfd)
+void read_file(const char *path, char *node,int wfd,ulong ref)
 {
     coefficient_t *coeffs;
 	int size;
 	int pstates;
+	char buffer[256];
 
     int rfd = open(path, O_RDONLY);
 	if (rfd<0){
-		printf("Error opening file %s\n",strerrno(errno));
+		printf("Error opening file %s\n",strerror(errno));
 		return;
 	}
 	/* Size */
 	size=lseek(rfd,0,SEEK_END);
 	lseek(rfd,0,SEEK_SET);
 	pstates=size/sizeof(coefficient_t);
+
+	printf("%d pstates found in %s\n",pstates,path);
 		
     coeffs = (coefficient_t *) malloc(size);
     
 
-    while((length = read(rfd, coeffs, size)) == size)
-    {
-
-	if (coeffs->pstate > 0)
-        {
-            printf("%s;%s;%lu;%u;%f;%f;%f;%f;%f;%f\n",
-               &cp_name[i_node], &cp_name[i_freq],
-               coeffs->pstate, coeffs->available,
-               coeffs->A, coeffs->B, coeffs->C,
-               coeffs->D, coeffs->E, coeffs->F);
-            dprintf(wfd, "%s;%s;%lu;%u;%f;%f;%f;%f;%f;%f\n",
-               &cp_name[i_node], &cp_name[i_freq],
-               coeffs->pstate, coeffs->available,
-               coeffs->A, coeffs->B, coeffs->C,
-               coeffs->D, coeffs->E, coeffs->F);
-        }
-    }
+	if (read(rfd, coeffs, size)!=size){
+		printf("Error reading coefficients (%s)\n",strerror(errno));
+	}
+	int i;
+	for ( i=0;i<pstates;i++){
+		print_coefficient(&coeffs[i]);
+		dprintf(wfd,"%s;%lu;%lu;%u;%lf;%lf;%lf;%lf;%lf;%lf\n",
+		node,ref,coeffs[i].pstate,coeffs[i].available,coeffs[i].A,coeffs[i].B,coeffs[i].C,coeffs[i].D,coeffs[i].E,coeffs[i].F);
+		
+	}
 
     close(rfd);
 }
@@ -126,7 +110,7 @@ int main(int argc, char *argv[])
 	min_freq=(ulong)atol(argv[5]);
 	if (argc==7) island=atoi(argv[6]);
 	
-	printf("Converting coefficients from % node %s from %lu to %lu freqs ", dir_path,nodename,max_freq,min_freq);
+	printf("Converting coefficients from %s node %s from %lu to %lu freqs ", dir_path,nodename,max_freq,min_freq);
 	if (version==2)
 	{
 		printf("\n");
@@ -137,22 +121,21 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 	/* The program reports coefficients in stdout and csv file */
-    sprintf(wfile_path, "%s/coefficients_list.csv", dir_path); 
+    sprintf(wfile_path, "./coefficients_list.csv"); 
 	wfd = open(wfile_path, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     if (wfd < 0) {
     	printf("Error opening coefficients list file %s (%s)\n", wfile_path,strerror(errno));
     }
    	if (version==2){ 
 
-        printf("Reading files in '%s' with suffix '%s'\n", dir_path, &dir_path[i_root]);       
         dprintf(wfd, "nodename;F_ref;F_n;AVAIL;A;B;C;D;E;F\n");
 		ulong cfreq;
-		for (cfreq=min_freq;cfreq<=max_freq;cfreq+=100000){
+		for (cfreq=min_freq;cfreq<=max_freq;cfreq+=100000)
         {
-            sprintf(rfile_path, "%s.%s.%lu", dir_path, nodename,cfreq);
+            sprintf(rfile_path, "%s%s.%lu", dir_path, nodename,cfreq);
             if (is_regular_file(rfile_path)) {
-				printf("Processing % file\n",rfile_path);
-                read_file(rfile_path, wfd);
+				printf("Processing %s file\n",rfile_path);
+                read_file(rfile_path, nodename,wfd,cfreq);
             }else{
 				printf("%s not a regular file, ignoring it\n",rfile_path);
 			}
@@ -160,13 +143,8 @@ int main(int argc, char *argv[])
 
         close(wfd);
         printf("Reading completed, saved csv '%s'\n", wfile_path);
-    }
-    else
-    {
-        printf("Error: the path doesn't exists\n");
-        exit(1);
-    }
 	}else{
+		printf("V3 not supported yet\n");
 	}
 
     return 0;

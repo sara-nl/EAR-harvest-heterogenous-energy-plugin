@@ -24,6 +24,8 @@ DB_Learning_phase/
 sim_metrics.csv
 tmp/*
 slurm-*.out
+coefficients_list.csv
+
 
 # Build
 etc/module/ear
@@ -34,6 +36,7 @@ etc/systemd/eardbd.service
 etc/systemd/eargmd.service
 src/common/config.h
 tests/check/check.sh
+*coefficients_to_csv
 
 *libear.so
 *libeart.so
