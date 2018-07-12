@@ -53,7 +53,8 @@ static int is_connected(socket_t *socket)
 {
 	int connected = 0;
 	connected |= socket->fd >= 0 && socket->protocol == TCP;
-	connected |= socket->fd
+	//connected |= socket->fd
+	return 0;
 }
 
 static state_t _packet_send(char *buffer, void *object, ulong size, uint type)

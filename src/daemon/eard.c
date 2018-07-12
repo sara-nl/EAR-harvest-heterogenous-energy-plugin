@@ -34,36 +34,35 @@
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
+#include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/select.h>
 #include <linux/limits.h>
-#include <pthread.h>
-
-#include <common/config.h>
 #include <control/frequency.h>
-#include <metrics/ipmi/energy_node.h>
-#include <metrics/custom/bandwidth.h>
-#include <metrics/custom/hardware_info.h>
-#include <metrics/papi/energy_cpu.h>
-#include <common/types/generic.h>
+#include <common/states.h>
+#include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/log.h>
 #include <common/types/loop.h>
-#include <common/types/services.h>
-#include <common/environment.h>
 #include <common/ear_verbose.h>
-#include <common/states.h>
-#include <daemon/eard_conf_api.h>
-
+#include <common/environment.h>
+#include <common/types/generic.h>
+#include <common/types/services.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <metrics/papi/energy_cpu.h>
+#include <metrics/custom/bandwidth.h>
+#include <metrics/ipmi/energy_node.h>
+#include <metrics/custom/hardware_info.h>
+#include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
-#include <daemon/dynamic_configuration.h>
 #include <daemon/shared_configuration.h>
+#include <daemon/dynamic_configuration.h>
+#include <database_cache/sockets.h>
+
 #if USE_EARDB
 #include <database_cache/eardbd_api.h>
 #endif
-
 
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
@@ -1048,7 +1047,7 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
-    if (eardbd_connect(my_node_conf->db_ip, my_cluster_conf.db_manager.udp_port, UDP)!=EAR_SUCCESS){
+    if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.udp_port, UDP)!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif

@@ -9,13 +9,16 @@ eard_OBJS += power_monitor.o \
              shared_configuration.o \
              eard_server_api.o \
              eard_api.o
+
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database.a
 endif
+
 eard_OBJS += $(SRCDIR)/common/types.a \
              $(SRCDIR)/common/environment_common.o \
              $(SRCDIR)/control/frequency.o \
              $(SRCDIR)/metrics/libmetrics.a \
+             $(SRCDIR)/database_cache/sockets.o \
              $(SRCDIR)/database_cache/eardbd_api.o
 
 BINARIES = eard_api.o \

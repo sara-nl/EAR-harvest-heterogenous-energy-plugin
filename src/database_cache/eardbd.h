@@ -70,9 +70,10 @@
 
 /* Types */
 typedef struct packet_header {
+	size_t content_size;
+	uchar  content_type;
+	uchar  mirroring;
 	time_t timestamp;
-	uchar content_type;
-	uchar mirroring;
 } packet_header_t;
 
 //char sender_hostname[SIZE_NAME];
