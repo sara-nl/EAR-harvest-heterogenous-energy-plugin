@@ -40,15 +40,15 @@
 static char buffer_pck[MAX_PACKET_SIZE()];
 static char buffer_gen[PATH_MAX];
 
-//#define lops_len 128 * 512
-//#define mets_len 32 * 512
-//#define eves_len 32 * 512
-//#define apps_len 32 * 512
+#define lops_len 128 * 512
+#define mets_len 32 * 512
+#define eves_len 32 * 512
+#define apps_len 32 * 512
 
-#define lops_len 1
-#define mets_len 2
-#define eves_len 2
-#define apps_len 1
+//#define lops_len 1
+//#define mets_len 2
+//#define eves_len 2
+//#define apps_len 1
 
 static periodic_aggregation_t aggr;
 static application_t apps_mpi[apps_len];
@@ -91,8 +91,8 @@ static void db_store_loops(loop_t *lops, uint n_lops)
 	}
 
 	verbose("Trying to insert in DB %d loop samples", n_lops);
-	//db_batch_insert_loops(lops, n_lops);
-	db_insert_loop(lops);
+	db_batch_insert_loops(lops, n_lops);
+	//db_insert_loop(lops);
 }
 
 static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
@@ -122,7 +122,7 @@ static void db_store_applications_mpi(application_t *apps, uint n_apps)
 	}
 
 	verbose("Trying to insert in DB %d mpi application samples", n_apps);
-	//db_batch_insert_applications(apps, n_apps);
+	db_batch_insert_applications(apps, n_apps);
 	//db_insert_application(apps);
 }
 
@@ -133,7 +133,7 @@ static void db_store_applications(application_t *apps, uint n_apps)
 	}
 
 	verbose("Trying to insert in DB %d non-mpi application samples", n_apps);
-	//db_batch_insert_applications_no_mpi(apps, n_apps);
+	db_batch_insert_applications_no_mpi(apps, n_apps);
 	//db_insert_application(apps);
 }
 
@@ -336,14 +336,17 @@ int main(int argc, char **argv)
 	verbose("reserving %0.2f MBytes for events  (%lu per ear_event_t)", mb_eves, sizeof(ear_event_t));
 	verbose("total memory allocated: %0.2f MBytes", mb_totl);
 
-	// Configuration file (TODO)
 	#if 1
+	// Configuration file (TODO)
 	if (get_ear_conf_path(buffer_gen) == EAR_ERROR) {
 		error("Error getting ear.conf path");
 	}
 
 	verbose("Reading '%s' configuration file", buffer_gen);
 	read_cluster_conf(buffer_gen, &conf_clus);
+
+	// Database
+	init_db_helper(&conf_clus.database);
 	#else
 	conf_clus.db_manager.aggr_time = 60;
 	conf_clus.db_manager.tcp_port = 4711;
