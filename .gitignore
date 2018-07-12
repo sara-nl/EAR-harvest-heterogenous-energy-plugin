@@ -71,6 +71,7 @@ tests/check/check.sh
 *traces_to_paraver
 *database_eraser
 *configuration_check
+*batch_insert
 
 # IDE
 cmake*
