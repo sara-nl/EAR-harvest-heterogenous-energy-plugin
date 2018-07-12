@@ -32,29 +32,30 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <float.h>
 #include <errno.h>
 #include <signal.h>
 #include <pthread.h>
-
-#include <common/config.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <control/frequency.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
+#include <common/config.h>
+#include <common/ear_verbose.h>
+#include <common/types/generic.h>
+#include <common/types/application.h>
+#include <common/types/periodic_metric.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <metrics/power_metrics/power_metrics.h>
+#include <database_cache/sockets.h>
+
 #if USE_EARDB
 #include <database_cache/eardbd_api.h>
 #include <daemon/eard_utils.h>
 #endif
-#include <common/types/periodic_metric.h>
-#include <common/types/application.h>
-#include <common/types/configuration/cluster_conf.h>
-#include <common/types/generic.h>
-#include <common/ear_verbose.h>
 
 #if DB_MYSQL
 #include <common/database/db_helper.h>

@@ -56,6 +56,7 @@
 #include <metrics/custom/hardware_info.h>
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
+#include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
 #include <database_cache/sockets.h>
@@ -1165,11 +1166,7 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
-<<<<<<< HEAD
     if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.udp_port, UDP)!=EAR_SUCCESS){
-=======
-    if (eardbd_connect(my_node_conf->db_ip, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
->>>>>>> e07fb227fdd0f5c4ad86ad01b461050f305b4d14
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif

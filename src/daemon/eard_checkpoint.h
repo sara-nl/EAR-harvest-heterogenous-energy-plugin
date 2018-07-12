@@ -31,6 +31,7 @@
 #define _EARD_CHECKPOINT_H_
 
 #include <common/types/configuration/cluster_conf.h>
+
 typedef struct eard_dyn_conf{
 	cluster_conf_t *cconf;
 	my_node_conf_t *nconf;
@@ -38,5 +39,5 @@ typedef struct eard_dyn_conf{
 
 void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf);
 void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf);
-#else
+
 #endif
