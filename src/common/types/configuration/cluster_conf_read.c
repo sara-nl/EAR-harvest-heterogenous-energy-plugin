@@ -398,6 +398,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 																	   sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_users+1));
 						conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
+						remove_chars(token, '\n');
 						strcpy(conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users], token);
 						conf->e_tags[conf->num_tags-1].num_users++;
                         token = strtok_r(NULL, ",", &secondary_ptr);
@@ -413,6 +414,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 																		sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_groups+1));
 						conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
+						remove_chars(token, '\n');
 						strcpy(conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups], token);
 						conf->e_tags[conf->num_tags-1].num_groups++;
                         token = strtok_r(NULL, ",", &secondary_ptr);
@@ -428,6 +430,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 																		  sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_accounts+1));
 						conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
+						remove_chars(token, '\n');
 						strcpy(conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts], token);
 						conf->e_tags[conf->num_tags-1].num_accounts++;
                         token = strtok_r(NULL, ",", &secondary_ptr);

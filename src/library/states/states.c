@@ -50,7 +50,7 @@
 #include <common/math_operations.h>
 
 static const char *__NAME__ = "ear/states";
-static const char *__HOST__ ;
+extern char *__HOST__ ;
 
 // static defines
 #define NO_PERIOD				0
@@ -93,7 +93,6 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	char *verbose, *loop_time, *who;
 	ulong	architecture_min_perf_accuracy_time;
-    __HOST__=node_name;
 
 
 	init_application(&last_signature);
