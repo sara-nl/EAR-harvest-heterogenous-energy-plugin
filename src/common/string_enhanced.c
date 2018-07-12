@@ -230,3 +230,18 @@ char* strclean(char *string, char chr)
     string[index - string] = '\0';
     return index;
 }
+
+void remove_chars(char *s, char c)
+{
+    int writer = 0, reader = 0;
+
+    while (s[reader])
+    {
+        if (s[reader]!=c) 
+            s[writer++] = s[reader];
+        
+        reader++;       
+    }
+
+    s[writer]=0;
+}
