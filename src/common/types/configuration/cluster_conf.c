@@ -221,6 +221,7 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
     if (user!=NULL){
 		i=0;
         while((i<my_tag->num_users) && (!found)){
+			fprintf(stderr,"Can_use_energy_tag user %s vs %s\n",user,my_tag->users[i]);
             if (strcmp(user,my_tag->users[i])==0) found=1;
 			else i++;
         }
@@ -229,6 +230,7 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
     if (group!=NULL){
 		i=0;
         while((i<my_tag->num_groups) && (!found)){
+			fprintf(stderr,"Can_use_energy_tag group %s(%d) vs %s(%d)\n",group,strlen(group),my_tag->groups[i],strlen(my_tag->groups[i]));
             if (strcmp(group,my_tag->groups[i])==0) found=1;
 			else i++;
         }
@@ -237,6 +239,7 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
     if (acc!=NULL){
 		i=0;
         while((i<my_tag->num_accounts) && (!found)){
+			fprintf(stderr,"Can_use_energy_tag acc %s vs %s\n",acc,my_tag->accounts[i]);
             if (strcmp(acc,my_tag->accounts[i])==0) found=1;
 			else i++;
         }
@@ -301,5 +304,29 @@ uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *g
 		*my_tag=is_tag;
 		return ENERGY_TAG;
 	} else return NORMAL;
+}
+
+/* Copy src in dest */
+void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src)
+{
+	if ((dest!=NULL) && (src!=NULL)){
+		strcpy(dest->coefficients_pathname,src->coefficients_pathname);
+		dest->dynais_levels=src->dynais_levels;
+		dest->dynais_window=src->dynais_window;
+		dest->dynais_timeout=src->dynais_timeout;
+		dest->lib_period=src->lib_period;
+		dest->check_every=src->check_every;
+	}
+}
+
+/* Prints the given library conf */
+void print_ear_lib_conf(earlib_conf_t *libc)
+{
+	if (libc!=NULL){
+		fprintf(stderr,"coeffs %s dynais level %u dynais window_size %u\n",
+		libc->coefficients_pathname,libc->dynais_levels,libc->dynais_window);
+		fprintf(stderr,"dynais timeout %u lib_period %u check_every %u\n",
+		libc->dynais_timeout,libc->lib_period,libc->check_every);
+	}
 }
 

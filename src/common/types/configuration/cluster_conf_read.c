@@ -213,6 +213,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
+            remove_chars(token, ' ');
 			strcpy(conf->DB_pathname, token);
 		}
 
@@ -221,6 +222,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
+            remove_chars(token, ' ');
 			strcpy(conf->earlib.coefficients_pathname, token);
 		}
         else if (!strcmp(token, "DYNAISLEVELS"))
@@ -233,17 +235,33 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->earlib.dynais_window = atoi(token);
         }
-
+        else if (!strcmp(token, "DYNAISTIMEOUT"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.dynais_timeout = atoi(token);
+        }
+        else if (!strcmp(token, "LIBRARYPERIOD"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.lib_period = atoi(token);
+        }
+        else if (!strcmp(token, "CHECKEARMODEEVERY"))
+        {
+            token = strtok(NULL, "=");
+            conf->earlib.check_every = atoi(token);
+        }
 		else if (!strcmp(token, "TMPDIR"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
+            remove_chars(token, ' ');
 			strcpy(conf->tmp_dir, token);
 		}
 		else if (!strcmp(token, "ETCDIR"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
+            remove_chars(token, ' ');
 			strcpy(conf->etc_dir, token);
 		}
 		else if (!strcmp(token, "VERBOSE"))
@@ -306,6 +324,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				conf->priv_users = realloc(conf->priv_users, sizeof(char *)*conf->num_priv_users);
 				strclean(token, '\n');
 				conf->priv_users[conf->num_priv_users-1] = malloc(strlen(token)+1);
+                remove_chars(token, ' ');
 				strcpy(conf->priv_users[conf->num_priv_users-1], token);
 				token = strtok(NULL, ",");
 			}
@@ -320,6 +339,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 conf->priv_groups = realloc(conf->priv_groups, sizeof(char *)*conf->num_priv_groups);
                 strclean(token, '\n');
                 conf->priv_groups[conf->num_priv_groups-1] = malloc(strlen(token)+1);
+                remove_chars(token, ' ');
                 strcpy(conf->priv_groups[conf->num_priv_groups-1], token);
                 token = strtok(NULL, ",");
             }
@@ -334,6 +354,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				conf->priv_acc = realloc(conf->priv_acc, sizeof(char *)*conf->num_acc);
 				strclean(token, '\n');
 				conf->priv_acc[conf->num_acc-1] = malloc(strlen(token)+1);
+                remove_chars(token, ' ');
 				strcpy(conf->priv_acc[conf->num_acc-1], token);
 				token = strtok(NULL, ",");
 			}
@@ -355,6 +376,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_tags+1));
 					token = strtok_r(NULL, "=", &secondary_ptr);
 					memset(&conf->e_tags[conf->num_tags], 0, sizeof(energy_tag_t));
+                    remove_chars(token, ' ');
 					strcpy(conf->e_tags[conf->num_tags].tag, token);
 					conf->e_tags[conf->num_tags].users = NULL;
 					conf->e_tags[conf->num_tags].groups = NULL;
@@ -375,6 +397,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].users = realloc(conf->e_tags[conf->num_tags-1].users,
 																	   sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_users+1));
 						conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users] = malloc(strlen(token)+1);
+                        remove_chars(token, ' ');
 						strcpy(conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users], token);
 						conf->e_tags[conf->num_tags-1].num_users++;
                         token = strtok_r(NULL, ",", &secondary_ptr);
@@ -389,6 +412,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].groups = realloc(conf->e_tags[conf->num_tags-1].groups,
 																		sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_groups+1));
 						conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups] = malloc(strlen(token)+1);
+                        remove_chars(token, ' ');
 						strcpy(conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups], token);
 						conf->e_tags[conf->num_tags-1].num_groups++;
                         token = strtok_r(NULL, ",", &secondary_ptr);
@@ -403,6 +427,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 						conf->e_tags[conf->num_tags-1].accounts = realloc(conf->e_tags[conf->num_tags-1].accounts,
 																		  sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_accounts+1));
 						conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts] = malloc(strlen(token)+1);
+                        remove_chars(token, ' ');
 						strcpy(conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts], token);
 						conf->e_tags[conf->num_tags-1].num_accounts++;
                         token = strtok_r(NULL, ",", &secondary_ptr);
@@ -570,6 +595,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					token = strtok_r(NULL, "=", &secondary_ptr);
 					strclean(token, '\n');
 					coef_file = malloc(sizeof(char)*strlen(token)+1);
+                    remove_chars(token, ' ');
 					strcpy(coef_file, token);
 				}
 
@@ -660,6 +686,23 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->eargm.energy = atoi(token);
 		}
+        else if (!strcmp(token, "GLOBALMANAGERWARNINGSPERC"))
+        {
+            token = strtok(NULL, "=");
+            token = strtok(token, ",");
+		    int perc=0;
+            while (token != NULL)
+            {
+            	conf->eargm.defcon_limits[perc++] = atoi(token);
+                token = strtok(NULL, ",");
+            }
+        }
+
+		else if (!strcmp(token, "GLOBALMANAGERGRACEPERIODS"))
+		{
+			token = strtok(NULL, "=");
+			conf->eargm.grace_periods = atoi(token);
+		}
 		else if (!strcmp(token, "GLOBALMANAGERPORT"))
 		{
 			token = strtok(NULL, "=");
@@ -674,12 +717,14 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
+            remove_chars(token, ' ');
 			strcpy(conf->eargm.mail, token);
 		}
 		else if (!strcmp(token, "GLOBALMANAGERHOST"))
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
+            remove_chars(token, ' ');
 			strcpy(conf->eargm.host, token);
 		}
 
@@ -688,24 +733,28 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
+            remove_chars(token, ' ');
 			strcpy(conf->database.ip, token);
 		}
 		else if (!strcmp(token, "MARIADBUSER"))
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
+            remove_chars(token, ' ');
 			strcpy(conf->database.user, token);
 		}
 		else if (!strcmp(token, "MARIADBPASSW"))
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
+            remove_chars(token, ' ');
 			strcpy(conf->database.pass, token);
 		}
 		else if (!strcmp(token, "MARIADBDATABASE"))
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
+            remove_chars(token, ' ');
 			strcpy(conf->database.database, token);
 		}
 		else if (!strcmp(token, "MARIADBPORT"))
@@ -766,6 +815,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             conf->islands[conf->num_islands].db_ips = realloc(conf->islands[conf->num_islands].db_ips,
                                                                             (conf->islands[conf->num_islands].num_ips+1)*sizeof(char *));
                             conf->islands[conf->num_islands].db_ips[conf->islands[conf->num_islands].num_ips] = malloc(strlen(token)+1);
+                            remove_chars(token, ' ');
                             strcpy(conf->islands[conf->num_islands].db_ips[conf->islands[conf->num_islands].num_ips], token);
                             for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
                                 conf->islands[conf->num_islands].ranges[i].db_ip = conf->islands[conf->num_islands].num_ips;
@@ -789,6 +839,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             conf->islands[idx].db_ips = realloc(conf->islands[idx].db_ips,
                                                                             (conf->islands[idx].num_ips+1)*sizeof(char *));
                             conf->islands[idx].db_ips[conf->islands[idx].num_ips] = malloc(strlen(token)+1);
+                            remove_chars(token, ' ');
                             strcpy(conf->islands[idx].db_ips[conf->islands[idx].num_ips], token);
                             for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)
                                 conf->islands[idx].ranges[i].db_ip = conf->islands[idx].num_ips;
@@ -817,6 +868,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             conf->islands[conf->num_islands].backup_ips = realloc(conf->islands[conf->num_islands].backup_ips,
                                                                             (conf->islands[conf->num_islands].num_backups+1)*sizeof(char *));
                             conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups] = malloc(strlen(token)+1);
+                            remove_chars(token, ' ');
                             strcpy(conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups], token);
                             for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
                                 conf->islands[conf->num_islands].ranges[i].sec_ip = conf->islands[conf->num_islands].num_backups;
@@ -840,6 +892,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             conf->islands[idx].backup_ips = realloc(conf->islands[idx].backup_ips,
                                                                             (conf->islands[idx].num_backups+1)*sizeof(char *));
                             conf->islands[idx].backup_ips[conf->islands[idx].num_backups] = malloc(strlen(token)+1);
+                            remove_chars(token, ' ');
                             strcpy(conf->islands[idx].backup_ips[conf->islands[idx].num_backups], token);
                             for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)
                                 conf->islands[idx].ranges[i].sec_ip = conf->islands[idx].num_backups;

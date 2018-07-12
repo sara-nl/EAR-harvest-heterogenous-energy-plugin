@@ -115,11 +115,23 @@ void report_application_data(application_t *app)
 	float def_f = ((double) app->job.def_f) / 1000000.0;
 	float pavg_f = ((double) app->power_sig.avg_f) / 1000000.0;
 	float pdef_f = ((double) app->power_sig.def_f) / 1000000.0;
+	char st[64],et[64];
+	char stmpi[64],etmpi[64];
+	struct tm *tmp;
+	tmp=localtime(&app->job.start_time);
+	strftime(st, sizeof(st), "%c", tmp);
+	tmp=localtime(&app->job.end_time);
+    strftime(et, sizeof(et), "%c", tmp);
+	tmp=localtime(&app->job.start_mpi_time);
+	strftime(stmpi, sizeof(stmpi), "%c", tmp);
+	tmp=localtime(&app->job.end_mpi_time);
+    strftime(etmpi, sizeof(etmpi), "%c", tmp);
+
 
 	fprintf(stderr,"----------------------------------- Application Summary[%s] --\n",app->node_id);
 	fprintf(stderr,"-- App id: %s, user id: %s, job id: %lu", app->job.app_id, app->job.user_id, app->job.id);
 	fprintf(stderr,"   procs: %lu (s) acc %s\n", app->job.procs,app->job.user_acc);
-	fprintf(stderr,"   start time %d end time %d start mpi %d end mpi %d\n",(int)app->job.start_time,(int)app->job.end_time,(int)app->job.start_mpi_time,(int)app->job.end_mpi_time);
+	fprintf(stderr,"   start time %s end time %s start mpi %s end mpi %s\n",st,et,stmpi,etmpi);
 	fprintf(stderr,"-- power_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->power_sig.time, pdef_f, pavg_f);
 	fprintf(stderr,"DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->power_sig.DC_power, app->power_sig.DRAM_power, 
                                                                	app->power_sig.PCK_power);

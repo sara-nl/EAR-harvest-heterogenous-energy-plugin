@@ -65,7 +65,8 @@ struct sockaddr_in eards_remote_client;
 char *my_tmp;
 extern cluster_conf_t my_cluster_conf;
 
-static char *__NAME__ = "dynamic_conf:";
+static char *__NAME__ = "EARD";
+extern char *__HOST__;
 extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
 
@@ -75,7 +76,7 @@ static uint num_f;
 void print_f_list(uint p_states,ulong *freql)
 {
 	int i;
-	for (i=0;i<p_states;i++) VERBOSE_N(2,"Freq %u= %lu\n",i,freql[i]);
+	for (i=0;i<p_states;i++) eard_verbose(2,"Freq %u= %lu\n",i,freql[i]);
 }
 
 uint is_valid_freq(ulong f, uint p_states,ulong *freql)
@@ -95,10 +96,10 @@ ulong lower_valid_freq(ulong f, uint p_states,ulong *freql)
 	ulong freq=f-100000;
 	while(!is_valid_freq(freq,p_states,freql)) freq=freq-100000;
 	if (freq>=freql[p_states-1]){
-		VERBOSE_N(0,"Invalid frequencies selecting the lower one valid: requested %lu selected %lu\n",f,freq);
+		eard_verbose(0,"Invalid frequencies selecting the lower one valid: requested %lu selected %lu\n",f,freq);
 		return freq;
 	}else{
-		VERBOSE_N(0,"PANIC no alternative freq can be selected for %lu\n",f);
+		eard_verbose(0,"PANIC no alternative freq can be selected for %lu\n",f);
 		return -1;
 	}
 
@@ -106,7 +107,7 @@ ulong lower_valid_freq(ulong f, uint p_states,ulong *freql)
 
 static void DC_my_sigusr1(int signun)
 {
-	VERBOSE_N(1,"thread %u receives sigusr1\n",(uint)pthread_self());
+	eard_verbose(1,"thread %u receives sigusr1\n",(uint)pthread_self());
 	close_server_socket(eards_remote_socket);
 	pthread_exit(0);
 }
@@ -123,7 +124,7 @@ static void DC_set_sigusr1()
     sa.sa_handler = DC_my_sigusr1;
     sa.sa_flags=0;
     if (sigaction(SIGUSR1, &sa, NULL) < 0)  		
-		VERBOSE_N(0," doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
+		eard_verbose(0," doing sigaction of signal s=%d, %s\n",SIGUSR1,strerror(errno));
 
 }
 
@@ -268,47 +269,47 @@ void process_remote_requests(int clientfd)
 	request_t command;
 	uint req;
 	ulong ack=EAR_SUCCESS;
-	VERBOSE_N(2,"connection received\n");
+	eard_verbose(2,"connection received\n");
 	req=read_command(clientfd,&command);
 	switch (req){
 		case EAR_RC_NEW_JOB:
-			VERBOSE_N(1,"new_job command received %d\n",command.my_req.new_job.job.id);
+			eard_verbose(1,"new_job command received %d\n",command.my_req.new_job.job.id);
 			powermon_new_job(&command.my_req.new_job,0);		
 			break;
 		case EAR_RC_END_JOB:
-			VERBOSE_N(1,"end_job command received %d\n",command.my_req.end_job.jid);
+			eard_verbose(1,"end_job command received %d\n",command.my_req.end_job.jid);
 			powermon_end_job(command.my_req.end_job.jid,command.my_req.end_job.sid);
 			break;
 		case EAR_RC_MAX_FREQ:
-			VERBOSE_N(1,"max_freq command received %lu\n",command.my_req.ear_conf.max_freq);
+			eard_verbose(1,"max_freq command received %lu\n",command.my_req.ear_conf.max_freq);
 			ack=dynconf_max_freq(command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_NEW_TH:
-			VERBOSE_N(1,"new_th command received %lu\n",command.my_req.ear_conf.th);
+			eard_verbose(1,"new_th command received %lu\n",command.my_req.ear_conf.th);
 			ack=dynconf_set_th(command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_INC_TH:
-			VERBOSE_N(1,"inc_th command received, %lu\n",command.my_req.ear_conf.th);
+			eard_verbose(1,"inc_th command received, %lu\n",command.my_req.ear_conf.th);
 			ack=dynconf_inc_th(command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_RED_PSTATE:
-			VERBOSE_N(1,"red_max_and_def_p_state command received\n");
+			eard_verbose(1,"red_max_and_def_p_state command received\n");
 			ack=dynconf_red_pstates(command.my_req.ear_conf.p_states);
 			break;
 		case EAR_RC_SET_FREQ:
-			VERBOSE_N(1,"set freq command received\n");
+			eard_verbose(1,"set freq command received\n");
 			ack=dynconf_set_freq(command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_DEF_FREQ:
-			VERBOSE_N(1,"set def freq command received\n");
+			eard_verbose(1,"set def freq command received\n");
 			ack=dynconf_def_freq(command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_REST_CONF:
-			VERBOSE_N(1,"restore conf command received\n");
+			eard_verbose(1,"restore conf command received\n");
 			ack=dyncon_restore_conf();
 			break;
 		default:
-			VERBOSE_N(0,"Invalid remote command\n");
+			eard_verbose(0,"Invalid remote command\n");
 	}	
 	send_answer(clientfd,&ack);
 }
@@ -321,37 +322,37 @@ void * eard_dynamic_configuration(void *tmp)
 	my_tmp=(char *)tmp;
 	int change=0;
 	
-	VERBOSE_N(2,"thread created\n");
+	eard_verbose(2,"thread created\n");
 
 	DC_set_sigusr1();
 
 	num_f=frequency_get_num_pstates();
 	f_list=frequency_get_freq_rank_list();
 	print_f_list(num_f,f_list);
-	VERBOSE_N(2,"We have %u valid p_states\n",num_f);
+	eard_verbose(2,"We have %u valid p_states\n",num_f);
 	
 
 
-	VERBOSE_N(2,"Creating socket for remote commands\n");
+	eard_verbose(2,"Creating socket for remote commands\n");
 	eards_remote_socket=create_server_socket(my_cluster_conf.eard.port);
 	if (eards_remote_socket<0){ 
-		VERBOSE_N(0,"Error creating socket\n");
+		eard_verbose(0,"Error creating socket\n");
 		pthread_exit(0);
 	}
 	/*
 	*	MAIN LOOP
 	*/
 	do{
-		VERBOSE_N(2,"waiting for remote commands\n");
+		eard_verbose(2,"waiting for remote commands\n");
 		eards_client=wait_for_client(eards_remote_socket,&eards_remote_client);	
 		if (eards_client<0){	
-			VERBOSE_N(0," wait_for_client returns error\n");
+			eard_verbose(0," wait_for_client returns error\n");
 		}else{ 
 			process_remote_requests(eards_client);
 			close(eards_client);
 		}
 	}while(eard_must_exit==0);
-    VERBOSE_N(0,"exiting\n");
+    eard_verbose(0,"exiting\n");
     //ear_conf_shared_area_dispose(my_tmp);
     close_server_socket(eards_remote_socket);
     pthread_exit(0);

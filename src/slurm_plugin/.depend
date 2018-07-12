@@ -1,3 +1,11 @@
+slurm_plugin_user_environment.o: slurm_plugin_user_environment.c \
+ ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
+ ../slurm_plugin/slurm_plugin_user_environment.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/generic.h ../common/ear_verbose.h ../common/config.h \
+ ../common/states.h ../common/types/application.h ../common/types/job.h \
+ ../common/types/signature.h ../common/types/power_signature.h
 slurm_plugin_options.o: slurm_plugin_options.c \
  ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
  ../slurm_plugin/slurm_plugin_options.h
@@ -13,11 +21,3 @@ slurm_plugin.o: slurm_plugin.c ../common/sizes.h ../common/config.h \
  ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
  ../slurm_plugin/slurm_plugin_options.h \
  ../slurm_plugin/slurm_plugin_user_environment.h
-slurm_plugin_user_environment.o: slurm_plugin_user_environment.c \
- ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
- ../slurm_plugin/slurm_plugin_user_environment.h \
- ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/types/generic.h ../common/ear_verbose.h ../common/config.h \
- ../common/states.h ../common/types/application.h ../common/types/job.h \
- ../common/types/signature.h ../common/types/power_signature.h

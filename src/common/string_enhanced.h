@@ -57,5 +57,7 @@ char* strclean(char *string, char chr);
 /** Converts a string to upper case. */
 void strtoup(char *string);
 
+/** Removes characters c from string s. */
+void remove_chars(char *s, char c);
 #else
 #endif
