@@ -66,6 +66,7 @@ static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
 
 	// Header process
 	header->content_type = type;
+	header->content_size = size;
 	header->timestamp = time(NULL);
 	header->mirroring = 0;
 

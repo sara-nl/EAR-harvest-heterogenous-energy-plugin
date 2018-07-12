@@ -83,7 +83,7 @@ state_t sockets_receive(int fd, char *buffer, ssize_t size_buffer, ssize_t *size
 	if (*size_read <= 0)
 	{
 		if (*size_read == 0) {
-			state_return_msg(EAR_SOCK_RECV_ERROR, "disconnected from socket");
+			state_return_msg(EAR_SUCCESS, "disconnected from socket");
 		} else {
 			state_return_msg(EAR_SOCK_RECV_ERROR, strerror(errno));
 		}
