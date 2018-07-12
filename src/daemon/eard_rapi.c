@@ -38,6 +38,7 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include <daemon/eard_rapi.h>
 #include <daemon/eard_conf_rapi.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
@@ -206,4 +207,213 @@ int eards_remote_disconnect()
 	eards_remote_connected=0;
 	close(eards_sfd);
 	return EAR_SUCCESS;
+}
+
+
+/*
+*	ACTIONS for WARNING and PANIC LEVELS
+*/
+void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
+{
+	int i, j, k, rc;
+    char node_name[256];
+
+    for (i=0;i < my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {
+                if (k == -1)
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                }
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+        	    if (rc<0){
+	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
+            	}else{
+	        		VERBOSE_N(1,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
+		        	if (!eards_inc_th(th)) VERBOSE_N(0,"Error increasing the th for node %s", node_name);
+			        eards_remote_disconnect();
+        		}
+	        }
+        }
+    }
+}
+
+void red_max_freq(ulong ps, cluster_conf_t my_cluster_conf)
+{
+	int i, j, k, rc;
+    char node_name[256];
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {
+                if (k == -1)
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                }
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+        	    if (rc<0){
+	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
+            	}else{
+    
+                	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
+		        	if (!eards_red_max_and_def_freq(ps)) VERBOSE_N(0,"Error reducing the max freq for node %s", node_name);
+			        eards_remote_disconnect();
+        		}
+	        }
+        }
+    }
+}
+
+void red_def_freq(ulong ps, cluster_conf_t my_cluster_conf)
+{
+	int i, j, k, rc;
+    char node_name[256];
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {
+                if (k == -1)
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                }
+    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+        	    if (rc<0){
+	    		    VERBOSE_N(0,"Error connecting with node %s", node_name);
+            	}else{
+                	VERBOSE_N(1,"Reducing  the default and maximumfrequency in node %s by %lu\n", node_name,ps);
+		        	if (!eards_red_max_and_def_freq(ps)) VERBOSE_N(0,"Error reducing the default freq for node %s", node_name);
+			        eards_remote_disconnect();
+        		}
+	        }
+        }
+    }
+}
+
+
+
+void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+{
+    int i, j, k, rc;
+    char node_name[256];
+
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {
+                if (k == -1)
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    
+                }
+
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+                if (rc<0){
+                    VERBOSE_N(0,"Error connecting with node %s",node_name);
+                }else{
+                	VERBOSE_N(1,"Setting  the frequency in node %s to %lu\n", node_name, freq);
+                	if (!eards_set_freq(freq)) VERBOSE_N(0,"Error reducing the freq for node %s", node_name);
+            	    eards_remote_disconnect();
+		        }
+            }
+        }
+    }
+}
+
+void set_def_freq(ulong freq, cluster_conf_t my_cluster_conf)
+{
+    int i, j, k, rc;
+    char node_name[256];
+
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {
+                if (k == -1)
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    
+                }
+
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+                if (rc<0){
+                    VERBOSE_N(0,"Error connecting with node %s",node_name);
+                }else{
+                	VERBOSE_N(1,"Setting  the frequency in node %s to %lu\n", node_name, freq);
+                	if (!eards_set_def_freq(freq)) VERBOSE_N(0,"Error setting the freq for node %s", node_name);
+            	    eards_remote_disconnect();
+		        }
+            }
+        }
+    }
+}
+
+void restore_conf(cluster_conf_t my_cluster_conf)
+{
+    int i, j, k, rc;
+    char node_name[256];
+
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {
+                if (k == -1)
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    
+                }
+
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+                if (rc<0){
+                    VERBOSE_N(0,"Error connecting with node %s",node_name);
+                }else{
+                	VERBOSE_N(1,"Restoring the configuartion in node %s\n", node_name);
+                	if (!eards_restore_conf()) VERBOSE_N(0,"Error restoring the configuration for node %s", node_name);
+            	    eards_remote_disconnect();
+		        }
+            }
+        }
+    }
 }
