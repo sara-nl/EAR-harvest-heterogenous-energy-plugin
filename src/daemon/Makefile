@@ -8,8 +8,7 @@ eard_OBJS += power_monitor.o \
              dynamic_configuration.o \
              shared_configuration.o \
              eard_server_api.o \
-			 eard_checkpoint.o \
-             eard_api.o
+			 eard_checkpoint.o
 
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database.a

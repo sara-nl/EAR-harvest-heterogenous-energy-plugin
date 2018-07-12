@@ -146,7 +146,7 @@ static size_t extract_packet_size(char *buffer)
 	packet_header_t *header;
 	header = P_HEADER(buffer);
 
-	return sizeof(packet_header_t) + header->content_size;
+	return header->packet_size;
 }
 
 static void make_periodic_aggregation(periodic_metric_t *met)
@@ -194,6 +194,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 	if (header->content_type == CONTENT_TYPE_APP)
 	{
 		application_t *app = (application_t *) content;
+		verbose("received an application %d from host %s", app->job.id, app->node_id);
 
 		if (app->is_learning)
 		{
@@ -265,8 +266,8 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		type = "unknown";
 	}
 
-	verbose("received a packet of size %ld, with an object type '%s', from the socket %d",
-			size, type, fd);
+	verbose("received a packet of size %ld, with an object type '%s' (%d), from the socket %d",
+			size, type, header->content_type, fd);
 }
 
 /*
@@ -290,8 +291,9 @@ int main(int argc, char **argv)
 {
 	cluster_conf_t conf_clus;
 	struct timeval timeout;
-	size_t pending_size;
-	ssize_t size;
+	size_t accum_size;
+	size_t packt_size;
+	ssize_t recvd_size;
 	int i;
 
 	socket_t sockets[3];
@@ -326,12 +328,12 @@ int main(int argc, char **argv)
 	mb_eves = (double) (sizeof(ear_event_t)       * mets_len) / 1000000.0;
 	mb_totl = (mb_apps * 3) + mb_mets + mb_lops + mb_eves;
 
-	verbose("reserving %0.2f MBytes for mpi applications", mb_apps);
-	verbose("reserving %0.2f MBytes for learning applications", mb_apps);
-	verbose("reserving %0.2f MBytes for applications", mb_apps);
-	verbose("reserving %0.2f MBytes for power metrics", mb_mets);
-	verbose("reserving %0.2f MBytes for loops", mb_lops);
-	verbose("reserving %0.2f MBytes for events", mb_eves);
+	verbose("reserving %0.2f MBytes for mpi applications (%lu per application)", mb_apps, sizeof(application_t));
+	verbose("reserving %0.2f MBytes for learning applications (%lu per application)", mb_apps, sizeof(application_t));
+	verbose("reserving %0.2f MBytes for non-mpi applications (%lu per application)", mb_apps, sizeof(application_t));
+	verbose("reserving %0.2f MBytes for power metrics (%lu per power metric)", mb_mets, sizeof(periodic_metric_t));
+	verbose("reserving %0.2f MBytes for loops (%lu per loop)", mb_lops, sizeof(loop_t));
+	verbose("reserving %0.2f MBytes for events  (%lu per ear_event_t)", mb_eves, sizeof(ear_event_t));
 	verbose("total memory allocated: %0.2f MBytes", mb_totl);
 
 	// Configuration file (TODO)
@@ -447,19 +449,27 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-					state1 = sockets_receive(i, buffer_pck, sizeof(buffer_pck), &size);
+					state1 = sockets_receive(i, buffer_pck, sizeof(buffer_pck), &recvd_size);
+					//verbose("1 recvd_size %lu", recvd_size);
 
-					if (state_ok(state1) && size > 0) {
-						pending_size = extract_packet_size(buffer_pck) - size;
+					if (state_ok(state1) && recvd_size > 0)
+					{
+						packt_size = extract_packet_size(buffer_pck);
+						accum_size = recvd_size;
 
-						while (state_ok(state1) && pending_size > 0) {
-							state1 = sockets_receive(i, buffer_pck, sizeof(buffer_pck), &size);
-							pending_size -= size;
+						//verbose("2 packt_size %lu", packt_size);
+						//verbose("3 accum_size %lu", accum_size);
+						
+						while (state_ok(state1) && recvd_size > 0 && accum_size < packt_size) {
+							state1 = sockets_receive(i, &buffer_pck[accum_size], sizeof(buffer_pck), &recvd_size);
+							accum_size += recvd_size;
+							//verbose("4 recvd_size %lu", recvd_size);
+							//verbose("5 accum_size %lu", accum_size);
 						}
 					}
 
-					if (state_ok(state1) && size > 0 && pending_size == 0) {
-						process_incoming_data(i, buffer_pck, size);
+					if (state_ok(state1) && recvd_size > 0 && accum_size == packt_size) {
+						process_incoming_data(i, buffer_pck, packt_size);
 					} else {
 						FD_CLR(i, &fds_active);
 						close(i);

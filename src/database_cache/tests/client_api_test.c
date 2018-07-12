@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
-#include <database_cache/sockets.h>
+
+#include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>
-#include <common/types/application.h>
+#include <database_cache/sockets.h>
 #include <common/types/periodic_metric.h>
+#include <common/types/application.h>
+#include <common/states.h>
 
 void usage(int argc, char **argv)
 {
@@ -17,15 +21,14 @@ void usage(int argc, char **argv)
 }
 
 /*
- gcc -I/home/xgomez/Desktop/git/EAR/src \
- -DUSE_TURBO=1 -DPERFORMANCE_GAIN=1 -DEAR_MIN_P_STATE=1 -DPOWERMON_FREQ=1 -DDAEMON_PORT_NUMBER=1 \
- -o client_api_test client_api_test.c ../eardbd_api.o ../sockets.o
+ *
  */
 
 int main(int argc, char **argv)
 {
 	periodic_metric_t met;
 	application_t app;
+	int job_id = 0;
 	state_t s;
 
 	usage(argc, argv);
@@ -35,18 +38,20 @@ int main(int argc, char **argv)
 	memset(&met, 0, sizeof (periodic_metric_t));
 
 	app.is_mpi = 1;
-	sprintf(app.node_id, "cae2306");
-	sprintf(met.node_id, "cae2306");
+	gethostname(app.node_id, 128);
 
 	// Testing API
-	s = eardbd_connect(argv[1], argv[1], 4711, UDP);
-	printf("con = %d (%s)\n", s, state_error);
-	s = eardbd_send_application(&app);
-	printf("sen = %d (%s)\n", s, state_error);
-	s = eardbd_send_periodic_metric(&met);
-	printf("sen = %d (%s)\n", s, state_error);
-	//s = eardbd_disconnect();
-	//printf("dis = %d (%s)\n", s, state_error);
+	eardbd_connect(argv[1], NULL, 4711, TCP);
+	
+	while(1) {
+		s = eardbd_send_application(&app);
+		printf("SEND RETURNED %d\n", s);
+		sleep(4);
+		job_id += 1;
+		app.job.id = job_id;
+	}
+
+	eardbd_disconnect();
 
 	return 0;
 }

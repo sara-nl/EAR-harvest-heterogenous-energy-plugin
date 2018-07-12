@@ -58,6 +58,8 @@ state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol);
 
 state_t sockets_dispose(socket_t *socket);
 
+state_t sockets_clean(socket_t *socket);
+
 state_t sockets_socket(socket_t *socket);
 
 state_t sockets_bind(socket_t *socket);

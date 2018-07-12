@@ -61,12 +61,11 @@ static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
 {
 	packet_header_t *header = P_HEADER(buffer);
 	void *content = P_CONTENT(buffer);
-	size_t size_pck;
 	state_t s;
 
 	// Header process
+	header->packet_size = size + sizeof(packet_header_t);
 	header->content_type = type;
-	header->content_size = size;
 	header->timestamp = time(NULL);
 	header->mirroring = 0;
 
@@ -74,8 +73,9 @@ static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
 	memcpy (content, object, sizeof(size));
 
 	// Sending to main
-	verbose("sending packet type %d to %s (size: %lu)", type, sock_main.host, size);
-	s = sockets_send(&sock_main, (void *) buffer_pck, size_pck);
+	verbose("sending packet type %d to %s (size: %lu)",
+		header->content_type, sock_main.host, header->packet_size);
+	s = sockets_send(&sock_main, (void *) buffer, header->packet_size);
 
 	if (state_fail(s)) {
 		eardbd_disconnect();
@@ -88,9 +88,8 @@ static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
 	}
 
 	header->mirroring = 1;
-
-	verbose("sending mirror packet type %d to %s (size: %lu)", type, sock_mirr.host, size);
-	s = sockets_send(&sock_mirr, (void *) buffer_pck, size_pck);
+	verbose("sending mirror packet type %d to %s (size: %lu)", type, sock_mirr.host, header->packet_size);
+	s = sockets_send(&sock_mirr, (void *) buffer, header->packet_size);
 
 	if (state_fail(s)) {
 		eardbd_disconnect();
@@ -158,6 +157,11 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 		return EAR_ERROR;
 	}
 
+	// Resetting type data
+	sockets_clean(&sock_main);
+	sockets_clean(&sock_mirr);
+
+	// Connecting to main
 	s = _eardbd_socket(&sock_main, host_main, port, protocol);
 
 	if (state_fail(s)) {

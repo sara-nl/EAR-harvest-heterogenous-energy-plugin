@@ -213,6 +213,18 @@ state_t sockets_disconnect(int *fd)
 	state_return(EAR_SUCCESS);
 }
 
+state_t sockets_clean(socket_t *socket)
+{
+	socket->hostname[0] = '\0';
+ 	socket->info = NULL;
+	socket->host = NULL;
+	socket->protocol = 0;
+	socket->port = 0;
+	socket->fd = -1;
+
+	return EAR_SUCCESS;
+}
+
 void sockets_print_socket(socket_t *socket)
 {
 	printf("socket (%d, %u, %u, '%s')\n", socket->fd, socket->port, socket->protocol, socket->host);
@@ -224,7 +236,6 @@ void sockets_print_sockaddr(struct sockaddr *host_addr)
 	char *ip_version;
 	void *address;
 	int port;
-
 
 	// IPv4
 	if (host_addr->sa_family == AF_INET)
