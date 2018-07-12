@@ -41,7 +41,7 @@
 
 #include <common/config.h>
 #include <common/types/application.h>
-#include <common/types/configuraton/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
@@ -93,18 +93,18 @@ int eards_remote_disconnect();
 void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf);
 
 /** Reduces the maximum and default freq to all nodes in my_cluster_conf. */
-void red_max_freq(ulong ps, cluster_conf_t my_cluster_conf);
+void red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
 
 /** Reduces the default freq to all nodes in my_cluster_conf. */
-void red_def_freq(ulong ps, cluster_conf_t my_cluster_conf);
+void red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
 
 /** Reduces the frequency of all nodes in my_cluster_conf.*/
 void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
 
 /** Sets the default frequency for all nodes in my_custer_conf. */
-void set_def_freq(ulong freq, cluster_conf_t my_cluster_conf);
+void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
 
 /** Restores the default configuration for all nodes in my_cluster_conf. */
-void restore_conf(cluster_conf_t my_cluster_conf);
+void restore_conf_all_nodes(cluster_conf_t my_cluster_conf);
 
 #endif

@@ -38,8 +38,9 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include <daemon/eard_rapi.h>
+#include <common/config.h>
 #include <daemon/eard_conf_rapi.h>
+#include <daemon/eard_rapi.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
 #include <common/types/job.h>
@@ -211,7 +212,7 @@ int eards_remote_disconnect()
 
 
 /*
-*	ACTIONS for WARNING and PANIC LEVELS
+*	SAME FUNCTIONALLITY BUT SENT TO ALL NODES
 */
 void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
 {
@@ -246,7 +247,7 @@ void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
     }
 }
 
-void red_max_freq(ulong ps, cluster_conf_t my_cluster_conf)
+void red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
@@ -279,7 +280,7 @@ void red_max_freq(ulong ps, cluster_conf_t my_cluster_conf)
     }
 }
 
-void red_def_freq(ulong ps, cluster_conf_t my_cluster_conf)
+void red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
@@ -348,7 +349,7 @@ void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
     }
 }
 
-void set_def_freq(ulong freq, cluster_conf_t my_cluster_conf)
+void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc;
     char node_name[256];
@@ -383,7 +384,7 @@ void set_def_freq(ulong freq, cluster_conf_t my_cluster_conf)
     }
 }
 
-void restore_conf(cluster_conf_t my_cluster_conf)
+void restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc;
     char node_name[256];
@@ -416,4 +417,5 @@ void restore_conf(cluster_conf_t my_cluster_conf)
             }
         }
     }
+
 }

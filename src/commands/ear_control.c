@@ -91,7 +91,7 @@ void main(int argc, char *argv[])
         switch(c)
         {
             case 0:
-                reduce_frequencies_all_nodes(atoi(optarg));
+                reduce_frequencies_all_nodes(atoi(optarg),my_cluster_conf);
                 break;
             case 1:
                 arg = atoi(optarg);
@@ -100,7 +100,7 @@ void main(int argc, char *argv[])
                     VERBOSE_N(0, "Indicated p_state to reduce def freq above the maximum (%d)", MAX_PSTATE);
                     break;
                 }
-                red_def_freq(arg);
+                red_def_freq_all_nodes(arg,my_cluster_conf);
                 break;
             case 2:
                 arg = atoi(optarg);
@@ -109,7 +109,7 @@ void main(int argc, char *argv[])
                     VERBOSE_N(0, "Indicated p_state to reduce max freq above the maximum (%d)", MAX_PSTATE);
                     break;
                 }
-                red_max_freq(arg);
+                red_max_freq_all_nodes(arg,my_cluster_conf);
                 break;
             case 3:
                 arg = atoi(optarg);
@@ -118,7 +118,7 @@ void main(int argc, char *argv[])
                     VERBOSE_N(0, "Indicated threshold increase above theoretical maximum (100%)");
                     break;
                 }
-                increase_th_all_nodes(arg);
+                increase_th_all_nodes(arg,my_cluster_conf);
                 break;
             case 4:
                 arg = atoi(optarg);
@@ -127,10 +127,10 @@ void main(int argc, char *argv[])
                     VERBOSE_N(0, "Indicated p_state to set is above the maximum (%d)", MAX_PSTATE);
                     break;
                 }
-                set_def_freq(arg);
+                set_def_freq_all_nodes(arg,my_cluster_conf);
                 break;
             case 5:
-                restore_conf();
+                restore_conf_all_nodes(my_cluster_conf);
         }
     }
 
