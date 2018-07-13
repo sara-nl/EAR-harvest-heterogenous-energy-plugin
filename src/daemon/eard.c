@@ -73,14 +73,19 @@ cluster_conf_t	my_cluster_conf;
 my_node_conf_t 	*my_node_conf;
 eard_dyn_conf_t eard_dyn_conf; // This variable is for eard checkpoint
 policy_conf_t default_policy_context,energy_tag_context,authorized_context;
+/* Shared memory regions */
 settings_conf_t *dyn_conf;
 resched_t *resched_conf;
+services_conf_t *my_services_conf;
+/* END Shared memory regions */
+
 coefficient_v3_t *my_coefficients;
 coefficient_v3_t *coeffs_conf;
 char my_ear_conf_path[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
 char coeffs_path[GENERIC_NAME];
+char services_conf_path[GENERIC_NAME];
 int coeffs_size;
 uint signal_sighup=0;
 uint f_monitoring;
@@ -389,12 +394,14 @@ void eard_exit(uint restart)
 		//	eard_verbose(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
 		//}
 	}
+	/* Releasing shared memory */
 	settings_conf_shared_area_dispose(dyn_conf_path);
 	resched_shared_area_dispose(resched_path);
 	#if COEFFS_V3
 	coeffs_shared_area_dispose(coeffs_path);
 	#endif
-
+	services_conf_shared_area_dispose(services_conf_path);
+	/* end releasing shared memory */
 	if (restart){ 
 		eard_verbose(0,"Restarting EARD\n");
 	}else{ 
@@ -890,6 +897,7 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
 		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
+	/* PENDING: we have to check we are not executing an application */
 	dyn->policy=cluster->default_policy;
     dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
@@ -897,6 +905,10 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
 	resched->force_rescheduling=1;
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
 	f_monitoring=my_cluster_conf.eard.period_powermon;
+	copy_eard_conf(&my_services_conf->eard,&my_cluster_conf.eard);
+	copy_eargmd_conf(&my_services_conf->eargmd,&my_cluster_conf.eargm);
+	copy_eardb_conf(&my_services_conf->db,&my_cluster_conf.database);
+	copy_eardbd_conf(&my_services_conf->eardbd,&my_cluster_conf.db_manager);
 	save_eard_conf(&eard_dyn_conf);
 }
 
@@ -920,6 +932,8 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 		default_policy_context.th=my_policy->th;
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
+    dyn->user_type=NORMAL;
+    dyn->lib_enabled=1;
 	dyn->policy=cluster->default_policy;
 	dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
@@ -927,6 +941,10 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
 	f_monitoring=my_cluster_conf.eard.period_powermon;
 	resched_conf->force_rescheduling=0;
+    copy_eard_conf(&my_services_conf->eard,&my_cluster_conf.eard);
+    copy_eargmd_conf(&my_services_conf->eargmd,&my_cluster_conf.eargm);
+    copy_eardb_conf(&my_services_conf->db,&my_cluster_conf.database);
+    copy_eardbd_conf(&my_services_conf->eardbd,&my_cluster_conf.db_manager);
 	save_eard_conf(&eard_dyn_conf);
 }
 
@@ -1085,6 +1103,14 @@ void main(int argc,char *argv[])
         _exit(0);
     }
 	#endif
+	get_services_conf_path(my_cluster_conf.tmp_dir,services_conf_path);
+	eard_verbose(1,"Using %s as services_conf path (shared memory region)",services_conf_path);
+	my_services_conf=create_services_conf_shared_area(services_conf_path);
+	if (my_services_conf==NULL){
+        eard_verbose(0,"Error creating shared memory\n");
+        _exit(0);
+	}
+	
 	/** We must control if we are come from a crash **/	
 	// We check if we are recovering from a crash
 	int must_recover=new_service("eard");

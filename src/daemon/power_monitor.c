@@ -376,6 +376,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
 	dyn_conf->user_type=user_type;
+	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);
 	dyn_conf->policy=my_policy->policy;
 	dyn_conf->def_freq=f;
 	dyn_conf->th=my_policy->th;

@@ -330,3 +330,20 @@ void print_ear_lib_conf(earlib_conf_t *libc)
 	}
 }
 
+void copy_eard_conf(eard_conf_t *dest,eard_conf_t *src)
+{
+	memcpy(dest,src,sizeof(eard_conf_t));
+}
+void copy_eargmd_conf(eargm_conf_t *dest,eargm_conf_t *src)
+{
+	memcpy(dest,src,sizeof(eargm_conf_t));
+}
+void copy_eardb_conf(db_conf_t *dest,db_conf_t *src)
+{
+	memcpy(dest,src,sizeof(db_conf_t));
+}
+void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
+{
+	memcpy(dest,src,sizeof(eardb_conf_t));
+}
+
