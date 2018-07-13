@@ -75,8 +75,8 @@ eard_dyn_conf_t eard_dyn_conf; // This variable is for eard checkpoint
 policy_conf_t default_policy_context,energy_tag_context,authorized_context;
 settings_conf_t *dyn_conf;
 resched_t *resched_conf;
-coefficient_t *my_coefficients;
-coefficient_t *coeffs_conf;
+coefficient_v3_t *my_coefficients;
+coefficient_v3_t *coeffs_conf;
 char my_ear_conf_path[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
@@ -971,9 +971,9 @@ int read_coefficients()
 			}
 		}
 	}
-	int entries=file_size/sizeof(coefficient_t);
+	int entries=file_size/sizeof(coefficient_v3_t);
 	eard_verbose(0,"%d coefficients found",entries);
-	my_coefficients=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
+	my_coefficients=(coefficient_v3_t *)calloc(entries,sizeof(coefficient_v3_t));
 	state=read_coefficients_file_v3(my_coefficients_file, my_coefficients,file_size);
 	#if 0
 	for (i=0;i<entries;i++){

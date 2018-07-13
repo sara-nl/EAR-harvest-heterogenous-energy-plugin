@@ -70,7 +70,7 @@ double performance_gain ;
 
 // Normals
 coefficient_t **coefficients;
-coefficient_t *coefficients_v3;
+coefficient_v3_t *coefficients_v3;
 int num_coeffs;
 static uint reset_freq_opt = RESET_FREQ;
 static uint ear_models_pstates = 0;
@@ -349,7 +349,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	char coeffs_path[GENERIC_NAME];
 	get_coeffs_path(get_ear_tmp(),coeffs_path);	
 	coefficients_v3=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
-	num_coeffs=num_coeffs/sizeof(coefficient_t);
+	num_coeffs=num_coeffs/sizeof(coefficient_v3_t);
 	ear_verbose(0,"Coefficients v3 %d coefficients found",num_coeffs);
 	#if 0
 	for (i=0;i<num_coeffs;i++){
