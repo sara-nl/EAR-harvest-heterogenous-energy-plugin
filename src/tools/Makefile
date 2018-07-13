@@ -10,6 +10,8 @@ BINARIES = compute_coefficients \
            compute_coefficients_remote \
            coefficients_quality_control \
 		   compute_coefficients_v3 \
+		   coefficients_to_csv \
+		   coefficients_v2_to_v3 \
 		   get_app_list
 
 ######## RULES
@@ -33,6 +35,12 @@ traces_to_paraver: traces_to_paraver.cpp
 
 get_app_list: get_app_list.c $(ROOTDIR)/src/common/types.a 
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o get_app_list get_app_list.c $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(ROOTDIR)/src/common/types.a
+
+coefficients_to_csv:coefficients_to_csv.c $(ROOTDIR)/src/common/types.a
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o coefficients_to_csv coefficients_to_csv.c $(LDFLAGS) $(COMMON_OBJS)
+
+coefficients_v2_to_v3:coefficients_v2_to_v3.c $(ROOTDIR)/src/common/types.a
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o coefficients_v2_to_v3 coefficients_v2_to_v3.c $(LDFLAGS) $(COMMON_OBJS)
 
 ######## OPTIONS
 

@@ -61,7 +61,7 @@
 
 // Statics
 static const char *__NAME__ = "EARL";
-static const char *__HOST__ ;
+char *__HOST__ ;
 
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100

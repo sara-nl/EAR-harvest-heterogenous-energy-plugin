@@ -38,15 +38,31 @@ typedef struct Coefficients_info
 {
     unsigned long pstate;
     unsigned int available;
-    // For power projection
+    /* For power projection */
     double A;
     double B;
     double C;
-    // For CPI projection
+    /* For CPI projection */
     double D;
     double E;
     double F;
 } coefficient_t;
+
+typedef struct Coefficients_info_v3
+{
+	ulong pstate_ref;	
+    ulong pstate;
+    uint available;
+    /* For power projection */
+    double A;
+    double B;
+    double C;
+    /* For CPI projection */
+    double D;
+    double E;
+    double F;
+} coefficient_v3_t;
+
 
 
 // Function declarations

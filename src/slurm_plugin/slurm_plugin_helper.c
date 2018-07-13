@@ -76,7 +76,7 @@ int verbosity_test(spank_t sp, int level)
  * Strings
  *
  */
-
+/*
 void strtoup(char *string)
 {
 	if (string == NULL) {
@@ -107,6 +107,7 @@ char *strclean(char *string, char chr)
 
     return index;
 }
+*/
 
 /*
  *

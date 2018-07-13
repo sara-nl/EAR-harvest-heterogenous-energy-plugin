@@ -301,43 +301,21 @@ void *eargm_server_api(void *p)
 /*
 *	ACTIONS for WARNING and PANIC LEVELS
 */
-ulong increase_th_all_nodes(int level)
+ulong eargm_increase_th_all_nodes(int level)
 {
 	int i,rc;
 	ulong th;
-	for (i=0;i< my_cluster_conf.num_nodes;i++){
-    	rc=eards_remote_connect(my_cluster_conf.nodes[i].name,my_cluster_conf.eard.port);
-    	if (rc<0){
-			VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
-    	}else{
-
-			th=th_level[level];
-
-			VERBOSE_N(1,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n",my_cluster_conf.nodes[i].name,th);
-			if (!eards_inc_th(th)) VERBOSE_N(0,"Error increasing the th for node %s",my_cluster_conf.nodes[i].name);
-			eards_remote_disconnect();
-		}
-	}
-	return th_level[level];
+	th=th_level[level];
+	increase_th_all_nodes(th,my_cluster_conf);
+	return th;
 }
-ulong reduce_frequencies_all_nodes(int level)
+ulong eargm_reduce_frequencies_all_nodes(int level)
 {
     int i,rc;
     ulong ps;
-    for (i=0;i< my_cluster_conf.num_nodes;i++){
-        rc=eards_remote_connect(my_cluster_conf.nodes[i].name,my_cluster_conf.eard.port);
-        if (rc<0){
-            VERBOSE_N(0,"Error connecting with node %s",my_cluster_conf.nodes[i].name);
-        }else{
-
-        	ps=pstate_level[level];
-
-        	VERBOSE_N(1,"Reducing  the frequency in node %s by %lu\n",my_cluster_conf.nodes[i].name,ps);
-        	if (!eards_red_max_and_def_freq(ps)) VERBOSE_N(0,"Error reducing the freq for node %s",my_cluster_conf.nodes[i].name);
-        	eards_remote_disconnect();
-		}
-    }
-	return pstate_level[level];
+	ps=pstate_level[level];
+	reduce_frequencies_all_nodes(ps,my_cluster_conf);
+	return ps;
 }
 
 
@@ -487,7 +465,7 @@ void main(int argc,char *argv[])
 
 			my_warning.level=WARNING_3;
 			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-				my_warning.inc_th=increase_th_all_nodes(WARNING_3);            
+				my_warning.inc_th=eargm_increase_th_all_nodes(WARNING_3);            
 			}else{
 				my_warning.inc_th=0;
 			}
@@ -504,8 +482,8 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"****************************************************************");
 			my_warning.level=WARNING_2;
 			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-				my_warning.new_p_state=reduce_frequencies_all_nodes(WARNING_2);
-				my_warning.inc_th=increase_th_all_nodes(WARNING_2);            
+				my_warning.new_p_state=eargm_reduce_frequencies_all_nodes(WARNING_2);
+				my_warning.inc_th=eargm_increase_th_all_nodes(WARNING_2);            
 			}else{
 				my_warning.inc_th=0;my_warning.new_p_state=0;
 			}
@@ -522,8 +500,8 @@ void main(int argc,char *argv[])
 			VERBOSE_N(0,"****************************************************************");
 			my_warning.level=PANIC;
 			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-				my_warning.new_p_state=reduce_frequencies_all_nodes(PANIC);
-				my_warning.inc_th=increase_th_all_nodes(PANIC);            
+				my_warning.new_p_state=eargm_reduce_frequencies_all_nodes(PANIC);
+				my_warning.inc_th=eargm_increase_th_all_nodes(PANIC);            
 			}else{
 				my_warning.inc_th=0;my_warning.new_p_state=0;
 			}
