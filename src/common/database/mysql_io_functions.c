@@ -575,7 +575,8 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
     if (sig_id < 0)
         return EAR_ERROR;
 
-    int *sigs_ids = calloc(num_loops, sizeof(int));
+    long long *sigs_ids = calloc(num_loops, sizeof(long long));
+
     for (i = 0; i < num_loops; i++)
         sigs_ids[i] = sig_id+i;
 
@@ -584,14 +585,14 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
 
         int offset = i*LOOP_ARGS;
         //integer types
-        for (j = 0; j < 8; j++)
+        for (j = 0; j < LOOP_ARGS; j++)
         {
             bind[j+offset].buffer_type = MYSQL_TYPE_LONGLONG;
             bind[j+offset].is_unsigned = 1;
         }
 
         //string types
-        bind[offset+5].buffer_type = MYSQL_TYPE_STRING;
+        bind[offset+5].buffer_type = MYSQL_TYPE_VAR_STRING;
         bind[offset+5].buffer_length = strlen(loop[i].node_id);
 
         //storage variable assignation
