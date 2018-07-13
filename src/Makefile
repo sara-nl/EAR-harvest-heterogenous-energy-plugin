@@ -18,7 +18,7 @@ ifdef CPUF_BASE
 	endif
 endif
 ifdef SLURM_BASE
-	COMPONENTS += slurm_plugin
+	#COMPONENTS += slurm_plugin
 endif
 ifdef DB_BASE
 	COMPONENTS += global_manager \

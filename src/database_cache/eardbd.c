@@ -91,7 +91,7 @@ static void db_store_loops(loop_t *lops, uint n_lops)
 	}
 
 	verbose("Trying to insert in DB %d loop samples", n_lops);
-	db_batch_insert_loops(lops, n_lops);
+	//db_batch_insert_loops(lops, n_lops);
 	//db_insert_loop(lops);
 }
 
