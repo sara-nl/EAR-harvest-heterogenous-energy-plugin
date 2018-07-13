@@ -66,6 +66,7 @@
 #include <daemon/eard_utils.h>
 #endif
 
+extern powermon_app_t current_ear_app;
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
@@ -944,7 +945,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
     copy_eard_conf(&my_services_conf->eard,&my_cluster_conf.eard);
     copy_eargmd_conf(&my_services_conf->eargmd,&my_cluster_conf.eargm);
     copy_eardb_conf(&my_services_conf->db,&my_cluster_conf.database);
-    copy_eardbd_conf(&my_services_conf->eardbd,&my_cluster_conf.db_manager);
+	copy_eardbd_conf(&my_services_conf->eardbd,&my_cluster_conf.db_manager);
 	save_eard_conf(&eard_dyn_conf);
 }
 
@@ -1066,6 +1067,7 @@ void main(int argc,char *argv[])
 	/* This info is used for eard checkpointing */
 	eard_dyn_conf.cconf=&my_cluster_conf;
 	eard_dyn_conf.nconf=my_node_conf;
+	eard_dyn_conf.pm_app=&current_ear_app;
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
 	/* We initialize frecuency */
@@ -1112,7 +1114,7 @@ void main(int argc,char *argv[])
 	}
 	
 	/** We must control if we are come from a crash **/	
-	// We check if we are recovering from a crash
+	reset_current_app();
 	int must_recover=new_service("eard");
 	if (must_recover){
 		eard_verbose(0,"We must recover from a crash");

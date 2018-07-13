@@ -37,6 +37,13 @@
 #define _POWER_MONITORING_H_
 
 #include <common/types/application.h>
+#include <metrics/power_metrics/power_metrics.h>
+typedef struct powermon_app{
+    application_t app;
+    uint job_created;
+    energy_data_t energy_init;
+}powermon_app_t;
+
 
 /** Periodically monitors the node power monitoring. 
 *
@@ -83,5 +90,11 @@ void powermon_restore_conf();
 
 /** Sets temporally the policy th */
 void powermon_set_th(double th);
+
+/** Resets the current appl data */
+void reset_current_app();
+
+/** Copy src into dest */
+void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src);
 
 #endif

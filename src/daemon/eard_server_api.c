@@ -54,6 +54,7 @@
 
 
 static char *__NAME__ = "EARD_API:";
+extern char *__HOST__;
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
@@ -95,10 +96,12 @@ int create_server_socket(uint port)
         if (sfd == -1)
             continue;
 
-       if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
+       while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){ 
+			eard_verbose(0,"Waiting for connection");
+			sleep(10);
+	   }
             break;                  /* Success */
 
-       close(sfd);
     }
 
    	if (rp == NULL) {               /* No address succeeded */

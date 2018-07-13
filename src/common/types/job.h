@@ -99,5 +99,7 @@ void copy_job(job_t *destiny, job_t *source);
 /** Given a job_t and a file descriptor, outputs the contents of said job to the fd.*/
 void print_job_fd(int fd, job_t *job);
 
+/** Reports the content of the job into the stderr*/
+void report_job(job_t *job);
 
 #endif

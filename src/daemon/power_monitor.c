@@ -87,12 +87,6 @@ extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
 static int sig_reported=0;
 
-typedef struct powermon_app{
-	application_t app;
-	uint job_created;
-	energy_data_t energy_init;
-}powermon_app_t;
-
 
 powermon_app_t current_ear_app;
 periodic_metric_t current_sample;
@@ -144,6 +138,14 @@ void clean_job_environment(int id,int step_id)
 	unlink(fd_lock_filename);
 	unlink(ear_commack);
 	
+
+}
+
+void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
+{
+	dest->job_created=src->job_created;
+	dest->energy_init=src->energy_init;
+	copy_application(&(dest->app),&(src->app));
 
 }
 
@@ -344,6 +346,7 @@ void powermon_mpi_init(application_t * appID)
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
 	start_mpi(&current_ear_app.app.job);
 	current_ear_app.app.is_mpi=1;
+	save_eard_conf(&eard_dyn_conf);	
 }
 
 void powermon_mpi_finalize()
@@ -401,6 +404,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	/* We must report the energy beforesetting the job_id: PENDING */
 	new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
     pthread_mutex_unlock(&app_lock);
+	save_eard_conf(&eard_dyn_conf);	
 	eard_verbose(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
 	sig_reported=0;
 
@@ -429,6 +433,7 @@ void powermon_end_job(job_id jid,job_id sid)
     pthread_mutex_unlock(&app_lock);
     report_powermon_app(&summary);
 	reset_current_app();
+    save_eard_conf(&eard_dyn_conf);
     frequency_recover_previous_policy();
     frequency_recover_previous_frequency();
 	current_node_freq=frequency_get_cpu_freq(0);	
@@ -626,6 +631,7 @@ void powermon_mpi_signature(application_t *app)
     strcpy(current_ear_app.app.job.policy,app->job.policy);
     strcpy(current_ear_app.app.job.app_id,app->job.app_id);
 	sig_reported=1;
+	save_eard_conf(&eard_dyn_conf);	
 }
 
 /*
@@ -657,7 +663,6 @@ void *eard_power_monitoring(void *noinfo)
 	init_periodic_metric(&current_sample);
 		
 	create_powermon_out();
-	reset_current_app();
 
 	// We will collect and report avg power until eard finishes
 	// Get time and Energy
