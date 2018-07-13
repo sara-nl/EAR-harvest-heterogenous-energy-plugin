@@ -40,15 +40,15 @@
 static char buffer_pck[MAX_PACKET_SIZE()];
 static char buffer_gen[PATH_MAX];
 
-//#define lops_len 128 * 512
-//#define mets_len 32 * 512
-//#define eves_len 32 * 512
-//#define apps_len 32 * 512
+#define lops_len 128 * 512
+#define mets_len 32 * 512
+#define eves_len 32 * 512
+#define apps_len 32 * 512
 
-#define lops_len 1
-#define mets_len 2
-#define eves_len 2
-#define apps_len 1
+//#define lops_len 1
+//#define mets_len 2
+//#define eves_len 2
+//#define apps_len 1
 
 static periodic_aggregation_t aggr;
 static application_t apps_mpi[apps_len];
@@ -92,7 +92,7 @@ static void db_store_loops(loop_t *lops, uint n_lops)
 
 	verbose("Trying to insert in DB %d loop samples", n_lops);
 	//db_batch_insert_loops(lops, n_lops);
-	db_insert_loop(lops);
+	//db_insert_loop(lops);
 }
 
 static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
@@ -122,7 +122,7 @@ static void db_store_applications_mpi(application_t *apps, uint n_apps)
 	}
 
 	verbose("Trying to insert in DB %d mpi application samples", n_apps);
-	//db_batch_insert_applications(apps, n_apps);
+	db_batch_insert_applications(apps, n_apps);
 	//db_insert_application(apps);
 }
 
@@ -133,7 +133,7 @@ static void db_store_applications(application_t *apps, uint n_apps)
 	}
 
 	verbose("Trying to insert in DB %d non-mpi application samples", n_apps);
-	//db_batch_insert_applications_no_mpi(apps, n_apps);
+	db_batch_insert_applications_no_mpi(apps, n_apps);
 	//db_insert_application(apps);
 }
 
@@ -157,7 +157,7 @@ static void make_periodic_aggregation(periodic_metric_t *met)
 static void process_timeout_data()
 {
 
-	verbose("Finished aggregation, consumed %lu energy (?J) from %lu to %lu,",
+	verbose("Finished aggregation, consumed %lu energy (mJ) from %lu to %lu,",
 			aggr.DC_energy, aggr.start_time, aggr.end_time);
 
 	db_store_periodic_aggregation();
@@ -194,11 +194,12 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 	if (header->content_type == CONTENT_TYPE_APP)
 	{
 		application_t *app = (application_t *) content;
-		verbose("received an application %d from host %s", app->job.id, app->node_id);
+		//verbose("received an application %d from host %s", app->job.id, app->node_id);
 
 		if (app->is_learning)
 		{
 			type = "learning application_t";
+			
 			memcpy (&apps_ler[apps_ler_i], content, sizeof(application_t));
 			apps_ler_i += 1;
 
@@ -210,6 +211,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		} else if (app->is_mpi)
 		{
 			type = "mpi application_t";
+			
 			memcpy (&apps_mpi[apps_mpi_i], content, sizeof(application_t));
 			apps_mpi_i += 1;
 
@@ -221,6 +223,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		} else
 		{
 			type = "non-mpi application_t";
+			
 			memcpy (&apps_nor[apps_nor_i], content, sizeof(application_t));
 			apps_nor_i += 1;
 
@@ -233,7 +236,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 	}
 	else if (header->content_type == CONTENT_TYPE_PER) {
 		type = "periodic_metric_t";
-
+		
 		memcpy (&mets[mets_i], content, sizeof(periodic_metric_t));
 		make_periodic_aggregation(&mets[mets_i]);
 		mets_i += 1;
@@ -244,7 +247,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		}
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
 		type = "ear_event_t";
-
+		
 		memcpy (&eves[eves_i], content, sizeof(ear_event_t));
 		eves_i += 1;
 
@@ -266,8 +269,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		type = "unknown";
 	}
 
-	verbose("received a packet of size %ld, with an object type '%s' (%d), from the socket %d",
-			size, type, header->content_type, fd);
+	verbose("received a '%s' packet (%ld bytes), from the socket %d", type, size, fd);
 }
 
 /*
@@ -336,14 +338,17 @@ int main(int argc, char **argv)
 	verbose("reserving %0.2f MBytes for events  (%lu per ear_event_t)", mb_eves, sizeof(ear_event_t));
 	verbose("total memory allocated: %0.2f MBytes", mb_totl);
 
-	// Configuration file (TODO)
 	#if 1
+	// Configuration file (TODO)
 	if (get_ear_conf_path(buffer_gen) == EAR_ERROR) {
 		error("Error getting ear.conf path");
 	}
 
 	verbose("Reading '%s' configuration file", buffer_gen);
 	read_cluster_conf(buffer_gen, &conf_clus);
+
+	// Database
+	init_db_helper(&conf_clus.database);
 	#else
 	conf_clus.db_manager.aggr_time = 60;
 	conf_clus.db_manager.tcp_port = 4711;
@@ -435,10 +440,12 @@ int main(int argc, char **argv)
 				// Handle new connections
 				if (i == sock_metr_tcp->fd)
 				{
-					sockets_accept(i, &fd_cli);
+					state1 = sockets_accept(i, &fd_cli);
 
-					if (fd_cli != -1)
+					if (state_ok(state1))
 					{
+						verbose("accepted connection from socket %d", fd_cli);
+
 						FD_SET(fd_cli, &fds_active);
 
 						if (fd_cli > fd_max) {
@@ -468,9 +475,15 @@ int main(int argc, char **argv)
 						}
 					}
 
-					if (state_ok(state1) && recvd_size > 0 && accum_size == packt_size) {
+					if (state_ok(state1) && recvd_size > 0 && accum_size == packt_size){
 						process_incoming_data(i, buffer_pck, packt_size);
 					} else {
+						if (recvd_size == 0) {
+							verbose("disconnected from socket %d", i);
+						} else {
+							error("on reception (%s), disconnecting from socket %d", strerror(errno), i);
+						}						
+
 						FD_CLR(i, &fds_active);
 						close(i);
 					}
