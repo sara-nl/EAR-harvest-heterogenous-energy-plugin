@@ -119,6 +119,17 @@ static void PM_set_sigusr1()
 
 }
 
+void reset_shared_memory()
+{
+	policy_conf_t *my_policy;
+    my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+    dyn_conf->user_type=NORMAL;
+    dyn_conf->lib_enabled=1;
+    dyn_conf->policy=my_cluster_conf.default_policy;
+    dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
+    dyn_conf->th=my_policy->th;
+}
+
 void clean_job_environment(int id,int step_id)
 {
 	char ear_ping[MAX_PATH_SIZE],fd_lock_filename[MAX_PATH_SIZE],ear_commack[MAX_PATH_SIZE];
@@ -422,7 +433,7 @@ void powermon_end_job(job_id jid,job_id sid)
     frequency_recover_previous_frequency();
 	current_node_freq=frequency_get_cpu_freq(0);	
 	clean_job_environment(jid,sid);
-
+	reset_shared_memory();
 }
 
 /*
