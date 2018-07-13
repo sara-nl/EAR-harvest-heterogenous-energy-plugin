@@ -42,7 +42,7 @@ static char *__NAME__ = "MYSQL_IO: ";
                             "(?, ?, ?, ?, ?)"
 
 
-#define LOOP_QUERY              "INSERT INTO Loops (event, size, level, job_id, step_id,  node_id, total_iterations," \
+#define LOOP_QUERY              "INSERT INTO Loops (event, size, level, job_id, step_id, node_id, total_iterations," \
                                 "signature_id) VALUES (?, ?, ?, ?, ?, ?, ? ,?)"
 
 
@@ -557,8 +557,9 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
     int i, j;
 
     char *params = ", (?, ?, ?, ?, ?, ?, ?, ?)";
-    char *query = malloc(strlen(LOOP_QUERY)+strlen(params)*LOOP_ARGS+1);
+    char *query = malloc(strlen(LOOP_QUERY)+strlen(params)*(num_loops-1)+1);
     strcpy(query, LOOP_QUERY);
+
     for (i = 1; i < num_loops; i++)
         strcat(query, params);
 
@@ -571,6 +572,9 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
     cont.loop = loop;
     int sig_id = mysql_batch_insert_signatures(connection, cont, 0, num_loops);
 
+    if (sig_id < 0)
+        return EAR_ERROR;
+
     int *sigs_ids = calloc(num_loops, sizeof(int));
     for (i = 0; i < num_loops; i++)
         sigs_ids[i] = sig_id+i;
@@ -578,7 +582,7 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
     for (i = 0; i < num_loops; i++)
     {
 
-        int offset = i*num_loops;
+        int offset = i*LOOP_ARGS;
         //integer types
         for (j = 0; j < 8; j++)
         {
@@ -587,7 +591,7 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
         }
 
         //string types
-        bind[offset+5].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[offset+5].buffer_type = MYSQL_TYPE_STRING;
         bind[offset+5].buffer_length = strlen(loop[i].node_id);
 
         //storage variable assignation
@@ -599,6 +603,7 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
         bind[offset+5].buffer = (char *)&loop[i].node_id;
         bind[offset+6].buffer = (char *)&loop[i].total_iterations;
         bind[offset+7].buffer = (char *)&sigs_ids[i];
+
     }
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
