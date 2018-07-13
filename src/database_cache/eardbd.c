@@ -157,7 +157,7 @@ static void make_periodic_aggregation(periodic_metric_t *met)
 static void process_timeout_data()
 {
 
-	verbose("Finished aggregation, consumed %lu energy (?J) from %lu to %lu,",
+	verbose("Finished aggregation, consumed %lu energy (mJ) from %lu to %lu,",
 			aggr.DC_energy, aggr.start_time, aggr.end_time);
 
 	db_store_periodic_aggregation();
@@ -194,11 +194,12 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 	if (header->content_type == CONTENT_TYPE_APP)
 	{
 		application_t *app = (application_t *) content;
-		verbose("received an application %d from host %s", app->job.id, app->node_id);
+		//verbose("received an application %d from host %s", app->job.id, app->node_id);
 
 		if (app->is_learning)
 		{
 			type = "learning application_t";
+			
 			memcpy (&apps_ler[apps_ler_i], content, sizeof(application_t));
 			apps_ler_i += 1;
 
@@ -210,6 +211,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		} else if (app->is_mpi)
 		{
 			type = "mpi application_t";
+			
 			memcpy (&apps_mpi[apps_mpi_i], content, sizeof(application_t));
 			apps_mpi_i += 1;
 
@@ -221,6 +223,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		} else
 		{
 			type = "non-mpi application_t";
+			
 			memcpy (&apps_nor[apps_nor_i], content, sizeof(application_t));
 			apps_nor_i += 1;
 
@@ -233,7 +236,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 	}
 	else if (header->content_type == CONTENT_TYPE_PER) {
 		type = "periodic_metric_t";
-
+		
 		memcpy (&mets[mets_i], content, sizeof(periodic_metric_t));
 		make_periodic_aggregation(&mets[mets_i]);
 		mets_i += 1;
@@ -244,7 +247,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		}
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
 		type = "ear_event_t";
-
+		
 		memcpy (&eves[eves_i], content, sizeof(ear_event_t));
 		eves_i += 1;
 
@@ -266,8 +269,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		type = "unknown";
 	}
 
-	verbose("received a packet of size %ld, with an object type '%s' (%d), from the socket %d",
-			size, type, header->content_type, fd);
+	verbose("received a '%s' packet (%ld bytes), from the socket %d", type, size, fd);
 }
 
 /*
@@ -438,10 +440,12 @@ int main(int argc, char **argv)
 				// Handle new connections
 				if (i == sock_metr_tcp->fd)
 				{
-					sockets_accept(i, &fd_cli);
+					state1 = sockets_accept(i, &fd_cli);
 
-					if (fd_cli != -1)
+					if (state_ok(state1))
 					{
+						verbose("accepted connection from socket %d", fd_cli);
+
 						FD_SET(fd_cli, &fds_active);
 
 						if (fd_cli > fd_max) {
@@ -471,9 +475,15 @@ int main(int argc, char **argv)
 						}
 					}
 
-					if (state_ok(state1) && recvd_size > 0 && accum_size == packt_size) {
+					if (state_ok(state1) && recvd_size > 0 && accum_size == packt_size){
 						process_incoming_data(i, buffer_pck, packt_size);
 					} else {
+						if (recvd_size == 0) {
+							verbose("disconnected from socket %d", i);
+						} else {
+							error("on reception (%s), disconnecting from socket %d", strerror(errno), i);
+						}						
+
 						FD_CLR(i, &fds_active);
 						close(i);
 					}

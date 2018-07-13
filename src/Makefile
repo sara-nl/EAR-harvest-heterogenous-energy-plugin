@@ -11,14 +11,14 @@ ifdef CPUF_BASE
                           commands \
                           tests
 		endif
-		#COMPONENTS += library
+		COMPONENTS += library
 	endif
 	ifdef GSL_BASE
 		COMPONENTS += tools
 	endif
 endif
 ifdef SLURM_BASE
-	#COMPONENTS += slurm_plugin
+	COMPONENTS += slurm_plugin
 endif
 ifdef DB_BASE
 	COMPONENTS += global_manager \
