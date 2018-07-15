@@ -251,6 +251,10 @@ void init_power_policy()
 	init_policy_functions();
 }
 
+void init_coeff_data(coefficient_t *cv2,coefficient_v3_t *cv3)
+{
+	memcpy(cv2,&(cv3->pstate),sizeof(coefficient_t));
+}
 
 
 void init_power_models(unsigned int p_states, unsigned long *p_states_list)
@@ -314,7 +318,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	if (ear_use_turbo) begin_pstate = 0;
 	end_pstate = p_states;
 
-
+	#if !COEFFS_V3
 	for (ref = begin_pstate; ref < end_pstate; ref++)
 	{
 		sprintf(coeff_file_fn, "%s.%d", coeff_file, p_states_list[ref]);
@@ -345,7 +349,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 			exit(1);
 		}
 	}
-	#if COEFFS_V3
+	#else
 	char coeffs_path[GENERIC_NAME];
 	get_coeffs_path(get_ear_tmp(),coeffs_path);	
 	coefficients_v3=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
@@ -356,6 +360,12 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 		print_coefficient(&coefficients_v3[i]);
 	}
 	#endif
+	int ccoeff;
+	for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
+		ref=frequency_to_pstate(coefficients_v3[ccoeff].pstate_ref);	
+		i=frequency_to_pstate(coefficients_v3[ccoeff].pstate);
+		init_coeff_data(&coefficients[ref][i],&coefficients_v3[ccoeff]);
+	}
 	#endif
 	app_policy.init(p_states);
 }
