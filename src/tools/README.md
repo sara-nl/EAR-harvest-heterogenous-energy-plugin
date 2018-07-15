@@ -15,10 +15,11 @@ EAR tools and command line tools used during the learning phase or to manipulate
 
 Examples
 --------
-# coefficients_v2_to_v3 v2_path(root) v3_path(directory) nodename max_fre min_freq island
+- coefficients_v2_to_v3 v2_path(root) v3_path(directory) nodename max_fre min_freq island
 coefficients_v2_to_v3 /etc/ear/coeffs/coeffs. $HOME/test r22u27 2600000 2000000 0
 
-# coefficients_to_csv version(2) v2_path(root) nodename max_fre min_freq
+- coefficients_to_csv version(2) v2_path(root) nodename max_fre min_freq
 coefficients_to_csv 2 /etc/ear/coeffs/coeffs. r22u21 2600000 2000000
-# coefficients_to_csv version(3) v3_path(directory) max_fre min_freq island --> it uses current nodename
+
+- coefficients_to_csv version(3) v3_path(directory) max_fre min_freq island --> it uses current nodename
 coefficients_to_csv 3 /etc/ear/coeffsv3 2600000 2000000 0
