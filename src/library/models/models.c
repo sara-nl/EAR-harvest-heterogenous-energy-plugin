@@ -354,7 +354,6 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	get_coeffs_path(get_ear_tmp(),coeffs_path);	
 	coefficients_v3=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
 	num_coeffs=num_coeffs/sizeof(coefficient_v3_t);
-	ear_verbose(0,"Coefficients v3 %d coefficients found",num_coeffs);
 	#if 0
 	for (i=0;i<num_coeffs;i++){
 		print_coefficient(&coefficients_v3[i]);
@@ -362,8 +361,8 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	#endif
 	int ccoeff;
 	for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
-		ref=frequency_to_pstate(coefficients_v3[ccoeff].pstate_ref);	
-		i=frequency_to_pstate(coefficients_v3[ccoeff].pstate);
+		ref=frequency_freq_to_pstate(coefficients_v3[ccoeff].pstate_ref);	
+		i=frequency_freq_to_pstate(coefficients_v3[ccoeff].pstate);
 		init_coeff_data(&coefficients[ref][i],&coefficients_v3[ccoeff]);
 	}
 	#endif
