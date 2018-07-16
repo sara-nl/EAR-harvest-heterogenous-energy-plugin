@@ -551,10 +551,10 @@ int eard_system(int must_read)
 			#if !LARGE_CLUSTER
 			#if !USE_EARDB
 			#if DB_MYSQL
-			ret1 = db_insert_loop (&req.req_data.loop.loop);
+			ret1 = db_insert_loop (&req.req_data.loop);
 			#endif
 			#else
-			if ((ret1=eardbd_send_loop(&req.req_data.loop.loop))!=EAR_SUCCESS){
+			if ((ret1=eardbd_send_loop(&req.req_data.loop))!=EAR_SUCCESS){
 				VERBOSE_N(0,"Error sending loop to eardb");
 				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
 			}
