@@ -8,7 +8,8 @@ eard_OBJS += power_monitor.o \
              dynamic_configuration.o \
              shared_configuration.o \
              eard_server_api.o \
-			 eard_checkpoint.o
+			 eard_checkpoint.o \
+			 app_api/app_server_api.o
 
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database.a
@@ -28,7 +29,7 @@ BINARIES = eard_api.o \
 
 ######## RULES
 
-all: $(BINARIES) all.others
+all: app_api_bin $(BINARIES) all.others
 
 eard: eard.c $(eard_OBJS) ../../Makefile 
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
@@ -54,9 +55,12 @@ eard_rapi.o: eard_rapi.c eard_rapi.h
 eard_checkpoint.o:eard_checkpoint.c eard_checkpoint.h
 	$(CC) -fPIC $(CFLAGS) -c eard_checkpoint.c
 
+app_api_bin:
+	$(MAKE) -C 'app_api' all
+
 ######## OPTIONS
 
-install: install.others
+install: install.others 
 	cp eard $(DESTDIR)/sbin
 
 clean: clean.others
@@ -74,3 +78,4 @@ include $(SRCDIR)/Makefile.depend
 
 %.others:
 	$(MAKE) -C 'commands' $*
+	$(MAKE) -C 'app_api' $*

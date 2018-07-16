@@ -66,6 +66,10 @@
 #include <daemon/eard_utils.h>
 #endif
 
+#if APP_API
+pthread_t app_eard_api_th;
+#endif
+
 extern powermon_app_t current_ear_app;
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
@@ -90,6 +94,9 @@ char services_conf_path[GENERIC_NAME];
 int coeffs_size;
 uint signal_sighup=0;
 uint f_monitoring;
+
+void *eard_non_earl_api_service(void *noinfo);
+
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
@@ -1225,6 +1232,12 @@ void main(int argc,char *argv[])
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
 		eard_verbose(0,"error creating dynamic_configuration thread \n");
 	}
+
+	#if APP_API
+	if (ret=pthread_create(&app_eard_api_th,NULL,eard_non_earl_api_service,NULL)){
+		eard_verbose(0,"error creating server thread for non-earl api\n");
+	}
+	#endif
 
 	eard_verbose(1,"Communicator for %s ON\n",nodename);
 	// we wait until EAR daemon receives a request

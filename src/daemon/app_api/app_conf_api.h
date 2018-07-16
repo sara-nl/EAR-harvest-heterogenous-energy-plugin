@@ -52,7 +52,7 @@ typedef struct app_send{
 typedef struct app_recv{
 	int 				ret;
 	union app_recv_opt 	my_data;
-}app_recv_t
+}app_recv_t;
 
 #else
 #endif

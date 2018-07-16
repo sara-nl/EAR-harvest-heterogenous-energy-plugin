@@ -26,10 +26,16 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-#include <common/daemon/app_api/app_conf_api.h>
+#include <daemon/app_api/app_conf_api.h>
 
 static int fd_app_to_eard;
 static int fd_eard_to_app;
@@ -46,11 +52,11 @@ static int create_connection()
         fprintf(stderr,"Error, EAR_TMP not defined. Load ear module\n");
         return EAR_ERROR;
     }
-    sprintf(app_to_eard,"%s/.app_to_eard",root);
-    sprintf(eard_to_app,"%s/.eard_to_app",root);
+    sprintf(app_to_eard,"%s/.app_to_eard",tmp);
+    sprintf(eard_to_app,"%s/.eard_to_app",tmp);
     fd_app_to_eard=open(app_to_eard,O_WRONLY);
 	if (fd_app_to_eard<0) return EAR_ERROR;
-    fd_eard_to_app=open(fd_eard_to_app,O_WRONLY);
+    fd_eard_to_app=open(eard_to_app,O_WRONLY);
 	if (fd_eard_to_app<0) return EAR_ERROR;
 
 	return EAR_SUCCESS;
@@ -96,8 +102,8 @@ int ear_energy(ulong *energy_mj,ulong *time_ms)
 
 	/* Parsing the output */
 
-	*energy_mj=my_data.my_data.energy_mj;
-	*time_ms=my_data.my_data.time_ms;
+	*energy_mj=my_data.my_data.my_energy.energy_mj;
+	*time_ms=my_data.my_data.my_energy.time_ms;
 
 	/* Closing connection */
 	close_connection();

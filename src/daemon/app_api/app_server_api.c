@@ -29,13 +29,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pthread.h>
+#include <errno.h>
+#include <fcntl.h>
+
 
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-#include <common/daemon/app_api/app_conf_api.h>
 #include <common/ear_verbose.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <daemon/app_api/app_conf_api.h>
 
 #define close_app_connection()
 
@@ -53,9 +56,8 @@ extern char *__HOST__;
 /***************** PRIVATE FUNCTIONS in this module ******/
 /*********************************************************/
 
-static int connect_with_app(int *fd)
+static int connect_with_app()
 {
-    *fd=fd_eard_to_app;
     if (fd_eard_to_app>=0) return EAR_SUCCESS;
     else return EAR_ERROR;
 }
@@ -95,13 +97,12 @@ int create_app_connection(char *root)
 	}
 	fd_eard_to_app=open(eard_to_app,O_RDWR);
 	if (fd_eard_to_app<0)	return EAR_ERROR;
-	}
 	return EAR_SUCCESS;
 }
 
 uint read_app_command(app_send_t *app_req)
 {
-	if (read(fd_external_eard,app_req,sizeof(app_send_t))!=sizeof(app_send_t)){
+	if (read(fd_app_to_eard,app_req,sizeof(app_send_t))!=sizeof(app_send_t)){
 		eard_verbose(0,"Error reading NON-EARL application request\n");
 		return INVALID_COMMAND;
 	}
@@ -131,17 +132,20 @@ void ear_energy()
 	
 	/* Execute specific request */
 
+	eard_verbose(0,"Energy&Time requested for non-earl code\n");
 	read_dc_energy_time(&energy_mj,&time_ms);
 
 	/* Create connection */
-	if (connect_with_app(&fd_ack)!=EAR_SUCCESS){
+	if (connect_with_app()!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with NON-EARL application \n");
 		return;
 	}
+	
+
 	/* Prepare the answer */
 	data.ret=EAR_SUCCESS;
-	data.my_data.energy_mj=energy_mj;
-	data.my_data.time_ms=time_ms;
+	data.my_data.my_energy.energy_mj=energy_mj;
+	data.my_data.my_energy.time_ms=time_ms;
 
 	send_app_answer(&data);
 
@@ -182,10 +186,10 @@ void *eard_non_earl_api_service(void *noinfo)
 {
 	fd_set rfds;
     fd_set rfds_basic;
-	int numfds_ready;
+	int numfds_ready,numfds_req;
 	int max_fd;
 	/* Create connections */
-	if (create_app_connection(my_cluster_conf.tmp)!= EAR_SUCCESS){ 
+	if (create_app_connection(my_cluster_conf.tmp_dir)!= EAR_SUCCESS){ 
 		eard_verbose(0,"Error creating files for non-EARL requests\n");
 		pthread_exit(0);
 	}
@@ -196,6 +200,7 @@ void *eard_non_earl_api_service(void *noinfo)
     numfds_req=max_fd+1;
 	rfds_basic=rfds;
 	/* Wait for messages */
+	eard_verbose(0,"Waiting for non-earl requestst\n");
 	while ((numfds_ready=select(numfds_req,&rfds,NULL,NULL,NULL))>=0){
 		if (numfds_ready>0){
 			/* There is only one fd, it MUST be this one */
