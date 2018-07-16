@@ -51,6 +51,16 @@ typedef struct loop
     signature_t signature;
 } loop_t;
 
+typedef struct db_loop
+{
+    loop_id_t id;
+    ulong loop_id;
+    ulong step_id;
+    char node_id[GENERIC_NAME];
+    ulong total_iterations;
+    signature_t signature;
+} db_loop_t;
+
 // Function declarations
 
 // MANAGEMENT
