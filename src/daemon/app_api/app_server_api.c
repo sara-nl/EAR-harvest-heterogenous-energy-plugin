@@ -132,7 +132,6 @@ void ear_energy()
 	
 	/* Execute specific request */
 
-	eard_verbose(0,"Energy&Time requested for non-earl code\n");
 	read_dc_energy_time(&energy_mj,&time_ms);
 
 	/* Create connection */
@@ -140,7 +139,7 @@ void ear_energy()
 		eard_verbose(0,"Error connecting with NON-EARL application \n");
 		return;
 	}
-	
+
 
 	/* Prepare the answer */
 	data.ret=EAR_SUCCESS;

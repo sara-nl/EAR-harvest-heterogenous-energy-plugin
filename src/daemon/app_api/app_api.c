@@ -56,7 +56,7 @@ static int create_connection()
     sprintf(eard_to_app,"%s/.eard_to_app",tmp);
     fd_app_to_eard=open(app_to_eard,O_WRONLY);
 	if (fd_app_to_eard<0) return EAR_ERROR;
-    fd_eard_to_app=open(eard_to_app,O_WRONLY);
+    fd_eard_to_app=open(eard_to_app,O_RDONLY);
 	if (fd_eard_to_app<0) return EAR_ERROR;
 
 	return EAR_SUCCESS;
