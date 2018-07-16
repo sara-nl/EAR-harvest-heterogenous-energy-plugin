@@ -40,7 +40,7 @@
 static char buffer_pck[MAX_PACKET_SIZE()];
 static char buffer_gen[PATH_MAX];
 
-#define lops_len 128 * 512
+//#define lops_len 128 * 512
 #define mets_len 32 * 512
 #define eves_len 32 * 512
 #define apps_len 32 * 512
