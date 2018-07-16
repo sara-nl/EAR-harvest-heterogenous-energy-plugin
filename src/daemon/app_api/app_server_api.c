@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 #include <pthread.h>
 #include <errno.h>
+#include <signal.h>
 #include <fcntl.h>
 
 
@@ -49,12 +50,23 @@ static int fd_app_to_eard=-1;
 static int fd_eard_to_app=-1;
 
 extern cluster_conf_t my_cluster_conf;
+extern int eard_must_exit;
 static char *__NAME__="EARD";
 extern char *__HOST__;
 
 /*********************************************************/
 /***************** PRIVATE FUNCTIONS in this module ******/
 /*********************************************************/
+
+static void app_api_set_sigterm()
+{
+    sigset_t set;
+    struct  sigaction sa;
+    sigfillset(&set);
+    pthread_sigmask(SIG_SETMASK,&set,NULL); 
+
+}
+
 
 static int connect_with_app()
 {
@@ -187,6 +199,9 @@ void *eard_non_earl_api_service(void *noinfo)
     fd_set rfds_basic;
 	int numfds_ready,numfds_req;
 	int max_fd;
+
+	app_api_set_sigterm();
+
 	/* Create connections */
 	if (create_app_connection(my_cluster_conf.tmp_dir)!= EAR_SUCCESS){ 
 		eard_verbose(0,"Error creating files for non-EARL requests\n");
@@ -200,7 +215,7 @@ void *eard_non_earl_api_service(void *noinfo)
 	rfds_basic=rfds;
 	/* Wait for messages */
 	eard_verbose(0,"Waiting for non-earl requestst\n");
-	while ((numfds_ready=select(numfds_req,&rfds,NULL,NULL,NULL))>=0){
+	while ((eard_must_exit==0) && (numfds_ready=select(numfds_req,&rfds,NULL,NULL,NULL))>=0){
 		if (numfds_ready>0){
 			/* There is only one fd, it MUST be this one */
         	if (FD_ISSET(fd_app_to_eard,&rfds)){
@@ -212,6 +227,7 @@ void *eard_non_earl_api_service(void *noinfo)
 	}
 	/* Close and remove files , never reached if thread is killed */
 	dispose_app_connection();
+	pthread_exit(0);
 }
 
 
