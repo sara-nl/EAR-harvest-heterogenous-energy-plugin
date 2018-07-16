@@ -548,6 +548,7 @@ int eard_system(int must_read)
 
 		case WRITE_LOOP_SIGNATURE:
 			ack=EAR_COM_OK;
+			// print_loop_fd(1,&req.req_data.loop);
 			#if !LARGE_CLUSTER
 			#if !USE_EARDB
 			#if DB_MYSQL
@@ -1213,7 +1214,7 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
-    if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.udp_port, UDP)!=EAR_SUCCESS){
+    if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif
