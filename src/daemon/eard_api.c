@@ -360,7 +360,6 @@ ulong eards_write_loop_signature(loop_t *loop_signature)
     req.req_service = WRITE_LOOP_SIGNATURE;
 	req.sec=create_sec_tag();
     memcpy(&req.req_data.loop.loop, loop_signature, sizeof(loop_t));
-    memcpy(&req.req_data.loop.job, loop_signature->job, sizeof(job_t));
 
 	
 

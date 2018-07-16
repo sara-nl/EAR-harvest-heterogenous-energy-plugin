@@ -35,16 +35,12 @@
 #include <common/types/job.h>
 #include <common/types/loop.h>
 
-typedef struct eard_loop{
-	loop_t loop;
-	job_t	job;
-}eard_loop_t;
 
 // Data type to send the requests
 union daemon_req_opt {
     unsigned long req_value;
     application_t app;
-	eard_loop_t		  loop;
+	loop_t		  loop;
 	ear_event_t event;
 };
 

@@ -80,7 +80,7 @@ void copy_loop(loop_t *destiny, loop_t *source);
 // REPORTING
 /** Appends in a file a loop in CSV format. The returned integer is one
 *   of the following states: EAR_SUCCESS or EAR_ERROR. */
-int append_loop_text_file(char *path, loop_t *loop);
+int append_loop_text_file(char *path, loop_t *loop,job_t *job);
 
 /** Given a loop_t and a file descriptor, outputs the contents of said loop to the fd.*/
 void print_loop_fd(int fd, loop_t *loop);

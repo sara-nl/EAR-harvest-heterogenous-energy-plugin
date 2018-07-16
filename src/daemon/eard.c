@@ -551,7 +551,6 @@ int eard_system(int must_read)
 			#if !LARGE_CLUSTER
 			#if !USE_EARDB
 			#if DB_MYSQL
-			req.req_data.loop.loop.job=&req.req_data.loop.job;
 			ret1 = db_insert_loop (&req.req_data.loop.loop);
 			#endif
 			#else

@@ -136,7 +136,7 @@ void states_end_period(uint iterations)
 	if (loop_with_signature)
 	{
 		loop.total_iterations = iterations;
-		append_loop_text_file(loop_summary_path, &loop);
+		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
 		#if !LARGE_CLUSTERS
 		#if DB_MYSQL
 		eards_write_loop_signature(&loop);
@@ -198,11 +198,11 @@ static void print_loop_signature(char *title, signature_t *loop)
 }
 
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter);
-static void report_loop_signature(uint iterations,loop_t *my_loop)
+static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
 {
    	my_loop->total_iterations = iterations;
 	#if DB_FILES
-   	append_loop_text_file(loop_summary_path, my_loop);
+   	append_loop_text_file(loop_summary_path, my_loop,job);
 	#endif
 	#if DB_MYSQL
     eards_write_loop_signature(my_loop);
@@ -398,7 +398,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 					// Loop printing algorithm
 					copy_signature(&loop.signature, &loop_signature.signature);
-					report_loop_signature(iterations,&loop);
+					report_loop_signature(iterations,&loop,&loop_signature.job);
 				}
 			}
 			break;
@@ -438,7 +438,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					EDP = ENERGY * TIME;
 
 					copy_signature(&loop.signature, &loop_signature.signature);
-					report_loop_signature(iterations,&loop);
+					report_loop_signature(iterations,&loop,&loop_signature.job);
 
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
