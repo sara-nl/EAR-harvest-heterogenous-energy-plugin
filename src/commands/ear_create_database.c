@@ -115,8 +115,9 @@ void create_tables(MYSQL *connection)
                             TPI DOUBLE,\
                             CPI DOUBLE,\
                             Gflops DOUBLE,\
-                            time DOUBLE,\
-                            FLOPS1 BIGINT unsigned,\
+                            time DOUBLE,"
+#if !DB_SIMPLE
+                            "FLOPS1 BIGINT unsigned,\
                             FLOPS2 BIGINT unsigned,\
                             FLOPS3 BIGINT unsigned,\
                             FLOPS4 BIGINT unsigned,\
@@ -125,8 +126,9 @@ void create_tables(MYSQL *connection)
                             FLOPS7 BIGINT unsigned,\
                             FLOPS8 BIGINT unsigned,\
                             instructions BIGINT unsigned, \
-                            cycles BIGINT unsigned,\
-                            avg_f BIGINT unsigned,\
+                            cycles BIGINT unsigned,"
+#endif
+                            "avg_f BIGINT unsigned,\
                             def_f BIGINT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
@@ -215,8 +217,9 @@ void create_tables(MYSQL *connection)
                             TPI DOUBLE,\
                             CPI DOUBLE,\
                             Gflops DOUBLE,\
-                            time DOUBLE,\
-                            FLOPS1 BIGINT unsigned,\
+                            time DOUBLE,"
+#if !DB_SIMPLE
+                            "FLOPS1 BIGINT unsigned,\
                             FLOPS2 BIGINT unsigned,\
                             FLOPS3 BIGINT unsigned,\
                             FLOPS4 BIGINT unsigned,\
@@ -225,8 +228,9 @@ void create_tables(MYSQL *connection)
                             FLOPS7 BIGINT unsigned,\
                             FLOPS8 BIGINT unsigned,\
                             instructions BIGINT unsigned, \
-                            cycles BIGINT unsigned,\
-                            avg_f BIGINT unsigned,\
+                            cycles BIGINT unsigned,"
+#endif
+                            "avg_f BIGINT unsigned,\
                             def_f BIGINT unsigned, \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
