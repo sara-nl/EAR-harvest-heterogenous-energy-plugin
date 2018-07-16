@@ -26,44 +26,9 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
-#include <sys/types.h>
-#include <sys/stat.h>
 
-#include <common/config.h>
-#include <common/states.h>
-#define MAX_PATH_SIZE 256
-
-static char app_to_eard[MAX_PATH_SIZE];
-static char eard_to_app[MAX_PATH_SIZE];
-int create_app_connection(char *root)
-{
-	int fd;
-	mode_t old_mask;
-    sprintf(app_to_eard,"%s/.app_to_eard",root);
-    sprintf(eard_to_app,"%s/.eard_to_app",root);
-	old_mask=umask(0);
-	// app_to_eard is used to send requests from app to eard
-    if (mknod(app_to_eard,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
-        if (errno!=EEXIST){
-			return EAR_ERROR;
-        }
-    }
-	if (mknod(eard_to_app,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
-        if (errno!=EEXIST){
-            return EAR_ERROR;
-        }
-    }
-	fd=open(app_to_eard,O_RDWR);
-	umask(old_mask);
-	return fd;
-}
-
-/** Returns the energy in mJ and the time in ms  */
-int ear_energy(ulong *energy_mj,ulong *time_ms)
-{
-}
-
-/** Releases resources to connect with applications */
-int dispose_app_connection()
-{
-}
+#ifndef _APP_API_H
+#define _APP_API_H
+void ear_energy(ulong *energy_mj,ulong *time_ms);
+#else
+#endif
