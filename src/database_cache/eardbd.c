@@ -45,7 +45,7 @@ static char buffer_gen[PATH_MAX];
 #define eves_len 32 * 512
 #define apps_len 32 * 512
 
-//#define lops_len 1
+#define lops_len 1
 //#define mets_len 2
 //#define eves_len 2
 //#define apps_len 1
@@ -55,8 +55,8 @@ static application_t apps_mpi[apps_len];
 static application_t apps_nor[apps_len];
 static application_t apps_ler[apps_len];
 static periodic_metric_t mets[mets_len];
-static ear_event_t eves[apps_len];
-static loop_t lops[apps_len];
+static ear_event_t eves[eves_len];
+static loop_t lops[lops_len];
 static uint apps_mpi_i;
 static uint apps_nor_i;
 static uint apps_ler_i;
@@ -92,7 +92,7 @@ static void db_store_loops(loop_t *lops, uint n_lops)
 
 	verbose("Trying to insert in DB %d loop samples", n_lops);
 	//db_batch_insert_loops(lops, n_lops);
-	//db_insert_loop(lops);
+	db_insert_loop(lops);
 }
 
 static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
@@ -260,6 +260,10 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 
 		memcpy (&lops[lops_i], content, sizeof(loop_t));
 		lops_i += 1;
+
+		//verbose("%d %d %d '%s' %lu", lops[lops_i].id.event, lops[lops_i].id.size, lops[lops_i].id.level,
+		//	lops[lops_i].node_id, lops[lops_i].total_iterations);
+		//print_signature_fd(STDERR_FILENO, &lops[lops_i].signature);
 
 		if (lops_i == eves_len) {
 			db_store_loops(lops, lops_i);
