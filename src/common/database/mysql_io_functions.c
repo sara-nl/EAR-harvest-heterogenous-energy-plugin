@@ -37,6 +37,7 @@
 #include <common/database/mysql_io_functions.h>
 
 static char *__NAME__ = "MYSQL_IO: ";
+#define DB_SIMPLE 1
 
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id, power_signature_id) VALUES" \
                             "(?, ?, ?, ?, ?)"
@@ -50,11 +51,17 @@ static char *__NAME__ = "MYSQL_IO: ";
                                 "end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
                                 "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
+#if !DB_SIMPLE
 #define SIGNATURE_QUERY         "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
                                 "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                 "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
                                 "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
                                 "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#else
+#define SIGNATURE_QUERY         "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
+                                "?, ?, ?)"
+#endif
 
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -95,7 +102,11 @@ static char *__NAME__ = "MYSQL_IO: ";
 
 #define EAR_EVENTS_ARGS 5
 
+#if !DB_SIMPLE
 #define SIGNATURE_ARGS 21
+#else
+#define SIGNATURE_ARGS 11
+#endif
 
 #define POWER_SIGNATURE_ARGS 9
 
@@ -871,7 +882,11 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
         if (mysql_stmt_prepare(statement, LEARNING_SIGNATURE_QUERY, strlen(LEARNING_SIGNATURE_QUERY))) return mysql_statement_error(statement);
     }
 
+#if !SIMPLE_DB
     MYSQL_BIND bind[21];
+#else
+    MYSQL_BIND bind[11];
+#endif
     int i = 0;
 
     //double storage
@@ -883,7 +898,11 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     }
 
     //unsigned long long storage
+#if !SIMPLE_DB
     for (i = 9; i < 21; i++)
+#else
+    for (i = 9; i < 11; i++)
+#endif
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[i].length = 0;
@@ -901,6 +920,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     bind[6].buffer = (char *)&sig->CPI;
     bind[7].buffer = (char *)&sig->Gflops;
     bind[8].buffer = (char *)&sig->time;
+#if !SIMPLE_DB
     bind[9].buffer = (char *)&sig->FLOPS[0];
     bind[10].buffer = (char *)&sig->FLOPS[1];
     bind[11].buffer = (char *)&sig->FLOPS[2];
@@ -913,7 +933,11 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     bind[18].buffer = (char *)&sig->cycles;
     bind[19].buffer = (char *)&sig->avg_f;
     bind[20].buffer = (char *)&sig->def_f;
-
+#else
+    bind[9].buffer = (char *)&sig->avg_f;
+    bind[10].buffer = (char *)&sig->def_f;
+#endif
+    
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
     if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
@@ -935,7 +959,11 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
     MYSQL_STMT *statement = mysql_stmt_init(connection);
 
     if (!statement) return EAR_MYSQL_ERROR;
+#if !DB_SIMPLE
     char *params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+#else
+    char *params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+#endif
     char *query;
 
     if (!is_learning)
@@ -970,7 +998,11 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
         }
 
         //unsigned long long storage
+#if !DB_SIMPLE
         for (j = 9; j < 21; j++)
+#else
+        for (j = 9; j < 11; j++)
+#endif
         {
             bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
             bind[offset+j].length = 0;
@@ -991,6 +1023,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[6+offset].buffer = (char *)&cont.app[i].signature.CPI;
             bind[7+offset].buffer = (char *)&cont.app[i].signature.Gflops;
             bind[8+offset].buffer = (char *)&cont.app[i].signature.time;
+#if !DB_SIMPLE
             bind[9+offset].buffer = (char *)&cont.app[i].signature.FLOPS[0];
             bind[10+offset].buffer = (char *)&cont.app[i].signature.FLOPS[1];
             bind[11+offset].buffer = (char *)&cont.app[i].signature.FLOPS[2];
@@ -1003,6 +1036,10 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[18+offset].buffer = (char *)&cont.app[i].signature.cycles;
             bind[19+offset].buffer = (char *)&cont.app[i].signature.avg_f;
             bind[20+offset].buffer = (char *)&cont.app[i].signature.def_f;
+#else
+            bind[9+offset].buffer = (char *)&cont.app[i].signature.avg_f;
+            bind[10+offset].buffer = (char *)&cont.app[i].signature.def_f;
+#endif
         }
         else if (cont.type == EAR_TYPE_LOOP)
         {
@@ -1015,6 +1052,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[6+offset].buffer = (char *)&cont.loop[i].signature.CPI;
             bind[7+offset].buffer = (char *)&cont.loop[i].signature.Gflops;
             bind[8+offset].buffer = (char *)&cont.loop[i].signature.time;
+#if !DB_SIMPLE
             bind[9+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[0];
             bind[10+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[1];
             bind[11+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[2];
@@ -1027,6 +1065,10 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[18+offset].buffer = (char *)&cont.loop[i].signature.cycles;
             bind[19+offset].buffer = (char *)&cont.loop[i].signature.avg_f;
             bind[20+offset].buffer = (char *)&cont.loop[i].signature.def_f;
+#else
+            bind[9+offset].buffer = (char *)&cont.loop[i].signature.avg_f;
+            bind[10+offset].buffer = (char *)&cont.loop[i].signature.def_f;
+#endif
         }
     }
 
