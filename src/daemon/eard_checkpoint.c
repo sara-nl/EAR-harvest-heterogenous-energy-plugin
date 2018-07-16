@@ -64,6 +64,12 @@ void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 		eard_verbose(0,"Error writting checkpoint file (%s)",strerror(errno));
 		return;
 	}
+	eard_verbose(0,"saving current app");
+	if (write(fd,eard_dyn_conf->pm_app,sizeof(powermon_app_t))!=sizeof(powermon_app_t)){
+        eard_verbose(0,"Error writting checkpoint file (%s)",strerror(errno));
+        return;
+    }
+
 	umask(old_mask);
 	close(fd);
 }
@@ -83,8 +89,15 @@ void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
         eard_verbose(0,"Error reading checkpoint file (%s)",strerror(errno));
         return;
     }
+    if (read(fd,eard_dyn_conf->pm_app,sizeof(powermon_app_t))!=sizeof(powermon_app_t)){
+        eard_verbose(0,"Error reading checkpoint file (%s)",strerror(errno));
+        return;
+    }
 	eard_verbose(0,"restoring node conf");
 	eard_max_pstate=eard_dyn_conf->nconf->max_pstate;
+	eard_verbose(0,"Node information recovered");
 	print_my_node_conf(eard_dyn_conf->nconf);
+	eard_verbose(0,"Job recovered");
+	report_job(&eard_dyn_conf->pm_app->app.job);
 	close(fd);
 }

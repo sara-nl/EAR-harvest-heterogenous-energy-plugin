@@ -205,12 +205,12 @@ static void get_app_name(char *my_name)
 /*** We update EARL configuration based on shared memory information **/
 void update_configuration()
 {
-	
+		
 	earl_verbose(1,"---- Validating shared memory information ----\n");
 	print_ear_lib_conf(&system_conf->lib_info);
 	earl_verbose(1,"User type: %d Policy %u, max_freq %lu, def_freq %lu th %lf\n",
 	system_conf->user_type,system_conf->policy,system_conf->max_freq,system_conf->def_freq,system_conf->th);
-	earl_verbose(1,"-----------------------------");
+	earl_verbose(1,"-----------------------------\n");
 	set_ear_power_policy(system_conf->policy);
 	set_ear_power_policy_th(system_conf->th);
 	set_ear_p_state(system_conf->def_freq);

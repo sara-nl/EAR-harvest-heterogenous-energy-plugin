@@ -78,3 +78,15 @@ void print_job_fd(int fd, job_t *job)
     sprintf(job_buff, "%s;%s;%lu;%s;%s;%lf", job->user_id, job->group_id,job->id, job->app_id, job->policy, job->th);
 	write(fd,job_buff,strlen(job_buff));
 }
+
+
+/** Reports the content of the job into the stderr*/
+void report_job(job_t *job)
+{
+	fprintf(stderr,"Job: ID %u step %u user %s group %s name %s account %s etag %s\n",
+	job->id,job->step_id,job->user_id,job->group_id,job->app_id,job->user_acc,job->energy_tag);
+	fprintf(stderr,"start time %u end time %u start mpi %u end mpi %u policy %s th %lf def_f %lu\n",
+	job->start_time,job->end_time,job->start_mpi_time,job->end_mpi_time,job->policy,job->th,job->def_f);
+	
+}
+

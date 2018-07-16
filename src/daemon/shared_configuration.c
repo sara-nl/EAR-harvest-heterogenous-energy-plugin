@@ -48,6 +48,7 @@
 
 static int fd;
 static const char *__NAME__ = "EARD_shared";
+static int fd_cluster,fd_settings,fd_resched,fd_coeffs,fd_services;
 extern char *__HOST__;
 
 
@@ -158,7 +159,6 @@ void dispose_shared_area(char *path,int fd)
 
 /***** SPECIFIC FUNCTIONS *******************/
 
-static int fd_cluster,fd_settings,fd_resched,fd_coeffs;
 
 //// SETTINGS
 
@@ -234,5 +234,34 @@ void dettach_coeffs_shared_area()
     dettach_shared_area(fd_coeffs);
 }
 
+
+
+
+/**** SERVICES **********/
+int get_services_conf_path(char *tmp,char *path)
+{
+    sprintf(path,"%s/.ear_services_conf",tmp);
+}
+
+services_conf_t * create_services_conf_shared_area(char * path)
+{
+	services_conf_t my_services;
+    return (services_conf_t *)create_shared_area(path,(char *)&my_services,sizeof(services_conf_t),&fd_services,1);
+}
+
+services_conf_t * attach_services_conf_shared_area(char * path)
+{
+    return (services_conf_t *)attach_shared_area(path,sizeof(services_conf_t),O_RDONLY,&fd_services,NULL);
+}
+
+void services_conf_shared_area_dispose(char * path)
+{
+    dispose_shared_area(path,fd_services);
+}
+
+void dettach_services_conf_shared_area()
+{
+    dettach_shared_area(fd_services);
+}
 
 

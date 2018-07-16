@@ -164,8 +164,8 @@ void report_mpi_application_data(application_t *app)
         fprintf(stderr,"   procs: %lu (s)\n", app->job.procs);
         fprintf(stderr,"\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
                                                                             app->signature.GBS, app->signature.Gflops);
-        fprintf(stderr,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power,
-                                                                app->signature.PCK_power);
+        fprintf(stderr,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W) GFlops/Watts %.3lf\n", app->signature.DC_power, app->signature.DRAM_power,
+                                                                app->signature.PCK_power,app->signature.Gflops/app->signature.DC_power);
     }
     fprintf(stderr,"-----------------------------------------------------------------------------------------------\n");
 }

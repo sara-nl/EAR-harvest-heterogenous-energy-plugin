@@ -41,8 +41,16 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/coefficient.h>
 
+typedef struct services_conf{
+	eard_conf_t     eard;
+    eargm_conf_t    eargmd;
+	db_conf_t 		db;
+    eardb_conf_t 	eardbd;
+}services_conf_t;
+
 typedef struct settings_conf{
 	uint 	user_type;
+	uint 	lib_enabled;
 	uint 	policy;
 	ulong 	max_freq;
 	ulong	def_freq;
@@ -115,6 +123,24 @@ coefficient_v3_t * attach_coeffs_shared_area(char * path,int *size);
 void coeffs_shared_area_dispose(char * path);
 
 void dettach_coeffs_shared_area();
+
+/*** SERVICES ***/
+
+/** Sets in path the path for the services configuration in the shared memory */
+int get_services_conf_path(char *tmp,char *path);
+
+/** Creates and maps the shared memory region for services, to be used by eard. path if created using get_services_conf_path */
+services_conf_t * create_services_conf_shared_area(char * path);
+
+/** Maps the shared memory region for services, to be used by ear plugin or any other component.path if created using get_services_conf_path */
+services_conf_t * attach_services_conf_shared_area(char * path);
+
+/** Releases the shared memory for services_conf, to be used by eard */
+void services_conf_shared_area_dispose(char * path);
+
+/** Unmmaps the shared memory for services_conf, to be used by ear plugin or any other component */
+void dettach_services_conf_shared_area();
+
 
 
 #endif

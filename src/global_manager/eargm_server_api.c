@@ -56,7 +56,7 @@ extern int EAR_VERBOSE_LEVEL;
 int eargm_remote_socket,eargm_client;
 struct sockaddr_in eargm_remote_client;
 
-static char *__NAME__ = "eargm_server_api:";
+static char *__NAME__ = "eargm_api:";
 
 // 2000 and 65535
 #define EARGM_EXTERNAL_CONNEXIONS 1
@@ -98,7 +98,10 @@ int create_server_socket(uint use_port)
         if (sfd == -1)
             continue;
 
-       if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
+       while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){
+		VERBOSE_N(0,"Waiting for connection");
+		sleep(10);
+		}
             break;                  /* Success */
 
        close(sfd);

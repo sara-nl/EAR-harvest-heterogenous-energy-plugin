@@ -213,8 +213,8 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     
     int pow_sig_id = 0;
     int sig_id = 0;
-    int *pow_sigs_ids = calloc(num_apps, sizeof(int));
-    int *sigs_ids = calloc(num_apps, sizeof(int));
+    long long *pow_sigs_ids = calloc(num_apps, sizeof(long long));
+    long long *sigs_ids = calloc(num_apps, sizeof(long long));
     
     //inserting all powersignatures (always present)
     pow_sig_id = mysql_batch_insert_power_signatures(connection, app, num_apps);
@@ -334,10 +334,11 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
     for (i = 0; i < num_apps; i++)
         mysql_insert_job(connection, &app[i].job, is_learning);
     int pow_sig_id = 0;
-    int sig_id = 0;
-    int *pow_sigs_ids = calloc(num_apps, sizeof(int));
-    
+    long long *pow_sigs_ids = calloc(num_apps, sizeof(long long));
+
     //inserting all powersignatures (always present)
+    pow_sig_id = mysql_batch_insert_power_signatures(connection, app, num_apps);
+
     if (pow_sig_id < 0)
         fprintf(stderr,"Unknown error when writing power_signature to database.\n");
 
