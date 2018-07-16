@@ -45,21 +45,12 @@ typedef struct loop_id
 typedef struct loop
 {
     loop_id_t id;
-    job_t *job;
+	ulog jid,step_id;
     char node_id[GENERIC_NAME];
     ulong total_iterations;
     signature_t signature;
 } loop_t;
 
-typedef struct db_loop
-{
-    loop_id_t id;
-    ulong loop_id;
-    ulong step_id;
-    char node_id[GENERIC_NAME];
-    ulong total_iterations;
-    signature_t signature;
-} db_loop_t;
 
 // Function declarations
 
