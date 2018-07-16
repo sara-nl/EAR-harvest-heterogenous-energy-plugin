@@ -547,8 +547,8 @@ int mysql_insert_loop(MYSQL *connection, loop_t *loop)
     bind[0].buffer = (char *)&loop->id.event;
     bind[1].buffer = (char *)&loop->id.size;
     bind[2].buffer = (char *)&loop->id.level;
-    bind[3].buffer = (char *)&loop->job->id;
-    bind[4].buffer = (char *)&loop->job->step_id;
+    bind[3].buffer = (char *)&loop->jid;
+    bind[4].buffer = (char *)&loop->step_id;
     bind[5].buffer = (char *)&loop->node_id;
     bind[6].buffer = (char *)&loop->total_iterations;
     bind[7].buffer = (char *)&sig_id;
@@ -611,8 +611,8 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
         bind[offset+0].buffer = (char *)&loop[i].id.event;
         bind[offset+1].buffer = (char *)&loop[i].id.size;
         bind[offset+2].buffer = (char *)&loop[i].id.level;
-        bind[offset+3].buffer = (char *)&loop[i].job->id;
-        bind[offset+4].buffer = (char *)&loop[i].job->step_id;
+        bind[offset+3].buffer = (char *)&loop[i].jid;
+        bind[offset+4].buffer = (char *)&loop[i].step_id;
         bind[offset+5].buffer = (char *)&loop[i].node_id;
         bind[offset+6].buffer = (char *)&loop[i].total_iterations;
         bind[offset+7].buffer = (char *)&sigs_ids[i];
@@ -661,8 +661,8 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     bind[0].buffer = &loop_aux->id.event;
     bind[1].buffer = &loop_aux->id.size;
     bind[2].buffer = &loop_aux->id.level;
-    bind[3].buffer = &job_id;
-    bind[4].buffer = &step_id;
+    bind[3].buffer = &loop_aux->jid;
+    bind[4].buffer = &loop_aux->step_id;
     bind[5].buffer = &loop_aux->node_id;
     bind[6].buffer = &loop_aux->total_iterations;
     bind[7].buffer = &sig_id;
@@ -698,17 +698,12 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     loops_aux = (loop_t*) calloc(num_loops, sizeof(loop_t));
     char job_query[128];
     char sig_query[128];
-    job_t *job_aux;
     signature_t *sig_aux;
     //fetching and storing of jobs
     i = 0;
     status = mysql_stmt_fetch(statement);
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
     {
-        sprintf(job_query, "SELECT * FROM Jobs WHERE id=%d AND step_id=%d", job_id, step_id);
-        num_jobs = mysql_retrieve_jobs(connection, job_query, &job_aux);
-        loop_aux->job = job_aux;
-
         sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
         int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
         copy_signature(&loop_aux->signature, sig_aux);
