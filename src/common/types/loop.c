@@ -75,7 +75,7 @@ void loop_init(loop_t *loop, job_t *job)
 
 void add_loop_signature(loop_t *loop,  signature_t *sig)
 {
-    memcpy(loop->signature,*sig,sizeof(signature_t));
+    memcpy(&loop->signature,sig,sizeof(signature_t));
 }
 
 void end_loop(loop_t *loop, ulong iterations)

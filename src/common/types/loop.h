@@ -45,7 +45,7 @@ typedef struct loop_id
 typedef struct loop
 {
     loop_id_t id;
-	ulog jid,step_id;
+	ulong jid,step_id;
     char node_id[GENERIC_NAME];
     ulong total_iterations;
     signature_t signature;
