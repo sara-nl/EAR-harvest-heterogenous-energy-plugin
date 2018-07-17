@@ -491,7 +491,6 @@ int _read_shared_data_remote(spank_t sp)
 {
 	plug_verbose(sp, 2, "function _read_shared_data_remote");
 
-
 	settings_conf_t *conf;
 
 	//	
@@ -501,12 +500,13 @@ int _read_shared_data_remote(spank_t sp)
 	get_settings_conf_path(buffer1, buffer2);
 	conf = attach_settings_conf_shared_area(buffer2);
 
+	print_settings_conf(conf);
+	
 	// EAR
 	if (!conf->lib_enabled || conf->user_type == ENERGY_TAG) {
 		setenv_remote_ret_err(sp, "EAR", "0", 1);
 	}
 
-	return (ESPANK_SUCCESS);
 	// EAR_POWER_POLICY
 	if(policy_id_to_name(conf->policy, buffer2) == EAR_ERROR) {
 		plug_error("invalid policy returned");
@@ -519,31 +519,18 @@ int _read_shared_data_remote(spank_t sp)
 	setenv_remote_ret_err(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
 	setenv_remote_ret_err(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
 		
-
 	// EAR_P_STATE
 	setenv_remote_ret_err(sp, "EAR_P_STATE", "", 1);
 	
 	// EAR_LEARNING_PHASE
 	setenv_remote_ret_err(sp, "EAR_LEARNING_PHASE", "", 1);
 	
-	/*	
-	typedef struct settings_conf{
-	uint 	user_type;
-	uint 	lib_enabled;
-	uint 	policy;
-	ulong 	max_freq;
-	ulong	def_freq;
-	double 	th;
-	earlib_conf_t lib_info;
-	} settings_conf_t;		
-	*/
-
 	// Final library tweaks
 	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
-		setenv_remot_ret_err(sp, "EAR_APP_NAME", buffer2, 1);
+		setenv_remote_ret_err(sp, "EAR_APP_NAME", buffer2, 1);
 	}
 	if (getenv_remote(sp, "EAR_TMPDIR", buffer2, sizeof(buffer2)) == 1) {
-		setenv_remot_ret_err(sp, "EAR_TMP", buffer2, 1);
+		setenv_remote_ret_err(sp, "EAR_TMP", buffer2, 1);
 	}
 
 	// Closing shared memory
