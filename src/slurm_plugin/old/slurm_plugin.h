@@ -30,47 +30,7 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
-#include <slurm/slurm.h>
-#include <slurm/spank.h>
-#include <common/sizes.h>
-#include <common/config.h>
-#include <common/types/job.h>
-#include <common/types/application.h>
-#include <common/types/configuration/cluster_conf.h>
-
-#define PRODUCTION 		1
+#define PRODUCTION		 0
 #define ESPANK_STOP 	-1
-#define S_CTX_SRUN 		S_CTX_LOCAL
-#define S_CTX_SBATCH	S_CTX_ALLOCATOR
-
-// Verbosity
-int EAR_VERBOSE_LEVEL = 0;
-int verbosity = -1;
-
-// Context
-struct passwd *upw;
-struct group *gpw;
-uid_t uid;
-gid_t gid;
-
-// Buffers
-char buffer1[SZ_PATH];
-char buffer2[SZ_PATH];
-char buffer3[SZ_PATH]; // helper buffer
-
-// EARD variables
-unsigned char eard_host[SZ_NAME_MEDIUM];
-unsigned int  eard_port;
-application_t eard_appl;
-
-// EARGMD variables
-unsigned char eargmd_host[SZ_NAME_MEDIUM];
-unsigned int  eargmd_port;
-unsigned int  eargmd_nods;
-
-// Paths
-char *etc_dir = NULL;
-char *pre_dir = NULL;
-char *tmp_dir = NULL;
 
 #endif

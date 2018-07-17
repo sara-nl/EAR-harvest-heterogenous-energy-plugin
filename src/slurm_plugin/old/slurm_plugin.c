@@ -36,11 +36,42 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <linux/limits.h>
+#include <slurm/slurm.h>
+#include <slurm/spank.h>
+#include <cpufreq.h>
+#include <common/sizes.h>
+#include <common/config.h>
+#include <common/types/job.h>
+#include <common/types/application.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
+#include <slurm_plugin/slurm_plugin_user_environment.h>
+
+int EAR_VERBOSE_LEVEL = 0;
 
 SPANK_PLUGIN(EAR_PLUGIN, 1)
+int verbosity = -1;
+
+char buffer1[PATH_MAX];
+char buffer2[PATH_MAX];
+static int job_created;
+
+// EARGMD variables
+unsigned char eargmd_host[NAME_MAX+1];
+unsigned int  eargmd_port;
+unsigned int  eargmd_nods;
+
+// EARD variables
+unsigned char eard_host[NAME_MAX+1];
+unsigned int  eard_port;
+application_t eard_appl;
+
+// Contexts
+#define S_CTX_SRUN 		S_CTX_LOCAL
+#define S_CTX_SBATCH	S_CTX_ALLOCATOR
 
 /*
  * Manual
@@ -106,10 +137,8 @@ SPANK_PLUGIN(EAR_PLUGIN, 1)
  *   Var                                    | Opt | Local | Local Job | Remote | Remote PU
  * ---------------------------------------------------------------------------------------
  * - EAR									| x   | x     |           |        |
- * - EAR_PLUGIN
  * - EAR_DEFAULT							|     | x     |           |        |
  * - EAR_USER                               |     | x     |           |        |
- * - EAR_GROUP
  * - EAR_LEARNING_PHASE						| x   |       |           |        |
  * - EAR_VERBOSE							| x   | x     |           |        |
  * - EAR_POWER_POLICY						| x   | x     |           |        |
@@ -128,7 +157,6 @@ SPANK_PLUGIN(EAR_PLUGIN, 1)
  * - EAR_TMP								| -   | -     | -         | -      |
  * - TMP									| -   | -     | -         | -      |
  * - EAR_APP_NAME							|     | x     |           |        |
- * - SPANK_EARGMD
  * - LD_PRELOAD                             |     | x     |           |        |
  * - SLURM_CPU_FREQ_REQ                     |     |       | x         |        |
  * - SLURM_NNODES                           |     |       | x         |        |
@@ -137,7 +165,6 @@ SPANK_PLUGIN(EAR_PLUGIN, 1)
  * - SLURM_JOB_USER							|     |       |           |        | x
  * - SLURM_JOB_NAME							|     |       | x         |        | 
  * - SLURM_JOB_ACCOUNT						|     |       | x         |        | 
- * - SLURM_LAST_LOCAL_CONTEXT
  *
  * Reasons to stop the job:
  * 1) A problem inside option functions.
@@ -169,50 +196,73 @@ SPANK_PLUGIN(EAR_PLUGIN, 1)
  *
  */
 
+static void remote_print_environment(spank_t sp)
+{
+	plug_verbose(sp, 2, "function remote_print_environment");
+
+	struct rlimit sta, mem;
+	int r_sta, r_mem;
+
+	if (verbosity_test(sp, 2) == 0) {
+		return;
+	}
+
+	r_sta = getrlimit(RLIMIT_STACK, &sta);
+    r_mem = getrlimit(RLIMIT_MEMLOCK, &mem);
+
+    plug_verbose_0("plugin compiled in %s", __DATE__);
+	plug_verbose_0("buffers size %d", PATH_MAX);
+
+    plug_verbose_0("stack size limit test (res %d, curr: %lld, max: %lld)",
+                 r_sta, (long long) sta.rlim_cur, (long long) sta.rlim_max);
+    plug_verbose_0("memlock size limit test (res %d, curr: %lld, max: %lld)",
+                 r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
+
+	printenv_remote(sp, "EAR");
+	printenv_remote(sp, "EAR_USER");
+	printenv_remote(sp, "EAR_GROUP");
+	printenv_remote(sp, "EAR_LEARNING_PHASE");
+	printenv_remote(sp, "EAR_VERBOSE");
+	printenv_remote(sp, "EAR_POWER_POLICY");
+	printenv_remote(sp, "EAR_P_STATE");
+	printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
+	printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
+	printenv_remote(sp, "EAR_POWER_POLICY_TH");
+	printenv_remote(sp, "EAR_TRACES");
+	printenv_remote(sp, "EAR_MPI_DIST");
+	printenv_remote(sp, "EAR_USER_DB_PATHNAME");
+	printenv_remote(sp, "EAR_PREDIR");
+	printenv_remote(sp, "EAR_ETCDIR");
+	printenv_remote(sp, "EAR_TMP");
+	printenv_remote(sp, "EAR_APP_NAME");
+	printenv_remote(sp, "EAR_ENERGY_TAG");
+	printenv_remote(sp, "LD_PRELOAD");
+	printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
+	printenv_remote(sp, "SLURM_NNODES");
+	printenv_remote(sp, "SLURM_JOB_ID");
+	printenv_remote(sp, "SLURM_STEP_ID");
+	printenv_remote(sp, "SLURM_JOB_USER");
+	printenv_remote(sp, "SLURM_JOB_NAME");
+	printenv_remote(sp, "SLURM_JOB_ACCOUNT");
+}
+
 /*
  *
  * Disabling
  *
  */
 
-int _local_library_disable()
+int local_library_disable()
 {
 	setenv_local("EAR", "0", 1);
 }
 
-int _remote_library_disable(spank_t sp)
+int remote_library_disable(spank_t sp)
 {
 	if(isenv_remote(sp, "EAR", "1")) {
 		setenv_remote(sp, "LD_PRELOAD", "", 1);
 		setenv_remote(sp, "EAR", "0", 1);
 	}
-}
-
-int _local_plugin_enable() {
-	setenv_local("EAR_PLUGIN", "1", 1);
-}
-
-int _local_plugin_disable()
-{
-	setenv_local("EAR_PLUGIN", "0", 1);
-}
-
-int _remote_plugin_disable(spank_t sp)
-{
-	setenv_remote(sp, "EAR_PLUGIN", "0", 1);
-}
-
-int _is_plugin_enabled(spank_t sp)
-{
-	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH) {
-		return isenv_local("EAR_PLUGIN", "1");
-	}
-
-	if (spank_context() == S_CTX_REMOTE) {
-		return isenv_remote(sp, "EAR_PLUGIN", "1");
-	}
-
-	return 0;
 }
 
 /*
@@ -360,9 +410,6 @@ int local_eargmd_report_start(spank_t sp)
 	}
 	eargm_disconnect();
 
-	// Protection
-	setenv_control(sp, "SPANK_EARGMD", "1", 1);
-
 	return (ESPANK_SUCCESS);
 }
 
@@ -371,13 +418,8 @@ int local_eargmd_report_finish(spank_t sp)
 	plug_verbose(sp, 2, "function local_eargmd_report_finish");
 
 	#if PRODUCTION
-    return (ESPANK_SUCCESS);
-	#endif
-
-    // Protection
-    if (!isenv_control(sp, "SPANK_EARGMD", "1")) {
-    	return (ESPANK_SUCCESS);
-    }
+    return ESPANK_SUCCESS;
+    #endif
 
 	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",
 				 eargmd_host, eargmd_port, eargmd_nods);
@@ -398,297 +440,96 @@ int local_eargmd_report_finish(spank_t sp)
 /*
  *
  *
- * Remote
- *
- *
- */
-
-//
-int _read_shared_data_remote(spank_t sp)
-{
-	return (ESPANK_SUCCESS);
-}
-
-//
-int _remote_environment_update(spank_t sp)
-{
-	return (ESPANK_SUCCESS);
-}
-
-/*
- *
- *
- * Local
- *
- *
- */
-
-int _read_plugstack(spank_t sp, int ac, char **av)
-{
-	char *conf_path = buffer1;
-	int found_predir = 0;
-	int found_tmpdir = 0;
-	int i;
-
-	for (i = 0; i < ac; ++i)
-	{
-		if ((strlen(av[i]) > 8) && (strncmp ("default=", av[i], 8) == 0))
-		{
-			// If enabled by default
-			if (strncmp ("default=on", av[i], 10)) {
-				// EAR == 1: enable
-				// EAR == 0: nothing
-				// EAR == whatever: enable (bug protection)
-				if (!isenv_local("EAR", "0")) {
-					setenv_local_ret_err("EAR", "1", 1);
-				}
-				// If disabled by default or de administrator have misswritten
-			} else {
-				// EAR == 1: nothing
-				// EAR == 0: disable
-				// EAR == whatever: disable (bug protection)
-				if (!isenv_local("EAR", "1")) {
-					setenv_local_ret_err("EAR", "0", 1);
-				}
-			}
-		}
-		if ((strlen(av[i]) > 14) && (strncmp ("localstatedir=", av[i], 14) == 0))
-		{
-			tmp_dir = &av[i][14];
-			found_tmpdir = 1;
-
-			plug_verbose(sp, 2, "looking for temporal files in path '%s'", tmp_dir);
-			setenv_local_ret_err("EAR_TMPDIR", tmp_dir, 1);
-		}
-		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
-		{
-			pre_dir = &av[i][7];
-			found_predir = 1;
-
-			plug_verbose(sp, 2, "looking for prefix path '%s'", pre_dir);
-			setenv_local_ret_err("EAR_PREDIR", pre_dir, 1);
-		}
-	}
-
-	if (!found_tmpdir) {
-		plug_error("missing plugstack localstatedir directory");
-		return (ESPANK_STOP);
-	}
-
-	if (!found_predir) {
-		plug_error("missing plugstack prefix directory");
-		return (ESPANK_ERROR);
-	}
-
-	return (EAR_SUCCESS);
-}
-
-int _read_user_info(spank_t sp)
-{
-	// Getting user ids
-	uid = geteuid();
-	gid = getgid();
-
-	// Getting user names
-	upw = getpwuid(uid);
-	gpw = getgrgid(gid);
-
-	if (upw == NULL) {
-		plug_error("converting UID in username");
-		return (ESPANK_ERROR);
-	}
-
-	if (gpw == NULL) {
-		plug_error("converting GID in groupname");
-		return (ESPANK_ERROR);
-	}
-
-	// To environment variables
-	setenv_local_ret_err("EAR_USER", upw->pw_name, 1);
-	setenv_local_ret_err("EAR_GROUP", gpw->gr_name, 1);
-
-	plug_verbose(sp, 2, "user detected '%u -> %s'", uid, upw->pw_name);
-	plug_verbose(sp, 2, "group detected '%u -> %s'", gid, gpw->gr_name);
-	plug_verbose(sp, 2, "account detected '%s'", getenv("SLURM_JOB_ACCOUNT"));
-
-	return (ESPANK_SUCCESS);
-}
-
-int _set_ld_preload(spank_t sp)
-{
-	char *ear_root_dir = NULL;
-
-	buffer1[0] = '\0';
-	buffer2[0] = '\0';
-
-	if (getenv_local("EAR_PREDIR", &ear_root_dir) == 0)
-	{
-		plug_error("Error, wrong environment for setting LD_PRELOAD");
-		return ESPANK_ERROR;
-	}
-	appendenv(buffer1, ear_root_dir, sizeof(buffer1));
-
-	// Appending libraries to LD_PRELOAD
-	if (isenv_local("EAR_TRACES", "1") == 1)
-	{
-		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-			snprintf_ret_err(buffer2, "%s/%s", buffer1, OMPI_TRACE_LIB_PATH);
-		} else {
-			snprintf_ret_err(buffer2, "%s/%s", buffer1, IMPI_TRACE_LIB_PATH);
-		}
-	} else {
-		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-			snprintf_ret_err(buffer2, "%s/%s", buffer1, OMPI_LIB_PATH);
-		} else {
-			snprintf_ret_err(buffer2, "%s/%s", buffer1, IMPI_LIB_PATH);
-		}
-	}
-
-	//
-	setenv_local_ret_err("LD_PRELOAD", buffer2, 1);
-
-	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
-
-	return (ESPANK_SUCCESS);
-}
-
-int _read_shared_data_basic(spank_t sp)
-{
-	services_conf_t *conf;
-	char *path = buffer2;
-
-	get_settings_conf_path(tmp_dir, path);
-	conf = attach_services_conf_shared_area(path);
-	dettach_settings_conf_shared_area();
-
-	//settings_conf_t * attach_settings_conf_shared_area(char * path);
-
-	return (ESPANK_STOP);
-}
-
-/*
- *
- *
  * Framework
  *
  *
  */
 
-int slurm_spank_init(spank_t sp, int ac, char **av)
+int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "function slurm_spank_init");
+    plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
+	int r;
 
-	if (spank_context() == S_CTX_SRUN)
+	if(spank_context () == S_CTX_LOCAL)
 	{
-		if (!setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SRUN", "1"))
+		if ((r = local_pre_job_configuration(sp, ac, av)) != ESPANK_SUCCESS)
 		{
-        	plug_error("while setting last local context variable (severe error)");
-        	_local_plugin_disable();
-			return ESPANK_SUCCESS;
+			local_library_disable();
+			return r;
 		}
 	}
 
-	if (spank_context() == S_CTX_SBATCH)
-	{
-		if (!setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SBATCH", "1"))
-		{
-			plug_error("while setting last local context variable (severe error)");
-			_local_plugin_disable();
-			return ESPANK_SUCCESS;
-		}
-	}
-
-	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH) {
-		_local_plugin_enable();
-	}
-
-	return ESPANK_SUCCESS;
+	return (ESPANK_SUCCESS);
 }
 
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
     plug_verbose(sp, 2, "function slurm_spank_local_user_init");
+    int r;
 
-	// No need of testing the context
-	if(!_is_plugin_enabled()) {
-		return ESPANK_SUCCESS;
-	}
+    if(spank_context () == S_CTX_LOCAL)
+    {
+		job_created = 1;
 
-	// Reading plugstack.conf
-	if (_read_plugstack(sp, ac, av) != ESPANK_SUCCESS) {
-		_local_plugin_disable();
-		return ESPANK_SUCCESS;
-	}
+		//
+		local_eargmd_report_start(sp);
 
-	// Read shared basic data
-	if (_read_shared_data_basic() != ESPANK_SUCCESS) {
-		_local_plugin_disable();
-		return ESPANK_SUCCESS;
-	}
-
-	// Filling user data
-	if (_read_user_info(sp) != ESPANK_SUCCESS) {
-		_local_library_disable();
-	}
-
-	// EARGMD contact
-	local_eargmd_report_start(sp);
-
-	//
-	if (isenv_local("EAR", "1")) {
-		_set_ld_preload(sp);
-	}
+		//
+		if (isenv_local("EAR", "1"))
+		{
+			//
+			if ((r = local_post_job_configuration(sp)) != ESPANK_SUCCESS)
+			{
+				local_library_disable();
+				return r;
+			}
+		}
+    }
 
     return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_user_init(spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_user_init");
-
-	if(!_is_plugin_enabled()) {
-		return ESPANK_SUCCESS;
-	}
-
-	//
-	if (spank_context() == S_CTX_REMOTE && isenv_remote("SLURM_LAST_LOCAL_CONTEXT", "SRUN"))
-	{
-		//
-		if (remote_eard_report_start(sp) != ESPANK_SUCCESS) {
-			_remote_library_disable(sp);
-			_remote_plugin_disable(sp);
-			return (ESPANK_SUCCESS);
-		}
-
-		//
-		if (_read_shared_data_remote() != ESPANK_SUCCESS) {
-			_remote_library_disable(sp);
-			return (ESPANK_SUCCESS);
-		}
-
-		//
-		if (isenv_remote("EAR", "1")) {
-			_remote_environment_update(sp);
-		}
-	}
-
-	return (ESPANK_SUCCESS);
 }
 
 int slurm_spank_exit (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "slurm_spank_exit");
 
-	if(!_is_plugin_enabled()) {
+	if (spank_context() == S_CTX_LOCAL && job_created == 1) {
+		local_eargmd_report_finish(sp);
 		return ESPANK_SUCCESS;
 	}
 
-	if (spank_context() == S_CTX_SRUN) {
-		local_eargmd_report_finish(sp);
-	}
+    if (spank_context() == S_CTX_REMOTE) {
+        return remote_eard_report_finish(sp);
+    }
 
-	if (spank_context() == S_CTX_REMOTE && isenv_remote("SLURM_LAST_LOCAL_CONTEXT", "SRUN")) {
-		return remote_eard_report_finish(sp);
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_user_init(spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_user_init");
+	int r;
+
+	if (spank_context() == S_CTX_REMOTE)
+	{
+		if(isenv_remote(sp, "EAR", "1"))
+		{
+			if ((r = remote_configuration(sp)) != ESPANK_SUCCESS)
+			{
+				remote_library_disable(sp);
+				return (ESPANK_ERROR);
+			}
+		}
+		
+		// Printing job remote information
+		remote_print_environment(sp);
+
+		//
+		if ((r = remote_eard_report_start(sp)) != ESPANK_SUCCESS)
+		{
+			remote_library_disable(sp);
+			return (ESPANK_ERROR);
+		}
 	}
 
 	return (ESPANK_SUCCESS);

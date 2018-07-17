@@ -31,23 +31,24 @@
 #define EAR_SLURM_PLUGIN_HELPER_H
 
 #include <slurm/spank.h>
+//#include <slurm_plugin/slurm_plugin.h>
 
 // Misc
-#define snprintf_ret_err(buffer, size, ...) \
-	if (snprintf(buffer, size, __VA_ARGS__) < 0) { \
+#define IF_RET_ERR(condition) \
+	if (condition) \
+		return (ESPANK_ERROR);
+
+#define snprintf_ret_err(buffer, ...) \
+	if (snprintf(buffer, sizeof(buffer), __VA_ARGS__) < 0) { \
         plug_error("while writing a formatted output to sized buffer"); \
 		return (ESPANK_ERROR); \
 	}
 
-#define setenv_local_ret_err(p_name, p_value, replace) \
-	if (!setenv_local(p_name, p_value, replace)) \
-        plug_error("while setting a local environment variable"); \
-		return (ESPANK_ERROR);
-
-#define setenv_remot_ret_err(sp, p_name, p_value, replace) \
-	if(!setenv_remote(sp, p_name, p_value, replace)) \
-        plug_error("while setting a remote environment variable"); \
-		return (ESPANK_ERROR);
+#define SNPRINTF_RET_STP(buffer, ...) \
+	if (snprintf(buffer, sizeof(buffer), __VA_ARGS__) < 0) { \
+        plug_error("while writing a formatted output to sized buffer"); \
+		return (ESPANK_STOP); \
+	}
 
 // Verbosity
 #define plug_verbose(sp, level, ...) \
@@ -65,20 +66,32 @@
 int verbosity_test(spank_t sp, int level);
 
 // String
+void strtoup(char *string);
+char* strclean(char *string, char chr);
+
+// Environment variables
+#define setenv_local_ret_err(p_name, p_value, replace) \
+	if (!setenv_local(p_name, p_value, replace)) \
+		return (ESPANK_ERROR);
+
+#define setenv_remot_ret_err(sp, p_name, p_value, replace) \
+	if(!setenv_remote(sp, p_name, p_value, replace)) \
+		return (ESPANK_ERROR);
+
 void print_local_environment(spank_t sp);
 void print_remote_environment(spank_t sp);
 void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source, int destiny_length);
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
-int setenv_control(spank_sp, char *name, char *value, int replace);
 int getenv_local(char *name, char **env);
 int getenv_remote(spank_t sp, char *name, char *value, int length);
-int getenv_control(spank_t sp, char *name, char *value, int length);
 int existenv_local(char *name);
 int existenv_remote(spank_t sp, char *name);
 int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
-int isenv_control(spank_t sp, char *name, char *value);
+
+// Others
+int freq_to_p_state(int freq);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H

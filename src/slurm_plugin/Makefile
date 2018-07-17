@@ -4,13 +4,13 @@ LDFLAGS = $(CPUF_LDFLAGS)
 ######## FILES
 
 plugin_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
+              $(SRCDIR)/daemon/shared_configuration.o \
               $(SRCDIR)/global_manager/eargm_rapi.o \
               $(SRCDIR)/common/types.a
 
 plugin_SOURCES = slurm_plugin.c \
                  slurm_plugin_helper.c \
-                 slurm_plugin_options.c \
-                 slurm_plugin_user_environment.c
+                 slurm_plugin_options.c
 
 ######## RULES
 

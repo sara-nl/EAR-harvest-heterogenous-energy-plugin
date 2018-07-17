@@ -34,9 +34,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <linux/limits.h>
+#include <slurm/spank.h>
+
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
+
+extern char buffer1[PATH_MAX];
+extern char buffer2[PATH_MAX];
+extern int verbosity;
 
 struct spank_option spank_options_manual[9] =
 {
@@ -77,18 +84,20 @@ struct spank_option spank_options_manual[9] =
 	}
 };
 
-int _opt_register(spank_t sp)
+int slurm_spank_init(spank_t sp, int ac, char **av)
 {
+	plug_verbose(sp, 2, "function slurm_spank_init");
+
 	int i;
 
-	for (i = 0; i < 9; ++i)
-	{
-		if (spank_option_register(sp, &spank_options_manual[i]) != ESPANK_SUCCESS)
-		{
-			slurm_error("unable to register a new option.");
-			return -1;
-		}
-	}
+    for (i = 0; i < 9; ++i)
+    {   
+        if (spank_option_register(sp, &spank_options_manual[i]) != ESPANK_SUCCESS)
+        {
+            slurm_error("unable to register a new option.");
+            return -1; 
+        }
+    }   
 }
 
 /*
@@ -100,23 +109,23 @@ int _opt_register(spank_t sp)
 static int _opt_ear (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear");
+	char enabled[32];
+	int ienabled;
 
 	if (!remote)
 	{
-		if (optarg == NULL) {
-			return (ESPANK_BAD_ARG);
-		}
+		strncpy(enabled, optarg, 32);
+		strtoup(enabled);
 
-		strncpy(buffer2, optarg, 8);
-		strtoup(buffer);
-
-		if (strcmp(buffer2, "ON") == 0) {
-			setenv_local_ret_err("EAR", "1", 1);
-		} else if (strcmp(buffer2, "OFF") == 0) {
-			setenv_local_ret_err("EAR", "0", 1);
+		if (strcmp(enabled, "ON") == 0)
+		{
+			if (setenv_local("EAR", "1", 1) != 1) {
+				return (ESPANK_STOP);
+			}
 		} else {
-			plug_error("Invalid enabling value '%s'", buffer2);
-			return (ESPANK_BAD_ARG);
+			if (setenv_local("EAR", "0", 1) != 1) {
+				return (ESPANK_STOP);
+			}
 		}
 	}
 
@@ -127,7 +136,9 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_learning");
 
+	char p_state[8];
 	int ioptarg;
+	int result;
 
 	if (!remote)
 	{
@@ -138,11 +149,15 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		snprintf_ret_err(buffer2, 4, "%d", ioptarg);
+		SNPRINTF_RET_STP(p_state, "%d", ioptarg);
 
-		setenv_local_ret_err("EAR_LEARNING_PHASE", "1", 1);
-		setenv_local_ret_err("EAR_P_STATE", buffer2, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		result = setenv_local("EAR_LEARNING_PHASE", "1", 1);
+		result = result && setenv_local("EAR_P_STATE", p_state, 1);
+		result = result && setenv_local("EAR", "1", 0);
+
+		if (result != 1) {
+			return (ESPANK_STOP);
+		}
 	}
 
 	return (ESPANK_SUCCESS);
@@ -162,39 +177,11 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		strncpy(buffer2, optarg, 32);
-		strtoup(buffer2);
+		strncpy(policy, optarg, 32);
+		strtoup(policy);
 
-		if (policy_name_to_id(buffer2) < 0) {
-			plug_error("Invalid policy '%s'", buffer2);
-			return (ESPANK_STOP);
-		}
-
-		setenv_local_ret_err("EAR_POWER_POLICY_TH", buffer2, 1);
-		setenv_local_ret_err("EAR", "1", 0);
-	}
-
-	return (ESPANK_SUCCESS);
-}
-
-static int _opt_ear_threshold (int val, const char *optarg, int remote)
-{
-	plug_nude("function _opt_ear_threshold");
-
-	double foptarg = -1;
-
-	if (!remote)
-	{
-		if (optarg == NULL) {
-			return (ESPANK_BAD_ARG);
-		}
-		if ((foptarg = atof(optarg)) < 0.0 || foptarg > 1.0) {
-			return (ESPANK_BAD_ARG);
-		}
-
-		snprintf_ret_err(buffer2, 8, "%0.2f", foptarg);
-		setenv_local_ret_err("EAR_POWER_POLICY_TH", buffer2, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		result = setenv_local("EAR_POWER_POLICY", policy, 1);
+		result = result && setenv_local("EAR", "1", 0);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -206,14 +193,45 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
 
 	int result;
 
+	if (!remote) {
+		if (optarg == NULL) return (ESPANK_BAD_ARG);
+
+		result = setenv_local("EAR_USER_DB_PATHNAME", optarg, 1);
+		result = result && setenv_local("EAR", "1", 0);
+
+		if (result != 1) {
+			return (ESPANK_STOP);
+		}
+	}
+
+	return (ESPANK_SUCCESS);
+}
+
+static int _opt_ear_threshold (int val, const char *optarg, int remote)
+{
+	plug_nude("function _opt_ear_threshold");
+
+	char threshold[4];
+	double foptarg = -1;
+	int result;
+
 	if (!remote)
 	{
 		if (optarg == NULL) {
 			return (ESPANK_BAD_ARG);
 		}
+		if ((foptarg = atof(optarg)) < 0.0 || foptarg > 1.0) {
+			return (ESPANK_BAD_ARG);
+		}
 
-		setenv_local_ret_err("EAR_USER_DB_PATHNAME", optarg, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		SNPRINTF_RET_STP(threshold, "%0.2f", foptarg);
+
+		result = setenv_local("EAR_POWER_POLICY_TH", threshold, 1);
+		result = result && setenv_local("EAR", "1", 0) != 1;
+
+		if (result != 1) {
+			return (ESPANK_STOP);
+		}
 	}
 
 	return (ESPANK_SUCCESS);
@@ -223,7 +241,9 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_verbose");
 
+	char c_verbosity[4];
 	int ioptarg;
+	int result;
 
 	if (!remote)
 	{
@@ -234,10 +254,18 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 		ioptarg = atoi(optarg);
 		if (ioptarg < 0) ioptarg = 0;
 		if (ioptarg > 4) ioptarg = 4;
-		snprintf_ret_err(buffer2, 4, "%i", ioptarg);
 
-		setenv_local_ret_err("EAR_VERBOSE", buffer2, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		SNPRINTF_RET_STP(c_verbosity, "%i", ioptarg);
+		result = setenv_local("EAR_VERBOSE", c_verbosity, 1);
+		result = result && setenv_local("EAR", "1", 0);
+
+		if (verbosity == -1) {
+			verbosity = ioptarg;
+		}
+
+		if (result != 1) {
+			return (ESPANK_STOP);
+		}
 	}
 
 	return (ESPANK_SUCCESS);
@@ -248,10 +276,13 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 	plug_nude("function _opt_ear_traces");
 	int result;
 
-	if (!remote)
-	{
-		setenv_local_ret_err("EAR_TRACES", "1", 1);
-		setenv_local_ret_err("EAR", "1", 0);
+	if (!remote) {
+		result = setenv_local("EAR_TRACES", "1", 1);
+		result = result && setenv_local("EAR", "1", 0);
+
+		if (result != 1) {
+			return (ESPANK_STOP);
+		}
 	}
 
 	return (ESPANK_SUCCESS);
@@ -266,9 +297,9 @@ static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 		if (optarg == NULL) {
 			return (ESPANK_BAD_ARG);
 		}
-
-		setenv_local_ret_err("EAR_MPI_DIST", optarg, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		if (setenv_local("EAR_MPI_DIST", optarg, 1) != 1) {
+			return (ESPANK_STOP);
+		}
 	}
 
 	return (ESPANK_SUCCESS);
@@ -283,18 +314,16 @@ static int _opt_ear_tag(int val, const char *optarg, int remote)
 		if (optarg == NULL) {
 			return (ESPANK_BAD_ARG);
 		}
-
-		setenv_local_ret_err("EAR_ENERGY_TAG", optarg, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		if (setenv_local("EAR_ENERGY_TAG", optarg, 1) != 1) {
+			return (ESPANK_STOP);
+		}
 	}
 	return (ESPANK_SUCCESS);
 }
 
 /*
  *
- *
  * SLURM framework
- *
  *
  */
 
@@ -320,13 +349,6 @@ int slurm_spank_job_prolog (spank_t sp, int ac, char **av)
 int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_task_init_privileged");
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
-{
-    plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
-
 	return (ESPANK_SUCCESS);
 }
 

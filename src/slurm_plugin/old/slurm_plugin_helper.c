@@ -35,8 +35,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <linux/limits.h>
 #include <sys/resource.h>
+#include <slurm/spank.h>
+#include <cpufreq.h>
+
 #include <slurm_plugin/slurm_plugin_helper.h>
+#include <common/config.h>
+
+extern char buffer1[PATH_MAX];
+extern char buffer2[PATH_MAX];
+extern int verbosity;
 
 /*
  *
@@ -61,6 +70,44 @@ int verbosity_test(spank_t sp, int level)
 
 	return verbosity >= level;
 }
+
+/*
+ *
+ * Strings
+ *
+ */
+/*
+void strtoup(char *string)
+{
+	if (string == NULL) {
+		return;
+	}
+
+    while (*string) {
+        *string = toupper((unsigned char) *string);
+        string++;
+    }
+}
+
+char *strclean(char *string, char chr)
+{
+    char *index;
+
+    if (string == NULL) {
+    	return NULL;
+    }
+
+	index = strchr(string, chr);
+
+    if (index == NULL) {
+    	return NULL;
+    }
+
+    string[index - string] = '\0';
+
+    return index;
+}
+*/
 
 /*
  *
@@ -103,8 +150,8 @@ void printenv_remote(spank_t sp, char *name)
 		return;
 	}
 	
-	if(getenv_remote(sp, name, buffer3, sizeof(buffer3))) {
-		plug_verbose_0("%s '%s'", name, buffer3);
+	if(getenv_remote(sp, name, buffer1, PATH_MAX)) {
+		plug_verbose_0("%s '%s'", name, buffer1);
 	} else {
 		plug_verbose_0("%s '%s'", name, "NULL");
 	}
@@ -133,9 +180,9 @@ void appendenv(char *dst, char *src, int dst_capacity)
 
 	if (len_dst > 0)
 	{
-		strcpy(buffer3, dst);
+		strcpy(buffer2, dst);
 		pointer = &dst[len_src];
-		strcpy(&pointer[1], buffer3);
+		strcpy(&pointer[1], buffer2);
 		strcpy(dst, src);
 		pointer[0] = ':';
 	} else {
@@ -167,15 +214,6 @@ int setenv_remote(spank_t sp, char *name, char *value, int replace)
     return (spank_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
 }
 
-int setenv_control(spank_t sp, char *name, char *value, int replace)
-{
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-
-	return (spank_job_control_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
-}
-
 int getenv_local(char *name, char **env)
 {
 	char *p;
@@ -205,29 +243,6 @@ int getenv_remote(spank_t sp, char *name, char *value, int length)
 	}
 
 	serrno = spank_getenv (sp, name, value, length);
-
-	if (serrno != ESPANK_SUCCESS) {
-		return 0;
-	}
-	if (value == NULL) {
-		return 0;
-	}
-	if (strlen(value) <= 0) {
-		return 0;
-	}
-
-	return 1;
-}
-
-int getenv_control(spank_t sp, char *name, char *value, int length)
-{
-	spank_err_t serrno;
-
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-
-	serrno = spank_job_control_getenv (sp, name, value, length);
 
 	if (serrno != ESPANK_SUCCESS) {
 		return 0;
@@ -290,22 +305,42 @@ int isenv_remote(spank_t sp, char *name, char *value)
 		return 0;
 	}
 
-    if (getenv_remote(sp, name, buffer3, sizeof(buffer3))) {
-        return (strcmp(buffer3, value) == 0);
+    if (getenv_remote(sp, name, buffer2, 128)) {
+        return (strcmp(buffer2, value) == 0);
     }
 
     return 0;
 }
 
-int isenv_control(spank_t sp, char *name, char *value)
+/*
+ *
+ * Others
+ *
+ */
+
+int freq_to_p_state(int freq)
 {
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
+    struct cpufreq_available_frequencies *list_freqs;
+    list_freqs = cpufreq_get_available_frequencies(0);
+    int i = 0;
 
-	if (getenv_control(sp, name, buffer3, sizeof(buffer3))) {
-		return (strcmp(buffer3, value) == 0);
-	}
+    if (list_freqs == NULL) {
+    	return 1;
+    }
 
-	return 0;
+    if (freq > (int) list_freqs->frequency) {
+        return 0;
+    }
+
+    while(list_freqs != NULL)
+    {
+        if (freq == (int) list_freqs->frequency) {
+            return i;
+        }
+
+        list_freqs = list_freqs->next;
+        i += 1;
+    }
+
+    return 1;
 }
