@@ -34,8 +34,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
 #include <sys/resource.h>
+#include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 
 /*

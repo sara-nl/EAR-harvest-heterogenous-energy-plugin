@@ -40,12 +40,12 @@
 static char buffer_pck[MAX_PACKET_SIZE()];
 static char buffer_gen[PATH_MAX];
 
-//#define lops_len 128 * 512
+#define lops_len 128 * 512
 #define mets_len 32 * 512
 #define eves_len 32 * 512
 #define apps_len 32 * 512
 
-#define lops_len 1
+//#define lops_len 1
 //#define mets_len 2
 //#define eves_len 2
 //#define apps_len 1
@@ -91,8 +91,8 @@ static void db_store_loops(loop_t *lops, uint n_lops)
 	}
 
 	verbose("Trying to insert in DB %d loop samples", n_lops);
-	//db_batch_insert_loops(lops, n_lops);
-	db_insert_loop(lops);
+	db_batch_insert_loops(lops, n_lops);
+	//db_insert_loop(lops);
 }
 
 static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
@@ -194,7 +194,8 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 	if (header->content_type == CONTENT_TYPE_APP)
 	{
 		application_t *app = (application_t *) content;
-		//verbose("received an application %d from host %s", app->job.id, app->node_id);
+		verbose("received an application %d from host %s", app->job.id, app->node_id);
+		report_application_data(app);
 
 		if (app->is_learning)
 		{
@@ -229,7 +230,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 
 			if (apps_nor_i == apps_len)
 			{
-				db_store_applications_mpi(apps_nor, apps_nor_i);
+				db_store_applications(apps_nor, apps_nor_i);
 				apps_nor_i = 0;
 			}
 		}
@@ -261,9 +262,9 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		memcpy (&lops[lops_i], content, sizeof(loop_t));
 		lops_i += 1;
 
-		//verbose("%d %d %d '%s' %lu", lops[lops_i].id.event, lops[lops_i].id.size, lops[lops_i].id.level,
-		//	lops[lops_i].node_id, lops[lops_i].total_iterations);
-		//print_signature_fd(STDERR_FILENO, &lops[lops_i].signature);
+		verbose("%d %d %d '%s' %lu", lops[lops_i].id.event, lops[lops_i].id.size, lops[lops_i].id.level,
+			lops[lops_i].node_id, lops[lops_i].total_iterations);
+		print_signature_fd(STDERR_FILENO, &lops[lops_i].signature);
 
 		if (lops_i == eves_len) {
 			db_store_loops(lops, lops_i);

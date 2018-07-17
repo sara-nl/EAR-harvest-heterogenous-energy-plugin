@@ -40,14 +40,16 @@
 	}
 
 #define setenv_local_ret_err(p_name, p_value, replace) \
-	if (!setenv_local(p_name, p_value, replace)) \
+	if (!setenv_local(p_name, p_value, replace)) { \
         plug_error("while setting a local environment variable"); \
-		return (ESPANK_ERROR);
+		return (ESPANK_ERROR); \
+	}
 
-#define setenv_remot_ret_err(sp, p_name, p_value, replace) \
-	if(!setenv_remote(sp, p_name, p_value, replace)) \
+#define setenv_remote_ret_err(sp, p_name, p_value, replace) \
+	if(!setenv_remote(sp, p_name, p_value, replace)) { \
         plug_error("while setting a remote environment variable"); \
-		return (ESPANK_ERROR);
+		return (ESPANK_ERROR); \
+	}
 
 // Verbosity
 #define plug_verbose(sp, level, ...) \
@@ -71,7 +73,7 @@ void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source, int destiny_length);
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
-int setenv_control(spank_sp, char *name, char *value, int replace);
+int setenv_control(spank_t sp, char *name, char *value, int replace);
 int getenv_local(char *name, char **env);
 int getenv_remote(spank_t sp, char *name, char *value, int length);
 int getenv_control(spank_t sp, char *name, char *value, int length);

@@ -108,7 +108,7 @@ static int _opt_ear (int val, const char *optarg, int remote)
 		}
 
 		strncpy(buffer2, optarg, 8);
-		strtoup(buffer);
+		strtoup(buffer2);
 
 		if (strcmp(buffer2, "ON") == 0) {
 			setenv_local_ret_err("EAR", "1", 1);
