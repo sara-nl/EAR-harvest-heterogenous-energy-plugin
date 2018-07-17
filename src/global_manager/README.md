@@ -23,9 +23,14 @@ GlobalManagerPeriodT2=2592000
 GlobalManagerEnergyLimit=756000
 GlobalManagerPort=6000
 # Two modes are supported (0 pasive, 1 active or automatic)
-GlobalManagerMode=
-# Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode)
-#GlobalManagerMail=
+GlobalManagerMode=0
+# Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode). nomail means no mail is going to be sent
+GlobalManagerMail=nomail
+#Thee values must be provided corresponding with DEFCON_L4,DEFCON_L3, and DEFCON_L2 (higer values means PANIC)
+GlobalManagerWarningsPerc=85,90,95
+#T1 "grace" periods between DEFCON re-evaluations. In that case, 3 T1 periods means 30 minutes
+GlobalManagerGracePeriods=3
+
 ```
 
 API

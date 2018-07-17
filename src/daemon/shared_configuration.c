@@ -186,6 +186,15 @@ void settings_conf_shared_area_dispose(char * path)
 }
 
 
+void print_settings_conf(settings_conf_t *setting)
+{
+	fprintf(stderr,"settings: user_type(0=NORMAL,1=AUTH,2=ENERGY) %u learning %u lib_enabled %d policy(0=min_energy, 1=min_time,2=monitoring) %u \n",
+	setting->user_type,setting->learning,setting->lib_enabled,setting->policy);
+	fprintf(stderr,"\tmax_freq %lu def_freq %lu th %.2lf\n",setting->max_freq,setting->def_freq,setting->th);
+	print_ear_lib_conf(&setting->lib_info);	
+
+}
+
 /// RESCHED
 
 // Creates a shared memory region between eard and ear_lib. returns NULL if error.

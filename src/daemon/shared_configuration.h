@@ -50,6 +50,7 @@ typedef struct services_conf{
 
 typedef struct settings_conf{
 	uint 	user_type;
+	uint 	learning;
 	uint 	lib_enabled;
 	uint 	policy;
 	ulong 	max_freq;
@@ -87,6 +88,10 @@ void dettach_settings_conf_shared_area();
 /** Releases a shared memory area previously created. It is used by EARD (server)
 */
 void settings_conf_shared_area_dispose(char * path);
+
+/** Prints in the stderr values for the setting 
+*/
+void print_settings_conf(settings_conf_t *setting);
 
 /*********** RESCHED ****************************/
 /** Sets in path the filename for the shared memory area between EARD and EARL

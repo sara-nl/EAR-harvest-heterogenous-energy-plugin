@@ -124,7 +124,7 @@ int lenovo_wct_node_energy_init()
 		return EAR_ERROR;
 	}	
 	// Robert Wolford provided command: ipmitool raw 0x3a 0x32 4 1 0 0 0 --> low frequency command
-	// Robert Wolford provided command: raw 0x3a 0x32 4 2 0 0 0 --> High frequency command : Energy (J,mJ) and Time (sec,ms)
+	// Robert Wolford provided command: ipmitool raw 0x3a 0x32 4 2 0 0 0 --> High frequency command : Energy (J,mJ) and Time (sec,ms)
     /*
     ipmitool raw 0x3a 0x32 4 2 0 0 0
     COMMENT: Add 2 bytes to this format
