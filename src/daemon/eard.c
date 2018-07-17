@@ -66,6 +66,10 @@
 #include <daemon/eard_utils.h>
 #endif
 
+#if APP_API
+pthread_t app_eard_api_th;
+#endif
+
 extern powermon_app_t current_ear_app;
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
@@ -90,6 +94,9 @@ char services_conf_path[GENERIC_NAME];
 int coeffs_size;
 uint signal_sighup=0;
 uint f_monitoring;
+
+void *eard_non_earl_api_service(void *noinfo);
+
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
@@ -541,14 +548,14 @@ int eard_system(int must_read)
 
 		case WRITE_LOOP_SIGNATURE:
 			ack=EAR_COM_OK;
+			// print_loop_fd(1,&req.req_data.loop);
 			#if !LARGE_CLUSTER
 			#if !USE_EARDB
 			#if DB_MYSQL
-			req.req_data.loop.loop.job=&req.req_data.loop.job;
-			ret1 = db_insert_loop (&req.req_data.loop.loop);
+			ret1 = db_insert_loop (&req.req_data.loop);
 			#endif
 			#else
-			if ((ret1=eardbd_send_loop(&req.req_data.loop.loop))!=EAR_SUCCESS){
+			if ((ret1=eardbd_send_loop(&req.req_data.loop))!=EAR_SUCCESS){
 				VERBOSE_N(0,"Error sending loop to eardb");
 				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
 			}
@@ -1207,7 +1214,7 @@ void main(int argc,char *argv[])
     // Database cache daemon
     #if USE_EARDB
 	// use eardb configuration is pending
-    if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.udp_port, UDP)!=EAR_SUCCESS){
+    if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with EARDB");
 	}
     #endif
@@ -1225,6 +1232,12 @@ void main(int argc,char *argv[])
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
 		eard_verbose(0,"error creating dynamic_configuration thread \n");
 	}
+
+	#if APP_API
+	if (ret=pthread_create(&app_eard_api_th,NULL,eard_non_earl_api_service,NULL)){
+		eard_verbose(0,"error creating server thread for non-earl api\n");
+	}
+	#endif
 
 	eard_verbose(1,"Communicator for %s ON\n",nodename);
 	// we wait until EAR daemon receives a request

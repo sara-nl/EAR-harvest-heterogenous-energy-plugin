@@ -45,21 +45,12 @@ typedef struct loop_id
 typedef struct loop
 {
     loop_id_t id;
-    job_t *job;
+	ulong jid,step_id;
     char node_id[GENERIC_NAME];
     ulong total_iterations;
     signature_t signature;
 } loop_t;
 
-typedef struct db_loop
-{
-    loop_id_t id;
-    ulong loop_id;
-    ulong step_id;
-    char node_id[GENERIC_NAME];
-    ulong total_iterations;
-    signature_t signature;
-} db_loop_t;
 
 // Function declarations
 
@@ -89,7 +80,7 @@ void copy_loop(loop_t *destiny, loop_t *source);
 // REPORTING
 /** Appends in a file a loop in CSV format. The returned integer is one
 *   of the following states: EAR_SUCCESS or EAR_ERROR. */
-int append_loop_text_file(char *path, loop_t *loop);
+int append_loop_text_file(char *path, loop_t *loop,job_t *job);
 
 /** Given a loop_t and a file descriptor, outputs the contents of said loop to the fd.*/
 void print_loop_fd(int fd, loop_t *loop);

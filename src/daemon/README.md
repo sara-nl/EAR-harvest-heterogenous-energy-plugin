@@ -41,6 +41,18 @@ To execute this component, this `systemctl` command examples are provided:
 - `sudo systemctl stop eard` to stop the EARD service.
 - `sudo systemctl reload eard` to force to reload the configuration of the EARD service.
 
+Reconfiguration
+---------------
+
+After executing a "systemctl reload eard" command, not all the EARD options are dynamically updated. The list of updated variables are:
+
+- NodeDaemonMaxPstate
+- NodeDaemonVerbose
+- Default policy and default policy settings
+- NodeDaemonPowermonFreq
+
+To reconfigure other detauils such as EARD port, coefficients, etc, EARD must be stopped and restarted again.
+
 API
 ---
 The (node) Daemon offers a simple API to request changes on the frequency, modify the current node settings, and reload the system configuration by reading `$(ETC)/ear.conf`
@@ -51,6 +63,7 @@ Three APIs are provided:
 - Local API, to be used by applications. It is a subset of the EARD api and designed to be used by any applications to contact the privileged metric service offered by EARD. This API is public and can be used without restrictinos, so doesn't include functions to change the frequency. It can be found at [TBD](.).
 
 - Remote API, to be used by the [EARGMD](../global_manager/README.md) or system commands and tools such as the `econtrol`. Can be found at [eard_rapi.h](eard_rapi.h) and is not public.
+
 
 Basic commands
 --------------

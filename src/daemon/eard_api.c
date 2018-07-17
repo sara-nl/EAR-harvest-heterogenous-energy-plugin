@@ -352,15 +352,13 @@ ulong eards_write_loop_signature(loop_t *loop_signature)
     int com_fd=system_req;
     struct daemon_req req;
     ulong ack=EAR_SUCCESS;
-	eard_loop_t my_loop;
 
     if (!app_connected) return EAR_SUCCESS;
     DEBUG_F(2, "asking the daemon to write the loop signature (DB)");
 
     req.req_service = WRITE_LOOP_SIGNATURE;
 	req.sec=create_sec_tag();
-    memcpy(&req.req_data.loop.loop, loop_signature, sizeof(loop_t));
-    memcpy(&req.req_data.loop.job, loop_signature->job, sizeof(job_t));
+    memcpy(&req.req_data.loop, loop_signature, sizeof(loop_t));
 
 	
 

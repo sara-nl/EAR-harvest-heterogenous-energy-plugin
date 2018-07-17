@@ -67,14 +67,15 @@ loop_t *create_loop(loop_id_t loop_id)
 void loop_init(loop_t *loop, job_t *job)
 {
     memset(loop, 0, sizeof(loop_t));
-    loop->job = job;
+    loop->jid = job->id;
+	loop->step_id=job->step_id;
 	gethostname(loop->node_id,sizeof(loop->node_id));
 }
 
 
 void add_loop_signature(loop_t *loop,  signature_t *sig)
 {
-    loop->signature = *sig;
+    memcpy(&loop->signature,sig,sizeof(signature_t));
 }
 
 void end_loop(loop_t *loop, ulong iterations)
@@ -94,10 +95,13 @@ void print_loop_id_fd(int fd, loop_id_t *loop_id)
 
 void print_loop_fd(int fd, loop_t *loop)
 {
-    //tbd
+	dprintf(fd,"id %d step id %d\n",loop->jid,loop->step_id);
+    print_loop_id_fd(fd, &loop->id);
+    print_signature_fd(fd, &loop->signature);
+	dprintf(fd, "%lu\n", loop->total_iterations);
 }
 
-int append_loop_text_file(char *path, loop_t *loop)
+int append_loop_text_file(char *path, loop_t *loop,job_t *job)
 {
 	#if DB_FILES
     if (path == NULL) {
@@ -132,7 +136,7 @@ int append_loop_text_file(char *path, loop_t *loop)
 	assert(loop!=NULL);
 	assert(loop->node_id!=NULL);
     dprintf(fd, "%s;", loop->node_id);
-    print_job_fd(fd, loop->job);
+    print_job_fd(fd, job);
     print_signature_fd(fd, &loop->signature);
     print_loop_id_fd(fd, &loop->id);
     dprintf(fd, "%lu\n", loop->total_iterations);
@@ -144,3 +148,4 @@ int append_loop_text_file(char *path, loop_t *loop)
 	#endif
 	
 }
+

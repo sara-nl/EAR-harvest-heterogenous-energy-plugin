@@ -26,44 +26,33 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
-#include <sys/types.h>
-#include <sys/stat.h>
 
+#ifndef _APP_CONF_API_H
+#define _APP_CONF_API_H
 #include <common/config.h>
-#include <common/states.h>
-#define MAX_PATH_SIZE 256
 
-static char app_to_eard[MAX_PATH_SIZE];
-static char eard_to_app[MAX_PATH_SIZE];
-int create_app_connection(char *root)
-{
-	int fd;
-	mode_t old_mask;
-    sprintf(app_to_eard,"%s/.app_to_eard",root);
-    sprintf(eard_to_app,"%s/.eard_to_app",root);
-	old_mask=umask(0);
-	// app_to_eard is used to send requests from app to eard
-    if (mknod(app_to_eard,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
-        if (errno!=EEXIST){
-			return EAR_ERROR;
-        }
-    }
-	if (mknod(eard_to_app,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
-        if (errno!=EEXIST){
-            return EAR_ERROR;
-        }
-    }
-	fd=open(app_to_eard,O_RDWR);
-	umask(old_mask);
-	return fd;
-}
+#define ENERGY_TIME		1000
+#define INVALID_COMMAND 1
 
-/** Returns the energy in mJ and the time in ms  */
-int ear_energy(ulong *energy_mj,ulong *time_ms)
-{
-}
+typedef struct energy{
+	ulong energy_mj;
+	ulong time_ms;	
+}energy_t;
 
-/** Releases resources to connect with applications */
-int dispose_app_connection()
-{
-}
+union app_recv_opt {
+	energy_t my_energy;
+};
+
+typedef struct app_send{
+	uint req;
+	/* union app_send_opt my_data; */
+}app_send_t;
+
+
+typedef struct app_recv{
+	int 				ret;
+	union app_recv_opt 	my_data;
+}app_recv_t;
+
+#else
+#endif
