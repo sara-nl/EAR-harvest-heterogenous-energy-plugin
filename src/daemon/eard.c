@@ -963,22 +963,16 @@ int read_coefficients()
 	char my_coefficients_file[GENERIC_NAME];
 	int state,i;
 	int file_size=0;
-	//sprintf(my_coefficients_file,"%s/island%d/coeffs.%s",my_cluster_conf.earlib.coefficients_pathname,
-	sprintf(my_coefficients_file,"%s/island%d/coeffs.%s","/etc/ear/coeffsv3",
-	my_node_conf->island,nodename);
+	sprintf(my_coefficients_file,"%s/island%d/coeffs.%s",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island,nodename);
 	eard_verbose(0,"Looking for %s coefficients file",my_coefficients_file);
 	file_size=check_file(my_coefficients_file);
 	if (file_size == EAR_FILE_NOT_FOUND){
 		if (my_node_conf->coef_file!=NULL){
-			//sprintf(my_coefficients_file,"%s/island%d/%s",my_cluster_conf.earlib.coefficients_pathname,
-			sprintf(my_coefficients_file,"%s/island%d/%s","/etc/ear/coeffsv3",
-			my_node_conf->island,my_node_conf->coef_file);
+			sprintf(my_coefficients_file,"%s/island%d/%s",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island,my_node_conf->coef_file);
 			eard_verbose(0,"Not found.Looking for special %s coefficients file",my_coefficients_file);
 			file_size=check_file(my_coefficients_file);
 			if (file_size==EAR_FILE_NOT_FOUND){
-				//sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,
-				sprintf(my_coefficients_file,"%s/island%d/coeffs.default","/etc/ear/coeffsv3",
-				my_node_conf->island);
+				sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island);
 				eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
 				file_size=check_file(my_coefficients_file);
 				if (file_size==EAR_FILE_NOT_FOUND){
@@ -987,9 +981,7 @@ int read_coefficients()
 				}
 			}
 		} else{
-			//sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,
-			sprintf(my_coefficients_file,"%s/island%d/coeffs.default","/etc/ear/coeffsv3",
-			my_node_conf->island);
+			sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island);
 			eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
 			file_size=check_file(my_coefficients_file);
 			if (file_size==EAR_FILE_NOT_FOUND){
