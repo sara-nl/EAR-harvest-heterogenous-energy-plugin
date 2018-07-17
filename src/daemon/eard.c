@@ -941,6 +941,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
     dyn->user_type=NORMAL;
+	dyn->learning=0;
     dyn->lib_enabled=1;
 	dyn->policy=cluster->default_policy;
 	dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);

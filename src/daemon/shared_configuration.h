@@ -50,6 +50,7 @@ typedef struct services_conf{
 
 typedef struct settings_conf{
 	uint 	user_type;
+	uint 	learning;
 	uint 	lib_enabled;
 	uint 	policy;
 	ulong 	max_freq;
