@@ -70,11 +70,6 @@ static unsigned char eargmd_host[SZ_NAME_MEDIUM];
 static unsigned int  eargmd_port;
 static unsigned int  eargmd_nods;
 
-// Paths
-static char *etc_dir = NULL;
-static char *pre_dir = NULL;
-static char *tmp_dir = NULL;
-
 /*
  * Manual
  * ------
@@ -310,7 +305,7 @@ int _is_plugin_enabled(spank_t sp)
 
 int remote_eard_report_start(spank_t sp)
 {
-	plug_verbose(sp, 2, "function remote_eard_report_finish");
+	plug_verbose(sp, 2, "function remote_eard_report_start");
 
 	#if PRODUCTION
 	return ESPANK_SUCCESS;
@@ -358,7 +353,7 @@ int remote_eard_report_start(spank_t sp)
 		eard_appl.is_learning = atoi(buffer1);
 	}
 	if (!getenv_remote(sp, "EAR_P_STATE", buffer1, SZ_NAME_MEDIUM)) {
-		return (ESPANK_ERROR);	
+		eard_appl.job.def_f = 0;
 	} else {
 		eard_appl.job.def_f = atoi(buffer1);
 	}
@@ -367,9 +362,9 @@ int remote_eard_report_start(spank_t sp)
 	}
 
 	// Getting EARD connection variables
-	gethostname(eard_host, NAME_MAX);
+	gethostname(eard_host, SZ_NAME_MEDIUM);
 
-	if (!getenv_remote(sp, "EARD_PORT", buffer1, NAME_MAX)) {
+	if (!getenv_remote(sp, "EARD_PORT", buffer1, SZ_NAME_MEDIUM)) {
 		plug_error("EARD port not found");
 		return (ESPANK_ERROR);
 	} else {
@@ -396,6 +391,7 @@ int remote_eard_report_finish(spank_t sp)
 	plug_verbose(sp, 2, "function remote_eard_report_finish");
 
 	#if PRODUCTION
+	plug_verbose(sp, 2, "volviendo");
     return ESPANK_SUCCESS;
 	#endif
 
@@ -493,13 +489,66 @@ int local_eargmd_report_finish(spank_t sp)
 //
 int _read_shared_data_remote(spank_t sp)
 {
-	//settings_conf_t * attach_settings_conf_shared_area(char * path);
-	return (ESPANK_SUCCESS);
-}
+	plug_verbose(sp, 2, "function _read_shared_data_remote");
 
-//
-int _remote_environment_update(spank_t sp)
-{
+
+	settings_conf_t *conf;
+
+	//	
+	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
+	
+	// Opening shared memory
+	get_settings_conf_path(buffer1, buffer2);
+	conf = attach_settings_conf_shared_area(buffer2);
+
+	// EAR
+	if (!conf->lib_enabled || conf->user_type == ENERGY_TAG) {
+		setenv_remote_ret_err(sp, "EAR", "0", 1);
+	}
+
+	return (ESPANK_SUCCESS);
+	// EAR_POWER_POLICY
+	if(policy_id_to_name(conf->policy, buffer2) == EAR_ERROR) {
+		plug_error("invalid policy returned");
+		return (ESPANK_ERROR);
+	}
+	setenv_remote_ret_err(sp, "EAR_POWER_POLICY", buffer2, 1);
+
+	// EAR_POWER_POLICY_TH *
+	snprintf_ret_err(buffer2, 8, "%0.2f", conf->th);
+	setenv_remote_ret_err(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
+	setenv_remote_ret_err(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
+		
+
+	// EAR_P_STATE
+	setenv_remote_ret_err(sp, "EAR_P_STATE", "", 1);
+	
+	// EAR_LEARNING_PHASE
+	setenv_remote_ret_err(sp, "EAR_LEARNING_PHASE", "", 1);
+	
+	/*	
+	typedef struct settings_conf{
+	uint 	user_type;
+	uint 	lib_enabled;
+	uint 	policy;
+	ulong 	max_freq;
+	ulong	def_freq;
+	double 	th;
+	earlib_conf_t lib_info;
+	} settings_conf_t;		
+	*/
+
+	// Final library tweaks
+	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
+		setenv_remot_ret_err(sp, "EAR_APP_NAME", buffer2, 1);
+	}
+	if (getenv_remote(sp, "EAR_TMPDIR", buffer2, sizeof(buffer2)) == 1) {
+		setenv_remot_ret_err(sp, "EAR_TMP", buffer2, 1);
+	}
+
+	// Closing shared memory
+	dettach_settings_conf_shared_area();
+
 	return (ESPANK_SUCCESS);
 }
 
@@ -516,10 +565,13 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 	plug_verbose(sp, 2, "function _read_plugstack");
 	
 	char *conf_path = buffer1;
+	char *etc_dir = NULL;
+	char *pre_dir = NULL;
+	char *tmp_dir = NULL;
 	int found_predir = 0;
 	int found_tmpdir = 0;
 	int i;
-
+		
 	for (i = 0; i < ac; ++i)
 	{
 		if ((strlen(av[i]) > 8) && (strncmp ("default=", av[i], 8) == 0))
@@ -653,11 +705,20 @@ int _read_shared_data_basic(spank_t sp)
 	plug_verbose(sp, 2, "function _read_shared_data_basic");
 	
 	services_conf_t *conf;
-	char *path = buffer2;
+	char *tmp_dir;
+
+	//
+	if(!getenv_local("EAR_TMPDIR", &tmp_dir)) {
+		return ESPANK_ERROR;
+	}
 
 	// Opening shared memory
-	get_settings_conf_path(tmp_dir, path);
-	conf = attach_services_conf_shared_area(path);
+	get_services_conf_path(tmp_dir, buffer2);
+	conf = attach_services_conf_shared_area(buffer2);
+
+	if (conf == NULL) {
+		return (ESPANK_ERROR);
+	}
 
 	// EARD	
 	snprintf_ret_err(buffer2, 16, "%u", conf->eard.port);
@@ -672,7 +733,7 @@ int _read_shared_data_basic(spank_t sp)
 	plug_verbose(sp, 2, "shared EARGMD connection host '%s' and port '%d'", eargmd_host, eargmd_port);
 
 	// Closing shared memory
-	dettach_settings_conf_shared_area();
+	dettach_services_conf_shared_area();
 
 	return (ESPANK_SUCCESS);
 }
@@ -688,6 +749,10 @@ int _read_shared_data_basic(spank_t sp)
 int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init");
+
+	if (!spank_remote(sp)) {
+		_opt_register(sp);
+	}
 
 	if (spank_context() == S_CTX_SRUN)
 	{
@@ -736,7 +801,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 		_local_plugin_disable();
 		return ESPANK_SUCCESS;
 	}
-
+	
 	// Filling user data
 	if (_read_user_info(sp) != ESPANK_SUCCESS) {
 		_local_library_disable();
@@ -756,14 +821,11 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_user_init");
-	
-	if (spank_context() == S_CTX_REMOTE)
-		remote_print_environment(sp);
 
 	if(!_is_plugin_enabled(sp)) {
-		return ESPANK_SUCCESS;
+		return (ESPANK_SUCCESS);
 	}
-
+	
 	//
 	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN"))
 	{
@@ -775,17 +837,15 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		}
 
 		//
-		if (_read_shared_data_remote(sp) != ESPANK_SUCCESS) {
-			_remote_library_disable(sp);
-			return (ESPANK_SUCCESS);
+		if (!isenv_remote(sp, "EAR", "0")) {
+			if (_read_shared_data_remote(sp) != ESPANK_SUCCESS) {
+				_remote_library_disable(sp);
+			}
 		}
 
-		//
-		if (isenv_remote(sp, "EAR", "1")) {
-			_remote_environment_update(sp);
-		}
+		remote_print_environment(sp);
 	}
-
+	
 	return (ESPANK_SUCCESS);
 }
 
@@ -802,7 +862,7 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 	}
 
 	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN")) {
-		return remote_eard_report_finish(sp);
+		remote_eard_report_finish(sp);
 	}
 
 	return (ESPANK_SUCCESS);

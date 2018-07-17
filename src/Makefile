@@ -1,6 +1,6 @@
 ######## FILES
 
-COMPONENTS = common database_cache
+COMPONENTS = common
 ifdef CPUF_BASE
 	COMPONENTS += control
 	ifdef PAPI_BASE
@@ -21,8 +21,8 @@ ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
 ifdef DB_BASE
-	COMPONENTS += global_manager \
-				  database_cache
+	COMPONENTS += global_manager
+				  #database_cache
 endif
 
 ######## RULES

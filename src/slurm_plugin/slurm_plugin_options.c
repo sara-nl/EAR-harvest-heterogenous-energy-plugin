@@ -285,7 +285,7 @@ static int _opt_ear_tag(int val, const char *optarg, int remote)
 		}
 
 		setenv_local_ret_err("EAR_ENERGY_TAG", optarg, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		setenv_local_ret_err("EAR", "0", 1);
 	}
 	return (ESPANK_SUCCESS);
 }
