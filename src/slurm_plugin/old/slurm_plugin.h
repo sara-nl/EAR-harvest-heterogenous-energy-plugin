@@ -30,27 +30,7 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
-#include <pwd.h>
-#include <grp.h>
-#include <slurm/slurm.h>
-#include <slurm/spank.h>
-#include <common/sizes.h>
-#include <common/config.h>
-#include <common/types/job.h>
-#include <common/types/application.h>
-#include <common/types/configuration/cluster_conf.h>
-
-#define PRODUCTION 		 1
+#define PRODUCTION		 0
 #define ESPANK_STOP 	-1
-#define S_CTX_SRUN 		S_CTX_LOCAL
-#define S_CTX_SBATCH	S_CTX_ALLOCATOR
-
-// Verbosity
-extern int verbosity;
-
-// Buffers
-extern char buffer1[SZ_PATH];
-extern char buffer2[SZ_PATH];
-extern char buffer3[SZ_PATH]; // helper buffer
 
 #endif
