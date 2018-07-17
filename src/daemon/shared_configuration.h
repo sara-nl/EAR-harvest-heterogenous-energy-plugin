@@ -89,6 +89,10 @@ void dettach_settings_conf_shared_area();
 */
 void settings_conf_shared_area_dispose(char * path);
 
+/** Prints in the stderr values for the setting 
+*/
+void print_settings_conf(settings_conf_t *setting);
+
 /*********** RESCHED ****************************/
 /** Sets in path the filename for the shared memory area between EARD and EARL
  *  * @param path (output)

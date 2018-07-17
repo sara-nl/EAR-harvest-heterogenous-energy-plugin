@@ -1113,6 +1113,7 @@ void main(int argc,char *argv[])
         _exit(0);
     }
 	#endif
+	/* This area incldues services details */
 	get_services_conf_path(my_cluster_conf.tmp_dir,services_conf_path);
 	eard_verbose(1,"Using %s as services_conf path (shared memory region)",services_conf_path);
 	my_services_conf=create_services_conf_shared_area(services_conf_path);
