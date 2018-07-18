@@ -74,7 +74,7 @@ static int connect_with_app()
     else return EAR_ERROR;
 }
 
-static send_app_answer(app_recv_t *data)
+static int send_app_answer(app_recv_t *data)
 {
 	if (write(fd_eard_to_app,data,sizeof(app_recv_t))!=sizeof(app_recv_t))	return EAR_ERROR;
 	return EAR_SUCCESS;

@@ -23,6 +23,10 @@ GlobalManagerMode=0
 #Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode)
 #GlobalManagerMail=pmayes@lenovo.com
 GlobalManagerMail=nomail
+#Thee values must be provided corresponding with DEFCON_L4,DEFCON_L3, and DEFCON_L2 (higer values means PANIC)
+GlobalManagerWarningsPerc=85,90,95
+##T1 "grace" periods between DEFCON before re-evaluate
+GlobalManagerGracePeriods=3
 
 #EARD
 

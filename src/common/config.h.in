@@ -90,3 +90,6 @@
 #define EARGM_PORT_NUMBER	60000	// Default port used by the global manager
 
 #define LARGE_CLUSTER		0		// This flag affects the data types and insertions into the DB
+#define COEFFS_V3 1
+#define APP_API 1
+
