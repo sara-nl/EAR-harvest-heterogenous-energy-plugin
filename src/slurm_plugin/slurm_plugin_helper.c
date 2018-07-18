@@ -50,12 +50,18 @@ int verbosity_test(spank_t sp, int level)
 	char *env_local;
 
 	if (verbosity == -1) {
-		if (getenv_remote(sp, "EAR_PLUGIN_VERBOSE", env_remote, 8) == 1) {
-			verbosity = atoi(env_remote);
-		} else if (getenv_local("EAR_PLUGIN_VERBOSE", &env_local) == 1) {
-			verbosity = atoi(env_local);
+		if (spank_remote(sp)) {
+			if (getenv_remote(sp, "EAR_PLUGIN_VERBOSE", env_remote, 8) == 1) {
+				verbosity = atoi(env_remote);
+			} else {
+				verbosity = 0;
+			}
 		} else {
-			verbosity = 0;
+			if (getenv_local("EAR_PLUGIN_VERBOSE", &env_local) == 1) {
+				verbosity = atoi(env_local);
+			} else {
+				verbosity = 0;
+			}
 		}
 	}
 
@@ -174,6 +180,15 @@ int setenv_control(spank_t sp, char *name, char *value, int replace)
 	}
 
 	return (spank_job_control_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
+}
+
+int unsetenv_remote(spank_t sp, char *name)
+{
+    if (name == NULL) {
+        return 0;
+    }   
+
+	return (spank_unsetenv(sp, name) == ESPANK_SUCCESS);
 }
 
 int getenv_local(char *name, char **env)

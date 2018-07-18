@@ -66,14 +66,18 @@
 
 int verbosity_test(spank_t sp, int level);
 
-// String
+// Environment
 void print_local_environment(spank_t sp);
 void print_remote_environment(spank_t sp);
+
+// Environment variables
 void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source, int destiny_length);
+
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
 int setenv_control(spank_t sp, char *name, char *value, int replace);
+int unsetenv_remote(spank_t sp, char *name);
 int getenv_local(char *name, char **env);
 int getenv_remote(spank_t sp, char *name, char *value, int length);
 int getenv_control(spank_t sp, char *name, char *value, int length);

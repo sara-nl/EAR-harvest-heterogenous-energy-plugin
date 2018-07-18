@@ -222,6 +222,7 @@ static void remote_print_environment(spank_t sp)
 
     printenv_remote(sp, "EAR");
     printenv_remote(sp, "EAR_PLUGIN");
+    printenv_remote(sp, "EAR_PLUGIN_VERBOSE");
     printenv_remote(sp, "EAR_USER");
     printenv_remote(sp, "EAR_GROUP");
     printenv_remote(sp, "EAR_LEARNING_PHASE");
@@ -500,30 +501,41 @@ int _read_shared_data_remote(spank_t sp)
 	get_settings_conf_path(buffer1, buffer2);
 	conf = attach_settings_conf_shared_area(buffer2);
 
-	print_settings_conf(conf);
+	if (verbosity_test(sp, 4)) {
+		print_settings_conf(conf);
+	}
 	
-	// EAR
+	// Variable EAR and LD_PRELOAD
 	if (!conf->lib_enabled || conf->user_type == ENERGY_TAG) {
 		setenv_remote_ret_err(sp, "EAR", "0", 1);
+		remote_library_disable();
 	}
 
-	// EAR_POWER_POLICY
-	if(policy_id_to_name(conf->policy, buffer2) == EAR_ERROR) {
+	// Variable EAR_ENERGY_TAG, unset
+	if (conf->user_type != ENERGY_TAG) {
+		unsetenv_remote(sp, "EAR_ENERGY_TAG");
+	}
+
+	// Variable EAR_POWER_POLICY, overwrite
+	if(policy_id_to_name(conf->policy, buffer2) == EAR_ERROR)
+	{
+		// Closing shared memory
+		dettach_settings_conf_shared_area();
 		plug_error("invalid policy returned");
 		return (ESPANK_ERROR);
 	}
 	setenv_remote_ret_err(sp, "EAR_POWER_POLICY", buffer2, 1);
 
-	// EAR_POWER_POLICY_TH *
+	// Variable EAR_POWER_POLICY_TH, overwrite
 	snprintf_ret_err(buffer2, 8, "%0.2f", conf->th);
 	setenv_remote_ret_err(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
 	setenv_remote_ret_err(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
 		
-	// EAR_P_STATE
-	setenv_remote_ret_err(sp, "EAR_P_STATE", "", 1);
-	
-	// EAR_LEARNING_PHASE
-	setenv_remote_ret_err(sp, "EAR_LEARNING_PHASE", "", 1);
+	// Variable EAR_LEARNING and EAR_P_STATE
+	if(!conf->learning) {
+		unsetenv_remote(sp, "EAR_P_STATE");
+		unsetenv_remote(sp, "EAR_LEARNING_PHASE");
+	}
 	
 	// Final library tweaks
 	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
@@ -566,13 +578,15 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			plug_verbose(sp, 2, "plugstack found library by default '%s'", &av[i][8]);
 			
 			// If enabled by default
-			if (strncmp ("default=on", av[i], 10)) {
+			if (strncmp ("default=on", av[i], 10) == 0) {
 				// EAR == 1: enable
 				// EAR == 0: nothing
 				// EAR == whatever: enable (bug protection)
 				if (!isenv_local("EAR", "0")) {
+					plug_verbose(sp, 2, "no esta a 0");
 					setenv_local_ret_err("EAR", "1", 1);
-				}
+				} else 
+					plug_verbose(sp, 2, "esta a 0");
 				// If disabled by default or de administrator have misswritten
 			} else {
 				// EAR == 1: nothing
