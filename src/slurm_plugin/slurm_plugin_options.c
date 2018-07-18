@@ -170,7 +170,7 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 			return (ESPANK_STOP);
 		}
 
-		setenv_local_ret_err("EAR_POWER_POLICY_TH", buffer2, 1);
+		setenv_local_ret_err("EAR_POWER_POLICY", buffer2, 1);
 		setenv_local_ret_err("EAR", "1", 0);
 	}
 

@@ -273,12 +273,14 @@ void process_remote_requests(int clientfd)
 	req=read_command(clientfd,&command);
 	switch (req){
 		case EAR_RC_NEW_JOB:
+			eard_verbose(1,"*******************************************\n");
 			eard_verbose(1,"new_job command received %d\n",command.my_req.new_job.job.id);
 			powermon_new_job(&command.my_req.new_job,0);		
 			break;
 		case EAR_RC_END_JOB:
-			eard_verbose(1,"end_job command received %d\n",command.my_req.end_job.jid);
 			powermon_end_job(command.my_req.end_job.jid,command.my_req.end_job.sid);
+			eard_verbose(1,"end_job command received %d\n",command.my_req.end_job.jid);
+			eard_verbose(1,"*******************************************\n");
 			break;
 		case EAR_RC_MAX_FREQ:
 			eard_verbose(1,"max_freq command received %lu\n",command.my_req.ear_conf.max_freq);
