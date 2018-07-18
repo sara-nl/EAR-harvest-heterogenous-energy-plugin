@@ -51,13 +51,19 @@ PluginAcceptedPstates=1,2,3
 ### COMMON Configuration
 TmpDir=@localstatedir@
 EtcDir=@sysconfdir@
-DataBasePathName=/etc/ear/dbs/dbs.
+DataBasePathName=@sysconfdir@/dbs/dbs.
 Verbose=0
 
 #Library conf
-CoefficientsDir=/etc/ear/coeffs/coeffs.
+CoefficientsDir=@sysconfdir@/coeffs/coeffs.
 DynAISLevels=4
 DynAISWindowSize=500
+# Maximum time (in seconds) EAR will wait until a signature is computed. After DynaisTimeout seconds, if no signature is computed, EAR will go to periodic mode
+DynaisTimeout=30
+# # When EAR goes to periodic mode, it will compute the Application signature every "LibraryPeriod" seconds
+LibraryPeriod=30
+# # EAR will check every N mpi calls whether it must go to periodic mode or not
+CheckEARModeEvery=1000
 
 # DEFAULT POWER POLICIES VALUES
 DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
