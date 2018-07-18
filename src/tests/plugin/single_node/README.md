@@ -5,7 +5,7 @@ These tests are designed to evaluate the different plugin options to be supporte
 * Assuming ear=on, some results depend on user privilege
 
 | Name   |Case             | Expected behavoiour                                                         |
-| ------------------------ | --------------------------------------------------------------------------- |
+| -------|----------------- | --------------------------------------------------------------------------- |
 | test1  |No arguments     | Application is executed with default policy and th                          |
 | test2  |--ear-verbose=1  | Application must be executed with default policy and th					 |
 | test3  |--ear-policy=MONITORING_ONLY | if MONITORING_ONLY is supported, it must be selected without privileges |
