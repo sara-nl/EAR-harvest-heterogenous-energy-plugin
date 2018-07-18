@@ -18,13 +18,13 @@ Parameters
 
 2 EAR Global Manager
 
-**GlobalManagerVerbose**=1 
-**GlobalManagerPeriodT1**=90, Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)
-**GlobalManagerPeriodT2**=259200
-**GlobalManagerEnergyLimit**=550000 , expressed in Joules
-**GlobalManagerHost**=name
-**GlobalManagerPort**=50000 , port were EARGM will be executed
-**GlobalManagerMode**=0, Two modes are supported 0=manual 1= means automatic
+**GlobalManagerVerbose**=1   
+**GlobalManagerPeriodT1**=90, Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)  
+**GlobalManagerPeriodT2**=259200  
+**GlobalManagerEnergyLimit**=550000 , expressed in Joules  
+**GlobalManagerHost**=name  
+**GlobalManagerPort**=50000 , port were EARGM will be executed  
+**GlobalManagerMode**=0, Two modes are supported 0=manual 1= means automatic  
 #Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode)
 #GlobalManagerMail=pmayes@lenovo.com
 GlobalManagerMail=nomail
