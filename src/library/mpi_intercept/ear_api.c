@@ -208,7 +208,7 @@ void update_configuration()
 	print_settings_conf(system_conf);	
 	set_ear_power_policy(system_conf->policy);
 	set_ear_power_policy_th(system_conf->th);
-	set_ear_p_state(system_conf->def_freq);
+	set_ear_p_state(system_conf->def_p_state);
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);

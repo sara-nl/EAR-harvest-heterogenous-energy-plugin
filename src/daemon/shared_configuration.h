@@ -55,6 +55,7 @@ typedef struct settings_conf{
 	uint 	policy;
 	ulong 	max_freq;
 	ulong	def_freq;
+	uint	def_p_state;
 	double 	th;
 	earlib_conf_t lib_info;
 } settings_conf_t;
@@ -145,6 +146,15 @@ void services_conf_shared_area_dispose(char * path);
 
 /** Unmmaps the shared memory for services_conf, to be used by ear plugin or any other component */
 void dettach_services_conf_shared_area();
+
+
+/************** FREQUENCIES ***************/
+int get_frequencies_path(char *tmp,char *path);
+ulong *create_frequencies_shared_area(char * path,ulong *f,int size);
+ulong *attach_frequencies_shared_area(char * path,int *size);
+void frequencies_shared_area_dispose(char * path);
+void dettach_frequencies_shared_area();
+
 
 
 

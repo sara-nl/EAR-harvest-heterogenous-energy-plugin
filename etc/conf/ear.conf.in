@@ -55,7 +55,7 @@ DataBasePathName=@sysconfdir@/dbs/dbs.
 Verbose=0
 
 #Library conf
-CoefficientsDir=@sysconfdir@/coeffs/coeffs.
+CoefficientsDir=@sysconfdir@/coeffs
 DynAISLevels=4
 DynAISWindowSize=500
 # Maximum time (in seconds) EAR will wait until a signature is computed. After DynaisTimeout seconds, if no signature is computed, EAR will go to periodic mode
@@ -86,8 +86,9 @@ AuthorizedUsers=user1,user2
 
 # # ENERGY TAGS AND PRIVILEDGED USERS
 # ### Privileged users,accounts and groups are allowed to use EnergyTags. The "allowed" TAGs are defined by row together with the priviledged user/group/account.
-EnergyTag=cpu-intensive freq=2400000 users=xjcorbalan 
-EnergyTag=memory-intensive freq=2000000 users=xjaneas,xlalonso groups=bsc accounts=COLBSC
+EnergyTag=cpu-intensive pstate=1  
+EnergyTag=memory-intensive pstate=4 
+#EnergyTag=memory-intensive pstate=4 users=user1,user2 groups=group1,group2 accounts=acc1,acc2
 #
 
 # NODES CONFIGURATION: Node list, grouped by hardware characteristics, different lists must reflect different power characteristics

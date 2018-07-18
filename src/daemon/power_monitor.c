@@ -122,6 +122,7 @@ void reset_shared_memory()
     dyn_conf->lib_enabled=1;
     dyn_conf->policy=my_cluster_conf.default_policy;
     dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
+	dyn_conf->def_p_state=my_policy->p_state;
     dyn_conf->th=my_policy->th;
 }
 
@@ -295,15 +296,19 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 	case AUTHORIZED:
 		if (appID->is_learning){
 			authorized_context.policy=MONITORING_ONLY;
-			authorized_context.p_state=appID->job.def_f;
+			if (appID->job.def_f) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+			else authorized_context.p_state=1;
 			authorized_context.th=0;
 			my_policy=&authorized_context;
 		}else{
 			p_id=policy_name_to_id(appID->job.policy);
 			if (p_id!=EAR_ERROR){
+            	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
 				authorized_context.policy=p_id;
-				authorized_context.p_state=appID->job.def_f;
-				authorized_context.th=appID->job.th;
+				if (appID->job.def_f) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+				else authorized_context.p_state=my_policy->p_state;	
+				if (appID->job.th>0) authorized_context.th=appID->job.th;
+				else authorized_context.th=my_policy->th;
 				my_policy=&authorized_context;
 			}else{
 				/* This should neve happen, just in case */
@@ -319,7 +324,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 	case ENERGY_TAG:
 		appID->is_learning=0;
 		energy_tag_context.policy=MONITORING_ONLY;
-		energy_tag_context.p_state=frequency_freq_to_pstate(my_tag->p_state);
+		energy_tag_context.p_state=my_tag->p_state;
 		energy_tag_context.th=0;
 		my_policy=&energy_tag_context;
 		break;
@@ -395,6 +400,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);
 	dyn_conf->policy=my_policy->policy;
 	dyn_conf->def_freq=f;
+	dyn_conf->def_p_state=my_policy->p_state;
 	dyn_conf->th=my_policy->th;
 	/* End app configuration */
 	frequency_set_all_cpus(f);

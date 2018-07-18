@@ -38,9 +38,13 @@ void main(int argc,char *argv[])
 {
 	cluster_conf_t my_cluster;
 	char ear_path[256];
-	if (get_ear_conf_path(ear_path)==EAR_ERROR){
-		printf("Error getting ear.conf path\n");
-		exit(0);
+	if (argc>1){
+		strcpy(ear_path,argv[1]);
+	}else{
+		if (get_ear_conf_path(ear_path)==EAR_ERROR){
+			printf("Error getting ear.conf path\n");
+			exit(0);
+		}
 	}
 	read_cluster_conf(ear_path,&my_cluster);
 	print_cluster_conf(&my_cluster);

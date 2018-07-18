@@ -82,6 +82,8 @@ policy_conf_t default_policy_context,energy_tag_context,authorized_context;
 settings_conf_t *dyn_conf;
 resched_t *resched_conf;
 services_conf_t *my_services_conf;
+ulong *shared_frequencies;
+ulong *frequencies;
 /* END Shared memory regions */
 
 coefficient_v3_t *my_coefficients;
@@ -91,6 +93,7 @@ char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
 char coeffs_path[GENERIC_NAME];
 char services_conf_path[GENERIC_NAME];
+char frequencies_path[GENERIC_NAME];
 int coeffs_size;
 uint signal_sighup=0;
 uint f_monitoring;
@@ -134,6 +137,15 @@ int application_timeout();
 void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node);
 int RAPL_counting=0;
 int eard_must_exit=0;
+
+void init_frequency_list()
+{
+	int size=frequency_get_num_pstates()*sizeof(ulong);
+	frequencies=(ulong *)malloc(size);
+	memcpy(frequencies,frequency_get_freq_rank_list,size);
+	get_frequencies_path(my_cluster_conf.tmp_dir,frequencies_path);
+	shared_frequencies=create_frequencies_shared_area(frequencies_path,frequencies,size);
+}
 
 int is_valid_sec_tag(ulong tag)
 {
@@ -1076,6 +1088,7 @@ void main(int argc,char *argv[])
 		_exit(1);
 	}
 	/** Shared memory is used between EARD and EARL **/
+	init_frequency_list();
 	/* This area is for shared info */
     eard_verbose(0,"creating shared memory regions");
 	get_settings_conf_path(my_cluster_conf.tmp_dir,dyn_conf_path);

@@ -170,6 +170,7 @@ int dynconf_def_freq(ulong def)
 {
     if (is_valid_freq(def,num_f,f_list)){
         dyn_conf->def_freq=def;
+		dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
         resched_conf->force_rescheduling=1;
         powermon_new_def_freq(def);
         return EAR_SUCCESS;
@@ -177,6 +178,7 @@ int dynconf_def_freq(ulong def)
         int freq=lower_valid_freq(def,num_f,f_list);
         if (freq>0){
             dyn_conf->def_freq=freq;
+			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
             resched_conf->force_rescheduling=1;
             powermon_new_def_freq(freq);
             return EAR_SUCCESS;
@@ -190,6 +192,7 @@ int dynconf_set_freq(ulong freq)
 	if (is_valid_freq(freq,num_f,f_list)){
 		dyn_conf->max_freq=freq;
 		dyn_conf->def_freq=freq;
+		dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
 		resched_conf->force_rescheduling=1;
 		powermon_set_freq(freq);
 		return EAR_SUCCESS;
@@ -198,6 +201,7 @@ int dynconf_set_freq(ulong freq)
 		if (freq2>0){
 			dyn_conf->max_freq=freq2;
 			dyn_conf->def_freq=freq2;
+			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
 			resched_conf->force_rescheduling=1;
 			powermon_set_freq(freq2);
 			return EAR_SUCCESS;
@@ -237,6 +241,7 @@ int dynconf_red_pstates(uint p_states)
 	// reducing the default freq in N p_states
 	if (is_valid_freq(def,num_f,f_list)){
 		dyn_conf->def_freq=def;
+		dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
 		resched_conf->force_rescheduling=1;
 		powermon_new_def_freq(def);
     	return EAR_SUCCESS;
@@ -244,6 +249,7 @@ int dynconf_red_pstates(uint p_states)
 		int freq=lower_valid_freq(def,num_f,f_list);
 		if (freq>0){
 			dyn_conf->def_freq=freq;
+			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
 			resched_conf->force_rescheduling=1;
 			powermon_new_def_freq(freq);
     		return EAR_SUCCESS;

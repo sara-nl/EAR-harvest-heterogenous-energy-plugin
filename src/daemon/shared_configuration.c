@@ -48,7 +48,7 @@
 
 static int fd;
 static const char *__NAME__ = "EARD_shared";
-static int fd_cluster,fd_settings,fd_resched,fd_coeffs,fd_services;
+static int fd_cluster,fd_settings,fd_resched,fd_coeffs,fd_services,fd_freq;
 extern char *__HOST__;
 
 
@@ -190,7 +190,7 @@ void print_settings_conf(settings_conf_t *setting)
 {
 	fprintf(stderr,"settings: user_type(0=NORMAL,1=AUTH,2=ENERGY) %u learning %u lib_enabled %d policy(0=min_energy, 1=min_time,2=monitoring) %u \n",
 	setting->user_type,setting->learning,setting->lib_enabled,setting->policy);
-	fprintf(stderr,"\tmax_freq %lu def_freq %lu th %.2lf\n",setting->max_freq,setting->def_freq,setting->th);
+	fprintf(stderr,"\tmax_freq %lu def_freq %lu def_p_state %u th %.2lf\n",setting->max_freq,setting->def_freq,setting->def_p_state,setting->th);
 	print_ear_lib_conf(&setting->lib_info);	
 
 }
@@ -273,4 +273,25 @@ void dettach_services_conf_shared_area()
     dettach_shared_area(fd_services);
 }
 
+/*************** FREQUENCIES ****************/
+int get_frequencies_path(char *tmp,char *path)
+{
+	sprintf(path,"%s/.ear_frequencies",tmp);
+}
+ulong *create_frequencies_shared_area(char * path,ulong *f,int size)
+{
+	return (ulong *)create_shared_area(path,(char *)f,size,&fd_freq,0);
+}
+ulong *attach_frequencies_shared_area(char * path,int *size)
+{
+	return (ulong *)attach_shared_area(path,0,O_RDONLY,&fd_freq,size);
+}
+void frequencies_shared_area_dispose(char * path)
+{
+	dispose_shared_area(path,fd_freq);
+}
+void dettach_frequencies_shared_area()
+{
+	dettach_shared_area(fd_freq);
+}
 

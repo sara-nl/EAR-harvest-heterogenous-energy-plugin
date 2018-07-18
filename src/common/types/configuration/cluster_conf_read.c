@@ -383,7 +383,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					conf->e_tags[conf->num_tags].accounts = NULL;
 					conf->num_tags++;
 				}
-				else if (!strcmp(token, "FREQ"))
+				else if (!strcmp(token, "PSTATE"))
 				{
 					token = strtok_r(NULL, "=", &secondary_ptr);
 					conf->e_tags[conf->num_tags-1].p_state = atoi(token);
