@@ -9,12 +9,12 @@ Parameters
 
 1 Mariadb CONFIGURATION
 
-**MariaDBIp**=172.30.2.101
-**MariaDBUser**=ear_daemon
-**MariaDBPassw**=
-**MariaDBPort**=0
-**MariaDBHost**=Report
-**MariaDBDatabase**=Report
+**MariaDBIp**=172.30.2.101  
+**MariaDBUser**=ear_daemon  
+**MariaDBPassw**=  
+**MariaDBPort**=0  
+**MariaDBHost**=hostname  
+**MariaDBDatabase**=EAR_DB  
 
 2 EAR Global Manager
 
