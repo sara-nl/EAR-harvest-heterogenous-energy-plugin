@@ -1,31 +1,30 @@
 Description
 -----------
-ear.conf is an ascii file describing EAR arguments for EAR components and cluster configuration. It must be readable at all compute nodes and at nodes where commands are executed. 
+ear.conf is an ascii file describing EAR arguments for EAR components and cluster configuration. It must be readable at all compute nodes and at nodes where commands are executed. Lines starting with # are comments. Some of the arguments are optional. A test for ear.conf file can be found at src/test/functionals/ear_conf
 
 Parameters
 ----------
-## SERVICES CONFIGURATION
 
-EAR Mariadb CONFIGURATION
-*MariaDBIp*=172.30.2.101
-MariaDBUser=ear_daemon
-MariaDBPassw=
-MariaDBPort=0
-#MariaDBHost=Report
-MariaDBDatabase=Report
+# SERVICES CONFIGURATION
 
-# EAR Global Manager
+1 Mariadb CONFIGURATION
 
-GlobalManagerVerbose=1
-#Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)
-GlobalManagerPeriodT1=90
-GlobalManagerPeriodT2=259200
-# in Joules
-GlobalManagerEnergyLimit=550000
-GlobalManagerHost=r22u21.hpc.eu.lenovo.com
-GlobalManagerPort=50000
-# Two modes are supported 0=manual 1= means automatic
-GlobalManagerMode=0
+**MariaDBIp**=172.30.2.101
+**MariaDBUser**=ear_daemon
+**MariaDBPassw**=
+**MariaDBPort**=0
+**MariaDBHost**=Report
+**MariaDBDatabase**=Report
+
+2 EAR Global Manager
+
+**GlobalManagerVerbose**=1 
+**GlobalManagerPeriodT1**=90, Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)
+**GlobalManagerPeriodT2**=259200
+**GlobalManagerEnergyLimit**=550000 , expressed in Joules
+**GlobalManagerHost**=name
+**GlobalManagerPort**=50000 , port were EARGM will be executed
+**GlobalManagerMode**=0, Two modes are supported 0=manual 1= means automatic
 #Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode)
 #GlobalManagerMail=pmayes@lenovo.com
 GlobalManagerMail=nomail
