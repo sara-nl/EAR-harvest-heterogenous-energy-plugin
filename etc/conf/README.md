@@ -6,10 +6,10 @@ Parameters
 ----------
 ## SERVICES CONFIGURATION
 
-# EAR Mariadb CONFIGURATION
-MariaDBIp=172.30.2.101
+EAR Mariadb CONFIGURATION
+*MariaDBIp*=172.30.2.101
 MariaDBUser=ear_daemon
-#MariaDBPassw=
+MariaDBPassw=
 MariaDBPort=0
 #MariaDBHost=Report
 MariaDBDatabase=Report
@@ -50,16 +50,6 @@ DBDaemonPortUDP=4712
 # Memory size expressed in MB
 DBDaemonMemorySize=120
 
-# Plugin configuration
-PluginVerbose=0
-PluginAcceptedPstates=1,2,3
-
-### COMMON Configuration
-TmpDir=@localstatedir@
-EtcDir=@sysconfdir@
-DataBasePathName=@sysconfdir@/dbs/dbs.
-Verbose=0
-
 #Library conf
 CoefficientsDir=@sysconfdir@/coeffs
 DynAISLevels=4
@@ -71,7 +61,18 @@ LibraryPeriod=30
 # # EAR will check every N mpi calls whether it must go to periodic mode or not
 CheckEARModeEvery=1000
 
-# DEFAULT POWER POLICIES VALUES
+# Plugin configuration
+PluginVerbose=0
+PluginAcceptedPstates=1,2,3
+
+## COMMON fields
+TmpDir=@localstatedir@
+EtcDir=@sysconfdir@
+DataBasePathName=@sysconfdir@/dbs/dbs.
+Verbose=0
+
+
+## Energy policies configuration 
 DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
 SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION
 #SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
@@ -80,6 +81,8 @@ DefaultPstates=1,4,4
 MinEfficiencyGain=0.7
 MaxPerformancePenalty=0.1
 MinTimePerformanceAccuracy=10000000
+
+## Security configuration
 
 # AUTHORIZED USERS
 # Authorized users,accounts and groups are allowed to change policies, thresholds, frequencies etc
@@ -90,22 +93,21 @@ AuthorizedUsers=user1,user2
 # AuthorizedGroups=xx,yy
 
 
-# # ENERGY TAGS AND PRIVILEDGED USERS
-# ### Privileged users,accounts and groups are allowed to use EnergyTags. The "allowed" TAGs are defined by row together with the priviledged user/group/account.
-EnergyTag=cpu-intensive pstate=1  
-EnergyTag=memory-intensive pstate=4 
-#EnergyTag=memory-intensive pstate=4 users=user1,user2 groups=group1,group2 accounts=acc1,acc2
-#
+## ENERGY TAGS AND PRIVILEDGED USERS
+Privileged users,accounts and groups are allowed to use EnergyTags. The "allowed" TAGs are defined by row together with the priviledged user/group/account.
+*EnergyTag*=memory-intensive *pstate*=4 *users*=user1,user2 *groups*=group1,group2 *accounts*=acc1,acc2
 
-# NODES CONFIGURATION: Node list, grouped by hardware characteristics, different lists must reflect different power characteristics
-NodeName=r22u[21,23,25,27] CPUs=24
+## Cluster description
+
+NODES CONFIGURATION: Node list, grouped by hardware characteristics, different lists must reflect different power characteristics
+*NodeName*=r22u[21,23,25,27] *CPUs*=24
 
 
 # ISLES CONFIGURATION
-# it is mandatory to specify all the nodes in the cluster, grouped by islands.
-#more than one line per island must be supported to specify dbip ports
-# Example: Each island with 2 eardb, each one covering 200 nodes
+it is mandatory to specify all the nodes in the cluster, grouped by islands.
+more than one line per island must be supported to specify dbip ports
+Example: Each island with 2 eardb, each one covering 200 nodes
 
 
-Island=0 Nodes=r22u21,r22u23,r22u25,r22u27 DBIP=r22u21.hpc.eu.lenovo.com 
+*Island*=0 *Nodes*=r22u21,r22u23,r22u25,r22u27 *DBIP*=r22u21.hpc.eu.lenovo.com 
 
