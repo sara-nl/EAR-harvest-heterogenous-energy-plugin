@@ -38,7 +38,12 @@ int main(int argc, char **argv)
 	memset(&met, 0, sizeof (periodic_metric_t));
 
 	app.is_mpi = 1;
+	app.power_sig.DC_power = 100;
+	app.power_sig.DRAM_power = 200;
+	app.power_sig.PCK_power = 300;
+	app.power_sig.DC_power = 100;
 	gethostname(app.node_id, 128);
+	report_application_data(&app);
 
 	// Testing API
 	eardbd_connect(argv[1], NULL, 4711, TCP);

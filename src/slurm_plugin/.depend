@@ -1,23 +1,29 @@
-slurm_plugin_user_environment.o: slurm_plugin_user_environment.c \
- ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
- ../slurm_plugin/slurm_plugin_user_environment.h \
- ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/types/generic.h ../common/ear_verbose.h ../common/config.h \
- ../common/states.h ../common/types/application.h ../common/types/job.h \
- ../common/types/signature.h ../common/types/power_signature.h
 slurm_plugin_options.o: slurm_plugin_options.c \
- ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
- ../slurm_plugin/slurm_plugin_options.h
-slurm_plugin_helper.o: slurm_plugin_helper.c \
- ../slurm_plugin/slurm_plugin_helper.h ../common/config.h
-slurm_plugin.o: slurm_plugin.c ../common/sizes.h ../common/config.h \
+ ../slurm_plugin/slurm_plugin.h ../common/sizes.h ../common/config.h \
  ../common/types/job.h ../common/types/generic.h \
  ../common/types/application.h ../common/types/signature.h \
  ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h \
- ../slurm_plugin/slurm_plugin.h ../slurm_plugin/slurm_plugin_helper.h \
- ../slurm_plugin/slurm_plugin_options.h \
- ../slurm_plugin/slurm_plugin_user_environment.h
+ ../slurm_plugin/slurm_plugin_helper.h \
+ ../slurm_plugin/slurm_plugin_options.h
+slurm_plugin.o: slurm_plugin.c ../slurm_plugin/slurm_plugin.h \
+ ../common/sizes.h ../common/config.h ../common/types/job.h \
+ ../common/types/generic.h ../common/types/application.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h \
+ ../slurm_plugin/slurm_plugin_helper.h \
+ ../slurm_plugin/slurm_plugin_options.h ../daemon/shared_configuration.h \
+ ../common/types/coefficient.h
+slurm_plugin_helper.o: slurm_plugin_helper.c \
+ ../slurm_plugin/slurm_plugin.h ../common/sizes.h ../common/config.h \
+ ../common/types/job.h ../common/types/generic.h \
+ ../common/types/application.h ../common/types/signature.h \
+ ../common/types/power_signature.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h \
+ ../slurm_plugin/slurm_plugin_helper.h

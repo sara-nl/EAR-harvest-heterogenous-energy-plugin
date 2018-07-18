@@ -45,11 +45,6 @@ static char buffer_gen[PATH_MAX];
 #define eves_len 32 * 512
 #define apps_len 32 * 512
 
-//#define lops_len 1
-//#define mets_len 2
-//#define eves_len 2
-//#define apps_len 1
-
 static periodic_aggregation_t aggr;
 static application_t apps_mpi[apps_len];
 static application_t apps_nor[apps_len];
@@ -156,7 +151,6 @@ static void make_periodic_aggregation(periodic_metric_t *met)
 
 static void process_timeout_data()
 {
-
 	verbose("Finished aggregation, consumed %lu energy (mJ) from %lu to %lu,",
 			aggr.DC_energy, aggr.start_time, aggr.end_time);
 
@@ -195,7 +189,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 	{
 		application_t *app = (application_t *) content;
 		verbose("received an application %d from host %s", app->job.id, app->node_id);
-		report_application_data(app);
+		//report_application_data(app);
 
 		if (app->is_learning)
 		{

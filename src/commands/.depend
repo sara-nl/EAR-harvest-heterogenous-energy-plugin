@@ -7,8 +7,9 @@ ear_control.o: ear_control.c ../common/config.h ../common/states.h \
  ../daemon/eard_rapi.h ../common/types/application.h \
  ../common/types/job.h ../common/types/generic.h \
  ../common/types/signature.h ../common/types/power_signature.h \
- ../common/ear_verbose.h ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h
 ear_options_test.o: ear_options_test.c
 ear_store_database.o: ear_store_database.c ../common/config.h
 ear_report.o: ear_report.c ../common/config.h \

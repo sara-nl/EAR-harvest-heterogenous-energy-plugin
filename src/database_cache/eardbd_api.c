@@ -70,8 +70,8 @@ static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
 	header->mirroring = 0;
 
 	// Content process
-	memcpy (content, object, sizeof(size));
-
+	memcpy (content, object, size);
+	
 	// Sending to main
 	verbose("sending packet type %d to %s (size: %lu)",
 		header->content_type, sock_main.host, header->packet_size);

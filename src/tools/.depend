@@ -5,12 +5,16 @@ coefficients_quality_control.o: coefficients_quality_control.c \
  ../common/types/power_signature.h ../common/types/coefficient.h \
  ../common/types/projection.h ../common/string_enhanced.h \
  ../common/states.h
+coefficients_v2_to_v3.o: coefficients_v2_to_v3.c \
+ ../common/types/coefficient.h ../common/types/generic.h
 projections_avx512.o: projections_avx512.c
 compute_coefficients_remote.o: compute_coefficients_remote.c \
  ../common/types/application.h ../common/config.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \
  ../common/types/power_signature.h ../common/types/coefficient.h \
  ../common/types/projection.h
+coefficients_to_csv.o: coefficients_to_csv.c \
+ ../common/types/coefficient.h ../common/types/generic.h
 compute_coefficients.o: compute_coefficients.c \
  ../common/types/application.h ../common/config.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \
