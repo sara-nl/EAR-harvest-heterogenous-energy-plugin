@@ -79,16 +79,19 @@ struct spank_option spank_options_manual[9] =
 
 int _opt_register(spank_t sp)
 {
+	spank_err_t s;
 	int i;
 
 	for (i = 0; i < 9; ++i)
 	{
-		if (spank_option_register(sp, &spank_options_manual[i]) != ESPANK_SUCCESS)
+		if ((s = spank_option_register(sp, &spank_options_manual[i])) != ESPANK_SUCCESS)
 		{
 			slurm_error("unable to register a new option.");
-			return -1;
+			return s;
 		}
 	}
+
+	return (ESPANK_SUCCESS);
 }
 
 /*
@@ -97,7 +100,7 @@ int _opt_register(spank_t sp)
  *
  */
 
-static int _opt_ear (int val, const char *optarg, int remote)
+int _opt_ear (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear");
 
@@ -123,7 +126,7 @@ static int _opt_ear (int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_learning (int val, const char *optarg, int remote)
+int _opt_ear_learning (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_learning");
 
@@ -148,13 +151,9 @@ static int _opt_ear_learning (int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_policy (int val, const char *optarg, int remote)
+int _opt_ear_policy (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_policy");
-
-	char policy[32];
-	int index = 0;
-	int result;
 
 	if (!remote)
 	{
@@ -177,7 +176,7 @@ static int _opt_ear_policy (int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_threshold (int val, const char *optarg, int remote)
+int _opt_ear_threshold (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_threshold");
 
@@ -200,11 +199,9 @@ static int _opt_ear_threshold (int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_user_db (int val, const char *optarg, int remote)
+int _opt_ear_user_db (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_user_db");
-
-	int result;
 
 	if (!remote)
 	{
@@ -219,7 +216,7 @@ static int _opt_ear_user_db (int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_verbose (int val, const char *optarg, int remote)
+int _opt_ear_verbose (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_verbose");
 
@@ -243,10 +240,9 @@ static int _opt_ear_verbose (int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_traces (int val, const char *optarg, int remote)
+int _opt_ear_traces (int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_ear_traces");
-	int result;
 
 	if (!remote)
 	{
@@ -257,7 +253,7 @@ static int _opt_ear_traces (int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
+int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_mpi_dist");
 
@@ -274,7 +270,7 @@ static int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-static int _opt_ear_tag(int val, const char *optarg, int remote)
+int _opt_ear_tag(int val, const char *optarg, int remote)
 {
 	plug_nude("function _opt_tag");
 
@@ -285,7 +281,7 @@ static int _opt_ear_tag(int val, const char *optarg, int remote)
 		}
 
 		setenv_local_ret_err("EAR_ENERGY_TAG", optarg, 1);
-		setenv_local_ret_err("EAR", "1", 1);
+		setenv_local_ret_err("EAR", "1", 0);
 	}
 	return (ESPANK_SUCCESS);
 }

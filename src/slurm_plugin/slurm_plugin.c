@@ -36,10 +36,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <daemon/eard_rapi.h>
+#include <daemon/shared_configuration.h>
+#include <global_manager/eargm_rapi.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
-#include <daemon/shared_configuration.h>
 
 // Spank
 SPANK_PLUGIN(EAR_PLUGIN, 1)
@@ -61,14 +63,14 @@ char buffer2[SZ_PATH];
 char buffer3[SZ_PATH]; // helper buffer
 
 // EARD variables
-static unsigned char eard_host[SZ_NAME_MEDIUM];
+static char eard_host[SZ_NAME_MEDIUM];
 static unsigned int  eard_port;
 static application_t eard_appl;
 
 // EARGMD variables
-static unsigned char eargmd_host[SZ_NAME_MEDIUM];
-static unsigned int  eargmd_port;
-static unsigned int  eargmd_nods;
+static char eargmd_host[SZ_NAME_MEDIUM];
+static unsigned int eargmd_port;
+static unsigned int eargmd_nods;
 
 /*
  * Manual
@@ -258,12 +260,12 @@ static void remote_print_environment(spank_t sp)
  *
  */
 
-int _local_library_disable()
+void _local_library_disable()
 {
 	setenv_local("EAR", "0", 1);
 }
 
-int _remote_library_disable(spank_t sp)
+void _remote_library_disable(spank_t sp)
 {
 	if(isenv_remote(sp, "EAR", "1")) {
 		setenv_remote(sp, "LD_PRELOAD", "", 1);
@@ -271,16 +273,16 @@ int _remote_library_disable(spank_t sp)
 	}
 }
 
-int _local_plugin_enable() {
+void _local_plugin_enable() {
 	setenv_local("EAR_PLUGIN", "1", 1);
 }
 
-int _local_plugin_disable()
+void _local_plugin_disable()
 {
 	setenv_local("EAR_PLUGIN", "0", 1);
 }
 
-int _remote_plugin_disable(spank_t sp)
+void _remote_plugin_disable(spank_t sp)
 {
 	setenv_remote(sp, "EAR_PLUGIN", "0", 1);
 }
@@ -358,7 +360,7 @@ int remote_eard_report_start(spank_t sp)
 	} else {
 		eard_appl.job.def_f = atoi(buffer1);
 	}
-	if (!getenv_remote(sp, "EAR_ENERGY_TAG", eard_appl.job.energy_tag, SZ_NAME_SHORT)) {
+	if (!getenv_remote(sp, "EAR_ENERGY_TAG", eard_appl.job.energy_tag, 32)) {
 		strcpy(eard_appl.job.energy_tag, "");
 	}
 
@@ -478,7 +480,7 @@ int local_eargmd_report_finish(spank_t sp)
 
 	return (ESPANK_SUCCESS);
 }
-
+ 
 /*
  *
  *
@@ -492,14 +494,19 @@ int _read_shared_data_remote(spank_t sp)
 {
 	plug_verbose(sp, 2, "function _read_shared_data_remote");
 
-	settings_conf_t *conf;
+	settings_conf_t *conf = NULL;
 
-	//	
+	// 	
 	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
 	
 	// Opening shared memory
 	get_settings_conf_path(buffer1, buffer2);
 	conf = attach_settings_conf_shared_area(buffer2);
+
+	if (conf == NULL) {
+		slurm_error("while reading the shared configuration memory.");
+		return ESPANK_ERROR;
+	}
 
 	if (verbosity_test(sp, 4)) {
 		print_settings_conf(conf);
@@ -507,8 +514,7 @@ int _read_shared_data_remote(spank_t sp)
 	
 	// Variable EAR and LD_PRELOAD
 	if (!conf->lib_enabled || conf->user_type == ENERGY_TAG) {
-		setenv_remote_ret_err(sp, "EAR", "0", 1);
-		remote_library_disable();
+		_remote_library_disable(sp);
 	}
 
 	// Variable EAR_ENERGY_TAG, unset
@@ -527,10 +533,10 @@ int _read_shared_data_remote(spank_t sp)
 	setenv_remote_ret_err(sp, "EAR_POWER_POLICY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY_TH, overwrite
-	snprintf_ret_err(buffer2, 8, "%0.2f", conf->th);
+	snprintf(buffer2, 8, "%0.2f", conf->th);
 	setenv_remote_ret_err(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
 	setenv_remote_ret_err(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
-		
+
 	// Variable EAR_LEARNING and EAR_P_STATE
 	if(!conf->learning) {
 		unsetenv_remote(sp, "EAR_P_STATE");
@@ -563,8 +569,6 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function _read_plugstack");
 	
-	char *conf_path = buffer1;
-	char *etc_dir = NULL;
 	char *pre_dir = NULL;
 	char *tmp_dir = NULL;
 	int found_predir = 0;
