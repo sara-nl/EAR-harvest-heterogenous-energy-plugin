@@ -12,7 +12,7 @@ Energy Aware Runtime (EAR) package provides an energy efficient solution for Sup
 3- A **global energy managear** in charge of monitoring and controlling the energy consumed in the system. Energy control is configurable and it dynamically adapts power policy settings to global energy limits and application characteristics. 
 
 
-All three components are configurable using a single, cetralized, and simple text file (ear.conf). This mechanism makes easy cluster definition and configuration. This ear.conf includes default values, pre-defined application configurations, etc. More details can be found in [configuration section] (./etc/conf/README.md)
+All three components are configurable using a single, cetralized, and simple text file (ear.conf). This mechanism makes easy cluster definition and configuration. This ear.conf includes default values, pre-defined application configurations, etc. More details can be found in [configuration section](./etc/conf/README.md)
 
 
 Please visit [the main components page](./src/README.md) for a detailed description of each of the main components of EAR.
