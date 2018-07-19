@@ -2,9 +2,17 @@
 Overview
 --------
 <img src="etc/images/logo.png" align="right" width="140">
-Energy Aware Runtime (EAR) package provides an energy efficient solution for clusters of nodes.
+Energy Aware Runtime (EAR) package provides an energy efficient solution for Supercomputers. EAR includes a runtime library to dynamiclly select the CPU frequency for MPI application based on application characterization done at runtime, node characteristics and power policy settings. EAR library doesn't need neither a priori information nor user input. EAR also provides mechanism for those experts users that perfectly knows their application, supporting pre-defined frequency configurations. EAR library has been integrated in a full energy management system incluing a complete accounting mechanism, and a global energy manager. All the componets together provides three main features: 
 
-The package includes some daemons to account, control and limit the power of the whole cluster. However, the core of EAR is the library, which aims at finding the optimal frequency for MPI applications for a job according to its selected energy policy, being totally dynamic and transparent.
+1- A **simple and ligthweigth runtime library** to automatically select the optimal CPU frequency according to the application, the node, and the power policy.  
+
+2- A complete **energy accounting systemi** based on mySQL DB. The energy accounting system is configurable in terms of application details and frequency of upcates 
+
+3- A **global energy managear** in charge of monitoring and controlling the energy consumed in the system. Energy control is configurable and it dynamically adapts power policy settings to global energy limits and application characteristics. 
+
+
+All three components are configurable using a single, cetralized, and simple text file (ear.conf). This mechanism makes easy cluster definition and configuration. This ear.conf includes default values, pre-defined application configurations, etc. More details can be found in [configuration section] (./etc/conf/README.md)
+
 
 Please visit [the main components page](./src/README.md) for a detailed description of each of the main components of EAR.
 
