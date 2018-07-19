@@ -26,12 +26,12 @@ static const char *__NAME__ = "econtrol";
 void usage(char *app)
 {
 	printf("Usage: %s [options]"\
-            "\n\t--set-freq sets the frequency of all nodes to the requested one"\
-            "\n\t--set-def-freq sets the default frequency"\
-            "\n\t--set-max-freq sets the maximum frequency"\
-            "\n\t--inc-th increases the threshold for all nodes"\
-            "\n\t--red-def-freq reduces the default frequency"\
-            "\n\t--restore-conf restores the configuration to all nodes"\
+            "\n\t--set-freq \tnewfreq\t\t->sets the frequency of all nodes to the requested one"\
+            "\n\t--set-def-freq \tnewfreq\t\t->sets the default frequency"\
+            "\n\t--set-max-freq \tnewfreq\t\t->sets the maximum frequency"\
+            "\n\t--inc-th \tnew_th\t\t->increases the threshold for all nodes"\
+            "\n\t--red-def-freq \treduction\t->reduces the default frequency"\
+            "\n\t--restore-conf \t\t\t->restores the configuration to all nodes"\
             "\n\nThis app requires root permission to execute.\n", app);
 	exit(1);
 }
@@ -43,9 +43,7 @@ void main(int argc, char *argv[])
     int c = 0;
     char path_name[128];
    
-    if (getuid()!=0) usage(argv[0]);
-
-    if (argc < 3) usage(argv[0]);
+    if (argc < 2) usage(argv[0]);
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -61,7 +59,7 @@ void main(int argc, char *argv[])
         free_cluster_conf(&my_cluster_conf);
         exit(1);
     }
-    else if (!is_privileged(&my_cluster_conf, user, NULL, NULL))
+    else if (!is_privileged(&my_cluster_conf, user, NULL, NULL) && getuid() != 0)
     {
         fprintf(stderr, "This command can only be executed by privileged users, and the current one (%s) is not. Contact your admin for more info.\n", user);
         free_cluster_conf(&my_cluster_conf);
