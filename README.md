@@ -1,4 +1,4 @@
-# Energy Aware Runtime
+# Energy Aware Runtime {#mainpage}
 Overview
 --------
 <img src="etc/images/logo.png" align="right" width="140">
