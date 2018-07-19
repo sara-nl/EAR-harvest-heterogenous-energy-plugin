@@ -77,17 +77,17 @@ Authorized users, groups, and slurm accounts are allowed to change policies, thr
 **AuthorizedGroups**=xx,yy  
 
 
-# List of energy tags and users/groups/slurm accounts authorized to use each one. These energy tags implies pre-defined configurations for applications (EAR library is not loaded)  
-*EnergyTag*=memory-intensive *pstate*=4 *users*=user1,user2 *groups*=group1,group2 *accounts*=acc1,acc2  
+List of energy tags and users/groups/slurm accounts authorized to use each one. These energy tags implies pre-defined configurations for applications (EAR library is not loaded)   
+**EnergyTag**=memory-intensive **pstate**=4 **users**=user1,user2 **groups**=group1,group2 **accounts**=acc1,acc2  
 
 # Special nodes
 
-*NodeName*=r22u[21,23,25,27] *CPUs*=24 **DefaultPstates**=2,5,5   , describes nodes with some special characteristic  
+**NodeName**=r22u[21,23,25,27] **CPUs**=24 **DefaultPstates**=2,5,5   , describes nodes with some special characteristic  
 
 # Island description
 
 Nodes are grouped in islands, this section is mandatory since it is used for cluster description
 more than one line per island must be supported to specify dbip ports
 
-*Island*=0 *Nodes*=r22u21,r22u23,r22u25,r22u27 *DBIP*=r22u21.hpc.eu.lenovo.com   
+**Island**=0 **Nodes**=r22u21,r22u23,r22u25,r22u27 **DBIP**=r22u21.hpc.eu.lenovo.com   
 
