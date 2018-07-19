@@ -2,9 +2,10 @@
 Overview
 --------
 <img src="etc/images/logo.png" align="right" width="140">
-Energy Aware Runtime (EAR) package provides an energy efficient solution for Supercomputers. EAR includes a runtime library to dynamiclly select the CPU frequency for MPI application based on application characterization done at runtime, node characteristics and power policy settings. EAR library doesn't need neither a priori information nor user input. EAR also provides mechanism for those experts users that perfectly knows their application, supporting pre-defined frequency configurations. EAR library has been integrated in a full energy management system incluing a complete accounting mechanism, and a global energy manager. All the componets together provides three main features: 
+Energy Aware Runtime (EAR) package provides an energy efficient solution for Supercomputers. EAR includes a runtime library to dynamiclly select the CPU frequency for MPI application based on application characterization done at runtime, node characteristics and power policy settings. EAR library doesn't need neither a priori information nor user input. EAR also provides mechanism for those experts users that perfectly knows their application, supporting pre-defined frequency configurations. EAR library has been integrated in a full energy management system incluing a complete accounting mechanism, and a global energy manager. All the componets together provides three main services: 
 
-1- A **simple and ligthweigth runtime library** to automatically select the optimal CPU frequency according to the application, the node, and the power policy.  
+
+1- A **simple and ligthweigth system** to automatically select the optimal CPU frequency according to the application, the node, and the power policy.  This  services is provided by two components: the EAR library (**EARL**) and the EAR daemon (**EARD**). EARL is the smart component in charge of selecting the CPU frequency for the running applications. The EARD is in charge of providing basic services to the rest of components (not only EARL).
 
 2- A complete **energy accounting systemi** based on mySQL DB. The energy accounting system is configurable in terms of application details and frequency of upcates 
 
