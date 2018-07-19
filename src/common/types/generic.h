@@ -37,10 +37,6 @@ typedef unsigned long long ull;
 typedef unsigned long ulong;
 typedef unsigned int uint;
 
-// TODO: this is not generic
-//#include <unistd.h>
-//#include <sys/types.h>
-//#include <linux/limits.h>
 
 typedef uint8_t job_type;
 typedef ulong   job_id;
@@ -50,5 +46,5 @@ typedef ulong   job_id;
 #define POLICY_NAME 		32
 #define ENERGY_TAG_SIZE		32
 #define MAX_PATH_SIZE   256
-
+#else
 #endif
