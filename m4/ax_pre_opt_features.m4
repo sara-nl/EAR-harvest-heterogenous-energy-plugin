@@ -53,36 +53,10 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	AC_ARG_VAR([MPICC],[Defines the Intel MPI compiler])
 	AC_ARG_VAR([OMPICC],[Defines the Open MPI compiler])
 
-	MPICC=
-	mpi_so=
-	mpi_trace_so=
-	ompi_so=
-	ompi_trace_so=
-
 	# !I && !O
 	if test -z "$MPICC" && test -z "$OMPICC"; then
 		MPICC=mpicc
 	fi
-
-	# I 
-	if test -n "$MPICC"; then
-		MPICC=$MPICC
-		mpi_so=libear.so
-		mpi_trace_so=libeart.so	
-	fi
-
-	# O
-	if test -n "$OMPICC"; then
-        ompi_so=libear_ompi.so
-        ompi_trace_so=libeart_ompi.so
-    fi
-
-	AC_SUBST(MPICC)
-	AC_SUBST(OMPICC)
-	AC_SUBST(mpi_so)
-	AC_SUBST(ompi_so)
-	AC_SUBST(mpi_trace_so)
-	AC_SUBST(ompi_trace_so)
 
 	#
 	# BUILD TYPE
