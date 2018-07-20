@@ -205,7 +205,7 @@ static void get_app_name(char *my_name)
 /*** We update EARL configuration based on shared memory information **/
 void update_configuration()
 {
-	print_settings_conf(system_conf);	
+	/* print_settings_conf(system_conf);*/
 	set_ear_power_policy(system_conf->policy);
 	set_ear_power_policy_th(system_conf->th);
 	set_ear_p_state(system_conf->def_p_state);
