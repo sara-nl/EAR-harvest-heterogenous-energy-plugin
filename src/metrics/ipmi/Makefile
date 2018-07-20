@@ -5,7 +5,7 @@ LDFLAGS =
 
 lib_OBJS = energy_node/ibm.o \
               energy_node/lenovo_nm.o \
-              energy_node/lenovo_ina226.o
+              energy_node/lenovo_sd650.o
 
 OBJS = energy_node.a
 

@@ -54,6 +54,7 @@
 #include <metrics/custom/bandwidth.h>
 #include <metrics/ipmi/energy_node.h>
 #include <metrics/custom/hardware_info.h>
+#include <metrics/custom/frequency.h>
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
@@ -65,6 +66,9 @@
 #include <database_cache/eardbd_api.h>
 #include <daemon/eard_utils.h>
 #endif
+
+#include <daemon/eard.h>
+#include <daemon/app_api/app_server_api.h>
 
 #if APP_API
 pthread_t app_eard_api_th;
@@ -98,7 +102,6 @@ int coeffs_size;
 uint signal_sighup=0;
 uint f_monitoring;
 
-void *eard_non_earl_api_service(void *noinfo);
 
 
 #define max(a,b) (a>b?a:b)
@@ -129,12 +132,6 @@ ulong energy_freq;
 ulong current_node_freq;
 struct daemon_req req;
 
-void eard_exit(uint restart);
-void eard_close_comm();
-int is_new_application(int pid);
-int is_new_service(int req,int pid);
-int application_timeout();
-void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node);
 int RAPL_counting=0;
 int eard_must_exit=0;
 
@@ -189,7 +186,7 @@ void  create_tmp(char *tmp_dir)
 	}
 }
 
-void eard_lock(char *tmp_dir,char *nodename)
+void eard_lock(char *tmp_dir)
 {
 	int ret;
 	sprintf(eard_lock_file, "%s/%s.eard_lock", tmp_dir, nodename);
@@ -1170,7 +1167,7 @@ void main(int argc,char *argv[])
 
 
 	#if EARD_LOCK
-    eard_lock(ear_tmp,nodename);
+    eard_lock(ear_tmp);
 	#endif
 	// At this point, only one daemon is running
 

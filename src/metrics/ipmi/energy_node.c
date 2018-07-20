@@ -38,7 +38,7 @@
 
 #include <metrics/custom/hardware_info.h>
 #include <metrics/ipmi/energy_node/lenovo_nm.h>
-#include <metrics/ipmi/energy_node/lenovo_ina226.h>
+#include <metrics/ipmi/energy_node/lenovo_sd650.h>
 #include <metrics/ipmi/energy_node/ibm.h>
 #include <common/ear_verbose.h>
 

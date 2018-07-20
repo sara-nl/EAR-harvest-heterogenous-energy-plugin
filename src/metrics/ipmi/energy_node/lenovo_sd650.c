@@ -173,7 +173,7 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
 
     int rs_len;
     if (ipmi_ctx==NULL){
-        ear_verbose(0,"lenovo_ina226_cooling: IPMI context not initiallized\n");
+        ear_verbose(0,"lenovo_fast/accurate meter: IPMI context not initiallized\n");
         return EAR_ERROR;
     }
     FUNCVERB("lenovo_read_dc_energy");
@@ -188,7 +188,7 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-        ear_verbose(0,"lenovo_ina226_cooling: ipmi_cmd_raw fails\n");
+        ear_verbose(0,"lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
         return EAR_ERROR;
     }
     assert(rs_len>=(RAW_SIZE+2));
@@ -206,8 +206,8 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
     my_energy=bytes_rs[7]<<24|bytes_rs[6]<<16|bytes_rs[5]<<8|bytes_rs[4];
     my_energy_mj=bytes_rs[9]<<8|bytes_rs[8];
     #if 0
-    printf("INA226_energy_reading(J):0x%02X%02X%02X%02X\n",bytes_rs[7],bytes_rs[6],bytes_rs[5],bytes_rs[4]);
-    printf("INA226_energy_reading(mJ):0x%02X%02X\n",bytes_rs[9],bytes_rs[8]);
+    printf("fast/accurate meter_energy_reading(J):0x%02X%02X%02X%02X\n",bytes_rs[7],bytes_rs[6],bytes_rs[5],bytes_rs[4]);
+    printf("fast/accurate meter_energy_reading(mJ):0x%02X%02X\n",bytes_rs[9],bytes_rs[8]);
     #endif
 
     // Energy values provided in this model are reported in Joules, the API
@@ -223,7 +223,7 @@ int lenovo_wct_read_ac_energy(unsigned long *energy)
 	*energy=0;
 	return EAR_SUCCESS;
 }
-#if DEBUG_INA226
+#if DEBUG_WCT
 /** Energy and time is returned in a single ipmi command */
 int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,uint8_t *raw_out,ulong *seconds,ulong *ms)
 #else
@@ -238,7 +238,7 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
 
     int rs_len;
     if (ipmi_ctx==NULL){
-        ear_verbose(0,"lenovo_ina226_cooling: IPMI context not initiallized\n");
+        ear_verbose(0,"lenovo_fast/accurate meter: IPMI context not initiallized\n");
         return EAR_ERROR;
     }
     FUNCVERB("lenovo_read_dc_energy");
@@ -248,7 +248,7 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
     *seconds=0;
     *ms=0;
     #define RAW_SIZE 14
-	#if DEBUG_INA226
+	#if DEBUG_WCT
     memset(raw_out,0,RAW_SIZE);
 	#endif
     if ((rs_len = ipmi_cmd_raw (ipmi_ctx,
@@ -259,7 +259,7 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-        ear_verbose(0,"lenovo_ina226_cooling: ipmi_cmd_raw fails\n");
+        ear_verbose(0,"lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
         return EAR_ERROR;
     }
     assert(rs_len>=(RAW_SIZE+2));
@@ -278,7 +278,7 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
     my_energy_mj=bytes_rs[9]<<8|bytes_rs[8];
     my_seconds=bytes_rs[13]<<24|bytes_rs[12]<<16|bytes_rs[11]<<8|bytes_rs[10];
     my_ms=bytes_rs[15]<<8|bytes_rs[14];
-	#if DEBUG_INA226
+	#if DEBUG_WCT
     raw_out[0]= bytes_rs[2];
     raw_out[1]= bytes_rs[3];
     raw_out[2]= bytes_rs[4];
@@ -295,10 +295,10 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
     raw_out[13]= bytes_rs[15];
 	#endif
     #if 0
-    printf("INA226_energy_reading(J):0x%02X%02X%02X%02X\n",bytes_rs[7],bytes_rs[6],bytes_rs[5],bytes_rs[4]);
-    printf("INA226_energy_reading(mJ):0x%02X%02X\n",bytes_rs[9],bytes_rs[8]);
-    printf("INA226_energy_reading(sec):0x%02X%02X%02X%02X\n",bytes_rs[13],bytes_rs[12],bytes_rs[11],bytes_rs[10]);
-    printf("INA226_energy_reading(ms):0x%02X%02X\n",bytes_rs[15],bytes_rs[14]);
+    printf("fast/accurate meter_energy_reading(J):0x%02X%02X%02X%02X\n",bytes_rs[7],bytes_rs[6],bytes_rs[5],bytes_rs[4]);
+    printf("fast/accurate meter_energy_reading(mJ):0x%02X%02X\n",bytes_rs[9],bytes_rs[8]);
+    printf("fast/accurate meter_energy_reading(sec):0x%02X%02X%02X%02X\n",bytes_rs[13],bytes_rs[12],bytes_rs[11],bytes_rs[10]);
+    printf("fast/accurate meter_energy_reading(ms):0x%02X%02X\n",bytes_rs[15],bytes_rs[14]);
     #endif
 
     // Energy values provided in this model are reported in Joules, the API
