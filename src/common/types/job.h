@@ -34,8 +34,6 @@
 #include <common/types/generic.h>
 #include <common/config.h>
 
-typedef uint8_t	job_type;
-typedef ulong	job_id;
 
 
 /* Proposal for new job

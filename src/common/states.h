@@ -81,5 +81,6 @@ char *state_error;
 #define state_return_msg(state, error) \
 	state_error = error; \
 	return state;
-
+#else
 #endif //STATES_H
+

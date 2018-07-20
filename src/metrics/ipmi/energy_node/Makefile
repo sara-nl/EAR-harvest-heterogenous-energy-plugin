@@ -4,7 +4,7 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 
 OBJS = ibm.o \
        lenovo_nm.o \
-       lenovo_ina226.o
+       lenovo_sd650.o
 
 ######## RULES
 
@@ -13,8 +13,8 @@ all: $(OBJS)
 lenovo_nm.o: lenovo_nm.c lenovo_nm.h
 	$(CC) $(CFLAGS) -c lenovo_nm.c
 
-lenovo_ina226.o: lenovo_ina226.c lenovo_ina226.h
-	$(CC) $(CFLAGS) -c lenovo_ina226.c
+lenovo_sd650.o: lenovo_sd650.c lenovo_sd650.h
+	$(CC) $(CFLAGS) -c lenovo_sd650.c
 
 ibm.o: ibm.c ibm.h
 	$(CC) $(CFLAGS) -c ibm.c

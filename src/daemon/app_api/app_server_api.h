@@ -38,3 +38,7 @@ int ear_energy(ulong *energy_mj,ulong *time_ms);
 
 /** Releases resources to connect with applications */
 int dispose_app_connection();
+
+void *eard_non_earl_api_service(void *noinfo);
+#else
+#endif
