@@ -142,9 +142,7 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 		}
 
 		snprintf_ret_err(buffer2, 4, "%d", ioptarg);
-
-		setenv_local_ret_err("EAR_LEARNING_PHASE", "1", 1);
-		setenv_local_ret_err("EAR_P_STATE", buffer2, 1);
+		setenv_local_ret_err("EAR_LEARNING_PHASE", buffer2, 1);
 		setenv_local_ret_err("EAR", "1", 0);
 	}
 
