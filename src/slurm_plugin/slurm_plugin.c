@@ -380,7 +380,6 @@ int remote_eard_report_start(spank_t sp)
 		eard_appl.job.def_f = 0;
 	} else {
 		eard_appl.job.def_f = (ulong) atol(buffer1);
-		slurm_error("FREQ %lu", eard_appl.job.def_f);
 		if (!frequency_exists(frequencies, n_frequencies, eard_appl.job.def_f)) {
 			eard_appl.job.def_f = 0;
 		}
@@ -390,7 +389,6 @@ int remote_eard_report_start(spank_t sp)
 	} else {
 		eard_appl.is_learning = 1;
 		eard_appl.job.def_f = frequencies[atoi(buffer1)];
-		slurm_error("P_STATE %s %lu", buffer1, eard_appl.job.def_f);
 	}
 	if (!getenv_remote(sp, "EAR_ENERGY_TAG", eard_appl.job.energy_tag, 32)) {
 		strcpy(eard_appl.job.energy_tag, "");

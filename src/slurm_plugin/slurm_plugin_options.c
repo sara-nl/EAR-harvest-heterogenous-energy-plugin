@@ -38,7 +38,7 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 
-struct spank_option spank_options_manual[9] =
+struct spank_option spank_options_manual[10] =
 {
 	{ "ear", "on|off", "Enables/disables Energy Aware Runtime",
 	  1, 0, (spank_opt_cb_f) _opt_ear
@@ -47,10 +47,13 @@ struct spank_option spank_options_manual[9] =
 	  "{type=MIN_ENERGY_TO_SOLUTION|MIN_TIME_TO_SOLUTION|MONITORING_ONLY}",
 	  1, 0, (spank_opt_cb_f) _opt_ear_policy
 	},
-	{ "ear-policy-th", "value", "Specifies the threshold to be used by EAR policy" \
-	  " {value=[0..1]}",
-	  1, 0, (spank_opt_cb_f) _opt_ear_threshold
+	{ "ear-cpufreq", "frequency", "Specifies the start frequency to be used by EAR policy (in KHz)",
+	  1, 0, (spank_opt_cb_f) _opt_ear_frequency
 	},
+    { "ear-policy-th", "value", "Specifies the threshold to be used by EAR policy" \
+      " {value=[0..1]}",
+      1, 0, (spank_opt_cb_f) _opt_ear_threshold
+    },
 	{ "ear-user-db", "file",
 	  "Specifies the file to save the user applications metrics summary" \
 	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
@@ -172,6 +175,27 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 	}
 
 	return (ESPANK_SUCCESS);
+}
+
+int _opt_ear_frequency (int val, const char *optarg, int remote)
+{
+    plug_nude("function _opt_ear_threshold");
+
+    ulong loptarg;
+
+    if (!remote)
+    {
+        if (optarg == NULL) {
+            return (ESPANK_BAD_ARG);
+        }
+		
+		loptarg = (ulong) atol(optarg);
+        snprintf_ret_err(buffer2, 16, "%lu", loptarg);
+        setenv_local_ret_err("EAR_FREQUENCY", buffer2, 1);
+        setenv_local_ret_err("EAR", "1", 0);
+    }
+
+    return (ESPANK_SUCCESS);
 }
 
 int _opt_ear_threshold (int val, const char *optarg, int remote)
