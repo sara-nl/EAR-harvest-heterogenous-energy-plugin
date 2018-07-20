@@ -798,7 +798,7 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[14];
+    MYSQL_BIND bind[16];
     memset(bind, 0, sizeof(bind));
     //integer types
     bind[0].buffer_type = bind[4].buffer_type = bind[5].buffer_type = bind[12].buffer_type
@@ -813,8 +813,8 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
     bind[9].buffer_type = MYSQL_TYPE_DOUBLE;
 
     //varchar types
-    bind[13].buffer_type = MYSQL_TYPE_VAR_STRING;
-    bind[13].buffer_length = 256;
+    bind[13].buffer_type = bind[14].buffer_type = bind[15].buffer_type = MYSQL_TYPE_VAR_STRING;
+    bind[13].buffer_length = bind[14].buffer_length = bind[15].buffer_length = 256;
 
 
     //reciever variables assignation
@@ -832,6 +832,8 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
     bind[11].buffer = &job_aux->type;
     bind[12].buffer = &job_aux->def_f;
     bind[13].buffer = &job_aux->user_acc;
+    bind[14].buffer = &job_aux->energy_tag;
+    bind[15].buffer = &job_aux->group_id;
 
     if (mysql_stmt_bind_result(statement, bind)) return mysql_statement_error(statement);
     
