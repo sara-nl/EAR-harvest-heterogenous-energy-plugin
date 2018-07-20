@@ -48,8 +48,8 @@ static char *__NAME__ = "MYSQL_IO: ";
 
 
 #define JOB_QUERY               "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
-                                "end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
-                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                "end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
+                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 #if !DB_SIMPLE
 #define SIGNATURE_QUERY         "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
@@ -738,7 +738,7 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
         if (mysql_stmt_prepare(statement, LEARNING_JOB_QUERY, strlen(LEARNING_JOB_QUERY))) return mysql_statement_error(statement);
     }
 
-    MYSQL_BIND bind[14];
+    MYSQL_BIND bind[16];
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -748,12 +748,14 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
 
     //string types
     bind[2].buffer_type = bind[3].buffer_type = bind[8].buffer_type = 
-    bind[13].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[13].buffer_type = bind[14].buffer_type = bind[15].buffer_type = MYSQL_TYPE_VARCHAR;
 
     bind[2].buffer_length = strlen(job->user_id);
     bind[3].buffer_length = strlen(job->app_id);
     bind[8].buffer_length = strlen(job->policy);
     bind[13].buffer_length = strlen(job->user_acc);
+    bind[14].buffer_length = strlen(job->group_id);
+    bind[15].buffer_length = strlen(job->energy_tag);
 
     //double types
     bind[9].buffer_type = MYSQL_TYPE_DOUBLE;
@@ -773,6 +775,8 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
     bind[11].buffer = (char *)&job->type;
     bind[12].buffer = (char *)&job->def_f;
     bind[13].buffer = (char *)&job->user_acc;
+    bind[14].buffer = (char *)&job->group_id;
+    bind[15].buffer = (char *)&job->energy_tag;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
