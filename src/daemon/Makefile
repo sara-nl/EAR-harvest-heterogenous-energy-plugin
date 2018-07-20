@@ -15,12 +15,12 @@ ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database.a
 endif
 
-eard_OBJS += $(SRCDIR)/common/types.a \
-             $(SRCDIR)/common/environment_common.o \
+eard_OBJS += $(SRCDIR)/common/environment_common.o \
+             $(SRCDIR)/common/sockets.o \
+             $(SRCDIR)/common/types.a \
              $(SRCDIR)/control/frequency.o \
-             $(SRCDIR)/metrics/libmetrics.a \
-             $(SRCDIR)/database_cache/sockets.o \
-             $(SRCDIR)/database_cache/eardbd_api.o
+             $(SRCDIR)/database_cache/eardbd_api.o \
+             $(SRCDIR)/metrics/libmetrics.a
 
 BINARIES = eard_api.o \
            eard_rapi.o \

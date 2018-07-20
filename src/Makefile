@@ -1,6 +1,6 @@
 ######## FILES
 
-COMPONENTS = common
+COMPONENTS = common database_cache
 ifdef CPUF_BASE
 	COMPONENTS += control
 	ifdef PAPI_BASE
