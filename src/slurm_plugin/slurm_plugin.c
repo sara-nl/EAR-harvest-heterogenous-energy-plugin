@@ -36,10 +36,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <daemon/eard_rapi.h>
+#include <daemon/shared_configuration.h>
+#include <global_manager/eargm_rapi.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
-#include <daemon/shared_configuration.h>
 
 // Spank
 SPANK_PLUGIN(EAR_PLUGIN, 1)
@@ -61,14 +63,14 @@ char buffer2[SZ_PATH];
 char buffer3[SZ_PATH]; // helper buffer
 
 // EARD variables
-static unsigned char eard_host[SZ_NAME_MEDIUM];
+static char eard_host[SZ_NAME_MEDIUM];
 static unsigned int  eard_port;
 static application_t eard_appl;
 
 // EARGMD variables
-static unsigned char eargmd_host[SZ_NAME_MEDIUM];
-static unsigned int  eargmd_port;
-static unsigned int  eargmd_nods;
+static char eargmd_host[SZ_NAME_MEDIUM];
+static unsigned int eargmd_port;
+static unsigned int eargmd_nods;
 
 /*
  * Manual
@@ -142,15 +144,15 @@ static unsigned int  eargmd_nods;
  * - EAR_LEARNING_PHASE						| x   |       |           |        |
  * - EAR_VERBOSE							| x   | x     |           |        |
  * - EAR_POWER_POLICY						| x   | x     |           |        |
- * - EAR_P_STATE							| x   | x     |           | t      |
+ * - EAR_P_STATE (obs)						| x   | x     |           | t      |
  * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN	| -   | -     | -         | -      |
  * - EAR_PERFORMANCE_PENALTY				| -   | -     | -         | -      |
  * - EAR_POWER_POLICY_TH					| x   | x     |           | t      |
  * - EAR_TRACES          					| x   |       |           |        |
  * - EAR_MPI_DIST                           | x   |       |           |        |
  * - EAR_USER_DB_PATHNAME                   | x   |       |           |        |
- * - EAR_DB_PATHNAME                   		|     | x     |           |        |
- * - EAR_COEFF_PATHNAME                     |     | x     |           |        |
+ * - EAR_DB_PATHNAME (obs)					|     | x     |           |        |
+ * - EAR_COEFF_PATHNAME (obs)				|     | x     |           |        |
  * - EAR_PREDIR								|     | x     |           |        |
  * - EAR_ETCDIR								|     | x     |           |        |
  * - EAR_TMPDIR                             |     | x     |           |        |
@@ -229,6 +231,7 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "EAR_VERBOSE");
     printenv_remote(sp, "EAR_POWER_POLICY");
     printenv_remote(sp, "EAR_P_STATE");
+    printenv_remote(sp, "EAR_FREQUENCY");
     printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
     printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
     printenv_remote(sp, "EAR_POWER_POLICY_TH");
@@ -258,12 +261,12 @@ static void remote_print_environment(spank_t sp)
  *
  */
 
-int _local_library_disable()
+void _local_library_disable()
 {
 	setenv_local("EAR", "0", 1);
 }
 
-int _remote_library_disable(spank_t sp)
+void _remote_library_disable(spank_t sp)
 {
 	if(isenv_remote(sp, "EAR", "1")) {
 		setenv_remote(sp, "LD_PRELOAD", "", 1);
@@ -271,16 +274,16 @@ int _remote_library_disable(spank_t sp)
 	}
 }
 
-int _local_plugin_enable() {
+void _local_plugin_enable() {
 	setenv_local("EAR_PLUGIN", "1", 1);
 }
 
-int _local_plugin_disable()
+void _local_plugin_disable()
 {
 	setenv_local("EAR_PLUGIN", "0", 1);
 }
 
-int _remote_plugin_disable(spank_t sp)
+void _remote_plugin_disable(spank_t sp)
 {
 	setenv_remote(sp, "EAR_PLUGIN", "0", 1);
 }
@@ -304,14 +307,39 @@ int _is_plugin_enabled(spank_t sp)
  *
  */
 
-int remote_eard_report_start(spank_t sp)
+static int frequency_exists(ulong *frequencies, int n_frequencies, ulong frequency)
 {
+	int i;
+
+	for (i = 0; i < n_frequencies; ++i) {
+		if (frequencies[i] == frequency) {
+			return 1;
+		}	
+	}
+
+	return 0;
+} 
+
+int remote_eard_report_start(spank_t sp)
+{	
 	plug_verbose(sp, 2, "function remote_eard_report_start");
+
+	ulong *frequencies;
+	int n_frequencies;
 
 	#if PRODUCTION
 	return ESPANK_SUCCESS;
 	#endif
 
+	// General variables
+	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
+	
+	// Shared memory reading for frequencies
+	get_frequencies_path(buffer1, buffer2);
+    frequencies = attach_frequencies_shared_area(buffer2, &n_frequencies);
+	n_frequencies = n_frequencies / sizeof(ulong);
+
+	// EARD report
 	init_application(&eard_appl);
 
 	// Gathering variables
@@ -344,21 +372,25 @@ int remote_eard_report_start(spank_t sp)
 		strcpy(eard_appl.job.policy, "");
 	}
 	if (!getenv_remote(sp, "EAR_POWER_POLICY_TH", buffer1, SZ_NAME_SHORT)) {
-		eard_appl.job.th = 0;
+		eard_appl.job.th = -1.0;
 	} else {
 		eard_appl.job.th = atof(buffer1);
+	}
+	if (!getenv_remote(sp, "EAR_FREQUENCY", buffer1, SZ_NAME_MEDIUM)) {
+		eard_appl.job.def_f = 0;
+	} else {
+		eard_appl.job.def_f = (ulong) atol(buffer1);
+		if (!frequency_exists(frequencies, n_frequencies, eard_appl.job.def_f)) {
+			eard_appl.job.def_f = 0;
+		}
 	}
 	if (!getenv_remote(sp, "EAR_LEARNING_PHASE", buffer1, SZ_NAME_MEDIUM)) {
 		eard_appl.is_learning = 0;
 	} else {
-		eard_appl.is_learning = atoi(buffer1);
+		eard_appl.is_learning = 1;
+		eard_appl.job.def_f = frequencies[atoi(buffer1)];
 	}
-	if (!getenv_remote(sp, "EAR_P_STATE", buffer1, SZ_NAME_MEDIUM)) {
-		eard_appl.job.def_f = 0;
-	} else {
-		eard_appl.job.def_f = atoi(buffer1);
-	}
-	if (!getenv_remote(sp, "EAR_ENERGY_TAG", eard_appl.job.energy_tag, SZ_NAME_SHORT)) {
+	if (!getenv_remote(sp, "EAR_ENERGY_TAG", eard_appl.job.energy_tag, 32)) {
 		strcpy(eard_appl.job.energy_tag, "");
 	}
 
@@ -383,6 +415,9 @@ int remote_eard_report_start(spank_t sp)
 		plug_error("while connecting with EAR daemon");
 	}
 	eards_remote_disconnect();
+
+	// Shared memory reading for job information
+	dettach_frequencies_shared_area();
 
 	return (ESPANK_SUCCESS);
 }
@@ -478,7 +513,7 @@ int local_eargmd_report_finish(spank_t sp)
 
 	return (ESPANK_SUCCESS);
 }
-
+ 
 /*
  *
  *
@@ -487,19 +522,23 @@ int local_eargmd_report_finish(spank_t sp)
  *
  */
 
-//
 int _read_shared_data_remote(spank_t sp)
 {
 	plug_verbose(sp, 2, "function _read_shared_data_remote");
 
-	settings_conf_t *conf;
+	settings_conf_t *conf = NULL;
 
-	//	
+	// 	
 	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
 	
 	// Opening shared memory
 	get_settings_conf_path(buffer1, buffer2);
 	conf = attach_settings_conf_shared_area(buffer2);
+
+	if (conf == NULL) {
+		slurm_error("while reading the shared configuration memory.");
+		return ESPANK_ERROR;
+	}
 
 	if (verbosity_test(sp, 4)) {
 		print_settings_conf(conf);
@@ -507,14 +546,21 @@ int _read_shared_data_remote(spank_t sp)
 	
 	// Variable EAR and LD_PRELOAD
 	if (!conf->lib_enabled || conf->user_type == ENERGY_TAG) {
-		setenv_remote_ret_err(sp, "EAR", "0", 1);
-		remote_library_disable();
+		_remote_library_disable(sp);
 	}
 
 	// Variable EAR_ENERGY_TAG, unset
 	if (conf->user_type != ENERGY_TAG) {
 		unsetenv_remote(sp, "EAR_ENERGY_TAG");
 	}
+
+	// Variable EAR_P_STATE
+	snprintf(buffer2, 16, "%u", conf->def_p_state);
+	setenv_remote_ret_err(sp, "EAR_P_STATE", buffer2, 1);
+
+	// Variable EAR_FREQUENCY
+	snprintf(buffer2, 16, "%lu", conf->def_freq);
+	setenv_remote_ret_err(sp, "EAR_FREQUENCY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY, overwrite
 	if(policy_id_to_name(conf->policy, buffer2) == EAR_ERROR)
@@ -527,10 +573,10 @@ int _read_shared_data_remote(spank_t sp)
 	setenv_remote_ret_err(sp, "EAR_POWER_POLICY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY_TH, overwrite
-	snprintf_ret_err(buffer2, 8, "%0.2f", conf->th);
+	snprintf(buffer2, 8, "%0.2f", conf->th);
 	setenv_remote_ret_err(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
 	setenv_remote_ret_err(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
-		
+
 	// Variable EAR_LEARNING and EAR_P_STATE
 	if(!conf->learning) {
 		unsetenv_remote(sp, "EAR_P_STATE");
@@ -563,8 +609,6 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function _read_plugstack");
 	
-	char *conf_path = buffer1;
-	char *etc_dir = NULL;
 	char *pre_dir = NULL;
 	char *tmp_dir = NULL;
 	int found_predir = 0;
