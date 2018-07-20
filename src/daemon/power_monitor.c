@@ -271,7 +271,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 {
 	policy_conf_t * my_policy;
 	int p_id;
-	eard_verbose(0,"configuring policy for user %u policy %s",user_type,appID->job.policy);
+	eard_verbose(0,"configuring policy for user %u policy %s freq %lu th %lf\n",user_type,appID->job.policy,appID->job.def_f,appID->job.th);
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
@@ -558,7 +558,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	int ret1;
 	eard_verbose(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%.2lf,%.2lf)\n",
 		current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,
-		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,((double)uncore_freq[0]/(double)(f_monitoring*2600000000)),((double)uncore_freq[1]/(double)(f_monitoring*2600000000)));
+		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
 	
 	while (pthread_mutex_trylock(&app_lock));
 	
