@@ -18,7 +18,7 @@ It consist in the execution of a set of pre-selected stressing benchmarks includ
 ## EAR (node) Daemon
 
 
-EAR Daemon [EARD](./daemon(README.md) is a daemon running in all the compute nodes. It is a core components  and must be always running. It provides three types of services: access to privileged metrics, periodic power monitoring, and power control commands. EARD is used by the library to read those metrics that requires root privileges. It also offers a simplified API to be used by applications. This API only provides read only metrics (not control operations such as changing the frequency). Moreover, each EARD is continuosly monitoring the node  and reporting information to the DB through the EARDBD. This information is used later for the Global Energy Manager. Finally, EARD offers a privileged API to change power policy settings. 
+EAR Daemon [EARD](./daemon/README.md) is a daemon running in all the compute nodes. It is a core components  and must be always running. It provides three types of services: access to privileged metrics, periodic power monitoring, and power control commands. EARD is used by the library to read those metrics that requires root privileges. It also offers a simplified API to be used by applications. This API only provides read only metrics (not control operations such as changing the frequency). Moreover, each EARD is continuosly monitoring the node  and reporting information to the DB through the EARDBD. This information is used later for the Global Energy Manager. Finally, EARD offers a privileged API to change power policy settings. 
 
 ## EAR Global Manager
 
