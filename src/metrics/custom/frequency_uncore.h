@@ -50,4 +50,9 @@ state_t frequency_uncore_counters_start();
 /* */
 state_t frequency_uncore_counters_stop(uint64_t *buffer);
 
+state_t frequency_uncore_get_limits(uint64_t *buffer);
+state_t frequency_uncore_set_limits(uint64_t *buffer);
+
+
+
 #endif //EAR_FREQUENCY_UNCORE_H

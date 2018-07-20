@@ -195,3 +195,13 @@ state_t frequency_uncore_counters_stop(uint64_t *buffer)
 	_start = 0;
 	return EAR_SUCCESS;
 }
+
+state_t frequency_uncore_set_limits(uint64_t *buffer)
+{
+
+}
+state_t frequency_uncore_get_limits(uint64_t *buffer)
+{
+
+}
+

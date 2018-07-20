@@ -296,8 +296,11 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 	case AUTHORIZED:
 		if (appID->is_learning){
 			authorized_context.policy=MONITORING_ONLY;
-			if (appID->job.def_f) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
-			else authorized_context.p_state=1;
+			if (appID->job.def_f){ 
+				if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+				else authorized_context.p_state=1;
+			} else authorized_context.p_state=1;
+			
 			authorized_context.th=0;
 			my_policy=&authorized_context;
 		}else{
@@ -305,8 +308,10 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 			if (p_id!=EAR_ERROR){
             	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
 				authorized_context.policy=p_id;
-				if (appID->job.def_f) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
-				else authorized_context.p_state=my_policy->p_state;	
+				if (appID->job.def_f){ 
+					if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+					else authorized_context.p_state=my_policy->p_state;
+				}else authorized_context.p_state=my_policy->p_state;	
 				if (appID->job.th>0) authorized_context.th=appID->job.th;
 				else authorized_context.th=my_policy->th;
 				my_policy=&authorized_context;

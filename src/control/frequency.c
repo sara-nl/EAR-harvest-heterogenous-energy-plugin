@@ -175,7 +175,7 @@ void frequency_dispose()
 	free(freq_list_cpu);
 }
 
-static int is_valid_frequency(ulong freq)
+int is_valid_frequency(ulong freq)
 {
 	int i = 0;
 

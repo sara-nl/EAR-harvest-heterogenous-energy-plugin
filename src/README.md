@@ -1,26 +1,40 @@
-Main components description
+EAR components
 ---------------------------
 EAR is composed by four main components: EAR Library, EAR (node) Daemon, EAR Global Manager Daemon, and EAR Database Daemon.
 
 The EAR Library ([EARL](./library/README.md)) and EAR Daemon ([EARD](./daemon/README.md)) together are the core of the EAR package.
 
-The EAR Library interceps the Profiling MPI Interface (PMPI) symbols using the dynamic loader environment variable LD_PRELOAD. The intercepted call allows the powerfull DynAIS algorithm to detect the tipical repetitive sequences of code found in the regular HPC applications. Once found a new repetitive sequence, metrics like CPI, bandwith and power are calculated.
+## EAR library 
 
-This data allows the library to predict the best frequency for the selected power policy for the upcoming iterations, setting then the proper CPU clock. I.e, if a detected bucle iteration is memory intensive, setting lower clocks holds the performance but saves a lot of power consumption. Because of that, the CPU frequency is constantly switching, maximizing the efficiency of the cluster.
+The EAR Library interceps the Profiling MPI Interface (PMPI) symbols using the dynamic loader environment variable LD_PRELOAD. Each intercepted call executes the DynAIS algorithm to detect the tipical repetitive sequences of code found in the regular HPC applications. Once found a new repetitive sequence, metrics like CPI, Memory bandwith and Node power are calculated.
 
-The EAR (node) Daemon allows the library to use some of the privileged functions like switching the core frequency.
+This data, called the **application signature**, together with the node characterization, called the **system signature**,  allows the library to predict the performance(time) and power for the list of available frequencies in  the node for the upcoming iterations. 
+Given that predictions, and the power policy, the *best* CPU frequency is selected. 
+For instance, given an application with a memory intensive behavior, EARL will 1) detect dynamically the iterative section for the application, 2) compute the application signature, 3) apply perforance and power models, 4) apply the power policy an, and 5) finally, select and change the CPU frequency. In that kind of applications, reducing the CPU frequency will not significantly affect the application performance. 
 
- To provide good predictions, it's used a performance and power models, which gets as an input the system and the application signature.
+The system signature is a set of coefficients and it's computed once (at installation time). The process of computing the system signature is called learning phase. 
+It consist in the execution of a set of pre-selected stressing benchmarks included in the package distribution. The application signature is computed at runtime since it characterizes the application.
 
-The system signature has a form of coefficients and it's computed once (at installation time). This process is called learning phase and consist in the execution of a set of pre-selected stressing benchmarks included in the package distribution. The application signature is computed at runtime since it characterizes the application
+## EAR (node) Daemon
+
+
+EAR Daemon [EARD](./daemon(README.md) is a daemon running in all the compute nodes. It is a core components  and must be always running. It provides three types of services: access to privileged metrics, periodic power monitoring, and power control commands. EARD is used by the library to read those metrics that requires root privileges. It also offers a simplified API to be used by applications. This API only provides read only metrics (not control operations such as changing the frequency). Moreover, each EARD is continuosly monitoring the node  and reporting information to the DB through the EARDBD. This information is used later for the Global Energy Manager. Finally, EARD offers a privileged API to change power policy settings. 
+
+## EAR Global Manager
 
 The EAR Global Manager Daemon ([EARGMD](./global_manager/README.md)) is a step beyond than only a single library. All the HPC clusters must control the energy consumed and, moreover, some others have limitations beacuse of the infrastructure (or will have limitations). The EAR Global Manager can be used in **passive** mode or **active** mode.
 
 When configured in passive mode, the EARGM will monitor the energy consumed in the system reporting warnings to the EAR DB or simple actions (such as sending mails). When configured in active mode, the EARGM will automatically react to energy warnings detected. The current EARGM only supports predefined levels and actions in automatic mode but we are working in a new version where different levels and actions will be configured through the `ear.conf` file (or a similar approach)
 
+
+## EAR Database daemon
+
 The EAR Database Daemon ([EARDBD](./database_cache/README.md)) includes a MySQL data base and a several EAR Datatabase daemon (EARDBD) in charge of collect records generated by EARL and EARD in the system and report it to the centralized DB. Several EARDBD's will run in the system reducing the number of connections and messages to the EAR DB and providing aggregated metrics for some of the records.
 
-Finally, the [EAR SLURM Plugin](./slurm_plugin/README.md), a lesser component which helps to connect all the main components focusing in the ease of use.
+
+## EAR SLURM plugin
+
+Finally, the [EAR SLURM Plugin](./slurm_plugin/README.md), a lesser component which helps to connect all the main components focusing in the ease of use. It is a SLURM SPANK plugin, extending the srun and sbatch options to make easy EAR utilization.
 
 EAR source directories
 ---------------------------
