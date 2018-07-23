@@ -21,7 +21,7 @@ The EAR Daemon uses the `$(ETC)/ear.conf` file to be configured. It can be dynam
 # Verbose level
 NodeDaemonVerbose=1
 
-# Frequency used by power monitoing service (in seconds)
+# Frequency used by power monitoring service (in seconds)
 NodeDaemonPowermonFreq=10
 
 # Maximum p_state supported (1 nominal)
@@ -40,6 +40,11 @@ To execute this component, this `systemctl` command examples are provided:
 - `sudo systemctl start eard` to start the EARD service.
 - `sudo systemctl stop eard` to stop the EARD service.
 - `sudo systemctl reload eard` to force to reload the configuration of the EARD service.
+
+Log messages are generated during the execution. Use journalctl command to see eard message:
+
+- `sudo journalctl -u eard -f` to force to reload the configuration of the EARD service.
+
 
 Reconfiguration
 ---------------

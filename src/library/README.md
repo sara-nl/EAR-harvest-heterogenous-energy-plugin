@@ -6,21 +6,60 @@ At runtime, EARL goes trough the following phase:
 
 <img src="../../etc/images/EAR_stack.png" align="right" width="280">
 
-1. Automatic detection of application outer loops. This is done using DynAIS, our own Dynamic Application Iterative Structure detector algorithm. Dynais is highly optimized for new Intel architectures reporting a low overhead. 
+1. Automatic detection of application outer loops. This is done by dynamically intercepting MPI calls (using LD_PRELOAD) and invoking DynAIS algorithm, our own Dynamic Application Iterative Structure detector algorithm. Dynais is highly optimized for new Intel architectures reporting a low overhead. 
 2. Computation of application Signature. Once Dynais starts reporting iterations for the outer loop, EAR starts computing the application signature. The application signature includes: CPI, Iteration time, DC node Power, and TPI (transactions per instruction). Since DC node power measurements error highly depends on the hardware, EAR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
 3. Project performance and power model. EAR incorporate one performance and power models. These models uses, as input, the application signature and the system signature. The system signature is a set of coefficients characterizing each node in the system. They are computed at EAR installation time (tipically one once). EAR projects power and performance (time), for all the available frequencies in the system.
+
+<img src="../../etc/images/Projections.png" align="center" width="280">
+
 4. Apply the selected power policy. EAR includes two power policies selected at runtime: Minimize time to solution and Minimize energy to solution. These policies are configured by the sysadmin, as well as which policies can be used by users. At this point , EAR executes the power policy, using the projections computed in the previous phase, and selects the optimal frequency for this application and this particular run.
 
 
 Configuration
 -------------
-The EAR Library uses the `$(ETC)/ear.conf` file to be configured. It can be dynamically configured by reloading the service.
+The EAR Library  is based on ear.conf settings when executing in a fully installed environment. Specific settings are available through a shared memory regions initialized by EARD and readable by the EARL. Fields described in ear.conf affecting the EARL configuration are (lines starting with #are comments):
+
+```
+# Number of levels used by the multi-level DynAIS algorihtm
+DynAISLevels=4
+
+# Windows size for DynAIS algorithm
+DynAISWindowSize=500
+
+# Maximum time (in seconds) EAR will wait until a signature is computed. After DynaisTimeout seconds, if no signature is computed, EAR will go to periodic mode
+DynaisTimeout=30
+
+# When EAR goes to periodic mode, it will compute the Application signature every "LibraryPeriod" seconds
+LibraryPeriod=30
+
+# EAR will check every N mpi calls whether it must go to periodic mode or not
+CheckEARModeEvery=1000
+
+# Default policy
+DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
+
+# List of supported policies for normal users
+SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
+
+# Pstates must be specified in the following order:MIN_ENERGY_TO_SOLUTION,MIN_TIME_TO_SOLUTION,MONITORING_ONLY 
+DefaultPstates=1,4,1
+
+# Thresholds used by MIN_TIME_TO_SOLUTION and MIN_ENERGY_TO_SOLUTION policies
+MinEfficiencyGain=0.7
+MaxPerformancePenalty=0.1
+
+# Time (expressed in usecs ) used between two energy measurements 
+MinTimePerformanceAccuracy=10000000
+```
+
+
+- When executed in a partially installed system for testing, it can be configured through environment variables, however this mechanism is not recommened. 
 
 
 How to run MPI applications with EARL
 -------------------------------------
 
-To load EARL with MPI jobs, it is only needed to set the LD_PRELOAD environment variable. EARL will be loaded at runtime and MPI calls will be intercepted calling EAR API automatically. 
+To load EARL with MPI jobs, it is only needed to set the LD_PRELOAD environment variable. EARL will be loaded at runtime and MPI calls will be intercepted calling EAR API automatically.  To simplify the execution of applications with EARL, we include a SLURM SPANK plugin. It extends srun options
 
 
 
