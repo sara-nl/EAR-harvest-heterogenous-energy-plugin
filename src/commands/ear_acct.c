@@ -241,6 +241,7 @@ void add_filter(char *query, char *addition, int value)
     }
 }
 
+//select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
 #if DB_MYSQL
 int read_from_database(char *user, int job_id, int limit, int step_id) 
 {
@@ -266,17 +267,17 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
      
     if (verbose) fprintf(stderr, "Preparing query statement\n");
     
-    sprintf(query, "SELECT * FROM Applications");
+    sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id");
     application_t *apps;
     if (job_id >= 0)
         add_filter(query, "job_id", job_id);
     if (step_id >= 0)
-        add_filter(query, "step_id", step_id);
+        add_filter(query, "Applications.step_id", step_id);
     if (!full_length)
         strcat(query, " GROUP BY job_id");
     if (limit > 0)
     {
-        strcat(query, " LIMIT %u");
+        strcat(query, " ORDER BY Jobs.end_time desc LIMIT %u");
         sprintf(query, query, limit);
     }
     printf("QUERY: %s\n", query);
@@ -409,7 +410,7 @@ void main(int argc, char *argv[])
 {
     int job_id = -1;
     int user_id = -1;
-    int step_id = 0;
+    int step_id = -1;
     int limit = -1;
     int opt;
     char path_name[256];
