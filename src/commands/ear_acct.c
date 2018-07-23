@@ -53,16 +53,16 @@ static const char *__NAME__ = "eacct";
 
 void usage(char *app)
 {
-    #if DB_FILES && !DB_MYSQL
-	printf("Usage: %s job_id user_db_pathname [-v]\n",app);
-    #endif
     #if DB_MYSQL
-    printf("Usage: %s job_id [Optional parameters]\n"\
+    printf("Usage: %s [Optional parameters]\n"\
 "\tOptional parameters: \n" \
+"\t\t-h\tdisplays this message\n"\
 "\t\t-v\tverbose mode for debugging purposes\n" \
-"\t\t-u\tspecifies the user that executes the query [default: root]\n" \
-"\t\t-db\tspecifies the database on which the query is executed [default: Report]\n" \
-"\t\t-ip\tspecifies the ip where the MySQL server can be found [default: 127.0.0.1]\n" \
+"\t\t-u\tspecifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]\n" \
+"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
+"\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
+"\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
+"\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: all jobs]\n" \
 "", app);
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
     #endif
@@ -219,8 +219,30 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
     free(nodes);
 
 }
+void add_string_filter(char *query, char *addition, char *value)
+{
+    if (query_filters < 1)
+    {
+        strcat(query, " WHERE ");
+        strcat(query, addition);
+        strcat(query, "=");
+    }
+    else
+    {
+        strcat(query, " AND ");
+        strcat(query, addition);
+        strcat(query, "=");
+    }
+    printf("QUERY: %s\n", query);
+    printf("VALUE: %s\n", value);
+    strcat(query, "\"");
+    strcat(query, value);
+    strcat(query, "\"");
+//    sprintf(query, query, value);
+    query_filters ++;
+}
 
-void add_filter(char *query, char *addition, int value)
+void add_int_filter(char *query, char *addition, int value)
 {
     if (query_filters < 1)
     {
@@ -271,11 +293,15 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
     sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id");
     application_t *apps;
     if (job_id >= 0)
-        add_filter(query, "job_id", job_id);
+        add_int_filter(query, "job_id", job_id);
     if (step_id >= 0)
-        add_filter(query, "Applications.step_id", step_id);
-    if (!full_length)
+        add_int_filter(query, "Applications.step_id", step_id);
+    if (user != NULL)
+        add_string_filter(query, "Jobs.user_id", user);
+
+    if (!full_length && strlen(csv_path) < 1)
         strcat(query, " GROUP BY job_id");
+
     if (limit > 0)
     {
         strcat(query, " ORDER BY Jobs.end_time desc LIMIT %u");
@@ -444,7 +470,7 @@ void main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:vlc:")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:vlc:h")) != -1) 
     {
         switch (opt)
         {
@@ -471,6 +497,10 @@ void main(int argc, char *argv[])
                 break;
             case 'c':
                 strcpy(csv_path, optarg);
+                break;
+            case 'h':
+                free_cluster_conf(&my_conf);
+                usage(argv[0]);
         }
     }
 
