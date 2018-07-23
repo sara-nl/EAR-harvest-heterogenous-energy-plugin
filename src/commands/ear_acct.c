@@ -47,6 +47,7 @@ int EAR_VERBOSE_LEVEL=0;
 int full_length = 0;
 int verbose = 0;
 int query_filters = 0;
+char csv_path[256] = "";
 
 static const char *__NAME__ = "eacct";
 
@@ -331,73 +332,81 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
     avg_GBS = 0;
 
     int i = 0;    
-    if (apps[0].is_mpi && !is_learning)
+    if (strlen(csv_path) < 1)
     {
-        printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\tCPI\tGBS\n\t");
-    
-        for (i = 0; i < num_apps; i++)
+        if (apps[0].is_mpi && !is_learning)
         {
-            avg_f = (double) apps[i].signature.avg_f/1000000;
-            printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t%.2lf\t%.2lf\n\t", 
-                    strtok(apps[i].node_id, "."), apps[i].signature.time, apps[i].signature.DC_power, 
-		    apps[i].signature.DC_power * apps[i].signature.time, avg_f, apps[i].signature.CPI, apps[i].signature.GBS);
-            avg_frequency += avg_f;
-            avg_time += apps[i].signature.time;
-            avg_power += apps[i].signature.DC_power;
-            avg_GBS += apps[i].signature.GBS;
-            avg_CPI += apps[i].signature.CPI;
-            total_energy += apps[i].signature.time * apps[i].signature.DC_power;
+            printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\tCPI\tGBS\n\t");
+        
+            for (i = 0; i < num_apps; i++)
+            {
+                avg_f = (double) apps[i].signature.avg_f/1000000;
+                printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t%.2lf\t%.2lf\n\t", 
+                        strtok(apps[i].node_id, "."), apps[i].signature.time, apps[i].signature.DC_power, 
+                apps[i].signature.DC_power * apps[i].signature.time, avg_f, apps[i].signature.CPI, apps[i].signature.GBS);
+                avg_frequency += avg_f;
+                avg_time += apps[i].signature.time;
+                avg_power += apps[i].signature.DC_power;
+                avg_GBS += apps[i].signature.GBS;
+                avg_CPI += apps[i].signature.CPI;
+                total_energy += apps[i].signature.time * apps[i].signature.DC_power;
 
+            }
         }
-    }
     //case mpi without ear
-    else if (num_apps > 1)
-    {
-        printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\n\t");
-
-        for (i = 0; i < num_apps; i++)
+        else if (num_apps > 1)
         {
-            avg_f = (double) apps[i].power_sig.avg_f/1000000;
-            printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t\n\t", 
-                    strtok(apps[i].node_id, "."), apps[i].power_sig.time, apps[i].power_sig.DC_power, 
-                    apps[i].power_sig.DC_power * apps[i].power_sig.time, avg_f);
-            avg_frequency += avg_f;
-            avg_time += apps[i].power_sig.time;
-            avg_power += apps[i].power_sig.DC_power;
-            total_energy += apps[i].power_sig.time * apps[i].power_sig.DC_power;
+            printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\n\t");
+
+            for (i = 0; i < num_apps; i++)
+            {
+                avg_f = (double) apps[i].power_sig.avg_f/1000000;
+                printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t\n\t", 
+                        strtok(apps[i].node_id, "."), apps[i].power_sig.time, apps[i].power_sig.DC_power, 
+                        apps[i].power_sig.DC_power * apps[i].power_sig.time, avg_f);
+                avg_frequency += avg_f;
+                avg_time += apps[i].power_sig.time;
+                avg_power += apps[i].power_sig.DC_power;
+                total_energy += apps[i].power_sig.time * apps[i].power_sig.DC_power;
+            }
         }
-    }
-    avg_frequency /= num_apps;
-    avg_time /= num_apps;
-    avg_power /= num_apps;
-    avg_CPI /= num_apps;
-    avg_GBS /= num_apps;
+        avg_frequency /= num_apps;
+        avg_time /= num_apps;
+        avg_power /= num_apps;
+        avg_CPI /= num_apps;
+        avg_GBS /= num_apps;
 
-    i=0;
-    printf("\nApplication summary\n\tApp_id: %s\n\tJob_id: %lu\n\tStep_id: %lu\n\tPolicy: %s\n\tPolicy threshold: %.2lf\n",
-            apps[0].job.app_id, apps[0].job.id, apps[0].job.step_id, apps[0].job.policy, apps[0].job.th);
+        i=0;
+        printf("\nApplication summary\n\tApp_id: %s\n\tJob_id: %lu\n\tStep_id: %lu\n\tPolicy: %s\n\tPolicy threshold: %.2lf\n",
+                apps[0].job.app_id, apps[0].job.id, apps[0].job.step_id, apps[0].job.policy, apps[0].job.th);
 
-    if (apps[0].is_mpi && !is_learning)
-    {
-        printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
+        if (apps[0].is_mpi && !is_learning)
+        {
+            printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
 
-        printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t%.2lf\t%.2lf\n", 
-                avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
-    }
-    else if (num_apps > 1)
-    {
-        printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\n\t");
+            printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t%.2lf\t%.2lf\n", 
+                    avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
+        }
+        else if (num_apps > 1)
+        {
+            printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\n\t");
 
-        printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t\n", 
-                avg_time, avg_power, total_energy, avg_frequency);
+            printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t\n", 
+                    avg_time, avg_power, total_energy, avg_frequency);
+        }
+        else
+        {
+            printf("\nApplication information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\t Avg_freq (GHz)\n\t");
+            avg_f = (double) apps[0].power_sig.avg_f/1000000;
+            printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n",
+                    strtok(apps[0].node_id, "."), apps[0].power_sig.time, apps[0].power_sig.DC_power,
+                    apps[0].power_sig.DC_power * apps[0].power_sig.time, avg_f);
+        }
     }
     else
     {
-        printf("\nApplication information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\t Avg_freq (GHz)\n\t");
-        avg_f = (double) apps[0].power_sig.avg_f/1000000;
-        printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n",
-                strtok(apps[0].node_id, "."), apps[0].power_sig.time, apps[0].power_sig.DC_power,
-                apps[0].power_sig.DC_power * apps[0].power_sig.time, avg_f);
+        for (i = 0; i < num_apps; i++)
+            append_application_text_file(csv_path, &apps[i]);
     }
 
     free(apps);
@@ -435,7 +444,7 @@ void main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:vl")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:vlc:")) != -1) 
     {
         switch (opt)
         {
@@ -460,6 +469,8 @@ void main(int argc, char *argv[])
             case 'v':
                 verbose = 1;
                 break;
+            case 'c':
+                strcpy(csv_path, optarg);
         }
     }
 
