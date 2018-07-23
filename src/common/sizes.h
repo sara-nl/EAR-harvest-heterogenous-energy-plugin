@@ -35,6 +35,7 @@
 #define SZ_NAME_SHORT	128
 #define SZ_NAME_MEDIUM 	NAME_MAX + 1
 #define SZ_NAME_LARGE	512
+#define SZ_BUFF_BIG		PATH_MAX
 #define SZ_PATH_KERNEL	64
 #define SZ_PATH			PATH_MAX
 

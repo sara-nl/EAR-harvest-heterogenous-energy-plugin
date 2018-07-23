@@ -3,8 +3,8 @@ CFLAGS  = -I$(SRCDIR) $(CONSTANTS)
 ######## FILES
 
 eardbd_OBJS = $(SRCDIR)/common/sockets.o \
-              $(SRCDIR)/common/database.a \
               $(SRCDIR)/common/types.a
+#             $(SRCDIR)/common/database.a \
 
 ######## RULES
 

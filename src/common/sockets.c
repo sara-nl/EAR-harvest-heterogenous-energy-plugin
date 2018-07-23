@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <common/sockets.h>
 
+static char output_buffer[SZ_BUFF_BIG];
 static state_t s;
 
 state_t sockets_accept(int fd_req, int *fd_cli)
@@ -50,18 +51,40 @@ state_t sockets_accept(int fd_req, int *fd_cli)
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_send(socket_t *socket, char *buffer, ssize_t size)
+state_t sockets_send(socket_t *socket, packet_header_t *header, char *content, ssize_t size_content)
 {
-	size_t bytes_left = size;
-	size_t bytes_sent = 0;
+	packet_header_t *output_header;
+	char *output_content;
+	size_t bytes_left;
+	size_t bytes_sent;
+	state_t s;
 	int n;
 
-	while(bytes_sent < size)
+	// Output
+	output_header = PACKET_HEADER(output_buffer);
+	output_content = PACKET_CONTENT(output_buffer);
+
+	// Header process
+	gethostname(header->host_src, sizeof(header->host_src));
+	output_header->packet_size = size_content + sizeof(packet_header_t);
+	output_header->content_type = header->content_type;
+	output_header->data_extra = header->data_extra;
+	output_header->timestamp = time(NULL);
+
+	// Content process
+	memcpy (output_content, content, size_content);
+
+	// Sizes
+	bytes_left = output_header->packet_size;
+	bytes_sent = 0;
+
+	// Sending
+	while(bytes_sent < output_header->packet_size)
 	{
 		if (socket->protocol == TCP) {
-			n = send(socket->fd, buffer + bytes_sent, bytes_left, 0);
+			n = send(socket->fd, output_buffer + bytes_sent, bytes_left, 0);
 		} else {
-			n = sendto(socket->fd, buffer + bytes_sent, bytes_left, 0, socket->info->ai_addr, socket->info->ai_addrlen);
+			n = sendto(socket->fd, output_buffer + bytes_sent, bytes_left, 0, socket->info->ai_addr, socket->info->ai_addrlen);
 		}
 
 		if (n == -1) {
@@ -75,18 +98,41 @@ state_t sockets_send(socket_t *socket, char *buffer, ssize_t size)
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_receive(int fd, char *buffer, ssize_t size_buffer, ssize_t *size_read)
+state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer)
 {
-	*size_read = recv(fd, buffer, size_buffer, 0);
+	size_t bytes_expc;
+	size_t bytes_left;
+	size_t bytes_recv;
+	char *bytes_buff;
+	int i = 0;
 
-	// Handle data from a client
-	if (*size_read <= 0)
+	// Receiving header
+	bytes_buff = (char *) header;
+	bytes_expc = sizeof(packet_header_t);
+	bytes_left = bytes_expc;
+	bytes_recv = 0;
+
+	while (i < 2)
 	{
-		if (*size_read == 0) {
-			state_return_msg(EAR_SUCCESS, "disconnected from socket");
-		} else {
-			state_return_msg(EAR_SOCK_RECV_ERROR, strerror(errno));
+		while (bytes_recv < bytes_expc)
+		{
+			bytes_recv += recv(fd, bytes_buff[bytes_recv], bytes_left, 0);
+
+			if (bytes_recv <= 0)
+			{
+				if (bytes_recv == 0) {
+					state_return_msg(EAR_SOCK_DISCONNECTED, "disconnected from socket");
+				} else {
+					state_return_msg(EAR_SOCK_RECV_ERROR, strerror(errno));
+				}
+			}
 		}
+
+		bytes_buff = buffer;
+		bytes_expc = header->packet_size - bytes_recv;
+		bytes_left = bytes_expc;
+		bytes_recv = 0;
+		i++;
 	}
 
 	state_return(EAR_SUCCESS);
@@ -161,7 +207,7 @@ state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
 	}
 
 	if (host != NULL) {
-		socket->host = strcpy(socket->hostname, host);
+		socket->host = strcpy(socket->host_dst, host);
 	} else {
 		socket->host = NULL;
 	}
@@ -215,7 +261,7 @@ state_t sockets_disconnect(int *fd)
 
 state_t sockets_clean(socket_t *socket)
 {
-	socket->hostname[0] = '\0';
+	socket->host_dst[0] = '\0';
  	socket->info = NULL;
 	socket->host = NULL;
 	socket->protocol = 0;

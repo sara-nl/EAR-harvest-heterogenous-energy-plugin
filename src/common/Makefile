@@ -16,11 +16,11 @@ endif
 
 database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
 
-types_SRCS = $(shell find ./types/ -type f -name '*.c' -o -name '*.h')
+types_SOURCES = $(shell find ./types/ -type f -name '*.c' -o -name '*.h')
 
-types_OBJS = $(shell find ./types/ -type f -name '*.o') \
-             string_enhanced.o \
-             math_operations.o
+types_OBJECTS = $(shell find ./types/ -type f -name '*.o') \
+                string_enhanced.o \
+                math_operations.o
 
 ######## RULES
 
@@ -47,8 +47,8 @@ string_enhanced.o: string_enhanced.c string_enhanced.h
 database.a: $(database_OBJS)
 	$(AR) rvs database.a $(database_OBJS)
 
-types.a: $(types_SRCS)
-	$(AR) rvs types.a $(types_FILES)
+types.a: $(types_SOURCES)
+	$(AR) rvs types.a $(types_OBJECTS)
 
 ######## OPTIONS
 

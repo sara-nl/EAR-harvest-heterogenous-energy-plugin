@@ -33,15 +33,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
-#include <database_cache/sockets.h>
 #include <database_cache/eardbd_api.h>
 
 static socket_t sock_main;
 static socket_t sock_mirr;
+static packet_header_t header;
 static int _connected = -1;
-
-static char buffer_gen[4096];
-static char buffer_pck[MAX_PACKET_SIZE()];
 
 /*
  *
@@ -57,25 +54,14 @@ static int is_connected(socket_t *socket)
 	return 0;
 }
 
-static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
+static state_t _packet_send(uint content_type, char *content, ssize_t content_size)
 {
-	packet_header_t *header = P_HEADER(buffer);
-	void *content = P_CONTENT(buffer);
 	state_t s;
 
-	// Header process
-	header->packet_size = size + sizeof(packet_header_t);
-	header->content_type = type;
-	header->timestamp = time(NULL);
-	header->mirroring = 0;
-
-	// Content process
-	memcpy (content, object, size);
-	
-	// Sending to main
-	verbose("sending packet type %d to %s (size: %lu)",
-		header->content_type, sock_main.host, header->packet_size);
-	s = sockets_send(&sock_main, (void *) buffer, header->packet_size);
+	// Main packet
+	header.content_type = content_type;
+	header.data_extra = 0; // Mirroring
+	s = sockets_send(&sock_main, &header, content, content_size);
 
 	if (state_fail(s)) {
 		eardbd_disconnect();
@@ -87,9 +73,8 @@ static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
 		return EAR_SUCCESS;
 	}
 
-	header->mirroring = 1;
-	verbose("sending mirror packet type %d to %s (size: %lu)", type, sock_mirr.host, header->packet_size);
-	s = sockets_send(&sock_mirr, (void *) buffer, header->packet_size);
+	header.data_extra = 1; // Mirroring
+	s = sockets_send(&sock_mirr, &header, content, content_size);
 
 	if (state_fail(s)) {
 		eardbd_disconnect();
@@ -101,28 +86,28 @@ static state_t _packet_send(char *buffer, void *object, ulong size, uint type)
 
 state_t eardbd_send_application(application_t *app)
 {
-	return _packet_send(buffer_pck, (void *) app, sizeof(application_t), CONTENT_TYPE_APP);
+	return _packet_send(CONTENT_TYPE_APP, (char *) app, sizeof(application_t));
 }
 
 state_t eardbd_send_periodic_metric(periodic_metric_t *met)
 {
-	return _packet_send(buffer_pck, (void *) met, sizeof(periodic_metric_t), CONTENT_TYPE_PER);
+	return _packet_send(CONTENT_TYPE_PER, (char *) met, sizeof(periodic_metric_t));
 }
 
 state_t eardbd_send_event(ear_event_t *eve)
 {
-	return _packet_send(buffer_pck, (void *) eve, sizeof(ear_event_t), CONTENT_TYPE_EVE);
+	return _packet_send(CONTENT_TYPE_EVE, (char *) eve, sizeof(ear_event_t));
 }
 
 state_t eardbd_send_loop(loop_t *loop)
 {
-	return _packet_send(buffer_pck, (void *) loop, sizeof(loop_t), CONTENT_TYPE_LOO);
+	return _packet_send(CONTENT_TYPE_LOO, (char *) loop, sizeof(loop_t));
 }
 
 state_t eardbd_ping()
 {
 	char ping[] = "ping";
-	return _packet_send(buffer_pck, (void *) ping, sizeof(ping), CONTENT_TYPE_PIN);
+	return _packet_send(CONTENT_TYPE_PIN, (char *) ping, sizeof(ping));
 }
 
 static state_t _eardbd_socket(socket_t *socket, char *host, uint port, uint protocol)

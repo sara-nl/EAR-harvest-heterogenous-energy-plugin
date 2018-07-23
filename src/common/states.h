@@ -56,6 +56,7 @@
 #define EAR_SOCK_ACCEPT_ERROR	-25
 #define EAR_SOCK_CONN_ERROR		-26
 #define EAR_SOCK_BAD_PROTOCOL	-27
+#define EAR_SOCK_DISCONNECTED	-28
 
 // TODO: this is a config not a state
 #define DYNAIS_ENABLED      1
@@ -74,6 +75,9 @@ char *state_error;
 
 #define state_fail(state) \
 	state != EAR_SUCCESS
+
+#define state_is(state1, state2) \
+	state1 == state2
 
 #define state_return(state) \
 	return state;

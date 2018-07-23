@@ -44,13 +44,27 @@
 
 /* types */
 typedef struct socket {
-	char hostname[SZ_NAME_MEDIUM];
+	char host_dst[SZ_NAME_SHORT];
 	struct addrinfo *info;
 	char *host;
 	uint protocol;
 	uint port;
 	int fd;
 } socket_t;
+
+typedef struct packet_header {
+	char host_src[SZ_NAME_SHORT]; // Filled in sockets_send()
+	size_t packet_size; // Filled in sockets_send()
+	time_t timestamp; // Filled in sockets_send()
+	uint content_type;
+	uint data_extra;
+}  packet_header_t;
+
+#define PACKET_HEADER(buffer) \
+		(packet_header_t *) buffer;
+
+#define PACKET_CONTENT(buffer) \
+		(void *) &buffer[sizeof(packet_header_t)];
 
 /* functions */
 state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol);
@@ -71,9 +85,9 @@ state_t sockets_connect(socket_t *socket);
 
 state_t sockets_disconnect(int *fd);
 
-state_t sockets_send(socket_t *socket, char *buffer, ssize_t size);
+state_t sockets_send(socket_t *socket, packet_header_t *header, char *content, ssize_t size_content);
 
-state_t sockets_receive(int fd, char *buffer, ssize_t size_buffer, ssize_t *size_read);
+state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer);
 
 void sockets_print_socket(socket_t *socket);
 

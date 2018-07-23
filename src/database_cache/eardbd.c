@@ -34,11 +34,21 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <database_cache/sockets.h>
 #include <database_cache/eardbd.h>
 
-static char buffer_pck[MAX_PACKET_SIZE()];
-static char buffer_gen[PATH_MAX];
+static socket_t sockets[3];
+static socket_t *sock_metr_tcp = &sockets[0];
+static socket_t *sock_metr_udp = &sockets[1];
+static socket_t *sock_sync_tcp = &sockets[2];
+
+static packet_header_t input_header;
+static char input_buffer[MAX_PACKET_SIZE()];
+static char extra_buffer[PATH_MAX];
+
+// Main & mirror
+static state_question_t output_qst;
+static state_answer_t   output_ans;
+static int im_mirror = 0;
 
 #define lops_len 128 * 512
 #define mets_len 32 * 512
@@ -49,6 +59,7 @@ static periodic_aggregation_t aggr;
 static application_t apps_mpi[apps_len];
 static application_t apps_nor[apps_len];
 static application_t apps_ler[apps_len];
+
 static periodic_metric_t mets[mets_len];
 static ear_event_t eves[eves_len];
 static loop_t lops[lops_len];
@@ -76,7 +87,7 @@ static void db_store_events(ear_event_t *eves, uint n_eves)
 	}
 
 	verbose("Trying to insert in DB %d event samples", n_eves);
-	db_batch_insert_ear_event(eves, n_eves);
+	//db_batch_insert_ear_event(eves, n_eves);
 }
 
 static void db_store_loops(loop_t *lops, uint n_lops)
@@ -86,8 +97,7 @@ static void db_store_loops(loop_t *lops, uint n_lops)
 	}
 
 	verbose("Trying to insert in DB %d loop samples", n_lops);
-	db_batch_insert_loops(lops, n_lops);
-	//db_insert_loop(lops);
+	//db_batch_insert_loops(lops, n_lops);
 }
 
 static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
@@ -97,7 +107,7 @@ static void db_store_periodic_metrics(periodic_metric_t *mets, uint n_mets)
 	}
 
 	verbose("Trying to insert in DB %d periodic metric samples", n_mets);
-	db_batch_insert_periodic_metrics(mets, n_mets);
+	//db_batch_insert_periodic_metrics(mets, n_mets);
 }
 
 static void db_store_periodic_aggregation()
@@ -107,7 +117,7 @@ static void db_store_periodic_aggregation()
 	}
 
 	verbose("Trying to insert in DB an aggregation of %d samples", aggr.n_samples);
-	db_insert_periodic_aggregation(&aggr);
+	//db_insert_periodic_aggregation(&aggr);
 }
 
 static void db_store_applications_mpi(application_t *apps, uint n_apps)
@@ -117,8 +127,7 @@ static void db_store_applications_mpi(application_t *apps, uint n_apps)
 	}
 
 	verbose("Trying to insert in DB %d mpi application samples", n_apps);
-	db_batch_insert_applications(apps, n_apps);
-	//db_insert_application(apps);
+	//db_batch_insert_applications(apps, n_apps);
 }
 
 static void db_store_applications(application_t *apps, uint n_apps)
@@ -128,31 +137,31 @@ static void db_store_applications(application_t *apps, uint n_apps)
 	}
 
 	verbose("Trying to insert in DB %d non-mpi application samples", n_apps);
-	db_batch_insert_applications_no_mpi(apps, n_apps);
-	//db_insert_application(apps);
+	//db_batch_insert_applications_no_mpi(apps, n_apps);
 }
 
 /*
  * Data processing
  */
 
-static size_t extract_packet_size(char *buffer)
-{
-	packet_header_t *header;
-	header = P_HEADER(buffer);
-
-	return header->packet_size;
-}
-
 static void make_periodic_aggregation(periodic_metric_t *met)
 {
 	add_periodic_aggregation(&aggr, met->DC_energy, met->start_time, met->end_time);
+}
+
+static void sync_question()
+{
+
 }
 
 static void process_timeout_data()
 {
 	verbose("Finished aggregation, consumed %lu energy (mJ) from %lu to %lu,",
 			aggr.DC_energy, aggr.start_time, aggr.end_time);
+
+	if (im_mirror) {
+		sync_question();
+	}
 
 	db_store_periodic_aggregation();
 	init_periodic_aggregation(&aggr);
@@ -176,20 +185,13 @@ static void process_timeout_data()
 	lops_i = 0;
 }
 
-static void process_incoming_data(int fd, char *buffer, ssize_t size)
+static void process_incoming_data(packet_header_t *header, char *content)
 {
-	packet_header_t *header;
-	void *content;
 	char *type;
-
-	header = P_HEADER(buffer);
-	content = P_CONTENT(buffer);
 
 	if (header->content_type == CONTENT_TYPE_APP)
 	{
 		application_t *app = (application_t *) content;
-		verbose("received an application %d from host %s", app->job.id, app->node_id);
-		//report_application_data(app);
 
 		if (app->is_learning)
 		{
@@ -256,19 +258,17 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		memcpy (&lops[lops_i], content, sizeof(loop_t));
 		lops_i += 1;
 
-		verbose("%d %d %d '%s' %lu", lops[lops_i].id.event, lops[lops_i].id.size, lops[lops_i].id.level,
-			lops[lops_i].node_id, lops[lops_i].total_iterations);
-		print_signature_fd(STDERR_FILENO, &lops[lops_i].signature);
-
 		if (lops_i == eves_len) {
 			db_store_loops(lops, lops_i);
 			lops_i = 0;
 		}
+	} else if (header->content_type == CONTENT_TYPE_QST) {
+
 	} else {
 		type = "unknown";
 	}
 
-	verbose("received a '%s' packet (%ld bytes), from the socket %d", type, size, fd);
+	verbose("received a '%s' packet, from the host %s", type, header->host_src);
 }
 
 /*
@@ -292,15 +292,8 @@ int main(int argc, char **argv)
 {
 	cluster_conf_t conf_clus;
 	struct timeval timeout;
-	size_t accum_size;
-	size_t packt_size;
-	ssize_t recvd_size;
 	int i;
 
-	socket_t sockets[3];
-	socket_t *sock_metr_tcp = &sockets[0];
-	socket_t *sock_metr_udp = &sockets[1];
-	socket_t *sock_sync_tcp = &sockets[2];
 	fd_set fds_incoming;
 	fd_set fds_active;
 	int fd_max;
@@ -337,14 +330,14 @@ int main(int argc, char **argv)
 	verbose("reserving %0.2f MBytes for events  (%lu per ear_event_t)", mb_eves, sizeof(ear_event_t));
 	verbose("total memory allocated: %0.2f MBytes", mb_totl);
 
-	#if 1
+	#if 0
 	// Configuration file (TODO)
-	if (get_ear_conf_path(buffer_gen) == EAR_ERROR) {
+	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("Error getting ear.conf path");
 	}
 
-	verbose("Reading '%s' configuration file", buffer_gen);
-	read_cluster_conf(buffer_gen, &conf_clus);
+	verbose("Reading '%s' configuration file", extra_buffer);
+	read_cluster_conf(extra_buffer, &conf_clus);
 
 	// Database
 	init_db_helper(&conf_clus.database);
@@ -352,6 +345,7 @@ int main(int argc, char **argv)
 	conf_clus.db_manager.aggr_time = 60;
 	conf_clus.db_manager.tcp_port = 4711;
 	conf_clus.db_manager.udp_port = 4712;
+	im_mirror = atoi(argv[1]);
 	#endif
 
 	// Format
@@ -455,29 +449,12 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-					state1 = sockets_receive(i, buffer_pck, sizeof(buffer_pck), &recvd_size);
-					//verbose("1 recvd_size %lu", recvd_size);
+					state1 = sockets_receive(i, &input_header, input_buffer, sizeof(input_buffer));
 
-					if (state_ok(state1) && recvd_size > 0)
-					{
-						packt_size = extract_packet_size(buffer_pck);
-						accum_size = recvd_size;
-
-						//verbose("2 packt_size %lu", packt_size);
-						//verbose("3 accum_size %lu", accum_size);
-						
-						while (state_ok(state1) && recvd_size > 0 && accum_size < packt_size) {
-							state1 = sockets_receive(i, &buffer_pck[accum_size], sizeof(buffer_pck), &recvd_size);
-							accum_size += recvd_size;
-							//verbose("4 recvd_size %lu", recvd_size);
-							//verbose("5 accum_size %lu", accum_size);
-						}
-					}
-
-					if (state_ok(state1) && recvd_size > 0 && accum_size == packt_size){
-						process_incoming_data(i, buffer_pck, packt_size);
+					if (state_ok(state1)) {
+						process_incoming_data(&input_header, input_buffer);
 					} else {
-						if (recvd_size == 0) {
+						if (state_is(state1, EAR_SOCK_DISCONNECTED)) {
 							verbose("disconnected from socket %d", i);
 						} else {
 							error("on reception (%s), disconnecting from socket %d", strerror(errno), i);

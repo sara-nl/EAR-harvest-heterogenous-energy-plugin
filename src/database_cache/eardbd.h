@@ -31,6 +31,7 @@
 
 #include <netdb.h>
 #include <common/config.h>
+#include <common/sockets.h>
 #include <common/types/log.h>
 #include <common/types/loop.h>
 #include <common/types/generic.h>
@@ -44,6 +45,8 @@
 #define CONTENT_TYPE_APP	2
 #define CONTENT_TYPE_LOO	3
 #define CONTENT_TYPE_EVE	4
+#define CONTENT_TYPE_QST	5
+#define CONTENT_TYPE_ANS	6
 
 #define verbose(...) \
 	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
@@ -62,21 +65,15 @@
 #define MAX_PACKET_SIZE() \
 	(_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t)) + sizeof(packet_header_t)
 
-#define P_HEADER(buffer) \
-		(packet_header_t *) buffer;
+typedef struct state_question {
+} state_question_t;
 
-#define P_CONTENT(buffer) \
-		(void *) &buffer[sizeof(packet_header_t)];
+typedef struct state_answer {
+	time_t timestamp_app;
+	time_t timestamp_per;
+	time_t timestamp_loo;
+	time_t timestamp_eve;
+} state_answer_t;
 
-/* Types */
-typedef struct packet_header {
-	size_t packet_size;
-	time_t timestamp;
-	uchar content_type;
-	uchar mirroring;
-} packet_header_t;
-
-//char sender_hostname[SIZE_NAME];
-//size_t content_size;
 
 #endif //EAR_EARDBD_H
