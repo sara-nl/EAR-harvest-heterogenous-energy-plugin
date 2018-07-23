@@ -17,6 +17,8 @@ These tests are designed to evaluate the different plugin options to be supporte
 | test9  |--ear-tag=memory-intensive --ear-verbose=1 | if energy-tag user--> select pstate and ear=off, default otherwise |
 | test10 |--ear-learning=1 --ear-tag=memory-intensive --ear-verbose=1 |if energy-tag user --> energy tag, else, if authorized, learning, else default |
 | test11 |--ear-tag=invalid --ear-verbose=1 | default |
+| test12 |--account=colbsc --ear-tag=cpu-intensive --ear-verbose=1|
+| test13 |--ear-cpufreq=2000000 --ear-policy=MONITORING_ONLY --ear-verbose=1 |
 
 It is recommented to test changing ear.conf configuration
 
