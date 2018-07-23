@@ -4,7 +4,7 @@ The EAR library is the core of the EAR package. The EARL offers a ligthweigth an
 
 At runtime, EARL goes trough the following phase:
 
-<img src="etc/images/EAR_stack.png" align="right" width="140">
+<img src="../../etc/images/EAR_stack.png" align="right" width="140">
 
 1. Automatic detection of application outer loops. This is done using DynAIS, our own Dynamic Application Iterative Structure detector algorithm. Dynais is highly optimized for new Intel architectures reporting a low overhead. 
 2. Computation of application Signature. Once Dynais starts reporting iterations for the outer loop, EAR starts computing the application signature. The application signature includes: CPI, Iteration time, DC node Power, and TPI (transactions per instruction). Since DC node power measurements error highly depends on the hardware, EAR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
