@@ -51,3 +51,9 @@ EAR source directories
 | tests          | Programs to test the installation and runtime of the components                                               |
 | metrics        | Low level metric gathering functions           |
 | common         | Generic functions and types                    |
+
+
+License
+-------
+All the files in the EAR framework are under the LGPLv2.1 license. See the [COPYING](../../COPYING) file in the EAR root directory.
+
