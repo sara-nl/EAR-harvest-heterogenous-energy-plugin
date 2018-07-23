@@ -271,7 +271,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 {
 	policy_conf_t * my_policy;
 	int p_id;
-	eard_verbose(0,"configuring policy for user %u policy %s freq %lu th %lf\n",user_type,appID->job.policy,appID->job.def_f,appID->job.th);
+	eard_verbose(0,"configuring policy for user %u policy %s freq %lu th %lf is_learning %u\n",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;

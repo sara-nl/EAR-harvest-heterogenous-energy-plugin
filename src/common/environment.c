@@ -141,8 +141,10 @@ void set_ear_app_name(char *name)
 int getenv_ear_learning_phase()
 {
 	char *learning=getenv("EAR_LEARNING_PHASE");
+	int learning_value;
 	if (learning!=NULL){
-		if (strcmp(learning,"1")==0) conf_ear_learning_phase=1;
+		learning_value=atoi(learning);
+		if (learning_value>0) conf_ear_learning_phase=1;
 	}
 	return conf_ear_learning_phase;
 }
