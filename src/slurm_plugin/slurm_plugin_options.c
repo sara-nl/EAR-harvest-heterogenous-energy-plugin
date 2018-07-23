@@ -37,7 +37,9 @@
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
+
 #define SRUN_OPTIONS 10
+
 struct spank_option spank_options_manual[SRUN_OPTIONS] =
 {
 	{ "ear", "on|off", "Enables/disables Energy Aware Runtime",
