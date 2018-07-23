@@ -219,8 +219,30 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
     free(nodes);
 
 }
+void add_string_filter(char *query, char *addition, char *value)
+{
+    if (query_filters < 1)
+    {
+        strcat(query, " WHERE ");
+        strcat(query, addition);
+        strcat(query, "=");
+    }
+    else
+    {
+        strcat(query, " AND ");
+        strcat(query, addition);
+        strcat(query, "=");
+    }
+    printf("QUERY: %s\n", query);
+    printf("VALUE: %s\n", value);
+    strcat(query, "\"");
+    strcat(query, value);
+    strcat(query, "\"");
+//    sprintf(query, query, value);
+    query_filters ++;
+}
 
-void add_filter(char *query, char *addition, int value)
+void add_int_filter(char *query, char *addition, int value)
 {
     if (query_filters < 1)
     {
@@ -271,11 +293,15 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
     sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id");
     application_t *apps;
     if (job_id >= 0)
-        add_filter(query, "job_id", job_id);
+        add_int_filter(query, "job_id", job_id);
     if (step_id >= 0)
-        add_filter(query, "Applications.step_id", step_id);
-    if (!full_length)
+        add_int_filter(query, "Applications.step_id", step_id);
+    if (user != NULL)
+        add_string_filter(query, "Jobs.user_id", user);
+
+    if (!full_length && strlen(csv_path) < 1)
         strcat(query, " GROUP BY job_id");
+
     if (limit > 0)
     {
         strcat(query, " ORDER BY Jobs.end_time desc LIMIT %u");
