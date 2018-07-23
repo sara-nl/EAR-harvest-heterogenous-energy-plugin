@@ -10,7 +10,9 @@ At runtime, EARL goes trough the following phase:
 2. Computation of application Signature. Once Dynais starts reporting iterations for the outer loop, EAR starts computing the application signature. The application signature includes: CPI, Iteration time, DC node Power, and TPI (transactions per instruction). Since DC node power measurements error highly depends on the hardware, EAR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
 3. Project performance and power model. EAR incorporate one performance and power models. These models uses, as input, the application signature and the system signature. The system signature is a set of coefficients characterizing each node in the system. They are computed at EAR installation time (tipically one once). EAR projects power and performance (time), for all the available frequencies in the system.
 
-<img src="../../etc/images/Projections.png" align="center" width="280">
+
+<img src="../../etc/images/Projections.png" align="center" width="3200">
+
 
 4. Apply the selected power policy. EAR includes two power policies selected at runtime: Minimize time to solution and Minimize energy to solution. These policies are configured by the sysadmin, as well as which policies can be used by users. At this point , EAR executes the power policy, using the projections computed in the previous phase, and selects the optimal frequency for this application and this particular run.
 
