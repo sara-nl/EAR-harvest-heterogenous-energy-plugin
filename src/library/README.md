@@ -11,7 +11,7 @@ At runtime, EARL goes trough the following phase:
 3. Project performance and power model. EAR incorporate one performance and power models. These models uses, as input, the application signature and the system signature. The system signature is a set of coefficients characterizing each node in the system. They are computed at EAR installation time (tipically one once). EAR projects power and performance (time), for all the available frequencies in the system.
 
 
-<img src="../../etc/images/Projections.png" align="center" width="320">
+<img src="../../etc/images/Projections.png"  width="320">
 
 
 4. Apply the selected power policy. EAR includes two power policies selected at runtime: Minimize time to solution and Minimize energy to solution. These policies are configured by the sysadmin, as well as which policies can be used by users. At this point , EAR executes the power policy, using the projections computed in the previous phase, and selects the optimal frequency for this application and this particular run.
