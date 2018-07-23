@@ -3,6 +3,9 @@ EAR Library
 The EAR library is the core of the EAR package. The EARL offers a ligthweigth and simple solution to select the optiomal frequency for MPI applications at runtime. EARL is dynamically loaded with applications using the PMPI interface used by many other runtime solutions. The current EARL version is only supported with this mechanism but it is under development an API to be inserted in the OpenMPI library. However, the actual distribution includes EARL versions to be dynamically loaded with Intel and OpenMPI libraries.  
 
 At runtime, EARL goes trough the following phase:
+
+<img src="../../etc/images/EAR_stack.png" align="right" width="280">
+
 1. Automatic detection of application outer loops. This is done using DynAIS, our own Dynamic Application Iterative Structure detector algorithm. Dynais is highly optimized for new Intel architectures reporting a low overhead. 
 2. Computation of application Signature. Once Dynais starts reporting iterations for the outer loop, EAR starts computing the application signature. The application signature includes: CPI, Iteration time, DC node Power, and TPI (transactions per instruction). Since DC node power measurements error highly depends on the hardware, EAR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
 3. Project performance and power model. EAR incorporate one performance and power models. These models uses, as input, the application signature and the system signature. The system signature is a set of coefficients characterizing each node in the system. They are computed at EAR installation time (tipically one once). EAR projects power and performance (time), for all the available frequencies in the system.
