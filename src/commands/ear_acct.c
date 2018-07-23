@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <common/config.h>
 #include <common/types/application.h>
 #if DB_MYSQL
@@ -43,7 +44,12 @@
 cluster_conf_t my_conf;
 int EAR_VERBOSE_LEVEL=0;
 #endif
+int full_length = 0;
+int verbose = 0;
+int query_filters = 0;
+char csv_path[256] = "";
 
+static const char *__NAME__ = "eacct";
 
 void usage(char *app)
 {
@@ -214,8 +220,31 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
 
 }
 
+void add_filter(char *query, char *addition, int value)
+{
+    if (query_filters < 1)
+    {
+        strcat(query, " WHERE ");
+        strcat(query, addition);
+        strcat(query, "=");
+        strcat(query, "%u");
+        sprintf(query, query, value);
+        query_filters ++;
+    }
+    else
+    {
+        strcat(query, " AND ");
+        strcat(query, addition);
+        strcat(query, "=");
+        strcat(query, "%u");
+        sprintf(query, query, value);
+        query_filters ++;
+    }
+}
+
+//select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
 #if DB_MYSQL
-void read_from_database(int argc, char *argv[], int db, int usr, int host, char verbose)
+int read_from_database(char *user, int job_id, int limit, int step_id) 
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -226,11 +255,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
         exit(1);
     }
 
-    char *database = db > 0 ? argv[db] : my_conf.database.database;
-    char *user = usr > 0 ? argv[usr] : my_conf.database.user;
-    char *ip = host > 0 ? argv[host] : my_conf.database.ip;
-
-    if(!mysql_real_connect(connection, ip, user,"", database, 0, NULL, 0))
+    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user,"", my_conf.database.database, 0, NULL, 0))
     {
         fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
@@ -239,18 +264,24 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
 
     char query[256];
     
-    int job_id, step_id = 0;
     char is_learning = 0;
-    char *token;
-    job_id = atoi(strtok(argv[1], "."));
-    token = strtok(NULL, ".");
-    if (token != NULL) step_id = atoi(token);
-    //job_id = job_id * 100 + step_id;
- 
+     
     if (verbose) fprintf(stderr, "Preparing query statement\n");
-    sprintf(query, "SELECT * FROM Applications WHERE job_id=%u and step_id=%u", job_id, step_id);
+    
+    sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id");
     application_t *apps;
-
+    if (job_id >= 0)
+        add_filter(query, "job_id", job_id);
+    if (step_id >= 0)
+        add_filter(query, "Applications.step_id", step_id);
+    if (!full_length)
+        strcat(query, " GROUP BY job_id");
+    if (limit > 0)
+    {
+        strcat(query, " ORDER BY Jobs.end_time desc LIMIT %u");
+        sprintf(query, query, limit);
+    }
+    printf("QUERY: %s\n", query);
     if (verbose) fprintf(stderr, "Retrieving applications\n");
     num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
     if (verbose) fprintf(stderr, "Finalized retrieving applications\n");
@@ -262,7 +293,14 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
         exit(1);
     }
 
-    else if (num_apps < 1)
+    if (num_apps < 1)
+    {
+        printf("No jobs found.\n");
+        mysql_close(connection);
+        return -1;
+    }
+
+    /*else if (num_apps < 1)
     {
         printf("No jobs with %u job_id and %u step_id found, trying with learning database. \n", job_id, step_id);
         if (verbose) printf("Creating new query...\n");
@@ -282,7 +320,7 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
             exit(1);
         }
         is_learning = 1;
-    }
+    }*/
 
 
     double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy;
@@ -294,73 +332,81 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
     avg_GBS = 0;
 
     int i = 0;    
-    if (apps[0].is_mpi && !is_learning)
+    if (strlen(csv_path) < 1)
     {
-        printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\tCPI\tGBS\n\t");
-    
-        for (i = 0; i < num_apps; i++)
+        if (apps[0].is_mpi && !is_learning)
         {
-            avg_f = (double) apps[i].signature.avg_f/1000000;
-            printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t%.2lf\t%.2lf\n\t", 
-                    strtok(apps[i].node_id, "."), apps[i].signature.time, apps[i].signature.DC_power, 
-		    apps[i].signature.DC_power * apps[i].signature.time, avg_f, apps[i].signature.CPI, apps[i].signature.GBS);
-            avg_frequency += avg_f;
-            avg_time += apps[i].signature.time;
-            avg_power += apps[i].signature.DC_power;
-            avg_GBS += apps[i].signature.GBS;
-            avg_CPI += apps[i].signature.CPI;
-            total_energy += apps[i].signature.time * apps[i].signature.DC_power;
+            printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\tCPI\tGBS\n\t");
+        
+            for (i = 0; i < num_apps; i++)
+            {
+                avg_f = (double) apps[i].signature.avg_f/1000000;
+                printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t%.2lf\t%.2lf\n\t", 
+                        strtok(apps[i].node_id, "."), apps[i].signature.time, apps[i].signature.DC_power, 
+                apps[i].signature.DC_power * apps[i].signature.time, avg_f, apps[i].signature.CPI, apps[i].signature.GBS);
+                avg_frequency += avg_f;
+                avg_time += apps[i].signature.time;
+                avg_power += apps[i].signature.DC_power;
+                avg_GBS += apps[i].signature.GBS;
+                avg_CPI += apps[i].signature.CPI;
+                total_energy += apps[i].signature.time * apps[i].signature.DC_power;
 
+            }
         }
-    }
     //case mpi without ear
-    else if (num_apps > 1)
-    {
-        printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\n\t");
-
-        for (i = 0; i < num_apps; i++)
+        else if (num_apps > 1)
         {
-            avg_f = (double) apps[i].power_sig.avg_f/1000000;
-            printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t\n\t", 
-                    strtok(apps[i].node_id, "."), apps[i].power_sig.time, apps[i].power_sig.DC_power, 
-                    apps[i].power_sig.DC_power * apps[i].power_sig.time, avg_f);
-            avg_frequency += avg_f;
-            avg_time += apps[i].power_sig.time;
-            avg_power += apps[i].power_sig.DC_power;
-            total_energy += apps[i].power_sig.time * apps[i].power_sig.DC_power;
+            printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\n\t");
+
+            for (i = 0; i < num_apps; i++)
+            {
+                avg_f = (double) apps[i].power_sig.avg_f/1000000;
+                printf("%s \t\t%.2lf \t\t%.2lf \t\t\t%.2lf \t%.2lf\t\t\n\t", 
+                        strtok(apps[i].node_id, "."), apps[i].power_sig.time, apps[i].power_sig.DC_power, 
+                        apps[i].power_sig.DC_power * apps[i].power_sig.time, avg_f);
+                avg_frequency += avg_f;
+                avg_time += apps[i].power_sig.time;
+                avg_power += apps[i].power_sig.DC_power;
+                total_energy += apps[i].power_sig.time * apps[i].power_sig.DC_power;
+            }
         }
-    }
-    avg_frequency /= num_apps;
-    avg_time /= num_apps;
-    avg_power /= num_apps;
-    avg_CPI /= num_apps;
-    avg_GBS /= num_apps;
+        avg_frequency /= num_apps;
+        avg_time /= num_apps;
+        avg_power /= num_apps;
+        avg_CPI /= num_apps;
+        avg_GBS /= num_apps;
 
-    i=0;
-    printf("\nApplication summary\n\tApp_id: %s\n\tJob_id: %lu\n\tStep_id: %lu\n\tPolicy: %s\n\tPolicy threshold: %.2lf\n",
-            apps[0].job.app_id, apps[0].job.id, apps[0].job.step_id, apps[0].job.policy, apps[0].job.th);
+        i=0;
+        printf("\nApplication summary\n\tApp_id: %s\n\tJob_id: %lu\n\tStep_id: %lu\n\tPolicy: %s\n\tPolicy threshold: %.2lf\n",
+                apps[0].job.app_id, apps[0].job.id, apps[0].job.step_id, apps[0].job.policy, apps[0].job.th);
 
-    if (apps[0].is_mpi && !is_learning)
-    {
-        printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
+        if (apps[0].is_mpi && !is_learning)
+        {
+            printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\tCPI\tGBS\n\t");
 
-        printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t%.2lf\t%.2lf\n", 
-                avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
-    }
-    else if (num_apps > 1)
-    {
-        printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\n\t");
+            printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t%.2lf\t%.2lf\n", 
+                    avg_time, avg_power, total_energy, avg_frequency, avg_CPI, avg_GBS);
+        }
+        else if (num_apps > 1)
+        {
+            printf("\nApplication average:\n\tTime (secs.) \tDC Power (Watts) \tAcc. Energy (Joules) \tAvg_freq (GHz)\n\t");
 
-        printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t\n", 
-                avg_time, avg_power, total_energy, avg_frequency);
+            printf("%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\t\t\n", 
+                    avg_time, avg_power, total_energy, avg_frequency);
+        }
+        else
+        {
+            printf("\nApplication information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\t Avg_freq (GHz)\n\t");
+            avg_f = (double) apps[0].power_sig.avg_f/1000000;
+            printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n",
+                    strtok(apps[0].node_id, "."), apps[0].power_sig.time, apps[0].power_sig.DC_power,
+                    apps[0].power_sig.DC_power * apps[0].power_sig.time, avg_f);
+        }
     }
     else
     {
-        printf("\nApplication information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\t Avg_freq (GHz)\n\t");
-        avg_f = (double) apps[0].power_sig.avg_f/1000000;
-        printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n",
-                strtok(apps[0].node_id, "."), apps[0].power_sig.time, apps[0].power_sig.DC_power,
-                apps[0].power_sig.DC_power * apps[0].power_sig.time, avg_f);
+        for (i = 0; i < num_apps; i++)
+            append_application_text_file(csv_path, &apps[i]);
     }
 
     free(apps);
@@ -371,62 +417,65 @@ void read_from_database(int argc, char *argv[], int db, int usr, int host, char 
 
 void main(int argc, char *argv[])
 {
+    int job_id = -1;
+    int user_id = -1;
+    int step_id = -1;
+    int limit = -1;
+    int opt;
+    char path_name[256];
 
-#if DB_MYSQL
-    if (argc < 2) usage(argv[0]);
-#else
-    if (argc < 3) usage(argv[0]);
-#endif
-    char verbose = 0;
+    if (get_ear_conf_path(path_name)==EAR_ERROR){
+        printf("Error getting ear.conf path\n");
+        exit(0);
+    }
 
-#if DB_FILES && !DB_MYSQL
-    if (argc > 3 && !strcmp("-v", argv[3])) verbose = 1;
-    else verbose = 0;
-    read_from_files(argc, argv, verbose, 0);
-    exit(1);
-#endif
-
-#if DB_MYSQL
-    int database = 0, user = 0, ip = 0, files = 0;
-    int i = 0;
-    if (argc > 2)
+    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) VERBOSE_N(0, "ERROR reading cluster configuration\n");
+    
+    char *user = getlogin();
+    if (user == NULL)
     {
-        for (i = 2; i < argc; i++)
+        fprintf(stderr, "ERROR getting username, cannot verify identity of user executing the command. Exiting...\n");
+        free_cluster_conf(&my_conf);
+        exit(1);
+    }
+    else if (is_privileged(&my_conf, user, NULL, NULL) || getuid() == 0)
+    {
+        user = NULL; //by default, privilegd users or root will query all user jobs
+    }
+
+    char *token;
+    while ((opt = getopt(argc, argv, "n:u:j:f:vlc:")) != -1) 
+    {
+        switch (opt)
         {
-            //fprintf(stderr, "Processing arg %d: %s\n", i, argv[i]);
-            if (!strcmp("-db", argv[i])){
-                database = ++i;
-            }
-            else if (!strcmp("-u", argv[i])){
-                user = ++i;
-            }
-            else if (!strcmp("-ip", argv[i])){
-                ip = ++i;
-            }
-            else if (!strcmp("-v", argv[i])){
+            case 'n':
+                limit = atoi(optarg);
+                break;
+            case 'u':
+                if (user != NULL) break;
+                user = optarg;
+                break;
+            case 'j':
+                job_id = atoi(strtok(optarg, "."));
+                token = strtok(NULL, ".");
+                if (token != NULL) step_id = atoi(token);
+                break;
+            case 'f':
+            
+                break;
+            case 'l':
+                full_length = 1;
+                break;
+            case 'v':
                 verbose = 1;
-            }
-            else if (!strcmp("-f", argv[i])){
-                files = ++i;
-            }
+                break;
+            case 'c':
+                strcpy(csv_path, optarg);
         }
     }
-    if (!files)
-    {
-        char ear_path[256];
-        if (get_ear_conf_path(ear_path)==EAR_ERROR){
-            printf("Error getting ear.conf path\n");
-            exit(0);
-        }
-        read_cluster_conf(ear_path,&my_conf);  
-        if (verbose) fprintf(stderr, "Initializing database reading.\n");
-        read_from_database(argc, argv, database, user, ip, verbose);
-    }
-    else 
-    {
-        if (verbose) fprintf(stderr, "Reading from file.\n");
-        read_from_files(argc, argv, verbose, files);
-    }
-#endif
+
+    read_from_database(user, job_id, limit, step_id); 
+
+    free_cluster_conf(&my_conf);
     exit(1);
 }
