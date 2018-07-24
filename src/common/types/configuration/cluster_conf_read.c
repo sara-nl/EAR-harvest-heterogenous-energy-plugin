@@ -459,7 +459,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				//fetches the first half of the pair =
 				token = strtok_r(token, "=", &secondary_ptr);
 				strtoup(token);
-				else if (!strcmp(token, "NODENAME"))
+				if (!strcmp(token, "NODENAME"))
 				{
 					//fetches the second half of the pair =
 					token = strtok_r(NULL, "=", &secondary_ptr);
