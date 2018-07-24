@@ -43,7 +43,7 @@ CheckEARModeEvery=1000
 # Default policy
 DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
 
-# List of supported policies for normal users
+# List of supported policies for normal users: it must be a subset of MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
 SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
 
 # Pstates must be specified in the following order:MIN_ENERGY_TO_SOLUTION,MIN_TIME_TO_SOLUTION,MONITORING_ONLY 
