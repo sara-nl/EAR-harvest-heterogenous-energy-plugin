@@ -1538,8 +1538,6 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     MYSQL_BIND bind[5];
     memset(bind, 0, sizeof(bind));
 
-    time_t timestamp = time(NULL);
-
     //integer types
     int i;
     for (i = 0; i < 5; i++)
@@ -1548,7 +1546,7 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     }
 
     //storage variable assignation
-    bind[0].buffer = (char *)&timestamp;
+    bind[0].buffer = (char *)&ear_ev->timestamp;
     bind[1].buffer = (char *)&ear_ev->event;
     bind[2].buffer = (char *)&ear_ev->jid;
     bind[3].buffer = (char *)&ear_ev->step_id;
@@ -1585,8 +1583,6 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
 
     MYSQL_BIND *bind = calloc(num_evs*EAR_EVENTS_ARGS, sizeof(MYSQL_BIND));
 
-    time_t timestamp = time(NULL);
-
     for (i = 0; i < num_evs; i++)
     {
         offset = i*EAR_EVENTS_ARGS;
@@ -1597,7 +1593,7 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
         }
 
         //storage variable assignation
-        bind[0+offset].buffer = (char *)&timestamp;
+        bind[0+offset].buffer = (char *)&ear_ev[i].timestamp;
         bind[1+offset].buffer = (char *)&ear_ev[i].event;
         bind[2+offset].buffer = (char *)&ear_ev[i].jid;
         bind[3+offset].buffer = (char *)&ear_ev[i].step_id;
