@@ -30,6 +30,7 @@
 #ifndef _EAR_LOG_H
 #define _EAR_LOG_H
 
+#include <time.h>
 #include <common/types/job.h>
 
 typedef struct ear_event {
@@ -37,6 +38,7 @@ typedef struct ear_event {
     job_id step_id;
 	uint event;
 	ulong freq;
+	time_t timestamp;
 } ear_event_t;
 
 #define ENERGY_POLICY_NEW_FREQ	0

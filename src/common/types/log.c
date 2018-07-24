@@ -135,7 +135,8 @@ void report_new_event(ear_event_t *event)
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
 #endif
 #if DB_MYSQL
-	// we request the daemon to write the event in the DB
+	/* we request the daemon to write the event in the DB */
+	event->timestamp=time(NULL);
 	eards_write_event(event);
 	//db_insert_ear_event(event);
 #endif
