@@ -8,6 +8,9 @@ At runtime, EARL goes trough the following phase:
 
 1. Automatic detection of application outer loops. This is done by dynamically intercepting MPI calls (using LD_PRELOAD) and invoking DynAIS algorithm, our own Dynamic Application Iterative Structure detector algorithm. Dynais is highly optimized for new Intel architectures reporting a low overhead. 
 2. Computation of application Signature. Once Dynais starts reporting iterations for the outer loop, EAR starts computing the application signature. The application signature includes: CPI, Iteration time, DC node Power, and TPI (transactions per instruction). Since DC node power measurements error highly depends on the hardware, EAR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
+
+<img src="../../etc/images/Models.png"  align="centered" width="640">
+
 3. Project performance and power model. EAR incorporate one performance and power models. These models uses, as input, the application signature and the system signature. The system signature is a set of coefficients characterizing each node in the system. They are computed at EAR installation time (tipically one once). EAR projects power and performance (time), for all the available frequencies in the system.
 
 
@@ -44,7 +47,7 @@ DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
 SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
 
 # Pstates must be specified in the following order:MIN_ENERGY_TO_SOLUTION,MIN_TIME_TO_SOLUTION,MONITORING_ONLY 
-DefaultPstates=1,4,1
+DefaultPstates=1,4,4
 
 # Thresholds used by MIN_TIME_TO_SOLUTION and MIN_ENERGY_TO_SOLUTION policies
 MinEfficiencyGain=0.7
