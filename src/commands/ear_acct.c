@@ -222,19 +222,12 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
 void add_string_filter(char *query, char *addition, char *value)
 {
     if (query_filters < 1)
-    {
         strcat(query, " WHERE ");
-        strcat(query, addition);
-        strcat(query, "=");
-    }
     else
-    {
         strcat(query, " AND ");
-        strcat(query, addition);
-        strcat(query, "=");
-    }
-    printf("QUERY: %s\n", query);
-    printf("VALUE: %s\n", value);
+
+    strcat(query, addition);
+    strcat(query, "=");
     strcat(query, "\"");
     strcat(query, value);
     strcat(query, "\"");
@@ -244,26 +237,24 @@ void add_string_filter(char *query, char *addition, char *value)
 
 void add_int_filter(char *query, char *addition, int value)
 {
+    char query_tmp[256];
+    strcpy(query_tmp, query);
     if (query_filters < 1)
-    {
-        strcat(query, " WHERE ");
-        strcat(query, addition);
-        strcat(query, "=");
-        strcat(query, "%u");
-        sprintf(query, query, value);
-        query_filters ++;
-    }
+        strcat(query_tmp, " WHERE ");
     else
-    {
-        strcat(query, " AND ");
-        strcat(query, addition);
-        strcat(query, "=");
-        strcat(query, "%u");
-        sprintf(query, query, value);
-        query_filters ++;
-    }
+        strcat(query_tmp, " AND ");
+    
+    strcat(query_tmp, addition);
+    strcat(query_tmp, "=");
+    strcat(query_tmp, "%llu");
+    printf("QUERY: %s\n", query);
+    printf("VALUE: %u\n", value);
+    sprintf(query, query_tmp, value);
+    printf("QUERY: %s\n", query);
+    query_filters ++;
 }
 
+//select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
 #if DB_MYSQL
 int read_from_database(char *user, int job_id, int limit, int step_id) 
@@ -284,29 +275,30 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
         exit(1);
     }
 
-    char query[256];
+    char query[512];
     
     char is_learning = 0;
      
     if (verbose) fprintf(stderr, "Preparing query statement\n");
     
-    sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id");
+    sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id where Jobs.end_time in (select end_time from (select end_time from Jobs" );
     application_t *apps;
     if (job_id >= 0)
-        add_int_filter(query, "job_id", job_id);
+        add_int_filter(query, "id", job_id);
     if (step_id >= 0)
-        add_int_filter(query, "Applications.step_id", step_id);
+        add_int_filter(query, "step_id", step_id);
     if (user != NULL)
-        add_string_filter(query, "Jobs.user_id", user);
+        add_string_filter(query, "user_id", user);
 
-    if (!full_length && strlen(csv_path) < 1)
-        strcat(query, " GROUP BY job_id");
+//    if (!full_length && strlen(csv_path) < 1)
+//        strcat(query, " GROUP BY job_id");
 
     if (limit > 0)
     {
         strcat(query, " ORDER BY Jobs.end_time desc LIMIT %u");
         sprintf(query, query, limit);
     }
+    strcat(query, ") as t1) order by Jobs.end_time desc");
     printf("QUERY: %s\n", query);
     if (verbose) fprintf(stderr, "Retrieving applications\n");
     num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
