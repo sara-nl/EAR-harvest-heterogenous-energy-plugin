@@ -367,9 +367,9 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->energy=DEFAULT_T2*DEFAULT_POWER;
 	eargmc->port=EARGM_PORT_NUMBER;
 	eargmc->mode=0;
-	eargmc->decon_limits[0]=85;
-	eargmc->decon_limits[1]=90;
-	eargmc->decon_limits[2]=95;
+	eargmc->defcon_limits[0]=85;
+	eargmc->defcon_limits[1]=90;
+	eargmc->defcon_limits[2]=95;
 	eargmc->grace_periods=GRACE_T1;
-	strcpy(mail,"nomail");
+	strcpy(eargmc->mail,"nomail");
 }

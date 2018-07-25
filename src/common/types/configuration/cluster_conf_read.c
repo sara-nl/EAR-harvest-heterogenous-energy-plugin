@@ -942,8 +942,8 @@ void set_ear_conf_default(cluster_conf_t *my_conf)
 {
 	/* PENDING */
 	if (my_conf==NULL) return;
-	set_default_eard_conf(my_conf->eard);
-	set_default_eargmd_conf(my_conf->eargmd);
+	set_default_eard_conf(&my_conf->eard);
+	set_default_eargm_conf(&my_conf->eargm);
 	
 }
 
