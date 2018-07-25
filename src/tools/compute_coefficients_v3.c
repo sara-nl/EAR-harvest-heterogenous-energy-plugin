@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
 
     /* We compute regression */
 	sprintf(path_coef_file,"%s/island%d",coeff_root,my_node->island);
-	if (mkdir (path_coef_file,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)<0){
+	if (mkdir (path_coef_file,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IROTH)<0){
 		if (errno!=EEXIST){
 			fprintf(stderr,"Error , path %s cannot be created (%s)\n",path_coef_file,strerror(errno));
 			exit(1);
