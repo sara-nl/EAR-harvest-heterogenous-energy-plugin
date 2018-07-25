@@ -298,7 +298,7 @@ int main(int argc, char *argv[])
     }
 	fprintf(stdout,"ear.conf ready\n");
     init_db_helper(&my_conf.database);
-	num_apps =get_num_applications(is_learning);
+	num_apps =get_num_applications(is_learning, nodename);
  	MALLOC(app_list, application_t, num_apps);
  	MALLOC(apps, application_t, num_apps);
 	fprintf(stdout,"%d applications in DB for learning phase\n",num_apps);
