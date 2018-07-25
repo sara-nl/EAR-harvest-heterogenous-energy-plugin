@@ -308,8 +308,8 @@ int main(int argc, char *argv[])
 		fprintf(stdout,"%d applications retrieved from DB\n",ret);
         for (i=0;i<ret;i++){
             if (strcmp(tmp_apps[i].node_id,nodename)==0){
+				copy_application(&apps[total_apps],&tmp_apps[i]);
 				total_apps++;
-				copy_application(&apps[total_apps+i],&tmp_apps[i]);
 			}
         }
         free(tmp_apps);
