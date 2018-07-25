@@ -419,6 +419,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
     pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);	
 	eard_verbose(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
+	eard_verbose(1,"*******************\n");
 	sig_reported=0;
 
 }
