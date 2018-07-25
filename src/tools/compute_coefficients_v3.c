@@ -52,6 +52,7 @@
 #include <common/types/coefficient.h>
 #include <common/types/projection.h>
 #include <common/states.h>
+#include <common/database/db_helper.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
@@ -233,7 +234,7 @@ void init_list_coeffs(uint ref, uint i, uint f, double A, double B, double C, do
 
 void usage(char *app)
 {
-    fprintf(stdout, "Usage: %s coefficients_db min_freq \n", app);
+    fprintf(stdout, "Usage: %s coefficients_path min_freq [nodename] \n", app);
     exit(1);
 }
 
@@ -248,19 +249,22 @@ int main(int argc, char *argv[])
     char coef_file[256];
     int fd, index;
 
-    if (argc < 3) {
+    if (!((argc ==3) || (argc ==4))){
         usage(argv[0]);
     }
 
-    //
-    min_freq = (uint) atoi(argv[2]);
 	coeff_root=argv[1];
-    if (gethostname(nodename, sizeof(nodename)) < 0)
-    {
-        fprintf(stderr, "Error getting node name (%s)", strerror(errno));
-        _exit(1);
-    }
-    strtok(nodename, ".");
+    min_freq = (uint) atoi(argv[2]);
+	if (argc==4){
+		strcpy(nodename,argv[3]);
+	}else{
+    	if (gethostname(nodename, sizeof(nodename)) < 0)
+    	{
+    	    fprintf(stderr, "Error getting node name (%s)", strerror(errno));
+    	    _exit(1);
+    	}
+    	strtok(nodename, ".");
+	}
 
     // We get how many samples per frequency we have
     num_node_p_states = fill_list_p_states();
@@ -298,7 +302,7 @@ int main(int argc, char *argv[])
  	MALLOC(app_list, application_t, num_apps);
  	MALLOC(apps, application_t, num_apps);
 	fprintf(stdout,"%d applications in DB for learning phase\n",num_apps);
-    ret=db_read_applications(&tmp_apps,is_learning, 50);
+    ret=db_read_applications(&tmp_apps,is_learning, 50,nodename);
     while (ret > 0)
     {
 		fprintf(stdout,"%d applications retrieved from DB\n",ret);
@@ -307,7 +311,7 @@ int main(int argc, char *argv[])
         }
         free(tmp_apps);
         total_apps += ret;
-        ret=db_read_applications(&tmp_apps,is_learning, 50);
+        ret=db_read_applications(&tmp_apps,is_learning, 50,nodename);
     }
     printf("Total apps:%d, expected %d\n", total_apps,num_apps);
     MALLOC(samples_per_app, uint, num_apps);

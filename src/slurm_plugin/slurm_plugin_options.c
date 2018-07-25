@@ -70,8 +70,8 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  "{value=[0..5]}; default is 0",
 	  2, 0, (spank_opt_cb_f) _opt_ear_verbose
 	},
-	{ "ear-learning-phase", "value",
-	  "Enables the learning phase for a given P_STATE {value=[0..n]}",
+	{ "ear-learning", "value",
+	  "Enables the learning phase for a given P_STATE {value=[1..n]}",
 	  1, 0, (spank_opt_cb_f) _opt_ear_learning
 	},
 	{ "ear-traces", "", "Generates application traces with metrics and internal details",
