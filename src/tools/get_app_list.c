@@ -39,13 +39,9 @@ void main(int argc,char *argv[])
     int total_apps = 0;
 	int i;
 	application_t *apps;
-	if (argc==2){
-		is_learning=atoi(argv[1]);
-		if (is_learning) printf("Reading applications from learning DB\n");
-		else printf("Reading applications from normal DB\n");
-	} else{
-		printf("Reading applications from normal DB\n");
-	}
+	is_learning=atoi(argv[1]);
+	if (is_learning) printf("Reading applications from learning DB\n");
+	else printf("Reading applications from normal DB\n");
     char ear_path[256];
 	cluster_conf_t my_conf;
     if (get_ear_conf_path(ear_path)==EAR_ERROR){
@@ -56,7 +52,7 @@ void main(int argc,char *argv[])
 	printf("Initializinf DB\n");
 	init_db_helper(&my_conf.database);
 	printf("reading apps\n");
-	num_apps=db_read_applications(&apps,is_learning, 50, "r22u21");
+	num_apps=db_read_applications(&apps,is_learning, 50, argv[2]);
     while (num_apps > 0)
     {
 	    for (i=0;i<num_apps;i++){
@@ -64,7 +60,7 @@ void main(int argc,char *argv[])
 	    }
         free(apps);
         total_apps += num_apps;
-	    num_apps=db_read_applications(&apps,is_learning, 50, "r22u21");
+	    num_apps=db_read_applications(&apps,is_learning, 50, argv[2]);
     }
     printf("Total apps from queries: %d\n", total_apps);
     printf("Total apps from DB: %d\n", get_num_applications(is_learning)); 
