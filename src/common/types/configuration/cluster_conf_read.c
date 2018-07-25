@@ -639,6 +639,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->eard.port = atoi(token);
 		}
+		else if (!strcmp(token, "NODEUSEDB"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.use_mysql = atoi(token);
+        }
+        else if (!strcmp(token, "NODEUSEEARDBD"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.use_eardbd = atoi(token);
+        }
+
 
 			//DB MANAGER
 		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))
@@ -927,6 +938,16 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 }
 
+void set_ear_conf_default(cluster_conf_t *my_conf)
+{
+	/* PENDING */
+	if (my_conf==NULL) return;
+	set_default_eard_conf(my_conf->eard);
+	set_default_eargmd_conf(my_conf->eargmd);
+	
+}
+
+
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 {
 	FILE *conf_file = fopen(conf_path, "r");
@@ -935,6 +956,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		fprintf(stderr, "ERROR opening file: %s\n", conf_path);
 		return EAR_ERROR;
 	}
+	set_ear_conf_default(my_conf);
 	get_cluster_config(conf_file, my_conf);
 	fclose(conf_file);
 	//print_cluster_conf(my_conf);
