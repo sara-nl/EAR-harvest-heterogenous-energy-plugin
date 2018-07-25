@@ -614,14 +614,14 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 	return num_apps;
 }
 
-#define LEARNING_APPS_QUERY "SELECT COUNT(*) FROM Learning_applications"
-#define APPS_QUERY          "SELECT COUNT(*) FROM Applications"
+#define LEARNING_APPS_QUERY "SELECT COUNT(*) FROM Learning_applications WHERE node_id = '%s'"
+#define APPS_QUERY          "SELECT COUNT(*) FROM Applications WHERE node_id = '%s'"
 
-ulong get_num_applications(char is_learning)
+ulong get_num_applications(char is_learning, char *node_name)
 {
     
     MYSQL *connection = mysql_init(NULL);
-
+    char query[256];
     if (connection == NULL)
     {
         VERBOSE_N(0, "ERROR creating MYSQL object.");
@@ -652,15 +652,12 @@ ulong get_num_applications(char is_learning)
     }
 
     if (is_learning)
-    {
-        if (mysql_stmt_prepare(statement, LEARNING_APPS_QUERY, strlen(LEARNING_APPS_QUERY)))
-                                                return mysql_statement_error(statement);
-    }
+        sprintf(query, LEARNING_APPS_QUERY, node_name);
     else
-    {
-        if (mysql_stmt_prepare(statement, APPS_QUERY, strlen(APPS_QUERY)))
-                                                return mysql_statement_error(statement);
-    }
+        sprintf(query, APPS_QUERY, node_name);
+
+    if (mysql_stmt_prepare(statement, query, strlen(query)))
+                                      return mysql_statement_error(statement);
     //Result parameters
     MYSQL_BIND res_bind[1];
     memset(res_bind, 0, sizeof(res_bind));
