@@ -893,7 +893,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
         if (mysql_stmt_prepare(statement, LEARNING_SIGNATURE_QUERY, strlen(LEARNING_SIGNATURE_QUERY))) return mysql_statement_error(statement);
     }
 
-#if !SIMPLE_DB
+#if !DB_SIMPLE
     MYSQL_BIND bind[21];
 #else
     MYSQL_BIND bind[11];
@@ -909,7 +909,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     }
 
     //unsigned long long storage
-#if !SIMPLE_DB
+#if !DB_SIMPLE
     for (i = 9; i < 21; i++)
 #else
     for (i = 9; i < 11; i++)
@@ -931,7 +931,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     bind[6].buffer = (char *)&sig->CPI;
     bind[7].buffer = (char *)&sig->Gflops;
     bind[8].buffer = (char *)&sig->time;
-#if !SIMPLE_DB
+#if !DB_SIMPLE
     bind[9].buffer = (char *)&sig->FLOPS[0];
     bind[10].buffer = (char *)&sig->FLOPS[1];
     bind[11].buffer = (char *)&sig->FLOPS[2];
