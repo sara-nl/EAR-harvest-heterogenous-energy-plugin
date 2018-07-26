@@ -141,8 +141,11 @@ void create_tables(MYSQL *connection)
                             DC_energy BIGINT unsigned NOT NULL, \
                             node_id VARCHAR(256) NOT NULL, \
                             job_id BIGINT NOT NULL, \
-                            step_id BIGINT NOT NULL, \
-                            PRIMARY KEY (id))")) execute_on_error(connection);
+                            step_id BIGINT NOT NULL, "\
+#if DEMO
+                            "avg_f BIGINT, "\
+#endif
+                            "PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Power_signatures (  \
                             id INT unsigned NOT NULL AUTO_INCREMENT, \
@@ -211,8 +214,6 @@ void create_tables(MYSQL *connection)
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
                             id INT unsigned NOT NULL AUTO_INCREMENT,\
                             DC_power DOUBLE,\
-                            max_DC_power DOUBLE, \
-                            min_DC_power DOUBLE, \
                             DRAM_power DOUBLE,\
                             PCK_power DOUBLE,\
                             EDP DOUBLE,\
