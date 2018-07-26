@@ -36,6 +36,9 @@ NodeDaemonPowermonFreq=60
 NodeDaemonMaxPstate=1
 NodeDaemonTurbo=0
 NodeDaemonPort=5000
+NodeUseDB=1
+NodeUseEARDBD=1
+
 
 # DATABASE MANAGER
 DBDaemonAggregationTime=300

@@ -257,13 +257,17 @@ void report_powermon_app(powermon_app_t *app)
 	
 	#if !USE_EARDB
 	#if DB_MYSQL
-    if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
+    if (my_cluster_conf.eard.use_mysql){ 
+		if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
+	}
 	#endif
 	#else
-    if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
-        eard_verbose(0,"Error when sending application to eardb");
-		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
-    }
+	if (my_cluster_conf.eard.use_eardbd){
+    	if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
+        	eard_verbose(0,"Error when sending application to eardb");
+			eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+    	}
+	}
 	#endif
 }
 
@@ -590,15 +594,19 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 
 	#if !USE_EARDB
 	#if DB_MYSQL
-	/* current sample reports the value of job_id and step_id active at this moment */
-	/* If we want to be strict, we must report intermediate samples at job start and job end */
-    if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
+	if (my_cluster_conf.eard.use_mysql){
+		/* current sample reports the value of job_id and step_id active at this moment */
+		/* If we want to be strict, we must report intermediate samples at job start and job end */
+    	if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
+	}
 	#endif
 
 	#else
-	if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
-		eard_verbose(0,"Error when sending periodic power metric to eardb");
-		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+	if (my_cluster_conf.eard.use_eardbd){
+		if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
+			eard_verbose(0,"Error when sending periodic power metric to eardb");
+			eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+		}
 	}
 	#endif
 
