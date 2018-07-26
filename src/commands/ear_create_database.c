@@ -164,6 +164,7 @@ void create_tables(MYSQL *connection)
                             job_id INT NOT NULL, \
                             step_id INT NOT NULL, \
                             freq BIGINT unsigned NOT NULL, \
+                            node_id VARCHAR(256), \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Warnings ( \

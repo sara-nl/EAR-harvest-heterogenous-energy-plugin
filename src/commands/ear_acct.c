@@ -219,6 +219,72 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
     free(nodes);
 
 }
+
+void print_full_apps(application_t *apps, int num_apps)
+{
+}
+
+void print_short_apps(application_t *apps, int num_apps)
+{
+    int current_job_id = -1;
+    int current_step_id = -1;
+    int current_is_mpi = 0;
+    int current_apps = 0;
+
+    int i = 0;
+    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy;
+    avg_frequency = 0;
+    avg_time = 0;
+    avg_power = 0;
+    total_energy = 0;
+    avg_CPI = 0;
+    avg_GBS = 0;
+
+    for (i = 0; i < num_apps; i ++)
+    {
+        avg_f = (double) apps[i].signature.avg_f/1000000;
+        if (apps[i].job.id == current_job_id && apps[i].job.step_id == current_step_id && current_is_mpi)
+        {
+            avg_frequency += avg_f;
+            avg_time += apps[i].signature.time;
+            avg_power += apps[i].signature.DC_power;
+            avg_GBS += apps[i].signature.GBS;
+            avg_CPI += apps[i].signature.CPI;
+            total_energy += apps[i].signature.time * apps[i].signature.DC_power;
+            current_apps++;
+        }
+        else
+        {
+            if (current_is_mpi)
+            {
+                
+                avg_frequency /= current_apps;
+                avg_time /= current_apps;
+                avg_power /= current_apps;
+                avg_GBS /= current_apps;
+                avg_CPI /= current_apps;
+
+                //to print: job_id.step_id \t user_id si root \t app_name \t num_nodes
+                if (strlen(apps[i-1].job.app_id) > 30)
+                    strcpy(apps[i-1].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
+
+                if (avg_f > 0 && avg_time > 0 && total_energy > 0)
+                    printf("%8u.%-3u\t %-10s %-30s %-5u %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
+                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
+                        avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+            }
+            if (apps[i].job.id != current_job_id || apps[i].job.step_id != current_step_id)
+            {
+                current_job_id = apps[i].job.id;
+                current_step_id = apps[i].job.step_id;
+                current_is_mpi = apps[i].is_mpi;
+                current_apps = 0;
+                i--; //go back to current app
+            }
+        }
+    }
+}
+
 void add_string_filter(char *query, char *addition, char *value)
 {
     if (query_filters < 1)
@@ -318,29 +384,6 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
         return -1;
     }
 
-    /*else if (num_apps < 1)
-    {
-        printf("No jobs with %u job_id and %u step_id found, trying with learning database. \n", job_id, step_id);
-        if (verbose) printf("Creating new query...\n");
-        sprintf(query, "SELECT * FROM Learning_applications WHERE job_id=%u and step_id=%u", job_id, step_id);
-        if (verbose) printf("Retrieving applications\n");
-        num_apps = mysql_retrieve_applications(connection, query, &apps, 1);
-        if (num_apps == EAR_MYSQL_ERROR)
-        {
-            fprintf(stderr, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
-            mysql_close(connection);
-            exit(1);
-        }
-        else if (num_apps < 1)
-        {
-            printf("No jobs with %u job_id and %u step_id found in the learning database. \n", job_id, step_id);
-            mysql_close(connection);
-            exit(1);
-        }
-        is_learning = 1;
-    }*/
-
-
     double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy;
     avg_frequency = 0;
     avg_time = 0;
@@ -352,7 +395,10 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
     int i = 0;    
     if (strlen(csv_path) < 1)
     {
-        if (apps[0].is_mpi && !is_learning)
+    
+        if (full_length) print_full_apps(apps, num_apps);
+        else print_short_apps(apps, num_apps);
+        /*if (apps[0].is_mpi && !is_learning)
         {
             printf("Node information:\n\tNodename\tTime (secs)\tDC Power (Watts)\tEnergy (Joules)\tAvg_freq (GHz)\tCPI\tGBS\n\t");
         
@@ -419,8 +465,9 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
             printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n",
                     strtok(apps[0].node_id, "."), apps[0].power_sig.time, apps[0].power_sig.DC_power,
                     apps[0].power_sig.DC_power * apps[0].power_sig.time, avg_f);
-        }
+        }*/
     }
+
     else
     {
         for (i = 0; i < num_apps; i++)

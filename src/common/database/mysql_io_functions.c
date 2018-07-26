@@ -75,7 +75,7 @@ static char *__NAME__ = "MYSQL_IO: ";
 
 #define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time) VALUES (?, ?, ?)"
 
-#define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq) VALUES (?, ?, ?, ?, ?)"
+#define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)"
 
 #define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state) VALUES (?, ?, ?, ?)"
 
@@ -100,7 +100,7 @@ static char *__NAME__ = "MYSQL_IO: ";
 #define PERIODIC_METRIC_ARGS 6
 #endif
 
-#define EAR_EVENTS_ARGS 5
+#define EAR_EVENTS_ARGS 6
 
 #if !DB_SIMPLE
 #define SIGNATURE_ARGS 21
@@ -1535,7 +1535,7 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
 
     if (mysql_stmt_prepare(statement, EAR_EVENT_QUERY, strlen(EAR_EVENT_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[5];
+    MYSQL_BIND bind[6];
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -1544,6 +1544,8 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
     }
+    bind[5].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[5].buffer_length = strlen(ear_ev->node_id);
 
     //storage variable assignation
     bind[0].buffer = (char *)&ear_ev->timestamp;
@@ -1551,6 +1553,7 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     bind[2].buffer = (char *)&ear_ev->jid;
     bind[3].buffer = (char *)&ear_ev->step_id;
     bind[4].buffer = (char *)&ear_ev->freq;
+    bind[5].buffer = (char *)&ear_ev->node_id;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
@@ -1569,7 +1572,7 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
-    char *params = ", (?, ?, ?, ?, ?)";
+    char *params = ", (?, ?, ?, ?, ?, ?)";
     char *query = malloc(strlen(EAR_EVENT_QUERY)+(num_evs)*strlen(params)+1);
     strcpy(query, EAR_EVENT_QUERY);
 
@@ -1591,6 +1594,8 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
         {
             bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
         }
+        bind[offset+5].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[offset+5].buffer_length = strlen(ear_ev[i].node_id);
 
         //storage variable assignation
         bind[0+offset].buffer = (char *)&ear_ev[i].timestamp;
@@ -1598,6 +1603,7 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
         bind[2+offset].buffer = (char *)&ear_ev[i].jid;
         bind[3+offset].buffer = (char *)&ear_ev[i].step_id;
         bind[4+offset].buffer = (char *)&ear_ev[i].freq;
+        bind[5+offset].buffer = (char *)&ear_ev[i].node_id;
     }
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
