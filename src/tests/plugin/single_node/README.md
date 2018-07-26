@@ -23,6 +23,7 @@ These tests are designed to evaluate the different plugin options to be supporte
 | test15 | --ear-cpufreq=200000 --ear-policy=MIN_TIME_TO_SOLUTION --ear-verbose=1| It is an invalid frequency, default frequency is selected|
 | test16 | --ear-user-db=DB/sp_metrics. --ear-verbose=1 -J name| application metrics must be reported in DB/sp_metrics.host.csv file. Intermediate folders must exists. App name must be name |
 | test17 | --ear-user-db=DB/sp_metrics. --ear-verbose=1 | application metrics must be reported in DB/sp_metrics.host.csv file. Intermediate folders must exists. App name must be executable |
+| test18 | --ear-user-db=DB/stream_mpi. --ear-verbose=1 -J $kernel| it is memory intensive application, low freqs must be selected |
 
 It is recommented to test changing ear.conf configuration
 
