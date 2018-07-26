@@ -37,7 +37,6 @@
 #include <common/database/mysql_io_functions.h>
 
 static char *__NAME__ = "MYSQL_IO: ";
-#define DB_SIMPLE 1
 
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id, power_signature_id) VALUES" \
                             "(?, ?, ?, ?, ?)"
@@ -245,7 +244,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     sig_id = mysql_batch_insert_signatures(connection, cont, is_learning, num_apps);
 
     if (sig_id < 0)
-        fprintf(stderr,"Unknown error when writing signature to database.\n");
+        fprintf(stderr,"Unknown error when writing signature to database. (%d)\n",sig_id);
 
     for (i = 0; i < num_apps; i++)
         sigs_ids[i] = sig_id + i;
@@ -586,8 +585,10 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
     cont.loop = loop;
     int sig_id = mysql_batch_insert_signatures(connection, cont, 0, num_loops);
 
-    if (sig_id < 0)
+    if (sig_id < 0){
+		fprintf(stderr,"Error inserting N=%d loops signatures\n",num_loops);
         return EAR_ERROR;
+	}
 
     long long *sigs_ids = calloc(num_loops, sizeof(long long));
 
@@ -971,19 +972,23 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
 
     if (!is_learning)
     {
+		fprintf(stderr,"Not learning batch signatures\n");
         query = malloc(strlen(SIGNATURE_QUERY)+num_sigs*strlen(params)+1);
         strcpy(query, SIGNATURE_QUERY);
     }
     else
     {
+		fprintf(stderr,"learning batch signatures\n");
         query = malloc(strlen(LEARNING_SIGNATURE_QUERY)+num_sigs*strlen(params)+1);
         strcpy(query, LEARNING_SIGNATURE_QUERY);
     }
+	
 
     int i, j;
     for (i = 1; i < num_sigs; i++)
         strcat(query, params);
 
+	fprintf(stderr,"%s - num sigs %u learning %u\n",query,num_sigs,(uint)is_learning);
     
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
@@ -1074,7 +1079,6 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
 #endif
         }
     }
-
 
     if (mysql_stmt_bind_param(statement, bind)) {
         free(bind);
