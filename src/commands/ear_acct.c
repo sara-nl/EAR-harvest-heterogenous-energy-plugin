@@ -222,6 +222,25 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
 
 void print_full_apps(application_t *apps, int num_apps)
 {
+    int i = 0;
+    double avg_f;
+
+    printf("%-6s.%-7s\t %-10s %-15s %-25s%-14s %-14s %-14s %-14s %-14s %-14s\n",
+            "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ (GHz)", "TIME (s)",
+            "POWER (Watts)", "GBS", "CPI", "ENERGY (J)");
+
+    for (i = 0; i < num_apps; i++)
+    {
+        if (strlen(apps[i].job.app_id) > 30)
+            strcpy(apps[i].job.app_id, strrchr(apps[i].job.app_id, '/')+1);
+
+        avg_f = (double) apps[i].signature.avg_f/1000000;
+        printf("%8u.%-3u\t %-10s %-15s %-25s %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
+            apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
+            avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
+            apps[i].signature.time * apps[i].signature.DC_power);
+
+    }
 }
 
 void print_short_apps(application_t *apps, int num_apps)
@@ -240,6 +259,9 @@ void print_short_apps(application_t *apps, int num_apps)
     avg_CPI = 0;
     avg_GBS = 0;
 
+    printf("%-6s.%-7s\t %-10s %-25s %-14s %-14s %-14s %-14s %-14s %-14s\n",
+            "JOB ID", "STEP ID", "USER ID", "APPLICATION ID", "FREQ (GHz)", "TIME (s)",
+            "POWER (Watts)", "GBS", "CPI", "ENERGY (J)");
     for (i = 0; i < num_apps; i ++)
     {
         avg_f = (double) apps[i].signature.avg_f/1000000;
@@ -269,7 +291,7 @@ void print_short_apps(application_t *apps, int num_apps)
                     strcpy(apps[i-1].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
 
                 if (avg_f > 0 && avg_time > 0 && total_energy > 0)
-                    printf("%8u.%-3u\t %-10s %-30s %-5u %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
+                    printf("%8u.%-3u\t %-10s %-25s %-5u %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
                         current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
                         avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
             }
