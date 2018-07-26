@@ -82,11 +82,18 @@ static char *__NAME__ = "MYSQL_IO: ";
 #define LEARNING_APPLICATION_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
                                     "signature_id, power_signature_id) VALUES (?, ?, ?, ?, ?)"
 
+#if !DB_SIMPLE
 #define LEARNING_SIGNATURE_QUERY    "INSERT INTO Learning_signatures (DC_power, DRAM_power,"\
                                     "PCK_power, EDP, GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                     "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
                                     "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
                                     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+#else
+#define LEARNING_SIGNATURE_QUERY    "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+                                    "GBS, TPI, CPI, Gflops, time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
+                                    "?, ?, ?)"
+#endif
 
 #define LEARNING_JOB_QUERY          "INSERT IGNORE INTO Learning_jobs (id, step_id, user_id, app_id, start_time, end_time, "\
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
@@ -994,6 +1001,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
 
 
     MYSQL_BIND *bind = calloc(num_sigs*SIGNATURE_ARGS, sizeof(MYSQL_BIND));
+
 
     for (i = 0; i < num_sigs; i++)
     {
