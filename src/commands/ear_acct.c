@@ -60,11 +60,11 @@ void usage(char *app)
 "\t\t-v\tverbose mode for debugging purposes\n" \
 "\t\t-u\tspecifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]\n" \
 "\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
-"\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
+/*"\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \*/
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
 "\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: all jobs]\n" \
 "", app);
-    printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
+//    printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
     #endif
 	exit(1);
 }
