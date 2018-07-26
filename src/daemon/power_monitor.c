@@ -68,6 +68,9 @@ extern my_node_conf_t     *my_node_conf;
 extern cluster_conf_t my_cluster_conf;
 extern eard_dyn_conf_t eard_dyn_conf;
 extern policy_conf_t default_policy_context,energy_tag_context,authorized_context;
+extern int ear_ping_fd;
+extern int ear_fd_ack[1];
+extern int application_id;
 static char *__NAME__="EARD";
 extern char *__HOST__;
 
@@ -129,6 +132,15 @@ void clean_job_environment(int id,int step_id)
 	char ear_ping[MAX_PATH_SIZE],fd_lock_filename[MAX_PATH_SIZE],ear_commack[MAX_PATH_SIZE];
 	uint pid=create_ID(id,step_id);
 
+	if (ear_ping_fd>=0){
+		close(ear_ping_fd);
+		ear_ping_fd=-1;
+	}
+	if (ear_fd_ack[0]>=0){
+		close(ear_fd_ack[0]);
+		ear_fd_ack[0]=-1;
+	}
+	application_id = -1;
 	sprintf(ear_ping,"%s/.ear_comm.ping.%u",ear_tmp,pid);
     sprintf(fd_lock_filename, "%s/.ear_app_lock.%u", ear_tmp, pid);
     sprintf(ear_commack, "%s/.ear_comm.ack_0.%u",ear_tmp, pid);
