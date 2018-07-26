@@ -61,6 +61,7 @@ const char *__NAME__ = "LOG";
 static int fd_log=-1;
 static char my_log_buffer[1024];
 static char log_name[128];
+static char log_nodename[GENERIC_NAME];
 
 void init_log()
 {
@@ -69,12 +70,13 @@ void init_log()
 	mode_t my_mask;
 	time_t curr_time;
     struct tm *current_t;
+	char nodename[GENERIC_NAME];
     char s[64];
-	char nodename[128];
 	if (fd_log>=0) return;
 	time(&curr_time);
 	my_mask=umask(0);	
 	gethostname(nodename, sizeof(nodename));
+	strtok(nodename, ".");
 	sprintf(log_name,"EAR.%s.log",nodename);
 	VERBOSE_N(2, "creating %s log file", log_name);
 	fd_log=open(log_name,O_WRONLY|O_APPEND|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -86,6 +88,10 @@ void init_log()
     strftime(s, sizeof(s), "%c", current_t);
 	sprintf(my_log_buffer,"----------------------	EAR log created %s ------------------\n",s);
 	write(fd_log,my_log_buffer,strlen(my_log_buffer));
+#endif
+#if DB_MYSQL
+	gethostname(log_nodename, sizeof(log_nodename));
+	strtok(log_nodename, ".");
 #endif
 #endif
 }
@@ -135,7 +141,9 @@ void report_new_event(ear_event_t *event)
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
 #endif
 #if DB_MYSQL
-	// we request the daemon to write the event in the DB
+	/* we request the daemon to write the event in the DB */
+	event->timestamp=time(NULL);
+	strcpy(event->node_id,log_nodename);
 	eards_write_event(event);
 	//db_insert_ear_event(event);
 #endif

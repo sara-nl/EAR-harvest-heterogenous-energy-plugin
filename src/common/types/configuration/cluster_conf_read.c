@@ -459,13 +459,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				//fetches the first half of the pair =
 				token = strtok_r(token, "=", &secondary_ptr);
 				strtoup(token);
-				if (!strcmp(token, "ISLAND"))
-				{
-					//fetches the second half of the pair =
-					token = strtok_r(NULL, "=", &secondary_ptr);
-					island = atoi(token);
-				}
-				else if (!strcmp(token, "NODENAME"))
+				if (!strcmp(token, "NODENAME"))
 				{
 					//fetches the second half of the pair =
 					token = strtok_r(NULL, "=", &secondary_ptr);

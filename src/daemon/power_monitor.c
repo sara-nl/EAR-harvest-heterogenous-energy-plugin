@@ -271,7 +271,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 {
 	policy_conf_t * my_policy;
 	int p_id;
-	eard_verbose(0,"configuring policy for user %u policy %s",user_type,appID->job.policy);
+	eard_verbose(0,"configuring policy for user %u policy %s freq %lu th %lf is_learning %u\n",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
@@ -296,8 +296,11 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 	case AUTHORIZED:
 		if (appID->is_learning){
 			authorized_context.policy=MONITORING_ONLY;
-			if (appID->job.def_f) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
-			else authorized_context.p_state=1;
+			if (appID->job.def_f){ 
+				if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+				else authorized_context.p_state=1;
+			} else authorized_context.p_state=1;
+			
 			authorized_context.th=0;
 			my_policy=&authorized_context;
 		}else{
@@ -305,8 +308,10 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 			if (p_id!=EAR_ERROR){
             	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
 				authorized_context.policy=p_id;
-				if (appID->job.def_f) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
-				else authorized_context.p_state=my_policy->p_state;	
+				if (appID->job.def_f){ 
+					if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+					else authorized_context.p_state=my_policy->p_state;
+				}else authorized_context.p_state=my_policy->p_state;	
 				if (appID->job.th>0) authorized_context.th=appID->job.th;
 				else authorized_context.th=my_policy->th;
 				my_policy=&authorized_context;
@@ -414,6 +419,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
     pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);	
 	eard_verbose(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
+	eard_verbose(1,"*******************\n");
 	sig_reported=0;
 
 }
@@ -558,7 +564,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	int ret1;
 	eard_verbose(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%.2lf,%.2lf)\n",
 		current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,
-		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,((double)uncore_freq[0]/(double)(f_monitoring*2600000000)),((double)uncore_freq[1]/(double)(f_monitoring*2600000000)));
+		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
 	
 	while (pthread_mutex_trylock(&app_lock));
 	

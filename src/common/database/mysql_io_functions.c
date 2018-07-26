@@ -48,8 +48,8 @@ static char *__NAME__ = "MYSQL_IO: ";
 
 
 #define JOB_QUERY               "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
-                                "end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
-                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                "end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
+                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 #if !DB_SIMPLE
 #define SIGNATURE_QUERY         "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
@@ -75,7 +75,7 @@ static char *__NAME__ = "MYSQL_IO: ";
 
 #define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time) VALUES (?, ?, ?)"
 
-#define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq) VALUES (?, ?, ?, ?, ?)"
+#define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)"
 
 #define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state) VALUES (?, ?, ?, ?)"
 
@@ -100,7 +100,7 @@ static char *__NAME__ = "MYSQL_IO: ";
 #define PERIODIC_METRIC_ARGS 6
 #endif
 
-#define EAR_EVENTS_ARGS 5
+#define EAR_EVENTS_ARGS 6
 
 #if !DB_SIMPLE
 #define SIGNATURE_ARGS 21
@@ -738,7 +738,7 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
         if (mysql_stmt_prepare(statement, LEARNING_JOB_QUERY, strlen(LEARNING_JOB_QUERY))) return mysql_statement_error(statement);
     }
 
-    MYSQL_BIND bind[14];
+    MYSQL_BIND bind[16];
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -748,12 +748,14 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
 
     //string types
     bind[2].buffer_type = bind[3].buffer_type = bind[8].buffer_type = 
-    bind[13].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[13].buffer_type = bind[14].buffer_type = bind[15].buffer_type = MYSQL_TYPE_VARCHAR;
 
     bind[2].buffer_length = strlen(job->user_id);
     bind[3].buffer_length = strlen(job->app_id);
     bind[8].buffer_length = strlen(job->policy);
     bind[13].buffer_length = strlen(job->user_acc);
+    bind[14].buffer_length = strlen(job->group_id);
+    bind[15].buffer_length = strlen(job->energy_tag);
 
     //double types
     bind[9].buffer_type = MYSQL_TYPE_DOUBLE;
@@ -773,6 +775,8 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
     bind[11].buffer = (char *)&job->type;
     bind[12].buffer = (char *)&job->def_f;
     bind[13].buffer = (char *)&job->user_acc;
+    bind[14].buffer = (char *)&job->group_id;
+    bind[15].buffer = (char *)&job->energy_tag;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
@@ -794,7 +798,7 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[14];
+    MYSQL_BIND bind[16];
     memset(bind, 0, sizeof(bind));
     //integer types
     bind[0].buffer_type = bind[4].buffer_type = bind[5].buffer_type = bind[12].buffer_type
@@ -809,8 +813,8 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
     bind[9].buffer_type = MYSQL_TYPE_DOUBLE;
 
     //varchar types
-    bind[13].buffer_type = MYSQL_TYPE_VAR_STRING;
-    bind[13].buffer_length = 256;
+    bind[13].buffer_type = bind[14].buffer_type = bind[15].buffer_type = MYSQL_TYPE_VAR_STRING;
+    bind[13].buffer_length = bind[14].buffer_length = bind[15].buffer_length = 256;
 
 
     //reciever variables assignation
@@ -828,6 +832,8 @@ int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs)
     bind[11].buffer = &job_aux->type;
     bind[12].buffer = &job_aux->def_f;
     bind[13].buffer = &job_aux->user_acc;
+    bind[14].buffer = &job_aux->energy_tag;
+    bind[15].buffer = &job_aux->group_id;
 
     if (mysql_stmt_bind_result(statement, bind)) return mysql_statement_error(statement);
     
@@ -1529,10 +1535,8 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
 
     if (mysql_stmt_prepare(statement, EAR_EVENT_QUERY, strlen(EAR_EVENT_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[5];
+    MYSQL_BIND bind[6];
     memset(bind, 0, sizeof(bind));
-
-    time_t timestamp = time(NULL);
 
     //integer types
     int i;
@@ -1540,13 +1544,16 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
     }
+    bind[5].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[5].buffer_length = strlen(ear_ev->node_id);
 
     //storage variable assignation
-    bind[0].buffer = (char *)&timestamp;
+    bind[0].buffer = (char *)&ear_ev->timestamp;
     bind[1].buffer = (char *)&ear_ev->event;
     bind[2].buffer = (char *)&ear_ev->jid;
     bind[3].buffer = (char *)&ear_ev->step_id;
     bind[4].buffer = (char *)&ear_ev->freq;
+    bind[5].buffer = (char *)&ear_ev->node_id;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
@@ -1565,7 +1572,7 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
-    char *params = ", (?, ?, ?, ?, ?)";
+    char *params = ", (?, ?, ?, ?, ?, ?)";
     char *query = malloc(strlen(EAR_EVENT_QUERY)+(num_evs)*strlen(params)+1);
     strcpy(query, EAR_EVENT_QUERY);
 
@@ -1579,8 +1586,6 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
 
     MYSQL_BIND *bind = calloc(num_evs*EAR_EVENTS_ARGS, sizeof(MYSQL_BIND));
 
-    time_t timestamp = time(NULL);
-
     for (i = 0; i < num_evs; i++)
     {
         offset = i*EAR_EVENTS_ARGS;
@@ -1589,13 +1594,16 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
         {
             bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
         }
+        bind[offset+5].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[offset+5].buffer_length = strlen(ear_ev[i].node_id);
 
         //storage variable assignation
-        bind[0+offset].buffer = (char *)&timestamp;
+        bind[0+offset].buffer = (char *)&ear_ev[i].timestamp;
         bind[1+offset].buffer = (char *)&ear_ev[i].event;
         bind[2+offset].buffer = (char *)&ear_ev[i].jid;
         bind[3+offset].buffer = (char *)&ear_ev[i].step_id;
         bind[4+offset].buffer = (char *)&ear_ev[i].freq;
+        bind[5+offset].buffer = (char *)&ear_ev[i].node_id;
     }
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);

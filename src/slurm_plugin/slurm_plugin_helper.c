@@ -218,13 +218,10 @@ int getenv_remote(spank_t sp, char *name, char *value, int length)
 	if (name == NULL || value == NULL) {
 		return 0;
 	}
-
+	
 	serrno = spank_getenv (sp, name, value, length);
 
 	if (serrno != ESPANK_SUCCESS) {
-		return 0;
-	}
-	if (value == NULL) {
 		return 0;
 	}
 	if (strlen(value) <= 0) {

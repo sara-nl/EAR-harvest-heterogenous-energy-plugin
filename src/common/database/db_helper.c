@@ -589,18 +589,27 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
     }
 
 
-    char query[256];
-    if (is_learning)
+    char query[512];
+    if (is_learning && node_name != NULL)
         sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
                         "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
-                        "job_id > %d AND node_id='%s'", current_job_id, max_apps, current_job_id, node_name);
+                        "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
+    else if (is_learning && node_name == NULL)
+        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
+                        "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
+                        "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
+                        "job_id > %d GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id);
+    else if (!is_learning && node_name != NULL)
+        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
+                        "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
+                        "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
+                        "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
     else
         sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
-                        "job_id > %d AND node_id='%s'", current_job_id, max_apps, current_job_id, node_name);
-
+                        "job_id > %d GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id);
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
@@ -614,14 +623,14 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 	return num_apps;
 }
 
-#define LEARNING_APPS_QUERY "SELECT COUNT(*) FROM Learning_applications"
-#define APPS_QUERY          "SELECT COUNT(*) FROM Applications"
+#define LEARNING_APPS_QUERY "SELECT COUNT(*) FROM Learning_applications WHERE node_id = '%s'"
+#define APPS_QUERY          "SELECT COUNT(*) FROM Applications WHERE node_id = '%s'"
 
-ulong get_num_applications(char is_learning)
+ulong get_num_applications(char is_learning, char *node_name)
 {
     
     MYSQL *connection = mysql_init(NULL);
-
+    char query[256];
     if (connection == NULL)
     {
         VERBOSE_N(0, "ERROR creating MYSQL object.");
@@ -652,15 +661,12 @@ ulong get_num_applications(char is_learning)
     }
 
     if (is_learning)
-    {
-        if (mysql_stmt_prepare(statement, LEARNING_APPS_QUERY, strlen(LEARNING_APPS_QUERY)))
-                                                return mysql_statement_error(statement);
-    }
+        sprintf(query, LEARNING_APPS_QUERY, node_name);
     else
-    {
-        if (mysql_stmt_prepare(statement, APPS_QUERY, strlen(APPS_QUERY)))
-                                                return mysql_statement_error(statement);
-    }
+        sprintf(query, APPS_QUERY, node_name);
+
+    if (mysql_stmt_prepare(statement, query, strlen(query)))
+                                      return mysql_statement_error(statement);
     //Result parameters
     MYSQL_BIND res_bind[1];
     memset(res_bind, 0, sizeof(res_bind));

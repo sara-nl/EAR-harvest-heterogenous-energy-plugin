@@ -137,11 +137,16 @@ int eard_must_exit=0;
 
 void init_frequency_list()
 {
-	int size=frequency_get_num_pstates()*sizeof(ulong);
+	int ps,i;
+	ps=frequency_get_num_pstates();
+	int size=ps*sizeof(ulong);
 	frequencies=(ulong *)malloc(size);
-	memcpy(frequencies,frequency_get_freq_rank_list,size);
+	memcpy(frequencies,frequency_get_freq_rank_list(),size);
 	get_frequencies_path(my_cluster_conf.tmp_dir,frequencies_path);
 	shared_frequencies=create_frequencies_shared_area(frequencies_path,frequencies,size);
+	for (i=0;i<ps;i++){
+		fprintf(stderr,"shared_frequencies[%d]=%lu\n",i,shared_frequencies[i]);
+	}
 }
 
 int is_valid_sec_tag(ulong tag)
@@ -834,10 +839,12 @@ void signal_handler(int sig)
         else{
 			eard_verbose(0,"Loading EAR configuration");
             print_cluster_conf(&my_cluster_conf);
+			free(my_node_conf);
 	        my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);
 	        if (my_node_conf==NULL){
      	       eard_verbose(0," Error in cluster configuration, node %s not found\n",nodename);
      	   	}else{
+				eard_dyn_conf.nconf=my_node_conf;
 				print_my_node_conf(my_node_conf);
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
