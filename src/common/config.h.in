@@ -81,7 +81,6 @@
 // EARD default values and configuration
 #define POWERMON_FREQ		30 		// Frequency for periodic power monitoring
 #define DAEMON_PORT_NUMBER	50000 	// Default port used by the power monitoring
-#define USE_EARDB			1		// Sets the EARD to report directly to the DB or use the EARDB
 
 // EARGMD default values and configuration
 #define DEFAULT_T1			60 		// Default period T1 used by the global mamager in seconds

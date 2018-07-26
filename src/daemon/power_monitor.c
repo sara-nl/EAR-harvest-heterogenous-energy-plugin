@@ -52,12 +52,10 @@
 #include <metrics/power_metrics/power_metrics.h>
 #include <database_cache/sockets.h>
 
-#if USE_EARDB
-#include <database_cache/eardbd_api.h>
-#include <daemon/eard_utils.h>
-#endif
 
 #if DB_MYSQL
+#include <database_cache/eardbd_api.h>
+#include <daemon/eard_utils.h>
 #include <common/database/db_helper.h>
 #endif
 
@@ -255,18 +253,16 @@ void report_powermon_app(powermon_app_t *app)
 	report_application_data(&app->app);
 	report_application_in_file(&app->app);
 	
-	#if !USE_EARDB
 	#if DB_MYSQL
     if (my_cluster_conf.eard.use_mysql){ 
-		if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
-	}
-	#endif
-	#else
-	if (my_cluster_conf.eard.use_eardbd){
-    	if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
-        	eard_verbose(0,"Error when sending application to eardb");
-			eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
-    	}
+		if (!my_cluster_conf.eard.use_eardbd){
+			if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
+		}else{
+    		if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
+        		eard_verbose(0,"Error when sending application to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+    		}
+		}
 	}
 	#endif
 }
@@ -592,20 +588,17 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 
-	#if !USE_EARDB
 	#if DB_MYSQL
 	if (my_cluster_conf.eard.use_mysql){
-		/* current sample reports the value of job_id and step_id active at this moment */
-		/* If we want to be strict, we must report intermediate samples at job start and job end */
-    	if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
-	}
-	#endif
-
-	#else
-	if (my_cluster_conf.eard.use_eardbd){
-		if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
-			eard_verbose(0,"Error when sending periodic power metric to eardb");
-			eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+		if (!my_cluster_conf.eard.use_eardbd){
+			/* current sample reports the value of job_id and step_id active at this moment */
+			/* If we want to be strict, we must report intermediate samples at job start and job end */
+    		if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
+		}else{
+			if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
+				eard_verbose(0,"Error when sending periodic power metric to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
 		}
 	}
 	#endif
