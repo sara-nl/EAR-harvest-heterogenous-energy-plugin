@@ -60,7 +60,14 @@ static state_t _packet_send(uint content_type, char *content, ssize_t content_si
 
 	// Main packet
 	header.content_type = content_type;
-	header.data_extra = 0; // Mirroring
+	header.data_extra1 = 0; // Mirroring
+	header.data_extra2 = 0; // Its ok
+
+	//header->content_size = sizeof(packet_header_t) + content_size;
+	//header->content_type = content_type;
+	//header->data_extra = header->data_extra;
+
+
 	s = sockets_send(&sock_main, &header, content, content_size);
 
 	if (state_fail(s)) {

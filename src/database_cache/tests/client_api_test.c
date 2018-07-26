@@ -3,13 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
-
-#include <database_cache/eardbd.h>
-#include <database_cache/eardbd_api.h>
-#include <database_cache/sockets.h>
-#include <common/types/periodic_metric.h>
-#include <common/types/application.h>
 #include <common/states.h>
+#include <database_cache/eardbd_api.h>
 
 void usage(int argc, char **argv)
 {

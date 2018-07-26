@@ -65,15 +65,15 @@
 #define MAX_PACKET_SIZE() \
 	(_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t)) + sizeof(packet_header_t)
 
-typedef struct state_question {
-} state_question_t;
+typedef struct sync_qst {
+	uint question;
+} sync_qst_t;
 
-typedef struct state_answer {
+typedef struct sync_ans {
 	time_t timestamp_app;
 	time_t timestamp_per;
 	time_t timestamp_loo;
 	time_t timestamp_eve;
-} state_answer_t;
-
+} sync_ans_t;
 
 #endif //EAR_EARDBD_H

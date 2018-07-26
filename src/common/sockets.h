@@ -54,19 +54,23 @@ typedef struct socket {
 
 typedef struct packet_header {
 	char host_src[SZ_NAME_SHORT]; // Filled in sockets_send()
-	size_t packet_size; // Filled in sockets_send()
 	time_t timestamp; // Filled in sockets_send()
-	uint content_type;
-	uint data_extra;
+	size_t content_size; // Filled in sockets_send()
+	uchar content_type;
+	uchar data_extra1;
+	uchar data_extra2;
+	uchar data_extra3;
 }  packet_header_t;
 
 #define PACKET_HEADER(buffer) \
-		(packet_header_t *) buffer;
+	(packet_header_t *) buffer;
 
 #define PACKET_CONTENT(buffer) \
-		(void *) &buffer[sizeof(packet_header_t)];
+	(void *) &buffer[sizeof(packet_header_t)];
 
 /* functions */
+state_t sockets_header_clean(packet_header_t *header);
+
 state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol);
 
 state_t sockets_dispose(socket_t *socket);
@@ -85,9 +89,15 @@ state_t sockets_connect(socket_t *socket);
 
 state_t sockets_disconnect(int *fd);
 
-state_t sockets_send(socket_t *socket, packet_header_t *header, char *content, ssize_t size_content);
+state_t sockets_send(socket_t *socket, packet_header_t *header, char *content);
 
 state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer);
+
+state_t sockets_set_timeout(int fd, struct timeval time);
+
+state_t sockets_header_clean(packet_header_t *header);
+
+state_t sockets_header_update(packet_header_t *header);
 
 void sockets_print_socket(socket_t *socket);
 

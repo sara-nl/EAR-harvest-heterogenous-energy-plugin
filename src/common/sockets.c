@@ -27,6 +27,7 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,12 +52,26 @@ state_t sockets_accept(int fd_req, int *fd_cli)
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_send(socket_t *socket, packet_header_t *header, char *content, ssize_t size_content)
+state_t sockets_header_clean(packet_header_t *header)
+{
+	memset((void *) header, 0, sizeof(packet_header_t));
+}
+
+state_t sockets_header_update(packet_header_t *header)
+{
+	if (strlen(header->host_src) == 0) {
+		gethostname(header->host_src, sizeof(header->host_src));
+	}
+
+	header->timestamp = time(NULL);
+}
+
+state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 {
 	packet_header_t *output_header;
 	char *output_content;
+	ssize_t bytes_sent;
 	size_t bytes_left;
-	size_t bytes_sent;
 	state_t s;
 	int n;
 
@@ -65,11 +80,7 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content, s
 	output_content = PACKET_CONTENT(output_buffer);
 
 	// Header process
-	gethostname(header->host_src, sizeof(header->host_src));
-	output_header->packet_size = size_content + sizeof(packet_header_t);
-	output_header->content_type = header->content_type;
-	output_header->data_extra = header->data_extra;
-	output_header->timestamp = time(NULL);
+	memcpy(output_header, header, sizeof(packet_header_t));
 
 	// Content process
 	memcpy (output_content, content, size_content);
@@ -93,6 +104,8 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content, s
 
 		bytes_sent += n;
 		bytes_left -= n;
+
+		printf("SOCKETS, sended %lu\n", bytes_sent);
 	}
 
 	state_return(EAR_SUCCESS);
@@ -100,9 +113,9 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content, s
 
 state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer)
 {
+	ssize_t bytes_recv;
 	size_t bytes_expc;
 	size_t bytes_left;
-	size_t bytes_recv;
 	char *bytes_buff;
 	int i = 0;
 
@@ -116,7 +129,8 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 	{
 		while (bytes_recv < bytes_expc)
 		{
-			bytes_recv += recv(fd, bytes_buff[bytes_recv], bytes_left, 0);
+			bytes_recv += recv(fd, (void *) &bytes_buff[bytes_recv], bytes_left, 0);
+			printf("SOCKETS, received %ld (%d)\n", bytes_recv, i);
 
 			if (bytes_recv <= 0)
 			{
@@ -136,6 +150,11 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 	}
 
 	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_set_timeout(int fd, struct timeval *timeout)
+{
+	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) timeout, sizeof(timeval));
 }
 
 state_t sockets_listen(socket_t *socket)
