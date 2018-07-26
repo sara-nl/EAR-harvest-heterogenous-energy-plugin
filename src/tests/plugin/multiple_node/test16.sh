@@ -15,8 +15,8 @@ export I_MPI_PIN_DOMAIN=auto
 export OMP_NUM_THREADS=4
 #export KMP_AFFINITY=granularity=fine,compact,1,0
 
-
-srun --account=colbsc --ear-tag=cpu-intensive --ear-verbose=1 -J $kernel --mpi=pmi2 -N $NODES -n $MPIS --tasks-per-node=$PPN --cpus-per-task=$OMP_NUM_THREADS $KERNELS_PATH/$kernel 
+mkdir DB
+srun --ear-user-db=DB/sp_metrics. --ear-verbose=1 -J $kernel --mpi=pmi2 -N $NODES -n $MPIS --tasks-per-node=$PPN --cpus-per-task=$OMP_NUM_THREADS $KERNELS_PATH/$kernel 
 
 
 

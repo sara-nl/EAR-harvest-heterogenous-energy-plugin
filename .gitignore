@@ -26,6 +26,7 @@ tmp/*
 slurm-*.out
 coefficients_list.csv
 *accepted_intel_ptu_license
+*.csv
 
 
 # Build

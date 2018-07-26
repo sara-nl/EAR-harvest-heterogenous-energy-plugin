@@ -862,8 +862,8 @@ void signal_handler(int sig)
 			}
 
     		#if DB_MYSQL
-			if (!my_cluster_conf.eard.use_eardbd && eardb_is_connected()){
-				eardb_disconnect();
+			if (!my_cluster_conf.eard.use_eardbd && eardbd_connected){
+				eardbd_disconnect();
 				eardbd_connected=0;
 			}
     		if (my_cluster_conf.eard.use_eardbd && !eardbd_connected){

@@ -220,8 +220,10 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     char is_learning = app[0].is_learning;
     
     int i;
+	#if 0
     for (i = 0; i < num_apps; i++)
         report_application_data(&app[i]);
+	#endif
 
    
     //job only needs to be inserted once
@@ -979,13 +981,11 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
 
     if (!is_learning)
     {
-		fprintf(stderr,"Not learning batch signatures\n");
         query = malloc(strlen(SIGNATURE_QUERY)+num_sigs*strlen(params)+1);
         strcpy(query, SIGNATURE_QUERY);
     }
     else
     {
-		fprintf(stderr,"learning batch signatures\n");
         query = malloc(strlen(LEARNING_SIGNATURE_QUERY)+num_sigs*strlen(params)+1);
         strcpy(query, LEARNING_SIGNATURE_QUERY);
     }
@@ -995,7 +995,6 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
     for (i = 1; i < num_sigs; i++)
         strcat(query, params);
 
-	fprintf(stderr,"%s - num sigs %u learning %u\n",query,num_sigs,(uint)is_learning);
     
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 

@@ -1,7 +1,17 @@
 Single node tests
 -----------------
 
-These tests are designed to evaluate the different plugin options to be supported by slurm plugin, EARD, and EARL
+These tests are designed to evaluate the different plugin options to be supported by slurm plugin, EARD, and EARL. They run in 4 nodes. To change it for more nodes just edit the test and change the following environment variables:
+
+```
+export PPN=NUM_PROCESSES_PER_NODE
+export NODES=NUM_NODES
+export OMP_NUM_THREADS=NUM_THREADS_PER_PROCESS
+```
+
+Tests 1..15 executes an MPI+OpenMP application supporting a maximum of 24 mpi processes. It is not a scalabillity test, so it is not designed for big number of nodes. It is an scalable application, so for few number of nodes and MIN_TIME_TO_SOLUTION policy EAR is supposed to select high frequencies. 
+
+
 * Assuming ear=on, some results depend on user privilege
 
 | Name   |Case             | Expected behavoiour                                                         |
@@ -21,6 +31,8 @@ These tests are designed to evaluate the different plugin options to be supporte
 | test13 |--ear-cpufreq=2000000 --ear-policy=MONITORING_ONLY --ear-verbose=1 | if authorized, execute application at 2.0Ghz, at default freq otherwise |
 | test14 |--ear-cpufreq=2000000 --ear-policy=MIN_TIME_TO_SOLUTION --ear-verbose=1 | if authorized, execute application at 2.0Ghz with MIN_TIME_TO_SOLUTION, at default freq otherwise |
 | test15 | --ear-cpufreq=200000 --ear-policy=MIN_TIME_TO_SOLUTION --ear-verbose=1| It is an invalid frequency, default frequency is selected|
+| test16 | --ear-user-db=DB/sp_metrics. --ear-verbose=1 | application metrics must be reported in four (1xnode) DB/sp_metrics.host.csv file. Intermediate folders must exists |
+
 
 It is recommented to test changing ear.conf configuration
 
