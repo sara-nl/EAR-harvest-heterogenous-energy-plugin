@@ -141,9 +141,9 @@ void create_tables(MYSQL *connection)
                             DC_energy BIGINT unsigned NOT NULL, \
                             node_id VARCHAR(256) NOT NULL, \
                             job_id BIGINT NOT NULL, \
-                            step_id BIGINT NOT NULL, "\
+                            step_id BIGINT NOT NULL, "
 #if DEMO
-                            "avg_f BIGINT, "\
+                            "avg_f BIGINT, "
 #endif
                             "PRIMARY KEY (id))")) execute_on_error(connection);
 
