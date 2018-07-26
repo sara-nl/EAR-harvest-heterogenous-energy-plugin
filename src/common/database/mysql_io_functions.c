@@ -271,6 +271,8 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     for (i = 1; i < num_apps; i++)
         strcat(query, params);
 
+    printf("QUERY: %s\n", query);
+
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
 
@@ -975,7 +977,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
     else
     {
         query = malloc(strlen(LEARNING_SIGNATURE_QUERY)+num_sigs*strlen(params)+1);
-        strcpy(query, LEARNING_JOB_QUERY);
+        strcpy(query, LEARNING_SIGNATURE_QUERY);
     }
 
     int i, j;
@@ -1074,20 +1076,33 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
     }
 
 
-    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+    if (mysql_stmt_bind_param(statement, bind)) {
+        free(bind);
+        free(query);
+        return mysql_statement_error(statement);
+    }
 
-    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+    if (mysql_stmt_execute(statement)) 
+    {
+        free(bind);
+        free(query);
+        return mysql_statement_error(statement);
+    }
 
     int id = mysql_stmt_insert_id(statement);
 
     my_ulonglong affected_rows = mysql_stmt_affected_rows(statement);
 
-    if (affected_rows != num_sigs) fprintf(stderr, "ERROR: inserting batch signature failed (affected rows does not match num_sigs).\n");
-
-    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+    if (affected_rows != num_sigs) 
+    {
+        fprintf(stderr, "ERROR: inserting batch signature failed (affected rows does not match num_sigs).\n");
+        id = EAR_ERROR;
+    }
 
     free(bind);
     free(query);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return id;
 }
@@ -1130,17 +1145,9 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
         bind[i].is_unsigned = 1;
     }
 
-    //unsigned long recievers
-    // bind[24].buffer_type = bind[25].buffer_type = MYSQL_TYPE_LONGLONG;
-    // bind[24].buffer_length = bind[25].buffer_length = 4;
-    // bind[24].is_null = bind[25].is_null = 0;
-    // bind[24].is_unsigned = bind[25].is_unsigned = 1;
-
     //reciever variables assignation
     bind[0].buffer = &id;
     bind[1].buffer = &sig_aux->DC_power;
-    //bind[2].buffer = &sig_aux->max_DC_power;
-    //bind[3].buffer = &sig_aux->min_DC_power;
     bind[2].buffer = &sig_aux->DRAM_power;
     bind[3].buffer = &sig_aux->PCK_power;
     bind[4].buffer = &sig_aux->EDP;
@@ -1157,9 +1164,6 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[15].buffer = &sig_aux->FLOPS[5];
     bind[16].buffer = &sig_aux->FLOPS[6];
     bind[17].buffer = &sig_aux->FLOPS[7];
-    // bind[20].buffer = &sig_aux->L1_misses;
-    // bind[21].buffer = &sig_aux->L2_misses;
-    // bind[22].buffer = &sig_aux->L3_misses;
     bind[18].buffer = &sig_aux->instructions;
     bind[19].buffer = &sig_aux->cycles;
     bind[20].buffer = &sig_aux->avg_f;
@@ -1296,16 +1300,27 @@ int mysql_batch_insert_power_signatures(MYSQL *connection, application_t *pow_si
         bind[8+offset].buffer = (char *)&pow_sig[i].power_sig.def_f;
     }
 
-    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+    if (mysql_stmt_bind_param(statement, bind)) 
+    {
+        free(bind);
+        free(query);
+        return mysql_statement_error(statement);
+    }
 
-    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
-
+    if (mysql_stmt_execute(statement)) 
+    {
+        free(bind);
+        free(query);
+        return mysql_statement_error(statement);
+    }
+    
     int id = mysql_stmt_insert_id(statement);
     
-    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
-
     free(bind);
     free(query);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
 
     return id;
 }
@@ -1518,9 +1533,19 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
 #endif
     }
 
-    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+    if (mysql_stmt_bind_param(statement, bind)) 
+    {
+        free(bind);
+        free(query);
+        return mysql_statement_error(statement);
+    }
 
-    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+    if (mysql_stmt_execute(statement)) 
+    {
+        free(bind);
+        free(query);
+        return mysql_statement_error(statement);
+    }
 
     mysql_stmt_close(statement);
     free(bind);
