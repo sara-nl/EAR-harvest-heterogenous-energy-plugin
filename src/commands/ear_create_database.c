@@ -241,7 +241,7 @@ void create_tables(MYSQL *connection)
 
 void main(int argc,char *argv[])
 {
-    if (argc != 2) usage(argv[0]);
+//    if (argc != 2) usage(argv[0]);
 	
     MYSQL *connection = mysql_init(NULL); 
 
@@ -251,7 +251,6 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    mysql_real_connect(connection, argv[1], "root", "", NULL, 0, NULL, 0);
 
     cluster_conf_t my_cluster;
     char ear_path[256];
@@ -261,6 +260,8 @@ void main(int argc,char *argv[])
         exit(0);
     }
     read_cluster_conf(ear_path, &my_cluster);
+
+    mysql_real_connect(connection, my_cluster.database.ip, "root", "", NULL, 0, NULL, 0);
 
     create_db(connection, my_cluster.database.database);
 
