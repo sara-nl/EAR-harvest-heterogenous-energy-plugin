@@ -90,3 +90,4 @@ CMake*
 # Kernels
 npbparams.h
 setparams
+kernels/STREAM/stream_mpi

@@ -35,6 +35,9 @@ ear.conf is a text file describing EAR options cluster description. It must be r
 **NodeDaemonMaxPstate**=1 , 1 means nominal frequency (no turbo)  
 **NodeDaemonTurbo**=0 , 0 means no turbo frequency  
 **NodeDaemonPort**=5000  
+**NodeUseDB**=1 , Send data to MySQL DB  
+**NodeUseEARDBD**=1, Send datat to MySQL using EARDBD (1) or directly to the mysql server (0)
+
 
 4-DATABASE MANAGER
 
