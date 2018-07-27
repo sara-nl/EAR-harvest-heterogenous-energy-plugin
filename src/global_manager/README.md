@@ -1,10 +1,10 @@
 Energy Aware Runtime: Global Manager Daemon
 -------------------------------------------
-The EAR Global Manager Daemon (EARGMD) is a cluster wide component that controls the percetage of the maximum energy consumed, and it can be configured to take actions automatically like reporting warning levels and let the actions to be taken by sysadmins or limiting the nodes policy.
+The EAR Global Manager Daemon (EARGMD) is a cluster wide component that controls the percetage of the maximum energy consumed. It can be configured to take actions automatically like warning sysadmins to take actions or limiting the nodes policy.
 
 Requirements
 ------------
-EARGMD uses periodic power metrics reported by [EARD](../daemon/README.md), the per-node daemon, including job identification details (job id, step id when executed in a slurm system). These metrics are stored and aggregated in a MariaDB (MySQL) database through the [EARDBD](../database_cache/REAME.md).
+EARGMD uses periodic power metrics reported by [EARD](../daemon/README.md), the per-node daemon, including job identification details (job id and step id if you are using the SLURM plugin). These metrics are stored and aggregated in a MariaDB (MySQL) database through the [EARDBD](../database_cache/REAME.md).
 
 Configuration
 -------------
@@ -35,7 +35,7 @@ GlobalManagerGracePeriods=3
 
 API
 ---
-The Global Manager offers a simple API (`eargm_api.c`, also used by the SLURM plugin) to be notified about the execution/finalization of the jobs. The API just notifies the EARGMD about the number of nodes to be used/released by the job.
+The global manager offers a simple API `eargm_api.c` to notify the execution and finalization of the jobs. The API just notifies the EARGMD about the number of nodes to be used and released after the execution of the job. The SLURM plugin automatically does this task.
 
 Execution
 ---------
@@ -48,10 +48,10 @@ Commands
 --------
 This is a list of the available commands:
 
-| Command           | Description                                         |
+| Command           | Description                                          |
 | ----------------- | --------------------------------------------------- |
 | eargm_new_job     | Informs the EARGMD that a job is about to start.    |
-| eargm_end_job     | Informs the EARGMD that a job has finished.         |
+| eargm_end_job     | Informs the EARGMD that a job has finished.    |
 
 License
 -------

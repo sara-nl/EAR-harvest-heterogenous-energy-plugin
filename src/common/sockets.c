@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <database_cache/sockets.h>
+#include <common/sockets.h>
 
 static state_t s;
 

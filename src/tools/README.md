@@ -10,7 +10,7 @@ EAR tools and command line tools used during the learning phase or to manipulate
 | coefficients_to_csv           | reads coefficients and prints it in both stdout and csv file     | v2 and v3 |
 | compute_coefficients          | computes coefficients for ear v2 using as input a user-db filei, it must be executed in compute nodes | v2|
 | compute_coefficients_v3       | coputes coefficients for ear v3 reading applications from DB     | v3        |
-| compute_coefficients_remote   | computes coefficients for ear v2 using as input a user-db filei, it can be executed anywhere | v2 |
+| compute_coefficients_remote   | computes coefficients for ear v2 using as input a user-db file, it can be executed anywhere | v2 |
 | get_app_list                  | reads application from DB (normal or learning) and prints metrics in stdout | v3 |
 
 Examples
