@@ -610,6 +610,7 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id);
+
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
