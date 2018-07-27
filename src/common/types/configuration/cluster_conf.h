@@ -73,6 +73,8 @@ typedef struct eard_conf
 	ulong max_pstate; 		/* default 1 */
 	uint turbo;				/* Fixed to 0 by the moment */
 	uint port;				/* mandatory */
+	uint use_mysql;			/* Must EARD report to DB */
+	uint use_eardbd;		/* Must EARD report to DB using EARDBD */
 } eard_conf_t;
 
 /*
@@ -298,6 +300,11 @@ void copy_eard_conf(eard_conf_t *dest,eard_conf_t *src);
 void copy_eargmd_conf(eargm_conf_t *dest,eargm_conf_t *src);
 void copy_eardb_conf(db_conf_t *dest,db_conf_t *src);
 void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src);
+
+
+/* Default functions */
+void set_default_eard_conf(eard_conf_t *eardc);
+void set_default_eargm_conf(eargm_conf_t *eardc);
 
 
 

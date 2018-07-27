@@ -46,6 +46,7 @@ coefficients_v2_to_v3:coefficients_v2_to_v3.c $(ROOTDIR)/src/common/types.a
 
 install:
 	cp compute_coefficients $(DESTDIR)/bin
+	cp compute_coefficients_v3 $(DESTDIR)/bin
 	cp coefficients_quality_control $(DESTDIR)/bin/
 
 clean:

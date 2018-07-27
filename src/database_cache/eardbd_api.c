@@ -49,7 +49,7 @@ static char buffer_pck[MAX_PACKET_SIZE()];
  *
  */
 
-static int is_connected(socket_t *socket)
+int is_connected(socket_t *socket)
 {
 	int connected = 0;
 	connected |= socket->fd >= 0 && socket->protocol == TCP;
