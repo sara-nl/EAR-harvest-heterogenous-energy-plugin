@@ -2,8 +2,7 @@ EAR configuration file
 ----------------------
 ear.conf is a text file describing EAR options cluster description. It must be readable at all compute nodes and at nodes where commands are executed. Lines starting with # are comments. Some of the arguments are optional. A test for ear.conf file can be found at src/test/functionals/ear_conf
 
-Parameters
-----------
+# Parameters
 
 # Services configuration
 
@@ -82,7 +81,8 @@ List of energy tags and users/groups/SLURM accounts authorized to use each one. 
 
 # Special nodes
 
-# Describes nodes with some special characteristic such as different default pstates, default coefficients file, and/ot policy thresholds
+Describes nodes with some special characteristic such as different default pstates, default coefficients file, and/ot policy thresholds
+
 **NodeName**=nodename_list **CPUs**=24 **DefaultPstates**=2,5,5   **DefCoefficientsSFile**=filename **MaxPerformancePenalty**=def_th (between 0 and 1) **MinEfficiencyGain**=def_th (between 0 and 1)
 
 # Island description
