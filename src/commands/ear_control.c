@@ -76,7 +76,9 @@ void main(int argc, char *argv[])
             {"red-max-freq", required_argument, 0, 2},
             {"inc-th",       required_argument, 0, 3},
             {"set-def-freq", required_argument, 0, 4},
-            {"restore-conf", no_argument, 0, 5}
+            {"restore-conf", no_argument, 0, 5},
+            {"help",         no_argument, 0, 6},
+            {0, 0, 0, 0}
         };
 
         c = getopt_long(argc, argv, "", long_options, &option_idx);
@@ -129,6 +131,10 @@ void main(int argc, char *argv[])
                 break;
             case 5:
                 restore_conf_all_nodes(my_cluster_conf);
+                break;
+            case 6:
+                usage(argv[0]);
+                break;
         }
     }
 
