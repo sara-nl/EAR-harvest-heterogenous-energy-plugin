@@ -1,5 +1,5 @@
 log.o: log.c ../../common/config.h ../../common/types/log.h \
- ../../common/types/job.h ../../common/types/generic.h \
+ ../../common/types/generic.h ../../common/types/job.h \
  ../../common/ear_verbose.h ../../daemon/eard_api.h \
  ../../daemon/eard_conf_api.h ../../common/types/application.h \
  ../../common/types/signature.h ../../common/types/power_signature.h \

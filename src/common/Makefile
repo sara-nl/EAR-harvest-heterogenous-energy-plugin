@@ -48,7 +48,7 @@ database.a: $(database_OBJS)
 	$(AR) rvs database.a $(database_OBJS)
 
 types.a: $(types_SRCS)
-	$(AR) rvs types.a $(types_FILES)
+	$(AR) rvs types.a $(types_OBJS)
 
 ######## OPTIONS
 

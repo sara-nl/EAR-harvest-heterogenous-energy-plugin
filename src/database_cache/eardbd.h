@@ -31,6 +31,7 @@
 
 #include <netdb.h>
 #include <common/config.h>
+#include <common/sockets.h>
 #include <common/types/log.h>
 #include <common/types/loop.h>
 #include <common/types/generic.h>
