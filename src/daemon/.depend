@@ -7,6 +7,16 @@ eard_checkpoint.o: eard_checkpoint.c ../common/config.h \
  ../common/types/signature.h ../common/types/power_signature.h \
  ../metrics/power_metrics/power_metrics.h ../metrics/ipmi/energy_node.h \
  ../metrics/papi/energy_cpu.h
+dynamic_configuration.o: dynamic_configuration.c ../common/config.h \
+ ../control/frequency.h ../common/types/job.h ../common/types/generic.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h ../daemon/eard_server_api.h \
+ ../daemon/eard_conf_rapi.h ../common/types/application.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../daemon/shared_configuration.h ../common/types/coefficient.h \
+ ../daemon/power_monitor.h ../metrics/power_metrics/power_metrics.h \
+ ../metrics/ipmi/energy_node.h ../metrics/papi/energy_cpu.h
 eard_api.o: eard_api.c ../common/ear_verbose.h ../common/config.h \
  ../daemon/eard_api.h ../common/types/generic.h ../common/types/log.h \
  ../common/types/job.h ../daemon/eard_conf_api.h \
@@ -27,29 +37,21 @@ eard.o: eard.c ../control/frequency.h ../common/states.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
  ../metrics/papi/energy_cpu.h ../metrics/custom/bandwidth.h \
  ../metrics/ipmi/energy_node.h ../metrics/custom/hardware_info.h \
- ../daemon/eard_conf_api.h ../common/types/application.h \
- ../common/types/power_signature.h ../daemon/power_monitor.h \
- ../metrics/power_metrics/power_metrics.h ../daemon/eard_checkpoint.h \
- ../daemon/shared_configuration.h ../common/types/coefficient.h \
- ../daemon/dynamic_configuration.h ../database_cache/sockets.h \
+ ../metrics/custom/frequency.h ../daemon/eard_conf_api.h \
+ ../common/types/application.h ../common/types/power_signature.h \
+ ../daemon/power_monitor.h ../metrics/power_metrics/power_metrics.h \
+ ../daemon/eard_checkpoint.h ../daemon/shared_configuration.h \
+ ../common/types/coefficient.h ../daemon/dynamic_configuration.h \
  ../database_cache/eardbd_api.h ../common/types/periodic_metric.h \
  ../common/types/periodic_aggregation.h ../database_cache/eardbd.h \
- ../daemon/eard_utils.h
+ ../daemon/eard_utils.h ../common/database/db_helper.h \
+ ../common/types/gm_warning.h ../daemon/eard.h \
+ ../daemon/app_api/app_server_api.h
 eard_server_api.o: eard_server_api.c ../common/types/job.h \
  ../common/types/generic.h ../common/config.h ../common/ear_verbose.h \
  ../common/states.h ../daemon/eard_conf_rapi.h \
  ../common/types/application.h ../common/types/signature.h \
  ../common/types/power_signature.h
-dynamic_configuration.o: dynamic_configuration.c ../common/config.h \
- ../control/frequency.h ../common/types/job.h ../common/types/generic.h \
- ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h ../daemon/eard_server_api.h \
- ../daemon/eard_conf_rapi.h ../common/types/application.h \
- ../common/types/signature.h ../common/types/power_signature.h \
- ../daemon/shared_configuration.h ../common/types/coefficient.h \
- ../daemon/power_monitor.h ../metrics/power_metrics/power_metrics.h \
- ../metrics/ipmi/energy_node.h ../metrics/papi/energy_cpu.h
 power_monitor.o: power_monitor.c ../control/frequency.h \
  ../daemon/power_monitor.h ../common/types/application.h \
  ../common/config.h ../common/types/job.h ../common/types/generic.h \
@@ -60,11 +62,10 @@ power_monitor.o: power_monitor.c ../control/frequency.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../daemon/shared_configuration.h \
  ../common/types/coefficient.h ../common/types/periodic_metric.h \
- ../database_cache/sockets.h ../database_cache/eardbd_api.h \
- ../common/types/log.h ../common/types/loop.h \
- ../common/types/periodic_aggregation.h ../database_cache/eardbd.h \
- ../daemon/eard_utils.h ../common/database/db_helper.h \
- ../common/types/gm_warning.h
+ ../database_cache/eardbd_api.h ../common/types/log.h \
+ ../common/types/loop.h ../common/types/periodic_aggregation.h \
+ ../database_cache/eardbd.h ../daemon/eard_utils.h \
+ ../common/database/db_helper.h ../common/types/gm_warning.h
 eard_rapi.o: eard_rapi.c ../common/config.h ../daemon/eard_conf_rapi.h \
  ../common/types/application.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \

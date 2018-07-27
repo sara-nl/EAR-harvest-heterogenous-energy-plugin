@@ -60,7 +60,6 @@
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
-#include <database_cache/sockets.h>
 
 #if DB_MYSQL
 #include <database_cache/eardbd_api.h>

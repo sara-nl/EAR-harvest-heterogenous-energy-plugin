@@ -34,7 +34,6 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <database_cache/sockets.h>
 #include <database_cache/eardbd.h>
 
 static char buffer_pck[MAX_PACKET_SIZE()];

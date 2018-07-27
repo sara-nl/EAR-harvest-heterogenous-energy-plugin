@@ -44,13 +44,13 @@
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <common/config.h>
+#include <common/sockets.h>
 #include <common/ear_verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <metrics/power_metrics/power_metrics.h>
-#include <database_cache/sockets.h>
 
 
 #if DB_MYSQL
