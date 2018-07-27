@@ -460,7 +460,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
     num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
     if (verbose) fprintf(stderr, "Finalized retrieving applications\n");
 
-    printf("QUERY: %s\n", query);
+    if (verbose) fprintf(stderr, "QUERY: %s\n", query);
     if (num_apps == EAR_MYSQL_ERROR)
     {
         fprintf(stderr, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
