@@ -16,6 +16,7 @@ configure
 
 # Julita's
 DB/
+OUTS/
 DB_Learning_phase/
 *romio_hints.txt
 *log.env
