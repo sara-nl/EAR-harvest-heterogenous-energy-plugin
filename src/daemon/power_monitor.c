@@ -52,12 +52,10 @@
 #include <metrics/power_metrics/power_metrics.h>
 #include <database_cache/sockets.h>
 
-#if USE_EARDB
-#include <database_cache/eardbd_api.h>
-#include <daemon/eard_utils.h>
-#endif
 
 #if DB_MYSQL
+#include <database_cache/eardbd_api.h>
+#include <daemon/eard_utils.h>
 #include <common/database/db_helper.h>
 #endif
 
@@ -70,6 +68,9 @@ extern my_node_conf_t     *my_node_conf;
 extern cluster_conf_t my_cluster_conf;
 extern eard_dyn_conf_t eard_dyn_conf;
 extern policy_conf_t default_policy_context,energy_tag_context,authorized_context;
+extern int ear_ping_fd;
+extern int ear_fd_ack[1];
+extern int application_id;
 static char *__NAME__="EARD";
 extern char *__HOST__;
 
@@ -131,6 +132,15 @@ void clean_job_environment(int id,int step_id)
 	char ear_ping[MAX_PATH_SIZE],fd_lock_filename[MAX_PATH_SIZE],ear_commack[MAX_PATH_SIZE];
 	uint pid=create_ID(id,step_id);
 
+	if (ear_ping_fd>=0){
+		close(ear_ping_fd);
+		ear_ping_fd=-1;
+	}
+	if (ear_fd_ack[0]>=0){
+		close(ear_fd_ack[0]);
+		ear_fd_ack[0]=-1;
+	}
+	application_id = -1;
 	sprintf(ear_ping,"%s/.ear_comm.ping.%u",ear_tmp,pid);
     sprintf(fd_lock_filename, "%s/.ear_app_lock.%u", ear_tmp, pid);
     sprintf(ear_commack, "%s/.ear_comm.ack_0.%u",ear_tmp, pid);
@@ -255,15 +265,17 @@ void report_powermon_app(powermon_app_t *app)
 	report_application_data(&app->app);
 	report_application_in_file(&app->app);
 	
-	#if !USE_EARDB
 	#if DB_MYSQL
-    if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
-	#endif
-	#else
-    if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
-        eard_verbose(0,"Error when sending application to eardb");
-		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
-    }
+    if (my_cluster_conf.eard.use_mysql){ 
+		if (!my_cluster_conf.eard.use_eardbd){
+			if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
+		}else{
+    		if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
+        		eard_verbose(0,"Error when sending application to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+    		}
+		}
+	}
 	#endif
 }
 
@@ -419,6 +431,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
     pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);	
 	eard_verbose(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
+	eard_verbose(1,"*******************\n");
 	sig_reported=0;
 
 }
@@ -587,17 +600,18 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 
-	#if !USE_EARDB
 	#if DB_MYSQL
-	/* current sample reports the value of job_id and step_id active at this moment */
-	/* If we want to be strict, we must report intermediate samples at job start and job end */
-    if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
-	#endif
-
-	#else
-	if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
-		eard_verbose(0,"Error when sending periodic power metric to eardb");
-		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+	if (my_cluster_conf.eard.use_mysql){
+		if (!my_cluster_conf.eard.use_eardbd){
+			/* current sample reports the value of job_id and step_id active at this moment */
+			/* If we want to be strict, we must report intermediate samples at job start and job end */
+    		if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
+		}else{
+			if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
+				eard_verbose(0,"Error when sending periodic power metric to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
+		}
 	}
 	#endif
 

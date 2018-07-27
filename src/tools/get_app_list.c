@@ -52,15 +52,17 @@ void main(int argc,char *argv[])
 	printf("Initializinf DB\n");
 	init_db_helper(&my_conf.database);
 	printf("reading apps\n");
-	num_apps=db_read_applications(&apps,is_learning, 50, argv[2]);
+	num_apps=db_read_applications(&apps,is_learning, 50, NULL);
     while (num_apps > 0)
     {
 	    for (i=0;i<num_apps;i++){
-		    report_application_data(&apps[i]);
+		    if (strcmp(apps[i].node_id,argv[2])==0){ 
+				total_apps++;
+				report_application_data(&apps[i]);
+			}
 	    }
         free(apps);
-        total_apps += num_apps;
-	    num_apps=db_read_applications(&apps,is_learning, 50, argv[2]);
+	    num_apps=db_read_applications(&apps,is_learning, 50, NULL);
     }
     printf("Total apps from queries: %d\n", total_apps);
     printf("Total apps from DB: %d\n", get_num_applications(is_learning, argv[2])); 

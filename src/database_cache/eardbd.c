@@ -254,15 +254,18 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 		type = "loop_t";
 
 		memcpy (&lops[lops_i], content, sizeof(loop_t));
-		lops_i += 1;
 
-		verbose("%d %d %d '%s' %lu", lops[lops_i].id.event, lops[lops_i].id.size, lops[lops_i].id.level,
+		verbose("%d %d %d '%s' %lu ", lops[lops_i].id.event, lops[lops_i].id.size, lops[lops_i].id.level,
 			lops[lops_i].node_id, lops[lops_i].total_iterations);
 		print_signature_fd(STDERR_FILENO, &lops[lops_i].signature);
+		lops_i += 1;
 
 		if (lops_i == eves_len) {
+			verbose("Inserting %u loop instances\n",lops_i);
 			db_store_loops(lops, lops_i);
 			lops_i = 0;
+		}else{
+			verbose("total loop_i=%u\n",lops_i);
 		}
 	} else {
 		type = "unknown";

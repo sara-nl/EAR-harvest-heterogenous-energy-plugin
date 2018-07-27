@@ -141,8 +141,11 @@ void create_tables(MYSQL *connection)
                             DC_energy BIGINT unsigned NOT NULL, \
                             node_id VARCHAR(256) NOT NULL, \
                             job_id BIGINT NOT NULL, \
-                            step_id BIGINT NOT NULL, \
-                            PRIMARY KEY (id))")) execute_on_error(connection);
+                            step_id BIGINT NOT NULL, "
+#if DEMO
+                            "avg_f BIGINT, "
+#endif
+                            "PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Power_signatures (  \
                             id INT unsigned NOT NULL AUTO_INCREMENT, \
@@ -164,6 +167,7 @@ void create_tables(MYSQL *connection)
                             job_id INT NOT NULL, \
                             step_id INT NOT NULL, \
                             freq BIGINT unsigned NOT NULL, \
+                            node_id VARCHAR(256), \
                             PRIMARY KEY (id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Warnings ( \
@@ -210,8 +214,6 @@ void create_tables(MYSQL *connection)
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
                             id INT unsigned NOT NULL AUTO_INCREMENT,\
                             DC_power DOUBLE,\
-                            max_DC_power DOUBLE, \
-                            min_DC_power DOUBLE, \
                             DRAM_power DOUBLE,\
                             PCK_power DOUBLE,\
                             EDP DOUBLE,\
@@ -240,7 +242,7 @@ void create_tables(MYSQL *connection)
 
 void main(int argc,char *argv[])
 {
-    if (argc != 2) usage(argv[0]);
+//    if (argc != 2) usage(argv[0]);
 	
     MYSQL *connection = mysql_init(NULL); 
 
@@ -250,7 +252,6 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    mysql_real_connect(connection, argv[1], "root", "", NULL, 0, NULL, 0);
 
     cluster_conf_t my_cluster;
     char ear_path[256];
@@ -260,6 +261,8 @@ void main(int argc,char *argv[])
         exit(0);
     }
     read_cluster_conf(ear_path, &my_cluster);
+
+    mysql_real_connect(connection, my_cluster.database.ip, "root", "", NULL, 0, NULL, 0);
 
     create_db(connection, my_cluster.database.database);
 

@@ -12,9 +12,7 @@ econtrol_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
 ifdef DB_BASE
 BINARIES = eacct econtrol
 
-SBINARIES += ear_create_database \
-             ear_energy_over_time \
-             ear_store_database
+SBINARIES += ear_create_database 
 endif
 
 ######## RULES

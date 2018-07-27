@@ -81,15 +81,17 @@
 // EARD default values and configuration
 #define POWERMON_FREQ		30 		// Frequency for periodic power monitoring
 #define DAEMON_PORT_NUMBER	50000 	// Default port used by the power monitoring
-#define USE_EARDB			1		// Sets the EARD to report directly to the DB or use the EARDB
 
 // EARGMD default values and configuration
 #define DEFAULT_T1			60 		// Default period T1 used by the global mamager in seconds
 #define DEFAULT_T2			600		// Default period T2 used by the global mamager in seconds. T2 should be multiple of T1
 #define MAX_ENERGY			300 	// Energy limit (in Joules) consumed by the cluster during period T2
 #define EARGM_PORT_NUMBER	60000	// Default port used by the global manager
+#define DEFAULT_POWER       275
+#define GRACE_T1			3
 
 #define LARGE_CLUSTER		0		// This flag affects the data types and insertions into the DB
+#define DB_SIMPLE			0
 #define COEFFS_V3 1
 #define APP_API 1
 
