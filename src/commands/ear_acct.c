@@ -234,11 +234,23 @@ void print_full_apps(application_t *apps, int num_apps)
         if (strlen(apps[i].job.app_id) > 30)
             strcpy(apps[i].job.app_id, strrchr(apps[i].job.app_id, '/')+1);
 
-        avg_f = (double) apps[i].signature.avg_f/1000000;
-        printf("%8u.%-3u\t %-10s %-15s %-25s %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
-            apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
-            avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-            apps[i].signature.time * apps[i].signature.DC_power);
+        if (apps[i].is_mpi)
+        {
+            avg_f = (double) apps[i].signature.avg_f/1000000;
+            printf("%8u.%-3u\t %-10s %-15s %-25s %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
+                apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
+                avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
+                apps[i].signature.time * apps[i].signature.DC_power);
+        }
+        else
+        {
+            avg_f = (double) apps[i].power_sig.avg_f/1000000;
+            printf("%8u.%-3u\t %-10s %-15s %-25s %-14.2lf %-14.2lf %-14.2lf %-14s %-14s %-14.2lf\n",
+                apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
+                avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NON-MPI", "NON-MPI", 
+                apps[i].power_sig.time * apps[i].power_sig.DC_power);
+
+        }
 
     }
 }
@@ -264,19 +276,37 @@ void print_short_apps(application_t *apps, int num_apps)
             "POWER (Watts)", "GBS", "CPI", "ENERGY (J)");
     for (i = 0; i < num_apps; i ++)
     {
-        avg_f = (double) apps[i].signature.avg_f/1000000;
-        if (apps[i].job.id == current_job_id && apps[i].job.step_id == current_step_id && current_is_mpi)
+        if (apps[i].job.id == current_job_id && apps[i].job.step_id == current_step_id)
         {
-            avg_frequency += avg_f;
-            avg_time += apps[i].signature.time;
-            avg_power += apps[i].signature.DC_power;
-            avg_GBS += apps[i].signature.GBS;
-            avg_CPI += apps[i].signature.CPI;
-            total_energy += apps[i].signature.time * apps[i].signature.DC_power;
-            current_apps++;
+            if (current_is_mpi)
+            {
+                avg_f = (double) apps[i].signature.avg_f/1000000;
+                avg_frequency += avg_f;
+                avg_time += apps[i].signature.time;
+                avg_power += apps[i].signature.DC_power;
+                avg_GBS += apps[i].signature.GBS;
+                avg_CPI += apps[i].signature.CPI;
+                total_energy += apps[i].signature.time * apps[i].signature.DC_power;
+                current_apps++;
+            }
+            else
+            {
+                avg_f = (double) apps[i].power_sig.avg_f/1000000;
+                avg_frequency += avg_f;
+                avg_time += apps[i].power_sig.time;
+                avg_power += apps[i].power_sig.DC_power;
+                total_energy += apps[i].power_sig.time * apps[i].power_sig.DC_power;
+                current_apps++;
+            }
         }
+        
         else
         {
+            //to print: job_id.step_id \t user_id si root \t app_name \t num_nodes
+            if (strlen(apps[i-1].job.app_id) > 30)
+                strcpy(apps[i-1].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
+
+
             if (current_is_mpi)
             {
                 
@@ -286,14 +316,21 @@ void print_short_apps(application_t *apps, int num_apps)
                 avg_GBS /= current_apps;
                 avg_CPI /= current_apps;
 
-                //to print: job_id.step_id \t user_id si root \t app_name \t num_nodes
-                if (strlen(apps[i-1].job.app_id) > 30)
-                    strcpy(apps[i-1].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
-
                 if (avg_f > 0 && avg_time > 0 && total_energy > 0)
                     printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
                         current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
                         avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+            }
+            else
+            {
+                avg_frequency /= current_apps;
+                avg_time /= current_apps;
+                avg_power /= current_apps;
+                if (avg_f > 0 && avg_time > 0 && total_energy > 0)
+                    printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14s %-14s %-14.2lf\n",
+                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
+                        avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
+
             }
             if (apps[i].job.id != current_job_id || apps[i].job.step_id != current_step_id)
             {
