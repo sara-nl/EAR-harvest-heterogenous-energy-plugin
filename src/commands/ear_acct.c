@@ -409,10 +409,7 @@ void add_int_filter(char *query, char *addition, int value)
     strcat(query_tmp, addition);
     strcat(query_tmp, "=");
     strcat(query_tmp, "%llu");
-    printf("QUERY: %s\n", query);
-    printf("VALUE: %u\n", value);
     sprintf(query, query_tmp, value);
-    printf("QUERY: %s\n", query);
     query_filters ++;
 }
 
