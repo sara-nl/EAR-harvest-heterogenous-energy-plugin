@@ -1,4 +1,4 @@
-Single node tests
+Multiple node tests
 -----------------
 
 These tests are designed to evaluate the different plugin options to be supported by slurm plugin, EARD, and EARL. They run in 4 nodes. To change it for more nodes just edit the test and change the following environment variables:

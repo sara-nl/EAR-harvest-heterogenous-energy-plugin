@@ -91,3 +91,4 @@ CMake*
 npbparams.h
 setparams
 kernels/STREAM/stream_mpi
+kernels/DGEMM/mkl_c_samples_09072016.tgz
