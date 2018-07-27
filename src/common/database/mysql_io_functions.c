@@ -415,7 +415,8 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
     MYSQL_BIND bind[5];
-    unsigned long job_id, step_id, sig_id, pow_sig_id;
+    unsigned long job_id, step_id, pow_sig_id;
+    long sig_id = 0; 
     int num_apps;
     memset(bind, 0, sizeof(bind));
 
