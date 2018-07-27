@@ -350,20 +350,34 @@ void print_short_apps(application_t *apps, int num_apps)
     }
     if (num_apps > 0)
     {
-        avg_frequency /= current_apps;
-        avg_time /= current_apps;
-        avg_power /= current_apps;
-        avg_GBS /= current_apps;
-        avg_CPI /= current_apps;
-
-        //to print: job_id.step_id \t user_id si root \t app_name \t num_nodes
         if (strlen(apps[i-1].job.app_id) > 30)
             strcpy(apps[i-1].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
 
-        if (avg_f > 0 && avg_time > 0 && total_energy > 0)
-            printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
-                current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
-                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+        if (apps[i-1].is_mpi)
+        {
+            avg_frequency /= current_apps;
+            avg_time /= current_apps;
+            avg_power /= current_apps;
+            avg_GBS /= current_apps;
+            avg_CPI /= current_apps;
+
+
+            if (avg_f > 0 && avg_time > 0 && total_energy > 0)
+                printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
+                    current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
+                    avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+        }
+        else
+        {
+            avg_frequency /= current_apps;
+            avg_time /= current_apps;
+            avg_power /= current_apps;
+            if (avg_f > 0 && avg_time > 0 && total_energy > 0)
+                printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14s %-14s %-14.2lf\n",
+                    current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
+                    avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
+
+        }
     }
 }
 
@@ -438,9 +452,6 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
     if (user != NULL)
         add_string_filter(query, "user_id", user);
 
-//    if (!full_length && strlen(csv_path) < 1)
-//        strcat(query, " GROUP BY job_id");
-
     if (limit > 0)
     {
         strcat(query, " ORDER BY Jobs.end_time desc LIMIT %u");
@@ -506,7 +517,7 @@ void main(int argc, char *argv[])
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
-        exit(0);
+        exit(1);
     }
 
     if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) VERBOSE_N(0, "ERROR reading cluster configuration\n");
