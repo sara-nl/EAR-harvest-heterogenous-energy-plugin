@@ -3,6 +3,8 @@ Single node tests
 
 These tests are designed to evaluate the different plugin options to be supported by slurm plugin, EARD, and EARL
 * Assuming ear=on, some results depend on user privilege
+* Test from 1..100 are designed to test srun options. They must be executes in the command line without arguments (./test1.sh) . They use kernels binaries, so they must be compiled before using the tests. 
+* tests test1XX.sh replicates testXX.sh but the are testing sbatch usage. They must be submitted using sbatch testXX.sh. Folder OUTS must be manually created before execution.
 
 | Name   |Case             | Expected behavoiour                                                         |
 | -------|----------------- | --------------------------------------------------------------------------- |
