@@ -64,13 +64,16 @@ MinTimePerformanceAccuracy=10000000
 How to run MPI applications with EARL
 -------------------------------------
 
-To load EARL with MPI jobs, it is only required to set the LD_PRELOAD environment variable with the EAR library binary 'libear.so' path name, before your application starts. EARL will be loaded at runtime and MPI calls will be intercepted calling EAR API automatically. To simplify the execution of applications with EARL, we include a SLURM plugin, which extends srun options.
+To load EARL with MPI jobs, it is only required to set the LD_PRELOAD environment variable with the EAR library binary 'libear.so' path name, before your application starts. EARL will be loaded at runtime and MPI calls will be intercepted calling EAR API automatically. To simplify the execution of applications with EARL, we include a SLURM SPANK plugin, which extends srun options.
 
-EAR SLURM
+EAR with SLURM plugin
 -------------------------
-Just call the `srun` program with, at least, the argument `--ear`, which loads the EAR library together with your application using just the default configuration. For a complete list of parameters, please visit the [SLURM plugin page](../slurm_plugin/README.md)
+Even though EAR doesn't need SLURM tobe executed, this is the recommended option since it makes totally transparent the execution of jobs with EAR. The plugin will deal with the configuration of the application and will contact the EARD and EAR Global Manager. 
 
-In example: `./srun -N2 -n2 --ear-policy=MIN_ENERGY_TO_SOLUTION --ear-policy-th=0.9 application`
+EAR library can be configured by the system administrator to be loaded "by default" or not. When EAR is configured by default, it is not needed to add any option to srun or sbatch. If EAR is disables by default, users can enable it by using some of the ear options or just adding `--ear=on` , in that case, default configuration will be loaded. For a complete list of parameters, please visit the [SLURM plugin page](../slurm_plugin/README.md)
+
+For example: `./srun -N2 -n2 --ear=on application` --> will run application with EAR library with default configuration (defined by sysadmin)  
+For example: `./srun -N2 -n2 --ear-policy=MIN_ENERGY_TO_SOLUTION application` --> will run application with EAR library and will select MIN_ENERGY_TO_SOLUTION power policy. If the user is not allowed to use this policy, the default settings will be applied   
 
 If your application is not an MPI application, the benefits of the EAR library won't be applied. But the SLURM plugin would contact with the daemons in order to monitorize the application metrics and take a decision in case the energy budget is surpassed.
 
@@ -80,8 +83,6 @@ This way doesn't make use of any cluster job scheduler, so a a script is provide
 
 In the folder `$(ETC)/scripts/launching`, execute the `mpi_exec.sh` script to launch the job. In example `./mpi_exec.sh computing_node1 28 28 MONITORING_ONLY`, where both numbers are the MPI processes and the MPI's per node, an the last one is the policy. This is script will use the `LD_PRELOAD` environment variable to load the library next to your MPI applications.
 
-Offline
--------
 
 License
 -------
