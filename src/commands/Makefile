@@ -20,19 +20,19 @@ endif
 all: $(BINARIES) $(SBINARIES) $(COMPONENTS)
 
 eacct: ear_acct.c $(erport_OBJS)
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o eacct ear_acct.c $(DB_LDFLAGS) $(erport_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eacct ear_acct.c $(DB_LDFLAGS) $(erport_OBJS)
 
 econtrol: ear_control.c $(econtrol_OBJS) 
-	$(CC) $(CFLAGS) -o econtrol ear_control.c $(econtrol_OBJS) 
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o econtrol ear_control.c $(econtrol_OBJS) 
 
 ear_create_database: ear_create_database.c $(SRCDIR)/common/types.a
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS) $(SRCDIR)/common/types.a
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o ear_create_database ear_create_database.c $(DB_LDFLAGS) $(SRCDIR)/common/types.a
 
 ear_energy_over_time: ear_energy_over_time.c
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_energy_over_time ear_energy_over_time.c $(DB_LDFLAGS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o ear_energy_over_time ear_energy_over_time.c $(DB_LDFLAGS)
 
 ear_store_database: ear_store_database.c
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o ear_store_database ear_store_database.c $(DB_LDFLAGS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o ear_store_database ear_store_database.c $(DB_LDFLAGS)
 
 ######## OPTIONS
 
