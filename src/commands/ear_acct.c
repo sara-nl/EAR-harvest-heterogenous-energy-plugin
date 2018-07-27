@@ -440,7 +440,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
      
     if (verbose) fprintf(stderr, "Preparing query statement\n");
     
-    sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id where Jobs.end_time in (select end_time from (select end_time from Jobs" );
+    sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id and Applications.step_id = Jobs.step_id where Jobs.end_time in (select end_time from (select end_time from Jobs" );
     application_t *apps;
     if (job_id >= 0)
         add_int_filter(query, "id", job_id);
