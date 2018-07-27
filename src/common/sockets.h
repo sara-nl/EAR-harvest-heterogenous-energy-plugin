@@ -34,14 +34,13 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-//#include <common/sizes.h>
+#include <common/sizes.h>
 #include <common/states.h>
 #include <common/types/generic.h>
 
 #define BACKLOG				10
 #define TCP					SOCK_STREAM
 #define UDP					SOCK_DGRAM
-#define SZ_NAME_MEDIUM		256
 
 /* types */
 typedef struct socket {

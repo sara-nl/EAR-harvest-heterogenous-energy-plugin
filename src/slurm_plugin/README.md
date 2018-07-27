@@ -21,7 +21,7 @@ After the plugin configuration, a set of additional arguments are included in SL
 | --ear-policy           | Energy/time policy             | See *EAR_POWER_POLICY* environment variable.                |
 | --ear-policy-th        | Threshold of the policy        | Value between 0 and 1.                                      |
 | --ear-verbose          | Verbosity level                | Value between 0 and 4.                                      |
-| --ear-learning-phase   | Enables the learning phase     | *P_STATE* [0..n].                                           |
+| --ear-learning         | Enables the learning phase     | *P_STATE* [0..n].                                           |
 | --ear-traces           | Saves trace files with metrics | Path where the files will be placed.                        |
 | --job-name             | App/job name for debugging     | Name for the job/application.                               |
 | --ear-user-db			 | Use-db filename root			  | Specifies the file to save the user applications metrics summary'file.nodename.csv' file  |
