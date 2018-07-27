@@ -28,17 +28,20 @@
 */
 
 #define _XOPEN_SOURCE 700 //to get rid of the warning
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <unistd.h>
+#include <common/states.h>
 #include <common/config.h>
+#include <common/types/configuration/cluster_conf.h>
 
-#if DB_MYSQL
 #include <mysql/mysql.h>
-#define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Report.Periodic_metrics WHERE start_time" \
+#define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Periodic_metrics WHERE start_time" \
                     ">= ? AND end_time <= ?"
-#endif
+
+int EAR_VERBOSE_LEVEL = 0;
 
 void usage(char *app)
 {
@@ -46,7 +49,6 @@ void usage(char *app)
 	exit(1);
 }
 
-#if DB_MYSQL
 
 long long stmt_error(MYSQL_STMT *statement)
 {
@@ -90,6 +92,7 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     memset(res_bind, 0, sizeof(res_bind));
     res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
     long long result = 0;
+    printf("result: %u\n", result);
     res_bind[0].buffer = &result;
 
     if (mysql_stmt_bind_param(statement, bind)) return stmt_error(statement);
@@ -97,60 +100,38 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     if (mysql_stmt_execute(statement)) return stmt_error(statement);
     if (mysql_stmt_store_result(statement)) return stmt_error(statement);
 
+    printf("result: %u\n", result);
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
         result = -2;
 
     mysql_stmt_close(statement);
+    printf("result: %u\n", result);
     return result;
 
 
 }
-#endif
 
 
 void main(int argc,char *argv[])
 {
-    if (argc < 3) usage(argv[0]);
+    char path_name[256];
+    cluster_conf_t my_conf;
 
-#if DB_MYSQL
-    char *db_ip = "127.0.0.1";
-    char *db_user = "root";
-    char *db_pass = "";
-    
-
-    unsigned long long divisor = 1;
-    int i;
-    for (i = 3; i < argc -1; i++)
+    if (get_ear_conf_path(path_name) == EAR_ERROR)
     {
-        if (!strcmp(argv[i], "-d"))
-            divisor = (atoi(argv[i+1]) > 0) ? atoi(argv[i+1]) : divisor;
-        if (!strcmp(argv[i], "-u"))
-            db_user = argv[i+1];
-        if (!strcmp(argv[i], "-db"))
-            db_ip = argv[i+1];
-        if (!strcmp(argv[i], "-p"))
-            db_pass = argv[i+1];
-          
-    }
-    printf("User: %s\n", db_user);
-    struct tm *start={0}, *end={0}; 
-    time_t start_time, end_time;
-    
-    start = getdate(argv[1]);
-    if (start == NULL)
-    {
-     //   printf("getdate error %d\n", getdate_err);
-        if (getdate_err == 7) fprintf(stderr, "Usupported date input. Please check your $DATEMSK file to see your defined inputs. \
-                                                If the environment variable is not set, please set it to a valid format file. \n");
-        else fprintf(stderr, "Error with date format.\n");
+        fprintf(stderr, "Error getting ear.conf path.\n");
         exit(1);
     }
-    start_time = mktime(start);
-   
-    end = getdate(argv[2]);
-    end_time = mktime(end);
+
+    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) fprintf(stderr, "Error reading configuration");
     
+    char *user = getlogin();
+    if (user == NULL)
+    {
+        fprintf(stderr, "Error getting username, cannot verify identity of user executing the command. Exiting...\n");
+        exit(1);
+    }
     MYSQL *connection = mysql_init(NULL);
     if (!connection)
     {
@@ -158,24 +139,27 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    if (!mysql_real_connect(connection, db_ip, db_user, db_pass, NULL, 0, NULL, 0))
+    if (!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user, "", my_conf.database.database, 0, NULL, 0))
     {
         fprintf(stderr, "Error connecting to the database (%d) :%s\n",
                 mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
         exit(1);
     }
-    
-    long long result = get_sum(connection, start_time, end_time, divisor);
+    time_t end_time = time(NULL);
+    long long result = get_sum(connection, end_time-2400, end_time, 1);
 
     mysql_close(connection);
     
     if (!result) printf("No results in that period of time found\n");
-    else if (result < 0) exit(1);
+    else if (result < 0) 
+    {
+        fprintf(stderr, "Error querying the database.\n");
+        exit(1);
+    }
     else printf("Total energy spent: %lli\n", result);
     
 
-#endif
 
     exit(1);
 }
