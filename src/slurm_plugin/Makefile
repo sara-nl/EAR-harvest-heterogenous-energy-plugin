@@ -26,7 +26,7 @@ earplug.so: $(SOURCES) $(HEADERS)
 ######## OPTIONS
 
 install:
-	#cp earplug.so $(DESTDIR)/lib
+	cp earplug.so $(DESTDIR)/lib
 
 clean:
 	rm -f *.o *.a *.so
