@@ -44,6 +44,16 @@ static socket_t *sock_metr_tcp = &sockets[0];
 static socket_t *sock_metr_udp = &sockets[1];
 static socket_t *sock_sync_tcp = &sockets[2];
 
+// Descriptors
+fd_set fds_metr_tcp;
+fd_set fds_sync_tcp;
+fd_set fds_incoming;
+fd_set fds_incoming;
+fd_set fds_active;
+
+int fd_max;
+int fd_cli;
+
 // Times
 static struct timeval timeout_insr;
 static struct timeval timeout_sync;
@@ -51,7 +61,8 @@ static ulong time_insrt;
 
 // Input buffers
 static packet_header_t input_header;
-static char input_buffer[MAX_PACKET_SIZE()];
+//static char input_buffer[MAX_PACKET_SIZE()];
+static char input_buffer[PATH_MAX];
 static char extra_buffer[PATH_MAX];
 
 // Mirror
@@ -91,15 +102,22 @@ static uint i_loops[2];
  */
 static int sync_question()
 {
-	state s;
+	state_t s;
 
-	s = sockets_send(&sock_sync_tcp, &sync_qst_header, (char *) &sync_qst_content, sizeof(sync_qst_t));
+	/*s = sockets_send(sock_sync_tcp, &sync_qst_header, (char *) &sync_qst_content);
 
 	if (state_fail(s)) {
+		verbose("Failed to send to MAIN (num: %d, str: %s)",
+				intern_error_num, intern_error_str);
 		return EAR_ERROR;
-	}
+	}*/
 
-	s = sockets_recv();
+	// 1) Conectar con MAIN
+	// 2) Hacer un send con la pregunta
+	// 3) Hacer un receive con timeout a 10 segundos
+	//type = "sync_answer";
+	//process_clean_by_answer((sync_ans_t *) content);
+	//process_insert();
 
 	return EAR_SUCCESS;
 }
@@ -107,6 +125,7 @@ static int sync_question()
 static int sync_answer(int fd)
 {
 	socket_t sync_ans_socket;
+	state_t s;
 
 	// Socket
 	sockets_clean(&sync_ans_socket);
@@ -116,7 +135,13 @@ static int sync_answer(int fd)
 	// Header
 	sockets_header_update(&sync_ans_header);
 
-	sockets_send(&sync_ans_socket, &sync_ans_header, (char *) &sync_ans_content, sizeof(sync_ans_t));
+	s = sockets_send(&sync_ans_socket, &sync_ans_header, (char *) &sync_ans_content);
+
+	if (state_fail(s)) {
+		verbose("Failed to send to MIRROR (num: %d, str: %s)",
+				intern_error_num, intern_error_str);
+		return EAR_ERROR;
+	}
 
 	return EAR_SUCCESS;
 }
@@ -231,7 +256,7 @@ static void make_periodic_aggregation(periodic_aggregation_t *aggr, periodic_met
 	add_periodic_aggregation(aggr, met->DC_energy, met->start_time, met->end_time);
 }
 
-static void clean_all(int mirror)
+static void process_clean_mirror(int mirror)
 {
 	i_metrs[mirror] = 0;
 	i_appsm[mirror] = 0;
@@ -241,7 +266,12 @@ static void clean_all(int mirror)
 	i_loops[mirror] = 0;
 }
 
-static void store_all(int mirror)
+static void process_clean_by_answer(sync_ans_t *answer)
+{
+	process_clean_mirror(1);
+}
+
+static void process_insert_mirror(int mirror)
 {
 	db_store_periodic_aggregation(mirror);
 	db_store_periodic_metrics(mirror);
@@ -253,27 +283,34 @@ static void store_all(int mirror)
 	db_store_loops(mirror);
 }
 
-static void process_timeout_insr_data()
+static void process_insert()
 {
 	verbose("Finished aggregation, consumed %lu energy (mJ) from %lu to %lu,",
 			aggr[i_main].DC_energy, aggr[i_main].start_time, aggr[i_main].end_time);
 
-	store_all(i_main);
+	process_insert_mirror(i_main);
 
-	if (!im_mirror) {
-		return;
+	if (im_mirror)
+	{
+		if(state_fail(sync_question())) {
+			// Comprobar que ha pasado
+			// Tomar decisión
+		} else {
+			// 4) Procesar la respuesta
+			// 5) Limpiar datos obsoletos
+			// 6) Mini insert de los datos que compartan timestamp
+			// 7) Limpieza total
+		}
 	}
 
-	if(sync_question()) {
-		store_all(i_mirr);
-	} else {
-		clean_all(i_mirr);
-	}
+	// Refresh insert time
+	timeout_insr.tv_sec = time_insrt;
+	timeout_insr.tv_usec = 0L;
 }
 
 static void process_incoming_data(int fd, packet_header_t *header, char *content)
 {
-	uint i = header->data_extra != 0;
+	uint i = header->data_extra1 != 0;
 	char *type;
 	uint *j;
 
@@ -348,12 +385,15 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 		if (*j == len_evnts) {
 			db_store_loops(i);
 		}
-	} else if (header->content_type == CONTENT_TYPE_ANS) {
-		type = "sync_ans";
-		// Process answer
-	} else if (header->content_type == CONTENT_TYPE_QST) {
+	} else if (header->content_type == CONTENT_TYPE_QST)
+	{
 		type = "sync_question";
-		sync_ans(fd);
+
+		if (state_fail(sync_answer(fd))) {
+			// Comprobar el error
+			// Tomar decisión
+			// sockets_disconnect(fd, &fds_active);
+		}
 	}else {
 		type = "unknown";
 	}
@@ -369,7 +409,7 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
  * Main
  */
 
-void data_init()
+void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 {
 	len_metrs = 32 * 512;
 	len_appsx = 32 * 512;
@@ -421,14 +461,14 @@ void data_init()
 	// Database
 	init_db_helper(&conf_clus.database);
 	#else
-	conf_clus.db_manager.aggr_time = 60;
-	conf_clus.db_manager.tcp_port = 4711;
-	conf_clus.db_manager.udp_port = 4712;
+	conf_clus->db_manager.aggr_time = 10;
+	conf_clus->db_manager.tcp_port = 4711;
+	conf_clus->db_manager.udp_port = 4712;
 	im_mirror = atoi(argv[1]);
 	#endif
 
 	// Times
-	time_insrt = (long) conf_clus.db_manager.aggr_time;
+	time_insrt = (long) conf_clus->db_manager.aggr_time;
 
 	timeout_insr.tv_sec  = time_insrt;
 	timeout_insr.tv_usec = 0L;
@@ -436,15 +476,15 @@ void data_init()
 	timeout_sync.tv_usec = 0L;
 
 	// Synchronization
-	sockets_header_clean(sync_ans_header);
-	sockets_header_clean(sync_qst_header);
+	sockets_header_clean(&sync_ans_header);
+	sockets_header_clean(&sync_qst_header);
 
 	sync_ans_header.content_type = CONTENT_TYPE_ANS;
-	sync_ans_header.content_size = sizeof(sync_ans);
+	sync_ans_header.content_size = sizeof(sync_ans_t);
 	sync_qst_header.content_type = CONTENT_TYPE_QST;
-	sync_qst_header.content_size = sizeof(sync_qst);
+	sync_qst_header.content_size = sizeof(sync_qst_t);
 
-	sockets_set_timeout(sock_sync_tcp, &timeout_sync);
+	sockets_set_timeout(sock_sync_tcp->fd, &timeout_sync);
 }
 
 void usage(int argc, char **argv)
@@ -456,14 +496,9 @@ int main(int argc, char **argv)
 	cluster_conf_t conf_clus;
 	int i;
 
-	fd_set fds_incoming;
-	fd_set fds_active;
-	int fd_max;
-	int fd_cli;
-
-	state_t state1;
-	state_t state2;
-	state_t state3;
+	state_t s1;
+	state_t s2;
+	state_t s3;
 
 	//
 	usage(argc, argv);
@@ -471,7 +506,7 @@ int main(int argc, char **argv)
 	//
 	verbose("phase 1: data initiallization space");
 
-	data_init();
+	data_init(argc, argv, &conf_clus);
 
 	//
 	verbose("phase 2: sockets");
@@ -484,12 +519,12 @@ int main(int argc, char **argv)
 	sockets_init(sock_metr_udp, NULL, conf_clus.db_manager.udp_port, UDP);
 	sockets_init(sock_sync_tcp, NULL, 4713, TCP);
 
-	state1 = sockets_socket(sock_metr_tcp);
-	state2 = sockets_socket(sock_metr_udp);
-	state3 = sockets_socket(sock_sync_tcp);
+	s1 = sockets_socket(sock_metr_tcp);
+	s2 = sockets_socket(sock_metr_udp);
+	s3 = sockets_socket(sock_sync_tcp);
 
-	if (state_fail(state1) || state_fail(state2) || state_fail(state3)) {
-		error("while creating sockets (%s)", state_error);
+	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
+		error("while creating sockets (%s)", intern_error_str);
 	}
 
 	verbose ("opened metrics socket %d for TCP packets on port %u", sock_metr_tcp->fd, sock_metr_tcp->port);
@@ -497,20 +532,20 @@ int main(int argc, char **argv)
 	verbose ("opened sync socket %d for TCP packets on port %u", sock_sync_tcp->fd, sock_sync_tcp->port);
 
 	// Binding socket
-	state1 = sockets_bind(sock_metr_tcp);
-	state2 = sockets_bind(sock_metr_udp);
-	state3 = sockets_bind(sock_sync_tcp);
+	s1 = sockets_bind(sock_metr_tcp);
+	s2 = sockets_bind(sock_metr_udp);
+	s3 = sockets_bind(sock_sync_tcp);
 
-	if (state_fail(state1) || state_fail(state2) || state_fail(state3)) {
-		error("while binding sockets (%s)", state_error);
+	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
+		error("while binding sockets (%s)", intern_error_str);
 	}
 
 	// Listening socket
-	state1 = sockets_listen(sock_metr_tcp);
-	state3 = sockets_listen(sock_sync_tcp);
+	s1 = sockets_listen(sock_metr_tcp);
+	s3 = sockets_listen(sock_sync_tcp);
 
-	if (state_fail(state1) || state_fail(state3)) {
-		error("while listening sockets (%s)", state_error);
+	if (state_fail(s1) || state_fail(s3)) {
+		error("while listening sockets (%s)", intern_error_str);
 	}
 
 	// Add the listener to the ready set
@@ -540,12 +575,9 @@ int main(int argc, char **argv)
 		}
 
 		// If timeout_insr, data processing
-		if (timeout_insr.tv_sec == 0 && timeout_insr.tv_usec == 0)
-		{
-			process_timeout_insr_data();
-
-			timeout_insr.tv_sec = time_insrt;
-			timeout_insr.tv_usec = 0L;
+		if (timeout_insr.tv_sec == 0 && timeout_insr.tv_usec == 0) {
+			// Inserts data and updates timeouts
+			process_insert();
 		}
 
 		// run through the existing connections looking for data to read
@@ -553,12 +585,12 @@ int main(int argc, char **argv)
 		{
 			if (FD_ISSET(i, &fds_incoming)) // we got one!!
 			{
-				// Handle new connections
+				// Handle new connections (just for TCP)
 				if (i == sock_metr_tcp->fd || i == sock_sync_tcp->fd)
 				{
-					state1 = sockets_accept(i, &fd_cli);
+					s1 = sockets_accept(i, &fd_cli);
 
-					if (state_ok(state1))
+					if (state_ok(s1))
 					{
 						verbose("accepted connection from socket %d", fd_cli);
 
@@ -572,20 +604,20 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-					verbose("something happens with the socket %d", i);
-					state1 = sockets_receive(i, &input_header, input_buffer, sizeof(input_buffer));
+					s1 = sockets_receive(i, &input_header, input_buffer, sizeof(input_buffer));
 
-					if (state_ok(state1)) {
+					if (state_ok(s1)) {
 						process_incoming_data(i, &input_header, input_buffer);
 					} else {
-						if (state_is(state1, EAR_SOCK_DISCONNECTED)) {
-							verbose("disconnected from socket %d", i);
+						if (state_is(s1, EAR_SOCK_DISCONNECTED)) {
+							verbose("disconnected from socket %d (num: %d, str: %s)",
+									i, intern_error_num, intern_error_str);
 						} else {
-							error("on reception (%s), disconnecting from socket %d", strerror(errno), i);
+							verbose("on reception (num: %d, str: %s), disconnecting from socket %d",
+									intern_error_num, intern_error_str, i);
 						}
 
-						FD_CLR(i, &fds_active);
-						close(i);
+						sockets_disconnect(i, &fds_active);
 					}
 				}
 			}

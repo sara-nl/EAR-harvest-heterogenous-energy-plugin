@@ -48,6 +48,9 @@
 #define EAR_MYSQL_ERROR         -14
 #define EAR_MYSQL_STMT_ERROR    -15
 #define EAR_ADDR_NOT_FOUND		-19
+#define EAR_SOCK_BAD_PROTOCOL	-27
+#define EAR_SOCK_DISCONNECTED	-28
+
 #define EAR_SOCK_CREAT_ERROR	-20
 #define EAR_SOCK_BIND_ERROR		-21
 #define EAR_SOCK_LISTEN_ERROR	-22
@@ -55,8 +58,6 @@
 #define EAR_SOCK_RECV_ERROR		-24
 #define EAR_SOCK_ACCEPT_ERROR	-25
 #define EAR_SOCK_CONN_ERROR		-26
-#define EAR_SOCK_BAD_PROTOCOL	-27
-#define EAR_SOCK_DISCONNECTED	-28
 
 // TODO: this is a config not a state
 #define DYNAIS_ENABLED      1
@@ -68,7 +69,8 @@
 typedef int state_t;
 
 /* global data */
-char *state_error;
+char *intern_error_str;
+int intern_error_num;
 
 #define state_ok(state) \
 	state == EAR_SUCCESS
@@ -82,8 +84,9 @@ char *state_error;
 #define state_return(state) \
 	return state;
 
-#define state_return_msg(state, error) \
-	state_error = error; \
+#define state_return_msg(state, error_num, error_str) \
+	intern_error_num = error_num; \
+	intern_error_str = error_str; \
 	return state;
 #else
 #endif //STATES_H

@@ -46,7 +46,7 @@ state_t sockets_accept(int fd_req, int *fd_cli)
 	*fd_cli = accept(fd_req, (struct sockaddr *) &cli_addr, &size);
 
 	if (*fd_cli == -1) {
-		state_return_msg(EAR_SOCK_ACCEPT_ERROR, strerror(errno));
+		state_return_msg(EAR_SOCK_ACCEPT_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
@@ -71,7 +71,8 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	packet_header_t *output_header;
 	char *output_content;
 	ssize_t bytes_sent;
-	size_t bytes_left;
+	ssize_t bytes_expc;
+	ssize_t bytes_left;
 	state_t s;
 	int n;
 
@@ -83,14 +84,15 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	memcpy(output_header, header, sizeof(packet_header_t));
 
 	// Content process
-	memcpy (output_content, content, size_content);
+	memcpy (output_content, content, header->content_size);
 
 	// Sizes
-	bytes_left = output_header->packet_size;
+	bytes_expc = sizeof(packet_header_t) + header->content_size;
+	bytes_left = bytes_expc;
 	bytes_sent = 0;
 
 	// Sending
-	while(bytes_sent < output_header->packet_size)
+	while(bytes_sent < bytes_expc)
 	{
 		if (socket->protocol == TCP) {
 			n = send(socket->fd, output_buffer + bytes_sent, bytes_left, 0);
@@ -99,25 +101,51 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 		}
 
 		if (n == -1) {
-			state_return_msg(EAR_SOCK_SEND_ERROR, strerror(errno));
+			state_return_msg(EAR_SOCK_SEND_ERROR, errno, strerror(errno));
 		}
 
 		bytes_sent += n;
 		bytes_left -= n;
-
-		printf("SOCKETS, sended %lu\n", bytes_sent);
 	}
 
 	state_return(EAR_SUCCESS);
 }
 
+// Receive:
+//
+// Errors:
+//	Returning EAR_BAD_ARGUMENT
+//	 - Header or buffer pointers are NULL
+//	 - Buffer size is less than the packet content size
+//	Returning EAR_SOCK_DISCONNECTED
+//	 - Received 0 bytes (meaning disconnection)
+//   - ECONNRESET: A connection was forcibly closed by a peer.
+//   - ENOTCONN: A receive is attempted on a connection-mode socket that is not connected.
+//   - ETIMEDOUT: The connection timed out during connection establishment, or due to a transmission
+//     timeout on active connection.
+//	Returning EAR_NOT_READY
+//	 - EAGAIN: The socket's file descriptor is marked O_NONBLOCK and no data is waiting.
+//   - EINVAL: The MSG_OOB flag is set and no out-of-band data is available.
+//	Returning EAR_ERROR
+//   - EBADF: The socket argument is not a valid file descriptor.
+//   - ENOTSOCK: The socket argument does not refer to a socket.
+//   - EOPNOTSUPP: The specified flags are not supported for this socket type or protocol.
+//   - EINTR: The recv() function was interrupted by a signal that was caught, before any data was available.
+//   - EIO: An I/O error occurred while reading from or writing to the file system.
+//	 - ENOBUFS: Insufficient resources were available in the system to perform the operation.
+//	 - ENOMEM: Insufficient memory was available to fulfill the request.
+
 state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer)
 {
 	ssize_t bytes_recv;
-	size_t bytes_expc;
-	size_t bytes_left;
+	ssize_t bytes_expc;
+	ssize_t bytes_left;
 	char *bytes_buff;
 	int i = 0;
+
+	if (header == NULL || buffer == NULL) {
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
+	}
 
 	// Receiving header
 	bytes_buff = (char *) header;
@@ -130,23 +158,34 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 		while (bytes_recv < bytes_expc)
 		{
 			bytes_recv += recv(fd, (void *) &bytes_buff[bytes_recv], bytes_left, 0);
-			printf("SOCKETS, received %ld (%d)\n", bytes_recv, i);
 
 			if (bytes_recv <= 0)
 			{
-				if (bytes_recv == 0) {
-					state_return_msg(EAR_SOCK_DISCONNECTED, "disconnected from socket");
-				} else {
-					state_return_msg(EAR_SOCK_RECV_ERROR, strerror(errno));
+				switch (bytes_recv) {
+					case 0:
+						state_return_msg(EAR_SOCK_DISCONNECTED, 0, "disconnected from socket");
+					case ENOTCONN:
+					case ETIMEDOUT:
+					case ECONNRESET:
+						state_return_msg(EAR_SOCK_DISCONNECTED, errno, strerror(errno));
+					case EINVAL:
+					case EAGAIN:
+						state_return_msg(EAR_NOT_READY, errno, strerror(errno));
+					default:
+						state_return_msg(EAR_SOCK_RECV_ERROR, errno, strerror(errno));
 				}
 			}
 		}
 
 		bytes_buff = buffer;
-		bytes_expc = header->packet_size - bytes_recv;
+		bytes_expc = header->content_size;
 		bytes_left = bytes_expc;
 		bytes_recv = 0;
 		i++;
+
+		if (bytes_expc > size_buffer) {
+			state_return_msg(EAR_BAD_ARGUMENT, 0, "buffer to small for the received object %ld %ld");
+		}
 	}
 
 	state_return(EAR_SUCCESS);
@@ -154,20 +193,21 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 
 state_t sockets_set_timeout(int fd, struct timeval *timeout)
 {
-	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) timeout, sizeof(timeval));
+	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) timeout, sizeof(struct timeval));
+	state_return(EAR_SUCCESS);
 }
 
 state_t sockets_listen(socket_t *socket)
 {
 	if (socket->protocol == UDP) {
-		state_return_msg(EAR_SOCK_LISTEN_ERROR, "UDP port can't be listened");
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "UDP port can't be listened");
 	}
 
 	// Listening the port
 	int r = listen(socket->fd, BACKLOG);
 
 	if (r < 0) {
-		state_return_msg(EAR_SOCK_LISTEN_ERROR, strerror(errno));
+		state_return_msg(EAR_SOCK_LISTEN_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
@@ -179,7 +219,7 @@ state_t sockets_bind(socket_t *socket)
 	int r = bind(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
 
 	if (r < 0) {
-		state_return_msg(EAR_SOCK_BIND_ERROR, (char *) strerror(errno));
+		state_return_msg(EAR_SOCK_BIND_ERROR, errno, (char *) strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
@@ -204,14 +244,14 @@ state_t sockets_socket(socket_t *sock)
 	}
 
 	if ((r = getaddrinfo(sock->host, c_port, &hints, &sock->info)) != 0) {
-		state_return_msg(EAR_ADDR_NOT_FOUND, (char *) gai_strerror(r));
+		state_return_msg(EAR_ADDR_NOT_FOUND, errno, (char *) gai_strerror(r));
 	}
 
 	//
 	sock->fd = socket(sock->info->ai_family, sock->info->ai_socktype, sock->info->ai_protocol);
 
 	if (sock->fd < 0) {
-		state_return_msg(EAR_SOCK_CREAT_ERROR, strerror(errno));
+		state_return_msg(EAR_SOCK_CREAT_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
@@ -222,7 +262,7 @@ state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
 	state_t s;
 
 	if (protocol != TCP && protocol != UDP) {
-		state_return_msg(EAR_SOCK_BAD_PROTOCOL, "protocol does not exist");
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "protocol does not exist");
 	}
 
 	if (host != NULL) {
@@ -242,13 +282,10 @@ state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
 state_t sockets_dispose(socket_t *socket)
 {
 	if (socket->fd >= 0) {
-		sockets_disconnect(&socket->fd);
+		sockets_disconnect(socket->fd, NULL);
 	}
 
-	if (socket->info != NULL) {
-		freeaddrinfo(socket->info);
-		socket->info = NULL;
-	}
+	sockets_clean(socket);
 
 	state_return(EAR_SUCCESS);
 }
@@ -262,24 +299,32 @@ state_t sockets_connect(socket_t *socket)
 
 	if (r < 0) {
 		printf("str %s\n", strerror(errno));
-		state_return_msg(EAR_SOCK_CONN_ERROR, strerror(errno));
+		state_return_msg(EAR_SOCK_CONN_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_disconnect(int *fd)
+state_t sockets_disconnect(int fd, fd_set* set)
 {
-	if (*fd > 0) {
-		close(*fd);
+	if (set != NULL) {
+		FD_CLR(fd, set);
 	}
-	*fd = -1;
+
+	if (fd > 0) {
+		close(fd);
+	}
 
 	state_return(EAR_SUCCESS);
 }
 
 state_t sockets_clean(socket_t *socket)
 {
+	if (socket->info != NULL) {
+		freeaddrinfo(socket->info);
+		socket->info = NULL;
+	}
+
 	socket->host_dst[0] = '\0';
  	socket->info = NULL;
 	socket->host = NULL;

@@ -60,17 +60,15 @@ static state_t _packet_send(uint content_type, char *content, ssize_t content_si
 
 	// Main packet
 	header.content_type = content_type;
+	header.content_size = content_size;
 	header.data_extra1 = 0; // Mirroring
 	header.data_extra2 = 0; // Its ok
 
-	//header->content_size = sizeof(packet_header_t) + content_size;
-	//header->content_type = content_type;
-	//header->data_extra = header->data_extra;
+	s = sockets_send(&sock_main, &header, content);
 
-
-	s = sockets_send(&sock_main, &header, content, content_size);
-
+	// If the sending fails
 	if (state_fail(s)) {
+		// Then the mirror is tested
 		eardbd_disconnect();
 		return s;
 	}
@@ -80,8 +78,9 @@ static state_t _packet_send(uint content_type, char *content, ssize_t content_si
 		return EAR_SUCCESS;
 	}
 
-	header.data_extra = 1; // Mirroring
-	s = sockets_send(&sock_mirr, &header, content, content_size);
+	header.data_extra1 = 1; // Mirroring
+	header.data_extra2 = 0; // It's ok
+	s = sockets_send(&sock_mirr, &header, content);
 
 	if (state_fail(s)) {
 		eardbd_disconnect();
@@ -131,7 +130,6 @@ static state_t _eardbd_socket(socket_t *socket, char *host, uint port, uint prot
 	if (protocol == TCP)
 	{
 		s = sockets_connect(&sock_main);
-		printf("api = %d (%s) %p\n", s, state_error, &state_error);
 
 		if (state_fail(s)) {
 			return s;
