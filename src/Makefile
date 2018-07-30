@@ -40,6 +40,9 @@ check:
 
 install: install.components
 
+%.install:
+	@ $(MAKE) -C $* install || exit
+
 clean: clean.components
 
 depend: depend.components

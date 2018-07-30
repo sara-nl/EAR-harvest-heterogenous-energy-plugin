@@ -28,6 +28,8 @@ slurm-*.out
 coefficients_list.csv
 *accepted_intel_ptu_license
 *.csv
+src/commands/ear_options_test.c
+src/commands/ear_energy_over_time
 
 
 # Build
@@ -92,3 +94,5 @@ npbparams.h
 setparams
 kernels/STREAM/stream_mpi
 kernels/DGEMM/mkl_c_samples_09072016.tgz
+
+
