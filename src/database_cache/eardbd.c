@@ -39,10 +39,11 @@
 int EAR_VERBOSE_LEVEL = 1;
 
 // Sockets
-static socket_t sockets[3];
-static socket_t *sock_metr_tcp = &sockets[0];
-static socket_t *sock_metr_udp = &sockets[1];
-static socket_t *sock_sync_tcp = &sockets[2];
+static socket_t sockets[4];
+static socket_t *sock_metr_srv_tcp = &sockets[0];
+static socket_t *sock_metr_srv_udp = &sockets[1];
+static socket_t *sock_sync_srv_tcp = &sockets[2];
+static socket_t *sock_sync_cli_tcp = &sockets[3];
 
 // Descriptors
 fd_set fds_metr_tcp;
@@ -57,7 +58,18 @@ int fd_cli;
 // Times
 static struct timeval timeout_insr;
 static struct timeval timeout_sync;
-static ulong time_insrt;
+static time_t time_insr_last;
+static ulong  time_insr;
+
+/*
+static time_t  tinsr_glbal[2];
+static time_t *tmetr_enrgy[2];
+static time_t *tmetr_appsm[2];
+static time_t *tmetr_appsn[2];
+static time_t *tmetr_appsl[2];
+static time_t *tmetr_evnts[2];
+static time_t *tmetr_loops[2];
+*/
 
 // Input buffers
 static packet_header_t input_header;
@@ -74,14 +86,14 @@ static int im_mirror;
 
 // Data warehouse
 static periodic_aggregation_t aggr[2];
-static periodic_metric_t *metrs[2];
-static application_t *appsm[2];
-static application_t *appsn[2];
-static application_t *appsl[2];
-static ear_event_t *evnts[2];
-static loop_t *loops[2];
+static periodic_metric_t *enrgy[2];
+static     application_t *appsm[2];
+static     application_t *appsn[2];
+static     application_t *appsl[2];
+static       ear_event_t *evnts[2];
+static            loop_t *loops[2];
 
-static ulong len_metrs;
+static ulong len_enrgy;
 static ulong len_appsx;
 static ulong len_evnts;
 static ulong len_loops;
@@ -90,7 +102,7 @@ static ulong len_loops;
 #define i_main 0
 #define i_mirr 1
 
-static uint i_metrs[2];
+static uint i_enrgy[2];
 static uint i_appsm[2];
 static uint i_appsn[2];
 static uint i_appsl[2];
@@ -104,20 +116,31 @@ static int sync_question()
 {
 	state_t s;
 
-	/*s = sockets_send(sock_sync_tcp, &sync_qst_header, (char *) &sync_qst_content);
+	s = sockets_connect(sock_sync_cli_tcp);
 
 	if (state_fail(s)) {
-		verbose("Failed to send to MAIN (num: %d, str: %s)",
-				intern_error_num, intern_error_str);
+		verbose("Failed to connect to MAIN (%d, inum: %d, istr: %s)",
+				s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
-	}*/
+	}
 
-	// 1) Conectar con MAIN
-	// 2) Hacer un send con la pregunta
-	// 3) Hacer un receive con timeout a 10 segundos
-	//type = "sync_answer";
-	//process_clean_by_answer((sync_ans_t *) content);
-	//process_insert();
+	s = sockets_send(sock_sync_cli_tcp, &sync_qst_header, (char *) &sync_qst_content);
+
+	if (state_fail(s)) {
+		verbose("Failed to send to MAIN (%d, num: %d, str: %s)",
+				s, intern_error_num, intern_error_str);
+		return EAR_ERROR;
+	}
+
+	s = sockets_receive(sock_sync_cli_tcp->fd, &sync_ans_header, (char *) &sync_ans_content, sizeof(sync_ans_t));
+
+	if (state_fail(s)) {
+		verbose("Failed to receive from MAIN (%d, num: %d, str: %s)",
+				s, intern_error_num, intern_error_str);
+		return EAR_ERROR;
+	}
+
+	verbose("Synchronization completed correctly");
 
 	return EAR_SUCCESS;
 }
@@ -138,10 +161,12 @@ static int sync_answer(int fd)
 	s = sockets_send(&sync_ans_socket, &sync_ans_header, (char *) &sync_ans_content);
 
 	if (state_fail(s)) {
-		verbose("Failed to send to MIRROR (num: %d, str: %s)",
-				intern_error_num, intern_error_str);
+		verbose("Failed to send to MIRROR (%d, num: %d, str: %s)",
+				s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
+
+	verbose("Synchronization completed correctly");
 
 	return EAR_SUCCESS;
 }
@@ -181,14 +206,14 @@ static void db_store_loops(uint mirror)
 static void db_store_periodic_metrics(uint mirror)
 {
 	uint  i = mirror;
-	uint *j = &i_metrs[mirror];
+	uint *j = &i_enrgy[mirror];
 
 	if (*j <= 0) {
 		return;
 	}
 
 	verbose("Trying to insert in DB %d periodic metric samples", *j);
-	//db_batch_insert_periodic_metrics(metrs[i], *j);
+	//db_batch_insert_periodic_metrics(enrgy[i], *j);
 	*j = 0;
 }
 
@@ -258,17 +283,12 @@ static void make_periodic_aggregation(periodic_aggregation_t *aggr, periodic_met
 
 static void process_clean_mirror(int mirror)
 {
-	i_metrs[mirror] = 0;
+	i_enrgy[mirror] = 0;
 	i_appsm[mirror] = 0;
 	i_appsn[mirror] = 0;
 	i_appsl[mirror] = 0;
 	i_evnts[mirror] = 0;
 	i_loops[mirror] = 0;
-}
-
-static void process_clean_by_answer(sync_ans_t *answer)
-{
-	process_clean_mirror(1);
 }
 
 static void process_insert_mirror(int mirror)
@@ -285,7 +305,7 @@ static void process_insert_mirror(int mirror)
 
 static void process_insert()
 {
-	verbose("Finished aggregation, consumed %lu energy (mJ) from %lu to %lu,",
+	verbose("Inserting, consumed %lu energy (mJ) from %lu to %lu,",
 			aggr[i_main].DC_energy, aggr[i_main].start_time, aggr[i_main].end_time);
 
 	process_insert_mirror(i_main);
@@ -293,19 +313,18 @@ static void process_insert()
 	if (im_mirror)
 	{
 		if(state_fail(sync_question())) {
-			// Comprobar que ha pasado
-			// Tomar decisión
+			process_insert_mirror(i_mirr);
 		} else {
-			// 4) Procesar la respuesta
-			// 5) Limpiar datos obsoletos
-			// 6) Mini insert de los datos que compartan timestamp
-			// 7) Limpieza total
+			process_clean_mirror(i_mirr);
 		}
 	}
 
 	// Refresh insert time
-	timeout_insr.tv_sec = time_insrt;
+	timeout_insr.tv_sec = time_insr;
 	timeout_insr.tv_usec = 0L;
+
+	// Set when was the last insert time
+	time_insr_last = time(NULL);
 }
 
 static void process_incoming_data(int fd, packet_header_t *header, char *content)
@@ -326,9 +345,9 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 			memcpy (&appsl[i][*j], content, sizeof(application_t));
 			*j += 1;
 
-			if (*j == len_appsx)
-			{
-				db_store_applications_learning(i);
+			if (*j == len_appsx) {
+				//db_store_applications_learning(i);
+				process_insert();
 			}
 		} else if (app->is_mpi)
 		{
@@ -338,9 +357,9 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 			memcpy (&appsm[i][*j], content, sizeof(application_t));
 			*j += 1;
 
-			if (*j == len_appsx)
-			{
-				db_store_applications_mpi(i);
+			if (*j == len_appsx) {
+				//db_store_applications_mpi(i);
+				process_insert();
 			}
 		} else
 		{
@@ -350,20 +369,23 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 			memcpy (&appsn[i][*j], content, sizeof(application_t));
 			*j += 1;
 
-			if (*j == len_appsx) {
+			if (*j == len_appsx && i == i_mirr) {
+				process_insert();
+			} else {
 				db_store_applications(i);
 			}
 		}
 	} else if (header->content_type == CONTENT_TYPE_PER) {
 		type = "periodic_metric_t";
-		j = &i_metrs[i];
+		j = &i_enrgy[i];
 
-		memcpy (&metrs[i][*j], content, sizeof(periodic_metric_t));
-		make_periodic_aggregation(&aggr[i], &metrs[i][*j]);
+		memcpy (&enrgy[i][*j], content, sizeof(periodic_metric_t));
+		make_periodic_aggregation(&aggr[i], &enrgy[i][*j]);
 		*j += 1;
 
-		if (*j == len_metrs) {
-			db_store_periodic_metrics(i);
+		if (*j == len_enrgy) {
+			//db_store_periodic_metrics(i);
+			process_insert();
 		}
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
 		type = "ear_event_t";
@@ -372,8 +394,9 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 		memcpy (&evnts[i][*j], content, sizeof(ear_event_t));
 		*j += 1;
 
-		if (*j == len_evnts) {
-			db_store_events(i);
+		if (*j == len_evnts && i == i_mirr) {
+			//db_store_events(i);
+			process_insert();
 		}
 	} else if (header->content_type == CONTENT_TYPE_LOO) {
 		type = "loop_t";
@@ -383,18 +406,26 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 		*j += 1;
 
 		if (*j == len_evnts) {
-			db_store_loops(i);
+			//db_store_loops(i);
+			process_insert();
 		}
 	} else if (header->content_type == CONTENT_TYPE_QST)
 	{
 		type = "sync_question";
 
-		if (state_fail(sync_answer(fd))) {
-			// Comprobar el error
-			// Tomar decisión
-			// sockets_disconnect(fd, &fds_active);
+		double ftime_insr_last = (double) time(NULL) - (double) time_insr_last;
+		double ftime_insr_sync = time_insr * 0.1;
+
+		verbose("Received question from host: %s", header->host_src);
+		verbose("Time passed since last insert: %0.2lf", ftime_insr_last);
+		verbose("Threshold of synchronization: %0.2lf", ftime_insr_sync);
+
+		if (time_insr_last <= ftime_insr_sync) {
+			process_insert();
 		}
-	}else {
+
+		sync_answer(fd);
+	} else {
 		type = "unknown";
 	}
 
@@ -411,12 +442,13 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 
 void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 {
-	len_metrs = 32 * 512;
+	len_enrgy = 32 * 512;
 	len_appsx = 32 * 512;
 	len_evnts = 32 * 512;
 	len_loops = 128 * 512;
 
-	ulong b_metrs = sizeof(periodic_metric_t) * len_metrs * 2;
+	// Raw data
+	ulong b_enrgy = sizeof(periodic_metric_t) * len_enrgy * 2;
 	ulong b_appsx = sizeof(application_t) * len_appsx * 2;
 	ulong b_evnts = sizeof(ear_event_t) * len_evnts * 2;
 	ulong b_loops = sizeof(loop_t) * len_loops * 2;
@@ -424,11 +456,11 @@ void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 	appsm[i_main] = malloc(b_appsx);
 	appsn[i_main] = malloc(b_appsx);
 	appsl[i_main] = malloc(b_appsx);
-	metrs[i_main] = malloc(b_metrs);
+	enrgy[i_main] = malloc(b_enrgy);
 	evnts[i_main] = malloc(b_evnts);
 	loops[i_main] = malloc(b_loops);
 
-	metrs[i_mirr] = &metrs[i_main][len_metrs];
+	enrgy[i_mirr] = &enrgy[i_main][len_enrgy];
 	appsm[i_mirr] = &appsm[i_main][len_appsx];
 	appsn[i_mirr] = &appsn[i_main][len_appsx];
 	appsl[i_mirr] = &appsl[i_main][len_appsx];
@@ -436,18 +468,40 @@ void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 	loops[i_mirr] = &loops[i_main][len_loops];
 
 	float mb_appsx = (double) (b_appsx) / 1000000.0;
-	float mb_metrs = (double) (b_metrs) / 1000000.0;
+	float mb_enrgy = (double) (b_enrgy) / 1000000.0;
 	float mb_loops = (double) (b_loops) / 1000000.0;
 	float mb_evnts = (double) (b_evnts) / 1000000.0;
-	float mb_total = (mb_appsx * 3) + mb_metrs + mb_loops + mb_evnts;
+	float mb_total = (mb_appsx * 3) + mb_enrgy + mb_loops + mb_evnts;
 
 	verbose("reserving %0.2f MBytes for mpi apps (%lu per app)", mb_appsx, sizeof(application_t));
 	verbose("reserving %0.2f MBytes for learning apps (%lu per app)", mb_appsx, sizeof(application_t));
 	verbose("reserving %0.2f MBytes for non-mpi apps (%lu per app)", mb_appsx, sizeof(application_t));
-	verbose("reserving %0.2f MBytes for power metrics (%lu per metric)", mb_metrs, sizeof(periodic_metric_t));
+	verbose("reserving %0.2f MBytes for power metrics (%lu per metric)", mb_enrgy, sizeof(periodic_metric_t));
 	verbose("reserving %0.2f MBytes for events (%lu per event)", mb_evnts, sizeof(ear_event_t));
 	verbose("reserving %0.2f MBytes for loops (%lu per loop)", mb_loops, sizeof(loop_t));
 	verbose("total memory allocated: %0.2f MBytes", mb_total);
+
+	// Times
+	/*
+	ulong b_enrgy = sizeof(time_t) * len_enrgy * 2;
+	ulong b_appsx = sizeof(time_t) * len_appsx * 2;
+	ulong b_evnts = sizeof(time_t) * len_evnts * 2;
+	ulong b_loops = sizeof(time_t) * len_loops * 2;
+
+	tmetr_appsm[i_main] = malloc(b_appsx);
+	tmetr_appsn[i_main] = malloc(b_appsx);
+	tmetr_appsl[i_main] = malloc(b_appsx);
+	tmetr_enrgy[i_main] = malloc(b_enrgy);
+	tmetr_evnts[i_main] = malloc(b_evnts);
+	tmetr_loops[i_main] = malloc(b_loops);
+
+	tmetr_enrgy[i_mirr] = &enrgy[i_main][len_enrgy];
+	tmetr_appsm[i_mirr] = &appsm[i_main][len_appsx];
+	tmetr_appsn[i_mirr] = &appsn[i_main][len_appsx];
+	tmetr_appsl[i_mirr] = &appsl[i_main][len_appsx];
+	tmetr_evnts[i_mirr] = &evnts[i_main][len_evnts];
+	tmetr_loops[i_mirr] = &loops[i_main][len_loops];
+	*/
 
 	#if 0
 	// Configuration file (TODO)
@@ -468,9 +522,9 @@ void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 	#endif
 
 	// Times
-	time_insrt = (long) conf_clus->db_manager.aggr_time;
+	time_insr = (long) conf_clus->db_manager.aggr_time;
 
-	timeout_insr.tv_sec  = time_insrt;
+	timeout_insr.tv_sec  = time_insr;
 	timeout_insr.tv_usec = 0L;
 	timeout_sync.tv_sec  = 30;
 	timeout_sync.tv_usec = 0L;
@@ -484,7 +538,7 @@ void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 	sync_qst_header.content_type = CONTENT_TYPE_QST;
 	sync_qst_header.content_size = sizeof(sync_qst_t);
 
-	sockets_set_timeout(sock_sync_tcp->fd, &timeout_sync);
+	sockets_set_timeout(sock_sync_srv_tcp->fd, &timeout_sync);
 }
 
 void usage(int argc, char **argv)
@@ -515,56 +569,57 @@ int main(int argc, char **argv)
 	FD_ZERO(&fds_active);
 
 	// Opening socket
-	sockets_init(sock_metr_tcp, NULL, conf_clus.db_manager.tcp_port, TCP);
-	sockets_init(sock_metr_udp, NULL, conf_clus.db_manager.udp_port, UDP);
-	sockets_init(sock_sync_tcp, NULL, 4713, TCP);
+	sockets_init(sock_metr_srv_tcp, NULL, conf_clus.db_manager.tcp_port, TCP);
+	sockets_init(sock_metr_srv_udp, NULL, conf_clus.db_manager.udp_port, UDP);
+	sockets_init(sock_sync_srv_tcp,    NULL, 4713, TCP);
+	sockets_init(sock_sync_cli_tcp, argv[2], 4713, TCP);
 
-	s1 = sockets_socket(sock_metr_tcp);
-	s2 = sockets_socket(sock_metr_udp);
-	s3 = sockets_socket(sock_sync_tcp);
+	s1 = sockets_socket(sock_metr_srv_tcp);
+	s2 = sockets_socket(sock_metr_srv_udp);
+	s3 = sockets_socket(sock_sync_srv_tcp);
 
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while creating sockets (%s)", intern_error_str);
 	}
 
-	verbose ("opened metrics socket %d for TCP packets on port %u", sock_metr_tcp->fd, sock_metr_tcp->port);
-	verbose ("opened metrics socket %d for UDP packets on port %u", sock_metr_udp->fd, sock_metr_udp->port);
-	verbose ("opened sync socket %d for TCP packets on port %u", sock_sync_tcp->fd, sock_sync_tcp->port);
+	verbose ("opened metrics socket %d for TCP packets on port %u", sock_metr_srv_tcp->fd, sock_metr_srv_tcp->port);
+	verbose ("opened metrics socket %d for UDP packets on port %u", sock_metr_srv_udp->fd, sock_metr_srv_udp->port);
+	verbose ("opened sync socket %d for TCP packets on port %u", sock_sync_srv_tcp->fd, sock_sync_srv_tcp->port);
 
 	// Binding socket
-	s1 = sockets_bind(sock_metr_tcp);
-	s2 = sockets_bind(sock_metr_udp);
-	s3 = sockets_bind(sock_sync_tcp);
+	s1 = sockets_bind(sock_metr_srv_tcp);
+	s2 = sockets_bind(sock_metr_srv_udp);
+	s3 = sockets_bind(sock_sync_srv_tcp);
 
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while binding sockets (%s)", intern_error_str);
 	}
 
 	// Listening socket
-	s1 = sockets_listen(sock_metr_tcp);
-	s3 = sockets_listen(sock_sync_tcp);
+	s1 = sockets_listen(sock_metr_srv_tcp);
+	s3 = sockets_listen(sock_sync_srv_tcp);
 
 	if (state_fail(s1) || state_fail(s3)) {
 		error("while listening sockets (%s)", intern_error_str);
 	}
 
 	// Add the listener to the ready set
-	FD_SET(sock_metr_tcp->fd, &fds_active);
-	FD_SET(sock_metr_udp->fd, &fds_active);
-	FD_SET(sock_sync_tcp->fd, &fds_active);
+	FD_SET(sock_metr_srv_tcp->fd, &fds_active);
+	FD_SET(sock_metr_srv_udp->fd, &fds_active);
+	FD_SET(sock_sync_srv_tcp->fd, &fds_active);
 
 	// Keep track of the biggest file descriptor
-	fd_max = sock_sync_tcp->fd;
+	fd_max = sock_sync_srv_tcp->fd;
 
-	if (sock_metr_tcp->fd > fd_max) {
-		fd_max = sock_metr_tcp->fd;
+	if (sock_metr_srv_tcp->fd > fd_max) {
+		fd_max = sock_metr_srv_tcp->fd;
 	}
-	if (sock_metr_udp->fd > fd_max) {
-		fd_max = sock_metr_udp->fd;
+	if (sock_metr_srv_udp->fd > fd_max) {
+		fd_max = sock_metr_srv_udp->fd;
 	}
 
 	//
-	verbose("phase 3: listening (processing every %lu s)", time_insrt);
+	verbose("phase 3: listening (processing every %lu s)", time_insr);
 
 	while(1)
 	{
@@ -586,7 +641,7 @@ int main(int argc, char **argv)
 			if (FD_ISSET(i, &fds_incoming)) // we got one!!
 			{
 				// Handle new connections (just for TCP)
-				if (i == sock_metr_tcp->fd || i == sock_sync_tcp->fd)
+				if (i == sock_metr_srv_tcp->fd || i == sock_sync_srv_tcp->fd)
 				{
 					s1 = sockets_accept(i, &fd_cli);
 

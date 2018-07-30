@@ -70,10 +70,12 @@ typedef struct sync_qst {
 } sync_qst_t;
 
 typedef struct sync_ans {
-	time_t timestamp_app;
-	time_t timestamp_per;
-	time_t timestamp_loo;
-	time_t timestamp_eve;
+	time_t timestamp_appsm;
+	time_t timestamp_appsn;
+	time_t timestamp_appsl;
+	time_t timestamp_metrs;
+	time_t timestamp_loops;
+	time_t timestamp_evnts;
 } sync_ans_t;
 
 #endif //EAR_EARDBD_H
