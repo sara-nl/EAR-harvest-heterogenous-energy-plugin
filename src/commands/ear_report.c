@@ -41,11 +41,28 @@
 #define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Periodic_metrics WHERE start_time" \
                     ">= ? AND end_time <= ?"
 
+#define AGGR_QUERY  "SELECT SUM(dc_energy)/? FROM Periodic_aggregations WHERE start_time" \
+                    ">= ? AND end_time <= ?"
+
+#define USER_QUERY  "SELECT SUM(DC_power*time)/? FROM Power_signatures WHERE id IN " \
+                    "(SELECT Applications.power_signature_id FROM Applications JOIN Jobs " \
+                    "ON job_id = id AND Applications.step_id = Jobs.step_id WHERE "\
+                    "Jobs.user_id = '%s' AND start_time >= ? AND end_time <= ?)"
+
+char *node_name = NULL;
+char *user_name = NULL;
 int EAR_VERBOSE_LEVEL = 0;
+int verbose = 0;
 
 void usage(char *app)
 {
-	printf("Usage: %s start_time end_time [options]\n", app);
+	printf("Usage: %s [options]\n", app);
+    printf("Options are as follows:\n"\
+            "\t-s start_time\t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
+            "\t-e ent_time  \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
+            "\t-n node_name \t indicates from which node the energy will be computed. Default: none (all nodes computed)\n"
+            "\t-u user_name \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed)\n"
+            "\t-h           \t shows this message.\n");
 	exit(1);
 }
 
@@ -69,7 +86,23 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
         return -1;
     }
     
-    if (mysql_stmt_prepare(statement, SUM_QUERY, strlen(SUM_QUERY)))
+    char query[256];
+
+    if (node_name != NULL)
+    {
+        strcpy(query, SUM_QUERY);
+        strcat(query, " AND node_id='");
+        strcat(query, node_name);
+        strcat(query, "'");
+    }
+    else if (user_name != NULL)
+    {
+        sprintf(query, USER_QUERY, user_name);
+    }
+    else strcpy(query, AGGR_QUERY);
+
+    if (verbose) printf("QUERY: %s\n", query);
+    if (mysql_stmt_prepare(statement, query, strlen(query)))
                                                 return stmt_error(statement);
 
 
@@ -92,7 +125,6 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     memset(res_bind, 0, sizeof(res_bind));
     res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
     long long result = 0;
-    printf("result: %u\n", result);
     res_bind[0].buffer = &result;
 
     if (mysql_stmt_bind_param(statement, bind)) return stmt_error(statement);
@@ -100,13 +132,11 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     if (mysql_stmt_execute(statement)) return stmt_error(statement);
     if (mysql_stmt_store_result(statement)) return stmt_error(statement);
 
-    printf("result: %u\n", result);
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
         result = -2;
 
     mysql_stmt_close(statement);
-    printf("result: %u\n", result);
     return result;
 
 
@@ -117,6 +147,11 @@ void main(int argc,char *argv[])
 {
     char path_name[256];
     cluster_conf_t my_conf;
+    time_t start_time = 0;
+    time_t end_time = time(NULL);
+    int divisor = 1000;
+    int flags, opt;
+    struct tm tinfo = {0};
 
     if (get_ear_conf_path(path_name) == EAR_ERROR)
     {
@@ -130,12 +165,15 @@ void main(int argc,char *argv[])
     if (user == NULL)
     {
         fprintf(stderr, "Error getting username, cannot verify identity of user executing the command. Exiting...\n");
+        free_cluster_conf(&my_conf);
         exit(1);
     }
+
     MYSQL *connection = mysql_init(NULL);
     if (!connection)
     {
         fprintf(stderr, "Error creating MYSQL object\n");
+        free_cluster_conf(&my_conf);
         exit(1);
     }
 
@@ -144,12 +182,63 @@ void main(int argc,char *argv[])
         fprintf(stderr, "Error connecting to the database (%d) :%s\n",
                 mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
+        free_cluster_conf(&my_conf);
         exit(1);
     }
-    time_t end_time = time(NULL);
-    long long result = get_sum(connection, end_time-2400, end_time, 1);
+
+    while ((opt = getopt(argc, argv, "vhn:u:s:e:")) != -1)
+    {
+        switch(opt)
+        {
+            case 'h':
+                usage(argv[0]);
+                mysql_close(connection);
+                free_cluster_conf(&my_conf);
+                break;
+            case 'v':
+                verbose=1;
+                break;
+            case 'n':
+                node_name = optarg;
+                break;
+            case 'u':
+                user_name = optarg;
+                break;
+            case 'e':
+                if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
+                {
+                    fprintf(stderr, "Incorrect time format. Supported format is YYYY-MM-DD\n");
+                    mysql_close(connection);
+                    free_cluster_conf(&my_conf);
+                    exit(1);
+                    break;
+                }
+                end_time = mktime(&tinfo);
+                break;
+            case 's':
+                if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
+                {
+                    fprintf(stderr, "Incorrect time format. Supported format is YYYY-MM-DD\n");
+                    mysql_close(connection);
+                    free_cluster_conf(&my_conf);
+                    exit(1);
+                    break;
+                }
+                start_time = mktime(&tinfo);
+                break;
+        }
+    }
+
+
+
+
+
+
+
+    long long result = get_sum(connection, start_time, end_time, divisor);
 
     mysql_close(connection);
+    free_cluster_conf(&my_conf);
     
     if (!result) printf("No results in that period of time found\n");
     else if (result < 0) 
@@ -157,10 +246,15 @@ void main(int argc,char *argv[])
         fprintf(stderr, "Error querying the database.\n");
         exit(1);
     }
-    else printf("Total energy spent: %lli\n", result);
-    
+    else
+    {
+        char sbuff[20], ebuff[20];
+        printf("Total energy spent from %s to %s: %lli J\n", strtok(ctime_r(&start_time, sbuff), "\n"),
+                strtok(ctime_r(&end_time, ebuff), "\n"), result);
+    }    
 
 
+    free_cluster_conf(&my_conf);
     exit(1);
 }
 
