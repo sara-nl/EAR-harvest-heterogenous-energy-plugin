@@ -41,17 +41,27 @@
 #define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Periodic_metrics WHERE start_time" \
                     ">= ? AND end_time <= ?"
 
+#define AGGR_QUERY  "SELECT SUM(dc_energy)/? FROM Periodic_aggregations WHERE start_time" \
+                    ">= ? AND end_time <= ?"
+
+#define USER_QUERY  "SELECT SUM(DC_power*time)/? FROM Power_signatures WHERE id IN " \
+                    "(SELECT Applications.power_signature_id FROM Applications JOIN Jobs " \
+                    "ON job_id = id AND Applications.step_id = Jobs.step_id WHERE "\
+                    "Jobs.user_id = '%s' AND start_time >= ? AND end_time <= ?)"
+
 char *node_name = NULL;
+char *user_name = NULL;
 int EAR_VERBOSE_LEVEL = 0;
 int verbose = 0;
 
 void usage(char *app)
 {
 	printf("Usage: %s [options]\n", app);
-    printf("Options are as follows:"\
+    printf("Options are as follows:\n"\
             "\t-s start_time\t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
             "\t-e ent_time  \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
             "\t-n node_name \t indicates from which node the energy will be computed. Default: none (all nodes computed)\n"
+            "\t-u user_name \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed)\n"
             "\t-h           \t shows this message.\n");
 	exit(1);
 }
@@ -77,14 +87,19 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     }
     
     char query[256];
-    strcpy(query, SUM_QUERY);
 
     if (node_name != NULL)
     {
+        strcpy(query, SUM_QUERY);
         strcat(query, " AND node_id='");
         strcat(query, node_name);
         strcat(query, "'");
     }
+    else if (user_name != NULL)
+    {
+        sprintf(query, USER_QUERY, user_name);
+    }
+    else strcpy(query, AGGR_QUERY);
 
     if (verbose) printf("QUERY: %s\n", query);
     if (mysql_stmt_prepare(statement, query, strlen(query)))
@@ -187,11 +202,15 @@ void main(int argc,char *argv[])
                 node_name = optarg;
                 break;
             case 'u':
+                user_name = optarg;
                 break;
             case 'e':
                 if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
                 {
                     fprintf(stderr, "Incorrect time format. Supported format is YYYY-MM-DD\n");
+                    mysql_close(connection);
+                    free_cluster_conf(&my_conf);
+                    exit(1);
                     break;
                 }
                 end_time = mktime(&tinfo);
@@ -200,6 +219,9 @@ void main(int argc,char *argv[])
                 if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
                 {
                     fprintf(stderr, "Incorrect time format. Supported format is YYYY-MM-DD\n");
+                    mysql_close(connection);
+                    free_cluster_conf(&my_conf);
+                    exit(1);
                     break;
                 }
                 start_time = mktime(&tinfo);
