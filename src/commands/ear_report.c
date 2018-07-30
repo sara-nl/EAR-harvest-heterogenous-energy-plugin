@@ -41,6 +41,12 @@
 #define SUM_QUERY   "SELECT SUM(dc_energy)/? FROM Periodic_metrics WHERE start_time" \
                     ">= ? AND end_time <= ?"
 
+#define MET_TIME    "SELECT MIN(start_time), MAX(end_time) FROM Periodic_metrics WHERE start_time" \
+                    ">= ? AND end_time <= ?"
+
+#define AGGR_TIME   "SELECT MIN(start_time), MAX(end_time) FROM Periodic_aggregations WHERE start_time" \
+                    ">= ? AND end_time <= ?"
+
 #define AGGR_QUERY  "SELECT SUM(dc_energy)/? FROM Periodic_aggregations WHERE start_time" \
                     ">= ? AND end_time <= ?"
 
@@ -53,6 +59,7 @@ char *node_name = NULL;
 char *user_name = NULL;
 int EAR_VERBOSE_LEVEL = 0;
 int verbose = 0;
+int avg_pow = -1;
 
 void usage(char *app)
 {
@@ -137,6 +144,70 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
         result = -2;
 
     mysql_stmt_close(statement);
+
+
+
+    if (user_name == NULL)
+    {
+        statement = mysql_stmt_init(connection);
+        if (!statement)
+        {
+            fprintf(stderr, "Error creating statement (%d): %s\n", mysql_errno(connection), 
+                    mysql_error(connection));
+            return result;
+        }
+
+        if (node_name != NULL)
+        {
+            strcpy(query, MET_TIME);
+            strcat(query, " AND node_id='");
+            strcat(query, node_name);
+            strcat(query, "'");
+        }
+        else
+            strcpy(query, AGGR_TIME);
+
+        if (verbose) printf("QUERY: %s\n", query);
+        if (mysql_stmt_prepare(statement, query, strlen(query)))
+        {
+            avg_pow = stmt_error(statement);
+            return result;
+        }
+        int start, end; 
+        MYSQL_BIND sec_bind[2];
+        memset(sec_bind, 0, sizeof(sec_bind));
+        sec_bind[0].buffer_type = sec_bind[1].buffer_type = MYSQL_TYPE_LONG;
+        sec_bind[0].buffer = (char *)&start_time;
+        sec_bind[1].buffer = (char *)&end_time;
+
+        MYSQL_BIND sec_res[2];
+        memset(sec_res, 0, sizeof(sec_res));
+        sec_res[0].buffer_type = sec_res[1].buffer_type = MYSQL_TYPE_LONGLONG;
+        sec_res[0].buffer = &start;
+        sec_res[1].buffer = &end;
+        
+        if (mysql_stmt_bind_param(statement, sec_bind))
+        {
+            avg_pow = stmt_error(statement);
+            return result;
+        }
+        if (mysql_stmt_bind_result(statement, sec_res))
+        {
+            avg_pow = stmt_error(statement);
+            return result;
+        }
+        if (mysql_stmt_execute(statement))
+        {
+            avg_pow = stmt_error(statement);
+            return result;
+        }
+        if (mysql_stmt_store_result(statement))
+        {
+            avg_pow = stmt_error(statement);
+            return result;
+        }
+        avg_pow = result / (end-start);
+    }
     return result;
 
 
@@ -230,11 +301,6 @@ void main(int argc,char *argv[])
     }
 
 
-
-
-
-
-
     long long result = get_sum(connection, start_time, end_time, divisor);
 
     mysql_close(connection);
@@ -249,8 +315,13 @@ void main(int argc,char *argv[])
     else
     {
         char sbuff[20], ebuff[20];
-        printf("Total energy spent from %s to %s: %lli J\n", strtok(ctime_r(&start_time, sbuff), "\n"),
-                strtok(ctime_r(&end_time, ebuff), "\n"), result);
+        strtok(ctime_r(&end_time, ebuff), "\n");
+        strtok(ctime_r(&start_time, sbuff), "\n");
+        printf("Total energy spent from %s to %s: %lli J\n", sbuff, ebuff, result);
+        if (avg_pow < 0)
+            fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
+        else
+            printf("Average power during the period: %d W\n", avg_pow);
     }    
 
 
