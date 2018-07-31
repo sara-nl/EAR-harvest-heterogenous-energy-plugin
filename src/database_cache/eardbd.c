@@ -146,7 +146,7 @@ static int sync_question()
 		return EAR_ERROR;
 	}
 
-	s = sockets_disconnect(sock_sync_cli_tcp->fd, NULL);
+	s = sockets_disconnect(sock_sync_cli_tcp);
 
 	verbose("synchronization completed correctly");
 
@@ -683,7 +683,8 @@ int main(int argc, char **argv)
 									intern_error_num, intern_error_str, i);
 						}
 
-						sockets_disconnect(i, &fds_active);
+						sockets_disconnect_fd(i);
+						FD_CLR(fd, set);
 					}
 				}
 			}

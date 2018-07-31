@@ -124,7 +124,8 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 		if (socket->protocol == TCP) {
 			bytes_sent += send(socket->fd, output_buffer + bytes_sent, bytes_left, 0);
 		} else {
-			bytes_sent += sendto(socket->fd, output_buffer + bytes_sent, bytes_left, 0, socket->info->ai_addr, socket->info->ai_addrlen);
+			bytes_sent += send(socket->fd, output_buffer + bytes_sent, bytes_left, 0);
+			//bytes_sent += sendto(socket->fd, output_buffer + bytes_sent, bytes_left, 0, socket->info->ai_addr, socket->info->ai_addrlen);
 		}
 
 		if (bytes_sent < 0)
@@ -323,7 +324,7 @@ state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
 state_t sockets_dispose(socket_t *socket)
 {
 	if (socket->fd >= 0) {
-		sockets_disconnect(socket->fd, NULL);
+		sockets_disconnect_fd(socket->fd);
 	}
 
 	sockets_clean(socket);
@@ -346,12 +347,18 @@ state_t sockets_connect(socket_t *socket)
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_disconnect(int fd, fd_set* set)
+state_t sockets_disconnect(socket_t *socket)
 {
-	if (set != NULL) {
-		FD_CLR(fd, set);
-	}
+	state_t s;
 
+	s = sockets_disconnect_fd(socket->fd);
+	socket->fd = -1;
+
+	state_return(s);
+}
+
+state_t sockets_disconnect_fd(int fd)
+{
 	if (fd > 0) {
 		close(fd);
 	}

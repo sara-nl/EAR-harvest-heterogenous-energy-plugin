@@ -63,7 +63,9 @@
 
 /* type & functions */
 typedef int state_t;
-char *state_error_str;
+
+/* */
+char *state_str;
 
 /* global data */
 char *intern_error_str;
