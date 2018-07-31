@@ -50,7 +50,6 @@ libs_ALL += libear_ompi.so libeart_ompi.so
 ompi_ALL = all.ompi.components libear_ompi.so \
            allt.ompi.components libeart_ompi.so
 endif
-OMPI_CCFLAGS
 ######## RULES
 
 all: all.gnrc.components $(impi_ALL) $(ompi_ALL)

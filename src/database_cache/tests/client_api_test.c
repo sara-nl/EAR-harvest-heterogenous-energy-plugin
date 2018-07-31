@@ -8,9 +8,9 @@
 
 void usage(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc != 2 && argc != 3)
 	{
-		printf("usage: %s IP/Hostname\n", argv[0]);
+		printf("usage: %s ip.main ip.mirror\n", argv[0]);
 		exit(1);
 	}
 }
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	report_application_data(&app);
 
 	// Testing API
-	s = eardbd_connect(argv[1], "E7450", 4711, TCP);
+	s = eardbd_connect(argv[1], argv[2], 4711, TCP);
 
 	printf("CONNECT RETURNED %d\n", s);
 

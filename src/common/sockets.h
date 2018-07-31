@@ -44,8 +44,8 @@
 
 /* types */
 typedef struct socket {
-	char host_dst[SZ_NAME_SHORT];
 	struct addrinfo *info;
+	char host_dst[SZ_NAME_SHORT];
 	char *host;
 	uint protocol;
 	uint port;

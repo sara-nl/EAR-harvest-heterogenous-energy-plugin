@@ -38,7 +38,6 @@
 static socket_t sock_main;
 static socket_t sock_mirr;
 static packet_header_t header;
-static int _connected = -1;
 
 /*
  *
@@ -46,20 +45,17 @@ static int _connected = -1;
  *
  */
 
-int is_connected(socket_t *socket)
-{
-	int connected = 0;
-	connected |= socket->fd >= 0 && socket->protocol == TCP;
-	//connected |= socket->fd
-	return 0;
-}
-
 static state_t _packet_send(uint content_type, char *content, ssize_t content_size)
 {
 	state_t state_main;
 	state_t state_mirr;
 
+	if (sock_main.fd == -1 && sock_mirr.fd == -1) {
+		state_return_msg(EAR_DBD_ERROR_BOTH, 0, "API not initialized");
+	}
+
 	// Main packet
+	sockets_header_update(&header);
 	header.content_type = content_type;
 	header.content_size = content_size;
 	header.data_extra1 = 0; // Mirroring
@@ -76,9 +72,9 @@ static state_t _packet_send(uint content_type, char *content, ssize_t content_si
 	// Sending to mirror
 	if (sock_mirr.fd == -1) {
 		if (state_fail(state_main)) {
-			return EAR_DBD_ERROR_MAIN;
+			state_return(EAR_DBD_ERROR_MAIN);
 		}
-		return state_main;
+		state_return(state_main);
 	}
 
 	header.data_extra1 = 1; // Mirroring
@@ -91,12 +87,12 @@ static state_t _packet_send(uint content_type, char *content, ssize_t content_si
 				state_mirr, intern_error_num, intern_error_str);
 
 		if (state_fail(state_main)) {
-			return EAR_DBD_ERROR_BOTH;
+			state_return(EAR_DBD_ERROR_BOTH);
 		}
-		return EAR_DBD_ERROR_MIRR;
+		state_return(EAR_DBD_ERROR_MIRR);
 	}
 
-	return EAR_SUCCESS;
+	state_return(EAR_SUCCESS);
 }
 
 static state_t _eardbd_prepare_socket(socket_t *socket, char *host, uint port, uint protocol)
@@ -125,6 +121,11 @@ static state_t _eardbd_prepare_socket(socket_t *socket, char *host, uint port, u
 	}
 
 	return EAR_SUCCESS;
+}
+
+static void _eardbd_disconnect(socket_t *socket)
+{
+    sockets_dispose(socket);
 }
 
 /*
@@ -181,7 +182,7 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 	state_main = _eardbd_prepare_socket(&sock_main, host_main, port, protocol);
 
 	if (state_fail(state_main) && host_mirror == NULL) {
-		eardbd_disconnect();
+		_eardbd_disconnect(&sock_main);
 		return EAR_DBD_ERROR_MAIN;
 	}
 
@@ -193,7 +194,7 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 
 	if (state_fail(state_mirr))
 	{
-		eardbd_disconnect();
+		_eardbd_disconnect(&sock_mirr);
 
 		if (state_fail(state_main)) {
 			return EAR_DBD_ERROR_BOTH;
@@ -206,8 +207,8 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 
 state_t eardbd_disconnect()
 {
-	printf("eardbd_disconnect\n");
-	sockets_dispose(&sock_main);
-	sockets_dispose(&sock_mirr);
+	_eardbd_disconnect(&sock_main);
+	_eardbd_disconnect(&sock_mirr);
+
 	return EAR_SUCCESS;
 }

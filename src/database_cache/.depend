@@ -1,28 +1,18 @@
 eardbd.o: eardbd.c ../database_cache/eardbd.h ../common/config.h \
-<<<<<<< HEAD
  ../common/sockets.h ../common/sizes.h ../common/states.h \
  ../common/types/generic.h ../common/types/log.h ../common/types/job.h \
-=======
- ../common/types/log.h ../common/types/generic.h ../common/types/job.h \
->>>>>>> 1d79f74900d0edb3cc0f76a164c718d9b63b4933
  ../common/types/loop.h ../common/types/signature.h \
  ../common/types/application.h ../common/types/power_signature.h \
  ../common/types/periodic_metric.h ../common/types/periodic_aggregation.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
-<<<<<<< HEAD
  ../common/ear_verbose.h
 eardbd_api.o: eardbd_api.c ../database_cache/eardbd_api.h \
  ../common/sockets.h ../common/sizes.h ../common/states.h \
  ../common/types/generic.h ../common/types/log.h ../common/types/job.h \
-=======
- ../common/ear_verbose.h ../common/states.h
-eardbd_api.o: eardbd_api.c ../database_cache/eardbd_api.h \
- ../common/types/log.h ../common/types/generic.h ../common/types/job.h \
->>>>>>> 1d79f74900d0edb3cc0f76a164c718d9b63b4933
  ../common/config.h ../common/types/loop.h ../common/types/signature.h \
  ../common/types/application.h ../common/types/power_signature.h \
  ../common/types/periodic_metric.h ../common/types/periodic_aggregation.h \
  ../database_cache/eardbd.h ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h
+ ../common/ear_verbose.h

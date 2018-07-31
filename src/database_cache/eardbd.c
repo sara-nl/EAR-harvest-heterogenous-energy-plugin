@@ -116,10 +116,16 @@ static int sync_question()
 {
 	state_t s;
 
+	verbose("synchronization started: asking the question");
+	
+	// Preparing packet
+	sockets_header_update(&sync_qst_header);
+	
+	// Synchronization pipeline
 	s = sockets_connect(sock_sync_cli_tcp);
 
 	if (state_fail(s)) {
-		verbose("Failed to connect to MAIN (%d, inum: %d, istr: %s)",
+		verbose("failed to connect to MAIN (%d, inum: %d, istr: %s)",
 				s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
@@ -127,7 +133,7 @@ static int sync_question()
 	s = sockets_send(sock_sync_cli_tcp, &sync_qst_header, (char *) &sync_qst_content);
 
 	if (state_fail(s)) {
-		verbose("Failed to send to MAIN (%d, num: %d, str: %s)",
+		verbose("failed to send to MAIN (%d, num: %d, str: %s)",
 				s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
@@ -135,12 +141,14 @@ static int sync_question()
 	s = sockets_receive(sock_sync_cli_tcp->fd, &sync_ans_header, (char *) &sync_ans_content, sizeof(sync_ans_t));
 
 	if (state_fail(s)) {
-		verbose("Failed to receive from MAIN (%d, num: %d, str: %s)",
+		verbose("failed to receive from MAIN (%d, num: %d, str: %s)",
 				s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
-	verbose("Synchronization completed correctly");
+	s = sockets_disconnect(sock_sync_cli_tcp->fd, NULL);
+
+	verbose("synchronization completed correctly");
 
 	return EAR_SUCCESS;
 }
@@ -150,6 +158,8 @@ static int sync_answer(int fd)
 	socket_t sync_ans_socket;
 	state_t s;
 
+	verbose("synchronization started: answering the question");
+	
 	// Socket
 	sockets_clean(&sync_ans_socket);
 	sync_ans_socket.protocol = TCP;
@@ -166,7 +176,7 @@ static int sync_answer(int fd)
 		return EAR_ERROR;
 	}
 
-	verbose("Synchronization completed correctly");
+	verbose("synchronization completed correctly");
 
 	return EAR_SUCCESS;
 }
@@ -184,7 +194,7 @@ static void db_store_events(uint mirror)
 		return;
 	}
 
-	verbose("Trying to insert in DB %d event samples", *j);
+	verbose("trying to insert in DB %d event samples", *j);
 	//db_batch_insert_ear_event(evnts[i], *j);
 	*j = 0;
 }
@@ -198,7 +208,7 @@ static void db_store_loops(uint mirror)
 		return;
 	}
 
-	verbose("Trying to insert in DB %d loop samples", *j);
+	verbose("trying to insert in DB %d loop samples", *j);
 	//db_batch_insert_loops(loops[i], *j);
 	*j = 0;
 }
@@ -212,7 +222,7 @@ static void db_store_periodic_metrics(uint mirror)
 		return;
 	}
 
-	verbose("Trying to insert in DB %d periodic metric samples", *j);
+	verbose("trying to insert in DB %d periodic metric samples", *j);
 	//db_batch_insert_periodic_metrics(enrgy[i], *j);
 	*j = 0;
 }
@@ -225,7 +235,7 @@ static void db_store_periodic_aggregation(uint mirror)
 		return;
 	}
 
-	verbose("Trying to insert in DB an aggregation of %d samples", aggr[i].n_samples);
+	verbose("trying to insert in DB an aggregation of %d samples", aggr[i].n_samples);
 	//db_insert_periodic_aggregation(&aggr[i]);
 	init_periodic_aggregation(&aggr[i]);
 }
@@ -239,7 +249,7 @@ static void db_store_applications_learning(uint mirror)
 		return;
 	}
 
-	verbose("Trying to insert in DB %d mpi application samples", *j);
+	verbose("trying to insert in DB %d mpi application samples", *j);
 	//db_batch_insert_applications(appsl[i], *j);
 	*j = 0;
 }
@@ -253,7 +263,7 @@ static void db_store_applications_mpi(uint mirror)
 		return;
 	}
 
-	verbose("Trying to insert in DB %d mpi application samples", *j);
+	verbose("trying to insert in DB %d mpi application samples", *j);
 	//db_batch_insert_applications(appsm[i], *j);
 	*j = 0;
 }
@@ -267,7 +277,7 @@ static void db_store_applications(uint mirror)
 		return;
 	}
 
-	verbose("Trying to insert in DB %d non-mpi application samples", *j);
+	verbose("trying to insert in DB %d non-mpi application samples", *j);
 	//db_batch_insert_applications_no_mpi(appsn[i], *j);
 	*j = 0;
 }
@@ -305,7 +315,7 @@ static void process_insert_mirror(int mirror)
 
 static void process_insert()
 {
-	verbose("Inserting, consumed %lu energy (mJ) from %lu to %lu,",
+	verbose("inserting, consumed %lu energy (mJ) from %lu to %lu",
 			aggr[i_main].DC_energy, aggr[i_main].start_time, aggr[i_main].end_time);
 
 	process_insert_mirror(i_main);
@@ -420,7 +430,7 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 		verbose("Time passed since last insert: %0.2lf", ftime_insr_last);
 		verbose("Threshold of synchronization: %0.2lf", ftime_insr_sync);
 
-		if (time_insr_last <= ftime_insr_sync) {
+		if (time_insr_last > ftime_insr_sync) {
 			process_insert();
 		}
 
@@ -429,7 +439,7 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 		type = "unknown";
 	}
 
-	verbose("received a '%s' packet (%d), from the host %s", type, i, header->host_src);
+	verbose("received a '%s' packet (mirr: %d), from the host %s (socket: %d)", type, i, header->host_src, fd);
 }
 
 /*
@@ -548,11 +558,11 @@ void usage(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	cluster_conf_t conf_clus;
-	int i;
-
 	state_t s1;
 	state_t s2;
 	state_t s3;
+	state_t s4;
+	int i;
 
 	//
 	usage(argc, argv);
@@ -577,8 +587,9 @@ int main(int argc, char **argv)
 	s1 = sockets_socket(sock_metr_srv_tcp);
 	s2 = sockets_socket(sock_metr_srv_udp);
 	s3 = sockets_socket(sock_sync_srv_tcp);
+	s4 = sockets_socket(sock_sync_cli_tcp);
 
-	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
+	if (state_fail(s1) || state_fail(s2) || state_fail(s3) || state_fail(s4)) {
 		error("while creating sockets (%s)", intern_error_str);
 	}
 
