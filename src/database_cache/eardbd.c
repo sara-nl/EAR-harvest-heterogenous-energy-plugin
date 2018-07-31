@@ -125,28 +125,26 @@ static int sync_question()
 	s = sockets_connect(sock_sync_cli_tcp);
 
 	if (state_fail(s)) {
-		verbose("failed to connect to MAIN (%d, inum: %d, istr: %s)",
-				s, intern_error_num, intern_error_str);
+		verbose("failed to connect to MAIN (%d, inum: %d, istr: %s)", s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	s = sockets_send(sock_sync_cli_tcp, &sync_qst_header, (char *) &sync_qst_content);
 
 	if (state_fail(s)) {
-		verbose("failed to send to MAIN (%d, num: %d, str: %s)",
-				s, intern_error_num, intern_error_str);
+		verbose("failed to send to MAIN (%d, num: %d, str: %s)", s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	s = sockets_receive(sock_sync_cli_tcp->fd, &sync_ans_header, (char *) &sync_ans_content, sizeof(sync_ans_t));
 
 	if (state_fail(s)) {
-		verbose("failed to receive from MAIN (%d, num: %d, str: %s)",
-				s, intern_error_num, intern_error_str);
+		verbose("failed to receive from MAIN (%d, num: %d, str: %s)", s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
-	s = sockets_disconnect(sock_sync_cli_tcp);
+	//s = sockets_disconnect(sock_sync_cli_tcp);
+	shutdown(sock_sync_cli_tcp->fd, SHUT_RDWR);
 
 	verbose("synchronization completed correctly");
 
@@ -684,7 +682,7 @@ int main(int argc, char **argv)
 						}
 
 						sockets_disconnect_fd(i);
-						FD_CLR(fd, set);
+						FD_CLR(i, &fds_active);
 					}
 				}
 			}

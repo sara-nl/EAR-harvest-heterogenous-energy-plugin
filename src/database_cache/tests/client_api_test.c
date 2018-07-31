@@ -26,14 +26,6 @@ int main(int argc, char **argv)
 	int job_id = 0;
 	state_t s;
 
-	s = eardbd_connect(argv[1], NULL, 4711, UDP);
-	printf("CONNECT RETURNED %d\n", s);
-	sleep(4);
-	s = eardbd_send_application(&app);
-	printf("SEND RETURNED %d\n", s);
-
-	return 0;
-
 	usage(argc, argv);
 
 	// Dummy objects
