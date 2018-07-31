@@ -55,8 +55,15 @@
                     "ON job_id = id AND Applications.step_id = Jobs.step_id WHERE "\
                     "Jobs.user_id = '%s' AND start_time >= ? AND end_time <= ?)"
 
+#define ETAG_QUERY  "SELECT SUM(DC_power*time)/? FROM Power_signatures WHERE id IN " \
+                    "(SELECT Applications.power_signature_id FROM Applications JOIN Jobs " \
+                    "ON job_id = id AND Applications.step_id = Jobs.step_id WHERE "\
+                    "Jobs.e_tag = '%s' AND start_time >= ? AND end_time <= ?)"
+
+
 char *node_name = NULL;
 char *user_name = NULL;
+char *etag = NULL;
 int EAR_VERBOSE_LEVEL = 0;
 int verbose = 0;
 int avg_pow = -1;
@@ -106,6 +113,10 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     {
         sprintf(query, USER_QUERY, user_name);
     }
+    else if (etag != NULL)
+    {
+        sprintf(query, ETAG_QUERY, etag);
+    }
     else strcpy(query, AGGR_QUERY);
 
     if (verbose) printf("QUERY: %s\n", query);
@@ -147,10 +158,10 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
 
 
 
-    if (user_name == NULL)
+    if (user_name == NULL && etag == NULL)
     {
-        statement = mysql_stmt_init(connection);
-        if (!statement)
+        MYSQL_STMT *statement2 = mysql_stmt_init(connection);
+        if (!statement2)
         {
             fprintf(stderr, "Error creating statement (%d): %s\n", mysql_errno(connection), 
                     mysql_error(connection));
@@ -168,9 +179,9 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
             strcpy(query, AGGR_TIME);
 
         if (verbose) printf("QUERY: %s\n", query);
-        if (mysql_stmt_prepare(statement, query, strlen(query)))
+        if (mysql_stmt_prepare(statement2, query, strlen(query)))
         {
-            avg_pow = stmt_error(statement);
+            avg_pow = stmt_error(statement2);
             return result;
         }
         int start, end; 
@@ -186,27 +197,41 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
         sec_res[0].buffer = &start;
         sec_res[1].buffer = &end;
         
-        if (mysql_stmt_bind_param(statement, sec_bind))
+        if (mysql_stmt_bind_param(statement2, sec_bind))
         {
-            avg_pow = stmt_error(statement);
+            avg_pow = stmt_error(statement2);
             return result;
         }
-        if (mysql_stmt_bind_result(statement, sec_res))
+        if (mysql_stmt_bind_result(statement2, sec_res))
         {
-            avg_pow = stmt_error(statement);
+            avg_pow = stmt_error(statement2);
             return result;
         }
-        if (mysql_stmt_execute(statement))
+        if (mysql_stmt_execute(statement2))
         {
-            avg_pow = stmt_error(statement);
+            avg_pow = stmt_error(statement2);
             return result;
         }
-        if (mysql_stmt_store_result(statement))
+        if (mysql_stmt_store_result(statement2))
         {
-            avg_pow = stmt_error(statement);
+            avg_pow = stmt_error(statement2);
             return result;
         }
-        avg_pow = result / (end-start);
+        //status = mysql_stmt_fetch(statement2);
+        /*if (status != 0 && status != MYSQL_DATA_TRUNCATED)
+            avg_pow = -2;*/
+
+        if (verbose)
+            printf("current avg_pow value: %d\n", avg_pow);
+        if (verbose)
+            printf("\nresult: %d\t end: %d\t start: %d\n\n", result, end, start);
+        if (verbose)
+            printf("start time computed: %d\t end time computed: %d\n\n", start_time, end_time);
+        if (start != end)
+            avg_pow = result / (end-start);
+    
+        mysql_stmt_close(statement2);
+    
     }
     return result;
 
@@ -257,7 +282,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    while ((opt = getopt(argc, argv, "vhn:u:s:e:")) != -1)
+    while ((opt = getopt(argc, argv, "t:vhn:u:s:e:")) != -1)
     {
         switch(opt)
         {
@@ -274,6 +299,9 @@ void main(int argc,char *argv[])
                 break;
             case 'u':
                 user_name = optarg;
+                break;
+            case 't':
+                etag = optarg;
                 break;
             case 'e':
                 if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
@@ -319,7 +347,10 @@ void main(int argc,char *argv[])
         strtok(ctime_r(&start_time, sbuff), "\n");
         printf("Total energy spent from %s to %s: %lli J\n", sbuff, ebuff, result);
         if (avg_pow < 0)
-            fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
+        {
+            if (user_name == NULL && etag == NULL)
+                fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
+        }
         else
             printf("Average power during the period: %d W\n", avg_pow);
     }    
