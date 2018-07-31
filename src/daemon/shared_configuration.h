@@ -149,10 +149,20 @@ void dettach_services_conf_shared_area();
 
 
 /************** FREQUENCIES ***************/
+
+/** Sets un path the path fort the list of frequencies in the shared memory */
 int get_frequencies_path(char *tmp,char *path);
+
+/** Creates and maps the shared memory region for list of frequencies. size is the input size */
 ulong *create_frequencies_shared_area(char * path,ulong *f,int size);
+
+/** Maps the shared memory region for list of frequencies. size is vector size in butes, num_pstates=size/sizeof(ulong) */
 ulong *attach_frequencies_shared_area(char * path,int *size);
+
+/** Releases the shared memory for the list of frequencies */
 void frequencies_shared_area_dispose(char * path);
+
+/** Unmmaps the shared memory for the list of frequencies */
 void dettach_frequencies_shared_area();
 
 

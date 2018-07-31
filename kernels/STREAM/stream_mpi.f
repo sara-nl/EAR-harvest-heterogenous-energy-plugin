@@ -106,7 +106,7 @@
 
 C     .. Parameters ..
       INTEGER  n,offset,ndim,ntimes
-      PARAMETER (n=50000000,offset=0,ndim=n+offset,ntimes=100)
+      PARAMETER (n=50000000,offset=0,ndim=n+offset,ntimes=500)
 
 *     .. MPI Variables ..
       integer numtask, rank

@@ -350,3 +350,29 @@ void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
 	memcpy(dest,src,sizeof(eardb_conf_t));
 }
 
+/*** DEFAULT VALUES ****/
+void set_default_eard_conf(eard_conf_t *eardc)
+{
+	eardc->verbose=1;           /* default 1 */
+    eardc->period_powermon=POWERMON_FREQ;  /* default 30000000 (30secs) */
+    eardc->max_pstate=1;       /* default 1 */
+    eardc->turbo=USE_TURBO;             /* Fixed to 0 by the moment */
+    eardc->port=DAEMON_PORT_NUMBER;              /* mandatory */
+    eardc->use_mysql=1;         /* Must EARD report to DB */
+    eardc->use_eardbd=1;        /* Must EARD report to DB using EARDBD */
+}
+
+void set_default_eargm_conf(eargm_conf_t *eargmc)
+{
+	eargmc->verbose=1;
+	eargmc->t1=DEFAULT_T1;
+	eargmc->t2=DEFAULT_T2;
+	eargmc->energy=DEFAULT_T2*DEFAULT_POWER;
+	eargmc->port=EARGM_PORT_NUMBER;
+	eargmc->mode=0;
+	eargmc->defcon_limits[0]=85;
+	eargmc->defcon_limits[1]=90;
+	eargmc->defcon_limits[2]=95;
+	eargmc->grace_periods=GRACE_T1;
+	strcpy(eargmc->mail,"nomail");
+}

@@ -1,14 +1,16 @@
 Energy Aware Runtime: (Node) Daemon
 -----------------------------------
-The node daemon is the component in charge of providing any kind of service that requires privileged capabilities. Current version is conceived as an external process executed with root privileges. The EARD provides two basic services, each one covered by one thread:
+The node daemon is the component in charge of providing any kind of services that requires privileged capabilities. Current version is conceived as an external process executed with root privileges.
+
+The EARD provides two basic services, each one covered by one thread:
 - Provides privileged metrics such as average frequency, uncore integrated memory controller counters to compute the memory bandwidth, and also energy metrics (DC node, DRAM and package energy).
 - Implements a periodic power monitoring service. This service allows EAR package to control the total energy consumed in the system.
 
 Requirements
 ------------
-EARD uses CPUPower, FreeIPMI and PAPI (with RAPL component enabled). Paths to these libraries must be specified during the configure process when they are not installed in defaults paths.
+EARD uses CPUPower, FreeIPMI and PAPI (with RAPL component enabled). Paths to these libraries must be specified during the installation process when they are not installed in default paths.
 
-When executed in production, EARD connects with [EARDBD](../database_cache/REAME.md), service that have to be up before starting the node daemon, otherwise values reported by EARD to the EAR database will be lost.
+When executed in production environments, EARD connects with [EARDBD](../database_cache/REAME.md) service, that has to be up before starting the node daemon, otherwise values reported by EARD to be stored in the database, will be lost.
 
 Configuration
 -------------
@@ -21,7 +23,7 @@ The EAR Daemon uses the `$(ETC)/ear.conf` file to be configured. It can be dynam
 # Verbose level
 NodeDaemonVerbose=1
 
-# Frequency used by power monitoing service (in seconds)
+# Frequency used by power monitoring service (in seconds)
 NodeDaemonPowermonFreq=10
 
 # Maximum p_state supported (1 nominal)
@@ -40,6 +42,10 @@ To execute this component, this `systemctl` command examples are provided:
 - `sudo systemctl start eard` to start the EARD service.
 - `sudo systemctl stop eard` to stop the EARD service.
 - `sudo systemctl reload eard` to force to reload the configuration of the EARD service.
+
+Log messages are generated during the execution. Use journalctl command to see eard message:
+
+- `sudo journalctl -u eard -f` to force to reload the configuration of the EARD service.
 
 Reconfiguration
 ---------------

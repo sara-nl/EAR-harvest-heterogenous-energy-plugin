@@ -44,20 +44,18 @@
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <common/config.h>
+#include <common/sockets.h>
 #include <common/ear_verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <metrics/power_metrics/power_metrics.h>
-#include <database_cache/sockets.h>
 
-#if USE_EARDB
-#include <database_cache/eardbd_api.h>
-#include <daemon/eard_utils.h>
-#endif
 
 #if DB_MYSQL
+#include <database_cache/eardbd_api.h>
+#include <daemon/eard_utils.h>
 #include <common/database/db_helper.h>
 #endif
 
@@ -70,6 +68,9 @@ extern my_node_conf_t     *my_node_conf;
 extern cluster_conf_t my_cluster_conf;
 extern eard_dyn_conf_t eard_dyn_conf;
 extern policy_conf_t default_policy_context,energy_tag_context,authorized_context;
+extern int ear_ping_fd;
+extern int ear_fd_ack[1];
+extern int application_id;
 static char *__NAME__="EARD";
 extern char *__HOST__;
 
@@ -131,6 +132,15 @@ void clean_job_environment(int id,int step_id)
 	char ear_ping[MAX_PATH_SIZE],fd_lock_filename[MAX_PATH_SIZE],ear_commack[MAX_PATH_SIZE];
 	uint pid=create_ID(id,step_id);
 
+	if (ear_ping_fd>=0){
+		close(ear_ping_fd);
+		ear_ping_fd=-1;
+	}
+	if (ear_fd_ack[0]>=0){
+		close(ear_fd_ack[0]);
+		ear_fd_ack[0]=-1;
+	}
+	application_id = -1;
 	sprintf(ear_ping,"%s/.ear_comm.ping.%u",ear_tmp,pid);
     sprintf(fd_lock_filename, "%s/.ear_app_lock.%u", ear_tmp, pid);
     sprintf(ear_commack, "%s/.ear_comm.ack_0.%u",ear_tmp, pid);
@@ -255,15 +265,17 @@ void report_powermon_app(powermon_app_t *app)
 	report_application_data(&app->app);
 	report_application_in_file(&app->app);
 	
-	#if !USE_EARDB
 	#if DB_MYSQL
-    if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
-	#endif
-	#else
-    if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
-        eard_verbose(0,"Error when sending application to eardb");
-		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
-    }
+    if (my_cluster_conf.eard.use_mysql){ 
+		if (!my_cluster_conf.eard.use_eardbd){
+			if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
+		}else{
+    		if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
+        		eard_verbose(0,"Error when sending application to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+    		}
+		}
+	}
 	#endif
 }
 
@@ -271,7 +283,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 {
 	policy_conf_t * my_policy;
 	int p_id;
-	eard_verbose(0,"configuring policy for user %u policy %s",user_type,appID->job.policy);
+	eard_verbose(0,"configuring policy for user %u policy %s freq %lu th %lf is_learning %u\n",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
@@ -296,8 +308,11 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 	case AUTHORIZED:
 		if (appID->is_learning){
 			authorized_context.policy=MONITORING_ONLY;
-			if (appID->job.def_f) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
-			else authorized_context.p_state=1;
+			if (appID->job.def_f){ 
+				if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+				else authorized_context.p_state=1;
+			} else authorized_context.p_state=1;
+			
 			authorized_context.th=0;
 			my_policy=&authorized_context;
 		}else{
@@ -305,8 +320,10 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 			if (p_id!=EAR_ERROR){
             	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
 				authorized_context.policy=p_id;
-				if (appID->job.def_f) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
-				else authorized_context.p_state=my_policy->p_state;	
+				if (appID->job.def_f){ 
+					if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+					else authorized_context.p_state=my_policy->p_state;
+				}else authorized_context.p_state=my_policy->p_state;	
 				if (appID->job.th>0) authorized_context.th=appID->job.th;
 				else authorized_context.th=my_policy->th;
 				my_policy=&authorized_context;
@@ -414,6 +431,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
     pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);	
 	eard_verbose(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
+	eard_verbose(1,"*******************\n");
 	sig_reported=0;
 
 }
@@ -558,7 +576,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	int ret1;
 	eard_verbose(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%.2lf,%.2lf)\n",
 		current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,
-		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,((double)uncore_freq[0]/(double)(f_monitoring*2600000000)),((double)uncore_freq[1]/(double)(f_monitoring*2600000000)));
+		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
 	
 	while (pthread_mutex_trylock(&app_lock));
 	
@@ -582,17 +600,18 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 
-	#if !USE_EARDB
 	#if DB_MYSQL
-	/* current sample reports the value of job_id and step_id active at this moment */
-	/* If we want to be strict, we must report intermediate samples at job start and job end */
-    if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
-	#endif
-
-	#else
-	if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
-		eard_verbose(0,"Error when sending periodic power metric to eardb");
-		eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+	if (my_cluster_conf.eard.use_mysql){
+		if (!my_cluster_conf.eard.use_eardbd){
+			/* current sample reports the value of job_id and step_id active at this moment */
+			/* If we want to be strict, we must report intermediate samples at job start and job end */
+    		if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
+		}else{
+			if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
+				eard_verbose(0,"Error when sending periodic power metric to eardb");
+				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			}
+		}
 	}
 	#endif
 

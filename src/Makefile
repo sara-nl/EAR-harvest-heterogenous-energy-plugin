@@ -1,8 +1,11 @@
 ######## FILES
 
-COMPONENTS = common database_cache
+COMPONENTS = common
 ifdef CPUF_BASE
 	COMPONENTS += control
+	ifdef DB_BASE
+    COMPONENTS += database_cache
+	endif
 	ifdef PAPI_BASE
 		ifdef IPMI_BASE
 			COMPONENTS += metrics \
@@ -21,8 +24,7 @@ ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
 ifdef DB_BASE
-	COMPONENTS += global_manager \
-				  database_cache
+	COMPONENTS += global_manager
 endif
 
 ######## RULES
@@ -37,6 +39,9 @@ check:
 ######## OPTIONS
 
 install: install.components
+
+%.install:
+	@ $(MAKE) -C $* install || exit
 
 clean: clean.components
 

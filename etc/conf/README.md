@@ -2,8 +2,7 @@ EAR configuration file
 ----------------------
 ear.conf is a text file describing EAR options cluster description. It must be readable at all compute nodes and at nodes where commands are executed. Lines starting with # are comments. Some of the arguments are optional. A test for ear.conf file can be found at src/test/functionals/ear_conf
 
-Parameters
-----------
+# Parameters
 
 # Services configuration
 
@@ -36,6 +35,9 @@ Parameters
 **NodeDaemonMaxPstate**=1 , 1 means nominal frequency (no turbo)  
 **NodeDaemonTurbo**=0 , 0 means no turbo frequency  
 **NodeDaemonPort**=5000  
+**NodeUseDB**=1 , Send data to MySQL DB  
+**NodeUseEARDBD**=1, Send datat to MySQL using EARDBD (1) or directly to the mysql server (0)
+
 
 4-DATABASE MANAGER
 
@@ -70,24 +72,28 @@ Parameters
 
 # Security configuration
 
-Authorized users, groups, and slurm accounts are allowed to change policies, thresholds, frequencies etc they are supposed to be admins 
+Authorized users, groups, and slurm accounts are allowed to change policies, thresholds, frequencies etc they are supposed to be admins . A list of users, linux groups, and/or SLURM accounts can be provided. 
 
 **AuthorizedUsers**=user1,user2  
 **AuthorizedAccounts**=acc1,acc2,acc3  
 **AuthorizedGroups**=xx,yy  
 
 
-List of energy tags and users/groups/slurm accounts authorized to use each one. These energy tags implies pre-defined configurations for applications (EAR library is not loaded)   
+List of energy tags and users/groups/SLURM accounts authorized to use each one. These energy tags implies pre-defined configurations for applications (EAR library is not loaded)   
 **EnergyTag**=memory-intensive **pstate**=4 **users**=user1,user2 **groups**=group1,group2 **accounts**=acc1,acc2  
 
 # Special nodes
 
-**NodeName**=r22u[21,23,25,27] **CPUs**=24 **DefaultPstates**=2,5,5   , describes nodes with some special characteristic  
+Describes nodes with some special characteristic such as different default pstates, default coefficients file, and/ot policy thresholds
+
+**NodeName**=nodename_list **CPUs**=24 **DefaultPstates**=2,5,5   **DefCoefficientsSFile**=filename **MaxPerformancePenalty**=def_th (between 0 and 1) **MinEfficiencyGain**=def_th (between 0 and 1)
 
 # Island description
 
 Nodes are grouped in islands, this section is mandatory since it is used for cluster description
-more than one line per island must be supported to specify dbip ports
+more than one line per island must be supported to specify different dbip ports. One EARDBD cannot be mirror from more than one EARDBD
 
-**Island**=0 **Nodes**=r22u21,r22u23,r22u25,r22u27 **DBIP**=r22u21.hpc.eu.lenovo.com   
+**Island**=0 **Nodes**=nodename_list **DBIP**=EARDB_hostname   **DBSECIP**=EARDB_mirror_hostname
 
+
+- nodename_list accept the following formats: 

@@ -21,10 +21,13 @@ After the plugin configuration, a set of additional arguments are included in SL
 | --ear-policy           | Energy/time policy             | See *EAR_POWER_POLICY* environment variable.                |
 | --ear-policy-th        | Threshold of the policy        | Value between 0 and 1.                                      |
 | --ear-verbose          | Verbosity level                | Value between 0 and 4.                                      |
-| --ear-learning-phase   | Enables the learning phase     | *P_STATE* [0..n].                                           |
+| --ear-learning         | Enables the learning phase     | *P_STATE* [0..n].                                           |
 | --ear-traces           | Saves trace files with metrics | Path where the files will be placed.                        |
 | --job-name             | App/job name for debugging     | Name for the job/application.                               |
-| --cpu-freq             | Sets the job frequency         | Just for *MONITORING_ONLY* policy.                          |
+| --ear-user-db			 | Use-db filename root			  | Specifies the file to save the user applications metrics summary'file.nodename.csv' file  |
+| --ear-cpufreq          | Sets the job frequency         | Just for *MONITORING_ONLY* policy.                          |
+
 * For more information consult `srun --help` output or see configuration options sections for more detailed description.
 * Example: `./srun -N2 -n2 --ear-policy=MIN_ENERGY_TO_SOLUTION --ear-policy-th=0.9 application`
 * Maximum *P_STATE* depends on the CPU.
+* Most of the options can only be used by Authorized users (specified at ear.conf file)

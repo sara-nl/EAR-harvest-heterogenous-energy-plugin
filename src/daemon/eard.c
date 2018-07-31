@@ -60,11 +60,11 @@
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
-#include <database_cache/sockets.h>
 
-#if USE_EARDB
+#if DB_MYSQL
 #include <database_cache/eardbd_api.h>
 #include <daemon/eard_utils.h>
+#include <common/database/db_helper.h>
 #endif
 
 #include <daemon/eard.h>
@@ -112,6 +112,8 @@ uint f_monitoring;
 static const char *__NAME__ = "EARD";
 char *__HOST__;
 
+static int eardbd_connected=0;
+static int db_helper_connected=0;
 
 int ear_fd_req[ear_daemon_client_requests];
 int ear_fd_ack[ear_daemon_client_requests];
@@ -137,11 +139,16 @@ int eard_must_exit=0;
 
 void init_frequency_list()
 {
-	int size=frequency_get_num_pstates()*sizeof(ulong);
+	int ps,i;
+	ps=frequency_get_num_pstates();
+	int size=ps*sizeof(ulong);
 	frequencies=(ulong *)malloc(size);
-	memcpy(frequencies,frequency_get_freq_rank_list,size);
+	memcpy(frequencies,frequency_get_freq_rank_list(),size);
 	get_frequencies_path(my_cluster_conf.tmp_dir,frequencies_path);
 	shared_frequencies=create_frequencies_shared_area(frequencies_path,frequencies,size);
+	for (i=0;i<ps;i++){
+		fprintf(stderr,"shared_frequencies[%d]=%lu\n",i,shared_frequencies[i]);
+	}
 }
 
 int is_valid_sec_tag(ulong tag)
@@ -393,7 +400,9 @@ void eard_exit(uint restart)
 	aperf_dispose();
     // Database cache daemon disconnect
     #if USE_EARDB
-    eardbd_disconnect();
+    if (my_cluster_conf.eard.use_eardbd){ 
+		eardbd_disconnect();
+	}
     #endif
 
 
@@ -539,14 +548,16 @@ int eard_system(int must_read)
 			break;
 		case WRITE_EVENT:
 			ack=EAR_COM_OK;
-			#if !USE_EARDB
 			#if DB_MYSQL
-			ret1=db_insert_ear_event(&req.req_data.event);
-			#endif
-			#else
-			if ((ret1=eardbd_send_event(&req.req_data.event))!=EAR_SUCCESS){
-				VERBOSE_N(0,"Error sending event to eardb");
-				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			if (my_cluster_conf.eard.use_mysql){ 
+				if (!my_cluster_conf.eard.use_eardbd){
+					ret1=db_insert_ear_event(&req.req_data.event);
+				}else{
+					if ((ret1=eardbd_send_event(&req.req_data.event))!=EAR_SUCCESS){
+						VERBOSE_N(0,"Error sending event to eardb");
+						eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+					}
+				}
 			}
 			#endif
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
@@ -559,14 +570,16 @@ int eard_system(int must_read)
 			ack=EAR_COM_OK;
 			// print_loop_fd(1,&req.req_data.loop);
 			#if !LARGE_CLUSTER
-			#if !USE_EARDB
 			#if DB_MYSQL
-			ret1 = db_insert_loop (&req.req_data.loop);
-			#endif
-			#else
-			if ((ret1=eardbd_send_loop(&req.req_data.loop))!=EAR_SUCCESS){
-				VERBOSE_N(0,"Error sending loop to eardb");
-				eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+			if (my_cluster_conf.eard.use_mysql){ 
+				if (!my_cluster_conf.eard.use_eardbd){
+					ret1 = db_insert_loop (&req.req_data.loop);
+				}else{
+					if ((ret1=eardbd_send_loop(&req.req_data.loop))!=EAR_SUCCESS){
+						VERBOSE_N(0,"Error sending loop to eardb");
+						eardb_reconnect(my_node_conf,&my_cluster_conf,ret1);
+					}
+				}
 			}
 			#endif
 			#endif
@@ -834,16 +847,35 @@ void signal_handler(int sig)
         else{
 			eard_verbose(0,"Loading EAR configuration");
             print_cluster_conf(&my_cluster_conf);
+			free(my_node_conf);
 	        my_node_conf=get_my_node_conf(&my_cluster_conf,nodename);
 	        if (my_node_conf==NULL){
      	       eard_verbose(0," Error in cluster configuration, node %s not found\n",nodename);
      	   	}else{
+				eard_dyn_conf.nconf=my_node_conf;
 				print_my_node_conf(my_node_conf);
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
     			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
 				save_eard_conf(&eard_dyn_conf);
 			}
+
+    		#if DB_MYSQL
+			if (!my_cluster_conf.eard.use_eardbd && eardbd_connected){
+				eardbd_disconnect();
+				eardbd_connected=0;
+			}
+    		if (my_cluster_conf.eard.use_eardbd && !eardbd_connected){
+        		if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
+            		eard_verbose(0,"Error connecting with EARDB");
+        		}else eardbd_connected=1;
+    		}
+    		if (my_cluster_conf.eard.use_mysql && !db_helper_connected){
+        		eard_verbose(1,"Connecting with EAR DB directly");
+        		init_db_helper(&my_cluster_conf.database);
+        		db_helper_connected=1;
+    		}
+    		#endif
 
         }
 	}
@@ -1216,16 +1248,17 @@ void main(int argc,char *argv[])
 	}
 	rfds_basic=rfds;
     // Database cache daemon
-    #if USE_EARDB
-	// use eardb configuration is pending
-    if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
-		eard_verbose(0,"Error connecting with EARDB");
+    #if DB_MYSQL
+	if (my_cluster_conf.eard.use_eardbd){
+    	if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
+			eard_verbose(0,"Error connecting with EARDB");
+		}else eardbd_connected=1;
 	}
-    #endif
-	#if !USE_EARDB && DB_MYSQL 
-	eard_verbose(1,"Connecting with EAR DB");
-	/*strcpy(my_cluster_conf.database.database,"Report2");*/
-	init_db_helper(&my_cluster_conf.database);
+	if (my_cluster_conf.eard.use_mysql){
+		eard_verbose(1,"Connecting with EAR DB directly");
+		init_db_helper(&my_cluster_conf.database);
+		db_helper_connected=1;
+	}
 	#endif
 
 	eard_verbose(1,"Using  %d seconds for periodic power monitoring",power_mon_freq);

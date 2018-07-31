@@ -1,23 +1,27 @@
-CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS)
+CFLAGS  = -Wall -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS)
 LDFLAGS = 
 
 ######## FILES
 
-plugin_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
-              $(SRCDIR)/daemon/shared_configuration.o \
-              $(SRCDIR)/global_manager/eargm_rapi.o \
-              $(SRCDIR)/common/types.a
+OBJECTS = $(SRCDIR)/daemon/eard_rapi.o \
+          $(SRCDIR)/daemon/shared_configuration.o \
+          $(SRCDIR)/global_manager/eargm_rapi.o \
+          $(SRCDIR)/common/types.a
 
-plugin_SOURCES = slurm_plugin.c \
-                 slurm_plugin_helper.c \
-                 slurm_plugin_options.c
+SOURCES = slurm_plugin.c \
+          slurm_plugin_helper.c \
+          slurm_plugin_options.c
+
+HEADERS = slurm_plugin.h \
+          slurm_plugin_helper.h \
+          slurm_plugin_options.h
 
 ######## RULES
 
 all: earplug.so
 
-earplug.so: $(plugin_SOURCES) slurm_plugin.h slurm_plugin_helper.h
-	$(CC) $(CC_FLAGS) $(CFLAGS) -shared -o earplug.so $(plugin_SOURCES) $(plugin_OBJS) $(LDFLAGS)
+earplug.so: $(SOURCES) $(HEADERS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared -o earplug.so $(SOURCES) $(OBJECTS) $(LDFLAGS)
 
 ######## OPTIONS
 
