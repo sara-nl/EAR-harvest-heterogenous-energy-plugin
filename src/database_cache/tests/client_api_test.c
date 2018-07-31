@@ -41,8 +41,10 @@ int main(int argc, char **argv)
 	report_application_data(&app);
 
 	// Testing API
-	eardbd_connect(argv[1], NULL, 4711, TCP);
-	
+	s = eardbd_connect(argv[1], "E7450", 4711, TCP);
+
+	printf("CONNECT RETURNED %d\n", s);
+
 	while(1) {
 		s = eardbd_send_application(&app);
 		printf("SEND RETURNED %d\n", s);

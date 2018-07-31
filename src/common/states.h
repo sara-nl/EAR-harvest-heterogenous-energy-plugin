@@ -48,16 +48,12 @@
 #define EAR_MYSQL_ERROR         -14
 #define EAR_MYSQL_STMT_ERROR    -15
 #define EAR_ADDR_NOT_FOUND		-19
-#define EAR_SOCK_BAD_PROTOCOL	-27
-#define EAR_SOCK_DISCONNECTED	-28
-
-#define EAR_SOCK_CREAT_ERROR	-20
-#define EAR_SOCK_BIND_ERROR		-21
-#define EAR_SOCK_LISTEN_ERROR	-22
-#define EAR_SOCK_SEND_ERROR		-23
-#define EAR_SOCK_RECV_ERROR		-24
-#define EAR_SOCK_ACCEPT_ERROR	-25
-#define EAR_SOCK_CONN_ERROR		-26
+#define EAR_SOCK_OP_ERROR		-20
+#define EAR_SOCK_BAD_PROTOCOL	-21
+#define EAR_SOCK_DISCONNECTED	-22
+#define EAR_DBD_ERROR_MAIN		-23
+#define EAR_DBD_ERROR_MIRR		-24
+#define EAR_DBD_ERROR_BOTH		-25
 
 // TODO: this is a config not a state
 #define DYNAIS_ENABLED      1
@@ -67,6 +63,7 @@
 
 /* type & functions */
 typedef int state_t;
+char *state_error_str;
 
 /* global data */
 char *intern_error_str;

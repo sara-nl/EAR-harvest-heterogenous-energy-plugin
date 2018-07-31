@@ -46,7 +46,7 @@ state_t sockets_accept(int fd_req, int *fd_cli)
 	*fd_cli = accept(fd_req, (struct sockaddr *) &cli_addr, &size);
 
 	if (*fd_cli == -1) {
-		state_return_msg(EAR_SOCK_ACCEPT_ERROR, errno, strerror(errno));
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
@@ -66,6 +66,29 @@ state_t sockets_header_update(packet_header_t *header)
 	header->timestamp = time(NULL);
 }
 
+// Send:
+//
+// Errors:
+//	Returning EAR_BAD_ARGUMENT
+//	 - Header or buffer pointers are NULL
+//	Returning EAR_SOCK_DISCONNECTED
+// 	 - ENETUNREACH: No route to the network is present.
+//	 - ENETDOWN: The local network interface used to reach the destination is down.
+//   - ECONNRESET: A connection was forcibly closed by a peer.
+//   - ENOTCONN: A receive is attempted on a connection-mode socket that is not connected.
+// 	 - EPIPE: The socket is shut down for writing.
+//	 - EDESTADDRREQ: The socket is not connection-mode and no peer address is set.
+//	Returning EAR_NOT_READY
+//	 - EAGAIN: The socket's file descriptor is marked O_NONBLOCK and no data is waiting.
+//	Returning EAR_ERROR
+//	 - EACCES: The calling process does not have the appropriate privileges.
+//   - EBADF: The socket argument is not a valid file descriptor.
+//   - ENOTSOCK: The socket argument does not refer to a socket.
+//   - EOPNOTSUPP: The specified flags are not supported for this socket type or protocol.
+//   - EINTR: The recv() function was interrupted by a signal that was caught, before any data was available.
+//   - EIO: An I/O error occurred while reading from or writing to the file system.
+//	 - ENOBUFS: Insufficient resources were available in the system to perform the operation.
+
 state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 {
 	packet_header_t *output_header;
@@ -75,6 +98,10 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	ssize_t bytes_left;
 	state_t s;
 	int n;
+
+	if (header == NULL || content == NULL) {
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
+	}
 
 	// Output
 	output_header = PACKET_HEADER(output_buffer);
@@ -95,17 +122,29 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	while(bytes_sent < bytes_expc)
 	{
 		if (socket->protocol == TCP) {
-			n = send(socket->fd, output_buffer + bytes_sent, bytes_left, 0);
+			bytes_sent += send(socket->fd, output_buffer + bytes_sent, bytes_left, 0);
 		} else {
-			n = sendto(socket->fd, output_buffer + bytes_sent, bytes_left, 0, socket->info->ai_addr, socket->info->ai_addrlen);
+			bytes_sent += sendto(socket->fd, output_buffer + bytes_sent, bytes_left, 0, socket->info->ai_addr, socket->info->ai_addrlen);
 		}
 
-		if (n == -1) {
-			state_return_msg(EAR_SOCK_SEND_ERROR, errno, strerror(errno));
+		if (bytes_sent < 0)
+		{
+			switch (bytes_sent) {
+				case ENETUNREACH:
+				case ENETDOWN:
+				case ECONNRESET:
+				case ENOTCONN:
+				case EPIPE:
+				case EDESTADDRREQ:
+					state_return_msg(EAR_SOCK_DISCONNECTED, errno, strerror(errno));
+				case EAGAIN:
+					state_return_msg(EAR_NOT_READY, errno, strerror(errno));
+				default:
+					state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+			}
 		}
 
-		bytes_sent += n;
-		bytes_left -= n;
+		bytes_left -= bytes_sent;
 	}
 
 	state_return(EAR_SUCCESS);
@@ -172,9 +211,11 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 					case EAGAIN:
 						state_return_msg(EAR_NOT_READY, errno, strerror(errno));
 					default:
-						state_return_msg(EAR_SOCK_RECV_ERROR, errno, strerror(errno));
+						state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 				}
 			}
+
+			bytes_left -= bytes_recv;
 		}
 
 		bytes_buff = buffer;
@@ -207,7 +248,7 @@ state_t sockets_listen(socket_t *socket)
 	int r = listen(socket->fd, BACKLOG);
 
 	if (r < 0) {
-		state_return_msg(EAR_SOCK_LISTEN_ERROR, errno, strerror(errno));
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
@@ -219,7 +260,7 @@ state_t sockets_bind(socket_t *socket)
 	int r = bind(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
 
 	if (r < 0) {
-		state_return_msg(EAR_SOCK_BIND_ERROR, errno, (char *) strerror(errno));
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, (char *) strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
@@ -251,7 +292,7 @@ state_t sockets_socket(socket_t *sock)
 	sock->fd = socket(sock->info->ai_family, sock->info->ai_socktype, sock->info->ai_protocol);
 
 	if (sock->fd < 0) {
-		state_return_msg(EAR_SOCK_CREAT_ERROR, errno, strerror(errno));
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
@@ -299,7 +340,7 @@ state_t sockets_connect(socket_t *socket)
 
 	if (r < 0) {
 		printf("str %s\n", strerror(errno));
-		state_return_msg(EAR_SOCK_CONN_ERROR, errno, strerror(errno));
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);

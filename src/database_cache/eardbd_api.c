@@ -42,7 +42,7 @@ static int _connected = -1;
 
 /*
  *
- * API
+ * Intern functions
  *
  */
 
@@ -56,7 +56,8 @@ static int is_connected(socket_t *socket)
 
 static state_t _packet_send(uint content_type, char *content, ssize_t content_size)
 {
-	state_t s;
+	state_t state_main;
+	state_t state_mirr;
 
 	// Main packet
 	header.content_type = content_type;
@@ -64,29 +65,76 @@ static state_t _packet_send(uint content_type, char *content, ssize_t content_si
 	header.data_extra1 = 0; // Mirroring
 	header.data_extra2 = 0; // Its ok
 
-	s = sockets_send(&sock_main, &header, content);
+	state_main = sockets_send(&sock_main, &header, content);
 
 	// If the sending fails
-	if (state_fail(s)) {
-		// Then the mirror is tested
-		eardbd_disconnect();
-		return s;
+	if (state_fail(state_main)) {
+		verbose("Failed to send to MAIN EARDBD (num: %d, inum: %d, istr: %s)",
+				state_main, intern_error_num, intern_error_str);
 	}
 
 	// Sending to mirror
 	if (sock_mirr.fd == -1) {
-		return EAR_SUCCESS;
+		if (state_fail(state_main)) {
+			return EAR_DBD_ERROR_MAIN;
+		}
+		return state_main;
 	}
 
 	header.data_extra1 = 1; // Mirroring
-	header.data_extra2 = 0; // It's ok
-	s = sockets_send(&sock_mirr, &header, content);
+	header.data_extra2 = state_fail(state_main); // It's ok?
+	state_mirr = sockets_send(&sock_mirr, &header, content);
+
+	if (state_fail(state_mirr))
+	{
+		verbose("Failed to send to MIRROR EARDBD (num: %d, inum: %d, istr: %s)",
+				state_mirr, intern_error_num, intern_error_str);
+
+		if (state_fail(state_main)) {
+			return EAR_DBD_ERROR_BOTH;
+		}
+		return EAR_DBD_ERROR_MIRR;
+	}
+
+	return EAR_SUCCESS;
+}
+
+static state_t _eardbd_prepare_socket(socket_t *socket, char *host, uint port, uint protocol)
+{
+	state_t s;
+
+	s = sockets_init(socket, host, port, protocol);
 
 	if (state_fail(s)) {
-		eardbd_disconnect();
 		return s;
 	}
 
+	s = sockets_socket(socket);
+
+	if (state_fail(s)) {
+		return s;
+	}
+
+	if (protocol == TCP)
+	{
+		s = sockets_connect(socket);
+
+		if (state_fail(s)) {
+			return s;
+		}
+	}
+
+	return EAR_SUCCESS;
+}
+
+/*
+ *
+ * API functions
+ *
+ */
+
+state_t eardbd_reconnect(state_t state_last)
+{
 	return EAR_SUCCESS;
 }
 
@@ -116,32 +164,10 @@ state_t eardbd_ping()
 	return _packet_send(CONTENT_TYPE_PIN, (char *) ping, sizeof(ping));
 }
 
-static state_t _eardbd_socket(socket_t *socket, char *host, uint port, uint protocol)
-{
-	state_t s;
-	s = sockets_init(&sock_main, host, port, protocol);
-
-	if (state_fail(s)) {
-		return s;
-	}
-
-	s = sockets_socket(&sock_main);
-
-	if (protocol == TCP)
-	{
-		s = sockets_connect(&sock_main);
-
-		if (state_fail(s)) {
-			return s;
-		}
-	}
-
-	return EAR_SUCCESS;
-}
-
 state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint protocol)
 {
-	state_t s;
+	state_t state_main;
+	state_t state_mirr;
 
 	if (host_main == NULL) {
 		return EAR_ERROR;
@@ -152,22 +178,27 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 	sockets_clean(&sock_mirr);
 
 	// Connecting to main
-	s = _eardbd_socket(&sock_main, host_main, port, protocol);
+	state_main = _eardbd_prepare_socket(&sock_main, host_main, port, protocol);
 
-	if (state_fail(s)) {
+	if (state_fail(state_main) && host_mirror == NULL) {
 		eardbd_disconnect();
-		return s;
+		return EAR_DBD_ERROR_MAIN;
 	}
 
 	if (host_mirror == NULL) {
 		return EAR_SUCCESS;
 	}
 
-	s = _eardbd_socket(&sock_mirr, host_mirror, port, protocol);
+	state_mirr = _eardbd_prepare_socket(&sock_mirr, host_mirror, port, protocol);
 
-	if (state_fail(s)) {
+	if (state_fail(state_mirr))
+	{
 		eardbd_disconnect();
-		return s;
+
+		if (state_fail(state_main)) {
+			return EAR_DBD_ERROR_BOTH;
+		}
+		return EAR_DBD_ERROR_MIRR;
 	}
 
 	return EAR_SUCCESS;
