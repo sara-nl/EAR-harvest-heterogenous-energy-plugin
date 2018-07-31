@@ -56,7 +56,7 @@ endif
 all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 
 %.so: $(OBJS) $(lib_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $(LDFLAGS) $(OBJS) $(lib_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $(LDFLAGS) $(OBJS) $(lib_OBJS) 
 
 ######## OPTIONS
 
