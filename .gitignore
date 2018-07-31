@@ -30,6 +30,7 @@ coefficients_list.csv
 *.csv
 src/commands/ear_options_test.c
 src/commands/ear_energy_over_time
+kernels/NPB3.3.1/NPB3.3-OMP/bin/
 
 
 # Build

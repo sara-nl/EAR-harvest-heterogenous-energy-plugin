@@ -19,6 +19,7 @@ export OMP_NUM_THREADS=1
 
 
 srun --mpi=pmi2 --ear-mpi-dist=openmpi --ear-verbose=1 -J $kernel  -N $NODES -n $MPIS --tasks-per-node=$PPN --cpus-per-task=$OMP_NUM_THREADS $KERNELS_PATH/$kernel 
+#mpirun -np $MPIS $KERNELS_PATH/$kernel
 
 
 
