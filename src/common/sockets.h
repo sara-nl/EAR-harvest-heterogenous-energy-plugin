@@ -87,9 +87,9 @@ state_t sockets_accept(int fd_req, int *fd_cli);
 
 state_t sockets_connect(socket_t *socket);
 
-state_t sockets_disconnect(socket_t *socket);
+state_t sockets_close(socket_t *socket);
 
-state_t sockets_disconnect_fd(int fd);
+state_t sockets_close_fd(int fd);
 
 state_t sockets_send(socket_t *socket, packet_header_t *header, char *content);
 
