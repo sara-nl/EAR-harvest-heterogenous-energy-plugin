@@ -154,18 +154,31 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
         result = -2;
 
-    mysql_stmt_close(statement);
+    if (verbose) printf("result after first fetch: %d\n", result);
 
+    if (mysql_stmt_free_result(statement)) fprintf(stderr, "ERROR when freing result.\n");
 
+    if (verbose) printf("result after result freed: %d\n", result);
 
+    if (mysql_stmt_close(statement)) printf("\nERROR when freeing statement\n");
+    statement = NULL;
+    if (verbose) printf("result after statement closed: %d\n", result);
+
+        return result;
+
+}
+
+void new_func(MYSQL *connection, int start_time, int end_time, int result)
+{
+    char query[256];
     if (user_name == NULL && etag == NULL)
     {
-        MYSQL_STMT *statement2 = mysql_stmt_init(connection);
-        if (!statement2)
+        MYSQL_STMT *statement = mysql_stmt_init(connection);
+        if (!statement)
         {
             fprintf(stderr, "Error creating statement (%d): %s\n", mysql_errno(connection), 
                     mysql_error(connection));
-            return result;
+            return;
         }
 
         if (node_name != NULL)
@@ -179,10 +192,10 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
             strcpy(query, AGGR_TIME);
 
         if (verbose) printf("QUERY: %s\n", query);
-        if (mysql_stmt_prepare(statement2, query, strlen(query)))
+        if (mysql_stmt_prepare(statement, query, strlen(query)))
         {
-            avg_pow = stmt_error(statement2);
-            return result;
+            avg_pow = stmt_error(statement);
+            return;
         }
         int start, end; 
         MYSQL_BIND sec_bind[2];
@@ -197,47 +210,43 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
         sec_res[0].buffer = &start;
         sec_res[1].buffer = &end;
         
-        if (mysql_stmt_bind_param(statement2, sec_bind))
+        if (mysql_stmt_bind_param(statement, sec_bind))
         {
-            avg_pow = stmt_error(statement2);
-            return result;
+            avg_pow = stmt_error(statement);
+            return;
         }
-        if (mysql_stmt_bind_result(statement2, sec_res))
+        if (mysql_stmt_bind_result(statement, sec_res))
         {
-            avg_pow = stmt_error(statement2);
-            return result;
+            avg_pow = stmt_error(statement);
+            return;
         }
-        if (mysql_stmt_execute(statement2))
+        if (mysql_stmt_execute(statement))
         {
-            avg_pow = stmt_error(statement2);
-            return result;
+            avg_pow = stmt_error(statement);
+            return;
         }
-        if (mysql_stmt_store_result(statement2))
+        if (mysql_stmt_store_result(statement))
         {
-            avg_pow = stmt_error(statement2);
-            return result;
+            avg_pow = stmt_error(statement);
+            return;
         }
-        //status = mysql_stmt_fetch(statement2);
-        /*if (status != 0 && status != MYSQL_DATA_TRUNCATED)
-            avg_pow = -2;*/
+        int status = mysql_stmt_fetch(statement);
+        if (status != 0 && status != MYSQL_DATA_TRUNCATED)
+            avg_pow = -2;
 
         if (verbose)
             printf("current avg_pow value: %d\n", avg_pow);
         if (verbose)
-            printf("\nresult: %d\t end: %d\t start: %d\n\n", result, end, start);
+            printf("\nstart: %d\t end: %d\n\n", start, end);
         if (verbose)
             printf("start time computed: %d\t end time computed: %d\n\n", start_time, end_time);
         if (start != end)
             avg_pow = result / (end-start);
     
-        mysql_stmt_close(statement2);
-    
+        mysql_stmt_close(statement);
     }
-    return result;
-
 
 }
-
 
 void main(int argc,char *argv[])
 {
@@ -330,7 +339,7 @@ void main(int argc,char *argv[])
 
 
     long long result = get_sum(connection, start_time, end_time, divisor);
-
+    new_func(connection, start_time, end_time, result);
     mysql_close(connection);
     free_cluster_conf(&my_conf);
     
