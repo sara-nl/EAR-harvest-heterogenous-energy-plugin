@@ -14,6 +14,7 @@ eardbd_api.o: eardbd_api.c eardbd_api.h
 	$(CC) $(CFLAGS) -c eardbd_api.c
 
 eardbd: eardbd.c eardbd.h $(eardbd_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -E eardbd.c $(DB_LDFLAGS) $(eardbd_OBJS) &> me_say.out
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eardbd eardbd.c $(DB_LDFLAGS) $(eardbd_OBJS)
 
 ######## OPTIONS

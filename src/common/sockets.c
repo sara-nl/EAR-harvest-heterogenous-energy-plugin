@@ -66,6 +66,147 @@ state_t sockets_header_update(packet_header_t *header)
 	header->timestamp = time(NULL);
 }
 
+state_t sockets_set_timeout(int fd, struct timeval *timeout)
+{
+	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) timeout, sizeof(struct timeval));
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_listen(socket_t *socket)
+{
+	if (socket->protocol == UDP) {
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "UDP port can't be listened");
+	}
+
+	// Listening the port
+	int r = listen(socket->fd, BACKLOG);
+
+	if (r < 0) {
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_bind(socket_t *socket)
+{
+	// Assign to the socket the address and port
+	int r = bind(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
+
+	if (r < 0) {
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, (char *) strerror(errno));
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_socket(socket_t *sock)
+{
+	struct addrinfo hints;
+	char c_port[16];
+	int r;
+
+	// Format
+	sprintf(c_port, "%u", sock->port);
+	memset(&hints, 0, sizeof (hints));
+
+	//
+	hints.ai_socktype = sock->protocol; // TCP stream sockets
+	hints.ai_family = AF_UNSPEC;		// Don't care IPv4 or IPv6
+
+	if (sock->host == NULL) {
+		hints.ai_flags = AI_PASSIVE;    // Fill in my IP for me
+	}
+
+	if ((r = getaddrinfo(sock->host, c_port, &hints, &sock->info)) != 0) {
+		state_return_msg(EAR_ADDR_NOT_FOUND, errno, (char *) gai_strerror(r));
+	}
+
+	//
+	sock->fd = socket(sock->info->ai_family, sock->info->ai_socktype, sock->info->ai_protocol);
+
+	if (sock->fd < 0) {
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
+{
+	state_t s;
+
+	if (protocol != TCP && protocol != UDP) {
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "protocol does not exist");
+	}
+
+	if (host != NULL) {
+		socket->host = strcpy(socket->host_dst, host);
+	} else {
+		socket->host = NULL;
+	}
+
+	socket->fd = -1;
+	socket->port = port;
+	socket->info = NULL;
+	socket->protocol = protocol;
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_dispose(socket_t *socket)
+{
+	sockets_close_fd(socket->fd);
+
+	if (socket->info != NULL) {
+        freeaddrinfo(socket->info);
+        socket->info = NULL;
+    }
+
+	return sockets_clean(socket);
+}
+
+state_t sockets_clean(socket_t *socket)
+{
+	memset((void *) socket, 0, sizeof(socket_t));	
+    socket->fd = -1;
+
+    state_return(EAR_SUCCESS);
+}
+
+state_t sockets_connect(socket_t *socket)
+{
+	int r;
+
+	// Assign to the socket the address and port
+	r = connect(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
+
+	if (r < 0) {
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_close(socket_t *socket)
+{
+	state_t s;
+
+	s = sockets_close_fd(socket->fd);
+	socket->fd = -1;
+
+	state_return(s);
+}
+
+state_t sockets_close_fd(int fd)
+{
+	if (fd > 0) {
+		close(fd);
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
 // Send:
 //
 // Errors:
@@ -231,156 +372,6 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 	}
 
 	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_set_timeout(int fd, struct timeval *timeout)
-{
-	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) timeout, sizeof(struct timeval));
-	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_listen(socket_t *socket)
-{
-	if (socket->protocol == UDP) {
-		state_return_msg(EAR_BAD_ARGUMENT, 0, "UDP port can't be listened");
-	}
-
-	// Listening the port
-	int r = listen(socket->fd, BACKLOG);
-
-	if (r < 0) {
-		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
-	}
-
-	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_bind(socket_t *socket)
-{
-	// Assign to the socket the address and port
-	int r = bind(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
-
-	if (r < 0) {
-		state_return_msg(EAR_SOCK_OP_ERROR, errno, (char *) strerror(errno));
-	}
-
-	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_socket(socket_t *sock)
-{
-	struct addrinfo hints;
-	char c_port[16];
-	int r;
-
-	// Format
-	sprintf(c_port, "%u", sock->port);
-	memset(&hints, 0, sizeof (hints));
-
-	//
-	hints.ai_socktype = sock->protocol; // TCP stream sockets
-	hints.ai_family = AF_UNSPEC;		// Don't care IPv4 or IPv6
-
-	if (sock->host == NULL) {
-		hints.ai_flags = AI_PASSIVE;    // Fill in my IP for me
-	}
-
-	if ((r = getaddrinfo(sock->host, c_port, &hints, &sock->info)) != 0) {
-		state_return_msg(EAR_ADDR_NOT_FOUND, errno, (char *) gai_strerror(r));
-	}
-
-	//
-	sock->fd = socket(sock->info->ai_family, sock->info->ai_socktype, sock->info->ai_protocol);
-
-	if (sock->fd < 0) {
-		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
-	}
-
-	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
-{
-	state_t s;
-
-	if (protocol != TCP && protocol != UDP) {
-		state_return_msg(EAR_BAD_ARGUMENT, 0, "protocol does not exist");
-	}
-
-	if (host != NULL) {
-		socket->host = strcpy(socket->host_dst, host);
-	} else {
-		socket->host = NULL;
-	}
-
-	socket->fd = -1;
-	socket->port = port;
-	socket->info = NULL;
-	socket->protocol = protocol;
-
-	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_dispose(socket_t *socket)
-{
-	if (socket->fd >= 0) {
-		sockets_disconnect_fd(socket->fd);
-	}
-
-	sockets_clean(socket);
-
-	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_connect(socket_t *socket)
-{
-	int r;
-
-	// Assign to the socket the address and port
-	r = connect(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
-
-	if (r < 0) {
-		printf("str %s\n", strerror(errno));
-		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
-	}
-
-	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_disconnect(socket_t *socket)
-{
-	state_t s;
-
-	s = sockets_disconnect_fd(socket->fd);
-	socket->fd = -1;
-
-	state_return(s);
-}
-
-state_t sockets_disconnect_fd(int fd)
-{
-	if (fd > 0) {
-		close(fd);
-	}
-
-	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_clean(socket_t *socket)
-{
-	if (socket->info != NULL) {
-		freeaddrinfo(socket->info);
-		socket->info = NULL;
-	}
-
-	socket->host_dst[0] = '\0';
- 	socket->info = NULL;
-	socket->host = NULL;
-	socket->protocol = 0;
-	socket->port = 0;
-	socket->fd = -1;
-
-	return EAR_SUCCESS;
 }
 
 void sockets_print_socket(socket_t *socket)

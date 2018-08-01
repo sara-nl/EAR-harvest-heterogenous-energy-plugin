@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 	else printf("received type %d\n", header.content_type);
 
 
-	sockets_disconnect_fd(&socket.fd);
+	sockets_close_fd(&socket.fd);
 
 	return 0;
 }
