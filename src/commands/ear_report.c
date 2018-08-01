@@ -231,6 +231,7 @@ void new_func(MYSQL *connection, int start_time, int end_time, int result)
         char sbuff[64], ebuff[64];
         if (verbose)
         {
+            printf("original  \t start_time: %d\t end_time: %d\n\n", start_time, end_time);
             printf("from query\t start_time: %d\t end_time: %d\n\n", start, end);
             printf("from query\t start_time: %s\t end_time: %s\n\n", 
                     ctime_r(&start, sbuff), ctime_r(&end, ebuff));
@@ -249,7 +250,7 @@ void main(int argc,char *argv[])
     cluster_conf_t my_conf;
     time_t start_time = 0;
     time_t end_time = time(NULL);
-    int divisor = 1000;
+    int divisor = 1;
     int opt;
     struct tm tinfo = {0};
 
