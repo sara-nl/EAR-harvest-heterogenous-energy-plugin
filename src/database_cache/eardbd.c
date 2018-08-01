@@ -61,16 +61,6 @@ static struct timeval timeout_sync;
 static time_t time_insr_last;
 static ulong  time_insr;
 
-/*
-static time_t  tinsr_glbal[2];
-static time_t *tmetr_enrgy[2];
-static time_t *tmetr_appsm[2];
-static time_t *tmetr_appsn[2];
-static time_t *tmetr_appsl[2];
-static time_t *tmetr_evnts[2];
-static time_t *tmetr_loops[2];
-*/
-
 // Input buffers
 static packet_header_t input_header;
 //static char input_buffer[MAX_PACKET_SIZE()];
@@ -81,6 +71,7 @@ static char extra_buffer[SZ_NAME_LARGE];
 static char mirror_srv[SZ_NAME_MEDIUM];
 static char mirror_cli[SZ_NAME_MEDIUM];
 static int  mirror_iam;
+static int  isle;
 
 // Synchronization
 static packet_header_t sync_ans_header;
@@ -357,7 +348,7 @@ static void process_insert()
  * 
  */
 
-static void process_incoming_data(int fd, packet_header_t *header, char *content)
+static void incoming_data_process(int fd, packet_header_t *header, char *content)
 {
 	uint i = header->data_extra1 != 0;
 	char *type;
@@ -369,7 +360,6 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 
 		if (app->is_learning)
 		{
-			type = "learning application_t";
 			j = &i_appsl[i];
 
 			memcpy (&appsl[i][*j], content, sizeof(application_t));
@@ -381,7 +371,6 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 			}
 		} else if (app->is_mpi)
 		{
-			type = "mpi application_t";
 			j = &i_appsm[i];
 
 			memcpy (&appsm[i][*j], content, sizeof(application_t));
@@ -391,9 +380,7 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 				//db_store_applications_mpi(i);
 				process_insert();
 			}
-		} else
-		{
-			type = "non-mpi application_t";
+		} else {
 			j = &i_appsn[i];
 
 			memcpy (&appsn[i][*j], content, sizeof(application_t));
@@ -406,7 +393,6 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 			}
 		}
 	} else if (header->content_type == CONTENT_TYPE_PER) {
-		type = "periodic_metric_t";
 		j = &i_enrgy[i];
 
 		memcpy (&enrgy[i][*j], content, sizeof(periodic_metric_t));
@@ -418,7 +404,6 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 			process_insert();
 		}
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
-		type = "ear_event_t";
 		j = &i_evnts[i];
 
 		memcpy (&evnts[i][*j], content, sizeof(ear_event_t));
@@ -429,7 +414,6 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 			process_insert();
 		}
 	} else if (header->content_type == CONTENT_TYPE_LOO) {
-		type = "loop_t";
 		j = &i_loops[i];
 
 		memcpy (&loops[i][*j], content, sizeof(loop_t));
@@ -441,8 +425,6 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 		}
 	} else if (header->content_type == CONTENT_TYPE_QST)
 	{
-		type = "sync_question";
-
 		double ftime_insr_last = ((double) time(NULL)) - ((double) time_insr_last);
 		double ftime_insr_sync = ((double) time_insr) * 0.1;
 
@@ -451,19 +433,47 @@ static void process_incoming_data(int fd, packet_header_t *header, char *content
 		}
 
 		sync_answer(fd);
+	}
+}
+
+static void incoming_data_announce(int fd, packet_header_t *header, char *content)
+{
+	char *type;
+
+	if (header->content_type == CONTENT_TYPE_APP)
+	{
+		if (app->is_learning) {
+			type = "learning application_t";
+		} else if (app->is_mpi) {
+			type = "mpi application_t";
+		} else {
+			type = "non-mpi application_t";
+		}
+	} else if (header->content_type == CONTENT_TYPE_PER) {
+		type = "periodic_metric_t";
+	} else if (header->content_type == CONTENT_TYPE_EVE) {
+		type = "ear_event_t";
+	} else if (header->content_type == CONTENT_TYPE_LOO) {
+		type = "loop_t";
+	} else if (header->content_type == CONTENT_TYPE_QST) {
+		type = "sync_question";
 	} else {
 		type = "unknown";
 	}
 
-	verbose("processed '%s' packet (m: %d) from host '%s' (socket: %d)", type, i, header->host_src, fd);
+	verbose("received '%s' packet (m: %d) from host '%s' (socket: %d)",
+			type, i, header->host_src, fd);
 }
 
 /*
+ *
  * Main
+ *
  */
 
-void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
+static void init_data(int argc, char **argv, cluster_conf_t *conf_clus)
 {
+	node_island_t *is;
 	int i, j, k;
 	char *p;
 
@@ -498,38 +508,8 @@ void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 	float mb_evnts = (double) (b_evnts) / 1000000.0;
 	float mb_total = (mb_appsx * 3) + mb_enrgy + mb_loops + mb_evnts;
 
-	verbose("reserving %0.2f MBytes for mpi apps (%lu per app)", mb_appsx, sizeof(application_t));
-	verbose("reserving %0.2f MBytes for learning apps (%lu per app)", mb_appsx, sizeof(application_t));
-	verbose("reserving %0.2f MBytes for non-mpi apps (%lu per app)", mb_appsx, sizeof(application_t));
-	verbose("reserving %0.2f MBytes for power metrics (%lu per metric)", mb_enrgy, sizeof(periodic_metric_t));
-	verbose("reserving %0.2f MBytes for events (%lu per event)", mb_evnts, sizeof(ear_event_t));
-	verbose("reserving %0.2f MBytes for loops (%lu per loop)", mb_loops, sizeof(loop_t));
-	verbose("total memory allocated: %0.2f MBytes", mb_total);
-
-	// Times
-	/*
-	ulong b_enrgy = sizeof(time_t) * len_enrgy * 2;
-	ulong b_appsx = sizeof(time_t) * len_appsx * 2;
-	ulong b_evnts = sizeof(time_t) * len_evnts * 2;
-	ulong b_loops = sizeof(time_t) * len_loops * 2;
-
-	tmetr_appsm[i_main] = malloc(b_appsx);
-	tmetr_appsn[i_main] = malloc(b_appsx);
-	tmetr_appsl[i_main] = malloc(b_appsx);
-	tmetr_enrgy[i_main] = malloc(b_enrgy);
-	tmetr_evnts[i_main] = malloc(b_evnts);
-	tmetr_loops[i_main] = malloc(b_loops);
-
-	tmetr_enrgy[i_mirr] = &enrgy[i_main][len_enrgy];
-	tmetr_appsm[i_mirr] = &appsm[i_main][len_appsx];
-	tmetr_appsn[i_mirr] = &appsn[i_main][len_appsx];
-	tmetr_appsl[i_mirr] = &appsl[i_main][len_appsx];
-	tmetr_evnts[i_mirr] = &evnts[i_main][len_evnts];
-	tmetr_loops[i_mirr] = &loops[i_main][len_loops];
-	*/
-
-	#if 1
-	// Configuration file (TODO)
+	// Configuration
+	#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("Error getting ear.conf path");
 	}
@@ -538,17 +518,10 @@ void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 	read_cluster_conf(extra_buffer, conf_clus);
 
 	// Database
-	//init_db_helper(&conf_clus->database);
+	init_db_helper(&conf_clus->database);
 
 	// Mirror finding
 	gethostname(mirror_cli, SZ_NAME_MEDIUM);
-	mirror_iam = 0;
-	//char **db_ips;
-    //uint num_ips;
-	//char **backup_ips;
-    //uint num_backups;
-
-	node_island_t *is;
 
 	for (i = 0; i < conf_clus->num_islands && !mirror_iam; ++i)
 	{
@@ -568,15 +541,12 @@ void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 			}
 		}
 	}
-
-	verbose("MIRROR SERVER '%s' %d", mirror_srv, mirror_iam);
-	verbose("MIRROR CLIENT '%s'", mirror_cli);
 	#else
 	conf_clus->db_manager.aggr_time = 10;
 	conf_clus->db_manager.tcp_port = 4711;
 	conf_clus->db_manager.udp_port = 4712;
 	mirror_iam = atoi(argv[1]);
-	mirror_srv = argv[2]);
+	mirror_srv = argv[2];
 	#endif
 
 	// Times
@@ -596,32 +566,30 @@ void data_init(int argc, char **argv, cluster_conf_t *conf_clus)
 	sync_qst_header.content_type = CONTENT_TYPE_QST;
 	sync_qst_header.content_size = sizeof(sync_qst_t);
 
-	sockets_set_timeout(sock_sync_srv_tcp->fd, &timeout_sync);
+	// Summary
+	verbose("reserving %0.2f MBytes for mpi apps (%lu per obj)",
+			mb_appsx, sizeof(application_t));
+	verbose("reserving %0.2f MBytes for learning apps (%lu per obj)",
+			mb_appsx, sizeof(application_t));
+	verbose("reserving %0.2f MBytes for non-mpi apps (%lu per obj)",
+			mb_appsx, sizeof(application_t));
+	verbose("reserving %0.2f MBytes for power metrics (%lu per obj)",
+			mb_enrgy, sizeof(periodic_metric_t));
+	verbose("reserving %0.2f MBytes for events (%lu per obj)",
+			mb_evnts, sizeof(ear_event_t));
+	verbose("reserving %0.2f MBytes for loops (%lu per obj)",
+			mb_loops, sizeof(loop_t));
+	verbose("total memory allocated: %0.2f MBytes", mb_total);
+
+	verbose("caching the content of isle '%d'", isle);
+
+	if (mirror_iam) {
+		verbose("mirroring the content of node '%s' %d", mirror_srv);
+	}
 }
 
-void usage(int argc, char **argv)
+static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 {
-}
-
-int main(int argc, char **argv)
-{
-	cluster_conf_t conf_clus;
-	state_t s1;
-	state_t s2;
-	state_t s3;
-	int i;
-
-	//
-	usage(argc, argv);
-
-	//
-	verbose("phase 1: data initiallization space");
-
-	data_init(argc, argv, &conf_clus);
-
-	//
-	verbose("phase 2: sockets");
-
 	FD_ZERO(&fds_incoming);
 	FD_ZERO(&fds_active);
 
@@ -638,10 +606,6 @@ int main(int argc, char **argv)
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while creating sockets (%s)", intern_error_str);
 	}
-
-	verbose ("opened metrics socket %d for TCP packets on port %u", sock_metr_srv_tcp->fd, sock_metr_srv_tcp->port);
-	verbose ("opened metrics socket %d for UDP packets on port %u", sock_metr_srv_udp->fd, sock_metr_srv_udp->port);
-	verbose ("opened sync socket %d for TCP packets on port %u", sock_sync_srv_tcp->fd, sock_sync_srv_tcp->port);
 
 	// Binding socket
 	s1 = sockets_bind(sock_metr_srv_tcp);
@@ -674,6 +638,36 @@ int main(int argc, char **argv)
 	if (sock_metr_srv_udp->fd > fd_max) {
 		fd_max = sock_metr_srv_udp->fd;
 	}
+
+	// Summary
+	verbose ("opened metrics socket %d for TCP packets on port %u",
+			 sock_metr_srv_tcp->fd, sock_metr_srv_tcp->port);
+	verbose ("opened metrics socket %d for UDP packets on port %u",
+			 sock_metr_srv_udp->fd, sock_metr_srv_udp->port);
+	verbose ("opened sync socket %d for TCP packets on port %u",
+			 sock_sync_srv_tcp->fd, sock_sync_srv_tcp->port);
+}
+
+void usage(int argc, char **argv) {}
+
+int main(int argc, char **argv)
+{
+	cluster_conf_t conf_clus;
+	state_t s1;
+	state_t s2;
+	state_t s3;
+	int i;
+
+	//
+	usage(argc, argv);
+
+	//
+	verbose("phase 1: data initiallization");
+	init_data(argc, argv, &conf_clus);
+
+	//
+	verbose("phase 2: sockets initialization");
+	init_sockets();
 
 	//
 	verbose("phase 3: listening (processing every %lu s)", time_insr);
@@ -718,9 +712,13 @@ int main(int argc, char **argv)
 				{
 					s1 = sockets_receive(i, &input_header, input_buffer, sizeof(input_buffer));
 
-					if (state_ok(s1)) {
-						process_incoming_data(i, &input_header, input_buffer);
-					} else {
+					if (state_ok(s1))
+					{
+						incoming_data_announce(i, &input_header, input_buffer);
+						incoming_data_process(i, &input_header, input_buffer);
+					}
+					else
+					{
 						if (state_is(s1, EAR_SOCK_DISCONNECTED)) {
 							verbose("disconnected from socket %d (num: %d, str: %s)",
 									i, intern_error_num, intern_error_str);
