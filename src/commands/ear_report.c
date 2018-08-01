@@ -73,7 +73,7 @@ void usage(char *app)
 	printf("Usage: %s [options]\n", app);
     printf("Options are as follows:\n"\
             "\t-s start_time\t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
-            "\t-e ent_time  \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
+            "\t-e end_time  \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
             "\t-n node_name \t indicates from which node the energy will be computed. Default: none (all nodes computed)\n"
             "\t-u user_name \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed)\n"
             "\t-h           \t shows this message.\n");
@@ -154,15 +154,15 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
         result = -2;
 
-    if (verbose) printf("result after first fetch: %d\n", result);
+    if (verbose) printf("result after first fetch: %lld\n", result);
 
     if (mysql_stmt_free_result(statement)) fprintf(stderr, "ERROR when freing result.\n");
 
-    if (verbose) printf("result after result freed: %d\n", result);
+    if (verbose) printf("result after result freed: %lld\n", result);
 
     if (mysql_stmt_close(statement)) printf("\nERROR when freeing statement\n");
     statement = NULL;
-    if (verbose) printf("result after statement closed: %d\n", result);
+    if (verbose) printf("result after statement closed: %lld\n", result);
 
         return result;
 
@@ -255,7 +255,7 @@ void main(int argc,char *argv[])
     time_t start_time = 0;
     time_t end_time = time(NULL);
     int divisor = 1000;
-    int flags, opt;
+    int opt;
     struct tm tinfo = {0};
 
     if (get_ear_conf_path(path_name) == EAR_ERROR)
@@ -351,16 +351,16 @@ void main(int argc,char *argv[])
     }
     else
     {
-        char sbuff[20], ebuff[20];
+        char sbuff[64], ebuff[64];
         strtok(ctime_r(&end_time, ebuff), "\n");
         strtok(ctime_r(&start_time, sbuff), "\n");
         printf("Total energy spent from %s to %s: %lli J\n", sbuff, ebuff, result);
         if (avg_pow < 0)
         {
-            if (user_name == NULL && etag == NULL)
+            if (user_name == NULL && etag == NULL && verbose)
                 fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
         }
-        else
+        else if (avg_pow > 0)
             printf("Average power during the period: %d W\n", avg_pow);
     }    
 
