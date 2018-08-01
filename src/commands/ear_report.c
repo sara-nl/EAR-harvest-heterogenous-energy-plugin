@@ -351,13 +351,13 @@ void main(int argc,char *argv[])
     }
     else
     {
-        char sbuff[20], ebuff[20];
+        char sbuff[64], ebuff[64];
         strtok(ctime_r(&end_time, ebuff), "\n");
         strtok(ctime_r(&start_time, sbuff), "\n");
         printf("Total energy spent from %s to %s: %lli J\n", sbuff, ebuff, result);
         if (avg_pow < 0)
         {
-            if (user_name == NULL && etag == NULL)
+            if (user_name == NULL && etag == NULL && verbose)
                 fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
         }
         else if (avg_pow > 0)
