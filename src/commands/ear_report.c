@@ -117,7 +117,7 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     {
         sprintf(query, ETAG_QUERY, etag);
     }
-    else strcpy(query, AGGR_QUERY);
+    else strcpy(query, SUM_QUERY);
 
     if (verbose) printf("QUERY: %s\n", query);
     if (mysql_stmt_prepare(statement, query, strlen(query)))
@@ -154,17 +154,11 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
         result = -2;
 
-    if (verbose) printf("result after first fetch: %lld\n", result);
-
     if (mysql_stmt_free_result(statement)) fprintf(stderr, "ERROR when freing result.\n");
 
-    if (verbose) printf("result after result freed: %lld\n", result);
-
     if (mysql_stmt_close(statement)) printf("\nERROR when freeing statement\n");
-    statement = NULL;
-    if (verbose) printf("result after statement closed: %lld\n", result);
 
-        return result;
+    return result;
 
 }
 
@@ -189,7 +183,7 @@ void new_func(MYSQL *connection, int start_time, int end_time, int result)
             strcat(query, "'");
         }
         else
-            strcpy(query, AGGR_TIME);
+            strcpy(query, MET_TIME);
 
         if (verbose) printf("QUERY: %s\n", query);
         if (mysql_stmt_prepare(statement, query, strlen(query)))
@@ -197,7 +191,7 @@ void new_func(MYSQL *connection, int start_time, int end_time, int result)
             avg_pow = stmt_error(statement);
             return;
         }
-        int start, end; 
+        time_t start, end; 
         MYSQL_BIND sec_bind[2];
         memset(sec_bind, 0, sizeof(sec_bind));
         sec_bind[0].buffer_type = sec_bind[1].buffer_type = MYSQL_TYPE_LONG;
@@ -234,12 +228,13 @@ void new_func(MYSQL *connection, int start_time, int end_time, int result)
         if (status != 0 && status != MYSQL_DATA_TRUNCATED)
             avg_pow = -2;
 
+        char sbuff[64], ebuff[64];
         if (verbose)
-            printf("current avg_pow value: %d\n", avg_pow);
-        if (verbose)
-            printf("\nstart: %d\t end: %d\n\n", start, end);
-        if (verbose)
-            printf("start time computed: %d\t end time computed: %d\n\n", start_time, end_time);
+        {
+            printf("from query\t start_time: %d\t end_time: %d\n\n", start, end);
+            printf("from query\t start_time: %s\t end_time: %s\n\n", 
+                    ctime_r(&start, sbuff), ctime_r(&end, ebuff));
+        }
         if (start != end)
             avg_pow = result / (end-start);
     
