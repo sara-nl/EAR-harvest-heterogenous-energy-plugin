@@ -44,8 +44,8 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 {
 	int i;
 	if (my_node_conf!=NULL){
-		fprintf(stderr,"My node: cpus %u max_pstate %lu island %u ip %s \n",
-			my_node_conf->cpus,my_node_conf->max_pstate,my_node_conf->island,my_node_conf->db_ip);
+		fprintf(stderr,"My node: cpus %u max_pstate %lu island %u ip %s sec_ip %s\n",
+			my_node_conf->cpus,my_node_conf->max_pstate,my_node_conf->island,my_node_conf->db_ip,my_node_conf->db_sec_ip);
 		if (my_node_conf->coef_file!=NULL){
 			fprintf(stderr,"coeffs %s \n",my_node_conf->coef_file);
 		}
@@ -78,8 +78,8 @@ static void print_eargm_conf(eargm_conf_t *conf)
 
 static void print_db_manager(eardb_conf_t *conf)
 {
-	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tUDP port: %u\tCacheSize: %u\n",
-			conf->aggr_time, conf->tcp_port, conf->udp_port, conf->mem_size);
+	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tCacheSize: %u\n",
+			conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->mem_size);
 }
 
 static void print_database_conf(db_conf_t *conf)

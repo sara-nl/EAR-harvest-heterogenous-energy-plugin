@@ -112,6 +112,7 @@ typedef struct eardb_conf
 {
 	uint aggr_time;
 	uint tcp_port;
+	uint sec_tcp_port;
 	uint udp_port;
     uint mem_size;
 } eardb_conf_t;
@@ -145,6 +146,7 @@ typedef struct my_node_conf
 	uint island;
 	ulong max_pstate;
 	char db_ip[USER];
+	char db_sec_ip[USER];
 	char *coef_file;
 	uint num_policies;
 	policy_conf_t policies[TOTAL_POLICIES];
