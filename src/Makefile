@@ -17,14 +17,14 @@ ifdef CPUF_BASE
 		COMPONENTS += library
 	endif
 	ifdef GSL_BASE
-		#COMPONENTS += tools
+		COMPONENTS += tools
 	endif
 endif
 ifdef SLURM_BASE
-#	COMPONENTS += slurm_plugin
+	COMPONENTS += slurm_plugin
 endif
 ifdef DB_BASE
-#	COMPONENTS += global_manager
+	COMPONENTS += global_manager
 endif
 
 ######## RULES
