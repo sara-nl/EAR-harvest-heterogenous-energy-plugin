@@ -60,23 +60,33 @@
                     "ON job_id = id AND Applications.step_id = Jobs.step_id WHERE "\
                     "Jobs.e_tag = '%s' AND start_time >= ? AND end_time <= ?)"
 
+#define ALL_USERS   "SELECT TRUNCATE(SUM(DC_power*time), 0) as energy, Jobs.user_id FROM " \
+                    "Power_signatures INNER JOIN Applications On id=Applications.power_signature_id " \
+                    "INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id " \
+                    "WHERE start_time >= %d AND end_time <= %d GROUP BY Jobs.user_id ORDER BY energy"
+
+//grouped by query:
+
+//SELECT TRUNCATE(SUM(DC_power*time),0) as energy, Jobs.user_id FROM Power_signatures INNER JOIN Applications ON id=Applications.power_signature_id INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id WHERE start_time >= 0 AND end_time <= 5555555555555 GROUP BY Jobs.user_id ORDER BY energy;
+
 
 char *node_name = NULL;
 char *user_name = NULL;
 char *etag = NULL;
 int EAR_VERBOSE_LEVEL = 0;
 int verbose = 0;
-int avg_pow = -1;
+long int avg_pow = -1;
 
 void usage(char *app)
 {
+    printf("%s is a tool that reports energy consumption data\n", app);
 	printf("Usage: %s [options]\n", app);
     printf("Options are as follows:\n"\
-            "\t-s start_time\t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
-            "\t-e end_time  \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
-            "\t-n node_name \t indicates from which node the energy will be computed. Default: none (all nodes computed)\n"
-            "\t-u user_name \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed)\n"
-            "\t-h           \t shows this message.\n");
+            "\t-s start_time    \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
+            "\t-e end_time      \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
+            "\t-n node_name     \t indicates from which node the energy will be computed. Default: none (all nodes computed)\n"
+            "\t-u user_name|all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
+            "\t-h               \t shows this message.\n");
 	exit(1);
 }
 
@@ -162,7 +172,7 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
 
 }
 
-void new_func(MYSQL *connection, int start_time, int end_time, int result)
+void new_func(MYSQL *connection, int start_time, int end_time, long long int result)
 {
     char query[256];
     if (user_name == NULL && etag == NULL)
@@ -235,13 +245,50 @@ void new_func(MYSQL *connection, int start_time, int end_time, int result)
             printf("from query\t start_time: %d\t end_time: %d\n\n", start, end);
             printf("from query\t start_time: %s\t end_time: %s\n\n", 
                     ctime_r(&start, sbuff), ctime_r(&end, ebuff));
+            printf("result: %lld\n", result);
         }
         if (start != end)
             avg_pow = result / (end-start);
     
+        if (verbose)
+        {
+            printf("avg_pow after computation: %d\n", avg_pow);
+            printf("end-start: %d\n", end-start);
+        }
+
         mysql_stmt_close(statement);
     }
 
+}
+
+void print_all_users(MYSQL *connection, int start_time, int end_time)
+{
+    char query[512];
+    int i;
+
+    sprintf(query, ALL_USERS, start_time, end_time);
+    if (verbose) printf("query: %s\n", query);
+    
+    if (mysql_query(connection, query))
+        fprintf(stderr, "MYSQL error\n"); 
+
+    MYSQL_RES *result = mysql_store_result(connection);
+  
+    if (result == NULL) 
+        fprintf(stderr, "MYSQL error\n"); 
+
+    int num_fields = mysql_num_fields(result);
+
+    MYSQL_ROW row;
+    printf("%15s %15s\n", "Energy (J)", "User"); 
+    while ((row = mysql_fetch_row(result))!= NULL) 
+    { 
+        for(i = 0; i < num_fields; i++) 
+            printf("%15s ", row[i] ? row[i] : "NULL"); 
+            printf("\n"); 
+    }
+  
+    mysql_free_result(result);
 }
 
 void main(int argc,char *argv[])
@@ -252,6 +299,7 @@ void main(int argc,char *argv[])
     time_t end_time = time(NULL);
     int divisor = 1;
     int opt;
+    char all_users=0;
     struct tm tinfo = {0};
 
     if (get_ear_conf_path(path_name) == EAR_ERROR)
@@ -304,6 +352,8 @@ void main(int argc,char *argv[])
                 break;
             case 'u':
                 user_name = optarg;
+                if (!strcmp(user_name, "all"))
+                    all_users=1;
                 break;
             case 't':
                 etag = optarg;
@@ -333,35 +383,40 @@ void main(int argc,char *argv[])
         }
     }
 
-
-    long long result = get_sum(connection, start_time, end_time, divisor);
-    new_func(connection, start_time, end_time, result);
-    mysql_close(connection);
-    free_cluster_conf(&my_conf);
-    
-    if (!result) printf("No results in that period of time found\n");
-    else if (result < 0) 
+    if (!all_users)
     {
-        fprintf(stderr, "Error querying the database.\n");
-        exit(1);
+        long long result = get_sum(connection, start_time, end_time, divisor);
+        new_func(connection, start_time, end_time, result);
+    
+        if (!result) printf("No results in that period of time found\n");
+        else if (result < 0) 
+        {
+            fprintf(stderr, "Error querying the database.\n");
+            exit(1);
+        }
+        else
+        {
+            char sbuff[64], ebuff[64];
+            strtok(ctime_r(&end_time, ebuff), "\n");
+            strtok(ctime_r(&start_time, sbuff), "\n");
+            printf("Total energy spent from %s to %s: %lli J\n", sbuff, ebuff, result);
+            if (avg_pow < 0)
+            {
+                if (user_name == NULL && etag == NULL && verbose)
+                    fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
+            }
+            else if (avg_pow > 0)
+                printf("Average power during the period: %d W\n", avg_pow);
+        }    
     }
     else
-    {
-        char sbuff[64], ebuff[64];
-        strtok(ctime_r(&end_time, ebuff), "\n");
-        strtok(ctime_r(&start_time, sbuff), "\n");
-        printf("Total energy spent from %s to %s: %lli J\n", sbuff, ebuff, result);
-        if (avg_pow < 0)
-        {
-            if (user_name == NULL && etag == NULL && verbose)
-                fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
-        }
-        else if (avg_pow > 0)
-            printf("Average power during the period: %d W\n", avg_pow);
-    }    
+        print_all_users(connection, start_time, end_time);
 
-
+    
+    mysql_close(connection);
     free_cluster_conf(&my_conf);
+
+
     exit(1);
 }
 
