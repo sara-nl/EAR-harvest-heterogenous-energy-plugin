@@ -97,3 +97,13 @@ more than one line per island must be supported to specify different dbip ports.
 
 
 - nodename_list accept the following formats: 
+    - Nodes=node1,node2,node3
+    - Nodes=node[1-3]
+    - Nodes=node[1,2,3]
+- Any combination of the two latter options will work, but if nodes have to be specified individually (the first format) as of now they have to be specified in their own line. As an example:
+    - Valid formats:
+        - Island=1 Nodes=node1,node2,node3
+        - Island=1 Nodes=node[1-3],node[4,5]
+    - Invalid formats:
+        - Island=1 Nodes=node[1,2],node3
+        - Island=1 Nodes=node[1-3],node4
