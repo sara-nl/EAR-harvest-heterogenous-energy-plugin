@@ -662,10 +662,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->db_manager.tcp_port = atoi(token);
 		}
-		else if (!strcmp(token, "DBDAEMONPORTUDP"))
+		else if (!strcmp(token, "DBDAEMONPORTSECTCP"))
 		{
 			token = strtok(NULL, "=");
-			conf->db_manager.udp_port = atoi(token);
+			conf->db_manager.sec_tcp_port = atoi(token);
 		}
         else if (!strcmp(token, "DBDAEMONMEMORYSIZE"))
         {
