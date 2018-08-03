@@ -47,15 +47,18 @@ endif
 
 ifdef OMPICC
 libs_ALL += libear_ompi.so libeart_ompi.so
-ompi_ALL = all.ompi.components libear_ompi.so \
-           allt.ompi.components libeart_ompi.so
+ompi_ALL = all.ompi.components libear.ompi.so \
+           allt.ompi.components libeart.ompi.so
 endif
 ######## RULES
 
 all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 
+%.ompi.so: $(OBJS) $(lib_OBJS)
+	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(LDFLAGS) $(OBJS) $(lib_OBJS) 
+
 %.so: $(OBJS) $(lib_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $(LDFLAGS) $(OBJS) $(lib_OBJS)
+	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.so $(LDFLAGS) $(OBJS) $(lib_OBJS) 
 
 ######## OPTIONS
 

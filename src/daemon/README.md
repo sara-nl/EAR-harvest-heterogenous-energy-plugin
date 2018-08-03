@@ -34,6 +34,13 @@ NodeDaemonTurbo=0
 
 # Port to be used by the remote API
 NodeDaemonPort=5000
+
+# MySQL DB is used
+NodeUseDB=1
+
+# MySQL is used and records are sent using eardbd, otherwise EARD will send it directly to the MySQL server
+NodeUseEARDBD=1
+
 ```
 
 Execution

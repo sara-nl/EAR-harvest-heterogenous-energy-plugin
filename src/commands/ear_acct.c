@@ -69,9 +69,9 @@ void usage(char *app)
 	exit(1);
 }
 
-void read_from_files(int argc, char *argv[], char verbose, char file_location)
+void read_from_files(int job_id, int step_id, char verbose, char *file_path)
 {
-	int job_id, num_nodes, i, step_id=0;
+    int i, num_nodes;
 	char **nodes;
 
     char nodelist_file_path[256], *nodelog_file_path, *env;
@@ -80,11 +80,6 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
     
     
     char *token;
-    job_id = atoi(strtok(argv[1], "."));
-    token = strtok(NULL, ".");
-    if (token != NULL) step_id = atoi(token);
-    //job_id = job_id * 100 + step_id;
-    
     
     strcpy(nodelist_file_path, EAR_INSTALL_PATH);
     strcat(nodelist_file_path, "/etc/sysconf/nodelist.conf");
@@ -126,8 +121,8 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
 
 
     char *nodename_extension = ".hpc.eu.lenovo.com.csv";
-    char *nodename_prepend = (file_location > 0) ? argv[file_location] : argv[2];
-    nodelog_file_path = malloc(strlen(nodename_extension)+ strlen(nodename_prepend) + STANDARD_NODENAME_LENGTH + 1);
+    char *nodename_prepend = file_path;
+    nodelog_file_path = malloc(strlen(nodename_extension) + strlen(nodename_prepend) + STANDARD_NODENAME_LENGTH + 1);
 
 
     //allocate memory to hold all possible found jobs
@@ -202,8 +197,8 @@ void read_from_files(int argc, char *argv[], char verbose, char file_location)
 
     printf("\nApplication average:\nJob_id \tTime (secs.) \tDC Power (Watts) \tAccumulated Energy (Joules) \tAvg_freq (GHz)\n");
 
-    printf("%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t\t%.2lf\n", 
-            argv[1], avg_time, avg_power, total_energy, avg_frequency);
+    printf("%d.%d \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t\t%.2lf\n", 
+            job_id, step_id, avg_time, avg_power, total_energy, avg_frequency);
 
 
     for (i = 0; i < jobs_counter; i++)
@@ -511,6 +506,7 @@ void main(int argc, char *argv[])
     int limit = -1;
     int opt;
     char path_name[256];
+    char *file_name = NULL;
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -549,7 +545,7 @@ void main(int argc, char *argv[])
                 if (token != NULL) step_id = atoi(token);
                 break;
             case 'f':
-            
+                file_name = optarg;
                 break;
             case 'l':
                 full_length = 1;
@@ -566,7 +562,8 @@ void main(int argc, char *argv[])
         }
     }
 
-    read_from_database(user, job_id, limit, step_id); 
+    if (file_name != NULL) read_from_files(job_id, step_id, verbose, file_name);
+    else read_from_database(user, job_id, limit, step_id); 
 
     free_cluster_conf(&my_conf);
     exit(1);
