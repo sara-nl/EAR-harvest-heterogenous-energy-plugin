@@ -17,7 +17,7 @@ export NODES=1
 export KERNELS_PATH=../../../../kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin
 export KERNELS_PATH=/home/xjcorbalan/git/benchmarks/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin
 export kernel=sp-mz.openmpi.C.$CORES
-module load mpi/openmpi-x86_64
+module load mpi/openmpi.3.0.0
 
 
 export I_MPI_PIN=1
