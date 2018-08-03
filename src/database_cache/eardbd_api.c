@@ -190,7 +190,7 @@ state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint proto
 		return EAR_SUCCESS;
 	}
 
-	state_mirr = _eardbd_prepare_socket(&sock_mirr, host_mirror, port, protocol);
+	state_mirr = _eardbd_prepare_socket(&sock_mirr, host_mirror, 4712, protocol);
 
 	if (state_fail(state_mirr))
 	{
