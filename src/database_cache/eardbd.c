@@ -256,7 +256,7 @@ static void process_incoming_data(int fd, char *buffer, ssize_t size)
 
 		verbose("%d %d %d '%s' %lu ", lops[lops_i].id.event, lops[lops_i].id.size, lops[lops_i].id.level,
 			lops[lops_i].node_id, lops[lops_i].total_iterations);
-		print_signature_fd(STDERR_FILENO, &lops[lops_i].signature);
+		print_signature_fd(STDERR_FILENO, &lops[lops_i].signature, 1);
 		lops_i += 1;
 
 		if (lops_i == eves_len) {

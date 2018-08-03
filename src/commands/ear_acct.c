@@ -28,7 +28,7 @@
 */
 
 #define STANDARD_NODENAME_LENGTH 25
-#define APP_TEXT_FILE_FIELDS 29
+#define APP_TEXT_FILE_FIELDS 22 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,7 +148,7 @@ void read_from_files(int job_id, int step_id, char verbose, char *file_path)
         apps[jobs_counter] = (application_t*) malloc(sizeof(application_t));
         init_application(apps[jobs_counter]);
         if (verbose) printf("Checking node for signatures with %d job id.\n", job_id);
-        while (scan_application_fd(node_file, apps[jobs_counter]) == APP_TEXT_FILE_FIELDS)
+        while (scan_application_fd(node_file, apps[jobs_counter], 0) == APP_TEXT_FILE_FIELDS)
         {
             if (apps[jobs_counter]->job.id == job_id && apps[jobs_counter]->job.step_id == step_id)
             {
@@ -489,7 +489,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
     else
     {
         for (i = 0; i < num_apps; i++)
-            append_application_text_file(csv_path, &apps[i]);
+            append_application_text_file(csv_path, &apps[i], 0);
     }
 
     free(apps);

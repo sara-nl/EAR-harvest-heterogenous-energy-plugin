@@ -76,7 +76,9 @@ void print_job_fd(int fd, job_t *job)
 		fprintf(stderr,"print_job_fd some of the args are null\n");
 		return;
 	}
-    sprintf(job_buff, "%s;%s;%lu;%s;%s;%lf", job->user_id, job->group_id,job->id, job->app_id, job->policy, job->th);
+//    sprintf(job_buff, "%s;%s;%lu;%s;%s;%lf", job->user_id, job->group_id,job->id, job->app_id, job->policy, job->th);
+    sprintf(job_buff, "%lu;%lu;%s;%s;%s;%s;%s;%s;%lf", job->id, job->step_id, job->user_id, job->group_id, job->app_id,
+                                                          job->user_acc, job->energy_tag, job->policy, job->th);
 	write(fd,job_buff,strlen(job_buff));
 }
 

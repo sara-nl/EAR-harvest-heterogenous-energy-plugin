@@ -97,7 +97,7 @@ void print_loop_fd(int fd, loop_t *loop)
 {
 	dprintf(fd,"id %lu step id %lu\n", loop->jid, loop->step_id);
     print_loop_id_fd(fd, &loop->id);
-    print_signature_fd(fd, &loop->signature);
+    print_signature_fd(fd, &loop->signature, 1);
 	dprintf(fd, "%lu\n", loop->total_iterations);
 }
 

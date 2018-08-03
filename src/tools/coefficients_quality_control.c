@@ -312,7 +312,7 @@ void save_applications_merged(control_t *control)
 
     for (i = 0; i < control->n_apps_merged; ++i)
     {
-        append_application_text_file(control->csv, &control->apps_merged[i]);
+        append_application_text_file(control->csv, &control->apps_merged[i], 1);
     }
 }
 
@@ -384,7 +384,7 @@ int main(int argc, char *argv[])
     if (control.mode == 1 && (argc == 5 || argc == 6))
     {
         //
-        READ_T(control.n_apps = read_application_text_file(argv[3], &control.apps));
+        READ_T(control.n_apps = read_application_text_file(argv[3], &control.apps,1));
 		control.n_coeffs = read_coefficients_file(argv[2], &control.coeffs, 0);
         control.f0_mhz = (unsigned long) atoi(argv[4]);
         control.csv = argv[5];
@@ -416,7 +416,7 @@ int main(int argc, char *argv[])
     else if (control.mode == 3 && (argc == 3 || argc == 4))
     {
         //
-        control.n_apps = read_application_text_file(argv[2], &control.apps);
+        control.n_apps = read_application_text_file(argv[2], &control.apps, 1);
         control.csv = argv[3];
 
         //
