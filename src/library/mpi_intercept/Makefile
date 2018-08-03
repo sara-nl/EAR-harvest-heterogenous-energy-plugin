@@ -3,7 +3,9 @@
 OBJS = ear_api.o \
        process_MPI.o \
        MPI_intercept.o \
-       MPI_interface.o
+       MPI_interface.o \
+       MPI_interceptF.o \
+       MPI_interfaceF.o
 
 ######## RULES
 

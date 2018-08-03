@@ -245,6 +245,7 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "EAR_ENERGY_TAG");
     printenv_remote(sp, "EARD_PORT");
     printenv_remote(sp, "LD_PRELOAD");
+    printenv_remote(sp, "LD_LIBRARY_PATH");
     printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
     printenv_remote(sp, "SLURM_NNODES");
     printenv_remote(sp, "SLURM_JOB_ID");
