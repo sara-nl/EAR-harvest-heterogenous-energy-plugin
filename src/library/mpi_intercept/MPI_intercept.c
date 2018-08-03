@@ -31,7 +31,7 @@
 #include "MPI_interface.h"
 #include <mpi.h>
 #include <stdio.h>
-
+#define EAR_INTERCEPT_C_DEBUG 1
 #ifdef EAR_INTERCEPT_C_DEBUG
 #define VERBOSE_INTERCEPT_C(tags,text,...) fprintf(stderr,"EAR_INTERCEPT_C[%d]: %s\n",getpid(),text);
 #else
