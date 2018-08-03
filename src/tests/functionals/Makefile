@@ -11,13 +11,17 @@ BINARIES = bandwith_monitor \
 		   ear_conf \
 		   my_node_conf \
 		   configuration_check \
-		   batch_insert
+		   batch_insert \
+		   read_from_file
 # ear_pm
 # test_architecture
 
 ######## RULES
 
 all: $(BINARIES)
+
+read_from_file: read_from_file.c $(SRCDIR)/common/types.a
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o read_from_file $^ $(SRCDIR)/common/types.a
 
 batch_insert: batch_insert.c \
 	$(SRCDIR)/common/types.a \

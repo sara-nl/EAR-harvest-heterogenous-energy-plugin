@@ -66,10 +66,10 @@ void print_signature_fd(int fd, signature_t *sig, char is_extended)
 	dprintf(fd, "%lu;%lu;", sig->avg_f, sig->def_f);
 	dprintf(fd, "%lf;%lf;%lf;%lf;", sig->time, sig->CPI, sig->TPI, sig->GBS);
 	dprintf(fd, "%lf;%lf;%lf;", sig->DC_power, sig->DRAM_power, sig->PCK_power);
-	dprintf(fd, "%llu;%llu;%lf;", sig->cycles, sig->instructions, sig->Gflops);
+	dprintf(fd, "%llu;%llu;%lf", sig->cycles, sig->instructions, sig->Gflops);
     if (is_extended)
     {
-	    dprintf(fd, "%llu;%llu;%llu", sig->L1_misses, sig->L2_misses, sig->L3_misses);
+	    dprintf(fd, ";%llu;%llu;%llu", sig->L1_misses, sig->L2_misses, sig->L3_misses);
 
         for (i = 0; i < FLOPS_EVENTS; ++i) {
 	    	dprintf(fd, ";%llu", sig->FLOPS[i]);
