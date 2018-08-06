@@ -215,6 +215,11 @@ void print_spacing_string_align_left(char* string, uint left_spaces)
     }
 }
 
+void print_line(FILE * stream)
+{
+    fprintf(stream, "---------------------------------------------------------------\n");
+}
+
 void strtoup(char *string)
 {
     while (*string) {

@@ -48,9 +48,30 @@
 #define CONTENT_TYPE_QST	5
 #define CONTENT_TYPE_ANS	6
 
+#define cred	"\x1b[31m"
+#define cgrn	"\x1b[32m"
+#define cylw	"\x1b[33m"
+#define cblu    "\x1b[34m"
+#define cmgt	"\x1b[35m"
+#define ccya	"\x1b[36m"
+#define crst
+
 #define verbose(...) \
 	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
 	fprintf(stderr, "\n");
+
+#define verbosec(...) \
+	if (!forked || (!mirror_iam && server_too) || (mirror_iam && !server_too)) { \
+		verbose(__VA_ARGS__); \
+	}
+
+#define verbosel(...) \
+	if (!forked || (!mirror_iam && server_too) || (mirror_iam && !server_too)) { \
+		fprintf(stderr, "\x1b[35m"); \
+		print_line(stderr); \
+		fprintf(stderr, "EARDBD, " __VA_ARGS__); \
+		fprintf(stderr, "\x1b[0m\n"); \
+	}
 
 #define error(...) \
 	fprintf(stderr, "EARDBD ERROR, " __VA_ARGS__); \

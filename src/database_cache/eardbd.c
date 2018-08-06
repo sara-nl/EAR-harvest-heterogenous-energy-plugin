@@ -32,7 +32,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <signal.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
 
@@ -40,10 +42,10 @@ int EAR_VERBOSE_LEVEL = 1;
 
 // Sockets
 static socket_t sockets[4];
-static socket_t *sock_main_srv_tcp = &sockets[0];
-static socket_t *sock_mirr_srv_tcp = &sockets[1];
-static socket_t *sock_sync_srv_tcp = &sockets[2];
-static socket_t *sock_sync_cli_tcp = &sockets[3];
+static socket_t *smets_srv = &sockets[0];
+static socket_t *smets_mir = &sockets[1];
+static socket_t *ssync_srv = &sockets[2];
+static socket_t *ssync_mir = &sockets[3];
 
 // Descriptors
 fd_set fds_metr_tcp;
@@ -68,9 +70,13 @@ static char input_buffer[SZ_NAME_LARGE];
 static char extra_buffer[SZ_NAME_LARGE];
 
 // Mirroring
-static char mirror_srv[SZ_NAME_MEDIUM];
-static char mirror_cli[SZ_NAME_MEDIUM];
-static int  mirror_iam;
+static char server_host[SZ_NAME_MEDIUM];
+static char mirror_host[SZ_NAME_MEDIUM];
+static int  mirror_iam = 0;
+static int  mirror_too = 0;
+static int  server_iam = 1;
+static int  server_too = 1;
+static int  forked;
 static int  isle;
 
 // Synchronization
@@ -101,6 +107,7 @@ static uint i_appsl;
 static uint i_evnts;
 static uint i_loops;
 
+
 /*
  *
  * Synchronization main/mirror
@@ -117,35 +124,35 @@ static int sync_question()
 	sockets_header_update(&sync_qst_header);
 	
 	// Synchronization pipeline
-	s = sockets_socket(sock_sync_cli_tcp);
+	s = sockets_socket(ssync_mir);
 
     if (state_fail(s)) {
         verbose("failed to create client socket to MAIN (%d, inum: %d, istr: %s)", s, intern_error_num, intern_error_str);
         return EAR_ERROR;
     }
 	
-	s = sockets_connect(sock_sync_cli_tcp);
+	s = sockets_connect(ssync_mir);
 
 	if (state_fail(s)) {
 		verbose("failed to connect to MAIN (%d, inum: %d, istr: %s)", s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
-	s = sockets_send(sock_sync_cli_tcp, &sync_qst_header, (char *) &sync_qst_content);
+	s = sockets_send(ssync_mir, &sync_qst_header, (char *) &sync_qst_content);
 
 	if (state_fail(s)) {
 		verbose("failed to send to MAIN (%d, num: %d, str: %s)", s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
-	s = sockets_receive(sock_sync_cli_tcp->fd, &sync_ans_header, (char *) &sync_ans_content, sizeof(sync_ans_t));
+	s = sockets_receive(ssync_mir->fd, &sync_ans_header, (char *) &sync_ans_content, sizeof(sync_ans_t));
 
 	if (state_fail(s)) {
 		verbose("failed to receive from MAIN (%d, num: %d, str: %s)", s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
-	s = sockets_close(sock_sync_cli_tcp);
+	s = sockets_close(ssync_mir);
 
 	verbose("synchronization completed correctly");
 
@@ -446,11 +453,17 @@ static int incoming_new_connection(int fd)
 {
 	int nc;
 
-	nc  = !mirror_iam && (fd == sock_main_srv_tcp->fd || fd == sock_sync_srv_tcp->fd);
-	nc |=  mirror_iam && (fd == sock_mirr_srv_tcp->fd);
+	nc  = !mirror_iam && (fd == smets_srv->fd || fd == ssync_srv->fd);
+	nc |=  mirror_iam && (fd == smets_mir->fd);
 
 	return nc;
 }
+
+/*
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -461,7 +474,7 @@ static int incoming_new_connection(int fd)
 static void init_configuration(int argc, char **argv, cluster_conf_t *conf_clus)
 {
 	node_island_t *is;
-	int i, j, k;
+	int i, j, k, found;
 	char *p;
 
 	// Configuration
@@ -477,32 +490,42 @@ static void init_configuration(int argc, char **argv, cluster_conf_t *conf_clus)
 	init_db_helper(&conf_clus->database);
 
 	// Mirror finding
-	gethostname(mirror_cli, SZ_NAME_MEDIUM);
+	gethostname(mirror_host, SZ_NAME_MEDIUM);
 
-	for (i = 0; i < conf_clus->num_islands && !mirror_iam; ++i)
+	for (i = 0; i < conf_clus->num_islands && !found; ++i)
 	{
 		is = &conf_clus->islands[i];
 
-		for (k = 0; k < is->num_ranges && !mirror_iam; k++)
+		for (k = 0; k < is->num_ranges && !found; k++)
 		{
-        	if (is->ranges[i].sec_ip >= 0)
+			p = is->db_ips[conf->ranges[i].db_ip];
+
+			if (!server_too && p != NULL && (strncmp(p, mirror_host, strlen(mirror_host)) == 0)){
+				server_too = 1;
+			}
+
+        	if (!mirror_too && is->ranges[i].sec_ip >= 0)
 			{
 				p = is->backup_ips[is->ranges[i].sec_ip];
 
-				if (strncmp(p, mirror_cli, strlen(mirror_cli)) == 0)
+				if (p != NULL && (strncmp(p, mirror_host, strlen(mirror_host)) == 0))
 				{
-					strcpy(mirror_srv, is->db_ips[is->ranges[i].db_ip]);
-					mirror_iam = 1;
+					strcpy(server_host, is->db_ips[is->ranges[i].db_ip]);
+					mirror_too = 1;
 				}
 			}
+
+			found = server_too && mirror_too;
 		}
 	}
 	#else
 	conf_clus->db_manager.aggr_time = 10;
 	conf_clus->db_manager.tcp_port = 4711;
 	conf_clus->db_manager.udp_port = 4712;
-	mirror_iam = atoi(argv[1]);
-	strcpy(mirror_srv, argv[2]);
+
+	server_too = atoi(argv[1]);
+	mirror_too = atoi(argv[2]);
+	strcpy(server_host, argv[3]);
 	#endif
 
 	// Times
@@ -510,8 +533,16 @@ static void init_configuration(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	timeout_insr.tv_sec  = time_insr;
 	timeout_insr.tv_usec = 0L;
-	timeout_sync.tv_sec  = 30;
+	timeout_sync.tv_sec  = 10;
 	timeout_sync.tv_usec = 0L;
+
+	// Verbose
+	verbose("enabled cache server: %s",      server_too ? "OK": "NO");
+	verbose("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
+
+	if (!server_too && !mirror_too) {
+		exit(0);
+	}
 }
 
 static void init_data(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -540,21 +571,6 @@ static void init_data(int argc, char **argv, cluster_conf_t *conf_clus)
 	float mb_evnts = (double) (b_evnts) / 1000000.0;
 	float mb_total = (mb_appsx * 3) + mb_enrgy + mb_loops + mb_evnts;
 
-	// Summary
-	verbose("reserving %0.2f MBytes for mpi apps (%lu per obj)",
-			mb_appsx, sizeof(application_t));
-	verbose("reserving %0.2f MBytes for learning apps (%lu per obj)",
-			mb_appsx, sizeof(application_t));
-	verbose("reserving %0.2f MBytes for non-mpi apps (%lu per obj)",
-			mb_appsx, sizeof(application_t));
-	verbose("reserving %0.2f MBytes for power metrics (%lu per obj)",
-			mb_enrgy, sizeof(periodic_metric_t));
-	verbose("reserving %0.2f MBytes for events (%lu per obj)",
-			mb_evnts, sizeof(ear_event_t));
-	verbose("reserving %0.2f MBytes for loops (%lu per obj)",
-			mb_loops, sizeof(loop_t));
-	verbose("total memory allocated: %0.2f MBytes", mb_total);
-
 	// Synchronization headers
 	sockets_header_clean(&sync_ans_header);
 	sockets_header_clean(&sync_qst_header);
@@ -563,24 +579,99 @@ static void init_data(int argc, char **argv, cluster_conf_t *conf_clus)
 	sync_ans_header.content_size = sizeof(sync_ans_t);
 	sync_qst_header.content_type = CONTENT_TYPE_QST;
 	sync_qst_header.content_size = sizeof(sync_qst_t);
+
+	// Summary
+	verbosec("type         \tmemory   \tsample\t");
+	verbosec("----         \t------   \t------\t");
+	verbosec("mpi apps     \t%0.2f MBs\t%lu Bs\t", mb_appsx, sizeof(application_t));
+	verbosec("non-mpi apps \t%0.2f MBs\t%lu Bs\t", mb_appsx, sizeof(application_t));
+	verbosec("learn apps   \t%0.2f MBs\t%lu Bs\t", mb_appsx, sizeof(application_t));
+	verbosec("pwr metrics  \t%0.2f MBs\t%lu Bs\t", mb_enrgy, sizeof(periodic_metric_t));
+	verbosec("app loops    \t%0.2f MBs\t%lu Bs\t", mb_loops, sizeof(loop_t));
+	verbosec("events       \t%0.2f MBs\t%lu Bs\t", mb_evnts, sizeof(ear_event_t));
+	verbosec("TOTAL        \t%0.2f MBs", mb_total);
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 {
-	pid_t pid;
+	pid_t spid = 0;
+	pid_t mpid = 0;
 
-	if (mirror_iam) {
-		return;
+	if (mirror_too)
+	{
+		mpid = fork();
+
+		if (mpid == 0)
+		{
+			// Reconfiguring
+			mirror_iam = 1;
+			server_iam = 0;
+
+			mpid = getpid();
+			spid = 0;
+		}
+		else if (mpid > 0)
+		{
+			spid = getpid();
+
+			if (!server_too) {
+				waitpid(mpid, NULL, 0);
+			}
+		} else {
+			error("error while forking, terminating the program");
+		}
 	}
 
-	pid = fork();
+	forked = 1;
+	verbose("cache server pid: %d", spid);
+	verbose("cache mirror pid: %d", mpid);
+}
 
-	if (pid == 0) {
-		mirror_iam = 1;
-	} else if (pid > 0) {
-		mirror_iam = 0;
-	} else {
-		error("error while forking, terminating the program");
+static void signal_handler(int signal)
+{
+	if (signal == SIGPIPE) {
+		verbose("%d signal SIGPIPE received", mirror_iam);
+	}
+	if (signal == SIGTERM) {
+		verbose("%d signal SIGTERM received", mirror_iam);
+	}
+	if (signal == SIGINT) {
+		verbose("%d signal SIGINT received", mirror_iam);
+	}
+	if (signal == SIGHUP) {
+		verbose("%d signal SIGHUP received", mirror_iam);
+	}
+}
+
+static void init_signals()
+{
+	struct sigaction action;
+	sigset_t set;
+
+	sigfillset(&set);
+	sigdelset(&set, SIGPIPE);
+	sigdelset(&set, SIGTERM);
+	sigdelset(&set, SIGINT);
+	sigdelset(&set, SIGHUP);
+
+	sigprocmask(SIG_SETMASK, &set, NULL);
+	//pthread_sigmask(SIG_SETMASK, &set,NULL);
+
+	sigemptyset(&action.sa_mask);
+	action.sa_handler = signal_handler;
+	action.sa_flags = 0;
+
+	if (sigaction(SIGPIPE, &action, NULL) < 0) {
+		verbose("sigaction error on signal %d (%s)", SIGPIPE, strerror(errno));
+	}
+	if (sigaction(SIGTERM, &action, NULL) < 0) {
+		verbose("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
+	}
+	if (sigaction(SIGINT, &action, NULL) < 0) {
+		verbose("sigaction error on signal %d (%s)", SIGINT, strerror(errno));
+	}
+	if (sigaction(SIGHUP, &action, NULL) < 0) {
+		verbose("sigaction error on signal %d (%s)", SIGHUP, strerror(errno));
 	}
 }
 
@@ -590,39 +681,32 @@ static void init_sockets_mirror(int argc, char **argv, cluster_conf_t *conf_clus
 	state_t s2;
 
 	// Opening server socket
-	sockets_init(sock_mirr_srv_tcp,       NULL, 4712, TCP);
-	sockets_init(sock_sync_cli_tcp, mirror_srv, 4714, TCP);
-
-	s1 = sockets_socket(sock_mirr_srv_tcp);
+	s1 = sockets_socket(smets_mir);
 
 	if (state_fail(s1) || state_fail(s2)) {
 		error("while creating sockets (%s)", intern_error_str);
 	}
 
 	// Binding socket
-	s1 = sockets_bind(sock_mirr_srv_tcp);
+	s1 = sockets_bind(smets_mir);
 
 	if (state_fail(s1) || state_fail(s2)) {
 		error("while binding sockets (%s)", intern_error_str);
 	}
 
 	// Listening socket
-	s1 = sockets_listen(sock_mirr_srv_tcp);
+	s1 = sockets_listen(smets_mir);
 
 	if (state_fail(s1)) {
 		error("while listening sockets (%s)", intern_error_str);
 	}
 
 	// Add the listener to the ready set
-	FD_SET(sock_mirr_srv_tcp->fd, &fds_active);
+	FD_SET(smets_mir->fd, &fds_active);
 
 	//
 	// Keep track of the biggest file descriptor
-	fd_max = sock_mirr_srv_tcp->fd;
-
-	// Summary
-	verbose ("opened mirror socket %d for TCP packets on port %u",
-			 sock_mirr_srv_tcp->fd, sock_mirr_srv_tcp->port);
+	fd_max = smets_mir->fd;
 }
 
 static void init_sockets_main(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -631,57 +715,54 @@ static void init_sockets_main(int argc, char **argv, cluster_conf_t *conf_clus)
 	state_t s2;
 
 	// Opening server socket
-	sockets_init(sock_main_srv_tcp, NULL, 4711, TCP);
-	sockets_init(sock_sync_srv_tcp, NULL, 4713, TCP);
-
-	s1 = sockets_socket(sock_main_srv_tcp);
-	s2 = sockets_socket(sock_sync_srv_tcp);
+	s1 = sockets_socket(smets_srv);
+	s2 = sockets_socket(ssync_srv);
 
 	if (state_fail(s1) || state_fail(s2)) {
 		error("while creating sockets (%s)", intern_error_str);
 	}
 
 	// Binding socket
-	s1 = sockets_bind(sock_main_srv_tcp);
-	s2 = sockets_bind(sock_sync_srv_tcp);
+	s1 = sockets_bind(smets_srv);
+	s2 = sockets_bind(ssync_srv);
 
 	if (state_fail(s1) || state_fail(s2)) {
 		error("while binding sockets (%s)", intern_error_str);
 	}
 
 	// Listening socket
-	s1 = sockets_listen(sock_main_srv_tcp);
-	s2 = sockets_listen(sock_sync_srv_tcp);
+	s1 = sockets_listen(smets_srv);
+	s2 = sockets_listen(ssync_srv);
 
 	if (state_fail(s1) || state_fail(s2)) {
 		error("while listening sockets (%s)", intern_error_str);
 	}
 
 	// Add the listener to the ready set
-	FD_SET(sock_main_srv_tcp->fd, &fds_active);
-	FD_SET(sock_sync_srv_tcp->fd, &fds_active);
+	FD_SET(smets_srv->fd, &fds_active);
+	FD_SET(ssync_srv->fd, &fds_active);
 
 	// Keep track of the biggest file descriptor
-	fd_max = sock_sync_srv_tcp->fd;
+	fd_max = ssync_srv->fd;
 
-	if (sock_main_srv_tcp->fd > fd_max) {
-		fd_max = sock_main_srv_tcp->fd;
+	if (smets_srv->fd > fd_max) {
+		fd_max = smets_srv->fd;
 	}
-
-	// Summary
-	verbose ("opened metrics socket %d for TCP packets on port %u",
-			 sock_main_srv_tcp->fd, sock_main_srv_tcp->port);
-	verbose ("opened sync socket %d for TCP packets on port %u",
-			 sock_sync_srv_tcp->fd, sock_sync_srv_tcp->port);
 }
 
 static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 {
 	// Cleaning sockets
-	sockets_clean(sock_main_srv_tcp);
-	sockets_clean(sock_mirr_srv_tcp);
-	sockets_clean(sock_sync_srv_tcp);
-	sockets_clean(sock_main_srv_tcp);
+	sockets_clean(smets_srv);
+	sockets_clean(smets_mir);
+	sockets_clean(ssync_srv);
+	sockets_clean(smets_srv);
+
+	// Setting data
+	sockets_init(smets_srv, NULL, 4711, TCP);
+	sockets_init(ssync_srv, NULL, 4713, TCP);
+	sockets_init(smets_mir, NULL, 4712, TCP);
+	sockets_init(ssync_mir, server_host, 4714, TCP);
 
 	// Cleaning socket sets
 	FD_ZERO(&fds_incoming);
@@ -692,6 +773,15 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	} else {
 		init_sockets_main(argc, argv, conf_clus);
 	}
+
+	// Summary
+	verbosec("type          \tport\tprot\tstat  \thost");
+	verbosec("----          \t----\t----\t----  \t----");
+	verbosec("server metrics\t%d  \tTCP \tlisten\t%s", smets_srv->port, server_host);
+	verbosec("mirror metrics\t%d  \tTCP \tlisten\t%s", smets_mir->port, server_host);
+	verbosec("server sync   \t%d  \tTCP \tlisten\t%s", ssync_srv->port, server_host);
+	verbosec("mirror sync   \t%d  \tTCP \tclosed\t%s", ssync_mir->port, ssync_mir->host);
+	verbosec("TIP! mirror sync socket opens and closes intermittently");
 }
 
 void usage(int argc, char **argv) {}
@@ -708,23 +798,23 @@ int main(int argc, char **argv)
 	usage(argc, argv);
 
 	//
-	verbose("phase 1: configuration initiallization");
+	verbosel("phase 1: configuration initiallization");
 	init_configuration(argc, argv, &conf_clus);
 
 	//
-	verbose("phase 2: processes fork");
+	verbosel("phase 2: processes fork");
 	init_fork(argc, argv, &conf_clus);
 
 	//
-	verbose("phase 3: data allocation");
+	verbosel("phase 3: data allocation");
 	init_data(argc, argv, &conf_clus);
 
 	//
-	verbose("phase 4: sockets initialization");
+	verbosel("phase 4: sockets initialization");
 	init_sockets(argc, argv, &conf_clus);
 
 	//
-	verbose("phase 5: listening (processing every %lu s)", time_insr);
+	verbosel("phase 5: listening (processing every %lu s)", time_insr);
 
 	while(1)
 	{
