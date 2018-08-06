@@ -256,7 +256,7 @@ void ear_init()
 	resched_conf = attach_resched_shared_area(resched_conf_path);
 
 	/* Updating configuration */
-	if ((system_conf!=NULL) && (resched_conf!=NULL)){
+	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
 		update_configuration();	
 	}else{
 		earl_verbose(0,"Shared memory not present, not connecting with EARD");

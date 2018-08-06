@@ -356,7 +356,6 @@ int MPI_Ibsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest,
 
 int MPI_Init(int *argc, char ***argv) {
     VERBOSE_INTERCEPT_C(VB_MPI_INT, ">> MPI_Init...............");
-	printf("INITTTTT\n");
     EAR_MPI_Init_enter(argc, argv);
     int res = PMPI_Init(argc, argv);
     EAR_MPI_Init_leave();

@@ -37,9 +37,9 @@ OBJS = dynais/dynais.o \
        mpi_intercept/ear_api.o \
        mpi_intercept/process_MPI.o \
        mpi_intercept/MPI_intercept.o \
-       mpi_intercept/MPI_interceptF.o \
-       mpi_intercept/MPI_interface.o \
-       mpi_intercept/MPI_interfaceF.o
+       mpi_intercept/MPI_interface.o  
+	#	mpi_intercept/MPI_interceptF.o \
+	#	mpi_intercept/MPI_interfaceF.o
 
 ifdef MPICC
 libs_ALL += libear.so libeart.so

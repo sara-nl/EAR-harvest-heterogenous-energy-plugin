@@ -396,6 +396,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
 	int p_id;
+	uint new_app_id=create_ID(appID->job.id,appID->job.step_id);
 	energy_tag_t *my_tag;
 	policy_conf_t *my_policy;
 	ulong f;
@@ -412,6 +413,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	eard_verbose(1,"Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->th);
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
+	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
 	if (user_type==AUTHORIZED) dyn_conf->learning=appID->is_learning;
 	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);

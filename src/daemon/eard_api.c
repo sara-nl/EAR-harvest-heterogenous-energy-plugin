@@ -77,8 +77,7 @@ void signal_handler(int s)
 }
 void signal_catcher()
 {
-    struct sigaction action,old_action;
-    sigset_t set;
+    struct sigaction action;
     sigset_t earl_mask;
     
     sigfillset(&earl_mask);
