@@ -63,7 +63,7 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	},
 	{ "ear-mpi-dist", "dist",
 	  "Selects the MPI distribution for compatibility of your application" \
-	  "{dist=intel|openmpi}",
+	  "{dist=intel|openmpi|openmpi-fortran}",
 	  2, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
 	},
 	{ "ear-verbose", "value", "Specifies the level of the verbosity\n" \

@@ -44,12 +44,12 @@ MPIF_OBJS = mpi_intercept/MPI_interceptF.o \
             mpi_intercept/MPI_interfaceF.o
 
 ifdef MPICC
-libs_ALL += libear.so libearf.so
+libs_ALL += libear.so
 impi_ALL = all.impi.components libear.so
 endif
 
 ifdef OMPICC
-libs_ALL += libear_ompi.so libearf_ompi.so
+libs_ALL += libear_ompi.so libear_ompif.so
 ompi_ALL = all.ompi.components libear.ompi.so
 endif
 
@@ -59,11 +59,10 @@ all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 
 %.ompi.so: $(OBJS) $(lib_OBJS)
 	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(LDFLAGS) $(OBJS) $(MPIC_OBJS) $(lib_OBJS) 
-	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*f_ompi.so $(LDFLAGS) $(OBJS) $(MPIF_OBJS) $(lib_OBJS) 
+	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompif.so $(LDFLAGS) $(OBJS) $(MPIF_OBJS) $(lib_OBJS) 
 
 %.so: $(OBJS) $(lib_OBJS)
 	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.so $(LDFLAGS) $(OBJS) $(MPIC_OBJS) $(lib_OBJS) 
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*f.so $(LDFLAGS) $(OBJS) $(MPIF_OBJS) $(lib_OBJS) 
 
 ######## OPTIONS
 
