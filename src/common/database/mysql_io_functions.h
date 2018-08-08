@@ -98,6 +98,14 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning);
 *   EAR_MYSQL_STMT_ERROR on error. */
 int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs);
 
+
+/** Given a MYSQL connection and a valid MYSQL query, stores in applications the 
+*   applications found in the database corresponding to the query. It looks in learning
+*   or "normal" tables depending on is_learning. Returns the 
+*   number of applications found on success, and either EAR_MYSQL_ERROR or
+*   EAR_MYSQL_STMT_ERROR on error. */
+int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps, char is_learning);
+
 /** Given a MYSQL connection and a signature, inserts said signature into
 *   the database. Returns the signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/

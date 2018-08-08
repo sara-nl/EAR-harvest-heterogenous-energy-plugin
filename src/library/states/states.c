@@ -48,6 +48,7 @@
 #include <common/types/application.h>
 #include <common/states.h>
 #include <common/math_operations.h>
+#include <daemon/eard_api.h>
 
 static const char *__NAME__ = "ear/states";
 extern char *__HOST__ ;

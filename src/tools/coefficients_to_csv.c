@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <math.h>
+#include <unistd.h>
 
 #include <linux/limits.h>
 #include <common/types/coefficient.h>

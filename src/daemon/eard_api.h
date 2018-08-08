@@ -114,6 +114,11 @@ int eards_node_dc_energy(unsigned long *energy);
 *   and 10000000 otherwise. */
 ulong eards_node_energy_frequency();
 
+/** Sends the loop_signature to eard to be reported in the DB */
+ulong eards_write_loop_signature(loop_t *loop_signature);
+
+/** Returns the frequency at which the node energy frequency is refreshed */
+ulong eards_node_energy_frequency();
 
 #else
 #endif

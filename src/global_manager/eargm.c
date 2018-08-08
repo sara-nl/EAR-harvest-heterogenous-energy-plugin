@@ -39,6 +39,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <signal.h>
 #include <common/config.h>
 #include <common/types/generic.h>
 #include <common/states.h>

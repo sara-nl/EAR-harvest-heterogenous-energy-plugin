@@ -84,4 +84,7 @@ int _papi_counters_read(int event_set, long long *event_values);
 /** Starts the event counters of the given event set. */
 int _papi_counters_start(int event_set);
 
+
+
+#else
 #endif
