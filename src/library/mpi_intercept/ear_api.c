@@ -58,6 +58,7 @@
 #include <common/environment.h>
 #include <common/states.h>
 #include <common/config.h>
+#include <metrics/metrics.h>
 
 // Statics
 static const char *__NAME__ = "EARL";

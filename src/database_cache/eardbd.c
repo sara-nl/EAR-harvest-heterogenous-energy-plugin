@@ -35,6 +35,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
+#include <common/database/db_helper.h>
 
 static char buffer_pck[MAX_PACKET_SIZE()];
 static char buffer_gen[PATH_MAX];

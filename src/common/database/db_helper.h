@@ -46,7 +46,7 @@ int db_insert_application(application_t *application);
 
 int db_insert_loop(loop_t *loop);
 
-int db_insert_event(ear_event_t *ear_ev);
+int db_insert_ear_event(ear_event_t *ear_ev);
 
 int db_insert_gm_warning(gm_warning_t *warning);
 

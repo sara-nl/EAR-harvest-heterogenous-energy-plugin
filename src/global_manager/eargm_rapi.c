@@ -35,6 +35,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include <global_manager/eargm_conf_api.h>
 #include <global_manager/eargm_rapi.h>

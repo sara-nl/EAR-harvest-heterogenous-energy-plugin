@@ -57,7 +57,7 @@ void copy_application(application_t *destiny, application_t *source)
 
 static int print_application_fd(int fd, application_t *app, int new_line, char is_extended)
 {
-    char buff[256];
+    char buff[1024];
     sprintf(buff, "%s;", app->node_id);
     write(fd, buff, strlen(buff));
 	print_job_fd(fd, &app->job);

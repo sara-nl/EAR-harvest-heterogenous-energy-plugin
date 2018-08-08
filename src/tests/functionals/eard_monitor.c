@@ -31,6 +31,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
+#include <unistd.h>
+
 #include <daemon/eard_api.h>
 
 #define MATRIX_SIZE 1024

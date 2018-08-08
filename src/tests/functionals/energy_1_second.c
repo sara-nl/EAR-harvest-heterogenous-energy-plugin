@@ -31,6 +31,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <metrics/ipmi/energy_node.h>
 
 int EAR_VERBOSE_LEVEL=1;

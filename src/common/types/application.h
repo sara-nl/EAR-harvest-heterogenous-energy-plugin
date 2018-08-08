@@ -32,6 +32,7 @@
 #ifndef _EAR_TYPES_APPLICATION
 #define _EAR_TYPES_APPLICATION
 #include <stdint.h>
+#include <stdio.h>
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/signature.h>
@@ -86,6 +87,9 @@ int append_application_text_file(char *path, application_t *app, char is_extende
 
 /** Replicates the application in *source to *destiny */
 void copy_application(application_t *destiny, application_t *source);
+
+/** PENDING */
+int scan_application_fd(FILE *fd, application_t *app, char is_extended);
 
 
 #define create_ID(id,sid)	(id*100+sid)

@@ -49,6 +49,7 @@
 #include <common/types/loop.h>
 #include <common/states.h>
 #include <common/math_operations.h>
+#include <daemon/eard_api.h>
 
 static const char *__NAME__ = "STATES_PERIOD";
 

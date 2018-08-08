@@ -36,6 +36,7 @@
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/db_helper.h>
+#include <common/database/mysql_io_functions.h>
 
 int EAR_VERBOSE_LEVEL = 0;
 

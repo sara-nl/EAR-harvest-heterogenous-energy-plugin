@@ -155,9 +155,16 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
 /** Given a MYSQL connection and num_evs EAR events, inserts said events into
 *   the database. Returns the EAR_SUCCESS success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_batch_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev, int num_evs);
+int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int num_evs);
+
 
 /** Given a MYSQL connection and an global manager warning, inserts said 
 *   warning into the database. Returns EAR_SUCCESS on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning);
+
+
+/** PENDING */
+int mysql_statement_error(MYSQL_STMT *statement);
+/** PENDING */
+int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signature_t **pow_sigs);

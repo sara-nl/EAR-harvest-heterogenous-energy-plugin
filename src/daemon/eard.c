@@ -50,11 +50,14 @@
 #include <common/types/generic.h>
 #include <common/types/services.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <metrics/metrics.h>
+#if 0
 #include <metrics/papi/energy_cpu.h>
 #include <metrics/custom/bandwidth.h>
 #include <metrics/ipmi/energy_node.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/frequency.h>
+#endif
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>

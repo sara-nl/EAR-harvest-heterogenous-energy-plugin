@@ -48,8 +48,10 @@ void frequency_set_ondemand_governor_all_cpus();
 void frequency_set_userspace_governor_all_cpus();
 void frequency_save_previous_frequency();
 void frequency_save_previous_configuration();
+void frequency_save_previous_policy();
 void frequency_recover_previous_frequency();
 void frequency_recover_previous_configuration();
+void frequency_recover_previous_policy();
 int frequency_is_valid_frequency(ulong freq);
 int frequency_is_valid_pstate(uint pstate);
 

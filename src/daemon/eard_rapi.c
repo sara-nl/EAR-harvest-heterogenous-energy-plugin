@@ -37,6 +37,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include <common/config.h>
 #include <daemon/eard_conf_rapi.h>

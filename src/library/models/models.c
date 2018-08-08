@@ -48,6 +48,7 @@
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
+#include <daemon/eard_api.h>
 
 typedef struct policy
 {

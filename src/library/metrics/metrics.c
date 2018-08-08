@@ -34,10 +34,13 @@
 #include <papi.h>
 
 #include <common/config.h>
+#include <metrics/metrics.h>
+#if 0
 #include <metrics/papi/flops.h>
 #include <metrics/papi/cache.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
+#endif
 #include <library/metrics/metrics.h>
 #include <common/types/signature.h>
 #include <daemon/eard_api.h>
@@ -444,7 +447,7 @@ long long metrics_usecs_diff(long long end, long long init)
 
 	if (end < init)
 	{
-		EAR_DEBUG(0, "Timer overflow (end: %ll - init: %ll)\n", end, init);
+		DEBUG_F(0, "Timer overflow (end: %ll - init: %ll)\n", end, init);
 		to_max = LLONG_MAX - init;
 		return (to_max + end);
 	}
