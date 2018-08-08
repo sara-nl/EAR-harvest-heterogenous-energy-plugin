@@ -28,8 +28,9 @@ These tests are designed to evaluate the different plugin options to be supporte
 | test18 | --ear-user-db=DB/stream_mpi. --ear-verbose=1 -J $kernel| it is memory intensive application, low freqs must be selected |
 | test19 | --ear-policy=MIN_ENERGY_TO_SOLUTION --ear-verbose=1 | If user is authorized, MIN_ENERGY will be selected as policy. It is a cpu app |
 | test20 |--ear-policy=MIN_ENERGY_TO_SOLUTION --ear-verbose=1| If user is authorized, MIN_ENERGY will be selected as policy. It is an memory intensive app|
-| test21 |-ear-mpi-dist=openmpi-fortran --ear-verbose=1 | openmpi test, fortran application, same case than test2.sh|
-| test23 | --ear=off | Application is MPI and it is executed without EAR library|
+| test21 |-ear-mpi-dist=openmpi --ear-verbose=1 | openmpi test, fortran application, same case than test2.sh|
+| test22 |-ear-mpi-dist=openmpi --ear-verbose=1 | openmpi test, C application|
+| test23 | --ear=off -ear-mpi-dist=openmpi --ear-verbose=1 | Application is MPI and it is executed without EAR library|
 | test24 | no ear flags | not mpi applications. It must be executed without problems |
 | test25 | --ear-verbose=1  | not mpi applications. It must be executed without problems |
 |test150 | Same than test103 (based on test1) with two srun's. | Options must be the same since there are defined in sbatch|
