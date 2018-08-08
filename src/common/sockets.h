@@ -95,7 +95,9 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content);
 
 state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer);
 
-state_t sockets_set_timeout(int fd, struct timeval *timeout);
+state_t sockets_set_timeout(int fd, time_t timeout);
+
+state_t sockets_get_timeout(int fd, time_t *timeout);
 
 state_t sockets_header_clean(packet_header_t *header);
 

@@ -427,7 +427,6 @@ int remote_eard_report_finish(spank_t sp)
 	plug_verbose(sp, 2, "function remote_eard_report_finish");
 
 	#if PRODUCTION
-	plug_verbose(sp, 2, "volviendo");
     return ESPANK_SUCCESS;
 	#endif
 

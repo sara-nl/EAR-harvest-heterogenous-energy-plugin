@@ -39,6 +39,10 @@ static socket_t sock_main;
 static socket_t sock_mirr;
 static packet_header_t header;
 
+#define verbose(...) \
+	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
+	fprintf(stderr, "\n");
+
 /*
  *
  * Intern functions

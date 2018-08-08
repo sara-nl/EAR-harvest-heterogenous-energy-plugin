@@ -47,36 +47,16 @@
 #define CONTENT_TYPE_EVE	4
 #define CONTENT_TYPE_QST	5
 #define CONTENT_TYPE_ANS	6
+#define SYNC_ENRGY 0x01
+#define SYNC_APPSM 0x02
+#define SYNC_APPSN 0x04
+#define SYNC_APPSL 0x08
+#define SYNC_LOOPS 0x10
+#define SYNC_EVNTS 0x20
+#define SYNC_ALL   0x3F
 
-#define cred	"\x1b[31m"
-#define cgrn	"\x1b[32m"
-#define cylw	"\x1b[33m"
-#define cblu    "\x1b[34m"
-#define cmgt	"\x1b[35m"
-#define ccya	"\x1b[36m"
-#define crst
-
-#define verbose(...) \
-	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
-	fprintf(stderr, "\n");
-
-#define verbosec(...) \
-	if (!forked || (!mirror_iam && server_too) || (mirror_iam && !server_too)) { \
-		verbose(__VA_ARGS__); \
-	}
-
-#define verbosel(...) \
-	if (!forked || (!mirror_iam && server_too) || (mirror_iam && !server_too)) { \
-		fprintf(stderr, "\x1b[35m"); \
-		print_line(stderr); \
-		fprintf(stderr, "EARDBD, " __VA_ARGS__); \
-		fprintf(stderr, "\x1b[0m\n"); \
-	}
-
-#define error(...) \
-	fprintf(stderr, "EARDBD ERROR, " __VA_ARGS__); \
-	fprintf(stderr, "\n"); \
-	exit(1);
+#define sync_option(option, type) \
+	((option & type) > 0)
 
 // Base macros
 #define _MAX(X,Y) sizeof(X) > sizeof(Y) ? sizeof(X) : sizeof(Y)
@@ -87,16 +67,11 @@
 	(_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t)) + sizeof(packet_header_t)
 
 typedef struct sync_qst {
-	uint question;
+	uchar sync_option;
 } sync_qst_t;
 
 typedef struct sync_ans {
-	time_t timestamp_appsm;
-	time_t timestamp_appsn;
-	time_t timestamp_appsl;
-	time_t timestamp_metrs;
-	time_t timestamp_loops;
-	time_t timestamp_evnts;
+	int answer;
 } sync_ans_t;
 
 #endif //EAR_EARDBD_H

@@ -66,12 +66,6 @@ state_t sockets_header_update(packet_header_t *header)
 	header->timestamp = time(NULL);
 }
 
-state_t sockets_set_timeout(int fd, struct timeval *timeout)
-{
-	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) timeout, sizeof(struct timeval));
-	state_return(EAR_SUCCESS);
-}
-
 state_t sockets_listen(socket_t *socket)
 {
 	if (socket->protocol == UDP) {
@@ -201,7 +195,7 @@ state_t sockets_close(socket_t *socket)
 state_t sockets_close_fd(int fd)
 {
 	if (fd > 0) {
-		close(fd);
+		int r = close(fd);
 	}
 
 	state_return(EAR_SUCCESS);
@@ -213,22 +207,11 @@ state_t sockets_close_fd(int fd)
 //	Returning EAR_BAD_ARGUMENT
 //	 - Header or buffer pointers are NULL
 //	Returning EAR_SOCK_DISCONNECTED
-// 	 - ENETUNREACH: No route to the network is present.
-//	 - ENETDOWN: The local network interface used to reach the destination is down.
-//   - ECONNRESET: A connection was forcibly closed by a peer.
-//   - ENOTCONN: A receive is attempted on a connection-mode socket that is not connected.
-// 	 - EPIPE: The socket is shut down for writing.
-//	 - EDESTADDRREQ: The socket is not connection-mode and no peer address is set.
+// 	 - On ENETUNREACH, ENETDOWN, ECONNRESET, ENOTCONN, EPIPE and EDESTADDRREQ
 //	Returning EAR_NOT_READY
-//	 - EAGAIN: The socket's file descriptor is marked O_NONBLOCK and no data is waiting.
+//	 - On EAGAIN
 //	Returning EAR_ERROR
-//	 - EACCES: The calling process does not have the appropriate privileges.
-//   - EBADF: The socket argument is not a valid file descriptor.
-//   - ENOTSOCK: The socket argument does not refer to a socket.
-//   - EOPNOTSUPP: The specified flags are not supported for this socket type or protocol.
-//   - EINTR: The recv() function was interrupted by a signal that was caught, before any data was available.
-//   - EIO: An I/O error occurred while reading from or writing to the file system.
-//	 - ENOBUFS: Insufficient resources were available in the system to perform the operation.
+//	 - On EACCES, EBADF, ENOTSOCK, EOPNOTSUPP, EINTR, EIO and ENOBUFS
 
 state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 {
@@ -296,25 +279,16 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 //
 // Errors:
 //	Returning EAR_BAD_ARGUMENT
+//	 - File descriptor less than 0
 //	 - Header or buffer pointers are NULL
 //	 - Buffer size is less than the packet content size
 //	Returning EAR_SOCK_DISCONNECTED
 //	 - Received 0 bytes (meaning disconnection)
-//   - ECONNRESET: A connection was forcibly closed by a peer.
-//   - ENOTCONN: A receive is attempted on a connection-mode socket that is not connected.
-//   - ETIMEDOUT: The connection timed out during connection establishment, or due to a transmission
-//     timeout on active connection.
+//	 - On ECONNRESET, ENOTCONN and ETIMEDOUT
 //	Returning EAR_NOT_READY
-//	 - EAGAIN: The socket's file descriptor is marked O_NONBLOCK and no data is waiting.
-//   - EINVAL: The MSG_OOB flag is set and no out-of-band data is available.
+//	 - On EAGAIN and EINVAL
 //	Returning EAR_ERROR
-//   - EBADF: The socket argument is not a valid file descriptor.
-//   - ENOTSOCK: The socket argument does not refer to a socket.
-//   - EOPNOTSUPP: The specified flags are not supported for this socket type or protocol.
-//   - EINTR: The recv() function was interrupted by a signal that was caught, before any data was available.
-//   - EIO: An I/O error occurred while reading from or writing to the file system.
-//	 - ENOBUFS: Insufficient resources were available in the system to perform the operation.
-//	 - ENOMEM: Insufficient memory was available to fulfill the request.
+//	 - On EBADF, ENOTSOCK, EOPNOTSUPP, EINTR, EIO, ENOBUFS and ENOMEM
 
 state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer)
 {
@@ -323,6 +297,10 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 	ssize_t bytes_left;
 	char *bytes_buff;
 	int i = 0;
+
+	if (fd < 0) {
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "invalid file descriptor");
+	}
 
 	if (header == NULL || buffer == NULL) {
 		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
@@ -369,6 +347,35 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 		if (bytes_expc > size_buffer) {
 			state_return_msg(EAR_BAD_ARGUMENT, 0, "buffer to small for the received object %ld %ld");
 		}
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_get_timeout(int fd, time_t *timeout)
+{
+	struct timeval tv;
+	socklen_t length;
+
+	if (getsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, &length) != 0)
+	{
+		state_return_msg(EAR_ERROR, errno, strerror(errno));
+		*timeout = 0;
+	}
+
+	*timeout = (time_t) tv.tv_sec;
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_set_timeout(int fd, time_t timeout)
+{
+	struct timeval tv;
+
+	tv.tv_sec  = timeout;
+	tv.tv_usec = 0;
+
+	if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) timeout, sizeof(struct timeval)) != 0) {
+		state_return_msg(EAR_ERROR, errno, strerror(errno));
 	}
 
 	state_return(EAR_SUCCESS);
