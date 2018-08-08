@@ -228,7 +228,7 @@ int scan_application_fd(FILE *fd, application_t *app, char is_extended)
 			 &a->signature.DC_power, &a->signature.DRAM_power, &a->signature.PCK_power,
 			 &a->signature.cycles, &a->signature.instructions, &a->signature.Gflops);
 	
-    printf("node_id: %s, job_id: %d\n", a->node_id, a->job.id);
+    printf("node_id: %s, job_id: %lu\n", a->node_id, a->job.id);
 	return ret;
 }
 

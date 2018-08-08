@@ -352,18 +352,21 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	#else
 	char coeffs_path[GENERIC_NAME];
 	get_coeffs_path(get_ear_tmp(),coeffs_path);	
+	num_coeffs=0;
 	coefficients_v3=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
-	num_coeffs=num_coeffs/sizeof(coefficient_v3_t);
-	#if 0
-	for (i=0;i<num_coeffs;i++){
-		print_coefficient(&coefficients_v3[i]);
-	}
-	#endif
-	int ccoeff;
-	for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
-		ref=frequency_freq_to_pstate(coefficients_v3[ccoeff].pstate_ref);	
-		i=frequency_freq_to_pstate(coefficients_v3[ccoeff].pstate);
-		init_coeff_data(&coefficients[ref][i],&coefficients_v3[ccoeff]);
+	if (num_coeffs>0){
+		num_coeffs=num_coeffs/sizeof(coefficient_v3_t);
+		#if 0
+		for (i=0;i<num_coeffs;i++){
+			print_coefficient(&coefficients_v3[i]);
+		}
+		#endif
+		int ccoeff;
+		for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
+			ref=frequency_freq_to_pstate(coefficients_v3[ccoeff].pstate_ref);	
+			i=frequency_freq_to_pstate(coefficients_v3[ccoeff].pstate);
+			init_coeff_data(&coefficients[ref][i],&coefficients_v3[ccoeff]);
+		}
 	}
 	#endif
 	app_policy.init(p_states);

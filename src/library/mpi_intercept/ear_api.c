@@ -263,6 +263,11 @@ void ear_init()
 		my_id=1;
 	}	
 
+	if (my_id != 0) {
+        return;
+    }
+
+
 	// Application static data and metrics
 	init_application(&application);
 	init_application(&loop_signature);

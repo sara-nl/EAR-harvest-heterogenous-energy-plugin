@@ -1,4 +1,14 @@
 #!/bin/bash
+#SBATCH -N 1
+#SBATCH -e OUTS/test.%j.err
+#SBATCH -o OUTS/test.%j.out
+#SBTACH --ntasks=24
+#SBATCH --tasks-per-node=24
+#SBATCH --cpus-per-task=1
+#SBATCH --ear-verbose=1 
+#SBATCH --ear-mpi-dist=openmpi-fortran
+
+
 
 export CORES=24
 export CORES_SOCKET=12
@@ -18,7 +28,7 @@ export OMP_NUM_THREADS=1
 #export KMP_AFFINITY=granularity=fine,compact,1,0
 
 
-srun  --mpi=pmi2 --ear-mpi-dist=openmpi-fortran --ear-verbose=1 -J $kernel  -N $NODES -n $MPIS --tasks-per-node=$PPN --cpus-per-task=$OMP_NUM_THREADS $KERNELS_PATH/$kernel 
+srun --ntasks=24  --mpi=pmi2  -J $kernel   $KERNELS_PATH/$kernel 
 
 
 
