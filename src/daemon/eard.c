@@ -50,14 +50,12 @@
 #include <common/types/generic.h>
 #include <common/types/services.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <metrics/metrics.h>
-#if 0
 #include <metrics/papi/energy_cpu.h>
+#include <metrics/papi/generics.h>
 #include <metrics/custom/bandwidth.h>
 #include <metrics/ipmi/energy_node.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/frequency.h>
-#endif
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
@@ -244,7 +242,7 @@ void connect_service(int req,application_t *new_app)
 	int pid=create_ID(new_job->id,new_job->step_id);
     // Let's check if there is another application
     eard_verbose(2, "request for connection at service %d", req);
-    if (is_new_application(pid) || is_new_service(req, pid)) {
+    if (is_new_application() || is_new_service(req, pid)) {
         connect=1;
     } else {
         connect=0;
@@ -314,7 +312,7 @@ void connect_service(int req,application_t *new_app)
 }
 
 // Checks application connections
-int is_new_application(pid)
+int is_new_application()
 {
 	if (application_id==-1) return 1;
 	else return 0;

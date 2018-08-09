@@ -157,7 +157,7 @@ static void check_dynais_on(signature_t *A, signature_t *B)
 	}
 }
 
-static check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
+static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
 {
 	ulong dynais_overhead_usec=0;
     double dynais_overhead_perc;

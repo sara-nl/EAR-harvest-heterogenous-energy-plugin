@@ -43,6 +43,7 @@
 
 #include <emmintrin.h> // -msse2
 #include <immintrin.h> // -mavx -mfma -mfavx512
+#include <omp.h>
 #include <papi.h>
 
 #include <control/frequency.h>
@@ -50,10 +51,13 @@
 #include <metrics/papi/flops.h>
 #include <metrics/papi/stalls.h>
 #include <metrics/papi/energy_cpu.h>
+#include <metrics/ipmi/energy_node.h>
 #include <metrics/papi/instructions.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/frequency.h>
 #include <common/types/generic.h>
+
+#include "simd_test.h"
 
 #define INST_ITER   64.0
 

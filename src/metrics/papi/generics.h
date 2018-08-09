@@ -29,7 +29,6 @@
 
 #ifndef EAR_PAPI_MACROS_H
 #define EAR_PAPI_MACROS_H
-
 #include <papi.h>
 
 // Use along with <ear_verbose.h> and by defining

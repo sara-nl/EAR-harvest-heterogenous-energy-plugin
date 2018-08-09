@@ -41,7 +41,7 @@
 #include <common/ear_verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
-#include <metrics/metrics.h>
+#include <metrics/ipmi/energy_node.h>
 
 #define close_app_connection()
 

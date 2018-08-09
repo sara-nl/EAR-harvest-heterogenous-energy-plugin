@@ -32,7 +32,7 @@ BINARIES = eard_api.o \
 all: app_api_bin $(BINARIES) all.others
 
 eard: eard.c $(eard_OBJS) ../../Makefile 
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
+	$(CC) $(PAPI_CFLAGS) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eard eard.c $(eard_OBJS) $(LDFLAGS)
 
 power_monitor.o: power_monitor.c power_monitor.h 
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c power_monitor.c
