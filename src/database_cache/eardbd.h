@@ -47,13 +47,18 @@
 #define CONTENT_TYPE_EVE	4
 #define CONTENT_TYPE_QST	5
 #define CONTENT_TYPE_ANS	6
-#define SYNC_ENRGY 0x01
-#define SYNC_APPSM 0x02
-#define SYNC_APPSN 0x04
-#define SYNC_APPSL 0x08
-#define SYNC_LOOPS 0x10
-#define SYNC_EVNTS 0x20
-#define SYNC_ALL   0x3F
+#define SYNC_ENRGY 			0x01
+#define SYNC_APPSM 			0x02
+#define SYNC_APPSN			0x04
+#define SYNC_APPSL 			0x08
+#define SYNC_LOOPS			0x10
+#define SYNC_EVNTS			0x20
+#define SYNC_RESET			0x40
+#define SYNC_ALL			0x7F
+#define RES_SYNC			0
+#define RES_TIME			1
+#define RES_OVER			2
+#define RES_FAIL			3
 
 #define sync_option(option, type) \
 	((option & type) > 0)
@@ -67,7 +72,7 @@
 	(_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t)) + sizeof(packet_header_t)
 
 typedef struct sync_qst {
-	uchar sync_option;
+	uint sync_option;
 } sync_qst_t;
 
 typedef struct sync_ans {

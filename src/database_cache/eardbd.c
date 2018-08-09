@@ -119,15 +119,19 @@ static       ear_event_t *evnts;
 static            loop_t *loops;
 
 // Indexes
-static uint i_enrgy;
-static uint i_appsm;
-static uint i_appsn;
-static uint i_appsl;
-static uint i_evnts;
-static uint i_loops;
+static ulong i_enrgy;
+static ulong i_appsm;
+static ulong i_appsn;
+static ulong i_appsl;
+static ulong i_evnts;
+static ulong i_loops;
 
 // Strings
 static char *str_who[2] = { "server", "mirror" };
+
+#define line "---------------------------------------------------------------\n"
+#define col1 "\x1b[35m"
+#define col2 "\x1b[0m"
 
 #define verbose0(format) \
 	fprintf(stderr, "EARDBD %s, %s \n", str_who[mirror_iam], format);
@@ -141,13 +145,14 @@ static char *str_who[2] = { "server", "mirror" };
 		fprintf(stderr, "\n"); \
 	}
 
-#define verbose_line(...) \
+#define verline1(...) \
 	if (!forked || master_iam) { \
-		fprintf(stderr, "\x1b[35m"); \
-		print_line(stderr); \
-		fprintf(stderr, "EARDBD, " __VA_ARGS__); \
-		fprintf(stderr, "\x1b[0m\n"); \
+		fprintf(stderr, col1 line "EARDBD, " __VA_ARGS__); \
+		fprintf(stderr, col2 "\n"); \
 	}
+
+#define verline0() \
+		fprintf(stderr, col1 line col2);
 
 #define error(...) \
 	fprintf(stderr, "EARDBD ERROR, " __VA_ARGS__); \
@@ -264,79 +269,101 @@ static int sync_answer(int fd)
 
 static void db_store_events()
 {
+	float percent = (float) (i_evnts) / (float) (len_evnts);
+	verbose1("inserting: %lu/%lu (%0.2f) samples of events",
+			 i_evnts, len_evnts, percent);
+
 	if (i_evnts <= 0) {
 		return;
 	}
 
-	verbose1("inserting in DB %d event samples", i_evnts);
+	verbose1("inserting in DB %lu event samples", i_evnts);
 	//db_batch_insert_ear_event(evnts[i_evnts]);
 	i_evnts = 0;
 }
 
 static void db_store_loops()
 {
+	float percent = (float) (i_loops) / (float) (len_loops);
+	verbose1("inserting: %lu/%lu (%0.2f) samples of loops",
+			 i_loops, len_loops, percent);
+
 	if (i_loops <= 0) {
 		return;
 	}
 
-	verbose1("inserting in DB %d loop samples", i_loops);
 	//db_batch_insert_loops(loops[i_loops]);
 	i_loops = 0;
 }
 
 static void db_store_periodic_metrics()
 {
+	float percent = (float) (i_enrgy) / (float) (len_enrgy);
+	verbose1("inserting: %lu/%lu (%0.2f) samples of energy monitoring data",
+			 i_enrgy, len_enrgy, percent);
+
 	if (i_enrgy <= 0) {
 		return;
 	}
 
-	verbose1("inserting in DB %d periodic metric samples", i_enrgy);
 	//db_batch_insert_periodic_metrics(enrgy[i_enrgy]);
 	i_enrgy = 0;
 }
 
 static void db_store_periodic_aggregation()
 {
+	float percent = (float) (i_appsl) / (float) (len_appsl);
+	verbose1("inserting: %d samples energy monitoring data (from %lu to %lu, consuming %lu mJ)",
+			 aggr.n_samples, aggr.start_time, aggr.end_time, aggr.DC_energy);
+
 	if (aggr.n_samples <= 0) {
 		return;
 	}
 
-	verbose1("insert in DB an aggregation of %d samples", aggr.n_samples);
 	//db_insert_periodic_aggregation(&aggr);
 	init_periodic_aggregation(&aggr);
 }
 
-static void db_store_applications_learning()
-{
-	if (i_appsl <= 0) {
-		return;
-	}
-
-	verbose1("inserting in DB %d learning mpi application samples", i_appsl);
-	//db_batch_insert_applications(appsl[i_appsl]);
-	i_appsl = 0;
-}
-
 static void db_store_applications_mpi()
 {
+	float percent = (float) (i_appsm) / (float) (len_appsm);
+	verbose1("inserting: %lu/%lu (%0.2f) samples of mpi applications",
+			 i_appsm, len_appsm, percent);
+
 	if (i_appsm <= 0) {
 		return;
 	}
 
-	verbose1("inserting in DB %d mpi application samples", i_appsm);
 	//db_batch_insert_applications(appsm[i_appsm]);
 	i_appsm = 0;
 }
 
 static void db_store_applications()
 {
+	float percent = (float) (i_appsn) / (float) (len_appsn);
+	verbose1("inserting: %lu/%lu (%0.2f) samples of non-mpi applications",
+			 i_appsn, len_appsn, percent);
+
 	if (i_appsn <= 0) {
 		return;
 	}
 
-	verbose1("inserting in DB %d non-mpi application samples", i_appsn);
 	//db_batch_insert_applications_no_mpi(appsn, i_appsn);
 	i_appsn = 0;
+}
+
+static void db_store_applications_learning()
+{
+	float percent = (float) (i_appsl) / (float) (len_appsl);
+	verbose1("inserting: %lu/%lu (%0.2f) samples of learning applications",
+			 i_appsl, len_appsl, percent);
+
+	if (i_appsl <= 0) {
+		return;
+	}
+
+	//db_batch_insert_applications(appsl[i_appsl]);
+	i_appsl = 0;
 }
 
 /*
@@ -348,45 +375,8 @@ static void make_periodic_aggregation(periodic_aggregation_t *aggr, periodic_met
 	add_periodic_aggregation(aggr, met->DC_energy, met->start_time, met->end_time);
 }
 
-static void process_reset_indexes()
+static void process_reset_insert_time()
 {
-	i_enrgy = 0;
-	i_appsm = 0;
-	i_appsn = 0;
-	i_appsl = 0;
-	i_evnts = 0;
-	i_loops = 0;
-}
-
-static void process_insert_all()
-{
-	db_store_periodic_aggregation();
-	db_store_periodic_metrics();
-	db_store_applications_mpi();
-	db_store_applications_learning();
-	db_store_applications_mpi();
-	db_store_applications();
-	db_store_events();
-	db_store_loops();
-}
-
-static void process_insert()
-{
-	// Synchronizing with the MAIN
-	if (mirror_iam)
-	{
-		if(state_fail(sync_question(SYNC_ALL))) {
-			process_insert_all();
-		} else {
-			process_reset_indexes();
-		}
-	}
-
-	verbose1("inserting main data, consumed %lu energy (mJ) from %lu to %lu",
-			aggr.DC_energy, aggr.start_time, aggr.end_time);
-
-	process_insert_all();
-
 	// Refresh insert time
 	timeout_insr.tv_sec = time_insr;
 	timeout_insr.tv_usec = 0L;
@@ -395,11 +385,74 @@ static void process_insert()
 	time_insr_last = time(NULL);
 }
 
+static void process_reset_indexes()
+{
+	i_appsm = 0;
+	i_appsn = 0;
+	i_appsl = 0;
+	i_enrgy = 0;
+	i_evnts = 0;
+	i_loops = 0;
+}
+
+static void process_insert(uint option, uint reason)
+{
+	verline0();
+	verbose1("inserting reason: %u", reason);
+
+	if (sync_option(option, SYNC_ALL))
+	{
+		// Time to aggregate
+		db_store_periodic_aggregation();
+
+		// Resetting time
+		process_reset_insert_time();
+	}
+	if (sync_option(option, SYNC_APPSM)) {
+		db_store_applications_mpi();
+	}
+	if (sync_option(option, SYNC_APPSN)) {
+		db_store_applications();
+	}
+	if (sync_option(option, SYNC_APPSL)) {
+		db_store_applications_learning();
+	}
+	if (sync_option(option, SYNC_ENRGY)) {
+		db_store_events();
+	}
+	if (sync_option(option, SYNC_EVNTS)) {
+		db_store_events();
+	}
+	if (sync_option(option, SYNC_LOOPS)) {
+		db_store_loops();
+	}
+	if (sync_option(option, SYNC_RESET)) {
+		process_reset_indexes();
+		process_reset_insert_time();
+	}
+}
+
 /*
  *
  * Incoming data
  *
  */
+
+static void sample(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt)
+{
+	memcpy (&buf[*idx], cnt, siz);
+	*idx += 1;
+
+	if (*idx == len)
+	{
+		if(server_iam) {
+			process_insert(opt, RES_OVER);
+		} else if (state_fail(sync_question(opt))) {
+			process_insert(opt, RES_OVER);
+		}
+		*idx = 0;
+	}
+}
 
 static void incoming_data_process(int fd, packet_header_t *header, char *content)
 {
@@ -409,124 +462,25 @@ static void incoming_data_process(int fd, packet_header_t *header, char *content
 	{
 		application_t *app = (application_t *) content;
 
-		if (app->is_learning)
-		{
-			memcpy (&appsl[i_appsl], content, sizeof(application_t));
-			i_appsl += 1;
-
-			if (i_appsl == len_appsl)
-			{
-				if(server_iam) {
-					db_store_applications_learning();
-				} else if (mirror_iam && state_fail(sync_question(SYNC_APPSL))) {
-					db_store_applications_learning();
-				} else {
-					process_reset_indexes();
-				}
-			}
-			// MPI applications
-		} else if (app->is_mpi)
-		{
-			memcpy (&appsm[i_appsm], content, sizeof(application_t));
-			i_appsm += 1;
-
-			if (i_appsm == len_appsm)
-			{
-				if(server_iam) {
-					db_store_applications_mpi();
-				} else if (mirror_iam && state_fail(sync_question(SYNC_APPSM))) {
-					db_store_applications_mpi();
-				} else {
-					process_reset_indexes();
-				}
-			}
-			// Non-MPI applications
-		} else
-		{
-			memcpy (&appsn[i_appsn], content, sizeof(application_t));
-			i_appsn += 1;
-
-			if (i_appsn == len_appsn)
-			{
-				if(server_iam) {
-					db_store_applications();
-				} else if (mirror_iam && state_fail(sync_question(SYNC_APPSN))) {
-					db_store_applications();
-				} else {
-					process_reset_indexes();
-				}
-			}
+		if (app->is_learning) {
+			sample((char *) appsl, len_appsl, &i_appsl, content, sizeof(application_t), SYNC_APPSL);
+		} else if (app->is_mpi) {
+			sample((char *) appsm, len_appsm, &i_appsm, content, sizeof(application_t), SYNC_APPSM);
+		} else {
+			sample((char *) appsn, len_appsn, &i_appsn, content, sizeof(application_t), SYNC_APPSN);
 		}
+	} else if (header->content_type == CONTENT_TYPE_EVE) {
+		sample((char *) evnts, len_evnts, &i_evnts, content, sizeof(ear_event_t), SYNC_EVNTS);
+	} else if (header->content_type == CONTENT_TYPE_LOO) {
+		sample((char *) loops, len_loops, &i_loops, content, sizeof(loop_t), SYNC_LOOPS);
 	} else if (header->content_type == CONTENT_TYPE_PER)
 	{
-		memcpy (&enrgy[i_enrgy], content, sizeof(periodic_metric_t));
-		make_periodic_aggregation(&aggr, &enrgy[i_enrgy]);
-		i_enrgy += 1;
-
-		if (i_enrgy == len_enrgy)
-		{
-			if(server_iam) {
-				db_store_periodic_metrics();
-			} else if (mirror_iam && state_fail(sync_question(SYNC_ENRGY))) {
-				db_store_periodic_metrics();
-			} else {
-				process_reset_indexes();
-			}
-		}
-	} else if (header->content_type == CONTENT_TYPE_EVE)
-	{
-		memcpy (&evnts[i_evnts], content, sizeof(ear_event_t));
-		i_evnts += 1;
-
-		if (i_evnts == len_evnts)
-		{
-			if(server_iam) {
-				db_store_events();
-			} else if (mirror_iam && state_fail(sync_question(SYNC_EVNTS))) {
-				db_store_events();
-			} else {
-				process_reset_indexes();
-			}
-		}
-	} else if (header->content_type == CONTENT_TYPE_LOO)
-	{
-		memcpy (&loops[i_loops], content, sizeof(loop_t));
-		i_loops += 1;
-
-		if (i_loops == len_loops)
-		{
-			if(server_iam) {
-				db_store_loops();
-			} else if (mirror_iam && state_fail(sync_question(SYNC_LOOPS))) {
-				db_store_loops();
-			} else {
-				process_reset_indexes();
-			}
-		}
-	}
-	else if (header->content_type == CONTENT_TYPE_QST)
+		make_periodic_aggregation(&aggr, (periodic_metric_t *) content);
+		sample((char *) enrgy, len_enrgy, &i_enrgy, content, sizeof(periodic_metric_t), SYNC_ENRGY);
+	} else if (header->content_type == CONTENT_TYPE_QST)
 	{
 		sync_qst_t *q = (sync_qst_t *) content;
-
-		if (sync_option(q->sync_option, SYNC_APPSL)) {
-			db_store_applications_learning();
-		}
-		if (sync_option(q->sync_option, SYNC_APPSM)) {
-			db_store_applications_mpi();
-		}
-		if (sync_option(q->sync_option, SYNC_APPSN)) {
-			db_store_applications();
-		}
-		if (sync_option(q->sync_option, SYNC_ENRGY)) {
-			db_store_events();
-		}
-		if (sync_option(q->sync_option, SYNC_EVNTS)) {
-			db_store_events();
-		}
-		if (sync_option(q->sync_option, SYNC_LOOPS)) {
-			db_store_loops();
-		}
-
+		process_insert(q->sync_option, RES_SYNC);
 		sync_answer(fd);
 	}
 }
@@ -616,42 +570,36 @@ static void release_resources()
 
 static void signal_handler(int signal)
 {
-	int propagating;
+	int propagating = 0;
 
 	// Case exit
 	if (signal == SIGTERM || signal == SIGINT && !exitting)
 	{
 		verbose1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
 
-		// Propagate
 		propagating = 1;
-		// Stop listening
-		listening = 0;
-		// Release resources
-		releasing = 1;
-		// Exit
-		exitting = 1;
+		listening   = 0;
+		releasing   = 1;
+		exitting    = 1;
 	}
 
 	// Case reconfigure
-	if (signal == SIGHUP)
+	if (signal == SIGHUP && !reconfiguring)
 	{
 		verbose1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
 
-		// Stop listening ?
-		listening = 0;
-		// Release resources ?
-		releasing = 1;
-		// Reconfiguration ?
+		propagating   = 1;
+		listening     = 0;
 		reconfiguring = server_iam;
-		// Exit ?
-		exitting = mirror_iam;
+		releasing     = 1;
+		exitting      = mirror_iam;
 	}
 
 	// Propagate signals
 	if (propagating && server_iam && mirror_too && (mirror_pid > 0)) {
 		kill(mirror_pid, signal);
-	} else if (propagating && mirror_iam && server_too && (server_pid > 0)) {
+	}
+	if (propagating && mirror_iam && server_too && (server_pid > 0)) {
 		kill(server_pid, signal);
 	}
 }
@@ -720,7 +668,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 		}
 	}
 #else
-	conf_clus->db_manager.aggr_time = 10;
+	conf_clus->db_manager.aggr_time = 30;
 	conf_clus->db_manager.tcp_port = 4711;
 	conf_clus->db_manager.udp_port = 4712;
 	conf_clus->db_manager.mem_size = 100;
@@ -799,13 +747,13 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	}
 
 	// Summary
-	verbose0("type          \tport\tprot\tstat  \tfd  \thost");
-	verbose0("----          \t----\t----\t----  \t--  \t----");
-	verbose1("server metrics\t%d  \tTCP \tlisten\t%d  \t%s", smets_srv->port, smets_srv->fd, server_host);
-	verbose1("mirror metrics\t%d  \tTCP \tlisten\t%d  \t%s", smets_mir->port, smets_mir->fd, server_host);
-	verbose1("server sync   \t%d  \tTCP \tlisten\t%d  \t%s", ssync_srv->port, ssync_srv->fd, server_host);
-	verbose1("mirror sync   \t%d  \tTCP \tclosed\t%d  \t%s", ssync_mir->port, ssync_mir->fd, ssync_mir->host);
-	verbose0("TIP! mirror sync socket opens and closes intermittently");
+	verbose3("type          \tport\tprot\tstat  \tfd  \thost");
+	verbose3("----          \t----\t----\t----  \t--  \t----");
+	verbose3("server metrics\t%d  \tTCP \tlisten\t%d  \t%s", smets_srv->port, smets_srv->fd, server_host);
+	verbose3("mirror metrics\t%d  \tTCP \tlisten\t%d  \t%s", smets_mir->port, smets_mir->fd, server_host);
+	verbose3("server sync   \t%d  \tTCP \tlisten\t%d  \t%s", ssync_srv->port, ssync_srv->fd, server_host);
+	verbose3("mirror sync   \t%d  \tTCP \tclosed\t%d  \t%s", ssync_mir->port, ssync_mir->fd, ssync_mir->host);
+	verbose3("TIP! mirror sync socket opens and closes intermittently");
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -878,7 +826,6 @@ static void init_signals()
 	sigprocmask(SIG_SETMASK, &set, NULL);
 
 	// Editing signals individually
-	//sigemptyset(&action.sa_mask);
 	sigfillset(&action.sa_mask);
 	action.sa_handler = signal_handler;
 	action.sa_flags = 0;
@@ -1011,9 +958,20 @@ static void pipeline()
 		}
 
 		// If timeout_insr, data processing
-		if (timeout_insr.tv_sec == 0 && timeout_insr.tv_usec == 0) {
+		if (timeout_insr.tv_sec == 0 && timeout_insr.tv_usec == 0)
+		{
 			// Inserts data and updates timeouts
-			process_insert();
+			// Synchronizing with the MAIN
+			if (mirror_iam)
+			{
+				if(state_fail(sync_question(SYNC_ALL))) {
+					process_insert(SYNC_ALL, RES_TIME);
+				} else {
+					process_insert(SYNC_RESET, RES_TIME);
+				}
+			} else {
+				process_insert(SYNC_ALL, RES_TIME);
+			}
 		}
 
 		// run through the existing connections looking for data to read
@@ -1071,13 +1029,13 @@ static void pipeline()
 	}
 
 	if (releasing) {
-		releasing = 0;
 		release_resources();
+		releasing = 0;
 	}
 
 	if (reconfiguring) {
-		reconfiguring = 0;
 		sleep(5);
+		reconfiguring = 0;
 	}
 }
 
@@ -1091,23 +1049,23 @@ int main(int argc, char **argv)
 	while(!exitting)
 	{
 		//
-		verbose_line("phase 1: general configuration");
+		verline1("phase 1: general configuration");
 		init_general_configuration(argc, argv, &conf_clus);
 
 		//
-		verbose_line("phase 2: sockets initialization");
+		verline1("phase 2: sockets initialization");
 		init_sockets(argc, argv, &conf_clus);
 
 		//
-		verbose_line("phase 3: processes fork");
+		verline1("phase 3: processes fork");
 		init_fork(argc, argv, &conf_clus);
 
 		//
-		verbose_line("phase 4: process configuration & allocation");
+		verline1("phase 4: process configuration & allocation");
 		init_process_configuration(argc, argv, &conf_clus);
 
 		//
-		verbose_line("phase 5: listening (processing every %lu s)", time_insr);
+		verline1("phase 5: listening (processing every %lu s)", time_insr);
 		pipeline();
 	}
 

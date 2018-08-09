@@ -51,8 +51,6 @@ void print_spacing_int(int number);
 void print_spacing_string(char* string);
 void print_spacing_string_align_left(char* string, uint left_spaces); /**@}*/
 
-void print_line(FILE * stream);
-
 /** Cleans the character pointed by 'chr', adding an '\0' in its position. */
 char* strclean(char *string, char chr);
 
@@ -61,5 +59,5 @@ void strtoup(char *string);
 
 /** Removes characters c from string s. */
 void remove_chars(char *s, char c);
-#else
+
 #endif
