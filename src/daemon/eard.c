@@ -549,6 +549,7 @@ int eard_system(int must_read)
 			break;
 		case WRITE_EVENT:
 			ack=EAR_COM_OK;
+			ret1=EAR_SUCCESS;
 			#if DB_MYSQL
 			if (my_cluster_conf.eard.use_mysql){ 
 				if (!my_cluster_conf.eard.use_eardbd){
@@ -569,6 +570,7 @@ int eard_system(int must_read)
 
 		case WRITE_LOOP_SIGNATURE:
 			ack=EAR_COM_OK;
+			ret1=EAR_SUCCESS;
 			// print_loop_fd(1,&req.req_data.loop);
 			#if !LARGE_CLUSTER
 			#if DB_MYSQL
@@ -866,12 +868,13 @@ void signal_handler(int sig)
 				eardbd_disconnect();
 				eardbd_connected=0;
 			}
-    		if (my_cluster_conf.eard.use_eardbd && !eardbd_connected){
+    		if (my_cluster_conf.eard.use_eardbd){
+				eardbd_disconnect();
         		if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
             		eard_verbose(0,"Error connecting with EARDB");
         		}else eardbd_connected=1;
     		}
-    		if (my_cluster_conf.eard.use_mysql && !db_helper_connected){
+    		if (my_cluster_conf.eard.use_mysql){
         		eard_verbose(1,"Connecting with EAR DB directly");
         		init_db_helper(&my_cluster_conf.database);
         		db_helper_connected=1;

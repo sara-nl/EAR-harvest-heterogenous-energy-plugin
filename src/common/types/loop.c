@@ -137,7 +137,7 @@ int append_loop_text_file(char *path, loop_t *loop,job_t *job)
 	assert(loop->node_id!=NULL);
     dprintf(fd, "%s;", loop->node_id);
     print_job_fd(fd, job);
-    print_signature_fd(fd, &loop->signature);
+    print_signature_fd(fd, &loop->signature,1);
     print_loop_id_fd(fd, &loop->id);
     dprintf(fd, "%lu\n", loop->total_iterations);
 

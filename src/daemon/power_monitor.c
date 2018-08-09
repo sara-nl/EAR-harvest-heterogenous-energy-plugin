@@ -39,6 +39,8 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+
 #include <control/frequency.h>
 #include <metrics/custom/frequency_uncore.h>
 #include <daemon/power_monitor.h>
@@ -169,14 +171,12 @@ void reset_current_app()
 }
 
 #if DB_FILES
-char database_bin_path[PATH_MAX];
 char database_csv_path[PATH_MAX];
 
 void report_application_in_file(application_t *app)
 {
 	int ret1,ret2;
-	ret1 = append_application_binary_file(database_bin_path, app);
-	ret2 = append_application_text_file(database_csv_path, app);
+	ret2 = append_application_text_file(database_csv_path, app,app->is_mpi);
 	if (ret1 == EAR_SUCCESS && ret2 == EAR_SUCCESS)
 	{
 		DEBUG_F(1, "application signature correctly written");
@@ -187,11 +187,21 @@ void report_application_in_file(application_t *app)
 
 void form_database_paths()
 {
-  	sprintf(database_bin_path, "%s%s.db.bin", my_cluster_conf.DB_pathname, nodename);
-	sprintf(database_csv_path, "%s%s.db.csv", my_cluster_conf.DB_pathname, nodename);
+	char island[PATH_MAX];
+	mode_t mode,old_mode;
 
-	eard_verbose(2, "DB binary file: %s", database_bin_path);
-	eard_verbose(2, "DB pain-text file: %s", database_csv_path);
+	old_mode=umask(0);	
+	mode=S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
+	sprintf(island,"%s/island%d",my_cluster_conf.DB_pathname,my_node_conf->island);
+	if ((mkdir(island,mode)<0 ) && (errno!=EEXIST)){
+		eard_verbose(0,"DB island cannot be created for %s node %s\n",island,nodename);
+		sprintf(database_csv_path, "/dev/null");
+	}else{
+		sprintf(database_csv_path, "%s/%s.csv", island, nodename);
+	}
+	umask(old_mode);
+
+	eard_verbose(0, "Using DB plain-text file: %s", database_csv_path);
 }
 
 #else
