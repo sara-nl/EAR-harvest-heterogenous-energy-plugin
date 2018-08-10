@@ -37,14 +37,14 @@
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/periodic_aggregation.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <database_cache/eardbd.h>
 
 #define verbose(...) \
 	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
 	fprintf(stderr, "\n");
 
-
-state_t eardbd_connect(char *host_main, char *host_mirror, uint port, uint protocol);
+state_t eardbd_connect(char *host_server, char *host_mirror, uint port_server, uint port_mirror);
 state_t eardbd_is_connected();
 state_t eardbd_disconnect();
 

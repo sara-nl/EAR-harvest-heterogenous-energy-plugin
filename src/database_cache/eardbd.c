@@ -48,7 +48,9 @@ static cluster_conf_t conf_clus;
 // Extras
 static pid_t server_pid;
 static pid_t mirror_pid;
+static pid_t others_pid;
 static float alloc;
+static int isle;
 
 // Sockets
 static socket_t sockets[4];
@@ -75,18 +77,21 @@ static ulong  time_insr;
 
 // Input buffers
 static packet_header_t input_header;
-//static char input_buffer[MAX_PACKET_SIZE()];
 static char input_buffer[SZ_NAME_LARGE];
 static char extra_buffer[SZ_NAME_LARGE];
 
 // Mirroring
-static char server_host[SZ_NAME_MEDIUM]; // server host if mirror
-static char mirror_host[SZ_NAME_MEDIUM]; // mirror host if server
-static int  mirror_iam;
-static int  mirror_too;
-static int  server_iam;
-static int  server_too;
-static int  master_iam;
+static char master_host[SZ_NAME_MEDIUM]; // This node name
+static char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
+static int server_port;
+static int mirror_port;
+static int synchr_port;
+static int master_iam; // Master is who speaks
+static int server_iam;
+static int mirror_iam;
+static int server_too;
+static int mirror_too;
+static int others_too; // Just if other process exists
 
 // Pipeline
 static int reconfiguring;
@@ -95,7 +100,6 @@ static int releasing;
 static int exitting;
 static int waiting;
 static int forked;
-static int isle;
 
 // Synchronization
 static packet_header_t sync_ans_header;
@@ -129,7 +133,6 @@ static ulong i_loops;
 
 // Strings
 static char *str_who[2] = { "server", "mirror" };
-static char *str_soc[2] = { "listen", "closed" };
 
 #define line "---------------------------------------------------------------\n"
 #define col1 "\x1b[35m"
@@ -569,7 +572,8 @@ static void release_resources()
 	free_cluster_conf(&conf_clus);
 }
 
-static void signal_handler(int signal)
+//static void signal_handler(int signal)
+static void signal_handler(int signal, siginfo_t *info, void *context)
 {
 	int propagating = 0;
 
@@ -578,7 +582,7 @@ static void signal_handler(int signal)
 	{
 		verbose1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
 
-		propagating = 1;
+		propagating = others_pid > 0 && info->si_pid != others_pid;
 		listening   = 0;
 		releasing   = 1;
 		exitting    = 1;
@@ -589,7 +593,7 @@ static void signal_handler(int signal)
 	{
 		verbose1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
 
-		propagating   = 1;
+		propagating = others_pid > 0 && info->si_pid != others_pid;
 		listening     = 0;
 		reconfiguring = server_iam;
 		releasing     = 1;
@@ -597,11 +601,13 @@ static void signal_handler(int signal)
 	}
 
 	// Propagate signals
-	if (propagating && server_iam && mirror_too && (mirror_pid > 0)) {
-		kill(mirror_pid, signal);
-	}
-	if (propagating && mirror_iam && server_too && (server_pid > 0)) {
-		kill(server_pid, signal);
+	if (propagating)
+	{
+		kill(others_pid, signal);
+
+		if (server_iam) {
+			waitpid(mirror_pid, NULL, 0);
+		}
 	}
 }
 
@@ -617,15 +623,16 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	int i, j, k, found;
 	char *p;
 
-	// Init values (who am I? Ok I'm the server, which is also the master)
+	// Cleaning 0 (who am I? Ok I'm the server, which is also the master for now)
 	mirror_iam = 0;
 	mirror_too = 0;
 	server_iam = 1;
-	server_too = 1;
-	master_iam = 0;
+	server_too = 0;
+	master_iam = 1;
 	forked     = 0;
 	server_pid = getpid();
 	mirror_pid = 0;
+	others_pid = 0;
 
 	// Configuration
 #if 1
@@ -633,34 +640,39 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 		error("while getting ear.conf path");
 	}
 
-	verbose1("reading '%s' configuration file", extra_buffer);
+	verbose3("reading '%s' configuration file", extra_buffer);
 	read_cluster_conf(extra_buffer, conf_clus);
 
 	// Database
 	init_db_helper(&conf_clus->database);
 
 	// Mirror finding
-	gethostname(mirror_host, SZ_NAME_MEDIUM);
+	gethostname(master_host, SZ_NAME_MEDIUM);
+	found = 0;
 
 	for (i = 0; i < conf_clus->num_islands && !found; ++i)
 	{
 		is = &conf_clus->islands[i];
+		//verbose3("i %d", i);
 
 		for (k = 0; k < is->num_ranges && !found; k++)
 		{
-			p = is->db_ips[is->ranges[i].db_ip];
+			p = is->db_ips[is->ranges[k].db_ip];
+			//verbose3("r %s", p);
 
-			if (!server_too && p != NULL && (strncmp(p, mirror_host, strlen(mirror_host)) == 0)){
+			if (!server_too && p != NULL && (strncmp(p, master_host, strlen(master_host)) == 0)){
+				//verbose3("db_ip %s", p);
 				server_too = 1;
 			}
 
-        	if (!mirror_too && is->ranges[i].sec_ip >= 0)
+        	if (!mirror_too && is->ranges[k].sec_ip >= 0)
 			{
-				p = is->backup_ips[is->ranges[i].sec_ip];
+				p = is->backup_ips[is->ranges[k].sec_ip];
 
-				if (p != NULL && (strncmp(p, mirror_host, strlen(mirror_host)) == 0))
+				if (p != NULL && (strncmp(p, master_host, strlen(master_host)) == 0))
 				{
-					strcpy(server_host, is->db_ips[is->ranges[i].db_ip]);
+					//verbose3("db_ip_sec %s", p);
+					strcpy(server_host, is->db_ips[is->ranges[k].db_ip]);
 					mirror_too = 1;
 				}
 			}
@@ -668,18 +680,21 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 			found = server_too && mirror_too;
 		}
 	}
-
-	verbose1("'%s' '%s', '%u' '%u'", server_host, mirror_host, server_too, mirror_too);
 #else
-	conf_clus->db_manager.aggr_time = 30;
-	conf_clus->db_manager.tcp_port = 4711;
-	conf_clus->db_manager.udp_port = 4712;
-	conf_clus->db_manager.mem_size = 100;
+	conf_clus->db_manager.tcp_port     = 4711;
+	conf_clus->db_manager.sec_tcp_port = 4712;
+	conf_clus->db_manager.mem_size     = 100;
+	conf_clus->db_manager.aggr_time    = 30;
 
 	server_too = atoi(argv[1]);
 	mirror_too = atoi(argv[2]);
 	strcpy(server_host, argv[3]);
 #endif
+	// Ports
+	server_port = conf_clus->db_manager.tcp_port;
+    mirror_port = conf_clus->db_manager.sec_tcp_port;
+    synchr_port = 4713;
+
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
 
@@ -692,11 +707,11 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	timeout_sync.tv_usec = 0L;
 
 	// Verbose
-	verbose1("enabled cache server: %s",      server_too ? "OK": "NO");
-	verbose1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
+	verbose3("enabled cache server: %s",      server_too ? "OK": "NO");
+	verbose3("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
 
 	if (!server_too && !mirror_too) {
-		error("this node is not a server nor mirror");
+		error("this node is not configured as a server nor mirror");
 	}
 }
 
@@ -717,10 +732,10 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	sockets_clean(smets_srv);
 
 	// Setting data
-	sockets_init(smets_srv, NULL, 4711, TCP);
-	sockets_init(ssync_srv, NULL, 4713, TCP);
-	sockets_init(smets_mir, NULL, 4712, TCP);
-	sockets_init(ssync_mir, server_host, 4713, TCP);
+	sockets_init(smets_srv, NULL, server_port, TCP);
+	sockets_init(ssync_srv, NULL, synchr_port, TCP);
+	sockets_init(smets_mir, NULL, mirror_port, TCP);
+	sockets_init(ssync_mir, server_host, synchr_port, TCP);
 
 	// Opening server socket
 	if (server_too) s1 = sockets_socket(smets_srv);
@@ -749,6 +764,8 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 		error("while listening sockets (%s)", intern_error_str);
 	}
 
+	// Verbosity
+	char *str_sta[2] = { "listen", "closed" };
 	int fd1 = smets_srv->fd;
 	int fd2 = smets_mir->fd;
 	int fd3 = ssync_srv->fd;
@@ -757,10 +774,10 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	// Summary
 	verbose3("type          \tport\tprot\tstat  \tfd");
 	verbose3("----          \t----\t----\t----  \t--");
-	verbose3("server metrics\t%d  \tTCP \t%s\t%d", smets_srv->port, str_soc[fd1 == -1], fd1);
-	verbose3("mirror metrics\t%d  \tTCP \t%s\t%d", smets_mir->port, str_soc[fd2 == -1], fd2);
-	verbose3("server sync   \t%d  \tTCP \t%s\t%d", ssync_srv->port, str_soc[fd3 == -1], fd3);
-	verbose3("mirror sync   \t%d  \tTCP \t%s\t%d", ssync_mir->port, str_soc[fd4 == -1], fd4);
+	verbose3("server metrics\t%d  \tTCP \t%s\t%d", smets_srv->port, str_sta[fd1 == -1], fd1);
+	verbose3("mirror metrics\t%d  \tTCP \t%s\t%d", smets_mir->port, str_sta[fd2 == -1], fd2);
+	verbose3("server sync   \t%d  \tTCP \t%s\t%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
+	verbose3("mirror sync   \t%d  \tTCP \t%s\t%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
 	verbose3("TIP! mirror sync socket opens and closes intermittently");
 }
 
@@ -777,8 +794,11 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 			server_iam = 0;
 
 			mirror_pid = getpid();
+			others_pid = server_pid;
 			sleep(1);
-		} else if (mirror_pid > 0) {
+		}
+		else if (mirror_pid > 0) {
+			others_pid = mirror_pid;
 		} else {
 			error("error while forking, terminating the program");
 		}
@@ -787,7 +807,10 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 	forked = 1;
 	master_iam = (server_iam && server_too) || (mirror_iam && !server_too);
 
-	verbose3("cache server pid: %d", server_pid);
+	// Verbosity
+	char *str_sta[2] = { "(just sleeps)", "" };
+	
+	verbose3("cache server pid: %d %s", server_pid, str_sta[server_too]);
 	verbose3("cache mirror pid: %d", mirror_pid);
 }
 
@@ -826,7 +849,6 @@ static void init_signals()
 
 	// Blocking all signals except PIPE, TERM, INT and HUP
 	sigfillset(&set);
-	sigdelset(&set, SIGPIPE);
 	sigdelset(&set, SIGTERM);
 	sigdelset(&set, SIGINT);
 	sigdelset(&set, SIGHUP);
@@ -835,12 +857,11 @@ static void init_signals()
 
 	// Editing signals individually
 	sigfillset(&action.sa_mask);
-	action.sa_handler = signal_handler;
-	action.sa_flags = 0;
+	
+	action.sa_handler = NULL;
+	action.sa_sigaction = signal_handler;
+	action.sa_flags = SA_SIGINFO;
 
-	if (sigaction(SIGPIPE, &action, NULL) < 0) {
-		verbose1("sigaction error on signal %d (%s)", SIGPIPE, strerror(errno));
-	}
 	if (sigaction(SIGTERM, &action, NULL) < 0) {
 		verbose1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
 	}
@@ -945,6 +966,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	verbose3("app loops    \t%0.2f MBs\t%lu Bs\t\t%lu\t%0.2f", mb_loops, sizeof(loop_t), len_loops, len_loops_pc);
 	verbose3("events       \t%0.2f MBs\t%lu Bs\t\t%lu\t%0.2f", mb_evnts, sizeof(ear_event_t), len_evnts, len_evnts_pc);
 	verbose3("TOTAL        \t%0.2f MBs", mb_total);
+	verbose3("TIP! this allocated space is per process server/mirror");
 }
 
 static void pipeline()
