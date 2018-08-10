@@ -79,8 +79,8 @@ static char input_buffer[SZ_NAME_LARGE];
 static char extra_buffer[SZ_NAME_LARGE];
 
 // Mirroring
-static char server_host[SZ_NAME_MEDIUM];
-static char mirror_host[SZ_NAME_MEDIUM];
+static char server_host[SZ_NAME_MEDIUM]; // server host if mirror
+static char mirror_host[SZ_NAME_MEDIUM]; // mirror host if server
 static int  mirror_iam;
 static int  mirror_too;
 static int  server_iam;
@@ -128,6 +128,7 @@ static ulong i_loops;
 
 // Strings
 static char *str_who[2] = { "server", "mirror" };
+static char *str_soc[2] = { "listen", "closed" };
 
 #define line "---------------------------------------------------------------\n"
 #define col1 "\x1b[35m"
@@ -473,8 +474,7 @@ static void incoming_data_process(int fd, packet_header_t *header, char *content
 		sample((char *) evnts, len_evnts, &i_evnts, content, sizeof(ear_event_t), SYNC_EVNTS);
 	} else if (header->content_type == CONTENT_TYPE_LOO) {
 		sample((char *) loops, len_loops, &i_loops, content, sizeof(loop_t), SYNC_LOOPS);
-	} else if (header->content_type == CONTENT_TYPE_PER)
-	{
+	} else if (header->content_type == CONTENT_TYPE_PER) {
 		make_periodic_aggregation(&aggr, (periodic_metric_t *) content);
 		sample((char *) enrgy, len_enrgy, &i_enrgy, content, sizeof(periodic_metric_t), SYNC_ENRGY);
 	} else if (header->content_type == CONTENT_TYPE_QST)
@@ -627,12 +627,12 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	mirror_pid = 0;
 
 	// Configuration
-#if 0
+#if 1
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
-		error("Error getting ear.conf path");
+		error("while getting ear.conf path");
 	}
 
-	verbose1("Reading '%s' configuration file", extra_buffer);
+	verbose1("reading '%s' configuration file", extra_buffer);
 	read_cluster_conf(extra_buffer, conf_clus);
 
 	// Database
@@ -647,7 +647,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 		for (k = 0; k < is->num_ranges && !found; k++)
 		{
-			p = is->db_ips[conf->ranges[i].db_ip];
+			p = is->db_ips[is->ranges[i].db_ip];
 
 			if (!server_too && p != NULL && (strncmp(p, mirror_host, strlen(mirror_host)) == 0)){
 				server_too = 1;
@@ -667,6 +667,8 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 			found = server_too && mirror_too;
 		}
 	}
+
+	verbose1("'%s' '%s', '%u' '%u'", server_host, mirror_host, server_too, mirror_too);
 #else
 	conf_clus->db_manager.aggr_time = 30;
 	conf_clus->db_manager.tcp_port = 4711;
@@ -693,15 +695,15 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	verbose1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
 
 	if (!server_too && !mirror_too) {
-		exit(0);
+		error("this node is not a server nor mirror");
 	}
 }
 
 static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 {
-	state_t s1;
-	state_t s2;
-	state_t s3;
+	state_t s1 = EAR_SUCCESS;
+	state_t s2 = EAR_SUCCESS;
+	state_t s3 = EAR_SUCCESS;
 
 	// Cleaning socket sets
 	FD_ZERO(&fds_incoming);
@@ -720,39 +722,44 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	sockets_init(ssync_mir, server_host, 4713, TCP);
 
 	// Opening server socket
-	s1 = sockets_socket(smets_srv);
-	s2 = sockets_socket(ssync_srv);
-	s3 = sockets_socket(smets_mir);
+	if (server_too) s1 = sockets_socket(smets_srv);
+	if (server_too) s2 = sockets_socket(ssync_srv);
+	if (mirror_too) s3 = sockets_socket(smets_mir);
 
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while creating sockets (%s)", intern_error_str);
 	}
 
 	// Binding socket
-	s1 = sockets_bind(smets_srv);
-	s2 = sockets_bind(ssync_srv);
-	s3 = sockets_bind(smets_mir);
+	if (server_too) s1 = sockets_bind(smets_srv);
+	if (server_too) s2 = sockets_bind(ssync_srv);
+	if (mirror_too) s3 = sockets_bind(smets_mir);
 
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while binding sockets (%s) %d %d %d", intern_error_str, s1, s2, s3);
 	}
 
 	// Listening socket
-	s1 = sockets_listen(smets_srv);
-	s2 = sockets_listen(ssync_srv);
-	s3 = sockets_listen(smets_mir);
+	if (server_too) s1 = sockets_listen(smets_srv);
+	if (server_too) s2 = sockets_listen(ssync_srv);
+	if (mirror_too) s3 = sockets_listen(smets_mir);
 
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while listening sockets (%s)", intern_error_str);
 	}
 
+	int fd1 = smets_srv->fd;
+	int fd2 = smets_mir->fd;
+	int fd3 = ssync_srv->fd;
+	int fd4 = ssync_mir->fd;
+
 	// Summary
-	verbose3("type          \tport\tprot\tstat  \tfd  \thost");
-	verbose3("----          \t----\t----\t----  \t--  \t----");
-	verbose3("server metrics\t%d  \tTCP \tlisten\t%d  \t%s", smets_srv->port, smets_srv->fd, server_host);
-	verbose3("mirror metrics\t%d  \tTCP \tlisten\t%d  \t%s", smets_mir->port, smets_mir->fd, server_host);
-	verbose3("server sync   \t%d  \tTCP \tlisten\t%d  \t%s", ssync_srv->port, ssync_srv->fd, server_host);
-	verbose3("mirror sync   \t%d  \tTCP \tclosed\t%d  \t%s", ssync_mir->port, ssync_mir->fd, ssync_mir->host);
+	verbose3("type          \tport\tprot\tstat  \tfd");
+	verbose3("----          \t----\t----\t----  \t--");
+	verbose3("server metrics\t%d  \tTCP \t%s\t%d", smets_srv->port, str_soc[fd1 == -1], fd1);
+	verbose3("mirror metrics\t%d  \tTCP \t%s\t%d", smets_mir->port, str_soc[fd2 == -1], fd2);
+	verbose3("server sync   \t%d  \tTCP \t%s\t%d", ssync_srv->port, str_soc[fd3 == -1], fd3);
+	verbose3("mirror sync   \t%d  \tTCP \t%s\t%d", ssync_mir->port, str_soc[fd4 == -1], fd4);
 	verbose3("TIP! mirror sync socket opens and closes intermittently");
 }
 
