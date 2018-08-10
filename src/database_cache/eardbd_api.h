@@ -44,7 +44,7 @@
 	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
 	fprintf(stderr, "\n");
 
-state_t eardbd_connect(char *host_server, char *host_mirror, uint port_server, uint port_mirror);
+state_t eardbd_connect(cluster_conf_t *conf);
 state_t eardbd_is_connected();
 state_t eardbd_disconnect();
 
