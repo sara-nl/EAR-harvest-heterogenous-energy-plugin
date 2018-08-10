@@ -1,4 +1,4 @@
-CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
+CFLAGS = -Wformat -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 

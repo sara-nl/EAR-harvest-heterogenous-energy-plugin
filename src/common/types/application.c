@@ -55,11 +55,14 @@ void copy_application(application_t *destiny, application_t *source)
 	memcpy(destiny, source, sizeof(application_t));
 }
 
-static int print_application_fd(int fd, application_t *app, int new_line)
+static int print_application_fd(int fd, application_t *app, int new_line, char is_extended)
 {
+    char buff[1024];
+    sprintf(buff, "%s;", app->node_id);
+    write(fd, buff, strlen(buff));
 	print_job_fd(fd, &app->job);
 	dprintf(fd, ";");
-	print_signature_fd(fd, &app->signature);
+	print_signature_fd(fd, &app->signature, is_extended);
 
 	if (new_line) {
 		dprintf(fd, "\n");
@@ -68,12 +71,21 @@ static int print_application_fd(int fd, application_t *app, int new_line)
 	return EAR_SUCCESS;
 }
 
-int append_application_text_file(char *path, application_t *app)
+int append_application_text_file(char *path, application_t *app, char is_extended)
 {
     //lacking: NODENAME(node_id in loop_t), not linked to any loop
-	static char *HEADER = "USERNAME;JOB_ID;APPNAME;POLICY;POLICY_TH;AVG.FREQ;DEF.FREQ;TIME;"\
-    "CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;CYCLES;INSTRUCTIONS;L1_MISSES;"     \
-	"L2_MISSES;L3_MISSES;GFLOPS;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;DP_128;DP_256;DP_512";
+    char *HEADER;
+    if (is_extended)
+	    HEADER = "NODE_ID;JOB_ID;STEP_ID;USER_ID;GROUP_ID;APP_ID;USER_ACC;ENERGY_TAG;POLICY;"\
+        "POLICY_TH;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;CYCLES;"\
+        "INSTRUCTIONS;GFLOPS;L1_MISSES;L2_MISSES;L3_MISSES;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;"\
+        "DP_128;DP_256;DP_512";
+
+    else
+	    HEADER = "NODE_ID;JOB_ID;STEP_ID;USER_ID;GROUP_ID;APP_ID;USER_ACC;ENERGY_TAG;POLICY;"\
+        "POLICY_TH;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;CYCLES;"\
+        "INSTRUCTIONS;GFLOPS";
+
 	int fd, ret;
 
 	if (path == NULL) {
@@ -99,9 +111,7 @@ int append_application_text_file(char *path, application_t *app)
         return EAR_ERROR;
     }
 
-    //print_job_fd(fd, &app->job);
-    //print_signature_fd(fd, &app->signature);
-    print_application_fd(fd, app, 1);
+    print_application_fd(fd, app, 1, is_extended);
 
     close(fd);
 
@@ -172,40 +182,57 @@ void report_mpi_application_data(application_t *app)
 
 int print_application(application_t *app)
 {
-    return print_application_fd(STDOUT_FILENO, app, 1);
+    return print_application_fd(STDOUT_FILENO, app, 1, 1);
 }
 
-int scan_application_fd(FILE *fd, application_t *app)
+int scan_application_fd(FILE *fd, application_t *app, char is_extended)
 {
-    #define APP_TEXT_FILE_FIELDS 28
 
+#define APP_TEXT_FILE_FIELDS 33
+#define EXTENDED_DIFF 11
 	application_t *a;
 	int ret;
 
 	a = app;
-	ret = fscanf(fd, "%[^;];%lu;%[^;];" \
-			 "%[^;];%lf;" \
+    if (is_extended)
+    	ret = fscanf(fd, "%[^;];%lu;%lu;%[^;];" \
+			 "%[^;];%[^;];%[^;];%[^;];%[^;];%lf;" \
 			 "%lu;%lu;" \
 			 "%lf;%lf;%lf;%lf;" \
 			 "%lf;%lf;%lf;" \
-			 "%llu;%llu;" \
+			 "%llu;%llu;%lf;" \
 			 "%llu;%llu;%llu;" \
-			 "%lf;%llu;%llu;%llu;%llu;"	\
+			 "%llu;%llu;%llu;%llu;"	\
 			 "%llu;%llu;%llu;%llu\n",
-			 a->job.user_id, &a->job.id, a->job.app_id,
-			 a->job.policy, &a->job.th,
+			 a->node_id, &a->job.id, &a->job.step_id, a->job.user_id,
+			 a->job.group_id, a->job.app_id, a->job.user_acc, a->job.energy_tag, a->job.policy, &a->job.th,
 			 &a->signature.avg_f, &a->signature.def_f,
 			 &a->signature.time, &a->signature.CPI, &a->signature.TPI, &a->signature.GBS,
 			 &a->signature.DC_power, &a->signature.DRAM_power, &a->signature.PCK_power,
-			 &a->signature.cycles, &a->signature.instructions,
+			 &a->signature.cycles, &a->signature.instructions, &a->signature.Gflops,
 			 &a->signature.L1_misses, &a->signature.L2_misses, &a->signature.L3_misses,
-			 &a->signature.Gflops, &a->signature.FLOPS[0], &a->signature.FLOPS[1], &a->signature.FLOPS[2], &a->signature.FLOPS[3],
+			 &a->signature.FLOPS[0], &a->signature.FLOPS[1], &a->signature.FLOPS[2], &a->signature.FLOPS[3],
 			 &a->signature.FLOPS[4], &a->signature.FLOPS[5], &a->signature.FLOPS[6], &a->signature.FLOPS[7]);
+    
+    else
+    	ret = fscanf(fd, "%[^;];%lu;%lu;%[^;];" \
+			 "%[^;];%[^;];%[^;];%[^;];%[^;];%lf;" \
+			 "%lu;%lu;" \
+			 "%lf;%lf;%lf;%lf;" \
+			 "%lf;%lf;%lf;" \
+			 "%llu;%llu;%lf\n", 
+			 a->node_id, &a->job.id, &a->job.step_id, a->job.user_id,
+			 a->job.group_id, a->job.app_id, a->job.user_acc, a->job.energy_tag, a->job.policy, &a->job.th,
+			 &a->signature.avg_f, &a->signature.def_f,
+			 &a->signature.time, &a->signature.CPI, &a->signature.TPI, &a->signature.GBS,
+			 &a->signature.DC_power, &a->signature.DRAM_power, &a->signature.PCK_power,
+			 &a->signature.cycles, &a->signature.instructions, &a->signature.Gflops);
 	
+    printf("node_id: %s, job_id: %lu\n", a->node_id, a->job.id);
 	return ret;
 }
 
-int read_application_text_file(char *path, application_t **apps)
+int read_application_text_file(char *path, application_t **apps, char is_extended)
 {
 	char line[PIPE_BUF];
 	application_t *apps_aux, *a;
@@ -239,11 +266,12 @@ int read_application_text_file(char *path, application_t **apps)
     i = 0;
     a = apps_aux;
  
-    while((ret = scan_application_fd(fd, a)) == APP_TEXT_FILE_FIELDS)
+    while((ret = scan_application_fd(fd, a, is_extended)) == (APP_TEXT_FILE_FIELDS - !(is_extended)*EXTENDED_DIFF))
     {
         i += 1;
         a = &apps_aux[i];
     }
+    printf("ret: %d i: %d lines: %d\n", ret, i, lines);
 
     fclose(fd);
 

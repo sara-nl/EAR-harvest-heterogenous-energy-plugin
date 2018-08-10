@@ -27,33 +27,7 @@
  * *   The GNU LEsser General Public License is contained in the file COPYING  
  * */
 
-#ifndef _EARD_H_
-#define _EARD_H_
-
-static void eard_exit(uint restart);
-static void eard_close_comm();
-static int is_new_application();
-static int is_new_service(int req,int pid);
-static int application_timeout();
-static void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t *cluster,my_node_conf_t *node);
-static void init_frequency_list();
-static int is_valid_sec_tag(ulong tag);
-static void set_global_eard_variables();
-static void eard_lock(char *tmp_dir);
-static void eard_unlock();
-static int read_coefficients();
-static void signal_catcher();
-static void Usage(char *app);
-static int eard_rapl(int must_read);
-static int eard_uncore(int must_read);
-static int eard_freq(int must_read);
-static int eard_system(int must_read);
-static void eard_restart();
-static int check_ping();
-static void  create_tmp(char *tmp_dir);
-static void create_connector(char *ear_tmp,char *nodename,int i);
-static void connect_service(int req,application_t *new_app);
-static void eard_set_freq(unsigned long new_freq,unsigned long max_freq);
-
-#else
-#endif
+int test_available(int i,int cpu);
+uint get_test_ops(int index,int cpu);
+char *get_test_name(int index,int cpu);
+void run_test(int index,ulong n_iterations,int cpu);

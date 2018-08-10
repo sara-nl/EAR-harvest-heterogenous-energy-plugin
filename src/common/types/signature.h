@@ -71,6 +71,6 @@ void init_signature(signature_t *sig);
 uint are_equal(signature_t *sig1,signature_t *sig2,double th);
 
 /** Outputs the signature contents to the file pointed by the fd. */
-void print_signature_fd(int fd, signature_t *sig);
+void print_signature_fd(int fd, signature_t *sig, char is_extended);
 
 #endif

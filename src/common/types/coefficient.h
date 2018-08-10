@@ -76,5 +76,6 @@ int read_coefficients_file(char *path, coefficient_t **coeffs, int size);
 int read_coefficients_file_v3(char *path, coefficient_v3_t *coeffs, int size);
 int check_file(char *path);
 void print_coefficient(coefficient_t *coeff);
+void print_coefficient_v3(coefficient_v3_t *coeff);
 
 #endif

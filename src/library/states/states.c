@@ -48,6 +48,7 @@
 #include <common/types/application.h>
 #include <common/states.h>
 #include <common/math_operations.h>
+#include <daemon/eard_api.h>
 
 static const char *__NAME__ = "ear/states";
 extern char *__HOST__ ;
@@ -156,7 +157,7 @@ static void check_dynais_on(signature_t *A, signature_t *B)
 	}
 }
 
-static check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
+static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
 {
 	ulong dynais_overhead_usec=0;
     double dynais_overhead_perc;

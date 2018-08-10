@@ -29,7 +29,6 @@
 
 #ifndef EAR_PAPI_MACROS_H
 #define EAR_PAPI_MACROS_H
-
 #include <papi.h>
 
 // Use along with <ear_verbose.h> and by defining
@@ -84,4 +83,7 @@ int _papi_counters_read(int event_set, long long *event_values);
 /** Starts the event counters of the given event set. */
 int _papi_counters_start(int event_set);
 
+
+
+#else
 #endif

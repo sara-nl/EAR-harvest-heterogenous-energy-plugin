@@ -38,6 +38,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
+#include <common/database/db_helper.h>
 
 int EAR_VERBOSE_LEVEL = 1;
 

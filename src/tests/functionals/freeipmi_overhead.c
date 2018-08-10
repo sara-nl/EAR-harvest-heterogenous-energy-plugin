@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <metrics/ipmi/energy_node.h>
 #include <common/config.h>
+#include <papi.h>
 
 int EAR_VERBOSE_LEVEL = 4;
 

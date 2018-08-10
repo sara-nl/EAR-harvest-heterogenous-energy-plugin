@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <gsl/gsl_math.h>
@@ -259,7 +260,7 @@ int main(int argc, char *argv[])
     //TODO: NEW, using CSVS
     application_t *apps;
 
-    num_apps = read_application_text_file(argv[1], &apps);
+    num_apps = read_application_text_file(argv[1], &apps, 1);
     MALLOC(app_list, application_t, num_apps);
     MALLOC(samples_per_app, uint, num_apps);
    

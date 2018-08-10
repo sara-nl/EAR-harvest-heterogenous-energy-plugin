@@ -32,6 +32,7 @@
 #ifndef _EAR_TYPES_APPLICATION
 #define _EAR_TYPES_APPLICATION
 #include <stdint.h>
+#include <stdio.h>
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/signature.h>
@@ -74,7 +75,7 @@ int read_application_binary_file(char *path, application_t **apps);
     The returned integer is the number of applications read. If the integer is
     negative, one of the following errors ocurred: EAR_ALLOC_ERROR,
     EAR_READ_ERROR or EAR_FILE_NOT_FOUND. */
-int read_application_text_file(char *path, application_t **apps);
+int read_application_text_file(char *path, application_t **apps, char is_extended);
 
 /** Appends in a file an application in binary format. The returned integer is
     one of the following states: EAR_SUCCESS or EAR_ERROR. */
@@ -82,10 +83,13 @@ int append_application_binary_file(char *path, application_t *app);
 
 /** Appends in a file an application in CSV format. The returned integer is one
 *   of the following states: EAR_SUCCESS or EAR_ERROR. */
-int append_application_text_file(char *path, application_t *app);
+int append_application_text_file(char *path, application_t *app, char is_extended);
 
 /** Replicates the application in *source to *destiny */
 void copy_application(application_t *destiny, application_t *source);
+
+/** PENDING */
+int scan_application_fd(FILE *fd, application_t *app, char is_extended);
 
 
 #define create_ID(id,sid)	(id*100+sid)

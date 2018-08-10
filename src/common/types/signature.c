@@ -56,7 +56,7 @@ uint are_equal(signature_t *sig1, signature_t *sig2, double th)
     return 1;
 }
 
-void print_signature_fd(int fd, signature_t *sig)
+void print_signature_fd(int fd, signature_t *sig, char is_extended)
 {
     /* print order: AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;
        PCK-POWER;CYCLES;INSTRUCTIONS;L1_MISSES;L2_MISSES;L3_MISSES;GFLOPS;
@@ -66,13 +66,15 @@ void print_signature_fd(int fd, signature_t *sig)
 	dprintf(fd, "%lu;%lu;", sig->avg_f, sig->def_f);
 	dprintf(fd, "%lf;%lf;%lf;%lf;", sig->time, sig->CPI, sig->TPI, sig->GBS);
 	dprintf(fd, "%lf;%lf;%lf;", sig->DC_power, sig->DRAM_power, sig->PCK_power);
-	dprintf(fd, "%llu;%llu;", sig->cycles, sig->instructions);
-	dprintf(fd, "%llu;%llu;%llu;", sig->L1_misses, sig->L2_misses, sig->L3_misses);
-	dprintf(fd, "%lf;%llu", sig->Gflops, sig->FLOPS[0]);
+	dprintf(fd, "%llu;%llu;%lf", sig->cycles, sig->instructions, sig->Gflops);
+    if (is_extended)
+    {
+	    dprintf(fd, ";%llu;%llu;%llu", sig->L1_misses, sig->L2_misses, sig->L3_misses);
 
-    for (i = 1; i < FLOPS_EVENTS; ++i) {
-		dprintf(fd, ";%llu", sig->FLOPS[i]);
-	}
+        for (i = 0; i < FLOPS_EVENTS; ++i) {
+	    	dprintf(fd, ";%llu", sig->FLOPS[i]);
+    	}
+    }
 }
 
 

@@ -49,6 +49,7 @@ typedef struct services_conf{
 }services_conf_t;
 
 typedef struct settings_conf{
+	uint 	id;
 	uint 	user_type;
 	uint 	learning;
 	uint 	lib_enabled;

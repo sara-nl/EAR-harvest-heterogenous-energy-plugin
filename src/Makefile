@@ -27,6 +27,17 @@ ifdef DB_BASEa
 	COMPONENTS += global_manager
 endif
 
+INSTALL_FOLDERS = $(DESTDIR)/bin \
+                  $(DESTDIR)/bin/kernels \
+                  $(DESTDIR)/include \
+                  $(DESTDIR)/lib \
+                  $(DESTDIR)/etc \
+                  $(DESTDIR)/sbin
+    
+
+INCLUDE_FOLDERS = $(DESTDIR)/include/common
+
+
 ######## RULES
 
 .PHONY: check
@@ -38,7 +49,11 @@ check:
 
 ######## OPTIONS
 
-install: install.components
+create_folders:
+	@ mkdir -p ${INSTALL_FOLDERS}
+	@ mkdir -p ${INCLUDE_FOLDERS}
+
+install: create_folders install.components
 
 %.install:
 	@ $(MAKE) -C $* install || exit

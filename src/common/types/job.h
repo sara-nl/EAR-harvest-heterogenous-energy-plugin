@@ -91,6 +91,11 @@ void start_mpi(job_t *job);
 /** Sets job->end_mpi_time to the current time */
 void end_mpi(job_t *job);
 
+/** Sets the job start time */
+void start_job(job_t *job);
+/** Sets the job end time */
+void end_job(job_t *job);
+
 /** Copies the source job given by parameter into the destiny job.*/
 void copy_job(job_t *destiny, job_t *source);
 

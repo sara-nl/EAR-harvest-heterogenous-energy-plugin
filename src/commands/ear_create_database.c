@@ -38,8 +38,8 @@ int EAR_VERBOSE_LEVEL = 1;
 
 void usage(char *app)
 {
-	printf("Usage:%s MySQL_ip\n",app);
-	exit(1);
+	printf("Usage:%s root_pass\n",app);
+	exit(0);
 }
 
 void execute_on_error(MYSQL *connection)
@@ -240,9 +240,10 @@ void create_tables(MYSQL *connection)
 
 }
 
+
 void main(int argc,char *argv[])
 {
-//    if (argc != 2) usage(argv[0]);
+    if (argc != 2) usage(argv[0]);
 	
     MYSQL *connection = mysql_init(NULL); 
 
@@ -262,7 +263,7 @@ void main(int argc,char *argv[])
     }
     read_cluster_conf(ear_path, &my_cluster);
 
-    mysql_real_connect(connection, my_cluster.database.ip, "root", "", NULL, 0, NULL, 0);
+    mysql_real_connect(connection, my_cluster.database.ip, "root", argv[1], NULL, 0, NULL, 0);
 
     create_db(connection, my_cluster.database.database);
 

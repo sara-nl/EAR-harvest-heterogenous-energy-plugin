@@ -37,6 +37,7 @@
 #include <endian.h>
 #include <sys/types.h>
 #include <sys/resource.h>
+#include <sys/time.h>
 #include <freeipmi/freeipmi.h>
 
 #include <metrics/custom/hardware_info.h>

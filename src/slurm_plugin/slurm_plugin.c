@@ -245,6 +245,7 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "EAR_ENERGY_TAG");
     printenv_remote(sp, "EARD_PORT");
     printenv_remote(sp, "LD_PRELOAD");
+    printenv_remote(sp, "LD_LIBRARY_PATH");
     printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
     printenv_remote(sp, "SLURM_NNODES");
     printenv_remote(sp, "SLURM_JOB_ID");
@@ -721,19 +722,10 @@ int _set_ld_preload(spank_t sp)
 	appendenv(buffer1, ear_root_dir, sizeof(buffer1));
 
 	// Appending libraries to LD_PRELOAD
-	if (isenv_local("EAR_TRACES", "1") == 1)
-	{
-		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-			snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_TRACE_LIB_PATH);
-		} else {
-			snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_TRACE_LIB_PATH);
-		}
+	if (isenv_local("EAR_MPI_DIST", "openmpi")) {
+		snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
 	} else {
-		if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-			snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_LIB_PATH);
-		} else {
-			snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_LIB_PATH);
-		}
+		snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
 	}
 
 	//

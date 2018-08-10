@@ -39,7 +39,10 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+
 #include <control/frequency.h>
+#include <metrics/custom/frequency_uncore.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
@@ -51,6 +54,7 @@
 #include <common/types/periodic_metric.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <metrics/power_metrics/power_metrics.h>
+#include <metrics/custom/frequency.h>
 
 
 #if DB_MYSQL
@@ -167,14 +171,12 @@ void reset_current_app()
 }
 
 #if DB_FILES
-char database_bin_path[PATH_MAX];
 char database_csv_path[PATH_MAX];
 
 void report_application_in_file(application_t *app)
 {
 	int ret1,ret2;
-	ret1 = append_application_binary_file(database_bin_path, app);
-	ret2 = append_application_text_file(database_csv_path, app);
+	ret2 = append_application_text_file(database_csv_path, app,app->is_mpi);
 	if (ret1 == EAR_SUCCESS && ret2 == EAR_SUCCESS)
 	{
 		DEBUG_F(1, "application signature correctly written");
@@ -185,11 +187,21 @@ void report_application_in_file(application_t *app)
 
 void form_database_paths()
 {
-  	sprintf(database_bin_path, "%s%s.db.bin", my_cluster_conf.DB_pathname, nodename);
-	sprintf(database_csv_path, "%s%s.db.csv", my_cluster_conf.DB_pathname, nodename);
+	char island[PATH_MAX];
+	mode_t mode,old_mode;
 
-	eard_verbose(2, "DB binary file: %s", database_bin_path);
-	eard_verbose(2, "DB pain-text file: %s", database_csv_path);
+	old_mode=umask(0);	
+	mode=S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
+	sprintf(island,"%s/island%d",my_cluster_conf.DB_pathname,my_node_conf->island);
+	if ((mkdir(island,mode)<0 ) && (errno!=EEXIST)){
+		eard_verbose(0,"DB island cannot be created for %s node %s\n",island,nodename);
+		sprintf(database_csv_path, "/dev/null");
+	}else{
+		sprintf(database_csv_path, "%s/%s.csv", island, nodename);
+	}
+	umask(old_mode);
+
+	eard_verbose(0, "Using DB plain-text file: %s", database_csv_path);
 }
 
 #else
@@ -396,6 +408,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 {
     // New application connected
 	int p_id;
+	uint new_app_id=create_ID(appID->job.id,appID->job.step_id);
 	energy_tag_t *my_tag;
 	policy_conf_t *my_policy;
 	ulong f;
@@ -412,6 +425,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	eard_verbose(1,"Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->th);
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
+	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
 	if (user_type==AUTHORIZED) dyn_conf->learning=appID->is_learning;
 	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);

@@ -192,6 +192,7 @@ int is_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc)
 		i=0;
 		while((i<my_conf->num_priv_users) && (!found)){
 			if (strcmp(user,my_conf->priv_users[i])==0) found=1;
+			else if (strcmp(my_conf->priv_users[i],"all")==0) found=1;
 			else i++;
 		}
 	}
@@ -224,6 +225,7 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
         while((i<my_tag->num_users) && (!found)){
 			fprintf(stderr,"Can_use_energy_tag user %s vs %s\n",user,my_tag->users[i]);
             if (strcmp(user,my_tag->users[i])==0) found=1;
+			else if (strcmp(my_tag->users[i],"all")==0) found=1;
 			else i++;
         }
     }

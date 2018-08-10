@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 
 #include <common/config.h>
@@ -40,6 +41,7 @@
 #include <common/ear_verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
+#include <metrics/ipmi/energy_node.h>
 
 #define close_app_connection()
 

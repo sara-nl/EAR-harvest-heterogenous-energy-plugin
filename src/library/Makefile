@@ -35,30 +35,32 @@ OBJS = dynais/dynais.o \
        states/states_periodic.o \
        tracer/tracer.o \
        mpi_intercept/ear_api.o \
-       mpi_intercept/process_MPI.o \
-       mpi_intercept/MPI_intercept.o \
-       mpi_intercept/MPI_interface.o
+       mpi_intercept/process_MPI.o
+
+MPIC_OBJS = mpi_intercept/MPI_intercept.o \
+            mpi_intercept/MPI_interface.o  
+	
+MPIF_OBJS = mpi_intercept/MPI_interceptF.o \
+            mpi_intercept/MPI_interfaceF.o
 
 ifdef MPICC
-libs_ALL += libear.so libeart.so
-impi_ALL = all.impi.components libear.so \
-           allt.impi.components libeart.so
+libs_ALL += libear.so
+impi_ALL = all.impi.components libear.so
 endif
 
 ifdef OMPICC
-libs_ALL += libear_ompi.so libeart_ompi.so
-ompi_ALL = all.ompi.components libear.ompi.so \
-           allt.ompi.components libeart.ompi.so
+libs_ALL += libear_ompi.so
+ompi_ALL = all.ompi.components libear.ompi.so
 endif
 ######## RULES
 
 all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 
 %.ompi.so: $(OBJS) $(lib_OBJS)
-	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(LDFLAGS) $(OBJS) $(lib_OBJS) 
+	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(LDFLAGS) $(OBJS) $(MPIC_OBJS) $(MPIF_OBJS) $(lib_OBJS) 
 
 %.so: $(OBJS) $(lib_OBJS)
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.so $(LDFLAGS) $(OBJS) $(lib_OBJS) 
+	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.so $(LDFLAGS) $(OBJS) $(MPIC_OBJS) $(lib_OBJS) 
 
 ######## OPTIONS
 

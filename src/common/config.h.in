@@ -39,10 +39,10 @@
 
 // File names
 #define EAR_DAEMON_PATH     "sbin/eard"
-#define IMPI_LIB_PATH		"lib/libear.so"
-#define IMPI_TRACE_LIB_PATH	"lib/libeart.so"
-#define OMPI_LIB_PATH		"lib/libear_ompi.so"
-#define OMPI_TRACE_LIB_PATH	"lib/libeart_ompi.so"
+#define IMPI_C_LIB_PATH		"lib/libear.so"
+#define IMPI_F_LIB_PATH		"lib/libearf.so"
+#define OMPI_C_LIB_PATH		"lib/libear_ompi.so"
+#define OMPI_F_LIB_PATH		"lib/libear_ompif.so"
 #define EAR_CONF_FILE		"sysconf/ear.conf"
 
 // Compile version type

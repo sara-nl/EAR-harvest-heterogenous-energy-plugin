@@ -51,6 +51,7 @@
 #include <common/types/services.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <metrics/papi/energy_cpu.h>
+#include <metrics/papi/generics.h>
 #include <metrics/custom/bandwidth.h>
 #include <metrics/ipmi/energy_node.h>
 #include <metrics/custom/hardware_info.h>
@@ -241,7 +242,7 @@ void connect_service(int req,application_t *new_app)
 	int pid=create_ID(new_job->id,new_job->step_id);
     // Let's check if there is another application
     eard_verbose(2, "request for connection at service %d", req);
-    if (is_new_application(pid) || is_new_service(req, pid)) {
+    if (is_new_application() || is_new_service(req, pid)) {
         connect=1;
     } else {
         connect=0;
@@ -311,7 +312,7 @@ void connect_service(int req,application_t *new_app)
 }
 
 // Checks application connections
-int is_new_application(pid)
+int is_new_application()
 {
 	if (application_id==-1) return 1;
 	else return 0;
@@ -548,6 +549,7 @@ int eard_system(int must_read)
 			break;
 		case WRITE_EVENT:
 			ack=EAR_COM_OK;
+			ret1=EAR_SUCCESS;
 			#if DB_MYSQL
 			if (my_cluster_conf.eard.use_mysql){ 
 				if (!my_cluster_conf.eard.use_eardbd){
@@ -568,6 +570,7 @@ int eard_system(int must_read)
 
 		case WRITE_LOOP_SIGNATURE:
 			ack=EAR_COM_OK;
+			ret1=EAR_SUCCESS;
 			// print_loop_fd(1,&req.req_data.loop);
 			#if !LARGE_CLUSTER
 			#if DB_MYSQL
@@ -865,12 +868,13 @@ void signal_handler(int sig)
 				eardbd_disconnect();
 				eardbd_connected=0;
 			}
-    		if (my_cluster_conf.eard.use_eardbd && !eardbd_connected){
+    		if (my_cluster_conf.eard.use_eardbd){
+				eardbd_disconnect();
         		if (eardbd_connect(my_node_conf->db_ip, NULL, my_cluster_conf.db_manager.tcp_port, TCP)!=EAR_SUCCESS){
             		eard_verbose(0,"Error connecting with EARDB");
         		}else eardbd_connected=1;
     		}
-    		if (my_cluster_conf.eard.use_mysql && !db_helper_connected){
+    		if (my_cluster_conf.eard.use_mysql){
         		eard_verbose(1,"Connecting with EAR DB directly");
         		init_db_helper(&my_cluster_conf.database);
         		db_helper_connected=1;

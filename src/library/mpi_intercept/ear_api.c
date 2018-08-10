@@ -58,6 +58,7 @@
 #include <common/environment.h>
 #include <common/states.h>
 #include <common/config.h>
+#include <metrics/metrics.h>
 
 // Statics
 static const char *__NAME__ = "EARL";
@@ -256,12 +257,17 @@ void ear_init()
 	resched_conf = attach_resched_shared_area(resched_conf_path);
 
 	/* Updating configuration */
-	if ((system_conf!=NULL) && (resched_conf!=NULL)){
+	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
 		update_configuration();	
 	}else{
 		earl_verbose(0,"Shared memory not present, not connecting with EARD");
 		my_id=1;
 	}	
+
+	if (my_id != 0) {
+        return;
+    }
+
 
 	// Application static data and metrics
 	init_application(&application);
@@ -376,7 +382,7 @@ void ear_finalize()
 
 	// Writing application data
 	eards_write_app_signature(&application);
-	append_application_text_file(app_summary_path, &application);
+	append_application_text_file(app_summary_path, &application, 1);
 	report_mpi_application_data(&application);
 
 	// Closing any remaining loop
