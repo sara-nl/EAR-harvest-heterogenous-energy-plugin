@@ -640,7 +640,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	// Configuration
-#if 1
+#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
@@ -777,13 +777,15 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	int fd4 = ssync_mir->fd;
 
 	// Summary
-	verbose3("type          \tport\tprot\tstat  \tfd");
-	verbose3("----          \t----\t----\t----  \t--");
-	verbose3("server metrics\t%d  \tTCP \t%s\t%d", smets_srv->port, str_sta[fd1 == -1], fd1);
-	verbose3("mirror metrics\t%d  \tTCP \t%s\t%d", smets_mir->port, str_sta[fd2 == -1], fd2);
-	verbose3("server sync   \t%d  \tTCP \t%s\t%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
-	verbose3("mirror sync   \t%d  \tTCP \t%s\t%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
-	verbose3("TIP! mirror sync socket opens and closes intermittently");
+	tprintf_init(stderr, {25,25,10,10,8}, 5);
+
+	tprintf("type||port||prot||stat||fd");
+	tprintf("----||----||----||----||--");
+	tprintf("server metrics||%d||TCP||%s||%d", smets_srv->port, str_sta[fd1 == -1], fd1);
+	tprintf("mirror metrics||%d||TCP||%s||%d", smets_mir->port, str_sta[fd2 == -1], fd2);
+	tprintf("server sync||%d||TCP||%s||%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
+	tprintf("mirror sync||%d||TCP||%s||%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
+	tprintf("TIP! mirror sync socket opens and closes intermittently");
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
