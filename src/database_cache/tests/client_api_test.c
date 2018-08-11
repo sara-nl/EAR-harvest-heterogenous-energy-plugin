@@ -21,12 +21,13 @@ void usage(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+	cluster_conf_t conf_clus;
 	periodic_metric_t met;
 	application_t app;
 	int job_id = 0;
 	state_t s;
 
-	usage(argc, argv);
+	//usage(argc, argv);
 
 	// Dummy objects
 	memset(&app, 0, sizeof (application_t));
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
 	report_application_data(&app);
 
 	// Testing API
-	s = eardbd_connect(argv[1], argv[2], 4711, TCP);
+	s = eardbd_connect(&conf_clus);
 
 	printf("CONNECT RETURNED %d\n", s);
 

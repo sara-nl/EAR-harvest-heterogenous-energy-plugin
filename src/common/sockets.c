@@ -344,8 +344,10 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 		bytes_recv = 0;
 		i++;
 
+
 		if (bytes_expc > size_buffer) {
-			state_return_msg(EAR_BAD_ARGUMENT, 0, "buffer to small for the received object %ld %ld");
+			printf("buffer to small for the received object %ld %ld\n", bytes_expc, size_buffer);
+			state_return_msg(EAR_BAD_ARGUMENT, 0, "buffer to small for the received object");
 		}
 	}
 

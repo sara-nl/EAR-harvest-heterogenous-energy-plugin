@@ -179,11 +179,21 @@ state_t eardbd_connect(cluster_conf_t *conf)
 	uint server_port;
 	uint mirror_port;
 
+#if 0
+	// Getting my node configuration
 	node = get_my_node_conf(conf, mirror_host);
+
+	// Configuring hosts and ports
 	server_host = node->db_ip;
 	mirror_host = node->db_sec_ip;
 	server_port = conf->db_manager.tcp_port;
 	mirror_port = conf->db_manager.sec_tcp_port;
+#else
+	server_port = 4711;
+	mirror_port = 4712;
+	server_host = "E7450";
+	mirror_host = "E7450";
+#endif
 
 	if (server_host == NULL) {
 		return EAR_ERROR;

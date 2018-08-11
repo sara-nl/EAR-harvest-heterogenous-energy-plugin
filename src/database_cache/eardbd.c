@@ -73,12 +73,12 @@ int fd_cli;
 static struct timeval timeout_insr;
 static struct timeval timeout_sync;
 static time_t time_insr_last;
-static ulong  time_insr;
+static time_t time_insr;
 
 // Input buffers
 static packet_header_t input_header;
-static char input_buffer[SZ_NAME_LARGE];
-static char extra_buffer[SZ_NAME_LARGE];
+static char input_buffer[SZ_BUFF_BIG];
+static char extra_buffer[SZ_BUFF_BIG];
 
 // Mirroring
 static char master_host[SZ_NAME_MEDIUM]; // This node name
@@ -275,7 +275,7 @@ static int sync_answer(int fd)
 static void db_store_events()
 {
 	float percent = (float) (i_evnts) / (float) (len_evnts);
-	verbose1("inserting: %lu/%lu (%0.2f) samples of events",
+	verbose1("%lu/%lu (%0.2f) samples of events",
 			 i_evnts, len_evnts, percent);
 
 	if (i_evnts <= 0) {
@@ -290,7 +290,7 @@ static void db_store_events()
 static void db_store_loops()
 {
 	float percent = (float) (i_loops) / (float) (len_loops);
-	verbose1("inserting: %lu/%lu (%0.2f) samples of loops",
+	verbose1("%lu/%lu (%0.2f) samples of loops",
 			 i_loops, len_loops, percent);
 
 	if (i_loops <= 0) {
@@ -304,7 +304,7 @@ static void db_store_loops()
 static void db_store_periodic_metrics()
 {
 	float percent = (float) (i_enrgy) / (float) (len_enrgy);
-	verbose1("inserting: %lu/%lu (%0.2f) samples of energy monitoring data",
+	verbose1("%lu/%lu (%0.2f) samples of energy monitoring data",
 			 i_enrgy, len_enrgy, percent);
 
 	if (i_enrgy <= 0) {
@@ -318,7 +318,7 @@ static void db_store_periodic_metrics()
 static void db_store_periodic_aggregation()
 {
 	float percent = (float) (i_appsl) / (float) (len_appsl);
-	verbose1("inserting: %d samples energy monitoring data (from %lu to %lu, consuming %lu mJ)",
+	verbose1("%d samples energy monitoring data (from %lu to %lu, consuming %lu mJ)",
 			 aggr.n_samples, aggr.start_time, aggr.end_time, aggr.DC_energy);
 
 	if (aggr.n_samples <= 0) {
@@ -332,7 +332,7 @@ static void db_store_periodic_aggregation()
 static void db_store_applications_mpi()
 {
 	float percent = (float) (i_appsm) / (float) (len_appsm);
-	verbose1("inserting: %lu/%lu (%0.2f) samples of mpi applications",
+	verbose1("%lu/%lu (%0.2f) samples of mpi applications",
 			 i_appsm, len_appsm, percent);
 
 	if (i_appsm <= 0) {
@@ -346,7 +346,7 @@ static void db_store_applications_mpi()
 static void db_store_applications()
 {
 	float percent = (float) (i_appsn) / (float) (len_appsn);
-	verbose1("inserting: %lu/%lu (%0.2f) samples of non-mpi applications",
+	verbose1("%lu/%lu (%0.2f) samples of non-mpi applications",
 			 i_appsn, len_appsn, percent);
 
 	if (i_appsn <= 0) {
@@ -360,7 +360,7 @@ static void db_store_applications()
 static void db_store_applications_learning()
 {
 	float percent = (float) (i_appsl) / (float) (len_appsl);
-	verbose1("inserting: %lu/%lu (%0.2f) samples of learning applications",
+	verbose1("%lu/%lu (%0.2f) samples of learning applications",
 			 i_appsl, len_appsl, percent);
 
 	if (i_appsl <= 0) {
@@ -380,10 +380,10 @@ static void make_periodic_aggregation(periodic_aggregation_t *aggr, periodic_met
 	add_periodic_aggregation(aggr, met->DC_energy, met->start_time, met->end_time);
 }
 
-static void process_reset_insert_time()
+static void process_reset_insert_time(time_t offset)
 {
 	// Refresh insert time
-	timeout_insr.tv_sec = time_insr;
+	timeout_insr.tv_sec = time_insr + offset;
 	timeout_insr.tv_usec = 0L;
 
 	// Set when was the last insert time
@@ -403,15 +403,11 @@ static void process_reset_indexes()
 static void process_insert(uint option, uint reason)
 {
 	verline0();
-	verbose1("inserting reason: %u", reason);
+	verbose1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 
-	if (sync_option(option, SYNC_ALL))
-	{
+	if (sync_option(option, SYNC_ALL)) {
 		// Time to aggregate
 		db_store_periodic_aggregation();
-
-		// Resetting time
-		process_reset_insert_time();
 	}
 	if (sync_option(option, SYNC_APPSM)) {
 		db_store_applications_mpi();
@@ -433,7 +429,6 @@ static void process_insert(uint option, uint reason)
 	}
 	if (sync_option(option, SYNC_RESET)) {
 		process_reset_indexes();
-		process_reset_insert_time();
 	}
 }
 
@@ -484,8 +479,18 @@ static void incoming_data_process(int fd, packet_header_t *header, char *content
 	} else if (header->content_type == CONTENT_TYPE_QST)
 	{
 		sync_qst_t *q = (sync_qst_t *) content;
+
+		// Passing the question option
 		process_insert(q->sync_option, RES_SYNC);
+
+		// Answering the mirror question
 		sync_answer(fd);
+
+		// In case it is a full sync the sync time is resetted before the answer
+		// with a very small offset (1 second is enough)
+		if (sync_option(q->sync_option, SYNC_ALL)) {
+			process_reset_insert_time(1);
+		}
 	}
 }
 
@@ -516,8 +521,8 @@ static void incoming_data_announce(int fd, packet_header_t *header, char *conten
 		type = "unknown";
 	}
 
-	verbose1("received '%s' packet (m: %d) from host '%s' (socket: %d)",
-			type, header->data_extra1, header->host_src, fd);
+	verbose1("received '%s' packet from host '%s' (socket: %d)",
+			type, header->host_src, fd);
 }
 
 static int incoming_new_connection(int fd)
@@ -635,7 +640,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	// Configuration
-#if 1
+#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
@@ -699,7 +704,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	alloc = (float) conf_clus->db_manager.mem_size;
 
 	// Times
-	time_insr = (long) conf_clus->db_manager.aggr_time;
+	time_insr = (time_t) conf_clus->db_manager.aggr_time;
 
 	timeout_insr.tv_sec  = time_insr;
 	timeout_insr.tv_usec = 0L;
@@ -994,13 +999,22 @@ static void pipeline()
 			// Synchronizing with the MAIN
 			if (mirror_iam)
 			{
+				// If mirror the time reset is do it before the insert
+				process_reset_insert_time(0);
+
+				// Asking the question
 				if(state_fail(sync_question(SYNC_ALL))) {
 					process_insert(SYNC_ALL, RES_TIME);
 				} else {
 					process_insert(SYNC_RESET, RES_TIME);
 				}
-			} else {
+			} else
+			{
+				// Server normal insertion
 				process_insert(SYNC_ALL, RES_TIME);
+
+				// If server the time reset is do it after the insert
+				process_reset_insert_time(0);
 			}
 		}
 
