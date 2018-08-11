@@ -179,7 +179,7 @@ state_t eardbd_connect(cluster_conf_t *conf)
 	uint server_port;
 	uint mirror_port;
 
-#if 0
+#if 1
 	// Getting my node configuration
 	node = get_my_node_conf(conf, mirror_host);
 

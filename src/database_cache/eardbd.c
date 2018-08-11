@@ -640,7 +640,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	// Configuration
-#if 0
+#if 1
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
