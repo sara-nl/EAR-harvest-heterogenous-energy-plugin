@@ -32,7 +32,7 @@
 #define eardb_reconnect(nconf,cconf,status) \
 {\
 	eardbd_disconnect();\
-    if (eardbd_connect((nconf)->db_ip, NULL, (cconf)->db_manager.tcp_port, TCP)!=EAR_SUCCESS){ \
+    if (eardbd_connect(cconf)!=EAR_SUCCESS){ \
         VERBOSE_N(0,"Error reconnecting with EARDB"); \
     } \
 }
