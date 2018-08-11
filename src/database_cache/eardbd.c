@@ -283,7 +283,7 @@ static void db_store_events()
 	}
 
 	verbose1("inserting in DB %lu event samples", i_evnts);
-	//db_batch_insert_ear_event(evnts[i_evnts]);
+	db_batch_insert_ear_event(evnts, i_evnts);
 	i_evnts = 0;
 }
 
@@ -297,7 +297,7 @@ static void db_store_loops()
 		return;
 	}
 
-	//db_batch_insert_loops(loops[i_loops]);
+	db_batch_insert_loops(loops, i_loops);
 	i_loops = 0;
 }
 
@@ -311,7 +311,7 @@ static void db_store_periodic_metrics()
 		return;
 	}
 
-	//db_batch_insert_periodic_metrics(enrgy[i_enrgy]);
+	db_batch_insert_periodic_metrics(enrgy, i_enrgy);
 	i_enrgy = 0;
 }
 
@@ -325,7 +325,7 @@ static void db_store_periodic_aggregation()
 		return;
 	}
 
-	//db_insert_periodic_aggregation(&aggr);
+	db_insert_periodic_aggregation(&aggr);
 	init_periodic_aggregation(&aggr);
 }
 
@@ -339,7 +339,7 @@ static void db_store_applications_mpi()
 		return;
 	}
 
-	//db_batch_insert_applications(appsm[i_appsm]);
+	db_batch_insert_applications(appsm, i_appsm);
 	i_appsm = 0;
 }
 
@@ -353,7 +353,7 @@ static void db_store_applications()
 		return;
 	}
 
-	//db_batch_insert_applications_no_mpi(appsn, i_appsn);
+	db_batch_insert_applications_no_mpi(appsn, i_appsn);
 	i_appsn = 0;
 }
 
@@ -367,7 +367,7 @@ static void db_store_applications_learning()
 		return;
 	}
 
-	//db_batch_insert_applications(appsl[i_appsl]);
+	db_batch_insert_applications(appsl, i_appsl);
 	i_appsl = 0;
 }
 
