@@ -771,7 +771,6 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	// Verbosity
 	char *str_sta[2] = { "listen", "closed" };
-	int table_format[5] = {18,8,8,10,8};
 
 	int fd1 = smets_srv->fd;
 	int fd2 = smets_mir->fd;
@@ -779,7 +778,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	int fd4 = ssync_mir->fd;
 
 	// Summary
-	tprintf_init(stderr, table_format, 5);
+	tprintf_init(stderr, "18 8 7 10 8");
 
 	tprintf("type||port||prot||stat||fd");
 	tprintf("----||----||----||----||--");
@@ -966,12 +965,10 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	sync_qst_header.content_size = sizeof(sync_qst_t);
 
 	// Verbose
-	int table_format[5] = {18,12,11,10,8};
-
-	tprintf_init(stderr, table_format, 5);
+	tprintf_init(stderr, "15 15 11 9 8");
 
 	// Summary
-	tprintf("type||memory||sample||Elems||%%");
+	tprintf("type||memory||sample||elems||%%");
 	tprintf("----||------||------||-----||----");
 	tprintf("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsm, sizeof(application_t), len_appsm, len_appsm_pc);
 	tprintf("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsn, sizeof(application_t), len_appsn, len_appsn_pc);

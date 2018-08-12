@@ -45,10 +45,10 @@ char sten_output[STEN_BUFF_SIZE];
 	tprintf_format();
 
 /** **/
-void tprintf_init(FILE *stream, unsigned int *table_format, unsigned int columns);
+int tprintf_init(FILE *stream, char *format);
 
 /** **/
-void tprintf_format();
+int tprintf_format();
 
 /** Cleans the character pointed by 'chr', adding an '\0' in its position. */
 char* strclean(char *string, char chr);

@@ -33,18 +33,40 @@
 #include <common/string_enhanced.h>
 
 static const char *sym = STEN_SYMBOL;
-static unsigned int table_format[STEN_MAX_COLS];
+static unsigned int format[STEN_MAX_COLS];
 static unsigned int columns;
 static FILE *stream;
 
-void tprintf_init(FILE *_stream, unsigned int *_table_format, unsigned int _columns)
+int tprintf_init(FILE *_stream, char *_format)
 {
-    stream = _stream;
-    columns = _columns;
-    memcpy(table_format, _table_format, columns * sizeof(unsigned int));
+	int len = strlen(_format);
+    char *tok;
+
+	if (len >= STEN_BUFF_SIZE) {
+		columns = 0;
+		return -1;
+	}
+
+	strcpy(sten_hinput, _format);
+	
+	columns = 0;
+	stream = _stream;
+	tok = strtok(sten_hinput, " ");
+	
+	while (tok != NULL && columns < STEN_MAX_COLS) {
+		format[columns++] = atoi(tok);
+		tok = strtok(NULL, " ");
+	}
+	
+	if (columns >= STEN_MAX_COLS) {
+		columns = 0;	
+		return -1;
+	}
+
+	return 0;
 }
 
-void tprintf_format()
+int tprintf_format()
 {
     char *p1 = strstr(sten_hinput, sym);
     char *p2 = sten_hinput;
@@ -53,6 +75,10 @@ void tprintf_format()
     int len = strlen(sten_hinput);
     int i = 0;
     int c = 0;
+
+	if ((len >= STEN_BUFF_SIZE) || (columns == 0)) {
+		return -1;
+	}
 
     while(p1 && i < columns)
     {
@@ -63,7 +89,7 @@ void tprintf_format()
             ++p3;
         }
 
-        while(c < table_format[i]) {
+        while(c < format[i]) {
             *p3 = ' ';
             ++c;
             ++p3;
@@ -87,6 +113,8 @@ void tprintf_format()
 	p3[0] = '\n';
 	p3[1] = '\0';
     fprintf(stream, sten_output);
+
+	return 0;
 }
 
 void strtoup(char *string)
