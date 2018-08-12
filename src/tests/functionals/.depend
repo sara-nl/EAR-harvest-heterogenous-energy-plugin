@@ -1,11 +1,5 @@
 test_architecture.o: test_architecture.c \
  ../../metrics/custom/hardware_info.h
-simd_power_metrics_openmp.o: simd_power_metrics_openmp.c \
- ../../control/frequency.h ../../metrics/papi/generics.h \
- ../../metrics/papi/flops.h ../../metrics/papi/stalls.h \
- ../../metrics/papi/energy_cpu.h ../../metrics/papi/instructions.h \
- ../../metrics/custom/hardware_info.h ../../metrics/custom/frequency.h \
- ../../common/types/generic.h
 energy_updates_freq.o: energy_updates_freq.c \
  ../../metrics/ipmi/energy_node.h
 bandwith_monitor.o: bandwith_monitor.c ../../metrics/custom/bandwidth.h \
@@ -20,13 +14,21 @@ batch_insert.o: batch_insert.c ../../common/config.h \
  ../../common/database/db_helper.h \
  ../../common/types/periodic_aggregation.h \
  ../../common/types/periodic_metric.h ../../common/types/gm_warning.h \
- ../../common/types/loop.h ../../common/types/log.h
+ ../../common/types/loop.h ../../common/types/log.h \
+ ../../common/database/mysql_io_functions.h
 energy_1_second.o: energy_1_second.c ../../metrics/ipmi/energy_node.h
 my_node_conf.o: my_node_conf.c ../../common/config.h \
  ../../common/states.h ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/types/generic.h \
  ../../common/ear_verbose.h
+simd_power_metrics_openmp.o: simd_power_metrics_openmp.c \
+ ../../control/frequency.h ../../metrics/papi/generics.h \
+ ../../metrics/papi/flops.h ../../metrics/papi/stalls.h \
+ ../../metrics/papi/energy_cpu.h ../../metrics/ipmi/energy_node.h \
+ ../../metrics/papi/instructions.h ../../metrics/custom/hardware_info.h \
+ ../../metrics/custom/frequency.h ../../common/types/generic.h \
+ simd_test.h
 freeipmi_overhead.o: freeipmi_overhead.c ../../metrics/ipmi/energy_node.h \
  ../../common/config.h
 configuration_check.o: configuration_check.c ../../common/config.h \
@@ -46,5 +48,9 @@ eard_monitor.o: eard_monitor.c ../../daemon/eard_api.h \
  ../../common/types/signature.h ../../common/types/power_signature.h \
  ../../common/types/loop.h
 simd_tests.o: simd_tests.c ../../metrics/custom/hardware_info.h
+read_from_file.o: read_from_file.c ../../common/types/application.h \
+ ../../common/config.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h
 ear_pm.o: ear_pm.c ../../common/ear_verbose.h ../../common/config.h \
  ../../common/types/generic.h ../../metrics/custom/frequency.h

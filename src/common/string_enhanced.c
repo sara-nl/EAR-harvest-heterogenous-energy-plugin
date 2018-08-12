@@ -50,7 +50,7 @@ void tprintf_format()
     char *p2 = sten_hinput;
     char *p3 = sten_output;
 
-    int l = strlen(sten_hinput);
+    int len = strlen(sten_hinput);
     int i = 0;
     int c = 0;
 
@@ -69,17 +69,24 @@ void tprintf_format()
             ++p3;
         }
 
+		if (p1 == &sten_hinput[len]) {
+			break;
+		}
+
         ++i;
         p1++;
         p1++;
         p2 = p1;
         p1 = strstr(p1, sym);
 
-        if (!p1) p1 = &sten_hinput[l];
+        if (!p1) p1 = &sten_hinput[len];
+		
         c = 0;
     }
 
-    fprintf(stream, "%s\n", sten_output);
+	p3[0] = '\n';
+	p3[1] = '\0';
+    fprintf(stream, sten_output);
 }
 
 void strtoup(char *string)

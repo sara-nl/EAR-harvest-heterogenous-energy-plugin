@@ -5,4 +5,5 @@ app_server_api.o: app_server_api.c ../../common/config.h \
  ../../common/ear_verbose.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
- ../../common/string_enhanced.h ../../daemon/app_api/app_conf_api.h
+ ../../common/string_enhanced.h ../../daemon/app_api/app_conf_api.h \
+ ../../metrics/ipmi/energy_node.h

@@ -966,18 +966,20 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	sync_qst_header.content_size = sizeof(sync_qst_t);
 
 	// Verbose
-	
+	int table_format[5] = {18,12,11,10,8};
+
+	tprintf_init(stderr, table_format, 5);
 
 	// Summary
-	verbose3("type||memory||sample||Elems||%%");
-	verbose3("----||------||------||-----||----");
-	verbose3("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsm, sizeof(application_t), len_appsm, len_appsm_pc);
-	verbose3("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsn, sizeof(application_t), len_appsn, len_appsn_pc);
-	verbose3("learn apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsl, sizeof(application_t), len_appsl, len_appsl_pc);
-	verbose3("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_enrgy, sizeof(periodic_metric_t), len_enrgy, len_enrgy_pc);
-	verbose3("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_loops, sizeof(loop_t), len_loops, len_loops_pc);
-	verbose3("events||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_evnts, sizeof(ear_event_t), len_evnts, len_evnts_pc);
-	verbose3("TOTAL||%0.2f MBs", mb_total);
+	tprintf("type||memory||sample||Elems||%%");
+	tprintf("----||------||------||-----||----");
+	tprintf("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsm, sizeof(application_t), len_appsm, len_appsm_pc);
+	tprintf("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsn, sizeof(application_t), len_appsn, len_appsn_pc);
+	tprintf("learn apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsl, sizeof(application_t), len_appsl, len_appsl_pc);
+	tprintf("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_enrgy, sizeof(periodic_metric_t), len_enrgy, len_enrgy_pc);
+	tprintf("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_loops, sizeof(loop_t), len_loops, len_loops_pc);
+	tprintf("events||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_evnts, sizeof(ear_event_t), len_evnts, len_evnts_pc);
+	tprintf("TOTAL||%0.2f MBs", mb_total);
 	verbose3("TIP! this allocated space is per process server/mirror");
 }
 

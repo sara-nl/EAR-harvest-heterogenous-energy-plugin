@@ -11,7 +11,8 @@ states_periodic.o: states_periodic.c ../../common/config.h \
  ../../library/tracer/tracer.h ../../library/states/states.h \
  ../../library/metrics/metrics.h ../../library/models/models.h \
  ../../common/environment.h ../../common/types/projection.h \
- ../../common/types/log.h ../../common/math_operations.h
+ ../../common/types/log.h ../../common/math_operations.h \
+ ../../daemon/eard_api.h ../../daemon/eard_conf_api.h
 states.o: states.c ../../common/config.h ../../control/frequency.h \
  ../../library/common/externs.h ../../common/types/application.h \
  ../../common/types/job.h ../../common/types/generic.h \
@@ -24,4 +25,5 @@ states.o: states.c ../../common/config.h ../../control/frequency.h \
  ../../library/tracer/tracer.h ../../library/states/states.h \
  ../../library/metrics/metrics.h ../../library/models/models.h \
  ../../common/environment.h ../../common/types/projection.h \
- ../../common/types/log.h ../../common/math_operations.h
+ ../../common/types/log.h ../../common/math_operations.h \
+ ../../daemon/eard_api.h ../../daemon/eard_conf_api.h
