@@ -32,8 +32,6 @@
 #include <string.h>
 #include <common/string_enhanced.h>
 
-static char hinput[STEN_BUFF_SIZE];
-static char output[STEN_BUFF_SIZE];
 static const char *sym = STEN_SYMBOL;
 static unsigned int table_format[STEN_MAX_COLS];
 static unsigned int columns;
@@ -48,11 +46,11 @@ void tprintf_init(FILE *_stream, unsigned int *_table_format, unsigned int _colu
 
 void tprintf_format()
 {
-    char *p1 = strstr(hinput, sym);
-    char *p2 = hinput;
-    char *p3 = output;
+    char *p1 = strstr(sten_hinput, sym);
+    char *p2 = sten_hinput;
+    char *p3 = sten_output;
 
-    int l = strlen(hinput);
+    int l = strlen(sten_hinput);
     int i = 0;
     int c = 0;
 
@@ -77,11 +75,11 @@ void tprintf_format()
         p2 = p1;
         p1 = strstr(p1, sym);
 
-        if (!p1) p1 = &hinput[l];
+        if (!p1) p1 = &sten_hinput[l];
         c = 0;
     }
 
-    fprintf(stream, "%s\n", output);
+    fprintf(stream, "%s\n", sten_output);
 }
 
 void strtoup(char *string)

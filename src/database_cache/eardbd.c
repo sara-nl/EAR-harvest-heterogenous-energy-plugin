@@ -139,20 +139,20 @@ static char *str_who[2] = { "server", "mirror" };
 #define col2 "\x1b[0m"
 
 #define verbose0(format) \
-	fprintf(stderr, "EARDBD %s, %s \n", str_who[mirror_iam], format);
+	fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
 
 #define verbose1(format, ...) \
-	fprintf(stderr, "EARDBD %s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
+	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 	
 #define verbose3(...) \
 	if (!forked || master_iam) { \
-		fprintf(stderr, "EARDBD, " __VA_ARGS__); \
+		fprintf(stderr, __VA_ARGS__); \
 		fprintf(stderr, "\n"); \
 	}
 
 #define verline1(...) \
 	if (!forked || master_iam) { \
-		fprintf(stderr, col1 line "EARDBD, " __VA_ARGS__); \
+		fprintf(stderr, col1 line __VA_ARGS__); \
 		fprintf(stderr, col2 "\n"); \
 	}
 
@@ -160,7 +160,7 @@ static char *str_who[2] = { "server", "mirror" };
 		fprintf(stderr, col1 line col2);
 
 #define error(...) \
-	fprintf(stderr, "EARDBD ERROR, " __VA_ARGS__); \
+	fprintf(stderr, "ERROR, " __VA_ARGS__); \
 	fprintf(stderr, "\n"); \
 	exit(1);
 
@@ -311,7 +311,7 @@ static void db_store_periodic_metrics()
 		return;
 	}
 
-	//db_batch_insert_periodic_metrics(enrgy[i_enrgy]);
+	//insert_periodic_metrics(enrgy[i_enrgy]);
 	i_enrgy = 0;
 }
 
@@ -771,13 +771,15 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	// Verbosity
 	char *str_sta[2] = { "listen", "closed" };
+	int table_format[5] = {18,8,8,10,8};
+
 	int fd1 = smets_srv->fd;
 	int fd2 = smets_mir->fd;
 	int fd3 = ssync_srv->fd;
 	int fd4 = ssync_mir->fd;
 
 	// Summary
-	tprintf_init(stderr, {25,25,10,10,8}, 5);
+	tprintf_init(stderr, table_format, 5);
 
 	tprintf("type||port||prot||stat||fd");
 	tprintf("----||----||----||----||--");
@@ -785,7 +787,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	tprintf("mirror metrics||%d||TCP||%s||%d", smets_mir->port, str_sta[fd2 == -1], fd2);
 	tprintf("server sync||%d||TCP||%s||%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
 	tprintf("mirror sync||%d||TCP||%s||%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
-	tprintf("TIP! mirror sync socket opens and closes intermittently");
+	verbose3("TIP! mirror sync socket opens and closes intermittently");
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)

@@ -37,8 +37,11 @@
 #define STEN_SYMBOL		"||"
 #define STEN_BUFF_SIZE	PIPE_BUF
 
+char sten_hinput[STEN_BUFF_SIZE];
+char sten_output[STEN_BUFF_SIZE];
+
 #define tprintf(...) \
-	snprintf(hinput,  STEN_BUFF_SIZE-1, __VA_ARGS__); \
+	snprintf(sten_hinput,  STEN_BUFF_SIZE-1, __VA_ARGS__); \
 	tprintf_format();
 
 /** **/
