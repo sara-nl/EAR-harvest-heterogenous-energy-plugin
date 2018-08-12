@@ -30,26 +30,25 @@
 #ifndef _STRING_ENHANCED_H_
 #define _STRING_ENHANCED_H_
 
+#include <linux/limits.h>
 #include <common/types/generic.h>
 
-/**@{ Adds commas to numbers. It is printed in internal buffer and a pointer to
-*   this buffer is returned. So do whatever you want before call again one
-*   of these functions. */
-char *add_point_ull(ull number);
-char *add_point_ulong(ulong number);
-char *add_point_uint(uint number); /**@}*/
+#define STEN_MAX_COLS	12
+#define STEN_SYMBOL		"||"
+#define STEN_BUFF_SIZE	PIPE_BUF
 
-/**@{ Prints a type splitted by columns. You have to call 'set_spacing_digits',
-*   every time you want to define the number of characters per column. You can
-*   define just once, or iteratively to use different column lengths. */
-void set_spacing_digits(uint digits);
-void print_spacing_digits(uint digits);
-void print_spacing_ull(ull number);
-void print_spacing_ulong(ulong number);
-void print_spacing_uint(uint number);
-void print_spacing_int(int number);
-void print_spacing_string(char* string);
-void print_spacing_string_align_left(char* string, uint left_spaces); /**@}*/
+char sten_hinput[STEN_BUFF_SIZE];
+char sten_output[STEN_BUFF_SIZE];
+
+#define tprintf(...) \
+	snprintf(sten_hinput,  STEN_BUFF_SIZE-1, __VA_ARGS__); \
+	tprintf_format();
+
+/** **/
+int tprintf_init(FILE *stream, char *format);
+
+/** **/
+int tprintf_format();
 
 /** Cleans the character pointed by 'chr', adding an '\0' in its position. */
 char* strclean(char *string, char chr);

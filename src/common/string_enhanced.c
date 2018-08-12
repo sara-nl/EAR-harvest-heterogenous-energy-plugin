@@ -32,187 +32,89 @@
 #include <string.h>
 #include <common/string_enhanced.h>
 
-static char _buffer[3][64];
-static uint _digits;
-static uint _i;
+static const char *sym = STEN_SYMBOL;
+static unsigned int format[STEN_MAX_COLS];
+static unsigned int columns;
+static FILE *stream;
 
-static void _add_point_ull (ull number)
+int tprintf_init(FILE *_stream, char *_format)
 {
-    if (number < 0) {
-        printf ("-");
-        _add_point_ull(-number);
-        return;
-    }
+	int len = strlen(_format);
+    char *tok;
 
-    if (number < 1000) {
-        sprintf(_buffer[_i], "%s%llu", _buffer[_i], number);
-        return;
-    }
-
-    _add_point_ull(number / 1000);
-    sprintf(_buffer[_i], "%s.%03llu", _buffer[_i], (number % 1000));
-}
-
-char* add_point_ull(ull number)
-{
-	_i = _i + 1 - (_i == 2) * 3;
-	 _buffer[_i][0] = '\0';
-	_add_point_ull(number);
-	return _buffer[_i];
-}
-
-static void _add_point_ulong (ulong number)
-{
-    if (number < 0) {
-        printf ("-");
-        _add_point_ulong(-number);
-        return;
-    }
-
-    if (number < 1000) {
-        sprintf(_buffer[_i], "%s%lu", _buffer[_i], number);
-        return;
-    }
-
-    _add_point_ulong(number / 1000);
-    sprintf(_buffer[_i], "%s.%03lu", _buffer[_i], (number % 1000));
-}
-
-char* add_point_ulong(ulong number)
-{
-    _buffer[_i][0] = '\0';
-    _add_point_ulong(number);
-    return _buffer[_i];
-}
-
-static void _add_point_uint (uint number)
-{
-    if (number < 0) {
-        printf ("-");
-        _add_point_uint(-number);
-        return;
-    }
-
-    if (number < 1000) {
-        sprintf(_buffer[_i], "%s%u", _buffer[_i], number);
-        return;
-    }
-
-    _add_point_uint(number / 1000);
-    sprintf(_buffer[_i], "%s.%03u", _buffer[_i], (number % 1000));
-}
-
-char* add_point_uint(uint number)
-{
-    _buffer[_i][0] = '\0';
-    _add_point_uint(number);
-    return _buffer[_i];
-}
-
-//TODO: remove
-void print_spacing_digits(uint digits)
-{
-    _digits = digits;
-}
-
-void set_spacing_digits(uint digits)
-{
-    _digits = digits;
-}
-
-void print_spacing_ull(ull number)
-{
-    int digits = _digits;
-    printf("%llu", number);
-
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        printf( " ");
-        digits--;
-    }
-}
-
-void print_spacing_ulong(ulong number)
-{
-    int digits = _digits;
-    printf("%lu", number);
-
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        printf( " ");
-        digits--;
-    }
-}
-
-void print_spacing_uint(uint number)
-{
-    int digits = _digits;
-    printf("%u", number);
-
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        printf(" ");
-        digits--;
-    }
-}
-
-void print_spacing_int(int number)
-{
-    int digits = _digits;
-    printf("%d", number);
-
-    while(number > 9) {
-        number = number / 10;
-        digits--;
-    }
-    while(digits > 1) {
-        printf(" ");
-        digits--;
-    }
-}
-
-void print_spacing_string(char* string)
-{
-    int digits = _digits - strlen(string);
-    
-	if (digits < 0) {
-		printf("...");
-		string = &string[-digits + 4];
-		digits = 1;
+	if (len >= STEN_BUFF_SIZE) {
+		columns = 0;
+		return -1;
 	}
 
-	printf("%s", string);
+	strcpy(sten_hinput, _format);
+	
+	columns = 0;
+	stream = _stream;
+	tok = strtok(sten_hinput, " ");
+	
+	while (tok != NULL && columns < STEN_MAX_COLS) {
+		format[columns++] = atoi(tok);
+		tok = strtok(NULL, " ");
+	}
+	
+	if (columns >= STEN_MAX_COLS) {
+		columns = 0;	
+		return -1;
+	}
 
-    while(digits > 0) {
-        printf(" ");
-        digits--;
-    }
+	return 0;
 }
 
-void print_spacing_string_align_left(char* string, uint left_spaces)
+int tprintf_format()
 {
-    int digits = _digits - strlen(string);
+    char *p1 = strstr(sten_hinput, sym);
+    char *p2 = sten_hinput;
+    char *p3 = sten_output;
 
-    while(digits > 0) {
-        printf(" ");
-        digits--;
+    int len = strlen(sten_hinput);
+    int i = 0;
+    int c = 0;
+
+	if ((len >= STEN_BUFF_SIZE) || (columns == 0)) {
+		return -1;
+	}
+
+    while(p1 && i < columns)
+    {
+        while(p2 != p1) {
+            *p3 = *p2;
+            ++c;
+            ++p2;
+            ++p3;
+        }
+
+        while(c < format[i]) {
+            *p3 = ' ';
+            ++c;
+            ++p3;
+        }
+
+		if (p1 == &sten_hinput[len]) {
+			break;
+		}
+
+        ++i;
+        p1++;
+        p1++;
+        p2 = p1;
+        p1 = strstr(p1, sym);
+
+        if (!p1) p1 = &sten_hinput[len];
+		
+        c = 0;
     }
 
-    printf("%s", string);
+	p3[0] = '\n';
+	p3[1] = '\0';
+    fprintf(stream, sten_output);
 
-    while(left_spaces > 0) {
-        printf(" ");
-        left_spaces--;
-    }
+	return 0;
 }
 
 void strtoup(char *string)

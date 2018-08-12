@@ -4,15 +4,11 @@ log.o: log.c ../../common/config.h ../../common/types/log.h \
  ../../daemon/eard_conf_api.h ../../common/types/application.h \
  ../../common/types/signature.h ../../common/types/power_signature.h \
  ../../common/types/loop.h
-signature.o: signature.c ../../common/types/signature.h \
- ../../common/types/generic.h ../../common/config.h \
- ../../common/math_operations.h
 gm_warning.o: gm_warning.c ../../common/config.h \
  ../../common/types/gm_warning.h ../../common/types/generic.h
-application.o: application.c ../../common/states.h \
- ../../common/types/application.h ../../common/config.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h
+loop.o: loop.c ../../common/config.h ../../common/types/loop.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/job.h ../../common/states.h
 power_signature.o: power_signature.c ../../common/types/power_signature.h \
  ../../common/types/generic.h ../../common/config.h \
  ../../common/math_operations.h
@@ -29,6 +25,10 @@ periodic_aggregation.o: periodic_aggregation.c \
  ../../common/types/periodic_aggregation.h ../../common/types/generic.h
 job.o: job.c ../../common/types/job.h ../../common/types/generic.h \
  ../../common/config.h
-loop.o: loop.c ../../common/config.h ../../common/types/loop.h \
- ../../common/types/generic.h ../../common/types/signature.h \
- ../../common/types/job.h ../../common/states.h
+signature.o: signature.c ../../common/types/signature.h \
+ ../../common/types/generic.h ../../common/config.h \
+ ../../common/math_operations.h
+application.o: application.c ../../common/states.h \
+ ../../common/types/application.h ../../common/config.h \
+ ../../common/types/job.h ../../common/types/generic.h \
+ ../../common/types/signature.h ../../common/types/power_signature.h

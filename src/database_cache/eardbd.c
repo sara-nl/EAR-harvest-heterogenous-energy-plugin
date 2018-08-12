@@ -139,20 +139,20 @@ static char *str_who[2] = { "server", "mirror" };
 #define col2 "\x1b[0m"
 
 #define verbose0(format) \
-	fprintf(stderr, "EARDBD %s, %s \n", str_who[mirror_iam], format);
+	fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
 
 #define verbose1(format, ...) \
-	fprintf(stderr, "EARDBD %s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
+	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 	
 #define verbose3(...) \
 	if (!forked || master_iam) { \
-		fprintf(stderr, "EARDBD, " __VA_ARGS__); \
+		fprintf(stderr, __VA_ARGS__); \
 		fprintf(stderr, "\n"); \
 	}
 
 #define verline1(...) \
 	if (!forked || master_iam) { \
-		fprintf(stderr, col1 line "EARDBD, " __VA_ARGS__); \
+		fprintf(stderr, col1 line __VA_ARGS__); \
 		fprintf(stderr, col2 "\n"); \
 	}
 
@@ -160,7 +160,7 @@ static char *str_who[2] = { "server", "mirror" };
 		fprintf(stderr, col1 line col2);
 
 #define error(...) \
-	fprintf(stderr, "EARDBD ERROR, " __VA_ARGS__); \
+	fprintf(stderr, "ERROR, " __VA_ARGS__); \
 	fprintf(stderr, "\n"); \
 	exit(1);
 
@@ -771,18 +771,21 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	// Verbosity
 	char *str_sta[2] = { "listen", "closed" };
+
 	int fd1 = smets_srv->fd;
 	int fd2 = smets_mir->fd;
 	int fd3 = ssync_srv->fd;
 	int fd4 = ssync_mir->fd;
 
 	// Summary
-	verbose3("type          \tport\tprot\tstat  \tfd");
-	verbose3("----          \t----\t----\t----  \t--");
-	verbose3("server metrics\t%d  \tTCP \t%s\t%d", smets_srv->port, str_sta[fd1 == -1], fd1);
-	verbose3("mirror metrics\t%d  \tTCP \t%s\t%d", smets_mir->port, str_sta[fd2 == -1], fd2);
-	verbose3("server sync   \t%d  \tTCP \t%s\t%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
-	verbose3("mirror sync   \t%d  \tTCP \t%s\t%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
+	tprintf_init(stderr, "18 8 7 10 8");
+
+	tprintf("type||port||prot||stat||fd");
+	tprintf("----||----||----||----||--");
+	tprintf("server metrics||%d||TCP||%s||%d", smets_srv->port, str_sta[fd1 == -1], fd1);
+	tprintf("mirror metrics||%d||TCP||%s||%d", smets_mir->port, str_sta[fd2 == -1], fd2);
+	tprintf("server sync||%d||TCP||%s||%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
+	tprintf("mirror sync||%d||TCP||%s||%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
 	verbose3("TIP! mirror sync socket opens and closes intermittently");
 }
 
@@ -961,16 +964,19 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	sync_qst_header.content_type = CONTENT_TYPE_QST;
 	sync_qst_header.content_size = sizeof(sync_qst_t);
 
+	// Verbose
+	tprintf_init(stderr, "15 15 11 9 8");
+
 	// Summary
-	verbose3("type         \tmemory   \tsample\t\tElems\t%%");
-	verbose3("----         \t------   \t------\t\t-----\t----");
-	verbose3("mpi apps     \t%0.2f MBs\t%lu Bs\t\t%lu\t%0.2f", mb_appsm, sizeof(application_t), len_appsm, len_appsm_pc);
-	verbose3("non-mpi apps \t%0.2f MBs\t%lu Bs\t\t%lu\t%0.2f", mb_appsn, sizeof(application_t), len_appsn, len_appsn_pc);
-	verbose3("learn apps   \t%0.2f MBs\t%lu Bs\t\t%lu\t%0.2f", mb_appsl, sizeof(application_t), len_appsl, len_appsl_pc);
-	verbose3("pwr metrics  \t%0.2f MBs\t%lu Bs\t\t%lu\t%0.2f", mb_enrgy, sizeof(periodic_metric_t), len_enrgy, len_enrgy_pc);
-	verbose3("app loops    \t%0.2f MBs\t%lu Bs\t\t%lu\t%0.2f", mb_loops, sizeof(loop_t), len_loops, len_loops_pc);
-	verbose3("events       \t%0.2f MBs\t%lu Bs\t\t%lu\t%0.2f", mb_evnts, sizeof(ear_event_t), len_evnts, len_evnts_pc);
-	verbose3("TOTAL        \t%0.2f MBs", mb_total);
+	tprintf("type||memory||sample||elems||%%");
+	tprintf("----||------||------||-----||----");
+	tprintf("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsm, sizeof(application_t), len_appsm, len_appsm_pc);
+	tprintf("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsn, sizeof(application_t), len_appsn, len_appsn_pc);
+	tprintf("learn apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsl, sizeof(application_t), len_appsl, len_appsl_pc);
+	tprintf("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_enrgy, sizeof(periodic_metric_t), len_enrgy, len_enrgy_pc);
+	tprintf("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_loops, sizeof(loop_t), len_loops, len_loops_pc);
+	tprintf("events||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_evnts, sizeof(ear_event_t), len_evnts, len_evnts_pc);
+	tprintf("TOTAL||%0.2f MBs", mb_total);
 	verbose3("TIP! this allocated space is per process server/mirror");
 }
 

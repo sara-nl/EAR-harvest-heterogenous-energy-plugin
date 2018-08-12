@@ -57,6 +57,206 @@ typedef struct control
 // gcc -I ../common/ -o coeffs_quality_control coeffs_quality_control.c string_enhanced.o types.o
 // gcc -I ../common/ -c ../common/types.c
 
+/*
+ *
+ *
+ *
+ *
+ *
+ */
+
+static char _buffer[3][64];
+static uint _digits;
+static uint _i;
+
+static void _add_point_ull (ull number)
+{
+    if (number < 0) {
+        printf ("-");
+        _add_point_ull(-number);
+        return;
+    }
+
+    if (number < 1000) {
+        sprintf(_buffer[_i], "%s%llu", _buffer[_i], number);
+        return;
+    }
+
+    _add_point_ull(number / 1000);
+    sprintf(_buffer[_i], "%s.%03llu", _buffer[_i], (number % 1000));
+}
+
+char* add_point_ull(ull number)
+{
+    _i = _i + 1 - (_i == 2) * 3;
+    _buffer[_i][0] = '\0';
+    _add_point_ull(number);
+    return _buffer[_i];
+}
+
+static void _add_point_ulong (ulong number)
+{
+    if (number < 0) {
+        printf ("-");
+        _add_point_ulong(-number);
+        return;
+    }
+
+    if (number < 1000) {
+        sprintf(_buffer[_i], "%s%lu", _buffer[_i], number);
+        return;
+    }
+
+    _add_point_ulong(number / 1000);
+    sprintf(_buffer[_i], "%s.%03lu", _buffer[_i], (number % 1000));
+}
+
+char* add_point_ulong(ulong number)
+{
+    _buffer[_i][0] = '\0';
+    _add_point_ulong(number);
+    return _buffer[_i];
+}
+
+static void _add_point_uint (uint number)
+{
+    if (number < 0) {
+        printf ("-");
+        _add_point_uint(-number);
+        return;
+    }
+
+    if (number < 1000) {
+        sprintf(_buffer[_i], "%s%u", _buffer[_i], number);
+        return;
+    }
+
+    _add_point_uint(number / 1000);
+    sprintf(_buffer[_i], "%s.%03u", _buffer[_i], (number % 1000));
+}
+
+char* add_point_uint(uint number)
+{
+    _buffer[_i][0] = '\0';
+    _add_point_uint(number);
+    return _buffer[_i];
+}
+
+//TODO: remove
+void print_spacing_digits(uint digits)
+{
+    _digits = digits;
+}
+
+void set_spacing_digits(uint digits)
+{
+    _digits = digits;
+}
+
+void print_spacing_ull(ull number)
+{
+    int digits = _digits;
+    printf("%llu", number);
+
+    while(number > 9) {
+        number = number / 10;
+        digits--;
+    }
+    while(digits > 1) {
+        printf( " ");
+        digits--;
+    }
+}
+
+void print_spacing_ulong(ulong number)
+{
+    int digits = _digits;
+    printf("%lu", number);
+
+    while(number > 9) {
+        number = number / 10;
+        digits--;
+    }
+    while(digits > 1) {
+        printf( " ");
+        digits--;
+    }
+}
+
+void print_spacing_uint(uint number)
+{
+    int digits = _digits;
+    printf("%u", number);
+
+    while(number > 9) {
+        number = number / 10;
+        digits--;
+    }
+    while(digits > 1) {
+        printf(" ");
+        digits--;
+    }
+}
+
+void print_spacing_int(int number)
+{
+    int digits = _digits;
+    printf("%d", number);
+
+    while(number > 9) {
+        number = number / 10;
+        digits--;
+    }
+    while(digits > 1) {
+        printf(" ");
+        digits--;
+    }
+}
+
+void print_spacing_string(char* string)
+{
+    int digits = _digits - strlen(string);
+
+    if (digits < 0) {
+        printf("...");
+        string = &string[-digits + 4];
+        digits = 1;
+    }
+
+    printf("%s", string);
+
+    while(digits > 0) {
+        printf(" ");
+        digits--;
+    }
+}
+
+void print_spacing_string_align_left(char* string, uint left_spaces)
+{
+    int digits = _digits - strlen(string);
+
+    while(digits > 0) {
+        printf(" ");
+        digits--;
+    }
+
+    printf("%s", string);
+
+    while(left_spaces > 0) {
+        printf(" ");
+        left_spaces--;
+    }
+}
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+
 double power_proj(double power0, double tpi0, coefficient_t *coeffs)
 {
     return coeffs->A * power0 + coeffs->B * tpi0 + coeffs->C;

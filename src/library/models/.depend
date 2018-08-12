@@ -60,7 +60,8 @@ models.o: models.c ../../common/config.h ../../control/frequency.h \
  ../../library/models/models.h ../../common/environment.h \
  ../../common/types/projection.h ../../library/models/monitoring.h \
  ../../library/models/min_energy.h ../../library/models/min_time.h \
- ../../common/types/log.h
+ ../../common/types/log.h ../../daemon/eard_api.h \
+ ../../daemon/eard_conf_api.h
 min_energy.o: min_energy.c ../../common/config.h \
  ../../control/frequency.h ../../library/common/macros.h \
  ../../library/common/externs.h ../../common/types/application.h \
