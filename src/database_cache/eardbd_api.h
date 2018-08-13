@@ -44,8 +44,8 @@
 	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
 	fprintf(stderr, "\n");
 
-state_t eardbd_connect(cluster_conf_t *conf);
-state_t eardbd_reconnect(cluster_conf_t *conf);
+state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node);
+state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node);
 state_t eardbd_is_connected();
 state_t eardbd_disconnect();
 

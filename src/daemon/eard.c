@@ -556,7 +556,7 @@ int eard_system(int must_read)
 				}else{
 					if ((ret1=eardbd_send_event(&req.req_data.event))!=EAR_SUCCESS){
 						VERBOSE_N(0,"Error sending event to eardb");
-						eardbd_reconnect(&my_cluster_conf);
+						eardbd_reconnect(&my_cluster_conf, my_node_conf);
 					}
 				}
 			}
@@ -579,7 +579,7 @@ int eard_system(int must_read)
 				}else{
 					if ((ret1=eardbd_send_loop(&req.req_data.loop))!=EAR_SUCCESS){
 						VERBOSE_N(0,"Error sending loop to eardb");
-						eardbd_reconnect(&my_cluster_conf);
+						eardbd_reconnect(&my_cluster_conf, my_node_conf);
 					}
 				}
 			}
@@ -870,7 +870,7 @@ void signal_handler(int sig)
 			if (my_cluster_conf.eard.use_mysql){
     			if (my_cluster_conf.eard.use_eardbd){
 					eardbd_disconnect();
-        			if (eardbd_connect(&my_cluster_conf)!=EAR_SUCCESS){
+        			if (eardbd_connect(&my_cluster_conf, my_node_conf)!=EAR_SUCCESS){
             			eard_verbose(0,"Error connecting with EARDB");
         			}else{ 
 						eard_verbose(1,"Connecting with EARDBD\n");
@@ -1259,7 +1259,7 @@ void main(int argc,char *argv[])
     #if DB_MYSQL
 	if (my_cluster_conf.eard.use_mysql){
 		if (my_cluster_conf.eard.use_eardbd){
-    		if (eardbd_connect(&my_cluster_conf)!=EAR_SUCCESS){
+    		if (eardbd_connect(&my_cluster_conf,my_node_conf)!=EAR_SUCCESS){
 				eard_verbose(0,"Error connecting with EARDB errnum:%d errmsg:%s\n",intern_error_num,intern_error_str);
 			}else{ 
 				eard_verbose(1,"Connecting with EARDBD\n");
