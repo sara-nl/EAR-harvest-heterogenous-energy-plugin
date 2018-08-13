@@ -440,7 +440,7 @@ static void process_insert(uint option, uint reason)
 
 static void sample(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt)
 {
-	memcpy (&buf[*idx], cnt, siz);
+	memcpy (buf, cnt, siz);
 	*idx += 1;
 
 	if (*idx == len)
@@ -463,19 +463,19 @@ static void incoming_data_process(int fd, packet_header_t *header, char *content
 		application_t *app = (application_t *) content;
 
 		if (app->is_learning) {
-			sample((char *) appsl, len_appsl, &i_appsl, content, sizeof(application_t), SYNC_APPSL);
+			sample((char *) &appsl[i_appsl], len_appsl, &i_appsl, content, sizeof(application_t), SYNC_APPSL);
 		} else if (app->is_mpi) {
-			sample((char *) appsm, len_appsm, &i_appsm, content, sizeof(application_t), SYNC_APPSM);
+			sample((char *) &appsm[i_appsm], len_appsm, &i_appsm, content, sizeof(application_t), SYNC_APPSM);
 		} else {
-			sample((char *) appsn, len_appsn, &i_appsn, content, sizeof(application_t), SYNC_APPSN);
+			sample((char *) &appsn[i_appsn], len_appsn, &i_appsn, content, sizeof(application_t), SYNC_APPSN);
 		}
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
-		sample((char *) evnts, len_evnts, &i_evnts, content, sizeof(ear_event_t), SYNC_EVNTS);
+		sample((char *) &evnts[i_evnts], len_evnts, &i_evnts, content, sizeof(ear_event_t), SYNC_EVNTS);
 	} else if (header->content_type == CONTENT_TYPE_LOO) {
-		sample((char *) loops, len_loops, &i_loops, content, sizeof(loop_t), SYNC_LOOPS);
+		sample((char *) &loops[i_loops], len_loops, &i_loops, content, sizeof(loop_t), SYNC_LOOPS);
 	} else if (header->content_type == CONTENT_TYPE_PER) {
 		make_periodic_aggregation(&aggr, (periodic_metric_t *) content);
-		sample((char *) enrgy, len_enrgy, &i_enrgy, content, sizeof(periodic_metric_t), SYNC_ENRGY);
+		sample((char *) &enrgy[i_enrgy], len_enrgy, &i_enrgy, content, sizeof(periodic_metric_t), SYNC_ENRGY);
 	} else if (header->content_type == CONTENT_TYPE_QST)
 	{
 		sync_qst_t *q = (sync_qst_t *) content;
