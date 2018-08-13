@@ -686,10 +686,11 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 		}
 	}
 #else
-	conf_clus->db_manager.tcp_port     = 4711;
-	conf_clus->db_manager.sec_tcp_port = 4712;
-	conf_clus->db_manager.mem_size     = 100;
-	conf_clus->db_manager.aggr_time    = 30;
+	conf_clus->db_manager.tcp_port      = 4711;
+	conf_clus->db_manager.sec_tcp_port  = 4712;
+	conf_clus->db_manager.sync_tcp_port = 4713;
+	conf_clus->db_manager.mem_size      = 100;
+	conf_clus->db_manager.aggr_time     = 30;
 
 	server_too = atoi(argv[1]);
 	mirror_too = atoi(argv[2]);
@@ -698,7 +699,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;
     mirror_port = conf_clus->db_manager.sec_tcp_port;
-    synchr_port = 4713;
+    synchr_port = conf_clus->db_manager.sync_tcp_port;
 
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
