@@ -82,9 +82,9 @@ static void print_db_manager(eardb_conf_t *conf)
 			conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->sync_tcp_port,conf->mem_size);
 }
 
-static void print_database_conf(db_conf_t *conf)
+void print_database_conf(db_conf_t *conf)
 {
-	fprintf(stderr, "---> IP: %s\tUser: %s\tPort:%u\tHost:%s\n",
+	fprintf(stderr, "---> IP: %s\tUser: %s\tPort:%u\tDB:%s\n",
 			conf->ip, conf->user, conf->port, conf->database);
 }
 
