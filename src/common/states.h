@@ -80,6 +80,9 @@ int intern_error_num;
 #define state_is(state1, state2) \
 	state1 == state2
 
+#define state_is(state1, state2, state3) \
+	state1 == state2 || state1 == state3
+
 #define state_return(state) \
 	return state;
 

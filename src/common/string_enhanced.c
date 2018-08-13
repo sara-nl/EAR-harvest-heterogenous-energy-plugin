@@ -47,11 +47,11 @@ int tprintf_init(FILE *_stream, char *_format)
 		return -1;
 	}
 
-	strcpy(sten_hinput, _format);
+	strcpy(tprintf_ibuf, _format);
 	
 	columns = 0;
 	stream = _stream;
-	tok = strtok(sten_hinput, " ");
+	tok = strtok(tprintf_ibuf, " ");
 	
 	while (tok != NULL && columns < STEN_MAX_COLS) {
 		format[columns++] = atoi(tok);
@@ -68,11 +68,11 @@ int tprintf_init(FILE *_stream, char *_format)
 
 int tprintf_format()
 {
-    char *p1 = strstr(sten_hinput, sym);
-    char *p2 = sten_hinput;
-    char *p3 = sten_output;
+    char *p1 = strstr(tprintf_ibuf, sym);
+    char *p2 = tprintf_ibuf;
+    char *p3 = tprintf_obuf;
 
-    int len = strlen(sten_hinput);
+    int len = strlen(tprintf_ibuf);
     int i = 0;
     int c = 0;
 
@@ -95,7 +95,7 @@ int tprintf_format()
             ++p3;
         }
 
-		if (p1 == &sten_hinput[len]) {
+		if (p1 == &tprintf_ibuf[len]) {
 			break;
 		}
 
@@ -105,14 +105,14 @@ int tprintf_format()
         p2 = p1;
         p1 = strstr(p1, sym);
 
-        if (!p1) p1 = &sten_hinput[len];
+        if (!p1) p1 = &tprintf_ibuf[len];
 		
         c = 0;
     }
 
 	p3[0] = '\n';
 	p3[1] = '\0';
-    fprintf(stream, sten_output);
+    fprintf(stream, tprintf_obuf);
 
 	return 0;
 }

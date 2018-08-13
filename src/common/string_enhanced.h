@@ -31,17 +31,16 @@
 #define _STRING_ENHANCED_H_
 
 #include <linux/limits.h>
-#include <common/types/generic.h>
 
 #define STEN_MAX_COLS	12
 #define STEN_SYMBOL		"||"
 #define STEN_BUFF_SIZE	PIPE_BUF
 
-char sten_hinput[STEN_BUFF_SIZE];
-char sten_output[STEN_BUFF_SIZE];
+char tprintf_ibuf[STEN_BUFF_SIZE];
+char tprintf_obuf[STEN_BUFF_SIZE];
 
 #define tprintf(...) \
-	snprintf(sten_hinput,  STEN_BUFF_SIZE-1, __VA_ARGS__); \
+	snprintf(tprintf_ibuf, STEN_BUFF_SIZE-1, __VA_ARGS__); \
 	tprintf_format();
 
 /** **/

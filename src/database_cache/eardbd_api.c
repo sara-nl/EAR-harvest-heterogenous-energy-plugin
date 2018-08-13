@@ -138,11 +138,6 @@ static void _eardbd_disconnect(socket_t *socket)
  *
  */
 
-state_t eardbd_reconnect(state_t state_last)
-{
-	return EAR_SUCCESS;
-}
-
 state_t eardbd_send_application(application_t *app)
 {
 	return _packet_send(CONTENT_TYPE_APP, (char *) app, sizeof(application_t));
@@ -228,6 +223,12 @@ state_t eardbd_connect(cluster_conf_t *conf)
 	}
 
 	return EAR_SUCCESS;
+}
+
+state_t eardbd_reconnect(cluster_conf_t *conf)
+{
+	eardbd_disconnect();
+	return eardbd_connect(conf);
 }
 
 state_t eardbd_disconnect()
