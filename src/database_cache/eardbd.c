@@ -419,7 +419,7 @@ static void process_insert(uint option, uint reason)
 		db_store_applications_learning();
 	}
 	if (sync_option(option, SYNC_ENRGY)) {
-		db_store_events();
+		db_store_periodic_metrics();	
 	}
 	if (sync_option(option, SYNC_EVNTS)) {
 		db_store_events();
