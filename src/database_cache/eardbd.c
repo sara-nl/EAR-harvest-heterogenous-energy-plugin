@@ -786,7 +786,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	tprintf("mirror metrics||%d||TCP||%s||%d", smets_mir->port, str_sta[fd2 == -1], fd2);
 	tprintf("server sync||%d||TCP||%s||%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
 	tprintf("mirror sync||%d||TCP||%s||%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
-	verbose3("TIP! mirror sync socket opens and closes intermittently");
+	verbose0("TIP! mirror sync socket opens and closes intermittently");
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -965,6 +965,10 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	sync_qst_header.content_size = sizeof(sync_qst_t);
 
 	// Verbose
+	if(!master_iam) {
+		return;
+	}
+
 	tprintf_init(stderr, "15 15 11 9 8");
 
 	// Summary

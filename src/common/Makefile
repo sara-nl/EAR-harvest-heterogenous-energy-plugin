@@ -16,7 +16,11 @@ endif
 
 database_OBJS = $(patsubst %.c, %.o, $(wildcard ./database/*.c))
 
-types_SOURCES = $(shell find ./types/ -type f -name '*.c' -o -name '*.h')
+types_SOURCES = $(shell find ./types/ -type f -name '*.c' -o -name '*.h') \
+                string_enhanced.c \
+                string_enhanced.h \
+                math_operations.c \
+                math_operations.h
 
 types_OBJECTS = $(shell find ./types/ -type f -name '*.o') \
                 string_enhanced.o \
