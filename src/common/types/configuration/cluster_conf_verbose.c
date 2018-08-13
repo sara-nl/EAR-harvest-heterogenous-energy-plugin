@@ -78,8 +78,8 @@ static void print_eargm_conf(eargm_conf_t *conf)
 
 static void print_db_manager(eardb_conf_t *conf)
 {
-	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tCacheSize: %u\n",
-			conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->mem_size);
+	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tSync Port: %u\tCacheSize: %u\n",
+			conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->sync_tcp_port,conf->mem_size);
 }
 
 static void print_database_conf(db_conf_t *conf)

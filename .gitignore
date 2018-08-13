@@ -38,6 +38,7 @@ src/tests/functionals/read_from_file
 # Build
 etc/module/ear
 etc/slurm/ear.conf
+etc/conf/ear.conf
 etc/slurm/plugstack.conf
 etc/systemd/eard.service
 etc/systemd/eardbd.service

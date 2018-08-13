@@ -667,6 +667,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->db_manager.sec_tcp_port = atoi(token);
 		}
+	    else if (!strcmp(token, "DBDAEMONSYNCPORT"))
+        {
+            token = strtok(NULL, "=");
+            conf->db_manager.sync_tcp_port = atoi(token);
+        }
         else if (!strcmp(token, "DBDAEMONMEMORYSIZE"))
         {
             token = strtok(NULL, "=");

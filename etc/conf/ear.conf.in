@@ -43,7 +43,8 @@ NodeUseEARDBD=1
 # DATABASE MANAGER
 DBDaemonAggregationTime=300
 DBDaemonPortTCP=4711
-DBDaemonPortUDP=4712
+DBDaemonPortSecTCP=4712
+DBDaemonSyncPort=4713
 # Memory size expressed in MB
 DBDaemonMemorySize=120
 
