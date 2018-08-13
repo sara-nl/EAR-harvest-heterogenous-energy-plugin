@@ -1,7 +1,7 @@
 db_helper.o: db_helper.c ../../common/states.h ../../common/ear_verbose.h \
  ../../common/config.h ../../common/string_enhanced.h \
- ../../common/types/generic.h ../../common/database/db_helper.h \
- ../../common/types/periodic_aggregation.h \
+ ../../common/database/db_helper.h \
+ ../../common/types/periodic_aggregation.h ../../common/types/generic.h \
  ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/configuration/cluster_conf.h \

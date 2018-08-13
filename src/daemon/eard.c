@@ -556,7 +556,7 @@ int eard_system(int must_read)
 				}else{
 					if ((ret1=eardbd_send_event(&req.req_data.event))!=EAR_SUCCESS){
 						VERBOSE_N(0,"Error sending event to eardb");
-						eardb_reconnect(&my_cluster_conf);
+						eardbd_reconnect(&my_cluster_conf);
 					}
 				}
 			}
@@ -579,7 +579,7 @@ int eard_system(int must_read)
 				}else{
 					if ((ret1=eardbd_send_loop(&req.req_data.loop))!=EAR_SUCCESS){
 						VERBOSE_N(0,"Error sending loop to eardb");
-						eardb_reconnect(&my_cluster_conf);
+						eardbd_reconnect(&my_cluster_conf);
 					}
 				}
 			}

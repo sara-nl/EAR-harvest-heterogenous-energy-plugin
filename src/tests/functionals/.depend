@@ -1,5 +1,12 @@
 test_architecture.o: test_architecture.c \
  ../../metrics/custom/hardware_info.h
+simd_power_metrics_openmp.o: simd_power_metrics_openmp.c \
+ ../../control/frequency.h ../../metrics/papi/generics.h \
+ ../../metrics/papi/flops.h ../../metrics/papi/stalls.h \
+ ../../metrics/papi/energy_cpu.h ../../metrics/ipmi/energy_node.h \
+ ../../metrics/papi/instructions.h ../../metrics/custom/hardware_info.h \
+ ../../metrics/custom/frequency.h ../../common/types/generic.h \
+ simd_test.h
 energy_updates_freq.o: energy_updates_freq.c \
  ../../metrics/ipmi/energy_node.h
 bandwith_monitor.o: bandwith_monitor.c ../../metrics/custom/bandwidth.h \
@@ -22,13 +29,6 @@ my_node_conf.o: my_node_conf.c ../../common/config.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/types/generic.h \
  ../../common/ear_verbose.h
-simd_power_metrics_openmp.o: simd_power_metrics_openmp.c \
- ../../control/frequency.h ../../metrics/papi/generics.h \
- ../../metrics/papi/flops.h ../../metrics/papi/stalls.h \
- ../../metrics/papi/energy_cpu.h ../../metrics/ipmi/energy_node.h \
- ../../metrics/papi/instructions.h ../../metrics/custom/hardware_info.h \
- ../../metrics/custom/frequency.h ../../common/types/generic.h \
- simd_test.h
 freeipmi_overhead.o: freeipmi_overhead.c ../../metrics/ipmi/energy_node.h \
  ../../common/config.h
 configuration_check.o: configuration_check.c ../../common/config.h \

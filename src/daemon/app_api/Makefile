@@ -5,8 +5,8 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 APP_OBJ = app_api.o
 APP_INC = app_api.h
 APP_LIB = libEARapi.a
-
 APP_SERVER= app_server_api.o
+
 ######## RULES
 
 all: $(APP_LIB) $(APP_SERVER)

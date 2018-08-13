@@ -283,7 +283,7 @@ void report_powermon_app(powermon_app_t *app)
 		}else{
     		if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
         		eard_verbose(0,"Error when sending application to eardb");
-				eardb_reconnect(&my_cluster_conf);
+				eardbd_reconnect(&my_cluster_conf);
     		}
 		}
 	}
@@ -622,7 +622,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 		}else{
 			if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
 				eard_verbose(0,"Error when sending periodic power metric to eardb");
-				eardb_reconnect(my_cluster_conf);
+				eardbd_reconnect(&my_cluster_conf);
 			}
 		}
 	}
