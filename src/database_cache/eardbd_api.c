@@ -164,9 +164,8 @@ state_t eardbd_ping()
 	return _packet_send(CONTENT_TYPE_PIN, (char *) ping, sizeof(ping));
 }
 
-state_t eardbd_connect(cluster_conf_t *conf)
+state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 {
-	my_node_conf_t *node;
 	state_t server_state;
 	state_t mirror_state;
 	char *server_host;
@@ -175,9 +174,6 @@ state_t eardbd_connect(cluster_conf_t *conf)
 	uint mirror_port;
 
 #if 1
-	// Getting my node configuration
-	node = get_my_node_conf(conf, mirror_host);
-
 	// Configuring hosts and ports
 	server_host = node->db_ip;
 	mirror_host = node->db_sec_ip;
@@ -225,10 +221,10 @@ state_t eardbd_connect(cluster_conf_t *conf)
 	return EAR_SUCCESS;
 }
 
-state_t eardbd_reconnect(cluster_conf_t *conf)
+state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node)
 {
 	eardbd_disconnect();
-	return eardbd_connect(conf);
+	return eardbd_connect(conf, node);
 }
 
 state_t eardbd_disconnect()
