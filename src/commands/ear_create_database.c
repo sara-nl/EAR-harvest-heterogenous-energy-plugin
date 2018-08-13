@@ -263,7 +263,9 @@ void main(int argc,char *argv[])
     }
     read_cluster_conf(ear_path, &my_cluster);
 
-    mysql_real_connect(connection, my_cluster.database.ip, "root", argv[1], NULL, 0, NULL, 0);
+	print_database_conf(&my_cluster.database);
+
+    mysql_real_connect(connection, my_cluster.database.ip, "root", argv[1], NULL, my_cluster.database.port, NULL, 0);
 
     create_db(connection, my_cluster.database.database);
 

@@ -256,6 +256,9 @@ void free_cluster_conf(cluster_conf_t *conf);
 /** prints in the stderr the node configuration */
 void print_node_conf(node_conf_t *node_conf);
 
+/** Prints the DB configuration */
+void print_database_conf(db_conf_t *conf);
+
 /** prints in the stderr the specific node configuration */
 void print_my_node_conf(my_node_conf_t *my_node_conf);
 
