@@ -195,7 +195,7 @@ state_t sockets_close(socket_t *socket)
 state_t sockets_close_fd(int fd)
 {
 	if (fd > 0) {
-		int r = close(fd);
+		close(fd);
 	}
 
 	state_return(EAR_SUCCESS);

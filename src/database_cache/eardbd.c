@@ -66,6 +66,7 @@ static fd_set fds_incoming;
 static fd_set fds_incoming;
 static fd_set fds_active;
 
+int fd_min;
 int fd_max;
 int fd_cli;
 
@@ -547,7 +548,6 @@ static void release_sockets()
 	sockets_dispose(smets_srv);
 	sockets_dispose(smets_mir);
 	sockets_dispose(ssync_srv);
-	sockets_dispose(smets_srv);
 }
 
 static void release_resources()
@@ -640,7 +640,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	// Configuration
-#if 1
+#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
@@ -726,6 +726,8 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	state_t s1 = EAR_SUCCESS;
 	state_t s2 = EAR_SUCCESS;
 	state_t s3 = EAR_SUCCESS;
+	time_t timeout;
+	int binded;
 
 	// Cleaning socket sets
 	FD_ZERO(&fds_incoming);
@@ -751,11 +753,20 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while creating sockets (%s)", intern_error_str);
 	}
+	
+	if (server_too) s1 = EAR_NOT_READY;
+    if (server_too) s2 = EAR_NOT_READY;
+    if (mirror_too) s3 = EAR_NOT_READY;
+	timeout = time(NULL) + 61;
 
 	// Binding socket
-	if (server_too) s1 = sockets_bind(smets_srv);
-	if (server_too) s2 = sockets_bind(ssync_srv);
-	if (mirror_too) s3 = sockets_bind(smets_mir);
+	do {
+		if (server_too && state_fail(s1)) s1 = sockets_bind(smets_srv);
+		if (server_too && state_fail(s2)) s2 = sockets_bind(ssync_srv);
+		if (mirror_too && state_fail(s3)) s3 = sockets_bind(smets_mir);
+		binded = state_ok(s1) && state_ok(s2) && state_ok(s3);
+	}
+	while (!binded && time(NULL) < timeout && !sleep(10));
 
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while binding sockets (%s) %d %d %d", intern_error_str, s1, s2, s3);
@@ -831,6 +842,7 @@ static void init_sockets_mirror(int argc, char **argv, cluster_conf_t *conf_clus
 
 	// Keep track of the biggest file descriptor
 	fd_max = smets_mir->fd;
+	fd_min = smets_mir->fd;
 
 	FD_SET(smets_mir->fd, &fds_active);
 }
@@ -842,9 +854,13 @@ static void init_sockets_main(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	// Keep track of the biggest file descriptor
 	fd_max = ssync_srv->fd;
+	fd_min = ssync_srv->fd;
 
 	if (smets_srv->fd > fd_max) {
 		fd_max = smets_srv->fd;
+	}
+	if (smets_srv->fd < fd_min) {
+		fd_min = smets_srv->fd;
 	}
 
 	FD_SET(smets_srv->fd, &fds_active);
@@ -1032,9 +1048,9 @@ static void pipeline()
 		}
 
 		// run through the existing connections looking for data to read
-		for(i = 0; i <= fd_max && listening; i++)
+		for(i = fd_min; i <= fd_max && listening; i++)
 		{
-			if (FD_ISSET(i, &fds_incoming)) // we got one!!
+			if (listening && FD_ISSET(i, &fds_incoming)) // we got one!!
 			{
 				// Handle new connections (just for TCP)
 				if (incoming_new_connection(i))
@@ -1049,6 +1065,9 @@ static void pipeline()
 
 						if (fd_cli > fd_max) {
 							fd_max = fd_cli;
+						}
+						if (fd_cli < fd_min) {
+							fd_min = fd_cli;
 						}
 					}
 					// Handle data transfers
@@ -1076,10 +1095,15 @@ static void pipeline()
 						FD_CLR(i, &fds_active);
 					}
 				}
-			}
+			} // FD_ISSET
+		}
+
+		// In case the listening is finished, the sockets are closed	
+		for(i = fd_max; i >= fd_min && !listening; --i)
+		{
+			close(i);
 		}
 	}
-
 
 	if (waiting) {
 		waitpid(mirror_pid, NULL, 0);
