@@ -190,7 +190,8 @@ int main(int argc,char *argv[])
 	// 2-We check all the cpus are online, we should detect cores but
 	// we start with this approach
 	for (i=0;i<ear_num_cpus;i++){
-		status=cpufreq_cpu_exists(i);
+		// status=cpufreq_cpu_exists(i);
+		status=0;
 		ear_cpufreq[i]=0;
 		if (status==0){
 			ear_cpufreq[i]=cpufreq_get(i);

@@ -79,7 +79,8 @@ static ulong *get_frequencies_cpu()
 		// Returns:
 		// X -> if not
 		// 0 -> if the specified CPU is present
-		status = cpufreq_cpu_exists(i);
+		// status = cpufreq_cpu_exists(i);
+		status = 0;
 		#else
 		// Returns:
 		// 1 -> if CPU is online
