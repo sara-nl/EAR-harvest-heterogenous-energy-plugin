@@ -18,7 +18,7 @@
 AC_DEFUN([X_AC_MYSQL],
 [
 	_x_ac_mysql_dirs_root="/usr /usr/local /opt"
-	_x_ac_mysql_dirs_libs="lib64/mysql lib/mysql"
+	_x_ac_mysql_dirs_libs="lib64/mysql lib/mysql lib64"
     _x_ac_mysql_gcc_libs="-lmysqlclient"
     _x_ac_mysql_gcc_ldflags=
     _x_ac_mysql_dir_bin=
