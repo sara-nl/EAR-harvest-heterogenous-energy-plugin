@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 #include <metrics/custom/bandwidth.h>
 #include <metrics/custom/hardware_info.h>
@@ -84,6 +85,10 @@ int main (int argc, char *argv[])
     int i, j = 0;
 	int num_steps;
 
+	if (getuid()!=0){
+		printf("Warning, this test need root privileges, execute it as root or with sudo\n");
+	}
+	
     if (argc<2) usage(argv[0]);
 
     num_steps=atoi(argv[1]);

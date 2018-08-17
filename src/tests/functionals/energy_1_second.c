@@ -39,6 +39,11 @@ int EAR_VERBOSE_LEVEL=1;
 void main(int argc,char *argv[])
 {
 	unsigned long init, end;
+
+    if (getuid()!=0){
+        printf("Warning, this test need root privileges, execute it as root or with sudo\n");
+    }
+
 	// Init 
 	node_energy_init();
 	// get accumulated energy

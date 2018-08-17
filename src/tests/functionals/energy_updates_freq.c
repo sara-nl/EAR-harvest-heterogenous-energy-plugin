@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include <metrics/ipmi/energy_node.h>
 
 int EAR_VERBOSE_LEVEL=1;
@@ -39,18 +40,31 @@ int EAR_VERBOSE_LEVEL=1;
 void main(int argc,char *argv[])
 {
 	unsigned long energy_freq,init,end;
+	struct timeval begin_time,end_time;
+	unsigned long min_interval;
+
+    if (getuid()!=0){
+        printf("Warning, this test need root privileges, execute it as root or with sudo\n");
+    }
+
 	// Init 
 	node_energy_init();
-	energy_freq=node_energy_frequency();
-	if (energy_freq>0){
-		fprintf(stderr,"Energy changes every %u usecs....testing...sleeping %lu usecs\n",energy_freq,energy_freq*2);
+	read_dc_energy(&energy_freq);
+    do {
 		read_dc_energy(&init);
-		usleep(energy_freq*2);
-		read_dc_energy(&end);	
-		fprintf(stderr,"Energy after %lu usecs %lu mJ (%lu-%lu)\n",energy_freq*2,(end-init),end,init);
-	}else{
-		fprintf(stderr,"Warning...DC node energy seems not being supported\n");
-	}
+     } while(init == energy_freq);
+
+     gettimeofday(&begin_time,NULL);
+
+     do{
+		read_dc_energy(&end);
+     } while(init == end);
+
+     gettimeofday(&end_time,NULL);
+     min_interval  = (end_time.tv_sec * 1000000 + end_time.tv_usec);
+     min_interval -= (begin_time.tv_sec *1000000 + begin_time.tv_usec);
+
+	fprintf(stderr,"Energy changes every %u usecs....\n",min_interval);
 	node_energy_dispose();
 
 }

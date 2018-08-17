@@ -33,6 +33,9 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+
 #include <metrics/ipmi/energy_node.h>
 #include <common/config.h>
 #include <papi.h>
@@ -54,6 +57,11 @@ int main (int argc, char *argv[])
     unsigned long energy;
     int iterations;
     int i;
+
+    if (getuid()!=0){
+        printf("Warning, this test need root privileges, execute it as root or with sudo\n");
+    }
+
 
 	if (argc != 2) {
 		usage(argv[0]);
