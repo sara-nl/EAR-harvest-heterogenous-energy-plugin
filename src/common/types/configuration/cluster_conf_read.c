@@ -684,6 +684,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->eargm.verbose = atoi(token);
 		}
+		else if (!strcmp(token, "GLOBALMANAGERUSEAGGREGATED"))
+		{
+			token = strtok(NULL, "=");
+			conf->eargm.use_aggregation = atoi(token);
+		}
 		else if (!strcmp(token, "GLOBALMANAGERPERIODT1"))
 		{
 			token = strtok(NULL, "=");

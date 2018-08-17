@@ -88,6 +88,7 @@ typedef struct eard_conf
 typedef struct eargm_conf
 {
 	uint 	verbose;		/* default 1 */
+	uint	use_aggregation; /* Use aggregated metrics.Default 1 */
 	ulong	t1;				/* default 60 seconds */
 	ulong	t2;				/* default 600 seconds */
 	ulong 	energy;			/* mandatory */

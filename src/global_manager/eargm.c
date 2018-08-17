@@ -68,6 +68,7 @@
 
 ulong th_level[NUM_LEVELS]={10,10,5,0};
 ulong pstate_level[NUM_LEVELS]={3,2,1,0};
+uint use_aggregation;
 
 pthread_t eargm_server_api_th;
 cluster_conf_t my_cluster_conf;
@@ -100,6 +101,7 @@ void update_eargm_configuration(cluster_conf_t *conf)
 	period_t2=conf->eargm.t2;
 	energy_budget=conf->eargm.energy;
 	my_port=conf->eargm.port;
+	use_aggregation=conf->eargm.use_aggregation;
 }
 
 
@@ -352,11 +354,10 @@ void parse_args(char *argv[])
 void main(int argc,char *argv[])
 {
 	sigset_t set;
-	ulong divisor = 1000;
+	ulong divisor = 1;
 	int ret;
 	ulong result,result2;
 	gm_warning_t my_warning;
-	int aggregation=0; /* 0=no aggregation */
     if (argc > 2) usage(argv[0]);
 	if (argc==2) parse_args(argv);
     // We read the cluster configuration and sets default values in the shared memory
@@ -414,7 +415,7 @@ void main(int argc,char *argv[])
 	
 	time(&end_time);
 	start_time=end_time-period_t2;
-	result = db_select_acum_energy( start_time, end_time, divisor, 0);
+	result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
 	fill_periods(result);
 	/*
 	*
@@ -431,7 +432,7 @@ void main(int argc,char *argv[])
 		start_time=end_time-period_t1;
 
     
-	    result = db_select_acum_energy( start_time, end_time, divisor, aggregation);
+	    result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
 	    if (!result){ 
 			VERBOSE_N(2,"No results in that period of time found\n");
 	    }else{ 
@@ -441,7 +442,7 @@ void main(int argc,char *argv[])
 
 		new_energy_sample(result);
 		start_time=end_time-period_t2;
-    	result2 = db_select_acum_energy( start_time, end_time, divisor, aggregation);
+    	result2 = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
 		// This code needs to be done since global manager is not running for time enough
 		//total_energy_t2=compute_energy_t2();	
 		total_energy_t2=result2;

@@ -11,6 +11,8 @@ MariaDBDatabase=Report
 # EAR Global Manager
 
 GlobalManagerVerbose=1
+# Use aggregated periodic metrics or periodic power metrics. Aggregated metrics are only available when EARDBD is running
+GlobalManagerUseAggregated=1
 #Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)
 GlobalManagerPeriodT1=90
 GlobalManagerPeriodT2=259200

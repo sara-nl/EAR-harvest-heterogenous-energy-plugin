@@ -370,6 +370,7 @@ void set_default_eard_conf(eard_conf_t *eardc)
 void set_default_eargm_conf(eargm_conf_t *eargmc)
 {
 	eargmc->verbose=1;
+	eargmc->use_aggregation=1;
 	eargmc->t1=DEFAULT_T1;
 	eargmc->t2=DEFAULT_T2;
 	eargmc->energy=DEFAULT_T2*DEFAULT_POWER;
