@@ -844,7 +844,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 	}
 
 	// EARGMD contact
-	local_eargmd_report_start(sp);
+	//local_eargmd_report_start(sp);
 
 	//
 	if (isenv_local("EAR", "1")) {
@@ -894,7 +894,7 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 	}
 
 	if (spank_context() == S_CTX_SRUN) {
-		local_eargmd_report_finish(sp);
+		//local_eargmd_report_finish(sp);
 	}
 
 	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN")) {
