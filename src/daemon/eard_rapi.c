@@ -202,7 +202,12 @@ int eards_inc_th(unsigned long th)
     command.my_req.ear_conf.th=th;
     return send_command(&command);
 }
-
+int eards_ping()
+{
+    request_t command;
+    command.req=EAR_RC_PING;
+    return send_command(&command);
+}
 
 int eards_remote_disconnect()
 {
@@ -280,6 +285,40 @@ void red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
         }
     }
 }
+
+void ping_all_nodes(cluster_conf_t my_cluster_conf)
+{
+    int i, j, k, rc; 
+    char node_name[256];
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {   
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {   
+                if (k == -1) 
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                }   
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+                if (rc<0){
+                    VERBOSE_N(0,"Error connecting with node %s", node_name);
+                }else{
+
+                    VERBOSE_N(1,"Node %s ping!\n", node_name);
+                    if (!eards_ping()) VERBOSE_N(0,"Error doing ping for node %s", node_name);
+                    eards_remote_disconnect();
+                }
+            }
+        }
+    }
+}
+
 
 void red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {

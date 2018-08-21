@@ -315,6 +315,9 @@ void process_remote_requests(int clientfd)
 			eard_verbose(1,"restore conf command received\n");
 			ack=dyncon_restore_conf();
 			break;
+		case EAR_RC_PING:
+			eard_verbose(1,"ping received\n");
+			break;
 		default:
 			eard_verbose(0,"Invalid remote command\n");
 	}	

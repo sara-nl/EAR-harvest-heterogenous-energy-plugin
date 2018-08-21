@@ -84,6 +84,9 @@ int eards_set_th(ulong th);
 */
 int eards_inc_th(ulong th);
 
+/** Sends a local ping */
+int eards_ping();
+
 
 /** Disconnect from the previously connected EARD
 */
@@ -106,5 +109,8 @@ void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
 
 /** Restores the default configuration for all nodes in my_cluster_conf. */
 void restore_conf_all_nodes(cluster_conf_t my_cluster_conf);
+
+/** Executes a simple ping to all nodes */
+void ping_all_nodes(cluster_conf_t my_cluster_conf);
 
 #endif
