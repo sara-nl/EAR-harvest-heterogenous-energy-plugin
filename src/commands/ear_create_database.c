@@ -30,6 +30,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <termios.h>
 #include <mysql/mysql.h>
 #include <common/config.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -38,7 +40,8 @@ int EAR_VERBOSE_LEVEL = 1;
 
 void usage(char *app)
 {
-	printf("Usage:%s root_pass\n",app);
+	printf("Usage:%s [options]\n",app);
+    printf("\t-p\t\tSpecify the password for MySQL's root user.\n");
 	exit(0);
 }
 
@@ -243,8 +246,24 @@ void create_tables(MYSQL *connection)
 
 void main(int argc,char *argv[])
 {
-    if (argc != 2) usage(argv[0]);
-	
+    char passw[256];
+    if (argc > 2) usage(argv[0]);
+    else if (argc == 2)
+    {
+        struct termios t;
+        tcgetattr(STDIN_FILENO, &t);
+        t.c_lflag &= ~ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &t);
+
+        printf("Introduce root's password:");
+        fflush(stdout);
+        fgets(passw, sizeof(passw), stdin);
+        t.c_lflag |= ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &t);
+        printf("\n");
+    }
+    else
+        strcpy(passw, "");
     MYSQL *connection = mysql_init(NULL); 
 
     if (connection == NULL)
@@ -265,7 +284,14 @@ void main(int argc,char *argv[])
 
 	print_database_conf(&my_cluster.database);
 
-    mysql_real_connect(connection, my_cluster.database.ip, "root", argv[1], NULL, my_cluster.database.port, NULL, 0);
+    mysql_real_connect(connection, my_cluster.database.ip, "root", passw, NULL, my_cluster.database.port, NULL, 0);
+
+    if (connection == NULL)
+    {
+        fprintf(stderr, "Error connecting to the database.\n");
+        free_cluster_conf(&my_cluster);
+        exit(0);
+    }
 
     create_db(connection, my_cluster.database.database);
 
@@ -274,6 +300,8 @@ void main(int argc,char *argv[])
     create_tables(connection);
 
     mysql_close(connection);
+
+    free_cluster_conf(&my_cluster);
 
     printf("Database successfully created\n");
 
