@@ -5,7 +5,6 @@ CFLAGS = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
 BINARIES = bandwith_monitor \
            eard_monitor \
            freeipmi_overhead \
-           simd_power_metrics_openmp \
            energy_1_second \
            energy_updates_freq \
 		   ear_conf \
@@ -52,15 +51,6 @@ freeipmi_overhead: freeipmi_overhead.c \
         $(SRCDIR)/metrics/custom/hardware_info.o
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o freeipmi_overhead $^ $(IPMI_LDFLAGS) $(PAPI_LDFLAGS)
 
-simd_tests.o: simd_tests.c
-	$(CC) $(CC_FLAGS) $(CFLAGS) -O0 -malign-double -march=native -c simd_tests.c
-
-simd_power_metrics_openmp: simd_power_metrics_openmp.c \
-        $(SRCDIR)/metrics/libmetrics.a \
-        $(SRCDIR)/control/frequency.o\
-        simd_tests.o
-	$(CC) $(CC_FLAGS) -fopenmp -malign-double -march=native $(CFLAGS) -o simd_power_metrics_openmp $^ \
-	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS)
 
 energy_1_second: energy_1_second.c \
         $(SRCDIR)/metrics/ipmi/energy_node.a \
