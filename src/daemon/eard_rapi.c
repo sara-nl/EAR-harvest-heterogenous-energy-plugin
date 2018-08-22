@@ -319,6 +319,10 @@ void ping_all_nodes(cluster_conf_t my_cluster_conf)
     }
 }
 
+void new_ping_all_nodes(cluster_conf_t my_cluster_conf)
+{
+}
+
 
 void red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {
