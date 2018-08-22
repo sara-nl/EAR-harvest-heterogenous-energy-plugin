@@ -113,4 +113,7 @@ void restore_conf_all_nodes(cluster_conf_t my_cluster_conf);
 /** Executes a simple ping to all nodes */
 void ping_all_nodes(cluster_conf_t my_cluster_conf);
 
+/** Executes a simple ping to all nodes with the next nodes calculated at runtime */
+void new_ping_all_nodes(cluster_conf_t my_cluster_conf);
+
 #endif
