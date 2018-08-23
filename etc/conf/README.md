@@ -21,6 +21,7 @@ ear.conf is a text file describing EAR options cluster description. It must be r
 **GlobalManagerPeriodT1**=90, Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)  
 **GlobalManagerPeriodT2**=259200  
 **GlobalManagerEnergyLimit**=550000 , expressed in Joules  
+**GlobalManagerUseAggregated**=1 , use (or not) aggregated metrics to compute total energy
 **GlobalManagerHost**=name  
 **GlobalManagerPort**=50000 , port were EARGM will be executed  
 **GlobalManagerMode**=0, Two modes are supported 0=manual 1= means automatic  
@@ -37,13 +38,15 @@ ear.conf is a text file describing EAR options cluster description. It must be r
 **NodeDaemonPort**=5000  
 **NodeUseDB**=1 , Send data to MySQL DB  
 **NodeUseEARDBD**=1, Send datat to MySQL using EARDBD (1) or directly to the mysql server (0)
+**NodeForceFrequencies**=1 , 1 means EAR is totally controlling frequencies (targeting production systems), 0 means EAR will not change the frequencies when users are not using EAR library (targeted to benchmarking systems)
 
 
 4-DATABASE MANAGER
 
 **DBDaemonAggregationTime**=300  , in seconds  
-**DBDaemonPortTCP**=4711  
-**DBDaemonPortUDP**=4712  
+**DBDaemonPortTCP**=4711 , This port is used for main EARDBD 
+**DBDaemonPortSecTCP**=4712, This port is used for secondary (mirror) EARDBD
+**DBDaemonSyncPort**=4713a, This port is used to synchronize main and mirror
 **DBDaemonMemorySize**=120, Max memory size used by EARDB. Memory size expressed in MB  
 
 # Library configuration
@@ -57,9 +60,9 @@ ear.conf is a text file describing EAR options cluster description. It must be r
 
 
 # Paths
-**TmpDir**=/var/ear, this path is used for communitation files, shared memory etc. It must be PRIVATE per compute node and with read/write permissions  
-**EtcDir**=/etc/ear, etc path where coefficients and configuration are stored. It must be readable in all compute nodes (it can be replicated).   
-**DataBasePathName**=/etc/ear/dbs/dbs., when no DB is installed, metrics are generated in text files.  
+**TmpDir**=(EAR_TMP), this path is used for communitation files, shared memory etc. It must be PRIVATE per compute node and with read/write permissions  
+**EtcDir**=(ETC), etc path where coefficients and configuration are stored. It must be readable in all compute nodes (it can be replicated).   
+**DataBasePathName**=(ETC)/ear/dbs/dbs., when no DB is installed, metrics are generated in text files.  
 
 
 # Energy policies configuration   

@@ -16,7 +16,7 @@ export OMP_NUM_THREADS=1
 #export KMP_AFFINITY=granularity=fine,compact,1,0
 
 
-srun --ear-verbose=1 -J $kernel --mpi=pmi2 -N $NODES -n $MPIS --tasks-per-node=$PPN --cpus-per-task=$OMP_NUM_THREADS $KERNELS_PATH/$kernel 
+srun --ear=off --ear-verbose=1 -J $kernel --mpi=pmi2 -N $NODES -n $MPIS --tasks-per-node=$PPN --cpus-per-task=$OMP_NUM_THREADS $KERNELS_PATH/$kernel 
 
 
 

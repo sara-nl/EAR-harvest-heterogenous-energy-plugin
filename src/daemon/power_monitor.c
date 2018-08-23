@@ -357,6 +357,12 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 		my_policy=&energy_tag_context;
 		break;
 	}
+	if ((!appID->is_mpi) && (!my_cluster_conf.eard.force_frequencies)){
+		my_policy->p_state=frequency_freq_to_pstate(frequency_get_cpu_freq(0));
+		eard_verbose(0,"Application is not using ear and force_frequencies=off, frequencies are not changed pstate=%u\n",my_policy->p_state);
+		
+	}
+	appID->is_mpi=0;
 	return my_policy;
 }
 
