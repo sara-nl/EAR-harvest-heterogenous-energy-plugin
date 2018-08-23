@@ -31,9 +31,6 @@ ear_create_database: ear_create_database.c $(SRCDIR)/common/types.a
 ereport: ear_report.c $(ereport_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o ereport ear_report.c $(DB_LDFLAGS) $(ereport_OBJS)
 
-ear_store_database: ear_store_database.c
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o ear_store_database ear_store_database.c $(DB_LDFLAGS)
-
 ######## OPTIONS
 
 install:
