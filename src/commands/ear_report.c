@@ -282,7 +282,11 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)
     int num_fields = mysql_num_fields(result);
 
     MYSQL_ROW row;
-    printf("%15s %15s\n", "Energy (J)", "User"); 
+    if (!strcmp(inc_query, ALL_USERS))
+        printf("%15s %15s\n", "Energy (J)", "User"); 
+    else
+        printf("%15s %15s\n", "Energy (J)", "Node"); 
+
     while ((row = mysql_fetch_row(result))!= NULL) 
     { 
         for(i = 0; i < num_fields; i++) 
