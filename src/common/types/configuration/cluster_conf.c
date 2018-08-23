@@ -365,6 +365,7 @@ void set_default_eard_conf(eard_conf_t *eardc)
     eardc->port=DAEMON_PORT_NUMBER;              /* mandatory */
     eardc->use_mysql=1;         /* Must EARD report to DB */
     eardc->use_eardbd=1;        /* Must EARD report to DB using EARDBD */
+	eardc->force_frequencies=1; /* EARD will force frequencies */
 }
 
 void set_default_eargm_conf(eargm_conf_t *eargmc)

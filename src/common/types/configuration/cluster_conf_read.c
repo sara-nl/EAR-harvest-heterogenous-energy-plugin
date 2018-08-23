@@ -649,7 +649,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->eard.use_eardbd = atoi(token);
         }
-
+        else if (!strcmp(token, "NODEFORCEFREQUENCIES"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.force_frequencies = atoi(token);
+        }
 
 			//DB MANAGER
 		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))

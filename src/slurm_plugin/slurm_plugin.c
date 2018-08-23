@@ -344,6 +344,15 @@ int remote_eard_report_start(spank_t sp)
 	init_application(&eard_appl);
 
 	// Gathering variables
+	if (!getenv_remote(sp, "EAR",buffer1, SZ_NAME_SHORT)) {
+		eard_appl.is_mpi=0;
+	}else{
+		if (strcmp(buffer1,"0")==0){
+			eard_appl.is_mpi=0;
+		}else{
+			eard_appl.is_mpi=1;
+		}
+	}
 	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer1, SZ_NAME_SHORT)) {
 		eard_appl.job.id = 0;
 	} else {

@@ -68,6 +68,7 @@ static void print_eard_conf(eard_conf_t *conf)
 {
 	fprintf(stderr,"\t eard: verbose %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
 	fprintf(stderr,"\t eard: turbo %u port %u use_db %u use_eardbd %u \n",conf->turbo,conf->port,conf->use_mysql,conf->use_eardbd);
+	fprintf(stderr,"\t eard: force_frequencies %u\n",conf->force_frequencies);
 
 }
 
