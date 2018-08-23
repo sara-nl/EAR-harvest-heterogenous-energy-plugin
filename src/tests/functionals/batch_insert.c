@@ -63,7 +63,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    if(!mysql_real_connect(connection, my_cluster.database.ip, my_cluster.database.user,"", my_cluster.database.database, 0, NULL, 0))
+    if(!mysql_real_connect(connection, my_cluster.database.ip, my_cluster.database.user,"", my_cluster.database.database, my_cluster.database.port, NULL, 0))
     {
         fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);

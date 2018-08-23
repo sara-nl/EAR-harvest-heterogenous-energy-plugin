@@ -329,7 +329,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    if (!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user, "", my_conf.database.database, 0, NULL, 0))
+    if (!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user, "", my_conf.database.database, my_conf.database.port, NULL, 0))
     {
         fprintf(stderr, "Error connecting to the database (%d) :%s\n",
                 mysql_errno(connection), mysql_error(connection));
