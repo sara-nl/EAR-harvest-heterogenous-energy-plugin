@@ -34,6 +34,7 @@ kernels/NPB3.3.1/NPB3.3-OMP/bin/
 kernels/NPB3.3.1/NPB3.3-MPI/bin/
 src/tests/functionals/read_from_file
 src/tests/functionals/ping
+kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin/sp-mz.C.40
 kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin/
 
 

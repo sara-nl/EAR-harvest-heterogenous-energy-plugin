@@ -166,8 +166,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 
 
 
-/** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/s
-ysconf/ear.conf */
+/** returns the ear.conf path. It checks at $ETC/ear/ear.conf  */
 int get_ear_conf_path(char *ear_conf_path)
 {
 	char my_path[GENERIC_NAME];
