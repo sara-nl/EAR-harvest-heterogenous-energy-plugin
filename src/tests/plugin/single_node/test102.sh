@@ -6,6 +6,8 @@
 #SBATCH --tasks-per-node=24
 #SBATCH --cpus-per-task=1
 #SBATCH --ear-verbose=1 
+#SBATCH --reservation=pmayes_88
+
 
 
 export CORES=24
@@ -21,6 +23,8 @@ export I_MPI_PIN_DOMAIN=auto
 export OMP_NUM_THREADS=1
 #export KMP_AFFINITY=granularity=fine,compact,1,0
 
+
+export EAR_PLUGIN_VERBOSE=2
 
 srun -J $kernel --mpi=pmi2  $KERNELS_PATH/$kernel 
 
