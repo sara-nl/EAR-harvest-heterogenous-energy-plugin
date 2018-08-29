@@ -77,7 +77,7 @@ char *user_name = NULL;
 char *etag = NULL;
 int EAR_VERBOSE_LEVEL = 0;
 int verbose = 0;
-long int avg_pow = -1;
+unsigned long long avg_pow = 0;
 
 void usage(char *app)
 {
@@ -101,7 +101,7 @@ long long stmt_error(MYSQL_STMT *statement)
     return -1;
 }
 
-long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long long divisor)
+unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long long divisor)
 {
 
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -151,10 +151,11 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
 
 
     //Result parameters
+    unsigned long long result = 0;
     MYSQL_BIND res_bind[1];
     memset(res_bind, 0, sizeof(res_bind));
     res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
-    long long result = 0;
+    res_bind[0].is_unsigned = 1;
     res_bind[0].buffer = &result;
 
     if (mysql_stmt_bind_param(statement, bind)) return stmt_error(statement);
@@ -174,7 +175,7 @@ long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long
 
 }
 
-void new_func(MYSQL *connection, int start_time, int end_time, long long int result)
+void new_func(MYSQL *connection, int start_time, int end_time, unsigned long long result)
 {
     char query[256];
     if (user_name == NULL && etag == NULL)
@@ -247,14 +248,14 @@ void new_func(MYSQL *connection, int start_time, int end_time, long long int res
             printf("from query\t start_time: %d\t end_time: %d\n\n", start, end);
             printf("from query\t start_time: %s\t end_time: %s\n\n", 
                     ctime_r(&start, sbuff), ctime_r(&end, ebuff));
-            printf("result: %lld\n", result);
+            printf("result: %llu\n", result);
         }
         if (start != end)
             avg_pow = result / (end-start);
     
         if (verbose)
         {
-            printf("avg_pow after computation: %d\n", avg_pow);
+            printf("avg_pow after computation: %lu\n", avg_pow);
             printf("end-start: %d\n", end-start);
         }
 
@@ -394,7 +395,7 @@ void main(int argc,char *argv[])
 
     if (!all_users && !all_nodes)
     {
-        long long result = get_sum(connection, start_time, end_time, divisor);
+        unsigned long long result = get_sum(connection, start_time, end_time, divisor);
         new_func(connection, start_time, end_time, result);
     
         if (!result) printf("No results in that period of time found\n");
@@ -408,14 +409,14 @@ void main(int argc,char *argv[])
             char sbuff[64], ebuff[64];
             strtok(ctime_r(&end_time, ebuff), "\n");
             strtok(ctime_r(&start_time, sbuff), "\n");
-            printf("Total energy spent from %s to %s: %lli J\n", sbuff, ebuff, result);
-            if (avg_pow < 0)
+            printf("Total energy spent from %s to %s: %llu J\n", sbuff, ebuff, result);
+            if (avg_pow <= 0)
             {
                 if (user_name == NULL && etag == NULL && verbose)
                     fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
             }
             else if (avg_pow > 0)
-                printf("Average power during the period: %d W\n", avg_pow);
+                printf("Average power during the period: %lu W\n", avg_pow);
         }    
     }
     else if (all_users)
