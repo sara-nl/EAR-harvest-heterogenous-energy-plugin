@@ -78,6 +78,8 @@ char *etag = NULL;
 int EAR_VERBOSE_LEVEL = 0;
 int verbose = 0;
 unsigned long long avg_pow = 0;
+time_t global_start_time = 0;
+time_t global_end_time = 0;
 
 void usage(char *app)
 {
@@ -175,7 +177,7 @@ unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsi
 
 }
 
-void new_func(MYSQL *connection, int start_time, int end_time, unsigned long long result)
+void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long long result)
 {
     char query[256];
     if (user_name == NULL && etag == NULL)
@@ -188,7 +190,7 @@ void new_func(MYSQL *connection, int start_time, int end_time, unsigned long lon
             return;
         }
 
-        if (node_name != NULL)
+        if (node_name != NULL && strcmp(node_name, "all"))
         {
             strcpy(query, MET_TIME);
             strcat(query, " AND node_id='");
@@ -204,7 +206,7 @@ void new_func(MYSQL *connection, int start_time, int end_time, unsigned long lon
             avg_pow = stmt_error(statement);
             return;
         }
-        time_t start, end; 
+        //time_t start, end; 
         MYSQL_BIND sec_bind[2];
         memset(sec_bind, 0, sizeof(sec_bind));
         sec_bind[0].buffer_type = sec_bind[1].buffer_type = MYSQL_TYPE_LONG;
@@ -214,8 +216,8 @@ void new_func(MYSQL *connection, int start_time, int end_time, unsigned long lon
         MYSQL_BIND sec_res[2];
         memset(sec_res, 0, sizeof(sec_res));
         sec_res[0].buffer_type = sec_res[1].buffer_type = MYSQL_TYPE_LONGLONG;
-        sec_res[0].buffer = &start;
-        sec_res[1].buffer = &end;
+        sec_res[0].buffer = &global_start_time;
+        sec_res[1].buffer = &global_end_time;
         
         if (mysql_stmt_bind_param(statement, sec_bind))
         {
@@ -245,18 +247,18 @@ void new_func(MYSQL *connection, int start_time, int end_time, unsigned long lon
         if (verbose)
         {
             printf("original  \t start_time: %d\t end_time: %d\n\n", start_time, end_time);
-            printf("from query\t start_time: %d\t end_time: %d\n\n", start, end);
+            printf("from query\t start_time: %d\t end_time: %d\n\n", global_start_time, global_end_time);
             printf("from query\t start_time: %s\t end_time: %s\n\n", 
-                    ctime_r(&start, sbuff), ctime_r(&end, ebuff));
+                    ctime_r(&global_start_time, sbuff), ctime_r(&global_end_time, ebuff));
             printf("result: %llu\n", result);
         }
-        if (start != end)
-            avg_pow = result / (end-start);
+        if (global_start_time != global_end_time && result > 0)
+            avg_pow = result / (global_end_time-global_start_time);
     
         if (verbose)
         {
             printf("avg_pow after computation: %lu\n", avg_pow);
-            printf("end-start: %d\n", end-start);
+            printf("end-start: %d\n", global_end_time-global_start_time);
         }
 
         mysql_stmt_close(statement);
@@ -268,6 +270,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)
 {
     char query[512];
     int i;
+    char all_nodes = 0;
 
     sprintf(query, inc_query, start_time, end_time);
     if (verbose) printf("query: %s\n", query);
@@ -285,16 +288,27 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)
     MYSQL_ROW row;
     if (!strcmp(inc_query, ALL_USERS))
         printf("%15s %15s\n", "Energy (J)", "User"); 
+    else if (global_end_time > 0)
+    {
+        printf("%15s %15s %15s\n", "Energy (J)", "Node", "Avg. Power"); 
+        all_nodes = 1;
+    }
     else
         printf("%15s %15s\n", "Energy (J)", "Node"); 
+
 
     while ((row = mysql_fetch_row(result))!= NULL) 
     { 
         for(i = 0; i < num_fields; i++) 
+        {
             printf("%15s ", row[i] ? row[i] : "NULL"); 
-            printf("\n"); 
+        }
+          
+        if (row[0] && all_nodes) //when getting energy we compute the avg_power
+            printf("%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
+
+        printf("\n"); 
     }
-  
     mysql_free_result(result);
 }
 
@@ -396,7 +410,7 @@ void main(int argc,char *argv[])
     if (!all_users && !all_nodes)
     {
         unsigned long long result = get_sum(connection, start_time, end_time, divisor);
-        new_func(connection, start_time, end_time, result);
+        compute_pow(connection, start_time, end_time, result);
     
         if (!result) printf("No results in that period of time found\n");
         else if (result < 0) 
@@ -422,7 +436,10 @@ void main(int argc,char *argv[])
     else if (all_users)
         print_all(connection, start_time, end_time, ALL_USERS);
     else if (all_nodes)
+    {
+        compute_pow(connection, start_time, end_time, 0);
         print_all(connection, start_time, end_time, ALL_NODES);
+    }
     
     mysql_close(connection);
     free_cluster_conf(&my_conf);
