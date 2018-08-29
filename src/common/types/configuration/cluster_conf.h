@@ -75,6 +75,7 @@ typedef struct eard_conf
 	uint port;				/* mandatory */
 	uint use_mysql;			/* Must EARD report to DB */
 	uint use_eardbd;		/* Must EARD report to DB using EARDBD */
+	uint force_frequencies; /* 1=EARD will force pstates specified in policies , 0=will not */
 } eard_conf_t;
 
 /*

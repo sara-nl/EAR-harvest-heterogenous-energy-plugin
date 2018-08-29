@@ -39,6 +39,7 @@ NodeDaemonTurbo=0
 NodeDaemonPort=5000
 NodeUseDB=1
 NodeUseEARDBD=1
+NodeForceFrequencies=1
 
 
 # DATABASE MANAGER
