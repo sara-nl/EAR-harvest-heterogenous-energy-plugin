@@ -206,6 +206,7 @@ int eards_ping()
 {
     request_t command;
     command.req=EAR_RC_PING;
+    command.node_dist = 2;
     return send_command(&command);
 }
 
@@ -321,6 +322,19 @@ void ping_all_nodes(cluster_conf_t my_cluster_conf)
 
 void new_ping_all_nodes(cluster_conf_t my_cluster_conf)
 {
+    char *node_name = "r22u21";
+    int rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
+    if (rc<0){
+        VERBOSE_N(0,"Error connecting with node %s", node_name);
+    }else{
+        VERBOSE_N(1,"Node %s ping!\n", node_name);
+        request_t command;
+        command.req=EAR_RC_PING;
+        command.node_dist = 2;
+        if (!send_command(&command)) VERBOSE_N(0,"Error doing ping for node %s", node_name);
+        eards_remote_disconnect();
+    }
+
 }
 
 

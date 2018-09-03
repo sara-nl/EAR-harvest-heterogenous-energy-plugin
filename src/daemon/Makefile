@@ -8,6 +8,7 @@ eard_OBJS += power_monitor.o \
              dynamic_configuration.o \
              shared_configuration.o \
              eard_server_api.o \
+			 eard_rapi.o \
 			 eard_checkpoint.o \
 			 app_api/app_server_api.o
 
@@ -43,14 +44,14 @@ dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
 shared_configuration.o: shared_configuration.c shared_configuration.h
 	$(CC) -fPIC $(CFLAGS) -c shared_configuration.c
 
+eard_rapi.o: eard_rapi.c eard_rapi.h
+	$(CC) -fPIC $(CFLAGS) -c eard_rapi.c
+
 eard_server_api.o: eard_server_api.c eard_server_api.h
-	$(CC) $(CFLAGS) -c eard_server_api.c
+	$(CC) $(CFLAGS) -c eard_server_api.c eard_rapi.o
 
 eard_api.o: eard_api.c eard_api.h ../../Makefile
 	$(CC) -fPIC $(CFLAGS) -c eard_api.c
-
-eard_rapi.o: eard_rapi.c eard_rapi.h
-	$(CC) -fPIC $(CFLAGS) -c eard_rapi.c
 
 eard_checkpoint.o:eard_checkpoint.c eard_checkpoint.h
 	$(CC) -fPIC $(CFLAGS) -c eard_checkpoint.c
