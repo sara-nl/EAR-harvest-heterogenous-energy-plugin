@@ -559,7 +559,7 @@ int _read_shared_data_remote(spank_t sp)
 	}
 
 	// EARD port
-	snprintf_ret_err(buffer2, 16, "%u", conf->eard.port);
+	snprintf_ret_err(buffer2, 16, "%u", conf_serv->eard.port);
 	setenv_local_ret_err("EARD_PORT", buffer2, 1);
 
 	// Closing services
@@ -845,12 +845,6 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
-	// Read shared basic data
-	if (_read_shared_data_basic(sp, ac, av) != ESPANK_SUCCESS) {
-		_local_plugin_disable();
-		return ESPANK_SUCCESS;
-	}
-	
 	// Filling user data
 	if (_read_user_info(sp) != ESPANK_SUCCESS) {
 		_local_library_disable();
