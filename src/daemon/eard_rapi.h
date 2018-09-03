@@ -42,6 +42,7 @@
 #include <common/config.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <daemon/eard_conf_rapi.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
