@@ -551,10 +551,8 @@ int _read_shared_data_remote(spank_t sp)
 	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
 	
 	// Opening services
-	get_settings_conf_path(buffer1, buffer2);
-
-	get_services_conf_path(tmp_dir, buffer2);
-	conf = attach_services_conf_shared_area(buffer2);
+	get_services_conf_path(buffer1, buffer2);
+	conf_serv = attach_services_conf_shared_area(buffer2);
 
 	if (conf_serv == NULL) {
 		return (ESPANK_ERROR);
@@ -568,6 +566,7 @@ int _read_shared_data_remote(spank_t sp)
 	dettach_services_conf_shared_area();
 
 	// Opening settings
+	get_settings_conf_path(buffer1, buffer2);
 	conf_sett = attach_settings_conf_shared_area(buffer2);
 
 	if (conf_sett == NULL) {
@@ -697,7 +696,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
 		{
 			found_eargmd_host = 1;
-			strcpy(eargmd_host, &av[i][12], SZ_NAME_MEDIUM);
+			strncpy(eargmd_host, &av[i][12], SZ_NAME_MEDIUM);
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0))
 		{
