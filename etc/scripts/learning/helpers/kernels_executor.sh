@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export BENCHS_SRC_PATH=$EAR_SRC_PATH/kernels
+export BENCHS_SRC_PATH=$EAR_SOURCE_PATH/kernels
 export BENCHS_BIN_PATH=$EAR_INSTALL_PATH/bin/kernels
 export MPI_SCRIPT_PATH=$EAR_INSTALL_PATH/etc/scripts/running/mpi_exec.sh
 
@@ -39,7 +39,7 @@ function launching_slurm
     echo "----------------------------------------------------------"
     echo "Launching (SLURM) $1 $2"
     echo "----------------------------------------------------------"
-    $SRUN_PATH -N1 -n$2 -J $1.$EAR_P_STATE -w $SLURMD_NODENAME \
+    echo $SRUN_PATH -N 1 -n $2 -J $1.$EAR_P_STATE -w $SLURMD_NODENAME \
         --jobid=$SLURM_JOBID $EAR_SLURM_POLICY $BENCHS_BIN_PATH/$1
 }
 

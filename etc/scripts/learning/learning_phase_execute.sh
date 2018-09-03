@@ -1,5 +1,17 @@
 #!/bin/bash
 
+if [[ $# -ne 1 ]]
+then
+        echo -e "Usage: hostlist"
+        echo -e "\thostlist: a host name list file"
+        exit 1
+fi
+
+if [ ! -f $1 ]
+then
+    echo "Error, thie nodelist file doesn't exists"
+fi
+
 # Edit architecture values
 export CORES=16
 export SOCKETS=2
@@ -10,29 +22,11 @@ export EAR_MIN_P_STATE=1
 export EAR_MAX_P_STATE=6
 export EAR_TIMES=3
 
-# Non edit region
-module load $EAR_INSTALL_PATH/etc/module/ear
-source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
-export EAR_LEARNING_PHASE=1
-export BENCHS_MODE="test"
+# Non-edit region
+export HOSTLIST="$(echo $(cat $1))"
 
-# Running the learning phase
-for (( i=$EAR_MIN_P_STATE; i<=$EAR_MAX_P_STATE; i++ ))
+for i in ${HOSTLIST}
 do
-    for (( j=0; j<$EAR_TIMES; j++ ))
-    do
-        export EAR_P_STATE=$i
-        learning_phase lu-mpi C
-        learning_phase ep D
-        learning_phase bt-mz C
-        learning_phase sp-mz C
-        learning_phase lu-mz C
-        learning_phase ua C
-        learning_phase dgemm
-        learning_phase stream
-    done
+    echo "Executing learning phase in node in node=${i}"
+	srun -w ${i} -N 1 -n 1 --exclusive $PWD/helpers/kernels_iterator.sh
 done
-
-# Calculating coefficients
-$EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname -a`.db.csv" \
-     $EAR_COEFF_DB_PATHNAME`hostname -a` 1000000 `hostname -a`
