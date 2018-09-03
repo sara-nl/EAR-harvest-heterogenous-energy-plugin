@@ -265,6 +265,7 @@ static void remote_print_environment(spank_t sp)
 
 void _local_library_disable()
 {
+	slurm_error("DISABLING");
 	setenv_local("EAR", "0", 1);
 }
 
@@ -326,6 +327,7 @@ int remote_eard_report_start(spank_t sp)
 {	
 	plug_verbose(sp, 2, "function remote_eard_report_start");
 
+	services_conf_t *conf_serv = NULL;
 	ulong *frequencies;
 	int n_frequencies;
 
@@ -335,6 +337,20 @@ int remote_eard_report_start(spank_t sp)
 
 	// General variables
 	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
+
+	// Opening shared services memory
+    get_services_conf_path(buffer1, buffer2);
+    conf_serv = attach_services_conf_shared_area(buffer2);
+
+    if (conf_serv == NULL) {
+        slurm_error("while reading the shared services memory.");
+        return (ESPANK_ERROR);
+    }   
+
+    snprintf_ret_err(buffer2, 16, "%u", conf_serv->eard.port);
+    setenv_remote_ret_err(sp, "EARD_PORT", buffer2, 1); 
+
+    dettach_services_conf_shared_area();
 	
 	// Shared memory reading for frequencies
 	get_frequencies_path(buffer1, buffer2);
@@ -544,26 +560,10 @@ int _read_shared_data_remote(spank_t sp)
 {
 	plug_verbose(sp, 2, "function _read_shared_data_remote");
 
-	services_conf_t *conf_serv = NULL;
 	settings_conf_t *conf_sett = NULL;
 
-	// 	
-	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
-	
-	// Opening services
-	get_services_conf_path(buffer1, buffer2);
-	conf_serv = attach_services_conf_shared_area(buffer2);
-
-	if (conf_serv == NULL) {
-		return (ESPANK_ERROR);
-	}
-
-	// EARD port
-	snprintf_ret_err(buffer2, 16, "%u", conf_serv->eard.port);
-	setenv_local_ret_err("EARD_PORT", buffer2, 1);
-
-	// Closing services
-	dettach_services_conf_shared_area();
+    // General variables
+    getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
 
 	// Opening settings
 	get_settings_conf_path(buffer1, buffer2);
@@ -663,11 +663,9 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 				// EAR == 0: nothing
 				// EAR == whatever: enable (bug protection)
 				if (!isenv_local("EAR", "0")) {
-					plug_verbose(sp, 2, "no esta a 0");
 					setenv_local_ret_err("EAR", "1", 1);
-				} else 
-					plug_verbose(sp, 2, "esta a 0");
-				// If disabled by default or de administrator have misswritten
+				} 
+			// If disabled by default or de administrator have misswritten
 			} else {
 				// EAR == 1: nothing
 				// EAR == 0: disable
