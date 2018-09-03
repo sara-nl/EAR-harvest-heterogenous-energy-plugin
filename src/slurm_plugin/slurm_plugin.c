@@ -71,6 +71,7 @@ static application_t eard_appl;
 static char eargmd_host[SZ_NAME_MEDIUM];
 static unsigned int eargmd_port;
 static unsigned int eargmd_nods;
+static unsigned int eargmd_enbl;
 
 /*
  * Manual
@@ -471,6 +472,10 @@ int local_eargmd_report_start(spank_t sp)
     return ESPANK_SUCCESS;
     #endif
 
+    if (!eargmd_enbl) {
+    	return ESPANK_SUCCESS;
+    }
+
 	// Gathering variables
 	getenv_local("SLURM_NNODES", &c_eargmd_nods);
 	eargmd_nods = atoi(c_eargmd_nods);
@@ -501,6 +506,10 @@ int local_eargmd_report_finish(spank_t sp)
 	#if PRODUCTION
     return (ESPANK_SUCCESS);
 	#endif
+
+	if (!eargmd_enbl) {
+		return ESPANK_SUCCESS;
+	}
 
     // Protection
     if (!isenv_control(sp, "SPANK_EARGMD", "1")) {
@@ -535,44 +544,60 @@ int _read_shared_data_remote(spank_t sp)
 {
 	plug_verbose(sp, 2, "function _read_shared_data_remote");
 
-	settings_conf_t *conf = NULL;
+	services_conf_t *conf_serv = NULL;
+	settings_conf_t *conf_sett = NULL;
 
 	// 	
 	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
 	
-	// Opening shared memory
-	get_settings_conf_path(buffer1, buffer2);
-	conf = attach_settings_conf_shared_area(buffer2);
+	// Opening services
+	get_services_conf_path(buffer1, buffer2);
+	conf_serv = attach_services_conf_shared_area(buffer2);
 
-	if (conf == NULL) {
+	if (conf_serv == NULL) {
+		return (ESPANK_ERROR);
+	}
+
+	// EARD port
+	snprintf_ret_err(buffer2, 16, "%u", conf->eard.port);
+	setenv_local_ret_err("EARD_PORT", buffer2, 1);
+
+	// Closing services
+	dettach_services_conf_shared_area();
+
+	// Opening settings
+	get_settings_conf_path(buffer1, buffer2);
+	conf_sett = attach_settings_conf_shared_area(buffer2);
+
+	if (conf_sett == NULL) {
 		slurm_error("while reading the shared configuration memory.");
 		return ESPANK_ERROR;
 	}
 
 	if (verbosity_test(sp, 4)) {
-		print_settings_conf(conf);
+		print_settings_conf(conf_sett);
 	}
 	
 	// Variable EAR and LD_PRELOAD
-	if (!conf->lib_enabled || conf->user_type == ENERGY_TAG) {
+	if (!conf_sett->lib_enabled || conf_sett->user_type == ENERGY_TAG) {
 		_remote_library_disable(sp);
 	}
 
 	// Variable EAR_ENERGY_TAG, unset
-	if (conf->user_type != ENERGY_TAG) {
+	if (conf_sett->user_type != ENERGY_TAG) {
 		unsetenv_remote(sp, "EAR_ENERGY_TAG");
 	}
 
 	// Variable EAR_P_STATE
-	snprintf(buffer2, 16, "%u", conf->def_p_state);
+	snprintf(buffer2, 16, "%u", conf_sett->def_p_state);
 	setenv_remote_ret_err(sp, "EAR_P_STATE", buffer2, 1);
 
 	// Variable EAR_FREQUENCY
-	snprintf(buffer2, 16, "%lu", conf->def_freq);
+	snprintf(buffer2, 16, "%lu", conf_sett->def_freq);
 	setenv_remote_ret_err(sp, "EAR_FREQUENCY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY, overwrite
-	if(policy_id_to_name(conf->policy, buffer2) == EAR_ERROR)
+	if(policy_id_to_name(conf_sett->policy, buffer2) == EAR_ERROR)
 	{
 		// Closing shared memory
 		dettach_settings_conf_shared_area();
@@ -582,12 +607,12 @@ int _read_shared_data_remote(spank_t sp)
 	setenv_remote_ret_err(sp, "EAR_POWER_POLICY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY_TH, overwrite
-	snprintf(buffer2, 8, "%0.2f", conf->th);
+	snprintf(buffer2, 8, "%0.2f", conf_sett->th);
 	setenv_remote_ret_err(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
 	setenv_remote_ret_err(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
 
 	// Variable EAR_LEARNING and EAR_P_STATE
-	if(!conf->learning) {
+	if(!conf_sett->learning) {
 		unsetenv_remote(sp, "EAR_P_STATE");
 		unsetenv_remote(sp, "EAR_LEARNING_PHASE");
 	}
@@ -617,13 +642,15 @@ int _read_shared_data_remote(spank_t sp)
 int _read_plugstack(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function _read_plugstack");
-	
-	char *pre_dir = NULL;
-	char *tmp_dir = NULL;
+
+	int found_earmgd_port = 0;
+	int found_eargmd_host = 0;
 	int found_predir = 0;
 	int found_tmpdir = 0;
+	char *pre_dir = NULL;
+	char *tmp_dir = NULL;
 	int i;
-		
+
 	for (i = 0; i < ac; ++i)
 	{
 		if ((strlen(av[i]) > 8) && (strncmp ("default=", av[i], 8) == 0))
@@ -666,13 +693,28 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			plug_verbose(sp, 2, "plugstack found prefix in path '%s'", pre_dir);
 			setenv_local_ret_err("EAR_PREDIR", pre_dir, 1);
 		}
+		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
+		{
+			found_eargmd_host = 1;
+			strncpy(eargmd_host, &av[i][12], SZ_NAME_MEDIUM);
+		}
+		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0))
+		{
+			found_earmgd_port = 1;
+			eargmd_port = atoi(&av[i][12]);
+		}
 	}
 
+	// EARGMD enabled?
+	eargmd_enbl = found_eargmd_host && found_earmgd_port;
+
+	// TMP folder missing?
 	if (!found_tmpdir) {
 		plug_error("missing plugstack localstatedir directory");
 		return (ESPANK_STOP);
 	}
 
+	// Prefix folder missing?
 	if (!found_predir) {
 		plug_error("missing plugstack prefix directory");
 		return (ESPANK_ERROR);
@@ -745,44 +787,6 @@ int _set_ld_preload(spank_t sp)
 	return (ESPANK_SUCCESS);
 }
 
-int _read_shared_data_basic(spank_t sp)
-{
-	plug_verbose(sp, 2, "function _read_shared_data_basic");
-	
-	services_conf_t *conf;
-	char *tmp_dir;
-
-	//
-	if(!getenv_local("EAR_TMPDIR", &tmp_dir)) {
-		return ESPANK_ERROR;
-	}
-
-	// Opening shared memory
-	get_services_conf_path(tmp_dir, buffer2);
-	conf = attach_services_conf_shared_area(buffer2);
-
-	if (conf == NULL) {
-		return (ESPANK_ERROR);
-	}
-
-	// EARD	
-	snprintf_ret_err(buffer2, 16, "%u", conf->eard.port);
-	setenv_local_ret_err("EARD_PORT", buffer2, 1);
-
-	// EARGMD
-	strncpy(eargmd_host, conf->eargmd.host, SZ_NAME_MEDIUM);
-	eargmd_port = conf->eargmd.port;
-
-	// Verbosity
-	plug_verbose(sp, 2, "shared EARD connection port '%s'", buffer2);
-	plug_verbose(sp, 2, "shared EARGMD connection host '%s' and port '%d'", eargmd_host, eargmd_port);
-
-	// Closing shared memory
-	dettach_services_conf_shared_area();
-
-	return (ESPANK_SUCCESS);
-}
-
 /*
  *
  *
@@ -842,7 +846,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 	}
 
 	// Read shared basic data
-	if (_read_shared_data_basic(sp) != ESPANK_SUCCESS) {
+	if (_read_shared_data_basic(sp, ac, av) != ESPANK_SUCCESS) {
 		_local_plugin_disable();
 		return ESPANK_SUCCESS;
 	}
