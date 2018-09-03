@@ -106,6 +106,4 @@ NodeName=r22u[21,23,25,27] CPUs=24
 #more than one line per island must be supported to specify dbip ports
 # Example: Each island with 2 eardb, each one covering 200 nodes
 
-
 Island=0 Nodes=r22u21,r22u23,r22u25,r22u27 DBIP=r22u21.hpc.eu.lenovo.com DBSECIP=r22u21.hpc.eu.lenovo.com
-
