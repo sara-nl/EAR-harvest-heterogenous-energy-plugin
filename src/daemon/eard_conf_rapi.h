@@ -63,6 +63,7 @@ typedef union req_data{
 
 typedef struct request{
     uint        req;
+    uint        node_dist;
     req_data_t  my_req;
 }request_t;
 

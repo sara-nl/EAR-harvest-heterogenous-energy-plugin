@@ -141,7 +141,11 @@ typedef struct node_conf
 	ulong db_ip;
 } node_conf_t;
 
-
+typedef struct communication_node
+{
+    char name[GENERIC_NAME];
+    int  distance;
+} communication_node_t;
 
 typedef struct my_node_conf
 {
@@ -229,6 +233,8 @@ typedef struct cluster_conf
 	uint num_islands;
 	node_island_t *islands;
     earlib_conf_t earlib;
+    communication_node_t *comm_nodes;
+    uint num_comm_nodes;
 } cluster_conf_t;
 
 /*

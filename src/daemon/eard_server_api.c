@@ -43,6 +43,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 
 #include <common/types/job.h>
@@ -50,6 +51,7 @@
 #include <common/states.h>
 #include <common/config.h>
 #include <daemon/eard_conf_rapi.h>
+#include <daemon/eard_rapi.h>
 
 
 
@@ -59,8 +61,8 @@ extern char *__HOST__;
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
 
-
 static  int sfd;
+
 // based on getaddrinfo man pages
 int create_server_socket(uint port)
 {
@@ -96,10 +98,12 @@ int create_server_socket(uint port)
         if (sfd == -1)
             continue;
 
-       while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){ 
+
+
+        while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){ 
 			eard_verbose(0,"Waiting for connection");
 			sleep(10);
-	   }
+	    }
             break;                  /* Success */
 
     }
@@ -156,4 +160,129 @@ void send_answer(int s,ulong *ack)
 	int ret;
 	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer");
 	if (ret<0) VERBOSE_N(0,"(%s)",strerror(errno));
+}
+//for the time being, only one correction will be applied
+void correct_error(int target_ip, request_t *command, int port)
+{
+    if (command->node_dist < 1) return;
+    char nextip1[50], nextip2[50];
+
+    struct sockaddr_in saddr;
+    saddr.sin_addr.s_addr = target_ip;
+    int offset1 = command->node_dist << 24;
+    int offset2 = (command->node_dist*2) << 24;
+    
+    saddr.sin_addr.s_addr += offset1;
+    strcpy(nextip1, inet_ntoa(saddr.sin_addr));
+
+    saddr.sin_addr.s_addr -= offset2;
+    strcpy(nextip2, inet_ntoa(saddr.sin_addr));
+
+
+    //the next node will propagate the command at half the distance
+    command->node_dist /= 2;
+    //connect to first subnode
+    int rc = eards_remote_connect(nextip1, port);
+    if (rc < 0)
+        fprintf(stderr, "Error connecting to node: %s\n", nextip1);
+    else
+    {
+        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip1);
+        else printf("pinged node %s\n", nextip1);
+        eards_remote_disconnect();
+    }
+
+    //connect to second subnode
+    rc = eards_remote_connect(nextip2, port);
+    if (rc < 0)
+        fprintf(stderr, "Error connecting to node: %s\n", nextip2);
+    else
+    {
+        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip2);
+        else printf("pinged node %s\n", nextip2);
+    } 
+}
+void propagate_req(request_t *command, int port)
+{
+
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int sfd, s;
+    int ip1, ip2;
+    struct sockaddr_storage peer_addr;
+    socklen_t peer_addr_len;
+    ssize_t nread;
+	char buff[50], nextip1[50], nextip2[50]; 
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+    gethostname(buff, 50);
+
+   	s = getaddrinfo(buff, NULL, &hints, &result);
+    if (s != 0) {
+		VERBOSE_N(0,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
+		return;
+    }
+
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        if (rp->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
+            //ina = saddr->sin_addr;    
+            printf("current ip: %d\n", saddr->sin_addr.s_addr);
+            printf("current ip: %s\n", inet_ntoa(saddr->sin_addr));
+            int offset1 = command->node_dist << 24;
+            saddr->sin_addr.s_addr += offset1;
+            ip1 = saddr->sin_addr.s_addr;
+            printf("next ip1: %d\n", saddr->sin_addr.s_addr);
+            printf("next ip1: %s\n", inet_ntoa(saddr->sin_addr));
+            strcpy(nextip1, inet_ntoa(saddr->sin_addr));
+            int offset2 = (command->node_dist*2) << 24;
+            saddr->sin_addr.s_addr -= offset2;
+            ip2 = saddr->sin_addr.s_addr;
+            printf("next ip2: %d\n", saddr->sin_addr.s_addr);
+            printf("next ip2: %s\n", inet_ntoa(saddr->sin_addr));
+            strcpy(nextip2, inet_ntoa(saddr->sin_addr));
+        }
+    }
+    printf("future ips: %s\t%s\n", nextip1, nextip2);
+
+    //the next node will propagate the command at half the distance
+    command->node_dist /= 2;
+    int actual_dist = command->node_dist;
+    //connect to first subnode
+    int rc = eards_remote_connect(nextip1, port);
+    if (rc < 0)
+    {
+        fprintf(stderr, "Error connecting to node: %s\n", nextip1);
+        correct_error(ip1, command, port);
+    }
+    else
+    {
+        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip1);
+        else printf("pinged node %s\n", nextip1);
+        eards_remote_disconnect();
+    }
+    
+    command->node_dist = actual_dist;
+    //connect to second subnode
+    rc = eards_remote_connect(nextip2, port);
+    if (rc < 0)
+    {
+        fprintf(stderr, "Error connecting to node: %s\n", nextip2);
+        correct_error(ip2, command, port);
+    }
+    else
+    {
+        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip2);
+        else printf("pinged node %s\n", nextip2);
+        eards_remote_disconnect();
+    }
 }
