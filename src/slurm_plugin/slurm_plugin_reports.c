@@ -53,30 +53,18 @@ unsigned int eargmd_nods;
 unsigned int eargmd_enbl;
 unsigned int eargmd_conn;
 
+// Externs
+extern char buffer1[SZ_PATH];
+extern char buffer2[SZ_PATH];
+
 static int _read_shared_data_remote(spank_t sp)
 {
 	plug_verbose(sp, 2, "function _read_shared_data_remote");
 
-	services_conf_t *conf_serv = NULL;
 	settings_conf_t *conf_sett = NULL;
 
-	//
+	// Getting TMP path
 	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
-
-	// Opening services
-	get_services_conf_path(buffer1, buffer2);
-	conf_serv = attach_services_conf_shared_area(buffer2);
-
-	if (conf_serv == NULL) {
-		return (ESPANK_ERROR);
-	}
-
-	// EARD port
-	snprintf_ret_err(buffer2, 16, "%u", conf_serv->eard.port);
-	setenv_local_ret_err("EARD_PORT", buffer2, 1);
-
-	// Closing services
-	dettach_services_conf_shared_area();
 
 	// Opening settings
 	get_settings_conf_path(buffer1, buffer2);
@@ -161,6 +149,7 @@ int remote_eard_report_start(spank_t sp)
 {
 	plug_verbose(sp, 2, "function remote_eard_report_start");
 
+	services_conf_t *conf_serv = NULL;
 	ulong *frequencies;
 	int n_frequencies;
 
@@ -174,6 +163,22 @@ int remote_eard_report_start(spank_t sp)
 
 	// General variables
 	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
+
+	// Opening shared services memory
+	get_services_conf_path(buffer1, buffer2);
+    conf_serv = attach_services_conf_shared_area(buffer2);
+
+    if (conf_serv == NULL) {
+        slurm_error("while reading the shared services memory.");
+        return (ESPANK_ERROR);
+    }   
+
+    // Getting EARD connection variables
+	eard_port = conf_serv->eard.port;
+    gethostname(eard_host, SZ_NAME_MEDIUM);
+	
+	// Closing shared services memory
+    dettach_services_conf_shared_area();
 
 	// Shared memory reading for frequencies
 	get_frequencies_path(buffer1, buffer2);
@@ -246,16 +251,6 @@ int remote_eard_report_start(spank_t sp)
 		strcpy(eard_appl.job.energy_tag, "");
 	}
 
-	// Getting EARD connection variables
-	gethostname(eard_host, SZ_NAME_MEDIUM);
-
-	if (!getenv_remote(sp, "EARD_PORT", buffer1, SZ_NAME_MEDIUM)) {
-		plug_error("EARD port not found");
-		return (ESPANK_ERROR);
-	} else {
-		eard_port = (unsigned int) atoi(buffer1);
-	}
-
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
 
@@ -326,7 +321,7 @@ int local_eargmd_report_start(spank_t sp)
 #endif
 
 	// Not enabled
-	if (!eargmd_enbl) {
+	if (!eargmd_enbl || isenv_local("EARGMD_CONNECTED", "1")) {
 		return ESPANK_SUCCESS;
 	}
 
@@ -368,10 +363,10 @@ int local_eargmd_report_finish(spank_t sp)
 	// Not connected, so doesn't need to be finished
 	if (!eargmd_conn) {
 		return ESPANK_SUCCESS;
+	} else {
+		// Disabling protection
+		setenv_local("EARGMD_CONNECTED", "0", 1);
 	}
-
-	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",
-				 eargmd_host, eargmd_port, eargmd_nods);
 
 	if (eargm_connect(eargmd_host, eargmd_port) < 0) {
 		plug_error("while connecting with EAR global manager daemon");
