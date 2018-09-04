@@ -34,6 +34,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <daemon/eard_rapi.h>
+#include <daemon/shared_configuration.h>
+#include <global_manager/eargm_rapi.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 
@@ -44,11 +47,11 @@ static unsigned int  eard_conn;
 static application_t eard_appl;
 
 // EARGMD variables
-static char eargmd_host[SZ_NAME_MEDIUM];
-static unsigned int eargmd_port;
-static unsigned int eargmd_nods;
-static unsigned int eargmd_enbl;
-static unsigned int eargmd_conn;
+char eargmd_host[SZ_NAME_MEDIUM];
+unsigned int eargmd_port;
+unsigned int eargmd_nods;
+unsigned int eargmd_enbl;
+unsigned int eargmd_conn;
 
 static int _read_shared_data_remote(spank_t sp)
 {
@@ -90,7 +93,7 @@ static int _read_shared_data_remote(spank_t sp)
 
 	// Variable EAR and LD_PRELOAD
 	if (!conf_sett->lib_enabled || conf_sett->user_type == ENERGY_TAG) {
-		_remote_library_disable(sp);
+		return (ESPANK_ERROR);
 	}
 
 	// Variable EAR_ENERGY_TAG, unset
