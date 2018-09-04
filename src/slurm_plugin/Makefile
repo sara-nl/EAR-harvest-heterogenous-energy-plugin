@@ -10,11 +10,13 @@ OBJECTS = $(SRCDIR)/daemon/eard_rapi.o \
 
 SOURCES = slurm_plugin.c \
           slurm_plugin_helper.c \
-          slurm_plugin_options.c
+          slurm_plugin_options.c \
+          slurm_plugin_reports.c
 
 HEADERS = slurm_plugin.h \
           slurm_plugin_helper.h \
-          slurm_plugin_options.h
+          slurm_plugin_options.h \
+          slurm_plugin_reports.c
 
 ######## RULES
 
