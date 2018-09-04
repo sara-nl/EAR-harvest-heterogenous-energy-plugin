@@ -53,39 +53,18 @@ typedef struct ip_table
 } ip_table_t;
 
 int EAR_VERBOSE_LEVEL=1;
+int global_num = 0;
 
-void generate_node_names(cluster_conf_t my_cluster_conf)
+void print_ips(ip_table_t *ips, int num_ips)
 {
-    int i, j, k, rc; 
-    char node_name[256];
-    ip_table_t *ips = NULL;
-    int num_ips = 0;
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {   
-            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
-            {   
-                if (k == -1) 
-                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-                else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-                    else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-                }   
-                ips = realloc(ips, sizeof(ip_table_t)*(num_ips+1));
-                strcpy(ips[num_ips].name, node_name);
-                fill_ip(node_name, &ips[num_ips]);
-                printf("node_name: %s\tip: %s\tip_int: %d\n", ips[num_ips].name, ips[num_ips].ip, ips[num_ips].ip_int); 
-                num_ips++;
-            }
-        }
-    }
-    free(ips);
+    int i;
+    printf("%10s\t%10s\t%12s\t%10s\n", "hostname", "ip", "ip_int", "counter");
+
+    for (i=0; i<num_ips; i++)
+        printf("%10s\t%10s\t%12d\t%10d\n", ips[i].name, ips[i].ip, ips[i].ip_int, ips[i].counter); 
 }
-int fill_ip(char *buff, ip_table_t *table)
+
+void fill_ip(char *buff, ip_table_t *table)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -119,21 +98,93 @@ int fill_ip(char *buff, ip_table_t *table)
             strcpy(table->ip, inet_ntoa(saddr->sin_addr));
         }
     }
+    freeaddrinfo(result);
 }
+
+ip_table_t *generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t *ips)
+{
+    int i, j, k, rc; 
+    char node_name[256];
+    int num_ips = 0;
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {   
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {   
+                if (k == -1) 
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                }   
+                ips = realloc(ips, sizeof(ip_table_t)*(num_ips+1));
+                strcpy(ips[num_ips].name, node_name);
+                fill_ip(node_name, &ips[num_ips]);
+     //           printf("node_name: %s\tip: %s\tip_int: %d\n", ips[num_ips].name, ips[num_ips].ip, ips[num_ips].ip_int); 
+                num_ips++;
+            }
+        }
+    }
+  // print_ips(ips, num_ips);
+    global_num = num_ips;
+    return ips;
+}
+
+void visit_ip(int ip, int dist, ip_table_t *ips, int num_ips)
+{
+    int i;
+    for (i=0; i < num_ips; i++)
+        if (ips[i].ip_int == ip)
+        {
+            ips[i].counter++;
+            break;
+        }
+    if (dist < 1) return;
+    
+    //reverse byte order for little-endian machines
+    int ip1, ip2;
+    ip1 = ip2 = htonl(ip);
+    //printf("new ip: %d\t old ip: %d\n", ip1, ip);
+    ip1 -= dist;
+    ip2 += dist;
+    dist /= 2;
+    visit_ip(ntohl(ip1), dist, ips, num_ips);
+    visit_ip(ntohl(ip2), dist, ips, num_ips);
+
+}
+
 void main(int argc,char *argv[])
 {
 	cluster_conf_t my_cluster;
 	char ear_path[256];
-	if (argc>1){
-		strcpy(ear_path,argv[1]);
-	}else{
-		if (get_ear_conf_path(ear_path)==EAR_ERROR){
-			printf("Error getting ear.conf path\n");
-			exit(0);
-		}
-	}
+    int starter_ip = 0;
+    int num_ips = 0;
+
+    if (get_ear_conf_path(ear_path)==EAR_ERROR){
+        printf("Error getting ear.conf path\n");
+        exit(0);
+    }
+    ip_table_t *ips = NULL;
 	read_cluster_conf(ear_path,&my_cluster);
-    generate_node_names(my_cluster);
-//	print_cluster_conf(&my_cluster);
+    ips = generate_node_names(my_cluster, ips);
+    num_ips = global_num;
+    if (argc < 2)
+    {
+        ip_table_t temp;
+        char buff[50];
+        gethostname(buff, 50);
+        fill_ip(buff, &temp);
+        starter_ip = temp.ip_int;
+        printf("No ip specified, taking default one: %s\n", temp.ip);
+    }
+    else
+        starter_ip = atoi(argv[1]);
+    visit_ip(starter_ip, 1, ips, num_ips);
+    print_ips(ips, num_ips);
     free_cluster_conf(&my_cluster);
+    free(ips);
 }
