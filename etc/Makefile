@@ -2,15 +2,16 @@
 
                   
 ETCEARDIR = $(ETCDIR)/ear
-ETC_FOLDERS = $(ETCDIR)/module \
-			  $(ETCDIR)/systemd \
-			  $(ETCDIR)/slurm \
-			  $(ETCEARDIR) \
+ETC_FOLDERS = $(ETCEARDIR) \
               $(ETCEARDIR)/coeffs \
               $(ETCEARDIR)/dbs \
+              $(ETCDIR)/module \
+			  $(ETCDIR)/systemd \
+			  $(ETCDIR)/slurm \
               $(ETCDIR)/scripts \
               $(ETCDIR)/scripts/examples \
               $(ETCDIR)/scripts/learning \
+              $(ETCDIR)/scripts/learning/helpers \
               $(ETCDIR)/scripts/running 
 
 

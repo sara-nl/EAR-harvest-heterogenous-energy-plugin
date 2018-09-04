@@ -9,7 +9,7 @@ export CORES_PER_SOCKET=8
 export EAR_SRC_PATH=$HOME/git/EAR
 
 # Non edit region
-source $EAR_INSTALL_PATH/etc/scripts/learning/learning_phase_helper.sh
+source $EAR_INSTALL_PATH/etc/scripts/learning/helpers/kernels_executor.sh
 export BENCHS_MODE="compile"
 
 # Compiling or executing the different kernels

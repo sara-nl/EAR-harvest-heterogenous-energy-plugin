@@ -42,6 +42,7 @@
 #include <common/config.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <daemon/eard_conf_rapi.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
@@ -116,4 +117,6 @@ void ping_all_nodes(cluster_conf_t my_cluster_conf);
 /** Executes a simple ping to all nodes with the next nodes calculated at runtime */
 void new_ping_all_nodes(cluster_conf_t my_cluster_conf);
 
+/** Sends the command to the currently connected fd */
+int send_command(request_t *command);
 #endif

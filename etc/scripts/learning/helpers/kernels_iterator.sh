@@ -1,15 +1,5 @@
 #!/bin/bash
 
-# Edit architecture values
-export CORES=16
-export SOCKETS=2
-export CORES_PER_SOCKET=8
-
-# Edit learning phase parameters
-export EAR_MIN_P_STATE=1
-export EAR_MAX_P_STATE=6
-export EAR_TIMES=3
-
 # Non edit region
 source $EAR_INSTALL_PATH/etc/scripts/learning/helpers/kernels_executor.sh
 export EAR_LEARNING_PHASE=1
