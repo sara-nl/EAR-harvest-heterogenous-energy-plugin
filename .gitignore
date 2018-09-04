@@ -89,6 +89,8 @@ tests/check/check.sh
 *database_eraser
 *configuration_check
 *batch_insert
+*ips
+*ping
 
 # IDE
 cmake*
