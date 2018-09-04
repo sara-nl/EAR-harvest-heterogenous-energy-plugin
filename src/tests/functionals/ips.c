@@ -163,6 +163,7 @@ void main(int argc,char *argv[])
 	char ear_path[256];
     int starter_ip = 0;
     int num_ips = 0;
+    int initial_distance = 0;
 
     if (get_ear_conf_path(ear_path)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -172,7 +173,7 @@ void main(int argc,char *argv[])
 	read_cluster_conf(ear_path,&my_cluster);
     ips = generate_node_names(my_cluster, ips);
     num_ips = global_num;
-    if (argc < 2)
+    if (argc < 3)
     {
         ip_table_t temp;
         char buff[50];
@@ -180,10 +181,17 @@ void main(int argc,char *argv[])
         fill_ip(buff, &temp);
         starter_ip = temp.ip_int;
         printf("No ip specified, taking default one: %s\n", temp.ip);
+        if (argc > 2)
+            initial_distance = atoi(argv[1]);
     }
     else
-        starter_ip = atoi(argv[1]);
-    visit_ip(starter_ip, 1, ips, num_ips);
+    {
+        ip_table_t temp;
+        fill_ip(argv[1], &temp);
+        initial_distance = atoi(argv[2]);
+        starter_ip = temp.ip_int;
+    }
+    visit_ip(starter_ip, initial_distance, ips, num_ips);
     print_ips(ips, num_ips);
     free_cluster_conf(&my_cluster);
     free(ips);
