@@ -12,7 +12,8 @@ BINARIES = bandwith_monitor \
 		   configuration_check \
 		   batch_insert \
 		   read_from_file \
-		   ping
+		   ping \
+		   ips
 # ear_pm
 # test_architecture
 
@@ -36,6 +37,9 @@ my_node_conf: my_node_conf.c $(SRCDIR)/common/types.a
 
 ear_conf: ear_conf.c $(SRCDIR)/common/types.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o ear_conf $^
+
+ips: ips.c $(SRCDIR)/common/types.a
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o ips $^
 
 ping: ping.c $(SRCDIR)/common/types.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o ping $^
