@@ -190,15 +190,20 @@ void main(int argc,char *argv[])
         if (argc > 1)
             initial_distance = atoi(argv[1]);
         printf("No ip specified, taking default one (%s) and distance %d\n", temp.ip, initial_distance);
+        visit_ip(starter_ip, initial_distance, ips, num_ips);
     }
     else
     {
         ip_table_t temp;
-        fill_ip(argv[1], &temp);
-        initial_distance = atoi(argv[2]);
-        starter_ip = temp.ip_int;
+        int i;
+        initial_distance = atoi(argv[argc-1]);
+        for (i = 1; i < argc - 1; i++)
+        {
+            fill_ip(argv[i], &temp);
+            starter_ip = temp.ip_int;
+            visit_ip(starter_ip, initial_distance, ips, num_ips);
+        }
     }
-    visit_ip(starter_ip, initial_distance, ips, num_ips);
     print_ips(ips, num_ips);
     free_cluster_conf(&my_cluster);
     free(ips);
