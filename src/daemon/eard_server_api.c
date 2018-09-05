@@ -235,21 +235,16 @@ void propagate_req(request_t *command, int port)
         if (rp->ai_addr->sa_family == AF_INET)
         {
             struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
-            //ina = saddr->sin_addr;    
-            printf("current ip: %d\n", saddr->sin_addr.s_addr);
-            printf("current ip: %s\n", inet_ntoa(saddr->sin_addr));
-            int offset1 = command->node_dist << 24;
-            saddr->sin_addr.s_addr += offset1;
-            ip1 = saddr->sin_addr.s_addr;
-            printf("next ip1: %d\n", saddr->sin_addr.s_addr);
-            printf("next ip1: %s\n", inet_ntoa(saddr->sin_addr));
-            strcpy(nextip1, inet_ntoa(saddr->sin_addr));
-            int offset2 = (command->node_dist*2) << 24;
-            saddr->sin_addr.s_addr -= offset2;
-            ip2 = saddr->sin_addr.s_addr;
-            printf("next ip2: %d\n", saddr->sin_addr.s_addr);
-            printf("next ip2: %s\n", inet_ntoa(saddr->sin_addr));
-            strcpy(nextip2, inet_ntoa(saddr->sin_addr));
+            struct sockaddr_in temp;
+
+            ip1 = ip2 = htonl(saddr->sin_addr.s_addr);
+            ip1 += command->node_dist;
+            temp.sin_addr.s_addr = ntohl(ip1);
+            strcpy(nextip1, inet_ntoa(temp.sin_addr));
+
+            ip2 -= command->node_dist;
+            temp.sin_addr.s_addr = ntohl(ip2);
+            strcpy(nextip2, inet_ntoa(temp.sin_addr));
         }
     }
     printf("future ips: %s\t%s\n", nextip1, nextip2);
@@ -262,7 +257,7 @@ void propagate_req(request_t *command, int port)
     if (rc < 0)
     {
         fprintf(stderr, "Error connecting to node: %s\n", nextip1);
-        correct_error(ip1, command, port);
+        correct_error(ntohl(ip1), command, port);
     }
     else
     {
@@ -277,7 +272,7 @@ void propagate_req(request_t *command, int port)
     if (rc < 0)
     {
         fprintf(stderr, "Error connecting to node: %s\n", nextip2);
-        correct_error(ip2, command, port);
+        correct_error(ntohl(ip2), command, port);
     }
     else
     {
