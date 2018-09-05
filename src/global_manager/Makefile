@@ -4,6 +4,7 @@ LDFLAGS = $(DB_LDFLAGS) -lpthread
 ######## FILES
 
 daemon_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
+              $(SRCDIR)/common/database.a \
               $(SRCDIR)/common/types.a \
               eargm_server_api.o
 
@@ -11,8 +12,6 @@ OBJS = eargm_rapi.o \
        eargm_server_api.o
 
 BINARIES = eargmd
-
-DB_OBJS = $(SRCDIR)/common/database.a
 
 ######## RULES
 
@@ -29,15 +28,17 @@ eargmd: eargm.c $(daemon_OBJS) $(DB_OBJS)
 install: install.others
 	cp $(BINARIES) $(DESTDIR)/sbin
 
+devel.install: devel.install.others
+
 clean: clean.others
 	rm -f $(BINARIES)
 	rm -f *.o *.a *.so
 
+######## DEPENDENCIES
+
 depend: depend.others
 
 depend-clean: depend-clean.others
-
-######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
 

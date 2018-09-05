@@ -1,29 +1,46 @@
 ######## FILES
-
                   
-ETCEARDIR = $(ETCDIR)/ear
-ETC_FOLDERS = $(ETCEARDIR) \
-              $(ETCEARDIR)/coeffs \
-              $(ETCEARDIR)/dbs \
-              $(ETCDIR)/module \
-			  $(ETCDIR)/systemd \
-			  $(ETCDIR)/slurm \
-              $(ETCDIR)/scripts \
-              $(ETCDIR)/scripts/examples \
-              $(ETCDIR)/scripts/learning \
-              $(ETCDIR)/scripts/learning/helpers \
-              $(ETCDIR)/scripts/running 
+gen_FOLDERS = $(DESTDIR)/bin \
+              $(DESTDIR)/bin/kernels \
+              $(DESTDIR)/lib \
+              $(DESTDIR)/sbin
 
+etc_FOLDERS = $(ETCDIR) \
+              $(ETCDIR)/ear \
+              $(ETCDIR)/ear/coeffs \
+              $(ETCDIR)/ear/dbs \
+              $(ETCDIR)/module \
+              $(ETCDIR)/systemd \
+              $(ETCDIR)/slurm 
+
+
+dev_FOLDERS = $(DESTDIR)/bin/scripts \
+              $(DESTDIR)/bin/scripts/learning \
+              $(DESTDIR)/bin/scripts/learning/helpers \
+              $(DESTDIR)/bin/scripts/running \
+              $(DESTDIR)/include \
+              $(DESTDIR)/include/common \
+              $(DESTDIR)/include/metrics/custom \
+              $(DESTDIR)/include/metrics/ipmi \
+              $(DESTDIR)/include/metrics/papi \
+              $(DESTDIR)/include/metrics/power_metrics
 
 ######## OPTIONS
 
 install:
-	@ mkdir -p ${ETC_FOLDERS}
+	mkdir -p $(gen_FOLDERS) 
+
+etc.install:
+	mkdir -p $(etc_FOLDERS) 
+	cp    conf/ear.conf $(ETCDIR)/ear
 	cp    module/ear $(ETCDIR)/module/
-	cp -n slurm/plugstack.conf $(ETCDIR)/slurm/
-	cp    conf/ear.conf $(ETCEARDIR)
-	cp    systemd/eard.service $(ETCDIR)/systemd
-	cp    systemd/eardbd.service $(ETCDIR)/systemd
-	cp    systemd/eargmd.service $(ETCDIR)/systemd
-	cp -r scripts/* $(ETCDIR)/scripts/
-	@ rm  $(ETCDIR)/scripts/README.md $(ETCDIR)/scripts/learning/README.md
+	cp -n slurm/ear.plugstack.conf $(ETCDIR)/slurm/
+	cp -n systemd/eard.service $(ETCDIR)/systemd
+	cp -n systemd/eardbd.service $(ETCDIR)/systemd
+	cp -n systemd/eargmd.service $(ETCDIR)/systemd
+
+devel.install:
+	mkdir -p $(dev_FOLDERS) 
+	cp -r scripts/* $(DESTDIR)/bin/scripts/
+	@ rm  $(DESTDIR)/bin/scripts/README.md
+	@ rm  $(DESTDIR)/bin/scripts/learning/README.md

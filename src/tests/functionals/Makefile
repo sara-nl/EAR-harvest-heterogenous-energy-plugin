@@ -59,7 +59,6 @@ freeipmi_overhead: freeipmi_overhead.c \
         $(SRCDIR)/metrics/custom/hardware_info.o
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o freeipmi_overhead $^ $(IPMI_LDFLAGS) $(PAPI_LDFLAGS)
 
-
 energy_1_second: energy_1_second.c \
         $(SRCDIR)/metrics/ipmi/energy_node.a \
         $(SRCDIR)/metrics/custom/hardware_info.o

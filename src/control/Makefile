@@ -12,6 +12,8 @@ frequency.o: frequency.c frequency.h
 
 install:
 
+%.install:
+
 clean:
 	rm -f *.o *.a *.so
 

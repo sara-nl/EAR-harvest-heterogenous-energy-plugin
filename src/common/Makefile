@@ -57,7 +57,11 @@ types.a: $(types_SOURCES)
 ######## OPTIONS
 
 install: install.components
+
+devel.install: devel.install.components
 	cp states.h $(DESTDIR)/include/common
+
+%.install:
 
 clean: clean.components
 	rm -f *.o *.a *.so

@@ -67,6 +67,8 @@ all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 install:
 	cp $(libs_ALL) $(DESTDIR)/lib/
 
+%.install:
+
 clean: clean.gnrc.components clean.impi.components
 	rm -f *.o *.a *.so
 

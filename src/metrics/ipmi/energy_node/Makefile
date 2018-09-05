@@ -23,6 +23,8 @@ ibm.o: ibm.c ibm.h
 
 install:
 
+%.install:
+
 clean:
 	rm -rf *.o *.a *.so
 

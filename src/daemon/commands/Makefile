@@ -56,6 +56,8 @@ ear_end_job: ear_end_job.c $(REMOTE_OBJS) $(TYPES_OBJS)
 ######## OPTIONS
 
 install:
+
+devel.install:
 	cp $(BINARIES) $(DESTDIR)/bin
 
 clean:

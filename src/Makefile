@@ -34,10 +34,6 @@ INSTALL_FOLDERS = $(DESTDIR)/bin \
                   $(DESTDIR)/etc \
                   $(DESTDIR)/sbin
     
-
-INCLUDE_FOLDERS = $(DESTDIR)/include/common
-
-
 ######## RULES
 
 .PHONY: check
@@ -47,18 +43,18 @@ all: all.components
 check:
 	@ $(MAKE) -C tests check
 
-######## OPTIONS
+install: install.components
 
-create_folders:
-	@ mkdir -p ${INSTALL_FOLDERS}
-	@ mkdir -p ${INCLUDE_FOLDERS}
+etc.install: etc.install.components
 
-install: create_folders install.components
+devel.install: devel.install.components
 
 %.install:
 	@ $(MAKE) -C $* install || exit
 
 clean: clean.components
+
+######## DEPENDENCIES
 
 depend: depend.components
 

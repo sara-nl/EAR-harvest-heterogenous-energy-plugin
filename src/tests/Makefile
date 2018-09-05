@@ -10,6 +10,8 @@ all: all.components
 
 install:
 
+%.install:
+
 ######## OPTIONS
 
 check:

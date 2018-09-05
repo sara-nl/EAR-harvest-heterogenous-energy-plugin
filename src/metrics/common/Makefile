@@ -15,6 +15,8 @@ msr.o: msr.c msr.h
 
 install:
 
+%.install:
+
 clean:
 	rm -f *.o *.a *.so
 
