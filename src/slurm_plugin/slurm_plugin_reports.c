@@ -289,16 +289,6 @@ int remote_eard_report_finish(spank_t sp)
 		return (ESPANK_SUCCESS);
 	}
 
-	// Getting EARD connection variables
-	gethostname(eard_host, NAME_MAX);
-
-	if (!getenv_remote(sp, "EARD_PORT", buffer1, NAME_MAX)) {
-		plug_error("EARD port not found");
-		return (ESPANK_ERROR);
-	} else {
-		eard_port = (unsigned int) atoi(buffer1);
-	}
-
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
 
