@@ -144,12 +144,18 @@ void visit_ip(int ip, int dist, ip_table_t *ips, int num_ips)
             ips[i].counter++;
             break;
         }
-    if (dist < 1) return;
     
+    struct sockaddr_in saddr;
+    //ina = saddr->sin_addr;    
+    saddr.sin_addr.s_addr = ip;
+    printf("current ip: %s\n", inet_ntoa(saddr.sin_addr));
     //reverse byte order for little-endian machines
+    if (dist < 1) return;
+
+
     int ip1, ip2;
     ip1 = ip2 = htonl(ip);
-    //printf("new ip: %d\t old ip: %d\n", ip1, ip);
+    printf("new ip: %d\t old ip: %d\n", ip1, ip);
     ip1 -= dist;
     ip2 += dist;
     dist /= 2;
@@ -181,9 +187,9 @@ void main(int argc,char *argv[])
         gethostname(buff, 50);
         fill_ip(buff, &temp);
         starter_ip = temp.ip_int;
-        printf("No ip specified, taking default one: %s\n", temp.ip);
-        if (argc > 2)
+        if (argc > 1)
             initial_distance = atoi(argv[1]);
+        printf("No ip specified, taking default one (%s) and distance %d\n", temp.ip, initial_distance);
     }
     else
     {
