@@ -37,6 +37,7 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <unistd.h>
 
 #include <common/config.h>
 #include <common/states.h>
