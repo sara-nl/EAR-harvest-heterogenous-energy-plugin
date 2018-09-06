@@ -31,44 +31,40 @@ types_OBJECTS = $(shell find ./types/ -type f -name '*.o') \
 all: all.components $(OBJS)
 
 environment.o: environment.c environment.h environment_common.h
-	$(CC) $(CFLAGS) -c environment.c
+	$(CC) $(CFLAGS) -c $<
 
 environment_common.o: environment_common.c environment_common.h
-	$(CC) $(CFLAGS) -c environment_common.c
+	$(CC) $(CFLAGS) -c $<
 
 file_lock.o: file_lock.c file_lock.h
-	$(CC) $(CFLAGS) -c file_lock.c
+	$(CC) $(CFLAGS) -c $<
 
 math_operations.o: math_operations.c math_operations.h
-	$(CC) $(CFLAGS) -c math_operations.c
+	$(CC) $(CFLAGS) -c $<
 
 sockets.o: sockets.c sockets.h
-	$(CC) $(CFLAGS) -c sockets.c
+	$(CC) $(CFLAGS) -c $<
 
 string_enhanced.o: string_enhanced.c string_enhanced.h
-	$(CC) $(CFLAGS) -c string_enhanced.c
+	$(CC) $(CFLAGS) -c $<
 
 database.a: $(database_OBJS)
-	$(AR) rvs database.a $(database_OBJS)
+	$(AR) rvs $@ $(database_OBJS)
 
 types.a: $(types_SOURCES)
-	$(AR) rvs types.a $(types_OBJECTS)
+	$(AR) rvs $@ $(types_OBJECTS)
 
 ######## OPTIONS
 
 install: install.components
 
-devel.instal: ;
+devel.install: devel.install.components;
 	cp states.h $(DESTDIR)/include/common
 
-%.install: ;
+%.install: %.install.components;
 
 clean: clean.components
 	rm -f *.o *.a *.so
-
-depend: depend.components
-
-depend-clean: depend-clean.components
 
 ######## SUBFOLDERS
 
@@ -79,5 +75,9 @@ ifdef DB_BASE
 endif
 
 ######## DEPENDENCIES
+
+depend: depend.components
+
+depend-clean: depend-clean.components
 
 include $(SRCDIR)/Makefile.depend

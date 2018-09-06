@@ -25,10 +25,10 @@ metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
 all: all.components libmetrics.a libmetrics.so
 
 libmetrics.a: $(metrics_OBJS)
-	$(AR) rvs libmetrics.a $(metrics_OBJS)
+	$(AR) rvs $@ $(metrics_OBJS)
 
 libmetrics.so: $(metrics_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o libmetrics.so $(metrics_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $(metrics_OBJS)
 
 ######## OPTIONS
 
@@ -38,7 +38,7 @@ devel.install: devel.install.components;
 	cp metrics.h $(DESTDIR)/include/metrics/
 	cp libmetrics.so $(DESTDIR)/lib/
 
-%.install: ;
+%.install: %.install.components;
 
 clean: clean.components
 	rm -f *.o *.a *.so

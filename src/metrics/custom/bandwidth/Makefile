@@ -5,7 +5,7 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 all: uncores_pci.o
 
 uncores_pci.o: uncores_pci.c uncores_pci.h
-	$(CC) $(CFLAGS) -c uncores_pci.c
+	$(CC) $(CFLAGS) -c $<
 
 ######## OPTIONS
 

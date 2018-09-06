@@ -3,22 +3,22 @@ LDFLAGS = $(DB_LDFLAGS) -lpthread
 
 ######## FILES
 
-daemon_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
-              $(SRCDIR)/common/database.a \
-              $(SRCDIR)/common/types.a \
-              eargm_server_api.o
+manager_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
+               $(SRCDIR)/common/database.a \
+               $(SRCDIR)/common/types.a \
+               eargm_server_api.o
 
 OBJS = eargm_rapi.o \
        eargm_server_api.o
 
-BINARIES = eargmd
+BINS = eargmd
 
 ######## RULES
 
-all: $(OBJS) $(BINARIES) all.others 
+all: $(OBJS) $(BINS) all.others 
 
-eargmd: eargm.c $(daemon_OBJS) $(DB_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o eargmd eargm.c $(LDFLAGS) $(DB_OBJS) $(daemon_OBJS) 
+eargmd: eargm.c $(manager_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(LDFLAGS) $(manager_OBJS)
 
 %.o: %.c %.h
 	$(CC) -fPIC $(CFLAGS) -c $<
@@ -26,14 +26,14 @@ eargmd: eargm.c $(daemon_OBJS) $(DB_OBJS)
 ######## OPTIONS
 
 install: install.others
-	cp $(BINARIES) $(DESTDIR)/sbin
+	cp $(BINS) $(DESTDIR)/sbin
 
-devel.install: devel.install.others
+devel.install: devel.install.others;
 
 %.install: ;
 
 clean: clean.others
-	rm -f $(BINARIES)
+	rm -f $(BINS)
 	rm -f *.o *.a *.so
 
 ######## SUBFOLDERS

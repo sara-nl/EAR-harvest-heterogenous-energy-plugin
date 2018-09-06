@@ -1,23 +1,22 @@
-CFLAGS    = -I$(SRCDIR) 
-LDFLAGS   =
+CFLAGS  = -I$(SRCDIR)
+LDFLAGS =
 
 ######## FILES
 
-ereport_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o \
-               $(SRCDIR)/common/types.a
+ereport_OBJS  = $(SRCDIR)/common/database/mysql_io_functions.o \
+                $(SRCDIR)/common/types.a
 
 econtrol_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
                 $(SRCDIR)/common/types.a
 
 ifdef DB_BASE
-BINARIES = eacct econtrol ereport
-
-SBINARIES += ear_create_database 
+BINS  = eacct econtrol ereport
+SBINS = ear_create_database
 endif
 
 ######## RULES
 
-all: $(BINARIES) $(SBINARIES) $(COMPONENTS)
+all: $(BINS) $(SBINS)
 
 eacct: ear_acct.c $(ereport_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ereport_OBJS)
@@ -35,14 +34,14 @@ ear_create_database: ear_create_database.c $(SRCDIR)/common/types.a
 
 install:
 ifdef DB_BASE
-	cp $(BINARIES) $(DESTDIR)/bin/
-	cp $(SBINARIES) $(DESTDIR)/sbin/
+	cp $(BINS) $(DESTDIR)/bin/
+	cp $(SBINS) $(DESTDIR)/sbin/
 endif
 
 %.install: ;
 
 clean:
-	rm -f $(BINARIES) $(SBINARIES)
+	rm -f $(BINS) $(SBINS)
 
 ######## DEPENDENCIES
 
