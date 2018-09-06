@@ -1,2 +1,2 @@
 #required?	plugin					args
-required	@prefix@/lib/earplug.so	prefix=@prefix@ sysconfdir=@sysconfdir@ localstatedir=@localstatedir@
+required	@prefix@/lib/earplug.so	prefix=@prefix@ sysconfdir=@sysconfdir@ localstatedir=@localstatedir@ default=off

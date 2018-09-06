@@ -78,22 +78,6 @@ static uint ear_models_pstates = 0;
 static ulong user_selected_freq;
 
 
-void set_energy_policy_name()
-{
-    switch(power_model_policy)
-    {
-        case MIN_ENERGY_TO_SOLUTION:
-            strcpy(application.job.policy,"min_energy");
-        break;
-        case MIN_TIME_TO_SOLUTION:
-            strcpy(application.job.policy,"min_time");
-        break;
-        case MONITORING_ONLY:
-            strcpy(application.job.policy,"monitoring_only");
-        break;
-    }
-}
-
 void init_policy_functions()
 {
     switch(power_model_policy)
@@ -248,7 +232,7 @@ void init_power_policy()
 
 		EAR_default_frequency = def_freq;
 	}
-	set_energy_policy_name();
+	policy_id_to_name(power_model_policy,application.job.policy);
 	init_policy_functions();
 }
 
