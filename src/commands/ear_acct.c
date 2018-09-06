@@ -60,11 +60,11 @@ void usage(char *app)
 "\t\t-v\tverbose mode for debugging purposes\n" \
 "\t\t-u\tspecifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]\n" \
 "\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
-/*"\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \*/
+"\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
 "\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: all jobs]\n" \
 "", app);
-//    printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
+    printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
     #endif
 	exit(1);
 }
@@ -220,7 +220,7 @@ void print_full_apps(application_t *apps, int num_apps)
     int i = 0;
     double avg_f;
 
-    printf("%-6s.%-7s\t %-10s %-15s %-25s %-14s %-14s %-14s %-14s %-14s %-14s\n",
+    printf("%-6s.%-7s\t %-10s %-15s %-20s %-14s %-14s %-14s %-14s %-14s %-14s\n",
             "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ (GHz)", "TIME (s)",
             "POWER (Watts)", "GBS", "CPI", "ENERGY (J)");
 
@@ -232,7 +232,7 @@ void print_full_apps(application_t *apps, int num_apps)
         if (apps[i].is_mpi)
         {
             avg_f = (double) apps[i].signature.avg_f/1000000;
-            printf("%8u.%-3u\t %-10s %-15s %-25s %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
+            printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                 avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
                 apps[i].signature.time * apps[i].signature.DC_power);
@@ -240,13 +240,33 @@ void print_full_apps(application_t *apps, int num_apps)
         else
         {
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
-            printf("%8u.%-3u\t %-10s %-15s %-25s %-14.2lf %-14.2lf %-14.2lf %-14s %-14s %-14.2lf\n",
+            printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                 avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NON-MPI", "NON-MPI", 
                 apps[i].power_sig.time * apps[i].power_sig.DC_power);
 
         }
 
+    }
+}
+
+void get_short_policy(char *buf, char *policy)
+{
+    int pol = policy_name_to_id(policy);
+    switch(pol)
+    {
+        case MIN_ENERGY_TO_SOLUTION:
+            strcpy(buf, "ME");
+            break;
+        case MIN_TIME_TO_SOLUTION:
+            strcpy(buf, "MT");
+            break;
+        case MONITORING_ONLY:
+            strcpy(buf, "MO");
+            break;
+        default:
+            strcpy(buf, "NP");
+            break;
     }
 }
 
@@ -265,9 +285,10 @@ void print_short_apps(application_t *apps, int num_apps)
     total_energy = 0;
     avg_CPI = 0;
     avg_GBS = 0;
+    char curr_policy[3];
 
-    printf("%-6s.%-7s\t %-10s %-25s %-7s %-14s %-14s %-14s %-14s %-14s %-14s\n",
-            "JOB ID", "STEP ID", "USER ID", "APPLICATION ID", "NODES #", "FREQ (GHz)", "TIME (s)",
+    printf("%-6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n",
+            "JOB ID", "STEP ID", "USER ID", "APPLICATION ID", "POLICY", "NODES #", "FREQ (GHz)", "TIME (s)",
             "POWER (Watts)", "GBS", "CPI", "ENERGY (J)");
     for (i = 0; i < num_apps; i ++)
     {
@@ -312,8 +333,8 @@ void print_short_apps(application_t *apps, int num_apps)
                 avg_CPI /= current_apps;
 
                 if (avg_f > 0 && avg_time > 0 && total_energy > 0)
-                    printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
-                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
+                    printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n",
+                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
                         avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
             }
             else
@@ -322,13 +343,14 @@ void print_short_apps(application_t *apps, int num_apps)
                 avg_time /= current_apps;
                 avg_power /= current_apps;
                 if (avg_f > 0 && avg_time > 0 && total_energy > 0)
-                    printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14s %-14s %-14.2lf\n",
-                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
+                    printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
+                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
                         avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
 
             }
             if (apps[i].job.id != current_job_id || apps[i].job.step_id != current_step_id)
             {
+                get_short_policy(curr_policy, apps[i].job.policy);
                 current_job_id = apps[i].job.id;
                 current_step_id = apps[i].job.step_id;
                 current_is_mpi = apps[i].is_mpi;
@@ -358,8 +380,8 @@ void print_short_apps(application_t *apps, int num_apps)
 
 
             if (avg_f > 0 && avg_time > 0 && total_energy > 0)
-                printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
-                    current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
+                printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n",
+                    current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
                     avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
         }
         else
@@ -368,8 +390,8 @@ void print_short_apps(application_t *apps, int num_apps)
             avg_time /= current_apps;
             avg_power /= current_apps;
             if (avg_f > 0 && avg_time > 0 && total_energy > 0)
-                printf("%8u.%-3u\t %-10s %-25s %-7u %-14.2lf %-14.2lf %-14.2lf %-14s %-14s %-14.2lf\n",
-                    current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, current_apps, 
+                printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
+                    current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
                     avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
 
         }

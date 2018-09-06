@@ -67,6 +67,11 @@
 
 #define ALL_NODES   "select SUM(DC_energy), node_id FROM Periodic_metrics WHERE start_time >= %d " \
                     " AND end_time <= %d GROUP BY node_id "
+
+#define ALL_TAGS    "SELECT TRUNCATE(SUM(DC_power*time), 0) as energy, Jobs.e_tag FROM " \
+                    "Power_signatures INNER JOIN Applications ON id=Applications.power_signature_id " \
+                    "INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id " \
+                    "WHERE start_time >= %d AND end_time <= %d GROUP BY Jobs.e_tag ORDER BY energy"
 //grouped by query:
 
 //SELECT TRUNCATE(SUM(DC_power*time),0) as energy, Jobs.user_id FROM Power_signatures INNER JOIN Applications ON id=Applications.power_signature_id INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id WHERE start_time >= 0 AND end_time <= 5555555555555 GROUP BY Jobs.user_id ORDER BY energy;
@@ -86,11 +91,12 @@ void usage(char *app)
     printf("%s is a tool that reports energy consumption data\n", app);
 	printf("Usage: %s [options]\n", app);
     printf("Options are as follows:\n"\
-            "\t-s start_time    \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
-            "\t-e end_time      \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
-            "\t-n node_name|all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
-            "\t-u user_name|all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
-            "\t-h               \t shows this message.\n");
+            "\t-s start_time     \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
+            "\t-e end_time       \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
+            "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
+            "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
+            "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
+            "\t-h                \t shows this message.\n");
 	exit(1);
 }
 
@@ -276,18 +282,25 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)
     if (verbose) printf("query: %s\n", query);
     
     if (mysql_query(connection, query))
+    {
         fprintf(stderr, "MYSQL error\n"); 
-
+        return;
+    }
     MYSQL_RES *result = mysql_store_result(connection);
   
     if (result == NULL) 
+    {
         fprintf(stderr, "MYSQL error\n"); 
+        return;
+    }
 
     int num_fields = mysql_num_fields(result);
 
     MYSQL_ROW row;
     if (!strcmp(inc_query, ALL_USERS))
         printf("%15s %15s\n", "Energy (J)", "User"); 
+    else if (!strcmp(inc_query, ALL_TAGS))
+        printf("%15s %15s\n", "Energy (J)", "Energy tag"); 
     else if (global_end_time > 0)
     {
         printf("%15s %15s %15s\n", "Energy (J)", "Node", "Avg. Power"); 
@@ -320,8 +333,9 @@ void main(int argc,char *argv[])
     time_t end_time = time(NULL);
     int divisor = 1;
     int opt;
-    char all_users=0;
-    char all_nodes=0;
+    char all_users = 0;
+    char all_nodes = 0;
+    char all_tags = 0;
     struct tm tinfo = {0};
 
     if (get_ear_conf_path(path_name) == EAR_ERROR)
@@ -381,6 +395,8 @@ void main(int argc,char *argv[])
                 break;
             case 't':
                 etag = optarg;
+                if (!strcmp(etag, "all"))
+                    all_tags=1;
                 break;
             case 'e':
                 if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
@@ -407,7 +423,7 @@ void main(int argc,char *argv[])
         }
     }
 
-    if (!all_users && !all_nodes)
+    if (!all_users && !all_nodes && !all_tags)
     {
         unsigned long long result = get_sum(connection, start_time, end_time, divisor);
         compute_pow(connection, start_time, end_time, result);
@@ -440,6 +456,8 @@ void main(int argc,char *argv[])
         compute_pow(connection, start_time, end_time, 0);
         print_all(connection, start_time, end_time, ALL_NODES);
     }
+    else if (all_tags)
+        print_all(connection, start_time, end_time, ALL_TAGS);
     
     mysql_close(connection);
     free_cluster_conf(&my_conf);
