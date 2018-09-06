@@ -316,17 +316,17 @@ void process_remote_requests(int clientfd)
 			ack=dyncon_restore_conf();
 			break;
 		case EAR_RC_PING:
-            if (command.node_dist > 0)
-            {
-                eard_verbose(1, "ping propagated");
-                propagate_req(&command, my_cluster_conf.eard.port);
-            }
 			eard_verbose(1,"ping received\n");
 			break;
 		default:
 			eard_verbose(0,"Invalid remote command\n");
 	}	
 	send_answer(clientfd,&ack);
+    if (command.node_dist > 0 && req == EAR_RC_PING)
+    {
+        eard_verbose(1, "ping propagated");
+        propagate_req(&command, my_cluster_conf.eard.port);
+    }
 }
 /*
 *	THREAD to process remote queries

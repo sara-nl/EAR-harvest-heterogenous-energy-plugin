@@ -26,18 +26,21 @@ all: all.components $(OBJS)
 
 install: install.components
 
+%.install: ;
+
 clean: clean.components
 	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
 
 depend: depend.components
 
 depend-clean: depend-clean.components
+
+include $(SRCDIR)/Makefile.depend
 
 ######## SUBFOLDERS
 
 %.components:
 	@ $(MAKE) -C 'configuration' $* || exit
 
-######## DEPENDENCIES
-
-include $(SRCDIR)/Makefile.depend

@@ -1,8 +1,8 @@
 process_MPI.o: process_MPI.c ../../library/mpi_intercept/ear_api.h \
  ../../library/mpi_intercept/MPI_types.h \
  ../../library/mpi_intercept/MPI_calls_coded.h
-MPI_intercept.o: MPI_intercept.c MPI_interface.h
 MPI_interceptF.o: MPI_interceptF.c MPI_interfaceF.h
+MPI_intercept.o: MPI_intercept.c MPI_interface.h
 MPI_interface.o: MPI_interface.c process_MPI.h \
  ../../library/mpi_intercept/MPI_types.h MPI_calls_coded.h \
  MPI_interface.h

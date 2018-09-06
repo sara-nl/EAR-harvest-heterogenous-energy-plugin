@@ -48,7 +48,7 @@ eard_rapi.o: eard_rapi.c eard_rapi.h
 	$(CC) -fPIC $(CFLAGS) -c eard_rapi.c
 
 eard_server_api.o: eard_server_api.c eard_server_api.h
-	$(CC) $(CFLAGS) -c eard_server_api.c
+	$(CC) $(CFLAGS) -c eard_server_api.c eard_rapi.o
 
 eard_api.o: eard_api.c eard_api.h ../../Makefile
 	$(CC) -fPIC $(CFLAGS) -c eard_api.c
@@ -64,19 +64,23 @@ app_api_bin:
 install: install.others 
 	cp eard $(DESTDIR)/sbin
 
+devel.install: devel.install.others
+
+%.install: ;
+
 clean: clean.others
 	rm -f *.o *.a *.so eard
-
-depend: depend.others
-
-depend-clean: depend-clean.others
-
-######## DEPENDENCIES
-
-include $(SRCDIR)/Makefile.depend
 
 ######## SUBFOLDERS
 
 %.others:
 	$(MAKE) -C 'commands' $*
 	$(MAKE) -C 'app_api' $*
+
+######## DEPENDENCIES
+
+depend: depend.others
+
+depend-clean: depend-clean.others
+
+include $(SRCDIR)/Makefile.depend

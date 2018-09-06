@@ -67,12 +67,10 @@ all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 install:
 	cp $(libs_ALL) $(DESTDIR)/lib/
 
+%.install: ;
+
 clean: clean.gnrc.components clean.impi.components
 	rm -f *.o *.a *.so
-
-depend: depend.gnrc.components depend.impi.components
-
-depend-clean: depend-clean.gnrc.components depend-clean.impi.components
 
 ######## SUBFOLDERS
 
@@ -90,3 +88,10 @@ depend-clean: depend-clean.gnrc.components depend-clean.impi.components
 	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(OMPICC)' || exit
 	@ $(MAKE) -B -C 'states' $* MPICC='$(OMPICC)' || exit
 	@ $(MAKE) -B -C 'tracer' $* MPICC='$(OMPICC)' || exit
+
+######## DEPENDENCIES
+
+depend: depend.gnrc.components depend.impi.components
+
+depend-clean: depend-clean.gnrc.components depend-clean.impi.components
+

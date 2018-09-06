@@ -1,12 +1,5 @@
 test_architecture.o: test_architecture.c \
  ../../metrics/custom/hardware_info.h
-simd_power_metrics_openmp.o: simd_power_metrics_openmp.c \
- ../../control/frequency.h ../../metrics/papi/generics.h \
- ../../metrics/papi/flops.h ../../metrics/papi/stalls.h \
- ../../metrics/papi/energy_cpu.h ../../metrics/ipmi/energy_node.h \
- ../../metrics/papi/instructions.h ../../metrics/custom/hardware_info.h \
- ../../metrics/custom/frequency.h ../../common/types/generic.h \
- simd_test.h
 energy_updates_freq.o: energy_updates_freq.c \
  ../../metrics/ipmi/energy_node.h
 bandwith_monitor.o: bandwith_monitor.c ../../metrics/custom/bandwidth.h \
@@ -24,6 +17,11 @@ batch_insert.o: batch_insert.c ../../common/config.h \
  ../../common/types/loop.h ../../common/types/log.h \
  ../../common/database/mysql_io_functions.h
 energy_1_second.o: energy_1_second.c ../../metrics/ipmi/energy_node.h
+ips.o: ips.c ../../common/config.h ../../common/states.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/string_enhanced.h ../../common/types/generic.h \
+ ../../common/ear_verbose.h
 my_node_conf.o: my_node_conf.c ../../common/config.h \
  ../../common/states.h ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
@@ -47,7 +45,14 @@ eard_monitor.o: eard_monitor.c ../../daemon/eard_api.h \
  ../../daemon/eard_conf_api.h ../../common/types/application.h \
  ../../common/types/signature.h ../../common/types/power_signature.h \
  ../../common/types/loop.h
-simd_tests.o: simd_tests.c ../../metrics/custom/hardware_info.h
+ping.o: ping.c ../../common/config.h ../../common/states.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/string_enhanced.h ../../common/types/generic.h \
+ ../../common/ear_verbose.h ../../daemon/eard_rapi.c \
+ ../../daemon/eard_conf_rapi.h ../../common/types/application.h \
+ ../../common/types/job.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h ../../daemon/eard_rapi.h
 read_from_file.o: read_from_file.c ../../common/types/application.h \
  ../../common/config.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \

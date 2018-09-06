@@ -32,16 +32,20 @@ bandwidth.a: bandwidth.o $(INTERN_OBJS)
 ######## OPTIONS
 
 install: install.components
+
+devel.install: devel.install.components;
 	cp *.h $(DESTDIR)/include/metrics/custom
+
+%.install: ;
 
 clean: clean.components
 	rm -f *.o *.a *.so
 
+######## DEPENDENCIES
+
 depend: depend.components
 
 depend-clean: depend-clean.components
-
-######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
 

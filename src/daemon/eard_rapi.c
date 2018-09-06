@@ -206,7 +206,7 @@ int eards_ping()
 {
     request_t command;
     command.req=EAR_RC_PING;
-    command.node_dist = 2;
+    command.node_dist = 0;
     return send_command(&command);
 }
 
@@ -320,7 +320,7 @@ void ping_all_nodes(cluster_conf_t my_cluster_conf)
     }
 }
 
-void new_ping_all_nodes(cluster_conf_t my_cluster_conf)
+void new_ping_all_nodes2(cluster_conf_t my_cluster_conf)
 {
     char *node_name = "r22u21";
     int rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
@@ -335,6 +335,45 @@ void new_ping_all_nodes(cluster_conf_t my_cluster_conf)
         eards_remote_disconnect();
     }
 
+}
+
+void new_ping_all_nodes(cluster_conf_t my_cluster_conf)
+{
+    int i, j, k, rc; 
+    char node_name[256];
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {   
+            request_t command;
+            command.req = EAR_RC_PING;
+            k = my_cluster_conf.islands[i].ranges[j].start;
+            command.node_dist = 0;
+            if (k == -1) 
+                sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+            else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+            else {
+                k += (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
+                if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
+                    sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                else 
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+
+                command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/4;
+                int t = 1;
+                while (t < command.node_dist) t *=2;
+                command.node_dist = t;
+            }   
+                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+                if (rc<0){
+                    VERBOSE_N(0,"Error connecting with node %s", node_name);
+                }else{
+                    VERBOSE_N(1,"Node %s with distande %d ping!\n", node_name, command.node_dist);
+                    if (!send_command(&command)) VERBOSE_N(0,"Error doing ping for node %s", node_name);
+                    eards_remote_disconnect();
+                }
+            }
+        }
 }
 
 

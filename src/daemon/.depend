@@ -7,6 +7,16 @@ eard_checkpoint.o: eard_checkpoint.c ../common/config.h \
  ../common/types/signature.h ../common/types/power_signature.h \
  ../metrics/power_metrics/power_metrics.h ../metrics/ipmi/energy_node.h \
  ../metrics/papi/energy_cpu.h
+dynamic_configuration.o: dynamic_configuration.c ../common/config.h \
+ ../control/frequency.h ../common/types/job.h ../common/types/generic.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h ../daemon/eard_server_api.h \
+ ../daemon/eard_conf_rapi.h ../common/types/application.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../daemon/shared_configuration.h ../common/types/coefficient.h \
+ ../daemon/power_monitor.h ../metrics/power_metrics/power_metrics.h \
+ ../metrics/ipmi/energy_node.h ../metrics/papi/energy_cpu.h
 eard_api.o: eard_api.c ../common/ear_verbose.h ../common/config.h \
  ../daemon/eard_api.h ../common/types/generic.h ../common/types/log.h \
  ../common/types/job.h ../daemon/eard_conf_api.h \
@@ -41,17 +51,9 @@ eard_server_api.o: eard_server_api.c ../common/types/job.h \
  ../common/types/generic.h ../common/config.h ../common/ear_verbose.h \
  ../common/states.h ../daemon/eard_conf_rapi.h \
  ../common/types/application.h ../common/types/signature.h \
- ../common/types/power_signature.h
-dynamic_configuration.o: dynamic_configuration.c ../common/config.h \
- ../control/frequency.h ../common/types/job.h ../common/types/generic.h \
+ ../common/types/power_signature.h ../daemon/eard_rapi.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h ../daemon/eard_server_api.h \
- ../daemon/eard_conf_rapi.h ../common/types/application.h \
- ../common/types/signature.h ../common/types/power_signature.h \
- ../daemon/shared_configuration.h ../common/types/coefficient.h \
- ../daemon/power_monitor.h ../metrics/power_metrics/power_metrics.h \
- ../metrics/ipmi/energy_node.h ../metrics/papi/energy_cpu.h
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h
 power_monitor.o: power_monitor.c ../control/frequency.h \
  ../metrics/custom/frequency_uncore.h ../common/states.h \
  ../common/types/generic.h ../daemon/power_monitor.h \

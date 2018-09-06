@@ -18,6 +18,8 @@ all: $(OBJS)
 
 install:
 
+%.install: ;
+
 clean:
 	rm -f *.o *.so *.a
 
