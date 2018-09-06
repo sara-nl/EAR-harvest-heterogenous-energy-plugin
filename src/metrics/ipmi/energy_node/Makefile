@@ -11,17 +11,17 @@ OBJS = ibm.o \
 all: $(OBJS)
 
 lenovo_nm.o: lenovo_nm.c lenovo_nm.h
-	$(CC) $(CFLAGS) -c lenovo_nm.c
+	$(CC) $(CFLAGS) -c $<
 
 lenovo_sd650.o: lenovo_sd650.c lenovo_sd650.h
-	$(CC) $(CFLAGS) -c lenovo_sd650.c
+	$(CC) $(CFLAGS) -c $<
 
 ibm.o: ibm.c ibm.h
-	$(CC) $(CFLAGS) -c ibm.c
+	$(CC) $(CFLAGS) -c $<
 
 ######## OPTIONS
 
-install: ;
+install:
 
 %.install: ;
 

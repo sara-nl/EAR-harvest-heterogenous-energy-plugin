@@ -9,7 +9,7 @@ OBJS = msr.o
 all: $(OBJS)
 
 msr.o: msr.c msr.h
-	$(CC) $(CFLAGS) -c msr.c
+	$(CC) $(CFLAGS) -c $<
 
 ######## OPTIONS
 

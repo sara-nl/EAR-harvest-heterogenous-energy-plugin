@@ -2,7 +2,7 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-INTERN_OBJS = bandwidth/uncores_pci.o
+bandwidth_OBJS = bandwidth/uncores_pci.o
 
 OBJS = frequency.o \
        frequency_uncore.o \
@@ -15,19 +15,19 @@ OBJS = frequency.o \
 all: all.components $(OBJS)
 
 frequency.o: frequency.c frequency.h
-	$(CC) $(CFLAGS) -c frequency.c
+	$(CC) $(CFLAGS) -c $<
 
 frequency_uncore.o: frequency_uncore.c frequency_uncore.h
-	$(CC) $(CFLAGS) -c frequency_uncore.c
+	$(CC) $(CFLAGS) -c $<
 
 hardware_info.o: hardware_info.c hardware_info.h
-	$(CC) $(CFLAGS) -c hardware_info.c
+	$(CC) $(CFLAGS) -c $<
 
 bandwidth.o: bandwidth.c bandwidth.h
-	$(CC) $(CFLAGS) -c bandwidth.c
+	$(CC) $(CFLAGS) -c $<
 
-bandwidth.a: bandwidth.o $(INTERN_OBJS)
-	$(AR) rcs bandwidth.a bandwidth.o $(INTERN_OBJS)
+bandwidth.a: bandwidth.o $(bandwidth_OBJS)
+	$(AR) rcs $@ $< $(bandwidth_OBJS)
 
 ######## OPTIONS
 
@@ -36,7 +36,7 @@ install: install.components
 devel.install: devel.install.components;
 	cp *.h $(DESTDIR)/include/metrics/custom
 
-%.install: ;
+%.install: %.install.components;
 
 clean: clean.components
 	rm -f *.o *.a *.so

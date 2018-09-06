@@ -21,6 +21,8 @@ devel.install:
 	cp libEARapi.a $(DESTDIR)/lib
 	cp app_api.h $(DESTDIR)/include/
 
+%.install: ;	
+
 clean:
 	rm -f *.o *.a *.so
 

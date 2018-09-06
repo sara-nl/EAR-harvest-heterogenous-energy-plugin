@@ -27,13 +27,6 @@ ifdef DB_BASE
 	COMPONENTS += global_manager
 endif
 
-INSTALL_FOLDERS = $(DESTDIR)/bin \
-                  $(DESTDIR)/bin/kernels \
-                  $(DESTDIR)/include \
-                  $(DESTDIR)/lib \
-                  $(DESTDIR)/etc \
-                  $(DESTDIR)/sbin
-    
 ######## RULES
 
 .PHONY: check

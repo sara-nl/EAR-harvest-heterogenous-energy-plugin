@@ -18,13 +18,13 @@ OBJS = power_metrics.o
 all: libpowermetrics.a libpowermetrics.so
 
 power_metrics.o: power_metrics.c power_metrics.h
-	$(CC) $(CFLAGS) -c power_metrics.c
+	$(CC) $(CFLAGS) -c $<
 
 libpowermetrics.a: $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
-	$(AR) rcs libpowermetrics.a $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
+	$(AR) rcs $@ $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
 
 libpowermetrics.so: $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -shared $(OBJS) $(lib_OBJS) $(COMMON_OBJS) -o libpowermetrics.so
+	$(CC) $(CC_FLAGS) -shared -o $@ $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
 
 ######## OPTIONS
 

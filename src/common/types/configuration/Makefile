@@ -16,7 +16,7 @@ all: $(OBJS)
 
 ######## OPTIONS
 
-install: ;
+install:
 
 %.install: ;
 
