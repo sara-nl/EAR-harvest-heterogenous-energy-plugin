@@ -32,7 +32,7 @@ void usage(char *app)
             "\n\t--inc-th \tnew_th\t\t->increases the threshold for all nodes"\
             "\n\t--red-def-freq \treduction\t->reduces the default frequency"\
             "\n\t--restore-conf \t\t\t->restores the configuration to all node"\
-	    "\n\t--ping				->pings all nodes to check wether the nodes are up or not"\
+            "\n\t--ping	\t\t\t->pings all nodes to check wether the nodes are up or not"\
             "\n\nThis app requires privileged access privileged accesss to execute.\n", app);
 	exit(1);
 }
@@ -78,7 +78,7 @@ void main(int argc, char *argv[])
             {"inc-th",       required_argument, 0, 3},
             {"set-def-freq", required_argument, 0, 4},
             {"restore-conf", no_argument, 0, 5},
-	    {"ping", 	     no_argument, 0, 6},
+	        {"ping", 	     optional_argument, 0, 6},
             {"help",         no_argument, 0, 7},
             {0, 0, 0, 0}
         };
@@ -134,9 +134,12 @@ void main(int argc, char *argv[])
             case 5:
                 restore_conf_all_nodes(my_cluster_conf);
                 break;
-	    case 6:
-		ping_all_nodes(my_cluster_conf);
-		break;
+            case 6:
+                if (optarg)
+                    new_ping_all_nodes(my_cluster_conf);
+                else
+                    ping_all_nodes(my_cluster_conf);
+                break;
             case 7:
                 usage(argv[0]);
                 break;
