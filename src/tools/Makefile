@@ -35,10 +35,10 @@ traces_to_paraver: traces_to_paraver.cpp
 get_app_list: get_app_list.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
-coefficients_to_csv: coefficients_to_csv.c $(COMMON_OBJS
+coefficients_to_csv: coefficients_to_csv.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
 
-coefficients_v2_to_v3:coefficients_v2_to_v3.c $(COMMON_OBJS
+coefficients_v2_to_v3:coefficients_v2_to_v3.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
 
 ######## OPTIONS
