@@ -83,6 +83,7 @@ tests/check/check.sh
 *compute_coefficients_remote
 *coefficients_quality_control
 *compute_coefficients_v3
+*compute_coefficients_v2
 *get_app_list
 *compute_coefficients
 *traces_to_paraver

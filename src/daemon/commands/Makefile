@@ -38,7 +38,7 @@ ear_new_job: ear_new_job.c $(REMOTE_OBJS) $(TYPES_OBJS)
 	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS)
 
 ear_set_freq: ear_set_freq.c $(REMOTE_OBJS) $(TYPES_OBJS)
-	$(CC) $(CFLAGS) -o $@ e$< $(REMOTE_OBJS) $(TYPES_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS)
 
 ear_red_freq: ear_red_freq.c $(REMOTE_OBJS) $(TYPES_OBJS)
 	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS)
