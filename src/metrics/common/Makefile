@@ -13,7 +13,9 @@ msr.o: msr.c msr.h
 
 ######## OPTIONS
 
-install:
+install: ;
+
+%.install: ;
 
 clean:
 	rm -f *.o *.a *.so

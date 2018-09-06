@@ -2,7 +2,7 @@ CFLAGS  = -fPIC -shared
 
 ######## FILES
 
-METRICS_OBJS = $(SRCDIR)/metrics/common/msr.o \
+metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
                $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/frequency_uncore.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
@@ -24,25 +24,26 @@ METRICS_OBJS = $(SRCDIR)/metrics/common/msr.o \
 
 all: all.components libmetrics.a libmetrics.so
 
-libmetrics.a: $(METRICS_OBJS)
-	$(AR) rvs libmetrics.a $(METRICS_OBJS)
+libmetrics.a: $(metrics_OBJS)
+	$(AR) rvs libmetrics.a $(metrics_OBJS)
 
-libmetrics.so: $(METRICS_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o libmetrics.so $(METRICS_OBJS)
+libmetrics.so: $(metrics_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o libmetrics.so $(metrics_OBJS)
 
 ######## OPTIONS
 
-install: install.others install.components
+install: install.components
 
-install.others:
-	mkdir -p $(DESTDIR)/include/metrics/custom
-	mkdir -p $(DESTDIR)/include/metrics/ipmi
-	mkdir -p $(DESTDIR)/include/metrics/papi
-	cp metrics.h $(DESTDIR)/include/metrics
-	cp libmetrics.so $(DESTDIR)/lib/libmetrics.so
+devel.install: devel.install.components;
+	cp metrics.h $(DESTDIR)/include/metrics/
+	cp libmetrics.so $(DESTDIR)/lib/
+
+%.install: ;
 
 clean: clean.components
 	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
 
 depend: depend.components
 

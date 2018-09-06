@@ -34,7 +34,11 @@ energy_cpu.o: energy_cpu.c energy_cpu.h
 ######## OPTIONS
 
 install:
+
+devel.install: ;
 	cp *.h $(DESTDIR)/include/metrics/papi
+
+%.install: ;
 
 clean:
 	rm -f *.o *.a *.so
