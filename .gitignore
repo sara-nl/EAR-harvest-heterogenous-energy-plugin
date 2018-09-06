@@ -36,6 +36,7 @@ src/tests/functionals/read_from_file
 src/tests/functionals/ping
 kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin/sp-mz.C.40
 kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin/
+src/tools/compute_coefficients_v2
 
 
 # Build
