@@ -45,6 +45,7 @@ void init_periodic_metric(periodic_metric_t *pm)
 {
     memset(pm, 0, sizeof(periodic_metric_t));
 	gethostname(pm->node_id,NODE_SIZE);
+	strtok(pm->node_id,".");
 	pm->job_id=0;
 	pm->step_id=0;	
 }
