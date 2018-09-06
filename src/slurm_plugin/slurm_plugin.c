@@ -541,7 +541,6 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		//
 		if (remote_eard_report_start(sp) != ESPANK_SUCCESS) {
 			_remote_library_disable(sp);
-			_remote_plugin_disable(sp);
 			return (ESPANK_SUCCESS);
 		}
 

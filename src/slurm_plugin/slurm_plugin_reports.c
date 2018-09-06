@@ -80,8 +80,11 @@ static int _read_shared_data_remote(spank_t sp)
 	}
 
 	// Variable EAR and LD_PRELOAD
-	if (!conf_sett->lib_enabled || conf_sett->user_type == ENERGY_TAG) {
-		return (ESPANK_ERROR);
+	if (!conf_sett->lib_enabled || conf_sett->user_type == ENERGY_TAG)
+	{
+		dettach_settings_conf_shared_area();
+		_remote_library_disable(sp);
+		return (ESPANK_SUCCESS);
 	}
 
 	// Variable EAR_ENERGY_TAG, unset
