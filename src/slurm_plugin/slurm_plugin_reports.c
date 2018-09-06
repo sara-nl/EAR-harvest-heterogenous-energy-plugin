@@ -83,8 +83,7 @@ static int _read_shared_data_remote(spank_t sp)
 	if (!conf_sett->lib_enabled || conf_sett->user_type == ENERGY_TAG)
 	{
 		dettach_settings_conf_shared_area();
-		_remote_library_disable(sp);
-		return (ESPANK_SUCCESS);
+		return (ESPANK_ERROR);
 	}
 
 	// Variable EAR_ENERGY_TAG, unset
