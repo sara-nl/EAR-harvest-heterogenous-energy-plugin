@@ -66,23 +66,32 @@ export DEBUG
 all:
 	@ $(MAKE) -C 'src' all || exit
 
+full: clean all 
+
 check:
 	@ $(MAKE) -C 'src' check
 
 install:
-	@ $(MAKE) -C 'src' install
+	@ $(MAKE) -C 'etc' install || exit
+	@ $(MAKE) -C 'src' install || exit
 
-etc.install:
-	@ $(MAKE) -C etc install || exit
+devel.install: install;
+	@ $(MAKE) -C 'etc' devel.install || exit
+	@ $(MAKE) -C 'src' devel.install || exit
 
-%.install:
+etc.install: ;
+	@ $(MAKE) -C 'etc' etc.install || exit
+	@ $(MAKE) -C 'src' etc.install || exit
+
+%.install: ;
 	@ $(MAKE) -C src $*.install || exit
 
 clean:
-	@ $(MAKE) -C 'src' clean
+	@ $(MAKE) -C 'src' clean || exit
 
 depend:
 	@ $(MAKE) -C 'src' depend || exit
 
 depend-clean:
 	@ $(MAKE) -C 'src' depend-clean || exit
+

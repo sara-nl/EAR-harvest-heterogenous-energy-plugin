@@ -5,7 +5,7 @@ ear_new_job.o: ear_new_job.c ../../common/config.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
- ../../common/states.h
+ ../../common/states.h ../../daemon/eard_conf_rapi.h
 ear_set_ondemand.o: ear_set_ondemand.c ../../control/frequency.h
 ear_control.o: ear_control.c ../../daemon/eard_rapi.h \
  ../../common/config.h ../../common/types/application.h \
@@ -14,7 +14,7 @@ ear_control.o: ear_control.c ../../daemon/eard_rapi.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
- ../../common/states.h
+ ../../common/states.h ../../daemon/eard_conf_rapi.h
 ear_set_th.o: ear_set_th.c ../../common/config.h ../../daemon/eard_rapi.h \
  ../../common/types/application.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \
@@ -22,7 +22,7 @@ ear_set_th.o: ear_set_th.c ../../common/config.h ../../daemon/eard_rapi.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
- ../../common/states.h
+ ../../common/states.h ../../daemon/eard_conf_rapi.h
 ear_set_freq.o: ear_set_freq.c ../../common/config.h \
  ../../daemon/eard_rapi.h ../../common/types/application.h \
  ../../common/types/job.h ../../common/types/generic.h \
@@ -30,7 +30,7 @@ ear_set_freq.o: ear_set_freq.c ../../common/config.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
- ../../common/states.h
+ ../../common/states.h ../../daemon/eard_conf_rapi.h
 ear_get_node_freq.o: ear_get_node_freq.c ../../control/frequency.h
 ear_end_job.o: ear_end_job.c ../../common/config.h \
  ../../daemon/eard_rapi.h ../../common/types/application.h \
@@ -39,7 +39,7 @@ ear_end_job.o: ear_end_job.c ../../common/config.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
- ../../common/states.h
+ ../../common/states.h ../../daemon/eard_conf_rapi.h
 ear_set_node_freq.o: ear_set_node_freq.c ../../control/frequency.h
 ear_red_freq.o: ear_red_freq.c ../../common/config.h \
  ../../daemon/eard_rapi.h ../../common/types/application.h \
@@ -48,7 +48,7 @@ ear_red_freq.o: ear_red_freq.c ../../common/config.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
- ../../common/states.h
+ ../../common/states.h ../../daemon/eard_conf_rapi.h
 ear_inc_th.o: ear_inc_th.c ../../common/config.h ../../daemon/eard_rapi.h \
  ../../common/types/application.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \
@@ -56,4 +56,4 @@ ear_inc_th.o: ear_inc_th.c ../../common/config.h ../../daemon/eard_rapi.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
- ../../common/states.h
+ ../../common/states.h ../../daemon/eard_conf_rapi.h
