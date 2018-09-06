@@ -48,7 +48,7 @@ install:
 	cp compute_coefficients $(DESTDIR)/sbin/
 	cp coefficients_quality_control $(DESTDIR)/sbin/
 
-%.install:
+%.install: ;
 
 clean:
 	rm -f $(BINARIES)

@@ -66,19 +66,21 @@ install: install.others
 
 devel.install: devel.install.others
 
+%.install: ;
+
 clean: clean.others
 	rm -f *.o *.a *.so eard
-
-depend: depend.others
-
-depend-clean: depend-clean.others
-
-######## DEPENDENCIES
-
-include $(SRCDIR)/Makefile.depend
 
 ######## SUBFOLDERS
 
 %.others:
 	$(MAKE) -C 'commands' $*
 	$(MAKE) -C 'app_api' $*
+
+######## DEPENDENCIES
+
+depend: depend.others
+
+depend-clean: depend-clean.others
+
+include $(SRCDIR)/Makefile.depend

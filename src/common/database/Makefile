@@ -18,7 +18,7 @@ all: $(OBJS)
 
 install:
 
-%.install:
+%.install: ;
 
 clean:
 	rm -f *.o *.so *.a

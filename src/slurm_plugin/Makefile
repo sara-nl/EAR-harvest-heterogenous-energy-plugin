@@ -30,7 +30,7 @@ earplug.so: $(SOURCES) $(HEADERS)
 install:
 	cp earplug.so $(DESTDIR)/lib
 
-%.install:
+%.install: ;
 
 clean:
 	rm -f *.o *.a *.so

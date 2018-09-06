@@ -20,16 +20,16 @@ endif
 all: $(BINARIES) $(SBINARIES) $(COMPONENTS)
 
 eacct: ear_acct.c $(ereport_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ ear_acct.c $(DB_LDFLAGS) $(ereport_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ereport_OBJS)
 
 econtrol: ear_control.c $(econtrol_OBJS) 
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ ear_control.c $(econtrol_OBJS) 
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(econtrol_OBJS) 
 
 ereport: ear_report.c $(ereport_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ ear_report.c $(DB_LDFLAGS) $(ereport_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ereport_OBJS)
 
 ear_create_database: ear_create_database.c $(SRCDIR)/common/types.a
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ ear_create_database.c $(DB_LDFLAGS) $(SRCDIR)/common/types.a
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(SRCDIR)/common/types.a
 
 ######## OPTIONS
 
@@ -39,7 +39,7 @@ ifdef DB_BASE
 	cp $(SBINARIES) $(DESTDIR)/sbin/
 endif
 
-devel.install:
+%.install: ;
 
 clean:
 	rm -f $(BINARIES) $(SBINARIES)

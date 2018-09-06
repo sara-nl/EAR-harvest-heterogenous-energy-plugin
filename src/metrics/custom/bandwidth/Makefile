@@ -9,9 +9,9 @@ uncores_pci.o: uncores_pci.c uncores_pci.h
 
 ######## OPTIONS
 
-install:
+install: ;
 
-%.install:
+%.install: ;
 
 clean:
 	rm -f *.o *.a *.so

@@ -23,8 +23,10 @@ energy_node.a: energy_node.o $(ENERGY_OBJS)
 
 install: install.components
 
-devel.install: devel.install.components
+devel.install: devel.install.components;
 	cp *.h $(DESTDIR)/include/metrics/ipmi
+
+%.install: ;
 
 clean: clean.components
 	rm -f *.o *.a *.so

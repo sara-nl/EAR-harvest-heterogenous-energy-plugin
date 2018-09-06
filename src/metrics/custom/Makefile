@@ -33,8 +33,10 @@ bandwidth.a: bandwidth.o $(INTERN_OBJS)
 
 install: install.components
 
-devel.install: devel.install.components
+devel.install: devel.install.components;
 	cp *.h $(DESTDIR)/include/metrics/custom
+
+%.install: ;
 
 clean: clean.components
 	rm -f *.o *.a *.so

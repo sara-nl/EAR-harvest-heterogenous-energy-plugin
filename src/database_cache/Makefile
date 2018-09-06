@@ -22,7 +22,7 @@ eardbd: eardbd.c eardbd.h $(eardbd_OBJS)
 install:
 	cp eardbd $(DESTDIR)/sbin
 
-%.install:
+%.install: ;
 
 clean:
 	rm -f $(BINARIES)

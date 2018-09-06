@@ -30,9 +30,11 @@ libpowermetrics.so: $(OBJS) $(lib_OBJS) $(COMMON_OBJS)
 
 install:
 
-devel.install: 
+devel.install: ; 
 	cp libpowermetrics.so $(DESTDIR)/lib
 	cp power_metrics.h $(DESTDIR)/include/metrics/power_metrics
+
+%.install: ;
 
 clean:
 	rm -f *.o *.a *.so

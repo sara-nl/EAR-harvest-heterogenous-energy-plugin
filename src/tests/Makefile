@@ -8,9 +8,9 @@ COMPONENTS = check functionals
 
 all: all.components
 
-install:
+install: ;
 
-%.install:
+%.install: ;
 
 ######## OPTIONS
 

@@ -10,9 +10,9 @@ frequency.o: frequency.c frequency.h
 
 ######## OPTIONS
 
-install:
+install: ;
 
-%.install:
+%.install: ;
 
 clean:
 	rm -f *.o *.a *.so

@@ -34,12 +34,16 @@ libmetrics.so: $(metrics_OBJS)
 
 install: install.components
 
-devel.install: devel.install.component
-	cp metrics.h $(DESTDIR)/include/metrics
-	cp libmetrics.so $(DESTDIR)/lib/libmetrics.so
+devel.install: devel.install.components;
+	cp metrics.h $(DESTDIR)/include/metrics/
+	cp libmetrics.so $(DESTDIR)/lib/
+
+%.install: ;
 
 clean: clean.components
 	rm -f *.o *.a *.so
+
+######## DEPENDENCIES
 
 depend: depend.components
 

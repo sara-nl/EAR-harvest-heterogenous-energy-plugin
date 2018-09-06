@@ -15,7 +15,7 @@ app_server_api.o: app_server_api.c app_server_api.h
 
 ######## OPTIONS
 
-install:
+install: ;
 
 devel.install: 
 	cp libEARapi.a $(DESTDIR)/lib

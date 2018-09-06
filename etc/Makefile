@@ -26,12 +26,12 @@ dev_FOLDERS = $(DESTDIR)/bin/scripts \
               $(DESTDIR)/include/metrics/power_metrics
 
 ######## OPTIONS
-
+ 
 install:
-	mkdir -p $(gen_FOLDERS) 
+	@ mkdir -p $(gen_FOLDERS) 
 
-etc.install:
-	mkdir -p $(etc_FOLDERS) 
+etc.install: ;
+	@ mkdir -p $(etc_FOLDERS) 
 	cp    conf/ear.conf $(ETCDIR)/ear
 	cp    module/ear $(ETCDIR)/module/
 	cp -n slurm/ear.plugstack.conf $(ETCDIR)/slurm/
@@ -39,8 +39,8 @@ etc.install:
 	cp -n systemd/eardbd.service $(ETCDIR)/systemd
 	cp -n systemd/eargmd.service $(ETCDIR)/systemd
 
-devel.install:
-	mkdir -p $(dev_FOLDERS) 
+devel.install: ;
+	@ mkdir -p $(dev_FOLDERS) 
 	cp -r scripts/* $(DESTDIR)/bin/scripts/
 	@ rm  $(DESTDIR)/bin/scripts/README.md
 	@ rm  $(DESTDIR)/bin/scripts/learning/README.md

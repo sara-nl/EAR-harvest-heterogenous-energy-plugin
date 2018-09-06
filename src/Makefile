@@ -45,20 +45,14 @@ check:
 
 install: install.components
 
-etc.install: etc.install.components
+etc.install: etc.install.components;
 
-devel.install: devel.install.components
+devel.install: devel.install.components;
 
 %.install:
 	@ $(MAKE) -C $* install || exit
 
 clean: clean.components
-
-######## DEPENDENCIES
-
-depend: depend.components
-
-depend-clean: depend-clean.components
 
 ######## SUBFOLDERS
 
@@ -69,3 +63,9 @@ depend-clean: depend-clean.components
 		echo "===================================="; \
 		$(MAKE) -C $${i} $* || exit;                 \
 	done
+
+######## DEPENDENCIES
+
+depend: depend.components
+
+depend-clean: depend-clean.components

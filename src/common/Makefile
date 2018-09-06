@@ -58,10 +58,10 @@ types.a: $(types_SOURCES)
 
 install: install.components
 
-devel.install: devel.install.components
+devel.instal: ;
 	cp states.h $(DESTDIR)/include/common
 
-%.install:
+%.install: ;
 
 clean: clean.components
 	rm -f *.o *.a *.so

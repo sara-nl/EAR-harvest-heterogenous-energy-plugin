@@ -26,7 +26,7 @@ all: all.components $(OBJS)
 
 install: install.components
 
-devel.install: devel.install.components
+%.install: ;
 
 clean: clean.components
 	rm -f *.o *.a *.so

@@ -21,9 +21,9 @@ ibm.o: ibm.c ibm.h
 
 ######## OPTIONS
 
-install:
+install: ;
 
-%.install:
+%.install: ;
 
 clean:
 	rm -rf *.o *.a *.so
