@@ -254,7 +254,6 @@ int remote_eard_report_start(spank_t sp)
 	}
 
 	// Verbosity
-	plug_verbose(sp, 2, "Frequency requested %lu",eard_appl.job.def_f);
 	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
 
 	// Connection

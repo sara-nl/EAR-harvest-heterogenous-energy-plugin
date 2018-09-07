@@ -538,13 +538,10 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	//
 	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN"))
 	{
-		plug_verbose(sp, 2, "BEFORE EARD connection");
-		remote_print_environment(sp);
 		//
 		if (remote_eard_report_start(sp) != ESPANK_SUCCESS) {
 			_remote_library_disable(sp);
 		}
-		plug_verbose(sp, 2, "AFTER EARD connection");
 
 		remote_print_environment(sp);
 	}
