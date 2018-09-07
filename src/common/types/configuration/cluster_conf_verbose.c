@@ -102,7 +102,11 @@ static void print_islands_conf(node_island_t *conf)
 	for (i = 0; i < conf->num_ranges; i++)
 	{
        
-        if (conf->ranges[i].sec_ip < 0)
+        if (conf->ranges[i].db_ip < 0)
+		    fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\n",
+                conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end);
+
+        else if (conf->ranges[i].sec_ip < 0)
 		    fprintf(stderr, "---->prefix: %s\tstart: %u\tend: %u\tip: %s\n",
                 conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end, conf->db_ips[conf->ranges[i].db_ip]);
     
