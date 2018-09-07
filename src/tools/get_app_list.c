@@ -39,7 +39,7 @@ void main(int argc,char *argv[])
     int total_apps = 0;
 	int i;
 	application_t *apps;
-	is_learning=atoi(argv[1]);
+	if (argc>=2) is_learning=atoi(argv[1]);
 	if (is_learning) printf("Reading applications from learning DB\n");
 	else printf("Reading applications from normal DB\n");
     char ear_path[256];
