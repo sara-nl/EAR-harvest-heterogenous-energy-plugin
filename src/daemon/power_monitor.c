@@ -332,9 +332,13 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
             	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
 				authorized_context.policy=p_id;
 				if (appID->job.def_f){ 
+					eard_verbose(0,"Setting freq to NOT default policy p_state \n");
 					if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
 					else authorized_context.p_state=my_policy->p_state;
-				}else authorized_context.p_state=my_policy->p_state;	
+				}else{ 
+					eard_verbose(0,"Setting freq to default policy p_state %u\n",my_policy->p_state);
+					authorized_context.p_state=my_policy->p_state;	
+				}
 				if (appID->job.th>0) authorized_context.th=appID->job.th;
 				else authorized_context.th=my_policy->th;
 				my_policy=&authorized_context;
