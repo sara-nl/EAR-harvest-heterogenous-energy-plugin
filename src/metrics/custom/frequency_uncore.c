@@ -44,6 +44,7 @@ static uint64_t _cmdsta;
 static uint64_t _cmdsto;
 static off_t _offctl;
 static off_t _offctr;
+static off_t _offurl;
 
 static uint _cpus_num = 0;
 static uint _start = 0;
@@ -69,6 +70,7 @@ static uint _fill_architecture_bits(uint cpus_model)
 	_cmdsta = U_MSR_PMON_FIXED_CTL_STA;
 	_offctl = U_MSR_PMON_FIXED_CTL_OFF;
 	_offctr = U_MSR_PMON_FIXED_CTR_OFF;
+	_offurl = U_MSR_UNCORE_RATIO_LIMIT;
 }
 
 state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model)
@@ -196,12 +198,64 @@ state_t frequency_uncore_counters_stop(uint64_t *buffer)
 	return EAR_SUCCESS;
 }
 
-state_t frequency_uncore_set_limits(uint64_t *buffer)
+state_t frequency_uncore_set_limits(uint32_t *buffer)
 {
+    uint64_t set0 = 0;
+    uint64_t set1 = 0;
+    state_t r;
+    int i, j;
 
+    if (!_init) {
+        return EAR_NOT_INITIALIZED;
+    }   
+
+    for (i = 0, j = 0; i < _cpus_num; ++i, j += 2)
+    {   
+        buffer[j+0] = 0;
+        buffer[j+1] = 0;
+
+        set0 = (buffer[j+0] & U_MSR_UNCORE_RL_MASK_MIN) << 8;
+        set1 = (buffer[j+1] & U_MSR_UNCORE_RL_MASK_MAX) << 0;
+		set0 = set0 | set1;
+
+		if ((r = msr_write(&_fds[i], &set0, sizeof(uint64_t), _offurl)) != EAR_SUCCESS) {
+			return r;
+		}
+    }   
+
+    return EAR_SUCCESS;
 }
-state_t frequency_uncore_get_limits(uint64_t *buffer)
-{
 
+state_t frequency_uncore_get_limits(uint32_t *buffer)
+{
+	uint64_t result0 = 0;
+	uint64_t result1 = 0;
+	state_t r;
+	int i, j;
+
+	if (!_init) {
+		return EAR_NOT_INITIALIZED;
+	}
+
+	for (i = 0, j = 0; i < _cpus_num; ++i, j += 2)
+	{
+		buffer[j+0] = 0;
+		buffer[j+1] = 0;
+
+		// Read
+		if ((r = msr_read(&_fds[i], &result0, sizeof(uint64_t), _offurl)) != EAR_SUCCESS) {
+			return r;
+		}
+
+		result1 = (result0 & U_MSR_UNCORE_RL_MASK_MAX) >> 0;
+		result0 = (result0 & U_MSR_UNCORE_RL_MASK_MIN) >> 8; 
+
+		buffer[j+0] = (uint32_t) result0;
+		buffer[j+1] = (uint32_t) result1;
+		result0 = 0;
+		result1 = 0;
+	}
+
+	return EAR_SUCCESS;
 }
 

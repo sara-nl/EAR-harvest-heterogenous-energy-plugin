@@ -37,6 +37,9 @@
 #define U_MSR_PMON_FIXED_CTL_OFF	0x000703
 #define U_MSR_PMON_FIXED_CTL_STA	0x400000
 #define U_MSR_PMON_FIXED_CTL_STO	0x000000
+#define U_MSR_UNCORE_RATIO_LIMIT	0x000620
+#define U_MSR_UNCORE_RL_MASK_MAX	0x00007F
+#define U_MSR_UNCORE_RL_MASK_MIN	0x007F00
 
 /* */
 state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model);
@@ -50,9 +53,7 @@ state_t frequency_uncore_counters_start();
 /* */
 state_t frequency_uncore_counters_stop(uint64_t *buffer);
 
-state_t frequency_uncore_get_limits(uint64_t *buffer);
-state_t frequency_uncore_set_limits(uint64_t *buffer);
-
-
+state_t frequency_uncore_get_limits(uint32_t *buffer);
+state_t frequency_uncore_set_limits(uint32_t *buffer);
 
 #endif //EAR_FREQUENCY_UNCORE_H
