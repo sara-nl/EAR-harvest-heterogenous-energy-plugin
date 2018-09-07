@@ -368,7 +368,7 @@ void new_ping_all_nodes(cluster_conf_t my_cluster_conf)
                 if (rc<0){
                     VERBOSE_N(0,"Error connecting with node %s", node_name);
                 }else{
-                    VERBOSE_N(1,"Node %s with distande %d ping!\n", node_name, command.node_dist);
+                    VERBOSE_N(1,"Node %s with distance %d ping!\n", node_name, command.node_dist);
                     if (!send_command(&command)) VERBOSE_N(0,"Error doing ping for node %s", node_name);
                     eards_remote_disconnect();
                 }

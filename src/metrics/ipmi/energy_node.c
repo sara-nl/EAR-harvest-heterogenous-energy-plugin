@@ -392,7 +392,7 @@ unsigned long node_energy_frequency()
 		min_interval -= (begin_time.tv_sec *1000000 + begin_time.tv_usec);
 		switch (energy_interface){
 		case NODE_MANAGER:
-			min_interval=2000000;
+			min_interval=1000000;
 			break;
 		case INA226:
 			min_interval=10000;
