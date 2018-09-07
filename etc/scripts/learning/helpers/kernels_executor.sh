@@ -39,7 +39,7 @@ function launching_slurm
     echo "----------------------------------------------------------"
     echo "Launching (SLURM) $1 $2"
     echo "----------------------------------------------------------"
-    echo $SRUN_PATH -N 1 -n $2 -J $1.$EAR_P_STATE -w $SLURMD_NODENAME \
+    $SRUN_PATH -N 1 -n $2 -J $1 -w $SLURMD_NODENAME \
         --jobid=$SLURM_JOBID $EAR_SLURM_POLICY $BENCHS_BIN_PATH/$1
 }
 
