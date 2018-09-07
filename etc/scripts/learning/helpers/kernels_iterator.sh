@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Non edit region
-source $EAR_INSTALL_PATH/etc/scripts/learning/helpers/kernels_executor.sh
+source $EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_executor.sh
 export EAR_LEARNING_PHASE=1
 export BENCHS_MODE="test"
 

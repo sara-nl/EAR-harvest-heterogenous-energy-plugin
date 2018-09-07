@@ -25,8 +25,15 @@ export EAR_TIMES=3
 # Non-edit region
 export HOSTLIST="$(echo $(cat $1))"
 
+if [ -z $EAR_INSTALL_PATH ]
+then
+    echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set."
+    echo -e "TIP! Load the EAR environment module."
+    exit 1
+fi
+
 for i in ${HOSTLIST}
 do
     echo "Executing learning phase in node in node=${i}"
-	srun -w ${i} -N 1 -n 1 --exclusive $PWD/helpers/kernels_iterator.sh
+	srun -w ${i} -N 1 -n 1 --exclusive $EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_iterator.sh
 done
