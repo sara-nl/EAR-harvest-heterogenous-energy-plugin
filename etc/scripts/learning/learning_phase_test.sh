@@ -6,7 +6,7 @@ export SOCKETS=2
 export CORES_PER_SOCKET=8
 
 # Non edit region
-source $EAR_INSTALL_PATH/etc/scripts/learning/helpers/kernels_executor.sh
+source $EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_executor.sh
 export BENCHS_MODE="test"
 export EAR_P_STATE=1
 
