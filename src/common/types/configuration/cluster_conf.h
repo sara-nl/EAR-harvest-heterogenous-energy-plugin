@@ -273,6 +273,9 @@ void print_my_node_conf(my_node_conf_t *my_node_conf);
 /** prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p);
 
+/** copy dest=src */
+void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src);
+
 /** Prints in the stdout the whole cluster configuration */
 void print_cluster_conf(cluster_conf_t *conf);
 

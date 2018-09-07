@@ -89,15 +89,21 @@ static int set_nodes_conf(cluster_conf_t *conf, char *namelist)
 
 		if (strchr(token, '-'))
 		{
-			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start = atoi(strtok_r(token, "-", &second_ptr));
-			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end = atoi(strtok_r(NULL, "-", &second_ptr));
+            char *first_token = strtok_r(token, "-", &second_ptr);
+            char *second_token = strtok_r(NULL, "-", &second_ptr);
+			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start = atoi(first_token);
+			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end = atoi(second_token);
 
+            if (atoi(first_token) < 10 && atoi(second_token) < 10 && (strchr(first_token, '0') || strchr(second_token, '0')))
+                strcat(conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].prefix, "0");
 		}
 		else
 		{
 			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].end =
 			conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start =
-					atoi(token);
+			    atoi(token);
+            if (atoi(token) < 10 && strchr(token, '0'))
+                strcat(conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].prefix, "0");
 		}
 		token = strtok_r(NULL, ",", &buffer_ptr);
 		if (next_token != NULL) start = next_token;
@@ -169,14 +175,21 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 
 		if (strchr(token, '-'))
 		{
-			island->ranges[island->num_ranges+range_count].start = atoi(strtok_r(token, "-", &second_ptr));
-			island->ranges[island->num_ranges+range_count].end = atoi(strtok_r(NULL, "-", &second_ptr));
+            char *first_token = strtok_r(token, "-", &second_ptr);
+            char *second_token = strtok_r(NULL, "-", &second_ptr);
+			island->ranges[island->num_ranges+range_count].start = atoi(first_token);
+			island->ranges[island->num_ranges+range_count].end = atoi(second_token);
+            if (atoi(first_token) < 10 && atoi(second_token) < 10 && (strchr(first_token, '0') || strchr(second_token, '0')))
+                strcat(island->ranges[island->num_ranges+range_count].prefix, "0");
+                
 			range_count++;
 		}
 		else
 		{
 			island->ranges[island->num_ranges+range_count].start = island->ranges[island->num_ranges+range_count].end =
 					atoi(token);
+            if (atoi(token) < 10 && strchr(token, '0'))
+                strcat(island->ranges[island->num_ranges+range_count].prefix, "0");
 			range_count++;
 		}
 		token = strtok_r(NULL, ",", &buffer_ptr);

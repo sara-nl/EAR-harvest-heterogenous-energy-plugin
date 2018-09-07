@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 #include <common/config.h>
 #include <common/states.h>
@@ -84,4 +85,9 @@ int policy_id_to_name(int policy_id,char *my_policy)
     }
 	return ret;
 
+}
+
+void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src)
+{
+	bcopy((void *)dest,(void *)src,sizeof(policy_conf_t));
 }
