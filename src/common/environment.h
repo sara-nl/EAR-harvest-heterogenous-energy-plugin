@@ -41,7 +41,7 @@
 #define DEFAULT_POWER_POLICY            0
 #define DEFAULT_MIN_ENERGY_TH           0.1
 #define DEFAULT_MIN_TIME_TH             PERFORMANCE_GAIN
-#define DEFAULT_PERFORMANCE_ACURACY     2000000
+#define DEFAULT_PERFORMANCE_ACURACY     10000000
 #define DEFAULT_VERBOSE                 0
 #define DEFAULT_MAX_P_STATE             1
 #define DEFAULT_MIN_P_STATE             EAR_MIN_P_STATE
