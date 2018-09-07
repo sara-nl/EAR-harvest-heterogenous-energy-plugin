@@ -1,9 +1,9 @@
 CC           = @CC@
-CC_FLAGS     =
+CC_FLAGS     = @CC_FLAGS@
 MPICC        = @MPICC@
-MPICC_FLAGS  =
+MPICC_FLAGS  = @MPICC_FLAGS@
 OMPICC       = @OMPICC@
-OMPICC_FLAGS =
+OMPICC_FLAGS = @OMPICC_FLAGS@
 ROOTDIR      = $(shell pwd)
 SRCDIR       = $(ROOTDIR)/src
 DESTDIR      = @prefix@
