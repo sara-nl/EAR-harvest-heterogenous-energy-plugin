@@ -211,11 +211,8 @@ state_t frequency_uncore_set_limits(uint32_t *buffer)
 
     for (i = 0, j = 0; i < _cpus_num; ++i, j += 2)
     {   
-        buffer[j+0] = 0;
-        buffer[j+1] = 0;
-
-        set0 = (buffer[j+0] & U_MSR_UNCORE_RL_MASK_MIN) << 8;
-        set1 = (buffer[j+1] & U_MSR_UNCORE_RL_MASK_MAX) << 0;
+        set0 = (buffer[j+0] << 8) & U_MSR_UNCORE_RL_MASK_MIN;
+        set1 = (buffer[j+1] << 0) & U_MSR_UNCORE_RL_MASK_MAX;
 		set0 = set0 | set1;
 
 		if ((r = msr_write(&_fds[i], &set0, sizeof(uint64_t), _offurl)) != EAR_SUCCESS) {
