@@ -322,8 +322,9 @@ void print_short_apps(application_t *apps, int num_apps)
         else
         {
             //to print: job_id.step_id \t user_id si root \t app_name \t num_nodes
-            if (strlen(apps[i-1].job.app_id) > 30)
-                strcpy(apps[i-1].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
+            int idx = (i > 0) ? i - 1: 0;
+            if (strlen(apps[idx].job.app_id) > 30)
+                strcpy(apps[idx].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
 
 
             if (current_is_mpi)
@@ -337,7 +338,7 @@ void print_short_apps(application_t *apps, int num_apps)
 
                 if (avg_f > 0 && avg_time > 0 && total_energy > 0)
                     printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n",
-                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                        current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
                         avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
             }
             else
@@ -347,7 +348,7 @@ void print_short_apps(application_t *apps, int num_apps)
                 avg_power /= current_apps;
                 if (avg_f > 0 && avg_time > 0 && total_energy > 0)
                     printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
-                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                        current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
                         avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
 
             }
