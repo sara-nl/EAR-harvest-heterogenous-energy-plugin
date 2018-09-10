@@ -173,7 +173,7 @@ echo "----------------------------------------------------------"
 AC_CONFIG_FILES([Makefile
                  etc/module/ear
                  etc/slurm/ear.conf
-                 etc/slurm/plugstack.conf
+                 etc/slurm/ear.plugstack.conf
                  etc/systemd/eard.service
                  etc/systemd/eardbd.service
                  etc/systemd/eargmd.service
