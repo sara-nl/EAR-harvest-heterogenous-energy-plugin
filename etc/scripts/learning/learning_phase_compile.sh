@@ -25,7 +25,6 @@ export EAR_MAX_P_STATE=1
 export EAR_TIMES=1
 
 # Non-edit region
-export HOSTLIST="$(echo $(cat $1))"
 export EAR_LEARNING_PHASE=0
 export BENCHS_MODE="compile"
 
