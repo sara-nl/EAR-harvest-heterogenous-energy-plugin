@@ -617,8 +617,8 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
         mysql_close(connection);
 		return num_apps;
     }
-
-    current_job_id = (*apps)[num_apps - 1].job.id;
+    if (num_apps > 0)
+        current_job_id = (*apps)[num_apps - 1].job.id;
     mysql_close(connection);
 	return num_apps;
 }
