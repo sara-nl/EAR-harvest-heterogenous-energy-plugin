@@ -1,24 +1,32 @@
 #!/bin/bash
 
+if [ -z $EAR_INSTALL_PATH ]
+then
+    echo -e "ERROR: EAR_INSTALL_PATH environment variable is not set."
+    echo -e "TIP! Load the EAR environment module."
+    exit 1
+fi
+
+if [ -z $EAR_SOURCE_PATH ]
+then
+    echo -e "ERROR: EAR_SOURCE_PATH environment variable is not set."
+    echo -e "TIP! Load the EAR environment module."
+    exit 1
+fi
+
 # Edit architecture values
 export CORES=16
 export SOCKETS=2
 export CORES_PER_SOCKET=8
 
-# Update paths
-export EAR_SRC_PATH=$HOME/git/EAR
+# Edit learning phase parameters
+export EAR_MIN_P_STATE=1
+export EAR_MAX_P_STATE=1
+export EAR_TIMES=1
 
-# Non edit region
-source $EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_executor.sh
-
+# Non-edit region
+export HOSTLIST="$(echo $(cat $1))"
+export EAR_LEARNING_PHASE=0
 export BENCHS_MODE="compile"
 
-# Compiling or executing the different kernels
-learning_phase lu-mpi C
-learning_phase ep D
-learning_phase bt-mz C
-learning_phase sp-mz C
-learning_phase lu-mz C
-learning_phase ua C
-learning_phase dgemm
-learning_phase stream
+$EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_iterator.sh

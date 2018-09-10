@@ -2,8 +2,6 @@
 
 # Non edit region
 source $EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_executor.sh
-export EAR_LEARNING_PHASE=1
-export BENCHS_MODE="test"
 
 # Running the learning phase
 for (( i=$EAR_MIN_P_STATE; i<=$EAR_MAX_P_STATE; i++ ))
@@ -22,6 +20,9 @@ do
     done
 done
 
-# Calculating coefficients
-$EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname -a`.db.csv" \
-     $EAR_COEFF_DB_PATHNAME`hostname -a` 1000000 `hostname -a`
+if [ $EAR_LEARNING_PHASE -eq 1 ]
+then
+	# Calculating coefficients
+	$EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname -a`.db.csv" \
+     	$EAR_COEFF_DB_PATHNAME`hostname -a` 1000000 `hostname -a`
+fi
