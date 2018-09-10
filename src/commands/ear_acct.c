@@ -47,6 +47,7 @@ int EAR_VERBOSE_LEVEL=0;
 int full_length = 0;
 int verbose = 0;
 int query_filters = 0;
+int all_mpi = 0;
 char csv_path[256] = "";
 
 static const char *__NAME__ = "eacct";
@@ -232,7 +233,7 @@ void print_full_apps(application_t *apps, int num_apps)
         time_t start = apps[i].job.start_time;
         char buff[25];
         strftime(buff, 25, "%Y-%m-%d %H:%M:%S", localtime(&start));
-        if (apps[i].is_mpi)
+        if (apps[i].is_mpi && !all_mpi)
         {
             avg_f = (double) apps[i].signature.avg_f/1000000;
             printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s\n",
@@ -297,7 +298,7 @@ void print_short_apps(application_t *apps, int num_apps)
     {
         if (apps[i].job.id == current_job_id && apps[i].job.step_id == current_step_id)
         {
-            if (current_is_mpi)
+            if (current_is_mpi && !all_mpi)
             {
                 avg_f = (double) apps[i].signature.avg_f/1000000;
                 avg_frequency += avg_f;
@@ -327,7 +328,7 @@ void print_short_apps(application_t *apps, int num_apps)
                 strcpy(apps[idx].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
 
 
-            if (current_is_mpi)
+            if (current_is_mpi && !all_mpi)
             {
                 
                 avg_frequency /= current_apps;
@@ -554,7 +555,7 @@ void main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:vlc:h")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:vmlc:h")) != -1) 
     {
         switch (opt)
         {
@@ -578,6 +579,9 @@ void main(int argc, char *argv[])
                 break;
             case 'v':
                 verbose = 1;
+                break;
+            case 'm':
+                all_mpi = 1;
                 break;
             case 'c':
                 strcpy(csv_path, optarg);
