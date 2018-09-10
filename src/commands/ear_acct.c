@@ -220,30 +220,33 @@ void print_full_apps(application_t *apps, int num_apps)
     int i = 0;
     double avg_f;
 
-    printf("%-6s.%-7s\t %-10s %-15s %-20s %-14s %-14s %-14s %-14s %-14s %-14s\n",
+    printf("%-6s.%-7s\t %-10s %-15s %-20s %-14s %-14s %-14s %-14s %-14s %-14s %-20s\n",
             "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ (GHz)", "TIME (s)",
-            "POWER (Watts)", "GBS", "CPI", "ENERGY (J)");
+            "POWER (Watts)", "GBS", "CPI", "ENERGY (J)", "START TIME");
 
     for (i = 0; i < num_apps; i++)
     {
         if (strlen(apps[i].job.app_id) > 30)
             strcpy(apps[i].job.app_id, strrchr(apps[i].job.app_id, '/')+1);
 
+        time_t start = apps[i].job.start_time;
+        char buff[25];
+        strftime(buff, 25, "%Y-%m-%d %H:%M:%S", localtime(&start));
         if (apps[i].is_mpi)
         {
             avg_f = (double) apps[i].signature.avg_f/1000000;
-            printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf\n",
+            printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                 avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-                apps[i].signature.time * apps[i].signature.DC_power);
+                apps[i].signature.time * apps[i].signature.DC_power, buff);
         }
         else
         {
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
-            printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf\n",
+            printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                 avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NON-MPI", "NON-MPI", 
-                apps[i].power_sig.time * apps[i].power_sig.DC_power);
+                apps[i].power_sig.time * apps[i].power_sig.DC_power, buff);
 
         }
 
