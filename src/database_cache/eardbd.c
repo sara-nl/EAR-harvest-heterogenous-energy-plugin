@@ -518,6 +518,8 @@ static void incoming_data_announce(int fd, packet_header_t *header, char *conten
 		type = "loop_t";
 	} else if (header->content_type == CONTENT_TYPE_QST) {
 		type = "sync_question";
+	} else if (header->content_type == CONTENT_TYPE_PIN) {
+		type = "ping";
 	} else {
 		type = "unknown";
 	}
