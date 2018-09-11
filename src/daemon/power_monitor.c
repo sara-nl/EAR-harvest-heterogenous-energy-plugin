@@ -343,9 +343,9 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 				else authorized_context.th=my_policy->th;
 				my_policy=&authorized_context;
 			}else{
-				eard_verbose(0,"Authorized user is executing not defined/invalid policy using default");
+				eard_verbose(0,"Authorized user is executing not defined/invalid policy using default %d",my_cluster_conf.default_policy);
 				my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
-				
+				print_policy_conf(my_policy);		
 				if (my_policy==NULL){
 					eard_verbose(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 					authorized_context.p_state=1;
@@ -479,7 +479,7 @@ void powermon_end_job(job_id jid,job_id sid)
         idleNode=1;
         job_end_powermon_app();
 		// After that function, the avg power is computed
-		bcopy(&current_ear_app,&summary,sizeof(powermon_app_t));
+		memcpy(&summary,&current_ear_app,sizeof(powermon_app_t));
         current_ear_app.app.job.id=0;
 		current_ear_app.job_created=0;
 		// we must report the current period for that job before the reset:PENDING
