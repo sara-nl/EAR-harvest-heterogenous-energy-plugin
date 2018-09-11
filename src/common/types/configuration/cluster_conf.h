@@ -113,6 +113,7 @@ typedef struct node_range
 typedef struct eardb_conf 
 {
 	uint aggr_time;
+	uint insr_time;
 	uint tcp_port;
 	uint sec_tcp_port;
 	uint sync_tcp_port;

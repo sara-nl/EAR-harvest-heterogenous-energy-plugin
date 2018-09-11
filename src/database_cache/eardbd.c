@@ -72,9 +72,11 @@ int fd_cli;
 
 // Times
 static struct timeval timeout_insr;
-static struct timeval timeout_sync;
-static time_t time_insr_last;
+static struct timeval timeout_aggr;
+static struct timeval timeout_slct;
 static time_t time_insr;
+static time_t time_aggr;
+static time_t time_slct;
 
 // Input buffers
 static packet_header_t input_header;
@@ -109,6 +111,7 @@ static sync_qst_t sync_qst_content;
 static sync_ans_t sync_ans_content;
 
 // Data warehouse
+static ulong len_aggrs;
 static ulong len_appsl;
 static ulong len_appsm;
 static ulong len_appsn;
@@ -116,7 +119,7 @@ static ulong len_enrgy;
 static ulong len_evnts;
 static ulong len_loops;
 
-static periodic_aggregation_t aggr;
+static periodic_aggregation_t *aggrs;
 static periodic_metric_t *enrgy;
 static     application_t *appsm;
 static     application_t *appsn;
@@ -124,13 +127,21 @@ static     application_t *appsl;
 static       ear_event_t *evnts;
 static            loop_t *loops;
 
-// Indexes
+static ulong i_aggrs;
 static ulong i_enrgy;
 static ulong i_appsm;
 static ulong i_appsn;
 static ulong i_appsl;
 static ulong i_evnts;
 static ulong i_loops;
+
+static uint per_aggrs = 01;
+static uint per_enrgy = 05;
+static uint per_appsm = 40;
+static uint per_appsn = 20;
+static uint per_appsl = 05;
+static uint per_evnts = 05;
+static uint per_loops = 24;
 
 // Strings
 static char *str_who[2] = { "server", "mirror" };
@@ -316,18 +327,18 @@ static void db_store_periodic_metrics()
 	i_enrgy = 0;
 }
 
-static void db_store_periodic_aggregation()
+static void db_store_periodic_aggregations()
 {
-	float percent = (float) (i_appsl) / (float) (len_appsl);
-	verbose1("%d samples energy monitoring data (from %lu to %lu, consuming %lu mJ)",
-			 aggr.n_samples, aggr.start_time, aggr.end_time, aggr.DC_energy);
+	float percent = (float) (i_aggrs) / (float) (len_aggrs);
+	verbose1("%lu/%lu (%0.2f) samples of energy aggregations",
+			 i_aggrs, len_aggrs, percent);
 
-	if (aggr.n_samples <= 0) {
+	if (i_aggrs <= 0) {
 		return;
 	}
 
-	db_insert_periodic_aggregation(&aggr);
-	init_periodic_aggregation(&aggr);
+	//db_insert_periodic_aggregation(&aggrs);
+	init_periodic_aggregation(aggrs);
 }
 
 static void db_store_applications_mpi()
@@ -373,6 +384,43 @@ static void db_store_applications_learning()
 }
 
 /*
+ * Time
+ */
+
+static void time_substract_timeouts()
+{
+	timeout_insr.tv_sec -= time_slct;
+	timeout_aggr.tv_sec -= time_slct;
+}
+
+static void time_reset_timeout_insr(time_t offset_insr)
+{
+	// Refresh insert time
+	timeout_insr.tv_sec  = time_insr + offset_insr;
+	timeout_insr.tv_usec = 0L;
+}
+
+static void time_reset_timeout_aggr()
+{
+	// Refresh aggregation timeout
+	timeout_aggr.tv_sec  = time_aggr;
+	timeout_aggr.tv_usec = 0L;
+}
+
+static void time_reset_timeout_slct()
+{
+	// Refresh select time
+	time_slct = timeout_aggr.tv_sec;
+
+	if (timeout_insr.tv_sec < timeout_aggr.tv_sec) {
+		timeout_slct.tv_sec = timeout_insr.tv_sec;
+	}
+
+	timeout_slct.tv_sec  = time_slct;
+	timeout_slct.tv_usec = 0L;
+}
+
+/*
  * Data processing
  */
 
@@ -381,18 +429,9 @@ static void make_periodic_aggregation(periodic_aggregation_t *aggr, periodic_met
 	add_periodic_aggregation(aggr, met->DC_energy, met->start_time, met->end_time);
 }
 
-static void process_reset_insert_time(time_t offset)
-{
-	// Refresh insert time
-	timeout_insr.tv_sec = time_insr + offset;
-	timeout_insr.tv_usec = 0L;
-
-	// Set when was the last insert time
-	time_insr_last = time(NULL);
-}
-
 static void process_reset_indexes()
 {
+	i_aggrs = 0;
 	i_appsm = 0;
 	i_appsn = 0;
 	i_appsl = 0;
@@ -406,9 +445,8 @@ static void process_insert(uint option, uint reason)
 	verline0();
 	verbose1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 
-	if (sync_option(option, SYNC_ALL)) {
-		// Time to aggregate
-		db_store_periodic_aggregation();
+	if (sync_option(option, SYNC_AGGRS)) {
+		db_store_periodic_aggregations();
 	}
 	if (sync_option(option, SYNC_APPSM)) {
 		db_store_applications_mpi();
@@ -420,7 +458,7 @@ static void process_insert(uint option, uint reason)
 		db_store_applications_learning();
 	}
 	if (sync_option(option, SYNC_ENRGY)) {
-		db_store_periodic_metrics();	
+		db_store_periodic_metrics();
 	}
 	if (sync_option(option, SYNC_EVNTS)) {
 		db_store_events();
@@ -439,9 +477,12 @@ static void process_insert(uint option, uint reason)
  *
  */
 
-static void sample(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt)
+static void incoming_data_sample(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt)
 {
-	memcpy (buf, cnt, siz);
+	if (cnt != NULL) {
+		memcpy (buf, cnt, siz);
+	}
+
 	*idx += 1;
 
 	if (*idx == len)
@@ -463,21 +504,39 @@ static void incoming_data_process(int fd, packet_header_t *header, char *content
 	{
 		application_t *app = (application_t *) content;
 
-		if (app->is_learning) {
-			sample((char *) &appsl[i_appsl], len_appsl, &i_appsl, content, sizeof(application_t), SYNC_APPSL);
-		} else if (app->is_mpi) {
-			sample((char *) &appsm[i_appsm], len_appsm, &i_appsm, content, sizeof(application_t), SYNC_APPSM);
-		} else {
-			sample((char *) &appsn[i_appsn], len_appsn, &i_appsn, content, sizeof(application_t), SYNC_APPSN);
+		if (app->is_learning)
+		{
+			incoming_data_sample((char *) &appsl[i_appsl], len_appsl, &i_appsl,
+				content, sizeof(application_t), SYNC_APPSL);
 		}
-	} else if (header->content_type == CONTENT_TYPE_EVE) {
-		sample((char *) &evnts[i_evnts], len_evnts, &i_evnts, content, sizeof(ear_event_t), SYNC_EVNTS);
-	} else if (header->content_type == CONTENT_TYPE_LOO) {
-		sample((char *) &loops[i_loops], len_loops, &i_loops, content, sizeof(loop_t), SYNC_LOOPS);
-	} else if (header->content_type == CONTENT_TYPE_PER) {
-		make_periodic_aggregation(&aggr, (periodic_metric_t *) content);
-		sample((char *) &enrgy[i_enrgy], len_enrgy, &i_enrgy, content, sizeof(periodic_metric_t), SYNC_ENRGY);
-	} else if (header->content_type == CONTENT_TYPE_QST)
+		else if (app->is_mpi)
+		{
+			incoming_data_sample((char *) &appsm[i_appsm], len_appsm, &i_appsm,
+				content, sizeof(application_t), SYNC_APPSM);
+		}
+		else
+		{
+			incoming_data_sample((char *) &appsn[i_appsn], len_appsn, &i_appsn,
+				content, sizeof(application_t), SYNC_APPSN);
+		}
+	} else if (header->content_type == CONTENT_TYPE_EVE)
+	{
+		incoming_data_sample((char *) &evnts[i_evnts], len_evnts, &i_evnts,
+			content, sizeof(ear_event_t), SYNC_EVNTS);
+	}
+	else if (header->content_type == CONTENT_TYPE_LOO)
+	{
+		incoming_data_sample((char *) &loops[i_loops], len_loops, &i_loops,
+			content, sizeof(loop_t), SYNC_LOOPS);
+	}
+	else if (header->content_type == CONTENT_TYPE_PER)
+	{
+		make_periodic_aggregation(&aggrs[i_aggrs], (periodic_metric_t *) content);
+
+		incoming_data_sample((char *) &enrgy[i_enrgy], len_enrgy, &i_enrgy,
+			content, sizeof(periodic_metric_t), SYNC_ENRGY);
+	}
+	else if (header->content_type == CONTENT_TYPE_QST)
 	{
 		sync_qst_t *q = (sync_qst_t *) content;
 
@@ -490,7 +549,7 @@ static void incoming_data_process(int fd, packet_header_t *header, char *content
 		// In case it is a full sync the sync time is resetted before the answer
 		// with a very small offset (1 second is enough)
 		if (sync_option(q->sync_option, SYNC_ALL)) {
-			process_reset_insert_time(1);
+			time_reset_timeout_insr(1);
 		}
 	}
 }
@@ -642,7 +701,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	// Configuration
-#if 1
+#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
@@ -651,7 +710,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	read_cluster_conf(extra_buffer, conf_clus);
 
 	// Database
-	init_db_helper(&conf_clus->database);
+	//init_db_helper(&conf_clus->database);
 
 	// Mirror finding
 	gethostname(master_host, SZ_NAME_MEDIUM);
@@ -692,7 +751,8 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	conf_clus->db_manager.sec_tcp_port  = 4712;
 	conf_clus->db_manager.sync_tcp_port = 4713;
 	conf_clus->db_manager.mem_size      = 100;
-	conf_clus->db_manager.aggr_time     = 30;
+	conf_clus->db_manager.aggr_time     = 10;
+	conf_clus->db_manager.insr_time     = 20;
 
 	server_too = atoi(argv[1]);
 	mirror_too = atoi(argv[2]);
@@ -706,21 +766,38 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
 
-	// Times
-	time_insr = (time_t) conf_clus->db_manager.aggr_time;
-
-	timeout_insr.tv_sec  = time_insr;
-	timeout_insr.tv_usec = 0L;
-	timeout_sync.tv_sec  = 10;
-	timeout_sync.tv_usec = 0L;
-
-	// Verbose
+	// Server & mirro verbosity
 	verbose3("enabled cache server: %s",      server_too ? "OK": "NO");
 	verbose3("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
 
 	if (!server_too && !mirror_too) {
 		error("this node is not configured as a server nor mirror");
 	}
+}
+
+static void init_time_configuration(int argc, char **argv, cluster_conf_t *conf_clus)
+{
+	// Times
+	time_insr = (time_t) conf_clus->db_manager.insr_time;
+	time_aggr = (time_t) conf_clus->db_manager.aggr_time;
+
+	if (time_insr == 0) {
+		verbose3("insert time can't be 0, using 300 seconds (default)");
+		time_insr = 300;
+	}
+	if (time_aggr == 0) {
+		verbose3("aggregation time can't be 0, using 60 seconds (default)");
+		time_aggr = 60;
+	}
+
+	// Looking for multiple value
+	time_reset_timeout_insr(0);
+	time_reset_timeout_aggr();
+	time_reset_timeout_slct();
+
+	// Times verbosity
+	verbose3("insertion time:   %lu seconds", time_insr);
+	verbose3("aggregation time: %lu seconds", time_aggr);
 }
 
 static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -755,7 +832,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
 		error("while creating sockets (%s)", intern_error_str);
 	}
-	
+
 	if (server_too) s1 = EAR_NOT_READY;
     if (server_too) s2 = EAR_NOT_READY;
     if (mirror_too) s3 = EAR_NOT_READY;
@@ -800,7 +877,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	tprintf("mirror metrics||%d||TCP||%s||%d", smets_mir->port, str_sta[fd2 == -1], fd2);
 	tprintf("server sync||%d||TCP||%s||%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
 	tprintf("mirror sync||%d||TCP||%s||%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
-	verbose0("TIP! mirror sync socket opens and closes intermittently");
+	verbose3("TIP! mirror sync socket opens and closes intermittently");
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -831,7 +908,7 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	// Verbosity
 	char *str_sta[2] = { "(just sleeps)", "" };
-	
+
 	verbose3("cache server pid: %d %s", server_pid, str_sta[server_too]);
 	verbose3("cache mirror pid: %d", mirror_pid);
 }
@@ -884,7 +961,7 @@ static void init_signals()
 
 	// Editing signals individually
 	sigfillset(&action.sa_mask);
-	
+
 	action.sa_handler = NULL;
 	action.sa_sigaction = signal_handler;
 	action.sa_flags = SA_SIGINFO;
@@ -936,14 +1013,16 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 		init_sockets_main(argc, argv, conf_clus);
 	}
 
-	float len_appsl_pc = 0.05;
-	float len_appsm_pc = 0.40;
-	float len_appsn_pc = 0.20;
-	float len_enrgy_pc = 0.05;
-	float len_evnts_pc = 0.05;
-	float len_loops_pc = 0.25;
+	float len_aggrs_pc = ((float) per_aggrs) / 100.0;
+	float len_appsl_pc = ((float) per_appsl) / 100.0;
+	float len_appsm_pc = ((float) per_appsm) / 100.0;
+	float len_appsn_pc = ((float) per_appsn) / 100.0;
+	float len_enrgy_pc = ((float) per_enrgy) / 100.0;
+	float len_evnts_pc = ((float) per_evnts) / 100.0;
+	float len_loops_pc = ((float) per_loops) / 100.0;
 
 	// Data allocation
+	len_aggrs = get_allocation_elements(len_aggrs_pc, sizeof(periodic_aggregation_t));
 	len_appsl = get_allocation_elements(len_appsl_pc, sizeof(application_t));
 	len_appsm = get_allocation_elements(len_appsm_pc, sizeof(application_t));
 	len_appsn = get_allocation_elements(len_appsn_pc, sizeof(application_t));
@@ -952,6 +1031,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	len_loops = get_allocation_elements(len_loops_pc, sizeof(loop_t));
 
 	// Raw data
+	ulong b_aggrs = sizeof(periodic_aggregation_t) * len_aggrs;
 	ulong b_enrgy = sizeof(periodic_metric_t) * len_enrgy;
 	ulong b_appsl = sizeof(application_t) * len_appsl;
 	ulong b_appsm = sizeof(application_t) * len_appsm;
@@ -959,6 +1039,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	ulong b_evnts = sizeof(ear_event_t) * len_evnts;
 	ulong b_loops = sizeof(loop_t) * len_loops;
 
+	aggrs = malloc(b_aggrs);
 	appsm = malloc(b_appsm);
 	appsl = malloc(b_appsl);
 	appsn = malloc(b_appsn);
@@ -966,13 +1047,15 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	evnts = malloc(b_evnts);
 	loops = malloc(b_loops);
 
+	float mb_aggrs = (double) (b_aggrs) / 1000000.0;
 	float mb_appsl = (double) (b_appsl) / 1000000.0;
 	float mb_appsm = (double) (b_appsm) / 1000000.0;
 	float mb_appsn = (double) (b_appsn) / 1000000.0;
 	float mb_enrgy = (double) (b_enrgy) / 1000000.0;
 	float mb_loops = (double) (b_loops) / 1000000.0;
 	float mb_evnts = (double) (b_evnts) / 1000000.0;
-	float mb_total = mb_appsl + mb_appsm + mb_appsn + mb_enrgy + mb_loops + mb_evnts;
+	float mb_total = mb_aggrs + mb_appsl + mb_appsm + mb_appsn +
+					 mb_enrgy + mb_loops + mb_evnts;
 
 	// Synchronization headers
 	sockets_header_clean(&sync_ans_header);
@@ -1000,6 +1083,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	tprintf("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_enrgy, sizeof(periodic_metric_t), len_enrgy, len_enrgy_pc);
 	tprintf("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_loops, sizeof(loop_t), len_loops, len_loops_pc);
 	tprintf("events||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_evnts, sizeof(ear_event_t), len_evnts, len_evnts_pc);
+	tprintf("aggregations||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_aggrs, sizeof(periodic_aggregation_t), len_aggrs, len_aggrs_pc);
 
 	tprintf("TOTAL||%0.2f MBs", mb_total);
 	verbose3("TIP! this allocated space is per process server/mirror");
@@ -1017,36 +1101,53 @@ static void pipeline()
 	{
 		fds_incoming = fds_active;
 
-		if ((s = select(fd_max + 1, &fds_incoming, NULL, NULL, &timeout_insr)) == -1) {
+		if ((s = select(fd_max + 1, &fds_incoming, NULL, NULL, &timeout_slct)) == -1) {
 			if (listening) {
 				error("during select (%s)", intern_error_str);
 			}
 		}
 
 		// If timeout_insr, data processing
-		if (timeout_insr.tv_sec == 0 && timeout_insr.tv_usec == 0)
+		if (timeout_slct.tv_sec == 0 && timeout_slct.tv_usec == 0)
 		{
-			// Inserts data and updates timeouts
-			// Synchronizing with the MAIN
-			if (mirror_iam)
-			{
-				// If mirror the time reset is do it before the insert
-				process_reset_insert_time(0);
+			time_substract_timeouts();
 
-				// Asking the question
-				if(state_fail(sync_question(SYNC_ALL))) {
-					process_insert(SYNC_ALL, RES_TIME);
-				} else {
-					process_insert(SYNC_RESET, RES_TIME);
-				}
-			} else
+			if (timeout_aggr.tv_sec == 0)
 			{
-				// Server normal insertion
-				process_insert(SYNC_ALL, RES_TIME);
+				// Aggregation time done, so new aggregation incoming
+				incoming_data_sample(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);
+
+				// Initializing the new element
+				init_periodic_aggregation(&aggrs[i_aggrs]);
+
+				//
+				time_reset_timeout_aggr();
+			}
+
+			if (timeout_insr.tv_sec == 0)
+			{
+				// Synchronizing with the MAIN
+				if (mirror_iam)
+				{
+					// Asking the question
+					if(state_fail(sync_question(SYNC_ALL))) {
+						// In case of fail the mirror have to insert the data
+						process_insert(SYNC_ALL, RES_TIME);
+					} else {
+						// In case of the answer is received the mirror just have to clear the data
+						process_insert(SYNC_RESET, RES_TIME);
+					}
+				} else
+				{
+					// Server normal insertion
+					process_insert(SYNC_ALL, RES_TIME);
+				}
 
 				// If server the time reset is do it after the insert
-				process_reset_insert_time(0);
+				time_reset_timeout_insr(0);
 			}
+
+			time_reset_timeout_slct();
 		}
 
 		// run through the existing connections looking for data to read
@@ -1135,20 +1236,23 @@ int main(int argc, char **argv)
 		verline1("phase 1: general configuration");
 		init_general_configuration(argc, argv, &conf_clus);
 
+		verline1("phase 2: time configuration");
+		init_time_configuration(argc, argv, &conf_clus);
+
 		//
-		verline1("phase 2: sockets initialization");
+		verline1("phase 3: sockets initialization");
 		init_sockets(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 3: processes fork");
+		verline1("phase 4: processes fork");
 		init_fork(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 4: process configuration & allocation");
+		verline1("phase 5: process configuration & allocation");
 		init_process_configuration(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 5: listening (processing every %lu s)", time_insr);
+		verline1("phase 6: listening (processing every %lu s)", time_insr);
 		pipeline();
 	}
 
