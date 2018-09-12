@@ -86,6 +86,7 @@ typedef struct eard_conf
 * EARGMPort=
 */
 #define DECON_LIMITS	3
+
 typedef struct eargm_conf
 {
 	uint 	verbose;		/* default 1 */
@@ -119,7 +120,9 @@ typedef struct eardb_conf
 	uint sync_tcp_port;
 	uint udp_port;
     uint mem_size;
+    uchar mem_size_types[EARDBD_TYPES];
 } eardb_conf_t;
+
 typedef struct policy_conf
 {
     uint policy; // from environment.h
@@ -127,7 +130,6 @@ typedef struct policy_conf
     uint p_state;
     char is_available; //default at 0, not available
 } policy_conf_t;
-
 
 typedef struct node_conf
 {
