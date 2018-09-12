@@ -216,6 +216,16 @@ void update_configuration()
 	dynais_timeout=system_conf->lib_info.dynais_timeout;
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
+#if EAR_PERFORMANCE_TESTS
+	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every;
+	ear_dynais_timeout=getenv("EAR_DYNAIS_TIMEOUT");
+	ear_lib_period=getenv("EAR_LIB_PERIOD");
+	ear_check_every=getenv("EAR_CHECK_EVERY");
+	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
+	if (ear_lib_period!=NULL) lib_period=atoi(ear_lib_period);
+	if (ear_check_every!=NULL) check_every=atoi(ear_check_every);
+	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais_timeout %d lib_period %d check_every %d\n",dynais_timeout,lib_period,check_every);	
+#endif
 }
 
 void ear_init()

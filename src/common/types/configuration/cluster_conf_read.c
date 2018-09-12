@@ -668,11 +668,16 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             conf->eard.force_frequencies = atoi(token);
         }
 
-			//DB MANAGER
+		//DB MANAGER
 		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.aggr_time = atoi(token);
+		}
+		else if (!strcmp(token, "DBDAEMONINSERTIONTIME"))
+		{
+			token = strtok(NULL, "=");
+			conf->db_manager.insr_time = atoi(token);
 		}
 		else if (!strcmp(token, "DBDAEMONPORTTCP"))
 		{
@@ -694,8 +699,22 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->db_manager.mem_size = atoi(token);
         }
+		else if (!strcmp(token, "DBDAEMONMEMORYSIZEPERTYPE"))
+		{
+			int i = 0;
 
-			//GLOBAL MANAGER
+			token = strtok(NULL, "=");
+			token = strtok(token, ",");
+
+			while (token != NULL && i < EARDBD_TYPES)
+			{
+				conf->db_manager.mem_size_types[i] = atoi(token);
+				token = strtok(NULL, ",");
+				i++;
+			}
+		}
+
+		//GLOBAL MANAGER
 		else if (!strcmp(token, "GLOBALMANAGERVERBOSE"))
 		{
 			token = strtok(NULL, "=");

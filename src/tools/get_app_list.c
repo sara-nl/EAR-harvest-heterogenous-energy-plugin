@@ -49,17 +49,14 @@ void main(int argc,char *argv[])
             exit(0);
     }
     read_cluster_conf(ear_path,&my_conf);
-	printf("Initializinf DB\n");
+	printf("Initializing DB\n");
 	init_db_helper(&my_conf.database);
 	printf("reading apps\n");
 	num_apps=db_read_applications(&apps,is_learning, 50, NULL);
     while (num_apps > 0)
     {
 	    for (i=0;i<num_apps;i++){
-		    if (strcmp(apps[i].node_id,argv[2])==0){ 
-				total_apps++;
-				report_application_data(&apps[i]);
-			}
+		    report_application_data(&apps[i]);
 	    }
         free(apps);
 	    num_apps=db_read_applications(&apps,is_learning, 50, NULL);

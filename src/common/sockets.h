@@ -68,7 +68,7 @@ typedef struct packet_header {
 #define PACKET_CONTENT(buffer) \
 	(void *) &buffer[sizeof(packet_header_t)];
 
-/* functions */
+/* Functions */
 state_t sockets_header_clean(packet_header_t *header);
 
 state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol);
