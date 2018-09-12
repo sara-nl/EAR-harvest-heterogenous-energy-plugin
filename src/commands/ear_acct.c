@@ -337,7 +337,7 @@ void print_short_apps(application_t *apps, int num_apps)
                 avg_GBS /= current_apps;
                 avg_CPI /= current_apps;
 
-                if (avg_f > 0 && avg_time > 0 && total_energy > 0)
+                if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                     printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n",
                         current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
                         avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
@@ -347,7 +347,7 @@ void print_short_apps(application_t *apps, int num_apps)
                 avg_frequency /= current_apps;
                 avg_time /= current_apps;
                 avg_power /= current_apps;
-                if (avg_f > 0 && avg_time > 0 && total_energy > 0)
+                if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                     printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
                         current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
                         avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
@@ -384,7 +384,7 @@ void print_short_apps(application_t *apps, int num_apps)
             avg_CPI /= current_apps;
 
 
-            if (avg_f > 0 && avg_time > 0 && total_energy > 0)
+            if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n",
                     current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
                     avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
@@ -394,7 +394,7 @@ void print_short_apps(application_t *apps, int num_apps)
             avg_frequency /= current_apps;
             avg_time /= current_apps;
             avg_power /= current_apps;
-            if (avg_f > 0 && avg_time > 0 && total_energy > 0)
+            if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
                     current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
                     avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);

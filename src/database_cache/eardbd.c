@@ -112,13 +112,13 @@ static sync_qst_t sync_qst_content;
 static sync_ans_t sync_ans_content;
 
 // Data warehouse
-static uint per_aggrs = 01;
-static uint per_enrgy = 05;
 static uint per_appsm = 40;
 static uint per_appsn = 20;
 static uint per_appsl = 05;
-static uint per_evnts = 05;
 static uint per_loops = 24;
+static uint per_enrgy = 05;
+static uint per_aggrs = 01;
+static uint per_evnts = 05;
 
 ulong len_aggrs;
 ulong len_appsl;

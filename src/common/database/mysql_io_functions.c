@@ -106,6 +106,8 @@ static char *__NAME__ = "MYSQL_IO: ";
 #define PERIODIC_METRIC_ARGS 6
 #endif
 
+#define PERIODIC_AGGREGATION_ARGS 3
+
 #define EAR_EVENTS_ARGS 6
 
 #if !DB_SIMPLE
@@ -1565,6 +1567,62 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
     return EAR_SUCCESS;
 }
 
+int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggregation_t *per_aggs, int num_aggs)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+
+    char *params = ", (?, ?, ?)";
+    char *query = malloc(strlen(PERIODIC_AGGREGATION_QUERY)+(num_aggs-1)*strlen(params)+1);
+    strcpy(query, PERIODIC_AGGREGATION_QUERY);
+
+    int i, j;
+    for (i = 1; i < num_aggs; i++)
+    {
+        strcat(query, params);
+    }
+
+
+    if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
+
+    MYSQL_BIND *bind = calloc(num_aggs*PERIODIC_AGGREGATION_ARGS, sizeof(MYSQL_BIND));
+
+    //integer types
+    for (i = 0; i < num_aggs; i++)
+    {
+        int offset = i*PERIODIC_AGGREGATION_ARGS;
+        for (j = 0; j < PERIODIC_AGGREGATION_ARGS; j++)
+        {
+            bind[j+offset].buffer_type = MYSQL_TYPE_LONGLONG;
+        }
+
+        //storage variable assignation
+        bind[0+offset].buffer = (char *)&per_aggs[i].DC_energy;
+        bind[1+offset].buffer = (char *)&per_aggs[i].start_time;
+        bind[2+offset].buffer = (char *)&per_aggs[i].end_time;
+    }
+
+    if (mysql_stmt_bind_param(statement, bind))
+    {
+        free(query);
+        free(bind);
+        return mysql_statement_error(statement);
+    }
+
+    if (mysql_stmt_execute(statement)) 
+    {
+        free(query);
+        free(bind);
+        return mysql_statement_error(statement);
+    }
+
+    free(query);
+    free(bind);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return EAR_SUCCESS;
+}
 int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
