@@ -708,16 +708,13 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 			while (token != NULL && i < EARDBD_TYPES)
 			{
-				printf("%s", token);
 				conf->db_manager.mem_size_types[i] = atoi(token);
 				token = strtok(NULL, ",");
 				i++;
 			}
 		}
 
-		//DBDaemonMemorySizePerType=40,20,5,24,5,1,5
-
-			//GLOBAL MANAGER
+		//GLOBAL MANAGER
 		else if (!strcmp(token, "GLOBALMANAGERVERBOSE"))
 		{
 			token = strtok(NULL, "=");
