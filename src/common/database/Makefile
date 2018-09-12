@@ -4,8 +4,8 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(DB_CFLAGS)
 
 ifdef DB_BASE
 OBJS = db_helper.o \
-       mysql_io_functions.o \
-	   auxiliars.o
+       mysql_io_functions.o 
+
 endif
 
 ######## RULES
