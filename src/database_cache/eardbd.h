@@ -26,6 +26,7 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+
 #ifndef EAR_EARDBD_H
 #define EAR_EARDBD_H
 
@@ -65,11 +66,11 @@
 #define sync_option(option, type) \
 	((option & type) > 0)
 
-// Base macros
+/* Macros */
 #define _MAX(X,Y) sizeof(X) > sizeof(Y) ? sizeof(X) : sizeof(Y)
 #define _MMAAXX(W,X,Y,Z) _MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z)
 
-// Compile time macros
+/* Compile time macros */
 #define MAX_PACKET_SIZE() \
 	(_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t)) + sizeof(packet_header_t)
 
@@ -80,5 +81,16 @@ typedef struct sync_qst {
 typedef struct sync_ans {
 	int answer;
 } sync_ans_t;
+
+/* Functions */
+int sync_question(uint sync_option);
+
+int sync_answer(int fd);
+
+void time_reset_timeout_insr(time_t offset_insr);
+
+void time_reset_timeout_aggr();
+
+void time_reset_timeout_slct();
 
 #endif //EAR_EARDBD_H

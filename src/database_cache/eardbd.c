@@ -38,6 +38,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
+#include <database_cache/eardbd_storage.h>
 #include <common/database/db_helper.h>
 
 int EAR_VERBOSE_LEVEL = 1;
@@ -89,12 +90,12 @@ static char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
 static int server_port;
 static int mirror_port;
 static int synchr_port;
-static int master_iam; // Master is who speaks
-static int server_iam;
-static int mirror_iam;
 static int server_too;
 static int mirror_too;
 static int others_too; // Just if other process exists
+int master_iam; // Master is who speaks
+int server_iam;
+int mirror_iam;
 
 // Pipeline
 static int reconfiguring;
@@ -111,30 +112,6 @@ static sync_qst_t sync_qst_content;
 static sync_ans_t sync_ans_content;
 
 // Data warehouse
-static ulong len_aggrs;
-static ulong len_appsl;
-static ulong len_appsm;
-static ulong len_appsn;
-static ulong len_enrgy;
-static ulong len_evnts;
-static ulong len_loops;
-
-static periodic_aggregation_t *aggrs;
-static periodic_metric_t *enrgy;
-static     application_t *appsm;
-static     application_t *appsn;
-static     application_t *appsl;
-static       ear_event_t *evnts;
-static            loop_t *loops;
-
-static ulong i_aggrs;
-static ulong i_enrgy;
-static ulong i_appsm;
-static ulong i_appsn;
-static ulong i_appsl;
-static ulong i_evnts;
-static ulong i_loops;
-
 static uint per_aggrs = 01;
 static uint per_enrgy = 05;
 static uint per_appsm = 40;
@@ -143,38 +120,32 @@ static uint per_appsl = 05;
 static uint per_evnts = 05;
 static uint per_loops = 24;
 
+ulong len_aggrs;
+ulong len_appsl;
+ulong len_appsm;
+ulong len_appsn;
+ulong len_enrgy;
+ulong len_evnts;
+ulong len_loops;
+
+periodic_aggregation_t *aggrs;
+periodic_metric_t *enrgy;
+    application_t *appsm;
+    application_t *appsn;
+    application_t *appsl;
+      ear_event_t *evnts;
+           loop_t *loops;
+
+ulong i_aggrs;
+ulong i_enrgy;
+ulong i_appsm;
+ulong i_appsn;
+ulong i_appsl;
+ulong i_evnts;
+ulong i_loops;
+
 // Strings
-static char *str_who[2] = { "server", "mirror" };
-
-#define line "---------------------------------------------------------------\n"
-#define col1 "\x1b[35m"
-#define col2 "\x1b[0m"
-
-#define verbose0(format) \
-	fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
-
-#define verbose1(format, ...) \
-	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
-	
-#define verbose3(...) \
-	if (!forked || master_iam) { \
-		fprintf(stderr, __VA_ARGS__); \
-		fprintf(stderr, "\n"); \
-	}
-
-#define verline1(...) \
-	if (!forked || master_iam) { \
-		fprintf(stderr, col1 line __VA_ARGS__); \
-		fprintf(stderr, col2 "\n"); \
-	}
-
-#define verline0() \
-		fprintf(stderr, col1 line col2);
-
-#define error(...) \
-	fprintf(stderr, "ERROR, " __VA_ARGS__); \
-	fprintf(stderr, "\n"); \
-	exit(1);
+char *str_who[2] = { "server", "mirror" };
 
 // Nomenclature:
 // 	- Server: main buffer of the gathered metrics. Inserts buffered metrics in
@@ -191,7 +162,7 @@ static char *str_who[2] = { "server", "mirror" };
  *
  */
 
-static int sync_question(uint sync_option)
+int sync_question(uint sync_option)
 {
 	time_t timeout_old;
 	state_t s;
@@ -232,7 +203,8 @@ static int sync_question(uint sync_option)
 	sockets_set_timeout(ssync_mir->fd, 10);
 
 	// Transferring
-	s = sockets_receive(ssync_mir->fd, &sync_ans_header, (char *) &sync_ans_content, sizeof(sync_ans_t));
+	s = sockets_receive(ssync_mir->fd, &sync_ans_header,
+		(char *) &sync_ans_content, sizeof(sync_ans_t));
 
 	// Recovering old timeout
 	sockets_set_timeout(ssync_mir->fd, timeout_old);
@@ -250,7 +222,7 @@ static int sync_question(uint sync_option)
 	return EAR_SUCCESS;
 }
 
-static int sync_answer(int fd)
+int sync_answer(int fd)
 {
 	socket_t sync_ans_socket;
 	state_t s;
@@ -280,134 +252,31 @@ static int sync_answer(int fd)
 
 /*
  *
- * Data storing
+ * Time
  *
  */
 
-static void db_store_events()
-{
-	float percent = (float) (i_evnts) / (float) (len_evnts);
-	verbose1("%lu/%lu (%0.2f) samples of events",
-			 i_evnts, len_evnts, percent);
-
-	if (i_evnts <= 0) {
-		return;
-	}
-
-	verbose1("inserting in DB %lu event samples", i_evnts);
-	db_batch_insert_ear_event(evnts, i_evnts);
-	i_evnts = 0;
-}
-
-static void db_store_loops()
-{
-	float percent = (float) (i_loops) / (float) (len_loops);
-	verbose1("%lu/%lu (%0.2f) samples of loops",
-			 i_loops, len_loops, percent);
-
-	if (i_loops <= 0) {
-		return;
-	}
-
-	db_batch_insert_loops(loops, i_loops);
-	i_loops = 0;
-}
-
-static void db_store_periodic_metrics()
-{
-	float percent = (float) (i_enrgy) / (float) (len_enrgy);
-	verbose1("%lu/%lu (%0.2f) samples of energy monitoring data",
-			 i_enrgy, len_enrgy, percent);
-
-	if (i_enrgy <= 0) {
-		return;
-	}
-
-	db_batch_insert_periodic_metrics(enrgy, i_enrgy);
-	i_enrgy = 0;
-}
-
-static void db_store_periodic_aggregations()
-{
-	float percent = (float) (i_aggrs) / (float) (len_aggrs);
-	verbose1("%lu/%lu (%0.2f) samples of energy aggregations",
-			 i_aggrs, len_aggrs, percent);
-
-	if (i_aggrs <= 0) {
-		return;
-	}
-
-	//db_insert_periodic_aggregation(&aggrs);
-	init_periodic_aggregation(aggrs);
-}
-
-static void db_store_applications_mpi()
-{
-	float percent = (float) (i_appsm) / (float) (len_appsm);
-	verbose1("%lu/%lu (%0.2f) samples of mpi applications",
-			 i_appsm, len_appsm, percent);
-
-	if (i_appsm <= 0) {
-		return;
-	}
-
-	db_batch_insert_applications(appsm, i_appsm);
-	i_appsm = 0;
-}
-
-static void db_store_applications()
-{
-	float percent = (float) (i_appsn) / (float) (len_appsn);
-	verbose1("%lu/%lu (%0.2f) samples of non-mpi applications",
-			 i_appsn, len_appsn, percent);
-
-	if (i_appsn <= 0) {
-		return;
-	}
-
-	db_batch_insert_applications_no_mpi(appsn, i_appsn);
-	i_appsn = 0;
-}
-
-static void db_store_applications_learning()
-{
-	float percent = (float) (i_appsl) / (float) (len_appsl);
-	verbose1("%lu/%lu (%0.2f) samples of learning applications",
-			 i_appsl, len_appsl, percent);
-
-	if (i_appsl <= 0) {
-		return;
-	}
-
-	db_batch_insert_applications(appsl, i_appsl);
-	i_appsl = 0;
-}
-
-/*
- * Time
- */
-
-static void time_substract_timeouts()
+void time_substract_timeouts()
 {
 	timeout_insr.tv_sec -= time_slct;
 	timeout_aggr.tv_sec -= time_slct;
 }
 
-static void time_reset_timeout_insr(time_t offset_insr)
+void time_reset_timeout_insr(time_t offset_insr)
 {
 	// Refresh insert time
 	timeout_insr.tv_sec  = time_insr + offset_insr;
 	timeout_insr.tv_usec = 0L;
 }
 
-static void time_reset_timeout_aggr()
+void time_reset_timeout_aggr()
 {
 	// Refresh aggregation timeout
 	timeout_aggr.tv_sec  = time_aggr;
 	timeout_aggr.tv_usec = 0L;
 }
 
-static void time_reset_timeout_slct()
+void time_reset_timeout_slct()
 {
 	// Refresh select time
 	time_slct = timeout_aggr.tv_sec;
@@ -421,171 +290,10 @@ static void time_reset_timeout_slct()
 }
 
 /*
- * Data processing
- */
-
-static void make_periodic_aggregation(periodic_aggregation_t *aggr, periodic_metric_t *met)
-{
-	add_periodic_aggregation(aggr, met->DC_energy, met->start_time, met->end_time);
-}
-
-static void process_reset_indexes()
-{
-	i_aggrs = 0;
-	i_appsm = 0;
-	i_appsn = 0;
-	i_appsl = 0;
-	i_enrgy = 0;
-	i_evnts = 0;
-	i_loops = 0;
-}
-
-static void process_insert(uint option, uint reason)
-{
-	verline0();
-	verbose1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
-
-	if (sync_option(option, SYNC_AGGRS)) {
-		db_store_periodic_aggregations();
-	}
-	if (sync_option(option, SYNC_APPSM)) {
-		db_store_applications_mpi();
-	}
-	if (sync_option(option, SYNC_APPSN)) {
-		db_store_applications();
-	}
-	if (sync_option(option, SYNC_APPSL)) {
-		db_store_applications_learning();
-	}
-	if (sync_option(option, SYNC_ENRGY)) {
-		db_store_periodic_metrics();
-	}
-	if (sync_option(option, SYNC_EVNTS)) {
-		db_store_events();
-	}
-	if (sync_option(option, SYNC_LOOPS)) {
-		db_store_loops();
-	}
-	if (sync_option(option, SYNC_RESET)) {
-		process_reset_indexes();
-	}
-}
-
-/*
  *
- * Incoming data
+ * Net
  *
  */
-
-static void incoming_data_sample(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt)
-{
-	if (cnt != NULL) {
-		memcpy (buf, cnt, siz);
-	}
-
-	*idx += 1;
-
-	if (*idx == len)
-	{
-		if(server_iam) {
-			process_insert(opt, RES_OVER);
-		} else if (state_fail(sync_question(opt))) {
-			process_insert(opt, RES_OVER);
-		}
-		*idx = 0;
-	}
-}
-
-static void incoming_data_process(int fd, packet_header_t *header, char *content)
-{
-	state_t state;
-
-	if (header->content_type == CONTENT_TYPE_APP)
-	{
-		application_t *app = (application_t *) content;
-
-		if (app->is_learning)
-		{
-			incoming_data_sample((char *) &appsl[i_appsl], len_appsl, &i_appsl,
-				content, sizeof(application_t), SYNC_APPSL);
-		}
-		else if (app->is_mpi)
-		{
-			incoming_data_sample((char *) &appsm[i_appsm], len_appsm, &i_appsm,
-				content, sizeof(application_t), SYNC_APPSM);
-		}
-		else
-		{
-			incoming_data_sample((char *) &appsn[i_appsn], len_appsn, &i_appsn,
-				content, sizeof(application_t), SYNC_APPSN);
-		}
-	} else if (header->content_type == CONTENT_TYPE_EVE)
-	{
-		incoming_data_sample((char *) &evnts[i_evnts], len_evnts, &i_evnts,
-			content, sizeof(ear_event_t), SYNC_EVNTS);
-	}
-	else if (header->content_type == CONTENT_TYPE_LOO)
-	{
-		incoming_data_sample((char *) &loops[i_loops], len_loops, &i_loops,
-			content, sizeof(loop_t), SYNC_LOOPS);
-	}
-	else if (header->content_type == CONTENT_TYPE_PER)
-	{
-		make_periodic_aggregation(&aggrs[i_aggrs], (periodic_metric_t *) content);
-
-		incoming_data_sample((char *) &enrgy[i_enrgy], len_enrgy, &i_enrgy,
-			content, sizeof(periodic_metric_t), SYNC_ENRGY);
-	}
-	else if (header->content_type == CONTENT_TYPE_QST)
-	{
-		sync_qst_t *q = (sync_qst_t *) content;
-
-		// Passing the question option
-		process_insert(q->sync_option, RES_SYNC);
-
-		// Answering the mirror question
-		sync_answer(fd);
-
-		// In case it is a full sync the sync time is resetted before the answer
-		// with a very small offset (1 second is enough)
-		if (sync_option(q->sync_option, SYNC_ALL)) {
-			time_reset_timeout_insr(1);
-		}
-	}
-}
-
-static void incoming_data_announce(int fd, packet_header_t *header, char *content)
-{
-	char *type;
-
-	if (header->content_type == CONTENT_TYPE_APP)
-	{
-		application_t *app = (application_t *) content;
-
-		if (app->is_learning) {
-			type = "learning application_t";
-		} else if (app->is_mpi) {
-			type = "mpi application_t";
-		} else {
-			type = "non-mpi application_t";
-		}
-	} else if (header->content_type == CONTENT_TYPE_PER) {
-		type = "periodic_metric_t";
-	} else if (header->content_type == CONTENT_TYPE_EVE) {
-		type = "ear_event_t";
-	} else if (header->content_type == CONTENT_TYPE_LOO) {
-		type = "loop_t";
-	} else if (header->content_type == CONTENT_TYPE_QST) {
-		type = "sync_question";
-	} else if (header->content_type == CONTENT_TYPE_PIN) {
-		type = "ping";
-	} else {
-		type = "unknown";
-	}
-
-	verbose1("received '%s' packet from host '%s' (socket: %d)",
-			type, header->host_src, fd);
-}
 
 static int incoming_new_connection(int fd)
 {
@@ -633,7 +341,7 @@ static void release_resources()
 		loops = NULL;
 	}
 
-	process_reset_indexes();
+	storage_reset_indexes();
 
 	free_cluster_conf(&conf_clus);
 }
@@ -659,7 +367,7 @@ static void signal_handler(int signal, siginfo_t *info, void *context)
 	{
 		verbose1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
 
-		propagating = others_pid > 0 && info->si_pid != others_pid;
+		propagating   = others_pid > 0 && info->si_pid != others_pid;
 		listening     = 0;
 		reconfiguring = server_iam;
 		releasing     = 1;
@@ -1115,7 +823,7 @@ static void pipeline()
 			if (timeout_aggr.tv_sec == 0)
 			{
 				// Aggregation time done, so new aggregation incoming
-				incoming_data_sample(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);
+				storage_sample_add(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);
 
 				// Initializing the new element
 				init_periodic_aggregation(&aggrs[i_aggrs]);
@@ -1132,15 +840,15 @@ static void pipeline()
 					// Asking the question
 					if(state_fail(sync_question(SYNC_ALL))) {
 						// In case of fail the mirror have to insert the data
-						process_insert(SYNC_ALL, RES_TIME);
+						insert_hub(SYNC_ALL, RES_TIME);
 					} else {
 						// In case of the answer is received the mirror just have to clear the data
-						process_insert(SYNC_RESET, RES_TIME);
+						insert_hub(SYNC_RESET, RES_TIME);
 					}
 				} else
 				{
 					// Server normal insertion
-					process_insert(SYNC_ALL, RES_TIME);
+					insert_hub(SYNC_ALL, RES_TIME);
 				}
 
 				// If server the time reset is do it after the insert
@@ -1181,8 +889,8 @@ static void pipeline()
 
 					if (state_ok(s1))
 					{
-						incoming_data_announce(i, &input_header, input_buffer);
-						incoming_data_process(i, &input_header, input_buffer);
+						storage_sample_announce(i, &input_header, input_buffer);
+						storage_sample_receive(i, &input_header, input_buffer);
 					}
 					else
 					{
