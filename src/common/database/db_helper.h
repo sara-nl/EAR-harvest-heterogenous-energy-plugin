@@ -58,6 +58,8 @@ int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg);
 
 int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets);
 
+int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int num_aggs);
+
 int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events);
 
 int db_batch_insert_applications(application_t *applications, int num_apps);

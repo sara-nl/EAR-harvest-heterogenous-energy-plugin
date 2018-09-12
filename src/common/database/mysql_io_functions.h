@@ -147,6 +147,11 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
 *   either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t *per_agg);
 
+/** Given a MYSQL connection and num_aggs periodic_aggregations, inserts said 
+*   periodic_agregations into the database. Returns EAR_SUCCESS on success, and either
+*   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. */
+int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggregation_t *per_aggs, int num_aggs);
+
 /** Given a MYSQL connection and an EAR event, inserts said event into
 *   the database. Returns the event's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
