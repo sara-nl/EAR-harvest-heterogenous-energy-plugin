@@ -1,4 +1,4 @@
-CFLAGS  = -fPIC -shared
+CFLAGS  = -fPIC -shared -O3
 
 ######## FILES
 
