@@ -668,11 +668,16 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             conf->eard.force_frequencies = atoi(token);
         }
 
-			//DB MANAGER
+		//DB MANAGER
 		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))
 		{
 			token = strtok(NULL, "=");
 			conf->db_manager.aggr_time = atoi(token);
+		}
+		else if (!strcmp(token, "DBDAEMONINSERTIONTIME"))
+		{
+			token = strtok(NULL, "=");
+			conf->db_manager.insr_time = atoi(token);
 		}
 		else if (!strcmp(token, "DBDAEMONPORTTCP"))
 		{
