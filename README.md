@@ -44,8 +44,11 @@ Lastly, the **compilers**:
 
 | Compiler                          | Comment                    | Minimum version | References      |
 | --------------------------------- | -------------------------- | --------------- | --------------- |
-| GNU Compiler Collection (GCC)     | For the library and daemon | 4.8.5           | [Website](https://gcc.gnu.org/) |
-| Intel Fortran Compiler (MPIIFort) | For some kernels           | 17.0.1          | [Website](https://software.intel.com/en-us/fortran-compilers) |
+| GNU Compiler Collection (GCC)     | For the library and daemon | 4.8.5           | [Website](https://gcc.gnu.org/)                               |
+| Intel C Compiler (ICC)            | For the library and daemon | 17.0.1          | [Website](https://software.intel.com/en-us/c-compilers)       |
+| Intel Fortran Compiler (MPIIFort) | For some kernels              | 17.0.1          | [Website](https://software.intel.com/en-us/fortran-compilers) |
+
+Just one C compiler next to its MPI scripts is needed.
 
 Brief installation guide
 ------------------------
@@ -59,8 +62,8 @@ Customize installation
 | Variable | Description                                                                                                  |
 | -------- | ------------------------------------------------------------------------------------------------------------ |
 | DEBUG    | Enables debug messages [0..4]. Debug messages with lower or equal level are printed.                         |
-| MPICC    | Intel MPI compiler command.                                                                                        |
-| OMPICC   | OpenMPI compiler command.                                                                                        |
+| MPICC    | C compiler MPI script.                                                                                       |
+| OMPICC   | OpenMPI compiler.                                                                                            |
 | CC       | C compiler command.                                                                                          |
 | CFLAGS   | C compiler flags.                                                                                            |
 | LDFLAGS  | Linker flags. E.g. ‘-L\<lib dir\>’ if you have libraries in a nonstandard directory \<lib dir\>.             |
@@ -69,26 +72,34 @@ Customize installation
 | TMP      | Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear) (you can alo use --localstatedir=DIR) |
 | ETC      | Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc) (you can also use --sharedstatedir=DIR)            |
 | MAN      | Defines the documentation directory (default: PREFIX/man) (you can use also --mandir=DIR)                    |
-| COEFFS   | Defines the coefficients store directory                                                                     |
+
 - This is an example of `CC`, `CFLAGS` and `DEBUG` variables overwriting: </br>
 `./configure CC=c99 CFLAGS=-g DEBUG=4`
 
-You can choose the root folder by typing `./configure --PREFIX=<path>`. But there is another option `---exec-prefix=<path>` or *EPREFIX*, which by default equals *PREFIX*, which also its default value is `/usr/local/`. You have more installation options information by typing `./configure --help`.
+You can choose the root folder by typing `./configure --PREFIX=<path>`. But there are other options in the following table:
 
-This is the list of installation folders and their content:
+| Definition      | Default directory    | Content / description                |
+| --------------- | -------------------- | ------------------------------------ |
+| \<*PREFIX*\>    | /usr/local           | Installation path                    |
+| \<*ETC*\>       | \<*PREFIX*\>/etc     | Configuration files.                 |
+| \<*TMP*\>       | /var/ear             | Pipes and temporal files.            |
 
-| Root                 | Directory    | Content / description                |
-| -------------------- | ------------ | ------------------------------------ |
-| \<*PREFIX*\>    | .            | Root folder.                         |
-| \<*EPREFIX*\>   | /lib         | Libraries.                           |
-| \<*EPREFIX*\>   | /bin         | Tools and benchmark kernels.         |
-| \<*EPREFIX*\>   | /bin/kernels | Benchmarks (or stress tests).        |
-| \<*EPREFIX*\>   | /sbin        | Privileged components.               |
-| \<*ETC*\>       | /slurm       | plugstack.conf.                      |
-| \<*ETC*\>       | /systemd     | Unit services.                       |
-| \<*ETC*\>       | /scripts     | Scripts.                             |
-| \<*mandir*\>    | /man         | Documentation.                       |
-| \<*TMP*\>       | /var         | Pipes and temporal files.            |
+This is the list of the inner installation folders and their content:
+
+| Directory    | Root         | Content / description                |
+| ------------ | ------------ | ------------------------------------ |
+| /lib         | \<*PREFIX*\> | Libraries.                           |
+| /bin         | \<*PREFIX*\> | Tools and benchmark kernels.         |
+| /bin/kernels | \<*PREFIX*\> | Benchmarks (or stress tests).        |
+| /sbin        | \<*PREFIX*\> | Privileged components.               |
+| /scripts     | \<*PREFIX*\>  | Scripts.                             |
+| /man         | \<*PREFIX*\>  | Documentation.                       |
+| /ear         | \<*ETC*\>    | Configuration file.                  |
+| /module      | \<*ETC*\>    | Environment module.                  |
+| /slurm       | \<*ETC*\>    | plugstack.conf.                      |
+| /systemd     | \<*ETC*\>    | Unit services.                       |
+
+You have more installation options information by typing `./configure --help`.
 
 Adding required libraries installed in custom locations
 -------------------------------------------------------

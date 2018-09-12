@@ -23,7 +23,7 @@ Visit [EAR lib page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/d
 
 Execution of the learning phase basics
 --------------------------------------
-A set of scripts are provided for speed up with minimum edition requirements. These files are placed in the `etc/scripts` folder in your EAR installation folder pointed by *EAR_INSTALL_PATH* variable, which is loaded the environment module. For a detailed information about the content of these scripts visit [EAR scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md).
+A set of scripts are provided for speed up with minimum edition requirements. These files are placed in the `bin/scripts` folder in your EAR installation folder pointed by *EAR_INSTALL_PATH* variable, which is loaded the environment module. For a detailed information about the content of these scripts visit [EAR scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md).
 
 Compiling benchmarks
 --------------------
@@ -33,63 +33,29 @@ Compiling benchmarks
 export CORES=28
 export SOCKETS=2
 export CORES_PER_SOCKET=14
-
-# Update the paths
-export EAR_SRC_PATH=$HOME/git/EAR
 ```
 2) Update the following parameters:<br />
 - **CORES**: the total number of cores in a single computing node.<br />
 - **SOCKETS**: the total number of sockets in a single computing node.<br />
 - **CORES_PER_SOCKET**: the total number of cores per socket in a single computing node.<br />
-- **EAR_SRC_PATH**: the path to the place where you unzipped EAR package.<br />
-3) Launch the compiling phase by typing `learning_phase_compile.sh compile` in your compile node.
+3) Launch the compiling phase by typing `./learning_phase_compile.sh` in your compile node.
 
 Testing benchmarks
 ------------------
 Once compiled, execute a test in a computing node.
 
-**If you're using SLURM**, and already configured [slurm plugin](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md), launch a command like `srun -N1 -n1 --exclusive learning_phase_compile.sh test`, allocating a single but complete computing node (because the script will open new threads as it needs).
+To do that launch `./learning_phase_test.sh <hostlist>`, with the path of a file containg a list of hosts in which you want to perform a kernel test. Also remember to correctly edit the architecture environment variables of the file.
 
-**If you are doing it calling MPI directly**, make sure you have read the [scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md) and follow the next steps:
-1) Open the script `etc/scripts/learning/learning_phase_helper.sh` and look for these lines:
-```
-function launching
-{
-    ...
-}
+Once the test is done, check the elapsed time of each kernel execution.
 
-function launching_disabled
-{
-    # MPI options
-    ...
-
-    # Non-edit region
-    ...
-}
-```
-2) Replace the word `_disabled` from `launching_disabled` adding it to the current `launching` one. 
-3) Edit the script `etc/scripts/environment/ear_vars.sh` in case you want to modify some [environment variables](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/ear_slurm_plugin/README.md).
-4) Launch the daemon executing the script `etc/scripts/running/ssh_daemon_start` by typing `./ssh_daemon_start computing_node1 1`, where `computing_node1` is the node name where the daemon will be launched and the last number the default *P_STATE*.
-5) Launch the test using your MPI scheduling program by typing something like `mpirun -n 1 -host computin_node1 learning_phase_compile.sh test`.
-6) Launch `./ssh_daemon_exit computing_node1` for closing the daemon if you don't want it running in the node.
-
-Once the test is done, inspect the summary file pointed by the environment variable EAR_USER_DB_PATHNAME. Look at the field time (in brackets):
-```
-USERNAME;JOB_ID;NODENAME;APPNAME;FREQ;[[TIME]];CPI;TPI...
-xuser;838;xnode;bt-mz.C.28;2600000;[[35.460251]];0.401421;1.560220...
-xuser;838;xnode;sp-mz.C.28;2600000;[[52.380336]];0.500832;4.614459...
-xuser;838;xnode;stream_mpi;2600000;[[83.232500]];2.714464;87.458571...
-xuser;838;xnode;ep.D.28;2600000;[[307.452702]];1.647134;0.020879;0.029462...
-```
 If the time (in seconds) of all benchmarks is between 60 and 120, the compilation, installation and test are done and you can proceed to the execution of the learning phase section. In case some benchmarks are not between these times, it is recommended to compile the kernels using different parameters. This is important because improves the quality of EAR prediction model.
 
 Fast benchmark modification
 ---------------------------
-If one of these benchmarks is `lu-mz`, `bt-mz`, `sp-mz`, `lu`, `ep` or `ua`, you could easily alter its behavior by changing its class letter in the same `etc/scripts/learning/learning_phase_compile.sh` script. For example if you want to increase its execution time of a kernel compiled with class letter C, switch it by D. Or if you want to decrease the execution time of a kernel compiled with class letter B, switch the letter by A. Then compile and execute again.
+If one of these benchmarks is `lu-mz`, `bt-mz`, `sp-mz`, `lu`, `ep` or `ua`, you could easily alter its behavior by changing its class letter in the file `bin/scripts/learning/helpers/kernels_iterator.sh` script. For example if you want to increase its execution time of a kernel compiled with class letter C, switch it by D. Or if you want to decrease the execution time of a kernel compiled with class letter B, switch the letter by A. Then compile and execute again.
 
 You could see where you have to edit in the following example:
 ```
-# Compiling or executing the different kernels
 learning-phase lu-mpi C
 learning-phase ep D
 learning-phase bt-mz C
@@ -113,7 +79,6 @@ The following table breaks down the key variables and its possible values to alt
 | ep       | NPB3.3.1/NPB3.3-MPI/sys/setparams.c       | write_ep_info | m     |
 | lu       | NPB3.3.1/NPB3.3-MPI/sys/setparams.c       | write_lu_info | itmax |
 | ua       | NPB3.3.1/NPB3.3-OMP/sys/setparams.c       | write_ua_info | niter |
-
 
 Depending on your system you have to increase or decrease its value. As a reference, it is provided a table containing the letter for the script and the value of the variable for a couple of CPU architectures:
 
@@ -151,7 +116,10 @@ export EAR_MAX_P_STATE=6
 - **CORES_PER_SOCKET**: the total number of cores per socket in a single computing node.<br />
 - **EAR_MIN_P_STATE**: defines the maximum frequency to set during the learning phase. The default value is 1, meaning that the nominal frequency will be the maximum frequency that your cluster nodes will set. In the current version of EAR turbo support is not included.<br />
 - **EAR_MAX_P_STATE**: defines the minimum frequency to test during the learning phase. If 6 is set and EAR_MIN_P_STATE is 1, it means that 6 frequencies will be set during the learning phase, from 1 to 6. This set of frequencies have to match with the set of frequencies that your cluster nodes are able to set during computing time.<br />
-4)  * **For SLURM users**, execute the learning phase in all of your nodes by typing a command like: `srun -N4 -n4 --exclusive -t 180 learning_phase_execute.sh`. In this example, are used 4 computing nodes.
-    * **For direct MPI call users**, launch the daemon executing the script `etc/scripts/running/ssh_daemon_start` by typing `./ssh_daemon_start computin_node1 1`, in case you have closed it. It also accepts a file containing the list of nodes where you want to wake that daemon. Then execute the MPI scheduling program of your MPI distribution by typing something like: `mpirun -n 4 -ppn 1 -hosts node1,node2,node3,node4 learning_phase_execute.sh`
-6) Check that there are the correct number of coefficients files stored in the folder pointed by the environment variable *EAR_COEFF_DB_PATHNAME*.
+4) Execute the learning phase in all of your nodes by typing a command like: `./learning_phase_execute.sh <hostlist>`, passing a file containing the list of nodes where you want to perform the learning phase. An `sbatch` will be launched exclusively in every node, performing a `srun` series of the kernel in the same node.
+6) Check that there are the correct number of coefficients files in the folder pointed by `EAR_ETC` environment variable.
+
+Editing learning phase SLURM commands
+-------------------------------------
+
 

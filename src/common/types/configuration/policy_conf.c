@@ -89,5 +89,5 @@ int policy_id_to_name(int policy_id,char *my_policy)
 
 void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src)
 {
-	bcopy((void *)dest,(void *)src,sizeof(policy_conf_t));
+	memcpy((void *)dest,(void *)src,sizeof(policy_conf_t));
 }
