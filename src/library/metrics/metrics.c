@@ -124,6 +124,9 @@ static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[2]; // ops (vec)
 static ull *metrics_rapl[2]; // nJ (vec)
 static ull *aux_rapl; // nJ (vec)
+static ull *last_rapl; // nJ (vec)
+static long long aux_time;
+static ulong aux_energy;
 static ulong metrics_ipmi[2]; // mJ
 static ulong metrics_avg_frequency[2]; // MHz
 static long long metrics_instructions[2];
@@ -150,6 +153,11 @@ static void metrics_global_start()
 {
 	//
 	eards_begin_app_compute_turbo_freq();
+	// New
+    eards_node_dc_energy(&aux_energy);
+    aux_time = metrics_time();
+    eards_read_rapl(aux_rapl);
+
 }
 
 static void metrics_global_stop()
@@ -178,11 +186,20 @@ static void metrics_global_stop()
 
 static void metrics_partial_start()
 {
+	#if 0
 	eards_node_dc_energy(&metrics_ipmi[LOO]);
 	metrics_usecs[LOO] = metrics_time();
+	eards_read_rapl(aux_rapl);
+	#endif
+	int i;
+	metrics_ipmi[LOO]=aux_energy;
+	metrics_usecs[LOO]=aux_time;
+	
 	eards_begin_compute_turbo_freq();
 	eards_start_uncore();
-	eards_read_rapl(aux_rapl);
+	for (i = 0; i < rapl_elements; i++) {
+		last_rapl[i]=aux_rapl[i];
+	}
 
 	start_basic_metrics();
 	#if 0
@@ -193,8 +210,7 @@ static void metrics_partial_start()
 
 static int metrics_partial_stop(uint where)
 {
-	long long aux_time, aux_flops;
-	ulong aux_energy;
+	long long aux_flops;
 	int i;
 
 	// Manual IPMI accumulation
@@ -210,7 +226,7 @@ static int metrics_partial_stop(uint where)
 	// Daemon metrics
 	metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
 	eards_read_uncore(metrics_bandwith[LOO]);
-	eards_read_rapl(metrics_rapl[LOO]);
+	eards_read_rapl(aux_rapl);
 
 	// Manual bandwith accumulation
 	for (i = 0; i < bandwith_elements; i++) {
@@ -218,12 +234,12 @@ static int metrics_partial_stop(uint where)
 	}
 	// We read acuumulated energy
 	for (i = 0; i < rapl_elements; i++) {
-		if (metrics_rapl[LOO][i] < aux_rapl[i])
+		if (aux_rapl[i] < last_rapl[i])
 		{
-			metrics_rapl[LOO][i] = ullong_diff_overflow(aux_rapl[i], metrics_rapl[LOO][i]);
+			metrics_rapl[LOO][i] = ullong_diff_overflow(last_rapl[i], aux_rapl[i]);
 		}
 		else {
-			metrics_rapl[LOO][i]=metrics_rapl[LOO][i]-aux_rapl[i];		
+			metrics_rapl[LOO][i]=aux_rapl[i]-last_rapl[i];		
 		}
 	}
 
@@ -372,10 +388,11 @@ int metrics_init()
 	metrics_rapl[LOO] = malloc(rapl_size);
 	metrics_rapl[APP] = malloc(rapl_size);
 	aux_rapl = malloc(rapl_size);
+	last_rapl = malloc(rapl_size);
 
 
 	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL ||
-			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL)
+			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL || last_rapl == NULL)
 	{
 			VERBOSE_N(0, "error allocating memory in metrics, exiting");
 			exit(1);
@@ -385,6 +402,7 @@ int metrics_init()
 	memset(metrics_rapl[LOO], 0, rapl_size);
 	memset(metrics_rapl[APP], 0, rapl_size);
 	memset(aux_rapl, 0, rapl_size);
+	memset(last_rapl, 0, rapl_size);
 
 	DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
 	DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);

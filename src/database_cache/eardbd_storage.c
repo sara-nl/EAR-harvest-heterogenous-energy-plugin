@@ -74,7 +74,6 @@ extern ulong i_loops;
 // Verbosity
 extern char *str_who[2];
 
-
 /*
  *
  * Insert
@@ -91,8 +90,14 @@ static void insert_aggregations()
 		return;
 	}
 
-	//db_insert_periodic_aggregation(&aggrs);
-	init_periodic_aggregation(aggrs);
+	db_batch_insert_periodic_aggregations(aggrs, i_aggrs);
+
+	if (i_aggrs < len_aggrs && aggrs[i_aggrs].n_samples > 0) {
+		memcpy (aggrs, &aggrs[i_aggrs], sizeof(periodic_aggregation_t));
+	} else {
+		init_periodic_aggregation(aggrs);
+	}
+
 	i_aggrs = 0;
 }
 
