@@ -361,6 +361,41 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
     return EAR_SUCCESS;
 }
 
+int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int num_aggs)
+{
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        VERBOSE_N(0, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+    if (mysql_batch_insert_periodic_aggregations(connection, per_aggs, num_aggs) < 0)
+    {
+        VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
+        return EAR_ERROR;
+    }
+
+    mysql_close(connection);
+
+    return EAR_SUCCESS;
+}
+
+
 int db_insert_ear_event(ear_event_t *ear_ev)
 {
     MYSQL *connection = mysql_init(NULL);

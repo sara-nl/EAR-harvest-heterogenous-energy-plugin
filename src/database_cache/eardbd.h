@@ -26,6 +26,7 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+
 #ifndef EAR_EARDBD_H
 #define EAR_EARDBD_H
 
@@ -45,16 +46,18 @@
 #define CONTENT_TYPE_APP	2
 #define CONTENT_TYPE_LOO	3
 #define CONTENT_TYPE_EVE	4
-#define CONTENT_TYPE_QST	5
-#define CONTENT_TYPE_ANS	6
-#define SYNC_ENRGY 			0x81
-#define SYNC_APPSM 			0x82
-#define SYNC_APPSN			0x84
-#define SYNC_APPSL 			0x88
-#define SYNC_LOOPS			0x90
-#define SYNC_EVNTS			0xA0
-#define SYNC_RESET			0x40
-#define SYNC_ALL			0x80
+#define CONTENT_TYPE_AGG	5
+#define CONTENT_TYPE_QST	6
+#define CONTENT_TYPE_ANS	7
+#define SYNC_ENRGY 			0x101
+#define SYNC_APPSM 			0x102
+#define SYNC_APPSN			0x104
+#define SYNC_APPSL 			0x108
+#define SYNC_LOOPS			0x110
+#define SYNC_EVNTS			0x120
+#define SYNC_AGGRS			0x140
+#define SYNC_RESET			0x080
+#define SYNC_ALL			0x100
 #define RES_SYNC			0
 #define RES_TIME			1
 #define RES_OVER			2
@@ -63,11 +66,11 @@
 #define sync_option(option, type) \
 	((option & type) > 0)
 
-// Base macros
+/* Macros */
 #define _MAX(X,Y) sizeof(X) > sizeof(Y) ? sizeof(X) : sizeof(Y)
 #define _MMAAXX(W,X,Y,Z) _MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z)
 
-// Compile time macros
+/* Compile time macros */
 #define MAX_PACKET_SIZE() \
 	(_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t)) + sizeof(packet_header_t)
 
@@ -78,5 +81,16 @@ typedef struct sync_qst {
 typedef struct sync_ans {
 	int answer;
 } sync_ans_t;
+
+/* Functions */
+int sync_question(uint sync_option);
+
+int sync_answer(int fd);
+
+void time_reset_timeout_insr(time_t offset_insr);
+
+void time_reset_timeout_aggr();
+
+void time_reset_timeout_slct();
 
 #endif //EAR_EARDBD_H

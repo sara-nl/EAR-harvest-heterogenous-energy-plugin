@@ -81,6 +81,10 @@ void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int 
 	void * my_shared_region=NULL;		
 	char buff[256];
 	mode_t my_mask;
+	if ((area_size==0) || (data==NULL) || (path==NULL)){
+		eard_verbose(0,"warning, creatinf shared region, invalid arguments. Not created\n");
+		return NULL;
+	}
 	my_mask=umask(0);
 	strcpy(buff,path);
 	eard_verbose(0,"creating file %s for shared memory\n",buff);
