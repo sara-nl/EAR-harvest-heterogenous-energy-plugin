@@ -28,7 +28,10 @@
 */
 
 #include <mysql/mysql.h>
+
 #include <common/config.h>
+#include <common/database/auxiliars.h>
+
 #include <common/types/log.h>
 #include <common/types/job.h>
 #include <common/types/loop.h>
