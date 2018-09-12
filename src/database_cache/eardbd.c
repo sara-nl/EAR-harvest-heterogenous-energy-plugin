@@ -418,7 +418,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	read_cluster_conf(extra_buffer, conf_clus);
 
 	// Database
-	//init_db_helper(&conf_clus->database);
+	init_db_helper(&conf_clus->database);
 
 	// Mirror finding
 	gethostname(master_host, SZ_NAME_MEDIUM);
