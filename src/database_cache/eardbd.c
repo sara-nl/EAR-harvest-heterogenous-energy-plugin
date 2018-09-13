@@ -282,7 +282,7 @@ void time_reset_timeout_slct()
 	time_slct = timeout_aggr.tv_sec;
 
 	if (timeout_insr.tv_sec < timeout_aggr.tv_sec) {
-		timeout_slct.tv_sec = timeout_insr.tv_sec;
+		time_slct = timeout_insr.tv_sec;
 	}
 
 	timeout_slct.tv_sec  = time_slct;
@@ -826,6 +826,7 @@ static void pipeline()
 		// If timeout_insr, data processing
 		if (timeout_slct.tv_sec == 0 && timeout_slct.tv_usec == 0)
 		{
+
 			time_substract_timeouts();
 
 			if (timeout_aggr.tv_sec == 0)
