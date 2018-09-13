@@ -112,13 +112,13 @@ static sync_qst_t sync_qst_content;
 static sync_ans_t sync_ans_content;
 
 // Data warehouse
-static uint per_appsm = 40;
-static uint per_appsn = 20;
-static uint per_appsl = 05;
-static uint per_loops = 24;
-static uint per_enrgy = 05;
-static uint per_aggrs = 01;
-static uint per_evnts = 05;
+uint per_appsm = 40;
+uint per_appsn = 20;
+uint per_appsl = 05;
+uint per_loops = 24;
+uint per_enrgy = 05;
+uint per_aggrs = 01;
+uint per_evnts = 05;
 
 ulong len_aggrs;
 ulong len_appsl;
@@ -721,13 +721,21 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 		init_sockets_main(argc, argv, conf_clus);
 	}
 
-	float len_aggrs_pc = ((float) per_aggrs) / 100.0;
-	float len_appsl_pc = ((float) per_appsl) / 100.0;
+	per_appsm = conf_clus->db_manager.mem_size_types[0];
+	per_appsn = conf_clus->db_manager.mem_size_types[1];
+	per_appsl = conf_clus->db_manager.mem_size_types[2];
+	per_loops = conf_clus->db_manager.mem_size_types[3];
+	per_enrgy = conf_clus->db_manager.mem_size_types[4];
+	per_aggrs = conf_clus->db_manager.mem_size_types[5];
+	per_evnts = conf_clus->db_manager.mem_size_types[6];
+
 	float len_appsm_pc = ((float) per_appsm) / 100.0;
 	float len_appsn_pc = ((float) per_appsn) / 100.0;
-	float len_enrgy_pc = ((float) per_enrgy) / 100.0;
-	float len_evnts_pc = ((float) per_evnts) / 100.0;
+	float len_appsl_pc = ((float) per_appsl) / 100.0;
 	float len_loops_pc = ((float) per_loops) / 100.0;
+	float len_enrgy_pc = ((float) per_enrgy) / 100.0;
+	float len_aggrs_pc = ((float) per_aggrs) / 100.0;
+	float len_evnts_pc = ((float) per_evnts) / 100.0;
 
 	// Data allocation
 	len_aggrs = get_allocation_elements(len_aggrs_pc, sizeof(periodic_aggregation_t));
@@ -826,7 +834,9 @@ static void pipeline()
 				storage_sample_add(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);
 
 				// Initializing the new element
-				init_periodic_aggregation(&aggrs[i_aggrs]);
+				if (len_aggrs > 0) {
+					init_periodic_aggregation(&aggrs[i_aggrs]);
+				}
 
 				//
 				time_reset_timeout_aggr();

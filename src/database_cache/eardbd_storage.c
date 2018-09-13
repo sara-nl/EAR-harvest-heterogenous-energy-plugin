@@ -47,6 +47,14 @@ int server_iam;
 int mirror_iam;
 
 // Storage
+extern uint per_appsm;
+extern uint per_appsn;
+extern uint per_appsl;
+extern uint per_loops;
+extern uint per_enrgy;
+extern uint per_aggrs;
+extern uint per_evnts;
+
 extern ulong len_aggrs;
 extern ulong len_appsl;
 extern ulong len_appsm;
@@ -80,8 +88,102 @@ extern char *str_who[2];
  *
  */
 
+static void insert_apps_mpi()
+{
+	if (per_appsm == 0) {
+		return;
+	}
+
+	float percent = (float) (i_appsm) / (float) (len_appsm);
+	verbose1("%lu/%lu (%0.2f) samples of mpi applications",
+			 i_appsm, len_appsm, percent);
+
+	if (i_appsm <= 0) {
+		return;
+	}
+
+	db_batch_insert_applications(appsm, i_appsm);
+	i_appsm = 0;
+}
+
+static void insert_apps_non_mpi()
+{
+	if (per_appsn == 0) {
+		return;
+	}
+
+	float percent = (float) (i_appsn) / (float) (len_appsn);
+	verbose1("%lu/%lu (%0.2f) samples of non-mpi applications",
+			 i_appsn, len_appsn, percent);
+
+	if (i_appsn <= 0) {
+		return;
+	}
+
+	db_batch_insert_applications_no_mpi(appsn, i_appsn);
+	i_appsn = 0;
+}
+
+static void insert_apps_learning()
+{
+	if (per_appsl == 0) {
+		return;
+	}
+
+	float percent = (float) (i_appsl) / (float) (len_appsl);
+	verbose1("%lu/%lu (%0.2f) samples of learning applications",
+			 i_appsl, len_appsl, percent);
+
+	if (i_appsl <= 0) {
+		return;
+	}
+
+	db_batch_insert_applications(appsl, i_appsl);
+	i_appsl = 0;
+}
+
+static void insert_loops()
+{
+	if (per_loops == 0) {
+		return;
+	}
+
+	float percent = (float) (i_loops) / (float) (len_loops);
+	verbose1("%lu/%lu (%0.2f) samples of loops",
+			 i_loops, len_loops, percent);
+
+	if (i_loops <= 0) {
+		return;
+	}
+
+	db_batch_insert_loops(loops, i_loops);
+	i_loops = 0;
+}
+
+static void insert_energy()
+{
+	if (per_enrgy == 0) {
+		return;
+	}
+
+	float percent = (float) (i_enrgy) / (float) (len_enrgy);
+	verbose1("%lu/%lu (%0.2f) samples of energy monitoring data",
+			 i_enrgy, len_enrgy, percent);
+
+	if (i_enrgy <= 0) {
+		return;
+	}
+
+	db_batch_insert_periodic_metrics(enrgy, i_enrgy);
+	i_enrgy = 0;
+}
+
 static void insert_aggregations()
 {
+	if (per_aggrs == 0) {
+		return;
+	}
+
 	float percent = (float) (i_aggrs) / (float) (len_aggrs);
 	verbose1("%lu/%lu (%0.2f) samples of energy aggregations",
 			 i_aggrs, len_aggrs, percent);
@@ -103,6 +205,10 @@ static void insert_aggregations()
 
 static void insert_events()
 {
+	if (per_evnts == 0) {
+		return;
+	}
+
 	float percent = (float) (i_evnts) / (float) (len_evnts);
 	verbose1("%lu/%lu (%0.2f) samples of events",
 			 i_evnts, len_evnts, percent);
@@ -113,76 +219,6 @@ static void insert_events()
 
 	db_batch_insert_ear_event(evnts, i_evnts);
 	i_evnts = 0;
-}
-
-static void insert_loops()
-{
-	float percent = (float) (i_loops) / (float) (len_loops);
-	verbose1("%lu/%lu (%0.2f) samples of loops",
-			 i_loops, len_loops, percent);
-
-	if (i_loops <= 0) {
-		return;
-	}
-
-	db_batch_insert_loops(loops, i_loops);
-	i_loops = 0;
-}
-
-static void insert_energy()
-{
-	float percent = (float) (i_enrgy) / (float) (len_enrgy);
-	verbose1("%lu/%lu (%0.2f) samples of energy monitoring data",
-			 i_enrgy, len_enrgy, percent);
-
-	if (i_enrgy <= 0) {
-		return;
-	}
-
-	db_batch_insert_periodic_metrics(enrgy, i_enrgy);
-	i_enrgy = 0;
-}
-
-static void insert_apps_mpi()
-{
-	float percent = (float) (i_appsm) / (float) (len_appsm);
-	verbose1("%lu/%lu (%0.2f) samples of mpi applications",
-			 i_appsm, len_appsm, percent);
-
-	if (i_appsm <= 0) {
-		return;
-	}
-
-	db_batch_insert_applications(appsm, i_appsm);
-	i_appsm = 0;
-}
-
-static void insert_apps_non_mpi()
-{
-	float percent = (float) (i_appsn) / (float) (len_appsn);
-	verbose1("%lu/%lu (%0.2f) samples of non-mpi applications",
-			 i_appsn, len_appsn, percent);
-
-	if (i_appsn <= 0) {
-		return;
-	}
-
-	db_batch_insert_applications_no_mpi(appsn, i_appsn);
-	i_appsn = 0;
-}
-
-static void insert_apps_learning()
-{
-	float percent = (float) (i_appsl) / (float) (len_appsl);
-	verbose1("%lu/%lu (%0.2f) samples of learning applications",
-			 i_appsl, len_appsl, percent);
-
-	if (i_appsl <= 0) {
-		return;
-	}
-
-	db_batch_insert_applications(appsl, i_appsl);
-	i_appsl = 0;
 }
 
 void insert_hub(uint option, uint reason)
@@ -235,6 +271,10 @@ void storage_reset_indexes()
 
 void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt)
 {
+	if (len == 0) {
+		return;
+	}
+
 	if (cnt != NULL) {
 		memcpy (buf, cnt, siz);
 	}
