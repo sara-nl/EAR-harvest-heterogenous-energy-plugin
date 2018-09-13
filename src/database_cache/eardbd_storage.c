@@ -42,9 +42,13 @@
 #include <common/database/db_helper.h>
 
 // Mirroring
-int master_iam; // Master is who speaks
-int server_iam;
-int mirror_iam;
+extern int master_iam; // Master is who speaks
+extern int server_iam;
+extern int mirror_iam;
+
+// Pipeline
+extern int forked;
+
 
 // Storage
 extern uint per_appsm;
@@ -331,7 +335,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 
 		// Add sample to the aggregation
 		add_periodic_aggregation(&aggrs[i_aggrs], met->DC_energy, met->start_time, met->end_time);
-
+		
 		// Add sample to the energy array
 		storage_sample_add((char *) &enrgy[i_enrgy], len_enrgy, &i_enrgy,
 			content, sizeof(periodic_metric_t), SYNC_ENRGY);

@@ -103,7 +103,7 @@ static int listening;
 static int releasing;
 static int exitting;
 static int waiting;
-static int forked;
+int forked;
 
 // Synchronization
 static packet_header_t sync_ans_header;
@@ -282,7 +282,7 @@ void time_reset_timeout_slct()
 	time_slct = timeout_aggr.tv_sec;
 
 	if (timeout_insr.tv_sec < timeout_aggr.tv_sec) {
-		timeout_slct.tv_sec = timeout_insr.tv_sec;
+		time_slct = timeout_insr.tv_sec;
 	}
 
 	timeout_slct.tv_sec  = time_slct;
