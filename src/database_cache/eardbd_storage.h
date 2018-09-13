@@ -35,30 +35,30 @@
 #define col2 "\x1b[0m"
 
 #define verbose0(format) \
-	fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
+    fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
 
 #define verbose1(format, ...) \
-	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
+    fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 
 #define verbose3(...) \
-	if (!forked || master_iam) { \
-		fprintf(stderr, __VA_ARGS__); \
-		fprintf(stderr, "\n"); \
-	}
+    if (!forked || master_iam) { \
+        fprintf(stderr, __VA_ARGS__); \
+        fprintf(stderr, "\n"); \
+    }
 
 #define verline1(...) \
-	if (!forked || master_iam) { \
-		fprintf(stderr, col1 line __VA_ARGS__); \
-		fprintf(stderr, col2 "\n"); \
-	}
+    if (!forked || master_iam) { \
+        fprintf(stderr, col1 line __VA_ARGS__); \
+        fprintf(stderr, col2 "\n"); \
+    }
 
 #define verline0() \
-		fprintf(stderr, col1 line col2);
+        fprintf(stderr, col1 line col2);
 
 #define error(...) \
-	fprintf(stderr, "ERROR, " __VA_ARGS__); \
-	fprintf(stderr, "\n"); \
-	exit(1);
+    fprintf(stderr, "ERROR, " __VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    exit(1);
 
 /* Functions */
 void insert_hub(uint option, uint reason);

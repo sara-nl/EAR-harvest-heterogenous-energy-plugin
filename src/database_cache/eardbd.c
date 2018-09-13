@@ -103,7 +103,7 @@ static int listening;
 static int releasing;
 static int exitting;
 static int waiting;
-static int forked;
+int forked;
 
 // Synchronization
 static packet_header_t sync_ans_header;
@@ -826,7 +826,6 @@ static void pipeline()
 		// If timeout_insr, data processing
 		if (timeout_slct.tv_sec == 0 && timeout_slct.tv_usec == 0)
 		{
-
 			time_substract_timeouts();
 
 			if (timeout_aggr.tv_sec == 0)
