@@ -63,7 +63,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    if(!mysql_real_connect(connection, my_cluster.database.ip, my_cluster.database.user,"", my_cluster.database.database, my_cluster.database.port, NULL, 0))
+    if(!mysql_real_connect(connection, my_cluster.database.ip, my_cluster.database.user,"", "Report5", my_cluster.database.port, NULL, 0))
     {
         fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
@@ -75,7 +75,7 @@ void main(int argc,char *argv[])
     int job_id, step_id = 0;
     char is_learning = 0;
     char *token;
-    job_id = 50954; 
+    job_id = 1602; 
  
     if (verbose) fprintf(stderr, "Preparing query statement\n");
     sprintf(query, "SELECT * FROM Applications WHERE job_id=%u and step_id=%u", job_id, step_id);
@@ -107,8 +107,6 @@ void main(int argc,char *argv[])
     printf("num_apps: %d found\n", num_apps);
     
     mysql_close(connection);
-
-    strcpy(my_cluster.database.database, "Report2");
 
     init_db_helper(&my_cluster.database);
 

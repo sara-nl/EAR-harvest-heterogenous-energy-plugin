@@ -86,6 +86,7 @@ tests/check/check.sh
 *compute_coefficients_v3
 *compute_coefficients_v2
 *get_app_list
+*get_ear_events
 *compute_coefficients
 *traces_to_paraver
 *database_eraser
