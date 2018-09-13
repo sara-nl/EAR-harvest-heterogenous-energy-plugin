@@ -542,7 +542,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 								// we must compute N here
 								ear_periodic_mode=PERIODIC_MODE_ON;
 								mpi_calls_in_period=(uint)(total_mpi_calls/dynais_timeout)*lib_period;
-								earl_verbose(0,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
+								earl_verbose(1,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
 									time_from_mpi_init,mpi_calls_in_period);
 								states_periodic_begin_period(my_id, NULL, 1, 1);
 								ear_iterations=0;
