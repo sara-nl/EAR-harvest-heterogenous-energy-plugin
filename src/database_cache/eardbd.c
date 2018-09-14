@@ -341,7 +341,7 @@ static void release_resources()
 		loops = NULL;
 	}
 
-	storage_reset_indexes();
+	reset_indexes();
 
 	free_cluster_conf(&conf_clus);
 }
@@ -700,6 +700,9 @@ static ulong get_allocation_elements(float percent, size_t size)
 
 static void init_process_configuration(int argc, char **argv, cluster_conf_t *conf_clus)
 {
+	uint per_total = 0;
+	int i;
+
 	// Single process configuration
 	listening = (server_iam && server_too) || (mirror_iam);
 
@@ -721,13 +724,27 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 		init_sockets_main(argc, argv, conf_clus);
 	}
 
-	per_appsm = conf_clus->db_manager.mem_size_types[0];
-	per_appsn = conf_clus->db_manager.mem_size_types[1];
-	per_appsl = conf_clus->db_manager.mem_size_types[2];
-	per_loops = conf_clus->db_manager.mem_size_types[3];
-	per_enrgy = conf_clus->db_manager.mem_size_types[4];
-	per_aggrs = conf_clus->db_manager.mem_size_types[5];
-	per_evnts = conf_clus->db_manager.mem_size_types[6];
+	for (i = 0; i < EARDBD_TYPES; ++i) {
+		per_total += conf_clus->db_manager.mem_size_types[i];
+	}
+
+	if (per_total > 100 && per_total < 110) {
+		per_appsm = conf_clus->db_manager.mem_size_types[0];
+		per_appsn = conf_clus->db_manager.mem_size_types[1];
+		per_appsl = conf_clus->db_manager.mem_size_types[2];
+		per_loops = conf_clus->db_manager.mem_size_types[3];
+		per_enrgy = conf_clus->db_manager.mem_size_types[4];
+		per_aggrs = conf_clus->db_manager.mem_size_types[5];
+		per_evnts = conf_clus->db_manager.mem_size_types[6];
+	} else {
+		per_appsm = 40;
+		per_appsn = 20;
+		per_appsl = 05;
+		per_loops = 24;
+		per_enrgy = 05;
+		per_aggrs = 01;
+		per_evnts = 05;	
+	}
 
 	float len_appsm_pc = ((float) per_appsm) / 100.0;
 	float len_appsn_pc = ((float) per_appsn) / 100.0;
@@ -830,6 +847,8 @@ static void pipeline()
 
 			if (timeout_aggr.tv_sec == 0)
 			{
+				verbose3("completed the aggregation number %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
+				
 				// Aggregation time done, so new aggregation incoming
 				storage_sample_add(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);
 

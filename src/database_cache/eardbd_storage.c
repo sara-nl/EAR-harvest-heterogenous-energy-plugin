@@ -49,7 +49,6 @@ extern int mirror_iam;
 // Pipeline
 extern int forked;
 
-
 // Storage
 extern uint per_appsm;
 extern uint per_appsn;
@@ -85,6 +84,43 @@ extern ulong i_loops;
 
 // Verbosity
 extern char *str_who[2];
+
+/*
+ *
+ * Reset
+ *
+ */
+
+static void reset_aggregations()
+{
+	if (i_aggrs < len_aggrs && aggrs[i_aggrs].n_samples > 0) {
+        memcpy (aggrs, &aggrs[i_aggrs], sizeof(periodic_aggregation_t));
+    } else {
+        init_periodic_aggregation(aggrs);
+    }   
+
+    i_aggrs = 0;
+}
+
+void reset_indexes()
+{
+    i_aggrs = 0;
+    i_appsm = 0;
+    i_appsn = 0;
+    i_appsl = 0;
+    i_enrgy = 0;
+    i_evnts = 0;
+    i_loops = 0;
+}
+
+static void reset_all()
+{
+	// Indexes
+	reset_indexes();
+
+    // Data
+    reset_aggregations();
+}
 
 /*
  *
@@ -198,13 +234,7 @@ static void insert_aggregations()
 
 	db_batch_insert_periodic_aggregations(aggrs, i_aggrs);
 
-	if (i_aggrs < len_aggrs && aggrs[i_aggrs].n_samples > 0) {
-		memcpy (aggrs, &aggrs[i_aggrs], sizeof(periodic_aggregation_t));
-	} else {
-		init_periodic_aggregation(aggrs);
-	}
-
-	i_aggrs = 0;
+	reset_aggregations();
 }
 
 static void insert_events()
@@ -252,7 +282,7 @@ void insert_hub(uint option, uint reason)
 		insert_loops();
 	}
 	if (sync_option(option, SYNC_RESET)) {
-		storage_reset_indexes();
+		reset_all();
 	}
 }
 
@@ -261,17 +291,6 @@ void insert_hub(uint option, uint reason)
  * Storage management
  *
  */
-
-void storage_reset_indexes()
-{
-	i_aggrs = 0;
-	i_appsm = 0;
-	i_appsn = 0;
-	i_appsl = 0;
-	i_enrgy = 0;
-	i_evnts = 0;
-	i_loops = 0;
-}
 
 void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt)
 {
