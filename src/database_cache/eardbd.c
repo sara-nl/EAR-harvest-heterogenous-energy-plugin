@@ -330,6 +330,7 @@ static void release_resources()
 		free(appsn);
 		free(appsl);
 		free(enrgy);
+		free(aggrs);
 		free(evnts);
 		free(loops);
 
@@ -337,6 +338,7 @@ static void release_resources()
 		appsn = NULL;
 		appsl = NULL;
 		enrgy = NULL;
+		aggrs = NULL;
 		evnts = NULL;
 		loops = NULL;
 	}
@@ -772,13 +774,13 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	ulong b_evnts = sizeof(ear_event_t) * len_evnts;
 	ulong b_loops = sizeof(loop_t) * len_loops;
 
-	aggrs = malloc(b_aggrs);
-	appsm = malloc(b_appsm);
-	appsl = malloc(b_appsl);
-	appsn = malloc(b_appsn);
-	enrgy = malloc(b_enrgy);
-	evnts = malloc(b_evnts);
-	loops = malloc(b_loops);
+	aggrs = calloc(b_aggrs);
+	appsm = calloc(b_appsm);
+	appsl = calloc(b_appsl);
+	appsn = calloc(b_appsn);
+	enrgy = calloc(b_enrgy);
+	evnts = calloc(b_evnts);
+	loops = calloc(b_loops);
 
 	float mb_aggrs = (double) (b_aggrs) / 1000000.0;
 	float mb_appsl = (double) (b_appsl) / 1000000.0;

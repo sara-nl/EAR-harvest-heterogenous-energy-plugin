@@ -94,7 +94,7 @@ extern char *str_who[2];
 static void reset_aggregations()
 {
 	if (i_aggrs < len_aggrs && aggrs[i_aggrs].n_samples > 0) {
-        memcpy (aggrs, &aggrs[i_aggrs], sizeof(periodic_aggregation_t));
+		memcpy (aggrs, &aggrs[i_aggrs], sizeof(periodic_aggregation_t));
     } else {
         init_periodic_aggregation(aggrs);
     }   
