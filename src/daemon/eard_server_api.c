@@ -167,17 +167,17 @@ void correct_error(int target_ip, request_t *command, int port)
     if (command->node_dist < 1) return;
     char nextip1[50], nextip2[50];
 
-    struct sockaddr_in saddr;
-    saddr.sin_addr.s_addr = target_ip;
-    int offset1 = command->node_dist << 24;
-    int offset2 = (command->node_dist*2) << 24;
-    
-    saddr.sin_addr.s_addr += offset1;
-    strcpy(nextip1, inet_ntoa(saddr.sin_addr));
+    struct sockaddr_in temp;
+    int ip1, ip2; 
+    ip1 = ip2 = htonl(target_ip);
+    ip1 += command->node_dist;
+    temp.sin_addr.s_addr = ntohl(ip1);
 
-    saddr.sin_addr.s_addr -= offset2;
-    strcpy(nextip2, inet_ntoa(saddr.sin_addr));
+    strcpy(nextip1, inet_ntoa(temp.sin_addr));
 
+    ip2 -= command->node_dist;
+    temp.sin_addr.s_addr = ntohl(ip2);
+    strcpy(nextip2, inet_ntoa(temp.sin_addr));
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;

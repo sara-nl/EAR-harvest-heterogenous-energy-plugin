@@ -101,6 +101,10 @@ uint total_mpi_calls=0;
 static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
 static uint lib_period=PERIOD;
 static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
+#if EAR_PERFORMANCE_TESTS
+static int only_load=0;
+static int use_dynais=1;
+#endif
 #endif
 
     
@@ -217,14 +221,16 @@ void update_configuration()
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
 #if EAR_PERFORMANCE_TESTS
-	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every;
+	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais;;
 	ear_dynais_timeout=getenv("EAR_DYNAIS_TIMEOUT");
 	ear_lib_period=getenv("EAR_LIB_PERIOD");
 	ear_check_every=getenv("EAR_CHECK_EVERY");
+	ear_use_dynais=getenv("EAR_DYNAIS");
 	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
 	if (ear_lib_period!=NULL) lib_period=atoi(ear_lib_period);
 	if (ear_check_every!=NULL) check_every=atoi(ear_check_every);
-	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais_timeout %d lib_period %d check_every %d\n",dynais_timeout,lib_period,check_every);	
+	if (ear_use_dynais!=NULL) use_dynais=atoi(ear_use_dynais);
+	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d lib_period %d check_every %d\n",use_dynais,dynais_timeout,lib_period,check_every);	
 #endif
 }
 
@@ -234,6 +240,14 @@ void ear_init()
 	char *summary_pathname;
 	char *freq;
 	int size;
+	long long init_start_time,init_end_time;
+	#if EAR_PERFORMANCE_TESTS
+	char *ear_only_load;
+	ear_only_load=getenv("EAR_ONLY_LOAD");
+	if (ear_only_load!=NULL) only_load=atoi(ear_only_load);
+	if (only_load) return;
+	init_start_time=PAPI_get_real_usec();
+	#endif
 
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
@@ -255,12 +269,21 @@ void ear_init()
 
 	get_job_identification();
 	// Getting if the local process is the master or not
+	#if EAR_PERFORMANCE_TESTS
+	long long local_id_start,local_id_end;
+	local_id_start=PAPI_get_real_usec();
+	#endif	
 	my_id = get_local_id(node_name);
+	
 
 	// if we are not the master, we return
 	if (my_id != 0) {
 		return;
 	}
+	#if EAR_PERFORMANCE_TESTS
+	local_id_end=PAPI_get_real_usec();
+	earl_verbose(0,"Local id initialization time %llu usecs",local_id_end-local_id_start);
+	#endif
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
@@ -303,13 +326,41 @@ void ear_init()
 	start_job(&application.job);
 
     earl_verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
+	#if EAR_PERFORMANCE_TESTS
+	long long eard_connect_start_time,eard_connect_end_time;
+	eard_connect_start_time=PAPI_get_real_usec();
+	#endif
     if (eards_connect(&application) == EAR_SUCCESS) {
         earl_verbose(1, "Rank %d connected with EARD", ear_my_rank);
     }
+	#if EAR_PERFORMANCE_TESTS
+	eard_connect_end_time=PAPI_get_real_usec();
+	earl_verbose(0,"eard connection time %llu usecs\n",eard_connect_end_time-eard_connect_start_time);
+	#endif
 	// Initializing sub systems
+	#if EAR_PERFORMANCE_TESTS
+	long long dinit,dend;
+	long long minit,mend;
+	long long finit,fend;
+	#endif
+	#if EAR_PERFORMANCE_TESTS
+	dinit=PAPI_get_real_usec();
+	#endif
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	#if EAR_PERFORMANCE_TESTS
+	dend=PAPI_get_real_usec();
+	minit=dend;
+	#endif
 	metrics_init();
+    #if EAR_PERFORMANCE_TESTS
+	mend=PAPI_get_real_usec();
+	finit=mend;
+	#endif
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
+	#if EAR_PERFORMANCE_TESTS
+	fend=PAPI_get_real_usec();
+	earl_verbose(0,"INIT cost: dynais %llu metrics %llu freq %llu",dend-dinit,mend-minit,fend-finit);
+	#endif
 
 	if (ear_my_rank == 0)
 	{
@@ -324,15 +375,32 @@ void ear_init()
 	ear_current_freq = frequency_get_cpu_freq(0);
 
 	// Policies
+	#if EAR_PERFORMANCE_TESTS
+	long long pinit,pend;
+    pinit=PAPI_get_real_usec();
+	#endif
 	init_power_policy();
 	init_power_models(frequency_get_num_pstates(), frequency_get_freq_rank_list());
+	#if EAR_PERFORMANCE_TESTS
+	pend=PAPI_get_real_usec();
+	earl_verbose(0,"policy cost %llu",pend-pinit);
+	#endif
+	
 
 	// Policy name is set in ear_models
 	strcpy(application.job.app_id, ear_app_name);
 
 	// Passing the frequency in KHz to MHz
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
+	#if EAR_PERFORMANCE_TESTS
+	long long rinit,rend;
+	rinit=PAPI_get_real_usec();
+	#endif	
 	application.job.procs = get_total_resources();
+	#if EAR_PERFORMANCE_TESTS
+	rend=PAPI_get_real_usec();
+	earl_verbose(0,"get_total_resources cost %llu",rend-rinit);
+	#endif
 	application.job.th =get_global_th();
 
 	// Copying static application info into the loop info
@@ -352,7 +420,7 @@ void ear_init()
 
 	// Print things
 	print_local_data();
-	ear_print_lib_environment();
+	// ear_print_lib_environment();
 	fflush(stderr);
 
 	// Tracing init
@@ -360,13 +428,22 @@ void ear_init()
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
 	// All is OK :D
-	earl_verbose(1, "EAR initialized successfully");
+	#if EAR_PERFORMANCE_TESTS
+	init_end_time=PAPI_get_real_usec();
+	earl_verbose(0, "EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
+	#else
+	earl_verbose(1, "EAR initialized successfully ");
+	#endif
 }
 
 void ear_finalize()
 {
 	char summary_fullpath[BUFFSIZE];
 	char node_name[BUFFSIZE];
+
+	#if EAR_PERFORMANCE_TESTS
+	if (only_load) return;
+	#endif
 
 	// if we are not the master, we return
 	if (my_id) {
@@ -431,6 +508,10 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 {
+    #if EAR_PERFORMANCE_TESTS
+    if (only_load) return;
+    #endif
+
 #if EAR_OVERHEAD_CONTROL
 	time_t curr_time;
 	double time_from_mpi_init;
@@ -461,7 +542,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 								// we must compute N here
 								ear_periodic_mode=PERIODIC_MODE_ON;
 								mpi_calls_in_period=(uint)(total_mpi_calls/dynais_timeout)*lib_period;
-								earl_verbose(0,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
+								earl_verbose(1,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
 									time_from_mpi_init,mpi_calls_in_period);
 								states_periodic_begin_period(my_id, NULL, 1, 1);
 								ear_iterations=0;
@@ -479,6 +560,8 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 				case DYNAIS_DISABLED:
 					/** That case means we have computed some signature and we have decided to set dynais disabled */
 					ear_mpi_call_dynais_off(call_type,buf,dest);
+					break;
+		
 			}
 			break;
 		case PERIODIC_MODE_ON:
@@ -487,6 +570,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 					ear_iterations++;
 					states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 				}
+				break;
 	}
 	}
 #else
@@ -532,8 +616,18 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 		begin_ov=PAPI_get_real_usec();
 		#endif
 
+		#if EAR_PERFORMANCE_TESTS
+		if (use_dynais){
+			ear_status=dynais(ear_event,&ear_size,&ear_level);
+		}else{
+			check_periodic_mode=0;
+			return;
+		}
+		#else
+
 		// This is key to detect periods
 		ear_status=dynais(ear_event,&ear_size,&ear_level);
+		#endif
 
 		#if MEASURE_DYNAIS_OV
 		end_ov=PAPI_get_real_usec();
