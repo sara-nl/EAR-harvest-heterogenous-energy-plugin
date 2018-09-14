@@ -94,7 +94,9 @@ extern char *str_who[2];
 static void reset_aggregations()
 {
 	if (i_aggrs < len_aggrs && aggrs[i_aggrs].n_samples > 0) {
-        memcpy (aggrs, &aggrs[i_aggrs], sizeof(periodic_aggregation_t));
+		verbose3("copying the aggregation %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
+
+		memcpy (aggrs, &aggrs[i_aggrs], sizeof(periodic_aggregation_t));
     } else {
         init_periodic_aggregation(aggrs);
     }   
@@ -104,7 +106,6 @@ static void reset_aggregations()
 
 void reset_indexes()
 {
-    i_aggrs = 0;
     i_appsm = 0;
     i_appsn = 0;
     i_appsl = 0;
@@ -233,7 +234,6 @@ static void insert_aggregations()
 	}
 
 	db_batch_insert_periodic_aggregations(aggrs, i_aggrs);
-
 	reset_aggregations();
 }
 
