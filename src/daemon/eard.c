@@ -509,7 +509,7 @@ int eard_node_energy(int must_read)
             write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
 			break;
 		case ENERGY_FREQ:
-			ack=(ulong)node_energy_frequency();
+			ack=(ulong)energy_freq;
             write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
 			break;
         default:

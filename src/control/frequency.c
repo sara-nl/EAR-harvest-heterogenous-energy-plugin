@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
