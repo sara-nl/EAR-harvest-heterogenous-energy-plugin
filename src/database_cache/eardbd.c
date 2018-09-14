@@ -730,7 +730,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 		per_total += conf_clus->db_manager.mem_size_types[i];
 	}
 
-	if (per_total > 100 && per_total < 110) {
+	if (per_total > 90 && per_total < 110) {
 		per_appsm = conf_clus->db_manager.mem_size_types[0];
 		per_appsn = conf_clus->db_manager.mem_size_types[1];
 		per_appsl = conf_clus->db_manager.mem_size_types[2];
