@@ -774,13 +774,21 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	ulong b_evnts = sizeof(ear_event_t) * len_evnts;
 	ulong b_loops = sizeof(loop_t) * len_loops;
 
-	aggrs = calloc(b_aggrs);
-	appsm = calloc(b_appsm);
-	appsl = calloc(b_appsl);
-	appsn = calloc(b_appsn);
-	enrgy = calloc(b_enrgy);
-	evnts = calloc(b_evnts);
-	loops = calloc(b_loops);
+	appsm = malloc(b_appsm);
+	appsn = malloc(b_appsn);
+	appsl = malloc(b_appsl);
+	loops = malloc(b_loops);
+	enrgy = malloc(b_enrgy);
+	aggrs = malloc(b_aggrs);
+	evnts = malloc(b_evnts);
+
+	memset(appsm, 0, b_appsm);
+	memset(appsn, 0, b_appsn);
+	memset(appsl, 0, b_appsl);
+	memset(loops, 0, b_loops);
+	memset(enrgy, 0, b_enrgy);
+	memset(aggrs, 0, b_aggrs);
+	memset(evnts, 0, b_evnts);
 
 	float mb_aggrs = (double) (b_aggrs) / 1000000.0;
 	float mb_appsl = (double) (b_appsl) / 1000000.0;
