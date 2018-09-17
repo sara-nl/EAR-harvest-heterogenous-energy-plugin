@@ -164,7 +164,7 @@ void main(int argc, char *argv[])
                 break;
             case 6:
                 if (optarg)
-                    new_ping_all_nodes(my_cluster_conf);
+                    ping_all_nodes(my_cluster_conf);
                 else
                     ping_all_nodes(my_cluster_conf);
                 break;
