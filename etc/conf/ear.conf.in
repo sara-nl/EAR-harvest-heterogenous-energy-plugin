@@ -18,6 +18,8 @@ GlobalManagerPeriodT2=259200
 # in Joules
 GlobalManagerEnergyLimit=550000
 GlobalManagerHost=r22u21.hpc.eu.lenovo.com
+GlobalManagerUnits=K
+GlobalManagerPolicy=MaxEnergy
 GlobalManagerPort=50000
 # Two modes are supported 0=manual 1= means automatic
 GlobalManagerMode=0
@@ -50,9 +52,6 @@ DBDaemonSyncPort=4713
 # Memory size expressed in MB
 DBDaemonMemorySize=120
 
-# Plugin configuration
-PluginVerbose=0
-PluginAcceptedPstates=1,2,3
 
 ### COMMON Configuration
 TmpDir=@localstatedir@

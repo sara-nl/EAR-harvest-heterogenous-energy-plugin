@@ -801,7 +801,7 @@ void Usage(char *app)
 {
 	fprintf(stderr,"Usage: %s [-h|verbose_level] \n", app);
 	fprintf(stderr,"\tear.conf file is used to define node settings. It must be available at\n"); 
-	fprintf(stderr,"\t $ETC/ear/ear.conf \n");
+	fprintf(stderr,"\t $EAR_ETC/ear/ear.conf \n");
 	_exit(1);
 }
 

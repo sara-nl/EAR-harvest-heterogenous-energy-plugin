@@ -20,7 +20,8 @@ ear.conf is a text file describing EAR options cluster description. It must be r
 **GlobalManagerVerbose**=1   
 **GlobalManagerPeriodT1**=90, Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)  
 **GlobalManagerPeriodT2**=259200  
-**GlobalManagerEnergyLimit**=550000 , expressed in Joules  
+**GlobalManagerUnits=K**=-|K|M , Units applied to energy limit , default KJ
+**GlobalManagerEnergyLimit**=550000   
 **GlobalManagerUseAggregated**=1 , use (or not) aggregated metrics to compute total energy
 **GlobalManagerHost**=name  
 **GlobalManagerPort**=50000 , port were EARGM will be executed  
