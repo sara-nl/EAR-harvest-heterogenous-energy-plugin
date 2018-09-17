@@ -7,7 +7,7 @@ ConditionPathExists=@localstatedir@
 
 [Service]
 Type=simple
-Environment="ETC=@sysconfdir@"
+Environment="EAR_ETC=@sysconfdir@"
 ExecStart=@prefix@/sbin/eard 1
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
