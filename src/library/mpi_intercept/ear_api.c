@@ -269,10 +269,6 @@ void ear_init()
 
 	get_job_identification();
 	// Getting if the local process is the master or not
-	#if EAR_PERFORMANCE_TESTS
-	long long local_id_start,local_id_end;
-	local_id_start=PAPI_get_real_usec();
-	#endif	
 	my_id = get_local_id(node_name);
 	
 
@@ -280,10 +276,6 @@ void ear_init()
 	if (my_id != 0) {
 		return;
 	}
-	#if EAR_PERFORMANCE_TESTS
-	local_id_end=PAPI_get_real_usec();
-	earl_verbose(0,"Local id initialization time %llu usecs",local_id_end-local_id_start);
-	#endif
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
@@ -326,41 +318,13 @@ void ear_init()
 	start_job(&application.job);
 
     earl_verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
-	#if EAR_PERFORMANCE_TESTS
-	long long eard_connect_start_time,eard_connect_end_time;
-	eard_connect_start_time=PAPI_get_real_usec();
-	#endif
     if (eards_connect(&application) == EAR_SUCCESS) {
         earl_verbose(1, "Rank %d connected with EARD", ear_my_rank);
     }
-	#if EAR_PERFORMANCE_TESTS
-	eard_connect_end_time=PAPI_get_real_usec();
-	earl_verbose(0,"eard connection time %llu usecs\n",eard_connect_end_time-eard_connect_start_time);
-	#endif
 	// Initializing sub systems
-	#if EAR_PERFORMANCE_TESTS
-	long long dinit,dend;
-	long long minit,mend;
-	long long finit,fend;
-	#endif
-	#if EAR_PERFORMANCE_TESTS
-	dinit=PAPI_get_real_usec();
-	#endif
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
-	#if EAR_PERFORMANCE_TESTS
-	dend=PAPI_get_real_usec();
-	minit=dend;
-	#endif
 	metrics_init();
-    #if EAR_PERFORMANCE_TESTS
-	mend=PAPI_get_real_usec();
-	finit=mend;
-	#endif
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
-	#if EAR_PERFORMANCE_TESTS
-	fend=PAPI_get_real_usec();
-	earl_verbose(0,"INIT cost: dynais %llu metrics %llu freq %llu",dend-dinit,mend-minit,fend-finit);
-	#endif
 
 	if (ear_my_rank == 0)
 	{
@@ -375,16 +339,8 @@ void ear_init()
 	ear_current_freq = frequency_get_cpu_freq(0);
 
 	// Policies
-	#if EAR_PERFORMANCE_TESTS
-	long long pinit,pend;
-    pinit=PAPI_get_real_usec();
-	#endif
 	init_power_policy();
 	init_power_models(frequency_get_num_pstates(), frequency_get_freq_rank_list());
-	#if EAR_PERFORMANCE_TESTS
-	pend=PAPI_get_real_usec();
-	earl_verbose(0,"policy cost %llu",pend-pinit);
-	#endif
 	
 
 	// Policy name is set in ear_models
@@ -392,15 +348,7 @@ void ear_init()
 
 	// Passing the frequency in KHz to MHz
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
-	#if EAR_PERFORMANCE_TESTS
-	long long rinit,rend;
-	rinit=PAPI_get_real_usec();
-	#endif	
 	application.job.procs = get_total_resources();
-	#if EAR_PERFORMANCE_TESTS
-	rend=PAPI_get_real_usec();
-	earl_verbose(0,"get_total_resources cost %llu",rend-rinit);
-	#endif
 	application.job.th =get_global_th();
 
 	// Copying static application info into the loop info
