@@ -61,9 +61,9 @@
     exit(1);
 
 /* Functions */
-void insert_hub(uint option, uint reason);
+void reset_indexes();
 
-void storage_reset_indexes();
+void insert_hub(uint option, uint reason);
 
 void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt);
 

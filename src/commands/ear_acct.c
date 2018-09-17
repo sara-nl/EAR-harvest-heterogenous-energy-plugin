@@ -63,7 +63,7 @@ void usage(char *app)
 "\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
 "\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
-"\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: all jobs]\n" \
+"\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]\n" \
 "", app);
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
     #endif
@@ -530,7 +530,7 @@ void main(int argc, char *argv[])
     int job_id = -1;
     int user_id = -1;
     int step_id = -1;
-    int limit = -1;
+    int limit = 20;
     int opt;
     char path_name[256];
     char *file_name = NULL;
@@ -560,7 +560,8 @@ void main(int argc, char *argv[])
         switch (opt)
         {
             case 'n':
-                limit = atoi(optarg);
+                if (strcmp(optarg, "all")) limit = -1;
+                else limit = atoi(optarg);
                 break;
             case 'u':
                 if (user != NULL) break;
