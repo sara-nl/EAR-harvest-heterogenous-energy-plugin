@@ -28,6 +28,8 @@
 */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <termios.h>
 #include <mysql/mysql.h>
 #include <common/database/db_helper.h>
 #include <common/types/application.h>
@@ -48,14 +50,32 @@ int EAR_VERBOSE_LEVEL=1;
 void main(int argc,char *argv[])
 {
 	int num_apps, is_learning=0;
+    char passw[256];
     int total_apps = 0;
     char all_nodes = 0;
 	application_t *apps;
 	if (argc < 2) {
-        printf("Requires an argument, either the node_name from which to delete records or [all] to delete all records\n");
+        printf("Requires an argument, either the node_name from which to delete records or [all] to delete all records. If the root user has a password, use -p\n");
         exit(0);
     }
     if (!strcmp(argv[1], "all")) all_nodes = 1;
+    if (argc > 3)
+    {
+        struct termios t;
+        tcgetattr(STDIN_FILENO, &t);
+        t.c_lflag &= ~ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &t);
+
+        printf("Introduce root's password:");
+        fflush(stdout);
+        fgets(passw, sizeof(passw), stdin);
+        t.c_lflag |= ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &t);
+        printf("\n");
+    }
+    else
+        strcpy(passw, "");
+
     char ear_path[256];
 	cluster_conf_t my_conf;
     if (get_ear_conf_path(ear_path)==EAR_ERROR){
@@ -77,7 +97,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user, "", my_conf.database.database, my_conf.database.port, NULL, 0))
+    if(!mysql_real_connect(connection, my_conf.database.ip, "root", passw, my_conf.database.database, my_conf.database.port, NULL, 0))
     {
         fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
