@@ -35,7 +35,7 @@
 
 #include <common/types/generic.h>
 #define NODE_SIZE 256
-#define DEMO 1
+
 typedef struct periodic_metric 
 {
     ulong DC_energy;
