@@ -12,7 +12,8 @@ BINARIES = compute_coefficients \
 		   coefficients_to_csv \
 		   coefficients_v2_to_v3 \
 		   get_app_list \
-		   get_ear_events
+		   get_ear_events \
+		   remove_learning
 
 ######## RULES
 
@@ -37,6 +38,9 @@ get_app_list: get_app_list.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 get_ear_events: get_ear_events.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+
+remove_learning: remove_learning.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 coefficients_to_csv: coefficients_to_csv.c $(COMMON_OBJS)
