@@ -92,6 +92,7 @@ tests/check/check.sh
 *database_eraser
 *configuration_check
 *batch_insert
+*remove_learning
 *ips
 *ping
 
