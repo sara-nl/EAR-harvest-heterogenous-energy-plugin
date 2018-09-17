@@ -114,10 +114,10 @@ void reset_indexes()
 
 static void reset_all()
 {
-	// Indexes
+	// Generic reset
 	reset_indexes();
 
-    // Data
+    // Specific resets
     reset_aggregations();
 }
 
@@ -370,7 +370,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		// In case it is a full sync the sync time is resetted before the answer
 		// with a very small offset (1 second is enough)
 		if (sync_option(q->sync_option, SYNC_ALL)) {
-			time_reset_timeout_insr(1);
+			time_reset_timeout_insr(5);
 		}
 	}
 }

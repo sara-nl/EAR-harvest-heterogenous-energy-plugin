@@ -7,7 +7,7 @@ ConditionPathExists=@localstatedir@
 
 [Service]
 Type=simple
-Environment="ETC=@sysconfdir@"
+Environment="EAR_ETC=@sysconfdir@"
 # ExecStart also accepts the verbosity level as first parameter
 ExecStart=@prefix@/sbin/eargmd
 ExecReload=/bin/kill -HUP $MAINPID
