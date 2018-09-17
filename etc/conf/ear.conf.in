@@ -44,14 +44,17 @@ NodeUseEARDBD=1
 NodeForceFrequencies=1
 
 
-# DATABASE MANAGER
-DBDaemonAggregationTime=300
+# EARDBD (database manager)
 DBDaemonPortTCP=4711
 DBDaemonPortSecTCP=4712
 DBDaemonSyncPort=4713
-# Memory size expressed in MB
+# Time in seconds
+DBDaemonAggregationTime=60
+DBDaemonInsertionTime=30
+# Memory size expressed in MB. It is per process, it means if there is a server and a mirror it would allocate the double of that value.
 DBDaemonMemorySize=120
-
+# Expressed in percentage for types: mpi, non-mpi and learning applications, loops, energy metrics and aggregations and events, in that order. 
+DBDaemonMemorySizePerType=40,20,5,24,5,1,5
 
 ### COMMON Configuration
 TmpDir=@localstatedir@
