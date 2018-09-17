@@ -88,6 +88,7 @@ cluster_conf_t my_cluster_conf;
 char my_ear_conf_path[GENERIC_NAME];	
 uint total_nodes=0;
 static const char *__NAME__ = "EARGM";
+char  unit_name[128];
 
 /* 
 * EAR Global Manager global data
@@ -119,9 +120,24 @@ void update_eargm_configuration(cluster_conf_t *conf)
 	policy=conf->eargm.policy;
     switch(units)
     {
-        case 0:divisor=BASIC_U;break;
-        case 1:divisor=KILO_U;break;
-        case 2:divisor=MEGA_U;break;
+        case 0:divisor=BASIC_U;
+			switch (policy){
+				case MAXENERGY:strcpy(unit_name,"Joules");break;
+				case MAXPOWER:strcpy(unit_name,"Watts");break;
+			}
+			break;
+        case 1:divisor=KILO_U;
+			switch (policy){
+				case MAXENERGY:strcpy(unit_name,"Kilo Joules");break;
+				case MAXPOWER:strcpy(unit_name,"Kilo Watts");break;
+			}
+			break;
+        case 2:divisor=MEGA_U;	
+			switch (policy){
+				case MAXENERGY:strcpy(unit_name,"Mega Joules");break;
+				case MAXPOWER:strcpy(unit_name,"Mega Watts");break;
+			}
+			break;
         default:break;
     }
 
@@ -254,7 +270,7 @@ void fill_periods(ulong energy)
 	}
 	total_samples=aggregate_samples;
 	current_sample=0;
-	VERBOSE_N(1,"Initializing T2 period with %lu Joules, each sample with %lu Joules",energy,e_persample);
+	VERBOSE_N(1,"Initializing T2 period with %lu %s, each sample with %lu %s",energy,unit_name,e_persample,unit_name);
 }
 
 void send_mail(uint level, double energy)
