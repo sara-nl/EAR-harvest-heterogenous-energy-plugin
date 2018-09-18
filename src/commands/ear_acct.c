@@ -60,8 +60,10 @@ void usage(char *app)
 "\t\t-h\tdisplays this message\n"\
 "\t\t-v\tverbose mode for debugging purposes\n" \
 "\t\t-u\tspecifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]\n" \
-"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
+"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid].\n" \
+"\t\t\t\tA user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
 "\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
+"\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
 "\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]\n" \
 "", app);
@@ -421,7 +423,7 @@ void add_string_filter(char *query, char *addition, char *value)
 
 void add_int_filter(char *query, char *addition, int value)
 {
-    char query_tmp[256];
+    char query_tmp[512];
     strcpy(query_tmp, query);
     if (query_filters < 1)
         strcat(query_tmp, " WHERE ");
@@ -471,7 +473,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     if (user != NULL)
         add_string_filter(query, "user_id", user);
     if (e_tag != NULL)
-        add_string_filter(query, "e_tag", user);
+        add_string_filter(query, "e_tag", e_tag);
 
     if (limit > 0)
     {
@@ -536,7 +538,7 @@ void main(int argc, char *argv[])
     int opt;
     char path_name[256];
     char *file_name = NULL;
-    char *e_tag = NULL;
+    char e_tag[64];
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -591,7 +593,7 @@ void main(int argc, char *argv[])
                 strcpy(csv_path, optarg);
                 break;
             case 't':
-                e_tag = optarg;
+                strcpy(e_tag, optarg);
                 break;
             case 'h':
                 free_cluster_conf(&my_conf);
