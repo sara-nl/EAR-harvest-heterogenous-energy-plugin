@@ -438,7 +438,7 @@ void add_int_filter(char *query, char *addition, int value)
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
 #if DB_MYSQL
-int read_from_database(char *user, int job_id, int limit, int step_id) 
+int read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag) 
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -470,6 +470,8 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
         add_int_filter(query, "step_id", step_id);
     if (user != NULL)
         add_string_filter(query, "user_id", user);
+    if (e_tag != NULL)
+        add_string_filter(query, "e_tag", user);
 
     if (limit > 0)
     {
@@ -534,6 +536,7 @@ void main(int argc, char *argv[])
     int opt;
     char path_name[256];
     char *file_name = NULL;
+    char *e_tag = NULL;
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -555,7 +558,7 @@ void main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:vmlc:h")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmlc:h")) != -1) 
     {
         switch (opt)
         {
@@ -587,14 +590,18 @@ void main(int argc, char *argv[])
             case 'c':
                 strcpy(csv_path, optarg);
                 break;
+            case 't':
+                e_tag = optarg;
+                break;
             case 'h':
                 free_cluster_conf(&my_conf);
                 usage(argv[0]);
+                break;
         }
     }
 
     if (file_name != NULL) read_from_files(job_id, step_id, verbose, file_name);
-    else read_from_database(user, job_id, limit, step_id); 
+    else read_from_database(user, job_id, limit, step_id, e_tag); 
 
     free_cluster_conf(&my_conf);
     exit(1);
