@@ -1,0 +1,39 @@
+E\+AR S\+L\+U\+RM plugin allows to load dynamically the E\+AR library for a S\+L\+U\+RM job, if the enabling argument is set. The library will be loaded over each job step, intercepting all M\+PI calls. The daemon will be loaded and closed next to S\+L\+U\+RM\textquotesingle{}s daemon ({\itshape slurmd}).
+
+\subsection*{Configuration }
+
+1) Locate and edit the library and daemon configuration file example in the installation path, {\ttfamily etc/ear.\+conf}. 2) Modify the values of the variables, taking into account that only accepts complete paths or names, not appending from other environment variables like {\ttfamily \$\+H\+O\+ME}. You can find a complete list in https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/etc/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}environment variables configuration page\char`\"{}. 1) Add in S\+L\+U\+RM\textquotesingle{}s {\ttfamily plugstack.\+conf} file, a new entry with the paths of the compiled plugin {\ttfamily earplug.\+so} and also the {\ttfamily ear.\+conf}, taking a look in the example {\ttfamily etc/plugstack.\+conf}. 3) Reset the system or kill and run S\+L\+U\+RM\textquotesingle{}s slurmctld and slurmd daemons.
+
+As previously said, E\+AR library and daemon behaviour depends on environment variables defined in {\bfseries ear.\+conf} file. These environment variables could be redefined by the end user with some {\itshape srun} arguments added by the plugin (see execution section below) or exporting the same variables before sending a job.
+
+\subsection*{New S\+L\+U\+RM arguments }
+
+After the plugin configuration, a set of additional arguments are included in S\+L\+U\+RM\textquotesingle{}s {\ttfamily srun} for the ease of use of E\+AR. You can see a complete list of those arguments below.
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*3{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Argument }&{\bf Description }&{\bf Type / comment  }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Argument }&{\bf Description }&{\bf Type / comment  }\\\cline{1-3}
+\endhead
+--ear &Enables E\+AR &Just for default values. \\\cline{1-3}
+--ear-\/policy &Energy/time policy &See {\itshape E\+A\+R\+\_\+\+P\+O\+W\+E\+R\+\_\+\+P\+O\+L\+I\+CY} environment variable. \\\cline{1-3}
+--ear-\/policy-\/th &Threshold of the policy &Value between 0 and 1. \\\cline{1-3}
+--ear-\/verbose &Verbosity level &Value between 0 and 4. \\\cline{1-3}
+--ear-\/learning &Enables the learning phase &{\itshape P\+\_\+\+S\+T\+A\+TE} \mbox{[}0..n\mbox{]}. \\\cline{1-3}
+--ear-\/traces &Saves trace files with metrics &Path where the files will be placed. \\\cline{1-3}
+--job-\/name &App/job name for debugging &Name for the job/application. \\\cline{1-3}
+--ear-\/user-\/db &Use-\/db filename root &Specifies the file to save the user applications metrics summary\textquotesingle{}file.\+nodename.\+csv\textquotesingle{} file \\\cline{1-3}
+--ear-\/cpufreq &Sets the job frequency &Just for {\itshape M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY} policy. \\\cline{1-3}
+\end{longtabu}
+
+\begin{DoxyItemize}
+\item For more information consult {\ttfamily srun -\/-\/help} output or see configuration options sections for more detailed description.
+\item Example\+: {\ttfamily ./srun -\/\+N2 -\/n2 -\/-\/ear-\/policy=M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON -\/-\/ear-\/policy-\/th=0.\+9 application}
+\item Maximum {\itshape P\+\_\+\+S\+T\+A\+TE} depends on the C\+PU.
+\item Most of the options can only be used by Authorized users (specified at ear.\+conf file) 
+\end{DoxyItemize}

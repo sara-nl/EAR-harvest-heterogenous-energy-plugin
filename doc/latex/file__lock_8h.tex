@@ -1,0 +1,88 @@
+\hypertarget{file__lock_8h}{}\section{src/common/file\+\_\+lock.h File Reference}
+\label{file__lock_8h}\index{src/common/file\+\_\+lock.\+h@{src/common/file\+\_\+lock.\+h}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{file__lock_8h_a7a329551a9d6ef69385db87082d9131f}{create\+\_\+lock} (char $\ast$lock\+\_\+file\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Creates a file to be used as lock. \end{DoxyCompactList}\item 
+int \hyperlink{file__lock_8h_ac5ed0f9ba5dbcee33e51241c71dde6d0}{lock\+\_\+file} (int fd)
+\begin{DoxyCompactList}\small\item\em Locks the file for writting in a fixe dpart. \end{DoxyCompactList}\item 
+int \hyperlink{file__lock_8h_a46c74f25ac0e9ea8c6479e0bf47a92c7}{unlock\+\_\+file} (int fd)
+\begin{DoxyCompactList}\small\item\em Unlocks the file. \end{DoxyCompactList}\item 
+void \hyperlink{file__lock_8h_a4c9b4f17abb72a98c80414c948e98a57}{lock\+\_\+dispose} (int fd, char $\ast$lock\+\_\+file\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Closes and removes the lock file. \end{DoxyCompactList}\item 
+int \hyperlink{file__lock_8h_aedf9b0844e33292502729ad6820be2ea}{lock\+\_\+master} (char $\ast$lock\+\_\+file\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Opens a file with O\+\_\+\+E\+X\+CL, only one process per node will do that. \end{DoxyCompactList}\item 
+void \hyperlink{file__lock_8h_aa7c0fc646ce78934e01bf9b237caab1d}{unlock\+\_\+master} (int fd, char $\ast$lock\+\_\+file\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Releases a lock file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{file\+\_\+lock.\+h@{file\+\_\+lock.\+h}!create\+\_\+lock@{create\+\_\+lock}}
+\index{create\+\_\+lock@{create\+\_\+lock}!file\+\_\+lock.\+h@{file\+\_\+lock.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+lock(char $\ast$lock\+\_\+file\+\_\+name)}{create_lock(char *lock_file_name)}}]{\setlength{\rightskip}{0pt plus 5cm}int create\+\_\+lock (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{lock\+\_\+file\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{file__lock_8h_a7a329551a9d6ef69385db87082d9131f}{}\label{file__lock_8h_a7a329551a9d6ef69385db87082d9131f}
+
+
+Creates a file to be used as lock. 
+
+It doesn\textquotesingle{}t locks the file \index{file\+\_\+lock.\+h@{file\+\_\+lock.\+h}!lock\+\_\+dispose@{lock\+\_\+dispose}}
+\index{lock\+\_\+dispose@{lock\+\_\+dispose}!file\+\_\+lock.\+h@{file\+\_\+lock.\+h}}
+\subsubsection[{\texorpdfstring{lock\+\_\+dispose(int fd, char $\ast$lock\+\_\+file\+\_\+name)}{lock_dispose(int fd, char *lock_file_name)}}]{\setlength{\rightskip}{0pt plus 5cm}void lock\+\_\+dispose (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{char $\ast$}]{lock\+\_\+file\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{file__lock_8h_a4c9b4f17abb72a98c80414c948e98a57}{}\label{file__lock_8h_a4c9b4f17abb72a98c80414c948e98a57}
+
+
+Closes and removes the lock file. 
+
+\index{file\+\_\+lock.\+h@{file\+\_\+lock.\+h}!lock\+\_\+file@{lock\+\_\+file}}
+\index{lock\+\_\+file@{lock\+\_\+file}!file\+\_\+lock.\+h@{file\+\_\+lock.\+h}}
+\subsubsection[{\texorpdfstring{lock\+\_\+file(int fd)}{lock_file(int fd)}}]{\setlength{\rightskip}{0pt plus 5cm}int lock\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{int}]{fd}
+\end{DoxyParamCaption}
+)}\hypertarget{file__lock_8h_ac5ed0f9ba5dbcee33e51241c71dde6d0}{}\label{file__lock_8h_ac5ed0f9ba5dbcee33e51241c71dde6d0}
+
+
+Locks the file for writting in a fixe dpart. 
+
+\index{file\+\_\+lock.\+h@{file\+\_\+lock.\+h}!lock\+\_\+master@{lock\+\_\+master}}
+\index{lock\+\_\+master@{lock\+\_\+master}!file\+\_\+lock.\+h@{file\+\_\+lock.\+h}}
+\subsubsection[{\texorpdfstring{lock\+\_\+master(char $\ast$lock\+\_\+file\+\_\+name)}{lock_master(char *lock_file_name)}}]{\setlength{\rightskip}{0pt plus 5cm}int lock\+\_\+master (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{lock\+\_\+file\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{file__lock_8h_aedf9b0844e33292502729ad6820be2ea}{}\label{file__lock_8h_aedf9b0844e33292502729ad6820be2ea}
+
+
+Opens a file with O\+\_\+\+E\+X\+CL, only one process per node will do that. 
+
+\index{file\+\_\+lock.\+h@{file\+\_\+lock.\+h}!unlock\+\_\+file@{unlock\+\_\+file}}
+\index{unlock\+\_\+file@{unlock\+\_\+file}!file\+\_\+lock.\+h@{file\+\_\+lock.\+h}}
+\subsubsection[{\texorpdfstring{unlock\+\_\+file(int fd)}{unlock_file(int fd)}}]{\setlength{\rightskip}{0pt plus 5cm}int unlock\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{int}]{fd}
+\end{DoxyParamCaption}
+)}\hypertarget{file__lock_8h_a46c74f25ac0e9ea8c6479e0bf47a92c7}{}\label{file__lock_8h_a46c74f25ac0e9ea8c6479e0bf47a92c7}
+
+
+Unlocks the file. 
+
+\index{file\+\_\+lock.\+h@{file\+\_\+lock.\+h}!unlock\+\_\+master@{unlock\+\_\+master}}
+\index{unlock\+\_\+master@{unlock\+\_\+master}!file\+\_\+lock.\+h@{file\+\_\+lock.\+h}}
+\subsubsection[{\texorpdfstring{unlock\+\_\+master(int fd, char $\ast$lock\+\_\+file\+\_\+name)}{unlock_master(int fd, char *lock_file_name)}}]{\setlength{\rightskip}{0pt plus 5cm}void unlock\+\_\+master (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{char $\ast$}]{lock\+\_\+file\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{file__lock_8h_aa7c0fc646ce78934e01bf9b237caab1d}{}\label{file__lock_8h_aa7c0fc646ce78934e01bf9b237caab1d}
+
+
+Releases a lock file. 
+

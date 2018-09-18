@@ -1,0 +1,120 @@
+The node daemon is the component in charge of providing any kind of services that requires privileged capabilities. Current version is conceived as an external process executed with root privileges.
+
+The E\+A\+RD provides two basic services, each one covered by one thread\+:
+\begin{DoxyItemize}
+\item Provides privileged metrics such as average frequency, uncore integrated memory controller counters to compute the memory bandwidth, and also energy metrics (DC node, D\+R\+AM and package energy).
+\item Implements a periodic power monitoring service. This service allows E\+AR package to control the total energy consumed in the system.
+\end{DoxyItemize}
+
+\subsection*{Requirements }
+
+E\+A\+RD uses C\+P\+U\+Power, Free\+I\+P\+MI and P\+A\+PI (with R\+A\+PL component enabled). Paths to these libraries must be specified during the installation process when they are not installed in default paths.
+
+When executed in production environments, E\+A\+RD connects with ../database\+\_\+cache/\+R\+E\+A\+ME.md \char`\"{}\+E\+A\+R\+D\+B\+D\char`\"{} service, that has to be up before starting the node daemon, otherwise values reported by E\+A\+RD to be stored in the database, will be lost.
+
+\subsection*{Configuration }
+
+The E\+AR Daemon uses the {\ttfamily /ear.conf} file to be configured. It can be dynamically configured by reloading the service.
+
+
+\begin{DoxyCode}
+1 # Fields related to the Daemon
+2 # Lines starting with # are comments
+3 
+4 # Verbose level
+5 NodeDaemonVerbose=1
+6 
+7 # Frequency used by power monitoring service (in seconds)
+8 NodeDaemonPowermonFreq=10
+9 
+10 # Maximum p\_state supported (1 nominal)
+11 NodeDaemonMaxPstate=1
+12 
+13 # Turbo frequencies supported (0 no)
+14 NodeDaemonTurbo=0
+15 
+16 # Port to be used by the remote API
+17 NodeDaemonPort=5000
+18 
+19 # MySQL DB is used
+20 NodeUseDB=1
+21 
+22 # MySQL is used and records are sent using eardbd, otherwise EARD will send it directly to the MySQL server
+23 NodeUseEARDBD=1
+\end{DoxyCode}
+
+
+\subsection*{Execution }
+
+To execute this component, this {\ttfamily systemctl} command examples are provided\+:
+\begin{DoxyItemize}
+\item {\ttfamily sudo systemctl start eard} to start the E\+A\+RD service.
+\item {\ttfamily sudo systemctl stop eard} to stop the E\+A\+RD service.
+\item {\ttfamily sudo systemctl reload eard} to force to reload the configuration of the E\+A\+RD service.
+\end{DoxyItemize}
+
+Log messages are generated during the execution. Use journalctl command to see eard message\+:
+
+
+\begin{DoxyItemize}
+\item {\ttfamily sudo journalctl -\/u eard -\/f} to force to reload the configuration of the E\+A\+RD service.
+\end{DoxyItemize}
+
+\subsection*{Reconfiguration }
+
+After executing a \char`\"{}systemctl reload eard\char`\"{} command, not all the E\+A\+RD options are dynamically updated. The list of updated variables are\+:
+
+
+\begin{DoxyItemize}
+\item Node\+Daemon\+Max\+Pstate
+\item Node\+Daemon\+Verbose
+\item Default policy and default policy settings
+\item Node\+Daemon\+Powermon\+Freq
+\end{DoxyItemize}
+
+To reconfigure other detauils such as E\+A\+RD port, coefficients, etc, E\+A\+RD must be stopped and restarted again.
+
+\subsection*{A\+PI }
+
+The (node) Daemon offers a simple A\+PI to request changes on the frequency, modify the current node settings, and reload the system configuration by reading {\ttfamily /ear.conf}
+
+Three A\+P\+Is are provided\+:
+\begin{DoxyItemize}
+\item Local A\+PI, to be used by ../library/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R\+L\char`\"{} (or any other runtime). It can be found in \href{eard_api.h}{\tt eard\+\_\+api.\+h}. This A\+PI involves complex data types and is not public.
+\item Local A\+PI, to be used by applications. It is a subset of the E\+A\+RD api and designed to be used by any applications to contact the privileged metric service offered by E\+A\+RD. This A\+PI is public and can be used without restrictinos, so doesn\textquotesingle{}t include functions to change the frequency. It can be found at \href{.}{\tt T\+BD}.
+\item Remote A\+PI, to be used by the ../global\+\_\+manager/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R\+G\+M\+D\char`\"{} or system commands and tools such as the {\ttfamily econtrol}. Can be found at \href{eard_rapi.h}{\tt eard\+\_\+rapi.\+h} and is not public.
+\end{DoxyItemize}
+
+\subsection*{Basic commands }
+
+E\+A\+RD includes some basic commands to be used in the same node eard is running. These commands change/get specific settings in the current node. They are not designaed to be used as system tools, just under development systems. We are offering\+:
+
+
+\begin{DoxyEnumerate}
+\item Commands using the eard local api\+:
+\begin{DoxyItemize}
+\item commands/ear\+\_\+get\+\_\+node\+\_\+freq\+: Usage\+: ./ear\+\_\+get\+\_\+node\+\_\+freq num\+\_\+cpus
+\item commands/ear\+\_\+set\+\_\+ondemand\+: Usage\+:ear\+\_\+set\+\_\+ondemand cpus$\vert$\mbox{[}-\/h\mbox{]}. Changes the current governor to ondemand
+\item commands/ear\+\_\+set\+\_\+node\+\_\+freq\+: Usage\+: ear\+\_\+set\+\_\+node\+\_\+freq node\+\_\+freq (in M\+Hz) num\+\_\+cpus
+\end{DoxyItemize}
+\item Commands using the remote api (can be connected from a different node) to notify new job/end job. They do the same functionality than E\+AR slurm plugin does
+\begin{DoxyItemize}
+\item commands/ear\+\_\+new\+\_\+job\+:Connects with eard and sends a new\+\_\+job requests. It automatically reads ear.\+conf file and sets application details based on environment variables.\+Only needed when slurm is not installed.
+\item commands/ear\+\_\+end\+\_\+job\+: Connects with eard and sends an end\+\_\+job request. It automatically reads ear.\+conf file and sets application details based on environmen t variables. Only needed when slurm is not installed.
+\end{DoxyItemize}
+\item Commands using the remote api (can be connected from a different node) to change node settings (defaul/max frequencies and th (for min\+\_\+time))
+\begin{DoxyItemize}
+\item commands/ear\+\_\+set\+\_\+freq\+: usage\+:ear\+\_\+set\+\_\+freq new\+\_\+freq (in K\+Hz)
+\item commands/ear\+\_\+inc\+\_\+th\+: usage\+:./ear\+\_\+inc\+\_\+th perc to be added to current Performance\+Efficiency\+Gain (5 means 5\%)
+\item commands/ear\+\_\+red\+\_\+freq\+: usage\+:./ear\+\_\+red\+\_\+freq p\+\_\+states
+\item commands/ear\+\_\+set\+\_\+th\+: usage\+:./ear\+\_\+set\+\_\+th Min\+Performance\+Efficiency\+Gain (75 means 0.\+75\%)
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\subsection*{Daemon testing }
+
+Look into the ../tests/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R test folder\char`\"{}
+
+\subsection*{License }
+
+All the files in the E\+AR framework are under the L\+G\+P\+Lv2.\+1 license. See the \href{../../COPYING}{\tt C\+O\+P\+Y\+I\+NG} file in the E\+AR root directory. 

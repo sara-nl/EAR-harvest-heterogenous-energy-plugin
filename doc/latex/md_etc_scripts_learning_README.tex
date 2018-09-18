@@ -1,0 +1,153 @@
+This is a phase prior to the normal E\+AR utilization, and it is called learning phase since is a kind of hardware characterization of the nodes. During the learning phase a matrix of coefficients which caracterizes the relationship between power and performance, is computed on all nodes and stored. To get them, during the phase, a set of preselected stress tools or benchmarks (also called kernels) are executed with the range frequencies of the system.
+
+\subsection*{Benchmarks or stress test }
+
+Benchmarks are the stressing programs which learning phase will execute to get node\textquotesingle{}s coefficient characterization. These coefficients will be used later by the E\+AR library to dynamically adjust each node frequency during an application execution, to save energy.
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*2{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf File }&{\bf Reference  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf File }&{\bf Reference  }\\\cline{1-2}
+\endhead
+dgemm &\href{https://software.intel.com/en-us/mkl-tutorial-c-multiplying-matrices-using-dgemm}{\tt https\+://software.\+intel.\+com/en-\/us/mkl-\/tutorial-\/c-\/multiplying-\/matrices-\/using-\/dgemm} \\\cline{1-2}
+stream &\href{http://www.cs.virginia.edu/stream/ref.html}{\tt http\+://www.\+cs.\+virginia.\+edu/stream/ref.\+html} \\\cline{1-2}
+bt-\/mz &\href{https://www.nas.nasa.gov/publications/npb.html}{\tt https\+://www.\+nas.\+nasa.\+gov/publications/npb.\+html} \\\cline{1-2}
+sp-\/mz &\char`\"{} 
+$<$tr$>$$<$td$>$ lu-\/mz  $<$td$>$ \char`\"{} \\\cline{1-2}
+ep &\char`\"{} 
+$<$tr$>$$<$td$>$ lu     $<$td$>$ \char`\"{} \\\cline{1-2}
+ua &" \\\cline{1-2}
+\end{longtabu}
+\subsection*{Saved files }
+
+Visit https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/library/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}\+E\+A\+R lib page\char`\"{} for more information.
+
+\subsection*{Execution of the learning phase basics }
+
+A set of scripts are provided for speed up with minimum edition requirements. These files are placed in the {\ttfamily bin/scripts} folder in your E\+AR installation folder pointed by {\itshape E\+A\+R\+\_\+\+I\+N\+S\+T\+A\+L\+L\+\_\+\+P\+A\+TH} variable, which is loaded the environment module. For a detailed information about the content of these scripts visit https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/etc/scripts/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}\+E\+A\+R scripts page\char`\"{}.
+
+\subsection*{Compiling benchmarks }
+
+1) Open {\ttfamily learning\+\_\+phase\+\_\+compile.\+sh} and look for these lines\+: 
+\begin{DoxyCode}
+1 # Edit architecture values
+2 export CORES=28
+3 export SOCKETS=2
+4 export CORES\_PER\_SOCKET=14
+\end{DoxyCode}
+ 2) Update the following parameters\+:~\newline
+
+\begin{DoxyItemize}
+\item {\bfseries C\+O\+R\+ES}\+: the total number of cores in a single computing node.~\newline
+
+\item {\bfseries S\+O\+C\+K\+E\+TS}\+: the total number of sockets in a single computing node.~\newline
+
+\item {\bfseries C\+O\+R\+E\+S\+\_\+\+P\+E\+R\+\_\+\+S\+O\+C\+K\+ET}\+: the total number of cores per socket in a single computing node.~\newline
+ 3) Launch the compiling phase by typing {\ttfamily ./learning\+\_\+phase\+\_\+compile.sh} in your compile node.
+\end{DoxyItemize}
+
+\subsection*{Testing benchmarks }
+
+Once compiled, execute a test in a computing node.
+
+To do that launch {\ttfamily ./learning\+\_\+phase\+\_\+test.sh $<$hostlist$>$}, with the path of a file containg a list of hosts in which you want to perform a kernel test. Also remember to correctly edit the architecture environment variables of the file.
+
+Once the test is done, check the elapsed time of each kernel execution.
+
+If the time (in seconds) of all benchmarks is between 60 and 120, the compilation, installation and test are done and you can proceed to the execution of the learning phase section. In case some benchmarks are not between these times, it is recommended to compile the kernels using different parameters. This is important because improves the quality of E\+AR prediction model.
+
+\subsection*{Fast benchmark modification }
+
+If one of these benchmarks is {\ttfamily lu-\/mz}, {\ttfamily bt-\/mz}, {\ttfamily sp-\/mz}, {\ttfamily lu}, {\ttfamily ep} or {\ttfamily ua}, you could easily alter its behavior by changing its class letter in the file {\ttfamily bin/scripts/learning/helpers/kernels\+\_\+iterator.\+sh} script. For example if you want to increase its execution time of a kernel compiled with class letter C, switch it by D. Or if you want to decrease the execution time of a kernel compiled with class letter B, switch the letter by A. Then compile and execute again.
+
+You could see where you have to edit in the following example\+: 
+\begin{DoxyCode}
+1 learning-phase lu-mpi C
+2 learning-phase ep D
+3 learning-phase bt-mz C
+4 learning-phase sp-mz C
+5 learning-phase lu-mz C
+6 learning-phase ua C
+7 learning-phase dgemm
+8 learning-phase stream
+\end{DoxyCode}
+ As you can see, there are no class letters for {\ttfamily dgemm} or {\ttfamily stream} kernels. Stream is a well known benchmark and there is no need to manual modification because varies its behavior itself. For {\ttfamily dgemm} or for a class letter benchmark which doesn’t fit in your goals, it’s recommended to do a manual kernel modification.
+
+\subsection*{Benchmarks manual modification }
+
+The following table breaks down the key variables and its possible values to alter the behaviour of the whole benchmarks.
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*4{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Kernel }&{\bf File }&{\bf Function }&{\bf Var  }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Kernel }&{\bf File }&{\bf Function }&{\bf Var  }\\\cline{1-4}
+\endhead
+bt-\/mz &N\+P\+B3.\+3.\+1-\/\+M\+Z/\+N\+P\+B3.\+3-\/\+M\+Z-\/\+M\+P\+I/sys/setparams.\+c &write\+\_\+bt\+\_\+info &niter \\\cline{1-4}
+lu-\/mz &N\+P\+B3.\+3.\+1-\/\+M\+Z/\+N\+P\+B3.\+3-\/\+M\+Z-\/\+M\+P\+I/sys/setparams.\+c &write\+\_\+lu\+\_\+info &itmax \\\cline{1-4}
+sp-\/mz &N\+P\+B3.\+3.\+1-\/\+M\+Z/\+N\+P\+B3.\+3-\/\+M\+Z-\/\+M\+P\+I/sys/setparams.\+c &write\+\_\+sp\+\_\+info &niter \\\cline{1-4}
+ep &N\+P\+B3.\+3.\+1/\+N\+P\+B3.3-\/\+M\+P\+I/sys/setparams.\+c &write\+\_\+ep\+\_\+info &m \\\cline{1-4}
+lu &N\+P\+B3.\+3.\+1/\+N\+P\+B3.3-\/\+M\+P\+I/sys/setparams.\+c &write\+\_\+lu\+\_\+info &itmax \\\cline{1-4}
+ua &N\+P\+B3.\+3.\+1/\+N\+P\+B3.3-\/\+O\+M\+P/sys/setparams.\+c &write\+\_\+ua\+\_\+info &niter \\\cline{1-4}
+\end{longtabu}
+Depending on your system you have to increase or decrease its value. As a reference, it is provided a table containing the letter for the script and the value of the variable for a couple of C\+PU architectures\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*3{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Kernel }&{\bf Haswell }&{\bf Skylake  }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Kernel }&{\bf Haswell }&{\bf Skylake  }\\\cline{1-3}
+\endhead
+bt-\/mz &C / 200 &C / 600 \\\cline{1-3}
+lu-\/mz &C / 250 &C / 800 \\\cline{1-3}
+sp-\/mz &C / 800 &C / 2000 \\\cline{1-3}
+ep &D / 36 &D / 37 \\\cline{1-3}
+lu &C / 250 &C / 750 \\\cline{1-3}
+ua &C / 200 &C / 200 \\\cline{1-3}
+\end{longtabu}
+For {\ttfamily dgemm}, you have to edit the file ‘dgemm\+\_\+example.\+f’. Take a look to P\+A\+R\+A\+M\+E\+T\+ER variable definition in the first line, which sets the size of the computing matrix. Increase or decrease that values equally depending if you want to add or subtract computing time.
+
+Once the variable is modified, rerun the test and check again the timings. Once done, you can proceed to the next section and execute the learning phase.
+
+\subsection*{Executing the learning phase }
+
+Having the kernels compiled, installed and tested, you are ready to execute the learning phase by the following steps\+: 1) Open the script {\ttfamily learning\+\_\+phase\+\_\+execute.\+sh}. This script will launch all kernels in all nodes in isolation, stressing the machine and saving metrics to train the E\+AR prediction model. 2) Look at these lines 
+\begin{DoxyCode}
+1 # Edit architecture values
+2 export CORES=28
+3 export SOCKETS=2
+4 export CORES\_PER\_SOCKET=14
+5 
+6 # Edit learning phase parameters
+7 export EAR\_MIN\_P\_STATE=1
+8 export EAR\_MAX\_P\_STATE=6
+\end{DoxyCode}
+ 3) Update the following parameters\+:~\newline
+
+\begin{DoxyItemize}
+\item {\bfseries C\+O\+R\+ES}\+: the total number of cores in a single computing node.~\newline
+
+\item {\bfseries S\+O\+C\+K\+E\+TS}\+: the total number of sockets in a single computing node.~\newline
+
+\item {\bfseries C\+O\+R\+E\+S\+\_\+\+P\+E\+R\+\_\+\+S\+O\+C\+K\+ET}\+: the total number of cores per socket in a single computing node.~\newline
+
+\item {\bfseries E\+A\+R\+\_\+\+M\+I\+N\+\_\+\+P\+\_\+\+S\+T\+A\+TE}\+: defines the maximum frequency to set during the learning phase. The default value is 1, meaning that the nominal frequency will be the maximum frequency that your cluster nodes will set. In the current version of E\+AR turbo support is not included.~\newline
+
+\item {\bfseries E\+A\+R\+\_\+\+M\+A\+X\+\_\+\+P\+\_\+\+S\+T\+A\+TE}\+: defines the minimum frequency to test during the learning phase. If 6 is set and E\+A\+R\+\_\+\+M\+I\+N\+\_\+\+P\+\_\+\+S\+T\+A\+TE is 1, it means that 6 frequencies will be set during the learning phase, from 1 to 6. This set of frequencies have to match with the set of frequencies that your cluster nodes are able to set during computing time.~\newline
+ 4) Execute the learning phase in all of your nodes by typing a command like\+: {\ttfamily ./learning\+\_\+phase\+\_\+execute.sh $<$hostlist$>$}, passing a file containing the list of nodes where you want to perform the learning phase. An {\ttfamily sbatch} will be launched exclusively in every node, performing a {\ttfamily srun} series of the kernel in the same node. 6) Check that there are the correct number of coefficients files in the folder pointed by {\ttfamily E\+A\+R\+\_\+\+E\+TC} environment variable.
+\end{DoxyItemize}
+
+\subsection*{Editing learning phase S\+L\+U\+RM commands }

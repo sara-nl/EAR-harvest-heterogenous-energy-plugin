@@ -1,0 +1,75 @@
+\hypertarget{lenovo__nm_8h}{}\section{src/metrics/ipmi/energy\+\_\+node/lenovo\+\_\+nm.h File Reference}
+\label{lenovo__nm_8h}\index{src/metrics/ipmi/energy\+\_\+node/lenovo\+\_\+nm.\+h@{src/metrics/ipmi/energy\+\_\+node/lenovo\+\_\+nm.\+h}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{lenovo__nm_8h_acab32bfb33f82ce4b2a7a350341b7a5e}{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+init} ()
+\begin{DoxyCompactList}\small\item\em Specific functions for C\+PU XX P\+L\+A\+T\+F\+O\+RM YY Grants access to ipmi device. \end{DoxyCompactList}\item 
+int \hyperlink{lenovo__nm_8h_ac1ee79d8d7d54147b6cdc44fecdf5a46}{lenovo\+\_\+act\+\_\+count\+\_\+energy\+\_\+data\+\_\+length} ()
+\item 
+int \hyperlink{lenovo__nm_8h_a2aa66377cfee75968cf81b233fb53015}{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy} (unsigned long $\ast$\hyperlink{structenergy}{energy})
+\item 
+int \hyperlink{lenovo__nm_8h_add793f265aa39a0480257331b8145d8b}{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy\+\_\+time} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$\hyperlink{structenergy}{energy}, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$ms)
+\item 
+int \hyperlink{lenovo__nm_8h_ae315c2c9d7bb888bca04d11ea7dab760}{lenovo\+\_\+act\+\_\+read\+\_\+ac\+\_\+energy} (unsigned long $\ast$\hyperlink{structenergy}{energy})
+\begin{DoxyCompactList}\small\item\em AC energy is not yet supported. \end{DoxyCompactList}\item 
+int \hyperlink{lenovo__nm_8h_ae250f4dc4c129aa89a4ea617300990ba}{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+dispose} ()
+\begin{DoxyCompactList}\small\item\em Release access to ipmi device. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}!lenovo\+\_\+act\+\_\+count\+\_\+energy\+\_\+data\+\_\+length@{lenovo\+\_\+act\+\_\+count\+\_\+energy\+\_\+data\+\_\+length}}
+\index{lenovo\+\_\+act\+\_\+count\+\_\+energy\+\_\+data\+\_\+length@{lenovo\+\_\+act\+\_\+count\+\_\+energy\+\_\+data\+\_\+length}!lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}}
+\subsubsection[{\texorpdfstring{lenovo\+\_\+act\+\_\+count\+\_\+energy\+\_\+data\+\_\+length()}{lenovo_act_count_energy_data_length()}}]{\setlength{\rightskip}{0pt plus 5cm}int lenovo\+\_\+act\+\_\+count\+\_\+energy\+\_\+data\+\_\+length (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{lenovo__nm_8h_ac1ee79d8d7d54147b6cdc44fecdf5a46}{}\label{lenovo__nm_8h_ac1ee79d8d7d54147b6cdc44fecdf5a46}
+\index{lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}!lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+dispose@{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+dispose}}
+\index{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+dispose@{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+dispose}!lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}}
+\subsubsection[{\texorpdfstring{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+dispose()}{lenovo_act_node_energy_dispose()}}]{\setlength{\rightskip}{0pt plus 5cm}int lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+dispose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{lenovo__nm_8h_ae250f4dc4c129aa89a4ea617300990ba}{}\label{lenovo__nm_8h_ae250f4dc4c129aa89a4ea617300990ba}
+
+
+Release access to ipmi device. 
+
+\index{lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}!lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+init@{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+init}}
+\index{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+init@{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+init}!lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}}
+\subsubsection[{\texorpdfstring{lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+init()}{lenovo_act_node_energy_init()}}]{\setlength{\rightskip}{0pt plus 5cm}int lenovo\+\_\+act\+\_\+node\+\_\+energy\+\_\+init (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{lenovo__nm_8h_acab32bfb33f82ce4b2a7a350341b7a5e}{}\label{lenovo__nm_8h_acab32bfb33f82ce4b2a7a350341b7a5e}
+
+
+Specific functions for C\+PU XX P\+L\+A\+T\+F\+O\+RM YY Grants access to ipmi device. 
+
+\index{lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}!lenovo\+\_\+act\+\_\+read\+\_\+ac\+\_\+energy@{lenovo\+\_\+act\+\_\+read\+\_\+ac\+\_\+energy}}
+\index{lenovo\+\_\+act\+\_\+read\+\_\+ac\+\_\+energy@{lenovo\+\_\+act\+\_\+read\+\_\+ac\+\_\+energy}!lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}}
+\subsubsection[{\texorpdfstring{lenovo\+\_\+act\+\_\+read\+\_\+ac\+\_\+energy(unsigned long $\ast$energy)}{lenovo_act_read_ac_energy(unsigned long *energy)}}]{\setlength{\rightskip}{0pt plus 5cm}int lenovo\+\_\+act\+\_\+read\+\_\+ac\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{unsigned long $\ast$}]{energy}
+\end{DoxyParamCaption}
+)}\hypertarget{lenovo__nm_8h_ae315c2c9d7bb888bca04d11ea7dab760}{}\label{lenovo__nm_8h_ae315c2c9d7bb888bca04d11ea7dab760}
+
+
+AC energy is not yet supported. 
+
+\index{lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}!lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy@{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy}}
+\index{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy@{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy}!lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}}
+\subsubsection[{\texorpdfstring{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy(unsigned long $\ast$energy)}{lenovo_act_read_dc_energy(unsigned long *energy)}}]{\setlength{\rightskip}{0pt plus 5cm}int lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{unsigned long $\ast$}]{energy}
+\end{DoxyParamCaption}
+)}\hypertarget{lenovo__nm_8h_a2aa66377cfee75968cf81b233fb53015}{}\label{lenovo__nm_8h_a2aa66377cfee75968cf81b233fb53015}
+\index{lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}!lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy\+\_\+time@{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy\+\_\+time}}
+\index{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy\+\_\+time@{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy\+\_\+time}!lenovo\+\_\+nm.\+h@{lenovo\+\_\+nm.\+h}}
+\subsubsection[{\texorpdfstring{lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy\+\_\+time(ulong $\ast$energy, ulong $\ast$ms)}{lenovo_act_read_dc_energy_time(ulong *energy, ulong *ms)}}]{\setlength{\rightskip}{0pt plus 5cm}int lenovo\+\_\+act\+\_\+read\+\_\+dc\+\_\+energy\+\_\+time (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong} $\ast$}]{energy, }
+\item[{{\bf ulong} $\ast$}]{ms}
+\end{DoxyParamCaption}
+)}\hypertarget{lenovo__nm_8h_add793f265aa39a0480257331b8145d8b}{}\label{lenovo__nm_8h_add793f265aa39a0480257331b8145d8b}

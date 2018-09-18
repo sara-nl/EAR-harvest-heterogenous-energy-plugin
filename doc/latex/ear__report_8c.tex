@@ -1,0 +1,236 @@
+\hypertarget{ear__report_8c}{}\section{src/commands/ear\+\_\+report.c File Reference}
+\label{ear__report_8c}\index{src/commands/ear\+\_\+report.\+c@{src/commands/ear\+\_\+report.\+c}}
+{\ttfamily \#include $<$time.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+{\ttfamily \#include $<$mysql/mysql.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{ear__report_8c_a78c99ffd76a7bb3c8c74db76207e9ab4}{\+\_\+\+X\+O\+P\+E\+N\+\_\+\+S\+O\+U\+R\+CE}~700
+\item 
+\#define \hyperlink{ear__report_8c_ade11582d4803f14f6a453f853f22dae6}{S\+U\+M\+\_\+\+Q\+U\+E\+RY}
+\item 
+\#define \hyperlink{ear__report_8c_ac08d8668647de44fb2ab4059709388a0}{M\+E\+T\+\_\+\+T\+I\+ME}
+\item 
+\#define \hyperlink{ear__report_8c_a1cf9c4dc784a01f5c36b746766bd0936}{A\+G\+G\+R\+\_\+\+T\+I\+ME}
+\item 
+\#define \hyperlink{ear__report_8c_adae6a54c9e9356b95ef20b0411b78316}{A\+G\+G\+R\+\_\+\+Q\+U\+E\+RY}
+\item 
+\#define \hyperlink{ear__report_8c_a95b9e8a339c7c4103628b75fe7a86863}{U\+S\+E\+R\+\_\+\+Q\+U\+E\+RY}
+\item 
+\#define \hyperlink{ear__report_8c_ab6c0780c28b414c84e543ea3ea90f4bb}{E\+T\+A\+G\+\_\+\+Q\+U\+E\+RY}
+\item 
+\#define \hyperlink{ear__report_8c_a21bc1d35338001d7e756894e8240ab92}{A\+L\+L\+\_\+\+U\+S\+E\+RS}
+\item 
+\#define \hyperlink{ear__report_8c_a1c162f3dd40d07693bdc8071a4e82170}{A\+L\+L\+\_\+\+N\+O\+D\+ES}
+\item 
+\#define \hyperlink{ear__report_8c_aff4519b52838f58ec762c93544743660}{A\+L\+L\+\_\+\+T\+A\+GS}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{ear__report_8c_acc7d17088590153d81d3e9b6ba1daa1a}{usage} (char $\ast$app)
+\item 
+long long \hyperlink{ear__report_8c_ad376fc40a5dfbb90d808c4766c9705bb}{stmt\+\_\+error} (M\+Y\+S\+Q\+L\+\_\+\+S\+T\+MT $\ast$statement)
+\item 
+unsigned long long \hyperlink{ear__report_8c_aed16714a3df0210864b2f3ab828c0bc7}{get\+\_\+sum} (M\+Y\+S\+QL $\ast$connection, int start\+\_\+time, int end\+\_\+time, unsigned long long \hyperlink{eargm_8c_a46bdc6418a56200bc580d4f64e1fa2b4}{divisor})
+\item 
+void \hyperlink{ear__report_8c_abbcf6db8910358944bb84776fb52e67c}{compute\+\_\+pow} (M\+Y\+S\+QL $\ast$connection, int start\+\_\+time, int end\+\_\+time, unsigned long long result)
+\item 
+void \hyperlink{ear__report_8c_a4f8c83d3f18fa08dcced1c5a71bf6691}{print\+\_\+all} (M\+Y\+S\+QL $\ast$connection, int start\+\_\+time, int end\+\_\+time, char $\ast$inc\+\_\+query)
+\item 
+void \hyperlink{ear__report_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ \hyperlink{ear__report_8c_a2156ca53e4d1bcd16c519a69e16002b2}{node\+\_\+name} = N\+U\+LL
+\item 
+char $\ast$ \hyperlink{ear__report_8c_add44c044e019d00d53fe8b4780916b58}{user\+\_\+name} = N\+U\+LL
+\item 
+char $\ast$ \hyperlink{ear__report_8c_ae96fbf2bcf0833cd225f57b894f35fc8}{etag} = N\+U\+LL
+\item 
+int \hyperlink{ear__report_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} = 0
+\item 
+int \hyperlink{ear__report_8c_a0b2caeb4b6f130be43e5a2f0267dd453}{verbose} = 0
+\item 
+unsigned long long \hyperlink{ear__report_8c_ae63bc5ab9cc6e7141484eee85d4e6cdc}{avg\+\_\+pow} = 0
+\item 
+time\+\_\+t \hyperlink{ear__report_8c_a33ed84fe8a2b4c3fb458003b677ffc3c}{global\+\_\+start\+\_\+time} = 0
+\item 
+time\+\_\+t \hyperlink{ear__report_8c_a86bdc09b38fde74c5c58f7b0a03b011d}{global\+\_\+end\+\_\+time} = 0
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!\+\_\+\+X\+O\+P\+E\+N\+\_\+\+S\+O\+U\+R\+CE@{\+\_\+\+X\+O\+P\+E\+N\+\_\+\+S\+O\+U\+R\+CE}}
+\index{\+\_\+\+X\+O\+P\+E\+N\+\_\+\+S\+O\+U\+R\+CE@{\+\_\+\+X\+O\+P\+E\+N\+\_\+\+S\+O\+U\+R\+CE}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+X\+O\+P\+E\+N\+\_\+\+S\+O\+U\+R\+CE}{_XOPEN_SOURCE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+X\+O\+P\+E\+N\+\_\+\+S\+O\+U\+R\+CE~700}\hypertarget{ear__report_8c_a78c99ffd76a7bb3c8c74db76207e9ab4}{}\label{ear__report_8c_a78c99ffd76a7bb3c8c74db76207e9ab4}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!A\+G\+G\+R\+\_\+\+Q\+U\+E\+RY@{A\+G\+G\+R\+\_\+\+Q\+U\+E\+RY}}
+\index{A\+G\+G\+R\+\_\+\+Q\+U\+E\+RY@{A\+G\+G\+R\+\_\+\+Q\+U\+E\+RY}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{A\+G\+G\+R\+\_\+\+Q\+U\+E\+RY}{AGGR_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+G\+G\+R\+\_\+\+Q\+U\+E\+RY}\hypertarget{ear__report_8c_adae6a54c9e9356b95ef20b0411b78316}{}\label{ear__report_8c_adae6a54c9e9356b95ef20b0411b78316}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"SELECT SUM(dc\_energy)/? FROM Periodic\_aggregations WHERE start\_time"} \(\backslash\)
+                    \textcolor{stringliteral}{">= ? AND end\_time <= ?"}
+\end{DoxyCode}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!A\+G\+G\+R\+\_\+\+T\+I\+ME@{A\+G\+G\+R\+\_\+\+T\+I\+ME}}
+\index{A\+G\+G\+R\+\_\+\+T\+I\+ME@{A\+G\+G\+R\+\_\+\+T\+I\+ME}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{A\+G\+G\+R\+\_\+\+T\+I\+ME}{AGGR_TIME}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+G\+G\+R\+\_\+\+T\+I\+ME}\hypertarget{ear__report_8c_a1cf9c4dc784a01f5c36b746766bd0936}{}\label{ear__report_8c_a1cf9c4dc784a01f5c36b746766bd0936}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"SELECT MIN(start\_time), MAX(end\_time) FROM Periodic\_aggregations WHERE start\_time"} \(\backslash\)
+                    \textcolor{stringliteral}{">= ? AND end\_time <= ?"}
+\end{DoxyCode}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!A\+L\+L\+\_\+\+N\+O\+D\+ES@{A\+L\+L\+\_\+\+N\+O\+D\+ES}}
+\index{A\+L\+L\+\_\+\+N\+O\+D\+ES@{A\+L\+L\+\_\+\+N\+O\+D\+ES}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+N\+O\+D\+ES}{ALL_NODES}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+N\+O\+D\+ES}\hypertarget{ear__report_8c_a1c162f3dd40d07693bdc8071a4e82170}{}\label{ear__report_8c_a1c162f3dd40d07693bdc8071a4e82170}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"select SUM(DC\_energy), node\_id FROM Periodic\_metrics WHERE start\_time >= %d "} \(\backslash\)
+                    \textcolor{stringliteral}{" AND end\_time <= %d GROUP BY node\_id "}
+\end{DoxyCode}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!A\+L\+L\+\_\+\+T\+A\+GS@{A\+L\+L\+\_\+\+T\+A\+GS}}
+\index{A\+L\+L\+\_\+\+T\+A\+GS@{A\+L\+L\+\_\+\+T\+A\+GS}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+T\+A\+GS}{ALL_TAGS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+T\+A\+GS}\hypertarget{ear__report_8c_aff4519b52838f58ec762c93544743660}{}\label{ear__report_8c_aff4519b52838f58ec762c93544743660}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"SELECT TRUNCATE(SUM(DC\_power*time), 0) as energy, Jobs.e\_tag FROM "} \(\backslash\)
+                    \textcolor{stringliteral}{"Power\_signatures INNER JOIN Applications ON id=Applications.power\_signature\_id "} \(\backslash\)
+                    \textcolor{stringliteral}{"INNER JOIN Jobs ON job\_id = Jobs.id AND Applications.step\_id = Jobs.step\_id "} \(\backslash\)
+                    \textcolor{stringliteral}{"WHERE start\_time >= %d AND end\_time <= %d GROUP BY Jobs.e\_tag ORDER BY energy"}
+\end{DoxyCode}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!A\+L\+L\+\_\+\+U\+S\+E\+RS@{A\+L\+L\+\_\+\+U\+S\+E\+RS}}
+\index{A\+L\+L\+\_\+\+U\+S\+E\+RS@{A\+L\+L\+\_\+\+U\+S\+E\+RS}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+U\+S\+E\+RS}{ALL_USERS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+U\+S\+E\+RS}\hypertarget{ear__report_8c_a21bc1d35338001d7e756894e8240ab92}{}\label{ear__report_8c_a21bc1d35338001d7e756894e8240ab92}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"SELECT TRUNCATE(SUM(DC\_power*time), 0) as energy, Jobs.user\_id FROM "} \(\backslash\)
+                    \textcolor{stringliteral}{"Power\_signatures INNER JOIN Applications On id=Applications.power\_signature\_id "} \(\backslash\)
+                    \textcolor{stringliteral}{"INNER JOIN Jobs ON job\_id = Jobs.id AND Applications.step\_id = Jobs.step\_id "} \(\backslash\)
+                    \textcolor{stringliteral}{"WHERE start\_time >= %d AND end\_time <= %d GROUP BY Jobs.user\_id ORDER BY energy"}
+\end{DoxyCode}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!E\+T\+A\+G\+\_\+\+Q\+U\+E\+RY@{E\+T\+A\+G\+\_\+\+Q\+U\+E\+RY}}
+\index{E\+T\+A\+G\+\_\+\+Q\+U\+E\+RY@{E\+T\+A\+G\+\_\+\+Q\+U\+E\+RY}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{E\+T\+A\+G\+\_\+\+Q\+U\+E\+RY}{ETAG_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define E\+T\+A\+G\+\_\+\+Q\+U\+E\+RY}\hypertarget{ear__report_8c_ab6c0780c28b414c84e543ea3ea90f4bb}{}\label{ear__report_8c_ab6c0780c28b414c84e543ea3ea90f4bb}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"SELECT SUM(DC\_power*time)/? FROM Power\_signatures WHERE id IN "} \(\backslash\)
+                    \textcolor{stringliteral}{"(SELECT Applications.power\_signature\_id FROM Applications JOIN Jobs "} \(\backslash\)
+                    \textcolor{stringliteral}{"ON job\_id = id AND Applications.step\_id = Jobs.step\_id WHERE "}\(\backslash\)
+                    \textcolor{stringliteral}{"Jobs.e\_tag = '%s' AND start\_time >= ? AND end\_time <= ?)"}
+\end{DoxyCode}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!M\+E\+T\+\_\+\+T\+I\+ME@{M\+E\+T\+\_\+\+T\+I\+ME}}
+\index{M\+E\+T\+\_\+\+T\+I\+ME@{M\+E\+T\+\_\+\+T\+I\+ME}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{M\+E\+T\+\_\+\+T\+I\+ME}{MET_TIME}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+E\+T\+\_\+\+T\+I\+ME}\hypertarget{ear__report_8c_ac08d8668647de44fb2ab4059709388a0}{}\label{ear__report_8c_ac08d8668647de44fb2ab4059709388a0}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"SELECT MIN(start\_time), MAX(end\_time) FROM Periodic\_metrics WHERE start\_time"} \(\backslash\)
+                    \textcolor{stringliteral}{">= ? AND end\_time <= ?"}
+\end{DoxyCode}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!S\+U\+M\+\_\+\+Q\+U\+E\+RY@{S\+U\+M\+\_\+\+Q\+U\+E\+RY}}
+\index{S\+U\+M\+\_\+\+Q\+U\+E\+RY@{S\+U\+M\+\_\+\+Q\+U\+E\+RY}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{S\+U\+M\+\_\+\+Q\+U\+E\+RY}{SUM_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+U\+M\+\_\+\+Q\+U\+E\+RY}\hypertarget{ear__report_8c_ade11582d4803f14f6a453f853f22dae6}{}\label{ear__report_8c_ade11582d4803f14f6a453f853f22dae6}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"SELECT SUM(dc\_energy)/? FROM Periodic\_metrics WHERE start\_time"} \(\backslash\)
+                    \textcolor{stringliteral}{">= ? AND end\_time <= ?"}
+\end{DoxyCode}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!U\+S\+E\+R\+\_\+\+Q\+U\+E\+RY@{U\+S\+E\+R\+\_\+\+Q\+U\+E\+RY}}
+\index{U\+S\+E\+R\+\_\+\+Q\+U\+E\+RY@{U\+S\+E\+R\+\_\+\+Q\+U\+E\+RY}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{U\+S\+E\+R\+\_\+\+Q\+U\+E\+RY}{USER_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define U\+S\+E\+R\+\_\+\+Q\+U\+E\+RY}\hypertarget{ear__report_8c_a95b9e8a339c7c4103628b75fe7a86863}{}\label{ear__report_8c_a95b9e8a339c7c4103628b75fe7a86863}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"SELECT SUM(DC\_power*time)/? FROM Power\_signatures WHERE id IN "} \(\backslash\)
+                    \textcolor{stringliteral}{"(SELECT Applications.power\_signature\_id FROM Applications JOIN Jobs "} \(\backslash\)
+                    \textcolor{stringliteral}{"ON job\_id = id AND Applications.step\_id = Jobs.step\_id WHERE "}\(\backslash\)
+                    \textcolor{stringliteral}{"Jobs.user\_id = '%s' AND start\_time >= ? AND end\_time <= ?)"}
+\end{DoxyCode}
+
+
+\subsection{Function Documentation}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!compute\+\_\+pow@{compute\+\_\+pow}}
+\index{compute\+\_\+pow@{compute\+\_\+pow}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{compute\+\_\+pow(\+M\+Y\+S\+Q\+L $\ast$connection, int start\+\_\+time, int end\+\_\+time, unsigned long long result)}{compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long long result)}}]{\setlength{\rightskip}{0pt plus 5cm}void compute\+\_\+pow (
+\begin{DoxyParamCaption}
+\item[{M\+Y\+S\+QL $\ast$}]{connection, }
+\item[{int}]{start\+\_\+time, }
+\item[{int}]{end\+\_\+time, }
+\item[{unsigned long long}]{result}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__report_8c_abbcf6db8910358944bb84776fb52e67c}{}\label{ear__report_8c_abbcf6db8910358944bb84776fb52e67c}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!get\+\_\+sum@{get\+\_\+sum}}
+\index{get\+\_\+sum@{get\+\_\+sum}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+sum(\+M\+Y\+S\+Q\+L $\ast$connection, int start\+\_\+time, int end\+\_\+time, unsigned long long divisor)}{get_sum(MYSQL *connection, int start_time, int end_time, unsigned long long divisor)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long long get\+\_\+sum (
+\begin{DoxyParamCaption}
+\item[{M\+Y\+S\+QL $\ast$}]{connection, }
+\item[{int}]{start\+\_\+time, }
+\item[{int}]{end\+\_\+time, }
+\item[{unsigned long long}]{divisor}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__report_8c_aed16714a3df0210864b2f3ab828c0bc7}{}\label{ear__report_8c_aed16714a3df0210864b2f3ab828c0bc7}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!main@{main}}
+\index{main@{main}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__report_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{ear__report_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!print\+\_\+all@{print\+\_\+all}}
+\index{print\+\_\+all@{print\+\_\+all}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{print\+\_\+all(\+M\+Y\+S\+Q\+L $\ast$connection, int start\+\_\+time, int end\+\_\+time, char $\ast$inc\+\_\+query)}{print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+all (
+\begin{DoxyParamCaption}
+\item[{M\+Y\+S\+QL $\ast$}]{connection, }
+\item[{int}]{start\+\_\+time, }
+\item[{int}]{end\+\_\+time, }
+\item[{char $\ast$}]{inc\+\_\+query}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__report_8c_a4f8c83d3f18fa08dcced1c5a71bf6691}{}\label{ear__report_8c_a4f8c83d3f18fa08dcced1c5a71bf6691}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!stmt\+\_\+error@{stmt\+\_\+error}}
+\index{stmt\+\_\+error@{stmt\+\_\+error}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{stmt\+\_\+error(\+M\+Y\+S\+Q\+L\+\_\+\+S\+T\+M\+T $\ast$statement)}{stmt_error(MYSQL_STMT *statement)}}]{\setlength{\rightskip}{0pt plus 5cm}long long stmt\+\_\+error (
+\begin{DoxyParamCaption}
+\item[{M\+Y\+S\+Q\+L\+\_\+\+S\+T\+MT $\ast$}]{statement}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__report_8c_ad376fc40a5dfbb90d808c4766c9705bb}{}\label{ear__report_8c_ad376fc40a5dfbb90d808c4766c9705bb}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!usage@{usage}}
+\index{usage@{usage}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{usage(char $\ast$app)}{usage(char *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void usage (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__report_8c_acc7d17088590153d81d3e9b6ba1daa1a}{}\label{ear__report_8c_acc7d17088590153d81d3e9b6ba1daa1a}
+
+
+\subsection{Variable Documentation}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!avg\+\_\+pow@{avg\+\_\+pow}}
+\index{avg\+\_\+pow@{avg\+\_\+pow}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{avg\+\_\+pow}{avg_pow}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long long avg\+\_\+pow = 0}\hypertarget{ear__report_8c_ae63bc5ab9cc6e7141484eee85d4e6cdc}{}\label{ear__report_8c_ae63bc5ab9cc6e7141484eee85d4e6cdc}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL = 0}\hypertarget{ear__report_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{ear__report_8c_a43d7e58c317e811389b628dc49b52bd2}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!etag@{etag}}
+\index{etag@{etag}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{etag}{etag}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ etag = N\+U\+LL}\hypertarget{ear__report_8c_ae96fbf2bcf0833cd225f57b894f35fc8}{}\label{ear__report_8c_ae96fbf2bcf0833cd225f57b894f35fc8}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!global\+\_\+end\+\_\+time@{global\+\_\+end\+\_\+time}}
+\index{global\+\_\+end\+\_\+time@{global\+\_\+end\+\_\+time}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{global\+\_\+end\+\_\+time}{global_end_time}}]{\setlength{\rightskip}{0pt plus 5cm}time\+\_\+t global\+\_\+end\+\_\+time = 0}\hypertarget{ear__report_8c_a86bdc09b38fde74c5c58f7b0a03b011d}{}\label{ear__report_8c_a86bdc09b38fde74c5c58f7b0a03b011d}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!global\+\_\+start\+\_\+time@{global\+\_\+start\+\_\+time}}
+\index{global\+\_\+start\+\_\+time@{global\+\_\+start\+\_\+time}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{global\+\_\+start\+\_\+time}{global_start_time}}]{\setlength{\rightskip}{0pt plus 5cm}time\+\_\+t global\+\_\+start\+\_\+time = 0}\hypertarget{ear__report_8c_a33ed84fe8a2b4c3fb458003b677ffc3c}{}\label{ear__report_8c_a33ed84fe8a2b4c3fb458003b677ffc3c}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!node\+\_\+name@{node\+\_\+name}}
+\index{node\+\_\+name@{node\+\_\+name}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{node\+\_\+name}{node_name}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ node\+\_\+name = N\+U\+LL}\hypertarget{ear__report_8c_a2156ca53e4d1bcd16c519a69e16002b2}{}\label{ear__report_8c_a2156ca53e4d1bcd16c519a69e16002b2}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!user\+\_\+name@{user\+\_\+name}}
+\index{user\+\_\+name@{user\+\_\+name}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{user\+\_\+name}{user_name}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ user\+\_\+name = N\+U\+LL}\hypertarget{ear__report_8c_add44c044e019d00d53fe8b4780916b58}{}\label{ear__report_8c_add44c044e019d00d53fe8b4780916b58}
+\index{ear\+\_\+report.\+c@{ear\+\_\+report.\+c}!verbose@{verbose}}
+\index{verbose@{verbose}!ear\+\_\+report.\+c@{ear\+\_\+report.\+c}}
+\subsubsection[{\texorpdfstring{verbose}{verbose}}]{\setlength{\rightskip}{0pt plus 5cm}int verbose = 0}\hypertarget{ear__report_8c_a0b2caeb4b6f130be43e5a2f0267dd453}{}\label{ear__report_8c_a0b2caeb4b6f130be43e5a2f0267dd453}

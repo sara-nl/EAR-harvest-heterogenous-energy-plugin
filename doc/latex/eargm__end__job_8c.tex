@@ -1,0 +1,70 @@
+\hypertarget{eargm__end__job_8c}{}\section{src/global\+\_\+manager/commands/eargm\+\_\+end\+\_\+job.c File Reference}
+\label{eargm__end__job_8c}\index{src/global\+\_\+manager/commands/eargm\+\_\+end\+\_\+job.\+c@{src/global\+\_\+manager/commands/eargm\+\_\+end\+\_\+job.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$global\+\_\+manager/eargm\+\_\+rapi.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{eargm__end__job_8c_a834e9a379307f869a10f4da078be5786}{N\+A\+M\+E\+\_\+\+S\+I\+ZE}~128
+\item 
+\#define \hyperlink{eargm__end__job_8c_a57375ea0ee50482e9db7de35d1b9e781}{I\+D\+\_\+\+S\+I\+ZE}~64
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{eargm__end__job_8c_acc7d17088590153d81d3e9b6ba1daa1a}{usage} (char $\ast$app)
+\item 
+void \hyperlink{eargm__end__job_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{eargm__end__job_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} =0
+\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\item 
+\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm__end__job_8c_a91686db1fb783c9bdf9c836c2b66ad01}{my\+\_\+cluster}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}!I\+D\+\_\+\+S\+I\+ZE@{I\+D\+\_\+\+S\+I\+ZE}}
+\index{I\+D\+\_\+\+S\+I\+ZE@{I\+D\+\_\+\+S\+I\+ZE}!eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{I\+D\+\_\+\+S\+I\+ZE}{ID_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+D\+\_\+\+S\+I\+ZE~64}\hypertarget{eargm__end__job_8c_a57375ea0ee50482e9db7de35d1b9e781}{}\label{eargm__end__job_8c_a57375ea0ee50482e9db7de35d1b9e781}
+\index{eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}!N\+A\+M\+E\+\_\+\+S\+I\+ZE@{N\+A\+M\+E\+\_\+\+S\+I\+ZE}}
+\index{N\+A\+M\+E\+\_\+\+S\+I\+ZE@{N\+A\+M\+E\+\_\+\+S\+I\+ZE}!eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{N\+A\+M\+E\+\_\+\+S\+I\+ZE}{NAME_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+A\+M\+E\+\_\+\+S\+I\+ZE~128}\hypertarget{eargm__end__job_8c_a834e9a379307f869a10f4da078be5786}{}\label{eargm__end__job_8c_a834e9a379307f869a10f4da078be5786}
+
+
+\subsection{Function Documentation}
+\index{eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}!main@{main}}
+\index{main@{main}!eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{eargm__end__job_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{eargm__end__job_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+\index{eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}!usage@{usage}}
+\index{usage@{usage}!eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{usage(char $\ast$app)}{usage(char *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void usage (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{eargm__end__job_8c_acc7d17088590153d81d3e9b6ba1daa1a}{}\label{eargm__end__job_8c_acc7d17088590153d81d3e9b6ba1daa1a}
+
+
+\subsection{Variable Documentation}
+\index{eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL =0}\hypertarget{eargm__end__job_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{eargm__end__job_8c_a43d7e58c317e811389b628dc49b52bd2}
+
+
+This program sets the node frequency . 
+
+It must be executed with privileges \index{eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}!my\+\_\+cluster@{my\+\_\+cluster}}
+\index{my\+\_\+cluster@{my\+\_\+cluster}!eargm\+\_\+end\+\_\+job.\+c@{eargm\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+cluster}{my_cluster}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+cluster}\hypertarget{eargm__end__job_8c_a91686db1fb783c9bdf9c836c2b66ad01}{}\label{eargm__end__job_8c_a91686db1fb783c9bdf9c836c2b66ad01}

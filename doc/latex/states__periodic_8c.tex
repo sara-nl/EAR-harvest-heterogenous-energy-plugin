@@ -1,0 +1,122 @@
+\hypertarget{states__periodic_8c}{}\section{src/library/states/states\+\_\+periodic.c File Reference}
+\label{states__periodic_8c}\index{src/library/states/states\+\_\+periodic.\+c@{src/library/states/states\+\_\+periodic.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$control/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/externs.\+h$>$}\\*
+{\ttfamily \#include $<$library/tracer/tracer.\+h$>$}\\*
+{\ttfamily \#include $<$library/states/states.\+h$>$}\\*
+{\ttfamily \#include $<$library/metrics/metrics.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/models.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/log.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/loop.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/math\+\_\+operations.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+api.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{states__periodic_8c_ad7b34964fc63ab23abf23d64da5d78e5}{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON}~1
+\item 
+\#define \hyperlink{states__periodic_8c_a0b98c41c26e9e356cd9146c6b24e5d2b}{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE}~2
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{states__periodic_8c_adbe87517008665723e077debbbd9c5fb}{states\+\_\+periodic\+\_\+end\+\_\+job} (int my\+\_\+id, F\+I\+LE $\ast$ear\+\_\+fd, char $\ast$app\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Executed at job end. \end{DoxyCompactList}\item 
+void \hyperlink{states__periodic_8c_aaa187e9be214646b6f99c5d58db3fa84}{states\+\_\+periodic\+\_\+begin\+\_\+job} (int my\+\_\+id, F\+I\+LE $\ast$ear\+\_\+fd, char $\ast$app\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Executed at job end. \end{DoxyCompactList}\item 
+void \hyperlink{states__periodic_8c_ab63ec4524c57b221c5800f740bdd550a}{states\+\_\+periodic\+\_\+begin\+\_\+period} (int my\+\_\+id, F\+I\+LE $\ast$ear\+\_\+fd, unsigned long event, unsigned int size)
+\begin{DoxyCompactList}\small\item\em It must be executed when E\+AR goes to periodic mode. \end{DoxyCompactList}\item 
+void \hyperlink{states__periodic_8c_a45715d6b10d1a92f6ff65780b891408c}{states\+\_\+periodic\+\_\+end\+\_\+period} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} iterations)
+\begin{DoxyCompactList}\small\item\em It must be executed when E\+AR is running in periodic mode. \end{DoxyCompactList}\item 
+void \hyperlink{states__periodic_8c_a8e37fa2e1586858e3f97a23b0004ff70}{states\+\_\+periodic\+\_\+new\+\_\+iteration} (int my\+\_\+id, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} period, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} iterations, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} level, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} event, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} mpi\+\_\+calls\+\_\+iter)
+\begin{DoxyCompactList}\small\item\em Executed every N mpi calls. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}!E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE@{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE}}
+\index{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE@{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE}!states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}}
+\subsubsection[{\texorpdfstring{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE}{EVALUATING_SIGNATURE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE~2}\hypertarget{states__periodic_8c_a0b98c41c26e9e356cd9146c6b24e5d2b}{}\label{states__periodic_8c_a0b98c41c26e9e356cd9146c6b24e5d2b}
+\index{states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}!F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON@{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON}}
+\index{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON@{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON}!states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}}
+\subsubsection[{\texorpdfstring{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON}{FIRST_ITERATION}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON~1}\hypertarget{states__periodic_8c_ad7b34964fc63ab23abf23d64da5d78e5}{}\label{states__periodic_8c_ad7b34964fc63ab23abf23d64da5d78e5}
+
+
+\subsection{Function Documentation}
+\index{states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}!states\+\_\+periodic\+\_\+begin\+\_\+job@{states\+\_\+periodic\+\_\+begin\+\_\+job}}
+\index{states\+\_\+periodic\+\_\+begin\+\_\+job@{states\+\_\+periodic\+\_\+begin\+\_\+job}!states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+periodic\+\_\+begin\+\_\+job(int my\+\_\+id, F\+I\+L\+E $\ast$ear\+\_\+fd, char $\ast$app\+\_\+name)}{states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+periodic\+\_\+begin\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{int}]{my\+\_\+id, }
+\item[{F\+I\+LE $\ast$}]{ear\+\_\+fd, }
+\item[{char $\ast$}]{app\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{states__periodic_8c_aaa187e9be214646b6f99c5d58db3fa84}{}\label{states__periodic_8c_aaa187e9be214646b6f99c5d58db3fa84}
+
+
+Executed at job end. 
+
+\index{states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}!states\+\_\+periodic\+\_\+begin\+\_\+period@{states\+\_\+periodic\+\_\+begin\+\_\+period}}
+\index{states\+\_\+periodic\+\_\+begin\+\_\+period@{states\+\_\+periodic\+\_\+begin\+\_\+period}!states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+periodic\+\_\+begin\+\_\+period(int my\+\_\+id, F\+I\+L\+E $\ast$ear\+\_\+fd, unsigned long event, unsigned int size)}{states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+periodic\+\_\+begin\+\_\+period (
+\begin{DoxyParamCaption}
+\item[{int}]{my\+\_\+id, }
+\item[{F\+I\+LE $\ast$}]{ear\+\_\+fd, }
+\item[{unsigned long}]{event, }
+\item[{unsigned int}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{states__periodic_8c_ab63ec4524c57b221c5800f740bdd550a}{}\label{states__periodic_8c_ab63ec4524c57b221c5800f740bdd550a}
+
+
+It must be executed when E\+AR goes to periodic mode. 
+
+states\+\_\+periodic\+\_\+new\+\_\+iteration must be executed after that when going to periodic mode \index{states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}!states\+\_\+periodic\+\_\+end\+\_\+job@{states\+\_\+periodic\+\_\+end\+\_\+job}}
+\index{states\+\_\+periodic\+\_\+end\+\_\+job@{states\+\_\+periodic\+\_\+end\+\_\+job}!states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+periodic\+\_\+end\+\_\+job(int my\+\_\+id, F\+I\+L\+E $\ast$ear\+\_\+fd, char $\ast$app\+\_\+name)}{states_periodic_end_job(int my_id, FILE *ear_fd, char *app_name)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+periodic\+\_\+end\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{int}]{my\+\_\+id, }
+\item[{F\+I\+LE $\ast$}]{ear\+\_\+fd, }
+\item[{char $\ast$}]{app\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{states__periodic_8c_adbe87517008665723e077debbbd9c5fb}{}\label{states__periodic_8c_adbe87517008665723e077debbbd9c5fb}
+
+
+Executed at job end. 
+
+\index{states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}!states\+\_\+periodic\+\_\+end\+\_\+period@{states\+\_\+periodic\+\_\+end\+\_\+period}}
+\index{states\+\_\+periodic\+\_\+end\+\_\+period@{states\+\_\+periodic\+\_\+end\+\_\+period}!states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+periodic\+\_\+end\+\_\+period(uint iterations)}{states_periodic_end_period(uint iterations)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+periodic\+\_\+end\+\_\+period (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{iterations}
+\end{DoxyParamCaption}
+)}\hypertarget{states__periodic_8c_a45715d6b10d1a92f6ff65780b891408c}{}\label{states__periodic_8c_a45715d6b10d1a92f6ff65780b891408c}
+
+
+It must be executed when E\+AR is running in periodic mode. 
+
+It is called at the end/begin of each period (called just once) \index{states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}!states\+\_\+periodic\+\_\+new\+\_\+iteration@{states\+\_\+periodic\+\_\+new\+\_\+iteration}}
+\index{states\+\_\+periodic\+\_\+new\+\_\+iteration@{states\+\_\+periodic\+\_\+new\+\_\+iteration}!states\+\_\+periodic.\+c@{states\+\_\+periodic.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+periodic\+\_\+new\+\_\+iteration(int my\+\_\+id, uint period, uint iterations, uint level, ulong event, ulong mpi\+\_\+calls\+\_\+iter)}{states_periodic_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+periodic\+\_\+new\+\_\+iteration (
+\begin{DoxyParamCaption}
+\item[{int}]{my\+\_\+id, }
+\item[{{\bf uint}}]{period, }
+\item[{{\bf uint}}]{iterations, }
+\item[{{\bf uint}}]{level, }
+\item[{{\bf ulong}}]{event, }
+\item[{{\bf ulong}}]{mpi\+\_\+calls\+\_\+iter}
+\end{DoxyParamCaption}
+)}\hypertarget{states__periodic_8c_a8e37fa2e1586858e3f97a23b0004ff70}{}\label{states__periodic_8c_a8e37fa2e1586858e3f97a23b0004ff70}
+
+
+Executed every N mpi calls. 
+

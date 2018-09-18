@@ -1,0 +1,311 @@
+\hypertarget{eard__rapi_8h}{}\section{src/daemon/eard\+\_\+rapi.h File Reference}
+\label{eard__rapi_8h}\index{src/daemon/eard\+\_\+rapi.\+h@{src/daemon/eard\+\_\+rapi.\+h}}
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+conf\+\_\+rapi.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{eard__rapi_8h_a85c1e1f03d85375fb5c69615188a53c6}{eards\+\_\+remote\+\_\+connect} (char $\ast$\hyperlink{compute__coefficients__v2_8c_aff90684e5eeb3720274928bb76d503d3}{nodename}, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} port)
+\begin{DoxyCompactList}\small\item\em Connects with the E\+A\+RD running in the given nodename. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a840cd500debd57028df7bc46bb9cfbf0}{eards\+\_\+new\+\_\+job} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$new\+\_\+job)
+\begin{DoxyCompactList}\small\item\em Notifies the E\+A\+RD the job with job\+\_\+id starts the execution. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a45f614cba7d9b8a20377b11679dbc3e3}{eards\+\_\+end\+\_\+job} (\hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id} jid, \hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id} sid)
+\begin{DoxyCompactList}\small\item\em Notifies the E\+A\+RD the job with job\+\_\+id ends the execution. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_acc5a889b10c224e7418503a2901fbb25}{eards\+\_\+set\+\_\+max\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq)
+\begin{DoxyCompactList}\small\item\em Sets freq as the maximim frequency to be used in the node where the A\+PI is connected with. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a2e6bb9e64ea87b12bffde3c95633c55f}{eards\+\_\+set\+\_\+freq} (unsigned long freq)
+\begin{DoxyCompactList}\small\item\em Sets the frequency of all the cores to freq. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_aaa33ab9266e0c8f503d4bc9a2a2bd7d7}{eards\+\_\+set\+\_\+def\+\_\+freq} (unsigned long freq)
+\begin{DoxyCompactList}\small\item\em Sets temporally the default frequency of all the policies to freq. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a660b449e184e01104a5519f466133952}{eards\+\_\+red\+\_\+max\+\_\+and\+\_\+def\+\_\+freq} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} p\+\_\+states)
+\begin{DoxyCompactList}\small\item\em Reduce the maximum and default freq by the given number of p\+\_\+states. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_af8a413bf20ade5bb717b4ea5a36261e4}{eards\+\_\+restore\+\_\+conf} ()
+\begin{DoxyCompactList}\small\item\em Restores the configuration originally set in ear.\+conf (it doesn´t read the file again) \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a10435c72161d3832d186f22c6cab1fc1}{eards\+\_\+set\+\_\+th} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} th)
+\begin{DoxyCompactList}\small\item\em Sets th as the new threashold to be used by the policy. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a1fe0929efd5a8f8362b602169e561e4d}{eards\+\_\+inc\+\_\+th} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} th)
+\begin{DoxyCompactList}\small\item\em Increases the current threshold by th units.\+New th must be passed as \% th=0.\+05 --$>$ 5. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a3dbf36dbfe3bdb985f0629896039ea78}{eards\+\_\+ping} ()
+\begin{DoxyCompactList}\small\item\em Sends a local ping. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a6672f0b2a1d6785b994576c423837927}{eards\+\_\+remote\+\_\+disconnect} ()
+\begin{DoxyCompactList}\small\item\em Disconnect from the previously connected E\+A\+RD. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_a39c41e1983a04d21ae972f55ce691f07}{increase\+\_\+th\+\_\+all\+\_\+nodes} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} th, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Increases the current threshold to all nodes in my\+\_\+cluster\+\_\+conf. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_a822a2c48f63ad912bd64b2cb92998144}{red\+\_\+max\+\_\+freq\+\_\+all\+\_\+nodes} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} ps, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Reduces the maximum and default freq to all nodes in my\+\_\+cluster\+\_\+conf. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_a3166f82d0a38a2ee4e85506067fa2667}{red\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} ps, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Reduces the default freq to all nodes in my\+\_\+cluster\+\_\+conf. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_a7a8d166c9f61cd3b69273f97636113e0}{reduce\+\_\+frequencies\+\_\+all\+\_\+nodes} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Reduces the frequency of all nodes in my\+\_\+cluster\+\_\+conf. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_ad848555db70bbe5a449a8fc0b95fcc8d}{set\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Sets the default frequency for all nodes in my\+\_\+custer\+\_\+conf. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_a8e8ce982006c78a690d531326c4624f8}{restore\+\_\+conf\+\_\+all\+\_\+nodes} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Restores the default configuration for all nodes in my\+\_\+cluster\+\_\+conf. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_a9e6c2437c83ae44b85cd1f87edeb8ac9}{ping\+\_\+all\+\_\+nodes} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Executes a simple ping to all nodes. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_a8b04f20803fc64de8236d01eb1d9211b}{new\+\_\+ping\+\_\+all\+\_\+nodes} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Executes a simple ping to all nodes with the next nodes calculated at runtime. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_a92282d11060af23cb9731bf21ee9a7c1}{send\+\_\+command} (\hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} $\ast$command)
+\begin{DoxyCompactList}\small\item\em Sends the command to the currently connected fd. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_a6c46d1f1b1882320730573938594f096}{send\+\_\+command\+\_\+all} (\hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} command, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Sends the command to all nodes in ear.\+conf. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+end\+\_\+job@{eards\+\_\+end\+\_\+job}}
+\index{eards\+\_\+end\+\_\+job@{eards\+\_\+end\+\_\+job}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+end\+\_\+job(job\+\_\+id jid, job\+\_\+id sid)}{eards_end_job(job_id jid, job_id sid)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+end\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{{\bf job\+\_\+id}}]{jid, }
+\item[{{\bf job\+\_\+id}}]{sid}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a45f614cba7d9b8a20377b11679dbc3e3}{}\label{eard__rapi_8h_a45f614cba7d9b8a20377b11679dbc3e3}
+
+
+Notifies the E\+A\+RD the job with job\+\_\+id ends the execution. 
+
+It is supposed to be used by the E\+AR slurm plugin \index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+inc\+\_\+th@{eards\+\_\+inc\+\_\+th}}
+\index{eards\+\_\+inc\+\_\+th@{eards\+\_\+inc\+\_\+th}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+inc\+\_\+th(ulong th)}{eards_inc_th(ulong th)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+inc\+\_\+th (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{th}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a1fe0929efd5a8f8362b602169e561e4d}{}\label{eard__rapi_8h_a1fe0929efd5a8f8362b602169e561e4d}
+
+
+Increases the current threshold by th units.\+New th must be passed as \% th=0.\+05 --$>$ 5. 
+
+It is designed to be used by the min\+\_\+time\+\_\+to\+\_\+solution policy \index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+new\+\_\+job@{eards\+\_\+new\+\_\+job}}
+\index{eards\+\_\+new\+\_\+job@{eards\+\_\+new\+\_\+job}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+new\+\_\+job(application\+\_\+t $\ast$new\+\_\+job)}{eards_new_job(application_t *new_job)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+new\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$}]{new\+\_\+job}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a840cd500debd57028df7bc46bb9cfbf0}{}\label{eard__rapi_8h_a840cd500debd57028df7bc46bb9cfbf0}
+
+
+Notifies the E\+A\+RD the job with job\+\_\+id starts the execution. 
+
+It is supposed to be used by the E\+AR slurm plugin \index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+ping@{eards\+\_\+ping}}
+\index{eards\+\_\+ping@{eards\+\_\+ping}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+ping()}{eards_ping()}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+ping (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a3dbf36dbfe3bdb985f0629896039ea78}{}\label{eard__rapi_8h_a3dbf36dbfe3bdb985f0629896039ea78}
+
+
+Sends a local ping. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+red\+\_\+max\+\_\+and\+\_\+def\+\_\+freq@{eards\+\_\+red\+\_\+max\+\_\+and\+\_\+def\+\_\+freq}}
+\index{eards\+\_\+red\+\_\+max\+\_\+and\+\_\+def\+\_\+freq@{eards\+\_\+red\+\_\+max\+\_\+and\+\_\+def\+\_\+freq}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+red\+\_\+max\+\_\+and\+\_\+def\+\_\+freq(uint p\+\_\+states)}{eards_red_max_and_def_freq(uint p_states)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+red\+\_\+max\+\_\+and\+\_\+def\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{p\+\_\+states}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a660b449e184e01104a5519f466133952}{}\label{eard__rapi_8h_a660b449e184e01104a5519f466133952}
+
+
+Reduce the maximum and default freq by the given number of p\+\_\+states. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+remote\+\_\+connect@{eards\+\_\+remote\+\_\+connect}}
+\index{eards\+\_\+remote\+\_\+connect@{eards\+\_\+remote\+\_\+connect}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+remote\+\_\+connect(char $\ast$nodename, uint port)}{eards_remote_connect(char *nodename, uint port)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+remote\+\_\+connect (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{nodename, }
+\item[{{\bf uint}}]{port}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a85c1e1f03d85375fb5c69615188a53c6}{}\label{eard__rapi_8h_a85c1e1f03d85375fb5c69615188a53c6}
+
+
+Connects with the E\+A\+RD running in the given nodename. 
+
+The current implementation supports a single command per connection The sequence must be \+: connect + command + disconnect 
+\begin{DoxyParams}{Parameters}
+{\em the} & nodename to connect with \\
+\hline
+\end{DoxyParams}
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+remote\+\_\+disconnect@{eards\+\_\+remote\+\_\+disconnect}}
+\index{eards\+\_\+remote\+\_\+disconnect@{eards\+\_\+remote\+\_\+disconnect}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+remote\+\_\+disconnect()}{eards_remote_disconnect()}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+remote\+\_\+disconnect (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a6672f0b2a1d6785b994576c423837927}{}\label{eard__rapi_8h_a6672f0b2a1d6785b994576c423837927}
+
+
+Disconnect from the previously connected E\+A\+RD. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+restore\+\_\+conf@{eards\+\_\+restore\+\_\+conf}}
+\index{eards\+\_\+restore\+\_\+conf@{eards\+\_\+restore\+\_\+conf}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+restore\+\_\+conf()}{eards_restore_conf()}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+restore\+\_\+conf (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_af8a413bf20ade5bb717b4ea5a36261e4}{}\label{eard__rapi_8h_af8a413bf20ade5bb717b4ea5a36261e4}
+
+
+Restores the configuration originally set in ear.\+conf (it doesn´t read the file again) 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+set\+\_\+def\+\_\+freq@{eards\+\_\+set\+\_\+def\+\_\+freq}}
+\index{eards\+\_\+set\+\_\+def\+\_\+freq@{eards\+\_\+set\+\_\+def\+\_\+freq}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+set\+\_\+def\+\_\+freq(unsigned long freq)}{eards_set_def_freq(unsigned long freq)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+set\+\_\+def\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{freq}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_aaa33ab9266e0c8f503d4bc9a2a2bd7d7}{}\label{eard__rapi_8h_aaa33ab9266e0c8f503d4bc9a2a2bd7d7}
+
+
+Sets temporally the default frequency of all the policies to freq. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+set\+\_\+freq@{eards\+\_\+set\+\_\+freq}}
+\index{eards\+\_\+set\+\_\+freq@{eards\+\_\+set\+\_\+freq}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+set\+\_\+freq(unsigned long freq)}{eards_set_freq(unsigned long freq)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+set\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{freq}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a2e6bb9e64ea87b12bffde3c95633c55f}{}\label{eard__rapi_8h_a2e6bb9e64ea87b12bffde3c95633c55f}
+
+
+Sets the frequency of all the cores to freq. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+set\+\_\+max\+\_\+freq@{eards\+\_\+set\+\_\+max\+\_\+freq}}
+\index{eards\+\_\+set\+\_\+max\+\_\+freq@{eards\+\_\+set\+\_\+max\+\_\+freq}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+set\+\_\+max\+\_\+freq(ulong freq)}{eards_set_max_freq(ulong freq)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+set\+\_\+max\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{freq}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_acc5a889b10c224e7418503a2901fbb25}{}\label{eard__rapi_8h_acc5a889b10c224e7418503a2901fbb25}
+
+
+Sets freq as the maximim frequency to be used in the node where the A\+PI is connected with. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+set\+\_\+th@{eards\+\_\+set\+\_\+th}}
+\index{eards\+\_\+set\+\_\+th@{eards\+\_\+set\+\_\+th}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{eards\+\_\+set\+\_\+th(ulong th)}{eards_set_th(ulong th)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+set\+\_\+th (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{th}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a10435c72161d3832d186f22c6cab1fc1}{}\label{eard__rapi_8h_a10435c72161d3832d186f22c6cab1fc1}
+
+
+Sets th as the new threashold to be used by the policy. 
+
+New th must be passed as \% th=0.\+75 --$>$ 75. It is designed to be used by the min\+\_\+time\+\_\+to\+\_\+solution policy \index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!increase\+\_\+th\+\_\+all\+\_\+nodes@{increase\+\_\+th\+\_\+all\+\_\+nodes}}
+\index{increase\+\_\+th\+\_\+all\+\_\+nodes@{increase\+\_\+th\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{increase\+\_\+th\+\_\+all\+\_\+nodes(ulong th, cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void increase\+\_\+th\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{th, }
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a39c41e1983a04d21ae972f55ce691f07}{}\label{eard__rapi_8h_a39c41e1983a04d21ae972f55ce691f07}
+
+
+Increases the current threshold to all nodes in my\+\_\+cluster\+\_\+conf. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!new\+\_\+ping\+\_\+all\+\_\+nodes@{new\+\_\+ping\+\_\+all\+\_\+nodes}}
+\index{new\+\_\+ping\+\_\+all\+\_\+nodes@{new\+\_\+ping\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{new\+\_\+ping\+\_\+all\+\_\+nodes(cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{new_ping_all_nodes(cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void new\+\_\+ping\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a8b04f20803fc64de8236d01eb1d9211b}{}\label{eard__rapi_8h_a8b04f20803fc64de8236d01eb1d9211b}
+
+
+Executes a simple ping to all nodes with the next nodes calculated at runtime. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!ping\+\_\+all\+\_\+nodes@{ping\+\_\+all\+\_\+nodes}}
+\index{ping\+\_\+all\+\_\+nodes@{ping\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{ping\+\_\+all\+\_\+nodes(cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{ping_all_nodes(cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void ping\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a9e6c2437c83ae44b85cd1f87edeb8ac9}{}\label{eard__rapi_8h_a9e6c2437c83ae44b85cd1f87edeb8ac9}
+
+
+Executes a simple ping to all nodes. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!red\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes@{red\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes}}
+\index{red\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes@{red\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{red\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes(ulong ps, cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void red\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{ps, }
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a3166f82d0a38a2ee4e85506067fa2667}{}\label{eard__rapi_8h_a3166f82d0a38a2ee4e85506067fa2667}
+
+
+Reduces the default freq to all nodes in my\+\_\+cluster\+\_\+conf. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!red\+\_\+max\+\_\+freq\+\_\+all\+\_\+nodes@{red\+\_\+max\+\_\+freq\+\_\+all\+\_\+nodes}}
+\index{red\+\_\+max\+\_\+freq\+\_\+all\+\_\+nodes@{red\+\_\+max\+\_\+freq\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{red\+\_\+max\+\_\+freq\+\_\+all\+\_\+nodes(ulong ps, cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void red\+\_\+max\+\_\+freq\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{ps, }
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a822a2c48f63ad912bd64b2cb92998144}{}\label{eard__rapi_8h_a822a2c48f63ad912bd64b2cb92998144}
+
+
+Reduces the maximum and default freq to all nodes in my\+\_\+cluster\+\_\+conf. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!reduce\+\_\+frequencies\+\_\+all\+\_\+nodes@{reduce\+\_\+frequencies\+\_\+all\+\_\+nodes}}
+\index{reduce\+\_\+frequencies\+\_\+all\+\_\+nodes@{reduce\+\_\+frequencies\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{reduce\+\_\+frequencies\+\_\+all\+\_\+nodes(ulong freq, cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void reduce\+\_\+frequencies\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{freq, }
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a7a8d166c9f61cd3b69273f97636113e0}{}\label{eard__rapi_8h_a7a8d166c9f61cd3b69273f97636113e0}
+
+
+Reduces the frequency of all nodes in my\+\_\+cluster\+\_\+conf. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!restore\+\_\+conf\+\_\+all\+\_\+nodes@{restore\+\_\+conf\+\_\+all\+\_\+nodes}}
+\index{restore\+\_\+conf\+\_\+all\+\_\+nodes@{restore\+\_\+conf\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{restore\+\_\+conf\+\_\+all\+\_\+nodes(cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{restore_conf_all_nodes(cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void restore\+\_\+conf\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a8e8ce982006c78a690d531326c4624f8}{}\label{eard__rapi_8h_a8e8ce982006c78a690d531326c4624f8}
+
+
+Restores the default configuration for all nodes in my\+\_\+cluster\+\_\+conf. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!send\+\_\+command@{send\+\_\+command}}
+\index{send\+\_\+command@{send\+\_\+command}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{send\+\_\+command(request\+\_\+t $\ast$command)}{send_command(request_t *command)}}]{\setlength{\rightskip}{0pt plus 5cm}int send\+\_\+command (
+\begin{DoxyParamCaption}
+\item[{{\bf request\+\_\+t} $\ast$}]{command}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a92282d11060af23cb9731bf21ee9a7c1}{}\label{eard__rapi_8h_a92282d11060af23cb9731bf21ee9a7c1}
+
+
+Sends the command to the currently connected fd. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!send\+\_\+command\+\_\+all@{send\+\_\+command\+\_\+all}}
+\index{send\+\_\+command\+\_\+all@{send\+\_\+command\+\_\+all}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{send\+\_\+command\+\_\+all(request\+\_\+t command, cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{send_command_all(request_t command, cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void send\+\_\+command\+\_\+all (
+\begin{DoxyParamCaption}
+\item[{{\bf request\+\_\+t}}]{command, }
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_a6c46d1f1b1882320730573938594f096}{}\label{eard__rapi_8h_a6c46d1f1b1882320730573938594f096}
+
+
+Sends the command to all nodes in ear.\+conf. 
+
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!set\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes@{set\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes}}
+\index{set\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes@{set\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{set\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes(ulong freq, cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf)}{set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+def\+\_\+freq\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{freq, }
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_ad848555db70bbe5a449a8fc0b95fcc8d}{}\label{eard__rapi_8h_ad848555db70bbe5a449a8fc0b95fcc8d}
+
+
+Sets the default frequency for all nodes in my\+\_\+custer\+\_\+conf. 
+
