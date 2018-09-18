@@ -1,0 +1,1060 @@
+\hypertarget{MPI__intercept_8c}{}\section{src/library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+intercept.c File Reference}
+\label{MPI__intercept_8c}\index{src/library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+intercept.\+c@{src/library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+intercept.\+c}}
+{\ttfamily \#include \char`\"{}M\+P\+I\+\_\+interface.\+h\char`\"{}}\\*
+{\ttfamily \#include $<$mpi.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{MPI__intercept_8c_ab4269b786e7ddd2b021c5aa9029ecb65}{V\+E\+R\+B\+O\+S\+E\+\_\+\+I\+N\+T\+E\+R\+C\+E\+P\+T\+\_\+C}(tags,  text, ...)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{MPI__intercept_8c_a5d6fda3839105d3e6264e413ce3d24e2}{M\+P\+I\+\_\+\+Allgather} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_af40d0e51ae7908154c71614a9718ad08}{M\+P\+I\+\_\+\+Allgatherv} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$recvcounts, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$displs, M\+P\+I\+\_\+\+Datatype recvtype, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_ad3d53867f883191bde6e6d793a5d6bec}{M\+P\+I\+\_\+\+Allreduce} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, void $\ast$recvbuf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Op op, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_accee38edc9e2b2a7bb38d071d55bf9e4}{M\+P\+I\+\_\+\+Alltoall} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a7492f25075138c2170cbca20c6d58324}{M\+P\+I\+\_\+\+Alltoallv} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$sendcounts, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$sdispls, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$recvcounts, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$rdispls, M\+P\+I\+\_\+\+Datatype recvtype, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a38a750883860adf3d7cee6f56442261a}{M\+P\+I\+\_\+\+Barrier} (M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a3864566826d5e4083b417a15b395921f}{M\+P\+I\+\_\+\+Bcast} (void $\ast$buffer, int count, M\+P\+I\+\_\+\+Datatype datatype, int root, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a441b980f50316c8e74b13e5bfd17bc7c}{M\+P\+I\+\_\+\+Bsend} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a4b83c586f2c3261074929da230dba785}{M\+P\+I\+\_\+\+Bsend\+\_\+init} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_a09dedce9761f1ca1e97b2c3f7810342f}{M\+P\+I\+\_\+\+Cancel} (M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_acce7ae769e588fe7af2b6bc5e7d648d5}{M\+P\+I\+\_\+\+Cart\+\_\+create} (M\+P\+I\+\_\+\+Comm comm\+\_\+old, int ndims, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int dims\mbox{[}$\,$\mbox{]}, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int periods\mbox{[}$\,$\mbox{]}, int reorder, M\+P\+I\+\_\+\+Comm $\ast$comm\+\_\+cart)
+\item 
+int \hyperlink{MPI__intercept_8c_a2676991955d1fc96c9bd2f444cbdbbb3}{M\+P\+I\+\_\+\+Cart\+\_\+sub} (M\+P\+I\+\_\+\+Comm comm, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int remain\+\_\+dims\mbox{[}$\,$\mbox{]}, M\+P\+I\+\_\+\+Comm $\ast$newcomm)
+\item 
+int \hyperlink{MPI__intercept_8c_a286004370653e7e7d1cd9ad43ff18607}{M\+P\+I\+\_\+\+Comm\+\_\+create} (M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Group group, M\+P\+I\+\_\+\+Comm $\ast$newcomm)
+\item 
+int \hyperlink{MPI__intercept_8c_a34c661fbb1bcd7637bfa7318d2ac13e1}{M\+P\+I\+\_\+\+Comm\+\_\+dup} (M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Comm $\ast$newcomm)
+\item 
+int \hyperlink{MPI__intercept_8c_aa59c23923726e15548c45f409661aacc}{M\+P\+I\+\_\+\+Comm\+\_\+free} (M\+P\+I\+\_\+\+Comm $\ast$comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a3199e776e016cbaaed648c2e8c32dd04}{M\+P\+I\+\_\+\+Comm\+\_\+rank} (M\+P\+I\+\_\+\+Comm comm, int $\ast$rank)
+\item 
+int \hyperlink{MPI__intercept_8c_af02c1da1e2be331e53ac3e5f8ccfedb6}{M\+P\+I\+\_\+\+Comm\+\_\+size} (M\+P\+I\+\_\+\+Comm comm, int $\ast$size)
+\item 
+int \hyperlink{MPI__intercept_8c_a780ccbf8bf6db49e1100afbf96ee4ca5}{M\+P\+I\+\_\+\+Comm\+\_\+spawn} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} char $\ast$command, char $\ast$argv\mbox{[}$\,$\mbox{]}, int maxprocs, M\+P\+I\+\_\+\+Info info, int root, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Comm $\ast$intercomm, int array\+\_\+of\+\_\+errcodes\mbox{[}$\,$\mbox{]})
+\item 
+int \hyperlink{MPI__intercept_8c_ae71bc7af5353febb5907e521e861d79f}{M\+P\+I\+\_\+\+Comm\+\_\+spawn\+\_\+multiple} (int count, char $\ast$array\+\_\+of\+\_\+commands\mbox{[}$\,$\mbox{]}, char $\ast$$\ast$array\+\_\+of\+\_\+argv\mbox{[}$\,$\mbox{]}, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int array\+\_\+of\+\_\+maxprocs\mbox{[}$\,$\mbox{]}, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} M\+P\+I\+\_\+\+Info array\+\_\+of\+\_\+info\mbox{[}$\,$\mbox{]}, int root, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Comm $\ast$intercomm, int array\+\_\+of\+\_\+errcodes\mbox{[}$\,$\mbox{]})
+\item 
+int \hyperlink{MPI__intercept_8c_a2846a8668afb120361d176ea159bf2db}{M\+P\+I\+\_\+\+Comm\+\_\+split} (M\+P\+I\+\_\+\+Comm comm, int color, int key, M\+P\+I\+\_\+\+Comm $\ast$newcomm)
+\item 
+int \hyperlink{MPI__intercept_8c_a8646dcfb2eadbc3a5518e008acc8f5ed}{M\+P\+I\+\_\+\+File\+\_\+close} (M\+P\+I\+\_\+\+File $\ast$fh)
+\item 
+int \hyperlink{MPI__intercept_8c_a625908a1704770c35899fd88d3739fdf}{M\+P\+I\+\_\+\+File\+\_\+read} (M\+P\+I\+\_\+\+File fh, void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a5cbb72984086ca7f9a38abcd1e865394}{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+all} (M\+P\+I\+\_\+\+File fh, void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_ad4385f25269671cfcea874ac05d31670}{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at} (M\+P\+I\+\_\+\+File fh, M\+P\+I\+\_\+\+Offset offset, void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a9a78e16390629cf6bbea322eb7290716}{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at\+\_\+all} (M\+P\+I\+\_\+\+File fh, M\+P\+I\+\_\+\+Offset offset, void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_ab376b2c35dcee058a6ea672a4bb5970a}{M\+P\+I\+\_\+\+File\+\_\+write} (M\+P\+I\+\_\+\+File fh, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a815511e89abf5a7468a6b13b941864b9}{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+all} (M\+P\+I\+\_\+\+File fh, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a66073e03e57977eb7dd08a103b2bed02}{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at} (M\+P\+I\+\_\+\+File fh, M\+P\+I\+\_\+\+Offset offset, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a2f85f41b1849041072c42048ea22bb31}{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at\+\_\+all} (M\+P\+I\+\_\+\+File fh, M\+P\+I\+\_\+\+Offset offset, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a91a0cf5613b31a183a5453446191f1df}{M\+P\+I\+\_\+\+Finalize} (void)
+\item 
+int \hyperlink{MPI__intercept_8c_a9b37211c3737bf0dbfd9b7207178626e}{M\+P\+I\+\_\+\+Gather} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, int root, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a76d261c66bd0d2b9f886d6a43b587bae}{M\+P\+I\+\_\+\+Gatherv} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$recvcounts, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$displs, M\+P\+I\+\_\+\+Datatype recvtype, int root, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a56c00d66157155aac11e7e2eb8b3d14a}{M\+P\+I\+\_\+\+Get} (void $\ast$origin\+\_\+addr, int origin\+\_\+count, M\+P\+I\+\_\+\+Datatype origin\+\_\+datatype, int target\+\_\+rank, M\+P\+I\+\_\+\+Aint target\+\_\+disp, int target\+\_\+count, M\+P\+I\+\_\+\+Datatype target\+\_\+datatype, M\+P\+I\+\_\+\+Win win)
+\item 
+int \hyperlink{MPI__intercept_8c_a2733506787268406c32f64051256dc09}{M\+P\+I\+\_\+\+Ibsend} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_a85fc482f00c52ec6e5f2503b3b480c56}{M\+P\+I\+\_\+\+Init} (int $\ast$argc, char $\ast$$\ast$$\ast$argv)
+\item 
+int \hyperlink{MPI__intercept_8c_abc96c7c5262fd4c0672890bbf1e035f8}{M\+P\+I\+\_\+\+Init\+\_\+thread} (int $\ast$argc, char $\ast$$\ast$$\ast$argv, int required, int $\ast$provided)
+\item 
+int \hyperlink{MPI__intercept_8c_aa21b7aeac2d1e15c39b9d5b2a0644fb9}{M\+P\+I\+\_\+\+Intercomm\+\_\+create} (M\+P\+I\+\_\+\+Comm local\+\_\+comm, int local\+\_\+leader, M\+P\+I\+\_\+\+Comm peer\+\_\+comm, int remote\+\_\+leader, int tag, M\+P\+I\+\_\+\+Comm $\ast$newintercomm)
+\item 
+int \hyperlink{MPI__intercept_8c_ac120c56da13d1cfd8bb2ed71e1e85bfd}{M\+P\+I\+\_\+\+Intercomm\+\_\+merge} (M\+P\+I\+\_\+\+Comm intercomm, int high, M\+P\+I\+\_\+\+Comm $\ast$newintracomm)
+\item 
+int \hyperlink{MPI__intercept_8c_a48e8771d911360bf2abeb007629e32cc}{M\+P\+I\+\_\+\+Iprobe} (int source, int tag, M\+P\+I\+\_\+\+Comm comm, int $\ast$flag, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a3959fe5bd231f4caa9ac1a49f35d7d57}{M\+P\+I\+\_\+\+Irecv} (void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int source, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_ade8dba62f661457f7300975a2e768aca}{M\+P\+I\+\_\+\+Irsend} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_aa6df98e3fc32a131bc7ef3a9324f6be3}{M\+P\+I\+\_\+\+Isend} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_ad07d1e7f49d502a856298d42fe34a130}{M\+P\+I\+\_\+\+Issend} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_ac9c49825e9fe032aafd078ce3451d58d}{M\+P\+I\+\_\+\+Probe} (int source, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_aee290b28146ce8b0b33b10b5e483f57f}{M\+P\+I\+\_\+\+Put} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$origin\+\_\+addr, int origin\+\_\+count, M\+P\+I\+\_\+\+Datatype origin\+\_\+datatype, int target\+\_\+rank, M\+P\+I\+\_\+\+Aint target\+\_\+disp, int target\+\_\+count, M\+P\+I\+\_\+\+Datatype target\+\_\+datatype, M\+P\+I\+\_\+\+Win win)
+\item 
+int \hyperlink{MPI__intercept_8c_a27b9cce644f78aa09796b4108bdf0cbc}{M\+P\+I\+\_\+\+Recv} (void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int source, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a7eb83649520ec3400164de0ec45fad39}{M\+P\+I\+\_\+\+Recv\+\_\+init} (void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int source, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_abe846ddef06f84cb700cd24ce781f3db}{M\+P\+I\+\_\+\+Reduce} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, void $\ast$recvbuf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Op op, int root, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a6e2c15ba0085d9b850542195ccaacc3c}{M\+P\+I\+\_\+\+Reduce\+\_\+scatter} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, void $\ast$recvbuf, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$recvcounts, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Op op, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a444abe6daa252a4eb40982a8b1e961da}{M\+P\+I\+\_\+\+Request\+\_\+free} (M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_a0e31975de73d2fcd08b5248defb2b6b4}{M\+P\+I\+\_\+\+Request\+\_\+get\+\_\+status} (M\+P\+I\+\_\+\+Request \hyperlink{structrequest}{request}, int $\ast$flag, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a829abcd0475360e9b52e9cdb86d2017c}{M\+P\+I\+\_\+\+Rsend} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a491ef55d3d6dec30a1763fb1a192ae4e}{M\+P\+I\+\_\+\+Rsend\+\_\+init} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_a4310d0dbabf9f34ef01a891ed2067b93}{M\+P\+I\+\_\+\+Scan} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, void $\ast$recvbuf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Op op, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a44128b4d4c88b5561dff18997188f2c9}{M\+P\+I\+\_\+\+Scatter} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, int root, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a281e32e43aefc6f49726c045082bc0b8}{M\+P\+I\+\_\+\+Scatterv} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$sendcounts, \hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$displs, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, int root, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a8ea34afa32f48c0304cd76b21c7bb33f}{M\+P\+I\+\_\+\+Send} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_a285a7aa137eb66d8ea11f1e3ba422d56}{M\+P\+I\+\_\+\+Send\+\_\+init} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_a64738f359645dfac5ed8055ecb90e40a}{M\+P\+I\+\_\+\+Sendrecv} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, int dest, int sendtag, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, int source, int recvtag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_aec73cb4cb446c0d7a86eabd11c339a06}{M\+P\+I\+\_\+\+Sendrecv\+\_\+replace} (void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int sendtag, int source, int recvtag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_af361d3085ad40f5c6b0ddbecb9181b0b}{M\+P\+I\+\_\+\+Ssend} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm)
+\item 
+int \hyperlink{MPI__intercept_8c_afef86ccf1474ee8bcd0047fe931c0898}{M\+P\+I\+\_\+\+Ssend\+\_\+init} (\hyperlink{MPI__interfaceF_8h_ac0ed494fc933ebcebce6b6e5be2e8731}{M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_aeec2a2f0b1a92aec5029710143104066}{M\+P\+I\+\_\+\+Start} (M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request})
+\item 
+int \hyperlink{MPI__intercept_8c_a39e6e008ee0410e06eff5f77a5e0e6a9}{M\+P\+I\+\_\+\+Startall} (int count, M\+P\+I\+\_\+\+Request array\+\_\+of\+\_\+requests\mbox{[}$\,$\mbox{]})
+\item 
+int \hyperlink{MPI__intercept_8c_a06c1d0daf22e41dd7b214ca71bf00654}{M\+P\+I\+\_\+\+Test} (M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request}, int $\ast$flag, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a55b4b1a6e7d25d0cda534261c8c45c32}{M\+P\+I\+\_\+\+Testall} (int count, M\+P\+I\+\_\+\+Request array\+\_\+of\+\_\+requests\mbox{[}$\,$\mbox{]}, int $\ast$flag, M\+P\+I\+\_\+\+Status array\+\_\+of\+\_\+statuses\mbox{[}$\,$\mbox{]})
+\item 
+int \hyperlink{MPI__intercept_8c_a866ddb3866bddffdd4aae4a8602d1726}{M\+P\+I\+\_\+\+Testany} (int count, M\+P\+I\+\_\+\+Request array\+\_\+of\+\_\+requests\mbox{[}$\,$\mbox{]}, int $\ast$indx, int $\ast$flag, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_a27666cfffa14e9b2acac8cbf280b1c80}{M\+P\+I\+\_\+\+Testsome} (int incount, M\+P\+I\+\_\+\+Request array\+\_\+of\+\_\+requests\mbox{[}$\,$\mbox{]}, int $\ast$outcount, int array\+\_\+of\+\_\+indices\mbox{[}$\,$\mbox{]}, M\+P\+I\+\_\+\+Status array\+\_\+of\+\_\+statuses\mbox{[}$\,$\mbox{]})
+\item 
+int \hyperlink{MPI__intercept_8c_a322f9b0709e67a883f01e0edecb7743c}{M\+P\+I\+\_\+\+Wait} (M\+P\+I\+\_\+\+Request $\ast$\hyperlink{structrequest}{request}, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_ae995f16c4ad40bc3ee8cbd4737e8e096}{M\+P\+I\+\_\+\+Waitall} (int count, M\+P\+I\+\_\+\+Request $\ast$array\+\_\+of\+\_\+requests, M\+P\+I\+\_\+\+Status $\ast$array\+\_\+of\+\_\+statuses)
+\item 
+int \hyperlink{MPI__intercept_8c_a55dd30f30f2586cba52eff32172ef211}{M\+P\+I\+\_\+\+Waitany} (int count, M\+P\+I\+\_\+\+Request $\ast$requests, int $\ast$index, M\+P\+I\+\_\+\+Status $\ast$status)
+\item 
+int \hyperlink{MPI__intercept_8c_adc49204af69fe6642740a6fd18bc43ed}{M\+P\+I\+\_\+\+Waitsome} (int incount, M\+P\+I\+\_\+\+Request $\ast$array\+\_\+of\+\_\+requests, int $\ast$outcount, int $\ast$array\+\_\+of\+\_\+indices, M\+P\+I\+\_\+\+Status $\ast$array\+\_\+of\+\_\+statuses)
+\item 
+int \hyperlink{MPI__intercept_8c_aa2b8f1ea0f086ded31523db4540ecc0a}{M\+P\+I\+\_\+\+Win\+\_\+complete} (M\+P\+I\+\_\+\+Win win)
+\item 
+int \hyperlink{MPI__intercept_8c_a01b3bf0b7d2ad473bee826f04347a8cf}{M\+P\+I\+\_\+\+Win\+\_\+create} (void $\ast$base, M\+P\+I\+\_\+\+Aint size, int disp\+\_\+unit, M\+P\+I\+\_\+\+Info info, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Win $\ast$win)
+\item 
+int \hyperlink{MPI__intercept_8c_afdd11c330421ea680713d06037226ea4}{M\+P\+I\+\_\+\+Win\+\_\+fence} (int assert, M\+P\+I\+\_\+\+Win win)
+\item 
+int \hyperlink{MPI__intercept_8c_ab98d79e83763bcd6c792bb8985f5465d}{M\+P\+I\+\_\+\+Win\+\_\+free} (M\+P\+I\+\_\+\+Win $\ast$win)
+\item 
+int \hyperlink{MPI__intercept_8c_ad6bf4ba0dbf370914cad586373c787c7}{M\+P\+I\+\_\+\+Win\+\_\+post} (M\+P\+I\+\_\+\+Group group, int assert, M\+P\+I\+\_\+\+Win win)
+\item 
+int \hyperlink{MPI__intercept_8c_afde76e975f57347dddebc40c3a3aaeac}{M\+P\+I\+\_\+\+Win\+\_\+start} (M\+P\+I\+\_\+\+Group group, int assert, M\+P\+I\+\_\+\+Win win)
+\item 
+int \hyperlink{MPI__intercept_8c_af0b0a32421e813ed9c91020f8514b99e}{M\+P\+I\+\_\+\+Win\+\_\+wait} (M\+P\+I\+\_\+\+Win win)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!V\+E\+R\+B\+O\+S\+E\+\_\+\+I\+N\+T\+E\+R\+C\+E\+P\+T\+\_\+C@{V\+E\+R\+B\+O\+S\+E\+\_\+\+I\+N\+T\+E\+R\+C\+E\+P\+T\+\_\+C}}
+\index{V\+E\+R\+B\+O\+S\+E\+\_\+\+I\+N\+T\+E\+R\+C\+E\+P\+T\+\_\+C@{V\+E\+R\+B\+O\+S\+E\+\_\+\+I\+N\+T\+E\+R\+C\+E\+P\+T\+\_\+C}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{V\+E\+R\+B\+O\+S\+E\+\_\+\+I\+N\+T\+E\+R\+C\+E\+P\+T\+\_\+C}{VERBOSE_INTERCEPT_C}}]{\setlength{\rightskip}{0pt plus 5cm}\#define V\+E\+R\+B\+O\+S\+E\+\_\+\+I\+N\+T\+E\+R\+C\+E\+P\+T\+\_\+C(
+\begin{DoxyParamCaption}
+\item[{}]{tags, }
+\item[{}]{text, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ab4269b786e7ddd2b021c5aa9029ecb65}{}\label{MPI__intercept_8c_ab4269b786e7ddd2b021c5aa9029ecb65}
+
+
+\subsection{Function Documentation}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Allgather@{M\+P\+I\+\_\+\+Allgather}}
+\index{M\+P\+I\+\_\+\+Allgather@{M\+P\+I\+\_\+\+Allgather}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Allgather(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, M\+P\+I\+\_\+\+Comm comm)}{MPI_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Allgather (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{int}]{sendcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{recvcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a5d6fda3839105d3e6264e413ce3d24e2}{}\label{MPI__intercept_8c_a5d6fda3839105d3e6264e413ce3d24e2}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Allgatherv@{M\+P\+I\+\_\+\+Allgatherv}}
+\index{M\+P\+I\+\_\+\+Allgatherv@{M\+P\+I\+\_\+\+Allgatherv}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Allgatherv(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$recvcounts, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$displs, M\+P\+I\+\_\+\+Datatype recvtype, M\+P\+I\+\_\+\+Comm comm)}{MPI_Allgatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Allgatherv (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{int}]{sendcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{recvcounts, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{displs, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_af40d0e51ae7908154c71614a9718ad08}{}\label{MPI__intercept_8c_af40d0e51ae7908154c71614a9718ad08}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Allreduce@{M\+P\+I\+\_\+\+Allreduce}}
+\index{M\+P\+I\+\_\+\+Allreduce@{M\+P\+I\+\_\+\+Allreduce}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Allreduce(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, void $\ast$recvbuf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Op op, M\+P\+I\+\_\+\+Comm comm)}{MPI_Allreduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Allreduce (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Op}]{op, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ad3d53867f883191bde6e6d793a5d6bec}{}\label{MPI__intercept_8c_ad3d53867f883191bde6e6d793a5d6bec}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Alltoall@{M\+P\+I\+\_\+\+Alltoall}}
+\index{M\+P\+I\+\_\+\+Alltoall@{M\+P\+I\+\_\+\+Alltoall}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Alltoall(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, M\+P\+I\+\_\+\+Comm comm)}{MPI_Alltoall(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Alltoall (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{int}]{sendcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{recvcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_accee38edc9e2b2a7bb38d071d55bf9e4}{}\label{MPI__intercept_8c_accee38edc9e2b2a7bb38d071d55bf9e4}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Alltoallv@{M\+P\+I\+\_\+\+Alltoallv}}
+\index{M\+P\+I\+\_\+\+Alltoallv@{M\+P\+I\+\_\+\+Alltoallv}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Alltoallv(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$sendcounts, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$sdispls, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$recvcounts, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$rdispls, M\+P\+I\+\_\+\+Datatype recvtype, M\+P\+I\+\_\+\+Comm comm)}{MPI_Alltoallv(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MPI3_CONST int *sdispls, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *rdispls, MPI_Datatype recvtype, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Alltoallv (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{sendcounts, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{sdispls, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{recvcounts, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{rdispls, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a7492f25075138c2170cbca20c6d58324}{}\label{MPI__intercept_8c_a7492f25075138c2170cbca20c6d58324}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Barrier@{M\+P\+I\+\_\+\+Barrier}}
+\index{M\+P\+I\+\_\+\+Barrier@{M\+P\+I\+\_\+\+Barrier}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Barrier(\+M\+P\+I\+\_\+\+Comm comm)}{MPI_Barrier(MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Barrier (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a38a750883860adf3d7cee6f56442261a}{}\label{MPI__intercept_8c_a38a750883860adf3d7cee6f56442261a}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Bcast@{M\+P\+I\+\_\+\+Bcast}}
+\index{M\+P\+I\+\_\+\+Bcast@{M\+P\+I\+\_\+\+Bcast}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Bcast(void $\ast$buffer, int count, M\+P\+I\+\_\+\+Datatype datatype, int root, M\+P\+I\+\_\+\+Comm comm)}{MPI_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Bcast (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{buffer, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{root, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a3864566826d5e4083b417a15b395921f}{}\label{MPI__intercept_8c_a3864566826d5e4083b417a15b395921f}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Bsend@{M\+P\+I\+\_\+\+Bsend}}
+\index{M\+P\+I\+\_\+\+Bsend@{M\+P\+I\+\_\+\+Bsend}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Bsend(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm)}{MPI_Bsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Bsend (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a441b980f50316c8e74b13e5bfd17bc7c}{}\label{MPI__intercept_8c_a441b980f50316c8e74b13e5bfd17bc7c}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Bsend\+\_\+init@{M\+P\+I\+\_\+\+Bsend\+\_\+init}}
+\index{M\+P\+I\+\_\+\+Bsend\+\_\+init@{M\+P\+I\+\_\+\+Bsend\+\_\+init}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Bsend\+\_\+init(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Bsend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Bsend\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a4b83c586f2c3261074929da230dba785}{}\label{MPI__intercept_8c_a4b83c586f2c3261074929da230dba785}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Cancel@{M\+P\+I\+\_\+\+Cancel}}
+\index{M\+P\+I\+\_\+\+Cancel@{M\+P\+I\+\_\+\+Cancel}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Cancel(\+M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Cancel(MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Cancel (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a09dedce9761f1ca1e97b2c3f7810342f}{}\label{MPI__intercept_8c_a09dedce9761f1ca1e97b2c3f7810342f}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Cart\+\_\+create@{M\+P\+I\+\_\+\+Cart\+\_\+create}}
+\index{M\+P\+I\+\_\+\+Cart\+\_\+create@{M\+P\+I\+\_\+\+Cart\+\_\+create}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Cart\+\_\+create(\+M\+P\+I\+\_\+\+Comm comm\+\_\+old, int ndims, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int dims[], M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int periods[], int reorder, M\+P\+I\+\_\+\+Comm $\ast$comm\+\_\+cart)}{MPI_Cart_create(MPI_Comm comm_old, int ndims, MPI3_CONST int dims[], MPI3_CONST int periods[], int reorder, MPI_Comm *comm_cart)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Cart\+\_\+create (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{comm\+\_\+old, }
+\item[{int}]{ndims, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int}]{dims\mbox{[}$\,$\mbox{]}, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int}]{periods\mbox{[}$\,$\mbox{]}, }
+\item[{int}]{reorder, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{comm\+\_\+cart}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_acce7ae769e588fe7af2b6bc5e7d648d5}{}\label{MPI__intercept_8c_acce7ae769e588fe7af2b6bc5e7d648d5}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Cart\+\_\+sub@{M\+P\+I\+\_\+\+Cart\+\_\+sub}}
+\index{M\+P\+I\+\_\+\+Cart\+\_\+sub@{M\+P\+I\+\_\+\+Cart\+\_\+sub}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Cart\+\_\+sub(\+M\+P\+I\+\_\+\+Comm comm, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int remain\+\_\+dims[], M\+P\+I\+\_\+\+Comm $\ast$newcomm)}{MPI_Cart_sub(MPI_Comm comm, MPI3_CONST int remain_dims[], MPI_Comm *newcomm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Cart\+\_\+sub (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int}]{remain\+\_\+dims\mbox{[}$\,$\mbox{]}, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{newcomm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a2676991955d1fc96c9bd2f444cbdbbb3}{}\label{MPI__intercept_8c_a2676991955d1fc96c9bd2f444cbdbbb3}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Comm\+\_\+create@{M\+P\+I\+\_\+\+Comm\+\_\+create}}
+\index{M\+P\+I\+\_\+\+Comm\+\_\+create@{M\+P\+I\+\_\+\+Comm\+\_\+create}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Comm\+\_\+create(\+M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Group group, M\+P\+I\+\_\+\+Comm $\ast$newcomm)}{MPI_Comm_create(MPI_Comm comm, MPI_Group group, MPI_Comm *newcomm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Comm\+\_\+create (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Group}]{group, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{newcomm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a286004370653e7e7d1cd9ad43ff18607}{}\label{MPI__intercept_8c_a286004370653e7e7d1cd9ad43ff18607}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Comm\+\_\+dup@{M\+P\+I\+\_\+\+Comm\+\_\+dup}}
+\index{M\+P\+I\+\_\+\+Comm\+\_\+dup@{M\+P\+I\+\_\+\+Comm\+\_\+dup}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Comm\+\_\+dup(\+M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Comm $\ast$newcomm)}{MPI_Comm_dup(MPI_Comm comm, MPI_Comm *newcomm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Comm\+\_\+dup (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{newcomm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a34c661fbb1bcd7637bfa7318d2ac13e1}{}\label{MPI__intercept_8c_a34c661fbb1bcd7637bfa7318d2ac13e1}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Comm\+\_\+free@{M\+P\+I\+\_\+\+Comm\+\_\+free}}
+\index{M\+P\+I\+\_\+\+Comm\+\_\+free@{M\+P\+I\+\_\+\+Comm\+\_\+free}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Comm\+\_\+free(\+M\+P\+I\+\_\+\+Comm $\ast$comm)}{MPI_Comm_free(MPI_Comm *comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Comm\+\_\+free (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_aa59c23923726e15548c45f409661aacc}{}\label{MPI__intercept_8c_aa59c23923726e15548c45f409661aacc}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Comm\+\_\+rank@{M\+P\+I\+\_\+\+Comm\+\_\+rank}}
+\index{M\+P\+I\+\_\+\+Comm\+\_\+rank@{M\+P\+I\+\_\+\+Comm\+\_\+rank}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Comm\+\_\+rank(\+M\+P\+I\+\_\+\+Comm comm, int $\ast$rank)}{MPI_Comm_rank(MPI_Comm comm, int *rank)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Comm\+\_\+rank (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{int $\ast$}]{rank}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a3199e776e016cbaaed648c2e8c32dd04}{}\label{MPI__intercept_8c_a3199e776e016cbaaed648c2e8c32dd04}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Comm\+\_\+size@{M\+P\+I\+\_\+\+Comm\+\_\+size}}
+\index{M\+P\+I\+\_\+\+Comm\+\_\+size@{M\+P\+I\+\_\+\+Comm\+\_\+size}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Comm\+\_\+size(\+M\+P\+I\+\_\+\+Comm comm, int $\ast$size)}{MPI_Comm_size(MPI_Comm comm, int *size)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Comm\+\_\+size (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{int $\ast$}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_af02c1da1e2be331e53ac3e5f8ccfedb6}{}\label{MPI__intercept_8c_af02c1da1e2be331e53ac3e5f8ccfedb6}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Comm\+\_\+spawn@{M\+P\+I\+\_\+\+Comm\+\_\+spawn}}
+\index{M\+P\+I\+\_\+\+Comm\+\_\+spawn@{M\+P\+I\+\_\+\+Comm\+\_\+spawn}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Comm\+\_\+spawn(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T char $\ast$command, char $\ast$argv[], int maxprocs, M\+P\+I\+\_\+\+Info info, int root, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Comm $\ast$intercomm, int array\+\_\+of\+\_\+errcodes[])}{MPI_Comm_spawn(MPI3_CONST char *command, char *argv[], int maxprocs, MPI_Info info, int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[])}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Comm\+\_\+spawn (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} char $\ast$}]{command, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}, }
+\item[{int}]{maxprocs, }
+\item[{M\+P\+I\+\_\+\+Info}]{info, }
+\item[{int}]{root, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{intercomm, }
+\item[{int}]{array\+\_\+of\+\_\+errcodes\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a780ccbf8bf6db49e1100afbf96ee4ca5}{}\label{MPI__intercept_8c_a780ccbf8bf6db49e1100afbf96ee4ca5}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Comm\+\_\+spawn\+\_\+multiple@{M\+P\+I\+\_\+\+Comm\+\_\+spawn\+\_\+multiple}}
+\index{M\+P\+I\+\_\+\+Comm\+\_\+spawn\+\_\+multiple@{M\+P\+I\+\_\+\+Comm\+\_\+spawn\+\_\+multiple}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Comm\+\_\+spawn\+\_\+multiple(int count, char $\ast$array\+\_\+of\+\_\+commands[], char $\ast$$\ast$array\+\_\+of\+\_\+argv[], M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int array\+\_\+of\+\_\+maxprocs[], M\+P\+I3\+\_\+\+C\+O\+N\+S\+T M\+P\+I\+\_\+\+Info array\+\_\+of\+\_\+info[], int root, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Comm $\ast$intercomm, int array\+\_\+of\+\_\+errcodes[])}{MPI_Comm_spawn_multiple(int count, char *array_of_commands[], char **array_of_argv[], MPI3_CONST int array_of_maxprocs[], MPI3_CONST MPI_Info array_of_info[], int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[])}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Comm\+\_\+spawn\+\_\+multiple (
+\begin{DoxyParamCaption}
+\item[{int}]{count, }
+\item[{char $\ast$}]{array\+\_\+of\+\_\+commands\mbox{[}$\,$\mbox{]}, }
+\item[{char $\ast$$\ast$}]{array\+\_\+of\+\_\+argv\mbox{[}$\,$\mbox{]}, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int}]{array\+\_\+of\+\_\+maxprocs\mbox{[}$\,$\mbox{]}, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} M\+P\+I\+\_\+\+Info}]{array\+\_\+of\+\_\+info\mbox{[}$\,$\mbox{]}, }
+\item[{int}]{root, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{intercomm, }
+\item[{int}]{array\+\_\+of\+\_\+errcodes\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ae71bc7af5353febb5907e521e861d79f}{}\label{MPI__intercept_8c_ae71bc7af5353febb5907e521e861d79f}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Comm\+\_\+split@{M\+P\+I\+\_\+\+Comm\+\_\+split}}
+\index{M\+P\+I\+\_\+\+Comm\+\_\+split@{M\+P\+I\+\_\+\+Comm\+\_\+split}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Comm\+\_\+split(\+M\+P\+I\+\_\+\+Comm comm, int color, int key, M\+P\+I\+\_\+\+Comm $\ast$newcomm)}{MPI_Comm_split(MPI_Comm comm, int color, int key, MPI_Comm *newcomm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Comm\+\_\+split (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{int}]{color, }
+\item[{int}]{key, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{newcomm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a2846a8668afb120361d176ea159bf2db}{}\label{MPI__intercept_8c_a2846a8668afb120361d176ea159bf2db}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+close@{M\+P\+I\+\_\+\+File\+\_\+close}}
+\index{M\+P\+I\+\_\+\+File\+\_\+close@{M\+P\+I\+\_\+\+File\+\_\+close}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+close(\+M\+P\+I\+\_\+\+File $\ast$fh)}{MPI_File_close(MPI_File *fh)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+close (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File $\ast$}]{fh}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a8646dcfb2eadbc3a5518e008acc8f5ed}{}\label{MPI__intercept_8c_a8646dcfb2eadbc3a5518e008acc8f5ed}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+read@{M\+P\+I\+\_\+\+File\+\_\+read}}
+\index{M\+P\+I\+\_\+\+File\+\_\+read@{M\+P\+I\+\_\+\+File\+\_\+read}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+read(\+M\+P\+I\+\_\+\+File fh, void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_File_read(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+read (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File}]{fh, }
+\item[{void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a625908a1704770c35899fd88d3739fdf}{}\label{MPI__intercept_8c_a625908a1704770c35899fd88d3739fdf}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+read\+\_\+all@{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+all}}
+\index{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+all@{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+all}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+all(\+M\+P\+I\+\_\+\+File fh, void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_File_read_all(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+read\+\_\+all (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File}]{fh, }
+\item[{void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a5cbb72984086ca7f9a38abcd1e865394}{}\label{MPI__intercept_8c_a5cbb72984086ca7f9a38abcd1e865394}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at@{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at}}
+\index{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at@{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at(\+M\+P\+I\+\_\+\+File fh, M\+P\+I\+\_\+\+Offset offset, void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_File_read_at(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File}]{fh, }
+\item[{M\+P\+I\+\_\+\+Offset}]{offset, }
+\item[{void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ad4385f25269671cfcea874ac05d31670}{}\label{MPI__intercept_8c_ad4385f25269671cfcea874ac05d31670}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at\+\_\+all@{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at\+\_\+all}}
+\index{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at\+\_\+all@{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at\+\_\+all}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at\+\_\+all(\+M\+P\+I\+\_\+\+File fh, M\+P\+I\+\_\+\+Offset offset, void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_File_read_at_all(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+read\+\_\+at\+\_\+all (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File}]{fh, }
+\item[{M\+P\+I\+\_\+\+Offset}]{offset, }
+\item[{void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a9a78e16390629cf6bbea322eb7290716}{}\label{MPI__intercept_8c_a9a78e16390629cf6bbea322eb7290716}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+write@{M\+P\+I\+\_\+\+File\+\_\+write}}
+\index{M\+P\+I\+\_\+\+File\+\_\+write@{M\+P\+I\+\_\+\+File\+\_\+write}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+write(\+M\+P\+I\+\_\+\+File fh, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_File_write(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+write (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File}]{fh, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ab376b2c35dcee058a6ea672a4bb5970a}{}\label{MPI__intercept_8c_ab376b2c35dcee058a6ea672a4bb5970a}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+write\+\_\+all@{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+all}}
+\index{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+all@{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+all}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+all(\+M\+P\+I\+\_\+\+File fh, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_File_write_all(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+write\+\_\+all (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File}]{fh, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a815511e89abf5a7468a6b13b941864b9}{}\label{MPI__intercept_8c_a815511e89abf5a7468a6b13b941864b9}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at@{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at}}
+\index{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at@{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at(\+M\+P\+I\+\_\+\+File fh, M\+P\+I\+\_\+\+Offset offset, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_File_write_at(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File}]{fh, }
+\item[{M\+P\+I\+\_\+\+Offset}]{offset, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a66073e03e57977eb7dd08a103b2bed02}{}\label{MPI__intercept_8c_a66073e03e57977eb7dd08a103b2bed02}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at\+\_\+all@{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at\+\_\+all}}
+\index{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at\+\_\+all@{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at\+\_\+all}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at\+\_\+all(\+M\+P\+I\+\_\+\+File fh, M\+P\+I\+\_\+\+Offset offset, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_File_write_at_all(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+File\+\_\+write\+\_\+at\+\_\+all (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+File}]{fh, }
+\item[{M\+P\+I\+\_\+\+Offset}]{offset, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a2f85f41b1849041072c42048ea22bb31}{}\label{MPI__intercept_8c_a2f85f41b1849041072c42048ea22bb31}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Finalize@{M\+P\+I\+\_\+\+Finalize}}
+\index{M\+P\+I\+\_\+\+Finalize@{M\+P\+I\+\_\+\+Finalize}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Finalize(void)}{MPI_Finalize(void)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Finalize (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a91a0cf5613b31a183a5453446191f1df}{}\label{MPI__intercept_8c_a91a0cf5613b31a183a5453446191f1df}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Gather@{M\+P\+I\+\_\+\+Gather}}
+\index{M\+P\+I\+\_\+\+Gather@{M\+P\+I\+\_\+\+Gather}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Gather(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, int root, M\+P\+I\+\_\+\+Comm comm)}{MPI_Gather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Gather (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{int}]{sendcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{recvcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{int}]{root, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a9b37211c3737bf0dbfd9b7207178626e}{}\label{MPI__intercept_8c_a9b37211c3737bf0dbfd9b7207178626e}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Gatherv@{M\+P\+I\+\_\+\+Gatherv}}
+\index{M\+P\+I\+\_\+\+Gatherv@{M\+P\+I\+\_\+\+Gatherv}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Gatherv(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$recvcounts, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$displs, M\+P\+I\+\_\+\+Datatype recvtype, int root, M\+P\+I\+\_\+\+Comm comm)}{MPI_Gatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, int root, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Gatherv (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{int}]{sendcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{recvcounts, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{displs, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{int}]{root, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a76d261c66bd0d2b9f886d6a43b587bae}{}\label{MPI__intercept_8c_a76d261c66bd0d2b9f886d6a43b587bae}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Get@{M\+P\+I\+\_\+\+Get}}
+\index{M\+P\+I\+\_\+\+Get@{M\+P\+I\+\_\+\+Get}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Get(void $\ast$origin\+\_\+addr, int origin\+\_\+count, M\+P\+I\+\_\+\+Datatype origin\+\_\+datatype, int target\+\_\+rank, M\+P\+I\+\_\+\+Aint target\+\_\+disp, int target\+\_\+count, M\+P\+I\+\_\+\+Datatype target\+\_\+datatype, M\+P\+I\+\_\+\+Win win)}{MPI_Get(void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Get (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{origin\+\_\+addr, }
+\item[{int}]{origin\+\_\+count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{origin\+\_\+datatype, }
+\item[{int}]{target\+\_\+rank, }
+\item[{M\+P\+I\+\_\+\+Aint}]{target\+\_\+disp, }
+\item[{int}]{target\+\_\+count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{target\+\_\+datatype, }
+\item[{M\+P\+I\+\_\+\+Win}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a56c00d66157155aac11e7e2eb8b3d14a}{}\label{MPI__intercept_8c_a56c00d66157155aac11e7e2eb8b3d14a}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Ibsend@{M\+P\+I\+\_\+\+Ibsend}}
+\index{M\+P\+I\+\_\+\+Ibsend@{M\+P\+I\+\_\+\+Ibsend}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Ibsend(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Ibsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Ibsend (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a2733506787268406c32f64051256dc09}{}\label{MPI__intercept_8c_a2733506787268406c32f64051256dc09}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Init@{M\+P\+I\+\_\+\+Init}}
+\index{M\+P\+I\+\_\+\+Init@{M\+P\+I\+\_\+\+Init}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Init(int $\ast$argc, char $\ast$$\ast$$\ast$argv)}{MPI_Init(int *argc, char ***argv)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Init (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{argc, }
+\item[{char $\ast$$\ast$$\ast$}]{argv}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a85fc482f00c52ec6e5f2503b3b480c56}{}\label{MPI__intercept_8c_a85fc482f00c52ec6e5f2503b3b480c56}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Init\+\_\+thread@{M\+P\+I\+\_\+\+Init\+\_\+thread}}
+\index{M\+P\+I\+\_\+\+Init\+\_\+thread@{M\+P\+I\+\_\+\+Init\+\_\+thread}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Init\+\_\+thread(int $\ast$argc, char $\ast$$\ast$$\ast$argv, int required, int $\ast$provided)}{MPI_Init_thread(int *argc, char ***argv, int required, int *provided)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Init\+\_\+thread (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{argc, }
+\item[{char $\ast$$\ast$$\ast$}]{argv, }
+\item[{int}]{required, }
+\item[{int $\ast$}]{provided}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_abc96c7c5262fd4c0672890bbf1e035f8}{}\label{MPI__intercept_8c_abc96c7c5262fd4c0672890bbf1e035f8}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Intercomm\+\_\+create@{M\+P\+I\+\_\+\+Intercomm\+\_\+create}}
+\index{M\+P\+I\+\_\+\+Intercomm\+\_\+create@{M\+P\+I\+\_\+\+Intercomm\+\_\+create}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Intercomm\+\_\+create(\+M\+P\+I\+\_\+\+Comm local\+\_\+comm, int local\+\_\+leader, M\+P\+I\+\_\+\+Comm peer\+\_\+comm, int remote\+\_\+leader, int tag, M\+P\+I\+\_\+\+Comm $\ast$newintercomm)}{MPI_Intercomm_create(MPI_Comm local_comm, int local_leader, MPI_Comm peer_comm, int remote_leader, int tag, MPI_Comm *newintercomm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Intercomm\+\_\+create (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{local\+\_\+comm, }
+\item[{int}]{local\+\_\+leader, }
+\item[{M\+P\+I\+\_\+\+Comm}]{peer\+\_\+comm, }
+\item[{int}]{remote\+\_\+leader, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{newintercomm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_aa21b7aeac2d1e15c39b9d5b2a0644fb9}{}\label{MPI__intercept_8c_aa21b7aeac2d1e15c39b9d5b2a0644fb9}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Intercomm\+\_\+merge@{M\+P\+I\+\_\+\+Intercomm\+\_\+merge}}
+\index{M\+P\+I\+\_\+\+Intercomm\+\_\+merge@{M\+P\+I\+\_\+\+Intercomm\+\_\+merge}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Intercomm\+\_\+merge(\+M\+P\+I\+\_\+\+Comm intercomm, int high, M\+P\+I\+\_\+\+Comm $\ast$newintracomm)}{MPI_Intercomm_merge(MPI_Comm intercomm, int high, MPI_Comm *newintracomm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Intercomm\+\_\+merge (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Comm}]{intercomm, }
+\item[{int}]{high, }
+\item[{M\+P\+I\+\_\+\+Comm $\ast$}]{newintracomm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ac120c56da13d1cfd8bb2ed71e1e85bfd}{}\label{MPI__intercept_8c_ac120c56da13d1cfd8bb2ed71e1e85bfd}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Iprobe@{M\+P\+I\+\_\+\+Iprobe}}
+\index{M\+P\+I\+\_\+\+Iprobe@{M\+P\+I\+\_\+\+Iprobe}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Iprobe(int source, int tag, M\+P\+I\+\_\+\+Comm comm, int $\ast$flag, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Iprobe(int source, int tag, MPI_Comm comm, int *flag, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Iprobe (
+\begin{DoxyParamCaption}
+\item[{int}]{source, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{int $\ast$}]{flag, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a48e8771d911360bf2abeb007629e32cc}{}\label{MPI__intercept_8c_a48e8771d911360bf2abeb007629e32cc}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Irecv@{M\+P\+I\+\_\+\+Irecv}}
+\index{M\+P\+I\+\_\+\+Irecv@{M\+P\+I\+\_\+\+Irecv}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Irecv(void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int source, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Irecv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Irecv (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{source, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a3959fe5bd231f4caa9ac1a49f35d7d57}{}\label{MPI__intercept_8c_a3959fe5bd231f4caa9ac1a49f35d7d57}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Irsend@{M\+P\+I\+\_\+\+Irsend}}
+\index{M\+P\+I\+\_\+\+Irsend@{M\+P\+I\+\_\+\+Irsend}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Irsend(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Irsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Irsend (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ade8dba62f661457f7300975a2e768aca}{}\label{MPI__intercept_8c_ade8dba62f661457f7300975a2e768aca}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Isend@{M\+P\+I\+\_\+\+Isend}}
+\index{M\+P\+I\+\_\+\+Isend@{M\+P\+I\+\_\+\+Isend}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Isend(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Isend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Isend (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_aa6df98e3fc32a131bc7ef3a9324f6be3}{}\label{MPI__intercept_8c_aa6df98e3fc32a131bc7ef3a9324f6be3}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Issend@{M\+P\+I\+\_\+\+Issend}}
+\index{M\+P\+I\+\_\+\+Issend@{M\+P\+I\+\_\+\+Issend}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Issend(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Issend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Issend (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ad07d1e7f49d502a856298d42fe34a130}{}\label{MPI__intercept_8c_ad07d1e7f49d502a856298d42fe34a130}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Probe@{M\+P\+I\+\_\+\+Probe}}
+\index{M\+P\+I\+\_\+\+Probe@{M\+P\+I\+\_\+\+Probe}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Probe(int source, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Probe(int source, int tag, MPI_Comm comm, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Probe (
+\begin{DoxyParamCaption}
+\item[{int}]{source, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ac9c49825e9fe032aafd078ce3451d58d}{}\label{MPI__intercept_8c_ac9c49825e9fe032aafd078ce3451d58d}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Put@{M\+P\+I\+\_\+\+Put}}
+\index{M\+P\+I\+\_\+\+Put@{M\+P\+I\+\_\+\+Put}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Put(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$origin\+\_\+addr, int origin\+\_\+count, M\+P\+I\+\_\+\+Datatype origin\+\_\+datatype, int target\+\_\+rank, M\+P\+I\+\_\+\+Aint target\+\_\+disp, int target\+\_\+count, M\+P\+I\+\_\+\+Datatype target\+\_\+datatype, M\+P\+I\+\_\+\+Win win)}{MPI_Put(MPI3_CONST void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Put (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{origin\+\_\+addr, }
+\item[{int}]{origin\+\_\+count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{origin\+\_\+datatype, }
+\item[{int}]{target\+\_\+rank, }
+\item[{M\+P\+I\+\_\+\+Aint}]{target\+\_\+disp, }
+\item[{int}]{target\+\_\+count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{target\+\_\+datatype, }
+\item[{M\+P\+I\+\_\+\+Win}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_aee290b28146ce8b0b33b10b5e483f57f}{}\label{MPI__intercept_8c_aee290b28146ce8b0b33b10b5e483f57f}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Recv@{M\+P\+I\+\_\+\+Recv}}
+\index{M\+P\+I\+\_\+\+Recv@{M\+P\+I\+\_\+\+Recv}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Recv(void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int source, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Recv (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{source, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a27b9cce644f78aa09796b4108bdf0cbc}{}\label{MPI__intercept_8c_a27b9cce644f78aa09796b4108bdf0cbc}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Recv\+\_\+init@{M\+P\+I\+\_\+\+Recv\+\_\+init}}
+\index{M\+P\+I\+\_\+\+Recv\+\_\+init@{M\+P\+I\+\_\+\+Recv\+\_\+init}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Recv\+\_\+init(void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int source, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Recv_init(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Recv\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{source, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a7eb83649520ec3400164de0ec45fad39}{}\label{MPI__intercept_8c_a7eb83649520ec3400164de0ec45fad39}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Reduce@{M\+P\+I\+\_\+\+Reduce}}
+\index{M\+P\+I\+\_\+\+Reduce@{M\+P\+I\+\_\+\+Reduce}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Reduce(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, void $\ast$recvbuf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Op op, int root, M\+P\+I\+\_\+\+Comm comm)}{MPI_Reduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Reduce (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Op}]{op, }
+\item[{int}]{root, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_abe846ddef06f84cb700cd24ce781f3db}{}\label{MPI__intercept_8c_abe846ddef06f84cb700cd24ce781f3db}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Reduce\+\_\+scatter@{M\+P\+I\+\_\+\+Reduce\+\_\+scatter}}
+\index{M\+P\+I\+\_\+\+Reduce\+\_\+scatter@{M\+P\+I\+\_\+\+Reduce\+\_\+scatter}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Reduce\+\_\+scatter(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, void $\ast$recvbuf, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$recvcounts, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Op op, M\+P\+I\+\_\+\+Comm comm)}{MPI_Reduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST int *recvcounts, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Reduce\+\_\+scatter (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{recvcounts, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Op}]{op, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a6e2c15ba0085d9b850542195ccaacc3c}{}\label{MPI__intercept_8c_a6e2c15ba0085d9b850542195ccaacc3c}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Request\+\_\+free@{M\+P\+I\+\_\+\+Request\+\_\+free}}
+\index{M\+P\+I\+\_\+\+Request\+\_\+free@{M\+P\+I\+\_\+\+Request\+\_\+free}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Request\+\_\+free(\+M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Request_free(MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Request\+\_\+free (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a444abe6daa252a4eb40982a8b1e961da}{}\label{MPI__intercept_8c_a444abe6daa252a4eb40982a8b1e961da}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Request\+\_\+get\+\_\+status@{M\+P\+I\+\_\+\+Request\+\_\+get\+\_\+status}}
+\index{M\+P\+I\+\_\+\+Request\+\_\+get\+\_\+status@{M\+P\+I\+\_\+\+Request\+\_\+get\+\_\+status}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Request\+\_\+get\+\_\+status(\+M\+P\+I\+\_\+\+Request request, int $\ast$flag, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Request_get_status(MPI_Request request, int *flag, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Request\+\_\+get\+\_\+status (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Request}]{request, }
+\item[{int $\ast$}]{flag, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a0e31975de73d2fcd08b5248defb2b6b4}{}\label{MPI__intercept_8c_a0e31975de73d2fcd08b5248defb2b6b4}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Rsend@{M\+P\+I\+\_\+\+Rsend}}
+\index{M\+P\+I\+\_\+\+Rsend@{M\+P\+I\+\_\+\+Rsend}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Rsend(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm)}{MPI_Rsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Rsend (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a829abcd0475360e9b52e9cdb86d2017c}{}\label{MPI__intercept_8c_a829abcd0475360e9b52e9cdb86d2017c}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Rsend\+\_\+init@{M\+P\+I\+\_\+\+Rsend\+\_\+init}}
+\index{M\+P\+I\+\_\+\+Rsend\+\_\+init@{M\+P\+I\+\_\+\+Rsend\+\_\+init}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Rsend\+\_\+init(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Rsend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Rsend\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a491ef55d3d6dec30a1763fb1a192ae4e}{}\label{MPI__intercept_8c_a491ef55d3d6dec30a1763fb1a192ae4e}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Scan@{M\+P\+I\+\_\+\+Scan}}
+\index{M\+P\+I\+\_\+\+Scan@{M\+P\+I\+\_\+\+Scan}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Scan(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, void $\ast$recvbuf, int count, M\+P\+I\+\_\+\+Datatype datatype, M\+P\+I\+\_\+\+Op op, M\+P\+I\+\_\+\+Comm comm)}{MPI_Scan(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Scan (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{M\+P\+I\+\_\+\+Op}]{op, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a4310d0dbabf9f34ef01a891ed2067b93}{}\label{MPI__intercept_8c_a4310d0dbabf9f34ef01a891ed2067b93}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Scatter@{M\+P\+I\+\_\+\+Scatter}}
+\index{M\+P\+I\+\_\+\+Scatter@{M\+P\+I\+\_\+\+Scatter}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Scatter(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, int root, M\+P\+I\+\_\+\+Comm comm)}{MPI_Scatter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Scatter (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{int}]{sendcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{recvcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{int}]{root, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a44128b4d4c88b5561dff18997188f2c9}{}\label{MPI__intercept_8c_a44128b4d4c88b5561dff18997188f2c9}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Scatterv@{M\+P\+I\+\_\+\+Scatterv}}
+\index{M\+P\+I\+\_\+\+Scatterv@{M\+P\+I\+\_\+\+Scatterv}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Scatterv(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$sendcounts, M\+P\+I3\+\_\+\+C\+O\+N\+S\+T int $\ast$displs, M\+P\+I\+\_\+\+Datatype sendtype, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, int root, M\+P\+I\+\_\+\+Comm comm)}{MPI_Scatterv(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MPI3_CONST int *displs, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Scatterv (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{sendcounts, }
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} int $\ast$}]{displs, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{recvcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{int}]{root, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a281e32e43aefc6f49726c045082bc0b8}{}\label{MPI__intercept_8c_a281e32e43aefc6f49726c045082bc0b8}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Send@{M\+P\+I\+\_\+\+Send}}
+\index{M\+P\+I\+\_\+\+Send@{M\+P\+I\+\_\+\+Send}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Send(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm)}{MPI_Send(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Send (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a8ea34afa32f48c0304cd76b21c7bb33f}{}\label{MPI__intercept_8c_a8ea34afa32f48c0304cd76b21c7bb33f}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Send\+\_\+init@{M\+P\+I\+\_\+\+Send\+\_\+init}}
+\index{M\+P\+I\+\_\+\+Send\+\_\+init@{M\+P\+I\+\_\+\+Send\+\_\+init}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Send\+\_\+init(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Send_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Send\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a285a7aa137eb66d8ea11f1e3ba422d56}{}\label{MPI__intercept_8c_a285a7aa137eb66d8ea11f1e3ba422d56}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Sendrecv@{M\+P\+I\+\_\+\+Sendrecv}}
+\index{M\+P\+I\+\_\+\+Sendrecv@{M\+P\+I\+\_\+\+Sendrecv}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Sendrecv(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$sendbuf, int sendcount, M\+P\+I\+\_\+\+Datatype sendtype, int dest, int sendtag, void $\ast$recvbuf, int recvcount, M\+P\+I\+\_\+\+Datatype recvtype, int source, int recvtag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Sendrecv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, int dest, int sendtag, void *recvbuf, int recvcount, MPI_Datatype recvtype, int source, int recvtag, MPI_Comm comm, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Sendrecv (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{sendbuf, }
+\item[{int}]{sendcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{sendtype, }
+\item[{int}]{dest, }
+\item[{int}]{sendtag, }
+\item[{void $\ast$}]{recvbuf, }
+\item[{int}]{recvcount, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{recvtype, }
+\item[{int}]{source, }
+\item[{int}]{recvtag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a64738f359645dfac5ed8055ecb90e40a}{}\label{MPI__intercept_8c_a64738f359645dfac5ed8055ecb90e40a}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Sendrecv\+\_\+replace@{M\+P\+I\+\_\+\+Sendrecv\+\_\+replace}}
+\index{M\+P\+I\+\_\+\+Sendrecv\+\_\+replace@{M\+P\+I\+\_\+\+Sendrecv\+\_\+replace}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Sendrecv\+\_\+replace(void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int sendtag, int source, int recvtag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Sendrecv_replace(void *buf, int count, MPI_Datatype datatype, int dest, int sendtag, int source, int recvtag, MPI_Comm comm, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Sendrecv\+\_\+replace (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{sendtag, }
+\item[{int}]{source, }
+\item[{int}]{recvtag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_aec73cb4cb446c0d7a86eabd11c339a06}{}\label{MPI__intercept_8c_aec73cb4cb446c0d7a86eabd11c339a06}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Ssend@{M\+P\+I\+\_\+\+Ssend}}
+\index{M\+P\+I\+\_\+\+Ssend@{M\+P\+I\+\_\+\+Ssend}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Ssend(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm)}{MPI_Ssend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Ssend (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_af361d3085ad40f5c6b0ddbecb9181b0b}{}\label{MPI__intercept_8c_af361d3085ad40f5c6b0ddbecb9181b0b}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Ssend\+\_\+init@{M\+P\+I\+\_\+\+Ssend\+\_\+init}}
+\index{M\+P\+I\+\_\+\+Ssend\+\_\+init@{M\+P\+I\+\_\+\+Ssend\+\_\+init}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Ssend\+\_\+init(\+M\+P\+I3\+\_\+\+C\+O\+N\+S\+T void $\ast$buf, int count, M\+P\+I\+\_\+\+Datatype datatype, int dest, int tag, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Ssend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Ssend\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf M\+P\+I3\+\_\+\+C\+O\+N\+ST} void $\ast$}]{buf, }
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Datatype}]{datatype, }
+\item[{int}]{dest, }
+\item[{int}]{tag, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_afef86ccf1474ee8bcd0047fe931c0898}{}\label{MPI__intercept_8c_afef86ccf1474ee8bcd0047fe931c0898}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Start@{M\+P\+I\+\_\+\+Start}}
+\index{M\+P\+I\+\_\+\+Start@{M\+P\+I\+\_\+\+Start}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Start(\+M\+P\+I\+\_\+\+Request $\ast$request)}{MPI_Start(MPI_Request *request)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Start (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_aeec2a2f0b1a92aec5029710143104066}{}\label{MPI__intercept_8c_aeec2a2f0b1a92aec5029710143104066}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Startall@{M\+P\+I\+\_\+\+Startall}}
+\index{M\+P\+I\+\_\+\+Startall@{M\+P\+I\+\_\+\+Startall}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Startall(int count, M\+P\+I\+\_\+\+Request array\+\_\+of\+\_\+requests[])}{MPI_Startall(int count, MPI_Request array_of_requests[])}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Startall (
+\begin{DoxyParamCaption}
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Request}]{array\+\_\+of\+\_\+requests\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a39e6e008ee0410e06eff5f77a5e0e6a9}{}\label{MPI__intercept_8c_a39e6e008ee0410e06eff5f77a5e0e6a9}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Test@{M\+P\+I\+\_\+\+Test}}
+\index{M\+P\+I\+\_\+\+Test@{M\+P\+I\+\_\+\+Test}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Test(\+M\+P\+I\+\_\+\+Request $\ast$request, int $\ast$flag, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Test(MPI_Request *request, int *flag, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Test (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request, }
+\item[{int $\ast$}]{flag, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a06c1d0daf22e41dd7b214ca71bf00654}{}\label{MPI__intercept_8c_a06c1d0daf22e41dd7b214ca71bf00654}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Testall@{M\+P\+I\+\_\+\+Testall}}
+\index{M\+P\+I\+\_\+\+Testall@{M\+P\+I\+\_\+\+Testall}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Testall(int count, M\+P\+I\+\_\+\+Request array\+\_\+of\+\_\+requests[], int $\ast$flag, M\+P\+I\+\_\+\+Status array\+\_\+of\+\_\+statuses[])}{MPI_Testall(int count, MPI_Request array_of_requests[], int *flag, MPI_Status array_of_statuses[])}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Testall (
+\begin{DoxyParamCaption}
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Request}]{array\+\_\+of\+\_\+requests\mbox{[}$\,$\mbox{]}, }
+\item[{int $\ast$}]{flag, }
+\item[{M\+P\+I\+\_\+\+Status}]{array\+\_\+of\+\_\+statuses\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a55b4b1a6e7d25d0cda534261c8c45c32}{}\label{MPI__intercept_8c_a55b4b1a6e7d25d0cda534261c8c45c32}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Testany@{M\+P\+I\+\_\+\+Testany}}
+\index{M\+P\+I\+\_\+\+Testany@{M\+P\+I\+\_\+\+Testany}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Testany(int count, M\+P\+I\+\_\+\+Request array\+\_\+of\+\_\+requests[], int $\ast$indx, int $\ast$flag, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Testany(int count, MPI_Request array_of_requests[], int *indx, int *flag, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Testany (
+\begin{DoxyParamCaption}
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Request}]{array\+\_\+of\+\_\+requests\mbox{[}$\,$\mbox{]}, }
+\item[{int $\ast$}]{indx, }
+\item[{int $\ast$}]{flag, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a866ddb3866bddffdd4aae4a8602d1726}{}\label{MPI__intercept_8c_a866ddb3866bddffdd4aae4a8602d1726}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Testsome@{M\+P\+I\+\_\+\+Testsome}}
+\index{M\+P\+I\+\_\+\+Testsome@{M\+P\+I\+\_\+\+Testsome}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Testsome(int incount, M\+P\+I\+\_\+\+Request array\+\_\+of\+\_\+requests[], int $\ast$outcount, int array\+\_\+of\+\_\+indices[], M\+P\+I\+\_\+\+Status array\+\_\+of\+\_\+statuses[])}{MPI_Testsome(int incount, MPI_Request array_of_requests[], int *outcount, int array_of_indices[], MPI_Status array_of_statuses[])}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Testsome (
+\begin{DoxyParamCaption}
+\item[{int}]{incount, }
+\item[{M\+P\+I\+\_\+\+Request}]{array\+\_\+of\+\_\+requests\mbox{[}$\,$\mbox{]}, }
+\item[{int $\ast$}]{outcount, }
+\item[{int}]{array\+\_\+of\+\_\+indices\mbox{[}$\,$\mbox{]}, }
+\item[{M\+P\+I\+\_\+\+Status}]{array\+\_\+of\+\_\+statuses\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a27666cfffa14e9b2acac8cbf280b1c80}{}\label{MPI__intercept_8c_a27666cfffa14e9b2acac8cbf280b1c80}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Wait@{M\+P\+I\+\_\+\+Wait}}
+\index{M\+P\+I\+\_\+\+Wait@{M\+P\+I\+\_\+\+Wait}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Wait(\+M\+P\+I\+\_\+\+Request $\ast$request, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Wait(MPI_Request *request, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Wait (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{request, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a322f9b0709e67a883f01e0edecb7743c}{}\label{MPI__intercept_8c_a322f9b0709e67a883f01e0edecb7743c}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Waitall@{M\+P\+I\+\_\+\+Waitall}}
+\index{M\+P\+I\+\_\+\+Waitall@{M\+P\+I\+\_\+\+Waitall}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Waitall(int count, M\+P\+I\+\_\+\+Request $\ast$array\+\_\+of\+\_\+requests, M\+P\+I\+\_\+\+Status $\ast$array\+\_\+of\+\_\+statuses)}{MPI_Waitall(int count, MPI_Request *array_of_requests, MPI_Status *array_of_statuses)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Waitall (
+\begin{DoxyParamCaption}
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{array\+\_\+of\+\_\+requests, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{array\+\_\+of\+\_\+statuses}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ae995f16c4ad40bc3ee8cbd4737e8e096}{}\label{MPI__intercept_8c_ae995f16c4ad40bc3ee8cbd4737e8e096}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Waitany@{M\+P\+I\+\_\+\+Waitany}}
+\index{M\+P\+I\+\_\+\+Waitany@{M\+P\+I\+\_\+\+Waitany}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Waitany(int count, M\+P\+I\+\_\+\+Request $\ast$requests, int $\ast$index, M\+P\+I\+\_\+\+Status $\ast$status)}{MPI_Waitany(int count, MPI_Request *requests, int *index, MPI_Status *status)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Waitany (
+\begin{DoxyParamCaption}
+\item[{int}]{count, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{requests, }
+\item[{int $\ast$}]{index, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a55dd30f30f2586cba52eff32172ef211}{}\label{MPI__intercept_8c_a55dd30f30f2586cba52eff32172ef211}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Waitsome@{M\+P\+I\+\_\+\+Waitsome}}
+\index{M\+P\+I\+\_\+\+Waitsome@{M\+P\+I\+\_\+\+Waitsome}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Waitsome(int incount, M\+P\+I\+\_\+\+Request $\ast$array\+\_\+of\+\_\+requests, int $\ast$outcount, int $\ast$array\+\_\+of\+\_\+indices, M\+P\+I\+\_\+\+Status $\ast$array\+\_\+of\+\_\+statuses)}{MPI_Waitsome(int incount, MPI_Request *array_of_requests, int *outcount, int *array_of_indices, MPI_Status *array_of_statuses)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Waitsome (
+\begin{DoxyParamCaption}
+\item[{int}]{incount, }
+\item[{M\+P\+I\+\_\+\+Request $\ast$}]{array\+\_\+of\+\_\+requests, }
+\item[{int $\ast$}]{outcount, }
+\item[{int $\ast$}]{array\+\_\+of\+\_\+indices, }
+\item[{M\+P\+I\+\_\+\+Status $\ast$}]{array\+\_\+of\+\_\+statuses}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_adc49204af69fe6642740a6fd18bc43ed}{}\label{MPI__intercept_8c_adc49204af69fe6642740a6fd18bc43ed}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Win\+\_\+complete@{M\+P\+I\+\_\+\+Win\+\_\+complete}}
+\index{M\+P\+I\+\_\+\+Win\+\_\+complete@{M\+P\+I\+\_\+\+Win\+\_\+complete}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Win\+\_\+complete(\+M\+P\+I\+\_\+\+Win win)}{MPI_Win_complete(MPI_Win win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Win\+\_\+complete (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Win}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_aa2b8f1ea0f086ded31523db4540ecc0a}{}\label{MPI__intercept_8c_aa2b8f1ea0f086ded31523db4540ecc0a}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Win\+\_\+create@{M\+P\+I\+\_\+\+Win\+\_\+create}}
+\index{M\+P\+I\+\_\+\+Win\+\_\+create@{M\+P\+I\+\_\+\+Win\+\_\+create}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Win\+\_\+create(void $\ast$base, M\+P\+I\+\_\+\+Aint size, int disp\+\_\+unit, M\+P\+I\+\_\+\+Info info, M\+P\+I\+\_\+\+Comm comm, M\+P\+I\+\_\+\+Win $\ast$win)}{MPI_Win_create(void *base, MPI_Aint size, int disp_unit, MPI_Info info, MPI_Comm comm, MPI_Win *win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Win\+\_\+create (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{base, }
+\item[{M\+P\+I\+\_\+\+Aint}]{size, }
+\item[{int}]{disp\+\_\+unit, }
+\item[{M\+P\+I\+\_\+\+Info}]{info, }
+\item[{M\+P\+I\+\_\+\+Comm}]{comm, }
+\item[{M\+P\+I\+\_\+\+Win $\ast$}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_a01b3bf0b7d2ad473bee826f04347a8cf}{}\label{MPI__intercept_8c_a01b3bf0b7d2ad473bee826f04347a8cf}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Win\+\_\+fence@{M\+P\+I\+\_\+\+Win\+\_\+fence}}
+\index{M\+P\+I\+\_\+\+Win\+\_\+fence@{M\+P\+I\+\_\+\+Win\+\_\+fence}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Win\+\_\+fence(int assert, M\+P\+I\+\_\+\+Win win)}{MPI_Win_fence(int assert, MPI_Win win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Win\+\_\+fence (
+\begin{DoxyParamCaption}
+\item[{int}]{assert, }
+\item[{M\+P\+I\+\_\+\+Win}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_afdd11c330421ea680713d06037226ea4}{}\label{MPI__intercept_8c_afdd11c330421ea680713d06037226ea4}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Win\+\_\+free@{M\+P\+I\+\_\+\+Win\+\_\+free}}
+\index{M\+P\+I\+\_\+\+Win\+\_\+free@{M\+P\+I\+\_\+\+Win\+\_\+free}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Win\+\_\+free(\+M\+P\+I\+\_\+\+Win $\ast$win)}{MPI_Win_free(MPI_Win *win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Win\+\_\+free (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Win $\ast$}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ab98d79e83763bcd6c792bb8985f5465d}{}\label{MPI__intercept_8c_ab98d79e83763bcd6c792bb8985f5465d}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Win\+\_\+post@{M\+P\+I\+\_\+\+Win\+\_\+post}}
+\index{M\+P\+I\+\_\+\+Win\+\_\+post@{M\+P\+I\+\_\+\+Win\+\_\+post}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Win\+\_\+post(\+M\+P\+I\+\_\+\+Group group, int assert, M\+P\+I\+\_\+\+Win win)}{MPI_Win_post(MPI_Group group, int assert, MPI_Win win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Win\+\_\+post (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Group}]{group, }
+\item[{int}]{assert, }
+\item[{M\+P\+I\+\_\+\+Win}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_ad6bf4ba0dbf370914cad586373c787c7}{}\label{MPI__intercept_8c_ad6bf4ba0dbf370914cad586373c787c7}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Win\+\_\+start@{M\+P\+I\+\_\+\+Win\+\_\+start}}
+\index{M\+P\+I\+\_\+\+Win\+\_\+start@{M\+P\+I\+\_\+\+Win\+\_\+start}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Win\+\_\+start(\+M\+P\+I\+\_\+\+Group group, int assert, M\+P\+I\+\_\+\+Win win)}{MPI_Win_start(MPI_Group group, int assert, MPI_Win win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Win\+\_\+start (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Group}]{group, }
+\item[{int}]{assert, }
+\item[{M\+P\+I\+\_\+\+Win}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_afde76e975f57347dddebc40c3a3aaeac}{}\label{MPI__intercept_8c_afde76e975f57347dddebc40c3a3aaeac}
+\index{M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}!M\+P\+I\+\_\+\+Win\+\_\+wait@{M\+P\+I\+\_\+\+Win\+\_\+wait}}
+\index{M\+P\+I\+\_\+\+Win\+\_\+wait@{M\+P\+I\+\_\+\+Win\+\_\+wait}!M\+P\+I\+\_\+intercept.\+c@{M\+P\+I\+\_\+intercept.\+c}}
+\subsubsection[{\texorpdfstring{M\+P\+I\+\_\+\+Win\+\_\+wait(\+M\+P\+I\+\_\+\+Win win)}{MPI_Win_wait(MPI_Win win)}}]{\setlength{\rightskip}{0pt plus 5cm}int M\+P\+I\+\_\+\+Win\+\_\+wait (
+\begin{DoxyParamCaption}
+\item[{M\+P\+I\+\_\+\+Win}]{win}
+\end{DoxyParamCaption}
+)}\hypertarget{MPI__intercept_8c_af0b0a32421e813ed9c91020f8514b99e}{}\label{MPI__intercept_8c_af0b0a32421e813ed9c91020f8514b99e}

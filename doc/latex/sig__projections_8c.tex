@@ -1,0 +1,67 @@
+\hypertarget{sig__projections_8c}{}\section{src/library/models/sig\+\_\+projections.c File Reference}
+\label{sig__projections_8c}\index{src/library/models/sig\+\_\+projections.\+c@{src/library/models/sig\+\_\+projections.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$control/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/macros.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/externs.\+h$>$}\\*
+{\ttfamily \#include $<$common/math\+\_\+operations.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/signature.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/projection.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/coefficient.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+double \hyperlink{sig__projections_8c_af18e36b7fbc63b308e3ceaa5a9c0ec62}{sig\+\_\+power\+\_\+projection} (\hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$my\+\_\+app, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} F, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} Fi)
+\item 
+double \hyperlink{sig__projections_8c_a9e72846bd1f3806bf2acd0946e23e27f}{sig\+\_\+cpi\+\_\+projection} (\hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$my\+\_\+app, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} F, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} Fi)
+\item 
+double \hyperlink{sig__projections_8c_a02b0a87b9c5c007c6d7cf7a70e03abb2}{sig\+\_\+time\+\_\+projection} (\hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$my\+\_\+app, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} F, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} Fi, double cpi\+\_\+pr)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{coefficient_8h_a7f58a37ee368b55a21d66b1b4e76e779}{coefficient\+\_\+t} $\ast$$\ast$ \hyperlink{sig__projections_8c_a638b9d18dabadf6e40aca8795eafb4ec}{coefficients}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{sig\+\_\+projections.\+c@{sig\+\_\+projections.\+c}!sig\+\_\+cpi\+\_\+projection@{sig\+\_\+cpi\+\_\+projection}}
+\index{sig\+\_\+cpi\+\_\+projection@{sig\+\_\+cpi\+\_\+projection}!sig\+\_\+projections.\+c@{sig\+\_\+projections.\+c}}
+\subsubsection[{\texorpdfstring{sig\+\_\+cpi\+\_\+projection(signature\+\_\+t $\ast$my\+\_\+app, ulong F, uint Fi)}{sig_cpi_projection(signature_t *my_app, ulong F, uint Fi)}}]{\setlength{\rightskip}{0pt plus 5cm}double sig\+\_\+cpi\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{{\bf signature\+\_\+t} $\ast$}]{my\+\_\+app, }
+\item[{{\bf ulong}}]{F, }
+\item[{{\bf uint}}]{Fi}
+\end{DoxyParamCaption}
+)}\hypertarget{sig__projections_8c_a9e72846bd1f3806bf2acd0946e23e27f}{}\label{sig__projections_8c_a9e72846bd1f3806bf2acd0946e23e27f}
+\index{sig\+\_\+projections.\+c@{sig\+\_\+projections.\+c}!sig\+\_\+power\+\_\+projection@{sig\+\_\+power\+\_\+projection}}
+\index{sig\+\_\+power\+\_\+projection@{sig\+\_\+power\+\_\+projection}!sig\+\_\+projections.\+c@{sig\+\_\+projections.\+c}}
+\subsubsection[{\texorpdfstring{sig\+\_\+power\+\_\+projection(signature\+\_\+t $\ast$my\+\_\+app, ulong F, uint Fi)}{sig_power_projection(signature_t *my_app, ulong F, uint Fi)}}]{\setlength{\rightskip}{0pt plus 5cm}double sig\+\_\+power\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{{\bf signature\+\_\+t} $\ast$}]{my\+\_\+app, }
+\item[{{\bf ulong}}]{F, }
+\item[{{\bf uint}}]{Fi}
+\end{DoxyParamCaption}
+)}\hypertarget{sig__projections_8c_af18e36b7fbc63b308e3ceaa5a9c0ec62}{}\label{sig__projections_8c_af18e36b7fbc63b308e3ceaa5a9c0ec62}
+\index{sig\+\_\+projections.\+c@{sig\+\_\+projections.\+c}!sig\+\_\+time\+\_\+projection@{sig\+\_\+time\+\_\+projection}}
+\index{sig\+\_\+time\+\_\+projection@{sig\+\_\+time\+\_\+projection}!sig\+\_\+projections.\+c@{sig\+\_\+projections.\+c}}
+\subsubsection[{\texorpdfstring{sig\+\_\+time\+\_\+projection(signature\+\_\+t $\ast$my\+\_\+app, ulong F, uint Fi, double cpi\+\_\+pr)}{sig_time_projection(signature_t *my_app, ulong F, uint Fi, double cpi_pr)}}]{\setlength{\rightskip}{0pt plus 5cm}double sig\+\_\+time\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{{\bf signature\+\_\+t} $\ast$}]{my\+\_\+app, }
+\item[{{\bf ulong}}]{F, }
+\item[{{\bf uint}}]{Fi, }
+\item[{double}]{cpi\+\_\+pr}
+\end{DoxyParamCaption}
+)}\hypertarget{sig__projections_8c_a02b0a87b9c5c007c6d7cf7a70e03abb2}{}\label{sig__projections_8c_a02b0a87b9c5c007c6d7cf7a70e03abb2}
+
+
+\subsection{Variable Documentation}
+\index{sig\+\_\+projections.\+c@{sig\+\_\+projections.\+c}!coefficients@{coefficients}}
+\index{coefficients@{coefficients}!sig\+\_\+projections.\+c@{sig\+\_\+projections.\+c}}
+\subsubsection[{\texorpdfstring{coefficients}{coefficients}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$$\ast$ coefficients}\hypertarget{sig__projections_8c_a638b9d18dabadf6e40aca8795eafb4ec}{}\label{sig__projections_8c_a638b9d18dabadf6e40aca8795eafb4ec}

@@ -1,0 +1,158 @@
+\hypertarget{dynais_8c}{}\section{src/library/dynais/dynais.c File Reference}
+\label{dynais_8c}\index{src/library/dynais/dynais.\+c@{src/library/dynais/dynais.\+c}}
+{\ttfamily \#include $<$time.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$library/dynais/dynais.\+h$>$}\\*
+{\ttfamily \#include $<$immintrin.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{dynais_8c_afbc965eb6f81d964b6f00087a6d89707}{A\+V\+X\+\_\+512}~\+\_\+\+F\+E\+A\+T\+U\+R\+E\+\_\+\+A\+V\+X512F
+\item 
+\#define \hyperlink{dynais_8c_a3dcd65d355c4cc8c7d1ef487f32506f0}{A\+V\+X\+\_\+256}~\+\_\+\+F\+E\+A\+T\+U\+R\+E\+\_\+\+A\+V\+X2
+\item 
+\#define \hyperlink{dynais_8c_a30b95bafa301938dd9bb5b8fc6b692e1}{A\+L\+I64}~\+\_\+\+\_\+attribute\+\_\+\+\_\+ ((aligned (64)))
+\item 
+\#define \hyperlink{dynais_8c_a6e576949b972ff7c5d9b27eefc01b2c5}{\+\_\+\+\_\+dyn\+\_\+size}~sizeof(long)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{dynais_8c_ad8e13f6004ab6c2e2ddbb8cbf8131cf2}{dynais\+\_\+init} (unsigned int window, unsigned int levels)
+\begin{DoxyCompactList}\small\item\em Allocates memory in preparation to use dynais. \end{DoxyCompactList}\item 
+void \hyperlink{dynais_8c_a92fc1a987338f254ce85339f707bbe8a}{dynais\+\_\+dispose} ()
+\begin{DoxyCompactList}\small\item\em Frees the memory previously allocated. \end{DoxyCompactList}\item 
+int \hyperlink{dynais_8c_a1678487dfa7e8eb39904610df5d9a3c0}{dynais\+\_\+build\+\_\+type} ()
+\begin{DoxyCompactList}\small\item\em Returns the building type of dynais. \end{DoxyCompactList}\item 
+int \hyperlink{dynais_8c_a5dd02e1a0daf5d813ea7a7bf050ccc8e}{dynais} (unsigned long sample, unsigned int $\ast$size, unsigned int $\ast$govern\+\_\+level)
+\begin{DoxyCompactList}\small\item\em Given a sample and its size, returns the state the application is in (in a loop, in an iteration, etc.). \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int \hyperlink{dynais_8c_a15f68e8c96222c9eed87ad5dbfc77c07}{\+\_\+levels}
+\item 
+unsigned int \hyperlink{dynais_8c_a390dcf228e719056132c833e4310e749}{\+\_\+window}
+\item 
+unsigned long $\ast$ \hyperlink{dynais_8c_a114f236c6d2655da303f8b38334a0e44}{samples\+\_\+vec} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\item 
+unsigned int $\ast$ \hyperlink{dynais_8c_a76fcca518cc69d8fefff5de00cae6f26}{zeros\+\_\+vec} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\item 
+unsigned int $\ast$ \hyperlink{dynais_8c_afd3a8df4ff8867df0bc6ffdf5684d4e8}{sizes\+\_\+vec} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\item 
+unsigned int $\ast$ \hyperlink{dynais_8c_a4d7f74a74935de56f21645949d291ad4}{indes\+\_\+vec} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\item 
+signed int \hyperlink{dynais_8c_ae25678b730e8adf6d73ba319aa962f31}{level\+\_\+result} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\item 
+unsigned int \hyperlink{dynais_8c_a19742ba8225ac5f892e754588b37c872}{level\+\_\+previous\+\_\+length} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\item 
+unsigned int \hyperlink{dynais_8c_a2875c7697e0ee42182829a7a855177a8}{level\+\_\+length} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\item 
+unsigned int \hyperlink{dynais_8c_acb4011a6e53b9c1eed1cb2e08f06cf4d}{level\+\_\+limit} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\item 
+unsigned int \hyperlink{dynais_8c_ac879181899e2e012fe512b8d22f6247f}{level\+\_\+index} \mbox{[}\hyperlink{dynais_8h_add784659439a8dd6b1423406171414d3}{M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{dynais.\+c@{dynais.\+c}!\+\_\+\+\_\+dyn\+\_\+size@{\+\_\+\+\_\+dyn\+\_\+size}}
+\index{\+\_\+\+\_\+dyn\+\_\+size@{\+\_\+\+\_\+dyn\+\_\+size}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+\_\+dyn\+\_\+size}{__dyn_size}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+\_\+dyn\+\_\+size~sizeof(long)}\hypertarget{dynais_8c_a6e576949b972ff7c5d9b27eefc01b2c5}{}\label{dynais_8c_a6e576949b972ff7c5d9b27eefc01b2c5}
+\index{dynais.\+c@{dynais.\+c}!A\+L\+I64@{A\+L\+I64}}
+\index{A\+L\+I64@{A\+L\+I64}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+I64}{ALI64}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+I64~\+\_\+\+\_\+attribute\+\_\+\+\_\+ ((aligned (64)))}\hypertarget{dynais_8c_a30b95bafa301938dd9bb5b8fc6b692e1}{}\label{dynais_8c_a30b95bafa301938dd9bb5b8fc6b692e1}
+\index{dynais.\+c@{dynais.\+c}!A\+V\+X\+\_\+256@{A\+V\+X\+\_\+256}}
+\index{A\+V\+X\+\_\+256@{A\+V\+X\+\_\+256}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{A\+V\+X\+\_\+256}{AVX_256}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+V\+X\+\_\+256~\+\_\+\+F\+E\+A\+T\+U\+R\+E\+\_\+\+A\+V\+X2}\hypertarget{dynais_8c_a3dcd65d355c4cc8c7d1ef487f32506f0}{}\label{dynais_8c_a3dcd65d355c4cc8c7d1ef487f32506f0}
+\index{dynais.\+c@{dynais.\+c}!A\+V\+X\+\_\+512@{A\+V\+X\+\_\+512}}
+\index{A\+V\+X\+\_\+512@{A\+V\+X\+\_\+512}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{A\+V\+X\+\_\+512}{AVX_512}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+V\+X\+\_\+512~\+\_\+\+F\+E\+A\+T\+U\+R\+E\+\_\+\+A\+V\+X512F}\hypertarget{dynais_8c_afbc965eb6f81d964b6f00087a6d89707}{}\label{dynais_8c_afbc965eb6f81d964b6f00087a6d89707}
+
+
+\subsection{Function Documentation}
+\index{dynais.\+c@{dynais.\+c}!dynais@{dynais}}
+\index{dynais@{dynais}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{dynais(unsigned long sample, unsigned int $\ast$size, unsigned int $\ast$govern\+\_\+level)}{dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)}}]{\setlength{\rightskip}{0pt plus 5cm}int dynais (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{sample, }
+\item[{unsigned int $\ast$}]{size, }
+\item[{unsigned int $\ast$}]{level}
+\end{DoxyParamCaption}
+)}\hypertarget{dynais_8c_a5dd02e1a0daf5d813ea7a7bf050ccc8e}{}\label{dynais_8c_a5dd02e1a0daf5d813ea7a7bf050ccc8e}
+
+
+Given a sample and its size, returns the state the application is in (in a loop, in an iteration, etc.). 
+
+\index{dynais.\+c@{dynais.\+c}!dynais\+\_\+build\+\_\+type@{dynais\+\_\+build\+\_\+type}}
+\index{dynais\+\_\+build\+\_\+type@{dynais\+\_\+build\+\_\+type}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{dynais\+\_\+build\+\_\+type()}{dynais_build_type()}}]{\setlength{\rightskip}{0pt plus 5cm}int dynais\+\_\+build\+\_\+type (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{dynais_8c_a1678487dfa7e8eb39904610df5d9a3c0}{}\label{dynais_8c_a1678487dfa7e8eb39904610df5d9a3c0}
+
+
+Returns the building type of dynais. 
+
+\index{dynais.\+c@{dynais.\+c}!dynais\+\_\+dispose@{dynais\+\_\+dispose}}
+\index{dynais\+\_\+dispose@{dynais\+\_\+dispose}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{dynais\+\_\+dispose()}{dynais_dispose()}}]{\setlength{\rightskip}{0pt plus 5cm}void dynais\+\_\+dispose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{dynais_8c_a92fc1a987338f254ce85339f707bbe8a}{}\label{dynais_8c_a92fc1a987338f254ce85339f707bbe8a}
+
+
+Frees the memory previously allocated. 
+
+\index{dynais.\+c@{dynais.\+c}!dynais\+\_\+init@{dynais\+\_\+init}}
+\index{dynais\+\_\+init@{dynais\+\_\+init}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{dynais\+\_\+init(unsigned int window, unsigned int levels)}{dynais_init(unsigned int window, unsigned int levels)}}]{\setlength{\rightskip}{0pt plus 5cm}int dynais\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{window, }
+\item[{unsigned int}]{levels}
+\end{DoxyParamCaption}
+)}\hypertarget{dynais_8c_ad8e13f6004ab6c2e2ddbb8cbf8131cf2}{}\label{dynais_8c_ad8e13f6004ab6c2e2ddbb8cbf8131cf2}
+
+
+Allocates memory in preparation to use dynais. 
+
+Returns 0 on success 
+
+\subsection{Variable Documentation}
+\index{dynais.\+c@{dynais.\+c}!\+\_\+levels@{\+\_\+levels}}
+\index{\+\_\+levels@{\+\_\+levels}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+levels}{_levels}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int \+\_\+levels}\hypertarget{dynais_8c_a15f68e8c96222c9eed87ad5dbfc77c07}{}\label{dynais_8c_a15f68e8c96222c9eed87ad5dbfc77c07}
+\index{dynais.\+c@{dynais.\+c}!\+\_\+window@{\+\_\+window}}
+\index{\+\_\+window@{\+\_\+window}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+window}{_window}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int \+\_\+window}\hypertarget{dynais_8c_a390dcf228e719056132c833e4310e749}{}\label{dynais_8c_a390dcf228e719056132c833e4310e749}
+\index{dynais.\+c@{dynais.\+c}!indes\+\_\+vec@{indes\+\_\+vec}}
+\index{indes\+\_\+vec@{indes\+\_\+vec}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{indes\+\_\+vec}{indes_vec}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int$\ast$ indes\+\_\+vec\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_a4d7f74a74935de56f21645949d291ad4}{}\label{dynais_8c_a4d7f74a74935de56f21645949d291ad4}
+\index{dynais.\+c@{dynais.\+c}!level\+\_\+index@{level\+\_\+index}}
+\index{level\+\_\+index@{level\+\_\+index}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{level\+\_\+index}{level_index}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int level\+\_\+index\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_ac879181899e2e012fe512b8d22f6247f}{}\label{dynais_8c_ac879181899e2e012fe512b8d22f6247f}
+\index{dynais.\+c@{dynais.\+c}!level\+\_\+length@{level\+\_\+length}}
+\index{level\+\_\+length@{level\+\_\+length}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{level\+\_\+length}{level_length}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int level\+\_\+length\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_a2875c7697e0ee42182829a7a855177a8}{}\label{dynais_8c_a2875c7697e0ee42182829a7a855177a8}
+\index{dynais.\+c@{dynais.\+c}!level\+\_\+limit@{level\+\_\+limit}}
+\index{level\+\_\+limit@{level\+\_\+limit}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{level\+\_\+limit}{level_limit}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int level\+\_\+limit\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_acb4011a6e53b9c1eed1cb2e08f06cf4d}{}\label{dynais_8c_acb4011a6e53b9c1eed1cb2e08f06cf4d}
+\index{dynais.\+c@{dynais.\+c}!level\+\_\+previous\+\_\+length@{level\+\_\+previous\+\_\+length}}
+\index{level\+\_\+previous\+\_\+length@{level\+\_\+previous\+\_\+length}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{level\+\_\+previous\+\_\+length}{level_previous_length}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int level\+\_\+previous\+\_\+length\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_a19742ba8225ac5f892e754588b37c872}{}\label{dynais_8c_a19742ba8225ac5f892e754588b37c872}
+\index{dynais.\+c@{dynais.\+c}!level\+\_\+result@{level\+\_\+result}}
+\index{level\+\_\+result@{level\+\_\+result}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{level\+\_\+result}{level_result}}]{\setlength{\rightskip}{0pt plus 5cm}signed int level\+\_\+result\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_ae25678b730e8adf6d73ba319aa962f31}{}\label{dynais_8c_ae25678b730e8adf6d73ba319aa962f31}
+\index{dynais.\+c@{dynais.\+c}!samples\+\_\+vec@{samples\+\_\+vec}}
+\index{samples\+\_\+vec@{samples\+\_\+vec}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{samples\+\_\+vec}{samples_vec}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long$\ast$ samples\+\_\+vec\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_a114f236c6d2655da303f8b38334a0e44}{}\label{dynais_8c_a114f236c6d2655da303f8b38334a0e44}
+\index{dynais.\+c@{dynais.\+c}!sizes\+\_\+vec@{sizes\+\_\+vec}}
+\index{sizes\+\_\+vec@{sizes\+\_\+vec}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{sizes\+\_\+vec}{sizes_vec}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int$\ast$ sizes\+\_\+vec\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_afd3a8df4ff8867df0bc6ffdf5684d4e8}{}\label{dynais_8c_afd3a8df4ff8867df0bc6ffdf5684d4e8}
+\index{dynais.\+c@{dynais.\+c}!zeros\+\_\+vec@{zeros\+\_\+vec}}
+\index{zeros\+\_\+vec@{zeros\+\_\+vec}!dynais.\+c@{dynais.\+c}}
+\subsubsection[{\texorpdfstring{zeros\+\_\+vec}{zeros_vec}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int$\ast$ zeros\+\_\+vec\mbox{[}{\bf M\+A\+X\+\_\+\+L\+E\+V\+E\+LS}\mbox{]}}\hypertarget{dynais_8c_a76fcca518cc69d8fefff5de00cae6f26}{}\label{dynais_8c_a76fcca518cc69d8fefff5de00cae6f26}

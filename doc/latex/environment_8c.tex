@@ -1,0 +1,660 @@
+\hypertarget{environment_8c}{}\section{src/common/environment.c File Reference}
+\label{environment_8c}\index{src/common/environment.\+c@{src/common/environment.\+c}}
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/environment.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+{\ttfamily \#include $<$common/environment\+\_\+common.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/policy\+\_\+conf.\+h$>$}\\*
+{\ttfamily \#include $<$dlfcn.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{environment_8c_adc4cc5c67b56f34138d786ef6331e3f4}{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}
+\item 
+\#define \hyperlink{environment_8c_a6c8d1ac2235685c7f28c3dae77a77c01}{U\+S\+E\+\_\+\+E\+A\+R\+\_\+\+C\+O\+NF}~1
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{environment_8c_afcec31e7c9604996f66d7a5b3ddc7a24}{set\+\_\+ear\+\_\+total\+\_\+processes} (int procs)
+\begin{DoxyCompactList}\small\item\em Sets the number of processes to the one recieved by parameter. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a84d07a6dda9130298349a5c545596572}{get\+\_\+ear\+\_\+total\+\_\+processes} ()
+\begin{DoxyCompactList}\small\item\em Returns the current number of processes. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{environment_8c_a2b40d77e397405a75f47fe6e51148de9}{getenv\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname} ()
+\begin{DoxyCompactList}\small\item\em Tries to get the E\+A\+R\+\_\+\+U\+S\+E\+R\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME value and returns it. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{environment_8c_a453e1e34ecc3f946b24d83c99d8266c6}{getenv\+\_\+ear\+\_\+gui\+\_\+pathname} ()
+\begin{DoxyCompactList}\small\item\em Tries to get the E\+A\+R\+\_\+\+G\+U\+I\+\_\+\+P\+A\+T\+H\+N\+A\+ME value and returns it. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{environment_8c_a37c48d3a5886a63a45e001b6af6bf5b4}{getenv\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname} ()
+\begin{DoxyCompactList}\small\item\em Tries to get the C\+O\+E\+F\+F\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME value and returns it. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{environment_8c_aa20d8b69cc3d476ec476303b6584acb5}{getenv\+\_\+ear\+\_\+app\+\_\+name} ()
+\begin{DoxyCompactList}\small\item\em Tries to get the E\+A\+R\+\_\+\+A\+P\+P\+\_\+\+N\+A\+ME value and returns it. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_ace592d3b44e0751214a53f56f1ba2c4d}{set\+\_\+ear\+\_\+app\+\_\+name} (char $\ast$name)
+\begin{DoxyCompactList}\small\item\em Sets the configuration\textquotesingle{}s app name to the value recieved by parameter. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a57a0e8b7f4a3b90967788ad1959942cc}{getenv\+\_\+ear\+\_\+learning\+\_\+phase} ()
+\begin{DoxyCompactList}\small\item\em Checks if the E\+A\+R\+\_\+\+L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+P\+H\+A\+SE environment variable is set. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a0bb61ea825b47f2acb107e474f7b3db2}{getenv\+\_\+ear\+\_\+power\+\_\+policy} ()
+\begin{DoxyCompactList}\small\item\em Checks what the E\+A\+R\+\_\+\+P\+O\+W\+E\+R\+\_\+\+P\+O\+L\+I\+CY environment variable is set to. \end{DoxyCompactList}\item 
+double \hyperlink{environment_8c_a0ffdf250e63e02ac5c180959be84ec30}{getenv\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th} ()
+\begin{DoxyCompactList}\small\item\em Reads the power threshold for the power policy currently set. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a5718f2d99c14a4da6aafe05d8cd47be8}{getenv\+\_\+ear\+\_\+reset\+\_\+freq} ()
+\begin{DoxyCompactList}\small\item\em Reads the E\+A\+R\+\_\+\+R\+E\+S\+E\+T\+\_\+\+F\+R\+EQ environment variable\textquotesingle{}s value. \end{DoxyCompactList}\item 
+unsigned long \hyperlink{environment_8c_abf4cc6a3636a89b2aa4638fac621bdb1}{getenv\+\_\+ear\+\_\+p\+\_\+state} ()
+\begin{DoxyCompactList}\small\item\em Reads the E\+A\+R\+\_\+\+P\+\_\+\+S\+T\+A\+TE environment variable\textquotesingle{}s value and returns it if it\textquotesingle{}s set, otherwise returns the default value for the current power policy. \end{DoxyCompactList}\item 
+double \hyperlink{environment_8c_afcc99e7d4dd477a1817eb4ec10486ed2}{getenv\+\_\+ear\+\_\+performance\+\_\+accuracy} ()
+\begin{DoxyCompactList}\small\item\em Reads the P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+A\+C\+C\+U\+R\+A\+CY environment variable\textquotesingle{}s value and returns it if it\textquotesingle{}s set, otherwise returns returns the default value. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a77576a6b4948438977ed874e2c1c06e9}{getenv\+\_\+ear\+\_\+local\+\_\+id} ()
+\begin{DoxyCompactList}\small\item\em Returns -\/1. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a826184af8e91e81bf6ea0cd358eddcd6}{getenv\+\_\+ear\+\_\+num\+\_\+nodes} ()
+\begin{DoxyCompactList}\small\item\em Reads the number of nodes from the E\+A\+R\+\_\+\+N\+U\+M\+\_\+\+N\+O\+D\+ES environment variable and returns it. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a51b8ba22370b3cde11fff4b914a6f5cb}{getenv\+\_\+ear\+\_\+dynais\+\_\+levels} ()
+\begin{DoxyCompactList}\small\item\em Reads the number of dynais levels in the D\+Y\+N\+A\+I\+S\+\_\+\+L\+E\+V\+E\+LS environment variable and returns it. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_ab11fea7899604066b5e2572af7c99ddf}{getenv\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size} ()
+\begin{DoxyCompactList}\small\item\em Reads the number of dynais window size in the E\+A\+R\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+W\+I\+N\+D\+O\+W\+\_\+\+S\+I\+ZE environment variable and returns it. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a57c0d6073896d6fa80062e1c18a4eb1b}{get\+\_\+ear\+\_\+dynais\+\_\+levels} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of dynais levels set. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_aa921bd34dcd56ddd15eae8da5f0dff2d}{set\+\_\+ear\+\_\+dynais\+\_\+levels} (int levels)
+\item 
+int \hyperlink{environment_8c_ad439fd4776c1ae6dd7a2f84bc2375123}{get\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size} ()
+\begin{DoxyCompactList}\small\item\em Returns the dynais window size. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_a502ecaf00dbb762acf8a3e834b64d9e6}{set\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size} (int size)
+\item 
+char $\ast$ \hyperlink{environment_8c_aba752f08767ffd82ec5f741da5fd0c6d}{get\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname} ()
+\begin{DoxyCompactList}\small\item\em Returns the user db path previously read. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{environment_8c_a42a90767b7a30f3b2ba21c77d3800bef}{get\+\_\+ear\+\_\+gui\+\_\+pathname} ()
+\begin{DoxyCompactList}\small\item\em Returns the gui path previously read. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{environment_8c_a90a6b1bd8fa3d9318bc236121ed1c2cf}{get\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname} ()
+\begin{DoxyCompactList}\small\item\em Returns the coef db path previously read. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_a93f1d720ebbc3d05d04424add8728ca3}{set\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname} (char $\ast$path)
+\item 
+char $\ast$ \hyperlink{environment_8c_aa7f236b7a470c271fd48cb7565c409b9}{get\+\_\+ear\+\_\+app\+\_\+name} ()
+\begin{DoxyCompactList}\small\item\em Returns the app name previously read. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a06032ae8632554cbb540f8088ecd3dc3}{get\+\_\+ear\+\_\+learning\+\_\+phase} ()
+\begin{DoxyCompactList}\small\item\em Returns 1 if the app is currently set in the learning phase, 0 otherwise. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a59a8f224f6d3292ca044c1d561e66902}{get\+\_\+ear\+\_\+power\+\_\+policy} ()
+\begin{DoxyCompactList}\small\item\em Returns the power policy currently set. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_ad853dcc04af37cded410c4f1bbc4c7ae}{set\+\_\+ear\+\_\+power\+\_\+policy} (int pid)
+\item 
+double \hyperlink{environment_8c_aed024e1d74bf9dc89ae6331a9383841c}{get\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th} ()
+\begin{DoxyCompactList}\small\item\em Returns the current threshold for the current power policy. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_a1b6390dbc50cc4e0745288b24af11c50}{set\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th} (double th)
+\item 
+int \hyperlink{environment_8c_acc704a4013cf2603979e042d5d4674c8}{get\+\_\+ear\+\_\+reset\+\_\+freq} ()
+\begin{DoxyCompactList}\small\item\em Returns the reset frequency value previously read. \end{DoxyCompactList}\item 
+unsigned long \hyperlink{environment_8c_a1ead2a308d98285578cc60a6f52b180d}{get\+\_\+ear\+\_\+p\+\_\+state} ()
+\begin{DoxyCompactList}\small\item\em Returns the current p\+\_\+state. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_acb1f14ba913e828cff1e793b95e2d6e5}{set\+\_\+ear\+\_\+p\+\_\+state} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} pstate)
+\item 
+double \hyperlink{environment_8c_ae434845194c198a56f018b6ad299f5d2}{get\+\_\+ear\+\_\+performance\+\_\+accuracy} ()
+\begin{DoxyCompactList}\small\item\em Returns the performance accuracy previously set. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_a4ff343777dc04bdec5b15c33bf8c1bfe}{get\+\_\+ear\+\_\+local\+\_\+id} ()
+\item 
+int \hyperlink{environment_8c_a74d85a4974bbc05acc190726c427f1eb}{get\+\_\+ear\+\_\+num\+\_\+nodes} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of nodes. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_a54a947cc993806336c7090bce0a77ce8}{ear\+\_\+lib\+\_\+environment} ()
+\begin{DoxyCompactList}\small\item\em Reads and process all the environment variables involving the library. \end{DoxyCompactList}\item 
+void \hyperlink{environment_8c_a1cf96e393e7eb6b2c8c0fb65a485734e}{ear\+\_\+print\+\_\+lib\+\_\+environment} ()
+\begin{DoxyCompactList}\small\item\em Writes ear library variables in \$\+E\+A\+R\+\_\+\+T\+MP/environment.txt file. \end{DoxyCompactList}\item 
+int \hyperlink{environment_8c_ac5f3ba15610a22a7164d3e0411e4ae56}{check\+\_\+threads} ()
+\item 
+int \hyperlink{environment_8c_a42a5b53ac1a59236be677eaacb8bc9bb}{get\+\_\+num\+\_\+threads} ()
+\item 
+int \hyperlink{environment_8c_a4bd4f54c567e654d898d291f7f65069e}{get\+\_\+total\+\_\+resources} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of processes per node. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ \hyperlink{environment_8c_a0f500243e4b073914cf2a56f80da5cac}{conf\+\_\+ear\+\_\+tmp}
+\item 
+char $\ast$ \hyperlink{environment_8c_a4bf33a64c43a680b3ee77ac497c769fc}{conf\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname} =N\+U\+LL
+\item 
+char $\ast$ \hyperlink{environment_8c_aaf80bde0cbf6649754d7b68ae2495ac7}{conf\+\_\+ear\+\_\+gui\+\_\+pathname} =N\+U\+LL
+\item 
+char $\ast$ \hyperlink{environment_8c_aab788958d85a161f39df549ea7208ab7}{conf\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname} =N\+U\+LL
+\item 
+char $\ast$ \hyperlink{environment_8c_a0cdf42dbcaaf24d03183b62beb824bb3}{conf\+\_\+ear\+\_\+app\+\_\+name} =N\+U\+LL
+\item 
+int \hyperlink{environment_8c_ae0288e7fb0e5b1b9772fb8ef847923ae}{conf\+\_\+ear\+\_\+learning\+\_\+phase} =\hyperlink{environment_8h_abe411eff5ff4560a0eeea501fcf564f5}{D\+E\+F\+A\+U\+L\+T\+\_\+\+L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+P\+H\+A\+SE}
+\item 
+int \hyperlink{environment_8c_a41c9599673119d7a1b749c4f5d869f62}{conf\+\_\+ear\+\_\+power\+\_\+policy} =-\/1
+\item 
+double \hyperlink{environment_8c_a5fb2cb60431bd0fe21b919624b196f10}{conf\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th} =0.\+0
+\item 
+int \hyperlink{environment_8c_a7ec630dfccf4f7124afaabcccb2a0293}{conf\+\_\+ear\+\_\+reset\+\_\+freq} =\hyperlink{environment_8h_aafacf74627dddbd02748037ed59be123}{D\+E\+F\+A\+U\+L\+T\+\_\+\+R\+E\+S\+E\+T\+\_\+\+F\+R\+EQ}
+\item 
+unsigned long \hyperlink{environment_8c_a9336f0f67a1110bc35af0a63add6499c}{conf\+\_\+ear\+\_\+p\+\_\+state} =\hyperlink{environment_8h_aa2d175705f2470a3d023115aeec9000c}{D\+E\+F\+A\+U\+L\+T\+\_\+\+M\+A\+X\+\_\+\+P\+\_\+\+S\+T\+A\+TE}
+\item 
+unsigned long \hyperlink{environment_8c_a7ba83786842ea5cf2c798894485f9b9e}{conf\+\_\+ear\+\_\+def\+\_\+freq} =0
+\item 
+double \hyperlink{environment_8c_a833abf6537082ffe5439695fd9d1e48f}{conf\+\_\+ear\+\_\+performance\+\_\+accuracy} =\hyperlink{environment_8h_ab42df463ee7ac29cff76130fbcf24267}{D\+E\+F\+A\+U\+L\+T\+\_\+\+P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+A\+C\+U\+R\+A\+CY}
+\item 
+int \hyperlink{environment_8c_a2ac98f11e42b6ed658f62c7f5fae6745}{conf\+\_\+ear\+\_\+use\+\_\+turbo} =U\+S\+E\+\_\+\+T\+U\+R\+BO
+\item 
+int \hyperlink{environment_8c_a39dccc6bc826f06226ad13e036022286}{conf\+\_\+ear\+\_\+local\+\_\+id} =-\/1
+\item 
+int \hyperlink{environment_8c_a2ddafae0bedd0aa50504b45ab46cf884}{conf\+\_\+ear\+\_\+num\+\_\+nodes} =0
+\item 
+int \hyperlink{environment_8c_a0a78f0acc5520d2e98a4e71f1cf130d4}{conf\+\_\+ear\+\_\+total\+\_\+processes} =1
+\item 
+int \hyperlink{environment_8c_a19f3a10c122fe0e383f30fb0e8dc0882}{conf\+\_\+ear\+\_\+dynais\+\_\+levels} =\hyperlink{environment_8h_a362260bfaeb5f21ee7a35bc10a30254a}{D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+L\+E\+V\+E\+LS}
+\item 
+int \hyperlink{environment_8c_af47e171da2c627a816c06f064dc4df65}{conf\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size} =\hyperlink{environment_8h_a176503e7792decebbc67e90f0b3bad26}{D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+W\+I\+N\+D\+O\+W\+\_\+\+S\+I\+ZE}
+\item 
+char \hyperlink{environment_8c_a8a5d44af0d3bb06ad205a668ec3524ee}{my\+\_\+ear\+\_\+conf\+\_\+path} \mbox{[}\hyperlink{loop_8h_a6b0b8b14cfc75447be8feba3efe18da8}{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}\mbox{]}
+\item 
+\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{environment_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}
+\item 
+\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$ \hyperlink{environment_8c_a4c85a23a7110473765eee80874e1c11d}{my\+\_\+node\+\_\+conf}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{environment.\+c@{environment.\+c}!\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU@{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}}
+\index{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU@{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}{__USE_GNU}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}\hypertarget{environment_8c_adc4cc5c67b56f34138d786ef6331e3f4}{}\label{environment_8c_adc4cc5c67b56f34138d786ef6331e3f4}
+\index{environment.\+c@{environment.\+c}!U\+S\+E\+\_\+\+E\+A\+R\+\_\+\+C\+O\+NF@{U\+S\+E\+\_\+\+E\+A\+R\+\_\+\+C\+O\+NF}}
+\index{U\+S\+E\+\_\+\+E\+A\+R\+\_\+\+C\+O\+NF@{U\+S\+E\+\_\+\+E\+A\+R\+\_\+\+C\+O\+NF}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{U\+S\+E\+\_\+\+E\+A\+R\+\_\+\+C\+O\+NF}{USE_EAR_CONF}}]{\setlength{\rightskip}{0pt plus 5cm}\#define U\+S\+E\+\_\+\+E\+A\+R\+\_\+\+C\+O\+NF~1}\hypertarget{environment_8c_a6c8d1ac2235685c7f28c3dae77a77c01}{}\label{environment_8c_a6c8d1ac2235685c7f28c3dae77a77c01}
+
+
+\subsection{Function Documentation}
+\index{environment.\+c@{environment.\+c}!check\+\_\+threads@{check\+\_\+threads}}
+\index{check\+\_\+threads@{check\+\_\+threads}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{check\+\_\+threads()}{check_threads()}}]{\setlength{\rightskip}{0pt plus 5cm}int check\+\_\+threads (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_ac5f3ba15610a22a7164d3e0411e4ae56}{}\label{environment_8c_ac5f3ba15610a22a7164d3e0411e4ae56}
+\index{environment.\+c@{environment.\+c}!ear\+\_\+lib\+\_\+environment@{ear\+\_\+lib\+\_\+environment}}
+\index{ear\+\_\+lib\+\_\+environment@{ear\+\_\+lib\+\_\+environment}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+lib\+\_\+environment()}{ear_lib_environment()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+lib\+\_\+environment (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a54a947cc993806336c7090bce0a77ce8}{}\label{environment_8c_a54a947cc993806336c7090bce0a77ce8}
+
+
+Reads and process all the environment variables involving the library. 
+
+\index{environment.\+c@{environment.\+c}!ear\+\_\+print\+\_\+lib\+\_\+environment@{ear\+\_\+print\+\_\+lib\+\_\+environment}}
+\index{ear\+\_\+print\+\_\+lib\+\_\+environment@{ear\+\_\+print\+\_\+lib\+\_\+environment}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+print\+\_\+lib\+\_\+environment()}{ear_print_lib_environment()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+print\+\_\+lib\+\_\+environment (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a1cf96e393e7eb6b2c8c0fb65a485734e}{}\label{environment_8c_a1cf96e393e7eb6b2c8c0fb65a485734e}
+
+
+Writes ear library variables in \$\+E\+A\+R\+\_\+\+T\+MP/environment.txt file. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+app\+\_\+name@{get\+\_\+ear\+\_\+app\+\_\+name}}
+\index{get\+\_\+ear\+\_\+app\+\_\+name@{get\+\_\+ear\+\_\+app\+\_\+name}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+app\+\_\+name()}{get_ear_app_name()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ get\+\_\+ear\+\_\+app\+\_\+name (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_aa7f236b7a470c271fd48cb7565c409b9}{}\label{environment_8c_aa7f236b7a470c271fd48cb7565c409b9}
+
+
+Returns the app name previously read. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname@{get\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}}
+\index{get\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname@{get\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname()}{get_ear_coeff_db_pathname()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ get\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a90a6b1bd8fa3d9318bc236121ed1c2cf}{}\label{environment_8c_a90a6b1bd8fa3d9318bc236121ed1c2cf}
+
+
+Returns the coef db path previously read. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+dynais\+\_\+levels@{get\+\_\+ear\+\_\+dynais\+\_\+levels}}
+\index{get\+\_\+ear\+\_\+dynais\+\_\+levels@{get\+\_\+ear\+\_\+dynais\+\_\+levels}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+dynais\+\_\+levels()}{get_ear_dynais_levels()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+dynais\+\_\+levels (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a57c0d6073896d6fa80062e1c18a4eb1b}{}\label{environment_8c_a57c0d6073896d6fa80062e1c18a4eb1b}
+
+
+Returns the number of dynais levels set. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size@{get\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}}
+\index{get\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size@{get\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size()}{get_ear_dynais_window_size()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_ad439fd4776c1ae6dd7a2f84bc2375123}{}\label{environment_8c_ad439fd4776c1ae6dd7a2f84bc2375123}
+
+
+Returns the dynais window size. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+gui\+\_\+pathname@{get\+\_\+ear\+\_\+gui\+\_\+pathname}}
+\index{get\+\_\+ear\+\_\+gui\+\_\+pathname@{get\+\_\+ear\+\_\+gui\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+gui\+\_\+pathname()}{get_ear_gui_pathname()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ get\+\_\+ear\+\_\+gui\+\_\+pathname (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a42a90767b7a30f3b2ba21c77d3800bef}{}\label{environment_8c_a42a90767b7a30f3b2ba21c77d3800bef}
+
+
+Returns the gui path previously read. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+learning\+\_\+phase@{get\+\_\+ear\+\_\+learning\+\_\+phase}}
+\index{get\+\_\+ear\+\_\+learning\+\_\+phase@{get\+\_\+ear\+\_\+learning\+\_\+phase}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+learning\+\_\+phase()}{get_ear_learning_phase()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+learning\+\_\+phase (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a06032ae8632554cbb540f8088ecd3dc3}{}\label{environment_8c_a06032ae8632554cbb540f8088ecd3dc3}
+
+
+Returns 1 if the app is currently set in the learning phase, 0 otherwise. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+local\+\_\+id@{get\+\_\+ear\+\_\+local\+\_\+id}}
+\index{get\+\_\+ear\+\_\+local\+\_\+id@{get\+\_\+ear\+\_\+local\+\_\+id}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+local\+\_\+id()}{get_ear_local_id()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+local\+\_\+id (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a4ff343777dc04bdec5b15c33bf8c1bfe}{}\label{environment_8c_a4ff343777dc04bdec5b15c33bf8c1bfe}
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+num\+\_\+nodes@{get\+\_\+ear\+\_\+num\+\_\+nodes}}
+\index{get\+\_\+ear\+\_\+num\+\_\+nodes@{get\+\_\+ear\+\_\+num\+\_\+nodes}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+num\+\_\+nodes()}{get_ear_num_nodes()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+num\+\_\+nodes (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a74d85a4974bbc05acc190726c427f1eb}{}\label{environment_8c_a74d85a4974bbc05acc190726c427f1eb}
+
+
+Returns the number of nodes. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+p\+\_\+state@{get\+\_\+ear\+\_\+p\+\_\+state}}
+\index{get\+\_\+ear\+\_\+p\+\_\+state@{get\+\_\+ear\+\_\+p\+\_\+state}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+p\+\_\+state()}{get_ear_p_state()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long get\+\_\+ear\+\_\+p\+\_\+state (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a1ead2a308d98285578cc60a6f52b180d}{}\label{environment_8c_a1ead2a308d98285578cc60a6f52b180d}
+
+
+Returns the current p\+\_\+state. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+performance\+\_\+accuracy@{get\+\_\+ear\+\_\+performance\+\_\+accuracy}}
+\index{get\+\_\+ear\+\_\+performance\+\_\+accuracy@{get\+\_\+ear\+\_\+performance\+\_\+accuracy}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+performance\+\_\+accuracy()}{get_ear_performance_accuracy()}}]{\setlength{\rightskip}{0pt plus 5cm}double get\+\_\+ear\+\_\+performance\+\_\+accuracy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_ae434845194c198a56f018b6ad299f5d2}{}\label{environment_8c_ae434845194c198a56f018b6ad299f5d2}
+
+
+Returns the performance accuracy previously set. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+power\+\_\+policy@{get\+\_\+ear\+\_\+power\+\_\+policy}}
+\index{get\+\_\+ear\+\_\+power\+\_\+policy@{get\+\_\+ear\+\_\+power\+\_\+policy}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+power\+\_\+policy()}{get_ear_power_policy()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+power\+\_\+policy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a59a8f224f6d3292ca044c1d561e66902}{}\label{environment_8c_a59a8f224f6d3292ca044c1d561e66902}
+
+
+Returns the power policy currently set. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th@{get\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}}
+\index{get\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th@{get\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th()}{get_ear_power_policy_th()}}]{\setlength{\rightskip}{0pt plus 5cm}double get\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_aed024e1d74bf9dc89ae6331a9383841c}{}\label{environment_8c_aed024e1d74bf9dc89ae6331a9383841c}
+
+
+Returns the current threshold for the current power policy. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+reset\+\_\+freq@{get\+\_\+ear\+\_\+reset\+\_\+freq}}
+\index{get\+\_\+ear\+\_\+reset\+\_\+freq@{get\+\_\+ear\+\_\+reset\+\_\+freq}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+reset\+\_\+freq()}{get_ear_reset_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+reset\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_acc704a4013cf2603979e042d5d4674c8}{}\label{environment_8c_acc704a4013cf2603979e042d5d4674c8}
+
+
+Returns the reset frequency value previously read. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+total\+\_\+processes@{get\+\_\+ear\+\_\+total\+\_\+processes}}
+\index{get\+\_\+ear\+\_\+total\+\_\+processes@{get\+\_\+ear\+\_\+total\+\_\+processes}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+total\+\_\+processes()}{get_ear_total_processes()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+total\+\_\+processes (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a84d07a6dda9130298349a5c545596572}{}\label{environment_8c_a84d07a6dda9130298349a5c545596572}
+
+
+Returns the current number of processes. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname@{get\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname}}
+\index{get\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname@{get\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname()}{get_ear_user_db_pathname()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ get\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_aba752f08767ffd82ec5f741da5fd0c6d}{}\label{environment_8c_aba752f08767ffd82ec5f741da5fd0c6d}
+
+
+Returns the user db path previously read. 
+
+\index{environment.\+c@{environment.\+c}!get\+\_\+num\+\_\+threads@{get\+\_\+num\+\_\+threads}}
+\index{get\+\_\+num\+\_\+threads@{get\+\_\+num\+\_\+threads}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+num\+\_\+threads()}{get_num_threads()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+num\+\_\+threads (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a42a5b53ac1a59236be677eaacb8bc9bb}{}\label{environment_8c_a42a5b53ac1a59236be677eaacb8bc9bb}
+\index{environment.\+c@{environment.\+c}!get\+\_\+total\+\_\+resources@{get\+\_\+total\+\_\+resources}}
+\index{get\+\_\+total\+\_\+resources@{get\+\_\+total\+\_\+resources}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+total\+\_\+resources()}{get_total_resources()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+total\+\_\+resources (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a4bd4f54c567e654d898d291f7f65069e}{}\label{environment_8c_a4bd4f54c567e654d898d291f7f65069e}
+
+
+Returns the number of processes per node. 
+
+\index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+app\+\_\+name@{getenv\+\_\+ear\+\_\+app\+\_\+name}}
+\index{getenv\+\_\+ear\+\_\+app\+\_\+name@{getenv\+\_\+ear\+\_\+app\+\_\+name}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+app\+\_\+name()}{getenv_ear_app_name()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ getenv\+\_\+ear\+\_\+app\+\_\+name (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_aa20d8b69cc3d476ec476303b6584acb5}{}\label{environment_8c_aa20d8b69cc3d476ec476303b6584acb5}
+
+
+Tries to get the E\+A\+R\+\_\+\+A\+P\+P\+\_\+\+N\+A\+ME value and returns it. 
+
+\index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname@{getenv\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}}
+\index{getenv\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname@{getenv\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname()}{getenv_ear_coeff_db_pathname()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ getenv\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a37c48d3a5886a63a45e001b6af6bf5b4}{}\label{environment_8c_a37c48d3a5886a63a45e001b6af6bf5b4}
+
+
+Tries to get the C\+O\+E\+F\+F\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME value and returns it. 
+
+\index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+dynais\+\_\+levels@{getenv\+\_\+ear\+\_\+dynais\+\_\+levels}}
+\index{getenv\+\_\+ear\+\_\+dynais\+\_\+levels@{getenv\+\_\+ear\+\_\+dynais\+\_\+levels}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+dynais\+\_\+levels()}{getenv_ear_dynais_levels()}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+ear\+\_\+dynais\+\_\+levels (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a51b8ba22370b3cde11fff4b914a6f5cb}{}\label{environment_8c_a51b8ba22370b3cde11fff4b914a6f5cb}
+
+
+Reads the number of dynais levels in the D\+Y\+N\+A\+I\+S\+\_\+\+L\+E\+V\+E\+LS environment variable and returns it. 
+
+If it\textquotesingle{}s not set, defaults to 4 and returns. \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size@{getenv\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}}
+\index{getenv\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size@{getenv\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size()}{getenv_ear_dynais_window_size()}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_ab11fea7899604066b5e2572af7c99ddf}{}\label{environment_8c_ab11fea7899604066b5e2572af7c99ddf}
+
+
+Reads the number of dynais window size in the E\+A\+R\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+W\+I\+N\+D\+O\+W\+\_\+\+S\+I\+ZE environment variable and returns it. 
+
+If it\textquotesingle{}s not set, defaults to 300 and returns. \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+gui\+\_\+pathname@{getenv\+\_\+ear\+\_\+gui\+\_\+pathname}}
+\index{getenv\+\_\+ear\+\_\+gui\+\_\+pathname@{getenv\+\_\+ear\+\_\+gui\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+gui\+\_\+pathname()}{getenv_ear_gui_pathname()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ getenv\+\_\+ear\+\_\+gui\+\_\+pathname (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a453e1e34ecc3f946b24d83c99d8266c6}{}\label{environment_8c_a453e1e34ecc3f946b24d83c99d8266c6}
+
+
+Tries to get the E\+A\+R\+\_\+\+G\+U\+I\+\_\+\+P\+A\+T\+H\+N\+A\+ME value and returns it. 
+
+\index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+learning\+\_\+phase@{getenv\+\_\+ear\+\_\+learning\+\_\+phase}}
+\index{getenv\+\_\+ear\+\_\+learning\+\_\+phase@{getenv\+\_\+ear\+\_\+learning\+\_\+phase}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+learning\+\_\+phase()}{getenv_ear_learning_phase()}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+ear\+\_\+learning\+\_\+phase (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a57a0e8b7f4a3b90967788ad1959942cc}{}\label{environment_8c_a57a0e8b7f4a3b90967788ad1959942cc}
+
+
+Checks if the E\+A\+R\+\_\+\+L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+P\+H\+A\+SE environment variable is set. 
+
+Returns 1 if it\textquotesingle{}s set to 1, 0 in any other case. \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+local\+\_\+id@{getenv\+\_\+ear\+\_\+local\+\_\+id}}
+\index{getenv\+\_\+ear\+\_\+local\+\_\+id@{getenv\+\_\+ear\+\_\+local\+\_\+id}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+local\+\_\+id()}{getenv_ear_local_id()}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+ear\+\_\+local\+\_\+id (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a77576a6b4948438977ed874e2c1c06e9}{}\label{environment_8c_a77576a6b4948438977ed874e2c1c06e9}
+
+
+Returns -\/1. 
+
+That value is computed later based on the number of total processes and E\+A\+R\+\_\+\+N\+U\+M\+\_\+\+N\+O\+D\+ES \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+num\+\_\+nodes@{getenv\+\_\+ear\+\_\+num\+\_\+nodes}}
+\index{getenv\+\_\+ear\+\_\+num\+\_\+nodes@{getenv\+\_\+ear\+\_\+num\+\_\+nodes}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+num\+\_\+nodes()}{getenv_ear_num_nodes()}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+ear\+\_\+num\+\_\+nodes (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a826184af8e91e81bf6ea0cd358eddcd6}{}\label{environment_8c_a826184af8e91e81bf6ea0cd358eddcd6}
+
+
+Reads the number of nodes from the E\+A\+R\+\_\+\+N\+U\+M\+\_\+\+N\+O\+D\+ES environment variable and returns it. 
+
+If it\textquotesingle{}s not set, it tries to see if S\+L\+U\+R\+M\+\_\+\+S\+T\+E\+P\+\_\+\+N\+U\+M\+\_\+\+N\+O\+D\+ES is set and returns it. Otherwise returns 1. \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+p\+\_\+state@{getenv\+\_\+ear\+\_\+p\+\_\+state}}
+\index{getenv\+\_\+ear\+\_\+p\+\_\+state@{getenv\+\_\+ear\+\_\+p\+\_\+state}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+p\+\_\+state()}{getenv_ear_p_state()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long getenv\+\_\+ear\+\_\+p\+\_\+state (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_abf4cc6a3636a89b2aa4638fac621bdb1}{}\label{environment_8c_abf4cc6a3636a89b2aa4638fac621bdb1}
+
+
+Reads the E\+A\+R\+\_\+\+P\+\_\+\+S\+T\+A\+TE environment variable\textquotesingle{}s value and returns it if it\textquotesingle{}s set, otherwise returns the default value for the current power policy. 
+
+\hyperlink{environment_8h_a0bb61ea825b47f2acb107e474f7b3db2}{getenv\+\_\+ear\+\_\+power\+\_\+policy()} is automatically called when using this function if it had not been called before. \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+performance\+\_\+accuracy@{getenv\+\_\+ear\+\_\+performance\+\_\+accuracy}}
+\index{getenv\+\_\+ear\+\_\+performance\+\_\+accuracy@{getenv\+\_\+ear\+\_\+performance\+\_\+accuracy}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+performance\+\_\+accuracy()}{getenv_ear_performance_accuracy()}}]{\setlength{\rightskip}{0pt plus 5cm}double getenv\+\_\+ear\+\_\+performance\+\_\+accuracy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_afcc99e7d4dd477a1817eb4ec10486ed2}{}\label{environment_8c_afcc99e7d4dd477a1817eb4ec10486ed2}
+
+
+Reads the P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+A\+C\+C\+U\+R\+A\+CY environment variable\textquotesingle{}s value and returns it if it\textquotesingle{}s set, otherwise returns returns the default value. 
+
+\index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+power\+\_\+policy@{getenv\+\_\+ear\+\_\+power\+\_\+policy}}
+\index{getenv\+\_\+ear\+\_\+power\+\_\+policy@{getenv\+\_\+ear\+\_\+power\+\_\+policy}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+power\+\_\+policy()}{getenv_ear_power_policy()}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+ear\+\_\+power\+\_\+policy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a0bb61ea825b47f2acb107e474f7b3db2}{}\label{environment_8c_a0bb61ea825b47f2acb107e474f7b3db2}
+
+
+Checks what the E\+A\+R\+\_\+\+P\+O\+W\+E\+R\+\_\+\+P\+O\+L\+I\+CY environment variable is set to. 
+
+Returns 0 if it\textquotesingle{}s not set or it\textquotesingle{}s set to M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON or min\+\_\+energy\+\_\+to\+\_\+solution, 1 if it\textquotesingle{}s set to M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON or min\+\_\+time\+\_\+to\+\_\+solution and 2 if it\textquotesingle{}s set to M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY or monitoring\+\_\+only. \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th@{getenv\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}}
+\index{getenv\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th@{getenv\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th()}{getenv_ear_power_policy_th()}}]{\setlength{\rightskip}{0pt plus 5cm}double getenv\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a0ffdf250e63e02ac5c180959be84ec30}{}\label{environment_8c_a0ffdf250e63e02ac5c180959be84ec30}
+
+
+Reads the power threshold for the power policy currently set. 
+
+If none is specified, it sets itself to the default for that power policy. \hyperlink{environment_8h_a0bb61ea825b47f2acb107e474f7b3db2}{getenv\+\_\+ear\+\_\+power\+\_\+policy()} is automatically called when using this function if it had not been called before. \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+reset\+\_\+freq@{getenv\+\_\+ear\+\_\+reset\+\_\+freq}}
+\index{getenv\+\_\+ear\+\_\+reset\+\_\+freq@{getenv\+\_\+ear\+\_\+reset\+\_\+freq}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+reset\+\_\+freq()}{getenv_ear_reset_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+ear\+\_\+reset\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a5718f2d99c14a4da6aafe05d8cd47be8}{}\label{environment_8c_a5718f2d99c14a4da6aafe05d8cd47be8}
+
+
+Reads the E\+A\+R\+\_\+\+R\+E\+S\+E\+T\+\_\+\+F\+R\+EQ environment variable\textquotesingle{}s value. 
+
+Returns 1 if it\textquotesingle{}s set to 1, 0 otherwise \index{environment.\+c@{environment.\+c}!getenv\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname@{getenv\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname}}
+\index{getenv\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname@{getenv\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname()}{getenv_ear_user_db_pathname()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ getenv\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a2b40d77e397405a75f47fe6e51148de9}{}\label{environment_8c_a2b40d77e397405a75f47fe6e51148de9}
+
+
+Tries to get the E\+A\+R\+\_\+\+U\+S\+E\+R\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME value and returns it. 
+
+\index{environment.\+c@{environment.\+c}!set\+\_\+ear\+\_\+app\+\_\+name@{set\+\_\+ear\+\_\+app\+\_\+name}}
+\index{set\+\_\+ear\+\_\+app\+\_\+name@{set\+\_\+ear\+\_\+app\+\_\+name}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+app\+\_\+name(char $\ast$name)}{set_ear_app_name(char *name)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+app\+\_\+name (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_ace592d3b44e0751214a53f56f1ba2c4d}{}\label{environment_8c_ace592d3b44e0751214a53f56f1ba2c4d}
+
+
+Sets the configuration\textquotesingle{}s app name to the value recieved by parameter. 
+
+\index{environment.\+c@{environment.\+c}!set\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname@{set\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}}
+\index{set\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname@{set\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname(char $\ast$path)}{set_ear_coeff_db_pathname(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a93f1d720ebbc3d05d04424add8728ca3}{}\label{environment_8c_a93f1d720ebbc3d05d04424add8728ca3}
+\index{environment.\+c@{environment.\+c}!set\+\_\+ear\+\_\+dynais\+\_\+levels@{set\+\_\+ear\+\_\+dynais\+\_\+levels}}
+\index{set\+\_\+ear\+\_\+dynais\+\_\+levels@{set\+\_\+ear\+\_\+dynais\+\_\+levels}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+dynais\+\_\+levels(int levels)}{set_ear_dynais_levels(int levels)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+dynais\+\_\+levels (
+\begin{DoxyParamCaption}
+\item[{int}]{levels}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_aa921bd34dcd56ddd15eae8da5f0dff2d}{}\label{environment_8c_aa921bd34dcd56ddd15eae8da5f0dff2d}
+\index{environment.\+c@{environment.\+c}!set\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size@{set\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}}
+\index{set\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size@{set\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size(int size)}{set_ear_dynais_window_size(int size)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size (
+\begin{DoxyParamCaption}
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a502ecaf00dbb762acf8a3e834b64d9e6}{}\label{environment_8c_a502ecaf00dbb762acf8a3e834b64d9e6}
+\index{environment.\+c@{environment.\+c}!set\+\_\+ear\+\_\+p\+\_\+state@{set\+\_\+ear\+\_\+p\+\_\+state}}
+\index{set\+\_\+ear\+\_\+p\+\_\+state@{set\+\_\+ear\+\_\+p\+\_\+state}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+p\+\_\+state(ulong pstate)}{set_ear_p_state(ulong pstate)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+p\+\_\+state (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{pstate}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_acb1f14ba913e828cff1e793b95e2d6e5}{}\label{environment_8c_acb1f14ba913e828cff1e793b95e2d6e5}
+\index{environment.\+c@{environment.\+c}!set\+\_\+ear\+\_\+power\+\_\+policy@{set\+\_\+ear\+\_\+power\+\_\+policy}}
+\index{set\+\_\+ear\+\_\+power\+\_\+policy@{set\+\_\+ear\+\_\+power\+\_\+policy}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+power\+\_\+policy(int pid)}{set_ear_power_policy(int pid)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+power\+\_\+policy (
+\begin{DoxyParamCaption}
+\item[{int}]{pid}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_ad853dcc04af37cded410c4f1bbc4c7ae}{}\label{environment_8c_ad853dcc04af37cded410c4f1bbc4c7ae}
+\index{environment.\+c@{environment.\+c}!set\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th@{set\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}}
+\index{set\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th@{set\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th(double th)}{set_ear_power_policy_th(double th)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th (
+\begin{DoxyParamCaption}
+\item[{double}]{th}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_a1b6390dbc50cc4e0745288b24af11c50}{}\label{environment_8c_a1b6390dbc50cc4e0745288b24af11c50}
+\index{environment.\+c@{environment.\+c}!set\+\_\+ear\+\_\+total\+\_\+processes@{set\+\_\+ear\+\_\+total\+\_\+processes}}
+\index{set\+\_\+ear\+\_\+total\+\_\+processes@{set\+\_\+ear\+\_\+total\+\_\+processes}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+total\+\_\+processes(int procs)}{set_ear_total_processes(int procs)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+total\+\_\+processes (
+\begin{DoxyParamCaption}
+\item[{int}]{procs}
+\end{DoxyParamCaption}
+)}\hypertarget{environment_8c_afcec31e7c9604996f66d7a5b3ddc7a24}{}\label{environment_8c_afcec31e7c9604996f66d7a5b3ddc7a24}
+
+
+Sets the number of processes to the one recieved by parameter. 
+
+
+
+\subsection{Variable Documentation}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+app\+\_\+name@{conf\+\_\+ear\+\_\+app\+\_\+name}}
+\index{conf\+\_\+ear\+\_\+app\+\_\+name@{conf\+\_\+ear\+\_\+app\+\_\+name}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+app\+\_\+name}{conf_ear_app_name}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ conf\+\_\+ear\+\_\+app\+\_\+name =N\+U\+LL}\hypertarget{environment_8c_a0cdf42dbcaaf24d03183b62beb824bb3}{}\label{environment_8c_a0cdf42dbcaaf24d03183b62beb824bb3}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname@{conf\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}}
+\index{conf\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname@{conf\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname}{conf_ear_coeff_db_pathname}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ conf\+\_\+ear\+\_\+coeff\+\_\+db\+\_\+pathname =N\+U\+LL}\hypertarget{environment_8c_aab788958d85a161f39df549ea7208ab7}{}\label{environment_8c_aab788958d85a161f39df549ea7208ab7}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+def\+\_\+freq@{conf\+\_\+ear\+\_\+def\+\_\+freq}}
+\index{conf\+\_\+ear\+\_\+def\+\_\+freq@{conf\+\_\+ear\+\_\+def\+\_\+freq}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+def\+\_\+freq}{conf_ear_def_freq}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long conf\+\_\+ear\+\_\+def\+\_\+freq =0}\hypertarget{environment_8c_a7ba83786842ea5cf2c798894485f9b9e}{}\label{environment_8c_a7ba83786842ea5cf2c798894485f9b9e}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+dynais\+\_\+levels@{conf\+\_\+ear\+\_\+dynais\+\_\+levels}}
+\index{conf\+\_\+ear\+\_\+dynais\+\_\+levels@{conf\+\_\+ear\+\_\+dynais\+\_\+levels}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+dynais\+\_\+levels}{conf_ear_dynais_levels}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+dynais\+\_\+levels ={\bf D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+L\+E\+V\+E\+LS}}\hypertarget{environment_8c_a19f3a10c122fe0e383f30fb0e8dc0882}{}\label{environment_8c_a19f3a10c122fe0e383f30fb0e8dc0882}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size@{conf\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}}
+\index{conf\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size@{conf\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size}{conf_ear_dynais_window_size}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+dynais\+\_\+window\+\_\+size ={\bf D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+W\+I\+N\+D\+O\+W\+\_\+\+S\+I\+ZE}}\hypertarget{environment_8c_af47e171da2c627a816c06f064dc4df65}{}\label{environment_8c_af47e171da2c627a816c06f064dc4df65}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+gui\+\_\+pathname@{conf\+\_\+ear\+\_\+gui\+\_\+pathname}}
+\index{conf\+\_\+ear\+\_\+gui\+\_\+pathname@{conf\+\_\+ear\+\_\+gui\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+gui\+\_\+pathname}{conf_ear_gui_pathname}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ conf\+\_\+ear\+\_\+gui\+\_\+pathname =N\+U\+LL}\hypertarget{environment_8c_aaf80bde0cbf6649754d7b68ae2495ac7}{}\label{environment_8c_aaf80bde0cbf6649754d7b68ae2495ac7}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+learning\+\_\+phase@{conf\+\_\+ear\+\_\+learning\+\_\+phase}}
+\index{conf\+\_\+ear\+\_\+learning\+\_\+phase@{conf\+\_\+ear\+\_\+learning\+\_\+phase}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+learning\+\_\+phase}{conf_ear_learning_phase}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+learning\+\_\+phase ={\bf D\+E\+F\+A\+U\+L\+T\+\_\+\+L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+P\+H\+A\+SE}}\hypertarget{environment_8c_ae0288e7fb0e5b1b9772fb8ef847923ae}{}\label{environment_8c_ae0288e7fb0e5b1b9772fb8ef847923ae}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+local\+\_\+id@{conf\+\_\+ear\+\_\+local\+\_\+id}}
+\index{conf\+\_\+ear\+\_\+local\+\_\+id@{conf\+\_\+ear\+\_\+local\+\_\+id}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+local\+\_\+id}{conf_ear_local_id}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+local\+\_\+id =-\/1}\hypertarget{environment_8c_a39dccc6bc826f06226ad13e036022286}{}\label{environment_8c_a39dccc6bc826f06226ad13e036022286}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+num\+\_\+nodes@{conf\+\_\+ear\+\_\+num\+\_\+nodes}}
+\index{conf\+\_\+ear\+\_\+num\+\_\+nodes@{conf\+\_\+ear\+\_\+num\+\_\+nodes}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+num\+\_\+nodes}{conf_ear_num_nodes}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+num\+\_\+nodes =0}\hypertarget{environment_8c_a2ddafae0bedd0aa50504b45ab46cf884}{}\label{environment_8c_a2ddafae0bedd0aa50504b45ab46cf884}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+p\+\_\+state@{conf\+\_\+ear\+\_\+p\+\_\+state}}
+\index{conf\+\_\+ear\+\_\+p\+\_\+state@{conf\+\_\+ear\+\_\+p\+\_\+state}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+p\+\_\+state}{conf_ear_p_state}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long conf\+\_\+ear\+\_\+p\+\_\+state ={\bf D\+E\+F\+A\+U\+L\+T\+\_\+\+M\+A\+X\+\_\+\+P\+\_\+\+S\+T\+A\+TE}}\hypertarget{environment_8c_a9336f0f67a1110bc35af0a63add6499c}{}\label{environment_8c_a9336f0f67a1110bc35af0a63add6499c}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+performance\+\_\+accuracy@{conf\+\_\+ear\+\_\+performance\+\_\+accuracy}}
+\index{conf\+\_\+ear\+\_\+performance\+\_\+accuracy@{conf\+\_\+ear\+\_\+performance\+\_\+accuracy}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+performance\+\_\+accuracy}{conf_ear_performance_accuracy}}]{\setlength{\rightskip}{0pt plus 5cm}double conf\+\_\+ear\+\_\+performance\+\_\+accuracy ={\bf D\+E\+F\+A\+U\+L\+T\+\_\+\+P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+A\+C\+U\+R\+A\+CY}}\hypertarget{environment_8c_a833abf6537082ffe5439695fd9d1e48f}{}\label{environment_8c_a833abf6537082ffe5439695fd9d1e48f}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+power\+\_\+policy@{conf\+\_\+ear\+\_\+power\+\_\+policy}}
+\index{conf\+\_\+ear\+\_\+power\+\_\+policy@{conf\+\_\+ear\+\_\+power\+\_\+policy}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+power\+\_\+policy}{conf_ear_power_policy}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+power\+\_\+policy =-\/1}\hypertarget{environment_8c_a41c9599673119d7a1b749c4f5d869f62}{}\label{environment_8c_a41c9599673119d7a1b749c4f5d869f62}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th@{conf\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}}
+\index{conf\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th@{conf\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th}{conf_ear_power_policy_th}}]{\setlength{\rightskip}{0pt plus 5cm}double conf\+\_\+ear\+\_\+power\+\_\+policy\+\_\+th =0.\+0}\hypertarget{environment_8c_a5fb2cb60431bd0fe21b919624b196f10}{}\label{environment_8c_a5fb2cb60431bd0fe21b919624b196f10}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+reset\+\_\+freq@{conf\+\_\+ear\+\_\+reset\+\_\+freq}}
+\index{conf\+\_\+ear\+\_\+reset\+\_\+freq@{conf\+\_\+ear\+\_\+reset\+\_\+freq}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+reset\+\_\+freq}{conf_ear_reset_freq}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+reset\+\_\+freq ={\bf D\+E\+F\+A\+U\+L\+T\+\_\+\+R\+E\+S\+E\+T\+\_\+\+F\+R\+EQ}}\hypertarget{environment_8c_a7ec630dfccf4f7124afaabcccb2a0293}{}\label{environment_8c_a7ec630dfccf4f7124afaabcccb2a0293}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+tmp@{conf\+\_\+ear\+\_\+tmp}}
+\index{conf\+\_\+ear\+\_\+tmp@{conf\+\_\+ear\+\_\+tmp}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+tmp}{conf_ear_tmp}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ conf\+\_\+ear\+\_\+tmp}\hypertarget{environment_8c_a0f500243e4b073914cf2a56f80da5cac}{}\label{environment_8c_a0f500243e4b073914cf2a56f80da5cac}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+total\+\_\+processes@{conf\+\_\+ear\+\_\+total\+\_\+processes}}
+\index{conf\+\_\+ear\+\_\+total\+\_\+processes@{conf\+\_\+ear\+\_\+total\+\_\+processes}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+total\+\_\+processes}{conf_ear_total_processes}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+total\+\_\+processes =1}\hypertarget{environment_8c_a0a78f0acc5520d2e98a4e71f1cf130d4}{}\label{environment_8c_a0a78f0acc5520d2e98a4e71f1cf130d4}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+use\+\_\+turbo@{conf\+\_\+ear\+\_\+use\+\_\+turbo}}
+\index{conf\+\_\+ear\+\_\+use\+\_\+turbo@{conf\+\_\+ear\+\_\+use\+\_\+turbo}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+use\+\_\+turbo}{conf_ear_use_turbo}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+use\+\_\+turbo =U\+S\+E\+\_\+\+T\+U\+R\+BO}\hypertarget{environment_8c_a2ac98f11e42b6ed658f62c7f5fae6745}{}\label{environment_8c_a2ac98f11e42b6ed658f62c7f5fae6745}
+\index{environment.\+c@{environment.\+c}!conf\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname@{conf\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname}}
+\index{conf\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname@{conf\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname}{conf_ear_user_db_pathname}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ conf\+\_\+ear\+\_\+user\+\_\+db\+\_\+pathname =N\+U\+LL}\hypertarget{environment_8c_a4bf33a64c43a680b3ee77ac497c769fc}{}\label{environment_8c_a4bf33a64c43a680b3ee77ac497c769fc}
+\index{environment.\+c@{environment.\+c}!my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}}
+\index{my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+cluster\+\_\+conf}{my_cluster_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+cluster\+\_\+conf}\hypertarget{environment_8c_a6c6877da2aa55927ec276bfdedb32660}{}\label{environment_8c_a6c6877da2aa55927ec276bfdedb32660}
+\index{environment.\+c@{environment.\+c}!my\+\_\+ear\+\_\+conf\+\_\+path@{my\+\_\+ear\+\_\+conf\+\_\+path}}
+\index{my\+\_\+ear\+\_\+conf\+\_\+path@{my\+\_\+ear\+\_\+conf\+\_\+path}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+ear\+\_\+conf\+\_\+path}{my_ear_conf_path}}]{\setlength{\rightskip}{0pt plus 5cm}char my\+\_\+ear\+\_\+conf\+\_\+path\mbox{[}{\bf G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}\mbox{]}}\hypertarget{environment_8c_a8a5d44af0d3bb06ad205a668ec3524ee}{}\label{environment_8c_a8a5d44af0d3bb06ad205a668ec3524ee}
+\index{environment.\+c@{environment.\+c}!my\+\_\+node\+\_\+conf@{my\+\_\+node\+\_\+conf}}
+\index{my\+\_\+node\+\_\+conf@{my\+\_\+node\+\_\+conf}!environment.\+c@{environment.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+node\+\_\+conf}{my_node_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf my\+\_\+node\+\_\+conf\+\_\+t}$\ast$ {\bf my\+\_\+node\+\_\+conf}}\hypertarget{environment_8c_a4c85a23a7110473765eee80874e1c11d}{}\label{environment_8c_a4c85a23a7110473765eee80874e1c11d}

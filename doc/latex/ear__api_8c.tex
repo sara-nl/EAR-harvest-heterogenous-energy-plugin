@@ -1,0 +1,149 @@
+\hypertarget{ear__api_8c}{}\section{src/library/mpi\+\_\+intercept/ear\+\_\+api.c File Reference}
+\label{ear__api_8c}\index{src/library/mpi\+\_\+intercept/ear\+\_\+api.\+c@{src/library/mpi\+\_\+intercept/ear\+\_\+api.\+c}}
+{\ttfamily \#include $<$mpi.\+h$>$}\\*
+{\ttfamily \#include $<$time.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+{\ttfamily \#include $<$sys/time.\+h$>$}\\*
+{\ttfamily \#include $<$papi.\+h$>$}\\*
+{\ttfamily \#include $<$control/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/externs\+\_\+alloc.\+h$>$}\\*
+{\ttfamily \#include $<$library/dynais/dynais.\+h$>$}\\*
+{\ttfamily \#include $<$library/tracer/tracer.\+h$>$}\\*
+{\ttfamily \#include $<$library/states/states.\+h$>$}\\*
+{\ttfamily \#include $<$library/states/states\+\_\+periodic.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/models.\+h$>$}\\*
+{\ttfamily \#include $<$library/metrics/metrics.\+h$>$}\\*
+{\ttfamily \#include $<$library/mpi\+\_\+intercept/ear\+\_\+api.\+h$>$}\\*
+{\ttfamily \#include $<$library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+types.\+h$>$}\\*
+{\ttfamily \#include $<$library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+calls\+\_\+coded.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+api.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/shared\+\_\+configuration.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/environment.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/metrics.\+h$>$}\\*
+{\ttfamily \#include $<$common/file\+\_\+lock.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{ear__api_8c_a39912bfe2a55f30e269196f9141d845d}{B\+U\+F\+F\+S\+I\+ZE}~128
+\item 
+\#define \hyperlink{ear__api_8c_a4cd23b0a113ac719067bca53e5b21eac}{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET}~100
+\item 
+\#define \hyperlink{ear__api_8c_ace341d2bc7c7862814ff98a4b1a20fbb}{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES}~1
+\item 
+\#define \hyperlink{ear__api_8c_a2667d413a18699f8ec46f4106490eb70}{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV}~0
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{ear__api_8c_a36f9e26ee34483972e2358f0b3e663f0}{update\+\_\+configuration} ()
+\item 
+void \hyperlink{ear__api_8c_a43b952e1e6132ad34d498e74cbf53d11}{ear\+\_\+init} ()
+\begin{DoxyCompactList}\small\item\em Initializes all the elements of the library as well as connecting to the daemon. \end{DoxyCompactList}\item 
+void \hyperlink{ear__api_8c_a90cb9dec3b68f3c7a88f97ec85d7e88c}{ear\+\_\+finalize} ()
+\begin{DoxyCompactList}\small\item\em Finalizes the processes, closing and registering metrics and traces, as well as closing the connection to the daemon and releasing the memory from Dyn\+A\+IS. \end{DoxyCompactList}\item 
+void \hyperlink{ear__api_8c_a23c9fb57db72c83726bda9d82491ba18}{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+on} (\hyperlink{MPI__calls__coded_8h_a56e22c8cf5cfe164d5b6394c50a54ae7}{mpi\+\_\+call} call\+\_\+type, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} buf, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} dest)
+\item 
+void \hyperlink{ear__api_8c_a3c107211374362b8ba234e704f9cffbb}{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+off} (\hyperlink{MPI__calls__coded_8h_a56e22c8cf5cfe164d5b6394c50a54ae7}{mpi\+\_\+call} call\+\_\+type, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} buf, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} dest)
+\item 
+void \hyperlink{ear__api_8c_a701f15d7fda34b1f14ec6aac5d9716cf}{ear\+\_\+mpi\+\_\+call} (\hyperlink{MPI__calls__coded_8h_a56e22c8cf5cfe164d5b6394c50a54ae7}{mpi\+\_\+call} call\+\_\+type, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} buf, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} dest)
+\begin{DoxyCompactList}\small\item\em Given the information corresponding a M\+PI call, creates a Dyn\+A\+IS event and processes it as well as creating the trace. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ \hyperlink{ear__api_8c_adbd38436c25bc604b1a48464727d4179}{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!B\+U\+F\+F\+S\+I\+ZE@{B\+U\+F\+F\+S\+I\+ZE}}
+\index{B\+U\+F\+F\+S\+I\+ZE@{B\+U\+F\+F\+S\+I\+ZE}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{B\+U\+F\+F\+S\+I\+ZE}{BUFFSIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define B\+U\+F\+F\+S\+I\+ZE~128}\hypertarget{ear__api_8c_a39912bfe2a55f30e269196f9141d845d}{}\label{ear__api_8c_a39912bfe2a55f30e269196f9141d845d}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET@{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET}}
+\index{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET@{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET}{JOB_ID_OFFSET}}]{\setlength{\rightskip}{0pt plus 5cm}\#define J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET~100}\hypertarget{ear__api_8c_a4cd23b0a113ac719067bca53e5b21eac}{}\label{ear__api_8c_a4cd23b0a113ac719067bca53e5b21eac}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV@{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV}}
+\index{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV@{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV}{MEASURE_DYNAIS_OV}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV~0}\hypertarget{ear__api_8c_a2667d413a18699f8ec46f4106490eb70}{}\label{ear__api_8c_a2667d413a18699f8ec46f4106490eb70}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES@{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES}}
+\index{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES@{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES}{USE_LOCK_FILES}}]{\setlength{\rightskip}{0pt plus 5cm}\#define U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES~1}\hypertarget{ear__api_8c_ace341d2bc7c7862814ff98a4b1a20fbb}{}\label{ear__api_8c_ace341d2bc7c7862814ff98a4b1a20fbb}
+
+
+\subsection{Function Documentation}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!ear\+\_\+finalize@{ear\+\_\+finalize}}
+\index{ear\+\_\+finalize@{ear\+\_\+finalize}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+finalize()}{ear_finalize()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+finalize (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8c_a90cb9dec3b68f3c7a88f97ec85d7e88c}{}\label{ear__api_8c_a90cb9dec3b68f3c7a88f97ec85d7e88c}
+
+
+Finalizes the processes, closing and registering metrics and traces, as well as closing the connection to the daemon and releasing the memory from Dyn\+A\+IS. 
+
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!ear\+\_\+init@{ear\+\_\+init}}
+\index{ear\+\_\+init@{ear\+\_\+init}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+init()}{ear_init()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+init (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8c_a43b952e1e6132ad34d498e74cbf53d11}{}\label{ear__api_8c_a43b952e1e6132ad34d498e74cbf53d11}
+
+
+Initializes all the elements of the library as well as connecting to the daemon. 
+
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!ear\+\_\+mpi\+\_\+call@{ear\+\_\+mpi\+\_\+call}}
+\index{ear\+\_\+mpi\+\_\+call@{ear\+\_\+mpi\+\_\+call}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+mpi\+\_\+call(mpi\+\_\+call call\+\_\+type, p2i buf, p2i dest)}{ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+mpi\+\_\+call (
+\begin{DoxyParamCaption}
+\item[{{\bf mpi\+\_\+call}}]{call\+\_\+type, }
+\item[{{\bf p2i}}]{buf, }
+\item[{{\bf p2i}}]{dest}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8c_a701f15d7fda34b1f14ec6aac5d9716cf}{}\label{ear__api_8c_a701f15d7fda34b1f14ec6aac5d9716cf}
+
+
+Given the information corresponding a M\+PI call, creates a Dyn\+A\+IS event and processes it as well as creating the trace. 
+
+If the library is in a learning phase it does nothing. \index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+off@{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+off}}
+\index{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+off@{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+off}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+off(mpi\+\_\+call call\+\_\+type, p2i buf, p2i dest)}{ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+off (
+\begin{DoxyParamCaption}
+\item[{{\bf mpi\+\_\+call}}]{call\+\_\+type, }
+\item[{{\bf p2i}}]{buf, }
+\item[{{\bf p2i}}]{dest}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8c_a3c107211374362b8ba234e704f9cffbb}{}\label{ear__api_8c_a3c107211374362b8ba234e704f9cffbb}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+on@{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+on}}
+\index{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+on@{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+on}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+on(mpi\+\_\+call call\+\_\+type, p2i buf, p2i dest)}{ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+mpi\+\_\+call\+\_\+dynais\+\_\+on (
+\begin{DoxyParamCaption}
+\item[{{\bf mpi\+\_\+call}}]{call\+\_\+type, }
+\item[{{\bf p2i}}]{buf, }
+\item[{{\bf p2i}}]{dest}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8c_a23c9fb57db72c83726bda9d82491ba18}{}\label{ear__api_8c_a23c9fb57db72c83726bda9d82491ba18}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!update\+\_\+configuration@{update\+\_\+configuration}}
+\index{update\+\_\+configuration@{update\+\_\+configuration}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{update\+\_\+configuration()}{update_configuration()}}]{\setlength{\rightskip}{0pt plus 5cm}void update\+\_\+configuration (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8c_a36f9e26ee34483972e2358f0b3e663f0}{}\label{ear__api_8c_a36f9e26ee34483972e2358f0b3e663f0}
+
+
+\subsection{Variable Documentation}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+@{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+@{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}{__HOST__}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ \+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}\hypertarget{ear__api_8c_adbd38436c25bc604b1a48464727d4179}{}\label{ear__api_8c_adbd38436c25bc604b1a48464727d4179}

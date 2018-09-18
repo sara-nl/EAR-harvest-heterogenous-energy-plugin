@@ -1,0 +1,85 @@
+\hypertarget{configuration__check_8c}{}\section{src/tests/functionals/configuration\+\_\+check.c File Reference}
+\label{configuration__check_8c}\index{src/tests/functionals/configuration\+\_\+check.\+c@{src/tests/functionals/configuration\+\_\+check.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{configuration__check_8c_adf949bf593771c43071efc16d5063669}{check\+\_\+incomplete\+\_\+statements} (F\+I\+LE $\ast$conf\+\_\+file)
+\item 
+void \hyperlink{configuration__check_8c_a5b66ec689a080ca8b8f0afc4ab2220db}{check\+\_\+invalid\+\_\+ports} (F\+I\+LE $\ast$conf\+\_\+file)
+\item 
+void \hyperlink{configuration__check_8c_a158f14731a80d412aaa0eb2caa9f2524}{check\+\_\+mandatory\+\_\+statements} (F\+I\+LE $\ast$conf\+\_\+file)
+\item 
+void \hyperlink{configuration__check_8c_aaf7a93d52b10cbf4f720ec094c99aefe}{check\+\_\+policies} (F\+I\+LE $\ast$conf\+\_\+file)
+\item 
+void \hyperlink{configuration__check_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{configuration__check_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} =1
+\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\item 
+int \hyperlink{configuration__check_8c_ae478164ff8b3d039f55ae5d0202e8d7d}{total\+\_\+errors} = 0
+\item 
+int \hyperlink{configuration__check_8c_a8222ee9285b96f4db5b5576df9a626d0}{total\+\_\+warnings} = 0
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}!check\+\_\+incomplete\+\_\+statements@{check\+\_\+incomplete\+\_\+statements}}
+\index{check\+\_\+incomplete\+\_\+statements@{check\+\_\+incomplete\+\_\+statements}!configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}}
+\subsubsection[{\texorpdfstring{check\+\_\+incomplete\+\_\+statements(\+F\+I\+L\+E $\ast$conf\+\_\+file)}{check_incomplete_statements(FILE *conf_file)}}]{\setlength{\rightskip}{0pt plus 5cm}void check\+\_\+incomplete\+\_\+statements (
+\begin{DoxyParamCaption}
+\item[{F\+I\+LE $\ast$}]{conf\+\_\+file}
+\end{DoxyParamCaption}
+)}\hypertarget{configuration__check_8c_adf949bf593771c43071efc16d5063669}{}\label{configuration__check_8c_adf949bf593771c43071efc16d5063669}
+\index{configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}!check\+\_\+invalid\+\_\+ports@{check\+\_\+invalid\+\_\+ports}}
+\index{check\+\_\+invalid\+\_\+ports@{check\+\_\+invalid\+\_\+ports}!configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}}
+\subsubsection[{\texorpdfstring{check\+\_\+invalid\+\_\+ports(\+F\+I\+L\+E $\ast$conf\+\_\+file)}{check_invalid_ports(FILE *conf_file)}}]{\setlength{\rightskip}{0pt plus 5cm}void check\+\_\+invalid\+\_\+ports (
+\begin{DoxyParamCaption}
+\item[{F\+I\+LE $\ast$}]{conf\+\_\+file}
+\end{DoxyParamCaption}
+)}\hypertarget{configuration__check_8c_a5b66ec689a080ca8b8f0afc4ab2220db}{}\label{configuration__check_8c_a5b66ec689a080ca8b8f0afc4ab2220db}
+\index{configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}!check\+\_\+mandatory\+\_\+statements@{check\+\_\+mandatory\+\_\+statements}}
+\index{check\+\_\+mandatory\+\_\+statements@{check\+\_\+mandatory\+\_\+statements}!configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}}
+\subsubsection[{\texorpdfstring{check\+\_\+mandatory\+\_\+statements(\+F\+I\+L\+E $\ast$conf\+\_\+file)}{check_mandatory_statements(FILE *conf_file)}}]{\setlength{\rightskip}{0pt plus 5cm}void check\+\_\+mandatory\+\_\+statements (
+\begin{DoxyParamCaption}
+\item[{F\+I\+LE $\ast$}]{conf\+\_\+file}
+\end{DoxyParamCaption}
+)}\hypertarget{configuration__check_8c_a158f14731a80d412aaa0eb2caa9f2524}{}\label{configuration__check_8c_a158f14731a80d412aaa0eb2caa9f2524}
+\index{configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}!check\+\_\+policies@{check\+\_\+policies}}
+\index{check\+\_\+policies@{check\+\_\+policies}!configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}}
+\subsubsection[{\texorpdfstring{check\+\_\+policies(\+F\+I\+L\+E $\ast$conf\+\_\+file)}{check_policies(FILE *conf_file)}}]{\setlength{\rightskip}{0pt plus 5cm}void check\+\_\+policies (
+\begin{DoxyParamCaption}
+\item[{F\+I\+LE $\ast$}]{conf\+\_\+file}
+\end{DoxyParamCaption}
+)}\hypertarget{configuration__check_8c_aaf7a93d52b10cbf4f720ec094c99aefe}{}\label{configuration__check_8c_aaf7a93d52b10cbf4f720ec094c99aefe}
+\index{configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}!main@{main}}
+\index{main@{main}!configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{configuration__check_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{configuration__check_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+
+
+\subsection{Variable Documentation}
+\index{configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL =1}\hypertarget{configuration__check_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{configuration__check_8c_a43d7e58c317e811389b628dc49b52bd2}
+
+
+This program sets the node frequency . 
+
+It must be executed with privileges \index{configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}!total\+\_\+errors@{total\+\_\+errors}}
+\index{total\+\_\+errors@{total\+\_\+errors}!configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}}
+\subsubsection[{\texorpdfstring{total\+\_\+errors}{total_errors}}]{\setlength{\rightskip}{0pt plus 5cm}int total\+\_\+errors = 0}\hypertarget{configuration__check_8c_ae478164ff8b3d039f55ae5d0202e8d7d}{}\label{configuration__check_8c_ae478164ff8b3d039f55ae5d0202e8d7d}
+\index{configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}!total\+\_\+warnings@{total\+\_\+warnings}}
+\index{total\+\_\+warnings@{total\+\_\+warnings}!configuration\+\_\+check.\+c@{configuration\+\_\+check.\+c}}
+\subsubsection[{\texorpdfstring{total\+\_\+warnings}{total_warnings}}]{\setlength{\rightskip}{0pt plus 5cm}int total\+\_\+warnings = 0}\hypertarget{configuration__check_8c_a8222ee9285b96f4db5b5576df9a626d0}{}\label{configuration__check_8c_a8222ee9285b96f4db5b5576df9a626d0}

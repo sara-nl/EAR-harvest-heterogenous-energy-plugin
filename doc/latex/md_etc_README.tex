@@ -1,0 +1,41 @@
+All E\+AR package component behaviour is defined by a set of variables defined in the file /./conf/\+R\+E\+A\+D\+ME.md \char`\"{}ear.\+conf\char`\"{}. The components which allows parameters as an input will have priority against the configuration written in this file.
+
+\subsection*{Environment variables list (deprecated) }
+
+This is the old way to define the E\+AR behaviour. Its functionality is not guaranteed.
+
+{\bfseries E\+AR}~\newline
+ Enables or disables E\+AR by default.~\newline
+ {\bfseries E\+A\+R\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME}~\newline
+ Defines the path to database saved files. These files stores all nodes metrics as data history, and its used to compute all nodes coefficients. They are not plain text files.~\newline
+ {\bfseries E\+A\+R\+\_\+\+C\+O\+E\+F\+F\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME}~\newline
+ Defines the path to coefficients saved files. These files contains the coefficients of all nodes for all working frequencies.~\newline
+ {\bfseries E\+A\+R\+\_\+\+U\+S\+E\+R\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME}~\newline
+ Defines the path to summary saved files. These files contains summaries of all executed applications as data historic. Can be read because they are plain text files.~\newline
+ {\bfseries E\+A\+R\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+L\+E\+V\+E\+LS}~\newline
+ Number of levels of Dyn\+A\+IS algorithm (see https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/library/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}library page\char`\"{} for more information).~\newline
+ {\bfseries E\+A\+R\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+W\+I\+N\+D\+O\+W\+\_\+\+S\+I\+ZE}~\newline
+ Windows size of Dyn\+A\+IS algorithm (see https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/library/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}library page\char`\"{} for more information).~\newline
+ {\bfseries E\+A\+R\+\_\+\+L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+P\+H\+A\+SE}~\newline
+ Enables the learning phase.~\newline
+ {\bfseries E\+A\+R\+\_\+\+M\+I\+N\+\_\+\+P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+E\+F\+F\+I\+C\+I\+E\+N\+C\+Y\+\_\+\+G\+A\+IN}~\newline
+ Minimum performance efficiency gain for {\itshape M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON} policy in the form of percentage (e.\+g. 0.\+15 meaning 15\%). Could be overrided by {\ttfamily srun -\/-\/ear-\/policy-\/th} argument. It prevents switching the C\+PU to the next value in the range of available frequencies, if the performance increase indicator do not scale over this efficiency gain value, preventing the waste of energy.~\newline
+ {\bfseries E\+A\+R\+\_\+\+P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+P\+E\+N\+A\+L\+TY}~\newline
+ Maximum performance degradation for {\itshape M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON} policy in the form of percentage (e.\+g. 0.\+15 meaning 15\%). Could be overrided by {\ttfamily srun -\/-\/ear-\/policy-\/th} argument. It means that prevents scalating the C\+PU to the next value in the range of available frequencies, if the performance degradation indicator of that frequency is over the penalty.~\newline
+ {\bfseries E\+A\+R\+\_\+\+P\+O\+W\+E\+R\+\_\+\+P\+O\+L\+I\+CY}~\newline
+ Sets by default an E\+AR policy. Could be overrided by {\ttfamily srun} arguments. The types are {\itshape M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON}, which minimizes the energy consumed with a limit to the performance degradation ({\itshape E\+A\+R\+\_\+\+P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+P\+E\+N\+A\+L\+TY}), and {\itshape M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON}, which improves the execution time while guaranteeing a minimum performance efficiency that justifies more energy consumption ({\itshape E\+A\+R\+\_\+\+M\+I\+N\+\_\+\+P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+E\+F\+F\+I\+C\+I\+E\+N\+C\+Y\+\_\+\+G\+A\+IN}). The last policy is {\itshape M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY}, just to analyze your application and get metrics.~\newline
+ {\bfseries E\+A\+R\+\_\+\+P\+E\+R\+F\+O\+R\+M\+A\+N\+C\+E\+\_\+\+A\+C\+C\+U\+R\+A\+CY}~\newline
+ Minimum time interval between two power measurements for a representative value.~\newline
+ {\bfseries E\+A\+R\+\_\+\+R\+E\+S\+E\+T\+\_\+\+F\+R\+EQ}~\newline
+ Set frequency to nominal at the begining of a new loop or not.~\newline
+ {\bfseries E\+A\+R\+\_\+\+T\+U\+R\+BO}~\newline
+ Enables turbo frequencies\+: those over the nominal frequency.~\newline
+ {\bfseries E\+A\+R\+\_\+\+A\+P\+P\+\_\+\+N\+A\+ME}~\newline
+ Default application name, used to save summarized metrics in DB.~\newline
+ {\bfseries E\+A\+R\+\_\+\+T\+MP}~\newline
+ Path were temporary files will be placed.~\newline
+ {\bfseries E\+A\+R\+\_\+\+G\+U\+I\+\_\+\+P\+A\+TH}~\newline
+ Path where the traces and graphic interface streaming files will be placed (see https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/library/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}library page\char`\"{} for more information about the traces or G\+UI).~\newline
+ {\bfseries E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+SE}~\newline
+ Defines the debug level. Higher the level, more messages.~\newline
+ 

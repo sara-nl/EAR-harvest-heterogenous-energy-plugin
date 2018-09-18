@@ -1,0 +1,412 @@
+\hypertarget{eard__api_8c}{}\section{src/daemon/eard\+\_\+api.c File Reference}
+\label{eard__api_8c}\index{src/daemon/eard\+\_\+api.\+c@{src/daemon/eard\+\_\+api.\+c}}
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$stdint.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$signal.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+api.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{eard__api_8c_afd63d23830ad86d01b6fff2e6c615f7e}{M\+A\+X\+\_\+\+T\+R\+I\+ES}~1
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{eard__api_8c_a9e3fa621137810891de74238ce96e896}{signal\+\_\+handler} (int s)
+\item 
+void \hyperlink{eard__api_8c_ab1120eb38b017fade776529073044fc8}{signal\+\_\+catcher} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_a65211cbf82a8e06274738b8ee5429e6b}{create\+\_\+sec\+\_\+tag} ()
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{eard__api_8c_a34d87932fba550b18199fb9448222a9a}{warning} (int return\+\_\+value, int expected, char $\ast$msg)
+\item 
+int \hyperlink{eard__api_8c_ac6bd08170b58eb856d2dd23c6253af32}{eards\+\_\+connected} ()
+\item 
+int \hyperlink{eard__api_8c_adb11cca52cb80b6ab1784bf9ef8f1a19}{eards\+\_\+connect} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$my\+\_\+app)
+\begin{DoxyCompactList}\small\item\em Tries to connect with the daemon. \end{DoxyCompactList}\item 
+void \hyperlink{eard__api_8c_a442a7166405a7b2814cdd6fc05e6320a}{eards\+\_\+disconnect} ()
+\begin{DoxyCompactList}\small\item\em Closes the connection with the daemon. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_ab40537390fc0b0d4f78273b629ee0df9}{eards\+\_\+write\+\_\+app\+\_\+signature} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$app\+\_\+signature)
+\begin{DoxyCompactList}\small\item\em Sends a request to the deamon to write the whole application signature. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_a6762762fe7157f718df7b12eda85ddd3}{eards\+\_\+write\+\_\+event} (\hyperlink{log_8h_a17129a55b5f8d7f3d58fab213ad96cac}{ear\+\_\+event\+\_\+t} $\ast$event)
+\begin{DoxyCompactList}\small\item\em Reports a new E\+AR event. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_ac9691bd8267f71f10be68db8c9dd591d}{eards\+\_\+write\+\_\+loop\+\_\+signature} (\hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$\hyperlink{externs__alloc_8h_a648075e4983326e9fdd58fca7908396c}{loop\+\_\+signature})
+\begin{DoxyCompactList}\small\item\em Sends the loop\+\_\+signature to eard to be reported in the DB. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_ab66d69357e91622d0550914ceb1c5342}{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+frequency} ()
+\begin{DoxyCompactList}\small\item\em Requests the frequency data size. \end{DoxyCompactList}\item 
+void \hyperlink{eard__api_8c_a9a164e9fabb748d745bc2f4d5e9b08c1}{eards\+\_\+begin\+\_\+compute\+\_\+turbo\+\_\+freq} ()
+\begin{DoxyCompactList}\small\item\em Sends a request to read the C\+PU frequency. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_a946869e71941f86a42ed1fd50301d1fd}{eards\+\_\+end\+\_\+compute\+\_\+turbo\+\_\+freq} ()
+\begin{DoxyCompactList}\small\item\em Requests to stop reading the C\+PU frequency. \end{DoxyCompactList}\item 
+void \hyperlink{eard__api_8c_aa58846d14df5aa830d5c1a8e7c548628}{eards\+\_\+begin\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq} ()
+\begin{DoxyCompactList}\small\item\em Sends a request to read the global C\+PU frequency. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_a05d09580544d8826c19d5d54ab24795b}{eards\+\_\+end\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq} ()
+\begin{DoxyCompactList}\small\item\em Requests to stop reading the C\+PU global frequency. \end{DoxyCompactList}\item 
+void \hyperlink{eard__api_8c_a00faddd04968871e9b6ff75f336efa12}{eards\+\_\+set\+\_\+turbo} ()
+\begin{DoxyCompactList}\small\item\em Tries to set the frequency to the turbo value. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_aa6c8ab8071aebf5c8a8fcfdc0a4b74cc}{eards\+\_\+change\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} newfreq)
+\begin{DoxyCompactList}\small\item\em Given a frequency value, sends a request to change the frequency to that value. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_a1b3d7d4764a207ebeca29f2ee6080963}{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+uncore} ()
+\begin{DoxyCompactList}\small\item\em Requests the uncore data size. \end{DoxyCompactList}\item 
+int \hyperlink{eard__api_8c_a978664062209ff4a93b5b5ee5a6cd61a}{eards\+\_\+reset\+\_\+uncore} ()
+\begin{DoxyCompactList}\small\item\em Sends a request to reset the uncores. \end{DoxyCompactList}\item 
+int \hyperlink{eard__api_8c_a9f359eb516205271a144dfa1f3b1a1d2}{eards\+\_\+start\+\_\+uncore} ()
+\begin{DoxyCompactList}\small\item\em Sends the request to start the uncores. \end{DoxyCompactList}\item 
+int \hyperlink{eard__api_8c_a358a997ca14529c77f9685cf553e5b64}{eards\+\_\+read\+\_\+uncore} (unsigned long long $\ast$\hyperlink{energy__cpu_8c_ab805d4eab86acb3d624dd5b16f94db88}{values})
+\begin{DoxyCompactList}\small\item\em Sends a request to read the uncores. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_a269504cf35b744a03be6ab106093889a}{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+rapl} ()
+\begin{DoxyCompactList}\small\item\em Requests the rapl data size. \end{DoxyCompactList}\item 
+int \hyperlink{eard__api_8c_aee4989577cf2ef0715e52cdcd1b73f32}{eards\+\_\+reset\+\_\+rapl} ()
+\begin{DoxyCompactList}\small\item\em Sends the request to reset the R\+A\+PL counters. \end{DoxyCompactList}\item 
+int \hyperlink{eard__api_8c_a80c8953676c3913b05837aed9bffbd8a}{eards\+\_\+start\+\_\+rapl} ()
+\begin{DoxyCompactList}\small\item\em Sends the request to start the R\+A\+PL counters. \end{DoxyCompactList}\item 
+int \hyperlink{eard__api_8c_a027d0abc9b3d61aa8cc7d249f8790ded}{eards\+\_\+read\+\_\+rapl} (unsigned long long $\ast$\hyperlink{energy__cpu_8c_ab805d4eab86acb3d624dd5b16f94db88}{values})
+\begin{DoxyCompactList}\small\item\em Sends a request to read the R\+A\+PL counters. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_a8109ec1633112ed849b31a98c92a8b18}{eards\+\_\+node\+\_\+energy\+\_\+data\+\_\+size} ()
+\begin{DoxyCompactList}\small\item\em Requests the I\+P\+MI data size. \end{DoxyCompactList}\item 
+int \hyperlink{eard__api_8c_a6b839be9079b567328906f03d24f0a3c}{eards\+\_\+node\+\_\+dc\+\_\+energy} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$\hyperlink{structenergy}{energy})
+\begin{DoxyCompactList}\small\item\em Requests the DC energy to the node. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eard__api_8c_a8e3cf6b478d255a3b238d8e95ed5df4c}{eards\+\_\+node\+\_\+energy\+\_\+frequency} ()
+\begin{DoxyCompactList}\small\item\em Returns the frequency at which the node energy frequency is refreshed. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char \hyperlink{eard__api_8c_aa0170ac04a3ed8a990cf216344f9e853}{ear\+\_\+commreq} \mbox{[}1024\mbox{]}
+\item 
+char \hyperlink{eard__api_8c_adb9b6ab1a117846760c012a1bd8499ff}{ear\+\_\+commack} \mbox{[}1024\mbox{]}
+\item 
+char \hyperlink{eard__api_8c_ab9bb8dc7ac8170748a2184f1ff9b7870}{ear\+\_\+ping} \mbox{[}1024\mbox{]}
+\item 
+int \hyperlink{eard__api_8c_a0f88c8b737c371da25a04e35638cb82b}{ear\+\_\+ping\+\_\+fd}
+\item 
+char $\ast$ \hyperlink{eard__api_8c_a33d69693c481e7033a0815c9d3e62614}{ear\+\_\+tmp}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!M\+A\+X\+\_\+\+T\+R\+I\+ES@{M\+A\+X\+\_\+\+T\+R\+I\+ES}}
+\index{M\+A\+X\+\_\+\+T\+R\+I\+ES@{M\+A\+X\+\_\+\+T\+R\+I\+ES}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{M\+A\+X\+\_\+\+T\+R\+I\+ES}{MAX_TRIES}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+\_\+\+T\+R\+I\+ES~1}\hypertarget{eard__api_8c_afd63d23830ad86d01b6fff2e6c615f7e}{}\label{eard__api_8c_afd63d23830ad86d01b6fff2e6c615f7e}
+
+
+\subsection{Function Documentation}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!create\+\_\+sec\+\_\+tag@{create\+\_\+sec\+\_\+tag}}
+\index{create\+\_\+sec\+\_\+tag@{create\+\_\+sec\+\_\+tag}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{create\+\_\+sec\+\_\+tag()}{create_sec_tag()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} create\+\_\+sec\+\_\+tag (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a65211cbf82a8e06274738b8ee5429e6b}{}\label{eard__api_8c_a65211cbf82a8e06274738b8ee5429e6b}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+begin\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq@{eards\+\_\+begin\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq}}
+\index{eards\+\_\+begin\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq@{eards\+\_\+begin\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+begin\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq()}{eards_begin_app_compute_turbo_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}void eards\+\_\+begin\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_aa58846d14df5aa830d5c1a8e7c548628}{}\label{eard__api_8c_aa58846d14df5aa830d5c1a8e7c548628}
+
+
+Sends a request to read the global C\+PU frequency. 
+
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+begin\+\_\+compute\+\_\+turbo\+\_\+freq@{eards\+\_\+begin\+\_\+compute\+\_\+turbo\+\_\+freq}}
+\index{eards\+\_\+begin\+\_\+compute\+\_\+turbo\+\_\+freq@{eards\+\_\+begin\+\_\+compute\+\_\+turbo\+\_\+freq}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+begin\+\_\+compute\+\_\+turbo\+\_\+freq()}{eards_begin_compute_turbo_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}void eards\+\_\+begin\+\_\+compute\+\_\+turbo\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a9a164e9fabb748d745bc2f4d5e9b08c1}{}\label{eard__api_8c_a9a164e9fabb748d745bc2f4d5e9b08c1}
+
+
+Sends a request to read the C\+PU frequency. 
+
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+change\+\_\+freq@{eards\+\_\+change\+\_\+freq}}
+\index{eards\+\_\+change\+\_\+freq@{eards\+\_\+change\+\_\+freq}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+change\+\_\+freq(ulong newfreq)}{eards_change_freq(ulong newfreq)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+change\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{newfreq}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_aa6c8ab8071aebf5c8a8fcfdc0a4b74cc}{}\label{eard__api_8c_aa6c8ab8071aebf5c8a8fcfdc0a4b74cc}
+
+
+Given a frequency value, sends a request to change the frequency to that value. 
+
+Returns -\/1 if there\textquotesingle{}s an error, 0 if the change\+\_\+freq service has not been provided, and the final frequency value otherwise. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+connect@{eards\+\_\+connect}}
+\index{eards\+\_\+connect@{eards\+\_\+connect}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+connect(application\+\_\+t $\ast$my\+\_\+app)}{eards_connect(application_t *my_app)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+connect (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$}]{my\+\_\+app}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_adb11cca52cb80b6ab1784bf9ef8f1a19}{}\label{eard__api_8c_adb11cca52cb80b6ab1784bf9ef8f1a19}
+
+
+Tries to connect with the daemon. 
+
+Returns 0 on success and -\/1 otherwise. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+connected@{eards\+\_\+connected}}
+\index{eards\+\_\+connected@{eards\+\_\+connected}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+connected()}{eards_connected()}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+connected (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_ac6bd08170b58eb856d2dd23c6253af32}{}\label{eard__api_8c_ac6bd08170b58eb856d2dd23c6253af32}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+disconnect@{eards\+\_\+disconnect}}
+\index{eards\+\_\+disconnect@{eards\+\_\+disconnect}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+disconnect()}{eards_disconnect()}}]{\setlength{\rightskip}{0pt plus 5cm}void eards\+\_\+disconnect (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a442a7166405a7b2814cdd6fc05e6320a}{}\label{eard__api_8c_a442a7166405a7b2814cdd6fc05e6320a}
+
+
+Closes the connection with the daemon. 
+
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+end\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq@{eards\+\_\+end\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq}}
+\index{eards\+\_\+end\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq@{eards\+\_\+end\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+end\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq()}{eards_end_app_compute_turbo_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+end\+\_\+app\+\_\+compute\+\_\+turbo\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a05d09580544d8826c19d5d54ab24795b}{}\label{eard__api_8c_a05d09580544d8826c19d5d54ab24795b}
+
+
+Requests to stop reading the C\+PU global frequency. 
+
+Returns the average frequency between the begin call and the end call on success, -\/1 otherwise. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+end\+\_\+compute\+\_\+turbo\+\_\+freq@{eards\+\_\+end\+\_\+compute\+\_\+turbo\+\_\+freq}}
+\index{eards\+\_\+end\+\_\+compute\+\_\+turbo\+\_\+freq@{eards\+\_\+end\+\_\+compute\+\_\+turbo\+\_\+freq}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+end\+\_\+compute\+\_\+turbo\+\_\+freq()}{eards_end_compute_turbo_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+end\+\_\+compute\+\_\+turbo\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a946869e71941f86a42ed1fd50301d1fd}{}\label{eard__api_8c_a946869e71941f86a42ed1fd50301d1fd}
+
+
+Requests to stop reading the C\+PU frequency. 
+
+Returns the average frequency between the begin call and the end call on success, -\/1 otherwise. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+get\+\_\+data\+\_\+size\+\_\+frequency@{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+frequency}}
+\index{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+frequency@{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+frequency}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+frequency()}{eards_get_data_size_frequency()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+get\+\_\+data\+\_\+size\+\_\+frequency (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_ab66d69357e91622d0550914ceb1c5342}{}\label{eard__api_8c_ab66d69357e91622d0550914ceb1c5342}
+
+
+Requests the frequency data size. 
+
+Returns -\/1 if there\textquotesingle{}s an error, and the actual value otherwise. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+get\+\_\+data\+\_\+size\+\_\+rapl@{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+rapl}}
+\index{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+rapl@{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+rapl}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+rapl()}{eards_get_data_size_rapl()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+get\+\_\+data\+\_\+size\+\_\+rapl (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a269504cf35b744a03be6ab106093889a}{}\label{eard__api_8c_a269504cf35b744a03be6ab106093889a}
+
+
+Requests the rapl data size. 
+
+Returns -\/1 if there\textquotesingle{}s an error, and the actual value otherwise. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+get\+\_\+data\+\_\+size\+\_\+uncore@{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+uncore}}
+\index{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+uncore@{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+uncore}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+get\+\_\+data\+\_\+size\+\_\+uncore()}{eards_get_data_size_uncore()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+get\+\_\+data\+\_\+size\+\_\+uncore (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a1b3d7d4764a207ebeca29f2ee6080963}{}\label{eard__api_8c_a1b3d7d4764a207ebeca29f2ee6080963}
+
+
+Requests the uncore data size. 
+
+Returns -\/1 if there\textquotesingle{}s an error, and the actual value otherwise. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+node\+\_\+dc\+\_\+energy@{eards\+\_\+node\+\_\+dc\+\_\+energy}}
+\index{eards\+\_\+node\+\_\+dc\+\_\+energy@{eards\+\_\+node\+\_\+dc\+\_\+energy}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+node\+\_\+dc\+\_\+energy(ulong $\ast$energy)}{eards_node_dc_energy(ulong *energy)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+node\+\_\+dc\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{unsigned long $\ast$}]{energy}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a6b839be9079b567328906f03d24f0a3c}{}\label{eard__api_8c_a6b839be9079b567328906f03d24f0a3c}
+
+
+Requests the DC energy to the node. 
+
+Returns 0 on success, -\/1 if there\textquotesingle{}s an error. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+node\+\_\+energy\+\_\+data\+\_\+size@{eards\+\_\+node\+\_\+energy\+\_\+data\+\_\+size}}
+\index{eards\+\_\+node\+\_\+energy\+\_\+data\+\_\+size@{eards\+\_\+node\+\_\+energy\+\_\+data\+\_\+size}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+node\+\_\+energy\+\_\+data\+\_\+size()}{eards_node_energy_data_size()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+node\+\_\+energy\+\_\+data\+\_\+size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a8109ec1633112ed849b31a98c92a8b18}{}\label{eard__api_8c_a8109ec1633112ed849b31a98c92a8b18}
+
+
+Requests the I\+P\+MI data size. 
+
+Returns -\/1 if there\textquotesingle{}s an error, and the actual value otherwise. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+node\+\_\+energy\+\_\+frequency@{eards\+\_\+node\+\_\+energy\+\_\+frequency}}
+\index{eards\+\_\+node\+\_\+energy\+\_\+frequency@{eards\+\_\+node\+\_\+energy\+\_\+frequency}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+node\+\_\+energy\+\_\+frequency()}{eards_node_energy_frequency()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+node\+\_\+energy\+\_\+frequency (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a8e3cf6b478d255a3b238d8e95ed5df4c}{}\label{eard__api_8c_a8e3cf6b478d255a3b238d8e95ed5df4c}
+
+
+Returns the frequency at which the node energy frequency is refreshed. 
+
+Requests the dc energy node frequency. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+read\+\_\+rapl@{eards\+\_\+read\+\_\+rapl}}
+\index{eards\+\_\+read\+\_\+rapl@{eards\+\_\+read\+\_\+rapl}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+read\+\_\+rapl(unsigned long long $\ast$values)}{eards_read_rapl(unsigned long long *values)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+read\+\_\+rapl (
+\begin{DoxyParamCaption}
+\item[{unsigned long long $\ast$}]{values}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a027d0abc9b3d61aa8cc7d249f8790ded}{}\label{eard__api_8c_a027d0abc9b3d61aa8cc7d249f8790ded}
+
+
+Sends a request to read the R\+A\+PL counters. 
+
+Returns -\/1 if there\textquotesingle{}s an error, and on success returns 0 and fills the array given by parameter with the counters\textquotesingle{} values. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+read\+\_\+uncore@{eards\+\_\+read\+\_\+uncore}}
+\index{eards\+\_\+read\+\_\+uncore@{eards\+\_\+read\+\_\+uncore}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+read\+\_\+uncore(unsigned long long $\ast$values)}{eards_read_uncore(unsigned long long *values)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+read\+\_\+uncore (
+\begin{DoxyParamCaption}
+\item[{unsigned long long $\ast$}]{values}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a358a997ca14529c77f9685cf553e5b64}{}\label{eard__api_8c_a358a997ca14529c77f9685cf553e5b64}
+
+
+Sends a request to read the uncores. 
+
+Returns -\/1 if there\textquotesingle{}s an error, on success stores the uncores values\textquotesingle{} into $\ast$values and returns 0. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+reset\+\_\+rapl@{eards\+\_\+reset\+\_\+rapl}}
+\index{eards\+\_\+reset\+\_\+rapl@{eards\+\_\+reset\+\_\+rapl}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+reset\+\_\+rapl()}{eards_reset_rapl()}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+reset\+\_\+rapl (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_aee4989577cf2ef0715e52cdcd1b73f32}{}\label{eard__api_8c_aee4989577cf2ef0715e52cdcd1b73f32}
+
+
+Sends the request to reset the R\+A\+PL counters. 
+
+Returns 0 on success or if the application is not connected, -\/1 if there\textquotesingle{}s an error. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+reset\+\_\+uncore@{eards\+\_\+reset\+\_\+uncore}}
+\index{eards\+\_\+reset\+\_\+uncore@{eards\+\_\+reset\+\_\+uncore}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+reset\+\_\+uncore()}{eards_reset_uncore()}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+reset\+\_\+uncore (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a978664062209ff4a93b5b5ee5a6cd61a}{}\label{eard__api_8c_a978664062209ff4a93b5b5ee5a6cd61a}
+
+
+Sends a request to reset the uncores. 
+
+Returns 0 on success, -\/1 on error \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+set\+\_\+turbo@{eards\+\_\+set\+\_\+turbo}}
+\index{eards\+\_\+set\+\_\+turbo@{eards\+\_\+set\+\_\+turbo}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+set\+\_\+turbo()}{eards_set_turbo()}}]{\setlength{\rightskip}{0pt plus 5cm}void eards\+\_\+set\+\_\+turbo (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a00faddd04968871e9b6ff75f336efa12}{}\label{eard__api_8c_a00faddd04968871e9b6ff75f336efa12}
+
+
+Tries to set the frequency to the turbo value. 
+
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+start\+\_\+rapl@{eards\+\_\+start\+\_\+rapl}}
+\index{eards\+\_\+start\+\_\+rapl@{eards\+\_\+start\+\_\+rapl}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+start\+\_\+rapl()}{eards_start_rapl()}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+start\+\_\+rapl (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a80c8953676c3913b05837aed9bffbd8a}{}\label{eard__api_8c_a80c8953676c3913b05837aed9bffbd8a}
+
+
+Sends the request to start the R\+A\+PL counters. 
+
+Returns 0 on success or if the application is not connected, -\/1 if there\textquotesingle{}s an error. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+start\+\_\+uncore@{eards\+\_\+start\+\_\+uncore}}
+\index{eards\+\_\+start\+\_\+uncore@{eards\+\_\+start\+\_\+uncore}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+start\+\_\+uncore()}{eards_start_uncore()}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+start\+\_\+uncore (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a9f359eb516205271a144dfa1f3b1a1d2}{}\label{eard__api_8c_a9f359eb516205271a144dfa1f3b1a1d2}
+
+
+Sends the request to start the uncores. 
+
+Returns 0 on success, -\/1 on error \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+write\+\_\+app\+\_\+signature@{eards\+\_\+write\+\_\+app\+\_\+signature}}
+\index{eards\+\_\+write\+\_\+app\+\_\+signature@{eards\+\_\+write\+\_\+app\+\_\+signature}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+write\+\_\+app\+\_\+signature(application\+\_\+t $\ast$app\+\_\+signature)}{eards_write_app_signature(application_t *app_signature)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+write\+\_\+app\+\_\+signature (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$}]{app\+\_\+signature}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_ab40537390fc0b0d4f78273b629ee0df9}{}\label{eard__api_8c_ab40537390fc0b0d4f78273b629ee0df9}
+
+
+Sends a request to the deamon to write the whole application signature. 
+
+Returns 0 on success, -\/1 on error. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+write\+\_\+event@{eards\+\_\+write\+\_\+event}}
+\index{eards\+\_\+write\+\_\+event@{eards\+\_\+write\+\_\+event}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+write\+\_\+event(ear\+\_\+event\+\_\+t $\ast$event)}{eards_write_event(ear_event_t *event)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+write\+\_\+event (
+\begin{DoxyParamCaption}
+\item[{{\bf ear\+\_\+event\+\_\+t} $\ast$}]{event}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a6762762fe7157f718df7b12eda85ddd3}{}\label{eard__api_8c_a6762762fe7157f718df7b12eda85ddd3}
+
+
+Reports a new E\+AR event. 
+
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!eards\+\_\+write\+\_\+loop\+\_\+signature@{eards\+\_\+write\+\_\+loop\+\_\+signature}}
+\index{eards\+\_\+write\+\_\+loop\+\_\+signature@{eards\+\_\+write\+\_\+loop\+\_\+signature}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eards\+\_\+write\+\_\+loop\+\_\+signature(loop\+\_\+t $\ast$loop\+\_\+signature)}{eards_write_loop_signature(loop_t *loop_signature)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} eards\+\_\+write\+\_\+loop\+\_\+signature (
+\begin{DoxyParamCaption}
+\item[{{\bf loop\+\_\+t} $\ast$}]{loop\+\_\+signature}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_ac9691bd8267f71f10be68db8c9dd591d}{}\label{eard__api_8c_ac9691bd8267f71f10be68db8c9dd591d}
+
+
+Sends the loop\+\_\+signature to eard to be reported in the DB. 
+
+Sends a request to the deamon to write one loop signature into the DB. \index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!signal\+\_\+catcher@{signal\+\_\+catcher}}
+\index{signal\+\_\+catcher@{signal\+\_\+catcher}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{signal\+\_\+catcher()}{signal_catcher()}}]{\setlength{\rightskip}{0pt plus 5cm}void signal\+\_\+catcher (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_ab1120eb38b017fade776529073044fc8}{}\label{eard__api_8c_ab1120eb38b017fade776529073044fc8}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!signal\+\_\+handler@{signal\+\_\+handler}}
+\index{signal\+\_\+handler@{signal\+\_\+handler}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{signal\+\_\+handler(int s)}{signal_handler(int s)}}]{\setlength{\rightskip}{0pt plus 5cm}void signal\+\_\+handler (
+\begin{DoxyParamCaption}
+\item[{int}]{s}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a9e3fa621137810891de74238ce96e896}{}\label{eard__api_8c_a9e3fa621137810891de74238ce96e896}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!warning@{warning}}
+\index{warning@{warning}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{warning(int return\+\_\+value, int expected, char $\ast$msg)}{warning(int return_value, int expected, char *msg)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} warning (
+\begin{DoxyParamCaption}
+\item[{int}]{return\+\_\+value, }
+\item[{int}]{expected, }
+\item[{char $\ast$}]{msg}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__api_8c_a34d87932fba550b18199fb9448222a9a}{}\label{eard__api_8c_a34d87932fba550b18199fb9448222a9a}
+
+
+\subsection{Variable Documentation}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!ear\+\_\+commack@{ear\+\_\+commack}}
+\index{ear\+\_\+commack@{ear\+\_\+commack}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+commack}{ear_commack}}]{\setlength{\rightskip}{0pt plus 5cm}char ear\+\_\+commack\mbox{[}1024\mbox{]}}\hypertarget{eard__api_8c_adb9b6ab1a117846760c012a1bd8499ff}{}\label{eard__api_8c_adb9b6ab1a117846760c012a1bd8499ff}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!ear\+\_\+commreq@{ear\+\_\+commreq}}
+\index{ear\+\_\+commreq@{ear\+\_\+commreq}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+commreq}{ear_commreq}}]{\setlength{\rightskip}{0pt plus 5cm}char ear\+\_\+commreq\mbox{[}1024\mbox{]}}\hypertarget{eard__api_8c_aa0170ac04a3ed8a990cf216344f9e853}{}\label{eard__api_8c_aa0170ac04a3ed8a990cf216344f9e853}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!ear\+\_\+ping@{ear\+\_\+ping}}
+\index{ear\+\_\+ping@{ear\+\_\+ping}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+ping}{ear_ping}}]{\setlength{\rightskip}{0pt plus 5cm}char ear\+\_\+ping\mbox{[}1024\mbox{]}}\hypertarget{eard__api_8c_ab9bb8dc7ac8170748a2184f1ff9b7870}{}\label{eard__api_8c_ab9bb8dc7ac8170748a2184f1ff9b7870}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!ear\+\_\+ping\+\_\+fd@{ear\+\_\+ping\+\_\+fd}}
+\index{ear\+\_\+ping\+\_\+fd@{ear\+\_\+ping\+\_\+fd}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+ping\+\_\+fd}{ear_ping_fd}}]{\setlength{\rightskip}{0pt plus 5cm}int ear\+\_\+ping\+\_\+fd}\hypertarget{eard__api_8c_a0f88c8b737c371da25a04e35638cb82b}{}\label{eard__api_8c_a0f88c8b737c371da25a04e35638cb82b}
+\index{eard\+\_\+api.\+c@{eard\+\_\+api.\+c}!ear\+\_\+tmp@{ear\+\_\+tmp}}
+\index{ear\+\_\+tmp@{ear\+\_\+tmp}!eard\+\_\+api.\+c@{eard\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+tmp}{ear_tmp}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ ear\+\_\+tmp}\hypertarget{eard__api_8c_a33d69693c481e7033a0815c9d3e62614}{}\label{eard__api_8c_a33d69693c481e7033a0815c9d3e62614}

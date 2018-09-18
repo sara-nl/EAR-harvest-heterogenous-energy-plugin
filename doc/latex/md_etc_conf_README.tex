@@ -1,0 +1,76 @@
+ear.\+conf is a text file describing E\+AR options cluster description. It must be readable at all compute nodes and at nodes where commands are executed. Lines starting with \# are comments. Some of the arguments are optional. A test for ear.\+conf file can be found at src/test/functionals/ear\+\_\+conf
+
+\section*{Parameters}
+
+\section*{Services configuration}
+
+1-\/\+Mariadb C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+ON
+
+{\bfseries Maria\+D\+B\+Ip}=172.\+30.\+2.\+101 {\bfseries Maria\+D\+B\+User}=ear\+\_\+daemon {\bfseries Maria\+D\+B\+Passw}= {\bfseries Maria\+D\+B\+Port}=0 {\bfseries Maria\+D\+B\+Host}=hostname {\bfseries Maria\+D\+B\+Database}=E\+A\+R\+\_\+\+DB
+
+2-\/\+E\+AR Global Manager
+
+{\bfseries Global\+Manager\+Verbose}=1 {\bfseries Global\+Manager\+Period\+T1}=90, Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month) {\bfseries Global\+Manager\+Period\+T2}=259200 {\bfseries Global\+Manager\+Units=K}=-\/$\vert$\+K$\vert$M , Units applied to energy limit , default KJ {\bfseries Global\+Manager\+Energy\+Limit}=550000 {\bfseries Global\+Manager\+Use\+Aggregated}=1 , use (or not) aggregated metrics to compute total energy {\bfseries Global\+Manager\+Host}=name {\bfseries Global\+Manager\+Port}=50000 , port were E\+A\+R\+GM will be executed {\bfseries Global\+Manager\+Mode}=0, Two modes are supported 0=manual 1= means automatic {\bfseries Global\+Manager\+Mail}=nomail, independetly on the mode, a mail can be sent reporting the warning level (and the action taken in automatic mode). nomail means no mail is sent {\bfseries Global\+Manager\+Warnings\+Perc}=85,90,95 , Thee values must be provided corresponding with D\+E\+F\+C\+O\+N\+\_\+\+L4,D\+E\+F\+C\+O\+N\+\_\+\+L3, and D\+E\+F\+C\+O\+N\+\_\+\+L2 (higer values means P\+A\+N\+IC) {\bfseries Global\+Manager\+Grace\+Periods}=3 ,number of \char`\"{}grace\char`\"{} T1 periods before doing a new re-\/evaluation
+
+3-\/\+E\+A\+RD
+
+{\bfseries Node\+Daemon\+Verbose}=1, different verbose levels are supported (0..4) {\bfseries Node\+Daemon\+Powermon\+Freq}=60, in seconds {\bfseries Node\+Daemon\+Max\+Pstate}=1 , 1 means nominal frequency (no turbo) {\bfseries Node\+Daemon\+Turbo}=0 , 0 means no turbo frequency {\bfseries Node\+Daemon\+Port}=5000 {\bfseries Node\+Use\+DB}=1 , Send data to My\+S\+QL DB {\bfseries Node\+Use\+E\+A\+R\+D\+BD}=1, Send datat to My\+S\+QL using E\+A\+R\+D\+BD (1) or directly to the mysql server (0) {\bfseries Node\+Force\+Frequencies}=1 , 1 means E\+AR is totally controlling frequencies (targeting production systems), 0 means E\+AR will not change the frequencies when users are not using E\+AR library (targeted to benchmarking systems)
+
+4-\/\+D\+A\+T\+A\+B\+A\+SE M\+A\+N\+A\+G\+ER
+
+{\bfseries D\+B\+Daemon\+Aggregation\+Time}=300 , in seconds {\bfseries D\+B\+Daemon\+Port\+T\+CP}=4711 , This port is used for main E\+A\+R\+D\+BD {\bfseries D\+B\+Daemon\+Port\+Sec\+T\+CP}=4712, This port is used for secondary (mirror) E\+A\+R\+D\+BD {\bfseries D\+B\+Daemon\+Sync\+Port}=4713a, This port is used to synchronize main and mirror {\bfseries D\+B\+Daemon\+Memory\+Size}=120, Max memory size used by E\+A\+R\+DB. Memory size expressed in MB
+
+\section*{Library configuration}
+
+{\bfseries Coefficients\+Dir=$\ast$$\ast$ (E\+TC)/ear/coeffs , path where coefficients are installed $\ast$$\ast$\+Dyn\+A\+I\+S\+Levels}=4, number of levels used by Dyn\+A\+IS algorithm {\bfseries Dyn\+A\+I\+S\+Window\+Size}=500, Windows size used by Dyn\+A\+IS, the higher the size the higer the overhead {\bfseries Dynais\+Timeout}=30 ,Maximum time (in seconds) E\+AR will wait until a signature is computed. After Dynais\+Timeout seconds, if no signature is computed, E\+AR will go to periodic mode {\bfseries Library\+Period}=30, When E\+AR goes to periodic mode, it will compute the Application signature every \char`\"{}\+Library\+Period\char`\"{} seconds {\bfseries Check\+E\+A\+R\+Mode\+Every}=1000, E\+AR will check every N mpi calls whether it must go to periodic mode or not
+
+\section*{Paths}
+
+{\bfseries Tmp\+Dir}=(E\+A\+R\+\_\+\+T\+MP), this path is used for communitation files, shared memory etc. It must be P\+R\+I\+V\+A\+TE per compute node and with read/write permissions {\bfseries Etc\+Dir}=(E\+TC), etc path where coefficients and configuration are stored. It must be readable in all compute nodes (it can be replicated). {\bfseries Data\+Base\+Path\+Name}=(E\+TC)/ear/dbs/dbs., when no DB is installed, metrics are generated in text files.
+
+\section*{Energy policies configuration}
+
+{\bfseries Default\+Power\+Policy}=M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON , default policy {\bfseries Supported\+Policies}=M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY,M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON , list of allowed policies for normal users (it is a subset of M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY,M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON,M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON) {\bfseries Default\+Pstates}=1,4,4, specified in the following order\+: M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON,M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON,M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY {\bfseries Min\+Efficiency\+Gain}=0.\+7,threshold used for M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON policy {\bfseries Max\+Performance\+Penalty}=0.\+1, threshold used for M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON policy {\bfseries Min\+Time\+Performance\+Accuracy}=10000000, min time between two energy readings for performance accuracy
+
+\section*{Security configuration}
+
+Authorized users, groups, and slurm accounts are allowed to change policies, thresholds, frequencies etc they are supposed to be admins . A list of users, linux groups, and/or S\+L\+U\+RM accounts can be provided.
+
+{\bfseries Authorized\+Users}=user1,user2 {\bfseries Authorized\+Accounts}=acc1,acc2,acc3 {\bfseries Authorized\+Groups}=xx,yy
+
+List of energy tags and users/groups/\+S\+L\+U\+RM accounts authorized to use each one. These energy tags implies pre-\/defined configurations for applications (E\+AR library is not loaded) {\bfseries Energy\+Tag}=memory-\/intensive {\bfseries pstate}=4 {\bfseries users}=user1,user2 {\bfseries groups}=group1,group2 {\bfseries accounts}=acc1,acc2
+
+\section*{Special nodes}
+
+Describes nodes with some special characteristic such as different default pstates, default coefficients file, and/ot policy thresholds
+
+{\bfseries Node\+Name}=nodename\+\_\+list {\bfseries C\+P\+Us}=24 {\bfseries Default\+Pstates}=2,5,5 {\bfseries Def\+Coefficients\+S\+File}=filename {\bfseries Max\+Performance\+Penalty}=def\+\_\+th (between 0 and 1) {\bfseries Min\+Efficiency\+Gain}=def\+\_\+th (between 0 and 1)
+
+\section*{Island description}
+
+Nodes are grouped in islands, this section is mandatory since it is used for cluster description more than one line per island must be supported to specify different dbip ports. One E\+A\+R\+D\+BD cannot be mirror from more than one E\+A\+R\+D\+BD
+
+{\bfseries Island}=0 {\bfseries Nodes}=nodename\+\_\+list {\bfseries D\+B\+IP}=E\+A\+R\+D\+B\+\_\+hostname {\bfseries D\+B\+S\+E\+C\+IP}=E\+A\+R\+D\+B\+\_\+mirror\+\_\+hostname
+
+
+\begin{DoxyItemize}
+\item nodename\+\_\+list accept the following formats\+:
+\begin{DoxyItemize}
+\item Nodes=node1,node2,node3
+\item Nodes=node\mbox{[}1-\/3\mbox{]}
+\item Nodes=node\mbox{[}1,2,3\mbox{]}
+\end{DoxyItemize}
+\item Any combination of the two latter options will work, but if nodes have to be specified individually (the first format) as of now they have to be specified in their own line. As an example\+:
+\begin{DoxyItemize}
+\item Valid formats\+:
+\begin{DoxyItemize}
+\item Island=1 Nodes=node1,node2,node3
+\item Island=1 Nodes=node\mbox{[}1-\/3\mbox{]},node\mbox{[}4,5\mbox{]}
+\end{DoxyItemize}
+\item Invalid formats\+:
+\begin{DoxyItemize}
+\item Island=1 Nodes=node\mbox{[}1,2\mbox{]},node3
+\item Island=1 Nodes=node\mbox{[}1-\/3\mbox{]},node4 
+\end{DoxyItemize}
+\end{DoxyItemize}
+\end{DoxyItemize}

@@ -1,0 +1,36 @@
+The E\+AR package includes two type of tests. The {\bfseries check tests}, prepared to be executed after the {\ttfamily make} by typing {\ttfamily make check}, with and without privileges, so probably you will have to check it with {\ttfamily sudo}. And also https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/tests/functionals/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}functional tests\char`\"{}, which tests library functionalities against your software and hardware platform.
+
+When running a {\bfseries check test}, 3 types of message are written in the output. 1) {\bfseries Error}\+: the hardware, software or libraries are incompatible with the library. 2) {\bfseries Warning}\+: it\textquotesingle{}s possible that some componentes have to be loaded prior the execution (the library would try to do it). 3) {\bfseries Ok}\+: your system is full compatible with the library.
+
+\subsection*{Make check tests list }
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*2{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Name }&{\bf Checking  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Name }&{\bf Checking  }\\\cline{1-2}
+\endhead
+cpu\+\_\+examinable &If the C\+PU examinable by the library. \\\cline{1-2}
+cpu\+\_\+aperf &If the C\+PU A\+P\+E\+RF counter is available. \\\cline{1-2}
+cpu\+\_\+uncores &If there are C\+PU uncore counters available. \\\cline{1-2}
+cpu\+\_\+uncores\+\_\+all &If there are all C\+PU uncore counters available. \\\cline{1-2}
+papi\+\_\+version &If the P\+A\+PI version is greater or equal than the reference. \\\cline{1-2}
+papi\+\_\+init &If P\+A\+PI initializes correctly. \\\cline{1-2}
+papi\+\_\+comp\+\_\+available &If P\+A\+PI perf counters events are available. \\\cline{1-2}
+papi\+\_\+comp\+\_\+enabled &If P\+A\+PI perf counters events are enabled. \\\cline{1-2}
+papi\+\_\+comp\+\_\+available &If P\+A\+PI perf uncore counters events are available. \\\cline{1-2}
+papi\+\_\+comp\+\_\+enabled &If P\+A\+PI perf uncore counters events are enabled. \\\cline{1-2}
+papi\+\_\+comp\+\_\+available &If P\+A\+PI libmsr events are available. \\\cline{1-2}
+papi\+\_\+comp\+\_\+enabled &If P\+A\+PI libmsr events are enabled. \\\cline{1-2}
+papi\+\_\+comp\+\_\+available &If P\+A\+PI rapl events are available. \\\cline{1-2}
+papi\+\_\+comp\+\_\+enabled &If P\+A\+PI rapl events are enabled. \\\cline{1-2}
+gsl\+\_\+version &If the G\+SL version is greater or equal than the reference. \\\cline{1-2}
+slurm\+\_\+version &If the S\+L\+U\+RM version is greater or equal than the reference. \\\cline{1-2}
+free\+\_\+ipmi\+\_\+version &If the Free I\+P\+MI version is greater or equal than the reference. \\\cline{1-2}
+module\+\_\+ipmi\+\_\+devintf &If the {\ttfamily ipmi\+\_\+devintf} (I\+P\+MI) driver is running. \\\cline{1-2}
+module\+\_\+acpi\+\_\+cpufreq &If the {\ttfamily acpi-\/cpufreq} (C\+P\+U\+Freq) driver is running. \\\cline{1-2}
+\end{longtabu}

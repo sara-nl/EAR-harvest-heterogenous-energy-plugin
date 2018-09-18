@@ -1,0 +1,74 @@
+\hypertarget{min__energy_8h}{}\section{src/library/models/min\+\_\+energy.h File Reference}
+\label{min__energy_8h}\index{src/library/models/min\+\_\+energy.\+h@{src/library/models/min\+\_\+energy.\+h}}
+
+
+This file implements the policy A\+PI for the minimize\+\_\+energy\+\_\+to\+\_\+solution policy.  
+
+
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{min__energy_8h_a69bd7f0adc825ac63c5af829d01e2a57}{min\+\_\+energy\+\_\+init} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} num\+\_\+pstates)
+\item 
+void \hyperlink{min__energy_8h_aae608090ed3fca8024c06a116977bf45}{min\+\_\+energy\+\_\+new\+\_\+loop} ()
+\item 
+void \hyperlink{min__energy_8h_af1e143590f00b5b1a71418311662d987}{min\+\_\+energy\+\_\+end\+\_\+loop} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__energy_8h_ad9821eb012b360d9de2a6da6a7893f80}{min\+\_\+energy\+\_\+policy} (\hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$sig)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__energy_8h_a6767c3bc77a2c9800046ed2e2e960ea7}{min\+\_\+energy\+\_\+policy\+\_\+ok} (\hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$proj, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$curr\+\_\+sig, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$last\+\_\+sig)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__energy_8h_a26223a28f6ef0c33525fa99853562fd8}{min\+\_\+energy\+\_\+default\+\_\+conf} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} f)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This file implements the policy A\+PI for the minimize\+\_\+energy\+\_\+to\+\_\+solution policy. 
+
+
+
+\subsection{Function Documentation}
+\index{min\+\_\+energy.\+h@{min\+\_\+energy.\+h}!min\+\_\+energy\+\_\+default\+\_\+conf@{min\+\_\+energy\+\_\+default\+\_\+conf}}
+\index{min\+\_\+energy\+\_\+default\+\_\+conf@{min\+\_\+energy\+\_\+default\+\_\+conf}!min\+\_\+energy.\+h@{min\+\_\+energy.\+h}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+default\+\_\+conf(ulong f)}{min_energy_default_conf(ulong f)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+energy\+\_\+default\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{f}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8h_a26223a28f6ef0c33525fa99853562fd8}{}\label{min__energy_8h_a26223a28f6ef0c33525fa99853562fd8}
+\index{min\+\_\+energy.\+h@{min\+\_\+energy.\+h}!min\+\_\+energy\+\_\+end\+\_\+loop@{min\+\_\+energy\+\_\+end\+\_\+loop}}
+\index{min\+\_\+energy\+\_\+end\+\_\+loop@{min\+\_\+energy\+\_\+end\+\_\+loop}!min\+\_\+energy.\+h@{min\+\_\+energy.\+h}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+end\+\_\+loop()}{min_energy_end_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+energy\+\_\+end\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8h_af1e143590f00b5b1a71418311662d987}{}\label{min__energy_8h_af1e143590f00b5b1a71418311662d987}
+\index{min\+\_\+energy.\+h@{min\+\_\+energy.\+h}!min\+\_\+energy\+\_\+init@{min\+\_\+energy\+\_\+init}}
+\index{min\+\_\+energy\+\_\+init@{min\+\_\+energy\+\_\+init}!min\+\_\+energy.\+h@{min\+\_\+energy.\+h}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+init(uint num\+\_\+pstates)}{min_energy_init(uint num_pstates)}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+energy\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{num\+\_\+pstates}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8h_a69bd7f0adc825ac63c5af829d01e2a57}{}\label{min__energy_8h_a69bd7f0adc825ac63c5af829d01e2a57}
+\index{min\+\_\+energy.\+h@{min\+\_\+energy.\+h}!min\+\_\+energy\+\_\+new\+\_\+loop@{min\+\_\+energy\+\_\+new\+\_\+loop}}
+\index{min\+\_\+energy\+\_\+new\+\_\+loop@{min\+\_\+energy\+\_\+new\+\_\+loop}!min\+\_\+energy.\+h@{min\+\_\+energy.\+h}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+new\+\_\+loop()}{min_energy_new_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+energy\+\_\+new\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8h_aae608090ed3fca8024c06a116977bf45}{}\label{min__energy_8h_aae608090ed3fca8024c06a116977bf45}
+\index{min\+\_\+energy.\+h@{min\+\_\+energy.\+h}!min\+\_\+energy\+\_\+policy@{min\+\_\+energy\+\_\+policy}}
+\index{min\+\_\+energy\+\_\+policy@{min\+\_\+energy\+\_\+policy}!min\+\_\+energy.\+h@{min\+\_\+energy.\+h}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+policy(signature\+\_\+t $\ast$sig)}{min_energy_policy(signature_t *sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+energy\+\_\+policy (
+\begin{DoxyParamCaption}
+\item[{{\bf signature\+\_\+t} $\ast$}]{sig}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8h_ad9821eb012b360d9de2a6da6a7893f80}{}\label{min__energy_8h_ad9821eb012b360d9de2a6da6a7893f80}
+\index{min\+\_\+energy.\+h@{min\+\_\+energy.\+h}!min\+\_\+energy\+\_\+policy\+\_\+ok@{min\+\_\+energy\+\_\+policy\+\_\+ok}}
+\index{min\+\_\+energy\+\_\+policy\+\_\+ok@{min\+\_\+energy\+\_\+policy\+\_\+ok}!min\+\_\+energy.\+h@{min\+\_\+energy.\+h}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+policy\+\_\+ok(projection\+\_\+t $\ast$proj, signature\+\_\+t $\ast$curr\+\_\+sig, signature\+\_\+t $\ast$last\+\_\+sig)}{min_energy_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+energy\+\_\+policy\+\_\+ok (
+\begin{DoxyParamCaption}
+\item[{{\bf projection\+\_\+t} $\ast$}]{proj, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{curr\+\_\+sig, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{last\+\_\+sig}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8h_a6767c3bc77a2c9800046ed2e2e960ea7}{}\label{min__energy_8h_a6767c3bc77a2c9800046ed2e2e960ea7}

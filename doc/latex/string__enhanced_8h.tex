@@ -1,0 +1,121 @@
+\hypertarget{string__enhanced_8h}{}\section{src/common/string\+\_\+enhanced.h File Reference}
+\label{string__enhanced_8h}\index{src/common/string\+\_\+enhanced.\+h@{src/common/string\+\_\+enhanced.\+h}}
+{\ttfamily \#include $<$linux/limits.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{string__enhanced_8h_acf82ff81adbcdba29a3cc07e8f3a0d12}{S\+T\+E\+N\+\_\+\+M\+A\+X\+\_\+\+C\+O\+LS}~12
+\item 
+\#define \hyperlink{string__enhanced_8h_ac18a61fbc90c049f661102ff9e4bb34a}{S\+T\+E\+N\+\_\+\+S\+Y\+M\+B\+OL}~\char`\"{}$\vert$$\vert$\char`\"{}
+\item 
+\#define \hyperlink{string__enhanced_8h_ab5df1fa54740676d5317a63d3ae619b0}{S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}~P\+I\+P\+E\+\_\+\+B\+UF
+\item 
+\#define \hyperlink{string__enhanced_8h_a02aa7cca2c3857c14716e8cca96ace6c}{tprintf}(...)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{string__enhanced_8h_ae6e12090e1888de01293907cd256bc5f}{tprintf\+\_\+init} (F\+I\+LE $\ast$stream, char $\ast$format)
+\item 
+int \hyperlink{string__enhanced_8h_ab2a53d2ce1c86b5ea49bafa8f4cda38c}{tprintf\+\_\+format} ()
+\item 
+char $\ast$ \hyperlink{string__enhanced_8h_a30021eb4da5d9ba25bdf21db7baaf398}{strclean} (char $\ast$string, char chr)
+\begin{DoxyCompactList}\small\item\em Cleans the character pointed by \textquotesingle{}chr\textquotesingle{}, adding an \textquotesingle{}\textbackslash{}0\textquotesingle{} in its position. \end{DoxyCompactList}\item 
+void \hyperlink{string__enhanced_8h_a07a65b8262e7ec7ca388e537b29235a5}{strtoup} (char $\ast$string)
+\begin{DoxyCompactList}\small\item\em Converts a string to upper case. \end{DoxyCompactList}\item 
+void \hyperlink{string__enhanced_8h_a2426f0ec0c92e526bf593c52c89b449c}{remove\+\_\+chars} (char $\ast$s, char c)
+\begin{DoxyCompactList}\small\item\em Removes characters c from string s. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char \hyperlink{string__enhanced_8h_a4b4348e642f686606148cc70aefe5da1}{tprintf\+\_\+ibuf} \mbox{[}\hyperlink{string__enhanced_8h_ab5df1fa54740676d5317a63d3ae619b0}{S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}\mbox{]}
+\item 
+char \hyperlink{string__enhanced_8h_a6c1d1beb12ed267a6008e5cd2e68ec1d}{tprintf\+\_\+obuf} \mbox{[}\hyperlink{string__enhanced_8h_ab5df1fa54740676d5317a63d3ae619b0}{S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE@{S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}}
+\index{S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE@{S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}{STEN_BUFF_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE~P\+I\+P\+E\+\_\+\+B\+UF}\hypertarget{string__enhanced_8h_ab5df1fa54740676d5317a63d3ae619b0}{}\label{string__enhanced_8h_ab5df1fa54740676d5317a63d3ae619b0}
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!S\+T\+E\+N\+\_\+\+M\+A\+X\+\_\+\+C\+O\+LS@{S\+T\+E\+N\+\_\+\+M\+A\+X\+\_\+\+C\+O\+LS}}
+\index{S\+T\+E\+N\+\_\+\+M\+A\+X\+\_\+\+C\+O\+LS@{S\+T\+E\+N\+\_\+\+M\+A\+X\+\_\+\+C\+O\+LS}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{S\+T\+E\+N\+\_\+\+M\+A\+X\+\_\+\+C\+O\+LS}{STEN_MAX_COLS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+T\+E\+N\+\_\+\+M\+A\+X\+\_\+\+C\+O\+LS~12}\hypertarget{string__enhanced_8h_acf82ff81adbcdba29a3cc07e8f3a0d12}{}\label{string__enhanced_8h_acf82ff81adbcdba29a3cc07e8f3a0d12}
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!S\+T\+E\+N\+\_\+\+S\+Y\+M\+B\+OL@{S\+T\+E\+N\+\_\+\+S\+Y\+M\+B\+OL}}
+\index{S\+T\+E\+N\+\_\+\+S\+Y\+M\+B\+OL@{S\+T\+E\+N\+\_\+\+S\+Y\+M\+B\+OL}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{S\+T\+E\+N\+\_\+\+S\+Y\+M\+B\+OL}{STEN_SYMBOL}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+T\+E\+N\+\_\+\+S\+Y\+M\+B\+OL~\char`\"{}$\vert$$\vert$\char`\"{}}\hypertarget{string__enhanced_8h_ac18a61fbc90c049f661102ff9e4bb34a}{}\label{string__enhanced_8h_ac18a61fbc90c049f661102ff9e4bb34a}
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!tprintf@{tprintf}}
+\index{tprintf@{tprintf}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{tprintf}{tprintf}}]{\setlength{\rightskip}{0pt plus 5cm}\#define tprintf(
+\begin{DoxyParamCaption}
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8h_a02aa7cca2c3857c14716e8cca96ace6c}{}\label{string__enhanced_8h_a02aa7cca2c3857c14716e8cca96ace6c}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+snprintf(\hyperlink{string__enhanced_8h_a4b4348e642f686606148cc70aefe5da1}{tprintf\_ibuf}, \hyperlink{string__enhanced_8h_ab5df1fa54740676d5317a63d3ae619b0}{STEN\_BUFF\_SIZE}-1, \_\_VA\_ARGS\_\_); 
+      \hyperlink{string__enhanced_8h_ab2a53d2ce1c86b5ea49bafa8f4cda38c}{\(\backslash\)}
+\hyperlink{string__enhanced_8h_ab2a53d2ce1c86b5ea49bafa8f4cda38c}{    tprintf\_format}();
+\end{DoxyCode}
+
+
+\subsection{Function Documentation}
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!remove\+\_\+chars@{remove\+\_\+chars}}
+\index{remove\+\_\+chars@{remove\+\_\+chars}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{remove\+\_\+chars(char $\ast$s, char c)}{remove_chars(char *s, char c)}}]{\setlength{\rightskip}{0pt plus 5cm}void remove\+\_\+chars (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{s, }
+\item[{char}]{c}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8h_a2426f0ec0c92e526bf593c52c89b449c}{}\label{string__enhanced_8h_a2426f0ec0c92e526bf593c52c89b449c}
+
+
+Removes characters c from string s. 
+
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!strclean@{strclean}}
+\index{strclean@{strclean}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{strclean(char $\ast$string, char chr)}{strclean(char *string, char chr)}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ strclean (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{string, }
+\item[{char}]{chr}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8h_a30021eb4da5d9ba25bdf21db7baaf398}{}\label{string__enhanced_8h_a30021eb4da5d9ba25bdf21db7baaf398}
+
+
+Cleans the character pointed by \textquotesingle{}chr\textquotesingle{}, adding an \textquotesingle{}\textbackslash{}0\textquotesingle{} in its position. 
+
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!strtoup@{strtoup}}
+\index{strtoup@{strtoup}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{strtoup(char $\ast$string)}{strtoup(char *string)}}]{\setlength{\rightskip}{0pt plus 5cm}void strtoup (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{string}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8h_a07a65b8262e7ec7ca388e537b29235a5}{}\label{string__enhanced_8h_a07a65b8262e7ec7ca388e537b29235a5}
+
+
+Converts a string to upper case. 
+
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!tprintf\+\_\+format@{tprintf\+\_\+format}}
+\index{tprintf\+\_\+format@{tprintf\+\_\+format}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{tprintf\+\_\+format()}{tprintf_format()}}]{\setlength{\rightskip}{0pt plus 5cm}int tprintf\+\_\+format (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8h_ab2a53d2ce1c86b5ea49bafa8f4cda38c}{}\label{string__enhanced_8h_ab2a53d2ce1c86b5ea49bafa8f4cda38c}
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!tprintf\+\_\+init@{tprintf\+\_\+init}}
+\index{tprintf\+\_\+init@{tprintf\+\_\+init}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{tprintf\+\_\+init(\+F\+I\+L\+E $\ast$stream, char $\ast$format)}{tprintf_init(FILE *stream, char *format)}}]{\setlength{\rightskip}{0pt plus 5cm}int tprintf\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{F\+I\+LE $\ast$}]{stream, }
+\item[{char $\ast$}]{format}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8h_ae6e12090e1888de01293907cd256bc5f}{}\label{string__enhanced_8h_ae6e12090e1888de01293907cd256bc5f}
+
+
+\subsection{Variable Documentation}
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!tprintf\+\_\+ibuf@{tprintf\+\_\+ibuf}}
+\index{tprintf\+\_\+ibuf@{tprintf\+\_\+ibuf}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{tprintf\+\_\+ibuf}{tprintf_ibuf}}]{\setlength{\rightskip}{0pt plus 5cm}char tprintf\+\_\+ibuf\mbox{[}{\bf S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}\mbox{]}}\hypertarget{string__enhanced_8h_a4b4348e642f686606148cc70aefe5da1}{}\label{string__enhanced_8h_a4b4348e642f686606148cc70aefe5da1}
+\index{string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}!tprintf\+\_\+obuf@{tprintf\+\_\+obuf}}
+\index{tprintf\+\_\+obuf@{tprintf\+\_\+obuf}!string\+\_\+enhanced.\+h@{string\+\_\+enhanced.\+h}}
+\subsubsection[{\texorpdfstring{tprintf\+\_\+obuf}{tprintf_obuf}}]{\setlength{\rightskip}{0pt plus 5cm}char tprintf\+\_\+obuf\mbox{[}{\bf S\+T\+E\+N\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}\mbox{]}}\hypertarget{string__enhanced_8h_a6c1d1beb12ed267a6008e5cd2e68ec1d}{}\label{string__enhanced_8h_a6c1d1beb12ed267a6008e5cd2e68ec1d}
