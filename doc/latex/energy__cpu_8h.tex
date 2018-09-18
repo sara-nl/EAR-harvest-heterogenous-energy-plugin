@@ -1,0 +1,118 @@
+\hypertarget{energy__cpu_8h}{}\section{src/metrics/papi/energy\+\_\+cpu.h File Reference}
+\label{energy__cpu_8h}\index{src/metrics/papi/energy\+\_\+cpu.\+h@{src/metrics/papi/energy\+\_\+cpu.\+h}}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{energy__cpu_8h_a0fae267f56cd8810147814369b96749b}{R\+A\+P\+L\+\_\+\+E\+VS}~4
+\item 
+\#define \hyperlink{energy__cpu_8h_a3f143295490c4cdd54adc28f5404b181}{R\+A\+P\+L\+\_\+\+D\+R\+A\+M0}~0
+\item 
+\#define \hyperlink{energy__cpu_8h_a3dc515c1c0ea42948a42841963390c05}{R\+A\+P\+L\+\_\+\+D\+R\+A\+M1}~1
+\item 
+\#define \hyperlink{energy__cpu_8h_a8621276a3685dbd5fe3d9df7750667c0}{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E0}~2
+\item 
+\#define \hyperlink{energy__cpu_8h_a84b21f6cf470c861257d1895590f14cc}{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E1}~3
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{energy__cpu_8h_a39f13d63c77b27b90821b2ff4c121965}{init\+\_\+rapl\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Initializes the P\+A\+PI library if needed and the \char`\"{}\+D\+R\+A\+M\+\_\+\+E\+N\+E\+R\+G\+Y\+:\+P\+A\+C\+K\+A\+G\+E0\char`\"{}, \char`\"{}\+D\+R\+A\+M\+\_\+\+E\+N\+E\+R\+G\+Y\+:\+P\+A\+C\+K\+A\+G\+E1\char`\"{}, \char`\"{}\+P\+A\+C\+K\+A\+G\+E\+\_\+\+E\+N\+E\+R\+G\+Y\+:\+P\+A\+C\+K\+A\+G\+E0\char`\"{}, \char`\"{}\+P\+A\+C\+K\+A\+G\+E\+\_\+\+E\+N\+E\+R\+G\+Y\+:\+P\+A\+C\+K\+A\+G\+E1\char`\"{} events. \end{DoxyCompactList}\item 
+int \hyperlink{energy__cpu_8h_a226238b2627ee79bce0af129f4201d9a}{reset\+\_\+rapl\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Resets (zeroes) rapl events. \end{DoxyCompactList}\item 
+int \hyperlink{energy__cpu_8h_a62f7f43156bd8ab34981922eaa653a2b}{start\+\_\+rapl\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Starts rapl events. \end{DoxyCompactList}\item 
+int \hyperlink{energy__cpu_8h_a45981d0bad136e123d1e076876ab42ed}{stop\+\_\+rapl\+\_\+metrics} (unsigned long long $\ast$\hyperlink{energy__cpu_8c_ab805d4eab86acb3d624dd5b16f94db88}{values})
+\begin{DoxyCompactList}\small\item\em Stops rapl events and copies events values in values array. \end{DoxyCompactList}\item 
+int \hyperlink{energy__cpu_8h_a3bbaa0f195bdeacbdbe2516a341f8f36}{read\+\_\+rapl\+\_\+metrics} (unsigned long long $\ast$\+\_\+values)
+\begin{DoxyCompactList}\small\item\em Reads rapl events and copies events values in values array. \end{DoxyCompactList}\item 
+void \hyperlink{energy__cpu_8h_af45f9ddcce1911d0136fb49522cb5827}{print\+\_\+rapl\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Prints rapl metrics in the stderr. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!R\+A\+P\+L\+\_\+\+D\+R\+A\+M0@{R\+A\+P\+L\+\_\+\+D\+R\+A\+M0}}
+\index{R\+A\+P\+L\+\_\+\+D\+R\+A\+M0@{R\+A\+P\+L\+\_\+\+D\+R\+A\+M0}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{R\+A\+P\+L\+\_\+\+D\+R\+A\+M0}{RAPL_DRAM0}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+A\+P\+L\+\_\+\+D\+R\+A\+M0~0}\hypertarget{energy__cpu_8h_a3f143295490c4cdd54adc28f5404b181}{}\label{energy__cpu_8h_a3f143295490c4cdd54adc28f5404b181}
+\index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!R\+A\+P\+L\+\_\+\+D\+R\+A\+M1@{R\+A\+P\+L\+\_\+\+D\+R\+A\+M1}}
+\index{R\+A\+P\+L\+\_\+\+D\+R\+A\+M1@{R\+A\+P\+L\+\_\+\+D\+R\+A\+M1}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{R\+A\+P\+L\+\_\+\+D\+R\+A\+M1}{RAPL_DRAM1}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+A\+P\+L\+\_\+\+D\+R\+A\+M1~1}\hypertarget{energy__cpu_8h_a3dc515c1c0ea42948a42841963390c05}{}\label{energy__cpu_8h_a3dc515c1c0ea42948a42841963390c05}
+\index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!R\+A\+P\+L\+\_\+\+E\+VS@{R\+A\+P\+L\+\_\+\+E\+VS}}
+\index{R\+A\+P\+L\+\_\+\+E\+VS@{R\+A\+P\+L\+\_\+\+E\+VS}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{R\+A\+P\+L\+\_\+\+E\+VS}{RAPL_EVS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+A\+P\+L\+\_\+\+E\+VS~4}\hypertarget{energy__cpu_8h_a0fae267f56cd8810147814369b96749b}{}\label{energy__cpu_8h_a0fae267f56cd8810147814369b96749b}
+\index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E0@{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E0}}
+\index{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E0@{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E0}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E0}{RAPL_PACKAGE0}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E0~2}\hypertarget{energy__cpu_8h_a8621276a3685dbd5fe3d9df7750667c0}{}\label{energy__cpu_8h_a8621276a3685dbd5fe3d9df7750667c0}
+\index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E1@{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E1}}
+\index{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E1@{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E1}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E1}{RAPL_PACKAGE1}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+A\+P\+L\+\_\+\+P\+A\+C\+K\+A\+G\+E1~3}\hypertarget{energy__cpu_8h_a84b21f6cf470c861257d1895590f14cc}{}\label{energy__cpu_8h_a84b21f6cf470c861257d1895590f14cc}
+
+
+\subsection{Function Documentation}
+\index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!init\+\_\+rapl\+\_\+metrics@{init\+\_\+rapl\+\_\+metrics}}
+\index{init\+\_\+rapl\+\_\+metrics@{init\+\_\+rapl\+\_\+metrics}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+rapl\+\_\+metrics()}{init_rapl_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}int init\+\_\+rapl\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__cpu_8h_a39f13d63c77b27b90821b2ff4c121965}{}\label{energy__cpu_8h_a39f13d63c77b27b90821b2ff4c121965}
+
+
+Initializes the P\+A\+PI library if needed and the \char`\"{}\+D\+R\+A\+M\+\_\+\+E\+N\+E\+R\+G\+Y\+:\+P\+A\+C\+K\+A\+G\+E0\char`\"{}, \char`\"{}\+D\+R\+A\+M\+\_\+\+E\+N\+E\+R\+G\+Y\+:\+P\+A\+C\+K\+A\+G\+E1\char`\"{}, \char`\"{}\+P\+A\+C\+K\+A\+G\+E\+\_\+\+E\+N\+E\+R\+G\+Y\+:\+P\+A\+C\+K\+A\+G\+E0\char`\"{}, \char`\"{}\+P\+A\+C\+K\+A\+G\+E\+\_\+\+E\+N\+E\+R\+G\+Y\+:\+P\+A\+C\+K\+A\+G\+E1\char`\"{} events. 
+
+Returns 0 on success and -\/1 on error. \index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!print\+\_\+rapl\+\_\+metrics@{print\+\_\+rapl\+\_\+metrics}}
+\index{print\+\_\+rapl\+\_\+metrics@{print\+\_\+rapl\+\_\+metrics}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+rapl\+\_\+metrics()}{print_rapl_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+rapl\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__cpu_8h_af45f9ddcce1911d0136fb49522cb5827}{}\label{energy__cpu_8h_af45f9ddcce1911d0136fb49522cb5827}
+
+
+Prints rapl metrics in the stderr. 
+
+Returns 0 on success and -\/1 on error. \index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!read\+\_\+rapl\+\_\+metrics@{read\+\_\+rapl\+\_\+metrics}}
+\index{read\+\_\+rapl\+\_\+metrics@{read\+\_\+rapl\+\_\+metrics}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{read\+\_\+rapl\+\_\+metrics(unsigned long long $\ast$\+\_\+values)}{read_rapl_metrics(unsigned long long *_values)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+rapl\+\_\+metrics (
+\begin{DoxyParamCaption}
+\item[{unsigned long long $\ast$}]{\+\_\+values}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__cpu_8h_a3bbaa0f195bdeacbdbe2516a341f8f36}{}\label{energy__cpu_8h_a3bbaa0f195bdeacbdbe2516a341f8f36}
+
+
+Reads rapl events and copies events values in values array. 
+
+Returns 0 on success and -\/1 on error. \index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!reset\+\_\+rapl\+\_\+metrics@{reset\+\_\+rapl\+\_\+metrics}}
+\index{reset\+\_\+rapl\+\_\+metrics@{reset\+\_\+rapl\+\_\+metrics}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{reset\+\_\+rapl\+\_\+metrics()}{reset_rapl_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}int reset\+\_\+rapl\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__cpu_8h_a226238b2627ee79bce0af129f4201d9a}{}\label{energy__cpu_8h_a226238b2627ee79bce0af129f4201d9a}
+
+
+Resets (zeroes) rapl events. 
+
+Returns 0 on success and -\/1 on error. \index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!start\+\_\+rapl\+\_\+metrics@{start\+\_\+rapl\+\_\+metrics}}
+\index{start\+\_\+rapl\+\_\+metrics@{start\+\_\+rapl\+\_\+metrics}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{start\+\_\+rapl\+\_\+metrics()}{start_rapl_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}int start\+\_\+rapl\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__cpu_8h_a62f7f43156bd8ab34981922eaa653a2b}{}\label{energy__cpu_8h_a62f7f43156bd8ab34981922eaa653a2b}
+
+
+Starts rapl events. 
+
+Returns 0 on success and -\/1 on error. \index{energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}!stop\+\_\+rapl\+\_\+metrics@{stop\+\_\+rapl\+\_\+metrics}}
+\index{stop\+\_\+rapl\+\_\+metrics@{stop\+\_\+rapl\+\_\+metrics}!energy\+\_\+cpu.\+h@{energy\+\_\+cpu.\+h}}
+\subsubsection[{\texorpdfstring{stop\+\_\+rapl\+\_\+metrics(unsigned long long $\ast$values)}{stop_rapl_metrics(unsigned long long *values)}}]{\setlength{\rightskip}{0pt plus 5cm}int stop\+\_\+rapl\+\_\+metrics (
+\begin{DoxyParamCaption}
+\item[{unsigned long long $\ast$}]{values}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__cpu_8h_a45981d0bad136e123d1e076876ab42ed}{}\label{energy__cpu_8h_a45981d0bad136e123d1e076876ab42ed}
+
+
+Stops rapl events and copies events values in values array. 
+
+Returns 0 on success and -\/1 on error. 

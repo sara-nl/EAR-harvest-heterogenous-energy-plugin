@@ -1,0 +1,248 @@
+\hypertarget{models_8c}{}\section{src/library/models/models.c File Reference}
+\label{models_8c}\index{src/library/models/models.\+c@{src/library/models/models.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$control/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/macros.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/externs.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/models.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/monitoring.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/min\+\_\+energy.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/min\+\_\+time.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/projection.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/log.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+api.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structpolicy}{policy}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structpolicy}{policy} \hyperlink{models_8c_aae056bb15d28f694a1b2dbaa93164d2d}{policy\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{models_8c_a2dddba2c84e8b7387517f1bb46c7d2cb}{init\+\_\+policy\+\_\+functions} ()
+\item 
+int \hyperlink{models_8c_aa90012be77c05780bc734a0a7f2f905f}{policy\+\_\+global\+\_\+configuration} (int p\+\_\+state)
+\item 
+void \hyperlink{models_8c_aab8814a778638a1fc4ba353b3852c5df}{policy\+\_\+global\+\_\+reconfiguration} ()
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{models_8c_aa92910b1a3938472fa5ad3cd77f16a58}{get\+\_\+global\+\_\+min\+\_\+pstate} ()
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{models_8c_aa6d92fa7e0218d3d03d650092f8ccd7f}{get\+\_\+global\+\_\+def\+\_\+pstate} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{models_8c_ab2d6f41ac78d7922fb4ae5d5c79f2113}{get\+\_\+global\+\_\+def\+\_\+freq} ()
+\item 
+double \hyperlink{models_8c_ac6774e915614cf818dab90e2ad8ee2b9}{get\+\_\+global\+\_\+th} ()
+\item 
+void \hyperlink{models_8c_acd0522f7905932fd64999ef3bf2d0906}{init\+\_\+power\+\_\+policy} ()
+\begin{DoxyCompactList}\small\item\em Selects policy based on E\+A\+R\+\_\+\+P\+O\+W\+E\+R\+\_\+\+P\+O\+L\+I\+CY. \end{DoxyCompactList}\item 
+void \hyperlink{models_8c_afd7fe3edf9d891195c1bf7fbbfdb0f13}{init\+\_\+coeff\+\_\+data} (\hyperlink{coefficient_8h_a7f58a37ee368b55a21d66b1b4e76e779}{coefficient\+\_\+t} $\ast$cv2, \hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$cv3)
+\item 
+void \hyperlink{models_8c_aaed3573d79d6c1dd46c14af89ab5d885}{init\+\_\+power\+\_\+models} (unsigned int p\+\_\+states, unsigned long $\ast$p\+\_\+states\+\_\+list)
+\begin{DoxyCompactList}\small\item\em Opens Coefficient db and reads coefficients. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{models_8c_a5e243de52e03cbe9f12b40974e3d7540}{policy\+\_\+ok} (\hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$proj, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$curr\+\_\+sig, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$last\+\_\+sig)
+\begin{DoxyCompactList}\small\item\em Given a performance projection, the actual application signature and the last computed application signature values, returns true if policy decision has been the correct ones. \end{DoxyCompactList}\item 
+unsigned long \hyperlink{models_8c_a43e2e1409913f2029c7c79ef4f8b8eda}{policy\+\_\+power} (unsigned int whole\+\_\+app, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$M\+Y\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE)
+\begin{DoxyCompactList}\small\item\em Given the computed application signature, applies the selected power policy and returns the “optimal” frequency. \end{DoxyCompactList}\item 
+void \hyperlink{models_8c_a57a3b4998eddc13279c97be6cbcf8754}{policy\+\_\+new\+\_\+loop} ()
+\begin{DoxyCompactList}\small\item\em Executed when a new\+\_\+loop is reported by dyanis. \end{DoxyCompactList}\item 
+void \hyperlink{models_8c_a41d87f488d74d0893055847db21b6455}{policy\+\_\+end\+\_\+loop} ()
+\begin{DoxyCompactList}\small\item\em Executed when a end\+\_\+loop is reported by dyanis. \end{DoxyCompactList}\item 
+void \hyperlink{models_8c_a92a352c14097670f3ac473f292f9a38d}{policy\+\_\+default\+\_\+configuration} ()
+\begin{DoxyCompactList}\small\item\em Executed when we have done several \char`\"{}tries\char`\"{} and the policy is not able to select the \char`\"{}good\char`\"{} freq for this app. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{models_8c_aae056bb15d28f694a1b2dbaa93164d2d}{policy\+\_\+t} \hyperlink{models_8c_a6c56e6b2134e3f530265e9f9855ce18d}{app\+\_\+policy}
+\item 
+double \hyperlink{models_8c_a584fd902416e83368773de1d6c281d06}{performance\+\_\+penalty}
+\item 
+double \hyperlink{models_8c_a8bf2b8237ca613a3a80feea335a27d44}{performance\+\_\+gain}
+\item 
+\hyperlink{coefficient_8h_a7f58a37ee368b55a21d66b1b4e76e779}{coefficient\+\_\+t} $\ast$$\ast$ \hyperlink{models_8c_a638b9d18dabadf6e40aca8795eafb4ec}{coefficients}
+\item 
+\hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$ \hyperlink{models_8c_a27d421e614800cde92c561ae643c8a18}{coefficients\+\_\+v3}
+\item 
+int \hyperlink{models_8c_a3e99c6dfda11b24753f56c79161509ed}{num\+\_\+coeffs}
+\end{DoxyCompactItemize}
+
+
+\subsection{Typedef Documentation}
+\index{models.\+c@{models.\+c}!policy\+\_\+t@{policy\+\_\+t}}
+\index{policy\+\_\+t@{policy\+\_\+t}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{policy\+\_\+t}{policy_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf policy} {\bf policy\+\_\+t}}\hypertarget{models_8c_aae056bb15d28f694a1b2dbaa93164d2d}{}\label{models_8c_aae056bb15d28f694a1b2dbaa93164d2d}
+
+
+\subsection{Function Documentation}
+\index{models.\+c@{models.\+c}!get\+\_\+global\+\_\+def\+\_\+freq@{get\+\_\+global\+\_\+def\+\_\+freq}}
+\index{get\+\_\+global\+\_\+def\+\_\+freq@{get\+\_\+global\+\_\+def\+\_\+freq}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+global\+\_\+def\+\_\+freq()}{get_global_def_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} get\+\_\+global\+\_\+def\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_ab2d6f41ac78d7922fb4ae5d5c79f2113}{}\label{models_8c_ab2d6f41ac78d7922fb4ae5d5c79f2113}
+\index{models.\+c@{models.\+c}!get\+\_\+global\+\_\+def\+\_\+pstate@{get\+\_\+global\+\_\+def\+\_\+pstate}}
+\index{get\+\_\+global\+\_\+def\+\_\+pstate@{get\+\_\+global\+\_\+def\+\_\+pstate}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+global\+\_\+def\+\_\+pstate()}{get_global_def_pstate()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} get\+\_\+global\+\_\+def\+\_\+pstate (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_aa6d92fa7e0218d3d03d650092f8ccd7f}{}\label{models_8c_aa6d92fa7e0218d3d03d650092f8ccd7f}
+\index{models.\+c@{models.\+c}!get\+\_\+global\+\_\+min\+\_\+pstate@{get\+\_\+global\+\_\+min\+\_\+pstate}}
+\index{get\+\_\+global\+\_\+min\+\_\+pstate@{get\+\_\+global\+\_\+min\+\_\+pstate}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+global\+\_\+min\+\_\+pstate()}{get_global_min_pstate()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} get\+\_\+global\+\_\+min\+\_\+pstate (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_aa92910b1a3938472fa5ad3cd77f16a58}{}\label{models_8c_aa92910b1a3938472fa5ad3cd77f16a58}
+\index{models.\+c@{models.\+c}!get\+\_\+global\+\_\+th@{get\+\_\+global\+\_\+th}}
+\index{get\+\_\+global\+\_\+th@{get\+\_\+global\+\_\+th}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+global\+\_\+th()}{get_global_th()}}]{\setlength{\rightskip}{0pt plus 5cm}double get\+\_\+global\+\_\+th (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_ac6774e915614cf818dab90e2ad8ee2b9}{}\label{models_8c_ac6774e915614cf818dab90e2ad8ee2b9}
+\index{models.\+c@{models.\+c}!init\+\_\+coeff\+\_\+data@{init\+\_\+coeff\+\_\+data}}
+\index{init\+\_\+coeff\+\_\+data@{init\+\_\+coeff\+\_\+data}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{init\+\_\+coeff\+\_\+data(coefficient\+\_\+t $\ast$cv2, coefficient\+\_\+v3\+\_\+t $\ast$cv3)}{init_coeff_data(coefficient_t *cv2, coefficient_v3_t *cv3)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+coeff\+\_\+data (
+\begin{DoxyParamCaption}
+\item[{{\bf coefficient\+\_\+t} $\ast$}]{cv2, }
+\item[{{\bf coefficient\+\_\+v3\+\_\+t} $\ast$}]{cv3}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_afd7fe3edf9d891195c1bf7fbbfdb0f13}{}\label{models_8c_afd7fe3edf9d891195c1bf7fbbfdb0f13}
+\index{models.\+c@{models.\+c}!init\+\_\+policy\+\_\+functions@{init\+\_\+policy\+\_\+functions}}
+\index{init\+\_\+policy\+\_\+functions@{init\+\_\+policy\+\_\+functions}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{init\+\_\+policy\+\_\+functions()}{init_policy_functions()}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+policy\+\_\+functions (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_a2dddba2c84e8b7387517f1bb46c7d2cb}{}\label{models_8c_a2dddba2c84e8b7387517f1bb46c7d2cb}
+\index{models.\+c@{models.\+c}!init\+\_\+power\+\_\+models@{init\+\_\+power\+\_\+models}}
+\index{init\+\_\+power\+\_\+models@{init\+\_\+power\+\_\+models}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{init\+\_\+power\+\_\+models(unsigned int p\+\_\+states, unsigned long $\ast$p\+\_\+states\+\_\+list)}{init_power_models(unsigned int p_states, unsigned long *p_states_list)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+power\+\_\+models (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{p\+\_\+states, }
+\item[{unsigned long $\ast$}]{p\+\_\+states\+\_\+list}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_aaed3573d79d6c1dd46c14af89ab5d885}{}\label{models_8c_aaed3573d79d6c1dd46c14af89ab5d885}
+
+
+Opens Coefficient db and reads coefficients. 
+
+\index{models.\+c@{models.\+c}!init\+\_\+power\+\_\+policy@{init\+\_\+power\+\_\+policy}}
+\index{init\+\_\+power\+\_\+policy@{init\+\_\+power\+\_\+policy}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{init\+\_\+power\+\_\+policy()}{init_power_policy()}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+power\+\_\+policy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_acd0522f7905932fd64999ef3bf2d0906}{}\label{models_8c_acd0522f7905932fd64999ef3bf2d0906}
+
+
+Selects policy based on E\+A\+R\+\_\+\+P\+O\+W\+E\+R\+\_\+\+P\+O\+L\+I\+CY. 
+
+\index{models.\+c@{models.\+c}!policy\+\_\+default\+\_\+configuration@{policy\+\_\+default\+\_\+configuration}}
+\index{policy\+\_\+default\+\_\+configuration@{policy\+\_\+default\+\_\+configuration}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{policy\+\_\+default\+\_\+configuration()}{policy_default_configuration()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+default\+\_\+configuration (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_a92a352c14097670f3ac473f292f9a38d}{}\label{models_8c_a92a352c14097670f3ac473f292f9a38d}
+
+
+Executed when we have done several \char`\"{}tries\char`\"{} and the policy is not able to select the \char`\"{}good\char`\"{} freq for this app. 
+
+\index{models.\+c@{models.\+c}!policy\+\_\+end\+\_\+loop@{policy\+\_\+end\+\_\+loop}}
+\index{policy\+\_\+end\+\_\+loop@{policy\+\_\+end\+\_\+loop}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{policy\+\_\+end\+\_\+loop()}{policy_end_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+end\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_a41d87f488d74d0893055847db21b6455}{}\label{models_8c_a41d87f488d74d0893055847db21b6455}
+
+
+Executed when a end\+\_\+loop is reported by dyanis. 
+
+\index{models.\+c@{models.\+c}!policy\+\_\+global\+\_\+configuration@{policy\+\_\+global\+\_\+configuration}}
+\index{policy\+\_\+global\+\_\+configuration@{policy\+\_\+global\+\_\+configuration}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{policy\+\_\+global\+\_\+configuration(int p\+\_\+state)}{policy_global_configuration(int p_state)}}]{\setlength{\rightskip}{0pt plus 5cm}int policy\+\_\+global\+\_\+configuration (
+\begin{DoxyParamCaption}
+\item[{int}]{p\+\_\+state}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_aa90012be77c05780bc734a0a7f2f905f}{}\label{models_8c_aa90012be77c05780bc734a0a7f2f905f}
+\index{models.\+c@{models.\+c}!policy\+\_\+global\+\_\+reconfiguration@{policy\+\_\+global\+\_\+reconfiguration}}
+\index{policy\+\_\+global\+\_\+reconfiguration@{policy\+\_\+global\+\_\+reconfiguration}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{policy\+\_\+global\+\_\+reconfiguration()}{policy_global_reconfiguration()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+global\+\_\+reconfiguration (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_aab8814a778638a1fc4ba353b3852c5df}{}\label{models_8c_aab8814a778638a1fc4ba353b3852c5df}
+\index{models.\+c@{models.\+c}!policy\+\_\+new\+\_\+loop@{policy\+\_\+new\+\_\+loop}}
+\index{policy\+\_\+new\+\_\+loop@{policy\+\_\+new\+\_\+loop}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{policy\+\_\+new\+\_\+loop()}{policy_new_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+new\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_a57a3b4998eddc13279c97be6cbcf8754}{}\label{models_8c_a57a3b4998eddc13279c97be6cbcf8754}
+
+
+Executed when a new\+\_\+loop is reported by dyanis. 
+
+\index{models.\+c@{models.\+c}!policy\+\_\+ok@{policy\+\_\+ok}}
+\index{policy\+\_\+ok@{policy\+\_\+ok}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{policy\+\_\+ok(projection\+\_\+t $\ast$proj, signature\+\_\+t $\ast$curr\+\_\+sig, signature\+\_\+t $\ast$last\+\_\+sig)}{policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} policy\+\_\+ok (
+\begin{DoxyParamCaption}
+\item[{{\bf projection\+\_\+t} $\ast$}]{proj, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{curr\+\_\+sig, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{last\+\_\+sig}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_a5e243de52e03cbe9f12b40974e3d7540}{}\label{models_8c_a5e243de52e03cbe9f12b40974e3d7540}
+
+
+Given a performance projection, the actual application signature and the last computed application signature values, returns true if policy decision has been the correct ones. 
+
+\index{models.\+c@{models.\+c}!policy\+\_\+power@{policy\+\_\+power}}
+\index{policy\+\_\+power@{policy\+\_\+power}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{policy\+\_\+power(unsigned int whole\+\_\+app, signature\+\_\+t $\ast$\+M\+Y\+\_\+\+S\+I\+G\+N\+A\+T\+U\+R\+E)}{policy_power(unsigned int whole_app, signature_t *MY_SIGNATURE)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long policy\+\_\+power (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{whole\+\_\+app, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{sig}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8c_a43e2e1409913f2029c7c79ef4f8b8eda}{}\label{models_8c_a43e2e1409913f2029c7c79ef4f8b8eda}
+
+
+Given the computed application signature, applies the selected power policy and returns the “optimal” frequency. 
+
+
+
+\subsection{Variable Documentation}
+\index{models.\+c@{models.\+c}!app\+\_\+policy@{app\+\_\+policy}}
+\index{app\+\_\+policy@{app\+\_\+policy}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{app\+\_\+policy}{app_policy}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf policy\+\_\+t} app\+\_\+policy}\hypertarget{models_8c_a6c56e6b2134e3f530265e9f9855ce18d}{}\label{models_8c_a6c56e6b2134e3f530265e9f9855ce18d}
+\index{models.\+c@{models.\+c}!coefficients@{coefficients}}
+\index{coefficients@{coefficients}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{coefficients}{coefficients}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$$\ast$ coefficients}\hypertarget{models_8c_a638b9d18dabadf6e40aca8795eafb4ec}{}\label{models_8c_a638b9d18dabadf6e40aca8795eafb4ec}
+\index{models.\+c@{models.\+c}!coefficients\+\_\+v3@{coefficients\+\_\+v3}}
+\index{coefficients\+\_\+v3@{coefficients\+\_\+v3}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{coefficients\+\_\+v3}{coefficients_v3}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+v3\+\_\+t}$\ast$ coefficients\+\_\+v3}\hypertarget{models_8c_a27d421e614800cde92c561ae643c8a18}{}\label{models_8c_a27d421e614800cde92c561ae643c8a18}
+\index{models.\+c@{models.\+c}!num\+\_\+coeffs@{num\+\_\+coeffs}}
+\index{num\+\_\+coeffs@{num\+\_\+coeffs}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{num\+\_\+coeffs}{num_coeffs}}]{\setlength{\rightskip}{0pt plus 5cm}int num\+\_\+coeffs}\hypertarget{models_8c_a3e99c6dfda11b24753f56c79161509ed}{}\label{models_8c_a3e99c6dfda11b24753f56c79161509ed}
+\index{models.\+c@{models.\+c}!performance\+\_\+gain@{performance\+\_\+gain}}
+\index{performance\+\_\+gain@{performance\+\_\+gain}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{performance\+\_\+gain}{performance_gain}}]{\setlength{\rightskip}{0pt plus 5cm}double performance\+\_\+gain}\hypertarget{models_8c_a8bf2b8237ca613a3a80feea335a27d44}{}\label{models_8c_a8bf2b8237ca613a3a80feea335a27d44}
+\index{models.\+c@{models.\+c}!performance\+\_\+penalty@{performance\+\_\+penalty}}
+\index{performance\+\_\+penalty@{performance\+\_\+penalty}!models.\+c@{models.\+c}}
+\subsubsection[{\texorpdfstring{performance\+\_\+penalty}{performance_penalty}}]{\setlength{\rightskip}{0pt plus 5cm}double performance\+\_\+penalty}\hypertarget{models_8c_a584fd902416e83368773de1d6c281d06}{}\label{models_8c_a584fd902416e83368773de1d6c281d06}

@@ -1,0 +1,73 @@
+\hypertarget{stalls_8h}{}\section{src/metrics/papi/stalls.h File Reference}
+\label{stalls_8h}\index{src/metrics/papi/stalls.\+h@{src/metrics/papi/stalls.\+h}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{stalls_8h_a2f516b38c98ac784ea83733c82172058}{init\+\_\+stall\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Initializes the event metrics for stall cycles. \end{DoxyCompactList}\item 
+void \hyperlink{stalls_8h_abf6dc361a63818ffd5b63ceca0ab2a54}{reset\+\_\+stall\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Resets the metrics for stall cycles. \end{DoxyCompactList}\item 
+void \hyperlink{stalls_8h_a2ae8ad7743b7202333ee77d3d5b07d6e}{start\+\_\+stall\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Starts tracking stall cycle metrics. \end{DoxyCompactList}\item 
+void \hyperlink{stalls_8h_aebd22a08a120e2399b7753916281f5ff}{stop\+\_\+stall\+\_\+metrics} (long long $\ast$stall\+\_\+cycles)
+\begin{DoxyCompactList}\small\item\em Stops stall metrics and accumulates registered stall cycles to the variable recieved by parameter. \end{DoxyCompactList}\item 
+void \hyperlink{stalls_8h_a8ddd5741c6513ba75e5203a9963a50ae}{get\+\_\+stall\+\_\+metrics} (long long $\ast$total\+\_\+stall\+\_\+cycles)
+\begin{DoxyCompactList}\small\item\em Puts the current stall cycles metrics in the variable recieved by parameter. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{stalls.\+h@{stalls.\+h}!get\+\_\+stall\+\_\+metrics@{get\+\_\+stall\+\_\+metrics}}
+\index{get\+\_\+stall\+\_\+metrics@{get\+\_\+stall\+\_\+metrics}!stalls.\+h@{stalls.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+stall\+\_\+metrics(long long $\ast$total\+\_\+stall\+\_\+cycles)}{get_stall_metrics(long long *total_stall_cycles)}}]{\setlength{\rightskip}{0pt plus 5cm}void get\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+\item[{long long $\ast$}]{total\+\_\+stall\+\_\+cycles}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8h_a8ddd5741c6513ba75e5203a9963a50ae}{}\label{stalls_8h_a8ddd5741c6513ba75e5203a9963a50ae}
+
+
+Puts the current stall cycles metrics in the variable recieved by parameter. 
+
+\index{stalls.\+h@{stalls.\+h}!init\+\_\+stall\+\_\+metrics@{init\+\_\+stall\+\_\+metrics}}
+\index{init\+\_\+stall\+\_\+metrics@{init\+\_\+stall\+\_\+metrics}!stalls.\+h@{stalls.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+stall\+\_\+metrics()}{init_stall_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8h_a2f516b38c98ac784ea83733c82172058}{}\label{stalls_8h_a2f516b38c98ac784ea83733c82172058}
+
+
+Initializes the event metrics for stall cycles. 
+
+\index{stalls.\+h@{stalls.\+h}!reset\+\_\+stall\+\_\+metrics@{reset\+\_\+stall\+\_\+metrics}}
+\index{reset\+\_\+stall\+\_\+metrics@{reset\+\_\+stall\+\_\+metrics}!stalls.\+h@{stalls.\+h}}
+\subsubsection[{\texorpdfstring{reset\+\_\+stall\+\_\+metrics()}{reset_stall_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void reset\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8h_abf6dc361a63818ffd5b63ceca0ab2a54}{}\label{stalls_8h_abf6dc361a63818ffd5b63ceca0ab2a54}
+
+
+Resets the metrics for stall cycles. 
+
+\index{stalls.\+h@{stalls.\+h}!start\+\_\+stall\+\_\+metrics@{start\+\_\+stall\+\_\+metrics}}
+\index{start\+\_\+stall\+\_\+metrics@{start\+\_\+stall\+\_\+metrics}!stalls.\+h@{stalls.\+h}}
+\subsubsection[{\texorpdfstring{start\+\_\+stall\+\_\+metrics()}{start_stall_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void start\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8h_a2ae8ad7743b7202333ee77d3d5b07d6e}{}\label{stalls_8h_a2ae8ad7743b7202333ee77d3d5b07d6e}
+
+
+Starts tracking stall cycle metrics. 
+
+\index{stalls.\+h@{stalls.\+h}!stop\+\_\+stall\+\_\+metrics@{stop\+\_\+stall\+\_\+metrics}}
+\index{stop\+\_\+stall\+\_\+metrics@{stop\+\_\+stall\+\_\+metrics}!stalls.\+h@{stalls.\+h}}
+\subsubsection[{\texorpdfstring{stop\+\_\+stall\+\_\+metrics(long long $\ast$stall\+\_\+cycles)}{stop_stall_metrics(long long *stall_cycles)}}]{\setlength{\rightskip}{0pt plus 5cm}void stop\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+\item[{long long $\ast$}]{stall\+\_\+cycles}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8h_aebd22a08a120e2399b7753916281f5ff}{}\label{stalls_8h_aebd22a08a120e2399b7753916281f5ff}
+
+
+Stops stall metrics and accumulates registered stall cycles to the variable recieved by parameter. 
+

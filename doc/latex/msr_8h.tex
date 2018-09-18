@@ -1,0 +1,53 @@
+\hypertarget{msr_8h}{}\section{src/metrics/common/msr.h File Reference}
+\label{msr_8h}\index{src/metrics/common/msr.\+h@{src/metrics/common/msr.\+h}}
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{msr_8h_a3b8aab483247dc4490a5f84539d22244}{msr\+\_\+open} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} cpu, int $\ast$fd)
+\item 
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{msr_8h_a9fff74a8efd722cab862ecd72fff975b}{msr\+\_\+close} (int $\ast$fd)
+\item 
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{msr_8h_ac7fc83b38b9daf09d898621c0ae1d985}{msr\+\_\+read} (int $\ast$fd, void $\ast$buffer, size\+\_\+t count, off\+\_\+t offset)
+\item 
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{msr_8h_a14720b3c541ebf69efcc1e75754a7eaa}{msr\+\_\+write} (int $\ast$fd, const void $\ast$buffer, size\+\_\+t count, off\+\_\+t offset)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{msr.\+h@{msr.\+h}!msr\+\_\+close@{msr\+\_\+close}}
+\index{msr\+\_\+close@{msr\+\_\+close}!msr.\+h@{msr.\+h}}
+\subsubsection[{\texorpdfstring{msr\+\_\+close(int $\ast$fd)}{msr_close(int *fd)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} msr\+\_\+close (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{fd}
+\end{DoxyParamCaption}
+)}\hypertarget{msr_8h_a9fff74a8efd722cab862ecd72fff975b}{}\label{msr_8h_a9fff74a8efd722cab862ecd72fff975b}
+\index{msr.\+h@{msr.\+h}!msr\+\_\+open@{msr\+\_\+open}}
+\index{msr\+\_\+open@{msr\+\_\+open}!msr.\+h@{msr.\+h}}
+\subsubsection[{\texorpdfstring{msr\+\_\+open(uint cpu, int $\ast$fd)}{msr_open(uint cpu, int *fd)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} msr\+\_\+open (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{cpu, }
+\item[{int $\ast$}]{fd}
+\end{DoxyParamCaption}
+)}\hypertarget{msr_8h_a3b8aab483247dc4490a5f84539d22244}{}\label{msr_8h_a3b8aab483247dc4490a5f84539d22244}
+\index{msr.\+h@{msr.\+h}!msr\+\_\+read@{msr\+\_\+read}}
+\index{msr\+\_\+read@{msr\+\_\+read}!msr.\+h@{msr.\+h}}
+\subsubsection[{\texorpdfstring{msr\+\_\+read(int $\ast$fd, void $\ast$buffer, size\+\_\+t count, off\+\_\+t offset)}{msr_read(int *fd, void *buffer, size_t count, off_t offset)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} msr\+\_\+read (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{fd, }
+\item[{void $\ast$}]{buffer, }
+\item[{size\+\_\+t}]{count, }
+\item[{off\+\_\+t}]{offset}
+\end{DoxyParamCaption}
+)}\hypertarget{msr_8h_ac7fc83b38b9daf09d898621c0ae1d985}{}\label{msr_8h_ac7fc83b38b9daf09d898621c0ae1d985}
+\index{msr.\+h@{msr.\+h}!msr\+\_\+write@{msr\+\_\+write}}
+\index{msr\+\_\+write@{msr\+\_\+write}!msr.\+h@{msr.\+h}}
+\subsubsection[{\texorpdfstring{msr\+\_\+write(int $\ast$fd, const void $\ast$buffer, size\+\_\+t count, off\+\_\+t offset)}{msr_write(int *fd, const void *buffer, size_t count, off_t offset)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} msr\+\_\+write (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{fd, }
+\item[{const void $\ast$}]{buffer, }
+\item[{size\+\_\+t}]{count, }
+\item[{off\+\_\+t}]{offset}
+\end{DoxyParamCaption}
+)}\hypertarget{msr_8h_a14720b3c541ebf69efcc1e75754a7eaa}{}\label{msr_8h_a14720b3c541ebf69efcc1e75754a7eaa}

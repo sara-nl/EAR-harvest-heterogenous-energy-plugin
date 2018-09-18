@@ -1,0 +1,147 @@
+\hypertarget{bandwidth_8c}{}\section{src/metrics/custom/bandwidth.c File Reference}
+\label{bandwidth_8c}\index{src/metrics/custom/bandwidth.\+c@{src/metrics/custom/bandwidth.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/hardware\+\_\+info.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/bandwidth/uncores\+\_\+pci.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structuncore__op}{uncore\+\_\+op}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{bandwidth_8c_a77dc17cadd125b543f535000905ec2cc}{F\+U\+N\+C\+V\+E\+RB}(function)                                                          ~\hyperlink{ear__verbose_8h_a86e8221e28e01ea67f896575743a567b}{ear\+\_\+debug}(4, \char`\"{}E\+A\+R\+\_\+\+D\+A\+E\+M\+ON(U\+N\+C\+O\+R\+ES) \char`\"{} function \char`\"{}\textbackslash{}n\char`\"{});
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{bandwidth_8c_ae4bc16c7973d05581d1ed0f53f53aa2b}{init\+\_\+uncores} (int \hyperlink{test__architecture_8c_acfede048b49209a0d8f7d773aa176e65}{cpu\+\_\+model})
+\begin{DoxyCompactList}\small\item\em Init the uncore counters for an specific cpu model number. \end{DoxyCompactList}\item 
+int \hyperlink{bandwidth_8c_af4578eaafbdc0c0bd26da3a08c8c1754}{count\+\_\+uncores} ()
+\begin{DoxyCompactList}\small\item\em Get the number of performance monitor counters. \end{DoxyCompactList}\item 
+int \hyperlink{bandwidth_8c_a94cf47a259961cdf355a28806ba94b7f}{check\+\_\+uncores} ()
+\begin{DoxyCompactList}\small\item\em Checks the state of the system uncore functions. \end{DoxyCompactList}\item 
+int \hyperlink{bandwidth_8c_a6f13d6164a78d0afb0b0aa4c83f57e2e}{reset\+\_\+uncores} ()
+\begin{DoxyCompactList}\small\item\em Freezes and resets all performance monitor (P\+M\+ON) uncore counters. \end{DoxyCompactList}\item 
+int \hyperlink{bandwidth_8c_a94bfb6f4f0ba87d8cc8f1b9bf25f793f}{start\+\_\+uncores} ()
+\begin{DoxyCompactList}\small\item\em Unfreezes all P\+M\+ON uncore counters. \end{DoxyCompactList}\item 
+int \hyperlink{bandwidth_8c_afa11f535fe21b2b2126e3684cf6ef92d}{stop\+\_\+uncores} (unsigned long long $\ast$\hyperlink{energy__cpu_8c_ab805d4eab86acb3d624dd5b16f94db88}{values})
+\begin{DoxyCompactList}\small\item\em Freezes all P\+M\+ON uncore counters and gets it\textquotesingle{}s values. \end{DoxyCompactList}\item 
+int \hyperlink{bandwidth_8c_a260fa6aa56ce3f87cf3184db20e7c8cd}{read\+\_\+uncores} (unsigned long long $\ast$\hyperlink{energy__cpu_8c_ab805d4eab86acb3d624dd5b16f94db88}{values})
+\begin{DoxyCompactList}\small\item\em Gets the P\+M\+ON uncore counters values. \end{DoxyCompactList}\item 
+int \hyperlink{bandwidth_8c_a339ee59c158fad4c8ec79330d516d196}{dispose\+\_\+uncores} ()
+\begin{DoxyCompactList}\small\item\em Closes file descriptors and frees memory. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structuncore__op}{uncore\+\_\+op} \hyperlink{bandwidth_8c_a3f75a89c2c3a0111e1608390c1426fed}{pmons}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{bandwidth.\+c@{bandwidth.\+c}!F\+U\+N\+C\+V\+E\+RB@{F\+U\+N\+C\+V\+E\+RB}}
+\index{F\+U\+N\+C\+V\+E\+RB@{F\+U\+N\+C\+V\+E\+RB}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{F\+U\+N\+C\+V\+E\+RB}{FUNCVERB}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+U\+N\+C\+V\+E\+RB(
+\begin{DoxyParamCaption}
+\item[{}]{function}
+\end{DoxyParamCaption}
+)~{\bf ear\+\_\+debug}(4, \char`\"{}E\+A\+R\+\_\+\+D\+A\+E\+M\+ON(U\+N\+C\+O\+R\+ES) \char`\"{} function \char`\"{}\textbackslash{}n\char`\"{});}\hypertarget{bandwidth_8c_a77dc17cadd125b543f535000905ec2cc}{}\label{bandwidth_8c_a77dc17cadd125b543f535000905ec2cc}
+
+
+\subsection{Function Documentation}
+\index{bandwidth.\+c@{bandwidth.\+c}!check\+\_\+uncores@{check\+\_\+uncores}}
+\index{check\+\_\+uncores@{check\+\_\+uncores}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{check\+\_\+uncores()}{check_uncores()}}]{\setlength{\rightskip}{0pt plus 5cm}int check\+\_\+uncores (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwidth_8c_a94cf47a259961cdf355a28806ba94b7f}{}\label{bandwidth_8c_a94cf47a259961cdf355a28806ba94b7f}
+
+
+Checks the state of the system uncore functions. 
+
+Returns E\+A\+R\+\_\+\+S\+U\+C\+C\+E\+SS, E\+A\+R\+\_\+\+E\+R\+R\+OR or E\+A\+R\+\_\+\+W\+A\+R\+N\+I\+NG. \index{bandwidth.\+c@{bandwidth.\+c}!count\+\_\+uncores@{count\+\_\+uncores}}
+\index{count\+\_\+uncores@{count\+\_\+uncores}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{count\+\_\+uncores()}{count_uncores()}}]{\setlength{\rightskip}{0pt plus 5cm}int count\+\_\+uncores (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwidth_8c_af4578eaafbdc0c0bd26da3a08c8c1754}{}\label{bandwidth_8c_af4578eaafbdc0c0bd26da3a08c8c1754}
+
+
+Get the number of performance monitor counters. 
+
+init\+\_\+uncore\+\_\+reading() have to be called before to scan the buses. \index{bandwidth.\+c@{bandwidth.\+c}!dispose\+\_\+uncores@{dispose\+\_\+uncores}}
+\index{dispose\+\_\+uncores@{dispose\+\_\+uncores}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{dispose\+\_\+uncores()}{dispose_uncores()}}]{\setlength{\rightskip}{0pt plus 5cm}int dispose\+\_\+uncores (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwidth_8c_a339ee59c158fad4c8ec79330d516d196}{}\label{bandwidth_8c_a339ee59c158fad4c8ec79330d516d196}
+
+
+Closes file descriptors and frees memory. 
+
+\index{bandwidth.\+c@{bandwidth.\+c}!init\+\_\+uncores@{init\+\_\+uncores}}
+\index{init\+\_\+uncores@{init\+\_\+uncores}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{init\+\_\+uncores(int cpu\+\_\+model)}{init_uncores(int cpu_model)}}]{\setlength{\rightskip}{0pt plus 5cm}int init\+\_\+uncores (
+\begin{DoxyParamCaption}
+\item[{int}]{cpu\+\_\+model}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwidth_8c_ae4bc16c7973d05581d1ed0f53f53aa2b}{}\label{bandwidth_8c_ae4bc16c7973d05581d1ed0f53f53aa2b}
+
+
+Init the uncore counters for an specific cpu model number. 
+
+\index{bandwidth.\+c@{bandwidth.\+c}!read\+\_\+uncores@{read\+\_\+uncores}}
+\index{read\+\_\+uncores@{read\+\_\+uncores}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{read\+\_\+uncores(unsigned long long $\ast$values)}{read_uncores(unsigned long long *values)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+uncores (
+\begin{DoxyParamCaption}
+\item[{unsigned long long $\ast$}]{values}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwidth_8c_a260fa6aa56ce3f87cf3184db20e7c8cd}{}\label{bandwidth_8c_a260fa6aa56ce3f87cf3184db20e7c8cd}
+
+
+Gets the P\+M\+ON uncore counters values. 
+
+\index{bandwidth.\+c@{bandwidth.\+c}!reset\+\_\+uncores@{reset\+\_\+uncores}}
+\index{reset\+\_\+uncores@{reset\+\_\+uncores}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{reset\+\_\+uncores()}{reset_uncores()}}]{\setlength{\rightskip}{0pt plus 5cm}int reset\+\_\+uncores (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwidth_8c_a6f13d6164a78d0afb0b0aa4c83f57e2e}{}\label{bandwidth_8c_a6f13d6164a78d0afb0b0aa4c83f57e2e}
+
+
+Freezes and resets all performance monitor (P\+M\+ON) uncore counters. 
+
+\index{bandwidth.\+c@{bandwidth.\+c}!start\+\_\+uncores@{start\+\_\+uncores}}
+\index{start\+\_\+uncores@{start\+\_\+uncores}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{start\+\_\+uncores()}{start_uncores()}}]{\setlength{\rightskip}{0pt plus 5cm}int start\+\_\+uncores (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwidth_8c_a94bfb6f4f0ba87d8cc8f1b9bf25f793f}{}\label{bandwidth_8c_a94bfb6f4f0ba87d8cc8f1b9bf25f793f}
+
+
+Unfreezes all P\+M\+ON uncore counters. 
+
+\index{bandwidth.\+c@{bandwidth.\+c}!stop\+\_\+uncores@{stop\+\_\+uncores}}
+\index{stop\+\_\+uncores@{stop\+\_\+uncores}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{stop\+\_\+uncores(unsigned long long $\ast$values)}{stop_uncores(unsigned long long *values)}}]{\setlength{\rightskip}{0pt plus 5cm}int stop\+\_\+uncores (
+\begin{DoxyParamCaption}
+\item[{unsigned long long $\ast$}]{values}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwidth_8c_afa11f535fe21b2b2126e3684cf6ef92d}{}\label{bandwidth_8c_afa11f535fe21b2b2126e3684cf6ef92d}
+
+
+Freezes all P\+M\+ON uncore counters and gets it\textquotesingle{}s values. 
+
+The array has to be greater or equal than the number of P\+M\+ON uncore counters returned by \hyperlink{bandwidth_8h_af4578eaafbdc0c0bd26da3a08c8c1754}{count\+\_\+uncores()} function. The returned values are the read and write bandwith values in index \mbox{[}i\mbox{]} and \mbox{[}i+1\mbox{]} respectively. 
+
+\subsection{Variable Documentation}
+\index{bandwidth.\+c@{bandwidth.\+c}!pmons@{pmons}}
+\index{pmons@{pmons}!bandwidth.\+c@{bandwidth.\+c}}
+\subsubsection[{\texorpdfstring{pmons}{pmons}}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf uncore\+\_\+op}  pmons}\hypertarget{bandwidth_8c_a3f75a89c2c3a0111e1608390c1426fed}{}\label{bandwidth_8c_a3f75a89c2c3a0111e1608390c1426fed}

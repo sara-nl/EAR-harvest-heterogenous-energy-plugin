@@ -1,0 +1,158 @@
+\hypertarget{loop_8h}{}\section{src/common/types/loop.h File Reference}
+\label{loop_8h}\index{src/common/types/loop.\+h@{src/common/types/loop.\+h}}
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/signature.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/job.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structloop__id}{loop\+\_\+id}
+\item 
+struct \hyperlink{structloop}{loop}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{loop_8h_a6b0b8b14cfc75447be8feba3efe18da8}{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}~256
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structloop__id}{loop\+\_\+id} \hyperlink{loop_8h_a4c055b277136987486c9d9a29e765e1c}{loop\+\_\+id\+\_\+t}
+\item 
+typedef struct \hyperlink{structloop}{loop} \hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{loop_8h_a4c055b277136987486c9d9a29e765e1c}{loop\+\_\+id\+\_\+t} $\ast$ \hyperlink{loop_8h_abcd68466d8b906d3f4b3c8e11674b5de}{create\+\_\+loop\+\_\+id} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} event, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} size, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} level)
+\begin{DoxyCompactList}\small\item\em Create a new loop\+\_\+id\+\_\+t based on dynais information. \end{DoxyCompactList}\item 
+void \hyperlink{loop_8h_adfefab3c2555ed26666dc2b7abdf1eee}{loop\+\_\+init} (\hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$\hyperlink{structloop}{loop}, \hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job})
+\begin{DoxyCompactList}\small\item\em Initalizes the loop given by parameter. \end{DoxyCompactList}\item 
+\hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$ \hyperlink{loop_8h_a01650b3b6000331e1f028dad73b72a51}{new\+\_\+loop} (\hyperlink{loop_8h_a4c055b277136987486c9d9a29e765e1c}{loop\+\_\+id\+\_\+t} $\ast$\hyperlink{structloop}{loop})
+\begin{DoxyCompactList}\small\item\em Given a new loop detected by dynais returns either a new \hyperlink{structloop__id}{loop\+\_\+id} (if it is really a new loop never detected) or the pointer to the already existing information. \end{DoxyCompactList}\item 
+void \hyperlink{loop_8h_a1ecdefceaf80a6af845260d1d8c06130}{add\+\_\+loop\+\_\+signature} (\hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$\hyperlink{structloop}{loop}, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$sig)
+\begin{DoxyCompactList}\small\item\em Add values for a new computed signature. \end{DoxyCompactList}\item 
+void \hyperlink{loop_8h_ab50931abd19cbfa8f0648a6b8e0270da}{end\+\_\+loop} (\hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$\hyperlink{structloop}{loop}, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} iterations)
+\begin{DoxyCompactList}\small\item\em Loop is finished, number of iterations is included. \end{DoxyCompactList}\item 
+void \hyperlink{loop_8h_a631d2f5202fcba788b8920031aeaa246}{copy\+\_\+loop} (\hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$destiny, \hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$source)
+\begin{DoxyCompactList}\small\item\em Copies the source loop into the destiny one. \end{DoxyCompactList}\item 
+int \hyperlink{loop_8h_ae1f071e94d101eed83e523ea419285e0}{append\+\_\+loop\+\_\+text\+\_\+file} (char $\ast$path, \hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$\hyperlink{structloop}{loop}, \hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job})
+\begin{DoxyCompactList}\small\item\em Appends in a file a loop in C\+SV format. \end{DoxyCompactList}\item 
+void \hyperlink{loop_8h_a1f60bf9f8f11b25659bc23499a5425b1}{print\+\_\+loop\+\_\+fd} (int fd, \hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$\hyperlink{structloop}{loop})
+\begin{DoxyCompactList}\small\item\em Given a loop\+\_\+t and a file descriptor, outputs the contents of said loop to the fd. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{loop.\+h@{loop.\+h}!G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME@{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}}
+\index{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME@{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}{GENERIC_NAME}}]{\setlength{\rightskip}{0pt plus 5cm}\#define G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME~256}\hypertarget{loop_8h_a6b0b8b14cfc75447be8feba3efe18da8}{}\label{loop_8h_a6b0b8b14cfc75447be8feba3efe18da8}
+
+
+\subsection{Typedef Documentation}
+\index{loop.\+h@{loop.\+h}!loop\+\_\+id\+\_\+t@{loop\+\_\+id\+\_\+t}}
+\index{loop\+\_\+id\+\_\+t@{loop\+\_\+id\+\_\+t}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{loop\+\_\+id\+\_\+t}{loop_id_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf loop\+\_\+id}  {\bf loop\+\_\+id\+\_\+t}}\hypertarget{loop_8h_a4c055b277136987486c9d9a29e765e1c}{}\label{loop_8h_a4c055b277136987486c9d9a29e765e1c}
+\index{loop.\+h@{loop.\+h}!loop\+\_\+t@{loop\+\_\+t}}
+\index{loop\+\_\+t@{loop\+\_\+t}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{loop\+\_\+t}{loop_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf loop}  {\bf loop\+\_\+t}}\hypertarget{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{}\label{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}
+
+
+\subsection{Function Documentation}
+\index{loop.\+h@{loop.\+h}!add\+\_\+loop\+\_\+signature@{add\+\_\+loop\+\_\+signature}}
+\index{add\+\_\+loop\+\_\+signature@{add\+\_\+loop\+\_\+signature}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{add\+\_\+loop\+\_\+signature(loop\+\_\+t $\ast$loop, signature\+\_\+t $\ast$sig)}{add_loop_signature(loop_t *loop, signature_t *sig)}}]{\setlength{\rightskip}{0pt plus 5cm}void add\+\_\+loop\+\_\+signature (
+\begin{DoxyParamCaption}
+\item[{{\bf loop\+\_\+t} $\ast$}]{loop, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{sig}
+\end{DoxyParamCaption}
+)}\hypertarget{loop_8h_a1ecdefceaf80a6af845260d1d8c06130}{}\label{loop_8h_a1ecdefceaf80a6af845260d1d8c06130}
+
+
+Add values for a new computed signature. 
+
+\index{loop.\+h@{loop.\+h}!append\+\_\+loop\+\_\+text\+\_\+file@{append\+\_\+loop\+\_\+text\+\_\+file}}
+\index{append\+\_\+loop\+\_\+text\+\_\+file@{append\+\_\+loop\+\_\+text\+\_\+file}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{append\+\_\+loop\+\_\+text\+\_\+file(char $\ast$path, loop\+\_\+t $\ast$loop, job\+\_\+t $\ast$job)}{append_loop_text_file(char *path, loop_t *loop, job_t *job)}}]{\setlength{\rightskip}{0pt plus 5cm}int append\+\_\+loop\+\_\+text\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf loop\+\_\+t} $\ast$}]{loop, }
+\item[{{\bf job\+\_\+t} $\ast$}]{job}
+\end{DoxyParamCaption}
+)}\hypertarget{loop_8h_ae1f071e94d101eed83e523ea419285e0}{}\label{loop_8h_ae1f071e94d101eed83e523ea419285e0}
+
+
+Appends in a file a loop in C\+SV format. 
+
+The returned integer is one of the following states\+: E\+A\+R\+\_\+\+S\+U\+C\+C\+E\+SS or E\+A\+R\+\_\+\+E\+R\+R\+OR. \index{loop.\+h@{loop.\+h}!copy\+\_\+loop@{copy\+\_\+loop}}
+\index{copy\+\_\+loop@{copy\+\_\+loop}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{copy\+\_\+loop(loop\+\_\+t $\ast$destiny, loop\+\_\+t $\ast$source)}{copy_loop(loop_t *destiny, loop_t *source)}}]{\setlength{\rightskip}{0pt plus 5cm}void copy\+\_\+loop (
+\begin{DoxyParamCaption}
+\item[{{\bf loop\+\_\+t} $\ast$}]{destiny, }
+\item[{{\bf loop\+\_\+t} $\ast$}]{source}
+\end{DoxyParamCaption}
+)}\hypertarget{loop_8h_a631d2f5202fcba788b8920031aeaa246}{}\label{loop_8h_a631d2f5202fcba788b8920031aeaa246}
+
+
+Copies the source loop into the destiny one. 
+
+\index{loop.\+h@{loop.\+h}!create\+\_\+loop\+\_\+id@{create\+\_\+loop\+\_\+id}}
+\index{create\+\_\+loop\+\_\+id@{create\+\_\+loop\+\_\+id}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+loop\+\_\+id(ulong event, ulong size, ulong level)}{create_loop_id(ulong event, ulong size, ulong level)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf loop\+\_\+id\+\_\+t}$\ast$ create\+\_\+loop\+\_\+id (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{event, }
+\item[{{\bf ulong}}]{size, }
+\item[{{\bf ulong}}]{level}
+\end{DoxyParamCaption}
+)}\hypertarget{loop_8h_abcd68466d8b906d3f4b3c8e11674b5de}{}\label{loop_8h_abcd68466d8b906d3f4b3c8e11674b5de}
+
+
+Create a new loop\+\_\+id\+\_\+t based on dynais information. 
+
+\index{loop.\+h@{loop.\+h}!end\+\_\+loop@{end\+\_\+loop}}
+\index{end\+\_\+loop@{end\+\_\+loop}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{end\+\_\+loop(loop\+\_\+t $\ast$loop, ulong iterations)}{end_loop(loop_t *loop, ulong iterations)}}]{\setlength{\rightskip}{0pt plus 5cm}void end\+\_\+loop (
+\begin{DoxyParamCaption}
+\item[{{\bf loop\+\_\+t} $\ast$}]{loop, }
+\item[{{\bf ulong}}]{iterations}
+\end{DoxyParamCaption}
+)}\hypertarget{loop_8h_ab50931abd19cbfa8f0648a6b8e0270da}{}\label{loop_8h_ab50931abd19cbfa8f0648a6b8e0270da}
+
+
+Loop is finished, number of iterations is included. 
+
+\index{loop.\+h@{loop.\+h}!loop\+\_\+init@{loop\+\_\+init}}
+\index{loop\+\_\+init@{loop\+\_\+init}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{loop\+\_\+init(loop\+\_\+t $\ast$loop, job\+\_\+t $\ast$job)}{loop_init(loop_t *loop, job_t *job)}}]{\setlength{\rightskip}{0pt plus 5cm}void loop\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf loop\+\_\+t} $\ast$}]{loop, }
+\item[{{\bf job\+\_\+t} $\ast$}]{job}
+\end{DoxyParamCaption}
+)}\hypertarget{loop_8h_adfefab3c2555ed26666dc2b7abdf1eee}{}\label{loop_8h_adfefab3c2555ed26666dc2b7abdf1eee}
+
+
+Initalizes the loop given by parameter. 
+
+\index{loop.\+h@{loop.\+h}!new\+\_\+loop@{new\+\_\+loop}}
+\index{new\+\_\+loop@{new\+\_\+loop}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{new\+\_\+loop(loop\+\_\+id\+\_\+t $\ast$loop)}{new_loop(loop_id_t *loop)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf loop\+\_\+t}$\ast$ new\+\_\+loop (
+\begin{DoxyParamCaption}
+\item[{{\bf loop\+\_\+id\+\_\+t} $\ast$}]{loop}
+\end{DoxyParamCaption}
+)}\hypertarget{loop_8h_a01650b3b6000331e1f028dad73b72a51}{}\label{loop_8h_a01650b3b6000331e1f028dad73b72a51}
+
+
+Given a new loop detected by dynais returns either a new \hyperlink{structloop__id}{loop\+\_\+id} (if it is really a new loop never detected) or the pointer to the already existing information. 
+
+If it is a new loop, memory is allocated for this loop. Memory for N signatures is reserved. \index{loop.\+h@{loop.\+h}!print\+\_\+loop\+\_\+fd@{print\+\_\+loop\+\_\+fd}}
+\index{print\+\_\+loop\+\_\+fd@{print\+\_\+loop\+\_\+fd}!loop.\+h@{loop.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+loop\+\_\+fd(int fd, loop\+\_\+t $\ast$loop)}{print_loop_fd(int fd, loop_t *loop)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+loop\+\_\+fd (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{{\bf loop\+\_\+t} $\ast$}]{loop}
+\end{DoxyParamCaption}
+)}\hypertarget{loop_8h_a1f60bf9f8f11b25659bc23499a5425b1}{}\label{loop_8h_a1f60bf9f8f11b25659bc23499a5425b1}
+
+
+Given a loop\+\_\+t and a file descriptor, outputs the contents of said loop to the fd. 
+

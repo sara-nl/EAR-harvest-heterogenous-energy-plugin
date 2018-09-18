@@ -1,0 +1,190 @@
+\hypertarget{application_8h}{}\section{src/common/types/application.h File Reference}
+\label{application_8h}\index{src/common/types/application.\+h@{src/common/types/application.\+h}}
+{\ttfamily \#include $<$stdint.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/job.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/signature.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/power\+\_\+signature.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structapplication}{application}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{application_8h_a6b0b8b14cfc75447be8feba3efe18da8}{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}~256
+\item 
+\#define \hyperlink{application_8h_a3dc34ed28dd5a0ec7cf0bcc264a91a73}{create\+\_\+\+ID}(id,  sid)~(id$\ast$100+sid)
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structapplication}{application} \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{application_8h_a6f976fdc719619fc5d7d5dc073d1a082}{init\+\_\+application} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$app)
+\begin{DoxyCompactList}\small\item\em Resets the data. \end{DoxyCompactList}\item 
+int \hyperlink{application_8h_a76a579e98b774d49eb3550862a806c13}{print\+\_\+application} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$app)
+\begin{DoxyCompactList}\small\item\em Prints the contents of app to the S\+T\+D\+O\+UT. \end{DoxyCompactList}\item 
+void \hyperlink{application_8h_aa22bc696a61f5ba867f2d2dca3c7cebe}{report\+\_\+application\+\_\+data} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$app)
+\begin{DoxyCompactList}\small\item\em Prints a summary of the application to S\+T\+D\+O\+UT. \end{DoxyCompactList}\item 
+void \hyperlink{application_8h_abb5d5a756eb8c5165546fa09b31345d4}{report\+\_\+mpi\+\_\+application\+\_\+data} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$app)
+\begin{DoxyCompactList}\small\item\em Prints a summary of the application (only mpi part,power signature is not reported) to S\+T\+D\+O\+UT. \end{DoxyCompactList}\item 
+int \hyperlink{application_8h_a5b94fed0243ca53967ebb28e73c4c9bd}{read\+\_\+application\+\_\+binary\+\_\+file} (char $\ast$path, \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$$\ast$apps)
+\begin{DoxyCompactList}\small\item\em Reads a file of applications saved in binary format. \end{DoxyCompactList}\item 
+int \hyperlink{application_8h_a14f2d721d02f4fe8ad1016ae1c64e866}{read\+\_\+application\+\_\+text\+\_\+file} (char $\ast$path, \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$$\ast$apps, char is\+\_\+extended)
+\begin{DoxyCompactList}\small\item\em Reads a file of applications saved in C\+SV format. \end{DoxyCompactList}\item 
+int \hyperlink{application_8h_a9cfdb2a0d5ea3ae621a1221c3430d08a}{append\+\_\+application\+\_\+binary\+\_\+file} (char $\ast$path, \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$app)
+\begin{DoxyCompactList}\small\item\em Appends in a file an application in binary format. \end{DoxyCompactList}\item 
+int \hyperlink{application_8h_a67860b21e8fc9d85ea33b13ac80507b5}{append\+\_\+application\+\_\+text\+\_\+file} (char $\ast$path, \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$app, char is\+\_\+extended)
+\begin{DoxyCompactList}\small\item\em Appends in a file an application in C\+SV format. \end{DoxyCompactList}\item 
+void \hyperlink{application_8h_a018280d58edb1608203a705bb298cf8a}{copy\+\_\+application} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$destiny, \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$source)
+\begin{DoxyCompactList}\small\item\em Replicates the application in $\ast$source to $\ast$destiny. \end{DoxyCompactList}\item 
+int \hyperlink{application_8h_ac3ce5bbd41aa359ac8b39d1bece918e3}{scan\+\_\+application\+\_\+fd} (F\+I\+LE $\ast$fd, \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$app, char is\+\_\+extended)
+\begin{DoxyCompactList}\small\item\em P\+E\+N\+D\+I\+NG. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{application.\+h@{application.\+h}!create\+\_\+\+ID@{create\+\_\+\+ID}}
+\index{create\+\_\+\+ID@{create\+\_\+\+ID}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+\+ID}{create_ID}}]{\setlength{\rightskip}{0pt plus 5cm}\#define create\+\_\+\+ID(
+\begin{DoxyParamCaption}
+\item[{}]{id, }
+\item[{}]{sid}
+\end{DoxyParamCaption}
+)~(id$\ast$100+sid)}\hypertarget{application_8h_a3dc34ed28dd5a0ec7cf0bcc264a91a73}{}\label{application_8h_a3dc34ed28dd5a0ec7cf0bcc264a91a73}
+\index{application.\+h@{application.\+h}!G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME@{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}}
+\index{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME@{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}{GENERIC_NAME}}]{\setlength{\rightskip}{0pt plus 5cm}\#define G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME~256}\hypertarget{application_8h_a6b0b8b14cfc75447be8feba3efe18da8}{}\label{application_8h_a6b0b8b14cfc75447be8feba3efe18da8}
+
+
+\subsection{Typedef Documentation}
+\index{application.\+h@{application.\+h}!application\+\_\+t@{application\+\_\+t}}
+\index{application\+\_\+t@{application\+\_\+t}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{application\+\_\+t}{application_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf application}  {\bf application\+\_\+t}}\hypertarget{application_8h_af0a524c43fc5f548021099181df194bf}{}\label{application_8h_af0a524c43fc5f548021099181df194bf}
+
+
+\subsection{Function Documentation}
+\index{application.\+h@{application.\+h}!append\+\_\+application\+\_\+binary\+\_\+file@{append\+\_\+application\+\_\+binary\+\_\+file}}
+\index{append\+\_\+application\+\_\+binary\+\_\+file@{append\+\_\+application\+\_\+binary\+\_\+file}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{append\+\_\+application\+\_\+binary\+\_\+file(char $\ast$path, application\+\_\+t $\ast$app)}{append_application_binary_file(char *path, application_t *app)}}]{\setlength{\rightskip}{0pt plus 5cm}int append\+\_\+application\+\_\+binary\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf application\+\_\+t} $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_a9cfdb2a0d5ea3ae621a1221c3430d08a}{}\label{application_8h_a9cfdb2a0d5ea3ae621a1221c3430d08a}
+
+
+Appends in a file an application in binary format. 
+
+The returned integer is one of the following states\+: E\+A\+R\+\_\+\+S\+U\+C\+C\+E\+SS or E\+A\+R\+\_\+\+E\+R\+R\+OR. \index{application.\+h@{application.\+h}!append\+\_\+application\+\_\+text\+\_\+file@{append\+\_\+application\+\_\+text\+\_\+file}}
+\index{append\+\_\+application\+\_\+text\+\_\+file@{append\+\_\+application\+\_\+text\+\_\+file}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{append\+\_\+application\+\_\+text\+\_\+file(char $\ast$path, application\+\_\+t $\ast$app, char is\+\_\+extended)}{append_application_text_file(char *path, application_t *app, char is_extended)}}]{\setlength{\rightskip}{0pt plus 5cm}int append\+\_\+application\+\_\+text\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf application\+\_\+t} $\ast$}]{app, }
+\item[{char}]{is\+\_\+extended}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_a67860b21e8fc9d85ea33b13ac80507b5}{}\label{application_8h_a67860b21e8fc9d85ea33b13ac80507b5}
+
+
+Appends in a file an application in C\+SV format. 
+
+The returned integer is one of the following states\+: E\+A\+R\+\_\+\+S\+U\+C\+C\+E\+SS or E\+A\+R\+\_\+\+E\+R\+R\+OR. \index{application.\+h@{application.\+h}!copy\+\_\+application@{copy\+\_\+application}}
+\index{copy\+\_\+application@{copy\+\_\+application}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{copy\+\_\+application(application\+\_\+t $\ast$destiny, application\+\_\+t $\ast$source)}{copy_application(application_t *destiny, application_t *source)}}]{\setlength{\rightskip}{0pt plus 5cm}void copy\+\_\+application (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$}]{destiny, }
+\item[{{\bf application\+\_\+t} $\ast$}]{source}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_a018280d58edb1608203a705bb298cf8a}{}\label{application_8h_a018280d58edb1608203a705bb298cf8a}
+
+
+Replicates the application in $\ast$source to $\ast$destiny. 
+
+\index{application.\+h@{application.\+h}!init\+\_\+application@{init\+\_\+application}}
+\index{init\+\_\+application@{init\+\_\+application}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+application(application\+\_\+t $\ast$app)}{init_application(application_t *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+application (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_a6f976fdc719619fc5d7d5dc073d1a082}{}\label{application_8h_a6f976fdc719619fc5d7d5dc073d1a082}
+
+
+Resets the data. 
+
+\index{application.\+h@{application.\+h}!print\+\_\+application@{print\+\_\+application}}
+\index{print\+\_\+application@{print\+\_\+application}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+application(application\+\_\+t $\ast$app)}{print_application(application_t *app)}}]{\setlength{\rightskip}{0pt plus 5cm}int print\+\_\+application (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_a76a579e98b774d49eb3550862a806c13}{}\label{application_8h_a76a579e98b774d49eb3550862a806c13}
+
+
+Prints the contents of app to the S\+T\+D\+O\+UT. 
+
+\index{application.\+h@{application.\+h}!read\+\_\+application\+\_\+binary\+\_\+file@{read\+\_\+application\+\_\+binary\+\_\+file}}
+\index{read\+\_\+application\+\_\+binary\+\_\+file@{read\+\_\+application\+\_\+binary\+\_\+file}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{read\+\_\+application\+\_\+binary\+\_\+file(char $\ast$path, application\+\_\+t $\ast$$\ast$apps)}{read_application_binary_file(char *path, application_t **apps)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+application\+\_\+binary\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf application\+\_\+t} $\ast$$\ast$}]{apps}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_a5b94fed0243ca53967ebb28e73c4c9bd}{}\label{application_8h_a5b94fed0243ca53967ebb28e73c4c9bd}
+
+
+Reads a file of applications saved in binary format. 
+
+A memory block is allocated for the read applications, and is returned by the argument \textquotesingle{}apps\textquotesingle{}. The returned integer is the number of applications read. If the integer is negative, one of the following errores ocurred\+: E\+A\+R\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+R\+R\+OR, E\+A\+R\+\_\+\+R\+E\+A\+D\+\_\+\+E\+R\+R\+OR or E\+A\+R\+\_\+\+F\+I\+L\+E\+\_\+\+N\+O\+T\+\_\+\+F\+O\+U\+ND. \index{application.\+h@{application.\+h}!read\+\_\+application\+\_\+text\+\_\+file@{read\+\_\+application\+\_\+text\+\_\+file}}
+\index{read\+\_\+application\+\_\+text\+\_\+file@{read\+\_\+application\+\_\+text\+\_\+file}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{read\+\_\+application\+\_\+text\+\_\+file(char $\ast$path, application\+\_\+t $\ast$$\ast$apps, char is\+\_\+extended)}{read_application_text_file(char *path, application_t **apps, char is_extended)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+application\+\_\+text\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf application\+\_\+t} $\ast$$\ast$}]{apps, }
+\item[{char}]{is\+\_\+extended}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_a14f2d721d02f4fe8ad1016ae1c64e866}{}\label{application_8h_a14f2d721d02f4fe8ad1016ae1c64e866}
+
+
+Reads a file of applications saved in C\+SV format. 
+
+A block of memory is allocated for this read applications, and is returned by the argument \textquotesingle{}apps\textquotesingle{}. The returned integer is the number of applications read. If the integer is negative, one of the following errors ocurred\+: E\+A\+R\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+R\+R\+OR, E\+A\+R\+\_\+\+R\+E\+A\+D\+\_\+\+E\+R\+R\+OR or E\+A\+R\+\_\+\+F\+I\+L\+E\+\_\+\+N\+O\+T\+\_\+\+F\+O\+U\+ND. \index{application.\+h@{application.\+h}!report\+\_\+application\+\_\+data@{report\+\_\+application\+\_\+data}}
+\index{report\+\_\+application\+\_\+data@{report\+\_\+application\+\_\+data}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{report\+\_\+application\+\_\+data(application\+\_\+t $\ast$app)}{report_application_data(application_t *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+\_\+application\+\_\+data (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_aa22bc696a61f5ba867f2d2dca3c7cebe}{}\label{application_8h_aa22bc696a61f5ba867f2d2dca3c7cebe}
+
+
+Prints a summary of the application to S\+T\+D\+O\+UT. 
+
+\index{application.\+h@{application.\+h}!report\+\_\+mpi\+\_\+application\+\_\+data@{report\+\_\+mpi\+\_\+application\+\_\+data}}
+\index{report\+\_\+mpi\+\_\+application\+\_\+data@{report\+\_\+mpi\+\_\+application\+\_\+data}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{report\+\_\+mpi\+\_\+application\+\_\+data(application\+\_\+t $\ast$app)}{report_mpi_application_data(application_t *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+\_\+mpi\+\_\+application\+\_\+data (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_abb5d5a756eb8c5165546fa09b31345d4}{}\label{application_8h_abb5d5a756eb8c5165546fa09b31345d4}
+
+
+Prints a summary of the application (only mpi part,power signature is not reported) to S\+T\+D\+O\+UT. 
+
+\index{application.\+h@{application.\+h}!scan\+\_\+application\+\_\+fd@{scan\+\_\+application\+\_\+fd}}
+\index{scan\+\_\+application\+\_\+fd@{scan\+\_\+application\+\_\+fd}!application.\+h@{application.\+h}}
+\subsubsection[{\texorpdfstring{scan\+\_\+application\+\_\+fd(\+F\+I\+L\+E $\ast$fd, application\+\_\+t $\ast$app, char is\+\_\+extended)}{scan_application_fd(FILE *fd, application_t *app, char is_extended)}}]{\setlength{\rightskip}{0pt plus 5cm}int scan\+\_\+application\+\_\+fd (
+\begin{DoxyParamCaption}
+\item[{F\+I\+LE $\ast$}]{fd, }
+\item[{{\bf application\+\_\+t} $\ast$}]{app, }
+\item[{char}]{is\+\_\+extended}
+\end{DoxyParamCaption}
+)}\hypertarget{application_8h_ac3ce5bbd41aa359ac8b39d1bece918e3}{}\label{application_8h_ac3ce5bbd41aa359ac8b39d1bece918e3}
+
+
+P\+E\+N\+D\+I\+NG. 
+

@@ -1,0 +1,53 @@
+\hypertarget{ear__end__job_8c}{}\section{src/daemon/commands/ear\+\_\+end\+\_\+job.c File Reference}
+\label{ear__end__job_8c}\index{src/daemon/commands/ear\+\_\+end\+\_\+job.\+c@{src/daemon/commands/ear\+\_\+end\+\_\+job.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+rapi.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{ear__end__job_8c_a834e9a379307f869a10f4da078be5786}{N\+A\+M\+E\+\_\+\+S\+I\+ZE}~128
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{ear__end__job_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{ear__end__job_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} =1
+\item 
+\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{ear__end__job_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{ear\+\_\+end\+\_\+job.\+c@{ear\+\_\+end\+\_\+job.\+c}!N\+A\+M\+E\+\_\+\+S\+I\+ZE@{N\+A\+M\+E\+\_\+\+S\+I\+ZE}}
+\index{N\+A\+M\+E\+\_\+\+S\+I\+ZE@{N\+A\+M\+E\+\_\+\+S\+I\+ZE}!ear\+\_\+end\+\_\+job.\+c@{ear\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{N\+A\+M\+E\+\_\+\+S\+I\+ZE}{NAME_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+A\+M\+E\+\_\+\+S\+I\+ZE~128}\hypertarget{ear__end__job_8c_a834e9a379307f869a10f4da078be5786}{}\label{ear__end__job_8c_a834e9a379307f869a10f4da078be5786}
+
+
+\subsection{Function Documentation}
+\index{ear\+\_\+end\+\_\+job.\+c@{ear\+\_\+end\+\_\+job.\+c}!main@{main}}
+\index{main@{main}!ear\+\_\+end\+\_\+job.\+c@{ear\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__end__job_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{ear__end__job_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+
+
+\subsection{Variable Documentation}
+\index{ear\+\_\+end\+\_\+job.\+c@{ear\+\_\+end\+\_\+job.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!ear\+\_\+end\+\_\+job.\+c@{ear\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL =1}\hypertarget{ear__end__job_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{ear__end__job_8c_a43d7e58c317e811389b628dc49b52bd2}
+\index{ear\+\_\+end\+\_\+job.\+c@{ear\+\_\+end\+\_\+job.\+c}!my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}}
+\index{my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}!ear\+\_\+end\+\_\+job.\+c@{ear\+\_\+end\+\_\+job.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+cluster\+\_\+conf}{my_cluster_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+cluster\+\_\+conf}\hypertarget{ear__end__job_8c_a6c6877da2aa55927ec276bfdedb32660}{}\label{ear__end__job_8c_a6c6877da2aa55927ec276bfdedb32660}

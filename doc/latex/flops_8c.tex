@@ -1,0 +1,204 @@
+\hypertarget{flops_8c}{}\section{src/metrics/papi/flops.c File Reference}
+\label{flops_8c}\index{src/metrics/papi/flops.\+c@{src/metrics/papi/flops.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$papi.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/papi/generics.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/hardware\+\_\+info.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/papi/flops.\+h$>$}\\*
+{\ttfamily \#include $<$common/environment.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{flops_8c_a775af6da547769a14f30dbfddf595fd7}{F\+L\+O\+P\+S\+\_\+\+S\+E\+TS}~2
+\item 
+\#define \hyperlink{flops_8c_ac69502f20476bac694e0741e9dc2dddc}{F\+L\+O\+P\+S\+\_\+\+E\+VS}~4
+\item 
+\#define \hyperlink{flops_8c_a6f3b5f7bd55d78c229ede60ccafeecf5}{S\+P\+\_\+\+O\+PS}~0
+\item 
+\#define \hyperlink{flops_8c_a55fe145ac2e217b66d313f1a511e870b}{D\+P\+\_\+\+O\+PS}~1
+\item 
+\#define \hyperlink{flops_8c_a5a9a2e9ef69dbb1c33cef604a24716d0}{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:\+S\+C\+A\+L\+A\+R\+\_\+\+S\+I\+N\+G\+LE\char`\"{}
+\item 
+\#define \hyperlink{flops_8c_ae50cae40b24213c68f847051fd99ca28}{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+LE\char`\"{}
+\item 
+\#define \hyperlink{flops_8c_a22262a24590492406011a1605eef726d}{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+LE\char`\"{}
+\item 
+\#define \hyperlink{flops_8c_a71cf58c4dc4144822f7fe962d2ceace4}{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+LE\char`\"{}
+\item 
+\#define \hyperlink{flops_8c_ab1ba06241442609a1aec8371fa8eb912}{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+LE\char`\"{}
+\item 
+\#define \hyperlink{flops_8c_a8f591dbbf43b77df7e82065e88f8a353}{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+LE\char`\"{}
+\item 
+\#define \hyperlink{flops_8c_a95125ea71fad43fda5a9d0092bb229ed}{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+LE\char`\"{}
+\item 
+\#define \hyperlink{flops_8c_aef4b42eeb99b0aa93987d31e73d05a47}{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+LE\char`\"{}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{flops_8c_a09d96a6e958f2395a8ac92d2e78d8349}{init\+\_\+flops\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Initializes the event metrics for flops. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8c_af14efb800e9513cfffa351bb705d27fe}{reset\+\_\+flops\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Resets the metrics for flops. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8c_a1f8e182cb74fec3933d45a1ffed050c2}{start\+\_\+flops\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Starts tracking flops metrics. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8c_a88b48d98867e3a9d4d823e577fd62618}{stop\+\_\+flops\+\_\+metrics} (long long $\ast$flops, long long $\ast$f\+\_\+operations)
+\begin{DoxyCompactList}\small\item\em Stops flops metrics and accumulates registered flops and number of operations to the variables recieved by parameter. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8c_aeb22d32e039485812ba03ab42f927f73}{print\+\_\+gflops} (long long total\+\_\+inst, unsigned long total\+\_\+time, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} total\+\_\+cores)
+\begin{DoxyCompactList}\small\item\em Prints the total G\+Flops per process and node if verbosity level is at 1 or higher. \end{DoxyCompactList}\item 
+double \hyperlink{flops_8c_a3beaed8263055f4f0a1458866585a07b}{gflops} (unsigned long total\+\_\+time, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} total\+\_\+cores)
+\begin{DoxyCompactList}\small\item\em Returns the amount of floating point operations done in the time total\+\_\+timei, in G\+Flops. \end{DoxyCompactList}\item 
+int \hyperlink{flops_8c_a77debe352fe64db6560d03e7d6225d3a}{get\+\_\+number\+\_\+fops\+\_\+events} ()
+\begin{DoxyCompactList}\small\item\em Returns the total number of fops events. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8c_ad5051fe78c165c0faa10141d0894e7e3}{get\+\_\+weigth\+\_\+fops\+\_\+instructions} (int $\ast$weigth\+\_\+vector)
+\begin{DoxyCompactList}\small\item\em Puts the weights of the fops instructions into $\ast$weight\+\_\+vector. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8c_af1f94974da69e85f8add8821fe2e7972}{get\+\_\+total\+\_\+fops} (long long $\ast$metrics)
+\begin{DoxyCompactList}\small\item\em Puts the current flops metrics in the variable recieved by parameter. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{flops.\+c@{flops.\+c}!D\+P\+\_\+\+O\+PS@{D\+P\+\_\+\+O\+PS}}
+\index{D\+P\+\_\+\+O\+PS@{D\+P\+\_\+\+O\+PS}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{D\+P\+\_\+\+O\+PS}{DP_OPS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\+P\+\_\+\+O\+PS~1}\hypertarget{flops_8c_a55fe145ac2e217b66d313f1a511e870b}{}\label{flops_8c_a55fe145ac2e217b66d313f1a511e870b}
+\index{flops.\+c@{flops.\+c}!F\+L\+O\+P\+S\+\_\+\+E\+VS@{F\+L\+O\+P\+S\+\_\+\+E\+VS}}
+\index{F\+L\+O\+P\+S\+\_\+\+E\+VS@{F\+L\+O\+P\+S\+\_\+\+E\+VS}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+L\+O\+P\+S\+\_\+\+E\+VS}{FLOPS_EVS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+L\+O\+P\+S\+\_\+\+E\+VS~4}\hypertarget{flops_8c_ac69502f20476bac694e0741e9dc2dddc}{}\label{flops_8c_ac69502f20476bac694e0741e9dc2dddc}
+\index{flops.\+c@{flops.\+c}!F\+L\+O\+P\+S\+\_\+\+S\+E\+TS@{F\+L\+O\+P\+S\+\_\+\+S\+E\+TS}}
+\index{F\+L\+O\+P\+S\+\_\+\+S\+E\+TS@{F\+L\+O\+P\+S\+\_\+\+S\+E\+TS}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+L\+O\+P\+S\+\_\+\+S\+E\+TS}{FLOPS_SETS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+L\+O\+P\+S\+\_\+\+S\+E\+TS~2}\hypertarget{flops_8c_a775af6da547769a14f30dbfddf595fd7}{}\label{flops_8c_a775af6da547769a14f30dbfddf595fd7}
+\index{flops.\+c@{flops.\+c}!F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}}
+\index{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}{FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+LE\char`\"{}}\hypertarget{flops_8c_a8f591dbbf43b77df7e82065e88f8a353}{}\label{flops_8c_a8f591dbbf43b77df7e82065e88f8a353}
+\index{flops.\+c@{flops.\+c}!F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}}
+\index{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}{FP_ARITH_INST_RETIRED_128B_PACKED_SINGLE_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:128\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+LE\char`\"{}}\hypertarget{flops_8c_ae50cae40b24213c68f847051fd99ca28}{}\label{flops_8c_ae50cae40b24213c68f847051fd99ca28}
+\index{flops.\+c@{flops.\+c}!F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}}
+\index{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}{FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+LE\char`\"{}}\hypertarget{flops_8c_a95125ea71fad43fda5a9d0092bb229ed}{}\label{flops_8c_a95125ea71fad43fda5a9d0092bb229ed}
+\index{flops.\+c@{flops.\+c}!F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}}
+\index{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}{FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:256\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+LE\char`\"{}}\hypertarget{flops_8c_a22262a24590492406011a1605eef726d}{}\label{flops_8c_a22262a24590492406011a1605eef726d}
+\index{flops.\+c@{flops.\+c}!F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}}
+\index{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}{FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+D\+O\+U\+B\+LE\char`\"{}}\hypertarget{flops_8c_aef4b42eeb99b0aa93987d31e73d05a47}{}\label{flops_8c_aef4b42eeb99b0aa93987d31e73d05a47}
+\index{flops.\+c@{flops.\+c}!F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}}
+\index{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}{FP_ARITH_INST_RETIRED_512B_PACKED_SINGLE_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:512\+B\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+LE\char`\"{}}\hypertarget{flops_8c_a71cf58c4dc4144822f7fe962d2ceace4}{}\label{flops_8c_a71cf58c4dc4144822f7fe962d2ceace4}
+\index{flops.\+c@{flops.\+c}!F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}}
+\index{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N}{FP_ARITH_INST_RETIRED_PACKED_SINGLE_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+P\+A\+C\+K\+E\+D\+\_\+\+S\+I\+N\+G\+L\+E\+\_\+N~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:\+S\+C\+A\+L\+A\+R\+\_\+\+S\+I\+N\+G\+LE\char`\"{}}\hypertarget{flops_8c_a5a9a2e9ef69dbb1c33cef604a24716d0}{}\label{flops_8c_a5a9a2e9ef69dbb1c33cef604a24716d0}
+\index{flops.\+c@{flops.\+c}!F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}}
+\index{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N@{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N}{FP_ARITH_INST_RETIRED_SCALAR_DOUBLE_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+P\+\_\+\+A\+R\+I\+T\+H\+\_\+\+I\+N\+S\+T\+\_\+\+R\+E\+T\+I\+R\+E\+D\+\_\+\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+N~\char`\"{}F\+P\+\_\+\+A\+R\+I\+T\+H\+:\+S\+C\+A\+L\+A\+R\+\_\+\+D\+O\+U\+B\+LE\char`\"{}}\hypertarget{flops_8c_ab1ba06241442609a1aec8371fa8eb912}{}\label{flops_8c_ab1ba06241442609a1aec8371fa8eb912}
+\index{flops.\+c@{flops.\+c}!S\+P\+\_\+\+O\+PS@{S\+P\+\_\+\+O\+PS}}
+\index{S\+P\+\_\+\+O\+PS@{S\+P\+\_\+\+O\+PS}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{S\+P\+\_\+\+O\+PS}{SP_OPS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+P\+\_\+\+O\+PS~0}\hypertarget{flops_8c_a6f3b5f7bd55d78c229ede60ccafeecf5}{}\label{flops_8c_a6f3b5f7bd55d78c229ede60ccafeecf5}
+
+
+\subsection{Function Documentation}
+\index{flops.\+c@{flops.\+c}!get\+\_\+number\+\_\+fops\+\_\+events@{get\+\_\+number\+\_\+fops\+\_\+events}}
+\index{get\+\_\+number\+\_\+fops\+\_\+events@{get\+\_\+number\+\_\+fops\+\_\+events}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+number\+\_\+fops\+\_\+events()}{get_number_fops_events()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+number\+\_\+fops\+\_\+events (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_a77debe352fe64db6560d03e7d6225d3a}{}\label{flops_8c_a77debe352fe64db6560d03e7d6225d3a}
+
+
+Returns the total number of fops events. 
+
+\index{flops.\+c@{flops.\+c}!get\+\_\+total\+\_\+fops@{get\+\_\+total\+\_\+fops}}
+\index{get\+\_\+total\+\_\+fops@{get\+\_\+total\+\_\+fops}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+total\+\_\+fops(long long $\ast$metrics)}{get_total_fops(long long *metrics)}}]{\setlength{\rightskip}{0pt plus 5cm}void get\+\_\+total\+\_\+fops (
+\begin{DoxyParamCaption}
+\item[{long long $\ast$}]{metrics}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_af1f94974da69e85f8add8821fe2e7972}{}\label{flops_8c_af1f94974da69e85f8add8821fe2e7972}
+
+
+Puts the current flops metrics in the variable recieved by parameter. 
+
+\index{flops.\+c@{flops.\+c}!get\+\_\+weigth\+\_\+fops\+\_\+instructions@{get\+\_\+weigth\+\_\+fops\+\_\+instructions}}
+\index{get\+\_\+weigth\+\_\+fops\+\_\+instructions@{get\+\_\+weigth\+\_\+fops\+\_\+instructions}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+weigth\+\_\+fops\+\_\+instructions(int $\ast$weigth\+\_\+vector)}{get_weigth_fops_instructions(int *weigth_vector)}}]{\setlength{\rightskip}{0pt plus 5cm}void get\+\_\+weigth\+\_\+fops\+\_\+instructions (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{weigth\+\_\+vector}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_ad5051fe78c165c0faa10141d0894e7e3}{}\label{flops_8c_ad5051fe78c165c0faa10141d0894e7e3}
+
+
+Puts the weights of the fops instructions into $\ast$weight\+\_\+vector. 
+
+\index{flops.\+c@{flops.\+c}!gflops@{gflops}}
+\index{gflops@{gflops}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{gflops(unsigned long total\+\_\+time, uint total\+\_\+cores)}{gflops(unsigned long total_time, uint total_cores)}}]{\setlength{\rightskip}{0pt plus 5cm}double gflops (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{total\+\_\+timei, }
+\item[{{\bf uint}}]{total\+\_\+cores}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_a3beaed8263055f4f0a1458866585a07b}{}\label{flops_8c_a3beaed8263055f4f0a1458866585a07b}
+
+
+Returns the amount of floating point operations done in the time total\+\_\+timei, in G\+Flops. 
+
+\index{flops.\+c@{flops.\+c}!init\+\_\+flops\+\_\+metrics@{init\+\_\+flops\+\_\+metrics}}
+\index{init\+\_\+flops\+\_\+metrics@{init\+\_\+flops\+\_\+metrics}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{init\+\_\+flops\+\_\+metrics()}{init_flops_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}int init\+\_\+flops\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_a09d96a6e958f2395a8ac92d2e78d8349}{}\label{flops_8c_a09d96a6e958f2395a8ac92d2e78d8349}
+
+
+Initializes the event metrics for flops. 
+
+\index{flops.\+c@{flops.\+c}!print\+\_\+gflops@{print\+\_\+gflops}}
+\index{print\+\_\+gflops@{print\+\_\+gflops}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{print\+\_\+gflops(long long total\+\_\+inst, unsigned long total\+\_\+time, uint total\+\_\+cores)}{print_gflops(long long total_inst, unsigned long total_time, uint total_cores)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+gflops (
+\begin{DoxyParamCaption}
+\item[{long long}]{total\+\_\+inst, }
+\item[{{\bf ulong}}]{total\+\_\+time, }
+\item[{{\bf uint}}]{total\+\_\+cores}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_aeb22d32e039485812ba03ab42f927f73}{}\label{flops_8c_aeb22d32e039485812ba03ab42f927f73}
+
+
+Prints the total G\+Flops per process and node if verbosity level is at 1 or higher. 
+
+\index{flops.\+c@{flops.\+c}!reset\+\_\+flops\+\_\+metrics@{reset\+\_\+flops\+\_\+metrics}}
+\index{reset\+\_\+flops\+\_\+metrics@{reset\+\_\+flops\+\_\+metrics}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{reset\+\_\+flops\+\_\+metrics()}{reset_flops_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void reset\+\_\+flops\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_af14efb800e9513cfffa351bb705d27fe}{}\label{flops_8c_af14efb800e9513cfffa351bb705d27fe}
+
+
+Resets the metrics for flops. 
+
+\index{flops.\+c@{flops.\+c}!start\+\_\+flops\+\_\+metrics@{start\+\_\+flops\+\_\+metrics}}
+\index{start\+\_\+flops\+\_\+metrics@{start\+\_\+flops\+\_\+metrics}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{start\+\_\+flops\+\_\+metrics()}{start_flops_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void start\+\_\+flops\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_a1f8e182cb74fec3933d45a1ffed050c2}{}\label{flops_8c_a1f8e182cb74fec3933d45a1ffed050c2}
+
+
+Starts tracking flops metrics. 
+
+\index{flops.\+c@{flops.\+c}!stop\+\_\+flops\+\_\+metrics@{stop\+\_\+flops\+\_\+metrics}}
+\index{stop\+\_\+flops\+\_\+metrics@{stop\+\_\+flops\+\_\+metrics}!flops.\+c@{flops.\+c}}
+\subsubsection[{\texorpdfstring{stop\+\_\+flops\+\_\+metrics(long long $\ast$flops, long long $\ast$f\+\_\+operations)}{stop_flops_metrics(long long *flops, long long *f_operations)}}]{\setlength{\rightskip}{0pt plus 5cm}void stop\+\_\+flops\+\_\+metrics (
+\begin{DoxyParamCaption}
+\item[{long long $\ast$}]{total\+\_\+flops, }
+\item[{long long $\ast$}]{f\+\_\+operations}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8c_a88b48d98867e3a9d4d823e577fd62618}{}\label{flops_8c_a88b48d98867e3a9d4d823e577fd62618}
+
+
+Stops flops metrics and accumulates registered flops and number of operations to the variables recieved by parameter. 
+

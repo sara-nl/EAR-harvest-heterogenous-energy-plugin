@@ -1,0 +1,120 @@
+\hypertarget{min__energy_8c}{}\section{src/library/models/min\+\_\+energy.c File Reference}
+\label{min__energy_8c}\index{src/library/models/min\+\_\+energy.\+c@{src/library/models/min\+\_\+energy.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$control/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/macros.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/externs.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/models.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/sig\+\_\+projections.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+api.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/projection.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/signature.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/log.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{min__energy_8c_a4a9de35e94a2acd1e9ed066b26a375ef}{M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+V\+E\+R\+B\+O\+SE}~0
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{min__energy_8c_a69bd7f0adc825ac63c5af829d01e2a57}{min\+\_\+energy\+\_\+init} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} num\+\_\+pstates)
+\item 
+void \hyperlink{min__energy_8c_aae608090ed3fca8024c06a116977bf45}{min\+\_\+energy\+\_\+new\+\_\+loop} ()
+\item 
+void \hyperlink{min__energy_8c_af1e143590f00b5b1a71418311662d987}{min\+\_\+energy\+\_\+end\+\_\+loop} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__energy_8c_ad9821eb012b360d9de2a6da6a7893f80}{min\+\_\+energy\+\_\+policy} (\hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$sig)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__energy_8c_a6767c3bc77a2c9800046ed2e2e960ea7}{min\+\_\+energy\+\_\+policy\+\_\+ok} (\hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$proj, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$curr\+\_\+sig, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$last\+\_\+sig)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__energy_8c_a26223a28f6ef0c33525fa99853562fd8}{min\+\_\+energy\+\_\+default\+\_\+conf} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} f)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+double \hyperlink{min__energy_8c_a584fd902416e83368773de1d6c281d06}{performance\+\_\+penalty}
+\item 
+\hyperlink{coefficient_8h_a7f58a37ee368b55a21d66b1b4e76e779}{coefficient\+\_\+t} $\ast$$\ast$ \hyperlink{min__energy_8c_a638b9d18dabadf6e40aca8795eafb4ec}{coefficients}
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{min__energy_8c_a63b60fcd544205b242ac1d54f00c1d90}{E\+A\+R\+\_\+default\+\_\+pstate}
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__energy_8c_a51266f67c59ab5a6aa52fb3515659413}{user\+\_\+selected\+\_\+freq}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+V\+E\+R\+B\+O\+SE@{M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+V\+E\+R\+B\+O\+SE}}
+\index{M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+V\+E\+R\+B\+O\+SE@{M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+V\+E\+R\+B\+O\+SE}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+V\+E\+R\+B\+O\+SE}{MIN_ENERGY_VERBOSE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+V\+E\+R\+B\+O\+SE~0}\hypertarget{min__energy_8c_a4a9de35e94a2acd1e9ed066b26a375ef}{}\label{min__energy_8c_a4a9de35e94a2acd1e9ed066b26a375ef}
+
+
+\subsection{Function Documentation}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!min\+\_\+energy\+\_\+default\+\_\+conf@{min\+\_\+energy\+\_\+default\+\_\+conf}}
+\index{min\+\_\+energy\+\_\+default\+\_\+conf@{min\+\_\+energy\+\_\+default\+\_\+conf}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+default\+\_\+conf(ulong f)}{min_energy_default_conf(ulong f)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+energy\+\_\+default\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{f}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8c_a26223a28f6ef0c33525fa99853562fd8}{}\label{min__energy_8c_a26223a28f6ef0c33525fa99853562fd8}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!min\+\_\+energy\+\_\+end\+\_\+loop@{min\+\_\+energy\+\_\+end\+\_\+loop}}
+\index{min\+\_\+energy\+\_\+end\+\_\+loop@{min\+\_\+energy\+\_\+end\+\_\+loop}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+end\+\_\+loop()}{min_energy_end_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+energy\+\_\+end\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8c_af1e143590f00b5b1a71418311662d987}{}\label{min__energy_8c_af1e143590f00b5b1a71418311662d987}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!min\+\_\+energy\+\_\+init@{min\+\_\+energy\+\_\+init}}
+\index{min\+\_\+energy\+\_\+init@{min\+\_\+energy\+\_\+init}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+init(uint num\+\_\+pstates)}{min_energy_init(uint num_pstates)}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+energy\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{num\+\_\+pstates}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8c_a69bd7f0adc825ac63c5af829d01e2a57}{}\label{min__energy_8c_a69bd7f0adc825ac63c5af829d01e2a57}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!min\+\_\+energy\+\_\+new\+\_\+loop@{min\+\_\+energy\+\_\+new\+\_\+loop}}
+\index{min\+\_\+energy\+\_\+new\+\_\+loop@{min\+\_\+energy\+\_\+new\+\_\+loop}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+new\+\_\+loop()}{min_energy_new_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+energy\+\_\+new\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8c_aae608090ed3fca8024c06a116977bf45}{}\label{min__energy_8c_aae608090ed3fca8024c06a116977bf45}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!min\+\_\+energy\+\_\+policy@{min\+\_\+energy\+\_\+policy}}
+\index{min\+\_\+energy\+\_\+policy@{min\+\_\+energy\+\_\+policy}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+policy(signature\+\_\+t $\ast$sig)}{min_energy_policy(signature_t *sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+energy\+\_\+policy (
+\begin{DoxyParamCaption}
+\item[{{\bf signature\+\_\+t} $\ast$}]{sig}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8c_ad9821eb012b360d9de2a6da6a7893f80}{}\label{min__energy_8c_ad9821eb012b360d9de2a6da6a7893f80}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!min\+\_\+energy\+\_\+policy\+\_\+ok@{min\+\_\+energy\+\_\+policy\+\_\+ok}}
+\index{min\+\_\+energy\+\_\+policy\+\_\+ok@{min\+\_\+energy\+\_\+policy\+\_\+ok}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+energy\+\_\+policy\+\_\+ok(projection\+\_\+t $\ast$proj, signature\+\_\+t $\ast$curr\+\_\+sig, signature\+\_\+t $\ast$last\+\_\+sig)}{min_energy_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+energy\+\_\+policy\+\_\+ok (
+\begin{DoxyParamCaption}
+\item[{{\bf projection\+\_\+t} $\ast$}]{proj, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{curr\+\_\+sig, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{last\+\_\+sig}
+\end{DoxyParamCaption}
+)}\hypertarget{min__energy_8c_a6767c3bc77a2c9800046ed2e2e960ea7}{}\label{min__energy_8c_a6767c3bc77a2c9800046ed2e2e960ea7}
+
+
+\subsection{Variable Documentation}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!coefficients@{coefficients}}
+\index{coefficients@{coefficients}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{coefficients}{coefficients}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$$\ast$ coefficients}\hypertarget{min__energy_8c_a638b9d18dabadf6e40aca8795eafb4ec}{}\label{min__energy_8c_a638b9d18dabadf6e40aca8795eafb4ec}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!E\+A\+R\+\_\+default\+\_\+pstate@{E\+A\+R\+\_\+default\+\_\+pstate}}
+\index{E\+A\+R\+\_\+default\+\_\+pstate@{E\+A\+R\+\_\+default\+\_\+pstate}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+default\+\_\+pstate}{EAR_default_pstate}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} E\+A\+R\+\_\+default\+\_\+pstate}\hypertarget{min__energy_8c_a63b60fcd544205b242ac1d54f00c1d90}{}\label{min__energy_8c_a63b60fcd544205b242ac1d54f00c1d90}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!performance\+\_\+penalty@{performance\+\_\+penalty}}
+\index{performance\+\_\+penalty@{performance\+\_\+penalty}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{performance\+\_\+penalty}{performance_penalty}}]{\setlength{\rightskip}{0pt plus 5cm}double performance\+\_\+penalty}\hypertarget{min__energy_8c_a584fd902416e83368773de1d6c281d06}{}\label{min__energy_8c_a584fd902416e83368773de1d6c281d06}
+\index{min\+\_\+energy.\+c@{min\+\_\+energy.\+c}!user\+\_\+selected\+\_\+freq@{user\+\_\+selected\+\_\+freq}}
+\index{user\+\_\+selected\+\_\+freq@{user\+\_\+selected\+\_\+freq}!min\+\_\+energy.\+c@{min\+\_\+energy.\+c}}
+\subsubsection[{\texorpdfstring{user\+\_\+selected\+\_\+freq}{user_selected_freq}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} user\+\_\+selected\+\_\+freq}\hypertarget{min__energy_8c_a51266f67c59ab5a6aa52fb3515659413}{}\label{min__energy_8c_a51266f67c59ab5a6aa52fb3515659413}

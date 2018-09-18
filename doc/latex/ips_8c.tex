@@ -1,0 +1,120 @@
+\hypertarget{ips_8c}{}\section{src/tests/functionals/ips.c File Reference}
+\label{ips_8c}\index{src/tests/functionals/ips.\+c@{src/tests/functionals/ips.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$sys/socket.\+h$>$}\\*
+{\ttfamily \#include $<$sys/select.\+h$>$}\\*
+{\ttfamily \#include $<$netinet/in.\+h$>$}\\*
+{\ttfamily \#include $<$netinet/ip.\+h$>$}\\*
+{\ttfamily \#include $<$arpa/inet.\+h$>$}\\*
+{\ttfamily \#include $<$netdb.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structip__table}{ip\+\_\+table}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{ips_8c_a26af4e86634a5afbbe4ae1326886c9b2}{I\+P\+\_\+\+L\+E\+N\+G\+TH}~24
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structip__table}{ip\+\_\+table} \hyperlink{ips_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{ips_8c_a994fd718c7071e1dee7801e4dc81197c}{print\+\_\+ips} (\hyperlink{ips_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$ips, int num\+\_\+ips)
+\item 
+void \hyperlink{ips_8c_a473cb9110ae8ab67cd83cf4f37b8e021}{fill\+\_\+ip} (char $\ast$buff, \hyperlink{ips_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$table)
+\item 
+\hyperlink{ips_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$ \hyperlink{ips_8c_a801da816d5e13ae8207bd831428709f1}{generate\+\_\+node\+\_\+names} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}, \hyperlink{ips_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$ips)
+\item 
+void \hyperlink{ips_8c_a09155ca68e9d0177db08f47252314f24}{visit\+\_\+ip} (int ip, int dist, \hyperlink{ips_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$ips, int num\+\_\+ips)
+\item 
+void \hyperlink{ips_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{ips_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} =1
+\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\item 
+int \hyperlink{ips_8c_a39d0373e8eeb9d9076243b92cd71fab6}{global\+\_\+num} = 0
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{ips.\+c@{ips.\+c}!I\+P\+\_\+\+L\+E\+N\+G\+TH@{I\+P\+\_\+\+L\+E\+N\+G\+TH}}
+\index{I\+P\+\_\+\+L\+E\+N\+G\+TH@{I\+P\+\_\+\+L\+E\+N\+G\+TH}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{I\+P\+\_\+\+L\+E\+N\+G\+TH}{IP_LENGTH}}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+P\+\_\+\+L\+E\+N\+G\+TH~24}\hypertarget{ips_8c_a26af4e86634a5afbbe4ae1326886c9b2}{}\label{ips_8c_a26af4e86634a5afbbe4ae1326886c9b2}
+
+
+\subsection{Typedef Documentation}
+\index{ips.\+c@{ips.\+c}!ip\+\_\+table\+\_\+t@{ip\+\_\+table\+\_\+t}}
+\index{ip\+\_\+table\+\_\+t@{ip\+\_\+table\+\_\+t}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{ip\+\_\+table\+\_\+t}{ip_table_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf ip\+\_\+table}  {\bf ip\+\_\+table\+\_\+t}}\hypertarget{ips_8c_a0708790201f3be117145b61b3be123a9}{}\label{ips_8c_a0708790201f3be117145b61b3be123a9}
+
+
+\subsection{Function Documentation}
+\index{ips.\+c@{ips.\+c}!fill\+\_\+ip@{fill\+\_\+ip}}
+\index{fill\+\_\+ip@{fill\+\_\+ip}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{fill\+\_\+ip(char $\ast$buff, ip\+\_\+table\+\_\+t $\ast$table)}{fill_ip(char *buff, ip_table_t *table)}}]{\setlength{\rightskip}{0pt plus 5cm}void fill\+\_\+ip (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{buff, }
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$}]{table}
+\end{DoxyParamCaption}
+)}\hypertarget{ips_8c_a473cb9110ae8ab67cd83cf4f37b8e021}{}\label{ips_8c_a473cb9110ae8ab67cd83cf4f37b8e021}
+\index{ips.\+c@{ips.\+c}!generate\+\_\+node\+\_\+names@{generate\+\_\+node\+\_\+names}}
+\index{generate\+\_\+node\+\_\+names@{generate\+\_\+node\+\_\+names}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{generate\+\_\+node\+\_\+names(cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf, ip\+\_\+table\+\_\+t $\ast$ips)}{generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t *ips)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ip\+\_\+table\+\_\+t}$\ast$ generate\+\_\+node\+\_\+names (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf, }
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$}]{ips}
+\end{DoxyParamCaption}
+)}\hypertarget{ips_8c_a801da816d5e13ae8207bd831428709f1}{}\label{ips_8c_a801da816d5e13ae8207bd831428709f1}
+\index{ips.\+c@{ips.\+c}!main@{main}}
+\index{main@{main}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{ips_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{ips_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+\index{ips.\+c@{ips.\+c}!print\+\_\+ips@{print\+\_\+ips}}
+\index{print\+\_\+ips@{print\+\_\+ips}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{print\+\_\+ips(ip\+\_\+table\+\_\+t $\ast$ips, int num\+\_\+ips)}{print_ips(ip_table_t *ips, int num_ips)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+ips (
+\begin{DoxyParamCaption}
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$}]{ips, }
+\item[{int}]{num\+\_\+ips}
+\end{DoxyParamCaption}
+)}\hypertarget{ips_8c_a994fd718c7071e1dee7801e4dc81197c}{}\label{ips_8c_a994fd718c7071e1dee7801e4dc81197c}
+\index{ips.\+c@{ips.\+c}!visit\+\_\+ip@{visit\+\_\+ip}}
+\index{visit\+\_\+ip@{visit\+\_\+ip}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{visit\+\_\+ip(int ip, int dist, ip\+\_\+table\+\_\+t $\ast$ips, int num\+\_\+ips)}{visit_ip(int ip, int dist, ip_table_t *ips, int num_ips)}}]{\setlength{\rightskip}{0pt plus 5cm}void visit\+\_\+ip (
+\begin{DoxyParamCaption}
+\item[{int}]{ip, }
+\item[{int}]{dist, }
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$}]{ips, }
+\item[{int}]{num\+\_\+ips}
+\end{DoxyParamCaption}
+)}\hypertarget{ips_8c_a09155ca68e9d0177db08f47252314f24}{}\label{ips_8c_a09155ca68e9d0177db08f47252314f24}
+
+
+\subsection{Variable Documentation}
+\index{ips.\+c@{ips.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL =1}\hypertarget{ips_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{ips_8c_a43d7e58c317e811389b628dc49b52bd2}
+
+
+This program sets the node frequency . 
+
+It must be executed with privileges \index{ips.\+c@{ips.\+c}!global\+\_\+num@{global\+\_\+num}}
+\index{global\+\_\+num@{global\+\_\+num}!ips.\+c@{ips.\+c}}
+\subsubsection[{\texorpdfstring{global\+\_\+num}{global_num}}]{\setlength{\rightskip}{0pt plus 5cm}int global\+\_\+num = 0}\hypertarget{ips_8c_a39d0373e8eeb9d9076243b92cd71fab6}{}\label{ips_8c_a39d0373e8eeb9d9076243b92cd71fab6}

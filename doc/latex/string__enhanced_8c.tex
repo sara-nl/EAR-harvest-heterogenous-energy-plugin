@@ -1,0 +1,73 @@
+\hypertarget{string__enhanced_8c}{}\section{src/common/string\+\_\+enhanced.c File Reference}
+\label{string__enhanced_8c}\index{src/common/string\+\_\+enhanced.\+c@{src/common/string\+\_\+enhanced.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$ctype.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$common/string\+\_\+enhanced.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{string__enhanced_8c_aa56d8c09a932d1a03385a90b43752ad9}{tprintf\+\_\+init} (F\+I\+LE $\ast$\+\_\+stream, char $\ast$\+\_\+format)
+\item 
+int \hyperlink{string__enhanced_8c_ab2a53d2ce1c86b5ea49bafa8f4cda38c}{tprintf\+\_\+format} ()
+\item 
+void \hyperlink{string__enhanced_8c_a07a65b8262e7ec7ca388e537b29235a5}{strtoup} (char $\ast$string)
+\begin{DoxyCompactList}\small\item\em Converts a string to upper case. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{string__enhanced_8c_a30021eb4da5d9ba25bdf21db7baaf398}{strclean} (char $\ast$string, char chr)
+\begin{DoxyCompactList}\small\item\em Cleans the character pointed by \textquotesingle{}chr\textquotesingle{}, adding an \textquotesingle{}\textbackslash{}0\textquotesingle{} in its position. \end{DoxyCompactList}\item 
+void \hyperlink{string__enhanced_8c_a2426f0ec0c92e526bf593c52c89b449c}{remove\+\_\+chars} (char $\ast$s, char c)
+\begin{DoxyCompactList}\small\item\em Removes characters c from string s. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}!remove\+\_\+chars@{remove\+\_\+chars}}
+\index{remove\+\_\+chars@{remove\+\_\+chars}!string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}}
+\subsubsection[{\texorpdfstring{remove\+\_\+chars(char $\ast$s, char c)}{remove_chars(char *s, char c)}}]{\setlength{\rightskip}{0pt plus 5cm}void remove\+\_\+chars (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{s, }
+\item[{char}]{c}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8c_a2426f0ec0c92e526bf593c52c89b449c}{}\label{string__enhanced_8c_a2426f0ec0c92e526bf593c52c89b449c}
+
+
+Removes characters c from string s. 
+
+\index{string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}!strclean@{strclean}}
+\index{strclean@{strclean}!string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}}
+\subsubsection[{\texorpdfstring{strclean(char $\ast$string, char chr)}{strclean(char *string, char chr)}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ strclean (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{string, }
+\item[{char}]{chr}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8c_a30021eb4da5d9ba25bdf21db7baaf398}{}\label{string__enhanced_8c_a30021eb4da5d9ba25bdf21db7baaf398}
+
+
+Cleans the character pointed by \textquotesingle{}chr\textquotesingle{}, adding an \textquotesingle{}\textbackslash{}0\textquotesingle{} in its position. 
+
+\index{string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}!strtoup@{strtoup}}
+\index{strtoup@{strtoup}!string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}}
+\subsubsection[{\texorpdfstring{strtoup(char $\ast$string)}{strtoup(char *string)}}]{\setlength{\rightskip}{0pt plus 5cm}void strtoup (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{string}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8c_a07a65b8262e7ec7ca388e537b29235a5}{}\label{string__enhanced_8c_a07a65b8262e7ec7ca388e537b29235a5}
+
+
+Converts a string to upper case. 
+
+\index{string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}!tprintf\+\_\+format@{tprintf\+\_\+format}}
+\index{tprintf\+\_\+format@{tprintf\+\_\+format}!string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}}
+\subsubsection[{\texorpdfstring{tprintf\+\_\+format()}{tprintf_format()}}]{\setlength{\rightskip}{0pt plus 5cm}int tprintf\+\_\+format (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8c_ab2a53d2ce1c86b5ea49bafa8f4cda38c}{}\label{string__enhanced_8c_ab2a53d2ce1c86b5ea49bafa8f4cda38c}
+\index{string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}!tprintf\+\_\+init@{tprintf\+\_\+init}}
+\index{tprintf\+\_\+init@{tprintf\+\_\+init}!string\+\_\+enhanced.\+c@{string\+\_\+enhanced.\+c}}
+\subsubsection[{\texorpdfstring{tprintf\+\_\+init(\+F\+I\+L\+E $\ast$\+\_\+stream, char $\ast$\+\_\+format)}{tprintf_init(FILE *_stream, char *_format)}}]{\setlength{\rightskip}{0pt plus 5cm}int tprintf\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{F\+I\+LE $\ast$}]{\+\_\+stream, }
+\item[{char $\ast$}]{\+\_\+format}
+\end{DoxyParamCaption}
+)}\hypertarget{string__enhanced_8c_aa56d8c09a932d1a03385a90b43752ad9}{}\label{string__enhanced_8c_aa56d8c09a932d1a03385a90b43752ad9}

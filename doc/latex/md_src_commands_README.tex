@@ -1,0 +1,54 @@
+E\+AR offers the following commands\+:
+\begin{DoxyItemize}
+\item Commands to analyze data stored in the DB\+: eacct and ereport
+\item Commands to control and temporally modify cluster settings\+: econtrol
+\item Commands to create/update the DB\+: ear\+\_\+create\+\_\+database, ear\+\_\+store\+\_\+database
+\end{DoxyItemize}
+
+All these commands read the E\+AR configurarion file (ear.\+conf) to determine if the user is an authorized (or not user). Root is a special case, it doesn\textquotesingle{}t need to be included in the list of authorized users. Some options are disables when the user is not authorized.
+
+\section*{Energy Account (eacct)}
+
+The eacct command shows accounting information stored in the E\+AR DB for jobs (and step) I\+Ds. It provides the following options. 
+\begin{DoxyCode}
+1 Usage: eacct [Optional parameters]
+2     Optional parameters: 
+3         -h  displays this message
+4         -v  verbose mode for debugging purposes
+5         -u  specifies the user whose applications will be retrieved. Only available to privileged users.
+       [default for authorized users: all users]
+6         -j  specifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only
+       retrieve its own jobs unless said user is privileged. [default: all jobs]
+7         -l  shows the information for each node for each job instead of the global statistics for said job.
+8         -n  specifies the number of jobs to be shown, starting from the most recent one. [default: all
+       jobs]
+\end{DoxyCode}
+
+
+\section*{Energy report (ereport)}
+
+The ereport command create reports from the information stored in the E\+AR DB concerning energy.
+
+\section*{Energy control (econtrol)}
+
+The econtrol command modifies cluster settings (temporally) related to power policy settings. These options are sent to all the nodes in the cluster.
+
+
+\begin{DoxyCode}
+1 Usage: econtrol [options]
+2     --set-freq  newfreq     ->sets the frequency of all nodes to the requested one
+3     --set-def-freq  newfreq     ->sets the default frequency
+4     --set-max-freq  newfreq     ->sets the maximum frequency
+5     --inc-th    new\_th      ->increases the threshold for all nodes
+6     --red-def-freq  reduction   ->reduces the default frequency
+7     --restore-conf          ->restores the configuration to all nodes
+\end{DoxyCode}
+
+
+\section*{Database commands}
+
+
+\begin{DoxyItemize}
+\item ear\+\_\+create\+\_\+database\+: Creates the E\+AR DB used for accounting and for the global energy control. Requires root access to the My\+S\+QL server. It reads the ear.\+conf to get connection details and DB name.
+\item ear\+\_\+store\+\_\+database\+: ?? 
+\end{DoxyItemize}
