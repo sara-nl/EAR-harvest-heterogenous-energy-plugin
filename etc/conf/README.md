@@ -29,11 +29,10 @@ MariaDBDatabase=EAR_DB
 2) EAR Global Manager (EARGMD)
 
 ```
-#
+# Verbose level
 GlobalManagerVerbose=1
 # Period T1 and period T2 are specified in seconds. T1 must be less than T2. (i.e. 10 min and 1 month)
 GlobalManagerPeriodT1=90
-#
 GlobalManagerPeriodT2=259200
 # Units field, Can be '-' (Joules), 'K' KiloJoules or 'M' MegaJoules
 GlobalManagerUnits=K
@@ -60,9 +59,9 @@ GlobalManagerGracePeriods=3
 ```
 # The verbosity level [0..4]
 NodeDaemonVerbose=1
-# In seconds
+# Frequency used by power monitoring service, in seconds.
 NodeDaemonPowermonFreq=60
-# Maximum supported frequency (1 means nominal, no turbo)
+# Maximum supported frequency (1 means nominal, no turbo).
 NodeDaemonMaxPstate=1
 # Enable (1) or disable (0) the turbo frequency
 NodeDaemonTurbo=0
@@ -107,7 +106,7 @@ DynAISWindowSize=500
 DynaisTimeout=30
 # Time in seconds to compute every application signature when the EAR goes to periodic mode.
 LibraryPeriod=30
-# Number of MPI calls whether EAR must go to periodic mode or not
+# Number of MPI calls whether EAR must go to periodic mode or not.
 CheckEARModeEvery=1000
 ```
 

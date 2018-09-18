@@ -16,32 +16,7 @@ Configuration
 -------------
 The EAR Daemon uses the `$(ETC)/ear.conf` file to be configured. It can be dynamically configured by reloading the service.
 
-```
-# Fields related to the Daemon
-# Lines starting with # are comments
-
-# Verbose level
-NodeDaemonVerbose=1
-
-# Frequency used by power monitoring service (in seconds)
-NodeDaemonPowermonFreq=10
-
-# Maximum p_state supported (1 nominal)
-NodeDaemonMaxPstate=1
-
-# Turbo frequencies supported (0 no)
-NodeDaemonTurbo=0
-
-# Port to be used by the remote API
-NodeDaemonPort=5000
-
-# MySQL DB is used
-NodeUseDB=1
-
-# MySQL is used and records are sent using eardbd, otherwise EARD will send it directly to the MySQL server
-NodeUseEARDBD=1
-
-```
+Please visit the [EAR configuration file page](../../etc/conf/README.md) for more information about the options of EARD and other components.
 
 Execution
 ---------
