@@ -1,0 +1,165 @@
+\hypertarget{environment__common_8c}{}\section{src/common/environment\+\_\+common.c File Reference}
+\label{environment__common_8c}\index{src/common/environment\+\_\+common.\+c@{src/common/environment\+\_\+common.\+c}}
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{environment__common_8c_a4ad8faebfc1723fec1090b84ec0f680e}{D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE}~0
+\item 
+\#define \hyperlink{environment__common_8c_acfb12d655d1289dca928264c229012f0}{D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME}~\char`\"{}.ear\+\_\+system\+\_\+db\char`\"{}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ \hyperlink{environment__common_8c_a3cedc4d1211b96f14b4239519ded7443}{getenv\+\_\+ear\+\_\+tmp} ()
+\begin{DoxyCompactList}\small\item\em Tries to get the E\+A\+R\+\_\+\+T\+MP environment variable\textquotesingle{}s value and returns it. \end{DoxyCompactList}\item 
+int \hyperlink{environment__common_8c_a49baf2bb1c72f70473efa5a14f0e7982}{getenv\+\_\+ear\+\_\+verbose} ()
+\begin{DoxyCompactList}\small\item\em Reads the V\+E\+R\+B\+O\+SE\textquotesingle{}s level set in the environment variable and returns its value if it\textquotesingle{}s a valid verbose level. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{environment__common_8c_a8d8534f9a2784709f7dc8482cafc1d98}{get\+\_\+ear\+\_\+install\+\_\+path} ()
+\begin{DoxyCompactList}\small\item\em Returns the install path previously read. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{environment__common_8c_a41298ad7f68b27773994f895f3084174}{get\+\_\+ear\+\_\+tmp} ()
+\begin{DoxyCompactList}\small\item\em Returns the tmp path previously read. \end{DoxyCompactList}\item 
+void \hyperlink{environment__common_8c_abf8b4f56e219b453cae9e49c3550e731}{set\+\_\+ear\+\_\+tmp} (char $\ast$new\+\_\+tmp)
+\begin{DoxyCompactList}\small\item\em Changes the tmp path to the one recieved by parameter. \end{DoxyCompactList}\item 
+int \hyperlink{environment__common_8c_a76a8826ffc52297ff25e59c463b6c234}{get\+\_\+ear\+\_\+verbose} ()
+\begin{DoxyCompactList}\small\item\em Returns the current verbosity level. \end{DoxyCompactList}\item 
+void \hyperlink{environment__common_8c_aaed068067df22cad656804b85336a0f8}{set\+\_\+ear\+\_\+verbose} (int verb)
+\begin{DoxyCompactList}\small\item\em Sets the verbosity level to the one recieved by parameter. \end{DoxyCompactList}\item 
+void \hyperlink{environment__common_8c_a59acef705fdd22c4bd2598f195c430c2}{ear\+\_\+daemon\+\_\+environment} ()
+\begin{DoxyCompactList}\small\item\em Reads and process all the environment variables involving the daemon. \end{DoxyCompactList}\item 
+void \hyperlink{environment__common_8c_afdfbba87241554e1a652167a1713a903}{ear\+\_\+print\+\_\+daemon\+\_\+environment} ()
+\begin{DoxyCompactList}\small\item\em Writes ear daemon variables in \$\+E\+A\+R\+\_\+\+T\+MP/environment.txt file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ \hyperlink{environment__common_8c_a0f500243e4b073914cf2a56f80da5cac}{conf\+\_\+ear\+\_\+tmp} =N\+U\+LL
+\item 
+int \hyperlink{environment__common_8c_a02a77b0c2c125025703e0ba5d7e6a1a9}{conf\+\_\+ear\+\_\+verbose} =\hyperlink{environment__common_8h_a4ad8faebfc1723fec1090b84ec0f680e}{D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME@{D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME}}
+\index{D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME@{D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME}{DEFAULT_DB_PATHNAME}}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\+E\+F\+A\+U\+L\+T\+\_\+\+D\+B\+\_\+\+P\+A\+T\+H\+N\+A\+ME~\char`\"{}.ear\+\_\+system\+\_\+db\char`\"{}}\hypertarget{environment__common_8c_acfb12d655d1289dca928264c229012f0}{}\label{environment__common_8c_acfb12d655d1289dca928264c229012f0}
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE@{D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE}}
+\index{D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE@{D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE}{DEFAULT_VERBOSE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE~0}\hypertarget{environment__common_8c_a4ad8faebfc1723fec1090b84ec0f680e}{}\label{environment__common_8c_a4ad8faebfc1723fec1090b84ec0f680e}
+
+
+\subsection{Function Documentation}
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!ear\+\_\+daemon\+\_\+environment@{ear\+\_\+daemon\+\_\+environment}}
+\index{ear\+\_\+daemon\+\_\+environment@{ear\+\_\+daemon\+\_\+environment}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+daemon\+\_\+environment()}{ear_daemon_environment()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+daemon\+\_\+environment (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_a59acef705fdd22c4bd2598f195c430c2}{}\label{environment__common_8c_a59acef705fdd22c4bd2598f195c430c2}
+
+
+Reads and process all the environment variables involving the daemon. 
+
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!ear\+\_\+print\+\_\+daemon\+\_\+environment@{ear\+\_\+print\+\_\+daemon\+\_\+environment}}
+\index{ear\+\_\+print\+\_\+daemon\+\_\+environment@{ear\+\_\+print\+\_\+daemon\+\_\+environment}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+print\+\_\+daemon\+\_\+environment()}{ear_print_daemon_environment()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+print\+\_\+daemon\+\_\+environment (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_afdfbba87241554e1a652167a1713a903}{}\label{environment__common_8c_afdfbba87241554e1a652167a1713a903}
+
+
+Writes ear daemon variables in \$\+E\+A\+R\+\_\+\+T\+MP/environment.txt file. 
+
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!get\+\_\+ear\+\_\+install\+\_\+path@{get\+\_\+ear\+\_\+install\+\_\+path}}
+\index{get\+\_\+ear\+\_\+install\+\_\+path@{get\+\_\+ear\+\_\+install\+\_\+path}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+install\+\_\+path()}{get_ear_install_path()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ get\+\_\+ear\+\_\+install\+\_\+path (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_a8d8534f9a2784709f7dc8482cafc1d98}{}\label{environment__common_8c_a8d8534f9a2784709f7dc8482cafc1d98}
+
+
+Returns the install path previously read. 
+
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!get\+\_\+ear\+\_\+tmp@{get\+\_\+ear\+\_\+tmp}}
+\index{get\+\_\+ear\+\_\+tmp@{get\+\_\+ear\+\_\+tmp}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+tmp()}{get_ear_tmp()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ get\+\_\+ear\+\_\+tmp (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_a41298ad7f68b27773994f895f3084174}{}\label{environment__common_8c_a41298ad7f68b27773994f895f3084174}
+
+
+Returns the tmp path previously read. 
+
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!get\+\_\+ear\+\_\+verbose@{get\+\_\+ear\+\_\+verbose}}
+\index{get\+\_\+ear\+\_\+verbose@{get\+\_\+ear\+\_\+verbose}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+ear\+\_\+verbose()}{get_ear_verbose()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+ear\+\_\+verbose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_a76a8826ffc52297ff25e59c463b6c234}{}\label{environment__common_8c_a76a8826ffc52297ff25e59c463b6c234}
+
+
+Returns the current verbosity level. 
+
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!getenv\+\_\+ear\+\_\+tmp@{getenv\+\_\+ear\+\_\+tmp}}
+\index{getenv\+\_\+ear\+\_\+tmp@{getenv\+\_\+ear\+\_\+tmp}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+tmp()}{getenv_ear_tmp()}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ getenv\+\_\+ear\+\_\+tmp (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_a3cedc4d1211b96f14b4239519ded7443}{}\label{environment__common_8c_a3cedc4d1211b96f14b4239519ded7443}
+
+
+Tries to get the E\+A\+R\+\_\+\+T\+MP environment variable\textquotesingle{}s value and returns it. 
+
+If it fails, it defaults to T\+MP\textquotesingle{}s value and then H\+O\+ME\textquotesingle{}s. \index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!getenv\+\_\+ear\+\_\+verbose@{getenv\+\_\+ear\+\_\+verbose}}
+\index{getenv\+\_\+ear\+\_\+verbose@{getenv\+\_\+ear\+\_\+verbose}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+ear\+\_\+verbose()}{getenv_ear_verbose()}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+ear\+\_\+verbose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_a49baf2bb1c72f70473efa5a14f0e7982}{}\label{environment__common_8c_a49baf2bb1c72f70473efa5a14f0e7982}
+
+
+Reads the V\+E\+R\+B\+O\+SE\textquotesingle{}s level set in the environment variable and returns its value if it\textquotesingle{}s a valid verbose level. 
+
+Otherwise returns 0. \index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!set\+\_\+ear\+\_\+tmp@{set\+\_\+ear\+\_\+tmp}}
+\index{set\+\_\+ear\+\_\+tmp@{set\+\_\+ear\+\_\+tmp}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+tmp(char $\ast$new\+\_\+tmp)}{set_ear_tmp(char *new_tmp)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+tmp (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{new\+\_\+tmp}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_abf8b4f56e219b453cae9e49c3550e731}{}\label{environment__common_8c_abf8b4f56e219b453cae9e49c3550e731}
+
+
+Changes the tmp path to the one recieved by parameter. 
+
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!set\+\_\+ear\+\_\+verbose@{set\+\_\+ear\+\_\+verbose}}
+\index{set\+\_\+ear\+\_\+verbose@{set\+\_\+ear\+\_\+verbose}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{set\+\_\+ear\+\_\+verbose(int verb)}{set_ear_verbose(int verb)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+ear\+\_\+verbose (
+\begin{DoxyParamCaption}
+\item[{int}]{verb}
+\end{DoxyParamCaption}
+)}\hypertarget{environment__common_8c_aaed068067df22cad656804b85336a0f8}{}\label{environment__common_8c_aaed068067df22cad656804b85336a0f8}
+
+
+Sets the verbosity level to the one recieved by parameter. 
+
+
+
+\subsection{Variable Documentation}
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!conf\+\_\+ear\+\_\+tmp@{conf\+\_\+ear\+\_\+tmp}}
+\index{conf\+\_\+ear\+\_\+tmp@{conf\+\_\+ear\+\_\+tmp}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+tmp}{conf_ear_tmp}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ conf\+\_\+ear\+\_\+tmp =N\+U\+LL}\hypertarget{environment__common_8c_a0f500243e4b073914cf2a56f80da5cac}{}\label{environment__common_8c_a0f500243e4b073914cf2a56f80da5cac}
+\index{environment\+\_\+common.\+c@{environment\+\_\+common.\+c}!conf\+\_\+ear\+\_\+verbose@{conf\+\_\+ear\+\_\+verbose}}
+\index{conf\+\_\+ear\+\_\+verbose@{conf\+\_\+ear\+\_\+verbose}!environment\+\_\+common.\+c@{environment\+\_\+common.\+c}}
+\subsubsection[{\texorpdfstring{conf\+\_\+ear\+\_\+verbose}{conf_ear_verbose}}]{\setlength{\rightskip}{0pt plus 5cm}int conf\+\_\+ear\+\_\+verbose ={\bf D\+E\+F\+A\+U\+L\+T\+\_\+\+V\+E\+R\+B\+O\+SE}}\hypertarget{environment__common_8c_a02a77b0c2c125025703e0ba5d7e6a1a9}{}\label{environment__common_8c_a02a77b0c2c125025703e0ba5d7e6a1a9}

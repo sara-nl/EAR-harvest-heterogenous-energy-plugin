@@ -1,0 +1,226 @@
+\hypertarget{power__metrics_8h}{}\section{src/metrics/power\+\_\+metrics/power\+\_\+metrics.h File Reference}
+\label{power__metrics_8h}\index{src/metrics/power\+\_\+metrics/power\+\_\+metrics.\+h@{src/metrics/power\+\_\+metrics/power\+\_\+metrics.\+h}}
+
+
+This file include functions to simplify the work of power monitoring It can be used by privileged applications (such as eard)  
+
+
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/ipmi/energy\+\_\+node.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/papi/energy\+\_\+cpu.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structenergy__mon__data}{energy\+\_\+mon\+\_\+data}
+\item 
+struct \hyperlink{structpower__data}{power\+\_\+data}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{power__metrics_8h_a1c803e4ececfb47d2791c9283c85eb00}{N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS}~2
+\item 
+\#define \hyperlink{power__metrics_8h_afdc8f5b504fe3d5ce81a1b928ea201ff}{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+OK}~\hyperlink{common_2states_8h_a51b10f15d807637c8cf641e8c33032b8}{E\+A\+R\+\_\+\+S\+U\+C\+C\+E\+SS}
+\item 
+\#define \hyperlink{power__metrics_8h_a902f8d43a614cedf0da737484683be12}{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+E\+R\+R\+OR}~\hyperlink{common_2states_8h_a1e00cd011ba6cb619f422d959c4f128f}{E\+A\+R\+\_\+\+E\+R\+R\+OR}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef long long \hyperlink{power__metrics_8h_ae129c807333e7e239f56d9413d00d48d}{rapl\+\_\+data\+\_\+t}
+\item 
+typedef unsigned long \hyperlink{power__metrics_8h_aacae91a2caffb1214de1a2f5694b8c51}{node\+\_\+data\+\_\+t}
+\item 
+typedef struct \hyperlink{structenergy__mon__data}{energy\+\_\+mon\+\_\+data} \hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t}
+\item 
+typedef struct \hyperlink{structpower__data}{power\+\_\+data} \hyperlink{power__metrics_8h_a6335c15ccd38fb5290e9c836c56e6b99}{power\+\_\+data\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{power__metrics_8h_af5eefcde30c84634efe6cfb8b156f89d}{init\+\_\+power\+\_\+ponitoring} ()
+\begin{DoxyCompactList}\small\item\em Starts power monitoring. \end{DoxyCompactList}\item 
+void \hyperlink{power__metrics_8h_affbb71e4b3e13f4786c527424c70cde2}{end\+\_\+power\+\_\+monitoring} ()
+\begin{DoxyCompactList}\small\item\em Ends power monitoring. \end{DoxyCompactList}\item 
+int \hyperlink{power__metrics_8h_aa934a380c9799cc51aa3617c3e288921}{read\+\_\+enegy\+\_\+data} (\hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$acc\+\_\+energy)
+\begin{DoxyCompactList}\small\item\em Energy is returned in mili Joules. \end{DoxyCompactList}\item 
+int \hyperlink{power__metrics_8h_a4c501a33975a5e054f4bb470dd03cc38}{diff\+\_\+energy\+\_\+data} (\hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$end, \hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$init, \hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$diff)
+\begin{DoxyCompactList}\small\item\em Computes the difference between two energy measurements. \end{DoxyCompactList}\item 
+void \hyperlink{power__metrics_8h_ad5a2387c018df597fe0c20773b76c876}{copy\+\_\+energy\+\_\+data} (\hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$dest, \hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$src)
+\begin{DoxyCompactList}\small\item\em Copies the energy measurement in $\ast$src to $\ast$dest. \end{DoxyCompactList}\item 
+void \hyperlink{power__metrics_8h_aa3b57f07f55cb27b4964a65a33d04a8c}{print\+\_\+energy\+\_\+data} (\hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$e)
+\begin{DoxyCompactList}\small\item\em Prints the data from an energy measurement to stdout. \end{DoxyCompactList}\item 
+void \hyperlink{power__metrics_8h_ad5de4fdcab231239165bcda8c0aef00a}{compute\+\_\+power} (\hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$e\+\_\+begin, \hyperlink{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{energy\+\_\+data\+\_\+t} $\ast$e\+\_\+end, \hyperlink{power__metrics_8h_a6335c15ccd38fb5290e9c836c56e6b99}{power\+\_\+data\+\_\+t} $\ast$my\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Computes the power between two energy measurements. \end{DoxyCompactList}\item 
+void \hyperlink{power__metrics_8h_aa33dfa989ca4c0ea07310e5c34acdd4f}{print\+\_\+power} (\hyperlink{power__metrics_8h_a6335c15ccd38fb5290e9c836c56e6b99}{power\+\_\+data\+\_\+t} $\ast$my\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Prints power information to the stdout. \end{DoxyCompactList}\item 
+void \hyperlink{power__metrics_8h_a9db12abbed4678adff9630d06b516f04}{report\+\_\+periodic\+\_\+power} (int fd, \hyperlink{power__metrics_8h_a6335c15ccd38fb5290e9c836c56e6b99}{power\+\_\+data\+\_\+t} $\ast$my\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Write (text mode) the power information in the provided file descriptor. \end{DoxyCompactList}\item 
+\hyperlink{power__metrics_8h_aacae91a2caffb1214de1a2f5694b8c51}{node\+\_\+data\+\_\+t} \hyperlink{power__metrics_8h_a7347deac644e3a9e13eb78b7ade6aa3e}{diff\+\_\+node\+\_\+energy} (\hyperlink{power__metrics_8h_aacae91a2caffb1214de1a2f5694b8c51}{node\+\_\+data\+\_\+t} end, \hyperlink{power__metrics_8h_aacae91a2caffb1214de1a2f5694b8c51}{node\+\_\+data\+\_\+t} init)
+\begin{DoxyCompactList}\small\item\em Computes the difference betwen two node energy measurements. \end{DoxyCompactList}\item 
+\hyperlink{power__metrics_8h_ae129c807333e7e239f56d9413d00d48d}{rapl\+\_\+data\+\_\+t} \hyperlink{power__metrics_8h_a8d33f7e1b233372f340b7296f0983fa8}{diff\+\_\+\+R\+A\+P\+L\+\_\+energy} (\hyperlink{power__metrics_8h_ae129c807333e7e239f56d9413d00d48d}{rapl\+\_\+data\+\_\+t} end, \hyperlink{power__metrics_8h_ae129c807333e7e239f56d9413d00d48d}{rapl\+\_\+data\+\_\+t} init)
+\begin{DoxyCompactList}\small\item\em Computes the difference betwen two R\+A\+PL energy measurements. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This file include functions to simplify the work of power monitoring It can be used by privileged applications (such as eard) 
+
+or not-\/privileged applications such as the E\+A\+R\+Lib (or external commands) 
+
+\subsection{Macro Definition Documentation}
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS@{N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS}}
+\index{N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS@{N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS}{NUM_SOCKETS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS~2}\hypertarget{power__metrics_8h_a1c803e4ececfb47d2791c9283c85eb00}{}\label{power__metrics_8h_a1c803e4ececfb47d2791c9283c85eb00}
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+E\+R\+R\+OR@{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+E\+R\+R\+OR}}
+\index{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+E\+R\+R\+OR@{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+E\+R\+R\+OR}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+E\+R\+R\+OR}{POWER_MON_ERROR}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+E\+R\+R\+OR~{\bf E\+A\+R\+\_\+\+E\+R\+R\+OR}}\hypertarget{power__metrics_8h_a902f8d43a614cedf0da737484683be12}{}\label{power__metrics_8h_a902f8d43a614cedf0da737484683be12}
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+OK@{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+OK}}
+\index{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+OK@{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+OK}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+OK}{POWER_MON_OK}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+O\+W\+E\+R\+\_\+\+M\+O\+N\+\_\+\+OK~{\bf E\+A\+R\+\_\+\+S\+U\+C\+C\+E\+SS}}\hypertarget{power__metrics_8h_afdc8f5b504fe3d5ce81a1b928ea201ff}{}\label{power__metrics_8h_afdc8f5b504fe3d5ce81a1b928ea201ff}
+
+
+\subsection{Typedef Documentation}
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!energy\+\_\+data\+\_\+t@{energy\+\_\+data\+\_\+t}}
+\index{energy\+\_\+data\+\_\+t@{energy\+\_\+data\+\_\+t}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{energy\+\_\+data\+\_\+t}{energy_data_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf energy\+\_\+mon\+\_\+data} {\bf energy\+\_\+data\+\_\+t}}\hypertarget{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}{}\label{power__metrics_8h_ae55b54cbb2cfac9ff38750726746acda}
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!node\+\_\+data\+\_\+t@{node\+\_\+data\+\_\+t}}
+\index{node\+\_\+data\+\_\+t@{node\+\_\+data\+\_\+t}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{node\+\_\+data\+\_\+t}{node_data_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef unsigned long {\bf node\+\_\+data\+\_\+t}}\hypertarget{power__metrics_8h_aacae91a2caffb1214de1a2f5694b8c51}{}\label{power__metrics_8h_aacae91a2caffb1214de1a2f5694b8c51}
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!power\+\_\+data\+\_\+t@{power\+\_\+data\+\_\+t}}
+\index{power\+\_\+data\+\_\+t@{power\+\_\+data\+\_\+t}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{power\+\_\+data\+\_\+t}{power_data_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf power\+\_\+data} {\bf power\+\_\+data\+\_\+t}}\hypertarget{power__metrics_8h_a6335c15ccd38fb5290e9c836c56e6b99}{}\label{power__metrics_8h_a6335c15ccd38fb5290e9c836c56e6b99}
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!rapl\+\_\+data\+\_\+t@{rapl\+\_\+data\+\_\+t}}
+\index{rapl\+\_\+data\+\_\+t@{rapl\+\_\+data\+\_\+t}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{rapl\+\_\+data\+\_\+t}{rapl_data_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef long long {\bf rapl\+\_\+data\+\_\+t}}\hypertarget{power__metrics_8h_ae129c807333e7e239f56d9413d00d48d}{}\label{power__metrics_8h_ae129c807333e7e239f56d9413d00d48d}
+
+
+\subsection{Function Documentation}
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!compute\+\_\+power@{compute\+\_\+power}}
+\index{compute\+\_\+power@{compute\+\_\+power}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{compute\+\_\+power(energy\+\_\+data\+\_\+t $\ast$e\+\_\+begin, energy\+\_\+data\+\_\+t $\ast$e\+\_\+end, power\+\_\+data\+\_\+t $\ast$my\+\_\+power)}{compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *my_power)}}]{\setlength{\rightskip}{0pt plus 5cm}void compute\+\_\+power (
+\begin{DoxyParamCaption}
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{e\+\_\+begin, }
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{e\+\_\+end, }
+\item[{{\bf power\+\_\+data\+\_\+t} $\ast$}]{my\+\_\+power}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_ad5de4fdcab231239165bcda8c0aef00a}{}\label{power__metrics_8h_ad5de4fdcab231239165bcda8c0aef00a}
+
+
+Computes the power between two energy measurements. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!copy\+\_\+energy\+\_\+data@{copy\+\_\+energy\+\_\+data}}
+\index{copy\+\_\+energy\+\_\+data@{copy\+\_\+energy\+\_\+data}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{copy\+\_\+energy\+\_\+data(energy\+\_\+data\+\_\+t $\ast$dest, energy\+\_\+data\+\_\+t $\ast$src)}{copy_energy_data(energy_data_t *dest, energy_data_t *src)}}]{\setlength{\rightskip}{0pt plus 5cm}void copy\+\_\+energy\+\_\+data (
+\begin{DoxyParamCaption}
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{dest, }
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{src}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_ad5a2387c018df597fe0c20773b76c876}{}\label{power__metrics_8h_ad5a2387c018df597fe0c20773b76c876}
+
+
+Copies the energy measurement in $\ast$src to $\ast$dest. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!diff\+\_\+energy\+\_\+data@{diff\+\_\+energy\+\_\+data}}
+\index{diff\+\_\+energy\+\_\+data@{diff\+\_\+energy\+\_\+data}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{diff\+\_\+energy\+\_\+data(energy\+\_\+data\+\_\+t $\ast$end, energy\+\_\+data\+\_\+t $\ast$init, energy\+\_\+data\+\_\+t $\ast$diff)}{diff_energy_data(energy_data_t *end, energy_data_t *init, energy_data_t *diff)}}]{\setlength{\rightskip}{0pt plus 5cm}int diff\+\_\+energy\+\_\+data (
+\begin{DoxyParamCaption}
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{end, }
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{init, }
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{diff}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_a4c501a33975a5e054f4bb470dd03cc38}{}\label{power__metrics_8h_a4c501a33975a5e054f4bb470dd03cc38}
+
+
+Computes the difference between two energy measurements. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!diff\+\_\+node\+\_\+energy@{diff\+\_\+node\+\_\+energy}}
+\index{diff\+\_\+node\+\_\+energy@{diff\+\_\+node\+\_\+energy}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{diff\+\_\+node\+\_\+energy(node\+\_\+data\+\_\+t end, node\+\_\+data\+\_\+t init)}{diff_node_energy(node_data_t end, node_data_t init)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf node\+\_\+data\+\_\+t} diff\+\_\+node\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{{\bf node\+\_\+data\+\_\+t}}]{end, }
+\item[{{\bf node\+\_\+data\+\_\+t}}]{init}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_a7347deac644e3a9e13eb78b7ade6aa3e}{}\label{power__metrics_8h_a7347deac644e3a9e13eb78b7ade6aa3e}
+
+
+Computes the difference betwen two node energy measurements. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!diff\+\_\+\+R\+A\+P\+L\+\_\+energy@{diff\+\_\+\+R\+A\+P\+L\+\_\+energy}}
+\index{diff\+\_\+\+R\+A\+P\+L\+\_\+energy@{diff\+\_\+\+R\+A\+P\+L\+\_\+energy}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{diff\+\_\+\+R\+A\+P\+L\+\_\+energy(rapl\+\_\+data\+\_\+t end, rapl\+\_\+data\+\_\+t init)}{diff_RAPL_energy(rapl_data_t end, rapl_data_t init)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rapl\+\_\+data\+\_\+t} diff\+\_\+\+R\+A\+P\+L\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{{\bf rapl\+\_\+data\+\_\+t}}]{end, }
+\item[{{\bf rapl\+\_\+data\+\_\+t}}]{init}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_a8d33f7e1b233372f340b7296f0983fa8}{}\label{power__metrics_8h_a8d33f7e1b233372f340b7296f0983fa8}
+
+
+Computes the difference betwen two R\+A\+PL energy measurements. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!end\+\_\+power\+\_\+monitoring@{end\+\_\+power\+\_\+monitoring}}
+\index{end\+\_\+power\+\_\+monitoring@{end\+\_\+power\+\_\+monitoring}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{end\+\_\+power\+\_\+monitoring()}{end_power_monitoring()}}]{\setlength{\rightskip}{0pt plus 5cm}void end\+\_\+power\+\_\+monitoring (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_affbb71e4b3e13f4786c527424c70cde2}{}\label{power__metrics_8h_affbb71e4b3e13f4786c527424c70cde2}
+
+
+Ends power monitoring. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!init\+\_\+power\+\_\+ponitoring@{init\+\_\+power\+\_\+ponitoring}}
+\index{init\+\_\+power\+\_\+ponitoring@{init\+\_\+power\+\_\+ponitoring}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+power\+\_\+ponitoring()}{init_power_ponitoring()}}]{\setlength{\rightskip}{0pt plus 5cm}int init\+\_\+power\+\_\+ponitoring (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_af5eefcde30c84634efe6cfb8b156f89d}{}\label{power__metrics_8h_af5eefcde30c84634efe6cfb8b156f89d}
+
+
+Starts power monitoring. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!print\+\_\+energy\+\_\+data@{print\+\_\+energy\+\_\+data}}
+\index{print\+\_\+energy\+\_\+data@{print\+\_\+energy\+\_\+data}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+energy\+\_\+data(energy\+\_\+data\+\_\+t $\ast$e)}{print_energy_data(energy_data_t *e)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+energy\+\_\+data (
+\begin{DoxyParamCaption}
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{e}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_aa3b57f07f55cb27b4964a65a33d04a8c}{}\label{power__metrics_8h_aa3b57f07f55cb27b4964a65a33d04a8c}
+
+
+Prints the data from an energy measurement to stdout. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!print\+\_\+power@{print\+\_\+power}}
+\index{print\+\_\+power@{print\+\_\+power}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+power(power\+\_\+data\+\_\+t $\ast$my\+\_\+power)}{print_power(power_data_t *my_power)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+power (
+\begin{DoxyParamCaption}
+\item[{{\bf power\+\_\+data\+\_\+t} $\ast$}]{my\+\_\+power}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_aa33dfa989ca4c0ea07310e5c34acdd4f}{}\label{power__metrics_8h_aa33dfa989ca4c0ea07310e5c34acdd4f}
+
+
+Prints power information to the stdout. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!read\+\_\+enegy\+\_\+data@{read\+\_\+enegy\+\_\+data}}
+\index{read\+\_\+enegy\+\_\+data@{read\+\_\+enegy\+\_\+data}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{read\+\_\+enegy\+\_\+data(energy\+\_\+data\+\_\+t $\ast$acc\+\_\+energy)}{read_enegy_data(energy_data_t *acc_energy)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+enegy\+\_\+data (
+\begin{DoxyParamCaption}
+\item[{{\bf energy\+\_\+data\+\_\+t} $\ast$}]{acc\+\_\+energy}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_aa934a380c9799cc51aa3617c3e288921}{}\label{power__metrics_8h_aa934a380c9799cc51aa3617c3e288921}
+
+
+Energy is returned in mili Joules. 
+
+\index{power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}!report\+\_\+periodic\+\_\+power@{report\+\_\+periodic\+\_\+power}}
+\index{report\+\_\+periodic\+\_\+power@{report\+\_\+periodic\+\_\+power}!power\+\_\+metrics.\+h@{power\+\_\+metrics.\+h}}
+\subsubsection[{\texorpdfstring{report\+\_\+periodic\+\_\+power(int fd, power\+\_\+data\+\_\+t $\ast$my\+\_\+power)}{report_periodic_power(int fd, power_data_t *my_power)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+\_\+periodic\+\_\+power (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{{\bf power\+\_\+data\+\_\+t} $\ast$}]{my\+\_\+power}
+\end{DoxyParamCaption}
+)}\hypertarget{power__metrics_8h_a9db12abbed4678adff9630d06b516f04}{}\label{power__metrics_8h_a9db12abbed4678adff9630d06b516f04}
+
+
+Write (text mode) the power information in the provided file descriptor. 
+

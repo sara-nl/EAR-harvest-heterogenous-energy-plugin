@@ -1,0 +1,61 @@
+\hypertarget{bandwith__monitor_8c}{}\section{src/tests/functionals/bandwith\+\_\+monitor.c File Reference}
+\label{bandwith__monitor_8c}\index{src/tests/functionals/bandwith\+\_\+monitor.\+c@{src/tests/functionals/bandwith\+\_\+monitor.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$stdint.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/bandwidth.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/hardware\+\_\+info.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ \hyperlink{bandwith__monitor_8c_a1ee23e6f501b7c3cbe8ef3bea0cea838}{format\+\_\+ull} (\hyperlink{generic_8h_aa5114a4fed348a29fb92123470476b1b}{ull} n)
+\item 
+void \hyperlink{bandwith__monitor_8c_acc7d17088590153d81d3e9b6ba1daa1a}{usage} (char $\ast$app)
+\item 
+int \hyperlink{bandwith__monitor_8c_a0ddf1224851353fc92bfbff6f499fa97}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{bandwith__monitor_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} = 4
+\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{bandwith\+\_\+monitor.\+c@{bandwith\+\_\+monitor.\+c}!format\+\_\+ull@{format\+\_\+ull}}
+\index{format\+\_\+ull@{format\+\_\+ull}!bandwith\+\_\+monitor.\+c@{bandwith\+\_\+monitor.\+c}}
+\subsubsection[{\texorpdfstring{format\+\_\+ull(ull n)}{format_ull(ull n)}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ format\+\_\+ull (
+\begin{DoxyParamCaption}
+\item[{{\bf ull}}]{n}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwith__monitor_8c_a1ee23e6f501b7c3cbe8ef3bea0cea838}{}\label{bandwith__monitor_8c_a1ee23e6f501b7c3cbe8ef3bea0cea838}
+\index{bandwith\+\_\+monitor.\+c@{bandwith\+\_\+monitor.\+c}!main@{main}}
+\index{main@{main}!bandwith\+\_\+monitor.\+c@{bandwith\+\_\+monitor.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}int main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwith__monitor_8c_a0ddf1224851353fc92bfbff6f499fa97}{}\label{bandwith__monitor_8c_a0ddf1224851353fc92bfbff6f499fa97}
+\index{bandwith\+\_\+monitor.\+c@{bandwith\+\_\+monitor.\+c}!usage@{usage}}
+\index{usage@{usage}!bandwith\+\_\+monitor.\+c@{bandwith\+\_\+monitor.\+c}}
+\subsubsection[{\texorpdfstring{usage(char $\ast$app)}{usage(char *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void usage (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{bandwith__monitor_8c_acc7d17088590153d81d3e9b6ba1daa1a}{}\label{bandwith__monitor_8c_acc7d17088590153d81d3e9b6ba1daa1a}
+
+
+\subsection{Variable Documentation}
+\index{bandwith\+\_\+monitor.\+c@{bandwith\+\_\+monitor.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!bandwith\+\_\+monitor.\+c@{bandwith\+\_\+monitor.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL = 4}\hypertarget{bandwith__monitor_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{bandwith__monitor_8c_a43d7e58c317e811389b628dc49b52bd2}
+
+
+This program sets the node frequency . 
+
+It must be executed with privileges 

@@ -38,12 +38,14 @@
     unsigned int ebx = 0; \
     unsigned int ecx = 0; \
     unsigned int edx = 0;
+
 #define CPUID(EAX,ECX)    \
     eax = EAX;            \
     ebx = 0;              \
     ecx = ECX;            \
     edx = 0;              \
     native_cpuid(&eax, &ebx, &ecx, &edx);
+
 #define IS_LEAF(num)      \
     is_cpu_leaf_present(num) == EAR_SUCCESS
 
@@ -165,6 +167,19 @@ int is_cpu_hyperthreading_capable()
     return extract_bits(edx, 28, 28);
 }
 
+// References:
+// 	- Intel System Programming Guide
+//    Vol. 2A, Software Developer Manual
+//	  3-193, INSTRUCTION SET REFERENCE, A-L
+// 	  Thermal and Power Management Leaf
+int is_cpu_boost_enabled()
+{
+	CREGS();
+
+	CPUID(6,0);
+
+	return extract_bits(eax, 1, 1);
+}
 
 int get_cpu_logical_processors()
 {

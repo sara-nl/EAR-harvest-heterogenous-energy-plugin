@@ -79,6 +79,7 @@ tests/check/check.sh
 *eargm_new_job
 *eargm_end_job
 *eardbd
+*ear_dbd_stress_test
 
 *client_api_test
 *compute_coefficients_remote
@@ -87,11 +88,13 @@ tests/check/check.sh
 *compute_coefficients_v2
 *get_app_list
 *get_ear_events
+*get_active_nodes
 *compute_coefficients
 *traces_to_paraver
 *database_eraser
 *configuration_check
 *batch_insert
+*remove_learning
 *ips
 *ping
 
@@ -106,5 +109,4 @@ npbparams.h
 setparams
 kernels/STREAM/stream_mpi
 kernels/DGEMM/mkl_c_samples_09072016.tgz
-
 

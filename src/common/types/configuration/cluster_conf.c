@@ -166,13 +166,13 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 
 
 
-/** returns the ear.conf path. It checks at $ETC/ear/ear.conf  */
+/** returns the ear.conf path. It checks at $EAR_ETC/ear/ear.conf  */
 int get_ear_conf_path(char *ear_conf_path)
 {
 	char my_path[GENERIC_NAME];
 	char *my_etc;
 	int fd;
-	my_etc=getenv("ETC");
+	my_etc=getenv("EAR_ETC");
 	if (my_etc==NULL) return EAR_ERROR;	
 	sprintf(my_path,"%s/ear/ear.conf",my_etc);
 	fd=open(my_path,O_RDONLY);
@@ -374,6 +374,8 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->t1=DEFAULT_T1;
 	eargmc->t2=DEFAULT_T2;
 	eargmc->energy=DEFAULT_T2*DEFAULT_POWER;
+	eargmc->units=1;
+	eargmc->policy=0; 
 	eargmc->port=EARGM_PORT_NUMBER;
 	eargmc->mode=0;
 	eargmc->defcon_limits[0]=85;

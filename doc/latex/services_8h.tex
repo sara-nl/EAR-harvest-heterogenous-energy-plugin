@@ -1,0 +1,34 @@
+\hypertarget{services_8h}{}\section{src/common/types/services.h File Reference}
+\label{services_8h}\index{src/common/types/services.\+h@{src/common/types/services.\+h}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{services_8h_a91494e17895b461a98ce019405f2f9c3}{new\+\_\+service} (char $\ast$service)
+\begin{DoxyCompactList}\small\item\em Creates a new /var/run/service.pid file with the pid of the calling process. \end{DoxyCompactList}\item 
+void \hyperlink{services_8h_a1f837da84b564327d43b0c29c14dd804}{end\+\_\+service} (char $\ast$name)
+\begin{DoxyCompactList}\small\item\em Releases the /var/run/service.pid file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{services.\+h@{services.\+h}!end\+\_\+service@{end\+\_\+service}}
+\index{end\+\_\+service@{end\+\_\+service}!services.\+h@{services.\+h}}
+\subsubsection[{\texorpdfstring{end\+\_\+service(char $\ast$name)}{end_service(char *name)}}]{\setlength{\rightskip}{0pt plus 5cm}void end\+\_\+service (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\hypertarget{services_8h_a1f837da84b564327d43b0c29c14dd804}{}\label{services_8h_a1f837da84b564327d43b0c29c14dd804}
+
+
+Releases the /var/run/service.pid file. 
+
+\index{services.\+h@{services.\+h}!new\+\_\+service@{new\+\_\+service}}
+\index{new\+\_\+service@{new\+\_\+service}!services.\+h@{services.\+h}}
+\subsubsection[{\texorpdfstring{new\+\_\+service(char $\ast$service)}{new_service(char *service)}}]{\setlength{\rightskip}{0pt plus 5cm}int new\+\_\+service (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{service}
+\end{DoxyParamCaption}
+)}\hypertarget{services_8h_a91494e17895b461a98ce019405f2f9c3}{}\label{services_8h_a91494e17895b461a98ce019405f2f9c3}
+
+
+Creates a new /var/run/service.pid file with the pid of the calling process. 
+

@@ -81,6 +81,7 @@ static void print_eargm_conf(eargm_conf_t *conf)
 			conf->verbose,conf->use_aggregation,conf->t1,conf->t2,conf->energy,conf->port, conf->mode, conf->mail, conf->host);
 	fprintf(stderr,"\t eargm: defcon levels [%u,%u,%u] grace period %u\n",conf->defcon_limits[0],conf->defcon_limits[1],conf->defcon_limits[2],
 	conf->grace_periods);
+	fprintf(stderr,"\t policy %u (0=MaxEnergy,1=MaxPower) units=%u (-,K,M)\n",conf->policy,conf->units); 
 }
 
 static void print_db_manager(eardb_conf_t *conf)

@@ -1,0 +1,71 @@
+\hypertarget{commands_2ear__control_8c}{}\section{src/commands/ear\+\_\+control.c File Reference}
+\label{commands_2ear__control_8c}\index{src/commands/ear\+\_\+control.\+c@{src/commands/ear\+\_\+control.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$getopt.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+rapi.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{commands_2ear__control_8c_ab122432988c73c06becf1ce34077e43b}{N\+U\+M\+\_\+\+L\+E\+V\+E\+LS}~4
+\item 
+\#define \hyperlink{commands_2ear__control_8c_a1e41da7b5124be14b9944a6134dc97ac}{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE}~16
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{commands_2ear__control_8c_acc7d17088590153d81d3e9b6ba1daa1a}{usage} (char $\ast$app)
+\item 
+void \hyperlink{commands_2ear__control_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{commands_2ear__control_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} = 1
+\item 
+\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{commands_2ear__control_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!M\+A\+X\+\_\+\+P\+S\+T\+A\+TE@{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE}}
+\index{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE@{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE}{MAX_PSTATE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+\_\+\+P\+S\+T\+A\+TE~16}\hypertarget{commands_2ear__control_8c_a1e41da7b5124be14b9944a6134dc97ac}{}\label{commands_2ear__control_8c_a1e41da7b5124be14b9944a6134dc97ac}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!N\+U\+M\+\_\+\+L\+E\+V\+E\+LS@{N\+U\+M\+\_\+\+L\+E\+V\+E\+LS}}
+\index{N\+U\+M\+\_\+\+L\+E\+V\+E\+LS@{N\+U\+M\+\_\+\+L\+E\+V\+E\+LS}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{N\+U\+M\+\_\+\+L\+E\+V\+E\+LS}{NUM_LEVELS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+U\+M\+\_\+\+L\+E\+V\+E\+LS~4}\hypertarget{commands_2ear__control_8c_ab122432988c73c06becf1ce34077e43b}{}\label{commands_2ear__control_8c_ab122432988c73c06becf1ce34077e43b}
+
+
+\subsection{Function Documentation}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!main@{main}}
+\index{main@{main}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{commands_2ear__control_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{commands_2ear__control_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!usage@{usage}}
+\index{usage@{usage}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{usage(char $\ast$app)}{usage(char *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void usage (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{commands_2ear__control_8c_acc7d17088590153d81d3e9b6ba1daa1a}{}\label{commands_2ear__control_8c_acc7d17088590153d81d3e9b6ba1daa1a}
+
+
+\subsection{Variable Documentation}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL = 1}\hypertarget{commands_2ear__control_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{commands_2ear__control_8c_a43d7e58c317e811389b628dc49b52bd2}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}}
+\index{my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+cluster\+\_\+conf}{my_cluster_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+cluster\+\_\+conf}\hypertarget{commands_2ear__control_8c_a6c6877da2aa55927ec276bfdedb32660}{}\label{commands_2ear__control_8c_a6c6877da2aa55927ec276bfdedb32660}

@@ -1,0 +1,207 @@
+\hypertarget{control_2frequency_8c}{}\section{src/control/frequency.c File Reference}
+\label{control_2frequency_8c}\index{src/control/frequency.\+c@{src/control/frequency.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$linux/version.\+h$>$}\\*
+{\ttfamily \#include $<$cpupower.\+h$>$}\\*
+{\ttfamily \#include $<$control/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{control_2frequency_8c_acb70e6a5926cb202bad30b8dfe6d4985}{frequency\+\_\+init} (unsigned int \hyperlink{metrics_2custom_2frequency_8c_a8f63007c242d1d09e16bc77c797f75a2}{\+\_\+num\+\_\+cpus})
+\item 
+void \hyperlink{control_2frequency_8c_a561a5dd4b019d4d0830c20d428e137f9}{frequency\+\_\+dispose} ()
+\item 
+int \hyperlink{control_2frequency_8c_a9eea867a33ba6dd68469ce302d4f80cd}{is\+\_\+valid\+\_\+frequency} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq)
+\item 
+int \hyperlink{control_2frequency_8c_ae550940aab90585f1bf78ca9720428f2}{frequency\+\_\+is\+\_\+valid\+\_\+frequency} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq)
+\item 
+int \hyperlink{control_2frequency_8c_af9afb50e00ae4958556629e863b2dfee}{frequency\+\_\+is\+\_\+valid\+\_\+pstate} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} pstate)
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{control_2frequency_8c_a84f42378ee7a0c89495c6e8c99803c2b}{frequency\+\_\+get\+\_\+num\+\_\+online\+\_\+cpus} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{control_2frequency_8c_af7a5888e16981f2dee8881978aba9e23}{frequency\+\_\+set\+\_\+all\+\_\+cpus} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq)
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{control_2frequency_8c_a888e5485922006f098f8e3fe4c342d61}{frequency\+\_\+get\+\_\+num\+\_\+freqs} ()
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{control_2frequency_8c_a62b04b9a5ce92095e50c1dccceafd841}{frequency\+\_\+get\+\_\+num\+\_\+pstates} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{control_2frequency_8c_a5402fd59ecbcb770b6622e4f447f6099}{frequency\+\_\+get\+\_\+cpu\+\_\+freq} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} cpu)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{control_2frequency_8c_a2da061479846cb459ed16d01821d6870}{frequency\+\_\+get\+\_\+nominal\+\_\+freq} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$ \hyperlink{control_2frequency_8c_a5e63fbdef0aee6d3042079262005a680}{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{control_2frequency_8c_a041777475bbecb41b08649c0d7db8578}{frequency\+\_\+pstate\+\_\+to\+\_\+freq} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} pstate)
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{control_2frequency_8c_a5fafc0575d4b8645c2ebe591de0a9232}{frequency\+\_\+freq\+\_\+to\+\_\+pstate} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq)
+\item 
+void \hyperlink{control_2frequency_8c_ab730d7147e5324137b93e869152c2a52}{frequency\+\_\+set\+\_\+performance\+\_\+governor\+\_\+all\+\_\+cpus} ()
+\item 
+void \hyperlink{control_2frequency_8c_ad944f9b4aa5e0d4cb13c3a15fb1285f7}{frequency\+\_\+set\+\_\+ondemand\+\_\+governor\+\_\+all\+\_\+cpus} ()
+\item 
+void \hyperlink{control_2frequency_8c_a6bb3a6a23b69e55aa96a1065dfd21040}{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus} ()
+\item 
+void \hyperlink{control_2frequency_8c_a5ee05de3abcaef1c29e516f007bae7d7}{frequency\+\_\+save\+\_\+previous\+\_\+frequency} ()
+\item 
+void \hyperlink{control_2frequency_8c_aa77694c1f53b34bf395db9a9bfc9e257}{frequency\+\_\+recover\+\_\+previous\+\_\+frequency} ()
+\item 
+void \hyperlink{control_2frequency_8c_a894b4dd568ca3ba23dc82301b98433d8}{frequency\+\_\+save\+\_\+previous\+\_\+policy} ()
+\item 
+void \hyperlink{control_2frequency_8c_a8873d81559c3f9ebb8779c28f0a93d0c}{frequency\+\_\+recover\+\_\+previous\+\_\+policy} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+dispose@{frequency\+\_\+dispose}}
+\index{frequency\+\_\+dispose@{frequency\+\_\+dispose}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+dispose()}{frequency_dispose()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+dispose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a561a5dd4b019d4d0830c20d428e137f9}{}\label{control_2frequency_8c_a561a5dd4b019d4d0830c20d428e137f9}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+freq\+\_\+to\+\_\+pstate@{frequency\+\_\+freq\+\_\+to\+\_\+pstate}}
+\index{frequency\+\_\+freq\+\_\+to\+\_\+pstate@{frequency\+\_\+freq\+\_\+to\+\_\+pstate}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+freq\+\_\+to\+\_\+pstate(ulong freq)}{frequency_freq_to_pstate(ulong freq)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} frequency\+\_\+freq\+\_\+to\+\_\+pstate (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{freq}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a5fafc0575d4b8645c2ebe591de0a9232}{}\label{control_2frequency_8c_a5fafc0575d4b8645c2ebe591de0a9232}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+get\+\_\+cpu\+\_\+freq@{frequency\+\_\+get\+\_\+cpu\+\_\+freq}}
+\index{frequency\+\_\+get\+\_\+cpu\+\_\+freq@{frequency\+\_\+get\+\_\+cpu\+\_\+freq}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+cpu\+\_\+freq(uint cpu)}{frequency_get_cpu_freq(uint cpu)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} frequency\+\_\+get\+\_\+cpu\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{cpu}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a5402fd59ecbcb770b6622e4f447f6099}{}\label{control_2frequency_8c_a5402fd59ecbcb770b6622e4f447f6099}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list@{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list}}
+\index{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list@{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list()}{frequency_get_freq_rank_list()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong}$\ast$ frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a5e63fbdef0aee6d3042079262005a680}{}\label{control_2frequency_8c_a5e63fbdef0aee6d3042079262005a680}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+get\+\_\+nominal\+\_\+freq@{frequency\+\_\+get\+\_\+nominal\+\_\+freq}}
+\index{frequency\+\_\+get\+\_\+nominal\+\_\+freq@{frequency\+\_\+get\+\_\+nominal\+\_\+freq}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+nominal\+\_\+freq()}{frequency_get_nominal_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} frequency\+\_\+get\+\_\+nominal\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a2da061479846cb459ed16d01821d6870}{}\label{control_2frequency_8c_a2da061479846cb459ed16d01821d6870}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+get\+\_\+num\+\_\+freqs@{frequency\+\_\+get\+\_\+num\+\_\+freqs}}
+\index{frequency\+\_\+get\+\_\+num\+\_\+freqs@{frequency\+\_\+get\+\_\+num\+\_\+freqs}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+num\+\_\+freqs()}{frequency_get_num_freqs()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} frequency\+\_\+get\+\_\+num\+\_\+freqs (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a888e5485922006f098f8e3fe4c342d61}{}\label{control_2frequency_8c_a888e5485922006f098f8e3fe4c342d61}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+get\+\_\+num\+\_\+online\+\_\+cpus@{frequency\+\_\+get\+\_\+num\+\_\+online\+\_\+cpus}}
+\index{frequency\+\_\+get\+\_\+num\+\_\+online\+\_\+cpus@{frequency\+\_\+get\+\_\+num\+\_\+online\+\_\+cpus}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+num\+\_\+online\+\_\+cpus()}{frequency_get_num_online_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} frequency\+\_\+get\+\_\+num\+\_\+online\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a84f42378ee7a0c89495c6e8c99803c2b}{}\label{control_2frequency_8c_a84f42378ee7a0c89495c6e8c99803c2b}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+get\+\_\+num\+\_\+pstates@{frequency\+\_\+get\+\_\+num\+\_\+pstates}}
+\index{frequency\+\_\+get\+\_\+num\+\_\+pstates@{frequency\+\_\+get\+\_\+num\+\_\+pstates}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+num\+\_\+pstates()}{frequency_get_num_pstates()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} frequency\+\_\+get\+\_\+num\+\_\+pstates (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a62b04b9a5ce92095e50c1dccceafd841}{}\label{control_2frequency_8c_a62b04b9a5ce92095e50c1dccceafd841}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+init@{frequency\+\_\+init}}
+\index{frequency\+\_\+init@{frequency\+\_\+init}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+init(unsigned int \+\_\+num\+\_\+cpus)}{frequency_init(unsigned int _num_cpus)}}]{\setlength{\rightskip}{0pt plus 5cm}int frequency\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{\+\_\+num\+\_\+cpus}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_acb70e6a5926cb202bad30b8dfe6d4985}{}\label{control_2frequency_8c_acb70e6a5926cb202bad30b8dfe6d4985}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+is\+\_\+valid\+\_\+frequency@{frequency\+\_\+is\+\_\+valid\+\_\+frequency}}
+\index{frequency\+\_\+is\+\_\+valid\+\_\+frequency@{frequency\+\_\+is\+\_\+valid\+\_\+frequency}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+is\+\_\+valid\+\_\+frequency(ulong freq)}{frequency_is_valid_frequency(ulong freq)}}]{\setlength{\rightskip}{0pt plus 5cm}int frequency\+\_\+is\+\_\+valid\+\_\+frequency (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{freq}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_ae550940aab90585f1bf78ca9720428f2}{}\label{control_2frequency_8c_ae550940aab90585f1bf78ca9720428f2}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+is\+\_\+valid\+\_\+pstate@{frequency\+\_\+is\+\_\+valid\+\_\+pstate}}
+\index{frequency\+\_\+is\+\_\+valid\+\_\+pstate@{frequency\+\_\+is\+\_\+valid\+\_\+pstate}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+is\+\_\+valid\+\_\+pstate(uint pstate)}{frequency_is_valid_pstate(uint pstate)}}]{\setlength{\rightskip}{0pt plus 5cm}int frequency\+\_\+is\+\_\+valid\+\_\+pstate (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{pstate}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_af9afb50e00ae4958556629e863b2dfee}{}\label{control_2frequency_8c_af9afb50e00ae4958556629e863b2dfee}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+pstate\+\_\+to\+\_\+freq@{frequency\+\_\+pstate\+\_\+to\+\_\+freq}}
+\index{frequency\+\_\+pstate\+\_\+to\+\_\+freq@{frequency\+\_\+pstate\+\_\+to\+\_\+freq}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+pstate\+\_\+to\+\_\+freq(uint pstate)}{frequency_pstate_to_freq(uint pstate)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} frequency\+\_\+pstate\+\_\+to\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{pstate}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a041777475bbecb41b08649c0d7db8578}{}\label{control_2frequency_8c_a041777475bbecb41b08649c0d7db8578}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+recover\+\_\+previous\+\_\+frequency@{frequency\+\_\+recover\+\_\+previous\+\_\+frequency}}
+\index{frequency\+\_\+recover\+\_\+previous\+\_\+frequency@{frequency\+\_\+recover\+\_\+previous\+\_\+frequency}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+recover\+\_\+previous\+\_\+frequency()}{frequency_recover_previous_frequency()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+recover\+\_\+previous\+\_\+frequency (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_aa77694c1f53b34bf395db9a9bfc9e257}{}\label{control_2frequency_8c_aa77694c1f53b34bf395db9a9bfc9e257}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+recover\+\_\+previous\+\_\+policy@{frequency\+\_\+recover\+\_\+previous\+\_\+policy}}
+\index{frequency\+\_\+recover\+\_\+previous\+\_\+policy@{frequency\+\_\+recover\+\_\+previous\+\_\+policy}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+recover\+\_\+previous\+\_\+policy()}{frequency_recover_previous_policy()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+recover\+\_\+previous\+\_\+policy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a8873d81559c3f9ebb8779c28f0a93d0c}{}\label{control_2frequency_8c_a8873d81559c3f9ebb8779c28f0a93d0c}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+save\+\_\+previous\+\_\+frequency@{frequency\+\_\+save\+\_\+previous\+\_\+frequency}}
+\index{frequency\+\_\+save\+\_\+previous\+\_\+frequency@{frequency\+\_\+save\+\_\+previous\+\_\+frequency}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+save\+\_\+previous\+\_\+frequency()}{frequency_save_previous_frequency()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+save\+\_\+previous\+\_\+frequency (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a5ee05de3abcaef1c29e516f007bae7d7}{}\label{control_2frequency_8c_a5ee05de3abcaef1c29e516f007bae7d7}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+save\+\_\+previous\+\_\+policy@{frequency\+\_\+save\+\_\+previous\+\_\+policy}}
+\index{frequency\+\_\+save\+\_\+previous\+\_\+policy@{frequency\+\_\+save\+\_\+previous\+\_\+policy}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+save\+\_\+previous\+\_\+policy()}{frequency_save_previous_policy()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+save\+\_\+previous\+\_\+policy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a894b4dd568ca3ba23dc82301b98433d8}{}\label{control_2frequency_8c_a894b4dd568ca3ba23dc82301b98433d8}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+set\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+all\+\_\+cpus}}
+\index{frequency\+\_\+set\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+all\+\_\+cpus}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+set\+\_\+all\+\_\+cpus(ulong freq)}{frequency_set_all_cpus(ulong freq)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} frequency\+\_\+set\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{freq}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_af7a5888e16981f2dee8881978aba9e23}{}\label{control_2frequency_8c_af7a5888e16981f2dee8881978aba9e23}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+set\+\_\+ondemand\+\_\+governor\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+ondemand\+\_\+governor\+\_\+all\+\_\+cpus}}
+\index{frequency\+\_\+set\+\_\+ondemand\+\_\+governor\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+ondemand\+\_\+governor\+\_\+all\+\_\+cpus}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+set\+\_\+ondemand\+\_\+governor\+\_\+all\+\_\+cpus()}{frequency_set_ondemand_governor_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+set\+\_\+ondemand\+\_\+governor\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_ad944f9b4aa5e0d4cb13c3a15fb1285f7}{}\label{control_2frequency_8c_ad944f9b4aa5e0d4cb13c3a15fb1285f7}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+set\+\_\+performance\+\_\+governor\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+performance\+\_\+governor\+\_\+all\+\_\+cpus}}
+\index{frequency\+\_\+set\+\_\+performance\+\_\+governor\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+performance\+\_\+governor\+\_\+all\+\_\+cpus}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+set\+\_\+performance\+\_\+governor\+\_\+all\+\_\+cpus()}{frequency_set_performance_governor_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+set\+\_\+performance\+\_\+governor\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_ab730d7147e5324137b93e869152c2a52}{}\label{control_2frequency_8c_ab730d7147e5324137b93e869152c2a52}
+\index{control/frequency.\+c@{control/frequency.\+c}!frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus}}
+\index{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus()}{frequency_set_userspace_governor_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a6bb3a6a23b69e55aa96a1065dfd21040}{}\label{control_2frequency_8c_a6bb3a6a23b69e55aa96a1065dfd21040}
+\index{control/frequency.\+c@{control/frequency.\+c}!is\+\_\+valid\+\_\+frequency@{is\+\_\+valid\+\_\+frequency}}
+\index{is\+\_\+valid\+\_\+frequency@{is\+\_\+valid\+\_\+frequency}!control/frequency.\+c@{control/frequency.\+c}}
+\subsubsection[{\texorpdfstring{is\+\_\+valid\+\_\+frequency(ulong freq)}{is_valid_frequency(ulong freq)}}]{\setlength{\rightskip}{0pt plus 5cm}int is\+\_\+valid\+\_\+frequency (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{freq}
+\end{DoxyParamCaption}
+)}\hypertarget{control_2frequency_8c_a9eea867a33ba6dd68469ce302d4f80cd}{}\label{control_2frequency_8c_a9eea867a33ba6dd68469ce302d4f80cd}

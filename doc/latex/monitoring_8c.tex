@@ -1,0 +1,73 @@
+\hypertarget{monitoring_8c}{}\section{src/library/models/monitoring.c File Reference}
+\label{monitoring_8c}\index{src/library/models/monitoring.\+c@{src/library/models/monitoring.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/projection.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/externs.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{monitoring_8c_a91e707768ceafcd377116e2a48e89ba9}{monitoring\+\_\+init} ()
+\item 
+void \hyperlink{monitoring_8c_aace6d91f5653f2353f0b1b8cf19be51d}{monitoring\+\_\+new\+\_\+loop} ()
+\item 
+void \hyperlink{monitoring_8c_a434176c6fd5ef2f3f1150d6926d752c4}{monitoring\+\_\+end\+\_\+loop} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{monitoring_8c_a79a33b3ee3bfe26ec31a946a3c1a2d02}{monitoring\+\_\+policy} (\hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$sig)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{monitoring_8c_a06c374cb222ab3c7668d754a5b83a02f}{monitoring\+\_\+policy\+\_\+ok} (\hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$proj, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$curr\+\_\+sig, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$last\+\_\+sig)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{monitoring_8c_aa71b573a76e3163ba7d2ea2ff263f09c}{monitoring\+\_\+default\+\_\+conf} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} f)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{monitoring.\+c@{monitoring.\+c}!monitoring\+\_\+default\+\_\+conf@{monitoring\+\_\+default\+\_\+conf}}
+\index{monitoring\+\_\+default\+\_\+conf@{monitoring\+\_\+default\+\_\+conf}!monitoring.\+c@{monitoring.\+c}}
+\subsubsection[{\texorpdfstring{monitoring\+\_\+default\+\_\+conf(ulong f)}{monitoring_default_conf(ulong f)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} monitoring\+\_\+default\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{f}
+\end{DoxyParamCaption}
+)}\hypertarget{monitoring_8c_aa71b573a76e3163ba7d2ea2ff263f09c}{}\label{monitoring_8c_aa71b573a76e3163ba7d2ea2ff263f09c}
+\index{monitoring.\+c@{monitoring.\+c}!monitoring\+\_\+end\+\_\+loop@{monitoring\+\_\+end\+\_\+loop}}
+\index{monitoring\+\_\+end\+\_\+loop@{monitoring\+\_\+end\+\_\+loop}!monitoring.\+c@{monitoring.\+c}}
+\subsubsection[{\texorpdfstring{monitoring\+\_\+end\+\_\+loop()}{monitoring_end_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void monitoring\+\_\+end\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{monitoring_8c_a434176c6fd5ef2f3f1150d6926d752c4}{}\label{monitoring_8c_a434176c6fd5ef2f3f1150d6926d752c4}
+\index{monitoring.\+c@{monitoring.\+c}!monitoring\+\_\+init@{monitoring\+\_\+init}}
+\index{monitoring\+\_\+init@{monitoring\+\_\+init}!monitoring.\+c@{monitoring.\+c}}
+\subsubsection[{\texorpdfstring{monitoring\+\_\+init()}{monitoring_init()}}]{\setlength{\rightskip}{0pt plus 5cm}void monitoring\+\_\+init (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{monitoring_8c_a91e707768ceafcd377116e2a48e89ba9}{}\label{monitoring_8c_a91e707768ceafcd377116e2a48e89ba9}
+\index{monitoring.\+c@{monitoring.\+c}!monitoring\+\_\+new\+\_\+loop@{monitoring\+\_\+new\+\_\+loop}}
+\index{monitoring\+\_\+new\+\_\+loop@{monitoring\+\_\+new\+\_\+loop}!monitoring.\+c@{monitoring.\+c}}
+\subsubsection[{\texorpdfstring{monitoring\+\_\+new\+\_\+loop()}{monitoring_new_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void monitoring\+\_\+new\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{monitoring_8c_aace6d91f5653f2353f0b1b8cf19be51d}{}\label{monitoring_8c_aace6d91f5653f2353f0b1b8cf19be51d}
+\index{monitoring.\+c@{monitoring.\+c}!monitoring\+\_\+policy@{monitoring\+\_\+policy}}
+\index{monitoring\+\_\+policy@{monitoring\+\_\+policy}!monitoring.\+c@{monitoring.\+c}}
+\subsubsection[{\texorpdfstring{monitoring\+\_\+policy(signature\+\_\+t $\ast$sig)}{monitoring_policy(signature_t *sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} monitoring\+\_\+policy (
+\begin{DoxyParamCaption}
+\item[{{\bf signature\+\_\+t} $\ast$}]{sig}
+\end{DoxyParamCaption}
+)}\hypertarget{monitoring_8c_a79a33b3ee3bfe26ec31a946a3c1a2d02}{}\label{monitoring_8c_a79a33b3ee3bfe26ec31a946a3c1a2d02}
+\index{monitoring.\+c@{monitoring.\+c}!monitoring\+\_\+policy\+\_\+ok@{monitoring\+\_\+policy\+\_\+ok}}
+\index{monitoring\+\_\+policy\+\_\+ok@{monitoring\+\_\+policy\+\_\+ok}!monitoring.\+c@{monitoring.\+c}}
+\subsubsection[{\texorpdfstring{monitoring\+\_\+policy\+\_\+ok(projection\+\_\+t $\ast$proj, signature\+\_\+t $\ast$curr\+\_\+sig, signature\+\_\+t $\ast$last\+\_\+sig)}{monitoring_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} monitoring\+\_\+policy\+\_\+ok (
+\begin{DoxyParamCaption}
+\item[{{\bf projection\+\_\+t} $\ast$}]{proj, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{curr\+\_\+sig, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{last\+\_\+sig}
+\end{DoxyParamCaption}
+)}\hypertarget{monitoring_8c_a06c374cb222ab3c7668d754a5b83a02f}{}\label{monitoring_8c_a06c374cb222ab3c7668d754a5b83a02f}

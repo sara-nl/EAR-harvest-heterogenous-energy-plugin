@@ -1,0 +1,120 @@
+\hypertarget{app__server__api_8c}{}\section{src/daemon/app\+\_\+api/app\+\_\+server\+\_\+api.c File Reference}
+\label{app__server__api_8c}\index{src/daemon/app\+\_\+api/app\+\_\+server\+\_\+api.\+c@{src/daemon/app\+\_\+api/app\+\_\+server\+\_\+api.\+c}}
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+{\ttfamily \#include $<$pthread.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$signal.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/app\+\_\+api/app\+\_\+conf\+\_\+api.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/ipmi/energy\+\_\+node.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{app__server__api_8c_a1143fdfbbf128cdc4575a660abf77f1e}{close\+\_\+app\+\_\+connection}()
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{app__server__api_8c_a1c36471ab4cdd0693c5b215a36d63b66}{create\+\_\+app\+\_\+connection} (char $\ast$root)
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{app__server__api_8c_ad1e8dd0fd6f8e854ad7360e7621519ba}{read\+\_\+app\+\_\+command} (\hyperlink{app__conf__api_8h_a79875d1ca2e4e74d6ec8a8e492d85834}{app\+\_\+send\+\_\+t} $\ast$app\+\_\+req)
+\item 
+void \hyperlink{app__server__api_8c_a13212378783015cb14e89a12e24ac808}{dispose\+\_\+app\+\_\+connection} ()
+\begin{DoxyCompactList}\small\item\em Releases resources to connect with applications. \end{DoxyCompactList}\item 
+void \hyperlink{app__server__api_8c_aea3c8ead708f0c70b47c0a5eeb8ff30a}{ear\+\_\+energy} ()
+\begin{DoxyCompactList}\small\item\em Returns the energy in mJ and the time in ms. \end{DoxyCompactList}\item 
+void \hyperlink{app__server__api_8c_a3fd1ee4b7e49237afad3fed490767ab2}{process\+\_\+request} ()
+\item 
+void $\ast$ \hyperlink{app__server__api_8c_a469f0749ceb1dfff922e6db2f626009e}{eard\+\_\+non\+\_\+earl\+\_\+api\+\_\+service} (void $\ast$noinfo)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{app__server__api_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}
+\item 
+int \hyperlink{app__server__api_8c_aacaa91bff98e529c0c8990b558a2a301}{eard\+\_\+must\+\_\+exit}
+\item 
+char $\ast$ \hyperlink{app__server__api_8c_adbd38436c25bc604b1a48464727d4179}{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!close\+\_\+app\+\_\+connection@{close\+\_\+app\+\_\+connection}}
+\index{close\+\_\+app\+\_\+connection@{close\+\_\+app\+\_\+connection}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{close\+\_\+app\+\_\+connection}{close_app_connection}}]{\setlength{\rightskip}{0pt plus 5cm}\#define close\+\_\+app\+\_\+connection(
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{app__server__api_8c_a1143fdfbbf128cdc4575a660abf77f1e}{}\label{app__server__api_8c_a1143fdfbbf128cdc4575a660abf77f1e}
+
+
+\subsection{Function Documentation}
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!create\+\_\+app\+\_\+connection@{create\+\_\+app\+\_\+connection}}
+\index{create\+\_\+app\+\_\+connection@{create\+\_\+app\+\_\+connection}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{create\+\_\+app\+\_\+connection(char $\ast$root)}{create_app_connection(char *root)}}]{\setlength{\rightskip}{0pt plus 5cm}int create\+\_\+app\+\_\+connection (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{root}
+\end{DoxyParamCaption}
+)}\hypertarget{app__server__api_8c_a1c36471ab4cdd0693c5b215a36d63b66}{}\label{app__server__api_8c_a1c36471ab4cdd0693c5b215a36d63b66}
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!dispose\+\_\+app\+\_\+connection@{dispose\+\_\+app\+\_\+connection}}
+\index{dispose\+\_\+app\+\_\+connection@{dispose\+\_\+app\+\_\+connection}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{dispose\+\_\+app\+\_\+connection()}{dispose_app_connection()}}]{\setlength{\rightskip}{0pt plus 5cm}void dispose\+\_\+app\+\_\+connection (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{app__server__api_8c_a13212378783015cb14e89a12e24ac808}{}\label{app__server__api_8c_a13212378783015cb14e89a12e24ac808}
+
+
+Releases resources to connect with applications. 
+
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!ear\+\_\+energy@{ear\+\_\+energy}}
+\index{ear\+\_\+energy@{ear\+\_\+energy}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+energy()}{ear_energy()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+energy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{app__server__api_8c_aea3c8ead708f0c70b47c0a5eeb8ff30a}{}\label{app__server__api_8c_aea3c8ead708f0c70b47c0a5eeb8ff30a}
+
+
+Returns the energy in mJ and the time in ms. 
+
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!eard\+\_\+non\+\_\+earl\+\_\+api\+\_\+service@{eard\+\_\+non\+\_\+earl\+\_\+api\+\_\+service}}
+\index{eard\+\_\+non\+\_\+earl\+\_\+api\+\_\+service@{eard\+\_\+non\+\_\+earl\+\_\+api\+\_\+service}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eard\+\_\+non\+\_\+earl\+\_\+api\+\_\+service(void $\ast$noinfo)}{eard_non_earl_api_service(void *noinfo)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ eard\+\_\+non\+\_\+earl\+\_\+api\+\_\+service (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{noinfo}
+\end{DoxyParamCaption}
+)}\hypertarget{app__server__api_8c_a469f0749ceb1dfff922e6db2f626009e}{}\label{app__server__api_8c_a469f0749ceb1dfff922e6db2f626009e}
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!process\+\_\+request@{process\+\_\+request}}
+\index{process\+\_\+request@{process\+\_\+request}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{process\+\_\+request()}{process_request()}}]{\setlength{\rightskip}{0pt plus 5cm}void process\+\_\+request (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{app__server__api_8c_a3fd1ee4b7e49237afad3fed490767ab2}{}\label{app__server__api_8c_a3fd1ee4b7e49237afad3fed490767ab2}
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!read\+\_\+app\+\_\+command@{read\+\_\+app\+\_\+command}}
+\index{read\+\_\+app\+\_\+command@{read\+\_\+app\+\_\+command}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{read\+\_\+app\+\_\+command(app\+\_\+send\+\_\+t $\ast$app\+\_\+req)}{read_app_command(app_send_t *app_req)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} read\+\_\+app\+\_\+command (
+\begin{DoxyParamCaption}
+\item[{{\bf app\+\_\+send\+\_\+t} $\ast$}]{app\+\_\+req}
+\end{DoxyParamCaption}
+)}\hypertarget{app__server__api_8c_ad1e8dd0fd6f8e854ad7360e7621519ba}{}\label{app__server__api_8c_ad1e8dd0fd6f8e854ad7360e7621519ba}
+
+
+\subsection{Variable Documentation}
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+@{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+@{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}{__HOST__}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ \+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}\hypertarget{app__server__api_8c_adbd38436c25bc604b1a48464727d4179}{}\label{app__server__api_8c_adbd38436c25bc604b1a48464727d4179}
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!eard\+\_\+must\+\_\+exit@{eard\+\_\+must\+\_\+exit}}
+\index{eard\+\_\+must\+\_\+exit@{eard\+\_\+must\+\_\+exit}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{eard\+\_\+must\+\_\+exit}{eard_must_exit}}]{\setlength{\rightskip}{0pt plus 5cm}int eard\+\_\+must\+\_\+exit}\hypertarget{app__server__api_8c_aacaa91bff98e529c0c8990b558a2a301}{}\label{app__server__api_8c_aacaa91bff98e529c0c8990b558a2a301}
+\index{app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}!my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}}
+\index{my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}!app\+\_\+server\+\_\+api.\+c@{app\+\_\+server\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+cluster\+\_\+conf}{my_cluster_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+cluster\+\_\+conf}\hypertarget{app__server__api_8c_a6c6877da2aa55927ec276bfdedb32660}{}\label{app__server__api_8c_a6c6877da2aa55927ec276bfdedb32660}

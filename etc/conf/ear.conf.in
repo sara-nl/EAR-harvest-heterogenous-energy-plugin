@@ -18,6 +18,8 @@ GlobalManagerPeriodT2=259200
 # in Joules
 GlobalManagerEnergyLimit=550000
 GlobalManagerHost=r22u21.hpc.eu.lenovo.com
+GlobalManagerUnits=K
+GlobalManagerPolicy=MaxEnergy
 GlobalManagerPort=50000
 # Two modes are supported 0=manual 1= means automatic
 GlobalManagerMode=0
@@ -42,17 +44,17 @@ NodeUseEARDBD=1
 NodeForceFrequencies=1
 
 
-# DATABASE MANAGER
-DBDaemonAggregationTime=300
+# EARDBD (database manager)
 DBDaemonPortTCP=4711
 DBDaemonPortSecTCP=4712
 DBDaemonSyncPort=4713
-# Memory size expressed in MB
+# Time in seconds
+DBDaemonAggregationTime=60
+DBDaemonInsertionTime=30
+# Memory size expressed in MB. It is per process, it means if there is a server and a mirror it would allocate the double of that value.
 DBDaemonMemorySize=120
-
-# Plugin configuration
-PluginVerbose=0
-PluginAcceptedPstates=1,2,3
+# Expressed in percentage for types: mpi, non-mpi and learning applications, loops, energy metrics and aggregations and events, in that order. 
+DBDaemonMemorySizePerType=40,20,5,24,5,1,5
 
 ### COMMON Configuration
 TmpDir=@localstatedir@

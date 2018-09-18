@@ -65,16 +65,30 @@
 #define DEFCON_L3 1
 #define DEFCON_L2 2
 
+#define MAXENERGY	0
+#define MAXPOWER	1
+
+#define BASIC_U	1
+#define KILO_U	1000
+#define MEGA_U	1000000
+
 
 ulong th_level[NUM_LEVELS]={10,10,5,0};
 ulong pstate_level[NUM_LEVELS]={3,2,1,0};
 uint use_aggregation;
+uint units;
+uint policy;
+uint divisor = 1;
+
+uint t1_expired=0;
+uint must_refill=0;
 
 pthread_t eargm_server_api_th;
 cluster_conf_t my_cluster_conf;
 char my_ear_conf_path[GENERIC_NAME];	
 uint total_nodes=0;
 static const char *__NAME__ = "EARGM";
+char  unit_name[128];
 
 /* 
 * EAR Global Manager global data
@@ -102,12 +116,43 @@ void update_eargm_configuration(cluster_conf_t *conf)
 	energy_budget=conf->eargm.energy;
 	my_port=conf->eargm.port;
 	use_aggregation=conf->eargm.use_aggregation;
+	units=conf->eargm.units;
+	policy=conf->eargm.policy;
+    switch(units)
+    {
+        case 0:divisor=BASIC_U;
+			switch (policy){
+				case MAXENERGY:strcpy(unit_name,"Joules");break;
+				case MAXPOWER:strcpy(unit_name,"Watts");break;
+			}
+			break;
+        case 1:divisor=KILO_U;
+			switch (policy){
+				case MAXENERGY:strcpy(unit_name,"Kilo Joules");break;
+				case MAXPOWER:strcpy(unit_name,"Kilo Watts");break;
+			}
+			break;
+        case 2:divisor=MEGA_U;	
+			switch (policy){
+				case MAXENERGY:strcpy(unit_name,"Mega Joules");break;
+				case MAXPOWER:strcpy(unit_name,"Mega Watts");break;
+			}
+			break;
+        default:break;
+    }
+
 }
 
 
 static void my_signals_function(int s)
 {
-	if (s==SIGALRM)	return;
+	uint punits;
+	uint ppolicy;
+	if (s==SIGALRM){
+		alarm(period_t1);
+		t1_expired=1;	
+		return;
+	}
 	if (s==SIGHUP){
 		VERBOSE_N(0,"Reloading EAR configuration");
 		free_cluster_conf(&my_cluster_conf);
@@ -118,6 +163,11 @@ static void my_signals_function(int s)
     	else{
         	print_cluster_conf(&my_cluster_conf);
 			update_eargm_configuration(&my_cluster_conf);
+			must_refill=1;
+			if (ppolicy!=policy){
+				VERBOSE_N(0," Error policy can not be change on the fly, stop & start EARGM\n");
+				policy=ppolicy;
+			}
 			VERBOSE_N(0,"Using new energy limit %lu",energy_budget);
     	}
 	}else{
@@ -220,7 +270,7 @@ void fill_periods(ulong energy)
 	}
 	total_samples=aggregate_samples;
 	current_sample=0;
-	VERBOSE_N(1,"Initializing T2 period with %lu Joules, each sample with %lu Joules",energy,e_persample);
+	VERBOSE_N(1,"Initializing T2 period with %lu %s, each sample with %lu %s",energy,unit_name,e_persample,unit_name);
 }
 
 void send_mail(uint level, double energy)
@@ -354,7 +404,6 @@ void parse_args(char *argv[])
 void main(int argc,char *argv[])
 {
 	sigset_t set;
-	ulong divisor = 1;
 	int ret;
 	ulong result,result2;
 	gm_warning_t my_warning;
@@ -373,6 +422,13 @@ void main(int argc,char *argv[])
         print_cluster_conf(&my_cluster_conf);
     }
     update_eargm_configuration(&my_cluster_conf);
+
+
+	if (policy!=MAXENERGY){
+		VERBOSE_N(0,"Configuration error: Only MaxEnergy is supported\n");
+		policy=MAXENERGY;
+	}
+		
 
 	if ((period_t1<=0) || (period_t2<=0) || (energy_budget<=0)) usage(argv[0]);
 
@@ -422,100 +478,120 @@ void main(int argc,char *argv[])
 	*	MAIN LOOP
 	*			
 	*/
+	alarm(period_t1);
 	while(1){
 		// Waiting a for period_t1
-		alarm(period_t1);
 		sigsuspend(&set);
+		// ALARM RECEIVED
+		if (t1_expired){
+			t1_expired=0;
 
-		// Compute the period
-		time(&end_time);
-		start_time=end_time-period_t1;
-
-    
-	    result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
-	    if (!result){ 
-			VERBOSE_N(2,"No results in that period of time found\n");
-	    }else{ 
-			if (result < 0) exit(1);
-		}
-		VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t1,result);
-
-		new_energy_sample(result);
-		start_time=end_time-period_t2;
-    	result2 = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
-		// This code needs to be done since global manager is not running for time enough
-		//total_energy_t2=compute_energy_t2();	
-		total_energy_t2=result2;
-		perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
-		perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
-		VERBOSE_N(0,"Percentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)\n",perc_energy,total_energy_t2,energy_budget);
+			// Compute the period
+			time(&end_time);
+			start_time=end_time-period_t1;
 	
-		if (perc_time<100.0){	
-			if (perc_energy>perc_time){
-				VERBOSE_N(0,"WARNING %.2lf%% of energy vs %.2lf%% of time!!\n",perc_energy,perc_time);
+    
+	    	result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
+	    	if (!result){ 
+				VERBOSE_N(2,"No results in that period of time found\n");
+	    	}else{ 
+				if (result < 0) exit(1);
 			}
+			VERBOSE_N(1,"Energy consumed in last %lu seconds %lu\n",period_t1,result);
+	
+			new_energy_sample(result);
+			#if 0
+			/* we can use this approach for some debugging purposses, uncomment this code and comment total_energy_t2=compute_energy_t2() */
+			start_time=end_time-period_t2;
+    		result2 = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
+			total_energy_t2=result2;
+			#endif
+			total_energy_t2=compute_energy_t2();	
+			perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
+			perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
+			VERBOSE_N(0,"Percentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)\n",perc_energy,total_energy_t2,energy_budget);
+		
+			if (perc_time<100.0){	
+				if (perc_energy>perc_time){
+					VERBOSE_N(0,"WARNING %.2lf%% of energy vs %.2lf%% of time!!\n",perc_energy,perc_time);
+				}
+			}
+			if (!in_action){
+			switch(defcon(perc_energy,total_nodes)){
+			case NO_PROBLEM:
+				VERBOSE_N(2," Safe area. energy budget %.2lf%% \n",perc_energy);
+				break;
+			case WARNING_3:
+				in_action+=my_cluster_conf.eargm.grace_periods;
+				VERBOSE_N(0,"****************************************************************");
+				VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+				VERBOSE_N(0,"****************************************************************");
+	
+				my_warning.level=WARNING_3;
+				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+					my_warning.inc_th=eargm_increase_th_all_nodes(WARNING_3);            
+				}else{
+					my_warning.inc_th=0;
+				}
+				my_warning.energy_percent=perc_energy;
+				send_mail(WARNING_3,perc_energy);
+				#if DB_MYSQL	
+				db_insert_gm_warning(&my_warning);
+				#endif
+				break;
+			case WARNING_2:
+				in_action+=my_cluster_conf.eargm.grace_periods;
+				VERBOSE_N(0,"****************************************************************");
+				VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+				VERBOSE_N(0,"****************************************************************");
+				my_warning.level=WARNING_2;
+				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+					my_warning.new_p_state=eargm_reduce_frequencies_all_nodes(WARNING_2);
+					my_warning.inc_th=eargm_increase_th_all_nodes(WARNING_2);            
+				}else{
+					my_warning.inc_th=0;my_warning.new_p_state=0;
+				}
+				my_warning.energy_percent=perc_energy;
+				send_mail(WARNING_2,perc_energy);
+				#if DB_MYSQL	
+				db_insert_gm_warning(&my_warning);
+				#endif
+				break;
+			case PANIC:
+				in_action+=my_cluster_conf.eargm.grace_periods;
+				VERBOSE_N(0,"****************************************************************");
+				VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
+				VERBOSE_N(0,"****************************************************************");
+				my_warning.level=PANIC;
+				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+					my_warning.new_p_state=eargm_reduce_frequencies_all_nodes(PANIC);
+					my_warning.inc_th=eargm_increase_th_all_nodes(PANIC);            
+				}else{
+					my_warning.inc_th=0;my_warning.new_p_state=0;
+				}
+				my_warning.energy_percent=perc_energy;
+				send_mail(PANIC,perc_energy);
+				#if DB_MYSQL	
+				db_insert_gm_warning(&my_warning);
+				#endif
+				break;
+			}
+			}else in_action--;
+		}// ALARM
+		if (must_refill){
+			must_refill=0;
+    		aggregate_samples=period_t2/period_t1;
+    				if ((period_t2%period_t1)!=0){
+        				VERBOSE_N(2,"warning period_t2 is not multiple of period_t1\n");
+        				aggregate_samples++;
+    		}
+			if (energy_consumed!=NULL) free(energy_consumed);
+    		energy_consumed=malloc(sizeof(ulong)*aggregate_samples);
+		    time(&end_time);
+    		start_time=end_time-period_t2;
+    		result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
+    		fill_periods(result);
 		}
-		if (!in_action){
-		switch(defcon(perc_energy,total_nodes)){
-		case NO_PROBLEM:
-			VERBOSE_N(2," Safe area. energy budget %.2lf%% \n",perc_energy);
-			break;
-		case WARNING_3:
-			in_action+=my_cluster_conf.eargm.grace_periods;
-			VERBOSE_N(0,"****************************************************************");
-			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
-			VERBOSE_N(0,"****************************************************************");
-
-			my_warning.level=WARNING_3;
-			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-				my_warning.inc_th=eargm_increase_th_all_nodes(WARNING_3);            
-			}else{
-				my_warning.inc_th=0;
-			}
-			my_warning.energy_percent=perc_energy;
-			send_mail(WARNING_3,perc_energy);
-			#if DB_MYSQL	
-			db_insert_gm_warning(&my_warning);
-			#endif
-			break;
-		case WARNING_2:
-			in_action+=my_cluster_conf.eargm.grace_periods;
-			VERBOSE_N(0,"****************************************************************");
-			VERBOSE_N(0,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
-			VERBOSE_N(0,"****************************************************************");
-			my_warning.level=WARNING_2;
-			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-				my_warning.new_p_state=eargm_reduce_frequencies_all_nodes(WARNING_2);
-				my_warning.inc_th=eargm_increase_th_all_nodes(WARNING_2);            
-			}else{
-				my_warning.inc_th=0;my_warning.new_p_state=0;
-			}
-			my_warning.energy_percent=perc_energy;
-			send_mail(WARNING_2,perc_energy);
-			#if DB_MYSQL	
-			db_insert_gm_warning(&my_warning);
-			#endif
-			break;
-		case PANIC:
-			in_action+=my_cluster_conf.eargm.grace_periods;
-			VERBOSE_N(0,"****************************************************************");
-			VERBOSE_N(0,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
-			VERBOSE_N(0,"****************************************************************");
-			my_warning.level=PANIC;
-			if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-				my_warning.new_p_state=eargm_reduce_frequencies_all_nodes(PANIC);
-				my_warning.inc_th=eargm_increase_th_all_nodes(PANIC);            
-			}else{
-				my_warning.inc_th=0;my_warning.new_p_state=0;
-			}
-			my_warning.energy_percent=perc_energy;
-			send_mail(PANIC,perc_energy);
-			#if DB_MYSQL	
-			db_insert_gm_warning(&my_warning);
-			#endif
-			break;
-		}
-		}else in_action--;
 	}
 
     

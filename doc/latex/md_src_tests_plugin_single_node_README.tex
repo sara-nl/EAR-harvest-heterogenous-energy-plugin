@@ -1,0 +1,45 @@
+These tests are designed to evaluate the different plugin options to be supported by slurm plugin, E\+A\+RD, and E\+A\+RL
+\begin{DoxyItemize}
+\item Assuming ear=on, some results depend on user privilege
+\item Test from 1..100 are designed to test srun options. They must be executes in the command line without arguments (./test1.sh) . They use kernels binaries, so they must be compiled before using the tests. It is also assumed they are executed in the same folder since executable path is relative.
+\item tests test1\+X\+X.\+sh replicates test\+X\+X.\+sh but the are testing sbatch usage. They must be submitted using sbatch test\+X\+X.\+sh. Folder O\+U\+TS must be manually created before execution.
+\end{DoxyItemize}
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*3{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Name }&{\bf Case }&{\bf Expected behavoiour  }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Name }&{\bf Case }&{\bf Expected behavoiour  }\\\cline{1-3}
+\endhead
+test1 &No arguments &Application is executed with default policy and th \\\cline{1-3}
+test2 &--ear-\/verbose=1 &Application must be executed with default policy and th \\\cline{1-3}
+test3 &--ear-\/policy=M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY &if M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY is supported, it must be selected without privileges \\\cline{1-3}
+test4 &--ear-\/policy=M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON --ear-\/policy-\/th=0.\+65 &Depending on privileges, th will be changed or not \\\cline{1-3}
+test5 &--ear-\/policy=M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON --ear-\/policy-\/th=0.\+75 &Depending on privileges, th will be changed or not \\\cline{1-3}
+test6 &--ear-\/learning=1 --ear-\/verbose=1 &if authorized --$>$ ok (freq=nominal), default otherwise \\\cline{1-3}
+test7 &--ear-\/learning=2 --ear-\/verbose=1 &if authorized --$>$ ok (freq=nominal-\/100000), default otherwise \\\cline{1-3}
+test8 &--ear-\/tag=cpu-\/intensive --ear-\/verbose=1 &if energy-\/tag user--$>$ select pstate and ear=off, default otherwise \\\cline{1-3}
+test9 &--ear-\/tag=memory-\/intensive --ear-\/verbose=1 &if energy-\/tag user--$>$ select pstate and ear=off, default otherwise \\\cline{1-3}
+test10 &--ear-\/learning=1 --ear-\/tag=memory-\/intensive --ear-\/verbose=1 &if energy-\/tag user --$>$ energy tag, else, if authorized, learning, else default \\\cline{1-3}
+test11 &--ear-\/tag=invalid --ear-\/verbose=1 &default \\\cline{1-3}
+test12 &--account=colbsc --ear-\/tag=cpu-\/intensive --ear-\/verbose=1&if energy-\/tag user --$>$ energy tag, else, if authorized, learning, else default \\\cline{1-3}
+test13 &--ear-\/cpufreq=2000000 --ear-\/policy=M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY --ear-\/verbose=1 &if authorized, execute application at 2.\+0\+Ghz, at default freq otherwise \\\cline{1-3}
+test14 &--ear-\/cpufreq=2000000 --ear-\/policy=M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON --ear-\/verbose=1 &if authorized, execute application at 2.\+0\+Ghz with M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON, at default freq otherwise \\\cline{1-3}
+test15 &--ear-\/cpufreq=200000 --ear-\/policy=M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON --ear-\/verbose=1&It is an invalid frequency, default frequency is selected \\\cline{1-3}
+test16 &--ear-\/user-\/db=D\+B/sp\+\_\+metrics. --ear-\/verbose=1 -\/J name&application metrics must be reported in D\+B/sp\+\_\+metrics.\+host.\+csv file. Intermediate folders must exists. App name must be name \\\cline{1-3}
+test17 &--ear-\/user-\/db=D\+B/sp\+\_\+metrics. --ear-\/verbose=1 &application metrics must be reported in D\+B/sp\+\_\+metrics.\+host.\+csv file. Intermediate folders must exists. App name must be executable \\\cline{1-3}
+test18 &--ear-\/user-\/db=D\+B/stream\+\_\+mpi. --ear-\/verbose=1 -\/J \$kernel&it is memory intensive application, low freqs must be selected \\\cline{1-3}
+test19 &--ear-\/policy=M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON --ear-\/verbose=1 &If user is authorized, M\+I\+N\+\_\+\+E\+N\+E\+R\+GY will be selected as policy. It is a cpu app \\\cline{1-3}
+test20 &--ear-\/policy=M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON --ear-\/verbose=1&If user is authorized, M\+I\+N\+\_\+\+E\+N\+E\+R\+GY will be selected as policy. It is an memory intensive app \\\cline{1-3}
+test21 &-\/ear-\/mpi-\/dist=openmpi --ear-\/verbose=1 &openmpi test, fortran application, same case than test2.\+sh \\\cline{1-3}
+test22 &-\/ear-\/mpi-\/dist=openmpi --ear-\/verbose=1 &openmpi test, C application \\\cline{1-3}
+test23 &--ear=off -\/ear-\/mpi-\/dist=openmpi --ear-\/verbose=1 &Application is M\+PI and it is executed without E\+AR library \\\cline{1-3}
+test24 &no ear flags &not mpi applications. It must be executed without problems \\\cline{1-3}
+test25 &--ear-\/verbose=1 &not mpi applications. It must be executed without problems \\\cline{1-3}
+test150 &Same than test103 (based on test1) with two srun\textquotesingle{}s. &Options must be the same since there are defined in sbatch \\\cline{1-3}
+\end{longtabu}
+It is recommented to test changing ear.\+conf configuration 

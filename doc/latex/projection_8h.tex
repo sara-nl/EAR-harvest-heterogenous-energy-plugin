@@ -1,0 +1,164 @@
+\hypertarget{projection_8h}{}\section{src/common/types/projection.h File Reference}
+\label{projection_8h}\index{src/common/types/projection.\+h@{src/common/types/projection.\+h}}
+
+
+Projections are used by time\&power models.  
+
+
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structPerfProjection}{Perf\+Projection}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structPerfProjection}{Perf\+Projection} \hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{projection_8h_a1dd60a59fa2dcf7ff62974bb3e1d9013}{create\+\_\+projections} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} p\+\_\+states)
+\begin{DoxyCompactList}\small\item\em Allocates memory to contain the projections for the p\+\_\+states given by parameter. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{projection_8h_ac52314e7430e49a244487fc796c7f6cc}{performance\+\_\+projection\+\_\+ok} (\hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$predicted, \hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$real)
+\begin{DoxyCompactList}\small\item\em Given a performance projection and an application signature returns true if they are “equal” \end{DoxyCompactList}\item 
+\hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$ \hyperlink{projection_8h_aee497a904b768f71896a7d9c472be449}{performance\+\_\+projection} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} f)
+\begin{DoxyCompactList}\small\item\em Given a frequency f, returns the projection of the associated p\+\_\+state of said frequency. \end{DoxyCompactList}\item 
+void \hyperlink{projection_8h_a1f34fdbe455a19be4f0be056c82ab8c5}{set\+\_\+performance\+\_\+projection} (int \hyperlink{compute__coefficients__v2_8c_aa0ecde9bec2f4c6686780ccf4f5fe835}{i}, double TP, double PP, double C\+PI)
+\begin{DoxyCompactList}\small\item\em Sets the values of the performance projection i to the ones given by parameter. \end{DoxyCompactList}\item 
+void \hyperlink{projection_8h_af0560f0933800c23f8b5ebdb028b6366}{reset\+\_\+performance\+\_\+projection} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} p\+\_\+states)
+\begin{DoxyCompactList}\small\item\em Resets the projections for power, C\+PI and time to 0. \end{DoxyCompactList}\item 
+double \hyperlink{projection_8h_a05646576a30b452ba1d4977b06e26280}{power\+\_\+projection} (double power, double tpi, double A, double B, double C)
+\begin{DoxyCompactList}\small\item\em Creates a prediction for power with the associated formula and returns it. \end{DoxyCompactList}\item 
+double \hyperlink{projection_8h_a99cef4e499b12f05979c76e151ecab10}{cpi\+\_\+projection} (double tpi, double cpi, double D, double E, double F)
+\begin{DoxyCompactList}\small\item\em Creates a prediction for C\+PI with the associated formula and returns it. \end{DoxyCompactList}\item 
+double \hyperlink{projection_8h_ae5c6ca8521d3774bc6fbbb931b07876b}{time\+\_\+projection} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} F, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} Fi, double T, double cpi, double cpi\+\_\+pr)
+\begin{DoxyCompactList}\small\item\em Creates a prediction for time with the associated formula and returns it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Projections are used by time\&power models. 
+
+
+
+\subsection{Typedef Documentation}
+\index{projection.\+h@{projection.\+h}!projection\+\_\+t@{projection\+\_\+t}}
+\index{projection\+\_\+t@{projection\+\_\+t}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{projection\+\_\+t}{projection_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf Perf\+Projection}  {\bf projection\+\_\+t}}\hypertarget{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{}\label{projection_8h_a50fc11780fbb9af29b37d325d803a2da}
+
+
+\subsection{Function Documentation}
+\index{projection.\+h@{projection.\+h}!cpi\+\_\+projection@{cpi\+\_\+projection}}
+\index{cpi\+\_\+projection@{cpi\+\_\+projection}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{cpi\+\_\+projection(double tpi, double cpi, double D, double E, double F)}{cpi_projection(double tpi, double cpi, double D, double E, double F)}}]{\setlength{\rightskip}{0pt plus 5cm}double cpi\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{double}]{tpi, }
+\item[{double}]{cpi, }
+\item[{double}]{D, }
+\item[{double}]{E, }
+\item[{double}]{F}
+\end{DoxyParamCaption}
+)}\hypertarget{projection_8h_a99cef4e499b12f05979c76e151ecab10}{}\label{projection_8h_a99cef4e499b12f05979c76e151ecab10}
+
+
+Creates a prediction for C\+PI with the associated formula and returns it. 
+
+\begin{DoxyReturn}{Returns}
+cpi$\ast$\+D+tpi$\ast$\+E+F 
+\end{DoxyReturn}
+\index{projection.\+h@{projection.\+h}!create\+\_\+projections@{create\+\_\+projections}}
+\index{create\+\_\+projections@{create\+\_\+projections}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+projections(uint p\+\_\+states)}{create_projections(uint p_states)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} create\+\_\+projections (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{p\+\_\+states}
+\end{DoxyParamCaption}
+)}\hypertarget{projection_8h_a1dd60a59fa2dcf7ff62974bb3e1d9013}{}\label{projection_8h_a1dd60a59fa2dcf7ff62974bb3e1d9013}
+
+
+Allocates memory to contain the projections for the p\+\_\+states given by parameter. 
+
+\index{projection.\+h@{projection.\+h}!performance\+\_\+projection@{performance\+\_\+projection}}
+\index{performance\+\_\+projection@{performance\+\_\+projection}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{performance\+\_\+projection(ulong f)}{performance_projection(ulong f)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf projection\+\_\+t}$\ast$ performance\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{f}
+\end{DoxyParamCaption}
+)}\hypertarget{projection_8h_aee497a904b768f71896a7d9c472be449}{}\label{projection_8h_aee497a904b768f71896a7d9c472be449}
+
+
+Given a frequency f, returns the projection of the associated p\+\_\+state of said frequency. 
+
+\index{projection.\+h@{projection.\+h}!performance\+\_\+projection\+\_\+ok@{performance\+\_\+projection\+\_\+ok}}
+\index{performance\+\_\+projection\+\_\+ok@{performance\+\_\+projection\+\_\+ok}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{performance\+\_\+projection\+\_\+ok(projection\+\_\+t $\ast$predicted, projection\+\_\+t $\ast$real)}{performance_projection_ok(projection_t *predicted, projection_t *real)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} performance\+\_\+projection\+\_\+ok (
+\begin{DoxyParamCaption}
+\item[{{\bf projection\+\_\+t} $\ast$}]{predicted, }
+\item[{{\bf projection\+\_\+t} $\ast$}]{real}
+\end{DoxyParamCaption}
+)}\hypertarget{projection_8h_ac52314e7430e49a244487fc796c7f6cc}{}\label{projection_8h_ac52314e7430e49a244487fc796c7f6cc}
+
+
+Given a performance projection and an application signature returns true if they are “equal” 
+
+\index{projection.\+h@{projection.\+h}!power\+\_\+projection@{power\+\_\+projection}}
+\index{power\+\_\+projection@{power\+\_\+projection}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{power\+\_\+projection(double power, double tpi, double A, double B, double C)}{power_projection(double power, double tpi, double A, double B, double C)}}]{\setlength{\rightskip}{0pt plus 5cm}double power\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{double}]{power, }
+\item[{double}]{tpi, }
+\item[{double}]{A, }
+\item[{double}]{B, }
+\item[{double}]{C}
+\end{DoxyParamCaption}
+)}\hypertarget{projection_8h_a05646576a30b452ba1d4977b06e26280}{}\label{projection_8h_a05646576a30b452ba1d4977b06e26280}
+
+
+Creates a prediction for power with the associated formula and returns it. 
+
+\begin{DoxyReturn}{Returns}
+power$\ast$\+A+tpi$\ast$\+B+C 
+\end{DoxyReturn}
+\index{projection.\+h@{projection.\+h}!reset\+\_\+performance\+\_\+projection@{reset\+\_\+performance\+\_\+projection}}
+\index{reset\+\_\+performance\+\_\+projection@{reset\+\_\+performance\+\_\+projection}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{reset\+\_\+performance\+\_\+projection(uint p\+\_\+states)}{reset_performance_projection(uint p_states)}}]{\setlength{\rightskip}{0pt plus 5cm}void reset\+\_\+performance\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{p\+\_\+states}
+\end{DoxyParamCaption}
+)}\hypertarget{projection_8h_af0560f0933800c23f8b5ebdb028b6366}{}\label{projection_8h_af0560f0933800c23f8b5ebdb028b6366}
+
+
+Resets the projections for power, C\+PI and time to 0. 
+
+\index{projection.\+h@{projection.\+h}!set\+\_\+performance\+\_\+projection@{set\+\_\+performance\+\_\+projection}}
+\index{set\+\_\+performance\+\_\+projection@{set\+\_\+performance\+\_\+projection}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{set\+\_\+performance\+\_\+projection(int i, double T\+P, double P\+P, double C\+P\+I)}{set_performance_projection(int i, double TP, double PP, double CPI)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+performance\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{int}]{i, }
+\item[{double}]{TP, }
+\item[{double}]{PP, }
+\item[{double}]{C\+PI}
+\end{DoxyParamCaption}
+)}\hypertarget{projection_8h_a1f34fdbe455a19be4f0be056c82ab8c5}{}\label{projection_8h_a1f34fdbe455a19be4f0be056c82ab8c5}
+
+
+Sets the values of the performance projection i to the ones given by parameter. 
+
+\index{projection.\+h@{projection.\+h}!time\+\_\+projection@{time\+\_\+projection}}
+\index{time\+\_\+projection@{time\+\_\+projection}!projection.\+h@{projection.\+h}}
+\subsubsection[{\texorpdfstring{time\+\_\+projection(ulong F, ulong Fi, double T, double cpi, double cpi\+\_\+pr)}{time_projection(ulong F, ulong Fi, double T, double cpi, double cpi_pr)}}]{\setlength{\rightskip}{0pt plus 5cm}double time\+\_\+projection (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{F, }
+\item[{{\bf ulong}}]{Fi, }
+\item[{double}]{T, }
+\item[{double}]{cpi, }
+\item[{double}]{cpi\+\_\+pr}
+\end{DoxyParamCaption}
+)}\hypertarget{projection_8h_ae5c6ca8521d3774bc6fbbb931b07876b}{}\label{projection_8h_ae5c6ca8521d3774bc6fbbb931b07876b}
+
+
+Creates a prediction for time with the associated formula and returns it. 
+
+\begin{DoxyReturn}{Returns}
+T $\ast$ cpi\+\_\+pr/cpi $\ast$ (F/\+Fi) 
+\end{DoxyReturn}

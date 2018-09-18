@@ -60,10 +60,12 @@ void usage(char *app)
 "\t\t-h\tdisplays this message\n"\
 "\t\t-v\tverbose mode for debugging purposes\n" \
 "\t\t-u\tspecifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]\n" \
-"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
+"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid].\n" \
+"\t\t\t\tA user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
 "\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
+"\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
-"\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: all jobs]\n" \
+"\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]\n" \
 "", app);
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
     #endif
@@ -421,7 +423,7 @@ void add_string_filter(char *query, char *addition, char *value)
 
 void add_int_filter(char *query, char *addition, int value)
 {
-    char query_tmp[256];
+    char query_tmp[512];
     strcpy(query_tmp, query);
     if (query_filters < 1)
         strcat(query_tmp, " WHERE ");
@@ -438,7 +440,7 @@ void add_int_filter(char *query, char *addition, int value)
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
 #if DB_MYSQL
-int read_from_database(char *user, int job_id, int limit, int step_id) 
+int read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag) 
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -470,6 +472,8 @@ int read_from_database(char *user, int job_id, int limit, int step_id)
         add_int_filter(query, "step_id", step_id);
     if (user != NULL)
         add_string_filter(query, "user_id", user);
+    if (e_tag != NULL)
+        add_string_filter(query, "e_tag", e_tag);
 
     if (limit > 0)
     {
@@ -530,10 +534,11 @@ void main(int argc, char *argv[])
     int job_id = -1;
     int user_id = -1;
     int step_id = -1;
-    int limit = -1;
+    int limit = 20;
     int opt;
     char path_name[256];
     char *file_name = NULL;
+    char e_tag[64];
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -555,12 +560,13 @@ void main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:vmlc:h")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmlc:h")) != -1) 
     {
         switch (opt)
         {
             case 'n':
-                limit = atoi(optarg);
+                if (strcmp(optarg, "all")) limit = -1;
+                else limit = atoi(optarg);
                 break;
             case 'u':
                 if (user != NULL) break;
@@ -586,14 +592,18 @@ void main(int argc, char *argv[])
             case 'c':
                 strcpy(csv_path, optarg);
                 break;
+            case 't':
+                strcpy(e_tag, optarg);
+                break;
             case 'h':
                 free_cluster_conf(&my_conf);
                 usage(argv[0]);
+                break;
         }
     }
 
     if (file_name != NULL) read_from_files(job_id, step_id, verbose, file_name);
-    else read_from_database(user, job_id, limit, step_id); 
+    else read_from_database(user, job_id, limit, step_id, e_tag); 
 
     free_cluster_conf(&my_conf);
     exit(1);

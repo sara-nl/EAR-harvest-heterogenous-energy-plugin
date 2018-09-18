@@ -168,11 +168,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 				
 				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);	
 
-				if (result == EAR_NOT_READY)
-				{
-					VERBOSE_N(0,"We must recompute number of mpi calls in period\n");
-				}
-				else
+				if (result != EAR_NOT_READY)
 				{
 					//print_loop_signature("signature computed", &loop_signature.signature);
 

@@ -119,4 +119,7 @@ void new_ping_all_nodes(cluster_conf_t my_cluster_conf);
 
 /** Sends the command to the currently connected fd */
 int send_command(request_t *command);
+
+/** Sends the command to all nodes in ear.conf */
+void send_command_all(request_t command, cluster_conf_t my_cluster_conf);
 #endif

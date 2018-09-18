@@ -221,7 +221,7 @@ int eards_remote_disconnect()
 /*
 *	SAME FUNCTIONALLITY BUT SENT TO ALL NODES
 */
-void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
+void old_increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
@@ -254,7 +254,7 @@ void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
     }
 }
 
-void red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
+void old_red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
@@ -287,7 +287,7 @@ void red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
     }
 }
 
-void ping_all_nodes(cluster_conf_t my_cluster_conf)
+void old_ping_all_nodes(cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc; 
     char node_name[256];
@@ -320,32 +320,67 @@ void ping_all_nodes(cluster_conf_t my_cluster_conf)
     }
 }
 
-void new_ping_all_nodes2(cluster_conf_t my_cluster_conf)
+void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
 {
-    char *node_name = "r22u21";
-    int rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
-    if (rc<0){
-        VERBOSE_N(0,"Error connecting with node %s", node_name);
-    }else{
-        VERBOSE_N(1,"Node %s ping!\n", node_name);
-        request_t command;
-        command.req=EAR_RC_PING;
-        command.node_dist = 2;
-        if (!send_command(&command)) VERBOSE_N(0,"Error doing ping for node %s", node_name);
-        eards_remote_disconnect();
-    }
-
+    request_t command;
+    command.req=EAR_RC_INC_TH;
+    command.my_req.ear_conf.th=th;
+    send_command_all(command, my_cluster_conf);
 }
 
-void new_ping_all_nodes(cluster_conf_t my_cluster_conf)
+void ping_all_nodes(cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req = EAR_RC_PING;
+    send_command_all(command, my_cluster_conf);
+}
+
+void red_max_freq_all_nodes(ulong p_states, cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_RED_PSTATE;
+    command.my_req.ear_conf.p_states=p_states;
+    send_command_all(command, my_cluster_conf);
+}
+
+void red_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_SET_FREQ;
+    command.my_req.ear_conf.max_freq=freq;
+    send_command_all(command, my_cluster_conf);
+}
+
+void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_DEF_FREQ;
+    command.my_req.ear_conf.max_freq=freq;
+    send_command_all(command, my_cluster_conf);
+}
+
+void restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_REST_CONF;
+    send_command_all(command, my_cluster_conf);
+}
+
+void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_DEF_FREQ;
+    command.my_req.ear_conf.max_freq=freq;
+    send_command_all(command, my_cluster_conf);
+}
+
+void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc; 
     char node_name[256];
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {   
-            request_t command;
-            command.req = EAR_RC_PING;
             k = my_cluster_conf.islands[i].ranges[j].start;
             command.node_dist = 0;
             if (k == -1) 
@@ -364,20 +399,20 @@ void new_ping_all_nodes(cluster_conf_t my_cluster_conf)
                 while (t < command.node_dist) t *=2;
                 command.node_dist = t;
             }   
-                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
-                if (rc<0){
-                    VERBOSE_N(0,"Error connecting with node %s", node_name);
-                }else{
-                    VERBOSE_N(1,"Node %s with distance %d ping!\n", node_name, command.node_dist);
-                    if (!send_command(&command)) VERBOSE_N(0,"Error doing ping for node %s", node_name);
-                    eards_remote_disconnect();
-                }
+            rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+            if (rc<0){
+                VERBOSE_N(0,"Error connecting with node %s", node_name);
+            }else{
+                VERBOSE_N(1,"Node %s with distance %d ping!\n", node_name, command.node_dist);
+                if (!send_command(&command)) VERBOSE_N(0,"Error doing ping for node %s", node_name);
+                eards_remote_disconnect();
             }
         }
+   }
 }
 
 
-void red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
+void old_red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
@@ -411,7 +446,7 @@ void red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 
 
 
-void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+void old_reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc;
     char node_name[256];
@@ -446,7 +481,7 @@ void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
     }
 }
 
-void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+void old_set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc;
     char node_name[256];
@@ -481,7 +516,7 @@ void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
     }
 }
 
-void restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
+void old_restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc;
     char node_name[256];

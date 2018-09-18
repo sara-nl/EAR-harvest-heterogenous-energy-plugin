@@ -19,7 +19,8 @@ BINARIES = ear_set_node_freq \
            ear_set_freq \
            ear_red_freq \
            ear_inc_th \
-           ear_set_th
+           ear_set_th \
+		   ear_dbd_stress_test
 
 ######## RULES
 
@@ -51,6 +52,9 @@ ear_set_th: ear_set_th.c $(REMOTE_OBJS) $(TYPES_OBJS)
 
 ear_end_job: ear_end_job.c $(REMOTE_OBJS) $(TYPES_OBJS)
 	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS)
+
+ear_dbd_stress_test:ear_dbd_stress_test.c $(TYPES_OBJS) $(SRCDIR)/database_cache/eardbd_api.o $(SRCDIR)/common/sockets.o
+	$(CC) $(CFLAGS) -o $@  $<  $(TYPES_OBJS) $(DB_LDFLAGS) $(SRCDIR)/database_cache/eardbd_api.o $(SRCDIR)/common/sockets.o
 
 ######## OPTIONS
 

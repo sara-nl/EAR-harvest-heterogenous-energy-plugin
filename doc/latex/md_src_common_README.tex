@@ -1,0 +1,35 @@
+\subsection*{Description }
+
+The power monitoring library offers basic functionality for power/energy monitoring.
+
+typedef struct \hyperlink{structenergy__mon__data}{energy\+\_\+mon\+\_\+data}\{ node\+\_\+data\+\_\+t A\+C\+\_\+node\+\_\+energy; node\+\_\+data\+\_\+t D\+C\+\_\+node\+\_\+energy; rapl\+\_\+data\+\_\+t D\+R\+A\+M\+\_\+energy\mbox{[}N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS\mbox{]}; rapl\+\_\+data\+\_\+t C\+P\+U\+\_\+energy\mbox{[}N\+U\+M\+\_\+\+S\+O\+C\+K\+E\+TS\mbox{]}; \}energy\+\_\+data\+\_\+t;
+
+int \hyperlink{power__metrics_8c_af5eefcde30c84634efe6cfb8b156f89d}{init\+\_\+power\+\_\+ponitoring()}; void \hyperlink{power__metrics_8c_affbb71e4b3e13f4786c527424c70cde2}{end\+\_\+power\+\_\+monitoring()};
+
+int \hyperlink{power__metrics_8h_aa934a380c9799cc51aa3617c3e288921}{read\+\_\+enegy\+\_\+data(energy\+\_\+data\+\_\+t $\ast$acc\+\_\+energy)}; int \hyperlink{power__metrics_8h_a4c501a33975a5e054f4bb470dd03cc38}{diff\+\_\+energy\+\_\+data(energy\+\_\+data\+\_\+t $\ast$init,energy\+\_\+data\+\_\+t $\ast$end,energy\+\_\+data\+\_\+t $\ast$diff)};
+
+\subsection*{Requirements }
+
+The power monitoring library uses ear services. E\+AR must be installed and E\+AR daemon must be running
+
+\subsection*{Brief installation guide }
+
+This current version is only a simple prototype, it includes a simple make that creates a shared\+\_\+library. The path must be included in L\+D\+\_\+\+L\+I\+B\+R\+A\+R\+Y\+\_\+\+P\+A\+TH to use the library
+
+\subsection*{Privileged and not privileged library }
+
+The same A\+PI can be used with or without privileges. For normal users, a non privileged version is offered . E\+AR daemon must be running.
+
+Example\+: ./my\+\_\+energy\+\_\+test ./command.sh
+
+The priviled version must define L\+D\+\_\+\+L\+I\+B\+R\+A\+R\+Y\+\_\+\+P\+A\+TH
+
+Example\+: sudo L\+D\+\_\+\+L\+I\+B\+R\+A\+R\+Y\+\_\+\+P\+A\+TH=\$\+L\+D\+\_\+\+L\+I\+B\+R\+A\+R\+Y\+\_\+\+P\+A\+TH ./my\+\_\+energy\+\_\+test\+\_\+priv ./command.sh
+
+Binaries are generated with different i
+
+
+\begin{DoxyItemize}
+\item L\+D\+\_\+\+F\+L\+A\+GS (papi and freeipmi libraries must be included -\/\+L/home/xjaneas/opt/lib -\/lpapi -\/lfreeipmi)
+\item C\+F\+L\+A\+GS (-\/\+D\+E\+A\+R\+\_\+\+I\+N\+T\+E\+R\+N\+AL needs to be defined to select internal A\+PI) 
+\end{DoxyItemize}

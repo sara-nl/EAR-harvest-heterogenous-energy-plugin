@@ -1,0 +1,317 @@
+\hypertarget{metrics_2custom_2frequency_8c}{}\section{src/metrics/custom/frequency.c File Reference}
+\label{metrics_2custom_2frequency_8c}\index{src/metrics/custom/frequency.\+c@{src/metrics/custom/frequency.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$stdint.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/hardware\+\_\+info.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structavg__perf__cpu__info}{avg\+\_\+perf\+\_\+cpu\+\_\+info}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{metrics_2custom_2frequency_8c_a48004101364a4543654702fe94dc6661}{aperf\+\_\+init} (unsigned int num\+\_\+cpus)
+\begin{DoxyCompactList}\small\item\em Allocates memory to hold the information of num\+\_\+cpus C\+P\+Us regarding their frequency. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_a7808359bd520ea4cb607a2f001ad7df3}{aperf\+\_\+init\+\_\+cpu} (unsigned int cpu, unsigned long max\+\_\+freq)
+\begin{DoxyCompactList}\small\item\em Initializes the frequency value of the C\+PU cpu at the value given by parameter. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_a5c85f4145f99af9150d488f8dcefdde0}{aperf\+\_\+init\+\_\+all\+\_\+cpus} (unsigned int num\+\_\+cpus, unsigned long max\+\_\+freq)
+\begin{DoxyCompactList}\small\item\em Initializes the frequency value of all C\+P\+Us at the value given by max\+\_\+freq. \end{DoxyCompactList}\item 
+void \hyperlink{metrics_2custom_2frequency_8c_a6a351b928f5ce55cf65b6808104a6d82}{aperf\+\_\+dispose} ()
+\begin{DoxyCompactList}\small\item\em Frees the memory allocated to hold the C\+PU information regarding their frequency. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_a5ee0d8549cdd5288599dc26196000752}{aperf\+\_\+start\+\_\+avg\+\_\+freq} (int cpu, struct \hyperlink{structavg__perf__cpu__info}{avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$my\+\_\+cpu\+\_\+info)
+\item 
+int \hyperlink{metrics_2custom_2frequency_8c_a2b7c8c92bb2f67e9fef98e5a892dd19b}{aperf\+\_\+end\+\_\+avg\+\_\+freq} (unsigned int cpu, struct \hyperlink{structavg__perf__cpu__info}{avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$my\+\_\+cpu\+\_\+info, unsigned long $\ast$frequency)
+\item 
+int \hyperlink{metrics_2custom_2frequency_8c_adece29c526d2df124be62b8b588073f4}{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init} (unsigned int cpu)
+\begin{DoxyCompactList}\small\item\em Starts tracking the frequency in the selected C\+PU. \end{DoxyCompactList}\item 
+void \hyperlink{metrics_2custom_2frequency_8c_a19f03f9657e0eb68c00689becaac4f87}{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus} ()
+\begin{DoxyCompactList}\small\item\em Starts tracking the frequency for all C\+P\+Us. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_af122f65d6049235419fb6e93450e3bdf}{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init} (unsigned int cpu)
+\begin{DoxyCompactList}\small\item\em Starts tracking frequency for the whole app in the selected C\+PU. \end{DoxyCompactList}\item 
+void \hyperlink{metrics_2custom_2frequency_8c_aa847392b55d2e8a5ad9b2e3a01dadcbb}{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus} ()
+\begin{DoxyCompactList}\small\item\em Starts tracking the frequency for all C\+P\+Us for the whole app. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_af000aec2859c142b51066c3507accd0e}{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end} (unsigned int cpu, unsigned long $\ast$frequency)
+\begin{DoxyCompactList}\small\item\em Ends the tracking previously started and puts the average frequency during the period between this call and the previous \hyperlink{metrics_2custom_2frequency_8h_adece29c526d2df124be62b8b588073f4}{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init()} and puts it in $\ast$frequency. \end{DoxyCompactList}\item 
+unsigned long \hyperlink{metrics_2custom_2frequency_8c_a3d842972a3481da109bb52704f59bb18}{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus} ()
+\begin{DoxyCompactList}\small\item\em Ends the tracking previously started with \hyperlink{metrics_2custom_2frequency_8h_a19f03f9657e0eb68c00689becaac4f87}{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus()} and returns the average frequency for all C\+P\+Us between this call and the previous one. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_a24fd6901140c1789c0a50cf9c6ec045f}{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end} (unsigned int cpu, unsigned long $\ast$frequency)
+\begin{DoxyCompactList}\small\item\em Ends the tracking previously started and puts the average frequency for the whole app during the period between this call and the preivous \hyperlink{metrics_2custom_2frequency_8h_af122f65d6049235419fb6e93450e3bdf}{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init()} call in $\ast$frequency. \end{DoxyCompactList}\item 
+unsigned long \hyperlink{metrics_2custom_2frequency_8c_aea4c543bbf54b0ceef5dcd6729348505}{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus} ()
+\begin{DoxyCompactList}\small\item\em Ends the tracking previously started with \hyperlink{metrics_2custom_2frequency_8h_aa847392b55d2e8a5ad9b2e3a01dadcbb}{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus()} and returns the average frequency for all C\+P\+Us for the whole app between this call and the previous one. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_aaba7c8676b317fe388685390c1c69f79}{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init} (unsigned int cpu)
+\item 
+void \hyperlink{metrics_2custom_2frequency_8c_a9e7fd5540c308ce3ed93c73ce32625b2}{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus} ()
+\begin{DoxyCompactList}\small\item\em To be used by power monitoring for periodic metrics. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_ad93b233c13835193411083c1e9ae6eca}{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end} (unsigned int cpu, unsigned long $\ast$frequency)
+\item 
+unsigned long \hyperlink{metrics_2custom_2frequency_8c_a2551ed5bb3fa0ef0c3cd4fc33d1b7707}{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus} ()
+\item 
+int \hyperlink{metrics_2custom_2frequency_8c_afddad11e631e3777f4f4b9db9807127c}{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init} (unsigned int cpu)
+\item 
+void \hyperlink{metrics_2custom_2frequency_8c_ad8f3a1046e88dcffbcc1fa519e621aa6}{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus} ()
+\begin{DoxyCompactList}\small\item\em To be used by power monitoring for power signatures. \end{DoxyCompactList}\item 
+int \hyperlink{metrics_2custom_2frequency_8c_aa91880ecdef8f07de0e5c54c8a8409ff}{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end} (unsigned int cpu, unsigned long $\ast$frequency)
+\item 
+unsigned long \hyperlink{metrics_2custom_2frequency_8c_a60e82681e53ebfc7804d973a9ca1c419}{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus} ()
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int \hyperlink{metrics_2custom_2frequency_8c_a8f63007c242d1d09e16bc77c797f75a2}{\+\_\+num\+\_\+cpus}
+\item 
+struct \hyperlink{structavg__perf__cpu__info}{avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$ \hyperlink{metrics_2custom_2frequency_8c_a3c5259a7065293e8f76d1c36a556a28d}{cpu\+\_\+info}
+\item 
+struct \hyperlink{structavg__perf__cpu__info}{avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$ \hyperlink{metrics_2custom_2frequency_8c_af40f934185a6bacd88c7becf098b9e02}{cpu\+\_\+info\+\_\+global}
+\item 
+struct \hyperlink{structavg__perf__cpu__info}{avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$ \hyperlink{metrics_2custom_2frequency_8c_a4ac29247eb06ba46216731d452da550f}{avg\+\_\+node}
+\item 
+struct \hyperlink{structavg__perf__cpu__info}{avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$ \hyperlink{metrics_2custom_2frequency_8c_ae3b62e97caea47703f811a6589cf5809}{job\+\_\+node}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+dispose@{aperf\+\_\+dispose}}
+\index{aperf\+\_\+dispose@{aperf\+\_\+dispose}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+dispose()}{aperf_dispose()}}]{\setlength{\rightskip}{0pt plus 5cm}void aperf\+\_\+dispose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a6a351b928f5ce55cf65b6808104a6d82}{}\label{metrics_2custom_2frequency_8c_a6a351b928f5ce55cf65b6808104a6d82}
+
+
+Frees the memory allocated to hold the C\+PU information regarding their frequency. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+end\+\_\+avg\+\_\+freq@{aperf\+\_\+end\+\_\+avg\+\_\+freq}}
+\index{aperf\+\_\+end\+\_\+avg\+\_\+freq@{aperf\+\_\+end\+\_\+avg\+\_\+freq}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+end\+\_\+avg\+\_\+freq(unsigned int cpu, struct avg\+\_\+perf\+\_\+cpu\+\_\+info $\ast$my\+\_\+cpu\+\_\+info, unsigned long $\ast$frequency)}{aperf_end_avg_freq(unsigned int cpu, struct avg_perf_cpu_info *my_cpu_info, unsigned long *frequency)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+end\+\_\+avg\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu, }
+\item[{struct {\bf avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$}]{my\+\_\+cpu\+\_\+info, }
+\item[{unsigned long $\ast$}]{frequency}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a2b7c8c92bb2f67e9fef98e5a892dd19b}{}\label{metrics_2custom_2frequency_8c_a2b7c8c92bb2f67e9fef98e5a892dd19b}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end@{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end}}
+\index{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end@{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end(unsigned int cpu, unsigned long $\ast$frequency)}{aperf_get_avg_frequency_end(unsigned int cpu, unsigned long *frequency)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu, }
+\item[{unsigned long $\ast$}]{frequency}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_af000aec2859c142b51066c3507accd0e}{}\label{metrics_2custom_2frequency_8c_af000aec2859c142b51066c3507accd0e}
+
+
+Ends the tracking previously started and puts the average frequency during the period between this call and the previous \hyperlink{metrics_2custom_2frequency_8h_adece29c526d2df124be62b8b588073f4}{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init()} and puts it in $\ast$frequency. 
+
+Returns 0 on success and -\/1 on error. \index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus@{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus@{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus()}{aperf_get_avg_frequency_end_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a3d842972a3481da109bb52704f59bb18}{}\label{metrics_2custom_2frequency_8c_a3d842972a3481da109bb52704f59bb18}
+
+
+Ends the tracking previously started with \hyperlink{metrics_2custom_2frequency_8h_a19f03f9657e0eb68c00689becaac4f87}{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus()} and returns the average frequency for all C\+P\+Us between this call and the previous one. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init@{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init}}
+\index{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init@{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init(unsigned int cpu)}{aperf_get_avg_frequency_init(unsigned int cpu)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_adece29c526d2df124be62b8b588073f4}{}\label{metrics_2custom_2frequency_8c_adece29c526d2df124be62b8b588073f4}
+
+
+Starts tracking the frequency in the selected C\+PU. 
+
+Returns 0 on success and -\/1 on error. \index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus()}{aperf_get_avg_frequency_init_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}void aperf\+\_\+get\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a19f03f9657e0eb68c00689becaac4f87}{}\label{metrics_2custom_2frequency_8c_a19f03f9657e0eb68c00689becaac4f87}
+
+
+Starts tracking the frequency for all C\+P\+Us. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end@{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end}}
+\index{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end@{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end(unsigned int cpu, unsigned long $\ast$frequency)}{aperf_get_global_avg_frequency_end(unsigned int cpu, unsigned long *frequency)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu, }
+\item[{unsigned long $\ast$}]{frequency}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a24fd6901140c1789c0a50cf9c6ec045f}{}\label{metrics_2custom_2frequency_8c_a24fd6901140c1789c0a50cf9c6ec045f}
+
+
+Ends the tracking previously started and puts the average frequency for the whole app during the period between this call and the preivous \hyperlink{metrics_2custom_2frequency_8h_af122f65d6049235419fb6e93450e3bdf}{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init()} call in $\ast$frequency. 
+
+Returns 0 on success and -\/1 on error. \index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus@{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus@{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus()}{aperf_get_global_avg_frequency_end_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_aea4c543bbf54b0ceef5dcd6729348505}{}\label{metrics_2custom_2frequency_8c_aea4c543bbf54b0ceef5dcd6729348505}
+
+
+Ends the tracking previously started with \hyperlink{metrics_2custom_2frequency_8h_aa847392b55d2e8a5ad9b2e3a01dadcbb}{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus()} and returns the average frequency for all C\+P\+Us for the whole app between this call and the previous one. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init@{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init}}
+\index{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init@{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init(unsigned int cpu)}{aperf_get_global_avg_frequency_init(unsigned int cpu)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_af122f65d6049235419fb6e93450e3bdf}{}\label{metrics_2custom_2frequency_8c_af122f65d6049235419fb6e93450e3bdf}
+
+
+Starts tracking frequency for the whole app in the selected C\+PU. 
+
+Returns 0 on success and -\/1 on error. \index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus()}{aperf_get_global_avg_frequency_init_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}void aperf\+\_\+get\+\_\+global\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_aa847392b55d2e8a5ad9b2e3a01dadcbb}{}\label{metrics_2custom_2frequency_8c_aa847392b55d2e8a5ad9b2e3a01dadcbb}
+
+
+Starts tracking the frequency for all C\+P\+Us for the whole app. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+init@{aperf\+\_\+init}}
+\index{aperf\+\_\+init@{aperf\+\_\+init}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+init(unsigned int num\+\_\+cpus)}{aperf_init(unsigned int num_cpus)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{num\+\_\+cpus}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a48004101364a4543654702fe94dc6661}{}\label{metrics_2custom_2frequency_8c_a48004101364a4543654702fe94dc6661}
+
+
+Allocates memory to hold the information of num\+\_\+cpus C\+P\+Us regarding their frequency. 
+
+Returns 0 on success, -\/1 on error. \index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+init\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+init\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+init\+\_\+all\+\_\+cpus(unsigned int num\+\_\+cpus, unsigned long max\+\_\+freq)}{aperf_init_all_cpus(unsigned int num_cpus, unsigned long max_freq)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+init\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{num\+\_\+cpus, }
+\item[{unsigned long}]{max\+\_\+freq}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a5c85f4145f99af9150d488f8dcefdde0}{}\label{metrics_2custom_2frequency_8c_a5c85f4145f99af9150d488f8dcefdde0}
+
+
+Initializes the frequency value of all C\+P\+Us at the value given by max\+\_\+freq. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+init\+\_\+cpu@{aperf\+\_\+init\+\_\+cpu}}
+\index{aperf\+\_\+init\+\_\+cpu@{aperf\+\_\+init\+\_\+cpu}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+init\+\_\+cpu(unsigned int cpu, unsigned long max\+\_\+freq)}{aperf_init_cpu(unsigned int cpu, unsigned long max_freq)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+init\+\_\+cpu (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu, }
+\item[{unsigned long}]{max\+\_\+freq}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a7808359bd520ea4cb607a2f001ad7df3}{}\label{metrics_2custom_2frequency_8c_a7808359bd520ea4cb607a2f001ad7df3}
+
+
+Initializes the frequency value of the C\+PU cpu at the value given by parameter. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end@{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end}}
+\index{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end@{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end(unsigned int cpu, unsigned long $\ast$frequency)}{aperf_job_avg_frequency_end(unsigned int cpu, unsigned long *frequency)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu, }
+\item[{unsigned long $\ast$}]{frequency}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_aa91880ecdef8f07de0e5c54c8a8409ff}{}\label{metrics_2custom_2frequency_8c_aa91880ecdef8f07de0e5c54c8a8409ff}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus@{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus@{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus()}{aperf_job_avg_frequency_end_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a60e82681e53ebfc7804d973a9ca1c419}{}\label{metrics_2custom_2frequency_8c_a60e82681e53ebfc7804d973a9ca1c419}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init@{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init}}
+\index{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init@{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init(unsigned int cpu)}{aperf_job_avg_frequency_init(unsigned int cpu)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_afddad11e631e3777f4f4b9db9807127c}{}\label{metrics_2custom_2frequency_8c_afddad11e631e3777f4f4b9db9807127c}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus()}{aperf_job_avg_frequency_init_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}void aperf\+\_\+job\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_ad8f3a1046e88dcffbcc1fa519e621aa6}{}\label{metrics_2custom_2frequency_8c_ad8f3a1046e88dcffbcc1fa519e621aa6}
+
+
+To be used by power monitoring for power signatures. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end@{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end}}
+\index{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end@{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end(unsigned int cpu, unsigned long $\ast$frequency)}{aperf_periodic_avg_frequency_end(unsigned int cpu, unsigned long *frequency)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu, }
+\item[{unsigned long $\ast$}]{frequency}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_ad93b233c13835193411083c1e9ae6eca}{}\label{metrics_2custom_2frequency_8c_ad93b233c13835193411083c1e9ae6eca}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus@{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus@{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus()}{aperf_periodic_avg_frequency_end_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+end\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a2551ed5bb3fa0ef0c3cd4fc33d1b7707}{}\label{metrics_2custom_2frequency_8c_a2551ed5bb3fa0ef0c3cd4fc33d1b7707}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init@{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init}}
+\index{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init@{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init(unsigned int cpu)}{aperf_periodic_avg_frequency_init(unsigned int cpu)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpu}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_aaba7c8676b317fe388685390c1c69f79}{}\label{metrics_2custom_2frequency_8c_aaba7c8676b317fe388685390c1c69f79}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus}}
+\index{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus@{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus()}{aperf_periodic_avg_frequency_init_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}void aperf\+\_\+periodic\+\_\+avg\+\_\+frequency\+\_\+init\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a9e7fd5540c308ce3ed93c73ce32625b2}{}\label{metrics_2custom_2frequency_8c_a9e7fd5540c308ce3ed93c73ce32625b2}
+
+
+To be used by power monitoring for periodic metrics. 
+
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!aperf\+\_\+start\+\_\+avg\+\_\+freq@{aperf\+\_\+start\+\_\+avg\+\_\+freq}}
+\index{aperf\+\_\+start\+\_\+avg\+\_\+freq@{aperf\+\_\+start\+\_\+avg\+\_\+freq}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{aperf\+\_\+start\+\_\+avg\+\_\+freq(int cpu, struct avg\+\_\+perf\+\_\+cpu\+\_\+info $\ast$my\+\_\+cpu\+\_\+info)}{aperf_start_avg_freq(int cpu, struct avg_perf_cpu_info *my_cpu_info)}}]{\setlength{\rightskip}{0pt plus 5cm}int aperf\+\_\+start\+\_\+avg\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{int}]{cpu, }
+\item[{struct {\bf avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$}]{my\+\_\+cpu\+\_\+info}
+\end{DoxyParamCaption}
+)}\hypertarget{metrics_2custom_2frequency_8c_a5ee0d8549cdd5288599dc26196000752}{}\label{metrics_2custom_2frequency_8c_a5ee0d8549cdd5288599dc26196000752}
+
+
+\subsection{Variable Documentation}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!\+\_\+num\+\_\+cpus@{\+\_\+num\+\_\+cpus}}
+\index{\+\_\+num\+\_\+cpus@{\+\_\+num\+\_\+cpus}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+num\+\_\+cpus}{_num_cpus}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int \+\_\+num\+\_\+cpus}\hypertarget{metrics_2custom_2frequency_8c_a8f63007c242d1d09e16bc77c797f75a2}{}\label{metrics_2custom_2frequency_8c_a8f63007c242d1d09e16bc77c797f75a2}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!avg\+\_\+node@{avg\+\_\+node}}
+\index{avg\+\_\+node@{avg\+\_\+node}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{avg\+\_\+node}{avg_node}}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf avg\+\_\+perf\+\_\+cpu\+\_\+info}$\ast$ avg\+\_\+node}\hypertarget{metrics_2custom_2frequency_8c_a4ac29247eb06ba46216731d452da550f}{}\label{metrics_2custom_2frequency_8c_a4ac29247eb06ba46216731d452da550f}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!cpu\+\_\+info@{cpu\+\_\+info}}
+\index{cpu\+\_\+info@{cpu\+\_\+info}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{cpu\+\_\+info}{cpu_info}}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$ cpu\+\_\+info}\hypertarget{metrics_2custom_2frequency_8c_a3c5259a7065293e8f76d1c36a556a28d}{}\label{metrics_2custom_2frequency_8c_a3c5259a7065293e8f76d1c36a556a28d}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!cpu\+\_\+info\+\_\+global@{cpu\+\_\+info\+\_\+global}}
+\index{cpu\+\_\+info\+\_\+global@{cpu\+\_\+info\+\_\+global}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{cpu\+\_\+info\+\_\+global}{cpu_info_global}}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf avg\+\_\+perf\+\_\+cpu\+\_\+info} $\ast$ cpu\+\_\+info\+\_\+global}\hypertarget{metrics_2custom_2frequency_8c_af40f934185a6bacd88c7becf098b9e02}{}\label{metrics_2custom_2frequency_8c_af40f934185a6bacd88c7becf098b9e02}
+\index{metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}!job\+\_\+node@{job\+\_\+node}}
+\index{job\+\_\+node@{job\+\_\+node}!metrics/custom/frequency.\+c@{metrics/custom/frequency.\+c}}
+\subsubsection[{\texorpdfstring{job\+\_\+node}{job_node}}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf avg\+\_\+perf\+\_\+cpu\+\_\+info}$\ast$ job\+\_\+node}\hypertarget{metrics_2custom_2frequency_8c_ae3b62e97caea47703f811a6589cf5809}{}\label{metrics_2custom_2frequency_8c_ae3b62e97caea47703f811a6589cf5809}

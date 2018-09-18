@@ -94,6 +94,8 @@ typedef struct eargm_conf
 	ulong	t1;				/* default 60 seconds */
 	ulong	t2;				/* default 600 seconds */
 	ulong 	energy;			/* mandatory */
+	uint	units;			/* 0=J, 1=KJ=default, 2=MJ, or Watts when using Power */	
+	uint 	policy;			/* 0=MaxEnergy (default), 1=MaxPower ( not yet implemented) */
 	uint 	port;			/* mandatory */
 	uint 	mode;
 	uint	defcon_limits[3];

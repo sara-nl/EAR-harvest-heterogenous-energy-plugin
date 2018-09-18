@@ -1,0 +1,103 @@
+\hypertarget{min__time_8c}{}\section{src/library/models/min\+\_\+time.c File Reference}
+\label{min__time_8c}\index{src/library/models/min\+\_\+time.\+c@{src/library/models/min\+\_\+time.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$control/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/macros.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/externs.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/models.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/sig\+\_\+projections.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+api.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/projection.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/log.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{min__time_8c_ab0e4e174e03dde5517b34c36cd8b1522}{min\+\_\+time\+\_\+init} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} pstates)
+\item 
+void \hyperlink{min__time_8c_a856eee44b570d4e797b0c1db6a332227}{min\+\_\+time\+\_\+new\+\_\+loop} ()
+\item 
+void \hyperlink{min__time_8c_ab3df75a50c28df386e69f1984524b9c8}{min\+\_\+time\+\_\+end\+\_\+loop} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__time_8c_acd399155c9e7c2ea4968fbe7df69dbb3}{min\+\_\+time\+\_\+policy} (\hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$sig)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__time_8c_a9afa5ab45b0ee4b002745602f1bb104d}{min\+\_\+time\+\_\+policy\+\_\+ok} (\hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$proj, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$curr\+\_\+sig, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$last\+\_\+sig)
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{min__time_8c_a070f3f71e03f5c9e8804b66766a08575}{min\+\_\+time\+\_\+default\+\_\+conf} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} f)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{coefficient_8h_a7f58a37ee368b55a21d66b1b4e76e779}{coefficient\+\_\+t} $\ast$$\ast$ \hyperlink{min__time_8c_a638b9d18dabadf6e40aca8795eafb4ec}{coefficients}
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{min__time_8c_a63b60fcd544205b242ac1d54f00c1d90}{E\+A\+R\+\_\+default\+\_\+pstate}
+\item 
+double \hyperlink{min__time_8c_a8bf2b8237ca613a3a80feea335a27d44}{performance\+\_\+gain}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!min\+\_\+time\+\_\+default\+\_\+conf@{min\+\_\+time\+\_\+default\+\_\+conf}}
+\index{min\+\_\+time\+\_\+default\+\_\+conf@{min\+\_\+time\+\_\+default\+\_\+conf}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+time\+\_\+default\+\_\+conf(ulong f)}{min_time_default_conf(ulong f)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+time\+\_\+default\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{f}
+\end{DoxyParamCaption}
+)}\hypertarget{min__time_8c_a070f3f71e03f5c9e8804b66766a08575}{}\label{min__time_8c_a070f3f71e03f5c9e8804b66766a08575}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!min\+\_\+time\+\_\+end\+\_\+loop@{min\+\_\+time\+\_\+end\+\_\+loop}}
+\index{min\+\_\+time\+\_\+end\+\_\+loop@{min\+\_\+time\+\_\+end\+\_\+loop}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+time\+\_\+end\+\_\+loop()}{min_time_end_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+time\+\_\+end\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{min__time_8c_ab3df75a50c28df386e69f1984524b9c8}{}\label{min__time_8c_ab3df75a50c28df386e69f1984524b9c8}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!min\+\_\+time\+\_\+init@{min\+\_\+time\+\_\+init}}
+\index{min\+\_\+time\+\_\+init@{min\+\_\+time\+\_\+init}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+time\+\_\+init(uint pstates)}{min_time_init(uint pstates)}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+time\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{pstates}
+\end{DoxyParamCaption}
+)}\hypertarget{min__time_8c_ab0e4e174e03dde5517b34c36cd8b1522}{}\label{min__time_8c_ab0e4e174e03dde5517b34c36cd8b1522}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!min\+\_\+time\+\_\+new\+\_\+loop@{min\+\_\+time\+\_\+new\+\_\+loop}}
+\index{min\+\_\+time\+\_\+new\+\_\+loop@{min\+\_\+time\+\_\+new\+\_\+loop}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+time\+\_\+new\+\_\+loop()}{min_time_new_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void min\+\_\+time\+\_\+new\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{min__time_8c_a856eee44b570d4e797b0c1db6a332227}{}\label{min__time_8c_a856eee44b570d4e797b0c1db6a332227}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!min\+\_\+time\+\_\+policy@{min\+\_\+time\+\_\+policy}}
+\index{min\+\_\+time\+\_\+policy@{min\+\_\+time\+\_\+policy}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+time\+\_\+policy(signature\+\_\+t $\ast$sig)}{min_time_policy(signature_t *sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+time\+\_\+policy (
+\begin{DoxyParamCaption}
+\item[{{\bf signature\+\_\+t} $\ast$}]{sig}
+\end{DoxyParamCaption}
+)}\hypertarget{min__time_8c_acd399155c9e7c2ea4968fbe7df69dbb3}{}\label{min__time_8c_acd399155c9e7c2ea4968fbe7df69dbb3}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!min\+\_\+time\+\_\+policy\+\_\+ok@{min\+\_\+time\+\_\+policy\+\_\+ok}}
+\index{min\+\_\+time\+\_\+policy\+\_\+ok@{min\+\_\+time\+\_\+policy\+\_\+ok}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{min\+\_\+time\+\_\+policy\+\_\+ok(projection\+\_\+t $\ast$proj, signature\+\_\+t $\ast$curr\+\_\+sig, signature\+\_\+t $\ast$last\+\_\+sig)}{min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} min\+\_\+time\+\_\+policy\+\_\+ok (
+\begin{DoxyParamCaption}
+\item[{{\bf projection\+\_\+t} $\ast$}]{proj, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{curr\+\_\+sig, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{last\+\_\+sig}
+\end{DoxyParamCaption}
+)}\hypertarget{min__time_8c_a9afa5ab45b0ee4b002745602f1bb104d}{}\label{min__time_8c_a9afa5ab45b0ee4b002745602f1bb104d}
+
+
+\subsection{Variable Documentation}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!coefficients@{coefficients}}
+\index{coefficients@{coefficients}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{coefficients}{coefficients}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$$\ast$ coefficients}\hypertarget{min__time_8c_a638b9d18dabadf6e40aca8795eafb4ec}{}\label{min__time_8c_a638b9d18dabadf6e40aca8795eafb4ec}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!E\+A\+R\+\_\+default\+\_\+pstate@{E\+A\+R\+\_\+default\+\_\+pstate}}
+\index{E\+A\+R\+\_\+default\+\_\+pstate@{E\+A\+R\+\_\+default\+\_\+pstate}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+default\+\_\+pstate}{EAR_default_pstate}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} E\+A\+R\+\_\+default\+\_\+pstate}\hypertarget{min__time_8c_a63b60fcd544205b242ac1d54f00c1d90}{}\label{min__time_8c_a63b60fcd544205b242ac1d54f00c1d90}
+\index{min\+\_\+time.\+c@{min\+\_\+time.\+c}!performance\+\_\+gain@{performance\+\_\+gain}}
+\index{performance\+\_\+gain@{performance\+\_\+gain}!min\+\_\+time.\+c@{min\+\_\+time.\+c}}
+\subsubsection[{\texorpdfstring{performance\+\_\+gain}{performance_gain}}]{\setlength{\rightskip}{0pt plus 5cm}double performance\+\_\+gain}\hypertarget{min__time_8c_a8bf2b8237ca613a3a80feea335a27d44}{}\label{min__time_8c_a8bf2b8237ca613a3a80feea335a27d44}

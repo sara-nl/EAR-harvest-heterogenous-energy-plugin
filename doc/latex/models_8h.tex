@@ -1,0 +1,143 @@
+\hypertarget{models_8h}{}\section{src/library/models/models.h File Reference}
+\label{models_8h}\index{src/library/models/models.\+h@{src/library/models/models.\+h}}
+{\ttfamily \#include $<$common/environment.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/coefficient.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/projection.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{models_8h_acd0522f7905932fd64999ef3bf2d0906}{init\+\_\+power\+\_\+policy} ()
+\begin{DoxyCompactList}\small\item\em Selects policy based on E\+A\+R\+\_\+\+P\+O\+W\+E\+R\+\_\+\+P\+O\+L\+I\+CY. \end{DoxyCompactList}\item 
+void \hyperlink{models_8h_ac0a34a3b64f3eb552cdd6ae514a5fb76}{init\+\_\+power\+\_\+models} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} p\+\_\+states, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$p\+\_\+states\+\_\+list)
+\begin{DoxyCompactList}\small\item\em Opens Coefficient db and reads coefficients. \end{DoxyCompactList}\item 
+void \hyperlink{models_8h_a57a3b4998eddc13279c97be6cbcf8754}{policy\+\_\+new\+\_\+loop} ()
+\begin{DoxyCompactList}\small\item\em Executed when a new\+\_\+loop is reported by dyanis. \end{DoxyCompactList}\item 
+void \hyperlink{models_8h_a41d87f488d74d0893055847db21b6455}{policy\+\_\+end\+\_\+loop} ()
+\begin{DoxyCompactList}\small\item\em Executed when a end\+\_\+loop is reported by dyanis. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{models_8h_a761fd87714d64dc5001fe2ac903e7166}{policy\+\_\+power} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} whole\+\_\+app, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$sig)
+\begin{DoxyCompactList}\small\item\em Given the computed application signature, applies the selected power policy and returns the “optimal” frequency. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{models_8h_a5e243de52e03cbe9f12b40974e3d7540}{policy\+\_\+ok} (\hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$proj, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$curr\+\_\+sig, \hyperlink{signature_8h_a3387c90f9aa9243c926866ee8ce61917}{signature\+\_\+t} $\ast$last\+\_\+sig)
+\begin{DoxyCompactList}\small\item\em Given a performance projection, the actual application signature and the last computed application signature values, returns true if policy decision has been the correct ones. \end{DoxyCompactList}\item 
+void \hyperlink{models_8h_a92a352c14097670f3ac473f292f9a38d}{policy\+\_\+default\+\_\+configuration} ()
+\begin{DoxyCompactList}\small\item\em Executed when we have done several \char`\"{}tries\char`\"{} and the policy is not able to select the \char`\"{}good\char`\"{} freq for this app. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{models_8h_aa6d92fa7e0218d3d03d650092f8ccd7f}{get\+\_\+global\+\_\+def\+\_\+pstate} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{models_8h_ab2d6f41ac78d7922fb4ae5d5c79f2113}{get\+\_\+global\+\_\+def\+\_\+freq} ()
+\item 
+double \hyperlink{models_8h_ac6774e915614cf818dab90e2ad8ee2b9}{get\+\_\+global\+\_\+th} ()
+\item 
+void \hyperlink{models_8h_aab8814a778638a1fc4ba353b3852c5df}{policy\+\_\+global\+\_\+reconfiguration} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{models.\+h@{models.\+h}!get\+\_\+global\+\_\+def\+\_\+freq@{get\+\_\+global\+\_\+def\+\_\+freq}}
+\index{get\+\_\+global\+\_\+def\+\_\+freq@{get\+\_\+global\+\_\+def\+\_\+freq}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+global\+\_\+def\+\_\+freq()}{get_global_def_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} get\+\_\+global\+\_\+def\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_ab2d6f41ac78d7922fb4ae5d5c79f2113}{}\label{models_8h_ab2d6f41ac78d7922fb4ae5d5c79f2113}
+\index{models.\+h@{models.\+h}!get\+\_\+global\+\_\+def\+\_\+pstate@{get\+\_\+global\+\_\+def\+\_\+pstate}}
+\index{get\+\_\+global\+\_\+def\+\_\+pstate@{get\+\_\+global\+\_\+def\+\_\+pstate}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+global\+\_\+def\+\_\+pstate()}{get_global_def_pstate()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} get\+\_\+global\+\_\+def\+\_\+pstate (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_aa6d92fa7e0218d3d03d650092f8ccd7f}{}\label{models_8h_aa6d92fa7e0218d3d03d650092f8ccd7f}
+\index{models.\+h@{models.\+h}!get\+\_\+global\+\_\+th@{get\+\_\+global\+\_\+th}}
+\index{get\+\_\+global\+\_\+th@{get\+\_\+global\+\_\+th}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+global\+\_\+th()}{get_global_th()}}]{\setlength{\rightskip}{0pt plus 5cm}double get\+\_\+global\+\_\+th (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_ac6774e915614cf818dab90e2ad8ee2b9}{}\label{models_8h_ac6774e915614cf818dab90e2ad8ee2b9}
+\index{models.\+h@{models.\+h}!init\+\_\+power\+\_\+models@{init\+\_\+power\+\_\+models}}
+\index{init\+\_\+power\+\_\+models@{init\+\_\+power\+\_\+models}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+power\+\_\+models(uint p\+\_\+states, ulong $\ast$p\+\_\+states\+\_\+list)}{init_power_models(uint p_states, ulong *p_states_list)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+power\+\_\+models (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{p\+\_\+states, }
+\item[{{\bf ulong} $\ast$}]{p\+\_\+states\+\_\+list}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_ac0a34a3b64f3eb552cdd6ae514a5fb76}{}\label{models_8h_ac0a34a3b64f3eb552cdd6ae514a5fb76}
+
+
+Opens Coefficient db and reads coefficients. 
+
+\index{models.\+h@{models.\+h}!init\+\_\+power\+\_\+policy@{init\+\_\+power\+\_\+policy}}
+\index{init\+\_\+power\+\_\+policy@{init\+\_\+power\+\_\+policy}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+power\+\_\+policy()}{init_power_policy()}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+power\+\_\+policy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_acd0522f7905932fd64999ef3bf2d0906}{}\label{models_8h_acd0522f7905932fd64999ef3bf2d0906}
+
+
+Selects policy based on E\+A\+R\+\_\+\+P\+O\+W\+E\+R\+\_\+\+P\+O\+L\+I\+CY. 
+
+\index{models.\+h@{models.\+h}!policy\+\_\+default\+\_\+configuration@{policy\+\_\+default\+\_\+configuration}}
+\index{policy\+\_\+default\+\_\+configuration@{policy\+\_\+default\+\_\+configuration}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{policy\+\_\+default\+\_\+configuration()}{policy_default_configuration()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+default\+\_\+configuration (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_a92a352c14097670f3ac473f292f9a38d}{}\label{models_8h_a92a352c14097670f3ac473f292f9a38d}
+
+
+Executed when we have done several \char`\"{}tries\char`\"{} and the policy is not able to select the \char`\"{}good\char`\"{} freq for this app. 
+
+\index{models.\+h@{models.\+h}!policy\+\_\+end\+\_\+loop@{policy\+\_\+end\+\_\+loop}}
+\index{policy\+\_\+end\+\_\+loop@{policy\+\_\+end\+\_\+loop}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{policy\+\_\+end\+\_\+loop()}{policy_end_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+end\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_a41d87f488d74d0893055847db21b6455}{}\label{models_8h_a41d87f488d74d0893055847db21b6455}
+
+
+Executed when a end\+\_\+loop is reported by dyanis. 
+
+\index{models.\+h@{models.\+h}!policy\+\_\+global\+\_\+reconfiguration@{policy\+\_\+global\+\_\+reconfiguration}}
+\index{policy\+\_\+global\+\_\+reconfiguration@{policy\+\_\+global\+\_\+reconfiguration}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{policy\+\_\+global\+\_\+reconfiguration()}{policy_global_reconfiguration()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+global\+\_\+reconfiguration (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_aab8814a778638a1fc4ba353b3852c5df}{}\label{models_8h_aab8814a778638a1fc4ba353b3852c5df}
+\index{models.\+h@{models.\+h}!policy\+\_\+new\+\_\+loop@{policy\+\_\+new\+\_\+loop}}
+\index{policy\+\_\+new\+\_\+loop@{policy\+\_\+new\+\_\+loop}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{policy\+\_\+new\+\_\+loop()}{policy_new_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+new\+\_\+loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_a57a3b4998eddc13279c97be6cbcf8754}{}\label{models_8h_a57a3b4998eddc13279c97be6cbcf8754}
+
+
+Executed when a new\+\_\+loop is reported by dyanis. 
+
+\index{models.\+h@{models.\+h}!policy\+\_\+ok@{policy\+\_\+ok}}
+\index{policy\+\_\+ok@{policy\+\_\+ok}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{policy\+\_\+ok(projection\+\_\+t $\ast$proj, signature\+\_\+t $\ast$curr\+\_\+sig, signature\+\_\+t $\ast$last\+\_\+sig)}{policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} policy\+\_\+ok (
+\begin{DoxyParamCaption}
+\item[{{\bf projection\+\_\+t} $\ast$}]{proj, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{curr\+\_\+sig, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{last\+\_\+sig}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_a5e243de52e03cbe9f12b40974e3d7540}{}\label{models_8h_a5e243de52e03cbe9f12b40974e3d7540}
+
+
+Given a performance projection, the actual application signature and the last computed application signature values, returns true if policy decision has been the correct ones. 
+
+\index{models.\+h@{models.\+h}!policy\+\_\+power@{policy\+\_\+power}}
+\index{policy\+\_\+power@{policy\+\_\+power}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{policy\+\_\+power(uint whole\+\_\+app, signature\+\_\+t $\ast$sig)}{policy_power(uint whole_app, signature_t *sig)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} policy\+\_\+power (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{whole\+\_\+app, }
+\item[{{\bf signature\+\_\+t} $\ast$}]{sig}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_a761fd87714d64dc5001fe2ac903e7166}{}\label{models_8h_a761fd87714d64dc5001fe2ac903e7166}
+
+
+Given the computed application signature, applies the selected power policy and returns the “optimal” frequency. 
+

@@ -73,7 +73,6 @@
 #define MAX_DYNAIS_OVERHEAD	5 		// Maximum % of overhead allowed for dynais overhead. If overhead > MAX_DYNAIS_OVERHEAD dynais is set off after computing the first signature
 #define EAR_OVERHEAD_CONTROL 1
 #define MAX_POLICY_TRIES	3 		// Maximum number of tries (per loop) before going to default frequency
-#define DEMO				1 		// Used when doing EAR demos. More information is reported
 #define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE   30		// Maximum time, in seconds, EAR will run in dynais driven mode before going to periodic mode 
 #define MPI_CALLS_TO_CHECK_PERIODIC         1000	// EAR will check periodically (every N mpi calls) 
 #define PERIOD                              30		// Period (in seconds) to compute the signature used in periodic mode
@@ -92,8 +91,9 @@
 #define DEFAULT_POWER       275
 #define GRACE_T1			3
 
-#define LARGE_CLUSTER		0		// This flag affects the data types and insertions into the DB
-#define DB_SIMPLE			0
+#define LARGE_CLUSTER		1		// This flag affects the data types and insertions into the DB
+#define DB_SIMPLE			1
+#define DEMO				0 		// Used when doing EAR demos. More information is reported
 #define COEFFS_V3			1
 #define APP_API				1
 

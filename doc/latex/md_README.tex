@@ -1,0 +1,200 @@
+\subsection*{Overview }
+
+ Energy Aware Runtime (E\+AR) package provides an energy efficient solution for super computers. E\+AR includes a runtime library that dynamically selects the C\+PU frequency for M\+PI applications based on the program characterization done at runtime, node characteristics and power policy settings. The library doesn\textquotesingle{}t need neither a prior information nor user input.
+
+E\+AR also provides mechanism for those experts users that perfectly knows their application, to change the frequency and view the effects in form of metrics.
+
+E\+AR library has been integrated in a full energy management system incluing a complete accounting mechanism, and a global energy manager. All the componets together provides three main services\+:
+
+1-\/ A {\bfseries simple and ligthweigth system} to automatically select the optimal C\+PU frequency according to the application, the node, and the power policy. This services is provided by two components\+: the E\+AR library ({\bfseries E\+A\+RL}) and the E\+AR daemon ({\bfseries E\+A\+RD}). E\+A\+RL is a smart component which selects the C\+PU frequency for the running applications. E\+A\+RD is provides basic services to the rest of components (not only E\+A\+RL).
+
+2-\/ A complete {\bfseries energy accounting system} based on My\+S\+QL database. The energy accounting system is configurable in terms of application details and updates frequency.
+
+3-\/ A {\bfseries global energy manager} which monitors and controls the energy consumed in the system. Energy control is configurable and dynamically adapts power policy settings based on global energy limits and application characteristics.
+
+All three components are configurable using a single, centralized, and simple text file called \textquotesingle{}ear.\+conf\textquotesingle{}. This mechanism makes easy the cluster definition and configuration. This \textquotesingle{}ear.\+conf\textquotesingle{} includes default values, pre-\/defined application configurations, etc. More details can be found in ./etc/conf/\+R\+E\+A\+D\+ME.md \char`\"{}configuration section\char`\"{}.
+
+Please visit ./src/\+R\+E\+A\+D\+ME.md \char`\"{}the main components page\char`\"{} for a detailed description of each of the main components of E\+AR.
+
+\subsection*{Requirements }
+
+E\+AR requires some third party libraríes and headers to compile and run, in addition to the basic requirements such as the compiler and Autoconf. This is a list of these {\bfseries libraries}, minimum {\bfseries tested} versions and its references\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*4{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Library }&{\bf Required / comment }&{\bf Minimum version }&{\bf References  }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Library }&{\bf Required / comment }&{\bf Minimum version }&{\bf References  }\\\cline{1-4}
+\endhead
+P\+A\+PI &Yes / with R\+A\+PL &5.\+4.\+3.\+0 &\href{http://icl.utk.edu/papi/}{\tt Website} \\\cline{1-4}
+G\+SL &Yes &1.\+4 &\href{https://www.gnu.org/software/gsl/}{\tt Website} \\\cline{1-4}
+C\+P\+U\+Power &Yes &Kernel 3.\+10$\ast$ &\href{https://wiki.archlinux.org/index.php/CPU_frequency_scaling}{\tt Information} \\\cline{1-4}
+Free\+I\+P\+MI &Yes &1.\+5.\+7 &\href{https://www.gnu.org/software/freeipmi/}{\tt Website} \\\cline{1-4}
+S\+L\+U\+RM &Just for S\+L\+U\+RM plugin &17.\+02.\+6 &\href{https://slurm.schedmd.com/}{\tt Website} \\\cline{1-4}
+M\+PI &Yes &-\/ &-\/ \\\cline{1-4}
+My\+S\+QL &No &-\/ &-\/ \\\cline{1-4}
+\end{longtabu}
+$\ast$ Depending on the version, may you have to change the name of the library function call (or the parameter).
+
+Also, some {\bfseries drivers} has to be present and loaded in the system\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*4{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Driver }&{\bf File }&{\bf Kernel version }&{\bf References  }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Driver }&{\bf File }&{\bf Kernel version }&{\bf References  }\\\cline{1-4}
+\endhead
+C\+P\+U\+Freq &kernel/drivers/cpufreq/acpi-\/cpufreq.\+ko &3.\+10 &\href{https://wiki.archlinux.org/index.php/CPU_frequency_scaling}{\tt Information} \\\cline{1-4}
+Open I\+P\+MI &kernel/drivers/char/ipmi/$\ast$.ko &3.\+10 &\href{https://docs.oracle.com/en/database/oracle/oracle-database/12.2/cwlin/configuring-the-open-ipmi-driver.html}{\tt Information} \\\cline{1-4}
+\end{longtabu}
+Lastly, the {\bfseries compilers}\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*4{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Compiler }&{\bf Comment }&{\bf Minimum version }&{\bf References  }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Compiler }&{\bf Comment }&{\bf Minimum version }&{\bf References  }\\\cline{1-4}
+\endhead
+G\+NU Compiler Collection (G\+CC) &For the library and daemon &4.\+8.\+5 &\href{https://gcc.gnu.org/}{\tt Website} \\\cline{1-4}
+Intel C Compiler (I\+CC) &For the library and daemon &17.\+0.\+1 &\href{https://software.intel.com/en-us/c-compilers}{\tt Website} \\\cline{1-4}
+Intel Fortran Compiler (M\+P\+I\+I\+Fort) &For some kernels &17.\+0.\+1 &\href{https://software.intel.com/en-us/fortran-compilers}{\tt Website} \\\cline{1-4}
+\end{longtabu}
+Just one C compiler next to its M\+PI scripts is needed.
+
+\subsection*{Brief installation guide }
+
+1) Generate Autoconf\textquotesingle{}s {\ttfamily configure} program by typing {\ttfamily autoreconf -\/i}. 2) Compile the library by typing {\ttfamily ./configure}, {\ttfamily make} and {\ttfamily make install} in the root directory. Consider the option of {\ttfamily ./configure -\/-\/\+P\+R\+E\+F\+IX=$<$path$>$} if you want to specify the installation path. It could be useful to run ‘./configure --help’ for listing the options details.
+
+\subsection*{Customize installation }
+
+{\ttfamily configure} is based on shell variables which initial value could be given by setting variables in the command line, or in the environment. Take a look to the table with the most popular variables\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*2{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Variable }&{\bf Description  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Variable }&{\bf Description  }\\\cline{1-2}
+\endhead
+D\+E\+B\+UG &Enables debug messages \mbox{[}0..4\mbox{]}. Debug messages with lower or equal level are printed. \\\cline{1-2}
+M\+P\+I\+CC &C compiler M\+PI script. \\\cline{1-2}
+O\+M\+P\+I\+CC &Open\+M\+PI compiler. \\\cline{1-2}
+CC &C compiler command. \\\cline{1-2}
+C\+F\+L\+A\+GS &C compiler flags. \\\cline{1-2}
+L\+D\+F\+L\+A\+GS &Linker flags. E.\+g. ‘-\/L$<$lib dir$>$’ if you have libraries in a nonstandard directory $<$lib dir$>$. \\\cline{1-2}
+L\+I\+BS &Libraries to pass to the linker. E.\+g. ‘-\/l$<$library$>$’. \\\cline{1-2}
+C\+P\+P\+F\+L\+A\+GS &C/\+C++ preprocessor flags, e.\+g. -\/I$<$include dir$>$ if you have headers in a nonstandard directory $<$include dir$>$. \\\cline{1-2}
+T\+MP &Defines the node local storage as \textquotesingle{}var\textquotesingle{}, \textquotesingle{}tmp\textquotesingle{} or other tempfs file system (default\+: /var/ear) (you can alo use --localstatedir=D\+IR) \\\cline{1-2}
+E\+TC &Defines the read-\/only single-\/machine data as \textquotesingle{}etc\textquotesingle{} (default\+: E\+P\+R\+E\+F\+I\+X/etc) (you can also use --sharedstatedir=D\+IR) \\\cline{1-2}
+M\+AN &Defines the documentation directory (default\+: P\+R\+E\+F\+I\+X/man) (you can use also --mandir=D\+IR) \\\cline{1-2}
+\end{longtabu}
+
+\begin{DoxyItemize}
+\item This is an example of {\ttfamily CC}, {\ttfamily C\+F\+L\+A\+GS} and {\ttfamily D\+E\+B\+UG} variables overwriting\+:  {\ttfamily ./configure CC=c99 C\+F\+L\+A\+GS=-\/g D\+E\+B\+UG=4}
+\end{DoxyItemize}
+
+You can choose the root folder by typing {\ttfamily ./configure -\/-\/\+P\+R\+E\+F\+IX=$<$path$>$}. But there are other options in the following table\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*3{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Definition }&{\bf Default directory }&{\bf Content / description  }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Definition }&{\bf Default directory }&{\bf Content / description  }\\\cline{1-3}
+\endhead
+$<${\itshape P\+R\+E\+F\+IX}$>$ &/usr/local &Installation path \\\cline{1-3}
+$<${\itshape E\+TC}$>$ &$<${\itshape P\+R\+E\+F\+IX}$>$/etc &Configuration files. \\\cline{1-3}
+$<${\itshape T\+MP}$>$ &/var/ear &Pipes and temporal files. \\\cline{1-3}
+\end{longtabu}
+This is the list of the inner installation folders and their content\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*3{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Directory }&{\bf Root }&{\bf Content / description  }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Directory }&{\bf Root }&{\bf Content / description  }\\\cline{1-3}
+\endhead
+/lib &$<${\itshape P\+R\+E\+F\+IX}$>$ &Libraries. \\\cline{1-3}
+/bin &$<${\itshape P\+R\+E\+F\+IX}$>$ &Tools and benchmark kernels. \\\cline{1-3}
+/bin/kernels &$<${\itshape P\+R\+E\+F\+IX}$>$ &Benchmarks (or stress tests). \\\cline{1-3}
+/sbin &$<${\itshape P\+R\+E\+F\+IX}$>$ &Privileged components. \\\cline{1-3}
+/scripts &$<${\itshape P\+R\+E\+F\+IX}$>$ &Scripts. \\\cline{1-3}
+/man &$<${\itshape P\+R\+E\+F\+IX}$>$ &Documentation. \\\cline{1-3}
+/ear &$<${\itshape E\+TC}$>$ &Configuration file. \\\cline{1-3}
+/module &$<${\itshape E\+TC}$>$ &Environment module. \\\cline{1-3}
+/slurm &$<${\itshape E\+TC}$>$ &plugstack.\+conf. \\\cline{1-3}
+/systemd &$<${\itshape E\+TC}$>$ &Unit services. \\\cline{1-3}
+\end{longtabu}
+You have more installation options information by typing {\ttfamily ./configure -\/-\/help}.
+
+\subsection*{Adding required libraries installed in custom locations }
+
+You can help {\ttfamily configure} to find P\+A\+PI, S\+L\+U\+RM, or other required libraries in case you installed in a custom location. It is necessary to add its root path for the compiler to see include headers and libraries for the linker. You can do this by adding to it the following arguments\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*2{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Argument }&{\bf Description  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf Argument }&{\bf Description  }\\\cline{1-2}
+\endhead
+--with-\/papi=$<$path$>$ &Specifies the path to P\+A\+PI installation. \\\cline{1-2}
+--with-\/gsl=$<$path$>$ &Specifies the path to G\+SL installation. \\\cline{1-2}
+--with-\/cpupower=$<$path$>$ &Specifies the path to C\+P\+U\+Power installation. \\\cline{1-2}
+--with-\/slurm=$<$path$>$ &Specifies the path to S\+L\+U\+RM installation. \\\cline{1-2}
+--with-\/freeipmi=$<$path$>$ &Specifies the path to Free\+I\+P\+MI installation. \\\cline{1-2}
+--with-\/mysql=$<$path$>$ &Specify path to My\+S\+QL installation. \\\cline{1-2}
+\end{longtabu}
+$\ast$ This is an example of ‘\+C\+C‘ overwriting and P\+A\+PI path specification\+:~\newline
+ {\ttfamily ./configure -\/-\/with-\/papi=/path/to/\+P\+A\+PI}
+
+If unusual procedures must be done to compile the package, please try to figure out how {\ttfamily configure} could check whether to do them and contact the team to be considered for the next release. In the meantime, you can overwrite shell variables or export its paths to the environment (e.\+g. L\+D\+\_\+\+L\+I\+B\+R\+A\+RY).
+
+\subsection*{Unit services }
+
+The way to launch the E\+AR daemons is by unit services method. The generated unit services for the E\+AR Daemon, E\+AR Global Manager Daemon and E\+AR Database Daemon are generated and installed in {\ttfamily /systemd}. You have to copy those unit service files to your {\ttfamily systemd} operating system folder. Once copied, use the {\ttfamily systemctl} command to run the daemons.
+
+Check the ./src/daemon/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R\+D\char`\"{}, ./src/database\+\_\+cache/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R\+D\+B\+D\char`\"{}, ./src/global\+\_\+manager/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R\+G\+M\+D\char`\"{} pages to find the precise execution commands.
+
+Finally, when using {\ttfamily systemctl} commands, you can check messages reported by the stderr using journalctl. For instance\+: {\ttfamily journalctl -\/u eard -\/f}
+
+\subsection*{Configuration }
+
+1) Depending on your environment\+:
+\begin{DoxyItemize}
+\item In case you are going to use {\bfseries E\+AR together with S\+L\+U\+RM}, visit the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/slurm\+\_\+plugin/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}\+S\+L\+U\+R\+M plugin page\char`\"{} to add the plugin to your S\+L\+U\+RM installation.
+\item In case you are going to use {\bfseries E\+AR with direct M\+PI calls}, visit the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/etc/scripts/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}scripts page\char`\"{} for more information about the scripts that simplify the launch. 2) Pass the learning phase in all your computing nodes by visiting the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/etc/scripts/learning/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}learning phase page\char`\"{} to follow its guide.
+\end{DoxyItemize}
+
+\subsection*{User guide }
+
+Finally, you can launch any M\+PI application next to E\+AR library by following the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/library/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}library user guide\char`\"{}.
+
+\subsection*{License }
+
+All the files in the E\+AR framework are under the L\+G\+P\+Lv2.\+1 license. See the \href{../../COPYING}{\tt C\+O\+P\+Y\+I\+NG} file in the E\+AR root directory. 

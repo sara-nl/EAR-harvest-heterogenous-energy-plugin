@@ -1,0 +1,129 @@
+\hypertarget{flops_8h}{}\section{src/metrics/papi/flops.h File Reference}
+\label{flops_8h}\index{src/metrics/papi/flops.\+h@{src/metrics/papi/flops.\+h}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{flops_8h_a09d96a6e958f2395a8ac92d2e78d8349}{init\+\_\+flops\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Initializes the event metrics for flops. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8h_af14efb800e9513cfffa351bb705d27fe}{reset\+\_\+flops\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Resets the metrics for flops. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8h_a1f8e182cb74fec3933d45a1ffed050c2}{start\+\_\+flops\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Starts tracking flops metrics. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8h_a3766dd6c41f8d64e5b7616cf68d5af9a}{stop\+\_\+flops\+\_\+metrics} (long long $\ast$total\+\_\+flops, long long $\ast$f\+\_\+operations)
+\begin{DoxyCompactList}\small\item\em Stops flops metrics and accumulates registered flops and number of operations to the variables recieved by parameter. \end{DoxyCompactList}\item 
+int \hyperlink{flops_8h_a77debe352fe64db6560d03e7d6225d3a}{get\+\_\+number\+\_\+fops\+\_\+events} ()
+\begin{DoxyCompactList}\small\item\em Returns the total number of fops events. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8h_af1f94974da69e85f8add8821fe2e7972}{get\+\_\+total\+\_\+fops} (long long $\ast$metrics)
+\begin{DoxyCompactList}\small\item\em Puts the current flops metrics in the variable recieved by parameter. \end{DoxyCompactList}\item 
+double \hyperlink{flops_8h_aa76233d2fa1b10b1a3a0954056d52be8}{gflops} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} total\+\_\+timei, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} total\+\_\+cores)
+\begin{DoxyCompactList}\small\item\em Returns the amount of floating point operations done in the time total\+\_\+timei, in G\+Flops. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8h_ad5051fe78c165c0faa10141d0894e7e3}{get\+\_\+weigth\+\_\+fops\+\_\+instructions} (int $\ast$weigth\+\_\+vector)
+\begin{DoxyCompactList}\small\item\em Puts the weights of the fops instructions into $\ast$weight\+\_\+vector. \end{DoxyCompactList}\item 
+void \hyperlink{flops_8h_a7afc351a684832340c6f2470022714c4}{print\+\_\+gflops} (long long total\+\_\+inst, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} total\+\_\+time, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} total\+\_\+cores)
+\begin{DoxyCompactList}\small\item\em Prints the total G\+Flops per process and node if verbosity level is at 1 or higher. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{flops.\+h@{flops.\+h}!get\+\_\+number\+\_\+fops\+\_\+events@{get\+\_\+number\+\_\+fops\+\_\+events}}
+\index{get\+\_\+number\+\_\+fops\+\_\+events@{get\+\_\+number\+\_\+fops\+\_\+events}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+number\+\_\+fops\+\_\+events()}{get_number_fops_events()}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+number\+\_\+fops\+\_\+events (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_a77debe352fe64db6560d03e7d6225d3a}{}\label{flops_8h_a77debe352fe64db6560d03e7d6225d3a}
+
+
+Returns the total number of fops events. 
+
+\index{flops.\+h@{flops.\+h}!get\+\_\+total\+\_\+fops@{get\+\_\+total\+\_\+fops}}
+\index{get\+\_\+total\+\_\+fops@{get\+\_\+total\+\_\+fops}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+total\+\_\+fops(long long $\ast$metrics)}{get_total_fops(long long *metrics)}}]{\setlength{\rightskip}{0pt plus 5cm}void get\+\_\+total\+\_\+fops (
+\begin{DoxyParamCaption}
+\item[{long long $\ast$}]{metrics}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_af1f94974da69e85f8add8821fe2e7972}{}\label{flops_8h_af1f94974da69e85f8add8821fe2e7972}
+
+
+Puts the current flops metrics in the variable recieved by parameter. 
+
+\index{flops.\+h@{flops.\+h}!get\+\_\+weigth\+\_\+fops\+\_\+instructions@{get\+\_\+weigth\+\_\+fops\+\_\+instructions}}
+\index{get\+\_\+weigth\+\_\+fops\+\_\+instructions@{get\+\_\+weigth\+\_\+fops\+\_\+instructions}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+weigth\+\_\+fops\+\_\+instructions(int $\ast$weigth\+\_\+vector)}{get_weigth_fops_instructions(int *weigth_vector)}}]{\setlength{\rightskip}{0pt plus 5cm}void get\+\_\+weigth\+\_\+fops\+\_\+instructions (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{weigth\+\_\+vector}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_ad5051fe78c165c0faa10141d0894e7e3}{}\label{flops_8h_ad5051fe78c165c0faa10141d0894e7e3}
+
+
+Puts the weights of the fops instructions into $\ast$weight\+\_\+vector. 
+
+\index{flops.\+h@{flops.\+h}!gflops@{gflops}}
+\index{gflops@{gflops}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{gflops(ulong total\+\_\+timei, uint total\+\_\+cores)}{gflops(ulong total_timei, uint total_cores)}}]{\setlength{\rightskip}{0pt plus 5cm}double gflops (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{total\+\_\+timei, }
+\item[{{\bf uint}}]{total\+\_\+cores}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_aa76233d2fa1b10b1a3a0954056d52be8}{}\label{flops_8h_aa76233d2fa1b10b1a3a0954056d52be8}
+
+
+Returns the amount of floating point operations done in the time total\+\_\+timei, in G\+Flops. 
+
+\index{flops.\+h@{flops.\+h}!init\+\_\+flops\+\_\+metrics@{init\+\_\+flops\+\_\+metrics}}
+\index{init\+\_\+flops\+\_\+metrics@{init\+\_\+flops\+\_\+metrics}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+flops\+\_\+metrics()}{init_flops_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}int init\+\_\+flops\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_a09d96a6e958f2395a8ac92d2e78d8349}{}\label{flops_8h_a09d96a6e958f2395a8ac92d2e78d8349}
+
+
+Initializes the event metrics for flops. 
+
+\index{flops.\+h@{flops.\+h}!print\+\_\+gflops@{print\+\_\+gflops}}
+\index{print\+\_\+gflops@{print\+\_\+gflops}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+gflops(long long total\+\_\+inst, ulong total\+\_\+time, uint total\+\_\+cores)}{print_gflops(long long total_inst, ulong total_time, uint total_cores)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+gflops (
+\begin{DoxyParamCaption}
+\item[{long long}]{total\+\_\+inst, }
+\item[{{\bf ulong}}]{total\+\_\+time, }
+\item[{{\bf uint}}]{total\+\_\+cores}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_a7afc351a684832340c6f2470022714c4}{}\label{flops_8h_a7afc351a684832340c6f2470022714c4}
+
+
+Prints the total G\+Flops per process and node if verbosity level is at 1 or higher. 
+
+\index{flops.\+h@{flops.\+h}!reset\+\_\+flops\+\_\+metrics@{reset\+\_\+flops\+\_\+metrics}}
+\index{reset\+\_\+flops\+\_\+metrics@{reset\+\_\+flops\+\_\+metrics}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{reset\+\_\+flops\+\_\+metrics()}{reset_flops_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void reset\+\_\+flops\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_af14efb800e9513cfffa351bb705d27fe}{}\label{flops_8h_af14efb800e9513cfffa351bb705d27fe}
+
+
+Resets the metrics for flops. 
+
+\index{flops.\+h@{flops.\+h}!start\+\_\+flops\+\_\+metrics@{start\+\_\+flops\+\_\+metrics}}
+\index{start\+\_\+flops\+\_\+metrics@{start\+\_\+flops\+\_\+metrics}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{start\+\_\+flops\+\_\+metrics()}{start_flops_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void start\+\_\+flops\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_a1f8e182cb74fec3933d45a1ffed050c2}{}\label{flops_8h_a1f8e182cb74fec3933d45a1ffed050c2}
+
+
+Starts tracking flops metrics. 
+
+\index{flops.\+h@{flops.\+h}!stop\+\_\+flops\+\_\+metrics@{stop\+\_\+flops\+\_\+metrics}}
+\index{stop\+\_\+flops\+\_\+metrics@{stop\+\_\+flops\+\_\+metrics}!flops.\+h@{flops.\+h}}
+\subsubsection[{\texorpdfstring{stop\+\_\+flops\+\_\+metrics(long long $\ast$total\+\_\+flops, long long $\ast$f\+\_\+operations)}{stop_flops_metrics(long long *total_flops, long long *f_operations)}}]{\setlength{\rightskip}{0pt plus 5cm}void stop\+\_\+flops\+\_\+metrics (
+\begin{DoxyParamCaption}
+\item[{long long $\ast$}]{total\+\_\+flops, }
+\item[{long long $\ast$}]{f\+\_\+operations}
+\end{DoxyParamCaption}
+)}\hypertarget{flops_8h_a3766dd6c41f8d64e5b7616cf68d5af9a}{}\label{flops_8h_a3766dd6c41f8d64e5b7616cf68d5af9a}
+
+
+Stops flops metrics and accumulates registered flops and number of operations to the variables recieved by parameter. 
+

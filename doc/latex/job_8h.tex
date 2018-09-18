@@ -1,0 +1,138 @@
+\hypertarget{job_8h}{}\section{src/common/types/job.h File Reference}
+\label{job_8h}\index{src/common/types/job.\+h@{src/common/types/job.\+h}}
+{\ttfamily \#include $<$stdint.\+h$>$}\\*
+{\ttfamily \#include $<$time.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structjob}{job}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structjob}{job} \hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{job_8h_ada5590e7ddaabac734584763489ae840}{init\+\_\+job} (\hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job}, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} def\+\_\+f, char $\ast$\hyperlink{structpolicy}{policy}, double th, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} procs)
+\begin{DoxyCompactList}\small\item\em Initializes all job variables at 0 with the exception of def\+\_\+f, policy, th and procs, which take the value given by parameter. \end{DoxyCompactList}\item 
+void \hyperlink{job_8h_af87ac90997d854fda31bbb051596d98f}{start\+\_\+mpi} (\hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job})
+\begin{DoxyCompactList}\small\item\em Sets job-\/$>$start\+\_\+mpi\+\_\+time to the current time. \end{DoxyCompactList}\item 
+void \hyperlink{job_8h_ae5da1f610f97db3ee1288e461a7dc812}{end\+\_\+mpi} (\hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job})
+\begin{DoxyCompactList}\small\item\em Sets job-\/$>$end\+\_\+mpi\+\_\+time to the current time. \end{DoxyCompactList}\item 
+void \hyperlink{job_8h_a79a6932971f896ef567cbd58e8391080}{start\+\_\+job} (\hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job})
+\begin{DoxyCompactList}\small\item\em Sets the job start time. \end{DoxyCompactList}\item 
+void \hyperlink{job_8h_a72fd4bd9694f9d4475381bfe059ab7ac}{end\+\_\+job} (\hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job})
+\begin{DoxyCompactList}\small\item\em Sets the job end time. \end{DoxyCompactList}\item 
+void \hyperlink{job_8h_a133741ce5132aa089ae1ac7d6ac01bf6}{copy\+\_\+job} (\hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$destiny, \hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$source)
+\begin{DoxyCompactList}\small\item\em Copies the source job given by parameter into the destiny job. \end{DoxyCompactList}\item 
+void \hyperlink{job_8h_aaea6865072a2487220d901a9e2333562}{print\+\_\+job\+\_\+fd} (int fd, \hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job})
+\begin{DoxyCompactList}\small\item\em Given a job\+\_\+t and a file descriptor, outputs the contents of said job to the fd. \end{DoxyCompactList}\item 
+void \hyperlink{job_8h_abefb83926ae95a931aa127683760f21b}{report\+\_\+job} (\hyperlink{job_8h_aa728c8658fca10fa053b983ab92efb2f}{job\+\_\+t} $\ast$\hyperlink{structjob}{job})
+\begin{DoxyCompactList}\small\item\em Reports the content of the job into the stderr. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Typedef Documentation}
+\index{job.\+h@{job.\+h}!job\+\_\+t@{job\+\_\+t}}
+\index{job\+\_\+t@{job\+\_\+t}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{job\+\_\+t}{job_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf job}  {\bf job\+\_\+t}}\hypertarget{job_8h_aa728c8658fca10fa053b983ab92efb2f}{}\label{job_8h_aa728c8658fca10fa053b983ab92efb2f}
+
+
+\subsection{Function Documentation}
+\index{job.\+h@{job.\+h}!copy\+\_\+job@{copy\+\_\+job}}
+\index{copy\+\_\+job@{copy\+\_\+job}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{copy\+\_\+job(job\+\_\+t $\ast$destiny, job\+\_\+t $\ast$source)}{copy_job(job_t *destiny, job_t *source)}}]{\setlength{\rightskip}{0pt plus 5cm}void copy\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{{\bf job\+\_\+t} $\ast$}]{destiny, }
+\item[{{\bf job\+\_\+t} $\ast$}]{source}
+\end{DoxyParamCaption}
+)}\hypertarget{job_8h_a133741ce5132aa089ae1ac7d6ac01bf6}{}\label{job_8h_a133741ce5132aa089ae1ac7d6ac01bf6}
+
+
+Copies the source job given by parameter into the destiny job. 
+
+\index{job.\+h@{job.\+h}!end\+\_\+job@{end\+\_\+job}}
+\index{end\+\_\+job@{end\+\_\+job}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{end\+\_\+job(job\+\_\+t $\ast$job)}{end_job(job_t *job)}}]{\setlength{\rightskip}{0pt plus 5cm}void end\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{{\bf job\+\_\+t} $\ast$}]{job}
+\end{DoxyParamCaption}
+)}\hypertarget{job_8h_a72fd4bd9694f9d4475381bfe059ab7ac}{}\label{job_8h_a72fd4bd9694f9d4475381bfe059ab7ac}
+
+
+Sets the job end time. 
+
+\index{job.\+h@{job.\+h}!end\+\_\+mpi@{end\+\_\+mpi}}
+\index{end\+\_\+mpi@{end\+\_\+mpi}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{end\+\_\+mpi(job\+\_\+t $\ast$job)}{end_mpi(job_t *job)}}]{\setlength{\rightskip}{0pt plus 5cm}void end\+\_\+mpi (
+\begin{DoxyParamCaption}
+\item[{{\bf job\+\_\+t} $\ast$}]{job}
+\end{DoxyParamCaption}
+)}\hypertarget{job_8h_ae5da1f610f97db3ee1288e461a7dc812}{}\label{job_8h_ae5da1f610f97db3ee1288e461a7dc812}
+
+
+Sets job-\/$>$end\+\_\+mpi\+\_\+time to the current time. 
+
+\index{job.\+h@{job.\+h}!init\+\_\+job@{init\+\_\+job}}
+\index{init\+\_\+job@{init\+\_\+job}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+job(job\+\_\+t $\ast$job, ulong def\+\_\+f, char $\ast$policy, double th, ulong procs)}{init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{{\bf job\+\_\+t} $\ast$}]{job, }
+\item[{{\bf ulong}}]{def\+\_\+f, }
+\item[{char $\ast$}]{policy, }
+\item[{double}]{th, }
+\item[{{\bf ulong}}]{procs}
+\end{DoxyParamCaption}
+)}\hypertarget{job_8h_ada5590e7ddaabac734584763489ae840}{}\label{job_8h_ada5590e7ddaabac734584763489ae840}
+
+
+Initializes all job variables at 0 with the exception of def\+\_\+f, policy, th and procs, which take the value given by parameter. 
+
+\index{job.\+h@{job.\+h}!print\+\_\+job\+\_\+fd@{print\+\_\+job\+\_\+fd}}
+\index{print\+\_\+job\+\_\+fd@{print\+\_\+job\+\_\+fd}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+job\+\_\+fd(int fd, job\+\_\+t $\ast$job)}{print_job_fd(int fd, job_t *job)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+job\+\_\+fd (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{{\bf job\+\_\+t} $\ast$}]{job}
+\end{DoxyParamCaption}
+)}\hypertarget{job_8h_aaea6865072a2487220d901a9e2333562}{}\label{job_8h_aaea6865072a2487220d901a9e2333562}
+
+
+Given a job\+\_\+t and a file descriptor, outputs the contents of said job to the fd. 
+
+\index{job.\+h@{job.\+h}!report\+\_\+job@{report\+\_\+job}}
+\index{report\+\_\+job@{report\+\_\+job}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{report\+\_\+job(job\+\_\+t $\ast$job)}{report_job(job_t *job)}}]{\setlength{\rightskip}{0pt plus 5cm}void report\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{{\bf job\+\_\+t} $\ast$}]{job}
+\end{DoxyParamCaption}
+)}\hypertarget{job_8h_abefb83926ae95a931aa127683760f21b}{}\label{job_8h_abefb83926ae95a931aa127683760f21b}
+
+
+Reports the content of the job into the stderr. 
+
+\index{job.\+h@{job.\+h}!start\+\_\+job@{start\+\_\+job}}
+\index{start\+\_\+job@{start\+\_\+job}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{start\+\_\+job(job\+\_\+t $\ast$job)}{start_job(job_t *job)}}]{\setlength{\rightskip}{0pt plus 5cm}void start\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{{\bf job\+\_\+t} $\ast$}]{job}
+\end{DoxyParamCaption}
+)}\hypertarget{job_8h_a79a6932971f896ef567cbd58e8391080}{}\label{job_8h_a79a6932971f896ef567cbd58e8391080}
+
+
+Sets the job start time. 
+
+\index{job.\+h@{job.\+h}!start\+\_\+mpi@{start\+\_\+mpi}}
+\index{start\+\_\+mpi@{start\+\_\+mpi}!job.\+h@{job.\+h}}
+\subsubsection[{\texorpdfstring{start\+\_\+mpi(job\+\_\+t $\ast$job)}{start_mpi(job_t *job)}}]{\setlength{\rightskip}{0pt plus 5cm}void start\+\_\+mpi (
+\begin{DoxyParamCaption}
+\item[{{\bf job\+\_\+t} $\ast$}]{job}
+\end{DoxyParamCaption}
+)}\hypertarget{job_8h_af87ac90997d854fda31bbb051596d98f}{}\label{job_8h_af87ac90997d854fda31bbb051596d98f}
+
+
+Sets job-\/$>$start\+\_\+mpi\+\_\+time to the current time. 
+
