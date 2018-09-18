@@ -79,6 +79,7 @@ tests/check/check.sh
 *eargm_new_job
 *eargm_end_job
 *eardbd
+*ear_dbd_stress_test
 
 *client_api_test
 *compute_coefficients_remote
