@@ -53,7 +53,6 @@ coefficients_v2_to_v3:coefficients_v2_to_v3.c $(COMMON_OBJS)
 
 install:
 	cp compute_coefficients $(DESTDIR)/sbin/
-	cp coefficients_quality_control $(DESTDIR)/sbin/
 
 %.install: ;
 
