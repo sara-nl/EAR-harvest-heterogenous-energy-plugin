@@ -68,3 +68,6 @@ int get_model();
 
 /** Returns if the processor is HTT capable */
 int is_cpu_hyperthreading_capable();
+
+/** Returns true if turbo is enabled */
+int is_cpu_boost_enabled();
