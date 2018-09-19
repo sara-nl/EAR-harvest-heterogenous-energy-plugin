@@ -48,6 +48,7 @@ Usage: econtrol [options]
 	--inc-th 	new_th		    ->increases the threshold for all nodes
 	--red-def-freq 	reduction	->reduces the default frequency
 	--restore-conf 			    ->restores the configuration to all nodes
+    --ping                      ->pings all nodes. Additionally, --ping=node_name pings node_name individually
 ```
 
 # Database commands
