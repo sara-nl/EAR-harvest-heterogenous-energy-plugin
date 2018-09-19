@@ -143,7 +143,7 @@ static void insert_result(uint index, uint length, clock_t time_start, ulong typ
 	pnt = (float) (index) / (float) (length);
 	kbs = (float) (index * type_size) / 1000.0;
 
-	verbose1("%lu/%lu (%0.2f%, %0.3f KBs) samples of %s data in %0.3f ms",
+	verbose1("%lu/%lu (%0.2f%, %0.3f KBs) samples of %s in %0.3f ms",
 			 index, length, pnt, kbs, type_name, tms);
 }
 
@@ -217,7 +217,7 @@ static void insert_loops()
 
 	// Verbosity of the result
 	insert_result(i_loops, len_loops, time_start, sizeof(loop_t),
-				  "application loops");
+				  "applications loops");
 
 	// Reset
 	i_loops = 0;
