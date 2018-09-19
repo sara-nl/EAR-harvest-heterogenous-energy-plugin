@@ -32,12 +32,12 @@ install:
 
 etc.install: ;
 	@ mkdir -p $(etc_FOLDERS) 
-	cp conf/ear.conf $(ETCDIR)/ear
-	cp module/ear $(ETCDIR)/module/
-	cp slurm/ear.plugstack.conf $(ETCDIR)/slurm/
-	cp systemd/eard.service $(ETCDIR)/systemd
-	cp systemd/eardbd.service $(ETCDIR)/systemd
-	cp systemd/eargmd.service $(ETCDIR)/systemd
+	cp -i conf/ear.conf $(ETCDIR)/ear
+	cp -i module/ear $(ETCDIR)/module/
+	cp -i slurm/ear.plugstack.conf $(ETCDIR)/slurm/
+	cp -i systemd/eard.service $(ETCDIR)/systemd
+	cp -i systemd/eardbd.service $(ETCDIR)/systemd
+	cp -i systemd/eargmd.service $(ETCDIR)/systemd
 
 devel.install: ;
 	@ mkdir -p $(dev_FOLDERS)
