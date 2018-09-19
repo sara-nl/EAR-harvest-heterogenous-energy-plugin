@@ -39,8 +39,28 @@
 #include <common/types/power_signature.h>
 #include <common/types/periodic_aggregation.h>
 
+//
 #define EAR_TYPE_APPLICATION    1
 #define EAR_TYPE_LOOP           2
+
+//number of arguments inserted into periodic_metrics
+#define PERIODIC_AGGREGATION_ARGS   3
+#define EAR_EVENTS_ARGS             6
+#define POWER_SIGNATURE_ARGS        9
+#define APPLICATION_ARGS            5
+#define LOOP_ARGS                   8
+#define JOB_ARGS                    16
+#if DEMO
+#define PERIODIC_METRIC_ARGS        7
+#else
+#define PERIODIC_METRIC_ARGS        6
+#endif
+#if !DB_SIMPLE
+#define SIGNATURE_ARGS              21
+#else
+#define SIGNATURE_ARGS              11
+#endif
+
 
 typedef struct
 {

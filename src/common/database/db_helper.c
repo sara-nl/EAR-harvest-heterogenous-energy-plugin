@@ -27,9 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
@@ -97,7 +99,8 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
 	const uint a = _MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_ARGS);
 	float b = (float) USHRT_MAX / (float) a;
 
-	uint c = ((uint) floor(b));
+	uint c = ((uint) b);
+	c = 100;
 	uint d = ((uint) num_apps) / c;
 	uint i, j;
 
@@ -124,9 +127,9 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
         return EAR_ERROR;
     }
 
-    for (i = 0, j = 0; j < d; i += max_bul_vars_u, j +=1)
+    for (i = 0, j = 0; j < d; i += c, j +=1)
     {
-    	if (mysql_batch_insert_applications(connection, &applications[i], max_bul_vars_u) < 0) {
+    	if (mysql_batch_insert_applications(connection, &applications[i], c) < 0) {
         	VERBOSE_N(0, "ERROR while batch writing applications to database.");
         	return EAR_ERROR;
     	}
