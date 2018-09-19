@@ -27,7 +27,9 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
+
 #include <math.h>
+#include <time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,6 +89,37 @@ extern char *str_who[2];
 
 /*
  *
+ * Maths
+ *
+ */
+
+clock_t time_start()
+{
+	return clock();
+}
+
+ulong time_stop_in_miliseconds(clock_t start)
+{
+	cock_t stop = clock();
+	double difference = stop - start;
+	double elapsed = (difference / (double) (CLOCKS_PER_SEC)) * 1000.0;
+	return (ulong) elapsed;
+}
+
+float bytes_to_kylobytes(uint bytes)
+{
+	float kbs = (double) (bytes) / 1000.0;
+	return kbs;
+}
+
+float bytes_to_megabytes(uint bytes)
+{
+	float mbs = (double) (bytes) / 1000000.0;
+	return mbs;
+}
+
+/*
+ *
  * Reset
  *
  */
@@ -129,13 +162,16 @@ static void reset_all()
 
 static void insert_apps_mpi()
 {
+	float pnt;
+	float kbs;
+	float tms;
+
 	if (per_appsm == 0) {
 		return;
 	}
 
-	float percent = (float) (i_appsm) / (float) (len_appsm);
-	verbose1("%lu/%lu (%0.2f) samples of mpi applications",
-			 i_appsm, len_appsm, percent);
+	pnt = (float) (i_appsm) / (float) (len_appsm);
+	kbs = bytes_to_kylobytes(i_appsm * sizeof(application_t));
 
 	if (i_appsm <= 0) {
 		return;
@@ -143,6 +179,9 @@ static void insert_apps_mpi()
 
 	db_batch_insert_applications(appsm, i_appsm);
 	i_appsm = 0;
+
+	verbose1("inserted %lu/%lu (%0.2f, %f KBs) samples of mpi applications in %f ms",
+			 i_appsm, len_appsm, pnt, kbs, tms);
 }
 
 static void insert_apps_non_mpi()
