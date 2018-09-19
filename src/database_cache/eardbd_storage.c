@@ -136,10 +136,10 @@ static void insert_result(uint index, uint length, clock_t time_start, ulong typ
 	float pnt;
 	float kbs;
 
-	total_time = (double) (clock() - time_start);
-	total_time = (total_time / (double) (CLOCKS_PER_SEC)) * 1000.0;
+	time_total = (double) (clock() - time_start);
+	time_total = (time_total / (double) (CLOCKS_PER_SEC)) * 1000.0;
 
-	tms = (float) total_time;
+	tms = (float) time_total;
 	pnt = (float) (index) / (float) (length);
 	kbs = (float) (index * type_size) / 1000.0;
 
