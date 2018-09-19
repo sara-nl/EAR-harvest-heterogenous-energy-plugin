@@ -99,28 +99,26 @@ static char *__NAME__ = "MYSQL_IO: ";
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
                                     "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
+
 //number of arguments inserted into periodic_metrics
+
+#define PERIODIC_AGGREGATION_ARGS	3
+#define EAR_EVENTS_ARGS				6
+#define POWER_SIGNATURE_ARGS		9
+#define APPLICATION_ARGS			5
+#define LOOP_ARGS					8
+#define JOB_ARGS					16
 #if DEMO
-#define PERIODIC_METRIC_ARGS 7
+#define PERIODIC_METRIC_ARGS		7
 #else
-#define PERIODIC_METRIC_ARGS 6
+#define PERIODIC_METRIC_ARGS		6
 #endif
-
-#define PERIODIC_AGGREGATION_ARGS 3
-
-#define EAR_EVENTS_ARGS 6
-
 #if !DB_SIMPLE
-#define SIGNATURE_ARGS 21
+#define SIGNATURE_ARGS				21
 #else
-#define SIGNATURE_ARGS 11
+#define SIGNATURE_ARGS				11
 #endif
 
-#define POWER_SIGNATURE_ARGS 9
-
-#define APPLICATION_ARGS 5
-
-#define LOOP_ARGS 8
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {

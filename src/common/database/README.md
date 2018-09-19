@@ -31,9 +31,16 @@ The main tables in the database Report and each of their rows are:
     - Power_signatures: Contains power metrics of an application.
     
     - Periodic_metrics: Contains information about a node's energy consumption with the purpose of monitoring it.
+
+    - Periodic_aggregations: Contains the same information as Periodic_metrics but aggregated by periods of time, not of each node individually.
+
     - Learning_[tables]: The tables that begin with the "Learning_" prefix contain the same as their counterparts without prefix, but are used exclusively for the learning phase of the EAR library.
 
 
 -The relationship between the tables can be seen in the adjunct diagram, as 
  well as the general equivalent of their MySQL types.
+
+Other tables are:
+    - Events: Contains a registry of EAR events (change in frequency, DynAIS on/off, etc.).
+    - Warnings: Contains a registry of EAR's Global Manager warnings.
 
