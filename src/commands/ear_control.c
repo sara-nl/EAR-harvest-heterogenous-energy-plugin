@@ -164,9 +164,18 @@ void main(int argc, char *argv[])
                 break;
             case 6:
                 if (optarg)
-                    ping_all_nodes(my_cluster_conf);
+                {
+                    int rc=eards_remote_connect(optarg ,my_cluster_conf.eard.port);
+                    if (rc<0){
+                        VERBOSE_N(0,"Error connecting with node %s", optarg);
+                    }else{
+                        VERBOSE_N(1,"Node %s ping!\n", optarg);
+                        if (!eards_ping()) VERBOSE_N(0,"Error doing ping for node %s", optarg);
+                        eards_remote_disconnect();
+                    }
+                }
                 else
-                    ping_all_nodes(my_cluster_conf);
+                    old_ping_all_nodes(my_cluster_conf);
                 break;
             case 7:
                 usage(argv[0]);

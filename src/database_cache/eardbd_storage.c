@@ -27,7 +27,9 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
+
 #include <math.h>
+#include <time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -127,129 +129,153 @@ static void reset_all()
  *
  */
 
+static void insert_result(uint index, uint length, clock_t time_start, ulong type_size, char *type_name)
+{
+	double time_total;
+	float tms;
+	float pnt;
+	float kbs;
+
+	time_total = (double) (clock() - time_start);
+	time_total = (time_total / (double) (CLOCKS_PER_SEC)) * 1000.0;
+
+	tms = (float) time_total;
+	pnt = (float) (index) / (float) (length);
+	kbs = (float) (index * type_size) / 1000.0;
+
+	verbose1("%lu/%lu (%0.2f%, %0.3f KBs) samples of %s in %0.3f ms",
+			 index, length, pnt, kbs, type_name, tms);
+}
+
 static void insert_apps_mpi()
 {
-	if (per_appsm == 0) {
+	clock_t time_start;
+
+	if (per_appsm == 0 || i_appsm <= 0) {
 		return;
 	}
 
-	float percent = (float) (i_appsm) / (float) (len_appsm);
-	verbose1("%lu/%lu (%0.2f) samples of mpi applications",
-			 i_appsm, len_appsm, percent);
-
-	if (i_appsm <= 0) {
-		return;
-	}
-
+	time_start = clock();
 	db_batch_insert_applications(appsm, i_appsm);
+
+	// Verbosity of the result
+	insert_result(i_appsm, len_appsm, time_start, sizeof(application_t),
+				  "mpi applications");
+
+	// Reset
 	i_appsm = 0;
 }
 
 static void insert_apps_non_mpi()
 {
-	if (per_appsn == 0) {
+	clock_t time_start;
+
+	if (per_appsn == 0 || i_appsn <= 0) {
 		return;
 	}
 
-	float percent = (float) (i_appsn) / (float) (len_appsn);
-	verbose1("%lu/%lu (%0.2f) samples of non-mpi applications",
-			 i_appsn, len_appsn, percent);
-
-	if (i_appsn <= 0) {
-		return;
-	}
-
+	time_start = clock();
 	db_batch_insert_applications_no_mpi(appsn, i_appsn);
+
+	// Verbosity of the result
+	insert_result(i_appsn, len_appsn, time_start, sizeof(application_t),
+				  "non-mpi applications");
+
+	// Reset
 	i_appsn = 0;
 }
 
 static void insert_apps_learning()
 {
-	if (per_appsl == 0) {
+	clock_t time_start;
+
+	if (per_appsl == 0 || i_appsl <= 0) {
 		return;
 	}
 
-	float percent = (float) (i_appsl) / (float) (len_appsl);
-	verbose1("%lu/%lu (%0.2f) samples of learning applications",
-			 i_appsl, len_appsl, percent);
-
-	if (i_appsl <= 0) {
-		return;
-	}
-
+	time_start = clock();
 	db_batch_insert_applications(appsl, i_appsl);
+
+	// Verbosity of the result
+	insert_result(i_appsl, len_appsl, time_start, sizeof(application_t),
+				  "learning applications");
+
+	// Reset
 	i_appsl = 0;
 }
 
 static void insert_loops()
 {
-	if (per_loops == 0) {
+	clock_t time_start;
+
+	if (per_loops == 0 || i_loops <= 0) {
 		return;
 	}
 
-	float percent = (float) (i_loops) / (float) (len_loops);
-	verbose1("%lu/%lu (%0.2f) samples of loops",
-			 i_loops, len_loops, percent);
-
-	if (i_loops <= 0) {
-		return;
-	}
-
+	time_start = clock();
 	db_batch_insert_loops(loops, i_loops);
+
+	// Verbosity of the result
+	insert_result(i_loops, len_loops, time_start, sizeof(loop_t),
+				  "applications loops");
+
+	// Reset
 	i_loops = 0;
 }
 
 static void insert_energy()
 {
-	if (per_enrgy == 0) {
+	clock_t time_start;
+
+	if (per_enrgy == 0 || i_enrgy <= 0) {
 		return;
 	}
 
-	float percent = (float) (i_enrgy) / (float) (len_enrgy);
-	verbose1("%lu/%lu (%0.2f) samples of energy monitoring data",
-			 i_enrgy, len_enrgy, percent);
-
-	if (i_enrgy <= 0) {
-		return;
-	}
-
+	time_start = clock();
 	db_batch_insert_periodic_metrics(enrgy, i_enrgy);
+
+	// Verbosity of the result
+	insert_result(i_enrgy, len_enrgy, time_start, sizeof(periodic_metric_t),
+				  "energy monitoring data");
+
+	// Reset
 	i_enrgy = 0;
 }
 
 static void insert_aggregations()
 {
-	if (per_aggrs == 0) {
+	clock_t time_start;
+
+	if (per_aggrs == 0 || i_aggrs <= 0) {
 		return;
 	}
 
-	float percent = (float) (i_aggrs) / (float) (len_aggrs);
-	verbose1("%lu/%lu (%0.2f) samples of energy aggregations",
-			 i_aggrs, len_aggrs, percent);
-
-	if (i_aggrs <= 0) {
-		return;
-	}
-
+	time_start = clock();
 	db_batch_insert_periodic_aggregations(aggrs, i_aggrs);
+
+	// Verbosity of the result
+	insert_result(i_aggrs, len_aggrs, time_start, sizeof(periodic_aggregation_t),
+				  "energy aggregations");
+
+	// Reset
 	reset_aggregations();
 }
 
 static void insert_events()
 {
-	if (per_evnts == 0) {
+	clock_t time_start;
+
+	if (per_evnts == 0 || i_evnts <= 0) {
 		return;
 	}
 
-	float percent = (float) (i_evnts) / (float) (len_evnts);
-	verbose1("%lu/%lu (%0.2f) samples of events",
-			 i_evnts, len_evnts, percent);
-
-	if (i_evnts <= 0) {
-		return;
-	}
-
+	time_start = clock();
 	db_batch_insert_ear_event(evnts, i_evnts);
+
+	// Verbosity of the result
+	insert_result(i_evnts, len_evnts, time_start, sizeof(ear_event_t), "events");
+
+	// Reset
 	i_evnts = 0;
 }
 
