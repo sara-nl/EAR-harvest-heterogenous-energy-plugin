@@ -149,7 +149,7 @@ static void insert_result(uint index, uint length, clock_t time_start, ulong typ
 
 static void insert_apps_mpi()
 {
-	clockt_t time_start;
+	clock_t time_start;
 
 	if (per_appsm == 0 || i_appsm <= 0) {
 		return;
@@ -168,7 +168,7 @@ static void insert_apps_mpi()
 
 static void insert_apps_non_mpi()
 {
-	clockt_t time_start;
+	clock_t time_start;
 
 	if (per_appsn == 0 || i_appsn <= 0) {
 		return;
@@ -187,7 +187,7 @@ static void insert_apps_non_mpi()
 
 static void insert_apps_learning()
 {
-	clockt_t time_start;
+	clock_t time_start;
 
 	if (per_appsl == 0 || i_appsl <= 0) {
 		return;
@@ -206,7 +206,7 @@ static void insert_apps_learning()
 
 static void insert_loops()
 {
-	clockt_t time_start;
+	clock_t time_start;
 
 	if (per_loops == 0 || i_loops <= 0) {
 		return;
@@ -225,7 +225,7 @@ static void insert_loops()
 
 static void insert_energy()
 {
-	clockt_t time_start;
+	clock_t time_start;
 
 	if (per_enrgy == 0 || i_enrgy <= 0) {
 		return;
@@ -244,7 +244,7 @@ static void insert_energy()
 
 static void insert_aggregations()
 {
-	clockt_t time_start;
+	clock_t time_start;
 
 	if (per_aggrs == 0 || i_aggrs <= 0) {
 		return;
@@ -263,7 +263,7 @@ static void insert_aggregations()
 
 static void insert_events()
 {
-	clockt_t time_start;
+	clock_t time_start;
 
 	if (per_evnts == 0 || i_evnts <= 0) {
 		return;
