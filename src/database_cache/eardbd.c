@@ -857,7 +857,7 @@ static void pipeline()
 
 			if (timeout_aggr.tv_sec == 0)
 			{
-				verbose3("completed the aggregation number %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
+				verbose1("completed the aggregation number %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
 				
 				// Aggregation time done, so new aggregation incoming
 				storage_sample_add(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);
