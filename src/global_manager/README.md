@@ -10,28 +10,7 @@ Configuration
 -------------
 The EAR Global Manager Daemon uses the `$(ETC)/ear.conf` file to be configured. It can be dynamically configured by reloading the service.
 
-```
-# Fields related to the Global Manager Daemon
-
-# Verbose level
-GlobalManagerVerbose=1
-# Period T1 in seconds (10 min)
-GlobalManagerPeriodT1=600
-# Period T2 in seconds (30 days)
-GlobalManagerPeriodT2=2592000
-# Abosolute value (joules)
-GlobalManagerEnergyLimit=756000
-GlobalManagerPort=6000
-# Two modes are supported (0 pasive, 1 active or automatic)
-GlobalManagerMode=0
-# Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode). nomail means no mail is going to be sent
-GlobalManagerMail=nomail
-#Thee values must be provided corresponding with DEFCON_L4,DEFCON_L3, and DEFCON_L2 (higer values means PANIC)
-GlobalManagerWarningsPerc=85,90,95
-#T1 "grace" periods between DEFCON re-evaluations. In that case, 3 T1 periods means 30 minutes
-GlobalManagerGracePeriods=3
-
-```
+Please visit the [EAR configuration file page](../../etc/conf/README.md) for more information about the options of EARGMD and other components.
 
 API
 ---
@@ -40,9 +19,9 @@ The global manager offers a simple API `eargm_api.c` to notify the execution and
 Execution
 ---------
 To execute this component, this `systemctl` command examples are provided:
-- `sudo systemctl start eard` to start the EARGMD service.
-- `sudo systemctl stop eard` to stop the EARGMD service.
-- `sudo systemctl reload eard` to force to reload the configuration of the EARGMD service.
+- `sudo systemctl start eargmd` to start the EARGMD service.
+- `sudo systemctl stop eargmd` to stop the EARGMD service.
+- `sudo systemctl reload eargmd` to force to reload the configuration of the EARGMD service.
 
 Commands
 --------

@@ -1,5 +1,5 @@
 EAR Library 
-------------------
+-----------
 The EAR library is the core of the EAR package. The EARL offers a ligthweigth and simple solution to select the optional frequency for MPI applications at runtime.
 
 EARL is dynamically loaded with applications using the PMPI interface used by many other runtime solutions. The current EARL version only supports with this mechanism but it is under development an API to be inserted in the OpenMPI library.
@@ -24,40 +24,9 @@ At runtime, EARL goes trough the following phase:
 
 Configuration
 -------------
-The EAR Library  is based on ear.conf settings when executing in a fully installed environment. Specific settings are available through a shared memory regions initialized by EARD and readable by the EARL. Fields described in ear.conf affecting the EARL configuration are (lines starting with #are comments):
+The EAR Library is based on `ear.conf` settings when executing in a fully installed environment. Specific settings are available through a shared memory regions initialized by EARD and readable by the EARL. Fields described in ear.conf affecting the EARL configuration are (lines starting with #are comments):
 
-```
-# Number of levels used by the multi-level DynAIS algorihtm
-DynAISLevels=4
-
-# Windows size for DynAIS algorithm
-DynAISWindowSize=500
-
-# Maximum time (in seconds) EAR will wait until a signature is computed. After DynaisTimeout seconds, if no signature is computed, EAR will go to periodic mode
-DynaisTimeout=30
-
-# When EAR goes to periodic mode, it will compute the Application signature every "LibraryPeriod" seconds
-LibraryPeriod=30
-
-# EAR will check every N mpi calls whether it must go to periodic mode or not
-CheckEARModeEvery=1000
-
-# Default policy
-DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
-
-# List of supported policies for normal users: it must be a subset of MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
-SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
-
-# Pstates must be specified in the following order:MIN_ENERGY_TO_SOLUTION,MIN_TIME_TO_SOLUTION,MONITORING_ONLY 
-DefaultPstates=1,4,4
-
-# Thresholds used by MIN_TIME_TO_SOLUTION and MIN_ENERGY_TO_SOLUTION policies
-MinEfficiencyGain=0.7
-MaxPerformancePenalty=0.1
-
-# Time (expressed in usecs ) used between two energy measurements 
-MinTimePerformanceAccuracy=10000000
-```
+Please visit the [EAR configuration file page](../../etc/conf/README.md) for more information about the options of EARL and other components.
 
 - When executed in a partially installed system for testing, it can be configured through environment variables, however this mechanism is not recommened.
 
@@ -82,7 +51,6 @@ Launching applications calling MPI directly
 This way doesn't make use of any cluster job scheduler, so a a script is provided to make it easy that task. You can launch the script with empty parameters to view it's usage.
 
 In the folder `$(ETC)/scripts/launching`, execute the `mpi_exec.sh` script to launch the job. In example `./mpi_exec.sh computing_node1 28 28 MONITORING_ONLY`, where both numbers are the MPI processes and the MPI's per node, an the last one is the policy. This is script will use the `LD_PRELOAD` environment variable to load the library next to your MPI applications.
-
 
 License
 -------

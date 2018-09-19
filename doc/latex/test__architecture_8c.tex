@@ -1,0 +1,218 @@
+\hypertarget{test__architecture_8c}{}\section{src/tests/functionals/test\+\_\+architecture.c File Reference}
+\label{test__architecture_8c}\index{src/tests/functionals/test\+\_\+architecture.\+c@{src/tests/functionals/test\+\_\+architecture.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$cpufreq.\+h$>$}\\*
+{\ttfamily \#include $<$papi.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/hardware\+\_\+info.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{test__architecture_8c_a369266c24eacffb87046522897a570d5}{\+\_\+\+G\+N\+U\+\_\+\+S\+O\+U\+R\+CE}
+\item 
+\#define \hyperlink{test__architecture_8c_adc4cc5c67b56f34138d786ef6331e3f4}{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{test__architecture_8c_a6bb3a6a23b69e55aa96a1065dfd21040}{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus} ()
+\item 
+unsigned int \hyperlink{test__architecture_8c_a5771a0ce102e4c1b607f3d2171cced90}{frequency\+\_\+freq\+\_\+to\+\_\+pstate} (unsigned long f)
+\item 
+void \hyperlink{test__architecture_8c_a561a5dd4b019d4d0830c20d428e137f9}{frequency\+\_\+dispose} ()
+\item 
+unsigned long \hyperlink{test__architecture_8c_a6e7024c5ad716028dfa152c631e5bf0e}{ear\+\_\+max\+\_\+f} ()
+\item 
+unsigned long \hyperlink{test__architecture_8c_aebba1e3d7cdf7e02a20cb041493c2d28}{ear\+\_\+min\+\_\+f} ()
+\item 
+unsigned long \hyperlink{test__architecture_8c_a18d09247b0fc16fcba386d9c77fa5a51}{frequency\+\_\+get\+\_\+num\+\_\+pstates} (unsigned int cpuid)
+\item 
+unsigned int \hyperlink{test__architecture_8c_a7be5c82cfcd2f642d8a9ebfe3a2d27d6}{ear\+\_\+is\+\_\+valid\+\_\+frequency} (unsigned long f)
+\item 
+unsigned long \hyperlink{test__architecture_8c_a3f778f029dd0163c431ab0bd20b4480c}{ear\+\_\+cpufreq\+\_\+set} (unsigned int cpuid, unsigned long newfreq)
+\item 
+unsigned long \hyperlink{test__architecture_8c_a46cdf12c987933c8baa9a7d5f21edc58}{frequency\+\_\+set\+\_\+all\+\_\+cpus} (unsigned long newfreq)
+\item 
+unsigned long \hyperlink{test__architecture_8c_a996797f251f42732a93723f39b01f71c}{frequency\+\_\+get\+\_\+nominal\+\_\+freq} ()
+\item 
+unsigned int \hyperlink{test__architecture_8c_a6dcaa6a2529d316c4bd3cd3848c58d74}{frequency\+\_\+get\+\_\+num\+\_\+pstates} ()
+\item 
+unsigned long $\ast$ \hyperlink{test__architecture_8c_a4f0f0b2d64213795eae57c24df0a78ed}{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list} ()
+\item 
+unsigned long \hyperlink{test__architecture_8c_af9602ce9a3f59aaffb22d2a320f02e59}{frequency\+\_\+pstate\+\_\+to\+\_\+freq} (unsigned int \hyperlink{compute__coefficients__v2_8c_aa0ecde9bec2f4c6686780ccf4f5fe835}{i})
+\item 
+int \hyperlink{test__architecture_8c_a0ddf1224851353fc92bfbff6f499fa97}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{test__architecture_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} = 0
+\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\item 
+int \hyperlink{test__architecture_8c_acfede048b49209a0d8f7d773aa176e65}{cpu\+\_\+model}
+\item 
+unsigned int \hyperlink{test__architecture_8c_aed8100abe3707131b78b26bc1f30152d}{ear\+\_\+num\+\_\+cpus}
+\item 
+unsigned long $\ast$ \hyperlink{test__architecture_8c_ad78748e7bc3d7c2a647989969b3c4ec6}{ear\+\_\+cpufreq}
+\item 
+unsigned int \hyperlink{test__architecture_8c_a0883287d427f5a9cdedc5c2c2c6cd6de}{ear\+\_\+num\+\_\+p\+\_\+states} =0
+\item 
+unsigned long $\ast$ \hyperlink{test__architecture_8c_aab222bb9aef32b85cedc39d18c2d0eff}{ear\+\_\+cpufreq\+\_\+pstates}
+\item 
+unsigned long \hyperlink{test__architecture_8c_a2eabd6532df4a2fe2c8d43f07338a85d}{ear\+\_\+nominal\+\_\+freq}
+\item 
+const P\+A\+P\+I\+\_\+hw\+\_\+info\+\_\+t $\ast$ \hyperlink{test__architecture_8c_a6dae68792aff372294eeaf42fb01831e}{ear\+\_\+cpufreq\+\_\+hwinfo}
+\item 
+struct \hyperlink{structcpufreq__policy}{cpufreq\+\_\+policy} $\ast$ \hyperlink{test__architecture_8c_acea972fe5ee2911a4a90224366a2919c}{current\+\_\+policy}
+\item 
+struct \hyperlink{structcpufreq__policy}{cpufreq\+\_\+policy} \hyperlink{test__architecture_8c_a0a12972239a6852666cca555cb52272d}{prev\+\_\+policy}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU@{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}}
+\index{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU@{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}{__USE_GNU}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+\_\+\+U\+S\+E\+\_\+\+G\+NU}\hypertarget{test__architecture_8c_adc4cc5c67b56f34138d786ef6331e3f4}{}\label{test__architecture_8c_adc4cc5c67b56f34138d786ef6331e3f4}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!\+\_\+\+G\+N\+U\+\_\+\+S\+O\+U\+R\+CE@{\+\_\+\+G\+N\+U\+\_\+\+S\+O\+U\+R\+CE}}
+\index{\+\_\+\+G\+N\+U\+\_\+\+S\+O\+U\+R\+CE@{\+\_\+\+G\+N\+U\+\_\+\+S\+O\+U\+R\+CE}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+G\+N\+U\+\_\+\+S\+O\+U\+R\+CE}{_GNU_SOURCE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+G\+N\+U\+\_\+\+S\+O\+U\+R\+CE}\hypertarget{test__architecture_8c_a369266c24eacffb87046522897a570d5}{}\label{test__architecture_8c_a369266c24eacffb87046522897a570d5}
+
+
+\subsection{Function Documentation}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+cpufreq\+\_\+set@{ear\+\_\+cpufreq\+\_\+set}}
+\index{ear\+\_\+cpufreq\+\_\+set@{ear\+\_\+cpufreq\+\_\+set}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+cpufreq\+\_\+set(unsigned int cpuid, unsigned long newfreq)}{ear_cpufreq_set(unsigned int cpuid, unsigned long newfreq)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long ear\+\_\+cpufreq\+\_\+set (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpuid, }
+\item[{unsigned long}]{newfreq}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a3f778f029dd0163c431ab0bd20b4480c}{}\label{test__architecture_8c_a3f778f029dd0163c431ab0bd20b4480c}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+is\+\_\+valid\+\_\+frequency@{ear\+\_\+is\+\_\+valid\+\_\+frequency}}
+\index{ear\+\_\+is\+\_\+valid\+\_\+frequency@{ear\+\_\+is\+\_\+valid\+\_\+frequency}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+is\+\_\+valid\+\_\+frequency(unsigned long f)}{ear_is_valid_frequency(unsigned long f)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int ear\+\_\+is\+\_\+valid\+\_\+frequency (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{f}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a7be5c82cfcd2f642d8a9ebfe3a2d27d6}{}\label{test__architecture_8c_a7be5c82cfcd2f642d8a9ebfe3a2d27d6}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+max\+\_\+f@{ear\+\_\+max\+\_\+f}}
+\index{ear\+\_\+max\+\_\+f@{ear\+\_\+max\+\_\+f}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+max\+\_\+f()}{ear_max_f()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long ear\+\_\+max\+\_\+f (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a6e7024c5ad716028dfa152c631e5bf0e}{}\label{test__architecture_8c_a6e7024c5ad716028dfa152c631e5bf0e}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+min\+\_\+f@{ear\+\_\+min\+\_\+f}}
+\index{ear\+\_\+min\+\_\+f@{ear\+\_\+min\+\_\+f}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+min\+\_\+f()}{ear_min_f()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long ear\+\_\+min\+\_\+f (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_aebba1e3d7cdf7e02a20cb041493c2d28}{}\label{test__architecture_8c_aebba1e3d7cdf7e02a20cb041493c2d28}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+dispose@{frequency\+\_\+dispose}}
+\index{frequency\+\_\+dispose@{frequency\+\_\+dispose}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+dispose()}{frequency_dispose()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+dispose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a561a5dd4b019d4d0830c20d428e137f9}{}\label{test__architecture_8c_a561a5dd4b019d4d0830c20d428e137f9}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+freq\+\_\+to\+\_\+pstate@{frequency\+\_\+freq\+\_\+to\+\_\+pstate}}
+\index{frequency\+\_\+freq\+\_\+to\+\_\+pstate@{frequency\+\_\+freq\+\_\+to\+\_\+pstate}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+freq\+\_\+to\+\_\+pstate(unsigned long f)}{frequency_freq_to_pstate(unsigned long f)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int frequency\+\_\+freq\+\_\+to\+\_\+pstate (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{f}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a5771a0ce102e4c1b607f3d2171cced90}{}\label{test__architecture_8c_a5771a0ce102e4c1b607f3d2171cced90}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list@{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list}}
+\index{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list@{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list()}{frequency_get_freq_rank_list()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long$\ast$ frequency\+\_\+get\+\_\+freq\+\_\+rank\+\_\+list (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a4f0f0b2d64213795eae57c24df0a78ed}{}\label{test__architecture_8c_a4f0f0b2d64213795eae57c24df0a78ed}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+get\+\_\+nominal\+\_\+freq@{frequency\+\_\+get\+\_\+nominal\+\_\+freq}}
+\index{frequency\+\_\+get\+\_\+nominal\+\_\+freq@{frequency\+\_\+get\+\_\+nominal\+\_\+freq}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+nominal\+\_\+freq()}{frequency_get_nominal_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long frequency\+\_\+get\+\_\+nominal\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a996797f251f42732a93723f39b01f71c}{}\label{test__architecture_8c_a996797f251f42732a93723f39b01f71c}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+get\+\_\+num\+\_\+pstates@{frequency\+\_\+get\+\_\+num\+\_\+pstates}}
+\index{frequency\+\_\+get\+\_\+num\+\_\+pstates@{frequency\+\_\+get\+\_\+num\+\_\+pstates}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+num\+\_\+pstates(unsigned int cpuid)}{frequency_get_num_pstates(unsigned int cpuid)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long frequency\+\_\+get\+\_\+num\+\_\+pstates (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{cpuid}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a18d09247b0fc16fcba386d9c77fa5a51}{}\label{test__architecture_8c_a18d09247b0fc16fcba386d9c77fa5a51}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+get\+\_\+num\+\_\+pstates@{frequency\+\_\+get\+\_\+num\+\_\+pstates}}
+\index{frequency\+\_\+get\+\_\+num\+\_\+pstates@{frequency\+\_\+get\+\_\+num\+\_\+pstates}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+get\+\_\+num\+\_\+pstates()}{frequency_get_num_pstates()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int frequency\+\_\+get\+\_\+num\+\_\+pstates (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a6dcaa6a2529d316c4bd3cd3848c58d74}{}\label{test__architecture_8c_a6dcaa6a2529d316c4bd3cd3848c58d74}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+pstate\+\_\+to\+\_\+freq@{frequency\+\_\+pstate\+\_\+to\+\_\+freq}}
+\index{frequency\+\_\+pstate\+\_\+to\+\_\+freq@{frequency\+\_\+pstate\+\_\+to\+\_\+freq}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+pstate\+\_\+to\+\_\+freq(unsigned int i)}{frequency_pstate_to_freq(unsigned int i)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long frequency\+\_\+pstate\+\_\+to\+\_\+freq (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{i}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_af9602ce9a3f59aaffb22d2a320f02e59}{}\label{test__architecture_8c_af9602ce9a3f59aaffb22d2a320f02e59}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+set\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+all\+\_\+cpus}}
+\index{frequency\+\_\+set\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+all\+\_\+cpus}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+set\+\_\+all\+\_\+cpus(unsigned long newfreq)}{frequency_set_all_cpus(unsigned long newfreq)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long frequency\+\_\+set\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{newfreq}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a46cdf12c987933c8baa9a7d5f21edc58}{}\label{test__architecture_8c_a46cdf12c987933c8baa9a7d5f21edc58}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus}}
+\index{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus@{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus()}{frequency_set_userspace_governor_all_cpus()}}]{\setlength{\rightskip}{0pt plus 5cm}void frequency\+\_\+set\+\_\+userspace\+\_\+governor\+\_\+all\+\_\+cpus (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a6bb3a6a23b69e55aa96a1065dfd21040}{}\label{test__architecture_8c_a6bb3a6a23b69e55aa96a1065dfd21040}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!main@{main}}
+\index{main@{main}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}int main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{test__architecture_8c_a0ddf1224851353fc92bfbff6f499fa97}{}\label{test__architecture_8c_a0ddf1224851353fc92bfbff6f499fa97}
+
+
+\subsection{Variable Documentation}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!cpu\+\_\+model@{cpu\+\_\+model}}
+\index{cpu\+\_\+model@{cpu\+\_\+model}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{cpu\+\_\+model}{cpu_model}}]{\setlength{\rightskip}{0pt plus 5cm}int cpu\+\_\+model}\hypertarget{test__architecture_8c_acfede048b49209a0d8f7d773aa176e65}{}\label{test__architecture_8c_acfede048b49209a0d8f7d773aa176e65}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!current\+\_\+policy@{current\+\_\+policy}}
+\index{current\+\_\+policy@{current\+\_\+policy}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{current\+\_\+policy}{current_policy}}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf cpufreq\+\_\+policy}$\ast$ current\+\_\+policy}\hypertarget{test__architecture_8c_acea972fe5ee2911a4a90224366a2919c}{}\label{test__architecture_8c_acea972fe5ee2911a4a90224366a2919c}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+cpufreq@{ear\+\_\+cpufreq}}
+\index{ear\+\_\+cpufreq@{ear\+\_\+cpufreq}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+cpufreq}{ear_cpufreq}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long$\ast$ ear\+\_\+cpufreq}\hypertarget{test__architecture_8c_ad78748e7bc3d7c2a647989969b3c4ec6}{}\label{test__architecture_8c_ad78748e7bc3d7c2a647989969b3c4ec6}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+cpufreq\+\_\+hwinfo@{ear\+\_\+cpufreq\+\_\+hwinfo}}
+\index{ear\+\_\+cpufreq\+\_\+hwinfo@{ear\+\_\+cpufreq\+\_\+hwinfo}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+cpufreq\+\_\+hwinfo}{ear_cpufreq_hwinfo}}]{\setlength{\rightskip}{0pt plus 5cm}const P\+A\+P\+I\+\_\+hw\+\_\+info\+\_\+t$\ast$ ear\+\_\+cpufreq\+\_\+hwinfo}\hypertarget{test__architecture_8c_a6dae68792aff372294eeaf42fb01831e}{}\label{test__architecture_8c_a6dae68792aff372294eeaf42fb01831e}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+cpufreq\+\_\+pstates@{ear\+\_\+cpufreq\+\_\+pstates}}
+\index{ear\+\_\+cpufreq\+\_\+pstates@{ear\+\_\+cpufreq\+\_\+pstates}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+cpufreq\+\_\+pstates}{ear_cpufreq_pstates}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long$\ast$ ear\+\_\+cpufreq\+\_\+pstates}\hypertarget{test__architecture_8c_aab222bb9aef32b85cedc39d18c2d0eff}{}\label{test__architecture_8c_aab222bb9aef32b85cedc39d18c2d0eff}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+nominal\+\_\+freq@{ear\+\_\+nominal\+\_\+freq}}
+\index{ear\+\_\+nominal\+\_\+freq@{ear\+\_\+nominal\+\_\+freq}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+nominal\+\_\+freq}{ear_nominal_freq}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long ear\+\_\+nominal\+\_\+freq}\hypertarget{test__architecture_8c_a2eabd6532df4a2fe2c8d43f07338a85d}{}\label{test__architecture_8c_a2eabd6532df4a2fe2c8d43f07338a85d}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+num\+\_\+cpus@{ear\+\_\+num\+\_\+cpus}}
+\index{ear\+\_\+num\+\_\+cpus@{ear\+\_\+num\+\_\+cpus}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+num\+\_\+cpus}{ear_num_cpus}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int ear\+\_\+num\+\_\+cpus}\hypertarget{test__architecture_8c_aed8100abe3707131b78b26bc1f30152d}{}\label{test__architecture_8c_aed8100abe3707131b78b26bc1f30152d}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!ear\+\_\+num\+\_\+p\+\_\+states@{ear\+\_\+num\+\_\+p\+\_\+states}}
+\index{ear\+\_\+num\+\_\+p\+\_\+states@{ear\+\_\+num\+\_\+p\+\_\+states}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+num\+\_\+p\+\_\+states}{ear_num_p_states}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int ear\+\_\+num\+\_\+p\+\_\+states =0}\hypertarget{test__architecture_8c_a0883287d427f5a9cdedc5c2c2c6cd6de}{}\label{test__architecture_8c_a0883287d427f5a9cdedc5c2c2c6cd6de}
+\index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL = 0}\hypertarget{test__architecture_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{test__architecture_8c_a43d7e58c317e811389b628dc49b52bd2}
+
+
+This program sets the node frequency . 
+
+It must be executed with privileges \index{test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}!prev\+\_\+policy@{prev\+\_\+policy}}
+\index{prev\+\_\+policy@{prev\+\_\+policy}!test\+\_\+architecture.\+c@{test\+\_\+architecture.\+c}}
+\subsubsection[{\texorpdfstring{prev\+\_\+policy}{prev_policy}}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf cpufreq\+\_\+policy} prev\+\_\+policy}\hypertarget{test__architecture_8c_a0a12972239a6852666cca555cb52272d}{}\label{test__architecture_8c_a0a12972239a6852666cca555cb52272d}

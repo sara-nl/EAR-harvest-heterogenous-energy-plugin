@@ -1,0 +1,74 @@
+\hypertarget{remove__learning_8c}{}\section{src/tools/remove\+\_\+learning.c File Reference}
+\label{remove__learning_8c}\index{src/tools/remove\+\_\+learning.\+c@{src/tools/remove\+\_\+learning.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$termios.\+h$>$}\\*
+{\ttfamily \#include $<$mysql/mysql.\+h$>$}\\*
+{\ttfamily \#include $<$common/database/db\+\_\+helper.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{remove__learning_8c_a605ea5b25dbcb511b3e8232149d118e7}{A\+L\+L\+\_\+\+Q\+U\+E\+RY}
+\item 
+\#define \hyperlink{remove__learning_8c_add8c0b4d51270a7899ce47db3b24461d}{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{remove__learning_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{remove__learning_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} =1
+\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!A\+L\+L\+\_\+\+Q\+U\+E\+RY@{A\+L\+L\+\_\+\+Q\+U\+E\+RY}}
+\index{A\+L\+L\+\_\+\+Q\+U\+E\+RY@{A\+L\+L\+\_\+\+Q\+U\+E\+RY}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+Q\+U\+E\+RY}{ALL_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+Q\+U\+E\+RY}\hypertarget{remove__learning_8c_a605ea5b25dbcb511b3e8232149d118e7}{}\label{remove__learning_8c_a605ea5b25dbcb511b3e8232149d118e7}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"DELETE Learning\_signatures, Learning\_applications, Learning\_jobs FROM Learning\_jobs "} \(\backslash\)
+                    \textcolor{stringliteral}{"INNER JOIN Learning\_applications INNER JOIN Learning\_signatures ON
+       Learning\_jobs.id=job\_id "} \(\backslash\)
+                    \textcolor{stringliteral}{"AND Learning\_jobs.step\_id=Learning\_applications.step\_id AND
+       Learning\_signatures.id=signature\_id"}
+\end{DoxyCode}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY@{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}}
+\index{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY@{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}{NODE_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}\hypertarget{remove__learning_8c_add8c0b4d51270a7899ce47db3b24461d}{}\label{remove__learning_8c_add8c0b4d51270a7899ce47db3b24461d}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"DELETE Learning\_signatures, Learning\_applications, Learning\_jobs FROM Learning\_jobs "} \(\backslash\)
+                    \textcolor{stringliteral}{"INNER JOIN Learning\_applications INNER JOIN Learning\_signatures ON
+       Learning\_jobs.id=job\_id "} \(\backslash\)
+                    \textcolor{stringliteral}{"AND Learning\_jobs.step\_id=Learning\_applications.step\_id AND
+       Learning\_signatures.id=signature\_id "}\(\backslash\)
+                    \textcolor{stringliteral}{"WHERE node\_id=\(\backslash\)"%s\(\backslash\)""}
+\end{DoxyCode}
+
+
+\subsection{Function Documentation}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!main@{main}}
+\index{main@{main}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{remove__learning_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+
+
+\subsection{Variable Documentation}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL =1}\hypertarget{remove__learning_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{remove__learning_8c_a43d7e58c317e811389b628dc49b52bd2}
+
+
+This program sets the node frequency . 
+
+It must be executed with privileges 

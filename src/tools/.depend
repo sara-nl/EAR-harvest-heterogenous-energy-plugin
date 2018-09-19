@@ -1,4 +1,14 @@
 compute_projections_avx512.o: compute_projections_avx512.c
+remove_learning.o: remove_learning.c ../common/database/db_helper.h \
+ ../common/types/periodic_aggregation.h ../common/types/generic.h \
+ ../common/types/power_signature.h ../common/config.h \
+ ../common/types/periodic_metric.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h ../common/types/application.h \
+ ../common/types/job.h ../common/types/signature.h \
+ ../common/types/gm_warning.h ../common/types/loop.h \
+ ../common/types/log.h
 coefficients_quality_control.o: coefficients_quality_control.c \
  ../common/types/application.h ../common/config.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \
@@ -13,14 +23,14 @@ compute_coefficients_remote.o: compute_coefficients_remote.c \
  ../common/types/generic.h ../common/types/signature.h \
  ../common/types/power_signature.h ../common/types/coefficient.h \
  ../common/types/projection.h
-coefficients_to_csv.o: coefficients_to_csv.c \
- ../common/types/coefficient.h ../common/types/generic.h
-compute_coefficients.o: compute_coefficients.c \
+compute_coefficients_v2.o: compute_coefficients_v2.c \
  ../common/types/application.h ../common/config.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \
  ../common/types/power_signature.h ../common/types/coefficient.h \
  ../common/types/projection.h
-get_app_list.o: get_app_list.c ../common/database/db_helper.h \
+coefficients_to_csv.o: coefficients_to_csv.c \
+ ../common/types/coefficient.h ../common/types/generic.h
+get_ear_events.o: get_ear_events.c ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/generic.h \
  ../common/types/power_signature.h ../common/config.h \
  ../common/types/periodic_metric.h \
@@ -30,7 +40,7 @@ get_app_list.o: get_app_list.c ../common/database/db_helper.h \
  ../common/types/job.h ../common/types/signature.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
-compute_coefficients_v3.o: compute_coefficients_v3.c ../common/config.h \
+compute_coefficients.o: compute_coefficients.c ../common/config.h \
  ../common/types/application.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \
  ../common/types/power_signature.h \
@@ -39,5 +49,15 @@ compute_coefficients_v3.o: compute_coefficients_v3.c ../common/config.h \
  ../common/ear_verbose.h ../common/states.h ../common/types/coefficient.h \
  ../common/types/projection.h ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
+ ../common/types/gm_warning.h ../common/types/loop.h \
+ ../common/types/log.h
+get_app_list.o: get_app_list.c ../common/database/db_helper.h \
+ ../common/types/periodic_aggregation.h ../common/types/generic.h \
+ ../common/types/power_signature.h ../common/config.h \
+ ../common/types/periodic_metric.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h ../common/types/application.h \
+ ../common/types/job.h ../common/types/signature.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h

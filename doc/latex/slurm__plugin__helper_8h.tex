@@ -1,0 +1,302 @@
+\hypertarget{slurm__plugin__helper_8h}{}\section{src/slurm\+\_\+plugin/slurm\+\_\+plugin\+\_\+helper.h File Reference}
+\label{slurm__plugin__helper_8h}\index{src/slurm\+\_\+plugin/slurm\+\_\+plugin\+\_\+helper.\+h@{src/slurm\+\_\+plugin/slurm\+\_\+plugin\+\_\+helper.\+h}}
+{\ttfamily \#include $<$slurm/spank.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{slurm__plugin__helper_8h_a27a16f44f05e68bdb1bcee598f9ff8c6}{snprintf\+\_\+ret\+\_\+err}(buffer,  size, ...)
+\item 
+\#define \hyperlink{slurm__plugin__helper_8h_acc01306257f90c6127e5db87b4359170}{setenv\+\_\+local\+\_\+ret\+\_\+err}(p\+\_\+name,  p\+\_\+value,  replace)
+\item 
+\#define \hyperlink{slurm__plugin__helper_8h_af487482cb84b2afa1167ec828acb3894}{setenv\+\_\+remote\+\_\+ret\+\_\+err}(sp,  p\+\_\+name,  p\+\_\+value,  replace)
+\item 
+\#define \hyperlink{slurm__plugin__helper_8h_a48701f016e2b1f9a842d62dd6935ed10}{plug\+\_\+verbose}(sp,  level, ...)
+\item 
+\#define \hyperlink{slurm__plugin__helper_8h_ac10260b40e892d96a4d6664676a05251}{plug\+\_\+verbose\+\_\+0}(...)~\hyperlink{spank_8h_a14376c80ce8e6414ae241f59844eaf01}{slurm\+\_\+error}(\char`\"{}E\+A\+R\+P\+L\+UG, \char`\"{} \+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+);
+\item 
+\#define \hyperlink{slurm__plugin__helper_8h_a8d841bb6aaa96ff0ee725c4b9dd20d3b}{plug\+\_\+error}(...)~\hyperlink{spank_8h_a14376c80ce8e6414ae241f59844eaf01}{slurm\+\_\+error}(\char`\"{}E\+A\+R\+P\+L\+UG E\+R\+R\+OR, \char`\"{} \+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+);
+\item 
+\#define \hyperlink{slurm__plugin__helper_8h_a515fa759370fa27d0cc5e85eae6c5ddc}{plug\+\_\+warning}(...)~\hyperlink{spank_8h_a14376c80ce8e6414ae241f59844eaf01}{slurm\+\_\+error}(\char`\"{}E\+A\+R\+P\+L\+UG W\+A\+R\+N\+I\+NG, \char`\"{} \+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+);
+\item 
+\#define \hyperlink{slurm__plugin__helper_8h_aac65eb27f50e6710c55d96009f3e2ee6}{plug\+\_\+nude}(...)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{slurm__plugin__helper_8h_ab4840fc8ecddff14010a3a0d63b8262f}{verbosity\+\_\+test} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, int level)
+\item 
+void \hyperlink{slurm__plugin__helper_8h_af1f5be53ec319d8da9d6147825c45d35}{print\+\_\+local\+\_\+environment} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp)
+\item 
+void \hyperlink{slurm__plugin__helper_8h_aa21cbaaaeefa51d3f67206d86a49dae4}{print\+\_\+remote\+\_\+environment} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp)
+\item 
+void \hyperlink{slurm__plugin__helper_8h_af6c9717dece624e8931a34c4d32c97e0}{printenv\+\_\+remote} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name)
+\item 
+void \hyperlink{slurm__plugin__helper_8h_a59fd44e7938c2e8ed57d9d72d0bd24b8}{appendenv} (char $\ast$destiny, char $\ast$source, int destiny\+\_\+length)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_a4a304255cd4b9caac4bc24fa7c2ff018}{setenv\+\_\+local} (const char $\ast$name, const char $\ast$value, int replace)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_afd0a6c45575f90b10076a992a3cc5b44}{setenv\+\_\+remote} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name, char $\ast$value, int replace)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_a6d736a857fc4c80e5eb5604127949c2c}{setenv\+\_\+control} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name, char $\ast$value, int replace)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_aaf4daac22aed98f23f543a2f6539e867}{unsetenv\+\_\+remote} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_a6415806544e83f82536bc96e74760dda}{getenv\+\_\+local} (char $\ast$name, char $\ast$$\ast$env)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_aaac6fa132ab6e9742edc725e8bdc27ba}{getenv\+\_\+remote} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name, char $\ast$value, int length)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_ad01b157bdbf1848194eb25ba4aa50415}{getenv\+\_\+control} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name, char $\ast$value, int length)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_ad7f4181babf9d85d3a15b278fb2390cf}{existenv\+\_\+local} (char $\ast$name)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_abd734e7a7fcb9cb292a54ccd4bc07438}{existenv\+\_\+remote} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_a289b6889a6413140c7d5cad2b6b47a4f}{isenv\+\_\+local} (char $\ast$name, char $\ast$value)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_aa65ed9fff205ebf04c2cdc7c7db2e7b9}{isenv\+\_\+remote} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name, char $\ast$value)
+\item 
+int \hyperlink{slurm__plugin__helper_8h_acc90e7650aa5b466741c92bdb22e275f}{isenv\+\_\+control} (\hyperlink{spank_8h_a86286d99399c69768b2cf48032282431}{spank\+\_\+t} sp, char $\ast$name, char $\ast$value)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!plug\+\_\+error@{plug\+\_\+error}}
+\index{plug\+\_\+error@{plug\+\_\+error}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{plug\+\_\+error}{plug_error}}]{\setlength{\rightskip}{0pt plus 5cm}\#define plug\+\_\+error(
+\begin{DoxyParamCaption}
+\item[{}]{...}
+\end{DoxyParamCaption}
+)~{\bf slurm\+\_\+error}(\char`\"{}E\+A\+R\+P\+L\+UG E\+R\+R\+OR, \char`\"{} \+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+);}\hypertarget{slurm__plugin__helper_8h_a8d841bb6aaa96ff0ee725c4b9dd20d3b}{}\label{slurm__plugin__helper_8h_a8d841bb6aaa96ff0ee725c4b9dd20d3b}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!plug\+\_\+nude@{plug\+\_\+nude}}
+\index{plug\+\_\+nude@{plug\+\_\+nude}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{plug\+\_\+nude}{plug_nude}}]{\setlength{\rightskip}{0pt plus 5cm}\#define plug\+\_\+nude(
+\begin{DoxyParamCaption}
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_aac65eb27f50e6710c55d96009f3e2ee6}{}\label{slurm__plugin__helper_8h_aac65eb27f50e6710c55d96009f3e2ee6}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!plug\+\_\+verbose@{plug\+\_\+verbose}}
+\index{plug\+\_\+verbose@{plug\+\_\+verbose}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{plug\+\_\+verbose}{plug_verbose}}]{\setlength{\rightskip}{0pt plus 5cm}\#define plug\+\_\+verbose(
+\begin{DoxyParamCaption}
+\item[{}]{sp, }
+\item[{}]{level, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_a48701f016e2b1f9a842d62dd6935ed10}{}\label{slurm__plugin__helper_8h_a48701f016e2b1f9a842d62dd6935ed10}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{keywordflow}{if} (\hyperlink{slurm__plugin__helper_8h_ab4840fc8ecddff14010a3a0d63b8262f}{verbosity\_test}(sp, level) == 1) \{ \hyperlink{spank_8h_a14376c80ce8e6414ae241f59844eaf01}{\(\backslash\)}
+\hyperlink{spank_8h_a14376c80ce8e6414ae241f59844eaf01}{        slurm\_error}(\textcolor{stringliteral}{"EARPLUG, "} \_\_VA\_ARGS\_\_); \(\backslash\)
+    \}
+\end{DoxyCode}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!plug\+\_\+verbose\+\_\+0@{plug\+\_\+verbose\+\_\+0}}
+\index{plug\+\_\+verbose\+\_\+0@{plug\+\_\+verbose\+\_\+0}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{plug\+\_\+verbose\+\_\+0}{plug_verbose_0}}]{\setlength{\rightskip}{0pt plus 5cm}\#define plug\+\_\+verbose\+\_\+0(
+\begin{DoxyParamCaption}
+\item[{}]{...}
+\end{DoxyParamCaption}
+)~{\bf slurm\+\_\+error}(\char`\"{}E\+A\+R\+P\+L\+UG, \char`\"{} \+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+);}\hypertarget{slurm__plugin__helper_8h_ac10260b40e892d96a4d6664676a05251}{}\label{slurm__plugin__helper_8h_ac10260b40e892d96a4d6664676a05251}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!plug\+\_\+warning@{plug\+\_\+warning}}
+\index{plug\+\_\+warning@{plug\+\_\+warning}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{plug\+\_\+warning}{plug_warning}}]{\setlength{\rightskip}{0pt plus 5cm}\#define plug\+\_\+warning(
+\begin{DoxyParamCaption}
+\item[{}]{...}
+\end{DoxyParamCaption}
+)~{\bf slurm\+\_\+error}(\char`\"{}E\+A\+R\+P\+L\+UG W\+A\+R\+N\+I\+NG, \char`\"{} \+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+);}\hypertarget{slurm__plugin__helper_8h_a515fa759370fa27d0cc5e85eae6c5ddc}{}\label{slurm__plugin__helper_8h_a515fa759370fa27d0cc5e85eae6c5ddc}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!setenv\+\_\+local\+\_\+ret\+\_\+err@{setenv\+\_\+local\+\_\+ret\+\_\+err}}
+\index{setenv\+\_\+local\+\_\+ret\+\_\+err@{setenv\+\_\+local\+\_\+ret\+\_\+err}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{setenv\+\_\+local\+\_\+ret\+\_\+err}{setenv_local_ret_err}}]{\setlength{\rightskip}{0pt plus 5cm}\#define setenv\+\_\+local\+\_\+ret\+\_\+err(
+\begin{DoxyParamCaption}
+\item[{}]{p\+\_\+name, }
+\item[{}]{p\+\_\+value, }
+\item[{}]{replace}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_acc01306257f90c6127e5db87b4359170}{}\label{slurm__plugin__helper_8h_acc01306257f90c6127e5db87b4359170}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{keywordflow}{if} (!\hyperlink{slurm__plugin__helper_8h_a4a304255cd4b9caac4bc24fa7c2ff018}{setenv\_local}(p\_name, p\_value, replace)) \{ \(\backslash\)
+        plug\_error(\textcolor{stringliteral}{"while setting a local environment variable"}); \(\backslash\)
+        return (\hyperlink{spank_8h_a20ab2c573943e056dfb16da58be348e9a2307bdba763f2f9b7dd406f18cdc36c3}{ESPANK\_ERROR}); \(\backslash\)
+    \}
+\end{DoxyCode}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!setenv\+\_\+remote\+\_\+ret\+\_\+err@{setenv\+\_\+remote\+\_\+ret\+\_\+err}}
+\index{setenv\+\_\+remote\+\_\+ret\+\_\+err@{setenv\+\_\+remote\+\_\+ret\+\_\+err}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{setenv\+\_\+remote\+\_\+ret\+\_\+err}{setenv_remote_ret_err}}]{\setlength{\rightskip}{0pt plus 5cm}\#define setenv\+\_\+remote\+\_\+ret\+\_\+err(
+\begin{DoxyParamCaption}
+\item[{}]{sp, }
+\item[{}]{p\+\_\+name, }
+\item[{}]{p\+\_\+value, }
+\item[{}]{replace}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_af487482cb84b2afa1167ec828acb3894}{}\label{slurm__plugin__helper_8h_af487482cb84b2afa1167ec828acb3894}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{keywordflow}{if}(!\hyperlink{slurm__plugin__helper_8h_afd0a6c45575f90b10076a992a3cc5b44}{setenv\_remote}(sp, p\_name, p\_value, replace)) \{ \(\backslash\)
+        plug\_error(\textcolor{stringliteral}{"while setting a remote environment variable"}); \(\backslash\)
+        return (\hyperlink{spank_8h_a20ab2c573943e056dfb16da58be348e9a2307bdba763f2f9b7dd406f18cdc36c3}{ESPANK\_ERROR}); \(\backslash\)
+    \}
+\end{DoxyCode}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!snprintf\+\_\+ret\+\_\+err@{snprintf\+\_\+ret\+\_\+err}}
+\index{snprintf\+\_\+ret\+\_\+err@{snprintf\+\_\+ret\+\_\+err}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{snprintf\+\_\+ret\+\_\+err}{snprintf_ret_err}}]{\setlength{\rightskip}{0pt plus 5cm}\#define snprintf\+\_\+ret\+\_\+err(
+\begin{DoxyParamCaption}
+\item[{}]{buffer, }
+\item[{}]{size, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_a27a16f44f05e68bdb1bcee598f9ff8c6}{}\label{slurm__plugin__helper_8h_a27a16f44f05e68bdb1bcee598f9ff8c6}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{keywordflow}{if} (snprintf(buffer, size, \_\_VA\_ARGS\_\_) < 0) \{ \(\backslash\)
+        plug\_error(\textcolor{stringliteral}{"while writing a formatted output to sized buffer"}); \(\backslash\)
+        return (\hyperlink{spank_8h_a20ab2c573943e056dfb16da58be348e9a2307bdba763f2f9b7dd406f18cdc36c3}{ESPANK\_ERROR}); \(\backslash\)
+    \}
+\end{DoxyCode}
+
+
+\subsection{Function Documentation}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!appendenv@{appendenv}}
+\index{appendenv@{appendenv}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{appendenv(char $\ast$destiny, char $\ast$source, int destiny\+\_\+length)}{appendenv(char *destiny, char *source, int destiny_length)}}]{\setlength{\rightskip}{0pt plus 5cm}void appendenv (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{destiny, }
+\item[{char $\ast$}]{source, }
+\item[{int}]{destiny\+\_\+length}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_a59fd44e7938c2e8ed57d9d72d0bd24b8}{}\label{slurm__plugin__helper_8h_a59fd44e7938c2e8ed57d9d72d0bd24b8}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!existenv\+\_\+local@{existenv\+\_\+local}}
+\index{existenv\+\_\+local@{existenv\+\_\+local}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{existenv\+\_\+local(char $\ast$name)}{existenv_local(char *name)}}]{\setlength{\rightskip}{0pt plus 5cm}int existenv\+\_\+local (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_ad7f4181babf9d85d3a15b278fb2390cf}{}\label{slurm__plugin__helper_8h_ad7f4181babf9d85d3a15b278fb2390cf}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!existenv\+\_\+remote@{existenv\+\_\+remote}}
+\index{existenv\+\_\+remote@{existenv\+\_\+remote}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{existenv\+\_\+remote(spank\+\_\+t sp, char $\ast$name)}{existenv_remote(spank_t sp, char *name)}}]{\setlength{\rightskip}{0pt plus 5cm}int existenv\+\_\+remote (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_abd734e7a7fcb9cb292a54ccd4bc07438}{}\label{slurm__plugin__helper_8h_abd734e7a7fcb9cb292a54ccd4bc07438}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!getenv\+\_\+control@{getenv\+\_\+control}}
+\index{getenv\+\_\+control@{getenv\+\_\+control}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+control(spank\+\_\+t sp, char $\ast$name, char $\ast$value, int length)}{getenv_control(spank_t sp, char *name, char *value, int length)}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+control (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$}]{value, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_ad01b157bdbf1848194eb25ba4aa50415}{}\label{slurm__plugin__helper_8h_ad01b157bdbf1848194eb25ba4aa50415}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!getenv\+\_\+local@{getenv\+\_\+local}}
+\index{getenv\+\_\+local@{getenv\+\_\+local}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+local(char $\ast$name, char $\ast$$\ast$env)}{getenv_local(char *name, char **env)}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+local (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$$\ast$}]{env}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_a6415806544e83f82536bc96e74760dda}{}\label{slurm__plugin__helper_8h_a6415806544e83f82536bc96e74760dda}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!getenv\+\_\+remote@{getenv\+\_\+remote}}
+\index{getenv\+\_\+remote@{getenv\+\_\+remote}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{getenv\+\_\+remote(spank\+\_\+t sp, char $\ast$name, char $\ast$value, int length)}{getenv_remote(spank_t sp, char *name, char *value, int length)}}]{\setlength{\rightskip}{0pt plus 5cm}int getenv\+\_\+remote (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$}]{value, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_aaac6fa132ab6e9742edc725e8bdc27ba}{}\label{slurm__plugin__helper_8h_aaac6fa132ab6e9742edc725e8bdc27ba}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!isenv\+\_\+control@{isenv\+\_\+control}}
+\index{isenv\+\_\+control@{isenv\+\_\+control}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{isenv\+\_\+control(spank\+\_\+t sp, char $\ast$name, char $\ast$value)}{isenv_control(spank_t sp, char *name, char *value)}}]{\setlength{\rightskip}{0pt plus 5cm}int isenv\+\_\+control (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$}]{value}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_acc90e7650aa5b466741c92bdb22e275f}{}\label{slurm__plugin__helper_8h_acc90e7650aa5b466741c92bdb22e275f}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!isenv\+\_\+local@{isenv\+\_\+local}}
+\index{isenv\+\_\+local@{isenv\+\_\+local}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{isenv\+\_\+local(char $\ast$name, char $\ast$value)}{isenv_local(char *name, char *value)}}]{\setlength{\rightskip}{0pt plus 5cm}int isenv\+\_\+local (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$}]{value}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_a289b6889a6413140c7d5cad2b6b47a4f}{}\label{slurm__plugin__helper_8h_a289b6889a6413140c7d5cad2b6b47a4f}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!isenv\+\_\+remote@{isenv\+\_\+remote}}
+\index{isenv\+\_\+remote@{isenv\+\_\+remote}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{isenv\+\_\+remote(spank\+\_\+t sp, char $\ast$name, char $\ast$value)}{isenv_remote(spank_t sp, char *name, char *value)}}]{\setlength{\rightskip}{0pt plus 5cm}int isenv\+\_\+remote (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$}]{value}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_aa65ed9fff205ebf04c2cdc7c7db2e7b9}{}\label{slurm__plugin__helper_8h_aa65ed9fff205ebf04c2cdc7c7db2e7b9}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!print\+\_\+local\+\_\+environment@{print\+\_\+local\+\_\+environment}}
+\index{print\+\_\+local\+\_\+environment@{print\+\_\+local\+\_\+environment}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+local\+\_\+environment(spank\+\_\+t sp)}{print_local_environment(spank_t sp)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+local\+\_\+environment (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_af1f5be53ec319d8da9d6147825c45d35}{}\label{slurm__plugin__helper_8h_af1f5be53ec319d8da9d6147825c45d35}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!print\+\_\+remote\+\_\+environment@{print\+\_\+remote\+\_\+environment}}
+\index{print\+\_\+remote\+\_\+environment@{print\+\_\+remote\+\_\+environment}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+remote\+\_\+environment(spank\+\_\+t sp)}{print_remote_environment(spank_t sp)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+remote\+\_\+environment (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_aa21cbaaaeefa51d3f67206d86a49dae4}{}\label{slurm__plugin__helper_8h_aa21cbaaaeefa51d3f67206d86a49dae4}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!printenv\+\_\+remote@{printenv\+\_\+remote}}
+\index{printenv\+\_\+remote@{printenv\+\_\+remote}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{printenv\+\_\+remote(spank\+\_\+t sp, char $\ast$name)}{printenv_remote(spank_t sp, char *name)}}]{\setlength{\rightskip}{0pt plus 5cm}void printenv\+\_\+remote (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_af6c9717dece624e8931a34c4d32c97e0}{}\label{slurm__plugin__helper_8h_af6c9717dece624e8931a34c4d32c97e0}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!setenv\+\_\+control@{setenv\+\_\+control}}
+\index{setenv\+\_\+control@{setenv\+\_\+control}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{setenv\+\_\+control(spank\+\_\+t sp, char $\ast$name, char $\ast$value, int replace)}{setenv_control(spank_t sp, char *name, char *value, int replace)}}]{\setlength{\rightskip}{0pt plus 5cm}int setenv\+\_\+control (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$}]{value, }
+\item[{int}]{replace}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_a6d736a857fc4c80e5eb5604127949c2c}{}\label{slurm__plugin__helper_8h_a6d736a857fc4c80e5eb5604127949c2c}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!setenv\+\_\+local@{setenv\+\_\+local}}
+\index{setenv\+\_\+local@{setenv\+\_\+local}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{setenv\+\_\+local(const char $\ast$name, const char $\ast$value, int replace)}{setenv_local(const char *name, const char *value, int replace)}}]{\setlength{\rightskip}{0pt plus 5cm}int setenv\+\_\+local (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{name, }
+\item[{const char $\ast$}]{value, }
+\item[{int}]{replace}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_a4a304255cd4b9caac4bc24fa7c2ff018}{}\label{slurm__plugin__helper_8h_a4a304255cd4b9caac4bc24fa7c2ff018}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!setenv\+\_\+remote@{setenv\+\_\+remote}}
+\index{setenv\+\_\+remote@{setenv\+\_\+remote}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{setenv\+\_\+remote(spank\+\_\+t sp, char $\ast$name, char $\ast$value, int replace)}{setenv_remote(spank_t sp, char *name, char *value, int replace)}}]{\setlength{\rightskip}{0pt plus 5cm}int setenv\+\_\+remote (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$}]{value, }
+\item[{int}]{replace}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_afd0a6c45575f90b10076a992a3cc5b44}{}\label{slurm__plugin__helper_8h_afd0a6c45575f90b10076a992a3cc5b44}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!unsetenv\+\_\+remote@{unsetenv\+\_\+remote}}
+\index{unsetenv\+\_\+remote@{unsetenv\+\_\+remote}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{unsetenv\+\_\+remote(spank\+\_\+t sp, char $\ast$name)}{unsetenv_remote(spank_t sp, char *name)}}]{\setlength{\rightskip}{0pt plus 5cm}int unsetenv\+\_\+remote (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_aaf4daac22aed98f23f543a2f6539e867}{}\label{slurm__plugin__helper_8h_aaf4daac22aed98f23f543a2f6539e867}
+\index{slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}!verbosity\+\_\+test@{verbosity\+\_\+test}}
+\index{verbosity\+\_\+test@{verbosity\+\_\+test}!slurm\+\_\+plugin\+\_\+helper.\+h@{slurm\+\_\+plugin\+\_\+helper.\+h}}
+\subsubsection[{\texorpdfstring{verbosity\+\_\+test(spank\+\_\+t sp, int level)}{verbosity_test(spank_t sp, int level)}}]{\setlength{\rightskip}{0pt plus 5cm}int verbosity\+\_\+test (
+\begin{DoxyParamCaption}
+\item[{{\bf spank\+\_\+t}}]{sp, }
+\item[{int}]{level}
+\end{DoxyParamCaption}
+)}\hypertarget{slurm__plugin__helper_8h_ab4840fc8ecddff14010a3a0d63b8262f}{}\label{slurm__plugin__helper_8h_ab4840fc8ecddff14010a3a0d63b8262f}

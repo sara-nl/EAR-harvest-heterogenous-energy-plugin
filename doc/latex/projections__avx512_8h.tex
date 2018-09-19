@@ -1,0 +1,49 @@
+\hypertarget{projections__avx512_8h}{}\section{src/tools/projections\+\_\+avx512.h File Reference}
+\label{projections__avx512_8h}\index{src/tools/projections\+\_\+avx512.\+h@{src/tools/projections\+\_\+avx512.\+h}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+double \hyperlink{projections__avx512_8h_a2079fb84b7ff594d17a133e1eecb8b47}{power\+\_\+proj} (double power\+\_\+f0, double tpi\+\_\+f0, struct \hyperlink{structCoefficients__info}{Coefficients\+\_\+info} $\ast$my\+\_\+coeffs, struct \hyperlink{structCoefficients__info}{Coefficients\+\_\+info} $\ast$my\+\_\+coeffs\+\_\+avx512, double perc\+\_\+nonavx512, double perc\+\_\+avx512)
+\item 
+double \hyperlink{projections__avx512_8h_a591a57edff3315873099c6c53d902dff}{cpi\+\_\+proj} (double cpi\+\_\+f0, double tpi\+\_\+f0, struct \hyperlink{structCoefficients__info}{Coefficients\+\_\+info} $\ast$my\+\_\+coeffs, struct \hyperlink{structCoefficients__info}{Coefficients\+\_\+info} $\ast$my\+\_\+coeffs\+\_\+avx512, double perc\+\_\+nonavx512, double perc\+\_\+avx512)
+\item 
+double \hyperlink{projections__avx512_8h_a7dc6940245f8a35d6c4a9260866f5eeb}{time\+\_\+proj} (double time\+\_\+f0, double \hyperlink{projections__avx512_8h_a591a57edff3315873099c6c53d902dff}{cpi\+\_\+proj}, double cpi\+\_\+f0, unsigned long f0, unsigned long fn)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{projections\+\_\+avx512.\+h@{projections\+\_\+avx512.\+h}!cpi\+\_\+proj@{cpi\+\_\+proj}}
+\index{cpi\+\_\+proj@{cpi\+\_\+proj}!projections\+\_\+avx512.\+h@{projections\+\_\+avx512.\+h}}
+\subsubsection[{\texorpdfstring{cpi\+\_\+proj(double cpi\+\_\+f0, double tpi\+\_\+f0, struct Coefficients\+\_\+info $\ast$my\+\_\+coeffs, struct Coefficients\+\_\+info $\ast$my\+\_\+coeffs\+\_\+avx512, double perc\+\_\+nonavx512, double perc\+\_\+avx512)}{cpi_proj(double cpi_f0, double tpi_f0, struct Coefficients_info *my_coeffs, struct Coefficients_info *my_coeffs_avx512, double perc_nonavx512, double perc_avx512)}}]{\setlength{\rightskip}{0pt plus 5cm}double cpi\+\_\+proj (
+\begin{DoxyParamCaption}
+\item[{double}]{cpi\+\_\+f0, }
+\item[{double}]{tpi\+\_\+f0, }
+\item[{struct {\bf Coefficients\+\_\+info} $\ast$}]{my\+\_\+coeffs, }
+\item[{struct {\bf Coefficients\+\_\+info} $\ast$}]{my\+\_\+coeffs\+\_\+avx512, }
+\item[{double}]{perc\+\_\+nonavx512, }
+\item[{double}]{perc\+\_\+avx512}
+\end{DoxyParamCaption}
+)}\hypertarget{projections__avx512_8h_a591a57edff3315873099c6c53d902dff}{}\label{projections__avx512_8h_a591a57edff3315873099c6c53d902dff}
+\index{projections\+\_\+avx512.\+h@{projections\+\_\+avx512.\+h}!power\+\_\+proj@{power\+\_\+proj}}
+\index{power\+\_\+proj@{power\+\_\+proj}!projections\+\_\+avx512.\+h@{projections\+\_\+avx512.\+h}}
+\subsubsection[{\texorpdfstring{power\+\_\+proj(double power\+\_\+f0, double tpi\+\_\+f0, struct Coefficients\+\_\+info $\ast$my\+\_\+coeffs, struct Coefficients\+\_\+info $\ast$my\+\_\+coeffs\+\_\+avx512, double perc\+\_\+nonavx512, double perc\+\_\+avx512)}{power_proj(double power_f0, double tpi_f0, struct Coefficients_info *my_coeffs, struct Coefficients_info *my_coeffs_avx512, double perc_nonavx512, double perc_avx512)}}]{\setlength{\rightskip}{0pt plus 5cm}double power\+\_\+proj (
+\begin{DoxyParamCaption}
+\item[{double}]{power\+\_\+f0, }
+\item[{double}]{tpi\+\_\+f0, }
+\item[{struct {\bf Coefficients\+\_\+info} $\ast$}]{my\+\_\+coeffs, }
+\item[{struct {\bf Coefficients\+\_\+info} $\ast$}]{my\+\_\+coeffs\+\_\+avx512, }
+\item[{double}]{perc\+\_\+nonavx512, }
+\item[{double}]{perc\+\_\+avx512}
+\end{DoxyParamCaption}
+)}\hypertarget{projections__avx512_8h_a2079fb84b7ff594d17a133e1eecb8b47}{}\label{projections__avx512_8h_a2079fb84b7ff594d17a133e1eecb8b47}
+\index{projections\+\_\+avx512.\+h@{projections\+\_\+avx512.\+h}!time\+\_\+proj@{time\+\_\+proj}}
+\index{time\+\_\+proj@{time\+\_\+proj}!projections\+\_\+avx512.\+h@{projections\+\_\+avx512.\+h}}
+\subsubsection[{\texorpdfstring{time\+\_\+proj(double time\+\_\+f0, double cpi\+\_\+proj, double cpi\+\_\+f0, unsigned long f0, unsigned long fn)}{time_proj(double time_f0, double cpi_proj, double cpi_f0, unsigned long f0, unsigned long fn)}}]{\setlength{\rightskip}{0pt plus 5cm}double time\+\_\+proj (
+\begin{DoxyParamCaption}
+\item[{double}]{time\+\_\+f0, }
+\item[{double}]{cpi\+\_\+proj, }
+\item[{double}]{cpi\+\_\+f0, }
+\item[{unsigned long}]{f0, }
+\item[{unsigned long}]{fn}
+\end{DoxyParamCaption}
+)}\hypertarget{projections__avx512_8h_a7dc6940245f8a35d6c4a9260866f5eeb}{}\label{projections__avx512_8h_a7dc6940245f8a35d6c4a9260866f5eeb}

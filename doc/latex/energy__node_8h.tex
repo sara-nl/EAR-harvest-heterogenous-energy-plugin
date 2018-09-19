@@ -1,0 +1,100 @@
+\hypertarget{energy__node_8h}{}\section{src/metrics/ipmi/energy\+\_\+node.h File Reference}
+\label{energy__node_8h}\index{src/metrics/ipmi/energy\+\_\+node.\+h@{src/metrics/ipmi/energy\+\_\+node.\+h}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{energy__node_8h_a0b11790aa9ba1f20f571fea3216e7f2f}{node\+\_\+energy\+\_\+init} ()
+\begin{DoxyCompactList}\small\item\em Detects cpu model and platform and initialize data structures and devices if required Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8h_a2e6b8c25211cd89d898a7a2c48639ddd}{count\+\_\+energy\+\_\+data\+\_\+length} ()
+\begin{DoxyCompactList}\small\item\em Returns the data size length in bytes returned by read\+\_\+dc\+\_\+energy and read\+\_\+ac\+\_\+energy Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8h_a5b50c1e86d96af5d3a147d86922e214f}{read\+\_\+dc\+\_\+energy} (unsigned long $\ast$\hyperlink{structenergy}{energy})
+\begin{DoxyCompactList}\small\item\em Update energy with the accumulated node DC energy in mJ Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8h_abefc2edc754c0a612d42c1b17bc76911}{read\+\_\+dc\+\_\+energy\+\_\+time} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$\hyperlink{structenergy}{energy}, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$time\+\_\+ms)
+\begin{DoxyCompactList}\small\item\em Update energy with the accumulated node DC energy in mJ and time in ms Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8h_aa74932e5f104a7e3d03a41f9afbb0691}{read\+\_\+ac\+\_\+energy} (unsigned long $\ast$\hyperlink{structenergy}{energy})
+\begin{DoxyCompactList}\small\item\em Update energy with the accumulated node AC energy in mJ Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8h_a37f2384f33d22f237035c3ba269ffc81}{node\+\_\+energy\+\_\+dispose} ()
+\begin{DoxyCompactList}\small\item\em Releases resources allocated in node\+\_\+energy\+\_\+init Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+unsigned long \hyperlink{energy__node_8h_a1e8430d94f8abbb6fcf085c598dce8a3}{node\+\_\+energy\+\_\+frequency} ()
+\begin{DoxyCompactList}\small\item\em Computes the energy node frequency of updates automatically returns the frequency (in usec) on success and 0 on error \hyperlink{energy__node_8h_a0b11790aa9ba1f20f571fea3216e7f2f}{node\+\_\+energy\+\_\+init()} must be called before. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{energy\+\_\+node.\+h@{energy\+\_\+node.\+h}!count\+\_\+energy\+\_\+data\+\_\+length@{count\+\_\+energy\+\_\+data\+\_\+length}}
+\index{count\+\_\+energy\+\_\+data\+\_\+length@{count\+\_\+energy\+\_\+data\+\_\+length}!energy\+\_\+node.\+h@{energy\+\_\+node.\+h}}
+\subsubsection[{\texorpdfstring{count\+\_\+energy\+\_\+data\+\_\+length()}{count_energy_data_length()}}]{\setlength{\rightskip}{0pt plus 5cm}int count\+\_\+energy\+\_\+data\+\_\+length (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8h_a2e6b8c25211cd89d898a7a2c48639ddd}{}\label{energy__node_8h_a2e6b8c25211cd89d898a7a2c48639ddd}
+
+
+Returns the data size length in bytes returned by read\+\_\+dc\+\_\+energy and read\+\_\+ac\+\_\+energy Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+h@{energy\+\_\+node.\+h}!node\+\_\+energy\+\_\+dispose@{node\+\_\+energy\+\_\+dispose}}
+\index{node\+\_\+energy\+\_\+dispose@{node\+\_\+energy\+\_\+dispose}!energy\+\_\+node.\+h@{energy\+\_\+node.\+h}}
+\subsubsection[{\texorpdfstring{node\+\_\+energy\+\_\+dispose()}{node_energy_dispose()}}]{\setlength{\rightskip}{0pt plus 5cm}int node\+\_\+energy\+\_\+dispose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8h_a37f2384f33d22f237035c3ba269ffc81}{}\label{energy__node_8h_a37f2384f33d22f237035c3ba269ffc81}
+
+
+Releases resources allocated in node\+\_\+energy\+\_\+init Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+h@{energy\+\_\+node.\+h}!node\+\_\+energy\+\_\+frequency@{node\+\_\+energy\+\_\+frequency}}
+\index{node\+\_\+energy\+\_\+frequency@{node\+\_\+energy\+\_\+frequency}!energy\+\_\+node.\+h@{energy\+\_\+node.\+h}}
+\subsubsection[{\texorpdfstring{node\+\_\+energy\+\_\+frequency()}{node_energy_frequency()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long node\+\_\+energy\+\_\+frequency (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8h_a1e8430d94f8abbb6fcf085c598dce8a3}{}\label{energy__node_8h_a1e8430d94f8abbb6fcf085c598dce8a3}
+
+
+Computes the energy node frequency of updates automatically returns the frequency (in usec) on success and 0 on error \hyperlink{energy__node_8h_a0b11790aa9ba1f20f571fea3216e7f2f}{node\+\_\+energy\+\_\+init()} must be called before. 
+
+\index{energy\+\_\+node.\+h@{energy\+\_\+node.\+h}!node\+\_\+energy\+\_\+init@{node\+\_\+energy\+\_\+init}}
+\index{node\+\_\+energy\+\_\+init@{node\+\_\+energy\+\_\+init}!energy\+\_\+node.\+h@{energy\+\_\+node.\+h}}
+\subsubsection[{\texorpdfstring{node\+\_\+energy\+\_\+init()}{node_energy_init()}}]{\setlength{\rightskip}{0pt plus 5cm}int node\+\_\+energy\+\_\+init (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8h_a0b11790aa9ba1f20f571fea3216e7f2f}{}\label{energy__node_8h_a0b11790aa9ba1f20f571fea3216e7f2f}
+
+
+Detects cpu model and platform and initialize data structures and devices if required Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+h@{energy\+\_\+node.\+h}!read\+\_\+ac\+\_\+energy@{read\+\_\+ac\+\_\+energy}}
+\index{read\+\_\+ac\+\_\+energy@{read\+\_\+ac\+\_\+energy}!energy\+\_\+node.\+h@{energy\+\_\+node.\+h}}
+\subsubsection[{\texorpdfstring{read\+\_\+ac\+\_\+energy(unsigned long $\ast$energy)}{read_ac_energy(unsigned long *energy)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+ac\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{unsigned long $\ast$}]{energy}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8h_aa74932e5f104a7e3d03a41f9afbb0691}{}\label{energy__node_8h_aa74932e5f104a7e3d03a41f9afbb0691}
+
+
+Update energy with the accumulated node AC energy in mJ Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+h@{energy\+\_\+node.\+h}!read\+\_\+dc\+\_\+energy@{read\+\_\+dc\+\_\+energy}}
+\index{read\+\_\+dc\+\_\+energy@{read\+\_\+dc\+\_\+energy}!energy\+\_\+node.\+h@{energy\+\_\+node.\+h}}
+\subsubsection[{\texorpdfstring{read\+\_\+dc\+\_\+energy(unsigned long $\ast$energy)}{read_dc_energy(unsigned long *energy)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+dc\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{unsigned long $\ast$}]{energy}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8h_a5b50c1e86d96af5d3a147d86922e214f}{}\label{energy__node_8h_a5b50c1e86d96af5d3a147d86922e214f}
+
+
+Update energy with the accumulated node DC energy in mJ Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+h@{energy\+\_\+node.\+h}!read\+\_\+dc\+\_\+energy\+\_\+time@{read\+\_\+dc\+\_\+energy\+\_\+time}}
+\index{read\+\_\+dc\+\_\+energy\+\_\+time@{read\+\_\+dc\+\_\+energy\+\_\+time}!energy\+\_\+node.\+h@{energy\+\_\+node.\+h}}
+\subsubsection[{\texorpdfstring{read\+\_\+dc\+\_\+energy\+\_\+time(ulong $\ast$energy, ulong $\ast$time\+\_\+ms)}{read_dc_energy_time(ulong *energy, ulong *time_ms)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+dc\+\_\+energy\+\_\+time (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong} $\ast$}]{energy, }
+\item[{{\bf ulong} $\ast$}]{time\+\_\+ms}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8h_abefc2edc754c0a612d42c1b17bc76911}{}\label{energy__node_8h_abefc2edc754c0a612d42c1b17bc76911}
+
+
+Update energy with the accumulated node DC energy in mJ and time in ms Returns 0 on success and -\/1 on error. 
+

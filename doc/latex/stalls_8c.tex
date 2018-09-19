@@ -1,0 +1,96 @@
+\hypertarget{stalls_8c}{}\section{src/metrics/papi/stalls.c File Reference}
+\label{stalls_8c}\index{src/metrics/papi/stalls.\+c@{src/metrics/papi/stalls.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$papi.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/papi/generics.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/papi/stalls.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{stalls_8c_afee8e1dfb873b66bb60c100926e73529}{S\+T\+A\+L\+L\+\_\+\+S\+E\+TS}~1
+\item 
+\#define \hyperlink{stalls_8c_a109c10712e8dfdf6eea92840952bae5a}{S\+T\+A\+L\+L\+\_\+\+E\+VS}~2
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{stalls_8c_a2f516b38c98ac784ea83733c82172058}{init\+\_\+stall\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Initializes the event metrics for stall cycles. \end{DoxyCompactList}\item 
+void \hyperlink{stalls_8c_abf6dc361a63818ffd5b63ceca0ab2a54}{reset\+\_\+stall\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Resets the metrics for stall cycles. \end{DoxyCompactList}\item 
+void \hyperlink{stalls_8c_a2ae8ad7743b7202333ee77d3d5b07d6e}{start\+\_\+stall\+\_\+metrics} ()
+\begin{DoxyCompactList}\small\item\em Starts tracking stall cycle metrics. \end{DoxyCompactList}\item 
+void \hyperlink{stalls_8c_aebd22a08a120e2399b7753916281f5ff}{stop\+\_\+stall\+\_\+metrics} (long long $\ast$stall\+\_\+cycles)
+\begin{DoxyCompactList}\small\item\em Stops stall metrics and accumulates registered stall cycles to the variable recieved by parameter. \end{DoxyCompactList}\item 
+void \hyperlink{stalls_8c_a8ddd5741c6513ba75e5203a9963a50ae}{get\+\_\+stall\+\_\+metrics} (long long $\ast$total\+\_\+stall\+\_\+cycles)
+\begin{DoxyCompactList}\small\item\em Puts the current stall cycles metrics in the variable recieved by parameter. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{stalls.\+c@{stalls.\+c}!S\+T\+A\+L\+L\+\_\+\+E\+VS@{S\+T\+A\+L\+L\+\_\+\+E\+VS}}
+\index{S\+T\+A\+L\+L\+\_\+\+E\+VS@{S\+T\+A\+L\+L\+\_\+\+E\+VS}!stalls.\+c@{stalls.\+c}}
+\subsubsection[{\texorpdfstring{S\+T\+A\+L\+L\+\_\+\+E\+VS}{STALL_EVS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+T\+A\+L\+L\+\_\+\+E\+VS~2}\hypertarget{stalls_8c_a109c10712e8dfdf6eea92840952bae5a}{}\label{stalls_8c_a109c10712e8dfdf6eea92840952bae5a}
+\index{stalls.\+c@{stalls.\+c}!S\+T\+A\+L\+L\+\_\+\+S\+E\+TS@{S\+T\+A\+L\+L\+\_\+\+S\+E\+TS}}
+\index{S\+T\+A\+L\+L\+\_\+\+S\+E\+TS@{S\+T\+A\+L\+L\+\_\+\+S\+E\+TS}!stalls.\+c@{stalls.\+c}}
+\subsubsection[{\texorpdfstring{S\+T\+A\+L\+L\+\_\+\+S\+E\+TS}{STALL_SETS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+T\+A\+L\+L\+\_\+\+S\+E\+TS~1}\hypertarget{stalls_8c_afee8e1dfb873b66bb60c100926e73529}{}\label{stalls_8c_afee8e1dfb873b66bb60c100926e73529}
+
+
+\subsection{Function Documentation}
+\index{stalls.\+c@{stalls.\+c}!get\+\_\+stall\+\_\+metrics@{get\+\_\+stall\+\_\+metrics}}
+\index{get\+\_\+stall\+\_\+metrics@{get\+\_\+stall\+\_\+metrics}!stalls.\+c@{stalls.\+c}}
+\subsubsection[{\texorpdfstring{get\+\_\+stall\+\_\+metrics(long long $\ast$total\+\_\+stall\+\_\+cycles)}{get_stall_metrics(long long *total_stall_cycles)}}]{\setlength{\rightskip}{0pt plus 5cm}void get\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+\item[{long long $\ast$}]{total\+\_\+stall\+\_\+cycles}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8c_a8ddd5741c6513ba75e5203a9963a50ae}{}\label{stalls_8c_a8ddd5741c6513ba75e5203a9963a50ae}
+
+
+Puts the current stall cycles metrics in the variable recieved by parameter. 
+
+\index{stalls.\+c@{stalls.\+c}!init\+\_\+stall\+\_\+metrics@{init\+\_\+stall\+\_\+metrics}}
+\index{init\+\_\+stall\+\_\+metrics@{init\+\_\+stall\+\_\+metrics}!stalls.\+c@{stalls.\+c}}
+\subsubsection[{\texorpdfstring{init\+\_\+stall\+\_\+metrics()}{init_stall_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8c_a2f516b38c98ac784ea83733c82172058}{}\label{stalls_8c_a2f516b38c98ac784ea83733c82172058}
+
+
+Initializes the event metrics for stall cycles. 
+
+\index{stalls.\+c@{stalls.\+c}!reset\+\_\+stall\+\_\+metrics@{reset\+\_\+stall\+\_\+metrics}}
+\index{reset\+\_\+stall\+\_\+metrics@{reset\+\_\+stall\+\_\+metrics}!stalls.\+c@{stalls.\+c}}
+\subsubsection[{\texorpdfstring{reset\+\_\+stall\+\_\+metrics()}{reset_stall_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void reset\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8c_abf6dc361a63818ffd5b63ceca0ab2a54}{}\label{stalls_8c_abf6dc361a63818ffd5b63ceca0ab2a54}
+
+
+Resets the metrics for stall cycles. 
+
+\index{stalls.\+c@{stalls.\+c}!start\+\_\+stall\+\_\+metrics@{start\+\_\+stall\+\_\+metrics}}
+\index{start\+\_\+stall\+\_\+metrics@{start\+\_\+stall\+\_\+metrics}!stalls.\+c@{stalls.\+c}}
+\subsubsection[{\texorpdfstring{start\+\_\+stall\+\_\+metrics()}{start_stall_metrics()}}]{\setlength{\rightskip}{0pt plus 5cm}void start\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8c_a2ae8ad7743b7202333ee77d3d5b07d6e}{}\label{stalls_8c_a2ae8ad7743b7202333ee77d3d5b07d6e}
+
+
+Starts tracking stall cycle metrics. 
+
+\index{stalls.\+c@{stalls.\+c}!stop\+\_\+stall\+\_\+metrics@{stop\+\_\+stall\+\_\+metrics}}
+\index{stop\+\_\+stall\+\_\+metrics@{stop\+\_\+stall\+\_\+metrics}!stalls.\+c@{stalls.\+c}}
+\subsubsection[{\texorpdfstring{stop\+\_\+stall\+\_\+metrics(long long $\ast$stall\+\_\+cycles)}{stop_stall_metrics(long long *stall_cycles)}}]{\setlength{\rightskip}{0pt plus 5cm}void stop\+\_\+stall\+\_\+metrics (
+\begin{DoxyParamCaption}
+\item[{long long $\ast$}]{stall\+\_\+cycles}
+\end{DoxyParamCaption}
+)}\hypertarget{stalls_8c_aebd22a08a120e2399b7753916281f5ff}{}\label{stalls_8c_aebd22a08a120e2399b7753916281f5ff}
+
+
+Stops stall metrics and accumulates registered stall cycles to the variable recieved by parameter. 
+

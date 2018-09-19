@@ -1,0 +1,175 @@
+\hypertarget{states_8c}{}\section{src/library/states/states.c File Reference}
+\label{states_8c}\index{src/library/states/states.\+c@{src/library/states/states.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$control/frequency.\+h$>$}\\*
+{\ttfamily \#include $<$library/common/externs.\+h$>$}\\*
+{\ttfamily \#include $<$library/tracer/tracer.\+h$>$}\\*
+{\ttfamily \#include $<$library/states/states.\+h$>$}\\*
+{\ttfamily \#include $<$library/metrics/metrics.\+h$>$}\\*
+{\ttfamily \#include $<$library/models/models.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/log.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/math\+\_\+operations.\+h$>$}\\*
+{\ttfamily \#include $<$daemon/eard\+\_\+api.\+h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{states_8c_ac3b9dac8a78eb0dadf0f8c8466121fc6}{N\+O\+\_\+\+P\+E\+R\+I\+OD}~0
+\item 
+\#define \hyperlink{states_8c_ad7b34964fc63ab23abf23d64da5d78e5}{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON}~1
+\item 
+\#define \hyperlink{states_8c_a0b98c41c26e9e356cd9146c6b24e5d2b}{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE}~2
+\item 
+\#define \hyperlink{states_8c_a03f95f1d7d69b6a9bcc11cc8c506e72b}{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+S\+T\+A\+B\+LE}~3
+\item 
+\#define \hyperlink{states_8c_ac1ace099ccf3073648cc7752fc76fdfb}{P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+E\+R\+R\+OR}~4
+\item 
+\#define \hyperlink{states_8c_afa85e373b8c2e3f72b651ef9210724ea}{R\+E\+C\+O\+M\+P\+U\+T\+I\+N\+G\+\_\+N}~5
+\item 
+\#define \hyperlink{states_8c_a8e972b85fc0bc8c515517da5bf1cc23d}{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+H\+A\+S\+\_\+\+C\+H\+A\+N\+G\+ED}~6
+\item 
+\#define \hyperlink{states_8c_a347fc461398e84efbdf5800702ed6115}{D\+Y\+N\+A\+I\+S\+\_\+\+C\+U\+T\+O\+FF}~1
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{states_8c_a39209b57f94c324f38ccb28a6395c4b1}{states\+\_\+end\+\_\+job} (int my\+\_\+id, F\+I\+LE $\ast$ear\+\_\+fd, char $\ast$app\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Executed at application end. \end{DoxyCompactList}\item 
+void \hyperlink{states_8c_a95470317136dad9b3a6b9c6b46d25b8c}{states\+\_\+begin\+\_\+job} (int my\+\_\+id, F\+I\+LE $\ast$ear\+\_\+fd, char $\ast$app\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Executed at application start. \end{DoxyCompactList}\item 
+int \hyperlink{states_8c_ae359117e56d202055a0adcc0c99d1b07}{states\+\_\+my\+\_\+state} ()
+\begin{DoxyCompactList}\small\item\em Returns the current E\+AR state. \end{DoxyCompactList}\item 
+void \hyperlink{states_8c_a5787e4c9b845c431f2887df78371f4af}{states\+\_\+begin\+\_\+period} (int my\+\_\+id, F\+I\+LE $\ast$ear\+\_\+fd, unsigned long event, unsigned int size)
+\begin{DoxyCompactList}\small\item\em Executed at N\+E\+W\+\_\+\+L\+O\+OP or E\+N\+D\+\_\+\+N\+E\+W\+\_\+\+L\+O\+OP Dyn\+A\+IS event. \end{DoxyCompactList}\item 
+void \hyperlink{states_8c_a5e5aae36d532da2009a4b3699e68faa7}{states\+\_\+end\+\_\+period} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} iterations)
+\begin{DoxyCompactList}\small\item\em Executed at E\+N\+D\+\_\+\+L\+O\+OP or E\+N\+D\+\_\+\+N\+E\+W\+\_\+\+L\+O\+OP Dyn\+A\+IS event. \end{DoxyCompactList}\item 
+void \hyperlink{states_8c_ab10f1687cbc4d645025300938b219076}{states\+\_\+new\+\_\+iteration} (int my\+\_\+id, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} period, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} iterations, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} level, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} event, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} mpi\+\_\+calls\+\_\+iter)
+\begin{DoxyCompactList}\small\item\em Executed at N\+E\+W\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON Dyn\+A\+IS event. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ \hyperlink{states_8c_adbd38436c25bc604b1a48464727d4179}{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{states.\+c@{states.\+c}!D\+Y\+N\+A\+I\+S\+\_\+\+C\+U\+T\+O\+FF@{D\+Y\+N\+A\+I\+S\+\_\+\+C\+U\+T\+O\+FF}}
+\index{D\+Y\+N\+A\+I\+S\+\_\+\+C\+U\+T\+O\+FF@{D\+Y\+N\+A\+I\+S\+\_\+\+C\+U\+T\+O\+FF}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{D\+Y\+N\+A\+I\+S\+\_\+\+C\+U\+T\+O\+FF}{DYNAIS_CUTOFF}}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\+Y\+N\+A\+I\+S\+\_\+\+C\+U\+T\+O\+FF~1}\hypertarget{states_8c_a347fc461398e84efbdf5800702ed6115}{}\label{states_8c_a347fc461398e84efbdf5800702ed6115}
+\index{states.\+c@{states.\+c}!E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE@{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE}}
+\index{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE@{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE}{EVALUATING_SIGNATURE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define E\+V\+A\+L\+U\+A\+T\+I\+N\+G\+\_\+\+S\+I\+G\+N\+A\+T\+U\+RE~2}\hypertarget{states_8c_a0b98c41c26e9e356cd9146c6b24e5d2b}{}\label{states_8c_a0b98c41c26e9e356cd9146c6b24e5d2b}
+\index{states.\+c@{states.\+c}!F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON@{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON}}
+\index{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON@{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON}{FIRST_ITERATION}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+I\+R\+S\+T\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON~1}\hypertarget{states_8c_ad7b34964fc63ab23abf23d64da5d78e5}{}\label{states_8c_ad7b34964fc63ab23abf23d64da5d78e5}
+\index{states.\+c@{states.\+c}!N\+O\+\_\+\+P\+E\+R\+I\+OD@{N\+O\+\_\+\+P\+E\+R\+I\+OD}}
+\index{N\+O\+\_\+\+P\+E\+R\+I\+OD@{N\+O\+\_\+\+P\+E\+R\+I\+OD}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{N\+O\+\_\+\+P\+E\+R\+I\+OD}{NO_PERIOD}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+O\+\_\+\+P\+E\+R\+I\+OD~0}\hypertarget{states_8c_ac3b9dac8a78eb0dadf0f8c8466121fc6}{}\label{states_8c_ac3b9dac8a78eb0dadf0f8c8466121fc6}
+\index{states.\+c@{states.\+c}!P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+E\+R\+R\+OR@{P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+E\+R\+R\+OR}}
+\index{P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+E\+R\+R\+OR@{P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+E\+R\+R\+OR}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+E\+R\+R\+OR}{PROJECTION_ERROR}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+E\+R\+R\+OR~4}\hypertarget{states_8c_ac1ace099ccf3073648cc7752fc76fdfb}{}\label{states_8c_ac1ace099ccf3073648cc7752fc76fdfb}
+\index{states.\+c@{states.\+c}!R\+E\+C\+O\+M\+P\+U\+T\+I\+N\+G\+\_\+N@{R\+E\+C\+O\+M\+P\+U\+T\+I\+N\+G\+\_\+N}}
+\index{R\+E\+C\+O\+M\+P\+U\+T\+I\+N\+G\+\_\+N@{R\+E\+C\+O\+M\+P\+U\+T\+I\+N\+G\+\_\+N}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{R\+E\+C\+O\+M\+P\+U\+T\+I\+N\+G\+\_\+N}{RECOMPUTING_N}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+E\+C\+O\+M\+P\+U\+T\+I\+N\+G\+\_\+N~5}\hypertarget{states_8c_afa85e373b8c2e3f72b651ef9210724ea}{}\label{states_8c_afa85e373b8c2e3f72b651ef9210724ea}
+\index{states.\+c@{states.\+c}!S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+H\+A\+S\+\_\+\+C\+H\+A\+N\+G\+ED@{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+H\+A\+S\+\_\+\+C\+H\+A\+N\+G\+ED}}
+\index{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+H\+A\+S\+\_\+\+C\+H\+A\+N\+G\+ED@{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+H\+A\+S\+\_\+\+C\+H\+A\+N\+G\+ED}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+H\+A\+S\+\_\+\+C\+H\+A\+N\+G\+ED}{SIGNATURE_HAS_CHANGED}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+H\+A\+S\+\_\+\+C\+H\+A\+N\+G\+ED~6}\hypertarget{states_8c_a8e972b85fc0bc8c515517da5bf1cc23d}{}\label{states_8c_a8e972b85fc0bc8c515517da5bf1cc23d}
+\index{states.\+c@{states.\+c}!S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+S\+T\+A\+B\+LE@{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+S\+T\+A\+B\+LE}}
+\index{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+S\+T\+A\+B\+LE@{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+S\+T\+A\+B\+LE}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+S\+T\+A\+B\+LE}{SIGNATURE_STABLE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+S\+T\+A\+B\+LE~3}\hypertarget{states_8c_a03f95f1d7d69b6a9bcc11cc8c506e72b}{}\label{states_8c_a03f95f1d7d69b6a9bcc11cc8c506e72b}
+
+
+\subsection{Function Documentation}
+\index{states.\+c@{states.\+c}!states\+\_\+begin\+\_\+job@{states\+\_\+begin\+\_\+job}}
+\index{states\+\_\+begin\+\_\+job@{states\+\_\+begin\+\_\+job}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+begin\+\_\+job(int my\+\_\+id, F\+I\+L\+E $\ast$ear\+\_\+fd, char $\ast$app\+\_\+name)}{states_begin_job(int my_id, FILE *ear_fd, char *app_name)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+begin\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{int}]{my\+\_\+id, }
+\item[{F\+I\+LE $\ast$}]{ear\+\_\+fd, }
+\item[{char $\ast$}]{app\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{states_8c_a95470317136dad9b3a6b9c6b46d25b8c}{}\label{states_8c_a95470317136dad9b3a6b9c6b46d25b8c}
+
+
+Executed at application start. 
+
+Reads E\+AR configuration env. variables \index{states.\+c@{states.\+c}!states\+\_\+begin\+\_\+period@{states\+\_\+begin\+\_\+period}}
+\index{states\+\_\+begin\+\_\+period@{states\+\_\+begin\+\_\+period}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+begin\+\_\+period(int my\+\_\+id, F\+I\+L\+E $\ast$ear\+\_\+fd, unsigned long event, unsigned int size)}{states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+begin\+\_\+period (
+\begin{DoxyParamCaption}
+\item[{int}]{my\+\_\+id, }
+\item[{F\+I\+LE $\ast$}]{ear\+\_\+fd, }
+\item[{unsigned long}]{event, }
+\item[{unsigned int}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{states_8c_a5787e4c9b845c431f2887df78371f4af}{}\label{states_8c_a5787e4c9b845c431f2887df78371f4af}
+
+
+Executed at N\+E\+W\+\_\+\+L\+O\+OP or E\+N\+D\+\_\+\+N\+E\+W\+\_\+\+L\+O\+OP Dyn\+A\+IS event. 
+
+\index{states.\+c@{states.\+c}!states\+\_\+end\+\_\+job@{states\+\_\+end\+\_\+job}}
+\index{states\+\_\+end\+\_\+job@{states\+\_\+end\+\_\+job}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+end\+\_\+job(int my\+\_\+id, F\+I\+L\+E $\ast$ear\+\_\+fd, char $\ast$app\+\_\+name)}{states_end_job(int my_id, FILE *ear_fd, char *app_name)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+end\+\_\+job (
+\begin{DoxyParamCaption}
+\item[{int}]{my\+\_\+id, }
+\item[{F\+I\+LE $\ast$}]{ear\+\_\+fd, }
+\item[{char $\ast$}]{app\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{states_8c_a39209b57f94c324f38ccb28a6395c4b1}{}\label{states_8c_a39209b57f94c324f38ccb28a6395c4b1}
+
+
+Executed at application end. 
+
+\index{states.\+c@{states.\+c}!states\+\_\+end\+\_\+period@{states\+\_\+end\+\_\+period}}
+\index{states\+\_\+end\+\_\+period@{states\+\_\+end\+\_\+period}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+end\+\_\+period(uint iterations)}{states_end_period(uint iterations)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+end\+\_\+period (
+\begin{DoxyParamCaption}
+\item[{{\bf uint}}]{iterations}
+\end{DoxyParamCaption}
+)}\hypertarget{states_8c_a5e5aae36d532da2009a4b3699e68faa7}{}\label{states_8c_a5e5aae36d532da2009a4b3699e68faa7}
+
+
+Executed at E\+N\+D\+\_\+\+L\+O\+OP or E\+N\+D\+\_\+\+N\+E\+W\+\_\+\+L\+O\+OP Dyn\+A\+IS event. 
+
+\index{states.\+c@{states.\+c}!states\+\_\+my\+\_\+state@{states\+\_\+my\+\_\+state}}
+\index{states\+\_\+my\+\_\+state@{states\+\_\+my\+\_\+state}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+my\+\_\+state()}{states_my_state()}}]{\setlength{\rightskip}{0pt plus 5cm}int states\+\_\+my\+\_\+state (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{states_8c_ae359117e56d202055a0adcc0c99d1b07}{}\label{states_8c_ae359117e56d202055a0adcc0c99d1b07}
+
+
+Returns the current E\+AR state. 
+
+\index{states.\+c@{states.\+c}!states\+\_\+new\+\_\+iteration@{states\+\_\+new\+\_\+iteration}}
+\index{states\+\_\+new\+\_\+iteration@{states\+\_\+new\+\_\+iteration}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{states\+\_\+new\+\_\+iteration(int my\+\_\+id, uint period, uint iterations, uint level, ulong event, ulong mpi\+\_\+calls\+\_\+iter)}{states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter)}}]{\setlength{\rightskip}{0pt plus 5cm}void states\+\_\+new\+\_\+iteration (
+\begin{DoxyParamCaption}
+\item[{int}]{my\+\_\+id, }
+\item[{{\bf uint}}]{period, }
+\item[{{\bf uint}}]{iterations, }
+\item[{{\bf uint}}]{level, }
+\item[{{\bf ulong}}]{event, }
+\item[{{\bf ulong}}]{mpi\+\_\+calls\+\_\+iter}
+\end{DoxyParamCaption}
+)}\hypertarget{states_8c_ab10f1687cbc4d645025300938b219076}{}\label{states_8c_ab10f1687cbc4d645025300938b219076}
+
+
+Executed at N\+E\+W\+\_\+\+I\+T\+E\+R\+A\+T\+I\+ON Dyn\+A\+IS event. 
+
+If we are not going better 
+
+\subsection{Variable Documentation}
+\index{states.\+c@{states.\+c}!\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+@{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+@{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}!states.\+c@{states.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}{__HOST__}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ \+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}\hypertarget{states_8c_adbd38436c25bc604b1a48464727d4179}{}\label{states_8c_adbd38436c25bc604b1a48464727d4179}

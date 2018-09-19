@@ -1,0 +1,52 @@
+\hypertarget{ear__api_8h}{}\section{src/library/mpi\+\_\+intercept/ear\+\_\+api.h File Reference}
+\label{ear__api_8h}\index{src/library/mpi\+\_\+intercept/ear\+\_\+api.\+h@{src/library/mpi\+\_\+intercept/ear\+\_\+api.\+h}}
+{\ttfamily \#include $<$library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+types.\+h$>$}\\*
+{\ttfamily \#include $<$library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+calls\+\_\+coded.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{ear__api_8h_a43b952e1e6132ad34d498e74cbf53d11}{ear\+\_\+init} ()
+\begin{DoxyCompactList}\small\item\em Initializes all the elements of the library as well as connecting to the daemon. \end{DoxyCompactList}\item 
+void \hyperlink{ear__api_8h_a701f15d7fda34b1f14ec6aac5d9716cf}{ear\+\_\+mpi\+\_\+call} (\hyperlink{MPI__calls__coded_8h_a56e22c8cf5cfe164d5b6394c50a54ae7}{mpi\+\_\+call} call\+\_\+type, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} buf, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} dest)
+\begin{DoxyCompactList}\small\item\em Given the information corresponding a M\+PI call, creates a Dyn\+A\+IS event and processes it as well as creating the trace. \end{DoxyCompactList}\item 
+void \hyperlink{ear__api_8h_a90cb9dec3b68f3c7a88f97ec85d7e88c}{ear\+\_\+finalize} ()
+\begin{DoxyCompactList}\small\item\em Finalizes the processes, closing and registering metrics and traces, as well as closing the connection to the daemon and releasing the memory from Dyn\+A\+IS. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{ear\+\_\+api.\+h@{ear\+\_\+api.\+h}!ear\+\_\+finalize@{ear\+\_\+finalize}}
+\index{ear\+\_\+finalize@{ear\+\_\+finalize}!ear\+\_\+api.\+h@{ear\+\_\+api.\+h}}
+\subsubsection[{\texorpdfstring{ear\+\_\+finalize()}{ear_finalize()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+finalize (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8h_a90cb9dec3b68f3c7a88f97ec85d7e88c}{}\label{ear__api_8h_a90cb9dec3b68f3c7a88f97ec85d7e88c}
+
+
+Finalizes the processes, closing and registering metrics and traces, as well as closing the connection to the daemon and releasing the memory from Dyn\+A\+IS. 
+
+\index{ear\+\_\+api.\+h@{ear\+\_\+api.\+h}!ear\+\_\+init@{ear\+\_\+init}}
+\index{ear\+\_\+init@{ear\+\_\+init}!ear\+\_\+api.\+h@{ear\+\_\+api.\+h}}
+\subsubsection[{\texorpdfstring{ear\+\_\+init()}{ear_init()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+init (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8h_a43b952e1e6132ad34d498e74cbf53d11}{}\label{ear__api_8h_a43b952e1e6132ad34d498e74cbf53d11}
+
+
+Initializes all the elements of the library as well as connecting to the daemon. 
+
+\index{ear\+\_\+api.\+h@{ear\+\_\+api.\+h}!ear\+\_\+mpi\+\_\+call@{ear\+\_\+mpi\+\_\+call}}
+\index{ear\+\_\+mpi\+\_\+call@{ear\+\_\+mpi\+\_\+call}!ear\+\_\+api.\+h@{ear\+\_\+api.\+h}}
+\subsubsection[{\texorpdfstring{ear\+\_\+mpi\+\_\+call(mpi\+\_\+call call\+\_\+type, p2i buf, p2i dest)}{ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+mpi\+\_\+call (
+\begin{DoxyParamCaption}
+\item[{{\bf mpi\+\_\+call}}]{call\+\_\+type, }
+\item[{{\bf p2i}}]{buf, }
+\item[{{\bf p2i}}]{dest}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8h_a701f15d7fda34b1f14ec6aac5d9716cf}{}\label{ear__api_8h_a701f15d7fda34b1f14ec6aac5d9716cf}
+
+
+Given the information corresponding a M\+PI call, creates a Dyn\+A\+IS event and processes it as well as creating the trace. 
+
+If the library is in a learning phase it does nothing. 

@@ -1,0 +1,82 @@
+\hypertarget{process__MPI_8c}{}\section{src/library/mpi\+\_\+intercept/process\+\_\+\+M\+PI.c File Reference}
+\label{process__MPI_8c}\index{src/library/mpi\+\_\+intercept/process\+\_\+\+M\+P\+I.\+c@{src/library/mpi\+\_\+intercept/process\+\_\+\+M\+P\+I.\+c}}
+{\ttfamily \#include $<$mpi.\+h$>$}\\*
+{\ttfamily \#include $<$library/mpi\+\_\+intercept/ear\+\_\+api.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{process__MPI_8c_a8b44f3172d1ce43d108b96461f3b86d5}{before\+\_\+init} ()
+\begin{DoxyCompactList}\small\item\em called before the M\+P\+I\+\_\+init. \end{DoxyCompactList}\item 
+void \hyperlink{process__MPI_8c_a7e25f02628414c6e5cadd7d7b358d9b4}{after\+\_\+init} ()
+\begin{DoxyCompactList}\small\item\em called after the M\+P\+I\+\_\+init \end{DoxyCompactList}\item 
+void \hyperlink{process__MPI_8c_a5bec195ff32d4cade6a3627f17c6f3fb}{before\+\_\+mpi} (\hyperlink{MPI__calls__coded_8h_a56e22c8cf5cfe164d5b6394c50a54ae7}{mpi\+\_\+call} call\+\_\+type, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} buf, \hyperlink{MPI__types_8h_a282f0fba88f9b93614dcadfe6993e846}{p2i} dest)
+\item 
+void \hyperlink{process__MPI_8c_aa61754ef00d3aa2b71e8fe5539e8cc16}{after\+\_\+mpi} (\hyperlink{MPI__calls__coded_8h_a56e22c8cf5cfe164d5b6394c50a54ae7}{mpi\+\_\+call} call\+\_\+type)
+\item 
+void \hyperlink{process__MPI_8c_a005c773c73232d6714f3552b6ff5e9d3}{before\+\_\+finalize} ()
+\begin{DoxyCompactList}\small\item\em called before mpi\+\_\+finalize, it calls E\+AR functions to summarize metrics \end{DoxyCompactList}\item 
+void \hyperlink{process__MPI_8c_a57ed07451451267eaab5e4f35e38d44c}{after\+\_\+finalize} ()
+\begin{DoxyCompactList}\small\item\em called after mpi\+\_\+finalize \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}!after\+\_\+finalize@{after\+\_\+finalize}}
+\index{after\+\_\+finalize@{after\+\_\+finalize}!process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}}
+\subsubsection[{\texorpdfstring{after\+\_\+finalize()}{after_finalize()}}]{\setlength{\rightskip}{0pt plus 5cm}void after\+\_\+finalize (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{process__MPI_8c_a57ed07451451267eaab5e4f35e38d44c}{}\label{process__MPI_8c_a57ed07451451267eaab5e4f35e38d44c}
+
+
+called after mpi\+\_\+finalize 
+
+\index{process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}!after\+\_\+init@{after\+\_\+init}}
+\index{after\+\_\+init@{after\+\_\+init}!process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}}
+\subsubsection[{\texorpdfstring{after\+\_\+init()}{after_init()}}]{\setlength{\rightskip}{0pt plus 5cm}void after\+\_\+init (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{process__MPI_8c_a7e25f02628414c6e5cadd7d7b358d9b4}{}\label{process__MPI_8c_a7e25f02628414c6e5cadd7d7b358d9b4}
+
+
+called after the M\+P\+I\+\_\+init 
+
+\index{process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}!after\+\_\+mpi@{after\+\_\+mpi}}
+\index{after\+\_\+mpi@{after\+\_\+mpi}!process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}}
+\subsubsection[{\texorpdfstring{after\+\_\+mpi(mpi\+\_\+call call\+\_\+type)}{after_mpi(mpi_call call_type)}}]{\setlength{\rightskip}{0pt plus 5cm}void after\+\_\+mpi (
+\begin{DoxyParamCaption}
+\item[{{\bf mpi\+\_\+call}}]{call\+\_\+type}
+\end{DoxyParamCaption}
+)}\hypertarget{process__MPI_8c_aa61754ef00d3aa2b71e8fe5539e8cc16}{}\label{process__MPI_8c_aa61754ef00d3aa2b71e8fe5539e8cc16}
+\index{process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}!before\+\_\+finalize@{before\+\_\+finalize}}
+\index{before\+\_\+finalize@{before\+\_\+finalize}!process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}}
+\subsubsection[{\texorpdfstring{before\+\_\+finalize()}{before_finalize()}}]{\setlength{\rightskip}{0pt plus 5cm}void before\+\_\+finalize (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{process__MPI_8c_a005c773c73232d6714f3552b6ff5e9d3}{}\label{process__MPI_8c_a005c773c73232d6714f3552b6ff5e9d3}
+
+
+called before mpi\+\_\+finalize, it calls E\+AR functions to summarize metrics 
+
+\index{process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}!before\+\_\+init@{before\+\_\+init}}
+\index{before\+\_\+init@{before\+\_\+init}!process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}}
+\subsubsection[{\texorpdfstring{before\+\_\+init()}{before_init()}}]{\setlength{\rightskip}{0pt plus 5cm}void before\+\_\+init (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{process__MPI_8c_a8b44f3172d1ce43d108b96461f3b86d5}{}\label{process__MPI_8c_a8b44f3172d1ce43d108b96461f3b86d5}
+
+
+called before the M\+P\+I\+\_\+init. 
+
+Connects with ear\+\_\+daemon \index{process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}!before\+\_\+mpi@{before\+\_\+mpi}}
+\index{before\+\_\+mpi@{before\+\_\+mpi}!process\+\_\+\+M\+P\+I.\+c@{process\+\_\+\+M\+P\+I.\+c}}
+\subsubsection[{\texorpdfstring{before\+\_\+mpi(mpi\+\_\+call call\+\_\+type, p2i buf, p2i dest)}{before_mpi(mpi_call call_type, p2i buf, p2i dest)}}]{\setlength{\rightskip}{0pt plus 5cm}void before\+\_\+mpi (
+\begin{DoxyParamCaption}
+\item[{{\bf mpi\+\_\+call}}]{call\+\_\+type, }
+\item[{{\bf p2i}}]{buf, }
+\item[{{\bf p2i}}]{dest}
+\end{DoxyParamCaption}
+)}\hypertarget{process__MPI_8c_a5bec195ff32d4cade6a3627f17c6f3fb}{}\label{process__MPI_8c_a5bec195ff32d4cade6a3627f17c6f3fb}

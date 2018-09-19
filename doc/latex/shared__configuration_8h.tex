@@ -1,0 +1,422 @@
+\hypertarget{shared__configuration_8h}{}\section{src/daemon/shared\+\_\+configuration.h File Reference}
+\label{shared__configuration_8h}\index{src/daemon/shared\+\_\+configuration.\+h@{src/daemon/shared\+\_\+configuration.\+h}}
+
+
+This file defines the A\+PI to create/attach/dettach/release the shared memory area between the E\+A\+RD and the E\+A\+R\+Lib.  
+
+
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/coefficient.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structservices__conf}{services\+\_\+conf}
+\item 
+struct \hyperlink{structsettings__conf}{settings\+\_\+conf}
+\item 
+struct \hyperlink{structresched}{resched}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structservices__conf}{services\+\_\+conf} \hyperlink{shared__configuration_8h_a7dcc37a3d0ece89482c3de7885bbecd6}{services\+\_\+conf\+\_\+t}
+\item 
+typedef struct \hyperlink{structsettings__conf}{settings\+\_\+conf} \hyperlink{shared__configuration_8h_ad610334cf2b8fdaea2cbda3c609e8d35}{settings\+\_\+conf\+\_\+t}
+\item 
+typedef struct \hyperlink{structresched}{resched} \hyperlink{shared__configuration_8h_a9faa857e3f34cd1b9f1dc8cfc5a87921}{resched\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{shared__configuration_8h_ad5704f3a0ba775acd2bf1ac1d099b614}{get\+\_\+settings\+\_\+conf\+\_\+path} (char $\ast$tmp, char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Sets in path the filename for the shared memory area between E\+A\+RD and E\+A\+RL. \end{DoxyCompactList}\item 
+\hyperlink{shared__configuration_8h_ad610334cf2b8fdaea2cbda3c609e8d35}{settings\+\_\+conf\+\_\+t} $\ast$ \hyperlink{shared__configuration_8h_afe299372c3c3b59d5d5c80e096908e42}{create\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Creates the shared mmemory. \end{DoxyCompactList}\item 
+\hyperlink{shared__configuration_8h_ad610334cf2b8fdaea2cbda3c609e8d35}{settings\+\_\+conf\+\_\+t} $\ast$ \hyperlink{shared__configuration_8h_a24b18d371606921043bf8b73f3246768}{attach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Connects with a previously created shared memory region. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_a94adf67b4a314d790c4e93745c071ff5}{dettach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area} ()
+\begin{DoxyCompactList}\small\item\em Disconnect from a previously connected shared memory region. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_a4ac27b1ca98dfd4eae86221ec02cb463}{settings\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Releases a shared memory area previously created. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_a20842309b32a30512c9540a7c21acd69}{print\+\_\+settings\+\_\+conf} (\hyperlink{shared__configuration_8h_ad610334cf2b8fdaea2cbda3c609e8d35}{settings\+\_\+conf\+\_\+t} $\ast$setting)
+\begin{DoxyCompactList}\small\item\em Prints in the stderr values for the setting. \end{DoxyCompactList}\item 
+int \hyperlink{shared__configuration_8h_a472fcbdd350e3dc7c1e5fb9fa9d633e8}{get\+\_\+resched\+\_\+path} (char $\ast$tmp, char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Sets in path the filename for the shared memory area between E\+A\+RD and E\+A\+RL. \end{DoxyCompactList}\item 
+\hyperlink{shared__configuration_8h_a9faa857e3f34cd1b9f1dc8cfc5a87921}{resched\+\_\+t} $\ast$ \hyperlink{shared__configuration_8h_a368f17a1c8dbdbd3f83de5057e264db2}{create\+\_\+resched\+\_\+shared\+\_\+area} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Creates the shared mmemory. \end{DoxyCompactList}\item 
+\hyperlink{shared__configuration_8h_a9faa857e3f34cd1b9f1dc8cfc5a87921}{resched\+\_\+t} $\ast$ \hyperlink{shared__configuration_8h_a8ff611ceddaa118812c9f8926dbfefd6}{attach\+\_\+resched\+\_\+shared\+\_\+area} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Connects with a previously created shared memory region. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_aa8bd5b5c7367d046b44a89ae342ae0c2}{dettach\+\_\+resched\+\_\+shared\+\_\+area} ()
+\begin{DoxyCompactList}\small\item\em Disconnect from a previously connected shared memory region. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_a05ff4dac11223ae0991669ee7dfb979b}{resched\+\_\+shared\+\_\+area\+\_\+dispose} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Releases a shared memory area previously created. \end{DoxyCompactList}\item 
+int \hyperlink{shared__configuration_8h_a04bca1efc88b32231d137a4037e115ae}{get\+\_\+coeffs\+\_\+path} (char $\ast$tmp, char $\ast$path)
+\item 
+\hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$ \hyperlink{shared__configuration_8h_ac476920e0d7b2e4c08414bddace0c534}{create\+\_\+coeffs\+\_\+shared\+\_\+area} (char $\ast$path, \hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$coeffs, int size)
+\item 
+\hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$ \hyperlink{shared__configuration_8h_ac0e23557b6448629d9857d13beb6f35c}{attach\+\_\+coeffs\+\_\+shared\+\_\+area} (char $\ast$path, int $\ast$size)
+\item 
+void \hyperlink{shared__configuration_8h_ac02b56eca9731d05c5bc96b3f7f8334b}{coeffs\+\_\+shared\+\_\+area\+\_\+dispose} (char $\ast$path)
+\item 
+void \hyperlink{shared__configuration_8h_ae04095b00aacaac80c9b919ac24d0fe3}{dettach\+\_\+coeffs\+\_\+shared\+\_\+area} ()
+\item 
+int \hyperlink{shared__configuration_8h_ab98488854c0c816f03d45b809b988c10}{get\+\_\+services\+\_\+conf\+\_\+path} (char $\ast$tmp, char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Sets in path the path for the services configuration in the shared memory. \end{DoxyCompactList}\item 
+\hyperlink{shared__configuration_8h_a7dcc37a3d0ece89482c3de7885bbecd6}{services\+\_\+conf\+\_\+t} $\ast$ \hyperlink{shared__configuration_8h_a8a042f20290356581a5a9aa9a65ca499}{create\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Creates and maps the shared memory region for services, to be used by eard. \end{DoxyCompactList}\item 
+\hyperlink{shared__configuration_8h_a7dcc37a3d0ece89482c3de7885bbecd6}{services\+\_\+conf\+\_\+t} $\ast$ \hyperlink{shared__configuration_8h_ab7193b9fc0f8cf116f49f1b5b0a5da5b}{attach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Maps the shared memory region for services, to be used by ear plugin or any other component.\+path if created using get\+\_\+services\+\_\+conf\+\_\+path. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_aeae17f8d200d964aaea3966ccd4163ee}{services\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Releases the shared memory for \hyperlink{structservices__conf}{services\+\_\+conf}, to be used by eard. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_ab10cb2e77dbffaa6eced2508aaaeef39}{dettach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area} ()
+\begin{DoxyCompactList}\small\item\em Unmmaps the shared memory for \hyperlink{structservices__conf}{services\+\_\+conf}, to be used by ear plugin or any other component. \end{DoxyCompactList}\item 
+int \hyperlink{shared__configuration_8h_a6a3bf5f8cbf776edda89acfb1b5d9531}{get\+\_\+frequencies\+\_\+path} (char $\ast$tmp, char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Sets un path the path fort the list of frequencies in the shared memory. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$ \hyperlink{shared__configuration_8h_ab2bf4be371293f26e79da10668f362a1}{create\+\_\+frequencies\+\_\+shared\+\_\+area} (char $\ast$path, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$f, int size)
+\begin{DoxyCompactList}\small\item\em Creates and maps the shared memory region for list of frequencies. \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$ \hyperlink{shared__configuration_8h_a80d238a623c15ecc06f62886d95752c0}{attach\+\_\+frequencies\+\_\+shared\+\_\+area} (char $\ast$path, int $\ast$size)
+\begin{DoxyCompactList}\small\item\em Maps the shared memory region for list of frequencies. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_a4bde4d5030e4c796c438d693d6ebd8c2}{frequencies\+\_\+shared\+\_\+area\+\_\+dispose} (char $\ast$path)
+\begin{DoxyCompactList}\small\item\em Releases the shared memory for the list of frequencies. \end{DoxyCompactList}\item 
+void \hyperlink{shared__configuration_8h_a154e1faa401da6d21fcb57285351b276}{dettach\+\_\+frequencies\+\_\+shared\+\_\+area} ()
+\begin{DoxyCompactList}\small\item\em Unmmaps the shared memory for the list of frequencies. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This file defines the A\+PI to create/attach/dettach/release the shared memory area between the E\+A\+RD and the E\+A\+R\+Lib. 
+
+It is used to communicate the E\+A\+R\+Lib updates remotelly requested 
+
+\subsection{Typedef Documentation}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!resched\+\_\+t@{resched\+\_\+t}}
+\index{resched\+\_\+t@{resched\+\_\+t}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{resched\+\_\+t}{resched_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf resched} {\bf resched\+\_\+t}}\hypertarget{shared__configuration_8h_a9faa857e3f34cd1b9f1dc8cfc5a87921}{}\label{shared__configuration_8h_a9faa857e3f34cd1b9f1dc8cfc5a87921}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!services\+\_\+conf\+\_\+t@{services\+\_\+conf\+\_\+t}}
+\index{services\+\_\+conf\+\_\+t@{services\+\_\+conf\+\_\+t}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{services\+\_\+conf\+\_\+t}{services_conf_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf services\+\_\+conf} {\bf services\+\_\+conf\+\_\+t}}\hypertarget{shared__configuration_8h_a7dcc37a3d0ece89482c3de7885bbecd6}{}\label{shared__configuration_8h_a7dcc37a3d0ece89482c3de7885bbecd6}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!settings\+\_\+conf\+\_\+t@{settings\+\_\+conf\+\_\+t}}
+\index{settings\+\_\+conf\+\_\+t@{settings\+\_\+conf\+\_\+t}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{settings\+\_\+conf\+\_\+t}{settings_conf_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf settings\+\_\+conf}  {\bf settings\+\_\+conf\+\_\+t}}\hypertarget{shared__configuration_8h_ad610334cf2b8fdaea2cbda3c609e8d35}{}\label{shared__configuration_8h_ad610334cf2b8fdaea2cbda3c609e8d35}
+
+
+\subsection{Function Documentation}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!attach\+\_\+coeffs\+\_\+shared\+\_\+area@{attach\+\_\+coeffs\+\_\+shared\+\_\+area}}
+\index{attach\+\_\+coeffs\+\_\+shared\+\_\+area@{attach\+\_\+coeffs\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{attach\+\_\+coeffs\+\_\+shared\+\_\+area(char $\ast$path, int $\ast$size)}{attach_coeffs_shared_area(char *path, int *size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+v3\+\_\+t}$\ast$ attach\+\_\+coeffs\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{int $\ast$}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ac0e23557b6448629d9857d13beb6f35c}{}\label{shared__configuration_8h_ac0e23557b6448629d9857d13beb6f35c}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!attach\+\_\+frequencies\+\_\+shared\+\_\+area@{attach\+\_\+frequencies\+\_\+shared\+\_\+area}}
+\index{attach\+\_\+frequencies\+\_\+shared\+\_\+area@{attach\+\_\+frequencies\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{attach\+\_\+frequencies\+\_\+shared\+\_\+area(char $\ast$path, int $\ast$size)}{attach_frequencies_shared_area(char *path, int *size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong}$\ast$ attach\+\_\+frequencies\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{int $\ast$}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a80d238a623c15ecc06f62886d95752c0}{}\label{shared__configuration_8h_a80d238a623c15ecc06f62886d95752c0}
+
+
+Maps the shared memory region for list of frequencies. 
+
+size is vector size in butes, num\+\_\+pstates=size/sizeof(ulong) \index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!attach\+\_\+resched\+\_\+shared\+\_\+area@{attach\+\_\+resched\+\_\+shared\+\_\+area}}
+\index{attach\+\_\+resched\+\_\+shared\+\_\+area@{attach\+\_\+resched\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{attach\+\_\+resched\+\_\+shared\+\_\+area(char $\ast$path)}{attach_resched_shared_area(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf resched\+\_\+t}$\ast$ attach\+\_\+resched\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a8ff611ceddaa118812c9f8926dbfefd6}{}\label{shared__configuration_8h_a8ff611ceddaa118812c9f8926dbfefd6}
+
+
+Connects with a previously created shared memory region. 
+
+It is used by E\+A\+R\+Lib (client)
+\begin{DoxyItemize}
+\item 
+\begin{DoxyParams}{Parameters}
+{\em ear\+\_\+conf\+\_\+path} & specifies the path (folder) where the mapped file were created \\
+\hline
+\end{DoxyParams}
+
+\end{DoxyItemize}\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!attach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area@{attach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area}}
+\index{attach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area@{attach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{attach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area(char $\ast$path)}{attach_services_conf_shared_area(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf services\+\_\+conf\+\_\+t}$\ast$ attach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ab7193b9fc0f8cf116f49f1b5b0a5da5b}{}\label{shared__configuration_8h_ab7193b9fc0f8cf116f49f1b5b0a5da5b}
+
+
+Maps the shared memory region for services, to be used by ear plugin or any other component.\+path if created using get\+\_\+services\+\_\+conf\+\_\+path. 
+
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!attach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area@{attach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area}}
+\index{attach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area@{attach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{attach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area(char $\ast$path)}{attach_settings_conf_shared_area(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf settings\+\_\+conf\+\_\+t}$\ast$ attach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a24b18d371606921043bf8b73f3246768}{}\label{shared__configuration_8h_a24b18d371606921043bf8b73f3246768}
+
+
+Connects with a previously created shared memory region. 
+
+It is used by E\+A\+R\+Lib (client) 
+\begin{DoxyParams}{Parameters}
+{\em ear\+\_\+conf\+\_\+path} & specifies the path (folder) where the mapped file were created \\
+\hline
+\end{DoxyParams}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!coeffs\+\_\+shared\+\_\+area\+\_\+dispose@{coeffs\+\_\+shared\+\_\+area\+\_\+dispose}}
+\index{coeffs\+\_\+shared\+\_\+area\+\_\+dispose@{coeffs\+\_\+shared\+\_\+area\+\_\+dispose}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{coeffs\+\_\+shared\+\_\+area\+\_\+dispose(char $\ast$path)}{coeffs_shared_area_dispose(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}void coeffs\+\_\+shared\+\_\+area\+\_\+dispose (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ac02b56eca9731d05c5bc96b3f7f8334b}{}\label{shared__configuration_8h_ac02b56eca9731d05c5bc96b3f7f8334b}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!create\+\_\+coeffs\+\_\+shared\+\_\+area@{create\+\_\+coeffs\+\_\+shared\+\_\+area}}
+\index{create\+\_\+coeffs\+\_\+shared\+\_\+area@{create\+\_\+coeffs\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+coeffs\+\_\+shared\+\_\+area(char $\ast$path, coefficient\+\_\+v3\+\_\+t $\ast$coeffs, int size)}{create_coeffs_shared_area(char *path, coefficient_v3_t *coeffs, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+v3\+\_\+t}$\ast$ create\+\_\+coeffs\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf coefficient\+\_\+v3\+\_\+t} $\ast$}]{coeffs, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ac476920e0d7b2e4c08414bddace0c534}{}\label{shared__configuration_8h_ac476920e0d7b2e4c08414bddace0c534}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!create\+\_\+frequencies\+\_\+shared\+\_\+area@{create\+\_\+frequencies\+\_\+shared\+\_\+area}}
+\index{create\+\_\+frequencies\+\_\+shared\+\_\+area@{create\+\_\+frequencies\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+frequencies\+\_\+shared\+\_\+area(char $\ast$path, ulong $\ast$f, int size)}{create_frequencies_shared_area(char *path, ulong *f, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong}$\ast$ create\+\_\+frequencies\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf ulong} $\ast$}]{f, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ab2bf4be371293f26e79da10668f362a1}{}\label{shared__configuration_8h_ab2bf4be371293f26e79da10668f362a1}
+
+
+Creates and maps the shared memory region for list of frequencies. 
+
+size is the input size \index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!create\+\_\+resched\+\_\+shared\+\_\+area@{create\+\_\+resched\+\_\+shared\+\_\+area}}
+\index{create\+\_\+resched\+\_\+shared\+\_\+area@{create\+\_\+resched\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+resched\+\_\+shared\+\_\+area(char $\ast$path)}{create_resched_shared_area(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf resched\+\_\+t}$\ast$ create\+\_\+resched\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a368f17a1c8dbdbd3f83de5057e264db2}{}\label{shared__configuration_8h_a368f17a1c8dbdbd3f83de5057e264db2}
+
+
+Creates the shared mmemory. 
+
+It is used by E\+A\+RD (server)
+\begin{DoxyItemize}
+\item 
+\begin{DoxyParams}{Parameters}
+{\em ear\+\_\+conf\+\_\+path} & specifies the path (folder) to create the file used by mmap\\
+\hline
+\end{DoxyParams}
+Creates the shared mmemory. 
+\end{DoxyItemize}\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!create\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area@{create\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area}}
+\index{create\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area@{create\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area(char $\ast$path)}{create_services_conf_shared_area(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf services\+\_\+conf\+\_\+t}$\ast$ create\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a8a042f20290356581a5a9aa9a65ca499}{}\label{shared__configuration_8h_a8a042f20290356581a5a9aa9a65ca499}
+
+
+Creates and maps the shared memory region for services, to be used by eard. 
+
+path if created using get\+\_\+services\+\_\+conf\+\_\+path \index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!create\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area@{create\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area}}
+\index{create\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area@{create\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{create\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area(char $\ast$path)}{create_settings_conf_shared_area(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf settings\+\_\+conf\+\_\+t}$\ast$ create\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_afe299372c3c3b59d5d5c80e096908e42}{}\label{shared__configuration_8h_afe299372c3c3b59d5d5c80e096908e42}
+
+
+Creates the shared mmemory. 
+
+It is used by E\+A\+RD (server) 
+\begin{DoxyParams}{Parameters}
+{\em ear\+\_\+conf\+\_\+path} & specifies the path (folder) to create the file used by mmap \\
+\hline
+\end{DoxyParams}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!dettach\+\_\+coeffs\+\_\+shared\+\_\+area@{dettach\+\_\+coeffs\+\_\+shared\+\_\+area}}
+\index{dettach\+\_\+coeffs\+\_\+shared\+\_\+area@{dettach\+\_\+coeffs\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{dettach\+\_\+coeffs\+\_\+shared\+\_\+area()}{dettach_coeffs_shared_area()}}]{\setlength{\rightskip}{0pt plus 5cm}void dettach\+\_\+coeffs\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ae04095b00aacaac80c9b919ac24d0fe3}{}\label{shared__configuration_8h_ae04095b00aacaac80c9b919ac24d0fe3}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!dettach\+\_\+frequencies\+\_\+shared\+\_\+area@{dettach\+\_\+frequencies\+\_\+shared\+\_\+area}}
+\index{dettach\+\_\+frequencies\+\_\+shared\+\_\+area@{dettach\+\_\+frequencies\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{dettach\+\_\+frequencies\+\_\+shared\+\_\+area()}{dettach_frequencies_shared_area()}}]{\setlength{\rightskip}{0pt plus 5cm}void dettach\+\_\+frequencies\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a154e1faa401da6d21fcb57285351b276}{}\label{shared__configuration_8h_a154e1faa401da6d21fcb57285351b276}
+
+
+Unmmaps the shared memory for the list of frequencies. 
+
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!dettach\+\_\+resched\+\_\+shared\+\_\+area@{dettach\+\_\+resched\+\_\+shared\+\_\+area}}
+\index{dettach\+\_\+resched\+\_\+shared\+\_\+area@{dettach\+\_\+resched\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{dettach\+\_\+resched\+\_\+shared\+\_\+area()}{dettach_resched_shared_area()}}]{\setlength{\rightskip}{0pt plus 5cm}void dettach\+\_\+resched\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_aa8bd5b5c7367d046b44a89ae342ae0c2}{}\label{shared__configuration_8h_aa8bd5b5c7367d046b44a89ae342ae0c2}
+
+
+Disconnect from a previously connected shared memory region. 
+
+It is used by E\+A\+R\+Lib (client) \index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!dettach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area@{dettach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area}}
+\index{dettach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area@{dettach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{dettach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area()}{dettach_services_conf_shared_area()}}]{\setlength{\rightskip}{0pt plus 5cm}void dettach\+\_\+services\+\_\+conf\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ab10cb2e77dbffaa6eced2508aaaeef39}{}\label{shared__configuration_8h_ab10cb2e77dbffaa6eced2508aaaeef39}
+
+
+Unmmaps the shared memory for \hyperlink{structservices__conf}{services\+\_\+conf}, to be used by ear plugin or any other component. 
+
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!dettach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area@{dettach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area}}
+\index{dettach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area@{dettach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{dettach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area()}{dettach_settings_conf_shared_area()}}]{\setlength{\rightskip}{0pt plus 5cm}void dettach\+\_\+settings\+\_\+conf\+\_\+shared\+\_\+area (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a94adf67b4a314d790c4e93745c071ff5}{}\label{shared__configuration_8h_a94adf67b4a314d790c4e93745c071ff5}
+
+
+Disconnect from a previously connected shared memory region. 
+
+It is used by E\+A\+R\+Lib (client) \index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!frequencies\+\_\+shared\+\_\+area\+\_\+dispose@{frequencies\+\_\+shared\+\_\+area\+\_\+dispose}}
+\index{frequencies\+\_\+shared\+\_\+area\+\_\+dispose@{frequencies\+\_\+shared\+\_\+area\+\_\+dispose}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{frequencies\+\_\+shared\+\_\+area\+\_\+dispose(char $\ast$path)}{frequencies_shared_area_dispose(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}void frequencies\+\_\+shared\+\_\+area\+\_\+dispose (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a4bde4d5030e4c796c438d693d6ebd8c2}{}\label{shared__configuration_8h_a4bde4d5030e4c796c438d693d6ebd8c2}
+
+
+Releases the shared memory for the list of frequencies. 
+
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!get\+\_\+coeffs\+\_\+path@{get\+\_\+coeffs\+\_\+path}}
+\index{get\+\_\+coeffs\+\_\+path@{get\+\_\+coeffs\+\_\+path}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+coeffs\+\_\+path(char $\ast$tmp, char $\ast$path)}{get_coeffs_path(char *tmp, char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+coeffs\+\_\+path (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{tmp, }
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a04bca1efc88b32231d137a4037e115ae}{}\label{shared__configuration_8h_a04bca1efc88b32231d137a4037e115ae}
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!get\+\_\+frequencies\+\_\+path@{get\+\_\+frequencies\+\_\+path}}
+\index{get\+\_\+frequencies\+\_\+path@{get\+\_\+frequencies\+\_\+path}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+frequencies\+\_\+path(char $\ast$tmp, char $\ast$path)}{get_frequencies_path(char *tmp, char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+frequencies\+\_\+path (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{tmp, }
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a6a3bf5f8cbf776edda89acfb1b5d9531}{}\label{shared__configuration_8h_a6a3bf5f8cbf776edda89acfb1b5d9531}
+
+
+Sets un path the path fort the list of frequencies in the shared memory. 
+
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!get\+\_\+resched\+\_\+path@{get\+\_\+resched\+\_\+path}}
+\index{get\+\_\+resched\+\_\+path@{get\+\_\+resched\+\_\+path}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+resched\+\_\+path(char $\ast$tmp, char $\ast$path)}{get_resched_path(char *tmp, char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+resched\+\_\+path (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{tmp, }
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a472fcbdd350e3dc7c1e5fb9fa9d633e8}{}\label{shared__configuration_8h_a472fcbdd350e3dc7c1e5fb9fa9d633e8}
+
+
+Sets in path the filename for the shared memory area between E\+A\+RD and E\+A\+RL. 
+
+
+\begin{DoxyItemize}
+\item 
+\begin{DoxyParams}{Parameters}
+{\em path} & (output)\\
+\hline
+\end{DoxyParams}
+Sets in path the filename for the shared memory area between E\+A\+RD and E\+A\+RL. 
+\end{DoxyItemize}\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!get\+\_\+services\+\_\+conf\+\_\+path@{get\+\_\+services\+\_\+conf\+\_\+path}}
+\index{get\+\_\+services\+\_\+conf\+\_\+path@{get\+\_\+services\+\_\+conf\+\_\+path}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+services\+\_\+conf\+\_\+path(char $\ast$tmp, char $\ast$path)}{get_services_conf_path(char *tmp, char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+services\+\_\+conf\+\_\+path (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{tmp, }
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ab98488854c0c816f03d45b809b988c10}{}\label{shared__configuration_8h_ab98488854c0c816f03d45b809b988c10}
+
+
+Sets in path the path for the services configuration in the shared memory. 
+
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!get\+\_\+settings\+\_\+conf\+\_\+path@{get\+\_\+settings\+\_\+conf\+\_\+path}}
+\index{get\+\_\+settings\+\_\+conf\+\_\+path@{get\+\_\+settings\+\_\+conf\+\_\+path}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+settings\+\_\+conf\+\_\+path(char $\ast$tmp, char $\ast$path)}{get_settings_conf_path(char *tmp, char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+settings\+\_\+conf\+\_\+path (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{tmp, }
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_ad5704f3a0ba775acd2bf1ac1d099b614}{}\label{shared__configuration_8h_ad5704f3a0ba775acd2bf1ac1d099b614}
+
+
+Sets in path the filename for the shared memory area between E\+A\+RD and E\+A\+RL. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em path} & (output)\\
+\hline
+\end{DoxyParams}
+Sets in path the filename for the shared memory area between E\+A\+RD and E\+A\+RL.
+
+This functions creates the name of the file mapping the shared memory for the dynamic power settings, it is placed at T\+MP \index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!print\+\_\+settings\+\_\+conf@{print\+\_\+settings\+\_\+conf}}
+\index{print\+\_\+settings\+\_\+conf@{print\+\_\+settings\+\_\+conf}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{print\+\_\+settings\+\_\+conf(settings\+\_\+conf\+\_\+t $\ast$setting)}{print_settings_conf(settings_conf_t *setting)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+settings\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf settings\+\_\+conf\+\_\+t} $\ast$}]{setting}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a20842309b32a30512c9540a7c21acd69}{}\label{shared__configuration_8h_a20842309b32a30512c9540a7c21acd69}
+
+
+Prints in the stderr values for the setting. 
+
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!resched\+\_\+shared\+\_\+area\+\_\+dispose@{resched\+\_\+shared\+\_\+area\+\_\+dispose}}
+\index{resched\+\_\+shared\+\_\+area\+\_\+dispose@{resched\+\_\+shared\+\_\+area\+\_\+dispose}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{resched\+\_\+shared\+\_\+area\+\_\+dispose(char $\ast$path)}{resched_shared_area_dispose(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}void resched\+\_\+shared\+\_\+area\+\_\+dispose (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a05ff4dac11223ae0991669ee7dfb979b}{}\label{shared__configuration_8h_a05ff4dac11223ae0991669ee7dfb979b}
+
+
+Releases a shared memory area previously created. 
+
+It is used by E\+A\+RD (server) \index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!services\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose@{services\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose}}
+\index{services\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose@{services\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{services\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose(char $\ast$path)}{services_conf_shared_area_dispose(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}void services\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_aeae17f8d200d964aaea3966ccd4163ee}{}\label{shared__configuration_8h_aeae17f8d200d964aaea3966ccd4163ee}
+
+
+Releases the shared memory for \hyperlink{structservices__conf}{services\+\_\+conf}, to be used by eard. 
+
+\index{shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}!settings\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose@{settings\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose}}
+\index{settings\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose@{settings\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose}!shared\+\_\+configuration.\+h@{shared\+\_\+configuration.\+h}}
+\subsubsection[{\texorpdfstring{settings\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose(char $\ast$path)}{settings_conf_shared_area_dispose(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}void settings\+\_\+conf\+\_\+shared\+\_\+area\+\_\+dispose (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path}
+\end{DoxyParamCaption}
+)}\hypertarget{shared__configuration_8h_a4ac27b1ca98dfd4eae86221ec02cb463}{}\label{shared__configuration_8h_a4ac27b1ca98dfd4eae86221ec02cb463}
+
+
+Releases a shared memory area previously created. 
+
+It is used by E\+A\+RD (server) 

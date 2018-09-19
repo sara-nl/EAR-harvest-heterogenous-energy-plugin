@@ -1,2 +1,1 @@
 dynais.o: dynais.c ../../library/dynais/dynais.h
-main.o: main.c ../../library/dynais/dynais.h

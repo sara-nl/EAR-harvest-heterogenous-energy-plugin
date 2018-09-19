@@ -1,0 +1,65 @@
+\hypertarget{gm__warning_8h}{}\section{src/common/types/gm\+\_\+warning.h File Reference}
+\label{gm__warning_8h}\index{src/common/types/gm\+\_\+warning.\+h@{src/common/types/gm\+\_\+warning.\+h}}
+{\ttfamily \#include $<$common/config.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/generic.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structgm__warning}{gm\+\_\+warning}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{gm__warning_8h_a7ff1bdaea529894a3efdb480b1f2c8ee}{N\+O\+D\+E\+\_\+\+S\+I\+ZE}~256
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structgm__warning}{gm\+\_\+warning} \hyperlink{gm__warning_8h_afa4f8152272e4b2e4c0ed778e642a855}{gm\+\_\+warning\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{gm__warning_8h_a7b7f940473536c79156f236489749002}{copy\+\_\+gm\+\_\+warning} (\hyperlink{gm__warning_8h_afa4f8152272e4b2e4c0ed778e642a855}{gm\+\_\+warning\+\_\+t} $\ast$destiny, \hyperlink{gm__warning_8h_afa4f8152272e4b2e4c0ed778e642a855}{gm\+\_\+warning\+\_\+t} $\ast$source)
+\begin{DoxyCompactList}\small\item\em Replicates the \hyperlink{structperiodic__metric}{periodic\+\_\+metric} in $\ast$source to $\ast$destiny. \end{DoxyCompactList}\item 
+void \hyperlink{gm__warning_8h_ad5251976a168f88ebf53f50a808c62c3}{init\+\_\+gm\+\_\+warning} (\hyperlink{gm__warning_8h_afa4f8152272e4b2e4c0ed778e642a855}{gm\+\_\+warning\+\_\+t} $\ast$pm)
+\begin{DoxyCompactList}\small\item\em Initializes all values of the \hyperlink{structperiodic__metric}{periodic\+\_\+metric} to 0 , sets the nodename. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{gm\+\_\+warning.\+h@{gm\+\_\+warning.\+h}!N\+O\+D\+E\+\_\+\+S\+I\+ZE@{N\+O\+D\+E\+\_\+\+S\+I\+ZE}}
+\index{N\+O\+D\+E\+\_\+\+S\+I\+ZE@{N\+O\+D\+E\+\_\+\+S\+I\+ZE}!gm\+\_\+warning.\+h@{gm\+\_\+warning.\+h}}
+\subsubsection[{\texorpdfstring{N\+O\+D\+E\+\_\+\+S\+I\+ZE}{NODE_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+O\+D\+E\+\_\+\+S\+I\+ZE~256}\hypertarget{gm__warning_8h_a7ff1bdaea529894a3efdb480b1f2c8ee}{}\label{gm__warning_8h_a7ff1bdaea529894a3efdb480b1f2c8ee}
+
+
+\subsection{Typedef Documentation}
+\index{gm\+\_\+warning.\+h@{gm\+\_\+warning.\+h}!gm\+\_\+warning\+\_\+t@{gm\+\_\+warning\+\_\+t}}
+\index{gm\+\_\+warning\+\_\+t@{gm\+\_\+warning\+\_\+t}!gm\+\_\+warning.\+h@{gm\+\_\+warning.\+h}}
+\subsubsection[{\texorpdfstring{gm\+\_\+warning\+\_\+t}{gm_warning_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf gm\+\_\+warning}  {\bf gm\+\_\+warning\+\_\+t}}\hypertarget{gm__warning_8h_afa4f8152272e4b2e4c0ed778e642a855}{}\label{gm__warning_8h_afa4f8152272e4b2e4c0ed778e642a855}
+
+
+\subsection{Function Documentation}
+\index{gm\+\_\+warning.\+h@{gm\+\_\+warning.\+h}!copy\+\_\+gm\+\_\+warning@{copy\+\_\+gm\+\_\+warning}}
+\index{copy\+\_\+gm\+\_\+warning@{copy\+\_\+gm\+\_\+warning}!gm\+\_\+warning.\+h@{gm\+\_\+warning.\+h}}
+\subsubsection[{\texorpdfstring{copy\+\_\+gm\+\_\+warning(gm\+\_\+warning\+\_\+t $\ast$destiny, gm\+\_\+warning\+\_\+t $\ast$source)}{copy_gm_warning(gm_warning_t *destiny, gm_warning_t *source)}}]{\setlength{\rightskip}{0pt plus 5cm}void copy\+\_\+gm\+\_\+warning (
+\begin{DoxyParamCaption}
+\item[{{\bf gm\+\_\+warning\+\_\+t} $\ast$}]{destiny, }
+\item[{{\bf gm\+\_\+warning\+\_\+t} $\ast$}]{source}
+\end{DoxyParamCaption}
+)}\hypertarget{gm__warning_8h_a7b7f940473536c79156f236489749002}{}\label{gm__warning_8h_a7b7f940473536c79156f236489749002}
+
+
+Replicates the \hyperlink{structperiodic__metric}{periodic\+\_\+metric} in $\ast$source to $\ast$destiny. 
+
+\index{gm\+\_\+warning.\+h@{gm\+\_\+warning.\+h}!init\+\_\+gm\+\_\+warning@{init\+\_\+gm\+\_\+warning}}
+\index{init\+\_\+gm\+\_\+warning@{init\+\_\+gm\+\_\+warning}!gm\+\_\+warning.\+h@{gm\+\_\+warning.\+h}}
+\subsubsection[{\texorpdfstring{init\+\_\+gm\+\_\+warning(gm\+\_\+warning\+\_\+t $\ast$pm)}{init_gm_warning(gm_warning_t *pm)}}]{\setlength{\rightskip}{0pt plus 5cm}void init\+\_\+gm\+\_\+warning (
+\begin{DoxyParamCaption}
+\item[{{\bf gm\+\_\+warning\+\_\+t} $\ast$}]{gmw}
+\end{DoxyParamCaption}
+)}\hypertarget{gm__warning_8h_ad5251976a168f88ebf53f50a808c62c3}{}\label{gm__warning_8h_ad5251976a168f88ebf53f50a808c62c3}
+
+
+Initializes all values of the \hyperlink{structperiodic__metric}{periodic\+\_\+metric} to 0 , sets the nodename. 
+
+Initializes all values of the \hyperlink{structperiodic__metric}{periodic\+\_\+metric} to 0 , sets the nodename. 

@@ -1,0 +1,71 @@
+\hypertarget{ear__dbd__stress__test_8c}{}\section{src/daemon/commands/ear\+\_\+dbd\+\_\+stress\+\_\+test.c File Reference}
+\label{ear__dbd__stress__test_8c}\index{src/daemon/commands/ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{src/daemon/commands/ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/wait.\+h$>$}\\*
+{\ttfamily \#include $<$database\+\_\+cache/eardbd\+\_\+api.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/periodic\+\_\+metric.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{ear__dbd__stress__test_8c_af50eab235c20210b86709ed5c417cec3}{stress\+\_\+eardbd} ()
+\item 
+void \hyperlink{ear__dbd__stress__test_8c_a952606f88d12e6d16e6a65cf1f66c6ba}{Usage} (char $\ast$app)
+\item 
+void \hyperlink{ear__dbd__stress__test_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{ear__dbd__stress__test_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}
+\item 
+char $\ast$ \hyperlink{ear__dbd__stress__test_8c_a663dc024ddb721cb5070400dbf8deaa3}{eardbd}
+\item 
+char $\ast$ \hyperlink{ear__dbd__stress__test_8c_ab3b87ca832066c25406a58966d272038}{eardbd\+\_\+sec}
+\item 
+int \hyperlink{ear__dbd__stress__test_8c_a2de2ffc34d0664f7a2e748d2342d1e10}{num\+\_\+events}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}!main@{main}}
+\index{main@{main}!ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__dbd__stress__test_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{ear__dbd__stress__test_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+\index{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}!stress\+\_\+eardbd@{stress\+\_\+eardbd}}
+\index{stress\+\_\+eardbd@{stress\+\_\+eardbd}!ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}}
+\subsubsection[{\texorpdfstring{stress\+\_\+eardbd()}{stress_eardbd()}}]{\setlength{\rightskip}{0pt plus 5cm}void stress\+\_\+eardbd (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__dbd__stress__test_8c_af50eab235c20210b86709ed5c417cec3}{}\label{ear__dbd__stress__test_8c_af50eab235c20210b86709ed5c417cec3}
+\index{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}!Usage@{Usage}}
+\index{Usage@{Usage}!ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}}
+\subsubsection[{\texorpdfstring{Usage(char $\ast$app)}{Usage(char *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void Usage (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{app}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__dbd__stress__test_8c_a952606f88d12e6d16e6a65cf1f66c6ba}{}\label{ear__dbd__stress__test_8c_a952606f88d12e6d16e6a65cf1f66c6ba}
+
+
+\subsection{Variable Documentation}
+\index{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}!eardbd@{eardbd}}
+\index{eardbd@{eardbd}!ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}}
+\subsubsection[{\texorpdfstring{eardbd}{eardbd}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ eardbd}\hypertarget{ear__dbd__stress__test_8c_a663dc024ddb721cb5070400dbf8deaa3}{}\label{ear__dbd__stress__test_8c_a663dc024ddb721cb5070400dbf8deaa3}
+\index{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}!eardbd\+\_\+sec@{eardbd\+\_\+sec}}
+\index{eardbd\+\_\+sec@{eardbd\+\_\+sec}!ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}}
+\subsubsection[{\texorpdfstring{eardbd\+\_\+sec}{eardbd_sec}}]{\setlength{\rightskip}{0pt plus 5cm}char $\ast$ eardbd\+\_\+sec}\hypertarget{ear__dbd__stress__test_8c_ab3b87ca832066c25406a58966d272038}{}\label{ear__dbd__stress__test_8c_ab3b87ca832066c25406a58966d272038}
+\index{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}!my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}}
+\index{my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}!ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+cluster\+\_\+conf}{my_cluster_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+cluster\+\_\+conf}\hypertarget{ear__dbd__stress__test_8c_a6c6877da2aa55927ec276bfdedb32660}{}\label{ear__dbd__stress__test_8c_a6c6877da2aa55927ec276bfdedb32660}
+\index{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}!num\+\_\+events@{num\+\_\+events}}
+\index{num\+\_\+events@{num\+\_\+events}!ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c@{ear\+\_\+dbd\+\_\+stress\+\_\+test.\+c}}
+\subsubsection[{\texorpdfstring{num\+\_\+events}{num_events}}]{\setlength{\rightskip}{0pt plus 5cm}int num\+\_\+events}\hypertarget{ear__dbd__stress__test_8c_a2de2ffc34d0664f7a2e748d2342d1e10}{}\label{ear__dbd__stress__test_8c_a2de2ffc34d0664f7a2e748d2342d1e10}

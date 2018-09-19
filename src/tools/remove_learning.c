@@ -104,7 +104,7 @@ void main(int argc,char *argv[])
         exit(0);
     }
     
-    printf("query: %s\n", query);
+//    printf("query: %s\n", query);
     if (mysql_query(connection, query))
     {
         fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 

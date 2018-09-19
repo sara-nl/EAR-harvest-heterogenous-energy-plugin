@@ -1,0 +1,192 @@
+\hypertarget{energy__node_8c}{}\section{src/metrics/ipmi/energy\+\_\+node.c File Reference}
+\label{energy__node_8c}\index{src/metrics/ipmi/energy\+\_\+node.\+c@{src/metrics/ipmi/energy\+\_\+node.\+c}}
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$sys/time.\+h$>$}\\*
+{\ttfamily \#include $<$freeipmi/freeipmi.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/custom/hardware\+\_\+info.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/ipmi/energy\+\_\+node/lenovo\+\_\+nm.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/ipmi/energy\+\_\+node/lenovo\+\_\+sd650.\+h$>$}\\*
+{\ttfamily \#include $<$metrics/ipmi/energy\+\_\+node/ibm.\+h$>$}\\*
+{\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structnode__energy__op}{node\+\_\+energy\+\_\+op}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{energy__node_8c_a77dc17cadd125b543f535000905ec2cc}{F\+U\+N\+C\+V\+E\+RB}(function)                                                          ~\hyperlink{ear__verbose_8h_a86e8221e28e01ea67f896575743a567b}{ear\+\_\+debug}(4, \char`\"{}ear\+\_\+daemon(node\+\_\+energy) \char`\"{} function \char`\"{}\textbackslash{}n\char`\"{});
+\item 
+\#define \hyperlink{energy__node_8c_ad39b1f9aae3895fd04fb29fe3b952765}{N\+O\+D\+E\+\_\+\+M\+A\+N\+A\+G\+ER}~0
+\item 
+\#define \hyperlink{energy__node_8c_a9b306f970d6643ead2ea113f6848e399}{I\+N\+A226}~1
+\item 
+\#define \hyperlink{energy__node_8c_aa9f2547a0438a9c5d55d81a0fdeea7e9}{I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+C\+U\+S\+T\+O\+M\+\_\+\+F\+I\+E\+L\+DS}~64
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{energy__node_8c_addc2f1aa1d83f3708018c6cb7ed35a2c}{ipmi\+\_\+get\+\_\+product\+\_\+name} (char $\ast$my\+\_\+product\+\_\+manufacturer\+\_\+name, char $\ast$my\+\_\+product\+\_\+name)
+\item 
+int \hyperlink{energy__node_8c_a0b11790aa9ba1f20f571fea3216e7f2f}{node\+\_\+energy\+\_\+init} ()
+\begin{DoxyCompactList}\small\item\em Detects cpu model and platform and initialize data structures and devices if required Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8c_a2e6b8c25211cd89d898a7a2c48639ddd}{count\+\_\+energy\+\_\+data\+\_\+length} ()
+\begin{DoxyCompactList}\small\item\em Returns the data size length in bytes returned by read\+\_\+dc\+\_\+energy and read\+\_\+ac\+\_\+energy Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8c_a5b50c1e86d96af5d3a147d86922e214f}{read\+\_\+dc\+\_\+energy} (unsigned long $\ast$\hyperlink{structenergy}{energy})
+\begin{DoxyCompactList}\small\item\em Update energy with the accumulated node DC energy in mJ Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8c_abefc2edc754c0a612d42c1b17bc76911}{read\+\_\+dc\+\_\+energy\+\_\+time} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$\hyperlink{structenergy}{energy}, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$time\+\_\+ms)
+\begin{DoxyCompactList}\small\item\em Update energy with the accumulated node DC energy in mJ and time in ms Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8c_aa74932e5f104a7e3d03a41f9afbb0691}{read\+\_\+ac\+\_\+energy} (unsigned long $\ast$\hyperlink{structenergy}{energy})
+\begin{DoxyCompactList}\small\item\em Update energy with the accumulated node AC energy in mJ Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+int \hyperlink{energy__node_8c_a37f2384f33d22f237035c3ba269ffc81}{node\+\_\+energy\+\_\+dispose} ()
+\begin{DoxyCompactList}\small\item\em Releases resources allocated in node\+\_\+energy\+\_\+init Returns 0 on success and -\/1 on error. \end{DoxyCompactList}\item 
+unsigned long \hyperlink{energy__node_8c_a1e8430d94f8abbb6fcf085c598dce8a3}{node\+\_\+energy\+\_\+frequency} ()
+\begin{DoxyCompactList}\small\item\em Computes the energy node frequency of updates automatically returns the frequency (in usec) on success and 0 on error \hyperlink{energy__node_8h_a0b11790aa9ba1f20f571fea3216e7f2f}{node\+\_\+energy\+\_\+init()} must be called before. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structnode__energy__op}{node\+\_\+energy\+\_\+op} \hyperlink{energy__node_8c_a6b1d68f7a584cd3eb0924e01870d455b}{node\+\_\+energy\+\_\+ops}
+\item 
+uint8\+\_\+t \hyperlink{energy__node_8c_a53543eaa37151a43545d7c8c1b45cb64}{areabuf} \mbox{[}I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+A\+R\+E\+A\+\_\+\+S\+I\+Z\+E\+\_\+\+M\+AX+1\mbox{]}
+\item 
+unsigned int \hyperlink{energy__node_8c_a07769840451f47afae9fc166e75eb3d5}{area\+\_\+type} = 0
+\item 
+unsigned int \hyperlink{energy__node_8c_acc781ce86f30d189331fe87d52cb4a90}{area\+\_\+length} = 0
+\item 
+char \hyperlink{energy__node_8c_af4f825ac2a0cbea26c8795e325158009}{my\+\_\+p\+\_\+manufacturer\+\_\+name} \mbox{[}I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+A\+R\+E\+A\+\_\+\+S\+T\+R\+I\+N\+G\+\_\+\+M\+AX+1\mbox{]}
+\item 
+char \hyperlink{energy__node_8c_ae6965c7026949575d4c6a5d637286ff7}{my\+\_\+p\+\_\+name} \mbox{[}I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+A\+R\+E\+A\+\_\+\+S\+T\+R\+I\+N\+G\+\_\+\+M\+AX+1\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!F\+U\+N\+C\+V\+E\+RB@{F\+U\+N\+C\+V\+E\+RB}}
+\index{F\+U\+N\+C\+V\+E\+RB@{F\+U\+N\+C\+V\+E\+RB}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{F\+U\+N\+C\+V\+E\+RB}{FUNCVERB}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+U\+N\+C\+V\+E\+RB(
+\begin{DoxyParamCaption}
+\item[{}]{function}
+\end{DoxyParamCaption}
+)~{\bf ear\+\_\+debug}(4, \char`\"{}ear\+\_\+daemon(node\+\_\+energy) \char`\"{} function \char`\"{}\textbackslash{}n\char`\"{});}\hypertarget{energy__node_8c_a77dc17cadd125b543f535000905ec2cc}{}\label{energy__node_8c_a77dc17cadd125b543f535000905ec2cc}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!I\+N\+A226@{I\+N\+A226}}
+\index{I\+N\+A226@{I\+N\+A226}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{I\+N\+A226}{INA226}}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+N\+A226~1}\hypertarget{energy__node_8c_a9b306f970d6643ead2ea113f6848e399}{}\label{energy__node_8c_a9b306f970d6643ead2ea113f6848e399}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+C\+U\+S\+T\+O\+M\+\_\+\+F\+I\+E\+L\+DS@{I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+C\+U\+S\+T\+O\+M\+\_\+\+F\+I\+E\+L\+DS}}
+\index{I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+C\+U\+S\+T\+O\+M\+\_\+\+F\+I\+E\+L\+DS@{I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+C\+U\+S\+T\+O\+M\+\_\+\+F\+I\+E\+L\+DS}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+C\+U\+S\+T\+O\+M\+\_\+\+F\+I\+E\+L\+DS}{IPMI_FRU_CUSTOM_FIELDS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+C\+U\+S\+T\+O\+M\+\_\+\+F\+I\+E\+L\+DS~64}\hypertarget{energy__node_8c_aa9f2547a0438a9c5d55d81a0fdeea7e9}{}\label{energy__node_8c_aa9f2547a0438a9c5d55d81a0fdeea7e9}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!N\+O\+D\+E\+\_\+\+M\+A\+N\+A\+G\+ER@{N\+O\+D\+E\+\_\+\+M\+A\+N\+A\+G\+ER}}
+\index{N\+O\+D\+E\+\_\+\+M\+A\+N\+A\+G\+ER@{N\+O\+D\+E\+\_\+\+M\+A\+N\+A\+G\+ER}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{N\+O\+D\+E\+\_\+\+M\+A\+N\+A\+G\+ER}{NODE_MANAGER}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+O\+D\+E\+\_\+\+M\+A\+N\+A\+G\+ER~0}\hypertarget{energy__node_8c_ad39b1f9aae3895fd04fb29fe3b952765}{}\label{energy__node_8c_ad39b1f9aae3895fd04fb29fe3b952765}
+
+
+\subsection{Function Documentation}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!count\+\_\+energy\+\_\+data\+\_\+length@{count\+\_\+energy\+\_\+data\+\_\+length}}
+\index{count\+\_\+energy\+\_\+data\+\_\+length@{count\+\_\+energy\+\_\+data\+\_\+length}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{count\+\_\+energy\+\_\+data\+\_\+length()}{count_energy_data_length()}}]{\setlength{\rightskip}{0pt plus 5cm}int count\+\_\+energy\+\_\+data\+\_\+length (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8c_a2e6b8c25211cd89d898a7a2c48639ddd}{}\label{energy__node_8c_a2e6b8c25211cd89d898a7a2c48639ddd}
+
+
+Returns the data size length in bytes returned by read\+\_\+dc\+\_\+energy and read\+\_\+ac\+\_\+energy Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!ipmi\+\_\+get\+\_\+product\+\_\+name@{ipmi\+\_\+get\+\_\+product\+\_\+name}}
+\index{ipmi\+\_\+get\+\_\+product\+\_\+name@{ipmi\+\_\+get\+\_\+product\+\_\+name}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{ipmi\+\_\+get\+\_\+product\+\_\+name(char $\ast$my\+\_\+product\+\_\+manufacturer\+\_\+name, char $\ast$my\+\_\+product\+\_\+name)}{ipmi_get_product_name(char *my_product_manufacturer_name, char *my_product_name)}}]{\setlength{\rightskip}{0pt plus 5cm}int ipmi\+\_\+get\+\_\+product\+\_\+name (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{my\+\_\+product\+\_\+manufacturer\+\_\+name, }
+\item[{char $\ast$}]{my\+\_\+product\+\_\+name}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8c_addc2f1aa1d83f3708018c6cb7ed35a2c}{}\label{energy__node_8c_addc2f1aa1d83f3708018c6cb7ed35a2c}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!node\+\_\+energy\+\_\+dispose@{node\+\_\+energy\+\_\+dispose}}
+\index{node\+\_\+energy\+\_\+dispose@{node\+\_\+energy\+\_\+dispose}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{node\+\_\+energy\+\_\+dispose()}{node_energy_dispose()}}]{\setlength{\rightskip}{0pt plus 5cm}int node\+\_\+energy\+\_\+dispose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8c_a37f2384f33d22f237035c3ba269ffc81}{}\label{energy__node_8c_a37f2384f33d22f237035c3ba269ffc81}
+
+
+Releases resources allocated in node\+\_\+energy\+\_\+init Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!node\+\_\+energy\+\_\+frequency@{node\+\_\+energy\+\_\+frequency}}
+\index{node\+\_\+energy\+\_\+frequency@{node\+\_\+energy\+\_\+frequency}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{node\+\_\+energy\+\_\+frequency()}{node_energy_frequency()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long node\+\_\+energy\+\_\+frequency (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8c_a1e8430d94f8abbb6fcf085c598dce8a3}{}\label{energy__node_8c_a1e8430d94f8abbb6fcf085c598dce8a3}
+
+
+Computes the energy node frequency of updates automatically returns the frequency (in usec) on success and 0 on error \hyperlink{energy__node_8h_a0b11790aa9ba1f20f571fea3216e7f2f}{node\+\_\+energy\+\_\+init()} must be called before. 
+
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!node\+\_\+energy\+\_\+init@{node\+\_\+energy\+\_\+init}}
+\index{node\+\_\+energy\+\_\+init@{node\+\_\+energy\+\_\+init}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{node\+\_\+energy\+\_\+init()}{node_energy_init()}}]{\setlength{\rightskip}{0pt plus 5cm}int node\+\_\+energy\+\_\+init (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8c_a0b11790aa9ba1f20f571fea3216e7f2f}{}\label{energy__node_8c_a0b11790aa9ba1f20f571fea3216e7f2f}
+
+
+Detects cpu model and platform and initialize data structures and devices if required Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!read\+\_\+ac\+\_\+energy@{read\+\_\+ac\+\_\+energy}}
+\index{read\+\_\+ac\+\_\+energy@{read\+\_\+ac\+\_\+energy}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{read\+\_\+ac\+\_\+energy(unsigned long $\ast$energy)}{read_ac_energy(unsigned long *energy)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+ac\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{unsigned long $\ast$}]{energy}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8c_aa74932e5f104a7e3d03a41f9afbb0691}{}\label{energy__node_8c_aa74932e5f104a7e3d03a41f9afbb0691}
+
+
+Update energy with the accumulated node AC energy in mJ Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!read\+\_\+dc\+\_\+energy@{read\+\_\+dc\+\_\+energy}}
+\index{read\+\_\+dc\+\_\+energy@{read\+\_\+dc\+\_\+energy}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{read\+\_\+dc\+\_\+energy(unsigned long $\ast$energy)}{read_dc_energy(unsigned long *energy)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+dc\+\_\+energy (
+\begin{DoxyParamCaption}
+\item[{unsigned long $\ast$}]{energy}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8c_a5b50c1e86d96af5d3a147d86922e214f}{}\label{energy__node_8c_a5b50c1e86d96af5d3a147d86922e214f}
+
+
+Update energy with the accumulated node DC energy in mJ Returns 0 on success and -\/1 on error. 
+
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!read\+\_\+dc\+\_\+energy\+\_\+time@{read\+\_\+dc\+\_\+energy\+\_\+time}}
+\index{read\+\_\+dc\+\_\+energy\+\_\+time@{read\+\_\+dc\+\_\+energy\+\_\+time}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{read\+\_\+dc\+\_\+energy\+\_\+time(ulong $\ast$energy, ulong $\ast$time\+\_\+ms)}{read_dc_energy_time(ulong *energy, ulong *time_ms)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+dc\+\_\+energy\+\_\+time (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong} $\ast$}]{energy, }
+\item[{{\bf ulong} $\ast$}]{time\+\_\+ms}
+\end{DoxyParamCaption}
+)}\hypertarget{energy__node_8c_abefc2edc754c0a612d42c1b17bc76911}{}\label{energy__node_8c_abefc2edc754c0a612d42c1b17bc76911}
+
+
+Update energy with the accumulated node DC energy in mJ and time in ms Returns 0 on success and -\/1 on error. 
+
+
+
+\subsection{Variable Documentation}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!area\+\_\+length@{area\+\_\+length}}
+\index{area\+\_\+length@{area\+\_\+length}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{area\+\_\+length}{area_length}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int area\+\_\+length = 0}\hypertarget{energy__node_8c_acc781ce86f30d189331fe87d52cb4a90}{}\label{energy__node_8c_acc781ce86f30d189331fe87d52cb4a90}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!area\+\_\+type@{area\+\_\+type}}
+\index{area\+\_\+type@{area\+\_\+type}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{area\+\_\+type}{area_type}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int area\+\_\+type = 0}\hypertarget{energy__node_8c_a07769840451f47afae9fc166e75eb3d5}{}\label{energy__node_8c_a07769840451f47afae9fc166e75eb3d5}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!areabuf@{areabuf}}
+\index{areabuf@{areabuf}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{areabuf}{areabuf}}]{\setlength{\rightskip}{0pt plus 5cm}uint8\+\_\+t areabuf\mbox{[}I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+A\+R\+E\+A\+\_\+\+S\+I\+Z\+E\+\_\+\+M\+AX+1\mbox{]}}\hypertarget{energy__node_8c_a53543eaa37151a43545d7c8c1b45cb64}{}\label{energy__node_8c_a53543eaa37151a43545d7c8c1b45cb64}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!my\+\_\+p\+\_\+manufacturer\+\_\+name@{my\+\_\+p\+\_\+manufacturer\+\_\+name}}
+\index{my\+\_\+p\+\_\+manufacturer\+\_\+name@{my\+\_\+p\+\_\+manufacturer\+\_\+name}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+p\+\_\+manufacturer\+\_\+name}{my_p_manufacturer_name}}]{\setlength{\rightskip}{0pt plus 5cm}char my\+\_\+p\+\_\+manufacturer\+\_\+name\mbox{[}I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+A\+R\+E\+A\+\_\+\+S\+T\+R\+I\+N\+G\+\_\+\+M\+AX+1\mbox{]}}\hypertarget{energy__node_8c_af4f825ac2a0cbea26c8795e325158009}{}\label{energy__node_8c_af4f825ac2a0cbea26c8795e325158009}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!my\+\_\+p\+\_\+name@{my\+\_\+p\+\_\+name}}
+\index{my\+\_\+p\+\_\+name@{my\+\_\+p\+\_\+name}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+p\+\_\+name}{my_p_name}}]{\setlength{\rightskip}{0pt plus 5cm}char my\+\_\+p\+\_\+name\mbox{[}I\+P\+M\+I\+\_\+\+F\+R\+U\+\_\+\+A\+R\+E\+A\+\_\+\+S\+T\+R\+I\+N\+G\+\_\+\+M\+AX+1\mbox{]}}\hypertarget{energy__node_8c_ae6965c7026949575d4c6a5d637286ff7}{}\label{energy__node_8c_ae6965c7026949575d4c6a5d637286ff7}
+\index{energy\+\_\+node.\+c@{energy\+\_\+node.\+c}!node\+\_\+energy\+\_\+ops@{node\+\_\+energy\+\_\+ops}}
+\index{node\+\_\+energy\+\_\+ops@{node\+\_\+energy\+\_\+ops}!energy\+\_\+node.\+c@{energy\+\_\+node.\+c}}
+\subsubsection[{\texorpdfstring{node\+\_\+energy\+\_\+ops}{node_energy_ops}}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf node\+\_\+energy\+\_\+op}  node\+\_\+energy\+\_\+ops}\hypertarget{energy__node_8c_a6b1d68f7a584cd3eb0924e01870d455b}{}\label{energy__node_8c_a6b1d68f7a584cd3eb0924e01870d455b}
