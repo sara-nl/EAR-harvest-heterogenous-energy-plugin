@@ -348,10 +348,28 @@ static void release_resources()
 	free_cluster_conf(&conf_clus);
 }
 
+int sigusr1 = 0;
+
 //static void signal_handler(int signal)
 static void signal_handler(int signal, siginfo_t *info, void *context)
 {
 	int propagating = 0;
+	int i;
+
+	if (signal == SIGUSR1)
+	{
+		verbose0("RECEIVED SIGUSR1");
+		memset(appsm, 0, len_appsm * sizeof(application_t));
+		i_appsm = len_appsm - 1;
+			
+		for (i = 0; i < len_appsm; ++i)
+		{
+			appsm[i].job.id = 857488;
+			appsm[i].job.step_id = i;
+		}
+
+		insert_hub(SYNC_APPSM, 0);
+	}
 
 	// Case exit
 	if (signal == SIGTERM || signal == SIGINT && !exitting)
@@ -663,6 +681,7 @@ static void init_signals()
 
 	// Blocking all signals except PIPE, TERM, INT and HUP
 	sigfillset(&set);
+	sigdelset(&set, SIGUSR1);
 	sigdelset(&set, SIGTERM);
 	sigdelset(&set, SIGINT);
 	sigdelset(&set, SIGHUP);
@@ -676,6 +695,9 @@ static void init_signals()
 	action.sa_sigaction = signal_handler;
 	action.sa_flags = SA_SIGINFO;
 
+    if (sigaction(SIGUSR1, &action, NULL) < 0) { 
+        verbose1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+    }  
 	if (sigaction(SIGTERM, &action, NULL) < 0) {
 		verbose1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
 	}

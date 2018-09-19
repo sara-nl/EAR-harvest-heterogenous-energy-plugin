@@ -143,7 +143,7 @@ static void insert_result(uint index, uint length, clock_t time_start, ulong typ
 	pnt = (float) (index) / (float) (length);
 	kbs = (float) (index * type_size) / 1000.0;
 
-	verbose1("%lu/%lu (%0.2f%, %0.3f KBs) samples of %s in %0.3f ms",
+	verbose1("inserted %lu/%lu (%0.2f%, %0.3f KBs) samples of %s in %0.3f ms",
 			 index, length, pnt, kbs, type_name, tms);
 }
 
@@ -154,6 +154,8 @@ static void insert_apps_mpi()
 	if (per_appsm == 0 || i_appsm <= 0) {
 		return;
 	}
+
+	verbose1("inserting %u mpi applications", i_appsm);
 
 	time_start = clock();
 	db_batch_insert_applications(appsm, i_appsm);
