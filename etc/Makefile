@@ -27,17 +27,17 @@ dev_FOLDERS = $(DESTDIR)/include \
 install:
 	@ mkdir -p $(gen_FOLDERS) 
 	cp -r scripts/* $(DESTDIR)/bin/scripts/
-	@ rm  $(DESTDIR)/bin/scripts/README.md
-	@ rm  $(DESTDIR)/bin/scripts/learning/README.md
+	@ rm $(DESTDIR)/bin/scripts/README.md
+	@ rm $(DESTDIR)/bin/scripts/learning/README.md
 
 etc.install: ;
 	@ mkdir -p $(etc_FOLDERS) 
-	cp    conf/ear.conf $(ETCDIR)/ear
-	cp    module/ear $(ETCDIR)/module/
-	cp -n slurm/ear.plugstack.conf $(ETCDIR)/slurm/
-	cp -n systemd/eard.service $(ETCDIR)/systemd
-	cp -n systemd/eardbd.service $(ETCDIR)/systemd
-	cp -n systemd/eargmd.service $(ETCDIR)/systemd
+	cp -i conf/ear.conf $(ETCDIR)/ear
+	cp -i module/ear $(ETCDIR)/module/
+	cp -i slurm/ear.plugstack.conf $(ETCDIR)/slurm/
+	cp -i systemd/eard.service $(ETCDIR)/systemd
+	cp -i systemd/eardbd.service $(ETCDIR)/systemd
+	cp -i systemd/eargmd.service $(ETCDIR)/systemd
 
 devel.install: ;
 	@ mkdir -p $(dev_FOLDERS)
