@@ -99,28 +99,6 @@ static char *__NAME__ = "MYSQL_IO: ";
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
                                     "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-//number of arguments inserted into periodic_metrics
-#if DEMO
-#define PERIODIC_METRIC_ARGS 7
-#else
-#define PERIODIC_METRIC_ARGS 6
-#endif
-
-#define PERIODIC_AGGREGATION_ARGS 3
-
-#define EAR_EVENTS_ARGS 6
-
-#if !DB_SIMPLE
-#define SIGNATURE_ARGS 21
-#else
-#define SIGNATURE_ARGS 11
-#endif
-
-#define POWER_SIGNATURE_ARGS 9
-
-#define APPLICATION_ARGS 5
-
-#define LOOP_ARGS 8
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
@@ -311,16 +289,30 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     }
 
-    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+    if (mysql_stmt_bind_param(statement, bind))
+    {
+        free(bind);
+        free(query);
+        free(pow_sigs_ids);
+        free(sigs_ids);
+        return mysql_statement_error(statement);
+    }
 
-    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
-
-    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+    if (mysql_stmt_execute(statement))
+    {
+        free(bind);
+        free(query);
+        free(pow_sigs_ids);
+        free(sigs_ids);
+        return mysql_statement_error(statement);
+    }
 
     free(bind);
     free(query);
     free(pow_sigs_ids);
     free(sigs_ids);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return EAR_SUCCESS;
 }

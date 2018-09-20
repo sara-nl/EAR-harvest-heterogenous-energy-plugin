@@ -27,9 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
@@ -85,9 +87,25 @@ int db_insert_application(application_t *application)
 
 }
 
+#define APP_VARS	APPLICATION_ARGS
+#define PSI_VARS	POWER_SIGNATURE_ARGS
+#define NSI_VARS	SIGNATURE_ARGS
+#define JOB_VARS	JOB_ARGS
+#define _MAX(X,Y)			 X > Y ? X : Y
+#define _MMAAXX(W,X,Y,Z) 	_MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z)
+
 int db_batch_insert_applications(application_t *applications, int num_apps)
 {
-        MYSQL *connection = mysql_init(NULL);
+	const uint a = _MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_ARGS);
+	float b = (float) USHRT_MAX / (float) a;
+
+	uint c = ((uint) b);
+	c = 100;
+	uint d = ((uint) num_apps) / c;
+	uint i, j;
+
+	//
+    MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
     {
@@ -101,23 +119,32 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
         return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+	if (!mysql_real_connect(connection, db_config->ip, db_config->user,
+			db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_applications(connection, applications, num_apps) < 0)
+    for (i = 0, j = 0; j < d; i += c, j +=1)
     {
-        VERBOSE_N(0, "ERROR while batch writing applications to database.");
-        return EAR_ERROR;
+    	if (mysql_batch_insert_applications(connection, &applications[i], c) < 0) {
+        	VERBOSE_N(0, "ERROR while batch writing applications to database.");
+        	return EAR_ERROR;
+    	}
+	}
+	if (i < num_apps)
+	{
+		if (mysql_batch_insert_applications(connection, &applications[i], num_apps - i) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing applications to database.");
+			return EAR_ERROR;
+		}
     }
 
     mysql_close(connection);
     
     return EAR_SUCCESS;
-
 }
 
 int db_batch_insert_applications_no_mpi(application_t *applications, int num_apps)
