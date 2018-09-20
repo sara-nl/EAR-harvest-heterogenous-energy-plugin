@@ -348,31 +348,43 @@ static void release_resources()
 	free_cluster_conf(&conf_clus);
 }
 
-int sigusr1 = 0;
+static void fake()
+{
+		int i;
+        memset(appsm, 0, len_appsm * sizeof(application_t));
+        i_appsm = len_appsm - 1; 
+     
+        for (i = 0; i < len_appsm; ++i) 
+        {
+            appsm[i].is_mpi = 1; 
+            appsm[i].job.id = 857489;
+            appsm[i].job.step_id = i; 
+            strcpy(appsm[i].node_id, "node");
+            strcpy(appsm[i].job.user_id, "user_id");
+            strcpy(appsm[i].job.group_id, "group_id");
+            strcpy(appsm[i].job.app_id, "app_id");
+            strcpy(appsm[i].job.user_acc, "user_acc");
+            strcpy(appsm[i].job.energy_tag, "energy_tag");
+            strcpy(appsm[i].job.policy, "MONITORING_ONLY");
 
-//static void signal_handler(int signal)
+        }
+
+        verbose0("DATABASE, entering insert_hub()");
+        insert_hub(SYNC_APPSM, 0);
+        verbose0("DATABASE, exitting insert_hub()");
+}
+
 static void signal_handler(int signal, siginfo_t *info, void *context)
 {
 	int propagating = 0;
-	int i;
 
 	if (signal == SIGUSR1)
 	{
-		verbose0("RECEIVED SIGUSR1");
-		memset(appsm, 0, len_appsm * sizeof(application_t));
-		i_appsm = len_appsm - 1;
-			
-		for (i = 0; i < len_appsm; ++i)
-		{
-			appsm[i].job.id = 857488;
-			appsm[i].job.step_id = i;
-		}
-
-		insert_hub(SYNC_APPSM, 0);
+		return;
 	}
 
 	// Case exit
-	if (signal == SIGTERM || signal == SIGINT && !exitting)
+	if ((signal == SIGTERM || signal == SIGINT) && !exitting)
 	{
 		verbose1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
 
@@ -415,7 +427,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 {
 	node_island_t *is;
 	int i, j, k, found;
-	char *p;
+	char *p, *hl, *hs;
 
 	// Cleaning 0 (who am I? Ok I'm the server, which is also the master for now)
 	mirror_iam = 0;
@@ -441,8 +453,17 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	init_db_helper(&conf_clus->database);
 
 	// Mirror finding
-	gethostname(master_host, SZ_NAME_MEDIUM);
+	hl = master_host;  // Long host pointer
+	hs = extra_buffer; // Short host pointer
+
+	gethostname(hl, SZ_NAME_MEDIUM);
+	strncpy(hs, hl, SZ_NAME_MEDIUM);
 	found = 0;
+
+	// Finding the short form 
+	if ((p = strchr(hs, '.')) != NULL) {
+		p[0] = '\0';
+	}
 
 	for (i = 0; i < conf_clus->num_islands && !found; ++i)
 	{
@@ -454,7 +475,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 			p = is->db_ips[is->ranges[k].db_ip];
 			//verbose3("r %s", p);
 
-			if (!server_too && p != NULL && (strncmp(p, master_host, strlen(master_host)) == 0)){
+			if (!server_too && p != NULL && ((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0)))) {
 				//verbose3("db_ip %s", p);
 				server_too = 1;
 			}
@@ -463,7 +484,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 			{
 				p = is->backup_ips[is->ranges[k].sec_ip];
 
-				if (p != NULL && (strncmp(p, master_host, strlen(master_host)) == 0))
+				if (p != NULL && ((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0))))
 				{
 					//verbose3("db_ip_sec %s", p);
 					strcpy(server_host, is->db_ips[is->ranges[k].db_ip]);
@@ -871,7 +892,7 @@ static void pipeline()
 				error("during select (%s)", intern_error_str);
 			}
 		}
-
+		
 		// If timeout_insr, data processing
 		if (timeout_slct.tv_sec == 0 && timeout_slct.tv_usec == 0)
 		{
@@ -1023,7 +1044,16 @@ int main(int argc, char **argv)
 		//
 		verline1("phase 6: listening (processing every %lu s)", time_insr);
 		pipeline();
+
+		//exitting = 1;	
 	}
+
+	//exitting = 0;
+
+	//while (!exitting) {
+		//sleep(100);	
+		//fake();
+	//}
 
 	return 0;
 }
