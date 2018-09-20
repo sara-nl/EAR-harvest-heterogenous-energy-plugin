@@ -21,7 +21,8 @@ BINARIES = cpu_examinable      \
            papi_comp_available \
            papi_comp_enabled   \
            gsl_version         \
-           free_ipmi_version 
+           free_ipmi_version \
+			ear_types
 ifdef SLURM_BASE
 	BINARIES += slurm_version
 endif
@@ -73,6 +74,9 @@ slurm_version: slurm_version.c
 
 free_ipmi_version: free_ipmi_version.c
 	$(CC) $(CFLAGS) $(IPMI_CFLAGS) -o free_ipmi_version free_ipmi_version.c
+
+ear_types:ear_types.c 
+	$(CC) $(CFLAGS) -o ear_types ear_types.c
 
 ######## OPTIONS
 
