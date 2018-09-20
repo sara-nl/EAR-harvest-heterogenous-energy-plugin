@@ -161,47 +161,6 @@ void send_answer(int s,ulong *ack)
 	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer");
 	if (ret<0) VERBOSE_N(0,"(%s)",strerror(errno));
 }
-//for the time being, only one correction will be applied
-void correct_error(int target_ip, request_t *command, int port)
-{
-    if (command->node_dist < 1) return;
-    char nextip1[50], nextip2[50];
-
-    struct sockaddr_in temp;
-    int ip1, ip2; 
-    ip1 = ip2 = htonl(target_ip);
-    ip1 += command->node_dist;
-    temp.sin_addr.s_addr = ntohl(ip1);
-
-    strcpy(nextip1, inet_ntoa(temp.sin_addr));
-
-    ip2 -= command->node_dist;
-    temp.sin_addr.s_addr = ntohl(ip2);
-    strcpy(nextip2, inet_ntoa(temp.sin_addr));
-
-    //the next node will propagate the command at half the distance
-    command->node_dist /= 2;
-    //connect to first subnode
-    int rc = eards_remote_connect(nextip1, port);
-    if (rc < 0)
-        fprintf(stderr, "Error connecting to node: %s\n", nextip1);
-    else
-    {
-        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip1);
-        else printf("pinged node %s\n", nextip1);
-        eards_remote_disconnect();
-    }
-
-    //connect to second subnode
-    rc = eards_remote_connect(nextip2, port);
-    if (rc < 0)
-        fprintf(stderr, "Error connecting to node: %s\n", nextip2);
-    else
-    {
-        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip2);
-        else printf("pinged node %s\n", nextip2);
-    } 
-}
 void propagate_req(request_t *command, int port)
 {
 

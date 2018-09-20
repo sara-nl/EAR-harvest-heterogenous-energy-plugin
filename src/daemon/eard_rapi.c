@@ -33,6 +33,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
+#include <arpa/inet.h>
 #include <netdb.h> 
 #include <string.h>
 #include <stdint.h>
@@ -374,6 +375,84 @@ void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
+//for the time being, only one correction will be applied
+void correct_error(int target_ip, request_t *command, int port)
+{
+    if (command->node_dist < 1) return;
+    char nextip1[50], nextip2[50];
+
+    struct sockaddr_in temp;
+    int ip1, ip2; 
+    ip1 = ip2 = htonl(target_ip);
+    ip1 += command->node_dist;
+    temp.sin_addr.s_addr = ntohl(ip1);
+
+    strcpy(nextip1, inet_ntoa(temp.sin_addr));
+
+    ip2 -= command->node_dist;
+    temp.sin_addr.s_addr = ntohl(ip2);
+    strcpy(nextip2, inet_ntoa(temp.sin_addr));
+
+    //the next node will propagate the command at half the distance
+    command->node_dist /= 2;
+    //connect to first subnode
+    int rc = eards_remote_connect(nextip1, port);
+    if (rc < 0)
+        fprintf(stderr, "Error connecting to node: %s\n", nextip1);
+    else
+    {
+        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip1);
+        else printf("pinged node %s\n", nextip1);
+        eards_remote_disconnect();
+    }
+
+    //connect to second subnode
+    rc = eards_remote_connect(nextip2, port);
+    if (rc < 0)
+        fprintf(stderr, "Error connecting to node: %s\n", nextip2);
+    else
+    {
+        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip2);
+        else printf("pinged node %s\n", nextip2);
+    } 
+}
+
+void correct_error_starter(char *host_name, request_t *command, int port)
+{
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int sfd, s;
+    int ip1, ip2;
+    struct sockaddr_storage peer_addr;
+    socklen_t peer_addr_len;
+    ssize_t nread;
+    int host_ip = 0;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+   	s = getaddrinfo(host_name, NULL, &hints, &result);
+    if (s != 0) {
+		fprintf(stderr,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
+		return;
+    }
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        if (rp->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
+            host_ip = saddr->sin_addr.s_addr;
+        }
+    }
+    freeaddrinfo(result);
+    correct_error(host_ip, command, port);
+}
+
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc; 
@@ -394,21 +473,27 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
                 else 
                     sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
 
-                command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/4;
+                command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
+                printf("com node_dis: %d\n", command.node_dist);
                 int t = 1;
                 while (t < command.node_dist) t *=2;
                 command.node_dist = t;
             }   
-            rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+            rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
-                VERBOSE_N(0,"Error connecting with node %s", node_name);
-            }else{
+                VERBOSE_N(0,"Error connecting with node %s, trying to correct it", node_name);
+                correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
+            }
+            else{
                 VERBOSE_N(1,"Node %s with distance %d ping!\n", node_name, command.node_dist);
-                if (!send_command(&command)) VERBOSE_N(0,"Error doing ping for node %s", node_name);
+                if (!send_command(&command)) {
+                    VERBOSE_N(0,"Error doing ping for node %s, trying to correct it", node_name);
+                    correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
+                }
                 eards_remote_disconnect();
             }
         }
-   }
+    }
 }
 
 
