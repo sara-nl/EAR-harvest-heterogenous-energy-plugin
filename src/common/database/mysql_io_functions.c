@@ -289,16 +289,30 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     }
 
-    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+    if (mysql_stmt_bind_param(statement, bind))
+    {
+        free(bind);
+        free(query);
+        free(pow_sigs_ids);
+        free(sigs_ids);
+        return mysql_statement_error(statement);
+    }
 
-    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
-
-    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+    if (mysql_stmt_execute(statement))
+    {
+        free(bind);
+        free(query);
+        free(pow_sigs_ids);
+        free(sigs_ids);
+        return mysql_statement_error(statement);
+    }
 
     free(bind);
     free(query);
     free(pow_sigs_ids);
     free(sigs_ids);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return EAR_SUCCESS;
 }
