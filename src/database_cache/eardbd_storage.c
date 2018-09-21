@@ -141,11 +141,11 @@ static void insert_resultt(uint index, uint length, time_t time_start, ulong typ
 
 	time(&time_stop);	
 
-	pnt = (float) (index) / (float) (length);
-	kbs = (float) (index * type_size) / 1000.0;
+	pnt = (float) (index) / (float) (length)) * 100.0f;
+	kbs = (float) (index * type_size) / 1000000.0;
 	tms = (float) difftime(time_stop, time_start);
 
-	verbose1("inserted %lu/%lu (%0.2f%, %0.3f KBs) samples of %s in %0.3f ms",
+	verbose1("inserted %lu/%lu (%0.2f%, %0.2f MBs) samples of %s in %f s",
 			 index, length, pnt, kbs, type_name, tms);
 }
 
@@ -286,25 +286,25 @@ void insert_hub(uint option, uint reason)
 	verline0();
 	verbose1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 
-	if (sync_option(option, SYNC_AGGRS)) {
-		insert_aggregations();
+	if (sync_option_m(option, SYNC_APPSM, SYNC_ALL)) {
+		insert_apps_mpi();
 	}
-	if (sync_option(option, SYNC_APPSM)) {
-		//insert_apps_mpi();
-	}
-	if (sync_option(option, SYNC_APPSN)) {
+	if (sync_option_m(option, SYNC_APPSN, SYNC_ALL)) {
 		insert_apps_non_mpi();
 	}
-	if (sync_option(option, SYNC_APPSL)) {
+	if (sync_option_m(option, SYNC_APPSL, SYNC_ALL)) {
 		insert_apps_learning();
 	}
-	if (sync_option(option, SYNC_ENRGY)) {
+	if (sync_option_m(option, SYNC_ENRGY, SYNC_ALL)) {
 		insert_energy();
 	}
-	if (sync_option(option, SYNC_EVNTS)) {
+	if (sync_option_m(option, SYNC_AGGRS, SYNC_ALL)) {
+		insert_aggregations();
+	}
+	if (sync_option_m(option, SYNC_EVNTS, SYNC_ALL)) {
 		insert_events();
 	}
-	if (sync_option(option, SYNC_LOOPS)) {
+	if (sync_option_m(option, SYNC_LOOPS, SYNC_ALL)) {
 		insert_loops();
 	}
 	if (sync_option(option, SYNC_RESET)) {

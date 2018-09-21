@@ -355,6 +355,7 @@ static void fake()
         memset(enrgy, 0, len_enrgy * sizeof(periodic_metric_t));
         i_appsm = len_appsm; 
 		i_enrgy = len_enrgy;    
+		i_enrgy = 8000;    
  
         for (i = 0; i < len_appsm; ++i) 
         {
@@ -1060,7 +1061,7 @@ int main(int argc, char **argv)
 	exitting = 0;
 
 	while (!exitting) {
-		sleep(100);	
+		sleep(10000);	
 		fake();
 	}
 	#endif

@@ -49,13 +49,13 @@
 #define CONTENT_TYPE_AGG	5
 #define CONTENT_TYPE_QST	6
 #define CONTENT_TYPE_ANS	7
-#define SYNC_ENRGY 			0x101
-#define SYNC_APPSM 			0x102
-#define SYNC_APPSN			0x104
-#define SYNC_APPSL 			0x108
-#define SYNC_LOOPS			0x110
-#define SYNC_EVNTS			0x120
-#define SYNC_AGGRS			0x140
+#define SYNC_ENRGY 			0x001
+#define SYNC_APPSM 			0x002
+#define SYNC_APPSN			0x004
+#define SYNC_APPSL 			0x008
+#define SYNC_LOOPS			0x010
+#define SYNC_EVNTS			0x020
+#define SYNC_AGGRS			0x040
 #define SYNC_RESET			0x080
 #define SYNC_ALL			0x100
 #define RES_SYNC			0
@@ -65,6 +65,9 @@
 
 #define sync_option(option, type) \
 	((option & type) > 0)
+
+#define sync_option_m(option, type1, type2) \
+	((sync_option(option, type1)) || (sync_option(option, type2)))
 
 /* Macros */
 #define _MAX(X,Y) sizeof(X) > sizeof(Y) ? sizeof(X) : sizeof(Y)

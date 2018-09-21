@@ -351,7 +351,7 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
 
 int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 {
-	int bulk_elms = _BULK_ELMS(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
+	int bulk_elms = _BULK_ELMS(PER_VARS);
 	int bulk_sets = _BULK_SETS(num_mets, bulk_elms);
 	int e, s;
 
