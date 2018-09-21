@@ -77,7 +77,14 @@ void main(int argc,char *argv[])
     char *token;
     job_id = 1602; 
  
-    if (verbose) fprintf(stderr, "Preparing query statement\n");
+    if (argc < 2) 
+        num_apps = 35000;
+    else
+        num_apps = atoi(argv[1]);
+
+    application_t * apps = calloc(num_apps, sizeof(application_t));
+
+    /*if (verbose) fprintf(stderr, "Preparing query statement\n");
     sprintf(query, "SELECT * FROM Applications WHERE job_id=%u and step_id=%u", job_id, step_id);
     application_t *apps;
 
@@ -101,12 +108,16 @@ void main(int argc,char *argv[])
 
     for (i = 0; i < num_apps; i++)
         report_application_data(&apps[i]);
-
+    mysql_close(connection);
+*/
+    int base = time(NULL);
     for (i = 0; i < num_apps; i++)
-        apps[i].job.step_id = time(NULL);
+    {
+        apps[i].job.id = base;
+        apps[i].job.step_id = i;
+    }
     printf("num_apps: %d found\n", num_apps);
     
-    mysql_close(connection);
 
     init_db_helper(&my_cluster.database);
 

@@ -99,28 +99,6 @@ static char *__NAME__ = "MYSQL_IO: ";
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
                                     "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-//number of arguments inserted into periodic_metrics
-#if DEMO
-#define PERIODIC_METRIC_ARGS 7
-#else
-#define PERIODIC_METRIC_ARGS 6
-#endif
-
-#define PERIODIC_AGGREGATION_ARGS 3
-
-#define EAR_EVENTS_ARGS 6
-
-#if !DB_SIMPLE
-#define SIGNATURE_ARGS 21
-#else
-#define SIGNATURE_ARGS 11
-#endif
-
-#define POWER_SIGNATURE_ARGS 9
-
-#define APPLICATION_ARGS 5
-
-#define LOOP_ARGS 8
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
@@ -229,8 +207,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
    
     //job only needs to be inserted once
-    for (i = 0; i < num_apps; i++)
-        mysql_insert_job(connection, &app[i].job, is_learning);
+    mysql_batch_insert_jobs(connection, app, num_apps);
     
     int pow_sig_id = 0;
     int sig_id = 0;
@@ -281,8 +258,6 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     for (i = 1; i < num_apps; i++)
         strcat(query, params);
 
-    printf("QUERY: %s\n", query);
-
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
 
@@ -311,19 +286,114 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     }
 
-    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+    if (mysql_stmt_bind_param(statement, bind))
+    {
+        free(bind);
+        free(query);
+        free(pow_sigs_ids);
+        free(sigs_ids);
+        return mysql_statement_error(statement);
+    }
 
-    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
-
-    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+    if (mysql_stmt_execute(statement))
+    {
+        free(bind);
+        free(query);
+        free(pow_sigs_ids);
+        free(sigs_ids);
+        return mysql_statement_error(statement);
+    }
 
     free(bind);
     free(query);
     free(pow_sigs_ids);
     free(sigs_ids);
 
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
     return EAR_SUCCESS;
 }
+
+int mysql_batch_insert_jobs(MYSQL *connection, application_t *app, int num_apps)
+{
+    char is_learning = app[0].is_learning;
+
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+    char *query;
+    char *params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    if (!is_learning)
+    {
+        query = malloc(strlen(JOB_QUERY)+strlen(params)*(num_apps-1)+1);
+        strcpy(query, JOB_QUERY);
+    }
+    else
+    {
+        query = malloc(strlen(LEARNING_JOB_QUERY)+strlen(params)*(num_apps-1)+1);
+        strcpy(query, JOB_QUERY);
+    }
+
+    int i;
+    for (i = 1; i < num_apps; i++)
+        strcat(query, params);
+
+    if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
+    MYSQL_BIND *bind = calloc(num_apps * JOB_ARGS, sizeof(MYSQL_BIND));
+
+    //integer types
+    for (i = 0; i < num_apps; i++)
+    {
+        int offset = i*JOB_ARGS;
+
+        bind[0+offset].buffer_type = bind[4+offset].buffer_type = bind[5+offset].buffer_type = bind[12+offset].buffer_type
+        = bind[6+offset].buffer_type = bind[7+offset].buffer_type = bind[10+offset].buffer_type = bind[1+offset].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[0+offset].is_unsigned = bind[10+offset].is_unsigned = 1;
+
+        //string types
+        bind[2+offset].buffer_type = bind[3+offset].buffer_type = bind[8+offset].buffer_type = 
+        bind[13+offset].buffer_type = bind[14+offset].buffer_type = bind[15+offset].buffer_type = MYSQL_TYPE_VARCHAR;
+
+        bind[2+offset].buffer_length = strlen(app[i].job.user_id);
+        bind[3+offset].buffer_length = strlen(app[i].job.app_id);
+        bind[8+offset].buffer_length = strlen(app[i].job.policy);
+        bind[13+offset].buffer_length = strlen(app[i].job.user_acc);
+        bind[14+offset].buffer_length = strlen(app[i].job.group_id);
+        bind[15+offset].buffer_length = strlen(app[i].job.energy_tag);
+
+        //double types
+        bind[9+offset].buffer_type = MYSQL_TYPE_DOUBLE;
+
+        //storage variable assignation
+        bind[0+offset].buffer = (char *)&app[i].job.id;
+        bind[1+offset].buffer = (char *)&app[i].job.step_id;
+        bind[2+offset].buffer = (char *)&app[i].job.user_id;
+        bind[3+offset].buffer = (char *)&app[i].job.app_id;
+        bind[4+offset].buffer = (char *)&app[i].job.start_time;
+        bind[5+offset].buffer = (char *)&app[i].job.end_time;
+        bind[6+offset].buffer = (char *)&app[i].job.start_mpi_time;
+        bind[7+offset].buffer = (char *)&app[i].job.end_mpi_time;
+        bind[8+offset].buffer = (char *)&app[i].job.policy;
+        bind[9+offset].buffer = (char *)&app[i].job.th;
+        bind[10+offset].buffer = (char *)&app[i].job.procs;
+        bind[11+offset].buffer = (char *)&app[i].job.type;
+        bind[12+offset].buffer = (char *)&app[i].job.def_f;
+        bind[13+offset].buffer = (char *)&app[i].job.user_acc;
+        bind[14+offset].buffer = (char *)&app[i].job.group_id;
+        bind[15+offset].buffer = (char *)&app[i].job.energy_tag;
+    }
+    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+
+    free(query);
+    free(bind);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return EAR_SUCCESS;
+}
+
 
 int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app, int num_apps)
 {
@@ -354,8 +424,7 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
     MYSQL_BIND *bind = calloc(num_apps*APPLICATION_ARGS, sizeof(MYSQL_BIND));
    
     //job only needs to be inserted once
-    for (i = 0; i < num_apps; i++)
-        mysql_insert_job(connection, &app[i].job, is_learning);
+    mysql_batch_insert_jobs(connection, app, num_apps);
     int pow_sig_id = 0;
     long long *pow_sigs_ids = calloc(num_apps, sizeof(long long));
 

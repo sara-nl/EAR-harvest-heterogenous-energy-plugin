@@ -460,17 +460,10 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init");
 
-	if (!spank_remote(sp)) {
-		_opt_register(sp);
-	}
+	_opt_register(sp);
 
 	if (spank_context() == S_CTX_SRUN)
 	{
-		if (isenv_local("SLURM_LAST_LOCAL_CONTEXT", "SRUN"))
-		{
-
-		}
-
 		if (!setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SRUN", 1))
 		{
         	plug_error("while setting last local context variable (severe error)");

@@ -130,36 +130,38 @@ static void reset_all()
  */
 
 static void insert_result(uint index, uint length, clock_t time_start, ulong type_size, char *type_name)
+{}
+
+static void insert_resultt(uint index, uint length, time_t time_start, ulong type_size, char *type_name)
 {
-	double time_total;
+	time_t time_stop;
 	float tms;
 	float pnt;
 	float kbs;
 
-	time_total = (double) (clock() - time_start);
-	time_total = (time_total / (double) (CLOCKS_PER_SEC)) * 1000.0;
+	time(&time_stop);	
 
-	tms = (float) time_total;
-	pnt = (float) (index) / (float) (length);
-	kbs = (float) (index * type_size) / 1000.0;
+	pnt = ((float) (index) / (float) (length)) * 100.0f;
+	kbs = (float) (index * type_size) / 1000000.0;
+	tms = (float) difftime(time_stop, time_start);
 
-	verbose1("%lu/%lu (%0.2f%, %0.3f KBs) samples of %s in %0.3f ms",
+	verbose1("inserted %lu/%lu (%0.2f%, %0.2f MBs) samples of %s in %f s",
 			 index, length, pnt, kbs, type_name, tms);
 }
 
 static void insert_apps_mpi()
 {
-	clock_t time_start;
+	time_t time_start;
 
 	if (per_appsm == 0 || i_appsm <= 0) {
 		return;
 	}
 
-	time_start = clock();
+	time(&time_start);
 	db_batch_insert_applications(appsm, i_appsm);
 
 	// Verbosity of the result
-	insert_result(i_appsm, len_appsm, time_start, sizeof(application_t),
+	insert_resultt(i_appsm, len_appsm, time_start, sizeof(application_t),
 				  "mpi applications");
 
 	// Reset
@@ -225,17 +227,17 @@ static void insert_loops()
 
 static void insert_energy()
 {
-	clock_t time_start;
+	time_t time_start;
 
 	if (per_enrgy == 0 || i_enrgy <= 0) {
 		return;
 	}
 
-	time_start = clock();
+	time(&time_start);
 	db_batch_insert_periodic_metrics(enrgy, i_enrgy);
 
 	// Verbosity of the result
-	insert_result(i_enrgy, len_enrgy, time_start, sizeof(periodic_metric_t),
+	insert_resultt(i_enrgy, len_enrgy, time_start, sizeof(periodic_metric_t),
 				  "energy monitoring data");
 
 	// Reset
@@ -284,25 +286,25 @@ void insert_hub(uint option, uint reason)
 	verline0();
 	verbose1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 
-	if (sync_option(option, SYNC_AGGRS)) {
-		insert_aggregations();
-	}
-	if (sync_option(option, SYNC_APPSM)) {
+	if (sync_option_m(option, SYNC_APPSM, SYNC_ALL)) {
 		insert_apps_mpi();
 	}
-	if (sync_option(option, SYNC_APPSN)) {
+	if (sync_option_m(option, SYNC_APPSN, SYNC_ALL)) {
 		insert_apps_non_mpi();
 	}
-	if (sync_option(option, SYNC_APPSL)) {
+	if (sync_option_m(option, SYNC_APPSL, SYNC_ALL)) {
 		insert_apps_learning();
 	}
-	if (sync_option(option, SYNC_ENRGY)) {
+	if (sync_option_m(option, SYNC_ENRGY, SYNC_ALL)) {
 		insert_energy();
 	}
-	if (sync_option(option, SYNC_EVNTS)) {
+	if (sync_option_m(option, SYNC_AGGRS, SYNC_ALL)) {
+		insert_aggregations();
+	}
+	if (sync_option_m(option, SYNC_EVNTS, SYNC_ALL)) {
 		insert_events();
 	}
-	if (sync_option(option, SYNC_LOOPS)) {
+	if (sync_option_m(option, SYNC_LOOPS, SYNC_ALL)) {
 		insert_loops();
 	}
 	if (sync_option(option, SYNC_RESET)) {
