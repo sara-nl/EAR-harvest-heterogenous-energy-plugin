@@ -80,6 +80,7 @@ tests/check/check.sh
 *eargm_end_job
 *eardbd
 *ear_dbd_stress_test
+*ear_types
 
 *client_api_test
 *compute_coefficients_remote

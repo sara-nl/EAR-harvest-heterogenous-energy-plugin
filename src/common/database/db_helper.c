@@ -54,12 +54,6 @@ int current_job_id = 0;
 #define JOB_VARS	        JOB_ARGS
 #define PER_VARS	        PERIODIC_METRIC_ARGS
 
-static int db_get_bulk_length(int element_vars, int insert_length)
-{
-    const uint max_vars = USHRT_MAX / num_vars;
-    uint d = ((uint) num_apps) / max_vars;
-}
-
 void init_db_helper(db_conf_t *conf)
 {
     db_config = conf;
@@ -102,7 +96,7 @@ int db_insert_application(application_t *application)
 
 int db_batch_insert_applications(application_t *applications, int num_apps)
 {
-    int bulk_elms = _BULK_ELSM(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
+    int bulk_elms = _BULK_ELMS(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
 	int bulk_sets = _BULK_SETS(num_apps, bulk_elms);
 	int e, s;
 
@@ -129,7 +123,7 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
     // Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
     {
-    	if (mysql_batch_insert_applications(connection, &applications[i], bulk_elms) < 0) {
+    	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
         	VERBOSE_N(0, "ERROR while batch writing applications to database.");
         	return EAR_ERROR;
     	}
@@ -137,7 +131,7 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_apps)
 	{
-		if (mysql_batch_insert_applications(connection, &applications[i], num_apps - e) < 0) {
+		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
             VERBOSE_N(0, "ERROR while batch writing applications to database.");
             return EAR_ERROR;
         }
@@ -357,8 +351,8 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
 
 int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 {
-	int bulk_elms = _BULK_ELSM(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
-	int bulk_sets = _BULK_SETS(num_apps, bulk_elms);
+	int bulk_elms = _BULK_ELMS(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
+	int bulk_sets = _BULK_SETS(num_mets, bulk_elms);
 	int e, s;
 
 	//
@@ -387,7 +381,7 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 	// Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
-		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[i], bulk_elms) < 0) {
+		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], bulk_elms) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
 			return EAR_ERROR;
 		}
@@ -395,7 +389,7 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_mets)
 	{
-		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[i], num_mets - e) < 0) {
+		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], num_mets - e) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
 			return EAR_ERROR;
 		}
