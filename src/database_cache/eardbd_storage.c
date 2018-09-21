@@ -141,7 +141,7 @@ static void insert_resultt(uint index, uint length, time_t time_start, ulong typ
 
 	time(&time_stop);	
 
-	pnt = (float) (index) / (float) (length)) * 100.0f;
+	pnt = ((float) (index) / (float) (length)) * 100.0f;
 	kbs = (float) (index * type_size) / 1000000.0;
 	tms = (float) difftime(time_stop, time_start);
 
