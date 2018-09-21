@@ -1,0 +1,29 @@
+.\" Manpage for ereport.
+.TH man 1 "21 September 2018" "1.0" "eacct man page"
+.SH NAME
+eacct \- See a report of the last job executions reported by EAR's daemons.
+.SH SYNOPSIS
+eacct [options]
+
+.SH DESCRIPTION
+
+
+
+.SH OPTIONS
+
+    -v      verbose mode for debugging purposes
+    -u      specifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]
+    -j      specifies the job id and step id to retrieve with the format [jobid.stepid].
+                A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]
+    -c      specifies the file where the output will be stored in CSV format. [default: no file]
+    -t      specifies the energy_tag of the jobs that will be retrieved. [default: all tags].
+    -l      shows the information for each node for each job instead of the global statistics for said job.
+    -n      specifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]
+    -f      specifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.
+    -h      displays the usage options.
+
+
+.SH BUGS
+    - Saving the output to a file with the -c option and then reading it with -f may cause some issues if there are empty fields.
+.SH AUTHOR
+Lluís Alonso (lluis.alonso@bsc.es)
