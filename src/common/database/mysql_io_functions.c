@@ -99,7 +99,6 @@ static char *__NAME__ = "MYSQL_IO: ";
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
                                     "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-
 int mysql_statement_error(MYSQL_STMT *statement)
 {
     fprintf(stderr, "MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
@@ -185,7 +184,6 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
 
 int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int num_apps)
 {
-
     if (app == NULL)
     {
         VERBOSE_N(0, "APP is null.");
@@ -224,7 +222,6 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     for (i = 0; i < num_apps; i++)
         pow_sigs_ids[i] = pow_sig_id + i;
 
-
     //inserting signatures (if the application is mpi)
     signature_container_t cont;
     cont.type = EAR_TYPE_APPLICATION;
@@ -244,7 +241,6 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     char *params = ", (?, ?, ?, ?, ?)";
     char *query;
 
-
     if (!is_learning)
     {
         query = malloc(strlen(APPLICATION_QUERY)+strlen(params)*(num_apps-1)+1);
@@ -259,11 +255,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     for (i = 1; i < num_apps; i++)
         strcat(query, params);
 
-    printf("QUERY: %s\n", query);
-
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
-
-
 
     MYSQL_BIND *bind = calloc(num_apps*APPLICATION_ARGS, sizeof(MYSQL_BIND));
 
@@ -289,16 +281,30 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     }
 
-    if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
+	if (mysql_stmt_bind_param(statement, bind))
+    {
+        free(bind);
+        free(query);
+        free(pow_sigs_ids);
+        free(sigs_ids);
+        return mysql_statement_error(statement);
+    }
 
-    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
-
-    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+    if (mysql_stmt_execute(statement))
+    {
+        free(bind);
+        free(query);
+        free(pow_sigs_ids);
+        free(sigs_ids);
+        return mysql_statement_error(statement);
+    }
 
     free(bind);
     free(query);
     free(pow_sigs_ids);
     free(sigs_ids);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return EAR_SUCCESS;
 }

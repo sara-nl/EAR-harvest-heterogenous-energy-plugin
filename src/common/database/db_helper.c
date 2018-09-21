@@ -91,59 +91,60 @@ int db_insert_application(application_t *application)
 #define PSI_VARS	POWER_SIGNATURE_ARGS
 #define NSI_VARS	SIGNATURE_ARGS
 #define JOB_VARS	JOB_ARGS
-#define _MAX(X,Y)			 X > Y ? X : Y
+#define PER_VARS	PERIODIC_METRIC_ARGS
+#define _MAX(X,Y)			 (X > Y ? X : Y)
 #define _MMAAXX(W,X,Y,Z) 	_MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z)
 
 int db_batch_insert_applications(application_t *applications, int num_apps)
 {
-	const uint a = _MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_ARGS);
-	float b = (float) USHRT_MAX / (float) a;
-
-	uint c = ((uint) b);
-	c = 100;
-	uint d = ((uint) num_apps) / c;
+	const uint num_vars = _MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS);
+	const uint max_vars = USHRT_MAX / num_vars;
+	uint d = ((uint) num_apps) / max_vars;
 	uint i, j;
 
-	//
-    MYSQL *connection = mysql_init(NULL);
+	MYSQL *connection = mysql_init(NULL);
 
-    if (connection == NULL)
-    {
+    if (connection == NULL) {   
         VERBOSE_N(0, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
-    if (db_config == NULL)
-    {
+    if (db_config == NULL) {   
         VERBOSE_N(0, "Database configuration not initialized.");
         return EAR_ERROR;
     }
-
-	if (!mysql_real_connect(connection, db_config->ip, db_config->user,
-			db_config->pass, db_config->database, db_config->port, NULL, 0))
+        
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user,
+            db_config->pass, db_config->database, db_config->port, NULL, 0)) 
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
-
-    for (i = 0, j = 0; j < d; i += c, j +=1)
+   
+	//fprintf(stderr, "DATABASE, max vars %u\n", max_vars); 
+	for (i = 0, j = 0; j < d; i += max_vars, j += 1)
     {
-    	if (mysql_batch_insert_applications(connection, &applications[i], c) < 0) {
+		//fprintf(stderr, "DATABASE, inserting bulk %u from %u to %u\n", j, i, i + max_vars - 1);
+
+    	if (mysql_batch_insert_applications(connection, &applications[i], max_vars) < 0) {
         	VERBOSE_N(0, "ERROR while batch writing applications to database.");
         	return EAR_ERROR;
     	}
 	}
 	if (i < num_apps)
 	{
-		if (mysql_batch_insert_applications(connection, &applications[i], num_apps - i) < 0) {
-			VERBOSE_N(0, "ERROR while batch writing applications to database.");
-			return EAR_ERROR;
-		}
-    }
+		//fprintf(stderr, "DATABASE, last inserting bulk %u from %u to %u\n", j, i, num_apps - 1); 
 
-    mysql_close(connection);
-    
+        if (mysql_batch_insert_applications(connection, &applications[i], num_apps - i) < 0) {
+            VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            return EAR_ERROR;
+        }
+	}	 
+
+   
+	mysql_close(connection);
+
     return EAR_SUCCESS;
 }
 
@@ -356,7 +357,13 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
 
 int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 {
-    MYSQL *connection = mysql_init(NULL);
+    const uint num_vars = PER_VARS;
+    const uint max_vars = USHRT_MAX / num_vars;
+    uint d = ((uint) num_mets) / max_vars;
+    uint i, j;
+
+
+	MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
     {
@@ -377,11 +384,22 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_periodic_metrics(connection, per_mets, num_mets) < 0)
+
+	for (i = 0, j = 0; j < d; i += max_vars, j += 1)
     {
-        VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
-        return EAR_ERROR;
+        if (mysql_batch_insert_applications(connection, &per_mets[i], max_vars) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
+            return EAR_ERROR;
+        }
     }
+    if (i < num_mets)
+    {
+        if (mysql_batch_insert_applications(connection, &per_mets[i], num_mets - i) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
+            return EAR_ERROR;
+        }
+    }
+
 
     mysql_close(connection);
 
