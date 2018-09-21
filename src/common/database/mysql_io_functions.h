@@ -112,6 +112,11 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops);
 *   EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning);
 
+/** Given a MYSQL connection and an array of applications, insert said applications' jobs
+*   into the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR
+*   or EAR_MYSQL_STMT_ERROR on error.  */ 
+int mysql_batch_insert_jobs(MYSQL *connection, application_t *app, int num_apps);
+
 /** Given a MYSQL connection and a valid MYSQL query, stores in jobs the 
 *   jobs found in the database corresponding to the query. Returns the 
 *   number of jobs found on success, and either EAR_MYSQL_ERROR or
