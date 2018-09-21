@@ -40,17 +40,25 @@
 #include <common/database/mysql_io_functions.h>
 
 static const char *__NAME__ = "db_helper";
-
 db_conf_t *db_config = NULL;
-
-int current_job_id = 0;
 int current_step_id = 0;
+int current_job_id = 0;
+
+#define _MAX(X,Y)			(X > Y ? X : Y)
+#define _MMAAXX(W,X,Y,Z) 	(_MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z))
+#define _BULK_ELMS(V)		USHRT_MAX / V
+#define _BULK_SETS(T,V)		T / V
+#define APP_VARS	        APPLICATION_ARGS
+#define PSI_VARS	        POWER_SIGNATURE_ARGS
+#define NSI_VARS	        SIGNATURE_ARGS
+#define JOB_VARS	        JOB_ARGS
+#define PER_VARS	        PERIODIC_METRIC_ARGS
+
 
 void init_db_helper(db_conf_t *conf)
 {
     db_config = conf;
 }
-
 
 int db_insert_application(application_t *application)
 {
@@ -87,20 +95,11 @@ int db_insert_application(application_t *application)
 
 }
 
-#define APP_VARS	APPLICATION_ARGS
-#define PSI_VARS	POWER_SIGNATURE_ARGS
-#define NSI_VARS	SIGNATURE_ARGS
-#define JOB_VARS	JOB_ARGS
-#define PER_VARS	PERIODIC_METRIC_ARGS
-#define _MAX(X,Y)			 (X > Y ? X : Y)
-#define _MMAAXX(W,X,Y,Z) 	_MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z)
-
 int db_batch_insert_applications(application_t *applications, int num_apps)
 {
-	const uint num_vars = _MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS);
-	const uint max_vars = USHRT_MAX / num_vars;
-	uint d = ((uint) num_apps) / max_vars;
-	uint i, j;
+    int bulk_elms = _BULK_ELMS(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
+	int bulk_sets = _BULK_SETS(num_apps / bulk_vars);
+	int e, s;
 
 	MYSQL *connection = mysql_init(NULL);
 
@@ -121,28 +120,25 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
         mysql_close(connection);
         return EAR_ERROR;
     }
-   
-	//fprintf(stderr, "DATABASE, max vars %u\n", max_vars); 
-	for (i = 0, j = 0; j < d; i += max_vars, j += 1)
-    {
-		//fprintf(stderr, "DATABASE, inserting bulk %u from %u to %u\n", j, i, i + max_vars - 1);
 
-    	if (mysql_batch_insert_applications(connection, &applications[i], max_vars) < 0) {
+    // Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
+    {
+    	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
         	VERBOSE_N(0, "ERROR while batch writing applications to database.");
         	return EAR_ERROR;
     	}
 	}
-	if (i < num_apps)
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_apps)
 	{
-		//fprintf(stderr, "DATABASE, last inserting bulk %u from %u to %u\n", j, i, num_apps - 1); 
-
-        if (mysql_batch_insert_applications(connection, &applications[i], num_apps - i) < 0) {
+		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
             VERBOSE_N(0, "ERROR while batch writing applications to database.");
             return EAR_ERROR;
         }
 	}	 
 
-   
+	//
 	mysql_close(connection);
 
     return EAR_SUCCESS;
@@ -285,7 +281,6 @@ int db_insert_power_signature(power_signature_t *pow_sig)
     return EAR_SUCCESS;
 }
 
-
 int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg)
 {
     MYSQL *connection = mysql_init(NULL);
@@ -357,12 +352,11 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
 
 int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 {
-    const uint num_vars = PER_VARS;
-    const uint max_vars = USHRT_MAX / num_vars;
-    uint d = ((uint) num_mets) / max_vars;
-    uint i, j;
+	int bulk_elms = _BULK_ELMS(PER_VARS);
+	int bulk_sets = _BULK_SETS(num_mets / bulk_vars);
+	int e, s;
 
-
+	//
 	MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
@@ -377,31 +371,33 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
         return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user,
+			db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
-
-	for (i = 0, j = 0; j < d; i += max_vars, j += 1)
-    {
-        if (mysql_batch_insert_applications(connection, &per_mets[i], max_vars) < 0) {
+	// Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
+	{
+		if (mysql_batch_insert_applications(connection, &per_mets[e], bulk_elms) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
-            return EAR_ERROR;
-        }
-    }
-    if (i < num_mets)
-    {
-        if (mysql_batch_insert_applications(connection, &per_mets[i], num_mets - i) < 0) {
-			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
-            return EAR_ERROR;
-        }
-    }
+			return EAR_ERROR;
+		}
+	}
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_apps)
+	{
+		if (mysql_batch_insert_applications(connection, &applications[e], num_mets - e) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing applications to database.");
+			return EAR_ERROR;
+		}
+	}
 
-
-    mysql_close(connection);
+	//
+	mysql_close(connection);
 
     return EAR_SUCCESS;
 }
@@ -439,7 +435,6 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
 
     return EAR_SUCCESS;
 }
-
 
 int db_insert_ear_event(ear_event_t *ear_ev)
 {
