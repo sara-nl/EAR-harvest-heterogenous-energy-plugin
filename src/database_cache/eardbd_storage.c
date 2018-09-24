@@ -129,10 +129,7 @@ static void reset_all()
  *
  */
 
-static void insert_result(uint index, uint length, clock_t time_start, ulong type_size, char *type_name)
-{}
-
-static void insert_resultt(uint index, uint length, time_t time_start, ulong type_size, char *type_name)
+static void insert_result(uint index, uint length, time_t time_start, ulong type_size, char *type_name)
 {
 	time_t time_stop;
 	float tms;
@@ -161,7 +158,7 @@ static void insert_apps_mpi()
 	db_batch_insert_applications(appsm, i_appsm);
 
 	// Verbosity of the result
-	insert_resultt(i_appsm, len_appsm, time_start, sizeof(application_t),
+	insert_result(i_appsm, len_appsm, time_start, sizeof(application_t),
 				  "mpi applications");
 
 	// Reset
@@ -170,13 +167,13 @@ static void insert_apps_mpi()
 
 static void insert_apps_non_mpi()
 {
-	clock_t time_start;
+	time_t time_start;
 
 	if (per_appsn == 0 || i_appsn <= 0) {
 		return;
 	}
 
-	time_start = clock();
+	time(&time_start);
 	db_batch_insert_applications_no_mpi(appsn, i_appsn);
 
 	// Verbosity of the result
@@ -189,13 +186,13 @@ static void insert_apps_non_mpi()
 
 static void insert_apps_learning()
 {
-	clock_t time_start;
+	time_t time_start;
 
 	if (per_appsl == 0 || i_appsl <= 0) {
 		return;
 	}
 
-	time_start = clock();
+	time(&time_start);
 	db_batch_insert_applications(appsl, i_appsl);
 
 	// Verbosity of the result
@@ -208,13 +205,13 @@ static void insert_apps_learning()
 
 static void insert_loops()
 {
-	clock_t time_start;
+	time_t time_start;
 
 	if (per_loops == 0 || i_loops <= 0) {
 		return;
 	}
 
-	time_start = clock();
+	time(&time_start);
 	db_batch_insert_loops(loops, i_loops);
 
 	// Verbosity of the result
@@ -237,7 +234,7 @@ static void insert_energy()
 	db_batch_insert_periodic_metrics(enrgy, i_enrgy);
 
 	// Verbosity of the result
-	insert_resultt(i_enrgy, len_enrgy, time_start, sizeof(periodic_metric_t),
+	insert_result(i_enrgy, len_enrgy, time_start, sizeof(periodic_metric_t),
 				  "energy monitoring data");
 
 	// Reset
@@ -246,13 +243,13 @@ static void insert_energy()
 
 static void insert_aggregations()
 {
-	clock_t time_start;
+	time_t time_start;
 
 	if (per_aggrs == 0 || i_aggrs <= 0) {
 		return;
 	}
 
-	time_start = clock();
+	time(&time_start);
 	db_batch_insert_periodic_aggregations(aggrs, i_aggrs);
 
 	// Verbosity of the result
@@ -265,13 +262,13 @@ static void insert_aggregations()
 
 static void insert_events()
 {
-	clock_t time_start;
+	time_t time_start;
 
 	if (per_evnts == 0 || i_evnts <= 0) {
 		return;
 	}
 
-	time_start = clock();
+	time(&time_start);
 	db_batch_insert_ear_event(evnts, i_evnts);
 
 	// Verbosity of the result

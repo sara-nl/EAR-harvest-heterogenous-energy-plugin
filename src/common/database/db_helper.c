@@ -233,7 +233,7 @@ int db_insert_loop(loop_t *loop)
 
 int db_batch_insert_loops(loop_t *loops, int num_loops)
 {
-	int bulk_elms = _BULK_ELMS(LOO_VARS);
+	int bulk_elms = _BULK_ELMS(_MAX(LOO_VARS, NSI_VARS));
 	int bulk_sets = _BULK_SETS(num_loops, bulk_elms);
 	int e, s;
 
