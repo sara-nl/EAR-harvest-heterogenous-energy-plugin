@@ -538,7 +538,7 @@ void main(int argc, char *argv[])
     int opt;
     char path_name[256];
     char *file_name = NULL;
-    char e_tag[64];
+    char e_tag[64] = "";
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -565,7 +565,7 @@ void main(int argc, char *argv[])
         switch (opt)
         {
             case 'n':
-                if (strcmp(optarg, "all")) limit = -1;
+                if (!strcmp(optarg, "all")) limit = -1;
                 else limit = atoi(optarg);
                 break;
             case 'u':
@@ -601,6 +601,8 @@ void main(int argc, char *argv[])
                 break;
         }
     }
+    
+    if (verbose) printf("Limit set to %d\n", limit);
 
     if (file_name != NULL) read_from_files(job_id, step_id, verbose, file_name);
     else read_from_database(user, job_id, limit, step_id, e_tag); 
