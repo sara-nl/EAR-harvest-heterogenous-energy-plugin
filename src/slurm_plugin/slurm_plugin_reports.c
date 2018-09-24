@@ -71,7 +71,7 @@ static int _read_shared_data_remote(spank_t sp)
 	conf_sett = attach_settings_conf_shared_area(buffer2);
 
 	if (conf_sett == NULL) {
-		slurm_error("while reading the shared configuration memory in node .");
+		plug_verbose(sp, 2, "while reading the shared configuration memory in node '%s'", eard_host);
 		return ESPANK_ERROR;
 	}
 
@@ -104,7 +104,7 @@ static int _read_shared_data_remote(spank_t sp)
 	{
 		// Closing shared memory
 		dettach_settings_conf_shared_area();
-		plug_error("invalid policy returned");
+		plug_verbose(sp, 2, "invalid policy returned");
 		return (ESPANK_ERROR);
 	}
 	setenv_remote_ret_err(sp, "EAR_POWER_POLICY", buffer2, 1);
@@ -172,7 +172,7 @@ int remote_eard_report_start(spank_t sp)
     conf_serv = attach_services_conf_shared_area(buffer2);
 
     if (conf_serv == NULL) {
-        slurm_error("ERROR while reading the shared services memory in '%s'", eard_host);
+		plug_verbose(sp, 2, "ERROR while reading the shared services memory in '%s'", eard_host);
         return (ESPANK_ERROR);
     }   
 
@@ -258,10 +258,10 @@ int remote_eard_report_start(spank_t sp)
 
 	// Connection
 	if (eards_remote_connect(eard_host, eard_port) < 0) {
-		plug_error("while connecting with EAR daemon");
+		plug_verbose(sp, 2, "while connecting with EAR daemon");
 	}
 	if (!eards_new_job(&eard_appl)) {
-		plug_error("while connecting with EAR daemon");
+		plug_verbose(sp, 2, "while connecting with EAR daemon");
 	}
 	eards_remote_disconnect();
 
@@ -295,7 +295,7 @@ int remote_eard_report_finish(spank_t sp)
 	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
 
 	if (eards_remote_connect(eard_host, eard_port) < 0) {
-		plug_error("while connecting with EAR daemon");
+		plug_verbose(sp, 2, "while connecting with EAR daemon");
 	}
 	eards_end_job(eard_appl.job.id, eard_appl.job.step_id);
 	eards_remote_disconnect();
@@ -327,11 +327,11 @@ int local_eargmd_report_start(spank_t sp)
 
 	// Connection
 	if (eargm_connect(eargmd_host, eargmd_port) < 0) {
-		plug_error("while connecting with EAR global manager daemon");
+		plug_verbose(sp, 2, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
 	if (!eargm_new_job(eargmd_nods)) {
-		plug_error("while connecting with EAR global manager daemon");
+		plug_verbose(sp, 2, "while speaking with EAR global manager daemon");
 	}
 	eargm_disconnect();
 
@@ -361,11 +361,11 @@ int local_eargmd_report_finish(spank_t sp)
 	}
 
 	if (eargm_connect(eargmd_host, eargmd_port) < 0) {
-		plug_error("while connecting with EAR global manager daemon");
+		plug_verbose(sp, 2,"while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
 	if (!eargm_end_job(eargmd_nods)) {
-		plug_error("while connecting with EAR global manager daemon");
+		plug_verbose(sp, 2, "while speaking with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
 	eargm_disconnect();

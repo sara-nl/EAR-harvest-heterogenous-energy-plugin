@@ -255,7 +255,6 @@ static void remote_print_environment(spank_t sp)
 
 void _local_library_disable()
 {
-	slurm_error("DISABLING");
 	setenv_local("EAR", "0", 1);
 }
 
@@ -371,13 +370,13 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 
 	// TMP folder missing?
 	if (!found_tmpdir) {
-		plug_error("missing plugstack localstatedir directory");
+		plug_verbose(sp, 2, "missing plugstack localstatedir directory");
 		return (ESPANK_STOP);
 	}
 
 	// Prefix folder missing?
 	if (!found_predir) {
-		plug_error("missing plugstack prefix directory");
+		plug_verbose(sp, 2, "missing plugstack prefix directory");
 		return (ESPANK_ERROR);
 	}
 
@@ -397,12 +396,12 @@ int _read_user_info(spank_t sp)
 	gpw = getgrgid(gid);
 
 	if (upw == NULL) {
-		plug_error("converting UID in username");
+		plug_verbose(sp, 2, "converting UID in username");
 		return (ESPANK_ERROR);
 	}
 
 	if (gpw == NULL) {
-		plug_error("converting GID in groupname");
+		plug_verbose(sp, 2, "converting GID in groupname");
 		return (ESPANK_ERROR);
 	}
 
@@ -428,7 +427,7 @@ int _set_ld_preload(spank_t sp)
 
 	if (getenv_local("EAR_PREDIR", &ear_root_dir) == 0)
 	{
-		plug_error("Error, wrong environment for setting LD_PRELOAD");
+		plug_verbose(sp, 2, "Error, wrong environment for setting LD_PRELOAD");
 		return ESPANK_ERROR;
 	}
 	appendenv(buffer1, ear_root_dir, sizeof(buffer1));
@@ -466,7 +465,7 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 	{
 		if (!setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SRUN", 1))
 		{
-        	plug_error("while setting last local context variable (severe error)");
+			plug_verbose(sp, 2, "while setting last local context variable (severe error)");
         	_local_plugin_disable();
 			return ESPANK_SUCCESS;
 		}
@@ -476,7 +475,7 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 	{
 		if (!setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SBATCH", 1))
 		{
-			plug_error("while setting last local context variable (severe error)");
+			plug_verbose(sp, 2, "while setting last local context variable (severe error)");
 			_local_plugin_disable();
 			return ESPANK_SUCCESS;
 		}
