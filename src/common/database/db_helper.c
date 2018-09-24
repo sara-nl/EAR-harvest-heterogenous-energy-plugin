@@ -27,9 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/ear_verbose.h>
@@ -38,17 +40,33 @@
 #include <common/database/mysql_io_functions.h>
 
 static const char *__NAME__ = "db_helper";
-
 db_conf_t *db_config = NULL;
-
-int current_job_id = 0;
 int current_step_id = 0;
+int current_job_id = 0;
+
+#define _MAX(X,Y)			(X > Y ? X : Y)
+#define _MMAAXX(W,X,Y,Z) 	(_MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z))
+#define _BULK_ELMS(V)		USHRT_MAX / V
+#define _BULK_SETS(T,V)		T / V
+#define APP_VARS	        APPLICATION_ARGS
+#define PSI_VARS	        POWER_SIGNATURE_ARGS
+#define NSI_VARS	        SIGNATURE_ARGS
+#define JOB_VARS	        JOB_ARGS
+#define PER_VARS	        PERIODIC_METRIC_ARGS
+#define LOO_VARS			LOOP_ARGS
+#define AGG_VARS			PERIODIC_AGGREGATION_ARGS
+#define EVE_VARS			EAR_EVENTS_ARGS
+
+
+#define PAINT(N) \
+	fprintf(stderr, "Elements to insert %d", N); \
+	fprintf(stderr, "Bulk elements %d", bulk_elms); \
+	fprintf(stderr, "Bulk sets %d", bulk_sets)
 
 void init_db_helper(db_conf_t *conf)
 {
     db_config = conf;
 }
-
 
 int db_insert_application(application_t *application)
 {
@@ -87,42 +105,60 @@ int db_insert_application(application_t *application)
 
 int db_batch_insert_applications(application_t *applications, int num_apps)
 {
-        MYSQL *connection = mysql_init(NULL);
+    int bulk_elms = _BULK_ELMS(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
+	int bulk_sets = _BULK_SETS(num_apps, bulk_elms);
+	int e, s;
 
-    if (connection == NULL)
-    {
+	MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL) {   
         VERBOSE_N(0, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
-    if (db_config == NULL)
-    {
+    if (db_config == NULL) {   
         VERBOSE_N(0, "Database configuration not initialized.");
         return EAR_ERROR;
     }
-
-    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+        
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user,
+            db_config->pass, db_config->database, db_config->port, NULL, 0)) 
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_applications(connection, applications, num_apps) < 0)
+    // Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
     {
-        VERBOSE_N(0, "ERROR while batch writing applications to database.");
-        return EAR_ERROR;
-    }
+    	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
+        	VERBOSE_N(0, "ERROR while batch writing applications to database.");
+        	return EAR_ERROR;
+    	}
+	}
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_apps)
+	{
+		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
+            VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            return EAR_ERROR;
+        }
+	}	 
 
-    mysql_close(connection);
-    
+	//
+	mysql_close(connection);
+
     return EAR_SUCCESS;
-
 }
 
 int db_batch_insert_applications_no_mpi(application_t *applications, int num_apps)
 {
-    MYSQL *connection = mysql_init(NULL);
+	int bulk_elms = _BULK_ELMS(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
+	int bulk_sets = _BULK_SETS(num_apps, bulk_elms);
+	int e, s;
+
+	MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
     {
@@ -136,18 +172,30 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
         return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user,
+			db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_applications_no_mpi(connection, applications, num_apps) < 0)
-    {
-        VERBOSE_N(0, "ERROR while batch writing applications to database.");
-        return EAR_ERROR;
-    }
+	// Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
+	{
+		if (mysql_batch_insert_applications_no_mpi(connection, &applications[e], bulk_elms) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing applications to database.");
+			return EAR_ERROR;
+		}
+	}
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_apps)
+	{
+		if (mysql_batch_insert_applications_no_mpi(connection, &applications[e], num_apps - e) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing applications to database.");
+			return EAR_ERROR;
+		}
+	}
 
     mysql_close(connection);
     
@@ -190,7 +238,11 @@ int db_insert_loop(loop_t *loop)
 }
 
 int db_batch_insert_loops(loop_t *loops, int num_loops)
-{    
+{
+	int bulk_elms = _BULK_ELMS(_MAX(LOO_VARS, NSI_VARS));
+	int bulk_sets = _BULK_SETS(num_loops, bulk_elms);
+	int e, s;
+
     MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
@@ -212,11 +264,22 @@ int db_batch_insert_loops(loop_t *loops, int num_loops)
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_loops(connection, loops, num_loops) < 0)
-    {
-        VERBOSE_N(0, "ERROR while batch writing loop signature to database.");
-        return EAR_ERROR;
-    }
+	// Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
+	{
+		if (mysql_batch_insert_loops(connection, &loops[e], bulk_elms) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing loop signature to database.");
+			return EAR_ERROR;
+		}
+	}
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_loops)
+	{
+		if (mysql_batch_insert_loops(connection, &loops[e], num_loops - e) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing loop signature to database.");
+			return EAR_ERROR;
+		}
+	}
 
     mysql_close(connection);
     
@@ -256,7 +319,6 @@ int db_insert_power_signature(power_signature_t *pow_sig)
     
     return EAR_SUCCESS;
 }
-
 
 int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg)
 {
@@ -329,7 +391,12 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
 
 int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 {
-    MYSQL *connection = mysql_init(NULL);
+	int bulk_elms = _BULK_ELMS(PER_VARS);
+	int bulk_sets = _BULK_SETS(num_mets, bulk_elms);
+	int e, s;
+
+	//
+	MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
     {
@@ -343,27 +410,44 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
         return EAR_ERROR;
     }
 
-    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user,
+			db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
         VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_periodic_metrics(connection, per_mets, num_mets) < 0)
-    {
-        VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
-        return EAR_ERROR;
-    }
+	// Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
+	{
+		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], bulk_elms) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
+			return EAR_ERROR;
+		}
+	}
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_mets)
+	{
+		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], num_mets - e) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
+			return EAR_ERROR;
+		}
+	}
 
-    mysql_close(connection);
+	//
+	mysql_close(connection);
 
     return EAR_SUCCESS;
 }
 
 int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int num_aggs)
 {
-    MYSQL *connection = mysql_init(NULL);
+	int bulk_elms = _BULK_ELMS(AGG_VARS);
+	int bulk_sets = _BULK_SETS(num_aggs, bulk_elms);
+	int e, s;
+
+	MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
     {
@@ -384,17 +468,27 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_periodic_aggregations(connection, per_aggs, num_aggs) < 0)
-    {
-        VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
-        return EAR_ERROR;
-    }
+	// Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
+	{
+		if (mysql_batch_insert_periodic_aggregations(connection, &per_aggs[e], bulk_elms) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing aggregations to database.");
+			return EAR_ERROR;
+		}
+	}
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_aggs)
+	{
+		if (mysql_batch_insert_periodic_aggregations(connection, &per_aggs[e], num_aggs - e) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing aggregations to database.");
+			return EAR_ERROR;
+		}
+	}
 
     mysql_close(connection);
 
     return EAR_SUCCESS;
 }
-
 
 int db_insert_ear_event(ear_event_t *ear_ev)
 {
@@ -432,6 +526,10 @@ int db_insert_ear_event(ear_event_t *ear_ev)
 
 int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 {
+	int bulk_elms = _BULK_ELMS(EVE_VARS);
+	int bulk_sets = _BULK_SETS(num_events, bulk_elms);
+	int e, s;
+
     MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL)
@@ -453,11 +551,22 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
         return EAR_ERROR;
     }
 
-    if (mysql_batch_insert_ear_events(connection, ear_evs, num_events) < 0)
-    {
-        VERBOSE_N(0, "ERROR while batch writing ear_event to database.");
-        return EAR_ERROR;
-    }
+	// Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
+	{
+		if (mysql_batch_insert_ear_events(connection, &ear_evs[e], bulk_elms) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing ear_event to database.");
+			return EAR_ERROR;
+		}
+	}
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_events)
+	{
+		if (mysql_batch_insert_ear_events(connection, &ear_evs[e], num_events - e) < 0) {
+			VERBOSE_N(0, "ERROR while batch writing ear_event to database.");
+			return EAR_ERROR;
+		}
+	}
 
     mysql_close(connection);
     

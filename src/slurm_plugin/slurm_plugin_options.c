@@ -91,7 +91,7 @@ int _opt_register(spank_t sp)
 	{
 		if ((s = spank_option_register(sp, &spank_options_manual[i])) != ESPANK_SUCCESS)
 		{
-			slurm_error("unable to register a new option.");
+			slurm_error("unable to register SPANK option %s", spank_options_manual[i].name);
 			return s;
 		}
 	}

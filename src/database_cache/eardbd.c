@@ -348,13 +348,17 @@ static void release_resources()
 	free_cluster_conf(&conf_clus);
 }
 
-//static void signal_handler(int signal)
 static void signal_handler(int signal, siginfo_t *info, void *context)
 {
 	int propagating = 0;
 
+	if (signal == SIGUSR1)
+	{
+		listening = 0;
+	}
+
 	// Case exit
-	if (signal == SIGTERM || signal == SIGINT && !exitting)
+	if ((signal == SIGTERM || signal == SIGINT) && !exitting)
 	{
 		verbose1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
 
@@ -397,7 +401,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 {
 	node_island_t *is;
 	int i, j, k, found;
-	char *p;
+	char *p, *hl, *hs;
 
 	// Cleaning 0 (who am I? Ok I'm the server, which is also the master for now)
 	mirror_iam = 0;
@@ -423,8 +427,17 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	init_db_helper(&conf_clus->database);
 
 	// Mirror finding
-	gethostname(master_host, SZ_NAME_MEDIUM);
+	hl = master_host;  // Long host pointer
+	hs = extra_buffer; // Short host pointer
+
+	gethostname(hl, SZ_NAME_MEDIUM);
+	strncpy(hs, hl, SZ_NAME_MEDIUM);
 	found = 0;
+
+	// Finding the short form 
+	if ((p = strchr(hs, '.')) != NULL) {
+		p[0] = '\0';
+	}
 
 	for (i = 0; i < conf_clus->num_islands && !found; ++i)
 	{
@@ -436,7 +449,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 			p = is->db_ips[is->ranges[k].db_ip];
 			//verbose3("r %s", p);
 
-			if (!server_too && p != NULL && (strncmp(p, master_host, strlen(master_host)) == 0)){
+			if (!server_too && p != NULL && ((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0)))) {
 				//verbose3("db_ip %s", p);
 				server_too = 1;
 			}
@@ -445,7 +458,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 			{
 				p = is->backup_ips[is->ranges[k].sec_ip];
 
-				if (p != NULL && (strncmp(p, master_host, strlen(master_host)) == 0))
+				if (p != NULL && ((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0))))
 				{
 					//verbose3("db_ip_sec %s", p);
 					strcpy(server_host, is->db_ips[is->ranges[k].db_ip]);
@@ -663,6 +676,7 @@ static void init_signals()
 
 	// Blocking all signals except PIPE, TERM, INT and HUP
 	sigfillset(&set);
+	sigdelset(&set, SIGUSR1);
 	sigdelset(&set, SIGTERM);
 	sigdelset(&set, SIGINT);
 	sigdelset(&set, SIGHUP);
@@ -676,6 +690,9 @@ static void init_signals()
 	action.sa_sigaction = signal_handler;
 	action.sa_flags = SA_SIGINFO;
 
+    if (sigaction(SIGUSR1, &action, NULL) < 0) { 
+        verbose1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+    }  
 	if (sigaction(SIGTERM, &action, NULL) < 0) {
 		verbose1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
 	}
@@ -849,7 +866,7 @@ static void pipeline()
 				error("during select (%s)", intern_error_str);
 			}
 		}
-
+		
 		// If timeout_insr, data processing
 		if (timeout_slct.tv_sec == 0 && timeout_slct.tv_usec == 0)
 		{
@@ -857,7 +874,7 @@ static void pipeline()
 
 			if (timeout_aggr.tv_sec == 0)
 			{
-				verbose3("completed the aggregation number %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
+				verbose1("completed the aggregation number %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
 				
 				// Aggregation time done, so new aggregation incoming
 				storage_sample_add(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);

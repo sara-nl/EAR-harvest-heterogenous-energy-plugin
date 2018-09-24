@@ -55,58 +55,28 @@ void main(int argc,char *argv[])
 
     
     int num_apps = 0;
-    MYSQL *connection = mysql_init(NULL);
-
-    if (connection == NULL)
-    {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
-        exit(1);
-    }
-
-    if(!mysql_real_connect(connection, my_cluster.database.ip, my_cluster.database.user,"", "Report5", my_cluster.database.port, NULL, 0))
-    {
-        fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
-        mysql_close(connection);
-        exit(1);
-    }
 
     char query[256];
     
     int job_id, step_id = 0;
     char is_learning = 0;
     char *token;
-    job_id = 1602; 
  
-    if (verbose) fprintf(stderr, "Preparing query statement\n");
-    sprintf(query, "SELECT * FROM Applications WHERE job_id=%u and step_id=%u", job_id, step_id);
-    application_t *apps;
+    if (argc < 2) 
+        num_apps = 35000;
+    else
+        num_apps = atoi(argv[1]);
 
-    if (verbose) fprintf(stderr, "Retrieving applications\n");
-    num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
-    if (verbose) fprintf(stderr, "Finalized retrieving applications\n");
+    application_t * apps = calloc(num_apps, sizeof(application_t));
 
-    if (num_apps == EAR_MYSQL_ERROR)
-    {
-        fprintf(stderr, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
-        mysql_close(connection);
-        exit(1);
-    }
-
-    else if (num_apps < 1)
-    {
-        printf("No jobs with %u job_id and %u step_id found, trying with learning database. \n", job_id, step_id);
-        free_cluster_conf(&my_cluster);
-        exit(0);
-    }
-
+    int base = time(NULL);
     for (i = 0; i < num_apps; i++)
-        report_application_data(&apps[i]);
-
-    for (i = 0; i < num_apps; i++)
-        apps[i].job.step_id = time(NULL);
+    {
+        apps[i].job.id = base;
+        apps[i].job.step_id = i;
+    }
     printf("num_apps: %d found\n", num_apps);
     
-    mysql_close(connection);
 
     init_db_helper(&my_cluster.database);
 
