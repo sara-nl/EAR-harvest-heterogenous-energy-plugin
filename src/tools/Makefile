@@ -8,7 +8,6 @@ COMMON_OBJS = $(ROOTDIR)/src/common/types.a
 BINARIES = compute_coefficients \
 		   compute_coefficients_v2 \
            compute_coefficients_remote \
-           coefficients_quality_control \
 		   coefficients_to_csv \
 		   coefficients_v2_to_v3 \
 		   get_app_list \
