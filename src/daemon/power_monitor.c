@@ -514,7 +514,8 @@ void powermon_set_th(double th)
 void powermon_new_max_freq(ulong maxf)
 {
 	uint ps;
-	if (current_ear_app.app.is_mpi==0){
+	/* Job running and not EAR-aware */
+	if ((current_ear_app.app.job.id>0) && (current_ear_app.app.is_mpi==0)){
 		if (maxf<current_node_freq){
 			eard_verbose(1,"MaxFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,maxf);
 			frequency_set_all_cpus(maxf);
@@ -591,10 +592,9 @@ void powermon_set_freq(ulong freq)
 	save_eard_conf(&eard_dyn_conf);
 }
 
-/** Restores values from ear.conf (not reloads the file). When application is not mpi, automatically chages the node freq if needed */
-void powermon_restore_conf()
+/** it reloads ear.conf */
+void powermon_reload_conf()
 {
-	save_eard_conf(&eard_dyn_conf);
 }
 
 

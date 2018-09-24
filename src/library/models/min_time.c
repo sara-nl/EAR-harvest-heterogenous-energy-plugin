@@ -139,8 +139,10 @@ ulong min_time_policy(signature_t *sig)
 	set_performance_projection(EAR_default_pstate,time_ref,power_ref,cpi_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
-	#if DEMO
-	VERBOSE_N(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
+	#if EAR_PERFORMANCE_TESTS
+	if (ear_frequency == EAR_default_frequency){
+		VERBOSE_N(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
+	}
 	#endif
 
 		try_next=1;
@@ -151,8 +153,10 @@ ulong min_time_policy(signature_t *sig)
 		{
 			if (coefficients[ref][i].available)
 			{
-				#if DEMO
-				VERBOSE_N(2,"Comparing %u with %u",best_pstate,i);
+				#if EAR_PERFORMANCE_TESTS
+				if (ear_frequency == EAR_default_frequency){
+					VERBOSE_N(2,"Comparing %u with %u",best_pstate,i);
+				}
 				#endif
 				power_proj=sig_power_projection(my_app,ear_frequency,i);
 				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
@@ -160,8 +164,10 @@ ulong min_time_policy(signature_t *sig)
 				set_performance_projection(i,time_proj,power_proj,cpi_proj);
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
-				#if DEMO	
-				VERBOSE_N(2,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
+				#if EAR_PERFORMANCE_TESTS
+				if (ear_frequency == EAR_default_frequency){
+					VERBOSE_N(2,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
+				}
 				#endif
 
 				// OK
