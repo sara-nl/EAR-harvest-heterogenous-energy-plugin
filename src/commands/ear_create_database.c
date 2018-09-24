@@ -205,6 +205,8 @@ void create_tables(MYSQL *connection)
                             job_type SMALLINT unsigned NOT NULL,\
                             def_f INT unsigned, \
                             user_acc VARCHAR(256) NOT NULL, \
+                            user_group VARCHAR(256), \
+                            e_tag VARCHAR(256), \
                             PRIMARY KEY(id, step_id))")) execute_on_error(connection);
 
     if (mysql_query(connection, "CREATE TABLE IF NOT EXISTS Periodic_aggregations (\

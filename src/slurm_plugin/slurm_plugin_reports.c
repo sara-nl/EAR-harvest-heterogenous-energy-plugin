@@ -71,7 +71,7 @@ static int _read_shared_data_remote(spank_t sp)
 	conf_sett = attach_settings_conf_shared_area(buffer2);
 
 	if (conf_sett == NULL) {
-		slurm_error("while reading the shared configuration memory.");
+		slurm_error("while reading the shared configuration memory in node .");
 		return ESPANK_ERROR;
 	}
 
@@ -165,19 +165,19 @@ int remote_eard_report_start(spank_t sp)
 
 	// General variables
 	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
+	gethostname(eard_host, SZ_NAME_MEDIUM);
 
 	// Opening shared services memory
 	get_services_conf_path(buffer1, buffer2);
     conf_serv = attach_services_conf_shared_area(buffer2);
 
     if (conf_serv == NULL) {
-        slurm_error("while reading the shared services memory.");
+        slurm_error("ERROR while reading the shared services memory in '%s'", eard_host);
         return (ESPANK_ERROR);
     }   
 
     // Getting EARD connection variables
 	eard_port = conf_serv->eard.port;
-    gethostname(eard_host, SZ_NAME_MEDIUM);
 	
 	// Closing shared services memory
     dettach_services_conf_shared_area();

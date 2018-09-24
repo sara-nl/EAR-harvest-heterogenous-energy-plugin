@@ -57,6 +57,12 @@ int current_job_id = 0;
 #define AGG_VARS			PERIODIC_AGGREGATION_ARGS
 #define EVE_VARS			EAR_EVENTS_ARGS
 
+
+#define PAINT(N) \
+	fprintf(stderr, "Elements to insert %d", N); \
+	fprintf(stderr, "Bulk elements %d", bulk_elms); \
+	fprintf(stderr, "Bulk sets %d", bulk_sets)
+
 void init_db_helper(db_conf_t *conf)
 {
     db_config = conf;
@@ -233,7 +239,7 @@ int db_insert_loop(loop_t *loop)
 
 int db_batch_insert_loops(loop_t *loops, int num_loops)
 {
-	int bulk_elms = _BULK_ELMS(LOO_VARS);
+	int bulk_elms = _BULK_ELMS(_MAX(LOO_VARS, NSI_VARS));
 	int bulk_sets = _BULK_SETS(num_loops, bulk_elms);
 	int e, s;
 

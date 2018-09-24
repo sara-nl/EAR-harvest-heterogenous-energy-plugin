@@ -96,8 +96,8 @@ static char *__NAME__ = "MYSQL_IO: ";
 #endif
 
 #define LEARNING_JOB_QUERY          "INSERT IGNORE INTO Learning_jobs (id, step_id, user_id, app_id, start_time, end_time, "\
-                                    "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES" \
-                                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                    "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
+                                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 
 int mysql_statement_error(MYSQL_STMT *statement)
@@ -331,12 +331,13 @@ int mysql_batch_insert_jobs(MYSQL *connection, application_t *app, int num_apps)
     else
     {
         query = malloc(strlen(LEARNING_JOB_QUERY)+strlen(params)*(num_apps-1)+1);
-        strcpy(query, JOB_QUERY);
+        strcpy(query, LEARNING_JOB_QUERY);
     }
 
     int i;
     for (i = 1; i < num_apps; i++)
         strcat(query, params);
+    fprintf(stderr, "QUERY: %s\n", query);
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
     MYSQL_BIND *bind = calloc(num_apps * JOB_ARGS, sizeof(MYSQL_BIND));
