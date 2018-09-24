@@ -1,28 +1,26 @@
 .\" Manpage for ereport.
-.TH man 1 "16 May 2018" "1.0" "ereport man page"
+.TH man 1 "21 September 2018" "1.0" "ereport man page"
 .SH NAME
-ereport \- See a report of EAR's signatures for a particular job execution.
+ereport \- Produces a summary of the energy consumption reported by EAR's daemons.
 .SH SYNOPSIS
-If EAR is using files as DB:
-ereport [job_id] [db files path] [options]
-
-If EAR is using MySQL as DB:
-ereport [job_id] [options]
+ereport [options]
 
 .SH DESCRIPTION
-ereport is a command used for accounting purposes of EAR's data. Given a job's id, ereport will report a detailed list of the nodes involved in said job's execution and EAR's metrics of each node. At he end it prints a summary of the job (including the job's application name, the policy used for its execution as well as its threshold) and the average of the previously displayed EAR's metrics. 
+ereport is an administrator command that reports energy consumption data reported by EAR's daemons.
+
 .SH OPTIONS
-If EAR is using files as DB:
-    -v  Makes the command run in verbose mode, displaying additional information such as files being opened, number of jobs found per node, etc.
+    -s start_time            indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.
+    -e end_time              indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.
+    -n node_name |all        indicates from which node the energy will be computed. Default: none (all nodes computed) 
+                                 'all' option shows all users individually, not aggregated.
+    -u user_name |all        requests the energy consumed by a user in the selected period of time. Default: none (all users computed). 
+                                 'all' option shows all users individually, not aggregated.
+    -t energy_tag|all        requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). 
+                                 'all' option shows all tags individually, not aggregated.
+    -h                       shows the usage options.
 
-If EAR is using MySQL as DB:
-    -u  Specifies the MySQL user that will execute the query to report jobs. If a user that does not exist or that does not have the sufficient permissions, an error will be thrown. The default option is "root".
-    -db Specifies the MySQL database from which data will be queried. If the database does not exist or does not contain the same structure as the default one, an error will be thrown. The default option is "Report".
-    -ip Specifies the ip where the MYSQL server can be found. The default option is 127.0.0.1
-    -v  Makes the command run in verbose mode, displaying what steps of the process are being executed.
-
-.SH SEE ALSO
-ecreate_database, eenergy_over_time, estore_database
+.\".SH SEE ALSO
+.\"ecreate_database, eenergy_over_time, estore_database
 .SH BUGS
 No known bugs.
 .SH AUTHOR

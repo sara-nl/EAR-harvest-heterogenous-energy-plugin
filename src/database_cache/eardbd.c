@@ -348,47 +348,13 @@ static void release_resources()
 	free_cluster_conf(&conf_clus);
 }
 
-static void fake()
-{
-		int i;
-        memset(appsm, 0, len_appsm * sizeof(application_t));
-        memset(enrgy, 0, len_enrgy * sizeof(periodic_metric_t));
-        i_appsm = len_appsm; 
-		i_enrgy = len_enrgy;    
-		i_enrgy = 8000;    
- 
-        for (i = 0; i < len_appsm; ++i) 
-        {
-            appsm[i].is_mpi = 1; 
-            appsm[i].job.id = 857489;
-            appsm[i].job.step_id = i;
-            strcpy(appsm[i].node_id, "node");
-            strcpy(appsm[i].job.user_id, "user_id");
-            strcpy(appsm[i].job.group_id, "group_id");
-            strcpy(appsm[i].job.app_id, "app_id");
-            strcpy(appsm[i].job.user_acc, "user_acc");
-            strcpy(appsm[i].job.energy_tag, "energy_tag");
-            strcpy(appsm[i].job.policy, "MONITORING_ONLY");
-
-        }
-
-        for (i = 0; i < len_enrgy; ++i) {
-			enrgy[i].step_id = i; 
-			enrgy[i].job_id = 857489;
-            strcpy(enrgy[i].node_id, "node");
-		}
-        verbose0("DATABASE, entering insert_hub()");
-        insert_hub(SYNC_ENRGY, 0);
-        verbose0("DATABASE, exitting insert_hub()");
-}
-
 static void signal_handler(int signal, siginfo_t *info, void *context)
 {
 	int propagating = 0;
 
 	if (signal == SIGUSR1)
 	{
-		return;
+		listening = 0;
 	}
 
 	// Case exit
@@ -1039,7 +1005,7 @@ int main(int argc, char **argv)
 
 		//
 		verline1("phase 3: sockets initialization");
-		//init_sockets(argc, argv, &conf_clus);
+		init_sockets(argc, argv, &conf_clus);
 
 		//
 		verline1("phase 4: processes fork");
@@ -1051,20 +1017,8 @@ int main(int argc, char **argv)
 
 		//
 		verline1("phase 6: listening (processing every %lu s)", time_insr);
-		//pipeline();
-
-		exitting = 1;	
+		pipeline();
 	}
-
-
-	#if 1
-	exitting = 0;
-
-	while (!exitting) {
-		sleep(10000);	
-		fake();
-	}
-	#endif
 
 	return 0;
 }

@@ -28,7 +28,7 @@ compute_coefficients_v2: compute_coefficients_v2.c $(COMMON_OBJS)
 compute_coefficients_remote: compute_coefficients_remote.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
 
-coefficients_quality_control: coefficients_quality_control.c $(COMMON_OBJS)
+coefficients_multitool: coefficients_multitool.c coefficients_multitool.h $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(COMMON_OBJS)
 
 traces_to_paraver: traces_to_paraver.cpp
