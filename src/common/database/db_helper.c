@@ -57,6 +57,12 @@ int current_job_id = 0;
 #define AGG_VARS			PERIODIC_AGGREGATION_ARGS
 #define EVE_VARS			EAR_EVENTS_ARGS
 
+
+#define PAINT(N) \
+	fprintf(stderr, "Elements to insert %d", N); \
+	fprintf(stderr, "Bulk elements %d", bulk_elms); \
+	fprintf(stderr, "Bulk sets %d", bulk_sets)
+
 void init_db_helper(db_conf_t *conf)
 {
     db_config = conf;
