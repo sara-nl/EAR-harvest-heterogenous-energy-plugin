@@ -268,10 +268,10 @@ int read_application_text_file(char *path, application_t **apps, char is_extende
  
     while((ret = scan_application_fd(fd, a, is_extended)) == (APP_TEXT_FILE_FIELDS - !(is_extended)*EXTENDED_DIFF))
     {
+        apps_aux[i].is_mpi = 1;
         i += 1;
         a = &apps_aux[i];
     }
-    printf("ret: %d i: %d lines: %d\n", ret, i, lines);
 
     fclose(fd);
 

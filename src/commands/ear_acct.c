@@ -72,7 +72,7 @@ void usage(char *app)
 	exit(1);
 }
 
-void read_from_files(int job_id, int step_id, char verbose, char *file_path)
+void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
 {
     int i, num_nodes;
 	char **nodes;
@@ -529,6 +529,15 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
 }
 #endif
 
+void read_from_files(char *path, char *user, int job_id, int limit, int step_id)
+{
+    application_t *apps;
+    int num_apps = read_application_text_file(path, &apps, 0);
+    int i = 0;
+    if (full_length) print_full_apps(apps, num_apps);
+    else print_short_apps(apps, num_apps);
+}
+
 void main(int argc, char *argv[])
 {
     int job_id = -1;
@@ -604,7 +613,7 @@ void main(int argc, char *argv[])
     
     if (verbose) printf("Limit set to %d\n", limit);
 
-    if (file_name != NULL) read_from_files(job_id, step_id, verbose, file_name);
+    if (file_name != NULL) read_from_files(file_name, user, job_id, limit, step_id);
     else read_from_database(user, job_id, limit, step_id, e_tag); 
 
     free_cluster_conf(&my_conf);
