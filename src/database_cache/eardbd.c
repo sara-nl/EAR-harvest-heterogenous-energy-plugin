@@ -146,6 +146,7 @@ ulong i_loops;
 
 // Strings
 char *str_who[2] = { "server", "mirror" };
+int verbosity = 0;
 
 // Nomenclature:
 // 	- Server: main buffer of the gathered metrics. Inserts buffered metrics in
@@ -167,7 +168,7 @@ int sync_question(uint sync_option)
 	time_t timeout_old;
 	state_t s;
 
-	verbose1("synchronization started: asking the question (%d)", sync_option);
+	verwho1("synchronization started: asking the question (%d)", sync_option);
 	sync_qst_content.sync_option = sync_option;
 
 	// Preparing packet
@@ -177,7 +178,7 @@ int sync_question(uint sync_option)
 	s = sockets_socket(ssync_mir);
 
 	if (state_fail(s)) {
-		verbose1("failed to create client socket to MAIN (%d, inum: %d, istr: %s)",
+		verwho1("failed to create client socket to MAIN (%d, inum: %d, istr: %s)",
 				 s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
@@ -185,7 +186,7 @@ int sync_question(uint sync_option)
 	s = sockets_connect(ssync_mir);
 
 	if (state_fail(s)) {
-		verbose1("failed to connect to MAIN (%d, inum: %d, istr: %s)",
+		verwho1("failed to connect to MAIN (%d, inum: %d, istr: %s)",
 				 s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
@@ -193,7 +194,7 @@ int sync_question(uint sync_option)
 	s = sockets_send(ssync_mir, &sync_qst_header, (char *) &sync_qst_content);
 
 	if (state_fail(s)) {
-		verbose1("failed to send to MAIN (%d, num: %d, str: %s)",
+		verwho1("failed to send to MAIN (%d, num: %d, str: %s)",
 				 s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
@@ -210,14 +211,14 @@ int sync_question(uint sync_option)
 	sockets_set_timeout(ssync_mir->fd, timeout_old);
 
 	if (state_fail(s)) {
-		verbose1("failed to receive from MAIN (%d, num: %d, str: %s)",
+		verwho1("failed to receive from MAIN (%d, num: %d, str: %s)",
 				 s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	s = sockets_close(ssync_mir);
 
-	verbose0("synchronization completed correctly");
+	verwho0("synchronization completed correctly");
 
 	return EAR_SUCCESS;
 }
@@ -227,7 +228,7 @@ int sync_answer(int fd)
 	socket_t sync_ans_socket;
 	state_t s;
 
-	verbose0("synchronization started: answering the question");
+	verwho0("synchronization started: answering the question");
 
 	// Socket
 	sockets_clean(&sync_ans_socket);
@@ -240,12 +241,12 @@ int sync_answer(int fd)
 	s = sockets_send(&sync_ans_socket, &sync_ans_header, (char *) &sync_ans_content);
 
 	if (state_fail(s)) {
-		verbose1("Failed to send to MIRROR (%d, num: %d, str: %s)",
+		verwho1("Failed to send to MIRROR (%d, num: %d, str: %s)",
 				s, intern_error_num, intern_error_str);
 		return EAR_ERROR;
 	}
 
-	verbose0("synchronization completed correctly");
+	verwho0("synchronization completed correctly");
 
 	return EAR_SUCCESS;
 }
@@ -355,12 +356,13 @@ static void signal_handler(int signal, siginfo_t *info, void *context)
 	if (signal == SIGUSR1)
 	{
 		listening = 0;
+		verbosity = !verbosity;
 	}
 
 	// Case exit
 	if ((signal == SIGTERM || signal == SIGINT) && !exitting)
 	{
-		verbose1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
+		verwho1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
 
 		propagating = others_pid > 0 && info->si_pid != others_pid;
 		listening   = 0;
@@ -371,7 +373,7 @@ static void signal_handler(int signal, siginfo_t *info, void *context)
 	// Case reconfigure
 	if (signal == SIGHUP && !reconfiguring)
 	{
-		verbose1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
+		verwho1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
 
 		propagating   = others_pid > 0 && info->si_pid != others_pid;
 		listening     = 0;
@@ -420,7 +422,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 		error("while getting ear.conf path");
 	}
 
-	verbose3("reading '%s' configuration file", extra_buffer);
+	vermast1("reading '%s' configuration file", extra_buffer);
 	read_cluster_conf(extra_buffer, conf_clus);
 
 	// Database
@@ -442,15 +444,15 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	for (i = 0; i < conf_clus->num_islands && !found; ++i)
 	{
 		is = &conf_clus->islands[i];
-		//verbose3("i %d", i);
+		//vermast1("i %d", i);
 
 		for (k = 0; k < is->num_ranges && !found; k++)
 		{
 			p = is->db_ips[is->ranges[k].db_ip];
-			//verbose3("r %s", p);
+			//vermast1("r %s", p);
 
 			if (!server_too && p != NULL && ((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0)))) {
-				//verbose3("db_ip %s", p);
+				//vermast1("db_ip %s", p);
 				server_too = 1;
 			}
 
@@ -460,7 +462,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 				if (p != NULL && ((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0))))
 				{
-					//verbose3("db_ip_sec %s", p);
+					//vermast1("db_ip_sec %s", p);
 					strcpy(server_host, is->db_ips[is->ranges[k].db_ip]);
 					mirror_too = 1;
 				}
@@ -490,8 +492,8 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	alloc = (float) conf_clus->db_manager.mem_size;
 
 	// Server & mirro verbosity
-	verbose3("enabled cache server: %s",      server_too ? "OK": "NO");
-	verbose3("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
+	vermast1("enabled cache server: %s",      server_too ? "OK": "NO");
+	vermast1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
 
 	if (!server_too && !mirror_too) {
 		error("this node is not configured as a server nor mirror");
@@ -505,11 +507,11 @@ static void init_time_configuration(int argc, char **argv, cluster_conf_t *conf_
 	time_aggr = (time_t) conf_clus->db_manager.aggr_time;
 
 	if (time_insr == 0) {
-		verbose3("insert time can't be 0, using 300 seconds (default)");
+		vermast1("insert time can't be 0, using 300 seconds (default)");
 		time_insr = 300;
 	}
 	if (time_aggr == 0) {
-		verbose3("aggregation time can't be 0, using 60 seconds (default)");
+		vermast1("aggregation time can't be 0, using 60 seconds (default)");
 		time_aggr = 60;
 	}
 
@@ -519,8 +521,8 @@ static void init_time_configuration(int argc, char **argv, cluster_conf_t *conf_
 	time_reset_timeout_slct();
 
 	// Times verbosity
-	verbose3("insertion time:   %lu seconds", time_insr);
-	verbose3("aggregation time: %lu seconds", time_aggr);
+	vermast1("insertion time:   %lu seconds", time_insr);
+	vermast1("aggregation time: %lu seconds", time_aggr);
 }
 
 static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -600,7 +602,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	tprintf("mirror metrics||%d||TCP||%s||%d", smets_mir->port, str_sta[fd2 == -1], fd2);
 	tprintf("server sync||%d||TCP||%s||%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
 	tprintf("mirror sync||%d||TCP||%s||%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
-	verbose3("TIP! mirror sync socket opens and closes intermittently");
+	vermast1("TIP! mirror sync socket opens and closes intermittently");
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -632,8 +634,8 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 	// Verbosity
 	char *str_sta[2] = { "(just sleeps)", "" };
 
-	verbose3("cache server pid: %d %s", server_pid, str_sta[server_too]);
-	verbose3("cache mirror pid: %d", mirror_pid);
+	vermast1("cache server pid: %d %s", server_pid, str_sta[server_too]);
+	vermast1("cache mirror pid: %d", mirror_pid);
 }
 
 static void init_sockets_mirror(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -691,16 +693,16 @@ static void init_signals()
 	action.sa_flags = SA_SIGINFO;
 
     if (sigaction(SIGUSR1, &action, NULL) < 0) { 
-        verbose1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+        verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
     }  
 	if (sigaction(SIGTERM, &action, NULL) < 0) {
-		verbose1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
+		verwho1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
 	}
 	if (sigaction(SIGINT, &action, NULL) < 0) {
-		verbose1("sigaction error on signal %d (%s)", SIGINT, strerror(errno));
+		verwho1("sigaction error on signal %d (%s)", SIGINT, strerror(errno));
 	}
 	if (sigaction(SIGHUP, &action, NULL) < 0) {
-		verbose1("sigaction error on signal %d (%s)", SIGHUP, strerror(errno));
+		verwho1("sigaction error on signal %d (%s)", SIGHUP, strerror(errno));
 	}
 }
 
@@ -846,7 +848,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	tprintf("aggregations||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_aggrs, sizeof(periodic_aggregation_t), len_aggrs, len_aggrs_pc);
 
 	tprintf("TOTAL||%0.2f MBs", mb_total);
-	verbose3("TIP! this allocated space is per process server/mirror");
+	vermast1("TIP! this allocated space is per process server/mirror");
 }
 
 static void pipeline()
@@ -874,7 +876,7 @@ static void pipeline()
 
 			if (timeout_aggr.tv_sec == 0)
 			{
-				verbose1("completed the aggregation number %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
+				verwho1("completed the aggregation number %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
 				
 				// Aggregation time done, so new aggregation incoming
 				storage_sample_add(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);
@@ -899,7 +901,7 @@ static void pipeline()
 						insert_hub(SYNC_ALL, RES_TIME);
 					} else {
 						// In case of the answer is received the mirror just have to clear the data
-						insert_hub(SYNC_RESET, RES_TIME);
+						reset_all();
 					}
 				} else
 				{
@@ -926,7 +928,7 @@ static void pipeline()
 
 					if (state_ok(s1))
 					{
-						verbose1("accepted connection from socket %d", fd_cli);
+						verwho1("accepted connection from socket %d", fd_cli);
 
 						FD_SET(fd_cli, &fds_active);
 
@@ -951,10 +953,10 @@ static void pipeline()
 					else
 					{
 						if (state_is(s1, EAR_SOCK_DISCONNECTED)) {
-							verbose1("disconnected from socket %d (num: %d, str: %s)",
+							verwho1("disconnected from socket %d (num: %d, str: %s)",
 									i, intern_error_num, intern_error_str);
 						} else {
-							verbose1("on reception (num: %d, str: %s), disconnecting from socket %d",
+							verwho1("on reception (num: %d, str: %s), disconnecting from socket %d",
 									intern_error_num, intern_error_str, i);
 						}
 

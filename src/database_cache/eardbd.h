@@ -56,7 +56,6 @@
 #define SYNC_LOOPS			0x010
 #define SYNC_EVNTS			0x020
 #define SYNC_AGGRS			0x040
-#define SYNC_RESET			0x080
 #define SYNC_ALL			0x100
 #define RES_SYNC			0
 #define RES_TIME			1
@@ -68,14 +67,6 @@
 
 #define sync_option_m(option, type1, type2) \
 	((sync_option(option, type1)) || (sync_option(option, type2)))
-
-/* Macros */
-#define _MAX(X,Y) sizeof(X) > sizeof(Y) ? sizeof(X) : sizeof(Y)
-#define _MMAAXX(W,X,Y,Z) _MAX(W,X) > _MAX(Y,Z) ? _MAX(W,X) : _MAX(Y,Z)
-
-/* Compile time macros */
-#define MAX_PACKET_SIZE() \
-	(_MMAAXX(periodic_metric_t, application_t, ear_event_t, loop_t)) + sizeof(packet_header_t)
 
 typedef struct sync_qst {
 	uint sync_option;
