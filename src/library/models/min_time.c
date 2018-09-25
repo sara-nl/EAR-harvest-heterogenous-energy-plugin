@@ -141,7 +141,8 @@ ulong min_time_policy(signature_t *sig)
 	// ref=1 is nominal 0=turbo, we are not using it
 	#if EAR_PERFORMANCE_TESTS
 	if (ear_frequency == EAR_default_frequency){
-		VERBOSE_N(1,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
+		VERBOSE_N(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u (ear_freq=%lu def_freq %lu )\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate,
+		ear_frequency,EAR_default_frequency);
 	}
 	#endif
 
@@ -182,7 +183,15 @@ ulong min_time_policy(signature_t *sig)
 					try_next = 0;
 				}
 			} // Coefficients available
-			else try_next=0;
+			else{ 
+				#if EAR_PERFORMANCE_TESTS
+				if (ear_frequency == EAR_default_frequency){
+					VERBOSE_N(1,"Coefficients for node %s [%d][%d] not available.... try=0\n",node_name,ref,i);
+					
+				}
+				#endif
+				try_next=0;
+			}
 		}	
 
 	// Coefficients were not available for this nominal frequency
