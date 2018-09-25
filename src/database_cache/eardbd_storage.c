@@ -143,7 +143,7 @@ static void insert_result(uint index, uint length, time_t time_start, ulong type
 	kbs = (float) (index * type_size) / 1000000.0;
 	tms = (float) difftime(time_stop, time_start);
 
-	verwho1("inserted %lu/%lu (%0.2f%, %0.2f MBs) samples of %s in %0.2f s",
+	verwho1("inserted %u/%u (%0.2f%, %0.2f MBs) samples of %s in %0.2f s",
 			 index, length, pnt, kbs, type_name, tms);
 }
 
