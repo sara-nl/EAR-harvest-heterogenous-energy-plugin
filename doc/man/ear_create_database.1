@@ -3,7 +3,7 @@
 .SH NAME
 ear_create_database \- Creates EAR's databases.
 .SH SYNOPSIS
-ear_create_database [MySQL ip]
+ear_create_database 
 .SH DESCRIPTION
 ear_create_database creates the base database, tables and users necessary for EAR's database functionality to work properly. In the current version, ear_create_database must be executed from somewhere where the "root" user of the MySQL server the given IP points to has access, if not a permission error will be thrown.
 
@@ -22,7 +22,8 @@ The database contains the following tables:
 By default, the user "ear_daemon" created by the command will only have INSERT and SELECT permissions and only in the default tables of "Report".
 
 .SH OPTIONS
-As of right now, ear_create_database does not support any additional options.
+The only supported option is:
+    -p      A password prompt will appear for the admin to introduce root's MySQL password.
 .SH SEE ALSO
 ereport, eenergy_over_time, estore_database
 .SH BUGS

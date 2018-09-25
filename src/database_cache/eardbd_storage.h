@@ -34,17 +34,20 @@
 #define col1 "\x1b[35m"
 #define col2 "\x1b[0m"
 
-#define verbose0(format) \
+#define verwho0(format) \
     fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
 
-#define verbose1(format, ...) \
+#define verwho1(format, ...) \
     fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 
-#define verbose3(...) \
+#define vermast1(...) \
     if (!forked || master_iam) { \
         fprintf(stderr, __VA_ARGS__); \
         fprintf(stderr, "\n"); \
     }
+
+#define verline0() \
+        fprintf(stderr, col1 line col2);
 
 #define verline1(...) \
     if (!forked || master_iam) { \
@@ -52,15 +55,14 @@
         fprintf(stderr, col2 "\n"); \
     }
 
-#define verline0() \
-        fprintf(stderr, col1 line col2);
-
 #define error(...) \
     fprintf(stderr, "ERROR, " __VA_ARGS__); \
     fprintf(stderr, "\n"); \
     exit(1);
 
 /* Functions */
+void reset_all();
+
 void reset_indexes();
 
 void insert_hub(uint option, uint reason);
