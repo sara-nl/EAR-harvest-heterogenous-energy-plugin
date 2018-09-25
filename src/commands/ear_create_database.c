@@ -55,7 +55,7 @@ void execute_on_error(MYSQL *connection)
 void create_user(MYSQL *connection, char *db_name, char *db_user)
 {
     char query[256];
-    sprintf(query, "GRANT INSERT, SELECT ON %s.* TO '%s'@'localhost'", db_name, db_user);
+    sprintf(query, "GRANT INSERT, SELECT ON %s.* TO '%s'@'%'", db_name, db_user);
     if (mysql_query(connection, query)) execute_on_error(connection);
 }
 
