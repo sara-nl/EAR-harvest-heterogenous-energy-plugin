@@ -74,10 +74,10 @@ int fd_cli;
 // Times
 static struct timeval timeout_insr;
 static struct timeval timeout_aggr;
-static struct timeval timeout_slct;
+struct timeval timeout_slct;
 static time_t time_insr;
 static time_t time_aggr;
-static time_t time_slct;
+time_t time_slct;
 
 // Input buffers
 static packet_header_t input_header;
@@ -102,6 +102,7 @@ static int reconfiguring;
 static int listening;
 static int releasing;
 static int exitting;
+static int updating;
 static int waiting;
 int forked;
 
@@ -355,7 +356,9 @@ static void signal_handler(int signal, siginfo_t *info, void *context)
 
 	if (signal == SIGUSR1)
 	{
-		listening = 0;
+		verwho1("signal SIGUSR1 received on %s, switching verbosity", str_who[mirror_iam]);
+
+		updating  = 1;
 		verbosity = !verbosity;
 	}
 
@@ -726,6 +729,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 
 	// Single process configuration
 	listening = (server_iam && server_too) || (mirror_iam);
+	updating  = 0;
 
 	// is not a listening socket?
 	waiting   = (server_iam && !listening);
@@ -864,8 +868,8 @@ static void pipeline()
 		fds_incoming = fds_active;
 
 		if ((s = select(fd_max + 1, &fds_incoming, NULL, NULL, &timeout_slct)) == -1) {
-			if (listening) {
-				error("during select (%s)", intern_error_str);
+			if (listening && !updating) {
+				error("during select (%s)", strerror(errno));
 			}
 		}
 		
@@ -917,7 +921,7 @@ static void pipeline()
 		}
 
 		// run through the existing connections looking for data to read
-		for(i = fd_min; i <= fd_max && listening; i++)
+		for(i = fd_min; i <= fd_max && listening && !updating; i++)
 		{
 			if (listening && FD_ISSET(i, &fds_incoming)) // we got one!!
 			{
@@ -972,6 +976,8 @@ static void pipeline()
 		{
 			close(i);
 		}
+
+		updating = 0;
 	}
 
 	if (waiting) {

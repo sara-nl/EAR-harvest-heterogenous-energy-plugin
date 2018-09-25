@@ -51,6 +51,10 @@ extern int mirror_iam;
 // Pipeline
 extern int forked;
 
+// Time
+extern struct timeval timeout_slct;
+extern time_t time_slct;
+
 // Storage
 extern uint per_appsm;
 extern uint per_appsn;
@@ -391,9 +395,16 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		sync_answer(fd);
 
 		// In case it is a full sync the sync time is resetted before the answer
-		// with a very small offset (1 second is enough)
-		if (sync_option(q->sync_option, SYNC_ALL)) {
-			time_reset_timeout_insr(5);
+		// with a very small offset (5 second is enough)
+		if (sync_option(q->sync_option, SYNC_ALL))
+		{
+			/// We get the timeout passed since the 'time_slct' got its value
+			// and added to 'timeout_insr', because when 'time_slct' would be
+			// substracted from both 'timeout_insr' and 'timeout_aggr', it
+			// also be substracted the passed time.	
+			time_t timeout_passed = time_slct - timeout_slct.tv_sec;
+			
+			time_reset_timeout_insr(timeout_passed + 5);
 		}
 	}
 }
