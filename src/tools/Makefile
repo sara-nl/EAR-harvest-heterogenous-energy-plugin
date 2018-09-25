@@ -8,7 +8,7 @@ COMMON_OBJS = $(ROOTDIR)/src/common/types.a
 BINARIES = compute_coefficients \
 		   compute_coefficients_v2 \
            compute_coefficients_remote \
-           coefficients_quality_control \
+           coefficients_multitool \
 		   coefficients_to_csv \
 		   coefficients_v2_to_v3 \
 		   get_app_list \
@@ -30,7 +30,7 @@ compute_coefficients_remote: compute_coefficients_remote.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
 
 coefficients_multitool: coefficients_multitool.c coefficients_multitool.h $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 traces_to_paraver: traces_to_paraver.cpp
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $<

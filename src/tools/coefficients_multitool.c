@@ -2,7 +2,17 @@
 // Created by xgomez on 24/09/18.
 //
 
-#include <coefficients_multitool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <common/states.h>
+#include <common/types/projection.h>
+#include <common/types/application.h>
+#include <common/types/coefficient.h>
+#include <common/types/configuration/cluster_conf.h>
+#include <common/database/db_helper.h>
+#include <tools/coefficients_multitool.h>
+
+int EAR_VERBOSE_LEVEL = 0;
 
 typedef struct control
 {
@@ -127,22 +137,38 @@ application_t *merge(control_t *control)
 int main(int argc, char *argv[])
 {
 	char hostname[512];
+	char confpath[512];
 	cluster_conf_t conf;
 	application_t *apps;
+	int n_apps = 100;
+	int i;
 
 	//
 	gethostname(hostname, sizeof(hostname));
 
 	//
-	if (read_cluster_conf(my_ear_conf_path, &conf) != EAR_SUCCESS){
+	get_ear_conf_path(confpath);
+	//conf_path = getenv("EAR_ETC");	
+
+	if (read_cluster_conf(confpath, &conf) != EAR_SUCCESS){
 		fprintf(stderr, "Error reading cluster configuration.\n");
+		return 0;
 	}
+
+	//
+	fprintf(stderr, "'%s' '%s' '%s'\n", confpath, conf.database.database, hostname);
+	
 
 	//
 	init_db_helper(&conf.database);
 
 	//
-	db_read_applications(&apps, 0, 100, hostname);
+	db_read_applications(&apps, 0, n_apps, hostname);
+
+	for (i = 0; i < n_apps; ++i) 
+	{
+		fprintf(stderr, "APP '%s'\n", apps[i].node_id);
+	}
 
 	return 0;
 }
