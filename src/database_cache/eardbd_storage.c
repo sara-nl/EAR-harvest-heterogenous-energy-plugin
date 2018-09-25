@@ -86,6 +86,7 @@ extern ulong i_loops;
 
 // Verbosity
 extern char *str_who[2];
+extern int verbosity;
 
 /*
  *
@@ -114,7 +115,7 @@ void reset_indexes()
     i_loops = 0;
 }
 
-static void reset_all()
+void reset_all()
 {
 	// Generic reset
 	reset_indexes();
@@ -142,7 +143,7 @@ static void insert_result(uint index, uint length, time_t time_start, ulong type
 	kbs = (float) (index * type_size) / 1000000.0;
 	tms = (float) difftime(time_stop, time_start);
 
-	verbose1("inserted %lu/%lu (%0.2f%, %0.2f MBs) samples of %s in %f s",
+	verwho1("inserted %lu/%lu (%0.2f%, %0.2f MBs) samples of %s in %0.2f s",
 			 index, length, pnt, kbs, type_name, tms);
 }
 
@@ -281,7 +282,7 @@ static void insert_events()
 void insert_hub(uint option, uint reason)
 {
 	verline0();
-	verbose1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
+	verwho1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 
 	if (sync_option_m(option, SYNC_APPSM, SYNC_ALL)) {
 		insert_apps_mpi();
@@ -303,9 +304,6 @@ void insert_hub(uint option, uint reason)
 	}
 	if (sync_option_m(option, SYNC_LOOPS, SYNC_ALL)) {
 		insert_loops();
-	}
-	if (sync_option(option, SYNC_RESET)) {
-		reset_all();
 	}
 }
 
@@ -402,6 +400,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 
 void storage_sample_announce(int fd, packet_header_t *header, char *content)
 {
+	int print;
 	char *type;
 
 	if (header->content_type == CONTENT_TYPE_APP)
@@ -417,6 +416,7 @@ void storage_sample_announce(int fd, packet_header_t *header, char *content)
 		}
 	} else if (header->content_type == CONTENT_TYPE_PER) {
 		type = "periodic_metric_t";
+		print = verbosity;
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
 		type = "ear_event_t";
 	} else if (header->content_type == CONTENT_TYPE_LOO) {
@@ -429,6 +429,8 @@ void storage_sample_announce(int fd, packet_header_t *header, char *content)
 		type = "unknown";
 	}
 
-	verbose1("received '%s' packet from host '%s' (socket: %d)",
+	if (print) {
+		verwho1("received '%s' packet from host '%s' (socket: %d)",
 			type, header->host_src, fd);
+	}
 }
