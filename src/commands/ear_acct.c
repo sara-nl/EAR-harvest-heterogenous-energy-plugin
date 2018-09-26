@@ -327,7 +327,14 @@ void print_short_apps(application_t *apps, int num_apps)
             //to print: job_id.step_id \t user_id si root \t app_name \t num_nodes
             int idx = (i > 0) ? i - 1: 0;
             if (strlen(apps[idx].job.app_id) > 30)
-                strcpy(apps[idx].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
+            {
+                char *token = strrchr(apps[i-1].job.app_id, '/');
+                if (token != NULL) 
+                {
+                    token++;
+                    strcpy(apps[idx].job.app_id, token);
+                }
+            }
 
 
             if (current_is_mpi && !all_mpi)
