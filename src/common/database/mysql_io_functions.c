@@ -554,6 +554,12 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         else
             sprintf(job_query, "SELECT * FROM Jobs WHERE id=%lu AND step_id=%lu", job_id, step_id);
         num_jobs = mysql_retrieve_jobs(connection, job_query, &job_aux);
+        if (num_jobs < 1)
+        {
+            if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+            fprintf(stderr,"No job structure found in the database for job %d.%d.\n", job_id, step_id);
+            return EAR_ERROR;
+        }
         copy_job(&app_aux->job, job_aux);
         free(job_aux);
 
