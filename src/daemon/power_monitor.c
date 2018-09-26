@@ -309,6 +309,15 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
         }else{
 			eard_verbose(0,"Invalid policy %s ",appID->job.policy);
             my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+			if (my_policy==NULL){
+				eard_verbose(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
+				authorized_context.p_state=1;
+				authorized_context.policy=MONITORING_ONLY;
+				authorized_context.th=0;
+			}else{
+				copy_policy_conf(&authorized_context,my_policy);
+			}
+			my_policy=&authorized_context;
         }
         if (my_policy==NULL){
             eard_verbose(0,"Default policy configuration returns NULL,invalid policy, check ear.conf");
