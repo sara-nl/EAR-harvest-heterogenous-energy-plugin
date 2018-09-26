@@ -36,11 +36,13 @@ int EAR_VERBOSE_LEVEL=1;
 
 void main(int argc,char *argv[])
 {
-	int num_apps, is_learning=0;
+	int num_apps, is_learning=1;
     int total_apps = 0;
 	int i;
+    char *node_name = NULL;
 	application_t *apps;
-	if (argc>=2) is_learning=atoi(argv[1]);
+//	if (argc>=2) is_learning=atoi(argv[1]);
+    if (argc>=2) node_name = argv[1];
 	if (is_learning) printf("Reading applications from learning DB\n");
 	else printf("Reading applications from normal DB\n");
     char ear_path[256];
@@ -53,14 +55,14 @@ void main(int argc,char *argv[])
 	printf("Initializing DB\n");
 	init_db_helper(&my_conf.database);
 	printf("reading apps\n");
-	num_apps=db_read_applications(&apps,is_learning, 50, NULL);
+	num_apps=db_read_applications(&apps,is_learning, 50, node_name);
     while (num_apps > 0)
     {
 	    for (i=0;i<num_apps;i++){
 		    report_application_data(&apps[i]);
 	    }
         free(apps);
-	    num_apps=db_read_applications(&apps,is_learning, 50, NULL);
+	    num_apps=db_read_applications(&apps,is_learning, 50, node_name);
     }
     printf("Total apps from queries: %d\n", total_apps);
     printf("Total apps from DB: %d\n", get_num_applications(is_learning, argv[2])); 

@@ -31,15 +31,21 @@
 #include <unistd.h>
 #include <termios.h>
 #include <mysql/mysql.h>
+#include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 
 int EAR_VERBOSE_LEVEL=1;
 
-#define ALL_QUERY   "DELETE Learning_signatures, Learning_applications, Learning_jobs FROM Learning_jobs " \
+//#define ALL_QUERY   "DELETE Learning_signatures, Learning_applications, Learning_jobs FROM Learning_jobs " \
                     "INNER JOIN Learning_applications INNER JOIN Learning_signatures ON Learning_jobs.id=job_id " \
                     "AND Learning_jobs.step_id=Learning_applications.step_id AND Learning_signatures.id=signature_id"
+
+#define ALL_QUERY1  "DELETE FROM Power_signatures WHERE id IN (SELECT power_signature_id from Learning_applications)"
+#define ALL_QUERY2  "DELETE FROM Learning_applications"
+#define ALL_QUERY3  "DELETE FROM Learning_signatures"
+#define ALL_QUERY4  "DELETE FROM Learning_jobs"
 
 
 #define NODE_QUERY  "DELETE Learning_signatures, Learning_applications, Learning_jobs FROM Learning_jobs " \
@@ -59,7 +65,7 @@ void main(int argc,char *argv[])
         exit(0);
     }
     if (!strcmp(argv[1], "all")) all_nodes = 1;
-    if (argc > 3)
+    if (argc > 2)
     {
         struct termios t;
         tcgetattr(STDIN_FILENO, &t);
@@ -72,6 +78,7 @@ void main(int argc,char *argv[])
         t.c_lflag |= ECHO;
         tcsetattr(STDIN_FILENO, TCSANOW, &t);
         printf("\n");
+        strclean(passw, '\n');
     }
     else
         strcpy(passw, "");
@@ -85,7 +92,7 @@ void main(int argc,char *argv[])
     read_cluster_conf(ear_path,&my_conf);
     char query[256];
     if (all_nodes)
-        strcpy(query, ALL_QUERY);
+        strcpy(query, ALL_QUERY1);
     else
         sprintf(query, NODE_QUERY, argv[1]);
 
@@ -105,6 +112,27 @@ void main(int argc,char *argv[])
     }
     
 //    printf("query: %s\n", query);
+    if (all_nodes)
+    {
+        if (mysql_query(connection, query))
+        {
+            fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 
+            exit(0);
+        }
+        strcpy(query, ALL_QUERY2);
+        if (mysql_query(connection, query))
+        {
+            fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 
+            exit(0);
+        }
+        strcpy(query, ALL_QUERY3);
+        if (mysql_query(connection, query))
+        {
+            fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 
+            exit(0);
+        }
+        strcpy(query, ALL_QUERY4);
+    }
     if (mysql_query(connection, query))
     {
         fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 

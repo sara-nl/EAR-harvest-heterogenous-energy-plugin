@@ -122,4 +122,7 @@ int send_command(request_t *command);
 
 /** Sends the command to all nodes in ear.conf */
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf);
+
+void correct_error(int target_ip, request_t *command, int port);
+void correct_error_starter(char *host_name, request_t *command, int port);
 #endif

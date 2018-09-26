@@ -309,6 +309,15 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
         }else{
 			eard_verbose(0,"Invalid policy %s ",appID->job.policy);
             my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+			if (my_policy==NULL){
+				eard_verbose(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
+				authorized_context.p_state=1;
+				authorized_context.policy=MONITORING_ONLY;
+				authorized_context.th=0;
+			}else{
+				copy_policy_conf(&authorized_context,my_policy);
+			}
+			my_policy=&authorized_context;
         }
         if (my_policy==NULL){
             eard_verbose(0,"Default policy configuration returns NULL,invalid policy, check ear.conf");
@@ -514,7 +523,8 @@ void powermon_set_th(double th)
 void powermon_new_max_freq(ulong maxf)
 {
 	uint ps;
-	if (current_ear_app.app.is_mpi==0){
+	/* Job running and not EAR-aware */
+	if ((current_ear_app.app.job.id>0) && (current_ear_app.app.is_mpi==0)){
 		if (maxf<current_node_freq){
 			eard_verbose(1,"MaxFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,maxf);
 			frequency_set_all_cpus(maxf);
@@ -591,10 +601,9 @@ void powermon_set_freq(ulong freq)
 	save_eard_conf(&eard_dyn_conf);
 }
 
-/** Restores values from ear.conf (not reloads the file). When application is not mpi, automatically chages the node freq if needed */
-void powermon_restore_conf()
+/** it reloads ear.conf */
+void powermon_reload_conf()
 {
-	save_eard_conf(&eard_dyn_conf);
 }
 
 

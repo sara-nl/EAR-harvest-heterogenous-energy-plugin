@@ -139,8 +139,11 @@ ulong min_time_policy(signature_t *sig)
 	set_performance_projection(EAR_default_pstate,time_ref,power_ref,cpi_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
-	#if DEMO
-	VERBOSE_N(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate);
+	#if EAR_PERFORMANCE_TESTS
+	if (ear_frequency == EAR_default_frequency){
+		VERBOSE_N(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u (ear_freq=%lu def_freq %lu )\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate,
+		ear_frequency,EAR_default_frequency);
+	}
 	#endif
 
 		try_next=1;
@@ -151,8 +154,10 @@ ulong min_time_policy(signature_t *sig)
 		{
 			if (coefficients[ref][i].available)
 			{
-				#if DEMO
-				VERBOSE_N(2,"Comparing %u with %u",best_pstate,i);
+				#if EAR_PERFORMANCE_TESTS
+				if (ear_frequency == EAR_default_frequency){
+					VERBOSE_N(1,"Comparing %u with %u",best_pstate,i);
+				}
 				#endif
 				power_proj=sig_power_projection(my_app,ear_frequency,i);
 				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
@@ -160,8 +165,10 @@ ulong min_time_policy(signature_t *sig)
 				set_performance_projection(i,time_proj,power_proj,cpi_proj);
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
-				#if DEMO	
-				VERBOSE_N(2,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
+				#if EAR_PERFORMANCE_TESTS
+				if (ear_frequency == EAR_default_frequency){
+					VERBOSE_N(1,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
+				}
 				#endif
 
 				// OK
@@ -176,7 +183,15 @@ ulong min_time_policy(signature_t *sig)
 					try_next = 0;
 				}
 			} // Coefficients available
-			else try_next=0;
+			else{ 
+				#if EAR_PERFORMANCE_TESTS
+				if (ear_frequency == EAR_default_frequency){
+					VERBOSE_N(1,"Coefficients for node %s [%d][%d] not available.... try=0\n",node_name,ref,i);
+					
+				}
+				#endif
+				try_next=0;
+			}
 		}	
 
 	// Coefficients were not available for this nominal frequency

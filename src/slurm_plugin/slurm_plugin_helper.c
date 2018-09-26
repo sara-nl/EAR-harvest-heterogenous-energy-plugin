@@ -133,7 +133,7 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	new_cap = len_dst + len_src + (len_dst > 0) + 1;
 
 	if (new_cap > dst_capacity) {
-		plug_error("Variable could not be appended, too many characters on %d",new_cap);
+		plug_error("Variable could not be appended, too many characters on %d", new_cap);
 		return;
 	}
 

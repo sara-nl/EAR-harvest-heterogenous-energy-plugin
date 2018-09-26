@@ -339,7 +339,7 @@ ulong eards_write_event(ear_event_t *event)
         if (warning(read(ear_fd_ack[com_fd], &ack, sizeof(ulong)),sizeof(ulong),
                 "ERROR reading ack event")) return EAR_ERROR;
     }else{
-        DEBUG_F(0, "writting application signature (DB) service unavailable");
+        DEBUG_F(0, "eards_write_event service not available");
         ack=EAR_SUCCESS;
     }
 

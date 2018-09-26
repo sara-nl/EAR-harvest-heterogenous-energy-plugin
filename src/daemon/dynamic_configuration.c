@@ -213,7 +213,7 @@ int dynconf_set_freq(ulong freq)
 
 int dyncon_restore_conf()
 {
-	/* PENDING */
+	powermon_reload_conf();
 	return EAR_SUCCESS;
 }
 

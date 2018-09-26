@@ -51,6 +51,10 @@ extern int mirror_iam;
 // Pipeline
 extern int forked;
 
+// Time
+extern struct timeval timeout_slct;
+extern time_t time_slct;
+
 // Storage
 extern uint per_appsm;
 extern uint per_appsn;
@@ -86,6 +90,7 @@ extern ulong i_loops;
 
 // Verbosity
 extern char *str_who[2];
+extern int verbosity;
 
 /*
  *
@@ -114,7 +119,7 @@ void reset_indexes()
     i_loops = 0;
 }
 
-static void reset_all()
+void reset_all()
 {
 	// Generic reset
 	reset_indexes();
@@ -142,7 +147,7 @@ static void insert_result(uint index, uint length, time_t time_start, ulong type
 	kbs = (float) (index * type_size) / 1000000.0;
 	tms = (float) difftime(time_stop, time_start);
 
-	verbose1("inserted %lu/%lu (%0.2f%, %0.2f MBs) samples of %s in %f s",
+	verwho1("inserted %u/%u (%0.2f%, %0.2f MBs) samples of %s in %0.2f s",
 			 index, length, pnt, kbs, type_name, tms);
 }
 
@@ -281,7 +286,7 @@ static void insert_events()
 void insert_hub(uint option, uint reason)
 {
 	verline0();
-	verbose1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
+	verwho1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 
 	if (sync_option_m(option, SYNC_APPSM, SYNC_ALL)) {
 		insert_apps_mpi();
@@ -303,9 +308,6 @@ void insert_hub(uint option, uint reason)
 	}
 	if (sync_option_m(option, SYNC_LOOPS, SYNC_ALL)) {
 		insert_loops();
-	}
-	if (sync_option(option, SYNC_RESET)) {
-		reset_all();
 	}
 }
 
@@ -393,15 +395,23 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		sync_answer(fd);
 
 		// In case it is a full sync the sync time is resetted before the answer
-		// with a very small offset (1 second is enough)
-		if (sync_option(q->sync_option, SYNC_ALL)) {
-			time_reset_timeout_insr(5);
+		// with a very small offset (5 second is enough)
+		if (sync_option(q->sync_option, SYNC_ALL))
+		{
+			/// We get the timeout passed since the 'time_slct' got its value
+			// and added to 'timeout_insr', because when 'time_slct' would be
+			// substracted from both 'timeout_insr' and 'timeout_aggr', it
+			// also be substracted the passed time.	
+			time_t timeout_passed = time_slct - timeout_slct.tv_sec;
+			
+			time_reset_timeout_insr(timeout_passed + 5);
 		}
 	}
 }
 
 void storage_sample_announce(int fd, packet_header_t *header, char *content)
 {
+	int print;
 	char *type;
 
 	if (header->content_type == CONTENT_TYPE_APP)
@@ -417,6 +427,7 @@ void storage_sample_announce(int fd, packet_header_t *header, char *content)
 		}
 	} else if (header->content_type == CONTENT_TYPE_PER) {
 		type = "periodic_metric_t";
+		print = verbosity;
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
 		type = "ear_event_t";
 	} else if (header->content_type == CONTENT_TYPE_LOO) {
@@ -429,6 +440,8 @@ void storage_sample_announce(int fd, packet_header_t *header, char *content)
 		type = "unknown";
 	}
 
-	verbose1("received '%s' packet from host '%s' (socket: %d)",
+	if (print) {
+		verwho1("received '%s' packet from host '%s' (socket: %d)",
 			type, header->host_src, fd);
+	}
 }

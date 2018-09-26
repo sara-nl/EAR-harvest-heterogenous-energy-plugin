@@ -77,6 +77,9 @@ void print_job_fd(int fd, job_t *job)
 		return;
 	}
 //    sprintf(job_buff, "%s;%s;%lu;%s;%s;%lf", job->user_id, job->group_id,job->id, job->app_id, job->policy, job->th);
+    if (strlen(job->group_id) < 1) strcpy(job->group_id, " ");
+    if (strlen(job->energy_tag) < 1) strcpy(job->energy_tag, " ");
+    if (strlen(job->user_acc) < 1) strcpy(job->user_acc, " ");
     sprintf(job_buff, "%lu;%lu;%s;%s;%s;%s;%s;%s;%lf", job->id, job->step_id, job->user_id, job->group_id, job->app_id,
                                                           job->user_acc, job->energy_tag, job->policy, job->th);
 	write(fd,job_buff,strlen(job_buff));

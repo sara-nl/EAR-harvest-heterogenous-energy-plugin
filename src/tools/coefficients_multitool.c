@@ -139,6 +139,7 @@ int main(int argc, char *argv[])
 	char confpath[512];
 	int n_apps = 1000;
 	int i, j, n, cmp;
+	unsigned int learning = 0;
 	char *node;
 
 	cluster_conf_t conf;
@@ -147,8 +148,10 @@ int main(int argc, char *argv[])
 
 	// argv[1]: node
 	// argv[2]: f0_mhz
+	// argv[3]: learning
 	cntr.f0_mhz = (unsigned long) atoi(argv[2]);
 	node = argv[1];
+	learning = (unsigned int) atoi(argv[3]);
 
 	// Reading ear.conf
 	get_ear_conf_path(confpath);
@@ -159,10 +162,15 @@ int main(int argc, char *argv[])
 	}
 
 	// Initializing database
-	fprintf(stderr, "'%s' '%s' '%s'\n", confpath, conf.database.database, node);
+	fprintf(stderr, "'%s' '%s' '%s' '%u'\n", confpath, conf.database.database, node, learning);
 
 	init_db_helper(&conf.database);
-	n = db_read_applications(&apps, 1, n_apps, node);
+	n = db_read_applications(&apps, learning, n_apps, node);
+
+	if (n == 0) {
+		fprintf(stderr, "No apps found\n");
+		return 0;
+	}
 
 	// Counting applications
 	fprintf(stderr, "n: %d\n", n);
@@ -177,6 +185,8 @@ int main(int argc, char *argv[])
 				i, apps[i].node_id, apps[i].job.app_id, apps[i].signature.def_f, cmp);
 	}
 
+	return 0;
+
 	// Allocating applications
 	cntr.apps = calloc(cntr.n_apps, sizeof(application_t));
 
@@ -186,12 +196,13 @@ int main(int argc, char *argv[])
 			  (strcmp(node, apps[i].node_id) == 0);
 
 		if (cmp) {
-			memcpy(&apps[j], &apps[i], sizeof(application_t));
+			memcpy(&cntr.apps[j], &apps[i], sizeof(application_t));
+			j += 1;
 		}
 	}
 
 	// Merging
-	merge(&cntr);
+	//merge(&cntr);
 
 	// Evaluating
 	//evaluate(&cntr);
