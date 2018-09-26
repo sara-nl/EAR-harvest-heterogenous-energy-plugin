@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <mysql/mysql.h>
+#include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -64,7 +65,7 @@ void main(int argc,char *argv[])
         exit(0);
     }
     if (!strcmp(argv[1], "all")) all_nodes = 1;
-    if (argc > 3)
+    if (argc > 2)
     {
         struct termios t;
         tcgetattr(STDIN_FILENO, &t);
@@ -77,6 +78,7 @@ void main(int argc,char *argv[])
         t.c_lflag |= ECHO;
         tcsetattr(STDIN_FILENO, TCSANOW, &t);
         printf("\n");
+        strclean(passw, '\n');
     }
     else
         strcpy(passw, "");
@@ -102,7 +104,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    if(!mysql_real_connect(connection, my_conf.database.ip, "root", "Leibniz", my_conf.database.database, my_conf.database.port, NULL, 0))
+    if(!mysql_real_connect(connection, my_conf.database.ip, "root", passw, my_conf.database.database, my_conf.database.port, NULL, 0))
     {
         fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
