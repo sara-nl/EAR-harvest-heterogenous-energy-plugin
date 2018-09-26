@@ -159,22 +159,22 @@ int main(int argc, char *argv[])
 	}
 
 	// Initializing database
-	fprintf(stderr, "'%s' '%s' '%s'\n", confpath, conf.database.database, hostname);
+	fprintf(stderr, "'%s' '%s' '%s'\n", confpath, conf.database.database, node);
 
 	init_db_helper(&conf.database);
-	n = db_read_applications(&apps, 1, n_apps, hostname);
+	n = db_read_applications(&apps, 1, n_apps, node);
 
 	// Counting applications
 	fprintf(stderr, "n: %d\n", n);
 
 	for (i = 0; i < n; ++i)
 	{
-		cmp = (strcmp(cntr.f0_mhz, apps[i].signature.def_f) == 0) &&
+		cmp = (cntr.f0_mhz == apps[i].signature.def_f) &&
 			  (strcmp(node, apps[i].node_id) == 0);
 		cntr.n_apps += cmp;
 
 		fprintf(stderr, "%d: '%s' '%s' '%lu' (%d)\n",
-				i, apps[i].node_id, apps[i].job.app_id, apps[i].def_f, cmp);
+				i, apps[i].node_id, apps[i].job.app_id, apps[i].signature.def_f, cmp);
 	}
 
 	// Allocating applications
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 
 	for (i = 0, j = 0; i < n; ++i)
 	{
-		cmp = (strcmp(cntr.f0_mhz, apps[i].signature.def_f) == 0) &&
+		cmp = (cntr.f0_mhz == apps[i].signature.def_f) &&
 			  (strcmp(node, apps[i].node_id) == 0);
 
 		if (cmp) {
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
 	merge(&cntr);
 
 	// Evaluating
-	evaluate(&cntr);
+	//evaluate(&cntr);
 
 	// Leaving
 	free(cntr.coeffs);
