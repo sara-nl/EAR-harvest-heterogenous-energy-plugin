@@ -140,8 +140,8 @@ int main(int argc, char *argv[])
 	char confpath[512];
 	cluster_conf_t conf;
 	application_t *apps;
-	int n_apps = 100;
-	int i;
+	int n_apps = 1000;
+	int i, s;
 
 	//
 	gethostname(hostname, sizeof(hostname));
@@ -157,17 +157,17 @@ int main(int argc, char *argv[])
 
 	//
 	fprintf(stderr, "'%s' '%s' '%s'\n", confpath, conf.database.database, hostname);
-	
 
 	//
 	init_db_helper(&conf.database);
 
 	//
-	db_read_applications(&apps, 0, n_apps, hostname);
+	s = db_read_applications(&apps, 1, n_apps, hostname);
+	fprintf(stderr, "s - %d\n", s);
 
-	for (i = 0; i < n_apps; ++i) 
+	for (i = 0; i < s; ++i) 
 	{
-		fprintf(stderr, "APP '%s'\n", apps[i].node_id);
+		fprintf(stderr, "%d: '%s' '%s'\n", i, apps[i].node_id, apps[i].job.app_id);
 	}
 
 	return 0;
