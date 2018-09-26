@@ -16,13 +16,13 @@ int EAR_VERBOSE_LEVEL = 0;
 
 typedef struct control
 {
+	coefficient_t *coeffs;
 	application_t *apps;
 	application_t *apps_merged;
-	coefficient_t *coeffs;
 	projection_t *projs;
+	int n_coeffs;
 	int n_apps;
 	int n_apps_merged;
-	int n_coeffs;
 	uint f0_mhz;
 } control_t;
 
@@ -136,39 +136,71 @@ application_t *merge(control_t *control)
 
 int main(int argc, char *argv[])
 {
-	char hostname[512];
 	char confpath[512];
+	int n_apps = 1000;
+	int i, j, n, cmp;
+	char *node;
+
 	cluster_conf_t conf;
 	application_t *apps;
-	int n_apps = 1000;
-	int i, s;
+	control_t cntr;
 
-	//
-	gethostname(hostname, sizeof(hostname));
+	// argv[1]: node
+	// argv[2]: f0_mhz
+	cntr.f0_mhz = (unsigned long) atoi(argv[2]);
+	node = argv[1];
 
-	//
+	// Reading ear.conf
 	get_ear_conf_path(confpath);
-	//conf_path = getenv("EAR_ETC");	
 
 	if (read_cluster_conf(confpath, &conf) != EAR_SUCCESS){
 		fprintf(stderr, "Error reading cluster configuration.\n");
 		return 0;
 	}
 
-	//
+	// Initializing database
 	fprintf(stderr, "'%s' '%s' '%s'\n", confpath, conf.database.database, hostname);
 
-	//
 	init_db_helper(&conf.database);
+	n = db_read_applications(&apps, 1, n_apps, hostname);
 
-	//
-	s = db_read_applications(&apps, 1, n_apps, hostname);
-	fprintf(stderr, "s - %d\n", s);
+	// Counting applications
+	fprintf(stderr, "n: %d\n", n);
 
-	for (i = 0; i < s; ++i) 
+	for (i = 0; i < n; ++i)
 	{
-		fprintf(stderr, "%d: '%s' '%s'\n", i, apps[i].node_id, apps[i].job.app_id);
+		cmp = (strcmp(cntr.f0_mhz, apps[i].signature.def_f) == 0) &&
+			  (strcmp(node, apps[i].node_id) == 0);
+		cntr.n_apps += cmp;
+
+		fprintf(stderr, "%d: '%s' '%s' '%lu' (%d)\n",
+				i, apps[i].node_id, apps[i].job.app_id, apps[i].def_f, cmp);
 	}
+
+	// Allocating applications
+	cntr.apps = calloc(cntr.n_apps, sizeof(application_t));
+
+	for (i = 0, j = 0; i < n; ++i)
+	{
+		cmp = (strcmp(cntr.f0_mhz, apps[i].signature.def_f) == 0) &&
+			  (strcmp(node, apps[i].node_id) == 0);
+
+		if (cmp) {
+			memcpy(&apps[j], &apps[i], sizeof(application_t));
+		}
+	}
+
+	// Merging
+	merge(&cntr);
+
+	// Evaluating
+	evaluate(&cntr);
+
+	// Leaving
+	free(cntr.coeffs);
+	free(cntr.apps_merged);
+	free(cntr.apps);
+
 
 	return 0;
 }
