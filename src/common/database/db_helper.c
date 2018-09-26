@@ -734,26 +734,31 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 
     char query[512];
     if (is_learning && node_name != NULL)
-        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
+//        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
                         "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
+        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications WHERE job_id >= %d AND step_id > %d AND node_id='%s' ORDER BY job_id "\
+                        "LIMIT %d", current_job_id, current_step_id, node_name, max_apps);
     else if (is_learning && node_name == NULL)
         sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
                         "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id);
     else if (!is_learning && node_name != NULL)
-        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
+//        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
+        sprintf(query,  "SELECT Applications.* FROM Applications WHERE job_id >= %d AND step_id > %d AND node_id='%s' ORDER BY job_id "\
+                        "LIMIT %d", current_job_id, current_step_id, node_name, max_apps);
     else
         sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id);
 
+//    fprintf(stderr, "QUERY: %s\n", query);
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
@@ -762,7 +767,10 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 		return num_apps;
     }
     if (num_apps > 0)
+    {
         current_job_id = (*apps)[num_apps - 1].job.id;
+        current_step_id = (*apps)[num_apps - 1].job.step_id;
+    }
     mysql_close(connection);
 	return num_apps;
 }
