@@ -41,7 +41,7 @@
 
 static const char *__NAME__ = "db_helper";
 db_conf_t *db_config = NULL;
-int current_step_id = 0;
+int current_step_id = -1;
 int current_job_id = 0;
 
 #define _MAX(X,Y)			(X > Y ? X : Y)
