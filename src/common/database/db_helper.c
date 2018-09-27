@@ -751,8 +751,9 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
-        sprintf(query,  "SELECT Applications.* FROM Applications WHERE job_id >= %d AND step_id > %d AND node_id='%s' ORDER BY job_id "\
-                        "LIMIT %d", current_job_id, current_step_id, node_name, max_apps);
+        sprintf(query,  "SELECT Applications.* FROM Applications WHERE (job_id > %d AND node_id='%s') OR "\
+                        "(job_id = %d AND step_id > %d AND node_id = '%s') ORDER BY job_id LIMIT %d", 
+                        current_job_id, node_name, current_job_id, current_step_id, node_name, max_apps);
     else
         sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
@@ -777,9 +778,11 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 }
 
 #define LEARNING_APPS_QUERY     "SELECT COUNT(*) FROM Learning_applications WHERE node_id = '%s'"
-#define LEARNING_APPS_ALL_QUERY "SELECT COUNT(*) FROM Learning_applications"
+//#define LEARNING_APPS_ALL_QUERY "SELECT COUNT(*) FROM Learning_applications"
+#define LEARNING_APPS_ALL_QUERY "SELECT COUNT(*) FROM (SELECT * FROM Learning_applications GROUP BY job_id, step_id) AS t1"
 #define APPS_QUERY              "SELECT COUNT(*) FROM Applications WHERE node_id = '%s'"
-#define APPS_ALL_QUERY          "SELECT COUNT(*) FROM Learning_applications"
+#define APPS_ALL_QUERY          "SELECT COUNT(*) FROM (SELECT * FROM Applications GROUP BY job_id, step_id) AS t1"
+//#define APPS_ALL_QUERY          "SELECT COUNT(*) FROM Applications"
 
 ulong get_num_applications(char is_learning, char *node_name)
 {
