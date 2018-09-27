@@ -302,19 +302,19 @@ int main(int argc, char *argv[])
  	MALLOC(app_list, application_t, num_apps);
  	MALLOC(apps, application_t, num_apps);
 	fprintf(stdout,"%d applications in DB for learning phase\n",num_apps);
-    ret=db_read_applications(&tmp_apps,is_learning, 50,NULL);
-    while (ret > 0)
-    {
-		fprintf(stdout,"%d applications retrieved from DB\n",ret);
+    ret=db_read_applications(&tmp_apps,is_learning, num_apps,nodename);
+    if (ret>0){
         for (i=0;i<ret;i++){
             if (strcmp(tmp_apps[i].node_id,nodename)==0){
-				copy_application(&apps[total_apps],&tmp_apps[i]);
-				total_apps++;
-			}
-        }
+                copy_application(&apps[total_apps],&tmp_apps[i]);
+                total_apps++;
+            }   
+        }   
         free(tmp_apps);
-        ret=db_read_applications(&tmp_apps,is_learning, 50,NULL);
-    }
+    }else{
+        printf("Warning, DB has reported %d jobs for node %s\n",ret,nodename);
+    }   
+
     printf("Total apps:%d, expected %d\n", total_apps,num_apps);
     MALLOC(samples_per_app, uint, num_apps);
    

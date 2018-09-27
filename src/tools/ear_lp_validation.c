@@ -324,9 +324,7 @@ int main(int argc, char *argv[])
 	printf("---------------------READING APPS-------------------------\n");
 	fprintf(stdout,"%d applications in DB for learning phase\n",num_apps);
     ret=db_read_applications(&tmp_apps,is_learning, num_apps,nodename);
-    while (ret > 0)
-    {
-		fprintf(stdout,"%d applications retrieved from DB\n",ret);
+	if (ret>0){
         for (i=0;i<ret;i++){
             if (strcmp(tmp_apps[i].node_id,nodename)==0){
 				copy_application(&apps[total_apps],&tmp_apps[i]);
@@ -334,9 +332,10 @@ int main(int argc, char *argv[])
 			}
         }
         free(tmp_apps);
-        //ret=db_read_applications(&tmp_apps,is_learning, 50,nodename);
-        ret=0;
-    }
+	}else{
+		printf("Warning, DB has reported %d jobs for node %s\n",ret,nodename);
+		total_warnings++;
+	}
 	/* Warning */
 	if (total_apps!=num_apps){
 		printf("Warning, DB has reported %d applications and only %d has been readed for node %s\n",num_apps,total_apps,nodename);
