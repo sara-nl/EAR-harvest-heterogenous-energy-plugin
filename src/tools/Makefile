@@ -13,7 +13,8 @@ BINARIES = compute_coefficients \
 		   get_app_list \
 		   get_ear_events \
 		   remove_learning \
-		   get_active_nodes
+		   get_active_nodes \
+		   ear_lp_validation
 
 ######## RULES
 
@@ -51,6 +52,9 @@ coefficients_to_csv: coefficients_to_csv.c $(COMMON_OBJS)
 
 coefficients_v2_to_v3:coefficients_v2_to_v3.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
+
+ear_lp_validation: ear_lp_validation.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 ######## OPTIONS
 

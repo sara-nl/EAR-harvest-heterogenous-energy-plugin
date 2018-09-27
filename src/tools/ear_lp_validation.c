@@ -53,6 +53,18 @@
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
+
+#define MIN_TIME 30
+#define MAX_TIME 200
+#define MIN_GBS	1.0
+#define MAX_GBS	300.0
+#define MIN_POWER	100.0
+#define MAX_POWER	400.0
+#define MIN_TPI	1.0
+#define MAX_TPI	300.0
+#define MIN_CPI 0.0
+#define MAX_CPI 50
+
 int EAR_VERBOSE_LEVEL=1;
 application_t *app_list;
 application_t **sorted_app_list;
@@ -291,7 +303,7 @@ int main(int argc, char *argv[])
  	MALLOC(app_list, application_t, num_apps);
  	MALLOC(apps, application_t, num_apps);
 	fprintf(stdout,"%d applications in DB for learning phase\n",num_apps);
-    ret=db_read_applications(&tmp_apps,is_learning, 50,NULL);
+    ret=db_read_applications(&tmp_apps,is_learning, 50,nodename);
     while (ret > 0)
     {
 		fprintf(stdout,"%d applications retrieved from DB\n",ret);
@@ -302,14 +314,14 @@ int main(int argc, char *argv[])
 			}
         }
         free(tmp_apps);
-        ret=db_read_applications(&tmp_apps,is_learning, 50,NULL);
+        ret=db_read_applications(&tmp_apps,is_learning, 50,nodename);
     }
 	/* Warning */
 	if (total_apps!=num_apps){
 		printf("Warning, DB has reported %d applications and only %d has been readed for node %s\n",num_apps,total_apps,nodename);
 	}
 	if (total_apps!=(expected_num_apps*expected_num_runs*expected_num_freqs)){
-		printf("Warning, DB has reported %d applications and we were expecting %d for node %s\n",total_apps,expected_num_apps*expected_num_runs*expected_num_freqs);
+		printf("Warning, DB has reported %d applications and we were expecting %d for node %s\n",total_apps,expected_num_apps*expected_num_runs*expected_num_freqs,nodename);
 	}
     MALLOC(samples_per_app, uint, num_apps);
    
@@ -326,7 +338,7 @@ int main(int argc, char *argv[])
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
                 // If APP exists, then accumulate its values in
-                accum_app(app_list[index].job.app_id,,nodename,&app_list[index].signature, &apps[i].signature);
+                accum_app(app_list[index].job.app_id,nodename,&app_list[index].signature, &apps[i].signature);
                 samples_per_app[index]++;
             } else {
                 write_app(&app_list[filtered_apps], &apps[i]);
@@ -342,9 +354,9 @@ int main(int argc, char *argv[])
     // We must compute the average per (app,f)
     for (i = 0; i < num_apps; i++) {
         average_list_samples(&app_list[i].signature, samples_per_app[i]);
-		if (samples_per_app[i]!=expected_runs){
+		if (samples_per_app[i]!=expected_num_runs){
 			printf("Warning, app %s freq %ul nodename %s with %d runs, expected %d\n",
-			app_list[i].job.app_id,app_list[i].signature.def_f,nodename,samples_per_app[i],expected_runs);
+			app_list[i].job.app_id,app_list[i].signature.def_f,nodename,samples_per_app[i],expected_num_runs);
 		}
     }
 	
@@ -356,10 +368,10 @@ int main(int argc, char *argv[])
             samples_f[index]++;
         }
     }
-	for (i=1;i<=expected_pstates;i++) {
-		if (samples_f[i]!=expected_num_apps*expect_num_runs){
+	for (i=1;i<=expected_num_freqs;i++) {
+		if (samples_f[i]!=expected_num_apps*expected_num_runs){
 			/* Warning */
-			printf("Warning, pstate %d with %d samples, expected %d\n",i,samples_f[i],expected_num_apps*expect_num_runs);
+			printf("Warning, pstate %d with %d samples, expected %d\n",i,samples_f[i],expected_num_apps*expected_num_runs);
 		}
 	}
 

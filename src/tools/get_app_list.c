@@ -58,6 +58,7 @@ void main(int argc,char *argv[])
 	num_apps=db_read_applications(&apps,is_learning, 50, node_name);
     while (num_apps > 0)
     {
+		total_apps+=num_apps;
 	    for (i=0;i<num_apps;i++){
 		    report_application_data(&apps[i]);
 	    }
@@ -65,5 +66,5 @@ void main(int argc,char *argv[])
 	    num_apps=db_read_applications(&apps,is_learning, 50, node_name);
     }
     printf("Total apps from queries: %d\n", total_apps);
-    printf("Total apps from DB: %d\n", get_num_applications(is_learning, argv[2])); 
+    printf("Total apps from DB: %d\n", get_num_applications(is_learning, argv[1])); 
 }
