@@ -135,7 +135,7 @@ application_t *merge(control_t *control)
 void evaluate(control_t *control)
 {
 	char buffer[32];
-	double cpi0, tpi0, tim0, pow;
+	double cpi0, tpi0, tim0, pow0;
 	double cpip, tpip, timp, powp;
 	double cpie, tpie, time, powe;
 
@@ -146,37 +146,19 @@ void evaluate(control_t *control)
 	uint f0_mhz;
 
 	buffer[0] = '\0';
-	f0_mhz = control->f0_mhz;
-	coeffs = control->coeffs;
-	apps = control->apps_merged;
+	f0_mhz   = control->f0_mhz;
+	coeffs   = control->coeffs;
+	apps     = control->apps_merged;
 	n_coeffs = control->n_coeffs;
-	n_apps = control->n_apps_merged;
+	n_apps   = control->n_apps_merged;
+			
+	tprintf_init(stderr, "18 11 15 12 12 15 12 12");
 
 	for (j = 0; j < n_apps; ++j)
 	{
 		if (apps[j].signature.def_f == f0_mhz)
 		{
-			tprintf_init(stderr, "18 11 12 12 12 12 12 12");
-
-			//set_spacing_digits(18);
-			//print_spacing_string(apps[j].job.app_id);
-
-			//set_spacing_digits(11);
-			printf("@");
-			//print_spacing_uint(apps[j].signature.def_f);
-
-			//set_spacing_digits(12);
-			printf("| ");
-			//print_spacing_string("T. Real");
-			//print_spacing_string("T. Proj");
-			//print_spacing_string("T. Err");
-			printf("| ");
-			//print_spacing_string("P. Real");
-			//print_spacing_string("P. Proj");
-			//print_spacing_string("P. Err");
-			printf("\n");
-
-			tprintf("%s||@%u||T. Real||T. Proj||T. Err||P. Real||P. Proj||P. Err",
+			tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
 					apps[j].job.app_id, apps[j].signature.def_f);
 
 			cpi0 = apps[j].signature.CPI;
@@ -194,9 +176,6 @@ void evaluate(control_t *control)
 
 					k = find(apps, n_apps, apps[j].job.app_id, coeffs[i].pstate);
 
-					tprintf("->||%lu||T. Real||T. Proj||T. Err||P. Real||P. Proj||P. Err",
-							coeffs[i].pstate);
-
 					if (k != -1)
 					{
 						m = &apps[k];
@@ -205,11 +184,11 @@ void evaluate(control_t *control)
 						powe = fabs((1.0 - (m->signature.DC_power / powp)) * 100.0);
 						cpie = fabs((1.0 - (m->signature.CPI / cpip)) * 100.0);
 
-						tprintf("->||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
+						tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
 								coeffs[i].pstate, m->signature.time, timp, time,
 								m->signature.DC_power, powp, powe);
 					} else {
-						tprintf(buffer, "->||%lu||-||-||-||-||-||-", coeffs[i].pstate);
+						tprintf(buffer, "->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
 					}
 				}
 			}
@@ -233,8 +212,8 @@ int main(int argc, char *argv[])
 	// argv[2]: f0_mhz
 	// argv[3]: learning
 	cntr.f0_mhz = (unsigned long) atoi(argv[2]);
-	node = argv[1];
 	learning = (unsigned int) atoi(argv[3]);
+	node = argv[1];
 
 	// Reading ear.conf
 	get_ear_conf_path(paths);
