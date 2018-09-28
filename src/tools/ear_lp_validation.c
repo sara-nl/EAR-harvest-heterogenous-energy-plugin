@@ -53,6 +53,20 @@
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
+
+#define MIN_TIME 30
+#define MAX_TIME 200
+#define MIN_GBS	0.0
+#define MAX_GBS	300.0
+#define MIN_POWER	100.0
+#define MAX_POWER	400.0
+#define MIN_TPI	0.0
+#define MAX_TPI	300.0
+#define MIN_CPI 0.0
+#define MAX_CPI 50
+#define MIN_FREQ min_freq
+#define MAX_FREQ max_freq
+
 int EAR_VERBOSE_LEVEL=1;
 application_t *app_list;
 application_t **sorted_app_list;
@@ -64,8 +78,10 @@ uint num_diff_apps;
 char nodename[256],*coeff_root;
 uint *node_freq_list;
 uint num_node_p_states;
-uint min_freq;
+uint min_freq,max_freq;
 uint nom_freq;
+int expected_num_apps,expected_num_runs, expected_num_freqs;
+int total_warnings=0;
 
 uint num_apps, current_app = 0;
 uint *samples_f, i, *current;
@@ -109,6 +125,7 @@ uint freq_to_p_state(uint freq)
 
 uint fill_list_p_states()
 {
+#if LOCAL
     struct cpufreq_available_frequencies *list_freqs, *first_freq;
     int num_pstates = 0;
 
@@ -132,6 +149,14 @@ uint fill_list_p_states()
 
     cpufreq_put_available_frequencies(first_freq);
     return num_pstates;
+#else
+	MALLOC(node_freq_list, uint, expected_num_freqs);
+	for (i = 0; i< expected_num_freqs;i ++){
+		nom_freq=max_freq;
+		node_freq_list[i] = max_freq-(100000*i);
+	}
+	return expected_num_freqs;
+#endif
 }
 
 int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {
@@ -162,19 +187,23 @@ void average_list_samples(signature_t *current, uint samples)
 int invalid_signature(signature_t *S)
 {
 	if ((S->time<=MIN_TIME) || (S->time>MAX_TIME))  return 1;
-	if ((S->GBS<=MIN_GBS) || (S->GBS > MAX_GBS)) return 1;
-	if ((S->DC_power<=MIN_POWER) || (S->DC_power>MAX_POWER)) return 1;
-	if ((S->TPI<=MIN_TPI) || (S->TPI>MAX_TPI))	return 1;
-	if ((S->CPI<=MIN_CPI) || (S->CPI>MAX_CPI)) return 1;
+	if ((S->GBS<=MIN_GBS) || (S->GBS > MAX_GBS)) return 2;
+	if ((S->DC_power<=MIN_POWER) || (S->DC_power>MAX_POWER)) return 3;
+	if ((S->TPI<=MIN_TPI) || (S->TPI>MAX_TPI))	return 4;
+	if ((S->CPI<=MIN_CPI) || (S->CPI>MAX_CPI)) return 5;
+	if ((S->def_f<MIN_FREQ) || (S->def_f>MAX_FREQ)) return 6;
 	return 0;
 }
 
 // A=A+B metrics
 void accum_app(char *app,char *node,signature_t *A, signature_t *B)
 {
+	int ret;
 	/* Warning 2*/
-	if (invalid_signature(B)){
-		printf("Invalid signature %s at node %s\n",app,node);
+	if (ret=invalid_signature(B)){
+		printf("\nInvalid signature %s at node %s (case %d)\n",app,node,ret);
+		print_signature_fd(1,B,0);
+		total_warnings++;
 	}
     A->time += B->time;
     A->GBS += B->GBS;
@@ -233,7 +262,7 @@ void nominal_for_cpi(uint ref, char *app_name, double *cpi, double *tpi)
 
 void usage(char *app)
 {
-    fprintf(stdout, "Usage: %s nodename num_apps num_runs num_freqs \n", app);
+    fprintf(stdout, "Usage: %s nodename num_apps num_runs num_freqs max_freq min_freq\n", app);
     exit(1);
 }
 
@@ -245,16 +274,17 @@ int main(int argc, char *argv[])
     uint f, pos, ref, i;
 	ulong p_state_max;
     int fd, index;
-	int expected_num_apps,expected_num_runs, expected_num_freqs;
 	
 
-    if (argc != 5){
+    if (argc != 7){
         usage(argv[0]);
     }
 	strcpy(nodename,argv[1]);
 	expected_num_apps=atoi(argv[2]);
 	expected_num_runs=atoi(argv[3]);
 	expected_num_freqs=atoi(argv[4]);
+	max_freq=atoi(argv[5]);
+	min_freq=atoi(argv[6]);
 	
 
 
@@ -290,11 +320,11 @@ int main(int argc, char *argv[])
 	num_apps =get_num_applications(is_learning, nodename);
  	MALLOC(app_list, application_t, num_apps);
  	MALLOC(apps, application_t, num_apps);
+	printf("---------------------------- NEXT STEP -------------------\n");
+	printf("---------------------READING APPS-------------------------\n");
 	fprintf(stdout,"%d applications in DB for learning phase\n",num_apps);
-    ret=db_read_applications(&tmp_apps,is_learning, 50,NULL);
-    while (ret > 0)
-    {
-		fprintf(stdout,"%d applications retrieved from DB\n",ret);
+    ret=db_read_applications(&tmp_apps,is_learning, num_apps,nodename);
+	if (ret>0){
         for (i=0;i<ret;i++){
             if (strcmp(tmp_apps[i].node_id,nodename)==0){
 				copy_application(&apps[total_apps],&tmp_apps[i]);
@@ -302,14 +332,18 @@ int main(int argc, char *argv[])
 			}
         }
         free(tmp_apps);
-        ret=db_read_applications(&tmp_apps,is_learning, 50,NULL);
-    }
+	}else{
+		printf("Warning, DB has reported %d jobs for node %s\n",ret,nodename);
+		total_warnings++;
+	}
 	/* Warning */
 	if (total_apps!=num_apps){
 		printf("Warning, DB has reported %d applications and only %d has been readed for node %s\n",num_apps,total_apps,nodename);
+		total_warnings++;
 	}
 	if (total_apps!=(expected_num_apps*expected_num_runs*expected_num_freqs)){
-		printf("Warning, DB has reported %d applications and we were expecting %d for node %s\n",total_apps,expected_num_apps*expected_num_runs*expected_num_freqs);
+		printf("Warning, DB has reported %d applications and we were expecting %d for node %s\n",total_apps,expected_num_apps*expected_num_runs*expected_num_freqs,nodename);
+		total_warnings++;
 	}
     MALLOC(samples_per_app, uint, num_apps);
    
@@ -318,50 +352,68 @@ int main(int argc, char *argv[])
         samples_per_app[i] = 0;
     }
 	/* Min freq set by default to 1 GHz */ 
-	min_freq=p_state_to_freq(expected_num_freqs);
+	//min_freq=p_state_to_freq(expected_num_freqs);
+	//max_freq=p_state_to_freq(1);
+	printf("---------------------------- NEXT STEP -------------------\n");
+	printf("---------------------ACCUMULATING APPS-------------------------\n");
     for (i = 0; i < num_apps; i++)
     {
-		printf("APP SIGNATURE %lu\n", apps[i].signature.def_f);
         if (apps[i].signature.def_f >= min_freq) {
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {
                 // If APP exists, then accumulate its values in
-                accum_app(app_list[index].job.app_id,,nodename,&app_list[index].signature, &apps[i].signature);
+                accum_app(app_list[index].job.app_id,nodename,&app_list[index].signature, &apps[i].signature);
                 samples_per_app[index]++;
             } else {
                 write_app(&app_list[filtered_apps], &apps[i]);
                 samples_per_app[filtered_apps] = 1;
                 filtered_apps++;
+				printf("Detected new application\n");
+				print_application(&apps[i]);
             }
         }
+		else{
+			printf("Warning, application is out of valid frequencies\n");
+			total_warnings++;
+			print_application(&apps[i]);
+		}
     }
 
     // We will consider only applictions with f >= min_freq
     num_apps = filtered_apps;
+	printf("---------------------------- NEXT STEP -------------------\n");
+	printf("---------------------COMPUTING SAMPLES PER APP -------------------------\n");
+	printf("Processing %d apps after filtering\n",num_apps);
+	printf("Processing %d pstates\n",expected_num_freqs);
+	printf("Min freq computed %lu\n",min_freq);
 
     // We must compute the average per (app,f)
     for (i = 0; i < num_apps; i++) {
         average_list_samples(&app_list[i].signature, samples_per_app[i]);
-		if (samples_per_app[i]!=expected_runs){
-			printf("Warning, app %s freq %ul nodename %s with %d runs, expected %d\n",
-			app_list[i].job.app_id,app_list[i].signature.def_f,nodename,samples_per_app[i],expected_runs);
+		if (samples_per_app[i]!=expected_num_runs){
+			total_warnings++;
+			printf("Warning, app %s freq %u nodename %s with %d runs, expected %d\n",
+			app_list[i].job.app_id,app_list[i].signature.def_f,nodename,samples_per_app[i],expected_num_runs);
 		}
     }
 	
 
-    // We maintain the name's of applications to generate graphs
+	printf("---------------------------- NEXT STEP -------------------\n");
+	printf("---------------------COMPUTING SAMPLES PER FREQ-------------------------\n");
     for (current_app = 0; current_app < num_apps; current_app++) {
         if (app_list[current_app].signature.def_f >= min_freq) {
             index = freq_to_p_state(app_list[current_app].signature.def_f);
             samples_f[index]++;
         }
     }
-	for (i=1;i<=expected_pstates;i++) {
-		if (samples_f[i]!=expected_num_apps*expect_num_runs){
+	for (i=0;i<expected_num_freqs;i++) {
+		if (samples_f[i]!=expected_num_apps){
 			/* Warning */
-			printf("Warning, pstate %d with %d samples, expected %d\n",i,samples_f[i],expected_num_apps*expect_num_runs);
+			printf("Warning, pstate %d with %d samples, expected %d\n",i,samples_f[i],expected_num_apps*expected_num_runs);
+			total_warnings++;
 		}
 	}
+	printf("Total warnings for node %s %d\n",nodename,total_warnings);
 
     return 0;
 }

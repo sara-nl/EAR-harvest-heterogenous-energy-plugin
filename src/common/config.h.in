@@ -78,6 +78,7 @@
 #define PERIOD                              30		// Period (in seconds) to compute the signature used in periodic mode
 
 #define EAR_PERFORMANCE_TESTS	0
+#define MEASURE_DYNAIS_OV	0
 
 // EARD default values and configuration
 #define POWERMON_FREQ		30 		// Frequency for periodic power monitoring
@@ -99,3 +100,5 @@
 
 // EARDBD default values and configuration
 #define EARDBD_TYPES        7
+
+#define EAR_LIB_SYNC 0

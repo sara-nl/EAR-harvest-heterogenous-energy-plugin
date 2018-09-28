@@ -327,7 +327,14 @@ void print_short_apps(application_t *apps, int num_apps)
             //to print: job_id.step_id \t user_id si root \t app_name \t num_nodes
             int idx = (i > 0) ? i - 1: 0;
             if (strlen(apps[idx].job.app_id) > 30)
-                strcpy(apps[idx].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
+            {
+                char *token = strrchr(apps[i-1].job.app_id, '/');
+                if (token != NULL) 
+                {
+                    token++;
+                    strcpy(apps[idx].job.app_id, token);
+                }
+            }
 
 
             if (current_is_mpi && !all_mpi)
@@ -472,7 +479,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
         add_int_filter(query, "step_id", step_id);
     if (user != NULL)
         add_string_filter(query, "user_id", user);
-    if (e_tag != NULL)
+    if (strlen(e_tag) > 0)
         add_string_filter(query, "e_tag", e_tag);
 
     if (limit > 0)
@@ -480,7 +487,15 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
         strcat(query, " ORDER BY Jobs.end_time desc LIMIT %u");
         sprintf(query, query, limit);
     }
-    strcat(query, ") as t1) order by Jobs.end_time desc");
+    strcat(query, ") as t1");
+
+    query_filters = 0;
+    if (job_id >= 0)
+        add_int_filter(query, "id", job_id);
+    if (user != NULL)
+        add_string_filter(query, "user_id", user);
+    
+    strcat(query, ") order by Jobs.end_time desc");
 
     if (verbose) fprintf(stderr, "Retrieving applications\n");
     num_apps = mysql_retrieve_applications(connection, query, &apps, 0);

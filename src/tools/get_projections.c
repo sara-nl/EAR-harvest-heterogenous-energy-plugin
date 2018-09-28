@@ -34,41 +34,44 @@
 
 int EAR_VERBOSE_LEVEL=1;
 
+#define APP_QUERY "SELECT * FROM Applications WHERE job_id=%d"
+
 void main(int argc,char *argv[])
 {
-	int num_apps, is_learning=1;
-    int total_apps = 0;
-	int i;
-    char *node_name = NULL;
+	int num_apps, job_id, step_id = -1;
 	application_t *apps;
-//	if (argc>=2) is_learning=atoi(argv[1]);
-    if (argc>=2) node_name = argv[1];
-	if (is_learning) printf("Reading applications from learning DB\n");
-	else printf("Reading applications from normal DB\n");
+    char *token;
+    if (argc < 2)
+    {
+        fprintf(stderr, "Usage is get_projections jobid[.stepid])\n");
+        exit(0);
+    }
+
+    job_id = atoi(strtok(argv[1], "."));
+    token = strtok(NULL, ".");
+    if (token != NULL) step_id = atoi(token);
+
     char ear_path[256];
 	cluster_conf_t my_conf;
     if (get_ear_conf_path(ear_path)==EAR_ERROR){
-            printf("Error getting ear.conf path\n");
-            exit(0);
+        printf("Error getting ear.conf path\n");
+        exit(0);
     }
     read_cluster_conf(ear_path,&my_conf);
-	printf("Initializing DB\n");
 	init_db_helper(&my_conf.database);
-	printf("reading apps\n");
-	num_apps=db_read_applications(&apps,is_learning, 50, node_name);
-    while (num_apps > 0)
+    
+    char query[256], sub_query[64];
+    sprintf(query, APP_QUERY, job_id);
+
+    if (step_id > -1)
     {
-		total_apps+=num_apps;
-	    for (i=0;i<num_apps;i++){
-		    report_application_data(&apps[i]);
-	    }
-        free(apps);
-	    num_apps=db_read_applications(&apps,is_learning, 50, node_name);
+        sprintf(sub_query, "AND step_id=%d", step_id);
+        strcat(query, sub_query);
     }
-    printf("Total apps from queries: %d\n", total_apps);
-    if (argc >=2)
-        printf("Total apps from DB: %d\n", get_num_applications(is_learning, argv[1])); 
-    else
-        printf("Total apps from DB: %d\n", get_num_applications(is_learning, NULL)); 
+    num_apps = db_read_applications_query(&apps, query);
+    int i;
+    for (i = 0; i < num_apps; i++)
+        print_application(&apps[i]);
+    free(apps);
 
 }
