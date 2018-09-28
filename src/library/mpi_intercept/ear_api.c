@@ -126,6 +126,22 @@ static void print_local_data()
 	earl_verbose(1, "--------------------------------");
 }
 
+/* This node belong to the master set */
+#if EAR_LIB_SYNC
+MPI_Comm masters_comm;
+int num_masters;
+int my_master_rank;
+int my_master_size;
+void attach_to_master_set()
+{
+	int color=0;
+	earl_verbose(0,"Creating new communicator for EAR synchronization\n");
+	PMPI_Comm_split(MPI_COMM_WORLD, color, ear_my_rank, &masters_comm);
+	PMPI_Comm_rank(masters_comm,&my_master_rank);
+	PMPI_Comm_size(masters_comm,&my_master_size);
+	earl_verbose(0,"New master communicator created with %d masters. Local master id %d\n",my_master_size,my_master_rank);
+}
+#endif
 //
 static int get_local_id(char *node_name)
 {
@@ -276,6 +292,9 @@ void ear_init()
 	if (my_id != 0) {
 		return;
 	}
+#if EAR_LIB_SYNC
+	attach_to_master_set();
+#endif
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
