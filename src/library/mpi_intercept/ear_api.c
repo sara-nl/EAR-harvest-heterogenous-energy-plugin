@@ -67,7 +67,6 @@ char *__HOST__ ;
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
 #define USE_LOCK_FILES 		1
-#define MEASURE_DYNAIS_OV	0
 
 #if USE_LOCK_FILES
 #include <common/file_lock.h>
@@ -102,6 +101,7 @@ static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
 static uint lib_period=PERIOD;
 static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 #if EAR_PERFORMANCE_TESTS
+long long init_start_time,init_end_time;
 static int only_load=0;
 static int use_dynais=1;
 #endif
@@ -240,7 +240,6 @@ void ear_init()
 	char *summary_pathname;
 	char *freq;
 	int size;
-	long long init_start_time,init_end_time;
 	#if EAR_PERFORMANCE_TESTS
 	char *ear_only_load;
 	ear_only_load=getenv("EAR_ONLY_LOAD");
