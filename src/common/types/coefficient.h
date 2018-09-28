@@ -64,8 +64,7 @@ typedef struct Coefficients_info_v3
 } coefficient_v3_t;
 
 
-
-// Function declarations
+/* functions */
 
 // Reads a file of coefficients saved in binary format. A block of memory
 // is allocated for this read coefficients, and is returned by the argument
@@ -73,9 +72,13 @@ typedef struct Coefficients_info_v3
 // integer is negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
 // EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
 int read_coefficients_file(char *path, coefficient_t **coeffs, int size);
+
 int read_coefficients_file_v3(char *path, coefficient_v3_t *coeffs, int size);
+
 int check_file(char *path);
+
 void print_coefficient(coefficient_t *coeff);
+
 void print_coefficient_v3(coefficient_v3_t *coeff);
 
 #endif

@@ -27,193 +27,6 @@ typedef struct control
 	uint f0_mhz;
 } control_t;
 
-
-static char _buffer[3][64];
-static uint _digits;
-static uint _i;
-
-static void _add_point_ull (ull number)
-{
-	if (number < 0) {
-		printf ("-");
-		_add_point_ull(-number);
-		return;
-	}
-
-	if (number < 1000) {
-		sprintf(_buffer[_i], "%s%llu", _buffer[_i], number);
-		return;
-	}
-
-	_add_point_ull(number / 1000);
-	sprintf(_buffer[_i], "%s.%03llu", _buffer[_i], (number % 1000));
-}
-
-char* add_point_ull(ull number)
-{
-	_i = _i + 1 - (_i == 2) * 3;
-	_buffer[_i][0] = '\0';
-	_add_point_ull(number);
-	return _buffer[_i];
-}
-
-static void _add_point_ulong (ulong number)
-{
-	if (number < 0) {
-		printf ("-");
-		_add_point_ulong(-number);
-		return;
-	}
-
-	if (number < 1000) {
-		sprintf(_buffer[_i], "%s%lu", _buffer[_i], number);
-		return;
-	}
-
-	_add_point_ulong(number / 1000);
-	sprintf(_buffer[_i], "%s.%03lu", _buffer[_i], (number % 1000));
-}
-
-char* add_point_ulong(ulong number)
-{
-	_buffer[_i][0] = '\0';
-	_add_point_ulong(number);
-	return _buffer[_i];
-}
-
-static void _add_point_uint (uint number)
-{
-	if (number < 0) {
-		printf ("-");
-		_add_point_uint(-number);
-		return;
-	}
-
-	if (number < 1000) {
-		sprintf(_buffer[_i], "%s%u", _buffer[_i], number);
-		return;
-	}
-
-	_add_point_uint(number / 1000);
-	sprintf(_buffer[_i], "%s.%03u", _buffer[_i], (number % 1000));
-}
-
-char* add_point_uint(uint number)
-{
-	_buffer[_i][0] = '\0';
-	_add_point_uint(number);
-	return _buffer[_i];
-}
-
-void print_spacing_digits(uint digits)
-{
-	_digits = digits;
-}
-
-void set_spacing_digits(uint digits)
-{
-	_digits = digits;
-}
-
-void print_spacing_ull(ull number)
-{
-	int digits = _digits;
-	printf("%llu", number);
-
-	while(number > 9) {
-		number = number / 10;
-		digits--;
-	}
-	while(digits > 1) {
-		printf( " ");
-		digits--;
-	}
-}
-
-void print_spacing_ulong(ulong number)
-{
-	int digits = _digits;
-	printf("%lu", number);
-
-	while(number > 9) {
-		number = number / 10;
-		digits--;
-	}
-	while(digits > 1) {
-		printf( " ");
-		digits--;
-	}
-}
-
-void print_spacing_uint(uint number)
-{
-	int digits = _digits;
-	printf("%u", number);
-
-	while(number > 9) {
-		number = number / 10;
-		digits--;
-	}
-	while(digits > 1) {
-		printf(" ");
-		digits--;
-	}
-}
-
-void print_spacing_int(int number)
-{
-	int digits = _digits;
-	printf("%d", number);
-
-	while(number > 9) {
-		number = number / 10;
-		digits--;
-	}
-	while(digits > 1) {
-		printf(" ");
-		digits--;
-	}
-}
-
-void print_spacing_string(char* string)
-{
-	int digits = _digits - strlen(string);
-
-	if (digits < 0) {
-		printf("...");
-		string = &string[-digits + 4];
-		digits = 1;
-	}
-
-	printf("%s", string);
-
-	while(digits > 0) {
-		printf(" ");
-		digits--;
-	}
-}
-
-void print_spacing_string_align_left(char* string, uint left_spaces)
-{
-	int digits = _digits - strlen(string);
-
-	while(digits > 0) {
-		printf(" ");
-		digits--;
-	}
-
-	printf("%s", string);
-
-	while(left_spaces > 0) {
-		printf(" ");
-		left_spaces--;
-	}
-}
-
-
-
-
-
 /*
  *
  * Work bench
@@ -238,15 +51,15 @@ double time_proj(double time0, double cpip, double cpi0, ulong f0, ulong fn)
 int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
 {
 	int equal_id = 0;
-	int equal_f = 0;
+	int equal_fq = 0;
 	int i;
 
 	for(i = 0; i < n_apps; ++i)
 	{
 		equal_id = strcmp(app_id, apps[i].job.app_id) == 0;
-		equal_f = f0_mhz == apps[i].signature.def_f;
+		equal_fq = f0_mhz == apps[i].signature.def_f;
 
-		if (equal_id && equal_f) {
+		if (equal_id && equal_fq) {
 			return i;
 		}
 	}
@@ -257,22 +70,19 @@ int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
 application_t *merge(control_t *control)
 {
 	application_t *apps, *apps_merged;
-	int n_apps, equal_id, equal_f, i, j, k;
-	double cpi, tpi, power, time, counter;
+	double cpi, tpi, pow, tim, counter;
+	int n_apps, equal_id, equal_f;
+	int i, j, k;
 	char *app_id;
 	uint f0_mhz;
 
 	// Allocation
-	apps = control->apps;
-	n_apps = control->n_apps;
-
-	// Allocation
-	apps_merged = (application_t *) malloc(n_apps * sizeof(application_t));
-	memset(apps_merged, 0, sizeof(application_t));
+	apps        = control->apps;
+	n_apps      = control->n_apps;
+	apps_merged = (application_t *) calloc(n_apps, sizeof(application_t));
 
 	// Initialization
-	for(i = 0; i < n_apps; ++i)
-	{
+	for(i = 0; i < n_apps; ++i) {
 		apps_merged[i].job.app_id[0] = '\0';
 	}
 
@@ -286,31 +96,31 @@ application_t *merge(control_t *control)
 		{
 			memcpy(&apps_merged[j], &apps[i], sizeof(application_t));
 
-			power = apps[i].signature.DC_power;
-			time = apps[i].signature.time;
 			tpi = apps[i].signature.TPI;
 			cpi = apps[i].signature.CPI;
+			tim = apps[i].signature.time;
+			pow = apps[i].signature.DC_power;
 			counter = 1.0;
 
 			for(k = i + 1; k < n_apps; ++k)
 			{
 				equal_id = strcmp(app_id, apps[k].job.app_id) == 0;
-				equal_f = f0_mhz == apps[k].signature.def_f;
+				equal_f  = f0_mhz == apps[k].signature.def_f;
 
 				if (equal_id && equal_f)
 				{
-					power += apps[k].signature.DC_power;
-					time += apps[k].signature.time;
 					tpi += apps[k].signature.TPI;
 					cpi += apps[k].signature.CPI;
+					tim += apps[k].signature.time;
+					pow += apps[k].signature.DC_power;
 					counter += 1.0;
 				}
 			}
 
-			apps_merged[j].signature.DC_power = power / counter;
-			apps_merged[j].signature.time = time / counter;
-			apps_merged[j].signature.TPI = tpi / counter;
-			apps_merged[j].signature.CPI = cpi / counter;
+			apps_merged[j].signature.DC_power = pow / counter;
+			apps_merged[j].signature.time     = tim / counter;
+			apps_merged[j].signature.TPI      = tpi / counter;
+			apps_merged[j].signature.CPI      = cpi / counter;
 
 			j += 1;
 		}
@@ -325,9 +135,10 @@ application_t *merge(control_t *control)
 void evaluate(control_t *control)
 {
 	char buffer[32];
-	double cpi0, tpi0, time0, power0;
-	double cpip, tpip, timep, powerp;
-	double cpie, tpie, timee, powere;
+	double cpi0, tpi0, tim0, pow;
+	double cpip, tpip, timp, powp;
+	double cpie, tpie, time, powe;
+
 	application_t *apps, *m;
 	coefficient_v3_t *coeffs;
 	int n_apps, n_coeffs;
@@ -345,86 +156,61 @@ void evaluate(control_t *control)
 	{
 		if (apps[j].signature.def_f == f0_mhz)
 		{
-			set_spacing_digits(18);
-			print_spacing_string(apps[j].job.app_id);
+			tprintf_init(stderr, "18 11 12 12 12 12 12 12");
 
-			set_spacing_digits(11);
+			//set_spacing_digits(18);
+			//print_spacing_string(apps[j].job.app_id);
+
+			//set_spacing_digits(11);
 			printf("@");
-			print_spacing_uint(apps[j].signature.def_f);
+			//print_spacing_uint(apps[j].signature.def_f);
 
-			set_spacing_digits(12);
+			//set_spacing_digits(12);
 			printf("| ");
-			print_spacing_string("T. Real");
-			print_spacing_string("T. Proj");
-			print_spacing_string("T. Err");
+			//print_spacing_string("T. Real");
+			//print_spacing_string("T. Proj");
+			//print_spacing_string("T. Err");
 			printf("| ");
-			print_spacing_string("P. Real");
-			print_spacing_string("P. Proj");
-			print_spacing_string("P. Err");
-
+			//print_spacing_string("P. Real");
+			//print_spacing_string("P. Proj");
+			//print_spacing_string("P. Err");
 			printf("\n");
+
+			tprintf("%s||@%u||T. Real||T. Proj||T. Err||P. Real||P. Proj||P. Err",
+					apps[j].job.app_id, apps[j].signature.def_f);
 
 			cpi0 = apps[j].signature.CPI;
 			tpi0 = apps[j].signature.TPI;
-			time0 = apps[j].signature.time;
-			power0 = apps[j].signature.DC_power;
+			tim0 = apps[j].signature.time;
+			pow0 = apps[j].signature.DC_power;
 
 			for (i = 0; i < n_coeffs; i++)
 			{
 				if (coeffs[i].available && coeffs[i].pstate_ref == f0_mhz)
 				{
 					cpip = cpi_proj(cpi0, tpi0, &coeffs[i]);
-					timep = time_proj(time0, cpip, cpi0, f0_mhz, coeffs[i].pstate);
-					powerp = power_proj(power0, tpi0, &coeffs[i]);
+					timp = time_proj(tim0, cpip, cpi0, f0_mhz, coeffs[i].pstate);
+					powp = power_proj(pow0, tpi0, &coeffs[i]);
 
 					k = find(apps, n_apps, apps[j].job.app_id, coeffs[i].pstate);
 
-					set_spacing_digits(18);
-					print_spacing_string("->");
-
-					set_spacing_digits(12);
-					print_spacing_ulong(coeffs[i].pstate);
+					tprintf("->||%lu||T. Real||T. Proj||T. Err||P. Real||P. Proj||P. Err",
+							coeffs[i].pstate);
 
 					if (k != -1)
 					{
 						m = &apps[k];
 
-						timee = fabs((1.0 - (m->signature.time / timep)) * 100.0);
-						powere = fabs((1.0 - (m->signature.DC_power / powerp)) * 100.0);
+						time = fabs((1.0 - (m->signature.time / timp)) * 100.0);
+						powe = fabs((1.0 - (m->signature.DC_power / powp)) * 100.0);
 						cpie = fabs((1.0 - (m->signature.CPI / cpip)) * 100.0);
 
-						printf("| ");
-						sprintf(buffer, "%0.2lf", m->signature.time);
-						print_spacing_string(buffer);
-
-						sprintf(buffer, "%0.2lf", timep);
-						print_spacing_string(buffer);
-
-						sprintf(buffer, "%0.2lf", timee);
-						print_spacing_string(buffer);
-
-						printf("| ");
-						sprintf(buffer, "%0.2lf", m->signature.DC_power);
-						print_spacing_string(buffer);
-
-						sprintf(buffer, "%0.2lf", powerp);
-						print_spacing_string(buffer);
-
-						sprintf(buffer, "%0.2lf", powere);
-						print_spacing_string(buffer);
+						tprintf("->||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
+								coeffs[i].pstate, m->signature.time, timp, time,
+								m->signature.DC_power, powp, powe);
 					} else {
-						printf("| ");
-						print_spacing_string("-");
-						print_spacing_string("-");
-						print_spacing_string("-");
-
-						printf("| ");
-						print_spacing_string("-");
-						print_spacing_string("-");
-						print_spacing_string("-");
+						tprintf(buffer, "->||%lu||-||-||-||-||-||-", coeffs[i].pstate);
 					}
-
-					printf("\n");
 				}
 			}
 		}
@@ -502,9 +288,9 @@ int main(int argc, char *argv[])
 	evaluate(&cntr);
 
 	// Leaving
-	//free(cntr.coeffs);
-	//free(cntr.apps_merged);
-	//free(cntr.apps);
+	free(cntr.coeffs);
+	free(cntr.apps_merged);
+	free(cntr.apps);
 
 	return 0;
 }

@@ -107,6 +107,7 @@ int check_file(char *path)
 
     ret = lseek(fd, 0, SEEK_END);
 	close(fd);
+
 	return ret;
 }
 
