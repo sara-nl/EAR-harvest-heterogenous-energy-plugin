@@ -80,4 +80,6 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 /** Reads from DB the number of applications that can be found in the corresponding tables. */
 ulong get_num_applications(char is_learning, char *node_name);
 
+int db_read_applications_query(application_t **apps, char *query);
+
 #endif
