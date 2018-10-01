@@ -15,7 +15,8 @@ BINARIES = compute_coefficients \
 		   get_ear_events \
 		   remove_learning \
 		   get_active_nodes \
-		   ear_lp_validation
+		   ear_lp_validation \
+		   get_projections
 
 ######## RULES
 
@@ -37,6 +38,9 @@ traces_to_paraver: traces_to_paraver.cpp
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $<
 
 get_app_list: get_app_list.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+
+get_projections: get_projections.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 get_ear_events: get_ear_events.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)

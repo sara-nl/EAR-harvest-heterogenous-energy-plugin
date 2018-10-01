@@ -1,31 +1,31 @@
 /**************************************************************
-*	Energy Aware Runtime (EAR)
-*	This program is part of the Energy Aware Runtime (EAR).
-*
-*	EAR provides a dynamic, transparent and ligth-weigth solution for
-*	Energy management.
-*
-*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
-*
-*       Copyright (C) 2017  
-*	BSC Contact 	mailto:ear-support@bsc.es
-*	Lenovo contact 	mailto:hpchelp@lenovo.com
-*
-*	EAR is free software; you can redistribute it and/or
-*	modify it under the terms of the GNU Lesser General Public
-*	License as published by the Free Software Foundation; either
-*	version 2.1 of the License, or (at your option) any later version.
-*	
-*	EAR is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*	Lesser General Public License for more details.
-*	
-*	You should have received a copy of the GNU Lesser General Public
-*	License along with EAR; if not, write to the Free Software
-*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
-*/
+ *	Energy Aware Runtime (EAR)
+ *	This program is part of the Energy Aware Runtime (EAR).
+ *
+ *	EAR provides a dynamic, transparent and ligth-weigth solution for
+ *	Energy management.
+ *
+ *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+ *
+ *       Copyright (C) 2017  
+ *	BSC Contact 	mailto:ear-support@bsc.es
+ *	Lenovo contact 	mailto:hpchelp@lenovo.com
+ *
+ *	EAR is free software; you can redistribute it and/or
+ *	modify it under the terms of the GNU Lesser General Public
+ *	License as published by the Free Software Foundation; either
+ *	version 2.1 of the License, or (at your option) any later version.
+ *	
+ *	EAR is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *	Lesser General Public License for more details.
+ *	
+ *	You should have received a copy of the GNU Lesser General Public
+ *	License along with EAR; if not, write to the Free Software
+ *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *	The GNU LEsser General Public License is contained in the file COPYING	
+ */
 
 #include <mpi.h>
 #include <time.h>
@@ -67,7 +67,6 @@ char *__HOST__ ;
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
 #define USE_LOCK_FILES 		1
-#define MEASURE_DYNAIS_OV	0
 
 #if USE_LOCK_FILES
 #include <common/file_lock.h>
@@ -77,7 +76,7 @@ static int fd_master_lock;
 
 #if MEASURE_DYNAIS_OV
 static long long begin_ov, end_ov, ear_acum;
-static unsigned int calls;
+static unsigned int calls=0;
 #endif
 
 // Process information
@@ -102,12 +101,14 @@ static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
 static uint lib_period=PERIOD;
 static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 #if EAR_PERFORMANCE_TESTS
+long long init_start_time,init_end_time;
 static int only_load=0;
 static int use_dynais=1;
+int first_time_disabled=0;
 #endif
 #endif
 
-    
+
 
 
 //
@@ -126,12 +127,28 @@ static void print_local_data()
 	earl_verbose(1, "--------------------------------");
 }
 
+/* This node belong to the master set */
+#if EAR_LIB_SYNC
+MPI_Comm masters_comm;
+int num_masters;
+int my_master_rank;
+int my_master_size;
+void attach_to_master_set()
+{
+	int color=0;
+	earl_verbose(0,"Creating new communicator for EAR synchronization\n");
+	PMPI_Comm_split(MPI_COMM_WORLD, color, ear_my_rank, &masters_comm);
+	PMPI_Comm_rank(masters_comm,&my_master_rank);
+	PMPI_Comm_size(masters_comm,&my_master_size);
+	earl_verbose(0,"New master communicator created with %d masters. Local master id %d\n",my_master_size,my_master_rank);
+}
+#endif
 //
 static int get_local_id(char *node_name)
 {
 	int master = 1;
 
-	#if USE_LOCK_FILES
+#if USE_LOCK_FILES
 	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
 
 	if ((fd_master_lock = lock_master(fd_lock_filename)) < 0) {
@@ -145,13 +162,13 @@ static int get_local_id(char *node_name)
 	}else{
 		earl_verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
 	}
-	#else
+#else
 	master = get_ear_local_id();
 
 	if (master < 0) {
 		master = (ear_my_rank % ppnode);
 	}
-	#endif
+#endif
 
 	return master;
 }
@@ -221,15 +238,17 @@ void update_configuration()
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
 #if EAR_PERFORMANCE_TESTS
-	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais;;
+	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais,*ear_dynais_size;
 	ear_dynais_timeout=getenv("EAR_DYNAIS_TIMEOUT");
 	ear_lib_period=getenv("EAR_LIB_PERIOD");
 	ear_check_every=getenv("EAR_CHECK_EVERY");
 	ear_use_dynais=getenv("EAR_DYNAIS");
+	ear_dynais_size=getenv("EAR_DYNAIS_SIZE");
 	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
 	if (ear_lib_period!=NULL) lib_period=atoi(ear_lib_period);
 	if (ear_check_every!=NULL) check_every=atoi(ear_check_every);
 	if (ear_use_dynais!=NULL) use_dynais=atoi(ear_use_dynais);
+	if (ear_dynais_size!=NULL) set_ear_dynais_window_size(atoi(ear_dynais_size));
 	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d lib_period %d check_every %d\n",use_dynais,dynais_timeout,lib_period,check_every);	
 #endif
 }
@@ -240,14 +259,13 @@ void ear_init()
 	char *summary_pathname;
 	char *freq;
 	int size;
-	long long init_start_time,init_end_time;
-	#if EAR_PERFORMANCE_TESTS
+#if EAR_PERFORMANCE_TESTS
 	char *ear_only_load;
 	ear_only_load=getenv("EAR_ONLY_LOAD");
 	if (ear_only_load!=NULL) only_load=atoi(ear_only_load);
 	if (only_load) return;
 	init_start_time=PAPI_get_real_usec();
-	#endif
+#endif
 
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
@@ -258,8 +276,8 @@ void ear_init()
 
 	// Fundamental data
 	gethostname(node_name, sizeof(node_name));
-    strtok(node_name, ".");
-    __HOST__=node_name;
+	strtok(node_name, ".");
+	__HOST__=node_name;
 
 	EAR_VERBOSE_LEVEL = get_ear_verbose();
 	set_ear_total_processes(my_size);
@@ -270,12 +288,15 @@ void ear_init()
 	get_job_identification();
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
-	
+
 
 	// if we are not the master, we return
 	if (my_id != 0) {
 		return;
 	}
+#if EAR_LIB_SYNC
+	attach_to_master_set();
+#endif
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
@@ -290,8 +311,8 @@ void ear_init()
 	}	
 
 	if (my_id != 0) {
-        return;
-    }
+		return;
+	}
 
 
 	// Application static data and metrics
@@ -302,7 +323,7 @@ void ear_init()
 	application.is_learning=ear_whole_app;
 	application.job.def_f=getenv_ear_p_state();
 	loop_signature.is_learning=ear_whole_app;
-	
+
 	// Getting environment data
 	get_app_name(ear_app_name);
 	if (application.is_learning){
@@ -313,14 +334,14 @@ void ear_init()
 	strcpy(application.job.user_acc,my_account);
 	application.job.id = my_job_id;
 	application.job.step_id = my_step_id;
-	
+
 	//sets the job start_time
 	start_job(&application.job);
 
-    earl_verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
-    if (eards_connect(&application) == EAR_SUCCESS) {
-        earl_verbose(1, "Rank %d connected with EARD", ear_my_rank);
-    }
+	earl_verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
+	if (eards_connect(&application) == EAR_SUCCESS) {
+		earl_verbose(1, "Rank %d connected with EARD", ear_my_rank);
+	}
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	metrics_init();
@@ -341,7 +362,7 @@ void ear_init()
 	// Policies
 	init_power_policy();
 	init_power_models(frequency_get_num_pstates(), frequency_get_freq_rank_list());
-	
+
 
 	// Policy name is set in ear_models
 	strcpy(application.job.app_id, ear_app_name);
@@ -376,12 +397,12 @@ void ear_init()
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
 	// All is OK :D
-	#if EAR_PERFORMANCE_TESTS
+#if EAR_PERFORMANCE_TESTS
 	init_end_time=PAPI_get_real_usec();
-	earl_verbose(0, "EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
-	#else
+	earl_verbose(1, "EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
+#else
 	earl_verbose(1, "EAR initialized successfully ");
-	#endif
+#endif
 }
 
 void ear_finalize()
@@ -389,24 +410,24 @@ void ear_finalize()
 	char summary_fullpath[BUFFSIZE];
 	char node_name[BUFFSIZE];
 
-	#if EAR_PERFORMANCE_TESTS
+#if EAR_PERFORMANCE_TESTS
 	if (only_load) return;
-	#endif
+#endif
 
 	// if we are not the master, we return
 	if (my_id) {
 		return;
 	}	
 
-	#if USE_LOCK_FILES
+#if USE_LOCK_FILES
 	earl_verbose(2, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
 	unlock_master(fd_master_lock,fd_lock_filename);
-	#endif
+#endif
 
-	#if MEASURE_DYNAIS_OV
+#if MEASURE_DYNAIS_OV
 	earl_verbose(0, "DynAIS algorithm consumes %llu usecs in %u calls", ear_acum, calls);
-	#endif
-	
+#endif
+
 	// Tracing
 	traces_end(ear_my_rank, my_id, 0);
 
@@ -424,25 +445,25 @@ void ear_finalize()
 	if (loop_with_signature) {
 		earl_verbose(1, "loop ends with %d iterations detected", ear_iterations);
 	}
-	#if EAR_OVERHEAD_CONTROL
+#if EAR_OVERHEAD_CONTROL
 	switch(ear_periodic_mode){
-	case PERIODIC_MODE_OFF:
-		if (in_loop) {
-			states_end_period(ear_iterations);
-		}
-		states_end_job(my_id, NULL, ear_app_name);
-		break;
-	case PERIODIC_MODE_ON:
-		states_periodic_end_period(ear_iterations);
-		states_periodic_end_job(my_id, NULL, ear_app_name);
-		break;
+		case PERIODIC_MODE_OFF:
+			if (in_loop) {
+				states_end_period(ear_iterations);
+			}
+			states_end_job(my_id, NULL, ear_app_name);
+			break;
+		case PERIODIC_MODE_ON:
+			states_periodic_end_period(ear_iterations);
+			states_periodic_end_job(my_id, NULL, ear_app_name);
+			break;
 	}
-	#else
+#else
 	if (in_loop) {
 		states_end_period(ear_iterations);
 	}
 	states_end_job(my_id, NULL, ear_app_name);
-	#endif
+#endif
 
 	dettach_settings_conf_shared_area();
 	dettach_resched_shared_area();
@@ -456,26 +477,27 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 {
-    #if EAR_PERFORMANCE_TESTS
-    if (only_load) return;
-    #endif
+#if EAR_PERFORMANCE_TESTS
+	if (only_load) return;
+#endif
 
 #if EAR_OVERHEAD_CONTROL
 	time_t curr_time;
 	double time_from_mpi_init;
-	
+
 	if (my_id) return;
 	/* The learning phase avoids EAR internals ear_whole_app is set to 1 when learning-phase is set */
 	if (!ear_whole_app)
 	{
-	total_mpi_calls++;
-	/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
-	 * ear_periodic_mode can be ON or OFF 
-	 */
+		total_mpi_calls++;
+		/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
+		 * ear_periodic_mode can be ON or OFF 
+		 */
 	switch(ear_periodic_mode){
 		case PERIODIC_MODE_OFF:
 			switch(dynais_enabled){
 				case DYNAIS_ENABLED:
+					{
 					/* First time EAR computes a signature using dynais, check_periodic_mode is set to 0 */
 					if (check_periodic_mode==0){  // check_periodic_mode=0 the first time a signature is computed
 						ear_mpi_call_dynais_on(call_type,buf,dest);
@@ -504,8 +526,17 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 							ear_mpi_call_dynais_on(call_type,buf,dest);
 						}
 					}
+					}
 					break;
 				case DYNAIS_DISABLED:
+					#if EAR_PERFORMANCE_TESTS
+					#if MEASURE_DYNAIS_OV
+					if (first_time_disabled==0){
+						first_time_disabled=1;
+						earl_verbose(1,"Number of Dynais calls executed before setting OFF %d\n",calls);
+					}
+					#endif
+					#endif
 					/** That case means we have computed some signature and we have decided to set dynais disabled */
 					ear_mpi_call_dynais_off(call_type,buf,dest);
 					break;
@@ -709,6 +740,9 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				}
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event, ear_loop_size, ear_iterations);
+				#if EAR_PERFORMANCE_TESTS
+				earl_verbose(1,"New estimated iteration\n");
+				#endif
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;

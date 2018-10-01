@@ -159,17 +159,19 @@ static void check_dynais_on(signature_t *A, signature_t *B)
 
 static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
 {
-	ulong dynais_overhead_usec=0;
-    double dynais_overhead_perc;
+    ulong dynais_overhead_usec=0;
+    float dynais_overhead_perc;
 
     dynais_overhead_usec=mpi_calls_iter;
-    dynais_overhead_perc=((double)dynais_overhead_usec/(double)1000000)*(double)100/loop_signature.signature.time;
+    dynais_overhead_perc=((float)dynais_overhead_usec/(float)1000000)*(float)100/loop_signature.signature.time;
     if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
     // Disable dynais : API is still pending
     	#if DYNAIS_CUTOFF
     	dynais_enabled=DYNAIS_DISABLED;
     	#endif
-    	earl_verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=OFF");
+	#if EAR_PERFORMANCE_TESTS
+    	earl_verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=%d,overhead=%lf",dynais_enabled, dynais_overhead_perc);
+	#endif
     	log_report_dynais_off(application.job.id,application.job.step_id);
     }
     earl_verbose(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
@@ -328,10 +330,13 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 				if (result == EAR_NOT_READY)
 				{
+					#if 0
 					comp_N_begin = metrics_time();
 					EAR_STATE = SIGNATURE_HAS_CHANGED;
 					ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE -> SIGNATURE_HAS_CHANGED\n",
 							  ear_app_name);
+					#endif
+					perf_count_period++;
 				}
 				else
 				{
@@ -340,7 +345,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					loop_with_signature = 1;
 					#if EAR_OVERHEAD_CONTROL
 					check_periodic_mode=0;
-					earl_verbose(2,"Switching check periodic mode to %d\n",check_periodic_mode);
+					#if EAR_PERFORMANCE_TESTS
+					earl_verbose(1,"Switching check periodic mode to %d\n",check_periodic_mode);
+					#endif
 					#endif
 
 					// Computing dynais overhead
@@ -375,9 +382,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 						tries_current_loop++;
 						ear_verbose(1,
-									"\n\nEAR(%s @ %s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
+									"\n\nEAR(%s @ %s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u in %s\n",
 									ear_app_name, application.node_id,prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
-									policy_freq);
+									policy_freq,application.node_id);
 					}
 					else
 					{

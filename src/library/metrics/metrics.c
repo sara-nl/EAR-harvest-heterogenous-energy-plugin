@@ -102,6 +102,7 @@
 
 // Verbosity
 static const char *__NAME__ = "ear/metrics";
+extern char *__HOST__ ;
 
 // Hardware
 static double hw_cache_line_size;
@@ -212,15 +213,36 @@ static int metrics_partial_stop(uint where)
 {
 	long long aux_flops;
 	int i;
+	ulong c_energy;
+	long long c_time;
+	float c_power;
 
 	// Manual IPMI accumulation
 	eards_node_dc_energy(&aux_energy);
-	if ((where==SIG_END) && (aux_energy==metrics_ipmi[LOO])) return EAR_NOT_READY;
-	metrics_ipmi[LOO] = aux_energy - metrics_ipmi[LOO];
+	if ((where==SIG_END) && (aux_energy==metrics_ipmi[LOO])){ 
+	#if EAR_PERFORMANCE_TESTS
+		earl_verbose(1,"EAR_NOT_READY because of energy \n");
+	#endif
+		return EAR_NOT_READY;
+	}
+	aux_time = metrics_time();
+	/* Sometimes energy is not zero but power is not correct */
+	c_energy=aux_energy - metrics_ipmi[LOO];
+	c_time=metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
+	/* energy is computed in mJ and time in usecs */
+	c_power=(float)(c_energy*1000.0)/(float)c_time;
+
+	if (c_power<MIN_SIG_POWER){ 
+	#if EAR_PERFORMANCE_TESTS
+		earl_verbose(1,"EAR_NOT_READY because of power \n");
+	#endif
+		return EAR_NOT_READY;
+	}
+
+	metrics_ipmi[LOO] = c_energy;
 	metrics_ipmi[APP] += metrics_ipmi[LOO];
 	// Manual time accumulation
-	aux_time = metrics_time();
-	metrics_usecs[LOO] = metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
+	metrics_usecs[LOO] = c_time;
 	metrics_usecs[APP] += metrics_usecs[LOO];
 	
 	// Daemon metrics
@@ -443,6 +465,10 @@ int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulon
 
 	//
 	if (aux_time < min_time_us) {
+        #if EAR_PERFORMANCE_TESTS
+                earl_verbose(1,"EAR_NOT_READY because of time\n");
+        #endif
+
 		return EAR_NOT_READY;
 	}
 

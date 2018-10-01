@@ -63,6 +63,7 @@ typedef struct policy
 policy_t app_policy;
 
 static const char *__NAME__ = "MODELS";
+extern char *__HOST__ ;
 
 // Policy
 static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
@@ -137,7 +138,7 @@ void policy_global_reconfiguration()
 	case MIN_ENERGY_TO_SOLUTION:
 	    // We filter initial configuration
 	    if (system_conf->max_freq<EAR_default_frequency){
-	        ear_verbose(0,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
+	        earl_verbose(1,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
 			EAR_default_frequency=system_conf->max_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 	    }
@@ -145,13 +146,13 @@ void policy_global_reconfiguration()
 	case MIN_TIME_TO_SOLUTION:
     case MONITORING_ONLY:
 		if (system_conf->def_freq!=EAR_default_frequency){
-	        ear_verbose(0,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
+	        earl_verbose(0,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
 			EAR_default_frequency=system_conf->def_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 		}
 	}
     if (performance_gain<system_conf->th){
-        ear_verbose(0,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
+        earl_verbose(0,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
         performance_gain=system_conf->th;
     }
 	}
