@@ -90,8 +90,8 @@ ulong *shared_frequencies;
 ulong *frequencies;
 /* END Shared memory regions */
 
-coefficient_v3_t *my_coefficients;
-coefficient_v3_t *coeffs_conf;
+coefficient_t *my_coefficients;
+coefficient_t *coeffs_conf;
 char my_ear_conf_path[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
@@ -1014,16 +1014,16 @@ int read_coefficients()
 	int file_size=0;
 	sprintf(my_coefficients_file,"%s/island%d/coeffs.%s",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island,nodename);
 	eard_verbose(0,"Looking for %s coefficients file",my_coefficients_file);
-	file_size=check_file(my_coefficients_file);
+	file_size=coeff_file_size(my_coefficients_file);
 	if (file_size == EAR_FILE_NOT_FOUND){
 		if (my_node_conf->coef_file!=NULL){
 			sprintf(my_coefficients_file,"%s/island%d/%s",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island,my_node_conf->coef_file);
 			eard_verbose(0,"Not found.Looking for special %s coefficients file",my_coefficients_file);
-			file_size=check_file(my_coefficients_file);
+			file_size=coeff_file_size(my_coefficients_file);
 			if (file_size==EAR_FILE_NOT_FOUND){
 				sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island);
 				eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
-				file_size=check_file(my_coefficients_file);
+				file_size=coeff_file_size(my_coefficients_file);
 				if (file_size==EAR_FILE_NOT_FOUND){
 					eard_verbose(0,"Warning, coefficients not found");
 					return 0;
@@ -1032,20 +1032,20 @@ int read_coefficients()
 		} else{
 			sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island);
 			eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
-			file_size=check_file(my_coefficients_file);
+			file_size=coeff_file_size(my_coefficients_file);
 			if (file_size==EAR_FILE_NOT_FOUND){
 				eard_verbose(0,"Warning, coefficients not found");
 				return 0;
 			}
 		}
 	}
-	int entries=file_size/sizeof(coefficient_v3_t);
+	int entries=file_size/sizeof(coefficient_t);
 	eard_verbose(0,"%d coefficients found",entries);
-	my_coefficients=(coefficient_v3_t *)calloc(entries,sizeof(coefficient_v3_t));
-	state=read_coefficients_file_v3(my_coefficients_file, my_coefficients,file_size);
+	my_coefficients=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
+	state=coeff_file_read_no_alloc(my_coefficients_file, my_coefficients,file_size);
 	#if 0
 	for (i=0;i<entries;i++){
-		print_coefficient(&my_coefficients[i]);
+		coeff_print_obs(&my_coefficients[i]);
 	}
 	#endif
 	return file_size;

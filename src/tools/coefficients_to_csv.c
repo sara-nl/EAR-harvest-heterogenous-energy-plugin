@@ -67,7 +67,7 @@ int strlst(const char *string, char c)
 
 void read_file_v2(const char *path, char *node,int wfd,ulong ref)
 {
-    coefficient_t *coeffs;
+    coefficient_obs_t *coeffs;
 	int size;
 	int pstates;
 	char buffer[256];
@@ -80,11 +80,11 @@ void read_file_v2(const char *path, char *node,int wfd,ulong ref)
 	/* Size */
 	size=lseek(rfd,0,SEEK_END);
 	lseek(rfd,0,SEEK_SET);
-	pstates=size/sizeof(coefficient_t);
+	pstates=size/sizeof(coefficient_obs_t);
 
 	printf("%d pstates found in %s\n",pstates,path);
 		
-    coeffs = (coefficient_t *) malloc(size);
+    coeffs = (coefficient_obs_t *) malloc(size);
     
 
 	if (read(rfd, coeffs, size)!=size){
@@ -92,7 +92,7 @@ void read_file_v2(const char *path, char *node,int wfd,ulong ref)
 	}
 	int i;
 	for ( i=0;i<pstates;i++){
-		print_coefficient(&coeffs[i]);
+		coeff_print_obs(&coeffs[i]);
 		dprintf(wfd,"%s;%lu;%lu;%u;%lf;%lf;%lf;%lf;%lf;%lf\n",
 		node,ref,coeffs[i].pstate,coeffs[i].available,coeffs[i].A,coeffs[i].B,coeffs[i].C,coeffs[i].D,coeffs[i].E,coeffs[i].F);
 		
@@ -103,7 +103,7 @@ void read_file_v2(const char *path, char *node,int wfd,ulong ref)
 
 void read_file_v3(char *path,char * node,int wfd)
 {
-    coefficient_v3_t *coeffs;
+    coefficient_t *coeffs;
     int size;
     int pstates,ncoeffs;
     char buffer[256];
@@ -117,10 +117,10 @@ void read_file_v3(char *path,char * node,int wfd)
     size=lseek(rfd,0,SEEK_END);
 	printf("File size %d\n",size);
     lseek(rfd,0,SEEK_SET);
-	ncoeffs=size/sizeof(coefficient_v3_t);
+	ncoeffs=size/sizeof(coefficient_t);
     printf("%d ncoeffs found in %s\n",ncoeffs,path);
     
-    coeffs = (coefficient_v3_t *) malloc(size);
+    coeffs = (coefficient_t *) malloc(size);
     
 
     if (read(rfd, coeffs, size)!=size){
@@ -128,7 +128,7 @@ void read_file_v3(char *path,char * node,int wfd)
     }   
 	int i;
 	for (i=0;i<ncoeffs;i++){
-        print_coefficient_v3(&coeffs[i]);
+        coeff_print(&coeffs[i]);
         dprintf(wfd,"%s;%lu;%lu;%u;%lf;%lf;%lf;%lf;%lf;%lf\n",
         node,coeffs[i].pstate_ref,coeffs[i].pstate,coeffs[i].available,coeffs[i].A,coeffs[i].B,coeffs[i].C,coeffs[i].D,coeffs[i].E,coeffs[i].F);
 

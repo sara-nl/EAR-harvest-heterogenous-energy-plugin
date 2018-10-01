@@ -27,28 +27,12 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef _EAR_TYPES_COEFFICIENT
 #define _EAR_TYPES_COEFFICIENT
 
 #include <common/types/generic.h>
 
-typedef struct Coefficients_info
-{
-    unsigned long pstate;
-    unsigned int available;
-    /* For power projection */
-    double A;
-    double B;
-    double C;
-    /* For CPI projection */
-    double D;
-    double E;
-    double F;
-} coefficient_t;
-
-typedef struct Coefficients_info_v3
+typedef struct coefficient
 {
 	ulong pstate_ref;	
     ulong pstate;
@@ -61,24 +45,36 @@ typedef struct Coefficients_info_v3
     double D;
     double E;
     double F;
-} coefficient_v3_t;
-
+} coefficient_t;
 
 /* functions */
 
-// Reads a file of coefficients saved in binary format. A block of memory
-// is allocated for this read coefficients, and is returned by the argument
-// 'coeffs'. The returned integer is the number of applications read. If the
-// integer is negative, one of the following errores ocurred: EAR_ALLOC_ERROR,
-// EAR_READ_ERROR or EAR_FILE_NOT_FOUND.
-int read_coefficients_file(char *path, coefficient_t **coeffs, int size);
+int coeff_file_size(char *path);
 
-int read_coefficients_file_v3(char *path, coefficient_v3_t *coeffs, int size);
+int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size);
 
-int check_file(char *path);
+int coeff_file_read(char *path, coefficient_t *coeffs);
 
-void print_coefficient(coefficient_t *coeff);
+void coeff_print(coefficient_t *coeff);
 
-void print_coefficient_v3(coefficient_v3_t *coeff);
+/* obsolete functions */
+
+typedef struct coefficient_obs
+{
+	unsigned long pstate;
+	unsigned int available;
+	/* For power projection */
+	double A;
+	double B;
+	double C;
+	/* For CPI projection */
+	double D;
+	double E;
+	double F;
+} coefficient_obs_t;
+
+int coeff_file_read_obs(char *path, coefficient_obs_t **coeffs, int size);
+
+void coeff_print_obs(coefficient_obs_t *coeff);
 
 #endif

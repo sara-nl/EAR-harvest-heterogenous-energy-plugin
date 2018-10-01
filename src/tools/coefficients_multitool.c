@@ -14,31 +14,38 @@
 #include <tools/coefficients_multitool.h>
 
 int EAR_VERBOSE_LEVEL = 0;
+char *buffer[SZ_PATH];
 
 typedef struct control
 {
-	coefficient_v3_t *coeffs;
+	/* node */
+	char name_node[SZ_NAME_SHORT];
+	char path_coeffs[SZ_PATH];
+	/* allocation */
 	application_t *apps;
 	application_t *apps_merged;
-	projection_t *projs;
-	int n_coeffs;
+	coefficient_t *coeffs;
+	projection_t  *projs;
+	/* indexes */
 	int n_apps;
 	int n_apps_merged;
+	int n_coeffs;
+	/* other */
 	uint f0_mhz;
 } control_t;
 
 /*
  *
- * Work bench
+ * Projections
  *
  */
 
-double power_proj(double power0, double tpi0, coefficient_v3_t *coeffs)
+double power_proj(double power0, double tpi0, coefficient_t *coeffs)
 {
 	return coeffs->A * power0 + coeffs->B * tpi0 + coeffs->C;
 }
 
-double cpi_proj(double cpi0, double tpi0, coefficient_v3_t *coeffs)
+double cpi_proj(double cpi0, double tpi0, coefficient_t *coeffs)
 {
 	return coeffs->D * cpi0 + coeffs->E * tpi0 + coeffs->F;
 }
@@ -47,6 +54,12 @@ double time_proj(double time0, double cpip, double cpi0, ulong f0, ulong fn)
 {
 	return (time0 * cpip / cpi0) * ((double) f0 / (double) fn);
 }
+
+/*
+ *
+ * Work bench
+ *
+ */
 
 int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
 {
@@ -140,7 +153,7 @@ void evaluate(control_t *control)
 	double cpie, tpie, time, powe;
 
 	application_t *apps, *m;
-	coefficient_v3_t *coeffs;
+	coefficient_t *coeffs;
 	int n_apps, n_coeffs;
 	int i, j, k;
 	uint f0_mhz;
@@ -196,80 +209,89 @@ void evaluate(control_t *control)
 	}
 }
 
-int main(int argc, char *argv[])
+/*
+ *
+ * Initialization
+ *
+ */
+
+void read_applications(control_t *cntr)
 {
-	char paths[512];
-	int n_apps = 1000;
-	int i, j, n, cmp;
-	unsigned int learning = 0;
-	char *node;
-
-	cluster_conf_t conf;
 	application_t *apps;
-	control_t cntr;
+	int i;
 
-	// argv[1]: node
-	// argv[2]: f0_mhz
-	// argv[3]: learning
+	//
+	cntr.n_apps = db_read_applications(&apps, learning, 1000, cntr->name_node);
+
+	if (cntr.n_apps == 0) {
+		fprintf(stderr, "No apps found\n");
+		exit(1);
+	}
+
+	//
+	cntr.apps = calloc(cntr->n_apps, sizeof(application_t));
+	memcpy(cntr->apps, apps, sizeof(cntr->n_apps * application_t));
+
+	// Merging
+	merge(cntr);
+}
+
+void read_coefficients(cluster_conf_t &conf, control_t *cntr)
+{
+	sprintf(cntr->path_coeffs, "%s/island0/coeffs.%s",
+		conf->earlib.coefficients_pathname, cntr->name_node);
+
+	cntr->n_coeffs = coeff_file_read(paths, &cntr.coeffs);
+
+	if (cntr->n_coeffs == 0) {
+		fprintf(stderr, "No coefficients found\n");
+		exit(1);
+	}
+}
+
+void usage(int argc, char *argv[], control_t *cntr)
+{
+	if (argc > 3 || argc < 3) {
+		fprintf(stdout, "Usage: %s [HOSTNAME] [NOM.FREQUENCY]\n", argv[0]);
+		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
+		fprintf(stdout, "  The nominal frequency is the base frequency of that node.\n");
+	}
+
 	cntr.f0_mhz = (unsigned long) atoi(argv[2]);
-	learning = (unsigned int) atoi(argv[3]);
-	node = argv[1];
+	strcpy(cntr.name_node, argv[1]);
+}
 
-	// Reading ear.conf
-	get_ear_conf_path(paths);
+void init(cluster_conf_t &conf)
+{
+	// Initialization
+	get_ear_conf_path(buffer);
 
-	if (read_cluster_conf(paths, &conf) != EAR_SUCCESS){
+	if (read_cluster_conf(buffer, conf) != EAR_SUCCESS){
 		fprintf(stderr, "Error reading cluster configuration.\n");
 		return 0;
 	}
 
-	// Initializing database
-	fprintf(stderr, "Reading applications: '%s' '%s' '%s' '%u'\n", paths, conf.database.database, node, learning);
+	init_db_helper(&conf->database);
+}
 
-	// Reading applications
-	init_db_helper(&conf.database);
-	cntr.n_apps = db_read_applications(&apps, learning, n_apps, node);
+int main(int argc, char *argv[])
+{
+	cluster_conf_t conf;
 
-	if (cntr.n_apps == 0) {
-		fprintf(stderr, "No apps found\n");
-		return 0;
-	}
+	//
+	usage(argc, argv, cntr);
+
+	//
+	init(&conf);
 
 	// Allocating applications
-	cntr.apps = calloc(cntr.n_apps, sizeof(application_t));
-
-	for (i = 0; i < cntr.n_apps; ++i) {
-		memcpy(&cntr.apps[i], &apps[i], sizeof(application_t));
-	}
-
-    for (i = 0; i < cntr.n_apps; ++i)
-    {
-        fprintf(stderr, "%d: '%s' '%s' '%lu'\n",
-                i, cntr.apps[i].node_id, cntr.apps[i].job.app_id, cntr.apps[i].signature.def_f);
-    }
+	read_applications(&cntr);
 
 	// Reading coefficients
-	cntr.coeffs = malloc(2592);
-	sprintf(paths, "%s/island0/coeffs.%s", conf.earlib.coefficients_pathname, node);
-	cntr.n_coeffs = read_coefficients_file_v3(paths, cntr.coeffs, 2592);
-	fprintf(stderr, "Reading coefficients: '%s' '%d'\n", paths, cntr.n_coeffs);
-
-    for (i = 0; i < cntr.n_coeffs; ++i)
-    {
-		print_coefficient_v3(&cntr.coeffs[i]);
-    }
-
-
-	// Merging
-	merge(&cntr);
+	read_coefficients(&conf, &cntr);
 
 	// Evaluating
 	evaluate(&cntr);
-
-	// Leaving
-	free(cntr.coeffs);
-	free(cntr.apps_merged);
-	free(cntr.apps);
 
 	return 0;
 }

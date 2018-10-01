@@ -54,7 +54,7 @@ static char *__NAME__ = "power_capping";
 
 // Policy
 extern double power_cap_limit;
-extern coefficient_t **coefficients;
+extern coefficient_obs_t **coefficients;
 
 // Process
 extern uint EAR_default_pstate;
