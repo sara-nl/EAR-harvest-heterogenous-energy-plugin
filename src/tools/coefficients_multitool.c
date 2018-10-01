@@ -32,6 +32,7 @@ typedef struct control
 	int n_apps_merged;
 	int n_coeffs;
 	/* other */
+	uint learning;
 	uint f0_mhz;
 } control_t;
 	
@@ -174,6 +175,19 @@ void evaluate(control_t *control)
 	{
 		if (apps[j].signature.def_f == f0_mhz)
 		{
+			for (i = 0, k = 0; i < n_coeffs; i++)
+            {
+                if (coeffs[i].available && coeffs[i].pstate_ref == f0_mhz)
+                {
+                    k += find(apps, n_apps, apps[j].job.app_id, coeffs[i].pstate) != -1;
+				}
+			}
+
+			// No more than one application to compare
+			if (k <= 1) {
+				continue;
+			}
+
 			tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
 					apps[j].job.app_id, apps[j].signature.def_f);
 
@@ -204,7 +218,7 @@ void evaluate(control_t *control)
 								coeffs[i].pstate, m->signature.time, timp, time,
 								m->signature.DC_power, powp, powe);
 					} else {
-						tprintf(buffer, "->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
+						tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
 					}
 				}
 			}
@@ -220,21 +234,36 @@ void evaluate(control_t *control)
 
 void read_applications(control_t *cntr)
 {
-	application_t *apps;
+	application_t *appsn;
+	application_t *appsl;
+	int n_appsn = 0;
+	int n_appsl = 0;
 	int i;
 
 	//
-	cntr->n_apps = db_read_applications(&apps, 1, 1000, cntr->name_node);
+	n_appsn = db_read_applications(&appsn, 1, 1000, cntr->name_node);
 
-	if (cntr->n_apps == 0) {
+	if (n_appsn == 0) {
 		fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);	
 		exit(1);
 	}
 
-	//
-	cntr->apps = calloc(cntr->n_apps, sizeof(application_t));
-	memcpy(cntr->apps, apps, cntr->n_apps * sizeof(application_t));
+	
+	if (cntr->learning) {
+		n_appsl = db_read_applications(&appsl, 0, 1000, cntr->name_node);
+	}
 
+	//
+	cntr->n_apps = n_appsn + n_appsl;
+	cntr->apps = calloc(cntr->n_apps, sizeof(application_t));
+
+	//
+	memcpy(cntr->apps, appsn, n_appsn * sizeof(application_t));
+
+	if (cntr->learning) {
+		memcpy(&cntr->apps[n_appsn], appsl, n_appsl * sizeof(application_t));
+	}
+	
 	// Merging
 	merge(cntr);
 }
@@ -254,14 +283,21 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 
 void usage(int argc, char *argv[], control_t *cntr)
 {
-	if (argc > 3 || argc < 3) {
-		fprintf(stdout, "Usage: %s [HOSTNAME] [NOM.FREQUENCY]\n", argv[0]);
+	if (argc > 4 || argc < 3) {
+		fprintf(stdout, "Usage: %s hostname frequency [OPTIONS...]\n\n", argv[0]);
 		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
-		fprintf(stdout, "  The nominal frequency is the base frequency of that node.\n");
+		fprintf(stdout, "  The frequency is the nominal base frequency of that node.\n\n");
+		fprintf(stdout, "Options:\n");
+		fprintf(stdout, "\t-A, --all\tMerges the applications database in addition\n");
+		fprintf(stdout, "\t\t\tof the learning applications database.\n");
+		
+		exit(1);
 	}
 
 	cntr->f0_mhz = (unsigned long) atoi(argv[2]);
 	strcpy(cntr->name_node, argv[1]);
+
+	cntr->learning = (argc == 4) && ((strcmp(argv[3], "-A") == 0) || (strcmp(argv[3], "--all") == 0));
 }
 
 void init(cluster_conf_t *conf)
