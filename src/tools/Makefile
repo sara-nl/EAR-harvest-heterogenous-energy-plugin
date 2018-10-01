@@ -8,6 +8,7 @@ COMMON_OBJS = $(ROOTDIR)/src/common/types.a
 BINARIES = compute_coefficients \
 		   compute_coefficients_v2 \
            compute_coefficients_remote \
+           coeffs_job \
            coeffs_quality \
 		   coefficients_to_csv \
 		   coefficients_v2_to_v3 \
@@ -31,7 +32,10 @@ compute_coefficients_v2: compute_coefficients_v2.c $(COMMON_OBJS)
 compute_coefficients_remote: compute_coefficients_remote.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
 
-coeffs_quality: coefficients_multitool.c coefficients_multitool.h $(COMMON_OBJS)
+coeffs_job: coeffs_job.c coeffs_job.h $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+
+coeffs_quality: coeffs_quality.c coeffs_quality.h $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 traces_to_paraver: traces_to_paraver.cpp
