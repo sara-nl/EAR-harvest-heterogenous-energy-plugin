@@ -405,6 +405,6 @@ void policy_end_loop()
 void policy_default_configuration()
 {
 	ear_frequency=app_policy.default_conf(user_selected_freq);
-	ear_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
+	earl_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
 	eards_change_freq(ear_frequency);
 }

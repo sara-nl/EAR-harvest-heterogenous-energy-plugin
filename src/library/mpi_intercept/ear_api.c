@@ -87,7 +87,7 @@ static int ppnode;
 
 // Loop information
 static uint mpi_calls_per_loop;
-static uint ear_iterations;
+static uint ear_iterations=0;
 static uint ear_loop_size;
 static int in_loop;
 
@@ -95,7 +95,7 @@ static int in_loop;
 /* in us */
 // These variables are shared
 uint ear_periodic_mode=PERIODIC_MODE_OFF;
-uint mpi_calls_in_period=0;
+uint mpi_calls_in_period=10000;
 uint total_mpi_calls=0;
 static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
 static uint lib_period=PERIOD;
@@ -238,18 +238,22 @@ void update_configuration()
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
 #if EAR_PERFORMANCE_TESTS
-	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais,*ear_dynais_size;
+	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais,*ear_dynais_size,*ear_mode;
 	ear_dynais_timeout=getenv("EAR_DYNAIS_TIMEOUT");
 	ear_lib_period=getenv("EAR_LIB_PERIOD");
 	ear_check_every=getenv("EAR_CHECK_EVERY");
 	ear_use_dynais=getenv("EAR_DYNAIS");
 	ear_dynais_size=getenv("EAR_DYNAIS_SIZE");
-	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
+	ear_mode=getenv("EAR_MODE");
 	if (ear_lib_period!=NULL) lib_period=atoi(ear_lib_period);
 	if (ear_check_every!=NULL) check_every=atoi(ear_check_every);
 	if (ear_use_dynais!=NULL) use_dynais=atoi(ear_use_dynais);
 	if (ear_dynais_size!=NULL) set_ear_dynais_window_size(atoi(ear_dynais_size));
-	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d lib_period %d check_every %d\n",use_dynais,dynais_timeout,lib_period,check_every);	
+	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
+	if (ear_mode!=NULL)	ear_periodic_mode=atoi(ear_mode);
+	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d ear_dynais_size %d \n",use_dynais,dynais_timeout,atoi(ear_dynais_size));	
+	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: lib_period %d check_every %d\n",lib_period,check_every);	
+	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: ear_mode %d (PERIODIC=%d DYNAIS=%d)\n",ear_periodic_mode,PERIODIC_MODE_ON,PERIODIC_MODE_OFF);
 #endif
 }
 
@@ -379,6 +383,9 @@ void ear_init()
 	states_begin_job(my_id, NULL, ear_app_name);
 	states_periodic_begin_job(my_id, NULL, ear_app_name);
 
+	if (ear_periodic_mode==PERIODIC_MODE_ON){
+		states_periodic_begin_period(my_id, NULL, 1, 1);
+	}
 	// Summary files
 	summary_pathname = get_ear_user_db_pathname();
 
@@ -395,6 +402,7 @@ void ear_init()
 	// Tracing init
 	traces_init(ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
+
 
 	// All is OK :D
 #if EAR_PERFORMANCE_TESTS
@@ -547,6 +555,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 				/* EAR energy policy is called periodically */
 				if ((total_mpi_calls%mpi_calls_in_period)==0){
 					ear_iterations++;
+					#if EAR_PERFORMANCE_TESTS
+					earl_verbose(1,"New preriodic iteration %d\n",ear_iterations);
+					#endif
 					states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 				}
 				break;
@@ -741,7 +752,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event, ear_loop_size, ear_iterations);
 				#if EAR_PERFORMANCE_TESTS
-				earl_verbose(1,"New estimated iteration\n");
+				earl_verbose(3,"New estimated iteration\n");
 				#endif
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
