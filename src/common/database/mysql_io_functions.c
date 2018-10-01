@@ -337,7 +337,6 @@ int mysql_batch_insert_jobs(MYSQL *connection, application_t *app, int num_apps)
     int i;
     for (i = 1; i < num_apps; i++)
         strcat(query, params);
-    fprintf(stderr, "QUERY: %s\n", query);
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
     MYSQL_BIND *bind = calloc(num_apps * JOB_ARGS, sizeof(MYSQL_BIND));
