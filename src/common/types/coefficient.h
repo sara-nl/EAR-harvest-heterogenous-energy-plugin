@@ -53,7 +53,7 @@ int coeff_file_size(char *path);
 
 int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size);
 
-int coeff_file_read(char *path, coefficient_t *coeffs);
+int coeff_file_read(char *path, coefficient_t **coeffs);
 
 void coeff_print(coefficient_t *coeff);
 

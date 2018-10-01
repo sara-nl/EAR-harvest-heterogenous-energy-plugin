@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <common/sizes.h>
 #include <common/states.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>
@@ -14,7 +15,7 @@
 #include <tools/coefficients_multitool.h>
 
 int EAR_VERBOSE_LEVEL = 0;
-char *buffer[SZ_PATH];
+char buffer[SZ_PATH];
 
 typedef struct control
 {
@@ -33,6 +34,8 @@ typedef struct control
 	/* other */
 	uint f0_mhz;
 } control_t;
+	
+control_t cntr;
 
 /*
  *
@@ -221,30 +224,30 @@ void read_applications(control_t *cntr)
 	int i;
 
 	//
-	cntr.n_apps = db_read_applications(&apps, learning, 1000, cntr->name_node);
+	cntr->n_apps = db_read_applications(&apps, 1, 1000, cntr->name_node);
 
-	if (cntr.n_apps == 0) {
-		fprintf(stderr, "No apps found\n");
+	if (cntr->n_apps == 0) {
+		fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);	
 		exit(1);
 	}
 
 	//
-	cntr.apps = calloc(cntr->n_apps, sizeof(application_t));
-	memcpy(cntr->apps, apps, sizeof(cntr->n_apps * application_t));
+	cntr->apps = calloc(cntr->n_apps, sizeof(application_t));
+	memcpy(cntr->apps, apps, cntr->n_apps * sizeof(application_t));
 
 	// Merging
 	merge(cntr);
 }
 
-void read_coefficients(cluster_conf_t &conf, control_t *cntr)
+void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 {
 	sprintf(cntr->path_coeffs, "%s/island0/coeffs.%s",
 		conf->earlib.coefficients_pathname, cntr->name_node);
 
-	cntr->n_coeffs = coeff_file_read(paths, &cntr.coeffs);
+	cntr->n_coeffs = coeff_file_read(cntr->path_coeffs, &cntr->coeffs);
 
 	if (cntr->n_coeffs == 0) {
-		fprintf(stderr, "No coefficients found\n");
+		fprintf(stderr, "No coefficient file found for the node '%s'\n", cntr->name_node);	
 		exit(1);
 	}
 }
@@ -257,18 +260,18 @@ void usage(int argc, char *argv[], control_t *cntr)
 		fprintf(stdout, "  The nominal frequency is the base frequency of that node.\n");
 	}
 
-	cntr.f0_mhz = (unsigned long) atoi(argv[2]);
-	strcpy(cntr.name_node, argv[1]);
+	cntr->f0_mhz = (unsigned long) atoi(argv[2]);
+	strcpy(cntr->name_node, argv[1]);
 }
 
-void init(cluster_conf_t &conf)
+void init(cluster_conf_t *conf)
 {
 	// Initialization
 	get_ear_conf_path(buffer);
 
 	if (read_cluster_conf(buffer, conf) != EAR_SUCCESS){
 		fprintf(stderr, "Error reading cluster configuration.\n");
-		return 0;
+		exit(1);
 	}
 
 	init_db_helper(&conf->database);
@@ -279,7 +282,7 @@ int main(int argc, char *argv[])
 	cluster_conf_t conf;
 
 	//
-	usage(argc, argv, cntr);
+	usage(argc, argv, &cntr);
 
 	//
 	init(&conf);
