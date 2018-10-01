@@ -1,8 +1,0 @@
-//
-// Created by xgomez on 24/09/18.
-//
-
-#ifndef EAR_COEFFICIENTS_MULTITOOL_H
-#define EAR_COEFFICIENTS_MULTITOOL_H
-
-#endif //EAR_COEFFICIENTS_MULTITOOL_H
