@@ -63,7 +63,7 @@ int strlst(const char *string, char c)
     return last_i;
 }
 
-void from_v2_to_v3(ulong ref,coefficient_t *v2,coefficient_v3_t *v3)
+void from_v2_to_v3(ulong ref,coefficient_obs_t *v2,coefficient_t *v3)
 {
 	v3->pstate_ref=ref;
 	v3->pstate=v2->pstate;
@@ -78,8 +78,8 @@ void from_v2_to_v3(ulong ref,coefficient_t *v2,coefficient_v3_t *v3)
 
 void convert_coeffs_v2(const char *path, char *node,int wfd,ulong ref)
 {
-    coefficient_t *coeffs;
-    coefficient_v3_t *coeffs_v3;
+    coefficient_obs_t *coeffs;
+    coefficient_t *coeffs_v3;
 	int size;
 	int pstates;
 	char buffer[256];
@@ -93,12 +93,12 @@ void convert_coeffs_v2(const char *path, char *node,int wfd,ulong ref)
 	/* Size */
 	size=lseek(rfd,0,SEEK_END);
 	lseek(rfd,0,SEEK_SET);
-	pstates=size/sizeof(coefficient_t);
+	pstates=size/sizeof(coefficient_obs_t);
 
 	printf("%d pstates found in %s\n",pstates,path);
 		
-    coeffs = (coefficient_t *) malloc(size);
-    coeffs_v3 = (coefficient_v3_t *) malloc(pstates*sizeof(coefficient_v3_t));
+    coeffs = (coefficient_obs_t *) malloc(size);
+    coeffs_v3 = (coefficient_t *) malloc(pstates*sizeof(coefficient_t));
     
 
 	if (read(rfd, coeffs, size)!=size){
@@ -107,9 +107,9 @@ void convert_coeffs_v2(const char *path, char *node,int wfd,ulong ref)
 	int i;
 	for ( i=0;i<pstates;i++){
 		if ((i>0) && (coeffs[i].pstate!=0)){
-			print_coefficient(&coeffs[i]);
+			coeff_print_obs(&coeffs[i]);
 			from_v2_to_v3(ref,&coeffs[i],&coeffs_v3[i]);
-			write(wfd,&coeffs_v3[i],sizeof(coefficient_v3_t));
+			write(wfd,&coeffs_v3[i],sizeof(coefficient_t));
 		}
 	}
     close(rfd);

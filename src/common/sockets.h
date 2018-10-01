@@ -103,8 +103,8 @@ state_t sockets_header_clean(packet_header_t *header);
 
 state_t sockets_header_update(packet_header_t *header);
 
-void sockets_print_socket(socket_t *socket);
+void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length);
 
-void sockets_print_sockaddr(struct sockaddr *host_addr);
+void sockets_get_address_fd(int fd, char *buffer, int length);
 
 #endif //EAR_SOCKETS_H

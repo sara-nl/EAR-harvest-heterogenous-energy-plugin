@@ -123,9 +123,9 @@ void resched_shared_area_dispose(char * path);
 /***************** COEFFICIENTS **********/
 int get_coeffs_path(char *tmp,char *path);
 
-coefficient_v3_t * create_coeffs_shared_area(char * path,coefficient_v3_t *coeffs,int size);
+coefficient_t * create_coeffs_shared_area(char * path,coefficient_t *coeffs,int size);
 
-coefficient_v3_t * attach_coeffs_shared_area(char * path,int *size);
+coefficient_t * attach_coeffs_shared_area(char * path,int *size);
 
 void coeffs_shared_area_dispose(char * path);
 

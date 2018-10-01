@@ -162,7 +162,7 @@ state_t sockets_dispose(socket_t *socket)
 
 state_t sockets_clean(socket_t *socket)
 {
-	memset((void *) socket, 0, sizeof(socket_t));	
+	memset((void *) socket, 0, sizeof(socket_t));
     socket->fd = -1;
 
     state_return(EAR_SUCCESS);
@@ -382,17 +382,15 @@ state_t sockets_set_timeout(int fd, time_t timeout)
 	state_return(EAR_SUCCESS);
 }
 
-void sockets_print_socket(socket_t *socket)
+void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length)
 {
-	printf("socket (%d, %u, %u, '%s')\n", socket->fd, socket->port, socket->protocol, socket->host);
-}
-
-void sockets_print_sockaddr(struct sockaddr *host_addr)
-{
-	char buffer[512];
 	char *ip_version;
 	void *address;
 	int port;
+
+	if (length < INET6_ADDRSTRLEN) {
+		return;
+	}
 
 	// IPv4
 	if (host_addr->sa_family == AF_INET)
@@ -402,7 +400,7 @@ void sockets_print_sockaddr(struct sockaddr *host_addr)
 		port = (int) ntohs(ipv4->sin_port);
 		ip_version = "IPv4";
 	}
-		// IPv6
+	// IPv6
 	else
 	{
 		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
@@ -412,8 +410,13 @@ void sockets_print_sockaddr(struct sockaddr *host_addr)
 
 	// convert the IP to a string and print it
 	inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
+}
 
-	if (buffer[0] != ':') {
-		printf("%s:%d", buffer, port);
-	}
+void sockets_get_address_fd(int fd, char *buffer, int length)
+{
+	struct sockaddr s_addr;
+	socklen_t s_leng;
+
+	getsockname(fd, (struct sockaddr *) &s_addr, &s_leng);
+	sockets_get_address(&s_addr, buffer, length);
 }

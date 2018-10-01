@@ -248,7 +248,7 @@ void print_full_apps(application_t *apps, int num_apps)
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
             printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
-                avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NON-MPI", "NON-MPI", 
+                avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
                 apps[i].power_sig.time * apps[i].power_sig.DC_power, buff);
 
         }
@@ -359,7 +359,7 @@ void print_short_apps(application_t *apps, int num_apps)
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                     printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
                         current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                        avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
+                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
 
             }
             if (apps[i].job.id != current_job_id || apps[i].job.step_id != current_step_id)
@@ -406,7 +406,7 @@ void print_short_apps(application_t *apps, int num_apps)
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
                     current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                    avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
+                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
 
         }
     }

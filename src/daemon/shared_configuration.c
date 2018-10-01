@@ -225,16 +225,16 @@ void resched_shared_area_dispose(char * path)
 
 /* COEFFS */
 
-coefficient_v3_t * create_coeffs_shared_area(char * path,coefficient_v3_t *coeffs,int size)
+coefficient_t * create_coeffs_shared_area(char * path,coefficient_t *coeffs,int size)
 {
 
-    return (coefficient_v3_t *)create_shared_area(path,(char *)coeffs,size,&fd_coeffs,0);
+    return (coefficient_t *)create_shared_area(path,(char *)coeffs,size,&fd_coeffs,0);
 
 }
 
-coefficient_v3_t * attach_coeffs_shared_area(char * path,int *size)
+coefficient_t * attach_coeffs_shared_area(char * path,int *size)
 {
-    return (coefficient_v3_t *)attach_shared_area(path,0,O_RDONLY,&fd_coeffs,size);
+    return (coefficient_t *)attach_shared_area(path,0,O_RDONLY,&fd_coeffs,size);
 }
 
 void coeffs_shared_area_dispose(char * path)

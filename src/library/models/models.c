@@ -71,8 +71,8 @@ double performance_penalty ;
 double performance_gain ;
 
 // Normals
-coefficient_t **coefficients;
-coefficient_v3_t *coefficients_v3;
+coefficient_obs_t **coefficients;
+coefficient_t *coefficients_v3;
 int num_coeffs;
 static uint reset_freq_opt = RESET_FREQ;
 static uint ear_models_pstates = 0;
@@ -235,9 +235,9 @@ void init_power_policy()
 	init_policy_functions();
 }
 
-void init_coeff_data(coefficient_t *cv2,coefficient_v3_t *cv3)
+void init_coeff_data(coefficient_obs_t *cv2,coefficient_t *cv3)
 {
-	memcpy(cv2,&(cv3->pstate),sizeof(coefficient_t));
+	memcpy(cv2,&(cv3->pstate),sizeof(coefficient_obs_t));
 }
 
 
@@ -270,7 +270,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 
 	// Coefficient pointers allocation
-	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * p_states);
+	coefficients = (coefficient_obs_t **) malloc(sizeof(coefficient_obs_t *) * p_states);
 
 	if (coefficients == NULL) {
 		ear_verbose(0, "EAR: Error allocating memory for p_states coefficients\n");
@@ -279,7 +279,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 	for (i = 0; i < p_states; i++)
 	{
-		coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * p_states);
+		coefficients[i] = (coefficient_obs_t *) malloc(sizeof(coefficient_obs_t) * p_states);
 		if (coefficients[i] == NULL) {
 			ear_verbose(0,"EAR: Error allocating memory for p_states coefficients fn %d\n",i);
 			exit(1);
@@ -309,15 +309,15 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 		ear_verbose(2, "EAR: Opening (per node) coefficient file %s\n", coeff_file_fn);
 
-		size = sizeof(coefficient_t) * p_states;
-		state = read_coefficients_file(coeff_file_fn, &coefficients[ref], size);
+		size = sizeof(coefficient_obs_t) * p_states;
+		state = coeff_file_read_obs(coeff_file_fn, &coefficients[ref], size);
 
 		if (state == EAR_FILE_NOT_FOUND)
 		{
 			sprintf(coeff_file_fn, "%s.%d", coeff_default_file, p_states_list[ref]);
 			ear_verbose(2, "EAR: Opening (default) coefficient file %s\n", coeff_file_fn);
 
-			state = read_coefficients_file(coeff_file_fn, &coefficients[ref], size);
+			state = coeff_file_read_obs(coeff_file_fn, &coefficients[ref], size);
 		}
 
 		// If default coefficient file not found
@@ -339,10 +339,10 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	num_coeffs=0;
 	coefficients_v3=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
 	if (num_coeffs>0){
-		num_coeffs=num_coeffs/sizeof(coefficient_v3_t);
+		num_coeffs=num_coeffs/sizeof(coefficient_t);
 		#if 0
 		for (i=0;i<num_coeffs;i++){
-			print_coefficient(&coefficients_v3[i]);
+			coeff_print_obs(&coefficients_v3[i]);
 		}
 		#endif
 		int ccoeff;

@@ -38,8 +38,9 @@ kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin/sp-mz.C.40
 kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin/
 src/tools/compute_coefficients_v2
 src/tools/ear_lp_validation
+src/tools/coeffs_jobs
+src/tools/coeffs_quality
 src/tools/get_projections
-
 
 # Build
 etc/module/ear

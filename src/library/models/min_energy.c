@@ -55,7 +55,7 @@ static char *__NAME__ = "min_energy_policy";
 
 // Policy
 extern double performance_penalty;
-extern coefficient_t **coefficients;
+extern coefficient_obs_t **coefficients;
 
 // Process
 extern uint EAR_default_pstate;
