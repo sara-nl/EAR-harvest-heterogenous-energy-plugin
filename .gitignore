@@ -44,6 +44,7 @@ src/tools/get_projections
 src/tools/coefficients_comparison
 src/tools/coeffs_job
 src/tools/show_coefficients
+src/tools/translate_coefficients
 
 # Build
 etc/module/ear

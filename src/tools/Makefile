@@ -20,7 +20,8 @@ BINARIES = compute_coefficients \
 		   ear_lp_validation \
 		   get_projections \
 		   coefficients_comparison \
-		  show_coefficients
+ 		   show_coefficients \
+		   translate_coefficients
 
 ######## RULES
 
@@ -67,6 +68,9 @@ coefficients_comparison:coefficients_comparison.c $(COMMON_OBJS)
 
 show_coefficients:show_coefficients.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
+translate_coefficients:translate_coefficients.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS) -lm
 
 coefficients_v2_to_v3:coefficients_v2_to_v3.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
