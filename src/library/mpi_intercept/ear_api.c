@@ -234,11 +234,11 @@ void update_configuration()
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
-	set_ear_learning(system_conf->lib_info.learning);
+	set_ear_learning(system_conf->learning);
 	dynais_timeout=system_conf->lib_info.dynais_timeout;
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
-	ear_whole_app=system_conf->lib_info.learning;
+	ear_whole_app=system_conf->learning;
 #if EAR_PERFORMANCE_TESTS
 	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais,*ear_dynais_size,*ear_mode;
 	ear_dynais_timeout=getenv("EAR_DYNAIS_TIMEOUT");
