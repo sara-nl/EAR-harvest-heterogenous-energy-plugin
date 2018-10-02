@@ -49,7 +49,7 @@ int num_pstates;
 #define IS_DIFFERENT 1
 #define IS_EQUAL     0
 #define MAX_DIFF	0.1
-#define DEF_FREQ	2400000
+#define DEF_FREQ	2401000
 
 int num_nodes=0;
 int valid_nodes=0;
@@ -145,9 +145,9 @@ void compute_average(coefficient_t *avg,int valid_nodes)
 {
 	int i;
 	for (i=0;i<num_pstates;i++){
-		avg[i].pstate_ref=avg[i].pstate_ref/(double)valid_nodes;
-		avg[i].pstate=avg[i].pstate/(double)valid_nodes;
-		avg[i].available=avg[i].available/(double)valid_nodes;
+		avg[i].pstate_ref=avg[i].pstate_ref/valid_nodes;
+		avg[i].pstate=avg[i].pstate/valid_nodes;
+		avg[i].available=avg[i].available/valid_nodes;
                 avg[i].A=avg[i].A/(double)valid_nodes;
                 avg[i].B=avg[i].B/(double)valid_nodes;
                 avg[i].C=avg[i].C/(double)valid_nodes;
@@ -215,14 +215,18 @@ int main(int argc, char *argv[])
 	   			accum_coeffs(coeffs_accum,&coeffs_per_node[(i-2)*num_pstates]);
 			    #if 0
 	   			print_coefficients(&coeffs_per_node[(i-2)*num_pstates]);
-			    #endif
 	   			printf("%s is a valid coefficient file\n",argv[i]);
+			    #endif
 	   			valid_nodes++;
 	   }else{
 		#if 0
 		printf("Default freq not valid %lu\n",coeffs_per_node[(i-2)*num_pstates].pstate_ref);
 	    #endif
 	   }
+	   #if 0
+	   print_coefficients(&coeffs_per_node[(i-2)*num_pstates]);
+	   getchar();
+	   #endif
         }else{
 		printf("%s not a regular file, ignoring it\n",rfile_path);
 	}
@@ -244,6 +248,16 @@ int main(int argc, char *argv[])
 	}
     }
     printf("Total warnings %d\n",total_warning);
+    printf("Generating coeffs.default at /tmp/coeffs.default\n");
+    fd=open("/tmp/coeffs.default",O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    if (fd<0){
+	printf("Error, default file can not be generated (%s)\n",strerror(errno));
+	exit(1);
+    }
+    if (write(fd,coeffs_accum,file_size)!=file_size){
+    	printf("Error writting default file (%s)\n",strerror(errno));
+    }
+    close(fd);
 
     return 0;
 }
