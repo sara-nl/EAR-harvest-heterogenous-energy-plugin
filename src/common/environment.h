@@ -166,6 +166,7 @@ void set_ear_p_state(ulong pstate);
 void set_ear_coeff_db_pathname(char *path);
 void set_ear_dynais_levels(int levels);
 void set_ear_dynais_window_size(int size);
+void set_ear_learning(int learning);
 
 
 
