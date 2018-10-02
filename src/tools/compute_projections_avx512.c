@@ -52,7 +52,7 @@ void usage(char *app)
 
 void main(int argc,char *argv[])
 {
-	struct Coefficients_info *MY_COEFFS;
+	struct coefficient_obs *MY_COEFFS;
 	int fd,ret,size,p_states,i,pstate_avx512=-1;
 	FILE *fd_apps;
 	char line[1024];

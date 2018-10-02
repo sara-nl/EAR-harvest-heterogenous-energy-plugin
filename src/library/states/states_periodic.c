@@ -52,6 +52,8 @@
 #include <daemon/eard_api.h>
 
 static const char *__NAME__ = "STATES_PERIOD";
+extern char *__HOST__ ;
+extern uint mpi_calls_in_period;
 
 // static defines
 #define FIRST_ITERATION			1
@@ -196,12 +198,12 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					if (policy_freq != prev_f)
 					{
-						ear_verbose(1,
+						earl_verbose(1,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
 									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
 					} else {
-						ear_verbose(1,
+						earl_verbose(1,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
 									ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
 									ENERGY, EDP);
@@ -210,6 +212,12 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					// Loop printing algorithm
 					copy_signature(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
+				}
+				else{
+					/* Time was not enough */
+					if (loop_signature.signature.time==0){
+						mpi_calls_in_period=mpi_calls_in_period*2;
+					}
 				}
 			break;
 		default: break;

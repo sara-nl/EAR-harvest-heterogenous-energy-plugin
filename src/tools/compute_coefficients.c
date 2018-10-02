@@ -59,7 +59,7 @@
 int EAR_VERBOSE_LEVEL=1;
 application_t *app_list;
 application_t **sorted_app_list;
-coefficient_v3_t **coeffs_list;
+coefficient_t **coeffs_list;
 
 uint *samples_per_app;
 uint num_diff_apps;
@@ -380,10 +380,10 @@ int main(int argc, char *argv[])
     }
 
     // Computing coefficients
-    MALLOC(coeffs_list, coefficient_v3_t *, num_node_p_states);
+    MALLOC(coeffs_list, coefficient_t *, num_node_p_states);
 
     for (f = 0; f < num_node_p_states; f++) {
-        MALLOC(coeffs_list[f], coefficient_v3_t, num_node_p_states);
+        MALLOC(coeffs_list[f], coefficient_t, num_node_p_states);
 
         for (i = 0; i < num_node_p_states; i++) {
 			coeffs_list[f][i].pstate_ref=p_state_to_freq(f);
@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
                 {
                     init_list_coeffs(ref, f, p_state_to_freq(f), 1, 0, 0, 1, 0, 0);
 					fprintf(stdout,"Writting coeffs for freq=%lu projection %lu\n",ref,f);
-            		if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_v3_t) ) != sizeof(coefficient_v3_t) ) {
+            		if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                 		perror("Error writting coefficients file\n");
                 		exit(1);
             		}
@@ -517,13 +517,13 @@ int main(int argc, char *argv[])
 
                         init_list_coeffs(ref, f, p_state_to_freq(f), A, B, C, D, E, F);
 						fprintf(stdout,"Writting coeffs for freq=%lu projection %lu\n",ref,f);
-            			if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_v3_t) ) != sizeof(coefficient_v3_t) ) {
+            			if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                 			perror("Error writting coefficients file\n");
                 			exit(1);
             			}
                     }else{
                         fprintf(stdout,"Writting NULL coeffs for freq=%lu projection %lu\n",ref,f);
-                        if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_v3_t) ) != sizeof(coefficient_v3_t) ) {
+                        if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                             perror("Error writting coefficients file\n");
                             exit(1);
                         }
@@ -534,7 +534,7 @@ int main(int argc, char *argv[])
 
         }else{
 			fprintf(stdout,"Writting NULL coeffs for freq=%lu projections %lu\n",ref,p_state_max);
-            if (write(fd, &coeffs_list[ref][0], sizeof(coefficient_v3_t)* p_state_max) != sizeof(coefficient_v3_t)*p_state_max ) {
+            if (write(fd, &coeffs_list[ref][0], sizeof(coefficient_t)* p_state_max) != sizeof(coefficient_t)*p_state_max ) {
             	perror("Error writting coefficients file\n");
             	exit(1);
             }

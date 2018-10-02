@@ -50,7 +50,7 @@
 
 application_t *app_list;
 application_t **sorted_app_list;
-coefficient_t **coeffs_list;
+coefficient_obs_t **coeffs_list;
 
 uint *samples_per_app;
 uint num_diff_apps;
@@ -325,10 +325,10 @@ int main(int argc, char *argv[])
     }
 
     // Computing coefficients
-    MALLOC(coeffs_list, coefficient_t *, num_node_p_states);
+    MALLOC(coeffs_list, coefficient_obs_t *, num_node_p_states);
 
     for (f = 0; f < num_node_p_states; f++) {
-        MALLOC(coeffs_list[f], coefficient_t, num_node_p_states);
+        MALLOC(coeffs_list[f], coefficient_obs_t, num_node_p_states);
 
         for (i = 0; i < num_node_p_states; i++) {
             coeffs_list[f][i].available = 0;
@@ -442,8 +442,8 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (write(fd, coeffs_list[ref], sizeof(coefficient_t) * num_node_p_states) !=
-                (sizeof(coefficient_t) * num_node_p_states)) {
+            if (write(fd, coeffs_list[ref], sizeof(coefficient_obs_t) * num_node_p_states) !=
+                (sizeof(coefficient_obs_t) * num_node_p_states)) {
                 perror("Error writting coefficients file\n");
                 exit(1);
             }

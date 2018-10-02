@@ -48,7 +48,7 @@ TIME = TIME * CPI(fn)/CPI * (Rf/fn)
 */
 
 
-double power_proj(double power_f0,double tpi_f0,struct Coefficients_info *my_coeffs,struct Coefficients_info *my_coeffs_avx512,double perc_nonavx512,double perc_avx512)
+double power_proj(double power_f0,double tpi_f0,struct coefficient_obs *my_coeffs,struct coefficient_obs *my_coeffs_avx512,double perc_nonavx512,double perc_avx512)
 {
 	double pp,pp_512;
 	pp=my_coeffs->A*power_f0+my_coeffs->B*tpi_f0+my_coeffs->C;
@@ -57,7 +57,7 @@ double power_proj(double power_f0,double tpi_f0,struct Coefficients_info *my_coe
 	return (pp*perc_nonavx512+pp_512*perc_avx512);
 	
 }
-double cpi_proj(double cpi_f0,double tpi_f0,struct Coefficients_info *my_coeffs,struct Coefficients_info *my_coeffs_avx512,double perc_nonavx512,double perc_avx512)
+double cpi_proj(double cpi_f0,double tpi_f0,struct coefficient_obs *my_coeffs,struct coefficient_obs *my_coeffs_avx512,double perc_nonavx512,double perc_avx512)
 {
 	double cpip,cpip_512;
 	cpip=my_coeffs->D*cpi_f0+my_coeffs->E*tpi_f0+my_coeffs->F;

@@ -70,7 +70,7 @@
 int EAR_VERBOSE_LEVEL=1;
 application_t *app_list;
 application_t **sorted_app_list;
-coefficient_v3_t **coeffs_list;
+coefficient_t **coeffs_list;
 
 uint *samples_per_app;
 uint num_diff_apps;

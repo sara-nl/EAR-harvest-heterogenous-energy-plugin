@@ -113,7 +113,7 @@ int tprintf_format()
 
 	p3[0] = '\n';
 	p3[1] = '\0';
-    fprintf(stream, tprintf_obuf);
+    fprintf(stream, "%s", tprintf_obuf);
 
 	return 0;
 }

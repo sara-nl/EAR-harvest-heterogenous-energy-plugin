@@ -31,8 +31,8 @@
 
 #ifndef _PROJECTIONS_AVX512_H
 #define _PROJECTIONS_AVX512_H
-double power_proj(double power_f0,double tpi_f0,struct Coefficients_info *my_coeffs,struct Coefficients_info *my_coeffs_avx512,double perc_nonavx512,double perc_avx512);
-double cpi_proj(double cpi_f0,double tpi_f0,struct Coefficients_info *my_coeffs,struct Coefficients_info *my_coeffs_avx512,double perc_nonavx512,double perc_avx512);
+double power_proj(double power_f0,double tpi_f0,struct coefficient_obs *my_coeffs,struct coefficient_obs *my_coeffs_avx512,double perc_nonavx512,double perc_avx512);
+double cpi_proj(double cpi_f0,double tpi_f0,struct coefficient_obs *my_coeffs,struct coefficient_obs *my_coeffs_avx512,double perc_nonavx512,double perc_avx512);
 double time_proj(double time_f0,double cpi_proj,double cpi_f0,unsigned long f0,unsigned long fn);
 #else
 #endif
