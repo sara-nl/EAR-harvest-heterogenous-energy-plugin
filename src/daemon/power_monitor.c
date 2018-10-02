@@ -451,6 +451,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
 	if (user_type==AUTHORIZED) dyn_conf->learning=appID->is_learning;
+	else dyn_conf->learning=0;
 	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);
 	dyn_conf->policy=my_policy->policy;
 	dyn_conf->def_freq=f;

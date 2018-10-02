@@ -317,6 +317,10 @@ void set_ear_dynais_window_size(int size)
 {
 	conf_ear_dynais_window_size=size;
 }
+void set_ear_learning(int learning)
+{
+	conf_ear_learning_phase=learning;
+}
 
 
 // get_ functions must be used after getenv_

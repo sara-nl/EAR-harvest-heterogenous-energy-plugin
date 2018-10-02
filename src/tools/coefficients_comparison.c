@@ -49,7 +49,7 @@ int num_pstates;
 #define IS_DIFFERENT 1
 #define IS_EQUAL     0
 #define MAX_DIFF	0.1
-#define DEF_FREQ	2401000
+#define DEF_FREQ	2400000
 
 int num_nodes=0;
 int valid_nodes=0;
@@ -211,12 +211,17 @@ int main(int argc, char *argv[])
         if (is_regular_file(rfile_path)) {
 	   printf("Processing %s file\n",rfile_path);
            read_file(rfile_path,&coeffs_per_node[(i-2)*num_pstates]);
-	   if (coeffs_per_node[(i-2)*num_pstates].pstate_ref==DEF_FREQ){
-	   	accum_coeffs(coeffs_accum,&coeffs_per_node[(i-2)*num_pstates]);
-	   	print_coefficients(&coeffs_per_node[(i-2)*num_pstates]);
-	   	valid_nodes++;
+	   	   if (coeffs_per_node[(i-2)*num_pstates].pstate_ref==DEF_FREQ){
+	   			accum_coeffs(coeffs_accum,&coeffs_per_node[(i-2)*num_pstates]);
+			    #if 0
+	   			print_coefficients(&coeffs_per_node[(i-2)*num_pstates]);
+			    #endif
+	   			printf("%s is a valid coefficient file\n",argv[i]);
+	   			valid_nodes++;
 	   }else{
+		#if 0
 		printf("Default freq not valid %lu\n",coeffs_per_node[(i-2)*num_pstates].pstate_ref);
+	    #endif
 	   }
         }else{
 		printf("%s not a regular file, ignoring it\n",rfile_path);
@@ -232,7 +237,9 @@ int main(int argc, char *argv[])
 	if (compare_coefficients(coeffs_accum,&coeffs_per_node[i*num_pstates])==IS_DIFFERENT){
 		printf("Node %s is (at least) %lf different than average in some coefficient\n",argv[i+2],MAX_DIFF);
 		total_warning++;
+	    #if 0
 		print_coefficients(&coeffs_per_node[i*num_pstates]);
+		#endif
 	}
 	}
     }
