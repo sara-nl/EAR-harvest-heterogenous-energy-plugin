@@ -43,6 +43,7 @@ src/tools/coeffs_quality
 src/tools/get_projections
 src/tools/coefficients_comparison
 src/tools/coeffs_job
+src/tools/show_coefficients
 
 # Build
 etc/module/ear

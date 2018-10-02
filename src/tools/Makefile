@@ -19,7 +19,8 @@ BINARIES = compute_coefficients \
 		   get_active_nodes \
 		   ear_lp_validation \
 		   get_projections \
-		   coefficients_comparison
+		   coefficients_comparison \
+		  show_coefficients
 
 ######## RULES
 
@@ -62,6 +63,9 @@ coefficients_to_csv: coefficients_to_csv.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
 
 coefficients_comparison:coefficients_comparison.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
+show_coefficients:show_coefficients.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
 
 coefficients_v2_to_v3:coefficients_v2_to_v3.c $(COMMON_OBJS)
