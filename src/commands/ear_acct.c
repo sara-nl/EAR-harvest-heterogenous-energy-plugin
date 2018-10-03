@@ -230,7 +230,8 @@ void print_full_apps(application_t *apps, int num_apps)
     for (i = 0; i < num_apps; i++)
     {
         if (strlen(apps[i].job.app_id) > 30)
-            strcpy(apps[i].job.app_id, strrchr(apps[i].job.app_id, '/')+1);
+            if (strchr(apps[i-1].job.app_id, '/') != NULL)
+                strcpy(apps[i].job.app_id, strrchr(apps[i].job.app_id, '/')+1);
 
         time_t start = apps[i].job.start_time;
         char buff[25];
