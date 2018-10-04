@@ -35,6 +35,7 @@ OBJS = dynais/dynais.o \
        states/states_periodic.o \
        tracer/tracer.o \
        mpi_intercept/ear_api.o \
+       mpi_intercept/freq_synchro.o \
        mpi_intercept/process_MPI.o
 
 MPIC_OBJS = mpi_intercept/MPI_intercept.o \

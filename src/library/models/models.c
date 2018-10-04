@@ -152,7 +152,7 @@ void policy_global_reconfiguration()
 		}
 	}
     if (performance_gain<system_conf->th){
-        earl_verbose(0,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
+        earl_verbose(2,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
         performance_gain=system_conf->th;
     }
 	}

@@ -5,7 +5,8 @@ OBJS = ear_api.o \
        MPI_intercept.o \
        MPI_interface.o \
        MPI_interceptF.o \
-       MPI_interfaceF.o
+       MPI_interfaceF.o \
+       freq_synchro.o
 
 ######## RULES
 
