@@ -51,7 +51,7 @@
 static const char *__NAME__ = "min_time_to_solution:";
 static uint mt_policy_pstates;
 static uint mt_reset_freq=RESET_FREQ;
-extern coefficient_obs_t **coefficients;
+extern coefficient_t **coefficients;
 extern uint EAR_default_pstate;
 extern double performance_gain;
 

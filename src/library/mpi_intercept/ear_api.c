@@ -51,6 +51,7 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
+#include <library/mpi_intercept/freq_synchro.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
 #include <common/types/application.h>
@@ -139,8 +140,8 @@ int num_masters;
 int my_master_rank;
 int my_master_size;
 int masters_connected=0;
-int *local_f;
-int *remote_f;
+ulong *local_f;
+ulong *remote_f;
 unsigned masters_comm_created=0;
 #endif
 
@@ -161,12 +162,10 @@ void notify_eard_connection(int status)
 			return;
 	}
 	buffer_send[0] = (char)status; 
-	if (my_master_rank==0) earl_verbose(0,"Collecting masters size status\n");
 
 	/* Not clear the error values */
-	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, my_master_size, MPI_BYTE, masters_comm);
+	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_comm);
 
-	if (my_master_rank==0) earl_verbose(0,"Processing masters status");
 
 	for (i = 0; i < my_master_size; ++i)
 	{       
@@ -180,8 +179,8 @@ void notify_eard_connection(int status)
 		return;
 	}else{
 		/* if ok, we allocate buffers for frequency synchronization (if selected) */
-		local_f=(int*)calloc(1,sizeof(ulong));
-		remote_f=(int*)calloc(my_master_size,sizeof(ulong));
+		local_f=(ulong *)calloc(1,sizeof(ulong));
+		remote_f=(ulong *)calloc(my_master_size,sizeof(ulong));
 		if ((local_f==NULL) || (remote_f==NULL)){
 			earl_verbose(0,"Error, memory not available for synchronization\n");
 			masters_comm_created=0;
@@ -207,7 +206,7 @@ void attach_to_master_set(int master)
 	if ((masters_comm_created) && (!color)){
 		PMPI_Comm_rank(masters_comm,&my_master_rank);
 		PMPI_Comm_size(masters_comm,&my_master_size);
-		earl_verbose(0,"New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
+		earl_verbose(2,"New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
 	}
 	#endif
 }
@@ -412,11 +411,12 @@ void ear_init()
 
 	earl_verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
 	if (eards_connect(&application) == EAR_SUCCESS) {
-		earl_verbose(1, "Rank %d connected with EARD", ear_my_rank);
+		earl_verbose(2, "Rank %d connected with EARD", ear_my_rank);
 		notify_eard_connection(1);
 	}else{   
 		notify_eard_connection(0);
 	}
+	configure_global_synchronization();
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	metrics_init();

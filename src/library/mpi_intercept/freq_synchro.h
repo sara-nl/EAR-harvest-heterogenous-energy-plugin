@@ -37,6 +37,7 @@
 
 void global_frequency_selection(ulong my_local_f);
 ulong global_frequency_selection_synchro();
+void configure_global_synchronization();
 #endif
 
 #else

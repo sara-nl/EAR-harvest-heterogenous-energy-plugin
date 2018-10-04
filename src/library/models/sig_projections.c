@@ -44,7 +44,7 @@
 #include <common/types/projection.h>
 #include <common/types/coefficient.h>
 
-extern coefficient_obs_t **coefficients;
+extern coefficient_t **coefficients;
 
 double sig_power_projection(signature_t *my_app,ulong F,uint Fi)
 {
