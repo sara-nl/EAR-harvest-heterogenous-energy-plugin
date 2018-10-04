@@ -373,10 +373,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					PP = performance_projection(policy_freq);
 					loop_signature.signature.def_f=prev_f;
 
-					/* This function only sends selected frequency */
-					if (global_synchro){
-						global_frequency_selection_send(policy_freq);
+					#if COORDINATE_FREQUENCIES
+					global_f=global_frequency_selection(policy_freq);
+					if (policy_freq!=global_f){
+						ear_verbose(0,"Warning, local freq %lu and global decission is %lu\n",policy_freq,global_f);
 					}
+					#endif
 
 					if (policy_freq != prev_f)
 					{
@@ -424,12 +426,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			// I have executed N iterations more with a new frequency, we must check the signature
 			if (((iterations - 1) % perf_count_period) == 0)
 			{
-				if (global_synchro){
-					global_f=global_frequency_selection_synchro();
-					if ((global_f) && global_f!=policy_freq){
-						earl_verbose(0,"Warning, we are not running at same freq local %lu avg %lu",policy_freq,global_f);	
-					}
-				}
 				N_iter = iterations - begin_iter;
 				
 				// GET power consumption for this N iterations

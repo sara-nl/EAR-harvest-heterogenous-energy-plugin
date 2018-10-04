@@ -268,6 +268,11 @@ int dynconf_set_th(ulong th)
 	}else return EAR_ERROR;
 }
 
+/* This function will propagate the status command and will return the list of node failures */
+void dyncon_get_status(int fd)
+{
+}
+
 
 void process_remote_requests(int clientfd)
 {
@@ -318,11 +323,16 @@ void process_remote_requests(int clientfd)
 		case EAR_RC_PING:
 			eard_verbose(1,"ping received\n");
 			break;
+		case EAR_RC_STATUS:
+			eard_verbose(1,"Status received\n");
+			dyncon_get_status(clientfd);
+			return;
+			break;
 		default:
 			eard_verbose(0,"Invalid remote command\n");
 	}	
 	send_answer(clientfd,&ack);
-    if (command.node_dist > 0 && req == EAR_RC_PING)
+    if (command.node_dist > 0 && req != EAR_RC_PING)
     {
         eard_verbose(1, "ping propagated");
         propagate_req(&command, my_cluster_conf.eard.port);

@@ -114,6 +114,9 @@ int first_time_disabled=0;
 //
 static void print_local_data()
 {
+	#if !EAR_PERFORMANCE_TESTS
+	if (ear_my_rank==0) {
+	#endif
 	earl_verbose(1, "--------------------------------");
 	earl_verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	earl_verbose(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
@@ -125,25 +128,90 @@ static void print_local_data()
 	earl_verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
 	earl_verbose(1, "VAR path: %s", get_ear_tmp());
 	earl_verbose(1, "--------------------------------");
+	#if !EAR_PERFORMANCE_TESTS
+	}
+	#endif
 }
 
-/* This node belong to the master set */
 #if EAR_LIB_SYNC
-MPI_Comm masters_comm;
+MPI_Comm new_world_comm,masters_comm;
 int num_masters;
 int my_master_rank;
 int my_master_size;
-void attach_to_master_set()
-{
-	int color=0;
-	earl_verbose(0,"Creating new communicator for EAR synchronization\n");
-	PMPI_Comm_split(MPI_COMM_WORLD, color, ear_my_rank, &masters_comm);
-	PMPI_Comm_rank(masters_comm,&my_master_rank);
-	PMPI_Comm_size(masters_comm,&my_master_size);
-	earl_verbose(0,"New master communicator created with %d masters. Local master id %d\n",my_master_size,my_master_rank);
-}
+int masters_connected=0;
+int *local_f;
+int *remote_f;
+unsigned masters_comm_created=0;
 #endif
-//
+
+/* notifies mpi process has succesfully connected with EARD */
+void notify_eard_connection(int status)
+{
+	#if EAR_LIB_SYNC
+	char *buffer_send;
+	char *buffer_recv;
+	int i;
+	if (masters_comm_created){
+	buffer_send = calloc(    1, sizeof(char));
+	buffer_recv = calloc(my_master_size, sizeof(char));
+	if ((buffer_send==NULL) || (buffer_recv==NULL)){
+			earl_verbose(0,"Error, memory not available for synchronization\n");
+			my_id=1;
+			masters_comm_created=0;
+			return;
+	}
+	buffer_send[0] = (char)status; 
+	if (my_master_rank==0) earl_verbose(0,"Collecting masters size status\n");
+
+	/* Not clear the error values */
+	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, my_master_size, MPI_BYTE, masters_comm);
+
+	if (my_master_rank==0) earl_verbose(0,"Processing masters status");
+
+	for (i = 0; i < my_master_size; ++i)
+	{       
+		masters_connected+=(int)buffer_recv[i];
+	}
+	if (my_master_rank==0) earl_verbose(0,"Total number of masters connected %d",masters_connected);
+	if (masters_connected!=num_nodes){
+	/* Some of the nodes is not ok , setting off EARL */
+		if (my_master_rank==0) earl_verbose(0,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
+		my_id=1;
+		return;
+	}else{
+		/* if ok, we allocate buffers for frequency synchronization (if selected) */
+		local_f=(int*)calloc(1,sizeof(ulong));
+		remote_f=(int*)calloc(my_master_size,sizeof(ulong));
+		if ((local_f==NULL) || (remote_f==NULL)){
+			earl_verbose(0,"Error, memory not available for synchronization\n");
+			masters_comm_created=0;
+		}
+	}
+	}
+	#endif
+}
+/* Connects the mpi process to a new communicator composed by masters */
+void attach_to_master_set(int master)
+{
+	#if EAR_LIB_SYNC
+	int color;
+	int num_nodes;
+	my_master_rank=0;
+	if (master) color=0;
+	else color=MPI_UNDEFINED;
+	if (ear_my_rank==0) ear_verbose(0,"Creating masters communicator\n");
+	PMPI_Comm_dup(MPI_COMM_WORLD,&new_world_comm);
+	if (ear_my_rank==0) ear_verbose(0,"MPI_COMM_WORLD duplicated");
+	PMPI_Comm_split(new_world_comm, color, my_master_rank, &masters_comm);
+	masters_comm_created=1;
+	if ((masters_comm_created) && (!color)){
+		PMPI_Comm_rank(masters_comm,&my_master_rank);
+		PMPI_Comm_size(masters_comm,&my_master_size);
+		earl_verbose(0,"New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
+	}
+	#endif
+}
+/* returns the local id in the node */
 static int get_local_id(char *node_name)
 {
 	int master = 1;
@@ -295,14 +363,12 @@ void ear_init()
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
 
+	attach_to_master_set(my_id==0);
 
 	// if we are not the master, we return
 	if (my_id != 0) {
 		return;
 	}
-#if EAR_LIB_SYNC
-	attach_to_master_set();
-#endif
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
@@ -347,6 +413,9 @@ void ear_init()
 	earl_verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
 	if (eards_connect(&application) == EAR_SUCCESS) {
 		earl_verbose(1, "Rank %d connected with EARD", ear_my_rank);
+		notify_eard_connection(1);
+	}else{   
+		notify_eard_connection(0);
 	}
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
@@ -411,7 +480,7 @@ void ear_init()
 	init_end_time=PAPI_get_real_usec();
 	earl_verbose(1, "EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
 #else
-	earl_verbose(1, "EAR initialized successfully ");
+	if (ear_my_rank==0) earl_verbose(1, "EAR initialized successfully ");
 #endif
 }
 
