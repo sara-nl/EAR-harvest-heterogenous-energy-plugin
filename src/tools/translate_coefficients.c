@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     num_pstates = new_num_pstates* new_num_pstates;
     print_coefficients(new_coeffs);
 
-    fd=open(argv[2], O_WRONLY|O_CREAT);
+    fd=open(argv[2], O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     write(fd, new_coeffs, sizeof(coefficient_t)*num_pstates);
     free(reference_pstates);
     return 0;
