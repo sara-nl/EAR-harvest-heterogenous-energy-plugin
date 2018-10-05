@@ -218,9 +218,6 @@ void form_database_paths()
 *
 */
 
-void adapt_to_dyn_conf(policy_conf_t *p)
-{
-}
 void job_init_powermon_app(application_t *new_app,uint from_mpi)
 {
 	energy_data_t c_energy;
@@ -311,7 +308,6 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 				my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
 			}
 			copy_policy_conf(&per_job_conf,my_policy);
-			adapt_to_dyn_conf(&per_job_conf);
 			my_policy=&per_job_conf;
         	}else{
 			eard_verbose(0,"Invalid policy %s ",appID->job.policy);

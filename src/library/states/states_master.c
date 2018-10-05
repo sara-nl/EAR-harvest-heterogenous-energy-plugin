@@ -62,7 +62,6 @@ extern char *__HOST__ ;
 #define PROJECTION_ERROR		4
 #define RECOMPUTING_N			5
 #define SIGNATURE_HAS_CHANGED	6
-#define TEST_LOOP		7
 
 static application_t last_signature;
 static projection_t *PP;
@@ -130,7 +129,10 @@ int states_my_state()
 
 void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
-	EAR_STATE = TEST_LOOP;
+	ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %lu size %u_____BEGIN_____\n",
+					ear_app_name, event, size);
+
+	EAR_STATE = FIRST_ITERATION;
 	tries_current_loop=0;
 	tries_current_loop_same_freq=0;
 
@@ -250,37 +252,32 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 	switch (EAR_STATE)
 	{
-		/* This is a new state to minimize overhead, we just check the loop has , at least, some granularity */
-		case TEST_LOOP:
-			comp_N_end = metrics_time();
-			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
-			if (comp_N_time>perf_accuracy_min_time*0.1){
-				comp_N_begin=comp_N_end;
-				EAR_STATE=FIRST_ITERATION;
-			}
-			break;
 		case FIRST_ITERATION:
-			comp_N_end = metrics_time();
-			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
+			if (iterations == 1)
+			{
+				comp_N_end = metrics_time();
+				comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
-			if (comp_N_time == 0) comp_N_time = 1;
-			// We include a dynamic configurarion of EAR
-			if (comp_N_time < (long long) perf_accuracy_min_time) {
-				perf_count_period = (perf_accuracy_min_time / comp_N_time) + 1;
-			} else {
-				perf_count_period = 1;
-			}
-			loop_perf_count_period=perf_count_period;
+				if (comp_N_time == 0) comp_N_time = 1;
+				// We include a dynamic configurarion of EAR
+				if (comp_N_time < (long long) perf_accuracy_min_time) {
+					perf_count_period = (perf_accuracy_min_time / comp_N_time) + 1;
+				} else {
+					perf_count_period = 1;
+				}
+				loop_perf_count_period=perf_count_period;
 
-			// Once min iterations is computed for performance accuracy we start computing application signature
-			EAR_STATE = EVALUATING_SIGNATURE;
-			metrics_compute_signature_begin();
-			begin_iter = iterations;
+				// Once min iterations is computed for performance accuracy we start computing application signature
+				EAR_STATE = EVALUATING_SIGNATURE;
+				metrics_compute_signature_begin();
+				begin_iter = iterations;
+
 			
-			// Loop printing algorithm
-			loop.id.event = event;
-			loop.id.level = level;
-			loop.id.size = period;
+				// Loop printing algorithm
+				loop.id.event = event;
+				loop.id.level = level;
+				loop.id.size = period;
+			}
 			break;
 		case SIGNATURE_HAS_CHANGED:
 			comp_N_end = metrics_time();
