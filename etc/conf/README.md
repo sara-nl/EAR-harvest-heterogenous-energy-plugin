@@ -21,8 +21,6 @@ MariaDBPort=0
 #
 MariaDBPassw=
 #
-MariaDBHost=hostname
-#
 MariaDBDatabase=EAR_DB
 ```
 
@@ -76,6 +74,7 @@ NodeForceFrequencies=1
 ```
 
 4) EAR Database Manager Daemon (EARDBD)
+
 ```
 # In seconds, time of accumulating data in every aggregation
 DBDaemonAggregationTime=60

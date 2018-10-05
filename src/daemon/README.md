@@ -3,7 +3,7 @@ Energy Aware Runtime: (Node) Daemon
 The node daemon is the component in charge of providing any kind of services that requires privileged capabilities. Current version is conceived as an external process executed with root privileges.
 
 The EARD provides two basic services, each one covered by one thread:
-- Provides privileged metrics such as average frequency, uncore integrated memory controller counters to compute the memory bandwidth, and also energy metrics (DC node, DRAM and package energy).
+- Provides privileged metrics such as a verage frequency, uncore integrated memory controller counters to compute the memory bandwidth, and also energy metrics (DC node, DRAM and package energy).
 - Implements a periodic power monitoring service. This service allows EAR package to control the total energy consumed in the system.
 
 Requirements
@@ -34,12 +34,18 @@ Reconfiguration
 
 After executing a "systemctl reload eard" command, not all the EARD options are dynamically updated. The list of updated variables are:
 
-- NodeDaemonMaxPstate
-- NodeDaemonVerbose
-- Default policy and default policy settings
-- NodeDaemonPowermonFreq
+```
+DefaultPstates
+NodeDaemonMaxPstate
+NodeDaemonVerbose
+NodeDaemonPowermonFreq
+SupportedPolicies
+MinEfficiencyGain
+MaxPerformancePenalty
+MinTimePerformanceAccuracy
+```
 
-To reconfigure other detauils such as EARD port, coefficients, etc, EARD must be stopped and restarted again.
+To reconfigure other options such as EARD connection port, coefficients, etc, it must be stopped and restarted again.
 
 API
 ---
@@ -51,7 +57,6 @@ Three APIs are provided:
 - Local API, to be used by applications. It is a subset of the EARD api and designed to be used by any applications to contact the privileged metric service offered by EARD. This API is public and can be used without restrictinos, so doesn't include functions to change the frequency. It can be found at [TBD](.).
 
 - Remote API, to be used by the [EARGMD](../global_manager/README.md) or system commands and tools such as the `econtrol`. Can be found at [eard_rapi.h](eard_rapi.h) and is not public.
-
 
 Basic commands
 --------------

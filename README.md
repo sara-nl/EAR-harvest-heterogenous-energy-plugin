@@ -8,11 +8,11 @@ EAR also provides mechanism for those experts users that perfectly knows their a
 
 EAR library has been integrated in a full energy management system incluing a complete accounting mechanism, and a global energy manager. All the componets together provides three main services:
 
-1- A **simple and ligthweigth system** to automatically select the optimal CPU frequency according to the application, the node, and the power policy.  This  services is provided by two components: the EAR library (**EARL**) and the EAR daemon (**EARD**). EARL is a smart component which selects the CPU frequency for the running applications. EARD is provides basic services to the rest of components (not only EARL).
+1) A **simple and ligthweigth system** to automatically select the optimal CPU frequency according to the application, the node, and the power policy.  This  services is provided by two components: the EAR library (**EARL**) and the EAR daemon (**EARD**). EARL is a smart component which selects the CPU frequency for the running applications. EARD is provides basic services to the rest of components (not only EARL).
 
-2- A complete **energy accounting system** based on MySQL database. The energy accounting system is configurable in terms of application details and updates frequency.
+2) A complete **energy accounting system** based on MySQL database. The energy accounting system is configurable in terms of application details and updates frequency.
 
-3- A **global energy manager** which monitors and controls the energy consumed in the system. Energy control is configurable and dynamically adapts power policy settings based on global energy limits and application characteristics.
+3) A **global energy manager** which monitors and controls the energy consumed in the system. Energy control is configurable and dynamically adapts power policy settings based on global energy limits and application characteristics.
 
 All three components are configurable using a single, centralized, and simple text file called 'ear.conf'. This mechanism makes easy the cluster definition and configuration. This 'ear.conf' includes default values, pre-defined application configurations, etc. More details can be found in [configuration section](./etc/conf/README.md).
 
@@ -71,7 +71,8 @@ Customize installation
 | CPPFLAGS | C/C++ preprocessor flags, e.g. -I\<include dir\> if you have headers in a nonstandard directory \<include dir\>. |
 | TMP      | Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear) (you can alo use --localstatedir=DIR) |
 | ETC      | Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc) (you can also use --sharedstatedir=DIR)            |
-| MAN      | Defines the documentation directory (default: PREFIX/man) (you can use also --mandir=DIR)                    |
+| MAN      | Defines the manual directory (default: PREFIX/man) (you can use also --mandir=DIR)                         |
+| DOC      |  Defines the documentation directory (default: PREFIX/doc) (you can use also --docdir=DIR)                         |
 
 - This is an example of `CC`, `CFLAGS` and `DEBUG` variables overwriting: </br>
 `./configure CC=c99 CFLAGS=-g DEBUG=4`
@@ -92,9 +93,10 @@ This is the list of the inner installation folders and their content:
 | /bin         | \<*PREFIX*\> | Tools and benchmark kernels.         |
 | /bin/kernels | \<*PREFIX*\> | Benchmarks (or stress tests).        |
 | /sbin        | \<*PREFIX*\> | Privileged components.               |
-| /scripts     | \<*PREFIX*\>  | Scripts.                             |
-| /man         | \<*PREFIX*\>  | Documentation.                       |
+| /scripts     | \<*PREFIX*\> | Scripts.                            |
+| /man         | \<*PREFIX*\> | Documentation.                      |
 | /ear         | \<*ETC*\>    | Configuration file.                  |
+| /ear/coeffs  | \<*ETC*\>    | Coefficient files store.             |
 | /module      | \<*ETC*\>    | Environment module.                  |
 | /slurm       | \<*ETC*\>    | plugstack.conf.                      |
 | /systemd     | \<*ETC*\>    | Unit services.                       |
@@ -129,10 +131,8 @@ Finally, when using `systemctl` commands, you can check messages reported by the
 
 Configuration
 -------------
-1) Depending on your environment:
-    * In case you are going to use **EAR together with SLURM**, visit the [SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
-    * In case you are going to use **EAR with direct MPI calls**, visit the [scripts page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md) for more information about the scripts that simplify the launch.
-2) Pass the learning phase in all your computing nodes by visiting the [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/learning/README.md) to follow its guide.
+1) EAR works together with **SLURM**, so please, visit the [SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
+2) Pass the learning phase in all your computing nodes by visiting the [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/learning/README.md) and follow this guide.
 
 User guide
 ----------
