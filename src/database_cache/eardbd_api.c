@@ -179,6 +179,8 @@ state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	mirror_host = node->db_sec_ip;
 	server_port = conf->db_manager.tcp_port;
 	mirror_port = conf->db_manager.sec_tcp_port;
+
+	printf("sh mh sp mp %s %s %d %d\n", node->db_ip, node->db_sec_ip, conf->db_manager.tcp_port, conf->db_manager.sec_tcp_port);
 #else
 	server_port = 4711;
 	mirror_port = 4712;

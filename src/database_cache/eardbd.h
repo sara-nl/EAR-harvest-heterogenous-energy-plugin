@@ -41,7 +41,6 @@
 #include <common/types/periodic_aggregation.h>
 #include <common/types/configuration/cluster_conf.h>
 
-#define CONTENT_TYPE_PIN	0
 #define CONTENT_TYPE_PER	1
 #define CONTENT_TYPE_APP	2
 #define CONTENT_TYPE_LOO	3
@@ -49,6 +48,7 @@
 #define CONTENT_TYPE_AGG	5
 #define CONTENT_TYPE_QST	6
 #define CONTENT_TYPE_ANS	7
+#define CONTENT_TYPE_PIN	8
 #define SYNC_ENRGY 			0x001
 #define SYNC_APPSM 			0x002
 #define SYNC_APPSN			0x004
