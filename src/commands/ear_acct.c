@@ -306,12 +306,12 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     }
     else
     {
-        strcpy(header_format, "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
+        strcpy(header_format, "%s.%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
         strcpy(line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
         strcpy(mpi_line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf\n");
     }
     dprintf(fd, header_format,
-            "JOBID", "STEPID", "USERID", "APPLICATIONID", "POLICY", "NODES#", "FREQ(GHz)", "TIME(s)",
+            "JOB", "STEP", "USER", "APPLICATION", "POLICY", "NODES#", "FREQ(GHz)", "TIME(s)",
             "POWER(Watts)", "GBS", "CPI", "ENERGY(J)");
     for (i = 0; i < num_apps; i ++)
     {
