@@ -230,7 +230,8 @@ void print_full_apps(application_t *apps, int num_apps)
     for (i = 0; i < num_apps; i++)
     {
         if (strlen(apps[i].job.app_id) > 30)
-            strcpy(apps[i].job.app_id, strrchr(apps[i].job.app_id, '/')+1);
+            if (strchr(apps[i-1].job.app_id, '/') != NULL)
+                strcpy(apps[i].job.app_id, strrchr(apps[i].job.app_id, '/')+1);
 
         time_t start = apps[i].job.start_time;
         char buff[25];
@@ -248,7 +249,7 @@ void print_full_apps(application_t *apps, int num_apps)
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
             printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
-                avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NON-MPI", "NON-MPI", 
+                avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
                 apps[i].power_sig.time * apps[i].power_sig.DC_power, buff);
 
         }
@@ -276,7 +277,7 @@ void get_short_policy(char *buf, char *policy)
     }
 }
 
-void print_short_apps(application_t *apps, int num_apps)
+void print_short_apps(application_t *apps, int num_apps, int fd)
 {
     int current_job_id = -1;
     int current_step_id = -1;
@@ -292,10 +293,26 @@ void print_short_apps(application_t *apps, int num_apps)
     avg_CPI = 0;
     avg_GBS = 0;
     char curr_policy[3];
+    char missing_apps = -1;
+    char header_format[256];
+    char line_format[256];
+    char mpi_line_format[256];
 
-    printf("%-6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n",
-            "JOB ID", "STEP ID", "USER ID", "APPLICATION ID", "POLICY", "NODES #", "FREQ (GHz)", "TIME (s)",
-            "POWER (Watts)", "GBS", "CPI", "ENERGY (J)");
+    if (fd == STDOUT_FILENO)
+    {
+        strcpy(header_format, "%-6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n");
+        strcpy(line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n");
+        strcpy(mpi_line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n");
+    }
+    else
+    {
+        strcpy(header_format, "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
+        strcpy(line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
+        strcpy(mpi_line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf\n");
+    }
+    dprintf(fd, header_format,
+            "JOBID", "STEPID", "USERID", "APPLICATIONID", "POLICY", "NODES#", "FREQ(GHz)", "TIME(s)",
+            "POWER(Watts)", "GBS", "CPI", "ENERGY(J)");
     for (i = 0; i < num_apps; i ++)
     {
         if (apps[i].job.id == current_job_id && apps[i].job.step_id == current_step_id)
@@ -347,9 +364,11 @@ void print_short_apps(application_t *apps, int num_apps)
                 avg_CPI /= current_apps;
 
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
-                    printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n",
+                    dprintf(fd, line_format,
                         current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
                         avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+                else
+                    missing_apps++;
             }
             else
             {
@@ -357,10 +376,11 @@ void print_short_apps(application_t *apps, int num_apps)
                 avg_time /= current_apps;
                 avg_power /= current_apps;
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
-                    printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
+                    dprintf(fd, mpi_line_format,
                         current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                        avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
-
+                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
+                else
+                    missing_apps++;
             }
             if (apps[i].job.id != current_job_id || apps[i].job.step_id != current_step_id)
             {
@@ -382,7 +402,8 @@ void print_short_apps(application_t *apps, int num_apps)
     if (num_apps > 0)
     {
         if (strlen(apps[i-1].job.app_id) > 30)
-            strcpy(apps[i-1].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
+            if (strchr(apps[i-1].job.app_id, '/') != NULL)
+                strcpy(apps[i-1].job.app_id, strrchr(apps[i-1].job.app_id, '/')+1);
 
         if (apps[i-1].is_mpi)
         {
@@ -394,9 +415,11 @@ void print_short_apps(application_t *apps, int num_apps)
 
 
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
-                printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n",
+                dprintf(fd, line_format,
                     current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
                     avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+            else
+                missing_apps++;
         }
         else
         {
@@ -404,12 +427,17 @@ void print_short_apps(application_t *apps, int num_apps)
             avg_time /= current_apps;
             avg_power /= current_apps;
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
-                printf("%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n",
+                dprintf(fd, mpi_line_format,
                     current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                    avg_frequency, avg_time, avg_power, "NON-MPI", "NON-MPI", total_energy);
+                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
+            else
+                missing_apps++;
 
         }
     }
+    if (missing_apps > 0 && fd==STDOUT_FILENO)
+        printf("\nSome jobs are not being shown because either their avg. frequency, time or total energy were 0. To see those jobs run with -l option.\n");
+    printf("\n");
 }
 
 void add_string_filter(char *query, char *addition, char *value)
@@ -443,6 +471,7 @@ void add_int_filter(char *query, char *addition, int value)
     sprintf(query, query_tmp, value);
     query_filters ++;
 }
+
 
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
@@ -525,17 +554,28 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     avg_GBS = 0;
 
     int i = 0;    
+    if (limit == 20 && strlen(csv_path) < 1)
+        printf("\nBy default only the first 20 jobs are retrieved.\n\n");
+
     if (strlen(csv_path) < 1)
     {
     
         if (full_length) print_full_apps(apps, num_apps);
-        else print_short_apps(apps, num_apps);
+        else print_short_apps(apps, num_apps, STDOUT_FILENO);
     }
 
     else
     {
-        for (i = 0; i < num_apps; i++)
-            append_application_text_file(csv_path, &apps[i], 0);
+        if (full_length)
+            for (i = 0; i < num_apps; i++)
+                append_application_text_file(csv_path, &apps[i], 0);
+        else
+        {
+            int fd = open(csv_path, O_WRONLY | O_CREAT);
+            print_short_apps(apps, num_apps, fd);
+            close(fd);
+        }
+        printf("Successfully written applications to csv. Only applications with EARL will have its information properly written.\n");
     }
 
     free(apps);
@@ -550,7 +590,7 @@ void read_from_files(char *path, char *user, int job_id, int limit, int step_id)
     int num_apps = read_application_text_file(path, &apps, 0);
     int i = 0;
     if (full_length) print_full_apps(apps, num_apps);
-    else print_short_apps(apps, num_apps);
+    else print_short_apps(apps, num_apps, STDOUT_FILENO);
 }
 
 void main(int argc, char *argv[])

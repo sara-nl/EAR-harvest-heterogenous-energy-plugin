@@ -77,6 +77,7 @@ typedef struct request{
 #define EAR_RC_DEF_FREQ		105
 #define EAR_RC_REST_CONF	106
 #define EAR_RC_PING		500
+#define EAR_RC_STATUS		600
 #define NO_COMMAND 100000
 
 

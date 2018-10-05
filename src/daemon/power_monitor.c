@@ -217,6 +217,10 @@ void form_database_paths()
 *	BASIC FUNCTIONS 
 *
 */
+
+void adapt_to_dyn_conf(policy_conf_t *p)
+{
+}
 void job_init_powermon_app(application_t *new_app,uint from_mpi)
 {
 	energy_data_t c_energy;
@@ -289,7 +293,7 @@ void report_powermon_app(powermon_app_t *app)
 	}
 	#endif
 }
-
+policy_conf_t per_job_conf;
 policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,application_t * appID)
 {
 	policy_conf_t * my_policy;
@@ -298,17 +302,20 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
-        p_id=policy_name_to_id(appID->job.policy);
-        /* Use cluster conf function */
-        if (p_id!=EAR_ERROR){
-            my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
-			if (!my_policy->is_available){
+        	p_id=policy_name_to_id(appID->job.policy);
+        	/* Use cluster conf function */
+        	if (p_id!=EAR_ERROR){
+            	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
+		if (!my_policy->is_available){
 				eard_verbose(0,"User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
 				my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
 			}
-        }else{
+			copy_policy_conf(&per_job_conf,my_policy);
+			adapt_to_dyn_conf(&per_job_conf);
+			my_policy=&per_job_conf;
+        	}else{
 			eard_verbose(0,"Invalid policy %s ",appID->job.policy);
-            my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+            		my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
 			if (my_policy==NULL){
 				eard_verbose(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 				authorized_context.p_state=1;
@@ -318,11 +325,11 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 				copy_policy_conf(&authorized_context,my_policy);
 			}
 			my_policy=&authorized_context;
-        }
-        if (my_policy==NULL){
-            eard_verbose(0,"Default policy configuration returns NULL,invalid policy, check ear.conf");
-            my_policy=&default_policy_context;
-        }
+        	}
+        	if (my_policy==NULL){
+        	    eard_verbose(0,"Default policy configuration returns NULL,invalid policy, check ear.conf");
+       	     	    my_policy=&default_policy_context;
+        	}
 		break;
 
 	case AUTHORIZED:
@@ -451,6 +458,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
 	if (user_type==AUTHORIZED) dyn_conf->learning=appID->is_learning;
+	else dyn_conf->learning=0;
 	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);
 	dyn_conf->policy=my_policy->policy;
 	dyn_conf->def_freq=f;

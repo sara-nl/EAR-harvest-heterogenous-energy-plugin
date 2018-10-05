@@ -220,8 +220,8 @@ static int metrics_partial_stop(uint where)
 	// Manual IPMI accumulation
 	eards_node_dc_energy(&aux_energy);
 	if ((where==SIG_END) && (aux_energy==metrics_ipmi[LOO])){ 
-	#if EAR_PERFORMANCE_TESTS
-		earl_verbose(1,"EAR_NOT_READY because of energy \n");
+	#if 0
+		earl_verbose(1,"EAR_NOT_READY because of energy %u\n",aux_energy);
 	#endif
 		return EAR_NOT_READY;
 	}
@@ -232,9 +232,9 @@ static int metrics_partial_stop(uint where)
 	/* energy is computed in mJ and time in usecs */
 	c_power=(float)(c_energy*1000.0)/(float)c_time;
 
-	if (c_power<MIN_SIG_POWER){ 
-	#if EAR_PERFORMANCE_TESTS
-		earl_verbose(1,"EAR_NOT_READY because of power \n");
+	if ((where==SIG_END) && (c_power<MIN_SIG_POWER)){ 
+	#if 0
+		earl_verbose(1,"EAR_NOT_READY because of power %f\n",c_power);
 	#endif
 		return EAR_NOT_READY;
 	}
@@ -464,10 +464,11 @@ int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulon
 	aux_time = metrics_usecs_diff(metrics_time(), metrics_usecs[LOO]);
 
 	//
-	if (aux_time < min_time_us) {
-        #if EAR_PERFORMANCE_TESTS
-                earl_verbose(1,"EAR_NOT_READY because of time\n");
+	if (!equal_with_th((double)aux_time, (double)min_time_us,0.1)) {
+        #if 0
+                earl_verbose(1,"EAR_NOT_READY because of time %llu\n",aux_time);
         #endif
+		metrics->time=0;
 
 		return EAR_NOT_READY;
 	}

@@ -84,15 +84,6 @@ static int current_loop_id;
 extern uint check_periodic_mode;
 #endif
 
-/** This funcion must be policy dependent */
-ulong select_near_freq(ulong avg)
-{
-	ulong near;
-	ulong norm;
-	norm=avg/100000;
-	near=norm*100000;
-	return near;
-}
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
@@ -227,8 +218,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
 	unsigned long prev_f;
 	int result;
-	ulong global_f=0;
-	int pok;
+	ulong global_f;
 
 	prev_f = ear_frequency;
 
@@ -255,6 +245,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		case FIRST_ITERATION:
 			if (iterations == 1)
 			{
+				ear_verbose(3, "EAR(%s): FIRST_ITERATION state LoopID %u LoopSize %u\n",
+							ear_app_name, event, period);
 				comp_N_end = metrics_time();
 				comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
@@ -266,12 +258,16 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					perf_count_period = 1;
 				}
 				loop_perf_count_period=perf_count_period;
+				ear_verbose(3,
+							"\nEAR(%s) at %u, %d iterations are considered to compute app signature...start computing\n",
+							ear_app_name, prev_f, perf_count_period);
 
 				// Once min iterations is computed for performance accuracy we start computing application signature
 				EAR_STATE = EVALUATING_SIGNATURE;
 				metrics_compute_signature_begin();
 				begin_iter = iterations;
 
+				ear_debug(3, "EAR(%s) FIRST_ITERATION -> EVALUATING_SIGNATURE\n", ear_app_name);
 			
 				// Loop printing algorithm
 				loop.id.event = event;
@@ -280,18 +276,28 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			break;
 		case SIGNATURE_HAS_CHANGED:
+			ear_debug(3, "EAR(%s): SIGNATURE_HAS_CHANGED state LoopID %u LoopSize %u iterations %d\n",
+					  ear_app_name, event, period, iterations);
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
+			// We include a dynamic configurarion of DPD behaviour
 			if (comp_N_time < (long long) perf_accuracy_min_time) {
 				perf_count_period = (perf_accuracy_min_time / comp_N_time) + 1;
 			} else {
 				perf_count_period = 1;
 			}                                        
 			loop_perf_count_period=perf_count_period;
+
+			ear_verbose(3,
+						"EAR(%s) at %u ::(SIGNATURE_HAS_CHANGED)Recomputing N because signature has changed, N set to %d\n",
+						ear_app_name, prev_f, perf_count_period);
 			EAR_STATE = EVALUATING_SIGNATURE;
+			ear_debug(3, "EAR(%s) SIGNATURE_HAS_CHANGED -> EVALUATING_SIGNATURE\n", ear_app_name);
 			break;
 		case RECOMPUTING_N:
+			ear_debug(3, "EAR(%s): RECOMPUTING_N state LoopID %u LoopSize %u iterations %d\n",
+					  ear_app_name, event, period, iterations);
 
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
@@ -305,168 +311,212 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period = 1;
 			}
 			loop_perf_count_period=perf_count_period;
+
+			ear_verbose(3, "EAR(%s) at %u ::(RECOMPUTING_N)Recomputing N because F has changed, N set to %d\n",
+						ear_app_name, prev_f, perf_count_period);
 			EAR_STATE = SIGNATURE_STABLE;
+			ear_debug(3, "EAR(%s) RECOMPUTING_N -> SIGNATURE_STABLE\n", ear_app_name);
 			break;
 		case EVALUATING_SIGNATURE:
+			ear_debug(3, "EAR(%s): EVALUATING_SIGNATURE state LoopID %u LoopSize %u iterations %d\n",
+					  ear_app_name, event, period, iterations);
 
-			if (((iterations - 1) % perf_count_period) || (iterations == 1)) return;
-			N_iter = iterations - begin_iter;
-			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);	
-			if (result == EAR_NOT_READY)
+			if ((((iterations - 1) % perf_count_period) == 0) && (iterations > 1))
 			{
-				perf_count_period++;
-				return;
-			}
-			//print_loop_signature("signature computed", &loop_signature.signature);
+				N_iter = iterations - begin_iter;
 
-			loop_with_signature = 1;
-			#if EAR_OVERHEAD_CONTROL
-			check_periodic_mode=0;
-			#if EAR_PERFORMANCE_TESTS
-			earl_verbose(1,"Switching check periodic mode to %d\n",check_periodic_mode);
-			#endif
-			#endif
+				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
+						  __FILE__, period, N_iter);
 
-			// Computing dynais overhead
-			// Change dynais_enabled to ear_tracing_status=DYNAIS_ON/DYNAIS_OFF
-			if (dynais_enabled==DYNAIS_ENABLED){
-				check_dynais_off(mpi_calls_iter,period,level,event);
-			}
-			current_loop_id = event;
-			CPI = loop_signature.signature.CPI;
-			GBS = loop_signature.signature.GBS;
-			POWER = loop_signature.signature.DC_power;
-			TPI = loop_signature.signature.TPI;
-			TIME = loop_signature.signature.time;
-			ENERGY = TIME * POWER;
-			EDP = ENERGY * TIME;
-			begin_iter = iterations;
-			policy_freq = policy_power(0, &loop_signature.signature);
-			PP = performance_projection(policy_freq);
-			loop_signature.signature.def_f=prev_f;
+				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);	
 
-			/* This function only sends selected frequency */
-			if (global_synchro){
-				global_frequency_selection_send(policy_freq);
-			}
+				if (result == EAR_NOT_READY)
+				{
+					#if 0
+					comp_N_begin = metrics_time();
+					EAR_STATE = SIGNATURE_HAS_CHANGED;
+					ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE -> SIGNATURE_HAS_CHANGED\n",
+							  ear_app_name);
+					#endif
+					perf_count_period++;
+				}
+				else
+				{
+					//print_loop_signature("signature computed", &loop_signature.signature);
 
-			if (policy_freq != prev_f)
-			{
-				comp_N_begin = metrics_time();
-				EAR_STATE = RECOMPUTING_N;
-				memcpy(&last_signature, &loop_signature, sizeof(application_t));
-				log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
-				tries_current_loop++;
-			}
-			else
-			{
-				if (tries_current_loop_same_freq>=MAX_POLICY_TRIES){
-					EAR_STATE = SIGNATURE_STABLE;
-				}else tries_current_loop_same_freq++;
-			}
-			copy_signature(&loop.signature, &loop_signature.signature);
-			/* VERBOSE */
-			earl_verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
-			earl_verbose(1,"\tAppSig-POL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)(New Freq %u in %s)\n",
-			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
+					loop_with_signature = 1;
+					#if EAR_OVERHEAD_CONTROL
+					check_periodic_mode=0;
+					#if EAR_PERFORMANCE_TESTS
+					earl_verbose(1,"Switching check periodic mode to %d\n",check_periodic_mode);
+					#endif
+					#endif
 
-			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
-			traces_frequency(ear_my_rank, my_id, policy_freq);
-			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
-			report_loop_signature(iterations,&loop,&loop_signature.job);
-			/* END VERBOSE */
+					// Computing dynais overhead
+					// Change dynais_enabled to ear_tracing_status=DYNAIS_ON/DYNAIS_OFF
+					if (dynais_enabled==DYNAIS_ENABLED){
+						check_dynais_off(mpi_calls_iter,period,level,event);
+
+					}
+					current_loop_id = event;
+
+					CPI = loop_signature.signature.CPI;
+					GBS = loop_signature.signature.GBS;
+					POWER = loop_signature.signature.DC_power;
+					TPI = loop_signature.signature.TPI;
+					TIME = loop_signature.signature.time;
+
+					ENERGY = TIME * POWER;
+					EDP = ENERGY * TIME;
+					begin_iter = iterations;
+					policy_freq = policy_power(0, &loop_signature.signature);
+					PP = performance_projection(policy_freq);
+					loop_signature.signature.def_f=prev_f;
+
+					#if COORDINATE_FREQUENCIES
+					global_f=global_frequency_selection(policy_freq);
+					if (policy_freq!=global_f){
+						ear_verbose(0,"Warning, local freq %lu and global decission is %lu\n",policy_freq,global_f);
+					}
+					#endif
+
+					if (policy_freq != prev_f)
+					{
+						comp_N_begin = metrics_time();
+						EAR_STATE = RECOMPUTING_N;
+
+						ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> RECOMPUTING_N \n", ear_app_name);
+
+						memcpy(&last_signature, &loop_signature, sizeof(application_t));
+						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+						tries_current_loop++;
+						ear_verbose(1,
+							"\n\nEAR(%s @ %s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppSig-POL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u in %s\n",
+									ear_app_name, application.node_id,prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
+									policy_freq,application.node_id);
+					}
+					else
+					{
+						if (tries_current_loop_same_freq>=MAX_POLICY_TRIES){
+							EAR_STATE = SIGNATURE_STABLE;
+							ear_debug(3, "EAR(%s) EVALUATING_SIGNATURE --> SIGNATURE_STABLE \n",
+								  ear_app_name);
+						}else tries_current_loop_same_freq++;
+						ear_verbose(1,
+							"\n\nEAR(%s @ %s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t AppSig-POL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
+									ear_app_name, application.node_id,prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
+									ENERGY, EDP);
+					}
+
+					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
+					traces_frequency(ear_my_rank, my_id, policy_freq);
+					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
+
+
+					// Loop printing algorithm
+					copy_signature(&loop.signature, &loop_signature.signature);
+					report_loop_signature(iterations,&loop,&loop_signature.job);
+				}
+			}
 			break;
 		case SIGNATURE_STABLE:
+			ear_debug(3, "EAR(%s): SIGNATURE_STABLE state LoopID=%u, LoopSize=%u,iterations=%d\n",
+					  ear_app_name, event, period, iterations);
 
 			// I have executed N iterations more with a new frequency, we must check the signature
-			if (((iterations - 1) % perf_count_period) ) return;
-			/* We can compute the signature */
-			N_iter = iterations - begin_iter;
-			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);
-			if (result == EAR_NOT_READY)
+			if (((iterations - 1) % perf_count_period) == 0)
 			{
-				perf_count_period++;
-				return;
-			}
-			//print_loop_signature("signature refreshed", &loop_signature.signature);
+				N_iter = iterations - begin_iter;
+				
+				// GET power consumption for this N iterations
+				ear_debug(4,"EAR(%s): getting metrics for period %d and iteration %d\n",
+						  __FILE__, period, N_iter);
 
-			CPI = loop_signature.signature.CPI;
-			GBS = loop_signature.signature.GBS;
-			POWER = loop_signature.signature.DC_power;
-			TPI = loop_signature.signature.TPI;
-			TIME = loop_signature.signature.time;
-			loop_signature.signature.def_f=prev_f;
+				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);
 
-			ENERGY = TIME * POWER;
-			EDP = ENERGY * TIME;
+				if (result == EAR_NOT_READY)
+				{
+					#if 0
+					comp_N_begin = metrics_time();
+					EAR_STATE = SIGNATURE_HAS_CHANGED;
+					ear_verbose(3, "EAR(%s) SIGNATURE_STABLE(NULL) --> SIGNATURE_HAS_CHANGED \n", __FILE__);
+					#endif
+					perf_count_period++;
+				}
+				else
+				{
+					//print_loop_signature("signature refreshed", &loop_signature.signature);
 
-			copy_signature(&loop.signature, &loop_signature.signature);
-			report_loop_signature(iterations,&loop,&loop_signature.job);
-			/* VERBOSE */
-			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
-			traces_frequency(ear_my_rank, my_id, policy_freq);
-			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
-			earl_verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
-			earl_verbose(1,"\tAppSig-VAL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)(New Freq %u in %s)\n",
-			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
-			/* END VERBOSE */
+					CPI = loop_signature.signature.CPI;
+					GBS = loop_signature.signature.GBS;
+					POWER = loop_signature.signature.DC_power;
+					TPI = loop_signature.signature.TPI;
+					TIME = loop_signature.signature.time;
+					loop_signature.signature.def_f=prev_f;
 
-			begin_iter = iterations;
-			// We compare the projection with the signature and the old signature
-			PP = performance_projection(policy_freq);
-			/* If global synchronizations are on, we get frequencies for the rest of the app */
-			if (global_synchro){
-				global_f=global_frequency_selection_synchro();
-			}
-			/* We must evaluate policy decissions */
-			pok=policy_ok(PP, &loop_signature.signature, &last_signature.signature);
-			if (pok)
-			{
-				perf_count_period = perf_count_period * 2;
-				tries_current_loop=0;
-				earl_verbose(1,"Policy ok");
-			}else{
-				earl_verbose(1,"Policy NOT ok");
-			}
-			earl_verbose(1,"EAR(%s): CurrentSig (Time %lf Power %lf Energy %lf) LastSig (Time %lf Power %lf Energy %lf) \n",
-			ear_app_name, TIME, POWER, ENERGY, last_signature.signature.time,last_signature.signature.DC_power,
-			(last_signature.signature.time*last_signature.signature.DC_power));
-			if (pok) return;
-			/* If policy is not ok and we are not running with the same freq, we can check again */
-			if (global_synchro){		
-				earl_verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
-				if ((global_f) && (global_f!=policy_freq)){
-					policy_freq=select_near_freq(global_f);
-					force_global_frequency(policy_freq);
-					earl_verbose(0,"trying with same frequency %lu",policy_freq);
-					tries_current_loop++;
-					return;
+					ENERGY = TIME * POWER;
+					EDP = ENERGY * TIME;
+
+					copy_signature(&loop.signature, &loop_signature.signature);
+					report_loop_signature(iterations,&loop,&loop_signature.job);
+
+					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
+					traces_frequency(ear_my_rank, my_id, policy_freq);
+					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
+					earl_verbose(1,
+					"\n\nEAR(%s @ %s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t AppSig-VAL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
+					ear_app_name, application.node_id, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
+					ENERGY, EDP);
+
+					begin_iter = iterations;
+					// We compare the projection with the signature and the old signature
+					PP = performance_projection(policy_freq);
+
+					if (policy_ok(PP, &loop_signature.signature, &last_signature.signature))
+					{
+						perf_count_period = perf_count_period * 2;
+						earl_verbose(1,
+						"\n\nEAR(%s @ %s): Policy ok CurrentSig (Time %lf Power %lf Energy %lf) LastSig (Time %lf Power %lf Energy %lf) \n",
+						ear_app_name, application.node_id,TIME, POWER, ENERGY, last_signature.signature.time,last_signature.signature.DC_power,
+						(last_signature.signature.time*last_signature.signature.DC_power));
+						tries_current_loop=0;
+					}
+					else
+					{
+						earl_verbose(1,
+						"\n\nEAR(%s @ %s): Policy not ok CurrentSig (Time %lf Power %lf Energy %lf) LastSig (Time %lf Power %lf Energy %lf) \n",
+						ear_app_name, application.node_id,TIME, POWER, ENERGY, last_signature.signature.time,last_signature.signature.DC_power,
+						(last_signature.signature.time*last_signature.signature.DC_power));
+						if (tries_current_loop==MAX_POLICY_TRIES){
+							/* We must report a problem and go to the default configuration*/
+							log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
+							EAR_STATE = PROJECTION_ERROR;
+							policy_default_configuration();
+						}else{
+						/** We are not going better **/
+
+						/* If signature is different, we consider as a new loop case */
+						if (!policy_had_effect(&loop_signature.signature, &last_signature.signature))
+						{
+							EAR_STATE = SIGNATURE_HAS_CHANGED;
+							ear_verbose(3, "EAR(%s) SIGNATURE_STABLE --> SIGNATURE_HAS_CHANGED \n",
+										ear_app_name);
+							comp_N_begin = metrics_time();
+
+							policy_new_loop();
+                            #if DYNAIS_CUTOFF
+							 check_dynais_on(&loop_signature.signature, &last_signature.signature);
+                            #endif
+						} else {
+							EAR_STATE = EVALUATING_SIGNATURE;
+						}
+						}// tries_current_loop<MAX_POLICY_TRIES
+				    } 
 				}
 			}
-			/* We must report a problem and go to the default configuration*/
-			if (tries_current_loop>=MAX_POLICY_TRIES){
-				log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
-				EAR_STATE = PROJECTION_ERROR;
-				policy_default_configuration();
-				return;
-			}
-			/** We are not going better **/
-			/* If signature is different, we consider as a new loop case */
-			if (!policy_had_effect(&loop_signature.signature, &last_signature.signature))
-			{
-				EAR_STATE = SIGNATURE_HAS_CHANGED;
-				comp_N_begin = metrics_time();
-				policy_new_loop();
-                        	#if DYNAIS_CUTOFF
-				check_dynais_on(&loop_signature.signature, &last_signature.signature);
-                        	#endif
-				} else {
-					EAR_STATE = EVALUATING_SIGNATURE;
-				}
 			break;
 		case PROJECTION_ERROR:
-			/* We run here at default freq */
-			break;
+				break;
 		default: break;
 	}
 }

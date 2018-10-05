@@ -71,8 +71,8 @@ double performance_penalty ;
 double performance_gain ;
 
 // Normals
-coefficient_obs_t **coefficients;
-coefficient_t *coefficients_v3;
+coefficient_t **coefficients;
+coefficient_t *coefficients_sm;
 int num_coeffs;
 static uint reset_freq_opt = RESET_FREQ;
 static uint ear_models_pstates = 0;
@@ -152,7 +152,7 @@ void policy_global_reconfiguration()
 		}
 	}
     if (performance_gain<system_conf->th){
-        earl_verbose(0,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
+        earl_verbose(2,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
         performance_gain=system_conf->th;
     }
 	}
@@ -235,9 +235,9 @@ void init_power_policy()
 	init_policy_functions();
 }
 
-void init_coeff_data(coefficient_obs_t *cv2,coefficient_t *cv3)
+void init_coeff_data(coefficient_t *c_m,coefficient_t *c_sm)
 {
-	memcpy(cv2,&(cv3->pstate),sizeof(coefficient_obs_t));
+	memcpy(c_m,c_sm,sizeof(coefficient_t));
 }
 
 
@@ -270,7 +270,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 
 	// Coefficient pointers allocation
-	coefficients = (coefficient_obs_t **) malloc(sizeof(coefficient_obs_t *) * p_states);
+	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * p_states);
 
 	if (coefficients == NULL) {
 		ear_verbose(0, "EAR: Error allocating memory for p_states coefficients\n");
@@ -279,7 +279,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 	for (i = 0; i < p_states; i++)
 	{
-		coefficients[i] = (coefficient_obs_t *) malloc(sizeof(coefficient_obs_t) * p_states);
+		coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * p_states);
 		if (coefficients[i] == NULL) {
 			ear_verbose(0,"EAR: Error allocating memory for p_states coefficients fn %d\n",i);
 			exit(1);
@@ -287,6 +287,8 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 		for (ref = 0; ref < p_states; ref++)
 		{
+			
+			coefficients[i][ref].pstate_ref = p_states_list[i];
 			coefficients[i][ref].pstate = p_states_list[ref];
 			coefficients[i][ref].available = 0;
 		}
@@ -302,57 +304,19 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	if (ear_use_turbo) begin_pstate = 0;
 	end_pstate = p_states;
 
-	#if !COEFFS_V3
-	for (ref = begin_pstate; ref < end_pstate; ref++)
-	{
-		sprintf(coeff_file_fn, "%s.%d", coeff_file, p_states_list[ref]);
-
-		ear_verbose(2, "EAR: Opening (per node) coefficient file %s\n", coeff_file_fn);
-
-		size = sizeof(coefficient_obs_t) * p_states;
-		state = coeff_file_read_obs(coeff_file_fn, &coefficients[ref], size);
-
-		if (state == EAR_FILE_NOT_FOUND)
-		{
-			sprintf(coeff_file_fn, "%s.%d", coeff_default_file, p_states_list[ref]);
-			ear_verbose(2, "EAR: Opening (default) coefficient file %s\n", coeff_file_fn);
-
-			state = coeff_file_read_obs(coeff_file_fn, &coefficients[ref], size);
-		}
-
-		// If default coefficient file not found
-		if (state == EAR_FILE_NOT_FOUND) {
-			ear_verbose(2, "EAR: Coefficients are not available per node %s and freq %u\n",
-						nodename, p_states_list[ref]);
-		}
-
-		// If other king of error during the reading
-		if (state == EAR_ALLOC_ERROR || state == EAR_READ_ERROR) {
-			ear_verbose(0, "EAR: Error while reading coefficients for %s (%s) (%d)\n",
-						coeff_file_fn, strerror(errno), state);
-			exit(1);
-		}
-	}
-	#else
 	char coeffs_path[GENERIC_NAME];
 	get_coeffs_path(get_ear_tmp(),coeffs_path);	
 	num_coeffs=0;
-	coefficients_v3=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
+	coefficients_sm=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
 	if (num_coeffs>0){
 		num_coeffs=num_coeffs/sizeof(coefficient_t);
-		#if 0
-		for (i=0;i<num_coeffs;i++){
-			coeff_print_obs(&coefficients_v3[i]);
-		}
-		#endif
 		int ccoeff;
 		for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
-			ref=frequency_freq_to_pstate(coefficients_v3[ccoeff].pstate_ref);	
-			i=frequency_freq_to_pstate(coefficients_v3[ccoeff].pstate);
-			init_coeff_data(&coefficients[ref][i],&coefficients_v3[ccoeff]);
+			ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);	
+			i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
+			init_coeff_data(&coefficients[ref][i],&coefficients_sm[ccoeff]);
 		}
 	}
-	#endif
 	app_policy.init(p_states);
 }
 
@@ -392,6 +356,12 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE)
 
 }
 
+void force_global_frequency(ulong new_f)
+{
+	ear_frequency=new_f;
+	eards_change_freq(ear_frequency);
+}
+
 void policy_new_loop()
 {
 	app_policy.new_loop();
@@ -405,6 +375,6 @@ void policy_end_loop()
 void policy_default_configuration()
 {
 	ear_frequency=app_policy.default_conf(user_selected_freq);
-	ear_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
+	earl_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
 	eards_change_freq(ear_frequency);
 }

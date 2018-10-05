@@ -51,6 +51,7 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
+#include <library/mpi_intercept/freq_synchro.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
 #include <common/types/application.h>
@@ -87,7 +88,7 @@ static int ppnode;
 
 // Loop information
 static uint mpi_calls_per_loop;
-static uint ear_iterations;
+static uint ear_iterations=0;
 static uint ear_loop_size;
 static int in_loop;
 
@@ -95,7 +96,7 @@ static int in_loop;
 /* in us */
 // These variables are shared
 uint ear_periodic_mode=PERIODIC_MODE_OFF;
-uint mpi_calls_in_period=0;
+uint mpi_calls_in_period=10000;
 uint total_mpi_calls=0;
 static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
 static uint lib_period=PERIOD;
@@ -114,6 +115,9 @@ int first_time_disabled=0;
 //
 static void print_local_data()
 {
+	#if !EAR_PERFORMANCE_TESTS
+	if (ear_my_rank==0) {
+	#endif
 	earl_verbose(1, "--------------------------------");
 	earl_verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	earl_verbose(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
@@ -125,25 +129,88 @@ static void print_local_data()
 	earl_verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
 	earl_verbose(1, "VAR path: %s", get_ear_tmp());
 	earl_verbose(1, "--------------------------------");
+	#if !EAR_PERFORMANCE_TESTS
+	}
+	#endif
 }
 
-/* This node belong to the master set */
 #if EAR_LIB_SYNC
-MPI_Comm masters_comm;
+MPI_Comm new_world_comm,masters_comm;
 int num_masters;
 int my_master_rank;
 int my_master_size;
-void attach_to_master_set()
-{
-	int color=0;
-	earl_verbose(0,"Creating new communicator for EAR synchronization\n");
-	PMPI_Comm_split(MPI_COMM_WORLD, color, ear_my_rank, &masters_comm);
-	PMPI_Comm_rank(masters_comm,&my_master_rank);
-	PMPI_Comm_size(masters_comm,&my_master_size);
-	earl_verbose(0,"New master communicator created with %d masters. Local master id %d\n",my_master_size,my_master_rank);
-}
+int masters_connected=0;
+ulong *local_f;
+ulong *remote_f;
+unsigned masters_comm_created=0;
 #endif
-//
+
+/* notifies mpi process has succesfully connected with EARD */
+void notify_eard_connection(int status)
+{
+	#if EAR_LIB_SYNC
+	char *buffer_send;
+	char *buffer_recv;
+	int i;
+	if (masters_comm_created){
+	buffer_send = calloc(    1, sizeof(char));
+	buffer_recv = calloc(my_master_size, sizeof(char));
+	if ((buffer_send==NULL) || (buffer_recv==NULL)){
+			earl_verbose(0,"Error, memory not available for synchronization\n");
+			my_id=1;
+			masters_comm_created=0;
+			return;
+	}
+	buffer_send[0] = (char)status; 
+
+	/* Not clear the error values */
+	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_comm);
+
+
+	for (i = 0; i < my_master_size; ++i)
+	{       
+		masters_connected+=(int)buffer_recv[i];
+	}
+	if (my_master_rank==0) earl_verbose(0,"Total number of masters connected %d",masters_connected);
+	if (masters_connected!=num_nodes){
+	/* Some of the nodes is not ok , setting off EARL */
+		if (my_master_rank==0) earl_verbose(0,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
+		my_id=1;
+		return;
+	}else{
+		/* if ok, we allocate buffers for frequency synchronization (if selected) */
+		local_f=(ulong *)calloc(1,sizeof(ulong));
+		remote_f=(ulong *)calloc(my_master_size,sizeof(ulong));
+		if ((local_f==NULL) || (remote_f==NULL)){
+			earl_verbose(0,"Error, memory not available for synchronization\n");
+			masters_comm_created=0;
+		}
+	}
+	}
+	#endif
+}
+/* Connects the mpi process to a new communicator composed by masters */
+void attach_to_master_set(int master)
+{
+	#if EAR_LIB_SYNC
+	int color;
+	int num_nodes;
+	my_master_rank=0;
+	if (master) color=0;
+	else color=MPI_UNDEFINED;
+	if (ear_my_rank==0) ear_verbose(0,"Creating masters communicator\n");
+	PMPI_Comm_dup(MPI_COMM_WORLD,&new_world_comm);
+	if (ear_my_rank==0) ear_verbose(0,"MPI_COMM_WORLD duplicated");
+	PMPI_Comm_split(new_world_comm, color, my_master_rank, &masters_comm);
+	masters_comm_created=1;
+	if ((masters_comm_created) && (!color)){
+		PMPI_Comm_rank(masters_comm,&my_master_rank);
+		PMPI_Comm_size(masters_comm,&my_master_size);
+		earl_verbose(2,"New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
+	}
+	#endif
+}
+/* returns the local id in the node */
 static int get_local_id(char *node_name)
 {
 	int master = 1;
@@ -234,22 +301,28 @@ void update_configuration()
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
+	set_ear_learning(system_conf->learning);
 	dynais_timeout=system_conf->lib_info.dynais_timeout;
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
+	ear_whole_app=system_conf->learning;
 #if EAR_PERFORMANCE_TESTS
-	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais,*ear_dynais_size;
+	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais,*ear_dynais_size,*ear_mode;
 	ear_dynais_timeout=getenv("EAR_DYNAIS_TIMEOUT");
 	ear_lib_period=getenv("EAR_LIB_PERIOD");
 	ear_check_every=getenv("EAR_CHECK_EVERY");
 	ear_use_dynais=getenv("EAR_DYNAIS");
 	ear_dynais_size=getenv("EAR_DYNAIS_SIZE");
-	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
+	ear_mode=getenv("EAR_MODE");
 	if (ear_lib_period!=NULL) lib_period=atoi(ear_lib_period);
 	if (ear_check_every!=NULL) check_every=atoi(ear_check_every);
 	if (ear_use_dynais!=NULL) use_dynais=atoi(ear_use_dynais);
 	if (ear_dynais_size!=NULL) set_ear_dynais_window_size(atoi(ear_dynais_size));
-	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d lib_period %d check_every %d\n",use_dynais,dynais_timeout,lib_period,check_every);	
+	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
+	if (ear_mode!=NULL)	ear_periodic_mode=atoi(ear_mode);
+	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d ear_dynais_size %d \n",use_dynais,dynais_timeout,atoi(ear_dynais_size));	
+	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: lib_period %d check_every %d\n",lib_period,check_every);	
+	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: ear_mode %d (PERIODIC=%d DYNAIS=%d)\n",ear_periodic_mode,PERIODIC_MODE_ON,PERIODIC_MODE_OFF);
 #endif
 }
 
@@ -289,14 +362,12 @@ void ear_init()
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
 
+	attach_to_master_set(my_id==0);
 
 	// if we are not the master, we return
 	if (my_id != 0) {
 		return;
 	}
-#if EAR_LIB_SYNC
-	attach_to_master_set();
-#endif
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
@@ -340,8 +411,12 @@ void ear_init()
 
 	earl_verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
 	if (eards_connect(&application) == EAR_SUCCESS) {
-		earl_verbose(1, "Rank %d connected with EARD", ear_my_rank);
+		earl_verbose(2, "Rank %d connected with EARD", ear_my_rank);
+		notify_eard_connection(1);
+	}else{   
+		notify_eard_connection(0);
 	}
+	configure_global_synchronization();
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	metrics_init();
@@ -379,6 +454,9 @@ void ear_init()
 	states_begin_job(my_id, NULL, ear_app_name);
 	states_periodic_begin_job(my_id, NULL, ear_app_name);
 
+	if (ear_periodic_mode==PERIODIC_MODE_ON){
+		states_periodic_begin_period(my_id, NULL, 1, 1);
+	}
 	// Summary files
 	summary_pathname = get_ear_user_db_pathname();
 
@@ -396,12 +474,13 @@ void ear_init()
 	traces_init(ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
+
 	// All is OK :D
 #if EAR_PERFORMANCE_TESTS
 	init_end_time=PAPI_get_real_usec();
 	earl_verbose(1, "EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
 #else
-	earl_verbose(1, "EAR initialized successfully ");
+	if (ear_my_rank==0) earl_verbose(1, "EAR initialized successfully ");
 #endif
 }
 
@@ -547,6 +626,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 				/* EAR energy policy is called periodically */
 				if ((total_mpi_calls%mpi_calls_in_period)==0){
 					ear_iterations++;
+					#if EAR_PERFORMANCE_TESTS
+					earl_verbose(1,"New preriodic iteration %d\n",ear_iterations);
+					#endif
 					states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 				}
 				break;
@@ -741,7 +823,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event, ear_loop_size, ear_iterations);
 				#if EAR_PERFORMANCE_TESTS
-				earl_verbose(1,"New estimated iteration\n");
+				earl_verbose(3,"New estimated iteration\n");
 				#endif
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;

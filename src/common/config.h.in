@@ -103,3 +103,4 @@
 #define EARDBD_TYPES        7
 
 #define EAR_LIB_SYNC 0
+#define COORDINATE_FREQUENCIES 0

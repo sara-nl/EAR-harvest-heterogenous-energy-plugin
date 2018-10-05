@@ -1,6 +1,7 @@
 CFLAGS  = -I$(SRCDIR) $(GSL_CFLAGS) $(CPUF_CFLAGS)
 LDFLAGS = $(CPUF_LDFLAGS) $(GSL_LDFLAGS)
 
+
 ######## FILES
 
 COMMON_OBJS = $(ROOTDIR)/src/common/types.a
@@ -17,7 +18,10 @@ BINARIES = compute_coefficients \
 		   remove_learning \
 		   get_active_nodes \
 		   ear_lp_validation \
-		   get_projections
+		   get_projections \
+		   coefficients_comparison \
+ 		   show_coefficients \
+		   translate_coefficients
 
 ######## RULES
 
@@ -58,6 +62,15 @@ remove_learning: remove_learning.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJ
 
 coefficients_to_csv: coefficients_to_csv.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
+
+coefficients_comparison:coefficients_comparison.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
+show_coefficients:show_coefficients.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
+translate_coefficients:translate_coefficients.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS) -lm
 
 coefficients_v2_to_v3:coefficients_v2_to_v3.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
