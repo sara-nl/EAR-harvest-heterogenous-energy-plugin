@@ -43,6 +43,10 @@
 #include <database_cache/eardbd_storage.h>
 #include <common/database/db_helper.h>
 
+//
+extern char input_buffer[SZ_BUFF_BIG];
+extern char extra_buffer[SZ_BUFF_BIG];
+
 // Mirroring
 extern int master_iam; // Master is who speaks
 extern int server_iam;
@@ -411,7 +415,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 
 void storage_sample_announce(int fd, packet_header_t *header, char *content)
 {
-	int print;
+	int print = 1;
 	char *type;
 
 	if (header->content_type == CONTENT_TYPE_APP)
@@ -425,8 +429,10 @@ void storage_sample_announce(int fd, packet_header_t *header, char *content)
 		} else {
 			type = "non-mpi application_t";
 		}
+		//verwho1("j %d -- s %d -- n %s", app->job.id, app->job.step_id, app->node_id);
+		//print_signature_fd(2, &app->signature, 1);
 	} else if (header->content_type == CONTENT_TYPE_PER) {
-		type = "periodic_metric_t";
+		type  = "periodic_metric_t";
 		print = verbosity;
 	} else if (header->content_type == CONTENT_TYPE_EVE) {
 		type = "ear_event_t";
@@ -437,11 +443,13 @@ void storage_sample_announce(int fd, packet_header_t *header, char *content)
 	} else if (header->content_type == CONTENT_TYPE_PIN) {
 		type = "ping";
 	} else {
-		type = "unknown";
+		type  = "unknown";
 	}
+
+	sockets_get_address_fd(fd, extra_buffer, SZ_NAME_MEDIUM);
 
 	if (print) {
 		verwho1("received '%s' packet from host '%s' (socket: %d)",
-			type, header->host_src, fd);
+			type, extra_buffer, fd);
 	}
 }
