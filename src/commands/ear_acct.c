@@ -300,7 +300,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 
     if (fd == STDOUT_FILENO)
     {
-        strcpy(header_format, "%-6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n");
+        strcpy(header_format, "%6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n");
         strcpy(line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n");
         strcpy(mpi_line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n");
     }
