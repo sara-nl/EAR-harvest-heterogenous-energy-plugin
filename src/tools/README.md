@@ -12,6 +12,8 @@ EAR tools and command line tools used during the learning phase or to manipulate
 | compute_coefficients_v3       | coputes coefficients for ear v3 reading applications from DB     | v3        |
 | compute_coefficients_remote   | computes coefficients for ear v2 using as input a user-db file, it can be executed anywhere | v2 |
 | get_app_list                  | reads application from DB (normal or learning) and prints metrics in stdout | v3 |
+| show_coefficients             | reads coefficients from the file given as an arg and prints it to stdout| v3 |
+
 
 Examples
 --------

@@ -45,23 +45,14 @@
 	fprintf(stderr, "\n");
 
 state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node);
-
 state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node);
-
 state_t eardbd_is_connected();
-
 state_t eardbd_disconnect();
 
 state_t eardbd_send_ping();
-
 state_t eardbd_send_periodic_metric(periodic_metric_t *met);
-
 state_t eardbd_send_application(application_t *app);
-
 state_t eardbd_send_loop(loop_t *loop);
-
 state_t eardbd_send_event(ear_event_t *eve);
-
-state_t eardbd_send_shit();
 
 #endif //EAR_EARDBD_API_H
