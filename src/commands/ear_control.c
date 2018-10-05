@@ -107,7 +107,8 @@ void main(int argc, char *argv[])
             {"set-def-freq", required_argument, 0, 4},
             {"restore-conf", no_argument, 0, 5},
 	        {"ping", 	     optional_argument, 0, 6},
-            {"help",         no_argument, 0, 7},
+            {"status",       no_argument, 0, 7},
+            {"help",         no_argument, 0, 8},
             {0, 0, 0, 0}
         };
 
@@ -178,6 +179,9 @@ void main(int argc, char *argv[])
                     old_ping_all_nodes(my_cluster_conf);
                 break;
             case 7:
+                status_all_nodes(my_cluster_conf);
+                break;
+            case 8:
                 usage(argv[0]);
                 break;
         }

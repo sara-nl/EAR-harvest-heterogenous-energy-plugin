@@ -12,8 +12,9 @@ Functional tests are programs which tests concrete library and daemon functional
 | intel_pci_uncores_stress | Gets the total bandwith readed in the uncore counters after the execution of a program. |
 | papi_cpu_gflops          | Tests the GFlops values given by PAPI.                                                  |
 | energy_1_second          | Reports the DC node energy consumed after 1 second                                      |
-| energy_updates_freq       | Reports the frequency at which the DC node energy is updated                            |
-| test_architecture        | checks basic cpufreq functions are ok
+| energy_updates_freq      | Reports the frequency at which the DC node energy is updated                            |
+| test_architecture        | checks basic cpufreq functions are ok                                                   |
+| ear_conf                 | reads the ear.conf file and prints its contents to stdout                               |
 
 How to launch these tests
 -------------------------

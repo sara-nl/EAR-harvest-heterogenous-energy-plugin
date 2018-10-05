@@ -19,6 +19,7 @@ Usage: eacct [Optional parameters]
 		-l	shows the information for each node for each job instead of the global statistics for said job.
 		-n	specifies the number of jobs to be shown, starting from the most recent one. [default: all jobs]
         -t  specifies the energy tag to filter the retrieved jobs. [default: all tags]
+        -c  specifies the file to save the output information in csv format.
 
 ```
 
