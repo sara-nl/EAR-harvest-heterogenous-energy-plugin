@@ -41,6 +41,7 @@
 #define BACKLOG				10
 #define TCP					SOCK_STREAM
 #define UDP					SOCK_DGRAM
+#define NON_BLOCK_TRYS		1000
 
 /* types */
 typedef struct socket {
@@ -83,7 +84,7 @@ state_t sockets_bind(socket_t *socket);
 
 state_t sockets_listen(socket_t *socket);
 
-state_t sockets_accept(int fd_req, int *fd_cli);
+state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_addr);
 
 state_t sockets_connect(socket_t *socket);
 
@@ -93,7 +94,7 @@ state_t sockets_close_fd(int fd);
 
 state_t sockets_send(socket_t *socket, packet_header_t *header, char *content);
 
-state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer);
+state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer, int block);
 
 state_t sockets_set_timeout(int fd, time_t timeout);
 

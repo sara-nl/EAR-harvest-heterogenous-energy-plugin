@@ -22,12 +22,24 @@ void usage(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	cluster_conf_t conf_clus;
+	my_node_conf_t *conf_node;
+	char buffer[1024];
+	char nodename[256];
 	periodic_metric_t met;
 	application_t app;
 	int job_id = 0;
 	state_t s;
 
-	//usage(argc, argv);
+	// Initialization
+	get_ear_conf_path(buffer);
+
+	if (read_cluster_conf(buffer, &conf_clus) != EAR_SUCCESS){
+		fprintf(stderr, "Error reading cluster configuration.\n");
+		exit(1);
+	}
+
+	gethostname(nodename, sizeof(nodename));
+	conf_node = get_my_node_conf(&conf_clus, "cmp2772");
 
 	// Dummy objects
 	memset(&app, 0, sizeof (application_t));
@@ -42,14 +54,14 @@ int main(int argc, char **argv)
 	report_application_data(&app);
 
 	// Testing API
-	s = eardbd_connect(&conf_clus);
+	s = eardbd_connect(&conf_clus, conf_node);
 
 	printf("CONNECT RETURNED %d\n", s);
 
 	while(1) {
 		s = eardbd_send_application(&app);
 		printf("SEND RETURNED %d\n", s);
-		sleep(4);
+		sleep(20);
 		job_id += 1;
 		app.job.id = job_id;
 	}

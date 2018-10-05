@@ -62,6 +62,9 @@ uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 */
 void policy_default_configuration();
 
+/** This function sets the frequency "by hand" when  using global synchronizations */
+void force_global_frequency(ulong new_f);
+
 uint get_global_def_pstate();
 ulong get_global_def_freq();
 double get_global_th();
