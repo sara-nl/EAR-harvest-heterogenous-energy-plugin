@@ -86,6 +86,9 @@ typedef struct status{
 #define EAR_RC_STATUS		600
 #define NO_COMMAND 100000
 
+#define STATUS_BAD      0
+#define STATUS_OK       1
+
 
 #else
 #endif
