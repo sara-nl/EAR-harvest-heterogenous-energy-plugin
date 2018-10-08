@@ -117,6 +117,8 @@ void ping_all_nodes(cluster_conf_t my_cluster_conf);
 /** Executes a simple ping to all nodes with the next nodes calculated at runtime */
 void new_ping_all_nodes(cluster_conf_t my_cluster_conf);
 
+int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status);
+
 /** Sends the command to the currently connected fd */
 int send_command(request_t *command);
 

@@ -359,13 +359,6 @@ void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
-void status_all_nodes(cluster_conf_t my_cluster_conf)
-{
-    request_t command;
-    command.req = EAR_RC_STATUS;
-    send_command_all(command, my_cluster_conf);
-}
-
 void ping_all_nodes(cluster_conf_t my_cluster_conf)
 {
     request_t command;
@@ -584,7 +577,7 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 
                 command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
                 int t = 1;
-                while (t < command.node_dist) t *=2;
+                while (t < command.node_dist) t *= 2;
                 command.node_dist = t;
             }   
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
@@ -593,9 +586,9 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
                 correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
             }
             else{
-                VERBOSE_N(1,"Node %s with distance %d ping!\n", node_name, command.node_dist);
+                VERBOSE_N(1,"Node %s with distance %d contacted!\n", node_name, command.node_dist);
                 if (!send_command(&command)) {
-                    VERBOSE_N(0,"Error doing ping for node %s, trying to correct it", node_name);
+                    VERBOSE_N(0,"Error sending command to node %s, trying to correct it", node_name);
                     correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
                 }
                 eards_remote_disconnect();
@@ -604,6 +597,63 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
     }
 }
 
+int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
+{
+    int i, j, k, rc; 
+    char node_name[256];
+    status_t *temp_status, *all_status = NULL;
+    int num_all_status = 0, num_temp_status;
+    request_t command;
+    command.req = EAR_RC_STATUS;
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {   
+            num_temp_status = 0;
+            k = my_cluster_conf.islands[i].ranges[j].start;
+            command.node_dist = 0;
+            if (k == -1) 
+                sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+            else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+            else {
+                k += (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
+                if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
+                    sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                else 
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+
+                command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
+                int t = 1;
+                while (t < command.node_dist) t *= 2;
+                command.node_dist = t;
+            }   
+
+            rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
+            if (rc<0){
+                VERBOSE_N(0,"Error connecting with node %s, trying to correct it", node_name);
+                //correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
+            }
+            else{
+                VERBOSE_N(1,"Node %s with distance %d concated with status!\n", node_name, command.node_dist);
+                if (num_temp_status = send_status(&command, &temp_status)) {
+                    VERBOSE_N(0,"Error doing status for node %s, trying to correct it", node_name);
+                //    correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
+                }
+                eards_remote_disconnect();
+            }
+
+            if (num_temp_status > 0)
+            {
+                all_status = realloc(all_status, sizeof(status_t)*(num_all_status+num_temp_status));
+                memcpy(&all_status[num_all_status], temp_status, sizeof(status_t)*num_temp_status);
+                free(temp_status);
+                num_all_status += num_temp_status;
+            }
+
+        }
+    }
+    return num_all_status;
+}
 
 void old_red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {
