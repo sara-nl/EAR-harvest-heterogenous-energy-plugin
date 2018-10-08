@@ -7,23 +7,22 @@ LDFLAGS = $(CPUF_LDFLAGS) $(GSL_LDFLAGS)
 COMMON_OBJS = $(ROOTDIR)/src/common/types.a
 
 BINARIES = compute_coefficients \
-		   compute_coefficients_v2 \
-           compute_coefficients_remote \
            coeffs_job \
            coeffs_quality \
-		   coefficients_to_csv \
-		   coefficients_v2_to_v3 \
 		   get_app_list \
 		   get_ear_events \
 		   remove_learning \
 		   get_active_nodes \
 		   ear_lp_validation \
 		   get_projections \
-		   coefficients_comparison \
- 		   show_coefficients \
 		   translate_coefficients
-
-######## RULES
+		   
+#compute_coefficients_v2 \
+#compute_coefficients_remote \
+#coefficients_to_csv \
+#coefficients_v2_to_v3 \
+#coefficients_comparison \
+#show_coefficients \
 
 all: $(BINARIES)
 

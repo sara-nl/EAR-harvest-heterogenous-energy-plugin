@@ -119,7 +119,7 @@ function learning_phase
             fi
         ;;
         dgemm)
-            configuring mpi $BENCHS_SRC_PATH/DGEMM/mkl_fortran_samples/matrix_multiplication X 1
+            configuring mpi $BENCHS_SRC_PATH/ X 1
 
             if [ "$BENCHS_MODE" == "compile" ]; then
                 mkdir -p $BENCH_SRC_PATH/release
