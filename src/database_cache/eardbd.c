@@ -67,9 +67,10 @@ static fd_set fds_incoming;
 static fd_set fds_incoming;
 static fd_set fds_active;
 
+struct sockaddr_storage addr_cli;
+int fd_cli;
 int fd_min;
 int fd_max;
-int fd_cli;
 
 // Times
 static struct timeval timeout_insr;
@@ -81,8 +82,8 @@ time_t time_slct;
 
 // Input buffers
 static packet_header_t input_header;
-static char input_buffer[SZ_BUFF_BIG];
-static char extra_buffer[SZ_BUFF_BIG];
+char input_buffer[SZ_BUFF_BIG];
+char extra_buffer[SZ_BUFF_BIG];
 
 // Mirroring
 static char master_host[SZ_NAME_MEDIUM]; // This node name
@@ -206,7 +207,7 @@ int sync_question(uint sync_option)
 
 	// Transferring
 	s = sockets_receive(ssync_mir->fd, &sync_ans_header,
-		(char *) &sync_ans_content, sizeof(sync_ans_t));
+		(char *) &sync_ans_content, sizeof(sync_ans_t), 1);
 
 	// Recovering old timeout
 	sockets_set_timeout(ssync_mir->fd, timeout_old);
@@ -928,11 +929,12 @@ static void pipeline()
 				// Handle new connections (just for TCP)
 				if (incoming_new_connection(i))
 				{
-					s1 = sockets_accept(i, &fd_cli);
+					s1 = sockets_accept(i, &fd_cli, &addr_cli);
 
 					if (state_ok(s1))
 					{
-						verwho1("accepted connection from socket %d", fd_cli);
+						sockets_get_address((struct sockaddr *) &addr_cli, extra_buffer, SZ_NAME_MEDIUM);
+						verwho1("accepted connection from socket %d (%s)", fd_cli, extra_buffer);
 
 						FD_SET(fd_cli, &fds_active);
 
@@ -947,7 +949,7 @@ static void pipeline()
 				}
 				else
 				{
-					s1 = sockets_receive(i, &input_header, input_buffer, sizeof(input_buffer));
+					s1 = sockets_receive(i, &input_header, input_buffer, sizeof(input_buffer), 0);
 
 					if (state_ok(s1))
 					{
@@ -955,10 +957,14 @@ static void pipeline()
 						storage_sample_receive(i, &input_header, input_buffer);
 					}
 					else
-					{
+					{	
 						if (state_is(s1, EAR_SOCK_DISCONNECTED)) {
 							verwho1("disconnected from socket %d (num: %d, str: %s)",
 									i, intern_error_num, intern_error_str);
+						} if (state_is(s1, EAR_SOCK_TIMEOUT)) {
+							sockets_get_address_fd(i, extra_buffer, SZ_BUFF_BIG);
+							verwho1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
+									i, extra_buffer, intern_error_num, intern_error_str);
 						} else {
 							verwho1("on reception (num: %d, str: %s), disconnecting from socket %d",
 									intern_error_num, intern_error_str, i);

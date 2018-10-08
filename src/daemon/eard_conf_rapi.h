@@ -67,6 +67,12 @@ typedef struct request{
     req_data_t  my_req;
 }request_t;
 
+typedef struct status{
+    int     ip;
+    char    ok;
+    uint    extra_info;
+} status_t;
+
 #define EAR_RC_NEW_JOB     0
 #define EAR_RC_END_JOB     1
 #define EAR_RC_MAX_FREQ    100
@@ -76,7 +82,8 @@ typedef struct request{
 #define EAR_RC_SET_FREQ 	104
 #define EAR_RC_DEF_FREQ		105
 #define EAR_RC_REST_CONF	106
-#define EAR_RC_PING		500
+#define EAR_RC_PING		    500
+#define EAR_RC_STATUS		600
 #define NO_COMMAND 100000
 
 

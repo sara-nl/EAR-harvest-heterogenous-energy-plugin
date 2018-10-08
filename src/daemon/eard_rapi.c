@@ -329,6 +329,13 @@ void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
+void status_all_nodes(cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req = EAR_RC_STATUS;
+    send_command_all(command, my_cluster_conf);
+}
+
 void ping_all_nodes(cluster_conf_t my_cluster_conf)
 {
     request_t command;
@@ -474,7 +481,6 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
                     sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
 
                 command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
-                printf("com node_dis: %d\n", command.node_dist);
                 int t = 1;
                 while (t < command.node_dist) t *=2;
                 command.node_dist = t;

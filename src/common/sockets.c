@@ -38,14 +38,19 @@
 static char output_buffer[SZ_BUFF_BIG];
 static state_t s;
 
-state_t sockets_accept(int fd_req, int *fd_cli)
+state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_addr)
 {
-	struct sockaddr_storage cli_addr;
-	socklen_t size = sizeof (cli_addr);
+	struct sockaddr_storage _cli_addr;
+	struct sockaddr_storage *p = &_cli_addr;
+	socklen_t size = sizeof (struct sockaddr_storage);
 
-	*fd_cli = accept(fd_req, (struct sockaddr *) &cli_addr, &size);
+	if (cli_addr != NULL) {
+		p = cli_addr;
+	}
 
-	if (*fd_cli == -1) {
+	*cli_fd = accept(req_fd, (struct sockaddr *) p, &size);
+
+	if (*cli_fd == -1) {
 		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 	}
 
@@ -290,13 +295,16 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 //	Returning EAR_ERROR
 //	 - On EBADF, ENOTSOCK, EOPNOTSUPP, EINTR, EIO, ENOBUFS and ENOMEM
 
-state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer)
+state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer, int block)
 {
 	ssize_t bytes_recv;
 	ssize_t bytes_expc;
 	ssize_t bytes_left;
+	ssize_t bytes_acum;
 	char *bytes_buff;
+	int f = 0;
 	int i = 0;
+	int w = 0;
 
 	if (fd < 0) {
 		state_return_msg(EAR_BAD_ARGUMENT, 0, "invalid file descriptor");
@@ -306,50 +314,80 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
 	}
 
+	if (!block) {
+		f = MSG_DONTWAIT;
+	}
+
+    //char address[128];
+    //int print = 0;
+    //ssize_t recvr = 0;
+    //sockets_get_address_fd(fd, address, 128);
+    //print = (strcmp(address, "login2301.hpc.eu.lenovo.com") == 0) || (strcmp(address, "login2301") == 0);
+    //if (print) fprintf(stderr, "%d Entering in sockets receive function\n", fd);
+
 	// Receiving header
 	bytes_buff = (char *) header;
 	bytes_expc = sizeof(packet_header_t);
 	bytes_left = bytes_expc;
-	bytes_recv = 0;
+	bytes_acum = 0;
 
+	// Header and content receiving bucle
 	while (i < 2)
 	{
-		while (bytes_recv < bytes_expc)
+		while (bytes_left > 0)
 		{
-			bytes_recv += recv(fd, (void *) &bytes_buff[bytes_recv], bytes_left, 0);
+			//if (print) fprintf(stderr, "%d Calling recv (%d) expecting %ld bytes\n", fd, i, bytes_expc);
+			bytes_recv = recv(fd, (void *) &bytes_buff[bytes_acum], bytes_left, f);
+			//if (print) fprintf(stderr, "%d Received a batch of %ld/%ld bytes\n", fd, bytes_recv, bytes_expc);
 
-			if (bytes_recv <= 0)
+			if (bytes_recv == 0) {
+				state_return_msg(EAR_SOCK_DISCONNECTED, 0, "disconnected from socket");
+			}
+			else if (bytes_recv < 0)
 			{
-				switch (bytes_recv) {
-					case 0:
-						state_return_msg(EAR_SOCK_DISCONNECTED, 0, "disconnected from socket");
+				switch (errno) {
 					case ENOTCONN:
 					case ETIMEDOUT:
 					case ECONNRESET:
 						state_return_msg(EAR_SOCK_DISCONNECTED, errno, strerror(errno));
+						break;
 					case EINVAL:
 					case EAGAIN:
-						state_return_msg(EAR_NOT_READY, errno, strerror(errno));
+						if (!block && w < NON_BLOCK_TRYS) { 
+							w += 1;
+						} else {
+							state_return_msg(EAR_SOCK_TIMEOUT, errno, strerror(errno));
+						}
+						break;
 					default:
 						state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 				}
+			} else {
+				bytes_acum += bytes_recv;
+				bytes_left -= bytes_recv;
 			}
-
-			bytes_left -= bytes_recv;
 		}
 
-		bytes_buff = buffer;
-		bytes_expc = header->content_size;
-		bytes_left = bytes_expc;
-		bytes_recv = 0;
-		i++;
+		// Passing from header to content 
+		i += 1;
 
-		if (bytes_expc > size_buffer) {
-			printf("buffer to small for the received object %ld %ld\n", bytes_expc, size_buffer);
-			state_return_msg(EAR_BAD_ARGUMENT, 0, "buffer to small for the received object");
+		// Content bucle options
+		if (i == 1)
+		{
+			bytes_buff = buffer;
+			bytes_expc = header->content_size;
+			bytes_left = bytes_expc;
+			bytes_acum = 0;
+
+			if (bytes_expc <= 0) {
+				state_return_msg(EAR_SOCK_OP_ERROR, 0, "unexpected packet size, zero or less bytes expected");
+			}
+			if (bytes_expc > size_buffer) {
+				state_return_msg(EAR_BAD_ARGUMENT, 0, "unexpected packet size, buffer too small for the receiving object");
+			}
 		}
 	}
-
+	
 	state_return(EAR_SUCCESS);
 }
 
@@ -384,6 +422,7 @@ state_t sockets_set_timeout(int fd, time_t timeout)
 
 void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length)
 {
+	socklen_t addrlen;
 	char *ip_version;
 	void *address;
 	int port;
@@ -396,27 +435,35 @@ void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length)
 	if (host_addr->sa_family == AF_INET)
 	{
 		struct sockaddr_in *ipv4 = (struct sockaddr_in *) host_addr;
-		address = &(ipv4->sin_addr);
 		port = (int) ntohs(ipv4->sin_port);
+		address = &(ipv4->sin_addr);
+		addrlen = INET_ADDRSTRLEN;
 		ip_version = "IPv4";
 	}
 	// IPv6
 	else
 	{
 		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
+		port = (int) ntohs(ipv6->sin6_port);
 		address = &(ipv6->sin6_addr);
+		addrlen = INET6_ADDRSTRLEN;
 		ip_version = "IPv6";
 	}
 
 	// convert the IP to a string and print it
-	inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
+	//inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
+
+    getnameinfo(host_addr, addrlen, buffer, length, NULL, 0, 0);
 }
 
 void sockets_get_address_fd(int fd, char *buffer, int length)
 {
-	struct sockaddr s_addr;
-	socklen_t s_leng;
+	struct sockaddr_storage s_addr;
+	socklen_t s_len;
 
-	getsockname(fd, (struct sockaddr *) &s_addr, &s_leng);
-	sockets_get_address(&s_addr, buffer, length);
+	s_len = sizeof(struct sockaddr_storage);
+	memset(&s_addr, 0, s_len);
+
+	getpeername(fd, (struct sockaddr *) &s_addr, &s_len);
+	sockets_get_address((struct sockaddr *) &s_addr, buffer, length);
 }
