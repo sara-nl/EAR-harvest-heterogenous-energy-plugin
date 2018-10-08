@@ -240,8 +240,10 @@ void evaluate(control_t *control)
 				continue;
 			}
 
-			tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
-					merged[j].job.app_id, merged[j].signature.def_f);
+			if (!control->hide) {
+				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
+						merged[j].job.app_id, merged[j].signature.def_f);
+			}
 
 			cpi_sign = merged[j].signature.CPI;
 			tpi_sign = merged[j].signature.TPI;
@@ -262,20 +264,20 @@ void evaluate(control_t *control)
 
 					if (k != -1)
 					{
-						m = &merged[k];
+						application_t *m = &merged[k];						
 
 						tim_serr = fabs((1.0 - (m->signature.time / tim_proj)) * 100.0);
 						pow_serr = fabs((1.0 - (m->signature.DC_power / pow_proj)) * 100.0);
 						cpi_serr = fabs((1.0 - (m->signature.CPI / cpi_proj)) * 100.0);
 
-						if (!cntr->hide)
+						if (!control->hide)
 						{
 							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
 								coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
 								m->signature.DC_power, pow_proj, pow_serr);
 						}
 					} else {
-						if (!cntr->hide) {
+						if (!control->hide) {
 							tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
 						}
 					}
@@ -291,12 +293,16 @@ void evaluate(control_t *control)
 		}
 	}
 
-	if (!cntr.summary) {
+	if (!control->summary) {
 		return;
 	}
 
 	// Coefficients medium error
-	fprintf(stderr, LINE);
+	
+	if (!control->hide) {
+		fprintf(stderr, LINE);
+	}
+	
 	tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
 
 	for (i = 0; i < n_coeffs; i++)
@@ -404,14 +410,15 @@ void usage(int argc, char *argv[], control_t *cntr)
 	// Additional parameters
 	for (i = 3; i < argc; ++i)
 	{
-		cntr->learning = ((strcmp(argv[i], "-A") == 0) ||
-						  (strcmp(argv[i], "--all") == 0));
-
-		cntr->summary = ((strcmp(argv[i], "-S") == 0) ||
-						 (strcmp(argv[i], "--summary") == 0));
-
-		cntr->summary = ((strcmp(argv[i], "-H") == 0) ||
-						 (strcmp(argv[i], "--hide") == 0));
+		if (!cntr->learning)
+			cntr->learning = ((strcmp(argv[i], "-A") == 0) ||
+						 	  (strcmp(argv[i], "--all") == 0));
+		if (!cntr->summary)
+			cntr->summary = ((strcmp(argv[i], "-S") == 0) ||
+							 (strcmp(argv[i], "--summary") == 0));
+		if (!cntr->hide)
+			cntr->hide = ((strcmp(argv[i], "-H") == 0) ||
+						  (strcmp(argv[i], "--hide") == 0));
 	}
 }
 
