@@ -1,6 +1,6 @@
 /**************************************************************
-*	Energy Aware Runtim_serr (EAR)
-*	This program is part of the Energy Aware Runtim_serr (EAR).
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
 *
 *	EAR provides a dynamic, transparent and ligth-weigth solution for
 *	Energy management.
@@ -73,9 +73,9 @@ control_t cntr;
  *
  */
 
-double projection_pow(double pow_serrr0, double tpi_sign, coefficient_t *coeffs)
+double projection_pow(double pow_sign, double tpi_sign, coefficient_t *coeffs)
 {
-	return coeffs->A * pow_serrr0 + coeffs->B * tpi_sign + coeffs->C;
+	return coeffs->A * pow_sign + coeffs->B * tpi_sign + coeffs->C;
 }
 
 double projection_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs)
@@ -83,9 +83,9 @@ double projection_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs)
 	return coeffs->D * cpi_sign + coeffs->E * tpi_sign + coeffs->F;
 }
 
-double projection_tim(double tim_serr0, double cpi_proj, double cpi_sign, ulong f0, ulong fn)
+double projection_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong f0, ulong fn)
 {
-	return (tim_serr0 * cpi_proj / cpi_sign) * ((double) f0 / (double) fn);
+	return (tim_sign * cpi_proj / cpi_sign) * ((double) f0 / (double) fn);
 }
 
 /*
@@ -144,8 +144,8 @@ application_t *merge(control_t *control)
 
 			tpi = apps[i].signature.TPI;
 			cpi = apps[i].signature.CPI;
-			tim = apps[i].signature.tim_serr;
-			pow = apps[i].signature.DC_pow_serrr;
+			tim = apps[i].signature.time;
+			pow = apps[i].signature.DC_power;
 			counter = 1.0;
 
 			for(k = i + 1; k < n_apps; ++k)
@@ -157,14 +157,14 @@ application_t *merge(control_t *control)
 				{
 					tpi += apps[k].signature.TPI;
 					cpi += apps[k].signature.CPI;
-					tim += apps[k].signature.tim_serr;
-					pow += apps[k].signature.DC_pow_serrr;
+					tim += apps[k].signature.time;
+					pow += apps[k].signature.DC_power;
 					counter += 1.0;
 				}
 			}
 
-			apps_merged[j].signature.DC_pow_serrr = pow / counter;
-			apps_merged[j].signature.tim_serr     = tim / counter;
+			apps_merged[j].signature.DC_power = pow / counter;
+			apps_merged[j].signature.time     = tim / counter;
 			apps_merged[j].signature.TPI      = tpi / counter;
 			apps_merged[j].signature.CPI      = cpi / counter;
 
@@ -245,8 +245,8 @@ void evaluate(control_t *control)
 
 			cpi_sign = merged[j].signature.CPI;
 			tpi_sign = merged[j].signature.TPI;
-			tim_sign = merged[j].signature.tim_serr;
-			pow_sign = merged[j].signature.DC_pow_serrr;
+			tim_sign = merged[j].signature.time;
+			pow_sign = merged[j].signature.DC_power;
 
 			for (i = 0; i < n_coeffs; i++)
 			{
@@ -264,15 +264,15 @@ void evaluate(control_t *control)
 					{
 						m = &merged[k];
 
-						tim_serr = fabs((1.0 - (m->signature.tim_serr / tim_proj)) * 100.0);
-						pow_serr = fabs((1.0 - (m->signature.DC_pow_serrr / pow_proj)) * 100.0);
+						tim_serr = fabs((1.0 - (m->signature.time / tim_proj)) * 100.0);
+						pow_serr = fabs((1.0 - (m->signature.DC_power / pow_proj)) * 100.0);
 						cpi_serr = fabs((1.0 - (m->signature.CPI / cpi_proj)) * 100.0);
 
 						if (!cntr->hide)
 						{
 							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
-								coeffs[i].pstate, m->signature.tim_serr, tim_proj, tim_serr,
-								m->signature.DC_pow_serrr, pow_proj, pow_serr);
+								coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
+								m->signature.DC_power, pow_proj, pow_serr);
 						}
 					} else {
 						if (!cntr->hide) {
