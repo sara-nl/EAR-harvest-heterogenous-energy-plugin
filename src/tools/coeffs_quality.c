@@ -184,8 +184,7 @@ void evaluate(control_t *control)
 	// Medium error
 	double *tim_merr;
 	double *pow_merr;
-	double *tim_n;
-	double *pow_n;
+	double *n_merr;
 
 	// Other data
 	application_t *apps, *m;
@@ -204,6 +203,14 @@ void evaluate(control_t *control)
 	// Medium Error
 	tim_merr = calloc(n_coeffs + 1, sizeof(double));
 	pow_merr = calloc(n_coeffs + 1, sizeof(double));
+	n_merr   = calloc(n_coeffs + 1, sizeof(double));
+
+	for (i = 0; i < n_coeffs + 1; i++)
+	{
+		tim_merr[i] = 0.0;
+		pow_merr[i] = 0.0;
+		n_merr[i]   = 0.0;
+	}
 
 	// Initializing columns
 	tprintf_init(stderr, "18 11 15 12 12 15 12 12");
@@ -242,7 +249,7 @@ void evaluate(control_t *control)
 					timp = time_proj(tim0, cpip, cpi0, f0_mhz, coeffs[i].pstate);
 					powp = power_proj(pow0, tpi0, &coeffs[i]);
 
-					//
+					// Fin that application for that coefficient
 					k = find(apps, n_apps, apps[j].job.app_id, coeffs[i].pstate);
 
 					if (k != -1)
@@ -261,26 +268,27 @@ void evaluate(control_t *control)
 					}
 
 					// Medium error
-					tim_merr[i] += time;
-					pow_merr[i] += powe;
-					tim_n[i] += 1.0;
-					pow_n[i] += 1.0;
+					if (coeffs[i].pstate != f0_mhz) {
+						tim_merr[i] += time;
+						pow_merr[i] += powe;
+						n_merr[i]   += 1.0;
+					}
 				}
 			}
 		}
 	}
 
 	// Coefficients medium error
-	tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err",
-			 apps[j].signature.def_f);
+	fprintf(stderr, "-----------------------------------------------------------------------------------------------------\n");
+	tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", f0_mhz);
 
 	for (i = 0; i < n_coeffs; i++)
 	{
-		if (coeffs[i].available && coeffs[i].pstate_ref == f0_mhz)
+		if (n_merr[i] > 0.0)
 		{
 			// Medium error
-			tim_merr[i] = tim_merr[i] / tim_n[i];
-			pow_merr[i] = pow_merr[i] / pow_n[i];
+			tim_merr[i] = tim_merr[i] / n_merr[i];
+			pow_merr[i] = pow_merr[i] / n_merr[i];
 
 			tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
 					coeffs[i].pstate, tim_merr[i], pow_merr[i]);
@@ -288,17 +296,17 @@ void evaluate(control_t *control)
 			// General medium error
 			tim_merr[n_coeffs] += tim_merr[i];
 			pow_merr[n_coeffs] += pow_merr[i];
-			tim_n[n_coeffs] += 1.0;
-			pow_n[n_coeffs] += 1.0;
+			n_merr[n_coeffs]   += 1.0f;
 		}
 	}
 
 	// General medium error
-	tim_merr[n_coeffs] = tim_merr[n_coeffs] / tim_n[n_coeffs];
-	pow_merr[n_coeffs] = pow_merr[n_coeffs] / pow_n[n_coeffs];
+	fprintf(stderr, "-----------------------------------------------------------------------------------------------------\n");
+	tim_merr[n_coeffs] = tim_merr[n_coeffs] / n_merr[n_coeffs];
+	pow_merr[n_coeffs] = pow_merr[n_coeffs] / n_merr[n_coeffs];
 
 	tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-			coeffs[i].pstate, tim_merr[n_coeffs], pow_merr[n_coeffs]);
+			f0_mhz, tim_merr[n_coeffs], pow_merr[n_coeffs]);
 }
 
 /*
