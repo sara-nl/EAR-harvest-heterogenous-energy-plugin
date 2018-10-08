@@ -202,8 +202,8 @@ void evaluate(control_t *control)
 	n_apps   = control->n_apps_merged;
 
 	// Medium Error
-	tpiem = calloc(n_coeffs + 1, sizeof(double));
-	powem = calloc(n_coeffs + 1, sizeof(double));
+	tim_merr = calloc(n_coeffs + 1, sizeof(double));
+	pow_merr = calloc(n_coeffs + 1, sizeof(double));
 
 	// Initializing columns
 	tprintf_init(stderr, "18 11 15 12 12 15 12 12");
