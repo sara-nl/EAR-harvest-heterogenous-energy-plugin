@@ -64,6 +64,7 @@ struct sockaddr_in eards_remote_client;
 char *my_tmp;
 extern cluster_conf_t my_cluster_conf;
 extern my_node_conf_t     *my_node_conf;
+extern my_node_conf_t  my_original_node_conf;
 
 static char *__NAME__ = "EARD";
 extern char *__HOST__;
@@ -218,6 +219,8 @@ int dyncon_restore_conf()
 {
 	int pid;
 	policy_conf_t *my_policy;
+	/* We copy the original configuration */
+	copy_my_node_conf(my_node_conf,&my_original_node_conf);
 	pid=MIN_TIME_TO_SOLUTION;
 	my_policy=get_my_policy_conf(my_node_conf,pid);
 	dyn_conf->max_freq=frequency_pstate_to_freq(my_node_conf->max_pstate);

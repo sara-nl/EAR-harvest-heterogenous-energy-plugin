@@ -1114,7 +1114,7 @@ void main(int argc,char *argv[])
             eard_verbose(0," Error in cluster configuration, node %s not found\n",nodename);
         }
 		print_my_node_conf(my_node_conf);
-	copy_my_node_conf(&my_original_node_conf,my_node_conf);
+		copy_my_node_conf(&my_original_node_conf,my_node_conf);
     }
 	/* This info is used for eard checkpointing */
 	eard_dyn_conf.cconf=&my_cluster_conf;
