@@ -102,13 +102,9 @@ void evaluate(control_t *cntr)
 	coefficient_t *c;
 	int i, j, k, n, r;
 
-	tprintf_init(stderr, "10 5 8" +
-						 "12 10 10 10 10 10" +
-						 "12 10 10 10 10 10");
+	tprintf_init(stderr, "10 5 8 12 10 10 10 10 10 12 10 10 10 10 10");
 
-	tprintf("%s||Coe.||@%u||" +
-			" | T. Real||T. 1||T. 2||T. 3||T. 4||T. 5||" +
-			" | P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
+	tprintf("%s||Coe.||@%u|| | T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|| | P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
 			cntr->mrgd[0].job.app_id, cntr->mrgd[0].signature.def_f);
 
 	for(i = 0; i < cntr->n_mrgd; ++i)
@@ -141,9 +137,7 @@ void evaluate(control_t *cntr)
 			}
 		}
 
-		tprintf("%s||%s||%lu||" +
-				" | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||" +
-				" | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
+		tprintf("%s||%s||%lu|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
  			m->node_id, cofs_str[cntr->cofs_s[i]], m->signature.avg_f,
 			m->signature.time, tim_proj[0], tim_proj[1], tim_proj[2], tim_proj[3], tim_proj[4],
 			m->signature.DC_power, pow_proj[0], pow_proj[1], pow_proj[2], pow_proj[3], pow_proj[4]);
@@ -177,7 +171,7 @@ void read_applications(control_t *cntr)
 	//
 	cntr->n_mrgd = db_read_applications_query(&apps, buffer);
 
-	if (cntr->n_apps == 0) {
+	if (cntr->n_mrgd == 0) {
 		fprintf(stderr, "No apps found for the job_id '%lu'\n", cntr->job_id);
 		exit(1);
 	}
