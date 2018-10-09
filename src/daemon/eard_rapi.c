@@ -547,7 +547,7 @@ int correct_status_starter(char *host_name, request_t *command, int port, status
    	s = getaddrinfo(host_name, NULL, &hints, &result);
     if (s != 0) {
 		fprintf(stderr,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
-		return;
+		return EAR_ERROR;
     }
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {
