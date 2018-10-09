@@ -413,7 +413,8 @@ void usage(int argc, char *argv[], control_t *cntr)
 {
 	int i = 0;
 
-	if (argc < 3) {
+	if (argc < 3)
+	{
 		fprintf(stdout, "Usage: %s hostname frequency [OPTIONS...]\n\n", argv[0]);
 		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
 		fprintf(stdout, "  The frequency is the nominal base frequency of that node.\n\n");
