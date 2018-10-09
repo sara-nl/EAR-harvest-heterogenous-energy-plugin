@@ -191,7 +191,9 @@ void main(int argc, char *argv[])
     if (num_status > 0)
     {
         printf("Status returned.\n");
-        free(status);
+        int i;
+        for (i = 0; i < num_status; i++)
+            printf("ip: %d\tstatus: %d\n", status[i].ip, status[i].ip);
     }
     free_cluster_conf(&my_cluster_conf);
 }

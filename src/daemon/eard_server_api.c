@@ -337,7 +337,7 @@ int propagate_status(request_t *command, int port, status_t **status)
     memcpy(final_status, status1, sizeof(status_t)*num_status1);
     memcpy(&final_status[num_status1], status2, sizeof(status_t)*num_status2);
     final_status[total_status].ip = self_ip;
-    final_status[0].ok = STATUS_OK;
+    final_status[total_status].ok = STATUS_OK;
     *status = final_status;
     free(status1);
     free(status2);
