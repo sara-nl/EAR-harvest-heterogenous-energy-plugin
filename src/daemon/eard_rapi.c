@@ -101,7 +101,7 @@ int send_status(request_t *command, status_t **status)
 
     return_status = calloc(ack, sizeof(status_t));
     ret = read(eards_sfd, return_status, sizeof(status_t)*ack);
-    if (ret < 1)
+    if (ret < sizeof(status_t)*ack)
     {
         VERBOSE_N(0, "Error receiving status %d\n", ret);
         free(return_status);
@@ -418,6 +418,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
         final_status = calloc(1, sizeof(status_t));
         final_status[0].ip = target_ip;
         final_status[0].ok = STATUS_BAD;
+        *status = final_status;
         return 1;
     }
 
@@ -476,7 +477,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     memcpy(final_status, status1, sizeof(status_t)*num_status1);
     memcpy(&final_status[num_status1], status2, sizeof(status_t)*num_status2);
     final_status[total_status].ip = self_ip;
-    final_status[0].ok = STATUS_BAD;
+    final_status[total_status].ok = STATUS_BAD;
     *status = final_status;
     free(status1);
     free(status2);
@@ -557,7 +558,11 @@ int correct_status_starter(char *host_name, request_t *command, int port, status
         }
     }
     freeaddrinfo(result);
-    return correct_status(host_ip, command, port, status);
+    status_t *temp;
+    int ntemp = 0;
+    ntemp = correct_status(host_ip, command, port, &temp);
+    *status = temp;
+    return ntemp;
 }
 
 
@@ -677,13 +682,13 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
                 VERBOSE_N(0,"Error connecting with node %s, trying to correct it", node_name);
-                correct_status_starter(node_name, &command, my_cluster_conf.eard.port, status);
+                num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
             }
             else{
                 VERBOSE_N(1,"Node %s with distance %d contacted with status!\n", node_name, command.node_dist);
                 if (num_temp_status = send_status(&command, &temp_status)) {
                     VERBOSE_N(0,"Error doing status for node %s, trying to correct it", node_name);
-                    correct_status_starter(node_name, &command, my_cluster_conf.eard.port, status);
+                    num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
                 }
                 eards_remote_disconnect();
             }
