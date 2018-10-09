@@ -37,6 +37,7 @@ uint frequency_get_num_pstates();
 uint frequency_get_num_online_cpus();
 ulong frequency_get_cpu_freq(uint cpu);
 ulong frequency_get_nominal_freq();
+ulong frequency_get_nominal_pstate();
 ulong *frequency_get_freq_rank_list();
 ulong frequency_set_all_cpus(ulong freq);
 ulong frequency_pstate_to_freq(uint pstate);

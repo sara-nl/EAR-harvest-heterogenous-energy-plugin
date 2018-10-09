@@ -71,6 +71,10 @@ double get_global_th();
 void policy_global_reconfiguration();
 
 
+/* Returns the maximum tries per policy */
+int policy_max_tries();
+/* Returns the default freq for the current policy */
+ulong policy_get_default_freq();
 
 #else
 #endif

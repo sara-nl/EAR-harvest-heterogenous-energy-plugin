@@ -43,6 +43,7 @@
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
+#include <metrics/custom/hardware_info.h>
 
 static const char* __NAME__ = "frequency:";
 
@@ -56,6 +57,7 @@ static ulong *freq_list_cpu; // List of frequencies of each CPU (KHz)
 static ulong freq_nom; // Nominal frequency (assuming CPU 0)
 static uint num_freqs;
 static uint num_cpus;
+static uint is_turbo_enabled;
 
 
 //
@@ -161,7 +163,10 @@ int frequency_init(unsigned int _num_cpus)
 	freq_list_rank = get_frequencies_rank();
 
 	// Saving nominal freq = 1, because 0 is the turbo mode
-	freq_nom = freq_list_rank[1];
+	is_turbo_enabled=is_cpu_boost_enabled();	
+
+	if (is_turbo_enabled)	freq_nom = freq_list_rank[1];
+	else freq_nom = freq_list_rank[0];
 	VERBOSE_N(2, "nominal frequency is %lu (KHz)", freq_nom);
 
 	return EAR_SUCCESS;
@@ -258,6 +263,13 @@ ulong frequency_get_cpu_freq(uint cpu)
 ulong frequency_get_nominal_freq()
 {
 	return freq_nom;
+}
+
+// return the nominal pstate
+ulong frequency_get_nominal_pstate()
+{
+	if (is_turbo_enabled) return 1;
+	else return 0;
 }
 
 // ear_get_pstate_list

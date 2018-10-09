@@ -5,6 +5,7 @@ CFLAGS    = -I$(SRCDIR) $(DEBUG)
 ######## FILES
 
 FREQ_OBJS = $(SRCDIR)/metrics/papi/generics.o \
+	    $(SRCDIR)/metrics/custom/hardware_info.o \
             $(SRCDIR)/control/frequency.o
 
 REMOTE_OBJS = $(SRCDIR)/daemon/eard_rapi.o

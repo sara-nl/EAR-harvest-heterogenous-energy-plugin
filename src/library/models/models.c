@@ -112,6 +112,7 @@ void init_policy_functions()
 }
 
 // This function sets the default freq based on the policy
+/* For min energy we reconfigure only max_freq, for min time max_freq and th, and for monitoring only max_freq */
 int policy_global_configuration(int p_state)
 {
 	if (system_conf!=NULL){
@@ -132,7 +133,7 @@ int policy_global_configuration(int p_state)
 void policy_global_reconfiguration()
 {
 	if (system_conf!=NULL){
-	ear_verbose(2,"policy_global_reconfiguration max %lu def %lu th %.2lf\n",
+	earl_verbose(2,"policy_global_reconfiguration max %lu def %lu th %.2lf\n",
 	system_conf->max_freq,system_conf->def_freq,system_conf->th);
 	switch (power_model_policy){
 	case MIN_ENERGY_TO_SOLUTION:
@@ -144,17 +145,17 @@ void policy_global_reconfiguration()
 	    }
 		break;
 	case MIN_TIME_TO_SOLUTION:
-    case MONITORING_ONLY:
+    	case MONITORING_ONLY:
 		if (system_conf->def_freq!=EAR_default_frequency){
 	        earl_verbose(0,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
 			EAR_default_frequency=system_conf->def_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 		}
 	}
-    if (performance_gain<system_conf->th){
-        earl_verbose(2,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
-        performance_gain=system_conf->th;
-    }
+    	if (performance_gain<system_conf->th){
+        	earl_verbose(2,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
+        	performance_gain=system_conf->th;
+    	}
 	}
 }
 
@@ -377,4 +378,25 @@ void policy_default_configuration()
 	ear_frequency=app_policy.default_conf(user_selected_freq);
 	earl_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
 	eards_change_freq(ear_frequency);
+}
+
+ulong policy_get_default_freq()
+{
+	return app_policy.default_conf(user_selected_freq);
+}
+
+int policy_max_tries()
+{
+        switch (power_model_policy)
+        {
+                case MIN_TIME_TO_SOLUTION:
+			return 2;
+                        break;
+                case MIN_ENERGY_TO_SOLUTION:
+			return 1;
+                        break;
+                case MONITORING_ONLY:
+                        return 0;
+        }
+
 }

@@ -464,7 +464,7 @@ int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulon
 	aux_time = metrics_usecs_diff(metrics_time(), metrics_usecs[LOO]);
 
 	//
-	if (!equal_with_th((double)aux_time, (double)min_time_us,0.1)) {
+	if ((aux_time<min_time_us) && !equal_with_th((double)aux_time, (double)min_time_us,0.1)) {
         #if 0
                 earl_verbose(1,"EAR_NOT_READY because of time %llu\n",aux_time);
         #endif
