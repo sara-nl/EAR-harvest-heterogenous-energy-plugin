@@ -64,7 +64,8 @@ extern char *__HOST__ ;
 #define SIGNATURE_HAS_CHANGED	6
 #define TEST_LOOP		7
 
-static application_t last_signature;
+static application_t *signatures;
+// static application_t last_signature;
 static projection_t *PP;
 
 static long long comp_N_begin, comp_N_end, comp_N_time;
@@ -77,6 +78,7 @@ static ulong perf_accuracy_min_time = 1000000;
 static uint perf_count_period = 100,loop_perf_count_period;
 static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
+static int MAX_POLICY_TRIES;
 
 #define DYNAIS_CUTOFF	1
 
@@ -105,9 +107,12 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	char *verbose, *loop_time, *who;
 	ulong	architecture_min_perf_accuracy_time;
+	int i;
 
 
-	init_application(&last_signature);
+	signatures=(application_t *) calloc(frequency_get_num_pstates(),sizeof(application_t));
+	for (i=0;i<frequency_get_num_pstates();i++) init_application(&signatures[i]);
+	//init_application(&last_signature);
 	if (my_id) return;
 
 	loop_init(&loop,&loop_signature.job);	
@@ -121,6 +126,7 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
 	init_log();
+	MAX_POLICY_TRIES=policy_max_tries();
 }
 
 int states_my_state()
@@ -227,8 +233,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	int result;
 	ulong global_f=0;
 	int pok;
+	int curr_pstate,def_pstate;
+	signature_t *c_sig,*l_sig;
+	ulong policy_def_freq;
 
 	prev_f = ear_frequency;
+	curr_pstate=frequency_freq_to_pstate(ear_frequency);
+	policy_def_freq=policy_get_default_freq();
+	def_pstate=frequency_freq_to_pstate(policy_def_freq);
 
 	if (system_conf!=NULL){
 	if (resched_conf->force_rescheduling){
@@ -344,7 +356,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			ENERGY = TIME * POWER;
 			EDP = ENERGY * TIME;
 			begin_iter = iterations;
+
+			/* This function executes the energy policy */
 			policy_freq = policy_power(0, &loop_signature.signature);
+
 			PP = performance_projection(policy_freq);
 			loop_signature.signature.def_f=prev_f;
 
@@ -352,20 +367,19 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (global_synchro){
 				global_frequency_selection_send(policy_freq);
 			}
+			// memcpy(&last_signature, &loop_signature, sizeof(application_t));
+			memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
 
-			if (policy_freq != prev_f)
+			if (policy_freq != policy_def_freq)
 			{
+				tries_current_loop++;
 				comp_N_begin = metrics_time();
 				EAR_STATE = RECOMPUTING_N;
-				memcpy(&last_signature, &loop_signature, sizeof(application_t));
 				log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
-				tries_current_loop++;
 			}
 			else
 			{
-				if (tries_current_loop_same_freq>=MAX_POLICY_TRIES){
-					EAR_STATE = SIGNATURE_STABLE;
-				}else tries_current_loop_same_freq++;
+				EAR_STATE = SIGNATURE_STABLE;
 			}
 			copy_signature(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
@@ -422,7 +436,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				global_f=global_frequency_selection_synchro();
 			}
 			/* We must evaluate policy decissions */
-			pok=policy_ok(PP, &loop_signature.signature, &last_signature.signature);
+			//pok=policy_ok(PP, &loop_signature.signature, &last_signature.signature);
+			l_sig=&signatures[def_pstate].signature;
+			pok=policy_ok(PP, &loop_signature.signature, l_sig);
 			if (pok)
 			{
 				perf_count_period = perf_count_period * 2;
@@ -432,9 +448,17 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				earl_verbose(1,"Policy NOT ok");
 			}
 			earl_verbose(1,"EAR(%s): CurrentSig (Time %lf Power %lf Energy %lf) LastSig (Time %lf Power %lf Energy %lf) \n",
-			ear_app_name, TIME, POWER, ENERGY, last_signature.signature.time,last_signature.signature.DC_power,
-			(last_signature.signature.time*last_signature.signature.DC_power));
+			ear_app_name, TIME, POWER, ENERGY, l_sig->time,l_sig->DC_power, (l_sig->time*l_sig->DC_power));
+
 			if (pok) return;
+			// We can give the library a second change in case we are at def freq
+			if ((tries_current_loop<MAX_POLICY_TRIES) && (curr_pstate==def_pstate))
+			{
+				EAR_STATE = EVALUATING_SIGNATURE;
+				return;
+			}
+
+
 			/* If policy is not ok and we are not running with the same freq, we can check again */
 			if (global_synchro){		
 				earl_verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
@@ -455,17 +479,18 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			/** We are not going better **/
 			/* If signature is different, we consider as a new loop case */
-			if (!policy_had_effect(&loop_signature.signature, &last_signature.signature))
+			//if (!policy_had_effect(&loop_signature.signature, &last_signature.signature))
+			if (!policy_had_effect(&loop_signature.signature,l_sig))
 			{
 				EAR_STATE = SIGNATURE_HAS_CHANGED;
 				comp_N_begin = metrics_time();
 				policy_new_loop();
                         	#if DYNAIS_CUTOFF
-				check_dynais_on(&loop_signature.signature, &last_signature.signature);
+				check_dynais_on(&loop_signature.signature, l_sig);
                         	#endif
-				} else {
+			} else {
 					EAR_STATE = EVALUATING_SIGNATURE;
-				}
+			}
 			break;
 		case PROJECTION_ERROR:
 			/* We run here at default freq */

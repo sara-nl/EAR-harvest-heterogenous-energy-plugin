@@ -379,3 +379,24 @@ void policy_default_configuration()
 	earl_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
 	eards_change_freq(ear_frequency);
 }
+
+ulong policy_get_default_freq()
+{
+	return app_policy.default_conf(user_selected_freq);
+}
+
+int policy_max_tries()
+{
+        switch (power_model_policy)
+        {
+                case MIN_TIME_TO_SOLUTION:
+			return 2;
+                        break;
+                case MIN_ENERGY_TO_SOLUTION:
+			return 1;
+                        break;
+                case MONITORING_ONLY:
+                        return 0;
+        }
+
+}
