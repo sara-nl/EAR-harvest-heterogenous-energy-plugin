@@ -39,23 +39,29 @@
 #include <common/database/db_helper.h>
 #include <tools/coeffs_jobproj.h>
 
-#define LINE "-----------------------------------------------------------------------------------------------------\n"
+char *cofs_str[2] = { "ok", "def" }; 
+char buffer[SZ_PATH];
 
 int EAR_VERBOSE_LEVEL = 0;
-char buffer[SZ_PATH];
+int COFS_MAX = 5;
 
 typedef struct control
 {
 	/* allocation */
 	application_t *apps;
 	application_t *mrgd;
-	coefficient_t *cofs;
-	projection_t  *prjs;
+	coefficient_t **cofs;
+	projection_t *prjs;
 	/* indexes */
 	int n_apps;
 	int n_mrgd;
-	int n_cofs;
+	int *n_cofs;
+	int *cofs_t;
+	/* format */
+	ulong freq_ref;
+	ulong *cofs_ref;
 	/* other */
+	job_id step_id;
 	job_id job_id;
 } control_t;
 	
@@ -141,8 +147,8 @@ application_t *merge(control_t *control)
 		app_fq = apps[i].signature.def_f;
 		app_id = apps[i].job.app_id;
 		nod_id = apps[i].node_id;
-
-		if (find(mrgd, j, app_id, app_fq) == -1)
+		
+		if (find(mrgd, j, app_id, nod_id, app_fq) == -1)
 		{
 			memcpy(&mrgd[j], &apps[i], sizeof(application_t));
 
@@ -155,7 +161,7 @@ application_t *merge(control_t *control)
 			for(k = i + 1; k < n_apps; ++k)
 			{
 				equal_id = strcmp(app_id, apps[k].job.app_id) == 0;
-				equal_no = strcmp(node, apps[k].job.app_id) == 0;
+				equal_no = strcmp(nod_id,    apps[k].node_id) == 0;
 				equal_fq = app_fq == apps[k].signature.def_f;
 
 				if (equal_id && equal_no && equal_fq)
@@ -180,11 +186,74 @@ application_t *merge(control_t *control)
 	control->mrgd = mrgd;
 	control->n_mrgd = j;
 
-	for(i = 0; i < j; ++i) {
-		fprintf(stderr, "%s %s\n", mrgd[i].node_id, mrgd[i]);
-	}
-
 	return mrgd;
+}
+
+void evaluate(control_t *cntr)
+{
+	double cpi_sign, tpi_sign, tim_sign, pow_sign;
+	double cpi_proj[COFS_MAX];
+	double tpi_proj[COFS_MAX];
+	double tim_proj[COFS_MAX];
+	double pow_proj[COFS_MAX];
+	
+	application_t *m;
+	coefficient_t *c;
+	int i, j, k, n, r;
+
+	tprintf_init(stderr, "10 5 8 12 10 10 10 10 10 12 10 10 10 10 10");
+
+	tprintf("%s||Coe.||@%u|| | T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|| | P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
+				cntr->mrgd[0].job.app_id, cntr->mrgd[0].signature.def_f);
+
+	for(i = 0; i < cntr->n_mrgd; ++i)
+	{
+		m = &cntr->mrgd[i];
+		c = cntr->cofs[i];
+		n = cntr->n_cofs[i];
+
+		cpi_sign = m->signature.CPI;
+		tpi_sign = m->signature.TPI;
+		tim_sign = m->signature.time;
+		pow_sign = m->signature.DC_power;
+
+		// Coefficients format
+		for (j = 0, r = 0; j < n; j++)
+		{
+			if (c[j].available && c[j].pstate_ref == cntr->freq_ref)
+			{
+				for (k = 0; k < COFS_MAX; ++k)
+				{
+					if (c[j].pstate == cntr->cofs_ref[k])
+					{
+						//fprintf(stderr, "r %d ref %lu pstate %lu\n", r, c[j].pstate_ref, c[j].pstate);
+						cpi_proj[r] = projection_cpi(cpi_sign, tpi_sign, &c[j]);
+						tim_proj[r] = projection_tim(tim_sign, cpi_proj[r], cpi_sign, cntr->freq_ref, c[j].pstate);
+						pow_proj[r] = projection_pow(pow_sign, tpi_sign, &c[j]);
+						r += 1;
+					}
+				}
+			}
+		}
+
+		tprintf("%s||%s||%lu|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
+ 			m->node_id, cofs_str[cntr->cofs_t[i]], m->signature.avg_f,
+			m->signature.time, tim_proj[0], tim_proj[1], tim_proj[2], tim_proj[3], tim_proj[4],
+			m->signature.DC_power, pow_proj[0], pow_proj[1], pow_proj[2], pow_proj[3], pow_proj[4]);
+
+		//fprintf(stderr, "%s %lu\n", mrgd[i].node_id, mrgd[i].signature.def_f);
+	}
+	
+
+	// Print legend
+	fprintf(stderr, "-------------------------\n");
+	
+	tprintf_init(stderr, "5 12 12");
+	tprintf("Idx||Freq. from||Freq. to");	
+	for (k = 0; k < COFS_MAX; ++k)
+    {
+		tprintf("%d||%lu||%lu", k + 1, cntr->freq_ref, cntr->cofs_ref[k]);
+	}
 }
 
 /*
@@ -196,44 +265,87 @@ application_t *merge(control_t *control)
 void read_applications(control_t *cntr)
 {
 	application_t *apps;
-	int n_apps = 0;
 	int i;
 
-	sprintf(buffer, "select * from Applications where job_id = %lu", cntr->job_id);
+	sprintf(buffer, "SELECT * FROM Applications WHERE job_id = %lu AND step_id = %lu", cntr->job_id, cntr->step_id);
 
 	//
-	n_apps = db_read_applications_query(&apps, buffer);
+	cntr->n_apps = db_read_applications_query(&apps, buffer);
 
-	if (n_apps == 0) {
+	if (cntr->n_apps == 0) {
 		fprintf(stderr, "No apps found for the job_id '%lu'\n", cntr->job_id);
 		exit(1);
 	}
-
 	
-	if (cntr->learning) {
-		n_appsl = db_read_applications(&appsl, 0, 1000, cntr->name_node);
-	}
-
 	//
 	cntr->apps = calloc(cntr->n_apps, sizeof(application_t));
 
 	//
-	memcpy(cntr->apps, appsn, n_appsn * sizeof(application_t));
+	memcpy(cntr->apps, apps, cntr->n_apps * sizeof(application_t));
 
 	// Merging
 	merge(cntr);
+	
+	//
+	cntr->freq_ref = cntr->mrgd[0].signature.def_f;
 }
 
 void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 {
-	sprintf(cntr->path_cofs, "%s/island0/cofs.%s",
-		conf->earlib.coefficients_pathname, cntr->name_node);
+	my_node_conf_t *node;
+	coefficient_t *c;	
+	int i, j;
 
-	cntr->n_cofs = coeff_file_read(cntr->path_cofs, &cntr->cofs);
+	cntr->cofs     = calloc(cntr->n_mrgd, sizeof(coefficient_t *));
+	cntr->n_cofs   = calloc(cntr->n_mrgd, sizeof(int));
+	cntr->cofs_t   = calloc(cntr->n_mrgd, sizeof(int));
+	cntr->cofs_ref = calloc(COFS_MAX, sizeof(unsigned long));
 
-	if (cntr->n_cofs == 0) {
-		fprintf(stderr, "No coefficient file found for the node '%s'\n", cntr->name_node);	
-		exit(1);
+	for (i = 0; i < cntr->n_mrgd; ++i)
+	{
+		node = get_my_node_conf(conf, cntr->mrgd[i].node_id);
+
+		//
+		sprintf(buffer, "%s/island%d/coeffs.%s",
+			conf->earlib.coefficients_pathname, node->island, cntr->mrgd[i].node_id);
+		
+		// Reading the coefficient
+		cntr->n_cofs[i] = coeff_file_read(buffer, &cntr->cofs[i]);
+
+		if (cntr->n_cofs[i] <= 0)
+		{
+			//
+			sprintf(buffer, "%s/island%d/coeffs.default",
+            	conf->earlib.coefficients_pathname, node->island);
+        
+			//
+			cntr->n_cofs[i] = coeff_file_read(buffer, &cntr->cofs[i]);
+			
+			if (cntr->n_cofs[i] <= 0) {
+				fprintf(stderr, "no coefficients found, exiting\n");
+				exit(1);
+			}
+
+			cntr->cofs_t[i] = 1;
+		}
+		else {
+			cntr->cofs_t[i] = 0;
+		}
+
+		free(node);
+	}
+
+
+	// Getting coefficients format
+	c = cntr->cofs[0];
+
+	for(i = 0, j = 0; i < cntr->n_cofs[0] && j < COFS_MAX; ++i)
+	{
+		if (c[i].available && c[i].pstate_ref == cntr->freq_ref && c[i].pstate != cntr->freq_ref)
+		{
+			cntr->cofs_ref[j] = c[i].pstate;
+			j += 1;
+		}
 	}
 }
 
@@ -241,14 +353,16 @@ void usage(int argc, char *argv[], control_t *cntr)
 {
 	int i = 0;
 
-	if (argc < 2) {
-		fprintf(stdout, "Usage: %s job_id [OPTIONS...]\n\n", argv[0]);
+	if (argc < 3) {
+		fprintf(stdout, "Usage: %s job_id step_id [OPTIONS...]\n\n", argv[0]);
 		fprintf(stdout, "  The job_id of the job to project.\n");
+		fprintf(stdout, "  The step_id of the job to project.\n");
 		exit(1);
 	}
 
 	// Basic parametrs
-	cntr->job_id = (unsigned long) atoi(argv[2]);
+	cntr->job_id = (unsigned long) atoi(argv[1]);
+	cntr->step_id = (unsigned long) atoi(argv[2]);
 }
 
 void init(cluster_conf_t *conf)
@@ -283,8 +397,11 @@ int main(int argc, char *argv[])
 	// Allocating applications
 	read_applications(&cntr);
 
-	// Reading coefficients
-	read_coefficients(&conf, &cntr);
+	// Read coefficients
+	read_coefficients(&conf, &cntr);	
+
+	//
+	evaluate(&cntr);
 
 	return 0;
 }

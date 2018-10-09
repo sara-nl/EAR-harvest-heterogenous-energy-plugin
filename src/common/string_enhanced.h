@@ -32,7 +32,7 @@
 
 #include <linux/limits.h>
 
-#define STEN_MAX_COLS	12
+#define STEN_MAX_COLS	20
 #define STEN_SYMBOL		"||"
 #define STEN_BUFF_SIZE	PIPE_BUF
 
