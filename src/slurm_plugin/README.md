@@ -1,15 +1,15 @@
 SLURM plugin configuration guide
 --------------------------------
-EAR SLURM plugin allows to load dynamically the EAR library for a SLURM job, if the enabling argument is set. The library will be loaded over each job step, intercepting all MPI calls. The daemon will be loaded and closed next to SLURM's daemon (*slurmd*).
+EAR SLURM plugin allows to load dynamically the EAR library for the SLURM jobs, if the enabling argument is set. The library will be loaded over each job step, intercepting all MPI calls. The daemon will be loaded and closed next to SLURM's daemon (*slurmd*).
 
 Configuration
 -------------
-1) Locate and edit the library and daemon configuration file example in the installation path, `etc/ear.conf`.
-2) Modify the values of the variables, taking into account that only accepts complete paths or names, not appending from other environment variables like `$HOME`. You can find a complete list in [environment variables configuration page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/README.md).
-1) Add in SLURM's `plugstack.conf` file, a new entry with the paths of the compiled plugin `earplug.so` and also the `ear.conf`, taking a look in the example `etc/plugstack.conf`.
-3) Reset the system or kill and run SLURM's slurmctld and slurmd daemons.
+Add in SLURM's `plugstack.conf` file, a new entry with the path of the compiled plugin `earplug.so`. Take a look into the example `etc/ear.plugstack.conf`.
 
-As previously said, EAR library and daemon behaviour depends on environment variables defined in **ear.conf** file. These environment variables could be redefined by the end user with some *srun* arguments added by the plugin (see execution section below) or exporting the same variables before sending a job.
+You will the argument `prefix` which points to the EAR installation path and it is used to load the library using `LD_PRELOAD` mechanism. Also you will find `localstatedir` used to contact with the EARD, which by default points the path you set during the `./configure` using `--localstatedir` or `EAR_TMP` arguments.
+
+
+Finally, the arguments `eargmd_host` and `eargmd_port`, for the hostname and port of the node in case you are using EARGMD.
 
 New SLURM arguments
 -------------------

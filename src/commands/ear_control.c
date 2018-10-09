@@ -71,6 +71,7 @@ void main(int argc, char *argv[])
     int optidx = 0;
     int c = 0;
     char path_name[128];
+    status_t *status;
    
     if (argc < 2) usage(argv[0]);
 
@@ -179,7 +180,7 @@ void main(int argc, char *argv[])
                     old_ping_all_nodes(my_cluster_conf);
                 break;
             case 7:
-                status_all_nodes(my_cluster_conf);
+                status_all_nodes(my_cluster_conf, &status);
                 break;
             case 8:
                 usage(argv[0]);

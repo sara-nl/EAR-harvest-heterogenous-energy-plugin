@@ -206,7 +206,6 @@ void propagate_req(request_t *command, int port)
             strcpy(nextip2, inet_ntoa(temp.sin_addr));
         }
     }
-    printf("future ips: %s\t%s\n", nextip1, nextip2);
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
@@ -220,8 +219,7 @@ void propagate_req(request_t *command, int port)
     }
     else
     {
-        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip1);
-        else printf("pinged node %s\n", nextip1);
+        if (!send_command(command)) fprintf(stderr, "Error propagating command to node %s\n", nextip1);
         eards_remote_disconnect();
     }
     
@@ -235,8 +233,114 @@ void propagate_req(request_t *command, int port)
     }
     else
     {
-        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip2);
-        else printf("pinged node %s\n", nextip2);
+        if (!send_command(command)) fprintf(stderr, "Error propagating command to node %s\n", nextip2);
         eards_remote_disconnect();
     }
+}
+
+int propagate_status(request_t *command, int port, status_t **status)
+{
+    status_t *status1, *status2, *final_status;
+    int num_status1, num_status2;
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int sfd, s;
+    int ip1, ip2, self_ip;
+    struct sockaddr_storage peer_addr;
+    socklen_t peer_addr_len;
+    ssize_t nread;
+	char buff[50], nextip1[50], nextip2[50]; 
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+    gethostname(buff, 50);
+
+   	s = getaddrinfo(buff, NULL, &hints, &result);
+    if (s != 0) {
+		VERBOSE_N(0,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
+		return;
+    }
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        if (rp->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
+            struct sockaddr_in temp;
+
+            self_ip = ip1 = ip2 = htonl(saddr->sin_addr.s_addr);
+            ip1 += command->node_dist;
+            temp.sin_addr.s_addr = ntohl(ip1);
+            strcpy(nextip1, inet_ntoa(temp.sin_addr));
+
+            ip2 -= command->node_dist;
+            temp.sin_addr.s_addr = ntohl(ip2);
+            strcpy(nextip2, inet_ntoa(temp.sin_addr));
+        }
+    }
+
+    if (command->node_dist < 1)
+    {
+        final_status = calloc(1, sizeof(status_t));
+        final_status[0].ip = self_ip;
+        final_status[0].ok = STATUS_OK;
+        *status = final_status;
+        return 1;
+    }
+
+    //the next node will propagate the command at half the distance
+    command->node_dist /= 2;
+    int actual_dist = command->node_dist;
+
+    //connect to first subnode
+    int rc = eards_remote_connect(nextip1, port);
+    if (rc < 0)
+    {
+        fprintf(stderr, "Error connecting to node: %s\n", nextip1);
+        num_status1 = correct_status(ntohl(ip1), command, port, &status1);
+    }
+    else
+    {
+        if ((num_status1 = send_status(command, &status1)) < 1)
+        {
+            fprintf(stderr, "Error propagating command to node %s\n", nextip1);
+            num_status1 = correct_status(ntohl(ip1), command, port, &status1);
+        }
+        eards_remote_disconnect();
+    }
+    
+    command->node_dist = actual_dist;
+    //connect to second subnode
+    rc = eards_remote_connect(nextip2, port);
+    if (rc < 0)
+    {
+        fprintf(stderr, "Error connecting to node: %s\n", nextip2);
+        num_status2 = correct_status(ntohl(ip2), command, port, &status2);
+    }
+    else
+    {
+        if ((num_status2 = send_status(command, &status2)) < 1)
+        {
+            fprintf(stderr, "Error propagating command to node %s\n", nextip2);
+            num_status1 = correct_status(ntohl(ip2), command, port, &status2);
+        }
+        eards_remote_disconnect();
+    }
+    
+    int total_status = num_status1 + num_status2;
+    final_status = calloc(total_status + 1, sizeof(status_t));
+    memcpy(final_status, status1, sizeof(status_t)*num_status1);
+    memcpy(&final_status[num_status1], status2, sizeof(status_t)*num_status2);
+    final_status[total_status].ip = self_ip;
+    final_status[0].ok = STATUS_OK;
+    *status = final_status;
+    free(status1);
+    free(status2);
+    return total_status + 1;
+
 }

@@ -269,8 +269,15 @@ int dynconf_set_th(ulong th)
 }
 
 /* This function will propagate the status command and will return the list of node failures */
-void dyncon_get_status(int fd)
+void dyncon_get_status(int fd, request_t *command)
 {
+    status_t *status;
+    ulong num_status = propagate_status(command, my_cluster_conf.eard.port, &status);
+    if (num_status < 1)
+        return;
+    write(fd, &num_status, sizeof(num_status));
+    write(fd, status, sizeof(status_t)*num_status);
+    free(status);
 }
 
 
@@ -325,7 +332,7 @@ void process_remote_requests(int clientfd)
 			break;
 		case EAR_RC_STATUS:
 			eard_verbose(1,"Status received\n");
-			dyncon_get_status(clientfd);
+			dyncon_get_status(clientfd, &command);
 			return;
 			break;
 		default:

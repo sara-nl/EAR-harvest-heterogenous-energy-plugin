@@ -39,6 +39,8 @@
 #include <common/database/db_helper.h>
 #include <tools/coeffs_quality.h>
 
+#define LINE "-----------------------------------------------------------------------------------------------------\n"
+
 int EAR_VERBOSE_LEVEL = 0;
 char buffer[SZ_PATH];
 
@@ -57,8 +59,10 @@ typedef struct control
 	int n_apps_merged;
 	int n_coeffs;
 	/* other */
+	uint frq_base;
 	uint learning;
-	uint f0_mhz;
+	uint summary;
+	uint hide;
 } control_t;
 	
 control_t cntr;
@@ -69,19 +73,19 @@ control_t cntr;
  *
  */
 
-double power_proj(double power0, double tpi0, coefficient_t *coeffs)
+double projection_pow(double pow_sign, double tpi_sign, coefficient_t *coeffs)
 {
-	return coeffs->A * power0 + coeffs->B * tpi0 + coeffs->C;
+	return coeffs->A * pow_sign + coeffs->B * tpi_sign + coeffs->C;
 }
 
-double cpi_proj(double cpi0, double tpi0, coefficient_t *coeffs)
+double projection_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs)
 {
-	return coeffs->D * cpi0 + coeffs->E * tpi0 + coeffs->F;
+	return coeffs->D * cpi_sign + coeffs->E * tpi_sign + coeffs->F;
 }
 
-double time_proj(double time0, double cpip, double cpi0, ulong f0, ulong fn)
+double projection_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong f0, ulong fn)
 {
-	return (time0 * cpip / cpi0) * ((double) f0 / (double) fn);
+	return (tim_sign * cpi_proj / cpi_sign) * ((double) f0 / (double) fn);
 }
 
 /*
@@ -90,7 +94,7 @@ double time_proj(double time0, double cpip, double cpi0, ulong f0, ulong fn)
  *
  */
 
-int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
+int find(application_t *apps, int n_apps, char *app_id, uint frq_base)
 {
 	int equal_id = 0;
 	int equal_fq = 0;
@@ -99,7 +103,7 @@ int find(application_t *apps, int n_apps, char *app_id, uint f0_mhz)
 	for(i = 0; i < n_apps; ++i)
 	{
 		equal_id = strcmp(app_id, apps[i].job.app_id) == 0;
-		equal_fq = f0_mhz == apps[i].signature.def_f;
+		equal_fq = frq_base == apps[i].signature.def_f;
 
 		if (equal_id && equal_fq) {
 			return i;
@@ -116,7 +120,7 @@ application_t *merge(control_t *control)
 	int n_apps, equal_id, equal_f;
 	int i, j, k;
 	char *app_id;
-	uint f0_mhz;
+	uint frq_base;
 
 	// Allocation
 	apps        = control->apps;
@@ -131,10 +135,10 @@ application_t *merge(control_t *control)
 	//
 	for(i = 0, j = 0; i < n_apps; ++i)
 	{
-		f0_mhz = apps[i].signature.def_f;
+		frq_base = apps[i].signature.def_f;
 		app_id = apps[i].job.app_id;
 
-		if (find(apps_merged, j, app_id, f0_mhz) == -1)
+		if (find(apps_merged, j, app_id, frq_base) == -1)
 		{
 			memcpy(&apps_merged[j], &apps[i], sizeof(application_t));
 
@@ -147,7 +151,7 @@ application_t *merge(control_t *control)
 			for(k = i + 1; k < n_apps; ++k)
 			{
 				equal_id = strcmp(app_id, apps[k].job.app_id) == 0;
-				equal_f  = f0_mhz == apps[k].signature.def_f;
+				equal_f  = frq_base == apps[k].signature.def_f;
 
 				if (equal_id && equal_f)
 				{
@@ -176,35 +180,58 @@ application_t *merge(control_t *control)
 
 void evaluate(control_t *control)
 {
-	char buffer[32];
-	double cpi0, tpi0, tim0, pow0;
-	double cpip, tpip, timp, powp;
-	double cpie, tpie, time, powe;
+	// App merged error
+	double cpi_sign, tpi_sign, tim_sign, pow_sign;
+	double cpi_proj, tpi_proj, tim_proj, pow_proj;
+	double cpi_serr, tpi_serr, tim_serr, pow_serr;
 
-	application_t *apps, *m;
+	// Medium error
+	double *tim_merr;
+	double *pow_merr;
+	double *n_merr;
+
+	// General error
+	double tim_gerr;
+	double pow_gerr;
+	double n_gerr;
+
+	// Other data
+	application_t *merged;
 	coefficient_t *coeffs;
-	int n_apps, n_coeffs;
+	int n_merged;
+	int n_coeffs;
+	int frq_base;
 	int i, j, k;
-	uint f0_mhz;
 
-	buffer[0] = '\0';
-	f0_mhz   = control->f0_mhz;
+	//
+	frq_base = control->frq_base;
 	coeffs   = control->coeffs;
-	apps     = control->apps_merged;
 	n_coeffs = control->n_coeffs;
-	n_apps   = control->n_apps_merged;
-			
+	merged   = control->apps_merged;
+	n_merged = control->n_apps_merged;
+
+	// Medium Error
+	tim_merr = calloc(n_coeffs, sizeof(double));
+	pow_merr = calloc(n_coeffs, sizeof(double));
+	n_merr   = calloc(n_coeffs, sizeof(double));
+
+	// General medium error
+	tim_gerr = 0.0;
+	pow_gerr = 0.0;
+	n_gerr = 0.0;
+
+	// Initializing columns
 	tprintf_init(stderr, "18 11 15 12 12 15 12 12");
 
-	for (j = 0; j < n_apps; ++j)
+	for (j = 0; j < n_merged; ++j)
 	{
-		if (apps[j].signature.def_f == f0_mhz)
+		if (merged[j].signature.def_f == frq_base)
 		{
 			for (i = 0, k = 0; i < n_coeffs; i++)
             {
-                if (coeffs[i].available && coeffs[i].pstate_ref == f0_mhz)
+                if (coeffs[i].available && coeffs[i].pstate_ref == frq_base)
                 {
-                    k += find(apps, n_apps, apps[j].job.app_id, coeffs[i].pstate) != -1;
+                    k += find(merged, n_merged, merged[j].job.app_id, coeffs[i].pstate) != -1;
 				}
 			}
 
@@ -213,42 +240,96 @@ void evaluate(control_t *control)
 				continue;
 			}
 
-			tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
-					apps[j].job.app_id, apps[j].signature.def_f);
+			if (!control->hide) {
+				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
+						merged[j].job.app_id, merged[j].signature.def_f);
+			}
 
-			cpi0 = apps[j].signature.CPI;
-			tpi0 = apps[j].signature.TPI;
-			tim0 = apps[j].signature.time;
-			pow0 = apps[j].signature.DC_power;
+			cpi_sign = merged[j].signature.CPI;
+			tpi_sign = merged[j].signature.TPI;
+			tim_sign = merged[j].signature.time;
+			pow_sign = merged[j].signature.DC_power;
 
 			for (i = 0; i < n_coeffs; i++)
 			{
-				if (coeffs[i].available && coeffs[i].pstate_ref == f0_mhz)
+				if (coeffs[i].available && coeffs[i].pstate_ref == frq_base)
 				{
-					cpip = cpi_proj(cpi0, tpi0, &coeffs[i]);
-					timp = time_proj(tim0, cpip, cpi0, f0_mhz, coeffs[i].pstate);
-					powp = power_proj(pow0, tpi0, &coeffs[i]);
+					// Error
+					cpi_proj = projection_cpi(cpi_sign, tpi_sign, &coeffs[i]);
+					tim_proj = projection_tim(tim_sign, cpi_proj, cpi_sign, frq_base, coeffs[i].pstate);
+					pow_proj = projection_pow(pow_sign, tpi_sign, &coeffs[i]);
 
-					k = find(apps, n_apps, apps[j].job.app_id, coeffs[i].pstate);
+					// Fin that application for that coefficient
+					k = find(merged, n_merged, merged[j].job.app_id, coeffs[i].pstate);
 
 					if (k != -1)
 					{
-						m = &apps[k];
+						application_t *m = &merged[k];						
 
-						time = fabs((1.0 - (m->signature.time / timp)) * 100.0);
-						powe = fabs((1.0 - (m->signature.DC_power / powp)) * 100.0);
-						cpie = fabs((1.0 - (m->signature.CPI / cpip)) * 100.0);
+						tim_serr = fabs((1.0 - (m->signature.time / tim_proj)) * 100.0);
+						pow_serr = fabs((1.0 - (m->signature.DC_power / pow_proj)) * 100.0);
+						cpi_serr = fabs((1.0 - (m->signature.CPI / cpi_proj)) * 100.0);
 
-						tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
-								coeffs[i].pstate, m->signature.time, timp, time,
-								m->signature.DC_power, powp, powe);
+						if (!control->hide)
+						{
+							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
+								coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
+								m->signature.DC_power, pow_proj, pow_serr);
+						}
 					} else {
-						tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
+						if (!control->hide) {
+							tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
+						}
+					}
+
+					// Medium error
+					if (coeffs[i].pstate != frq_base) {
+						tim_merr[i] += tim_serr;
+						pow_merr[i] += pow_serr;
+						n_merr[i]   += 1.0;
 					}
 				}
 			}
 		}
 	}
+
+	if (!control->summary) {
+		return;
+	}
+
+	// Coefficients medium error
+	
+	if (!control->hide) {
+		fprintf(stderr, LINE);
+	}
+	
+	tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
+
+	for (i = 0; i < n_coeffs; i++)
+	{
+		if (n_merr[i] > 0.0)
+		{
+			// Medium error
+			tim_merr[i] = tim_merr[i] / n_merr[i];
+			pow_merr[i] = pow_merr[i] / n_merr[i];
+
+			tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+					coeffs[i].pstate, tim_merr[i], pow_merr[i]);
+
+			// General medium error
+			tim_gerr += tim_merr[i];
+			pow_gerr += pow_merr[i];
+			n_gerr   += 1.0f;
+		}
+	}
+
+	// General medium error
+	fprintf(stderr, LINE);
+	tim_gerr = tim_gerr / n_gerr;
+	pow_gerr = pow_gerr / n_gerr;
+
+	tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+			frq_base, tim_gerr, pow_gerr);
 }
 
 /*
@@ -308,21 +389,37 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 
 void usage(int argc, char *argv[], control_t *cntr)
 {
-	if (argc > 4 || argc < 3) {
+	int i = 0;
+
+	if (argc < 3) {
 		fprintf(stdout, "Usage: %s hostname frequency [OPTIONS...]\n\n", argv[0]);
 		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
 		fprintf(stdout, "  The frequency is the nominal base frequency of that node.\n\n");
 		fprintf(stdout, "Options:\n");
 		fprintf(stdout, "\t-A, --all\tMerges the applications database in addition\n");
 		fprintf(stdout, "\t\t\tof the learning applications database.\n");
-		
+		fprintf(stdout, "\t-S, --summary\tShows the medium and general errors.\n");
+		fprintf(stdout, "\t-H, --hide\tHides the merged applications projections and errors.\n");
 		exit(1);
 	}
 
-	cntr->f0_mhz = (unsigned long) atoi(argv[2]);
+	// Basic parametrs
+	cntr->frq_base = (unsigned long) atoi(argv[2]);
 	strcpy(cntr->name_node, argv[1]);
 
-	cntr->learning = (argc == 4) && ((strcmp(argv[3], "-A") == 0) || (strcmp(argv[3], "--all") == 0));
+	// Additional parameters
+	for (i = 3; i < argc; ++i)
+	{
+		if (!cntr->learning)
+			cntr->learning = ((strcmp(argv[i], "-A") == 0) ||
+						 	  (strcmp(argv[i], "--all") == 0));
+		if (!cntr->summary)
+			cntr->summary = ((strcmp(argv[i], "-S") == 0) ||
+							 (strcmp(argv[i], "--summary") == 0));
+		if (!cntr->hide)
+			cntr->hide = ((strcmp(argv[i], "-H") == 0) ||
+						  (strcmp(argv[i], "--hide") == 0));
+	}
 }
 
 void init(cluster_conf_t *conf)
@@ -337,6 +434,12 @@ void init(cluster_conf_t *conf)
 
 	init_db_helper(&conf->database);
 }
+
+/*
+ *
+ * Main
+ *
+ */
 
 int main(int argc, char *argv[])
 {
