@@ -72,6 +72,8 @@ extern resched_t *resched_conf;
 
 static ulong* f_list;
 static uint num_f;
+int last_command = -1;
+int last_command_time = -1;
 
 void print_f_list(uint p_states,ulong *freql)
 {
@@ -297,6 +299,14 @@ void process_remote_requests(int clientfd)
 	ulong ack=EAR_SUCCESS;
 	eard_verbose(2,"connection received\n");
 	req=read_command(clientfd,&command);
+    if (req == last_command && command.time_code == last_command_time)
+        return;
+    else
+    {
+        last_command = req;
+        last_command_time = command.time_code;
+    }
+
 	switch (req){
 		case EAR_RC_NEW_JOB:
 			eard_verbose(1,"*******************************************\n");

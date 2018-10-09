@@ -108,8 +108,8 @@ int coeff_file_read(char *path, coefficient_t **coeffs)
         return EAR_READ_ERROR;
     }
     close(fd);
-
-    *coeffs = coeffs_aux;
+    
+	*coeffs = coeffs_aux;
     return (size / sizeof(coefficient_t));
 }
 

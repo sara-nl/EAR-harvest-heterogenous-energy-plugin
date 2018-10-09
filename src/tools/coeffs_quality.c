@@ -376,22 +376,45 @@ void read_applications(control_t *cntr)
 
 void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 {
-	sprintf(cntr->path_coeffs, "%s/island0/coeffs.%s",
-		conf->earlib.coefficients_pathname, cntr->name_node);
+	my_node_conf_t *node;
 
+	//
+	node = get_my_node_conf(conf, cntr->name_node);
+	
+	//
+	sprintf(cntr->path_coeffs, "%s/island%d/coeffs.%s",
+		conf->earlib.coefficients_pathname, node->island, cntr->name_node);
+
+	//
 	cntr->n_coeffs = coeff_file_read(cntr->path_coeffs, &cntr->coeffs);
 
-	if (cntr->n_coeffs == 0) {
-		fprintf(stderr, "No coefficient file found for the node '%s'\n", cntr->name_node);	
-		exit(1);
+	if (cntr->n_coeffs <= 0)
+	{
+		fprintf(stderr, "no coefficient file found for the node '%s', using defaults\n", cntr->name_node);	
+		
+		//
+		sprintf(buffer, "%s/island%d/coeffs.default",
+ 			conf->earlib.coefficients_pathname, node->island);
+
+		//
+		cntr->n_coeffs = coeff_file_read(buffer, &cntr->coeffs);	
+		
+		if (cntr->n_coeffs <= 0)
+		{
+			fprintf(stderr, "no default coefficients found, exiting\n");	
+			exit(1);
+		}
 	}
+
+	free(node);
 }
 
 void usage(int argc, char *argv[], control_t *cntr)
 {
 	int i = 0;
 
-	if (argc < 3) {
+	if (argc < 3)
+	{
 		fprintf(stdout, "Usage: %s hostname frequency [OPTIONS...]\n\n", argv[0]);
 		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
 		fprintf(stdout, "  The frequency is the nominal base frequency of that node.\n\n");

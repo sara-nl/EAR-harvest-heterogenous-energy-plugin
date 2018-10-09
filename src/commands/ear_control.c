@@ -72,6 +72,7 @@ void main(int argc, char *argv[])
     int c = 0;
     char path_name[128];
     status_t *status;
+    int num_status = 0;
    
     if (argc < 2) usage(argv[0]);
 
@@ -180,13 +181,19 @@ void main(int argc, char *argv[])
                     old_ping_all_nodes(my_cluster_conf);
                 break;
             case 7:
-                status_all_nodes(my_cluster_conf, &status);
+                num_status = status_all_nodes(my_cluster_conf, &status);
                 break;
             case 8:
                 usage(argv[0]);
                 break;
         }
     }
-
+    if (num_status > 0)
+    {
+        printf("Status returned.\n");
+        int i;
+        for (i = 0; i < num_status; i++)
+            printf("ip: %d\tstatus: %d\n", status[i].ip, status[i].ip);
+    }
     free_cluster_conf(&my_cluster_conf);
 }
