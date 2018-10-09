@@ -92,7 +92,12 @@ int send_status(request_t *command, status_t **status)
 	ret=read(eards_sfd,&ack,sizeof(ulong));
 	if (ret<0){
 		VERBOSE_N(0,"Error receiving ack %d\n",ret);
+        return EAR_ERROR;
 	}
+    if (ack < 1){
+        VERBOSE_N(0, "Number of status is not a valid amount: %d", ack);
+        return EAR_ERROR;
+    }
 
     return_status = calloc(ack, sizeof(status_t));
     ret = read(eards_sfd, return_status, sizeof(status_t)*ack);
@@ -519,6 +524,43 @@ void correct_error(int target_ip, request_t *command, int port)
     } 
 }
 
+int correct_status_starter(char *host_name, request_t *command, int port, status_t **status)
+{
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int sfd, s;
+    int ip1, ip2;
+    struct sockaddr_storage peer_addr;
+    socklen_t peer_addr_len;
+    ssize_t nread;
+    int host_ip = 0;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+   	s = getaddrinfo(host_name, NULL, &hints, &result);
+    if (s != 0) {
+		fprintf(stderr,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
+		return;
+    }
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        if (rp->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
+            host_ip = saddr->sin_addr.s_addr;
+        }
+    }
+    freeaddrinfo(result);
+    return correct_status(host_ip, command, port, status);
+}
+
+
 void correct_error_starter(char *host_name, request_t *command, int port)
 {
     struct addrinfo hints;
@@ -559,6 +601,8 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc; 
     char node_name[256];
+    time_t ctime = time(NULL);
+    command.time_code = ctime;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {   
@@ -604,6 +648,8 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
     status_t *temp_status, *all_status = NULL;
     int num_all_status = 0, num_temp_status;
     request_t command;
+    time_t ctime = time(NULL);
+    command.time_code = ctime;
     command.req = EAR_RC_STATUS;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -631,13 +677,13 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
                 VERBOSE_N(0,"Error connecting with node %s, trying to correct it", node_name);
-                //correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
+                correct_status_starter(node_name, &command, my_cluster_conf.eard.port, status);
             }
             else{
-                VERBOSE_N(1,"Node %s with distance %d concated with status!\n", node_name, command.node_dist);
+                VERBOSE_N(1,"Node %s with distance %d contacted with status!\n", node_name, command.node_dist);
                 if (num_temp_status = send_status(&command, &temp_status)) {
                     VERBOSE_N(0,"Error doing status for node %s, trying to correct it", node_name);
-                //    correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
+                    correct_status_starter(node_name, &command, my_cluster_conf.eard.port, status);
                 }
                 eards_remote_disconnect();
             }
