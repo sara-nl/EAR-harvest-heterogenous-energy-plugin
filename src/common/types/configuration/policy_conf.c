@@ -40,8 +40,8 @@
  *  * POLICY FUNCTIONS
  *   */
 
-/* Given a cluser, node and policy_id, returns the policy configuration (or NULL) */
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id)
+/* Given a  node and policy_id, returns the policy configuration (or NULL) */
+policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id)
 {
     policy_conf_t *my_policy=NULL;
     uint i;

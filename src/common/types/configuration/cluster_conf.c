@@ -113,6 +113,22 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 	return n;
 }
 
+void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
+{
+	int i;
+	dest->cpus=src->cpus;
+	dest->island=src->island;
+	dest->max_pstate=src->max_pstate;
+	strcpy(dest->db_ip,src->db_ip);
+	strcpy(dest->db_sec_ip,src->db_sec_ip);
+	dest->coef_file=malloc(strlen(src->coef_file)+1);
+	strcpy(dest->coef_file,src->coef_file);
+	dest->num_policies=src->num_policies;
+	for (i=0;i<TOTAL_POLICIES;i++){
+		copy_policy_conf(&dest->policies[i],&src->policies[i]);
+	}
+	
+}
 
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 {

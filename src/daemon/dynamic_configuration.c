@@ -63,6 +63,7 @@ int eards_remote_socket,eards_client;
 struct sockaddr_in eards_remote_client;
 char *my_tmp;
 extern cluster_conf_t my_cluster_conf;
+extern my_node_conf_t     *my_node_conf;
 
 static char *__NAME__ = "EARD";
 extern char *__HOST__;
@@ -213,7 +214,15 @@ int dynconf_set_freq(ulong freq)
 
 int dyncon_restore_conf()
 {
-	powermon_reload_conf();
+	int pid;
+	policy_conf_t *my_policy;
+	pid=MIN_TIME_TO_SOLUTION;
+	my_policy=get_my_policy_conf(my_node_conf,pid);
+	dyn_conf->max_freq=frequency_pstate_to_freq(my_node_conf->max_pstate);
+	dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
+	dyn_conf->def_p_state=my_policy->p_state;
+	dyn_conf->th=my_policy->th;
+	
 	return EAR_SUCCESS;
 }
 
