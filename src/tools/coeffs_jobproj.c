@@ -46,43 +46,23 @@ typedef struct control
 {
 	/* Merged applications */
 	application_t *mrgd;
-	int n_mrgd;
+	int mrgd_n;
 	/* Coefficients */
 	coefficient_t **cofs;
-	ulong *cofs_ref;
 	int *cofs_n;
 	int *cofs_s;
+	/* Frequency */
+	ulong *f_dst;
+	ulong  f_src;
 	/* Others */
-	ulong freq_ref;
 	job_id step_id;
 	job_id job_id;
 	int cols_n;
 } control_t;
 
-static char buffer[SZ_PATH];
 static char *cofs_str[2] = { "ok", "def" };
+static char buffer[SZ_PATH];
 static control_t cntr;
-
-/*
- *
- * Projections
- *
- */
-
-double projection_pow(double pow_sign, double tpi_sign, coefficient_t *cofs)
-{
-	return cofs->A * pow_sign + cofs->B * tpi_sign + cofs->C;
-}
-
-double projection_cpi(double cpi_sign, double tpi_sign, coefficient_t *cofs)
-{
-	return cofs->D * cpi_sign + cofs->E * tpi_sign + cofs->F;
-}
-
-double projection_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong freq_from, ulong freq_to)
-{
-	return (tim_sign * cpi_proj / cpi_sign) * ((double) freq_from / (double) freq_to);
-}
 
 /*
  *
@@ -107,7 +87,7 @@ void evaluate(control_t *cntr)
 	tprintf("%s||Coe.||@%u|| | T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|| | P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
 			cntr->mrgd[0].job.app_id, cntr->mrgd[0].signature.def_f);
 
-	for(i = 0; i < cntr->n_mrgd; ++i)
+	for(i = 0; i < cntr->mrgd_n; ++i)
 	{
 		m = &cntr->mrgd[i];
 		c = cntr->cofs[i];
@@ -121,16 +101,16 @@ void evaluate(control_t *cntr)
 		// Coefficients format
 		for (j = 0, r = 0; j < n; j++)
 		{
-			if (c[j].available && c[j].pstate_ref == cntr->freq_ref)
+			if (c[j].available && c[j].pstate_ref == cntr->f_src)
 			{
 				for (k = 0; k < COLUMNS; ++k)
 				{
-					if (c[j].pstate == cntr->cofs_ref[k])
+					if (c[j].pstate == cntr->f_dst[k])
 					{
 						//fprintf(stderr, "r %d ref %lu pstate %lu\n", r, c[j].pstate_ref, c[j].pstate);
-						cpi_proj[r] = projection_cpi(cpi_sign, tpi_sign, &c[j]);
-						tim_proj[r] = projection_tim(tim_sign, cpi_proj[r], cpi_sign, cntr->freq_ref, c[j].pstate);
-						pow_proj[r] = projection_pow(pow_sign, tpi_sign, &c[j]);
+						cpi_proj[r] = coeff_project_cpi(cpi_sign, tpi_sign, &c[j]);
+						tim_proj[r] = coeff_project_tim(tim_sign, cpi_proj[r], cpi_sign, cntr->f_src, c[j].pstate);
+						pow_proj[r] = coeff_project_pow(pow_sign, tpi_sign, &c[j]);
 						r += 1;
 					}
 				}
@@ -151,7 +131,7 @@ void evaluate(control_t *cntr)
 	tprintf("Idx||Freq. from||Freq. to");	
 	for (k = 0; k < COLUMNS; ++k)
     {
-		tprintf("%d||%lu||%lu", k + 1, cntr->freq_ref, cntr->cofs_ref[k]);
+		tprintf("%d||%lu||%lu", k + 1, cntr->f_src, cntr->f_dst[k]);
 	}
 }
 
@@ -169,40 +149,47 @@ void read_applications(control_t *cntr)
 	sprintf(buffer, "SELECT * FROM Applications WHERE job_id = %lu AND step_id = %lu", cntr->job_id, cntr->step_id);
 
 	//
-	cntr->n_mrgd = db_read_applications_query(&apps, buffer);
+	cntr->mrgd_n = db_read_applications_query(&apps, buffer);
 
-	if (cntr->n_mrgd == 0) {
+	if (cntr->mrgd_n == 0) {
 		fprintf(stderr, "No apps found for the job_id '%lu'\n", cntr->job_id);
 		exit(1);
 	}
 	
 	//
-	cntr->mrgd = calloc(cntr->n_mrgd, sizeof(application_t));
-	memcpy(cntr->mrgd, apps, cntr->n_mrgd * sizeof(application_t));
+	cntr->mrgd = calloc(cntr->mrgd_n, sizeof(application_t));
+	memcpy(cntr->mrgd, apps, cntr->mrgd_n * sizeof(application_t));
 	free(apps);
 
 	//
-	cntr->freq_ref = cntr->mrgd[0].signature.def_f;
+	cntr->f_src = cntr->mrgd[0].signature.def_f;
 }
 
 void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 {
-	my_node_conf_t *node;
-	coefficient_t *c;	
+	coefficient_t *c;
+	char *node;
+	int island;
 	int i, j;
 
-	cntr->cofs     = calloc(cntr->n_mrgd, sizeof(coefficient_t *));
-	cntr->cofs_n   = calloc(cntr->n_mrgd, sizeof(int));
-	cntr->cofs_s   = calloc(cntr->n_mrgd, sizeof(int));
-	cntr->cofs_ref = calloc(COLUMNS, sizeof(unsigned long));
+	cntr->cofs     = calloc(cntr->mrgd_n, sizeof(coefficient_t *));
+	cntr->cofs_n   = calloc(cntr->mrgd_n, sizeof(int));
+	cntr->cofs_s   = calloc(cntr->mrgd_n, sizeof(int));
+	cntr->f_dst = calloc(COLUMNS, sizeof(unsigned long));
 
-	for (i = 0; i < cntr->n_mrgd; ++i)
+	for (i = 0; i < cntr->mrgd_n; ++i)
 	{
-		node = get_my_node_conf(conf, cntr->mrgd[i].node_id);
+		node = cntr->mrgd[i].node_id;
+		island = get_node_island(conf, node);
+
+		if (island == EAR_ERROR) {
+			fprintf(stderr, "no island found for node %s, exiting\n", node);
+			exit(1);
+		}
 
 		//
 		sprintf(buffer, "%s/island%d/coeffs.%s",
-			conf->earlib.coefficients_pathname, node->island, cntr->mrgd[i].node_id);
+			conf->earlib.coefficients_pathname, island, cntr->mrgd[i].node_id);
 		
 		// Reading the coefficient
 		cntr->cofs_n[i] = coeff_file_read(buffer, &cntr->cofs[i]);
@@ -211,13 +198,13 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 		{
 			//
 			sprintf(buffer, "%s/island%d/coeffs.default",
-            	conf->earlib.coefficients_pathname, node->island);
+            	conf->earlib.coefficients_pathname, island);
         
 			//
 			cntr->cofs_n[i] = coeff_file_read(buffer, &cntr->cofs[i]);
 			
 			if (cntr->cofs_n[i] <= 0) {
-				fprintf(stderr, "no coefficients found, exiting\n");
+				fprintf(stderr, "no coefficients found for node %s, exiting\n", node);
 				exit(1);
 			}
 
@@ -236,9 +223,9 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 
 	for(i = 0, j = 0; i < cntr->cofs_n[0] && j < COLUMNS; ++i)
 	{
-		if (c[i].available && c[i].pstate_ref == cntr->freq_ref && c[i].pstate != cntr->freq_ref)
+		if (c[i].available && c[i].pstate_ref == cntr->f_src && c[i].pstate != cntr->f_src)
 		{
-			cntr->cofs_ref[j] = c[i].pstate;
+			cntr->f_dst[j] = c[i].pstate;
 			j += 1;
 		}
 	}
