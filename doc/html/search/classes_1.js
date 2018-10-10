@@ -1,8 +1,8 @@
 var searchData=
 [
   ['cluster_5fconf',['cluster_conf',['../structcluster__conf.html',1,'']]],
-  ['coefficients_5finfo',['Coefficients_info',['../structCoefficients__info.html',1,'']]],
-  ['coefficients_5finfo_5fv3',['Coefficients_info_v3',['../structCoefficients__info__v3.html',1,'']]],
+  ['coefficient',['coefficient',['../structcoefficient.html',1,'']]],
+  ['coefficient_5fobs',['coefficient_obs',['../structcoefficient__obs.html',1,'']]],
   ['communication_5fnode',['communication_node',['../structcommunication__node.html',1,'']]],
   ['control',['control',['../structcontrol.html',1,'']]],
   ['cpufreq_5faffected_5fcpus',['cpufreq_affected_cpus',['../structcpufreq__affected__cpus.html',1,'']]],

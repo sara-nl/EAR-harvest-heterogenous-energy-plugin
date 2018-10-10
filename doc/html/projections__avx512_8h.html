@@ -96,15 +96,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a2079fb84b7ff594d17a133e1eecb8b47"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="projections__avx512_8h.html#a2079fb84b7ff594d17a133e1eecb8b47">power_proj</a> (double power_f0, double tpi_f0, struct <a class="el" href="structCoefficients__info.html">Coefficients_info</a> *my_coeffs, struct <a class="el" href="structCoefficients__info.html">Coefficients_info</a> *my_coeffs_avx512, double perc_nonavx512, double perc_avx512)</td></tr>
-<tr class="separator:a2079fb84b7ff594d17a133e1eecb8b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a591a57edff3315873099c6c53d902dff"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="projections__avx512_8h.html#a591a57edff3315873099c6c53d902dff">cpi_proj</a> (double cpi_f0, double tpi_f0, struct <a class="el" href="structCoefficients__info.html">Coefficients_info</a> *my_coeffs, struct <a class="el" href="structCoefficients__info.html">Coefficients_info</a> *my_coeffs_avx512, double perc_nonavx512, double perc_avx512)</td></tr>
-<tr class="separator:a591a57edff3315873099c6c53d902dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7dc6940245f8a35d6c4a9260866f5eeb"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="projections__avx512_8h.html#a7dc6940245f8a35d6c4a9260866f5eeb">time_proj</a> (double time_f0, double <a class="el" href="projections__avx512_8h.html#a591a57edff3315873099c6c53d902dff">cpi_proj</a>, double cpi_f0, unsigned long f0, unsigned long fn)</td></tr>
+<tr class="memitem:a197ef36ef37c41691c48f8e6893ddd98"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="projections__avx512_8h.html#a197ef36ef37c41691c48f8e6893ddd98">power_proj</a> (double power_f0, double tpi_f0, struct <a class="el" href="structcoefficient__obs.html">coefficient_obs</a> *my_coeffs, struct <a class="el" href="structcoefficient__obs.html">coefficient_obs</a> *my_coeffs_avx512, double perc_nonavx512, double perc_avx512)</td></tr>
+<tr class="separator:a197ef36ef37c41691c48f8e6893ddd98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae771b5976490abde7cb61e3ed8f4be0d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="projections__avx512_8h.html#ae771b5976490abde7cb61e3ed8f4be0d">cpi_proj</a> (double cpi_f0, double tpi_f0, struct <a class="el" href="structcoefficient__obs.html">coefficient_obs</a> *my_coeffs, struct <a class="el" href="structcoefficient__obs.html">coefficient_obs</a> *my_coeffs_avx512, double perc_nonavx512, double perc_avx512)</td></tr>
+<tr class="separator:ae771b5976490abde7cb61e3ed8f4be0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7dc6940245f8a35d6c4a9260866f5eeb"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="projections__avx512_8h.html#a7dc6940245f8a35d6c4a9260866f5eeb">time_proj</a> (double time_f0, double <a class="el" href="projections__avx512_8h.html#ae771b5976490abde7cb61e3ed8f4be0d">cpi_proj</a>, double cpi_f0, unsigned long f0, unsigned long fn)</td></tr>
 <tr class="separator:a7dc6940245f8a35d6c4a9260866f5eeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a591a57edff3315873099c6c53d902dff"></a>
+<a class="anchor" id="ae771b5976490abde7cb61e3ed8f4be0d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -123,13 +123,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct <a class="el" href="structCoefficients__info.html">Coefficients_info</a> *&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structcoefficient__obs.html">coefficient_obs</a> *&#160;</td>
           <td class="paramname"><em>my_coeffs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct <a class="el" href="structCoefficients__info.html">Coefficients_info</a> *&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structcoefficient__obs.html">coefficient_obs</a> *&#160;</td>
           <td class="paramname"><em>my_coeffs_avx512</em>, </td>
         </tr>
         <tr>
@@ -154,7 +154,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a2079fb84b7ff594d17a133e1eecb8b47"></a>
+<a class="anchor" id="a197ef36ef37c41691c48f8e6893ddd98"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -173,13 +173,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct <a class="el" href="structCoefficients__info.html">Coefficients_info</a> *&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structcoefficient__obs.html">coefficient_obs</a> *&#160;</td>
           <td class="paramname"><em>my_coeffs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct <a class="el" href="structCoefficients__info.html">Coefficients_info</a> *&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structcoefficient__obs.html">coefficient_obs</a> *&#160;</td>
           <td class="paramname"><em>my_coeffs_avx512</em>, </td>
         </tr>
         <tr>

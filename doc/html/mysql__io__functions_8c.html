@@ -117,7 +117,7 @@ Macros</h2></td></tr>
 <tr class="separator:a68effc267f27cd0165f187cd93ad3b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa58a0a489cd172cb4fec2250581c301b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#aa58a0a489cd172cb4fec2250581c301b">PERIODIC_AGGREGATION_QUERY</a>&#160;&#160;&#160;&quot;INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time) VALUES (?, ?, ?)&quot;</td></tr>
 <tr class="separator:aa58a0a489cd172cb4fec2250581c301b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae26e04f503f8840935e4bb4c814e1106"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ae26e04f503f8840935e4bb4c814e1106">EAR_EVENT_QUERY</a>&#160;&#160;&#160;&quot;INSERT INTO Events (timestamp, event_type, <a class="el" href="generic_8h.html#aa17a8e6cdc1860741119dc46c1777778">job_id</a>, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)&quot;</td></tr>
+<tr class="memitem:ae26e04f503f8840935e4bb4c814e1106"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ae26e04f503f8840935e4bb4c814e1106">EAR_EVENT_QUERY</a>&#160;&#160;&#160;&quot;INSERT INTO Events (timestamp, event_type, <a class="el" href="generic_8h.html#aa17a8e6cdc1860741119dc46c1777778">job_id</a>, <a class="el" href="remove__learning_8c.html#aaaecc7646b3c722387d285ecbb165474">step_id</a>, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)&quot;</td></tr>
 <tr class="separator:ae26e04f503f8840935e4bb4c814e1106"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae63867abc6cc4810a393f5a97f6b7915"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ae63867abc6cc4810a393f5a97f6b7915">EAR_WARNING_QUERY</a>&#160;&#160;&#160;&quot;INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state) VALUES (?, ?, ?, ?)&quot;</td></tr>
 <tr class="separator:ae63867abc6cc4810a393f5a97f6b7915"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -127,20 +127,6 @@ Macros</h2></td></tr>
 <tr class="separator:ade911e8ba4bc6289e7c81d70efe2afc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21ae2d1228953f337ca7a45825f268ef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a21ae2d1228953f337ca7a45825f268ef">LEARNING_JOB_QUERY</a></td></tr>
 <tr class="separator:a21ae2d1228953f337ca7a45825f268ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91e348e7084f8775ca5e575e658172e3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a91e348e7084f8775ca5e575e658172e3">PERIODIC_METRIC_ARGS</a>&#160;&#160;&#160;6</td></tr>
-<tr class="separator:a91e348e7084f8775ca5e575e658172e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16ed43b9c7c9a96e03699705531c73c0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a16ed43b9c7c9a96e03699705531c73c0">PERIODIC_AGGREGATION_ARGS</a>&#160;&#160;&#160;3</td></tr>
-<tr class="separator:a16ed43b9c7c9a96e03699705531c73c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9867b97e0b5cb11393bd0fd5ee0ed90f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a9867b97e0b5cb11393bd0fd5ee0ed90f">EAR_EVENTS_ARGS</a>&#160;&#160;&#160;6</td></tr>
-<tr class="separator:a9867b97e0b5cb11393bd0fd5ee0ed90f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a593ef474ef6541845f62c3d6af43f051"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a593ef474ef6541845f62c3d6af43f051">SIGNATURE_ARGS</a>&#160;&#160;&#160;21</td></tr>
-<tr class="separator:a593ef474ef6541845f62c3d6af43f051"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d79f154eaf6a1b881cb11c7caba8659"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a5d79f154eaf6a1b881cb11c7caba8659">POWER_SIGNATURE_ARGS</a>&#160;&#160;&#160;9</td></tr>
-<tr class="separator:a5d79f154eaf6a1b881cb11c7caba8659"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab72650713c5ca9895d4dc93d4e8d70bd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ab72650713c5ca9895d4dc93d4e8d70bd">APPLICATION_ARGS</a>&#160;&#160;&#160;5</td></tr>
-<tr class="separator:ab72650713c5ca9895d4dc93d4e8d70bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e198abe0f1747d8b026a5f0003b7f7c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a8e198abe0f1747d8b026a5f0003b7f7c">LOOP_ARGS</a>&#160;&#160;&#160;8</td></tr>
-<tr class="separator:a8e198abe0f1747d8b026a5f0003b7f7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -153,10 +139,13 @@ Functions</h2></td></tr>
 <tr class="memitem:a85c24e0d94698b94e90fc6babb558a4c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a85c24e0d94698b94e90fc6babb558a4c">mysql_batch_insert_applications</a> (MYSQL *connection, <a class="el" href="application_8h.html#af0a524c43fc5f548021099181df194bf">application_t</a> *app, int <a class="el" href="compute__coefficients__v2_8c.html#a38c5085379783428dd049efbedc264dd">num_apps</a>)</td></tr>
 <tr class="memdesc:a85c24e0d94698b94e90fc6babb558a4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and an array of applications, insert said applications into the database.  <a href="#a85c24e0d94698b94e90fc6babb558a4c">More...</a><br /></td></tr>
 <tr class="separator:a85c24e0d94698b94e90fc6babb558a4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2eb0102839b75a6752c6ac0d62541520"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a2eb0102839b75a6752c6ac0d62541520">mysql_batch_insert_jobs</a> (MYSQL *connection, <a class="el" href="application_8h.html#af0a524c43fc5f548021099181df194bf">application_t</a> *app, int <a class="el" href="compute__coefficients__v2_8c.html#a38c5085379783428dd049efbedc264dd">num_apps</a>)</td></tr>
+<tr class="memdesc:a2eb0102839b75a6752c6ac0d62541520"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and an array of applications, insert said applications' jobs into the database.  <a href="#a2eb0102839b75a6752c6ac0d62541520">More...</a><br /></td></tr>
+<tr class="separator:a2eb0102839b75a6752c6ac0d62541520"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa48d24beaa977d383a5ec987b7406087"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#aa48d24beaa977d383a5ec987b7406087">mysql_batch_insert_applications_no_mpi</a> (MYSQL *connection, <a class="el" href="application_8h.html#af0a524c43fc5f548021099181df194bf">application_t</a> *app, int <a class="el" href="compute__coefficients__v2_8c.html#a38c5085379783428dd049efbedc264dd">num_apps</a>)</td></tr>
 <tr class="memdesc:aa48d24beaa977d383a5ec987b7406087"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and an array of applications, insert said applications into the database.  <a href="#aa48d24beaa977d383a5ec987b7406087">More...</a><br /></td></tr>
 <tr class="separator:aa48d24beaa977d383a5ec987b7406087"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8beaaa12d8415ce19bb815c8fab4299"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ab8beaaa12d8415ce19bb815c8fab4299">mysql_retrieve_applications</a> (MYSQL *connection, char *query, <a class="el" href="application_8h.html#af0a524c43fc5f548021099181df194bf">application_t</a> **apps, char is_learning)</td></tr>
+<tr class="memitem:ab8beaaa12d8415ce19bb815c8fab4299"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ab8beaaa12d8415ce19bb815c8fab4299">mysql_retrieve_applications</a> (MYSQL *connection, char *<a class="el" href="remove__learning_8c.html#a0ad9302c12c82c3144067f176a085cec">query</a>, <a class="el" href="application_8h.html#af0a524c43fc5f548021099181df194bf">application_t</a> **apps, char is_learning)</td></tr>
 <tr class="memdesc:ab8beaaa12d8415ce19bb815c8fab4299"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and a valid MYSQL query, stores in applications the applications found in the database corresponding to the query.  <a href="#ab8beaaa12d8415ce19bb815c8fab4299">More...</a><br /></td></tr>
 <tr class="separator:ab8beaaa12d8415ce19bb815c8fab4299"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a025afbf085db10fb73351ca6874070f8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a025afbf085db10fb73351ca6874070f8">mysql_insert_loop</a> (MYSQL *connection, <a class="el" href="loop_8h.html#a3cab4c06c8bb84fe949df61aa5ca8d5b">loop_t</a> *<a class="el" href="structloop.html">loop</a>)</td></tr>
@@ -165,13 +154,13 @@ Functions</h2></td></tr>
 <tr class="memitem:a70921ca2d1e7c7656019c009fabaf84b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a70921ca2d1e7c7656019c009fabaf84b">mysql_batch_insert_loops</a> (MYSQL *connection, <a class="el" href="loop_8h.html#a3cab4c06c8bb84fe949df61aa5ca8d5b">loop_t</a> *<a class="el" href="structloop.html">loop</a>, int num_loops)</td></tr>
 <tr class="memdesc:a70921ca2d1e7c7656019c009fabaf84b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and an array of loops, inserts said loops into the database.  <a href="#a70921ca2d1e7c7656019c009fabaf84b">More...</a><br /></td></tr>
 <tr class="separator:a70921ca2d1e7c7656019c009fabaf84b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a004224142e36aeaeb56367429bdae272"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a004224142e36aeaeb56367429bdae272">mysql_retrieve_loops</a> (MYSQL *connection, char *query, <a class="el" href="loop_8h.html#a3cab4c06c8bb84fe949df61aa5ca8d5b">loop_t</a> **<a class="el" href="eardbd__storage_8c.html#a0ab5b6e9f9327ed022db4f7e26a53aef">loops</a>)</td></tr>
+<tr class="memitem:a004224142e36aeaeb56367429bdae272"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a004224142e36aeaeb56367429bdae272">mysql_retrieve_loops</a> (MYSQL *connection, char *<a class="el" href="remove__learning_8c.html#a0ad9302c12c82c3144067f176a085cec">query</a>, <a class="el" href="loop_8h.html#a3cab4c06c8bb84fe949df61aa5ca8d5b">loop_t</a> **<a class="el" href="eardbd__storage_8c.html#a0ab5b6e9f9327ed022db4f7e26a53aef">loops</a>)</td></tr>
 <tr class="memdesc:a004224142e36aeaeb56367429bdae272"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and a valid MYSQL query, stores in loops the loops found in the database corresponding to the query.  <a href="#a004224142e36aeaeb56367429bdae272">More...</a><br /></td></tr>
 <tr class="separator:a004224142e36aeaeb56367429bdae272"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae12ff8eebabf6815da80e39396a0a346"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ae12ff8eebabf6815da80e39396a0a346">mysql_insert_job</a> (MYSQL *connection, <a class="el" href="job_8h.html#aa728c8658fca10fa053b983ab92efb2f">job_t</a> *<a class="el" href="structjob.html">job</a>, char is_learning)</td></tr>
 <tr class="memdesc:ae12ff8eebabf6815da80e39396a0a346"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and a job, inserts said job into the database.  <a href="#ae12ff8eebabf6815da80e39396a0a346">More...</a><br /></td></tr>
 <tr class="separator:ae12ff8eebabf6815da80e39396a0a346"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba8f4d19bf858235c7d8247b1d36a32a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#aba8f4d19bf858235c7d8247b1d36a32a">mysql_retrieve_jobs</a> (MYSQL *connection, char *query, <a class="el" href="job_8h.html#aa728c8658fca10fa053b983ab92efb2f">job_t</a> **jobs)</td></tr>
+<tr class="memitem:aba8f4d19bf858235c7d8247b1d36a32a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#aba8f4d19bf858235c7d8247b1d36a32a">mysql_retrieve_jobs</a> (MYSQL *connection, char *<a class="el" href="remove__learning_8c.html#a0ad9302c12c82c3144067f176a085cec">query</a>, <a class="el" href="job_8h.html#aa728c8658fca10fa053b983ab92efb2f">job_t</a> **jobs)</td></tr>
 <tr class="memdesc:aba8f4d19bf858235c7d8247b1d36a32a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and a valid MYSQL query, stores in jobs the jobs found in the database corresponding to the query.  <a href="#aba8f4d19bf858235c7d8247b1d36a32a">More...</a><br /></td></tr>
 <tr class="separator:aba8f4d19bf858235c7d8247b1d36a32a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67f0e21a9b2e5cf1d7c74f9269abfcec"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a67f0e21a9b2e5cf1d7c74f9269abfcec">mysql_insert_signature</a> (MYSQL *connection, <a class="el" href="signature_8h.html#a3387c90f9aa9243c926866ee8ce61917">signature_t</a> *sig, char is_learning)</td></tr>
@@ -180,7 +169,7 @@ Functions</h2></td></tr>
 <tr class="memitem:acf63ccbde1d70e8b24d1f5b6f9d50cda"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#acf63ccbde1d70e8b24d1f5b6f9d50cda">mysql_batch_insert_signatures</a> (MYSQL *connection, <a class="el" href="structsignature__container__t.html">signature_container_t</a> cont, char is_learning, int num_sigs)</td></tr>
 <tr class="memdesc:acf63ccbde1d70e8b24d1f5b6f9d50cda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and an array of applications, inserts said application's signatures into the database.  <a href="#acf63ccbde1d70e8b24d1f5b6f9d50cda">More...</a><br /></td></tr>
 <tr class="separator:acf63ccbde1d70e8b24d1f5b6f9d50cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab9b0aedda3734c6cbd261fdb56de695c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ab9b0aedda3734c6cbd261fdb56de695c">mysql_retrieve_signatures</a> (MYSQL *connection, char *query, <a class="el" href="signature_8h.html#a3387c90f9aa9243c926866ee8ce61917">signature_t</a> **sigs)</td></tr>
+<tr class="memitem:ab9b0aedda3734c6cbd261fdb56de695c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ab9b0aedda3734c6cbd261fdb56de695c">mysql_retrieve_signatures</a> (MYSQL *connection, char *<a class="el" href="remove__learning_8c.html#a0ad9302c12c82c3144067f176a085cec">query</a>, <a class="el" href="signature_8h.html#a3387c90f9aa9243c926866ee8ce61917">signature_t</a> **sigs)</td></tr>
 <tr class="memdesc:ab9b0aedda3734c6cbd261fdb56de695c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and a valid MYSQL query, stores in sigs the signatures found in the database corresponding to the query.  <a href="#ab9b0aedda3734c6cbd261fdb56de695c">More...</a><br /></td></tr>
 <tr class="separator:ab9b0aedda3734c6cbd261fdb56de695c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace24be1051ef33c4728495df3b3054d9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#ace24be1051ef33c4728495df3b3054d9">mysql_insert_power_signature</a> (MYSQL *connection, <a class="el" href="power__signature_8h.html#a480837ae8c8a296ce593d1c3d898c464">power_signature_t</a> *pow_sig)</td></tr>
@@ -189,7 +178,7 @@ Functions</h2></td></tr>
 <tr class="memitem:aaf897a55416de9932a89c54fe7f2099f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#aaf897a55416de9932a89c54fe7f2099f">mysql_batch_insert_power_signatures</a> (MYSQL *connection, <a class="el" href="application_8h.html#af0a524c43fc5f548021099181df194bf">application_t</a> *pow_sig, int num_sigs)</td></tr>
 <tr class="memdesc:aaf897a55416de9932a89c54fe7f2099f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a MYSQL connection and an array of aplications , inserts said application's power_signatures into the database.  <a href="#aaf897a55416de9932a89c54fe7f2099f">More...</a><br /></td></tr>
 <tr class="separator:aaf897a55416de9932a89c54fe7f2099f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8fa2c33a0fd1e919ce91b7f8febfdd90"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a8fa2c33a0fd1e919ce91b7f8febfdd90">mysql_retrieve_power_signatures</a> (MYSQL *connection, char *query, <a class="el" href="power__signature_8h.html#a480837ae8c8a296ce593d1c3d898c464">power_signature_t</a> **pow_sigs)</td></tr>
+<tr class="memitem:a8fa2c33a0fd1e919ce91b7f8febfdd90"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a8fa2c33a0fd1e919ce91b7f8febfdd90">mysql_retrieve_power_signatures</a> (MYSQL *connection, char *<a class="el" href="remove__learning_8c.html#a0ad9302c12c82c3144067f176a085cec">query</a>, <a class="el" href="power__signature_8h.html#a480837ae8c8a296ce593d1c3d898c464">power_signature_t</a> **pow_sigs)</td></tr>
 <tr class="memdesc:a8fa2c33a0fd1e919ce91b7f8febfdd90"><td class="mdescLeft">&#160;</td><td class="mdescRight">PENDING.  <a href="#a8fa2c33a0fd1e919ce91b7f8febfdd90">More...</a><br /></td></tr>
 <tr class="separator:a8fa2c33a0fd1e919ce91b7f8febfdd90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82e4d6c563fe047057845860d98ad905"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mysql__io__functions_8c.html#a82e4d6c563fe047057845860d98ad905">mysql_insert_periodic_metric</a> (MYSQL *connection, <a class="el" href="periodic__metric_8h.html#ad4fd0cdd85e470f61486232f140aa88f">periodic_metric_t</a> *per_met)</td></tr>
@@ -215,18 +204,6 @@ Functions</h2></td></tr>
 <tr class="separator:a6699f2b4ee890b02930f59b5d13535ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
-<a class="anchor" id="ab72650713c5ca9895d4dc93d4e8d70bd"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define APPLICATION_ARGS&#160;&#160;&#160;5</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="ac382977ccb9b24ee2dafa930b1e04779"></a>
 <div class="memitem">
 <div class="memproto">
@@ -244,19 +221,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define EAR_EVENT_QUERY&#160;&#160;&#160;&quot;INSERT INTO Events (timestamp, event_type, <a class="el" href="generic_8h.html#aa17a8e6cdc1860741119dc46c1777778">job_id</a>, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a9867b97e0b5cb11393bd0fd5ee0ed90f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define EAR_EVENTS_ARGS&#160;&#160;&#160;6</td>
+          <td class="memname">#define EAR_EVENT_QUERY&#160;&#160;&#160;&quot;INSERT INTO Events (timestamp, event_type, <a class="el" href="generic_8h.html#aa17a8e6cdc1860741119dc46c1777778">job_id</a>, <a class="el" href="remove__learning_8c.html#aaaecc7646b3c722387d285ecbb165474">step_id</a>, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)&quot;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -308,7 +273,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;INSERT IGNORE INTO Learning_jobs (id, step_id, user_id, app_id, start_time, end_time, &quot;</span>\</div><div class="line">                                    <span class="stringliteral">&quot;start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc) VALUES&quot;</span> \</div><div class="line">                                    <span class="stringliteral">&quot;(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span></div></div><!-- fragment -->
+<b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;INSERT IGNORE INTO Learning_jobs (id, step_id, user_id, app_id, start_time, end_time, &quot;</span>\</div><div class="line">                                    <span class="stringliteral">&quot;start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES&quot;</span> \</div><div class="line">                                    <span class="stringliteral">&quot;(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span></div></div><!-- fragment -->
 </div>
 </div>
 <a class="anchor" id="ade911e8ba4bc6289e7c81d70efe2afc3"></a>
@@ -323,18 +288,6 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;INSERT INTO Learning_signatures (DC_power, DRAM_power,&quot;</span>\</div><div class="line">                                    <span class="stringliteral">&quot;PCK_power, EDP, GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, &quot;</span>\</div><div class="line">                                    <span class="stringliteral">&quot;FLOPS5, FLOPS6, FLOPS7, FLOPS8,&quot;</span>\</div><div class="line">                                    <span class="stringliteral">&quot;instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, &quot;</span>\</div><div class="line">                                    <span class="stringliteral">&quot;?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span></div></div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a8e198abe0f1747d8b026a5f0003b7f7c"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LOOP_ARGS&#160;&#160;&#160;8</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="aad351e3ee4f44ba8fc9a0493120a9c2c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -347,36 +300,12 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;INSERT INTO Loops (event, size, level, job_id, step_id, node_id, total_iterations,&quot;</span> \</div><div class="line">                                <span class="stringliteral">&quot;signature_id) VALUES (?, ?, ?, ?, ?, ?, ? ,?)&quot;</span></div></div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a16ed43b9c7c9a96e03699705531c73c0"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PERIODIC_AGGREGATION_ARGS&#160;&#160;&#160;3</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="aa58a0a489cd172cb4fec2250581c301b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">#define PERIODIC_AGGREGATION_QUERY&#160;&#160;&#160;&quot;INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time) VALUES (?, ?, ?)&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a91e348e7084f8775ca5e575e658172e3"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PERIODIC_METRIC_ARGS&#160;&#160;&#160;6</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -395,18 +324,6 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)&quot;</span>\</div><div class="line">                                <span class="stringliteral">&quot;VALUES (?, ?, ?, ?, ?, ?)&quot;</span></div></div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a5d79f154eaf6a1b881cb11c7caba8659"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define POWER_SIGNATURE_ARGS&#160;&#160;&#160;9</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="a2dc8ed65ca0e48e51f8768bdd66c7b63"></a>
 <div class="memitem">
 <div class="memproto">
@@ -417,18 +334,6 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, &quot;</span>\</div><div class="line">                                <span class="stringliteral">&quot;time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span></div></div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="a593ef474ef6541845f62c3d6af43f051"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define SIGNATURE_ARGS&#160;&#160;&#160;21</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
 </div>
 </div>
 <a class="anchor" id="a99cfc2cc06e61f669c8127fc21ce8d40"></a>
@@ -546,6 +451,41 @@ Functions</h2></td></tr>
 
 <p>Given a MYSQL connection and num_evs EAR events, inserts said events into the database. </p>
 <p>Returns the EAR_SUCCESS success, and either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. </p>
+
+</div>
+</div>
+<a class="anchor" id="a2eb0102839b75a6752c6ac0d62541520"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int mysql_batch_insert_jobs </td>
+          <td>(</td>
+          <td class="paramtype">MYSQL *&#160;</td>
+          <td class="paramname"><em>connection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="application_8h.html#af0a524c43fc5f548021099181df194bf">application_t</a> *&#160;</td>
+          <td class="paramname"><em>app</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_apps</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Given a MYSQL connection and an array of applications, insert said applications' jobs into the database. </p>
+<p>Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. </p>
 
 </div>
 </div>

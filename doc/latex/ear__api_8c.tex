@@ -23,6 +23,7 @@
 {\ttfamily \#include $<$library/mpi\+\_\+intercept/ear\+\_\+api.\+h$>$}\\*
 {\ttfamily \#include $<$library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+types.\+h$>$}\\*
 {\ttfamily \#include $<$library/mpi\+\_\+intercept/\+M\+P\+I\+\_\+calls\+\_\+coded.\+h$>$}\\*
+{\ttfamily \#include $<$library/mpi\+\_\+intercept/freq\+\_\+synchro.\+h$>$}\\*
 {\ttfamily \#include $<$daemon/eard\+\_\+api.\+h$>$}\\*
 {\ttfamily \#include $<$daemon/shared\+\_\+configuration.\+h$>$}\\*
 {\ttfamily \#include $<$common/types/application.\+h$>$}\\*
@@ -40,11 +41,13 @@
 \#define \hyperlink{ear__api_8c_a4cd23b0a113ac719067bca53e5b21eac}{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET}~100
 \item 
 \#define \hyperlink{ear__api_8c_ace341d2bc7c7862814ff98a4b1a20fbb}{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES}~1
-\item 
-\#define \hyperlink{ear__api_8c_a2667d413a18699f8ec46f4106490eb70}{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV}~0
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
+\item 
+void \hyperlink{ear__api_8c_a4577a1a47c4958ab6e2ba5fed9eccd03}{notify\+\_\+eard\+\_\+connection} (int \hyperlink{structstatus}{status})
+\item 
+void \hyperlink{ear__api_8c_affac44c09ed1a58e20ad1d190d1f6c6e}{attach\+\_\+to\+\_\+master\+\_\+set} (int master)
 \item 
 void \hyperlink{ear__api_8c_a36f9e26ee34483972e2358f0b3e663f0}{update\+\_\+configuration} ()
 \item 
@@ -72,15 +75,19 @@ char $\ast$ \hyperlink{ear__api_8c_adbd38436c25bc604b1a48464727d4179}{\+\_\+\+\_
 \index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET@{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET}}
 \index{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET@{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
 \subsubsection[{\texorpdfstring{J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET}{JOB_ID_OFFSET}}]{\setlength{\rightskip}{0pt plus 5cm}\#define J\+O\+B\+\_\+\+I\+D\+\_\+\+O\+F\+F\+S\+ET~100}\hypertarget{ear__api_8c_a4cd23b0a113ac719067bca53e5b21eac}{}\label{ear__api_8c_a4cd23b0a113ac719067bca53e5b21eac}
-\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV@{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV}}
-\index{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV@{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
-\subsubsection[{\texorpdfstring{M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV}{MEASURE_DYNAIS_OV}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+E\+A\+S\+U\+R\+E\+\_\+\+D\+Y\+N\+A\+I\+S\+\_\+\+OV~0}\hypertarget{ear__api_8c_a2667d413a18699f8ec46f4106490eb70}{}\label{ear__api_8c_a2667d413a18699f8ec46f4106490eb70}
 \index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES@{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES}}
 \index{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES@{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
 \subsubsection[{\texorpdfstring{U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES}{USE_LOCK_FILES}}]{\setlength{\rightskip}{0pt plus 5cm}\#define U\+S\+E\+\_\+\+L\+O\+C\+K\+\_\+\+F\+I\+L\+ES~1}\hypertarget{ear__api_8c_ace341d2bc7c7862814ff98a4b1a20fbb}{}\label{ear__api_8c_ace341d2bc7c7862814ff98a4b1a20fbb}
 
 
 \subsection{Function Documentation}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!attach\+\_\+to\+\_\+master\+\_\+set@{attach\+\_\+to\+\_\+master\+\_\+set}}
+\index{attach\+\_\+to\+\_\+master\+\_\+set@{attach\+\_\+to\+\_\+master\+\_\+set}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{attach\+\_\+to\+\_\+master\+\_\+set(int master)}{attach_to_master_set(int master)}}]{\setlength{\rightskip}{0pt plus 5cm}void attach\+\_\+to\+\_\+master\+\_\+set (
+\begin{DoxyParamCaption}
+\item[{int}]{master}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8c_affac44c09ed1a58e20ad1d190d1f6c6e}{}\label{ear__api_8c_affac44c09ed1a58e20ad1d190d1f6c6e}
 \index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!ear\+\_\+finalize@{ear\+\_\+finalize}}
 \index{ear\+\_\+finalize@{ear\+\_\+finalize}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
 \subsubsection[{\texorpdfstring{ear\+\_\+finalize()}{ear_finalize()}}]{\setlength{\rightskip}{0pt plus 5cm}void ear\+\_\+finalize (
@@ -134,6 +141,13 @@ If the library is in a learning phase it does nothing. \index{ear\+\_\+api.\+c@{
 \item[{{\bf p2i}}]{dest}
 \end{DoxyParamCaption}
 )}\hypertarget{ear__api_8c_a23c9fb57db72c83726bda9d82491ba18}{}\label{ear__api_8c_a23c9fb57db72c83726bda9d82491ba18}
+\index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!notify\+\_\+eard\+\_\+connection@{notify\+\_\+eard\+\_\+connection}}
+\index{notify\+\_\+eard\+\_\+connection@{notify\+\_\+eard\+\_\+connection}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
+\subsubsection[{\texorpdfstring{notify\+\_\+eard\+\_\+connection(int status)}{notify_eard_connection(int status)}}]{\setlength{\rightskip}{0pt plus 5cm}void notify\+\_\+eard\+\_\+connection (
+\begin{DoxyParamCaption}
+\item[{int}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{ear__api_8c_a4577a1a47c4958ab6e2ba5fed9eccd03}{}\label{ear__api_8c_a4577a1a47c4958ab6e2ba5fed9eccd03}
 \index{ear\+\_\+api.\+c@{ear\+\_\+api.\+c}!update\+\_\+configuration@{update\+\_\+configuration}}
 \index{update\+\_\+configuration@{update\+\_\+configuration}!ear\+\_\+api.\+c@{ear\+\_\+api.\+c}}
 \subsubsection[{\texorpdfstring{update\+\_\+configuration()}{update_configuration()}}]{\setlength{\rightskip}{0pt plus 5cm}void update\+\_\+configuration (

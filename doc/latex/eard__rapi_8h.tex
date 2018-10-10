@@ -47,13 +47,37 @@ void \hyperlink{eard__rapi_8h_a9e6c2437c83ae44b85cd1f87edeb8ac9}{ping\+\_\+all\+
 \begin{DoxyCompactList}\small\item\em Executes a simple ping to all nodes. \end{DoxyCompactList}\item 
 void \hyperlink{eard__rapi_8h_a8b04f20803fc64de8236d01eb1d9211b}{new\+\_\+ping\+\_\+all\+\_\+nodes} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
 \begin{DoxyCompactList}\small\item\em Executes a simple ping to all nodes with the next nodes calculated at runtime. \end{DoxyCompactList}\item 
+int \hyperlink{eard__rapi_8h_ae421b3982048064c9533986247f081ed}{status\+\_\+all\+\_\+nodes} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}, \hyperlink{eard__conf__rapi_8h_ae10cc0dbef73781f1180541121e675bb}{status\+\_\+t} $\ast$$\ast$\hyperlink{structstatus}{status})
+\item 
 int \hyperlink{eard__rapi_8h_a92282d11060af23cb9731bf21ee9a7c1}{send\+\_\+command} (\hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} $\ast$command)
 \begin{DoxyCompactList}\small\item\em Sends the command to the currently connected fd. \end{DoxyCompactList}\item 
 void \hyperlink{eard__rapi_8h_a6c46d1f1b1882320730573938594f096}{send\+\_\+command\+\_\+all} (\hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} command, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf})
-\begin{DoxyCompactList}\small\item\em Sends the command to all nodes in ear.\+conf. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Sends the command to all nodes in ear.\+conf. \end{DoxyCompactList}\item 
+void \hyperlink{eard__rapi_8h_af1ce3da1d0e6b7fdbbb688d85b813be8}{correct\+\_\+error} (int target\+\_\+ip, \hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} $\ast$command, int port)
+\item 
+void \hyperlink{eard__rapi_8h_abd60f11d2c52725ff79aff26c500ddfd}{correct\+\_\+error\+\_\+starter} (char $\ast$host\+\_\+name, \hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} $\ast$command, int port)
+\end{DoxyCompactItemize}
 
 
 \subsection{Function Documentation}
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!correct\+\_\+error@{correct\+\_\+error}}
+\index{correct\+\_\+error@{correct\+\_\+error}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{correct\+\_\+error(int target\+\_\+ip, request\+\_\+t $\ast$command, int port)}{correct_error(int target_ip, request_t *command, int port)}}]{\setlength{\rightskip}{0pt plus 5cm}void correct\+\_\+error (
+\begin{DoxyParamCaption}
+\item[{int}]{target\+\_\+ip, }
+\item[{{\bf request\+\_\+t} $\ast$}]{command, }
+\item[{int}]{port}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_af1ce3da1d0e6b7fdbbb688d85b813be8}{}\label{eard__rapi_8h_af1ce3da1d0e6b7fdbbb688d85b813be8}
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!correct\+\_\+error\+\_\+starter@{correct\+\_\+error\+\_\+starter}}
+\index{correct\+\_\+error\+\_\+starter@{correct\+\_\+error\+\_\+starter}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{correct\+\_\+error\+\_\+starter(char $\ast$host\+\_\+name, request\+\_\+t $\ast$command, int port)}{correct_error_starter(char *host_name, request_t *command, int port)}}]{\setlength{\rightskip}{0pt plus 5cm}void correct\+\_\+error\+\_\+starter (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{host\+\_\+name, }
+\item[{{\bf request\+\_\+t} $\ast$}]{command, }
+\item[{int}]{port}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_abd60f11d2c52725ff79aff26c500ddfd}{}\label{eard__rapi_8h_abd60f11d2c52725ff79aff26c500ddfd}
 \index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!eards\+\_\+end\+\_\+job@{eards\+\_\+end\+\_\+job}}
 \index{eards\+\_\+end\+\_\+job@{eards\+\_\+end\+\_\+job}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
 \subsubsection[{\texorpdfstring{eards\+\_\+end\+\_\+job(job\+\_\+id jid, job\+\_\+id sid)}{eards_end_job(job_id jid, job_id sid)}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+end\+\_\+job (
@@ -309,3 +333,11 @@ Sends the command to all nodes in ear.\+conf.
 
 Sets the default frequency for all nodes in my\+\_\+custer\+\_\+conf. 
 
+\index{eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}!status\+\_\+all\+\_\+nodes@{status\+\_\+all\+\_\+nodes}}
+\index{status\+\_\+all\+\_\+nodes@{status\+\_\+all\+\_\+nodes}!eard\+\_\+rapi.\+h@{eard\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{status\+\_\+all\+\_\+nodes(cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf, status\+\_\+t $\ast$$\ast$status)}{status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)}}]{\setlength{\rightskip}{0pt plus 5cm}int status\+\_\+all\+\_\+nodes (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf, }
+\item[{{\bf status\+\_\+t} $\ast$$\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__rapi_8h_ae421b3982048064c9533986247f081ed}{}\label{eard__rapi_8h_ae421b3982048064c9533986247f081ed}

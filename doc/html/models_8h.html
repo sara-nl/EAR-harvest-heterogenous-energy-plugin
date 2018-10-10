@@ -121,6 +121,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a92a352c14097670f3ac473f292f9a38d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8h.html#a92a352c14097670f3ac473f292f9a38d">policy_default_configuration</a> ()</td></tr>
 <tr class="memdesc:a92a352c14097670f3ac473f292f9a38d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executed when we have done several "tries" and the policy is not able to select the "good" freq for this app.  <a href="#a92a352c14097670f3ac473f292f9a38d">More...</a><br /></td></tr>
 <tr class="separator:a92a352c14097670f3ac473f292f9a38d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f5bdfb62b903b462daf98252f682f4c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8h.html#a6f5bdfb62b903b462daf98252f682f4c">force_global_frequency</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> new_f)</td></tr>
+<tr class="memdesc:a6f5bdfb62b903b462daf98252f682f4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function sets the frequency "by hand" when using global synchronizations.  <a href="#a6f5bdfb62b903b462daf98252f682f4c">More...</a><br /></td></tr>
+<tr class="separator:a6f5bdfb62b903b462daf98252f682f4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6d92fa7e0218d3d03d650092f8ccd7f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="generic_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8h.html#aa6d92fa7e0218d3d03d650092f8ccd7f">get_global_def_pstate</a> ()</td></tr>
 <tr class="separator:aa6d92fa7e0218d3d03d650092f8ccd7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2d6f41ac78d7922fb4ae5d5c79f2113"><td class="memItemLeft" align="right" valign="top"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8h.html#ab2d6f41ac78d7922fb4ae5d5c79f2113">get_global_def_freq</a> ()</td></tr>
@@ -129,8 +132,30 @@ Functions</h2></td></tr>
 <tr class="separator:ac6774e915614cf818dab90e2ad8ee2b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab8814a778638a1fc4ba353b3852c5df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8h.html#aab8814a778638a1fc4ba353b3852c5df">policy_global_reconfiguration</a> ()</td></tr>
 <tr class="separator:aab8814a778638a1fc4ba353b3852c5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dc26cdb45d5de748515b058d805a5fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8h.html#a0dc26cdb45d5de748515b058d805a5fe">policy_max_tries</a> ()</td></tr>
+<tr class="separator:a0dc26cdb45d5de748515b058d805a5fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb90faacdf8786ae94fcae00d3f941dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8h.html#acb90faacdf8786ae94fcae00d3f941dd">policy_get_default_freq</a> ()</td></tr>
+<tr class="separator:acb90faacdf8786ae94fcae00d3f941dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a6f5bdfb62b903b462daf98252f682f4c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void force_global_frequency </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td>
+          <td class="paramname"><em>new_f</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function sets the frequency "by hand" when using global synchronizations. </p>
+
+</div>
+</div>
 <a class="anchor" id="ab2d6f41ac78d7922fb4ae5d5c79f2113"></a>
 <div class="memitem">
 <div class="memproto">
@@ -255,12 +280,42 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="acb90faacdf8786ae94fcae00d3f941dd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> policy_get_default_freq </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="aab8814a778638a1fc4ba353b3852c5df"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void policy_global_reconfiguration </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0dc26cdb45d5de748515b058d805a5fe"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int policy_max_tries </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>

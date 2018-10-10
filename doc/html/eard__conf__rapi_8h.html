@@ -107,6 +107,8 @@ Data Structures</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structrequest.html">request</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstatus.html">status</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
@@ -130,8 +132,14 @@ Macros</h2></td></tr>
 <tr class="separator:ac96df2bfc1127b46e06f2430470adab9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7886f2fce4354d84194778e2f257cdf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__conf__rapi_8h.html#ab7886f2fce4354d84194778e2f257cdf">EAR_RC_PING</a>&#160;&#160;&#160;500</td></tr>
 <tr class="separator:ab7886f2fce4354d84194778e2f257cdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a648cd4b8bb51d5b74ebe42e652a16fff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__conf__rapi_8h.html#a648cd4b8bb51d5b74ebe42e652a16fff">EAR_RC_STATUS</a>&#160;&#160;&#160;600</td></tr>
+<tr class="separator:a648cd4b8bb51d5b74ebe42e652a16fff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1fccca1b6dc1167906cdc3a948bbc6de"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__conf__rapi_8h.html#a1fccca1b6dc1167906cdc3a948bbc6de">NO_COMMAND</a>&#160;&#160;&#160;100000</td></tr>
 <tr class="separator:a1fccca1b6dc1167906cdc3a948bbc6de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cab522a4e8ec6366a5577f4bcf83a4c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__conf__rapi_8h.html#a8cab522a4e8ec6366a5577f4bcf83a4c">STATUS_BAD</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:a8cab522a4e8ec6366a5577f4bcf83a4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2403320c41f08e7567cb169de5db66b3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__conf__rapi_8h.html#a2403320c41f08e7567cb169de5db66b3">STATUS_OK</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a2403320c41f08e7567cb169de5db66b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -143,6 +151,8 @@ Typedefs</h2></td></tr>
 <tr class="separator:a8e11ed6a146d5be9a0067ef5b147b5fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a367edad9ab2aa35c679c908173b6ebc2"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structrequest.html">request</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a></td></tr>
 <tr class="separator:a367edad9ab2aa35c679c908173b6ebc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae10cc0dbef73781f1180541121e675bb"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structstatus.html">status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a></td></tr>
+<tr class="separator:ae10cc0dbef73781f1180541121e675bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a class="anchor" id="ade5214d7260a1c7bc94238af50d5c405"></a>
@@ -265,12 +275,48 @@ Typedefs</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a648cd4b8bb51d5b74ebe42e652a16fff"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define EAR_RC_STATUS&#160;&#160;&#160;600</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a1fccca1b6dc1167906cdc3a948bbc6de"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">#define NO_COMMAND&#160;&#160;&#160;100000</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8cab522a4e8ec6366a5577f4bcf83a4c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define STATUS_BAD&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2403320c41f08e7567cb169de5db66b3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define STATUS_OK&#160;&#160;&#160;1</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -320,6 +366,18 @@ Typedefs</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">typedef struct <a class="el" href="structrequest.html">request</a> <a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae10cc0dbef73781f1180541121e675bb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="structstatus.html">status</a>  <a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">

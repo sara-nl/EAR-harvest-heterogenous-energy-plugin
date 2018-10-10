@@ -3,11 +3,35 @@
 \subsection*{Data Fields}
 \begin{DoxyCompactItemize}
 \item 
+\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$ \hyperlink{structcontrol_a04135aa2d6b29eecc4170e2aaf6c3932}{mrgd}
+\item 
+int \hyperlink{structcontrol_a78580ddada2c63b02e7dd4e740f2e838}{n\+\_\+mrgd}
+\item 
+\hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$$\ast$ \hyperlink{structcontrol_a1fb1319059177f24405d983bf9257d54}{cofs}
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$ \hyperlink{structcontrol_a5d69e959a6826d6dd049018d077deca7}{cofs\+\_\+ref}
+\item 
+int $\ast$ \hyperlink{structcontrol_a16cff1fe6d8306a8e9feff2ec5cc61f7}{cofs\+\_\+n}
+\item 
+int $\ast$ \hyperlink{structcontrol_a1ebfe3ea1c817cf610430425debe0535}{cofs\+\_\+s}
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{structcontrol_af98c6f06898291c5e6cb06bc0d386530}{freq\+\_\+ref}
+\item 
+\hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id} \hyperlink{structcontrol_a5c60a2ddd48af987e6e6f169f0bce418}{step\+\_\+id}
+\item 
+\hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id} \hyperlink{structcontrol_af1bc7a403a34f7e8250cf42a4bca8d34}{job\+\_\+id}
+\item 
+int \hyperlink{structcontrol_a65f0109f7133188cd43aeeaa3358b912}{cols\+\_\+n}
+\item 
+char \hyperlink{structcontrol_a468bfded513333b2191ea4dcecd52d7f}{name\+\_\+node} \mbox{[}\hyperlink{sizes_8h_aa1539eb7e3aa7e9eb929e62cfb80e621}{S\+Z\+\_\+\+N\+A\+M\+E\+\_\+\+S\+H\+O\+RT}\mbox{]}
+\item 
+char \hyperlink{structcontrol_a4a9fe143850eab7bc8908ae309713005}{path\+\_\+coeffs} \mbox{[}\hyperlink{sizes_8h_abf7d7dd1d18e459056eb207d220de187}{S\+Z\+\_\+\+P\+A\+TH}\mbox{]}
+\item 
 \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$ \hyperlink{structcontrol_a94e8577f94e22cd211cd5456486e5acf}{apps}
 \item 
 \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$ \hyperlink{structcontrol_ae522f2f8c84a5ae42afa56a256047304}{apps\+\_\+merged}
 \item 
-\hyperlink{coefficient_8h_a7f58a37ee368b55a21d66b1b4e76e779}{coefficient\+\_\+t} $\ast$ \hyperlink{structcontrol_a824711ff421f53cfa70d16121b61887d}{coeffs}
+\hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$ \hyperlink{structcontrol_a824711ff421f53cfa70d16121b61887d}{coeffs}
 \item 
 \hyperlink{projection_8h_a50fc11780fbb9af29b37d325d803a2da}{projection\+\_\+t} $\ast$ \hyperlink{structcontrol_ab8a72c0f5de8d4f3dfe74f75c59116e1}{projs}
 \item 
@@ -17,11 +41,13 @@ int \hyperlink{structcontrol_abbe1758b776d494be512904ee15314ad}{n\+\_\+apps\+\_\
 \item 
 int \hyperlink{structcontrol_ab6adbaa20aa1a77de8bbfa162e591710}{n\+\_\+coeffs}
 \item 
-\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{structcontrol_a68c1711de0d975a8463c36213150f172}{f0\+\_\+mhz}
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{structcontrol_a43673299be6fda595a58b55924f7883b}{frq\+\_\+base}
 \item 
-\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{structcontrol_abac58f8c6d52b42d6e2b133f078950db}{mode}
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{structcontrol_a880df0dad4a4d0e856c44fbbf4226c77}{learning}
 \item 
-char $\ast$ \hyperlink{structcontrol_a21fdf3e624ee92abe1108476164c3378}{csv}
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{structcontrol_a83bc735a6e6d51728d78ba73bcbaf393}{summary}
+\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{structcontrol_a870046ae96e87d8e48228cc73059ecf8}{hide}
 \end{DoxyCompactItemize}
 
 
@@ -35,15 +61,39 @@ char $\ast$ \hyperlink{structcontrol_a21fdf3e624ee92abe1108476164c3378}{csv}
 \index{control@{control}!coeffs@{coeffs}}
 \index{coeffs@{coeffs}!control@{control}}
 \subsubsection[{\texorpdfstring{coeffs}{coeffs}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$ control\+::coeffs}\hypertarget{structcontrol_a824711ff421f53cfa70d16121b61887d}{}\label{structcontrol_a824711ff421f53cfa70d16121b61887d}
-\index{control@{control}!csv@{csv}}
-\index{csv@{csv}!control@{control}}
-\subsubsection[{\texorpdfstring{csv}{csv}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ control\+::csv}\hypertarget{structcontrol_a21fdf3e624ee92abe1108476164c3378}{}\label{structcontrol_a21fdf3e624ee92abe1108476164c3378}
-\index{control@{control}!f0\+\_\+mhz@{f0\+\_\+mhz}}
-\index{f0\+\_\+mhz@{f0\+\_\+mhz}!control@{control}}
-\subsubsection[{\texorpdfstring{f0\+\_\+mhz}{f0_mhz}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} control\+::f0\+\_\+mhz}\hypertarget{structcontrol_a68c1711de0d975a8463c36213150f172}{}\label{structcontrol_a68c1711de0d975a8463c36213150f172}
-\index{control@{control}!mode@{mode}}
-\index{mode@{mode}!control@{control}}
-\subsubsection[{\texorpdfstring{mode}{mode}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} control\+::mode}\hypertarget{structcontrol_abac58f8c6d52b42d6e2b133f078950db}{}\label{structcontrol_abac58f8c6d52b42d6e2b133f078950db}
+\index{control@{control}!cofs@{cofs}}
+\index{cofs@{cofs}!control@{control}}
+\subsubsection[{\texorpdfstring{cofs}{cofs}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$$\ast$ control\+::cofs}\hypertarget{structcontrol_a1fb1319059177f24405d983bf9257d54}{}\label{structcontrol_a1fb1319059177f24405d983bf9257d54}
+\index{control@{control}!cofs\+\_\+n@{cofs\+\_\+n}}
+\index{cofs\+\_\+n@{cofs\+\_\+n}!control@{control}}
+\subsubsection[{\texorpdfstring{cofs\+\_\+n}{cofs_n}}]{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ control\+::cofs\+\_\+n}\hypertarget{structcontrol_a16cff1fe6d8306a8e9feff2ec5cc61f7}{}\label{structcontrol_a16cff1fe6d8306a8e9feff2ec5cc61f7}
+\index{control@{control}!cofs\+\_\+ref@{cofs\+\_\+ref}}
+\index{cofs\+\_\+ref@{cofs\+\_\+ref}!control@{control}}
+\subsubsection[{\texorpdfstring{cofs\+\_\+ref}{cofs_ref}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong}$\ast$ control\+::cofs\+\_\+ref}\hypertarget{structcontrol_a5d69e959a6826d6dd049018d077deca7}{}\label{structcontrol_a5d69e959a6826d6dd049018d077deca7}
+\index{control@{control}!cofs\+\_\+s@{cofs\+\_\+s}}
+\index{cofs\+\_\+s@{cofs\+\_\+s}!control@{control}}
+\subsubsection[{\texorpdfstring{cofs\+\_\+s}{cofs_s}}]{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ control\+::cofs\+\_\+s}\hypertarget{structcontrol_a1ebfe3ea1c817cf610430425debe0535}{}\label{structcontrol_a1ebfe3ea1c817cf610430425debe0535}
+\index{control@{control}!cols\+\_\+n@{cols\+\_\+n}}
+\index{cols\+\_\+n@{cols\+\_\+n}!control@{control}}
+\subsubsection[{\texorpdfstring{cols\+\_\+n}{cols_n}}]{\setlength{\rightskip}{0pt plus 5cm}int control\+::cols\+\_\+n}\hypertarget{structcontrol_a65f0109f7133188cd43aeeaa3358b912}{}\label{structcontrol_a65f0109f7133188cd43aeeaa3358b912}
+\index{control@{control}!freq\+\_\+ref@{freq\+\_\+ref}}
+\index{freq\+\_\+ref@{freq\+\_\+ref}!control@{control}}
+\subsubsection[{\texorpdfstring{freq\+\_\+ref}{freq_ref}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} control\+::freq\+\_\+ref}\hypertarget{structcontrol_af98c6f06898291c5e6cb06bc0d386530}{}\label{structcontrol_af98c6f06898291c5e6cb06bc0d386530}
+\index{control@{control}!frq\+\_\+base@{frq\+\_\+base}}
+\index{frq\+\_\+base@{frq\+\_\+base}!control@{control}}
+\subsubsection[{\texorpdfstring{frq\+\_\+base}{frq_base}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} control\+::frq\+\_\+base}\hypertarget{structcontrol_a43673299be6fda595a58b55924f7883b}{}\label{structcontrol_a43673299be6fda595a58b55924f7883b}
+\index{control@{control}!hide@{hide}}
+\index{hide@{hide}!control@{control}}
+\subsubsection[{\texorpdfstring{hide}{hide}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} control\+::hide}\hypertarget{structcontrol_a870046ae96e87d8e48228cc73059ecf8}{}\label{structcontrol_a870046ae96e87d8e48228cc73059ecf8}
+\index{control@{control}!job\+\_\+id@{job\+\_\+id}}
+\index{job\+\_\+id@{job\+\_\+id}!control@{control}}
+\subsubsection[{\texorpdfstring{job\+\_\+id}{job_id}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf job\+\_\+id} control\+::job\+\_\+id}\hypertarget{structcontrol_af1bc7a403a34f7e8250cf42a4bca8d34}{}\label{structcontrol_af1bc7a403a34f7e8250cf42a4bca8d34}
+\index{control@{control}!learning@{learning}}
+\index{learning@{learning}!control@{control}}
+\subsubsection[{\texorpdfstring{learning}{learning}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} control\+::learning}\hypertarget{structcontrol_a880df0dad4a4d0e856c44fbbf4226c77}{}\label{structcontrol_a880df0dad4a4d0e856c44fbbf4226c77}
+\index{control@{control}!mrgd@{mrgd}}
+\index{mrgd@{mrgd}!control@{control}}
+\subsubsection[{\texorpdfstring{mrgd}{mrgd}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf application\+\_\+t}$\ast$ control\+::mrgd}\hypertarget{structcontrol_a04135aa2d6b29eecc4170e2aaf6c3932}{}\label{structcontrol_a04135aa2d6b29eecc4170e2aaf6c3932}
 \index{control@{control}!n\+\_\+apps@{n\+\_\+apps}}
 \index{n\+\_\+apps@{n\+\_\+apps}!control@{control}}
 \subsubsection[{\texorpdfstring{n\+\_\+apps}{n_apps}}]{\setlength{\rightskip}{0pt plus 5cm}int control\+::n\+\_\+apps}\hypertarget{structcontrol_a1f6a496b5c9139cefb6160126a35d441}{}\label{structcontrol_a1f6a496b5c9139cefb6160126a35d441}
@@ -53,11 +103,27 @@ char $\ast$ \hyperlink{structcontrol_a21fdf3e624ee92abe1108476164c3378}{csv}
 \index{control@{control}!n\+\_\+coeffs@{n\+\_\+coeffs}}
 \index{n\+\_\+coeffs@{n\+\_\+coeffs}!control@{control}}
 \subsubsection[{\texorpdfstring{n\+\_\+coeffs}{n_coeffs}}]{\setlength{\rightskip}{0pt plus 5cm}int control\+::n\+\_\+coeffs}\hypertarget{structcontrol_ab6adbaa20aa1a77de8bbfa162e591710}{}\label{structcontrol_ab6adbaa20aa1a77de8bbfa162e591710}
+\index{control@{control}!n\+\_\+mrgd@{n\+\_\+mrgd}}
+\index{n\+\_\+mrgd@{n\+\_\+mrgd}!control@{control}}
+\subsubsection[{\texorpdfstring{n\+\_\+mrgd}{n_mrgd}}]{\setlength{\rightskip}{0pt plus 5cm}int control\+::n\+\_\+mrgd}\hypertarget{structcontrol_a78580ddada2c63b02e7dd4e740f2e838}{}\label{structcontrol_a78580ddada2c63b02e7dd4e740f2e838}
+\index{control@{control}!name\+\_\+node@{name\+\_\+node}}
+\index{name\+\_\+node@{name\+\_\+node}!control@{control}}
+\subsubsection[{\texorpdfstring{name\+\_\+node}{name_node}}]{\setlength{\rightskip}{0pt plus 5cm}char control\+::name\+\_\+node\mbox{[}{\bf S\+Z\+\_\+\+N\+A\+M\+E\+\_\+\+S\+H\+O\+RT}\mbox{]}}\hypertarget{structcontrol_a468bfded513333b2191ea4dcecd52d7f}{}\label{structcontrol_a468bfded513333b2191ea4dcecd52d7f}
+\index{control@{control}!path\+\_\+coeffs@{path\+\_\+coeffs}}
+\index{path\+\_\+coeffs@{path\+\_\+coeffs}!control@{control}}
+\subsubsection[{\texorpdfstring{path\+\_\+coeffs}{path_coeffs}}]{\setlength{\rightskip}{0pt plus 5cm}char control\+::path\+\_\+coeffs\mbox{[}{\bf S\+Z\+\_\+\+P\+A\+TH}\mbox{]}}\hypertarget{structcontrol_a4a9fe143850eab7bc8908ae309713005}{}\label{structcontrol_a4a9fe143850eab7bc8908ae309713005}
 \index{control@{control}!projs@{projs}}
 \index{projs@{projs}!control@{control}}
 \subsubsection[{\texorpdfstring{projs}{projs}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf projection\+\_\+t}$\ast$ control\+::projs}\hypertarget{structcontrol_ab8a72c0f5de8d4f3dfe74f75c59116e1}{}\label{structcontrol_ab8a72c0f5de8d4f3dfe74f75c59116e1}
+\index{control@{control}!step\+\_\+id@{step\+\_\+id}}
+\index{step\+\_\+id@{step\+\_\+id}!control@{control}}
+\subsubsection[{\texorpdfstring{step\+\_\+id}{step_id}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf job\+\_\+id} control\+::step\+\_\+id}\hypertarget{structcontrol_a5c60a2ddd48af987e6e6f169f0bce418}{}\label{structcontrol_a5c60a2ddd48af987e6e6f169f0bce418}
+\index{control@{control}!summary@{summary}}
+\index{summary@{summary}!control@{control}}
+\subsubsection[{\texorpdfstring{summary}{summary}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} control\+::summary}\hypertarget{structcontrol_a83bc735a6e6d51728d78ba73bcbaf393}{}\label{structcontrol_a83bc735a6e6d51728d78ba73bcbaf393}
 
 
-The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 
-src/tools/\hyperlink{coefficients__quality__control_8c}{coefficients\+\_\+quality\+\_\+control.\+c}\end{DoxyCompactItemize}
+src/tools/\hyperlink{coeffs__jobproj_8c}{coeffs\+\_\+jobproj.\+c}\item 
+src/tools/\hyperlink{coeffs__quality_8c}{coeffs\+\_\+quality.\+c}\end{DoxyCompactItemize}

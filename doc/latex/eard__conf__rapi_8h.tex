@@ -11,6 +11,8 @@ struct \hyperlink{structnew__conf}{new\+\_\+conf}
 union \hyperlink{unionreq__data}{req\+\_\+data}
 \item 
 struct \hyperlink{structrequest}{request}
+\item 
+struct \hyperlink{structstatus}{status}
 \end{DoxyCompactItemize}
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
@@ -35,7 +37,13 @@ struct \hyperlink{structrequest}{request}
 \item 
 \#define \hyperlink{eard__conf__rapi_8h_ab7886f2fce4354d84194778e2f257cdf}{E\+A\+R\+\_\+\+R\+C\+\_\+\+P\+I\+NG}~500
 \item 
+\#define \hyperlink{eard__conf__rapi_8h_a648cd4b8bb51d5b74ebe42e652a16fff}{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+T\+A\+T\+US}~600
+\item 
 \#define \hyperlink{eard__conf__rapi_8h_a1fccca1b6dc1167906cdc3a948bbc6de}{N\+O\+\_\+\+C\+O\+M\+M\+A\+ND}~100000
+\item 
+\#define \hyperlink{eard__conf__rapi_8h_a8cab522a4e8ec6366a5577f4bcf83a4c}{S\+T\+A\+T\+U\+S\+\_\+\+B\+AD}~0
+\item 
+\#define \hyperlink{eard__conf__rapi_8h_a2403320c41f08e7567cb169de5db66b3}{S\+T\+A\+T\+U\+S\+\_\+\+OK}~1
 \end{DoxyCompactItemize}
 \subsection*{Typedefs}
 \begin{DoxyCompactItemize}
@@ -47,6 +55,8 @@ typedef struct \hyperlink{structnew__conf}{new\+\_\+conf} \hyperlink{eard__conf_
 typedef union \hyperlink{unionreq__data}{req\+\_\+data} \hyperlink{eard__conf__rapi_8h_a8e11ed6a146d5be9a0067ef5b147b5fb}{req\+\_\+data\+\_\+t}
 \item 
 typedef struct \hyperlink{structrequest}{request} \hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t}
+\item 
+typedef struct \hyperlink{structstatus}{status} \hyperlink{eard__conf__rapi_8h_ae10cc0dbef73781f1180541121e675bb}{status\+\_\+t}
 \end{DoxyCompactItemize}
 
 
@@ -81,9 +91,18 @@ typedef struct \hyperlink{structrequest}{request} \hyperlink{eard__conf__rapi_8h
 \index{eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}!E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+E\+T\+\_\+\+F\+R\+EQ@{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+E\+T\+\_\+\+F\+R\+EQ}}
 \index{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+E\+T\+\_\+\+F\+R\+EQ@{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+E\+T\+\_\+\+F\+R\+EQ}!eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}}
 \subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+E\+T\+\_\+\+F\+R\+EQ}{EAR_RC_SET_FREQ}}]{\setlength{\rightskip}{0pt plus 5cm}\#define E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+E\+T\+\_\+\+F\+R\+EQ~104}\hypertarget{eard__conf__rapi_8h_aa3ff7d8b27960746fdd669669245f640}{}\label{eard__conf__rapi_8h_aa3ff7d8b27960746fdd669669245f640}
+\index{eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}!E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+T\+A\+T\+US@{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+T\+A\+T\+US}}
+\index{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+T\+A\+T\+US@{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+T\+A\+T\+US}!eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+T\+A\+T\+US}{EAR_RC_STATUS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define E\+A\+R\+\_\+\+R\+C\+\_\+\+S\+T\+A\+T\+US~600}\hypertarget{eard__conf__rapi_8h_a648cd4b8bb51d5b74ebe42e652a16fff}{}\label{eard__conf__rapi_8h_a648cd4b8bb51d5b74ebe42e652a16fff}
 \index{eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}!N\+O\+\_\+\+C\+O\+M\+M\+A\+ND@{N\+O\+\_\+\+C\+O\+M\+M\+A\+ND}}
 \index{N\+O\+\_\+\+C\+O\+M\+M\+A\+ND@{N\+O\+\_\+\+C\+O\+M\+M\+A\+ND}!eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}}
 \subsubsection[{\texorpdfstring{N\+O\+\_\+\+C\+O\+M\+M\+A\+ND}{NO_COMMAND}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+O\+\_\+\+C\+O\+M\+M\+A\+ND~100000}\hypertarget{eard__conf__rapi_8h_a1fccca1b6dc1167906cdc3a948bbc6de}{}\label{eard__conf__rapi_8h_a1fccca1b6dc1167906cdc3a948bbc6de}
+\index{eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}!S\+T\+A\+T\+U\+S\+\_\+\+B\+AD@{S\+T\+A\+T\+U\+S\+\_\+\+B\+AD}}
+\index{S\+T\+A\+T\+U\+S\+\_\+\+B\+AD@{S\+T\+A\+T\+U\+S\+\_\+\+B\+AD}!eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{S\+T\+A\+T\+U\+S\+\_\+\+B\+AD}{STATUS_BAD}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+T\+A\+T\+U\+S\+\_\+\+B\+AD~0}\hypertarget{eard__conf__rapi_8h_a8cab522a4e8ec6366a5577f4bcf83a4c}{}\label{eard__conf__rapi_8h_a8cab522a4e8ec6366a5577f4bcf83a4c}
+\index{eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}!S\+T\+A\+T\+U\+S\+\_\+\+OK@{S\+T\+A\+T\+U\+S\+\_\+\+OK}}
+\index{S\+T\+A\+T\+U\+S\+\_\+\+OK@{S\+T\+A\+T\+U\+S\+\_\+\+OK}!eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{S\+T\+A\+T\+U\+S\+\_\+\+OK}{STATUS_OK}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+T\+A\+T\+U\+S\+\_\+\+OK~1}\hypertarget{eard__conf__rapi_8h_a2403320c41f08e7567cb169de5db66b3}{}\label{eard__conf__rapi_8h_a2403320c41f08e7567cb169de5db66b3}
 
 
 \subsection{Typedef Documentation}
@@ -99,3 +118,6 @@ typedef struct \hyperlink{structrequest}{request} \hyperlink{eard__conf__rapi_8h
 \index{eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}!request\+\_\+t@{request\+\_\+t}}
 \index{request\+\_\+t@{request\+\_\+t}!eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}}
 \subsubsection[{\texorpdfstring{request\+\_\+t}{request_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf request} {\bf request\+\_\+t}}\hypertarget{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{}\label{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}
+\index{eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}!status\+\_\+t@{status\+\_\+t}}
+\index{status\+\_\+t@{status\+\_\+t}!eard\+\_\+conf\+\_\+rapi.\+h@{eard\+\_\+conf\+\_\+rapi.\+h}}
+\subsubsection[{\texorpdfstring{status\+\_\+t}{status_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf status}  {\bf status\+\_\+t}}\hypertarget{eard__conf__rapi_8h_ae10cc0dbef73781f1180541121e675bb}{}\label{eard__conf__rapi_8h_ae10cc0dbef73781f1180541121e675bb}

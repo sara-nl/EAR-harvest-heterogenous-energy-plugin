@@ -129,7 +129,7 @@ Functions</h2></td></tr>
 <tr class="separator:a95bbfb1a7b564cece9aee7715b6aa47f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5af8384ddab7dede7b7c00b50ae96a3a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a5af8384ddab7dede7b7c00b50ae96a3a">dynconf_inc_th</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> th)</td></tr>
 <tr class="separator:a5af8384ddab7dede7b7c00b50ae96a3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a761cc2f1a4619e26450b460f91290891"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a761cc2f1a4619e26450b460f91290891">dynconf_max_freq</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> max_freq)</td></tr>
+<tr class="memitem:a761cc2f1a4619e26450b460f91290891"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a761cc2f1a4619e26450b460f91290891">dynconf_max_freq</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> <a class="el" href="ear__lp__validation_8c.html#a67b5fc2af25178078dfc5b1bac08de32">max_freq</a>)</td></tr>
 <tr class="separator:a761cc2f1a4619e26450b460f91290891"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a402850795d67573017d791bb82ede482"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a402850795d67573017d791bb82ede482">dynconf_def_freq</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> def)</td></tr>
 <tr class="separator:a402850795d67573017d791bb82ede482"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -142,6 +142,8 @@ Functions</h2></td></tr>
 <tr class="memitem:a1380e3101b045d0c99117bca6bebabec"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a1380e3101b045d0c99117bca6bebabec">dynconf_set_th</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> th)</td></tr>
 <tr class="memdesc:a1380e3101b045d0c99117bca6bebabec"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function is supposed to affect only to MIN_TIME_TO_SOLUTION.  <a href="#a1380e3101b045d0c99117bca6bebabec">More...</a><br /></td></tr>
 <tr class="separator:a1380e3101b045d0c99117bca6bebabec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6d0dd0f9347bc9b0c862ab908c6c178"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#af6d0dd0f9347bc9b0c862ab908c6c178">dyncon_get_status</a> (int fd, <a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command)</td></tr>
+<tr class="separator:af6d0dd0f9347bc9b0c862ab908c6c178"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a374cfdc92d2be2897d39a5fa34874fec"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a374cfdc92d2be2897d39a5fa34874fec">process_remote_requests</a> (int clientfd)</td></tr>
 <tr class="separator:a374cfdc92d2be2897d39a5fa34874fec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55711e3e828929dcb6f7e48b8ca922d9"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a55711e3e828929dcb6f7e48b8ca922d9">eard_dynamic_configuration</a> (void *tmp)</td></tr>
@@ -164,14 +166,48 @@ Variables</h2></td></tr>
 <tr class="separator:acf94d106083b49b8d1281f3c0a6d446a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c6877da2aa55927ec276bfdedb32660"><td class="memItemLeft" align="right" valign="top"><a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a6c6877da2aa55927ec276bfdedb32660">my_cluster_conf</a></td></tr>
 <tr class="separator:a6c6877da2aa55927ec276bfdedb32660"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c85a23a7110473765eee80874e1c11d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="cluster__conf_8h.html#a3e757dbe9c6eacf7676d955890edc8dc">my_node_conf_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a4c85a23a7110473765eee80874e1c11d">my_node_conf</a></td></tr>
+<tr class="separator:a4c85a23a7110473765eee80874e1c11d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a123c8414e64591d6d57189a02df597ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="cluster__conf_8h.html#a3e757dbe9c6eacf7676d955890edc8dc">my_node_conf_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a123c8414e64591d6d57189a02df597ff">my_original_node_conf</a></td></tr>
+<tr class="separator:a123c8414e64591d6d57189a02df597ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adbd38436c25bc604b1a48464727d4179"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#adbd38436c25bc604b1a48464727d4179">__HOST__</a></td></tr>
 <tr class="separator:adbd38436c25bc604b1a48464727d4179"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c946f257bd518da755792b1dfaa1a0a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="shared__configuration_8h.html#ad610334cf2b8fdaea2cbda3c609e8d35">settings_conf_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a1c946f257bd518da755792b1dfaa1a0a">dyn_conf</a></td></tr>
 <tr class="separator:a1c946f257bd518da755792b1dfaa1a0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a4bf3b5fb9af4d2afcafdcc9d23b8ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="shared__configuration_8h.html#a9faa857e3f34cd1b9f1dc8cfc5a87921">resched_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a4a4bf3b5fb9af4d2afcafdcc9d23b8ef">resched_conf</a></td></tr>
 <tr class="separator:a4a4bf3b5fb9af4d2afcafdcc9d23b8ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8db564a08bbddf37c4bb0a235402bbaf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#a8db564a08bbddf37c4bb0a235402bbaf">last_command</a> = -1</td></tr>
+<tr class="separator:a8db564a08bbddf37c4bb0a235402bbaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb8fcbde03c514a733ac76372cadacf6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="dynamic__configuration_8c.html#afb8fcbde03c514a733ac76372cadacf6">last_command_time</a> = -1</td></tr>
+<tr class="separator:afb8fcbde03c514a733ac76372cadacf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="af6d0dd0f9347bc9b0c862ab908c6c178"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dyncon_get_status </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *&#160;</td>
+          <td class="paramname"><em>command</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a18b2bfe8a02af3be6df9b0031b37f464"></a>
 <div class="memitem">
 <div class="memproto">
@@ -512,12 +548,60 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a8db564a08bbddf37c4bb0a235402bbaf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int last_command = -1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afb8fcbde03c514a733ac76372cadacf6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int last_command_time = -1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a6c6877da2aa55927ec276bfdedb32660"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a> my_cluster_conf</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4c85a23a7110473765eee80874e1c11d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="cluster__conf_8h.html#a3e757dbe9c6eacf7676d955890edc8dc">my_node_conf_t</a>* <a class="el" href="structmy__node__conf.html">my_node_conf</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a123c8414e64591d6d57189a02df597ff"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="cluster__conf_8h.html#a3e757dbe9c6eacf7676d955890edc8dc">my_node_conf_t</a> my_original_node_conf</td>
         </tr>
       </table>
 </div><div class="memdoc">

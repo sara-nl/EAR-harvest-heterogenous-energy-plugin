@@ -35,7 +35,7 @@ var searchData=
   ['cpu_5funidentified',['CPU_UNIDENTIFIED',['../hardware__info_8h.html#ab55c67211d7cf3a8de4cb1d80761c38a',1,'hardware_info.h']]],
   ['cpufreq_5fget',['cpufreq_get',['../cpufreq_8h.html#afb21ad8c78f842f55836cd334e336945',1,'cpufreq.h']]],
   ['cpuid',['CPUID',['../hardware__info_8c.html#ab7e2626cf7290412e0289c55db90f7a9',1,'hardware_info.c']]],
-  ['create_5fflags',['CREATE_FLAGS',['../compute__coefficients_8c.html#a3fdd8297f1dda5bce4af3a2b02a29456',1,'CREATE_FLAGS():&#160;compute_coefficients.c'],['../compute__coefficients__remote_8c.html#a3fdd8297f1dda5bce4af3a2b02a29456',1,'CREATE_FLAGS():&#160;compute_coefficients_remote.c'],['../compute__coefficients__v2_8c.html#a3fdd8297f1dda5bce4af3a2b02a29456',1,'CREATE_FLAGS():&#160;compute_coefficients_v2.c']]],
+  ['create_5fflags',['CREATE_FLAGS',['../compute__coefficients_8c.html#a3fdd8297f1dda5bce4af3a2b02a29456',1,'CREATE_FLAGS():&#160;compute_coefficients.c'],['../compute__coefficients__remote_8c.html#a3fdd8297f1dda5bce4af3a2b02a29456',1,'CREATE_FLAGS():&#160;compute_coefficients_remote.c'],['../ear__lp__validation_8c.html#a3fdd8297f1dda5bce4af3a2b02a29456',1,'CREATE_FLAGS():&#160;ear_lp_validation.c'],['../compute__coefficients__v2_8c.html#a3fdd8297f1dda5bce4af3a2b02a29456',1,'CREATE_FLAGS():&#160;compute_coefficients_v2.c']]],
   ['create_5fid',['create_ID',['../application_8h.html#a3dc34ed28dd5a0ec7cf0bcc264a91a73',1,'application.h']]],
   ['cregs',['CREGS',['../hardware__info_8c.html#a877a3c98f22849d5c7c643412a8620db',1,'hardware_info.c']]]
 ];
