@@ -98,28 +98,30 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;unistd.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="coefficient_8h_source.html">common/types/coefficient.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="common_2states_8h_source.html">common/states.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="coefficient_8h_source.html">common/types/coefficient.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:ab2965cfd3ad781fd1df28623a108bcc0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#ab2965cfd3ad781fd1df28623a108bcc0">PERMISSION</a>&#160;&#160;&#160;S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH</td></tr>
+<tr class="memitem:ab2965cfd3ad781fd1df28623a108bcc0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#ab2965cfd3ad781fd1df28623a108bcc0">PERMISSION</a>&#160;&#160;&#160;S_IRUSR  | S_IWUSR | S_IRGRP | S_IROTH</td></tr>
 <tr class="separator:ab2965cfd3ad781fd1df28623a108bcc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aec95ee3aec6673f51ed3c6a833a2dc71"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#aec95ee3aec6673f51ed3c6a833a2dc71">OPTIONS</a>&#160;&#160;&#160;O_WRONLY | O_CREAT | O_TRUNC | O_APPEND</td></tr>
 <tr class="separator:aec95ee3aec6673f51ed3c6a833a2dc71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ac2f7dd01c266d796ba214ccec177025a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#ac2f7dd01c266d796ba214ccec177025a">read_coefficients_file_v3</a> (char *path, <a class="el" href="coefficient_8h.html#a1be465f2b5624de5256f58836a8cd967">coefficient_v3_t</a> *coeffs, int size)</td></tr>
-<tr class="separator:ac2f7dd01c266d796ba214ccec177025a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0545ae45338197a298b48664273cdcf9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#a0545ae45338197a298b48664273cdcf9">read_coefficients_file</a> (char *path, <a class="el" href="coefficient_8h.html#a7f58a37ee368b55a21d66b1b4e76e779">coefficient_t</a> **coeffs, int size)</td></tr>
-<tr class="separator:a0545ae45338197a298b48664273cdcf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a661671c130024f9318b2e3e7d6b14ff8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#a661671c130024f9318b2e3e7d6b14ff8">check_file</a> (char *path)</td></tr>
-<tr class="separator:a661671c130024f9318b2e3e7d6b14ff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a038e890e0c4ec4b311bf04164c195f76"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#a038e890e0c4ec4b311bf04164c195f76">print_coefficient</a> (<a class="el" href="coefficient_8h.html#a7f58a37ee368b55a21d66b1b4e76e779">coefficient_t</a> *coeff)</td></tr>
-<tr class="separator:a038e890e0c4ec4b311bf04164c195f76"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a177331a96da06de437c8c8c4e7cd8ea6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#a177331a96da06de437c8c8c4e7cd8ea6">print_coefficient_v3</a> (<a class="el" href="coefficient_8h.html#a1be465f2b5624de5256f58836a8cd967">coefficient_v3_t</a> *coeff)</td></tr>
-<tr class="separator:a177331a96da06de437c8c8c4e7cd8ea6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8b94a754c0dc48d6d57d25664d2ea0f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#ac8b94a754c0dc48d6d57d25664d2ea0f">coeff_file_size</a> (char *path)</td></tr>
+<tr class="separator:ac8b94a754c0dc48d6d57d25664d2ea0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ce3a5c1e56d94e343cf3a1b9c9cc58c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#a9ce3a5c1e56d94e343cf3a1b9c9cc58c">coeff_file_read_no_alloc</a> (char *path, <a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *<a class="el" href="translate__coefficients_8c.html#a276abdf3617a49b44ba15ce0b9d585aa">coeffs</a>, int size)</td></tr>
+<tr class="separator:a9ce3a5c1e56d94e343cf3a1b9c9cc58c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4a679cd0e9bc08058a7eac1e565323c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#ad4a679cd0e9bc08058a7eac1e565323c">coeff_print</a> (<a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *coeff)</td></tr>
+<tr class="separator:ad4a679cd0e9bc08058a7eac1e565323c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54b41c776ff61cba3b8f0d84bb7510f5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#a54b41c776ff61cba3b8f0d84bb7510f5">coeff_file_read</a> (char *path, <a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> **<a class="el" href="translate__coefficients_8c.html#a276abdf3617a49b44ba15ce0b9d585aa">coeffs</a>)</td></tr>
+<tr class="separator:a54b41c776ff61cba3b8f0d84bb7510f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e73c10a5bdd2179be62b4acea0eb6ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#a7e73c10a5bdd2179be62b4acea0eb6ac">coeff_print_obs</a> (<a class="el" href="coefficient_8h.html#a2dedde4fabff984d39bf49fffb48fcf6">coefficient_obs_t</a> *coeff)</td></tr>
+<tr class="separator:a7e73c10a5bdd2179be62b4acea0eb6ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fdfbf5d62da7f631b3fbed127894659"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coefficient_8c.html#a9fdfbf5d62da7f631b3fbed127894659">coeff_file_read_obs</a> (char *path, <a class="el" href="coefficient_8h.html#a2dedde4fabff984d39bf49fffb48fcf6">coefficient_obs_t</a> **<a class="el" href="translate__coefficients_8c.html#a276abdf3617a49b44ba15ce0b9d585aa">coeffs</a>, int size)</td></tr>
+<tr class="separator:a9fdfbf5d62da7f631b3fbed127894659"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a class="anchor" id="aec95ee3aec6673f51ed3c6a833a2dc71"></a>
@@ -139,7 +141,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define PERMISSION&#160;&#160;&#160;S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH</td>
+          <td class="memname">#define PERMISSION&#160;&#160;&#160;S_IRUSR  | S_IWUSR | S_IRGRP | S_IROTH</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -147,12 +149,102 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a661671c130024f9318b2e3e7d6b14ff8"></a>
+<a class="anchor" id="a54b41c776ff61cba3b8f0d84bb7510f5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int check_file </td>
+          <td class="memname">int coeff_file_read </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> **&#160;</td>
+          <td class="paramname"><em>coeffs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9ce3a5c1e56d94e343cf3a1b9c9cc58c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int coeff_file_read_no_alloc </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *&#160;</td>
+          <td class="paramname"><em>coeffs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9fdfbf5d62da7f631b3fbed127894659"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int coeff_file_read_obs </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="coefficient_8h.html#a2dedde4fabff984d39bf49fffb48fcf6">coefficient_obs_t</a> **&#160;</td>
+          <td class="paramname"><em>coeffs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac8b94a754c0dc48d6d57d25664d2ea0f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int coeff_file_size </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>path</em></td><td>)</td>
@@ -163,14 +255,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a038e890e0c4ec4b311bf04164c195f76"></a>
+<a class="anchor" id="ad4a679cd0e9bc08058a7eac1e565323c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void print_coefficient </td>
+          <td class="memname">void coeff_print </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="coefficient_8h.html#a7f58a37ee368b55a21d66b1b4e76e779">coefficient_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *&#160;</td>
           <td class="paramname"><em>coeff</em></td><td>)</td>
           <td></td>
         </tr>
@@ -179,80 +271,16 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a177331a96da06de437c8c8c4e7cd8ea6"></a>
+<a class="anchor" id="a7e73c10a5bdd2179be62b4acea0eb6ac"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void print_coefficient_v3 </td>
+          <td class="memname">void coeff_print_obs </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="coefficient_8h.html#a1be465f2b5624de5256f58836a8cd967">coefficient_v3_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="coefficient_8h.html#a2dedde4fabff984d39bf49fffb48fcf6">coefficient_obs_t</a> *&#160;</td>
           <td class="paramname"><em>coeff</em></td><td>)</td>
           <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a0545ae45338197a298b48664273cdcf9"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int read_coefficients_file </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>path</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="coefficient_8h.html#a7f58a37ee368b55a21d66b1b4e76e779">coefficient_t</a> **&#160;</td>
-          <td class="paramname"><em>coeffs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="ac2f7dd01c266d796ba214ccec177025a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int read_coefficients_file_v3 </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>path</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="coefficient_8h.html#a1be465f2b5624de5256f58836a8cd967">coefficient_v3_t</a> *&#160;</td>
-          <td class="paramname"><em>coeffs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

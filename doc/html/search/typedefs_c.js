@@ -11,6 +11,7 @@ var searchData=
   ['spank_5fopt_5fcb_5ff',['spank_opt_cb_f',['../spank_8h.html#a6a2cd7e061d72b335a76340e786486fa',1,'spank.h']]],
   ['spank_5ft',['spank_t',['../spank_8h.html#a86286d99399c69768b2cf48032282431',1,'spank.h']]],
   ['state_5ft',['state_t',['../common_2states_8h.html#a70fb3cb460ce19a89130b2787e73d71d',1,'states.h']]],
+  ['status_5ft',['status_t',['../eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb',1,'eard_conf_rapi.h']]],
   ['sync_5fans_5ft',['sync_ans_t',['../eardbd_8h.html#a05f7b8da91cf8c844979b3274907642b',1,'eardbd.h']]],
   ['sync_5fqst_5ft',['sync_qst_t',['../eardbd_8h.html#a57f73c6446149b0e999764a753af0f7e',1,'eardbd.h']]]
 ];

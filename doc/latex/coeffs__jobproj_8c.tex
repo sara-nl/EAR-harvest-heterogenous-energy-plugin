@@ -1,0 +1,149 @@
+\hypertarget{coeffs__jobproj_8c}{}\section{src/tools/coeffs\+\_\+jobproj.c File Reference}
+\label{coeffs__jobproj_8c}\index{src/tools/coeffs\+\_\+jobproj.\+c@{src/tools/coeffs\+\_\+jobproj.\+c}}
+{\ttfamily \#include $<$math.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$common/sizes.\+h$>$}\\*
+{\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/projection.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/application.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/coefficient.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+{\ttfamily \#include $<$common/database/db\+\_\+helper.\+h$>$}\\*
+{\ttfamily \#include $<$tools/coeffs\+\_\+jobproj.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structcontrol}{control}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structcontrol}{control} \hyperlink{coeffs__jobproj_8c_a95c19d83d0b29cb74fc06e34c67fbd2f}{control\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+double \hyperlink{coeffs__jobproj_8c_aa02043bdde09394ff7a7584a13d2175d}{projection\+\_\+pow} (double pow\+\_\+sign, double tpi\+\_\+sign, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$cofs)
+\item 
+double \hyperlink{coeffs__jobproj_8c_ac3fcdec2315f79a858a7d0ce661655ef}{projection\+\_\+cpi} (double cpi\+\_\+sign, double tpi\+\_\+sign, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$cofs)
+\item 
+double \hyperlink{coeffs__jobproj_8c_aac762b27ee0a5a152fe449bb51ef7e44}{projection\+\_\+tim} (double tim\+\_\+sign, double \hyperlink{projections__avx512_8h_ae771b5976490abde7cb61e3ed8f4be0d}{cpi\+\_\+proj}, double cpi\+\_\+sign, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq\+\_\+from, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq\+\_\+to)
+\item 
+void \hyperlink{coeffs__jobproj_8c_a036df463eef8ad30c94e11dd40521ebf}{evaluate} (\hyperlink{coeffs__jobproj_8c_a95c19d83d0b29cb74fc06e34c67fbd2f}{control\+\_\+t} $\ast$\hyperlink{coeffs__quality_8c_a856eb0fddbbe91397aa6bb0de67f6c28}{cntr})
+\item 
+void \hyperlink{coeffs__jobproj_8c_a73f5b34d4cecda74ab4c1031b01a2bba}{read\+\_\+applications} (\hyperlink{coeffs__jobproj_8c_a95c19d83d0b29cb74fc06e34c67fbd2f}{control\+\_\+t} $\ast$\hyperlink{coeffs__quality_8c_a856eb0fddbbe91397aa6bb0de67f6c28}{cntr})
+\item 
+void \hyperlink{coeffs__jobproj_8c_abae69ab64dbb64aed7bb3e922f651ce1}{read\+\_\+coefficients} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$conf, \hyperlink{coeffs__jobproj_8c_a95c19d83d0b29cb74fc06e34c67fbd2f}{control\+\_\+t} $\ast$\hyperlink{coeffs__quality_8c_a856eb0fddbbe91397aa6bb0de67f6c28}{cntr})
+\item 
+void \hyperlink{coeffs__jobproj_8c_a61833cfb952e1aba9b1fcb7741e59382}{usage} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]}, \hyperlink{coeffs__jobproj_8c_a95c19d83d0b29cb74fc06e34c67fbd2f}{control\+\_\+t} $\ast$\hyperlink{coeffs__quality_8c_a856eb0fddbbe91397aa6bb0de67f6c28}{cntr})
+\item 
+void \hyperlink{coeffs__jobproj_8c_af7bb7d0197f29075aee8c7d87d38c5d5}{init} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$conf)
+\item 
+int \hyperlink{coeffs__jobproj_8c_a0ddf1224851353fc92bfbff6f499fa97}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{coeffs__jobproj_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} = 0
+\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\item 
+int \hyperlink{coeffs__jobproj_8c_a2b9b5f62c780e8303627ff77cb554815}{C\+O\+L\+U\+M\+NS} = 5
+\end{DoxyCompactItemize}
+
+
+\subsection{Typedef Documentation}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!control\+\_\+t@{control\+\_\+t}}
+\index{control\+\_\+t@{control\+\_\+t}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{control\+\_\+t}{control_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf control}  {\bf control\+\_\+t}}\hypertarget{coeffs__jobproj_8c_a95c19d83d0b29cb74fc06e34c67fbd2f}{}\label{coeffs__jobproj_8c_a95c19d83d0b29cb74fc06e34c67fbd2f}
+
+
+\subsection{Function Documentation}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!evaluate@{evaluate}}
+\index{evaluate@{evaluate}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{evaluate(control\+\_\+t $\ast$cntr)}{evaluate(control_t *cntr)}}]{\setlength{\rightskip}{0pt plus 5cm}void evaluate (
+\begin{DoxyParamCaption}
+\item[{{\bf control\+\_\+t} $\ast$}]{cntr}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_a036df463eef8ad30c94e11dd40521ebf}{}\label{coeffs__jobproj_8c_a036df463eef8ad30c94e11dd40521ebf}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!init@{init}}
+\index{init@{init}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{init(cluster\+\_\+conf\+\_\+t $\ast$conf)}{init(cluster_conf_t *conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void init (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t} $\ast$}]{conf}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_af7bb7d0197f29075aee8c7d87d38c5d5}{}\label{coeffs__jobproj_8c_af7bb7d0197f29075aee8c7d87d38c5d5}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!main@{main}}
+\index{main@{main}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}int main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_a0ddf1224851353fc92bfbff6f499fa97}{}\label{coeffs__jobproj_8c_a0ddf1224851353fc92bfbff6f499fa97}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!projection\+\_\+cpi@{projection\+\_\+cpi}}
+\index{projection\+\_\+cpi@{projection\+\_\+cpi}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{projection\+\_\+cpi(double cpi\+\_\+sign, double tpi\+\_\+sign, coefficient\+\_\+t $\ast$cofs)}{projection_cpi(double cpi_sign, double tpi_sign, coefficient_t *cofs)}}]{\setlength{\rightskip}{0pt plus 5cm}double projection\+\_\+cpi (
+\begin{DoxyParamCaption}
+\item[{double}]{cpi\+\_\+sign, }
+\item[{double}]{tpi\+\_\+sign, }
+\item[{{\bf coefficient\+\_\+t} $\ast$}]{cofs}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_ac3fcdec2315f79a858a7d0ce661655ef}{}\label{coeffs__jobproj_8c_ac3fcdec2315f79a858a7d0ce661655ef}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!projection\+\_\+pow@{projection\+\_\+pow}}
+\index{projection\+\_\+pow@{projection\+\_\+pow}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{projection\+\_\+pow(double pow\+\_\+sign, double tpi\+\_\+sign, coefficient\+\_\+t $\ast$cofs)}{projection_pow(double pow_sign, double tpi_sign, coefficient_t *cofs)}}]{\setlength{\rightskip}{0pt plus 5cm}double projection\+\_\+pow (
+\begin{DoxyParamCaption}
+\item[{double}]{pow\+\_\+sign, }
+\item[{double}]{tpi\+\_\+sign, }
+\item[{{\bf coefficient\+\_\+t} $\ast$}]{cofs}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_aa02043bdde09394ff7a7584a13d2175d}{}\label{coeffs__jobproj_8c_aa02043bdde09394ff7a7584a13d2175d}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!projection\+\_\+tim@{projection\+\_\+tim}}
+\index{projection\+\_\+tim@{projection\+\_\+tim}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{projection\+\_\+tim(double tim\+\_\+sign, double cpi\+\_\+proj, double cpi\+\_\+sign, ulong freq\+\_\+from, ulong freq\+\_\+to)}{projection_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong freq_from, ulong freq_to)}}]{\setlength{\rightskip}{0pt plus 5cm}double projection\+\_\+tim (
+\begin{DoxyParamCaption}
+\item[{double}]{tim\+\_\+sign, }
+\item[{double}]{cpi\+\_\+proj, }
+\item[{double}]{cpi\+\_\+sign, }
+\item[{{\bf ulong}}]{freq\+\_\+from, }
+\item[{{\bf ulong}}]{freq\+\_\+to}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_aac762b27ee0a5a152fe449bb51ef7e44}{}\label{coeffs__jobproj_8c_aac762b27ee0a5a152fe449bb51ef7e44}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!read\+\_\+applications@{read\+\_\+applications}}
+\index{read\+\_\+applications@{read\+\_\+applications}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{read\+\_\+applications(control\+\_\+t $\ast$cntr)}{read_applications(control_t *cntr)}}]{\setlength{\rightskip}{0pt plus 5cm}void read\+\_\+applications (
+\begin{DoxyParamCaption}
+\item[{{\bf control\+\_\+t} $\ast$}]{cntr}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_a73f5b34d4cecda74ab4c1031b01a2bba}{}\label{coeffs__jobproj_8c_a73f5b34d4cecda74ab4c1031b01a2bba}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!read\+\_\+coefficients@{read\+\_\+coefficients}}
+\index{read\+\_\+coefficients@{read\+\_\+coefficients}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{read\+\_\+coefficients(cluster\+\_\+conf\+\_\+t $\ast$conf, control\+\_\+t $\ast$cntr)}{read_coefficients(cluster_conf_t *conf, control_t *cntr)}}]{\setlength{\rightskip}{0pt plus 5cm}void read\+\_\+coefficients (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t} $\ast$}]{conf, }
+\item[{{\bf control\+\_\+t} $\ast$}]{cntr}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_abae69ab64dbb64aed7bb3e922f651ce1}{}\label{coeffs__jobproj_8c_abae69ab64dbb64aed7bb3e922f651ce1}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!usage@{usage}}
+\index{usage@{usage}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{usage(int argc, char $\ast$argv[], control\+\_\+t $\ast$cntr)}{usage(int argc, char *argv[], control_t *cntr)}}]{\setlength{\rightskip}{0pt plus 5cm}void usage (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}, }
+\item[{{\bf control\+\_\+t} $\ast$}]{cntr}
+\end{DoxyParamCaption}
+)}\hypertarget{coeffs__jobproj_8c_a61833cfb952e1aba9b1fcb7741e59382}{}\label{coeffs__jobproj_8c_a61833cfb952e1aba9b1fcb7741e59382}
+
+
+\subsection{Variable Documentation}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!C\+O\+L\+U\+M\+NS@{C\+O\+L\+U\+M\+NS}}
+\index{C\+O\+L\+U\+M\+NS@{C\+O\+L\+U\+M\+NS}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{C\+O\+L\+U\+M\+NS}{COLUMNS}}]{\setlength{\rightskip}{0pt plus 5cm}int C\+O\+L\+U\+M\+NS = 5}\hypertarget{coeffs__jobproj_8c_a2b9b5f62c780e8303627ff77cb554815}{}\label{coeffs__jobproj_8c_a2b9b5f62c780e8303627ff77cb554815}
+\index{coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
+\index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!coeffs\+\_\+jobproj.\+c@{coeffs\+\_\+jobproj.\+c}}
+\subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL = 0}\hypertarget{coeffs__jobproj_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{coeffs__jobproj_8c_a43d7e58c317e811389b628dc49b52bd2}
+
+
+This program sets the node frequency . 
+
+It must be executed with privileges 

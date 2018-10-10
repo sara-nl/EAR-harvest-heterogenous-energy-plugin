@@ -6,11 +6,11 @@ E\+AR also provides mechanism for those experts users that perfectly knows their
 
 E\+AR library has been integrated in a full energy management system incluing a complete accounting mechanism, and a global energy manager. All the componets together provides three main services\+:
 
-1-\/ A {\bfseries simple and ligthweigth system} to automatically select the optimal C\+PU frequency according to the application, the node, and the power policy. This services is provided by two components\+: the E\+AR library ({\bfseries E\+A\+RL}) and the E\+AR daemon ({\bfseries E\+A\+RD}). E\+A\+RL is a smart component which selects the C\+PU frequency for the running applications. E\+A\+RD is provides basic services to the rest of components (not only E\+A\+RL).
+1) A {\bfseries simple and ligthweigth system} to automatically select the optimal C\+PU frequency according to the application, the node, and the power policy. This services is provided by two components\+: the E\+AR library ({\bfseries E\+A\+RL}) and the E\+AR daemon ({\bfseries E\+A\+RD}). E\+A\+RL is a smart component which selects the C\+PU frequency for the running applications. E\+A\+RD is provides basic services to the rest of components (not only E\+A\+RL).
 
-2-\/ A complete {\bfseries energy accounting system} based on My\+S\+QL database. The energy accounting system is configurable in terms of application details and updates frequency.
+2) A complete {\bfseries energy accounting system} based on My\+S\+QL database. The energy accounting system is configurable in terms of application details and updates frequency.
 
-3-\/ A {\bfseries global energy manager} which monitors and controls the energy consumed in the system. Energy control is configurable and dynamically adapts power policy settings based on global energy limits and application characteristics.
+3) A {\bfseries global energy manager} which monitors and controls the energy consumed in the system. Energy control is configurable and dynamically adapts power policy settings based on global energy limits and application characteristics.
 
 All three components are configurable using a single, centralized, and simple text file called \textquotesingle{}ear.\+conf\textquotesingle{}. This mechanism makes easy the cluster definition and configuration. This \textquotesingle{}ear.\+conf\textquotesingle{} includes default values, pre-\/defined application configurations, etc. More details can be found in ./etc/conf/\+R\+E\+A\+D\+ME.md \char`\"{}configuration section\char`\"{}.
 
@@ -101,7 +101,8 @@ L\+I\+BS &Libraries to pass to the linker. E.\+g. ‘-\/l$<$library$>$’. \\\cl
 C\+P\+P\+F\+L\+A\+GS &C/\+C++ preprocessor flags, e.\+g. -\/I$<$include dir$>$ if you have headers in a nonstandard directory $<$include dir$>$. \\\cline{1-2}
 T\+MP &Defines the node local storage as \textquotesingle{}var\textquotesingle{}, \textquotesingle{}tmp\textquotesingle{} or other tempfs file system (default\+: /var/ear) (you can alo use --localstatedir=D\+IR) \\\cline{1-2}
 E\+TC &Defines the read-\/only single-\/machine data as \textquotesingle{}etc\textquotesingle{} (default\+: E\+P\+R\+E\+F\+I\+X/etc) (you can also use --sharedstatedir=D\+IR) \\\cline{1-2}
-M\+AN &Defines the documentation directory (default\+: P\+R\+E\+F\+I\+X/man) (you can use also --mandir=D\+IR) \\\cline{1-2}
+M\+AN &Defines the manual directory (default\+: P\+R\+E\+F\+I\+X/man) (you can use also --mandir=D\+IR) \\\cline{1-2}
+D\+OC &Defines the documentation directory (default\+: P\+R\+E\+F\+I\+X/doc) (you can use also --docdir=D\+IR) \\\cline{1-2}
 \end{longtabu}
 
 \begin{DoxyItemize}
@@ -143,6 +144,7 @@ This is the list of the inner installation folders and their content\+:
 /scripts &$<${\itshape P\+R\+E\+F\+IX}$>$ &Scripts. \\\cline{1-3}
 /man &$<${\itshape P\+R\+E\+F\+IX}$>$ &Documentation. \\\cline{1-3}
 /ear &$<${\itshape E\+TC}$>$ &Configuration file. \\\cline{1-3}
+/ear/coeffs &$<${\itshape E\+TC}$>$ &Coefficient files store. \\\cline{1-3}
 /module &$<${\itshape E\+TC}$>$ &Environment module. \\\cline{1-3}
 /slurm &$<${\itshape E\+TC}$>$ &plugstack.\+conf. \\\cline{1-3}
 /systemd &$<${\itshape E\+TC}$>$ &Unit services. \\\cline{1-3}
@@ -185,11 +187,7 @@ Finally, when using {\ttfamily systemctl} commands, you can check messages repor
 
 \subsection*{Configuration }
 
-1) Depending on your environment\+:
-\begin{DoxyItemize}
-\item In case you are going to use {\bfseries E\+AR together with S\+L\+U\+RM}, visit the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/slurm\+\_\+plugin/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}\+S\+L\+U\+R\+M plugin page\char`\"{} to add the plugin to your S\+L\+U\+RM installation.
-\item In case you are going to use {\bfseries E\+AR with direct M\+PI calls}, visit the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/etc/scripts/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}scripts page\char`\"{} for more information about the scripts that simplify the launch. 2) Pass the learning phase in all your computing nodes by visiting the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/etc/scripts/learning/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}learning phase page\char`\"{} to follow its guide.
-\end{DoxyItemize}
+1) E\+AR works together with {\bfseries S\+L\+U\+RM}, so please, visit the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/src/slurm\+\_\+plugin/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}\+S\+L\+U\+R\+M plugin page\char`\"{} to add the plugin to your S\+L\+U\+RM installation. 2) Pass the learning phase in all your computing nodes by visiting the https\+://github.com/\+Barcelona\+Supercomputing\+Center/\+E\+A\+R/blob/development/etc/scripts/learning/\+R\+E\+A\+D\+M\+E.\+md \char`\"{}learning phase page\char`\"{} and follow this guide.
 
 \subsection*{User guide }
 

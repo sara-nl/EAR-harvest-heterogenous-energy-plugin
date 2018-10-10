@@ -21,8 +21,15 @@ The main tables in the database Report and each of their rows are\+:
 \item Loops\+: Contains the information of an application loop, its identifying characteristics (type of event, size, level and total iterations), the job it belongs to and the computed signature of the loop.
 \item Power\+\_\+signatures\+: Contains power metrics of an application.
 \item Periodic\+\_\+metrics\+: Contains information about a node\textquotesingle{}s energy consumption with the purpose of monitoring it.
+\item Periodic\+\_\+aggregations\+: Contains the same information as Periodic\+\_\+metrics but aggregated by periods of time, not of each node individually.
 \item Learning\+\_\+\mbox{[}tables\mbox{]}\+: The tables that begin with the \char`\"{}\+Learning\+\_\+\char`\"{} prefix contain the same as their counterparts without prefix, but are used exclusively for the learning phase of the E\+AR library.
 \end{DoxyItemize}
 \end{DoxyItemize}
 
--\/\+The relationship between the tables can be seen in the adjunct diagram, as well as the general equivalent of their My\+S\+QL types. 
+-\/\+The relationship between the tables can be seen in the adjunct diagram, as well as the general equivalent of their My\+S\+QL types.
+
+Other tables are\+:
+\begin{DoxyItemize}
+\item Events\+: Contains a registry of E\+AR events (change in frequency, Dyn\+A\+IS on/off, etc.).
+\item Warnings\+: Contains a registry of E\+AR\textquotesingle{}s Global Manager warnings. 
+\end{DoxyItemize}

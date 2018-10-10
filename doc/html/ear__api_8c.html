@@ -116,6 +116,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;<a class="el" href="ear__api_8h_source.html">library/mpi_intercept/ear_api.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="MPI__types_8h_source.html">library/mpi_intercept/MPI_types.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="MPI__calls__coded_8h_source.html">library/mpi_intercept/MPI_calls_coded.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="freq__synchro_8h_source.html">library/mpi_intercept/freq_synchro.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="eard__api_8h_source.html">daemon/eard_api.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="shared__configuration_8h_source.html">daemon/shared_configuration.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="application_8h_source.html">common/types/application.h</a>&gt;</code><br />
@@ -134,11 +135,13 @@ Macros</h2></td></tr>
 <tr class="separator:a4cd23b0a113ac719067bca53e5b21eac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace341d2bc7c7862814ff98a4b1a20fbb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ear__api_8c.html#ace341d2bc7c7862814ff98a4b1a20fbb">USE_LOCK_FILES</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:ace341d2bc7c7862814ff98a4b1a20fbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2667d413a18699f8ec46f4106490eb70"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ear__api_8c.html#a2667d413a18699f8ec46f4106490eb70">MEASURE_DYNAIS_OV</a>&#160;&#160;&#160;0</td></tr>
-<tr class="separator:a2667d413a18699f8ec46f4106490eb70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a4577a1a47c4958ab6e2ba5fed9eccd03"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ear__api_8c.html#a4577a1a47c4958ab6e2ba5fed9eccd03">notify_eard_connection</a> (int <a class="el" href="structstatus.html">status</a>)</td></tr>
+<tr class="separator:a4577a1a47c4958ab6e2ba5fed9eccd03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affac44c09ed1a58e20ad1d190d1f6c6e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ear__api_8c.html#affac44c09ed1a58e20ad1d190d1f6c6e">attach_to_master_set</a> (int master)</td></tr>
+<tr class="separator:affac44c09ed1a58e20ad1d190d1f6c6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36f9e26ee34483972e2358f0b3e663f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ear__api_8c.html#a36f9e26ee34483972e2358f0b3e663f0">update_configuration</a> ()</td></tr>
 <tr class="separator:a36f9e26ee34483972e2358f0b3e663f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43b952e1e6132ad34d498e74cbf53d11"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ear__api_8c.html#a43b952e1e6132ad34d498e74cbf53d11">ear_init</a> ()</td></tr>
@@ -185,18 +188,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a2667d413a18699f8ec46f4106490eb70"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MEASURE_DYNAIS_OV&#160;&#160;&#160;0</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="ace341d2bc7c7862814ff98a4b1a20fbb"></a>
 <div class="memitem">
 <div class="memproto">
@@ -210,6 +201,22 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="affac44c09ed1a58e20ad1d190d1f6c6e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void attach_to_master_set </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>master</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a90cb9dec3b68f3c7a88f97ec85d7e88c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -337,6 +344,22 @@ Variables</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4577a1a47c4958ab6e2ba5fed9eccd03"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void notify_eard_connection </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>status</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -121,8 +121,12 @@ void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
 	dest->max_pstate=src->max_pstate;
 	strcpy(dest->db_ip,src->db_ip);
 	strcpy(dest->db_sec_ip,src->db_sec_ip);
-	dest->coef_file=malloc(strlen(src->coef_file)+1);
-	strcpy(dest->coef_file,src->coef_file);
+    if (src->coef_file == NULL)
+        dest->coef_file="";
+    else{
+	    dest->coef_file=malloc(strlen(src->coef_file)+1);
+	    strcpy(dest->coef_file,src->coef_file);
+    }
 	dest->num_policies=src->num_policies;
 	for (i=0;i<TOTAL_POLICIES;i++){
 		copy_policy_conf(&dest->policies[i],&src->policies[i]);

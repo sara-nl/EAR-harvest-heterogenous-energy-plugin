@@ -95,6 +95,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;sys/types.h&gt;</code><br />
 <code>#include &lt;sys/socket.h&gt;</code><br />
 <code>#include &lt;netinet/ip.h&gt;</code><br />
+<code>#include &lt;arpa/inet.h&gt;</code><br />
 <code>#include &lt;netdb.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -112,6 +113,8 @@ Functions</h2></td></tr>
 <tr class="memitem:a92282d11060af23cb9731bf21ee9a7c1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#a92282d11060af23cb9731bf21ee9a7c1">send_command</a> (<a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command)</td></tr>
 <tr class="memdesc:a92282d11060af23cb9731bf21ee9a7c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends the command to the currently connected fd.  <a href="#a92282d11060af23cb9731bf21ee9a7c1">More...</a><br /></td></tr>
 <tr class="separator:a92282d11060af23cb9731bf21ee9a7c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4749c57ba5573eb0873d239370f6651"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#ad4749c57ba5573eb0873d239370f6651">send_status</a> (<a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command, <a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **<a class="el" href="structstatus.html">status</a>)</td></tr>
+<tr class="separator:ad4749c57ba5573eb0873d239370f6651"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85c1e1f03d85375fb5c69615188a53c6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#a85c1e1f03d85375fb5c69615188a53c6">eards_remote_connect</a> (char *<a class="el" href="compute__coefficients__v2_8c.html#aff90684e5eeb3720274928bb76d503d3">nodename</a>, <a class="el" href="generic_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> port)</td></tr>
 <tr class="memdesc:a85c1e1f03d85375fb5c69615188a53c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connects with the EARD running in the given nodename.  <a href="#a85c1e1f03d85375fb5c69615188a53c6">More...</a><br /></td></tr>
 <tr class="separator:a85c1e1f03d85375fb5c69615188a53c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -175,9 +178,19 @@ Functions</h2></td></tr>
 <tr class="memitem:ad848555db70bbe5a449a8fc0b95fcc8d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#ad848555db70bbe5a449a8fc0b95fcc8d">set_def_freq_all_nodes</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> freq, <a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a> <a class="el" href="eargm_8c.html#a6c6877da2aa55927ec276bfdedb32660">my_cluster_conf</a>)</td></tr>
 <tr class="memdesc:ad848555db70bbe5a449a8fc0b95fcc8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the default frequency for all nodes in my_custer_conf.  <a href="#ad848555db70bbe5a449a8fc0b95fcc8d">More...</a><br /></td></tr>
 <tr class="separator:ad848555db70bbe5a449a8fc0b95fcc8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a369190556ac5f41c94432cd68b219174"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#a369190556ac5f41c94432cd68b219174">correct_status</a> (int target_ip, <a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command, int port, <a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **<a class="el" href="structstatus.html">status</a>)</td></tr>
+<tr class="separator:a369190556ac5f41c94432cd68b219174"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1ce3da1d0e6b7fdbbb688d85b813be8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#af1ce3da1d0e6b7fdbbb688d85b813be8">correct_error</a> (int target_ip, <a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command, int port)</td></tr>
+<tr class="separator:af1ce3da1d0e6b7fdbbb688d85b813be8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa741689465c4fa169f476f568dff254b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#aa741689465c4fa169f476f568dff254b">correct_status_starter</a> (char *host_name, <a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command, int port, <a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **<a class="el" href="structstatus.html">status</a>)</td></tr>
+<tr class="separator:aa741689465c4fa169f476f568dff254b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd60f11d2c52725ff79aff26c500ddfd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#abd60f11d2c52725ff79aff26c500ddfd">correct_error_starter</a> (char *host_name, <a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command, int port)</td></tr>
+<tr class="separator:abd60f11d2c52725ff79aff26c500ddfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c46d1f1b1882320730573938594f096"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#a6c46d1f1b1882320730573938594f096">send_command_all</a> (<a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> command, <a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a> <a class="el" href="eargm_8c.html#a6c6877da2aa55927ec276bfdedb32660">my_cluster_conf</a>)</td></tr>
 <tr class="memdesc:a6c46d1f1b1882320730573938594f096"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends the command to all nodes in ear.conf.  <a href="#a6c46d1f1b1882320730573938594f096">More...</a><br /></td></tr>
 <tr class="separator:a6c46d1f1b1882320730573938594f096"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae421b3982048064c9533986247f081ed"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#ae421b3982048064c9533986247f081ed">status_all_nodes</a> (<a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a> <a class="el" href="eargm_8c.html#a6c6877da2aa55927ec276bfdedb32660">my_cluster_conf</a>, <a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **<a class="el" href="structstatus.html">status</a>)</td></tr>
+<tr class="separator:ae421b3982048064c9533986247f081ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb28440ba0cfd9415eb73f852b10c6c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#aeb28440ba0cfd9415eb73f852b10c6c4">old_red_def_freq_all_nodes</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> ps, <a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a> <a class="el" href="eargm_8c.html#a6c6877da2aa55927ec276bfdedb32660">my_cluster_conf</a>)</td></tr>
 <tr class="separator:aeb28440ba0cfd9415eb73f852b10c6c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab837425312bb84f87aff2769839b2a7b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__rapi_8c.html#ab837425312bb84f87aff2769839b2a7b">old_reduce_frequencies_all_nodes</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> freq, <a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a> <a class="el" href="eargm_8c.html#a6c6877da2aa55927ec276bfdedb32660">my_cluster_conf</a>)</td></tr>
@@ -188,6 +201,146 @@ Functions</h2></td></tr>
 <tr class="separator:a66089293a53c8140a086bd3b573d1808"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="af1ce3da1d0e6b7fdbbb688d85b813be8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void correct_error </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>target_ip</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *&#160;</td>
+          <td class="paramname"><em>command</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>port</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abd60f11d2c52725ff79aff26c500ddfd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void correct_error_starter </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>host_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *&#160;</td>
+          <td class="paramname"><em>command</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>port</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a369190556ac5f41c94432cd68b219174"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int correct_status </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>target_ip</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *&#160;</td>
+          <td class="paramname"><em>command</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>port</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **&#160;</td>
+          <td class="paramname"><em>status</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa741689465c4fa169f476f568dff254b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int correct_status_starter </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>host_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *&#160;</td>
+          <td class="paramname"><em>command</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>port</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **&#160;</td>
+          <td class="paramname"><em>status</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a45f614cba7d9b8a20377b11679dbc3e3"></a>
 <div class="memitem">
 <div class="memproto">
@@ -787,6 +940,32 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ad4749c57ba5573eb0873d239370f6651"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int send_status </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *&#160;</td>
+          <td class="paramname"><em>command</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **&#160;</td>
+          <td class="paramname"><em>status</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="ad848555db70bbe5a449a8fc0b95fcc8d"></a>
 <div class="memitem">
 <div class="memproto">
@@ -812,6 +991,32 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Sets the default frequency for all nodes in my_custer_conf. </p>
+
+</div>
+</div>
+<a class="anchor" id="ae421b3982048064c9533986247f081ed"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int status_all_nodes </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a>&#160;</td>
+          <td class="paramname"><em>my_cluster_conf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **&#160;</td>
+          <td class="paramname"><em>status</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

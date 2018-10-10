@@ -4,40 +4,78 @@
 {\ttfamily \#include $<$unistd.\+h$>$}\\*
 {\ttfamily \#include $<$termios.\+h$>$}\\*
 {\ttfamily \#include $<$mysql/mysql.\+h$>$}\\*
+{\ttfamily \#include $<$common/string\+\_\+enhanced.\+h$>$}\\*
 {\ttfamily \#include $<$common/database/db\+\_\+helper.\+h$>$}\\*
 {\ttfamily \#include $<$common/types/application.\+h$>$}\\*
 {\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
-\#define \hyperlink{remove__learning_8c_a605ea5b25dbcb511b3e8232149d118e7}{A\+L\+L\+\_\+\+Q\+U\+E\+RY}
+\#define \hyperlink{remove__learning_8c_af5638066512cc527404ebbcd3f8efafc}{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y1}~\char`\"{}D\+E\+L\+E\+TE F\+R\+OM Power\+\_\+signatures W\+H\+E\+RE id IN (S\+E\+L\+E\+CT power\+\_\+signature\+\_\+id from Learning\+\_\+applications)\char`\"{}
+\item 
+\#define \hyperlink{remove__learning_8c_acae513c8a2e5d5ec9f7a37193d130754}{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y2}~\char`\"{}D\+E\+L\+E\+TE F\+R\+OM Learning\+\_\+applications\char`\"{}
+\item 
+\#define \hyperlink{remove__learning_8c_a0c27bc6381aa5a1331572bce3e155e19}{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y3}~\char`\"{}D\+E\+L\+E\+TE F\+R\+OM Learning\+\_\+signatures\char`\"{}
+\item 
+\#define \hyperlink{remove__learning_8c_ae54433bf2336778870d78827c118882a}{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y4}~\char`\"{}D\+E\+L\+E\+TE F\+R\+OM Learning\+\_\+jobs\char`\"{}
 \item 
 \#define \hyperlink{remove__learning_8c_add8c0b4d51270a7899ce47db3b24461d}{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \hyperlink{remove__learning_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\hyperlink{remove__learning_8c_adf5c804dfce7a70e36dda02995fad481}{exit} (0)
+\item 
+\hyperlink{remove__learning_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{if} (!strcmp(argv\mbox{[}1\mbox{]},\char`\"{}all\char`\"{})) all\+\_\+nodes
+\item 
+\hyperlink{remove__learning_8c_a952d7eac6fda03d78b47bc5c013e6b66}{if} (argc $>$ 2)
+\item 
+else \hyperlink{remove__learning_8c_a01275f8d4d9e0c74f8b1140d6cc344d1}{strcpy} (passw,\char`\"{}\char`\"{})
+\item 
+\hyperlink{remove__learning_8c_a1e2deb055ee62ad4aeeed4a0bc592d30}{if} (\hyperlink{cluster__conf_8h_a5a0f7933ace10edf104ac654942f764b}{get\+\_\+ear\+\_\+conf\+\_\+path}(\hyperlink{remove__learning_8c_a9bf419f662d96087eb75930ea48ac805}{ear\+\_\+path})==\hyperlink{common_2states_8h_a1e00cd011ba6cb619f422d959c4f128f}{E\+A\+R\+\_\+\+E\+R\+R\+OR})
+\item 
+\hyperlink{remove__learning_8c_aff20b7ca8c4eded951efd9d815f98f76}{read\+\_\+cluster\+\_\+conf} (\hyperlink{remove__learning_8c_a9bf419f662d96087eb75930ea48ac805}{ear\+\_\+path},\&\hyperlink{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf})
+\item 
+\hyperlink{remove__learning_8c_a0faf4517f2ecde0085b00ea8f94d4266}{if} (all\+\_\+nodes)
+\item 
+\hyperlink{remove__learning_8c_a7ae077894f4be08fe1b78883a5f00ee6}{if} (!mysql\+\_\+real\+\_\+connect(connection, my\+\_\+conf.\+database.\+ip,\char`\"{}root\char`\"{}, passw, my\+\_\+conf.\+database.\+database, my\+\_\+conf.\+database.\+port, N\+U\+LL, 0))
+\item 
+\hyperlink{remove__learning_8c_a98a5e7d8f4b09677886328784e551d77}{if} (mysql\+\_\+query(connection, \hyperlink{remove__learning_8c_a0ad9302c12c82c3144067f176a085cec}{query}))
+\item 
+\hyperlink{remove__learning_8c_a4d86de0be78f3cf4cc7b98bc27d2f5af}{mysql\+\_\+close} (connection)
 \end{DoxyCompactItemize}
 \subsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
 int \hyperlink{remove__learning_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL} =1
-\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em This program sets the node frequency . \end{DoxyCompactList}\item 
+A\+ND Learning\+\_\+jobs \hyperlink{remove__learning_8c_aaaecc7646b3c722387d285ecbb165474}{step\+\_\+id}
+\item 
+A\+ND Learning\+\_\+jobs either the \hyperlink{externs__alloc_8h_a2ae65b19e2c0b0e3d4945cf6ceb0085c}{node\+\_\+name} from which to delete records or\mbox{[}all\mbox{]} to delete all records If the root user has a \hyperlink{remove__learning_8c_ab7ef36563acf2b1eade4b6856c9c9b63}{password}
+\item 
+A\+ND Learning\+\_\+jobs either the \hyperlink{externs__alloc_8h_a2ae65b19e2c0b0e3d4945cf6ceb0085c}{node\+\_\+name} from which to delete records or\mbox{[}all\mbox{]} to delete all records If the root user has a use p \hyperlink{remove__learning_8c_a93e673027f655c55b00cc492898783a0}{n}
+\item 
+char \hyperlink{remove__learning_8c_a9bf419f662d96087eb75930ea48ac805}{ear\+\_\+path} \mbox{[}256\mbox{]}
+\item 
+\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}
+\item 
+char \hyperlink{remove__learning_8c_a0ad9302c12c82c3144067f176a085cec}{query} \mbox{[}256\mbox{]}
+\end{DoxyCompactItemize}
 
 
 \subsection{Macro Definition Documentation}
-\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!A\+L\+L\+\_\+\+Q\+U\+E\+RY@{A\+L\+L\+\_\+\+Q\+U\+E\+RY}}
-\index{A\+L\+L\+\_\+\+Q\+U\+E\+RY@{A\+L\+L\+\_\+\+Q\+U\+E\+RY}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
-\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+Q\+U\+E\+RY}{ALL_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+Q\+U\+E\+RY}\hypertarget{remove__learning_8c_a605ea5b25dbcb511b3e8232149d118e7}{}\label{remove__learning_8c_a605ea5b25dbcb511b3e8232149d118e7}
-{\bfseries Value\+:}
-\begin{DoxyCode}
-\textcolor{stringliteral}{"DELETE Learning\_signatures, Learning\_applications, Learning\_jobs FROM Learning\_jobs "} \(\backslash\)
-                    \textcolor{stringliteral}{"INNER JOIN Learning\_applications INNER JOIN Learning\_signatures ON
-       Learning\_jobs.id=job\_id "} \(\backslash\)
-                    \textcolor{stringliteral}{"AND Learning\_jobs.step\_id=Learning\_applications.step\_id AND
-       Learning\_signatures.id=signature\_id"}
-\end{DoxyCode}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y1@{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y1}}
+\index{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y1@{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y1}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y1}{ALL_QUERY1}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y1~\char`\"{}D\+E\+L\+E\+TE F\+R\+OM Power\+\_\+signatures W\+H\+E\+RE id IN (S\+E\+L\+E\+CT power\+\_\+signature\+\_\+id from Learning\+\_\+applications)\char`\"{}}\hypertarget{remove__learning_8c_af5638066512cc527404ebbcd3f8efafc}{}\label{remove__learning_8c_af5638066512cc527404ebbcd3f8efafc}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y2@{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y2}}
+\index{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y2@{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y2}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y2}{ALL_QUERY2}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y2~\char`\"{}D\+E\+L\+E\+TE F\+R\+OM Learning\+\_\+applications\char`\"{}}\hypertarget{remove__learning_8c_acae513c8a2e5d5ec9f7a37193d130754}{}\label{remove__learning_8c_acae513c8a2e5d5ec9f7a37193d130754}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y3@{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y3}}
+\index{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y3@{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y3}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y3}{ALL_QUERY3}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y3~\char`\"{}D\+E\+L\+E\+TE F\+R\+OM Learning\+\_\+signatures\char`\"{}}\hypertarget{remove__learning_8c_a0c27bc6381aa5a1331572bce3e155e19}{}\label{remove__learning_8c_a0c27bc6381aa5a1331572bce3e155e19}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y4@{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y4}}
+\index{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y4@{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y4}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y4}{ALL_QUERY4}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+L\+L\+\_\+\+Q\+U\+E\+R\+Y4~\char`\"{}D\+E\+L\+E\+TE F\+R\+OM Learning\+\_\+jobs\char`\"{}}\hypertarget{remove__learning_8c_ae54433bf2336778870d78827c118882a}{}\label{remove__learning_8c_ae54433bf2336778870d78827c118882a}
 \index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY@{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}}
 \index{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY@{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
 \subsubsection[{\texorpdfstring{N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}{NODE_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+O\+D\+E\+\_\+\+Q\+U\+E\+RY}\hypertarget{remove__learning_8c_add8c0b4d51270a7899ce47db3b24461d}{}\label{remove__learning_8c_add8c0b4d51270a7899ce47db3b24461d}
@@ -53,17 +91,85 @@ int \hyperlink{remove__learning_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\
 
 
 \subsection{Function Documentation}
-\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!main@{main}}
-\index{main@{main}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
-\subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!exit@{exit}}
+\index{exit@{exit}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{exit(0)}{exit(0)}}]{\setlength{\rightskip}{0pt plus 5cm}exit (
 \begin{DoxyParamCaption}
-\item[{int}]{argc, }
-\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\item[{0}]{}
 \end{DoxyParamCaption}
-)}\hypertarget{remove__learning_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{remove__learning_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+)}\hypertarget{remove__learning_8c_adf5c804dfce7a70e36dda02995fad481}{}\label{remove__learning_8c_adf5c804dfce7a70e36dda02995fad481}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!if@{if}}
+\index{if@{if}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{if("!strcmp(argv[1],""all"")) all\+\_\+nodes}{if(!strcmp(argv[1],"all")) all_nodes}}]{\setlength{\rightskip}{0pt plus 5cm}if (
+\begin{DoxyParamCaption}
+\item[{!}]{strcmpargv\mbox{[}1\mbox{]},\char`\"{}all\char`\"{}}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{}\label{remove__learning_8c_a2965759c2a309bb9a8346cb90c4bbb8a}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!if@{if}}
+\index{if@{if}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{if(argc $>$ 2)}{if(argc > 2)}}]{\setlength{\rightskip}{0pt plus 5cm}if (
+\begin{DoxyParamCaption}
+\item[{argc}]{, }
+\item[{2}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a952d7eac6fda03d78b47bc5c013e6b66}{}\label{remove__learning_8c_a952d7eac6fda03d78b47bc5c013e6b66}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!if@{if}}
+\index{if@{if}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{if(get\+\_\+ear\+\_\+conf\+\_\+path(ear\+\_\+path)==\+E\+A\+R\+\_\+\+E\+R\+R\+O\+R)}{if(get_ear_conf_path(ear_path)==EAR_ERROR)}}]{\setlength{\rightskip}{0pt plus 5cm}if (
+\begin{DoxyParamCaption}
+\item[{{\bf get\+\_\+ear\+\_\+conf\+\_\+path}({\bf ear\+\_\+path})}]{ = {\ttfamily ={\bf E\+A\+R\+\_\+\+E\+R\+R\+OR}}}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a1e2deb055ee62ad4aeeed4a0bc592d30}{}\label{remove__learning_8c_a1e2deb055ee62ad4aeeed4a0bc592d30}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!if@{if}}
+\index{if@{if}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{if(all\+\_\+nodes)}{if(all_nodes)}}]{\setlength{\rightskip}{0pt plus 5cm}if (
+\begin{DoxyParamCaption}
+\item[{all\+\_\+nodes}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a0faf4517f2ecde0085b00ea8f94d4266}{}\label{remove__learning_8c_a0faf4517f2ecde0085b00ea8f94d4266}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!if@{if}}
+\index{if@{if}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{if("!mysql\+\_\+real\+\_\+connect(connection, my\+\_\+conf.\+database.\+ip,""root"", passw, my\+\_\+conf.\+database.\+database, my\+\_\+conf.\+database.\+port, N\+U\+L\+L, 0))}{if(!mysql_real_connect(connection, my_conf.database.ip,"root", passw, my_conf.database.database, my_conf.database.port, NULL, 0))}}]{\setlength{\rightskip}{0pt plus 5cm}if (
+\begin{DoxyParamCaption}
+\item[{!}]{mysql\+\_\+real\+\_\+connectconnection, my\+\_\+conf.\+database.\+ip,\char`\"{}root\char`\"{}, passw, my\+\_\+conf.\+database.\+database, my\+\_\+conf.\+database.\+port, N\+U\+L\+L, 0}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a7ae077894f4be08fe1b78883a5f00ee6}{}\label{remove__learning_8c_a7ae077894f4be08fe1b78883a5f00ee6}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!if@{if}}
+\index{if@{if}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{if(mysql\+\_\+query(connection, query))}{if(mysql_query(connection, query))}}]{\setlength{\rightskip}{0pt plus 5cm}if (
+\begin{DoxyParamCaption}
+\item[{mysql\+\_\+query(connection, {\bf query})}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a98a5e7d8f4b09677886328784e551d77}{}\label{remove__learning_8c_a98a5e7d8f4b09677886328784e551d77}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!mysql\+\_\+close@{mysql\+\_\+close}}
+\index{mysql\+\_\+close@{mysql\+\_\+close}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{mysql\+\_\+close(connection)}{mysql_close(connection)}}]{\setlength{\rightskip}{0pt plus 5cm}mysql\+\_\+close (
+\begin{DoxyParamCaption}
+\item[{connection}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a4d86de0be78f3cf4cc7b98bc27d2f5af}{}\label{remove__learning_8c_a4d86de0be78f3cf4cc7b98bc27d2f5af}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!read\+\_\+cluster\+\_\+conf@{read\+\_\+cluster\+\_\+conf}}
+\index{read\+\_\+cluster\+\_\+conf@{read\+\_\+cluster\+\_\+conf}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{read\+\_\+cluster\+\_\+conf(ear\+\_\+path,\&my\+\_\+conf)}{read_cluster_conf(ear_path,&my_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}read\+\_\+cluster\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf ear\+\_\+path}}]{, }
+\item[{\&}]{my\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_aff20b7ca8c4eded951efd9d815f98f76}{}\label{remove__learning_8c_aff20b7ca8c4eded951efd9d815f98f76}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!strcpy@{strcpy}}
+\index{strcpy@{strcpy}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{strcpy(passw,"""")}{strcpy(passw,"")}}]{\setlength{\rightskip}{0pt plus 5cm}else strcpy (
+\begin{DoxyParamCaption}
+\item[{passw}]{, }
+\item[{\char`\"{}\char`\"{}}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{remove__learning_8c_a01275f8d4d9e0c74f8b1140d6cc344d1}{}\label{remove__learning_8c_a01275f8d4d9e0c74f8b1140d6cc344d1}
 
 
 \subsection{Variable Documentation}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!ear\+\_\+path@{ear\+\_\+path}}
+\index{ear\+\_\+path@{ear\+\_\+path}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{ear\+\_\+path}{ear_path}}]{\setlength{\rightskip}{0pt plus 5cm}char ear\+\_\+path\mbox{[}256\mbox{]}}\hypertarget{remove__learning_8c_a9bf419f662d96087eb75930ea48ac805}{}\label{remove__learning_8c_a9bf419f662d96087eb75930ea48ac805}
 \index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}}
 \index{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL@{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
 \subsubsection[{\texorpdfstring{E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL}{EAR_VERBOSE_LEVEL}}]{\setlength{\rightskip}{0pt plus 5cm}int E\+A\+R\+\_\+\+V\+E\+R\+B\+O\+S\+E\+\_\+\+L\+E\+V\+EL =1}\hypertarget{remove__learning_8c_a43d7e58c317e811389b628dc49b52bd2}{}\label{remove__learning_8c_a43d7e58c317e811389b628dc49b52bd2}
@@ -71,4 +177,43 @@ int \hyperlink{remove__learning_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A\+R\+\
 
 This program sets the node frequency . 
 
-It must be executed with privileges 
+It must be executed with privileges \index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!my\+\_\+conf@{my\+\_\+conf}}
+\index{my\+\_\+conf@{my\+\_\+conf}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+conf}{my_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+conf}\hypertarget{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{}\label{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!n@{n}}
+\index{n@{n}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{n}{n}}]{\setlength{\rightskip}{0pt plus 5cm}A\+ND Learning\+\_\+jobs either the {\bf node\+\_\+name} from which to delete records or \mbox{[}all\mbox{]} to delete all records If the root user has a use p n}\hypertarget{remove__learning_8c_a93e673027f655c55b00cc492898783a0}{}\label{remove__learning_8c_a93e673027f655c55b00cc492898783a0}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!password@{password}}
+\index{password@{password}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{password}{password}}]{\setlength{\rightskip}{0pt plus 5cm}A\+ND Learning\+\_\+jobs either the {\bf node\+\_\+name} from which to delete records or \mbox{[}all\mbox{]} to delete all records If the root user has a password}\hypertarget{remove__learning_8c_ab7ef36563acf2b1eade4b6856c9c9b63}{}\label{remove__learning_8c_ab7ef36563acf2b1eade4b6856c9c9b63}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!query@{query}}
+\index{query@{query}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{query}{query}}]{\setlength{\rightskip}{0pt plus 5cm}char query\mbox{[}256\mbox{]}}\hypertarget{remove__learning_8c_a0ad9302c12c82c3144067f176a085cec}{}\label{remove__learning_8c_a0ad9302c12c82c3144067f176a085cec}
+\index{remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}!step\+\_\+id@{step\+\_\+id}}
+\index{step\+\_\+id@{step\+\_\+id}!remove\+\_\+learning.\+c@{remove\+\_\+learning.\+c}}
+\subsubsection[{\texorpdfstring{step\+\_\+id}{step_id}}]{\setlength{\rightskip}{0pt plus 5cm}A\+ND Learning\+\_\+jobs step\+\_\+id}\hypertarget{remove__learning_8c_aaaecc7646b3c722387d285ecbb165474}{}\label{remove__learning_8c_aaaecc7646b3c722387d285ecbb165474}
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+=Learning\_applications.step\_id AND Learning\_signatures.id=signature\_id\textcolor{stringliteral}{"}
+\textcolor{stringliteral}{}
+\textcolor{stringliteral}{#define ALL\_QUERY1}
+\textcolor{stringliteral}{#define ALL\_QUERY2}
+\textcolor{stringliteral}{#define ALL\_QUERY3}
+\textcolor{stringliteral}{#define ALL\_QUERY4}
+\textcolor{stringliteral}{}
+\textcolor{stringliteral}{}
+\textcolor{stringliteral}{#define NODE\_QUERY}
+\textcolor{stringliteral}{}
+\textcolor{stringliteral}{}
+\textcolor{stringliteral}{}
+\textcolor{stringliteral}{}
+\textcolor{stringliteral}{void main(int argc,char *argv[])}
+\textcolor{stringliteral}{\{}
+\textcolor{stringliteral}{    int num\_apps, is\_learning=0;}
+\textcolor{stringliteral}{    char passw[256];}
+\textcolor{stringliteral}{    int total\_apps = 0;}
+\textcolor{stringliteral}{    char all\_nodes = 0;}
+\textcolor{stringliteral}{    application\_t *apps;}
+\textcolor{stringliteral}{    if (argc < 2) \{}
+\textcolor{stringliteral}{        printf("}Requires an argument
+\end{DoxyCode}

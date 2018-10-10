@@ -10,7 +10,7 @@
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8c_af2ff66ea1faa5041fc487555ac5a0345}{sockets\+\_\+accept} (int fd\+\_\+req, int $\ast$\hyperlink{eardbd_8c_a4131bc827a3f9ffabf867a654d698888}{fd\+\_\+cli})
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8c_a5d04b6af970b81b0b00d2b728dba0b32}{sockets\+\_\+accept} (int req\+\_\+fd, int $\ast$cli\+\_\+fd, struct sockaddr\+\_\+storage $\ast$cli\+\_\+addr)
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8c_a15f22aae08bde528e225ac0d2599e77a}{sockets\+\_\+header\+\_\+clean} (\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header)
 \item 
@@ -36,27 +36,28 @@
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8c_a1df6f80fd52bd4f6eb511de4e3454959}{sockets\+\_\+send} (\hyperlink{sockets_8h_aaf18456b5174d29ea88d310e21d82d92}{socket\+\_\+t} $\ast$\hyperlink{structsocket}{socket}, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$content)
 \item 
-\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8c_ac3495a0e2fedf4daa37e874b6e08f317}{sockets\+\_\+receive} (int fd, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$buffer, ssize\+\_\+t size\+\_\+buffer)
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8c_a98d380a13bbdd30fa6d92a6403167b48}{sockets\+\_\+receive} (int fd, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, ssize\+\_\+t size\+\_\+buffer, int block)
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8c_aaeb9acd250482f6935250599b825b6a5}{sockets\+\_\+get\+\_\+timeout} (int fd, time\+\_\+t $\ast$timeout)
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8c_a1826eb72bb22b9756e5223cf0594fb5b}{sockets\+\_\+set\+\_\+timeout} (int fd, time\+\_\+t timeout)
 \item 
-void \hyperlink{sockets_8c_a3d579cc82b3d3d2898ef9129cbeb2bc0}{sockets\+\_\+print\+\_\+socket} (\hyperlink{sockets_8h_aaf18456b5174d29ea88d310e21d82d92}{socket\+\_\+t} $\ast$\hyperlink{structsocket}{socket})
+void \hyperlink{sockets_8c_a24ac6982b58bf8df906b3d0a2b5aa7ea}{sockets\+\_\+get\+\_\+address} (struct sockaddr $\ast$host\+\_\+addr, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, int length)
 \item 
-void \hyperlink{sockets_8c_a486e7dbb033af3040d6b9ab66c6f7d8e}{sockets\+\_\+print\+\_\+sockaddr} (struct sockaddr $\ast$host\+\_\+addr)
+void \hyperlink{sockets_8c_a52360b12f4a5c7382abf9344d325a973}{sockets\+\_\+get\+\_\+address\+\_\+fd} (int fd, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, int length)
 \end{DoxyCompactItemize}
 
 
 \subsection{Function Documentation}
 \index{sockets.\+c@{sockets.\+c}!sockets\+\_\+accept@{sockets\+\_\+accept}}
 \index{sockets\+\_\+accept@{sockets\+\_\+accept}!sockets.\+c@{sockets.\+c}}
-\subsubsection[{\texorpdfstring{sockets\+\_\+accept(int fd\+\_\+req, int $\ast$fd\+\_\+cli)}{sockets_accept(int fd_req, int *fd_cli)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+accept (
+\subsubsection[{\texorpdfstring{sockets\+\_\+accept(int req\+\_\+fd, int $\ast$cli\+\_\+fd, struct sockaddr\+\_\+storage $\ast$cli\+\_\+addr)}{sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_addr)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+accept (
 \begin{DoxyParamCaption}
-\item[{int}]{fd\+\_\+req, }
-\item[{int $\ast$}]{fd\+\_\+cli}
+\item[{int}]{req\+\_\+fd, }
+\item[{int $\ast$}]{cli\+\_\+fd, }
+\item[{struct sockaddr\+\_\+storage $\ast$}]{cli\+\_\+addr}
 \end{DoxyParamCaption}
-)}\hypertarget{sockets_8c_af2ff66ea1faa5041fc487555ac5a0345}{}\label{sockets_8c_af2ff66ea1faa5041fc487555ac5a0345}
+)}\hypertarget{sockets_8c_a5d04b6af970b81b0b00d2b728dba0b32}{}\label{sockets_8c_a5d04b6af970b81b0b00d2b728dba0b32}
 \index{sockets.\+c@{sockets.\+c}!sockets\+\_\+bind@{sockets\+\_\+bind}}
 \index{sockets\+\_\+bind@{sockets\+\_\+bind}!sockets.\+c@{sockets.\+c}}
 \subsubsection[{\texorpdfstring{sockets\+\_\+bind(socket\+\_\+t $\ast$socket)}{sockets_bind(socket_t *socket)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+bind (
@@ -99,6 +100,24 @@ void \hyperlink{sockets_8c_a486e7dbb033af3040d6b9ab66c6f7d8e}{sockets\+\_\+print
 \item[{{\bf socket\+\_\+t} $\ast$}]{socket}
 \end{DoxyParamCaption}
 )}\hypertarget{sockets_8c_a9b2b22e070e38743e314a4a2e6852d5b}{}\label{sockets_8c_a9b2b22e070e38743e314a4a2e6852d5b}
+\index{sockets.\+c@{sockets.\+c}!sockets\+\_\+get\+\_\+address@{sockets\+\_\+get\+\_\+address}}
+\index{sockets\+\_\+get\+\_\+address@{sockets\+\_\+get\+\_\+address}!sockets.\+c@{sockets.\+c}}
+\subsubsection[{\texorpdfstring{sockets\+\_\+get\+\_\+address(struct sockaddr $\ast$host\+\_\+addr, char $\ast$buffer, int length)}{sockets_get_address(struct sockaddr *host_addr, char *buffer, int length)}}]{\setlength{\rightskip}{0pt plus 5cm}void sockets\+\_\+get\+\_\+address (
+\begin{DoxyParamCaption}
+\item[{struct sockaddr $\ast$}]{host\+\_\+addr, }
+\item[{char $\ast$}]{buffer, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}\hypertarget{sockets_8c_a24ac6982b58bf8df906b3d0a2b5aa7ea}{}\label{sockets_8c_a24ac6982b58bf8df906b3d0a2b5aa7ea}
+\index{sockets.\+c@{sockets.\+c}!sockets\+\_\+get\+\_\+address\+\_\+fd@{sockets\+\_\+get\+\_\+address\+\_\+fd}}
+\index{sockets\+\_\+get\+\_\+address\+\_\+fd@{sockets\+\_\+get\+\_\+address\+\_\+fd}!sockets.\+c@{sockets.\+c}}
+\subsubsection[{\texorpdfstring{sockets\+\_\+get\+\_\+address\+\_\+fd(int fd, char $\ast$buffer, int length)}{sockets_get_address_fd(int fd, char *buffer, int length)}}]{\setlength{\rightskip}{0pt plus 5cm}void sockets\+\_\+get\+\_\+address\+\_\+fd (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{char $\ast$}]{buffer, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}\hypertarget{sockets_8c_a52360b12f4a5c7382abf9344d325a973}{}\label{sockets_8c_a52360b12f4a5c7382abf9344d325a973}
 \index{sockets.\+c@{sockets.\+c}!sockets\+\_\+get\+\_\+timeout@{sockets\+\_\+get\+\_\+timeout}}
 \index{sockets\+\_\+get\+\_\+timeout@{sockets\+\_\+get\+\_\+timeout}!sockets.\+c@{sockets.\+c}}
 \subsubsection[{\texorpdfstring{sockets\+\_\+get\+\_\+timeout(int fd, time\+\_\+t $\ast$timeout)}{sockets_get_timeout(int fd, time_t *timeout)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+get\+\_\+timeout (
@@ -138,30 +157,17 @@ void \hyperlink{sockets_8c_a486e7dbb033af3040d6b9ab66c6f7d8e}{sockets\+\_\+print
 \item[{{\bf socket\+\_\+t} $\ast$}]{socket}
 \end{DoxyParamCaption}
 )}\hypertarget{sockets_8c_ab526c7828e9bce2b26ef558f1f4b7ec1}{}\label{sockets_8c_ab526c7828e9bce2b26ef558f1f4b7ec1}
-\index{sockets.\+c@{sockets.\+c}!sockets\+\_\+print\+\_\+sockaddr@{sockets\+\_\+print\+\_\+sockaddr}}
-\index{sockets\+\_\+print\+\_\+sockaddr@{sockets\+\_\+print\+\_\+sockaddr}!sockets.\+c@{sockets.\+c}}
-\subsubsection[{\texorpdfstring{sockets\+\_\+print\+\_\+sockaddr(struct sockaddr $\ast$host\+\_\+addr)}{sockets_print_sockaddr(struct sockaddr *host_addr)}}]{\setlength{\rightskip}{0pt plus 5cm}void sockets\+\_\+print\+\_\+sockaddr (
-\begin{DoxyParamCaption}
-\item[{struct sockaddr $\ast$}]{host\+\_\+addr}
-\end{DoxyParamCaption}
-)}\hypertarget{sockets_8c_a486e7dbb033af3040d6b9ab66c6f7d8e}{}\label{sockets_8c_a486e7dbb033af3040d6b9ab66c6f7d8e}
-\index{sockets.\+c@{sockets.\+c}!sockets\+\_\+print\+\_\+socket@{sockets\+\_\+print\+\_\+socket}}
-\index{sockets\+\_\+print\+\_\+socket@{sockets\+\_\+print\+\_\+socket}!sockets.\+c@{sockets.\+c}}
-\subsubsection[{\texorpdfstring{sockets\+\_\+print\+\_\+socket(socket\+\_\+t $\ast$socket)}{sockets_print_socket(socket_t *socket)}}]{\setlength{\rightskip}{0pt plus 5cm}void sockets\+\_\+print\+\_\+socket (
-\begin{DoxyParamCaption}
-\item[{{\bf socket\+\_\+t} $\ast$}]{socket}
-\end{DoxyParamCaption}
-)}\hypertarget{sockets_8c_a3d579cc82b3d3d2898ef9129cbeb2bc0}{}\label{sockets_8c_a3d579cc82b3d3d2898ef9129cbeb2bc0}
 \index{sockets.\+c@{sockets.\+c}!sockets\+\_\+receive@{sockets\+\_\+receive}}
 \index{sockets\+\_\+receive@{sockets\+\_\+receive}!sockets.\+c@{sockets.\+c}}
-\subsubsection[{\texorpdfstring{sockets\+\_\+receive(int fd, packet\+\_\+header\+\_\+t $\ast$header, char $\ast$buffer, ssize\+\_\+t size\+\_\+buffer)}{sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+receive (
+\subsubsection[{\texorpdfstring{sockets\+\_\+receive(int fd, packet\+\_\+header\+\_\+t $\ast$header, char $\ast$buffer, ssize\+\_\+t size\+\_\+buffer, int block)}{sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer, int block)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+receive (
 \begin{DoxyParamCaption}
 \item[{int}]{fd, }
 \item[{{\bf packet\+\_\+header\+\_\+t} $\ast$}]{header, }
 \item[{char $\ast$}]{buffer, }
-\item[{ssize\+\_\+t}]{size\+\_\+buffer}
+\item[{ssize\+\_\+t}]{size\+\_\+buffer, }
+\item[{int}]{block}
 \end{DoxyParamCaption}
-)}\hypertarget{sockets_8c_ac3495a0e2fedf4daa37e874b6e08f317}{}\label{sockets_8c_ac3495a0e2fedf4daa37e874b6e08f317}
+)}\hypertarget{sockets_8c_a98d380a13bbdd30fa6d92a6403167b48}{}\label{sockets_8c_a98d380a13bbdd30fa6d92a6403167b48}
 \index{sockets.\+c@{sockets.\+c}!sockets\+\_\+send@{sockets\+\_\+send}}
 \index{sockets\+\_\+send@{sockets\+\_\+send}!sockets.\+c@{sockets.\+c}}
 \subsubsection[{\texorpdfstring{sockets\+\_\+send(socket\+\_\+t $\ast$socket, packet\+\_\+header\+\_\+t $\ast$header, char $\ast$content)}{sockets_send(socket_t *socket, packet_header_t *header, char *content)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+send (

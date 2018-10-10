@@ -1,8 +1,10 @@
 \hypertarget{db__helper_8c}{}\section{src/common/database/db\+\_\+helper.c File Reference}
 \label{db__helper_8c}\index{src/common/database/db\+\_\+helper.\+c@{src/common/database/db\+\_\+helper.\+c}}
+{\ttfamily \#include $<$math.\+h$>$}\\*
 {\ttfamily \#include $<$stdio.\+h$>$}\\*
 {\ttfamily \#include $<$stdlib.\+h$>$}\\*
 {\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$limits.\+h$>$}\\*
 {\ttfamily \#include $<$mysql/mysql.\+h$>$}\\*
 {\ttfamily \#include $<$common/states.\+h$>$}\\*
 {\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
@@ -12,13 +14,43 @@
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
+\#define \hyperlink{db__helper_8c_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(X,  Y)~(X $>$ Y ? X \+: Y)
+\item 
+\#define \hyperlink{db__helper_8c_a78a86c5c26a0c02d8bcca140f724f583}{\+\_\+\+M\+M\+A\+A\+XX}(W,  X,  Y,  Z)~(\hyperlink{db__helper_8c_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(W,X) $>$ \hyperlink{db__helper_8c_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(Y,Z) ? \hyperlink{db__helper_8c_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(W,X) \+: \hyperlink{db__helper_8c_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(Y,Z))
+\item 
+\#define \hyperlink{db__helper_8c_acee6a74070c0ccaa567e078f4d03a36c}{\+\_\+\+B\+U\+L\+K\+\_\+\+E\+L\+MS}(V)~U\+S\+H\+R\+T\+\_\+\+M\+AX / V
+\item 
+\#define \hyperlink{db__helper_8c_a9cd9b29324169239055e60116e0e6a02}{\+\_\+\+B\+U\+L\+K\+\_\+\+S\+E\+TS}(T,  V)~T / V
+\item 
+\#define \hyperlink{db__helper_8c_a32bdc255797f0ce6599a1fa70da953ae}{A\+P\+P\+\_\+\+V\+A\+RS}~\hyperlink{mysql__io__functions_8h_ab72650713c5ca9895d4dc93d4e8d70bd}{A\+P\+P\+L\+I\+C\+A\+T\+I\+O\+N\+\_\+\+A\+R\+GS}
+\item 
+\#define \hyperlink{db__helper_8c_a426c6fdbb904fa49a871387d7a3841b6}{P\+S\+I\+\_\+\+V\+A\+RS}~\hyperlink{mysql__io__functions_8h_a5d79f154eaf6a1b881cb11c7caba8659}{P\+O\+W\+E\+R\+\_\+\+S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+A\+R\+GS}
+\item 
+\#define \hyperlink{db__helper_8c_a43384709edf1797ac5e7701f0d0ec8e5}{N\+S\+I\+\_\+\+V\+A\+RS}~\hyperlink{mysql__io__functions_8h_a593ef474ef6541845f62c3d6af43f051}{S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+A\+R\+GS}
+\item 
+\#define \hyperlink{db__helper_8c_ae4660ddd1162afb2ead9cb7ae9c14f67}{J\+O\+B\+\_\+\+V\+A\+RS}~\hyperlink{mysql__io__functions_8h_a0783b0457c876d3b07d8cde3904eabca}{J\+O\+B\+\_\+\+A\+R\+GS}
+\item 
+\#define \hyperlink{db__helper_8c_a8f86eee2003890686e06f00dec627168}{P\+E\+R\+\_\+\+V\+A\+RS}~\hyperlink{mysql__io__functions_8h_a91e348e7084f8775ca5e575e658172e3}{P\+E\+R\+I\+O\+D\+I\+C\+\_\+\+M\+E\+T\+R\+I\+C\+\_\+\+A\+R\+GS}
+\item 
+\#define \hyperlink{db__helper_8c_a4fab4ced1771a6d24bc212e5d56cbb29}{L\+O\+O\+\_\+\+V\+A\+RS}~\hyperlink{mysql__io__functions_8h_a8e198abe0f1747d8b026a5f0003b7f7c}{L\+O\+O\+P\+\_\+\+A\+R\+GS}
+\item 
+\#define \hyperlink{db__helper_8c_a379a115091b2d6af92a5249714112824}{A\+G\+G\+\_\+\+V\+A\+RS}~\hyperlink{mysql__io__functions_8h_a16ed43b9c7c9a96e03699705531c73c0}{P\+E\+R\+I\+O\+D\+I\+C\+\_\+\+A\+G\+G\+R\+E\+G\+A\+T\+I\+O\+N\+\_\+\+A\+R\+GS}
+\item 
+\#define \hyperlink{db__helper_8c_aa14202aa7bb8ff925cc715b0bedf9b67}{E\+V\+E\+\_\+\+V\+A\+RS}~\hyperlink{mysql__io__functions_8h_a9867b97e0b5cb11393bd0fd5ee0ed90f}{E\+A\+R\+\_\+\+E\+V\+E\+N\+T\+S\+\_\+\+A\+R\+GS}
+\item 
+\#define \hyperlink{db__helper_8c_aed46ff1fa35fff7419476e2d17d9c339}{P\+A\+I\+NT}(N)
+\item 
 \#define \hyperlink{db__helper_8c_a238ada1765529ead46975836f43ad0bd}{M\+E\+T\+R\+I\+C\+S\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}
 \item 
 \#define \hyperlink{db__helper_8c_a3a884866719cc4a5ceacc7d8c9522529}{A\+G\+G\+R\+E\+G\+A\+T\+E\+D\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}
 \item 
 \#define \hyperlink{db__helper_8c_ad2b9a2dfda061cff36c3f16559651d72}{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM Learning\+\_\+applications W\+H\+E\+RE node\+\_\+id = \textquotesingle{}\%s\textquotesingle{}\char`\"{}
 \item 
+\#define \hyperlink{db__helper_8c_a5097aa558dd1dced77010431cd062937}{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM (S\+E\+L\+E\+CT $\ast$ F\+R\+OM Learning\+\_\+applications G\+R\+O\+UP BY \hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id}, \hyperlink{remove__learning_8c_aaaecc7646b3c722387d285ecbb165474}{step\+\_\+id}) AS t1\char`\"{}
+\item 
 \#define \hyperlink{db__helper_8c_a291d50f1331cf22e2594f476ce35aa45}{A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM Applications W\+H\+E\+RE node\+\_\+id = \textquotesingle{}\%s\textquotesingle{}\char`\"{}
+\item 
+\#define \hyperlink{db__helper_8c_ab6870950fe0591dcb617d1f02c30ee06}{A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM (S\+E\+L\+E\+CT $\ast$ F\+R\+OM Applications G\+R\+O\+UP BY \hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id}, \hyperlink{remove__learning_8c_aaaecc7646b3c722387d285ecbb165474}{step\+\_\+id}) AS t1\char`\"{}
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
@@ -55,6 +87,8 @@ int \hyperlink{db__helper_8c_aad4c0d6d243c37ee44a81cdfafe6be7f}{db\+\_\+insert\+
 \item 
 \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{db__helper_8c_acabe62efa96056076b244fe40c84275f}{db\+\_\+select\+\_\+acum\+\_\+energy} (int start\+\_\+time, int end\+\_\+time, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eargm_8c_a46bdc6418a56200bc580d4f64e1fa2b4}{divisor}, char is\+\_\+aggregated)
 \item 
+int \hyperlink{db__helper_8c_af9048708c79494310200747bb75da0a8}{db\+\_\+read\+\_\+applications\+\_\+query} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$$\ast$apps, char $\ast$\hyperlink{remove__learning_8c_a0ad9302c12c82c3144067f176a085cec}{query})
+\item 
 int \hyperlink{db__helper_8c_ac012ed174017f9c60aee7fc4a38e9b55}{db\+\_\+read\+\_\+applications} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$$\ast$apps, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} is\+\_\+learning, int max\+\_\+apps, char $\ast$\hyperlink{externs__alloc_8h_a2ae65b19e2c0b0e3d4945cf6ceb0085c}{node\+\_\+name})
 \item 
 \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{db__helper_8c_ad03a98564e057b2c2e2a1d69ceba6770}{get\+\_\+num\+\_\+applications} (char is\+\_\+learning, char $\ast$\hyperlink{externs__alloc_8h_a2ae65b19e2c0b0e3d4945cf6ceb0085c}{node\+\_\+name})
@@ -64,13 +98,49 @@ int \hyperlink{db__helper_8c_ac012ed174017f9c60aee7fc4a38e9b55}{db\+\_\+read\+\_
 \item 
 \hyperlink{cluster__conf_8h_aa0de47e5ae932430d21c17657d69c381}{db\+\_\+conf\+\_\+t} $\ast$ \hyperlink{db__helper_8c_af302dbc28ee93fa4b34eb4942cd33607}{db\+\_\+config} = N\+U\+LL
 \item 
-int \hyperlink{db__helper_8c_a71008fa3fa9cc53a3437e64d79957545}{current\+\_\+job\+\_\+id} = 0
+int \hyperlink{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}{current\+\_\+step\+\_\+id} = -\/1
 \item 
-int \hyperlink{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}{current\+\_\+step\+\_\+id} = 0
+int \hyperlink{db__helper_8c_a71008fa3fa9cc53a3437e64d79957545}{current\+\_\+job\+\_\+id} = 0
 \end{DoxyCompactItemize}
 
 
 \subsection{Macro Definition Documentation}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!\+\_\+\+B\+U\+L\+K\+\_\+\+E\+L\+MS@{\+\_\+\+B\+U\+L\+K\+\_\+\+E\+L\+MS}}
+\index{\+\_\+\+B\+U\+L\+K\+\_\+\+E\+L\+MS@{\+\_\+\+B\+U\+L\+K\+\_\+\+E\+L\+MS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+B\+U\+L\+K\+\_\+\+E\+L\+MS}{_BULK_ELMS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+B\+U\+L\+K\+\_\+\+E\+L\+MS(
+\begin{DoxyParamCaption}
+\item[{}]{V}
+\end{DoxyParamCaption}
+)~U\+S\+H\+R\+T\+\_\+\+M\+AX / V}\hypertarget{db__helper_8c_acee6a74070c0ccaa567e078f4d03a36c}{}\label{db__helper_8c_acee6a74070c0ccaa567e078f4d03a36c}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!\+\_\+\+B\+U\+L\+K\+\_\+\+S\+E\+TS@{\+\_\+\+B\+U\+L\+K\+\_\+\+S\+E\+TS}}
+\index{\+\_\+\+B\+U\+L\+K\+\_\+\+S\+E\+TS@{\+\_\+\+B\+U\+L\+K\+\_\+\+S\+E\+TS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+B\+U\+L\+K\+\_\+\+S\+E\+TS}{_BULK_SETS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+B\+U\+L\+K\+\_\+\+S\+E\+TS(
+\begin{DoxyParamCaption}
+\item[{}]{T, }
+\item[{}]{V}
+\end{DoxyParamCaption}
+)~T / V}\hypertarget{db__helper_8c_a9cd9b29324169239055e60116e0e6a02}{}\label{db__helper_8c_a9cd9b29324169239055e60116e0e6a02}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!\+\_\+\+M\+AX@{\+\_\+\+M\+AX}}
+\index{\+\_\+\+M\+AX@{\+\_\+\+M\+AX}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+M\+AX}{_MAX}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+M\+AX(
+\begin{DoxyParamCaption}
+\item[{}]{X, }
+\item[{}]{Y}
+\end{DoxyParamCaption}
+)~(X $>$ Y ? X \+: Y)}\hypertarget{db__helper_8c_a888a150379b8fa6b4ac40f0ceb2e9c55}{}\label{db__helper_8c_a888a150379b8fa6b4ac40f0ceb2e9c55}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!\+\_\+\+M\+M\+A\+A\+XX@{\+\_\+\+M\+M\+A\+A\+XX}}
+\index{\+\_\+\+M\+M\+A\+A\+XX@{\+\_\+\+M\+M\+A\+A\+XX}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{\+\_\+\+M\+M\+A\+A\+XX}{_MMAAXX}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+M\+M\+A\+A\+XX(
+\begin{DoxyParamCaption}
+\item[{}]{W, }
+\item[{}]{X, }
+\item[{}]{Y, }
+\item[{}]{Z}
+\end{DoxyParamCaption}
+)~({\bf \+\_\+\+M\+AX}(W,X) $>$ {\bf \+\_\+\+M\+AX}(Y,Z) ? {\bf \+\_\+\+M\+AX}(W,X) \+: {\bf \+\_\+\+M\+AX}(Y,Z))}\hypertarget{db__helper_8c_a78a86c5c26a0c02d8bcca140f724f583}{}\label{db__helper_8c_a78a86c5c26a0c02d8bcca140f724f583}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!A\+G\+G\+\_\+\+V\+A\+RS@{A\+G\+G\+\_\+\+V\+A\+RS}}
+\index{A\+G\+G\+\_\+\+V\+A\+RS@{A\+G\+G\+\_\+\+V\+A\+RS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{A\+G\+G\+\_\+\+V\+A\+RS}{AGG_VARS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+G\+G\+\_\+\+V\+A\+RS~{\bf P\+E\+R\+I\+O\+D\+I\+C\+\_\+\+A\+G\+G\+R\+E\+G\+A\+T\+I\+O\+N\+\_\+\+A\+R\+GS}}\hypertarget{db__helper_8c_a379a115091b2d6af92a5249714112824}{}\label{db__helper_8c_a379a115091b2d6af92a5249714112824}
 \index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!A\+G\+G\+R\+E\+G\+A\+T\+E\+D\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY@{A\+G\+G\+R\+E\+G\+A\+T\+E\+D\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}}
 \index{A\+G\+G\+R\+E\+G\+A\+T\+E\+D\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY@{A\+G\+G\+R\+E\+G\+A\+T\+E\+D\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
 \subsubsection[{\texorpdfstring{A\+G\+G\+R\+E\+G\+A\+T\+E\+D\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}{AGGREGATED_SUM_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+G\+G\+R\+E\+G\+A\+T\+E\+D\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}\hypertarget{db__helper_8c_a3a884866719cc4a5ceacc7d8c9522529}{}\label{db__helper_8c_a3a884866719cc4a5ceacc7d8c9522529}
@@ -79,12 +149,30 @@ int \hyperlink{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}{current\+\_\+ste
 \textcolor{stringliteral}{"SELECT SUM(DC\_energy)/? FROM Periodic\_aggregations WHERE start\_time"}\(\backslash\)
                                 \textcolor{stringliteral}{">= ? AND end\_time <= ?"}
 \end{DoxyCode}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!A\+P\+P\+\_\+\+V\+A\+RS@{A\+P\+P\+\_\+\+V\+A\+RS}}
+\index{A\+P\+P\+\_\+\+V\+A\+RS@{A\+P\+P\+\_\+\+V\+A\+RS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{A\+P\+P\+\_\+\+V\+A\+RS}{APP_VARS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+P\+P\+\_\+\+V\+A\+RS~{\bf A\+P\+P\+L\+I\+C\+A\+T\+I\+O\+N\+\_\+\+A\+R\+GS}}\hypertarget{db__helper_8c_a32bdc255797f0ce6599a1fa70da953ae}{}\label{db__helper_8c_a32bdc255797f0ce6599a1fa70da953ae}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY@{A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}}
+\index{A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY@{A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}{APPS_ALL_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM (S\+E\+L\+E\+CT $\ast$ F\+R\+OM Applications G\+R\+O\+UP BY {\bf job\+\_\+id}, {\bf step\+\_\+id}) AS t1\char`\"{}}\hypertarget{db__helper_8c_ab6870950fe0591dcb617d1f02c30ee06}{}\label{db__helper_8c_ab6870950fe0591dcb617d1f02c30ee06}
 \index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY@{A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}}
 \index{A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY@{A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
 \subsubsection[{\texorpdfstring{A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}{APPS_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM Applications W\+H\+E\+RE node\+\_\+id = \textquotesingle{}\%s\textquotesingle{}\char`\"{}}\hypertarget{db__helper_8c_a291d50f1331cf22e2594f476ce35aa45}{}\label{db__helper_8c_a291d50f1331cf22e2594f476ce35aa45}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!E\+V\+E\+\_\+\+V\+A\+RS@{E\+V\+E\+\_\+\+V\+A\+RS}}
+\index{E\+V\+E\+\_\+\+V\+A\+RS@{E\+V\+E\+\_\+\+V\+A\+RS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{E\+V\+E\+\_\+\+V\+A\+RS}{EVE_VARS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define E\+V\+E\+\_\+\+V\+A\+RS~{\bf E\+A\+R\+\_\+\+E\+V\+E\+N\+T\+S\+\_\+\+A\+R\+GS}}\hypertarget{db__helper_8c_aa14202aa7bb8ff925cc715b0bedf9b67}{}\label{db__helper_8c_aa14202aa7bb8ff925cc715b0bedf9b67}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!J\+O\+B\+\_\+\+V\+A\+RS@{J\+O\+B\+\_\+\+V\+A\+RS}}
+\index{J\+O\+B\+\_\+\+V\+A\+RS@{J\+O\+B\+\_\+\+V\+A\+RS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{J\+O\+B\+\_\+\+V\+A\+RS}{JOB_VARS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define J\+O\+B\+\_\+\+V\+A\+RS~{\bf J\+O\+B\+\_\+\+A\+R\+GS}}\hypertarget{db__helper_8c_ae4660ddd1162afb2ead9cb7ae9c14f67}{}\label{db__helper_8c_ae4660ddd1162afb2ead9cb7ae9c14f67}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY@{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}}
+\index{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY@{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}{LEARNING_APPS_ALL_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM (S\+E\+L\+E\+CT $\ast$ F\+R\+OM Learning\+\_\+applications G\+R\+O\+UP BY {\bf job\+\_\+id}, {\bf step\+\_\+id}) AS t1\char`\"{}}\hypertarget{db__helper_8c_a5097aa558dd1dced77010431cd062937}{}\label{db__helper_8c_a5097aa558dd1dced77010431cd062937}
 \index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY@{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}}
 \index{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY@{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
 \subsubsection[{\texorpdfstring{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}{LEARNING_APPS_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM Learning\+\_\+applications W\+H\+E\+RE node\+\_\+id = \textquotesingle{}\%s\textquotesingle{}\char`\"{}}\hypertarget{db__helper_8c_ad2b9a2dfda061cff36c3f16559651d72}{}\label{db__helper_8c_ad2b9a2dfda061cff36c3f16559651d72}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!L\+O\+O\+\_\+\+V\+A\+RS@{L\+O\+O\+\_\+\+V\+A\+RS}}
+\index{L\+O\+O\+\_\+\+V\+A\+RS@{L\+O\+O\+\_\+\+V\+A\+RS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{L\+O\+O\+\_\+\+V\+A\+RS}{LOO_VARS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define L\+O\+O\+\_\+\+V\+A\+RS~{\bf L\+O\+O\+P\+\_\+\+A\+R\+GS}}\hypertarget{db__helper_8c_a4fab4ced1771a6d24bc212e5d56cbb29}{}\label{db__helper_8c_a4fab4ced1771a6d24bc212e5d56cbb29}
 \index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!M\+E\+T\+R\+I\+C\+S\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY@{M\+E\+T\+R\+I\+C\+S\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}}
 \index{M\+E\+T\+R\+I\+C\+S\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY@{M\+E\+T\+R\+I\+C\+S\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
 \subsubsection[{\texorpdfstring{M\+E\+T\+R\+I\+C\+S\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}{METRICS_SUM_QUERY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+E\+T\+R\+I\+C\+S\+\_\+\+S\+U\+M\+\_\+\+Q\+U\+E\+RY}\hypertarget{db__helper_8c_a238ada1765529ead46975836f43ad0bd}{}\label{db__helper_8c_a238ada1765529ead46975836f43ad0bd}
@@ -93,6 +181,28 @@ int \hyperlink{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}{current\+\_\+ste
 \textcolor{stringliteral}{"SELECT SUM(DC\_energy)/? FROM Periodic\_metrics WHERE start\_time"} \(\backslash\)
                                 \textcolor{stringliteral}{">= ? AND end\_time <= ?"}
 \end{DoxyCode}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!N\+S\+I\+\_\+\+V\+A\+RS@{N\+S\+I\+\_\+\+V\+A\+RS}}
+\index{N\+S\+I\+\_\+\+V\+A\+RS@{N\+S\+I\+\_\+\+V\+A\+RS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{N\+S\+I\+\_\+\+V\+A\+RS}{NSI_VARS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+S\+I\+\_\+\+V\+A\+RS~{\bf S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+A\+R\+GS}}\hypertarget{db__helper_8c_a43384709edf1797ac5e7701f0d0ec8e5}{}\label{db__helper_8c_a43384709edf1797ac5e7701f0d0ec8e5}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!P\+A\+I\+NT@{P\+A\+I\+NT}}
+\index{P\+A\+I\+NT@{P\+A\+I\+NT}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{P\+A\+I\+NT}{PAINT}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+A\+I\+NT(
+\begin{DoxyParamCaption}
+\item[{}]{N}
+\end{DoxyParamCaption}
+)}\hypertarget{db__helper_8c_aed46ff1fa35fff7419476e2d17d9c339}{}\label{db__helper_8c_aed46ff1fa35fff7419476e2d17d9c339}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+fprintf(stderr, \textcolor{stringliteral}{"Elements to insert %d"}, N); \(\backslash\)
+    fprintf(stderr, \textcolor{stringliteral}{"Bulk elements %d"}, bulk\_elms); \(\backslash\)
+    fprintf(stderr, \textcolor{stringliteral}{"Bulk sets %d"}, bulk\_sets)
+\end{DoxyCode}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!P\+E\+R\+\_\+\+V\+A\+RS@{P\+E\+R\+\_\+\+V\+A\+RS}}
+\index{P\+E\+R\+\_\+\+V\+A\+RS@{P\+E\+R\+\_\+\+V\+A\+RS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{P\+E\+R\+\_\+\+V\+A\+RS}{PER_VARS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+E\+R\+\_\+\+V\+A\+RS~{\bf P\+E\+R\+I\+O\+D\+I\+C\+\_\+\+M\+E\+T\+R\+I\+C\+\_\+\+A\+R\+GS}}\hypertarget{db__helper_8c_a8f86eee2003890686e06f00dec627168}{}\label{db__helper_8c_a8f86eee2003890686e06f00dec627168}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!P\+S\+I\+\_\+\+V\+A\+RS@{P\+S\+I\+\_\+\+V\+A\+RS}}
+\index{P\+S\+I\+\_\+\+V\+A\+RS@{P\+S\+I\+\_\+\+V\+A\+RS}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{P\+S\+I\+\_\+\+V\+A\+RS}{PSI_VARS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+S\+I\+\_\+\+V\+A\+RS~{\bf P\+O\+W\+E\+R\+\_\+\+S\+I\+G\+N\+A\+T\+U\+R\+E\+\_\+\+A\+R\+GS}}\hypertarget{db__helper_8c_a426c6fdbb904fa49a871387d7a3841b6}{}\label{db__helper_8c_a426c6fdbb904fa49a871387d7a3841b6}
 
 
 \subsection{Function Documentation}
@@ -203,6 +313,14 @@ int \hyperlink{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}{current\+\_\+ste
 \item[{char $\ast$}]{node\+\_\+name}
 \end{DoxyParamCaption}
 )}\hypertarget{db__helper_8c_ac012ed174017f9c60aee7fc4a38e9b55}{}\label{db__helper_8c_ac012ed174017f9c60aee7fc4a38e9b55}
+\index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!db\+\_\+read\+\_\+applications\+\_\+query@{db\+\_\+read\+\_\+applications\+\_\+query}}
+\index{db\+\_\+read\+\_\+applications\+\_\+query@{db\+\_\+read\+\_\+applications\+\_\+query}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
+\subsubsection[{\texorpdfstring{db\+\_\+read\+\_\+applications\+\_\+query(application\+\_\+t $\ast$$\ast$apps, char $\ast$query)}{db_read_applications_query(application_t **apps, char *query)}}]{\setlength{\rightskip}{0pt plus 5cm}int db\+\_\+read\+\_\+applications\+\_\+query (
+\begin{DoxyParamCaption}
+\item[{{\bf application\+\_\+t} $\ast$$\ast$}]{apps, }
+\item[{char $\ast$}]{query}
+\end{DoxyParamCaption}
+)}\hypertarget{db__helper_8c_af9048708c79494310200747bb75da0a8}{}\label{db__helper_8c_af9048708c79494310200747bb75da0a8}
 \index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!db\+\_\+select\+\_\+acum\+\_\+energy@{db\+\_\+select\+\_\+acum\+\_\+energy}}
 \index{db\+\_\+select\+\_\+acum\+\_\+energy@{db\+\_\+select\+\_\+acum\+\_\+energy}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
 \subsubsection[{\texorpdfstring{db\+\_\+select\+\_\+acum\+\_\+energy(int start\+\_\+time, int end\+\_\+time, ulong divisor, char is\+\_\+aggregated)}{db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_aggregated)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} db\+\_\+select\+\_\+acum\+\_\+energy (
@@ -243,7 +361,7 @@ int \hyperlink{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}{current\+\_\+ste
 \subsubsection[{\texorpdfstring{current\+\_\+job\+\_\+id}{current_job_id}}]{\setlength{\rightskip}{0pt plus 5cm}int current\+\_\+job\+\_\+id = 0}\hypertarget{db__helper_8c_a71008fa3fa9cc53a3437e64d79957545}{}\label{db__helper_8c_a71008fa3fa9cc53a3437e64d79957545}
 \index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!current\+\_\+step\+\_\+id@{current\+\_\+step\+\_\+id}}
 \index{current\+\_\+step\+\_\+id@{current\+\_\+step\+\_\+id}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
-\subsubsection[{\texorpdfstring{current\+\_\+step\+\_\+id}{current_step_id}}]{\setlength{\rightskip}{0pt plus 5cm}int current\+\_\+step\+\_\+id = 0}\hypertarget{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}{}\label{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}
+\subsubsection[{\texorpdfstring{current\+\_\+step\+\_\+id}{current_step_id}}]{\setlength{\rightskip}{0pt plus 5cm}int current\+\_\+step\+\_\+id = -\/1}\hypertarget{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}{}\label{db__helper_8c_aa47cbfa227d160d756bec6c57ced0597}
 \index{db\+\_\+helper.\+c@{db\+\_\+helper.\+c}!db\+\_\+config@{db\+\_\+config}}
 \index{db\+\_\+config@{db\+\_\+config}!db\+\_\+helper.\+c@{db\+\_\+helper.\+c}}
 \subsubsection[{\texorpdfstring{db\+\_\+config}{db_config}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf db\+\_\+conf\+\_\+t}$\ast$ db\+\_\+config = N\+U\+LL}\hypertarget{db__helper_8c_af302dbc28ee93fa4b34eb4942cd33607}{}\label{db__helper_8c_af302dbc28ee93fa4b34eb4942cd33607}

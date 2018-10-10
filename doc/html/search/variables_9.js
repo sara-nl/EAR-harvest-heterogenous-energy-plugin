@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['i',['i',['../compute__coefficients_8c.html#aa0ecde9bec2f4c6686780ccf4f5fe835',1,'i():&#160;compute_coefficients.c'],['../compute__coefficients__remote_8c.html#aa0ecde9bec2f4c6686780ccf4f5fe835',1,'i():&#160;compute_coefficients_remote.c'],['../compute__coefficients__v2_8c.html#aa0ecde9bec2f4c6686780ccf4f5fe835',1,'i():&#160;compute_coefficients_v2.c']]],
+  ['i',['i',['../compute__coefficients_8c.html#aa0ecde9bec2f4c6686780ccf4f5fe835',1,'i():&#160;compute_coefficients.c'],['../compute__coefficients__remote_8c.html#aa0ecde9bec2f4c6686780ccf4f5fe835',1,'i():&#160;compute_coefficients_remote.c'],['../ear__lp__validation_8c.html#aa0ecde9bec2f4c6686780ccf4f5fe835',1,'i():&#160;ear_lp_validation.c'],['../compute__coefficients__v2_8c.html#aa0ecde9bec2f4c6686780ccf4f5fe835',1,'i():&#160;compute_coefficients_v2.c']]],
   ['i_5faggrs',['i_aggrs',['../eardbd_8c.html#ad550a86ab3700c642f536a1e311553c7',1,'i_aggrs():&#160;eardbd.c'],['../eardbd__storage_8c.html#ad550a86ab3700c642f536a1e311553c7',1,'i_aggrs():&#160;eardbd.c']]],
   ['i_5fappsl',['i_appsl',['../eardbd_8c.html#a9247a5d7cf8d1627a4f7e800f9e2b0e2',1,'i_appsl():&#160;eardbd.c'],['../eardbd__storage_8c.html#a9247a5d7cf8d1627a4f7e800f9e2b0e2',1,'i_appsl():&#160;eardbd.c']]],
   ['i_5fappsm',['i_appsm',['../eardbd_8c.html#a2768286c46372edad5a14700170553cc',1,'i_appsm():&#160;eardbd.c'],['../eardbd__storage_8c.html#a2768286c46372edad5a14700170553cc',1,'i_appsm():&#160;eardbd.c']]],
@@ -16,11 +16,12 @@ var searchData=
   ['indes_5fvec',['indes_vec',['../dynais_8c.html#a4d7f74a74935de56f21645949d291ad4',1,'dynais.c']]],
   ['info',['info',['../structsocket.html#a85b401d22d0c7860590b4ff073fc2348',1,'socket']]],
   ['init',['init',['../structpolicy.html#ade5ad6f0239e34d13826497fd72d917e',1,'policy::init()'],['../structuncore__op.html#a8a3c691983021d4ec3df44316b9a9e00',1,'uncore_op::init()']]],
+  ['input_5fbuffer',['input_buffer',['../eardbd_8c.html#a6213d32adf6e65122506eef13094b36a',1,'input_buffer():&#160;eardbd.c'],['../eardbd__storage_8c.html#a6213d32adf6e65122506eef13094b36a',1,'input_buffer():&#160;eardbd.c']]],
   ['insr_5ftime',['insr_time',['../structeardb__conf.html#abd34c6007df2cae4da6bdfa64de7275c',1,'eardb_conf']]],
   ['instructions',['instructions',['../structsignature.html#a2c19cc9d3fd08eb61f365b2e2fbe4cd3',1,'signature']]],
   ['intern_5ferror_5fnum',['intern_error_num',['../common_2states_8h.html#ac09a0ec02abc29d1b783a1e3609d892a',1,'states.h']]],
   ['intern_5ferror_5fstr',['intern_error_str',['../common_2states_8h.html#ac78d836ea556fd4f7f2f00df49d23999',1,'states.h']]],
-  ['ip',['ip',['../structdb__conf.html#a45e0cfabfe7401704cdf48ba876ee58e',1,'db_conf::ip()'],['../structip__table.html#a7554c8d4714d10c6a3c54aa9ada7fc29',1,'ip_table::ip()']]],
+  ['ip',['ip',['../structdb__conf.html#a45e0cfabfe7401704cdf48ba876ee58e',1,'db_conf::ip()'],['../structstatus.html#a9a85a135d4221fdbc270ca331c44aef7',1,'status::ip()'],['../structip__table.html#a7554c8d4714d10c6a3c54aa9ada7fc29',1,'ip_table::ip()']]],
   ['ip_5fint',['ip_int',['../structip__table.html#a164501eaaa381a490d1b477b6202a3f4',1,'ip_table']]],
   ['is_5favailable',['is_available',['../structpolicy__conf.html#a1735820221b6e1c5cd9ff3f86b5b49e7',1,'policy_conf']]],
   ['is_5flearning',['is_learning',['../structapplication.html#a1bc8bcfea9b32948bbf940494388a4ae',1,'application']]],

@@ -50,9 +50,9 @@ void \hyperlink{shared__configuration_8c_aa8bd5b5c7367d046b44a89ae342ae0c2}{dett
 \begin{DoxyCompactList}\small\item\em Disconnect from a previously connected shared memory region. \end{DoxyCompactList}\item 
 void \hyperlink{shared__configuration_8c_a05ff4dac11223ae0991669ee7dfb979b}{resched\+\_\+shared\+\_\+area\+\_\+dispose} (char $\ast$path)
 \begin{DoxyCompactList}\small\item\em Releases a shared memory area previously created. \end{DoxyCompactList}\item 
-\hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$ \hyperlink{shared__configuration_8c_ac476920e0d7b2e4c08414bddace0c534}{create\+\_\+coeffs\+\_\+shared\+\_\+area} (char $\ast$path, \hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$coeffs, int size)
+\hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$ \hyperlink{shared__configuration_8c_a5ecbe7c6252262570b7065366f4d07a4}{create\+\_\+coeffs\+\_\+shared\+\_\+area} (char $\ast$path, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs}, int size)
 \item 
-\hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$ \hyperlink{shared__configuration_8c_ac0e23557b6448629d9857d13beb6f35c}{attach\+\_\+coeffs\+\_\+shared\+\_\+area} (char $\ast$path, int $\ast$size)
+\hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$ \hyperlink{shared__configuration_8c_aefdfc994cf4b50857be28b76aaf33c5e}{attach\+\_\+coeffs\+\_\+shared\+\_\+area} (char $\ast$path, int $\ast$size)
 \item 
 void \hyperlink{shared__configuration_8c_ac02b56eca9731d05c5bc96b3f7f8334b}{coeffs\+\_\+shared\+\_\+area\+\_\+dispose} (char $\ast$path)
 \item 
@@ -88,12 +88,12 @@ char $\ast$ \hyperlink{shared__configuration_8c_adbd38436c25bc604b1a48464727d417
 \subsection{Function Documentation}
 \index{shared\+\_\+configuration.\+c@{shared\+\_\+configuration.\+c}!attach\+\_\+coeffs\+\_\+shared\+\_\+area@{attach\+\_\+coeffs\+\_\+shared\+\_\+area}}
 \index{attach\+\_\+coeffs\+\_\+shared\+\_\+area@{attach\+\_\+coeffs\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+c@{shared\+\_\+configuration.\+c}}
-\subsubsection[{\texorpdfstring{attach\+\_\+coeffs\+\_\+shared\+\_\+area(char $\ast$path, int $\ast$size)}{attach_coeffs_shared_area(char *path, int *size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+v3\+\_\+t}$\ast$ attach\+\_\+coeffs\+\_\+shared\+\_\+area (
+\subsubsection[{\texorpdfstring{attach\+\_\+coeffs\+\_\+shared\+\_\+area(char $\ast$path, int $\ast$size)}{attach_coeffs_shared_area(char *path, int *size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$ attach\+\_\+coeffs\+\_\+shared\+\_\+area (
 \begin{DoxyParamCaption}
 \item[{char $\ast$}]{path, }
 \item[{int $\ast$}]{size}
 \end{DoxyParamCaption}
-)}\hypertarget{shared__configuration_8c_ac0e23557b6448629d9857d13beb6f35c}{}\label{shared__configuration_8c_ac0e23557b6448629d9857d13beb6f35c}
+)}\hypertarget{shared__configuration_8c_aefdfc994cf4b50857be28b76aaf33c5e}{}\label{shared__configuration_8c_aefdfc994cf4b50857be28b76aaf33c5e}
 \index{shared\+\_\+configuration.\+c@{shared\+\_\+configuration.\+c}!attach\+\_\+frequencies\+\_\+shared\+\_\+area@{attach\+\_\+frequencies\+\_\+shared\+\_\+area}}
 \index{attach\+\_\+frequencies\+\_\+shared\+\_\+area@{attach\+\_\+frequencies\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+c@{shared\+\_\+configuration.\+c}}
 \subsubsection[{\texorpdfstring{attach\+\_\+frequencies\+\_\+shared\+\_\+area(char $\ast$path, int $\ast$size)}{attach_frequencies_shared_area(char *path, int *size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong}$\ast$ attach\+\_\+frequencies\+\_\+shared\+\_\+area (
@@ -172,13 +172,13 @@ It is used by E\+A\+R\+Lib (client)
 )}\hypertarget{shared__configuration_8c_ac02b56eca9731d05c5bc96b3f7f8334b}{}\label{shared__configuration_8c_ac02b56eca9731d05c5bc96b3f7f8334b}
 \index{shared\+\_\+configuration.\+c@{shared\+\_\+configuration.\+c}!create\+\_\+coeffs\+\_\+shared\+\_\+area@{create\+\_\+coeffs\+\_\+shared\+\_\+area}}
 \index{create\+\_\+coeffs\+\_\+shared\+\_\+area@{create\+\_\+coeffs\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+c@{shared\+\_\+configuration.\+c}}
-\subsubsection[{\texorpdfstring{create\+\_\+coeffs\+\_\+shared\+\_\+area(char $\ast$path, coefficient\+\_\+v3\+\_\+t $\ast$coeffs, int size)}{create_coeffs_shared_area(char *path, coefficient_v3_t *coeffs, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+v3\+\_\+t}$\ast$ create\+\_\+coeffs\+\_\+shared\+\_\+area (
+\subsubsection[{\texorpdfstring{create\+\_\+coeffs\+\_\+shared\+\_\+area(char $\ast$path, coefficient\+\_\+t $\ast$coeffs, int size)}{create_coeffs_shared_area(char *path, coefficient_t *coeffs, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$ create\+\_\+coeffs\+\_\+shared\+\_\+area (
 \begin{DoxyParamCaption}
 \item[{char $\ast$}]{path, }
-\item[{{\bf coefficient\+\_\+v3\+\_\+t} $\ast$}]{coeffs, }
+\item[{{\bf coefficient\+\_\+t} $\ast$}]{coeffs, }
 \item[{int}]{size}
 \end{DoxyParamCaption}
-)}\hypertarget{shared__configuration_8c_ac476920e0d7b2e4c08414bddace0c534}{}\label{shared__configuration_8c_ac476920e0d7b2e4c08414bddace0c534}
+)}\hypertarget{shared__configuration_8c_a5ecbe7c6252262570b7065366f4d07a4}{}\label{shared__configuration_8c_a5ecbe7c6252262570b7065366f4d07a4}
 \index{shared\+\_\+configuration.\+c@{shared\+\_\+configuration.\+c}!create\+\_\+frequencies\+\_\+shared\+\_\+area@{create\+\_\+frequencies\+\_\+shared\+\_\+area}}
 \index{create\+\_\+frequencies\+\_\+shared\+\_\+area@{create\+\_\+frequencies\+\_\+shared\+\_\+area}!shared\+\_\+configuration.\+c@{shared\+\_\+configuration.\+c}}
 \subsubsection[{\texorpdfstring{create\+\_\+frequencies\+\_\+shared\+\_\+area(char $\ast$path, ulong $\ast$f, int size)}{create_frequencies_shared_area(char *path, ulong *f, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong}$\ast$ create\+\_\+frequencies\+\_\+shared\+\_\+area (

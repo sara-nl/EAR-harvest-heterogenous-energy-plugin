@@ -36,7 +36,7 @@ void \hyperlink{dynamic__configuration_8c_a083c48edbd843d4e82416e295f26c62f}{pri
 \begin{DoxyCompactList}\small\item\em Returns the frequency defined dynamically. \end{DoxyCompactList}\item 
 int \hyperlink{dynamic__configuration_8c_a5af8384ddab7dede7b7c00b50ae96a3a}{dynconf\+\_\+inc\+\_\+th} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} th)
 \item 
-int \hyperlink{dynamic__configuration_8c_a761cc2f1a4619e26450b460f91290891}{dynconf\+\_\+max\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} max\+\_\+freq)
+int \hyperlink{dynamic__configuration_8c_a761cc2f1a4619e26450b460f91290891}{dynconf\+\_\+max\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{ear__lp__validation_8c_a67b5fc2af25178078dfc5b1bac08de32}{max\+\_\+freq})
 \item 
 int \hyperlink{dynamic__configuration_8c_a402850795d67573017d791bb82ede482}{dynconf\+\_\+def\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} def)
 \item 
@@ -48,6 +48,8 @@ int \hyperlink{dynamic__configuration_8c_a18546ad3b1ed6e63aff6eff6ddbfa593}{dync
 \item 
 int \hyperlink{dynamic__configuration_8c_a1380e3101b045d0c99117bca6bebabec}{dynconf\+\_\+set\+\_\+th} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} th)
 \begin{DoxyCompactList}\small\item\em This function is supposed to affect only to M\+I\+N\+\_\+\+T\+I\+M\+E\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON. \end{DoxyCompactList}\item 
+void \hyperlink{dynamic__configuration_8c_af6d0dd0f9347bc9b0c862ab908c6c178}{dyncon\+\_\+get\+\_\+status} (int fd, \hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} $\ast$command)
+\item 
 void \hyperlink{dynamic__configuration_8c_a374cfdc92d2be2897d39a5fa34874fec}{process\+\_\+remote\+\_\+requests} (int clientfd)
 \item 
 void $\ast$ \hyperlink{dynamic__configuration_8c_a55711e3e828929dcb6f7e48b8ca922d9}{eard\+\_\+dynamic\+\_\+configuration} (void $\ast$tmp)
@@ -69,15 +71,31 @@ char $\ast$ \hyperlink{dynamic__configuration_8c_acf94d106083b49b8d1281f3c0a6d44
 \item 
 \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{dynamic__configuration_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}
 \item 
+\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$ \hyperlink{dynamic__configuration_8c_a4c85a23a7110473765eee80874e1c11d}{my\+\_\+node\+\_\+conf}
+\item 
+\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} \hyperlink{dynamic__configuration_8c_a123c8414e64591d6d57189a02df597ff}{my\+\_\+original\+\_\+node\+\_\+conf}
+\item 
 char $\ast$ \hyperlink{dynamic__configuration_8c_adbd38436c25bc604b1a48464727d4179}{\+\_\+\+\_\+\+H\+O\+S\+T\+\_\+\+\_\+}
 \item 
 \hyperlink{shared__configuration_8h_ad610334cf2b8fdaea2cbda3c609e8d35}{settings\+\_\+conf\+\_\+t} $\ast$ \hyperlink{dynamic__configuration_8c_a1c946f257bd518da755792b1dfaa1a0a}{dyn\+\_\+conf}
 \item 
 \hyperlink{shared__configuration_8h_a9faa857e3f34cd1b9f1dc8cfc5a87921}{resched\+\_\+t} $\ast$ \hyperlink{dynamic__configuration_8c_a4a4bf3b5fb9af4d2afcafdcc9d23b8ef}{resched\+\_\+conf}
+\item 
+int \hyperlink{dynamic__configuration_8c_a8db564a08bbddf37c4bb0a235402bbaf}{last\+\_\+command} = -\/1
+\item 
+int \hyperlink{dynamic__configuration_8c_afb8fcbde03c514a733ac76372cadacf6}{last\+\_\+command\+\_\+time} = -\/1
 \end{DoxyCompactItemize}
 
 
 \subsection{Function Documentation}
+\index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!dyncon\+\_\+get\+\_\+status@{dyncon\+\_\+get\+\_\+status}}
+\index{dyncon\+\_\+get\+\_\+status@{dyncon\+\_\+get\+\_\+status}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
+\subsubsection[{\texorpdfstring{dyncon\+\_\+get\+\_\+status(int fd, request\+\_\+t $\ast$command)}{dyncon_get_status(int fd, request_t *command)}}]{\setlength{\rightskip}{0pt plus 5cm}void dyncon\+\_\+get\+\_\+status (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{{\bf request\+\_\+t} $\ast$}]{command}
+\end{DoxyParamCaption}
+)}\hypertarget{dynamic__configuration_8c_af6d0dd0f9347bc9b0c862ab908c6c178}{}\label{dynamic__configuration_8c_af6d0dd0f9347bc9b0c862ab908c6c178}
 \index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!dyncon\+\_\+restore\+\_\+conf@{dyncon\+\_\+restore\+\_\+conf}}
 \index{dyncon\+\_\+restore\+\_\+conf@{dyncon\+\_\+restore\+\_\+conf}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
 \subsubsection[{\texorpdfstring{dyncon\+\_\+restore\+\_\+conf()}{dyncon_restore_conf()}}]{\setlength{\rightskip}{0pt plus 5cm}int dyncon\+\_\+restore\+\_\+conf (
@@ -210,9 +228,21 @@ Returns the frequency defined dynamically.
 \index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!eards\+\_\+remote\+\_\+socket@{eards\+\_\+remote\+\_\+socket}}
 \index{eards\+\_\+remote\+\_\+socket@{eards\+\_\+remote\+\_\+socket}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
 \subsubsection[{\texorpdfstring{eards\+\_\+remote\+\_\+socket}{eards_remote_socket}}]{\setlength{\rightskip}{0pt plus 5cm}int eards\+\_\+remote\+\_\+socket}\hypertarget{dynamic__configuration_8c_aa32f3b0785e889b48840d7a103dedecd}{}\label{dynamic__configuration_8c_aa32f3b0785e889b48840d7a103dedecd}
+\index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!last\+\_\+command@{last\+\_\+command}}
+\index{last\+\_\+command@{last\+\_\+command}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
+\subsubsection[{\texorpdfstring{last\+\_\+command}{last_command}}]{\setlength{\rightskip}{0pt plus 5cm}int last\+\_\+command = -\/1}\hypertarget{dynamic__configuration_8c_a8db564a08bbddf37c4bb0a235402bbaf}{}\label{dynamic__configuration_8c_a8db564a08bbddf37c4bb0a235402bbaf}
+\index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!last\+\_\+command\+\_\+time@{last\+\_\+command\+\_\+time}}
+\index{last\+\_\+command\+\_\+time@{last\+\_\+command\+\_\+time}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
+\subsubsection[{\texorpdfstring{last\+\_\+command\+\_\+time}{last_command_time}}]{\setlength{\rightskip}{0pt plus 5cm}int last\+\_\+command\+\_\+time = -\/1}\hypertarget{dynamic__configuration_8c_afb8fcbde03c514a733ac76372cadacf6}{}\label{dynamic__configuration_8c_afb8fcbde03c514a733ac76372cadacf6}
 \index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}}
 \index{my\+\_\+cluster\+\_\+conf@{my\+\_\+cluster\+\_\+conf}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
 \subsubsection[{\texorpdfstring{my\+\_\+cluster\+\_\+conf}{my_cluster_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+cluster\+\_\+conf}\hypertarget{dynamic__configuration_8c_a6c6877da2aa55927ec276bfdedb32660}{}\label{dynamic__configuration_8c_a6c6877da2aa55927ec276bfdedb32660}
+\index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!my\+\_\+node\+\_\+conf@{my\+\_\+node\+\_\+conf}}
+\index{my\+\_\+node\+\_\+conf@{my\+\_\+node\+\_\+conf}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+node\+\_\+conf}{my_node_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf my\+\_\+node\+\_\+conf\+\_\+t}$\ast$ {\bf my\+\_\+node\+\_\+conf}}\hypertarget{dynamic__configuration_8c_a4c85a23a7110473765eee80874e1c11d}{}\label{dynamic__configuration_8c_a4c85a23a7110473765eee80874e1c11d}
+\index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!my\+\_\+original\+\_\+node\+\_\+conf@{my\+\_\+original\+\_\+node\+\_\+conf}}
+\index{my\+\_\+original\+\_\+node\+\_\+conf@{my\+\_\+original\+\_\+node\+\_\+conf}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+original\+\_\+node\+\_\+conf}{my_original_node_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf my\+\_\+node\+\_\+conf\+\_\+t} my\+\_\+original\+\_\+node\+\_\+conf}\hypertarget{dynamic__configuration_8c_a123c8414e64591d6d57189a02df597ff}{}\label{dynamic__configuration_8c_a123c8414e64591d6d57189a02df597ff}
 \index{dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}!my\+\_\+tmp@{my\+\_\+tmp}}
 \index{my\+\_\+tmp@{my\+\_\+tmp}!dynamic\+\_\+configuration.\+c@{dynamic\+\_\+configuration.\+c}}
 \subsubsection[{\texorpdfstring{my\+\_\+tmp}{my_tmp}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ my\+\_\+tmp}\hypertarget{dynamic__configuration_8c_acf94d106083b49b8d1281f3c0a6d446a}{}\label{dynamic__configuration_8c_acf94d106083b49b8d1281f3c0a6d446a}
