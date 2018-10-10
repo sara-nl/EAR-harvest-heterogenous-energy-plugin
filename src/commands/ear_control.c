@@ -34,6 +34,9 @@
 #include <unistd.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>
@@ -193,7 +196,12 @@ void main(int argc, char *argv[])
         printf("Status returned.\n");
         int i;
         for (i = 0; i < num_status; i++)
-            printf("ip: %d\tstatus: %d\n", status[i].ip, status[i].ip);
+        {
+            struct sockaddr_in temp;
+            temp.sin_addr.s_addr = (status[i].ip);
+            printf("ip: %d\tstatus: %d\tip: %s\n", status[i].ip, status[i].ok, inet_ntoa(temp.sin_addr));
+        }
+        free(status);
     }
     free_cluster_conf(&my_cluster_conf);
 }

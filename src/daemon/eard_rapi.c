@@ -703,6 +703,7 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 
         }
     }
+    *status = all_status;
     return num_all_status;
 }
 
