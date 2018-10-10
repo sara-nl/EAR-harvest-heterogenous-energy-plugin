@@ -476,7 +476,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     final_status = calloc(total_status + 1, sizeof(status_t));
     memcpy(final_status, status1, sizeof(status_t)*num_status1);
     memcpy(&final_status[num_status1], status2, sizeof(status_t)*num_status2);
-    final_status[total_status].ip = self_ip;
+    final_status[total_status].ip = ntohl(self_ip);
     final_status[total_status].ok = STATUS_BAD;
     *status = final_status;
     free(status1);
@@ -558,11 +558,7 @@ int correct_status_starter(char *host_name, request_t *command, int port, status
         }
     }
     freeaddrinfo(result);
-    status_t *temp;
-    int ntemp = 0;
-    ntemp = correct_status(host_ip, command, port, &temp);
-    *status = temp;
-    return ntemp;
+    return correct_status(host_ip, command, port, status);
 }
 
 
