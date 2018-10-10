@@ -37,7 +37,6 @@
 #include <common/types/coefficient.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/db_helper.h>
-#include <tools/coeffs_jobproj.h>
 
 int EAR_VERBOSE_LEVEL = 0;
 int COLUMNS = 5;

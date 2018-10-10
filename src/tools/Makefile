@@ -17,7 +17,7 @@ BINARIES = coeffs_compute \
 
 all: $(BINARIES)
 
-compute_coefficients: compute_coefficients.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
+coeffs_compute: coeffs_compute.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 coeffs_jobproj: coeffs_jobproj.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)

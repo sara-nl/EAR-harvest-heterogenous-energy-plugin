@@ -387,7 +387,7 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 
 int get_node_island(cluster_conf_t *conf, char *hostname)
 {
-	my_node_conf_t node;
+	my_node_conf_t *node;
 	int island;
 
 	node = get_my_node_conf(conf, hostname);

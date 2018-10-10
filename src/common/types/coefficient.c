@@ -112,3 +112,18 @@ int coeff_file_read(char *path, coefficient_t **coeffs)
 	*coeffs = coeffs_aux;
     return (size / sizeof(coefficient_t));
 }
+
+double coeff_project_pow(double pow_sign, double tpi_sign, coefficient_t *cofs)
+{
+	return cofs->A * pow_sign + cofs->B * tpi_sign + cofs->C;
+}
+
+double coeff_project_cpi(double cpi_sign, double tpi_sign, coefficient_t *cofs)
+{
+	return cofs->D * cpi_sign + cofs->E * tpi_sign + cofs->F;
+}
+
+double coeff_project_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong freq_from, ulong freq_to)
+{
+	return (tim_sign * cpi_proj / cpi_sign) * ((double) freq_from / (double) freq_to);
+}
