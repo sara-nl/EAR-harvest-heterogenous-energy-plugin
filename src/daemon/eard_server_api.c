@@ -287,7 +287,7 @@ int propagate_status(request_t *command, int port, status_t **status)
     if (command->node_dist < 1)
     {
         final_status = calloc(1, sizeof(status_t));
-        final_status[0].ip = self_ip;
+        final_status[0].ip = ntohl(self_ip);
         final_status[0].ok = STATUS_OK;
         *status = final_status;
         return 1;
@@ -327,7 +327,7 @@ int propagate_status(request_t *command, int port, status_t **status)
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip2);
-            num_status1 = correct_status(ntohl(ip2), command, port, &status2);
+            num_status2 = correct_status(ntohl(ip2), command, port, &status2);
         }
         eards_remote_disconnect();
     }
@@ -336,7 +336,7 @@ int propagate_status(request_t *command, int port, status_t **status)
     final_status = calloc(total_status + 1, sizeof(status_t));
     memcpy(final_status, status1, sizeof(status_t)*num_status1);
     memcpy(&final_status[num_status1], status2, sizeof(status_t)*num_status2);
-    final_status[total_status].ip = self_ip;
+    final_status[total_status].ip = ntohl(self_ip);
     final_status[total_status].ok = STATUS_OK;
     *status = final_status;
     free(status1);

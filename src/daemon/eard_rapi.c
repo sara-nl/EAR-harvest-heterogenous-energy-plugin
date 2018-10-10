@@ -98,7 +98,6 @@ int send_status(request_t *command, status_t **status)
         VERBOSE_N(0, "Number of status is not a valid amount: %d", ack);
         return EAR_ERROR;
     }
-
     return_status = calloc(ack, sizeof(status_t));
     ret = read(eards_sfd, return_status, sizeof(status_t)*ack);
     if (ret < sizeof(status_t)*ack)
@@ -681,8 +680,8 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
                 num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
             }
             else{
-                VERBOSE_N(1,"Node %s with distance %d contacted with status!\n", node_name, command.node_dist);
-                if (num_temp_status = send_status(&command, &temp_status)) {
+                VERBOSE_N(1,"Node %s with distance %d contacted with status!", node_name, command.node_dist);
+                if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
                     VERBOSE_N(0,"Error doing status for node %s, trying to correct it", node_name);
                     num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
                 }
