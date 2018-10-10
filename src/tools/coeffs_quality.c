@@ -389,8 +389,6 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 			exit(1);
 		}
 	}
-
-	free(node);
 }
 
 void usage(int argc, char *argv[], control_t *cntr)

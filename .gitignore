@@ -46,6 +46,9 @@ src/tools/coeffs_job
 src/tools/show_coefficients
 src/tools/translate_coefficients
 src/tools/coeffs_jobproj
+src/tools/coeffs_compute
+src/tools/learn_deleter
+src/tools/learn_validator
 
 # Build
 etc/module/ear

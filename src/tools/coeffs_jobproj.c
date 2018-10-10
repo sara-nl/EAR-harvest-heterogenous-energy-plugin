@@ -39,7 +39,7 @@
 #include <common/database/db_helper.h>
 
 int EAR_VERBOSE_LEVEL = 0;
-int COLUMNS = 5;
+int COLUMNS = 6;
 
 typedef struct control
 {
@@ -56,11 +56,14 @@ typedef struct control
 	/* Others */
 	job_id step_id;
 	job_id job_id;
+	int compare;
 	int cols_n;
 } control_t;
 
 static char *cofs_str[2] = { "ok", "def" };
-static char buffer[SZ_PATH];
+static char buffer [SZ_PATH];
+static char buffer2[SZ_PATH];
+static char buffer3[SZ_PATH];
 static control_t cntr;
 
 /*
@@ -68,6 +71,60 @@ static control_t cntr;
  * Work bench
  *
  */
+
+static void print_similars(control_t *cntr, application_t *app)
+{
+	application_t *apps;
+    char tim_proj[COLUMNS][64];
+    char pow_proj[COLUMNS][64];
+	int napps, nsets, nppns;
+	int icol, iapp, finished;
+
+	//
+	sprintf(buffer, "SELECT * from Applications WHERE (node_id = '%s') \
+						AND (job_id,step_id) IN (SELECT id,step_id FROM Jobs WHERE policy = '%s' AND app_id = '%s' AND procs = %lu) \
+						AND ((job_id != %lu) OR (step_id != %lu));",
+					app->node_id,
+						app->job.policy, app->job.app_id, app->job.procs,
+						app->job.id, app->job.step_id);
+
+	//
+	napps = db_read_applications_query(&apps, buffer);
+	
+	while (!finished)
+	{
+		nsets = 0;
+	
+		for (icol = 0; icol < COLUMNS; ++icol)
+		{
+			sprintf(tim_proj[icol], "-");
+			sprintf(pow_proj[icol], "-");
+
+			for (iapp = 0; iapp < napps; ++iapp)
+			{
+				if (apps[iapp].job.def_f == cntr->f_dst[icol])
+				{
+					sprintf(tim_proj[icol], "%0.2lf", apps[iapp].signature.time); 				
+					sprintf(pow_proj[icol], "%0.2lf", apps[iapp].signature.DC_power); 				
+	
+					apps[iapp].job.def_f = 1;
+					iapp = napps;
+					nsets += 1;
+				}
+			}	
+		}
+
+		finished = (nsets == 0);
+
+		if (!finished) {
+			tprintf("-||-||-|| | %s||%s||%s||%s||%s||%s|| | %s||%s||%s||%s||%s||%s",
+				tim_proj[0], tim_proj[1], tim_proj[2], tim_proj[3], tim_proj[4], tim_proj[5],
+				pow_proj[0], pow_proj[1], pow_proj[2], pow_proj[3], pow_proj[4], pow_proj[5]);
+		}
+	}
+
+	free(apps);
+}
 
 void evaluate(control_t *cntr)
 {
@@ -97,12 +154,15 @@ void evaluate(control_t *cntr)
 		tim_sign = m->signature.time;
 		pow_sign = m->signature.DC_power;
 
+		tim_proj[0] = tim_sign;
+		pow_proj[0] = pow_sign;
+
 		// Coefficients format
-		for (j = 0, r = 0; j < n; j++)
+		for (j = 0, r = 1; j < n; j++)
 		{
 			if (c[j].available && c[j].pstate_ref == cntr->f_src)
 			{
-				for (k = 0; k < COLUMNS; ++k)
+				for (k = 1; k < COLUMNS; ++k)
 				{
 					if (c[j].pstate == cntr->f_dst[k])
 					{
@@ -118,8 +178,12 @@ void evaluate(control_t *cntr)
 
 		tprintf("%s||%s||%lu|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
  			m->node_id, cofs_str[cntr->cofs_s[i]], m->signature.avg_f,
-			m->signature.time, tim_proj[0], tim_proj[1], tim_proj[2], tim_proj[3], tim_proj[4],
-			m->signature.DC_power, pow_proj[0], pow_proj[1], pow_proj[2], pow_proj[3], pow_proj[4]);
+			tim_proj[0], tim_proj[1], tim_proj[2], tim_proj[3], tim_proj[4], tim_proj[5],
+			pow_proj[0], pow_proj[1], pow_proj[2], pow_proj[3], pow_proj[4], pow_proj[5]);
+
+		if (cntr->compare) {
+			print_similars(cntr, m);
+		}
 	}
 	
 
@@ -128,9 +192,9 @@ void evaluate(control_t *cntr)
 	
 	tprintf_init(stderr, "5 12 12");
 	tprintf("Idx||Freq. from||Freq. to");	
-	for (k = 0; k < COLUMNS; ++k)
+	for (k = 1; k < COLUMNS; ++k)
     {
-		tprintf("%d||%lu||%lu", k + 1, cntr->f_src, cntr->f_dst[k]);
+		tprintf("%d||%lu||%lu", k, cntr->f_src, cntr->f_dst[k]);
 	}
 }
 
@@ -212,15 +276,14 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 		else {
 			cntr->cofs_s[i] = 0;
 		}
-
-		free(node);
 	}
 
 
 	// Getting coefficients format
 	c = cntr->cofs[0];
+	cntr->f_dst[0] = cntr->f_src;
 
-	for(i = 0, j = 0; i < cntr->cofs_n[0] && j < COLUMNS; ++i)
+	for(i = 0, j = 1; i < cntr->cofs_n[0] && j < COLUMNS; ++i)
 	{
 		if (c[i].available && c[i].pstate_ref == cntr->f_src && c[i].pstate != cntr->f_src)
 		{
@@ -239,13 +302,22 @@ void usage(int argc, char *argv[], control_t *cntr)
 		fprintf(stdout, "Usage: %s job.id step.id\n\n", argv[0]);
 		fprintf(stdout, "  The job.id of the job to project.\n");
 		fprintf(stdout, "  The step.id of the job to project.\n");
-		fprintf(stdout, "Options:\n");
+		fprintf(stdout, "\nOptions:\n");
+		fprintf(stdout, "\t-C, --compare\tShows other jobs of the same application,\n");
+		fprintf(stdout, "\t\t\tnode, policy and number of processes.\n");
 		exit(1);
 	}
 
 	// Basic parametrs
 	cntr->job_id = (unsigned long) atoi(argv[1]);
 	cntr->step_id = (unsigned long) atoi(argv[2]);
+
+	for (i = 3; i < argc; ++i)
+	{
+		if (!cntr->compare)
+			cntr->compare = ((strcmp(argv[i], "-C") == 0) ||
+						 	  (strcmp(argv[i], "--compare") == 0));
+	}
 }
 
 void init(cluster_conf_t *conf)
@@ -259,6 +331,11 @@ void init(cluster_conf_t *conf)
 	}
 
 	init_db_helper(&conf->database);
+}
+
+static leave(cluster_conf_t *conf)
+{
+
 }
 
 /*
@@ -285,6 +362,9 @@ int main(int argc, char *argv[])
 
 	//
 	evaluate(&cntr);
+
+	//
+	leave(&conf);
 
 	return 0;
 }

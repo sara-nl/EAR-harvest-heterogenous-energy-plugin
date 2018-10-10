@@ -80,6 +80,7 @@ pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
 cluster_conf_t	my_cluster_conf;
 my_node_conf_t 	*my_node_conf;
+my_node_conf_t  my_original_node_conf;
 eard_dyn_conf_t eard_dyn_conf; // This variable is for eard checkpoint
 policy_conf_t default_policy_context,energy_tag_context,authorized_context;
 /* Shared memory regions */
@@ -856,6 +857,7 @@ void signal_handler(int sig)
      	   	}else{
 				eard_dyn_conf.nconf=my_node_conf;
 				print_my_node_conf(my_node_conf);
+				copy_my_node_conf(&my_original_node_conf,my_node_conf);
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
     			eard_verbose(0,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
@@ -943,7 +945,7 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
     default_policy_context.policy=MONITORING_ONLY;
     default_policy_context.p_state=EAR_MIN_P_STATE;
     default_policy_context.th=0;
-    my_policy=get_my_policy_conf(cluster,node,cluster->default_policy);
+    my_policy=get_my_policy_conf(node,cluster->default_policy);
     if (my_policy==NULL){
         // This should not happen
         eard_verbose(0,"Default policy  not found in ear.conf");
@@ -978,7 +980,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	default_policy_context.policy=MONITORING_ONLY;
 	default_policy_context.p_state=EAR_MIN_P_STATE;
 	default_policy_context.th=0;
-	my_policy=get_my_policy_conf(cluster,node,cluster->default_policy);
+	my_policy=get_my_policy_conf(node,cluster->default_policy);
 	if (my_policy==NULL){
 		// This should not happen
 		eard_verbose(0,"Default policy  not found in ear.conf");
@@ -1112,6 +1114,7 @@ void main(int argc,char *argv[])
             eard_verbose(0," Error in cluster configuration, node %s not found\n",nodename);
         }
 		print_my_node_conf(my_node_conf);
+		copy_my_node_conf(&my_original_node_conf,my_node_conf);
     }
 	/* This info is used for eard checkpointing */
 	eard_dyn_conf.cconf=&my_cluster_conf;

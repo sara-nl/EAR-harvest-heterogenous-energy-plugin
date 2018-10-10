@@ -264,7 +264,7 @@ int propagate_status(request_t *command, int port, status_t **status)
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
 		VERBOSE_N(0,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
-		return;
+		return EAR_ERROR;
     }
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {

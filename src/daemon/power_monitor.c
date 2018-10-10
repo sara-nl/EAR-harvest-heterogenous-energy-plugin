@@ -120,7 +120,7 @@ static void PM_set_sigusr1()
 void reset_shared_memory()
 {
 	policy_conf_t *my_policy;
-    my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+    my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
     dyn_conf->user_type=NORMAL;
 	dyn_conf->learning=0;
     dyn_conf->lib_enabled=1;
@@ -302,16 +302,16 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
         	p_id=policy_name_to_id(appID->job.policy);
         	/* Use cluster conf function */
         	if (p_id!=EAR_ERROR){
-            	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
+            	my_policy=get_my_policy_conf(my_node_conf,p_id);
 		if (!my_policy->is_available){
 				eard_verbose(0,"User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
-				my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+				my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
 			}
 			copy_policy_conf(&per_job_conf,my_policy);
 			my_policy=&per_job_conf;
         	}else{
 			eard_verbose(0,"Invalid policy %s ",appID->job.policy);
-            		my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+            		my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
 			if (my_policy==NULL){
 				eard_verbose(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 				authorized_context.p_state=1;
@@ -341,9 +341,9 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 		}else{
 			p_id=policy_name_to_id(appID->job.policy);
 			if (p_id!=EAR_ERROR){
-            	my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,p_id);
-				authorized_context.policy=p_id;
-				if (appID->job.def_f){ 
+            		my_policy=get_my_policy_conf(my_node_conf,p_id);
+			authorized_context.policy=p_id;
+			if (appID->job.def_f){ 
 					eard_verbose(0,"Setting freq to NOT default policy p_state \n");
 					if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
 					else authorized_context.p_state=my_policy->p_state;
@@ -356,7 +356,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 				my_policy=&authorized_context;
 			}else{
 				eard_verbose(0,"Authorized user is executing not defined/invalid policy using default %d",my_cluster_conf.default_policy);
-				my_policy=get_my_policy_conf(&my_cluster_conf,my_node_conf,my_cluster_conf.default_policy);
+				my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
 				print_policy_conf(my_policy);		
 				if (my_policy==NULL){
 					eard_verbose(0,"Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
@@ -464,9 +464,9 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	frequency_set_all_cpus(f);
 	current_node_freq=f;
 	appID->job.def_f=dyn_conf->def_freq;	
-    while (pthread_mutex_trylock(&app_lock));
-    idleNode=0;
-    job_init_powermon_app(appID,from_mpi);
+    	while (pthread_mutex_trylock(&app_lock));
+    	idleNode=0;
+    	job_init_powermon_app(appID,from_mpi);
 	/* We must report the energy beforesetting the job_id: PENDING */
 	new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
     pthread_mutex_unlock(&app_lock);
@@ -515,7 +515,7 @@ void powermon_end_job(job_id jid,job_id sid)
 void powermon_set_th(double th)
 {
 	policy_conf_t *min_time_p;
-	min_time_p=get_my_policy_conf(&my_cluster_conf,my_node_conf,MIN_TIME_TO_SOLUTION);
+	min_time_p=get_my_policy_conf(my_node_conf,MIN_TIME_TO_SOLUTION);
 	if (min_time_p==NULL){
 		eard_verbose(1,"MIN_TIME_TO_SOLUTION not supported, th setting has no effect");
 	}else{

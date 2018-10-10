@@ -254,7 +254,10 @@ int get_ear_conf_path(char *ear_conf_path);
 /** returns the pointer to the information of nodename */
 node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
 
-/** */
+/** Copies dest=src */
+void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src);
+
+/** returns the configuration for your node with any specific setting specified at ear.conf */
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
 
 // Cluster configuration read
@@ -301,11 +304,8 @@ uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *g
 
 // Policy functions
 
-/** Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy */
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
-
-/** Given a cluser, node and policy_id, returns the policy configuration (or NULL) */
-policy_conf_t *get_my_policy_conf(cluster_conf_t *my_cluster,my_node_conf_t *my_node,uint p_id);
+/** Given a  node and policy, returns the policy configuration for that cluser,node,policy */
+policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id);
 
 /** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
 int policy_name_to_id(char *my_policy);
