@@ -68,6 +68,22 @@ void usage(char *app)
 	exit(1);
 }
 
+void process_status(int num_status, status_t *status)
+{
+    if (num_status > 0)
+    {
+        printf("Status returned.\n");
+        int i;
+        for (i = 0; i < num_status; i++)
+        {
+            struct sockaddr_in temp;
+            temp.sin_addr.s_addr = (status[i].ip);
+            printf("ip: %d\tstatus: %d\tip: %s\n", status[i].ip, status[i].ok, inet_ntoa(temp.sin_addr));
+        }
+        free(status);
+    }
+}
+
 
 void main(int argc, char *argv[])
 {
@@ -185,23 +201,13 @@ void main(int argc, char *argv[])
                 break;
             case 7:
                 num_status = status_all_nodes(my_cluster_conf, &status);
+                process_status(num_status, status);
                 break;
             case 8:
                 usage(argv[0]);
                 break;
         }
     }
-    if (num_status > 0)
-    {
-        printf("Status returned.\n");
-        int i;
-        for (i = 0; i < num_status; i++)
-        {
-            struct sockaddr_in temp;
-            temp.sin_addr.s_addr = (status[i].ip);
-            printf("ip: %d\tstatus: %d\tip: %s\n", status[i].ip, status[i].ok, inet_ntoa(temp.sin_addr));
-        }
-        free(status);
-    }
+
     free_cluster_conf(&my_cluster_conf);
 }
