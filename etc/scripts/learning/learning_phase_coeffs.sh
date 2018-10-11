@@ -31,5 +31,5 @@ export HOSTLIST="$(echo $(cat $1))"
 for i in ${HOSTLIST}
 do
     echo "Computing coefficients for node=${i}"
-	$EAR_INSTALL_PATH/coeffs_compute $OUT_COE $MIN_FREQUENCY ${i}
+	$EAR_INSTALL_PATH/sbin/coeffs_compute $OUT_COE $MIN_FREQUENCY ${i}
 done
