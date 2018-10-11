@@ -19,7 +19,7 @@ export CORES=16
 export SOCKETS=2
 export CORES_PER_SOCKET=8
 
-# Edit learning phase parameters
+# Non-edit region
 export EAR_MIN_P_STATE=1
 export EAR_MAX_P_STATE=1
 export EAR_TIMES=1
