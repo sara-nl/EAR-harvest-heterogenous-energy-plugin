@@ -309,9 +309,10 @@ int propagate_status(request_t *command, int port, status_t **status)
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip1);
+            eards_remote_disconnect();
             num_status1 = correct_status(ntohl(ip1), command, port, &status1);
         }
-        eards_remote_disconnect();
+        else eards_remote_disconnect();
     }
     
     command->node_dist = actual_dist;
@@ -327,9 +328,10 @@ int propagate_status(request_t *command, int port, status_t **status)
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip2);
+            eards_remote_disconnect();
             num_status2 = correct_status(ntohl(ip2), command, port, &status2);
         }
-        eards_remote_disconnect();
+        else eards_remote_disconnect();
     }
     
     int total_status = num_status1 + num_status2;

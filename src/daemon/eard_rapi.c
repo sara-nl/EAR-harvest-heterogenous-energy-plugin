@@ -437,6 +437,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
+    int actual_dist = command->node_dist;
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
@@ -455,6 +456,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
         else eards_remote_disconnect();
     }
 
+    command->node_dist = actual_dist;
     //connect to second subnode
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
@@ -505,6 +507,7 @@ void correct_error(int target_ip, request_t *command, int port)
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
+    int actual_dist = command->node_dist;
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
@@ -515,6 +518,7 @@ void correct_error(int target_ip, request_t *command, int port)
         eards_remote_disconnect();
     }
 
+    command->node_dist = actual_dist;
     //connect to second subnode
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
