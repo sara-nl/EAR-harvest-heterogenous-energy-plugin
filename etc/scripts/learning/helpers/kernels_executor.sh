@@ -2,7 +2,6 @@
 
 export BENCHS_SRC_PATH=$EAR_SOURCE_PATH/kernels
 export BENCHS_BIN_PATH=$EAR_INSTALL_PATH/bin/kernels
-export MPI_SCRIPT_PATH=$EAR_INSTALL_PATH/etc/scripts/running/mpi_exec.sh
 
 function configuring
 {
@@ -17,49 +16,13 @@ function configuring
 
 function launching
 {
-    if [[ -z "${SLURM_JOB_ID}" ]]; then
-      launching_mpi_script $1 $2
-    else
-      launching_slurm $1 $2
-    fi
-}
-
-function launching_slurm
-{
-    # Update srun command for custom SLURM installations
-    export SRUN_PATH=srun
-
-    # Non-edit region
-	if [ "$EAR_POWER_POLICY" != "NO_EAR" ]; then
-    	export EAR_SLURM_POLICY="--ear-policy=MONITORING_ONLY"
-    else
-    	export EAR=0
-	fi
-
     echo "----------------------------------------------------------"
-    echo "Launching (SLURM) $1 $2"
+    echo "Launching (SLURM) $1 $2 (P_STATE $EAR_P_STATE)"
     echo "----------------------------------------------------------"
-    $SRUN_PATH -N 1 -n $2 -J $1 -w $SLURMD_NODENAME \
-        --jobid=$SLURM_JOBID $EAR_SLURM_POLICY $BENCHS_BIN_PATH/$1
-}
 
-function launching_mpi_script
-{
-	# MPI options
-	export I_MPI_PIN=1
-	export I_MPI_PIN_DOMAIN=auto
-
-	# Non-edit region
-	export EAR_APP_NAME=$1
-
-	if [ "$EAR_POWER_POLICY" != "NO_EAR" ]; then
-    		export EAR_POWER_POLICY="MONITORING_ONLY"
-	fi
-
-	echo "----------------------------------------------------------"
-	echo "Launching (script) $1 $2"
-	echo "----------------------------------------------------------"
-	$MPI_SCRIPT_PATH local $BENCHS_BIN_PATH/$1 $2 $2 $EAR_POWER_POLICY NO_TRACE
+    srun -N 1 -n $2 -J $1 -w $SLURMD_NODENAME --jobid=$SLURM_JOBID \
+    	--ear-policy=MONITORING_ONLY --ear-verbose=1 --ear-learning=$EAR_P_STATE \
+         $BENCHS_BIN_PATH/$1
 }
 
 function learning_phase
@@ -119,7 +82,7 @@ function learning_phase
             fi
         ;;
         dgemm)
-            configuring mpi $BENCHS_SRC_PATH/ X 1
+            configuring mpi $BENCHS_SRC_PATH/DGEMM/mkl_fortran_samples/matrix_multiplication X 1
 
             if [ "$BENCHS_MODE" == "compile" ]; then
                 mkdir -p $BENCH_SRC_PATH/release

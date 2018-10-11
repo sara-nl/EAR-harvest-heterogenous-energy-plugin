@@ -256,6 +256,7 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
 
 /** Copies dest=src */
 void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src);
+
 /** returns the configuration for your node with any specific setting specified at ear.conf */
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
 
@@ -281,18 +282,16 @@ void print_my_node_conf(my_node_conf_t *my_node_conf);
 /** prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p);
 
-/** copy dest=src */
-void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src);
-
 /** Prints in the stdout the whole cluster configuration */
 void print_cluster_conf(cluster_conf_t *conf);
 
 /** Prints in the stdout the energy_tag settings */
 void print_energy_tag(energy_tag_t *etag);
 
-/** Given a  node and policy, returns the policy configuration for that cluser,node,policy */
-policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id);
+/** Prints the given library conf */
+void print_ear_lib_conf(earlib_conf_t *libc);
 
+// User functions
 
 /** returns  the energy tag entry if the username, group and/or accounts is in the list of the users/groups/acc authorized to use the given energy-tag, NULL otherwise */
 energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc,char *energy_tag);
@@ -300,12 +299,13 @@ energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char
 /** returns true if the username, group and/or accounts is presents in the list of authorized users/groups/accounts */
 int is_privileged(cluster_conf_t *my_conf, char *user,char *group, char *acc);
 
-
-
 /** returns the user type: NORMAL, AUTHORIZED, ENERGY_TAG */
 uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *group, char *acc,energy_tag_t **my_tag);
 
+// Policy functions
 
+/** Given a  node and policy, returns the policy configuration for that cluser,node,policy */
+policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id);
 
 /** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
 int policy_name_to_id(char *my_policy);
@@ -313,23 +313,36 @@ int policy_name_to_id(char *my_policy);
 /** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
 int policy_id_to_name(int policy_id,char *my_policy);
 
-/* Copy src in dest */
+// Copy functions
+
+/** Copy src in dest */
 void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src);
-/* Prints the given library conf */
-void print_ear_lib_conf(earlib_conf_t *libc);
 
+/** copy dest=src */
+void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src);
 
+/** */
 void copy_eard_conf(eard_conf_t *dest,eard_conf_t *src);
+
+/** */
 void copy_eargmd_conf(eargm_conf_t *dest,eargm_conf_t *src);
+
+/** */
 void copy_eardb_conf(db_conf_t *dest,db_conf_t *src);
+
+/** */
 void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src);
 
+// Default functions
 
-/* Default functions */
+/** */
 void set_default_eard_conf(eard_conf_t *eardc);
+
+/** */
 void set_default_eargm_conf(eargm_conf_t *eardc);
 
+// Concrete data functions
 
-
+int get_node_island(cluster_conf_t *conf, char *hostname);
 
 #endif

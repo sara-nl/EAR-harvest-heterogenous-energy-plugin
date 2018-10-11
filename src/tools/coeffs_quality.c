@@ -37,7 +37,6 @@
 #include <common/types/coefficient.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/db_helper.h>
-#include <tools/coeffs_quality.h>
 
 #define LINE "-----------------------------------------------------------------------------------------------------\n"
 
@@ -66,27 +65,6 @@ typedef struct control
 } control_t;
 	
 control_t cntr;
-
-/*
- *
- * Projections
- *
- */
-
-double projection_pow(double pow_sign, double tpi_sign, coefficient_t *coeffs)
-{
-	return coeffs->A * pow_sign + coeffs->B * tpi_sign + coeffs->C;
-}
-
-double projection_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs)
-{
-	return coeffs->D * cpi_sign + coeffs->E * tpi_sign + coeffs->F;
-}
-
-double projection_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong f0, ulong fn)
-{
-	return (tim_sign * cpi_proj / cpi_sign) * ((double) f0 / (double) fn);
-}
 
 /*
  *
@@ -255,9 +233,9 @@ void evaluate(control_t *control)
 				if (coeffs[i].available && coeffs[i].pstate_ref == frq_base)
 				{
 					// Error
-					cpi_proj = projection_cpi(cpi_sign, tpi_sign, &coeffs[i]);
-					tim_proj = projection_tim(tim_sign, cpi_proj, cpi_sign, frq_base, coeffs[i].pstate);
-					pow_proj = projection_pow(pow_sign, tpi_sign, &coeffs[i]);
+					cpi_proj = coeff_project_cpi(cpi_sign, tpi_sign, &coeffs[i]);
+					tim_proj = coeff_project_tim(tim_sign, cpi_proj, cpi_sign, frq_base, coeffs[i].pstate);
+					pow_proj = coeff_project_pow(pow_sign, tpi_sign, &coeffs[i]);
 
 					// Fin that application for that coefficient
 					k = find(merged, n_merged, merged[j].job.app_id, coeffs[i].pstate);
@@ -376,14 +354,20 @@ void read_applications(control_t *cntr)
 
 void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 {
-	my_node_conf_t *node;
+	char *node = cntr->name_node;
+	int island;
 
 	//
-	node = get_my_node_conf(conf, cntr->name_node);
-	
+	island = get_node_island(conf, node);
+
+	if (island == EAR_ERROR) {
+		fprintf(stderr, "no island found for node %s, exiting\n", node);
+		exit(1);
+	}
+
 	//
 	sprintf(cntr->path_coeffs, "%s/island%d/coeffs.%s",
-		conf->earlib.coefficients_pathname, node->island, cntr->name_node);
+		conf->earlib.coefficients_pathname, island, node);
 
 	//
 	cntr->n_coeffs = coeff_file_read(cntr->path_coeffs, &cntr->coeffs);
@@ -394,7 +378,7 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 		
 		//
 		sprintf(buffer, "%s/island%d/coeffs.default",
- 			conf->earlib.coefficients_pathname, node->island);
+ 			conf->earlib.coefficients_pathname, island);
 
 		//
 		cntr->n_coeffs = coeff_file_read(buffer, &cntr->coeffs);	
@@ -405,8 +389,6 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 			exit(1);
 		}
 	}
-
-	free(node);
 }
 
 void usage(int argc, char *argv[], control_t *cntr)

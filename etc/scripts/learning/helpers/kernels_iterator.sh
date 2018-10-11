@@ -19,10 +19,3 @@ do
         learning_phase stream
     done
 done
-
-if [ $EAR_LEARNING_PHASE -eq 1 ]
-then
-	# Calculating coefficients
-	$EAR_INSTALL_PATH/bin/compute_coefficients "$EAR_DB_PATHNAME`hostname -a`.db.csv" \
-     	$EAR_COEFF_DB_PATHNAME`hostname -a` 1000000 `hostname -a`
-fi

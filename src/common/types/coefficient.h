@@ -57,24 +57,11 @@ int coeff_file_read(char *path, coefficient_t **coeffs);
 
 void coeff_print(coefficient_t *coeff);
 
-/* obsolete functions */
+double coeff_project_pow(double pow_sign, double tpi_sign, coefficient_t *coeffs);
 
-typedef struct coefficient_obs
-{
-	unsigned long pstate;
-	unsigned int available;
-	/* For power projection */
-	double A;
-	double B;
-	double C;
-	/* For CPI projection */
-	double D;
-	double E;
-	double F;
-} coefficient_obs_t;
+double coeff_project_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs);
 
-int coeff_file_read_obs(char *path, coefficient_obs_t **coeffs, int size);
-
-void coeff_print_obs(coefficient_obs_t *coeff);
+double coeff_project_tim(double tim_sign, double cpi_proj, double cpi_sign,
+						 ulong f_src, ulong f_dst);
 
 #endif
