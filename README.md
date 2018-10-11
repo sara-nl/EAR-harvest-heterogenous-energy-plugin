@@ -54,6 +54,7 @@ Brief installation guide
 ------------------------
 1) Generate Autoconf's `configure` program by typing `autoreconf -i`.
 2) Compile the library by typing `./configure`, `make` and `make install` in the root directory. Consider the option of `./configure --PREFIX=<path>` if you want to specify the installation path. It could be useful to run ‘./configure --help’ for listing the options details.
+3) Type `make etc.install` if you are interested in install the content of `ETC`. You can find a list of that content in the in the below section.
 
 Customize installation
 ----------------------
