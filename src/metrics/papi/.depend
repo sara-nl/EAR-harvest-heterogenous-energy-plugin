@@ -1,5 +1,3 @@
-generics.o: generics.c ../../metrics/papi/generics.h \
- ../../common/ear_verbose.h ../../common/config.h
 instructions.o: instructions.c ../../metrics/papi/generics.h \
  ../../metrics/papi/instructions.h ../../common/ear_verbose.h \
  ../../common/config.h
@@ -7,6 +5,8 @@ flops.o: flops.c ../../metrics/papi/generics.h \
  ../../metrics/custom/hardware_info.h ../../metrics/papi/flops.h \
  ../../common/environment.h ../../common/ear_verbose.h \
  ../../common/config.h
+generics.o: generics.c ../../metrics/papi/generics.h \
+ ../../common/ear_verbose.h ../../common/config.h
 stalls.o: stalls.c ../../metrics/papi/generics.h \
  ../../metrics/papi/stalls.h ../../common/ear_verbose.h \
  ../../common/config.h

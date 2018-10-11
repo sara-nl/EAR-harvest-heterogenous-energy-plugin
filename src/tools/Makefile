@@ -47,7 +47,7 @@ learn_validator: learn_validator.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJ
 ######## OPTIONS
 
 install:
-	cp compute_coefficients $(DESTDIR)/sbin/
+	cp coeffs_compute $(DESTDIR)/sbin/
 
 %.install: ;
 
