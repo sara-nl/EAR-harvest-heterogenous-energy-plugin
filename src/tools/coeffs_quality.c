@@ -61,6 +61,7 @@ typedef struct control
 	uint frq_base;
 	uint learning;
 	uint summary;
+	uint general;
 	uint hide;
 } control_t;
 	
@@ -271,17 +272,15 @@ void evaluate(control_t *control)
 		}
 	}
 
-	if (!control->summary) {
-		return;
-	}
-
 	// Coefficients medium error
 	
 	if (!control->hide) {
 		fprintf(stderr, LINE);
 	}
-	
-	tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
+
+	if (control->summary) {	
+		tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
+	}
 
 	for (i = 0; i < n_coeffs; i++)
 	{
@@ -291,8 +290,10 @@ void evaluate(control_t *control)
 			tim_merr[i] = tim_merr[i] / n_merr[i];
 			pow_merr[i] = pow_merr[i] / n_merr[i];
 
-			tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+			if (control->summary) {
+				tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
 					coeffs[i].pstate, tim_merr[i], pow_merr[i]);
+			}
 
 			// General medium error
 			tim_gerr += tim_merr[i];
@@ -302,12 +303,21 @@ void evaluate(control_t *control)
 	}
 
 	// General medium error
-	fprintf(stderr, LINE);
+	if (!control->hide) {
+		fprintf(stderr, LINE);
+	}
+
 	tim_gerr = tim_gerr / n_gerr;
 	pow_gerr = pow_gerr / n_gerr;
 
-	tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+	if (control->summary) {
+		tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
 			frq_base, tim_gerr, pow_gerr);
+	}
+	if (control->general) {
+		tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+			control->name_node, frq_base, tim_gerr, pow_gerr);
+	}
 }
 
 /*
@@ -327,8 +337,17 @@ void read_applications(control_t *cntr)
 	//
 	n_appsn = db_read_applications(&appsn, 1, 1000, cntr->name_node);
 
-	if (n_appsn == 0) {
-		fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);	
+	if (n_appsn == 0)
+	{
+		if (cntr->general)
+		{
+			// Initializing columns
+			tprintf_init(stderr, "18 11 15 12 12 15 12 12");
+			tprintf("%s||--|| | -||-||--|| | -||-||--", cntr->name_node);
+		} else {
+			fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);	
+		}
+		
 		exit(1);
 	}
 
@@ -404,6 +423,7 @@ void usage(int argc, char *argv[], control_t *cntr)
 		fprintf(stdout, "\t-A, --all\tMerges the applications database in addition\n");
 		fprintf(stdout, "\t\t\tof the learning applications database.\n");
 		fprintf(stdout, "\t-S, --summary\tShows the medium and general errors.\n");
+		fprintf(stdout, "\t-G, --general\tShows only the general medium error.\n");
 		fprintf(stdout, "\t-H, --hide\tHides the merged applications projections and errors.\n");
 		exit(1);
 	}
@@ -421,9 +441,17 @@ void usage(int argc, char *argv[], control_t *cntr)
 		if (!cntr->summary)
 			cntr->summary = ((strcmp(argv[i], "-S") == 0) ||
 							 (strcmp(argv[i], "--summary") == 0));
+		if (!cntr->general)
+			cntr->general = ((strcmp(argv[i], "-G") == 0) ||
+							 (strcmp(argv[i], "--general") == 0));
 		if (!cntr->hide)
 			cntr->hide = ((strcmp(argv[i], "-H") == 0) ||
 						  (strcmp(argv[i], "--hide") == 0));
+	}
+
+	if (cntr->general) {
+		cntr->hide = 1;
+		cntr->summary = 0;
 	}
 }
 
