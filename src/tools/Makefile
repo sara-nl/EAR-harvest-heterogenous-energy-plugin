@@ -13,8 +13,8 @@ BINARIES = coeffs_compute \
 		   get_app_list \
 		   get_ear_events \
 		   get_active_nodes \
-		   learn_validator \
-		   learn_deleter
+		   learn_validate \
+		   learn_delete
 
 all: $(BINARIES)
 
@@ -33,19 +33,19 @@ coeffs_show: coeffs_show.c $(COMMON_OBJS)
 coeffs_comparison: coeffs_comparison.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
 
-get_app_list: get_app_list.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
-
 get_ear_events: get_ear_events.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 get_active_nodes: get_active_nodes.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
-learn_deleter: learn_deleter.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
+learning_show: learning_show.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+
+learning_delete: learning_delete.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
-learn_validator: learn_validator.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
+learning_validate: learning_validate.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 ######## OPTIONS

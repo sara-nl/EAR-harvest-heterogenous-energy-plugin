@@ -383,11 +383,11 @@ void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 	eardbd->sec_tcp_port = 4712;
 	eardbd->sync_tcp_port = 4713;
 	eardbd->mem_size = 120;
-	eardbd->mem_size_types[0] = 40;
-	eardbd->mem_size_types[1] = 20;
+	eardbd->mem_size_types[0] = 60;
+	eardbd->mem_size_types[1] = 22;
 	eardbd->mem_size_types[2] = 5;
-	eardbd->mem_size_types[3] = 24;
-	eardbd->mem_size_types[4] = 5;
+	eardbd->mem_size_types[3] = 0;
+	eardbd->mem_size_types[4] = 7;
 	eardbd->mem_size_types[5] = 1;
 	eardbd->mem_size_types[6] = 5;
 }
