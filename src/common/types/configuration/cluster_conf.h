@@ -120,7 +120,6 @@ typedef struct eardb_conf
 	uint tcp_port;
 	uint sec_tcp_port;
 	uint sync_tcp_port;
-	uint udp_port;
     uint mem_size;
     uchar mem_size_types[EARDBD_TYPES];
 } eardb_conf_t;
@@ -340,6 +339,8 @@ void set_default_eard_conf(eard_conf_t *eardc);
 
 /** */
 void set_default_eargm_conf(eargm_conf_t *eardc);
+
+void set_default_db_conf(db_conf_t *db_conf);
 
 // Concrete data functions
 

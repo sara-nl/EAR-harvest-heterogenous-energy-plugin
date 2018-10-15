@@ -375,6 +375,23 @@ void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
 }
 
 /*** DEFAULT VALUES ****/
+void set_default_eardbd_conf(eardb_conf_t *eardbdc)
+{
+	eardbdc->aggr_time = 30;
+	eardbdc->insr_time = 30;
+	eardbdc->tcp_port = 4711;
+	eardbdc->sec_tcp_port = 4712;
+	eardbdc->sync_tcp_port = 4713;
+	eardbdc->mem_size = 120;
+	eardbdc->mem_size_types[0] = 40;
+	eardbdc->mem_size_types[1] = 20;
+	eardbdc->mem_size_types[2] = 5;
+	eardbdc->mem_size_types[3] = 24;
+	eardbdc->mem_size_types[4] = 5;
+	eardbdc->mem_size_types[5] = 1;
+	eardbdc->mem_size_types[6] = 5;
+}
+
 void set_default_eard_conf(eard_conf_t *eardc)
 {
 	eardc->verbose=1;           /* default 1 */
@@ -403,6 +420,13 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->defcon_limits[2]=95;
 	eargmc->grace_periods=GRACE_T1;
 	strcpy(eargmc->mail,"nomail");
+}
+
+void set_default_db_conf(db_conf_t *db_conf)
+{
+    strcpy(db_conf->user, "ear_daemon");
+    strcpy(db_conf->ip, "127.0.0.1");
+    db_conf->port = 0;
 }
 
 int get_node_island(cluster_conf_t *conf, char *hostname)
