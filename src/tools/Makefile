@@ -8,9 +8,10 @@ COMMON_OBJS = $(ROOTDIR)/src/common/types.a
 BINARIES = coeffs_compute \
            coeffs_jobproj \
            coeffs_quality \
+           coeffs_show \
+           coeffs_comparison \
 		   get_app_list \
 		   get_ear_events \
-		   get_projections \
 		   get_active_nodes \
 		   learn_validator \
 		   learn_deleter
@@ -26,10 +27,13 @@ coeffs_jobproj: coeffs_jobproj.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 coeffs_quality: coeffs_quality.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
-get_app_list: get_app_list.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+coeffs_show: coeffs_show.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
 
-get_projections: get_projections.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
+coeffs_comparison: coeffs_comparison.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
+get_app_list: get_app_list.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 get_ear_events: get_ear_events.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
@@ -43,20 +47,6 @@ learn_deleter: learn_deleter.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 
 learn_validator: learn_validator.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
-
-######## OBS
-
-coeffs_show: coeffs_show.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
-
-coeffs_export: coeffs_export.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
-
-coeffs_translate: coeffs_translate.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS) -lm
-
-coeffs_comparison: coeffs_comparison.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
 
 ######## OPTIONS
 

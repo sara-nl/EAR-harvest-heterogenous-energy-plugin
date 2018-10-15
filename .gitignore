@@ -49,6 +49,9 @@ src/tools/coeffs_jobproj
 src/tools/coeffs_compute
 src/tools/learn_deleter
 src/tools/learn_validator
+src/tools/coeffs_comparison
+src/tools/coeffs_show
+
 
 # Build
 etc/module/ear
