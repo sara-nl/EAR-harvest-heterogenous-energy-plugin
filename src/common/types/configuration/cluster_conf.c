@@ -28,6 +28,7 @@
 */
 
 #include <common/types/configuration/cluster_conf.h>
+#include <common/environment.h>
 
 
 //#define __OLD__CONF__
@@ -404,6 +405,15 @@ void set_default_eard_conf(eard_conf_t *eardc)
 	eardc->force_frequencies=1; /* EARD will force frequencies */
 }
 
+void set_default_earlib_conf(earlib_conf_t *earlibc)
+{
+	strcpy(earlibc->coefficients_pathname,DEFAULT_COEFF_PATHNAME);
+	earlibc->dynais_levels=DEFAULT_DYNAIS_LEVELS;
+	earlibc->dynais_window=DEFAULT_DYNAIS_WINDOW_SIZE;
+	earlibc->dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
+	earlibc->lib_period=PERIOD;
+	earlibc->check_every=MPI_CALLS_TO_CHECK_PERIODIC;
+}
 void set_default_eargm_conf(eargm_conf_t *eargmc)
 {
 	eargmc->verbose=1;

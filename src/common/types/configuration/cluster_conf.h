@@ -334,13 +334,20 @@ void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src);
 
 // Default functions
 
-/** */
+/** Initializes the default values for EARD */
 void set_default_eard_conf(eard_conf_t *eardc);
 
-/** */
+/** Initializes the default values for EAR Global Mamager*/
 void set_default_eargm_conf(eargm_conf_t *eardc);
 
+/** Initializes the default values for DB */
 void set_default_db_conf(db_conf_t *db_conf);
+
+/** Initializes the default values for EARDBD */
+void set_default_eardbd_conf(eardb_conf_t *eardbd_conf);
+
+/** Initializes the default values for earlib conf */
+void set_default_earlib_conf(earlib_conf_t *earlibc);
 
 // Concrete data functions
 
