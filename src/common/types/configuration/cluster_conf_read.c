@@ -1030,9 +1030,8 @@ void set_ear_conf_default(cluster_conf_t *my_conf)
 	set_default_eard_conf(&my_conf->eard);
 	set_default_eargm_conf(&my_conf->eargm);
     set_default_db_conf(&my_conf->database);
-	
+	set_default_eardbd_conf(&my_conf->db_manager);
 }
-
 
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 {
