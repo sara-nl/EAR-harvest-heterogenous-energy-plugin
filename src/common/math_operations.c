@@ -103,3 +103,33 @@ unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long
     }
     return ret;
 }
+
+unsigned long long uncore_ullong_diff_overflow(unsigned long long a, unsigned long long b)
+{
+    unsigned long long max_16 = USHRT_MAX;
+    unsigned long long max_32 = ULONG_MAX;
+    unsigned long long max_64 = ULLONG_MAX;
+    //max_48 was obtained empirically via monitoring the power results and checking
+    //when the overflow occured. The same can be said about max_DRAM (~46 bits)
+    unsigned long long max_48 = 281474976710656; 
+
+    unsigned long long ret = 0;
+
+    if (a < max_16 && b < max_16)
+    {
+        ret = max_16 - a + b;
+    }
+    else if ( a < max_32 && b < max_32 && max_32 < max_64) //some architectures have the same size for ul and ull
+    {
+        ret = max_32 - a + b;
+    }
+    else if (a < max_48 && b < max_48)
+    {
+        ret = max_48 - a + b;
+    }
+    else
+    {
+        ret = max_64 - a + b;
+    }
+    return ret;
+}
