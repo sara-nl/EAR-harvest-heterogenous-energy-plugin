@@ -41,7 +41,6 @@ void main(int argc,char *argv[])
 	int i;
     char *node_name = NULL;
 	application_t *apps;
-//	if (argc>=2) is_learning=atoi(argv[1]);
     if (argc>=2) node_name = argv[1];
 	if (is_learning) printf("Reading applications from learning DB\n");
 	else printf("Reading applications from normal DB\n");
