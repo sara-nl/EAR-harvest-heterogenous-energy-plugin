@@ -4,12 +4,11 @@
 
 2. Modify the /etc/ear/ear.conf file to specify the name of the database that will be created and the name of the user that EAR will use.
 
-3. Run the command $EAR_INSTALL_PATH/sbin/ear_create_database with the IP 
-   address of the MySQL's server location. MySQL's root user needs permission to log from the location in which the command is being executed (if it's being executed locally nothing needs to be done). If the root user has a password, it must be specified in the command with the _-p_ option.
+3. Modify the file /etc/ear/ear.conf to specify in the database section the IP of the MySQL server as well as the user, user password (optional) and database port. Make sure that the said user (which may or may not have been created with the ear_create_database command) has the proper permissions towards the database created (only INSERT and SELECT privileges are needed) as well as permission to access the database from foreign IPs (such as the ones from the computation nodes). Said privileges should be granted at database creation, but some MySQL configurations may interfere and privileges will have to be granted manually by the admin.
 
-4. Modify the file /etc/ear/ear.conf to specify in the database section the     IP of the MySQL server as well as the user if you want to use another user. Make sure that the said user (which may or may not have been created with the ear_create_database command) has the proper permissions towards the database created (only INSERT and SELECT privileges are needed) as well as permission to access the database from foreign IPs (such as the ones from the computation nodes).
+4. Run the command $EAR_INSTALL_PATH/sbin/ear_create_database, which will create the database and user with the configuration previously specified in the ear.conf file. MySQL's root user needs permission to log from the location in which the command is being executed (if it's being executed locally nothing needs to be done). If the root user has a password, use the _-p_ option which will ask the user to introduce it..
 
-5. Start either the EAR daemon, the slurm controller and daemon with the      EAR plugin or the _eard_ service.
+5. Start either the EAR daemon, the slurm controller and daemon with the EAR plugin or the _eard_ service.
 
 6. Run the jobs. The data should be successfully stored when a job is completed
 
@@ -19,7 +18,7 @@
 
 The main tables in the database Report and each of their rows are:
 
-   - Applications:  Contains basic information about where the application was executed (node_id) and the id's of the executed job and the final computated application signature.
+    - Applications:  Contains basic information about where the application was executed (node_id) and the id's of the executed job and the final computated application signature.
 
     - Jobs:  Contains the information about a job execution [user_id, app_id,start_time, end_time], as well as the EAR parameters defined executon (policy, threshold) and node information (procs, def_f). 
 
