@@ -44,6 +44,20 @@ learn_deleter: learn_deleter.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 learn_validator: learn_validator.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
+######## OBS
+
+coeffs_show: coeffs_show.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
+coeffs_export: coeffs_export.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS)
+
+coeffs_translate: coeffs_translate.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS) -lm
+
+coeffs_comparison: coeffs_comparison.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
 ######## OPTIONS
 
 install:
