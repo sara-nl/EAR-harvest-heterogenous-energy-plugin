@@ -863,7 +863,7 @@ void signal_handler(int sig)
      	   	}else{
 				eard_dyn_conf.nconf=my_node_conf;
 				print_my_node_conf(my_node_conf);
-				update_coefficients(my_node_conf->coef_file,my_original_node_conf->coef_file);
+				update_coefficients(my_node_conf->coef_file,my_original_node_conf.coef_file);
 				copy_my_node_conf(&my_original_node_conf,my_node_conf);
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);

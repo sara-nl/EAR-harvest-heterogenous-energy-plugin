@@ -28,6 +28,7 @@
 */
 
 #include <common/types/configuration/cluster_conf.h>
+#include <common/environment.h>
 
 
 //#define __OLD__CONF__
