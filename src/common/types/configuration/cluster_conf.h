@@ -341,6 +341,8 @@ void set_default_eard_conf(eard_conf_t *eardc);
 /** */
 void set_default_eargm_conf(eargm_conf_t *eardc);
 
+void set_default_db_conf(db_conf_t *db_conf);
+
 // Concrete data functions
 
 int get_node_island(cluster_conf_t *conf, char *hostname);

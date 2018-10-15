@@ -405,6 +405,13 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	strcpy(eargmc->mail,"nomail");
 }
 
+void set_default_db_conf(db_conf_t *db_conf)
+{
+    strcpy(db_conf->user, "ear_daemon");
+    strcpy(db_conf->ip, "127.0.0.1");
+    db_conf->port = 0;
+}
+
 int get_node_island(cluster_conf_t *conf, char *hostname)
 {
 	my_node_conf_t *node;
