@@ -93,6 +93,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;math.h&gt;</code><br />
+<code>#include &lt;time.h&gt;</code><br />
 <code>#include &lt;errno.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -110,6 +111,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Functions</h2></td></tr>
 <tr class="memitem:ab91630dddeab6daffb42c9c1f259a051"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#ab91630dddeab6daffb42c9c1f259a051">reset_indexes</a> ()</td></tr>
 <tr class="separator:ab91630dddeab6daffb42c9c1f259a051"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a265da85056f5eee8bcc6ade9b333480c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a265da85056f5eee8bcc6ade9b333480c">reset_all</a> ()</td></tr>
+<tr class="separator:a265da85056f5eee8bcc6ade9b333480c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e0028e7072ecd7dde08c98b22360807"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a3e0028e7072ecd7dde08c98b22360807">insert_hub</a> (<a class="el" href="generic_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> option, <a class="el" href="generic_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> reason)</td></tr>
 <tr class="separator:a3e0028e7072ecd7dde08c98b22360807"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8be0f3489a17ecbf9667be6101a5388a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a8be0f3489a17ecbf9667be6101a5388a">storage_sample_add</a> (char *buf, <a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> len, <a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> *idx, char *cnt, size_t siz, <a class="el" href="generic_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> opt)</td></tr>
@@ -121,6 +124,10 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:a6213d32adf6e65122506eef13094b36a"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a6213d32adf6e65122506eef13094b36a">input_buffer</a> [<a class="el" href="sizes_8h.html#aa45d645227f1ace4122b416d531084b0">SZ_BUFF_BIG</a>]</td></tr>
+<tr class="separator:a6213d32adf6e65122506eef13094b36a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a417ba43fad5eca658019656dc037c656"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a417ba43fad5eca658019656dc037c656">extra_buffer</a> [<a class="el" href="sizes_8h.html#aa45d645227f1ace4122b416d531084b0">SZ_BUFF_BIG</a>]</td></tr>
+<tr class="separator:a417ba43fad5eca658019656dc037c656"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb6bbd81930736624f130727d6899b67"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#aeb6bbd81930736624f130727d6899b67">master_iam</a></td></tr>
 <tr class="separator:aeb6bbd81930736624f130727d6899b67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b01e621fe2446ee8b8aabadea57a42d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a6b01e621fe2446ee8b8aabadea57a42d">server_iam</a></td></tr>
@@ -129,6 +136,10 @@ Variables</h2></td></tr>
 <tr class="separator:ac933405aa8caa9a87595e33987db08e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a561d6ae2df1882124024d1ad25c05ca0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a561d6ae2df1882124024d1ad25c05ca0">forked</a></td></tr>
 <tr class="separator:a561d6ae2df1882124024d1ad25c05ca0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69a1637c3b544e501ed6715f94e12fc6"><td class="memItemLeft" align="right" valign="top">struct timeval&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a69a1637c3b544e501ed6715f94e12fc6">timeout_slct</a></td></tr>
+<tr class="separator:a69a1637c3b544e501ed6715f94e12fc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af24558f6a2e922802d2557d78a2d51bd"><td class="memItemLeft" align="right" valign="top">time_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#af24558f6a2e922802d2557d78a2d51bd">time_slct</a></td></tr>
+<tr class="separator:af24558f6a2e922802d2557d78a2d51bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af989652f2668d7f6e604367bd6c78354"><td class="memItemLeft" align="right" valign="top"><a class="el" href="generic_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#af989652f2668d7f6e604367bd6c78354">per_appsm</a></td></tr>
 <tr class="separator:af989652f2668d7f6e604367bd6c78354"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94daeab71b5fe74ed39bfde399afec07"><td class="memItemLeft" align="right" valign="top"><a class="el" href="generic_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a94daeab71b5fe74ed39bfde399afec07">per_appsn</a></td></tr>
@@ -187,6 +198,8 @@ Variables</h2></td></tr>
 <tr class="separator:a06ee8ad6c631032323e3b9d762436255"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9297ccf78119abdfd95a295fdea7214"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#ad9297ccf78119abdfd95a295fdea7214">str_who</a> [2]</td></tr>
 <tr class="separator:ad9297ccf78119abdfd95a295fdea7214"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bdcfae3209cbd96db35a2ae356fa15e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eardbd__storage_8c.html#a1bdcfae3209cbd96db35a2ae356fa15e">verbosity</a></td></tr>
+<tr class="separator:a1bdcfae3209cbd96db35a2ae356fa15e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a3e0028e7072ecd7dde08c98b22360807"></a>
@@ -209,6 +222,21 @@ Variables</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a265da85056f5eee8bcc6ade9b333480c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void reset_all </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -341,6 +369,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>We get the timeout passed since the 'time_slct' got its value </p>
 
 </div>
 </div>
@@ -411,6 +440,18 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="log_8h.html#a17129a55b5f8d7f3d58fab213ad96cac">ear_event_t</a>* evnts</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a417ba43fad5eca658019656dc037c656"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char extra_buffer[<a class="el" href="sizes_8h.html#aa45d645227f1ace4122b416d531084b0">SZ_BUFF_BIG</a>]</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -507,6 +548,18 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> i_loops</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6213d32adf6e65122506eef13094b36a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char input_buffer[<a class="el" href="sizes_8h.html#aa45d645227f1ace4122b416d531084b0">SZ_BUFF_BIG</a>]</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -735,6 +788,42 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">char* str_who[2]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af24558f6a2e922802d2557d78a2d51bd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">time_t time_slct</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a69a1637c3b544e501ed6715f94e12fc6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct timeval timeout_slct</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1bdcfae3209cbd96db35a2ae356fa15e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int verbosity</td>
         </tr>
       </table>
 </div><div class="memdoc">

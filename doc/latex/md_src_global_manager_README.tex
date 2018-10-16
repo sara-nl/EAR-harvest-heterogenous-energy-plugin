@@ -8,43 +8,15 @@ E\+A\+R\+G\+MD uses periodic power metrics reported by ../daemon/\+R\+E\+A\+D\+M
 
 The E\+AR Global Manager Daemon uses the {\ttfamily /ear.conf} file to be configured. It can be dynamically configured by reloading the service.
 
-
-\begin{DoxyCode}
-1 # Fields related to the Global Manager Daemon
-2 
-3 # Verbose level
-4 GlobalManagerVerbose=1
-5 # Period T1 in seconds (10 min)
-6 GlobalManagerPeriodT1=600
-7 # Period T2 in seconds (30 days)
-8 GlobalManagerPeriodT2=2592000
-9 # Abosolute value (joules)
-10 GlobalManagerEnergyLimit=756000
-11 GlobalManagerPort=6000
-12 # Two modes are supported (0 pasive, 1 active or automatic)
-13 GlobalManagerMode=0
-14 # Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode). nomail
-       means no mail is going to be sent
-15 GlobalManagerMail=nomail
-16 #Thee values must be provided corresponding with DEFCON\_L4,DEFCON\_L3, and DEFCON\_L2 (higer values means
-       PANIC)
-17 GlobalManagerWarningsPerc=85,90,95
-18 #T1 "grace" periods between DEFCON re-evaluations. In that case, 3 T1 periods means 30 minutes
-19 GlobalManagerGracePeriods=3
-\end{DoxyCode}
-
-
-\subsection*{A\+PI }
-
-The global manager offers a simple A\+PI {\ttfamily eargm\+\_\+api.\+c} to notify the execution and finalization of the jobs. The A\+PI just notifies the E\+A\+R\+G\+MD about the number of nodes to be used and released after the execution of the job. The S\+L\+U\+RM plugin automatically does this task.
+Please visit the ../../etc/conf/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R configuration file page\char`\"{} for more information about the options of E\+A\+R\+G\+MD and other components.
 
 \subsection*{Execution }
 
 To execute this component, this {\ttfamily systemctl} command examples are provided\+:
 \begin{DoxyItemize}
-\item {\ttfamily sudo systemctl start eard} to start the E\+A\+R\+G\+MD service.
-\item {\ttfamily sudo systemctl stop eard} to stop the E\+A\+R\+G\+MD service.
-\item {\ttfamily sudo systemctl reload eard} to force to reload the configuration of the E\+A\+R\+G\+MD service.
+\item {\ttfamily sudo systemctl start eargmd} to start the E\+A\+R\+G\+MD service.
+\item {\ttfamily sudo systemctl stop eargmd} to stop the E\+A\+R\+G\+MD service.
+\item {\ttfamily sudo systemctl reload eargmd} to force to reload the configuration of the E\+A\+R\+G\+MD service.
 \end{DoxyItemize}
 
 \subsection*{Commands }
@@ -64,6 +36,3 @@ This is a list of the available commands\+:
 eargm\+\_\+new\+\_\+job &Informs the E\+A\+R\+G\+MD that a job is about to start. \\\cline{1-2}
 eargm\+\_\+end\+\_\+job &Informs the E\+A\+R\+G\+MD that a job has finished. \\\cline{1-2}
 \end{longtabu}
-\subsection*{License }
-
-All the files in the E\+AR framework are under the L\+G\+P\+Lv2.\+1 license. See the \href{../../COPYING}{\tt C\+O\+P\+Y\+I\+NG} file in the E\+AR root directory. 

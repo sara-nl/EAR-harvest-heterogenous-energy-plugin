@@ -23,9 +23,11 @@ struct \hyperlink{structpacket__header}{packet\+\_\+header}
 \item 
 \#define \hyperlink{sockets_8h_a1db55153877cfdc729091d3aecdb3bd2}{U\+DP}~S\+O\+C\+K\+\_\+\+D\+G\+R\+AM
 \item 
-\#define \hyperlink{sockets_8h_a1f075e72b81eb2e8f19bfcb222116242}{P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER}(buffer)~(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$) buffer;
+\#define \hyperlink{sockets_8h_a58a1f4e725d5ddd7426a945b9cadb84f}{N\+O\+N\+\_\+\+B\+L\+O\+C\+K\+\_\+\+T\+R\+YS}~1000
 \item 
-\#define \hyperlink{sockets_8h_ad4a558dc80b2c153e45e8cf1435553da}{P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT}(buffer)~(void $\ast$) \&buffer\mbox{[}sizeof(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t})\mbox{]};
+\#define \hyperlink{sockets_8h_a1f075e72b81eb2e8f19bfcb222116242}{P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER}(\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer})~(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$) \hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer};
+\item 
+\#define \hyperlink{sockets_8h_ad4a558dc80b2c153e45e8cf1435553da}{P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT}(\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer})~(void $\ast$) \&\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}\mbox{[}sizeof(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t})\mbox{]};
 \end{DoxyCompactItemize}
 \subsection*{Typedefs}
 \begin{DoxyCompactItemize}
@@ -51,7 +53,7 @@ typedef struct \hyperlink{structpacket__header}{packet\+\_\+header} \hyperlink{s
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_ab526c7828e9bce2b26ef558f1f4b7ec1}{sockets\+\_\+listen} (\hyperlink{sockets_8h_aaf18456b5174d29ea88d310e21d82d92}{socket\+\_\+t} $\ast$\hyperlink{structsocket}{socket})
 \item 
-\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_af2ff66ea1faa5041fc487555ac5a0345}{sockets\+\_\+accept} (int fd\+\_\+req, int $\ast$\hyperlink{eardbd_8c_a4131bc827a3f9ffabf867a654d698888}{fd\+\_\+cli})
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a5d04b6af970b81b0b00d2b728dba0b32}{sockets\+\_\+accept} (int req\+\_\+fd, int $\ast$cli\+\_\+fd, struct sockaddr\+\_\+storage $\ast$cli\+\_\+addr)
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_ae8e02b432b7c92306200b34bcf7582d1}{sockets\+\_\+connect} (\hyperlink{sockets_8h_aaf18456b5174d29ea88d310e21d82d92}{socket\+\_\+t} $\ast$\hyperlink{structsocket}{socket})
 \item 
@@ -61,7 +63,7 @@ typedef struct \hyperlink{structpacket__header}{packet\+\_\+header} \hyperlink{s
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a1df6f80fd52bd4f6eb511de4e3454959}{sockets\+\_\+send} (\hyperlink{sockets_8h_aaf18456b5174d29ea88d310e21d82d92}{socket\+\_\+t} $\ast$\hyperlink{structsocket}{socket}, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$content)
 \item 
-\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_ac3495a0e2fedf4daa37e874b6e08f317}{sockets\+\_\+receive} (int fd, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$buffer, ssize\+\_\+t size\+\_\+buffer)
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a98d380a13bbdd30fa6d92a6403167b48}{sockets\+\_\+receive} (int fd, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, ssize\+\_\+t size\+\_\+buffer, int block)
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a1826eb72bb22b9756e5223cf0594fb5b}{sockets\+\_\+set\+\_\+timeout} (int fd, time\+\_\+t timeout)
 \item 
@@ -69,9 +71,9 @@ typedef struct \hyperlink{structpacket__header}{packet\+\_\+header} \hyperlink{s
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a6838753c7fac71e6e71606318d8cebcb}{sockets\+\_\+header\+\_\+update} (\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header)
 \item 
-void \hyperlink{sockets_8h_a3d579cc82b3d3d2898ef9129cbeb2bc0}{sockets\+\_\+print\+\_\+socket} (\hyperlink{sockets_8h_aaf18456b5174d29ea88d310e21d82d92}{socket\+\_\+t} $\ast$\hyperlink{structsocket}{socket})
+void \hyperlink{sockets_8h_a24ac6982b58bf8df906b3d0a2b5aa7ea}{sockets\+\_\+get\+\_\+address} (struct sockaddr $\ast$host\+\_\+addr, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, int length)
 \item 
-void \hyperlink{sockets_8h_a486e7dbb033af3040d6b9ab66c6f7d8e}{sockets\+\_\+print\+\_\+sockaddr} (struct sockaddr $\ast$host\+\_\+addr)
+void \hyperlink{sockets_8h_a52360b12f4a5c7382abf9344d325a973}{sockets\+\_\+get\+\_\+address\+\_\+fd} (int fd, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, int length)
 \end{DoxyCompactItemize}
 
 
@@ -79,20 +81,23 @@ void \hyperlink{sockets_8h_a486e7dbb033af3040d6b9ab66c6f7d8e}{sockets\+\_\+print
 \index{sockets.\+h@{sockets.\+h}!B\+A\+C\+K\+L\+OG@{B\+A\+C\+K\+L\+OG}}
 \index{B\+A\+C\+K\+L\+OG@{B\+A\+C\+K\+L\+OG}!sockets.\+h@{sockets.\+h}}
 \subsubsection[{\texorpdfstring{B\+A\+C\+K\+L\+OG}{BACKLOG}}]{\setlength{\rightskip}{0pt plus 5cm}\#define B\+A\+C\+K\+L\+OG~10}\hypertarget{sockets_8h_aeefbbafa97642defe3ee6c3080b7d66f}{}\label{sockets_8h_aeefbbafa97642defe3ee6c3080b7d66f}
+\index{sockets.\+h@{sockets.\+h}!N\+O\+N\+\_\+\+B\+L\+O\+C\+K\+\_\+\+T\+R\+YS@{N\+O\+N\+\_\+\+B\+L\+O\+C\+K\+\_\+\+T\+R\+YS}}
+\index{N\+O\+N\+\_\+\+B\+L\+O\+C\+K\+\_\+\+T\+R\+YS@{N\+O\+N\+\_\+\+B\+L\+O\+C\+K\+\_\+\+T\+R\+YS}!sockets.\+h@{sockets.\+h}}
+\subsubsection[{\texorpdfstring{N\+O\+N\+\_\+\+B\+L\+O\+C\+K\+\_\+\+T\+R\+YS}{NON_BLOCK_TRYS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+O\+N\+\_\+\+B\+L\+O\+C\+K\+\_\+\+T\+R\+YS~1000}\hypertarget{sockets_8h_a58a1f4e725d5ddd7426a945b9cadb84f}{}\label{sockets_8h_a58a1f4e725d5ddd7426a945b9cadb84f}
 \index{sockets.\+h@{sockets.\+h}!P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT@{P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT}}
 \index{P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT@{P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT}!sockets.\+h@{sockets.\+h}}
 \subsubsection[{\texorpdfstring{P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT}{PACKET_CONTENT}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT(
 \begin{DoxyParamCaption}
-\item[{}]{buffer}
+\item[{}]{{\bf buffer}}
 \end{DoxyParamCaption}
-)~(void $\ast$) \&buffer\mbox{[}sizeof({\bf packet\+\_\+header\+\_\+t})\mbox{]};}\hypertarget{sockets_8h_ad4a558dc80b2c153e45e8cf1435553da}{}\label{sockets_8h_ad4a558dc80b2c153e45e8cf1435553da}
+)~(void $\ast$) \&{\bf buffer}\mbox{[}sizeof({\bf packet\+\_\+header\+\_\+t})\mbox{]};}\hypertarget{sockets_8h_ad4a558dc80b2c153e45e8cf1435553da}{}\label{sockets_8h_ad4a558dc80b2c153e45e8cf1435553da}
 \index{sockets.\+h@{sockets.\+h}!P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER@{P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER}}
 \index{P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER@{P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER}!sockets.\+h@{sockets.\+h}}
 \subsubsection[{\texorpdfstring{P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER}{PACKET_HEADER}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER(
 \begin{DoxyParamCaption}
-\item[{}]{buffer}
+\item[{}]{{\bf buffer}}
 \end{DoxyParamCaption}
-)~({\bf packet\+\_\+header\+\_\+t} $\ast$) buffer;}\hypertarget{sockets_8h_a1f075e72b81eb2e8f19bfcb222116242}{}\label{sockets_8h_a1f075e72b81eb2e8f19bfcb222116242}
+)~({\bf packet\+\_\+header\+\_\+t} $\ast$) {\bf buffer};}\hypertarget{sockets_8h_a1f075e72b81eb2e8f19bfcb222116242}{}\label{sockets_8h_a1f075e72b81eb2e8f19bfcb222116242}
 \index{sockets.\+h@{sockets.\+h}!T\+CP@{T\+CP}}
 \index{T\+CP@{T\+CP}!sockets.\+h@{sockets.\+h}}
 \subsubsection[{\texorpdfstring{T\+CP}{TCP}}]{\setlength{\rightskip}{0pt plus 5cm}\#define T\+CP~S\+O\+C\+K\+\_\+\+S\+T\+R\+E\+AM}\hypertarget{sockets_8h_a383cc726612c3f31cc235472be55516b}{}\label{sockets_8h_a383cc726612c3f31cc235472be55516b}
@@ -113,12 +118,13 @@ void \hyperlink{sockets_8h_a486e7dbb033af3040d6b9ab66c6f7d8e}{sockets\+\_\+print
 \subsection{Function Documentation}
 \index{sockets.\+h@{sockets.\+h}!sockets\+\_\+accept@{sockets\+\_\+accept}}
 \index{sockets\+\_\+accept@{sockets\+\_\+accept}!sockets.\+h@{sockets.\+h}}
-\subsubsection[{\texorpdfstring{sockets\+\_\+accept(int fd\+\_\+req, int $\ast$fd\+\_\+cli)}{sockets_accept(int fd_req, int *fd_cli)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+accept (
+\subsubsection[{\texorpdfstring{sockets\+\_\+accept(int req\+\_\+fd, int $\ast$cli\+\_\+fd, struct sockaddr\+\_\+storage $\ast$cli\+\_\+addr)}{sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_addr)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+accept (
 \begin{DoxyParamCaption}
-\item[{int}]{fd\+\_\+req, }
-\item[{int $\ast$}]{fd\+\_\+cli}
+\item[{int}]{req\+\_\+fd, }
+\item[{int $\ast$}]{cli\+\_\+fd, }
+\item[{struct sockaddr\+\_\+storage $\ast$}]{cli\+\_\+addr}
 \end{DoxyParamCaption}
-)}\hypertarget{sockets_8h_af2ff66ea1faa5041fc487555ac5a0345}{}\label{sockets_8h_af2ff66ea1faa5041fc487555ac5a0345}
+)}\hypertarget{sockets_8h_a5d04b6af970b81b0b00d2b728dba0b32}{}\label{sockets_8h_a5d04b6af970b81b0b00d2b728dba0b32}
 \index{sockets.\+h@{sockets.\+h}!sockets\+\_\+bind@{sockets\+\_\+bind}}
 \index{sockets\+\_\+bind@{sockets\+\_\+bind}!sockets.\+h@{sockets.\+h}}
 \subsubsection[{\texorpdfstring{sockets\+\_\+bind(socket\+\_\+t $\ast$socket)}{sockets_bind(socket_t *socket)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+bind (
@@ -161,6 +167,24 @@ void \hyperlink{sockets_8h_a486e7dbb033af3040d6b9ab66c6f7d8e}{sockets\+\_\+print
 \item[{{\bf socket\+\_\+t} $\ast$}]{socket}
 \end{DoxyParamCaption}
 )}\hypertarget{sockets_8h_a9b2b22e070e38743e314a4a2e6852d5b}{}\label{sockets_8h_a9b2b22e070e38743e314a4a2e6852d5b}
+\index{sockets.\+h@{sockets.\+h}!sockets\+\_\+get\+\_\+address@{sockets\+\_\+get\+\_\+address}}
+\index{sockets\+\_\+get\+\_\+address@{sockets\+\_\+get\+\_\+address}!sockets.\+h@{sockets.\+h}}
+\subsubsection[{\texorpdfstring{sockets\+\_\+get\+\_\+address(struct sockaddr $\ast$host\+\_\+addr, char $\ast$buffer, int length)}{sockets_get_address(struct sockaddr *host_addr, char *buffer, int length)}}]{\setlength{\rightskip}{0pt plus 5cm}void sockets\+\_\+get\+\_\+address (
+\begin{DoxyParamCaption}
+\item[{struct sockaddr $\ast$}]{host\+\_\+addr, }
+\item[{char $\ast$}]{buffer, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}\hypertarget{sockets_8h_a24ac6982b58bf8df906b3d0a2b5aa7ea}{}\label{sockets_8h_a24ac6982b58bf8df906b3d0a2b5aa7ea}
+\index{sockets.\+h@{sockets.\+h}!sockets\+\_\+get\+\_\+address\+\_\+fd@{sockets\+\_\+get\+\_\+address\+\_\+fd}}
+\index{sockets\+\_\+get\+\_\+address\+\_\+fd@{sockets\+\_\+get\+\_\+address\+\_\+fd}!sockets.\+h@{sockets.\+h}}
+\subsubsection[{\texorpdfstring{sockets\+\_\+get\+\_\+address\+\_\+fd(int fd, char $\ast$buffer, int length)}{sockets_get_address_fd(int fd, char *buffer, int length)}}]{\setlength{\rightskip}{0pt plus 5cm}void sockets\+\_\+get\+\_\+address\+\_\+fd (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{char $\ast$}]{buffer, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}\hypertarget{sockets_8h_a52360b12f4a5c7382abf9344d325a973}{}\label{sockets_8h_a52360b12f4a5c7382abf9344d325a973}
 \index{sockets.\+h@{sockets.\+h}!sockets\+\_\+get\+\_\+timeout@{sockets\+\_\+get\+\_\+timeout}}
 \index{sockets\+\_\+get\+\_\+timeout@{sockets\+\_\+get\+\_\+timeout}!sockets.\+h@{sockets.\+h}}
 \subsubsection[{\texorpdfstring{sockets\+\_\+get\+\_\+timeout(int fd, time\+\_\+t $\ast$timeout)}{sockets_get_timeout(int fd, time_t *timeout)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+get\+\_\+timeout (
@@ -200,30 +224,17 @@ void \hyperlink{sockets_8h_a486e7dbb033af3040d6b9ab66c6f7d8e}{sockets\+\_\+print
 \item[{{\bf socket\+\_\+t} $\ast$}]{socket}
 \end{DoxyParamCaption}
 )}\hypertarget{sockets_8h_ab526c7828e9bce2b26ef558f1f4b7ec1}{}\label{sockets_8h_ab526c7828e9bce2b26ef558f1f4b7ec1}
-\index{sockets.\+h@{sockets.\+h}!sockets\+\_\+print\+\_\+sockaddr@{sockets\+\_\+print\+\_\+sockaddr}}
-\index{sockets\+\_\+print\+\_\+sockaddr@{sockets\+\_\+print\+\_\+sockaddr}!sockets.\+h@{sockets.\+h}}
-\subsubsection[{\texorpdfstring{sockets\+\_\+print\+\_\+sockaddr(struct sockaddr $\ast$host\+\_\+addr)}{sockets_print_sockaddr(struct sockaddr *host_addr)}}]{\setlength{\rightskip}{0pt plus 5cm}void sockets\+\_\+print\+\_\+sockaddr (
-\begin{DoxyParamCaption}
-\item[{struct sockaddr $\ast$}]{host\+\_\+addr}
-\end{DoxyParamCaption}
-)}\hypertarget{sockets_8h_a486e7dbb033af3040d6b9ab66c6f7d8e}{}\label{sockets_8h_a486e7dbb033af3040d6b9ab66c6f7d8e}
-\index{sockets.\+h@{sockets.\+h}!sockets\+\_\+print\+\_\+socket@{sockets\+\_\+print\+\_\+socket}}
-\index{sockets\+\_\+print\+\_\+socket@{sockets\+\_\+print\+\_\+socket}!sockets.\+h@{sockets.\+h}}
-\subsubsection[{\texorpdfstring{sockets\+\_\+print\+\_\+socket(socket\+\_\+t $\ast$socket)}{sockets_print_socket(socket_t *socket)}}]{\setlength{\rightskip}{0pt plus 5cm}void sockets\+\_\+print\+\_\+socket (
-\begin{DoxyParamCaption}
-\item[{{\bf socket\+\_\+t} $\ast$}]{socket}
-\end{DoxyParamCaption}
-)}\hypertarget{sockets_8h_a3d579cc82b3d3d2898ef9129cbeb2bc0}{}\label{sockets_8h_a3d579cc82b3d3d2898ef9129cbeb2bc0}
 \index{sockets.\+h@{sockets.\+h}!sockets\+\_\+receive@{sockets\+\_\+receive}}
 \index{sockets\+\_\+receive@{sockets\+\_\+receive}!sockets.\+h@{sockets.\+h}}
-\subsubsection[{\texorpdfstring{sockets\+\_\+receive(int fd, packet\+\_\+header\+\_\+t $\ast$header, char $\ast$buffer, ssize\+\_\+t size\+\_\+buffer)}{sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+receive (
+\subsubsection[{\texorpdfstring{sockets\+\_\+receive(int fd, packet\+\_\+header\+\_\+t $\ast$header, char $\ast$buffer, ssize\+\_\+t size\+\_\+buffer, int block)}{sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer, int block)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+receive (
 \begin{DoxyParamCaption}
 \item[{int}]{fd, }
 \item[{{\bf packet\+\_\+header\+\_\+t} $\ast$}]{header, }
 \item[{char $\ast$}]{buffer, }
-\item[{ssize\+\_\+t}]{size\+\_\+buffer}
+\item[{ssize\+\_\+t}]{size\+\_\+buffer, }
+\item[{int}]{block}
 \end{DoxyParamCaption}
-)}\hypertarget{sockets_8h_ac3495a0e2fedf4daa37e874b6e08f317}{}\label{sockets_8h_ac3495a0e2fedf4daa37e874b6e08f317}
+)}\hypertarget{sockets_8h_a98d380a13bbdd30fa6d92a6403167b48}{}\label{sockets_8h_a98d380a13bbdd30fa6d92a6403167b48}
 \index{sockets.\+h@{sockets.\+h}!sockets\+\_\+send@{sockets\+\_\+send}}
 \index{sockets\+\_\+send@{sockets\+\_\+send}!sockets.\+h@{sockets.\+h}}
 \subsubsection[{\texorpdfstring{sockets\+\_\+send(socket\+\_\+t $\ast$socket, packet\+\_\+header\+\_\+t $\ast$header, char $\ast$content)}{sockets_send(socket_t *socket, packet_header_t *header, char *content)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf state\+\_\+t} sockets\+\_\+send (

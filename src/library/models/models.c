@@ -77,6 +77,7 @@ int num_coeffs;
 static uint reset_freq_opt = RESET_FREQ;
 static uint ear_models_pstates = 0;
 static ulong user_selected_freq;
+static int model_nominal=1;
 
 
 void init_policy_functions()
@@ -163,7 +164,7 @@ void policy_global_reconfiguration()
 uint get_global_min_pstate()
 {
     if (system_conf!=NULL) return frequency_freq_to_pstate(system_conf->max_freq);
-	else return 1;
+	else return model_nominal;
 }
 
 // This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
@@ -207,6 +208,8 @@ void init_power_policy()
 
 	if (power_model_policy==MIN_ENERGY_TO_SOLUTION) performance_penalty=get_ear_power_policy_th();
 	else if (power_model_policy==MIN_TIME_TO_SOLUTION) performance_gain=get_ear_power_policy_th();	
+	if (is_cpu_boost_enabled()) model_nominal=1;
+	else model_nominal=0;
 
 	reset_freq_opt=get_ear_reset_freq();
 
@@ -254,7 +257,8 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	ear_debug(3, "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
 
 	// Initializations
-	begin_pstate = 1;
+	// We start t nominal by default
+	begin_pstate = model_nominal;
 	ear_models_pstates = p_states;
 
 	// Coefficient file

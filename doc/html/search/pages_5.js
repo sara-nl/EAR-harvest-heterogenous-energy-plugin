@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['power_20monitoring_20library',['Power Monitoring library',['../md_src_common_README.html',1,'']]]
+  ['overview_20of_20the_20learning_20phase',['Overview of the learning phase',['../md_etc_scripts_learning_README.html',1,'']]]
 ];

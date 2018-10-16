@@ -1,2 +1,3 @@
 frequency.o: frequency.c ../control/frequency.h ../common/types/generic.h \
- ../common/ear_verbose.h ../common/config.h ../common/states.h
+ ../common/ear_verbose.h ../common/config.h ../common/states.h \
+ ../metrics/custom/hardware_info.h

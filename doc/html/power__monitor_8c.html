@@ -135,7 +135,7 @@ Macros</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a7beea948ef887a5265d29431575f2b13"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a7beea948ef887a5265d29431575f2b13">reset_shared_memory</a> ()</td></tr>
 <tr class="separator:a7beea948ef887a5265d29431575f2b13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3ab5b20667bb27b374ed878ec17cc8fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a3ab5b20667bb27b374ed878ec17cc8fb">clean_job_environment</a> (int id, int step_id)</td></tr>
+<tr class="memitem:a3ab5b20667bb27b374ed878ec17cc8fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a3ab5b20667bb27b374ed878ec17cc8fb">clean_job_environment</a> (int id, int <a class="el" href="remove__learning_8c.html#aaaecc7646b3c722387d285ecbb165474">step_id</a>)</td></tr>
 <tr class="separator:a3ab5b20667bb27b374ed878ec17cc8fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a603c7d4e368589c18b5ae8e526559256"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a603c7d4e368589c18b5ae8e526559256">copy_powermon_app</a> (<a class="el" href="power__monitor_8h.html#a0c338f8504224469cd258fdb3b08e9e6">powermon_app_t</a> *dest, <a class="el" href="power__monitor_8h.html#a0c338f8504224469cd258fdb3b08e9e6">powermon_app_t</a> *src)</td></tr>
 <tr class="memdesc:a603c7d4e368589c18b5ae8e526559256"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy src into dest.  <a href="#a603c7d4e368589c18b5ae8e526559256">More...</a><br /></td></tr>
@@ -172,15 +172,15 @@ Functions</h2></td></tr>
 <tr class="memitem:a90910d31d65acd75dc12cfa1013e8fa7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a90910d31d65acd75dc12cfa1013e8fa7">powermon_new_def_freq</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> def)</td></tr>
 <tr class="memdesc:a90910d31d65acd75dc12cfa1013e8fa7"><td class="mdescLeft">&#160;</td><td class="mdescRight">if application is not mpi, automatically chages the node freq, it is called by dynamic_configuration API  <a href="#a90910d31d65acd75dc12cfa1013e8fa7">More...</a><br /></td></tr>
 <tr class="separator:a90910d31d65acd75dc12cfa1013e8fa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3162f4f1cdc977ddeba57883d4d4a995"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a3162f4f1cdc977ddeba57883d4d4a995">powermon_red_freq</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> max_freq, <a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> def_freq)</td></tr>
+<tr class="memitem:a3162f4f1cdc977ddeba57883d4d4a995"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a3162f4f1cdc977ddeba57883d4d4a995">powermon_red_freq</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> <a class="el" href="ear__lp__validation_8c.html#a67b5fc2af25178078dfc5b1bac08de32">max_freq</a>, <a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> def_freq)</td></tr>
 <tr class="memdesc:a3162f4f1cdc977ddeba57883d4d4a995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reduces the current freq (default and max) based on new values.  <a href="#a3162f4f1cdc977ddeba57883d4d4a995">More...</a><br /></td></tr>
 <tr class="separator:a3162f4f1cdc977ddeba57883d4d4a995"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d66bf35f4988bcc0ccf317cff3332c2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a4d66bf35f4988bcc0ccf317cff3332c2">powermon_set_freq</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> freq)</td></tr>
 <tr class="memdesc:a4d66bf35f4988bcc0ccf317cff3332c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets temporally the default and max frequency to the same value.  <a href="#a4d66bf35f4988bcc0ccf317cff3332c2">More...</a><br /></td></tr>
 <tr class="separator:a4d66bf35f4988bcc0ccf317cff3332c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67cec9287ab45b90950f272bf99222a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a67cec9287ab45b90950f272bf99222a5">powermon_restore_conf</a> ()</td></tr>
-<tr class="memdesc:a67cec9287ab45b90950f272bf99222a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restores values from ear.conf (not reloads the file).  <a href="#a67cec9287ab45b90950f272bf99222a5">More...</a><br /></td></tr>
-<tr class="separator:a67cec9287ab45b90950f272bf99222a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7db97520baa460bd6d348dc93c3d8bbb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a7db97520baa460bd6d348dc93c3d8bbb">powermon_reload_conf</a> ()</td></tr>
+<tr class="memdesc:a7db97520baa460bd6d348dc93c3d8bbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">it reloads ear.conf  <a href="#a7db97520baa460bd6d348dc93c3d8bbb">More...</a><br /></td></tr>
+<tr class="separator:a7db97520baa460bd6d348dc93c3d8bbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a674cbc8ab907b7371b8c8a0bb9b46527"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a674cbc8ab907b7371b8c8a0bb9b46527">update_historic_info</a> (<a class="el" href="power__metrics_8h.html#a6335c15ccd38fb5290e9c836c56e6b99">power_data_t</a> *my_current_power, <a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> avg_f)</td></tr>
 <tr class="separator:a674cbc8ab907b7371b8c8a0bb9b46527"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8beac0876f5d23b7fa7a31929c9358f7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a8beac0876f5d23b7fa7a31929c9358f7">create_powermon_out</a> ()</td></tr>
@@ -236,6 +236,8 @@ Variables</h2></td></tr>
 <tr class="separator:a14180bfb4e65046378f00a36106b54fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47dbdbfdfeaf3fdd9cd7a6ff022090b4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="periodic__metric_8h.html#ad4fd0cdd85e470f61486232f140aa88f">periodic_metric_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a47dbdbfdfeaf3fdd9cd7a6ff022090b4">current_sample</a></td></tr>
 <tr class="separator:a47dbdbfdfeaf3fdd9cd7a6ff022090b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d9e7b0ea6cdd37b8a338e72dc20ea23"><td class="memItemLeft" align="right" valign="top"><a class="el" href="cluster__conf_8h.html#adb213a7b2565c7dc2cc3c9305f0cbc8d">policy_conf_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="power__monitor_8c.html#a9d9e7b0ea6cdd37b8a338e72dc20ea23">per_job_conf</a></td></tr>
+<tr class="separator:a9d9e7b0ea6cdd37b8a338e72dc20ea23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a class="anchor" id="a1e8e713d43cbd6f24cf09ffa50541060"></a>
@@ -635,12 +637,12 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a67cec9287ab45b90950f272bf99222a5"></a>
+<a class="anchor" id="a7db97520baa460bd6d348dc93c3d8bbb"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void powermon_restore_conf </td>
+          <td class="memname">void powermon_reload_conf </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -648,8 +650,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Restores values from ear.conf (not reloads the file). </p>
-<p>When application is not mpi, automatically chages the node freq if needed </p>
+<p>it reloads ear.conf </p>
 
 </div>
 </div>
@@ -987,6 +988,18 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">char nodename[<a class="el" href="ear__pm_8c.html#a4620eb783fd7aaa1d61fe4fdaa750d74">MAX_PATH_SIZE</a>]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9d9e7b0ea6cdd37b8a338e72dc20ea23"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="cluster__conf_8h.html#adb213a7b2565c7dc2cc3c9305f0cbc8d">policy_conf_t</a> per_job_conf</td>
         </tr>
       </table>
 </div><div class="memdoc">

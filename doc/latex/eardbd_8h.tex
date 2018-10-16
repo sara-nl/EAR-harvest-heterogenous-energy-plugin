@@ -20,8 +20,6 @@ struct \hyperlink{structsync__ans}{sync\+\_\+ans}
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
-\#define \hyperlink{eardbd_8h_a7cc5ce1f589b7144c1b306a1183c235e}{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN}~0
-\item 
 \#define \hyperlink{eardbd_8h_a44c1a72224d08b115910fb61de1b06b8}{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+ER}~1
 \item 
 \#define \hyperlink{eardbd_8h_a8b12a36bd352290ec3d21f50b8b72c11}{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+PP}~2
@@ -36,21 +34,21 @@ struct \hyperlink{structsync__ans}{sync\+\_\+ans}
 \item 
 \#define \hyperlink{eardbd_8h_ab1f386bf1afcf1ecd240d62850cd7aba}{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+NS}~7
 \item 
-\#define \hyperlink{eardbd_8h_a8a2165ede83715c7dca70d02e5ed0173}{S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY}~0x101
+\#define \hyperlink{eardbd_8h_a7cc5ce1f589b7144c1b306a1183c235e}{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN}~8
 \item 
-\#define \hyperlink{eardbd_8h_a50ab0a85b5dce924266bc408df920ad4}{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM}~0x102
+\#define \hyperlink{eardbd_8h_a8a2165ede83715c7dca70d02e5ed0173}{S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY}~0x001
 \item 
-\#define \hyperlink{eardbd_8h_a610f7451002352fea7c583e330aa55ae}{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN}~0x104
+\#define \hyperlink{eardbd_8h_a50ab0a85b5dce924266bc408df920ad4}{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM}~0x002
 \item 
-\#define \hyperlink{eardbd_8h_a68bd4225332ab2621fa94f342f9dac84}{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL}~0x108
+\#define \hyperlink{eardbd_8h_a610f7451002352fea7c583e330aa55ae}{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN}~0x004
 \item 
-\#define \hyperlink{eardbd_8h_aa1bcba278c2172acd2af9901f9cc09ed}{S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS}~0x110
+\#define \hyperlink{eardbd_8h_a68bd4225332ab2621fa94f342f9dac84}{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL}~0x008
 \item 
-\#define \hyperlink{eardbd_8h_a1c938ea156cb886911aa9db0b7e7e307}{S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS}~0x120
+\#define \hyperlink{eardbd_8h_aa1bcba278c2172acd2af9901f9cc09ed}{S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS}~0x010
 \item 
-\#define \hyperlink{eardbd_8h_a7910f113a4c121683b9a354282d85bec}{S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS}~0x140
+\#define \hyperlink{eardbd_8h_a1c938ea156cb886911aa9db0b7e7e307}{S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS}~0x020
 \item 
-\#define \hyperlink{eardbd_8h_a95863cd461472163406e9c4ded95d3f9}{S\+Y\+N\+C\+\_\+\+R\+E\+S\+ET}~0x080
+\#define \hyperlink{eardbd_8h_a7910f113a4c121683b9a354282d85bec}{S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS}~0x040
 \item 
 \#define \hyperlink{eardbd_8h_a4d71aa0f84c83a2cc64b94f9fa08d39c}{S\+Y\+N\+C\+\_\+\+A\+LL}~0x100
 \item 
@@ -64,11 +62,7 @@ struct \hyperlink{structsync__ans}{sync\+\_\+ans}
 \item 
 \#define \hyperlink{eardbd_8h_a4464c40a58e1c4bab0ae64444eb0782d}{sync\+\_\+option}(option,  type)~((option \& type) $>$ 0)
 \item 
-\#define \hyperlink{eardbd_8h_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(X,  Y)~sizeof(X) $>$ sizeof(Y) ? sizeof(X) \+: sizeof(Y)
-\item 
-\#define \hyperlink{eardbd_8h_a78a86c5c26a0c02d8bcca140f724f583}{\+\_\+\+M\+M\+A\+A\+XX}(W,  X,  Y,  Z)~\hyperlink{eardbd_8h_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(W,X) $>$ \hyperlink{eardbd_8h_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(Y,Z) ? \hyperlink{eardbd_8h_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(W,X) \+: \hyperlink{eardbd_8h_a888a150379b8fa6b4ac40f0ceb2e9c55}{\+\_\+\+M\+AX}(Y,Z)
-\item 
-\#define \hyperlink{eardbd_8h_a508ddb6f20ea5a0e262178eedc8339f7}{M\+A\+X\+\_\+\+P\+A\+C\+K\+E\+T\+\_\+\+S\+I\+ZE}()~(\hyperlink{eardbd_8h_a78a86c5c26a0c02d8bcca140f724f583}{\+\_\+\+M\+M\+A\+A\+XX}(\hyperlink{periodic__metric_8h_ad4fd0cdd85e470f61486232f140aa88f}{periodic\+\_\+metric\+\_\+t}, \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t}, \hyperlink{log_8h_a17129a55b5f8d7f3d58fab213ad96cac}{ear\+\_\+event\+\_\+t}, \hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t})) + sizeof(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t})
+\#define \hyperlink{eardbd_8h_ad35c5d4a817d8610596f8c4a0981176a}{sync\+\_\+option\+\_\+m}(option,  type1,  type2)~((\hyperlink{eardbd_8h_a4464c40a58e1c4bab0ae64444eb0782d}{sync\+\_\+option}(option, type1)) $\vert$$\vert$ (\hyperlink{eardbd_8h_a4464c40a58e1c4bab0ae64444eb0782d}{sync\+\_\+option}(option, type2)))
 \end{DoxyCompactItemize}
 \subsection*{Typedefs}
 \begin{DoxyCompactItemize}
@@ -93,24 +87,6 @@ void \hyperlink{eardbd_8h_a0ca21f54b05de92e3ae12625a22ece07}{time\+\_\+reset\+\_
 
 
 \subsection{Macro Definition Documentation}
-\index{eardbd.\+h@{eardbd.\+h}!\+\_\+\+M\+AX@{\+\_\+\+M\+AX}}
-\index{\+\_\+\+M\+AX@{\+\_\+\+M\+AX}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{\+\_\+\+M\+AX}{_MAX}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+M\+AX(
-\begin{DoxyParamCaption}
-\item[{}]{X, }
-\item[{}]{Y}
-\end{DoxyParamCaption}
-)~sizeof(X) $>$ sizeof(Y) ? sizeof(X) \+: sizeof(Y)}\hypertarget{eardbd_8h_a888a150379b8fa6b4ac40f0ceb2e9c55}{}\label{eardbd_8h_a888a150379b8fa6b4ac40f0ceb2e9c55}
-\index{eardbd.\+h@{eardbd.\+h}!\+\_\+\+M\+M\+A\+A\+XX@{\+\_\+\+M\+M\+A\+A\+XX}}
-\index{\+\_\+\+M\+M\+A\+A\+XX@{\+\_\+\+M\+M\+A\+A\+XX}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{\+\_\+\+M\+M\+A\+A\+XX}{_MMAAXX}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+M\+M\+A\+A\+XX(
-\begin{DoxyParamCaption}
-\item[{}]{W, }
-\item[{}]{X, }
-\item[{}]{Y, }
-\item[{}]{Z}
-\end{DoxyParamCaption}
-)~{\bf \+\_\+\+M\+AX}(W,X) $>$ {\bf \+\_\+\+M\+AX}(Y,Z) ? {\bf \+\_\+\+M\+AX}(W,X) \+: {\bf \+\_\+\+M\+AX}(Y,Z)}\hypertarget{eardbd_8h_a78a86c5c26a0c02d8bcca140f724f583}{}\label{eardbd_8h_a78a86c5c26a0c02d8bcca140f724f583}
 \index{eardbd.\+h@{eardbd.\+h}!C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+GG@{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+GG}}
 \index{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+GG@{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+GG}!eardbd.\+h@{eardbd.\+h}}
 \subsubsection[{\texorpdfstring{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+GG}{CONTENT_TYPE_AGG}}]{\setlength{\rightskip}{0pt plus 5cm}\#define C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+GG~5}\hypertarget{eardbd_8h_ae0e48ffb358c51759b9fc628b8fc1d91}{}\label{eardbd_8h_ae0e48ffb358c51759b9fc628b8fc1d91}
@@ -131,17 +107,10 @@ void \hyperlink{eardbd_8h_a0ca21f54b05de92e3ae12625a22ece07}{time\+\_\+reset\+\_
 \subsubsection[{\texorpdfstring{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+ER}{CONTENT_TYPE_PER}}]{\setlength{\rightskip}{0pt plus 5cm}\#define C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+ER~1}\hypertarget{eardbd_8h_a44c1a72224d08b115910fb61de1b06b8}{}\label{eardbd_8h_a44c1a72224d08b115910fb61de1b06b8}
 \index{eardbd.\+h@{eardbd.\+h}!C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN@{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN}}
 \index{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN@{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN}{CONTENT_TYPE_PIN}}]{\setlength{\rightskip}{0pt plus 5cm}\#define C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN~0}\hypertarget{eardbd_8h_a7cc5ce1f589b7144c1b306a1183c235e}{}\label{eardbd_8h_a7cc5ce1f589b7144c1b306a1183c235e}
+\subsubsection[{\texorpdfstring{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN}{CONTENT_TYPE_PIN}}]{\setlength{\rightskip}{0pt plus 5cm}\#define C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+P\+IN~8}\hypertarget{eardbd_8h_a7cc5ce1f589b7144c1b306a1183c235e}{}\label{eardbd_8h_a7cc5ce1f589b7144c1b306a1183c235e}
 \index{eardbd.\+h@{eardbd.\+h}!C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+Q\+ST@{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+Q\+ST}}
 \index{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+Q\+ST@{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+Q\+ST}!eardbd.\+h@{eardbd.\+h}}
 \subsubsection[{\texorpdfstring{C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+Q\+ST}{CONTENT_TYPE_QST}}]{\setlength{\rightskip}{0pt plus 5cm}\#define C\+O\+N\+T\+E\+N\+T\+\_\+\+T\+Y\+P\+E\+\_\+\+Q\+ST~6}\hypertarget{eardbd_8h_a5d0ce2a80d97bd7ff031fb99e67d5c56}{}\label{eardbd_8h_a5d0ce2a80d97bd7ff031fb99e67d5c56}
-\index{eardbd.\+h@{eardbd.\+h}!M\+A\+X\+\_\+\+P\+A\+C\+K\+E\+T\+\_\+\+S\+I\+ZE@{M\+A\+X\+\_\+\+P\+A\+C\+K\+E\+T\+\_\+\+S\+I\+ZE}}
-\index{M\+A\+X\+\_\+\+P\+A\+C\+K\+E\+T\+\_\+\+S\+I\+ZE@{M\+A\+X\+\_\+\+P\+A\+C\+K\+E\+T\+\_\+\+S\+I\+ZE}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{M\+A\+X\+\_\+\+P\+A\+C\+K\+E\+T\+\_\+\+S\+I\+ZE}{MAX_PACKET_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+\_\+\+P\+A\+C\+K\+E\+T\+\_\+\+S\+I\+ZE(
-\begin{DoxyParamCaption}
-{}
-\end{DoxyParamCaption}
-)~({\bf \+\_\+\+M\+M\+A\+A\+XX}({\bf periodic\+\_\+metric\+\_\+t}, {\bf application\+\_\+t}, {\bf ear\+\_\+event\+\_\+t}, {\bf loop\+\_\+t})) + sizeof({\bf packet\+\_\+header\+\_\+t})}\hypertarget{eardbd_8h_a508ddb6f20ea5a0e262178eedc8339f7}{}\label{eardbd_8h_a508ddb6f20ea5a0e262178eedc8339f7}
 \index{eardbd.\+h@{eardbd.\+h}!R\+E\+S\+\_\+\+F\+A\+IL@{R\+E\+S\+\_\+\+F\+A\+IL}}
 \index{R\+E\+S\+\_\+\+F\+A\+IL@{R\+E\+S\+\_\+\+F\+A\+IL}!eardbd.\+h@{eardbd.\+h}}
 \subsubsection[{\texorpdfstring{R\+E\+S\+\_\+\+F\+A\+IL}{RES_FAIL}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+E\+S\+\_\+\+F\+A\+IL~3}\hypertarget{eardbd_8h_a03cbcebeb064f4facf6dc48f26061560}{}\label{eardbd_8h_a03cbcebeb064f4facf6dc48f26061560}
@@ -156,28 +125,28 @@ void \hyperlink{eardbd_8h_a0ca21f54b05de92e3ae12625a22ece07}{time\+\_\+reset\+\_
 \subsubsection[{\texorpdfstring{R\+E\+S\+\_\+\+T\+I\+ME}{RES_TIME}}]{\setlength{\rightskip}{0pt plus 5cm}\#define R\+E\+S\+\_\+\+T\+I\+ME~1}\hypertarget{eardbd_8h_af77a81f1f26ef4fe00f1ceb40a1bcfcf}{}\label{eardbd_8h_af77a81f1f26ef4fe00f1ceb40a1bcfcf}
 \index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS@{S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS}}
 \index{S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS@{S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS}{SYNC_AGGRS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS~0x140}\hypertarget{eardbd_8h_a7910f113a4c121683b9a354282d85bec}{}\label{eardbd_8h_a7910f113a4c121683b9a354282d85bec}
+\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS}{SYNC_AGGRS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+G\+G\+RS~0x040}\hypertarget{eardbd_8h_a7910f113a4c121683b9a354282d85bec}{}\label{eardbd_8h_a7910f113a4c121683b9a354282d85bec}
 \index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+A\+LL@{S\+Y\+N\+C\+\_\+\+A\+LL}}
 \index{S\+Y\+N\+C\+\_\+\+A\+LL@{S\+Y\+N\+C\+\_\+\+A\+LL}!eardbd.\+h@{eardbd.\+h}}
 \subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+LL}{SYNC_ALL}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+LL~0x100}\hypertarget{eardbd_8h_a4d71aa0f84c83a2cc64b94f9fa08d39c}{}\label{eardbd_8h_a4d71aa0f84c83a2cc64b94f9fa08d39c}
 \index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL@{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL}}
 \index{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL@{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL}{SYNC_APPSL}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL~0x108}\hypertarget{eardbd_8h_a68bd4225332ab2621fa94f342f9dac84}{}\label{eardbd_8h_a68bd4225332ab2621fa94f342f9dac84}
+\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL}{SYNC_APPSL}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+P\+P\+SL~0x008}\hypertarget{eardbd_8h_a68bd4225332ab2621fa94f342f9dac84}{}\label{eardbd_8h_a68bd4225332ab2621fa94f342f9dac84}
 \index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM@{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM}}
 \index{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM@{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM}{SYNC_APPSM}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM~0x102}\hypertarget{eardbd_8h_a50ab0a85b5dce924266bc408df920ad4}{}\label{eardbd_8h_a50ab0a85b5dce924266bc408df920ad4}
+\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM}{SYNC_APPSM}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+P\+P\+SM~0x002}\hypertarget{eardbd_8h_a50ab0a85b5dce924266bc408df920ad4}{}\label{eardbd_8h_a50ab0a85b5dce924266bc408df920ad4}
 \index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN@{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN}}
 \index{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN@{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN}{SYNC_APPSN}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN~0x104}\hypertarget{eardbd_8h_a610f7451002352fea7c583e330aa55ae}{}\label{eardbd_8h_a610f7451002352fea7c583e330aa55ae}
+\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN}{SYNC_APPSN}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+A\+P\+P\+SN~0x004}\hypertarget{eardbd_8h_a610f7451002352fea7c583e330aa55ae}{}\label{eardbd_8h_a610f7451002352fea7c583e330aa55ae}
 \index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY@{S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY}}
 \index{S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY@{S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY}{SYNC_ENRGY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY~0x101}\hypertarget{eardbd_8h_a8a2165ede83715c7dca70d02e5ed0173}{}\label{eardbd_8h_a8a2165ede83715c7dca70d02e5ed0173}
+\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY}{SYNC_ENRGY}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+E\+N\+R\+GY~0x001}\hypertarget{eardbd_8h_a8a2165ede83715c7dca70d02e5ed0173}{}\label{eardbd_8h_a8a2165ede83715c7dca70d02e5ed0173}
 \index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS@{S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS}}
 \index{S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS@{S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS}{SYNC_EVNTS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS~0x120}\hypertarget{eardbd_8h_a1c938ea156cb886911aa9db0b7e7e307}{}\label{eardbd_8h_a1c938ea156cb886911aa9db0b7e7e307}
+\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS}{SYNC_EVNTS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+E\+V\+N\+TS~0x020}\hypertarget{eardbd_8h_a1c938ea156cb886911aa9db0b7e7e307}{}\label{eardbd_8h_a1c938ea156cb886911aa9db0b7e7e307}
 \index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS@{S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS}}
 \index{S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS@{S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS}{SYNC_LOOPS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS~0x110}\hypertarget{eardbd_8h_aa1bcba278c2172acd2af9901f9cc09ed}{}\label{eardbd_8h_aa1bcba278c2172acd2af9901f9cc09ed}
+\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS}{SYNC_LOOPS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+L\+O\+O\+PS~0x010}\hypertarget{eardbd_8h_aa1bcba278c2172acd2af9901f9cc09ed}{}\label{eardbd_8h_aa1bcba278c2172acd2af9901f9cc09ed}
 \index{eardbd.\+h@{eardbd.\+h}!sync\+\_\+option@{sync\+\_\+option}}
 \index{sync\+\_\+option@{sync\+\_\+option}!eardbd.\+h@{eardbd.\+h}}
 \subsubsection[{\texorpdfstring{sync\+\_\+option}{sync_option}}]{\setlength{\rightskip}{0pt plus 5cm}\#define sync\+\_\+option(
@@ -186,9 +155,15 @@ void \hyperlink{eardbd_8h_a0ca21f54b05de92e3ae12625a22ece07}{time\+\_\+reset\+\_
 \item[{}]{type}
 \end{DoxyParamCaption}
 )~((option \& type) $>$ 0)}\hypertarget{eardbd_8h_a4464c40a58e1c4bab0ae64444eb0782d}{}\label{eardbd_8h_a4464c40a58e1c4bab0ae64444eb0782d}
-\index{eardbd.\+h@{eardbd.\+h}!S\+Y\+N\+C\+\_\+\+R\+E\+S\+ET@{S\+Y\+N\+C\+\_\+\+R\+E\+S\+ET}}
-\index{S\+Y\+N\+C\+\_\+\+R\+E\+S\+ET@{S\+Y\+N\+C\+\_\+\+R\+E\+S\+ET}!eardbd.\+h@{eardbd.\+h}}
-\subsubsection[{\texorpdfstring{S\+Y\+N\+C\+\_\+\+R\+E\+S\+ET}{SYNC_RESET}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+Y\+N\+C\+\_\+\+R\+E\+S\+ET~0x080}\hypertarget{eardbd_8h_a95863cd461472163406e9c4ded95d3f9}{}\label{eardbd_8h_a95863cd461472163406e9c4ded95d3f9}
+\index{eardbd.\+h@{eardbd.\+h}!sync\+\_\+option\+\_\+m@{sync\+\_\+option\+\_\+m}}
+\index{sync\+\_\+option\+\_\+m@{sync\+\_\+option\+\_\+m}!eardbd.\+h@{eardbd.\+h}}
+\subsubsection[{\texorpdfstring{sync\+\_\+option\+\_\+m}{sync_option_m}}]{\setlength{\rightskip}{0pt plus 5cm}\#define sync\+\_\+option\+\_\+m(
+\begin{DoxyParamCaption}
+\item[{}]{option, }
+\item[{}]{type1, }
+\item[{}]{type2}
+\end{DoxyParamCaption}
+)~(({\bf sync\+\_\+option}(option, type1)) $\vert$$\vert$ ({\bf sync\+\_\+option}(option, type2)))}\hypertarget{eardbd_8h_ad35c5d4a817d8610596f8c4a0981176a}{}\label{eardbd_8h_ad35c5d4a817d8610596f8c4a0981176a}
 
 
 \subsection{Typedef Documentation}

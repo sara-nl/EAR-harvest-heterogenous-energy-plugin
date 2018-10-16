@@ -146,17 +146,29 @@
 \hypertarget{md_src_common_database_README}{}
 \input{md_src_common_database_README}
 \chapter{Power Monitoring library}
-\label{md_src_common_README}
-\hypertarget{md_src_common_README}{}
-\input{md_src_common_README}
+\label{md_src_common_README.dev}
+\hypertarget{md_src_common_README.dev}{}
+\input{md_src_common_README.dev}
+\chapter{R\+E\+A\+D\+ME}
+\label{md_src_daemon_README.dev}
+\hypertarget{md_src_daemon_README.dev}{}
+\input{md_src_daemon_README.dev}
 \chapter{Energy Aware Runtime\+: (Node) Daemon}
 \label{md_src_daemon_README}
 \hypertarget{md_src_daemon_README}{}
 \input{md_src_daemon_README}
-\chapter{Energy Aware Runtime\+: Database Daemon}
+\chapter{A\+PI}
+\label{md_src_database_cache_README.dev}
+\hypertarget{md_src_database_cache_README.dev}{}
+\input{md_src_database_cache_README.dev}
+\chapter{E\+AR Database Daemon}
 \label{md_src_database_cache_README}
 \hypertarget{md_src_database_cache_README}{}
 \input{md_src_database_cache_README}
+\chapter{A\+PI}
+\label{md_src_global_manager_README.dev}
+\hypertarget{md_src_global_manager_README.dev}{}
+\input{md_src_global_manager_README.dev}
 \chapter{Energy Aware Runtime\+: Global Manager Daemon}
 \label{md_src_global_manager_README}
 \hypertarget{md_src_global_manager_README}{}
@@ -165,6 +177,10 @@
 \label{md_src_library_README}
 \hypertarget{md_src_library_README}{}
 \input{md_src_library_README}
+\chapter{E\+AR source directories}
+\label{md_src_README.dev}
+\hypertarget{md_src_README.dev}{}
+\input{md_src_README.dev}
 \chapter{E\+AR components}
 \label{md_src_README}
 \hypertarget{md_src_README}{}
@@ -197,15 +213,15 @@
 \label{md_README}
 \hypertarget{md_README}{}
 \input{md_README}
+\chapter{E\+AR islands examples}
+\label{md_etc_conf_README.islands}
+\hypertarget{md_etc_conf_README.islands}{}
+\input{md_etc_conf_README.islands}
 \chapter{E\+AR configuration file}
 \label{md_etc_conf_README}
 \hypertarget{md_etc_conf_README}{}
 \input{md_etc_conf_README}
-\chapter{Configuration}
-\label{md_etc_README}
-\hypertarget{md_etc_README}{}
-\input{md_etc_README}
-\chapter{Energy Aware Runtime learning phase}
+\chapter{Overview of the learning phase}
 \label{md_etc_scripts_learning_README}
 \hypertarget{md_etc_scripts_learning_README}{}
 \input{md_etc_scripts_learning_README}
@@ -224,8 +240,8 @@
 \input{structapplication}
 \input{structavg__perf__cpu__info}
 \input{structcluster__conf}
-\input{structCoefficients__info}
-\input{structCoefficients__info__v3}
+\input{structcoefficient}
+\input{structcoefficient__obs}
 \input{structcommunication__node}
 \input{structcontrol}
 \input{structcpufreq__affected__cpus}
@@ -276,10 +292,12 @@
 \input{structsignature__container__t}
 \input{structsocket}
 \input{structspank__option}
+\input{structstatus}
 \input{structsync__ans}
 \input{structsync__qst}
 \input{structuncore__op}
 \chapter{File Documentation}
+\input{README_8islands_8md}
 \input{cpufreq_8h}
 \input{spank_8h}
 \input{ear__acct_8c}
@@ -289,7 +307,6 @@
 \input{ear__report_8c}
 \input{src_2commands_2README_8md}
 \input{src_2common_2database_2README_8md}
-\input{src_2common_2README_8md}
 \input{src_2daemon_2README_8md}
 \input{src_2database__cache_2README_8md}
 \input{src_2global__manager_2README_8md}
@@ -303,7 +320,6 @@
 \input{src_2tools_2README_8md}
 \input{README_8md}
 \input{etc_2conf_2README_8md}
-\input{etc_2README_8md}
 \input{etc_2scripts_2learning_2README_8md}
 \input{etc_2scripts_2README_8md}
 \input{db__helper_8c}
@@ -319,6 +335,11 @@
 \input{file__lock_8h}
 \input{math__operations_8c}
 \input{math__operations_8h}
+\input{common_2README_8dev_8md}
+\input{daemon_2README_8dev_8md}
+\input{database__cache_2README_8dev_8md}
+\input{global__manager_2README_8dev_8md}
+\input{README_8dev_8md}
 \input{sizes_8h}
 \input{sockets_8c}
 \input{sockets_8h}
@@ -405,6 +426,7 @@
 \input{client__api__test_8c}
 \input{client__signal__test_8c}
 \input{client__sync__test_8c}
+\input{sock__test_8c}
 \input{eargm__end__job_8c}
 \input{eargm__new__job_8c}
 \input{eargm_8c}
@@ -434,6 +456,8 @@
 \input{sig__projections_8h}
 \input{ear__api_8c}
 \input{ear__api_8h}
+\input{freq__synchro_8c}
+\input{freq__synchro_8h}
 \input{MPI__calls__coded_8h}
 \input{MPI__intercept_8c}
 \input{MPI__intercept_8h}
@@ -447,6 +471,7 @@
 \input{process__MPI_8c}
 \input{process__MPI_8h}
 \input{states_8c}
+\input{states__master_8c}
 \input{states__periodic_8c}
 \input{states__periodic_8h}
 \input{tracer_8c}
@@ -499,6 +524,7 @@
 \input{cpu__examinable_8c}
 \input{cpu__uncores_8c}
 \input{cpu__uncores__all_8c}
+\input{ear__types_8c}
 \input{free__ipmi__version_8c}
 \input{gsl__version_8c}
 \input{module__acpi__cpufreq_8c}
@@ -522,18 +548,27 @@
 \input{ping_8c}
 \input{read__from__file_8c}
 \input{test__architecture_8c}
-\input{coefficients__quality__control_8c}
-\input{coefficients__to__csv_8c}
-\input{coefficients__v2__to__v3_8c}
+\input{coeffs__jobproj_8c}
+\input{coeffs__jobproj_8h}
+\input{coeffs__quality_8c}
+\input{coeffs__quality_8h}
 \input{compute__coefficients_8c}
 \input{compute__coefficients__remote_8c}
-\input{compute__coefficients__v2_8c}
-\input{compute__projections__avx512_8c}
+\input{ear__lp__validation_8c}
+\input{get__active__nodes_8c}
 \input{get__app__list_8c}
 \input{get__ear__events_8c}
+\input{get__projections_8c}
 \input{projections__avx512_8c}
 \input{projections__avx512_8h}
 \input{remove__learning_8c}
+\input{show__coefficients_8c}
+\input{coefficients__comparison_8c}
+\input{coefficients__to__csv_8c}
+\input{coefficients__v2__to__v3_8c}
+\input{compute__coefficients__v2_8c}
+\input{compute__projections__avx512_8c}
+\input{translate__coefficients_8c}
 %--- End generated contents ---
 
 % Index

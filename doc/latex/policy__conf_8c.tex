@@ -10,8 +10,8 @@
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} $\ast$ \hyperlink{policy__conf_8c_ada90cb389b7c92b35d6490c521014569}{get\+\_\+my\+\_\+policy\+\_\+conf} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{eargm__new__job_8c_a91686db1fb783c9bdf9c836c2b66ad01}{my\+\_\+cluster}, \hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$my\+\_\+node, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} p\+\_\+id)
-\begin{DoxyCompactList}\small\item\em Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy. \end{DoxyCompactList}\item 
+\hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} $\ast$ \hyperlink{policy__conf_8c_a114c1b149f215152b99cae72f50f98a9}{get\+\_\+my\+\_\+policy\+\_\+conf} (\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$my\+\_\+node, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} p\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Given a node and policy, returns the policy configuration for that cluser,node,policy. \end{DoxyCompactList}\item 
 int \hyperlink{policy__conf_8c_a455f47e45f0a3c9009ce466b417ac0a1}{policy\+\_\+name\+\_\+to\+\_\+id} (char $\ast$my\+\_\+policy)
 \begin{DoxyCompactList}\small\item\em Converts from policy name to policy\+\_\+id . \end{DoxyCompactList}\item 
 int \hyperlink{policy__conf_8c_a8d3ff26ab22494527d7def73c94f1933}{policy\+\_\+id\+\_\+to\+\_\+name} (int policy\+\_\+id, char $\ast$my\+\_\+policy)
@@ -35,16 +35,15 @@ copy dest=src
 
 \index{policy\+\_\+conf.\+c@{policy\+\_\+conf.\+c}!get\+\_\+my\+\_\+policy\+\_\+conf@{get\+\_\+my\+\_\+policy\+\_\+conf}}
 \index{get\+\_\+my\+\_\+policy\+\_\+conf@{get\+\_\+my\+\_\+policy\+\_\+conf}!policy\+\_\+conf.\+c@{policy\+\_\+conf.\+c}}
-\subsubsection[{\texorpdfstring{get\+\_\+my\+\_\+policy\+\_\+conf(cluster\+\_\+conf\+\_\+t $\ast$my\+\_\+cluster, my\+\_\+node\+\_\+conf\+\_\+t $\ast$my\+\_\+node, uint p\+\_\+id)}{get_my_policy_conf(cluster_conf_t *my_cluster, my_node_conf_t *my_node, uint p_id)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf policy\+\_\+conf\+\_\+t}$\ast$ get\+\_\+my\+\_\+policy\+\_\+conf (
+\subsubsection[{\texorpdfstring{get\+\_\+my\+\_\+policy\+\_\+conf(my\+\_\+node\+\_\+conf\+\_\+t $\ast$my\+\_\+node, uint p\+\_\+id)}{get_my_policy_conf(my_node_conf_t *my_node, uint p_id)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf policy\+\_\+conf\+\_\+t}$\ast$ get\+\_\+my\+\_\+policy\+\_\+conf (
 \begin{DoxyParamCaption}
-\item[{{\bf cluster\+\_\+conf\+\_\+t} $\ast$}]{my\+\_\+cluster, }
 \item[{{\bf my\+\_\+node\+\_\+conf\+\_\+t} $\ast$}]{my\+\_\+node, }
 \item[{{\bf uint}}]{p\+\_\+id}
 \end{DoxyParamCaption}
-)}\hypertarget{policy__conf_8c_ada90cb389b7c92b35d6490c521014569}{}\label{policy__conf_8c_ada90cb389b7c92b35d6490c521014569}
+)}\hypertarget{policy__conf_8c_a114c1b149f215152b99cae72f50f98a9}{}\label{policy__conf_8c_a114c1b149f215152b99cae72f50f98a9}
 
 
-Given a cluster, node and policy, returns the policy configuration for that cluser,node,policy. 
+Given a node and policy, returns the policy configuration for that cluser,node,policy. 
 
 \index{policy\+\_\+conf.\+c@{policy\+\_\+conf.\+c}!policy\+\_\+id\+\_\+to\+\_\+name@{policy\+\_\+id\+\_\+to\+\_\+name}}
 \index{policy\+\_\+id\+\_\+to\+\_\+name@{policy\+\_\+id\+\_\+to\+\_\+name}!policy\+\_\+conf.\+c@{policy\+\_\+conf.\+c}}

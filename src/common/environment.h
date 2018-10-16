@@ -37,7 +37,7 @@
 #define DEFAULT_VERBOSE                 0
 #define DEFAULT_DB_PATHNAME             ".ear_system_db"
 #define DEFAULT_USER_DB_PATHNAME        ".ear_user_db"
-#define DEFAULT_COEFF_PATHNAME          "COEFFICIENTS/COEFFS_"
+#define DEFAULT_COEFF_PATHNAME          "/etc/ear/coeffs"
 #define DEFAULT_POWER_POLICY            0
 #define DEFAULT_MIN_ENERGY_TH           0.1
 #define DEFAULT_MIN_TIME_TH             PERFORMANCE_GAIN
@@ -47,7 +47,7 @@
 #define DEFAULT_MIN_P_STATE             EAR_MIN_P_STATE
 #define DEFAULT_P_STATE                 DEFAULT_MAX_P_STATE
 #define DEFAULT_DYNAIS_LEVELS           4
-#define DEFAULT_DYNAIS_WINDOW_SIZE      300
+#define DEFAULT_DYNAIS_WINDOW_SIZE      500
 #define DYNAIS_TIMEOUT                  30
 
 /** Tries to get the EAR_TMP environment variable's value and returns it.

@@ -131,10 +131,10 @@ Functions</h2></td></tr>
 <tr class="separator:ae0648bb0f63c7e75716dd46ae6b9dc5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2de03e2b8662edec023f7d751ad7179"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__server__api_8c.html#aa2de03e2b8662edec023f7d751ad7179">send_answer</a> (int s, <a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> *ack)</td></tr>
 <tr class="separator:aa2de03e2b8662edec023f7d751ad7179"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1ce3da1d0e6b7fdbbb688d85b813be8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__server__api_8c.html#af1ce3da1d0e6b7fdbbb688d85b813be8">correct_error</a> (int target_ip, <a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command, int port)</td></tr>
-<tr class="separator:af1ce3da1d0e6b7fdbbb688d85b813be8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c6bee49e1fb1d89ae6b0597b9e66fb5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__server__api_8c.html#a7c6bee49e1fb1d89ae6b0597b9e66fb5">propagate_req</a> (<a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command, int port)</td></tr>
 <tr class="separator:a7c6bee49e1fb1d89ae6b0597b9e66fb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1be7d282613339884adf46eb00d358d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="eard__server__api_8c.html#a1be7d282613339884adf46eb00d358d4">propagate_status</a> (<a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *command, int port, <a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **<a class="el" href="structstatus.html">status</a>)</td></tr>
+<tr class="separator:a1be7d282613339884adf46eb00d358d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -165,38 +165,6 @@ Variables</h2></td></tr>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>sock</em></td><td>)</td>
           <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="af1ce3da1d0e6b7fdbbb688d85b813be8"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void correct_error </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>target_ip</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *&#160;</td>
-          <td class="paramname"><em>command</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>port</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -234,6 +202,38 @@ Variables</h2></td></tr>
           <td></td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>port</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1be7d282613339884adf46eb00d358d4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int propagate_status </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#a367edad9ab2aa35c679c908173b6ebc2">request_t</a> *&#160;</td>
+          <td class="paramname"><em>command</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>port</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> **&#160;</td>
+          <td class="paramname"><em>status</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

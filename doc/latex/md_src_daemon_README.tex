@@ -2,7 +2,7 @@ The node daemon is the component in charge of providing any kind of services tha
 
 The E\+A\+RD provides two basic services, each one covered by one thread\+:
 \begin{DoxyItemize}
-\item Provides privileged metrics such as average frequency, uncore integrated memory controller counters to compute the memory bandwidth, and also energy metrics (DC node, D\+R\+AM and package energy).
+\item Provides privileged metrics such as a verage frequency, uncore integrated memory controller counters to compute the memory bandwidth, and also energy metrics (DC node, D\+R\+AM and package energy).
 \item Implements a periodic power monitoring service. This service allows E\+AR package to control the total energy consumed in the system.
 \end{DoxyItemize}
 
@@ -16,33 +16,7 @@ When executed in production environments, E\+A\+RD connects with ../database\+\_
 
 The E\+AR Daemon uses the {\ttfamily /ear.conf} file to be configured. It can be dynamically configured by reloading the service.
 
-
-\begin{DoxyCode}
-1 # Fields related to the Daemon
-2 # Lines starting with # are comments
-3 
-4 # Verbose level
-5 NodeDaemonVerbose=1
-6 
-7 # Frequency used by power monitoring service (in seconds)
-8 NodeDaemonPowermonFreq=10
-9 
-10 # Maximum p\_state supported (1 nominal)
-11 NodeDaemonMaxPstate=1
-12 
-13 # Turbo frequencies supported (0 no)
-14 NodeDaemonTurbo=0
-15 
-16 # Port to be used by the remote API
-17 NodeDaemonPort=5000
-18 
-19 # MySQL DB is used
-20 NodeUseDB=1
-21 
-22 # MySQL is used and records are sent using eardbd, otherwise EARD will send it directly to the MySQL server
-23 NodeUseEARDBD=1
-\end{DoxyCode}
-
+Please visit the ../../etc/conf/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R configuration file page\char`\"{} for more information about the options of E\+A\+RD and other components.
 
 \subsection*{Execution }
 
@@ -65,14 +39,19 @@ Log messages are generated during the execution. Use journalctl command to see e
 After executing a \char`\"{}systemctl reload eard\char`\"{} command, not all the E\+A\+RD options are dynamically updated. The list of updated variables are\+:
 
 
-\begin{DoxyItemize}
-\item Node\+Daemon\+Max\+Pstate
-\item Node\+Daemon\+Verbose
-\item Default policy and default policy settings
-\item Node\+Daemon\+Powermon\+Freq
-\end{DoxyItemize}
+\begin{DoxyCode}
+1 DefaultPstates
+2 NodeDaemonMaxPstate
+3 NodeDaemonVerbose
+4 NodeDaemonPowermonFreq
+5 SupportedPolicies
+6 MinEfficiencyGain
+7 MaxPerformancePenalty
+8 MinTimePerformanceAccuracy
+\end{DoxyCode}
 
-To reconfigure other detauils such as E\+A\+RD port, coefficients, etc, E\+A\+RD must be stopped and restarted again.
+
+To reconfigure other options such as E\+A\+RD connection port, coefficients, etc, it must be stopped and restarted again.
 
 \subsection*{A\+PI }
 

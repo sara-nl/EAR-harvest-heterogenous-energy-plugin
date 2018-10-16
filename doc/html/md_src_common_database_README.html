@@ -96,11 +96,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Loops: Contains the information of an application loop, its identifying characteristics (type of event, size, level and total iterations), the job it belongs to and the computed signature of the loop.</li>
 <li>Power_signatures: Contains power metrics of an application.</li>
 <li>Periodic_metrics: Contains information about a node's energy consumption with the purpose of monitoring it.</li>
+<li>Periodic_aggregations: Contains the same information as Periodic_metrics but aggregated by periods of time, not of each node individually.</li>
 <li>Learning_[tables]: The tables that begin with the "Learning_" prefix contain the same as their counterparts without prefix, but are used exclusively for the learning phase of the EAR library.</li>
 </ul>
 </li>
 </ul>
-<p>-The relationship between the tables can be seen in the adjunct diagram, as well as the general equivalent of their MySQL types. </p>
+<p>-The relationship between the tables can be seen in the adjunct diagram, as well as the general equivalent of their MySQL types.</p>
+<p>Other tables are:</p><ul>
+<li>Events: Contains a registry of EAR events (change in frequency, DynAIS on/off, etc.).</li>
+<li>Warnings: Contains a registry of EAR's Global Manager warnings. </li>
+</ul>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

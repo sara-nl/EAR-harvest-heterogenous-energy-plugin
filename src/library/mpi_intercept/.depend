@@ -1,3 +1,13 @@
+freq_synchro.o: freq_synchro.c ../../common/config.h \
+ ../../common/ear_verbose.h ../../library/common/externs.h \
+ ../../common/types/application.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h ../../common/types/loop.h \
+ ../../daemon/shared_configuration.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../common/types/coefficient.h
 process_MPI.o: process_MPI.c ../../library/mpi_intercept/ear_api.h \
  ../../library/mpi_intercept/MPI_types.h \
  ../../library/mpi_intercept/MPI_calls_coded.h
@@ -21,7 +31,8 @@ ear_api.o: ear_api.c ../../control/frequency.h \
  ../../common/environment.h ../../common/types/projection.h \
  ../../library/metrics/metrics.h ../../library/mpi_intercept/ear_api.h \
  ../../library/mpi_intercept/MPI_types.h \
- ../../library/mpi_intercept/MPI_calls_coded.h ../../daemon/eard_api.h \
+ ../../library/mpi_intercept/MPI_calls_coded.h \
+ ../../library/mpi_intercept/freq_synchro.h ../../daemon/eard_api.h \
  ../../common/types/log.h ../../daemon/eard_conf_api.h \
  ../../metrics/metrics.h ../../metrics/papi/cache.h \
  ../../metrics/papi/energy_cpu.h ../../metrics/papi/flops.h \

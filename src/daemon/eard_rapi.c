@@ -98,7 +98,6 @@ int send_status(request_t *command, status_t **status)
         VERBOSE_N(0, "Number of status is not a valid amount: %d", ack);
         return EAR_ERROR;
     }
-
     return_status = calloc(ack, sizeof(status_t));
     ret = read(eards_sfd, return_status, sizeof(status_t)*ack);
     if (ret < sizeof(status_t)*ack)
@@ -412,8 +411,8 @@ void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
 
 int correct_status(int target_ip, request_t *command, int port, status_t **status)
 {
-    status_t *final_status, *status1, *status2;
-    int total_status, num_status1, num_status2;
+    status_t *final_status, *status1 = NULL, *status2 = NULL;
+    int total_status, num_status1 = 0, num_status2 = 0;
     if (command->node_dist < 1) {
         final_status = calloc(1, sizeof(status_t));
         final_status[0].ip = target_ip;
@@ -438,6 +437,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
+    int actual_dist = command->node_dist;
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
@@ -450,33 +450,36 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip1);
+            eards_remote_disconnect();
             num_status1 = correct_status(ntohl(ip1), command, port, &status1);
         }
-        eards_remote_disconnect();
+        else eards_remote_disconnect();
     }
 
+    command->node_dist = actual_dist;
     //connect to second subnode
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
         fprintf(stderr, "Error connecting to node: %s\n", nextip2);
-        num_status2 = correct_status(ntohl(ip1), command, port, &status1);
+        num_status2 = correct_status(ntohl(ip1), command, port, &status2);
     }
     else
     {
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip2);
+            eards_remote_disconnect();
             num_status2 = correct_status(ntohl(ip2), command, port, &status2);
         }
-        eards_remote_disconnect();
+        else eards_remote_disconnect();
     } 
 
     total_status = num_status1 + num_status2;
     final_status = calloc(total_status + 1, sizeof(status_t));
     memcpy(final_status, status1, sizeof(status_t)*num_status1);
     memcpy(&final_status[num_status1], status2, sizeof(status_t)*num_status2);
-    final_status[total_status].ip = self_ip;
+    final_status[total_status].ip = ntohl(self_ip);
     final_status[total_status].ok = STATUS_BAD;
     *status = final_status;
     free(status1);
@@ -504,23 +507,25 @@ void correct_error(int target_ip, request_t *command, int port)
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
+    int actual_dist = command->node_dist;
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
         fprintf(stderr, "Error connecting to node: %s\n", nextip1);
     else
     {
-        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip1);
+        if (!send_command(command)) fprintf(stderr, "Error propagating command to node %s\n", nextip1);
         eards_remote_disconnect();
     }
 
+    command->node_dist = actual_dist;
     //connect to second subnode
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
         fprintf(stderr, "Error connecting to node: %s\n", nextip2);
     else
     {
-        if (!send_command(command)) printf("Error propagating command to node %s\n", nextip2);
+        if (!send_command(command)) fprintf(stderr, "Error propagating command to node %s\n", nextip2);
         eards_remote_disconnect();
     } 
 }
@@ -558,11 +563,7 @@ int correct_status_starter(char *host_name, request_t *command, int port, status
         }
     }
     freeaddrinfo(result);
-    status_t *temp;
-    int ntemp = 0;
-    ntemp = correct_status(host_ip, command, port, &temp);
-    *status = temp;
-    return ntemp;
+    return correct_status(host_ip, command, port, status);
 }
 
 
@@ -673,7 +674,7 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
                 else 
                     sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
 
-                command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
+                command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2 + 1;
                 int t = 1;
                 while (t < command.node_dist) t *= 2;
                 command.node_dist = t;
@@ -685,14 +686,13 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
                 num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
             }
             else{
-                VERBOSE_N(1,"Node %s with distance %d contacted with status!\n", node_name, command.node_dist);
-                if (num_temp_status = send_status(&command, &temp_status)) {
+                VERBOSE_N(1,"Node %s with distance %d contacted with status!", node_name, command.node_dist);
+                if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
                     VERBOSE_N(0,"Error doing status for node %s, trying to correct it", node_name);
                     num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
                 }
                 eards_remote_disconnect();
             }
-
             if (num_temp_status > 0)
             {
                 all_status = realloc(all_status, sizeof(status_t)*(num_all_status+num_temp_status));
@@ -703,6 +703,7 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 
         }
     }
+    *status = all_status;
     return num_all_status;
 }
 

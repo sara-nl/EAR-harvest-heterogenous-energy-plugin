@@ -27,6 +27,8 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <errno.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>
@@ -34,6 +36,9 @@
 #include <unistd.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>
@@ -43,13 +48,99 @@
                    
 #define NUM_LEVELS  4
 #define MAX_PSTATE 16
+#define IP_LENGTH 24
+
+typedef struct ip_table
+{
+    int ip_int;
+    char ip[IP_LENGTH];
+    char name[IP_LENGTH];
+    int counter;
+} ip_table_t;
 
 int EAR_VERBOSE_LEVEL = 1;
-
 
 cluster_conf_t my_cluster_conf;
 
 static const char *__NAME__ = "econtrol";
+
+void fill_ip(char *buff, ip_table_t *table)
+{
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int sfd, s;
+    int ip1, ip2;
+    struct sockaddr_storage peer_addr;
+    socklen_t peer_addr_len;
+    ssize_t nread;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+   	s = getaddrinfo(buff, NULL, &hints, &result);
+    if (s != 0) {
+		fprintf(stderr,"getaddrinfo fails for port %s (%s)\n",buff,strerror(errno));
+		return;
+    }
+
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        if (rp->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
+            //ina = saddr->sin_addr;    
+            table->ip_int = saddr->sin_addr.s_addr;
+            strcpy(table->ip, inet_ntoa(saddr->sin_addr));
+        }
+    }
+    freeaddrinfo(result);
+}
+
+int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
+{
+    int i, j, k, rc; 
+    char node_name[256];
+    int num_ips = 0;
+    ip_table_t *new_ips = NULL;
+    for (i=0;i< my_cluster_conf.num_islands;i++){
+        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+        {   
+            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            {   
+                if (k == -1) 
+                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
+                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                else {
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                    else 
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                }   
+                new_ips = realloc(new_ips, sizeof(ip_table_t)*(num_ips+1));
+                strcpy(new_ips[num_ips].name, node_name);
+                fill_ip(node_name, &new_ips[num_ips]);
+                num_ips++;
+            }
+        }
+    }
+    *ips = new_ips;
+    return num_ips;
+}
+
+void print_ips(ip_table_t *ips, int num_ips)
+{
+    int i;
+    printf("%10s\t%10s\t%12s\t%10s\n", "hostname", "ip", "ip_int", "status");
+
+    for (i=0; i<num_ips; i++)
+        printf("%10s\t%10s\t%12d\t%10d\n", ips[i].name, ips[i].ip, ips[i].ip_int, ips[i].counter); 
+}
 
 void usage(char *app)
 {
@@ -63,6 +154,39 @@ void usage(char *app)
             "\n\t--ping	\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally, --ping=node_name pings that node individually."\
             "\n\nThis app requires privileged access privileged accesss to execute.\n", app);
 	exit(1);
+}
+
+void check_ip(status_t status, ip_table_t *ips, int num_ips)
+{
+    int i;
+    for (i = 0; i < num_ips; i++)
+        if (htonl(status.ip) == htonl(ips[i].ip_int))
+            ips[i].counter |= status.ok;
+}
+
+void clean_ips(ip_table_t *ips, int num_ips)
+{
+    int i = 0;
+    for (i = 0; i < num_ips; i++)
+        ips[i].counter=0;
+}
+
+void process_status(int num_status, status_t *status)
+{
+    if (num_status > 0)
+    {
+        printf("Status retrieved.\n");
+        int i, num_ips;
+        ip_table_t *ips = NULL;
+        num_ips = generate_node_names(my_cluster_conf, &ips);
+        clean_ips(ips, num_ips);
+        for (i = 0; i < num_status; i++)
+            check_ip(status[i], ips, num_ips);
+        print_ips(ips, num_ips);
+        free(status);
+    }
+    else
+        printf("An error retrieving status has occurred.\n");
 }
 
 
@@ -182,18 +306,13 @@ void main(int argc, char *argv[])
                 break;
             case 7:
                 num_status = status_all_nodes(my_cluster_conf, &status);
+                process_status(num_status, status);
                 break;
             case 8:
                 usage(argv[0]);
                 break;
         }
     }
-    if (num_status > 0)
-    {
-        printf("Status returned.\n");
-        int i;
-        for (i = 0; i < num_status; i++)
-            printf("ip: %d\tstatus: %d\n", status[i].ip, status[i].ip);
-    }
+
     free_cluster_conf(&my_cluster_conf);
 }

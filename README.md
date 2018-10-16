@@ -1,7 +1,7 @@
 # Energy Aware Runtime
 Overview
 --------
-<img src="etc/images/logo.png" align="right" width="140">
+<img src="etc/images/logo.png" align="right" width="440">
 Energy Aware Runtime (EAR) package provides an energy efficient solution for super computers. EAR includes a runtime library that dynamically selects the CPU frequency for MPI applications based on the program characterization done at runtime, node characteristics and power policy settings. The library doesn't need neither a prior information nor user input.
 
 EAR also provides mechanism for those experts users that perfectly knows their application, to change the frequency and view the effects in form of metrics.
@@ -54,6 +54,7 @@ Brief installation guide
 ------------------------
 1) Generate Autoconf's `configure` program by typing `autoreconf -i`.
 2) Compile the library by typing `./configure`, `make` and `make install` in the root directory. Consider the option of `./configure --PREFIX=<path>` if you want to specify the installation path. It could be useful to run ‘./configure --help’ for listing the options details.
+3) Type `make etc.install` if you are interested in install the content of `ETC`. You can find a list of that content in the in the below section.
 
 Customize installation
 ----------------------

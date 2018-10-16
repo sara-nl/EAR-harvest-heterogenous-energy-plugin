@@ -144,8 +144,8 @@ Functions</h2></td></tr>
 <tr class="memitem:acd0522f7905932fd64999ef3bf2d0906"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#acd0522f7905932fd64999ef3bf2d0906">init_power_policy</a> ()</td></tr>
 <tr class="memdesc:acd0522f7905932fd64999ef3bf2d0906"><td class="mdescLeft">&#160;</td><td class="mdescRight">Selects policy based on EAR_POWER_POLICY.  <a href="#acd0522f7905932fd64999ef3bf2d0906">More...</a><br /></td></tr>
 <tr class="separator:acd0522f7905932fd64999ef3bf2d0906"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd7fe3edf9d891195c1bf7fbbfdb0f13"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#afd7fe3edf9d891195c1bf7fbbfdb0f13">init_coeff_data</a> (<a class="el" href="coefficient_8h.html#a7f58a37ee368b55a21d66b1b4e76e779">coefficient_t</a> *cv2, <a class="el" href="coefficient_8h.html#a1be465f2b5624de5256f58836a8cd967">coefficient_v3_t</a> *cv3)</td></tr>
-<tr class="separator:afd7fe3edf9d891195c1bf7fbbfdb0f13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a830f4aac7ef1fd86d71c42fe7832f6ab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a830f4aac7ef1fd86d71c42fe7832f6ab">init_coeff_data</a> (<a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *c_m, <a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *c_sm)</td></tr>
+<tr class="separator:a830f4aac7ef1fd86d71c42fe7832f6ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaed3573d79d6c1dd46c14af89ab5d885"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#aaed3573d79d6c1dd46c14af89ab5d885">init_power_models</a> (unsigned int p_states, unsigned long *p_states_list)</td></tr>
 <tr class="memdesc:aaed3573d79d6c1dd46c14af89ab5d885"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opens Coefficient db and reads coefficients.  <a href="#aaed3573d79d6c1dd46c14af89ab5d885">More...</a><br /></td></tr>
 <tr class="separator:aaed3573d79d6c1dd46c14af89ab5d885"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,6 +155,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a43e2e1409913f2029c7c79ef4f8b8eda"><td class="memItemLeft" align="right" valign="top">unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a43e2e1409913f2029c7c79ef4f8b8eda">policy_power</a> (unsigned int whole_app, <a class="el" href="signature_8h.html#a3387c90f9aa9243c926866ee8ce61917">signature_t</a> *MY_SIGNATURE)</td></tr>
 <tr class="memdesc:a43e2e1409913f2029c7c79ef4f8b8eda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given the computed application signature, applies the selected power policy and returns the “optimal” frequency.  <a href="#a43e2e1409913f2029c7c79ef4f8b8eda">More...</a><br /></td></tr>
 <tr class="separator:a43e2e1409913f2029c7c79ef4f8b8eda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f5bdfb62b903b462daf98252f682f4c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a6f5bdfb62b903b462daf98252f682f4c">force_global_frequency</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> new_f)</td></tr>
+<tr class="memdesc:a6f5bdfb62b903b462daf98252f682f4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function sets the frequency "by hand" when using global synchronizations.  <a href="#a6f5bdfb62b903b462daf98252f682f4c">More...</a><br /></td></tr>
+<tr class="separator:a6f5bdfb62b903b462daf98252f682f4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57a3b4998eddc13279c97be6cbcf8754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a57a3b4998eddc13279c97be6cbcf8754">policy_new_loop</a> ()</td></tr>
 <tr class="memdesc:a57a3b4998eddc13279c97be6cbcf8754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executed when a new_loop is reported by dyanis.  <a href="#a57a3b4998eddc13279c97be6cbcf8754">More...</a><br /></td></tr>
 <tr class="separator:a57a3b4998eddc13279c97be6cbcf8754"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -164,19 +167,25 @@ Functions</h2></td></tr>
 <tr class="memitem:a92a352c14097670f3ac473f292f9a38d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a92a352c14097670f3ac473f292f9a38d">policy_default_configuration</a> ()</td></tr>
 <tr class="memdesc:a92a352c14097670f3ac473f292f9a38d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executed when we have done several "tries" and the policy is not able to select the "good" freq for this app.  <a href="#a92a352c14097670f3ac473f292f9a38d">More...</a><br /></td></tr>
 <tr class="separator:a92a352c14097670f3ac473f292f9a38d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb90faacdf8786ae94fcae00d3f941dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#acb90faacdf8786ae94fcae00d3f941dd">policy_get_default_freq</a> ()</td></tr>
+<tr class="separator:acb90faacdf8786ae94fcae00d3f941dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dc26cdb45d5de748515b058d805a5fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a0dc26cdb45d5de748515b058d805a5fe">policy_max_tries</a> ()</td></tr>
+<tr class="separator:a0dc26cdb45d5de748515b058d805a5fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a6c56e6b2134e3f530265e9f9855ce18d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="models_8c.html#aae056bb15d28f694a1b2dbaa93164d2d">policy_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a6c56e6b2134e3f530265e9f9855ce18d">app_policy</a></td></tr>
 <tr class="separator:a6c56e6b2134e3f530265e9f9855ce18d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbd38436c25bc604b1a48464727d4179"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#adbd38436c25bc604b1a48464727d4179">__HOST__</a></td></tr>
+<tr class="separator:adbd38436c25bc604b1a48464727d4179"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a584fd902416e83368773de1d6c281d06"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a584fd902416e83368773de1d6c281d06">performance_penalty</a></td></tr>
 <tr class="separator:a584fd902416e83368773de1d6c281d06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8bf2b8237ca613a3a80feea335a27d44"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a8bf2b8237ca613a3a80feea335a27d44">performance_gain</a></td></tr>
 <tr class="separator:a8bf2b8237ca613a3a80feea335a27d44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a638b9d18dabadf6e40aca8795eafb4ec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="coefficient_8h.html#a7f58a37ee368b55a21d66b1b4e76e779">coefficient_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a638b9d18dabadf6e40aca8795eafb4ec">coefficients</a></td></tr>
+<tr class="memitem:a638b9d18dabadf6e40aca8795eafb4ec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a638b9d18dabadf6e40aca8795eafb4ec">coefficients</a></td></tr>
 <tr class="separator:a638b9d18dabadf6e40aca8795eafb4ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27d421e614800cde92c561ae643c8a18"><td class="memItemLeft" align="right" valign="top"><a class="el" href="coefficient_8h.html#a1be465f2b5624de5256f58836a8cd967">coefficient_v3_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a27d421e614800cde92c561ae643c8a18">coefficients_v3</a></td></tr>
-<tr class="separator:a27d421e614800cde92c561ae643c8a18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5eaa1af8c131eb829d2e513d290a6011"><td class="memItemLeft" align="right" valign="top"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a5eaa1af8c131eb829d2e513d290a6011">coefficients_sm</a></td></tr>
+<tr class="separator:a5eaa1af8c131eb829d2e513d290a6011"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e99c6dfda11b24753f56c79161509ed"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="models_8c.html#a3e99c6dfda11b24753f56c79161509ed">num_coeffs</a></td></tr>
 <tr class="separator:a3e99c6dfda11b24753f56c79161509ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -194,6 +203,24 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a6f5bdfb62b903b462daf98252f682f4c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void force_global_frequency </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td>
+          <td class="paramname"><em>new_f</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function sets the frequency "by hand" when using global synchronizations. </p>
+
+</div>
+</div>
 <a class="anchor" id="ab2d6f41ac78d7922fb4ae5d5c79f2113"></a>
 <div class="memitem">
 <div class="memproto">
@@ -254,21 +281,21 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="afd7fe3edf9d891195c1bf7fbbfdb0f13"></a>
+<a class="anchor" id="a830f4aac7ef1fd86d71c42fe7832f6ab"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void init_coeff_data </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="coefficient_8h.html#a7f58a37ee368b55a21d66b1b4e76e779">coefficient_t</a> *&#160;</td>
-          <td class="paramname"><em>cv2</em>, </td>
+          <td class="paramtype"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *&#160;</td>
+          <td class="paramname"><em>c_m</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="coefficient_8h.html#a1be465f2b5624de5256f58836a8cd967">coefficient_v3_t</a> *&#160;</td>
-          <td class="paramname"><em>cv3</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *&#160;</td>
+          <td class="paramname"><em>c_sm</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -374,6 +401,21 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="acb90faacdf8786ae94fcae00d3f941dd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> policy_get_default_freq </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="aa90012be77c05780bc734a0a7f2f905f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -396,6 +438,21 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">void policy_global_reconfiguration </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0dc26cdb45d5de748515b058d805a5fe"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int policy_max_tries </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -485,6 +542,18 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="adbd38436c25bc604b1a48464727d4179"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* __HOST__</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a6c56e6b2134e3f530265e9f9855ce18d"></a>
 <div class="memitem">
 <div class="memproto">
@@ -502,19 +571,19 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="coefficient_8h.html#a7f58a37ee368b55a21d66b1b4e76e779">coefficient_t</a>** coefficients</td>
+          <td class="memname"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a>** coefficients</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a class="anchor" id="a27d421e614800cde92c561ae643c8a18"></a>
+<a class="anchor" id="a5eaa1af8c131eb829d2e513d290a6011"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="coefficient_8h.html#a1be465f2b5624de5256f58836a8cd967">coefficient_v3_t</a>* coefficients_v3</td>
+          <td class="memname"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a>* coefficients_sm</td>
         </tr>
       </table>
 </div><div class="memdoc">

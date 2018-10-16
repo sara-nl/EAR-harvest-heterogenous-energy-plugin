@@ -107,6 +107,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;<a class="el" href="library_2states_2states_8h_source.html">library/states/states.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="library_2metrics_2metrics_8h_source.html">library/metrics/metrics.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="models_8h_source.html">library/models/models.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="freq__synchro_8h_source.html">library/mpi_intercept/freq_synchro.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="ear__verbose_8h_source.html">common/ear_verbose.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="log_8h_source.html">common/types/log.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="application_8h_source.html">common/types/application.h</a>&gt;</code><br />
@@ -130,11 +131,16 @@ Macros</h2></td></tr>
 <tr class="separator:afa85e373b8c2e3f72b651ef9210724ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e972b85fc0bc8c515517da5bf1cc23d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="states_8c.html#a8e972b85fc0bc8c515517da5bf1cc23d">SIGNATURE_HAS_CHANGED</a>&#160;&#160;&#160;6</td></tr>
 <tr class="separator:a8e972b85fc0bc8c515517da5bf1cc23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abaf2dcff6bab4b52cfd1f6f9e15ee53a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="states_8c.html#abaf2dcff6bab4b52cfd1f6f9e15ee53a">TEST_LOOP</a>&#160;&#160;&#160;7</td></tr>
+<tr class="separator:abaf2dcff6bab4b52cfd1f6f9e15ee53a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a347fc461398e84efbdf5800702ed6115"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="states_8c.html#a347fc461398e84efbdf5800702ed6115">DYNAIS_CUTOFF</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a347fc461398e84efbdf5800702ed6115"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a15675d9111e54b99820f8e267c5bc278"><td class="memItemLeft" align="right" valign="top"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="states_8c.html#a15675d9111e54b99820f8e267c5bc278">select_near_freq</a> (<a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> avg)</td></tr>
+<tr class="memdesc:a15675d9111e54b99820f8e267c5bc278"><td class="mdescLeft">&#160;</td><td class="mdescRight">This funcion must be policy dependent.  <a href="#a15675d9111e54b99820f8e267c5bc278">More...</a><br /></td></tr>
+<tr class="separator:a15675d9111e54b99820f8e267c5bc278"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39209b57f94c324f38ccb28a6395c4b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="states_8c.html#a39209b57f94c324f38ccb28a6395c4b1">states_end_job</a> (int my_id, FILE *ear_fd, char *app_name)</td></tr>
 <tr class="memdesc:a39209b57f94c324f38ccb28a6395c4b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executed at application end.  <a href="#a39209b57f94c324f38ccb28a6395c4b1">More...</a><br /></td></tr>
 <tr class="separator:a39209b57f94c324f38ccb28a6395c4b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -256,7 +262,37 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="abaf2dcff6bab4b52cfd1f6f9e15ee53a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define TEST_LOOP&#160;&#160;&#160;7</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a15675d9111e54b99820f8e267c5bc278"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> select_near_freq </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td>
+          <td class="paramname"><em>avg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This funcion must be policy dependent. </p>
+
+</div>
+</div>
 <a class="anchor" id="a95470317136dad9b3a6b9c6b46d25b8c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -450,7 +486,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Executed at NEW_ITERATION DynAIS event. </p>
-<p>If we are not going better </p>
+<p>We are not going better </p>
 
 </div>
 </div>

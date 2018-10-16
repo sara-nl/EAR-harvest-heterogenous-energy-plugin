@@ -1,97 +1,54 @@
 The E\+AR library is the core of the E\+AR package. The E\+A\+RL offers a ligthweigth and simple solution to select the optional frequency for M\+PI applications at runtime.
 
-E\+A\+RL is dynamically loaded with applications using the P\+M\+PI interface used by many other runtime solutions. The current E\+A\+RL version only supports with this mechanism but it is under development an A\+PI to be inserted in the Open\+M\+PI library.
+E\+A\+RL is dynamically loaded next to the running applications using the P\+M\+PI interface, which it\textquotesingle{}s used by many other runtime solutions. The current E\+A\+RL version only supports this mechanism but it is under development an A\+PI to be inserted in the Open\+M\+PI library.
 
-At runtime, E\+A\+RL goes trough the following phase\+:
+At runtime, E\+A\+RL goes through the following phase\+:
 
 
 
 
 \begin{DoxyEnumerate}
-\item Automatic detection of application outer loops. This is done by dynamically intercepting M\+PI calls (using L\+D\+\_\+\+P\+R\+E\+L\+O\+AD) and invoking Dyn\+A\+IS algorithm, our Dynamic Application Iterative Structure detector algorithm. Dyn\+A\+IS is highly optimized for new Intel architectures reporting low overhead.
-\item Computation of the application signature. Once Dyn\+A\+IS starts reporting iterations for the outer loop, E\+AR starts computing the application signature. This signature includes\+: C\+PI, iteration time, DC node power and T\+PI (transactions per instruction). Since DC node power measurements error highly depends on the hardware, E\+AR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
+\item Automatic detection of application outer loops. This is done by dynamically intercepting M\+PI calls (using {\ttfamily L\+D\+\_\+\+P\+R\+E\+L\+O\+AD}) and invoking the Dynamic Application Iterative Structure detector algorithm. Dyn\+A\+IS is highly optimized for new Intel architectures reporting low overhead.
+\item Computation of the application signature. Once Dyn\+A\+IS starts reporting iterations for the outer loop, E\+AR starts computing the application signature. This signature includes\+: iteration time, DC power consumption, C\+PI and T\+PI (transactions per instruction). Since DC power measurements error highly depends on the hardware, E\+AR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
 \end{DoxyEnumerate}
 
 
 
 
 \begin{DoxyEnumerate}
-\item Power and performance projection. E\+AR has its own performance and power models which uses, as an input, the application signature and the system signature. The system signature is a set of coefficients characterizing each node in the system. They are computed at the learning phase at the E\+AR configuration time. E\+AR projects the power used and computing time (performance) of the running application for all the available frequencies in the system.
+\item Power and performance projection. E\+AR has its own performance and power models which requires as an input, the application and the system signatures. The system signature is a set of coefficients characterizing each node in the system. They are computed at the learning phase at the E\+AR configuration time. E\+AR projects the power used and computing time (performance) of the running application for all the available frequencies in the system.
 \end{DoxyEnumerate}
 
 
 
 
 \begin{DoxyEnumerate}
-\item Apply the selected power policy. E\+AR includes two power policies to be selected at runtime\+: \textquotesingle{}minimize time to solution\textquotesingle{} and \textquotesingle{}minimize energy to solution\textquotesingle{}. These policies are permitted or not by the system administrator. At this point, E\+AR executes the power policy, using the projections computed in the previous phase, and selects the optimal frequency for this application and this particular run.
+\item Apply the selected power policy. E\+AR includes two power policies to be selected at runtime\+: \textquotesingle{}minimize time to solution\textquotesingle{} and \textquotesingle{}minimize energy to solution\textquotesingle{} if are permitted by the system administrator. At this point, E\+AR executes the power policy, using the projections computed in the previous phase, and selects the optimal frequency for this application and this particular run.
 \end{DoxyEnumerate}
 
 \subsection*{Configuration }
 
-The E\+AR Library is based on ear.\+conf settings when executing in a fully installed environment. Specific settings are available through a shared memory regions initialized by E\+A\+RD and readable by the E\+A\+RL. Fields described in ear.\+conf affecting the E\+A\+RL configuration are (lines starting with \#are comments)\+:
+The E\+AR Library uses the {\ttfamily /ear.conf} file to be configured. Please visit the ../../etc/conf/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R configuration file page\char`\"{} for more information about the options of E\+A\+RL and other components.
 
-
-\begin{DoxyCode}
-1 # Number of levels used by the multi-level DynAIS algorihtm
-2 DynAISLevels=4
-3 
-4 # Windows size for DynAIS algorithm
-5 DynAISWindowSize=500
-6 
-7 # Maximum time (in seconds) EAR will wait until a signature is computed. After DynaisTimeout seconds, if no
-       signature is computed, EAR will go to periodic mode
-8 DynaisTimeout=30
-9 
-10 # When EAR goes to periodic mode, it will compute the Application signature every "LibraryPeriod" seconds
-11 LibraryPeriod=30
-12 
-13 # EAR will check every N mpi calls whether it must go to periodic mode or not
-14 CheckEARModeEvery=1000
-15 
-16 # Default policy
-17 DefaultPowerPolicy=MIN\_TIME\_TO\_SOLUTION
-18 
-19 # List of supported policies for normal users: it must be a subset of
-       MONITORING\_ONLY,MIN\_TIME\_TO\_SOLUTION,MIN\_ENERGY\_TO\_SOLUTION
-20 SupportedPolicies=MONITORING\_ONLY,MIN\_TIME\_TO\_SOLUTION,MIN\_ENERGY\_TO\_SOLUTION
-21 
-22 # Pstates must be specified in the following
-       order:MIN\_ENERGY\_TO\_SOLUTION,MIN\_TIME\_TO\_SOLUTION,MONITORING\_ONLY 
-23 DefaultPstates=1,4,4
-24 
-25 # Thresholds used by MIN\_TIME\_TO\_SOLUTION and MIN\_ENERGY\_TO\_SOLUTION policies
-26 MinEfficiencyGain=0.7
-27 MaxPerformancePenalty=0.1
-28 
-29 # Time (expressed in usecs ) used between two energy measurements 
-30 MinTimePerformanceAccuracy=10000000
-\end{DoxyCode}
-
-
-
-\begin{DoxyItemize}
-\item When executed in a partially installed system for testing, it can be configured through environment variables, however this mechanism is not recommened.
-\end{DoxyItemize}
+The library receives the its specific settings through a shared memory regiones initialized by E\+A\+RD.
 
 \subsection*{How to run M\+PI applications with E\+A\+RL }
 
-To load E\+A\+RL with M\+PI jobs, it is only required to set the L\+D\+\_\+\+P\+R\+E\+L\+O\+AD environment variable with the E\+AR library binary \textquotesingle{}libear.\+so\textquotesingle{} path name, before your application starts. E\+A\+RL will be loaded at runtime and M\+PI calls will be intercepted calling E\+AR A\+PI automatically. To simplify the execution of applications with E\+A\+RL, we include a S\+L\+U\+RM S\+P\+A\+NK plugin, which extends srun options.
+To load E\+A\+RL with M\+PI jobs, it is only required to set the {\ttfamily L\+D\+\_\+\+P\+R\+E\+L\+O\+AD} environment variable with the library binary \textquotesingle{}libear.\+so\textquotesingle{} path name, before your application starts. E\+A\+RL will be loaded at runtime and M\+PI calls will be intercepted calling E\+AR A\+PI automatically.
 
-\subsection*{E\+AR with S\+L\+U\+RM plugin }
+To use this feature you have to rely on S\+L\+U\+RM plugin. Check the ../slurm\+\_\+plugin/\+R\+E\+A\+D\+ME.md \char`\"{}\+E\+A\+R S\+L\+U\+R\+M plugin page\char`\"{} for information about all the S\+L\+U\+RM arguments. The plugin will deal with the configuration of the application and will contact the E\+A\+RD and E\+AR Global Manager.
 
-Even though E\+AR doesn\textquotesingle{}t need S\+L\+U\+RM tobe executed, this is the recommended option since it makes totally transparent the execution of jobs with E\+AR. The plugin will deal with the configuration of the application and will contact the E\+A\+RD and E\+AR Global Manager.
+The library can be configured by the system administrator to be loaded by default or not. When E\+AR is configured by default, it is not needed to add any option to {\ttfamily srun} nor {\ttfamily sbatch}. If E\+AR is disabled by default, users can enable it by using the argument {\ttfamily -\/-\/ear=on} .
 
-E\+AR library can be configured by the system administrator to be loaded \char`\"{}by default\char`\"{} or not. When E\+AR is configured by default, it is not needed to add any option to srun or sbatch. If E\+AR is disables by default, users can enable it by using some of the ear options or just adding {\ttfamily -\/-\/ear=on} , in that case, default configuration will be loaded. For a complete list of parameters, please visit the ../slurm\+\_\+plugin/\+R\+E\+A\+D\+ME.md \char`\"{}\+S\+L\+U\+R\+M plugin page\char`\"{}
+The following example will run application with E\+AR library with default configuration (defined by sysadmin)\+:
 
-For example\+: {\ttfamily ./srun -\/\+N2 -\/n2 -\/-\/ear=on application} --$>$ will run application with E\+AR library with default configuration (defined by sysadmin) For example\+: {\ttfamily ./srun -\/\+N2 -\/n2 -\/-\/ear-\/policy=M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON application} --$>$ will run application with E\+AR library and will select M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON power policy. If the user is not allowed to use this policy, the default settings will be applied
+{\ttfamily ./srun -\/\+N2 -\/n2 -\/-\/ear=on application}
+
+Also, the following example will run application with E\+AR library and will select M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON power policy. If the user is not allowed to use this policy, the default settings will be applied\+:
+
+{\ttfamily ./srun -\/\+N2 -\/n2 -\/-\/ear-\/policy=M\+I\+N\+\_\+\+E\+N\+E\+R\+G\+Y\+\_\+\+T\+O\+\_\+\+S\+O\+L\+U\+T\+I\+ON application}
 
 If your application is not an M\+PI application, the benefits of the E\+AR library won\textquotesingle{}t be applied. But the S\+L\+U\+RM plugin would contact with the daemons in order to monitorize the application metrics and take a decision in case the energy budget is surpassed.
-
-\subsection*{Launching applications calling M\+PI directly }
-
-This way doesn\textquotesingle{}t make use of any cluster job scheduler, so a a script is provided to make it easy that task. You can launch the script with empty parameters to view it\textquotesingle{}s usage.
-
-In the folder {\ttfamily /scripts/launching}, execute the {\ttfamily mpi\+\_\+exec.\+sh} script to launch the job. In example {\ttfamily ./mpi\+\_\+exec.sh computing\+\_\+node1 28 28 M\+O\+N\+I\+T\+O\+R\+I\+N\+G\+\_\+\+O\+N\+LY}, where both numbers are the M\+PI processes and the M\+PI\textquotesingle{}s per node, an the last one is the policy. This is script will use the {\ttfamily L\+D\+\_\+\+P\+R\+E\+L\+O\+AD} environment variable to load the library next to your M\+PI applications.
 
 \subsection*{License }
 

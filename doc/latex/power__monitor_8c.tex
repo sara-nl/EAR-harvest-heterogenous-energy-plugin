@@ -42,7 +42,7 @@
 \item 
 void \hyperlink{power__monitor_8c_a7beea948ef887a5265d29431575f2b13}{reset\+\_\+shared\+\_\+memory} ()
 \item 
-void \hyperlink{power__monitor_8c_a3ab5b20667bb27b374ed878ec17cc8fb}{clean\+\_\+job\+\_\+environment} (int id, int step\+\_\+id)
+void \hyperlink{power__monitor_8c_a3ab5b20667bb27b374ed878ec17cc8fb}{clean\+\_\+job\+\_\+environment} (int id, int \hyperlink{remove__learning_8c_aaaecc7646b3c722387d285ecbb165474}{step\+\_\+id})
 \item 
 void \hyperlink{power__monitor_8c_a603c7d4e368589c18b5ae8e526559256}{copy\+\_\+powermon\+\_\+app} (\hyperlink{power__monitor_8h_a0c338f8504224469cd258fdb3b08e9e6}{powermon\+\_\+app\+\_\+t} $\ast$dest, \hyperlink{power__monitor_8h_a0c338f8504224469cd258fdb3b08e9e6}{powermon\+\_\+app\+\_\+t} $\ast$src)
 \begin{DoxyCompactList}\small\item\em Copy src into dest. \end{DoxyCompactList}\item 
@@ -70,12 +70,12 @@ void \hyperlink{power__monitor_8c_a748f221a91e2c5660370f88e6cac5785}{powermon\+\
 \begin{DoxyCompactList}\small\item\em if application is not mpi, automatically chages the node freq, it is called by dynamic\+\_\+configuration A\+PI \end{DoxyCompactList}\item 
 void \hyperlink{power__monitor_8c_a90910d31d65acd75dc12cfa1013e8fa7}{powermon\+\_\+new\+\_\+def\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} def)
 \begin{DoxyCompactList}\small\item\em if application is not mpi, automatically chages the node freq, it is called by dynamic\+\_\+configuration A\+PI \end{DoxyCompactList}\item 
-void \hyperlink{power__monitor_8c_a3162f4f1cdc977ddeba57883d4d4a995}{powermon\+\_\+red\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} max\+\_\+freq, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} def\+\_\+freq)
+void \hyperlink{power__monitor_8c_a3162f4f1cdc977ddeba57883d4d4a995}{powermon\+\_\+red\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{ear__lp__validation_8c_a67b5fc2af25178078dfc5b1bac08de32}{max\+\_\+freq}, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} def\+\_\+freq)
 \begin{DoxyCompactList}\small\item\em Reduces the current freq (default and max) based on new values. \end{DoxyCompactList}\item 
 void \hyperlink{power__monitor_8c_a4d66bf35f4988bcc0ccf317cff3332c2}{powermon\+\_\+set\+\_\+freq} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} freq)
 \begin{DoxyCompactList}\small\item\em Sets temporally the default and max frequency to the same value. \end{DoxyCompactList}\item 
-void \hyperlink{power__monitor_8c_a67cec9287ab45b90950f272bf99222a5}{powermon\+\_\+restore\+\_\+conf} ()
-\begin{DoxyCompactList}\small\item\em Restores values from ear.\+conf (not reloads the file). \end{DoxyCompactList}\item 
+void \hyperlink{power__monitor_8c_a7db97520baa460bd6d348dc93c3d8bbb}{powermon\+\_\+reload\+\_\+conf} ()
+\begin{DoxyCompactList}\small\item\em it reloads ear.\+conf \end{DoxyCompactList}\item 
 void \hyperlink{power__monitor_8c_a674cbc8ab907b7371b8c8a0bb9b46527}{update\+\_\+historic\+\_\+info} (\hyperlink{power__metrics_8h_a6335c15ccd38fb5290e9c836c56e6b99}{power\+\_\+data\+\_\+t} $\ast$my\+\_\+current\+\_\+power, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} avg\+\_\+f)
 \item 
 void \hyperlink{power__monitor_8c_a8beac0876f5d23b7fa7a31929c9358f7}{create\+\_\+powermon\+\_\+out} ()
@@ -128,6 +128,8 @@ char \hyperlink{power__monitor_8c_a332fb84aff94ecd0fb0f599cf79e65ee}{nodename} \
 \hyperlink{power__monitor_8h_a0c338f8504224469cd258fdb3b08e9e6}{powermon\+\_\+app\+\_\+t} \hyperlink{power__monitor_8c_a14180bfb4e65046378f00a36106b54fb}{current\+\_\+ear\+\_\+app}
 \item 
 \hyperlink{periodic__metric_8h_ad4fd0cdd85e470f61486232f140aa88f}{periodic\+\_\+metric\+\_\+t} \hyperlink{power__monitor_8c_a47dbdbfdfeaf3fdd9cd7a6ff022090b4}{current\+\_\+sample}
+\item 
+\hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} \hyperlink{power__monitor_8c_a9d9e7b0ea6cdd37b8a338e72dc20ea23}{per\+\_\+job\+\_\+conf}
 \end{DoxyCompactItemize}
 
 
@@ -315,18 +317,18 @@ Reduces the current freq (default and max) based on new values.
 
 Reduces, temporally, the current freq (default and max) based on new values.
 
-If application is not mpi, automatically chages the node freq if needed \index{power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}!powermon\+\_\+restore\+\_\+conf@{powermon\+\_\+restore\+\_\+conf}}
-\index{powermon\+\_\+restore\+\_\+conf@{powermon\+\_\+restore\+\_\+conf}!power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}}
-\subsubsection[{\texorpdfstring{powermon\+\_\+restore\+\_\+conf()}{powermon_restore_conf()}}]{\setlength{\rightskip}{0pt plus 5cm}void powermon\+\_\+restore\+\_\+conf (
+If application is not mpi, automatically chages the node freq if needed \index{power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}!powermon\+\_\+reload\+\_\+conf@{powermon\+\_\+reload\+\_\+conf}}
+\index{powermon\+\_\+reload\+\_\+conf@{powermon\+\_\+reload\+\_\+conf}!power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}}
+\subsubsection[{\texorpdfstring{powermon\+\_\+reload\+\_\+conf()}{powermon_reload_conf()}}]{\setlength{\rightskip}{0pt plus 5cm}void powermon\+\_\+reload\+\_\+conf (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
-)}\hypertarget{power__monitor_8c_a67cec9287ab45b90950f272bf99222a5}{}\label{power__monitor_8c_a67cec9287ab45b90950f272bf99222a5}
+)}\hypertarget{power__monitor_8c_a7db97520baa460bd6d348dc93c3d8bbb}{}\label{power__monitor_8c_a7db97520baa460bd6d348dc93c3d8bbb}
 
 
-Restores values from ear.\+conf (not reloads the file). 
+it reloads ear.\+conf 
 
-When application is not mpi, automatically chages the node freq if needed \index{power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}!powermon\+\_\+set\+\_\+freq@{powermon\+\_\+set\+\_\+freq}}
+\index{power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}!powermon\+\_\+set\+\_\+freq@{powermon\+\_\+set\+\_\+freq}}
 \index{powermon\+\_\+set\+\_\+freq@{powermon\+\_\+set\+\_\+freq}!power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}}
 \subsubsection[{\texorpdfstring{powermon\+\_\+set\+\_\+freq(ulong freq)}{powermon_set_freq(ulong freq)}}]{\setlength{\rightskip}{0pt plus 5cm}void powermon\+\_\+set\+\_\+freq (
 \begin{DoxyParamCaption}
@@ -441,6 +443,9 @@ Resets the current appl data.
 \index{power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}!nodename@{nodename}}
 \index{nodename@{nodename}!power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}}
 \subsubsection[{\texorpdfstring{nodename}{nodename}}]{\setlength{\rightskip}{0pt plus 5cm}char nodename\mbox{[}{\bf M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE}\mbox{]}}\hypertarget{power__monitor_8c_a332fb84aff94ecd0fb0f599cf79e65ee}{}\label{power__monitor_8c_a332fb84aff94ecd0fb0f599cf79e65ee}
+\index{power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}!per\+\_\+job\+\_\+conf@{per\+\_\+job\+\_\+conf}}
+\index{per\+\_\+job\+\_\+conf@{per\+\_\+job\+\_\+conf}!power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}}
+\subsubsection[{\texorpdfstring{per\+\_\+job\+\_\+conf}{per_job_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf policy\+\_\+conf\+\_\+t} per\+\_\+job\+\_\+conf}\hypertarget{power__monitor_8c_a9d9e7b0ea6cdd37b8a338e72dc20ea23}{}\label{power__monitor_8c_a9d9e7b0ea6cdd37b8a338e72dc20ea23}
 \index{power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}!resched\+\_\+conf@{resched\+\_\+conf}}
 \index{resched\+\_\+conf@{resched\+\_\+conf}!power\+\_\+monitor.\+c@{power\+\_\+monitor.\+c}}
 \subsubsection[{\texorpdfstring{resched\+\_\+conf}{resched_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf resched\+\_\+t}$\ast$ resched\+\_\+conf}\hypertarget{power__monitor_8c_a4a4bf3b5fb9af4d2afcafdcc9d23b8ef}{}\label{power__monitor_8c_a4a4bf3b5fb9af4d2afcafdcc9d23b8ef}

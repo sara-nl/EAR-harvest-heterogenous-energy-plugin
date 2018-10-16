@@ -138,6 +138,12 @@ struct daemon_req req;
 int RAPL_counting=0;
 int eard_must_exit=0;
 
+
+
+void update_coefficients(char *new,char *old)
+{
+}
+
 void init_frequency_list()
 {
 	int ps,i;
@@ -857,6 +863,7 @@ void signal_handler(int sig)
      	   	}else{
 				eard_dyn_conf.nconf=my_node_conf;
 				print_my_node_conf(my_node_conf);
+				update_coefficients(my_node_conf->coef_file,my_original_node_conf.coef_file);
 				copy_my_node_conf(&my_original_node_conf,my_node_conf);
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
@@ -1008,7 +1015,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	save_eard_conf(&eard_dyn_conf);
 }
 
-/* Read coefficients for node X */
+/* Read coefficients for current node */
 int read_coefficients()
 {
 	char my_coefficients_file[GENERIC_NAME];

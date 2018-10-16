@@ -12,12 +12,12 @@ All these commands read the EAR configurarion file (ear.conf) to determine if th
 The eacct command shows accounting information stored in the EAR DB for jobs (and step) IDs. It provides the following options. 
 ```
 Usage: eacct [Optional parameters]
-	Optional parameters: 
-		-h	displays this information
-		-u	specifies the user whose applications will be retrieved. Only available to privileged users. [default for authorized users: all users]
-		-j	specifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]
-		-l	shows the information for each node for each job instead of the global statistics for said job.
-		-n	specifies the number of jobs to be shown, starting from the most recent one. [default: all jobs]
+    Optional parameters: 
+        -h  displays this information
+        -u  specifies the user whose applications will be retrieved. Only available to privileged users. [default for authorized users: all users]
+        -j  specifies the job id and step id to retrieve with the format [jobid.stepid]. A user can only retrieve its own jobs unless said user is privileged. [default: all jobs]
+        -l  shows the information for each node for each job instead of the global statistics for said job.
+        -n  specifies the number of jobs to be shown, starting from the most recent one. [default: all jobs]
         -t  specifies the energy tag to filter the retrieved jobs. [default: all tags]
         -c  specifies the file to save the output information in csv format.
 
@@ -27,7 +27,7 @@ Usage: eacct [Optional parameters]
 # Energy report (ereport)
 
 The ereport command creates reports from the information stored in the EAR DB concerning energy.
-...
+```
 Usage: ereport [Optional parameters]
     Optional parameters:
         -s  start_time  indicates the starting period from which the energy information will be computed. Format: YYYY-MM-DD. Default: 1970-01-01.
@@ -37,19 +37,21 @@ Usage: ereport [Optional parameters]
         -t  energy_tag  requests the energy consumed filtering by the selected energy tag. Default: none (not filtering by energy_tag). 'all' option will show all tags individually.
         -h              displays this information
 
+```
 # Energy control (econtrol)
 
 The econtrol command modifies cluster settings (temporally) related to power policy settings. These options are sent to all the nodes in the cluster.
 
 ```
 Usage: econtrol [options]
-	--set-freq 	newfreq		    ->sets the frequency of all nodes to the requested one
-	--set-def-freq 	newfreq		->sets the default frequency
-	--set-max-freq 	newfreq		->sets the maximum frequency
-	--inc-th 	new_th		    ->increases the threshold for all nodes
-	--red-def-freq 	reduction	->reduces the default frequency
-	--restore-conf 			    ->restores the configuration to all nodes
-    --ping                      ->pings all nodes. Additionally, --ping=node_name pings node_name individually
+    Options:
+        --set-freq  newfreq         ->sets the frequency of all nodes to the requested one
+        --set-def-freq  newfreq     ->sets the default frequency
+        --set-max-freq  newfreq     ->sets the maximum frequency
+        --inc-th  new_th            ->increases the threshold for all nodes
+        --red-def-freq 	reduction   ->reduces the default frequency
+        --restore-conf              ->restores the configuration to all nodes
+        --ping                      ->pings all nodes. Additionally, --ping=node_name pings node_name individually
 ```
 
 # Database commands

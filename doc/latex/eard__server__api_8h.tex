@@ -20,6 +20,8 @@ int \hyperlink{eard__server__api_8h_ae0648bb0f63c7e75716dd46ae6b9dc5d}{read\+\_\
 void \hyperlink{eard__server__api_8h_aa2de03e2b8662edec023f7d751ad7179}{send\+\_\+answer} (int s, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$ack)
 \item 
 void \hyperlink{eard__server__api_8h_a7c6bee49e1fb1d89ae6b0597b9e66fb5}{propagate\+\_\+req} (\hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} $\ast$command, int port)
+\item 
+int \hyperlink{eard__server__api_8h_a1be7d282613339884adf46eb00d358d4}{propagate\+\_\+status} (\hyperlink{eard__conf__rapi_8h_a367edad9ab2aa35c679c908173b6ebc2}{request\+\_\+t} $\ast$command, int port, \hyperlink{eard__conf__rapi_8h_ae10cc0dbef73781f1180541121e675bb}{status\+\_\+t} $\ast$$\ast$\hyperlink{structstatus}{status})
 \end{DoxyCompactItemize}
 
 
@@ -46,6 +48,15 @@ void \hyperlink{eard__server__api_8h_a7c6bee49e1fb1d89ae6b0597b9e66fb5}{propagat
 \item[{int}]{port}
 \end{DoxyParamCaption}
 )}\hypertarget{eard__server__api_8h_a7c6bee49e1fb1d89ae6b0597b9e66fb5}{}\label{eard__server__api_8h_a7c6bee49e1fb1d89ae6b0597b9e66fb5}
+\index{eard\+\_\+server\+\_\+api.\+h@{eard\+\_\+server\+\_\+api.\+h}!propagate\+\_\+status@{propagate\+\_\+status}}
+\index{propagate\+\_\+status@{propagate\+\_\+status}!eard\+\_\+server\+\_\+api.\+h@{eard\+\_\+server\+\_\+api.\+h}}
+\subsubsection[{\texorpdfstring{propagate\+\_\+status(request\+\_\+t $\ast$command, int port, status\+\_\+t $\ast$$\ast$status)}{propagate_status(request_t *command, int port, status_t **status)}}]{\setlength{\rightskip}{0pt plus 5cm}int propagate\+\_\+status (
+\begin{DoxyParamCaption}
+\item[{{\bf request\+\_\+t} $\ast$}]{command, }
+\item[{int}]{port, }
+\item[{{\bf status\+\_\+t} $\ast$$\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{eard__server__api_8h_a1be7d282613339884adf46eb00d358d4}{}\label{eard__server__api_8h_a1be7d282613339884adf46eb00d358d4}
 \index{eard\+\_\+server\+\_\+api.\+h@{eard\+\_\+server\+\_\+api.\+h}!read\+\_\+command@{read\+\_\+command}}
 \index{read\+\_\+command@{read\+\_\+command}!eard\+\_\+server\+\_\+api.\+h@{eard\+\_\+server\+\_\+api.\+h}}
 \subsubsection[{\texorpdfstring{read\+\_\+command(int s, request\+\_\+t $\ast$command)}{read_command(int s, request_t *command)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+command (

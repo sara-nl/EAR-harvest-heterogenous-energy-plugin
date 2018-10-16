@@ -1,40 +1,45 @@
-## SERVICE CONFIGURATION
+# EAR Configuration File
 
-# EAR Mariadb CONFIGURATION
-MariaDBIp=172.30.2.101
-MariaDBUser=ear_daemon
-#MariaDBPassw=
-MariaDBPort=0
+# MariaDB
+
+MariaDBIp=192.168.1.1
+MariaDBUser=root
+MariaDBPassw=password
+MariaDBPort=1100
 MariaDBDatabase=EAR
 
-# EAR Global Manager
+# EAR Global Manager (EARGMD)
 
 GlobalManagerVerbose=1
-# Use aggregated periodic metrics or periodic power metrics. Aggregated metrics are only available when EARDBD is running
+# Use aggregated periodic metrics or periodic power metrics. Aggregated metrics
+#  are only available when EARDBD is running
 GlobalManagerUseAggregated=1
-#Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)
+# Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2,
+#  ex. 10min and 1 month)
 GlobalManagerPeriodT1=90
 GlobalManagerPeriodT2=259200
 # in Joules
 GlobalManagerEnergyLimit=550000
-GlobalManagerHost=r22u21.hpc.eu.lenovo.com
+GlobalManagerHost=node1001
 GlobalManagerUnits=K
 GlobalManagerPolicy=MaxEnergy
 GlobalManagerPort=50000
-# Two modes are supported 0=manual 1= means automatic
+# Two modes are supported 0=manual and 1=automatic
 GlobalManagerMode=0
-#Anyway, a mail can be sent reporting the warning level (and the action taken in automatic mode)
-#GlobalManagerMail=pmayes@lenovo.com
+# Anyway, a mail can be sent reporting the warning level (and the action taken
+#  in automatic mode)
+#GlobalManagerMail=admin@hpc.example.com
 GlobalManagerMail=nomail
-#Thee values must be provided corresponding with DEFCON_L4,DEFCON_L3, and DEFCON_L2 (higer values means PANIC)
+# Three values must be provided corresponding with DEFCON_L4,DEFCON_L3, and
+#  DEFCON_L2 (higer values means PANIC)
 GlobalManagerWarningsPerc=85,90,95
-##T1 "grace" periods between DEFCON before re-evaluate
+# T1 "grace" periods between DEFCON before re-evaluate
 GlobalManagerGracePeriods=3
 
-#EARD
+# EAR Daemon (EARD)
 
 NodeDaemonVerbose=1
-#in seconds
+# In seconds
 NodeDaemonPowermonFreq=60
 NodeDaemonMaxPstate=1
 NodeDaemonTurbo=0
@@ -43,69 +48,84 @@ NodeUseDB=1
 NodeUseEARDBD=1
 NodeForceFrequencies=1
 
+# EAR Database Manager (EARDBD)
 
-# EARDBD (database manager)
 DBDaemonPortTCP=4711
 DBDaemonPortSecTCP=4712
 DBDaemonSyncPort=4713
-# Time in seconds
+# In seconds
 DBDaemonAggregationTime=60
 DBDaemonInsertionTime=30
-# Memory size expressed in MB. It is per process, it means if there is a server and a mirror it would allocate the double of that value.
+# Memory size expressed in MB. It is per process, it means if there is a server
+#  and a mirror it would allocate the double of that value.
 DBDaemonMemorySize=120
-# Expressed in percentage for types: mpi, non-mpi and learning applications, loops, energy metrics and aggregations and events, in that order. 
-DBDaemonMemorySizePerType=40,20,5,24,5,1,5
+# Expressed in percentage for types: mpi, non-mpi and learning applications,
+#  loops, energy metrics and aggregations and events, in that order.
+DBDaemonMemorySizePerType=60,22,5,0,7,1,5
 
-### COMMON Configuration
-TmpDir=@localstatedir@
-EtcDir=@sysconfdir@
-DataBasePathName=@sysconfdir@/ear/dbs/dbs.
-Verbose=0
+# EAR Library (EARL)
 
-#Library conf
 CoefficientsDir=@sysconfdir@/ear/coeffs
 DynAISLevels=4
 DynAISWindowSize=500
-# Maximum time (in seconds) EAR will wait until a signature is computed. After DynaisTimeout seconds, if no signature is computed, EAR will go to periodic mode
+# Maximum time (in seconds) EAR will wait until a signature is computed. After
+#  DynaisTimeout seconds, if no signature is computed, EAR will go to periodic
+#  mode.
 DynaisTimeout=30
-# # When EAR goes to periodic mode, it will compute the Application signature every "LibraryPeriod" seconds
+# When EAR goes to periodic mode, it will compute the Application signature
+#  every "LibraryPeriod" seconds
 LibraryPeriod=30
-# # EAR will check every N mpi calls whether it must go to periodic mode or not
+# EAR will check every N mpi calls whether it must go to periodic mode or not
 CheckEARModeEvery=1000
-
-# DEFAULT POWER POLICIES VALUES
+# Default power policy values
 DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
-SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION
-#SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
-#Pstates must be specified in the following order: MIN_ENERGY_TO_SOLUTION,MIN_TIME_TO_SOLUTION,MONITORING_ONLY
+SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION
+# P_STATES must be specified in the following order: MIN_ENERGY_TO_SOLUTION,
+#  MIN_TIME_TO_SOLUTION and MONITORING_ONLY.
 DefaultPstates=1,4,4
 MinEfficiencyGain=0.7
 MaxPerformancePenalty=0.1
 MinTimePerformanceAccuracy=10000000
 
-# AUTHORIZED USERS
-# Authorized users,accounts and groups are allowed to change policies, thresholds, frequencies etc
-# they are supposed to be admins 
+# Common configuration
 
-AuthorizedUsers=user1,user2
-# AuthorizedAccounts=acc1,acc2,acc3
-# AuthorizedGroups=xx,yy
+TmpDir=@localstatedir@
+EtcDir=@sysconfdir@
+DataBasePathName=@sysconfdir@/ear/dbs/dbs.
+Verbose=0
 
+# Authorized Users
 
-# # ENERGY TAGS AND PRIVILEDGED USERS
-# ### Privileged users,accounts and groups are allowed to use EnergyTags. The "allowed" TAGs are defined by row together with the priviledged user/group/account.
-EnergyTag=cpu-intensive pstate=1  
-EnergyTag=memory-intensive pstate=4 
-#EnergyTag=memory-intensive pstate=4 users=user1,user2 groups=group1,group2 accounts=acc1,acc2
-#
+# Authorized users,accounts and groups are allowed to change policies,
+#  thresholds, frequencies etc they are supposed to be admins
+AuthorizedUsers=usr1,usr2
+AuthorizedAccounts=acc1,acc2,acc3
+AuthorizedGroups=grp1,grp2
 
-# NODES CONFIGURATION: Node list, grouped by hardware characteristics, different lists must reflect different power characteristics
-NodeName=r22u[21,23,25,27] CPUs=24
+# Energy Tags
 
+# Privileged users,accounts and groups are allowed to use EnergyTags. The
+#  "allowed" TAGs are defined by row together with the priviledged
+#  user/group/account.
+EnergyTag=cpu-intensive pstate=1
+EnergyTag=memory-intensive pstate=4 users=usr1,usr2 groups=grp1,grp2 accounts=acc1,acc2
 
-# ISLES CONFIGURATION
-# it is mandatory to specify all the nodes in the cluster, grouped by islands.
-#more than one line per island must be supported to specify dbip ports
-# Example: Each island with 2 eardb, each one covering 200 nodes
+# Node List
 
-Island=0 Nodes=r22u21,r22u23,r22u25,r22u27 DBIP=r22u21.hpc.eu.lenovo.com DBSECIP=r22u21.hpc.eu.lenovo.com
+# Grouped by hardware characteristics, different lists must reflect different
+#  power characteristics.
+# In this example the nodes are clustered by its type of CPU. From node1001 to
+#  node1080 for 24 cores nodes and from node1101 to node1180 for 18 cores nodes.
+NodeName=node10[01-80] CPUs=24
+NodeName=node11[01-80] CPUs=18
+
+# Node Isles
+
+# It is mandatory to specify all the nodes in the cluster, grouped by islands.
+# More than one line per island must be supported to hold nodes with different
+#  names or for pointing to different EARDBDs through its IPs or hostnames.
+# In the following example the nodes are clustered in two different islands,
+#  but the Island 1 have two types of EARDBDs configurations.
+Island=0 Nodes=node10[01-80] DBIP=node1081 DBSECIP=node1082
+Island=1 Nodes=node11[01-40] DBIP=node1181 DBSECIP=node1182
+Island=1 Nodes=node11[41-80] DBIP=node1183 DBSECIP=node1184

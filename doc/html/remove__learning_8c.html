@@ -97,39 +97,112 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;unistd.h&gt;</code><br />
 <code>#include &lt;termios.h&gt;</code><br />
 <code>#include &lt;mysql/mysql.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="string__enhanced_8h_source.html">common/string_enhanced.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="db__helper_8h_source.html">common/database/db_helper.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="application_8h_source.html">common/types/application.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="cluster__conf_8h_source.html">common/types/configuration/cluster_conf.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a605ea5b25dbcb511b3e8232149d118e7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a605ea5b25dbcb511b3e8232149d118e7">ALL_QUERY</a></td></tr>
-<tr class="separator:a605ea5b25dbcb511b3e8232149d118e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5638066512cc527404ebbcd3f8efafc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#af5638066512cc527404ebbcd3f8efafc">ALL_QUERY1</a>&#160;&#160;&#160;&quot;DELETE FROM Power_signatures WHERE id IN (SELECT power_signature_id from Learning_applications)&quot;</td></tr>
+<tr class="separator:af5638066512cc527404ebbcd3f8efafc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acae513c8a2e5d5ec9f7a37193d130754"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#acae513c8a2e5d5ec9f7a37193d130754">ALL_QUERY2</a>&#160;&#160;&#160;&quot;DELETE FROM Learning_applications&quot;</td></tr>
+<tr class="separator:acae513c8a2e5d5ec9f7a37193d130754"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c27bc6381aa5a1331572bce3e155e19"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a0c27bc6381aa5a1331572bce3e155e19">ALL_QUERY3</a>&#160;&#160;&#160;&quot;DELETE FROM Learning_signatures&quot;</td></tr>
+<tr class="separator:a0c27bc6381aa5a1331572bce3e155e19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae54433bf2336778870d78827c118882a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#ae54433bf2336778870d78827c118882a">ALL_QUERY4</a>&#160;&#160;&#160;&quot;DELETE FROM Learning_jobs&quot;</td></tr>
+<tr class="separator:ae54433bf2336778870d78827c118882a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add8c0b4d51270a7899ce47db3b24461d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#add8c0b4d51270a7899ce47db3b24461d">NODE_QUERY</a></td></tr>
 <tr class="separator:add8c0b4d51270a7899ce47db3b24461d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a91a3bbcc7eb26e8695255b2795d6e46f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a91a3bbcc7eb26e8695255b2795d6e46f">main</a> (int argc, char *argv[])</td></tr>
-<tr class="separator:a91a3bbcc7eb26e8695255b2795d6e46f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf5c804dfce7a70e36dda02995fad481"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#adf5c804dfce7a70e36dda02995fad481">exit</a> (0)</td></tr>
+<tr class="separator:adf5c804dfce7a70e36dda02995fad481"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2965759c2a309bb9a8346cb90c4bbb8a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a2965759c2a309bb9a8346cb90c4bbb8a">if</a> (!strcmp(argv[1],&quot;all&quot;)) all_nodes</td></tr>
+<tr class="separator:a2965759c2a309bb9a8346cb90c4bbb8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a952d7eac6fda03d78b47bc5c013e6b66"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a952d7eac6fda03d78b47bc5c013e6b66">if</a> (argc &gt; 2)</td></tr>
+<tr class="separator:a952d7eac6fda03d78b47bc5c013e6b66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01275f8d4d9e0c74f8b1140d6cc344d1"><td class="memItemLeft" align="right" valign="top">else&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a01275f8d4d9e0c74f8b1140d6cc344d1">strcpy</a> (passw,&quot;&quot;)</td></tr>
+<tr class="separator:a01275f8d4d9e0c74f8b1140d6cc344d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e2deb055ee62ad4aeeed4a0bc592d30"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a1e2deb055ee62ad4aeeed4a0bc592d30">if</a> (<a class="el" href="cluster__conf_8h.html#a5a0f7933ace10edf104ac654942f764b">get_ear_conf_path</a>(<a class="el" href="remove__learning_8c.html#a9bf419f662d96087eb75930ea48ac805">ear_path</a>)==<a class="el" href="common_2states_8h.html#a1e00cd011ba6cb619f422d959c4f128f">EAR_ERROR</a>)</td></tr>
+<tr class="separator:a1e2deb055ee62ad4aeeed4a0bc592d30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff20b7ca8c4eded951efd9d815f98f76"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#aff20b7ca8c4eded951efd9d815f98f76">read_cluster_conf</a> (<a class="el" href="remove__learning_8c.html#a9bf419f662d96087eb75930ea48ac805">ear_path</a>,&amp;<a class="el" href="remove__learning_8c.html#aab1c67b37b6a1a1135c6fc1e4ef7cd80">my_conf</a>)</td></tr>
+<tr class="separator:aff20b7ca8c4eded951efd9d815f98f76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0faf4517f2ecde0085b00ea8f94d4266"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a0faf4517f2ecde0085b00ea8f94d4266">if</a> (all_nodes)</td></tr>
+<tr class="separator:a0faf4517f2ecde0085b00ea8f94d4266"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ae077894f4be08fe1b78883a5f00ee6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a7ae077894f4be08fe1b78883a5f00ee6">if</a> (!mysql_real_connect(connection, my_conf.database.ip,&quot;root&quot;, passw, my_conf.database.database, my_conf.database.port, NULL, 0))</td></tr>
+<tr class="separator:a7ae077894f4be08fe1b78883a5f00ee6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98a5e7d8f4b09677886328784e551d77"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a98a5e7d8f4b09677886328784e551d77">if</a> (mysql_query(connection, <a class="el" href="remove__learning_8c.html#a0ad9302c12c82c3144067f176a085cec">query</a>))</td></tr>
+<tr class="separator:a98a5e7d8f4b09677886328784e551d77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d86de0be78f3cf4cc7b98bc27d2f5af"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a4d86de0be78f3cf4cc7b98bc27d2f5af">mysql_close</a> (connection)</td></tr>
+<tr class="separator:a4d86de0be78f3cf4cc7b98bc27d2f5af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a43d7e58c317e811389b628dc49b52bd2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a43d7e58c317e811389b628dc49b52bd2">EAR_VERBOSE_LEVEL</a> =1</td></tr>
 <tr class="memdesc:a43d7e58c317e811389b628dc49b52bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">This program sets the node frequency .  <a href="#a43d7e58c317e811389b628dc49b52bd2">More...</a><br /></td></tr>
 <tr class="separator:a43d7e58c317e811389b628dc49b52bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaaecc7646b3c722387d285ecbb165474"><td class="memItemLeft" align="right" valign="top">AND Learning_jobs&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#aaaecc7646b3c722387d285ecbb165474">step_id</a></td></tr>
+<tr class="separator:aaaecc7646b3c722387d285ecbb165474"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7ef36563acf2b1eade4b6856c9c9b63"><td class="memItemLeft" align="right" valign="top">AND Learning_jobs either the <a class="el" href="externs__alloc_8h.html#a2ae65b19e2c0b0e3d4945cf6ceb0085c">node_name</a> from which to delete records or[all] to delete all records If the root user has a&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#ab7ef36563acf2b1eade4b6856c9c9b63">password</a></td></tr>
+<tr class="separator:ab7ef36563acf2b1eade4b6856c9c9b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93e673027f655c55b00cc492898783a0"><td class="memItemLeft" align="right" valign="top">AND Learning_jobs either the <a class="el" href="externs__alloc_8h.html#a2ae65b19e2c0b0e3d4945cf6ceb0085c">node_name</a> from which to delete records or[all] to delete all records If the root user has a use p&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a93e673027f655c55b00cc492898783a0">n</a></td></tr>
+<tr class="separator:a93e673027f655c55b00cc492898783a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bf419f662d96087eb75930ea48ac805"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a9bf419f662d96087eb75930ea48ac805">ear_path</a> [256]</td></tr>
+<tr class="separator:a9bf419f662d96087eb75930ea48ac805"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab1c67b37b6a1a1135c6fc1e4ef7cd80"><td class="memItemLeft" align="right" valign="top"><a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#aab1c67b37b6a1a1135c6fc1e4ef7cd80">my_conf</a></td></tr>
+<tr class="separator:aab1c67b37b6a1a1135c6fc1e4ef7cd80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ad9302c12c82c3144067f176a085cec"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__learning_8c.html#a0ad9302c12c82c3144067f176a085cec">query</a> [256]</td></tr>
+<tr class="separator:a0ad9302c12c82c3144067f176a085cec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
-<a class="anchor" id="a605ea5b25dbcb511b3e8232149d118e7"></a>
+<a class="anchor" id="af5638066512cc527404ebbcd3f8efafc"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define ALL_QUERY</td>
+          <td class="memname">#define ALL_QUERY1&#160;&#160;&#160;&quot;DELETE FROM Power_signatures WHERE id IN (SELECT power_signature_id from Learning_applications)&quot;</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;DELETE Learning_signatures, Learning_applications, Learning_jobs FROM Learning_jobs &quot;</span> \</div><div class="line">                    <span class="stringliteral">&quot;INNER JOIN Learning_applications INNER JOIN Learning_signatures ON Learning_jobs.id=job_id &quot;</span> \</div><div class="line">                    <span class="stringliteral">&quot;AND Learning_jobs.step_id=Learning_applications.step_id AND Learning_signatures.id=signature_id&quot;</span></div></div><!-- fragment -->
+
+</div>
+</div>
+<a class="anchor" id="acae513c8a2e5d5ec9f7a37193d130754"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ALL_QUERY2&#160;&#160;&#160;&quot;DELETE FROM Learning_applications&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0c27bc6381aa5a1331572bce3e155e19"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ALL_QUERY3&#160;&#160;&#160;&quot;DELETE FROM Learning_signatures&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae54433bf2336778870d78827c118882a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ALL_QUERY4&#160;&#160;&#160;&quot;DELETE FROM Learning_jobs&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
 </div>
 </div>
 <a class="anchor" id="add8c0b4d51270a7899ce47db3b24461d"></a>
@@ -145,21 +218,185 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a91a3bbcc7eb26e8695255b2795d6e46f"></a>
+<a class="anchor" id="adf5c804dfce7a70e36dda02995fad481"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void main </td>
+          <td class="memname">exit </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>argc</em>, </td>
+          <td class="paramtype">0&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2965759c2a309bb9a8346cb90c4bbb8a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">if </td>
+          <td>(</td>
+          <td class="paramtype">!&#160;</td>
+          <td class="paramname"><em>strcmp</em>argv[1],&quot;all&quot;</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a952d7eac6fda03d78b47bc5c013e6b66"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">if </td>
+          <td>(</td>
+          <td class="paramtype">argc&#160;</td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>argv</em>[]&#160;</td>
+          <td class="paramtype">2&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1e2deb055ee62ad4aeeed4a0bc592d30"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">if </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="cluster__conf_8h.html#a5a0f7933ace10edf104ac654942f764b">get_ear_conf_path</a>(<a class="el" href="remove__learning_8c.html#a9bf419f662d96087eb75930ea48ac805">ear_path</a>)&#160;</td>
+          <td class="paramname"> = <code>=<a class="el" href="common_2states_8h.html#a1e00cd011ba6cb619f422d959c4f128f">EAR_ERROR</a></code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0faf4517f2ecde0085b00ea8f94d4266"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">if </td>
+          <td>(</td>
+          <td class="paramtype">all_nodes&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7ae077894f4be08fe1b78883a5f00ee6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">if </td>
+          <td>(</td>
+          <td class="paramtype">!&#160;</td>
+          <td class="paramname"><em>mysql_real_connect</em>connection, my_conf.database.ip,&quot;root&quot;, passw, my_conf.database.database, my_conf.database.port, NULL, 0</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a98a5e7d8f4b09677886328784e551d77"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">if </td>
+          <td>(</td>
+          <td class="paramtype">mysql_query(connection, <a class="el" href="remove__learning_8c.html#a0ad9302c12c82c3144067f176a085cec">query</a>)&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4d86de0be78f3cf4cc7b98bc27d2f5af"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">mysql_close </td>
+          <td>(</td>
+          <td class="paramtype">connection&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aff20b7ca8c4eded951efd9d815f98f76"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">read_cluster_conf </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="remove__learning_8c.html#a9bf419f662d96087eb75930ea48ac805">ear_path</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&amp;&#160;</td>
+          <td class="paramname"><em>my_conf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a01275f8d4d9e0c74f8b1140d6cc344d1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">else strcpy </td>
+          <td>(</td>
+          <td class="paramtype">passw&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&quot;&quot;&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -172,6 +409,18 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="a9bf419f662d96087eb75930ea48ac805"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char ear_path[256]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a43d7e58c317e811389b628dc49b52bd2"></a>
 <div class="memitem">
 <div class="memproto">
@@ -185,6 +434,66 @@ Variables</h2></td></tr>
 <p>This program sets the node frequency . </p>
 <p>It must be executed with privileges </p>
 
+</div>
+</div>
+<a class="anchor" id="aab1c67b37b6a1a1135c6fc1e4ef7cd80"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a> my_conf</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a93e673027f655c55b00cc492898783a0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">AND Learning_jobs either the <a class="el" href="externs__alloc_8h.html#a2ae65b19e2c0b0e3d4945cf6ceb0085c">node_name</a> from which to delete records or [all] to delete all records If the root user has a use p n</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab7ef36563acf2b1eade4b6856c9c9b63"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">AND Learning_jobs either the <a class="el" href="externs__alloc_8h.html#a2ae65b19e2c0b0e3d4945cf6ceb0085c">node_name</a> from which to delete records or [all] to delete all records If the root user has a password</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0ad9302c12c82c3144067f176a085cec"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char query[256]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aaaecc7646b3c722387d285ecbb165474"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">AND Learning_jobs step_id</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=Learning_applications.step_id AND Learning_signatures.id=signature_id<span class="stringliteral">&quot;</span></div><div class="line"><span class="stringliteral"></span></div><div class="line"><span class="stringliteral">#define ALL_QUERY1</span></div><div class="line"><span class="stringliteral">#define ALL_QUERY2</span></div><div class="line"><span class="stringliteral">#define ALL_QUERY3</span></div><div class="line"><span class="stringliteral">#define ALL_QUERY4</span></div><div class="line"><span class="stringliteral"></span></div><div class="line"><span class="stringliteral"></span></div><div class="line"><span class="stringliteral">#define NODE_QUERY</span></div><div class="line"><span class="stringliteral"></span></div><div class="line"><span class="stringliteral"></span></div><div class="line"><span class="stringliteral"></span></div><div class="line"><span class="stringliteral"></span></div><div class="line"><span class="stringliteral">void main(int argc,char *argv[])</span></div><div class="line"><span class="stringliteral">{</span></div><div class="line"><span class="stringliteral">    int num_apps, is_learning=0;</span></div><div class="line"><span class="stringliteral">    char passw[256];</span></div><div class="line"><span class="stringliteral">    int total_apps = 0;</span></div><div class="line"><span class="stringliteral">    char all_nodes = 0;</span></div><div class="line"><span class="stringliteral">    application_t *apps;</span></div><div class="line"><span class="stringliteral">    if (argc &lt; 2) {</span></div><div class="line"><span class="stringliteral">        printf(&quot;</span>Requires an argument</div></div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->

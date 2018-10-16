@@ -1,21 +1,23 @@
 var searchData=
 [
-  ['f',['F',['../structCoefficients__info.html#af3ccffc2c82048102f09ee41cd8ed30c',1,'Coefficients_info::F()'],['../structCoefficients__info__v3.html#a1af4d0fbc6523a1172115b330ed60edd',1,'Coefficients_info_v3::F()']]],
-  ['f0_5fmhz',['f0_mhz',['../structcontrol.html#a68c1711de0d975a8463c36213150f172',1,'control']]],
+  ['f',['F',['../structcoefficient.html#a53becc3d26c6e1ac77f25002c28b5971',1,'coefficient::F()'],['../structcoefficient__obs.html#a450b61c7f8ecd5cd3c3dd9281e5da992',1,'coefficient_obs::F()']]],
   ['f_5fmonitoring',['f_monitoring',['../eard_8c.html#a64cabfb370e6eb06f481ac0b0c620e29',1,'f_monitoring():&#160;eard.c'],['../power__monitor_8c.html#a64cabfb370e6eb06f481ac0b0c620e29',1,'f_monitoring():&#160;eard.c'],['../ear__pm_8c.html#a2dd1d63ebc85df2352f843f464964618',1,'f_monitoring():&#160;ear_pm.c']]],
   ['fd',['fd',['../structsocket.html#adce841ceca3a01158a71421e6b0dbd8a',1,'socket']]],
   ['fd_5fcli',['fd_cli',['../eardbd_8c.html#a4131bc827a3f9ffabf867a654d698888',1,'eardbd.c']]],
   ['fd_5fmax',['fd_max',['../eardbd_8c.html#a09e21034f62b8102c2534c139cf965e7',1,'eardbd.c']]],
   ['fd_5fmin',['fd_min',['../eardbd_8c.html#a36d44537ec90ffc3ce08d463ef9ee99e',1,'eardbd.c']]],
   ['fd_5fpowermon',['fd_powermon',['../ear__pm_8c.html#af54074a8f35c422afcc9b9cfc624143e',1,'ear_pm.c']]],
+  ['file_5fsize',['file_size',['../show__coefficients_8c.html#a8bc95708c758a6400d8692f2d0fcbaeb',1,'file_size():&#160;show_coefficients.c'],['../coefficients__comparison_8c.html#a8bc95708c758a6400d8692f2d0fcbaeb',1,'file_size():&#160;coefficients_comparison.c'],['../translate__coefficients_8c.html#a8bc95708c758a6400d8692f2d0fcbaeb',1,'file_size():&#160;translate_coefficients.c']]],
   ['first',['first',['../structcpufreq__available__governors.html#aa4a79389742e7ce24da79278a70be602',1,'cpufreq_available_governors::first()'],['../structcpufreq__available__frequencies.html#ac7f4720d7bc9d95bae99d5bc055627cd',1,'cpufreq_available_frequencies::first()'],['../structcpufreq__affected__cpus.html#afa0443d824bd14ff01e64b3b72a99a09',1,'cpufreq_affected_cpus::first()'],['../structcpufreq__stats.html#ad86cafc85cfd0f15b184ac6a46259d05',1,'cpufreq_stats::first()']]],
   ['flops',['FLOPS',['../structsignature.html#af1683c527a4767018d0d946f0c9f4a79',1,'signature']]],
   ['force_5ffrequencies',['force_frequencies',['../structeard__conf.html#a72a8269c5c85c2a0544ce949d1867ed5',1,'eard_conf']]],
   ['force_5frescheduling',['force_rescheduling',['../structresched.html#a0c832dbecc3f492eca588ca547226fdb',1,'resched']]],
   ['forked',['forked',['../eardbd_8c.html#a561d6ae2df1882124024d1ad25c05ca0',1,'forked():&#160;eardbd.c'],['../eardbd__storage_8c.html#a561d6ae2df1882124024d1ad25c05ca0',1,'forked():&#160;eardbd.c']]],
   ['freq',['freq',['../structear__event.html#aedf43a51d14908b79e030af38a20a70c',1,'ear_event']]],
+  ['freq_5fref',['freq_ref',['../structcontrol.html#af98c6f06898291c5e6cb06bc0d386530',1,'control']]],
   ['frequencies',['frequencies',['../eard_8c.html#a4acc76aa243f40007add29d705cc0bda',1,'eard.c']]],
   ['frequencies_5fpath',['frequencies_path',['../eard_8c.html#ab9ad5abb5cabf7ec35bd298768486862',1,'eard.c']]],
   ['frequency',['frequency',['../structcpufreq__available__frequencies.html#a1e1de232844a2267ce9eda63bc48fa15',1,'cpufreq_available_frequencies::frequency()'],['../structcpufreq__stats.html#a387ccb433c26f2b249454f0a9913d033',1,'cpufreq_stats::frequency()']]],
+  ['frq_5fbase',['frq_base',['../structcontrol.html#a43673299be6fda595a58b55924f7883b',1,'control']]],
   ['full_5flength',['full_length',['../ear__acct_8c.html#a32e89a4c06b782ee2fe44dba97cff9e1',1,'ear_acct.c']]]
 ];

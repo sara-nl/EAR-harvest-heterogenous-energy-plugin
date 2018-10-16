@@ -302,7 +302,7 @@ void process_remote_requests(int clientfd)
 	ulong ack=EAR_SUCCESS;
 	eard_verbose(2,"connection received\n");
 	req=read_command(clientfd,&command);
-    if (req == last_command && command.time_code == last_command_time)
+    if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time)
         return;
     else
     {

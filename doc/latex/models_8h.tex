@@ -21,6 +21,8 @@ void \hyperlink{models_8h_a41d87f488d74d0893055847db21b6455}{policy\+\_\+end\+\_
 \begin{DoxyCompactList}\small\item\em Given a performance projection, the actual application signature and the last computed application signature values, returns true if policy decision has been the correct ones. \end{DoxyCompactList}\item 
 void \hyperlink{models_8h_a92a352c14097670f3ac473f292f9a38d}{policy\+\_\+default\+\_\+configuration} ()
 \begin{DoxyCompactList}\small\item\em Executed when we have done several \char`\"{}tries\char`\"{} and the policy is not able to select the \char`\"{}good\char`\"{} freq for this app. \end{DoxyCompactList}\item 
+void \hyperlink{models_8h_a6f5bdfb62b903b462daf98252f682f4c}{force\+\_\+global\+\_\+frequency} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} new\+\_\+f)
+\begin{DoxyCompactList}\small\item\em This function sets the frequency \char`\"{}by hand\char`\"{} when using global synchronizations. \end{DoxyCompactList}\item 
 \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{models_8h_aa6d92fa7e0218d3d03d650092f8ccd7f}{get\+\_\+global\+\_\+def\+\_\+pstate} ()
 \item 
 \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{models_8h_ab2d6f41ac78d7922fb4ae5d5c79f2113}{get\+\_\+global\+\_\+def\+\_\+freq} ()
@@ -28,10 +30,25 @@ void \hyperlink{models_8h_a92a352c14097670f3ac473f292f9a38d}{policy\+\_\+default
 double \hyperlink{models_8h_ac6774e915614cf818dab90e2ad8ee2b9}{get\+\_\+global\+\_\+th} ()
 \item 
 void \hyperlink{models_8h_aab8814a778638a1fc4ba353b3852c5df}{policy\+\_\+global\+\_\+reconfiguration} ()
+\item 
+int \hyperlink{models_8h_a0dc26cdb45d5de748515b058d805a5fe}{policy\+\_\+max\+\_\+tries} ()
+\item 
+\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{models_8h_acb90faacdf8786ae94fcae00d3f941dd}{policy\+\_\+get\+\_\+default\+\_\+freq} ()
 \end{DoxyCompactItemize}
 
 
 \subsection{Function Documentation}
+\index{models.\+h@{models.\+h}!force\+\_\+global\+\_\+frequency@{force\+\_\+global\+\_\+frequency}}
+\index{force\+\_\+global\+\_\+frequency@{force\+\_\+global\+\_\+frequency}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{force\+\_\+global\+\_\+frequency(ulong new\+\_\+f)}{force_global_frequency(ulong new_f)}}]{\setlength{\rightskip}{0pt plus 5cm}void force\+\_\+global\+\_\+frequency (
+\begin{DoxyParamCaption}
+\item[{{\bf ulong}}]{new\+\_\+f}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_a6f5bdfb62b903b462daf98252f682f4c}{}\label{models_8h_a6f5bdfb62b903b462daf98252f682f4c}
+
+
+This function sets the frequency \char`\"{}by hand\char`\"{} when using global synchronizations. 
+
 \index{models.\+h@{models.\+h}!get\+\_\+global\+\_\+def\+\_\+freq@{get\+\_\+global\+\_\+def\+\_\+freq}}
 \index{get\+\_\+global\+\_\+def\+\_\+freq@{get\+\_\+global\+\_\+def\+\_\+freq}!models.\+h@{models.\+h}}
 \subsubsection[{\texorpdfstring{get\+\_\+global\+\_\+def\+\_\+freq()}{get_global_def_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} get\+\_\+global\+\_\+def\+\_\+freq (
@@ -98,6 +115,13 @@ Executed when we have done several \char`\"{}tries\char`\"{} and the policy is n
 
 Executed when a end\+\_\+loop is reported by dyanis. 
 
+\index{models.\+h@{models.\+h}!policy\+\_\+get\+\_\+default\+\_\+freq@{policy\+\_\+get\+\_\+default\+\_\+freq}}
+\index{policy\+\_\+get\+\_\+default\+\_\+freq@{policy\+\_\+get\+\_\+default\+\_\+freq}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{policy\+\_\+get\+\_\+default\+\_\+freq()}{policy_get_default_freq()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} policy\+\_\+get\+\_\+default\+\_\+freq (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_acb90faacdf8786ae94fcae00d3f941dd}{}\label{models_8h_acb90faacdf8786ae94fcae00d3f941dd}
 \index{models.\+h@{models.\+h}!policy\+\_\+global\+\_\+reconfiguration@{policy\+\_\+global\+\_\+reconfiguration}}
 \index{policy\+\_\+global\+\_\+reconfiguration@{policy\+\_\+global\+\_\+reconfiguration}!models.\+h@{models.\+h}}
 \subsubsection[{\texorpdfstring{policy\+\_\+global\+\_\+reconfiguration()}{policy_global_reconfiguration()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+global\+\_\+reconfiguration (
@@ -105,6 +129,13 @@ Executed when a end\+\_\+loop is reported by dyanis.
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{models_8h_aab8814a778638a1fc4ba353b3852c5df}{}\label{models_8h_aab8814a778638a1fc4ba353b3852c5df}
+\index{models.\+h@{models.\+h}!policy\+\_\+max\+\_\+tries@{policy\+\_\+max\+\_\+tries}}
+\index{policy\+\_\+max\+\_\+tries@{policy\+\_\+max\+\_\+tries}!models.\+h@{models.\+h}}
+\subsubsection[{\texorpdfstring{policy\+\_\+max\+\_\+tries()}{policy_max_tries()}}]{\setlength{\rightskip}{0pt plus 5cm}int policy\+\_\+max\+\_\+tries (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{models_8h_a0dc26cdb45d5de748515b058d805a5fe}{}\label{models_8h_a0dc26cdb45d5de748515b058d805a5fe}
 \index{models.\+h@{models.\+h}!policy\+\_\+new\+\_\+loop@{policy\+\_\+new\+\_\+loop}}
 \index{policy\+\_\+new\+\_\+loop@{policy\+\_\+new\+\_\+loop}!models.\+h@{models.\+h}}
 \subsubsection[{\texorpdfstring{policy\+\_\+new\+\_\+loop()}{policy_new_loop()}}]{\setlength{\rightskip}{0pt plus 5cm}void policy\+\_\+new\+\_\+loop (

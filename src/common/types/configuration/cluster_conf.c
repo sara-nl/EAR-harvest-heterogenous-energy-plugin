@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,19 +15,20 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
 #include <common/types/configuration/cluster_conf.h>
+#include <common/environment.h>
 
 
 //#define __OLD__CONF__
@@ -104,7 +105,7 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 	int i=0;
 	node_conf_t *n=NULL;
 	do{ // At least one node is assumed
-		//if (strcmp(my_conf->nodes[i].name,nodename)==0){	
+		//if (strcmp(my_conf->nodes[i].name,nodename)==0){
 		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
         	n=&my_conf->nodes[i];
 		}
@@ -121,8 +122,12 @@ void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
 	dest->max_pstate=src->max_pstate;
 	strcpy(dest->db_ip,src->db_ip);
 	strcpy(dest->db_sec_ip,src->db_sec_ip);
-	dest->coef_file=malloc(strlen(src->coef_file)+1);
-	strcpy(dest->coef_file,src->coef_file);
+    if (src->coef_file == NULL)
+        dest->coef_file="";
+    else{
+	    dest->coef_file=malloc(strlen(src->coef_file)+1);
+	    strcpy(dest->coef_file,src->coef_file);
+    }
 	dest->num_policies=src->num_policies;
 	for (i=0;i<TOTAL_POLICIES;i++){
 		copy_policy_conf(&dest->policies[i],&src->policies[i]);
@@ -148,7 +153,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 		}
 		i++;
     }
-    
+
     i = 0;
     do{ // At least one node is assumed
 		if ((range_id = island_range_conf_contains_node(&my_conf->islands[i], nodename)) >= 0) {
@@ -168,7 +173,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         char found = 0;
         for (j = 0; j < num_spec_nodes; j++)
             if (my_conf->power_policies[i].policy == n->policies[j].policy) found = 1;
-        
+
         if (!found)
         {
             memcpy(&n->policies[num_spec_nodes], &my_conf->power_policies[i], sizeof(policy_conf_t));
@@ -189,7 +194,7 @@ int get_ear_conf_path(char *ear_conf_path)
 	char *my_etc;
 	int fd;
 	my_etc=getenv("EAR_ETC");
-	if (my_etc==NULL) return EAR_ERROR;	
+	if (my_etc==NULL) return EAR_ERROR;
 	sprintf(my_path,"%s/ear/ear.conf",my_etc);
 	fd=open(my_path,O_RDONLY);
     if (fd>0){
@@ -282,9 +287,9 @@ energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char
 	while((i<my_conf->num_tags) && (!found)){
 		if (strcmp(energy_tag,my_conf->e_tags[i].tag)==0){
 			found=1;
-			my_tag=&my_conf->e_tags[i];	
+			my_tag=&my_conf->e_tags[i];
 		}else i++;
-	}	
+	}
 	if (!found)	return NULL;
 	return can_use_energy_tag(user,group,acc,my_tag);
 }
@@ -311,19 +316,19 @@ uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *g
 	energy_tag_t *is_tag;
 	int flag;
 	*my_tag=NULL;
-	fprintf(stderr,"Checking user %s group %s acc %s etag %s\n",user,group,acc,energy_tag);	
+	fprintf(stderr,"Checking user %s group %s acc %s etag %s\n",user,group,acc,energy_tag);
 	/* We first check if it is authorized user */
 	flag=is_privileged(my_conf,user,group,acc);
 	if (flag){
 		if (energy_tag!=NULL){
-			is_tag=energy_tag_exists(my_conf,energy_tag); 
+			is_tag=energy_tag_exists(my_conf,energy_tag);
 			if (is_tag!=NULL){ *my_tag=is_tag;return ENERGY_TAG;}
 			else return AUTHORIZED;
 		}else return AUTHORIZED;
 	}
 	/* It is an energy tag user ? */
 	is_tag=is_energy_tag_privileged(my_conf, user,group,acc,energy_tag);
-	if (is_tag!=NULL){ 
+	if (is_tag!=NULL){
 		*my_tag=is_tag;
 		return ENERGY_TAG;
 	} else return NORMAL;
@@ -371,6 +376,23 @@ void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
 }
 
 /*** DEFAULT VALUES ****/
+void set_default_eardbd_conf(eardb_conf_t *eardbdc)
+{
+	eardbdc->aggr_time = 30;
+	eardbdc->insr_time = 30;
+	eardbdc->tcp_port = 4711;
+	eardbdc->sec_tcp_port = 4712;
+	eardbdc->sync_tcp_port = 4713;
+	eardbdc->mem_size = 120;
+	eardbdc->mem_size_types[0] = 60;
+	eardbdc->mem_size_types[1] = 22;
+	eardbdc->mem_size_types[2] = 5;
+	eardbdc->mem_size_types[3] = 0;
+	eardbdc->mem_size_types[4] = 7;
+	eardbdc->mem_size_types[5] = 1;
+	eardbdc->mem_size_types[6] = 5;
+}
+
 void set_default_eard_conf(eard_conf_t *eardc)
 {
 	eardc->verbose=1;           /* default 1 */
@@ -383,6 +405,15 @@ void set_default_eard_conf(eard_conf_t *eardc)
 	eardc->force_frequencies=1; /* EARD will force frequencies */
 }
 
+void set_default_earlib_conf(earlib_conf_t *earlibc)
+{
+	strcpy(earlibc->coefficients_pathname,DEFAULT_COEFF_PATHNAME);
+	earlibc->dynais_levels=DEFAULT_DYNAIS_LEVELS;
+	earlibc->dynais_window=DEFAULT_DYNAIS_WINDOW_SIZE;
+	earlibc->dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
+	earlibc->lib_period=PERIOD;
+	earlibc->check_every=MPI_CALLS_TO_CHECK_PERIODIC;
+}
 void set_default_eargm_conf(eargm_conf_t *eargmc)
 {
 	eargmc->verbose=1;
@@ -391,7 +422,7 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->t2=DEFAULT_T2;
 	eargmc->energy=DEFAULT_T2*DEFAULT_POWER;
 	eargmc->units=1;
-	eargmc->policy=0; 
+	eargmc->policy=0;
 	eargmc->port=EARGM_PORT_NUMBER;
 	eargmc->mode=0;
 	eargmc->defcon_limits[0]=85;
@@ -399,4 +430,28 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->defcon_limits[2]=95;
 	eargmc->grace_periods=GRACE_T1;
 	strcpy(eargmc->mail,"nomail");
+}
+
+void set_default_db_conf(db_conf_t *db_conf)
+{
+    strcpy(db_conf->user, "ear_daemon");
+    strcpy(db_conf->ip, "127.0.0.1");
+    db_conf->port = 0;
+}
+
+int get_node_island(cluster_conf_t *conf, char *hostname)
+{
+	my_node_conf_t *node;
+	int island;
+
+	node = get_my_node_conf(conf, hostname);
+
+	if (node == NULL) {
+		return EAR_ERROR;
+	}
+
+	island = node->island;
+	free(node);
+
+	return island;
 }

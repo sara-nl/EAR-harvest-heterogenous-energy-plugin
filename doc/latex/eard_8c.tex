@@ -82,7 +82,7 @@ int \hyperlink{eard_8c_a629a1b8b9361f3237e42483a10ec834b}{eard\+\_\+node\+\_\+en
 \item 
 int \hyperlink{eard_8c_a5e9620b703ef0b9a74325263eb197dd6}{eard\+\_\+system} (int must\+\_\+read)
 \item 
-void \hyperlink{eard_8c_af9ac3338028205c4fb9d2dae85e43773}{eard\+\_\+set\+\_\+freq} (unsigned long new\+\_\+freq, unsigned long max\+\_\+freq)
+void \hyperlink{eard_8c_af9ac3338028205c4fb9d2dae85e43773}{eard\+\_\+set\+\_\+freq} (unsigned long new\+\_\+freq, unsigned long \hyperlink{ear__lp__validation_8c_a67b5fc2af25178078dfc5b1bac08de32}{max\+\_\+freq})
 \item 
 int \hyperlink{eard_8c_aa6f4faf4cbb0cedf947898f2100989e3}{eard\+\_\+freq} (int must\+\_\+read)
 \item 
@@ -121,6 +121,8 @@ pthread\+\_\+t \hyperlink{eard_8c_a1c3bf6f5d3096e1d18fa36141d1101d2}{dyn\+\_\+co
 \item 
 \hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$ \hyperlink{eard_8c_a4c85a23a7110473765eee80874e1c11d}{my\+\_\+node\+\_\+conf}
 \item 
+\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} \hyperlink{eard_8c_a123c8414e64591d6d57189a02df597ff}{my\+\_\+original\+\_\+node\+\_\+conf}
+\item 
 \hyperlink{eard__checkpoint_8h_a15dcbd88d3825526c38c1e1a5d8325e9}{eard\+\_\+dyn\+\_\+conf\+\_\+t} \hyperlink{eard_8c_af4290bd197152d64b82fa3ce92a076fd}{eard\+\_\+dyn\+\_\+conf}
 \item 
 \hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} \hyperlink{eard_8c_ac5603ed5364e47b572bfd29c59ab1452}{default\+\_\+policy\+\_\+context}
@@ -139,9 +141,9 @@ pthread\+\_\+t \hyperlink{eard_8c_a1c3bf6f5d3096e1d18fa36141d1101d2}{dyn\+\_\+co
 \item 
 \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$ \hyperlink{eard_8c_a4acc76aa243f40007add29d705cc0bda}{frequencies}
 \item 
-\hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$ \hyperlink{eard_8c_aa2e339851a97c074ec7ab5671a58e67e}{my\+\_\+coefficients}
+\hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$ \hyperlink{eard_8c_a8132cacba090747a2b440e038bb93acd}{my\+\_\+coefficients}
 \item 
-\hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$ \hyperlink{eard_8c_a8829efd9b54fe3eef5827bb8b2a7768e}{coeffs\+\_\+conf}
+\hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$ \hyperlink{eard_8c_aa5a6e9b2ab30027a51f382b643d85b00}{coeffs\+\_\+conf}
 \item 
 char \hyperlink{eard_8c_a8a5d44af0d3bb06ad205a668ec3524ee}{my\+\_\+ear\+\_\+conf\+\_\+path} \mbox{[}\hyperlink{loop_8h_a6b0b8b14cfc75447be8feba3efe18da8}{G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}\mbox{]}
 \item 
@@ -461,7 +463,7 @@ E\+ND R\+A\+PL S\+E\+R\+V\+I\+C\+ES.
 \subsubsection[{\texorpdfstring{authorized\+\_\+context}{authorized_context}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf policy\+\_\+conf\+\_\+t} authorized\+\_\+context}\hypertarget{eard_8c_a88689b12848c3069614d9179c668e259}{}\label{eard_8c_a88689b12848c3069614d9179c668e259}
 \index{eard.\+c@{eard.\+c}!coeffs\+\_\+conf@{coeffs\+\_\+conf}}
 \index{coeffs\+\_\+conf@{coeffs\+\_\+conf}!eard.\+c@{eard.\+c}}
-\subsubsection[{\texorpdfstring{coeffs\+\_\+conf}{coeffs_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+v3\+\_\+t}$\ast$ coeffs\+\_\+conf}\hypertarget{eard_8c_a8829efd9b54fe3eef5827bb8b2a7768e}{}\label{eard_8c_a8829efd9b54fe3eef5827bb8b2a7768e}
+\subsubsection[{\texorpdfstring{coeffs\+\_\+conf}{coeffs_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$ coeffs\+\_\+conf}\hypertarget{eard_8c_aa5a6e9b2ab30027a51f382b643d85b00}{}\label{eard_8c_aa5a6e9b2ab30027a51f382b643d85b00}
 \index{eard.\+c@{eard.\+c}!coeffs\+\_\+path@{coeffs\+\_\+path}}
 \index{coeffs\+\_\+path@{coeffs\+\_\+path}!eard.\+c@{eard.\+c}}
 \subsubsection[{\texorpdfstring{coeffs\+\_\+path}{coeffs_path}}]{\setlength{\rightskip}{0pt plus 5cm}char coeffs\+\_\+path\mbox{[}{\bf G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}\mbox{]}}\hypertarget{eard_8c_a16773e3e3002b871031ec2b82d5f8902}{}\label{eard_8c_a16773e3e3002b871031ec2b82d5f8902}
@@ -546,13 +548,16 @@ It must be executed with privileges \index{eard.\+c@{eard.\+c}!eard\+\_\+dyn\+\_
 \subsubsection[{\texorpdfstring{my\+\_\+cluster\+\_\+conf}{my_cluster_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf cluster\+\_\+conf\+\_\+t} my\+\_\+cluster\+\_\+conf}\hypertarget{eard_8c_a6c6877da2aa55927ec276bfdedb32660}{}\label{eard_8c_a6c6877da2aa55927ec276bfdedb32660}
 \index{eard.\+c@{eard.\+c}!my\+\_\+coefficients@{my\+\_\+coefficients}}
 \index{my\+\_\+coefficients@{my\+\_\+coefficients}!eard.\+c@{eard.\+c}}
-\subsubsection[{\texorpdfstring{my\+\_\+coefficients}{my_coefficients}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+v3\+\_\+t}$\ast$ my\+\_\+coefficients}\hypertarget{eard_8c_aa2e339851a97c074ec7ab5671a58e67e}{}\label{eard_8c_aa2e339851a97c074ec7ab5671a58e67e}
+\subsubsection[{\texorpdfstring{my\+\_\+coefficients}{my_coefficients}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf coefficient\+\_\+t}$\ast$ my\+\_\+coefficients}\hypertarget{eard_8c_a8132cacba090747a2b440e038bb93acd}{}\label{eard_8c_a8132cacba090747a2b440e038bb93acd}
 \index{eard.\+c@{eard.\+c}!my\+\_\+ear\+\_\+conf\+\_\+path@{my\+\_\+ear\+\_\+conf\+\_\+path}}
 \index{my\+\_\+ear\+\_\+conf\+\_\+path@{my\+\_\+ear\+\_\+conf\+\_\+path}!eard.\+c@{eard.\+c}}
 \subsubsection[{\texorpdfstring{my\+\_\+ear\+\_\+conf\+\_\+path}{my_ear_conf_path}}]{\setlength{\rightskip}{0pt plus 5cm}char my\+\_\+ear\+\_\+conf\+\_\+path\mbox{[}{\bf G\+E\+N\+E\+R\+I\+C\+\_\+\+N\+A\+ME}\mbox{]}}\hypertarget{eard_8c_a8a5d44af0d3bb06ad205a668ec3524ee}{}\label{eard_8c_a8a5d44af0d3bb06ad205a668ec3524ee}
 \index{eard.\+c@{eard.\+c}!my\+\_\+node\+\_\+conf@{my\+\_\+node\+\_\+conf}}
 \index{my\+\_\+node\+\_\+conf@{my\+\_\+node\+\_\+conf}!eard.\+c@{eard.\+c}}
 \subsubsection[{\texorpdfstring{my\+\_\+node\+\_\+conf}{my_node_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf my\+\_\+node\+\_\+conf\+\_\+t}$\ast$ {\bf my\+\_\+node\+\_\+conf}}\hypertarget{eard_8c_a4c85a23a7110473765eee80874e1c11d}{}\label{eard_8c_a4c85a23a7110473765eee80874e1c11d}
+\index{eard.\+c@{eard.\+c}!my\+\_\+original\+\_\+node\+\_\+conf@{my\+\_\+original\+\_\+node\+\_\+conf}}
+\index{my\+\_\+original\+\_\+node\+\_\+conf@{my\+\_\+original\+\_\+node\+\_\+conf}!eard.\+c@{eard.\+c}}
+\subsubsection[{\texorpdfstring{my\+\_\+original\+\_\+node\+\_\+conf}{my_original_node_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf my\+\_\+node\+\_\+conf\+\_\+t} my\+\_\+original\+\_\+node\+\_\+conf}\hypertarget{eard_8c_a123c8414e64591d6d57189a02df597ff}{}\label{eard_8c_a123c8414e64591d6d57189a02df597ff}
 \index{eard.\+c@{eard.\+c}!my\+\_\+services\+\_\+conf@{my\+\_\+services\+\_\+conf}}
 \index{my\+\_\+services\+\_\+conf@{my\+\_\+services\+\_\+conf}!eard.\+c@{eard.\+c}}
 \subsubsection[{\texorpdfstring{my\+\_\+services\+\_\+conf}{my_services_conf}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf services\+\_\+conf\+\_\+t}$\ast$ my\+\_\+services\+\_\+conf}\hypertarget{eard_8c_ad0390b886f365e3427b68f7e62178433}{}\label{eard_8c_ad0390b886f365e3427b68f7e62178433}

@@ -79,10 +79,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">SLURM plugin configuration guide </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>EAR SLURM plugin allows to load dynamically the EAR library for a SLURM job, if the enabling argument is set. The library will be loaded over each job step, intercepting all MPI calls. The daemon will be loaded and closed next to SLURM's daemon (<em>slurmd</em>).</p>
+<div class="textblock"><p>EAR SLURM plugin allows to load dynamically the EAR library for the SLURM jobs, if the enabling argument is set. The library will be loaded over each job step, intercepting all MPI calls. The daemon will be loaded and closed next to SLURM's daemon (<em>slurmd</em>).</p>
 <h2>Configuration </h2>
-<p>1) Locate and edit the library and daemon configuration file example in the installation path, <code>etc/ear.conf</code>. 2) Modify the values of the variables, taking into account that only accepts complete paths or names, not appending from other environment variables like <code>$HOME</code>. You can find a complete list in https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/README.md "environment variables configuration page". 1) Add in SLURM's <code>plugstack.conf</code> file, a new entry with the paths of the compiled plugin <code>earplug.so</code> and also the <code>ear.conf</code>, taking a look in the example <code>etc/plugstack.conf</code>. 3) Reset the system or kill and run SLURM's slurmctld and slurmd daemons.</p>
-<p>As previously said, EAR library and daemon behaviour depends on environment variables defined in <b>ear.conf</b> file. These environment variables could be redefined by the end user with some <em>srun</em> arguments added by the plugin (see execution section below) or exporting the same variables before sending a job.</p>
+<p>Add in SLURM's <code>plugstack.conf</code> file, a new entry with the path of the compiled plugin <code>earplug.so</code>. Take a look into the example <code>etc/ear.plugstack.conf</code>.</p>
+<p>You will the argument <code>prefix</code> which points to the EAR installation path and it is used to load the library using <code>LD_PRELOAD</code> mechanism. Also you will find <code>localstatedir</code> used to contact with the EARD, which by default points the path you set during the <code>./configure</code> using <code>--localstatedir</code> or <code>EAR_TMP</code> arguments.</p>
+<p>Finally, the arguments <code>eargmd_host</code> and <code>eargmd_port</code>, for the hostname and port of the node in case you are using EARGMD.</p>
 <h2>New SLURM arguments </h2>
 <p>After the plugin configuration, a set of additional arguments are included in SLURM's <code>srun</code> for the ease of use of EAR. You can see a complete list of those arguments below.</p>
 <table class="doxtable">

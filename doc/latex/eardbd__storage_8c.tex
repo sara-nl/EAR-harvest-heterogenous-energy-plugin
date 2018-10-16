@@ -1,6 +1,7 @@
 \hypertarget{eardbd__storage_8c}{}\section{src/database\+\_\+cache/eardbd\+\_\+storage.c File Reference}
 \label{eardbd__storage_8c}\index{src/database\+\_\+cache/eardbd\+\_\+storage.\+c@{src/database\+\_\+cache/eardbd\+\_\+storage.\+c}}
 {\ttfamily \#include $<$math.\+h$>$}\\*
+{\ttfamily \#include $<$time.\+h$>$}\\*
 {\ttfamily \#include $<$errno.\+h$>$}\\*
 {\ttfamily \#include $<$stdio.\+h$>$}\\*
 {\ttfamily \#include $<$stdlib.\+h$>$}\\*
@@ -18,6 +19,8 @@
 \item 
 void \hyperlink{eardbd__storage_8c_ab91630dddeab6daffb42c9c1f259a051}{reset\+\_\+indexes} ()
 \item 
+void \hyperlink{eardbd__storage_8c_a265da85056f5eee8bcc6ade9b333480c}{reset\+\_\+all} ()
+\item 
 void \hyperlink{eardbd__storage_8c_a3e0028e7072ecd7dde08c98b22360807}{insert\+\_\+hub} (\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} option, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} reason)
 \item 
 void \hyperlink{eardbd__storage_8c_a8be0f3489a17ecbf9667be6101a5388a}{storage\+\_\+sample\+\_\+add} (char $\ast$buf, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} len, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} $\ast$idx, char $\ast$cnt, size\+\_\+t siz, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} opt)
@@ -29,6 +32,10 @@ void \hyperlink{eardbd__storage_8c_af298dbd0632f2f5b3ce85b2d150e7af2}{storage\+\
 \subsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
+char \hyperlink{eardbd__storage_8c_a6213d32adf6e65122506eef13094b36a}{input\+\_\+buffer} \mbox{[}\hyperlink{sizes_8h_aa45d645227f1ace4122b416d531084b0}{S\+Z\+\_\+\+B\+U\+F\+F\+\_\+\+B\+IG}\mbox{]}
+\item 
+char \hyperlink{eardbd__storage_8c_a417ba43fad5eca658019656dc037c656}{extra\+\_\+buffer} \mbox{[}\hyperlink{sizes_8h_aa45d645227f1ace4122b416d531084b0}{S\+Z\+\_\+\+B\+U\+F\+F\+\_\+\+B\+IG}\mbox{]}
+\item 
 int \hyperlink{eardbd__storage_8c_aeb6bbd81930736624f130727d6899b67}{master\+\_\+iam}
 \item 
 int \hyperlink{eardbd__storage_8c_a6b01e621fe2446ee8b8aabadea57a42d}{server\+\_\+iam}
@@ -36,6 +43,10 @@ int \hyperlink{eardbd__storage_8c_a6b01e621fe2446ee8b8aabadea57a42d}{server\+\_\
 int \hyperlink{eardbd__storage_8c_ac933405aa8caa9a87595e33987db08e5}{mirror\+\_\+iam}
 \item 
 int \hyperlink{eardbd__storage_8c_a561d6ae2df1882124024d1ad25c05ca0}{forked}
+\item 
+struct timeval \hyperlink{eardbd__storage_8c_a69a1637c3b544e501ed6715f94e12fc6}{timeout\+\_\+slct}
+\item 
+time\+\_\+t \hyperlink{eardbd__storage_8c_af24558f6a2e922802d2557d78a2d51bd}{time\+\_\+slct}
 \item 
 \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{eardbd__storage_8c_af989652f2668d7f6e604367bd6c78354}{per\+\_\+appsm}
 \item 
@@ -94,6 +105,8 @@ int \hyperlink{eardbd__storage_8c_a561d6ae2df1882124024d1ad25c05ca0}{forked}
 \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eardbd__storage_8c_a06ee8ad6c631032323e3b9d762436255}{i\+\_\+loops}
 \item 
 char $\ast$ \hyperlink{eardbd__storage_8c_ad9297ccf78119abdfd95a295fdea7214}{str\+\_\+who} \mbox{[}2\mbox{]}
+\item 
+int \hyperlink{eardbd__storage_8c_a1bdcfae3209cbd96db35a2ae356fa15e}{verbosity}
 \end{DoxyCompactItemize}
 
 
@@ -106,6 +119,13 @@ char $\ast$ \hyperlink{eardbd__storage_8c_ad9297ccf78119abdfd95a295fdea7214}{str
 \item[{{\bf uint}}]{reason}
 \end{DoxyParamCaption}
 )}\hypertarget{eardbd__storage_8c_a3e0028e7072ecd7dde08c98b22360807}{}\label{eardbd__storage_8c_a3e0028e7072ecd7dde08c98b22360807}
+\index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!reset\+\_\+all@{reset\+\_\+all}}
+\index{reset\+\_\+all@{reset\+\_\+all}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
+\subsubsection[{\texorpdfstring{reset\+\_\+all()}{reset_all()}}]{\setlength{\rightskip}{0pt plus 5cm}void reset\+\_\+all (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{eardbd__storage_8c_a265da85056f5eee8bcc6ade9b333480c}{}\label{eardbd__storage_8c_a265da85056f5eee8bcc6ade9b333480c}
 \index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!reset\+\_\+indexes@{reset\+\_\+indexes}}
 \index{reset\+\_\+indexes@{reset\+\_\+indexes}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
 \subsubsection[{\texorpdfstring{reset\+\_\+indexes()}{reset_indexes()}}]{\setlength{\rightskip}{0pt plus 5cm}void reset\+\_\+indexes (
@@ -143,7 +163,7 @@ char $\ast$ \hyperlink{eardbd__storage_8c_ad9297ccf78119abdfd95a295fdea7214}{str
 \item[{char $\ast$}]{content}
 \end{DoxyParamCaption}
 )}\hypertarget{eardbd__storage_8c_a7e721fdcd0c224fb8754cf70ea0aeeda}{}\label{eardbd__storage_8c_a7e721fdcd0c224fb8754cf70ea0aeeda}
-
+We get the timeout passed since the \textquotesingle{}time\+\_\+slct\textquotesingle{} got its value 
 
 \subsection{Variable Documentation}
 \index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!aggrs@{aggrs}}
@@ -164,6 +184,9 @@ char $\ast$ \hyperlink{eardbd__storage_8c_ad9297ccf78119abdfd95a295fdea7214}{str
 \index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!evnts@{evnts}}
 \index{evnts@{evnts}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
 \subsubsection[{\texorpdfstring{evnts}{evnts}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ear\+\_\+event\+\_\+t}$\ast$ evnts}\hypertarget{eardbd__storage_8c_a8046a71d21fff6caab2bdfdf1c2f2868}{}\label{eardbd__storage_8c_a8046a71d21fff6caab2bdfdf1c2f2868}
+\index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!extra\+\_\+buffer@{extra\+\_\+buffer}}
+\index{extra\+\_\+buffer@{extra\+\_\+buffer}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
+\subsubsection[{\texorpdfstring{extra\+\_\+buffer}{extra_buffer}}]{\setlength{\rightskip}{0pt plus 5cm}char extra\+\_\+buffer\mbox{[}{\bf S\+Z\+\_\+\+B\+U\+F\+F\+\_\+\+B\+IG}\mbox{]}}\hypertarget{eardbd__storage_8c_a417ba43fad5eca658019656dc037c656}{}\label{eardbd__storage_8c_a417ba43fad5eca658019656dc037c656}
 \index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!forked@{forked}}
 \index{forked@{forked}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
 \subsubsection[{\texorpdfstring{forked}{forked}}]{\setlength{\rightskip}{0pt plus 5cm}int forked}\hypertarget{eardbd__storage_8c_a561d6ae2df1882124024d1ad25c05ca0}{}\label{eardbd__storage_8c_a561d6ae2df1882124024d1ad25c05ca0}
@@ -188,6 +211,9 @@ char $\ast$ \hyperlink{eardbd__storage_8c_ad9297ccf78119abdfd95a295fdea7214}{str
 \index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!i\+\_\+loops@{i\+\_\+loops}}
 \index{i\+\_\+loops@{i\+\_\+loops}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
 \subsubsection[{\texorpdfstring{i\+\_\+loops}{i_loops}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} i\+\_\+loops}\hypertarget{eardbd__storage_8c_a06ee8ad6c631032323e3b9d762436255}{}\label{eardbd__storage_8c_a06ee8ad6c631032323e3b9d762436255}
+\index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!input\+\_\+buffer@{input\+\_\+buffer}}
+\index{input\+\_\+buffer@{input\+\_\+buffer}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
+\subsubsection[{\texorpdfstring{input\+\_\+buffer}{input_buffer}}]{\setlength{\rightskip}{0pt plus 5cm}char input\+\_\+buffer\mbox{[}{\bf S\+Z\+\_\+\+B\+U\+F\+F\+\_\+\+B\+IG}\mbox{]}}\hypertarget{eardbd__storage_8c_a6213d32adf6e65122506eef13094b36a}{}\label{eardbd__storage_8c_a6213d32adf6e65122506eef13094b36a}
 \index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!len\+\_\+aggrs@{len\+\_\+aggrs}}
 \index{len\+\_\+aggrs@{len\+\_\+aggrs}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
 \subsubsection[{\texorpdfstring{len\+\_\+aggrs}{len_aggrs}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ulong} len\+\_\+aggrs}\hypertarget{eardbd__storage_8c_a5b4576922bf78aaf15f3451d67bde850}{}\label{eardbd__storage_8c_a5b4576922bf78aaf15f3451d67bde850}
@@ -245,3 +271,12 @@ char $\ast$ \hyperlink{eardbd__storage_8c_ad9297ccf78119abdfd95a295fdea7214}{str
 \index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!str\+\_\+who@{str\+\_\+who}}
 \index{str\+\_\+who@{str\+\_\+who}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
 \subsubsection[{\texorpdfstring{str\+\_\+who}{str_who}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ str\+\_\+who\mbox{[}2\mbox{]}}\hypertarget{eardbd__storage_8c_ad9297ccf78119abdfd95a295fdea7214}{}\label{eardbd__storage_8c_ad9297ccf78119abdfd95a295fdea7214}
+\index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!time\+\_\+slct@{time\+\_\+slct}}
+\index{time\+\_\+slct@{time\+\_\+slct}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
+\subsubsection[{\texorpdfstring{time\+\_\+slct}{time_slct}}]{\setlength{\rightskip}{0pt plus 5cm}time\+\_\+t time\+\_\+slct}\hypertarget{eardbd__storage_8c_af24558f6a2e922802d2557d78a2d51bd}{}\label{eardbd__storage_8c_af24558f6a2e922802d2557d78a2d51bd}
+\index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!timeout\+\_\+slct@{timeout\+\_\+slct}}
+\index{timeout\+\_\+slct@{timeout\+\_\+slct}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
+\subsubsection[{\texorpdfstring{timeout\+\_\+slct}{timeout_slct}}]{\setlength{\rightskip}{0pt plus 5cm}struct timeval timeout\+\_\+slct}\hypertarget{eardbd__storage_8c_a69a1637c3b544e501ed6715f94e12fc6}{}\label{eardbd__storage_8c_a69a1637c3b544e501ed6715f94e12fc6}
+\index{eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}!verbosity@{verbosity}}
+\index{verbosity@{verbosity}!eardbd\+\_\+storage.\+c@{eardbd\+\_\+storage.\+c}}
+\subsubsection[{\texorpdfstring{verbosity}{verbosity}}]{\setlength{\rightskip}{0pt plus 5cm}int verbosity}\hypertarget{eardbd__storage_8c_a1bdcfae3209cbd96db35a2ae356fa15e}{}\label{eardbd__storage_8c_a1bdcfae3209cbd96db35a2ae356fa15e}

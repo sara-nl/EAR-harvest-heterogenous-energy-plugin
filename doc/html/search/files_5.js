@@ -6,6 +6,8 @@ var searchData=
   ['flops_2eh',['flops.h',['../flops_8h.html',1,'']]],
   ['free_5fipmi_5fversion_2ec',['free_ipmi_version.c',['../free__ipmi__version_8c.html',1,'']]],
   ['freeipmi_5foverhead_2ec',['freeipmi_overhead.c',['../freeipmi__overhead_8c.html',1,'']]],
+  ['freq_5fsynchro_2ec',['freq_synchro.c',['../freq__synchro_8c.html',1,'']]],
+  ['freq_5fsynchro_2eh',['freq_synchro.h',['../freq__synchro_8h.html',1,'']]],
   ['frequency_2ec',['frequency.c',['../metrics_2custom_2frequency_8c.html',1,'']]],
   ['frequency_2ec',['frequency.c',['../control_2frequency_8c.html',1,'']]],
   ['frequency_2eh',['frequency.h',['../control_2frequency_8h.html',1,'']]],

@@ -86,9 +86,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p> Energy Aware Runtime (EAR) package provides an energy efficient solution for super computers. EAR includes a runtime library that dynamically selects the CPU frequency for MPI applications based on the program characterization done at runtime, node characteristics and power policy settings. The library doesn't need neither a prior information nor user input.</p>
 <p>EAR also provides mechanism for those experts users that perfectly knows their application, to change the frequency and view the effects in form of metrics.</p>
 <p>EAR library has been integrated in a full energy management system incluing a complete accounting mechanism, and a global energy manager. All the componets together provides three main services:</p>
-<p>1- A <b>simple and ligthweigth system</b> to automatically select the optimal CPU frequency according to the application, the node, and the power policy. This services is provided by two components: the EAR library (<b>EARL</b>) and the EAR daemon (<b>EARD</b>). EARL is a smart component which selects the CPU frequency for the running applications. EARD is provides basic services to the rest of components (not only EARL).</p>
-<p>2- A complete <b>energy accounting system</b> based on MySQL database. The energy accounting system is configurable in terms of application details and updates frequency.</p>
-<p>3- A <b>global energy manager</b> which monitors and controls the energy consumed in the system. Energy control is configurable and dynamically adapts power policy settings based on global energy limits and application characteristics.</p>
+<p>1) A <b>simple and ligthweigth system</b> to automatically select the optimal CPU frequency according to the application, the node, and the power policy. This services is provided by two components: the EAR library (<b>EARL</b>) and the EAR daemon (<b>EARD</b>). EARL is a smart component which selects the CPU frequency for the running applications. EARD is provides basic services to the rest of components (not only EARL).</p>
+<p>2) A complete <b>energy accounting system</b> based on MySQL database. The energy accounting system is configurable in terms of application details and updates frequency.</p>
+<p>3) A <b>global energy manager</b> which monitors and controls the energy consumed in the system. Energy control is configurable and dynamically adapts power policy settings based on global energy limits and application characteristics.</p>
 <p>All three components are configurable using a single, centralized, and simple text file called 'ear.conf'. This mechanism makes easy the cluster definition and configuration. This 'ear.conf' includes default values, pre-defined application configurations, etc. More details can be found in ./etc/conf/README.md "configuration section".</p>
 <p>Please visit ./src/README.md "the main components page" for a detailed description of each of the main components of EAR.</p>
 <h2>Requirements </h2>
@@ -161,7 +161,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr>
 <td>ETC </td><td>Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc) (you can also use &ndash;sharedstatedir=DIR) </td></tr>
 <tr>
-<td>MAN </td><td>Defines the documentation directory (default: PREFIX/man) (you can use also &ndash;mandir=DIR) </td></tr>
+<td>MAN </td><td>Defines the manual directory (default: PREFIX/man) (you can use also &ndash;mandir=DIR) </td></tr>
+<tr>
+<td>DOC </td><td>Defines the documentation directory (default: PREFIX/doc) (you can use also &ndash;docdir=DIR) </td></tr>
 </table>
 <ul>
 <li>This is an example of <code>CC</code>, <code>CFLAGS</code> and <code>DEBUG</code> variables overwriting:  <code>./configure CC=c99 CFLAGS=-g DEBUG=4</code></li>
@@ -196,6 +198,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr>
 <td>/ear </td><td>&lt;<em>ETC</em>&gt; </td><td>Configuration file. </td></tr>
 <tr>
+<td>/ear/coeffs </td><td>&lt;<em>ETC</em>&gt; </td><td>Coefficient files store. </td></tr>
+<tr>
 <td>/module </td><td>&lt;<em>ETC</em>&gt; </td><td>Environment module. </td></tr>
 <tr>
 <td>/slurm </td><td>&lt;<em>ETC</em>&gt; </td><td>plugstack.conf. </td></tr>
@@ -229,10 +233,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Check the ./src/daemon/README.md "EARD", ./src/database_cache/README.md "EARDBD", ./src/global_manager/README.md "EARGMD" pages to find the precise execution commands.</p>
 <p>Finally, when using <code>systemctl</code> commands, you can check messages reported by the stderr using journalctl. For instance: <code>journalctl -u eard -f</code></p>
 <h2>Configuration </h2>
-<p>1) Depending on your environment:</p><ul>
-<li>In case you are going to use <b>EAR together with SLURM</b>, visit the https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md "SLURM plugin page" to add the plugin to your SLURM installation.</li>
-<li>In case you are going to use <b>EAR with direct MPI calls</b>, visit the https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/README.md "scripts page" for more information about the scripts that simplify the launch. 2) Pass the learning phase in all your computing nodes by visiting the https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/learning/README.md "learning phase page" to follow its guide.</li>
-</ul>
+<p>1) EAR works together with <b>SLURM</b>, so please, visit the https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md "SLURM plugin page" to add the plugin to your SLURM installation. 2) Pass the learning phase in all your computing nodes by visiting the https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/learning/README.md "learning phase page" and follow this guide.</p>
 <h2>User guide </h2>
 <p>Finally, you can launch any MPI application next to EAR library by following the https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md "library user guide".</p>
 <h2>License </h2>

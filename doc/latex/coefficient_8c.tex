@@ -6,27 +6,29 @@
 {\ttfamily \#include $<$stdlib.\+h$>$}\\*
 {\ttfamily \#include $<$string.\+h$>$}\\*
 {\ttfamily \#include $<$unistd.\+h$>$}\\*
-{\ttfamily \#include $<$common/types/coefficient.\+h$>$}\\*
 {\ttfamily \#include $<$common/states.\+h$>$}\\*
+{\ttfamily \#include $<$common/types/coefficient.\+h$>$}\\*
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
-\#define \hyperlink{coefficient_8c_ab2965cfd3ad781fd1df28623a108bcc0}{P\+E\+R\+M\+I\+S\+S\+I\+ON}~S\+\_\+\+I\+R\+U\+SR $\vert$ S\+\_\+\+I\+W\+U\+SR $\vert$ S\+\_\+\+I\+R\+G\+RP $\vert$ S\+\_\+\+I\+R\+O\+TH
+\#define \hyperlink{coefficient_8c_ab2965cfd3ad781fd1df28623a108bcc0}{P\+E\+R\+M\+I\+S\+S\+I\+ON}~S\+\_\+\+I\+R\+U\+SR  $\vert$ S\+\_\+\+I\+W\+U\+SR $\vert$ S\+\_\+\+I\+R\+G\+RP $\vert$ S\+\_\+\+I\+R\+O\+TH
 \item 
 \#define \hyperlink{coefficient_8c_aec95ee3aec6673f51ed3c6a833a2dc71}{O\+P\+T\+I\+O\+NS}~O\+\_\+\+W\+R\+O\+N\+LY $\vert$ O\+\_\+\+C\+R\+E\+AT $\vert$ O\+\_\+\+T\+R\+U\+NC $\vert$ O\+\_\+\+A\+P\+P\+E\+ND
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-int \hyperlink{coefficient_8c_ac2f7dd01c266d796ba214ccec177025a}{read\+\_\+coefficients\+\_\+file\+\_\+v3} (char $\ast$path, \hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$coeffs, int size)
+int \hyperlink{coefficient_8c_ac8b94a754c0dc48d6d57d25664d2ea0f}{coeff\+\_\+file\+\_\+size} (char $\ast$path)
 \item 
-int \hyperlink{coefficient_8c_a0545ae45338197a298b48664273cdcf9}{read\+\_\+coefficients\+\_\+file} (char $\ast$path, \hyperlink{coefficient_8h_a7f58a37ee368b55a21d66b1b4e76e779}{coefficient\+\_\+t} $\ast$$\ast$coeffs, int size)
+int \hyperlink{coefficient_8c_a9ce3a5c1e56d94e343cf3a1b9c9cc58c}{coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc} (char $\ast$path, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs}, int size)
 \item 
-int \hyperlink{coefficient_8c_a661671c130024f9318b2e3e7d6b14ff8}{check\+\_\+file} (char $\ast$path)
+void \hyperlink{coefficient_8c_ad4a679cd0e9bc08058a7eac1e565323c}{coeff\+\_\+print} (\hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$coeff)
 \item 
-void \hyperlink{coefficient_8c_a038e890e0c4ec4b311bf04164c195f76}{print\+\_\+coefficient} (\hyperlink{coefficient_8h_a7f58a37ee368b55a21d66b1b4e76e779}{coefficient\+\_\+t} $\ast$coeff)
+int \hyperlink{coefficient_8c_a54b41c776ff61cba3b8f0d84bb7510f5}{coeff\+\_\+file\+\_\+read} (char $\ast$path, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$$\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs})
 \item 
-void \hyperlink{coefficient_8c_a177331a96da06de437c8c8c4e7cd8ea6}{print\+\_\+coefficient\+\_\+v3} (\hyperlink{coefficient_8h_a1be465f2b5624de5256f58836a8cd967}{coefficient\+\_\+v3\+\_\+t} $\ast$coeff)
+void \hyperlink{coefficient_8c_a7e73c10a5bdd2179be62b4acea0eb6ac}{coeff\+\_\+print\+\_\+obs} (\hyperlink{coefficient_8h_a2dedde4fabff984d39bf49fffb48fcf6}{coefficient\+\_\+obs\+\_\+t} $\ast$coeff)
+\item 
+int \hyperlink{coefficient_8c_a9fdfbf5d62da7f631b3fbed127894659}{coeff\+\_\+file\+\_\+read\+\_\+obs} (char $\ast$path, \hyperlink{coefficient_8h_a2dedde4fabff984d39bf49fffb48fcf6}{coefficient\+\_\+obs\+\_\+t} $\ast$$\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs}, int size)
 \end{DoxyCompactItemize}
 
 
@@ -36,46 +38,54 @@ void \hyperlink{coefficient_8c_a177331a96da06de437c8c8c4e7cd8ea6}{print\+\_\+coe
 \subsubsection[{\texorpdfstring{O\+P\+T\+I\+O\+NS}{OPTIONS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define O\+P\+T\+I\+O\+NS~O\+\_\+\+W\+R\+O\+N\+LY $\vert$ O\+\_\+\+C\+R\+E\+AT $\vert$ O\+\_\+\+T\+R\+U\+NC $\vert$ O\+\_\+\+A\+P\+P\+E\+ND}\hypertarget{coefficient_8c_aec95ee3aec6673f51ed3c6a833a2dc71}{}\label{coefficient_8c_aec95ee3aec6673f51ed3c6a833a2dc71}
 \index{coefficient.\+c@{coefficient.\+c}!P\+E\+R\+M\+I\+S\+S\+I\+ON@{P\+E\+R\+M\+I\+S\+S\+I\+ON}}
 \index{P\+E\+R\+M\+I\+S\+S\+I\+ON@{P\+E\+R\+M\+I\+S\+S\+I\+ON}!coefficient.\+c@{coefficient.\+c}}
-\subsubsection[{\texorpdfstring{P\+E\+R\+M\+I\+S\+S\+I\+ON}{PERMISSION}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+E\+R\+M\+I\+S\+S\+I\+ON~S\+\_\+\+I\+R\+U\+SR $\vert$ S\+\_\+\+I\+W\+U\+SR $\vert$ S\+\_\+\+I\+R\+G\+RP $\vert$ S\+\_\+\+I\+R\+O\+TH}\hypertarget{coefficient_8c_ab2965cfd3ad781fd1df28623a108bcc0}{}\label{coefficient_8c_ab2965cfd3ad781fd1df28623a108bcc0}
+\subsubsection[{\texorpdfstring{P\+E\+R\+M\+I\+S\+S\+I\+ON}{PERMISSION}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+E\+R\+M\+I\+S\+S\+I\+ON~S\+\_\+\+I\+R\+U\+SR  $\vert$ S\+\_\+\+I\+W\+U\+SR $\vert$ S\+\_\+\+I\+R\+G\+RP $\vert$ S\+\_\+\+I\+R\+O\+TH}\hypertarget{coefficient_8c_ab2965cfd3ad781fd1df28623a108bcc0}{}\label{coefficient_8c_ab2965cfd3ad781fd1df28623a108bcc0}
 
 
 \subsection{Function Documentation}
-\index{coefficient.\+c@{coefficient.\+c}!check\+\_\+file@{check\+\_\+file}}
-\index{check\+\_\+file@{check\+\_\+file}!coefficient.\+c@{coefficient.\+c}}
-\subsubsection[{\texorpdfstring{check\+\_\+file(char $\ast$path)}{check_file(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}int check\+\_\+file (
+\index{coefficient.\+c@{coefficient.\+c}!coeff\+\_\+file\+\_\+read@{coeff\+\_\+file\+\_\+read}}
+\index{coeff\+\_\+file\+\_\+read@{coeff\+\_\+file\+\_\+read}!coefficient.\+c@{coefficient.\+c}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+file\+\_\+read(char $\ast$path, coefficient\+\_\+t $\ast$$\ast$coeffs)}{coeff_file_read(char *path, coefficient_t **coeffs)}}]{\setlength{\rightskip}{0pt plus 5cm}int coeff\+\_\+file\+\_\+read (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf coefficient\+\_\+t} $\ast$$\ast$}]{coeffs}
+\end{DoxyParamCaption}
+)}\hypertarget{coefficient_8c_a54b41c776ff61cba3b8f0d84bb7510f5}{}\label{coefficient_8c_a54b41c776ff61cba3b8f0d84bb7510f5}
+\index{coefficient.\+c@{coefficient.\+c}!coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc@{coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc}}
+\index{coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc@{coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc}!coefficient.\+c@{coefficient.\+c}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc(char $\ast$path, coefficient\+\_\+t $\ast$coeffs, int size)}{coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}int coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf coefficient\+\_\+t} $\ast$}]{coeffs, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{coefficient_8c_a9ce3a5c1e56d94e343cf3a1b9c9cc58c}{}\label{coefficient_8c_a9ce3a5c1e56d94e343cf3a1b9c9cc58c}
+\index{coefficient.\+c@{coefficient.\+c}!coeff\+\_\+file\+\_\+read\+\_\+obs@{coeff\+\_\+file\+\_\+read\+\_\+obs}}
+\index{coeff\+\_\+file\+\_\+read\+\_\+obs@{coeff\+\_\+file\+\_\+read\+\_\+obs}!coefficient.\+c@{coefficient.\+c}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+file\+\_\+read\+\_\+obs(char $\ast$path, coefficient\+\_\+obs\+\_\+t $\ast$$\ast$coeffs, int size)}{coeff_file_read_obs(char *path, coefficient_obs_t **coeffs, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}int coeff\+\_\+file\+\_\+read\+\_\+obs (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{path, }
+\item[{{\bf coefficient\+\_\+obs\+\_\+t} $\ast$$\ast$}]{coeffs, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{coefficient_8c_a9fdfbf5d62da7f631b3fbed127894659}{}\label{coefficient_8c_a9fdfbf5d62da7f631b3fbed127894659}
+\index{coefficient.\+c@{coefficient.\+c}!coeff\+\_\+file\+\_\+size@{coeff\+\_\+file\+\_\+size}}
+\index{coeff\+\_\+file\+\_\+size@{coeff\+\_\+file\+\_\+size}!coefficient.\+c@{coefficient.\+c}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+file\+\_\+size(char $\ast$path)}{coeff_file_size(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}int coeff\+\_\+file\+\_\+size (
 \begin{DoxyParamCaption}
 \item[{char $\ast$}]{path}
 \end{DoxyParamCaption}
-)}\hypertarget{coefficient_8c_a661671c130024f9318b2e3e7d6b14ff8}{}\label{coefficient_8c_a661671c130024f9318b2e3e7d6b14ff8}
-\index{coefficient.\+c@{coefficient.\+c}!print\+\_\+coefficient@{print\+\_\+coefficient}}
-\index{print\+\_\+coefficient@{print\+\_\+coefficient}!coefficient.\+c@{coefficient.\+c}}
-\subsubsection[{\texorpdfstring{print\+\_\+coefficient(coefficient\+\_\+t $\ast$coeff)}{print_coefficient(coefficient_t *coeff)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+coefficient (
+)}\hypertarget{coefficient_8c_ac8b94a754c0dc48d6d57d25664d2ea0f}{}\label{coefficient_8c_ac8b94a754c0dc48d6d57d25664d2ea0f}
+\index{coefficient.\+c@{coefficient.\+c}!coeff\+\_\+print@{coeff\+\_\+print}}
+\index{coeff\+\_\+print@{coeff\+\_\+print}!coefficient.\+c@{coefficient.\+c}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+print(coefficient\+\_\+t $\ast$coeff)}{coeff_print(coefficient_t *coeff)}}]{\setlength{\rightskip}{0pt plus 5cm}void coeff\+\_\+print (
 \begin{DoxyParamCaption}
 \item[{{\bf coefficient\+\_\+t} $\ast$}]{coeff}
 \end{DoxyParamCaption}
-)}\hypertarget{coefficient_8c_a038e890e0c4ec4b311bf04164c195f76}{}\label{coefficient_8c_a038e890e0c4ec4b311bf04164c195f76}
-\index{coefficient.\+c@{coefficient.\+c}!print\+\_\+coefficient\+\_\+v3@{print\+\_\+coefficient\+\_\+v3}}
-\index{print\+\_\+coefficient\+\_\+v3@{print\+\_\+coefficient\+\_\+v3}!coefficient.\+c@{coefficient.\+c}}
-\subsubsection[{\texorpdfstring{print\+\_\+coefficient\+\_\+v3(coefficient\+\_\+v3\+\_\+t $\ast$coeff)}{print_coefficient_v3(coefficient_v3_t *coeff)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+coefficient\+\_\+v3 (
+)}\hypertarget{coefficient_8c_ad4a679cd0e9bc08058a7eac1e565323c}{}\label{coefficient_8c_ad4a679cd0e9bc08058a7eac1e565323c}
+\index{coefficient.\+c@{coefficient.\+c}!coeff\+\_\+print\+\_\+obs@{coeff\+\_\+print\+\_\+obs}}
+\index{coeff\+\_\+print\+\_\+obs@{coeff\+\_\+print\+\_\+obs}!coefficient.\+c@{coefficient.\+c}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+print\+\_\+obs(coefficient\+\_\+obs\+\_\+t $\ast$coeff)}{coeff_print_obs(coefficient_obs_t *coeff)}}]{\setlength{\rightskip}{0pt plus 5cm}void coeff\+\_\+print\+\_\+obs (
 \begin{DoxyParamCaption}
-\item[{{\bf coefficient\+\_\+v3\+\_\+t} $\ast$}]{coeff}
+\item[{{\bf coefficient\+\_\+obs\+\_\+t} $\ast$}]{coeff}
 \end{DoxyParamCaption}
-)}\hypertarget{coefficient_8c_a177331a96da06de437c8c8c4e7cd8ea6}{}\label{coefficient_8c_a177331a96da06de437c8c8c4e7cd8ea6}
-\index{coefficient.\+c@{coefficient.\+c}!read\+\_\+coefficients\+\_\+file@{read\+\_\+coefficients\+\_\+file}}
-\index{read\+\_\+coefficients\+\_\+file@{read\+\_\+coefficients\+\_\+file}!coefficient.\+c@{coefficient.\+c}}
-\subsubsection[{\texorpdfstring{read\+\_\+coefficients\+\_\+file(char $\ast$path, coefficient\+\_\+t $\ast$$\ast$coeffs, int size)}{read_coefficients_file(char *path, coefficient_t **coeffs, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+coefficients\+\_\+file (
-\begin{DoxyParamCaption}
-\item[{char $\ast$}]{path, }
-\item[{{\bf coefficient\+\_\+t} $\ast$$\ast$}]{coeffs, }
-\item[{int}]{size}
-\end{DoxyParamCaption}
-)}\hypertarget{coefficient_8c_a0545ae45338197a298b48664273cdcf9}{}\label{coefficient_8c_a0545ae45338197a298b48664273cdcf9}
-\index{coefficient.\+c@{coefficient.\+c}!read\+\_\+coefficients\+\_\+file\+\_\+v3@{read\+\_\+coefficients\+\_\+file\+\_\+v3}}
-\index{read\+\_\+coefficients\+\_\+file\+\_\+v3@{read\+\_\+coefficients\+\_\+file\+\_\+v3}!coefficient.\+c@{coefficient.\+c}}
-\subsubsection[{\texorpdfstring{read\+\_\+coefficients\+\_\+file\+\_\+v3(char $\ast$path, coefficient\+\_\+v3\+\_\+t $\ast$coeffs, int size)}{read_coefficients_file_v3(char *path, coefficient_v3_t *coeffs, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}int read\+\_\+coefficients\+\_\+file\+\_\+v3 (
-\begin{DoxyParamCaption}
-\item[{char $\ast$}]{path, }
-\item[{{\bf coefficient\+\_\+v3\+\_\+t} $\ast$}]{coeffs, }
-\item[{int}]{size}
-\end{DoxyParamCaption}
-)}\hypertarget{coefficient_8c_ac2f7dd01c266d796ba214ccec177025a}{}\label{coefficient_8c_ac2f7dd01c266d796ba214ccec177025a}
+)}\hypertarget{coefficient_8c_a7e73c10a5bdd2179be62b4acea0eb6ac}{}\label{coefficient_8c_a7e73c10a5bdd2179be62b4acea0eb6ac}

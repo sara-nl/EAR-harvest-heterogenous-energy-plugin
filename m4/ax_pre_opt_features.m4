@@ -44,6 +44,12 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	if test "x$localstatedir" = "x\${prefix}/var"; then
         localstatedir=/var/ear
     fi
+	if test -n "$DOC"; then
+		docdir=$DOC
+	fi
+	if test "x$docdir" = "x\${datarootdir}/doc/\${PACKAGE_TARNAME}"; then
+        docdir=/share/doc/ear
+    fi
 
 	AC_SUBST(TMP)
 

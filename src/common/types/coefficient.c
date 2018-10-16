@@ -113,48 +113,17 @@ int coeff_file_read(char *path, coefficient_t **coeffs)
     return (size / sizeof(coefficient_t));
 }
 
-/* obsolete functions */
-
-void coeff_print_obs(coefficient_obs_t *coeff)
+double coeff_project_pow(double pow_sign, double tpi_sign, coefficient_t *cofs)
 {
-    fprintf(stderr,"pstate %lu avail %u A %lf B %lf C %lf D %lf E %lf F %lf\n",
-            coeff->pstate,coeff->available,coeff->A,coeff->B,coeff->C,coeff->D,coeff->E,coeff->F);
+	return cofs->A * pow_sign + cofs->B * tpi_sign + cofs->C;
 }
 
-int coeff_file_read_obs(char *path, coefficient_obs_t **coeffs, int size)
+double coeff_project_cpi(double cpi_sign, double tpi_sign, coefficient_t *cofs)
 {
-    coefficient_obs_t *coeffs_aux;
-    int ret, fd;
+	return cofs->D * cpi_sign + cofs->E * tpi_sign + cofs->F;
+}
 
-    if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
-    }
-
-    if (size <= 0) {
-        size = lseek(fd, 0, SEEK_END);
-        lseek(fd, 0, SEEK_SET);
-    }
-
-    /* Allocating memory*/
-    coeffs_aux = (coefficient_obs_t *) malloc(size);
-
-    if (coeffs_aux == NULL)
-    {
-        close(fd);
-        return EAR_ALLOC_ERROR;
-    }
-
-    /* Reset the memory to zeroes*/
-    memset(coeffs_aux, 0, sizeof(coefficient_obs_t));
-
-    if ((ret = read(fd, coeffs_aux, size)) != size)
-    {
-        close(fd);
-        free(coeffs_aux);
-        return EAR_READ_ERROR;
-    }
-    close(fd);
-
-    *coeffs = coeffs_aux;
-    return (size / sizeof(coefficient_obs_t));
+double coeff_project_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong freq_from, ulong freq_to)
+{
+	return (tim_sign * cpi_proj / cpi_sign) * ((double) freq_from / (double) freq_to);
 }
