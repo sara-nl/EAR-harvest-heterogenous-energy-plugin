@@ -384,7 +384,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			copy_signature(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
 			earl_verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
-			earl_verbose(1,"\tAppSig-POL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)(New Freq %u in %s)\n",
+			earl_verbose(1,"\tAppSig-POL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)(Freq selected %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
