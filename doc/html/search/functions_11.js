@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['time_5fproj',['time_proj',['../projections__avx512_8c.html#a7dc6940245f8a35d6c4a9260866f5eeb',1,'time_proj(double time_f0, double cpi_proj, double cpi_f0, unsigned long f0, unsigned long fn):&#160;projections_avx512.c'],['../projections__avx512_8h.html#a7dc6940245f8a35d6c4a9260866f5eeb',1,'time_proj(double time_f0, double cpi_proj, double cpi_f0, unsigned long f0, unsigned long fn):&#160;projections_avx512.c']]],
   ['time_5fprojection',['time_projection',['../projection_8c.html#ae5c6ca8521d3774bc6fbbb931b07876b',1,'time_projection(ulong F, ulong Fi, double T, double cpi, double cpi_pr):&#160;projection.c'],['../projection_8h.html#ae5c6ca8521d3774bc6fbbb931b07876b',1,'time_projection(ulong F, ulong Fi, double T, double cpi, double cpi_pr):&#160;projection.c']]],
   ['time_5freset_5ftimeout_5faggr',['time_reset_timeout_aggr',['../eardbd_8c.html#a1cd9d98ffbe1d0a5a04eb111fefff7ed',1,'time_reset_timeout_aggr():&#160;eardbd.c'],['../eardbd_8h.html#a1cd9d98ffbe1d0a5a04eb111fefff7ed',1,'time_reset_timeout_aggr():&#160;eardbd.c']]],
   ['time_5freset_5ftimeout_5finsr',['time_reset_timeout_insr',['../eardbd_8c.html#a4759b456f01e0eed5b24a770ed149dc7',1,'time_reset_timeout_insr(time_t offset_insr):&#160;eardbd.c'],['../eardbd_8h.html#a4759b456f01e0eed5b24a770ed149dc7',1,'time_reset_timeout_insr(time_t offset_insr):&#160;eardbd.c']]],

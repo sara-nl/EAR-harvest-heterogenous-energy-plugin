@@ -1,5 +1,7 @@
 \hypertarget{commands_2ear__control_8c}{}\section{src/commands/ear\+\_\+control.c File Reference}
 \label{commands_2ear__control_8c}\index{src/commands/ear\+\_\+control.\+c@{src/commands/ear\+\_\+control.\+c}}
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$netdb.\+h$>$}\\*
 {\ttfamily \#include $<$stdio.\+h$>$}\\*
 {\ttfamily \#include $<$getopt.\+h$>$}\\*
 {\ttfamily \#include $<$string.\+h$>$}\\*
@@ -15,17 +17,41 @@
 {\ttfamily \#include $<$common/ear\+\_\+verbose.\+h$>$}\\*
 {\ttfamily \#include $<$common/types/application.\+h$>$}\\*
 {\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structip__table}{ip\+\_\+table}
+\end{DoxyCompactItemize}
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
 \#define \hyperlink{commands_2ear__control_8c_ab122432988c73c06becf1ce34077e43b}{N\+U\+M\+\_\+\+L\+E\+V\+E\+LS}~4
 \item 
 \#define \hyperlink{commands_2ear__control_8c_a1e41da7b5124be14b9944a6134dc97ac}{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE}~16
+\item 
+\#define \hyperlink{commands_2ear__control_8c_a26af4e86634a5afbbe4ae1326886c9b2}{I\+P\+\_\+\+L\+E\+N\+G\+TH}~24
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structip__table}{ip\+\_\+table} \hyperlink{commands_2ear__control_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t}
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
+void \hyperlink{commands_2ear__control_8c_a473cb9110ae8ab67cd83cf4f37b8e021}{fill\+\_\+ip} (char $\ast$buff, \hyperlink{commands_2ear__control_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$table)
+\item 
+int \hyperlink{commands_2ear__control_8c_ab0f41f8b5713c0cc2886b84131fef499}{generate\+\_\+node\+\_\+names} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} \hyperlink{eargm_8c_a6c6877da2aa55927ec276bfdedb32660}{my\+\_\+cluster\+\_\+conf}, \hyperlink{commands_2ear__control_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$$\ast$ips)
+\item 
+void \hyperlink{commands_2ear__control_8c_a994fd718c7071e1dee7801e4dc81197c}{print\+\_\+ips} (\hyperlink{commands_2ear__control_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$ips, int num\+\_\+ips)
+\item 
 void \hyperlink{commands_2ear__control_8c_acc7d17088590153d81d3e9b6ba1daa1a}{usage} (char $\ast$app)
+\item 
+void \hyperlink{commands_2ear__control_8c_a692b270a9ce5bc0370c29dcc70a4a82b}{check\+\_\+ip} (\hyperlink{eard__conf__rapi_8h_ae10cc0dbef73781f1180541121e675bb}{status\+\_\+t} \hyperlink{structstatus}{status}, \hyperlink{commands_2ear__control_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$ips, int num\+\_\+ips)
+\item 
+void \hyperlink{commands_2ear__control_8c_a787e34dab3adda2f65442758fc885c68}{clean\+\_\+ips} (\hyperlink{commands_2ear__control_8c_a0708790201f3be117145b61b3be123a9}{ip\+\_\+table\+\_\+t} $\ast$ips, int num\+\_\+ips)
+\item 
+void \hyperlink{commands_2ear__control_8c_aa9b2f092905f9be9818fb39ccbb58314}{process\+\_\+status} (int num\+\_\+status, \hyperlink{eard__conf__rapi_8h_ae10cc0dbef73781f1180541121e675bb}{status\+\_\+t} $\ast$\hyperlink{structstatus}{status})
 \item 
 void \hyperlink{commands_2ear__control_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
 \end{DoxyCompactItemize}
@@ -39,6 +65,9 @@ int \hyperlink{commands_2ear__control_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A
 
 
 \subsection{Macro Definition Documentation}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!I\+P\+\_\+\+L\+E\+N\+G\+TH@{I\+P\+\_\+\+L\+E\+N\+G\+TH}}
+\index{I\+P\+\_\+\+L\+E\+N\+G\+TH@{I\+P\+\_\+\+L\+E\+N\+G\+TH}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{I\+P\+\_\+\+L\+E\+N\+G\+TH}{IP_LENGTH}}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+P\+\_\+\+L\+E\+N\+G\+TH~24}\hypertarget{commands_2ear__control_8c_a26af4e86634a5afbbe4ae1326886c9b2}{}\label{commands_2ear__control_8c_a26af4e86634a5afbbe4ae1326886c9b2}
 \index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!M\+A\+X\+\_\+\+P\+S\+T\+A\+TE@{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE}}
 \index{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE@{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
 \subsubsection[{\texorpdfstring{M\+A\+X\+\_\+\+P\+S\+T\+A\+TE}{MAX_PSTATE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+\_\+\+P\+S\+T\+A\+TE~16}\hypertarget{commands_2ear__control_8c_a1e41da7b5124be14b9944a6134dc97ac}{}\label{commands_2ear__control_8c_a1e41da7b5124be14b9944a6134dc97ac}
@@ -47,7 +76,46 @@ int \hyperlink{commands_2ear__control_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A
 \subsubsection[{\texorpdfstring{N\+U\+M\+\_\+\+L\+E\+V\+E\+LS}{NUM_LEVELS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+U\+M\+\_\+\+L\+E\+V\+E\+LS~4}\hypertarget{commands_2ear__control_8c_ab122432988c73c06becf1ce34077e43b}{}\label{commands_2ear__control_8c_ab122432988c73c06becf1ce34077e43b}
 
 
+\subsection{Typedef Documentation}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!ip\+\_\+table\+\_\+t@{ip\+\_\+table\+\_\+t}}
+\index{ip\+\_\+table\+\_\+t@{ip\+\_\+table\+\_\+t}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{ip\+\_\+table\+\_\+t}{ip_table_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf ip\+\_\+table}  {\bf ip\+\_\+table\+\_\+t}}\hypertarget{commands_2ear__control_8c_a0708790201f3be117145b61b3be123a9}{}\label{commands_2ear__control_8c_a0708790201f3be117145b61b3be123a9}
+
+
 \subsection{Function Documentation}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!check\+\_\+ip@{check\+\_\+ip}}
+\index{check\+\_\+ip@{check\+\_\+ip}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{check\+\_\+ip(status\+\_\+t status, ip\+\_\+table\+\_\+t $\ast$ips, int num\+\_\+ips)}{check_ip(status_t status, ip_table_t *ips, int num_ips)}}]{\setlength{\rightskip}{0pt plus 5cm}void check\+\_\+ip (
+\begin{DoxyParamCaption}
+\item[{{\bf status\+\_\+t}}]{status, }
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$}]{ips, }
+\item[{int}]{num\+\_\+ips}
+\end{DoxyParamCaption}
+)}\hypertarget{commands_2ear__control_8c_a692b270a9ce5bc0370c29dcc70a4a82b}{}\label{commands_2ear__control_8c_a692b270a9ce5bc0370c29dcc70a4a82b}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!clean\+\_\+ips@{clean\+\_\+ips}}
+\index{clean\+\_\+ips@{clean\+\_\+ips}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{clean\+\_\+ips(ip\+\_\+table\+\_\+t $\ast$ips, int num\+\_\+ips)}{clean_ips(ip_table_t *ips, int num_ips)}}]{\setlength{\rightskip}{0pt plus 5cm}void clean\+\_\+ips (
+\begin{DoxyParamCaption}
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$}]{ips, }
+\item[{int}]{num\+\_\+ips}
+\end{DoxyParamCaption}
+)}\hypertarget{commands_2ear__control_8c_a787e34dab3adda2f65442758fc885c68}{}\label{commands_2ear__control_8c_a787e34dab3adda2f65442758fc885c68}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!fill\+\_\+ip@{fill\+\_\+ip}}
+\index{fill\+\_\+ip@{fill\+\_\+ip}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{fill\+\_\+ip(char $\ast$buff, ip\+\_\+table\+\_\+t $\ast$table)}{fill_ip(char *buff, ip_table_t *table)}}]{\setlength{\rightskip}{0pt plus 5cm}void fill\+\_\+ip (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{buff, }
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$}]{table}
+\end{DoxyParamCaption}
+)}\hypertarget{commands_2ear__control_8c_a473cb9110ae8ab67cd83cf4f37b8e021}{}\label{commands_2ear__control_8c_a473cb9110ae8ab67cd83cf4f37b8e021}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!generate\+\_\+node\+\_\+names@{generate\+\_\+node\+\_\+names}}
+\index{generate\+\_\+node\+\_\+names@{generate\+\_\+node\+\_\+names}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{generate\+\_\+node\+\_\+names(cluster\+\_\+conf\+\_\+t my\+\_\+cluster\+\_\+conf, ip\+\_\+table\+\_\+t $\ast$$\ast$ips)}{generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)}}]{\setlength{\rightskip}{0pt plus 5cm}int generate\+\_\+node\+\_\+names (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t}}]{my\+\_\+cluster\+\_\+conf, }
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$$\ast$}]{ips}
+\end{DoxyParamCaption}
+)}\hypertarget{commands_2ear__control_8c_ab0f41f8b5713c0cc2886b84131fef499}{}\label{commands_2ear__control_8c_ab0f41f8b5713c0cc2886b84131fef499}
 \index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!main@{main}}
 \index{main@{main}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
 \subsubsection[{\texorpdfstring{main(int argc, char $\ast$argv[])}{main(int argc, char *argv[])}}]{\setlength{\rightskip}{0pt plus 5cm}void main (
@@ -56,6 +124,22 @@ int \hyperlink{commands_2ear__control_8c_a43d7e58c317e811389b628dc49b52bd2}{E\+A
 \item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
 \end{DoxyParamCaption}
 )}\hypertarget{commands_2ear__control_8c_a91a3bbcc7eb26e8695255b2795d6e46f}{}\label{commands_2ear__control_8c_a91a3bbcc7eb26e8695255b2795d6e46f}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!print\+\_\+ips@{print\+\_\+ips}}
+\index{print\+\_\+ips@{print\+\_\+ips}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{print\+\_\+ips(ip\+\_\+table\+\_\+t $\ast$ips, int num\+\_\+ips)}{print_ips(ip_table_t *ips, int num_ips)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+ips (
+\begin{DoxyParamCaption}
+\item[{{\bf ip\+\_\+table\+\_\+t} $\ast$}]{ips, }
+\item[{int}]{num\+\_\+ips}
+\end{DoxyParamCaption}
+)}\hypertarget{commands_2ear__control_8c_a994fd718c7071e1dee7801e4dc81197c}{}\label{commands_2ear__control_8c_a994fd718c7071e1dee7801e4dc81197c}
+\index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!process\+\_\+status@{process\+\_\+status}}
+\index{process\+\_\+status@{process\+\_\+status}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
+\subsubsection[{\texorpdfstring{process\+\_\+status(int num\+\_\+status, status\+\_\+t $\ast$status)}{process_status(int num_status, status_t *status)}}]{\setlength{\rightskip}{0pt plus 5cm}void process\+\_\+status (
+\begin{DoxyParamCaption}
+\item[{int}]{num\+\_\+status, }
+\item[{{\bf status\+\_\+t} $\ast$}]{status}
+\end{DoxyParamCaption}
+)}\hypertarget{commands_2ear__control_8c_aa9b2f092905f9be9818fb39ccbb58314}{}\label{commands_2ear__control_8c_aa9b2f092905f9be9818fb39ccbb58314}
 \index{commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}!usage@{usage}}
 \index{usage@{usage}!commands/ear\+\_\+control.\+c@{commands/ear\+\_\+control.\+c}}
 \subsubsection[{\texorpdfstring{usage(char $\ast$app)}{usage(char *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void usage (

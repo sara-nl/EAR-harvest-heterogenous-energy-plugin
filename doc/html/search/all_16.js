@@ -1,7 +1,7 @@
 var searchData=
 [
   ['val',['val',['../structspank__option.html#ae39b3949758fbf1b27a0055f001c67b5',1,'spank_option']]],
-  ['valid_5fnodes',['valid_nodes',['../coefficients__comparison_8c.html#a394e312646f7b3b4585b1fc08f1a1746',1,'coefficients_comparison.c']]],
+  ['valid_5fnodes',['valid_nodes',['../coeffs__comparison_8c.html#a394e312646f7b3b4585b1fc08f1a1746',1,'coeffs_comparison.c']]],
   ['values',['values',['../energy__cpu_8c.html#ab805d4eab86acb3d624dd5b16f94db88',1,'energy_cpu.c']]],
   ['verbose',['verbose',['../structeard__conf.html#ad44edb707601cc0fcdc4e84fc2fed141',1,'eard_conf::verbose()'],['../structeargm__conf.html#a36bcc8aa5b1f1367ff001518149a789f',1,'eargm_conf::verbose()'],['../structcluster__conf.html#a5262e1ff09faa8c205475875d07a3f34',1,'cluster_conf::verbose()'],['../eardbd__api_8c.html#a32ff763fbfce505a9011f6369c647c2a',1,'verbose():&#160;eardbd_api.c'],['../eardbd__api_8h.html#a32ff763fbfce505a9011f6369c647c2a',1,'verbose():&#160;eardbd_api.h'],['../MPI__interceptF_8c.html#aa9e037e5d52d47e5e97faca863aad464',1,'verbose():&#160;MPI_interceptF.c'],['../ear__acct_8c.html#a0b2caeb4b6f130be43e5a2f0267dd453',1,'verbose():&#160;ear_acct.c'],['../ear__report_8c.html#a0b2caeb4b6f130be43e5a2f0267dd453',1,'verbose():&#160;ear_report.c'],['../get__active__nodes_8c.html#a0b2caeb4b6f130be43e5a2f0267dd453',1,'verbose():&#160;get_active_nodes.c'],['../get__ear__events_8c.html#a0b2caeb4b6f130be43e5a2f0267dd453',1,'verbose():&#160;get_ear_events.c'],['../power__metrics_8c.html#a4ee88e55206d19184b890f12a3902c65',1,'VERBOSE():&#160;power_metrics.c']]],
   ['verbose_5farg',['verbose_arg',['../eargm_8c.html#a54972248a03e55eda6504f51c5f50314',1,'eargm.c']]],

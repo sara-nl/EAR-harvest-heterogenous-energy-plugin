@@ -1,6 +1,7 @@
 var searchData=
 [
   ['gbs',['GBS',['../structsignature.html#a6a6d7bfe0415926c5337b67fd30901d9',1,'signature']]],
+  ['general',['general',['../structcontrol.html#aa68f7412f21e7e41e7bc70bc87f1a368',1,'control']]],
   ['gflops',['Gflops',['../structsignature.html#a724ca9e31b09960e29067825cfef1af9',1,'signature']]],
   ['global_5fend_5ftime',['global_end_time',['../ear__report_8c.html#a86bdc09b38fde74c5c58f7b0a03b011d',1,'ear_report.c']]],
   ['global_5fnum',['global_num',['../ips_8c.html#a39d0373e8eeb9d9076243b92cd71fab6',1,'ips.c']]],

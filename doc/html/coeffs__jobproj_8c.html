@@ -104,7 +104,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;<a class="el" href="coefficient_8h_source.html">common/types/coefficient.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="cluster__conf_8h_source.html">common/types/configuration/cluster_conf.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="db__helper_8h_source.html">common/database/db_helper.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="coeffs__jobproj_8h_source.html">tools/coeffs_jobproj.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -118,12 +117,6 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aa02043bdde09394ff7a7584a13d2175d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coeffs__jobproj_8c.html#aa02043bdde09394ff7a7584a13d2175d">projection_pow</a> (double pow_sign, double tpi_sign, <a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *cofs)</td></tr>
-<tr class="separator:aa02043bdde09394ff7a7584a13d2175d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3fcdec2315f79a858a7d0ce661655ef"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coeffs__jobproj_8c.html#ac3fcdec2315f79a858a7d0ce661655ef">projection_cpi</a> (double cpi_sign, double tpi_sign, <a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *cofs)</td></tr>
-<tr class="separator:ac3fcdec2315f79a858a7d0ce661655ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac762b27ee0a5a152fe449bb51ef7e44"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coeffs__jobproj_8c.html#aac762b27ee0a5a152fe449bb51ef7e44">projection_tim</a> (double tim_sign, double <a class="el" href="projections__avx512_8h.html#ae771b5976490abde7cb61e3ed8f4be0d">cpi_proj</a>, double cpi_sign, <a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> freq_from, <a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a> freq_to)</td></tr>
-<tr class="separator:aac762b27ee0a5a152fe449bb51ef7e44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a036df463eef8ad30c94e11dd40521ebf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coeffs__jobproj_8c.html#a036df463eef8ad30c94e11dd40521ebf">evaluate</a> (<a class="el" href="coeffs__jobproj_8c.html#a95c19d83d0b29cb74fc06e34c67fbd2f">control_t</a> *<a class="el" href="coeffs__quality_8c.html#a856eb0fddbbe91397aa6bb0de67f6c28">cntr</a>)</td></tr>
 <tr class="separator:a036df463eef8ad30c94e11dd40521ebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73f5b34d4cecda74ab4c1031b01a2bba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coeffs__jobproj_8c.html#a73f5b34d4cecda74ab4c1031b01a2bba">read_applications</a> (<a class="el" href="coeffs__jobproj_8c.html#a95c19d83d0b29cb74fc06e34c67fbd2f">control_t</a> *<a class="el" href="coeffs__quality_8c.html#a856eb0fddbbe91397aa6bb0de67f6c28">cntr</a>)</td></tr>
@@ -142,7 +135,7 @@ Variables</h2></td></tr>
 <tr class="memitem:a43d7e58c317e811389b628dc49b52bd2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coeffs__jobproj_8c.html#a43d7e58c317e811389b628dc49b52bd2">EAR_VERBOSE_LEVEL</a> = 0</td></tr>
 <tr class="memdesc:a43d7e58c317e811389b628dc49b52bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">This program sets the node frequency .  <a href="#a43d7e58c317e811389b628dc49b52bd2">More...</a><br /></td></tr>
 <tr class="separator:a43d7e58c317e811389b628dc49b52bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b9b5f62c780e8303627ff77cb554815"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coeffs__jobproj_8c.html#a2b9b5f62c780e8303627ff77cb554815">COLUMNS</a> = 5</td></tr>
+<tr class="memitem:a2b9b5f62c780e8303627ff77cb554815"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="coeffs__jobproj_8c.html#a2b9b5f62c780e8303627ff77cb554815">COLUMNS</a> = 6</td></tr>
 <tr class="separator:a2b9b5f62c780e8303627ff77cb554815"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
@@ -206,114 +199,6 @@ Variables</h2></td></tr>
           <td></td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>argv</em>[]&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="ac3fcdec2315f79a858a7d0ce661655ef"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double projection_cpi </td>
-          <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cpi_sign</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>tpi_sign</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *&#160;</td>
-          <td class="paramname"><em>cofs</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="aa02043bdde09394ff7a7584a13d2175d"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double projection_pow </td>
-          <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>pow_sign</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>tpi_sign</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="coefficient_8h.html#ae9e93dca86a1dd13e152e183589cdeda">coefficient_t</a> *&#160;</td>
-          <td class="paramname"><em>cofs</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="aac762b27ee0a5a152fe449bb51ef7e44"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double projection_tim </td>
-          <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>tim_sign</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cpi_proj</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cpi_sign</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td>
-          <td class="paramname"><em>freq_from</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="generic_8h.html#a718b4eb2652c286f4d42dc18a8e71a1a">ulong</a>&#160;</td>
-          <td class="paramname"><em>freq_to</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -405,7 +290,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int COLUMNS = 5</td>
+          <td class="memname">int COLUMNS = 6</td>
         </tr>
       </table>
 </div><div class="memdoc">

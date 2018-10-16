@@ -25,9 +25,9 @@ struct \hyperlink{structpacket__header}{packet\+\_\+header}
 \item 
 \#define \hyperlink{sockets_8h_a58a1f4e725d5ddd7426a945b9cadb84f}{N\+O\+N\+\_\+\+B\+L\+O\+C\+K\+\_\+\+T\+R\+YS}~1000
 \item 
-\#define \hyperlink{sockets_8h_a1f075e72b81eb2e8f19bfcb222116242}{P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER}(\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer})~(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$) \hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer};
+\#define \hyperlink{sockets_8h_a1f075e72b81eb2e8f19bfcb222116242}{P\+A\+C\+K\+E\+T\+\_\+\+H\+E\+A\+D\+ER}(\hyperlink{coeffs__show_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer})~(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$) \hyperlink{coeffs__show_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer};
 \item 
-\#define \hyperlink{sockets_8h_ad4a558dc80b2c153e45e8cf1435553da}{P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT}(\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer})~(void $\ast$) \&\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}\mbox{[}sizeof(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t})\mbox{]};
+\#define \hyperlink{sockets_8h_ad4a558dc80b2c153e45e8cf1435553da}{P\+A\+C\+K\+E\+T\+\_\+\+C\+O\+N\+T\+E\+NT}(\hyperlink{coeffs__show_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer})~(void $\ast$) \&\hyperlink{coeffs__show_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}\mbox{[}sizeof(\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t})\mbox{]};
 \end{DoxyCompactItemize}
 \subsection*{Typedefs}
 \begin{DoxyCompactItemize}
@@ -63,7 +63,7 @@ typedef struct \hyperlink{structpacket__header}{packet\+\_\+header} \hyperlink{s
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a1df6f80fd52bd4f6eb511de4e3454959}{sockets\+\_\+send} (\hyperlink{sockets_8h_aaf18456b5174d29ea88d310e21d82d92}{socket\+\_\+t} $\ast$\hyperlink{structsocket}{socket}, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$content)
 \item 
-\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a98d380a13bbdd30fa6d92a6403167b48}{sockets\+\_\+receive} (int fd, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, ssize\+\_\+t size\+\_\+buffer, int block)
+\hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a98d380a13bbdd30fa6d92a6403167b48}{sockets\+\_\+receive} (int fd, \hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header, char $\ast$\hyperlink{coeffs__show_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, ssize\+\_\+t size\+\_\+buffer, int block)
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a1826eb72bb22b9756e5223cf0594fb5b}{sockets\+\_\+set\+\_\+timeout} (int fd, time\+\_\+t timeout)
 \item 
@@ -71,9 +71,9 @@ typedef struct \hyperlink{structpacket__header}{packet\+\_\+header} \hyperlink{s
 \item 
 \hyperlink{common_2states_8h_a70fb3cb460ce19a89130b2787e73d71d}{state\+\_\+t} \hyperlink{sockets_8h_a6838753c7fac71e6e71606318d8cebcb}{sockets\+\_\+header\+\_\+update} (\hyperlink{sockets_8h_a35e9ad205493f020e5b774f397b1eeb7}{packet\+\_\+header\+\_\+t} $\ast$header)
 \item 
-void \hyperlink{sockets_8h_a24ac6982b58bf8df906b3d0a2b5aa7ea}{sockets\+\_\+get\+\_\+address} (struct sockaddr $\ast$host\+\_\+addr, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, int length)
+void \hyperlink{sockets_8h_a24ac6982b58bf8df906b3d0a2b5aa7ea}{sockets\+\_\+get\+\_\+address} (struct sockaddr $\ast$host\+\_\+addr, char $\ast$\hyperlink{coeffs__show_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, int length)
 \item 
-void \hyperlink{sockets_8h_a52360b12f4a5c7382abf9344d325a973}{sockets\+\_\+get\+\_\+address\+\_\+fd} (int fd, char $\ast$\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, int length)
+void \hyperlink{sockets_8h_a52360b12f4a5c7382abf9344d325a973}{sockets\+\_\+get\+\_\+address\+\_\+fd} (int fd, char $\ast$\hyperlink{coeffs__show_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, int length)
 \end{DoxyCompactItemize}
 
 
