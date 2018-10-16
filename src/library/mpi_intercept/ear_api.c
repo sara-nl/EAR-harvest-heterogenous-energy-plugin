@@ -171,7 +171,7 @@ void notify_eard_connection(int status)
 	{       
 		masters_connected+=(int)buffer_recv[i];
 	}
-	if (my_master_rank==0) earl_verbose(0,"Total number of masters connected %d",masters_connected);
+	if (my_master_rank==0) earl_verbose(1,"Total number of masters connected %d",masters_connected);
 	if (masters_connected!=num_nodes){
 	/* Some of the nodes is not ok , setting off EARL */
 		if (my_master_rank==0) earl_verbose(0,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
@@ -198,9 +198,7 @@ void attach_to_master_set(int master)
 	my_master_rank=0;
 	if (master) color=0;
 	else color=MPI_UNDEFINED;
-	if (ear_my_rank==0) ear_verbose(0,"Creating masters communicator\n");
 	PMPI_Comm_dup(MPI_COMM_WORLD,&new_world_comm);
-	if (ear_my_rank==0) ear_verbose(0,"MPI_COMM_WORLD duplicated");
 	PMPI_Comm_split(new_world_comm, color, my_master_rank, &masters_comm);
 	masters_comm_created=1;
 	if ((masters_comm_created) && (!color)){
