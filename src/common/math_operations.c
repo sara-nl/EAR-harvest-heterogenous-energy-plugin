@@ -44,7 +44,7 @@ unsigned int equal_with_th(double a, double b, double th)
 
 //Unsigned long can be 16, 32 or 64 bits
 //a should be the old number, b the one after the overflow
-unsigned long ulong_diff_overflow(unsigned long a, unsigned long b)
+unsigned long ulong_diff_overflow(unsigned long begin, unsigned long end)
 {
     unsigned long max_16 = USHRT_MAX;
     unsigned long max_32 = ULONG_MAX;
@@ -52,24 +52,24 @@ unsigned long ulong_diff_overflow(unsigned long a, unsigned long b)
 
     unsigned long ret = 0;
 
-    if (a < max_16 && b < max_16)
+    if (begin < max_16 && end < max_16)
     {
-        ret = max_16 - a + b;
+        ret = max_16 - begin + end;
     }
-    else if ( a < max_32 && b < max_32)
+    else if ( begin < max_32 && end < max_32)
     {
-        ret = max_32 - a + b;
+        ret = max_32 - begin + end;
     }
     else
     {
-        ret = max_64 - a + b;
+        ret = max_64 - begin + end;
     }
     return ret;
 }
 
 //Unsigned long can be 32 or 64 bits
 //a should be the old number, b the one after the overflow
-unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long b)
+unsigned long long ullong_diff_overflow(unsigned long long begin, unsigned long long end)
 {
     unsigned long long max_16 = USHRT_MAX;
     unsigned long long max_32 = ULONG_MAX;
@@ -81,55 +81,43 @@ unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long
 
     unsigned long long ret = 0;
 
-    if (a < max_16 && b < max_16)
+    if (begin < max_16 && end < max_16)
     {
-        ret = max_16 - a + b;
+        ret = max_16 - begin + end;
     }
-    else if ( a < max_32 && b < max_32 && max_32 < max_64) //some architectures have the same size for ul and ull
+    else if (begin < max_32 && end < max_32 && max_32 < max_64) //some architectures have the same size for ul and ull
     {
-        ret = max_32 - a + b;
+        ret = max_32 - begin + end;
     }
-    else if (a < max_DRAM && b < max_DRAM)
+    else if (begin < max_DRAM && end < max_DRAM)
     {
-        ret = max_DRAM - a + b;
+        ret = max_DRAM - begin + end;
     }
-    else if (a < max_48 && b < max_48)
+    else if (begin < max_48 && end < max_48)
     {
-        ret = max_48 - a + b;
+        ret = max_48 - begin + end;
     }
     else
     {
-        ret = max_64 - a + b;
+        ret = max_64 - begin + end;
     }
     return ret;
 }
 
-unsigned long long uncore_ullong_diff_overflow(unsigned long long a, unsigned long long b)
+unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end)
 {
-    unsigned long long max_16 = USHRT_MAX;
-    unsigned long long max_32 = ULONG_MAX;
     unsigned long long max_64 = ULLONG_MAX;
-    //max_48 was obtained empirically via monitoring the power results and checking
-    //when the overflow occured. The same can be said about max_DRAM (~46 bits)
-    unsigned long long max_48 = 281474976710656; 
+    unsigned long long max_48 = 281474976710656; //2^48
 
     unsigned long long ret = 0;
 
-    if (a < max_16 && b < max_16)
+    if (begin < max_48 && end < max_48)
     {
-        ret = max_16 - a + b;
-    }
-    else if ( a < max_32 && b < max_32 && max_32 < max_64) //some architectures have the same size for ul and ull
-    {
-        ret = max_32 - a + b;
-    }
-    else if (a < max_48 && b < max_48)
-    {
-        ret = max_48 - a + b;
+        ret = max_48 - begin + end;
     }
     else
     {
-        ret = max_64 - a + b;
+        ret = max_64 - begin + end;
     }
     return ret;
 }
