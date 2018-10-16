@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>EAR: EAR tools</title>
+<title>EAR: Tools list</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -76,36 +76,41 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">EAR tools </div>  </div>
+<div class="title">Tools list </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h2>EAR tools and command line tools used during the learning phase or to manipulate, analyze coefficients. Not all of them have been intensivelly tested. </h2>
-<table class="doxtable">
+<div class="textblock"><table class="doxtable">
 <tr>
-<th>Name </th><th>Checking </th><th>Version  </th></tr>
+<th>Name </th><th>Description </th><th>Basic arguments  </th></tr>
 <tr>
-<td>coefficients_quality_control </td><td>Used to evaluate the quality of coefficients </td><td>V2 </td></tr>
+<td>coeffs_compute </td><td>Computes the learning coefficients </td><td>&lt;save.path&gt; &lt;min.frequency&gt; &lt;node.name&gt; </td></tr>
 <tr>
-<td>coefficients_v2_to_v3 </td><td>converts coefficients from ear v2 to ear v3 </td><td>v2/v3 </td></tr>
+<td>coeffs_comparison </td><td>Compares the computed coefficients </td><td></td></tr>
 <tr>
-<td>coefficients_to_csv </td><td>reads coefficients and prints it in both stdout and csv file </td><td>v2 and v3 </td></tr>
+<td>coeffs_show </td><td>Shows the computed coefficients file in text format </td><td>&lt;file.path&gt; </td></tr>
 <tr>
-<td>compute_coefficients </td><td>computes coefficients for ear v2 using as input a user-db filei, it must be executed in compute nodes </td><td>v2 </td></tr>
+<td>coeffs_jobproj </td><td>For an executed application, applies the coefficients projection </td><td>&lt;job.i&gt; &lt;step.id&gt; </td></tr>
 <tr>
-<td>compute_coefficients_v3 </td><td>coputes coefficients for ear v3 reading applications from DB </td><td>v3 </td></tr>
+<td>coeffs_quality </td><td>Evaluates the quality of the learning coefficients </td><td>&lt;node.name &lt;ref.freq&gt; </td></tr>
 <tr>
-<td>compute_coefficients_remote </td><td>computes coefficients for ear v2 using as input a user-db file, it can be executed anywhere </td><td>v2 </td></tr>
+<td>get_active_nodes </td><td>Shows the acvite nodes in the cluster </td><td></td></tr>
 <tr>
-<td>get_app_list </td><td>reads application from DB (normal or learning) and prints metrics in stdout </td><td>v3 </td></tr>
+<td>get_events </td><td>Show the EAR events recorded in the database </td><td></td></tr>
 <tr>
-<td>show_coefficients </td><td>reads coefficients from the file given as an arg and prints it to stdout</td><td>v3 </td></tr>
+<td>learning_delete </td><td>Deletes the previous learning phase data of the database </td><td>&lt;node.name&gt; </td></tr>
+<tr>
+<td>learning_validate </td><td>Evaluates the quality of the learning phase results </td><td></td></tr>
+<tr>
+<td>learning_show </td><td>Shows the learning phase applications per node </td><td>&lt;node.name&gt; </td></tr>
 </table>
+<ul>
+<li>Use the argument <code>--help</code> to expand the application information and list the admitted flags.</li>
+</ul>
 <h2>Examples </h2>
 <ul>
-<li>coefficients_v2_to_v3 v2_path(root) v3_path(directory) nodename max_fre min_freq island coefficients_v2_to_v3 /etc/ear/coeffs/coeffs. $HOME/test r22u27 2600000 2000000 0</li>
-<li>coefficients_to_csv version(2) v2_path(root) nodename max_fre min_freq coefficients_to_csv 2 /etc/ear/coeffs/coeffs. r22u21 2600000 2000000</li>
-<li>coefficients_to_csv version(3) v3_path(directory) max_fre min_freq island &ndash;&gt; it uses current nodename coefficients_to_csv 3 /etc/ear/coeffsv3 2600000 2000000 0 </li>
+<li>Compute the coefficients for the node <code>node1001</code> in which the minimum frequency set during the learning phase was 1900000 KHz</li>
 </ul>
+<p><code>/compute_coeffs /etc/coeffs 1900000 node1001</code> </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

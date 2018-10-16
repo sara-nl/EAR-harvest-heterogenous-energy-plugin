@@ -108,32 +108,6 @@ static int use_dynais=1;
 int first_time_disabled=0;
 #endif
 #endif
-
-
-
-
-//
-static void print_local_data()
-{
-	#if !EAR_PERFORMANCE_TESTS
-	if (ear_my_rank==0) {
-	#endif
-	earl_verbose(1, "--------------------------------");
-	earl_verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
-	earl_verbose(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
-	earl_verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
-	earl_verbose(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
-	earl_verbose(2, "Procs/nodes/ppn: %u/%d/%d", application.job.procs, num_nodes, ppnode);
-	earl_verbose(1, "Policy (learning): %s (%d)", application.job.policy, ear_whole_app);
-	earl_verbose(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());
-	earl_verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
-	earl_verbose(1, "VAR path: %s", get_ear_tmp());
-	earl_verbose(1, "--------------------------------");
-	#if !EAR_PERFORMANCE_TESTS
-	}
-	#endif
-}
-
 #if EAR_LIB_SYNC
 MPI_Comm new_world_comm,masters_comm;
 int num_masters;
@@ -144,6 +118,32 @@ ulong *local_f;
 ulong *remote_f;
 unsigned masters_comm_created=0;
 #endif
+
+
+
+
+//
+static void print_local_data()
+{
+	#if EAR_LIB_SYNC 
+	if (my_master_rank==0) {
+	#endif
+	earl_verbose(1, "--------------------------------");
+	earl_verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
+	earl_verbose(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
+	earl_verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
+	earl_verbose(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
+	earl_verbose(1, "Tasks/nodes/ppn: %u/%d/%d", my_size, num_nodes, ppnode);
+	earl_verbose(1, "Policy (learning): %s (%d)", application.job.policy, ear_whole_app);
+	earl_verbose(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());
+	earl_verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
+	earl_verbose(1, "VAR path: %s", get_ear_tmp());
+	earl_verbose(1, "--------------------------------");
+	#if EAR_LIB_SYNC
+	}
+	#endif
+}
+
 
 /* notifies mpi process has succesfully connected with EARD */
 void notify_eard_connection(int status)
@@ -171,7 +171,7 @@ void notify_eard_connection(int status)
 	{       
 		masters_connected+=(int)buffer_recv[i];
 	}
-	if (my_master_rank==0) earl_verbose(0,"Total number of masters connected %d",masters_connected);
+	if (my_master_rank==0) earl_verbose(1,"Total number of masters connected %d",masters_connected);
 	if (masters_connected!=num_nodes){
 	/* Some of the nodes is not ok , setting off EARL */
 		if (my_master_rank==0) earl_verbose(0,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
@@ -198,9 +198,7 @@ void attach_to_master_set(int master)
 	my_master_rank=0;
 	if (master) color=0;
 	else color=MPI_UNDEFINED;
-	if (ear_my_rank==0) ear_verbose(0,"Creating masters communicator\n");
 	PMPI_Comm_dup(MPI_COMM_WORLD,&new_world_comm);
-	if (ear_my_rank==0) ear_verbose(0,"MPI_COMM_WORLD duplicated");
 	PMPI_Comm_split(new_world_comm, color, my_master_rank, &masters_comm);
 	masters_comm_created=1;
 	if ((masters_comm_created) && (!color)){
@@ -511,7 +509,7 @@ void ear_finalize()
 	traces_end(ear_my_rank, my_id, 0);
 
 	// Closing and obtaining global metrics
-	metrics_dispose(&application.signature, application.job.procs);
+	metrics_dispose(&application.signature, get_total_resources());
 	dynais_dispose();
 	frequency_dispose();
 

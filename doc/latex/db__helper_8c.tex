@@ -46,11 +46,11 @@
 \item 
 \#define \hyperlink{db__helper_8c_ad2b9a2dfda061cff36c3f16559651d72}{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM Learning\+\_\+applications W\+H\+E\+RE node\+\_\+id = \textquotesingle{}\%s\textquotesingle{}\char`\"{}
 \item 
-\#define \hyperlink{db__helper_8c_a5097aa558dd1dced77010431cd062937}{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM (S\+E\+L\+E\+CT $\ast$ F\+R\+OM Learning\+\_\+applications G\+R\+O\+UP BY \hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id}, \hyperlink{remove__learning_8c_aaaecc7646b3c722387d285ecbb165474}{step\+\_\+id}) AS t1\char`\"{}
+\#define \hyperlink{db__helper_8c_a5097aa558dd1dced77010431cd062937}{L\+E\+A\+R\+N\+I\+N\+G\+\_\+\+A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM (S\+E\+L\+E\+CT $\ast$ F\+R\+OM Learning\+\_\+applications G\+R\+O\+UP BY \hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id}, \hyperlink{learning__delete_8c_aaaecc7646b3c722387d285ecbb165474}{step\+\_\+id}) AS t1\char`\"{}
 \item 
 \#define \hyperlink{db__helper_8c_a291d50f1331cf22e2594f476ce35aa45}{A\+P\+P\+S\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM Applications W\+H\+E\+RE node\+\_\+id = \textquotesingle{}\%s\textquotesingle{}\char`\"{}
 \item 
-\#define \hyperlink{db__helper_8c_ab6870950fe0591dcb617d1f02c30ee06}{A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM (S\+E\+L\+E\+CT $\ast$ F\+R\+OM Applications G\+R\+O\+UP BY \hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id}, \hyperlink{remove__learning_8c_aaaecc7646b3c722387d285ecbb165474}{step\+\_\+id}) AS t1\char`\"{}
+\#define \hyperlink{db__helper_8c_ab6870950fe0591dcb617d1f02c30ee06}{A\+P\+P\+S\+\_\+\+A\+L\+L\+\_\+\+Q\+U\+E\+RY}~\char`\"{}S\+E\+L\+E\+CT C\+O\+U\+NT($\ast$) F\+R\+OM (S\+E\+L\+E\+CT $\ast$ F\+R\+OM Applications G\+R\+O\+UP BY \hyperlink{generic_8h_aa17a8e6cdc1860741119dc46c1777778}{job\+\_\+id}, \hyperlink{learning__delete_8c_aaaecc7646b3c722387d285ecbb165474}{step\+\_\+id}) AS t1\char`\"{}
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
@@ -59,9 +59,9 @@ void \hyperlink{db__helper_8c_acde5181265c914948222ed449729a35b}{init\+\_\+db\+\
 \item 
 int \hyperlink{db__helper_8c_a2c039d0a405ee6cf5f1b7b0f9974a1a7}{db\+\_\+insert\+\_\+application} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$\hyperlink{structapplication}{application})
 \item 
-int \hyperlink{db__helper_8c_a4365709ce747fdd2a7f0e84582daa5de}{db\+\_\+batch\+\_\+insert\+\_\+applications} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$applications, int \hyperlink{compute__coefficients__v2_8c_a38c5085379783428dd049efbedc264dd}{num\+\_\+apps})
+int \hyperlink{db__helper_8c_a4365709ce747fdd2a7f0e84582daa5de}{db\+\_\+batch\+\_\+insert\+\_\+applications} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$applications, int \hyperlink{learning__validate_8c_a38c5085379783428dd049efbedc264dd}{num\+\_\+apps})
 \item 
-int \hyperlink{db__helper_8c_a93ce1775fd9414f8a2aee7426ed77863}{db\+\_\+batch\+\_\+insert\+\_\+applications\+\_\+no\+\_\+mpi} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$applications, int \hyperlink{compute__coefficients__v2_8c_a38c5085379783428dd049efbedc264dd}{num\+\_\+apps})
+int \hyperlink{db__helper_8c_a93ce1775fd9414f8a2aee7426ed77863}{db\+\_\+batch\+\_\+insert\+\_\+applications\+\_\+no\+\_\+mpi} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$applications, int \hyperlink{learning__validate_8c_a38c5085379783428dd049efbedc264dd}{num\+\_\+apps})
 \item 
 int \hyperlink{db__helper_8c_ad51a86bf29707289e43e6ec3e4e2174f}{db\+\_\+insert\+\_\+loop} (\hyperlink{loop_8h_a3cab4c06c8bb84fe949df61aa5ca8d5b}{loop\+\_\+t} $\ast$\hyperlink{structloop}{loop})
 \item 
@@ -87,7 +87,7 @@ int \hyperlink{db__helper_8c_aad4c0d6d243c37ee44a81cdfafe6be7f}{db\+\_\+insert\+
 \item 
 \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{db__helper_8c_acabe62efa96056076b244fe40c84275f}{db\+\_\+select\+\_\+acum\+\_\+energy} (int start\+\_\+time, int end\+\_\+time, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} \hyperlink{eargm_8c_a46bdc6418a56200bc580d4f64e1fa2b4}{divisor}, char is\+\_\+aggregated)
 \item 
-int \hyperlink{db__helper_8c_af9048708c79494310200747bb75da0a8}{db\+\_\+read\+\_\+applications\+\_\+query} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$$\ast$apps, char $\ast$\hyperlink{remove__learning_8c_a0ad9302c12c82c3144067f176a085cec}{query})
+int \hyperlink{db__helper_8c_af9048708c79494310200747bb75da0a8}{db\+\_\+read\+\_\+applications\+\_\+query} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$$\ast$apps, char $\ast$\hyperlink{learning__delete_8c_a0ad9302c12c82c3144067f176a085cec}{query})
 \item 
 int \hyperlink{db__helper_8c_ac012ed174017f9c60aee7fc4a38e9b55}{db\+\_\+read\+\_\+applications} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$$\ast$apps, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} is\+\_\+learning, int max\+\_\+apps, char $\ast$\hyperlink{externs__alloc_8h_a2ae65b19e2c0b0e3d4945cf6ceb0085c}{node\+\_\+name})
 \item 

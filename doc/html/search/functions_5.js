@@ -407,11 +407,11 @@ var searchData=
   ['end_5fsample_5fperiod',['end_sample_period',['../periodic__metric_8c.html#a7dd0ca67dc1566ba65c64582c99a7118',1,'end_sample_period(periodic_metric_t *pm, ulong energy):&#160;periodic_metric.c'],['../periodic__metric_8h.html#a7dd0ca67dc1566ba65c64582c99a7118',1,'end_sample_period(periodic_metric_t *pm, ulong energy):&#160;periodic_metric.c']]],
   ['end_5fservice',['end_service',['../services_8c.html#a1f837da84b564327d43b0c29c14dd804',1,'end_service(char *name):&#160;services.c'],['../services_8h.html#a1f837da84b564327d43b0c29c14dd804',1,'end_service(char *name):&#160;services.c']]],
   ['energy_5ftag_5fexists',['energy_tag_exists',['../cluster__conf_8c.html#a403cfce2c5ac6d7c9823801d9fb3aa5d',1,'cluster_conf.c']]],
-  ['equal',['equal',['../coefficients__comparison_8c.html#a61ae68ecd8e3f6f2960e207817147ce8',1,'coefficients_comparison.c']]],
+  ['equal',['equal',['../coeffs__comparison_8c.html#a61ae68ecd8e3f6f2960e207817147ce8',1,'coeffs_comparison.c']]],
   ['equal_5fwith_5fth',['equal_with_th',['../math__operations_8c.html#aae1d10a18dba01d5893808973e721bf8',1,'equal_with_th(double a, double b, double th):&#160;math_operations.c'],['../math__operations_8h.html#aae1d10a18dba01d5893808973e721bf8',1,'equal_with_th(double a, double b, double th):&#160;math_operations.c']]],
   ['evaluate',['evaluate',['../coeffs__jobproj_8c.html#a036df463eef8ad30c94e11dd40521ebf',1,'evaluate(control_t *cntr):&#160;coeffs_jobproj.c'],['../coeffs__quality_8c.html#af939160fc6d5999efb8f56d09cd0597d',1,'evaluate(control_t *control):&#160;coeffs_quality.c']]],
   ['execute_5fon_5ferror',['execute_on_error',['../ear__create__database_8c.html#a31650589e852c9cdb8b618dfd9605032',1,'ear_create_database.c']]],
   ['existenv_5flocal',['existenv_local',['../slurm__plugin__helper_8c.html#ad7f4181babf9d85d3a15b278fb2390cf',1,'existenv_local(char *name):&#160;slurm_plugin_helper.c'],['../slurm__plugin__helper_8h.html#ad7f4181babf9d85d3a15b278fb2390cf',1,'existenv_local(char *name):&#160;slurm_plugin_helper.c']]],
   ['existenv_5fremote',['existenv_remote',['../slurm__plugin__helper_8c.html#abd734e7a7fcb9cb292a54ccd4bc07438',1,'existenv_remote(spank_t sp, char *name):&#160;slurm_plugin_helper.c'],['../slurm__plugin__helper_8h.html#abd734e7a7fcb9cb292a54ccd4bc07438',1,'existenv_remote(spank_t sp, char *name):&#160;slurm_plugin_helper.c']]],
-  ['exit',['exit',['../remove__learning_8c.html#adf5c804dfce7a70e36dda02995fad481',1,'remove_learning.c']]]
+  ['exit',['exit',['../learning__delete_8c.html#adf5c804dfce7a70e36dda02995fad481',1,'learning_delete.c']]]
 ];

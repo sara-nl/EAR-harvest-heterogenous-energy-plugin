@@ -49,8 +49,8 @@ int \hyperlink{generics_8h_a82a53d61b3f75085c9fd7fc2e1e4e63e}{\+\_\+papi\+\_\+co
 \begin{DoxyCode}
 \textcolor{keywordflow}{if} ((cid = PAPI\_get\_component\_index(event)) < 0) \{ \(\backslash\)
         fprintf(stderr, \textcolor{stringliteral}{"%s: '%s' component not found (%s), exiting\(\backslash\)n"}, \(\backslash\)
-            name, event, PAPI\_strerror(cid)); \hyperlink{remove__learning_8c_adf5c804dfce7a70e36dda02995fad481}{\(\backslash\)}
-\hyperlink{remove__learning_8c_adf5c804dfce7a70e36dda02995fad481}{        exit}(1); \(\backslash\)
+            name, event, PAPI\_strerror(cid)); \hyperlink{learning__delete_8c_adf5c804dfce7a70e36dda02995fad481}{\(\backslash\)}
+\hyperlink{learning__delete_8c_adf5c804dfce7a70e36dda02995fad481}{        exit}(1); \(\backslash\)
     \}
 \end{DoxyCode}
 \index{generics.\+h@{generics.\+h}!P\+A\+P\+I\+\_\+\+I\+N\+I\+T\+\_\+\+M\+U\+L\+T\+I\+P\+L\+E\+X\+\_\+\+T\+E\+ST@{P\+A\+P\+I\+\_\+\+I\+N\+I\+T\+\_\+\+M\+U\+L\+T\+I\+P\+L\+E\+X\+\_\+\+T\+E\+ST}}
@@ -62,8 +62,8 @@ int \hyperlink{generics_8h_a82a53d61b3f75085c9fd7fc2e1e4e63e}{\+\_\+papi\+\_\+co
 )}\hypertarget{generics_8h_aa2e30bdc3d52f3f530ee1c85a167acc3}{}\label{generics_8h_aa2e30bdc3d52f3f530ee1c85a167acc3}
 {\bfseries Value\+:}
 \begin{DoxyCode}
-\textcolor{keywordtype}{int} papi\_multi; \hyperlink{remove__learning_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{\(\backslash\)}
-\hyperlink{remove__learning_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{    if} ((papi\_multi = PAPI\_multiplex\_init()) != PAPI\_OK) \{ \hyperlink{ear__verbose_8h_aeb5dc7c7c53a2c9f6be9b299759a594b}{\(\backslash\)}
+\textcolor{keywordtype}{int} papi\_multi; \hyperlink{learning__delete_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{\(\backslash\)}
+\hyperlink{learning__delete_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{    if} ((papi\_multi = PAPI\_multiplex\_init()) != PAPI\_OK) \{ \hyperlink{ear__verbose_8h_aeb5dc7c7c53a2c9f6be9b299759a594b}{\(\backslash\)}
 \hyperlink{ear__verbose_8h_aeb5dc7c7c53a2c9f6be9b299759a594b}{        ear\_verbose}(0,\textcolor{stringliteral}{"%s: WARNING, %s\(\backslash\)n"}, name, PAPI\_strerror(papi\_multi)); \(\backslash\)
     \}
 \end{DoxyCode}
@@ -77,12 +77,12 @@ int \hyperlink{generics_8h_a82a53d61b3f75085c9fd7fc2e1e4e63e}{\+\_\+papi\+\_\+co
 {\bfseries Value\+:}
 \begin{DoxyCode}
 \textcolor{keywordtype}{int} papi\_init; \(\backslash\)
-    if (PAPI\_is\_initialized() == PAPI\_NOT\_INITED) \{ \hyperlink{remove__learning_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{\(\backslash\)}
-\hyperlink{remove__learning_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{        if} ((papi\_init = PAPI\_library\_init(PAPI\_VER\_CURRENT)) != PAPI\_VER\_CURRENT) \{ 
+    if (PAPI\_is\_initialized() == PAPI\_NOT\_INITED) \{ \hyperlink{learning__delete_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{\(\backslash\)}
+\hyperlink{learning__delete_8c_a2965759c2a309bb9a8346cb90c4bbb8a}{        if} ((papi\_init = PAPI\_library\_init(PAPI\_VER\_CURRENT)) != PAPI\_VER\_CURRENT) \{ 
       \hyperlink{ear__verbose_8h_aeb5dc7c7c53a2c9f6be9b299759a594b}{\(\backslash\)}
 \hyperlink{ear__verbose_8h_aeb5dc7c7c53a2c9f6be9b299759a594b}{            ear\_verbose}(0, \textcolor{stringliteral}{"%s: ERROR initializing the PAPI library (%s), exiting\(\backslash\)n"}, \(\backslash\)
-                name, PAPI\_strerror(papi\_init)); \hyperlink{remove__learning_8c_adf5c804dfce7a70e36dda02995fad481}{\(\backslash\)}
-\hyperlink{remove__learning_8c_adf5c804dfce7a70e36dda02995fad481}{            exit}(1); \(\backslash\)
+                name, PAPI\_strerror(papi\_init)); \hyperlink{learning__delete_8c_adf5c804dfce7a70e36dda02995fad481}{\(\backslash\)}
+\hyperlink{learning__delete_8c_adf5c804dfce7a70e36dda02995fad481}{            exit}(1); \(\backslash\)
         \} \(\backslash\)
     \}
 \end{DoxyCode}

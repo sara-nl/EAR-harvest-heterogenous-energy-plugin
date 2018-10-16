@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['d',['D',['../structcoefficient.html#a704078b49bbd47f39b1d74c8955a3895',1,'coefficient::D()'],['../structcoefficient__obs.html#a24799e11ae2246845354e784a5014cb1',1,'coefficient_obs::D()']]],
+  ['d',['D',['../structcoefficient.html#a704078b49bbd47f39b1d74c8955a3895',1,'coefficient']]],
   ['daemon_5fexternal_5fconnexions',['DAEMON_EXTERNAL_CONNEXIONS',['../eard__server__api_8c.html#a26a49fd3bffb985120f5ddb2f4ab11ed',1,'eard_server_api.c']]],
   ['daemon_5freq',['daemon_req',['../structdaemon__req.html',1,'']]],
   ['daemon_5freq_5fopt',['daemon_req_opt',['../uniondaemon__req__opt.html',1,'']]],
@@ -45,7 +45,7 @@ var searchData=
   ['debug_5ff',['DEBUG_F',['../ear__verbose_8h.html#a67a017fe560cabc8e5e7813d82d1cd07',1,'ear_verbose.h']]],
   ['decon_5flimits',['DECON_LIMITS',['../cluster__conf_8h.html#a351031dfb8533fad8e6cacbb7bfc79c9',1,'cluster_conf.h']]],
   ['def_5ff',['def_f',['../structjob.html#adecf5ae4909df0587be6eb9762aeab3d',1,'job::def_f()'],['../structpower__signature.html#ad3219c2a2526b20419ca70ee35d69232',1,'power_signature::def_f()'],['../structsignature.html#a83155e96275d47f586a757c97d91976e',1,'signature::def_f()']]],
-  ['def_5ffreq',['def_freq',['../structsettings__conf.html#a8ad3b36e7d353a391a8b6f08aec53dff',1,'settings_conf::def_freq()'],['../coefficients__comparison_8c.html#aab9166f9c1b6e65ca2a8ecc9a69fc5eb',1,'DEF_FREQ():&#160;coefficients_comparison.c']]],
+  ['def_5ffreq',['def_freq',['../structsettings__conf.html#a8ad3b36e7d353a391a8b6f08aec53dff',1,'settings_conf::def_freq()'],['../coeffs__comparison_8c.html#aab9166f9c1b6e65ca2a8ecc9a69fc5eb',1,'DEF_FREQ():&#160;coeffs_comparison.c']]],
   ['def_5fp_5fstate',['def_p_state',['../structsettings__conf.html#aad942b4394e08d446f8488296bafdb09',1,'settings_conf']]],
   ['default_5fcoeff_5fpathname',['DEFAULT_COEFF_PATHNAME',['../environment_8h.html#adbc19491b9fed42074b518f319f2e502',1,'environment.h']]],
   ['default_5fconf',['default_conf',['../structpolicy.html#a647e41f22ae624084b0082721c013400',1,'policy']]],

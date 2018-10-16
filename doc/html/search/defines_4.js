@@ -7,7 +7,7 @@ var searchData=
   ['data_5fsize_5funcore',['DATA_SIZE_UNCORE',['../eard__conf__api_8h.html#a436837e44a1e12f511e7f9e27f581568',1,'eard_conf_api.h']]],
   ['debug_5ff',['DEBUG_F',['../ear__verbose_8h.html#a67a017fe560cabc8e5e7813d82d1cd07',1,'ear_verbose.h']]],
   ['decon_5flimits',['DECON_LIMITS',['../cluster__conf_8h.html#a351031dfb8533fad8e6cacbb7bfc79c9',1,'cluster_conf.h']]],
-  ['def_5ffreq',['DEF_FREQ',['../coefficients__comparison_8c.html#aab9166f9c1b6e65ca2a8ecc9a69fc5eb',1,'coefficients_comparison.c']]],
+  ['def_5ffreq',['DEF_FREQ',['../coeffs__comparison_8c.html#aab9166f9c1b6e65ca2a8ecc9a69fc5eb',1,'coeffs_comparison.c']]],
   ['default_5fcoeff_5fpathname',['DEFAULT_COEFF_PATHNAME',['../environment_8h.html#adbc19491b9fed42074b518f319f2e502',1,'environment.h']]],
   ['default_5fdb_5fpathname',['DEFAULT_DB_PATHNAME',['../environment_8h.html#acfb12d655d1289dca928264c229012f0',1,'DEFAULT_DB_PATHNAME():&#160;environment.h'],['../environment__common_8c.html#acfb12d655d1289dca928264c229012f0',1,'DEFAULT_DB_PATHNAME():&#160;environment_common.c'],['../environment__common_8h.html#acfb12d655d1289dca928264c229012f0',1,'DEFAULT_DB_PATHNAME():&#160;environment_common.h']]],
   ['default_5fdynais_5flevels',['DEFAULT_DYNAIS_LEVELS',['../environment_8h.html#a362260bfaeb5f21ee7a35bc10a30254a',1,'environment.h']]],
