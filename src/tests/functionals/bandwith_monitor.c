@@ -77,7 +77,7 @@ void usage(char *app)
 int main (int argc, char *argv[])
 {
     double gbytes;
-    unsigned long long values[128];
+    unsigned long long values_begin[128],values_end[128],values[128];
     unsigned long long total_bytes;
     unsigned long long total_cas = 0;
     int num_counters;
@@ -98,16 +98,19 @@ int main (int argc, char *argv[])
     printf("CPU Model: \t\t%i\n", cpu_model);
     num_counters = init_uncores(cpu_model);
     printf("Uncores detected: \t%i\n", num_counters);
+    read_uncores(values_begin);
 
     while(j < num_steps)
     {
 		total_bytes=0;
 		total_cas=0;
         printf("-------------------------- Working\n");
-        start_uncores();
-        reset_uncores();
+        // start_uncores();
+        // reset_uncores();
         sleep(1);
-        stop_uncores(values);
+        read_uncores(values_end);
+		diff_uncores(values,values_end,values_begin,128);
+		copy_uncores(values_begin,values_end,128);
 
         printf("Reads\t  Writes\n");
         for (i = 0; i < num_counters; i += 2)
