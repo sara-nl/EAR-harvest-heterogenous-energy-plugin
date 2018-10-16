@@ -2,7 +2,7 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-bandwidth_OBJS = bandwidth/uncores_pci.o
+bandwidth_OBJS = bandwidth/uncores_pci.o $(SRCDIR)/common/math_operations.o
 
 OBJS = frequency.o \
        frequency_uncore.o \

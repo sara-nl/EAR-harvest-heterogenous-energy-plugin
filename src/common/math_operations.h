@@ -31,16 +31,16 @@
 unsigned int equal_with_th(double a, double b, double th);
 
 /** Given two unsigned long's, one before and one after overflow, returns the
-*   value added to the first to obtain the second. This corrects b-a when there 
+*   value added to the first to obtain the second. This corrects end-begin when there 
 *   has been an overflow. */
-unsigned long ulong_diff_overflow(unsigned long a, unsigned long b);
+unsigned long ulong_diff_overflow(unsigned long begin, unsigned long end);
 
 /** Given two unsigned long's, one before and one after overflow, returns the
-*   value added to the first to obtain the second. This corrects b-a when there 
+*   value added to the first to obtain the second. This corrects end-begin when there 
 *   has been an overflow. */
-unsigned long long ullong_diff_overflow(unsigned long long a, unsigned long long b);
+unsigned long long ullong_diff_overflow(unsigned long long begin, unsigned long long end);
 
 /** Given two unsigned long's, one before and one after overflow, returns the
 *   value added to the first to obtain the second. This uses the normal 48 bit max. 
-*   This corrects b-a when there has been an overflow.*/
-unsigned long long uncore_ullong_diff_overflow(unsigned long long a, unsigned long long b);
+*   This corrects end-begin when there has been an overflow.*/
+unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end);

@@ -4,7 +4,7 @@
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
-\#define \hyperlink{slurm__plugin__helper_8h_a27a16f44f05e68bdb1bcee598f9ff8c6}{snprintf\+\_\+ret\+\_\+err}(\hyperlink{translate__coefficients_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer},  size, ...)
+\#define \hyperlink{slurm__plugin__helper_8h_a27a16f44f05e68bdb1bcee598f9ff8c6}{snprintf\+\_\+ret\+\_\+err}(\hyperlink{coeffs__show_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer},  size, ...)
 \item 
 \#define \hyperlink{slurm__plugin__helper_8h_acc01306257f90c6127e5db87b4359170}{setenv\+\_\+local\+\_\+ret\+\_\+err}(p\+\_\+name,  p\+\_\+value,  replace)
 \item 
@@ -147,7 +147,7 @@ int \hyperlink{slurm__plugin__helper_8h_acc90e7650aa5b466741c92bdb22e275f}{isenv
 )}\hypertarget{slurm__plugin__helper_8h_a27a16f44f05e68bdb1bcee598f9ff8c6}{}\label{slurm__plugin__helper_8h_a27a16f44f05e68bdb1bcee598f9ff8c6}
 {\bfseries Value\+:}
 \begin{DoxyCode}
-\textcolor{keywordflow}{if} (snprintf(buffer, size, \_\_VA\_ARGS\_\_) < 0) \{ \(\backslash\)
+\textcolor{keywordflow}{if} (snprintf(\hyperlink{coeffs__comparison_8c_a28d4d3d8445e73a696b2d6f7eadabd96}{buffer}, size, \_\_VA\_ARGS\_\_) < 0) \{ \(\backslash\)
         plug\_error(\textcolor{stringliteral}{"while writing a formatted output to sized buffer"}); \(\backslash\)
         return (\hyperlink{spank_8h_a20ab2c573943e056dfb16da58be348e9a2307bdba763f2f9b7dd406f18cdc36c3}{ESPANK\_ERROR}); \(\backslash\)
     \}

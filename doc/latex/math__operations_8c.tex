@@ -6,9 +6,11 @@
 \item 
 unsigned int \hyperlink{math__operations_8c_aae1d10a18dba01d5893808973e721bf8}{equal\+\_\+with\+\_\+th} (double a, double b, double th)
 \begin{DoxyCompactList}\small\item\em Given two doubles a and b, checks if they are equal within a margin of th. \end{DoxyCompactList}\item 
-unsigned long \hyperlink{math__operations_8c_a92252077213e0059e95825e76f3075ac}{ulong\+\_\+diff\+\_\+overflow} (unsigned long a, unsigned long b)
+unsigned long \hyperlink{math__operations_8c_aef68cd694ac3de2054c27c9c2b99ad8f}{ulong\+\_\+diff\+\_\+overflow} (unsigned long begin, unsigned long end)
 \begin{DoxyCompactList}\small\item\em Given two unsigned long\textquotesingle{}s, one before and one after overflow, returns the value added to the first to obtain the second. \end{DoxyCompactList}\item 
-unsigned long long \hyperlink{math__operations_8c_ae998092285b320b6f3237e4db462c85c}{ullong\+\_\+diff\+\_\+overflow} (unsigned long long a, unsigned long long b)
+unsigned long long \hyperlink{math__operations_8c_ac8b466a831b1e4212f2543f60d998c55}{ullong\+\_\+diff\+\_\+overflow} (unsigned long long begin, unsigned long long end)
+\begin{DoxyCompactList}\small\item\em Given two unsigned long\textquotesingle{}s, one before and one after overflow, returns the value added to the first to obtain the second. \end{DoxyCompactList}\item 
+unsigned long long \hyperlink{math__operations_8c_a8690742809c8e3a27945864186ef168b}{uncore\+\_\+ullong\+\_\+diff\+\_\+overflow} (unsigned long long begin, unsigned long long end)
 \begin{DoxyCompactList}\small\item\em Given two unsigned long\textquotesingle{}s, one before and one after overflow, returns the value added to the first to obtain the second. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
@@ -28,25 +30,38 @@ Given two doubles a and b, checks if they are equal within a margin of th.
 
 \index{math\+\_\+operations.\+c@{math\+\_\+operations.\+c}!ullong\+\_\+diff\+\_\+overflow@{ullong\+\_\+diff\+\_\+overflow}}
 \index{ullong\+\_\+diff\+\_\+overflow@{ullong\+\_\+diff\+\_\+overflow}!math\+\_\+operations.\+c@{math\+\_\+operations.\+c}}
-\subsubsection[{\texorpdfstring{ullong\+\_\+diff\+\_\+overflow(unsigned long long a, unsigned long long b)}{ullong_diff_overflow(unsigned long long a, unsigned long long b)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long long ullong\+\_\+diff\+\_\+overflow (
+\subsubsection[{\texorpdfstring{ullong\+\_\+diff\+\_\+overflow(unsigned long long begin, unsigned long long end)}{ullong_diff_overflow(unsigned long long begin, unsigned long long end)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long long ullong\+\_\+diff\+\_\+overflow (
 \begin{DoxyParamCaption}
-\item[{unsigned long long}]{a, }
-\item[{unsigned long long}]{b}
+\item[{unsigned long long}]{begin, }
+\item[{unsigned long long}]{end}
 \end{DoxyParamCaption}
-)}\hypertarget{math__operations_8c_ae998092285b320b6f3237e4db462c85c}{}\label{math__operations_8c_ae998092285b320b6f3237e4db462c85c}
+)}\hypertarget{math__operations_8c_ac8b466a831b1e4212f2543f60d998c55}{}\label{math__operations_8c_ac8b466a831b1e4212f2543f60d998c55}
 
 
 Given two unsigned long\textquotesingle{}s, one before and one after overflow, returns the value added to the first to obtain the second. 
 
-\index{math\+\_\+operations.\+c@{math\+\_\+operations.\+c}!ulong\+\_\+diff\+\_\+overflow@{ulong\+\_\+diff\+\_\+overflow}}
+This corrects end-\/begin when there has been an overflow. \index{math\+\_\+operations.\+c@{math\+\_\+operations.\+c}!ulong\+\_\+diff\+\_\+overflow@{ulong\+\_\+diff\+\_\+overflow}}
 \index{ulong\+\_\+diff\+\_\+overflow@{ulong\+\_\+diff\+\_\+overflow}!math\+\_\+operations.\+c@{math\+\_\+operations.\+c}}
-\subsubsection[{\texorpdfstring{ulong\+\_\+diff\+\_\+overflow(unsigned long a, unsigned long b)}{ulong_diff_overflow(unsigned long a, unsigned long b)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long ulong\+\_\+diff\+\_\+overflow (
+\subsubsection[{\texorpdfstring{ulong\+\_\+diff\+\_\+overflow(unsigned long begin, unsigned long end)}{ulong_diff_overflow(unsigned long begin, unsigned long end)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long ulong\+\_\+diff\+\_\+overflow (
 \begin{DoxyParamCaption}
-\item[{unsigned long}]{a, }
-\item[{unsigned long}]{b}
+\item[{unsigned long}]{begin, }
+\item[{unsigned long}]{end}
 \end{DoxyParamCaption}
-)}\hypertarget{math__operations_8c_a92252077213e0059e95825e76f3075ac}{}\label{math__operations_8c_a92252077213e0059e95825e76f3075ac}
+)}\hypertarget{math__operations_8c_aef68cd694ac3de2054c27c9c2b99ad8f}{}\label{math__operations_8c_aef68cd694ac3de2054c27c9c2b99ad8f}
 
 
 Given two unsigned long\textquotesingle{}s, one before and one after overflow, returns the value added to the first to obtain the second. 
 
+This corrects end-\/begin when there has been an overflow. \index{math\+\_\+operations.\+c@{math\+\_\+operations.\+c}!uncore\+\_\+ullong\+\_\+diff\+\_\+overflow@{uncore\+\_\+ullong\+\_\+diff\+\_\+overflow}}
+\index{uncore\+\_\+ullong\+\_\+diff\+\_\+overflow@{uncore\+\_\+ullong\+\_\+diff\+\_\+overflow}!math\+\_\+operations.\+c@{math\+\_\+operations.\+c}}
+\subsubsection[{\texorpdfstring{uncore\+\_\+ullong\+\_\+diff\+\_\+overflow(unsigned long long begin, unsigned long long end)}{uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end)}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long long uncore\+\_\+ullong\+\_\+diff\+\_\+overflow (
+\begin{DoxyParamCaption}
+\item[{unsigned long long}]{begin, }
+\item[{unsigned long long}]{end}
+\end{DoxyParamCaption}
+)}\hypertarget{math__operations_8c_a8690742809c8e3a27945864186ef168b}{}\label{math__operations_8c_a8690742809c8e3a27945864186ef168b}
+
+
+Given two unsigned long\textquotesingle{}s, one before and one after overflow, returns the value added to the first to obtain the second. 
+
+This uses the normal 48 bit max. This corrects end-\/begin when there has been an overflow. 

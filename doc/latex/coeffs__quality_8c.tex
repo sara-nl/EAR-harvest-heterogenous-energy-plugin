@@ -10,7 +10,6 @@
 {\ttfamily \#include $<$common/types/coefficient.\+h$>$}\\*
 {\ttfamily \#include $<$common/types/configuration/cluster\+\_\+conf.\+h$>$}\\*
 {\ttfamily \#include $<$common/database/db\+\_\+helper.\+h$>$}\\*
-{\ttfamily \#include $<$tools/coeffs\+\_\+quality.\+h$>$}\\*
 \subsection*{Data Structures}
 \begin{DoxyCompactItemize}
 \item 
@@ -28,12 +27,6 @@ typedef struct \hyperlink{structcontrol}{control} \hyperlink{coeffs__quality_8c_
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
-\item 
-double \hyperlink{coeffs__quality_8c_a8c0e46c62cb370b529bd97a3f5e3db8a}{projection\+\_\+pow} (double pow\+\_\+sign, double tpi\+\_\+sign, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs})
-\item 
-double \hyperlink{coeffs__quality_8c_a702b31c0db00f33472ebd39fabe23f59}{projection\+\_\+cpi} (double cpi\+\_\+sign, double tpi\+\_\+sign, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs})
-\item 
-double \hyperlink{coeffs__quality_8c_ac40f1f00f6998af9665b262675da758e}{projection\+\_\+tim} (double tim\+\_\+sign, double \hyperlink{projections__avx512_8h_ae771b5976490abde7cb61e3ed8f4be0d}{cpi\+\_\+proj}, double cpi\+\_\+sign, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} f0, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} fn)
 \item 
 int \hyperlink{coeffs__quality_8c_acf2295b1faf11facb406e67c72060f0e}{find} (\hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$apps, int n\+\_\+apps, char $\ast$app\+\_\+id, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} frq\+\_\+base)
 \item 
@@ -114,35 +107,6 @@ char \hyperlink{coeffs__quality_8c_a1434799c303fa58d4e96515079985b34}{buffer} \m
 \item[{{\bf control\+\_\+t} $\ast$}]{control}
 \end{DoxyParamCaption}
 )}\hypertarget{coeffs__quality_8c_a6a13e748ce8a3365703f0a5ba02d7727}{}\label{coeffs__quality_8c_a6a13e748ce8a3365703f0a5ba02d7727}
-\index{coeffs\+\_\+quality.\+c@{coeffs\+\_\+quality.\+c}!projection\+\_\+cpi@{projection\+\_\+cpi}}
-\index{projection\+\_\+cpi@{projection\+\_\+cpi}!coeffs\+\_\+quality.\+c@{coeffs\+\_\+quality.\+c}}
-\subsubsection[{\texorpdfstring{projection\+\_\+cpi(double cpi\+\_\+sign, double tpi\+\_\+sign, coefficient\+\_\+t $\ast$coeffs)}{projection_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs)}}]{\setlength{\rightskip}{0pt plus 5cm}double projection\+\_\+cpi (
-\begin{DoxyParamCaption}
-\item[{double}]{cpi\+\_\+sign, }
-\item[{double}]{tpi\+\_\+sign, }
-\item[{{\bf coefficient\+\_\+t} $\ast$}]{coeffs}
-\end{DoxyParamCaption}
-)}\hypertarget{coeffs__quality_8c_a702b31c0db00f33472ebd39fabe23f59}{}\label{coeffs__quality_8c_a702b31c0db00f33472ebd39fabe23f59}
-\index{coeffs\+\_\+quality.\+c@{coeffs\+\_\+quality.\+c}!projection\+\_\+pow@{projection\+\_\+pow}}
-\index{projection\+\_\+pow@{projection\+\_\+pow}!coeffs\+\_\+quality.\+c@{coeffs\+\_\+quality.\+c}}
-\subsubsection[{\texorpdfstring{projection\+\_\+pow(double pow\+\_\+sign, double tpi\+\_\+sign, coefficient\+\_\+t $\ast$coeffs)}{projection_pow(double pow_sign, double tpi_sign, coefficient_t *coeffs)}}]{\setlength{\rightskip}{0pt plus 5cm}double projection\+\_\+pow (
-\begin{DoxyParamCaption}
-\item[{double}]{pow\+\_\+sign, }
-\item[{double}]{tpi\+\_\+sign, }
-\item[{{\bf coefficient\+\_\+t} $\ast$}]{coeffs}
-\end{DoxyParamCaption}
-)}\hypertarget{coeffs__quality_8c_a8c0e46c62cb370b529bd97a3f5e3db8a}{}\label{coeffs__quality_8c_a8c0e46c62cb370b529bd97a3f5e3db8a}
-\index{coeffs\+\_\+quality.\+c@{coeffs\+\_\+quality.\+c}!projection\+\_\+tim@{projection\+\_\+tim}}
-\index{projection\+\_\+tim@{projection\+\_\+tim}!coeffs\+\_\+quality.\+c@{coeffs\+\_\+quality.\+c}}
-\subsubsection[{\texorpdfstring{projection\+\_\+tim(double tim\+\_\+sign, double cpi\+\_\+proj, double cpi\+\_\+sign, ulong f0, ulong fn)}{projection_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong f0, ulong fn)}}]{\setlength{\rightskip}{0pt plus 5cm}double projection\+\_\+tim (
-\begin{DoxyParamCaption}
-\item[{double}]{tim\+\_\+sign, }
-\item[{double}]{cpi\+\_\+proj, }
-\item[{double}]{cpi\+\_\+sign, }
-\item[{{\bf ulong}}]{f0, }
-\item[{{\bf ulong}}]{fn}
-\end{DoxyParamCaption}
-)}\hypertarget{coeffs__quality_8c_ac40f1f00f6998af9665b262675da758e}{}\label{coeffs__quality_8c_ac40f1f00f6998af9665b262675da758e}
 \index{coeffs\+\_\+quality.\+c@{coeffs\+\_\+quality.\+c}!read\+\_\+applications@{read\+\_\+applications}}
 \index{read\+\_\+applications@{read\+\_\+applications}!coeffs\+\_\+quality.\+c@{coeffs\+\_\+quality.\+c}}
 \subsubsection[{\texorpdfstring{read\+\_\+applications(control\+\_\+t $\ast$cntr)}{read_applications(control_t *cntr)}}]{\setlength{\rightskip}{0pt plus 5cm}void read\+\_\+applications (

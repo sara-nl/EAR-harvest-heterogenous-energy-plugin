@@ -46,7 +46,7 @@ ping: ping.c $(SRCDIR)/common/types.a
 
 bandwith_monitor: bandwith_monitor.c \
         $(SRCDIR)/metrics/custom/hardware_info.o \
-        $(SRCDIR)/metrics/custom/bandwidth.a
+        $(SRCDIR)/metrics/custom/bandwidth.a  
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o bandwith_monitor $^
 
 eard_monitor: eard_monitor.c \
