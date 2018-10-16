@@ -442,7 +442,7 @@ void ear_init()
 
 	// Passing the frequency in KHz to MHz
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
-	application.job.procs = get_total_resources();
+	application.job.procs = my_size;
 	application.job.th =get_global_th();
 
 	// Copying static application info into the loop info
@@ -509,7 +509,7 @@ void ear_finalize()
 	traces_end(ear_my_rank, my_id, 0);
 
 	// Closing and obtaining global metrics
-	metrics_dispose(&application.signature, application.job.procs);
+	metrics_dispose(&application.signature, get_total_resources());
 	dynais_dispose();
 	frequency_dispose();
 
