@@ -74,6 +74,14 @@ void usage(char *app)
 	exit(0);
 }
 
+void print_uncores(unsigned long long *v,int num){
+	int i;
+	for (i = 0; i < num; i += 2)
+	{
+		printf("%s\t  %s\n", format_ull(v[i]), format_ull(v[i+1]));
+	}
+}
+
 int main (int argc, char *argv[])
 {
     double gbytes;
@@ -98,19 +106,19 @@ int main (int argc, char *argv[])
     printf("CPU Model: \t\t%i\n", cpu_model);
     num_counters = init_uncores(cpu_model);
     printf("Uncores detected: \t%i\n", num_counters);
-    read_uncores(values_begin);
 
+    read_uncores(values_begin);
+    start_uncores();
     while(j < num_steps)
     {
 		total_bytes=0;
 		total_cas=0;
         printf("-------------------------- Working\n");
-        // start_uncores();
-        // reset_uncores();
         sleep(1);
-        read_uncores(values_end);
-		diff_uncores(values,values_end,values_begin,128);
-		copy_uncores(values_begin,values_end,128);
+		read_uncores(values_end);
+		// print_uncores(values_end,num_counters);
+		diff_uncores(values,values_end,values_begin,num_counters);
+		copy_uncores(values_begin,values_end,num_counters);
 
         printf("Reads\t  Writes\n");
         for (i = 0; i < num_counters; i += 2)
