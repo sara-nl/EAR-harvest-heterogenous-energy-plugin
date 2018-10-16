@@ -34,40 +34,65 @@
 
 int EAR_VERBOSE_LEVEL=1;
 
+
+#define COL_RED "\x1b[31m"
+#define COL_GRE "\x1b[32m"
+#define COL_YLW "\x1b[33m"
+#define COL_BLU "\x1b[34m"
+#define COL_MGT "\x1b[35m"
+#define COL_CYA "\x1b[36m"
+#define COL_RST "\x1b[0m"
+
+char *colors[7] = { COL_RED, COL_GRE, COL_YLW, COL_BLU, COL_MGT, COL_CYA, COL_RST };
+
 void main(int argc,char *argv[])
 {
-	int num_apps, is_learning=1;
+    char buffer[256];
+	int num_apps;
     int total_apps = 0;
-	int i;
+	int i, c = 0;
     char *node_name = NULL;
 	application_t *apps;
-    if (argc>=2) node_name = argv[1];
-	if (is_learning) printf("Reading applications from learning DB\n");
-	else printf("Reading applications from normal DB\n");
-    char ear_path[256];
 	cluster_conf_t my_conf;
-    if (get_ear_conf_path(ear_path)==EAR_ERROR){
-            printf("Error getting ear.conf path\n");
-            exit(0);
+    
+	node_name = argv[1];
+	c = atoi(argv[2]) % 6; 
+ 
+	if (get_ear_conf_path(buffer)==EAR_ERROR) {
+		printf("Error getting ear.conf path\n");
+		exit(0);
     }
-    read_cluster_conf(ear_path,&my_conf);
-	printf("Initializing DB\n");
+	
+	//
+    read_cluster_conf(buffer, &my_conf);
+	
+	//
 	init_db_helper(&my_conf.database);
-	printf("reading apps\n");
-	num_apps=db_read_applications(&apps,is_learning, 50, node_name);
-    while (num_apps > 0)
+	
+	//
+	num_apps = db_read_applications(&apps, 1, 50, node_name);
+   
+	// 
+	tprintf_init(stdout, "22 11 12 10 8 14 12");
+ 
+	while (num_apps > 0)
     {
-		total_apps+=num_apps;
-	    for (i=0;i<num_apps;i++){
-		    report_application_data(&apps[i]);
+		total_apps += num_apps;
+	    
+		for (i = 0; i < num_apps; i++)
+		{
+			if (strcmp(buffer, apps[i].node_id) != 0) {
+				strcpy(buffer, apps[i].node_id);
+			}
+		
+			tprintf("%s%s%s||%s||%lu||%0.2lf||%0.2lf|| | %lu || %0.2lf",
+				colors[c], apps[i].job.app_id, colors[6], apps[i].node_id,
+				apps[i].job.def_f, apps[i].signature.time, apps[i].signature.DC_power,
+				apps[i].signature.avg_f, apps[i].signature.GBS);
 	    }
-        free(apps);
-	    num_apps=db_read_applications(&apps,is_learning, 50, node_name);
-    }
-    printf("Total apps from queries: %d\n", total_apps);
-    if (argc >=2)
-        printf("Total apps from DB: %d\n", get_num_applications(is_learning, argv[1])); 
-    else
-        printf("Total apps from DB: %d\n", get_num_applications(is_learning, NULL)); 
 
+        free(apps);
+	    
+		num_apps = db_read_applications(&apps, 1, 50, node_name);
+    }
 }
