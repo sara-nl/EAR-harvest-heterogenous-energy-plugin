@@ -37,19 +37,19 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 
-#define TRA_ID		1
-#define TRA_LEN		2
-#define TRA_ITS		3
-#define TRA_TIM		4
-#define TRA_CPI		5
-#define TRA_TPI		6
-#define TRA_GBS		7
-#define TRA_POW		8
-#define TRA_PTI		9
-#define TRA_PCP		10
-#define TRA_PPO		11
-#define TRA_FRQ		12
-#define TRA_ENE		13
+#define TRA_ID		60001
+#define TRA_LEN		60002
+#define TRA_ITS		60003
+#define TRA_TIM		60004
+#define TRA_CPI		60005
+#define TRA_TPI		60006
+#define TRA_GBS		60007
+#define TRA_POW		60008
+#define TRA_PTI		60009
+#define TRA_PCP		60010
+#define TRA_PPO		60011
+#define TRA_FRQ		60012
+#define TRA_ENE		60013
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
