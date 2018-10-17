@@ -9,7 +9,7 @@ coeffs_quality.o: coeffs_quality.c ../common/sizes.h ../common/states.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
-learn_deleter.o: learn_deleter.c ../common/string_enhanced.h \
+learning_delete.o: learning_delete.c ../common/string_enhanced.h \
  ../common/database/db_helper.h ../common/types/periodic_aggregation.h \
  ../common/types/generic.h ../common/types/power_signature.h \
  ../common/config.h ../common/types/periodic_metric.h \
@@ -18,17 +18,6 @@ learn_deleter.o: learn_deleter.c ../common/string_enhanced.h \
  ../common/states.h ../common/types/application.h ../common/types/job.h \
  ../common/types/signature.h ../common/types/gm_warning.h \
  ../common/types/loop.h ../common/types/log.h
-learn_validator.o: learn_validator.c ../common/config.h \
- ../common/types/application.h ../common/types/job.h \
- ../common/types/generic.h ../common/types/signature.h \
- ../common/types/power_signature.h \
- ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h ../common/types/coefficient.h \
- ../common/types/projection.h ../common/database/db_helper.h \
- ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
- ../common/types/gm_warning.h ../common/types/loop.h \
- ../common/types/log.h
 coeffs_compute.o: coeffs_compute.c ../common/config.h \
  ../common/types/application.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \
@@ -40,17 +29,22 @@ coeffs_compute.o: coeffs_compute.c ../common/config.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
-get_app_list.o: get_app_list.c ../common/database/db_helper.h \
- ../common/types/periodic_aggregation.h ../common/types/generic.h \
- ../common/types/power_signature.h ../common/config.h \
- ../common/types/periodic_metric.h \
+learning_validate.o: learning_validate.c ../common/config.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/generic.h ../common/types/signature.h \
+ ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h ../common/types/application.h \
- ../common/types/job.h ../common/types/signature.h \
+ ../common/ear_verbose.h ../common/states.h ../common/types/coefficient.h \
+ ../common/types/projection.h ../common/database/db_helper.h \
+ ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
-get_projections.o: get_projections.c ../common/database/db_helper.h \
+coeffs_comparison.o: coeffs_comparison.c ../common/types/coefficient.h \
+ ../common/types/generic.h
+coeffs_show.o: coeffs_show.c ../common/types/coefficient.h \
+ ../common/types/generic.h
+learning_show.o: learning_show.c ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/generic.h \
  ../common/types/power_signature.h ../common/config.h \
  ../common/types/periodic_metric.h \

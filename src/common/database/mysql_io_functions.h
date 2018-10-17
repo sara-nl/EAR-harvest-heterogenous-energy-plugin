@@ -57,8 +57,10 @@
 #endif
 #if !DB_SIMPLE
 #define SIGNATURE_ARGS              21
+#define AVG_SIGNATURE_ARGS          24
 #else
 #define SIGNATURE_ARGS              11
+#define AVG_SIGNATURE_ARGS          14
 #endif
 
 
@@ -193,6 +195,11 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning);
 
+/** Given a MYSQL connection and num_sigs applications, inserts the application's signatures
+*   to the database using a query to calculate the moving average of all the signatures in 
+*   a job. Returns EAR_SUCCESS on succkess, and either EAR_MYSQL_ERROR
+*   or EAR_MYSQL_STMT_ERROR on error.*/
+int mysql_batch_insert_avg_signatures(MYSQL *connection, application_t *app, int num_sigs);
 
 /** PENDING */
 int mysql_statement_error(MYSQL_STMT *statement);

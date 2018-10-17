@@ -63,25 +63,43 @@ void main(int argc,char *argv[])
     char *token;
  
     if (argc < 2) 
-        num_apps = 5000;
+        num_apps = 4500;
     else
         num_apps = atoi(argv[1]);
 
     application_t * apps = calloc(num_apps, sizeof(application_t));
 
     int base = time(NULL);
+    int pow = 25.0;
     for (i = 0; i < num_apps; i++)
     {
         apps[i].job.id = base;
-        apps[i].job.step_id = i;
+        apps[i].signature.DC_power = pow + i;
     }
-    printf("num_apps: %d found\n", num_apps);
+        
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        fprintf(stderr, "ERROR creating MYSQL object.\n");
+        exit(0);
+    }
+
+    if (!mysql_real_connect(connection,my_cluster.database.ip, my_cluster.database.user, my_cluster.database.pass, my_cluster.database.database, my_cluster.database.port, NULL, 0))
+    {
+        fprintf(stderr, "ERROR connecting to the database: %s\n", mysql_error(connection));
+        mysql_close(connection);
+        exit(0);
+    }
+
+    if (mysql_batch_insert_avg_signatures(connection, apps, num_apps) < 0)
+    {
+        fprintf(stderr, "ERROR while writing application to database.\n");
+        exit(0);
+    }
+
+    mysql_close(connection);
     
-
-    init_db_helper(&my_cluster.database);
-
-    db_batch_insert_applications(apps, num_apps);
-
     free(apps);
 
     free_cluster_conf(&my_cluster);

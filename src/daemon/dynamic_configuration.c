@@ -303,7 +303,10 @@ void process_remote_requests(int clientfd)
 	eard_verbose(2,"connection received\n");
 	req=read_command(clientfd,&command);
     if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time)
+    {
+        eard_verbose(1, "Recieved repeating command: %d", req);
         return;
+    }
     else
     {
         last_command = req;
