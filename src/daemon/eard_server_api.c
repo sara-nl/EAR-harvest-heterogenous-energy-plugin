@@ -139,6 +139,7 @@ int wait_for_client(int s,struct sockaddr_in *client)
 	VERBOSE_N(2,"new connection ");
 	return new_sock;
 }
+
 void close_server_socket(int sock)
 {
 	close(sock);
@@ -146,12 +147,23 @@ void close_server_socket(int sock)
 
 int read_command(int s,request_t *command)
 {
-	int ret;
+	int ret,pending,done;
+	pending=sizeof(request_t);
+	done=0;
 	ret=read(s,command,sizeof(request_t));
-	if ((ret<0) || (ret!=sizeof(request_t))){
-		VERBOSE_N(0,"Error reading remote command read %d expected %d",ret,sizeof(request_t));
-		if (ret<0) VERBOSE_N(0,"errno %s",strerror(errno));	
+	if (ret<0){
+		VERBOSE_N(0,"read_command error errno %s",strerror(errno));	
 		command->req=NO_COMMAND;
+		return command->req;
+	}
+	pending-=ret;
+	done=ret;
+	while((ret>0) && (pending>0)){
+		VERBOSE_N(1,"Read command continue , pending %d",pending);
+		ret=read(s,(char*)command+done,pending);
+		if (ret<0) VERBOSE_N(0,"read_command error errno %s",strerror(errno));
+		pending-=ret;
+		done+=ret;
 	}
 	return command->req;
 }

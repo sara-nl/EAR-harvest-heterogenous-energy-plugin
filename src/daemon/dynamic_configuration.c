@@ -364,7 +364,7 @@ void process_remote_requests(int clientfd)
 			eard_verbose(0,"Invalid remote command\n");
 	}	
 	send_answer(clientfd,&ack);
-    if (command.node_dist > 0 && req != EAR_RC_PING)
+    if (command.node_dist > 0 && req != EAR_RC_PING && req != NO_COMMAND)
     {
         eard_verbose(1, "command=%d propagated distance=%d",req,command.node_dist);
         propagate_req(&command, my_cluster_conf.eard.port);
