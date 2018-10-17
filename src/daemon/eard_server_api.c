@@ -160,7 +160,7 @@ int read_command(int s,request_t *command)
 	done=ret;
 	while((ret>0) && (pending>0)){
 		VERBOSE_N(1,"Read command continue , pending %d",pending);
-		ret=read(s,command+done,pending);
+		ret=read(s,(char*)command+done,pending);
 		if (ret<0) VERBOSE_N(0,"read_command error errno %s",strerror(errno));
 		pending-=ret;
 		done+=ret;
