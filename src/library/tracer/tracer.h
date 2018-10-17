@@ -77,8 +77,8 @@
 	void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power); /**@}*/ 
 
 	/**@{ Executed when each time a new loop is detected, the loop ends, or a new iteration are reported */
-	void traces_new_n_iter(int global_rank, int local_rank, int period_id, int loop_size, int iterations);
-	void traces_new_period(int global_rank, int local_rank, int period_id);
+	void traces_new_n_iter(int global_rank, int local_rank, ullong period_id, int loop_size, int iterations);
+	void traces_new_period(int global_rank, int local_rank, ullong period_id);
 	void traces_end_period(int global_rank, int local_rank); /**@}*/ 
 
 	/** Executed at each mpi_call */

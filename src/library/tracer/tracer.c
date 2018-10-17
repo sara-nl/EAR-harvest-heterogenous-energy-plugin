@@ -36,23 +36,24 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <common/sizes.h>
-
 #include <common/config.h>
+#include <library/tracer/tracer.h>
 
 #ifdef EAR_GUI
-#define TRA_ID		1
-#define TRA_LEN		2
-#define TRA_ITS		3
-#define TRA_TIM		4
-#define TRA_CPI		5
-#define TRA_TPI		6
-#define TRA_GBS		7
-#define TRA_POW		8
-#define TRA_PTI		9
-#define TRA_PCP		10
-#define TRA_PPO		11
-#define TRA_FRQ		12
-#define TRA_ENE		13
+
+#define TRA_ID		60001
+#define TRA_LEN		60002
+#define TRA_ITS		60003
+#define TRA_TIM		60004
+#define TRA_CPI		60005
+#define TRA_TPI		60006
+#define TRA_GBS		60007
+#define TRA_POW		60008
+#define TRA_PTI		60009
+#define TRA_PCP		60010
+#define TRA_PPO		60011
+#define TRA_FRQ		60012
+#define TRA_ENE		60013
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
@@ -66,7 +67,6 @@ static int file_row;
 static int r_master;
 static int n_nodes;
 static int enabled;
-
 
 /*
 static long long metrics_usecs_diff(long long end, long long init)
@@ -166,13 +166,14 @@ static void trace_file_init()
 	write(file_prv, buffer, strlen(buffer));
 }
 
-static void trace_file_write(int event, long long value)
+static void trace_file_write(int event, ullong value)
 {
 	long long time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
 	char *buffer = buffer1;
 
 	// 2:cpu:app:task:thread:time:event:value
-	sprintf(buffer, "2:%d:1:%d:1:%llu:1:%d:%lld\n", 1, 1, time, event, value);
+	sprintf(buffer, "2:%d:1:%d:1:%llu:%d:%llu\n", 1, 1, time, event, value);
+	//fprintf(stderr, "%d: %s");
 	write(file_prv, buffer, strlen(buffer));
 }
 
@@ -212,7 +213,7 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 	enabled = (file_prv >= 0);
 
 	//
-	trace_file_init(file_prv);
+	trace_file_init();
 
 	//
 	config_file_create(pathname, hostname);
@@ -223,7 +224,7 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
 	//
-	time_end = PAPI_get_real_usec();
+	time_end = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
 	//time_end = 1000;
 
 	//
@@ -238,11 +239,12 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 	lseek(file_prv, edit_time_states, SEEK_SET);
 	write(file_prv, buffer1, 20);
 
+	//
 	close(file_prv);
 }
 
 // ear_states.c
-void traces_new_period(int global_rank, int local_rank, int loop_id)
+void traces_new_period(int global_rank, int local_rank, ullong loop_id)
 {
 	if (!enabled) {
 		return;
@@ -250,15 +252,15 @@ void traces_new_period(int global_rank, int local_rank, int loop_id)
 }
 
 // ear_api.c
-void traces_new_n_iter(int global_rank, int local_rank, int period_id, int loop_size, int iterations)
+void traces_new_n_iter(int global_rank, int local_rank, ullong loop_id, int loop_size, int iterations)
 {
 	if (!enabled) {
 		return;
 	}
 
-	trace_file_write(TRA_ID, period_id);
-	trace_file_write(TRA_LEN, loop_size);
-	trace_file_write(TRA_ITS, iterations);
+	trace_file_write(TRA_ID, (ullong) loop_id);
+	trace_file_write(TRA_LEN, (ullong) loop_size);
+	trace_file_write(TRA_ITS, (ullong) iterations);
 }
 
 // ear_api.c
@@ -268,36 +270,56 @@ void traces_end_period(int global_rank, int local_rank)
 		return;
 	}
 
-	trace_file_write(TRA_ID, 0);
-	trace_file_write(TRA_LEN, 0);
-	trace_file_write(TRA_ITS, 0);
+	trace_file_write(TRA_ID, 0ll);
+	trace_file_write(TRA_LEN, 0ll);
+	trace_file_write(TRA_ITS, 0ll);
 }
 
 // ear_states.c
 void traces_new_signature(int global_rank, int local_rank, double seconds,
 	double cpi, double tpi, double gbs, double power)
 {
+	ullong lsec;
+	ullong lcpi;
+	ullong ltpi;
+	ullong lgbs;
+	ullong lpow;
+
 	if (!enabled) {
 		return;
 	}
 
-	trace_file_write(TRA_TIM, seconds*1000000);
-	trace_file_write(TRA_CPI, cpi);
-	trace_file_write(TRA_TPI, tpi);
-	trace_file_write(TRA_GBS, gbs);
-	trace_file_write(TRA_POW, power);
+    lsec = (ullong) (seconds * 1000000.0);
+    lcpi = (ullong) (cpi * 1000.0);
+    ltpi = (ullong) (tpi * 1000.0);
+    lgbs = (ullong) (gbs * 1000.0);
+    lpow = (ullong) (power);
+
+	trace_file_write(TRA_TIM, lsec);
+	trace_file_write(TRA_CPI, lcpi);
+	trace_file_write(TRA_TPI, ltpi);
+	trace_file_write(TRA_GBS, lgbs);
+	trace_file_write(TRA_POW, lpow);
 }
 
 // ear_states.c
 void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power)
 {
+	ullong lpsec;
+    ullong lpcpi;
+    ullong lppow;
+
 	if (!enabled) {
 		return;
 	}
 
-	trace_file_write(TRA_PTI, seconds * 1000000);
-	trace_file_write(TRA_PCP, cpi);
-	trace_file_write(TRA_PPO, power);
+	lpsec = (ullong) (seconds * 1000000.0);
+    lpcpi = (ullong) (cpi * 1000.0);
+    lppow = (ullong) (power);
+
+	trace_file_write(TRA_PTI, lpsec);
+	trace_file_write(TRA_PCP, lpcpi);
+	trace_file_write(TRA_PPO, lppow);
 }
 
 // ear_api.c, ear_states.c
