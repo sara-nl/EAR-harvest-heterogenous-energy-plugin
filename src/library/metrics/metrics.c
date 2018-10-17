@@ -49,6 +49,8 @@
 #include <common/math_operations.h>
 #include <library/common/externs.h>
 
+#define TEST_MB 1
+
 /*
  * Low level reading
  ********************
@@ -116,13 +118,14 @@ static int rapl_elements;
 // Registers
 #define LOO 0 // loop
 #define APP 1 // application
+#define ACUM 2
 
 #define SIG_BEGIN 	0
 #define SIG_END		1
 
 static long long *metrics_flops[2]; // (vec)
 static int *metrics_flops_weights; // (vec)
-static ull *metrics_bandwith[2]; // ops (vec)
+static ull *metrics_bandwith[3]; // ops (vec)
 static ull *metrics_bandwith_init[2]; // ops (vec)
 static ull *metrics_bandwith_end[2]; // ops (vec)
 static ull *metrics_rapl[2]; // nJ (vec)
@@ -271,7 +274,7 @@ static int metrics_partial_stop(uint where)
 
 	// Manual bandwith accumulation: We are also computing it at the end. Should we maintain it? For very long apps maybe this approach is better
 	for (i = 0; i < bandwith_elements; i++) {
-			metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
+			metrics_bandwith[ACUM][i] += metrics_bandwith[LOO][i];
 	}
 	// We read acuumulated energy
 	for (i = 0; i < rapl_elements; i++) {
@@ -314,7 +317,7 @@ static void metrics_reset()
 
 static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)
 {
-	double time_s, cas_counter, aux;
+	double time_s, cas_counter, aux,cas_counter_acum;
 	int i, s;
 
 	// If global is 1, it means that the global application metrics are required
@@ -356,12 +359,25 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	for (i = 0; i < bandwith_elements; ++i) {
 		cas_counter += (double) metrics_bandwith[s][i];
 	}
+	#ifdef TEST_MB
+	if (s==APP){
+		/* We compare the global cas_counters computed accumulating loops vs globally computed */
+		for (i = 0; i < bandwith_elements; ++i) {
+    	    cas_counter_acum += (double) metrics_bandwith[ACUM][i];
+    	}
+	}
+	#endif
 
 	// Cycles, instructions and transactions
 	metrics->cycles = metrics_cycles[s];
 	metrics->instructions = metrics_instructions[s];
 
 	metrics->GBS = cas_counter * hw_cache_line_size / aux;
+	#ifdef TEST_MB
+	double GBS_acum;
+	GBS_acum=cas_counter_acum * hw_cache_line_size / aux;
+	ear_verbose(1,"GBS global %.3lf . GBS accumulated %.3lf",metrics->GBS,GBS_acum);
+	#endif
 	metrics->CPI = (double) metrics_cycles[s] / (double) metrics_instructions[s];
 	metrics->TPI = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];
 
@@ -426,6 +442,7 @@ int metrics_init()
 
 	metrics_bandwith[LOO] = malloc(bandwith_size);
 	metrics_bandwith[APP] = malloc(bandwith_size);
+	metrics_bandwith[ACUM] = malloc(bandwith_size);
 	metrics_bandwith_init[LOO] = malloc(bandwith_size);
 	metrics_bandwith_init[APP] = malloc(bandwith_size);
 	metrics_bandwith_end[LOO] = malloc(bandwith_size);
@@ -436,7 +453,7 @@ int metrics_init()
 	last_rapl = malloc(rapl_size);
 
 
-	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
+	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL || metrics_bandwith[ACUM] == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
 		metrics_bandwith_end[LOO] == NULL || metrics_bandwith_end[APP] == NULL  ||
 			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL || last_rapl == NULL)
 	{
@@ -445,6 +462,7 @@ int metrics_init()
 	}
 	memset(metrics_bandwith[LOO], 0, bandwith_size);
 	memset(metrics_bandwith[APP], 0, bandwith_size);
+	memset(metrics_bandwith[ACUM], 0, bandwith_size);
 	memset(metrics_bandwith_init[LOO], 0, bandwith_size);
 	memset(metrics_bandwith_init[APP], 0, bandwith_size);
 	memset(metrics_bandwith_end[LOO], 0, bandwith_size);
