@@ -57,36 +57,17 @@
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
-static int edit_time_header;
-static int edit_time_states;
+
 static long long time_sta;
 static long long time_end;
+
+static int edit_time_header;
+static int edit_time_states;
 static int file_prv;
 static int file_pcf;
 static int file_row;
-static int r_master;
-static int n_nodes;
 static int enabled;
-
-/*
-static long long metrics_usecs_diff(long long end, long long init)
-{
-	long long to_max;
-
-	if (end < init)
-	{
-		to_max = 9223372036854775807LL - init;
-		return (to_max + end);
-	}
-
-	return (end - init);
-}
-
-static long long PAPI_get_real_usec()
-{
-	return 0;
-}
-*/
+static int working;
 
 static void config_file_create(char *pathname, char* hostname)
 {
@@ -114,7 +95,7 @@ static void trace_file_open(char *pathname, char *hostname)
 	//printf("FD: %s %d %s %s %s\n", buffer1, file_prv, strerror(errno), pathname, hostname);
 }
 
-static void trace_file_init()
+static void trace_file_init(int n_nodes)
 {
 	char *buffer = buffer1;
 	char *b;
@@ -185,6 +166,16 @@ static void trace_file_write(int event, ullong value)
  *
  */
 
+void traces_start()
+{
+	working = 1;
+}
+
+void traces_stop()
+{
+	working = 0;
+}
+
 void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
 	char *pathname = getenv("EAR_TRACE_PATH");
@@ -202,8 +193,6 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 
 	//
 	time_sta = PAPI_get_real_usec();
-	r_master = 1;
-	n_nodes  = 1;
 
 	//
 	gethostname(hostname, SZ_BUFF_BIG);
@@ -213,7 +202,11 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 	enabled = (file_prv >= 0);
 
 	//
-	trace_file_init();
+	trace_file_init(nodes);
+
+	if(!enabled) {
+		return;
+	}
 
 	//
 	config_file_create(pathname, hostname);
@@ -225,7 +218,6 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
 	//
 	time_end = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
-	//time_end = 1000;
 
 	//
 	trace_file_write(TRA_ENE, total_energy);
@@ -241,20 +233,21 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 
 	//
 	close(file_prv);
+
+	//
+	enabled = 0;
+	working = 0;
 }
 
 // ear_states.c
 void traces_new_period(int global_rank, int local_rank, ullong loop_id)
 {
-	if (!enabled) {
-		return;
-	}
 }
 
 // ear_api.c
 void traces_new_n_iter(int global_rank, int local_rank, ullong loop_id, int loop_size, int iterations)
 {
-	if (!enabled) {
+	if (!enabled || !working) {
 		return;
 	}
 
@@ -266,7 +259,7 @@ void traces_new_n_iter(int global_rank, int local_rank, ullong loop_id, int loop
 // ear_api.c
 void traces_end_period(int global_rank, int local_rank)
 {
-	if (!enabled) {
+	if (!enabled || !working) {
 		return;
 	}
 
@@ -285,7 +278,7 @@ void traces_new_signature(int global_rank, int local_rank, double seconds,
 	ullong lgbs;
 	ullong lpow;
 
-	if (!enabled) {
+	if (!enabled || !working) {
 		return;
 	}
 
@@ -309,7 +302,8 @@ void traces_PP(int global_rank, int local_rank, double seconds, double cpi, doub
     ullong lpcpi;
     ullong lppow;
 
-	if (!enabled) {
+	if (!enabled || !working) {
+		return;
 		return;
 	}
 
@@ -325,7 +319,7 @@ void traces_PP(int global_rank, int local_rank, double seconds, double cpi, doub
 // ear_api.c, ear_states.c
 void traces_frequency(int global_rank, int local_rank, unsigned long f)
 {
-	if (!enabled) {
+	if (!enabled || !working) {
 		return;
 	}
 
@@ -337,16 +331,4 @@ void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulon
 {
 }
 
-/*
-int main(int argc, char *argv[])
-{
-	traces_init(0, 0, 0, 0, 0);
-	traces_end_period(0, 0);
-	traces_PP(0, 0, 0, 0, 0);
-	traces_new_signature(0, 0, 0, 0, 0, 0, 0);
-	traces_end(0, 0, 0);
-
-	return 0;
-}
-*/
 #endif

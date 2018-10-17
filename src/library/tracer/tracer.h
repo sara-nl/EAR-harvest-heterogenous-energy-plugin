@@ -70,6 +70,10 @@
  	void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn);
 	/** Executed at application end */
 	void traces_end(int global_rank,int local_rank, unsigned long int total_ener);
+	/** **/
+	void traces_start();
+	/** **/
+	void traces_stop();
 
 	/**@{ Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states */
 	void traces_frequency(int global_rank, int local_rank, unsigned long f);
