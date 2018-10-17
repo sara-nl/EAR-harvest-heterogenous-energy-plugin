@@ -108,7 +108,7 @@ static void trace_file_open(char *pathname, char *hostname)
 		O_WRONLY | O_CREAT | O_TRUNC,
 		S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
-	printf("FD: %s %d %s %s %s\n", buffer1, file_prv, strerror(errno), pathname, hostname);
+	//printf("FD: %s %d %s %s %s\n", buffer1, file_prv, strerror(errno), pathname, hostname);
 }
 
 static void trace_file_init()
