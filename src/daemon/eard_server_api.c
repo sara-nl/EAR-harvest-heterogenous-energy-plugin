@@ -219,8 +219,13 @@ void propagate_req(request_t *command, int port)
     }
     else
     {
-        if (!send_command(command)) fprintf(stderr, "Error propagating command to node %s\n", nextip1);
-        eards_remote_disconnect();
+        if (!send_command(command)) 
+        {
+            fprintf(stderr, "Error propagating command to node %s\n", nextip1);
+            eards_remote_disconnect();
+            correct_error(ntohl(ip1), command, port);
+        }
+        else eards_remote_disconnect();
     }
     
     command->node_dist = actual_dist;
@@ -233,8 +238,13 @@ void propagate_req(request_t *command, int port)
     }
     else
     {
-        if (!send_command(command)) fprintf(stderr, "Error propagating command to node %s\n", nextip2);
-        eards_remote_disconnect();
+        if (!send_command(command)) 
+        {
+            fprintf(stderr, "Error propagating command to node %s\n", nextip2);
+            eards_remote_disconnect();
+            correct_error(ntohl(ip2), command, port);
+        }
+        else eards_remote_disconnect();
     }
 }
 
