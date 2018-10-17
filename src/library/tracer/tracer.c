@@ -79,6 +79,43 @@ static void config_file_create(char *pathname, char* hostname)
 			   O_WRONLY | O_CREAT | O_TRUNC,
 			   S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
+	sprintf(buffer1, "GRADIENT_COLOR\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "0\t{255,255,255}\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "GRADIENT_NAMES\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "0\twhite\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t1\tRUN\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60001\tPERIOD_ID\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60002\tPERIOD_LENGTH\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60003\tPERIOD_ITERATIONS\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60004\tPERIOD_TIME\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60005\tPERIOD_CPI\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60006\tPERIOD_TPI\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60007\tPERIOD_GBS\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60008\tPERIOD_POWER\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60009\tPERIOD_TIME_PROJECTION\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60010\tPERIOD_CPI_PROJECTION\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60011\tPERIOD_POWER_PROJECTION\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60012\tFREQUENCY\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60013\tENERGY\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+
 	close(file_pcf);
 }
 
