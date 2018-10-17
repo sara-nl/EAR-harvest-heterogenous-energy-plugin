@@ -123,6 +123,8 @@ static int rapl_elements;
 static long long *metrics_flops[2]; // (vec)
 static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[2]; // ops (vec)
+static ull *metrics_bandwith_init[2]; // ops (vec)
+static ull *metrics_bandwith_end[2]; // ops (vec)
 static ull *metrics_rapl[2]; // nJ (vec)
 static ull *aux_rapl; // nJ (vec)
 static ull *last_rapl; // nJ (vec)
@@ -158,6 +160,7 @@ static void metrics_global_start()
     eards_node_dc_energy(&aux_energy);
     aux_time = metrics_time();
     eards_read_rapl(aux_rapl);
+	eards_read_uncore(metrics_bandwith_aux[APP]);
 
 }
 
@@ -247,6 +250,10 @@ static int metrics_partial_stop(uint where)
 	
 	// Daemon metrics
 	metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
+	/* This code needs to be adapted to read , compute the difference, and copy begin=end 
+ 	* diff_uncores(values,values_end,values_begin,num_counters);
+ 	* copy_uncores(values_begin,values_end,num_counters);
+ 	*/
 	eards_read_uncore(metrics_bandwith[LOO]);
 	eards_read_rapl(aux_rapl);
 
@@ -283,7 +290,7 @@ static int metrics_partial_stop(uint where)
 
 static void metrics_reset()
 {
-	eards_reset_uncore();
+	//eards_reset_uncore();
 	//eards_reset_rapl();
 
 	reset_basic_metrics();
@@ -407,13 +414,18 @@ int metrics_init()
 
 	metrics_bandwith[LOO] = malloc(bandwith_size);
 	metrics_bandwith[APP] = malloc(bandwith_size);
+	metrics_bandwith_init[LOO] = malloc(bandwith_size);
+	metrics_bandwith_init[APP] = malloc(bandwith_size);
+	metrics_bandwith_end[LOO] = malloc(bandwith_size);
+	metrics_bandwith_end[APP] = malloc(bandwith_size);
 	metrics_rapl[LOO] = malloc(rapl_size);
 	metrics_rapl[APP] = malloc(rapl_size);
 	aux_rapl = malloc(rapl_size);
 	last_rapl = malloc(rapl_size);
 
 
-	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL ||
+	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
+		metrics_bandwith_end[LOO] == NULL || metrics_bandwith_end[APP] == NULL  ||
 			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL || last_rapl == NULL)
 	{
 			VERBOSE_N(0, "error allocating memory in metrics, exiting");
@@ -421,6 +433,10 @@ int metrics_init()
 	}
 	memset(metrics_bandwith[LOO], 0, bandwith_size);
 	memset(metrics_bandwith[APP], 0, bandwith_size);
+	memset(metrics_bandwith_init[LOO], 0, bandwith_size);
+	memset(metrics_bandwith_init[APP], 0, bandwith_size);
+	memset(metrics_bandwith_end[LOO], 0, bandwith_size);
+	memset(metrics_bandwith_end[APP], 0, bandwith_size);
 	memset(metrics_rapl[LOO], 0, rapl_size);
 	memset(metrics_rapl[APP], 0, rapl_size);
 	memset(aux_rapl, 0, rapl_size);

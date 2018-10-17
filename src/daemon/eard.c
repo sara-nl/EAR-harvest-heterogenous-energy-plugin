@@ -1231,6 +1231,8 @@ void main(int argc,char *argv[])
 	cpu_model = get_model();
 	num_uncore_counters = init_uncores(cpu_model);
 	eard_verbose(1,"eard %d imc uncore counters detected\n",num_uncore_counters);
+	/* Start uncore to have counters ready for reading */
+	start_uncores();
 
 	// We initialize rapl counters
 	init_rapl_metrics();
