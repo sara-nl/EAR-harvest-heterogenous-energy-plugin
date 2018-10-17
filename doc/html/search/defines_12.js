@@ -2,6 +2,7 @@ var searchData=
 [
   ['s_5fctx_5fsbatch',['S_CTX_SBATCH',['../slurm__plugin_8h.html#aa6ce289c10a5734dd340a0510f2efde2',1,'slurm_plugin.h']]],
   ['s_5fctx_5fsrun',['S_CTX_SRUN',['../slurm__plugin_8h.html#ad3494b16e51e02025845f313e0eebd0f',1,'slurm_plugin.h']]],
+  ['sd650_5fhfr',['SD650_HFR',['../energy__node_8c.html#a669a1f9d0194e76a3ef69b466a05474d',1,'energy_node.c']]],
   ['set_5ffreq',['SET_FREQ',['../eard__conf__api_8h.html#a385f6ebc72fbcdeea7b32bfc3095b6e8',1,'eard_conf_api.h']]],
   ['set_5fturbo',['SET_TURBO',['../eard__conf__api_8h.html#a6be5e36b84c0f89e243d3c6e76ae37f5',1,'eard_conf_api.h']]],
   ['setenv_5flocal_5fret_5ferr',['setenv_local_ret_err',['../slurm__plugin__helper_8h.html#acc01306257f90c6127e5db87b4359170',1,'slurm_plugin_helper.h']]],

@@ -121,9 +121,9 @@ Macros</h2></td></tr>
 <tr class="separator:a1db55153877cfdc729091d3aecdb3bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58a1f4e725d5ddd7426a945b9cadb84f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a58a1f4e725d5ddd7426a945b9cadb84f">NON_BLOCK_TRYS</a>&#160;&#160;&#160;1000</td></tr>
 <tr class="separator:a58a1f4e725d5ddd7426a945b9cadb84f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1f075e72b81eb2e8f19bfcb222116242"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a1f075e72b81eb2e8f19bfcb222116242">PACKET_HEADER</a>(<a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>)&#160;&#160;&#160;(<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a> *) <a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>;</td></tr>
+<tr class="memitem:a1f075e72b81eb2e8f19bfcb222116242"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a1f075e72b81eb2e8f19bfcb222116242">PACKET_HEADER</a>(<a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>)&#160;&#160;&#160;(<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a> *) <a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>;</td></tr>
 <tr class="separator:a1f075e72b81eb2e8f19bfcb222116242"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4a558dc80b2c153e45e8cf1435553da"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#ad4a558dc80b2c153e45e8cf1435553da">PACKET_CONTENT</a>(<a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>)&#160;&#160;&#160;(void *) &amp;<a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>[sizeof(<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a>)];</td></tr>
+<tr class="memitem:ad4a558dc80b2c153e45e8cf1435553da"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#ad4a558dc80b2c153e45e8cf1435553da">PACKET_CONTENT</a>(<a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>)&#160;&#160;&#160;(void *) &amp;<a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>[sizeof(<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a>)];</td></tr>
 <tr class="separator:ad4a558dc80b2c153e45e8cf1435553da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -159,7 +159,7 @@ Functions</h2></td></tr>
 <tr class="separator:a5e25bdca6cd6963c9abe93a882df1bc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1df6f80fd52bd4f6eb511de4e3454959"><td class="memItemLeft" align="right" valign="top"><a class="el" href="common_2states_8h.html#a70fb3cb460ce19a89130b2787e73d71d">state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a1df6f80fd52bd4f6eb511de4e3454959">sockets_send</a> (<a class="el" href="sockets_8h.html#aaf18456b5174d29ea88d310e21d82d92">socket_t</a> *<a class="el" href="structsocket.html">socket</a>, <a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a> *header, char *content)</td></tr>
 <tr class="separator:a1df6f80fd52bd4f6eb511de4e3454959"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a98d380a13bbdd30fa6d92a6403167b48"><td class="memItemLeft" align="right" valign="top"><a class="el" href="common_2states_8h.html#a70fb3cb460ce19a89130b2787e73d71d">state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a98d380a13bbdd30fa6d92a6403167b48">sockets_receive</a> (int fd, <a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a> *header, char *<a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>, ssize_t size_buffer, int block)</td></tr>
+<tr class="memitem:a98d380a13bbdd30fa6d92a6403167b48"><td class="memItemLeft" align="right" valign="top"><a class="el" href="common_2states_8h.html#a70fb3cb460ce19a89130b2787e73d71d">state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a98d380a13bbdd30fa6d92a6403167b48">sockets_receive</a> (int fd, <a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a> *header, char *<a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>, ssize_t size_buffer, int block)</td></tr>
 <tr class="separator:a98d380a13bbdd30fa6d92a6403167b48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1826eb72bb22b9756e5223cf0594fb5b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="common_2states_8h.html#a70fb3cb460ce19a89130b2787e73d71d">state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a1826eb72bb22b9756e5223cf0594fb5b">sockets_set_timeout</a> (int fd, time_t timeout)</td></tr>
 <tr class="separator:a1826eb72bb22b9756e5223cf0594fb5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -167,9 +167,9 @@ Functions</h2></td></tr>
 <tr class="separator:aaeb9acd250482f6935250599b825b6a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6838753c7fac71e6e71606318d8cebcb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="common_2states_8h.html#a70fb3cb460ce19a89130b2787e73d71d">state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a6838753c7fac71e6e71606318d8cebcb">sockets_header_update</a> (<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a> *header)</td></tr>
 <tr class="separator:a6838753c7fac71e6e71606318d8cebcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24ac6982b58bf8df906b3d0a2b5aa7ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a24ac6982b58bf8df906b3d0a2b5aa7ea">sockets_get_address</a> (struct sockaddr *host_addr, char *<a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>, int length)</td></tr>
+<tr class="memitem:a24ac6982b58bf8df906b3d0a2b5aa7ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a24ac6982b58bf8df906b3d0a2b5aa7ea">sockets_get_address</a> (struct sockaddr *host_addr, char *<a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>, int length)</td></tr>
 <tr class="separator:a24ac6982b58bf8df906b3d0a2b5aa7ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52360b12f4a5c7382abf9344d325a973"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a52360b12f4a5c7382abf9344d325a973">sockets_get_address_fd</a> (int fd, char *<a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>, int length)</td></tr>
+<tr class="memitem:a52360b12f4a5c7382abf9344d325a973"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sockets_8h.html#a52360b12f4a5c7382abf9344d325a973">sockets_get_address_fd</a> (int fd, char *<a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>, int length)</td></tr>
 <tr class="separator:a52360b12f4a5c7382abf9344d325a973"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
@@ -205,8 +205,8 @@ Functions</h2></td></tr>
           <td class="memname">#define PACKET_CONTENT</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a></td><td>)</td>
-          <td>&#160;&#160;&#160;(void *) &amp;<a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>[sizeof(<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a>)];</td>
+          <td class="paramname"><a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a></td><td>)</td>
+          <td>&#160;&#160;&#160;(void *) &amp;<a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>[sizeof(<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a>)];</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -221,8 +221,8 @@ Functions</h2></td></tr>
           <td class="memname">#define PACKET_HEADER</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a></td><td>)</td>
-          <td>&#160;&#160;&#160;(<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a> *) <a class="el" href="translate__coefficients_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>;</td>
+          <td class="paramname"><a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a></td><td>)</td>
+          <td>&#160;&#160;&#160;(<a class="el" href="sockets_8h.html#a35e9ad205493f020e5b774f397b1eeb7">packet_header_t</a> *) <a class="el" href="coeffs__show_8c.html#a28d4d3d8445e73a696b2d6f7eadabd96">buffer</a>;</td>
         </tr>
       </table>
 </div><div class="memdoc">

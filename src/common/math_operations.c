@@ -103,7 +103,6 @@ unsigned long long ullong_diff_overflow(unsigned long long begin, unsigned long 
     }
     return ret;
 }
-
 unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end)
 {
     unsigned long long max_64 = ULLONG_MAX;

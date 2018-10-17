@@ -247,13 +247,13 @@ int read_enegy_data(energy_data_t *acc_energy)
 {
 	node_data_t ac=0,dc=0;
 	
+	time(&acc_energy->sample_time);
 	if (power_mon_connected){
 		if (acc_energy==NULL) return POWER_MON_ERROR;
 		// Contacting the eards api
 		pm_read_rapl(RAPL_metrics);
 		//pm_start_rapl();
 		pm_node_dc_energy(&dc);
-		time(&acc_energy->sample_time);
 		//pm_node_ac_energy(&ac); Not implemened yet
 		acc_energy->DC_node_energy=dc;
 		acc_energy->AC_node_energy=ac;

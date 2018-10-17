@@ -5,37 +5,32 @@
 \begin{DoxyCompactItemize}
 \item 
 struct \hyperlink{structcoefficient}{coefficient}
-\item 
-struct \hyperlink{structcoefficient__obs}{coefficient\+\_\+obs}
 \end{DoxyCompactItemize}
 \subsection*{Typedefs}
 \begin{DoxyCompactItemize}
 \item 
 typedef struct \hyperlink{structcoefficient}{coefficient} \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t}
-\item 
-typedef struct \hyperlink{structcoefficient__obs}{coefficient\+\_\+obs} \hyperlink{coefficient_8h_a2dedde4fabff984d39bf49fffb48fcf6}{coefficient\+\_\+obs\+\_\+t}
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
 int \hyperlink{coefficient_8h_ac8b94a754c0dc48d6d57d25664d2ea0f}{coeff\+\_\+file\+\_\+size} (char $\ast$path)
 \item 
-int \hyperlink{coefficient_8h_a9ce3a5c1e56d94e343cf3a1b9c9cc58c}{coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc} (char $\ast$path, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs}, int size)
+int \hyperlink{coefficient_8h_a9ce3a5c1e56d94e343cf3a1b9c9cc58c}{coeff\+\_\+file\+\_\+read\+\_\+no\+\_\+alloc} (char $\ast$path, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$\hyperlink{coeffs__show_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs}, int size)
 \item 
-int \hyperlink{coefficient_8h_a54b41c776ff61cba3b8f0d84bb7510f5}{coeff\+\_\+file\+\_\+read} (char $\ast$path, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$$\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs})
+int \hyperlink{coefficient_8h_a54b41c776ff61cba3b8f0d84bb7510f5}{coeff\+\_\+file\+\_\+read} (char $\ast$path, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$$\ast$\hyperlink{coeffs__show_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs})
 \item 
 void \hyperlink{coefficient_8h_ad4a679cd0e9bc08058a7eac1e565323c}{coeff\+\_\+print} (\hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$coeff)
 \item 
-int \hyperlink{coefficient_8h_a9fdfbf5d62da7f631b3fbed127894659}{coeff\+\_\+file\+\_\+read\+\_\+obs} (char $\ast$path, \hyperlink{coefficient_8h_a2dedde4fabff984d39bf49fffb48fcf6}{coefficient\+\_\+obs\+\_\+t} $\ast$$\ast$\hyperlink{translate__coefficients_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs}, int size)
+double \hyperlink{coefficient_8h_a55e08669e628114bc9e29003a6eb998b}{coeff\+\_\+project\+\_\+pow} (double pow\+\_\+sign, double tpi\+\_\+sign, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$\hyperlink{coeffs__show_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs})
 \item 
-void \hyperlink{coefficient_8h_a7e73c10a5bdd2179be62b4acea0eb6ac}{coeff\+\_\+print\+\_\+obs} (\hyperlink{coefficient_8h_a2dedde4fabff984d39bf49fffb48fcf6}{coefficient\+\_\+obs\+\_\+t} $\ast$coeff)
+double \hyperlink{coefficient_8h_a39259509ffc16869b4ae1f3b7f555f78}{coeff\+\_\+project\+\_\+cpi} (double cpi\+\_\+sign, double tpi\+\_\+sign, \hyperlink{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{coefficient\+\_\+t} $\ast$\hyperlink{coeffs__show_8c_a276abdf3617a49b44ba15ce0b9d585aa}{coeffs})
+\item 
+double \hyperlink{coefficient_8h_a4c7672b5cefb4f752fb9b75117a561fc}{coeff\+\_\+project\+\_\+tim} (double tim\+\_\+sign, double cpi\+\_\+proj, double cpi\+\_\+sign, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} f\+\_\+src, \hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} f\+\_\+dst)
 \end{DoxyCompactItemize}
 
 
 \subsection{Typedef Documentation}
-\index{coefficient.\+h@{coefficient.\+h}!coefficient\+\_\+obs\+\_\+t@{coefficient\+\_\+obs\+\_\+t}}
-\index{coefficient\+\_\+obs\+\_\+t@{coefficient\+\_\+obs\+\_\+t}!coefficient.\+h@{coefficient.\+h}}
-\subsubsection[{\texorpdfstring{coefficient\+\_\+obs\+\_\+t}{coefficient_obs_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf coefficient\+\_\+obs}  {\bf coefficient\+\_\+obs\+\_\+t}}\hypertarget{coefficient_8h_a2dedde4fabff984d39bf49fffb48fcf6}{}\label{coefficient_8h_a2dedde4fabff984d39bf49fffb48fcf6}
 \index{coefficient.\+h@{coefficient.\+h}!coefficient\+\_\+t@{coefficient\+\_\+t}}
 \index{coefficient\+\_\+t@{coefficient\+\_\+t}!coefficient.\+h@{coefficient.\+h}}
 \subsubsection[{\texorpdfstring{coefficient\+\_\+t}{coefficient_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf coefficient}  {\bf coefficient\+\_\+t}}\hypertarget{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}{}\label{coefficient_8h_ae9e93dca86a1dd13e152e183589cdeda}
@@ -59,15 +54,6 @@ void \hyperlink{coefficient_8h_a7e73c10a5bdd2179be62b4acea0eb6ac}{coeff\+\_\+pri
 \item[{int}]{size}
 \end{DoxyParamCaption}
 )}\hypertarget{coefficient_8h_a9ce3a5c1e56d94e343cf3a1b9c9cc58c}{}\label{coefficient_8h_a9ce3a5c1e56d94e343cf3a1b9c9cc58c}
-\index{coefficient.\+h@{coefficient.\+h}!coeff\+\_\+file\+\_\+read\+\_\+obs@{coeff\+\_\+file\+\_\+read\+\_\+obs}}
-\index{coeff\+\_\+file\+\_\+read\+\_\+obs@{coeff\+\_\+file\+\_\+read\+\_\+obs}!coefficient.\+h@{coefficient.\+h}}
-\subsubsection[{\texorpdfstring{coeff\+\_\+file\+\_\+read\+\_\+obs(char $\ast$path, coefficient\+\_\+obs\+\_\+t $\ast$$\ast$coeffs, int size)}{coeff_file_read_obs(char *path, coefficient_obs_t **coeffs, int size)}}]{\setlength{\rightskip}{0pt plus 5cm}int coeff\+\_\+file\+\_\+read\+\_\+obs (
-\begin{DoxyParamCaption}
-\item[{char $\ast$}]{path, }
-\item[{{\bf coefficient\+\_\+obs\+\_\+t} $\ast$$\ast$}]{coeffs, }
-\item[{int}]{size}
-\end{DoxyParamCaption}
-)}\hypertarget{coefficient_8h_a9fdfbf5d62da7f631b3fbed127894659}{}\label{coefficient_8h_a9fdfbf5d62da7f631b3fbed127894659}
 \index{coefficient.\+h@{coefficient.\+h}!coeff\+\_\+file\+\_\+size@{coeff\+\_\+file\+\_\+size}}
 \index{coeff\+\_\+file\+\_\+size@{coeff\+\_\+file\+\_\+size}!coefficient.\+h@{coefficient.\+h}}
 \subsubsection[{\texorpdfstring{coeff\+\_\+file\+\_\+size(char $\ast$path)}{coeff_file_size(char *path)}}]{\setlength{\rightskip}{0pt plus 5cm}int coeff\+\_\+file\+\_\+size (
@@ -82,10 +68,32 @@ void \hyperlink{coefficient_8h_a7e73c10a5bdd2179be62b4acea0eb6ac}{coeff\+\_\+pri
 \item[{{\bf coefficient\+\_\+t} $\ast$}]{coeff}
 \end{DoxyParamCaption}
 )}\hypertarget{coefficient_8h_ad4a679cd0e9bc08058a7eac1e565323c}{}\label{coefficient_8h_ad4a679cd0e9bc08058a7eac1e565323c}
-\index{coefficient.\+h@{coefficient.\+h}!coeff\+\_\+print\+\_\+obs@{coeff\+\_\+print\+\_\+obs}}
-\index{coeff\+\_\+print\+\_\+obs@{coeff\+\_\+print\+\_\+obs}!coefficient.\+h@{coefficient.\+h}}
-\subsubsection[{\texorpdfstring{coeff\+\_\+print\+\_\+obs(coefficient\+\_\+obs\+\_\+t $\ast$coeff)}{coeff_print_obs(coefficient_obs_t *coeff)}}]{\setlength{\rightskip}{0pt plus 5cm}void coeff\+\_\+print\+\_\+obs (
+\index{coefficient.\+h@{coefficient.\+h}!coeff\+\_\+project\+\_\+cpi@{coeff\+\_\+project\+\_\+cpi}}
+\index{coeff\+\_\+project\+\_\+cpi@{coeff\+\_\+project\+\_\+cpi}!coefficient.\+h@{coefficient.\+h}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+project\+\_\+cpi(double cpi\+\_\+sign, double tpi\+\_\+sign, coefficient\+\_\+t $\ast$coeffs)}{coeff_project_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs)}}]{\setlength{\rightskip}{0pt plus 5cm}double coeff\+\_\+project\+\_\+cpi (
 \begin{DoxyParamCaption}
-\item[{{\bf coefficient\+\_\+obs\+\_\+t} $\ast$}]{coeff}
+\item[{double}]{cpi\+\_\+sign, }
+\item[{double}]{tpi\+\_\+sign, }
+\item[{{\bf coefficient\+\_\+t} $\ast$}]{coeffs}
 \end{DoxyParamCaption}
-)}\hypertarget{coefficient_8h_a7e73c10a5bdd2179be62b4acea0eb6ac}{}\label{coefficient_8h_a7e73c10a5bdd2179be62b4acea0eb6ac}
+)}\hypertarget{coefficient_8h_a39259509ffc16869b4ae1f3b7f555f78}{}\label{coefficient_8h_a39259509ffc16869b4ae1f3b7f555f78}
+\index{coefficient.\+h@{coefficient.\+h}!coeff\+\_\+project\+\_\+pow@{coeff\+\_\+project\+\_\+pow}}
+\index{coeff\+\_\+project\+\_\+pow@{coeff\+\_\+project\+\_\+pow}!coefficient.\+h@{coefficient.\+h}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+project\+\_\+pow(double pow\+\_\+sign, double tpi\+\_\+sign, coefficient\+\_\+t $\ast$coeffs)}{coeff_project_pow(double pow_sign, double tpi_sign, coefficient_t *coeffs)}}]{\setlength{\rightskip}{0pt plus 5cm}double coeff\+\_\+project\+\_\+pow (
+\begin{DoxyParamCaption}
+\item[{double}]{pow\+\_\+sign, }
+\item[{double}]{tpi\+\_\+sign, }
+\item[{{\bf coefficient\+\_\+t} $\ast$}]{coeffs}
+\end{DoxyParamCaption}
+)}\hypertarget{coefficient_8h_a55e08669e628114bc9e29003a6eb998b}{}\label{coefficient_8h_a55e08669e628114bc9e29003a6eb998b}
+\index{coefficient.\+h@{coefficient.\+h}!coeff\+\_\+project\+\_\+tim@{coeff\+\_\+project\+\_\+tim}}
+\index{coeff\+\_\+project\+\_\+tim@{coeff\+\_\+project\+\_\+tim}!coefficient.\+h@{coefficient.\+h}}
+\subsubsection[{\texorpdfstring{coeff\+\_\+project\+\_\+tim(double tim\+\_\+sign, double cpi\+\_\+proj, double cpi\+\_\+sign, ulong f\+\_\+src, ulong f\+\_\+dst)}{coeff_project_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong f_src, ulong f_dst)}}]{\setlength{\rightskip}{0pt plus 5cm}double coeff\+\_\+project\+\_\+tim (
+\begin{DoxyParamCaption}
+\item[{double}]{tim\+\_\+sign, }
+\item[{double}]{cpi\+\_\+proj, }
+\item[{double}]{cpi\+\_\+sign, }
+\item[{{\bf ulong}}]{f\+\_\+src, }
+\item[{{\bf ulong}}]{f\+\_\+dst}
+\end{DoxyParamCaption}
+)}\hypertarget{coefficient_8h_a4c7672b5cefb4f752fb9b75117a561fc}{}\label{coefficient_8h_a4c7672b5cefb4f752fb9b75117a561fc}

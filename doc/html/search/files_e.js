@@ -4,7 +4,6 @@ var searchData=
   ['services_2eh',['services.h',['../services_8h.html',1,'']]],
   ['shared_5fconfiguration_2ec',['shared_configuration.c',['../shared__configuration_8c.html',1,'']]],
   ['shared_5fconfiguration_2eh',['shared_configuration.h',['../shared__configuration_8h.html',1,'']]],
-  ['show_5fcoefficients_2ec',['show_coefficients.c',['../show__coefficients_8c.html',1,'']]],
   ['sig_5fprojections_2ec',['sig_projections.c',['../sig__projections_8c.html',1,'']]],
   ['sig_5fprojections_2eh',['sig_projections.h',['../sig__projections_8h.html',1,'']]],
   ['signature_2ec',['signature.c',['../signature_8c.html',1,'']]],

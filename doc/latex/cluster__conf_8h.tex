@@ -91,13 +91,13 @@ typedef struct \hyperlink{structcluster__conf}{cluster\+\_\+conf} \hyperlink{clu
 \item 
 int \hyperlink{cluster__conf_8h_a5a0f7933ace10edf104ac654942f764b}{get\+\_\+ear\+\_\+conf\+\_\+path} (char $\ast$ear\+\_\+conf\+\_\+path)
 \begin{DoxyCompactList}\small\item\em returns the ear.\+conf path. \end{DoxyCompactList}\item 
-\hyperlink{cluster__conf_8h_a5799a406c157f8d54a7aa53a32f3a1ed}{node\+\_\+conf\+\_\+t} $\ast$ \hyperlink{cluster__conf_8h_a0edfab97a988c4d92220759fddb719a4}{get\+\_\+node\+\_\+conf} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$\hyperlink{compute__coefficients__v2_8c_aff90684e5eeb3720274928bb76d503d3}{nodename})
+\hyperlink{cluster__conf_8h_a5799a406c157f8d54a7aa53a32f3a1ed}{node\+\_\+conf\+\_\+t} $\ast$ \hyperlink{cluster__conf_8h_a0edfab97a988c4d92220759fddb719a4}{get\+\_\+node\+\_\+conf} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{learning__delete_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$\hyperlink{learning__validate_8c_ac8aded813ea16c906c9039b899bcd7f3}{nodename})
 \begin{DoxyCompactList}\small\item\em returns the pointer to the information of nodename \end{DoxyCompactList}\item 
 void \hyperlink{cluster__conf_8h_a09c6671966185d8d55754e94c1d87a22}{copy\+\_\+my\+\_\+node\+\_\+conf} (\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$dest, \hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$src)
 \begin{DoxyCompactList}\small\item\em Copies dest=src. \end{DoxyCompactList}\item 
-\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$ \hyperlink{cluster__conf_8h_af6539955717ddacea75e9a08189f8cf8}{get\+\_\+my\+\_\+node\+\_\+conf} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$\hyperlink{compute__coefficients__v2_8c_aff90684e5eeb3720274928bb76d503d3}{nodename})
+\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$ \hyperlink{cluster__conf_8h_af6539955717ddacea75e9a08189f8cf8}{get\+\_\+my\+\_\+node\+\_\+conf} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{learning__delete_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$\hyperlink{learning__validate_8c_ac8aded813ea16c906c9039b899bcd7f3}{nodename})
 \begin{DoxyCompactList}\small\item\em returns the configuration for your node with any specific setting specified at ear.\+conf \end{DoxyCompactList}\item 
-int \hyperlink{cluster__conf_8h_ac52300783a8c7041b7ac410aa8d3c417}{read\+\_\+cluster\+\_\+conf} (char $\ast$conf\+\_\+path, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf})
+int \hyperlink{cluster__conf_8h_ac52300783a8c7041b7ac410aa8d3c417}{read\+\_\+cluster\+\_\+conf} (char $\ast$conf\+\_\+path, \hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{learning__delete_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf})
 \begin{DoxyCompactList}\small\item\em read the cluster configuration from the ear\+\_\+cluster.\+conf pointed by conf path \end{DoxyCompactList}\item 
 void \hyperlink{cluster__conf_8h_a107a569daf8438b958ef08c397f67522}{free\+\_\+cluster\+\_\+conf} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$conf)
 \begin{DoxyCompactList}\small\item\em frees a cluster\+\_\+conf\+\_\+t \end{DoxyCompactList}\item 
@@ -109,28 +109,28 @@ void \hyperlink{cluster__conf_8h_a16a66ffb79b01e745d47c21730cf3f90}{print\+\_\+m
 \begin{DoxyCompactList}\small\item\em prints in the stderr the specific node configuration \end{DoxyCompactList}\item 
 void \hyperlink{cluster__conf_8h_a0552c49e3dd8ab3cb965ff532598d807}{print\+\_\+policy\+\_\+conf} (\hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} $\ast$p)
 \begin{DoxyCompactList}\small\item\em prints in the stdout policy configuration \end{DoxyCompactList}\item 
-void \hyperlink{cluster__conf_8h_abf3811f581b07479b8199dc4e70020c3}{copy\+\_\+policy\+\_\+conf} (\hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} $\ast$dest, \hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} $\ast$src)
-\begin{DoxyCompactList}\small\item\em copy dest=src \end{DoxyCompactList}\item 
 void \hyperlink{cluster__conf_8h_a76b7397324843fdf013bbe1d5d563985}{print\+\_\+cluster\+\_\+conf} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$conf)
 \begin{DoxyCompactList}\small\item\em Prints in the stdout the whole cluster configuration. \end{DoxyCompactList}\item 
 void \hyperlink{cluster__conf_8h_a9981db2e3b691a448518038a50c8f454}{print\+\_\+energy\+\_\+tag} (\hyperlink{cluster__conf_8h_a347fd3f0b8de09f55b793354e1e24089}{energy\+\_\+tag\+\_\+t} $\ast$\hyperlink{ear__report_8c_ae96fbf2bcf0833cd225f57b894f35fc8}{etag})
 \begin{DoxyCompactList}\small\item\em Prints in the stdout the \hyperlink{structenergy__tag}{energy\+\_\+tag} settings. \end{DoxyCompactList}\item 
+void \hyperlink{cluster__conf_8h_a1cba16648d2f25b4fe43172c74a0a062}{print\+\_\+ear\+\_\+lib\+\_\+conf} (\hyperlink{cluster__conf_8h_ab77e2db67e3090de8bc90b4b3d971b62}{earlib\+\_\+conf\+\_\+t} $\ast$libc)
+\begin{DoxyCompactList}\small\item\em Prints the given library conf. \end{DoxyCompactList}\item 
+\hyperlink{cluster__conf_8h_a347fd3f0b8de09f55b793354e1e24089}{energy\+\_\+tag\+\_\+t} $\ast$ \hyperlink{cluster__conf_8h_abcb16a0b145fc93d59b58d00cc90ca02}{is\+\_\+energy\+\_\+tag\+\_\+privileged} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{learning__delete_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$user, char $\ast$group, char $\ast$acc, char $\ast$\hyperlink{structenergy__tag}{energy\+\_\+tag})
+\begin{DoxyCompactList}\small\item\em returns the energy tag entry if the username, group and/or accounts is in the list of the users/groups/acc authorized to use the given energy-\/tag, N\+U\+LL otherwise \end{DoxyCompactList}\item 
+int \hyperlink{cluster__conf_8h_a1fe920dfbcbd59b47f6aafcb4092c402}{is\+\_\+privileged} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{learning__delete_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$user, char $\ast$group, char $\ast$acc)
+\begin{DoxyCompactList}\small\item\em returns true if the username, group and/or accounts is presents in the list of authorized users/groups/accounts \end{DoxyCompactList}\item 
+\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{cluster__conf_8h_a28a659a38af2ee9756cddade6a581301}{get\+\_\+user\+\_\+type} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{learning__delete_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$\hyperlink{structenergy__tag}{energy\+\_\+tag}, char $\ast$user, char $\ast$group, char $\ast$acc, \hyperlink{cluster__conf_8h_a347fd3f0b8de09f55b793354e1e24089}{energy\+\_\+tag\+\_\+t} $\ast$$\ast$my\+\_\+tag)
+\begin{DoxyCompactList}\small\item\em returns the user type\+: N\+O\+R\+M\+AL, A\+U\+T\+H\+O\+R\+I\+Z\+ED, E\+N\+E\+R\+G\+Y\+\_\+\+T\+AG \end{DoxyCompactList}\item 
 \hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} $\ast$ \hyperlink{cluster__conf_8h_a114c1b149f215152b99cae72f50f98a9}{get\+\_\+my\+\_\+policy\+\_\+conf} (\hyperlink{cluster__conf_8h_a3e757dbe9c6eacf7676d955890edc8dc}{my\+\_\+node\+\_\+conf\+\_\+t} $\ast$my\+\_\+node, \hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} p\+\_\+id)
 \begin{DoxyCompactList}\small\item\em Given a node and policy, returns the policy configuration for that cluser,node,policy. \end{DoxyCompactList}\item 
-\hyperlink{cluster__conf_8h_a347fd3f0b8de09f55b793354e1e24089}{energy\+\_\+tag\+\_\+t} $\ast$ \hyperlink{cluster__conf_8h_abcb16a0b145fc93d59b58d00cc90ca02}{is\+\_\+energy\+\_\+tag\+\_\+privileged} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$user, char $\ast$group, char $\ast$acc, char $\ast$\hyperlink{structenergy__tag}{energy\+\_\+tag})
-\begin{DoxyCompactList}\small\item\em returns the energy tag entry if the username, group and/or accounts is in the list of the users/groups/acc authorized to use the given energy-\/tag, N\+U\+LL otherwise \end{DoxyCompactList}\item 
-int \hyperlink{cluster__conf_8h_a1fe920dfbcbd59b47f6aafcb4092c402}{is\+\_\+privileged} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$user, char $\ast$group, char $\ast$acc)
-\begin{DoxyCompactList}\small\item\em returns true if the username, group and/or accounts is presents in the list of authorized users/groups/accounts \end{DoxyCompactList}\item 
-\hyperlink{generic_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{uint} \hyperlink{cluster__conf_8h_a28a659a38af2ee9756cddade6a581301}{get\+\_\+user\+\_\+type} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$\hyperlink{remove__learning_8c_aab1c67b37b6a1a1135c6fc1e4ef7cd80}{my\+\_\+conf}, char $\ast$\hyperlink{structenergy__tag}{energy\+\_\+tag}, char $\ast$user, char $\ast$group, char $\ast$acc, \hyperlink{cluster__conf_8h_a347fd3f0b8de09f55b793354e1e24089}{energy\+\_\+tag\+\_\+t} $\ast$$\ast$my\+\_\+tag)
-\begin{DoxyCompactList}\small\item\em returns the user type\+: N\+O\+R\+M\+AL, A\+U\+T\+H\+O\+R\+I\+Z\+ED, E\+N\+E\+R\+G\+Y\+\_\+\+T\+AG \end{DoxyCompactList}\item 
 int \hyperlink{cluster__conf_8h_a455f47e45f0a3c9009ce466b417ac0a1}{policy\+\_\+name\+\_\+to\+\_\+id} (char $\ast$my\+\_\+policy)
 \begin{DoxyCompactList}\small\item\em Converts from policy name to policy\+\_\+id . \end{DoxyCompactList}\item 
 int \hyperlink{cluster__conf_8h_a8d3ff26ab22494527d7def73c94f1933}{policy\+\_\+id\+\_\+to\+\_\+name} (int policy\+\_\+id, char $\ast$my\+\_\+policy)
 \begin{DoxyCompactList}\small\item\em Converts from policy\+\_\+id to policy name. \end{DoxyCompactList}\item 
 void \hyperlink{cluster__conf_8h_a40a1963c979fa3647d0a7bd636602a08}{copy\+\_\+ear\+\_\+lib\+\_\+conf} (\hyperlink{cluster__conf_8h_ab77e2db67e3090de8bc90b4b3d971b62}{earlib\+\_\+conf\+\_\+t} $\ast$dest, \hyperlink{cluster__conf_8h_ab77e2db67e3090de8bc90b4b3d971b62}{earlib\+\_\+conf\+\_\+t} $\ast$src)
-\item 
-void \hyperlink{cluster__conf_8h_a1cba16648d2f25b4fe43172c74a0a062}{print\+\_\+ear\+\_\+lib\+\_\+conf} (\hyperlink{cluster__conf_8h_ab77e2db67e3090de8bc90b4b3d971b62}{earlib\+\_\+conf\+\_\+t} $\ast$libc)
-\item 
+\begin{DoxyCompactList}\small\item\em Copy src in dest. \end{DoxyCompactList}\item 
+void \hyperlink{cluster__conf_8h_abf3811f581b07479b8199dc4e70020c3}{copy\+\_\+policy\+\_\+conf} (\hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} $\ast$dest, \hyperlink{cluster__conf_8h_adb213a7b2565c7dc2cc3c9305f0cbc8d}{policy\+\_\+conf\+\_\+t} $\ast$src)
+\begin{DoxyCompactList}\small\item\em copy dest=src \end{DoxyCompactList}\item 
 void \hyperlink{cluster__conf_8h_aa354b0f173dd391c5bd10898cf3be45d}{copy\+\_\+eard\+\_\+conf} (\hyperlink{cluster__conf_8h_ab58e601c68bae45a48eb70dc9dfe7d09}{eard\+\_\+conf\+\_\+t} $\ast$dest, \hyperlink{cluster__conf_8h_ab58e601c68bae45a48eb70dc9dfe7d09}{eard\+\_\+conf\+\_\+t} $\ast$src)
 \item 
 void \hyperlink{cluster__conf_8h_a73d17dd1a176e1ad074cd8e4ec6db02d}{copy\+\_\+eargmd\+\_\+conf} (\hyperlink{cluster__conf_8h_a75027be4ac348fc2af4a15e0429b469c}{eargm\+\_\+conf\+\_\+t} $\ast$dest, \hyperlink{cluster__conf_8h_a75027be4ac348fc2af4a15e0429b469c}{eargm\+\_\+conf\+\_\+t} $\ast$src)
@@ -140,8 +140,16 @@ void \hyperlink{cluster__conf_8h_a6ba23f13d446cd54b22180a82a8fda1c}{copy\+\_\+ea
 void \hyperlink{cluster__conf_8h_aec2e46f4b77d10e839a9e0dbe2e04c79}{copy\+\_\+eardbd\+\_\+conf} (\hyperlink{cluster__conf_8h_a058319658e76e00909caa695fe9c466b}{eardb\+\_\+conf\+\_\+t} $\ast$dest, \hyperlink{cluster__conf_8h_a058319658e76e00909caa695fe9c466b}{eardb\+\_\+conf\+\_\+t} $\ast$src)
 \item 
 void \hyperlink{cluster__conf_8h_af16270e8d89a5947b2fe3b251e8279ea}{set\+\_\+default\+\_\+eard\+\_\+conf} (\hyperlink{cluster__conf_8h_ab58e601c68bae45a48eb70dc9dfe7d09}{eard\+\_\+conf\+\_\+t} $\ast$eardc)
-\item 
+\begin{DoxyCompactList}\small\item\em Initializes the default values for E\+A\+RD. \end{DoxyCompactList}\item 
 void \hyperlink{cluster__conf_8h_a9a9ce38cd1b27ee0bc1cca1df31f9955}{set\+\_\+default\+\_\+eargm\+\_\+conf} (\hyperlink{cluster__conf_8h_a75027be4ac348fc2af4a15e0429b469c}{eargm\+\_\+conf\+\_\+t} $\ast$eardc)
+\begin{DoxyCompactList}\small\item\em Initializes the default values for E\+AR Global Mamager. \end{DoxyCompactList}\item 
+void \hyperlink{cluster__conf_8h_a0115e30b668386f71050bf11cfeb58d6}{set\+\_\+default\+\_\+db\+\_\+conf} (\hyperlink{cluster__conf_8h_aa0de47e5ae932430d21c17657d69c381}{db\+\_\+conf\+\_\+t} $\ast$\hyperlink{structdb__conf}{db\+\_\+conf})
+\begin{DoxyCompactList}\small\item\em Initializes the default values for DB. \end{DoxyCompactList}\item 
+void \hyperlink{cluster__conf_8h_ae1c9224a25ae9316971afb3b1c641720}{set\+\_\+default\+\_\+eardbd\+\_\+conf} (\hyperlink{cluster__conf_8h_a058319658e76e00909caa695fe9c466b}{eardb\+\_\+conf\+\_\+t} $\ast$eardbd\+\_\+conf)
+\begin{DoxyCompactList}\small\item\em Initializes the default values for E\+A\+R\+D\+BD. \end{DoxyCompactList}\item 
+void \hyperlink{cluster__conf_8h_a12e4fc096ed4a50bb39a105acfe7df51}{set\+\_\+default\+\_\+earlib\+\_\+conf} (\hyperlink{cluster__conf_8h_ab77e2db67e3090de8bc90b4b3d971b62}{earlib\+\_\+conf\+\_\+t} $\ast$earlibc)
+\begin{DoxyCompactList}\small\item\em Initializes the default values for earlib conf. \end{DoxyCompactList}\item 
+int \hyperlink{cluster__conf_8h_ab5fe8e132c55ab2a1a1b765d98ea16e0}{get\+\_\+node\+\_\+island} (\hyperlink{cluster__conf_8h_ac9321adc9770e987439ad10c4bd1913e}{cluster\+\_\+conf\+\_\+t} $\ast$conf, char $\ast$hostname)
 \end{DoxyCompactItemize}
 
 
@@ -220,6 +228,10 @@ void \hyperlink{cluster__conf_8h_a9a9ce38cd1b27ee0bc1cca1df31f9955}{set\+\_\+def
 \item[{{\bf earlib\+\_\+conf\+\_\+t} $\ast$}]{src}
 \end{DoxyParamCaption}
 )}\hypertarget{cluster__conf_8h_a40a1963c979fa3647d0a7bd636602a08}{}\label{cluster__conf_8h_a40a1963c979fa3647d0a7bd636602a08}
+
+
+Copy src in dest. 
+
 \index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!copy\+\_\+eard\+\_\+conf@{copy\+\_\+eard\+\_\+conf}}
 \index{copy\+\_\+eard\+\_\+conf@{copy\+\_\+eard\+\_\+conf}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
 \subsubsection[{\texorpdfstring{copy\+\_\+eard\+\_\+conf(eard\+\_\+conf\+\_\+t $\ast$dest, eard\+\_\+conf\+\_\+t $\ast$src)}{copy_eard_conf(eard_conf_t *dest, eard_conf_t *src)}}]{\setlength{\rightskip}{0pt plus 5cm}void copy\+\_\+eard\+\_\+conf (
@@ -336,6 +348,14 @@ Given a node and policy, returns the policy configuration for that cluser,node,p
 
 returns the pointer to the information of nodename 
 
+\index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!get\+\_\+node\+\_\+island@{get\+\_\+node\+\_\+island}}
+\index{get\+\_\+node\+\_\+island@{get\+\_\+node\+\_\+island}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
+\subsubsection[{\texorpdfstring{get\+\_\+node\+\_\+island(cluster\+\_\+conf\+\_\+t $\ast$conf, char $\ast$hostname)}{get_node_island(cluster_conf_t *conf, char *hostname)}}]{\setlength{\rightskip}{0pt plus 5cm}int get\+\_\+node\+\_\+island (
+\begin{DoxyParamCaption}
+\item[{{\bf cluster\+\_\+conf\+\_\+t} $\ast$}]{conf, }
+\item[{char $\ast$}]{hostname}
+\end{DoxyParamCaption}
+)}\hypertarget{cluster__conf_8h_ab5fe8e132c55ab2a1a1b765d98ea16e0}{}\label{cluster__conf_8h_ab5fe8e132c55ab2a1a1b765d98ea16e0}
 \index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!get\+\_\+user\+\_\+type@{get\+\_\+user\+\_\+type}}
 \index{get\+\_\+user\+\_\+type@{get\+\_\+user\+\_\+type}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
 \subsubsection[{\texorpdfstring{get\+\_\+user\+\_\+type(cluster\+\_\+conf\+\_\+t $\ast$my\+\_\+conf, char $\ast$energy\+\_\+tag, char $\ast$user, char $\ast$group, char $\ast$acc, energy\+\_\+tag\+\_\+t $\ast$$\ast$my\+\_\+tag)}{get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user, char *group, char *acc, energy_tag_t **my_tag)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf uint} get\+\_\+user\+\_\+type (
@@ -433,6 +453,10 @@ Prints the DB configuration.
 \item[{{\bf earlib\+\_\+conf\+\_\+t} $\ast$}]{libc}
 \end{DoxyParamCaption}
 )}\hypertarget{cluster__conf_8h_a1cba16648d2f25b4fe43172c74a0a062}{}\label{cluster__conf_8h_a1cba16648d2f25b4fe43172c74a0a062}
+
+
+Prints the given library conf. 
+
 \index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!print\+\_\+energy\+\_\+tag@{print\+\_\+energy\+\_\+tag}}
 \index{print\+\_\+energy\+\_\+tag@{print\+\_\+energy\+\_\+tag}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
 \subsubsection[{\texorpdfstring{print\+\_\+energy\+\_\+tag(energy\+\_\+tag\+\_\+t $\ast$etag)}{print_energy_tag(energy_tag_t *etag)}}]{\setlength{\rightskip}{0pt plus 5cm}void print\+\_\+energy\+\_\+tag (
@@ -489,6 +513,17 @@ prints in the stdout policy configuration
 
 read the cluster configuration from the ear\+\_\+cluster.\+conf pointed by conf path 
 
+\index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!set\+\_\+default\+\_\+db\+\_\+conf@{set\+\_\+default\+\_\+db\+\_\+conf}}
+\index{set\+\_\+default\+\_\+db\+\_\+conf@{set\+\_\+default\+\_\+db\+\_\+conf}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
+\subsubsection[{\texorpdfstring{set\+\_\+default\+\_\+db\+\_\+conf(db\+\_\+conf\+\_\+t $\ast$db\+\_\+conf)}{set_default_db_conf(db_conf_t *db_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+default\+\_\+db\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf db\+\_\+conf\+\_\+t} $\ast$}]{db\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{cluster__conf_8h_a0115e30b668386f71050bf11cfeb58d6}{}\label{cluster__conf_8h_a0115e30b668386f71050bf11cfeb58d6}
+
+
+Initializes the default values for DB. 
+
 \index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!set\+\_\+default\+\_\+eard\+\_\+conf@{set\+\_\+default\+\_\+eard\+\_\+conf}}
 \index{set\+\_\+default\+\_\+eard\+\_\+conf@{set\+\_\+default\+\_\+eard\+\_\+conf}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
 \subsubsection[{\texorpdfstring{set\+\_\+default\+\_\+eard\+\_\+conf(eard\+\_\+conf\+\_\+t $\ast$eardc)}{set_default_eard_conf(eard_conf_t *eardc)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+default\+\_\+eard\+\_\+conf (
@@ -496,6 +531,21 @@ read the cluster configuration from the ear\+\_\+cluster.\+conf pointed by conf 
 \item[{{\bf eard\+\_\+conf\+\_\+t} $\ast$}]{eardc}
 \end{DoxyParamCaption}
 )}\hypertarget{cluster__conf_8h_af16270e8d89a5947b2fe3b251e8279ea}{}\label{cluster__conf_8h_af16270e8d89a5947b2fe3b251e8279ea}
+
+
+Initializes the default values for E\+A\+RD. 
+
+\index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!set\+\_\+default\+\_\+eardbd\+\_\+conf@{set\+\_\+default\+\_\+eardbd\+\_\+conf}}
+\index{set\+\_\+default\+\_\+eardbd\+\_\+conf@{set\+\_\+default\+\_\+eardbd\+\_\+conf}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
+\subsubsection[{\texorpdfstring{set\+\_\+default\+\_\+eardbd\+\_\+conf(eardb\+\_\+conf\+\_\+t $\ast$eardbd\+\_\+conf)}{set_default_eardbd_conf(eardb_conf_t *eardbd_conf)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+default\+\_\+eardbd\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf eardb\+\_\+conf\+\_\+t} $\ast$}]{eardbd\+\_\+conf}
+\end{DoxyParamCaption}
+)}\hypertarget{cluster__conf_8h_ae1c9224a25ae9316971afb3b1c641720}{}\label{cluster__conf_8h_ae1c9224a25ae9316971afb3b1c641720}
+
+
+Initializes the default values for E\+A\+R\+D\+BD. 
+
 \index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!set\+\_\+default\+\_\+eargm\+\_\+conf@{set\+\_\+default\+\_\+eargm\+\_\+conf}}
 \index{set\+\_\+default\+\_\+eargm\+\_\+conf@{set\+\_\+default\+\_\+eargm\+\_\+conf}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
 \subsubsection[{\texorpdfstring{set\+\_\+default\+\_\+eargm\+\_\+conf(eargm\+\_\+conf\+\_\+t $\ast$eardc)}{set_default_eargm_conf(eargm_conf_t *eardc)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+default\+\_\+eargm\+\_\+conf (
@@ -503,3 +553,18 @@ read the cluster configuration from the ear\+\_\+cluster.\+conf pointed by conf 
 \item[{{\bf eargm\+\_\+conf\+\_\+t} $\ast$}]{eardc}
 \end{DoxyParamCaption}
 )}\hypertarget{cluster__conf_8h_a9a9ce38cd1b27ee0bc1cca1df31f9955}{}\label{cluster__conf_8h_a9a9ce38cd1b27ee0bc1cca1df31f9955}
+
+
+Initializes the default values for E\+AR Global Mamager. 
+
+\index{cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}!set\+\_\+default\+\_\+earlib\+\_\+conf@{set\+\_\+default\+\_\+earlib\+\_\+conf}}
+\index{set\+\_\+default\+\_\+earlib\+\_\+conf@{set\+\_\+default\+\_\+earlib\+\_\+conf}!cluster\+\_\+conf.\+h@{cluster\+\_\+conf.\+h}}
+\subsubsection[{\texorpdfstring{set\+\_\+default\+\_\+earlib\+\_\+conf(earlib\+\_\+conf\+\_\+t $\ast$earlibc)}{set_default_earlib_conf(earlib_conf_t *earlibc)}}]{\setlength{\rightskip}{0pt plus 5cm}void set\+\_\+default\+\_\+earlib\+\_\+conf (
+\begin{DoxyParamCaption}
+\item[{{\bf earlib\+\_\+conf\+\_\+t} $\ast$}]{earlibc}
+\end{DoxyParamCaption}
+)}\hypertarget{cluster__conf_8h_a12e4fc096ed4a50bb39a105acfe7df51}{}\label{cluster__conf_8h_a12e4fc096ed4a50bb39a105acfe7df51}
+
+
+Initializes the default values for earlib conf. 
+

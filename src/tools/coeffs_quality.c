@@ -345,7 +345,7 @@ void read_applications(control_t *cntr)
 			tprintf_init(stderr, "18 11 15 12 12 15 12 12");
 			tprintf("%s||--|| | -||-||--|| | -||-||--", cntr->name_node);
 		} else {
-			fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);	
+			fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);
 		}
 		
 		exit(1);

@@ -28,22 +28,37 @@ The eacct command shows accounting information stored in the E\+AR DB for jobs (
 
 \section*{Energy report (ereport)}
 
-The ereport command creates reports from the information stored in the E\+AR DB concerning energy. ... Usage\+: ereport \mbox{[}Optional parameters\mbox{]} Optional parameters\+: -\/s start\+\_\+time indicates the starting period from which the energy information will be computed. Format\+: Y\+Y\+Y\+Y-\/\+M\+M-\/\+DD. Default\+: 1970-\/01-\/01. -\/e end\+\_\+time indicates the end of the period from which the energy information will be computed. Format\+: Y\+Y\+Y\+Y-\/\+M\+M-\/\+DD. Default\+: current time. -\/n node\+\_\+name indicates from which node the energy information will be computed. Default\+: none (all nodes computed together). \textquotesingle{}all\textquotesingle{} option will show all nodes computed individually. -\/u user\+\_\+name requests the energy consumed by a user in the selected period of time. Default\+: none (not filtering by user). \textquotesingle{}all\textquotesingle{} option will show all users individually. -\/t \hyperlink{structenergy__tag}{energy\+\_\+tag} requests the energy consumed filtering by the selected energy tag. Default\+: none (not filtering by \hyperlink{structenergy__tag}{energy\+\_\+tag}). \textquotesingle{}all\textquotesingle{} option will show all tags individually. -\/h displays this information
-
-\section*{Energy control (econtrol)}
+The ereport command creates reports from the information stored in the E\+AR DB concerning energy. 
+\begin{DoxyCode}
+1 Usage: ereport [Optional parameters]
+2     Optional parameters:
+3         -s  start\_time  indicates the starting period from which the energy information will be computed.
+       Format: YYYY-MM-DD. Default: 1970-01-01.
+4         -e  end\_time    indicates the end of the period from which the energy information will be computed.
+       Format: YYYY-MM-DD. Default: current time.
+5         -n  node\_name   indicates from which node the energy information will be computed. Default: none
+       (all nodes computed together). 'all' option will show all nodes computed individually.
+6         -u  user\_name   requests the energy consumed by a user in the selected period of time. Default:
+       none (not filtering by user). 'all' option will show all users individually.
+7         -t  energy\_tag  requests the energy consumed filtering by the selected energy tag. Default: none
+       (not filtering by energy\_tag). 'all' option will show all tags individually.
+8         -h              displays this information
+\end{DoxyCode}
+ \section*{Energy control (econtrol)}
 
 The econtrol command modifies cluster settings (temporally) related to power policy settings. These options are sent to all the nodes in the cluster.
 
 
 \begin{DoxyCode}
 1 Usage: econtrol [options]
-2     --set-freq  newfreq         ->sets the frequency of all nodes to the requested one
-3     --set-def-freq  newfreq     ->sets the default frequency
-4     --set-max-freq  newfreq     ->sets the maximum frequency
-5     --inc-th    new\_th          ->increases the threshold for all nodes
-6     --red-def-freq  reduction   ->reduces the default frequency
-7     --restore-conf              ->restores the configuration to all nodes
-8     --ping                      ->pings all nodes. Additionally, --ping=node\_name pings node\_name
+2     Options:
+3         --set-freq  newfreq         ->sets the frequency of all nodes to the requested one
+4         --set-def-freq  newfreq     ->sets the default frequency
+5         --set-max-freq  newfreq     ->sets the maximum frequency
+6         --inc-th  new\_th            ->increases the threshold for all nodes
+7         --red-def-freq  reduction   ->reduces the default frequency
+8         --restore-conf              ->restores the configuration to all nodes
+9         --ping                      ->pings all nodes. Additionally, --ping=node\_name pings node\_name
        individually
 \end{DoxyCode}
 

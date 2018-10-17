@@ -12,6 +12,5 @@ var searchData=
   ['traces_5fnew_5fn_5fiter',['traces_new_n_iter',['../tracer_8h.html#aa405e65184e38de39fc111de3ffbe5c3',1,'tracer.h']]],
   ['traces_5fnew_5fperiod',['traces_new_period',['../tracer_8h.html#a68cfdc3fd2f41f8f572ccaec3ede596c',1,'tracer.h']]],
   ['traces_5fnew_5fsignature',['traces_new_signature',['../tracer_8h.html#a7d32c868f288a69a8357f160a831216a',1,'tracer.h']]],
-  ['traces_5fpp',['traces_PP',['../tracer_8h.html#af4a6f2ec5f85dd60fdd297922b3970b9',1,'tracer.h']]],
-  ['turbo_5ffreq',['TURBO_FREQ',['../translate__coefficients_8c.html#a6662b0d6818452d62b6e9cc82a32de86',1,'translate_coefficients.c']]]
+  ['traces_5fpp',['traces_PP',['../tracer_8h.html#af4a6f2ec5f85dd60fdd297922b3970b9',1,'tracer.h']]]
 ];

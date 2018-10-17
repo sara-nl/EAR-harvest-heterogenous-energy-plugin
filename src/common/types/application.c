@@ -140,7 +140,7 @@ void report_application_data(application_t *app)
 
 	fprintf(stderr,"----------------------------------- Application Summary[%s] --\n",app->node_id);
 	fprintf(stderr,"-- App id: %s, user id: %s, job id: %lu.%lu", app->job.app_id, app->job.user_id, app->job.id,app->job.step_id);
-	fprintf(stderr,"   procs: %lu (s) acc %s\n", app->job.procs,app->job.user_acc);
+	fprintf(stderr,"   procs: %lu  acc %s\n", app->job.procs,app->job.user_acc);
 	fprintf(stderr,"   start time %s end time %s start mpi %s end mpi %s\n",st,et,stmpi,etmpi);
 	fprintf(stderr,"-- power_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->power_sig.time, pdef_f, pavg_f);
 	fprintf(stderr,"DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->power_sig.DC_power, app->power_sig.DRAM_power, 
@@ -171,7 +171,7 @@ void report_mpi_application_data(application_t *app)
     if (app->is_mpi){
 
         fprintf(stderr,"-- mpi_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
-        fprintf(stderr,"   procs: %lu (s)\n", app->job.procs);
+        fprintf(stderr,"   tasks: %lu \n", app->job.procs);
         fprintf(stderr,"\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
                                                                             app->signature.GBS, app->signature.Gflops);
         fprintf(stderr,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W) GFlops/Watts %.3lf\n", app->signature.DC_power, app->signature.DRAM_power,

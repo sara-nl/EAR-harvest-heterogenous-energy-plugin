@@ -23,7 +23,5 @@ var searchData=
   ['process_5fmpi_2ec',['process_MPI.c',['../process__MPI_8c.html',1,'']]],
   ['process_5fmpi_2eh',['process_MPI.h',['../process__MPI_8h.html',1,'']]],
   ['projection_2ec',['projection.c',['../projection_8c.html',1,'']]],
-  ['projection_2eh',['projection.h',['../projection_8h.html',1,'']]],
-  ['projections_5favx512_2ec',['projections_avx512.c',['../projections__avx512_8c.html',1,'']]],
-  ['projections_5favx512_2eh',['projections_avx512.h',['../projections__avx512_8h.html',1,'']]]
+  ['projection_2eh',['projection.h',['../projection_8h.html',1,'']]]
 ];

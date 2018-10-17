@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['a',['A',['../structcoefficient.html#a780ff954a477f5081a13cdef91b25136',1,'coefficient::A()'],['../structcoefficient__obs.html#a647cf54a094cc55438fd68998745678c',1,'coefficient_obs::A()']]],
+  ['a',['A',['../structcoefficient.html#a780ff954a477f5081a13cdef91b25136',1,'coefficient']]],
   ['ac_5fnode_5fenergy',['AC_node_energy',['../structenergy__mon__data.html#a48d1f27c275ffecaf6aebf5af76d1080',1,'energy_mon_data']]],
   ['accounts',['accounts',['../structenergy__tag.html#a4bdf70b4b97fb9d820ed91e7449149f9',1,'energy_tag']]],
   ['acum_5fvalues',['acum_values',['../energy__cpu_8c.html#adb760e2e8c51bcc04e7079963f62d3d2',1,'energy_cpu.c']]],
@@ -12,7 +12,7 @@ var searchData=
   ['answer',['answer',['../structsync__ans.html#a873505b80233cd710d61447e13de1838',1,'sync_ans']]],
   ['app',['app',['../structsignature__container__t.html#a0e096cbc5c3f7d0e05d140c2148743d2',1,'signature_container_t::app()'],['../uniondaemon__req__opt.html#ac25c4d8f45f1807727ce782644c8c94a',1,'daemon_req_opt::app()'],['../structpowermon__app.html#aded095b638b665bb8b8539df7ee991ae',1,'powermon_app::app()']]],
   ['app_5fid',['app_id',['../structjob.html#ac8ae0afb961355375b16051aa4f2ca22',1,'job']]],
-  ['app_5flist',['app_list',['../compute__coefficients_8c.html#a762aaf92761a9492ea4b1511a877c457',1,'app_list():&#160;compute_coefficients.c'],['../compute__coefficients__remote_8c.html#a762aaf92761a9492ea4b1511a877c457',1,'app_list():&#160;compute_coefficients_remote.c'],['../ear__lp__validation_8c.html#a762aaf92761a9492ea4b1511a877c457',1,'app_list():&#160;ear_lp_validation.c'],['../compute__coefficients__v2_8c.html#a762aaf92761a9492ea4b1511a877c457',1,'app_list():&#160;compute_coefficients_v2.c']]],
+  ['app_5flist',['app_list',['../coeffs__compute_8c.html#a762aaf92761a9492ea4b1511a877c457',1,'app_list():&#160;coeffs_compute.c'],['../learning__validate_8c.html#a762aaf92761a9492ea4b1511a877c457',1,'app_list():&#160;learning_validate.c']]],
   ['app_5fpolicy',['app_policy',['../models_8c.html#a6c56e6b2134e3f530265e9f9855ce18d',1,'models.c']]],
   ['app_5fsummary_5fpath',['app_summary_path',['../externs_8h.html#ab6386ca4a20fb544f3810b9efb5e325d',1,'app_summary_path():&#160;externs_alloc.h'],['../externs__alloc_8h.html#ab6386ca4a20fb544f3810b9efb5e325d',1,'app_summary_path():&#160;externs_alloc.h']]],
   ['application',['application',['../externs_8h.html#ab7686296d20504e5004cbb3f7bb8540e',1,'application():&#160;externs_alloc.h'],['../externs__alloc_8h.html#ab7686296d20504e5004cbb3f7bb8540e',1,'application():&#160;externs_alloc.h']]],
@@ -27,7 +27,7 @@ var searchData=
   ['areabuf',['areabuf',['../energy__node_8c.html#a53543eaa37151a43545d7c8c1b45cb64',1,'energy_node.c']]],
   ['arginfo',['arginfo',['../structspank__option.html#afc78d6e50d706e77bb90a483dec629b7',1,'spank_option']]],
   ['authorized_5fcontext',['authorized_context',['../eard_8c.html#a88689b12848c3069614d9179c668e259',1,'authorized_context():&#160;eard.c'],['../power__monitor_8c.html#a88689b12848c3069614d9179c668e259',1,'authorized_context():&#160;eard.c']]],
-  ['available',['available',['../structcoefficient.html#ad13424d49390d1e8d1f735924d8ee680',1,'coefficient::available()'],['../structcoefficient__obs.html#a3069dc88f74c2a5a5e57441716e3a3a1',1,'coefficient_obs::available()']]],
+  ['available',['available',['../structcoefficient.html#ad13424d49390d1e8d1f735924d8ee680',1,'coefficient']]],
   ['avg_5fac',['avg_ac',['../structpower__data.html#a6be0998c821a1f4dd0a29873052e6bf6',1,'power_data']]],
   ['avg_5fcpu',['avg_cpu',['../structpower__data.html#a47b28e3d302b9ac37fb948b653a74274',1,'power_data']]],
   ['avg_5fdc',['avg_dc',['../structpower__data.html#af27803e682e8f281c1d108af766b739d',1,'power_data::avg_dc()'],['../ear__pm_8c.html#a616fdc3ba50d4bf09a54b4d680609ba6',1,'avg_dc():&#160;ear_pm.c']]],
