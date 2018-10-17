@@ -53,6 +53,8 @@
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
+static int edit_time_header;
+static int edit_time_states;
 static long long time_sta;
 static long long time_end;
 static int file_prv;
@@ -61,6 +63,7 @@ static int file_row;
 static int r_master;
 static int n_nodes;
 static int enabled;
+
 
 /*
 static long long metrics_usecs_diff(long long end, long long init)
@@ -80,12 +83,12 @@ static long long PAPI_get_real_usec()
 {
 	return 0;
 }
- */
+*/
 
 static void config_file_create(char *pathname, char* hostname)
 {
 	//
-	sprintf(buffer1, "%s/%s.pcf", pathname, hostname);
+	sprintf(buffer1, "%s/%d.pcf", pathname, getpid());
 
 	//
 	file_pcf = open(buffer1,
@@ -98,7 +101,7 @@ static void config_file_create(char *pathname, char* hostname)
 static void trace_file_open(char *pathname, char *hostname)
 {
 	//
-	sprintf(buffer1, "%s/%s.prv", pathname, hostname);
+	sprintf(buffer1, "%s/%d.prv", pathname, getpid());
 
 	//
 	file_prv = open(buffer1,
@@ -121,6 +124,7 @@ static void trace_file_init()
 	// Buffer position 0
 	i = sprintf(buffer, "#Paraver (01/01/1970 at 00:00):%020llu:%d(",
 				(unsigned long long) 0, n_nodes);
+	edit_time_header = 31;
 
 	//
 	for (b = &buffer[i], i = 0, j = 0; i < n_nodes; ++i, j += 2)
@@ -148,7 +152,14 @@ static void trace_file_init()
 	write(file_prv, buffer, strlen(buffer));
 
 	// 1:cpu:app:task:thread:b_time:e_time:state
-	sprintf(buffer, "1:%d:1:%d:1:0:%020llu:1\n", 1, 1, (unsigned long long) 0);
+	i = sprintf(buffer, "1:%d:1:%d:1:0:", 1, 1);
+	write(file_prv, buffer, strlen(buffer));
+
+	//
+	edit_time_states = lseek(file_prv, 0, SEEK_CUR);
+
+	//
+	sprintf(buffer, "%020llu:1\n", (unsigned long long) 0);
 	write(file_prv, buffer, strlen(buffer));
 }
 
@@ -210,9 +221,19 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
 	//
 	time_end = PAPI_get_real_usec();
+	//time_end = 1000;
 
 	//
 	trace_file_write(TRA_ENE, total_energy);
+
+	// Post process
+	sprintf(buffer1, "%020llu", time_end);
+
+	lseek(file_prv, edit_time_header, SEEK_SET);
+	write(file_prv, buffer1, 20);
+
+	lseek(file_prv, edit_time_states, SEEK_SET);
+	write(file_prv, buffer1, 20);
 
 	close(file_prv);
 }
@@ -302,4 +323,4 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-*/
+ */
