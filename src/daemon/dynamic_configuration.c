@@ -303,7 +303,10 @@ void process_remote_requests(int clientfd)
 	eard_verbose(2,"connection received\n");
 	req=read_command(clientfd,&command);
     if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time)
+    {
+        eard_verbose(1, "Recieved repeating command: %d", req);
         return;
+    }
     else
     {
         last_command = req;
@@ -363,7 +366,7 @@ void process_remote_requests(int clientfd)
 	send_answer(clientfd,&ack);
     if (command.node_dist > 0 && req != EAR_RC_PING)
     {
-        eard_verbose(1, "ping propagated");
+        eard_verbose(1, "Propagated command %d", req);
         propagate_req(&command, my_cluster_conf.eard.port);
     }
 }
