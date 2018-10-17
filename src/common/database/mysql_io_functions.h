@@ -57,8 +57,10 @@
 #endif
 #if !DB_SIMPLE
 #define SIGNATURE_ARGS              21
+#define AVG_SIGNATURE_ARGS          24
 #else
 #define SIGNATURE_ARGS              11
+#define AVG_SIGNATURE_ARGS          14
 #endif
 
 
