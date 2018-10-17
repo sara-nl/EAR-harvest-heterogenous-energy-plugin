@@ -149,7 +149,7 @@ int read_command(int s,request_t *command)
 	int ret;
 	ret=read(s,command,sizeof(request_t));
 	if ((ret<0) || (ret!=sizeof(request_t))){
-		VERBOSE_N(0,"Error reading remote command ");
+		VERBOSE_N(0,"Error reading remote command read %d expected %d",ret,sizeof(request_t));
 		if (ret<0) VERBOSE_N(0,"errno %s",strerror(errno));	
 		command->req=NO_COMMAND;
 	}

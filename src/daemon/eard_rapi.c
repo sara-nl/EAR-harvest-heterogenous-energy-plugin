@@ -163,6 +163,8 @@ int eards_remote_connect(char *nodename,uint port)
 int eards_new_job(application_t *new_job)
 {
 	request_t command;
+	command.node_dist = 0;
+
 	command.req=EAR_RC_NEW_JOB;
 	copy_application(&command.my_req.new_job,new_job);
 	VERBOSE_N(2,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
@@ -172,6 +174,8 @@ int eards_new_job(application_t *new_job)
 int eards_end_job(job_id jid,job_id sid)
 {
     request_t command;
+	command.node_dist = 0;
+
     command.req=EAR_RC_END_JOB;
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
@@ -182,6 +186,7 @@ int eards_end_job(job_id jid,job_id sid)
 int eards_set_max_freq(unsigned long freq)
 {
 	request_t command;
+	command.node_dist = 0;
 	command.req=EAR_RC_MAX_FREQ;
     command.my_req.ear_conf.max_freq=freq;
 	return send_command(&command);
@@ -190,6 +195,7 @@ int eards_set_max_freq(unsigned long freq)
 int eards_set_freq(unsigned long freq)
 {
     request_t command;
+	command.node_dist = 0;
     command.req=EAR_RC_SET_FREQ;
     command.my_req.ear_conf.max_freq=freq;
     return send_command(&command);
@@ -197,6 +203,7 @@ int eards_set_freq(unsigned long freq)
 int eards_set_def_freq(unsigned long freq)
 {
     request_t command;
+	command.node_dist = 0;
     command.req=EAR_RC_DEF_FREQ;
     command.my_req.ear_conf.max_freq=freq;
     return send_command(&command);
@@ -206,6 +213,7 @@ int eards_set_def_freq(unsigned long freq)
 int eards_red_max_and_def_freq(uint p_states)
 {
     request_t command;
+	command.node_dist = 0;
     command.req=EAR_RC_RED_PSTATE;
     command.my_req.ear_conf.p_states=p_states;
     return send_command(&command);
@@ -214,6 +222,7 @@ int eards_red_max_and_def_freq(uint p_states)
 int eards_restore_conf()
 {
     request_t command;
+	command.node_dist = 0;
     command.req=EAR_RC_REST_CONF;
     return send_command(&command);
 }
@@ -224,6 +233,7 @@ int eards_restore_conf()
 int eards_set_th(unsigned long th)
 {
     request_t command;
+	command.node_dist = 0;
     command.req=EAR_RC_NEW_TH;
     command.my_req.ear_conf.th=th;
     return send_command(&command);
@@ -233,6 +243,7 @@ int eards_set_th(unsigned long th)
 int eards_inc_th(unsigned long th)
 {
     request_t command;
+	command.node_dist = 0;
     command.req=EAR_RC_INC_TH;
     command.my_req.ear_conf.th=th;
     return send_command(&command);
@@ -240,6 +251,7 @@ int eards_inc_th(unsigned long th)
 int eards_ping()
 {
     request_t command;
+	command.node_dist = 0;
     command.req=EAR_RC_PING;
     command.node_dist = 0;
     return send_command(&command);

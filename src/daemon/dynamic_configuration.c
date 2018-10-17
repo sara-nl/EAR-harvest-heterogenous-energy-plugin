@@ -363,7 +363,7 @@ void process_remote_requests(int clientfd)
 	send_answer(clientfd,&ack);
     if (command.node_dist > 0 && req != EAR_RC_PING)
     {
-        eard_verbose(1, "ping propagated");
+        eard_verbose(1, "command=%d propagated distance=%d",req,command.node_dist);
         propagate_req(&command, my_cluster_conf.eard.port);
     }
 }
