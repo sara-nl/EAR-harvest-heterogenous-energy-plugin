@@ -47,6 +47,7 @@
         timestamp:12:           Frequency
 */
 
+#include <common/config.h>
 #include <common/types/generic.h>
 
 #define MIN_FREQ_FOR_SAMPLING 500000

@@ -37,6 +37,9 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 
+#include <common/config.h>
+
+#ifdef EAR_GUI
 #define TRA_ID		1
 #define TRA_LEN		2
 #define TRA_ITS		3
@@ -303,3 +306,4 @@ int main(int argc, char *argv[])
 	return 0;
 }
 */
+#endif
