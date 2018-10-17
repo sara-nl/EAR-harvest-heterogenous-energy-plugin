@@ -62,6 +62,32 @@ static char *__NAME__ = "MYSQL_IO: ";
                                 "?, ?, ?)"
 #endif
 
+#if !DB_SIMPLE
+#define AVG_SIGNATURE_QUERY     "INSERT INTO Signatures_avg (DC_power, DRAM_power, PCK_power, EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
+                                "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
+                                "instructions, cycles, avg_f, def_f, job_id, step_id, nodes_counter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
+                                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#else
+#define AVG_SIGNATURE_QUERY     "INSERT INTO Signatures_avg (DC_power, DRAM_power, PCK_power, EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, avg_f, def_f, job_id, step_id, nodes_counter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
+                                "?, ?, ?, ?, ?, ?)"
+#endif
+
+#define AVG_SIG_ENDING          "ON DUPLICATE KEY UPDATE "\
+                                "DC_power = DC_power + (VALUES(DC_power) - DC_power)/nodes_counter, "\
+                                "DRAM_power = DRAM_power + (VALUES(DRAM_power) - DRAM_power)/nodes_counter, "\
+                                "PCK_power = PCK_power + (VALUES(PCK_power) - PCK_power)/nodes_counter, "\
+                                "EDP = EDP + (VALUES(EDP) - EDP)/nodes_counter, "\
+                                "GBS = GBS + (VALUES(GBS) - GBS)/nodes_counter, "\
+                                "TPI = TPI + (VALUES(TPI) - TPI)/nodes_counter, "\
+                                "CPI = CPI + (VALUES(CPI) - CPI)/nodes_counter, "\
+                                "Gflops = Gflops + (VALUES(Gflops) - Gflops)/nodes_counter, "\
+                                "time = time + (VALUES(time) - time)/nodes_counter, "\
+                                "avg_f = avg_f + (VALUES(avg_f) - avg_f)/nodes_counter, "\
+                                "def_f = def_f + (VALUES(def_f) - def_f)/nodes_counter, "\
+                                "nodes_counter = nodes_counter + 1"                                
+
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 #if DEMO
@@ -1042,6 +1068,112 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
     return id;
+}
+
+/*Inserts a new signature for a certain job, computes average if it already exists. */
+int mysql_batch_insert_avg_signatures(MYSQL *connection, application_t *app, int num_sigs)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+
+    if (!statement) return EAR_MYSQL_ERROR;
+#if !DB_SIMPLE
+    char *params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+#else
+    char *params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+#endif
+    char *query;
+
+    query = malloc(strlen(AVG_SIGNATURE_QUERY)+num_sigs*strlen(params)+1+strlen(AVG_SIG_ENDING));
+    strcpy(query, AVG_SIGNATURE_QUERY);
+	
+
+    int i, j;
+    for (i = 1; i < num_sigs; i++)
+        strcat(query, params);
+
+    strcat(query, AVG_SIG_ENDING);
+    
+    if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
+
+
+    MYSQL_BIND *bind = calloc(num_sigs*AVG_SIGNATURE_ARGS, sizeof(MYSQL_BIND));
+
+    unsigned long nodes_counter = 1;
+
+    for (i = 0; i < num_sigs; i++)
+    {
+        int offset = i*AVG_SIGNATURE_ARGS;
+        //double storage
+        for (j = 0; j < 9; j++)
+        {
+            bind[offset+j].buffer_type = MYSQL_TYPE_DOUBLE;
+            bind[offset+j].length = 0;
+        }
+
+        //unsigned long long storage
+        for (j = 9; j < AVG_SIGNATURE_ARGS; j++)
+        {
+            bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
+            bind[offset+j].length = 0;
+            bind[offset+j].is_null = 0;
+            bind[offset+j].is_unsigned = 1;
+        }
+
+        //storage variables assignation
+        bind[0+offset].buffer = (char *)&app[i].signature.DC_power;
+        bind[1+offset].buffer = (char *)&app[i].signature.DRAM_power;
+        bind[2+offset].buffer = (char *)&app[i].signature.PCK_power;
+        bind[3+offset].buffer = (char *)&app[i].signature.EDP;
+        bind[4+offset].buffer = (char *)&app[i].signature.GBS;
+        bind[5+offset].buffer = (char *)&app[i].signature.TPI;
+        bind[6+offset].buffer = (char *)&app[i].signature.CPI;
+        bind[7+offset].buffer = (char *)&app[i].signature.Gflops;
+        bind[8+offset].buffer = (char *)&app[i].signature.time;
+#if !DB_SIMPLE
+        bind[9+offset].buffer = (char *)&app[i].signature.FLOPS[0];
+        bind[10+offset].buffer = (char *)&app[i].signature.FLOPS[1];
+        bind[11+offset].buffer = (char *)&app[i].signature.FLOPS[2];
+        bind[12+offset].buffer = (char *)&app[i].signature.FLOPS[3];
+        bind[13+offset].buffer = (char *)&app[i].signature.FLOPS[4];
+        bind[14+offset].buffer = (char *)&app[i].signature.FLOPS[5];
+        bind[15+offset].buffer = (char *)&app[i].signature.FLOPS[6];
+        bind[16+offset].buffer = (char *)&app[i].signature.FLOPS[7];
+        bind[17+offset].buffer = (char *)&app[i].signature.instructions;
+        bind[18+offset].buffer = (char *)&app[i].signature.cycles;
+        bind[19+offset].buffer = (char *)&app[i].signature.avg_f;
+        bind[20+offset].buffer = (char *)&app[i].signature.def_f;
+        bind[21+offset].buffer = (char *)&app[i].job.id;
+        bind[22+offset].buffer = (char *)&app[i].job.step_id;
+        bind[23+offset].buffer = (char *)&nodes_counter;
+#else
+        bind[9+offset].buffer = (char *)&app[i].signature.avg_f;
+        bind[10+offset].buffer = (char *)&app[i].signature.def_f;
+        bind[11+offset].buffer = (char *)&app[i].job.id;
+        bind[12+offset].buffer = (char *)&app[i].job.step_id;
+        bind[13+offset].buffer = (char *)&nodes_counter;
+
+#endif
+    }
+
+    if (mysql_stmt_bind_param(statement, bind)) {
+        free(bind);
+        free(query);
+        return mysql_statement_error(statement);
+    }
+
+    if (mysql_stmt_execute(statement)) 
+    {
+        free(bind);
+        free(query);
+        return mysql_statement_error(statement);
+    }
+
+    free(bind);
+    free(query);
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return EAR_SUCCESS;
 }
 
 //returns id of the first inserted signature

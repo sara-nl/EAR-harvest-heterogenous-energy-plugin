@@ -27,278 +27,300 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <linux/limits.h>
-#include <papi.h>
+#include <common/sizes.h>
 
-#include <control/frequency.h>
-#include <metrics/papi/generics.h>
-#include <library/common/externs.h>
-#include <library/tracer/tracer.h>
-#include <library/states/states.h>
-#include <library/metrics/metrics.h>
-#include <common/environment.h>
-#include <common/ear_verbose.h>
+#define TRA_ID		60001
+#define TRA_LEN		60002
+#define TRA_ITS		60003
+#define TRA_TIM		60004
+#define TRA_CPI		60005
+#define TRA_TPI		60006
+#define TRA_GBS		60007
+#define TRA_POW		60008
+#define TRA_PTI		60009
+#define TRA_PCP		60010
+#define TRA_PPO		60011
+#define TRA_FRQ		60012
+#define TRA_ENE		60013
 
-#ifdef EAR_GUI
+static char buffer1[SZ_BUFF_BIG];
+static char buffer2[SZ_BUFF_BIG];
+static int edit_time_header;
+static int edit_time_states;
+static long long time_sta;
+static long long time_end;
+static int file_prv;
+static int file_pcf;
+static int file_row;
+static int r_master;
+static int n_nodes;
+static int enabled;
 
-#define DYNAIS_TRACE		0
-#define APPLICATION_TRACE	1
-#define APP_INFO_FILE		"appinfo.txt"
-#define ARCH_INFO_FILE		"archinfo.txt"
 
-static const char *__NAME__ = "TRACER";
+/*
+static long long metrics_usecs_diff(long long end, long long init)
+{
+	long long to_max;
 
-static char write_buffer[4096];
-static long long first_sample;
-static long long sample_time;
-static long long last_sample;
-static long long sample;
-static int trace_type = DYNAIS_TRACE;
-static int fd_evs_app;
-static int fd_evs_dyn;
-
-#define CREATE_FLAGS S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
-
-#define OPEN_FILE(_filename, _fd) 															 \
-	if ((_fd = open(_filename, O_WRONLY | O_CREAT | O_TRUNC, CREATE_FLAGS)) < 0) {	         \
-		VERBOSE_N(0, "ERROR while creating trace file %s (%s)", _filename, strerror(errno)); \
-		exit(1);																			 \
+	if (end < init)
+	{
+		to_max = 9223372036854775807LL - init;
+		return (to_max + end);
 	}
 
-static void write_archinfo_info_file(char *pathname)
+	return (end - init);
+}
+
+static long long PAPI_get_real_usec()
 {
-	char filename[PATH_MAX], vendor[128], model[128];
-	const PAPI_hw_info_t *hw_general = NULL;
-	unsigned long max_f, min_f, nom_f;
-	int sockets, cores_per_socket;
-	int fd;
+	return 0;
+}
+*/
 
-	sprintf(filename, "%s/%s", pathname, ARCH_INFO_FILE);
-	OPEN_FILE(filename, fd);
+static void config_file_create(char *pathname, char* hostname)
+{
+	//
+	sprintf(buffer1, "%s/%d.pcf", pathname, getpid());
 
 	//
-	nom_f = frequency_get_nominal_freq();
+	file_pcf = open(buffer1,
+			   O_WRONLY | O_CREAT | O_TRUNC,
+			   S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
+	close(file_pcf);
+}
+
+static void trace_file_open(char *pathname, char *hostname)
+{
+	//
+	sprintf(buffer1, "%s/%d.prv", pathname, getpid());
 
 	//
-	hw_general = metrics_get_hw_info();
-	sockets = hw_general->sockets;
-	cores_per_socket = hw_general->cores;
-	max_f = hw_general->cpu_max_mhz;
-	min_f = hw_general->cpu_min_mhz;
+	file_prv = open(buffer1,
+		O_WRONLY | O_CREAT | O_TRUNC,
+		S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
-	//
-	strcpy(vendor, hw_general->vendor_string);
-	strcpy(model, hw_general->model_string);
+	//printf("FD: %s %d %s %s %s\n", buffer1, file_prv, strerror(errno), pathname, hostname);
+}
 
-	//
-	sprintf(write_buffer, "%d\n%d\n%u\n%u\n%u\n%s\n%s\n",
-		sockets, cores_per_socket, max_f * 1000, min_f * 1000, nom_f, vendor, model);
+static void trace_file_init()
+{
+	char *buffer = buffer1;
+	char *b;
+	int i, j;
 
-	//
-	if (write(fd, write_buffer, strlen(write_buffer)) != strlen(write_buffer)) {
-		VERBOSE_N(0, "ERROR while writting trace file %s (%s)", filename, strerror(errno));
-		exit(1);
+	if (!enabled) {
+		return;
 	}
 
-	close(fd);
-}
-
-static void write_app_info_file(char *pathname, int nodes, int mpis, int ppn)
-{
-	char filename[PATH_MAX];
-	int fd;
-
-	sprintf(filename, "%s/%s", pathname, APP_INFO_FILE);
-	OPEN_FILE(filename, fd);
+	// Buffer position 0
+	i = sprintf(buffer, "#Paraver (01/01/1970 at 00:00):%020llu:%d(",
+				(unsigned long long) 0, n_nodes);
+	edit_time_header = 31;
 
 	//
-	sprintf(write_buffer, "%s\n%d\n%d\n%d\n%s\n", application.job.app_id, nodes, mpis, ppn, application.job.policy);
-
-	//
-	if (write(fd, write_buffer, strlen(write_buffer)) != strlen(write_buffer)) {
-		VERBOSE_N(0, "ERROR while writting trace file %s (%s)", filename, strerror(errno));
-		exit(1);
+	for (b = &buffer[i], i = 0, j = 0; i < n_nodes; ++i, j += 2)
+	{
+		b[j+0] = '1';
+		b[j+1] = ',';
 	}
 
-	close(fd);
+	// Buffer position 2
+	b = &b[j-1];
+	i = sprintf(b, "):1:%d(", n_nodes);
+
+	// Buffer position 3
+	for (b = &b[i], i = 0, j = 1; i < n_nodes; ++i, ++j)
+	{
+		sprintf(b, "1:%d,", j);
+		b = &b[strlen(b)];
+	}
+
+	b = &b[strlen(b)-1];
+	b[0] = ')';
+	b[1] = '\n';
+	b[2] = '\0';
+
+	write(file_prv, buffer, strlen(buffer));
+
+	// 1:cpu:app:task:thread:b_time:e_time:state
+	i = sprintf(buffer, "1:%d:1:%d:1:0:", 1, 1);
+	write(file_prv, buffer, strlen(buffer));
+
+	//
+	edit_time_states = lseek(file_prv, 0, SEEK_CUR);
+
+	//
+	sprintf(buffer, "%020llu:1\n", (unsigned long long) 0);
+	write(file_prv, buffer, strlen(buffer));
 }
 
-static void open_event_file_application(char *pathname, int global_rank)
+static void trace_file_write(int event, long long value)
 {
-	char filename[PATH_MAX];
+	long long time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
+	char *buffer = buffer1;
 
-	sprintf(filename, "%s/%d.%s.txt", pathname, global_rank, application.node_id);
-	OPEN_FILE(filename, fd_evs_app);
-
-	sample_time = 0;
-
-	sprintf(write_buffer,"%llu;%u;%u\n%llu;%u;%u\n%llu;%u;%u\n", sample_time, PERIOD_ID, 0,
-		sample_time, PERIOD_LENGTH, 0, sample_time, PERIOD_ITERATIONS, 0);
-
-	write(fd_evs_app, write_buffer, strlen(write_buffer));
-	first_sample = PAPI_get_real_usec();
-	last_sample = sample_time;
+	// 2:cpu:app:task:thread:time:event:value
+	sprintf(buffer, "2:%d:1:%d:1:%llu:1:%d:%lld\n", 1, 1, time, event, value);
+	write(file_prv, buffer, strlen(buffer));
 }
 
-static void open_event_file_dynais(char *pathname)
-{
-	char filename[PATH_MAX];
+/*
+ *
+ *
+ * ear_api.c
+ *
+ *
+ */
 
-	sprintf(filename, "%s/%s.dyn", pathname, application.node_id);
-	OPEN_FILE(filename, fd_evs_dyn);
-}
-
-// ear_api.c
 void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
-	char *pathname;
+	char *pathname = getenv("EAR_TRACE_PATH");
+	char  hostname[256];
 
-	pathname = get_ear_gui_pathname();
-	VERBOSE_N(1, "using gui path %s\n", pathname);
+	//
+	file_prv = -1;
+	file_pcf = -1;
+	file_row = -1;
 
-	if (global_rank == 0)
-	{
-		write_app_info_file(pathname, nodes, mpis, ppn);
-		write_archinfo_info_file(pathname);
+	if (pathname == NULL) {
+		enabled = 0;
+		return;
 	}
 
-	if (local_rank == 0 && trace_type == APPLICATION_TRACE)
-	{
-		open_event_file_application(pathname, global_rank);
-	}
+	//
+	time_sta = PAPI_get_real_usec();
+	r_master = 1;
+	n_nodes  = 1;
 
-	if (local_rank == 0 && trace_type == DYNAIS_TRACE)
-	{
-		open_event_file_dynais(pathname);
-	}
-}
+	//
+	gethostname(hostname, SZ_BUFF_BIG);
 
-#define WRITE_TRACE(_fd, format, ...)						\
-{ 															\
-	sample = PAPI_get_real_usec();							\
-	sample_time = metrics_usecs_diff(sample, first_sample);	\
-	sprintf(write_buffer, format, __VA_ARGS__);				\
-	write(_fd, write_buffer, strlen(write_buffer));			\
-	last_sample = sample_time;								\
+	//
+	trace_file_open(pathname, hostname);
+	enabled = (file_prv >= 0);
+
+	//
+	trace_file_init(file_prv);
+
+	//
+	config_file_create(pathname, hostname);
+	enabled = enabled && (file_pcf >= 0);
 }
 
 // ear_api.c
 void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
-    if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
-        return; 
-    }
+	//
+	time_end = PAPI_get_real_usec();
+	//time_end = 1000;
 
-	WRITE_TRACE(fd_evs_app, "%llu;%u;%llu\n", sample_time, APP_ENERGY, total_energy);
+	//
+	trace_file_write(TRA_ENE, total_energy);
+
+	// Post process
+	sprintf(buffer1, "%020llu", time_end);
+
+	lseek(file_prv, edit_time_header, SEEK_SET);
+	write(file_prv, buffer1, 20);
+
+	lseek(file_prv, edit_time_states, SEEK_SET);
+	write(file_prv, buffer1, 20);
+
+	close(file_prv);
 }
 
 // ear_states.c
 void traces_new_period(int global_rank, int local_rank, int loop_id)
 {
+	if (!enabled) {
+		return;
+	}
 }
 
 // ear_api.c
 void traces_new_n_iter(int global_rank, int local_rank, int period_id, int loop_size, int iterations)
 {
-	if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
-        return; 
-    }
-
-	//
-	sample = PAPI_get_real_usec();
-	sample_time = metrics_usecs_diff(sample,first_sample);
-
-	// we report the loop after 1 iteration to compute the loop size
-	if (iterations == 1 || (sample_time - last_sample) > MIN_FREQ_FOR_SAMPLING)
-	{
-		sprintf(write_buffer,"%llu;%u;%u\n%llu;%u;%u\n%llu;%u;%u\n",
-			sample_time, PERIOD_ID, period_id, sample_time, PERIOD_LENGTH,
-			loop_size, sample_time, PERIOD_ITERATIONS, iterations);
-
-		write(fd_evs_app, write_buffer, strlen(write_buffer));
-		last_sample = sample_time;
+	if (!enabled) {
+		return;
 	}
 
-	last_sample = sample_time;
+	trace_file_write(TRA_ID, period_id);
+	trace_file_write(TRA_LEN, loop_size);
+	trace_file_write(TRA_ITS, iterations);
 }
 
 // ear_api.c
 void traces_end_period(int global_rank, int local_rank)
 {
-    if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
-        return; 
-    }
+	if (!enabled) {
+		return;
+	}
 
-	WRITE_TRACE(fd_evs_app, "%llu;%u;%u\n%llu;%u;%u\n%llu;%u;%u\n", sample_time,PERIOD_ID, 0,
-		sample_time, PERIOD_LENGTH,0,sample_time,PERIOD_ITERATIONS, 0);
+	trace_file_write(TRA_ID, 0);
+	trace_file_write(TRA_LEN, 0);
+	trace_file_write(TRA_ITS, 0);
 }
 
 // ear_states.c
 void traces_new_signature(int global_rank, int local_rank, double seconds,
 	double cpi, double tpi, double gbs, double power)
 {
-    if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
-        return; 
-    }
+	if (!enabled) {
+		return;
+	}
 
-	WRITE_TRACE(fd_evs_app, "%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n",
-		sample_time, PERIOD_TIME, seconds*1000000, sample_time, PERIOD_CPI, cpi, sample_time,
-		PERIOD_TPI, tpi, sample_time, PERIOD_GBS, gbs, sample_time, PERIOD_POWER, power);
+	trace_file_write(TRA_TIM, seconds*1000000);
+	trace_file_write(TRA_CPI, cpi);
+	trace_file_write(TRA_TPI, tpi);
+	trace_file_write(TRA_GBS, gbs);
+	trace_file_write(TRA_POW, power);
 }
 
 // ear_states.c
 void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power)
 {
-    if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
-        return; 
-    }
+	if (!enabled) {
+		return;
+	}
 
-	WRITE_TRACE(fd_evs_app, "%llu;%u;%lf\n%llu;%u;%lf\n%llu;%u;%lf\n",
-		sample_time, PERIOD_TIME_PROJ, seconds * 1000000, sample_time,
-		PERIOD_CPI_PROJ, cpi, sample_time, PERIOD_POWER_PROJ, power);
+	trace_file_write(TRA_PTI, seconds * 1000000);
+	trace_file_write(TRA_PCP, cpi);
+	trace_file_write(TRA_PPO, power);
 }
 
 // ear_api.c, ear_states.c
 void traces_frequency(int global_rank, int local_rank, unsigned long f)
 {
-	if (local_rank != 0 || trace_type != APPLICATION_TRACE) {
+	if (!enabled) {
 		return;
 	}
 
-	WRITE_TRACE(fd_evs_app, "%llu;%u;%u\n", sample_time, PERIOD_FREQ, f);
+	trace_file_write(TRA_FRQ, f);
 }
 
 // ear_api.c
 void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3)
 {
-	/*
-	        traces_mpi_call(ear_my_rank, my_id,
-                        (ulong) PAPI_get_real_usec(),
-                        (ulong) ear_event.
-                        (ulong) buf,
-                        (ulong) dest,
-                        (ulong) call_type);
-	*/
-	ulong trace_data[5];
-
-	if (global_rank != 0 || trace_type != DYNAIS_TRACE) {
-		return;
-	}
-	
-	trace_data[0] = (ulong) time;
-	trace_data[1] = (ulong) ev;
-	trace_data[2] = (ulong) a1;
-	trace_data[3] = (ulong) a2;
-	trace_data[4] = (ulong) a3;
-	write(fd_evs_dyn, trace_data, sizeof(trace_data));
 }
-#endif
+
+/*
+int main(int argc, char *argv[])
+{
+	traces_init(0, 0, 0, 0, 0);
+	traces_end_period(0, 0);
+	traces_PP(0, 0, 0, 0, 0);
+	traces_new_signature(0, 0, 0, 0, 0, 0, 0);
+	traces_end(0, 0, 0);
+
+	return 0;
+}
+ */
