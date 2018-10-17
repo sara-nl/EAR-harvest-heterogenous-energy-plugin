@@ -63,7 +63,7 @@ void main(int argc,char *argv[])
     char *token;
  
     if (argc < 2) 
-        num_apps = 35000;
+        num_apps = 5000;
     else
         num_apps = atoi(argv[1]);
 

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['udp_5fport',['udp_port',['../structeardb__conf.html#ae436b735136399150cf5af7cdddd4bd4',1,'eardb_conf']]],
   ['uncore_5ffreq',['uncore_freq',['../power__monitor_8c.html#a333b3a24fc650d15d0c5d4cea5e1674d',1,'power_monitor.c']]],
   ['unit_5fname',['unit_name',['../eargm_8c.html#a9dd997185d825a2f73c53fe190b86c48',1,'eargm.c']]],
   ['units',['units',['../structeargm__conf.html#a03716673397e97334c320454b2e37016',1,'eargm_conf::units()'],['../eargm_8c.html#a4eff036071ed296422a9cf539c8ee1e0',1,'units():&#160;eargm.c']]],

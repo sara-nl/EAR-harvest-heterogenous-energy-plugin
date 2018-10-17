@@ -10,6 +10,5 @@ var searchData=
   ['energy_20aware_20runtime_3a_20global_20manager_20daemon',['Energy Aware Runtime: Global Manager Daemon',['../md_src_global_manager_README.html',1,'']]],
   ['ear_20library',['EAR Library',['../md_src_library_README.html',1,'']]],
   ['ear_20components',['EAR components',['../md_src_README.html',1,'']]],
-  ['ear_20source_20directories',['EAR source directories',['../md_src_README.dev.html',1,'']]],
-  ['ear_20tools',['EAR tools',['../md_src_tools_README.html',1,'']]]
+  ['ear_20source_20directories',['EAR source directories',['../md_src_README.dev.html',1,'']]]
 ];

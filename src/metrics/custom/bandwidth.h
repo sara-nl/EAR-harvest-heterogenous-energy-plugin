@@ -58,5 +58,11 @@ int stop_uncores(unsigned long long *values);
 /** Gets the PMON uncore counters values. */
 int read_uncores(unsigned long long *values);
 
+/** Calculates diff=end-begin, with vectors of N elements */
+void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned long long  *begin,int N);
+
+/** Copies DEST=SRC */
+void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N);
+
 /** Closes file descriptors and frees memory. */
 int dispose_uncores();

@@ -13,7 +13,8 @@ BINARIES = bandwith_monitor \
 		   batch_insert \
 		   read_from_file \
 		   ping \
-		   ips
+		   ips \
+		   signatures_avg
 # ear_pm
 # test_architecture
 
@@ -28,6 +29,11 @@ batch_insert: batch_insert.c \
 	$(SRCDIR)/common/types.a \
 	$(SRCDIR)/common/database.a
 	$(CC) $(CC_FLAGS) $(DB_LDFLAGS) $(CFLAGS) -o batch_insert $^ $(SRCDIR)/common/types.a $(SRCDIR)/common/database.a
+
+signatures_avg: signatures_avg.c \
+	$(SRCDIR)/common/types.a \
+	$(SRCDIR)/common/database.a
+	$(CC) $(CC_FLAGS) $(DB_LDFLAGS) $(CFLAGS) -o signaures_avg $^ $(SRCDIR)/common/types.a $(SRCDIR)/common/database.a
 
 configuration_check: configuration_check.c $(SRCDIR)/common/types.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o configuration_check $^ $(SRCDIR)/common/types.a
@@ -46,7 +52,7 @@ ping: ping.c $(SRCDIR)/common/types.a
 
 bandwith_monitor: bandwith_monitor.c \
         $(SRCDIR)/metrics/custom/hardware_info.o \
-        $(SRCDIR)/metrics/custom/bandwidth.a
+        $(SRCDIR)/metrics/custom/bandwidth.a  
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o bandwith_monitor $^
 
 eard_monitor: eard_monitor.c \

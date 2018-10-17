@@ -378,19 +378,19 @@ void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
 /*** DEFAULT VALUES ****/
 void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 {
-	eardbd->aggr_time = 30;
-	eardbd->insr_time = 30;
-	eardbd->tcp_port = 4711;
-	eardbd->sec_tcp_port = 4712;
-	eardbd->sync_tcp_port = 4713;
-	eardbd->mem_size = 120;
-	eardbd->mem_size_types[0] = 60;
-	eardbd->mem_size_types[1] = 22;
-	eardbd->mem_size_types[2] = 5;
-	eardbd->mem_size_types[3] = 0;
-	eardbd->mem_size_types[4] = 7;
-	eardbd->mem_size_types[5] = 1;
-	eardbd->mem_size_types[6] = 5;
+	eardbdc->aggr_time = 30;
+	eardbdc->insr_time = 30;
+	eardbdc->tcp_port = 4711;
+	eardbdc->sec_tcp_port = 4712;
+	eardbdc->sync_tcp_port = 4713;
+	eardbdc->mem_size = 120;
+	eardbdc->mem_size_types[0] = 60;
+	eardbdc->mem_size_types[1] = 22;
+	eardbdc->mem_size_types[2] = 5;
+	eardbdc->mem_size_types[3] = 0;
+	eardbdc->mem_size_types[4] = 7;
+	eardbdc->mem_size_types[5] = 1;
+	eardbdc->mem_size_types[6] = 5;
 }
 
 void set_default_eard_conf(eard_conf_t *eardc)

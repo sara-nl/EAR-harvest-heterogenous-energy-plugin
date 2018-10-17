@@ -15,7 +15,7 @@ cluster_conf.o: cluster_conf.c \
  ../../../common/types/configuration/policy_conf.h \
  ../../../common/string_enhanced.h ../../../common/types/generic.h \
  ../../../common/ear_verbose.h ../../../common/config.h \
- ../../../common/states.h
+ ../../../common/states.h ../../../common/environment.h
 policy_conf.o: policy_conf.c ../../../common/config.h \
  ../../../common/states.h \
  ../../../common/types/configuration/cluster_conf.h \

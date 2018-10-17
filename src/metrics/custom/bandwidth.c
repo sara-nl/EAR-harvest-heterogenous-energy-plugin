@@ -47,10 +47,12 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/bandwidth/uncores_pci.h>
 #include <common/ear_verbose.h>
+#include <common/math_operations.h>
 
 #define FUNCVERB(function)                               \
     ear_debug(4, "EAR_DAEMON(UNCORES) " function "\n");
@@ -131,3 +133,23 @@ int dispose_uncores()
     FUNCVERB("dispose_uncores");
     return pmons.dispose();
 }
+
+/** Calculates diff=end-begin, with vectors of N elements */
+void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned long long  *begin,int N)
+{
+	int i;
+	for (i=0;i<N;i++){
+		if (end[i]<begin[i]){
+			diff[i]=uncore_ullong_diff_overflow(begin[i],end[i]);
+		}else{
+			diff[i]=end[i]-begin[i];
+		}
+	}
+}
+
+/** Copies DEST=SRC */
+void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N)
+{
+	memcpy((void *)DEST, (void *)SRC, N*sizeof(unsigned long long));
+}
+

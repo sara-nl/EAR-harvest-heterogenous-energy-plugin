@@ -51,6 +51,9 @@ src/tools/learn_deleter
 src/tools/learn_validator
 src/tools/coeffs_comparison
 src/tools/coeffs_show
+src/tools/learning_delete
+src/tools/learning_show
+src/tools/learning_validate
 
 
 # Build

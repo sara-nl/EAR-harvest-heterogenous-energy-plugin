@@ -3,7 +3,7 @@ var searchData=
   ['p_5fstate',['p_state',['../structpolicy__conf.html#ae688188c0b05d9616de5186ecb66d8e1',1,'policy_conf::p_state()'],['../structenergy__tag.html#a9daf307e4f9737899d22fe9c04c49b1d',1,'energy_tag::p_state()']]],
   ['p_5fstates',['p_states',['../structnew__conf.html#acf3eef39107cf56589d1b891e07db17c',1,'new_conf']]],
   ['pass',['pass',['../structdb__conf.html#adf6dc17b9c5009dac8b8fed9ff92ec15',1,'db_conf']]],
-  ['password',['password',['../remove__learning_8c.html#ab7ef36563acf2b1eade4b6856c9c9b63',1,'remove_learning.c']]],
+  ['password',['password',['../learning__delete_8c.html#ab7ef36563acf2b1eade4b6856c9c9b63',1,'learning_delete.c']]],
   ['path_5fcoeffs',['path_coeffs',['../structcontrol.html#a4a9fe143850eab7bc8908ae309713005',1,'control']]],
   ['pck_5fpower',['PCK_power',['../structpower__signature.html#a0cda14ce59849720a91b070f6f95421e',1,'power_signature::PCK_power()'],['../structsignature.html#a64959c9028a6777f27869c5f8c57e8d0',1,'signature::PCK_power()']]],
   ['per_5faggrs',['per_aggrs',['../eardbd_8c.html#ad7fbcccd8703b067db6b03bd87007368',1,'per_aggrs():&#160;eardbd.c'],['../eardbd__storage_8c.html#ad7fbcccd8703b067db6b03bd87007368',1,'per_aggrs():&#160;eardbd.c']]],
@@ -40,7 +40,7 @@ var searchData=
   ['procs',['procs',['../structjob.html#aacbd58284400b92738096e855aad60cc',1,'job']]],
   ['projs',['projs',['../structcontrol.html#ab8a72c0f5de8d4f3dfe74f75c59116e1',1,'control']]],
   ['protocol',['protocol',['../structsocket.html#a81a5c1e41565a6b97b741c8de80a9c4b',1,'socket']]],
-  ['pstate',['pstate',['../structcoefficient.html#a8925983fbabe494fd60712bf1b3450a7',1,'coefficient::pstate()'],['../structcoefficient__obs.html#adecb824d8a854272d74d11cce7952518',1,'coefficient_obs::pstate()']]],
+  ['pstate',['pstate',['../structcoefficient.html#a8925983fbabe494fd60712bf1b3450a7',1,'coefficient']]],
   ['pstate_5flevel',['pstate_level',['../eargm_8c.html#a4c6e3e7e1088e0437593e2e974ccc1a0',1,'eargm.c']]],
   ['pstate_5fref',['pstate_ref',['../structcoefficient.html#af9f59f76144099c646a2a0b7e621a0ad',1,'coefficient']]]
 ];

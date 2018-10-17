@@ -10,11 +10,11 @@ BINARIES = coeffs_compute \
            coeffs_quality \
            coeffs_show \
            coeffs_comparison \
-		   get_app_list \
 		   get_ear_events \
 		   get_active_nodes \
-		   learn_validate \
-		   learn_delete
+		   learning_show \
+		   learning_validate \
+		   learning_delete
 
 all: $(BINARIES)
 

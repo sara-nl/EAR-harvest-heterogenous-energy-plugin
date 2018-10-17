@@ -9,7 +9,7 @@ var searchData=
   ['no_5fproblem',['NO_PROBLEM',['../eargm_8c.html#a80d1eccc95c765961a978c4354e78d6d',1,'eargm.c']]],
   ['node_5fenergy_5freq',['node_energy_req',['../eard__conf__api_8h.html#ae024bcbc335512c9b65177fff2065127',1,'eard_conf_api.h']]],
   ['node_5fmanager',['NODE_MANAGER',['../energy__node_8c.html#ad39b1f9aae3895fd04fb29fe3b952765',1,'energy_node.c']]],
-  ['node_5fquery',['NODE_QUERY',['../get__active__nodes_8c.html#add8c0b4d51270a7899ce47db3b24461d',1,'NODE_QUERY():&#160;get_active_nodes.c'],['../remove__learning_8c.html#add8c0b4d51270a7899ce47db3b24461d',1,'NODE_QUERY():&#160;remove_learning.c']]],
+  ['node_5fquery',['NODE_QUERY',['../get__active__nodes_8c.html#add8c0b4d51270a7899ce47db3b24461d',1,'NODE_QUERY():&#160;get_active_nodes.c'],['../learning__delete_8c.html#add8c0b4d51270a7899ce47db3b24461d',1,'NODE_QUERY():&#160;learning_delete.c']]],
   ['node_5fsize',['NODE_SIZE',['../gm__warning_8c.html#a7ff1bdaea529894a3efdb480b1f2c8ee',1,'NODE_SIZE():&#160;gm_warning.c'],['../gm__warning_8h.html#a7ff1bdaea529894a3efdb480b1f2c8ee',1,'NODE_SIZE():&#160;gm_warning.h'],['../periodic__metric_8h.html#a7ff1bdaea529894a3efdb480b1f2c8ee',1,'NODE_SIZE():&#160;periodic_metric.h']]],
   ['non_5fblock_5ftrys',['NON_BLOCK_TRYS',['../sockets_8h.html#a58a1f4e725d5ddd7426a945b9cadb84f',1,'sockets.h']]],
   ['normal',['NORMAL',['../cluster__conf_8h.html#a1291f416b069313021b519eea62d5bf1',1,'cluster_conf.h']]],

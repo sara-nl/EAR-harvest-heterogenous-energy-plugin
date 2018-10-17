@@ -38,7 +38,7 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 
-#define SRUN_OPTIONS 10
+#define SRUN_OPTIONS 9
 
 struct spank_option spank_options_manual[SRUN_OPTIONS] =
 {
@@ -74,13 +74,14 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  "Enables the learning phase for a given P_STATE {value=[1..n]}",
 	  1, 0, (spank_opt_cb_f) _opt_ear_learning
 	},
-	{ "ear-traces", "", "Generates application traces with metrics and internal details",
-	  0, 0, (spank_opt_cb_f) _opt_ear_traces
-	},
-	{ "ear-tag", "tag", "Sets an energy tag",
+	{ "ear-tag", "tag", "Sets an energy tag (max 32 chars)",
 	  2, 0, (spank_opt_cb_f) _opt_ear_tag
 	}
 };
+
+    /*{ "ear-traces", "", "Generates application traces with metrics and internal details",
+	 *  0, 0, (spank_opt_cb_f) _opt_ear_traces
+ 	 *},*/
 
 int _opt_register(spank_t sp)
 {

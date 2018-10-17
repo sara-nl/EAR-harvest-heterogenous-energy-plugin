@@ -86,14 +86,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">ear_control.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;errno.h&gt;</code><br />
+<code>#include &lt;netdb.h&gt;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;getopt.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -109,17 +113,41 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;<a class="el" href="application_8h_source.html">common/types/application.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="cluster__conf_8h_source.html">common/types/configuration/cluster_conf.h</a>&gt;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structip__table.html">ip_table</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ab122432988c73c06becf1ce34077e43b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#ab122432988c73c06becf1ce34077e43b">NUM_LEVELS</a>&#160;&#160;&#160;4</td></tr>
 <tr class="separator:ab122432988c73c06becf1ce34077e43b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e41da7b5124be14b9944a6134dc97ac"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#a1e41da7b5124be14b9944a6134dc97ac">MAX_PSTATE</a>&#160;&#160;&#160;16</td></tr>
 <tr class="separator:a1e41da7b5124be14b9944a6134dc97ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26af4e86634a5afbbe4ae1326886c9b2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#a26af4e86634a5afbbe4ae1326886c9b2">IP_LENGTH</a>&#160;&#160;&#160;24</td></tr>
+<tr class="separator:a26af4e86634a5afbbe4ae1326886c9b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a0708790201f3be117145b61b3be123a9"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structip__table.html">ip_table</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a></td></tr>
+<tr class="separator:a0708790201f3be117145b61b3be123a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a473cb9110ae8ab67cd83cf4f37b8e021"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#a473cb9110ae8ab67cd83cf4f37b8e021">fill_ip</a> (char *buff, <a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> *table)</td></tr>
+<tr class="separator:a473cb9110ae8ab67cd83cf4f37b8e021"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0f41f8b5713c0cc2886b84131fef499"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#ab0f41f8b5713c0cc2886b84131fef499">generate_node_names</a> (<a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a> <a class="el" href="eargm_8c.html#a6c6877da2aa55927ec276bfdedb32660">my_cluster_conf</a>, <a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> **ips)</td></tr>
+<tr class="separator:ab0f41f8b5713c0cc2886b84131fef499"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a994fd718c7071e1dee7801e4dc81197c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#a994fd718c7071e1dee7801e4dc81197c">print_ips</a> (<a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> *ips, int num_ips)</td></tr>
+<tr class="separator:a994fd718c7071e1dee7801e4dc81197c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc7d17088590153d81d3e9b6ba1daa1a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#acc7d17088590153d81d3e9b6ba1daa1a">usage</a> (char *app)</td></tr>
 <tr class="separator:acc7d17088590153d81d3e9b6ba1daa1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a692b270a9ce5bc0370c29dcc70a4a82b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#a692b270a9ce5bc0370c29dcc70a4a82b">check_ip</a> (<a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> <a class="el" href="structstatus.html">status</a>, <a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> *ips, int num_ips)</td></tr>
+<tr class="separator:a692b270a9ce5bc0370c29dcc70a4a82b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a787e34dab3adda2f65442758fc885c68"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#a787e34dab3adda2f65442758fc885c68">clean_ips</a> (<a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> *ips, int num_ips)</td></tr>
+<tr class="separator:a787e34dab3adda2f65442758fc885c68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9b2f092905f9be9818fb39ccbb58314"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#aa9b2f092905f9be9818fb39ccbb58314">process_status</a> (int num_status, <a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> *<a class="el" href="structstatus.html">status</a>)</td></tr>
+<tr class="separator:aa9b2f092905f9be9818fb39ccbb58314"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91a3bbcc7eb26e8695255b2795d6e46f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="commands_2ear__control_8c.html#a91a3bbcc7eb26e8695255b2795d6e46f">main</a> (int argc, char *argv[])</td></tr>
 <tr class="separator:a91a3bbcc7eb26e8695255b2795d6e46f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -131,6 +159,18 @@ Variables</h2></td></tr>
 <tr class="separator:a6c6877da2aa55927ec276bfdedb32660"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="a26af4e86634a5afbbe4ae1326886c9b2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IP_LENGTH&#160;&#160;&#160;24</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a1e41da7b5124be14b9944a6134dc97ac"></a>
 <div class="memitem">
 <div class="memproto">
@@ -155,7 +195,130 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a class="anchor" id="a0708790201f3be117145b61b3be123a9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="structip__table.html">ip_table</a>  <a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a692b270a9ce5bc0370c29dcc70a4a82b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void check_ip </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a>&#160;</td>
+          <td class="paramname"><em>status</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> *&#160;</td>
+          <td class="paramname"><em>ips</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_ips</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a787e34dab3adda2f65442758fc885c68"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void clean_ips </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> *&#160;</td>
+          <td class="paramname"><em>ips</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_ips</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a473cb9110ae8ab67cd83cf4f37b8e021"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void fill_ip </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>buff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> *&#160;</td>
+          <td class="paramname"><em>table</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab0f41f8b5713c0cc2886b84131fef499"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int generate_node_names </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="cluster__conf_8h.html#ac9321adc9770e987439ad10c4bd1913e">cluster_conf_t</a>&#160;</td>
+          <td class="paramname"><em>my_cluster_conf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> **&#160;</td>
+          <td class="paramname"><em>ips</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a91a3bbcc7eb26e8695255b2795d6e46f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -171,6 +334,58 @@ Variables</h2></td></tr>
           <td></td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>argv</em>[]&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a994fd718c7071e1dee7801e4dc81197c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void print_ips </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="commands_2ear__control_8c.html#a0708790201f3be117145b61b3be123a9">ip_table_t</a> *&#160;</td>
+          <td class="paramname"><em>ips</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_ips</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa9b2f092905f9be9818fb39ccbb58314"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void process_status </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_status</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="eard__conf__rapi_8h.html#ae10cc0dbef73781f1180541121e675bb">status_t</a> *&#160;</td>
+          <td class="paramname"><em>status</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

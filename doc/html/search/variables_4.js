@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['d',['D',['../structcoefficient.html#a704078b49bbd47f39b1d74c8955a3895',1,'coefficient::D()'],['../structcoefficient__obs.html#a24799e11ae2246845354e784a5014cb1',1,'coefficient_obs::D()']]],
+  ['d',['D',['../structcoefficient.html#a704078b49bbd47f39b1d74c8955a3895',1,'coefficient']]],
   ['data_5fextra1',['data_extra1',['../structpacket__header.html#acc623e37adeca9c65db186a84428b9b7',1,'packet_header']]],
   ['data_5fextra2',['data_extra2',['../structpacket__header.html#a1cb6613afe1cd0de0a8ffac9edf8457f',1,'packet_header']]],
   ['data_5fextra3',['data_extra3',['../structpacket__header.html#af0cd2814f06559da7518c5c980717983',1,'packet_header']]],

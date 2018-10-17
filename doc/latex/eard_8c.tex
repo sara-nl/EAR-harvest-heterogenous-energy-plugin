@@ -48,6 +48,8 @@
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
+void \hyperlink{eard_8c_a04d1f75bad6b2034c19280aa3d96a429}{update\+\_\+coefficients} (char $\ast$new, char $\ast$old)
+\item 
 void \hyperlink{eard_8c_ae0772b88d0e56584db4d025c24cc1852}{init\+\_\+frequency\+\_\+list} ()
 \item 
 int \hyperlink{eard_8c_a569fb7822e78eb5177c1684ffdb4d6e7}{is\+\_\+valid\+\_\+sec\+\_\+tag} (\hyperlink{generic_8h_a718b4eb2652c286f4d42dc18a8e71a1a}{ulong} tag)
@@ -60,7 +62,7 @@ void \hyperlink{eard_8c_a79f4f17b33fe1e7fac29af9dd6d44943}{eard\+\_\+lock} (char
 \item 
 void \hyperlink{eard_8c_a7164b223c00278c418e8766f8071d329}{eard\+\_\+unlock} ()
 \item 
-void \hyperlink{eard_8c_ac7684732da9e92dc9080ef3bf7e3f9a7}{create\+\_\+connector} (char $\ast$\hyperlink{power__monitor_8c_afcdb78d029ba1eca50905a8eed1d38d4}{ear\+\_\+tmp}, char $\ast$\hyperlink{compute__coefficients__v2_8c_aff90684e5eeb3720274928bb76d503d3}{nodename}, int \hyperlink{compute__coefficients__v2_8c_aa0ecde9bec2f4c6686780ccf4f5fe835}{i})
+void \hyperlink{eard_8c_ac7684732da9e92dc9080ef3bf7e3f9a7}{create\+\_\+connector} (char $\ast$\hyperlink{power__monitor_8c_afcdb78d029ba1eca50905a8eed1d38d4}{ear\+\_\+tmp}, char $\ast$\hyperlink{learning__validate_8c_ac8aded813ea16c906c9039b899bcd7f3}{nodename}, int \hyperlink{learning__validate_8c_aa0ecde9bec2f4c6686780ccf4f5fe835}{i})
 \item 
 void \hyperlink{eard_8c_a00a4d989611a853580df0b4d8b94fb3f}{connect\+\_\+service} (int \hyperlink{eard_8c_a9bd82451e41ea82b3f1d2bdc38b815b3}{req}, \hyperlink{application_8h_af0a524c43fc5f548021099181df194bf}{application\+\_\+t} $\ast$new\+\_\+app)
 \item 
@@ -82,7 +84,7 @@ int \hyperlink{eard_8c_a629a1b8b9361f3237e42483a10ec834b}{eard\+\_\+node\+\_\+en
 \item 
 int \hyperlink{eard_8c_a5e9620b703ef0b9a74325263eb197dd6}{eard\+\_\+system} (int must\+\_\+read)
 \item 
-void \hyperlink{eard_8c_af9ac3338028205c4fb9d2dae85e43773}{eard\+\_\+set\+\_\+freq} (unsigned long new\+\_\+freq, unsigned long \hyperlink{ear__lp__validation_8c_a67b5fc2af25178078dfc5b1bac08de32}{max\+\_\+freq})
+void \hyperlink{eard_8c_af9ac3338028205c4fb9d2dae85e43773}{eard\+\_\+set\+\_\+freq} (unsigned long new\+\_\+freq, unsigned long \hyperlink{learning__validate_8c_a67b5fc2af25178078dfc5b1bac08de32}{max\+\_\+freq})
 \item 
 int \hyperlink{eard_8c_aa6f4faf4cbb0cedf947898f2100989e3}{eard\+\_\+freq} (int must\+\_\+read)
 \item 
@@ -442,6 +444,14 @@ E\+ND R\+A\+PL S\+E\+R\+V\+I\+C\+ES.
 \item[{int}]{sig}
 \end{DoxyParamCaption}
 )}\hypertarget{eard_8c_a6aa59f98cad89c73966351ad7afb303c}{}\label{eard_8c_a6aa59f98cad89c73966351ad7afb303c}
+\index{eard.\+c@{eard.\+c}!update\+\_\+coefficients@{update\+\_\+coefficients}}
+\index{update\+\_\+coefficients@{update\+\_\+coefficients}!eard.\+c@{eard.\+c}}
+\subsubsection[{\texorpdfstring{update\+\_\+coefficients(char $\ast$new, char $\ast$old)}{update_coefficients(char *new, char *old)}}]{\setlength{\rightskip}{0pt plus 5cm}void update\+\_\+coefficients (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{new, }
+\item[{char $\ast$}]{old}
+\end{DoxyParamCaption}
+)}\hypertarget{eard_8c_a04d1f75bad6b2034c19280aa3d96a429}{}\label{eard_8c_a04d1f75bad6b2034c19280aa3d96a429}
 \index{eard.\+c@{eard.\+c}!Usage@{Usage}}
 \index{Usage@{Usage}!eard.\+c@{eard.\+c}}
 \subsubsection[{\texorpdfstring{Usage(char $\ast$app)}{Usage(char *app)}}]{\setlength{\rightskip}{0pt plus 5cm}void Usage (

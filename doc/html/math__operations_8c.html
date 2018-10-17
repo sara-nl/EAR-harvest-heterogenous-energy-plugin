@@ -98,12 +98,15 @@ Functions</h2></td></tr>
 <tr class="memitem:aae1d10a18dba01d5893808973e721bf8"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="math__operations_8c.html#aae1d10a18dba01d5893808973e721bf8">equal_with_th</a> (double a, double b, double th)</td></tr>
 <tr class="memdesc:aae1d10a18dba01d5893808973e721bf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given two doubles a and b, checks if they are equal within a margin of th.  <a href="#aae1d10a18dba01d5893808973e721bf8">More...</a><br /></td></tr>
 <tr class="separator:aae1d10a18dba01d5893808973e721bf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92252077213e0059e95825e76f3075ac"><td class="memItemLeft" align="right" valign="top">unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="math__operations_8c.html#a92252077213e0059e95825e76f3075ac">ulong_diff_overflow</a> (unsigned long a, unsigned long b)</td></tr>
-<tr class="memdesc:a92252077213e0059e95825e76f3075ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given two unsigned long's, one before and one after overflow, returns the value added to the first to obtain the second.  <a href="#a92252077213e0059e95825e76f3075ac">More...</a><br /></td></tr>
-<tr class="separator:a92252077213e0059e95825e76f3075ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae998092285b320b6f3237e4db462c85c"><td class="memItemLeft" align="right" valign="top">unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="math__operations_8c.html#ae998092285b320b6f3237e4db462c85c">ullong_diff_overflow</a> (unsigned long long a, unsigned long long b)</td></tr>
-<tr class="memdesc:ae998092285b320b6f3237e4db462c85c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given two unsigned long's, one before and one after overflow, returns the value added to the first to obtain the second.  <a href="#ae998092285b320b6f3237e4db462c85c">More...</a><br /></td></tr>
-<tr class="separator:ae998092285b320b6f3237e4db462c85c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef68cd694ac3de2054c27c9c2b99ad8f"><td class="memItemLeft" align="right" valign="top">unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="math__operations_8c.html#aef68cd694ac3de2054c27c9c2b99ad8f">ulong_diff_overflow</a> (unsigned long begin, unsigned long end)</td></tr>
+<tr class="memdesc:aef68cd694ac3de2054c27c9c2b99ad8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given two unsigned long's, one before and one after overflow, returns the value added to the first to obtain the second.  <a href="#aef68cd694ac3de2054c27c9c2b99ad8f">More...</a><br /></td></tr>
+<tr class="separator:aef68cd694ac3de2054c27c9c2b99ad8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8b466a831b1e4212f2543f60d998c55"><td class="memItemLeft" align="right" valign="top">unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="math__operations_8c.html#ac8b466a831b1e4212f2543f60d998c55">ullong_diff_overflow</a> (unsigned long long begin, unsigned long long end)</td></tr>
+<tr class="memdesc:ac8b466a831b1e4212f2543f60d998c55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given two unsigned long's, one before and one after overflow, returns the value added to the first to obtain the second.  <a href="#ac8b466a831b1e4212f2543f60d998c55">More...</a><br /></td></tr>
+<tr class="separator:ac8b466a831b1e4212f2543f60d998c55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8690742809c8e3a27945864186ef168b"><td class="memItemLeft" align="right" valign="top">unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="math__operations_8c.html#a8690742809c8e3a27945864186ef168b">uncore_ullong_diff_overflow</a> (unsigned long long begin, unsigned long long end)</td></tr>
+<tr class="memdesc:a8690742809c8e3a27945864186ef168b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given two unsigned long's, one before and one after overflow, returns the value added to the first to obtain the second.  <a href="#a8690742809c8e3a27945864186ef168b">More...</a><br /></td></tr>
+<tr class="separator:a8690742809c8e3a27945864186ef168b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="aae1d10a18dba01d5893808973e721bf8"></a>
@@ -140,7 +143,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ae998092285b320b6f3237e4db462c85c"></a>
+<a class="anchor" id="ac8b466a831b1e4212f2543f60d998c55"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -148,13 +151,13 @@ Functions</h2></td></tr>
           <td class="memname">unsigned long long ullong_diff_overflow </td>
           <td>(</td>
           <td class="paramtype">unsigned long long&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
+          <td class="paramname"><em>begin</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">unsigned long long&#160;</td>
-          <td class="paramname"><em>b</em>&#160;</td>
+          <td class="paramname"><em>end</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -165,10 +168,11 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Given two unsigned long's, one before and one after overflow, returns the value added to the first to obtain the second. </p>
+<p>This corrects end-begin when there has been an overflow. </p>
 
 </div>
 </div>
-<a class="anchor" id="a92252077213e0059e95825e76f3075ac"></a>
+<a class="anchor" id="aef68cd694ac3de2054c27c9c2b99ad8f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -176,13 +180,13 @@ Functions</h2></td></tr>
           <td class="memname">unsigned long ulong_diff_overflow </td>
           <td>(</td>
           <td class="paramtype">unsigned long&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
+          <td class="paramname"><em>begin</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">unsigned long&#160;</td>
-          <td class="paramname"><em>b</em>&#160;</td>
+          <td class="paramname"><em>end</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -193,6 +197,36 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Given two unsigned long's, one before and one after overflow, returns the value added to the first to obtain the second. </p>
+<p>This corrects end-begin when there has been an overflow. </p>
+
+</div>
+</div>
+<a class="anchor" id="a8690742809c8e3a27945864186ef168b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned long long uncore_ullong_diff_overflow </td>
+          <td>(</td>
+          <td class="paramtype">unsigned long long&#160;</td>
+          <td class="paramname"><em>begin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long long&#160;</td>
+          <td class="paramname"><em>end</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Given two unsigned long's, one before and one after overflow, returns the value added to the first to obtain the second. </p>
+<p>This uses the normal 48 bit max. This corrects end-begin when there has been an overflow. </p>
 
 </div>
 </div>
