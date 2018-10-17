@@ -470,6 +470,7 @@ void ear_init()
 
 	// Tracing init
 	traces_init(ear_my_rank, my_id, num_nodes, my_size, ppnode);
+	traces_start();
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 
 
@@ -506,6 +507,7 @@ void ear_finalize()
 #endif
 
 	// Tracing
+	traces_stop();
 	traces_end(ear_my_rank, my_id, 0);
 
 	// Closing and obtaining global metrics
