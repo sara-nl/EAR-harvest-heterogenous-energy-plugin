@@ -103,3 +103,5 @@
 
 #define EAR_LIB_SYNC 1
 #define COORDINATE_FREQUENCIES 0
+
+//#define EAR_GUI

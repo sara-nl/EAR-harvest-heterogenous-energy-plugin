@@ -32,19 +32,19 @@
 
 #include <stdint.h>
 
-typedef unsigned char uchar;
-typedef unsigned long long ull;
-typedef unsigned long ulong;
-typedef unsigned int uint;
-
-
-typedef uint8_t job_type;
-typedef ulong   job_id;
+typedef unsigned char		uchar;
+typedef unsigned long long	ull;
+typedef unsigned long long	ullong;
+typedef unsigned long 		ulong;
+typedef unsigned int		uint;
+typedef uint8_t				job_type;
+typedef ulong				job_id;
 
 #define GENERIC_NAME 		256
 #define	UID_NAME			8
 #define POLICY_NAME 		32
 #define ENERGY_TAG_SIZE		32
-#define MAX_PATH_SIZE   256
+#define MAX_PATH_SIZE		256
+
 #else
 #endif

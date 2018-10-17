@@ -47,6 +47,7 @@
         timestamp:12:           Frequency
 */
 
+#include <common/config.h>
 #include <common/types/generic.h>
 
 #define MIN_FREQ_FOR_SAMPLING 500000
@@ -69,6 +70,10 @@
  	void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn);
 	/** Executed at application end */
 	void traces_end(int global_rank,int local_rank, unsigned long int total_ener);
+	/** **/
+	void traces_start();
+	/** **/
+	void traces_stop();
 
 	/**@{ Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states */
 	void traces_frequency(int global_rank, int local_rank, unsigned long f);
@@ -76,8 +81,8 @@
 	void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power); /**@}*/ 
 
 	/**@{ Executed when each time a new loop is detected, the loop ends, or a new iteration are reported */
-	void traces_new_n_iter(int global_rank, int local_rank, int period_id, int loop_size, int iterations);
-	void traces_new_period(int global_rank, int local_rank, int period_id);
+	void traces_new_n_iter(int global_rank, int local_rank, ullong period_id, int loop_size, int iterations);
+	void traces_new_period(int global_rank, int local_rank, ullong period_id);
 	void traces_end_period(int global_rank, int local_rank); /**@}*/ 
 
 	/** Executed at each mpi_call */

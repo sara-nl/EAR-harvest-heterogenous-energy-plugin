@@ -36,6 +36,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <common/sizes.h>
+#include <common/config.h>
+#include <library/tracer/tracer.h>
+
+#ifdef EAR_GUI
 
 #define TRA_ID		60001
 #define TRA_LEN		60002
@@ -53,37 +57,17 @@
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
-static int edit_time_header;
-static int edit_time_states;
+
 static long long time_sta;
 static long long time_end;
+
+static int edit_time_header;
+static int edit_time_states;
 static int file_prv;
 static int file_pcf;
 static int file_row;
-static int r_master;
-static int n_nodes;
 static int enabled;
-
-
-/*
-static long long metrics_usecs_diff(long long end, long long init)
-{
-	long long to_max;
-
-	if (end < init)
-	{
-		to_max = 9223372036854775807LL - init;
-		return (to_max + end);
-	}
-
-	return (end - init);
-}
-
-static long long PAPI_get_real_usec()
-{
-	return 0;
-}
-*/
+static int working;
 
 static void config_file_create(char *pathname, char* hostname)
 {
@@ -94,6 +78,43 @@ static void config_file_create(char *pathname, char* hostname)
 	file_pcf = open(buffer1,
 			   O_WRONLY | O_CREAT | O_TRUNC,
 			   S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
+	sprintf(buffer1, "GRADIENT_COLOR\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "0\t{255,255,255}\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "GRADIENT_NAMES\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "0\twhite\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t1\tRUN\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60001\tPERIOD_ID\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60002\tPERIOD_LENGTH\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60003\tPERIOD_ITERATIONS\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60004\tPERIOD_TIME\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60005\tPERIOD_CPI\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60006\tPERIOD_TPI\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60007\tPERIOD_GBS\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60008\tPERIOD_POWER\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60009\tPERIOD_TIME_PROJECTION\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60010\tPERIOD_CPI_PROJECTION\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60011\tPERIOD_POWER_PROJECTION\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60012\tFREQUENCY\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60013\tENERGY\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
 
 	close(file_pcf);
 }
@@ -111,7 +132,7 @@ static void trace_file_open(char *pathname, char *hostname)
 	//printf("FD: %s %d %s %s %s\n", buffer1, file_prv, strerror(errno), pathname, hostname);
 }
 
-static void trace_file_init()
+static void trace_file_init(int n_nodes)
 {
 	char *buffer = buffer1;
 	char *b;
@@ -163,13 +184,14 @@ static void trace_file_init()
 	write(file_prv, buffer, strlen(buffer));
 }
 
-static void trace_file_write(int event, long long value)
+static void trace_file_write(int event, ullong value)
 {
 	long long time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
 	char *buffer = buffer1;
 
 	// 2:cpu:app:task:thread:time:event:value
-	sprintf(buffer, "2:%d:1:%d:1:%llu:1:%d:%lld\n", 1, 1, time, event, value);
+	sprintf(buffer, "2:%d:1:%d:1:%llu:%d:%llu\n", 1, 1, time, event, value);
+	//fprintf(stderr, "%d: %s");
 	write(file_prv, buffer, strlen(buffer));
 }
 
@@ -180,6 +202,16 @@ static void trace_file_write(int event, long long value)
  *
  *
  */
+
+void traces_start()
+{
+	working = 1;
+}
+
+void traces_stop()
+{
+	working = 0;
+}
 
 void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
@@ -198,8 +230,6 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 
 	//
 	time_sta = PAPI_get_real_usec();
-	r_master = 1;
-	n_nodes  = 1;
 
 	//
 	gethostname(hostname, SZ_BUFF_BIG);
@@ -209,7 +239,11 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 	enabled = (file_prv >= 0);
 
 	//
-	trace_file_init(file_prv);
+	trace_file_init(nodes);
+
+	if(!enabled) {
+		return;
+	}
 
 	//
 	config_file_create(pathname, hostname);
@@ -220,8 +254,7 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
 	//
-	time_end = PAPI_get_real_usec();
-	//time_end = 1000;
+	time_end = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
 
 	//
 	trace_file_write(TRA_ENE, total_energy);
@@ -235,72 +268,95 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 	lseek(file_prv, edit_time_states, SEEK_SET);
 	write(file_prv, buffer1, 20);
 
+	//
 	close(file_prv);
+
+	//
+	enabled = 0;
+	working = 0;
 }
 
 // ear_states.c
-void traces_new_period(int global_rank, int local_rank, int loop_id)
+void traces_new_period(int global_rank, int local_rank, ullong loop_id)
 {
-	if (!enabled) {
-		return;
-	}
 }
 
 // ear_api.c
-void traces_new_n_iter(int global_rank, int local_rank, int period_id, int loop_size, int iterations)
+void traces_new_n_iter(int global_rank, int local_rank, ullong loop_id, int loop_size, int iterations)
 {
-	if (!enabled) {
+	if (!enabled || !working) {
 		return;
 	}
 
-	trace_file_write(TRA_ID, period_id);
-	trace_file_write(TRA_LEN, loop_size);
-	trace_file_write(TRA_ITS, iterations);
+	trace_file_write(TRA_ID, (ullong) loop_id);
+	trace_file_write(TRA_LEN, (ullong) loop_size);
+	trace_file_write(TRA_ITS, (ullong) iterations);
 }
 
 // ear_api.c
 void traces_end_period(int global_rank, int local_rank)
 {
-	if (!enabled) {
+	if (!enabled || !working) {
 		return;
 	}
 
-	trace_file_write(TRA_ID, 0);
-	trace_file_write(TRA_LEN, 0);
-	trace_file_write(TRA_ITS, 0);
+	trace_file_write(TRA_ID, 0ll);
+	trace_file_write(TRA_LEN, 0ll);
+	trace_file_write(TRA_ITS, 0ll);
 }
 
 // ear_states.c
 void traces_new_signature(int global_rank, int local_rank, double seconds,
 	double cpi, double tpi, double gbs, double power)
 {
-	if (!enabled) {
+	ullong lsec;
+	ullong lcpi;
+	ullong ltpi;
+	ullong lgbs;
+	ullong lpow;
+
+	if (!enabled || !working) {
 		return;
 	}
 
-	trace_file_write(TRA_TIM, seconds*1000000);
-	trace_file_write(TRA_CPI, cpi);
-	trace_file_write(TRA_TPI, tpi);
-	trace_file_write(TRA_GBS, gbs);
-	trace_file_write(TRA_POW, power);
+    lsec = (ullong) (seconds * 1000000.0);
+    lcpi = (ullong) (cpi * 1000.0);
+    ltpi = (ullong) (tpi * 1000.0);
+    lgbs = (ullong) (gbs * 1000.0);
+    lpow = (ullong) (power);
+
+	trace_file_write(TRA_TIM, lsec);
+	trace_file_write(TRA_CPI, lcpi);
+	trace_file_write(TRA_TPI, ltpi);
+	trace_file_write(TRA_GBS, lgbs);
+	trace_file_write(TRA_POW, lpow);
 }
 
 // ear_states.c
 void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power)
 {
-	if (!enabled) {
+	ullong lpsec;
+    ullong lpcpi;
+    ullong lppow;
+
+	if (!enabled || !working) {
+		return;
 		return;
 	}
 
-	trace_file_write(TRA_PTI, seconds * 1000000);
-	trace_file_write(TRA_PCP, cpi);
-	trace_file_write(TRA_PPO, power);
+	lpsec = (ullong) (seconds * 1000000.0);
+    lpcpi = (ullong) (cpi * 1000.0);
+    lppow = (ullong) (power);
+
+	trace_file_write(TRA_PTI, lpsec);
+	trace_file_write(TRA_PCP, lpcpi);
+	trace_file_write(TRA_PPO, lppow);
 }
 
 // ear_api.c, ear_states.c
 void traces_frequency(int global_rank, int local_rank, unsigned long f)
 {
-	if (!enabled) {
+	if (!enabled || !working) {
 		return;
 	}
 
@@ -312,15 +368,4 @@ void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulon
 {
 }
 
-/*
-int main(int argc, char *argv[])
-{
-	traces_init(0, 0, 0, 0, 0);
-	traces_end_period(0, 0);
-	traces_PP(0, 0, 0, 0, 0);
-	traces_new_signature(0, 0, 0, 0, 0, 0, 0);
-	traces_end(0, 0, 0);
-
-	return 0;
-}
- */
+#endif
