@@ -160,7 +160,9 @@ static void metrics_global_start()
     eards_node_dc_energy(&aux_energy);
     aux_time = metrics_time();
     eards_read_rapl(aux_rapl);
-	eards_read_uncore(metrics_bandwith_aux[APP]);
+	eards_start_uncore();
+	eards_read_uncore(metrics_bandwith_init[APP]);
+	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
 
 }
 
@@ -175,6 +177,9 @@ static void metrics_global_stop()
 	#endif
 	get_basic_metrics(&metrics_cycles[APP], &metrics_instructions[APP]);
 	get_total_fops(metrics_flops[APP]);
+	eards_read_uncore(metrics_bandwith_end[APP]);
+	diff_uncores(metrics_bandwith[APP],metrics_bandwith_end[APP],metrics_bandwith_init[APP],bandwith_elements);
+	
 }
 
 /*           | Glob | Part || Start | Stop | Read | Get accum | Reset | Size
@@ -200,7 +205,12 @@ static void metrics_partial_start()
 	metrics_usecs[LOO]=aux_time;
 	
 	eards_begin_compute_turbo_freq();
+	#if 0
 	eards_start_uncore();
+	eards_read_uncore(metrics_bandwith_init[LOO]);
+	#endif
+	//There is always a partial_stop before a partial_start, we can guarantee a previous uncore_read
+	copy_uncores(metrics_bandwith_init[LOO],metrics_bandwith_end[LOO],bandwith_elements);
 	for (i = 0; i < rapl_elements; i++) {
 		last_rapl[i]=aux_rapl[i];
 	}
@@ -254,10 +264,12 @@ static int metrics_partial_stop(uint where)
  	* diff_uncores(values,values_end,values_begin,num_counters);
  	* copy_uncores(values_begin,values_end,num_counters);
  	*/
-	eards_read_uncore(metrics_bandwith[LOO]);
+	eards_read_uncore(metrics_bandwith_end[LOO]);
+	diff_uncores(metrics_bandwith[LOO],metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
+
 	eards_read_rapl(aux_rapl);
 
-	// Manual bandwith accumulation
+	// Manual bandwith accumulation: We are also computing it at the end. Should we maintain it? For very long apps maybe this approach is better
 	for (i = 0; i < bandwith_elements; i++) {
 			metrics_bandwith[APP][i] += metrics_bandwith[LOO][i];
 	}
@@ -290,7 +302,7 @@ static int metrics_partial_stop(uint where)
 
 static void metrics_reset()
 {
-	//eards_reset_uncore();
+	// eards_reset_uncore();
 	//eards_reset_rapl();
 
 	reset_basic_metrics();
