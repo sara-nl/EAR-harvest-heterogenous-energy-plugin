@@ -333,7 +333,7 @@ void init(cluster_conf_t *conf)
 	init_db_helper(&conf->database);
 }
 
-static leave(cluster_conf_t *conf)
+static void leave(cluster_conf_t *conf)
 {
 
 }

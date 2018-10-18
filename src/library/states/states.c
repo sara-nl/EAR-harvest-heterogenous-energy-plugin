@@ -383,7 +383,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			copy_signature(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
-			earl_verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
+			earl_verbose(1,"EAR(%s)at%u: LoopID=%ul, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
 			earl_verbose(1,"\tAppSig-POL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(Freq selected %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 
@@ -423,7 +423,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
 			traces_frequency(ear_my_rank, my_id, policy_freq);
 			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
-			earl_verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
+			earl_verbose(1,"EAR(%s)at%u: LoopID=%ul, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
 			earl_verbose(1,"\tAppSig-VAL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(New Freq %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 			/* END VERBOSE */
@@ -474,7 +474,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (tries_current_loop>=MAX_POLICY_TRIES){
 				log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
 				EAR_STATE = PROJECTION_ERROR;
-				policy_default_configuration();
+				policy_freq=policy_default_configuration();
+				traces_frequency(ear_my_rank, my_id, policy_freq);
 				return;
 			}
 			/** We are not going better **/

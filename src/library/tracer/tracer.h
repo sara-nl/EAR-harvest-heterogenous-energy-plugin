@@ -51,19 +51,6 @@
 #include <common/types/generic.h>
 
 #define MIN_FREQ_FOR_SAMPLING 500000
-#define PERIOD_ID			1
-#define PERIOD_LENGTH		2
-#define PERIOD_ITERATIONS	3
-#define PERIOD_TIME			4
-#define PERIOD_CPI			5
-#define PERIOD_TPI			6
-#define PERIOD_GBS			7
-#define PERIOD_POWER		8
-#define PERIOD_TIME_PROJ	9
-#define PERIOD_CPI_PROJ		10
-#define PERIOD_POWER_PROJ	11
-#define PERIOD_FREQ			12
-#define APP_ENERGY			13
 
 #ifdef EAR_GUI
 	/** Executed at application start */
@@ -85,6 +72,12 @@
 	void traces_new_period(int global_rank, int local_rank, ullong period_id);
 	void traces_end_period(int global_rank, int local_rank); /**@}*/ 
 
+	/** EARL internal state */
+	void traces_policy_state(int global_rank, int local_rank, int state);
+	void traces_dynais(int global_rank, int local_rank, int state);
+	void traces_earl_mode_dynais(int global_rank, int local_rank);
+	void traces_earl_mode_periodic(int global_rank, int local_rank);
+
 	/** Executed at each mpi_call */
 	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
 #else
@@ -97,6 +90,10 @@
 	#define traces_new_period(g,l,p)
 	#define traces_end_period(g,l)
 	#define traces_mpi_call(g,l,t,e,a1,a2,a3);
+	#define traces_policy_state(g,l,s);
+	#define traces_dynais(g,l,s);
+	#define traces_earl_mode_dynais(g,l);
+	#define traces_earl_mode_periodic(g,l);
 #endif
 
 #endif

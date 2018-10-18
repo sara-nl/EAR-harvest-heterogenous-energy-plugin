@@ -2,12 +2,13 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-bandwidth_OBJS = bandwidth/uncores_pci.o $(SRCDIR)/common/math_operations.o
+bandwidth_OBJS = bandwidth/uncores_pci.o bandwidth_notpriv.o $(SRCDIR)/common/math_operations.o
 
 OBJS = frequency.o \
        frequency_uncore.o \
        hardware_info.o \
        bandwidth.o \
+	   bandwidth_notpriv.o \
        bandwidth.a
 
 ######## RULES
@@ -24,6 +25,9 @@ hardware_info.o: hardware_info.c hardware_info.h
 	$(CC) $(CFLAGS) -c $<
 
 bandwidth.o: bandwidth.c bandwidth.h
+	$(CC) $(CFLAGS) -c $<
+
+bandwidth_notpriv.o: bandwidth_notpriv.c bandwidth_notpriv.h
 	$(CC) $(CFLAGS) -c $<
 
 bandwidth.a: bandwidth.o $(bandwidth_OBJS)
