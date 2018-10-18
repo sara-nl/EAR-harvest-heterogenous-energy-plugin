@@ -10,6 +10,7 @@ export LDFLAGS
 ######## FILES
 
 lib_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
+		   $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
            $(SRCDIR)/metrics/papi/generics.o \
            $(SRCDIR)/metrics/papi/cache.o \
            $(SRCDIR)/metrics/papi/flops.o \

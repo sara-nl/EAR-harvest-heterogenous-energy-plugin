@@ -27,40 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _MB_H_
-#define _MB_H_
+#ifndef _MB_NOT_PRIV_H_
+#define _MB_NOT_PRIV_H_
+/** Calculates diff=end-begin, with vectors of N elements */
+void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned long long  *begin,int N); 
 
-// All these functions returns the specific funcion errror.
-// pmons.init for init_uncores etc.
 
-/** Init the uncore counters for an specific cpu model number. */
-int init_uncores(int cpu_model);
-
-/** Get the number of performance monitor counters.
-*   init_uncore_reading() have to be called before to scan the buses. */
-int count_uncores();
-
-/** Checks the state of the system uncore functions.
-*   Returns EAR_SUCCESS, EAR_ERROR or EAR_WARNING. */
-int check_uncores();
-
-/** Freezes and resets all performance monitor (PMON) uncore counters. */
-int reset_uncores();
-
-/** Unfreezes all PMON uncore counters. */
-int start_uncores();
-
-/** Freezes all PMON uncore counters and gets it's values. The array
-*   has to be greater or equal than the number of PMON uncore counters
-*   returned by count_uncores() function. The returned values are the
-*   read and write bandwith values in index [i] and [i+1] respectively. */
-int stop_uncores(unsigned long long *values);
-
-/** Gets the PMON uncore counters values. */
-int read_uncores(unsigned long long *values);
-
-/** Closes file descriptors and frees memory. */
-int dispose_uncores();
+/** Copies DEST=SRC */
+void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N);
 
 
 #else

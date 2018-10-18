@@ -377,11 +377,12 @@ void policy_end_loop()
     app_policy.end_loop();
 }
 
-void policy_default_configuration()
+ulong policy_default_configuration()
 {
 	ear_frequency=app_policy.default_conf(user_selected_freq);
 	earl_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
 	eards_change_freq(ear_frequency);
+	return ear_frequency;
 }
 
 ulong policy_get_default_freq()

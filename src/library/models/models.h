@@ -60,7 +60,7 @@ uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 
 /** Executed when we have done several "tries" and the policy is not able to select the "good" freq for this app
 */
-void policy_default_configuration();
+ulong policy_default_configuration();
 
 /** This function sets the frequency "by hand" when  using global synchronizations */
 void force_global_frequency(ulong new_f);

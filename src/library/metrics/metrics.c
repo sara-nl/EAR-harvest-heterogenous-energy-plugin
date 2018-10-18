@@ -374,9 +374,11 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 
 	metrics->GBS = cas_counter * hw_cache_line_size / aux;
 	#ifdef TEST_MB
-	double GBS_acum;
-	GBS_acum=cas_counter_acum * hw_cache_line_size / aux;
-	ear_verbose(1,"GBS global %.3lf . GBS accumulated %.3lf",metrics->GBS,GBS_acum);
+	if (s==APP){
+		double GBS_acum;
+		GBS_acum=cas_counter_acum * hw_cache_line_size / aux;
+		ear_verbose(2,"GBS global %.3lf . GBS accumulated %.3lf\n",metrics->GBS,GBS_acum);
+	}
 	#endif
 	metrics->CPI = (double) metrics_cycles[s] / (double) metrics_instructions[s];
 	metrics->TPI = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];
