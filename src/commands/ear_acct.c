@@ -571,7 +571,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
                 append_application_text_file(csv_path, &apps[i], 0);
         else
         {
-            int fd = open(csv_path, O_WRONLY | O_CREAT);
+            int fd = open(csv_path, O_WRONLY | O_CREAT | S_IRWXU | S_IRWXG | S_IRWXO);
             print_short_apps(apps, num_apps, fd);
             close(fd);
         }
