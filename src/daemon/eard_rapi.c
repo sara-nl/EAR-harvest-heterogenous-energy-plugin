@@ -129,14 +129,28 @@ int send_status(request_t *command, status_t **status)
     *status = return_status;
 	return ack;
 }
+
+int set_socket_block(int sfd, char blocking)
+{
+    if (sfd < 0) return EAR_ERROR;
+
+    int flags = fcntl(sfd, F_GETFL, 0);
+    //if flags is -1 fcntl returned an error
+    if (flags == -1) return EAR_ERROR;
+    flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
+    if (fcntl(sfd, F_SETFL, flags) != 0) return EAR_ERROR;
+    return EAR_ERROR;
+}
+
 // based on getaddrinfo  man page
 int eards_remote_connect(char *nodename,uint port)
 {
-    int client_sock ;
+    int client_sock;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
 	char port_number[50]; 	// that size needs to be validated
-    int sfd, s, j;
+    int sfd, s, j, res;
+    fd_set set;
 
 	if (eards_remote_connected) return eards_sfd;
    	memset(&hints, 0, sizeof(struct addrinfo));
@@ -154,16 +168,58 @@ int eards_remote_connect(char *nodename,uint port)
 		return EAR_ERROR;
     }
 
+    struct timeval timeout;
+    memset(&timeout, 0, sizeof(struct timeval));
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1000;
+    int optlen, valopt;
+
    	for (rp = result; rp != NULL; rp = rp->ai_next) {
         sfd = socket(rp->ai_family, rp->ai_socktype,
                      rp->ai_protocol);
         if (sfd == -1) // if we can not create the socket we continue
             continue;
 
-       if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-            break;                  /* Success */
+        set_socket_block(sfd, 0);
+        
+//        if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+//            break;                  /* Success */
 
-       close(sfd);
+        int res = connect(sfd, rp->ai_addr, rp->ai_addrlen);
+        if (res < 0 && errno != EINPROGRESS)
+        {
+            close(sfd);
+            continue;
+        }
+        if (res == 0) //sucessful connection
+        {
+            set_socket_block(sfd, 1);
+            break;
+        }
+        else
+        {
+            FD_ZERO(&set);
+            FD_SET(sfd, &set);
+            if (select(sfd+1, NULL, &set, NULL, &timeout) > 0) 
+            {
+                optlen = sizeof(int);
+                getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
+                if (valopt)
+                {
+                    fprintf(stderr, "Error opening connection.");
+                    close(sfd);
+                    continue;
+                }
+            }
+            else
+            {
+                fprintf(stderr, "Timeout connecting to %s node", nodename);
+                close(sfd);
+                continue;
+            }
+            set_socket_block(sfd, 1);
+            break;
+        }
     }
 
    	if (rp == NULL) {               /* No address succeeded */
