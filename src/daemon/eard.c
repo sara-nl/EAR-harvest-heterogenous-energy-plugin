@@ -94,14 +94,16 @@ ulong *frequencies;
 coefficient_t *my_coefficients;
 coefficient_t *my_coefficients_default;
 coefficient_t *coeffs_conf;
-coefficient_t *coeffs_conf_default;
+coefficient_t *coeffs_default_conf;
 char my_ear_conf_path[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
 char coeffs_path[GENERIC_NAME];
+char coeffs_default_path[GENERIC_NAME];
 char services_conf_path[GENERIC_NAME];
 char frequencies_path[GENERIC_NAME];
 int coeffs_size;
+int coeffs_default_size;
 uint signal_sighup=0;
 uint f_monitoring;
 
@@ -433,6 +435,7 @@ void eard_exit(uint restart)
 	settings_conf_shared_area_dispose(dyn_conf_path);
 	resched_shared_area_dispose(resched_path);
 	coeffs_shared_area_dispose(coeffs_path);
+	coeffs_default_shared_area_dispose(coeffs_default_path);
 	services_conf_shared_area_dispose(services_conf_path);
 	/* end releasing shared memory */
 	if (restart){ 
@@ -1043,6 +1046,57 @@ int coeffs_per_island_default_exist(char *filename)
 	return file_size;
 }
 
+int read_coefficients_default()
+{
+    char my_coefficients_file[GENERIC_NAME];
+    int state,i;
+    int file_size=0;
+    file_size=coeffs_per_node_default_exist(my_coefficients_file);
+    if (file_size == EAR_FILE_NOT_FOUND){
+    	file_size=coeffs_per_island_default_exist(my_coefficients_file);
+    	if (file_size==EAR_FILE_NOT_FOUND){
+    		eard_verbose(0,"Warning, coefficients not found");
+    		my_coefficients_default=(coefficient_t *)calloc(1,sizeof(coefficient_t));
+    		coeff_reset(my_coefficients_default);
+    		return sizeof(coefficient_t);
+    	}
+    }
+    int entries=file_size/sizeof(coefficient_t);
+    eard_verbose(0,"%d default coefficients found",entries);
+    my_coefficients_default=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
+    state=coeff_file_read_no_alloc(my_coefficients_file, my_coefficients_default,file_size);
+    return file_size;
+}
+
+/* Read coefficients for current node */
+int read_coefficients()
+{
+	char my_coefficients_file[GENERIC_NAME];
+	int state,i;
+	int file_size=0;
+	file_size=coeffs_per_node_exist(my_coefficients_file);
+	if (file_size == EAR_FILE_NOT_FOUND){
+		file_size=coeffs_per_node_default_exist(my_coefficients_file);
+		if (file_size == EAR_FILE_NOT_FOUND){
+			file_size=coeffs_per_island_default_exist(my_coefficients_file);
+            if (file_size==EAR_FILE_NOT_FOUND){
+                eard_verbose(0,"Warning, coefficients not found");
+    			my_coefficients=(coefficient_t *)calloc(1,sizeof(coefficient_t));
+				coeff_reset(my_coefficients);
+                return sizeof(coefficient_t);
+            }
+		}
+	}
+    int entries=file_size/sizeof(coefficient_t);
+    eard_verbose(0,"%d coefficients found",entries);
+    my_coefficients=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
+    state=coeff_file_read_no_alloc(my_coefficients_file, my_coefficients,file_size);
+	return file_size;
+}
+
+	
+
+#if 0
 /* Read coefficients for current node */
 int read_coefficients()
 {
@@ -1093,6 +1147,7 @@ int read_coefficients()
 	
 	return file_size;
 }
+#endif
 
 
 
@@ -1176,7 +1231,7 @@ void main(int argc,char *argv[])
 	eard_verbose(1,"Using %s as settings path (shared memory region)",dyn_conf_path);
     dyn_conf=create_settings_conf_shared_area(dyn_conf_path);
     if (dyn_conf==NULL){
-        eard_verbose(0,"Error creating shared memory\n");
+        eard_verbose(0,"Error creating shared memory between EARD & EARL\n");
         _exit(0);
     }
 	/* This area indicates EARL must resched */
@@ -1184,7 +1239,7 @@ void main(int argc,char *argv[])
 	eard_verbose(1,"Using %s as resched path (shared memory region)",resched_path);
     resched_conf=create_resched_shared_area(resched_path);
     if (resched_conf==NULL){
-        eard_verbose(0,"Error creating shared memory\n");
+        eard_verbose(0,"Error creating shared memory between EARD & EARL\n");
         _exit(0);
     }
 	/* Coefficients */
@@ -1194,9 +1249,20 @@ void main(int argc,char *argv[])
 	eard_verbose(1,"Using %s as coeff path (shared memory region)",coeffs_path);
     coeffs_conf=create_coeffs_shared_area(coeffs_path,my_coefficients,coeffs_size);
     if (coeffs_conf==NULL){
-        eard_verbose(0,"Error creating shared memory\n");
+        eard_verbose(0,"Error creating shared memory for coefficients\n");
         _exit(0);
     }
+	/* Default coefficients */
+    coeffs_default_size=read_coefficients_default();
+    eard_verbose(0,"Coefficients by default loaded");
+    get_coeffs_default_path(my_cluster_conf.tmp_dir,coeffs_default_path);
+    eard_verbose(1,"Using %s as coeff by default path (shared memory region)",coeffs_default_path);
+    coeffs_default_conf=create_coeffs_default_shared_area(coeffs_default_path,my_coefficients_default,coeffs_default_size);
+    if (coeffs_default_conf==NULL){
+        eard_verbose(0,"Error creating shared memory for coefficients by default\n");
+        _exit(0);
+    }
+
 	/* This area incldues services details */
 	get_services_conf_path(my_cluster_conf.tmp_dir,services_conf_path);
 	eard_verbose(1,"Using %s as services_conf path (shared memory region)",services_conf_path);

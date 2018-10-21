@@ -48,7 +48,7 @@
 
 static int fd;
 static const char *__NAME__ = "EARD_shared";
-static int fd_cluster,fd_settings,fd_resched,fd_coeffs,fd_services,fd_freq;
+static int fd_cluster,fd_settings,fd_resched,fd_coeffs,fd_coeffs_default,fd_services,fd_freq;
 extern char *__HOST__;
 
 
@@ -71,6 +71,12 @@ int get_coeffs_path(char *tmp,char *path)
 {
 	sprintf(path,"%s/.ear_coeffs",tmp);
 }
+
+int get_coeffs_default_path(char *tmp,char *path)
+{
+    sprintf(path,"%s/.ear_coeffs_default",tmp);
+}
+
 
 /** BASIC FUNCTIONS */
 
@@ -232,17 +238,41 @@ coefficient_t * create_coeffs_shared_area(char * path,coefficient_t *coeffs,int 
 
 }
 
+coefficient_t * create_coeffs_default_shared_area(char * path,coefficient_t *coeffs,int size)
+{
+
+    return (coefficient_t *)create_shared_area(path,(char *)coeffs,size,&fd_coeffs,0);
+
+}
+
+
 coefficient_t * attach_coeffs_shared_area(char * path,int *size)
 {
     return (coefficient_t *)attach_shared_area(path,0,O_RDONLY,&fd_coeffs,size);
 }
+coefficient_t * attach_coeffs_default_shared_area(char * path,int *size)
+{
+    return (coefficient_t *)attach_shared_area(path,0,O_RDONLY,&fd_coeffs,size);
+}
+
 
 void coeffs_shared_area_dispose(char * path)
 {
     dispose_shared_area(path,fd_coeffs);
 }
 
+void coeffs_default_shared_area_dispose(char * path)
+{
+    dispose_shared_area(path,fd_coeffs);
+}
+
+
 void dettach_coeffs_shared_area()
+{
+    dettach_shared_area(fd_coeffs);
+}
+
+void dettach_coeffs_default_shared_area()
 {
     dettach_shared_area(fd_coeffs);
 }
