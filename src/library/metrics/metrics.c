@@ -166,6 +166,7 @@ static void metrics_global_start()
 	eards_start_uncore();
 	eards_read_uncore(metrics_bandwith_init[APP]);
 	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
+	eards_start_uncore();
 
 }
 
@@ -181,6 +182,7 @@ static void metrics_global_stop()
 	get_basic_metrics(&metrics_cycles[APP], &metrics_instructions[APP]);
 	get_total_fops(metrics_flops[APP]);
 	eards_read_uncore(metrics_bandwith_end[APP]);
+	eards_start_uncore();
 	diff_uncores(metrics_bandwith[APP],metrics_bandwith_end[APP],metrics_bandwith_init[APP],bandwith_elements);
 	
 }
@@ -268,6 +270,7 @@ static int metrics_partial_stop(uint where)
  	* copy_uncores(values_begin,values_end,num_counters);
  	*/
 	eards_read_uncore(metrics_bandwith_end[LOO]);
+	eards_start_uncore();
 	diff_uncores(metrics_bandwith[LOO],metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
 
 	eards_read_rapl(aux_rapl);
@@ -313,6 +316,15 @@ static void metrics_reset()
 	#if 0
 	reset_cache_metrics();
 	#endif
+}
+
+ull metrics_vec_inst(signature_t *metrics)
+{
+	int i;
+	ull VI=0;
+    if (metrics->FLOPS[3]>0) VI = metrics->FLOPS[3] / metrics_flops_weights[3];
+    if (metrics->FLOPS[7]>0) VI = VI + (metrics->FLOPS[7] / metrics_flops_weights[7]);
+	return VI;
 }
 
 static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)

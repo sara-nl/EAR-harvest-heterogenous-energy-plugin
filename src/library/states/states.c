@@ -228,8 +228,9 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
 
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
-	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
+	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI;
 	unsigned long prev_f;
+	ull VI;
 	int result;
 	ulong global_f=0;
 	int pok;
@@ -269,6 +270,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (comp_N_time>perf_accuracy_min_time*0.1){
 				comp_N_begin=comp_N_end;
 				EAR_STATE=FIRST_ITERATION;
+				traces_start();
 			}
 			break;
 		case FIRST_ITERATION:
@@ -355,6 +357,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			TIME = loop_signature.signature.time;
 			ENERGY = TIME * POWER;
 			EDP = ENERGY * TIME;
+			VI=metrics_vec_inst(&loop_signature.signature);
+			VPI=(double)VI/(double)loop_signature.signature.instructions;
 			begin_iter = iterations;
 
 			/* This function executes the energy policy */
@@ -387,7 +391,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			earl_verbose(1,"\tAppSig-POL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(Freq selected %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 
-			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
+			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
 			traces_frequency(ear_my_rank, my_id, policy_freq);
 			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
 			report_loop_signature(iterations,&loop,&loop_signature.job);
@@ -413,6 +417,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			TPI = loop_signature.signature.TPI;
 			TIME = loop_signature.signature.time;
 			loop_signature.signature.def_f=prev_f;
+			VI=metrics_vec_inst(&loop_signature.signature);
+			VPI=(double)VI/(double)loop_signature.signature.instructions;
 
 			ENERGY = TIME * POWER;
 			EDP = ENERGY * TIME;
@@ -420,7 +426,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			copy_signature(&loop.signature, &loop_signature.signature);
 			report_loop_signature(iterations,&loop,&loop_signature.job);
 			/* VERBOSE */
-			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
+			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
 			traces_frequency(ear_my_rank, my_id, policy_freq);
 			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
 			earl_verbose(1,"EAR(%s)at%u: LoopID=%ul, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);

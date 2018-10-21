@@ -171,7 +171,7 @@ int eards_remote_connect(char *nodename,uint port)
     struct timeval timeout;
     memset(&timeout, 0, sizeof(struct timeval));
     timeout.tv_sec = 0;
-    timeout.tv_usec = 1000;
+    timeout.tv_usec = 5000;
     int optlen, valopt;
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {

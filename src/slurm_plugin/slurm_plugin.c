@@ -239,6 +239,8 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "LD_LIBRARY_PATH");
     printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
     printenv_remote(sp, "SLURM_NNODES");
+    printenv_remote(sp, "SLURM_STEP_NUM_NODES");
+    printenv_remote(sp, "SLURM_JOB_NUM_NODES");
     printenv_remote(sp, "SLURM_JOB_ID");
     printenv_remote(sp, "SLURM_STEP_ID");
     printenv_remote(sp, "SLURM_JOB_USER");
