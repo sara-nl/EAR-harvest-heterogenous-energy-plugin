@@ -712,12 +712,24 @@ int eard_uncore(int must_read)
 			unsigned long demon_cas=0;
 			int i;
 			ear_debug(1,"EAR_daemon_server: read uncore\n");
-			stop_uncores(values);
+			read_uncores(values);
 			write(ear_fd_ack[uncore_req], values, sizeof(unsigned long long) * num_uncore_counters);
 			for (i=0; i < num_uncore_counters; i++) demon_cas += values[i];
 			ear_debug(3,"DAEMON cas %lu %d values\n", demon_cas, num_uncore_counters);
-		}
 			break;
+		}
+        case STOP_UNCORE:
+        {
+            unsigned long demon_cas=0;
+            int i;
+            ear_debug(1,"EAR_daemon_server: stop uncore\n");
+            stop_uncores(values);
+            write(ear_fd_ack[uncore_req], values, sizeof(unsigned long long) * num_uncore_counters);
+            for (i=0; i < num_uncore_counters; i++) demon_cas += values[i];
+            ear_debug(3,"DAEMON cas %lu %d values\n", demon_cas, num_uncore_counters);
+            break;
+        }
+
 		case DATA_SIZE_UNCORE:
 			ack=sizeof(unsigned long long) * num_uncore_counters;
 			write(ear_fd_ack[uncore_req],&ack,sizeof(unsigned long));

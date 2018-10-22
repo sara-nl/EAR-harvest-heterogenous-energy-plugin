@@ -614,6 +614,37 @@ int eards_start_uncore()
 	DEBUG_F(0, "start uncore service not provided ");
 	return EAR_ERROR;
 }
+int eards_stop_uncore(unsigned long long *values)
+{
+    struct daemon_req req;
+    unsigned long long cas_client=0;
+    ulong ack;
+    int i;
+
+    if (!app_connected){ values[0]=0;return EAR_SUCCESS;}
+
+    req.req_service=STOP_UNCORE;
+    req.sec=create_sec_tag();
+    DEBUG_F(2, "stopping uncore counters");
+
+    if (ear_fd_req[uncore_req]>=0)
+    {
+        /* There is not request for uncore...only answer */
+        if (warning(write(ear_fd_req[uncore_req], &req, sizeof(req)) , sizeof(req),
+            "ERROR writing request for reading uncores ")) return EAR_ERROR;
+        if (warning(read(ear_fd_ack[uncore_req],values,uncore_size) , uncore_size, 
+             "ERROR reading ack for reading uncores ")){ 
+            return EAR_ERROR;
+        } else {
+            ack = EAR_SUCCESS;
+        }
+
+    }else{
+        ack=EAR_ERROR;
+        DEBUG_F(0, "read uncore service not provided");
+    }
+    return ack;
+}
 
 int eards_read_uncore(unsigned long long *values)
 {
@@ -630,7 +661,7 @@ int eards_read_uncore(unsigned long long *values)
 
 	if (ear_fd_req[uncore_req]>=0)
 	{
-		// There is not request for uncore...only answer
+		/* There is not request for uncore...only answer */
 		if (warning(write(ear_fd_req[uncore_req], &req, sizeof(req)) , sizeof(req),
 			"ERROR writing request for reading uncores ")) return EAR_ERROR;
 		if (warning(read(ear_fd_ack[uncore_req],values,uncore_size) , uncore_size, 

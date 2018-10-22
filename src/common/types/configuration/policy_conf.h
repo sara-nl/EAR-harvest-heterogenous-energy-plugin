@@ -30,13 +30,13 @@
 
 #ifndef _POLICY_CONF_H
 #define _POLICY_CONF_H
-
-#include <common/types/configuration/cluster_conf.h>
 #define TOTAL_POLICIES          3
 
 #define MIN_ENERGY_TO_SOLUTION  0
 #define MIN_TIME_TO_SOLUTION    1
 #define MONITORING_ONLY         2
+
+#include <common/types/configuration/cluster_conf.h>
 
 
 #endif

@@ -41,6 +41,7 @@
 #define REMOTE_CONF_H
 
 #include <common/types/application.h>
+#include <common/types/configuration/policy_conf.h>
 
 typedef struct end_job_req{
 	job_id jid;
@@ -68,10 +69,16 @@ typedef struct request{
     req_data_t  my_req;
 }request_t;
 
+typedef struct eard_policy_info{
+	uint pstate; /* default pstate */
+	uint th; 	 /* th x 100 */
+}eard_policy_info_t;
+
 typedef struct status{
     int     ip;
     char    ok;
-    uint    extra_info;
+    eard_policy_info_t    policy_conf[TOTAL_POLICIES];
+	uint 	power;	
 } status_t;
 
 #define EAR_RC_NEW_JOB     0
