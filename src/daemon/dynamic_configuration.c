@@ -139,6 +139,7 @@ ulong max_dyn_freq()
 int dynconf_inc_th(ulong th)
 {
 	double dth;
+	eard_verbose(1,"Increasing th by  %u",th);
 	dth=(double)th/100.0;
 	if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
     	dyn_conf->th=dyn_conf->th+dth;
@@ -152,6 +153,7 @@ int dynconf_inc_th(ulong th)
 
 int dynconf_max_freq(ulong max_freq)
 {
+	eard_verbose(1,"Setting max freq to %u",max_freq);
 	if (is_valid_freq(max_freq, num_f,f_list)){
 		dyn_conf->max_freq=max_freq;
 		resched_conf->force_rescheduling=1;
@@ -169,21 +171,26 @@ int dynconf_max_freq(ulong max_freq)
 	}
 }
 
-int dynconf_def_freq(ulong def)
+int dynconf_def_freq(uint p_id,ulong def)
 {
+	eard_verbose(1,"Setting default freq to %u",def);
     if (is_valid_freq(def,num_f,f_list)){
-        dyn_conf->def_freq=def;
-		dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
-        resched_conf->force_rescheduling=1;
-        powermon_new_def_freq(def);
+		if (dyn_conf->policy==p_id){
+        	dyn_conf->def_freq=def;
+			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
+        	resched_conf->force_rescheduling=1;
+		}
+        powermon_new_def_freq(p_id,def);
         return EAR_SUCCESS;
     }else{
         int freq=lower_valid_freq(def,num_f,f_list);
         if (freq>0){
-            dyn_conf->def_freq=freq;
-			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
-            resched_conf->force_rescheduling=1;
-            powermon_new_def_freq(freq);
+			if (dyn_conf->policy==p_id){
+            	dyn_conf->def_freq=freq;
+				dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
+            	resched_conf->force_rescheduling=1;
+			}
+            powermon_new_def_freq(p_id,freq);
             return EAR_SUCCESS;
         }else return EAR_ERROR;
     }
@@ -192,6 +199,7 @@ int dynconf_def_freq(ulong def)
 
 int dynconf_set_freq(ulong freq)
 {
+	eard_verbose(1,"Setting freq to %u",freq);
 	if (is_valid_freq(freq,num_f,f_list)){
 		dyn_conf->max_freq=freq;
 		dyn_conf->def_freq=freq;
@@ -231,10 +239,10 @@ int dyncon_restore_conf()
 	return EAR_SUCCESS;
 }
 
-int dynconf_red_pstates(uint p_states)
+int dynconf_red_pstates(uint p_id,uint p_states)
 {
 	// Reduces p_states both the maximum and the default
-	ulong max,def;
+	ulong max,def,i;
 	max=dyn_conf->max_freq-(p_states*100000);
 	def=dyn_conf->def_freq-(p_states*100000);
 
@@ -256,7 +264,7 @@ int dynconf_red_pstates(uint p_states)
 		dyn_conf->def_freq=def;
 		dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
 		resched_conf->force_rescheduling=1;
-		powermon_new_def_freq(def);
+		for (i=0;i<TOTAL_POLICIES;i++) powermon_new_def_freq(i,def);
     	return EAR_SUCCESS;
 	}else{ 
 		int freq=lower_valid_freq(def,num_f,f_list);
@@ -264,7 +272,7 @@ int dynconf_red_pstates(uint p_states)
 			dyn_conf->def_freq=freq;
 			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
 			resched_conf->force_rescheduling=1;
-			powermon_new_def_freq(freq);
+			for (i=0;i<TOTAL_POLICIES;i++) powermon_new_def_freq(i,freq);
     		return EAR_SUCCESS;
 		}else return EAR_ERROR;
 	}
@@ -341,7 +349,7 @@ void process_remote_requests(int clientfd)
 			break;
 		case EAR_RC_RED_PSTATE:
 			eard_verbose(1,"red_max_and_def_p_state command received\n");
-			ack=dynconf_red_pstates(command.my_req.ear_conf.p_states);
+			ack=dynconf_red_pstates(command.my_req.ear_conf.p_id,command.my_req.ear_conf.p_states);
 			break;
 		case EAR_RC_SET_FREQ:
 			eard_verbose(1,"set freq command received\n");
@@ -349,7 +357,7 @@ void process_remote_requests(int clientfd)
 			break;
 		case EAR_RC_DEF_FREQ:
 			eard_verbose(1,"set def freq command received\n");
-			ack=dynconf_def_freq(command.my_req.ear_conf.max_freq);
+			ack=dynconf_def_freq(command.my_req.ear_conf.p_id,command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_REST_CONF:
 			eard_verbose(1,"restore conf command received\n");
