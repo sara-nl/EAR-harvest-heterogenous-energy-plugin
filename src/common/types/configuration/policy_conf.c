@@ -53,6 +53,25 @@ policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id)
     return my_policy;
 }
 
+void get_short_policy(char *buf, char *policy)
+{
+    int pol = policy_name_to_id(policy);
+    switch(pol)
+    {
+        case MIN_ENERGY_TO_SOLUTION:
+            strcpy(buf, "ME");
+            break;
+        case MIN_TIME_TO_SOLUTION:
+            strcpy(buf, "MT");
+            break;
+        case MONITORING_ONLY:
+            strcpy(buf, "MO");
+            break;
+        default:
+            strcpy(buf, "NP");
+            break;
+    }
+}
 
 /** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
 int policy_name_to_id(char *my_policy)
