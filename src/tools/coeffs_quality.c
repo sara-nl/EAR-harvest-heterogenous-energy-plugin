@@ -62,6 +62,7 @@ typedef struct control
 	uint learning;
 	uint summary;
 	uint general;
+	uint defaul;
 	uint hide;
 } control_t;
 	
@@ -337,7 +338,7 @@ void read_applications(control_t *cntr)
 	//
 	n_appsn = db_read_applications(&appsn, 1, 1000, cntr->name_node);
 
-	if (n_appsn == 0)
+	if (n_appsn <= 0)
 	{
 		if (cntr->general)
 		{
@@ -389,18 +390,18 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 		conf->earlib.coefficients_pathname, island, node);
 
 	//
-	cntr->n_coeffs = coeff_file_read(cntr->path_coeffs, &cntr->coeffs);
+	if (!cntr->defaul) {
+		cntr->n_coeffs = coeff_file_read(cntr->path_coeffs, &cntr->coeffs);
+	}
 
 	if (cntr->n_coeffs <= 0)
 	{
-		fprintf(stderr, "no coefficient file found for the node '%s', using defaults\n", cntr->name_node);	
-		
 		//
 		sprintf(buffer, "%s/island%d/coeffs.default",
  			conf->earlib.coefficients_pathname, island);
 
 		//
-		cntr->n_coeffs = coeff_file_read(buffer, &cntr->coeffs);	
+		cntr->n_coeffs = coeff_file_read(buffer, &cntr->coeffs);
 		
 		if (cntr->n_coeffs <= 0)
 		{
@@ -425,6 +426,7 @@ void usage(int argc, char *argv[], control_t *cntr)
 		fprintf(stdout, "\t-S, --summary\tShows the medium and general errors.\n");
 		fprintf(stdout, "\t-G, --general\tShows only the general medium error.\n");
 		fprintf(stdout, "\t-H, --hide\tHides the merged applications projections and errors.\n");
+		fprintf(stdout, "\t-D, --default\tUses the default coefficients.\n");
 		exit(1);
 	}
 
@@ -447,6 +449,9 @@ void usage(int argc, char *argv[], control_t *cntr)
 		if (!cntr->hide)
 			cntr->hide = ((strcmp(argv[i], "-H") == 0) ||
 						  (strcmp(argv[i], "--hide") == 0));
+		if (!cntr->defaul)
+			cntr->defaul = ((strcmp(argv[i], "-D") == 0) ||
+						  (strcmp(argv[i], "--default") == 0));
 	}
 
 	if (cntr->general) {
