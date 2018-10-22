@@ -46,6 +46,7 @@
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
+#include <daemon/eard_conf_rapi.h>
 #include <common/config.h>
 #include <common/sockets.h>
 #include <common/ear_verbose.h>
@@ -94,6 +95,7 @@ static int sig_reported=0;
 
 powermon_app_t current_ear_app;
 periodic_metric_t current_sample;
+double last_power_reported=0;
 
 static void PM_my_sigusr1(int signun)
 {
@@ -635,6 +637,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	current_sample.start_time=my_current_power->begin;
 	current_sample.end_time=my_current_power->end;
 	current_sample.DC_energy=my_current_power->avg_dc*(ulong)difftime(my_current_power->end,my_current_power->begin);
+	last_power_reported=my_current_power->avg_dc;
 	
 	#if DEMO
 	current_sample.avg_f=avg_f;
@@ -780,4 +783,14 @@ void *eard_power_monitoring(void *noinfo)
 
 	pthread_exit(0);
 	//exit(0);
+}
+
+void powermon_get_status(status_t *my_status)
+{
+	int i;
+	my_status->power=(uint)last_power_reported;
+	for (i=0;i<TOTAL_POLICIES;i++){
+		my_status->policy_conf[i].pstate=(uint)my_node_conf->policies[i].p_state;
+		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].th*100.0);
+	}
 }

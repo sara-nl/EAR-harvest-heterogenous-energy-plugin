@@ -64,7 +64,7 @@
 
 	/**@{ Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states */
 	void traces_frequency(int global_rank, int local_rank, unsigned long f);
-	void traces_new_signature(int global_rank, int local_rank, double seconds, double cpi, double tpi, double gbs, double power);
+	void traces_new_signature(int global_rank, int local_rank, double seconds, double cpi, double tpi, double gbs, double power,double vpi);
 	void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power); /**@}*/ 
 
 	/**@{ Executed when each time a new loop is detected, the loop ends, or a new iteration are reported */
@@ -84,7 +84,7 @@
 	#define traces_init(g,l,n,m,p)
 	#define traces_new_n_iter(g,l,p,lo,i)
 	#define traces_end(g,l,e)
-	#define traces_new_signature(g,l,s,c,t,gb,p)
+	#define traces_new_signature(g,l,s,c,t,gb,p,vpi)
 	#define traces_frequency(g,l,f)
 	#define traces_PP(g,l,s,c,p)
 	#define traces_new_period(g,l,p)
@@ -94,6 +94,8 @@
 	#define traces_dynais(g,l,s);
 	#define traces_earl_mode_dynais(g,l);
 	#define traces_earl_mode_periodic(g,l);
+	#define traces_start()
+	#define traces_stop()
 #endif
 
 #endif

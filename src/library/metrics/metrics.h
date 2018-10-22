@@ -49,4 +49,7 @@ void metrics_compute_signature_begin();
 
 /** */
 int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulong min_time_us, ulong procs);
+
+/** Copute the number of vector instructions since signature reports FP ops, metrics is valid signature*/
+unsigned long long metrics_vec_inst(signature_t *metrics);
 #endif //EAR_EAR_METRICS_H

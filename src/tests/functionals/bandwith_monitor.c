@@ -37,6 +37,7 @@
 #include <sys/types.h>
 
 #include <metrics/custom/bandwidth.h>
+#include <metrics/custom/bandwidth_notpriv.h>
 #include <metrics/custom/hardware_info.h>
 #include <common/types/generic.h>
 

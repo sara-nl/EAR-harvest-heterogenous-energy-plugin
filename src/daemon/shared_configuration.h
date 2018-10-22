@@ -131,6 +131,17 @@ void coeffs_shared_area_dispose(char * path);
 
 void dettach_coeffs_shared_area();
 
+int get_coeffs_default_path(char *tmp,char *path);
+
+coefficient_t * create_coeffs_default_shared_area(char * path,coefficient_t *coeffs,int size);
+
+coefficient_t * attach_coeffs_default_shared_area(char * path,int *size);
+
+void coeffs_default_shared_area_dispose(char * path);
+
+void dettach_coeffs_default_shared_area();
+
+
 /*** SERVICES ***/
 
 /** Sets in path the path for the services configuration in the shared memory */
