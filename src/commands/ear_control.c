@@ -44,11 +44,13 @@
 #include <daemon/eard_rapi.h>
 #include <common/ear_verbose.h>
 #include <common/types/application.h>
+#include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/cluster_conf.h>
                    
 #define NUM_LEVELS  4
 #define MAX_PSTATE 16
 #define IP_LENGTH 24
+
 
 typedef struct ip_table
 {
@@ -56,6 +58,8 @@ typedef struct ip_table
     char ip[IP_LENGTH];
     char name[IP_LENGTH];
     int counter;
+	uint power;
+	eard_policy_info_t policies[TOTAL_POLICIES];
 } ip_table_t;
 
 int EAR_VERBOSE_LEVEL = 1;
@@ -135,11 +139,18 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 
 void print_ips(ip_table_t *ips, int num_ips)
 {
-    int i;
-    printf("%10s\t%10s\t%12s\t%10s\n", "hostname", "ip", "ip_int", "status");
-
+    int i, j;
+    printf("%10s\t%10s\t%12s\t%10s\t%10s\n", "hostname", "ip", "ip_int", "status", "power");
+	char temp[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
-        printf("%10s\t%10s\t%12d\t%10d\n", ips[i].name, ips[i].ip, ips[i].ip_int, ips[i].counter); 
+	{
+        printf("%10s\t%10s\t%12d\t%10d\t%10d\n", ips[i].name, ips[i].ip, ips[i].ip_int, ips[i].counter, ips[i].power); 
+		for (j = 0; j < TOTAL_POLICIES; j++)
+		{
+			policy_id_to_name(j, temp);
+			printf("\t%25s\t%10u\t%10u\n", temp, ips[i].policies[j].pstate, ips[i].policies[j].th); 
+		}
+	}
 }
 
 void usage(char *app)
@@ -158,10 +169,19 @@ void usage(char *app)
 
 void check_ip(status_t status, ip_table_t *ips, int num_ips)
 {
-    int i;
+    int i, j;
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
+		{
             ips[i].counter |= status.ok;
+			ips[i].power = status.power;
+			//refactor
+			for (j = 0; j < TOTAL_POLICIES; j++)
+			{
+				ips[i].policies[j].pstate = status.policy_conf[j].pstate;
+				ips[i].policies[j].th = status.policy_conf[j].th;
+			}	
+		}
 }
 
 void clean_ips(ip_table_t *ips, int num_ips)
@@ -226,15 +246,15 @@ void main(int argc, char *argv[])
         int option_optidx = optidx ? optidx : 1;
         int option_idx = 0;
         static struct option long_options[] = {
-            {"set-freq",     required_argument, 0, 0},
-            {"red-def-freq", required_argument, 0, 1},
-            {"red-max-freq", required_argument, 0, 2},
-            {"inc-th",       required_argument, 0, 3},
-            {"set-def-freq", required_argument, 0, 4},
-            {"restore-conf", no_argument, 0, 5},
-	        {"ping", 	     optional_argument, 0, 6},
-            {"status",       no_argument, 0, 7},
-            {"help",         no_argument, 0, 8},
+            {"set-freq",     	required_argument, 0, 0},
+            {"red-def-pstate", 	required_argument, 0, 1},
+            {"set-max-freq", 	required_argument, 0, 2},
+            {"inc-th",       	required_argument, 0, 3},
+            {"set-def-freq", 	required_argument, 0, 4},
+            {"restore-conf", 	no_argument, 0, 5},
+	        {"ping", 	     	optional_argument, 0, 6},
+            {"status",       	no_argument, 0, 7},
+            {"help",         	no_argument, 0, 8},
             {0, 0, 0, 0}
         };
 
@@ -244,6 +264,7 @@ void main(int argc, char *argv[])
             break;
 
         ulong arg;
+		ulong arg2;
 
         switch(c)
         {
@@ -252,20 +273,11 @@ void main(int argc, char *argv[])
                 break;
             case 1:
                 arg = atoi(optarg);
-                if (arg > MAX_PSTATE)
-                {
-                    VERBOSE_N(0, "Indicated p_state to reduce def freq above the maximum (%d)", MAX_PSTATE);
-                    break;
-                }
                 red_def_freq_all_nodes(arg,my_cluster_conf);
                 break;
             case 2:
                 arg = atoi(optarg);
-                if (arg > MAX_PSTATE)
-                {
-                    VERBOSE_N(0, "Indicated p_state to reduce max freq above the maximum (%d)", MAX_PSTATE);
-                    break;
-                }
+				//this one uses p_state
                 red_max_freq_all_nodes(arg,my_cluster_conf);
                 break;
             case 3:
@@ -279,12 +291,20 @@ void main(int argc, char *argv[])
                 break;
             case 4:
                 arg = atoi(optarg);
-                if (arg > MAX_PSTATE)
-                {
-                    VERBOSE_N(0, "Indicated p_state to set is above the maximum (%d)", MAX_PSTATE);
-                    break;
-                }
-                set_def_freq_all_nodes(arg,my_cluster_conf);
+				if (optind+1 > argc)
+				{
+					VERBOSE_N(0, "Missing policy argument for set-def-freq");
+    				free_cluster_conf(&my_cluster_conf);
+					exit(0);
+				}
+				arg2 = atoi(argv[optind+1]);
+				if (!is_valid_policy(arg2))
+				{
+					VERBOSE_N(0, "Invalid policy index.");
+    				free_cluster_conf(&my_cluster_conf);
+					exit(0);
+				}
+                set_def_freq_all_nodes(arg, arg2, my_cluster_conf);
                 break;
             case 5:
                 restore_conf_all_nodes(my_cluster_conf);

@@ -106,7 +106,7 @@ void red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
 void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
 
 /** Sets the default frequency for all nodes in my_custer_conf. */
-void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
+void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_conf);
 
 /** Restores the default configuration for all nodes in my_cluster_conf. */
 void restore_conf_all_nodes(cluster_conf_t my_cluster_conf);

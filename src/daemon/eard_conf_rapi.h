@@ -53,6 +53,7 @@ typedef struct new_conf{
 	ulong min_freq;
 	ulong th;
 	uint p_states;
+	uint p_id;
 }new_conf_t;
 
 typedef union req_data{

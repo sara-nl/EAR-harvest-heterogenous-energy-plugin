@@ -38,5 +38,7 @@
 
 #include <common/types/configuration/cluster_conf.h>
 
+int is_valid_policy(unsigned int p_id);
+
 
 #endif

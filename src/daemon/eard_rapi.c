@@ -508,11 +508,13 @@ void restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
-void set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_DEF_FREQ;
-    command.my_req.ear_conf.max_freq=freq;
+    command.my_req.ear_conf.max_freq = freq;
+	command.my_req.ear_conf.p_id = policy;
+	VERBOSE_N(0, "sending set_def_freq with freq %u and policy %u", freq, policy);
     send_command_all(command, my_cluster_conf);
 }
 
@@ -676,6 +678,7 @@ int correct_status_starter(char *host_name, request_t *command, int port, status
 
 void correct_error_starter(char *host_name, request_t *command, int port)
 {
+	if (command->node_dist < 1) return;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;

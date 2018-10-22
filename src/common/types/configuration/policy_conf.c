@@ -91,3 +91,7 @@ void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src)
 {
 	memcpy((void *)dest,(void *)src,sizeof(policy_conf_t));
 }
+int is_valid_policy(unsigned int p_id)
+{
+	return (p_id<TOTAL_POLICIES);
+}

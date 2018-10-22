@@ -525,7 +525,7 @@ void powermon_set_th(double th)
 	}
 	save_eard_conf(&eard_dyn_conf);
 }
-
+/* Sets the maximum frequency in the node */
 void powermon_new_max_freq(ulong maxf)
 {
 	uint ps;
@@ -543,7 +543,7 @@ void powermon_new_max_freq(ulong maxf)
 	save_eard_conf(&eard_dyn_conf);
 }
 
-void powermon_new_def_freq(ulong def)
+void powermon_new_def_freq(uint p_id,ulong def)
 {
 	int nump;
 	uint ps;
@@ -555,9 +555,11 @@ void powermon_new_def_freq(ulong def)
             current_node_freq=def;
         }
     }
-	for (nump=0;nump<my_node_conf->num_policies;nump++){
-		eard_verbose(1,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[nump].policy,def);
-		my_node_conf->policies[nump].p_state=ps;
+	if (is_valid_policy(p_id)){
+		eard_verbose(1,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[p_id].policy,def);
+		my_node_conf->policies[p_id].p_state=ps;
+	}else{
+		eard_verbose(0,"Invalid policy %u",p_id);
 	}
 	save_eard_conf(&eard_dyn_conf);
 }
