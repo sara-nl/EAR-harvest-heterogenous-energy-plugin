@@ -39,4 +39,6 @@
 #define MONITORING_ONLY         2
 
 
+void get_short_policy(char *buf, char *policy);
+
 #endif

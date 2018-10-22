@@ -257,26 +257,6 @@ void print_full_apps(application_t *apps, int num_apps)
     }
 }
 
-void get_short_policy(char *buf, char *policy)
-{
-    int pol = policy_name_to_id(policy);
-    switch(pol)
-    {
-        case MIN_ENERGY_TO_SOLUTION:
-            strcpy(buf, "ME");
-            break;
-        case MIN_TIME_TO_SOLUTION:
-            strcpy(buf, "MT");
-            break;
-        case MONITORING_ONLY:
-            strcpy(buf, "MO");
-            break;
-        default:
-            strcpy(buf, "NP");
-            break;
-    }
-}
-
 void print_short_apps(application_t *apps, int num_apps, int fd)
 {
     int current_job_id = -1;
