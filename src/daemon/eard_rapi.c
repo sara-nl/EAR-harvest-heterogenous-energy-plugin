@@ -569,7 +569,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     if (rc < 0)
     {
         fprintf(stderr, "Error connecting to node: %s\n", nextip2);
-        num_status2 = correct_status(ntohl(ip1), command, port, &status2);
+        num_status2 = correct_status(ntohl(ip2), command, port, &status2);
     }
     else
     {
