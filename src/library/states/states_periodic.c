@@ -139,7 +139,8 @@ static void report_loop_signature(uint iterations,loop_t *loop)
 */
 void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
-	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP;
+	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP,VPI;
+	unsigned long long VI;
 	unsigned long prev_f;
 	int result;
 	uint N_iter;
@@ -183,6 +184,9 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					TPI = loop_signature.signature.TPI;
 					TIME = loop_signature.signature.time;
 
+		            VI=metrics_vec_inst(&loop_signature.signature);
+		            VPI=(double)VI/(double)loop_signature.signature.instructions;
+
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					policy_freq = policy_power(0, &loop_signature.signature);
@@ -192,7 +196,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					}
 
-					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
+					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER, VPI);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
 

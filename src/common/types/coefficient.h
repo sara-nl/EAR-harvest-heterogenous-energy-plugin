@@ -63,5 +63,6 @@ double coeff_project_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs
 
 double coeff_project_tim(double tim_sign, double cpi_proj, double cpi_sign,
 						 ulong f_src, ulong f_dst);
+void coeff_reset(coefficient_t *coeff);
 
 #endif

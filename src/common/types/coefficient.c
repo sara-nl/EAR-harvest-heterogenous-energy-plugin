@@ -76,6 +76,10 @@ void coeff_print(coefficient_t *coeff)
     fprintf(stderr,"ref %lu pstate %lu avail %u A %lf B %lf C %lf D %lf E %lf F %lf\n",
     coeff->pstate_ref,coeff->pstate,coeff->available,coeff->A,coeff->B,coeff->C,coeff->D,coeff->E,coeff->F);
 }
+void coeff_reset(coefficient_t *coeff)
+{
+	coeff->available=0;
+}
 
 int coeff_file_read(char *path, coefficient_t **coeffs)
 {

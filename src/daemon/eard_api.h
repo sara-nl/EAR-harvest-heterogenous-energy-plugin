@@ -70,6 +70,9 @@ unsigned long eards_end_app_compute_turbo_freq();
 /** Sends a request to read the uncores. Returns -1 if there's an error, on
 *   success stores the uncores values' into *values and returns 0. */
 int eards_read_uncore(unsigned long long *values);
+/** Sends a request to stop&read the uncores. Returns -1 if there's an error, on
+*   success stores the uncores values' into *values and returns 0. */
+int eards_stop_uncore(unsigned long long *values);
 /** Sends the request to start the uncores. Returns 0 on success, -1 on error */
 int eards_start_uncore();
 /** Sends a request to reset the uncores. Returns 0 on success, -1 on error */

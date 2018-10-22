@@ -27,7 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <string.h>
+#include <common/math_operations.h>
 
 /** Calculates diff=end-begin, with vectors of N elements */
 void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned long long  *begin,int N)

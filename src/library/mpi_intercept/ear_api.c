@@ -90,6 +90,7 @@ static int ppnode;
 static uint mpi_calls_per_loop;
 static uint ear_iterations=0;
 static uint ear_loop_size;
+static uint ear_loop_level;
 static int in_loop;
 
 #if EAR_OVERHEAD_CONTROL
@@ -194,7 +195,6 @@ void attach_to_master_set(int master)
 {
 	#if EAR_LIB_SYNC
 	int color;
-	int num_nodes;
 	my_master_rank=0;
 	if (master) color=0;
 	else color=MPI_UNDEFINED;
@@ -476,6 +476,7 @@ void ear_init()
 	#endif
 	traces_start();
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
+	traces_stop();
 
 
 	// All is OK :D
@@ -483,7 +484,11 @@ void ear_init()
 	init_end_time=PAPI_get_real_usec();
 	earl_verbose(1, "EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
 #else
+	#if EAR_LIB_SYNC
+	if (my_master_rank==0) earl_verbose(1, "EAR initialized successfully ");
+	#else
 	if (ear_my_rank==0) earl_verbose(1, "EAR initialized successfully ");
+	#endif
 #endif
 }
 
@@ -595,6 +600,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 								// we must compute N here
 								ear_periodic_mode=PERIODIC_MODE_ON;
 								mpi_calls_in_period=(uint)(total_mpi_calls/dynais_timeout)*lib_period;
+								traces_start();
 								earl_verbose(1,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
 									time_from_mpi_init,mpi_calls_in_period);
 								states_periodic_begin_period(my_id, NULL, 1, 1);
@@ -655,7 +661,6 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 	if (my_id) {
 		return;
 	}
-
 	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
 	if (!ear_whole_app)
 	{
@@ -710,6 +715,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				ear_iterations=0;
 				states_begin_period(my_id, NULL, ear_event, ear_size);
 				ear_loop_size=ear_size;
+				ear_loop_level=ear_level;
 				in_loop=1;
 				mpi_calls_per_loop=1;
 				break;
@@ -723,6 +729,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
 				ear_loop_size=ear_size;
+				ear_loop_level=ear_level;
 				states_begin_period(my_id, NULL, ear_event, ear_size);
 				break;
 			case NEW_ITERATION:
@@ -731,11 +738,11 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				if (loop_with_signature)
 				{
 					earl_verbose(4,"new iteration detected for level %u, event %u, size %u and iterations %u",
-							  ear_level, ear_event, ear_loop_size, ear_iterations);
+							  ear_loop_level, ear_event, ear_loop_size, ear_iterations);
 				}
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event, ear_loop_size, ear_iterations);
-				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event, mpi_calls_per_loop);
+				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_loop_level, ear_event, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
 			case END_LOOP:

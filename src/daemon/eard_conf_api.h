@@ -79,6 +79,7 @@ struct daemon_req {
 #define READ_UNCORE 			102
 #define DATA_SIZE_UNCORE 		103
 #define CONNECT_UNCORE 			104
+#define STOP_UNCORE 			105
 
 // Services related with rapl counters 
 #define START_RAPL 				200

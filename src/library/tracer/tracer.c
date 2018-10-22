@@ -57,6 +57,7 @@
 #define TRA_DYN		60014
 #define TRA_STA		60015
 #define TRA_MOD		60016
+#define TRA_VPI	    60017
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
@@ -141,6 +142,10 @@ static void config_file_create(char *pathname, char* hostname)
 	write(file_pcf, buffer1, strlen(buffer1));
 	sprintf(buffer1,"PERIODIC\t2\n");
 	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60017\tVPI\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+
+
 
 	close(file_pcf);
 }
@@ -315,6 +320,7 @@ void traces_new_period(int global_rank, int local_rank, ullong loop_id)
 // ear_api.c
 void traces_new_n_iter(int global_rank, int local_rank, ullong loop_id, int loop_size, int iterations)
 {
+	#if 0
 	if (!enabled || !working) {
 		return;
 	}
@@ -322,6 +328,7 @@ void traces_new_n_iter(int global_rank, int local_rank, ullong loop_id, int loop
 	trace_file_write(TRA_ID, (ullong) loop_id);
 	trace_file_write(TRA_LEN, (ullong) loop_size);
 	trace_file_write(TRA_ITS, (ullong) iterations);
+	#endif
 }
 
 // ear_api.c
@@ -338,13 +345,14 @@ void traces_end_period(int global_rank, int local_rank)
 
 // ear_states.c
 void traces_new_signature(int global_rank, int local_rank, double seconds,
-	double cpi, double tpi, double gbs, double power)
+	double cpi, double tpi, double gbs, double power, double vpi)
 {
 	ullong lsec;
 	ullong lcpi;
 	ullong ltpi;
 	ullong lgbs;
 	ullong lpow;
+    ullong lvpi;
 
 	if (!enabled || !working) {
 		return;
@@ -355,12 +363,14 @@ void traces_new_signature(int global_rank, int local_rank, double seconds,
     ltpi = (ullong) (tpi * 1000.0);
     lgbs = (ullong) (gbs * 1000.0);
     lpow = (ullong) (power);
+    lvpi = (ullong) (vpi * 1000.0);
 
 	trace_file_write(TRA_TIM, lsec);
 	trace_file_write(TRA_CPI, lcpi);
 	trace_file_write(TRA_TPI, ltpi);
 	trace_file_write(TRA_GBS, lgbs);
 	trace_file_write(TRA_POW, lpow);
+	trace_file_write(TRA_VPI, lvpi);
 }
 
 // ear_states.c

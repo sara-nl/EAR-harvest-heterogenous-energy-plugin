@@ -319,7 +319,12 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 		for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
 			ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);	
 			i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
-			init_coeff_data(&coefficients[ref][i],&coefficients_sm[ccoeff]);
+			if (frequency_is_valid_pstate(ref) || frequency_is_valid_pstate(i)){ 
+				init_coeff_data(&coefficients[ref][i],&coefficients_sm[ccoeff]);
+			}else{ 
+				earl_verbose(0,"Error: invalid coefficients for ref %ul or proj %ul\n",coefficients_sm[ccoeff].pstate_ref,
+				coefficients_sm[ccoeff].pstate);
+			}
 		}
 	}
 	app_policy.init(p_states);
