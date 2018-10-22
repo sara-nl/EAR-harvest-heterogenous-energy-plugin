@@ -51,7 +51,7 @@
 #include <common/math_operations.h>
 #include <daemon/eard_api.h>
 
-static const char *__NAME__ = "ear/states";
+static const char *__NAME__ = "EARL/states";
 extern char *__HOST__ ;
 
 // static defines

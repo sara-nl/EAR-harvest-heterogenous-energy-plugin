@@ -238,6 +238,8 @@ int dyncon_restore_conf()
 	dyn_conf->def_p_state=my_policy->p_state;
 	dyn_conf->th=my_policy->th;
 	
+	resched_conf->force_rescheduling=1;
+	
 	return EAR_SUCCESS;
 }
 
@@ -353,6 +355,7 @@ void process_remote_requests(int clientfd)
 			break;
 		case EAR_RC_RED_PSTATE:
 			eard_verbose(1,"red_max_and_def_p_state command received\n");
+			/* p_id is missing , it is currently applied to all the policies */
 			ack=dynconf_red_pstates(command.my_req.ear_conf.p_id,command.my_req.ear_conf.p_states);
 			break;
 		case EAR_RC_SET_FREQ:
