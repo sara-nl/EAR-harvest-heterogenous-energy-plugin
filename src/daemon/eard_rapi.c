@@ -470,6 +470,14 @@ void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
+void set_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_NEW_TH;
+    command.my_req.ear_conf.th=th;
+    send_command_all(command, my_cluster_conf);
+}
+
 void ping_all_nodes(cluster_conf_t my_cluster_conf)
 {
     request_t command;
@@ -477,19 +485,27 @@ void ping_all_nodes(cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
-void red_max_freq_all_nodes(ulong p_states, cluster_conf_t my_cluster_conf)
+void set_max_freq_all_nodes(ulong max_freq, cluster_conf_t my_cluster_conf)
 {
     request_t command;
-    command.req=EAR_RC_RED_PSTATE;
-    command.my_req.ear_conf.p_states=p_states;
+    command.req=EAR_RC_MAX_FREQ;
+    command.my_req.ear_conf.max_freq = max_freq;
     send_command_all(command, my_cluster_conf);
 }
 
-void red_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_SET_FREQ;
-    command.my_req.ear_conf.max_freq=freq;
+    command.my_req.ear_conf.max_freq = freq;
+    send_command_all(command, my_cluster_conf);
+}
+
+void red_def_max_pstate_all_nodes(ulong pstate, cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_RED_PSTATE;
+    command.my_req.ear_conf.p_states = pstate;
     send_command_all(command, my_cluster_conf);
 }
 
@@ -514,7 +530,6 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_
     command.req=EAR_RC_DEF_FREQ;
     command.my_req.ear_conf.max_freq = freq;
 	command.my_req.ear_conf.p_id = policy;
-	VERBOSE_N(0, "sending set_def_freq with freq %u and policy %u", freq, policy);
     send_command_all(command, my_cluster_conf);
 }
 
