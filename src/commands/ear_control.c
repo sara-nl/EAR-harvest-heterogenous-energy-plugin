@@ -139,18 +139,34 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 
 void print_ips(ip_table_t *ips, int num_ips)
 {
-    int i, j;
-    printf("%10s\t%10s\t%12s\t%10s\t%10s\n", "hostname", "ip", "ip_int", "status", "power");
+    int i, j, counter = 0;
+    printf("%10s\t%10s\t%10s\t%15s\n", "hostname", "ip", "power", "policies");
 	char temp[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
-        printf("%10s\t%10s\t%12d\t%10d\t%10d\n", ips[i].name, ips[i].ip, ips[i].ip_int, ips[i].counter, ips[i].power); 
-		for (j = 0; j < TOTAL_POLICIES; j++)
-		{
-			policy_id_to_name(j, temp);
-			printf("\t%25s\t%10u\t%10u\n", temp, ips[i].policies[j].pstate, ips[i].policies[j].th); 
-		}
+        if (ips[i].counter || ips[i].power != 0)
+        {
+            printf("%10s\t%10s\t%10d", ips[i].name, ips[i].ip, ips[i].power); 
+		    for (j = 0; j < TOTAL_POLICIES; j++)
+		    {
+			    policy_id_to_name(j, temp);
+			    printf("\t%15s\t%5u\t%8u\t", temp, ips[i].policies[j].pstate, ips[i].policies[j].th); 
+		    }
+            printf("\n");
+            counter++;
+        }
 	}
+    if (counter < num_ips)
+    {
+        printf("\n\nINACTIVE NODES\n");
+        for (i = 0; i <num_ips; i++)
+        {
+            if (!ips[i].counter)
+                printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
+            else if (!ips[i].power)
+                printf("%10s\t%10s\t%10s\n", ips[i].name, ips[i].ip, "->power error");
+        }
+    }
 }
 
 void usage(char *app)
@@ -195,7 +211,6 @@ void process_status(int num_status, status_t *status)
 {
     if (num_status > 0)
     {
-        printf("Status retrieved.\n");
         int i, num_ips;
         ip_table_t *ips = NULL;
         num_ips = generate_node_names(my_cluster_conf, &ips);
@@ -247,14 +262,15 @@ void main(int argc, char *argv[])
         int option_idx = 0;
         static struct option long_options[] = {
             {"set-freq",     	required_argument, 0, 0},
-            {"red-def-pstate", 	required_argument, 0, 1},
+            {"red-def-freq", 	required_argument, 0, 1},
             {"set-max-freq", 	required_argument, 0, 2},
             {"inc-th",       	required_argument, 0, 3},
             {"set-def-freq", 	required_argument, 0, 4},
-            {"restore-conf", 	no_argument, 0, 5},
-	        {"ping", 	     	optional_argument, 0, 6},
-            {"status",       	no_argument, 0, 7},
-            {"help",         	no_argument, 0, 8},
+            {"set-th",          required_argument, 0, 5},
+            {"restore-conf", 	no_argument, 0, 6},
+	        {"ping", 	     	optional_argument, 0, 7},
+            {"status",       	no_argument, 0, 8},
+            {"help",         	no_argument, 0, 9},
             {0, 0, 0, 0}
         };
 
@@ -269,16 +285,16 @@ void main(int argc, char *argv[])
         switch(c)
         {
             case 0:
-                reduce_frequencies_all_nodes(atoi(optarg),my_cluster_conf);
+                set_freq_all_nodes(atoi(optarg),my_cluster_conf);
                 break;
             case 1:
                 arg = atoi(optarg);
-                red_def_freq_all_nodes(arg,my_cluster_conf);
+                red_def_max_pstate_all_nodes(arg,my_cluster_conf);
                 break;
             case 2:
                 arg = atoi(optarg);
 				//this one uses p_state
-                red_max_freq_all_nodes(arg,my_cluster_conf);
+                set_max_freq_all_nodes(arg,my_cluster_conf);
                 break;
             case 3:
                 arg = atoi(optarg);
@@ -294,22 +310,29 @@ void main(int argc, char *argv[])
 				if (optind+1 > argc)
 				{
 					VERBOSE_N(0, "Missing policy argument for set-def-freq");
-    				free_cluster_conf(&my_cluster_conf);
-					exit(0);
+                    break;
 				}
 				arg2 = atoi(argv[optind+1]);
 				if (!is_valid_policy(arg2))
 				{
 					VERBOSE_N(0, "Invalid policy index.");
-    				free_cluster_conf(&my_cluster_conf);
-					exit(0);
+                    break;
 				}
                 set_def_freq_all_nodes(arg, arg2, my_cluster_conf);
                 break;
             case 5:
-                restore_conf_all_nodes(my_cluster_conf);
+                arg = atoi(optarg);
+                if (arg > 100)
+                {
+                    VERBOSE_N(0, "Indicated threshold increase above theoretical maximum (100%)");
+                    break;
+                }
+                set_th_all_nodes(arg, my_cluster_conf);
                 break;
             case 6:
+                restore_conf_all_nodes(my_cluster_conf);
+                break;
+            case 7:
                 if (optarg)
                 {
                     int rc=eards_remote_connect(optarg ,my_cluster_conf.eard.port);
@@ -324,11 +347,11 @@ void main(int argc, char *argv[])
                 else
                     old_ping_all_nodes(my_cluster_conf);
                 break;
-            case 7:
+            case 8:
                 num_status = status_all_nodes(my_cluster_conf, &status);
                 process_status(num_status, status);
                 break;
-            case 8:
+            case 9:
                 usage(argv[0]);
                 break;
         }

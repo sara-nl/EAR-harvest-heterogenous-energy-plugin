@@ -96,13 +96,13 @@ int eards_remote_disconnect();
 /** Increases the current threshold to all nodes in my_cluster_conf. */
 void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf);
 
-/** Reduces the maximum and default freq to all nodes in my_cluster_conf. */
-void red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
+/** Sets the maximum and default freq to all nodes in my_cluster_conf. */
+void set_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
 
 /** Reduces the default freq to all nodes in my_cluster_conf. */
-void red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
+void red_def_max_pstate_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
 
-/** Reduces the frequency of all nodes in my_cluster_conf.*/
+/** Reduces the frequecy of all nodes, using set frequenchy. */
 void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
 
 /** Sets the default frequency for all nodes in my_custer_conf. */
@@ -124,6 +124,12 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status);
 
 /** Sends the command to the currently connected fd */
 int send_command(request_t *command);
+
+/** Sets frequency for all nodes. */
+void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
+
+/** Sets the th to all nodes. */
+void set_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf);
 
 /** Sends the command to all nodes in ear.conf */
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf);
