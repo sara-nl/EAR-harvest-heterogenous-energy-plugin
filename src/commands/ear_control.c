@@ -62,7 +62,7 @@ typedef struct ip_table
 	eard_policy_info_t policies[TOTAL_POLICIES];
 } ip_table_t;
 
-int EAR_VERBOSE_LEVEL = 1;
+int EAR_VERBOSE_LEVEL = 0;
 
 cluster_conf_t my_cluster_conf;
 
