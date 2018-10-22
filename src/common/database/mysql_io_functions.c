@@ -582,7 +582,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         if (num_jobs < 1)
         {
             if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
-            fprintf(stderr,"No job structure found in the database for job %d.%d.\n", job_id, step_id);
+            //fprintf(stderr,"No job structure found in the database for job %d.%d.\n", job_id, step_id);
             return EAR_ERROR;
         }
         copy_job(&app_aux->job, job_aux);
