@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/limits.h>
+#include <common/string_enhanced.h>
 #include <common/types/coefficient.h>
 
 #define SZ_COEFF sizeof(coefficient_t)
@@ -55,7 +56,14 @@ void accum(coefficient_t *coeff, int i)
     coeffs_accum[i].pstate_ref = coeff->pstate_ref;
     coeffs_accum[i].pstate = coeff->pstate;
 
-	if (coeff->pstate_ref == coeff->pstate || !coeff->available) {
+	if(!coeff->available) {
+		return;
+	}
+	
+	coeffs_accum[i].available = 1;
+	coeffs_num[i] += 1;
+
+	if (coeff->pstate_ref == coeff->pstate) {
 		return;
 	}
 
@@ -65,8 +73,6 @@ void accum(coefficient_t *coeff, int i)
 	coeffs_accum[i].D += coeff->D;
 	coeffs_accum[i].E += coeff->E;
 	coeffs_accum[i].F += coeff->F;
-	coeffs_accum[i].available = 1;
-	coeffs_num[i] += 1;
 }
 
 void write_file(char *path)
@@ -77,13 +83,23 @@ void write_file(char *path)
     int fd;
     int i;
 
+	#define FD_WRITE 1
+
 	//
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH);
+	#if FD_WRITE
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH);
 
     if (fd < 0) {
         printf("ERROR while opening file %s (%s)\n", path, strerror(errno));
         return;
     }
+	#endif
+
+	//
+	tprintf_init(stderr, "10 10 6 2 13 10 10 10 10 10");
+
+	//
+	tprintf("F. from||F. to||N||Av|| |  A|| B|| C|| D|| E|| F|| G");
 
 	//
 	for (i = 0; i < coeffs_max; ++i)
@@ -101,10 +117,18 @@ void write_file(char *path)
             coeffs_accum[i].F = coeffs_accum[i].F / num;
         }
 
+		tprintf("%lu||%lu||%d||%d|| | %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
+			coeffs_accum[i].pstate_ref, coeffs_accum[i].pstate, coeffs_num[i], coeffs_accum[i].available,
+			coeffs_accum[i].A, coeffs_accum[i].B, coeffs_accum[i].C,
+			coeffs_accum[i].D, coeffs_accum[i].E, coeffs_accum[i].F);
+
+
+		#if FD_WRITE
 		if (write(fd, &coeffs_accum[i], SZ_COEFF) != SZ_COEFF) {
  			printf("ERROR while writting coefficients file\n");
             exit(1);
 		}
+		#endif
 		
         #if 0   
         coeff_print(&coeffs_accum[i]);
