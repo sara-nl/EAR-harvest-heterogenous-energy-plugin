@@ -275,7 +275,7 @@ void evaluate(control_t *control)
 
 	// Coefficients medium error
 	
-	if (!control->hide) {
+	if (control->summary) {
 		fprintf(stderr, LINE);
 	}
 
@@ -304,7 +304,7 @@ void evaluate(control_t *control)
 	}
 
 	// General medium error
-	if (!control->hide) {
+	if (control->summary) {
 		fprintf(stderr, LINE);
 	}
 

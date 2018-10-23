@@ -9,7 +9,7 @@ BINARIES = coeffs_compute \
            coeffs_jobproj \
            coeffs_quality \
            coeffs_show \
-#           coeffs_comparison \
+           coeffs_comparison \
 		   get_ear_events \
 		   get_active_nodes \
 		   learning_show \
