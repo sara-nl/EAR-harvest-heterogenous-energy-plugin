@@ -140,17 +140,22 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 void print_ips(ip_table_t *ips, int num_ips)
 {
     int i, j, counter = 0;
-    printf("%10s\t%10s\t%10s\t%15s\n", "hostname", "ip", "power", "policies");
+    printf("%10s\t%10s\t%5s\t", "hostname", "ip", "power");
+    for (i = 0; i < TOTAL_POLICIES; i++)
+        printf("  %6s  %6s%5s\t   ", "policy", "pstate", "th");
+    printf("\n");
 	char temp[GENERIC_NAME];
+    char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
         if (ips[i].counter || ips[i].power != 0)
         {
-            printf("%10s\t%10s\t%10d", ips[i].name, ips[i].ip, ips[i].power); 
+            printf("%10s\t%10s\t%5d", ips[i].name, ips[i].ip, ips[i].power); 
 		    for (j = 0; j < TOTAL_POLICIES; j++)
 		    {
 			    policy_id_to_name(j, temp);
-			    printf("\t%15s\t%5u\t%8u\t", temp, ips[i].policies[j].pstate, ips[i].policies[j].th); 
+                get_short_policy(final, temp);
+			    printf("  %5s  %5u  %8u\t", final, ips[i].policies[j].pstate, ips[i].policies[j].th); 
 		    }
             printf("\n");
             counter++;
