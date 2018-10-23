@@ -140,17 +140,22 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 void print_ips(ip_table_t *ips, int num_ips)
 {
     int i, j, counter = 0;
-    printf("%10s\t%10s\t%10s\t%15s\n", "hostname", "ip", "power", "policies");
+    printf("%10s\t%10s\t%5s\t", "hostname", "ip", "power");
+    for (i = 0; i < TOTAL_POLICIES; i++)
+        printf("  %6s  %6s%5s\t   ", "policy", "pstate", "th");
+    printf("\n");
 	char temp[GENERIC_NAME];
+    char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
         if (ips[i].counter || ips[i].power != 0)
         {
-            printf("%10s\t%10s\t%10d", ips[i].name, ips[i].ip, ips[i].power); 
+            printf("%10s\t%10s\t%5d", ips[i].name, ips[i].ip, ips[i].power); 
 		    for (j = 0; j < TOTAL_POLICIES; j++)
 		    {
 			    policy_id_to_name(j, temp);
-			    printf("\t%15s\t%5u\t%8u\t", temp, ips[i].policies[j].pstate, ips[i].policies[j].th); 
+                get_short_policy(final, temp);
+			    printf("  %5s  %5u  %8u\t", final, ips[i].policies[j].pstate, ips[i].policies[j].th); 
 		    }
             printf("\n");
             counter++;
@@ -172,13 +177,17 @@ void print_ips(ip_table_t *ips, int num_ips)
 void usage(char *app)
 {
 	printf("Usage: %s [options]"\
-            "\n\t--set-freq \tnewfreq\t\t->sets the frequency of all nodes to the requested one"\
-            "\n\t--set-def-freq \tnewfreq\t\t->sets the default frequency"\
-            "\n\t--set-max-freq \tnewfreq\t\t->sets the maximum frequency"\
-            "\n\t--inc-th \tnew_th\t\t->increases the threshold for all nodes"\
-            "\n\t--red-def-freq \treduction\t->reduces the default frequency"\
-            "\n\t--restore-conf \t\t\t->restores the configuration to all node"\
-            "\n\t--ping	\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally, --ping=node_name pings that node individually."\
+            "\n\t--set-freq \tnewfreq\t\t\t->sets the frequency of all nodes to the requested one"\
+            "\n\t--set-def-freq \tnewfreq\tpolicy_id\t->sets the default frequency for the selected policy id"\
+            "\n\t--set-max-freq \tnewfreq\t\t\t->sets the maximum frequency"\
+            "\n\t--inc-th \tnew_th\t\t\t->increases the threshold for all nodes"\
+            "\n\t--set-th \tnew_th\t\t\t->sets the threshold for all nodes"\
+            "\n\t--red-def-freq \tn_pstates\t\t->reduces the default and max frequency by n pstates"\
+            "\n\t--restore-conf \t\t\t\t->restores the configuration to all node"\
+            "\n\t--status \t\t\t\t->requests the current status for all nodes. The ones responding show the current power, IP address and policy configuration. A list with"\
+            "\n\t\t\t\t\t\t\tthe ones not respondig is provided with their hostnames and IP address."\
+            "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally, --ping=node_name pings that node individually."\
+            "\n\t--help \t\t\t\t\t->displays this message."\
             "\n\nThis app requires privileged access privileged accesss to execute.\n", app);
 	exit(1);
 }
@@ -293,7 +302,6 @@ void main(int argc, char *argv[])
                 break;
             case 2:
                 arg = atoi(optarg);
-				//this one uses p_state
                 set_max_freq_all_nodes(arg,my_cluster_conf);
                 break;
             case 3:
