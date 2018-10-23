@@ -62,7 +62,7 @@ typedef struct policy
 
 policy_t app_policy;
 
-static const char *__NAME__ = "EARL/models";
+static const char *__NAME__ = "EARL";
 extern char *__HOST__ ;
 
 // Policy
@@ -134,27 +134,27 @@ int policy_global_configuration(int p_state)
 void policy_global_reconfiguration()
 {
 	if (system_conf!=NULL){
-	earl_verbose(1,"policy_global_reconfiguration policy %d max %lu def %lu th %.2lf\n",
+	earl_verbose(DYN_VERBOSE,"policy_global_reconfiguration policy %d max %lu def %lu th %.2lf\n",
 	power_model_policy,system_conf->max_freq,system_conf->def_freq,system_conf->th);
 	switch (power_model_policy){
 	case MIN_ENERGY_TO_SOLUTION:
 	    // We filter initial configuration
 	    if (system_conf->max_freq<EAR_default_frequency){
-	        earl_verbose(1,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
+	        earl_verbose(DYN_VERBOSE,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
 			EAR_default_frequency=system_conf->max_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 	    }
 		break;
 	case MIN_TIME_TO_SOLUTION:
 		if (system_conf->def_freq!=EAR_default_frequency){
-	        earl_verbose(0,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
+	        earl_verbose(DYN_VERBOSE,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
 			EAR_default_frequency=system_conf->def_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 		}
 		break;
 	case MONITORING_ONLY:
 		if (system_conf->max_freq<ear_frequency){
-			earl_verbose(1,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
+			earl_verbose(DYN_VERBOSE,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
 			EAR_default_frequency=system_conf->max_freq;
 			EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);	
 		}
@@ -167,7 +167,7 @@ void policy_global_reconfiguration()
 		break;
 	}
     if (performance_gain<system_conf->th){
-        	earl_verbose(2,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
+        	earl_verbose(DYN_VERBOSE,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
         	performance_gain=system_conf->th;
     }
 	}
@@ -380,7 +380,7 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE)
 }
 
 void force_global_frequency(ulong new_f)
-{
+{							
 	ear_frequency=new_f;
 	eards_change_freq(ear_frequency);
 }

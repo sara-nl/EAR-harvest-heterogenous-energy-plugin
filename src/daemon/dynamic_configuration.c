@@ -231,7 +231,7 @@ int dyncon_restore_conf()
 	policy_conf_t *my_policy;
 	/* We copy the original configuration */
 	copy_my_node_conf(my_node_conf,&my_original_node_conf);
-	pid=MIN_TIME_TO_SOLUTION;
+	pid=dyn_conf->policy;
 	my_policy=get_my_policy_conf(my_node_conf,pid);
 	dyn_conf->max_freq=frequency_pstate_to_freq(my_node_conf->max_pstate);
 	dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
@@ -247,39 +247,29 @@ int dynconf_red_pstates(uint p_id,uint p_states)
 {
 	// Reduces p_states both the maximum and the default
 	ulong max,def,i;
-	max=dyn_conf->max_freq-(p_states*100000);
-	def=dyn_conf->def_freq-(p_states*100000);
+	uint def_pstate,max_pstate;
+	ulong new_def_freq,new_max_freq;
+	def_pstate=frequency_freq_to_pstate(dyn_conf->def_freq);
+	max_pstate=frequency_freq_to_pstate(dyn_conf->max_freq);
+	/* Reducing means incresing in the vector of pstates */
+	def_pstate=def_pstate+p_states;
+	max_pstate=max_pstate+p_states;
+	
+	new_def_freq=frequency_pstate_to_freq(def_pstate);
+	new_max_freq=frequency_pstate_to_freq(max_pstate);
+	
 
-	// reducing the maximum freq in N p_states
-	if (is_valid_freq(max,num_f,f_list)){
-		dyn_conf->max_freq=max;
-    	resched_conf->force_rescheduling=1;
-		powermon_new_max_freq(max);
-	}else{
-		int freq=lower_valid_freq(max,num_f,f_list);
-		if (freq>0){
-			dyn_conf->max_freq=freq;
-			resched_conf->force_rescheduling=1;
-			powermon_new_max_freq(freq);
-		}else	return EAR_ERROR;
+	/* reducing the maximum freq in N p_states */
+	dyn_conf->max_freq=new_max_freq;
+	dyn_conf->def_freq=new_def_freq;
+    resched_conf->force_rescheduling=1;
+
+	/* We must update my_node_info */
+
+	for (i=0;i<TOTAL_POLICIES;i++){
+		my_node_conf->policies[i].p_state=my_node_conf->policies[i].p_state-p_states;
 	}
-	// reducing the default freq in N p_states
-	if (is_valid_freq(def,num_f,f_list)){
-		dyn_conf->def_freq=def;
-		dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
-		resched_conf->force_rescheduling=1;
-		for (i=0;i<TOTAL_POLICIES;i++) powermon_new_def_freq(i,def);
-    	return EAR_SUCCESS;
-	}else{ 
-		int freq=lower_valid_freq(def,num_f,f_list);
-		if (freq>0){
-			dyn_conf->def_freq=freq;
-			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
-			resched_conf->force_rescheduling=1;
-			for (i=0;i<TOTAL_POLICIES;i++) powermon_new_def_freq(i,freq);
-    		return EAR_SUCCESS;
-		}else return EAR_ERROR;
-	}
+	powermon_new_max_freq(new_max_freq);	
 }
 /** This function is supposed to affect only to MIN_TIME_TO_SOLUTION */
 int dynconf_set_th(ulong th)
