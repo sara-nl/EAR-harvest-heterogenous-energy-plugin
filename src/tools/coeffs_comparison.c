@@ -174,12 +174,28 @@ void read_file(char *path, char *node)
 	close(fd);
 }
 
+void usage(int argc, char *argv[])
+{
+	int i = 0;
+
+	if (argc < 3)
+	{
+		fprintf(stdout, "Usage: %s coeffs.path node.list\n\n", argv[0]);
+		fprintf(stdout, "  The coeffs.path includes the island.\n");
+		fprintf(stdout, "  The node.list is splitted by spaces.\n");
+		exit(1);
+	}
+
+}
+
 int main(int argc, char *argv[])
 {
 	char *path_file;
 	char *path_root;
 	char *node_name;
 	int i;
+
+	usage(argc, argv);
 
 	//
 	coeffs_accum = calloc(200, sizeof(coefficient_t));
