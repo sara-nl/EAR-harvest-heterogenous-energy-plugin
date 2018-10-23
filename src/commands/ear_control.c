@@ -177,13 +177,17 @@ void print_ips(ip_table_t *ips, int num_ips)
 void usage(char *app)
 {
 	printf("Usage: %s [options]"\
-            "\n\t--set-freq \tnewfreq\t\t->sets the frequency of all nodes to the requested one"\
-            "\n\t--set-def-freq \tnewfreq\t\t->sets the default frequency"\
-            "\n\t--set-max-freq \tnewfreq\t\t->sets the maximum frequency"\
-            "\n\t--inc-th \tnew_th\t\t->increases the threshold for all nodes"\
-            "\n\t--red-def-freq \treduction\t->reduces the default frequency"\
-            "\n\t--restore-conf \t\t\t->restores the configuration to all node"\
-            "\n\t--ping	\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally, --ping=node_name pings that node individually."\
+            "\n\t--set-freq \tnewfreq\t\t\t->sets the frequency of all nodes to the requested one"\
+            "\n\t--set-def-freq \tnewfreq\tpolicy_id\t->sets the default frequency for the selected policy id"\
+            "\n\t--set-max-freq \tnewfreq\t\t\t->sets the maximum frequency"\
+            "\n\t--inc-th \tnew_th\t\t\t->increases the threshold for all nodes"\
+            "\n\t--set-th \tnew_th\t\t\t->sets the threshold for all nodes"\
+            "\n\t--red-def-freq \tn_pstates\t\t->reduces the default and max frequency by n pstates"\
+            "\n\t--restore-conf \t\t\t\t->restores the configuration to all node"\
+            "\n\t--status \t\t\t\t->requests the current status for all nodes. The ones responding show the current power, IP address and policy configuration. A list with"\
+            "\n\t\t\t\t\t\t\tthe ones not respondig is provided with their hostnames and IP address."\
+            "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally, --ping=node_name pings that node individually."\
+            "\n\t--help \t\t\t\t\t->displays this message."\
             "\n\nThis app requires privileged access privileged accesss to execute.\n", app);
 	exit(1);
 }
@@ -298,7 +302,6 @@ void main(int argc, char *argv[])
                 break;
             case 2:
                 arg = atoi(optarg);
-				//this one uses p_state
                 set_max_freq_all_nodes(arg,my_cluster_conf);
                 break;
             case 3:
