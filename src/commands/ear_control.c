@@ -148,7 +148,7 @@ void print_ips(ip_table_t *ips, int num_ips)
     char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
-        if (ips[i].counter || ips[i].power != 0)
+        if (ips[i].counter && ips[i].power != 0)
         {
             printf("%10s\t%10s\t%5d", ips[i].name, ips[i].ip, ips[i].power); 
 		    for (j = 0; j < TOTAL_POLICIES; j++)

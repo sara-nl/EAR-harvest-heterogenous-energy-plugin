@@ -74,6 +74,7 @@ extern resched_t *resched_conf;
 static ulong* f_list;
 static uint num_f;
 int last_command = -1;
+int last_dist = -1;
 int last_command_time = -1;
 
 void print_f_list(uint p_states,ulong *freql)
@@ -314,6 +315,10 @@ void process_remote_requests(int clientfd)
         eard_verbose(1, "Recieved repeating command: %d", req);
         ack=EAR_IGNORE;
 	    send_answer(clientfd,&ack);
+        if (command.node_dist != last_dist)
+        {
+            propagate_req(&command, my_cluster_conf.eard.port);
+        }
         return;
     }
     else
@@ -374,6 +379,7 @@ void process_remote_requests(int clientfd)
 			eard_verbose(0,"Invalid remote command\n");
 	}	
 	send_answer(clientfd,&ack);
+    last_dist = command.node_dist;
     if (command.node_dist > 0 && req != EAR_RC_PING && req != NO_COMMAND)
     {
         eard_verbose(1, "command=%d propagated distance=%d",req,command.node_dist);
