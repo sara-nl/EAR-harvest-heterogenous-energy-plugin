@@ -10,6 +10,7 @@ BINARIES = coeffs_compute \
            coeffs_quality \
            coeffs_show \
            coeffs_comparison \
+		   coeffs_null \
 		   get_ear_events \
 		   get_active_nodes \
 		   learning_show \
@@ -28,6 +29,9 @@ coeffs_quality: coeffs_quality.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
 coeffs_show: coeffs_show.c $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
+coeffs_null: coeffs_null.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
 
 coeffs_comparison: coeffs_comparison.c $(COMMON_OBJS)

@@ -52,6 +52,7 @@
 static uint me_policy_pstates;
 static uint me_reset_freq=RESET_FREQ;
 static char *__NAME__ = "min_energy_policy";
+extern char *__HOST__;
 
 // Policy
 extern double performance_penalty;
@@ -151,6 +152,7 @@ ulong min_energy_policy(signature_t *sig)
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * performance_penalty);
 
+	earl_verbose(DYN_VERBOSE,"MIN_ENERGY: From %d to %d\n",min_pstate,me_policy_pstates);
 
 	// MIN_ENERGY_TO_SOLUTION BEGIN
 	for (i = min_pstate; i < me_policy_pstates;i++)
@@ -208,9 +210,11 @@ ulong  min_energy_default_conf(ulong f)
 {
     // Just in case the bestPstate was the frequency at which the application was running
     if (f>system_conf->max_freq){
+#if 0
         log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-        ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
+        ear_verbose(1,"EAR (default conf) frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
         f,system_conf->max_freq);
+#endif
 		return system_conf->max_freq;
     } else return f;
 }

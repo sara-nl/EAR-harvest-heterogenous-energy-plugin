@@ -37,6 +37,7 @@
 #include <common/types/application.h>
 #include <common/types/projection.h>
 #include <library/common/externs.h>
+#include <library/models/models.h>
 
 void monitoring_init()
 {
@@ -49,7 +50,8 @@ void monitoring_end_loop()
 }
 ulong monitoring_policy(signature_t *sig)
 {
-	return ear_frequency;
+	policy_global_reconfiguration();
+	return EAR_default_frequency;
 }
 ulong monitoring_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
