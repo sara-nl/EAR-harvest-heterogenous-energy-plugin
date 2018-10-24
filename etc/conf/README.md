@@ -159,7 +159,7 @@ Describes nodes with some special characteristic such as different default P_STA
 
 ```
 # The 'MaxPerformancePenalty' and 'MinEfficiencyGain' accepts values between 0 and 1.
-NodeName=nodename_list CPUs=24 DefaultPstates=2,5,5   DefCoefficientsSFile=filename MaxPerformancePenalty=def_th MinEfficiencyGain=def_th
+NodeName=nodename_list CPUs=24 DefaultPstates=2,5,5   DefCoefficientsFile=filename MaxPerformancePenalty=def_th MinEfficiencyGain=def_th
 ```
 
 10) Island description
