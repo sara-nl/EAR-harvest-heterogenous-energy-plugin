@@ -30,6 +30,7 @@
 #ifndef _STRING_ENHANCED_H_
 #define _STRING_ENHANCED_H_
 
+#include <stdio.h>
 #include <linux/limits.h>
 
 #define STEN_MAX_COLS	20

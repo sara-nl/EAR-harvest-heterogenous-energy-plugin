@@ -27,18 +27,45 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_EARDBD_STORAGE_H
-#define EAR_EARDBD_STORAGE_H
+#ifndef EAR_EARDBD_STATS_H
+#define EAR_EARDBD_STATS_H
 
-/* Functions */
-void reset_all();
+#define line "---------------------------------------------------------------\n"
+#define col1 "\x1b[35m"
+#define col2 "\x1b[0m"
 
-void reset_indexes();
+#define verwho0(format) \
+    fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
 
-void insert_hub(uint option, uint reason);
+#define verwho1(format, ...) \
+    fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 
-void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt);
+#define vermast1(...) \
+    if (!forked || master_iam) { \
+        fprintf(stderr, __VA_ARGS__); \
+        fprintf(stderr, "\n"); \
+    }
 
-void storage_sample_receive(int fd, packet_header_t *header, char *content);
+#define verline0() \
+        fprintf(stderr, col1 line col2);
 
-#endif //EAR_EARDBD_STORAGE_H
+#define verline1(...) \
+    if (!forked || master_iam) { \
+        fprintf(stderr, col1 line __VA_ARGS__); \
+        fprintf(stderr, col2 "\n"); \
+    }
+
+#define error(...) \
+    fprintf(stderr, "ERROR, " __VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    exit(1);
+
+void stats_account_insert_start(uint i);
+
+void stats_account_insert_stop(uint i, uint max);
+
+void stats_sample_account(int fd, packet_header_t *header, char *content);
+
+void stats_print();
+
+#endif //EAR_EARDBD_STATS_H

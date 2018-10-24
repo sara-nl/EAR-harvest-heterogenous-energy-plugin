@@ -140,7 +140,7 @@ static void _eardbd_disconnect(socket_t *socket)
 
 state_t eardbd_send_application(application_t *app)
 {
-	return _packet_send(CONTENT_TYPE_APP, (char *) app, sizeof(application_t));
+	return _packet_send(CONTENT_TYPE_APM, (char *) app, sizeof(application_t));
 }
 
 state_t eardbd_send_periodic_metric(periodic_metric_t *met)

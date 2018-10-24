@@ -34,12 +34,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
-#include <sys/time.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
-#include <database_cache/eardbd_storage.h>
-#include <common/database/db_helper.h>
 
 int EAR_VERBOSE_LEVEL = 1;
 
@@ -55,10 +53,10 @@ static int isle;
 
 // Sockets
 static socket_t sockets[4];
-static socket_t *smets_srv = &sockets[0];
-static socket_t *smets_mir = &sockets[1];
-static socket_t *ssync_srv = &sockets[2];
-static socket_t *ssync_mir = &sockets[3];
+socket_t *smets_srv = &sockets[0];
+socket_t *smets_mir = &sockets[1];
+socket_t *ssync_srv = &sockets[2];
+socket_t *ssync_mir = &sockets[3];
 
 // Descriptors
 static fd_set fds_metr_tcp;
@@ -73,11 +71,11 @@ int fd_min;
 int fd_max;
 
 // Times
-static struct timeval timeout_insr;
-static struct timeval timeout_aggr;
+struct timeval timeout_insr;
+struct timeval timeout_aggr;
 struct timeval timeout_slct;
-static time_t time_insr;
-static time_t time_aggr;
+time_t time_insr;
+time_t time_aggr;
 time_t time_slct;
 
 // Input buffers
@@ -108,12 +106,20 @@ static int waiting;
 int forked;
 
 // Synchronization
-static packet_header_t sync_ans_header;
-static packet_header_t sync_qst_header;
-static sync_qst_t sync_qst_content;
-static sync_ans_t sync_ans_content;
+packet_header_t sync_ans_header;
+packet_header_t sync_qst_header;
+sync_qst_t sync_qst_content;
+sync_ans_t sync_ans_content;
 
 // Data warehouse
+periodic_aggregation_t *aggrs;
+periodic_metric_t *enrgy;
+application_t *appsm;
+application_t *appsn;
+application_t *appsl;
+ear_event_t *evnts;
+loop_t *loops;
+
 uint per_appsm = 40;
 uint per_appsn = 20;
 uint per_appsl = 05;
@@ -122,29 +128,28 @@ uint per_enrgy = 05;
 uint per_aggrs = 01;
 uint per_evnts = 05;
 
-ulong len_aggrs;
-ulong len_appsl;
-ulong len_appsm;
-ulong len_appsn;
-ulong len_enrgy;
-ulong len_evnts;
-ulong len_loops;
+ulong max_aggrs;
+ulong max_enrgy;
+ulong max_appsm;
+ulong max_appsn;
+ulong max_appsl;
+ulong max_evnts;
+ulong max_loops;
 
-periodic_aggregation_t *aggrs;
-periodic_metric_t *enrgy;
-    application_t *appsm;
-    application_t *appsn;
-    application_t *appsl;
-      ear_event_t *evnts;
-           loop_t *loops;
-
-ulong i_aggrs;
-ulong i_enrgy;
-ulong i_appsm;
-ulong i_appsn;
-ulong i_appsl;
-ulong i_evnts;
-ulong i_loops;
+// Metrics
+time_t glb_time1[MAX_TYPES];
+time_t glb_time2[MAX_TYPES];
+time_t ins_time1[MAX_TYPES];
+time_t ins_time2[MAX_TYPES];
+size_t typ_sizof[MAX_TYPES];
+uint   sam_index[MAX_TYPES];
+char  *sam_iname[MAX_TYPES];
+ulong  sam_inmax[MAX_TYPES];
+uint   sam_recvd[MAX_TYPES];
+uint   soc_accpt;
+uint   soc_discn;
+uint   soc_unkwn;
+uint   soc_tmout;
 
 // Strings
 char *str_who[2] = { "server", "mirror" };
@@ -161,156 +166,64 @@ int verbosity = 0;
 
 /*
  *
- * Synchronization main/mirror
- *
- */
-
-int sync_question(uint sync_option)
-{
-	time_t timeout_old;
-	state_t s;
-
-	verwho1("synchronization started: asking the question (%d)", sync_option);
-	sync_qst_content.sync_option = sync_option;
-
-	// Preparing packet
-	sockets_header_update(&sync_qst_header);
-
-	// Synchronization pipeline
-	s = sockets_socket(ssync_mir);
-
-	if (state_fail(s)) {
-		verwho1("failed to create client socket to MAIN (%d, inum: %d, istr: %s)",
-				 s, intern_error_num, intern_error_str);
-		return EAR_ERROR;
-	}
-
-	s = sockets_connect(ssync_mir);
-
-	if (state_fail(s)) {
-		verwho1("failed to connect to MAIN (%d, inum: %d, istr: %s)",
-				 s, intern_error_num, intern_error_str);
-		return EAR_ERROR;
-	}
-
-	s = sockets_send(ssync_mir, &sync_qst_header, (char *) &sync_qst_content);
-
-	if (state_fail(s)) {
-		verwho1("failed to send to MAIN (%d, num: %d, str: %s)",
-				 s, intern_error_num, intern_error_str);
-		return EAR_ERROR;
-	}
-
-	// Setting new timeout
-	sockets_get_timeout(ssync_mir->fd, &timeout_old);
-	sockets_set_timeout(ssync_mir->fd, 10);
-
-	// Transferring
-	s = sockets_receive(ssync_mir->fd, &sync_ans_header,
-		(char *) &sync_ans_content, sizeof(sync_ans_t), 1);
-
-	// Recovering old timeout
-	sockets_set_timeout(ssync_mir->fd, timeout_old);
-
-	if (state_fail(s)) {
-		verwho1("failed to receive from MAIN (%d, num: %d, str: %s)",
-				 s, intern_error_num, intern_error_str);
-		return EAR_ERROR;
-	}
-
-	s = sockets_close(ssync_mir);
-
-	verwho0("synchronization completed correctly");
-
-	return EAR_SUCCESS;
-}
-
-int sync_answer(int fd)
-{
-	socket_t sync_ans_socket;
-	state_t s;
-
-	verwho0("synchronization started: answering the question");
-
-	// Socket
-	sockets_clean(&sync_ans_socket);
-	sync_ans_socket.protocol = TCP;
-	sync_ans_socket.fd = fd;
-
-	// Header
-	sockets_header_update(&sync_ans_header);
-
-	s = sockets_send(&sync_ans_socket, &sync_ans_header, (char *) &sync_ans_content);
-
-	if (state_fail(s)) {
-		verwho1("Failed to send to MIRROR (%d, num: %d, str: %s)",
-				s, intern_error_num, intern_error_str);
-		return EAR_ERROR;
-	}
-
-	verwho0("synchronization completed correctly");
-
-	return EAR_SUCCESS;
-}
-
-/*
- *
- * Time
- *
- */
-
-void time_substract_timeouts()
-{
-	timeout_insr.tv_sec -= time_slct;
-	timeout_aggr.tv_sec -= time_slct;
-}
-
-void time_reset_timeout_insr(time_t offset_insr)
-{
-	// Refresh insert time
-	timeout_insr.tv_sec  = time_insr + offset_insr;
-	timeout_insr.tv_usec = 0L;
-}
-
-void time_reset_timeout_aggr()
-{
-	// Refresh aggregation timeout
-	timeout_aggr.tv_sec  = time_aggr;
-	timeout_aggr.tv_usec = 0L;
-}
-
-void time_reset_timeout_slct()
-{
-	// Refresh select time
-	time_slct = timeout_aggr.tv_sec;
-
-	if (timeout_insr.tv_sec < timeout_aggr.tv_sec) {
-		time_slct = timeout_insr.tv_sec;
-	}
-
-	timeout_slct.tv_sec  = time_slct;
-	timeout_slct.tv_usec = 0L;
-}
-
-/*
- *
- * Net
- *
- */
-
-static int incoming_new_connection(int fd)
-{
-	int nc;
-
-	nc  = !mirror_iam && (fd == smets_srv->fd || fd == ssync_srv->fd);
-	nc |=  mirror_iam && (fd == smets_mir->fd);
-
-	return nc;
-}
-
-/*
- *
  * Signals
+ *
+ */
+
+static void signal_handler(int signal, siginfo_t *info, void *context)
+{
+	int propagating = 0;
+
+	if (signal == SIGUSR1)
+	{
+		verwho1("signal SIGUSR1 received on %s, switching verbosity", str_who[mirror_iam]);
+
+		updating  = 1;
+		verbosity = (verbosity + 1) % 4;
+	}
+
+	if (signal == SIGUSR2)
+	{
+		verwho1("signal SIGUSR2 received on %s, switching verbosity", str_who[mirror_iam]);
+	}
+
+	// Case exit
+	if ((signal == SIGTERM || signal == SIGINT) && !exitting)
+	{
+		verwho1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
+
+		propagating = others_pid > 0 && info->si_pid != others_pid;
+		listening   = 0;
+		releasing   = 1;
+		exitting    = 1;
+	}
+
+	// Case reconfigure
+	if (signal == SIGHUP && !reconfiguring)
+	{
+		verwho1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
+
+		propagating   = others_pid > 0 && info->si_pid != others_pid;
+		listening     = 0;
+		reconfiguring = server_iam;
+		releasing     = 1;
+		exitting      = mirror_iam;
+	}
+
+	// Propagate signals
+	if (propagating)
+	{
+		kill(others_pid, signal);
+
+		if (server_iam) {
+			waitpid(mirror_pid, NULL, 0);
+		}
+	}
+}
+
+/*
+ *
+ * Release
  *
  */
 
@@ -351,52 +264,6 @@ static void release_resources()
 	free_cluster_conf(&conf_clus);
 }
 
-static void signal_handler(int signal, siginfo_t *info, void *context)
-{
-	int propagating = 0;
-
-	if (signal == SIGUSR1)
-	{
-		verwho1("signal SIGUSR1 received on %s, switching verbosity", str_who[mirror_iam]);
-
-		updating  = 1;
-		verbosity = !verbosity;
-	}
-
-	// Case exit
-	if ((signal == SIGTERM || signal == SIGINT) && !exitting)
-	{
-		verwho1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
-
-		propagating = others_pid > 0 && info->si_pid != others_pid;
-		listening   = 0;
-		releasing   = 1;
-		exitting    = 1;
-	}
-
-	// Case reconfigure
-	if (signal == SIGHUP && !reconfiguring)
-	{
-		verwho1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
-
-		propagating   = others_pid > 0 && info->si_pid != others_pid;
-		listening     = 0;
-		reconfiguring = server_iam;
-		releasing     = 1;
-		exitting      = mirror_iam;
-	}
-
-	// Propagate signals
-	if (propagating)
-	{
-		kill(others_pid, signal);
-
-		if (server_iam) {
-			waitpid(mirror_pid, NULL, 0);
-		}
-	}
-}
-
 /*
  *
  * Init
@@ -421,7 +288,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	// Configuration
-#if 1
+#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
@@ -481,7 +348,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	conf_clus->db_manager.sync_tcp_port = 4713;
 	conf_clus->db_manager.mem_size      = 100;
 	conf_clus->db_manager.aggr_time     = 10;
-	conf_clus->db_manager.insr_time     = 20;
+	conf_clus->db_manager.insr_time     = 3;
 
 	server_too = atoi(argv[1]);
 	mirror_too = atoi(argv[2]);
@@ -683,6 +550,7 @@ static void init_signals()
 	// Blocking all signals except PIPE, TERM, INT and HUP
 	sigfillset(&set);
 	sigdelset(&set, SIGUSR1);
+	sigdelset(&set, SIGUSR2);
 	sigdelset(&set, SIGTERM);
 	sigdelset(&set, SIGINT);
 	sigdelset(&set, SIGHUP);
@@ -698,7 +566,10 @@ static void init_signals()
 
     if (sigaction(SIGUSR1, &action, NULL) < 0) { 
         verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
-    }  
+    }
+	if (sigaction(SIGUSR2, &action, NULL) < 0) {
+		verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+	}
 	if (sigaction(SIGTERM, &action, NULL) < 0) {
 		verwho1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
 	}
@@ -708,6 +579,27 @@ static void init_signals()
 	if (sigaction(SIGHUP, &action, NULL) < 0) {
 		verwho1("sigaction error on signal %d (%s)", SIGHUP, strerror(errno));
 	}
+}
+
+static void init_types(int argc, char **argv, cluster_conf_t *conf_clus)
+{
+
+	// Types
+	sam_iname[i_aggrs] = "energy aggrs";
+	sam_iname[i_enrgy] = "energy reps";
+	sam_iname[i_appsm] = "apps mpi";
+	sam_iname[i_appsn] = "apps non-mpi";
+	sam_iname[i_appsl] = "apps learn.";
+	sam_iname[i_evnts] = "events";
+	sam_iname[i_loops] = "loops";
+
+	typ_sizof[i_aggrs] = sizeof(periodic_aggregation_t);
+	typ_sizof[i_enrgy] = sizeof(periodic_metric_t);
+	typ_sizof[i_appsm] = sizeof(application_t);
+	typ_sizof[i_appsn] = sizeof(application_t);
+	typ_sizof[i_appsl] = sizeof(application_t);
+	typ_sizof[i_evnts] = sizeof(ear_event_t);
+	typ_sizof[i_loops] = sizeof(loop_t);
 }
 
 static ulong get_allocation_elements(float percent, size_t size)
@@ -769,34 +661,34 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 		per_loops = 24;
 		per_enrgy = 05;
 		per_aggrs = 01;
-		per_evnts = 05;	
+		per_evnts = 05;
 	}
 
-	float len_appsm_pc = ((float) per_appsm) / 100.0;
-	float len_appsn_pc = ((float) per_appsn) / 100.0;
-	float len_appsl_pc = ((float) per_appsl) / 100.0;
-	float len_loops_pc = ((float) per_loops) / 100.0;
-	float len_enrgy_pc = ((float) per_enrgy) / 100.0;
-	float len_aggrs_pc = ((float) per_aggrs) / 100.0;
-	float len_evnts_pc = ((float) per_evnts) / 100.0;
+	float lpc_appsm = ((float) per_appsm) / 100.0;
+	float lpc_appsn = ((float) per_appsn) / 100.0;
+	float lpc_appsl = ((float) per_appsl) / 100.0;
+	float lpc_loops = ((float) per_loops) / 100.0;
+	float lpc_enrgy = ((float) per_enrgy) / 100.0;
+	float lpc_aggrs = ((float) per_aggrs) / 100.0;
+	float lpc_evnts = ((float) per_evnts) / 100.0;
 
 	// Data allocation
-	len_aggrs = get_allocation_elements(len_aggrs_pc, sizeof(periodic_aggregation_t));
-	len_appsl = get_allocation_elements(len_appsl_pc, sizeof(application_t));
-	len_appsm = get_allocation_elements(len_appsm_pc, sizeof(application_t));
-	len_appsn = get_allocation_elements(len_appsn_pc, sizeof(application_t));
-	len_enrgy = get_allocation_elements(len_enrgy_pc, sizeof(periodic_metric_t));
-	len_evnts = get_allocation_elements(len_evnts_pc, sizeof(ear_event_t));
-	len_loops = get_allocation_elements(len_loops_pc, sizeof(loop_t));
+	sam_inmax[i_aggrs] = get_allocation_elements(lpc_aggrs, typ_sizof[i_aggrs]);
+	sam_inmax[i_appsl] = get_allocation_elements(lpc_appsl, typ_sizof[i_appsm]);
+	sam_inmax[i_appsm] = get_allocation_elements(lpc_appsm, typ_sizof[i_appsm]);
+	sam_inmax[i_appsn] = get_allocation_elements(lpc_appsn, typ_sizof[i_appsm]);
+	sam_inmax[i_enrgy] = get_allocation_elements(lpc_enrgy, typ_sizof[i_enrgy]);
+	sam_inmax[i_evnts] = get_allocation_elements(lpc_evnts, typ_sizof[i_evnts]);
+	sam_inmax[i_loops] = get_allocation_elements(lpc_loops, typ_sizof[i_loops]);
 
 	// Raw data
-	ulong b_aggrs = sizeof(periodic_aggregation_t) * len_aggrs;
-	ulong b_enrgy = sizeof(periodic_metric_t) * len_enrgy;
-	ulong b_appsl = sizeof(application_t) * len_appsl;
-	ulong b_appsm = sizeof(application_t) * len_appsm;
-	ulong b_appsn = sizeof(application_t) * len_appsn;
-	ulong b_evnts = sizeof(ear_event_t) * len_evnts;
-	ulong b_loops = sizeof(loop_t) * len_loops;
+	ulong b_aggrs = typ_sizof[i_aggrs] * sam_inmax[i_aggrs];
+	ulong b_enrgy = typ_sizof[i_enrgy] * sam_inmax[i_enrgy];
+	ulong b_appsl = typ_sizof[i_appsm] * sam_inmax[i_appsl];
+	ulong b_appsm = typ_sizof[i_appsm] * sam_inmax[i_appsm];
+	ulong b_appsn = typ_sizof[i_appsm] * sam_inmax[i_appsn];
+	ulong b_evnts = typ_sizof[i_evnts] * sam_inmax[i_evnts];
+	ulong b_loops = typ_sizof[i_loops] * sam_inmax[i_loops];
 
 	appsm = malloc(b_appsm);
 	appsn = malloc(b_appsn);
@@ -844,16 +736,31 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	tprintf("type||memory||sample||elems||%%");
 	tprintf("----||------||------||-----||----");
 
-	tprintf("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsm, sizeof(application_t), len_appsm, len_appsm_pc);
-	tprintf("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsn, sizeof(application_t), len_appsn, len_appsn_pc);
-	tprintf("learn apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsl, sizeof(application_t), len_appsl, len_appsl_pc);
-	tprintf("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_enrgy, sizeof(periodic_metric_t), len_enrgy, len_enrgy_pc);
-	tprintf("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_loops, sizeof(loop_t), len_loops, len_loops_pc);
-	tprintf("events||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_evnts, sizeof(ear_event_t), len_evnts, len_evnts_pc);
-	tprintf("aggregations||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_aggrs, sizeof(periodic_aggregation_t), len_aggrs, len_aggrs_pc);
+	tprintf("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsm, typ_sizof[i_appsm], sam_inmax[i_appsm], lpc_appsm);
+	tprintf("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsn, typ_sizof[i_appsm], sam_inmax[i_appsn], lpc_appsn);
+	tprintf("learn apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsl, typ_sizof[i_appsm], sam_inmax[i_appsl], lpc_appsl);
+	tprintf("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_enrgy, typ_sizof[i_enrgy], sam_inmax[i_enrgy], lpc_enrgy);
+	tprintf("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_loops, typ_sizof[i_loops], sam_inmax[i_loops], lpc_loops);
+	tprintf("events||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_evnts, typ_sizof[i_evnts], sam_inmax[i_evnts], lpc_evnts);
+	tprintf("aggregations||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_aggrs, typ_sizof[i_aggrs], sam_inmax[i_aggrs], lpc_aggrs);
 
 	tprintf("TOTAL||%0.2f MBs", mb_total);
 	vermast1("TIP! this allocated space is per process server/mirror");
+}
+
+/*
+ *
+ *
+ *
+ */
+static int incoming_new_connection(int fd)
+{
+	int nc;
+
+	nc  = !mirror_iam && (fd == smets_srv->fd || fd == ssync_srv->fd);
+	nc |=  mirror_iam && (fd == smets_mir->fd);
+
+	return nc;
 }
 
 static void pipeline()
@@ -881,14 +788,15 @@ static void pipeline()
 
 			if (timeout_aggr.tv_sec == 0)
 			{
-				verwho1("completed the aggregation number %u with energy %lu", i_aggrs, aggrs[i_aggrs].DC_energy);
+				verwho1("completed the aggregation number %lu with energy %lu",
+						max_aggrs, aggrs[max_aggrs].DC_energy);
 				
 				// Aggregation time done, so new aggregation incoming
-				storage_sample_add(NULL, len_aggrs, &i_aggrs, NULL, 0, SYNC_AGGRS);
+				storage_sample_add(NULL, sam_inmax[i_aggrs], &max_aggrs, NULL, 0, SYNC_AGGRS);
 
 				// Initializing the new element
-				if (len_aggrs > 0) {
-					init_periodic_aggregation(&aggrs[i_aggrs]);
+				if (sam_inmax[i_aggrs] > 0) {
+					init_periodic_aggregation(&aggrs[max_aggrs]);
 				}
 
 				//
@@ -914,6 +822,9 @@ static void pipeline()
 					insert_hub(SYNC_ALL, RES_TIME);
 				}
 
+				//
+				stats_print();
+
 				// If server the time reset is do it after the insert
 				time_reset_timeout_insr(0);
 			}
@@ -934,7 +845,7 @@ static void pipeline()
 					if (state_ok(s1))
 					{
 						sockets_get_address((struct sockaddr *) &addr_cli, extra_buffer, SZ_NAME_MEDIUM);
-						verwho1("accepted connection from socket %d (%s)", fd_cli, extra_buffer);
+						//verwho1("accepted connection from socket %d (%s)", fd_cli, extra_buffer);
 
 						FD_SET(fd_cli, &fds_active);
 
@@ -944,8 +855,10 @@ static void pipeline()
 						if (fd_cli < fd_min) {
 							fd_min = fd_cli;
 						}
+
+						soc_accpt += 1;
 					}
-					// Handle data transfers
+				// Handle data transfers
 				}
 				else
 				{
@@ -953,21 +866,24 @@ static void pipeline()
 
 					if (state_ok(s1))
 					{
-						storage_sample_announce(i, &input_header, input_buffer);
+						stats_sample_account(i, &input_header, input_buffer);
 						storage_sample_receive(i, &input_header, input_buffer);
 					}
 					else
 					{	
 						if (state_is(s1, EAR_SOCK_DISCONNECTED)) {
-							verwho1("disconnected from socket %d (num: %d, str: %s)",
-									i, intern_error_num, intern_error_str);
+							//verwho1("disconnected from socket %d (num: %d, str: %s)",
+							//		i, intern_error_num, intern_error_str);
+							soc_discn += 1;
 						} if (state_is(s1, EAR_SOCK_TIMEOUT)) {
 							sockets_get_address_fd(i, extra_buffer, SZ_BUFF_BIG);
-							verwho1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
-									i, extra_buffer, intern_error_num, intern_error_str);
+							//verwho1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
+							//		i, extra_buffer, intern_error_num, intern_error_str);
+							soc_tmout += 1;
 						} else {
-							verwho1("on reception (num: %d, str: %s), disconnecting from socket %d",
-									intern_error_num, intern_error_str, i);
+							//verwho1("on reception (num: %d, str: %s), disconnecting from socket %d",
+							//		intern_error_num, intern_error_str, i);
+							soc_unkwn += 1;
 						}
 
 						sockets_close_fd(i);
@@ -1014,6 +930,7 @@ int main(int argc, char **argv)
 		verline1("phase 1: general configuration");
 		init_general_configuration(argc, argv, &conf_clus);
 
+		//
 		verline1("phase 2: time configuration");
 		init_time_configuration(argc, argv, &conf_clus);
 
@@ -1026,11 +943,15 @@ int main(int argc, char **argv)
 		init_fork(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 5: process configuration & allocation");
+		verline1("phase 5: types initialization");
+		init_types(argc, argv, &conf_clus);
+
+		//
+		verline1("phase 6: process configuration & allocation");
 		init_process_configuration(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 6: listening (processing every %lu s)", time_insr);
+		verline1("phase 7: listening (processing every %lu s)", time_insr);
 		pipeline();
 	}
 

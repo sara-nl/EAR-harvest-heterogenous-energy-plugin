@@ -40,8 +40,6 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
-#include <database_cache/eardbd_storage.h>
-#include <common/database/db_helper.h>
 
 //
 extern char input_buffer[SZ_BUFF_BIG];
@@ -68,14 +66,6 @@ extern uint per_enrgy;
 extern uint per_aggrs;
 extern uint per_evnts;
 
-extern ulong len_aggrs;
-extern ulong len_appsl;
-extern ulong len_appsm;
-extern ulong len_appsn;
-extern ulong len_enrgy;
-extern ulong len_evnts;
-extern ulong len_loops;
-
 extern periodic_aggregation_t *aggrs;
 extern periodic_metric_t *enrgy;
 extern application_t *appsm;
@@ -84,13 +74,24 @@ extern application_t *appsl;
 extern ear_event_t *evnts;
 extern loop_t *loops;
 
-extern ulong i_aggrs;
-extern ulong i_enrgy;
-extern ulong i_appsm;
-extern ulong i_appsn;
-extern ulong i_appsl;
-extern ulong i_evnts;
-extern ulong i_loops;
+extern ulong max_aggrs;
+extern ulong max_enrgy;
+extern ulong max_appsm;
+extern ulong max_appsn;
+extern ulong max_appsl;
+extern ulong max_evnts;
+extern ulong max_loops;
+
+// Metrics
+extern time_t glb_time1[MAX_TYPES];
+extern time_t glb_time2[MAX_TYPES];
+extern time_t ins_time1[MAX_TYPES];
+extern time_t ins_time2[MAX_TYPES];
+extern size_t typ_sizof[MAX_TYPES];
+extern char  *sam_iname[MAX_TYPES];
+extern uint   sam_index[MAX_TYPES];
+extern uint   sam_inmax[MAX_TYPES];
+extern uint   sam_recvd[MAX_TYPES];
 
 // Verbosity
 extern char *str_who[2];
@@ -104,23 +105,23 @@ extern int verbosity;
 
 static void reset_aggregations()
 {
-	if (i_aggrs < len_aggrs && aggrs[i_aggrs].n_samples > 0) {
-		memcpy (aggrs, &aggrs[i_aggrs], sizeof(periodic_aggregation_t));
+	if (max_aggrs < sam_inmax[i_aggrs] && aggrs[max_aggrs].n_samples > 0) {
+		memcpy (aggrs, &aggrs[max_aggrs], sizeof(periodic_aggregation_t));
     } else {
         init_periodic_aggregation(aggrs);
-    }   
+    }
 
-    i_aggrs = 0;
+    max_aggrs = 0;
 }
 
 void reset_indexes()
 {
-    i_appsm = 0;
-    i_appsn = 0;
-    i_appsl = 0;
-    i_enrgy = 0;
-    i_evnts = 0;
-    i_loops = 0;
+    max_appsm = 0;
+    max_appsn = 0;
+    max_appsl = 0;
+    max_enrgy = 0;
+    max_evnts = 0;
+    max_loops = 0;
 }
 
 void reset_all()
@@ -137,133 +138,104 @@ void reset_all()
  * Insert
  *
  */
-
-static void insert_result(uint index, uint length, time_t time_start, ulong type_size, char *type_name)
-{
-	time_t time_stop;
-	float tms;
-	float pnt;
-	float kbs;
-
-	time(&time_stop);	
-
-	pnt = ((float) (index) / (float) (length)) * 100.0f;
-	kbs = (float) (index * type_size) / 1000000.0;
-	tms = (float) difftime(time_stop, time_start);
-
-	verwho1("inserted %u/%u (%0.2f%, %0.2f MBs) samples of %s in %0.2f s",
-			 index, length, pnt, kbs, type_name, tms);
-}
+#if 1
+	#define db_batch_insert_applications(a, b);
+	#define db_batch_insert_applications_no_mpi(a, b);
+	#define db_batch_insert_loops(a, b);
+	#define db_batch_insert_periodic_metrics(a, b);
+	#define db_batch_insert_periodic_aggregations(a, b);
+	#define db_batch_insert_ear_event(a, b);
+#endif
 
 static void insert_apps_mpi()
 {
-	time_t time_start;
-
-	if (per_appsm == 0 || i_appsm <= 0) {
+	if (per_appsm == 0 || max_appsm <= 0) {
 		return;
 	}
 
-	time(&time_start);
-	db_batch_insert_applications(appsm, i_appsm);
-
-	// Verbosity of the result
-	insert_result(i_appsm, len_appsm, time_start, sizeof(application_t),
-				  "mpi applications");
+	stats_account_insert_start(i_appsm);
+	db_batch_insert_applications(appsm, max_appsm);
+	stats_account_insert_stop(i_appsm, max_appsm);
 
 	// Reset
-	i_appsm = 0;
+	max_appsm = 0;
 }
 
 static void insert_apps_non_mpi()
 {
 	time_t time_start;
 
-	if (per_appsn == 0 || i_appsn <= 0) {
+	if (per_appsn == 0 || max_appsn <= 0) {
 		return;
 	}
 
-	time(&time_start);
-	db_batch_insert_applications_no_mpi(appsn, i_appsn);
-
-	// Verbosity of the result
-	insert_result(i_appsn, len_appsn, time_start, sizeof(application_t),
-				  "non-mpi applications");
+	stats_account_insert_start(i_appsn);
+	db_batch_insert_applications_no_mpi(appsn, max_appsn);
+	stats_account_insert_stop(i_appsn, max_appsn);
 
 	// Reset
-	i_appsn = 0;
+	max_appsn = 0;
 }
 
 static void insert_apps_learning()
 {
 	time_t time_start;
 
-	if (per_appsl == 0 || i_appsl <= 0) {
+	if (per_appsl == 0 || max_appsl <= 0) {
 		return;
 	}
 
-	time(&time_start);
-	db_batch_insert_applications(appsl, i_appsl);
-
-	// Verbosity of the result
-	insert_result(i_appsl, len_appsl, time_start, sizeof(application_t),
-				  "learning applications");
+	stats_account_insert_start(i_appsl);
+	db_batch_insert_applications(appsl, max_appsl);
+	stats_account_insert_stop(i_appsl, max_appsl);
 
 	// Reset
-	i_appsl = 0;
+	max_appsl = 0;
 }
 
 static void insert_loops()
 {
 	time_t time_start;
 
-	if (per_loops == 0 || i_loops <= 0) {
+	if (per_loops == 0 || max_loops <= 0) {
 		return;
 	}
 
-	time(&time_start);
-	db_batch_insert_loops(loops, i_loops);
-
-	// Verbosity of the result
-	insert_result(i_loops, len_loops, time_start, sizeof(loop_t),
-				  "applications loops");
+	stats_account_insert_start(i_loops);
+	db_batch_insert_loops(loops, max_loops);
+	stats_account_insert_stop(i_loops, max_loops);
 
 	// Reset
-	i_loops = 0;
+	max_loops = 0;
 }
 
 static void insert_energy()
 {
 	time_t time_start;
 
-	if (per_enrgy == 0 || i_enrgy <= 0) {
+	if (per_enrgy == 0 || max_enrgy <= 0) {
 		return;
 	}
 
-	time(&time_start);
-	db_batch_insert_periodic_metrics(enrgy, i_enrgy);
-
-	// Verbosity of the result
-	insert_result(i_enrgy, len_enrgy, time_start, sizeof(periodic_metric_t),
-				  "energy monitoring data");
+	stats_account_insert_start(i_enrgy);
+	db_batch_insert_periodic_metrics(enrgy, max_enrgy);
+	stats_account_insert_stop(i_enrgy, max_enrgy);
 
 	// Reset
-	i_enrgy = 0;
+	max_enrgy = 0;
 }
 
 static void insert_aggregations()
 {
 	time_t time_start;
 
-	if (per_aggrs == 0 || i_aggrs <= 0) {
+	if (per_aggrs == 0 || max_aggrs <= 0) {
 		return;
 	}
 
-	time(&time_start);
-	db_batch_insert_periodic_aggregations(aggrs, i_aggrs);
-
-	// Verbosity of the result
-	insert_result(i_aggrs, len_aggrs, time_start, sizeof(periodic_aggregation_t),
-				  "energy aggregations");
+	stats_account_insert_start(i_aggrs);
+	db_batch_insert_periodic_aggregations(aggrs, max_aggrs);
+	stats_account_insert_stop(i_aggrs, max_aggrs);
 
 	// Reset
 	reset_aggregations();
@@ -273,23 +245,20 @@ static void insert_events()
 {
 	time_t time_start;
 
-	if (per_evnts == 0 || i_evnts <= 0) {
+	if (per_evnts == 0 || max_evnts <= 0) {
 		return;
 	}
 
-	time(&time_start);
-	db_batch_insert_ear_event(evnts, i_evnts);
-
-	// Verbosity of the result
-	insert_result(i_evnts, len_evnts, time_start, sizeof(ear_event_t), "events");
+	stats_account_insert_start(i_evnts);
+	db_batch_insert_ear_event(evnts, max_evnts);
+	stats_account_insert_stop(i_evnts, max_evnts);
 
 	// Reset
-	i_evnts = 0;
+	max_evnts = 0;
 }
 
 void insert_hub(uint option, uint reason)
 {
-	verline0();
 	verwho1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 
 	if (sync_option_m(option, SYNC_APPSM, SYNC_ALL)) {
@@ -348,33 +317,33 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 {
 	state_t state;
 
-	if (header->content_type == CONTENT_TYPE_APP)
+	if (header->content_type == CONTENT_TYPE_APM)
 	{
 		application_t *app = (application_t *) content;
 
 		if (app->is_learning)
 		{
-			storage_sample_add((char *) &appsl[i_appsl], len_appsl, &i_appsl,
+			storage_sample_add((char *) &appsl[max_appsl], sam_inmax[i_appsl], &max_appsl,
 				content, sizeof(application_t), SYNC_APPSL);
 		}
 		else if (app->is_mpi)
 		{
-			storage_sample_add((char *) &appsm[i_appsm], len_appsm, &i_appsm,
+			storage_sample_add((char *) &appsm[max_appsm], sam_inmax[i_appsm], &max_appsm,
 				content, sizeof(application_t), SYNC_APPSM);
 		}
 		else
 		{
-			storage_sample_add((char *) &appsn[i_appsn], len_appsn, &i_appsn,
+			storage_sample_add((char *) &appsn[max_appsn], sam_inmax[i_appsn], &max_appsn,
 				content, sizeof(application_t), SYNC_APPSN);
 		}
 	} else if (header->content_type == CONTENT_TYPE_EVE)
 	{
-		storage_sample_add((char *) &evnts[i_evnts], len_evnts, &i_evnts,
+		storage_sample_add((char *) &evnts[max_evnts], sam_inmax[i_evnts], &max_evnts,
 			content, sizeof(ear_event_t), SYNC_EVNTS);
 	}
 	else if (header->content_type == CONTENT_TYPE_LOO)
 	{
-		storage_sample_add((char *) &loops[i_loops], len_loops, &i_loops,
+		storage_sample_add((char *) &loops[max_loops], sam_inmax[i_loops], &max_loops,
 			content, sizeof(loop_t), SYNC_LOOPS);
 	}
 	else if (header->content_type == CONTENT_TYPE_PER)
@@ -382,10 +351,10 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		periodic_metric_t *met = (periodic_metric_t *) content;
 
 		// Add sample to the aggregation
-		add_periodic_aggregation(&aggrs[i_aggrs], met->DC_energy, met->start_time, met->end_time);
-		
+		add_periodic_aggregation(&aggrs[max_aggrs], met->DC_energy, met->start_time, met->end_time);
+
 		// Add sample to the energy array
-		storage_sample_add((char *) &enrgy[i_enrgy], len_enrgy, &i_enrgy,
+		storage_sample_add((char *) &enrgy[max_enrgy], sam_inmax[i_enrgy], &max_enrgy,
 			content, sizeof(periodic_metric_t), SYNC_ENRGY);
 	}
 	else if (header->content_type == CONTENT_TYPE_QST)
@@ -405,51 +374,10 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 			/// We get the timeout passed since the 'time_slct' got its value
 			// and added to 'timeout_insr', because when 'time_slct' would be
 			// substracted from both 'timeout_insr' and 'timeout_aggr', it
-			// also be substracted the passed time.	
+			// also be substracted the passed time.
 			time_t timeout_passed = time_slct - timeout_slct.tv_sec;
-			
+
 			time_reset_timeout_insr(timeout_passed + 5);
 		}
-	}
-}
-
-void storage_sample_announce(int fd, packet_header_t *header, char *content)
-{
-	int print = 1;
-	char *type;
-
-	if (header->content_type == CONTENT_TYPE_APP)
-	{
-		application_t *app = (application_t *) content;
-
-		if (app->is_learning) {
-			type = "learning application_t";
-		} else if (app->is_mpi) {
-			type = "mpi application_t";
-		} else {
-			type = "non-mpi application_t";
-		}
-		//verwho1("j %d -- s %d -- n %s", app->job.id, app->job.step_id, app->node_id);
-		//print_signature_fd(2, &app->signature, 1);
-	} else if (header->content_type == CONTENT_TYPE_PER) {
-		type  = "periodic_metric_t";
-		print = verbosity;
-	} else if (header->content_type == CONTENT_TYPE_EVE) {
-		type = "ear_event_t";
-	} else if (header->content_type == CONTENT_TYPE_LOO) {
-		type = "loop_t";
-	} else if (header->content_type == CONTENT_TYPE_QST) {
-		type = "sync_question";
-	} else if (header->content_type == CONTENT_TYPE_PIN) {
-		type = "ping";
-	} else {
-		type  = "unknown";
-	}
-
-	sockets_get_address_fd(fd, extra_buffer, SZ_NAME_MEDIUM);
-
-	if (print) {
-		verwho1("received '%s' packet from host '%s' (socket: %d)",
-			type, extra_buffer, fd);
 	}
 }
