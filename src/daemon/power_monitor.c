@@ -514,6 +514,20 @@ void powermon_end_job(job_id jid,job_id sid)
 * These functions are called by dynamic_configuration thread: Used to notify when a configuracion setting is changed
 *
 */
+void powermon_inc_th(double th)
+{
+    policy_conf_t *min_time_p;
+    min_time_p=get_my_policy_conf(my_node_conf,MIN_TIME_TO_SOLUTION);
+    if (min_time_p==NULL){
+        eard_verbose(1,"MIN_TIME_TO_SOLUTION not supported, th setting has no effect");
+    }else{
+		if (((min_time_p->th+th)>0) && ((min_time_p->th+th)<=1.0)){
+        	min_time_p->th=min_time_p->th+th;
+		}
+    }
+    save_eard_conf(&eard_dyn_conf);
+}
+
 void powermon_set_th(double th)
 {
 	policy_conf_t *min_time_p;

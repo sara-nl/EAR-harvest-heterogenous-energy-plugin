@@ -141,14 +141,14 @@ int dynconf_inc_th(ulong th)
 	double dth;
 	eard_verbose(1,"Increasing th by  %u",th);
 	dth=(double)th/100.0;
-	if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
-		if (dyn_conf->policy==MIN_TIME_TO_SOLUTION){
+	if (dyn_conf->policy==MIN_TIME_TO_SOLUTION){
+		if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
     		dyn_conf->th=dyn_conf->th+dth;
     		resched_conf->force_rescheduling=1;
 		}
-		powermon_set_th(dyn_conf->th);
-    	return EAR_SUCCESS;
-	}else return EAR_ERROR;
+	}
+	powermon_inc_th(dth);
+    return EAR_SUCCESS;
 
 }
 
@@ -281,7 +281,7 @@ int dynconf_set_th(ulong th)
 			dyn_conf->th=dth;
 			resched_conf->force_rescheduling=1;	
 		}
-		powermon_set_th(dyn_conf->th);
+		powermon_set_th(dth);
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }

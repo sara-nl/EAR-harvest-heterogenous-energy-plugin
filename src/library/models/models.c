@@ -327,18 +327,22 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	num_coeffs=0;
 	coefficients_sm=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
 	if (num_coeffs>0){
+		earl_verbose(1,"%d coefficients found",num_coeffs);
 		num_coeffs=num_coeffs/sizeof(coefficient_t);
 		int ccoeff;
 		for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
 			ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);	
 			i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
-			if (frequency_is_valid_pstate(ref) || frequency_is_valid_pstate(i)){ 
+			if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){ 
+				earl_verbose(1,"Adding pstate ref %d and projection to %d",ref,i);
 				init_coeff_data(&coefficients[ref][i],&coefficients_sm[ccoeff]);
 			}else{ 
 				earl_verbose(0,"Error: invalid coefficients for ref %ul or proj %ul\n",coefficients_sm[ccoeff].pstate_ref,
 				coefficients_sm[ccoeff].pstate);
 			}
 		}
+	}else{
+		earl_verbose(1,"NO coefficients found");
 	}
 	app_policy.init(p_states);
 }
