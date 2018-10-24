@@ -49,6 +49,7 @@
 #include <common/states.h>
 
 static const char *__NAME__ = "min_time_to_solution:";
+extern const char *__HOST__;
 static uint mt_policy_pstates;
 static uint mt_reset_freq=RESET_FREQ;
 extern coefficient_t **coefficients;
@@ -149,6 +150,7 @@ ulong min_time_policy(signature_t *sig)
 		try_next=1;
 		i=EAR_default_pstate-1;
 		time_current=time_ref;
+
 
 		while(try_next && (i >= min_pstate))
 		{

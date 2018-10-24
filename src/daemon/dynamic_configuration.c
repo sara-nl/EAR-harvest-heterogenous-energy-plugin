@@ -74,6 +74,7 @@ extern resched_t *resched_conf;
 static ulong* f_list;
 static uint num_f;
 int last_command = -1;
+int last_dist = -1;
 int last_command_time = -1;
 
 void print_f_list(uint p_states,ulong *freql)
@@ -141,14 +142,14 @@ int dynconf_inc_th(ulong th)
 	double dth;
 	eard_verbose(1,"Increasing th by  %u",th);
 	dth=(double)th/100.0;
-	if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
-		if (dyn_conf->policy==MIN_TIME_TO_SOLUTION){
+	if (dyn_conf->policy==MIN_TIME_TO_SOLUTION){
+		if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
     		dyn_conf->th=dyn_conf->th+dth;
     		resched_conf->force_rescheduling=1;
 		}
-		powermon_set_th(dyn_conf->th);
-    	return EAR_SUCCESS;
-	}else return EAR_ERROR;
+	}
+	powermon_inc_th(dth);
+    return EAR_SUCCESS;
 
 }
 
@@ -231,12 +232,14 @@ int dyncon_restore_conf()
 	policy_conf_t *my_policy;
 	/* We copy the original configuration */
 	copy_my_node_conf(my_node_conf,&my_original_node_conf);
-	pid=MIN_TIME_TO_SOLUTION;
+	pid=dyn_conf->policy;
 	my_policy=get_my_policy_conf(my_node_conf,pid);
 	dyn_conf->max_freq=frequency_pstate_to_freq(my_node_conf->max_pstate);
 	dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
 	dyn_conf->def_p_state=my_policy->p_state;
 	dyn_conf->th=my_policy->th;
+	
+	resched_conf->force_rescheduling=1;
 	
 	return EAR_SUCCESS;
 }
@@ -245,39 +248,29 @@ int dynconf_red_pstates(uint p_id,uint p_states)
 {
 	// Reduces p_states both the maximum and the default
 	ulong max,def,i;
-	max=dyn_conf->max_freq-(p_states*100000);
-	def=dyn_conf->def_freq-(p_states*100000);
+	uint def_pstate,max_pstate;
+	ulong new_def_freq,new_max_freq;
+	def_pstate=frequency_freq_to_pstate(dyn_conf->def_freq);
+	max_pstate=frequency_freq_to_pstate(dyn_conf->max_freq);
+	/* Reducing means incresing in the vector of pstates */
+	def_pstate=def_pstate+p_states;
+	max_pstate=max_pstate+p_states;
+	
+	new_def_freq=frequency_pstate_to_freq(def_pstate);
+	new_max_freq=frequency_pstate_to_freq(max_pstate);
+	
 
-	// reducing the maximum freq in N p_states
-	if (is_valid_freq(max,num_f,f_list)){
-		dyn_conf->max_freq=max;
-    	resched_conf->force_rescheduling=1;
-		powermon_new_max_freq(max);
-	}else{
-		int freq=lower_valid_freq(max,num_f,f_list);
-		if (freq>0){
-			dyn_conf->max_freq=freq;
-			resched_conf->force_rescheduling=1;
-			powermon_new_max_freq(freq);
-		}else	return EAR_ERROR;
+	/* reducing the maximum freq in N p_states */
+	dyn_conf->max_freq=new_max_freq;
+	dyn_conf->def_freq=new_def_freq;
+    resched_conf->force_rescheduling=1;
+
+	/* We must update my_node_info */
+
+	for (i=0;i<TOTAL_POLICIES;i++){
+		my_node_conf->policies[i].p_state=my_node_conf->policies[i].p_state-p_states;
 	}
-	// reducing the default freq in N p_states
-	if (is_valid_freq(def,num_f,f_list)){
-		dyn_conf->def_freq=def;
-		dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
-		resched_conf->force_rescheduling=1;
-		for (i=0;i<TOTAL_POLICIES;i++) powermon_new_def_freq(i,def);
-    	return EAR_SUCCESS;
-	}else{ 
-		int freq=lower_valid_freq(def,num_f,f_list);
-		if (freq>0){
-			dyn_conf->def_freq=freq;
-			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
-			resched_conf->force_rescheduling=1;
-			for (i=0;i<TOTAL_POLICIES;i++) powermon_new_def_freq(i,freq);
-    		return EAR_SUCCESS;
-		}else return EAR_ERROR;
-	}
+	powermon_new_max_freq(new_max_freq);	
 }
 /** This function is supposed to affect only to MIN_TIME_TO_SOLUTION */
 int dynconf_set_th(ulong th)
@@ -289,7 +282,7 @@ int dynconf_set_th(ulong th)
 			dyn_conf->th=dth;
 			resched_conf->force_rescheduling=1;	
 		}
-		powermon_set_th(dyn_conf->th);
+		powermon_set_th(dth);
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }
@@ -320,13 +313,18 @@ void process_remote_requests(int clientfd)
     if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time)
     {
         eard_verbose(1, "Recieved repeating command: %d", req);
+        ack=EAR_IGNORE;
+	    send_answer(clientfd,&ack);
+        if ((command.node_dist>0) && (command.node_dist != last_dist))
+        {
+    		last_dist = command.node_dist;
+            propagate_req(&command, my_cluster_conf.eard.port);
+        }
         return;
     }
-    else
-    {
-        last_command = req;
-        last_command_time = command.time_code;
-    }
+    last_dist = command.node_dist;
+ 	last_command = req;
+ 	last_command_time = command.time_code;
 
 	switch (req){
 		case EAR_RC_NEW_JOB:
@@ -353,6 +351,7 @@ void process_remote_requests(int clientfd)
 			break;
 		case EAR_RC_RED_PSTATE:
 			eard_verbose(1,"red_max_and_def_p_state command received\n");
+			/* p_id is missing , it is currently applied to all the policies */
 			ack=dynconf_red_pstates(command.my_req.ear_conf.p_id,command.my_req.ear_conf.p_states);
 			break;
 		case EAR_RC_SET_FREQ:

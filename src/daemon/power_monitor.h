@@ -88,8 +88,10 @@ void powermon_set_freq(ulong freq);
 /** Restores values from ear.conf (not reloads the file). When application is not mpi, automatically chages the node freq if needed */
 void powermon_restore_conf();
 
-/** Sets temporally the policy th */
+/** Sets temporally the policy th for min_time */
 void powermon_set_th(double th);
+/** Increases temporally the policy th for min_time */
+void powermon_inc_th(double th);
 
 /** Resets the current appl data */
 void reset_current_app();

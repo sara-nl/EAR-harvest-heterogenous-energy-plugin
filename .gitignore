@@ -41,6 +41,7 @@ src/tools/ear_lp_validation
 src/tools/coeffs_jobs
 src/tools/coeffs_quality
 src/tools/get_projections
+src/tools/coeffs_null
 src/tools/coefficients_comparison
 src/tools/coeffs_job
 src/tools/show_coefficients
