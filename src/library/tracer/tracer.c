@@ -75,16 +75,44 @@ static int working;
 
 
 static int my_trace_rank=0;
+static int my_num_nodes=0;
+static char  hostname[256];
+static char *pathname;
+
+static void row_file_create(char *pathname, char *hostname)
+{
+	sprintf(buffer1, "%s/%d_%d.row", pathname, my_trace_rank,getpid());
+	if (my_trace_rank==1){
+		file_row=open(buffer1,
+               O_WRONLY | O_CREAT | O_TRUNC,
+               S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+		return;
+		sprintf(buffer1,"LEVEL TASK SIZE %d\n",my_num_nodes);
+		write(file_row, buffer1, strlen(buffer1));
+	}else{
+		file_row=open(buffer1,
+               O_WRONLY | O_CREAT | O_APPEND,
+               S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+		if (file_row<0) return;
+	}
+	sprintf(buffer1,"%s %d\n",hostname,my_trace_rank);
+	write(file_row, buffer1, strlen(buffer1));
+	close(file_row);
+	
+
+}
 
 static void config_file_create(char *pathname, char* hostname)
 {
 	//
-	sprintf(buffer1, "%s/%d.pcf", pathname, getpid());
+	if (my_trace_rank>1) return;
+	sprintf(buffer1, "%s/%d_%d.pcf", pathname, my_trace_rank,getpid());
 
 	//
 	file_pcf = open(buffer1,
 			   O_WRONLY | O_CREAT | O_TRUNC,
 			   S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	if (file_pcf<0) return;
 
 	sprintf(buffer1, "GRADIENT_COLOR\n");
 	write(file_pcf, buffer1, strlen(buffer1));
@@ -153,7 +181,7 @@ static void config_file_create(char *pathname, char* hostname)
 static void trace_file_open(char *pathname, char *hostname)
 {
 	//
-	sprintf(buffer1, "%s/%d.prv", pathname, getpid());
+	sprintf(buffer1, "%s/%d_%d.prv", pathname, my_trace_rank,getpid());
 
 	//
 	file_prv = open(buffer1,
@@ -248,8 +276,7 @@ void traces_stop()
 
 void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
-	char *pathname = getenv("EAR_TRACE_PATH");
-	char  hostname[256];
+	pathname = getenv("EAR_TRACE_PATH");
 
 	//
 	file_prv = -1;
@@ -260,19 +287,21 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 		enabled = 0;
 		return;
 	}
+	my_trace_rank=global_rank+1;
 
 	//
 	time_sta = PAPI_get_real_usec();
 
 	//
 	gethostname(hostname, SZ_BUFF_BIG);
+	strtok(hostname,".");
 
 	//
 	trace_file_open(pathname, hostname);
 	enabled = (file_prv >= 0);
 
 	//
-	my_trace_rank=global_rank+1;
+	my_num_nodes=nodes;
 	trace_file_init(nodes);
 
 	if(!enabled) {
@@ -281,6 +310,7 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 
 	//
 	config_file_create(pathname, hostname);
+	if (my_trace_rank==1) row_file_create(pathname, hostname);
 	enabled = enabled && (file_pcf >= 0);
 }
 
@@ -306,6 +336,9 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 
 	//
 	close(file_prv);
+
+
+	if (my_trace_rank>1) row_file_create(pathname, hostname);
 
 	//
 	enabled = 0;

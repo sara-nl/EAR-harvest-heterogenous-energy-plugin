@@ -51,7 +51,7 @@
 #include <common/math_operations.h>
 #include <daemon/eard_api.h>
 
-static const char *__NAME__ = "ear/states";
+static const char *__NAME__ = "EARL";
 extern char *__HOST__ ;
 
 // static defines
@@ -65,6 +65,7 @@ extern char *__HOST__ ;
 #define TEST_LOOP		7
 
 static application_t *signatures;
+static uint *sig_ready;
 // static application_t last_signature;
 static projection_t *PP;
 
@@ -99,7 +100,7 @@ ulong select_near_freq(ulong avg)
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
-	ear_verbose(1, "EAR(%s) Ends execution. \n", app_name);
+	earl_verbose(1, "EAR(%s) Ends execution. \n", app_name);
 	end_log();
 }
 
@@ -111,7 +112,11 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 
 
 	signatures=(application_t *) calloc(frequency_get_num_pstates(),sizeof(application_t));
-	for (i=0;i<frequency_get_num_pstates();i++) init_application(&signatures[i]);
+	sig_ready=(uint *)calloc(frequency_get_num_pstates(),sizeof(uint));
+	for (i=0;i<frequency_get_num_pstates();i++){ 
+		init_application(&signatures[i]);
+		sig_ready[i]=0;
+	}
 	//init_application(&last_signature);
 	if (my_id) return;
 
@@ -136,6 +141,7 @@ int states_my_state()
 
 void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
+	int i;
 	EAR_STATE = TEST_LOOP;
 	tries_current_loop=0;
 	tries_current_loop_same_freq=0;
@@ -144,6 +150,10 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
 	comp_N_begin = metrics_time();
 	traces_new_period(ear_my_rank, my_id, event);
 	loop_with_signature = 0;
+    for (i=0;i<frequency_get_num_pstates();i++){
+        init_application(&signatures[i]);
+        sig_ready[i]=0;
+    }
 }
 
 void states_end_period(uint iterations)
@@ -245,19 +255,28 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 	if (system_conf!=NULL){
 	if (resched_conf->force_rescheduling){
-		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
-
-		// We set the default number of iterations to the default for this loop
-		perf_count_period=loop_perf_count_period;
 		resched_conf->force_rescheduling=0;
-		// If the loop was already evaluated, we force the rescheduling
+		earl_verbose(DYN_VERBOSE,"EAR: rescheduling forced by eard: max freq %lu def_freq %lu def_th %lf\n",system_conf->max_freq,system_conf->def_freq,system_conf->th);
 		if (EAR_STATE==SIGNATURE_STABLE){ 
-			ear_verbose(0,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
+
+			// We set the default number of iterations to the default for this loop
+			perf_count_period=loop_perf_count_period;
+			// If the loop was already evaluated, we force the rescheduling
+			earl_verbose(DYN_VERBOSE,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
 			EAR_STATE = EVALUATING_SIGNATURE;
+			// Should we reset these controls?
+			tries_current_loop_same_freq=0;
+			tries_current_loop=0;
 		}
-		// Should we reset these controls?
-		tries_current_loop_same_freq=0;
-		tries_current_loop=0;
+		else if (EAR_STATE==PROJECTION_ERROR){	
+			earl_verbose(DYN_VERBOSE,"EAR state forced to be FIRST_ITERATION because of power capping policies\n");
+			EAR_STATE=FIRST_ITERATION;
+		}else if (EAR_STATE==RECOMPUTING_N){	
+			earl_verbose(DYN_VERBOSE,"EAR state forced to be SIGNATURE_HAS_CHANGED because of power capping policies\n");
+			EAR_STATE=SIGNATURE_HAS_CHANGED;
+		}else{
+			earl_verbose(DYN_VERBOSE,"EAR state not changed\n");
+		}
 	}
 	}
 
@@ -313,7 +332,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
-			if (comp_N_time == 0) ear_verbose(0, "EAR(%s):PANIC comp_N_time must be >0\n", ear_app_name);
+			if (comp_N_time == 0) earl_verbose(0, "EAR(%s):PANIC comp_N_time must be >0\n", ear_app_name);
 
 			// We include a dynamic configurarion of DPD behaviour
 			if (comp_N_time < (long long) perf_accuracy_min_time) {
@@ -373,6 +392,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			// memcpy(&last_signature, &loop_signature, sizeof(application_t));
 			memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
+			sig_ready[curr_pstate]=1;
 
 			if (policy_freq != policy_def_freq)
 			{
@@ -387,7 +407,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			copy_signature(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
-			earl_verbose(1,"EAR(%s)at%u: LoopID=%ul, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
+			earl_verbose(1,"EAR(%s)at %u: LoopID=%ul, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
 			earl_verbose(1,"\tAppSig-POL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(Freq selected %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 
@@ -429,12 +449,15 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
 			traces_frequency(ear_my_rank, my_id, policy_freq);
 			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
-			earl_verbose(1,"EAR(%s)at%u: LoopID=%ul, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
+			earl_verbose(1,"EAR(%s)at %u: LoopID=%ul, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
 			earl_verbose(1,"\tAppSig-VAL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(New Freq %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 			/* END VERBOSE */
 
+			
 			begin_iter = iterations;
+
+
 			// We compare the projection with the signature and the old signature
 			PP = performance_projection(policy_freq);
 			/* If global synchronizations are on, we get frequencies for the rest of the app */
@@ -444,6 +467,19 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* We must evaluate policy decissions */
 			//pok=policy_ok(PP, &loop_signature.signature, &last_signature.signature);
 			l_sig=&signatures[def_pstate].signature;
+			if (sig_ready[def_pstate]==0){
+				earl_verbose(DYN_VERBOSE,"Signature at default freq not available, assuming policy ok");
+				/* If default is not available, that means a dynamic configuration has been decided, we assume we are ok */
+				if (sig_ready[curr_pstate]==0){
+            		memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
+            		sig_ready[curr_pstate]=1;
+				}
+				return;
+			}
+			if (sig_ready[curr_pstate]==0){
+            	memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
+            	sig_ready[curr_pstate]=1;
+			}
 			pok=policy_ok(PP, &loop_signature.signature, l_sig);
 			if (pok)
 			{
@@ -453,7 +489,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}else{
 				earl_verbose(1,"Policy NOT ok");
 			}
-			earl_verbose(1,"EAR(%s): CurrentSig (Time %2.3lf Power %3.2lf Energy %.2lf) LastSig (Time %2.3lf Power %3.2lf Energy %.2lf) \n",
+			earl_verbose(2,"EAR(%s): CurrentSig (Time %2.3lf Power %3.2lf Energy %.2lf) LastSig (Time %2.3lf Power %3.2lf Energy %.2lf) \n",
 			ear_app_name, TIME, POWER, ENERGY, l_sig->time,l_sig->DC_power, (l_sig->time*l_sig->DC_power));
 
 			if (pok) return;

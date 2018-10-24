@@ -171,7 +171,7 @@ int eards_remote_connect(char *nodename,uint port)
     struct timeval timeout;
     memset(&timeout, 0, sizeof(struct timeval));
     timeout.tv_sec = 0;
-    timeout.tv_usec = 2000;
+    timeout.tv_usec = 5000;
     int optlen, valopt;
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {
@@ -611,7 +611,6 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     return total_status + 1;
 }
 
-//for the time being, only one correction will be applied
 void correct_error(int target_ip, request_t *command, int port)
 {
     if (command->node_dist < 1) return;
@@ -635,22 +634,38 @@ void correct_error(int target_ip, request_t *command, int port)
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
+    {
         fprintf(stderr, "Error connecting to node: %s\n", nextip1);
+        correct_error(ntohl(ip1), command, port);
+    }
     else
     {
-        if (!send_command(command)) fprintf(stderr, "Error propagating command to node %s\n", nextip1);
-        eards_remote_disconnect();
+        if (!send_command(command))
+        {
+            fprintf(stderr, "Error propagating command to node %s\n", nextip1);
+            eards_remote_disconnect();
+            correct_error(ntohl(ip1), command, port);
+        }
+        else eards_remote_disconnect();
     }
 
     command->node_dist = actual_dist;
     //connect to second subnode
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
+    {
         fprintf(stderr, "Error connecting to node: %s\n", nextip2);
+        correct_error(ntohl(ip2), command, port);
+    }
     else
     {
-        if (!send_command(command)) fprintf(stderr, "Error propagating command to node %s\n", nextip2);
-        eards_remote_disconnect();
+        if (!send_command(command))
+        {
+            fprintf(stderr, "Error propagating command to node %s\n", nextip2);
+            eards_remote_disconnect();
+            correct_error(ntohl(ip2), command, port);
+        }
+        else eards_remote_disconnect();
     } 
 }
 
