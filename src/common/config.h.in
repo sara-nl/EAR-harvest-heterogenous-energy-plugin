@@ -105,3 +105,4 @@
 #define COORDINATE_FREQUENCIES 0
 
 //#define EAR_GUI
+#define DYN_VERBOSE 2
