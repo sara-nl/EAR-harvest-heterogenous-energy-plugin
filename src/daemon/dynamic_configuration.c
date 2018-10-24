@@ -312,6 +312,8 @@ void process_remote_requests(int clientfd)
     if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time)
     {
         eard_verbose(1, "Recieved repeating command: %d", req);
+        ack=EAR_IGNORE;
+	    send_answer(clientfd,&ack);
         return;
     }
     else

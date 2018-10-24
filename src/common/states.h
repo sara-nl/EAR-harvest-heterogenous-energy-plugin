@@ -55,6 +55,7 @@
 #define EAR_DBD_ERROR_MAIN		-23
 #define EAR_DBD_ERROR_MIRR		-24
 #define EAR_DBD_ERROR_BOTH		-25
+#define EAR_IGNORE              -26
 
 // TODO: this is a config not a state
 #define DYNAIS_ENABLED      1
