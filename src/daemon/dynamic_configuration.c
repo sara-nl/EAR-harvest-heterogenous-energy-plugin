@@ -315,17 +315,16 @@ void process_remote_requests(int clientfd)
         eard_verbose(1, "Recieved repeating command: %d", req);
         ack=EAR_IGNORE;
 	    send_answer(clientfd,&ack);
-        if (command.node_dist != last_dist)
+        if ((command.node_dist>0) && (command.node_dist != last_dist))
         {
+    		last_dist = command.node_dist;
             propagate_req(&command, my_cluster_conf.eard.port);
         }
         return;
     }
-    else
-    {
-        last_command = req;
-        last_command_time = command.time_code;
-    }
+    last_dist = command.node_dist;
+ 	last_command = req;
+ 	last_command_time = command.time_code;
 
 	switch (req){
 		case EAR_RC_NEW_JOB:
@@ -379,7 +378,6 @@ void process_remote_requests(int clientfd)
 			eard_verbose(0,"Invalid remote command\n");
 	}	
 	send_answer(clientfd,&ack);
-    last_dist = command.node_dist;
     if (command.node_dist > 0 && req != EAR_RC_PING && req != NO_COMMAND)
     {
         eard_verbose(1, "command=%d propagated distance=%d",req,command.node_dist);
