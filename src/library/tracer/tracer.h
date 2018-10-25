@@ -54,7 +54,7 @@
 
 #ifdef EAR_GUI
 	/** Executed at application start */
- 	void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn);
+ 	void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn);
 	/** Executed at application end */
 	void traces_end(int global_rank,int local_rank, unsigned long int total_ener);
 	/** **/
@@ -84,7 +84,7 @@
 	/** External reconfiguration is requested */
 	void traces_reconfiguration(int global_rank, int local_rank);
 #else
-	#define traces_init(g,l,n,m,p)
+	#define traces_init(a,g,l,n,m,p)
 	#define traces_new_n_iter(g,l,p,lo,i)
 	#define traces_end(g,l,e)
 	#define traces_new_signature(g,l,s,c,t,gb,p,vpi)

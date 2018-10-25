@@ -77,13 +77,14 @@ static int working;
 
 static int my_trace_rank=0;
 static int my_num_nodes=0;
+static char my_app[GENERIC_NAME];
 static char  hostname[256];
 static char *pathname;
 
 
 static void row_file_create(char *pathname, char *hostname)
 {
-	sprintf(buffer1, "%s/%d_%d.row", pathname, my_trace_rank,getpid());
+	sprintf(buffer1, "%s/%d_%s.%d.row", pathname, my_trace_rank,my_app,getpid());
 	if (my_trace_rank==1){
 		file_row=open(buffer1,
                O_WRONLY | O_CREAT | O_TRUNC,
@@ -108,7 +109,7 @@ static void config_file_create(char *pathname, char* hostname)
 {
 	//
 	if (my_trace_rank>1) return;
-	sprintf(buffer1, "%s/%d_%d.pcf", pathname, my_trace_rank,getpid());
+	sprintf(buffer1, "%s/%d_%s.%d.pcf", pathname, my_trace_rank,my_app,getpid());
 
 	//
 	file_pcf = open(buffer1,
@@ -185,7 +186,7 @@ static void config_file_create(char *pathname, char* hostname)
 static void trace_file_open(char *pathname, char *hostname)
 {
 	//
-	sprintf(buffer1, "%s/%d_%d.prv", pathname, my_trace_rank,getpid());
+	sprintf(buffer1, "%s/%d_%s.%d.prv", pathname, my_trace_rank,my_app,getpid());
 
 	//
 	file_prv = open(buffer1,
@@ -288,7 +289,7 @@ void traces_stop()
 	working = 0;
 }
 
-void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
+void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
 	pathname = getenv("EAR_TRACE_PATH");
 
@@ -302,6 +303,7 @@ void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn)
 		return;
 	}
 	my_trace_rank=global_rank+1;
+	strcpy(my_app,app);
 
 	//
 	time_sta = PAPI_get_real_usec();

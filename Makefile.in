@@ -90,6 +90,9 @@ etc.install: ;
 scripts.install: ;
 	@ $(MAKE) -C 'etc' scripts.install || exit
 
+doc.install: ;
+	@ $(MAKE) -C 'doc' install || exit 
+
 %.install: ;
 	@ $(MAKE) -C src $*.install || exit
 
