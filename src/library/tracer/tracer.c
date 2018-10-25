@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 #include <common/config.h>
+#include <common/ear_verbose.h>
 #include <library/tracer/tracer.h>
 
 #ifdef EAR_GUI
@@ -59,6 +60,10 @@
 #define TRA_MOD		60016
 #define TRA_VPI	    60017
 #define TRA_REC		60018
+
+static const char *__NAME__ = "EARL";
+extern char *__HOST__ ;
+
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
@@ -187,6 +192,7 @@ static void trace_file_open(char *pathname, char *hostname)
 {
 	//
 	sprintf(buffer1, "%s/%d_%s.%d.prv", pathname, my_trace_rank,my_app,getpid());
+	earl_verbose(1,"Generating trace file %s\n",buffer1);
 
 	//
 	file_prv = open(buffer1,
