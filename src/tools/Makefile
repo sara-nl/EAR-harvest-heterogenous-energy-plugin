@@ -17,7 +17,7 @@ BINARIES = coeffs_compute \
 		   learning_validate \
 		   learning_delete
 
-all: $(BINARIES)
+all: $(BINARIES) tmpi
 
 coeffs_compute: coeffs_compute.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
@@ -51,6 +51,9 @@ learning_delete: learning_delete.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJ
 
 learning_validate: learning_validate.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+
+tmpi: tmpi.c $(COMMON_OBJS) $(ROOTDIR)/src/database_cache/eardbd_api.o $(ROOTDIR)/src/common/sockets.o
+	mpiicc $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS) $(ROOTDIR)/src/database_cache/eardbd_api.o $(ROOTDIR)/src/common/sockets.o
 
 ######## OPTIONS
 
