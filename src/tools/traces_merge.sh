@@ -1,4 +1,4 @@
-!#/bin/bash
+#!/bin/bash
 if [[ $# -ne 2 ]]
 then
         echo -e "Usage: $0 job_name pid_first_rank"
@@ -15,6 +15,6 @@ rm -rf ?_$1.*.prv
 echo "Moving pcf file to $2/$1.pcf"
 mv 1_$1.*.pcf $2/$1.pcf
 echo "Merging row files to $2/$1.row"
-cat ?_$1.*.row $2/$1.row
+cat ?_$1.*.row >> $2/$1.row
 echo "Deleting row files"
 rm -rf ?_$1.*.row
