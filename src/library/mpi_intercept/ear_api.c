@@ -470,9 +470,9 @@ void ear_init()
 
 	// Tracing init
 	#if EAR_LIB_SYNC	
-	traces_init(my_master_rank, my_id, num_nodes, my_size, ppnode);
+	traces_init(application.job.app_id,my_master_rank, my_id, num_nodes, my_size, ppnode);
 	#else
-	traces_init(ear_my_rank, my_id, num_nodes, my_size, ppnode);
+	traces_init(application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	#endif
 	traces_start();
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
