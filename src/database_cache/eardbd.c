@@ -343,12 +343,12 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 		}
 	}
 #else
-	conf_clus->db_manager.tcp_port      = 4711;
-	conf_clus->db_manager.sec_tcp_port  = 4712;
-	conf_clus->db_manager.sync_tcp_port = 4713;
+	conf_clus->db_manager.tcp_port      = 4811;
+	conf_clus->db_manager.sec_tcp_port  = 4812;
+	conf_clus->db_manager.sync_tcp_port = 4813;
 	conf_clus->db_manager.mem_size      = 100;
-	conf_clus->db_manager.aggr_time     = 10;
-	conf_clus->db_manager.insr_time     = 3;
+	conf_clus->db_manager.aggr_time     = 60;
+	conf_clus->db_manager.insr_time     = 30;
 
 	server_too = atoi(argv[1]);
 	mirror_too = atoi(argv[2]);
@@ -816,8 +816,7 @@ static void pipeline()
 						// In case of the answer is received the mirror just have to clear the data
 						reset_all();
 					}
-				} else
-				{
+				} else {
 					// Server normal insertion
 					insert_hub(SYNC_ALL, RES_TIME);
 				}
@@ -832,7 +831,7 @@ static void pipeline()
 			time_reset_timeout_slct();
 		}
 
-		// run through the existing connections looking for data to read
+		// Run through the existing connections looking for data to read
 		for(i = fd_min; i <= fd_max && listening && !updating; i++)
 		{
 			if (listening && FD_ISSET(i, &fds_incoming)) // we got one!!
@@ -840,24 +839,23 @@ static void pipeline()
 				// Handle new connections (just for TCP)
 				if (incoming_new_connection(i))
 				{
-					s1 = sockets_accept(i, &fd_cli, &addr_cli);
+					do {
+						s1 = sockets_accept(i, &fd_cli, &addr_cli);
+						
+						if (state_ok(s1))
+						{
+							FD_SET(fd_cli, &fds_active);
 
-					if (state_ok(s1))
-					{
-						sockets_get_address((struct sockaddr *) &addr_cli, extra_buffer, SZ_NAME_MEDIUM);
-						//verwho1("accepted connection from socket %d (%s)", fd_cli, extra_buffer);
+							if (fd_cli > fd_max) {
+								fd_max = fd_cli;
+							}
+							if (fd_cli < fd_min) {
+								fd_min = fd_cli;
+							}
 
-						FD_SET(fd_cli, &fds_active);
-
-						if (fd_cli > fd_max) {
-							fd_max = fd_cli;
+							soc_accpt += 1;
 						}
-						if (fd_cli < fd_min) {
-							fd_min = fd_cli;
-						}
-
-						soc_accpt += 1;
-					}
+					} while(state_ok(s1));
 				// Handle data transfers
 				}
 				else
@@ -866,7 +864,9 @@ static void pipeline()
 
 					if (state_ok(s1))
 					{
+						//
 						stats_sample_account(i, &input_header, input_buffer);
+						//
 						storage_sample_receive(i, &input_header, input_buffer);
 					}
 					else

@@ -186,7 +186,7 @@ state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	mirror_host = "E7450";
 #endif
 
-	if (server_host == NULL) {
+	if (server_host == NULL || strlen(server_host) == 0) {
 		return EAR_ERROR;
 	}
 
@@ -202,7 +202,7 @@ state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 		return EAR_DBD_ERROR_MAIN;
 	}
 
-	if (mirror_host == NULL) {
+	if (mirror_host == NULL || strlen(mirror_host) == 0) {
 		return EAR_SUCCESS;
 	}
 

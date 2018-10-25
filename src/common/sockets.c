@@ -30,6 +30,7 @@
 #include <time.h>
 #include <errno.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -48,11 +49,29 @@ state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_add
 		p = cli_addr;
 	}
 
+	int get = fcntl(req_fd, F_GETFL);
+	printf("pre %d\n", get);
+	
+	fcntl(req_fd, F_SETFL, O_NONBLOCK);	
+	
+	get = fcntl(req_fd, F_GETFL);
+	printf("pos %d\n", get);
+	
+	//
 	*cli_fd = accept(req_fd, (struct sockaddr *) p, &size);
-
-	if (*cli_fd == -1) {
-		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+	get = fcntl(req_fd, F_GETFL);
+	
+	if (*cli_fd == -1)
+	{
+		if (errno == EWOULDBLOCK || errno == EAGAIN) {
+			state_return_msg(EAR_NOT_READY, errno, strerror(errno));
+		} else {
+			state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+		}
 	}
+
+	get = fcntl(*cli_fd, F_GETFL);
+	printf("fin %d\n", get);
 
 	state_return(EAR_SUCCESS);
 }
@@ -319,7 +338,7 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 	}
 
     //char address[128];
-    //int print = 0;
+    //int print = 1;
     //ssize_t recvr = 0;
     //sockets_get_address_fd(fd, address, 128);
     //print = (strcmp(address, "login2301.hpc.eu.lenovo.com") == 0) || (strcmp(address, "login2301") == 0);
@@ -387,7 +406,7 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 			}
 		}
 	}
-	
+
 	state_return(EAR_SUCCESS);
 }
 

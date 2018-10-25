@@ -73,8 +73,8 @@ void stats_print()
 		itime = ((float) difftime(ins_time2[i], ins_time1[i]));
 		gtime = ((float) difftime(glb_time2[i], glb_time1[i]));
 		alloc = ((float) (typ_sizof[i] * sam_inmax[i]) / 1000000.0);
-		prcnt = ((float) (sam_index[i]) / (float) (sam_inmax[i])) * 100.0f;
-		block = ((float) (sam_index[i] * typ_sizof[i]) / 1000000.0);
+		prcnt = ((float) (sam_recvd[i]) / (float) (sam_inmax[i])) * 100.0f;
+		block = ((float) (sam_recvd[i] * typ_sizof[i]) / 1000000.0);
 
 		tprintf("%s||%u/%lu||%2.2f||%0.2fs||%0.2fs",
 				sam_iname[i], sam_index[i], sam_inmax[i],
@@ -95,6 +95,7 @@ void stats_print()
 	fprintf(stderr, "unknown samples: %u\n", soc_tmout);
 
 	verline0();
+	stats_reset();
 }
 
 void stats_reset()

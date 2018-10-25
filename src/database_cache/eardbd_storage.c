@@ -90,7 +90,7 @@ extern time_t ins_time2[MAX_TYPES];
 extern size_t typ_sizof[MAX_TYPES];
 extern char  *sam_iname[MAX_TYPES];
 extern uint   sam_index[MAX_TYPES];
-extern uint   sam_inmax[MAX_TYPES];
+extern ulong  sam_inmax[MAX_TYPES];
 extern uint   sam_recvd[MAX_TYPES];
 
 // Verbosity

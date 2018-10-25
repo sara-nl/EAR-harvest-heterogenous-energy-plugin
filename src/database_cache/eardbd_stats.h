@@ -66,6 +66,8 @@ void stats_account_insert_stop(uint i, uint max);
 
 void stats_sample_account(int fd, packet_header_t *header, char *content);
 
+void stats_reset();
+
 void stats_print();
 
 #endif //EAR_EARDBD_STATS_H
