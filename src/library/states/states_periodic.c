@@ -149,6 +149,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 	if (resched_conf->force_rescheduling)
 	{
+		traces_reconfiguration(ear_my_rank, my_id);
 		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",
 					system_conf->max_freq, system_conf->th);
 
@@ -160,6 +161,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	{
 		case FIRST_ITERATION:
 				EAR_STATE = EVALUATING_SIGNATURE;
+				traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 				metrics_compute_signature_begin();
 				// Loop printing algorithm
 				loop.id.event = event;

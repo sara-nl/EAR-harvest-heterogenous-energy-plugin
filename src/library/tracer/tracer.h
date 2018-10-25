@@ -80,6 +80,9 @@
 
 	/** Executed at each mpi_call */
 	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
+
+	/** External reconfiguration is requested */
+	void traces_reconfiguration(int global_rank, int local_rank);
 #else
 	#define traces_init(g,l,n,m,p)
 	#define traces_new_n_iter(g,l,p,lo,i)
@@ -94,6 +97,7 @@
 	#define traces_dynais(g,l,s);
 	#define traces_earl_mode_dynais(g,l);
 	#define traces_earl_mode_periodic(g,l);
+	#define traces_reconfiguration(g,l);
 	#define traces_start()
 	#define traces_stop()
 #endif

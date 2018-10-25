@@ -255,6 +255,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 	if (system_conf!=NULL){
 	if (resched_conf->force_rescheduling){
+		traces_reconfiguration(ear_my_rank, my_id);
 		resched_conf->force_rescheduling=0;
 		earl_verbose(DYN_VERBOSE,"EAR: rescheduling forced by eard: max freq %lu def_freq %lu def_th %lf\n",system_conf->max_freq,system_conf->def_freq,system_conf->th);
 		if (EAR_STATE==SIGNATURE_STABLE){ 
@@ -264,6 +265,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			// If the loop was already evaluated, we force the rescheduling
 			earl_verbose(DYN_VERBOSE,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
 			EAR_STATE = EVALUATING_SIGNATURE;
+			traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			// Should we reset these controls?
 			tries_current_loop_same_freq=0;
 			tries_current_loop=0;
@@ -307,6 +309,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			// Once min iterations is computed for performance accuracy we start computing application signature
 			EAR_STATE = EVALUATING_SIGNATURE;
+			traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			metrics_compute_signature_begin();
 			begin_iter = iterations;
 			
@@ -326,6 +329,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}                                        
 			loop_perf_count_period=perf_count_period;
 			EAR_STATE = EVALUATING_SIGNATURE;
+			traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			break;
 		case RECOMPUTING_N:
 
@@ -342,6 +346,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			loop_perf_count_period=perf_count_period;
 			EAR_STATE = SIGNATURE_STABLE;
+			traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
 			break;
 		case EVALUATING_SIGNATURE:
 
@@ -404,6 +409,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			else
 			{
 				EAR_STATE = SIGNATURE_STABLE;
+				traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
 			}
 			copy_signature(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
@@ -497,6 +503,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if ((tries_current_loop<MAX_POLICY_TRIES) && (curr_pstate==def_pstate))
 			{
 				EAR_STATE = EVALUATING_SIGNATURE;
+				traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 				return;
 			}
 
@@ -516,6 +523,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (tries_current_loop>=MAX_POLICY_TRIES){
 				log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
 				EAR_STATE = PROJECTION_ERROR;
+				traces_policy_state(ear_my_rank, my_id,PROJECTION_ERROR);
 				policy_freq=policy_default_configuration();
 				traces_frequency(ear_my_rank, my_id, policy_freq);
 				return;
@@ -533,6 +541,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
                         	#endif
 			} else {
 					EAR_STATE = EVALUATING_SIGNATURE;
+					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			}
 			break;
 		case PROJECTION_ERROR:

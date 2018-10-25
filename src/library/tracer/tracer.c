@@ -58,6 +58,7 @@
 #define TRA_STA		60015
 #define TRA_MOD		60016
 #define TRA_VPI	    60017
+#define TRA_REC		60018
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
@@ -79,6 +80,7 @@ static int my_num_nodes=0;
 static char  hostname[256];
 static char *pathname;
 
+
 static void row_file_create(char *pathname, char *hostname)
 {
 	sprintf(buffer1, "%s/%d_%d.row", pathname, my_trace_rank,getpid());
@@ -86,7 +88,7 @@ static void row_file_create(char *pathname, char *hostname)
 		file_row=open(buffer1,
                O_WRONLY | O_CREAT | O_TRUNC,
                S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-		return;
+		if (file_row<0) return;
 		sprintf(buffer1,"LEVEL TASK SIZE %d\n",my_num_nodes);
 		write(file_row, buffer1, strlen(buffer1));
 	}else{
@@ -156,21 +158,23 @@ static void config_file_create(char *pathname, char* hostname)
 	write(file_pcf, buffer1, strlen(buffer1));
 	sprintf(buffer1, "VALUES\n");
 	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"EVALUATING_POLICY\t2\n");
+	sprintf(buffer1,"2\tEVALUATING_POLICY\n");
 	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"VALIDATING_POLICY\t3\n");
+	sprintf(buffer1,"3\tVALIDATING_POLICY\n");
 	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"POLICY_ERROR\t4\n");
+	sprintf(buffer1,"4\tPOLICY_ERROR\n");
 	write(file_pcf, buffer1, strlen(buffer1));
 	sprintf(buffer1, "EVENT_TYPE\n0\t60016\tEARL_MODE\n\n");
 	write(file_pcf, buffer1, strlen(buffer1));
 	sprintf(buffer1, "VALUES\n");
 	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"DYNAIS\t1\n");
+	sprintf(buffer1,"1\tDYNAIS\n");
 	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"PERIODIC\t2\n");
+	sprintf(buffer1,"2\tPERIODIC\n");
 	write(file_pcf, buffer1, strlen(buffer1));
 	sprintf(buffer1, "EVENT_TYPE\n0\t60017\tVPI\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60018\tRECONFIGURATION\n\n");
 	write(file_pcf, buffer1, strlen(buffer1));
 
 
@@ -253,6 +257,16 @@ static void trace_file_write(int event, ullong value)
 	// 2:cpu:app:task:thread:time:event:value
 	sprintf(buffer, "2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank, time, event, value);
 	//fprintf(stderr, "%d: %s");
+	write(file_prv, buffer, strlen(buffer));
+}
+static void trace_file_write_simple_event(int event)
+{
+    long long time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
+    char *buffer = buffer1;
+	// 2:cpu:app:task:thread:time:event:value
+	sprintf(buffer, "2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank, time, event, 1);
+	write(file_prv, buffer, strlen(buffer));
+	sprintf(buffer, "2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank, time+10, event, 0);
 	write(file_prv, buffer, strlen(buffer));
 }
 
@@ -444,15 +458,37 @@ void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulon
 
 void traces_policy_state(int global_rank, int local_rank, int state)
 {
+    if (!enabled || !working) {
+        return;
+	}
+	trace_file_write(TRA_STA,state);
 }
 void traces_dynais(int global_rank, int local_rank, int state)
 {
+    if (!enabled || !working) {
+        return;
+	}
 }
 void traces_earl_mode_dynais(int global_rank, int local_rank)
 {
+    if (!enabled || !working) {
+        return;
+	}
 }
 void traces_earl_mode_periodic(int global_rank, int local_rank)
 {
+    if (!enabled || !working) {
+        return;
+	}
+}
+
+void traces_reconfiguration(int global_rank, int local_rank)
+{
+    if (!enabled || !working) {
+        return;
+    }
+
+    trace_file_write_simple_event(TRA_REC);
 }
 
 #endif
