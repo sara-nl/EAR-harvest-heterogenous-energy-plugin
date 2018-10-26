@@ -456,6 +456,10 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 		error("while listening sockets (%s)", intern_error_str);
 	}
 
+	//
+	sockets_nonblock_set(smets_srv);
+	sockets_nonblock_set(smets_mir);
+
 	// Verbosity
 	char *str_sta[2] = { "listen", "closed" };
 

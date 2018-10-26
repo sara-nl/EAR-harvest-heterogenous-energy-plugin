@@ -160,15 +160,15 @@ int sync_question(uint sync_option)
 	}
 
 	// Setting new timeout
-	sockets_get_timeout(ssync_mir->fd, &timeout_old);
-	sockets_set_timeout(ssync_mir->fd, 10);
+	sockets_timeout_get(ssync_mir->fd, &timeout_old);
+	sockets_timeout_set(ssync_mir->fd, 10);
 
 	// Transferring
 	s = sockets_receive(ssync_mir->fd, &sync_ans_header,
 						(char *) &sync_ans_content, sizeof(sync_ans_t), 1);
 
 	// Recovering old timeout
-	sockets_set_timeout(ssync_mir->fd, timeout_old);
+	sockets_timeout_set(ssync_mir->fd, timeout_old);
 
 	if (state_fail(s)) {
 		verwho1("failed to receive from MAIN (%d, num: %d, str: %s)",
