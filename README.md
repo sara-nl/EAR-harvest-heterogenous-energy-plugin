@@ -1,6 +1,8 @@
 # Energy Aware Runtime
 Overview
 --------
+hola
+
 <img src="etc/images/logo.png" align="right" width="440">
 Energy Aware Runtime (EAR) package provides an energy efficient solution for super computers. EAR includes a runtime library that dynamically selects the CPU frequency for MPI applications based on the program characterization done at runtime, node characteristics and power policy settings. The library doesn't need neither a prior information nor user input.
 
