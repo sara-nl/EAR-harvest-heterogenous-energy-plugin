@@ -175,7 +175,8 @@ void send_answer(int s,ulong *ack)
 }
 void propagate_req(request_t *command, int port)
 {
-
+     
+    if (command->node_dist < 1) return;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;

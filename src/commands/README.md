@@ -45,13 +45,20 @@ The econtrol command modifies cluster settings (temporally) related to power pol
 ```
 Usage: econtrol [options]
     Options:
-        --set-freq  newfreq         ->sets the frequency of all nodes to the requested one
-        --set-def-freq  newfreq     ->sets the default frequency
-        --set-max-freq  newfreq     ->sets the maximum frequency
-        --inc-th  new_th            ->increases the threshold for all nodes
-        --red-def-freq 	reduction   ->reduces the default frequency
-        --restore-conf              ->restores the configuration to all nodes
-        --ping                      ->pings all nodes. Additionally, --ping=node_name pings node_name individually
+        --set-freq      newfreq                 ->sets the frequency of all nodes to the requested one
+        --set-def-freq  newfreq policy_id       ->sets the default frequency for the selected policy id
+        --set-max-freq  newfreq                 ->sets the maximum frequency
+        --inc-th        new_th                  ->increases the threshold for all nodes
+        --set-th        new_th                  ->sets the threshold for all nodes
+        --red-def-freq  n_pstates               ->reduces the default and max frequency by n pstates
+        --restore-conf                          ->restores the configuration to all node
+        --status                                ->requests the current status for all nodes. The ones responding show the current 
+                                                    power, IP address and policy configuration. A list with the ones not
+                                                    responding is provided with their hostnames and IP address.
+        --ping                                  ->pings all nodes to check wether the nodes are up or not. Additionally,
+                                                    --ping=node_name pings that node individually.
+        --help                                  ->displays this message.
+
 ```
 
 # Database commands
