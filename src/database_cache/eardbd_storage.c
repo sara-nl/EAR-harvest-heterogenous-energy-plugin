@@ -138,7 +138,7 @@ void reset_all()
  * Insert
  *
  */
-#if 1
+#if 0
 	#define db_batch_insert_applications(a, b);
 	#define db_batch_insert_applications_no_mpi(a, b);
 	#define db_batch_insert_loops(a, b);

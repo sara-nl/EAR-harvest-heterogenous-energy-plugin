@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
 	//
 	app = calloc(1, sizeof(application_t));
 	app->job.id = (unsigned long) strtoul(argv[1], 0, 10);
-	app->job.step_id = rank;
 	sprintf(app->job.app_id, "caca");
+	app->job.step_id = rank;
 	app->is_mpi = 1;
 	gethostname(app->node_id, 128);	
 	app->is_learning = 0;
@@ -68,8 +68,9 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < n; ++i) {
 		s2 = eardbd_send_application(app);
+		app->job.procs = i;
+		if (s1 != 0 || s2 != 0) fprintf(stderr, "[%d]: %d %d\n", rank, s1, s2);	
 	}
-	if (s1 != 0 || s2 != 0) fprintf(stderr, "[%d]: %d %d\n", rank, s1, s2);	
 
 	//
 	eardbd_disconnect();

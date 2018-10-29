@@ -61,10 +61,14 @@ extern time_t glb_time2[MAX_TYPES];
 extern time_t ins_time1[MAX_TYPES];
 extern time_t ins_time2[MAX_TYPES];
 extern size_t typ_sizof[MAX_TYPES];
-extern char  *sam_iname[MAX_TYPES];
 extern uint   sam_index[MAX_TYPES];
+extern char  *sam_iname[MAX_TYPES];
 extern ulong  sam_inmax[MAX_TYPES];
 extern uint   sam_recvd[MAX_TYPES];
+extern uint   soc_accpt;
+extern uint   soc_discn;
+extern uint   soc_unkwn;
+extern uint   soc_tmout;
 
 // Strings
 extern char *str_who[2];
