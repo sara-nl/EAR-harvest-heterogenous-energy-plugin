@@ -759,6 +759,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->eargm.energy = atoi(token);
 		}
+		else if (!strcmp(token, "GLOBALMANAGERPOWERLIMIT"))
+		{
+			token = strtok(NULL, "=");
+			/* It mas be included in power */
+			conf->eargm.energy = atoi(token);
+		}
         else if (!strcmp(token, "GLOBALMANAGERWARNINGSPERC"))
         {
             token = strtok(NULL, "=");
