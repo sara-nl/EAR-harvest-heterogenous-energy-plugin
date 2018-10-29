@@ -303,7 +303,7 @@ static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
 	int intents = 0;
 	int flags = 0;
 
-	if (block) {
+	if (!block) {
 		flags = MSG_DONTWAIT;
 	}
 
