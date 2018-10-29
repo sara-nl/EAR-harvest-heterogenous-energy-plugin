@@ -63,6 +63,12 @@ extern int EAR_VERBOSE_LEVEL;
                 fprintf(stderr, "\n"); \
         }
 
+#define eargm_verbose(level, ...) \
+        if (level <= EAR_VERBOSE_LEVEL) { \
+                fprintf(stderr, "EARGM: "); \
+                fprintf(stderr, __VA_ARGS__); \
+                fprintf(stderr, "\n"); \
+        }
 
 
 /** Prints a formatted string in case the level passed is greater or equal then

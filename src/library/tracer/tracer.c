@@ -93,7 +93,7 @@ typedef struct paraver_events{
   int event; 
   ullong value;
 }paraver_events_t;
-static paraver_events_t events_list[PARAVER_EVENTS];[
+static paraver_events_t events_list[PARAVER_EVENTS];
 static int num_events=0;
 
 
