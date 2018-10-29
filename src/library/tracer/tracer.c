@@ -86,6 +86,17 @@ static char my_app[GENERIC_NAME];
 static char  hostname[256];
 static char *pathname;
 
+#define PARAVER_EVENTS  400 
+#define EVENTS_IN_BUFFER 200 
+typedef struct paraver_events{
+  long long t;
+  int event; 
+  ullong value;
+}paraver_events_t;
+static paraver_events_t events_list[PARAVER_EVENTS];[
+static int num_events=0;
+
+
 #define TRA_VER	2
 
 static void row_file_create(char *pathname, char *hostname)
@@ -264,25 +275,53 @@ static void trace_file_init(int n_nodes)
 	write(file_prv, buffer, strlen(buffer));
 }
 
+static void trace_file_write_in_file()
+{
+  int i;
+  int events,pendings=num_events,ready=0;
+  while(pendings>0){
+    if (pendings<EVENTS_IN_BUFFER) events=pendings;
+    else events=EVENTS_IN_BUFFER;
+    sprintf(buffer2,"");
+    for (i=0;i<events;i++){
+      sprintf(buffer1,"2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank,
+      events_list[ready+i].t,events_list[ready+i].event,events_list[ready+i].value);
+      strcat(buffer2,buffer1);
+    }
+    write(file_prv, buffer2, strlen(buffer2));
+    ready+=events;
+    pendings-=events;
+  }
+  num_events=0;
+}
+
 static void trace_file_write(int event, ullong value)
 {
-	long long time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
-	char *buffer = buffer1;
+  if (num_events==PARAVER_EVENTS){
+    trace_file_write_in_file();
+  }
+  long long my_time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
+  events_list[num_events].t=my_time;
+  events_list[num_events].event=event;
+  events_list[num_events].value=value;
+  num_events++;
 
-	// 2:cpu:app:task:thread:time:event:value
-	sprintf(buffer, "2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank, time, event, value);
-	//fprintf(stderr, "%d: %s");
-	write(file_prv, buffer, strlen(buffer));
 }
 static void trace_file_write_simple_event(int event)
 {
-    long long time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
-    char *buffer = buffer1;
-	// 2:cpu:app:task:thread:time:event:value
-	sprintf(buffer, "2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank, time, event, 1);
-	write(file_prv, buffer, strlen(buffer));
-	sprintf(buffer, "2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank, time+10, event, 0);
-	write(file_prv, buffer, strlen(buffer));
+  if (num_events==PARAVER_EVENTS-2){
+    trace_file_write_in_file();
+  }
+  long long my_time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
+  events_list[num_events].t=my_time;
+  events_list[num_events].event=event;
+  events_list[num_events].value=1;
+  num_events++;
+  events_list[num_events].t=my_time+10;
+  events_list[num_events].event=event;
+  events_list[num_events].value=0;
+  num_events++;
+
 }
 
 /*
@@ -352,7 +391,8 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 	time_end = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
 
 	//
-	trace_file_write(TRA_ENE, total_energy);
+	trace_file_write(TRA_ENE, total_energy);	
+	trace_file_write_in_file();
 
 	// Post process
 	sprintf(buffer1, "%020llu", time_end);
