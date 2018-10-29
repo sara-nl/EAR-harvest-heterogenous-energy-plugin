@@ -28,22 +28,14 @@
 */
 
 #include <stdio.h>
+#include <common/colors.h>
 #include <common/database/db_helper.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 
 int EAR_VERBOSE_LEVEL=1;
 
-
-#define COL_RED "\x1b[31m"
-#define COL_GRE "\x1b[32m"
-#define COL_YLW "\x1b[33m"
-#define COL_BLU "\x1b[34m"
-#define COL_MGT "\x1b[35m"
-#define COL_CYA "\x1b[36m"
-#define COL_RST "\x1b[0m"
-
-char *colors[7] = { COL_RED, COL_GRE, COL_YLW, COL_BLU, COL_MGT, COL_CYA, COL_RST };
+char *colors[7] = { COL_RED, COL_GRE, COL_YLW, COL_BLU, COL_MGT, COL_CYA, COL_CLR };
 
 void main(int argc,char *argv[])
 {

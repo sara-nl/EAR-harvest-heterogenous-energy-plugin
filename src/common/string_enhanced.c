@@ -27,40 +27,94 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <string.h>
+#include <common/colors.h>
 #include <common/string_enhanced.h>
 
-static const char *sym = STEN_SYMBOL;
-static unsigned int format[STEN_MAX_COLS];
+static const char *sym = STR_SYMBOL;
+static unsigned int format[STR_MAX_COLUMNS];
 static unsigned int columns;
+static unsigned int mode;
 static FILE *stream;
 
-int tprintf_init(FILE *_stream, char *_format)
+/*
+ *
+ *
+ *
+ */
+
+static int tprintf_color_open(char **iput, char **oput)
+{
+	char *ibuf = *iput;
+	char *obuf = *oput;
+
+	if (strncmp(ibuf, STR_RED, STR_COL_CHR) == 0)
+	{
+		sprintf(obuf, "%s", COL_RED);
+		*iput = &ibuf[STR_COL_CHR];
+		*oput = &obuf[COL_CHR];
+		return 1;
+	}
+
+	if (strncmp(ibuf, STR_YLW, STR_COL_CHR) == 0)
+	{
+		sprintf(obuf, "%s", COL_YLW);
+		*iput = &ibuf[STR_COL_CHR];
+		*oput = &obuf[COL_CHR];
+		return 1;
+	}
+
+
+	return 0;
+}
+
+static void tprintf_color_close(char **oput)
+{
+	char *obuf = *oput;
+
+	sprintf(obuf, "%s", COL_CLR);
+	*oput = &obuf[CLR_CHR];
+}
+
+/*
+ *
+	 *
+ *
+ */
+
+int tprintf_init(FILE *_stream, int _mode, char *_format)
 {
 	int len = strlen(_format);
     char *tok;
 
-	if (len >= STEN_BUFF_SIZE) {
+	if (len >= STR_SIZE_BUFFER) {
 		columns = 0;
 		return -1;
 	}
 
-	strcpy(tprintf_ibuf, _format);
-	
+	//
 	columns = 0;
-	stream = _stream;
+	stream  = _stream;
+	mode    = _mode;
+
+
+	// Getting the format
+	strcpy(tprintf_ibuf, _format);
+
+	//
 	tok = strtok(tprintf_ibuf, " ");
-	
-	while (tok != NULL && columns < STEN_MAX_COLS) {
+
+	//
+	while (tok != NULL && columns < STR_MAX_COLUMNS) {
 		format[columns++] = atoi(tok);
 		tok = strtok(NULL, " ");
 	}
-	
-	if (columns >= STEN_MAX_COLS) {
-		columns = 0;	
+
+	if (columns >= STR_MAX_COLUMNS) {
+		columns = 0;
 		return -1;
 	}
 
@@ -74,27 +128,45 @@ int tprintf_format()
     char *p3 = tprintf_obuf;
 
     int len = strlen(tprintf_ibuf);
+	int chr = 0;
+	int col = 0;
     int i = 0;
-    int c = 0;
 
-	if ((len >= STEN_BUFF_SIZE) || (columns == 0)) {
+	if ((len >= STR_SIZE_BUFFER) || (columns == 0)) {
 		return -1;
 	}
 
     while(p1 && i < columns)
     {
+    	// If color
+		if (mode == STR_MODE_TAB_COL) {
+			col = tprintf_color_open(&p2, &p3);
+		}
+
+    	// Character copy and count
         while(p2 != p1) {
             *p3 = *p2;
-            ++c;
+            ++chr;
             ++p2;
+            ++p3;
+		}
+
+        // Number of characters per column
+		if (mode == STR_MODE_CSV_DEF) {
+			*p3 = ';';
+			++p3;
+		}
+
+        while(mode <= STR_MODE_TAB_COL && chr < format[i]) {
+            *p3 = ' ';
+            ++chr;
             ++p3;
         }
 
-        while(c < format[i]) {
-            *p3 = ' ';
-            ++c;
-            ++p3;
-        }
+		if (col) {
+			tprintf_color_close(&p3);
+			col = 0;
+		}
 
 		if (p1 == &tprintf_ibuf[len]) {
 			break;
@@ -108,7 +180,7 @@ int tprintf_format()
 
         if (!p1) p1 = &tprintf_ibuf[len];
 		
-        c = 0;
+        chr = 0;
     }
 
 	p3[0] = '\n';

@@ -41,7 +41,9 @@
 #define LINE "-----------------------------------------------------------------------------------------------------\n"
 
 int EAR_VERBOSE_LEVEL = 0;
-char buffer[SZ_PATH];
+
+static char buffer[SZ_PATH];
+static char buffer_file[SZ_PATH];
 
 typedef struct control
 {
@@ -64,6 +66,7 @@ typedef struct control
 	uint general;
 	uint defaul;
 	uint hide;
+	uint file;
 } control_t;
 	
 control_t cntr;
@@ -316,7 +319,7 @@ void evaluate(control_t *control)
 			frq_base, tim_gerr, pow_gerr);
 	}
 	if (control->general) {
-		tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+		tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||@red@||%0.2lf",
 			control->name_node, frq_base, tim_gerr, pow_gerr);
 	}
 }
@@ -385,15 +388,21 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 		exit(1);
 	}
 
-	//
-	sprintf(cntr->path_coeffs, "%s/island%d/coeffs.%s",
-		conf->earlib.coefficients_pathname, island, node);
 
-	//
-	if (!cntr->defaul) {
+	// If file is custom
+	if (cntr->file) {
+		cntr->n_coeffs = coeff_file_read(buffer_file, &cntr->coeffs);
+	// If default is selected
+	} else if (!cntr->defaul)
+	{
+		sprintf(cntr->path_coeffs, "%s/island%d/coeffs.%s",
+				conf->earlib.coefficients_pathname, island, node);
+
+
 		cntr->n_coeffs = coeff_file_read(cntr->path_coeffs, &cntr->coeffs);
 	}
 
+	// Don't worked, looking for defaults
 	if (cntr->n_coeffs <= 0)
 	{
 		//
@@ -427,6 +436,9 @@ void usage(int argc, char *argv[], control_t *cntr)
 		fprintf(stdout, "\t-G, --general\tShows only the general medium error.\n");
 		fprintf(stdout, "\t-H, --hide\tHides the merged applications projections and errors.\n");
 		fprintf(stdout, "\t-D, --default\tUses the default coefficients.\n");
+		fprintf(stdout, "\t-F, --coeffs-file <path>\tUse this coefficients file\n");
+		fprintf(stdout, "\t\t\tto project instead the node coefficients.\n");
+
 		exit(1);
 	}
 
@@ -452,11 +464,23 @@ void usage(int argc, char *argv[], control_t *cntr)
 		if (!cntr->defaul)
 			cntr->defaul = ((strcmp(argv[i], "-D") == 0) ||
 						  (strcmp(argv[i], "--default") == 0));
+
+		if (!cntr->file)
+		{
+			cntr->file = ((strcmp(argv[i], "-F") == 0) ||
+						  (strcmp(argv[i], "--coeffs-file") == 0));
+
+			strcpy(buffer_file, argv[i + 1]);
+		}
 	}
 
 	if (cntr->general) {
 		cntr->hide = 1;
 		cntr->summary = 0;
+	}
+
+	if (cntr->file) {
+		cntr->defaul = 0;
 	}
 }
 

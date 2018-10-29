@@ -209,7 +209,8 @@ void read_applications(control_t *cntr)
 	application_t *apps;
 	int i;
 
-	sprintf(buffer, "SELECT * FROM Applications WHERE job_id = %lu AND step_id = %lu", cntr->job_id, cntr->step_id);
+	sprintf(buffer, "SELECT * FROM Applications WHERE job_id = %lu AND step_id = %lu",
+			cntr->job_id, cntr->step_id);
 
 	//
 	cntr->mrgd_n = db_read_applications_query(&apps, buffer);
@@ -235,10 +236,10 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 	int island;
 	int i, j;
 
-	cntr->cofs     = calloc(cntr->mrgd_n, sizeof(coefficient_t *));
-	cntr->cofs_n   = calloc(cntr->mrgd_n, sizeof(int));
-	cntr->cofs_s   = calloc(cntr->mrgd_n, sizeof(int));
-	cntr->f_dst = calloc(COLUMNS, sizeof(unsigned long));
+	cntr->cofs   = calloc(cntr->mrgd_n, sizeof(coefficient_t *));
+	cntr->cofs_n = calloc(cntr->mrgd_n, sizeof(int));
+	cntr->cofs_s = calloc(cntr->mrgd_n, sizeof(int));
+	cntr->f_dst	 = calloc(COLUMNS, sizeof(unsigned long));
 
 	for (i = 0; i < cntr->mrgd_n; ++i)
 	{
@@ -299,7 +300,7 @@ void usage(int argc, char *argv[], control_t *cntr)
 
 	if (argc < 3)
 	{
-		fprintf(stdout, "Usage: %s job.id step.id\n\n", argv[0]);
+		fprintf(stdout, "Usage: %s job.id step.id [OPTIONS]\n\n", argv[0]);
 		fprintf(stdout, "  The job.id of the job to project.\n");
 		fprintf(stdout, "  The step.id of the job to project.\n");
 		fprintf(stdout, "\nOptions:\n");

@@ -9,16 +9,24 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/limits.h>
+#include <common/sizes.h>
 #include <common/string_enhanced.h>
 #include <common/types/coefficient.h>
 
+char buffer[SZ_PATH];
+
+coefficient_t *coeffs_accum;
+int *coeffs_num;
+int coeffs_max;
+int armonize;
+
 #define SZ_COEFF sizeof(coefficient_t)
 
-char buffer[4096];
-coefficient_t *coeffs_accum;
-unsigned int *coeffs_num;
-unsigned int coeffs_max;
-unsigned int files_num;
+/*
+ *
+ *
+ *
+ */
 
 int is_regular_file(const char *path)
 {
@@ -67,12 +75,21 @@ void accum(coefficient_t *coeff, int i)
 		return;
 	}
 
-	coeffs_accum[i].A += coeff->A;
-	coeffs_accum[i].B += coeff->B;
-	coeffs_accum[i].C += coeff->C;
-	coeffs_accum[i].D += coeff->D;
-	coeffs_accum[i].E += coeff->E;
-	coeffs_accum[i].F += coeff->F;
+	if (armonize) {
+		coeffs_accum[i].A += 1.0 / coeff->A;
+		coeffs_accum[i].B += 1.0 / coeff->B;
+		coeffs_accum[i].C += 1.0 / coeff->C;
+		coeffs_accum[i].D += 1.0 / coeff->D;
+		coeffs_accum[i].E += 1.0 / coeff->E;
+		coeffs_accum[i].F += 1.0 / coeff->F;
+	} else {
+		coeffs_accum[i].A += coeff->A;
+		coeffs_accum[i].B += coeff->B;
+		coeffs_accum[i].C += coeff->C;
+		coeffs_accum[i].D += coeff->D;
+		coeffs_accum[i].E += coeff->E;
+		coeffs_accum[i].F += coeff->F;
+	}
 }
 
 void write_file(char *path)
@@ -107,14 +124,25 @@ void write_file(char *path)
         if (coeffs_accum[i].pstate_ref == coeffs_accum[i].pstate) {
             coeffs_accum[i].A = 1.0;
             coeffs_accum[i].D = 1.0;
-        } else if (coeffs_accum[i].available) {
+        } else if (coeffs_accum[i].available)
+        {
             num = (double) coeffs_num[i];
-            coeffs_accum[i].A = coeffs_accum[i].A / num;
-            coeffs_accum[i].B = coeffs_accum[i].B / num;
-            coeffs_accum[i].C = coeffs_accum[i].C / num;
-            coeffs_accum[i].D = coeffs_accum[i].D / num;
-            coeffs_accum[i].E = coeffs_accum[i].E / num;
-            coeffs_accum[i].F = coeffs_accum[i].F / num;
+
+            if (armonize) {
+				coeffs_accum[i].A = n / coeffs_accum[i].A;
+				coeffs_accum[i].B = n / coeffs_accum[i].B;
+				coeffs_accum[i].C = n / coeffs_accum[i].C;
+				coeffs_accum[i].D = n / coeffs_accum[i].D;
+				coeffs_accum[i].E = n / coeffs_accum[i].E;
+				coeffs_accum[i].F = n / coeffs_accum[i].F;
+			} else {
+				coeffs_accum[i].A = coeffs_accum[i].A / num;
+				coeffs_accum[i].B = coeffs_accum[i].B / num;
+				coeffs_accum[i].C = coeffs_accum[i].C / num;
+				coeffs_accum[i].D = coeffs_accum[i].D / num;
+				coeffs_accum[i].E = coeffs_accum[i].E / num;
+				coeffs_accum[i].F = coeffs_accum[i].F / num;
+			}
         }
 
 		tprintf("%lu||%lu||%d||%d|| | %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
@@ -174,18 +202,29 @@ void read_file(char *path, char *node)
 	close(fd);
 }
 
-void usage(int argc, char *argv[])
+int usage(int argc, char *argv[])
 {
 	int i = 0;
 
 	if (argc < 3)
 	{
-		fprintf(stdout, "Usage: %s coeffs.path node.list\n\n", argv[0]);
+		fprintf(stdout, "Usage: %s coeffs.path node.list [OPTIONS...]\n\n", argv[0]);
 		fprintf(stdout, "  The coeffs.path includes the island.\n");
 		fprintf(stdout, "  The node.list is splitted by spaces.\n");
+		fprintf(stdout, "\nOptions:\n");
+		fprintf(stdout, "\t-A, --armonize\tDoes the armonic mean, reducing the weight\n");
+		fprintf(stdout, "\t\t\tof radical coefficient values.\n");
 		exit(1);
 	}
 
+	for (i = 3; i < argc; ++i)
+	{
+		if (!armonize)
+			armonize = ((strcmp(argv[i], "-A") == 0) ||
+						(strcmp(argv[i], "--armonize") == 0));
+	}
+
+	return argc - armonize;
 }
 
 int main(int argc, char *argv[])
@@ -193,18 +232,19 @@ int main(int argc, char *argv[])
 	char *path_file;
 	char *path_root;
 	char *node_name;
+	int n;
 	int i;
 
-	usage(argc, argv);
+	n = usage(argc, argv);
 
-	//
+	// Number of P_STATEs, more than 200 is impossible
 	coeffs_accum = calloc(200, sizeof(coefficient_t));
 	coeffs_num   = calloc(200, sizeof(unsigned int));	
 	path_root = argv[1];
 	path_file = buffer;
 
 	//
-	for (i = 2; i < argc; i++)
+	for (i = 2; i < n; i++)
 	{
 		node_name = argv[i];
 
