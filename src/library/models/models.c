@@ -50,6 +50,8 @@
 #include <common/states.h>
 #include <daemon/eard_api.h>
 
+static int use_default=0;
+
 typedef struct policy
 {
 	void (*init)(uint num_pstates);
@@ -266,8 +268,12 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	char nodename[128];
 	int begin_pstate, end_pstate;
 	int i, ref;
+	char *use_def;
 
 	ear_debug(3, "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
+
+	use_def=getenv("USE_DEFAULT_COEFFICIENTS");
+	if (use_def!=NULL) use_default=1;
 
 	// Initializations
 	// We start t nominal by default
@@ -323,9 +329,17 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	end_pstate = p_states;
 
 	char coeffs_path[GENERIC_NAME];
-	get_coeffs_path(get_ear_tmp(),coeffs_path);	
+	if (use_default){
+		get_coeffs_default_path(get_ear_tmp(),coeffs_path);
+	}else{
+		get_coeffs_path(get_ear_tmp(),coeffs_path);	
+	}
 	num_coeffs=0;
-	coefficients_sm=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
+	if (use_default){
+		coefficients_sm=attach_coeffs_default_shared_area(coeffs_path,&num_coeffs);
+	}else{
+		coefficients_sm=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
+	}
 	if (num_coeffs>0){
 		num_coeffs=num_coeffs/sizeof(coefficient_t);
 		earl_verbose(2,"%d coefficients found",num_coeffs);
