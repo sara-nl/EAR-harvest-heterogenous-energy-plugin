@@ -204,7 +204,7 @@ void evaluate(control_t *control)
 	n_gerr = 0.0;
 
 	// Initializing columns
-	tprintf_init(stderr, "18 11 15 12 12 15 12 12");
+	tprintf_init(stderr, STR_MODE_TAB_DEF, "18 11 15 12 12 15 12 12");
 
 	for (j = 0; j < n_merged; ++j)
 	{
@@ -346,7 +346,7 @@ void read_applications(control_t *cntr)
 		if (cntr->general)
 		{
 			// Initializing columns
-			tprintf_init(stderr, "18 11 15 12 12 15 12 12");
+			tprintf_init(stderr, STR_MODE_TAB_DEF, "18 11 15 12 12 15 12 12");
 			tprintf("%s||--|| | -||-||--|| | -||-||--", cntr->name_node);
 		} else {
 			fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);

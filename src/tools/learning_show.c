@@ -65,7 +65,7 @@ void main(int argc,char *argv[])
 	num_apps = db_read_applications(&apps, 1, 50, node_name);
    
 	// 
-	tprintf_init(stdout, "22 11 12 10 8 14 12");
+	tprintf_init(stdout, STR_MODE_TAB_DEF, "22 11 12 10 8 14 12");
  
 	while (num_apps > 0)
     {

@@ -138,7 +138,7 @@ void evaluate(control_t *cntr)
 	coefficient_t *c;
 	int i, j, k, n, r;
 
-	tprintf_init(stderr, "10 5 8 12 10 10 10 10 10 12 10 10 10 10 10");
+	tprintf_init(stderr, STR_MODE_TAB_DEF, "10 5 8 12 10 10 10 10 10 12 10 10 10 10 10");
 
 	tprintf("%s||Coe.||@%u|| | T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|| | P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
 			cntr->mrgd[0].job.app_id, cntr->mrgd[0].signature.def_f);
@@ -190,7 +190,7 @@ void evaluate(control_t *cntr)
 	// Print legend
 	fprintf(stderr, "-------------------------\n");
 	
-	tprintf_init(stderr, "5 12 12");
+	tprintf_init(stderr, STR_MODE_TAB_DEF, "5 12 12");
 	tprintf("Idx||Freq. from||Freq. to");	
 	for (k = 1; k < COLUMNS; ++k)
     {
