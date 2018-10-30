@@ -152,11 +152,6 @@ int tprintf_format()
 		}
 
         // Number of characters per column
-		if (mode == STR_MODE_CSV_DEF) {
-			*p3 = ';';
-			++p3;
-		}
-
         while(mode <= STR_MODE_TAB_COL && chr < format[i]) {
             *p3 = ' ';
             ++chr;
@@ -171,6 +166,11 @@ int tprintf_format()
 		if (p1 == &tprintf_ibuf[len]) {
 			break;
 		}
+
+        if (mode == STR_MODE_CSV_DEF) {
+            *p3 = ';';
+            ++p3;
+        }
 
         ++i;
         p1++;

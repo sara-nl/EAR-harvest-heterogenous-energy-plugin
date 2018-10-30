@@ -43,7 +43,7 @@
 int EAR_VERBOSE_LEVEL = 0;
 
 static char buffer[SZ_PATH];
-static char buffer_file[SZ_PATH];
+static char buffer_input[SZ_PATH];
 
 typedef struct control
 {
@@ -60,13 +60,15 @@ typedef struct control
 	int n_apps_merged;
 	int n_coeffs;
 	/* other */
+	uint table_mode;
 	uint frq_base;
 	uint learning;
 	uint summary;
 	uint general;
 	uint defaul;
+	uint input;
 	uint hide;
-	uint file;
+	uint csv;
 } control_t;
 	
 control_t cntr;
@@ -204,7 +206,11 @@ void evaluate(control_t *control)
 	n_gerr = 0.0;
 
 	// Initializing columns
-	tprintf_init(stderr, STR_MODE_TAB_DEF, "18 11 15 12 12 15 12 12");
+	if (control->csv) {
+		fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+	} else {
+		tprintf_init(stderr, STR_MODE_TAB_COL, "18 11 15 12 12 15 12 12");
+	}
 
 	for (j = 0; j < n_merged; ++j)
 	{
@@ -223,9 +229,10 @@ void evaluate(control_t *control)
 				continue;
 			}
 
-			if (!control->hide) {
+			if (!control->hide && !control->csv)
+			{
 				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
-						merged[j].job.app_id, merged[j].signature.def_f);
+					merged[j].job.app_id, merged[j].signature.def_f);
 			}
 
 			cpi_sign = merged[j].signature.CPI;
@@ -255,9 +262,16 @@ void evaluate(control_t *control)
 
 						if (!control->hide)
 						{
-							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
-								coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
-								m->signature.DC_power, pow_proj, pow_serr);
+							if (control->csv) {
+								fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
+									merged[j].job.app_id, merged[j].signature.def_f,
+									coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
+									m->signature.DC_power, pow_proj, pow_serr);
+							} else {
+								tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
+									coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
+									m->signature.DC_power, pow_proj, pow_serr);
+							}
 						}
 					} else {
 						if (!control->hide) {
@@ -315,11 +329,12 @@ void evaluate(control_t *control)
 	pow_gerr = pow_gerr / n_gerr;
 
 	if (control->summary) {
+
 		tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
 			frq_base, tim_gerr, pow_gerr);
 	}
 	if (control->general) {
-		tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||@red@||%0.2lf",
+		tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
 			control->name_node, frq_base, tim_gerr, pow_gerr);
 	}
 }
@@ -346,7 +361,7 @@ void read_applications(control_t *cntr)
 		if (cntr->general)
 		{
 			// Initializing columns
-			tprintf_init(stderr, STR_MODE_TAB_DEF, "18 11 15 12 12 15 12 12");
+			tprintf_init(stderr, cntr->table_mode, "18 11 15 12 12 15 12 12");
 			tprintf("%s||--|| | -||-||--|| | -||-||--", cntr->name_node);
 		} else {
 			fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);
@@ -390,8 +405,8 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 
 
 	// If file is custom
-	if (cntr->file) {
-		cntr->n_coeffs = coeff_file_read(buffer_file, &cntr->coeffs);
+	if (cntr->input) {
+		cntr->n_coeffs = coeff_file_read(buffer_input, &cntr->coeffs);
 	// If default is selected
 	} else if (!cntr->defaul)
 	{
@@ -435,8 +450,9 @@ void usage(int argc, char *argv[], control_t *cntr)
 		fprintf(stdout, "\t-S, --summary\tShows the medium and general errors.\n");
 		fprintf(stdout, "\t-G, --general\tShows only the general medium error.\n");
 		fprintf(stdout, "\t-H, --hide\tHides the merged applications projections and errors.\n");
+		fprintf(stdout, "\t-C, --csv\tPrints the console output in CSV format.\n");
 		fprintf(stdout, "\t-D, --default\tUses the default coefficients.\n");
-		fprintf(stdout, "\t-F, --coeffs-file <path>\tUse this coefficients file\n");
+		fprintf(stdout, "\t-I <path>\tUse this coefficients input file\n");
 		fprintf(stdout, "\t\t\tto project instead the node coefficients.\n");
 
 		exit(1);
@@ -461,16 +477,23 @@ void usage(int argc, char *argv[], control_t *cntr)
 		if (!cntr->hide)
 			cntr->hide = ((strcmp(argv[i], "-H") == 0) ||
 						  (strcmp(argv[i], "--hide") == 0));
+		if (!cntr->csv)
+		{
+			cntr->csv = ((strcmp(argv[i], "-C") == 0) ||
+						   (strcmp(argv[i], "--csv") == 0));
+
+			cntr->table_mode = STR_MODE_CSV_DEF;
+		}
 		if (!cntr->defaul)
 			cntr->defaul = ((strcmp(argv[i], "-D") == 0) ||
 						  (strcmp(argv[i], "--default") == 0));
-
-		if (!cntr->file)
+		if (!cntr->input) 
 		{
-			cntr->file = ((strcmp(argv[i], "-F") == 0) ||
-						  (strcmp(argv[i], "--coeffs-file") == 0));
+			cntr->input = (strcmp(argv[i], "-I") == 0);
 
-			strcpy(buffer_file, argv[i + 1]);
+			if (cntr->input) {
+				strcpy(buffer_input, argv[i + 1]);
+			}
 		}
 	}
 
@@ -479,7 +502,7 @@ void usage(int argc, char *argv[], control_t *cntr)
 		cntr->summary = 0;
 	}
 
-	if (cntr->file) {
+	if (cntr->input) {
 		cntr->defaul = 0;
 	}
 }

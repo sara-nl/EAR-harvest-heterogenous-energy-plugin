@@ -13,12 +13,18 @@
 #include <common/string_enhanced.h>
 #include <common/types/coefficient.h>
 
+// Buffers
 char buffer[SZ_PATH];
+char buffer_output[SZ_PATH];
 
+// Coefficients
 coefficient_t *coeffs_accum;
 int *coeffs_num;
 int coeffs_max;
+
+// Customize program
 int armonize;
+int output;
 
 #define SZ_COEFF sizeof(coefficient_t)
 
@@ -129,12 +135,12 @@ void write_file(char *path)
             num = (double) coeffs_num[i];
 
             if (armonize) {
-				coeffs_accum[i].A = n / coeffs_accum[i].A;
-				coeffs_accum[i].B = n / coeffs_accum[i].B;
-				coeffs_accum[i].C = n / coeffs_accum[i].C;
-				coeffs_accum[i].D = n / coeffs_accum[i].D;
-				coeffs_accum[i].E = n / coeffs_accum[i].E;
-				coeffs_accum[i].F = n / coeffs_accum[i].F;
+				coeffs_accum[i].A = num / coeffs_accum[i].A;
+				coeffs_accum[i].B = num / coeffs_accum[i].B;
+				coeffs_accum[i].C = num / coeffs_accum[i].C;
+				coeffs_accum[i].D = num / coeffs_accum[i].D;
+				coeffs_accum[i].E = num / coeffs_accum[i].E;
+				coeffs_accum[i].F = num / coeffs_accum[i].F;
 			} else {
 				coeffs_accum[i].A = coeffs_accum[i].A / num;
 				coeffs_accum[i].B = coeffs_accum[i].B / num;
@@ -214,6 +220,9 @@ int usage(int argc, char *argv[])
 		fprintf(stdout, "\nOptions:\n");
 		fprintf(stdout, "\t-A, --armonize\tDoes the armonic mean, reducing the weight\n");
 		fprintf(stdout, "\t\t\tof radical coefficient values.\n");
+		fprintf(stdout, "\t-O <file.path>\tSaves the default coefficients file in a\n");
+		fprintf(stdout, "\t\t\tfile of custom location.\n");
+		
 		exit(1);
 	}
 
@@ -222,9 +231,13 @@ int usage(int argc, char *argv[])
 		if (!armonize)
 			armonize = ((strcmp(argv[i], "-A") == 0) ||
 						(strcmp(argv[i], "--armonize") == 0));
+		if (!output) {
+			output = (strcmp(argv[i], "-O") == 0);
+			strcpy(buffer_output, argv[i+1]);
+		}
 	}
 
-	return argc - armonize;
+	return argc - armonize - (output*2);
 }
 
 int main(int argc, char *argv[])
@@ -254,14 +267,15 @@ int main(int argc, char *argv[])
 		if (is_regular_file(path_file))
 		{
 			read_file(path_file, node_name);
-
-			//
-			files_num += 1;
 		}
 	}
 
 	//
-	sprintf(path_file, "%s/coeffs.default", path_root);
+	if (output) {
+		path_file = buffer_output;
+	} else {
+		sprintf(path_file, "%s/coeffs.default", path_root);
+	}
 	write_file(path_file);
 
 	return 0;
