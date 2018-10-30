@@ -42,9 +42,9 @@
 #define STR_MGT 			"<mgt>"
 #define STR_CYA 			"<cya>"
 #define STR_COL_CHR			5
-#define STR_MODE_TAB_DEF	0
-#define STR_MODE_TAB_COL	1
-#define STR_MODE_CSV_DEF	2
+#define STR_MODE_DEF		0
+#define STR_MODE_COL		1
+#define STR_MODE_CSV		2
 
 char tprintf_ibuf[STR_SIZE_BUFFER];
 char tprintf_obuf[STR_SIZE_BUFFER];

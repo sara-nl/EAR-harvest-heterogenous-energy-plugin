@@ -119,7 +119,7 @@ void write_file(char *path)
 	#endif
 
 	//
-	tprintf_init(stderr, STR_MODE_TAB_DEF, "10 10 6 2 13 10 10 10 10 10");
+	tprintf_init(stderr, STR_MODE_DEF, "10 10 6 2 13 10 10 10 10 10");
 
 	//
 	tprintf("F. from||F. to||N||Av|| |  A|| B|| C|| D|| E|| F|| G");

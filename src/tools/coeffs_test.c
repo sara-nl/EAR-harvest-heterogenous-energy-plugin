@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-	tprintf_init(stderr, STR_MODE_TAB_COL, "18 11");
+	tprintf_init(stderr, STR_MODE_COL, "18 11");
 	tprintf("Hola||Adios");
 	tprintf("----||-----");
 	tprintf("1980||--");

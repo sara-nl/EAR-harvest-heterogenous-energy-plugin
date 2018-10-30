@@ -209,7 +209,7 @@ void evaluate(control_t *control)
 	if (control->csv) {
 		fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
 	} else {
-		tprintf_init(stderr, STR_MODE_TAB_COL, "18 11 15 12 12 15 12 12");
+		tprintf_init(stderr, STR_MODE_COL, "18 11 15 12 12 15 12 12");
 	}
 
 	for (j = 0; j < n_merged; ++j)
@@ -229,8 +229,7 @@ void evaluate(control_t *control)
 				continue;
 			}
 
-			if (!control->hide && !control->csv)
-			{
+			if (!control->hide && !control->csv) {
 				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
 					merged[j].job.app_id, merged[j].signature.def_f);
 			}
@@ -296,8 +295,13 @@ void evaluate(control_t *control)
 		fprintf(stderr, LINE);
 	}
 
-	if (control->summary) {	
-		tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
+	if (control->summary)
+	{
+		if (control->csv) {
+			fprintf(stderr, "Freq. From;Freq. To;T. Err;P. Err\n");
+		} else {
+			tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
+		}
 	}
 
 	for (i = 0; i < n_coeffs; i++)
@@ -308,9 +312,15 @@ void evaluate(control_t *control)
 			tim_merr[i] = tim_merr[i] / n_merr[i];
 			pow_merr[i] = pow_merr[i] / n_merr[i];
 
-			if (control->summary) {
-				tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-					coeffs[i].pstate, tim_merr[i], pow_merr[i]);
+			if (control->summary)
+			{
+				if (control->csv) {
+					fprintf(stderr, "%lu;%lu;%0.2lf;%0.2lf\n",
+						frq_base, coeffs[i].pstate, tim_merr[i], pow_merr[i]);
+				} else {
+					tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+						coeffs[i].pstate, tim_merr[i], pow_merr[i]);
+				}
 			}
 
 			// General medium error
@@ -328,14 +338,25 @@ void evaluate(control_t *control)
 	tim_gerr = tim_gerr / n_gerr;
 	pow_gerr = pow_gerr / n_gerr;
 
-	if (control->summary) {
-
-		tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-			frq_base, tim_gerr, pow_gerr);
+	if (control->summary)
+	{
+		if (control->csv) {
+			fprintf(stderr, "%lu;%0.2lf;%0.2lf\n",
+				frq_base, tim_gerr, pow_gerr);
+		} else {
+			tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+				frq_base, tim_gerr, pow_gerr);
+		}
 	}
-	if (control->general) {
-		tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-			control->name_node, frq_base, tim_gerr, pow_gerr);
+	if (control->general)
+	{
+		if (control->csv) {
+			tprintf("%s;%lu;%0.2lf;%0.2lf\n",
+				control->name_node, frq_base, tim_gerr, pow_gerr);
+		} else {
+			tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+				control->name_node, frq_base, tim_gerr, pow_gerr);
+		}
 	}
 }
 
@@ -360,9 +381,13 @@ void read_applications(control_t *cntr)
 	{
 		if (cntr->general)
 		{
-			// Initializing columns
-			tprintf_init(stderr, cntr->table_mode, "18 11 15 12 12 15 12 12");
-			tprintf("%s||--|| | -||-||--|| | -||-||--", cntr->name_node);
+			if (control->csv) {
+				tprintf("%s;--;--;--\n");
+			} else {
+				// Initializing columns
+				tprintf_init(stderr, cntr->table_mode, "18 11 15 12 12 15 12 12");
+				tprintf("%s||--|| | -||-||--|| | -||-||--", cntr->name_node);
+			}
 		} else {
 			fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);
 		}

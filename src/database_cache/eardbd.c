@@ -598,7 +598,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	int fd4 = ssync_mir->fd;
 
 	// Summary
-	tprintf_init(stderr, STR_MODE_TAB_DEF, "18 8 7 10 8");
+	tprintf_init(stderr, STR_MODE_DEF, "18 8 7 10 8");
 
 	tprintf("type||port||prot||stat||fd");
 	tprintf("----||----||----||----||--");
@@ -838,7 +838,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 		return;
 	}
 
-	tprintf_init(stderr, STR_MODE_TAB_DEF, "15 15 11 9 8");
+	tprintf_init(stderr, STR_MODE_DEF, "15 15 11 9 8");
 
 	// Summary
 	tprintf("type||memory||sample||elems||%%");

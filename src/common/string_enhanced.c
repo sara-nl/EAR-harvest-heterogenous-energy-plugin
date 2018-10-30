@@ -100,7 +100,6 @@ int tprintf_init(FILE *_stream, int _mode, char *_format)
 	stream  = _stream;
 	mode    = _mode;
 
-
 	// Getting the format
 	strcpy(tprintf_ibuf, _format);
 
@@ -139,7 +138,7 @@ int tprintf_format()
     while(p1 && i < columns)
     {
     	// If color
-		if (mode == STR_MODE_TAB_COL) {
+		if (mode == STR_MODE_COL) {
 			col = tprintf_color_open(&p2, &p3);
 		}
 
@@ -152,7 +151,7 @@ int tprintf_format()
 		}
 
         // Number of characters per column
-        while(mode <= STR_MODE_TAB_COL && chr < format[i]) {
+        while(chr < format[i]) {
             *p3 = ' ';
             ++chr;
             ++p3;
@@ -166,11 +165,6 @@ int tprintf_format()
 		if (p1 == &tprintf_ibuf[len]) {
 			break;
 		}
-
-        if (mode == STR_MODE_CSV_DEF) {
-            *p3 = ';';
-            ++p3;
-        }
 
         ++i;
         p1++;

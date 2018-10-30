@@ -58,6 +58,7 @@ typedef struct control
 	job_id job_id;
 	int compare;
 	int cols_n;
+	int csv;
 } control_t;
 
 static char *cofs_str[2] = { "ok", "def" };
@@ -138,10 +139,18 @@ void evaluate(control_t *cntr)
 	coefficient_t *c;
 	int i, j, k, n, r;
 
-	tprintf_init(stderr, STR_MODE_TAB_DEF, "10 5 8 12 10 10 10 10 10 12 10 10 10 10 10");
+	if (strlen(cntr->mrgd[0].job.app_id) > 12) {
+		cntr->mrgd[0].job.app_id[12] = '\0';
+	}
 
-	tprintf("%s||Coe.||@%u|| | T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|| | P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
+	tprintf_init(stderr, STR_MODE_DEF, "15 5 8 12 10 10 10 10 10 12 10 10 10 10 10");
+
+	if (cntr->csv) {
+		fprintf(stderr, "Node;Coe.;Freq.;T. Real;T. 1;T. 2;T. 3;T. 4;T. 5;P. Real;P. 1;P. 2;P. 3;P. 4;P. 5\n");
+	} else {
+		tprintf("%s||Coe.||@%u|| | T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|| | P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
 			cntr->mrgd[0].job.app_id, cntr->mrgd[0].signature.def_f);
+	}
 
 	for(i = 0; i < cntr->mrgd_n; ++i)
 	{
@@ -176,10 +185,17 @@ void evaluate(control_t *cntr)
 			}
 		}
 
-		tprintf("%s||%s||%lu|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
+		if (cntr->csv) {
+			fprintf(stderr, "%s;%s;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf",
+				m->node_id, cofs_str[cntr->cofs_s[i]], m->signature.avg_f,
+				tim_proj[0], tim_proj[1], tim_proj[2], tim_proj[3], tim_proj[4], tim_proj[5],
+				pow_proj[0], pow_proj[1], pow_proj[2], pow_proj[3], pow_proj[4], pow_proj[5]);
+		} else {
+			tprintf("%s||%s||%lu|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
  			m->node_id, cofs_str[cntr->cofs_s[i]], m->signature.avg_f,
 			tim_proj[0], tim_proj[1], tim_proj[2], tim_proj[3], tim_proj[4], tim_proj[5],
 			pow_proj[0], pow_proj[1], pow_proj[2], pow_proj[3], pow_proj[4], pow_proj[5]);
+		}
 
 		if (cntr->compare) {
 			print_similars(cntr, m);
@@ -190,7 +206,7 @@ void evaluate(control_t *cntr)
 	// Print legend
 	fprintf(stderr, "-------------------------\n");
 	
-	tprintf_init(stderr, STR_MODE_TAB_DEF, "5 12 12");
+	tprintf_init(stderr, STR_MODE_DEF, "5 12 12");
 	tprintf("Idx||Freq. from||Freq. to");	
 	for (k = 1; k < COLUMNS; ++k)
     {
@@ -304,8 +320,9 @@ void usage(int argc, char *argv[], control_t *cntr)
 		fprintf(stdout, "  The job.id of the job to project.\n");
 		fprintf(stdout, "  The step.id of the job to project.\n");
 		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-C, --compare\tShows other jobs of the same application,\n");
+		fprintf(stdout, "\t-A, --all\tShows other jobs of the same application,\n");
 		fprintf(stdout, "\t\t\tnode, policy and number of processes.\n");
+		fprintf(stdout, "\t-C, --csv\tPrints the console output in CSV format.\n");
 		exit(1);
 	}
 
@@ -316,8 +333,11 @@ void usage(int argc, char *argv[], control_t *cntr)
 	for (i = 3; i < argc; ++i)
 	{
 		if (!cntr->compare)
-			cntr->compare = ((strcmp(argv[i], "-C") == 0) ||
-						 	  (strcmp(argv[i], "--compare") == 0));
+			cntr->compare = ((strcmp(argv[i], "-A") == 0) ||
+						 	  (strcmp(argv[i], "--all") == 0));
+		if (!cntr->csv)
+			cntr->csv = ((strcmp(argv[i], "-C") == 0) ||
+							 (strcmp(argv[i], "--csv") == 0));
 	}
 }
 
