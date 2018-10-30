@@ -85,6 +85,13 @@ typedef struct eard_conf
 * EARGMEnergy=
 * EARGMPort=
 */
+
+#define MAXENERGY   0
+#define MAXPOWER    1
+#define BASIC 	0
+#define KILO 	1
+#define MEGA	2
+
 #define DECON_LIMITS	3
 
 typedef struct eargm_conf

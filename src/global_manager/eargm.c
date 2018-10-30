@@ -65,8 +65,6 @@
 #define DEFCON_L3 1
 #define DEFCON_L2 2
 
-#define MAXENERGY	0
-#define MAXPOWER	1
 
 #define BASIC_U	1
 #define KILO_U	1000
@@ -88,7 +86,7 @@ cluster_conf_t my_cluster_conf;
 char my_ear_conf_path[GENERIC_NAME];	
 uint total_nodes=0;
 static const char *__NAME__ = "EARGM";
-char  unit_name[128];
+char  unit_name[128],unit_energy[128],unit_power[128];
 
 /* 
 * EAR Global Manager global data
@@ -124,23 +122,30 @@ void update_eargm_configuration(cluster_conf_t *conf)
 	policy=conf->eargm.policy;
     switch(units)
     {
-        case 0:divisor=BASIC_U;
+        case BASIC:divisor=BASIC_U;
 			switch (policy){
 				case MAXENERGY:strcpy(unit_name,"Joules");break;
 				case MAXPOWER:strcpy(unit_name,"Watts");break;
 			}
+			strcpy(unit_energy,"J");
+			strcpy(unit_power,"W");
+			
 			break;
-        case 1:divisor=KILO_U;
+        case KILO:divisor=KILO_U;
 			switch (policy){
 				case MAXENERGY:strcpy(unit_name,"Kilo Joules");break;
 				case MAXPOWER:strcpy(unit_name,"Kilo Watts");break;
 			}
+			strcpy(unit_energy,"KJ");
+			strcpy(unit_power,"KW");
 			break;
-        case 2:divisor=MEGA_U;	
+        case MEGA:divisor=MEGA_U;	
 			switch (policy){
 				case MAXENERGY:strcpy(unit_name,"Mega Joules");break;
 				case MAXPOWER:strcpy(unit_name,"Mega Watts");break;
 			}
+			strcpy(unit_energy,"MJ");
+			strcpy(unit_power,"MW");
 			break;
         default:break;
     }
@@ -301,7 +306,15 @@ void fill_periods(ulong energy)
 	}
 	total_samples=aggregate_samples;
 	current_sample=0;
-	eargm_verbose(1,"Initializing T2 period with %lu %s, each sample with %lu %s",energy,unit_name,e_persample,unit_name);
+	switch (policy)
+	{
+	case MAXENERGY:
+		eargm_verbose(1,"Initializing T2 period with %lu %s, each sample with %lu %s",energy,unit_name,e_persample,unit_name);
+		break;
+	case MAXPOWER:
+		eargm_verbose(1,"AVG power in last %d seconds %u %s\n",period_t1,e_persample/period_t1,unit_name);
+		break;
+	}
 }
 
 void send_mail(uint level, double energy)
@@ -455,10 +468,15 @@ void main(int argc,char *argv[])
     update_eargm_configuration(&my_cluster_conf);
 
 
-	if (policy!=MAXENERGY){
-		eargm_verbose(0,"Configuration error: Only MaxEnergy is supported\n");
-		policy=MAXENERGY;
-	}
+	switch (policy){
+		case MAXENERGY:
+			eargm_verbose(0,"MAXENERGY policy configured with limit %u %s\n",energy_budget,unit_name);
+			break;
+		case MAXPOWER:
+			eargm_verbose(0,"MAXPOWER policy configured with limit %u %s\n",power_budget,unit_name);
+			break;
+	}	
+	
 		
 
 	if ((period_t1<=0) || (period_t2<=0) || (energy_budget<=0)) usage(argv[0]);
@@ -528,7 +546,8 @@ void main(int argc,char *argv[])
 	    	}else{ 
 				if (result < 0) exit(1);
 			}
-			eargm_verbose(1,"Energy consumed in last %lu seconds %lu\n",period_t1,result);
+			eargm_verbose(1,"Energy consumed in last %lu seconds %lu %s. Avg power %u %s\n",period_t1,result,unit_energy,result/period_t1,unit_power);
+			
 	
 			new_energy_sample(result);
 			#if 0

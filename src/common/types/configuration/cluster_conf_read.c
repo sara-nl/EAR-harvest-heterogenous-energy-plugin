@@ -743,16 +743,16 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		else if (!strcmp(token, "GLOBALMANAGERUNITS"))
         {
             token = strtok(NULL, "=");
-			if (!strcmp(token,"-"))	conf->eargm.units=0;
-			else if (!strcmp(token,"K"))    conf->eargm.units=1;
-			else if (!strcmp(token,"M"))   conf->eargm.units=2;
-			else conf->eargm.units=1;
+			if (!strcmp(token,"-"))	conf->eargm.units=BASIC;
+			else if (!strcmp(token,"K"))    conf->eargm.units=KILO;
+			else if (!strcmp(token,"M"))   conf->eargm.units=MEGA;
+			else conf->eargm.units=KILO;
         }
 		else if (!strcmp(token, "GLOBALMANAGERPOLICY"))
 		{
 			token = strtok(NULL, "=");
-			if (strcmp(token,"MAXENERGY")==0)	conf->eargm.policy=0;
-			else conf->eargm.policy=0;
+			if (strcmp(token,"MAXENERGY")==0)	conf->eargm.policy=MAXENERGY;
+			else conf->eargm.policy=MAXPOWER;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERENERGYLIMIT"))
 		{
