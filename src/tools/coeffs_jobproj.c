@@ -140,10 +140,10 @@ void evaluate(control_t *cntr)
 	int i, j, k, n, r;
 
 	if (strlen(cntr->mrgd[0].job.app_id) > 12) {
-		cntr->mrgd[0].job.app_id[12] = '\0';
+		cntr->mrgd[0].job.app_id[10] = '\0';
 	}
 
-	tprintf_init(stderr, STR_MODE_DEF, "15 5 8 12 10 10 10 10 10 12 10 10 10 10 10");
+	tprintf_init(stderr, STR_MODE_DEF, "12 5 8 12 10 10 10 10 10 12 10 10 10 10 10");
 
 	if (cntr->csv) {
 		fprintf(stderr, "Node;Coe.;Freq.;T. Real;T. 1;T. 2;T. 3;T. 4;T. 5;P. Real;P. 1;P. 2;P. 3;P. 4;P. 5\n");
@@ -186,7 +186,7 @@ void evaluate(control_t *cntr)
 		}
 
 		if (cntr->csv) {
-			fprintf(stderr, "%s;%s;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf",
+			fprintf(stderr, "%s;%s;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
 				m->node_id, cofs_str[cntr->cofs_s[i]], m->signature.avg_f,
 				tim_proj[0], tim_proj[1], tim_proj[2], tim_proj[3], tim_proj[4], tim_proj[5],
 				pow_proj[0], pow_proj[1], pow_proj[2], pow_proj[3], pow_proj[4], pow_proj[5]);

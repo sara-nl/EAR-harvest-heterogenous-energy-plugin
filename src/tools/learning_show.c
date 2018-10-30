@@ -35,7 +35,7 @@
 
 int EAR_VERBOSE_LEVEL=1;
 
-static char *paint[7] = { STR_RED, STR_GRE, STR_YLW, STR_BLU, STR_MGT, STR_CYA, STR_CLR };
+static char *paint[6] = { STR_RED, STR_GRE, STR_YLW, STR_BLU, STR_MGT, STR_CYA };
 static unsigned int color;
 static unsigned int csv;
 
@@ -64,7 +64,7 @@ void usage(int argc, char *argv[])
 			color = (strcmp(argv[i], "-P") == 0);
 
 			if (color) {
-				color = argv[i + 1] % 6;
+				color = atoi(argv[i + 1]) % 6;
 			}
 		}
 	}
@@ -102,7 +102,7 @@ void main(int argc,char *argv[])
 
 	//
 	if (!csv) {
-		tprintf_init(stdout, STR_MODE_COL, "25 11 12 10 8 14 12");
+		tprintf_init(stdout, STR_MODE_COL, "12 10 10 8 8 8 30");
 	}
 
 	while (num_apps > 0)
@@ -115,16 +115,20 @@ void main(int argc,char *argv[])
 				strcpy(buffer, apps[i].node_id);
 			}
 
+			if (strlen(apps[i].node_id) > 10) {
+				apps[i].node_id[10] = '\0';
+			}
+
 			if (csv) {
-				tprintf("%s;%s%s;%lu;%0.2lf;%0.2lf;%lu;%0.2lf",
-						apps[i].job.app_id, paint[color], apps[i].node_id,
-						apps[i].job.def_f, apps[i].signature.time, apps[i].signature.DC_power,
-						apps[i].signature.avg_f, apps[i].signature.GBS);
+				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%s\n",
+                    apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
+                    apps[i].signature.time, apps[i].signature.DC_power,
+                    apps[i].signature.GBS, apps[i].job.app_id);
 			} else {
-				tprintf("%s%s||%s||%lu||%0.2lf||%0.2lf|| | %lu || %0.2lf",
-					paint[color], apps[i].job.app_id, apps[i].node_id,
-					apps[i].job.def_f, apps[i].signature.time, apps[i].signature.DC_power,
-					apps[i].signature.avg_f, apps[i].signature.GBS);
+				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf|| %0.2lf || | %s",
+					paint[color], apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
+					apps[i].signature.time, apps[i].signature.DC_power,
+					apps[i].signature.GBS, apps[i].job.app_id);
 			}
 	    }
 

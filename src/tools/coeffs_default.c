@@ -233,7 +233,9 @@ int usage(int argc, char *argv[])
 						(strcmp(argv[i], "--armonize") == 0));
 		if (!output) {
 			output = (strcmp(argv[i], "-O") == 0);
-			strcpy(buffer_output, argv[i+1]);
+			if (output) {
+				strcpy(buffer_output, argv[i+1]);
+			}
 		}
 	}
 

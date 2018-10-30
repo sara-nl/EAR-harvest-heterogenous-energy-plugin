@@ -51,22 +51,21 @@ static int tprintf_color_open(char **iput, char **oput)
 	char *ibuf = *iput;
 	char *obuf = *oput;
 
-	if (strncmp(ibuf, STR_RED, STR_COL_CHR) == 0)
-	{
-		sprintf(obuf, "%s", COL_RED);
-		*iput = &ibuf[STR_COL_CHR];
-		*oput = &obuf[COL_CHR];
-		return 1;
+	#define is_color(tag, color) \
+	if (strncmp(ibuf, tag, STR_COL_CHR) == 0) \
+	{ \
+		sprintf(obuf, "%s", color); \
+		*iput = &ibuf[STR_COL_CHR]; \
+		*oput = &obuf[COL_CHR]; \
+		return 1; \
 	}
 
-	if (strncmp(ibuf, STR_YLW, STR_COL_CHR) == 0)
-	{
-		sprintf(obuf, "%s", COL_YLW);
-		*iput = &ibuf[STR_COL_CHR];
-		*oput = &obuf[COL_CHR];
-		return 1;
-	}
-
+	is_color(STR_RED, COL_RED);
+	is_color(STR_GRE, COL_GRE);
+	is_color(STR_YLW, COL_YLW);
+	is_color(STR_BLU, COL_BLU);
+	is_color(STR_MGT, COL_MGT);
+	is_color(STR_CYA, COL_CYA);
 
 	return 0;
 }

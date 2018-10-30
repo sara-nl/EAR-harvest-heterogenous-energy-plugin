@@ -207,7 +207,9 @@ void evaluate(control_t *control)
 
 	// Initializing columns
 	if (control->csv) {
-		fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+		if (!control->general) {
+			fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+		}
 	} else {
 		tprintf_init(stderr, STR_MODE_COL, "18 11 15 12 12 15 12 12");
 	}
@@ -351,7 +353,7 @@ void evaluate(control_t *control)
 	if (control->general)
 	{
 		if (control->csv) {
-			tprintf("%s;%lu;%0.2lf;%0.2lf\n",
+			fprintf(stderr, "%s;%lu;%0.2lf;%0.2lf\n",
 				control->name_node, frq_base, tim_gerr, pow_gerr);
 		} else {
 			tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
@@ -381,8 +383,8 @@ void read_applications(control_t *cntr)
 	{
 		if (cntr->general)
 		{
-			if (control->csv) {
-				tprintf("%s;--;--;--\n");
+			if (cntr->csv) {
+				fprintf(stderr, "%s;--;--;--\n", cntr->name_node);
 			} else {
 				// Initializing columns
 				tprintf_init(stderr, cntr->table_mode, "18 11 15 12 12 15 12 12");
@@ -507,7 +509,7 @@ void usage(int argc, char *argv[], control_t *cntr)
 			cntr->csv = ((strcmp(argv[i], "-C") == 0) ||
 						   (strcmp(argv[i], "--csv") == 0));
 
-			cntr->table_mode = STR_MODE_CSV_DEF;
+			cntr->table_mode = STR_MODE_CSV;
 		}
 		if (!cntr->defaul)
 			cntr->defaul = ((strcmp(argv[i], "-D") == 0) ||
