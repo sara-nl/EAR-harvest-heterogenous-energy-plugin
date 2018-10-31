@@ -51,9 +51,10 @@ eard_server_api.o: eard_server_api.c ../common/types/job.h \
  ../common/types/generic.h ../common/config.h ../common/ear_verbose.h \
  ../common/states.h ../daemon/eard_conf_rapi.h \
  ../common/types/application.h ../common/types/signature.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
- ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h
+ ../common/types/power_signature.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/cluster_conf.h ../common/string_enhanced.h \
+ ../daemon/eard_rapi.h
 power_monitor.o: power_monitor.c ../control/frequency.h \
  ../metrics/custom/frequency_uncore.h ../common/states.h \
  ../common/types/generic.h ../daemon/power_monitor.h \
@@ -64,16 +65,16 @@ power_monitor.o: power_monitor.c ../control/frequency.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../daemon/shared_configuration.h \
- ../common/types/coefficient.h ../common/sockets.h ../common/sizes.h \
- ../common/types/periodic_metric.h ../metrics/custom/frequency.h \
- ../database_cache/eardbd_api.h ../common/types/log.h \
- ../common/types/loop.h ../common/types/periodic_aggregation.h \
- ../database_cache/eardbd.h ../common/database/db_helper.h \
- ../common/types/gm_warning.h
+ ../common/types/coefficient.h ../daemon/eard_conf_rapi.h \
+ ../common/sockets.h ../common/sizes.h ../common/types/periodic_metric.h \
+ ../metrics/custom/frequency.h ../database_cache/eardbd_api.h \
+ ../common/types/log.h ../common/types/loop.h \
+ ../common/types/periodic_aggregation.h ../database_cache/eardbd.h \
+ ../common/database/db_helper.h ../common/types/gm_warning.h
 eard_rapi.o: eard_rapi.c ../common/config.h ../daemon/eard_conf_rapi.h \
  ../common/types/application.h ../common/types/job.h \
  ../common/types/generic.h ../common/types/signature.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
- ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h
+ ../common/types/power_signature.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/cluster_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/states.h ../daemon/eard_rapi.h

@@ -6,6 +6,7 @@ environment.o: environment.c ../common/config.h ../common/environment.h \
 environment_common.o: environment_common.c
 file_lock.o: file_lock.c
 math_operations.o: math_operations.c
-string_enhanced.o: string_enhanced.c ../common/string_enhanced.h
+string_enhanced.o: string_enhanced.c ../common/colors.h \
+ ../common/string_enhanced.h
 sockets.o: sockets.c ../common/sockets.h ../common/sizes.h \
  ../common/states.h ../common/types/generic.h
