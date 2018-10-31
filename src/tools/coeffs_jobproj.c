@@ -175,10 +175,9 @@ void evaluate(control_t *cntr)
 				{
 					if (c[j].pstate == cntr->f_dst[k])
 					{
-						//fprintf(stderr, "r %d ref %lu pstate %lu\n", r, c[j].pstate_ref, c[j].pstate);
-						cpi_proj[r] = coeff_project_cpi(cpi_sign, tpi_sign, &c[j]);
-						tim_proj[r] = coeff_project_tim(tim_sign, cpi_proj[r], cpi_sign, cntr->f_src, c[j].pstate);
-						pow_proj[r] = coeff_project_pow(pow_sign, tpi_sign, &c[j]);
+						cpi_proj[r] = proj_project_cpi(&m->signature, &c[j]);
+						tim_proj[r] = proj_project_time(&m->signature, &c[j]);
+						pow_proj[r] = proj_project_power(&m->signature, &c[j]);
 						r += 1;
 					}
 				}

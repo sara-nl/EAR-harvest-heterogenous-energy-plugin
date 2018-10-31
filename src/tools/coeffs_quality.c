@@ -175,9 +175,6 @@ static application_t *merge()
 static void compute()
 {
 	double cpi_sign, tpi_sign, tim_sign, pow_sign;
-	obs_power_t obs_power;
-	obs_time_t obs_time;
-	obs_cpi_t obs_cpi;
 	int c, a, n, i;
 
 	// Initializing columns

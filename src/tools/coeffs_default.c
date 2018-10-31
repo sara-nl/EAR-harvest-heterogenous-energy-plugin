@@ -208,11 +208,11 @@ static void read_file(char *path, char *node)
 }
 
 
-static void read_files()
+static void read_files(int argc, char *argv[], int n_nodes)
 {
 	int i;
 
-	for (i = 2; i < n; i++)
+	for (i = 2; i < n_nodes; i++)
 	{
 		node_name = argv[i];
 
@@ -235,7 +235,7 @@ static void read_files()
 
 static int usage(int argc, char *argv[])
 {
-	int i = 0;
+	int i, c;
 
 	if (argc < 3)
 	{
@@ -285,19 +285,19 @@ void init()
 
 int main(int argc, char *argv[])
 {
-	int n;
+	int n_nodes;
 	int i;
 
 	// Initialization
-	n = usage(argc, argv);
+	n_nodes = usage(argc, argv);
 
 	init();
 
 	//
-	read_files(argc, argv);
+	read_files(argc, argv, n_nodes);
 
 	//
-	if (output) {
+	if (opt_o) {
 		path_file = buffer_output;
 	} else {
 		sprintf(path_file, "%s/coeffs.default", path_root);
