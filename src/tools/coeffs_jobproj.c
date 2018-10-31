@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <common/sizes.h>
 #include <common/states.h>
-#include <common/types/projection.h>
+#include <common/types/projection_old.h>
 #include <common/types/application.h>
 #include <common/types/coefficient.h>
 #include <common/types/configuration/cluster_conf.h>

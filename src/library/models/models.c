@@ -44,7 +44,7 @@
 #include <library/models/min_energy.h>
 #include <library/models/min_time.h>
 #include <common/types/application.h>
-#include <common/types/projection.h>
+#include <common/types/projection_old.h>
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
