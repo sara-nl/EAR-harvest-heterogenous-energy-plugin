@@ -198,10 +198,6 @@ static void compute()
 				continue;
 			}
 
-			observed_values_fill_cpi(&obs_cpi, &mrgd[a].signature);
-			observed_values_fill_time(&obs_time, &mrgd[a].signature);
-			observed_values_fill_power(&obs_power, &mrgd[a].signature);
-
 			for (c = 0; c < n_coeffs; c++)
 			{
 				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
@@ -211,9 +207,9 @@ static void compute()
 					double *errs_b = &errs[i];	
 
 					// Error
-					prjs_b[c+0] = proj_project_cpi(&obs_cpi, &coeffs[c]);
-					prjs_b[c+1] = proj_project_time(&obs_time, &coeffs[c], prjs_b[c+0]);
-					prjs_b[c+2] = proj_project_power(&obs_power, &coeffs[c]);
+					prjs_b[c+0] = proj_project_cpi(&mrgd[a].signature, &coeffs[c]);
+					prjs_b[c+1] = proj_project_time(&mrgd[a].signature, &coeffs[c]);
+					prjs_b[c+2] = proj_project_power(&mrgd[a].signature, &coeffs[c]);
 
 					// Fin that application for that coefficient
 					n = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);
@@ -332,8 +328,8 @@ void print()
 					{
 						if (!opt_h && opt_c)
 						{
-							fprintf(stderr, "%s;--;%lu;--;--;--;--;--;--\n",
-								mrgd[a].job.app_id, coeffs[c].pstate);
+							fprintf(stderr, "%s;%s;--;%lu;--;--;--;--;--;--\n",
+								name_node, mrgd[a].job.app_id, coeffs[c].pstate);
 						}
 						else if (!opt_h)
 						{
@@ -364,8 +360,8 @@ void print()
 		if (errs_med[i+3] > 0.0)
 		{
 			if (opt_c) {
-				fprintf(stderr, "%lu;%lu;%0.2lf;%0.2lf\n",
-					frq_base, coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
+				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf\n",
+					name_node, frq_base, coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
 			} else {
 				tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
 					coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
@@ -381,8 +377,8 @@ void print()
 	if (opt_s && !opt_g)
 	{
 		if (opt_c) {
-			fprintf(stderr, "%lu;%lu;%0.2lf;%0.2lf\n",
-				frq_base, frq_base, errs_gen[1], errs_gen[2]);
+			fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf\n",
+				name_node, frq_base, frq_base, errs_gen[1], errs_gen[2]);
 		} else {
 			tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
 				frq_base, errs_gen[1], errs_gen[2]);
@@ -514,10 +510,6 @@ void usage(int argc, char *argv[])
 	}
 
 	//
-	frq_base = (unsigned long) atoi(argv[2]);
-	strcpy(name_node, argv[1]);
-
-	//
 	while ((c = getopt (argc, argv, "ACDGHI:S")) != -1)
 	{
 		switch (c)
@@ -551,6 +543,10 @@ void usage(int argc, char *argv[])
 		}
 	}
 
+	//
+	frq_base = (unsigned long) atoi(argv[2]);
+	strcpy(name_node, argv[1]);
+
 	if (opt_g) {
 		opt_h = 1;
 		opt_s = 0;
@@ -561,17 +557,17 @@ void usage(int argc, char *argv[])
 	}
 }
 
-void init(cluster_conf_t *conf)
+void init()
 {
 	// Initialization
 	get_ear_conf_path(buffer);
 
-	if (read_cluster_conf(buffer, conf) != EAR_SUCCESS){
+	if (read_cluster_conf(buffer, &conf) != EAR_SUCCESS){
 		fprintf(stderr, "Error reading cluster configuration.\n");
 		exit(1);
 	}
 
-	init_db_helper(&conf->database);
+	init_db_helper(&conf.database);
 }
 
 /*
@@ -585,7 +581,7 @@ int main(int argc, char *argv[])
 	// Initialization
 	usage(argc, argv);
 
-	init(&conf);
+	init();
 
 	// Read
 	read_coefficients();

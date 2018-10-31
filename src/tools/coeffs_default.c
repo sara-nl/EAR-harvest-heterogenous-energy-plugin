@@ -16,6 +16,9 @@
 // Buffers
 char buffer[SZ_PATH];
 char buffer_output[SZ_PATH];
+char *path_file;
+char *path_root;
+char *node_name;
 
 // Coefficients
 coefficient_t *coeffs_accum;
@@ -23,10 +26,8 @@ int *coeffs_num;
 int coeffs_max;
 
 // Customize program
-int armonize;
-int output;
-
-#define SZ_COEFF sizeof(coefficient_t)
+int opt_a;
+int opt_o;
 
 /*
  *
@@ -81,7 +82,7 @@ void accum(coefficient_t *coeff, int i)
 		return;
 	}
 
-	if (armonize) {
+	if (opt_a) {
 		coeffs_accum[i].A += 1.0 / coeff->A;
 		coeffs_accum[i].B += 1.0 / coeff->B;
 		coeffs_accum[i].C += 1.0 / coeff->C;
@@ -100,7 +101,8 @@ void accum(coefficient_t *coeff, int i)
 
 void write_file(char *path)
 {
-    coefficient_t coeff;
+	#define SZ_COEFF sizeof(coefficient_t)
+	coefficient_t coeff;
     double num;
 	size_t r;
     int fd;
@@ -134,7 +136,7 @@ void write_file(char *path)
         {
             num = (double) coeffs_num[i];
 
-            if (armonize) {
+            if (opt_a) {
 				coeffs_accum[i].A = num / coeffs_accum[i].A;
 				coeffs_accum[i].B = num / coeffs_accum[i].B;
 				coeffs_accum[i].C = num / coeffs_accum[i].C;
@@ -172,7 +174,7 @@ void write_file(char *path)
 	close(fd);
 }
 
-void read_file(char *path, char *node)
+static void read_file(char *path, char *node)
 {
 	coefficient_t coeff;
 	size_t r;
@@ -191,9 +193,6 @@ void read_file(char *path, char *node)
 	{
 		if (r == SZ_COEFF)
 		{
-			#if 0
-			coeff_print(&coeff);
-			#endif
 			i = find(&coeff);
 	
 			if (i >= 0) {
@@ -208,57 +207,11 @@ void read_file(char *path, char *node)
 	close(fd);
 }
 
-int usage(int argc, char *argv[])
+
+static void read_files()
 {
-	int i = 0;
-
-	if (argc < 3)
-	{
-		fprintf(stdout, "Usage: %s coeffs.path node.list [OPTIONS...]\n\n", argv[0]);
-		fprintf(stdout, "  The coeffs.path includes the island.\n");
-		fprintf(stdout, "  The node.list is splitted by spaces.\n");
-		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-A, --armonize\tDoes the armonic mean, reducing the weight\n");
-		fprintf(stdout, "\t\t\tof radical coefficient values.\n");
-		fprintf(stdout, "\t-O <file.path>\tSaves the default coefficients file in a\n");
-		fprintf(stdout, "\t\t\tfile of custom location.\n");
-		
-		exit(1);
-	}
-
-	for (i = 3; i < argc; ++i)
-	{
-		if (!armonize)
-			armonize = ((strcmp(argv[i], "-A") == 0) ||
-						(strcmp(argv[i], "--armonize") == 0));
-		if (!output) {
-			output = (strcmp(argv[i], "-O") == 0);
-			if (output) {
-				strcpy(buffer_output, argv[i+1]);
-			}
-		}
-	}
-
-	return argc - armonize - (output*2);
-}
-
-int main(int argc, char *argv[])
-{
-	char *path_file;
-	char *path_root;
-	char *node_name;
-	int n;
 	int i;
 
-	n = usage(argc, argv);
-
-	// Number of P_STATEs, more than 200 is impossible
-	coeffs_accum = calloc(200, sizeof(coefficient_t));
-	coeffs_num   = calloc(200, sizeof(unsigned int));	
-	path_root = argv[1];
-	path_file = buffer;
-
-	//
 	for (i = 2; i < n; i++)
 	{
 		node_name = argv[i];
@@ -271,6 +224,77 @@ int main(int argc, char *argv[])
 			read_file(path_file, node_name);
 		}
 	}
+}
+
+/*
+ *
+ * Initialization
+ *
+ */
+
+
+static int usage(int argc, char *argv[])
+{
+	int i = 0;
+
+	if (argc < 3)
+	{
+		fprintf(stdout, "Usage: %s coeffs.path node.list [OPTIONS...]\n\n", argv[0]);
+		fprintf(stdout, "  The coeffs.path includes the island.\n");
+		fprintf(stdout, "  The node.list is splitted by spaces.\n");
+		fprintf(stdout, "\nOptions:\n");
+		fprintf(stdout, "\t-A \t\tDoes the armonic mean, reducing the weight\n");
+		fprintf(stdout, "\t\t\t\tof radical coefficient values.\n");
+		fprintf(stdout, "\t-O <path>\tSaves the default coefficients file in a\n");
+		fprintf(stdout, "\t\t\t\tfile of custom location.\n");
+		
+		exit(1);
+	}
+
+	while ((c = getopt (argc, argv, "AO:")) != -1)
+	{
+		switch (c)
+		{
+			case 'A':
+				opt_a = 1;
+				break;
+			case 'O':
+				strcpy(buffer_output, optarg);
+				opt_o = 1;
+				break;
+			case '?':
+				break;
+			default:
+				abort();
+		}
+	}
+
+	//
+	path_root = argv[1];
+	path_file = buffer;
+
+	return argc - opt_a - (opt_o * 2);
+}
+
+void init()
+{
+	// Number of P_STATEs, more than 200 is impossible
+	coeffs_accum = calloc(200, sizeof(coefficient_t));
+	coeffs_num   = calloc(200, sizeof(unsigned int));
+}
+
+int main(int argc, char *argv[])
+{
+	int n;
+	int i;
+
+	// Initialization
+	n = usage(argc, argv);
+
+	init();
+
+	//
+	read_files(argc, argv);
 
 	//
 	if (output) {

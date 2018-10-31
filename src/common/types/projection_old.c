@@ -48,15 +48,10 @@ uint proj_create_old(uint p_states)
 
 projection_t *proj_perf_project_old(ulong f)
 {
-	#if PROJ_NO_OBSOLETE
-    #warning "C Preprocessor got here!"
-	return NULL;
-	#else
     ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",
               __FILE__,f,frequency_freq_to_pstate(f));
 
     return &projections[frequency_freq_to_pstate(f)];
-    #endif
 }
 
 void proj_perf_set_old(int i, double TP, double PP, double CPI)

@@ -39,37 +39,11 @@
 #include <common/types/signature.h>
 #include <common/types/coefficient.h>
 
-typedef struct obs_cpi
-{
-	double obs_cpi;
-	double obs_tpi;
-} obs_cpi_t;
-
-typedef struct obs_time
-{
-	double obs_time;
-	double obs_cpi;
-} obs_time_t;
-
-typedef struct obs_power
-{
-	double obs_power;
-	double obs_tpi;
-} obs_power_t;
-
-
-// Fill
-void observed_values_fill_cpi(obs_cpi_t *obs, signature_t *sign);
-
-void observed_values_fill_time(obs_time_t *obs, signature_t *sign);
-
-void observed_values_fill_power(obs_power_t *obs, signature_t *sign);
-
 // Projections
-double proj_project_cpi(obs_cpi_t *cpi, coefficient_t *coeff);
+double proj_project_cpi(signature_t *sign, coefficient_t *coeff);
 
-double proj_project_time(obs_time_t *time, coefficient_t *coeff, double proj_cpi);
+double proj_project_time(signature_t *sign, coefficient_t *coeff);
 
-double proj_project_power(obs_power_t *power, coefficient_t *coeff);
+double proj_project_power(signature_t *sign, coefficient_t *coeff);
 
 #endif

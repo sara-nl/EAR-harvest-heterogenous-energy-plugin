@@ -32,43 +32,26 @@
 #include <common/types/projection.h>
 
 // Projections
-void observed_values_fill_cpi(obs_cpi_t *obs, signature_t *sign)
+double proj_project_cpi(signature_t *sign, coefficient_t *coeff)
 {
-	obs->obs_cpi = sign->CPI;
-	obs->obs_tpi = sign->TPI;
-}
-
-void observed_values_fill_time(obs_time_t *obs, signature_t *sign)
-{
-	obs->obs_cpi = sign->CPI;
-	obs->obs_time = sign->time;
-}
-
-void observed_values_fill_power(obs_power_t *obs, signature_t *sign)
-{
-	obs->obs_tpi = sign->TPI;
-	obs->obs_power = sign->DC_power;
-}
-
-double proj_project_cpi(obs_cpi_t *obs, coefficient_t *coeff)
-{
-	return (coeff->D * obs->obs_cpi) +
-		   (coeff->E * obs->obs_tpi) +
+	return (coeff->D * sign->CPI) +
+		   (coeff->E * sign->TPI) +
 		   (coeff->F);
 }
 
-double proj_project_time(obs_time_t *obs, coefficient_t *coeff, double proj_cpi)
+double proj_project_time(signature_t *sign, coefficient_t *coeff)
 {
+	double proj_cpi = proj_project_cpi(sign, coeff);
 	double freq_src = (double) coeff->pstate_ref;
 	double freq_dst = (double) coeff->pstate;
 
-	return ((obs->obs_time * proj_cpi) / obs->obs_cpi) *
+	return ((sign->time * proj_cpi) / sign->CPI) *
 		   (freq_src / freq_dst);
 }
 
-double proj_project_power(obs_power_t *obs, coefficient_t *coeff)
+double proj_project_power(signature_t *sign, coefficient_t *coeff)
 {
-	return (coeff->A * obs->obs_power) +
-		   (coeff->B * obs->obs_tpi) +
+	return (coeff->A * sign->DC_power) +
+		   (coeff->B * sign->TPI) +
 		   (coeff->C);
 }
