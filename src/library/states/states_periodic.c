@@ -192,7 +192,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					policy_freq = policy_power(0, &loop_signature.signature);
-					PP = performance_projection(policy_freq);
+					PP = proj_perf_project_old(policy_freq);
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
@@ -217,7 +217,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					}
 
 					// Loop printing algorithm
-					copy_signature(&loop.signature, &loop_signature.signature);
+					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
 				}
 				else{

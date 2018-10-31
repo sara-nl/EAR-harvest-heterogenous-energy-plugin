@@ -39,8 +39,6 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/db_helper.h>
 
-#define LINE "-----------------------------------------------------------------------------------------------------\n"
-
 int EAR_VERBOSE_LEVEL = 0;
 
 // buffers
@@ -176,34 +174,33 @@ static application_t *merge()
 
 static void compute()
 {
-	// App mrgd error
 	double cpi_sign, tpi_sign, tim_sign, pow_sign;
-
-	// Other data
-	int c, a, k;
+	obs_power_t obs_power;
+	obs_time_t obs_time;
+	obs_cpi_t obs_cpi;
+	int c, a, n;
 
 	// Initializing columns
 	for (a = 0; a < n_mrgd; ++a)
 	{
 		if (mrgd[a].signature.def_f == frq_base)
 		{
-			for (c = 0, k = 0; c < n_coeffs; c++)
+			for (c = 0, n = 0; c < n_coeffs; c++)
             {
                 if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
                 {
-                    k += find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate) != -1;
+                    n += find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate) != -1;
 				}
 			}
 
 			// No more than one application to compare
-			if (k <= 1) {
+			if (n <= 1) {
 				continue;
 			}
 
-			cpi_sign = mrgd[a].signature.CPI;
-			tpi_sign = mrgd[a].signature.TPI;
-			tim_sign = mrgd[a].signature.time;
-			pow_sign = mrgd[a].signature.DC_power;
+			observed_values_fill_cpi(&obs_cpi, &mrgd[a].signature);
+			observed_values_fill_time(&obs_time, &mrgd[a].signature);
+			observed_values_fill_power(&obs_power, &mrgd[a].signature);
 
 			for (c = 0; c < n_coeffs; c++)
 			{
@@ -214,16 +211,16 @@ static void compute()
 					double *errs_b = &errs[i];	
 
 					// Error
-					prjs_b[c+0] = coeff_project_cpi(cpi_sign, tpi_sign, &coeffs[c]);
-					prjs_b[c+1] = coeff_project_tim(tim_sign, prjs_b[c+0], cpi_sign, frq_base, coeffs[c].pstate);
-					prjs_b[c+2] = coeff_project_pow(pow_sign, tpi_sign, &coeffs[c]);
+					prjs_b[c+0] = proj_project_cpi(&obs_cpi, &coeffs[c]);
+					prjs_b[c+1] = proj_project_time(&obs_time, &coeffs[c], prjs_b[c+0]);
+					prjs_b[c+2] = proj_project_power(&obs_power, &coeffs[c]);
 
 					// Fin that application for that coefficient
-					k = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);
+					n = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);
 
-					if (k != -1)
+					if (n != -1)
 					{
-						application_t *m = &mrgd[k];
+						application_t *m = &mrgd[n];
 
 						errs_b[c+0] = fabs((1.0 - (m->signature.CPI      / prjs_b[c+0])) * 100.0);
 						errs_b[c+1] = fabs((1.0 - (m->signature.time     / prjs_b[c+1])) * 100.0);
@@ -269,6 +266,7 @@ static void compute()
 
 void print()
 {
+	#define LINE "-------------------------------\n"
 	int c, a, k;
 
 	tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");

@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 /**
 *    \file projection.h
 *    \brief Projections are used by time&power models. 
@@ -40,52 +38,77 @@
 
 #include <common/types/generic.h>
 
-
-typedef struct PerfProjection
+typedef struct projection
 {
-    double Time;
-    double Power;
-    double CPI;
+	double Time;
+	double Power;
+	double CPI;
 } projection_t;
 
+typedef struct obs_cpi
+{
+	double obs_cpi;
+	double obs_tpi;
+} obs_cpi_t;
 
-// Function declarations
+typedef struct obs_time
+{
+	double obs_time;
+	double obs_cpi;
+} obs_time_t;
 
-/** Allocates memory to contain the projections for the p_states given by 
+typedef struct obs_power
+{
+	double obs_power;
+	double obs_tpi;
+} obs_power_t;
+
+
+// Fill
+void observed_values_fill_cpi(obs_cpi_t *obs, signature_t *sign);
+
+void observed_values_fill_time(obs_time_t *obs, signature_t *sign);
+
+void observed_values_fill_power(obs_power_t *obs, signature_t *sign);
+
+// Projections
+double proj_project_cpi(obs_cpi_t *cpi, coefficient_t *coeffs);
+
+double proj_project_time(obs_time_t *time, coefficient_t *coeffs, double proj_cpi);
+
+double proj_project_power(obs_power_t *power, coefficient_t *coeffs);
+
+// Old
+
+/** Allocates memory to contain the projections for the p_states given by
 *   parameter */ 
-uint create_projections(uint p_states);
+uint proj_create_old(uint p_states);
 
-/** Given a performance projection and an application signature returns true if
-*   they are “equal” */
-uint performance_projection_ok(projection_t *predicted, projection_t *real);
+/** Sets the values of the performance projection i to the ones given by parameter */
+void proj_perf_set_old(int i, double TP, double PP, double CPI);
+
+/** Resets the projections for power, CPI and time to 0 */
+void proj_perf_reset_old(uint p_states);
 
 /** Given a frequency f, returns the projection of the associated p_state of said
 *   frequency */
-projection_t *performance_projection(ulong f);
+projection_t *proj_perf_project_old(ulong f);
 
-/** Sets the values of the performance projection i to the ones given by parameter */
-void set_performance_projection(int i, double TP, double PP, double CPI);
-
-/** Resets the projections for power, CPI and time to 0 */
-void reset_performance_projection(uint p_states);
+// Obsolete
 
 /** Creates a prediction for power with the associated formula and returns it
 * @return power*A+tpi*B+C
 */
-double power_projection(double power, double tpi,double A,double B, double C);
-
+double proj_power_old(double power, double tpi,double A,double B, double C);
 
 /** Creates a prediction for CPI with the associated formula and returns it
 * @return cpi*D+tpi*E+F
 */
-double cpi_projection(double tpi,double cpi,double D,double E, double F);
+double proj_cpi_old(double tpi,double cpi,double D,double E, double F);
 
 /** Creates a prediction for time with the associated formula and returns it
 *	@return T * cpi_pr/cpi * (F/Fi)
 */
-double time_projection(ulong F,ulong Fi,double T,double cpi,double cpi_pr);
-
-
-
+double proj_time_old(ulong F,ulong Fi,double T,double cpi,double cpi_pr);
 
 #endif

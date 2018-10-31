@@ -27,20 +27,62 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+//#include <control/frequency.h>
+#include <common/ear_verbose.h> // Obsolete
 #include <common/types/projection.h>
-#include <common/ear_verbose.h>
-#include <control/frequency.h>
 
+// Projections
+void observed_values_fill_cpi(obs_cpi_t *obs, signature_t *sign)
+{
+    obs->obs_cpi = sign->CPI;
+    obs->obs_tpi = sign->TPI;
+}
 
+void observed_values_fill_time(obs_time_t *obs, signature_t *sign)
+{
+    obs->obs_cpi = sign->CPI;
+    obs->obs_time = sign->time;
+}
 
-// Function declarations
+void observed_values_fill_power(obs_power_t *obs, signature_t *sign)
+{
+    obs->obs_tpi = sign->TPI;
+    obs->obs_power = sign->DC_power;
+}
+
+double coeff_project_cpi(obs_cpi_t *obs, coefficient_t *coeffs)
+{
+    return (cofs->D * obs->obs_cpi) +
+           (cofs->E * obs->obs_tpi) +
+           (cofs->F);
+}
+
+double coeff_project_time(obs_time_t *obs, coefficient_t *coeffs, double proj_cpi)
+{
+    double frq_src = (double) coeffs.pstate_ref;
+    double frq_dst = (double) coeffs.pstate;
+
+    return ((obs->obs_time * proj_cpi) / obs->obs_cpi) *
+           (freq_src / freq_dst);
+}
+
+double coeff_project_power(obs_power_t *obs, coefficient_t *coeffs)
+{
+    return (coeffs->A * obs->pow_sign) +
+           (coeffs->B * obs->tpi_sign) +
+           (coeffs->C);
+}
+
+/*
+ *
+ * Obsolete
+ *
+ */
 static projection_t *projections;
 
-uint create_projections(uint p_states)
+uint proj_create_old(uint p_states)
 {
 	// Projections allocation
     projections = (projection_t *) malloc(sizeof(projection_t) * p_states);
@@ -51,20 +93,24 @@ uint create_projections(uint p_states)
     }
 }
 
-projection_t *performance_projection(ulong f)
+projection_t *proj_perf_project_old(ulong f)
 {
-    ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,frequency_freq_to_pstate(f));
+    ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",
+              __FILE__,f,frequency_freq_to_pstate(f));
+
     return &projections[frequency_freq_to_pstate(f)];
 }
-void set_performance_projection(int i, double TP, double PP, double CPI)
+
+void proj_perf_set_old(int i, double TP, double PP, double CPI)
 {
         ear_debug(4,"EAR(%s):: Setting PP for entry %d (%lf,%lf,%lf)\n",__FILE__,i,TP,PP,CPI);
+
         projections[i].Time=TP;
         projections[i].Power=PP;
         projections[i].CPI=CPI;
 
 }
-void reset_performance_projection(uint p_states)
+void proj_perf_reset_old(uint p_states)
 {
     ear_debug(4,"EAR(%s) :: ResetperformanceProjection\n",__FILE__);
     int i;
@@ -73,25 +119,23 @@ void reset_performance_projection(uint p_states)
         projections[i].Power=0;
         projections[i].CPI=0;
     }
-
 }
 
-
-
-double power_projection(double power, double tpi,double A,double B, double C)
+double proj_power_old(double power, double tpi,double A,double B, double C)
 {
 	double pp;
     pp=A*power+B*tpi+C;
     return pp;
 }
 
-double cpi_projection(double cpi,double tpi,double D,double E, double F)
+double proj_cpi_old(double cpi,double tpi,double D,double E, double F)
 {
     double cpi_pr;
     cpi_pr=D*cpi+E*tpi+F;
     return cpi_pr;
 }
-double time_projection(ulong F,ulong Fi,double T,double cpi,double cpi_pr)
+
+double proj_time_old(ulong F,ulong Fi,double T,double cpi,double cpi_pr)
 {
     double timep;
 
@@ -100,6 +144,3 @@ double time_projection(ulong F,ulong Fi,double T,double cpi,double cpi_pr)
 
     return timep;
 }
-
-
-

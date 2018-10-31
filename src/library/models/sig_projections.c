@@ -55,7 +55,7 @@ double sig_power_projection(signature_t *my_app,ulong F,uint Fi)
 	// Fref is the index in the pstate list
 	// F was ear_frequency
 	Fref=frequency_freq_to_pstate(F);
-	pp=power_projection(power,tpi,coefficients[Fref][Fi].A,coefficients[Fref][Fi].B,coefficients[Fref][Fi].C);
+	pp=proj_power_old(power,tpi,coefficients[Fref][Fi].A,coefficients[Fref][Fi].B,coefficients[Fref][Fi].C);
 	return pp;
 }
 
@@ -68,7 +68,7 @@ double sig_cpi_projection(signature_t *my_app,ulong F,uint Fi)
 	Fref=frequency_freq_to_pstate(F);
 	tpi=my_app->TPI;
 	cpi=my_app->CPI;
-	cpi_pr=cpi_projection(cpi,tpi,coefficients[Fref][Fi].D,coefficients[Fref][Fi].E,coefficients[Fref][Fi].F);
+	cpi_pr=proj_cpi_old(cpi,tpi,coefficients[Fref][Fi].D,coefficients[Fref][Fi].E,coefficients[Fref][Fi].F);
 	return cpi_pr;
 }
 double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr)
@@ -80,7 +80,7 @@ double sig_time_projection(signature_t *my_app,ulong F,uint Fi,double cpi_pr)
 
 	cpi=my_app->CPI;
 	my_time=my_app->time;
-	timep=time_projection(F,frequency_pstate_to_freq(Fi),my_time,cpi,cpi_pr);
+	timep=proj_time_old(F,frequency_pstate_to_freq(Fi),my_time,cpi,cpi_pr);
 	return timep; 
 }
 

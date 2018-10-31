@@ -312,9 +312,9 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 		}
 	}
 
-	create_projections(p_states);
+	proj_create_old(p_states);
 	//
-	reset_performance_projection(p_states);
+	proj_perf_reset_old(p_states);
 
 	// Coefficient pointers allocation and reading
 	int size, state;
