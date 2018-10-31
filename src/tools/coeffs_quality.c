@@ -42,36 +42,42 @@
 
 int EAR_VERBOSE_LEVEL = 0;
 
+// buffers
+static char name_node[SZ_NAME_SHORT];
+static char path_coeffs[SZ_PATH];
+static char path_input[SZ_PATH];
 static char buffer[SZ_PATH];
-static char buffer_input[SZ_PATH];
 
-typedef struct control
-{
-	/* node */
-	char name_node[SZ_NAME_SHORT];
-	char path_coeffs[SZ_PATH];
-	/* allocation */
-	application_t *apps;
-	application_t *apps_merged;
-	coefficient_t *coeffs;
-	projection_t  *projs;
-	/* indexes */
-	int n_apps;
-	int n_apps_merged;
-	int n_coeffs;
-	/* other */
-	uint table_mode;
-	uint frq_base;
-	uint learning;
-	uint summary;
-	uint general;
-	uint defaul;
-	uint input;
-	uint hide;
-	uint csv;
-} control_t;
-	
-control_t cntr;
+/* node */
+static cluster_conf_t conf;
+
+/* allocation */
+static coefficient_t *coeffs;
+static application_t *apps;
+static application_t *mrgd;
+static double *prjs;
+static double *errs;
+static double *errs_gen;
+static double *errs_med;
+
+/* indexes */
+static int n_coeffs;
+static int n_apps;
+static int n_mrgd;
+static int n_prjs;
+static int n_errs;
+
+// General metrics
+static uint frq_base;
+
+/* other */
+static uint opt_a;
+static uint opt_s;
+static uint opt_g;
+static uint opt_d;
+static uint opt_i;
+static uint opt_h;
+static uint opt_c;
 
 /*
  *
@@ -79,7 +85,7 @@ control_t cntr;
  *
  */
 
-int find(application_t *apps, int n_apps, char *app_id, uint frq_base)
+static int find(application_t *apps, int n_apps, char *app_id, uint frq_base)
 {
 	int equal_id = 0;
 	int equal_fq = 0;
@@ -98,34 +104,39 @@ int find(application_t *apps, int n_apps, char *app_id, uint frq_base)
 	return -1;
 }
 
-application_t *merge(control_t *control)
+static application_t *merge()
 {
-	application_t *apps, *apps_merged;
-	double cpi, tpi, pow, tim, counter;
-	int n_apps, equal_id, equal_f;
-	int i, j, k;
 	char *app_id;
-	uint frq_base;
+	double cpi, tpi, pow, tim, counter;
+	int equal_id, equal_f;
+	int i, j, k;
+	uint freq;
+
+	// n_apps * n_coeffs * (cpi + time + power)
+	n_prjs = n_apps * n_coeffs * 3;
+	n_errs = n_apps * n_coeffs * 3;
 
 	// Allocation
-	apps        = control->apps;
-	n_apps      = control->n_apps;
-	apps_merged = (application_t *) calloc(n_apps, sizeof(application_t));
+	mrgd = (application_t *) calloc(n_apps, sizeof(application_t));
+	prjs = (double *) calloc(n_prjs, sizeof(double));
+	errs = (double *) calloc(n_errs, sizeof(double));
+	errs_med = (double *) calloc(n_coeffs * 4, sizeof(double));
+	errs_gen = (double *) calloc(n_coeffs * 4, sizeof(double));
 
 	// Initialization
 	for(i = 0; i < n_apps; ++i) {
-		apps_merged[i].job.app_id[0] = '\0';
+		mrgd[i].job.app_id[0] = '\0';
 	}
 
 	//
 	for(i = 0, j = 0; i < n_apps; ++i)
 	{
-		frq_base = apps[i].signature.def_f;
+		freq = apps[i].signature.def_f;
 		app_id = apps[i].job.app_id;
 
-		if (find(apps_merged, j, app_id, frq_base) == -1)
+		if (find(mrgd, j, app_id, freq) == -1)
 		{
-			memcpy(&apps_merged[j], &apps[i], sizeof(application_t));
+			memcpy(&mrgd[j], &apps[i], sizeof(application_t));
 
 			tpi = apps[i].signature.TPI;
 			cpi = apps[i].signature.CPI;
@@ -136,7 +147,7 @@ application_t *merge(control_t *control)
 			for(k = i + 1; k < n_apps; ++k)
 			{
 				equal_id = strcmp(app_id, apps[k].job.app_id) == 0;
-				equal_f  = frq_base == apps[k].signature.def_f;
+				equal_f  = freq == apps[k].signature.def_f;
 
 				if (equal_id && equal_f)
 				{
@@ -148,81 +159,38 @@ application_t *merge(control_t *control)
 				}
 			}
 
-			apps_merged[j].signature.DC_power = pow / counter;
-			apps_merged[j].signature.time     = tim / counter;
-			apps_merged[j].signature.TPI      = tpi / counter;
-			apps_merged[j].signature.CPI      = cpi / counter;
+			mrgd[j].signature.DC_power = pow / counter;
+			mrgd[j].signature.time     = tim / counter;
+			mrgd[j].signature.TPI      = tpi / counter;
+			mrgd[j].signature.CPI      = cpi / counter;
 
 			j += 1;
 		}
 	}
 
-	control->apps_merged = apps_merged;
-	control->n_apps_merged = j;
+	n_mrgd = j;
 
-	return apps_merged;
+	return mrgd;
 }
 
-void evaluate(control_t *control)
+static void compute()
 {
-	// App merged error
+	// App mrgd error
 	double cpi_sign, tpi_sign, tim_sign, pow_sign;
-	double cpi_proj, tpi_proj, tim_proj, pow_proj;
-	double cpi_serr, tpi_serr, tim_serr, pow_serr;
-
-	// Medium error
-	double *tim_merr;
-	double *pow_merr;
-	double *n_merr;
-
-	// General error
-	double tim_gerr;
-	double pow_gerr;
-	double n_gerr;
 
 	// Other data
-	application_t *merged;
-	coefficient_t *coeffs;
-	int n_merged;
-	int n_coeffs;
-	int frq_base;
-	int i, j, k;
-
-	//
-	frq_base = control->frq_base;
-	coeffs   = control->coeffs;
-	n_coeffs = control->n_coeffs;
-	merged   = control->apps_merged;
-	n_merged = control->n_apps_merged;
-
-	// Medium Error
-	tim_merr = calloc(n_coeffs, sizeof(double));
-	pow_merr = calloc(n_coeffs, sizeof(double));
-	n_merr   = calloc(n_coeffs, sizeof(double));
-
-	// General medium error
-	tim_gerr = 0.0;
-	pow_gerr = 0.0;
-	n_gerr = 0.0;
+	int c, a, k;
 
 	// Initializing columns
-	if (control->csv) {
-		if (!control->general) {
-			fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
-		}
-	} else {
-		tprintf_init(stderr, STR_MODE_COL, "18 11 15 12 12 15 12 12");
-	}
-
-	for (j = 0; j < n_merged; ++j)
+	for (a = 0; a < n_mrgd; ++a)
 	{
-		if (merged[j].signature.def_f == frq_base)
+		if (mrgd[a].signature.def_f == frq_base)
 		{
-			for (i = 0, k = 0; i < n_coeffs; i++)
+			for (c = 0, k = 0; c < n_coeffs; c++)
             {
-                if (coeffs[i].available && coeffs[i].pstate_ref == frq_base)
+                if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
                 {
-                    k += find(merged, n_merged, merged[j].job.app_id, coeffs[i].pstate) != -1;
+                    k += find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate) != -1;
 				}
 			}
 
@@ -231,60 +199,39 @@ void evaluate(control_t *control)
 				continue;
 			}
 
-			if (!control->hide && !control->csv) {
-				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
-					merged[j].job.app_id, merged[j].signature.def_f);
-			}
+			cpi_sign = mrgd[a].signature.CPI;
+			tpi_sign = mrgd[a].signature.TPI;
+			tim_sign = mrgd[a].signature.time;
+			pow_sign = mrgd[a].signature.DC_power;
 
-			cpi_sign = merged[j].signature.CPI;
-			tpi_sign = merged[j].signature.TPI;
-			tim_sign = merged[j].signature.time;
-			pow_sign = merged[j].signature.DC_power;
-
-			for (i = 0; i < n_coeffs; i++)
+			for (c = 0; c < n_coeffs; c++)
 			{
-				if (coeffs[i].available && coeffs[i].pstate_ref == frq_base)
+				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
 				{
 					// Error
-					cpi_proj = coeff_project_cpi(cpi_sign, tpi_sign, &coeffs[i]);
-					tim_proj = coeff_project_tim(tim_sign, cpi_proj, cpi_sign, frq_base, coeffs[i].pstate);
-					pow_proj = coeff_project_pow(pow_sign, tpi_sign, &coeffs[i]);
+					prjs[a][c+0] = coeff_project_cpi(cpi_sign, tpi_sign, &coeffs[c]);
+					prjs[a][c+1] = coeff_project_tim(tim_sign, cpi_proj, cpi_sign, frq_base, coeffs[c].pstate);
+					prjs[a][c+2] = coeff_project_pow(pow_sign, tpi_sign, &coeffs[c]);
 
 					// Fin that application for that coefficient
-					k = find(merged, n_merged, merged[j].job.app_id, coeffs[i].pstate);
+					k = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);
 
 					if (k != -1)
 					{
-						application_t *m = &merged[k];						
+						application_t *m = &mrgd[k];
 
-						tim_serr = fabs((1.0 - (m->signature.time / tim_proj)) * 100.0);
-						pow_serr = fabs((1.0 - (m->signature.DC_power / pow_proj)) * 100.0);
-						cpi_serr = fabs((1.0 - (m->signature.CPI / cpi_proj)) * 100.0);
-
-						if (!control->hide)
-						{
-							if (control->csv) {
-								fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
-									merged[j].job.app_id, merged[j].signature.def_f,
-									coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
-									m->signature.DC_power, pow_proj, pow_serr);
-							} else {
-								tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
-									coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
-									m->signature.DC_power, pow_proj, pow_serr);
-							}
-						}
-					} else {
-						if (!control->hide) {
-							tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
-						}
+						errs[a][c+0] = fabs((1.0 - (m->signature.CPI / cpi_proj)) * 100.0);
+						errs[a][c+1] = fabs((1.0 - (m->signature.time / tim_proj)) * 100.0);
+						errs[a][c+2] = fabs((1.0 - (m->signature.DC_power / pow_proj)) * 100.0);
 					}
 
 					// Medium error
-					if (coeffs[i].pstate != frq_base) {
-						tim_merr[i] += tim_serr;
-						pow_merr[i] += pow_serr;
-						n_merr[i]   += 1.0;
+					if (coeffs[c].pstate != frq_base)
+					{
+						errs_med[c+0] += errs[a][c+0];
+						errs_med[c+1] += errs[a][c+1];
+						errs_med[c+2] += errs[a][c+2];
+						errs_med[c+3] += 1.0;
 					}
 				}
 			}
@@ -292,83 +239,75 @@ void evaluate(control_t *control)
 	}
 
 	// Coefficients medium error
-	
-	if (control->summary) {
-		fprintf(stderr, LINE);
-	}
-
-	if (control->summary)
+	for (c = 0; c < n_coeffs; c++)
 	{
-		if (control->csv) {
-			fprintf(stderr, "Freq. From;Freq. To;T. Err;P. Err\n");
-		} else {
-			tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
-		}
-	}
-
-	for (i = 0; i < n_coeffs; i++)
-	{
-		if (n_merr[i] > 0.0)
+		if (n_merr[c] > 0.0)
 		{
 			// Medium error
-			tim_merr[i] = tim_merr[i] / n_merr[i];
-			pow_merr[i] = pow_merr[i] / n_merr[i];
+			errs_med[c+0] = errs_med[c+0] / errs_med[c+3];
+			errs_med[c+1] = errs_med[c+1] / errs_med[c+3];
+			errs_med[c+2] = errs_med[c+2] / errs_med[c+3];
 
-			if (control->summary)
-			{
-				if (control->csv) {
-					fprintf(stderr, "%lu;%lu;%0.2lf;%0.2lf\n",
-						frq_base, coeffs[i].pstate, tim_merr[i], pow_merr[i]);
-				} else {
-					tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-						coeffs[i].pstate, tim_merr[i], pow_merr[i]);
-				}
-			}
-
-			// General medium error
-			tim_gerr += tim_merr[i];
-			pow_gerr += pow_merr[i];
-			n_gerr   += 1.0f;
+			// General error
+			errs_gen[c+0] += errs_med[c+0];
+			errs_gen[c+1] += errs_med[c+1];
+			errs_gen[c+2] += errs_med[c+2];
+			errs_gen[c+3] += 1.0;
 		}
 	}
 
 	// General medium error
-	if (control->summary) {
-		fprintf(stderr, LINE);
-	}
+	errs_gen[c+0] = errs_med[c+0] / errs_gen[c+3];
+	errs_gen[c+1] = errs_med[c+1] / errs_gen[c+3];
+	errs_gen[c+2] = errs_med[c+2] / errs_gen[c+3];
+}
 
-	tim_gerr = tim_gerr / n_gerr;
-	pow_gerr = pow_gerr / n_gerr;
+void print()
+{
+	int c, a, k;
 
-	if (control->summary)
+	tprintf_init(stderr, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+
+	for (a = 0; a < n_mrgd; ++a)
 	{
-		if (control->csv) {
-			fprintf(stderr, "%lu;%0.2lf;%0.2lf\n",
-				frq_base, tim_gerr, pow_gerr);
-		} else {
-			tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-				frq_base, tim_gerr, pow_gerr);
-		}
-	}
-	if (control->general)
-	{
-		if (control->csv) {
-			fprintf(stderr, "%s;%lu;%0.2lf;%0.2lf\n",
-				control->name_node, frq_base, tim_gerr, pow_gerr);
-		} else {
-			tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-				control->name_node, frq_base, tim_gerr, pow_gerr);
+		if (mrgd[a].signature.def_f == frq_base)
+		{
+			for (c = 0, k = 0; c < n_coeffs; c++)
+			{
+				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
+				{
+					k += find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate) != -1;
+				}
+			}
+
+			// No more than one application to compare
+			if (k <= 1) {
+				continue;
+			}
+
+			tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
+					merged[j].job.app_id, merged[j].signature.def_f);
+
+			for (c = 0; c < n_coeffs; c++)
+			{
+				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
+				{
+					tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
+							coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
+							m->signature.DC_power, pow_proj, pow_serr);
+				}
+			}
 		}
 	}
 }
 
 /*
  *
- * Initialization
+ * Read
  *
  */
 
-void read_applications(control_t *cntr)
+void read_applications()
 {
 	application_t *appsn;
 	application_t *appsl;
@@ -377,49 +316,37 @@ void read_applications(control_t *cntr)
 	int i;
 
 	//
-	n_appsn = db_read_applications(&appsn, 1, 1000, cntr->name_node);
+	n_appsn = db_read_applications(&appsn, 1, 1000, name_node);
 
 	if (n_appsn <= 0)
 	{
-		if (cntr->general)
-		{
-			if (cntr->csv) {
-				fprintf(stderr, "%s;--;--;--\n", cntr->name_node);
-			} else {
-				// Initializing columns
-				tprintf_init(stderr, cntr->table_mode, "18 11 15 12 12 15 12 12");
-				tprintf("%s||--|| | -||-||--|| | -||-||--", cntr->name_node);
-			}
-		} else {
-			fprintf(stderr, "No learning apps found for the node '%s'\n", cntr->name_node);
+		if (!opt_g) {
+			fprintf(stderr, "No learning apps found for the node '%s'\n", name_node);
 		}
-		
+
 		exit(1);
 	}
 
 	
-	if (cntr->learning) {
-		n_appsl = db_read_applications(&appsl, 0, 1000, cntr->name_node);
+	if (opt_a) {
+		n_appsl = db_read_applications(&appsl, 0, 1000, name_node);
 	}
 
 	//
-	cntr->n_apps = n_appsn + n_appsl;
-	cntr->apps = calloc(cntr->n_apps, sizeof(application_t));
+	n_apps = n_appsn + n_appsl;
+	apps = calloc(n_apps, sizeof(application_t));
 
 	//
-	memcpy(cntr->apps, appsn, n_appsn * sizeof(application_t));
+	memcpy(apps, appsn, n_appsn * sizeof(application_t));
 
-	if (cntr->learning) {
-		memcpy(&cntr->apps[n_appsn], appsl, n_appsl * sizeof(application_t));
+	if (opt_a) {
+		memcpy(&apps[n_appsn], appsl, n_appsl * sizeof(application_t));
 	}
-	
-	// Merging
-	merge(cntr);
 }
 
-void read_coefficients(cluster_conf_t *conf, control_t *cntr)
+void read_coefficients(cluster_conf_t *conf)
 {
-	char *node = cntr->name_node;
+	char *node = name_node;
 	int island;
 
 	//
@@ -430,31 +357,29 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 		exit(1);
 	}
 
-
 	// If file is custom
-	if (cntr->input) {
-		cntr->n_coeffs = coeff_file_read(buffer_input, &cntr->coeffs);
-	// If default is selected
-	} else if (!cntr->defaul)
+	if (opt_i)
 	{
-		sprintf(cntr->path_coeffs, "%s/island%d/coeffs.%s",
+		n_coeffs = coeff_file_read(path_input, &coeffs);
+	}
+	// If default is selected
+	else if (!opt_d)
+	{
+		sprintf(path_coeffs, "%s/island%d/coeffs.%s",
 				conf->earlib.coefficients_pathname, island, node);
-
-
-		cntr->n_coeffs = coeff_file_read(cntr->path_coeffs, &cntr->coeffs);
+		//
+		n_coeffs = coeff_file_read(path_coeffs, &coeffs);
 	}
 
 	// Don't worked, looking for defaults
-	if (cntr->n_coeffs <= 0)
+	if (n_coeffs <= 0)
 	{
-		//
 		sprintf(buffer, "%s/island%d/coeffs.default",
  			conf->earlib.coefficients_pathname, island);
-
 		//
-		cntr->n_coeffs = coeff_file_read(buffer, &cntr->coeffs);
+		n_coeffs = coeff_file_read(buffer, &coeffs);
 		
-		if (cntr->n_coeffs <= 0)
+		if (n_coeffs <= 0)
 		{
 			fprintf(stderr, "no default coefficients found, exiting\n");	
 			exit(1);
@@ -462,7 +387,13 @@ void read_coefficients(cluster_conf_t *conf, control_t *cntr)
 	}
 }
 
-void usage(int argc, char *argv[], control_t *cntr)
+/*
+ *
+ * Initialization
+ *
+ */
+
+void usage(int argc, char *argv[])
 {
 	int i = 0;
 
@@ -472,65 +403,47 @@ void usage(int argc, char *argv[], control_t *cntr)
 		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
 		fprintf(stdout, "  The frequency is the nominal base frequency of that node.\n\n");
 		fprintf(stdout, "Options:\n");
-		fprintf(stdout, "\t-A, --all\tMerges the applications database in addition\n");
-		fprintf(stdout, "\t\t\tof the learning applications database.\n");
-		fprintf(stdout, "\t-S, --summary\tShows the medium and general errors.\n");
-		fprintf(stdout, "\t-G, --general\tShows only the general medium error.\n");
-		fprintf(stdout, "\t-H, --hide\tHides the merged applications projections and errors.\n");
-		fprintf(stdout, "\t-C, --csv\tPrints the console output in CSV format.\n");
-		fprintf(stdout, "\t-D, --default\tUses the default coefficients.\n");
-		fprintf(stdout, "\t-I <path>\tUse this coefficients input file\n");
-		fprintf(stdout, "\t\t\tto project instead the node coefficients.\n");
-
+		fprintf(stdout, "\t-A\tAdds also the applications database.\n");
+		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
+		fprintf(stdout, "\t-D\tUses the default coefficients.\n");
+		fprintf(stdout, "\t-G\tShows only the opt_g medium error.\n");
+		fprintf(stdout, "\t-H\tHides the applications projections and errors.\n");
+		fprintf(stdout, "\t-I <path>\tUse a custom coefficients opt_i file.\n");
+		fprintf(stdout, "\t-S\tShows the medium and opt_g errors.\n");
 		exit(1);
 	}
 
-	// Basic parametrs
-	cntr->frq_base = (unsigned long) atoi(argv[2]);
-	strcpy(cntr->name_node, argv[1]);
-
-	// Additional parameters
-	for (i = 3; i < argc; ++i)
+	while ((c = getopt (argc, argv, "ACDGHI:S")) != -1)
 	{
-		if (!cntr->learning)
-			cntr->learning = ((strcmp(argv[i], "-A") == 0) ||
-						 	  (strcmp(argv[i], "--all") == 0));
-		if (!cntr->summary)
-			cntr->summary = ((strcmp(argv[i], "-S") == 0) ||
-							 (strcmp(argv[i], "--summary") == 0));
-		if (!cntr->general)
-			cntr->general = ((strcmp(argv[i], "-G") == 0) ||
-							 (strcmp(argv[i], "--general") == 0));
-		if (!cntr->hide)
-			cntr->hide = ((strcmp(argv[i], "-H") == 0) ||
-						  (strcmp(argv[i], "--hide") == 0));
-		if (!cntr->csv)
+		switch (c)
 		{
-			cntr->csv = ((strcmp(argv[i], "-C") == 0) ||
-						   (strcmp(argv[i], "--csv") == 0));
-
-			cntr->table_mode = STR_MODE_CSV;
+			case 'A':
+				opt_a = 1;
+				break;
+			case 'C':
+				opt_c = 1;
+				break;
+			case 'D':
+				opt_d = 1;
+				break;
+			case 'G':
+				opt_g = 1;
+				break;
+			case 'H':
+				opt_h = 1;
+				break;
+			case 'I':
+				opt_i = 1;
+				strcpy(buffer_input, optarg);
+				break;
+			case 'S':
+				opt_s = 1;
+				break;
+			case '?':
+				return 1;
+			default:
+				abort ();
 		}
-		if (!cntr->defaul)
-			cntr->defaul = ((strcmp(argv[i], "-D") == 0) ||
-						  (strcmp(argv[i], "--default") == 0));
-		if (!cntr->input) 
-		{
-			cntr->input = (strcmp(argv[i], "-I") == 0);
-
-			if (cntr->input) {
-				strcpy(buffer_input, argv[i + 1]);
-			}
-		}
-	}
-
-	if (cntr->general) {
-		cntr->hide = 1;
-		cntr->summary = 0;
-	}
-
-	if (cntr->input) {
-		cntr->defaul = 0;
 	}
 }
 
@@ -555,22 +468,22 @@ void init(cluster_conf_t *conf)
 
 int main(int argc, char *argv[])
 {
-	cluster_conf_t conf;
+	// Initialization
+	usage(argc, argv);
 
-	//
-	usage(argc, argv, &cntr);
-
-	//
 	init(&conf);
 
-	// Allocating applications
-	read_applications(&cntr);
+	// Read
+	read_coefficients();
 
-	// Reading coefficients
-	read_coefficients(&conf, &cntr);
+	read_applications();
 
-	// Evaluating
-	evaluate(&cntr);
+	// Work bench
+	merge();
+
+	compute();
+
+	print();
 
 	return 0;
 }
