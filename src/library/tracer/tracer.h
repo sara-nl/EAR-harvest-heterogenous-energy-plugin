@@ -83,6 +83,9 @@
 
 	/** External reconfiguration is requested */
 	void traces_reconfiguration(int global_rank, int local_rank);
+	
+	/** returns true if traces are dynamically activated , is independent on start/stop*/
+	int traces_are_on();
 #else
 	#define traces_init(a,g,l,n,m,p)
 	#define traces_new_n_iter(g,l,p,lo,i)
@@ -100,6 +103,7 @@
 	#define traces_reconfiguration(g,l);
 	#define traces_start()
 	#define traces_stop()
+	#define traces_are_on() 	0
 #endif
 
 #endif

@@ -435,7 +435,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period++;
 				return;
 			}
-			//print_loop_signature("signature refreshed", &loop_signature.signature);
+			/*print_loop_signature("signature refreshed", &loop_signature.signature);*/
 
 			CPI = loop_signature.signature.CPI;
 			GBS = loop_signature.signature.GBS;
@@ -489,7 +489,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			pok=policy_ok(PP, &loop_signature.signature, l_sig);
 			if (pok)
 			{
-				perf_count_period = perf_count_period * 2;
+				/* When collecting traces, we maintain the period */
+				if (traces_are_on()==0)	perf_count_period = perf_count_period * 2;
 				tries_current_loop=0;
 				earl_verbose(1,"Policy ok");
 			}else{
@@ -545,6 +546,34 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			break;
 		case PROJECTION_ERROR:
+			if (traces_are_on())
+			{
+			/* We compute the signature just in case EAR_GUI is on */
+            if (((iterations - 1) % perf_count_period) ) return;
+            /* We can compute the signature */
+            N_iter = iterations - begin_iter;
+            result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);
+            if (result == EAR_NOT_READY)
+            {
+                perf_count_period++;
+                return;
+            }
+
+            CPI = loop_signature.signature.CPI;
+            GBS = loop_signature.signature.GBS;
+            POWER = loop_signature.signature.DC_power;
+            TPI = loop_signature.signature.TPI;
+            TIME = loop_signature.signature.time;
+            VI=metrics_vec_inst(&loop_signature.signature);
+            VPI=(double)VI/(double)loop_signature.signature.instructions;
+
+            ENERGY = TIME * POWER;
+            EDP = ENERGY * TIME;
+
+            /* VERBOSE */
+            traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
+            traces_frequency(ear_my_rank, my_id, policy_freq);
+			}
 			/* We run here at default freq */
 			break;
 		default: break;

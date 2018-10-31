@@ -550,4 +550,9 @@ void traces_reconfiguration(int global_rank, int local_rank)
     trace_file_write_simple_event(TRA_REC);
 }
 
+int traces_are_on()
+{
+	return enabled;
+}
+
 #endif
