@@ -266,30 +266,37 @@ static void compute()
 
 void print()
 {
-	#define LINE "-------------------------------\n"
-	int c, a, k;
+	#define LINE "-------------------------------------------------------------------------------\n"
+	int c, a, n;
 
-	tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+	if (opt_c && !opt_g) {
+		fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+	}
+
+	if (!opt_c) {
+		tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+	}
 
 	for (a = 0; a < n_mrgd; ++a)
 	{
 		if (mrgd[a].signature.def_f == frq_base)
 		{
-			for (c = 0, k = 0; c < n_coeffs; c++)
+			for (c = 0, n = 0; c < n_coeffs; c++)
 			{
-				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
-				{
-					k += find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate) != -1;
+				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base) {
+					n += find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate) != -1;
 				}
 			}
 
 			// No more than one application to compare
-			if (k <= 1) {
+			if (n <= 1) {
 				continue;
 			}
 
-			tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
+			if (!opt_c) {
+				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
 					mrgd[a].job.app_id, mrgd[a].signature.def_f);
+			}
 
 			for (c = 0; c < n_coeffs; c++)
 			{
@@ -299,18 +306,87 @@ void print()
 					double *prjs_b = &prjs[i];
             		double *errs_b = &errs[i];
 					
-					k = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);
+					n = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);
 
-					if (k != -1) 
+					if (n != -1)
 					{
-						application_t *m = &mrgd[k];						
+						application_t *m = &mrgd[n];
 
-						tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
-							coeffs[c].pstate, m->signature.time, prjs_b[c+1], errs_b[c+1],
-							m->signature.DC_power, prjs_b[c+2], errs_b[c+2]);
+						if (!opt_h && opt_c) {
+							fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
+								merged[j].job.app_id, merged[j].signature.def_f, coeffs[i].pstate,
+								m->signature.time, prjs_b[c + 1], errs_b[c + 1],
+								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
+						} else if (!opt_h) {
+							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
+								coeffs[c].pstate, m->signature.time, prjs_b[c + 1], errs_b[c + 1],
+								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
+						}
+					} else {
+						if (!opt_h && opt_c) {
+							fprintf(stderr, "%s;--;%lu;--;--;--;--;--;--\n",
+								merged[j].job.app_id, coeffs[i].pstate);
+						} else if (!opt_h) {
+							tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
+
+						}
 					}
 				}
 			}
+		}
+	}
+
+	// Medium error per coefficient
+	if (opt_s && !opt_h) {
+		fprintf(stdout, LINE);
+	}
+
+	if (opt_s)
+	{
+		if (opt_c) {
+			fprintf(stderr, "Freq. From;Freq. To;T. Err;P. Err\n");
+		} else {
+			tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
+		}
+	}
+
+	for (c = 0; opt_s && c < n_coeffs; c++)
+	{
+		if (errs_med[c+3] > 0.0)
+		{
+			if (opt_c) {
+				fprintf(stderr, "%lu;%lu;%0.2lf;%0.2lf\n",
+						frq_base, coeffs[i].pstate, errs_med[c+1], errs_med[c+2]);
+			} else {
+				tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+						coeffs[i].pstate, errs_med[c+1], errs_med[c+2]);
+			}
+		}
+	}
+
+	// General medium error
+	if (opt_s) {
+		fprintf(stderr, LINE);
+	}
+
+	if (opt_s && !opt_g)
+	{
+		if (control->csv) {
+			fprintf(stderr, "%lu;%0.2lf;%0.2lf\n",
+					frq_base, errs_gen[c+1], errs_gen[c+2]);
+		} else {
+			tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+					frq_base, errs_gen[c+1], errs_gen[c+2]);
+		}
+	}
+	if (opt_g)
+	{
+		if (control->csv) {
+			fprintf(stderr, "%s;%lu;%0.2lf;%0.2lf\n",
+					control->name_node, frq_base, errs_gen[c+1], errs_gen[c+2]);
+		} else {
+			tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
+					control->name_node, frq_base, errs_gen[c+1], errs_gen[c+2]);
 		}
 	}
 }
