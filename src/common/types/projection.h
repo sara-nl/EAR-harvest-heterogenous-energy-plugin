@@ -37,6 +37,8 @@
 #define _EAR_TYPES_PROJECTION
 
 #include <common/types/generic.h>
+#include <common/types/signature.h>
+#include <common/types/coefficient.h>
 
 typedef struct projection
 {
@@ -72,11 +74,11 @@ void observed_values_fill_time(obs_time_t *obs, signature_t *sign);
 void observed_values_fill_power(obs_power_t *obs, signature_t *sign);
 
 // Projections
-double proj_project_cpi(obs_cpi_t *cpi, coefficient_t *coeffs);
+double proj_project_cpi(obs_cpi_t *cpi, coefficient_t *coeff);
 
-double proj_project_time(obs_time_t *time, coefficient_t *coeffs, double proj_cpi);
+double proj_project_time(obs_time_t *time, coefficient_t *coeff, double proj_cpi);
 
-double proj_project_power(obs_power_t *power, coefficient_t *coeffs);
+double proj_project_power(obs_power_t *power, coefficient_t *coeff);
 
 // Old
 

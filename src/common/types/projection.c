@@ -29,9 +29,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-//#include <control/frequency.h>
 #include <common/ear_verbose.h> // Obsolete
 #include <common/types/projection.h>
+#ifndef PROJ_NO_OBSOLETE
+#include <control/frequency.h> // Obsolete
+#endif
 
 // Projections
 void observed_values_fill_cpi(obs_cpi_t *obs, signature_t *sign)
@@ -52,27 +54,27 @@ void observed_values_fill_power(obs_power_t *obs, signature_t *sign)
     obs->obs_power = sign->DC_power;
 }
 
-double coeff_project_cpi(obs_cpi_t *obs, coefficient_t *coeffs)
+double proj_project_cpi(obs_cpi_t *obs, coefficient_t *coeff)
 {
-    return (cofs->D * obs->obs_cpi) +
-           (cofs->E * obs->obs_tpi) +
-           (cofs->F);
+    return (coeff->D * obs->obs_cpi) +
+           (coeff->E * obs->obs_tpi) +
+           (coeff->F);
 }
 
-double coeff_project_time(obs_time_t *obs, coefficient_t *coeffs, double proj_cpi)
+double proj_project_time(obs_time_t *obs, coefficient_t *coeff, double proj_cpi)
 {
-    double frq_src = (double) coeffs.pstate_ref;
-    double frq_dst = (double) coeffs.pstate;
+    double freq_src = (double) coeff->pstate_ref;
+    double freq_dst = (double) coeff->pstate;
 
     return ((obs->obs_time * proj_cpi) / obs->obs_cpi) *
            (freq_src / freq_dst);
 }
 
-double coeff_project_power(obs_power_t *obs, coefficient_t *coeffs)
+double proj_project_power(obs_power_t *obs, coefficient_t *coeff)
 {
-    return (coeffs->A * obs->pow_sign) +
-           (coeffs->B * obs->tpi_sign) +
-           (coeffs->C);
+    return (coeff->A * obs->obs_power) +
+           (coeff->B * obs->obs_tpi) +
+           (coeff->C);
 }
 
 /*
@@ -95,10 +97,15 @@ uint proj_create_old(uint p_states)
 
 projection_t *proj_perf_project_old(ulong f)
 {
+	#if PROJ_NO_OBSOLETE
+    #warning "C Preprocessor got here!"
+	return NULL;
+	#else
     ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",
               __FILE__,f,frequency_freq_to_pstate(f));
 
     return &projections[frequency_freq_to_pstate(f)];
+    #endif
 }
 
 void proj_perf_set_old(int i, double TP, double PP, double CPI)

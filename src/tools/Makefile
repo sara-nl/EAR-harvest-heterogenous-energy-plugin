@@ -5,9 +5,10 @@ LDFLAGS = $(CPUF_LDFLAGS) $(GSL_LDFLAGS)
 
 COMMON_OBJS = $(ROOTDIR)/src/common/types.a
 
-BINARIES = coeffs_compute \
-           coeffs_jobproj \
+BINARIES = \
            coeffs_quality \
+           coeffs_compute \
+           coeffs_jobproj \
            coeffs_show \
            coeffs_default \
 		   coeffs_null \
