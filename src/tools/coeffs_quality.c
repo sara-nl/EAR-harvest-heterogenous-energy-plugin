@@ -506,11 +506,14 @@ void usage(int argc, char *argv[])
 		exit(1);
 	}
 
+	frq_base = (unsigned long) atoi(argv[2]);
+	strcpy(name_node, argv[1]);
 	//
 	while ((c = getopt (argc, argv, "ACDGHI:S")) != -1)
 	{
 		switch (c)
 		{
+
 			case 'A':
 				opt_a = 1;
 				break;
@@ -541,8 +544,6 @@ void usage(int argc, char *argv[])
 	}
 
 	//
-	frq_base = (unsigned long) atoi(argv[2]);
-	strcpy(name_node, argv[1]);
 
 	if (opt_g) {
 		opt_h = 1;
