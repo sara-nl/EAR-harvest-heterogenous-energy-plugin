@@ -119,8 +119,8 @@ static application_t *merge()
 	mrgd = (application_t *) calloc(n_apps, sizeof(application_t));
 	prjs = (double *) calloc(n_prjs, sizeof(double));
 	errs = (double *) calloc(n_errs, sizeof(double));
-	errs_med = (double *) calloc(n_coeffs * 4, sizeof(double));
-	errs_gen = (double *) calloc(n_coeffs * 4, sizeof(double));
+	errs_med = (double *) calloc(4 * n_coeffs, sizeof(double));
+	errs_gen = (double *) calloc(4, sizeof(double));
 
 	// Initialization
 	for(i = 0; i < n_apps; ++i) {
@@ -178,7 +178,7 @@ static void compute()
 	obs_power_t obs_power;
 	obs_time_t obs_time;
 	obs_cpi_t obs_cpi;
-	int c, a, n;
+	int c, a, n, i;
 
 	// Initializing columns
 	for (a = 0; a < n_mrgd; ++a)
@@ -206,7 +206,7 @@ static void compute()
 			{
 				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
 				{
-					int i = (n_coeffs * 3) * a + (3 * c);
+					i = (n_coeffs * 3) * a + (3) * c;
 					double *prjs_b = &prjs[i];
 					double *errs_b = &errs[i];	
 
@@ -230,10 +230,11 @@ static void compute()
 					// Medium error
 					if (coeffs[c].pstate != frq_base)
 					{
-						errs_med[c+0] += errs_b[c+0];
-						errs_med[c+1] += errs_b[c+1];
-						errs_med[c+2] += errs_b[c+2];
-						errs_med[c+3] += 1.0;
+						i = 4 * c;
+						errs_med[i+0] += errs_b[c+0];
+						errs_med[i+1] += errs_b[c+1];
+						errs_med[i+2] += errs_b[c+2];
+						errs_med[i+3] += 1.0;
 					}
 				}
 			}
@@ -241,9 +242,9 @@ static void compute()
 	}
 
 	// Coefficients medium error
-	for (c = 0; c < n_coeffs; c++)
+	for (c = 0; c < n_coeffs * 4; c += 4)
 	{
-		if (errs_med[c+3] > 0.0)
+		if (errs_med[c+3] > 0.1)
 		{
 			// Medium error
 			errs_med[c+0] = errs_med[c+0] / errs_med[c+3];
@@ -251,23 +252,23 @@ static void compute()
 			errs_med[c+2] = errs_med[c+2] / errs_med[c+3];
 
 			// General error
-			errs_gen[c+0] += errs_med[c+0];
-			errs_gen[c+1] += errs_med[c+1];
-			errs_gen[c+2] += errs_med[c+2];
-			errs_gen[c+3] += 1.0;
+			errs_gen[0] += errs_med[c+0];
+			errs_gen[1] += errs_med[c+1];
+			errs_gen[2] += errs_med[c+2];
+			errs_gen[3] += 1.0;
 		}
 	}
 
 	// General medium error
-	errs_gen[c+0] = errs_med[c+0] / errs_gen[c+3];
-	errs_gen[c+1] = errs_med[c+1] / errs_gen[c+3];
-	errs_gen[c+2] = errs_med[c+2] / errs_gen[c+3];
+	errs_gen[0] = errs_gen[0] / errs_gen[3];
+	errs_gen[1] = errs_gen[1] / errs_gen[3];
+	errs_gen[2] = errs_gen[2] / errs_gen[3];
 }
 
 void print()
 {
-	#define LINE "-------------------------------------------------------------------------------\n"
-	int c, a, n;
+	#define LINE "-----------------------------------------------------------------------------------------------------\n"
+	int c, a, n, i;
 
 	if (opt_c && !opt_g) {
 		fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
@@ -293,7 +294,7 @@ void print()
 				continue;
 			}
 
-			if (!opt_c) {
+			if (!opt_h && !opt_c) {
 				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
 					mrgd[a].job.app_id, mrgd[a].signature.def_f);
 			}
@@ -302,7 +303,7 @@ void print()
 			{
 				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
 				{
-					int i = (n_coeffs * 3) * a + (3) * c;
+					i = (n_coeffs * 3) * a + (3) * c;
 					double *prjs_b = &prjs[i];
             		double *errs_b = &errs[i];
 					
@@ -312,23 +313,31 @@ void print()
 					{
 						application_t *m = &mrgd[n];
 
-						if (!opt_h && opt_c) {
+						if (!opt_h && opt_c)
+						{
 							fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
-								merged[j].job.app_id, merged[j].signature.def_f, coeffs[i].pstate,
-								m->signature.time, prjs_b[c + 1], errs_b[c + 1],
-								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
-						} else if (!opt_h) {
-							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
-								coeffs[c].pstate, m->signature.time, prjs_b[c + 1], errs_b[c + 1],
+								mrgd[a].job.app_id, mrgd[a].signature.def_f, coeffs[c].pstate,
+								m->signature.time    , prjs_b[c + 1], errs_b[c + 1],
 								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
 						}
-					} else {
-						if (!opt_h && opt_c) {
+						else if (!opt_h)
+						{
+							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
+								coeffs[c].pstate,
+								m->signature.time    , prjs_b[c + 1], errs_b[c + 1],
+								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
+						}
+					}
+					else
+					{
+						if (!opt_h && opt_c)
+						{
 							fprintf(stderr, "%s;--;%lu;--;--;--;--;--;--\n",
-								merged[j].job.app_id, coeffs[i].pstate);
-						} else if (!opt_h) {
-							tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[i].pstate);
-
+								mrgd[a].job.app_id, coeffs[c].pstate);
+						}
+						else if (!opt_h)
+						{
+							tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[c].pstate);
 						}
 					}
 				}
@@ -350,43 +359,44 @@ void print()
 		}
 	}
 
-	for (c = 0; opt_s && c < n_coeffs; c++)
+	for (c = 0, i = 0; opt_s && c < n_coeffs; ++c, i += 4)
 	{
-		if (errs_med[c+3] > 0.0)
+		if (errs_med[i+3] > 0.0)
 		{
 			if (opt_c) {
 				fprintf(stderr, "%lu;%lu;%0.2lf;%0.2lf\n",
-						frq_base, coeffs[i].pstate, errs_med[c+1], errs_med[c+2]);
+					frq_base, coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
 			} else {
 				tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-						coeffs[i].pstate, errs_med[c+1], errs_med[c+2]);
+					coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
 			}
 		}
 	}
 
-	// General medium error
-	if (opt_s) {
+	if (opt_c) {
 		fprintf(stderr, LINE);
 	}
 
+	// General medium error
 	if (opt_s && !opt_g)
 	{
-		if (control->csv) {
-			fprintf(stderr, "%lu;%0.2lf;%0.2lf\n",
-					frq_base, errs_gen[c+1], errs_gen[c+2]);
+		if (opt_c) {
+			fprintf(stderr, "%lu;%lu;%0.2lf;%0.2lf\n",
+				frq_base, frq_base, errs_gen[1], errs_gen[2]);
 		} else {
 			tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-					frq_base, errs_gen[c+1], errs_gen[c+2]);
+				frq_base, errs_gen[1], errs_gen[2]);
 		}
 	}
+
 	if (opt_g)
 	{
-		if (control->csv) {
+		if (opt_c) {
 			fprintf(stderr, "%s;%lu;%0.2lf;%0.2lf\n",
-					control->name_node, frq_base, errs_gen[c+1], errs_gen[c+2]);
+				name_node, frq_base, errs_gen[1], errs_gen[2]);
 		} else {
 			tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-					control->name_node, frq_base, errs_gen[c+1], errs_gen[c+2]);
+				name_node, frq_base, errs_gen[1], errs_gen[2]);
 		}
 	}
 }
@@ -539,6 +549,15 @@ void usage(int argc, char *argv[])
 			default:
 				abort ();
 		}
+	}
+
+	if (opt_g) {
+		opt_h = 1;
+		opt_s = 0;
+	}
+
+	if (opt_i) {
+		opt_d = 0;
 	}
 }
 
