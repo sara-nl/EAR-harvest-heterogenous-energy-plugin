@@ -30,6 +30,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/types/projection.h>
@@ -208,10 +209,14 @@ static void compute()
 			{
 				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
 				{
+					int i = (n_coeffs * 3) * a + (3 * c);
+					double *prjs_b = &prjs[i];
+					double *errs_b = &errs[i];	
+
 					// Error
-					prjs[a][c+0] = coeff_project_cpi(cpi_sign, tpi_sign, &coeffs[c]);
-					prjs[a][c+1] = coeff_project_tim(tim_sign, cpi_proj, cpi_sign, frq_base, coeffs[c].pstate);
-					prjs[a][c+2] = coeff_project_pow(pow_sign, tpi_sign, &coeffs[c]);
+					prjs_b[c+0] = coeff_project_cpi(cpi_sign, tpi_sign, &coeffs[c]);
+					prjs_b[c+1] = coeff_project_tim(tim_sign, prjs_b[c+0], cpi_sign, frq_base, coeffs[c].pstate);
+					prjs_b[c+2] = coeff_project_pow(pow_sign, tpi_sign, &coeffs[c]);
 
 					// Fin that application for that coefficient
 					k = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);
@@ -220,17 +225,17 @@ static void compute()
 					{
 						application_t *m = &mrgd[k];
 
-						errs[a][c+0] = fabs((1.0 - (m->signature.CPI / cpi_proj)) * 100.0);
-						errs[a][c+1] = fabs((1.0 - (m->signature.time / tim_proj)) * 100.0);
-						errs[a][c+2] = fabs((1.0 - (m->signature.DC_power / pow_proj)) * 100.0);
+						errs_b[c+0] = fabs((1.0 - (m->signature.CPI      / prjs_b[c+0])) * 100.0);
+						errs_b[c+1] = fabs((1.0 - (m->signature.time     / prjs_b[c+1])) * 100.0);
+						errs_b[c+2] = fabs((1.0 - (m->signature.DC_power / prjs_b[c+2])) * 100.0);
 					}
 
 					// Medium error
 					if (coeffs[c].pstate != frq_base)
 					{
-						errs_med[c+0] += errs[a][c+0];
-						errs_med[c+1] += errs[a][c+1];
-						errs_med[c+2] += errs[a][c+2];
+						errs_med[c+0] += errs_b[c+0];
+						errs_med[c+1] += errs_b[c+1];
+						errs_med[c+2] += errs_b[c+2];
 						errs_med[c+3] += 1.0;
 					}
 				}
@@ -241,7 +246,7 @@ static void compute()
 	// Coefficients medium error
 	for (c = 0; c < n_coeffs; c++)
 	{
-		if (n_merr[c] > 0.0)
+		if (errs_med[c+3] > 0.0)
 		{
 			// Medium error
 			errs_med[c+0] = errs_med[c+0] / errs_med[c+3];
@@ -266,7 +271,7 @@ void print()
 {
 	int c, a, k;
 
-	tprintf_init(stderr, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+	tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
 
 	for (a = 0; a < n_mrgd; ++a)
 	{
@@ -286,15 +291,26 @@ void print()
 			}
 
 			tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
-					merged[j].job.app_id, merged[j].signature.def_f);
+					mrgd[a].job.app_id, mrgd[a].signature.def_f);
 
 			for (c = 0; c < n_coeffs; c++)
 			{
 				if (coeffs[c].available && coeffs[c].pstate_ref == frq_base)
 				{
-					tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
-							coeffs[i].pstate, m->signature.time, tim_proj, tim_serr,
-							m->signature.DC_power, pow_proj, pow_serr);
+					int i = (n_coeffs * 3) * a + (3) * c;
+					double *prjs_b = &prjs[i];
+            		double *errs_b = &errs[i];
+					
+					k = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);
+
+					if (k != -1) 
+					{
+						application_t *m = &mrgd[k];						
+
+						tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
+							coeffs[c].pstate, m->signature.time, prjs_b[c+1], errs_b[c+1],
+							m->signature.DC_power, prjs_b[c+2], errs_b[c+2]);
+					}
 				}
 			}
 		}
@@ -344,13 +360,13 @@ void read_applications()
 	}
 }
 
-void read_coefficients(cluster_conf_t *conf)
+void read_coefficients()
 {
 	char *node = name_node;
 	int island;
 
 	//
-	island = get_node_island(conf, node);
+	island = get_node_island(&conf, node);
 
 	if (island == EAR_ERROR) {
 		fprintf(stderr, "no island found for node %s, exiting\n", node);
@@ -366,7 +382,7 @@ void read_coefficients(cluster_conf_t *conf)
 	else if (!opt_d)
 	{
 		sprintf(path_coeffs, "%s/island%d/coeffs.%s",
-				conf->earlib.coefficients_pathname, island, node);
+				conf.earlib.coefficients_pathname, island, node);
 		//
 		n_coeffs = coeff_file_read(path_coeffs, &coeffs);
 	}
@@ -375,7 +391,7 @@ void read_coefficients(cluster_conf_t *conf)
 	if (n_coeffs <= 0)
 	{
 		sprintf(buffer, "%s/island%d/coeffs.default",
- 			conf->earlib.coefficients_pathname, island);
+ 			conf.earlib.coefficients_pathname, island);
 		//
 		n_coeffs = coeff_file_read(buffer, &coeffs);
 		
@@ -395,7 +411,7 @@ void read_coefficients(cluster_conf_t *conf)
 
 void usage(int argc, char *argv[])
 {
-	int i = 0;
+	int c = 0;
 
 	if (argc < 3)
 	{
@@ -403,16 +419,21 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
 		fprintf(stdout, "  The frequency is the nominal base frequency of that node.\n\n");
 		fprintf(stdout, "Options:\n");
-		fprintf(stdout, "\t-A\tAdds also the applications database.\n");
-		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
-		fprintf(stdout, "\t-D\tUses the default coefficients.\n");
-		fprintf(stdout, "\t-G\tShows only the opt_g medium error.\n");
-		fprintf(stdout, "\t-H\tHides the applications projections and errors.\n");
-		fprintf(stdout, "\t-I <path>\tUse a custom coefficients opt_i file.\n");
-		fprintf(stdout, "\t-S\tShows the medium and opt_g errors.\n");
+		fprintf(stdout, "\t-A\t\tAdds also the applications database.\n");
+		fprintf(stdout, "\t-C\t\tPrints the console output in CSV format.\n");
+		fprintf(stdout, "\t-D\t\tUses the default coefficients.\n");
+		fprintf(stdout, "\t-G\t\tShows only the opt_g medium error.\n");
+		fprintf(stdout, "\t-H\t\tHides the applications projections and errors.\n");
+		fprintf(stdout, "\t-I <path>\tUse a custom coefficients file.\n");
+		fprintf(stdout, "\t-S\t\tShows the medium and opt_g errors.\n");
 		exit(1);
 	}
 
+	//
+	frq_base = (unsigned long) atoi(argv[2]);
+	strcpy(name_node, argv[1]);
+
+	//
 	while ((c = getopt (argc, argv, "ACDGHI:S")) != -1)
 	{
 		switch (c)
@@ -434,13 +455,13 @@ void usage(int argc, char *argv[])
 				break;
 			case 'I':
 				opt_i = 1;
-				strcpy(buffer_input, optarg);
+				strcpy(path_input, optarg);
 				break;
 			case 'S':
 				opt_s = 1;
 				break;
 			case '?':
-				return 1;
+				break;
 			default:
 				abort ();
 		}
