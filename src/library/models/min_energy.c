@@ -43,7 +43,7 @@
 #include <library/models/sig_projections.h>
 #include <daemon/eard_api.h>
 #include <common/types/application.h>
-#include <common/types/projection.h>
+#include <common/types/projection_old.h>
 #include <common/types/signature.h>
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
@@ -73,7 +73,7 @@ void min_energy_init(uint num_pstates)
 }
 void min_energy_new_loop()
 {
-    reset_performance_projection(me_policy_pstates);
+    proj_perf_reset_old(me_policy_pstates);
 }
 
 void min_energy_end_loop()
@@ -163,7 +163,7 @@ ulong min_energy_policy(signature_t *sig)
 				power_proj=sig_power_projection(my_app,ear_frequency,i);
 				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
 				time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
-				set_performance_projection(i,time_proj,power_proj,cpi_proj);
+				proj_perf_set_old(i,time_proj,power_proj,cpi_proj);
 				energy_proj=power_proj*time_proj;
 			#if MIN_ENERGY_VERBOSE
 				RANK(0) {

@@ -231,7 +231,7 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	current_ear_app.app.job.end_mpi_time=0;
 	current_ear_app.app.job.end_time=0;
 	// reset signature
-	init_signature(&current_ear_app.app.signature);
+	signature_init(&current_ear_app.app.signature);
 	init_power_signature(&current_ear_app.app.power_sig);
 	current_ear_app.app.power_sig.max_DC_power=0;
 	current_ear_app.app.power_sig.min_DC_power=500;
@@ -713,7 +713,7 @@ void create_powermon_out()
 
 void powermon_mpi_signature(application_t *app)
 {
-    copy_signature(&current_ear_app.app.signature,&app->signature);
+    signature_copy(&current_ear_app.app.signature,&app->signature);
     current_ear_app.app.job.def_f=app->job.def_f;
     current_ear_app.app.job.th=app->job.th;
     current_ear_app.app.job.procs=app->job.procs;

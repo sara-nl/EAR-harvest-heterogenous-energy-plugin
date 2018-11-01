@@ -44,7 +44,7 @@
 #include <library/models/min_energy.h>
 #include <library/models/min_time.h>
 #include <common/types/application.h>
-#include <common/types/projection.h>
+#include <common/types/projection_old.h>
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
@@ -318,9 +318,9 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 		}
 	}
 
-	create_projections(p_states);
+	proj_create_old(p_states);
 	//
-	reset_performance_projection(p_states);
+	proj_perf_reset_old(p_states);
 
 	// Coefficient pointers allocation and reading
 	int size, state;

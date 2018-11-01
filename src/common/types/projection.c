@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,91 +15,43 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-
-
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <common/types/projection.h>
-#include <common/ear_verbose.h>
-#include <control/frequency.h>
 
-
-
-// Function declarations
-static projection_t *projections;
-
-uint create_projections(uint p_states)
+// Projections
+double proj_project_cpi(signature_t *sign, coefficient_t *coeff)
 {
-	// Projections allocation
-    projections = (projection_t *) malloc(sizeof(projection_t) * p_states);
-
-    if (projections == NULL) {
-        ear_verbose(0, "EAR: Error allocating memory for perf. projections\n");
-        exit(1);
-    }
+	return (coeff->D * sign->CPI) +
+		   (coeff->E * sign->TPI) +
+		   (coeff->F);
 }
 
-projection_t *performance_projection(ulong f)
+double proj_project_time(signature_t *sign, coefficient_t *coeff)
 {
-    ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",__FILE__,f,frequency_freq_to_pstate(f));
-    return &projections[frequency_freq_to_pstate(f)];
-}
-void set_performance_projection(int i, double TP, double PP, double CPI)
-{
-        ear_debug(4,"EAR(%s):: Setting PP for entry %d (%lf,%lf,%lf)\n",__FILE__,i,TP,PP,CPI);
-        projections[i].Time=TP;
-        projections[i].Power=PP;
-        projections[i].CPI=CPI;
+	double proj_cpi = proj_project_cpi(sign, coeff);
+	double freq_src = (double) coeff->pstate_ref;
+	double freq_dst = (double) coeff->pstate;
 
-}
-void reset_performance_projection(uint p_states)
-{
-    ear_debug(4,"EAR(%s) :: ResetperformanceProjection\n",__FILE__);
-    int i;
-    for (i=0;i<p_states;i++){
-        projections[i].Time=0;
-        projections[i].Power=0;
-        projections[i].CPI=0;
-    }
-
+	return ((sign->time * proj_cpi) / sign->CPI) *
+		   (freq_src / freq_dst);
 }
 
-
-
-double power_projection(double power, double tpi,double A,double B, double C)
+double proj_project_power(signature_t *sign, coefficient_t *coeff)
 {
-	double pp;
-    pp=A*power+B*tpi+C;
-    return pp;
+	return (coeff->A * sign->DC_power) +
+		   (coeff->B * sign->TPI) +
+		   (coeff->C);
 }
-
-double cpi_projection(double cpi,double tpi,double D,double E, double F)
-{
-    double cpi_pr;
-    cpi_pr=D*cpi+E*tpi+F;
-    return cpi_pr;
-}
-double time_projection(ulong F,ulong Fi,double T,double cpi,double cpi_pr)
-{
-    double timep;
-
-    //TIME(fn) = TIME(f0) * CPI(fn)/CPI(f0) * (f0/fn)
-    timep=T*(cpi_pr/cpi)*((double)F/(double)Fi);
-
-    return timep;
-}
-
-
-

@@ -57,7 +57,7 @@ src/tools/learning_show
 src/tools/learning_validate
 src/tests/functionals/signaures_avg
 src/tools/tmpi
-
+src/tools/coeffs_default
 
 # Build
 etc/module/ear

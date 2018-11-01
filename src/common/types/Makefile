@@ -11,6 +11,7 @@ OBJS = application.o \
        periodic_metric.o \
        power_signature.o \
        projection.o \
+       projection_old.o \
        signature.o \
        gm_warning.o \
        services.o

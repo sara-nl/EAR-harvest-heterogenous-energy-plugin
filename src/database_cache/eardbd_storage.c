@@ -430,7 +430,7 @@ void storage_sample_announce(int fd, packet_header_t *header, char *content)
 			type = "non-mpi application_t";
 		}
 		//verwho1("j %d -- s %d -- n %s", app->job.id, app->job.step_id, app->node_id);
-		//print_signature_fd(2, &app->signature, 1);
+		//signature_print_fd(2, &app->signature, 1);
 	} else if (header->content_type == CONTENT_TYPE_PER) {
 		type  = "periodic_metric_t";
 		print = verbosity;

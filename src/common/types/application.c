@@ -62,7 +62,7 @@ static int print_application_fd(int fd, application_t *app, int new_line, char i
     write(fd, buff, strlen(buff));
 	print_job_fd(fd, &app->job);
 	dprintf(fd, ";");
-	print_signature_fd(fd, &app->signature, is_extended);
+	signature_print_fd(fd, &app->signature, is_extended);
 
 	if (new_line) {
 		dprintf(fd, "\n");

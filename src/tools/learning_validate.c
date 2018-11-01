@@ -47,7 +47,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/signature.h>
 #include <common/types/coefficient.h>
-#include <common/types/projection.h>
+#include <common/types/projection_old.h>
 #include <common/states.h>
 #include <common/database/db_helper.h>
 
@@ -202,7 +202,7 @@ void accum_app(char *app,char *node,signature_t *A, signature_t *B)
 	/* Warning 2*/
 	if (ret=invalid_signature(B)){
 		printf("\nInvalid signature %s at node %s (case %d)\n",app,node,ret);
-		print_signature_fd(1,B,0);
+		signature_print_fd(1,B,0);
 		total_warnings++;
 	}
     A->time += B->time;
