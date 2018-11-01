@@ -263,7 +263,7 @@ void print()
 	#define LINE "-----------------------------------------------------------------------------------------------------\n"
 	int c, a, n, i;
 
-	if (opt_c && !opt_g) {
+	if (opt_c && !opt_g && !opt_h) {
 		fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
 	}
 
@@ -271,7 +271,7 @@ void print()
 		tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
 	}
 
-	for (a = 0; a < n_mrgd; ++a)
+	for (a = 0; !opt_g && a < n_mrgd; ++a)
 	{
 		if (mrgd[a].signature.def_f == frq_base)
 		{
@@ -306,14 +306,14 @@ void print()
 					{
 						application_t *m = &mrgd[n];
 
-						if (!opt_h && opt_c)
+						if ((!opt_s || (opt_s && !opt_h)) && opt_c)
 						{
 							fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
 								mrgd[a].job.app_id, mrgd[a].signature.def_f, coeffs[c].pstate,
 								m->signature.time    , prjs_b[c + 1], errs_b[c + 1],
 								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
 						}
-						else if (!opt_h)
+						else if ((!opt_s || (opt_s && !opt_h)))
 						{
 							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
 								coeffs[c].pstate,
@@ -345,9 +345,9 @@ void print()
 
 	if (opt_s)
 	{
-		if (opt_c) {
+		if (opt_c && !opt_h) {
 			fprintf(stderr, "Freq. From;Freq. To;T. Err;P. Err\n");
-		} else {
+		} else if (!opt_h) {
 			tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
 		}
 	}
@@ -364,10 +364,6 @@ void print()
 					coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
 			}
 		}
-	}
-
-	if (opt_c) {
-		fprintf(stderr, LINE);
 	}
 
 	// General medium error
@@ -496,13 +492,15 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
 		fprintf(stdout, "  The frequency is the nominal base frequency of that node.\n\n");
 		fprintf(stdout, "Options:\n");
-		fprintf(stdout, "\t-A\t\tAdds also the applications database.\n");
-		fprintf(stdout, "\t-C\t\tPrints the console output in CSV format.\n");
-		fprintf(stdout, "\t-D\t\tUses the default coefficients.\n");
-		fprintf(stdout, "\t-G\t\tShows only the opt_g medium error.\n");
-		fprintf(stdout, "\t-H\t\tHides the applications projections and errors.\n");
-		fprintf(stdout, "\t-I <path>\tUse a custom coefficients file.\n");
-		fprintf(stdout, "\t-S\t\tShows the medium and opt_g errors.\n");
+		fprintf(stdout, "\t-A\tAdds also the applications database.\n");
+		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
+		fprintf(stdout, "\t-D\tUses the default coefficients.\n");
+		fprintf(stdout, "\t-G\tShows only the opt_g medium error.\n");
+		fprintf(stdout, "\t-H\tHides the applications projections and error.\n");
+		fprintf(stdout, "\t\twhen summary is enabled. When summary is not\n");
+		fprintf(stdout, "\t\tenabled, just hides the header.\n");
+		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
+		fprintf(stdout, "\t-S\tShows the medium and opt_g errors.\n");
 		exit(1);
 	}
 

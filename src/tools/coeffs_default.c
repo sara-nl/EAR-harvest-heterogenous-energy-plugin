@@ -15,7 +15,7 @@
 
 // Buffers
 char buffer[SZ_PATH];
-char *path_root[SZ_PATH];
+char path_root[SZ_PATH];
 char path_output[SZ_PATH];
 
 // Coefficients
@@ -90,6 +90,39 @@ void accum(coefficient_t *coeff, int i)
 	}
 }
 
+static void compute()
+{
+	double num;
+	int i;
+
+    for (i = 0; i < coeffs_max; ++i)
+    {
+        if (coeffs_accum[i].pstate_ref == coeffs_accum[i].pstate) {
+            coeffs_accum[i].A = 1.0;
+            coeffs_accum[i].D = 1.0;
+        } else if (coeffs_accum[i].available)
+        {
+            num = (double) coeffs_num[i];
+
+            if (opt_a) {
+                coeffs_accum[i].A = num / coeffs_accum[i].A;
+                coeffs_accum[i].B = num / coeffs_accum[i].B;
+                coeffs_accum[i].C = num / coeffs_accum[i].C;
+                coeffs_accum[i].D = num / coeffs_accum[i].D;
+                coeffs_accum[i].E = num / coeffs_accum[i].E;
+                coeffs_accum[i].F = num / coeffs_accum[i].F;
+            } else {
+                coeffs_accum[i].A = coeffs_accum[i].A / num;
+                coeffs_accum[i].B = coeffs_accum[i].B / num;
+                coeffs_accum[i].C = coeffs_accum[i].C / num;
+                coeffs_accum[i].D = coeffs_accum[i].D / num;
+                coeffs_accum[i].E = coeffs_accum[i].E / num;
+                coeffs_accum[i].F = coeffs_accum[i].F / num;
+            }
+        }
+    }
+}
+
 static void print()
 {
 	int i;
@@ -130,66 +163,38 @@ static int is_regular_file(const char *path)
 static void write_coefficients()
 {
 	#define SZ_COEFF sizeof(coefficient_t)
-	#define FD_WRITE 1
 
 	coefficient_t coeff;
-	char *path_file;
-    double num;
 	size_t r;
     int fd;
     int i;
 
-	if (opt_o) {
-		path_file = path_output;
-	} else {
-		sprintf(path_file, "%s/coeffs.default", path_root);
+	fprintf(stdout, "-----------------------------------------------------------------------------------------------------\n");	
+	if (!opt_o) {
+		sprintf(path_output, "%s/coeffs.default", path_root);
 	}
 
+	fd = -1;
+
     //
-	#if FD_WRITE
-	fd = open(path_file, O_WRONLY | O_CREAT | O_TRUNC,
+	fd = open(path_output, O_WRONLY | O_CREAT | O_TRUNC,
 			  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH);
 
     if (fd < 0) {
-        printf("ERROR while opening file %s (%s)\n", path_file, strerror(errno));
-        return;
+        printf("ERROR while opening file %s (%s)\n", path_output, strerror(errno));
+		return;
     }
-	#endif
 
 	//
 	for (i = 0; i < coeffs_max; ++i)
     {
-        if (coeffs_accum[i].pstate_ref == coeffs_accum[i].pstate) {
-            coeffs_accum[i].A = 1.0;
-            coeffs_accum[i].D = 1.0;
-        } else if (coeffs_accum[i].available)
-        {
-            num = (double) coeffs_num[i];
-
-            if (opt_a) {
-				coeffs_accum[i].A = num / coeffs_accum[i].A;
-				coeffs_accum[i].B = num / coeffs_accum[i].B;
-				coeffs_accum[i].C = num / coeffs_accum[i].C;
-				coeffs_accum[i].D = num / coeffs_accum[i].D;
-				coeffs_accum[i].E = num / coeffs_accum[i].E;
-				coeffs_accum[i].F = num / coeffs_accum[i].F;
-			} else {
-				coeffs_accum[i].A = coeffs_accum[i].A / num;
-				coeffs_accum[i].B = coeffs_accum[i].B / num;
-				coeffs_accum[i].C = coeffs_accum[i].C / num;
-				coeffs_accum[i].D = coeffs_accum[i].D / num;
-				coeffs_accum[i].E = coeffs_accum[i].E / num;
-				coeffs_accum[i].F = coeffs_accum[i].F / num;
-			}
-        }
-
-		#if FD_WRITE
 		if (write(fd, &coeffs_accum[i], SZ_COEFF) != SZ_COEFF) {
  			printf("ERROR while writting coefficients file\n");
-            exit(1);
+			exit(1);
 		}
-		#endif
     }
+	
+	fprintf(stdout, "file written '%s'\n", path_output); 
 
 	close(fd);
 }
@@ -264,16 +269,16 @@ static int usage(int argc, char *argv[])
 		fprintf(stdout, "  The coeffs.path includes the island.\n");
 		fprintf(stdout, "  The node.list is splitted by spaces.\n");
 		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-A \t\tDoes the armonic mean, reducing the weight\n");
-		fprintf(stdout, "\t\t\t\tof radical coefficient values.\n");
-		fprintf(stdout, "\t-O <path>\tSaves the default coefficients file in a\n");
-		fprintf(stdout, "\t\t\t\tfile of custom location.\n");
+		fprintf(stdout, "\t-A\tDoes the armonic mean, reducing the weight\n");
+		fprintf(stdout, "\t\tof radical coefficient values.\n");
+		fprintf(stdout, "\t-O <p>\tSaves the default coefficients file in a\n");
+		fprintf(stdout, "\t\tfile of custom location.\n");
 		
 		exit(1);
 	}
 
 	// Basic parametrs
-	sprintf(path_output, argv[1]);
+	sprintf(path_root, argv[1]);
 
 	while ((c = getopt (argc, argv, "AO:")) != -1)
 	{
@@ -315,10 +320,13 @@ int main(int argc, char *argv[])
 	//
 	read_coefficients(argc, argv, n_nodes);
 
-	write_coefficients();
+	//	
+	compute();
+
+	print();
 
 	//
-	print();
+	write_coefficients();
 
 	return 0;
 }
