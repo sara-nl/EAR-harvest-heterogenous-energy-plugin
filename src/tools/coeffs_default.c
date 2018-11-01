@@ -15,10 +15,8 @@
 
 // Buffers
 char buffer[SZ_PATH];
-char buffer_output[SZ_PATH];
-char *path_file;
-char *path_root;
-char *node_name;
+char *path_root[SZ_PATH];
+char path_output[SZ_PATH];
 
 // Coefficients
 coefficient_t *coeffs_accum;
@@ -31,16 +29,9 @@ int opt_o;
 
 /*
  *
- *
+ * Work bench
  *
  */
-
-int is_regular_file(const char *path)
-{
-	struct stat path_stat;
-	stat(path, &path_stat);
-	return S_ISREG(path_stat.st_mode);
-}
 
 int find(coefficient_t *coeff)
 {
@@ -69,9 +60,9 @@ int find(coefficient_t *coeff)
 void accum(coefficient_t *coeff, int i)
 {
     coeffs_accum[i].pstate_ref = coeff->pstate_ref;
-    coeffs_accum[i].pstate = coeff->pstate;
+    coeffs_accum[i].pstate     = coeff->pstate;
 
-	if(!coeff->available) {
+	if (!coeff->available) {
 		return;
 	}
 	
@@ -83,12 +74,12 @@ void accum(coefficient_t *coeff, int i)
 	}
 
 	if (opt_a) {
-		coeffs_accum[i].A += 1.0 / coeff->A;
-		coeffs_accum[i].B += 1.0 / coeff->B;
-		coeffs_accum[i].C += 1.0 / coeff->C;
-		coeffs_accum[i].D += 1.0 / coeff->D;
-		coeffs_accum[i].E += 1.0 / coeff->E;
-		coeffs_accum[i].F += 1.0 / coeff->F;
+		coeffs_accum[i].A += (1.0 / coeff->A);
+		coeffs_accum[i].B += (1.0 / coeff->B);
+		coeffs_accum[i].C += (1.0 / coeff->C);
+		coeffs_accum[i].D += (1.0 / coeff->D);
+		coeffs_accum[i].E += (1.0 / coeff->E);
+		coeffs_accum[i].F += (1.0 / coeff->F);
 	} else {
 		coeffs_accum[i].A += coeff->A;
 		coeffs_accum[i].B += coeff->B;
@@ -99,32 +90,71 @@ void accum(coefficient_t *coeff, int i)
 	}
 }
 
-void write_file(char *path)
+static void print()
 {
-	#define SZ_COEFF sizeof(coefficient_t)
-	coefficient_t coeff;
-    double num;
-	size_t r;
-    int fd;
-    int i;
-
-	#define FD_WRITE 1
-
-	//
-	#if FD_WRITE
-	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH);
-
-    if (fd < 0) {
-        printf("ERROR while opening file %s (%s)\n", path, strerror(errno));
-        return;
-    }
-	#endif
+	int i;
 
 	//
 	tprintf_init(stderr, STR_MODE_DEF, "10 10 6 2 13 10 10 10 10 10");
 
 	//
 	tprintf("F. from||F. to||N||Av|| |  A|| B|| C|| D|| E|| F|| G");
+
+	//
+	for (i = 0; i < coeffs_max; ++i)
+	{
+		tprintf("%lu||%lu||%d||%d|| | %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
+				coeffs_accum[i].pstate_ref, coeffs_accum[i].pstate, coeffs_num[i], coeffs_accum[i].available,
+				coeffs_accum[i].A, coeffs_accum[i].B, coeffs_accum[i].C,
+				coeffs_accum[i].D, coeffs_accum[i].E, coeffs_accum[i].F);
+
+		#if 0
+		coeff_print(&coeffs_accum[i]);
+		#endif
+	}
+}
+
+/*
+ *
+ * Read and write
+ *
+ */
+
+static int is_regular_file(const char *path)
+{
+	struct stat path_stat;
+	stat(path, &path_stat);
+	return S_ISREG(path_stat.st_mode);
+}
+
+static void write_coefficients()
+{
+	#define SZ_COEFF sizeof(coefficient_t)
+	#define FD_WRITE 1
+
+	coefficient_t coeff;
+	char *path_file;
+    double num;
+	size_t r;
+    int fd;
+    int i;
+
+	if (opt_o) {
+		path_file = path_output;
+	} else {
+		sprintf(path_file, "%s/coeffs.default", path_root);
+	}
+
+    //
+	#if FD_WRITE
+	fd = open(path_file, O_WRONLY | O_CREAT | O_TRUNC,
+			  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH);
+
+    if (fd < 0) {
+        printf("ERROR while opening file %s (%s)\n", path_file, strerror(errno));
+        return;
+    }
+	#endif
 
 	//
 	for (i = 0; i < coeffs_max; ++i)
@@ -153,22 +183,12 @@ void write_file(char *path)
 			}
         }
 
-		tprintf("%lu||%lu||%d||%d|| | %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
-			coeffs_accum[i].pstate_ref, coeffs_accum[i].pstate, coeffs_num[i], coeffs_accum[i].available,
-			coeffs_accum[i].A, coeffs_accum[i].B, coeffs_accum[i].C,
-			coeffs_accum[i].D, coeffs_accum[i].E, coeffs_accum[i].F);
-
-
 		#if FD_WRITE
 		if (write(fd, &coeffs_accum[i], SZ_COEFF) != SZ_COEFF) {
  			printf("ERROR while writting coefficients file\n");
             exit(1);
 		}
 		#endif
-		
-        #if 0   
-        coeff_print(&coeffs_accum[i]);
-        #endif
     }
 
 	close(fd);
@@ -208,8 +228,9 @@ static void read_file(char *path, char *node)
 }
 
 
-static void read_files(int argc, char *argv[], int n_nodes)
+static void read_coefficients(int argc, char *argv[], int n_nodes)
 {
+	char *node_name;
 	int i;
 
 	for (i = 2; i < n_nodes; i++)
@@ -217,11 +238,11 @@ static void read_files(int argc, char *argv[], int n_nodes)
 		node_name = argv[i];
 
 		/* The program reports coefficients in stdout and csv file */
-		sprintf(path_file, "%s/coeffs.%s", path_root, node_name);
+		sprintf(buffer, "%s/coeffs.%s", path_root, node_name);
 
-		if (is_regular_file(path_file))
+		if (is_regular_file(buffer))
 		{
-			read_file(path_file, node_name);
+			read_file(buffer, node_name);
 		}
 	}
 }
@@ -251,6 +272,9 @@ static int usage(int argc, char *argv[])
 		exit(1);
 	}
 
+	// Basic parametrs
+	sprintf(path_output, argv[1]);
+
 	while ((c = getopt (argc, argv, "AO:")) != -1)
 	{
 		switch (c)
@@ -259,7 +283,7 @@ static int usage(int argc, char *argv[])
 				opt_a = 1;
 				break;
 			case 'O':
-				strcpy(buffer_output, optarg);
+				strcpy(path_output, optarg);
 				opt_o = 1;
 				break;
 			case '?':
@@ -268,10 +292,6 @@ static int usage(int argc, char *argv[])
 				abort();
 		}
 	}
-
-	//
-	path_root = argv[1];
-	path_file = buffer;
 
 	return argc - opt_a - (opt_o * 2);
 }
@@ -286,7 +306,6 @@ void init()
 int main(int argc, char *argv[])
 {
 	int n_nodes;
-	int i;
 
 	// Initialization
 	n_nodes = usage(argc, argv);
@@ -294,15 +313,12 @@ int main(int argc, char *argv[])
 	init();
 
 	//
-	read_files(argc, argv, n_nodes);
+	read_coefficients(argc, argv, n_nodes);
+
+	write_coefficients();
 
 	//
-	if (opt_o) {
-		path_file = buffer_output;
-	} else {
-		sprintf(path_file, "%s/coeffs.default", path_root);
-	}
-	write_file(path_file);
+	print();
 
 	return 0;
 }
