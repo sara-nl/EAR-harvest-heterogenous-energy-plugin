@@ -57,7 +57,7 @@ typedef struct policy
 	void (*init)(uint num_pstates);
 	void (*new_loop)();
 	void (*end_loop)();
-	ulong (*policy)(signature_t *sig);
+	ulong (*policy)(signature_t *sig,int *ready);
 	ulong (*policy_ok)(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
 	ulong (*default_conf)(ulong user_freq);
 }policy_t;
@@ -372,12 +372,12 @@ uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 
 
 // When 'evaluating signature', this function is called.
-unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE)
+unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int *ready)
 {
 	unsigned long optimal_freq, max_freq;
 
 	if (whole_app) return ear_frequency;
-	optimal_freq = app_policy.policy(MY_SIGNATURE);
+	optimal_freq = app_policy.policy(MY_SIGNATURE,ready);
 
 	if (optimal_freq != ear_frequency)
 	{

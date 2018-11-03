@@ -55,10 +55,19 @@ static uint mt_reset_freq=RESET_FREQ;
 extern coefficient_t **coefficients;
 extern uint EAR_default_pstate;
 extern double performance_gain;
+extern application_t *signatures;
+extern uint *sig_ready;
+
+
+static int use_models=1;
 
 void min_time_init(uint pstates)
 {
     mt_policy_pstates=pstates;
+    char *env_use_models;
+    env_use_models=getenv("EAR_USE_MODELS");
+    if ((env_use_models!=NULL) && (atoi(env_use_models)==0)) use_models=0;
+
 }
 
 void min_time_new_loop()
@@ -74,10 +83,36 @@ void min_time_end_loop()
         ear_frequency = eards_change_freq(get_global_def_freq());
     }
 }
+static void go_next_mt(int curr_pstate,int *ready,ulong *best_pstate,int min_pstate)
+{
+	int next_pstate;
+	if (curr_pstate==min_pstate){
+		*ready=1;
+		*best_pstate=frequency_pstate_to_freq(curr_pstate);
+	}else{
+		next_pstate=curr_pstate-1;
+		*ready=0;
+		*best_pstate=frequency_pstate_to_freq(next_pstate);
+	}
+}
+
+static int is_better_min_time(signature_t * curr_sig,signature_t *prev_sig)
+{
+    double freq_gain,perf_gain;
+	int curr_freq,prev_freq;
+
+	curr_freq=curr_sig->def_f;
+	prev_freq=prev_sig->def_f;
+	freq_gain=performance_gain*(double)(curr_freq-prev_freq)/(double)prev_freq;
+   	perf_gain=(prev_sig->time-curr_sig->time)/prev_sig->time;
+	if (perf_gain>=freq_gain) return 1;
+    return 0;
+}
+
 
 
 // This is the main function in this file, it implements power policy
-ulong min_time_policy(signature_t *sig)
+ulong min_time_policy(signature_t *sig,int *ready)
 {
     signature_t *my_app;
     int i,min_pstate;
@@ -88,6 +123,7 @@ ulong min_time_policy(signature_t *sig)
     ulong best_pstate;
     my_app=sig;
 
+	*ready=1;
 
     if (ear_use_turbo) min_pstate=0;
     else min_pstate=get_global_min_pstate();
@@ -99,6 +135,8 @@ ulong min_time_policy(signature_t *sig)
     // We must check this is ok changing these values at this point
     policy_global_reconfiguration();
 	if (!eards_connected()) return EAR_default_frequency;
+
+	if (use_models){
 
     // We compute here our reference
 
@@ -195,6 +233,34 @@ ulong min_time_policy(signature_t *sig)
 				try_next=0;
 			}
 		}	
+	}else{/* Use models is set to 0 */
+        ulong prev_pstate,curr_pstate,next_pstate;
+        signature_t *prev_sig;
+        earl_verbose(1,"We are not using models \n");
+        /* We must not use models , we will check one by one*/
+        /* If we are not running at default freq, we must check if we must follow */
+        if (sig_ready[EAR_default_pstate]==0){
+            *ready=0;
+            best_pstate=EAR_default_frequency;
+        } else{
+        	/* This is the normal case */
+        		curr_pstate=frequency_freq_to_pstate(ear_frequency);
+        		if (ear_frequency != EAR_default_frequency){
+                	prev_pstate=curr_pstate+1;
+                	prev_sig=&signatures[prev_pstate].signature;
+                	if (is_better_min_time(my_app,prev_sig)){
+						go_next_mt(curr_pstate,ready,&best_pstate,min_pstate);
+                	}else{
+                    	*ready=1;
+                    	best_pstate=frequency_pstate_to_freq(prev_pstate);
+                	}
+        		}else{
+					go_next_mt(curr_pstate,ready,&best_pstate,min_pstate);
+				}
+        }
+		earl_verbose(1,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
+     }
+
 
 	// Coefficients were not available for this nominal frequency
 	if (system_conf!=NULL){
