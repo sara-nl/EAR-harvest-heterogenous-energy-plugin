@@ -26,5 +26,5 @@ export HOSTLIST="$(echo $(cat $1))"
 #
 for i in ${HOSTLIST}
 do
-	/home/xjaneas/bench/tools/coeffs_quality ${i} 2100000 -G
+	$EAR_INSTALL_PATH/bin/tools/coeffs_quality ${i} 2100000 -G
 done
