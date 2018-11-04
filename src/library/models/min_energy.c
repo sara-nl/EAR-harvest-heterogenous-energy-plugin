@@ -53,10 +53,13 @@ static uint me_policy_pstates;
 static uint me_reset_freq=RESET_FREQ;
 static char *__NAME__ = "min_energy_policy";
 extern char *__HOST__;
+static int use_models=1;
 
 // Policy
 extern double performance_penalty;
 extern coefficient_t **coefficients;
+extern application_t *signatures;
+extern uint *sig_ready;
 
 // Process
 extern uint EAR_default_pstate;
@@ -69,7 +72,10 @@ extern ulong user_selected_freq;
 
 void min_energy_init(uint num_pstates)
 {
+	char *env_use_models;
 	me_policy_pstates=num_pstates;
+	env_use_models=getenv("EAR_USE_MODELS");
+	if ((env_use_models!=NULL) && (atoi(env_use_models)==0)) use_models=0;
 }
 void min_energy_new_loop()
 {
@@ -85,10 +91,33 @@ void min_energy_end_loop()
     }
 }
 
+static void go_next_me(int curr_pstate,int *ready,ulong *best_pstate)
+{
+	int next_pstate;
+	if (curr_pstate>(me_policy_pstates-1)){
+		*ready=0;
+		next_pstate=curr_pstate+1;
+		*best_pstate=frequency_pstate_to_freq(next_pstate);
+	}else{
+		*ready=1;
+		*best_pstate=frequency_pstate_to_freq(curr_pstate);
+	}
+}
 
+static int is_better_min_energy(signature_t * curr_sig,signature_t *prev_sig)
+{
+	double curr_energy,pre_energy;
+	double max_time;
+	curr_energy=curr_sig->time*curr_sig->DC_power;
+	pre_energy=prev_sig->time*prev_sig->DC_power;
+	if (curr_energy>pre_energy) return 0;
+	max_time=signatures[EAR_default_pstate].signature.time*performance_penalty;
+	if (curr_sig->time<=max_time) return 1;
+	return 0;
+}
 
 // This is the main function in this file, it implements power policy
-ulong min_energy_policy(signature_t *sig)
+ulong min_energy_policy(signature_t *sig,int *ready)
 {
 	signature_t *my_app;
 	int i,min_pstate;
@@ -104,6 +133,8 @@ ulong min_energy_policy(signature_t *sig)
 	if (ear_use_turbo) min_pstate=0;
 	else min_pstate=get_global_min_pstate();
 
+	*ready=1;
+
 	// This is the frequency at which we were running
 	ref = frequency_freq_to_pstate(ear_frequency);
 
@@ -111,6 +142,9 @@ ulong min_energy_policy(signature_t *sig)
 	// We must check this is ok changing these values at this point
 	policy_global_reconfiguration();
 	if (!eards_connected()) return EAR_default_frequency;
+
+	if (use_models)
+	{
 	
 	// We compute here our reference
 
@@ -154,7 +188,7 @@ ulong min_energy_policy(signature_t *sig)
 
 	earl_verbose(DYN_VERBOSE,"MIN_ENERGY: From %d to %d\n",min_pstate,me_policy_pstates);
 
-	// MIN_ENERGY_TO_SOLUTION BEGIN
+	// MIN_ENERGY_TO_SOLUTION ALGORITHM
 	for (i = min_pstate; i < me_policy_pstates;i++)
 	{
 		// If coeffs are available
@@ -166,10 +200,6 @@ ulong min_energy_policy(signature_t *sig)
 				proj_perf_set_old(i,time_proj,power_proj,cpi_proj);
 				energy_proj=power_proj*time_proj;
 			#if MIN_ENERGY_VERBOSE
-				RANK(0) {
-					VERBOSE_N(1, "Projection (%u): [power: %lf, time: %lf, energy: %lf]",
-						coefficients[ref][i].pstate, power_proj, time_proj, energy_proj);
-				}
 			ear_verbose(1,"pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);
 			#endif
 			if ((energy_proj < best_solution) && (time_proj < time_max))
@@ -179,8 +209,35 @@ ulong min_energy_policy(signature_t *sig)
 			}
 		}
 	}
+	}else{ /* Use models is set to 0 */
+		ulong prev_pstate,curr_pstate,next_pstate;
+		signature_t *prev_sig;
+		earl_verbose(1,"We are not using models \n");
+		/* We must not use models , we will check one by one*/
+		/* If we are not running at default freq, we must check if we must follow */
+		if (sig_ready[EAR_default_pstate]==0){
+			*ready=0;
+			best_pstate=EAR_default_frequency;
+		} else{
+			/* This is the normal case */
+			curr_pstate=frequency_freq_to_pstate(ear_frequency);
+			if (ear_frequency != EAR_default_frequency){
+					prev_pstate=curr_pstate-1;
+					prev_sig=&signatures[prev_pstate].signature;
+					if (is_better_min_energy(my_app,prev_sig)){
+						go_next_me(curr_pstate,ready,&best_pstate);
+					}else{
+						*ready=1;
+						best_pstate=frequency_pstate_to_freq(prev_pstate);
+					}
+			}else{
+				go_next_me(curr_pstate,ready,&best_pstate);
+			}
+		}
+		earl_verbose(1,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
+		
+	}
 
-	// Coefficients were not available for this nominal frequency
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (best_pstate>system_conf->max_freq){ 
 		log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);

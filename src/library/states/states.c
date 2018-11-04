@@ -64,8 +64,8 @@ extern char *__HOST__ ;
 #define SIGNATURE_HAS_CHANGED	6
 #define TEST_LOOP		7
 
-static application_t *signatures;
-static uint *sig_ready;
+application_t *signatures;
+uint *sig_ready;
 // static application_t last_signature;
 static projection_t *PP;
 
@@ -240,6 +240,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI;
 	unsigned long prev_f;
+	int ready;
 	ull VI;
 	int result;
 	ulong global_f=0;
@@ -385,31 +386,36 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			VPI=(double)VI/(double)loop_signature.signature.instructions;
 			begin_iter = iterations;
 
+			loop_signature.signature.def_f=prev_f;
+			// memcpy(&last_signature, &loop_signature, sizeof(application_t));
+			memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
+			sig_ready[curr_pstate]=1;
+
 			/* This function executes the energy policy */
-			policy_freq = policy_power(0, &loop_signature.signature);
+			policy_freq = policy_power(0, &loop_signature.signature,&ready);
 
 			PP = proj_perf_project_old(policy_freq);
-			loop_signature.signature.def_f=prev_f;
 
 			/* This function only sends selected frequency */
 			if (global_synchro){
 				global_frequency_selection_send(policy_freq);
 			}
-			// memcpy(&last_signature, &loop_signature, sizeof(application_t));
-			memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
-			sig_ready[curr_pstate]=1;
-
-			if (policy_freq != policy_def_freq)
-			{
-				tries_current_loop++;
-				comp_N_begin = metrics_time();
-				EAR_STATE = RECOMPUTING_N;
-				log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
-			}
-			else
-			{
-				EAR_STATE = SIGNATURE_STABLE;
-				traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
+			/* When the policy is ready to be evaluated, we go to the next state */
+			if (ready){
+				if (policy_freq != policy_def_freq)
+				{
+					tries_current_loop++;
+					comp_N_begin = metrics_time();
+					EAR_STATE = RECOMPUTING_N;
+					log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+				}
+				else
+				{
+					EAR_STATE = SIGNATURE_STABLE;
+					traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
+				}
+			}else{
+				traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			}
 			signature_copy(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */

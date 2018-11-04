@@ -144,6 +144,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	unsigned long prev_f;
 	int result;
 	uint N_iter;
+	int ready;
 
 	prev_f = ear_frequency;
 
@@ -191,7 +192,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
-					policy_freq = policy_power(0, &loop_signature.signature);
+					policy_freq = policy_power(0, &loop_signature.signature,&ready);
 					PP = proj_perf_project_old(policy_freq);
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
@@ -215,7 +216,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 									ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
 									ENERGY, EDP);
 					}
-
+					
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
