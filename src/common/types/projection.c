@@ -58,11 +58,14 @@ double project_power(signature_t *sign, coefficient_t *coeff)
 
 // Inherited
 static projection_t *projections;
+static int proj_pstates=0;
 
 uint projection_create(uint p_states)
 {
 	// Projections allocation
 	projections = (projection_t *) malloc(sizeof(projection_t) * p_states);
+
+	proj_pstates=p_states;
 
 	if (projections == NULL) {
 		//ear_verbose(0, "EAR: Error allocating memory for perf. projections\n");
@@ -70,29 +73,23 @@ uint projection_create(uint p_states)
 	}
 }
 
-projection_t *projection_get(ulong f)
+projection_t *projection_get(int pstate)
 {
-	/*ear_debug(4,"EAR(%s):: Getting perfprojection for %u, entry %d\n",
-			  __FILE__,f,frequency_freq_to_pstate(f));*/
-
-	return &projections[frequency_freq_to_pstate(f)];
+	if (pstate>proj_pstates) return NULL;
+	return &projections[pstate];
 }
 
-void projection_set(int i, double TP, double PP, double CPI)
+void projection_set(int i, double TP, double PP)
 {
-	//ear_debug(4,"EAR(%s):: Setting PP for entry %d (%lf,%lf,%lf)\n",__FILE__,i,TP,PP,CPI);
 	projections[i].Time=TP;
 	projections[i].Power=PP;
-	projections[i].CPI=CPI;
 }
 
 void projection_reset(uint p_states)
 {
-	//ear_debug(4,"EAR(%s) :: ResetperformanceProjection\n",__FILE__);
 	int i;
 	for (i=0;i<p_states;i++){
 		projections[i].Time=0;
 		projections[i].Power=0;
-		projections[i].CPI=0;
 	}
 }

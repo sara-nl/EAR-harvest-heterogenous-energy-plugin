@@ -394,7 +394,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* This function executes the energy policy */
 			policy_freq = policy_power(0, &loop_signature.signature,&ready);
 
-			PP = projection_get(policy_freq);
+			PP = projection_get(frequency_freq_to_pstate(policy_freq));
 
 			/* This function only sends selected frequency */
 			if (global_synchro){
@@ -471,7 +471,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 
 			// We compare the projection with the signature and the old signature
-			PP = projection_get(policy_freq);
+			PP = projection_get(frequency_freq_to_pstate(policy_freq));
 			/* If global synchronizations are on, we get frequencies for the rest of the app */
 			if (global_synchro){
 				global_f=global_frequency_selection_synchro();

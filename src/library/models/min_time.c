@@ -40,7 +40,6 @@
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
-#include <library/models/sig_projections.h>
 #include <daemon/eard_api.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
@@ -149,9 +148,8 @@ ulong min_time_policy(signature_t *sig,int *ready)
     {
         if (coefficients[ref][EAR_default_pstate].available)
         {
-                power_ref=sig_power_projection(my_app,ear_frequency,EAR_default_pstate);
-                cpi_ref=sig_cpi_projection(my_app,ear_frequency,EAR_default_pstate);
-                time_ref=sig_time_projection(my_app,ear_frequency,EAR_default_pstate,cpi_ref);
+                power_ref=project_power(my_app,&coefficients[ref][EAR_default_pstate]);
+                time_ref=project_time(my_app,&coefficients[ref][EAR_default_pstate]);
                 energy_ref=power_ref*time_ref;
                 best_solution=energy_ref;
                 best_pstate=EAR_default_frequency;
@@ -178,7 +176,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
             best_pstate=ear_frequency;
     }
 
-	projection_set(EAR_default_pstate,time_ref,power_ref,cpi_ref);
+	projection_set(EAR_default_pstate,time_ref,power_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
 	#if EAR_PERFORMANCE_TESTS
@@ -202,10 +200,9 @@ ulong min_time_policy(signature_t *sig,int *ready)
 					VERBOSE_N(1,"Comparing %u with %u",best_pstate,i);
 				}
 				#endif
-				power_proj=sig_power_projection(my_app,ear_frequency,i);
-				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
-				time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
-				projection_set(i,time_proj,power_proj,cpi_proj);
+                power_proj=project_power(my_app,&coefficients[ref][i]);
+                time_proj=project_time(my_app,&coefficients[ref][i]);
+				projection_set(i,time_proj,power_proj);
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
 				#if EAR_PERFORMANCE_TESTS

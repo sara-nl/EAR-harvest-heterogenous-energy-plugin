@@ -40,7 +40,6 @@
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
-#include <library/models/sig_projections.h>
 #include <daemon/eard_api.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
@@ -159,9 +158,8 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	{
 		if (coefficients[ref][EAR_default_pstate].available)
 		{
-				power_ref=sig_power_projection(my_app,ear_frequency,EAR_default_pstate);
-				cpi_ref=sig_cpi_projection(my_app,ear_frequency,EAR_default_pstate);
-				time_ref=sig_time_projection(my_app,ear_frequency,EAR_default_pstate,cpi_ref);
+				power_ref=project_power(my_app,&coefficients[ref][EAR_default_pstate]);
+				time_ref=project_time(my_app,&coefficients[ref][EAR_default_pstate]);
 				energy_ref=power_ref*time_ref;
 				best_solution=energy_ref;
 				best_pstate=EAR_default_frequency;
@@ -170,7 +168,6 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 		{
 				time_ref=my_app->time;
 				power_ref=my_app->DC_power;
-				cpi_ref=my_app->CPI;
 				energy_ref=power_ref*time_ref;
 				best_solution=energy_ref;
 				best_pstate=ear_frequency;
@@ -182,7 +179,6 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	{ // we are running at default frequency , signature is our reference
 			time_ref=my_app->time;
 			power_ref=my_app->DC_power;
-			cpi_ref=my_app->CPI;
 			energy_ref=power_ref*time_ref;
 			best_solution=energy_ref;
 			best_pstate=ear_frequency;
@@ -199,10 +195,9 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 		// If coeffs are available
 		if (coefficients[ref][i].available)
 		{
-				power_proj=sig_power_projection(my_app,ear_frequency,i);
-				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
-				time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
-				projection_set(i,time_proj,power_proj,cpi_proj);
+				power_proj=project_power(my_app,&coefficients[ref][i]);
+				time_proj=project_time(my_app,&coefficients[ref][i]);
+				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
 			#if MIN_ENERGY_VERBOSE
 			ear_verbose(1,"pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);

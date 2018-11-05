@@ -43,7 +43,6 @@ typedef struct projection
 {
 	double Time;
 	double Power;
-	double CPI;
 } projection_t;
 
 // Projections
@@ -59,7 +58,7 @@ double project_power(signature_t *sign, coefficient_t *coeff);
 uint projection_create(uint p_states);
 
 /** Sets the values of the performance projection i to the ones given by parameter */
-void projection_set(int i, double TP, double PP, double CPI);
+void projection_set(int i, double TP, double PP);
 
 /** Resets the projections for power, CPI and time to 0 */
 void projection_reset(uint p_states);
