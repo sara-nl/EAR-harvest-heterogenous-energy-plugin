@@ -80,8 +80,8 @@ get_active_nodes.o: get_active_nodes.c ../common/database/db_helper.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
 coeffs_jobproj.o: coeffs_jobproj.c ../common/sizes.h ../common/states.h \
- ../common/types/projection.h ../common/types/generic.h \
- ../common/types/signature.h ../common/config.h \
+ ../common/types/projection.h ../common/types/signature.h \
+ ../common/types/generic.h ../common/config.h \
  ../common/types/coefficient.h ../common/types/application.h \
  ../common/types/job.h ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \

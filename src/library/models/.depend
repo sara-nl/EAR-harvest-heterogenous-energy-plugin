@@ -20,9 +20,9 @@ min_time.o: min_time.c ../../common/config.h ../../control/frequency.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection.h \
- ../../library/models/sig_projections.h ../../daemon/eard_api.h \
- ../../common/types/log.h ../../daemon/eard_conf_api.h
+ ../../common/types/projection.h ../../library/models/sig_projections.h \
+ ../../daemon/eard_api.h ../../common/types/log.h \
+ ../../daemon/eard_conf_api.h
 power_capping.o: power_capping.c ../../common/config.h \
  ../../control/frequency.h ../../library/common/macros.h \
  ../../library/common/externs.h ../../common/types/application.h \
@@ -34,9 +34,9 @@ power_capping.o: power_capping.c ../../common/config.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection.h \
- ../../library/models/sig_projections.h ../../daemon/eard_api.h \
- ../../common/types/log.h ../../daemon/eard_conf_api.h
+ ../../common/types/projection.h ../../library/models/sig_projections.h \
+ ../../daemon/eard_api.h ../../common/types/log.h \
+ ../../daemon/eard_conf_api.h
 monitoring.o: monitoring.c ../../common/types/application.h \
  ../../common/config.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \
@@ -74,6 +74,6 @@ min_energy.o: min_energy.c ../../common/config.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection.h \
- ../../library/models/sig_projections.h ../../daemon/eard_api.h \
- ../../common/types/log.h ../../daemon/eard_conf_api.h
+ ../../common/types/projection.h ../../library/models/sig_projections.h \
+ ../../daemon/eard_api.h ../../common/types/log.h \
+ ../../daemon/eard_conf_api.h
