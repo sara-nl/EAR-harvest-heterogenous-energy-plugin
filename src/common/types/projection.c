@@ -32,14 +32,14 @@
 #include <common/types/projection.h>
 
 // Projections
-double proj_project_cpi(signature_t *sign, coefficient_t *coeff)
+double project_cpi(signature_t *sign, coefficient_t *coeff)
 {
 	return (coeff->D * sign->CPI) +
 		   (coeff->E * sign->TPI) +
 		   (coeff->F);
 }
 
-double proj_project_time(signature_t *sign, coefficient_t *coeff)
+double project_time(signature_t *sign, coefficient_t *coeff)
 {
 	double proj_cpi = proj_project_cpi(sign, coeff);
 	double freq_src = (double) coeff->pstate_ref;
@@ -49,7 +49,7 @@ double proj_project_time(signature_t *sign, coefficient_t *coeff)
 		   (freq_src / freq_dst);
 }
 
-double proj_project_power(signature_t *sign, coefficient_t *coeff)
+double project_power(signature_t *sign, coefficient_t *coeff)
 {
 	return (coeff->A * sign->DC_power) +
 		   (coeff->B * sign->TPI) +

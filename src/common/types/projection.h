@@ -40,10 +40,10 @@
 #include <common/types/coefficient.h>
 
 // Projections
-double proj_project_cpi(signature_t *sign, coefficient_t *coeff);
+double project_cpi(signature_t *sign, coefficient_t *coeff);
 
-double proj_project_time(signature_t *sign, coefficient_t *coeff);
+double project_time(signature_t *sign, coefficient_t *coeff);
 
-double proj_project_power(signature_t *sign, coefficient_t *coeff);
+double project_power(signature_t *sign, coefficient_t *coeff);
 
 #endif

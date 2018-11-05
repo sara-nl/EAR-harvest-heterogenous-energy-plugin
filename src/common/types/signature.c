@@ -62,3 +62,18 @@ void signature_print_fd(int fd, signature_t *sig, char is_extended)
 }
 
 
+void compute_vpi(double *vpi,signature_t *sig)
+{
+    ull vins;
+    vins=0;
+    if (sig->FLOPS[3]>0){
+        vins=sig->FLOPS[3]/16;
+    }   
+
+    if (sig->FLOPS[7]>0){
+        vins=vins+sig->FLOPS[7]/8;
+    }   
+    if ((vins>0) && (sig->instructions>0)) *vpi=(double)vins/(double)sig->instructions;
+    else *vpi=0;
+}
+

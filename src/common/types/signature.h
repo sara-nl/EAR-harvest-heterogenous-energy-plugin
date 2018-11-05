@@ -75,5 +75,6 @@ void signature_copy(signature_t *destiny, signature_t *source);
 
 /** Outputs the signature contents to the file pointed by the fd. */
 void signature_print_fd(int fd, signature_t *sig, char is_extended);
+void compute_vpi(double *vpi,signature_t *sig);
 
 #endif
