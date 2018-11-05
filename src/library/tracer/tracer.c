@@ -479,7 +479,7 @@ void traces_new_signature(int global_rank, int local_rank, double seconds,
 }
 
 // ear_states.c
-void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power)
+void traces_PP(int global_rank, int local_rank, double seconds, double power)
 {
 	ullong lpsec;
     ullong lpcpi;
@@ -490,11 +490,9 @@ void traces_PP(int global_rank, int local_rank, double seconds, double cpi, doub
 	}
 
 	lpsec = (ullong) (seconds * 1000000.0);
-    lpcpi = (ullong) (cpi * 1000.0);
     lppow = (ullong) (power);
 
 	trace_file_write(TRA_PTI, lpsec);
-	trace_file_write(TRA_PCP, lpcpi);
 	trace_file_write(TRA_PPO, lppow);
 }
 
