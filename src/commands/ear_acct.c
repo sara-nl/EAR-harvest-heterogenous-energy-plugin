@@ -48,6 +48,7 @@ int full_length = 0;
 int verbose = 0;
 int query_filters = 0;
 int all_mpi = 0;
+int avx = 0;
 char csv_path[256] = "";
 
 static const char *__NAME__ = "eacct";
@@ -221,11 +222,11 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
 void print_full_apps(application_t *apps, int num_apps)
 {
     int i = 0;
-    double avg_f;
+    double avg_f, vpi;
 
-    printf("%-6s.%-7s\t %-10s %-15s %-20s %-14s %-14s %-14s %-14s %-14s %-14s %-20s\n",
-            "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ (GHz)", "TIME (s)",
-            "POWER (Watts)", "GBS", "CPI", "ENERGY (J)", "START TIME");
+    printf("%-6s.%-7s\t %-10s %-15s %-20s %-10s %-10s %-14s %-14s %-14s %-14s %-20s %-14s\n",
+            "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ", "TIME",
+            "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI");
 
     for (i = 0; i < num_apps; i++)
     {
@@ -239,18 +240,19 @@ void print_full_apps(application_t *apps, int num_apps)
         if (apps[i].is_mpi && !all_mpi)
         {
             avg_f = (double) apps[i].signature.avg_f/1000000;
-            printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s\n",
+            compute_vpi(&vpi, &apps[i].signature);
+            printf("%8u.%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s %-14.2lf\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                 avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-                apps[i].signature.time * apps[i].signature.DC_power, buff);
+                apps[i].signature.time * apps[i].signature.DC_power, buff, vpi);
         }
         else
         {
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
-            printf("%8u.%-3u\t %-10s %-15s %-20s %-14.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s\n",
+            printf("%8u.%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s %-14s\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                 avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
-                apps[i].power_sig.time * apps[i].power_sig.DC_power, buff);
+                apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL");
 
         }
 
@@ -265,7 +267,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     int current_apps = 0;
 
     int i = 0;
-    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy;
+    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy, avg_VPI;
     avg_frequency = 0;
     avg_time = 0;
     avg_power = 0;
@@ -277,28 +279,56 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     char header_format[256];
     char line_format[256];
     char mpi_line_format[256];
+    double vpi;
 
     if (fd == STDOUT_FILENO)
     {
-        strcpy(header_format, "%6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n");
-        strcpy(line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n");
-        strcpy(mpi_line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n");
+        if (avx)
+        {
+            strcpy(header_format, "%6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s\n");
+            strcpy(line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf\n");
+            strcpy(mpi_line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s\n");
+        }
+        else
+        {
+            strcpy(header_format, "%6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n");
+            strcpy(line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n");
+            strcpy(mpi_line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n");
+        }
     }
     else
     {
-        strcpy(header_format, "%s.%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
-        strcpy(line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-        strcpy(mpi_line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf\n");
+        if (avx)
+        {
+            strcpy(header_format, "%s.%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
+            strcpy(line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
+            strcpy(mpi_line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s\n");
+        }
+        else
+        {
+            strcpy(header_format, "%s.%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
+            strcpy(line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
+            strcpy(mpi_line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf\n");
+        }
     }
-    dprintf(fd, header_format,
+    if (avx)
+        dprintf(fd, header_format,
+            "JOB", "STEP", "USER", "APPLICATION", "POLICY", "NODES#", "FREQ(GHz)", "TIME(s)",
+            "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "AVX");
+
+    else
+        dprintf(fd, header_format,
             "JOB", "STEP", "USER", "APPLICATION", "POLICY", "NODES#", "FREQ(GHz)", "TIME(s)",
             "POWER(Watts)", "GBS", "CPI", "ENERGY(J)");
+
     for (i = 0; i < num_apps; i ++)
     {
         if (apps[i].job.id == current_job_id && apps[i].job.step_id == current_step_id)
         {
             if (current_is_mpi && !all_mpi)
             {
+                compute_vpi(&vpi, &apps[i].signature); 
+                avg_VPI += vpi;
                 avg_f = (double) apps[i].signature.avg_f/1000000;
                 avg_frequency += avg_f;
                 avg_time += apps[i].signature.time;
@@ -342,11 +372,20 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_power /= current_apps;
                 avg_GBS /= current_apps;
                 avg_CPI /= current_apps;
+                avg_VPI /= current_apps;
 
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
-                    dprintf(fd, line_format,
-                        current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                        avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+                {
+                    if (avx)
+                        dprintf(fd, line_format,
+                            current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, avg_VPI);
+
+                    else
+                        dprintf(fd, line_format,
+                            current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+                }
                 else
                     missing_apps++;
             }
@@ -356,9 +395,17 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_time /= current_apps;
                 avg_power /= current_apps;
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
-                    dprintf(fd, mpi_line_format,
-                        current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
+                {
+                    if (avx)
+                        dprintf(fd, mpi_line_format,
+                            current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
+                    else
+                        dprintf(fd, mpi_line_format,
+                            current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
+
+                }
                 else
                     missing_apps++;
             }
@@ -374,6 +421,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_power = 0;
                 avg_GBS = 0;
                 avg_CPI = 0;
+                avg_VPI = 0;
                 total_energy = 0;
                 i--; //go back to current app
             }
@@ -392,12 +440,20 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             avg_power /= current_apps;
             avg_GBS /= current_apps;
             avg_CPI /= current_apps;
-
+            avg_VPI /= current_apps;
 
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
-                dprintf(fd, line_format,
-                    current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                    avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+            {
+                if (avx)
+                    dprintf(fd, line_format,
+                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                        avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, avg_VPI);
+                else
+                    dprintf(fd, line_format,
+                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                        avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+
+            }
             else
                 missing_apps++;
         }
@@ -407,9 +463,17 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             avg_time /= current_apps;
             avg_power /= current_apps;
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
-                dprintf(fd, mpi_line_format,
-                    current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
+            {
+                if (avx)
+                    dprintf(fd, mpi_line_format,
+                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
+                else
+                    dprintf(fd, mpi_line_format,
+                        current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
+
+            }
             else
                 missing_apps++;
 
@@ -604,7 +668,7 @@ void main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmlc:h")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmalc:h")) != -1) 
     {
         switch (opt)
         {
@@ -638,6 +702,9 @@ void main(int argc, char *argv[])
                 break;
             case 't':
                 strcpy(e_tag, optarg);
+                break;
+            case 'a':
+                avx = 1;
                 break;
             case 'h':
                 free_cluster_conf(&my_conf);
