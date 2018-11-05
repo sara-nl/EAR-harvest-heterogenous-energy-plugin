@@ -202,7 +202,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER, VPI);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
-					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
+					traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
 					if (policy_freq != prev_f)
 					{

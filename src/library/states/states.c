@@ -425,7 +425,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
 			traces_frequency(ear_my_rank, my_id, policy_freq);
-			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
+			traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 			report_loop_signature(iterations,&loop,&loop_signature.job);
 			/* END VERBOSE */
 			break;
@@ -460,7 +460,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* VERBOSE */
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
 			traces_frequency(ear_my_rank, my_id, policy_freq);
-			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
+			traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 			earl_verbose(1,"EAR(%s)at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
 			earl_verbose(1,"\tAppSig-VAL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(New Freq %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
