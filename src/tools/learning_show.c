@@ -120,15 +120,17 @@ void main(int argc,char *argv[])
 			}
 
 			if (csv) {
-				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%s\n",
+				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%s\n",
                     apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
                     apps[i].signature.time, apps[i].signature.DC_power,
-                    apps[i].signature.GBS, apps[i].job.app_id);
+                    apps[i].signature.GBS, apps[i].signature.CPI,
+					apps[i].job.app_id);
 			} else {
-				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf|| %0.2lf || | %s",
+				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf|| | %s",
 					paint[color], apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
 					apps[i].signature.time, apps[i].signature.DC_power,
-					apps[i].signature.GBS, apps[i].job.app_id);
+					apps[i].signature.GBS, apps[i].signature.CPI,
+					apps[i].job.app_id);
 			}
 	    }
 

@@ -50,7 +50,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/signature.h>
 #include <common/types/coefficient.h>
-#include <common/types/projection_old.h>
+#include <common/types/projection.h>
 #include <common/states.h>
 #include <common/database/db_helper.h>
 

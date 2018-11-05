@@ -43,7 +43,7 @@
 #include <library/models/sig_projections.h>
 #include <daemon/eard_api.h>
 #include <common/types/application.h>
-#include <common/types/projection_old.h>
+#include <common/types/projection.h>
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
@@ -73,7 +73,7 @@ void min_time_init(uint pstates)
 
 void min_time_new_loop()
 {
-    proj_perf_reset_old(mt_policy_pstates);
+    projection_reset(mt_policy_pstates);
 }
 
 void min_time_end_loop()
@@ -178,7 +178,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
             best_pstate=ear_frequency;
     }
 
-	proj_perf_set_old(EAR_default_pstate,time_ref,power_ref,cpi_ref);
+	projection_set(EAR_default_pstate,time_ref,power_ref,cpi_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
 	#if EAR_PERFORMANCE_TESTS
@@ -205,7 +205,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 				power_proj=sig_power_projection(my_app,ear_frequency,i);
 				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
 				time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
-				proj_perf_set_old(i,time_proj,power_proj,cpi_proj);
+				projection_set(i,time_proj,power_proj,cpi_proj);
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
 				#if EAR_PERFORMANCE_TESTS

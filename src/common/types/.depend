@@ -1,7 +1,3 @@
-projection_old.o: projection_old.c ../../control/frequency.h \
- ../../common/ear_verbose.h ../../common/config.h \
- ../../common/types/projection_old.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/coefficient.h
 log.o: log.c ../../common/config.h ../../common/types/log.h \
  ../../common/types/generic.h ../../common/types/job.h \
  ../../common/ear_verbose.h ../../daemon/eard_api.h \
