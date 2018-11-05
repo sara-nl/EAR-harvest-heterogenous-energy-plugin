@@ -68,6 +68,7 @@ static double time_max;
 extern ulong user_selected_freq;
 
 #define MIN_ENERGY_VERBOSE 0
+#define NO_MODELS_ME_VERB	2
 
 
 void min_energy_init(uint num_pstates)
@@ -94,7 +95,7 @@ void min_energy_end_loop()
 static void go_next_me(int curr_pstate,int *ready,ulong *best_pstate)
 {
 	int next_pstate;
-	if (curr_pstate>(me_policy_pstates-1)){
+	if (curr_pstate<(me_policy_pstates-1)){
 		*ready=0;
 		next_pstate=curr_pstate+1;
 		*best_pstate=frequency_pstate_to_freq(next_pstate);
@@ -102,6 +103,7 @@ static void go_next_me(int curr_pstate,int *ready,ulong *best_pstate)
 		*ready=1;
 		*best_pstate=frequency_pstate_to_freq(curr_pstate);
 	}
+	earl_verbose(NO_MODELS_ME_VERB,"Current %d next %u\n",curr_pstate,*best_pstate);
 }
 
 static int is_better_min_energy(signature_t * curr_sig,signature_t *prev_sig)
@@ -110,9 +112,12 @@ static int is_better_min_energy(signature_t * curr_sig,signature_t *prev_sig)
 	double max_time;
 	curr_energy=curr_sig->time*curr_sig->DC_power;
 	pre_energy=prev_sig->time*prev_sig->DC_power;
-	if (curr_energy>pre_energy) return 0;
-	max_time=signatures[EAR_default_pstate].signature.time*performance_penalty;
-	if (curr_sig->time<=max_time) return 1;
+	if (curr_energy>pre_energy){ 
+		earl_verbose(NO_MODELS_ME_VERB,"Curr energy %lf prev energy %lf\n",curr_energy,pre_energy);
+		return 0;
+	}
+	earl_verbose(NO_MODELS_ME_VERB,"Time %lf max %lf\n",curr_sig->time,time_max);
+	if (curr_sig->time<time_max) return 1;
 	return 0;
 }
 
@@ -212,13 +217,15 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	}else{ /* Use models is set to 0 */
 		ulong prev_pstate,curr_pstate,next_pstate;
 		signature_t *prev_sig;
-		earl_verbose(1,"We are not using models \n");
+		earl_verbose(NO_MODELS_ME_VERB,"We are not using models \n");
 		/* We must not use models , we will check one by one*/
 		/* If we are not running at default freq, we must check if we must follow */
 		if (sig_ready[EAR_default_pstate]==0){
 			*ready=0;
 			best_pstate=EAR_default_frequency;
 		} else{
+			time_ref= signatures[EAR_default_pstate].signature.time;
+			time_max = time_ref + (time_ref * performance_penalty);
 			/* This is the normal case */
 			curr_pstate=frequency_freq_to_pstate(ear_frequency);
 			if (ear_frequency != EAR_default_frequency){
@@ -234,7 +241,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 				go_next_me(curr_pstate,ready,&best_pstate);
 			}
 		}
-		earl_verbose(1,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
+		earl_verbose(NO_MODELS_ME_VERB,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
 		
 	}
 
@@ -255,6 +262,8 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 ulong min_energy_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
 	double energy_last, energy_curr;
+
+	if (curr_sig->def_f==last_sig->def_f) return 1;
 
 	energy_last = last_sig->time*last_sig->DC_power;
 	energy_curr = curr_sig->time * curr_sig->DC_power;

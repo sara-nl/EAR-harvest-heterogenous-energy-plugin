@@ -57,6 +57,7 @@ extern uint EAR_default_pstate;
 extern double performance_gain;
 extern application_t *signatures;
 extern uint *sig_ready;
+#define NO_MODELS_MT_VERBOSE	2
 
 
 static int use_models=1;
@@ -103,8 +104,10 @@ static int is_better_min_time(signature_t * curr_sig,signature_t *prev_sig)
 
 	curr_freq=curr_sig->def_f;
 	prev_freq=prev_sig->def_f;
-	freq_gain=performance_gain*(double)(curr_freq-prev_freq)/(double)prev_freq;
+	earl_verbose(NO_MODELS_MT_VERBOSE,"curr %u prev %u\n",curr_freq,prev_freq);
+	freq_gain=performance_gain*(double)((curr_freq-prev_freq)/(double)prev_freq);
    	perf_gain=(prev_sig->time-curr_sig->time)/prev_sig->time;
+	earl_verbose(NO_MODELS_MT_VERBOSE,"Performance gain %lf Frequency gain %lf\n",perf_gain,freq_gain);
 	if (perf_gain>=freq_gain) return 1;
     return 0;
 }
@@ -236,7 +239,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 	}else{/* Use models is set to 0 */
         ulong prev_pstate,curr_pstate,next_pstate;
         signature_t *prev_sig;
-        earl_verbose(1,"We are not using models \n");
+        earl_verbose(NO_MODELS_MT_VERBOSE,"We are not using models \n");
         /* We must not use models , we will check one by one*/
         /* If we are not running at default freq, we must check if we must follow */
         if (sig_ready[EAR_default_pstate]==0){
@@ -258,7 +261,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 					go_next_mt(curr_pstate,ready,&best_pstate,min_pstate);
 				}
         }
-		earl_verbose(1,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
+		earl_verbose(NO_MODELS_MT_VERBOSE,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
      }
 
 
@@ -278,6 +281,8 @@ ulong min_time_policy(signature_t *sig,int *ready)
 ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
 	double energy_proj, energy_real;
+
+	if (curr_sig->def_f==last_sig->def_f) return 1;
 
 	// Check that efficiency is enough
 	if (curr_sig->time < last_sig->time) return 1;
