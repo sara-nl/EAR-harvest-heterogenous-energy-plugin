@@ -28,7 +28,7 @@ ear_api.o: ear_api.c ../../control/frequency.h \
  ../../common/types/coefficient.h ../../library/dynais/dynais.h \
  ../../library/tracer/tracer.h ../../library/states/states.h \
  ../../library/states/states_periodic.h ../../library/models/models.h \
- ../../common/environment.h ../../common/types/projection_old.h \
+ ../../common/environment.h ../../common/types/projection.h \
  ../../library/metrics/metrics.h ../../library/mpi_intercept/ear_api.h \
  ../../library/mpi_intercept/MPI_types.h \
  ../../library/mpi_intercept/MPI_calls_coded.h \

@@ -1,7 +1,4 @@
-projection_old.o: projection_old.c ../../control/frequency.h \
- ../../common/ear_verbose.h ../../common/config.h \
- ../../common/types/projection_old.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/coefficient.h
+services.o: services.c ../../common/ear_verbose.h ../../common/config.h
 log.o: log.c ../../common/config.h ../../common/types/log.h \
  ../../common/types/generic.h ../../common/types/job.h \
  ../../common/ear_verbose.h ../../daemon/eard_api.h \
@@ -10,9 +7,10 @@ log.o: log.c ../../common/config.h ../../common/types/log.h \
  ../../common/types/loop.h
 gm_warning.o: gm_warning.c ../../common/config.h \
  ../../common/types/gm_warning.h ../../common/types/generic.h
-loop.o: loop.c ../../common/config.h ../../common/types/loop.h \
- ../../common/types/generic.h ../../common/types/signature.h \
- ../../common/types/job.h ../../common/states.h
+application.o: application.c ../../common/states.h \
+ ../../common/types/application.h ../../common/config.h \
+ ../../common/types/job.h ../../common/types/generic.h \
+ ../../common/types/signature.h ../../common/types/power_signature.h
 power_signature.o: power_signature.c ../../common/types/power_signature.h \
  ../../common/types/generic.h ../../common/config.h \
  ../../common/math_operations.h
@@ -24,15 +22,13 @@ projection.o: projection.c ../../common/types/projection.h \
 periodic_metric.o: periodic_metric.c ../../common/math_operations.h \
  ../../common/types/periodic_metric.h ../../common/config.h \
  ../../common/types/generic.h
-services.o: services.c ../../common/ear_verbose.h ../../common/config.h
+periodic_aggregation.o: periodic_aggregation.c \
+ ../../common/types/periodic_aggregation.h ../../common/types/generic.h
 job.o: job.c ../../common/types/job.h ../../common/types/generic.h \
  ../../common/config.h
 signature.o: signature.c ../../common/types/signature.h \
  ../../common/types/generic.h ../../common/config.h \
  ../../common/math_operations.h
-application.o: application.c ../../common/states.h \
- ../../common/types/application.h ../../common/config.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h
-periodic_aggregation.o: periodic_aggregation.c \
- ../../common/types/periodic_aggregation.h ../../common/types/generic.h
+loop.o: loop.c ../../common/config.h ../../common/types/loop.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/job.h ../../common/states.h

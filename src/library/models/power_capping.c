@@ -43,7 +43,7 @@
 #include <library/models/sig_projections.h>
 #include <daemon/eard_api.h>
 #include <common/types/application.h>
-#include <common/types/projection_old.h>
+#include <common/types/projection.h>
 #include <common/types/signature.h>
 #include <common/ear_verbose.h>
 #include <common/types/log.h>
@@ -67,7 +67,7 @@ void power_cap_energy_init(uint num_pstates)
 }
 void power_cap_energy_new_loop()
 {
-    proj_perf_reset_old(me_policy_pstates);
+    projection_reset(me_policy_pstates);
 }
 
 void power_cap_energy_end_loop()
@@ -113,7 +113,7 @@ ulong power_cap_energy_policy(signature_t *sig)
 				power_proj=sig_power_projection(my_app,ear_frequency,i);
 				cpi_proj=sig_cpi_projection(my_app,ear_frequency,i);
 				time_proj=sig_time_projection(my_app,ear_frequency,i,cpi_proj);
-				proj_perf_set_old(i,time_proj,power_proj,cpi_proj);
+				projection_set(i,time_proj,power_proj,cpi_proj);
 				if (power_proj<xxx) && (time_proj<YYY) best_freq=frequency_pstate_to_freq(i);
 		}
 	}

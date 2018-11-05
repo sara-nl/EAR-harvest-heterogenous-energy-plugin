@@ -35,7 +35,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <common/types/application.h>
-#include <common/types/projection_old.h>
+#include <common/types/projection.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
 

@@ -8,7 +8,7 @@ sig_projections.o: sig_projections.c ../../control/frequency.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
- ../../common/math_operations.h ../../common/types/projection_old.h
+ ../../common/math_operations.h ../../common/types/projection.h
 min_time.o: min_time.c ../../common/config.h ../../control/frequency.h \
  ../../library/common/macros.h ../../library/common/externs.h \
  ../../common/types/application.h ../../common/types/job.h \
@@ -20,7 +20,7 @@ min_time.o: min_time.c ../../common/config.h ../../control/frequency.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection_old.h \
+ ../../common/types/projection.h \
  ../../library/models/sig_projections.h ../../daemon/eard_api.h \
  ../../common/types/log.h ../../daemon/eard_conf_api.h
 power_capping.o: power_capping.c ../../common/config.h \
@@ -34,13 +34,13 @@ power_capping.o: power_capping.c ../../common/config.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection_old.h \
+ ../../common/types/projection.h \
  ../../library/models/sig_projections.h ../../daemon/eard_api.h \
  ../../common/types/log.h ../../daemon/eard_conf_api.h
 monitoring.o: monitoring.c ../../common/types/application.h \
  ../../common/config.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \
- ../../common/types/power_signature.h ../../common/types/projection_old.h \
+ ../../common/types/power_signature.h ../../common/types/projection.h \
  ../../common/types/coefficient.h ../../library/common/externs.h \
  ../../common/types/loop.h ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
@@ -59,7 +59,7 @@ models.o: models.c ../../common/config.h ../../control/frequency.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection_old.h ../../library/models/monitoring.h \
+ ../../common/types/projection.h ../../library/models/monitoring.h \
  ../../library/models/min_energy.h ../../library/models/min_time.h \
  ../../common/types/log.h ../../daemon/eard_api.h \
  ../../daemon/eard_conf_api.h
@@ -74,6 +74,6 @@ min_energy.o: min_energy.c ../../common/config.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection_old.h \
+ ../../common/types/projection.h \
  ../../library/models/sig_projections.h ../../daemon/eard_api.h \
  ../../common/types/log.h ../../daemon/eard_conf_api.h

@@ -10,7 +10,7 @@ states_periodic.o: states_periodic.c ../../common/config.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/tracer/tracer.h ../../library/states/states.h \
  ../../library/metrics/metrics.h ../../library/models/models.h \
- ../../common/environment.h ../../common/types/projection_old.h \
+ ../../common/environment.h ../../common/types/projection.h \
  ../../common/types/log.h ../../common/math_operations.h \
  ../../daemon/eard_api.h ../../daemon/eard_conf_api.h
 states_master.o: states_master.c ../../common/config.h \
@@ -25,7 +25,7 @@ states_master.o: states_master.c ../../common/config.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/tracer/tracer.h ../../library/states/states.h \
  ../../library/metrics/metrics.h ../../library/models/models.h \
- ../../common/environment.h ../../common/types/projection_old.h \
+ ../../common/environment.h ../../common/types/projection.h \
  ../../library/mpi_intercept/freq_synchro.h ../../common/types/log.h \
  ../../common/math_operations.h ../../daemon/eard_api.h \
  ../../daemon/eard_conf_api.h
@@ -40,7 +40,7 @@ states.o: states.c ../../common/config.h ../../control/frequency.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/tracer/tracer.h ../../library/states/states.h \
  ../../library/metrics/metrics.h ../../library/models/models.h \
- ../../common/environment.h ../../common/types/projection_old.h \
+ ../../common/environment.h ../../common/types/projection.h \
  ../../library/mpi_intercept/freq_synchro.h ../../common/types/log.h \
  ../../common/math_operations.h ../../daemon/eard_api.h \
  ../../daemon/eard_conf_api.h

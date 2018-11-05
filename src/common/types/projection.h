@@ -28,7 +28,7 @@
 */
 
 /**
-*    \file projection_old.h
+*    \file projection.h
 *    \brief Projections are used by time&power models.
 *
 */
@@ -39,11 +39,34 @@
 #include <common/types/signature.h>
 #include <common/types/coefficient.h>
 
+typedef struct projection
+{
+	double Time;
+	double Power;
+	double CPI;
+} projection_t;
+
 // Projections
-double proj_project_cpi(signature_t *sign, coefficient_t *coeff);
+double project_cpi(signature_t *sign, coefficient_t *coeff);
 
-double proj_project_time(signature_t *sign, coefficient_t *coeff);
+double project_time(signature_t *sign, coefficient_t *coeff);
 
-double proj_project_power(signature_t *sign, coefficient_t *coeff);
+double project_power(signature_t *sign, coefficient_t *coeff);
+
+// Inherited
+/** Allocates memory to contain the projections for the p_states given by
+*   parameter */
+uint projection_create(uint p_states);
+
+/** Sets the values of the performance projection i to the ones given by parameter */
+void projection_set(int i, double TP, double PP, double CPI);
+
+/** Resets the projections for power, CPI and time to 0 */
+void projection_reset(uint p_states);
+
+/** Given a frequency f, returns the projection of the associated p_state of said
+*   frequency */
+projection_t *projection_get(ulong f);
+
 
 #endif

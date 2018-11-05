@@ -32,7 +32,7 @@ coeffs_compute.o: coeffs_compute.c ../common/config.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h ../common/types/coefficient.h \
- ../common/types/projection_old.h ../common/database/db_helper.h \
+ ../common/types/projection.h ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
@@ -43,7 +43,7 @@ learning_validate.o: learning_validate.c ../common/config.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h ../common/types/coefficient.h \
- ../common/types/projection_old.h ../common/database/db_helper.h \
+ ../common/types/projection.h ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
@@ -80,7 +80,7 @@ get_active_nodes.o: get_active_nodes.c ../common/database/db_helper.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
 coeffs_jobproj.o: coeffs_jobproj.c ../common/sizes.h ../common/states.h \
- ../common/types/projection_old.h ../common/types/generic.h \
+ ../common/types/projection.h ../common/types/generic.h \
  ../common/types/signature.h ../common/config.h \
  ../common/types/coefficient.h ../common/types/application.h \
  ../common/types/job.h ../common/types/power_signature.h \

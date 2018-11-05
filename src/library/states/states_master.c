@@ -342,7 +342,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			EDP = ENERGY * TIME;
 			begin_iter = iterations;
 			policy_freq = policy_power(0, &loop_signature.signature);
-			PP = proj_perf_project_old(policy_freq);
+			PP = projection_get(policy_freq);
 			loop_signature.signature.def_f=prev_f;
 
 			/* This function only sends selected frequency */
@@ -413,7 +413,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			begin_iter = iterations;
 			// We compare the projection with the signature and the old signature
-			PP = proj_perf_project_old(policy_freq);
+			PP = projection_get(policy_freq);
 			/* If global synchronizations are on, we get frequencies for the rest of the app */
 			if (global_synchro){
 				global_f=global_frequency_selection_synchro();

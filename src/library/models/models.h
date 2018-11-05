@@ -34,7 +34,7 @@
 
 #include <common/environment.h>
 #include <common/types/coefficient.h>
-#include <common/types/projection_old.h>
+#include <common/types/projection.h>
 #include <common/types/application.h>
 
 
