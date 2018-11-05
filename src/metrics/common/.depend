@@ -1,3 +1,0 @@
-pci.o: pci.c
-msr.o: msr.c ../../common/sizes.h ../../metrics/common/msr.h \
- ../../common/states.h ../../common/types/generic.h

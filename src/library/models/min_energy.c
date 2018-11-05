@@ -127,8 +127,8 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	int i,min_pstate;
 	unsigned int ref,try_next;
 	double freq_gain,perf_gain;
-	double power_proj,time_proj,cpi_proj,energy_proj,best_solution,energy_ref;
-	double power_ref,cpi_ref,time_ref,time_current;
+	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
+	double power_ref,time_ref,time_current;
 	ulong best_pstate;
 	my_app=sig;
 	#if MIN_ENERGY_VERBOSE

@@ -65,7 +65,7 @@ void projection_reset(uint p_states);
 
 /** Given a frequency f, returns the projection of the associated p_state of said
 *   frequency */
-projection_t *projection_get(ulong f);
+projection_t *projection_get(int pstate);
 
 
 #endif

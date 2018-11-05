@@ -1,3 +1,0 @@
-tracer.o: tracer.c ../../common/sizes.h ../../common/config.h \
- ../../common/ear_verbose.h ../../library/tracer/tracer.h \
- ../../common/types/generic.h
