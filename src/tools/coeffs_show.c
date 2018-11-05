@@ -27,104 +27,69 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <math.h>
+#include <errno.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
-#include <math.h>
-#include <unistd.h>
-
-#include <linux/limits.h>
+#include <sys/types.h>
+#include <common/types/sizes.h>
 #include <common/types/coefficient.h>
 
-coefficient_t *coeffs;
-int num_pstates;
+static char buffer[SZ_PATH];
 
-
-char buffer[1024];
-int file_size;
-int is_regular_file(const char *path)
-{
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISREG(path_stat.st_mode);
-}
-
-int strlst(const char *string, char c)
-{
-    int last_i = -1;
-    int i = 0;
-
-    while (string[i] != '\0') {
-        if (string[i] == c) {
-            last_i = i;
-        }
-        i++;
-    }
-
-    return last_i;
-}
-
-
-
-void read_file(char *path,coefficient_t *coeffs)
-{
-
-    int rfd = open(path, O_RDONLY);
-    if (rfd<0){
-        printf("Error opening file %s\n",strerror(errno));
-        return;
-    }   
-    if (read(rfd, coeffs, file_size)!=file_size){
-        printf("Error reading coefficients for path %s (%s)\n",path,strerror(errno));
-    }   
-
-    close(rfd);
-
-}
-
-
-void print_coefficients(coefficient_t *avg)
+void print_coefficients(coefficient_t *avg, int n_pstates)
 {
 	int i;
-	for (i=0;i<num_pstates;i++){
+	for (i=0;i<n_pstates;i++){
 		coeff_print(&avg[i]);
 	}
 }
 
-
 int main(int argc, char *argv[])
 {
-    int fd;
+	coefficient_t *coeffs;
+	state_t state;
+	int n_pstates;
+	int file_size;
     int i;
 
-    if (argc<2){ 
+    if (argc < 2) {
         printf("Usage: %s coeffs_file\n",argv[0]);
         exit(1);
     }
 
-    fd=open(argv[1],O_RDONLY);
-    if (fd<0){
-	sprintf(buffer,"Invalid coeffs path %s (%s)\n",argv[1],strerror(errno));
-	printf(buffer);
-	exit(1);
+	file_size = file_size(argv[1]);
+
+	if (file_size < 0) {
+		sprintf(buffer, "ERROR, invalid coeffs path %s (%s)\n", argv[1], intern_error_str);
+		printf(buffer);
+		exit(1);
+	}
+
+    n_pstates = file_size / sizeof(coefficient_t);
+	printf("coefficients file size: %d\n", file_size);
+	printf("number of P_STATES: %d\n", n_pstates);
+
+    coeffs = (coefficient_t*) calloc(file_size ,1);
+
+    if (coeffs == NULL) {
+		printf("ERROR, not enough memory\n");
+		exit(1);
     }
-    file_size=lseek(fd,0,SEEK_END);
-    close(fd);
-    num_pstates=file_size/sizeof(coefficient_t);
-    printf("Coefficients file size %d, pstates %d\n",file_size,num_pstates);
-    coeffs=(coefficient_t*)calloc(file_size,1);
-    if (coeffs==NULL) {
-	printf("Not enough memory\n");
-	exit(1);
-    }
+
     /* The program reports coefficients in stdout and csv file */
-    read_file(argv[1],coeffs);
+	state = file_read(argv[1], coeffs, file_size);
+
+	if (state_fail(state)) {
+		state_print_error(state);
+		exit(1);
+	}
+
     print_coefficients(coeffs);
 
     return 0;

@@ -275,18 +275,16 @@ int main(int argc, char *argv[])
 	ulong p_state_max;
     int fd, index;
 	
-
     if (argc != 7){
         usage(argv[0]);
     }
-	strcpy(nodename,argv[1]);
+
+    strcpy(nodename,argv[1]);
 	expected_num_apps=atoi(argv[2]);
 	expected_num_runs=atoi(argv[3]);
 	expected_num_freqs=atoi(argv[4]);
 	max_freq=atoi(argv[5]);
 	min_freq=atoi(argv[6]);
-	
-
 
     // We get how many samples per frequency we have
     num_node_p_states = fill_list_p_states();

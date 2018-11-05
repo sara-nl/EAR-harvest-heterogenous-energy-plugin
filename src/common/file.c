@@ -1,0 +1,121 @@
+/**************************************************************
+*   Energy Aware Runtime (EAR)
+*   This program is part of the Energy Aware Runtime (EAR).
+*
+*   EAR provides a dynamic, transparent and ligth-weigth solution for
+*   Energy management.
+*
+*       It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017
+*   BSC Contact     mailto:ear-support@bsc.es
+*   Lenovo contact  mailto:hpchelp@lenovo.com
+*
+*   EAR is free software; you can redistribute it and/or
+*   modify it under the terms of the GNU Lesser General Public
+*   License as published by the Free Software Foundation; either
+*   version 2.1 of the License, or (at your option) any later version.
+*
+*   EAR is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*   Lesser General Public License for more details.
+*
+*   You should have received a copy of the GNU Lesser General Public
+*   License along with EAR; if not, write to the Free Software
+*   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*   The GNU LEsser General Public License is contained in the file COPYING
+*/
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+static struct flock lock;
+
+int file_lock(int fd)
+{
+	if (fd>=0){
+		lock.l_type = F_WRLCK;
+		return fcntl(fd, F_SETLKW, &lock);
+	}else return -1;
+}
+
+int file_unlock(int fd)
+{
+	if (fd>=0){
+		lock.l_type = F_UNLCK;
+		return fcntl(fd, F_SETLKW, &lock);
+	}else return -1;
+}
+
+int file_lock_master(char *lock_file_name)
+{
+	int fd=open(lock_file_name,O_WRONLY|O_CREAT|O_EXCL,S_IWUSR);
+	return fd;
+}
+
+void file_unlock_master(int fd,char *lock_file_name)
+{
+	close(fd);
+	unlink(lock_file_name);
+}
+
+void file_lock_clean(int fd,char *lock_file_name)
+{
+	if (fd>=0){
+		close(fd);
+		unlink(lock_file_name);
+	}
+}
+
+int file_lock_create(char *lock_file_name)
+{
+	int fd = open(lock_file_name, O_WRONLY|O_CREAT,S_IWUSR);
+	if (fd<0) return fd;
+	lock.l_start = 0;
+	lock.l_whence = SEEK_SET;
+	lock.l_len = 0;
+	lock.l_pid = getpid();
+}
+
+int file_is_regular(const char *path)
+{
+	struct stat path_stat;
+	stat(path, &path_stat);
+	return S_ISREG(path_stat.st_mode);
+}
+
+ssize_t file_size(char *path)
+{
+	int fd = open(path, O_RDONLY);
+	ssize_t size;
+
+	if (fd < 0){
+		state_return_msg(EAR_OPEN_ERROR, errno, strerror(errno));
+	}
+
+	size = lseek(fd, 0, SEEK_END);
+	close(fd);
+
+	return size;
+}
+
+state_t file_read(char *path, char *container, size_t size)
+{
+	int fd = open(path, O_RDONLY);
+
+	if (fd < 0) {
+		state_return_msg(EAR_OPEN_ERROR, errno, strerror(errno));
+	}
+
+	if (read(fd, container, size) != size){
+		state_return_msg(EAR_READ_ERROR, errno, strerror(errno));
+	}
+
+	close(fd);
+
+	state_return(EAR_SUCCESS);
+}

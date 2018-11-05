@@ -26,55 +26,34 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+#ifndef _FILE_H
+#define _FILE_H
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <common/states.h>
 
-static struct flock lock;
+/** Locks the file for writting in a fixe dpart */
+int file_lock(int fd);
 
-int create_lock(char *lock_file_name)
-{
-    int fd = open(lock_file_name, O_WRONLY|O_CREAT,S_IWUSR);
-	if (fd<0) return fd;
-    lock.l_start = 0;
-    lock.l_whence = SEEK_SET;
-    lock.l_len = 0;
-    lock.l_pid = getpid();
-}
-int lock_file(int fd)
-{
-	if (fd>=0){
-		lock.l_type = F_WRLCK;
-		return fcntl(fd, F_SETLKW, &lock);
-	}else return -1;
-}
-int unlock_file(int fd)
-{
-	if (fd>=0){
-		lock.l_type = F_UNLCK;
-		return fcntl(fd, F_SETLKW, &lock);
-	}else return -1;
-}
-void lock_dispose(int fd,char *lock_file_name)
-{
-	if (fd>=0){
-		close(fd);
-		unlink(lock_file_name);
-	}
-}
+/** Unlocks the file */
+int file_unlock(int fd);
 
-int lock_master(char *lock_file_name)
-{
-	int fd=open(lock_file_name,O_WRONLY|O_CREAT|O_EXCL,S_IWUSR);
-	return fd;
-}
-void unlock_master(int fd,char *lock_file_name)
-{
-	close(fd);
-	unlink(lock_file_name);
-	
-}
+/** Opens a file with O_EXCL, only one process per node will do that */
+int file_lock_master(char *lock_file_name);
+
+/** Releases a lock file */
+void file_unlock_master(int fd,char *lock_file_name);
+
+/** Creates a file to be used  as lock. It doesn't locks the file */
+int file_lock_create(char *lock_file_name);
+
+/** Closes and removes the lock file */
+void file_lock_clean(int fd,char *lock_file_name);
+
+/** */
+int file_is_regular(const char *path);
+
+/** */
+state_t file_read();
+
+#endif
 

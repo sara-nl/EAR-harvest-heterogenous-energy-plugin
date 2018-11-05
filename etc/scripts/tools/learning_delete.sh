@@ -1,10 +1,12 @@
 #!/bin/bash
 
-if [[ $# -ne 2 ]]
+# Edit region
+export PASSWORD="--password=EAR"
+
+if [[ $# -ne 1 ]]
 then
-        echo -e "Usage: hostlist frequency"
+        echo -e "Usage: hostlist"
         echo -e "\thostlist: a host name list file"
-		echo -e "\tfrequency: the reference frequency to project"
         exit 1
 fi
 
@@ -21,11 +23,8 @@ then
     exit 1
 fi
 
-#
-export HOSTLIST="$(echo $(cat $1))"
-
-#
 for i in ${HOSTLIST}
 do
-	$EAR_INSTALL_PATH/bin/tools/coeffs_quality ${i} ${2} -G
+    echo "Cleaning learning phase of node ${i}"
+    $EAR_INSTALL_PATH/bin/tools/learning_delete ${i} -p ${PASSWORD}
 done
