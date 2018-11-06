@@ -30,5 +30,5 @@ $EAR_INSTALL_PATH/bin/tools/learning_validate nonode -G -H
 
 for i in ${HOSTLIST}
 do
-	$EAR_INSTALL_PATH/bin/tools/learning_validate -G
+	$EAR_INSTALL_PATH/bin/tools/learning_validate ${i} -G
 done

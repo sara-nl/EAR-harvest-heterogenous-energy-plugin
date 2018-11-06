@@ -3,6 +3,7 @@
 gen_FOLDERS = $(DESTDIR)/bin \
               $(DESTDIR)/bin/kernels \
               $(DESTDIR)/bin/scripts \
+              $(DESTDIR)/bin/tools \
               $(DESTDIR)/lib \
               $(DESTDIR)/sbin
 

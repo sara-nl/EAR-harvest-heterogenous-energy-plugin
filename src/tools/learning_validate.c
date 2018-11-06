@@ -239,7 +239,7 @@ static void read_applications()
 	//
 	n_apps = db_read_applications(&apps_aux, 1, 1000, buffer_nodename);
 
-	if (n_apps == 0) {
+	if (n_apps <= 0) {
 		exit(1);
 	}
 

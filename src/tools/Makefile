@@ -56,7 +56,7 @@ learning_validate: learning_validate.c $(ROOTDIR)/src/common/database.a $(COMMON
 ######## OPTIONS
 
 install:
-	cp coeffs_compute $(DESTDIR)/sbin/
+	cp $(BINARIES) $(DESTDIR)/bin/tools
 
 %.install: ;
 

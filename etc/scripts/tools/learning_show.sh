@@ -34,11 +34,11 @@ do
     then
         if [[ -n $3 ]]
         then
-            $EAR_INSTALL_PATH/bin/tools/learning_show ${i} ${color} | grep -E "$2.*$3|$3.*$2"
+            $EAR_INSTALL_PATH/bin/tools/learning_show ${i} -P ${color} | grep -E "$2.*$3|$3.*$2"
         else
-            $EAR_INSTALL_PATH/bin/tools/learning_show ${i} ${color} | grep "$2"
+            $EAR_INSTALL_PATH/bin/tools/learning_show ${i} -P ${color} | grep "$2"
         fi
     else
-        $EAR_INSTALL_PATH/bin/tools/learning_show ${i} ${color}
+        $EAR_INSTALL_PATH/bin/tools/learning_show ${i} -P ${color}
     fi
 done

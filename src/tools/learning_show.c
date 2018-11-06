@@ -49,10 +49,10 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "  The node.id of the node to display the information.\n");
 		fprintf(stdout, "\nOptions:\n");
 		fprintf(stdout, "\t-P <num>\tPrints the output with a different color,\n");
-		fprintf(stdout, "\t\t\tcan be used when displaying different batch of\n");
-		fprintf(stdout, "\t\t\tapplications by script.\n");
-		fprintf(stdout, "\t-C, --csv\tShows other jobs of the same application,\n");
-		fprintf(stdout, "\t\t\tnode, policy and number of processes.\n");
+		fprintf(stdout, "\t\tcan be used when displaying different batch of\n");
+		fprintf(stdout, "\t\tapplications by script.\n");
+		fprintf(stdout, "\t-C\tShows other jobs of the same application,\n");
+		fprintf(stdout, "\t\tnode, policy and number of processes.\n");
 		exit(1);
 	}
 
@@ -102,7 +102,7 @@ void main(int argc,char *argv[])
 
 	//
 	if (!csv) {
-		tprintf_init(stdout, STR_MODE_COL, "12 10 10 8 8 8 30");
+		tprintf_init(stdout, STR_MODE_COL, "12 10 10 8 8 8 8 30");
 	}
 
 	while (num_apps > 0)
