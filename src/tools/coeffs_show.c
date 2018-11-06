@@ -37,7 +37,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <common/types/sizes.h>
+#include <common/file.h>
+#include <common/sizes.h>
+#include <common/states.h>
 #include <common/types/coefficient.h>
 
 static char buffer[SZ_PATH];
@@ -55,7 +57,7 @@ int main(int argc, char *argv[])
 	coefficient_t *coeffs;
 	state_t state;
 	int n_pstates;
-	int file_size;
+	int size;
     int i;
 
     if (argc < 2) {
@@ -63,19 +65,19 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-	file_size = file_size(argv[1]);
+	size = file_size(argv[1]);
 
-	if (file_size < 0) {
+	if (size < 0) {
 		sprintf(buffer, "ERROR, invalid coeffs path %s (%s)\n", argv[1], intern_error_str);
 		printf(buffer);
 		exit(1);
 	}
 
-    n_pstates = file_size / sizeof(coefficient_t);
-	printf("coefficients file size: %d\n", file_size);
+    n_pstates = size / sizeof(coefficient_t);
+	printf("coefficients file size: %d\n", size);
 	printf("number of P_STATES: %d\n", n_pstates);
 
-    coeffs = (coefficient_t*) calloc(file_size ,1);
+    coeffs = (coefficient_t*) calloc(size ,1);
 
     if (coeffs == NULL) {
 		printf("ERROR, not enough memory\n");
@@ -83,14 +85,14 @@ int main(int argc, char *argv[])
     }
 
     /* The program reports coefficients in stdout and csv file */
-	state = file_read(argv[1], coeffs, file_size);
+	state = file_read(argv[1], coeffs, size);
 
 	if (state_fail(state)) {
 		state_print_error(state);
 		exit(1);
 	}
 
-    print_coefficients(coeffs);
+    print_coefficients(coeffs, n_pstates);
 
     return 0;
 }

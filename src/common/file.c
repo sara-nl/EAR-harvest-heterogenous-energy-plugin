@@ -27,11 +27,15 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <common/file.h>
 
 static struct flock lock;
 
@@ -94,7 +98,7 @@ ssize_t file_size(char *path)
 	ssize_t size;
 
 	if (fd < 0){
-		state_return_msg(EAR_OPEN_ERROR, errno, strerror(errno));
+		state_return_msg((ssize_t) EAR_OPEN_ERROR, errno, strerror(errno));
 	}
 
 	size = lseek(fd, 0, SEEK_END);
@@ -108,7 +112,7 @@ state_t file_read(char *path, char *container, size_t size)
 	int fd = open(path, O_RDONLY);
 
 	if (fd < 0) {
-		state_return_msg(EAR_OPEN_ERROR, errno, strerror(errno));
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 	}
 
 	if (read(fd, container, size) != size){
