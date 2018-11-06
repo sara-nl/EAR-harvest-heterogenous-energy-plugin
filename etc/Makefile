@@ -29,6 +29,7 @@ install:
 	cp -r scripts/* $(DESTDIR)/bin/scripts/
 	@ rm $(DESTDIR)/bin/scripts/README.md
 	@ rm $(DESTDIR)/bin/scripts/learning/README.md
+	@ rm $(DESTDIR)/bin/scripts/tools/README.md
 
 etc.install: ;
 	@ mkdir -p $(etc_FOLDERS) 

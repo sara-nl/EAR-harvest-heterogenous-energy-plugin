@@ -44,7 +44,7 @@ int coeff_file_size(char *path)
     int ret, fd;
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     ret = lseek(fd, 0, SEEK_END);
@@ -58,7 +58,7 @@ int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size)
     int ret, fd;
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     if ((ret = read(fd, coeffs, size)) != size)
@@ -87,7 +87,7 @@ int coeff_file_read(char *path, coefficient_t **coeffs)
     int size, ret, fd;
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     size = lseek(fd, 0, SEEK_END);

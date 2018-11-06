@@ -70,7 +70,7 @@ char *__HOST__ ;
 #define USE_LOCK_FILES 		1
 
 #if USE_LOCK_FILES
-#include <common/file_lock.h>
+#include <common/file.h>
 static char fd_lock_filename[BUFFSIZE];
 static int fd_master_lock;
 #endif
@@ -216,7 +216,7 @@ static int get_local_id(char *node_name)
 #if USE_LOCK_FILES
 	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
 
-	if ((fd_master_lock = lock_master(fd_lock_filename)) < 0) {
+	if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
 		master = 1;
 	} else {
 		master = 0;
@@ -508,7 +508,7 @@ void ear_finalize()
 
 #if USE_LOCK_FILES
 	earl_verbose(2, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-	unlock_master(fd_master_lock,fd_lock_filename);
+	file_unlock_master(fd_master_lock,fd_lock_filename);
 #endif
 
 #if MEASURE_DYNAIS_OV
