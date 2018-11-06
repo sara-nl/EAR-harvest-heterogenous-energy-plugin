@@ -4,10 +4,11 @@ Tools list
 | Name              | Description                                                      | Basic arguments                         |
 | ----------------- | ---------------------------------------------------------------- | --------------------------------------- |
 | coeffs_compute    | Computes the learning coefficients                               | <save.path> <min.frequency> <node.name> |
-| coeffs_comparison | Compares the computed coefficients                               |                                         |
-| coeffs_show       | Shows the computed coefficients file in text format              | <file.path>                             |
+| coeffs_default    | Computes a default coefficients file                             |                                         |
 | coeffs_jobproj    | For an executed application, applies the coefficients projection | <job.i> <step.id>                       |
+| coeffs_null       |                                                                  |                                         |
 | coeffs_quality    | Evaluates the quality of the learning coefficients               | <node.name <ref.freq>                   |
+| coeffs_show       | Shows the computed coefficients file in text format              | <file.path>                             |
 | get_active_nodes  | Shows the acvite nodes in the cluster                            |                                         |
 | get_events        | Show the EAR events recorded in the database                     |                                         |
 | learning_delete   | Deletes the previous learning phase data of the database         | <node.name>                             |
@@ -15,6 +16,10 @@ Tools list
 | learning_show     | Shows the learning phase applications per node                   | <node.name>                             |
 
 * Use the argument `--help` to expand the application information and list the admitted flags.
+
+Scripts
+-------
+Plase, visit the [tools scripts page](../../etc/scripts/tools/README.md) to get more information about the tool scripts. These scripts will expand the tools utility.
 
 Examples
 --------

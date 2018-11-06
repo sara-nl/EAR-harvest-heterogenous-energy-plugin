@@ -1,0 +1,4 @@
+power_metrics.o: power_metrics.c \
+ ../../metrics/power_metrics/power_metrics.h ../../common/states.h \
+ ../../metrics/ipmi/energy_node.h ../../metrics/papi/energy_cpu.h \
+ ../../common/math_operations.h

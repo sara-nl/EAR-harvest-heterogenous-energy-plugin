@@ -27,38 +27,47 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <common/file.h>
 
 static struct flock lock;
 
-int create_lock(char *lock_file_name)
-{
-    int fd = open(lock_file_name, O_WRONLY|O_CREAT,S_IWUSR);
-	if (fd<0) return fd;
-    lock.l_start = 0;
-    lock.l_whence = SEEK_SET;
-    lock.l_len = 0;
-    lock.l_pid = getpid();
-}
-int lock_file(int fd)
+int file_lock(int fd)
 {
 	if (fd>=0){
 		lock.l_type = F_WRLCK;
 		return fcntl(fd, F_SETLKW, &lock);
 	}else return -1;
 }
-int unlock_file(int fd)
+
+int file_unlock(int fd)
 {
 	if (fd>=0){
 		lock.l_type = F_UNLCK;
 		return fcntl(fd, F_SETLKW, &lock);
 	}else return -1;
 }
-void lock_dispose(int fd,char *lock_file_name)
+
+int file_lock_master(char *lock_file_name)
+{
+	int fd=open(lock_file_name,O_WRONLY|O_CREAT|O_EXCL,S_IWUSR);
+	return fd;
+}
+
+void file_unlock_master(int fd,char *lock_file_name)
+{
+	close(fd);
+	unlink(lock_file_name);
+}
+
+void file_lock_clean(int fd,char *lock_file_name)
 {
 	if (fd>=0){
 		close(fd);
@@ -66,15 +75,51 @@ void lock_dispose(int fd,char *lock_file_name)
 	}
 }
 
-int lock_master(char *lock_file_name)
+int file_lock_create(char *lock_file_name)
 {
-	int fd=open(lock_file_name,O_WRONLY|O_CREAT|O_EXCL,S_IWUSR);
-	return fd;
-}
-void unlock_master(int fd,char *lock_file_name)
-{
-	close(fd);
-	unlink(lock_file_name);
-	
+	int fd = open(lock_file_name, O_WRONLY|O_CREAT,S_IWUSR);
+	if (fd<0) return fd;
+	lock.l_start = 0;
+	lock.l_whence = SEEK_SET;
+	lock.l_len = 0;
+	lock.l_pid = getpid();
 }
 
+int file_is_regular(const char *path)
+{
+	struct stat path_stat;
+	stat(path, &path_stat);
+	return S_ISREG(path_stat.st_mode);
+}
+
+ssize_t file_size(char *path)
+{
+	int fd = open(path, O_RDONLY);
+	ssize_t size;
+
+	if (fd < 0){
+		state_return_msg((ssize_t) EAR_OPEN_ERROR, errno, strerror(errno));
+	}
+
+	size = lseek(fd, 0, SEEK_END);
+	close(fd);
+
+	return size;
+}
+
+state_t file_read(char *path, char *container, size_t size)
+{
+	int fd = open(path, O_RDONLY);
+
+	if (fd < 0) {
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+	}
+
+	if (read(fd, container, size) != size){
+		state_return_msg(EAR_READ_ERROR, errno, strerror(errno));
+	}
+
+	close(fd);
+
+	state_return(EAR_SUCCESS);
+}
