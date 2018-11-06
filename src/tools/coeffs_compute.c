@@ -242,7 +242,8 @@ int main(int argc, char *argv[])
 {
     application_t read_app;
     double power, cpi, tpi;
-    uint filtered_apps = 0, ret,is_learning=1;
+    uint filtered_apps = 0, is_learning=1;
+	int ret;
     uint f, pos, ref, i;
 	ulong p_state_max;
 	char path_coef_file[256];

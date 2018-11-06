@@ -206,7 +206,7 @@ int eards_remote_connect(char *nodename,uint port)
                 getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
                 if (valopt)
                 {
-                    fprintf(stderr, "Error opening connection.");
+                    fprintf(stderr, "Error opening connection %s",nodename);
                     close(sfd);
                     continue;
                 }
