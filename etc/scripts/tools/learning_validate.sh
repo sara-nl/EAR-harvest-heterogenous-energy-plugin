@@ -26,19 +26,9 @@ export HOSTLIST="$(echo $(cat $1))"
 #
 color="0"
 
+$EAR_INSTALL_PATH/bin/tools/learning_validate nonode -G -H
+
 for i in ${HOSTLIST}
 do
-    color=$[$color + 1]
-
-    if [[ -n $2 ]]
-    then
-        if [[ -n $3 ]]
-        then
-            $EAR_INSTALL_PATH/bin/tools/learning_show ${i} ${color} | grep -E "$2.*$3|$3.*$2"
-        else
-            $EAR_INSTALL_PATH/bin/tools/learning_show ${i} ${color} | grep "$2"
-        fi
-    else
-        $EAR_INSTALL_PATH/bin/tools/learning_show ${i} ${color}
-    fi
+	$EAR_INSTALL_PATH/bin/tools/learning_validate -G
 done
