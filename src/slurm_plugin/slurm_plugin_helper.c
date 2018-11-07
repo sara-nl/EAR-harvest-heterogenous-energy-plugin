@@ -173,15 +173,6 @@ int setenv_remote(spank_t sp, char *name, char *value, int replace)
     return (spank_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
 }
 
-int setenv_control(spank_t sp, char *name, char *value, int replace)
-{
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-
-	return (spank_job_control_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
-}
-
 int unsetenv_remote(spank_t sp, char *name)
 {
     if (name == NULL) {
@@ -222,29 +213,6 @@ int getenv_remote(spank_t sp, char *name, char *value, int length)
 	serrno = spank_getenv (sp, name, value, length);
 
 	if (serrno != ESPANK_SUCCESS) {
-		return 0;
-	}
-	if (strlen(value) <= 0) {
-		return 0;
-	}
-
-	return 1;
-}
-
-int getenv_control(spank_t sp, char *name, char *value, int length)
-{
-	spank_err_t serrno;
-
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-
-	serrno = spank_job_control_getenv (sp, name, value, length);
-
-	if (serrno != ESPANK_SUCCESS) {
-		return 0;
-	}
-	if (value == NULL) {
 		return 0;
 	}
 	if (strlen(value) <= 0) {
@@ -307,17 +275,4 @@ int isenv_remote(spank_t sp, char *name, char *value)
     }
 
     return 0;
-}
-
-int isenv_control(spank_t sp, char *name, char *value)
-{
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-
-	if (getenv_control(sp, name, buffer3, sizeof(buffer3))) {
-		return (strcmp(buffer3, value) == 0);
-	}
-
-	return 0;
 }

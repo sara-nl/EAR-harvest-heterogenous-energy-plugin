@@ -32,25 +32,6 @@
 
 #include <slurm/spank.h>
 
-// Misc
-#define snprintf_ret_err(buffer, size, ...) \
-	if (snprintf(buffer, size, __VA_ARGS__) < 0) { \
-        plug_error("while writing a formatted output to sized buffer"); \
-		return (ESPANK_ERROR); \
-	}
-
-#define setenv_local_ret_err(p_name, p_value, replace) \
-	if (!setenv_local(p_name, p_value, replace)) { \
-        plug_error("while setting a local environment variable"); \
-		return (ESPANK_ERROR); \
-	}
-
-#define setenv_remote_ret_err(sp, p_name, p_value, replace) \
-	if(!setenv_remote(sp, p_name, p_value, replace)) { \
-        plug_error("while setting a remote environment variable"); \
-		return (ESPANK_ERROR); \
-	}
-
 // Verbosity
 #define plug_verbose(sp, level, ...) \
 	if (verbosity_test(sp, level) == 1) { \
@@ -69,22 +50,16 @@ int verbosity_test(spank_t sp, int level);
 // Environment
 void print_local_environment(spank_t sp);
 void print_remote_environment(spank_t sp);
-
-// Environment variables
 void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source, int destiny_length);
-
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
-int setenv_control(spank_t sp, char *name, char *value, int replace);
 int unsetenv_remote(spank_t sp, char *name);
 int getenv_local(char *name, char **env);
 int getenv_remote(spank_t sp, char *name, char *value, int length);
-int getenv_control(spank_t sp, char *name, char *value, int length);
 int existenv_local(char *name);
 int existenv_remote(spank_t sp, char *name);
 int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
-int isenv_control(spank_t sp, char *name, char *value);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H
