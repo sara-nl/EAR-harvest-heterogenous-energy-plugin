@@ -93,11 +93,11 @@ static int _read_shared_data_remote(spank_t sp)
 
 	// Variable EAR_P_STATE
 	snprintf(buffer2, 16, "%u", conf_sett->def_p_state);
-	setenv_remote(sp, "EAR_P_STATE", buffer2, 1);
+	setenv_remote_ret_err(sp, "EAR_P_STATE", buffer2, 1);
 
 	// Variable EAR_FREQUENCY
 	snprintf(buffer2, 16, "%lu", conf_sett->def_freq);
-	setenv_remote(sp, "EAR_FREQUENCY", buffer2, 1);
+	setenv_remote_ret_err(sp, "EAR_FREQUENCY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY, overwrite
 	if(policy_id_to_name(conf_sett->policy, buffer2) == EAR_ERROR)
@@ -107,12 +107,12 @@ static int _read_shared_data_remote(spank_t sp)
 		plug_verbose(sp, 2, "invalid policy returned");
 		return (ESPANK_ERROR);
 	}
-	setenv_remote(sp, "EAR_POWER_POLICY", buffer2, 1);
+	setenv_remote_ret_err(sp, "EAR_POWER_POLICY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY_TH, overwrite
 	snprintf(buffer2, 8, "%0.2f", conf_sett->th);
-	setenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
-	setenv_remote(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
+	setenv_remote_ret_err(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
+	setenv_remote_ret_err(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
 
 	// Variable EAR_LEARNING and EAR_P_STATE
 	if(!conf_sett->learning) {
@@ -122,10 +122,10 @@ static int _read_shared_data_remote(spank_t sp)
 
 	// Final library tweaks
 	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
-		setenv_remote(sp, "EAR_APP_NAME", buffer2, 1);
+		setenv_remote_ret_err(sp, "EAR_APP_NAME", buffer2, 1);
 	}
 	if (getenv_remote(sp, "EAR_TMPDIR", buffer2, sizeof(buffer2)) == 1) {
-		setenv_remote(sp, "EAR_TMP", buffer2, 1);
+		setenv_remote_ret_err(sp, "EAR_TMP", buffer2, 1);
 	}
 
 	// Closing shared memory
@@ -282,12 +282,9 @@ int remote_eard_report_finish(spank_t sp)
 {
 	plug_verbose(sp, 2, "function remote_eard_report_finish");
 
-	spank_err_t error;
-	int exit_status;
-
-	#if PRODUCTION
+#if PRODUCTION
 	return ESPANK_SUCCESS;
-	#endif
+#endif
 
 	// Not connected before, so doesn't need to be finished
 	if (!eard_conn) {
@@ -300,13 +297,7 @@ int remote_eard_report_finish(spank_t sp)
 	if (eards_remote_connect(eard_host, eard_port) < 0) {
 		plug_verbose(sp, 2, "while connecting with EAR daemon");
 	}
-
-	//
-	error = spank_get_item (sp, S_TASK_EXIT_STATUS, &exit_status);
-	sprintf(buffer1, "echo \"%d\" >> /home/xjaneas/output", exit_status);
-	system(buffer1);
-
-	eards_end_job(eard_appl.job.id, eard_appl.job.step_id, exit_status);
+	eards_end_job(eard_appl.job.id, eard_appl.job.step_id);
 	eards_remote_disconnect();
 
 	return (ESPANK_SUCCESS);

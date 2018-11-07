@@ -327,7 +327,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 				// EAR == 0: nothing
 				// EAR == whatever: enable (bug protection)
 				if (!isenv_local("EAR", "0")) {
-					setenv_local("EAR", "1", 1);
+					setenv_local_ret_err("EAR", "1", 1);
 				} 
 			// If disabled by default or de administrator have misswritten
 			} else {
@@ -335,7 +335,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 				// EAR == 0: disable
 				// EAR == whatever: disable (bug protection)
 				if (!isenv_local("EAR", "1")) {
-					setenv_local("EAR", "0", 1);
+					setenv_local_ret_err("EAR", "0", 1);
 				}
 			}
 		}
@@ -345,7 +345,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			found_tmpdir = 1;
 
 			plug_verbose(sp, 2, "plugstack found temporal files in path '%s'", tmp_dir);
-			setenv_local("EAR_TMPDIR", tmp_dir, 1);
+			setenv_local_ret_err("EAR_TMPDIR", tmp_dir, 1);
 		}
 		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
 		{
@@ -353,7 +353,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			found_predir = 1;
 
 			plug_verbose(sp, 2, "plugstack found prefix in path '%s'", pre_dir);
-			setenv_local("EAR_PREDIR", pre_dir, 1);
+			setenv_local_ret_err("EAR_PREDIR", pre_dir, 1);
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
 		{
@@ -408,8 +408,8 @@ int _read_user_info(spank_t sp)
 	}
 
 	// To environment variables
-	setenv_local("EAR_USER", upw->pw_name, 1);
-	setenv_local("EAR_GROUP", gpw->gr_name, 1);
+	setenv_local_ret_err("EAR_USER", upw->pw_name, 1);
+	setenv_local_ret_err("EAR_GROUP", gpw->gr_name, 1);
 
 	plug_verbose(sp, 2, "user detected '%u -> %s'", uid, upw->pw_name);
 	plug_verbose(sp, 2, "user group detected '%u -> %s'", gid, gpw->gr_name);
@@ -436,13 +436,13 @@ int _set_ld_preload(spank_t sp)
 
 	// Appending libraries to LD_PRELOAD
 	if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-		snprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
+		snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
 	} else {
-		snprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
+		snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
 	}
 
 	//
-	setenv_local("LD_PRELOAD", buffer2, 1);
+	setenv_local_ret_err("LD_PRELOAD", buffer2, 1);
 
 	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
@@ -533,8 +533,10 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN"))
 	{
 		//
-		_remote_library_disable(sp);
-		//
+		if (remote_eard_report_start(sp) != ESPANK_SUCCESS) {
+			_remote_library_disable(sp);
+		}
+
 		remote_print_environment(sp);
 	}
 	
