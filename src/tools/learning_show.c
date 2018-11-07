@@ -36,8 +36,8 @@
 int EAR_VERBOSE_LEVEL=1;
 
 static char *paint[6] = { STR_RED, STR_GRE, STR_YLW, STR_BLU, STR_MGT, STR_CYA };
-static unsigned int color;
-static unsigned int csv;
+static unsigned int opt_p;
+static unsigned int opt_c;
 
 void usage(int argc, char *argv[])
 {
@@ -49,22 +49,21 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "  The node.id of the node to display the information.\n");
 		fprintf(stdout, "\nOptions:\n");
 		fprintf(stdout, "\t-P <num>\tPrints the output with a different color,\n");
-		fprintf(stdout, "\t\t\tcan be used when displaying different batch of\n");
-		fprintf(stdout, "\t\t\tapplications by script.\n");
-		fprintf(stdout, "\t-C, --csv\tShows other jobs of the same application,\n");
-		fprintf(stdout, "\t\t\tnode, policy and number of processes.\n");
+		fprintf(stdout, "\t\tcan be used when displaying different batch of\n");
+		fprintf(stdout, "\t\tapplications by script.\n");
+		fprintf(stdout, "\t-C\tShows other jobs of the same application,\n");
+		fprintf(stdout, "\t\tnode, policy and number of processes.\n");
 		exit(1);
 	}
 
 	for (i = 2; i < argc; ++i) {
-		if (!csv)
-			csv = ((strcmp(argv[i], "-C") == 0) ||
-				   (strcmp(argv[i], "--csv") == 0));
-		if (!color) {
-			color = (strcmp(argv[i], "-P") == 0);
+		if (!opt_c)
+			opt_c = (strcmp(argv[i], "-C") == 0);
+		if (!opt_p) {
+			opt_p = (strcmp(argv[i], "-P") == 0);
 
-			if (color) {
-				color = atoi(argv[i + 1]) % 6;
+			if (opt_p) {
+				opt_p = atoi(argv[i + 1]) % 6;
 			}
 		}
 	}
@@ -87,7 +86,7 @@ void main(int argc,char *argv[])
 	node_name = argv[1];
 
 	if (get_ear_conf_path(buffer) == EAR_ERROR) {
-		printf("Error getting ear.conf path\n");
+		printf("ERROR while getting ear.conf path\n");
 		exit(0);
 	}
 
@@ -101,8 +100,13 @@ void main(int argc,char *argv[])
 	num_apps = db_read_applications(&apps, 1, 50, node_name);
 
 	//
-	if (!csv) {
+	if (!opt_c) {
 		tprintf_init(stdout, STR_MODE_COL, "12 10 10 8 8 8 30");
+
+		tprintf("Node name||Def. F.||Avg. F.||Seconds||Watts||GBS||CPI|||App name");
+		tprintf("---------||-------||-------||-------||-----||---||---|||--------");
+	} else {
+		fprintf(stderr, "Node name;Def. F.;Avg. F.;Seconds;Watts;GBS;CPI;App name\n");
 	}
 
 	while (num_apps > 0)
@@ -119,15 +123,15 @@ void main(int argc,char *argv[])
 				apps[i].node_id[10] = '\0';
 			}
 
-			if (csv) {
+			if (opt_c) {
 				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%s\n",
                     apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
                     apps[i].signature.time, apps[i].signature.DC_power,
                     apps[i].signature.GBS, apps[i].signature.CPI,
 					apps[i].job.app_id);
 			} else {
-				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf|| | %s",
-					paint[color], apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
+				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf|||%s",
+					paint[opt_p], apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
 					apps[i].signature.time, apps[i].signature.DC_power,
 					apps[i].signature.GBS, apps[i].signature.CPI,
 					apps[i].job.app_id);

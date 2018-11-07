@@ -27,23 +27,20 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <math.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
-#include <math.h>
-#include <unistd.h>
-
+#include <sys/types.h>
 #include <linux/limits.h>
 #include <common/types/coefficient.h>
 
-coefficient_t *coeffs;
-
+static coefficient_t *coeffs;
 
 void print_coefficients(coefficient_t *avg,int nump)
 {
@@ -52,7 +49,6 @@ void print_coefficients(coefficient_t *avg,int nump)
 		coeff_print(&avg[i]);
 	}
 }
-
 
 int main(int argc, char *argv[])
 {

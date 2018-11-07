@@ -35,6 +35,7 @@
 #include <common/string_enhanced.h>
 
 static const char *sym = STR_SYMBOL;
+static const char *sym_vis = STR_SYMBOL_VIS;
 static unsigned int format[STR_MAX_COLUMNS];
 static unsigned int columns;
 static unsigned int mode;
@@ -128,6 +129,7 @@ int tprintf_format()
     int len = strlen(tprintf_ibuf);
 	int chr = 0;
 	int col = 0;
+	int vis = 0;
     int i = 0;
 
 	if ((len >= STR_SIZE_BUFFER) || (columns == 0)) {
@@ -136,6 +138,16 @@ int tprintf_format()
 
     while(p1 && i < columns)
     {
+		// If it is a visible wall
+		if (vis)
+		{
+			p3[0] = '|';
+            p3[1] = ' ';
+            p3++;
+            p3++;
+			p2++;
+		}
+
     	// If color
 		if (mode == STR_MODE_COL) {
 			col = tprintf_color_open(&p2, &p3);
@@ -164,6 +176,9 @@ int tprintf_format()
 		if (p1 == &tprintf_ibuf[len]) {
 			break;
 		}
+
+		// Visible wall
+		vis = (strncmp(p2, sym_vis, strlen(sym_vis)) == 0);
 
         ++i;
         p1++;

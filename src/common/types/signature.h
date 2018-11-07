@@ -35,12 +35,12 @@
 #include <common/config.h>
 
 // 0: float
-// 1: double
-// 2: 128 float
-// 3: 128 double
-// 4: 256 float
-// 5: 256 double
-// 6: 512 float
+// 1: 128 float
+// 2: 256 float
+// 3: 512 float
+// 4: double
+// 5: 128 double
+// 6: 256 double
 // 7: 512 double
 #define FLOPS_EVENTS 8
 

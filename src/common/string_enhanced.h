@@ -35,6 +35,7 @@
 #define STR_MAX_COLUMNS		20
 #define STR_SIZE_BUFFER		PIPE_BUF
 #define STR_SYMBOL			"||"
+#define STR_SYMBOL_VIS		"|||"
 #define STR_RED				"<red>"
 #define STR_GRE 			"<gre>"
 #define STR_YLW 			"<ylw>"

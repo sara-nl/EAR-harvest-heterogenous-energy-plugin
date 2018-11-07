@@ -29,14 +29,14 @@ coeffs_jobproj: coeffs_jobproj.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 coeffs_quality: coeffs_quality.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
-coeffs_show: coeffs_show.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+coeffs_show: coeffs_show.c $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
 
 coeffs_null: coeffs_null.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
 
-coeffs_default: coeffs_default.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+coeffs_default: coeffs_default.c $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
 
 get_ear_events: get_ear_events.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
@@ -56,7 +56,7 @@ learning_validate: learning_validate.c $(ROOTDIR)/src/common/database.a $(COMMON
 ######## OPTIONS
 
 install:
-	cp coeffs_compute $(DESTDIR)/sbin/
+	cp $(BINARIES) $(DESTDIR)/bin/tools
 
 %.install: ;
 

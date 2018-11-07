@@ -1,9 +1,10 @@
 #!/bin/bash
 
-if [[ $# -ne 1 ]]
+if [[ $# -ne 2 ]]
 then
-        echo -e "Usage: hostlist"
+        echo -e "Usage: hostlist frequency"
         echo -e "\thostlist: a host name list file"
+		echo -e "\tfrequency: the reference frequency to project"
         exit 1
 fi
 
@@ -23,8 +24,11 @@ fi
 #
 export HOSTLIST="$(echo $(cat $1))"
 
+# Header
+$EAR_INSTALL_PATH/bin/tools/coeffs_quality -G -H
+
 #
 for i in ${HOSTLIST}
 do
-	$EAR_INSTALL_PATH/bin/tools/coeffs_quality ${i} 2100000 -G
+	$EAR_INSTALL_PATH/bin/tools/coeffs_quality ${i} ${2} -G
 done

@@ -38,7 +38,7 @@
 #define EAR_READ_ERROR          -4
 #define EAR_OPEN_ERROR			-5
 #define EAR_WRITE_ERROR			-6
-#define EAR_FILE_NOT_FOUND      -7
+//								-7
 #define EAR_NOT_INITIALIZED		-8
 #define EAR_NOT_READY		    -9
 #define EAR_BUSY				-10
@@ -92,6 +92,10 @@ int intern_error_num;
 	intern_error_num = error_num; \
 	intern_error_str = error_str; \
 	return state;
-#else
+
+#define state_print_error(id) \
+	printf("ERROR, state id: %d (errno: %d, strerrno: %s)\n", \
+		id, intern_error_num, intern_error_str)
+
 #endif //STATES_H
 

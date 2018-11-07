@@ -206,7 +206,7 @@ int eards_remote_connect(char *nodename,uint port)
                 getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
                 if (valopt)
                 {
-                    fprintf(stderr, "Error opening connection.");
+                    fprintf(stderr, "Error opening connection %s",nodename);
                     close(sfd);
                     continue;
                 }
@@ -249,7 +249,7 @@ int eards_new_job(application_t *new_job)
 	return send_command(&command);
 }
 
-int eards_end_job(job_id jid,job_id sid)
+int eards_end_job(job_id jid,job_id sid,int status)
 {
     request_t command;
 	command.node_dist = 0;
@@ -259,7 +259,8 @@ int eards_end_job(job_id jid,job_id sid)
     command.time_code = time(NULL);
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
-	eard_verbose(2,"command %u job_id %d step_id %d\n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
+	command.my_req.end_job.status=status;
+	eard_verbose(2,"command %u job_id %d step_id %d status %d\n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid,command.my_req.end_job.status);
 	return send_command(&command);
 }
 

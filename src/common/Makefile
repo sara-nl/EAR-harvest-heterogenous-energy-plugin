@@ -4,7 +4,7 @@ CFLAGS = -I$(SRCDIR) -fPIC $(CONSTANTS) -O3
 
 OBJS = environment.o \
        environment_common.o \
-       file_lock.o \
+       file.o \
        math_operations.o \
        sockets.o \
        string_enhanced.o \
@@ -36,7 +36,7 @@ environment.o: environment.c environment.h environment_common.h
 environment_common.o: environment_common.c environment_common.h
 	$(CC) $(CFLAGS) -c $<
 
-file_lock.o: file_lock.c file_lock.h
+file.o: file.c file.h
 	$(CC) $(CFLAGS) -c $<
 
 math_operations.o: math_operations.c math_operations.h

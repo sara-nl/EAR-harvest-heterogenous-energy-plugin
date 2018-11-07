@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/limits.h>
+#include <common/file.h>
 #include <common/sizes.h>
 #include <common/string_enhanced.h>
 #include <common/types/coefficient.h>
@@ -131,12 +132,12 @@ static void print()
 	tprintf_init(stderr, STR_MODE_DEF, "10 10 6 2 13 10 10 10 10 10");
 
 	//
-	tprintf("F. from||F. to||N||Av|| |  A|| B|| C|| D|| E|| F|| G");
+	tprintf("F. from||F. to||N||Av||| A|| B|| C|| D|| E|| F|| G");
 
 	//
 	for (i = 0; i < coeffs_max; ++i)
 	{
-		tprintf("%lu||%lu||%d||%d|| | %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
+		tprintf("%lu||%lu||%d||%d||| %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
 				coeffs_accum[i].pstate_ref, coeffs_accum[i].pstate, coeffs_num[i], coeffs_accum[i].available,
 				coeffs_accum[i].A, coeffs_accum[i].B, coeffs_accum[i].C,
 				coeffs_accum[i].D, coeffs_accum[i].E, coeffs_accum[i].F);
@@ -153,13 +154,6 @@ static void print()
  *
  */
 
-static int is_regular_file(const char *path)
-{
-	struct stat path_stat;
-	stat(path, &path_stat);
-	return S_ISREG(path_stat.st_mode);
-}
-
 static void write_coefficients()
 {
 	#define SZ_COEFF sizeof(coefficient_t)
@@ -170,6 +164,7 @@ static void write_coefficients()
     int i;
 
 	fprintf(stdout, "-----------------------------------------------------------------------------------------------------\n");	
+
 	if (!opt_o) {
 		sprintf(path_output, "%s/coeffs.default", path_root);
 	}
@@ -245,7 +240,7 @@ static void read_coefficients(int argc, char *argv[], int n_nodes)
 		/* The program reports coefficients in stdout and csv file */
 		sprintf(buffer, "%s/coeffs.%s", path_root, node_name);
 
-		if (is_regular_file(buffer))
+		if (file_is_regular(buffer))
 		{
 			read_file(buffer, node_name);
 		}

@@ -243,7 +243,7 @@ int read_application_text_file(char *path, application_t **apps, char is_extende
 	}
 
     if ((fd = fopen(path, "r")) == NULL) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     // Reading the header
@@ -323,7 +323,7 @@ int read_application_binary_file(char *path, application_t **apps)
 	}
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     // Getting the number
