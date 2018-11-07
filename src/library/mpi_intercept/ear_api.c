@@ -378,6 +378,7 @@ void ear_init()
 		update_configuration();	
 	}else{
 		earl_verbose(0,"Shared memory not present, not connecting with EARD");
+		notify_eard_connection(0);
 		my_id=1;
 	}	
 

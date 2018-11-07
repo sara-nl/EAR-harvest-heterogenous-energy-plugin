@@ -86,7 +86,7 @@ void main(int argc,char *argv[])
 	#if API_DEBUG
 	fprintf(stdout,"ear_end_job id %d step_id %d\n",jid,step_id);
 	#endif
-	eards_end_job(jid,step_id,0);
+	eards_end_job(jid,step_id);
 	eards_remote_disconnect();
 	exit(0);
 }
