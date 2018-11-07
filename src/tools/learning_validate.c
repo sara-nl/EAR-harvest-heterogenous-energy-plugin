@@ -49,7 +49,7 @@ char buffer[SZ_PATH];
 char buffer_nodename[256];
 
 //
-static int opt_s;
+static int opt_g;
 static int opt_h;
 
 //
@@ -78,7 +78,7 @@ static ulong min_freq;
 static void print_header()
 {
 	// If not general the header is printed
-	if (!opt_s)
+	if (!opt_g)
 	{
 		tprintf_init(stdout, STR_MODE_COL, "15 10 10 10");
 
@@ -112,7 +112,7 @@ static void print_individual(application_t *app)
     ulong freq;
     char *name;
 
-	if (opt_s) {
+	if (opt_g) {
 		return;
 	}
 
@@ -148,7 +148,7 @@ static void print_summary()
 	char *col_powe;
 	char *col_time;
 
-	if (n_apps == 0 || !opt_s) {
+	if (n_apps == 0 || !opt_g) {
 		return;
 	}
 
@@ -274,7 +274,7 @@ static void usage(int argc, char *argv[])
 		fprintf(stdout, "Usage: %s node.name [OPTIONS...]\n\n", argv[0]);
 		fprintf(stdout, "  node.name is the name of the node to analyze\n");
 		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-S \tShows one lined summary \n");
+		fprintf(stdout, "\t-G \tShows one lined general summary \n");
 		fprintf(stdout, "\t-H \tShows the header in one lined summary mode.\n");
 
 		exit(1);
@@ -284,12 +284,12 @@ static void usage(int argc, char *argv[])
 	strcpy(buffer_nodename, argv[1]);
 
 	// Flags
-	while ((c = getopt (argc, argv, "SH")) != -1)
+	while ((c = getopt (argc, argv, "GH")) != -1)
 	{
 		switch (c)
 		{
 			case 'G':
-				opt_s = 1;
+				opt_g = 1;
 				break;
 			case 'H':
                 opt_h = 1;

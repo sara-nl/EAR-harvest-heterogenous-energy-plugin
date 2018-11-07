@@ -510,8 +510,8 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "\t-A\tAdds also the applications database.\n");
 		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
 		fprintf(stdout, "\t-D\tUses the default coefficients.\n");
-		fprintf(stdout, "\t-G\tShows only the opt_g medium error.\n");
-		fprintf(stdout, "\t-H\tShows the header when summary is enabled.\n");
+		fprintf(stdout, "\t-G\tShows one lined general summary.\n");
+		fprintf(stdout, "\t-H\tShows the header when general summary is enabled.\n");
 		fprintf(stdout, "\t\tWhen not, just hides the header.\n");
 		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
 		fprintf(stdout, "\t-S\tShows the medium and opt_g errors.\n");
