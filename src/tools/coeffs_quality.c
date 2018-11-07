@@ -103,13 +103,17 @@ static int find(application_t *apps, int n_apps, char *app_id, uint frq_base)
 	return -1;
 }
 
-static application_t *merge()
+static void merge()
 {
 	char *app_id;
 	double cpi, tpi, pow, tim, counter;
 	int equal_id, equal_f;
 	int i, j, k;
 	uint freq;
+
+	if (n_apps == 0 || n_coeffs == 0) {
+		return;
+	}
 
 	// n_apps * n_coeffs * (cpi + time + power)
 	n_prjs = n_apps * n_coeffs * 3;
@@ -168,14 +172,16 @@ static application_t *merge()
 	}
 
 	n_mrgd = j;
-
-	return mrgd;
 }
 
 static void compute()
 {
 	double cpi_sign, tpi_sign, tim_sign, pow_sign;
 	int c, a, n, i;
+
+	if (n_apps == 0 || n_coeffs == 0) {
+		return;
+	}
 
 	// Initializing columns
 	for (a = 0; a < n_mrgd; ++a)
@@ -262,13 +268,41 @@ void print()
 {
 	#define LINE "-----------------------------------------------------------------------------------------------------\n"
 	int c, a, n, i;
-
-	if (opt_c && !opt_g && !opt_h) {
-		fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+	char *col_time;
+	char *col_powe;
+	
+	// Headers
+	if (opt_c) {
+		if (!opt_g) {
+			fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+		} else if(opt_g && opt_h) {
+			fprintf(stderr, "Node name;Freq. from;T. Err.;P. Err.\n");
+		}
 	}
 
 	if (!opt_c) {
 		tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+
+		if (opt_g && opt_h) {
+			tprintf("Node name||Frequency|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err");
+			tprintf("---------||---------|| | -------||-------||------|| | -------||-------||------");
+		}
+	}
+
+
+	// When no apps or coeffs found
+	if (n_apps == 0 || n_coeffs == 0)
+	{
+		if (opt_g && !opt_h)
+		{
+        	if (opt_c) {
+            	fprintf(stderr, "%s;-;-;-\n", name_node);
+        	} else {
+            	tprintf("%s||-|| | -||-||-|| | -||-||-", name_node);
+        	}
+		}
+
+		return;
 	}
 
 	for (a = 0; !opt_g && a < n_mrgd; ++a)
@@ -287,7 +321,7 @@ void print()
 				continue;
 			}
 
-			if (!opt_h && !opt_c) {
+			if (!opt_c) {
 				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
 					mrgd[a].job.app_id, mrgd[a].signature.def_f);
 			}
@@ -306,29 +340,34 @@ void print()
 					{
 						application_t *m = &mrgd[n];
 
-						if ((!opt_s || (opt_s && !opt_h)) && opt_c)
+						if ((!opt_s || (opt_s)) && opt_c)
 						{
 							fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
 								mrgd[a].job.app_id, mrgd[a].signature.def_f, coeffs[c].pstate,
 								m->signature.time    , prjs_b[c + 1], errs_b[c + 1],
 								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
 						}
-						else if ((!opt_s || (opt_s && !opt_h)))
+						else if ((!opt_s || opt_s))
 						{
-							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
+							col_time = (errs_b[c+1] < 6.0) ? "": STR_YLW;
+							col_powe = (errs_b[c+2] < 6.0) ? "": STR_YLW;
+							col_time = (errs_b[c+1] < 8.0) ? col_time: STR_RED;
+           					col_powe = (errs_b[c+2] < 8.0) ? col_powe: STR_RED;
+
+							tprintf("->||%lu|| | %0.2lf||%0.2lf||%s%0.2lf|| | %0.2lf||%0.2lf||%s%0.2lf",
 								coeffs[c].pstate,
-								m->signature.time    , prjs_b[c + 1], errs_b[c + 1],
-								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
+								m->signature.time    , prjs_b[c + 1], col_time, errs_b[c + 1],
+								m->signature.DC_power, prjs_b[c + 2], col_powe, errs_b[c + 2]);
 						}
 					}
 					else
 					{
-						if (!opt_h && opt_c)
+						if (opt_c)
 						{
 							fprintf(stderr, "%s;%s;--;%lu;--;--;--;--;--;--\n",
 								name_node, mrgd[a].job.app_id, coeffs[c].pstate);
 						}
-						else if (!opt_h)
+						else
 						{
 							tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[c].pstate);
 						}
@@ -339,15 +378,15 @@ void print()
 	}
 
 	// Medium error per coefficient
-	if (opt_s && !opt_h) {
+	if (opt_s) {
 		fprintf(stdout, LINE);
 	}
 
 	if (opt_s)
 	{
-		if (opt_c && !opt_h) {
+		if (opt_c) {
 			fprintf(stderr, "Freq. From;Freq. To;T. Err;P. Err\n");
-		} else if (!opt_h) {
+		} else {
 			tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
 		}
 	}
@@ -360,8 +399,13 @@ void print()
 				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf\n",
 					name_node, frq_base, coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
 			} else {
-				tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-					coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
+				col_time = (errs_med[i+1] < 6.0) ? "": STR_YLW;
+	            col_powe = (errs_med[i+2] < 6.0) ? "": STR_YLW;
+	            col_time = (errs_med[i+1] < 8.0) ? col_time: STR_RED;
+	            col_powe = (errs_med[i+2] < 8.0) ? col_powe: STR_RED;
+
+				tprintf("->||%lu|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
+					coeffs[c].pstate, col_time, errs_med[i+1], col_powe, errs_med[i+2]);
 			}
 		}
 	}
@@ -373,8 +417,13 @@ void print()
 			fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf\n",
 				name_node, frq_base, frq_base, errs_gen[1], errs_gen[2]);
 		} else {
-			tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-				frq_base, errs_gen[1], errs_gen[2]);
+			col_time = (errs_gen[1] < 6.0) ? "": STR_YLW;
+            col_powe = (errs_gen[2] < 6.0) ? "": STR_YLW;
+            col_time = (errs_gen[1] < 8.0) ? col_time: STR_RED;
+            col_powe = (errs_gen[2] < 8.0) ? col_powe: STR_RED;
+
+			tprintf("general error||%lu|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
+				frq_base, col_time, errs_gen[1], col_powe, errs_gen[2]);
 		}
 	}
 
@@ -383,9 +432,15 @@ void print()
 		if (opt_c) {
 			fprintf(stderr, "%s;%lu;%0.2lf;%0.2lf\n",
 				name_node, frq_base, errs_gen[1], errs_gen[2]);
-		} else {
-			tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-				name_node, frq_base, errs_gen[1], errs_gen[2]);
+		} else
+		{
+			col_time = (errs_gen[1] < 6.0) ? "": STR_YLW;
+			col_powe = (errs_gen[2] < 6.0) ? "": STR_YLW;
+			col_time = (errs_gen[1] < 8.0) ? col_time: STR_RED;
+			col_powe = (errs_gen[2] < 8.0) ? col_powe: STR_RED;
+
+			tprintf("%s||%lu|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
+				name_node, frq_base, col_time, errs_gen[1], col_powe, errs_gen[2]);
 		}
 	}
 }
@@ -410,10 +465,10 @@ void read_applications()
 	if (n_appsn <= 0)
 	{
 		if (!opt_g) {
-			fprintf(stderr, "No learning apps found for the node '%s'\n", name_node);
+			fprintf(stderr, "ERROR, no learning apps found for the node '%s'\n", name_node);
 		}
 
-		exit(1);
+		return;
 	}
 
 	
@@ -441,9 +496,13 @@ void read_coefficients()
 	//
 	island = get_node_island(&conf, node);
 
-	if (island == EAR_ERROR) {
-		fprintf(stderr, "no island found for node %s, exiting\n", node);
-		exit(1);
+	if (island == EAR_ERROR)
+	{
+		if (!opt_g)
+		{
+			fprintf(stderr, "ERROR, no island found for node %s\n", node);
+			return;
+		}
 	}
 
 	// If file is custom
@@ -455,7 +514,7 @@ void read_coefficients()
 	else if (!opt_d)
 	{
 		sprintf(path_coeffs, "%s/island%d/coeffs.%s",
-				conf.earlib.coefficients_pathname, island, node);
+			conf.earlib.coefficients_pathname, island, node);
 		//
 		n_coeffs = coeff_file_read(path_coeffs, &coeffs);
 	}
@@ -470,8 +529,9 @@ void read_coefficients()
 		
 		if (n_coeffs <= 0)
 		{
-			fprintf(stderr, "no default coefficients found, exiting\n");	
-			exit(1);
+			if (!opt_g) {
+				fprintf(stderr, "ERROR, no default coefficients found\n");
+			}
 		}
 	}
 }
@@ -495,10 +555,8 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "\t-A\tAdds also the applications database.\n");
 		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
 		fprintf(stdout, "\t-D\tUses the default coefficients.\n");
-		fprintf(stdout, "\t-G\tShows only the opt_g medium error.\n");
-		fprintf(stdout, "\t-H\tHides the applications projections and error.\n");
-		fprintf(stdout, "\t\twhen summary is enabled. When summary is not\n");
-		fprintf(stdout, "\t\tenabled, just hides the header.\n");
+		fprintf(stdout, "\t-G\tShows one lined general summary.\n");
+		fprintf(stdout, "\t-H\tShows the header when general summary is enabled.\n");
 		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
 		fprintf(stdout, "\t-S\tShows the medium and opt_g errors.\n");
 		exit(1);
@@ -544,7 +602,6 @@ void usage(int argc, char *argv[])
 	//
 
 	if (opt_g) {
-		opt_h = 1;
 		opt_s = 0;
 	}
 
@@ -559,7 +616,7 @@ void init()
 	get_ear_conf_path(buffer);
 
 	if (read_cluster_conf(buffer, &conf) != EAR_SUCCESS){
-		fprintf(stderr, "Error reading cluster configuration.\n");
+		fprintf(stderr, "ERROR while reading cluster configuration.\n");
 		exit(1);
 	}
 

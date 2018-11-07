@@ -26,9 +26,9 @@ export HOSTLIST="$(echo $(cat $1))"
 #
 color="0"
 
-$EAR_INSTALL_PATH/bin/tools/learning_validate nonode -G -H
+$EAR_INSTALL_PATH/bin/tools/learning_validate -G -H
 
 for i in ${HOSTLIST}
 do
-	$EAR_INSTALL_PATH/bin/tools/learning_validate -G
+	$EAR_INSTALL_PATH/bin/tools/learning_validate ${i} -G
 done

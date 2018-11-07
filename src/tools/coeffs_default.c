@@ -132,12 +132,12 @@ static void print()
 	tprintf_init(stderr, STR_MODE_DEF, "10 10 6 2 13 10 10 10 10 10");
 
 	//
-	tprintf("F. from||F. to||N||Av|| |  A|| B|| C|| D|| E|| F|| G");
+	tprintf("F. from||F. to||N||Av||| A|| B|| C|| D|| E|| F|| G");
 
 	//
 	for (i = 0; i < coeffs_max; ++i)
 	{
-		tprintf("%lu||%lu||%d||%d|| | %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
+		tprintf("%lu||%lu||%d||%d||| %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
 				coeffs_accum[i].pstate_ref, coeffs_accum[i].pstate, coeffs_num[i], coeffs_accum[i].available,
 				coeffs_accum[i].A, coeffs_accum[i].B, coeffs_accum[i].C,
 				coeffs_accum[i].D, coeffs_accum[i].E, coeffs_accum[i].F);
@@ -164,6 +164,7 @@ static void write_coefficients()
     int i;
 
 	fprintf(stdout, "-----------------------------------------------------------------------------------------------------\n");	
+
 	if (!opt_o) {
 		sprintf(path_output, "%s/coeffs.default", path_root);
 	}
