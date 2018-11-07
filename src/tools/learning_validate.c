@@ -80,10 +80,10 @@ static void print_header()
 	// If not general the header is printed
 	if (!opt_g)
 	{
-		tprintf_init(stdout, STR_MODE_COL, "15 10 10 10");
+		tprintf_init(stdout, STR_MODE_COL, "10 10 10 100");
 
-		tprintf("Application|||Time||Power||Bandwidth");
-		tprintf("-----------|||----||-----||---------");
+		tprintf("Time||Power||Bandwidth|||Application");
+		tprintf("----||-----||---------|||-----------");
 
 		return;
 	}
@@ -134,8 +134,8 @@ static void print_individual(application_t *app)
     col_bwth = (warn_bwth == 0) ? "": STR_RED;
     
     if (warn_time || warn_powe || warn_bwth)	{
-        tprintf("%s|||%s%0.2lf||%s%0.2lf||%s%0.2lf", name,
-			col_time, time, col_powe, powe, col_bwth, bwth);
+        tprintf("%s%0.2lf||%s%0.2lf||%s%0.2lf|||%s",
+			col_time, time, col_powe, powe, col_bwth, bwth, name);
     }
 }
 
@@ -148,7 +148,18 @@ static void print_summary()
 	char *col_powe;
 	char *col_time;
 
-	if (n_apps == 0 || !opt_g) {
+	if (!opt_g) {
+		return;
+	}
+
+	if (n_apps == 0 && opt_h) {
+		return;
+	}
+
+	if (n_apps == 0)
+	{
+		tprintf("%s|||-||-||-|||-||-||-|||-||-||-",
+            buffer_nodename);
 		return;
 	}
 
@@ -247,7 +258,8 @@ static void read_applications()
 	//
 	n_apps = db_read_applications(&apps_aux, 1, 1000, buffer_nodename);
 
-	if (n_apps == 0) {
+	if (n_apps <= 0) {
+		n_apps = 0;
 		return;
 	}
 

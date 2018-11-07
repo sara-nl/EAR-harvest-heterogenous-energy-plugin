@@ -269,15 +269,37 @@ void print()
 	#define LINE "-----------------------------------------------------------------------------------------------------\n"
 	int c, a, n, i;
 
-	if (opt_c && !opt_g && !opt_h) {
-		fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+	// Headers
+	if (opt_c) {
+		if (!opt_g) {
+			fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+		} else if(opt_g && opt_h) {
+			fprintf(stderr, "Node name;Freq. from;T. Err.;P. Err.\n");
+		}
 	}
 
 	if (!opt_c) {
 		tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+
+		if (opt_g && opt_h) {
+			tprintf("Node name||Frequency|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err");
+			tprintf("---------||---------|| | -------||-------||------|| | -------||-------||------");
+		}
 	}
 
-	if (n_apps == 0 || n_coeffs == 0) {
+
+	// When no apps or coeffs found
+	if (n_apps == 0 || n_coeffs == 0)
+	{
+		if (opt_g && !opt_h)
+		{
+        	if (opt_c) {
+            	fprintf(stderr, "%s;-;-;-\n", name_node);
+        	} else {
+            	tprintf("%s||-|| | -||-||-|| | -||-||-", name_node);
+        	}
+		}
+
 		return;
 	}
 
@@ -297,7 +319,7 @@ void print()
 				continue;
 			}
 
-			if (!opt_h && !opt_c) {
+			if (!opt_c) {
 				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
 					mrgd[a].job.app_id, mrgd[a].signature.def_f);
 			}
@@ -316,14 +338,14 @@ void print()
 					{
 						application_t *m = &mrgd[n];
 
-						if ((!opt_s || (opt_s && !opt_h)) && opt_c)
+						if ((!opt_s || (opt_s)) && opt_c)
 						{
 							fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
 								mrgd[a].job.app_id, mrgd[a].signature.def_f, coeffs[c].pstate,
 								m->signature.time    , prjs_b[c + 1], errs_b[c + 1],
 								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
 						}
-						else if ((!opt_s || (opt_s && !opt_h)))
+						else if ((!opt_s || opt_s))
 						{
 							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
 								coeffs[c].pstate,
@@ -333,12 +355,12 @@ void print()
 					}
 					else
 					{
-						if (!opt_h && opt_c)
+						if (opt_c)
 						{
 							fprintf(stderr, "%s;%s;--;%lu;--;--;--;--;--;--\n",
 								name_node, mrgd[a].job.app_id, coeffs[c].pstate);
 						}
-						else if (!opt_h)
+						else
 						{
 							tprintf("->||%lu|| | -||-||-|| | -||-||-", coeffs[c].pstate);
 						}
@@ -349,15 +371,15 @@ void print()
 	}
 
 	// Medium error per coefficient
-	if (opt_s && !opt_h) {
+	if (opt_s) {
 		fprintf(stdout, LINE);
 	}
 
 	if (opt_s)
 	{
-		if (opt_c && !opt_h) {
+		if (opt_c) {
 			fprintf(stderr, "Freq. From;Freq. To;T. Err;P. Err\n");
-		} else if (!opt_h) {
+		} else {
 			tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
 		}
 	}
@@ -512,7 +534,6 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "\t-D\tUses the default coefficients.\n");
 		fprintf(stdout, "\t-G\tShows one lined general summary.\n");
 		fprintf(stdout, "\t-H\tShows the header when general summary is enabled.\n");
-		fprintf(stdout, "\t\tWhen not, just hides the header.\n");
 		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
 		fprintf(stdout, "\t-S\tShows the medium and opt_g errors.\n");
 		exit(1);
@@ -558,7 +579,6 @@ void usage(int argc, char *argv[])
 	//
 
 	if (opt_g) {
-		opt_h = 1;
 		opt_s = 0;
 	}
 
