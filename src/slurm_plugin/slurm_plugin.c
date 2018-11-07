@@ -327,7 +327,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 				// EAR == 0: nothing
 				// EAR == whatever: enable (bug protection)
 				if (!isenv_local("EAR", "0")) {
-					snprintf("EAR", "1", 1);
+					setenv_local("EAR", "1", 1);
 				} 
 			// If disabled by default or de administrator have misswritten
 			} else {
@@ -335,7 +335,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 				// EAR == 0: disable
 				// EAR == whatever: disable (bug protection)
 				if (!isenv_local("EAR", "1")) {
-					snprintf("EAR", "0", 1);
+					setenv_local("EAR", "0", 1);
 				}
 			}
 		}
@@ -345,7 +345,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			found_tmpdir = 1;
 
 			plug_verbose(sp, 2, "plugstack found temporal files in path '%s'", tmp_dir);
-			snprintf("EAR_TMPDIR", tmp_dir, 1);
+			setenv_local("EAR_TMPDIR", tmp_dir, 1);
 		}
 		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
 		{
@@ -353,7 +353,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			found_predir = 1;
 
 			plug_verbose(sp, 2, "plugstack found prefix in path '%s'", pre_dir);
-			snprintf("EAR_PREDIR", pre_dir, 1);
+			setenv_local("EAR_PREDIR", pre_dir, 1);
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
 		{
@@ -408,8 +408,8 @@ int _read_user_info(spank_t sp)
 	}
 
 	// To environment variables
-	snprintf("EAR_USER", upw->pw_name, 1);
-	snprintf("EAR_GROUP", gpw->gr_name, 1);
+	setenv_local("EAR_USER", upw->pw_name, 1);
+	setenv_local("EAR_GROUP", gpw->gr_name, 1);
 
 	plug_verbose(sp, 2, "user detected '%u -> %s'", uid, upw->pw_name);
 	plug_verbose(sp, 2, "user group detected '%u -> %s'", gid, gpw->gr_name);
@@ -442,7 +442,7 @@ int _set_ld_preload(spank_t sp)
 	}
 
 	//
-	snprintf("LD_PRELOAD", buffer2, 1);
+	setenv_local("LD_PRELOAD", buffer2, 1);
 
 	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
@@ -525,8 +525,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_user_init");
 
-	if(!_is_plugin_enabled(sp))
-	{
+	if(!_is_plugin_enabled(sp)) {
 		return (ESPANK_SUCCESS);
 	}
 	
@@ -534,7 +533,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN"))
 	{
 		//
-		remote_eard_report_start(sp);
+		_remote_library_disable(sp);
 		//
 		remote_print_environment(sp);
 	}

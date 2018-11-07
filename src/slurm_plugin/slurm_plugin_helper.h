@@ -50,8 +50,11 @@ int verbosity_test(spank_t sp, int level);
 // Environment
 void print_local_environment(spank_t sp);
 void print_remote_environment(spank_t sp);
+
+// Environment variables
 void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source, int destiny_length);
+
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
 int unsetenv_remote(spank_t sp, char *name);
@@ -61,5 +64,9 @@ int existenv_local(char *name);
 int existenv_remote(spank_t sp, char *name);
 int isenv_local(char *name, char *value);
 int isenv_remote(spank_t sp, char *name, char *value);
+
+int setenv_control(spank_t sp, char *name, char *value, int replace);
+int getenv_control(spank_t sp, char *name, char *value, int length);
+int isenv_control(spank_t sp, char *name, char *value);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H
