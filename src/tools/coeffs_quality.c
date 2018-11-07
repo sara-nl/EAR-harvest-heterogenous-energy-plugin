@@ -103,13 +103,17 @@ static int find(application_t *apps, int n_apps, char *app_id, uint frq_base)
 	return -1;
 }
 
-static application_t *merge()
+static void merge()
 {
 	char *app_id;
 	double cpi, tpi, pow, tim, counter;
 	int equal_id, equal_f;
 	int i, j, k;
 	uint freq;
+
+	if (n_apps == 0 || n_coeffs == 0) {
+		return;
+	}
 
 	// n_apps * n_coeffs * (cpi + time + power)
 	n_prjs = n_apps * n_coeffs * 3;
@@ -168,14 +172,16 @@ static application_t *merge()
 	}
 
 	n_mrgd = j;
-
-	return mrgd;
 }
 
 static void compute()
 {
 	double cpi_sign, tpi_sign, tim_sign, pow_sign;
 	int c, a, n, i;
+
+	if (n_apps == 0 || n_coeffs == 0) {
+		return;
+	}
 
 	// Initializing columns
 	for (a = 0; a < n_mrgd; ++a)
@@ -269,6 +275,10 @@ void print()
 
 	if (!opt_c) {
 		tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+	}
+
+	if (n_apps == 0 || n_coeffs == 0) {
+		return;
 	}
 
 	for (a = 0; !opt_g && a < n_mrgd; ++a)
@@ -410,10 +420,10 @@ void read_applications()
 	if (n_appsn <= 0)
 	{
 		if (!opt_g) {
-			fprintf(stderr, "No learning apps found for the node '%s'\n", name_node);
+			fprintf(stderr, "ERROR, no learning apps found for the node '%s'\n", name_node);
 		}
 
-		exit(1);
+		return;
 	}
 
 	
@@ -441,9 +451,13 @@ void read_coefficients()
 	//
 	island = get_node_island(&conf, node);
 
-	if (island == EAR_ERROR) {
-		fprintf(stderr, "no island found for node %s, exiting\n", node);
-		exit(1);
+	if (island == EAR_ERROR)
+	{
+		if (!opt_g)
+		{
+			fprintf(stderr, "ERROR, no island found for node %s\n", node);
+			return;
+		}
 	}
 
 	// If file is custom
@@ -455,7 +469,7 @@ void read_coefficients()
 	else if (!opt_d)
 	{
 		sprintf(path_coeffs, "%s/island%d/coeffs.%s",
-				conf.earlib.coefficients_pathname, island, node);
+			conf.earlib.coefficients_pathname, island, node);
 		//
 		n_coeffs = coeff_file_read(path_coeffs, &coeffs);
 	}
@@ -470,8 +484,9 @@ void read_coefficients()
 		
 		if (n_coeffs <= 0)
 		{
-			fprintf(stderr, "no default coefficients found, exiting\n");	
-			exit(1);
+			if (!opt_g) {
+				fprintf(stderr, "ERROR, no default coefficients found\n");
+			}
 		}
 	}
 }
@@ -496,9 +511,8 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
 		fprintf(stdout, "\t-D\tUses the default coefficients.\n");
 		fprintf(stdout, "\t-G\tShows only the opt_g medium error.\n");
-		fprintf(stdout, "\t-H\tHides the applications projections and error.\n");
-		fprintf(stdout, "\t\twhen summary is enabled. When summary is not\n");
-		fprintf(stdout, "\t\tenabled, just hides the header.\n");
+		fprintf(stdout, "\t-H\tShows the header when summary is enabled.\n");
+		fprintf(stdout, "\t\tWhen not, just hides the header.\n");
 		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
 		fprintf(stdout, "\t-S\tShows the medium and opt_g errors.\n");
 		exit(1);
@@ -559,7 +573,7 @@ void init()
 	get_ear_conf_path(buffer);
 
 	if (read_cluster_conf(buffer, &conf) != EAR_SUCCESS){
-		fprintf(stderr, "Error reading cluster configuration.\n");
+		fprintf(stderr, "ERROR while reading cluster configuration.\n");
 		exit(1);
 	}
 

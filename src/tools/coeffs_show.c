@@ -47,6 +47,7 @@ static char buffer[SZ_PATH];
 void print_coefficients(coefficient_t *avg, int n_pstates)
 {
 	int i;
+
 	for (i=0;i<n_pstates;i++){
 		coeff_print(&avg[i]);
 	}
