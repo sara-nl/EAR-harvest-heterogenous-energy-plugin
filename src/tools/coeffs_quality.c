@@ -268,7 +268,9 @@ void print()
 {
 	#define LINE "-----------------------------------------------------------------------------------------------------\n"
 	int c, a, n, i;
-
+	char *col_time;
+	char *col_powe;
+	
 	// Headers
 	if (opt_c) {
 		if (!opt_g) {
@@ -347,10 +349,15 @@ void print()
 						}
 						else if ((!opt_s || opt_s))
 						{
-							tprintf("->||%lu|| | %0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf",
+							col_time = (errs_b[c+1] < 6.0) ? "": STR_YLW;
+							col_powe = (errs_b[c+2] < 6.0) ? "": STR_YLW;
+							col_time = (errs_b[c+1] < 8.0) ? col_time: STR_RED;
+           					col_powe = (errs_b[c+2] < 8.0) ? col_powe: STR_RED;
+
+							tprintf("->||%lu|| | %0.2lf||%0.2lf||%s%0.2lf|| | %0.2lf||%0.2lf||%s%0.2lf",
 								coeffs[c].pstate,
-								m->signature.time    , prjs_b[c + 1], errs_b[c + 1],
-								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
+								m->signature.time    , prjs_b[c + 1], col_time, errs_b[c + 1],
+								m->signature.DC_power, prjs_b[c + 2], col_powe, errs_b[c + 2]);
 						}
 					}
 					else
@@ -392,8 +399,13 @@ void print()
 				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf\n",
 					name_node, frq_base, coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
 			} else {
-				tprintf("->||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-					coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
+				col_time = (errs_med[i+1] < 6.0) ? "": STR_YLW;
+	            col_powe = (errs_med[i+2] < 6.0) ? "": STR_YLW;
+	            col_time = (errs_med[i+1] < 8.0) ? col_time: STR_RED;
+	            col_powe = (errs_med[i+2] < 8.0) ? col_powe: STR_RED;
+
+				tprintf("->||%lu|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
+					coeffs[c].pstate, col_time, errs_med[i+1], col_powe, errs_med[i+2]);
 			}
 		}
 	}
@@ -405,8 +417,13 @@ void print()
 			fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf\n",
 				name_node, frq_base, frq_base, errs_gen[1], errs_gen[2]);
 		} else {
-			tprintf("general error||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-				frq_base, errs_gen[1], errs_gen[2]);
+			col_time = (errs_gen[1] < 6.0) ? "": STR_YLW;
+            col_powe = (errs_gen[2] < 6.0) ? "": STR_YLW;
+            col_time = (errs_gen[1] < 8.0) ? col_time: STR_RED;
+            col_powe = (errs_gen[2] < 8.0) ? col_powe: STR_RED;
+
+			tprintf("general error||%lu|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
+				frq_base, col_time, errs_gen[1], col_powe, errs_gen[2]);
 		}
 	}
 
@@ -415,9 +432,15 @@ void print()
 		if (opt_c) {
 			fprintf(stderr, "%s;%lu;%0.2lf;%0.2lf\n",
 				name_node, frq_base, errs_gen[1], errs_gen[2]);
-		} else {
-			tprintf("%s||%lu|| | -||-||%0.2lf|| | -||-||%0.2lf",
-				name_node, frq_base, errs_gen[1], errs_gen[2]);
+		} else
+		{
+			col_time = (errs_gen[1] < 6.0) ? "": STR_YLW;
+			col_powe = (errs_gen[2] < 6.0) ? "": STR_YLW;
+			col_time = (errs_gen[1] < 8.0) ? col_time: STR_RED;
+			col_powe = (errs_gen[2] < 8.0) ? col_powe: STR_RED;
+
+			tprintf("%s||%lu|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
+				name_node, frq_base, col_time, errs_gen[1], col_powe, errs_gen[2]);
 		}
 	}
 }
