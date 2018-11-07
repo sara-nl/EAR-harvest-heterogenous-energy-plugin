@@ -1,0 +1,8 @@
+ibm.o: ibm.c ../../../metrics/custom/hardware_info.h \
+ ../../../common/ear_verbose.h ../../../common/config.h
+lenovo_sd650.o: lenovo_sd650.c ../../../metrics/custom/hardware_info.h \
+ ../../../common/ear_verbose.h ../../../common/config.h \
+ ../../../common/states.h
+lenovo_nm.o: lenovo_nm.c ../../../metrics/custom/hardware_info.h \
+ ../../../common/ear_verbose.h ../../../common/config.h \
+ ../../../common/states.h

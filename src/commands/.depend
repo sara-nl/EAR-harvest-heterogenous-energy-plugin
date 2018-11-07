@@ -1,0 +1,24 @@
+ear_create_database.o: ear_create_database.c ../common/config.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/generic.h ../common/ear_verbose.h ../common/states.h
+ear_control.o: ear_control.c ../common/config.h ../common/states.h \
+ ../daemon/eard_rapi.h ../common/types/application.h \
+ ../common/types/job.h ../common/types/generic.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../daemon/eard_conf_rapi.h
+ear_acct.o: ear_acct.c ../common/config.h ../common/types/application.h \
+ ../common/types/job.h ../common/types/generic.h \
+ ../common/types/signature.h ../common/types/power_signature.h \
+ ../common/states.h ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/ear_verbose.h ../common/database/mysql_io_functions.h \
+ ../common/types/log.h ../common/types/loop.h \
+ ../common/types/gm_warning.h ../common/types/periodic_metric.h \
+ ../common/types/periodic_aggregation.h
+ear_report.o: ear_report.c ../common/states.h ../common/config.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/generic.h ../common/ear_verbose.h
