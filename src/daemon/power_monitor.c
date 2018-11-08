@@ -57,6 +57,10 @@
 #include <metrics/power_metrics/power_metrics.h>
 #include <metrics/custom/frequency.h>
 
+#if SYSLOG_MSG
+#include <syslog.h>
+#define MIN_POWER_TO_REPORT	70
+#endif
 
 #if DB_MYSQL
 #include <database_cache/eardbd_api.h>
@@ -154,6 +158,10 @@ void clean_job_environment(int id,int step_id)
 	unlink(ear_ping);
 	unlink(fd_lock_filename);
 	unlink(ear_commack);
+	#if SYSLOG_MSG
+	closelog();
+	#endif
+
 	
 
 }
@@ -659,7 +667,11 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	current_sample.avg_f=avg_f;
 	#endif	
 
-
+	#if SYSLOG_MSG
+	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< MIN_POWER_TO_REPORT)){
+		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
+	}
+	#endif
 	#if DB_MYSQL
 	if (my_cluster_conf.eard.use_mysql){
 		if (!my_cluster_conf.eard.use_eardbd){
@@ -759,6 +771,9 @@ void *eard_power_monitoring(void *noinfo)
 	aperf_periodic_avg_frequency_init_all_cpus();
 	#if REPORT_UNCORE
 	frequency_uncore_counters_start();
+	#endif
+	#if SYSLOG_MSG
+	openlog("eard",LOG_PID|LOG_PERROR,LOG_DAEMON);
 	#endif
 
 	/*
