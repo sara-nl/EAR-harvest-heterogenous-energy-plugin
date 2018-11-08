@@ -236,7 +236,8 @@ static int metrics_partial_stop(uint where)
 	}
 	aux_time = metrics_time();
 	/* Sometimes energy is not zero but power is not correct */
-	c_energy=ulong_diff_overflow(metrics_ipmi[LOO],aux_energy);
+	if (aux_energy>metrics_ipmi[LOO]) c_energy=aux_energy-metrics_ipmi[LOO];
+	else c_energy=ulong_diff_overflow(metrics_ipmi[LOO],aux_energy);
 	c_time=metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
 	/* energy is computed in mJ and time in usecs */
 	c_power=(float)(c_energy*1000.0)/(float)c_time;
