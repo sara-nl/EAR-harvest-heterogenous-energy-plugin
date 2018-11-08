@@ -190,7 +190,7 @@ node_data_t diff_node_energy(node_data_t end,node_data_t init)
 	if (end>init){ 
 		ret=end-init;
 	} else{
-		//VERBOSE("OVERFLOW DETECTED!\n");
+		ret=ulong_diff_overflow(init,end);
 	}
 	return ret;
 }

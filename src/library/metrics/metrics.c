@@ -200,20 +200,11 @@ static void metrics_global_stop()
 
 static void metrics_partial_start()
 {
-	#if 0
-	eards_node_dc_energy(&metrics_ipmi[LOO]);
-	metrics_usecs[LOO] = metrics_time();
-	eards_read_rapl(aux_rapl);
-	#endif
 	int i;
 	metrics_ipmi[LOO]=aux_energy;
 	metrics_usecs[LOO]=aux_time;
 	
 	eards_begin_compute_turbo_freq();
-	#if 0
-	eards_start_uncore();
-	eards_read_uncore(metrics_bandwith_init[LOO]);
-	#endif
 	//There is always a partial_stop before a partial_start, we can guarantee a previous uncore_read
 	copy_uncores(metrics_bandwith_init[LOO],metrics_bandwith_end[LOO],bandwith_elements);
 	for (i = 0; i < rapl_elements; i++) {
@@ -245,7 +236,7 @@ static int metrics_partial_stop(uint where)
 	}
 	aux_time = metrics_time();
 	/* Sometimes energy is not zero but power is not correct */
-	c_energy=aux_energy - metrics_ipmi[LOO];
+	c_energy=ulong_diff_overflow(metrics_ipmi[LOO],aux_energy);
 	c_time=metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
 	/* energy is computed in mJ and time in usecs */
 	c_power=(float)(c_energy*1000.0)/(float)c_time;
