@@ -51,7 +51,6 @@ char buffer_nodename[256];
 //
 static int opt_g;
 static int opt_h;
-static int opt_d;
 
 //
 static application_t *apps;
@@ -76,9 +75,31 @@ static ulong min_freq;
  *
  */
 
+static void print_header()
+{
+	// If not general the header is printed
+	if (!opt_g)
+	{
+		tprintf_init(stdout, STR_MODE_COL, "10 10 10 100");
+
+		tprintf("Time||Power||Bandwidth|||Application");
+		tprintf("----||-----||---------|||-----------");
+
+		return;
+	}
+
+	// If general
+	tprintf_init(stdout, STR_MODE_COL, "10 7 8 8 9 9 9 10 10 10");
+
+	// If header
+	if (opt_h) {
+		tprintf("Nodename|||#Apps||#Execs||#Times|||#Freqs||Max||Min|||W. tim.||W. pow.||W. gbs.");
+		tprintf("--------|||-----||------||------|||------||---||---|||-------||-------||-------");
+	}
+}
+
 static void print_individual(application_t *app)
 {
-    static int header = 1;
     char *col_time;
     char *col_powe;
     char *col_bwth;
@@ -111,21 +132,53 @@ static void print_individual(application_t *app)
     col_time = (warn_time == 0) ? "": STR_RED;
     col_powe = (warn_powe == 0) ? "": STR_RED;
     col_bwth = (warn_bwth == 0) ? "": STR_RED;
+    
+    if (warn_time || warn_powe || warn_bwth)	{
+        tprintf("%s%0.2lf||%s%0.2lf||%s%0.2lf|||%s",
+			col_time, time, col_powe, powe, col_bwth, bwth, name);
+    }
+}
+
+static void print_summary()
+{
+	int warn_bwth;
+	int warn_powe;
+	int warn_time;
+	char *col_bwth;
+	char *col_powe;
+	char *col_time;
+
+	if (!opt_g) {
+		return;
+	}
+
+	if (n_apps == 0 && opt_h) {
+		return;
+	}
+
+	if (n_apps == 0)
+	{
+		tprintf("%s|||-||-||-|||-||-||-|||-||-||-",
+            buffer_nodename);
+		return;
+	}
 
 	//
-    if (header) {
-        tprintf_init(stdout, STR_MODE_COL, "15 10 10 10");
+	warn_bwth = diff_450g + diff_000g;
+	warn_powe = diff_400w + diff_100w;
+	warn_time = diff_120s + diff_060s;
 
-        tprintf("Application|||Time||Power||Bandwidth");
-        tprintf("-----------|||----||-----||---------");
+	//
+	col_time = (warn_time == 0) ? "": STR_RED;
+	col_powe = (warn_powe == 0) ? "": STR_RED;
+	col_bwth = (warn_bwth == 0) ? "": STR_RED;
 
-        header = 0;
-    }
-
-    if (warn_time || warn_powe || warn_bwth)	{
-        tprintf("%s|||%s%0.2lf||%s%0.2lf||%s%0.2lf", name,
-			col_time, time, col_powe, powe, col_bwth, bwth);
-    }
+	// Table
+	tprintf("%s|||%d||%d||%0.2lf|||%d||%lu||%lu|||%s%d||%s%d||%s%d",
+			buffer_nodename, diff_apps, n_apps, diff_exfr,
+			diff_freq, max_freq, min_freq,
+			col_time, warn_time, col_powe, warn_powe, col_bwth, warn_bwth
+	);
 }
 
 static void analyze()
@@ -138,6 +191,10 @@ static void analyze()
 	int found_name;
 	int found_freq;
 	int a, i;
+
+	if (n_apps == 0) {
+		return;
+	}
 
 	//
 	max_freq = apps[0].job.def_f;
@@ -177,44 +234,6 @@ static void analyze()
 	diff_exfr = (double) n_apps / (double) diff_freq;
 }
 
-static void print_general()
-{
-	int warn_bwth;
-	int warn_powe;	
-	int warn_time;	
-	char *col_bwth;
-	char *col_powe;
-	char *col_time;
-
-	if (!opt_g) {
-		return;
-	}
-
-	//
-	warn_bwth = diff_450g + diff_000g;
-	warn_powe = diff_400w + diff_100w;
-	warn_time = diff_120s + diff_060s;
-
-	//
-	col_time = (warn_time == 0) ? "": STR_RED;
-    col_powe = (warn_powe == 0) ? "": STR_RED;
-    col_bwth = (warn_bwth == 0) ? "": STR_RED;
-
-	// Table
-	tprintf_init(stdout, STR_MODE_COL, "10 7 8 8 9 9 9 10 10 10");
-
-	if (opt_h) {
-    	tprintf("Nodename|||#Apps||#Execs||#Times|||#Freqs||Max||Min|||W. tim.||W. pow.||W. gbs.");
-    	tprintf("--------|||-----||------||------|||------||---||---|||-------||-------||-------");
-    }
-	
-	tprintf("%s|||%d||%d||%0.2lf|||%d||%lu||%lu|||%s%d||%s%d||%s%d",
-       	buffer_nodename, diff_apps, n_apps, diff_exfr,
-		diff_freq, max_freq, min_freq,
-		col_time, warn_time, col_powe, warn_powe, col_bwth, warn_bwth
-		);
-}
-
 /*
  *
  *
@@ -239,8 +258,9 @@ static void read_applications()
 	//
 	n_apps = db_read_applications(&apps_aux, 1, 1000, buffer_nodename);
 
-	if (n_apps == 0) {
-		exit(1);
+	if (n_apps <= 0) {
+		n_apps = 0;
+		return;
 	}
 
 	//
@@ -266,7 +286,8 @@ static void usage(int argc, char *argv[])
 		fprintf(stdout, "Usage: %s node.name [OPTIONS...]\n\n", argv[0]);
 		fprintf(stdout, "  node.name is the name of the node to analyze\n");
 		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-G \tSaves the default coefficients file in a\n");
+		fprintf(stdout, "\t-G \tShows one lined general summary \n");
+		fprintf(stdout, "\t-H \tShows the header in one lined summary mode.\n");
 
 		exit(1);
 	}
@@ -275,7 +296,7 @@ static void usage(int argc, char *argv[])
 	strcpy(buffer_nodename, argv[1]);
 
 	// Flags
-	while ((c = getopt (argc, argv, "GHD")) != -1)
+	while ((c = getopt (argc, argv, "GH")) != -1)
 	{
 		switch (c)
 		{
@@ -284,9 +305,6 @@ static void usage(int argc, char *argv[])
 				break;
 			case 'H':
                 opt_h = 1;
-                break;
-			case 'D':
-                opt_d = 1;
                 break;
 			case '?':
 				break;
@@ -302,9 +320,11 @@ int main(int argc, char *argv[])
 
 	read_applications();
 
+	print_header();
+
 	analyze();
 
-	print_general();
+	print_summary();
 
     return 0;
 }

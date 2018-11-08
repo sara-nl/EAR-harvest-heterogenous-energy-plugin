@@ -259,7 +259,9 @@ int eards_end_job(job_id jid,job_id sid)
     command.time_code = time(NULL);
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
-	eard_verbose(2,"command %u job_id %d step_id %d\n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
+//	command.my_req.end_job.status=status;
+	//eard_verbose(2,"command %u job_id %d step_id %d status %d\n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid,command.my_req.end_job.status);
+	eard_verbose(2,"command %u job_id %d step_id %d \n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
 	return send_command(&command);
 }
 

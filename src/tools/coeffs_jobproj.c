@@ -270,7 +270,7 @@ void read_coefficients()
 	//printf("%s %s %lu\n", apps[i].job.app_id, apps[i].node_id, apps[i].signature.time);
 
 		if (island == EAR_ERROR) {
-			fprintf(stderr, "no island found for node %s, exiting\n", node);
+			fprintf(stderr, "ERROR, no island found for node %s\n", node);
 			exit(1);
 		}
 
@@ -291,7 +291,7 @@ void read_coefficients()
 			cofs_n[i] = coeff_file_read(buffer, &cofs[i]);
 			
 			if (cofs_n[i] <= 0) {
-				fprintf(stderr, "no coefficients found for node %s, exiting\n", node);
+				fprintf(stderr, "no coefficients found for node %s\n", node);
 				exit(1);
 			}
 

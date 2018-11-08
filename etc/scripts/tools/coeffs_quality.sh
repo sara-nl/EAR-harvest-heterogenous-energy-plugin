@@ -24,6 +24,9 @@ fi
 #
 export HOSTLIST="$(echo $(cat $1))"
 
+# Header
+$EAR_INSTALL_PATH/bin/tools/coeffs_quality -G -H
+
 #
 for i in ${HOSTLIST}
 do
