@@ -285,30 +285,30 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     {
         if (avx)
         {
-            strcpy(header_format, "%6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s\n");
-            strcpy(line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf\n");
-            strcpy(mpi_line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s\n");
+            strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s\n");
+            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf\n");
+            strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s\n");
         }
         else
         {
-            strcpy(header_format, "%6s.%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n");
-            strcpy(line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n");
-            strcpy(mpi_line_format, "%8u.%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n");
+            strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n");
+            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n");
+            strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n");
         }
     }
     else
     {
         if (avx)
         {
-            strcpy(header_format, "%s.%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
-            strcpy(line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-            strcpy(mpi_line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s\n");
+            strcpy(header_format, "%s-%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
+            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
+            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s\n");
         }
         else
         {
-            strcpy(header_format, "%s.%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
-            strcpy(line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-            strcpy(mpi_line_format, "%u.%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf\n");
+            strcpy(header_format, "%s-%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
+            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
+            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf\n");
         }
     }
     if (avx)
@@ -373,6 +373,9 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_GBS /= current_apps;
                 avg_CPI /= current_apps;
                 avg_VPI /= current_apps;
+
+				if (avg_VPI == 0)
+					avg_VPI = -1;
 
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 {
@@ -442,6 +445,8 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             avg_CPI /= current_apps;
             avg_VPI /= current_apps;
 
+			if (avg_VPI == 0)
+				avg_VPI = -1;
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
             {
                 if (avx)
