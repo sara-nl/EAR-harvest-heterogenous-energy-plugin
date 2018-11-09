@@ -285,6 +285,9 @@ void print_database_conf(db_conf_t *conf);
 /** prints in the stderr the specific node configuration */
 void print_my_node_conf(my_node_conf_t *my_node_conf);
 
+int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
+int read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
+
 /** prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p);
 

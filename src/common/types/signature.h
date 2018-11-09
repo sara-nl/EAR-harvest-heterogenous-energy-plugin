@@ -77,4 +77,7 @@ void signature_copy(signature_t *destiny, signature_t *source);
 void signature_print_fd(int fd, signature_t *sig, char is_extended);
 void compute_vpi(double *vpi,signature_t *sig);
 
+int print_signature_fd_binary(int fd, signature_t *sig);
+int read_signature_fd_binary(int fd, signature_t *sig);
+
 #endif
