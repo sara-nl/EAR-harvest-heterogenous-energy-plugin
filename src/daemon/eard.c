@@ -1289,7 +1289,7 @@ void main(int argc,char *argv[])
 	int must_recover=new_service("eard");
 	if (must_recover){
 		eard_verbose(0,"We must recover from a crash");
-		// restore_eard_conf(&eard_dyn_conf);
+		 restore_eard_conf(&eard_dyn_conf);
 	}
 	/* After potential recoveries, we set the info in the shared memory */
     configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
