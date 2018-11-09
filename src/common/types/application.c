@@ -349,3 +349,12 @@ int read_application_binary_file(char *path, application_t **apps)
     *apps = apps_aux;
     return i;
 }
+
+int print_application_fd_binary(int fd,application_t *app)
+{
+	write(fd,app,sizeof(application_t));
+}
+int read_application_fd_binary(int fd,application_t *app)
+{
+	read(fd,app,sizeof(application_t));
+}

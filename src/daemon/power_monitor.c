@@ -825,3 +825,25 @@ void powermon_get_status(status_t *my_status)
 		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].th*100.0);
 	}
 }
+
+int print_powermon_app_fd_binary(int fd,powermon_app_t *app)
+{
+	print_application_fd_binary(fd,&app->app);
+	write(fd,&app->job_created,sizeof(uint));
+	print_energy_data_fd_binary(fd,&app->energy_init);
+		
+}
+int read_powermon_app_fd_binary(int fd,powermon_app_t *app)
+{
+	read_application_fd_binary(fd,&app->app);
+	read(fd,&app->job_created,sizeof(uint));
+	read_energy_data_fd_binary(fd,&app->energy_init);
+}
+
+void print_powermon_app(powermon_app_t *app)
+{
+	print_application(&app->app);
+	printf("job created %d\n",app->job_created);
+	print_energy_data(&app->energy_init);
+}
+

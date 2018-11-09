@@ -314,3 +314,11 @@ void print_energy_data(energy_data_t *e)
 	e->CPU_energy[0],e->CPU_energy[1]);
 }
 
+int print_energy_data_fd_binary(int fd, energy_data_t *ed)
+{
+	write(fd,ed,sizeof(energy_data_t));
+}
+int read_energy_data_fd_binary(int fd, energy_data_t *ed)
+{
+	read(fd,ed,sizeof(energy_data_t));
+}

@@ -97,4 +97,8 @@ node_data_t diff_node_energy(node_data_t end,node_data_t init);
 /** Computes the difference betwen two RAPL energy measurements */
 rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init);
 
+
+int print_energy_data_fd_binary(int fd, energy_data_t *ed);
+int read_energy_data_fd_binary(int fd, energy_data_t *ed);
+
 #endif

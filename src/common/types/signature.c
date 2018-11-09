@@ -77,3 +77,12 @@ void compute_vpi(double *vpi,signature_t *sig)
     else *vpi=0;
 }
 
+int print_signature_fd_binary(int fd, signature_t *sig)
+{
+    write(fd,sig,sizeof(signature_t));
+}
+int read_signature_fd_binary(int fd, signature_t *sig)
+{
+    read(fd,sig,sizeof(signature_t));
+}
+

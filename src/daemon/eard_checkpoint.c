@@ -54,22 +54,16 @@ void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 	sprintf(checkpoint_file,"%s/%s",eard_dyn_conf->cconf->tmp_dir,".eard_check");
 	eard_verbose(0,"Using checkpoint file %s",checkpoint_file);
 	old_mask=umask(0);	
-	fd=open(checkpoint_file,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR);
+	fd=open(checkpoint_file,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
 	if (fd<0){
 		eard_verbose(0,"Error creating checkpoint file (%s)",strerror(errno));
 		return;
 	}	
 	eard_verbose(0,"saving node conf");
 	print_my_node_conf(eard_dyn_conf->nconf);
-	if (write(fd,eard_dyn_conf->nconf,sizeof(my_node_conf_t))!=sizeof(my_node_conf_t)){
-		eard_verbose(0,"Error writting checkpoint file (%s)",strerror(errno));
-		return;
-	}
+	print_my_node_conf_fd_binary(fd,eard_dyn_conf->nconf);
 	eard_verbose(0,"saving current app");
-	if (write(fd,eard_dyn_conf->pm_app,sizeof(powermon_app_t))!=sizeof(powermon_app_t)){
-        eard_verbose(0,"Error writting checkpoint file (%s)",strerror(errno));
-        return;
-    }
+	print_powermon_app_fd_binary(fd,eard_dyn_conf->pm_app);
 
 	umask(old_mask);
 	close(fd);
@@ -86,14 +80,8 @@ void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
         eard_verbose(0,"Error creating checkpoint file (%s)",strerror(errno));
         return;
     }
-    if (read(fd,eard_dyn_conf->nconf,sizeof(my_node_conf_t))!=sizeof(my_node_conf_t)){
-        eard_verbose(0,"Error reading checkpoint file (%s)",strerror(errno));
-        return;
-    }
-    if (read(fd,eard_dyn_conf->pm_app,sizeof(powermon_app_t))!=sizeof(powermon_app_t)){
-        eard_verbose(0,"Error reading checkpoint file (%s)",strerror(errno));
-        return;
-    }
+	read_my_node_conf_fd_binary(fd,eard_dyn_conf->nconf);	
+	read_powermon_app_fd_binary(fd,eard_dyn_conf->pm_app);
 	eard_verbose(0,"restoring node conf");
 	eard_max_pstate=eard_dyn_conf->nconf->max_pstate;
 	eard_verbose(0,"Node information recovered");
