@@ -16,7 +16,7 @@ BINARIES = \
 		   get_active_nodes \
 		   learning_show \
 		   learning_validate \
-		   learning_delete
+		   learning_delete \
 		   coeffs_comparison
 
 all: $(BINARIES)
