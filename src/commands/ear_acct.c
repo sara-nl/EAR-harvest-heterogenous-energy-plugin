@@ -224,7 +224,7 @@ void print_full_apps(application_t *apps, int num_apps)
     int i = 0;
     double avg_f, vpi;
 
-    printf("%-6s.%-7s\t %-10s %-15s %-20s %-10s %-10s %-14s %-14s %-14s %-14s %-20s %-14s\n",
+    printf("%-6s-%-7s\t %-10s %-15s %-20s %-10s %-10s %-14s %-14s %-14s %-14s %-20s %-14s\n",
             "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ", "TIME",
             "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI");
 
@@ -241,7 +241,7 @@ void print_full_apps(application_t *apps, int num_apps)
         {
             avg_f = (double) apps[i].signature.avg_f/1000000;
             compute_vpi(&vpi, &apps[i].signature);
-            printf("%8u.%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s %-14.2lf\n",
+            printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s %-14.2lf\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                 avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
                 apps[i].signature.time * apps[i].signature.DC_power, buff, vpi);
@@ -249,7 +249,7 @@ void print_full_apps(application_t *apps, int num_apps)
         else
         {
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
-            printf("%8u.%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s %-14s\n",
+            printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s %-14s\n",
                 apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                 avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
                 apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL");
