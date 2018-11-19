@@ -37,12 +37,13 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <common/config.h>
 #include <common/types/configuration/policy_conf.h>
+#include <common/types/configuration/node_conf.h>
 #include <common/string_enhanced.h>
 #include <common/types/generic.h>
 #include <common/ear_verbose.h>
 #include <common/states.h>
-#include <common/config.h>
 
 #define GENERIC_NAME	256
 #define USER			64
@@ -111,15 +112,6 @@ typedef struct eargm_conf
     char    host[GENERIC_NAME];
 } eargm_conf_t;
 
-typedef struct node_range
-{
-	char prefix[USER];
-	int start;
-	int end;
-    int db_ip;
-    int sec_ip;
-} node_range_t;
-
 typedef struct eardb_conf 
 {
 	uint aggr_time;
@@ -131,44 +123,12 @@ typedef struct eardb_conf
     uchar mem_size_types[EARDBD_TYPES];
 } eardb_conf_t;
 
-typedef struct policy_conf
-{
-    uint policy; // from environment.h
-    double th;
-    uint p_state;
-    char is_available; //default at 0, not available
-} policy_conf_t;
-
-typedef struct node_conf
-{
-	char name[GENERIC_NAME];
-	node_range_t *range;
-	uint range_count;
-	uint cpus;
-	uint island;	
-	uint num_special_node_conf;
-	policy_conf_t *special_node_conf;
-	char *coef_file;
-	ulong db_ip;
-} node_conf_t;
 
 typedef struct communication_node
 {
     char name[GENERIC_NAME];
     int  distance;
 } communication_node_t;
-
-typedef struct my_node_conf
-{
-	uint cpus;
-	uint island;
-	ulong max_pstate;
-	char db_ip[USER];
-	char db_sec_ip[USER];
-	char *coef_file;
-	uint num_policies;
-	policy_conf_t policies[TOTAL_POLICIES];
-}my_node_conf_t;
 
 typedef struct energy_tag
 {
@@ -191,16 +151,6 @@ typedef struct db_conf
     uint port;
 } db_conf_t;
 
-typedef struct node_island
-{
-	uint id;
-	uint num_ranges;
-	node_range_t *ranges;
-	char **db_ips;
-    uint num_ips;
-	char **backup_ips;
-    uint num_backups;
-} node_island_t;
 
 typedef struct earlib_conf
 {
@@ -260,8 +210,6 @@ int get_ear_conf_path(char *ear_conf_path);
 /** returns the pointer to the information of nodename */
 node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
 
-/** Copies dest=src */
-void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src);
 
 /** returns the configuration for your node with any specific setting specified at ear.conf */
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
@@ -276,20 +224,9 @@ void free_cluster_conf(cluster_conf_t *conf);
 
 // Cluster configuration verbose
 
-/** prints in the stderr the node configuration */
-void print_node_conf(node_conf_t *node_conf);
-
 /** Prints the DB configuration */
 void print_database_conf(db_conf_t *conf);
 
-/** prints in the stderr the specific node configuration */
-void print_my_node_conf(my_node_conf_t *my_node_conf);
-
-int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
-int read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
-
-/** prints in the stdout policy configuration */
-void print_policy_conf(policy_conf_t *p);
 
 /** Prints in the stdout the whole cluster configuration */
 void print_cluster_conf(cluster_conf_t *conf);
@@ -313,22 +250,12 @@ uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *g
 
 // Policy functions
 
-/** Given a  node and policy, returns the policy configuration for that cluser,node,policy */
-policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id);
-
-/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
-int policy_name_to_id(char *my_policy);
-
-/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
-int policy_id_to_name(int policy_id,char *my_policy);
 
 // Copy functions
 
 /** Copy src in dest */
 void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src);
 
-/** copy dest=src */
-void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src);
 
 /** */
 void copy_eard_conf(eard_conf_t *dest,eard_conf_t *src);

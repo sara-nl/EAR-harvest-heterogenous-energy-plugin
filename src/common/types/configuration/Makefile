@@ -5,7 +5,8 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 OBJS = cluster_conf.o \
        cluster_conf_read.o \
        cluster_conf_verbose.o \
-	   policy_conf.o
+	   policy_conf.o \
+	   node_conf.o
 
 ######## RULES
 

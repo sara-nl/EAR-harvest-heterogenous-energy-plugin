@@ -8,7 +8,8 @@ eargm.o: eargm.c ../common/config.h ../common/types/generic.h \
  ../common/types/job.h ../common/types/signature.h \
  ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../daemon/eard_conf_rapi.h ../common/types/gm_warning.h \
  ../common/database/db_helper.h ../common/types/periodic_aggregation.h \
  ../common/types/periodic_metric.h ../common/types/loop.h \

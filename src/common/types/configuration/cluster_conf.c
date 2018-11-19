@@ -33,69 +33,6 @@
 
 //#define __OLD__CONF__
 
-char range_conf_contains_node(node_conf_t *node, char *nodename)
-{
-    char aux_name[64];
-    int i, j;
-    for (i = 0; i < node->range_count; i++)
-    {
-        if (node->range[i].end == -1)
-        {
-            sprintf(aux_name, "%s", node->range[i].prefix);
-            if (!strcmp(aux_name, nodename)) return 1;
-            else continue;
-        }
-        if (node->range[i].end == node->range[i].start)
-        {
-            sprintf(aux_name, "%s%u", node->range[i].prefix, node->range[i].start);
-            if (!strcmp(aux_name, nodename)) return 1;
-            else continue;
-        }
-        for (j = node->range[i].end; j >= node->range[i].start && j > 0; j--)
-        {
-            if (j < 10 && node->range[i].end > 10)
-                sprintf(aux_name, "%s0%u", node->range[i].prefix, j);
-            else
-                sprintf(aux_name, "%s%u", node->range[i].prefix, j);
-            if (!strcmp(aux_name, nodename)) return 1;
-        }
-    }
-
-    return 0;
-}
-
-char island_range_conf_contains_node(node_island_t *node, char *nodename)
-{
-    char aux_name[64];
-    int i, j;
-    for (i = 0; i < node->num_ranges; i++)
-    {
-        if (node->ranges[i].end == -1)
-        {
-            sprintf(aux_name, "%s", node->ranges[i].prefix);
-            if (!strcmp(aux_name, nodename)) return i;
-            else continue;
-        }
-        if (node->ranges[i].end == node->ranges[i].start)
-        {
-            sprintf(aux_name, "%s%u", node->ranges[i].prefix, node->ranges[i].start);
-            if (!strcmp(aux_name, nodename)) return i;
-            else continue;
-        }
-        for (j = node->ranges[i].end; j >= node->ranges[i].start && j > 0; j--)
-        {
-            if (j < 10 && node->ranges[i].end > 10)
-                sprintf(aux_name, "%s0%u", node->ranges[i].prefix, j);
-            else
-                sprintf(aux_name, "%s%u", node->ranges[i].prefix, j);
-            if (!strcmp(aux_name, nodename)) return i;
-        }
-    }
-
-    return -1;
-}
-
-
 
 /*
 * NODE FUNCTIONS
@@ -114,26 +51,6 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 	return n;
 }
 
-void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
-{
-	int i;
-	dest->cpus=src->cpus;
-	dest->island=src->island;
-	dest->max_pstate=src->max_pstate;
-	strcpy(dest->db_ip,src->db_ip);
-	strcpy(dest->db_sec_ip,src->db_sec_ip);
-    if (src->coef_file == NULL)
-        dest->coef_file="";
-    else{
-	    dest->coef_file=malloc(strlen(src->coef_file)+1);
-	    strcpy(dest->coef_file,src->coef_file);
-    }
-	dest->num_policies=src->num_policies;
-	for (i=0;i<TOTAL_POLICIES;i++){
-		copy_policy_conf(&dest->policies[i],&src->policies[i]);
-	}
-	
-}
 
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 {
