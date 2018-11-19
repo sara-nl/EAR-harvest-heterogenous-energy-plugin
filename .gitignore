@@ -59,6 +59,7 @@ src/tests/functionals/signaures_avg
 src/tools/coeffs_default
 src/database_cache/tmpi
 src/daemon/commands/ear_check_node_test
+src/tools/coeffs_compare
 
 # Build
 etc/module/ear

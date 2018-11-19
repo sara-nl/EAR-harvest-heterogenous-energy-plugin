@@ -17,7 +17,7 @@ BINARIES = \
 		   learning_show \
 		   learning_validate \
 		   learning_delete \
-		   coeffs_comparison
+		   coeffs_compare
 
 all: $(BINARIES)
 
@@ -39,7 +39,7 @@ coeffs_null: coeffs_null.c $(COMMON_OBJS)
 coeffs_default: coeffs_default.c $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
 
-coeffs_comparison: coeffs_comparison.c $(COMMON_OBJS)
+coeffs_compare: coeffs_compare.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
 
 get_ear_events: get_ear_events.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
