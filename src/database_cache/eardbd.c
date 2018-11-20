@@ -136,7 +136,7 @@ ulong max_appsl;
 ulong max_evnts;
 ulong max_loops;
 
-// Metrics
+// Stats
 time_t glb_time1[MAX_TYPES];
 time_t glb_time2[MAX_TYPES];
 time_t ins_time1[MAX_TYPES];
@@ -776,6 +776,7 @@ static void pipeline()
 	int s;
 	int i;
 
+	// BODY
 	while(listening)
 	{
 		fds_incoming = fds_active;
@@ -786,7 +787,7 @@ static void pipeline()
 			}
 		}
 		
-		// If timeout_insr, data processing
+		// BODY: timeout functions
 		if (timeout_slct.tv_sec == 0 && timeout_slct.tv_usec == 0)
 		{
 			time_substract_timeouts();
@@ -826,9 +827,6 @@ static void pipeline()
 					insert_hub(SYNC_ALL, RES_TIME);
 				}
 
-				//
-				stats_print();
-
 				// If server the time reset is do it after the insert
 				time_reset_timeout_insr(0);
 			}
@@ -836,7 +834,7 @@ static void pipeline()
 			time_reset_timeout_slct();
 		}
 
-		// Run through the existing connections looking for data to read
+		// BODY: receiving functions
 		for(i = fd_min; i <= fd_max && listening && !updating; i++)
 		{
 			if (listening && FD_ISSET(i, &fds_incoming)) // we got one!!
@@ -898,13 +896,15 @@ static void pipeline()
 			} // FD_ISSET
 		}
 
-		// In case the listening is finished, the sockets are closed	
-		for(i = fd_max; i >= fd_min && !listening; --i)
-		{
-			close(i);
-		}
+		// BODY: insert functions
 
 		updating = 0;
+	}
+
+	// BODY: closing
+	for(i = fd_max; i >= fd_min && !listening; --i)
+	{
+		close(i);
 	}
 
 	if (waiting) {

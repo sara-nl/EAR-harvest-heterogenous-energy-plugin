@@ -284,6 +284,9 @@ void insert_hub(uint option, uint reason)
 	if (sync_option_m(option, SYNC_LOOPS, SYNC_ALL)) {
 		insert_loops();
 	}
+
+	stats_print();
+	stats_reset();
 }
 
 /*
@@ -311,7 +314,6 @@ void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz,
 		} else if (state_fail(sync_question(opt))) {
 			insert_hub(opt, RES_OVER);
 		}
-		*idx = 0;
 	}
 }
 

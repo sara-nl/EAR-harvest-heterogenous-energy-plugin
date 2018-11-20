@@ -35,7 +35,7 @@ extern int master_iam;
 extern int server_iam;
 extern int mirror_iam;
 
-// Metrics
+// Stats
 extern time_t glb_time1[MAX_TYPES];
 extern time_t glb_time2[MAX_TYPES];
 extern time_t ins_time1[MAX_TYPES];
@@ -71,7 +71,7 @@ void stats_print()
 	tprintf_init(stderr, STR_MODE_DEF, "15 13 9 10 10");
 
 	//
-	tprintf("sample (%d)||recv/alloc||%%||t. insr||t. recv", mirror_iam);
+	tprintf("sample (%d)||recv/alloc||%%||t. insr||t. recv", server_iam);
 	tprintf("-----------||----------||--||-------||-------");
 
 	for (i = 0; i < MAX_TYPES; ++i)
@@ -87,12 +87,6 @@ void stats_print()
 				prcnt, itime, gtime);
 	}
 
-	tprintf_init(stderr, STR_MODE_DEF, "15 13 9 10 10");
-
-	// Unknowns
-	//tprintf("unknown||%u/--||--||--||--", soc_unkwn);
-	//tprintf("timeout||%u/--||--||--||--", soc_tmout);
-
 	//
 	fprintf(stderr, "--\n");
 	fprintf(stderr, "accept. sockets: %u\n", soc_accpt);
@@ -101,7 +95,6 @@ void stats_print()
 	fprintf(stderr, "unknown samples: %u\n", soc_tmout);
 
 	verline0();
-	stats_reset();
 }
 
 void stats_reset()
@@ -242,12 +235,4 @@ void stats_sample_account(int fd, packet_header_t *header, char *content)
 
 	//
 	sam_recvd[index] += 1;
-	
-	/*if (print)
-	{
-		sockets_get_address_fd(fd, extra_buffer, SZ_NAME_MEDIUM);
-
-		verwho1("received '%s' packet from host '%s' (socket: %d)",
-				type, extra_buffer, fd);
-	}*/
 }
