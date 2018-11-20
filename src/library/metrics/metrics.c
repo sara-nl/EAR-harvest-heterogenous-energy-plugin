@@ -200,20 +200,11 @@ static void metrics_global_stop()
 
 static void metrics_partial_start()
 {
-	#if 0
-	eards_node_dc_energy(&metrics_ipmi[LOO]);
-	metrics_usecs[LOO] = metrics_time();
-	eards_read_rapl(aux_rapl);
-	#endif
 	int i;
 	metrics_ipmi[LOO]=aux_energy;
 	metrics_usecs[LOO]=aux_time;
 	
 	eards_begin_compute_turbo_freq();
-	#if 0
-	eards_start_uncore();
-	eards_read_uncore(metrics_bandwith_init[LOO]);
-	#endif
 	//There is always a partial_stop before a partial_start, we can guarantee a previous uncore_read
 	copy_uncores(metrics_bandwith_init[LOO],metrics_bandwith_end[LOO],bandwith_elements);
 	for (i = 0; i < rapl_elements; i++) {
@@ -234,19 +225,22 @@ static int metrics_partial_stop(uint where)
 	ulong c_energy;
 	long long c_time;
 	float c_power;
+	ulong aux_energy_stop;
+	long long aux_time_stop;
 
 	// Manual IPMI accumulation
-	eards_node_dc_energy(&aux_energy);
-	if ((where==SIG_END) && (aux_energy==metrics_ipmi[LOO])){ 
+	eards_node_dc_energy(&aux_energy_stop);
+	if ((where==SIG_END) && (aux_energy_stop==metrics_ipmi[LOO])){ 
 	#if 0
 		earl_verbose(1,"EAR_NOT_READY because of energy %u\n",aux_energy);
 	#endif
 		return EAR_NOT_READY;
 	}
-	aux_time = metrics_time();
+	aux_time_stop = metrics_time();
 	/* Sometimes energy is not zero but power is not correct */
-	c_energy=aux_energy - metrics_ipmi[LOO];
-	c_time=metrics_usecs_diff(aux_time, metrics_usecs[LOO]);
+	if (aux_energy_stop>=metrics_ipmi[LOO]) c_energy=aux_energy_stop-metrics_ipmi[LOO];
+	else c_energy=ulong_diff_overflow(metrics_ipmi[LOO],aux_energy_stop);
+	c_time=metrics_usecs_diff(aux_time_stop, metrics_usecs[LOO]);
 	/* energy is computed in mJ and time in usecs */
 	c_power=(float)(c_energy*1000.0)/(float)c_time;
 
@@ -256,6 +250,8 @@ static int metrics_partial_stop(uint where)
 	#endif
 		return EAR_NOT_READY;
 	}
+	aux_energy=aux_energy_stop;
+	aux_time=aux_time_stop;
 
 	metrics_ipmi[LOO] = c_energy;
 	metrics_ipmi[APP] += metrics_ipmi[LOO];
@@ -398,6 +394,9 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	// Energy IPMI
 	metrics->DC_power = (double) metrics_ipmi[s] / (time_s * 1000.0);
 	metrics->EDP = time_s * time_s * metrics->DC_power;
+	if ((metrics->DC_power>MAX_SIG_POWER) || (metrics->DC_power<MIN_SIG_POWER)){
+		earl_verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,metrics_ipmi[s],time_s* 1000.0);
+	}
 
 	// Energy RAPL (TODO: ask for the two individual energy types separately)
 	metrics->PCK_power   = (double) metrics_rapl[s][RAPL_PACKAGE0];

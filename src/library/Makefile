@@ -20,7 +20,7 @@ lib_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
            $(SRCDIR)/daemon/eard_api.o \
            $(SRCDIR)/daemon/shared_configuration.o \
            $(SRCDIR)/common/environment_common.o \
-           $(SRCDIR)/common/file_lock.o \
+           $(SRCDIR)/common/file.o \
            $(SRCDIR)/common/environment.o \
            $(SRCDIR)/common/math_operations.o \
            $(SRCDIR)/common/types.a
@@ -31,7 +31,6 @@ OBJS = dynais/dynais.o \
        models/min_time.o \
        models/min_energy.o \
        models/monitoring.o \
-       models/sig_projections.o \
        states/states.o \
        states/states_periodic.o \
        tracer/tracer.o \

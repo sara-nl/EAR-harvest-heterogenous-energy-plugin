@@ -97,7 +97,7 @@ void print_loop_fd(int fd, loop_t *loop)
 {
 	dprintf(fd,"id %lu step id %lu\n", loop->jid, loop->step_id);
     print_loop_id_fd(fd, &loop->id);
-    print_signature_fd(fd, &loop->signature, 1);
+    signature_print_fd(fd, &loop->signature, 1);
 	dprintf(fd, "%lu\n", loop->total_iterations);
 }
 
@@ -137,7 +137,7 @@ int append_loop_text_file(char *path, loop_t *loop,job_t *job)
 	assert(loop->node_id!=NULL);
     dprintf(fd, "%s;", loop->node_id);
     print_job_fd(fd, job);
-    print_signature_fd(fd, &loop->signature,1);
+    signature_print_fd(fd, &loop->signature,1);
     print_loop_id_fd(fd, &loop->id);
     dprintf(fd, "%lu\n", loop->total_iterations);
 

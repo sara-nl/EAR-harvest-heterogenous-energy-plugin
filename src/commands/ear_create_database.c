@@ -55,7 +55,7 @@ void execute_on_error(MYSQL *connection)
 void create_user(MYSQL *connection, char *db_name, char *db_user)
 {
     char query[256];
-    sprintf(query, "GRANT INSERT, SELECT ON %s.* TO '%s'@'%'", db_name, db_user);
+    sprintf(query, "GRANT INSERT, SELECT ON %s.* TO '%s'@'%%'", db_name, db_user);
     if (mysql_query(connection, query)) execute_on_error(connection);
 }
 
@@ -262,6 +262,7 @@ void main(int argc,char *argv[])
         fgets(passw, sizeof(passw), stdin);
         t.c_lflag |= ECHO;
         tcsetattr(STDIN_FILENO, TCSANOW, &t);
+        strclean(passw, '\n');
         printf("\n");
     }
     else
@@ -286,20 +287,18 @@ void main(int argc,char *argv[])
 
 	print_database_conf(&my_cluster.database);
 
-    mysql_real_connect(connection, my_cluster.database.ip, "root", passw, NULL, my_cluster.database.port, NULL, 0);
-
-    if (connection == NULL)
+    if (!mysql_real_connect(connection, my_cluster.database.ip, "root", passw, NULL, my_cluster.database.port, NULL, 0))
     {
-        fprintf(stderr, "Error connecting to the database.\n");
+        fprintf(stderr, "Error connecting to database: %s\n", mysql_error(connection));
         free_cluster_conf(&my_cluster);
         exit(0);
     }
 
     create_db(connection, my_cluster.database.database);
-
-    create_user(connection, my_cluster.database.database, my_cluster.database.user);
     
     create_tables(connection);
+
+    create_user(connection, my_cluster.database.database, my_cluster.database.user);
 
     mysql_close(connection);
 

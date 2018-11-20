@@ -62,7 +62,7 @@ static int print_application_fd(int fd, application_t *app, int new_line, char i
     write(fd, buff, strlen(buff));
 	print_job_fd(fd, &app->job);
 	dprintf(fd, ";");
-	print_signature_fd(fd, &app->signature, is_extended);
+	signature_print_fd(fd, &app->signature, is_extended);
 
 	if (new_line) {
 		dprintf(fd, "\n");
@@ -243,7 +243,7 @@ int read_application_text_file(char *path, application_t **apps, char is_extende
 	}
 
     if ((fd = fopen(path, "r")) == NULL) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     // Reading the header
@@ -323,7 +323,7 @@ int read_application_binary_file(char *path, application_t **apps)
 	}
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     // Getting the number
@@ -348,4 +348,13 @@ int read_application_binary_file(char *path, application_t **apps)
 
     *apps = apps_aux;
     return i;
+}
+
+int print_application_fd_binary(int fd,application_t *app)
+{
+	write(fd,app,sizeof(application_t));
+}
+int read_application_fd_binary(int fd,application_t *app)
+{
+	read(fd,app,sizeof(application_t));
 }

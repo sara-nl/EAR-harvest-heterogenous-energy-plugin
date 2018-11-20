@@ -26,31 +26,34 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
-#ifndef _LOCK_FILES_H
-#define _LOCK_FILES_H
+#ifndef _FILE_H
+#define _FILE_H
 
-/** Creates a file to be used  as lock. It doesn't locks the file
-*/
-int create_lock(char *lock_file_name);
-/** Locks the file for writting in a fixe dpart
-*/
-int lock_file(int fd);
-/** Unlocks the file
-*/
-int unlock_file(int fd);
-/** Closes and removes the lock file
-*/
-void lock_dispose(int fd,char *lock_file_name);
+#include <common/states.h>
 
+/** Locks the file for writting in a fixe dpart */
+int file_lock(int fd);
 
-/** Opens a file with O_EXCL, only one process per node will do that
-*/
-int lock_master(char *lock_file_name);
-/** Releases a lock file
-*/
-void unlock_master(int fd,char *lock_file_name);
+/** Unlocks the file */
+int file_unlock(int fd);
 
+/** Opens a file with O_EXCL, only one process per node will do that */
+int file_lock_master(char *lock_file_name);
 
-#else
+/** Releases a lock file */
+void file_unlock_master(int fd,char *lock_file_name);
+
+/** Creates a file to be used  as lock. It doesn't locks the file */
+int file_lock_create(char *lock_file_name);
+
+/** Closes and removes the lock file */
+void file_lock_clean(int fd,char *lock_file_name);
+
+/** */
+int file_is_regular(const char *path);
+
+/** */
+state_t file_read();
+
 #endif
 

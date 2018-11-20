@@ -60,7 +60,7 @@ void main(int argc,char *argv[])
 	char my_ear_conf_path[NAME_SIZE];
 
 	if (argc==1){
-	// NEW_JOB
+	/*NEW_JOB*/
 		if (gethostname(myhost,NAME_SIZE)<0){
 			fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
 			exit(1);

@@ -97,6 +97,8 @@
 #define COEFFS_V3			1
 #define APP_API				1
 #define MIN_SIG_POWER                       100.0
+#define MAX_SIG_POWER                       400.0
+
 
 // EARDBD default values and configuration
 #define EARDBD_TYPES        7
@@ -106,3 +108,4 @@
 
 //#define EAR_GUI
 #define DYN_VERBOSE 2
+#define SYSLOG_MSG 1

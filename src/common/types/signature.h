@@ -34,6 +34,14 @@
 #include <common/types/generic.h>
 #include <common/config.h>
 
+// 0: float
+// 1: 128 float
+// 2: 256 float
+// 3: 512 float
+// 4: double
+// 5: 128 double
+// 6: 256 double
+// 7: 512 double
 #define FLOPS_EVENTS 8
 
 typedef struct signature
@@ -57,20 +65,19 @@ typedef struct signature
     ulong def_f;
 } signature_t;
 
-
-// Function declarations
-
-/** Replicates the signature in *source to *destiny */
-void copy_signature(signature_t *destiny, signature_t *source);
+// Misc
 
 /** Initializes all values of the signature to 0.*/
-void init_signature(signature_t *sig);
+void signature_init(signature_t *sig);
 
-/** returns true if basic values for sig1 and sig2 are equal with a maximum %
-*   of difference defined by threshold (th) */
-uint are_equal(signature_t *sig1,signature_t *sig2,double th);
+/** Replicates the signature in *source to *destiny */
+void signature_copy(signature_t *destiny, signature_t *source);
 
 /** Outputs the signature contents to the file pointed by the fd. */
-void print_signature_fd(int fd, signature_t *sig, char is_extended);
+void signature_print_fd(int fd, signature_t *sig, char is_extended);
+void compute_vpi(double *vpi,signature_t *sig);
+
+int print_signature_fd_binary(int fd, signature_t *sig);
+int read_signature_fd_binary(int fd, signature_t *sig);
 
 #endif

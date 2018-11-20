@@ -46,6 +46,7 @@
 typedef struct end_job_req{
 	job_id jid;
 	job_id sid;
+	//int status;
 }end_job_req_t;
 
 typedef struct new_conf{

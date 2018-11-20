@@ -96,3 +96,14 @@ void report_job(job_t *job)
 	
 }
 
+int print_job_fd_binary(int fd, job_t *job)
+{
+	write(fd,job, sizeof(job_t));
+}
+/** Memory is already allocated for the job */
+int read_job_fd_binary(int fd, job_t *job)
+{
+	read(fd,job, sizeof(job_t));
+}
+
+

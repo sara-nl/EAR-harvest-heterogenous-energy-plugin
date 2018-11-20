@@ -5,19 +5,21 @@ LDFLAGS = $(CPUF_LDFLAGS) $(GSL_LDFLAGS)
 
 COMMON_OBJS = $(ROOTDIR)/src/common/types.a
 
-BINARIES = coeffs_compute \
-           coeffs_jobproj \
+BINARIES = \
            coeffs_quality \
+           coeffs_compute \
+           coeffs_jobproj \
            coeffs_show \
-           coeffs_comparison \
+           coeffs_default \
 		   coeffs_null \
 		   get_ear_events \
 		   get_active_nodes \
 		   learning_show \
 		   learning_validate \
-		   learning_delete
+		   learning_delete \
+		   coeffs_comparison
 
-all: $(BINARIES) tmpi
+all: $(BINARIES)
 
 coeffs_compute: coeffs_compute.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
@@ -28,11 +30,14 @@ coeffs_jobproj: coeffs_jobproj.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 coeffs_quality: coeffs_quality.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
-coeffs_show: coeffs_show.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+coeffs_show: coeffs_show.c $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
 
 coeffs_null: coeffs_null.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+
+coeffs_default: coeffs_default.c $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
+	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
 
 coeffs_comparison: coeffs_comparison.c $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
@@ -52,13 +57,10 @@ learning_delete: learning_delete.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJ
 learning_validate: learning_validate.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
 
-tmpi: tmpi.c $(COMMON_OBJS) $(ROOTDIR)/src/database_cache/eardbd_api.o $(ROOTDIR)/src/common/sockets.o
-	mpiicc $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(COMMON_OBJS) $(ROOTDIR)/src/database_cache/eardbd_api.o $(ROOTDIR)/src/common/sockets.o
-
 ######## OPTIONS
 
 install:
-	cp coeffs_compute $(DESTDIR)/sbin/
+	cp $(BINARIES) $(DESTDIR)/bin/tools
 
 %.install: ;
 

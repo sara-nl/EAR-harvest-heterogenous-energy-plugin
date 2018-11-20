@@ -56,6 +56,7 @@ int eards_new_job(application_t *new_job);
 
 /** Notifies the EARD the job with job_id ends the execution. It is supposed to be used by the EAR slurm plugin
 */
+//int eards_end_job(job_id jid,job_id sid,int status);
 int eards_end_job(job_id jid,job_id sid);
 
 /**  Sets freq as the maximim frequency to be used in the node where the API is connected with

@@ -64,6 +64,8 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events);
 
 int db_batch_insert_applications(application_t *applications, int num_apps);
 
+int db_batch_insert_applications_learning(application_t *applications, int num_apps);
+
 int db_batch_insert_applications_no_mpi(application_t *applications, int num_apps);
 
 int db_batch_insert_loops(loop_t *loops, int num_loops);

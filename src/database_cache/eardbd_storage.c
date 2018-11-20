@@ -186,7 +186,9 @@ static void insert_apps_learning()
 	}
 
 	stats_account_insert_start(i_appsl);
-	db_batch_insert_applications(appsl, max_appsl);
+	//db_batch_insert_applications(appsl, max_appsl);
+	db_batch_insert_applications_learning(appsl, max_appsl);
+
 	stats_account_insert_stop(i_appsl, max_appsl);
 
 	// Reset
@@ -324,27 +326,27 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		if (app->is_learning)
 		{
 			storage_sample_add((char *) &appsl[max_appsl], sam_inmax[i_appsl], &max_appsl,
-				content, sizeof(application_t), SYNC_APPSL);
+							   content, sizeof(application_t), SYNC_APPSL);
 		}
 		else if (app->is_mpi)
 		{
 			storage_sample_add((char *) &appsm[max_appsm], sam_inmax[i_appsm], &max_appsm,
-				content, sizeof(application_t), SYNC_APPSM);
+							   content, sizeof(application_t), SYNC_APPSM);
 		}
 		else
 		{
 			storage_sample_add((char *) &appsn[max_appsn], sam_inmax[i_appsn], &max_appsn,
-				content, sizeof(application_t), SYNC_APPSN);
+							   content, sizeof(application_t), SYNC_APPSN);
 		}
 	} else if (header->content_type == CONTENT_TYPE_EVE)
 	{
 		storage_sample_add((char *) &evnts[max_evnts], sam_inmax[i_evnts], &max_evnts,
-			content, sizeof(ear_event_t), SYNC_EVNTS);
+						   content, sizeof(ear_event_t), SYNC_EVNTS);
 	}
 	else if (header->content_type == CONTENT_TYPE_LOO)
 	{
 		storage_sample_add((char *) &loops[max_loops], sam_inmax[i_loops], &max_loops,
-			content, sizeof(loop_t), SYNC_LOOPS);
+						   content, sizeof(loop_t), SYNC_LOOPS);
 	}
 	else if (header->content_type == CONTENT_TYPE_PER)
 	{
@@ -355,7 +357,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 
 		// Add sample to the energy array
 		storage_sample_add((char *) &enrgy[max_enrgy], sam_inmax[i_enrgy], &max_enrgy,
-			content, sizeof(periodic_metric_t), SYNC_ENRGY);
+						   content, sizeof(periodic_metric_t), SYNC_ENRGY);
 	}
 	else if (header->content_type == CONTENT_TYPE_QST)
 	{

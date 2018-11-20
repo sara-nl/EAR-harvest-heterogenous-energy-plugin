@@ -33,19 +33,30 @@
 #include <stdio.h>
 #include <linux/limits.h>
 
-#define STEN_MAX_COLS	20
-#define STEN_SYMBOL		"||"
-#define STEN_BUFF_SIZE	PIPE_BUF
+#define STR_MAX_COLUMNS		20
+#define STR_SIZE_BUFFER		PIPE_BUF
+#define STR_SYMBOL			"||"
+#define STR_SYMBOL_VIS		"|||"
+#define STR_RED				"<red>"
+#define STR_GRE 			"<gre>"
+#define STR_YLW 			"<ylw>"
+#define STR_BLU 			"<blu>"
+#define STR_MGT 			"<mgt>"
+#define STR_CYA 			"<cya>"
+#define STR_COL_CHR			5
+#define STR_MODE_DEF		0
+#define STR_MODE_COL		1
+#define STR_MODE_CSV		2
 
-char tprintf_ibuf[STEN_BUFF_SIZE];
-char tprintf_obuf[STEN_BUFF_SIZE];
+char tprintf_ibuf[STR_SIZE_BUFFER];
+char tprintf_obuf[STR_SIZE_BUFFER];
 
 #define tprintf(...) \
-	snprintf(tprintf_ibuf, STEN_BUFF_SIZE-1, __VA_ARGS__); \
+	snprintf(tprintf_ibuf, STR_SIZE_BUFFER-1, __VA_ARGS__); \
 	tprintf_format();
 
 /** **/
-int tprintf_init(FILE *stream, char *format);
+int tprintf_init(FILE *stream, int mode, char *format);
 
 /** **/
 int tprintf_format();

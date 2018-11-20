@@ -184,9 +184,11 @@ void usage(char *app)
             "\n\t--set-th \tnew_th\t\t\t->sets the threshold for all nodes"\
             "\n\t--red-def-freq \tn_pstates\t\t->reduces the default and max frequency by n pstates"\
             "\n\t--restore-conf \t\t\t\t->restores the configuration to all node"\
-            "\n\t--status \t\t\t\t->requests the current status for all nodes. The ones responding show the current power, IP address and policy configuration. A list with"\
-            "\n\t\t\t\t\t\t\tthe ones not respondig is provided with their hostnames and IP address."\
-            "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally, --ping=node_name pings that node individually."\
+            "\n\t--status \t\t\t\t->requests the current status for all nodes. The ones responding show the current "\
+            "\n\t\t\t\t\t\t\tpower, IP address and policy configuration. A list with the ones not"\
+            "\n\t\t\t\t\t\t\tresponding is provided with their hostnames and IP address."\
+            "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
+            "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
             "\n\t--help \t\t\t\t\t->displays this message."\
             "\n\nThis app requires privileged access privileged accesss to execute.\n", app);
 	exit(1);

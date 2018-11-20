@@ -59,6 +59,44 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 	}
 }
 
+
+int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
+{
+	int coef_len;
+	int part1,part2;
+	part1=sizeof(uint)*2+sizeof(ulong)+USER*2;
+	part2=sizeof(uint)+sizeof(policy_conf_t)*TOTAL_POLICIES;
+	write(fd,(char *)myconf,part1);
+	if (myconf->coef_file!=NULL){
+		coef_len=strlen(myconf->coef_file);
+		write(fd,(char *)&coef_len,sizeof(int));
+		write(fd,myconf->coef_file,coef_len);
+	}else{ 
+		coef_len=0;	
+		write(fd,(char *)&coef_len,sizeof(int));
+	}
+	write(fd,(char *)myconf+part1+sizeof(char *),part2);
+	return 0;
+}
+int read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
+{
+	int coef_len;
+	int part1,part2;
+	part1=sizeof(uint)*2+sizeof(ulong)+USER*2;
+	part2=sizeof(uint)+sizeof(policy_conf_t)*TOTAL_POLICIES;
+	read(fd,(char *)myconf,part1);
+	read(fd,(char *)&coef_len,sizeof(int));
+	if (coef_len>0){
+		myconf->coef_file=(char *)malloc(coef_len+1);
+		myconf->coef_file[coef_len]='\0';
+		read(fd,myconf->coef_file,coef_len);
+	}else{
+		myconf->coef_file=NULL;
+	}
+	read(fd,(char *)myconf+part1+sizeof(char *),part2);
+	
+}
+
 void print_policy_conf(policy_conf_t *p)
 {
 	char buffer[64];

@@ -596,7 +596,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
                 sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
             int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
             if (num_sigs > 0) {
-                copy_signature(&app_aux->signature, sig_aux);
+                signature_copy(&app_aux->signature, sig_aux);
                 free(sig_aux);
             }
             app_aux->is_mpi = 1;
@@ -822,7 +822,7 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     {
         sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
         int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
-        copy_signature(&loop_aux->signature, sig_aux);
+        signature_copy(&loop_aux->signature, sig_aux);
         free(sig_aux);
 
         copy_loop(&loops_aux[i], loop_aux);
@@ -1424,7 +1424,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     status = mysql_stmt_fetch(statement);
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
     {
-        copy_signature(&sigs_aux[i], sig_aux);
+        signature_copy(&sigs_aux[i], sig_aux);
         status = mysql_stmt_fetch(statement);
         i++;
     }

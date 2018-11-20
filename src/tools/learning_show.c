@@ -28,53 +28,87 @@
 */
 
 #include <stdio.h>
-#include <common/database/db_helper.h>
+#include <common/string_enhanced.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/database/db_helper.h>
 
 int EAR_VERBOSE_LEVEL=1;
 
+static char *paint[6] = { STR_RED, STR_GRE, STR_YLW, STR_BLU, STR_MGT, STR_CYA };
+static unsigned int opt_p;
+static unsigned int opt_c;
 
-#define COL_RED "\x1b[31m"
-#define COL_GRE "\x1b[32m"
-#define COL_YLW "\x1b[33m"
-#define COL_BLU "\x1b[34m"
-#define COL_MGT "\x1b[35m"
-#define COL_CYA "\x1b[36m"
-#define COL_RST "\x1b[0m"
+void usage(int argc, char *argv[])
+{
+	int i = 0;
 
-char *colors[7] = { COL_RED, COL_GRE, COL_YLW, COL_BLU, COL_MGT, COL_CYA, COL_RST };
+	if (argc < 2)
+	{
+		fprintf(stdout, "Usage: %s node.id [OPTIONS]\n\n", argv[0]);
+		fprintf(stdout, "  The node.id of the node to display the information.\n");
+		fprintf(stdout, "\nOptions:\n");
+		fprintf(stdout, "\t-P <num>\tPrints the output with a different color,\n");
+		fprintf(stdout, "\t\tcan be used when displaying different batch of\n");
+		fprintf(stdout, "\t\tapplications by script.\n");
+		fprintf(stdout, "\t-C\tShows other jobs of the same application,\n");
+		fprintf(stdout, "\t\tnode, policy and number of processes.\n");
+		exit(1);
+	}
+
+	for (i = 2; i < argc; ++i) {
+		if (!opt_c)
+			opt_c = (strcmp(argv[i], "-C") == 0);
+		if (!opt_p) {
+			opt_p = (strcmp(argv[i], "-P") == 0);
+
+			if (opt_p) {
+				opt_p = atoi(argv[i + 1]) % 6;
+			}
+		}
+	}
+}
 
 void main(int argc,char *argv[])
 {
-    char buffer[256];
-	int num_apps;
-    int total_apps = 0;
-	int i, c = 0;
-    char *node_name = NULL;
-	application_t *apps;
+	char buffer[256];
+	char *node_name = NULL;
 	cluster_conf_t my_conf;
-    
-	node_name = argv[1];
-	c = atoi(argv[2]) % 6; 
- 
-	if (get_ear_conf_path(buffer)==EAR_ERROR) {
-		printf("Error getting ear.conf path\n");
-		exit(0);
-    }
-	
+	application_t *apps;
+	int total_apps = 0;
+	int num_apps = 0;
+	int i;
+
 	//
-    read_cluster_conf(buffer, &my_conf);
-	
+	usage(argc, argv);
+
+	//
+	node_name = argv[1];
+
+	if (get_ear_conf_path(buffer) == EAR_ERROR) {
+		printf("ERROR while getting ear.conf path\n");
+		exit(0);
+	}
+
+	//
+	read_cluster_conf(buffer, &my_conf);
+
 	//
 	init_db_helper(&my_conf.database);
-	
+
 	//
 	num_apps = db_read_applications(&apps, 1, 50, node_name);
-   
-	// 
-	tprintf_init(stdout, "22 11 12 10 8 14 12");
- 
+
+	//
+	if (!opt_c) {
+		tprintf_init(stdout, STR_MODE_COL, "12 10 10 8 8 8 30");
+
+		tprintf("Node name||Def. F.||Avg. F.||Seconds||Watts||GBS||CPI|||App name");
+		tprintf("---------||-------||-------||-------||-----||---||---|||--------");
+	} else {
+		fprintf(stderr, "Node name;Def. F.;Avg. F.;Seconds;Watts;GBS;CPI;App name\n");
+	}
+
 	while (num_apps > 0)
     {
 		total_apps += num_apps;
@@ -84,11 +118,24 @@ void main(int argc,char *argv[])
 			if (strcmp(buffer, apps[i].node_id) != 0) {
 				strcpy(buffer, apps[i].node_id);
 			}
-		
-			tprintf("%s%s%s||%s||%lu||%0.2lf||%0.2lf|| | %lu || %0.2lf",
-				colors[c], apps[i].job.app_id, colors[6], apps[i].node_id,
-				apps[i].job.def_f, apps[i].signature.time, apps[i].signature.DC_power,
-				apps[i].signature.avg_f, apps[i].signature.GBS);
+
+			if (strlen(apps[i].node_id) > 10) {
+				apps[i].node_id[10] = '\0';
+			}
+
+			if (opt_c) {
+				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%s\n",
+                    apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
+                    apps[i].signature.time, apps[i].signature.DC_power,
+                    apps[i].signature.GBS, apps[i].signature.CPI,
+					apps[i].job.app_id);
+			} else {
+				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf|||%s",
+					paint[opt_p], apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
+					apps[i].signature.time, apps[i].signature.DC_power,
+					apps[i].signature.GBS, apps[i].signature.CPI,
+					apps[i].job.app_id);
+			}
 	    }
 
         free(apps);

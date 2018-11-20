@@ -1047,7 +1047,7 @@ int coeffs_per_node_default_exist(char *filename)
 		eard_verbose(0,"Looking for per-node special default %s coefficients file",filename);
 		file_size=coeff_file_size(filename);
 		return file_size;
-	}else return EAR_FILE_NOT_FOUND;
+	}else return EAR_OPEN_ERROR;
 }
 int coeffs_per_island_default_exist(char *filename)
 {
@@ -1064,9 +1064,9 @@ int read_coefficients_default()
     int state,i;
     int file_size=0;
     file_size=coeffs_per_node_default_exist(my_coefficients_file);
-    if (file_size == EAR_FILE_NOT_FOUND){
+    if (file_size == EAR_OPEN_ERROR){
     	file_size=coeffs_per_island_default_exist(my_coefficients_file);
-    	if (file_size==EAR_FILE_NOT_FOUND){
+    	if (file_size==EAR_OPEN_ERROR){
     		eard_verbose(0,"Warning, coefficients not found");
     		my_coefficients_default=(coefficient_t *)calloc(1,sizeof(coefficient_t));
     		coeff_reset(my_coefficients_default);
@@ -1087,11 +1087,11 @@ int read_coefficients()
 	int state,i;
 	int file_size=0;
 	file_size=coeffs_per_node_exist(my_coefficients_file);
-	if (file_size == EAR_FILE_NOT_FOUND){
+	if (file_size == EAR_OPEN_ERROR){
 		file_size=coeffs_per_node_default_exist(my_coefficients_file);
-		if (file_size == EAR_FILE_NOT_FOUND){
+		if (file_size == EAR_OPEN_ERROR){
 			file_size=coeffs_per_island_default_exist(my_coefficients_file);
-            if (file_size==EAR_FILE_NOT_FOUND){
+            if (file_size==EAR_OPEN_ERROR){
                 eard_verbose(0,"Warning, coefficients not found");
     			my_coefficients=(coefficient_t *)calloc(1,sizeof(coefficient_t));
 				coeff_reset(my_coefficients);
@@ -1121,18 +1121,18 @@ int read_coefficients()
 	eard_verbose(0,"Looking for %s coefficients file",my_coefficients_file);
 	/** We first look for per-node coefficients */
 	file_size=coeff_file_size(my_coefficients_file);
-	if (file_size == EAR_FILE_NOT_FOUND){
+	if (file_size == EAR_OPEN_ERROR){
 		/** Second choice is special default coefficients */
 		if (my_node_conf->coef_file!=NULL){
 			sprintf(my_coefficients_file,"%s/island%d/%s",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island,my_node_conf->coef_file);
 			eard_verbose(0,"Not found.Looking for special %s coefficients file",my_coefficients_file);
 			file_size=coeff_file_size(my_coefficients_file);
-			if (file_size==EAR_FILE_NOT_FOUND){
+			if (file_size==EAR_OPEN_ERROR){
 				/** Third option is global per-island coefficients */
 				sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island);
 				eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
 				file_size=coeff_file_size(my_coefficients_file);
-				if (file_size==EAR_FILE_NOT_FOUND){
+				if (file_size==EAR_OPEN_ERROR){
 					eard_verbose(0,"Warning, coefficients not found");
 					return 0;
 				}
@@ -1141,7 +1141,7 @@ int read_coefficients()
 			sprintf(my_coefficients_file,"%s/island%d/coeffs.default",my_cluster_conf.earlib.coefficients_pathname,my_node_conf->island);
 			eard_verbose(0,"Not found.Looking for %s coefficients file",my_coefficients_file);
 			file_size=coeff_file_size(my_coefficients_file);
-			if (file_size==EAR_FILE_NOT_FOUND){
+			if (file_size==EAR_OPEN_ERROR){
 				eard_verbose(0,"Warning, coefficients not found");
 				return 0;
 			}

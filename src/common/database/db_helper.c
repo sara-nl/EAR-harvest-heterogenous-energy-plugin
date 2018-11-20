@@ -152,6 +152,56 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
     return EAR_SUCCESS;
 }
 
+int db_batch_insert_applications_learning(application_t *applications, int num_apps)
+{
+    int bulk_elms = _BULK_ELMS(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
+	int bulk_sets = _BULK_SETS(num_apps, bulk_elms);
+	int e, s;
+
+	MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL) {   
+        VERBOSE_N(0, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_config == NULL) {   
+        VERBOSE_N(0, "Database configuration not initialized.");
+        return EAR_ERROR;
+    }
+        
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user,
+            db_config->pass, "EAR2", db_config->port, NULL, 0)) 
+    {
+        VERBOSE_N(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+    // Inserting full bulks one by one
+	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
+    {
+    	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
+        	VERBOSE_N(0, "ERROR while batch writing applications to database.");
+        	return EAR_ERROR;
+    	}
+	}
+	// Inserting the lagging bulk, the incomplete last one
+	if (e < num_apps)
+	{
+		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
+            VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            return EAR_ERROR;
+        }
+	}	 
+
+	//
+	mysql_close(connection);
+
+    return EAR_SUCCESS;
+}
+
+
 int db_batch_insert_applications_no_mpi(application_t *applications, int num_apps)
 {
 	int bulk_elms = _BULK_ELMS(_MMAAXX(APP_VARS, PSI_VARS, NSI_VARS, JOB_VARS));
@@ -615,9 +665,9 @@ ulong stmt_error(MYSQL_STMT *statement)
     return -1;
 }
 
-#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? FROM Periodic_metrics WHERE start_time" \
+#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? FROM Periodic_metrics WHERE end_time" \
                                 ">= ? AND end_time <= ?"
-#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? FROM Periodic_aggregations WHERE start_time"\
+#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
 
 ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated)

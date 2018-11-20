@@ -15,8 +15,8 @@ power_signature.o: power_signature.c ../../common/types/power_signature.h \
 coefficient.o: coefficient.c ../../common/states.h \
  ../../common/types/coefficient.h ../../common/types/generic.h
 projection.o: projection.c ../../common/types/projection.h \
- ../../common/types/generic.h ../../common/ear_verbose.h \
- ../../common/config.h ../../control/frequency.h
+ ../../common/types/signature.h ../../common/types/generic.h \
+ ../../common/config.h ../../common/types/coefficient.h
 periodic_metric.o: periodic_metric.c ../../common/math_operations.h \
  ../../common/types/periodic_metric.h ../../common/config.h \
  ../../common/types/generic.h

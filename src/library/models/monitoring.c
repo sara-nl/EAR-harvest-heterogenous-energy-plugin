@@ -48,9 +48,10 @@ void monitoring_new_loop()
 void monitoring_end_loop()
 {
 }
-ulong monitoring_policy(signature_t *sig)
+ulong monitoring_policy(signature_t *sig,int *ready)
 {
 	policy_global_reconfiguration();
+	*ready=1;
 	return EAR_default_frequency;
 }
 ulong monitoring_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)

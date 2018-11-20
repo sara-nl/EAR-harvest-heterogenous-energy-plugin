@@ -44,7 +44,7 @@ int coeff_file_size(char *path)
     int ret, fd;
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     ret = lseek(fd, 0, SEEK_END);
@@ -58,7 +58,7 @@ int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size)
     int ret, fd;
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     if ((ret = read(fd, coeffs, size)) != size)
@@ -87,7 +87,7 @@ int coeff_file_read(char *path, coefficient_t **coeffs)
     int size, ret, fd;
 
     if ((fd = open(path, O_RDONLY)) < 0) {
-        return EAR_FILE_NOT_FOUND;
+        return EAR_OPEN_ERROR;
     }
 
     size = lseek(fd, 0, SEEK_END);
@@ -115,19 +115,4 @@ int coeff_file_read(char *path, coefficient_t **coeffs)
     
 	*coeffs = coeffs_aux;
     return (size / sizeof(coefficient_t));
-}
-
-double coeff_project_pow(double pow_sign, double tpi_sign, coefficient_t *cofs)
-{
-	return cofs->A * pow_sign + cofs->B * tpi_sign + cofs->C;
-}
-
-double coeff_project_cpi(double cpi_sign, double tpi_sign, coefficient_t *cofs)
-{
-	return cofs->D * cpi_sign + cofs->E * tpi_sign + cofs->F;
-}
-
-double coeff_project_tim(double tim_sign, double cpi_proj, double cpi_sign, ulong freq_from, ulong freq_to)
-{
-	return (tim_sign * cpi_proj / cpi_sign) * ((double) freq_from / (double) freq_to);
 }

@@ -3,6 +3,7 @@
 gen_FOLDERS = $(DESTDIR)/bin \
               $(DESTDIR)/bin/kernels \
               $(DESTDIR)/bin/scripts \
+              $(DESTDIR)/bin/tools \
               $(DESTDIR)/lib \
               $(DESTDIR)/sbin
 
@@ -29,6 +30,7 @@ install:
 	cp -r scripts/* $(DESTDIR)/bin/scripts/
 	@ rm $(DESTDIR)/bin/scripts/README.md
 	@ rm $(DESTDIR)/bin/scripts/learning/README.md
+	@ rm $(DESTDIR)/bin/scripts/tools/README.md
 
 etc.install: ;
 	@ mkdir -p $(etc_FOLDERS) 

@@ -54,7 +54,7 @@
 
 #ifdef EAR_GUI
 	/** Executed at application start */
- 	void traces_init(int global_rank, int local_rank, int nodes, int mpis, int ppn);
+ 	void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn);
 	/** Executed at application end */
 	void traces_end(int global_rank,int local_rank, unsigned long int total_ener);
 	/** **/
@@ -65,7 +65,7 @@
 	/**@{ Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states */
 	void traces_frequency(int global_rank, int local_rank, unsigned long f);
 	void traces_new_signature(int global_rank, int local_rank, double seconds, double cpi, double tpi, double gbs, double power,double vpi);
-	void traces_PP(int global_rank, int local_rank, double seconds, double cpi, double power); /**@}*/ 
+	void traces_PP(int global_rank, int local_rank, double seconds, double power); /**@}*/ 
 
 	/**@{ Executed when each time a new loop is detected, the loop ends, or a new iteration are reported */
 	void traces_new_n_iter(int global_rank, int local_rank, ullong period_id, int loop_size, int iterations);
@@ -80,13 +80,19 @@
 
 	/** Executed at each mpi_call */
 	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
+
+	/** External reconfiguration is requested */
+	void traces_reconfiguration(int global_rank, int local_rank);
+	
+	/** returns true if traces are dynamically activated , is independent on start/stop*/
+	int traces_are_on();
 #else
-	#define traces_init(g,l,n,m,p)
+	#define traces_init(a,g,l,n,m,p)
 	#define traces_new_n_iter(g,l,p,lo,i)
 	#define traces_end(g,l,e)
 	#define traces_new_signature(g,l,s,c,t,gb,p,vpi)
 	#define traces_frequency(g,l,f)
-	#define traces_PP(g,l,s,c,p)
+	#define traces_PP(g,l,s,p)
 	#define traces_new_period(g,l,p)
 	#define traces_end_period(g,l)
 	#define traces_mpi_call(g,l,t,e,a1,a2,a3);
@@ -94,8 +100,10 @@
 	#define traces_dynais(g,l,s);
 	#define traces_earl_mode_dynais(g,l);
 	#define traces_earl_mode_periodic(g,l);
+	#define traces_reconfiguration(g,l);
 	#define traces_start()
 	#define traces_stop()
+	#define traces_are_on() 	0
 #endif
 
 #endif

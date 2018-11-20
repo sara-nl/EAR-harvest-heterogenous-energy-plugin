@@ -144,11 +144,13 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	unsigned long prev_f;
 	int result;
 	uint N_iter;
+	int ready;
 
 	prev_f = ear_frequency;
 
 	if (resched_conf->force_rescheduling)
 	{
+		traces_reconfiguration(ear_my_rank, my_id);
 		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",
 					system_conf->max_freq, system_conf->th);
 
@@ -160,6 +162,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	{
 		case FIRST_ITERATION:
 				EAR_STATE = EVALUATING_SIGNATURE;
+				traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 				metrics_compute_signature_begin();
 				// Loop printing algorithm
 				loop.id.event = event;
@@ -189,8 +192,8 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
-					policy_freq = policy_power(0, &loop_signature.signature);
-					PP = performance_projection(policy_freq);
+					policy_freq = policy_power(0, &loop_signature.signature,&ready);
+					PP = projection_get(frequency_freq_to_pstate(policy_freq));
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
@@ -198,7 +201,8 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER, VPI);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
-					traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
+					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
+					traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
 					if (policy_freq != prev_f)
 					{
@@ -212,9 +216,9 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 									ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
 									ENERGY, EDP);
 					}
-
+					
 					// Loop printing algorithm
-					copy_signature(&loop.signature, &loop_signature.signature);
+					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
 				}
 				else{

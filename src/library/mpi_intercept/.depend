@@ -39,7 +39,7 @@ ear_api.o: ear_api.c ../../control/frequency.h \
  ../../metrics/papi/generics.h ../../metrics/papi/instructions.h \
  ../../metrics/papi/stalls.h ../../metrics/ipmi/energy_node.h \
  ../../metrics/custom/bandwidth.h ../../metrics/custom/frequency.h \
- ../../metrics/custom/hardware_info.h ../../common/file_lock.h
+ ../../metrics/custom/hardware_info.h ../../common/file.h
 MPI_interfaceF.o: MPI_interfaceF.c process_MPI.h \
  ../../library/mpi_intercept/MPI_types.h MPI_calls_coded.h \
  MPI_interfaceF.h

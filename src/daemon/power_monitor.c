@@ -57,6 +57,10 @@
 #include <metrics/power_metrics/power_metrics.h>
 #include <metrics/custom/frequency.h>
 
+#if SYSLOG_MSG
+#include <syslog.h>
+#define MIN_POWER_TO_REPORT	70
+#endif
 
 #if DB_MYSQL
 #include <database_cache/eardbd_api.h>
@@ -154,6 +158,10 @@ void clean_job_environment(int id,int step_id)
 	unlink(ear_ping);
 	unlink(fd_lock_filename);
 	unlink(ear_commack);
+	#if SYSLOG_MSG
+	closelog();
+	#endif
+
 	
 
 }
@@ -231,7 +239,7 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	current_ear_app.app.job.end_mpi_time=0;
 	current_ear_app.app.job.end_time=0;
 	// reset signature
-	init_signature(&current_ear_app.app.signature);
+	signature_init(&current_ear_app.app.signature);
 	init_power_signature(&current_ear_app.app.power_sig);
 	current_ear_app.app.power_sig.max_DC_power=0;
 	current_ear_app.app.power_sig.min_DC_power=500;
@@ -659,7 +667,11 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	current_sample.avg_f=avg_f;
 	#endif	
 
-
+	#if SYSLOG_MSG
+	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< MIN_POWER_TO_REPORT)){
+		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
+	}
+	#endif
 	#if DB_MYSQL
 	if (my_cluster_conf.eard.use_mysql){
 		if (!my_cluster_conf.eard.use_eardbd){
@@ -713,7 +725,7 @@ void create_powermon_out()
 
 void powermon_mpi_signature(application_t *app)
 {
-    copy_signature(&current_ear_app.app.signature,&app->signature);
+    signature_copy(&current_ear_app.app.signature,&app->signature);
     current_ear_app.app.job.def_f=app->job.def_f;
     current_ear_app.app.job.th=app->job.th;
     current_ear_app.app.job.procs=app->job.procs;
@@ -759,6 +771,9 @@ void *eard_power_monitoring(void *noinfo)
 	aperf_periodic_avg_frequency_init_all_cpus();
 	#if REPORT_UNCORE
 	frequency_uncore_counters_start();
+	#endif
+	#if SYSLOG_MSG
+	openlog("eard",LOG_PID|LOG_PERROR,LOG_DAEMON);
 	#endif
 
 	/*
@@ -810,3 +825,25 @@ void powermon_get_status(status_t *my_status)
 		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].th*100.0);
 	}
 }
+
+int print_powermon_app_fd_binary(int fd,powermon_app_t *app)
+{
+	print_application_fd_binary(fd,&app->app);
+	write(fd,&app->job_created,sizeof(uint));
+	print_energy_data_fd_binary(fd,&app->energy_init);
+		
+}
+int read_powermon_app_fd_binary(int fd,powermon_app_t *app)
+{
+	read_application_fd_binary(fd,&app->app);
+	read(fd,&app->job_created,sizeof(uint));
+	read_energy_data_fd_binary(fd,&app->energy_init);
+}
+
+void print_powermon_app(powermon_app_t *app)
+{
+	print_application(&app->app);
+	printf("job created %d\n",app->job_created);
+	print_energy_data(&app->energy_init);
+}
+

@@ -3,8 +3,7 @@
 OBJS = models.o \
        min_time.o \
        min_energy.o \
-       monitoring.o \
-       sig_projections.o
+       monitoring.o 
 
 ########
 

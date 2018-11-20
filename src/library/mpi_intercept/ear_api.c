@@ -70,7 +70,7 @@ char *__HOST__ ;
 #define USE_LOCK_FILES 		1
 
 #if USE_LOCK_FILES
-#include <common/file_lock.h>
+#include <common/file.h>
 static char fd_lock_filename[BUFFSIZE];
 static int fd_master_lock;
 #endif
@@ -110,6 +110,7 @@ int first_time_disabled=0;
 #endif
 #endif
 #if EAR_LIB_SYNC
+#define MASTERS_SYNC_VERBOSE 1
 MPI_Comm new_world_comm,masters_comm;
 int num_masters;
 int my_master_rank;
@@ -165,6 +166,7 @@ void notify_eard_connection(int status)
 	buffer_send[0] = (char)status; 
 
 	/* Not clear the error values */
+	if (my_master_rank==0) earl_verbose(MASTERS_SYNC_VERBOSE,"Number of nodes expected %d\n",my_master_size);
 	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_comm);
 
 
@@ -172,7 +174,7 @@ void notify_eard_connection(int status)
 	{       
 		masters_connected+=(int)buffer_recv[i];
 	}
-	if (my_master_rank==0) earl_verbose(1,"Total number of masters connected %d",masters_connected);
+	if (my_master_rank==0) earl_verbose(MASTERS_SYNC_VERBOSE,"Total number of masters connected %d",masters_connected);
 	if (masters_connected!=num_nodes){
 	/* Some of the nodes is not ok , setting off EARL */
 		if (my_master_rank==0) earl_verbose(0,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
@@ -204,7 +206,7 @@ void attach_to_master_set(int master)
 	if ((masters_comm_created) && (!color)){
 		PMPI_Comm_rank(masters_comm,&my_master_rank);
 		PMPI_Comm_size(masters_comm,&my_master_size);
-		earl_verbose(2,"New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
+		earl_verbose(MASTERS_SYNC_VERBOSE+1,"New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
 	}
 	#endif
 }
@@ -216,7 +218,7 @@ static int get_local_id(char *node_name)
 #if USE_LOCK_FILES
 	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
 
-	if ((fd_master_lock = lock_master(fd_lock_filename)) < 0) {
+	if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
 		master = 1;
 	} else {
 		master = 0;
@@ -376,6 +378,7 @@ void ear_init()
 		update_configuration();	
 	}else{
 		earl_verbose(0,"Shared memory not present, not connecting with EARD");
+		notify_eard_connection(0);
 		my_id=1;
 	}	
 
@@ -470,9 +473,9 @@ void ear_init()
 
 	// Tracing init
 	#if EAR_LIB_SYNC	
-	traces_init(my_master_rank, my_id, num_nodes, my_size, ppnode);
+	traces_init(application.job.app_id,my_master_rank, my_id, num_nodes, my_size, ppnode);
 	#else
-	traces_init(ear_my_rank, my_id, num_nodes, my_size, ppnode);
+	traces_init(application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	#endif
 	traces_start();
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
@@ -508,7 +511,7 @@ void ear_finalize()
 
 #if USE_LOCK_FILES
 	earl_verbose(2, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-	unlock_master(fd_master_lock,fd_lock_filename);
+	file_unlock_master(fd_master_lock,fd_lock_filename);
 #endif
 
 #if MEASURE_DYNAIS_OV

@@ -533,9 +533,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN"))
 	{
 		//
-		if (remote_eard_report_start(sp) != ESPANK_SUCCESS) {
-			_remote_library_disable(sp);
-		}
+		remote_eard_report_start(sp);
 
 		remote_print_environment(sp);
 	}

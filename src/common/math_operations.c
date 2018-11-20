@@ -48,6 +48,7 @@ unsigned long ulong_diff_overflow(unsigned long begin, unsigned long end)
 {
     unsigned long max_16 = USHRT_MAX;
     unsigned long max_32 = ULONG_MAX;
+    unsigned long max_48 = 281474976710656; //2^48
     unsigned long max_64 = ULLONG_MAX;
 
     unsigned long ret = 0;
@@ -56,9 +57,13 @@ unsigned long ulong_diff_overflow(unsigned long begin, unsigned long end)
     {
         ret = max_16 - begin + end;
     }
-    else if ( begin < max_32 && end < max_32)
+    else if (begin < max_32 && end < max_32 && max_32 < max_64)
     {
         ret = max_32 - begin + end;
+    }
+    if (begin < max_48 && end < max_48)
+    {
+        ret = max_48 - begin + end;
     }
     else
     {

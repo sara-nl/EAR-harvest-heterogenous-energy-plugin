@@ -190,7 +190,7 @@ node_data_t diff_node_energy(node_data_t end,node_data_t init)
 	if (end>init){ 
 		ret=end-init;
 	} else{
-		//VERBOSE("OVERFLOW DETECTED!\n");
+		ret=ulong_diff_overflow(init,end);
 	}
 	return ret;
 }
@@ -314,3 +314,11 @@ void print_energy_data(energy_data_t *e)
 	e->CPU_energy[0],e->CPU_energy[1]);
 }
 
+int print_energy_data_fd_binary(int fd, energy_data_t *ed)
+{
+	write(fd,ed,sizeof(energy_data_t));
+}
+int read_energy_data_fd_binary(int fd, energy_data_t *ed)
+{
+	read(fd,ed,sizeof(energy_data_t));
+}

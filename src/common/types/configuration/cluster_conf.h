@@ -85,6 +85,13 @@ typedef struct eard_conf
 * EARGMEnergy=
 * EARGMPort=
 */
+
+#define MAXENERGY   0
+#define MAXPOWER    1
+#define BASIC 	0
+#define KILO 	1
+#define MEGA	2
+
 #define DECON_LIMITS	3
 
 typedef struct eargm_conf
@@ -277,6 +284,9 @@ void print_database_conf(db_conf_t *conf);
 
 /** prints in the stderr the specific node configuration */
 void print_my_node_conf(my_node_conf_t *my_node_conf);
+
+int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
+int read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
 
 /** prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p);

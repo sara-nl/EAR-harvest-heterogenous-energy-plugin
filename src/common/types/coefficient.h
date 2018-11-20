@@ -47,22 +47,16 @@ typedef struct coefficient
     double F;
 } coefficient_t;
 
-/* functions */
-
+// File
 int coeff_file_size(char *path);
-
-int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size);
 
 int coeff_file_read(char *path, coefficient_t **coeffs);
 
-void coeff_print(coefficient_t *coeff);
+int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size);
 
-double coeff_project_pow(double pow_sign, double tpi_sign, coefficient_t *coeffs);
-
-double coeff_project_cpi(double cpi_sign, double tpi_sign, coefficient_t *coeffs);
-
-double coeff_project_tim(double tim_sign, double cpi_proj, double cpi_sign,
-						 ulong f_src, ulong f_dst);
+// Misc
 void coeff_reset(coefficient_t *coeff);
+
+void coeff_print(coefficient_t *coeff);
 
 #endif
