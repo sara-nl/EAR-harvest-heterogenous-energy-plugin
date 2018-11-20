@@ -62,7 +62,7 @@ void stats_print()
 	verline0();
 
 	//
-	tprintf_init(stderr, "15 13 9 10 10");
+	tprintf_init(stderr, STR_MODE_DEF, "15 13 9 10 10");
 
 	//
 	tprintf("sample||recv/alloc||%%||t. insr||t. recv");
@@ -81,7 +81,7 @@ void stats_print()
 				prcnt, itime, gtime);
 	}
 
-	tprintf_init(stderr, "15 13 9 10 10");
+	tprintf_init(stderr, STR_MODE_DEF, "15 13 9 10 10");
 
 	// Unknowns
 	//tprintf("unknown||%u/--||--||--||--", soc_unkwn);
