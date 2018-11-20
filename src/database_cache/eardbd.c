@@ -288,7 +288,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	// Configuration
-#if 0
+#if 1
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
@@ -457,8 +457,8 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	}
 
 	//
-	sockets_nonblock_set(smets_srv);
-	sockets_nonblock_set(smets_mir);
+	sockets_nonblock_set(smets_srv->fd);
+	sockets_nonblock_set(smets_mir->fd);
 
 	// Verbosity
 	char *str_sta[2] = { "listen", "closed" };
@@ -845,7 +845,7 @@ static void pipeline()
 				{
 					do {
 						s1 = sockets_accept(i, &fd_cli, &addr_cli);
-						
+	
 						if (state_ok(s1))
 						{
 							FD_SET(fd_cli, &fds_active);
