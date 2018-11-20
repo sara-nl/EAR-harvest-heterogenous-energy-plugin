@@ -458,6 +458,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	//
 	sockets_nonblock_set(smets_srv->fd);
+	sockets_nonblock_set(ssync_srv->fd);
 	sockets_nonblock_set(smets_mir->fd);
 
 	// Verbosity

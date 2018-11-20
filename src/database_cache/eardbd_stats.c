@@ -30,6 +30,12 @@
 #include <stdlib.h>
 #include <database_cache/eardbd.h>
 
+// Mirroring
+extern int master_iam;
+extern int server_iam;
+extern int mirror_iam;
+
+// Metrics
 extern time_t glb_time1[MAX_TYPES];
 extern time_t glb_time2[MAX_TYPES];
 extern time_t ins_time1[MAX_TYPES];
@@ -65,8 +71,8 @@ void stats_print()
 	tprintf_init(stderr, STR_MODE_DEF, "15 13 9 10 10");
 
 	//
-	tprintf("sample||recv/alloc||%%||t. insr||t. recv");
-	tprintf("----||----------||--||-------||-------");
+	tprintf("sample (%d)||recv/alloc||%%||t. insr||t. recv", mirror_iam);
+	tprintf("-----------||----------||--||-------||-------");
 
 	for (i = 0; i < MAX_TYPES; ++i)
 	{
@@ -77,7 +83,7 @@ void stats_print()
 		block = ((float) (sam_recvd[i] * typ_sizof[i]) / 1000000.0);
 
 		tprintf("%s||%u/%lu||%2.2f||%0.2fs||%0.2fs",
-				sam_iname[i], sam_index[i], sam_inmax[i],
+				sam_iname[i], sam_recvd[i], sam_inmax[i],
 				prcnt, itime, gtime);
 	}
 
@@ -129,11 +135,9 @@ void stats_account_insert_start(uint i)
 	time(&ins_time1[i]);
 }
 
-void stats_account_insert_stop(uint i, uint max)
+void stats_account_insert_stop(uint i, ulong max)
 {
-	//
 	time(&ins_time2[i]);
-	sam_index[i] = max;
 }
 
 /*
@@ -222,6 +226,10 @@ void stats_sample_account(int fd, packet_header_t *header, char *content)
 
 	type  = stats_type_extract(header, content);
 	index = stats_type_index(type, name);
+
+	if (index == -1) {
+		return;
+	}
 
 	//
 	if (sam_recvd[index] == 0)

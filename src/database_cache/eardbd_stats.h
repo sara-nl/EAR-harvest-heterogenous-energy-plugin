@@ -62,7 +62,7 @@
 
 void stats_account_insert_start(uint i);
 
-void stats_account_insert_stop(uint i, uint max);
+void stats_account_insert_stop(uint i, ulong max);
 
 void stats_sample_account(int fd, packet_header_t *header, char *content);
 
