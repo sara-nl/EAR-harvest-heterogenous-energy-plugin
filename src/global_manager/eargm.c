@@ -50,6 +50,10 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/gm_warning.h>
 #include <common/database/db_helper.h>
+#if SYSLOG_MSG
+#include <syslog.h>
+#endif
+
 
 /*
 *	EAR Global Manager constants
@@ -186,6 +190,10 @@ static void my_signals_function(int s)
     	}
 	}else{
 		eargm_verbose(0,"Exiting");
+	    #if SYSLOG_MSG
+	    closelog();
+	    #endif
+
 		exit(0);
 	}
 }
@@ -415,6 +423,13 @@ ulong eargm_reduce_frequencies_all_nodes(int level)
 	reduce_frequencies_all_nodes(ps,my_cluster_conf);
 	return ps;
 }
+void report_status(gm_warning_t *my_warning)
+{
+    #if SYSLOG_MSG
+    syslog(LOG_DAEMON|LOG_ERR,"Warning level %d: p_state %u energy/power perc %.3lf inc_th %.2lf \n",my_warning->level,my_warning->new_p_state,my_warning->energy_percent,my_warning->inc_th);
+	#endif
+}
+
 
 
 
@@ -458,6 +473,10 @@ void main(int argc,char *argv[])
         eargm_verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }
+    #if SYSLOG_MSG
+    openlog("eargm",LOG_PID|LOG_PERROR,LOG_DAEMON);
+    #endif
+
 	eargm_verbose(0,"Using %s as EARGM configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         eargm_verbose(0," Error reading cluster configuration\n");
@@ -592,6 +611,7 @@ void main(int argc,char *argv[])
 				#if DB_MYSQL	
 				db_insert_gm_warning(&my_warning);
 				#endif
+				report_status(&my_warning);
 				break;
 			case WARNING_2:
 				in_action+=my_cluster_conf.eargm.grace_periods;
@@ -610,6 +630,7 @@ void main(int argc,char *argv[])
 				#if DB_MYSQL	
 				db_insert_gm_warning(&my_warning);
 				#endif
+				report_status(&my_warning);
 				break;
 			case PANIC:
 				in_action+=my_cluster_conf.eargm.grace_periods;
@@ -628,6 +649,7 @@ void main(int argc,char *argv[])
 				#if DB_MYSQL	
 				db_insert_gm_warning(&my_warning);
 				#endif
+				report_status(&my_warning);
 				break;
 			}
 			}else in_action--;
@@ -647,6 +669,11 @@ void main(int argc,char *argv[])
     		fill_periods(result);
 		}
 	}
+
+    #if SYSLOG_MSG
+    closelog();
+    #endif
+
 
     
 

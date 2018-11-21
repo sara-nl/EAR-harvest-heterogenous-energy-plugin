@@ -41,6 +41,12 @@
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/generic.h>
 
+/**
+* @file node_conf.h
+* @brief This file includes basic types and functions headers to manipulate nodes and nodes settings
+*
+*/
+
 
 /*
  *

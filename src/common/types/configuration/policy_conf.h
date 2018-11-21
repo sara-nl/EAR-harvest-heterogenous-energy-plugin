@@ -28,7 +28,7 @@
 */
 /**
  * @file policy_conf.h
- * @brief This file include constants to specify the number of supported policies and the policies id's
+ * @brief This file includes types, constants,and headers to specify the number of supported policies and the policies id's
  *
  * When adding a new policy, we must provide a set of functions to identify policies by name (targeted to users) and by policy id, for internal use.
  * Moreover, basic functions to copy, print etc are provided
@@ -38,6 +38,7 @@
 #ifndef _POLICY_CONF_H
 #define _POLICY_CONF_H
 
+#include <common/config.h>
 #include <common/types/generic.h>
 #define TOTAL_POLICIES          3
 

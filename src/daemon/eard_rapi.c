@@ -71,6 +71,9 @@ int send_command(request_t *command)
 	}
 	ret=read(eards_sfd,&ack,sizeof(ulong));
 	if (ret<0){
+		eard_verbose(0,"Error receiving ack %s\n",strerror(errno));
+	}
+	else if (ret!=sizeof(ulong)){
 		eard_verbose(0,"Error receiving ack %d\n",ret);
 	}
 	return (ret==sizeof(ulong)); // Should we return ack ?
