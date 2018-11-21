@@ -510,6 +510,7 @@ void read_coefficients()
 	{
 		n_coeffs = coeff_file_read(path_input, &coeffs);
 	}
+
 	// If default is selected
 	else if (!opt_d)
 	{
@@ -564,6 +565,7 @@ void usage(int argc, char *argv[])
 
 	frq_base = (unsigned long) atoi(argv[2]);
 	strcpy(name_node, argv[1]);
+
 	//
 	while ((c = getopt (argc, argv, "ACDGHI:S")) != -1)
 	{

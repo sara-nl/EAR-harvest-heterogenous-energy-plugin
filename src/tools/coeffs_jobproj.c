@@ -41,18 +41,20 @@
 int EAR_VERBOSE_LEVEL = 0;
 int COLUMNS = 6;
 
-static char *cofs_str[2] = { "ok", "def" };
 static char buffer [SZ_PATH];
+static char path_input[SZ_PATH];
+static char *cofs_str[2] = { "ok", "def", "cus" };
 
 /* */
 static cluster_conf_t conf;
 
 /* Merged applications */
-static application_t  *apps;
+static signature_t sign_mean;
 static coefficient_t **cofs;
-static int apps_n;
-static int *cofs_n;
+static application_t  *apps;
 static int *cofs_s;
+static int *cofs_n;
+static int apps_n;
 
 /* Frequency */
 static ulong *f_dst;
@@ -64,6 +66,8 @@ static job_id jobp_id;
 static int opt_a;
 static int opt_c;
 static int opt_h;
+static int opt_i;
+static int opt_m;
 
 /*
  *
@@ -125,6 +129,24 @@ static void print_similars(application_t *app)
 	free(apps);
 }
 
+static void mean()
+{
+	int n;
+
+	for(n = 0; n < apps_n && opt_m; ++n)
+	{
+		sign_mean.CPI  += CPI;
+		sign_mean.TPI  += TPI;
+		sign_mean.time += time;
+		sign_mean.time += DC_power;
+	}
+
+	sign_mean.CPI  /= (double) apps_n;
+	sign_mean.TPI  /= (double) apps_n;
+	sign_mean.time /= (double) apps_n;
+	sign_mean.time /= (double) apps_n;
+}
+
 static void print()
 {
 	double proj_cpi[COLUMNS];
@@ -133,32 +155,50 @@ static void print()
 	double proj_pow[COLUMNS];
 	application_t *p_apps;
 	coefficient_t *p_cofs;
+	signature_t   *p_sign;
 	int n, c, t1, t2, num;
 	char *app_id;
 
+	//
 	app_id = apps[0].job.app_id;
 
 	if ((num = strlen(app_id)) > 12) {
 		app_id = &app_id[num-11];
 	}
 
-	if (opt_c && !opt_h) {
+	// Headers
+	if (opt_c && !opt_h)
+	{
 		fprintf(stderr, "Node;Coe.;Freq.;T. Real;T. 1;T. 2;T. 3;T. 4;T. 5;P. Real;P. 1;P. 2;P. 3;P. 4;P. 5\n");
-	} else if (!opt_c) {
-		tprintf_init(stderr, STR_MODE_DEF, "12 3 13 11 11 11 11 11 13 11 11 11 11 11");
+	}
+	else if (!opt_c)
+	{
+		tprintf_init(stderr, STR_MODE_DEF, "12 3 11 11 11 11 11 11 11 11 11 11 11 11");
 
 		if (!opt_h) {
-			tprintf("%s||Coe|| | T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|| | P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
+			tprintf("%s||Coe|||T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|||P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
 				app_id);
 		}
 	}
 
+	if (opt_m) {
+		apps_n = 1;
+	}
+
+	// For all nodes (or apps)
 	for(n = 0; n < apps_n; ++n)
 	{
 		// Pointers
-		p_apps = &apps[n];
-		p_cofs = cofs[n];
 		num = cofs_n[n];
+		p_cofs = cofs[n];
+		p_apps = &apps[n];
+
+		// Selecting signature (app or mean)
+		if (opt_m) {
+			p_sign = sign_mean;
+		} else {
+			p_sign = &p_apps->signature;
+		}
 
 		// Real values
 		proj_tim[0] = p_apps->signature.time;
@@ -173,9 +213,9 @@ static void print()
 				{
 					if (p_cofs[c].pstate == f_dst[t1])
 					{
-						proj_cpi[t2] = project_cpi(&p_apps->signature, &p_cofs[c]);
-						proj_tim[t2] = project_time(&p_apps->signature, &p_cofs[c]);
-						proj_pow[t2] = project_power(&p_apps->signature, &p_cofs[c]);
+						proj_cpi[t2] = project_cpi(p_sign, &p_cofs[c]);
+						proj_tim[t2] = project_time(p_sign, &p_cofs[c]);
+						proj_pow[t2] = project_power(p_sign, &p_cofs[c]);
 						//printf("%d %0.2lf %lu\n", t2, proj_tim[t2], p_cofs[c].pstate);
 						t2 += 1;
 					}
@@ -192,7 +232,7 @@ static void print()
 		}
 		else
 		{
-			tprintf("%s||%s|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf|| | %0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
+			tprintf("%s||%s|||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf|||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf||%0.2lf",
  			p_apps->node_id, cofs_str[cofs_s[n]],
 			proj_tim[0], proj_tim[1], proj_tim[2], proj_tim[3], proj_tim[4], proj_tim[5],
 			proj_pow[0], proj_pow[1], proj_pow[2], proj_pow[3], proj_pow[4], proj_pow[5]);
@@ -277,28 +317,35 @@ void read_coefficients()
 		//
 		sprintf(buffer, "%s/island%d/coeffs.%s",
 			conf.earlib.coefficients_pathname, island, apps[i].node_id);
-		
-		// Reading the coefficient
-		cofs_n[i] = coeff_file_read(buffer, &cofs[i]);
 
-		if (cofs_n[i] <= 0)
+		// Reading the coefficient
+		if (opt_i)
 		{
-			//
-			sprintf(buffer, "%s/island%d/coeffs.default",
-            	conf.earlib.coefficients_pathname, island);
-        
-			//
-			cofs_n[i] = coeff_file_read(buffer, &cofs[i]);
-			
+			cofs_s[i] = 2;
+			cofs_n[i] = coeff_file_read(path_input, &coeffs);
+
 			if (cofs_n[i] <= 0) {
-				fprintf(stderr, "no coefficients found for node %s\n", node);
+				fprintf(stderr, "no custom coefficients found\n", node);
 				exit(1);
 			}
-
-			cofs_s[i] = 1;
-		}
-		else {
+		} else {
 			cofs_s[i] = 0;
+			cofs_n[i] = coeff_file_read(buffer, &cofs[i]);
+
+			if (cofs_n[i] <= 0) {
+				//
+				sprintf(buffer, "%s/island%d/coeffs.default",
+						conf.earlib.coefficients_pathname, island);
+
+				//
+				cofs_s[i] = 1;
+				cofs_n[i] = coeff_file_read(buffer, &cofs[i]);
+
+				if (cofs_n[i] <= 0) {
+					fprintf(stderr, "no coefficients found for node %s\n", node);
+					exit(1);
+				}
+			}
 		}
 	}
 
@@ -331,6 +378,9 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "\t\tnode, policy and number of processes.\n");
 		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
 		fprintf(stdout, "\t-H\tHides the header and the summary.\n");
+		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
+		fprintf(stdout, "\t-M <p>\tProject using the mean of all applications\n");
+		fprintf(stdout, "\t\t\tsignatures and custom coefficients file.\n");
 		exit(1);
 	}
 
@@ -339,7 +389,7 @@ void usage(int argc, char *argv[])
 	step_id = (unsigned long) atoi(argv[2]);
 
 	//
-	while ((c = getopt (argc, argv, "ACH")) != -1)
+	while ((c = getopt (argc, argv, "ACHI:M")) != -1)
 	{
 		switch (c)
 		{
@@ -351,6 +401,15 @@ void usage(int argc, char *argv[])
 				break;
 			case 'H':
 				opt_h = 1;
+				break;
+			case 'I':
+				opt_i = 1;
+				strcpy(path_input, optarg);
+				break;
+			case 'M':
+				opt_m = 1;
+				opt_i = 1;
+				strcpy(path_input, optarg);
 				break;
 			case '?':
 				break;
@@ -392,6 +451,8 @@ int main(int argc, char *argv[])
 	read_coefficients();
 
 	// Work bench
+	mean();
+
 	print();
 
 	return 0;
