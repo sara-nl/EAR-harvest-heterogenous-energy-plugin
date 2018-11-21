@@ -372,7 +372,6 @@ void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz,
 
 	*idx += 1;
 
-	verwho1("#### %lu %lu", *idx, len);
 	if (*idx == len)
 	{
 		//TODO: MPKFA
