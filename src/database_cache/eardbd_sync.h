@@ -27,18 +27,21 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_EARDBD_STORAGE_H
-#define EAR_EARDBD_STORAGE_H
+#ifndef EAR_EARDBD_SYNC_H
+#define EAR_EARDBD_SYNC_H
 
-/* Functions */
-void reset_all();
+#include <database_cache/eardbd.h>
 
-void reset_indexes();
+void time_substract_timeouts();
 
-void insert_hub(uint option, uint reason);
+void time_reset_timeout_insr(time_t offset_insr);
 
-void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt);
+void time_reset_timeout_aggr();
 
-void storage_sample_receive(int fd, packet_header_t *header, char *content);
+void time_reset_timeout_slct();
 
-#endif //EAR_EARDBD_STORAGE_H
+int sync_question(uint sync_option);
+
+int sync_answer(int fd);
+
+#endif //EAR_EARDBD_SYNC_H

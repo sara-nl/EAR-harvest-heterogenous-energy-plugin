@@ -267,13 +267,14 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     int current_apps = 0;
 
     int i = 0;
-    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy, avg_VPI;
+    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy, avg_VPI, gflops_watt;
     avg_frequency = 0;
     avg_time = 0;
     avg_power = 0;
     total_energy = 0;
     avg_CPI = 0;
     avg_GBS = 0;
+    gflops_watt = 0;
     char curr_policy[3];
     char missing_apps = -1;
     char header_format[256];
@@ -285,41 +286,41 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     {
         if (avx)
         {
-            strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s\n");
-            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf\n");
-            strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s\n");
+            strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s %-14s\n");
+            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf\n");
+            strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-14s\n");
         }
         else
         {
-            strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s\n");
-            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf\n");
-            strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf\n");
+            strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s\n");
+            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf\n");
+            strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s\n");
         }
     }
     else
     {
         if (avx)
         {
-            strcpy(header_format, "%s-%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
-            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s\n");
+            strcpy(header_format, "%s-%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
+            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
+            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s;%s\n");
         }
         else
         {
-            strcpy(header_format, "%s-%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
-            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf\n");
+            strcpy(header_format, "%s-%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
+            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
+            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s\n");
         }
     }
     if (avx)
         dprintf(fd, header_format,
             "JOB", "STEP", "USER", "APPLICATION", "POLICY", "NODES#", "FREQ(GHz)", "TIME(s)",
-            "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "AVX");
+            "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "GFLOPS/WATT", "VPI");
 
     else
         dprintf(fd, header_format,
             "JOB", "STEP", "USER", "APPLICATION", "POLICY", "NODES#", "FREQ(GHz)", "TIME(s)",
-            "POWER(Watts)", "GBS", "CPI", "ENERGY(J)");
+            "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "GFLOPS/WATT");
 
     for (i = 0; i < num_apps; i ++)
     {
@@ -335,6 +336,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_power += apps[i].signature.DC_power;
                 avg_GBS += apps[i].signature.GBS;
                 avg_CPI += apps[i].signature.CPI;
+                gflops_watt += apps[i].signature.Gflops;
                 total_energy += apps[i].signature.time * apps[i].signature.DC_power;
                 current_apps++;
             }
@@ -367,12 +369,14 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             if (current_is_mpi && !all_mpi)
             {
                 
+                gflops_watt /= avg_power;
                 avg_frequency /= current_apps;
                 avg_time /= current_apps;
                 avg_power /= current_apps;
                 avg_GBS /= current_apps;
                 avg_CPI /= current_apps;
                 avg_VPI /= current_apps;
+                
 
 				if (avg_VPI == 0)
 					avg_VPI = -1;
@@ -382,12 +386,12 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                     if (avx)
                         dprintf(fd, line_format,
                             current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, avg_VPI);
+                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI);
 
                     else
                         dprintf(fd, line_format,
                             current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt);
                 }
                 else
                     missing_apps++;
@@ -402,11 +406,11 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                     if (avx)
                         dprintf(fd, mpi_line_format,
                             current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
+                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL");
                     else
                         dprintf(fd, mpi_line_format,
                             current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
+                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
 
                 }
                 else
@@ -426,6 +430,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_CPI = 0;
                 avg_VPI = 0;
                 total_energy = 0;
+                gflops_watt = 0;
                 i--; //go back to current app
             }
         }
@@ -438,6 +443,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 
         if (apps[i-1].is_mpi)
         {
+            gflops_watt /= avg_power;
             avg_frequency /= current_apps;
             avg_time /= current_apps;
             avg_power /= current_apps;
@@ -452,11 +458,11 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 if (avx)
                     dprintf(fd, line_format,
                         current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                        avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, avg_VPI);
+                        avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI);
                 else
                     dprintf(fd, line_format,
                         current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                        avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy);
+                        avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt);
 
             }
             else
@@ -472,11 +478,11 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 if (avx)
                     dprintf(fd, mpi_line_format,
                         current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
+                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL");
                 else
                     dprintf(fd, mpi_line_format,
                         current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy);
+                        avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
 
             }
             else
@@ -486,6 +492,10 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     }
     if (missing_apps > 0 && fd==STDOUT_FILENO)
         printf("\nSome jobs are not being shown because either their avg. frequency, time or total energy were 0. To see those jobs run with -l option.\n");
+
+    if (avx)
+        printf("\nA -1.0 in the VPI column means an absolute 0 in that field. This is done to distinguish from very low values.\n");
+
     printf("\n");
 }
 

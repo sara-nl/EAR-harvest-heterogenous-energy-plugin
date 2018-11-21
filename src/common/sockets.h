@@ -69,9 +69,7 @@ typedef struct packet_header {
 #define PACKET_CONTENT(buffer) \
 	(void *) &buffer[sizeof(packet_header_t)];
 
-/* Functions */
-state_t sockets_header_clean(packet_header_t *header);
-
+/* Initialization */
 state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol);
 
 state_t sockets_dispose(socket_t *socket);
@@ -88,22 +86,32 @@ state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_add
 
 state_t sockets_connect(socket_t *socket);
 
+/* Closing */
 state_t sockets_close(socket_t *socket);
 
 state_t sockets_close_fd(int fd);
 
+/* Write & read */
 state_t sockets_send(socket_t *socket, packet_header_t *header, char *content);
 
 state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer, int block);
 
-state_t sockets_set_timeout(int fd, time_t timeout);
+/* Timeout */
+state_t sockets_timeout_set(int fd, time_t timeout);
 
-state_t sockets_get_timeout(int fd, time_t *timeout);
+state_t sockets_timeout_get(int fd, time_t *timeout);
 
+/* Non-blocking */
+state_t sockets_nonblock_set(int fd);
+
+state_t sockets_nonblock_clean(int fd);
+
+/* Header */
 state_t sockets_header_clean(packet_header_t *header);
 
 state_t sockets_header_update(packet_header_t *header);
 
+/* Addresses */
 void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length);
 
 void sockets_get_address_fd(int fd, char *buffer, int length);

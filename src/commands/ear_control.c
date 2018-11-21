@@ -48,8 +48,9 @@
 #include <common/types/configuration/cluster_conf.h>
                    
 #define NUM_LEVELS  4
-#define MAX_PSTATE 16
-#define IP_LENGTH 24
+#define MAX_PSTATE  16
+#define IP_LENGTH   24
+#define MAX_POWER   400
 
 
 typedef struct ip_table
@@ -148,7 +149,7 @@ void print_ips(ip_table_t *ips, int num_ips)
     char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
-        if (ips[i].counter && ips[i].power != 0)
+        if (ips[i].counter && ips[i].power != 0 && ips[i].power < MAX_POWER)
         {
             printf("%10s\t%10s\t%5d", ips[i].name, ips[i].ip, ips[i].power); 
 		    for (j = 0; j < TOTAL_POLICIES; j++)
@@ -168,8 +169,8 @@ void print_ips(ip_table_t *ips, int num_ips)
         {
             if (!ips[i].counter)
                 printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
-            else if (!ips[i].power)
-                printf("%10s\t%10s\t%10s\n", ips[i].name, ips[i].ip, "->power error");
+            else if (!ips[i].power || ips[i].power > MAX_POWER)
+                printf("%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
         }
     }
 }

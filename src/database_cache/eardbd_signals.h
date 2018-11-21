@@ -27,18 +27,11 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_EARDBD_STORAGE_H
-#define EAR_EARDBD_STORAGE_H
+#ifndef EAR_EARDBD_SIGNALS_H
+#define EAR_EARDBD_SIGNALS_H
 
-/* Functions */
-void reset_all();
+#include <signal.h>
 
-void reset_indexes();
+void signal_handler(int signal, siginfo_t *info, void *context);
 
-void insert_hub(uint option, uint reason);
-
-void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt);
-
-void storage_sample_receive(int fd, packet_header_t *header, char *content);
-
-#endif //EAR_EARDBD_STORAGE_H
+#endif //EAR_EARDBD_SIGNALS_H
