@@ -42,12 +42,14 @@
 int EAR_VERBOSE_LEVEL = 1;
 
 // Configuration
-static cluster_conf_t conf_clus;
+cluster_conf_t conf_clus;
+
+// Input buffers
+packet_header_t input_header;
+char input_buffer[SZ_BUFF_BIG];
+char extra_buffer[SZ_BUFF_BIG];
 
 // Extras
-static pid_t server_pid;
-static pid_t mirror_pid;
-static pid_t others_pid;
 static float alloc;
 static int isle;
 
@@ -59,33 +61,31 @@ socket_t *ssync_srv = &sockets[2];
 socket_t *ssync_mir = &sockets[3];
 
 // Descriptors
-static fd_set fds_metr_tcp;
-static fd_set fds_sync_tcp;
-static fd_set fds_incoming;
-static fd_set fds_incoming;
-static fd_set fds_active;
-
 struct sockaddr_storage addr_cli;
+fd_set fds_metr_tcp;
+fd_set fds_sync_tcp;
+fd_set fds_incoming;
+fd_set fds_incoming;
+fd_set fds_active;
 int fd_cli;
 int fd_min;
 int fd_max;
 
-// Times
-struct timeval timeout_insr;
-struct timeval timeout_aggr;
-struct timeval timeout_slct;
-time_t time_insr;
-time_t time_aggr;
-time_t time_slct;
-
-// Input buffers
-static packet_header_t input_header;
-char input_buffer[SZ_BUFF_BIG];
-char extra_buffer[SZ_BUFF_BIG];
+// Nomenclature:
+// 	- Server: main buffer of the gathered metrics. Inserts buffered metrics in
+//	the database.
+// 	- Mirror: the secondary buffer of the gather metrics. Inserts the buffered
+//	metrics in the database if the server is offline.
+//	- Master: if in a node there is a server and a mirror, the master is the
+//	server. If the server is not enabled because the admin wants the node to
+//	be just a mirror, the mirror is the master.
 
 // Mirroring
 static char master_host[SZ_NAME_MEDIUM]; // This node name
 static char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
+pid_t server_pid;
+pid_t mirror_pid;
+pid_t others_pid;
 static int server_port;
 static int mirror_port;
 static int synchr_port;
@@ -95,15 +95,6 @@ static int others_too; // Just if other process exists
 int master_iam; // Master is who speaks
 int server_iam;
 int mirror_iam;
-
-// Pipeline
-static int reconfiguring;
-static int listening;
-static int releasing;
-static int exitting;
-static int updating;
-static int waiting;
-int forked;
 
 // Synchronization
 packet_header_t sync_ans_header;
@@ -120,149 +111,44 @@ application_t *appsl;
 ear_event_t *evnts;
 loop_t *loops;
 
-uint per_appsm = 40;
-uint per_appsn = 20;
-uint per_appsl = 05;
-uint per_loops = 24;
-uint per_enrgy = 05;
-uint per_aggrs = 01;
-uint per_evnts = 05;
-
-ulong max_aggrs;
-ulong max_enrgy;
-ulong max_appsm;
-ulong max_appsn;
-ulong max_appsl;
-ulong max_evnts;
-ulong max_loops;
-
-// Stats
+// Metrics
 time_t glb_time1[MAX_TYPES];
 time_t glb_time2[MAX_TYPES];
 time_t ins_time1[MAX_TYPES];
 time_t ins_time2[MAX_TYPES];
 size_t typ_sizof[MAX_TYPES];
-uint   sam_index[MAX_TYPES];
+uint   typ_prcnt[MAX_TYPES];
+uint   typ_index[MAX_TYPES];
+char  *typ_alloc[MAX_TYPES];
 char  *sam_iname[MAX_TYPES];
 ulong  sam_inmax[MAX_TYPES];
+ulong  sam_index[MAX_TYPES];
 uint   sam_recvd[MAX_TYPES];
 uint   soc_accpt;
 uint   soc_discn;
 uint   soc_unkwn;
 uint   soc_tmout;
 
+// Times (alarms)
+struct timeval timeout_insr;
+struct timeval timeout_aggr;
+struct timeval timeout_slct;
+time_t time_insr;
+time_t time_aggr;
+time_t time_slct;
+
+// State machine
+int reconfiguring;
+int listening;
+int releasing;
+int exitting;
+int updating;
+int waiting;
+int forked;
+
 // Strings
 char *str_who[2] = { "server", "mirror" };
 int verbosity = 0;
-
-// Nomenclature:
-// 	- Server: main buffer of the gathered metrics. Inserts buffered metrics in
-//	the database.
-// 	- Mirror: the secondary buffer of the gather metrics. Inserts the buffered
-//	metrics in the database if the server is offline.
-//	- Master: if in a node there is a server and a mirror, the master is the
-//	server. If the server is not enabled because the admin wants the node to
-//	be just a mirror, the mirror is the master.
-
-/*
- *
- * Signals
- *
- */
-
-static void signal_handler(int signal, siginfo_t *info, void *context)
-{
-	int propagating = 0;
-
-	if (signal == SIGUSR1)
-	{
-		verwho1("signal SIGUSR1 received on %s, switching verbosity", str_who[mirror_iam]);
-
-		updating  = 1;
-		verbosity = (verbosity + 1) % 4;
-	}
-
-	if (signal == SIGUSR2)
-	{
-		verwho1("signal SIGUSR2 received on %s, switching verbosity", str_who[mirror_iam]);
-	}
-
-	// Case exit
-	if ((signal == SIGTERM || signal == SIGINT) && !exitting)
-	{
-		verwho1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
-
-		propagating = others_pid > 0 && info->si_pid != others_pid;
-		listening   = 0;
-		releasing   = 1;
-		exitting    = 1;
-	}
-
-	// Case reconfigure
-	if (signal == SIGHUP && !reconfiguring)
-	{
-		verwho1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
-
-		propagating   = others_pid > 0 && info->si_pid != others_pid;
-		listening     = 0;
-		reconfiguring = server_iam;
-		releasing     = 1;
-		exitting      = mirror_iam;
-	}
-
-	// Propagate signals
-	if (propagating)
-	{
-		kill(others_pid, signal);
-
-		if (server_iam) {
-			waitpid(mirror_pid, NULL, 0);
-		}
-	}
-}
-
-/*
- *
- * Release
- *
- */
-
-static void release_sockets()
-{
-	// Cleaning sockets
-	sockets_dispose(smets_srv);
-	sockets_dispose(smets_mir);
-	sockets_dispose(ssync_srv);
-}
-
-static void release_resources()
-{
-	release_sockets();
-
-	// Freeing data
-	if (appsm != NULL)
-	{
-		free(appsm);
-		free(appsn);
-		free(appsl);
-		free(enrgy);
-		free(aggrs);
-		free(evnts);
-		free(loops);
-
-		appsm = NULL;
-		appsn = NULL;
-		appsl = NULL;
-		enrgy = NULL;
-		aggrs = NULL;
-		evnts = NULL;
-		loops = NULL;
-	}
-
-	reset_indexes();
-
-	free_cluster_conf(&conf_clus);
-}
 
 /*
  *
@@ -322,7 +208,9 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 			p = is->db_ips[is->ranges[k].db_ip];
 			//vermast1("r %s", p);
 
-			if (!server_too && p != NULL && ((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0)))) {
+			if (!server_too && p != NULL &&
+				((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0))))
+			{
 				//vermast1("db_ip %s", p);
 				server_too = 1;
 			}
@@ -331,7 +219,8 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 			{
 				p = is->backup_ips[is->ranges[k].sec_ip];
 
-				if (p != NULL && ((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0))))
+				if (p != NULL &&
+					((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0))))
 				{
 					//vermast1("db_ip_sec %s", p);
 					strcpy(server_host, is->db_ips[is->ranges[k].db_ip]);
@@ -346,14 +235,15 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	conf_clus->db_manager.tcp_port      = 4811;
 	conf_clus->db_manager.sec_tcp_port  = 4812;
 	conf_clus->db_manager.sync_tcp_port = 4813;
-	conf_clus->db_manager.mem_size      = 100;
+	conf_clus->db_manager.mem_size      = 1;
 	conf_clus->db_manager.aggr_time     = 60;
-	conf_clus->db_manager.insr_time     = 30;
+	conf_clus->db_manager.insr_time     = atoi(argv[4]);
 
 	server_too = atoi(argv[1]);
 	mirror_too = atoi(argv[2]);
 	strcpy(server_host, argv[3]);
 #endif
+
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;
     mirror_port = conf_clus->db_manager.sec_tcp_port;
@@ -527,7 +417,7 @@ static void init_sockets_mirror(int argc, char **argv, cluster_conf_t *conf_clus
 	FD_SET(smets_mir->fd, &fds_active);
 }
 
-static void init_sockets_main(int argc, char **argv, cluster_conf_t *conf_clus)
+static void init_sockets_server(int argc, char **argv, cluster_conf_t *conf_clus)
 {
 	// Destroying mirror soockets
 	sockets_dispose(smets_mir);
@@ -588,7 +478,6 @@ static void init_signals()
 
 static void init_types(int argc, char **argv, cluster_conf_t *conf_clus)
 {
-
 	// Types
 	sam_iname[i_aggrs] = "energy aggrs";
 	sam_iname[i_enrgy] = "energy reps";
@@ -605,6 +494,14 @@ static void init_types(int argc, char **argv, cluster_conf_t *conf_clus)
 	typ_sizof[i_appsl] = sizeof(application_t);
 	typ_sizof[i_evnts] = sizeof(ear_event_t);
 	typ_sizof[i_loops] = sizeof(loop_t);
+
+	typ_prcnt[i_appsm] = 40;
+	typ_prcnt[i_appsn] = 20;
+	typ_prcnt[i_appsl] = 05;
+	typ_prcnt[i_loops] = 24;
+	typ_prcnt[i_enrgy] = 05;
+	typ_prcnt[i_aggrs] = 01;
+	typ_prcnt[i_evnts] = 05;
 }
 
 static ulong get_allocation_elements(float percent, size_t size)
@@ -644,7 +541,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	if (mirror_iam) {
 		init_sockets_mirror(argc, argv, conf_clus);
 	} else {
-		init_sockets_main(argc, argv, conf_clus);
+		init_sockets_server(argc, argv, conf_clus);
 	}
 
 	for (i = 0; i < EARDBD_TYPES; ++i) {
@@ -652,30 +549,22 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	}
 
 	if (per_total > 90 && per_total < 110) {
-		per_appsm = conf_clus->db_manager.mem_size_types[0];
-		per_appsn = conf_clus->db_manager.mem_size_types[1];
-		per_appsl = conf_clus->db_manager.mem_size_types[2];
-		per_loops = conf_clus->db_manager.mem_size_types[3];
-		per_enrgy = conf_clus->db_manager.mem_size_types[4];
-		per_aggrs = conf_clus->db_manager.mem_size_types[5];
-		per_evnts = conf_clus->db_manager.mem_size_types[6];
-	} else {
-		per_appsm = 40;
-		per_appsn = 20;
-		per_appsl = 05;
-		per_loops = 24;
-		per_enrgy = 05;
-		per_aggrs = 01;
-		per_evnts = 05;
+		typ_prcnt[i_appsm] = conf_clus->db_manager.mem_size_types[0];
+		typ_prcnt[i_appsn] = conf_clus->db_manager.mem_size_types[1];
+		typ_prcnt[i_appsl] = conf_clus->db_manager.mem_size_types[2];
+		typ_prcnt[i_loops] = conf_clus->db_manager.mem_size_types[3];
+		typ_prcnt[i_enrgy] = conf_clus->db_manager.mem_size_types[4];
+		typ_prcnt[i_aggrs] = conf_clus->db_manager.mem_size_types[5];
+		typ_prcnt[i_evnts] = conf_clus->db_manager.mem_size_types[6];
 	}
 
-	float lpc_appsm = ((float) per_appsm) / 100.0;
-	float lpc_appsn = ((float) per_appsn) / 100.0;
-	float lpc_appsl = ((float) per_appsl) / 100.0;
-	float lpc_loops = ((float) per_loops) / 100.0;
-	float lpc_enrgy = ((float) per_enrgy) / 100.0;
-	float lpc_aggrs = ((float) per_aggrs) / 100.0;
-	float lpc_evnts = ((float) per_evnts) / 100.0;
+	float lpc_appsm = ((float) typ_prcnt[i_appsm]) / 100.0;
+	float lpc_appsn = ((float) typ_prcnt[i_appsn]) / 100.0;
+	float lpc_appsl = ((float) typ_prcnt[i_appsl]) / 100.0;
+	float lpc_loops = ((float) typ_prcnt[i_loops]) / 100.0;
+	float lpc_enrgy = ((float) typ_prcnt[i_enrgy]) / 100.0;
+	float lpc_aggrs = ((float) typ_prcnt[i_aggrs]) / 100.0;
+	float lpc_evnts = ((float) typ_prcnt[i_evnts]) / 100.0;
 
 	// Data allocation
 	sam_inmax[i_aggrs] = get_allocation_elements(lpc_aggrs, typ_sizof[i_aggrs]);
@@ -741,13 +630,20 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	tprintf("type||memory||sample||elems||%%");
 	tprintf("----||------||------||-----||----");
 
-	tprintf("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsm, typ_sizof[i_appsm], sam_inmax[i_appsm], lpc_appsm);
-	tprintf("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsn, typ_sizof[i_appsm], sam_inmax[i_appsn], lpc_appsn);
-	tprintf("learn apps||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_appsl, typ_sizof[i_appsm], sam_inmax[i_appsl], lpc_appsl);
-	tprintf("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_enrgy, typ_sizof[i_enrgy], sam_inmax[i_enrgy], lpc_enrgy);
-	tprintf("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_loops, typ_sizof[i_loops], sam_inmax[i_loops], lpc_loops);
-	tprintf("events||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_evnts, typ_sizof[i_evnts], sam_inmax[i_evnts], lpc_evnts);
-	tprintf("aggregations||%0.2f MBs||%lu Bs||%lu||%0.2f", mb_aggrs, typ_sizof[i_aggrs], sam_inmax[i_aggrs], lpc_aggrs);
+	tprintf("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f",
+			mb_appsm, typ_sizof[i_appsm], sam_inmax[i_appsm], lpc_appsm);
+	tprintf("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f",
+			mb_appsn, typ_sizof[i_appsm], sam_inmax[i_appsn], lpc_appsn);
+	tprintf("learn apps||%0.2f MBs||%lu Bs||%lu||%0.2f",
+			mb_appsl, typ_sizof[i_appsm], sam_inmax[i_appsl], lpc_appsl);
+	tprintf("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f",
+			mb_enrgy, typ_sizof[i_enrgy], sam_inmax[i_enrgy], lpc_enrgy);
+	tprintf("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f",
+			mb_loops, typ_sizof[i_loops], sam_inmax[i_loops], lpc_loops);
+	tprintf("events||%0.2f MBs||%lu Bs||%lu||%0.2f",
+			mb_evnts, typ_sizof[i_evnts], sam_inmax[i_evnts], lpc_evnts);
+	tprintf("aggregations||%0.2f MBs||%lu Bs||%lu||%0.2f",
+			mb_aggrs, typ_sizof[i_aggrs], sam_inmax[i_aggrs], lpc_aggrs);
 
 	tprintf("TOTAL||%0.2f MBs", mb_total);
 	vermast1("TIP! this allocated space is per process server/mirror");
@@ -758,171 +654,10 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
  *
  *
  */
-static int incoming_new_connection(int fd)
+
+void usage(int argc, char **argv)
 {
-	int nc;
-
-	nc  = !mirror_iam && (fd == smets_srv->fd || fd == ssync_srv->fd);
-	nc |=  mirror_iam && (fd == smets_mir->fd);
-
-	return nc;
 }
-
-static void pipeline()
-{
-	state_t s1;
-	state_t s2;
-	state_t s3;
-	int s;
-	int i;
-
-	// BODY
-	while(listening)
-	{
-		fds_incoming = fds_active;
-
-		if ((s = select(fd_max + 1, &fds_incoming, NULL, NULL, &timeout_slct)) == -1) {
-			if (listening && !updating) {
-				error("during select (%s)", strerror(errno));
-			}
-		}
-		
-		// BODY: timeout functions
-		if (timeout_slct.tv_sec == 0 && timeout_slct.tv_usec == 0)
-		{
-			time_substract_timeouts();
-
-			if (timeout_aggr.tv_sec == 0)
-			{
-				verwho1("completed the aggregation number %lu with energy %lu",
-						max_aggrs, aggrs[max_aggrs].DC_energy);
-				
-				// Aggregation time done, so new aggregation incoming
-				storage_sample_add(NULL, sam_inmax[i_aggrs], &max_aggrs, NULL, 0, SYNC_AGGRS);
-
-				// Initializing the new element
-				if (sam_inmax[i_aggrs] > 0) {
-					init_periodic_aggregation(&aggrs[max_aggrs]);
-				}
-
-				//
-				time_reset_timeout_aggr();
-			}
-
-			if (timeout_insr.tv_sec == 0)
-			{
-				// Synchronizing with the MAIN
-				if (mirror_iam)
-				{
-					// Asking the question
-					if(state_fail(sync_question(SYNC_ALL))) {
-						// In case of fail the mirror have to insert the data
-						insert_hub(SYNC_ALL, RES_TIME);
-					} else {
-						// In case of the answer is received the mirror just have to clear the data
-						reset_all();
-					}
-				} else {
-					// Server normal insertion
-					insert_hub(SYNC_ALL, RES_TIME);
-				}
-
-				// If server the time reset is do it after the insert
-				time_reset_timeout_insr(0);
-			}
-
-			time_reset_timeout_slct();
-		}
-
-		// BODY: receiving functions
-		for(i = fd_min; i <= fd_max && listening && !updating; i++)
-		{
-			if (listening && FD_ISSET(i, &fds_incoming)) // we got one!!
-			{
-				// Handle new connections (just for TCP)
-				if (incoming_new_connection(i))
-				{
-					do {
-						s1 = sockets_accept(i, &fd_cli, &addr_cli);
-	
-						if (state_ok(s1))
-						{
-							FD_SET(fd_cli, &fds_active);
-
-							if (fd_cli > fd_max) {
-								fd_max = fd_cli;
-							}
-							if (fd_cli < fd_min) {
-								fd_min = fd_cli;
-							}
-
-							soc_accpt += 1;
-						}
-					} while(state_ok(s1));
-				// Handle data transfers
-				}
-				else
-				{
-					s1 = sockets_receive(i, &input_header, input_buffer, sizeof(input_buffer), 0);
-
-					if (state_ok(s1))
-					{
-						//
-						stats_sample_account(i, &input_header, input_buffer);
-						//
-						storage_sample_receive(i, &input_header, input_buffer);
-					}
-					else
-					{	
-						if (state_is(s1, EAR_SOCK_DISCONNECTED)) {
-							//verwho1("disconnected from socket %d (num: %d, str: %s)",
-							//		i, intern_error_num, intern_error_str);
-							soc_discn += 1;
-						} if (state_is(s1, EAR_SOCK_TIMEOUT)) {
-							sockets_get_address_fd(i, extra_buffer, SZ_BUFF_BIG);
-							//verwho1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
-							//		i, extra_buffer, intern_error_num, intern_error_str);
-							soc_tmout += 1;
-						} else {
-							//verwho1("on reception (num: %d, str: %s), disconnecting from socket %d",
-							//		intern_error_num, intern_error_str, i);
-							soc_unkwn += 1;
-						}
-
-						sockets_close_fd(i);
-						FD_CLR(i, &fds_active);
-					}
-				}
-			} // FD_ISSET
-		}
-
-		// BODY: insert functions
-
-		updating = 0;
-	}
-
-	// BODY: closing
-	for(i = fd_max; i >= fd_min && !listening; --i)
-	{
-		close(i);
-	}
-
-	if (waiting) {
-		waitpid(mirror_pid, NULL, 0);
-	}
-
-	if (releasing) {
-		release_resources();
-		releasing = 0;
-	}
-
-	if (reconfiguring) {
-		sleep(5);
-		reconfiguring = 0;
-	}
-}
-
-void usage(int argc, char **argv) {}
 
 int main(int argc, char **argv)
 {
@@ -957,7 +692,7 @@ int main(int argc, char **argv)
 
 		//
 		verline1("phase 7: listening (processing every %lu s)", time_insr);
-		pipeline();
+		body();
 	}
 
 	return 0;

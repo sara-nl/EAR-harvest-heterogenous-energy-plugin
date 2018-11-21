@@ -8,13 +8,15 @@ eardbd_OBJS = $(SRCDIR)/common/sockets.o \
               $(SRCDIR)/common/types.a
 
 eardbd_SRCS = eardbd.c \
+              eardbd_body.c \
               eardbd_sync.c \
-              eardbd_stats.c \
+              eardbd_signals.c \
               eardbd_storage.c
 
 eardbd_HDRS = eardbd.h \
+              eardbd_body.h \
               eardbd_sync.h \
-              eardbd_stats.h \
+              eardbd_signals.h \
               eardbd_storage.h
 
 ######## RULES

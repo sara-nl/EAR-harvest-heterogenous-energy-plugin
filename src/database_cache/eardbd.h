@@ -33,16 +33,11 @@
 #include <netdb.h>
 #include <common/config.h>
 #include <common/sockets.h>
+#include <common/types/types.h>
 #include <common/string_enhanced.h>
-#include <common/types/log.h>
-#include <common/types/loop.h>
-#include <common/types/generic.h>
-#include <common/types/application.h>
-#include <common/types/periodic_metric.h>
-#include <common/types/periodic_aggregation.h>
-#include <common/types/configuration/cluster_conf.h>
+#include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
-#include <database_cache/eardbd_stats.h>
+#include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
 
 #define CONTENT_TYPE_PER	1

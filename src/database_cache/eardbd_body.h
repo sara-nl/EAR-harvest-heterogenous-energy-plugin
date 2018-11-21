@@ -26,9 +26,8 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
-
-#ifndef EAR_EARDBD_STATS_H
-#define EAR_EARDBD_STATS_H
+#ifndef EAR_EARDBD_BODY_H
+#define EAR_EARDBD_BODY_H
 
 #define line "---------------------------------------------------------------\n"
 #define col1 "\x1b[35m"
@@ -60,14 +59,6 @@
     fprintf(stderr, "\n"); \
     exit(1);
 
-void stats_account_insert_start(uint i);
+void body();
 
-void stats_account_insert_stop(uint i, ulong max);
-
-void stats_sample_account(int fd, packet_header_t *header, char *content);
-
-void stats_reset();
-
-void stats_print();
-
-#endif //EAR_EARDBD_STATS_H
+#endif //EAR_EARDBD_BODY_H
