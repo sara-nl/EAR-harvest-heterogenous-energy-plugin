@@ -327,7 +327,7 @@ void read_coefficients()
 			cofs_n[i] = coeff_file_read(path_input, &cofs[i]);
 
 			if (cofs_n[i] <= 0) {
-				fprintf(stderr, "no custom coefficients found\n", node);
+				fprintf(stderr, "no custom coefficients found\n");
 				exit(1);
 			}
 		} else {
