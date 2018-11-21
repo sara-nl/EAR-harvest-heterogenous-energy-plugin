@@ -30,8 +30,10 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <common/sizes.h>
 #include <common/states.h>
+#include <common/types/signature.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>
 #include <common/types/coefficient.h>
@@ -43,7 +45,7 @@ int COLUMNS = 6;
 
 static char buffer [SZ_PATH];
 static char path_input[SZ_PATH];
-static char *cofs_str[2] = { "ok", "def", "cus" };
+static char *cofs_str[3] = { "ok", "def", "cus" };
 
 /* */
 static cluster_conf_t conf;
@@ -135,16 +137,16 @@ static void mean()
 
 	for(n = 0; n < apps_n && opt_m; ++n)
 	{
-		sign_mean.CPI  += CPI;
-		sign_mean.TPI  += TPI;
-		sign_mean.time += time;
-		sign_mean.time += DC_power;
+		sign_mean.CPI  += apps[n].signature.CPI;
+		sign_mean.TPI  += apps[n].signature.TPI;
+		sign_mean.time += apps[n].signature.time;
+		sign_mean.DC_power += apps[n].signature.DC_power;
 	}
 
 	sign_mean.CPI  /= (double) apps_n;
 	sign_mean.TPI  /= (double) apps_n;
 	sign_mean.time /= (double) apps_n;
-	sign_mean.time /= (double) apps_n;
+	sign_mean.DC_power /= (double) apps_n;
 }
 
 static void print()
@@ -195,7 +197,7 @@ static void print()
 
 		// Selecting signature (app or mean)
 		if (opt_m) {
-			p_sign = sign_mean;
+			p_sign = &sign_mean;
 		} else {
 			p_sign = &p_apps->signature;
 		}
@@ -322,7 +324,7 @@ void read_coefficients()
 		if (opt_i)
 		{
 			cofs_s[i] = 2;
-			cofs_n[i] = coeff_file_read(path_input, &coeffs);
+			cofs_n[i] = coeff_file_read(path_input, &cofs[i]);
 
 			if (cofs_n[i] <= 0) {
 				fprintf(stderr, "no custom coefficients found\n", node);
@@ -380,7 +382,7 @@ void usage(int argc, char *argv[])
 		fprintf(stdout, "\t-H\tHides the header and the summary.\n");
 		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
 		fprintf(stdout, "\t-M <p>\tProject using the mean of all applications\n");
-		fprintf(stdout, "\t\t\tsignatures and custom coefficients file.\n");
+		fprintf(stdout, "\t\tsignatures and custom coefficients file.\n");
 		exit(1);
 	}
 
@@ -389,7 +391,7 @@ void usage(int argc, char *argv[])
 	step_id = (unsigned long) atoi(argv[2]);
 
 	//
-	while ((c = getopt (argc, argv, "ACHI:M")) != -1)
+	while ((c = getopt (argc, argv, "ACHI:M:")) != -1)
 	{
 		switch (c)
 		{
