@@ -59,7 +59,6 @@
 
 #if SYSLOG_MSG
 #include <syslog.h>
-#define MIN_POWER_TO_REPORT	70
 #endif
 
 #if DB_MYSQL
@@ -668,7 +667,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 	#if SYSLOG_MSG
-	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< MIN_POWER_TO_REPORT)){
+	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< MIN_SIG_POWER) || (my_current_power->avg_dc>MAX_SIG_POWER)){
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
 	}
 	#endif

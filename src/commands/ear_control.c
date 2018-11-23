@@ -48,8 +48,9 @@
 #include <common/types/configuration/cluster_conf.h>
                    
 #define NUM_LEVELS  4
-#define MAX_PSTATE 16
-#define IP_LENGTH 24
+#define MAX_PSTATE  16
+#define IP_LENGTH   24
+#define MAX_POWER   400
 
 
 typedef struct ip_table
@@ -148,7 +149,7 @@ void print_ips(ip_table_t *ips, int num_ips)
     char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
-        if (ips[i].counter && ips[i].power != 0)
+        if (ips[i].counter && ips[i].power != 0 && ips[i].power < MAX_POWER)
         {
             printf("%10s\t%10s\t%5d", ips[i].name, ips[i].ip, ips[i].power); 
 		    for (j = 0; j < TOTAL_POLICIES; j++)
@@ -168,8 +169,8 @@ void print_ips(ip_table_t *ips, int num_ips)
         {
             if (!ips[i].counter)
                 printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
-            else if (!ips[i].power)
-                printf("%10s\t%10s\t%10s\n", ips[i].name, ips[i].ip, "->power error");
+            else if (!ips[i].power || ips[i].power > MAX_POWER)
+                printf("%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
         }
     }
 }
@@ -279,13 +280,13 @@ void main(int argc, char *argv[])
             {"set-def-freq", 	required_argument, 0, 4},
             {"set-th",          required_argument, 0, 5},
             {"restore-conf", 	no_argument, 0, 6},
-	        {"ping", 	     	optional_argument, 0, 7},
-            {"status",       	no_argument, 0, 8},
-            {"help",         	no_argument, 0, 9},
+	        {"ping", 	     	optional_argument, 0, 'p'},
+            {"status",       	no_argument, 0, 's'},
+            {"help",         	no_argument, 0, 'h'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "", long_options, &option_idx);
+        c = getopt_long(argc, argv, "p::shv::", long_options, &option_idx);
 
         if (c == -1)
             break;
@@ -342,7 +343,7 @@ void main(int argc, char *argv[])
             case 6:
                 restore_conf_all_nodes(my_cluster_conf);
                 break;
-            case 7:
+            case 'p':
                 if (optarg)
                 {
                     int rc=eards_remote_connect(optarg ,my_cluster_conf.eard.port);
@@ -357,13 +358,19 @@ void main(int argc, char *argv[])
                 else
                     old_ping_all_nodes(my_cluster_conf);
                 break;
-            case 8:
+            case 's':
                 num_status = status_all_nodes(my_cluster_conf, &status);
                 process_status(num_status, status);
                 break;
-            case 9:
+            case 'h':
                 usage(argv[0]);
                 break;
+            case 'v':
+                if (optarg)
+                    EAR_VERBOSE_LEVEL = atoi(optarg);
+                else EAR_VERBOSE_LEVEL = 1;
+
+
         }
     }
 

@@ -125,3 +125,11 @@ unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigne
     }
     return ret;
 }
+long long llong_diff_overflow(long long begin, long long end)
+{
+	long long max_64=LLONG_MAX;
+	long long ret;
+	ret=max_64 - begin + end;
+	return ret;
+}
+

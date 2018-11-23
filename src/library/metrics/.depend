@@ -14,4 +14,5 @@ metrics.o: metrics.c ../../common/config.h ../../metrics/metrics.h \
  ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/types/coefficient.h

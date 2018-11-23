@@ -96,8 +96,8 @@
 #define DEMO				0 		// Used when doing EAR demos. More information is reported
 #define COEFFS_V3			1
 #define APP_API				1
-#define MIN_SIG_POWER                       100.0
-#define MAX_SIG_POWER                       400.0
+#define MIN_SIG_POWER                       70.0
+#define MAX_SIG_POWER                       450.0
 
 
 // EARDBD default values and configuration

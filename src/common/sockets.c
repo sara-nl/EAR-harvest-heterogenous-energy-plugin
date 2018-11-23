@@ -30,9 +30,11 @@
 #include <time.h>
 #include <errno.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <common/sockets.h>
 
 static char output_buffer[SZ_BUFF_BIG];
@@ -43,6 +45,7 @@ state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_add
 	struct sockaddr_storage _cli_addr;
 	struct sockaddr_storage *p = &_cli_addr;
 	socklen_t size = sizeof (struct sockaddr_storage);
+	int flags = 0;
 
 	if (cli_addr != NULL) {
 		p = cli_addr;
@@ -50,25 +53,17 @@ state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_add
 
 	*cli_fd = accept(req_fd, (struct sockaddr *) p, &size);
 
-	if (*cli_fd == -1) {
-		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+	//
+	if (*cli_fd == -1)
+	{
+		if (errno == EWOULDBLOCK || errno == EAGAIN) {
+			state_return_msg(EAR_NOT_READY, errno, strerror(errno));
+		} else {
+			state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+		}
 	}
 
 	state_return(EAR_SUCCESS);
-}
-
-state_t sockets_header_clean(packet_header_t *header)
-{
-	memset((void *) header, 0, sizeof(packet_header_t));
-}
-
-state_t sockets_header_update(packet_header_t *header)
-{
-	if (strlen(header->host_src) == 0) {
-		gethostname(header->host_src, sizeof(header->host_src));
-	}
-
-	header->timestamp = time(NULL);
 }
 
 state_t sockets_listen(socket_t *socket)
@@ -206,6 +201,12 @@ state_t sockets_close_fd(int fd)
 	state_return(EAR_SUCCESS);
 }
 
+/*
+ *
+ * Read & write
+ *
+ */
+
 // Send:
 //
 // Errors:
@@ -218,43 +219,18 @@ state_t sockets_close_fd(int fd)
 //	Returning EAR_ERROR
 //	 - On EACCES, EBADF, ENOTSOCK, EOPNOTSUPP, EINTR, EIO and ENOBUFS
 
-state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
+static state_t _send(socket_t *socket, ssize_t bytes_expc, char *buffer)
 {
-	packet_header_t *output_header;
-	char *output_content;
-	ssize_t bytes_sent;
-	ssize_t bytes_expc;
-	ssize_t bytes_left;
-	state_t s;
-	int n;
+	ssize_t bytes_left = bytes_expc;
+	ssize_t bytes_sent = 0;
 
-	if (header == NULL || content == NULL) {
-		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
-	}
-
-	// Output
-	output_header = PACKET_HEADER(output_buffer);
-	output_content = PACKET_CONTENT(output_buffer);
-
-	// Header process
-	memcpy(output_header, header, sizeof(packet_header_t));
-
-	// Content process
-	memcpy (output_content, content, header->content_size);
-
-	// Sizes
-	bytes_expc = sizeof(packet_header_t) + header->content_size;
-	bytes_left = bytes_expc;
-	bytes_sent = 0;
-
-	// Sending
 	while(bytes_sent < bytes_expc)
 	{
 		if (socket->protocol == TCP) {
-			bytes_sent += send(socket->fd, output_buffer + bytes_sent, bytes_left, 0);
+			bytes_sent += send(socket->fd, buffer + bytes_sent, bytes_left, 0);
 		} else {
-			bytes_sent += send(socket->fd, output_buffer + bytes_sent, bytes_left, 0);
-			//bytes_sent += sendto(socket->fd, output_buffer + bytes_sent, bytes_left, 0, socket->info->ai_addr, socket->info->ai_addrlen);
+			bytes_sent += sendto(socket->fd, buffer + bytes_sent, bytes_left, 0,
+								 socket->info->ai_addr, socket->info->ai_addrlen);
 		}
 
 		if (bytes_sent < 0)
@@ -280,6 +256,30 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	state_return(EAR_SUCCESS);
 }
 
+state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
+{
+	packet_header_t *output_header;
+	char *output_content;
+	state_t state;
+
+	if (header == NULL || content == NULL) {
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
+	}
+
+	// Output
+	output_header = PACKET_HEADER(output_buffer);
+	output_content = PACKET_CONTENT(output_buffer);
+
+	// Copy process
+	memcpy(output_header, header, sizeof(packet_header_t));
+	memcpy (output_content, content, header->content_size);
+
+	// Sending
+	state = _send(socket, sizeof(packet_header_t) + header->content_size, output_buffer);
+
+	state_return(EAR_SUCCESS);
+}
+
 // Receive:
 //
 // Errors:
@@ -295,16 +295,56 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 //	Returning EAR_ERROR
 //	 - On EBADF, ENOTSOCK, EOPNOTSUPP, EINTR, EIO, ENOBUFS and ENOMEM
 
+static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
+{
+	ssize_t bytes_left = bytes_expc;
+	ssize_t bytes_recv = 0;
+	ssize_t bytes_acum = 0;
+	int intents = 0;
+	int flags = 0;
+
+	if (!block) {
+		flags = MSG_DONTWAIT;
+	}
+
+	while (bytes_left > 0)
+	{
+		bytes_recv = recv(fd, (void *) &buffer[bytes_acum], bytes_left, flags);
+
+		if (bytes_recv == 0) {
+			state_return_msg(EAR_SOCK_DISCONNECTED, 0, "disconnected from socket");
+		}
+		else if (bytes_recv < 0)
+		{
+			switch (errno) {
+				case ENOTCONN:
+				case ETIMEDOUT:
+				case ECONNRESET:
+					state_return_msg(EAR_SOCK_DISCONNECTED, errno, strerror(errno));
+					break;
+				case EINVAL:
+				case EAGAIN:
+					if (!block && intents < NON_BLOCK_TRYS) {
+						intents += 1;
+					} else {
+						state_return_msg(EAR_SOCK_TIMEOUT, errno, strerror(errno));
+					}
+					break;
+				default:
+					state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+			}
+		} else {
+			bytes_acum += bytes_recv;
+			bytes_left -= bytes_recv;
+		}
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
 state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer, int block)
 {
-	ssize_t bytes_recv;
-	ssize_t bytes_expc;
-	ssize_t bytes_left;
-	ssize_t bytes_acum;
-	char *bytes_buff;
-	int f = 0;
-	int i = 0;
-	int w = 0;
+	state_t state;
 
 	if (fd < 0) {
 		state_return_msg(EAR_BAD_ARGUMENT, 0, "invalid file descriptor");
@@ -314,84 +354,30 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
 	}
 
-	if (!block) {
-		f = MSG_DONTWAIT;
+	// Receiving the header
+	state = _receive(fd, sizeof(packet_header_t), (char *) header, block);
+
+	if (state_fail(state)) {
+		state_return(state);
 	}
 
-    //char address[128];
-    //int print = 0;
-    //ssize_t recvr = 0;
-    //sockets_get_address_fd(fd, address, 128);
-    //print = (strcmp(address, "login2301.hpc.eu.lenovo.com") == 0) || (strcmp(address, "login2301") == 0);
-    //if (print) fprintf(stderr, "%d Entering in sockets receive function\n", fd);
+	// Receiving the content
+	state = _receive(fd, header->content_size, buffer, block);
 
-	// Receiving header
-	bytes_buff = (char *) header;
-	bytes_expc = sizeof(packet_header_t);
-	bytes_left = bytes_expc;
-	bytes_acum = 0;
-
-	// Header and content receiving bucle
-	while (i < 2)
-	{
-		while (bytes_left > 0)
-		{
-			//if (print) fprintf(stderr, "%d Calling recv (%d) expecting %ld bytes\n", fd, i, bytes_expc);
-			bytes_recv = recv(fd, (void *) &bytes_buff[bytes_acum], bytes_left, f);
-			//if (print) fprintf(stderr, "%d Received a batch of %ld/%ld bytes\n", fd, bytes_recv, bytes_expc);
-
-			if (bytes_recv == 0) {
-				state_return_msg(EAR_SOCK_DISCONNECTED, 0, "disconnected from socket");
-			}
-			else if (bytes_recv < 0)
-			{
-				switch (errno) {
-					case ENOTCONN:
-					case ETIMEDOUT:
-					case ECONNRESET:
-						state_return_msg(EAR_SOCK_DISCONNECTED, errno, strerror(errno));
-						break;
-					case EINVAL:
-					case EAGAIN:
-						if (!block && w < NON_BLOCK_TRYS) { 
-							w += 1;
-						} else {
-							state_return_msg(EAR_SOCK_TIMEOUT, errno, strerror(errno));
-						}
-						break;
-					default:
-						state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
-				}
-			} else {
-				bytes_acum += bytes_recv;
-				bytes_left -= bytes_recv;
-			}
-		}
-
-		// Passing from header to content 
-		i += 1;
-
-		// Content bucle options
-		if (i == 1)
-		{
-			bytes_buff = buffer;
-			bytes_expc = header->content_size;
-			bytes_left = bytes_expc;
-			bytes_acum = 0;
-
-			if (bytes_expc <= 0) {
-				state_return_msg(EAR_SOCK_OP_ERROR, 0, "unexpected packet size, zero or less bytes expected");
-			}
-			if (bytes_expc > size_buffer) {
-				state_return_msg(EAR_BAD_ARGUMENT, 0, "unexpected packet size, buffer too small for the receiving object");
-			}
-		}
+	if (state_fail(state)) {
+		state_return(state);
 	}
-	
+
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_get_timeout(int fd, time_t *timeout)
+/*
+ *
+ * Timeout
+ *
+ */
+
+state_t sockets_timeout_get(int fd, time_t *timeout)
 {
 	struct timeval tv;
 	socklen_t length;
@@ -406,7 +392,7 @@ state_t sockets_get_timeout(int fd, time_t *timeout)
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_set_timeout(int fd, time_t timeout)
+state_t sockets_timeout_set(int fd, time_t timeout)
 {
 	struct timeval tv;
 
@@ -419,6 +405,54 @@ state_t sockets_set_timeout(int fd, time_t timeout)
 
 	state_return(EAR_SUCCESS);
 }
+
+/*
+ *
+ * Non-blocking
+ *
+ */
+
+state_t sockets_nonblock_set(int fd)
+{
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t sockets_nonblock_clean(int fd)
+{
+	int flags = fcntl(fd, F_GETFL);
+
+	fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
+
+	state_return(EAR_SUCCESS);
+}
+
+/*
+ *
+ * Header
+ *
+ */
+
+state_t sockets_header_clean(packet_header_t *header)
+{
+	memset((void *) header, 0, sizeof(packet_header_t));
+}
+
+state_t sockets_header_update(packet_header_t *header)
+{
+	if (strlen(header->host_src) == 0) {
+		gethostname(header->host_src, sizeof(header->host_src));
+	}
+
+	header->timestamp = time(NULL);
+}
+
+/*
+ *
+ * Addresses
+ *
+ */
 
 void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length)
 {

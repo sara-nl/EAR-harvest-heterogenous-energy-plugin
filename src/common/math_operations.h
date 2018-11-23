@@ -44,3 +44,8 @@ unsigned long long ullong_diff_overflow(unsigned long long begin, unsigned long 
 *   value added to the first to obtain the second. This uses the normal 48 bit max. 
 *   This corrects end-begin when there has been an overflow.*/
 unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end);
+
+/** Given two long long's, one before and one after overflow, returns the
+*   value added to the first to obtain the second. 
+*   This corrects end-begin when there has been an overflow.*/
+long long llong_diff_overflow(long long begin, long long end);

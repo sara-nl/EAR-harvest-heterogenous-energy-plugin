@@ -140,7 +140,7 @@ static void _eardbd_disconnect(socket_t *socket)
 
 state_t eardbd_send_application(application_t *app)
 {
-	return _packet_send(CONTENT_TYPE_APP, (char *) app, sizeof(application_t));
+	return _packet_send(CONTENT_TYPE_APM, (char *) app, sizeof(application_t));
 }
 
 state_t eardbd_send_periodic_metric(periodic_metric_t *met)
@@ -186,7 +186,7 @@ state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	mirror_host = "E7450";
 #endif
 
-	if (server_host == NULL) {
+	if (server_host == NULL || strlen(server_host) == 0) {
 		return EAR_ERROR;
 	}
 
@@ -202,7 +202,7 @@ state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 		return EAR_DBD_ERROR_MAIN;
 	}
 
-	if (mirror_host == NULL) {
+	if (mirror_host == NULL || strlen(mirror_host) == 0) {
 		return EAR_SUCCESS;
 	}
 

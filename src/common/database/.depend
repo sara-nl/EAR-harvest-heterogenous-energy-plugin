@@ -6,6 +6,7 @@ db_helper.o: db_helper.c ../../common/states.h ../../common/ear_verbose.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
  ../../common/types/application.h ../../common/types/job.h \
  ../../common/types/signature.h ../../common/types/gm_warning.h \
  ../../common/types/loop.h ../../common/types/log.h \

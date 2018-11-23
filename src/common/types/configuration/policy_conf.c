@@ -37,21 +37,9 @@
 
 
 /*
- *  * POLICY FUNCTIONS
- *   */
+ *   POLICY FUNCTIONS
+ */
 
-/* Given a  node and policy_id, returns the policy configuration (or NULL) */
-policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id)
-{
-    policy_conf_t *my_policy=NULL;
-    uint i;
-    uint nump=0;
-    while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
-    if (nump<my_node->num_policies){
-        my_policy=&my_node->policies[nump];
-    }
-    return my_policy;
-}
 
 void get_short_policy(char *buf, char *policy)
 {
@@ -114,3 +102,10 @@ int is_valid_policy(unsigned int p_id)
 {
 	return (p_id<TOTAL_POLICIES);
 }
+void print_policy_conf(policy_conf_t *p) 
+{
+    char buffer[64];
+    policy_id_to_name(p->policy,buffer);
+    fprintf(stderr,"---> policy %s th %.2lf p_state %u\n",buffer,p->th,p->p_state);
+}
+

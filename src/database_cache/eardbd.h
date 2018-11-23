@@ -33,16 +33,17 @@
 #include <netdb.h>
 #include <common/config.h>
 #include <common/sockets.h>
-#include <common/types/log.h>
-#include <common/types/loop.h>
-#include <common/types/generic.h>
-#include <common/types/application.h>
-#include <common/types/periodic_metric.h>
-#include <common/types/periodic_aggregation.h>
-#include <common/types/configuration/cluster_conf.h>
+#include <common/types/types.h>
+#include <common/string_enhanced.h>
+#include <database_cache/eardbd_body.h>
+#include <database_cache/eardbd_sync.h>
+#include <database_cache/eardbd_signals.h>
+#include <database_cache/eardbd_storage.h>
 
 #define CONTENT_TYPE_PER	1
-#define CONTENT_TYPE_APP	2
+#define CONTENT_TYPE_APM	2
+#define CONTENT_TYPE_APN	9
+#define CONTENT_TYPE_APL	10
 #define CONTENT_TYPE_LOO	3
 #define CONTENT_TYPE_EVE	4
 #define CONTENT_TYPE_AGG	5
@@ -61,6 +62,14 @@
 #define RES_TIME			1
 #define RES_OVER			2
 #define RES_FAIL			3
+#define i_enrgy 			0
+#define i_appsm 			1
+#define i_appsn				2
+#define i_appsl				3
+#define i_loops				4
+#define i_evnts				5
+#define i_aggrs				6
+#define MAX_TYPES			7
 
 #define sync_option(option, type) \
 	((option & type) > 0)
@@ -75,16 +84,5 @@ typedef struct sync_qst {
 typedef struct sync_ans {
 	int answer;
 } sync_ans_t;
-
-/* Functions */
-int sync_question(uint sync_option);
-
-int sync_answer(int fd);
-
-void time_reset_timeout_insr(time_t offset_insr);
-
-void time_reset_timeout_aggr();
-
-void time_reset_timeout_slct();
 
 #endif //EAR_EARDBD_H

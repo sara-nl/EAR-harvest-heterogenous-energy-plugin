@@ -4,7 +4,8 @@ slurm_plugin_options.o: slurm_plugin_options.c \
  ../common/types/application.h ../common/types/signature.h \
  ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h \
  ../slurm_plugin/slurm_plugin_helper.h \
  ../slurm_plugin/slurm_plugin_options.h
@@ -13,7 +14,8 @@ slurm_plugin_reports.o: slurm_plugin_reports.c ../daemon/eard_rapi.h \
  ../common/types/generic.h ../common/types/signature.h \
  ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h ../daemon/eard_conf_rapi.h \
  ../daemon/shared_configuration.h ../common/types/coefficient.h \
  ../global_manager/eargm_rapi.h ../slurm_plugin/slurm_plugin.h \
@@ -23,7 +25,8 @@ slurm_plugin.o: slurm_plugin.c ../slurm_plugin/slurm_plugin.h \
  ../common/types/generic.h ../common/types/application.h \
  ../common/types/signature.h ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h \
  ../slurm_plugin/slurm_plugin_helper.h \
  ../slurm_plugin/slurm_plugin_options.h \
@@ -34,6 +37,7 @@ slurm_plugin_helper.o: slurm_plugin_helper.c \
  ../common/types/application.h ../common/types/signature.h \
  ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h \
  ../slurm_plugin/slurm_plugin_helper.h

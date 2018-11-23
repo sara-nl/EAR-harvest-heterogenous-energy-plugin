@@ -6,6 +6,7 @@ min_time.o: min_time.c ../../common/config.h ../../control/frequency.h \
  ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
@@ -19,6 +20,7 @@ power_capping.o: power_capping.c ../../common/config.h \
  ../../common/types/loop.h ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
@@ -32,6 +34,7 @@ monitoring.o: monitoring.c ../../common/types/application.h \
  ../../common/types/loop.h ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../library/models/models.h \
  ../../common/environment.h
@@ -43,6 +46,7 @@ models.o: models.c ../../common/config.h ../../control/frequency.h \
  ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \
@@ -58,6 +62,7 @@ min_energy.o: min_energy.c ../../common/config.h \
  ../../common/types/loop.h ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/ear_verbose.h \
  ../../common/states.h ../../common/types/coefficient.h \
  ../../library/models/models.h ../../common/environment.h \

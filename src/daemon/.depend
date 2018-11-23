@@ -1,7 +1,8 @@
 eard_checkpoint.o: eard_checkpoint.c ../common/config.h \
  ../common/ear_verbose.h ../common/types/generic.h \
  ../daemon/eard_checkpoint.h ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../common/states.h ../daemon/power_monitor.h \
  ../common/types/application.h ../common/types/job.h \
  ../common/types/signature.h ../common/types/power_signature.h \
@@ -10,7 +11,8 @@ eard_checkpoint.o: eard_checkpoint.c ../common/config.h \
 dynamic_configuration.o: dynamic_configuration.c ../common/config.h \
  ../control/frequency.h ../common/types/job.h ../common/types/generic.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h ../daemon/eard_server_api.h \
  ../daemon/eard_conf_rapi.h ../common/types/application.h \
  ../common/types/signature.h ../common/types/power_signature.h \
@@ -26,15 +28,16 @@ eard_api.o: eard_api.c ../common/ear_verbose.h ../common/config.h \
 shared_configuration.o: shared_configuration.c ../common/ear_verbose.h \
  ../common/config.h ../common/states.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
- ../common/types/generic.h ../common/types/coefficient.h \
- ../daemon/shared_configuration.h
+ ../common/types/configuration/policy_conf.h ../common/types/generic.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
+ ../common/types/coefficient.h ../daemon/shared_configuration.h
 eard.o: eard.c ../control/frequency.h ../common/states.h \
  ../common/config.h ../common/types/job.h ../common/types/generic.h \
  ../common/types/log.h ../common/types/loop.h ../common/types/signature.h \
  ../common/ear_verbose.h ../common/environment.h \
  ../common/types/services.h ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../metrics/papi/energy_cpu.h ../metrics/papi/generics.h \
  ../metrics/custom/bandwidth.h ../metrics/ipmi/energy_node.h \
  ../metrics/custom/hardware_info.h ../metrics/custom/frequency.h \
@@ -53,7 +56,8 @@ eard_server_api.o: eard_server_api.c ../common/types/job.h \
  ../common/types/application.h ../common/types/signature.h \
  ../common/types/power_signature.h \
  ../common/types/configuration/policy_conf.h \
- ../common/types/configuration/cluster_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../daemon/eard_rapi.h
 power_monitor.o: power_monitor.c ../control/frequency.h \
  ../metrics/custom/frequency_uncore.h ../common/states.h \
@@ -63,7 +67,8 @@ power_monitor.o: power_monitor.c ../control/frequency.h \
  ../metrics/power_metrics/power_metrics.h ../metrics/ipmi/energy_node.h \
  ../metrics/papi/energy_cpu.h ../daemon/eard_checkpoint.h \
  ../common/types/configuration/cluster_conf.h \
- ../common/types/configuration/policy_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/policy_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../daemon/shared_configuration.h \
  ../common/types/coefficient.h ../daemon/eard_conf_rapi.h \
  ../common/sockets.h ../common/sizes.h ../common/types/periodic_metric.h \
@@ -76,5 +81,6 @@ eard_rapi.o: eard_rapi.c ../common/config.h ../daemon/eard_conf_rapi.h \
  ../common/types/generic.h ../common/types/signature.h \
  ../common/types/power_signature.h \
  ../common/types/configuration/policy_conf.h \
- ../common/types/configuration/cluster_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
  ../common/ear_verbose.h ../common/states.h ../daemon/eard_rapi.h

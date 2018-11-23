@@ -59,6 +59,7 @@ src/tests/functionals/signaures_avg
 src/tools/coeffs_default
 src/database_cache/tmpi
 src/daemon/commands/ear_check_node_test
+src/tools/coeffs_compare
 
 # Build
 etc/module/ear
@@ -86,6 +87,7 @@ tests/check/check.sh
 *ear_set_ondemand
 *ear_report
 *ear_create_database
+*ear_cleandb
 *ear_end_job
 *ear_new_job
 *ear_energy_over_time

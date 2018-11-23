@@ -29,8 +29,17 @@
 
 
 #include <mpi.h>
+#if IN_MPI_TIME
+#include <papi.h>
+#include <common/math_operations.h>
+#endif
 #include <library/mpi_intercept/ear_api.h>
 
+#if IN_MPI_TIME
+long long ear_in_mpi=0;
+long long begin_in_mpi,end_mpi_time;
+long long ear_total_in_mpi=0;
+#endif
 void before_init(){
 }
 
@@ -39,9 +48,18 @@ void after_init(){
 }
 void before_mpi(mpi_call call_type, p2i buf, p2i dest) {
 	ear_mpi_call(call_type,buf,dest);
+	#if IN_MPI_TIME
+	begin_in_mpi=PAPI_get_real_usec();
+	#endif
 }
 
 void after_mpi(mpi_call call_type){
+	#if IN_MPI_TIME
+	end_mpi_time=PAPI_get_real_usec();
+	if (end_mpi_time>begin_in_mpi) ear_in_mpi=end_mpi_time-begin_in_mpi;
+	else ear_in_mpi= llong_diff_overflow(begin_in_mpi,end_mpi_time);
+	ear_total_in_mpi+=ear_in_mpi;
+	#endif
 }
 
 void before_finalize() {
