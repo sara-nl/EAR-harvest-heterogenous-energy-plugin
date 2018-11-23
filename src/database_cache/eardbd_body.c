@@ -72,16 +72,7 @@ extern int master_iam; // Master is who speaks
 extern int server_iam;
 extern int mirror_iam;
 
-// Storage
-extern periodic_aggregation_t *aggrs;
-extern periodic_metric_t *enrgy;
-extern application_t *appsm;
-extern application_t *appsn;
-extern application_t *appsl;
-extern ear_event_t *evnts;
-extern loop_t *loops;
-
-// Metrics
+// Data
 extern time_t glb_time1[MAX_TYPES];
 extern time_t glb_time2[MAX_TYPES];
 extern time_t ins_time1[MAX_TYPES];
@@ -134,15 +125,20 @@ static void body_alarm(struct timeval *timeout_slct)
 
 		if (timeout_aggr.tv_sec == 0)
 		{
+			peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
+			peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
+
 			verwho1("completed the aggregation number %lu with energy %lu",
-					sam_index[i_aggrs], aggrs[sam_index[i_aggrs]].DC_energy);
+					sam_index[i_aggrs], q->DC_energy);
 
 			// Aggregation time done, so new aggregation incoming
 			storage_sample_add(NULL, sam_inmax[i_aggrs], &sam_index[i_aggrs], NULL, 0, SYNC_AGGRS);
 
 			// Initializing the new element
+			q = (peraggr_t *) &p[sam_index[i_aggrs]];
+
 			if (sam_inmax[i_aggrs] > 0) {
-				init_periodic_aggregation(&aggrs[sam_index[i_aggrs]]);
+				init_periodic_aggregation(q);
 			}
 
 			//
@@ -275,23 +271,23 @@ static void body_free_resources()
 	sockets_dispose(ssync_srv);
 
 	// Freeing data
-	if (appsm != NULL)
+	if (typ_alloc[i_appsm] != NULL)
 	{
-		free(appsm);
-		free(appsn);
-		free(appsl);
-		free(enrgy);
-		free(aggrs);
-		free(evnts);
-		free(loops);
+		free(typ_alloc[i_appsm]);
+		free(typ_alloc[i_appsn]);
+		free(typ_alloc[i_appsl]);
+		free(typ_alloc[i_enrgy]);
+		free(typ_alloc[i_aggrs]);
+		free(typ_alloc[i_evnts]);
+		free(typ_alloc[i_loops]);
 
-		appsm = NULL;
-		appsn = NULL;
-		appsl = NULL;
-		enrgy = NULL;
-		aggrs = NULL;
-		evnts = NULL;
-		loops = NULL;
+		typ_alloc[i_appsm] = NULL;
+		typ_alloc[i_appsn] = NULL;
+		typ_alloc[i_appsl] = NULL;
+		typ_alloc[i_enrgy] = NULL;
+		typ_alloc[i_aggrs] = NULL;
+		typ_alloc[i_evnts] = NULL;
+		typ_alloc[i_loops] = NULL;
 	}
 
 	free_cluster_conf(&conf_clus);

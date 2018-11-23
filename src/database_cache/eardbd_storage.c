@@ -54,16 +54,7 @@ extern int mirror_iam;
 extern struct timeval timeout_slct;
 extern time_t time_slct;
 
-// Storage
-extern periodic_aggregation_t *aggrs;
-extern periodic_metric_t *enrgy;
-extern application_t *appsm;
-extern application_t *appsn;
-extern application_t *appsl;
-extern ear_event_t *evnts;
-extern loop_t *loops;
-
-// Metrics
+// Data
 extern time_t glb_time1[MAX_TYPES];
 extern time_t glb_time2[MAX_TYPES];
 extern time_t ins_time1[MAX_TYPES];
@@ -158,10 +149,14 @@ void metrics_print()
 
 static void reset_aggregations()
 {
-	if (sam_index[i_aggrs] < sam_inmax[i_aggrs] && aggrs[sam_index[i_aggrs]].n_samples > 0) {
-		memcpy (aggrs, &aggrs[sam_index[i_aggrs]], sizeof(periodic_aggregation_t));
+	peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
+	peraggr_t  q = (peraggr_t  ) p[sam_index[i_aggrs]];
+
+	if (sam_index[i_aggrs] < sam_inmax[i_aggrs] && q.n_samples > 0)
+	{
+		memcpy (p, &q, sizeof(periodic_aggregation_t));
     } else {
-        init_periodic_aggregation(aggrs);
+        init_periodic_aggregation(p);
     }
 
     sam_index[i_aggrs] = 0;
@@ -196,7 +191,7 @@ void reset_all()
  * Insert
  *
  */
-#if 0
+#if 1
 	#define db_batch_insert_applications(a, b);
 	#define db_batch_insert_applications_no_mpi(a, b);
 	#define db_batch_insert_applications_learning(a, b);
@@ -213,7 +208,7 @@ static void insert_apps_mpi()
 	}
 
 	metrics_insert_start(i_appsm);
-	db_batch_insert_applications(appsm, sam_index[i_appsm]);
+	db_batch_insert_applications(typ_alloc[i_appsm], sam_index[i_appsm]);
 	metrics_insert_stop(i_appsm, sam_index[i_appsm]);
 }
 
@@ -226,7 +221,7 @@ static void insert_apps_non_mpi()
 	}
 
 	metrics_insert_start(i_appsn);
-	db_batch_insert_applications_no_mpi(appsn, sam_index[i_appsn]);
+	db_batch_insert_applications_no_mpi(typ_alloc[i_appsn], sam_index[i_appsn]);
 	metrics_insert_stop(i_appsn, sam_index[i_appsn]);
 }
 
@@ -239,7 +234,7 @@ static void insert_apps_learning()
 	}
 
 	metrics_insert_start(i_appsl);
-	db_batch_insert_applications_learning(appsl, sam_index[i_appsl]);
+	db_batch_insert_applications_learning(typ_alloc[i_appsl], sam_index[i_appsl]);
 	metrics_insert_stop(i_appsl, sam_index[i_appsl]);
 }
 
@@ -252,7 +247,7 @@ static void insert_loops()
 	}
 
 	metrics_insert_start(i_loops);
-	db_batch_insert_loops(loops, sam_index[i_loops]);
+	db_batch_insert_loops(typ_alloc[i_loops], sam_index[i_loops]);
 	metrics_insert_stop(i_loops, sam_index[i_loops]);
 }
 
@@ -265,7 +260,7 @@ static void insert_energy()
 	}
 
 	metrics_insert_start(i_enrgy);
-	db_batch_insert_periodic_metrics(enrgy, sam_index[i_enrgy]);
+	db_batch_insert_periodic_metrics(typ_alloc[i_enrgy], sam_index[i_enrgy]);
 	metrics_insert_stop(i_enrgy, sam_index[i_enrgy]);
 }
 
@@ -278,7 +273,7 @@ static void insert_aggregations()
 	}
 
 	metrics_insert_start(i_aggrs);
-	db_batch_insert_periodic_aggregations(aggrs, sam_index[i_aggrs]);
+	db_batch_insert_periodic_aggregations(typ_alloc[i_aggrs], sam_index[i_aggrs]);
 	metrics_insert_stop(i_aggrs, sam_index[i_aggrs]);
 }
 
@@ -291,7 +286,7 @@ static void insert_events()
 	}
 
 	metrics_insert_start(i_evnts);
-	db_batch_insert_ear_event(evnts, sam_index[i_evnts]);
+	db_batch_insert_ear_event(typ_alloc[i_evnts], sam_index[i_evnts]);
 	metrics_insert_stop(i_evnts, sam_index[i_evnts]);
 }
 
@@ -481,39 +476,40 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	// Storage
 	if (type == CONTENT_TYPE_APM)
 	{
-		storage_sample_add((char *) &appsm[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_appsm][sam_index[index]], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSM);
 	}
 	else if (type == CONTENT_TYPE_APN)
 	{
-		storage_sample_add((char *) &appsn[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_appsn][sam_index[index]], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSN);
 	}
 	else if (type == CONTENT_TYPE_APL)
 	{
-		storage_sample_add((char *) &appsl[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_appsl][sam_index[index]], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_APPSL);
 	}
 	else if (type == CONTENT_TYPE_EVE)
 	{
-		storage_sample_add((char *) &evnts[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_evnts][sam_index[index]], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_EVNTS);
 	}
 	else if (type == CONTENT_TYPE_LOO)
 	{
-		storage_sample_add((char *) &loops[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_loops][sam_index[index]], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_LOOPS);
 	}
 	else if (type == CONTENT_TYPE_PER)
 	{
+		peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
+		peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 		periodic_metric_t *met = (periodic_metric_t *) content;
 
 		// Add sample to the aggregation
-		add_periodic_aggregation(&aggrs[sam_index[index]], met->DC_energy,
-			met->start_time, met->end_time);
+		add_periodic_aggregation(q, met->DC_energy, met->start_time, met->end_time);
 
 		// Add sample to the energy array
-		storage_sample_add((char *) &enrgy[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_enrgy][sam_index[index]], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_ENRGY);
 	}
 	else if (type == CONTENT_TYPE_QST)

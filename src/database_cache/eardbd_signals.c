@@ -89,6 +89,7 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 		verwho1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
 
 		propagating = others_pid > 0 && info->si_pid != others_pid;
+		waiting     = propagating && server_iam;
 		listening   = 0;
 		releasing   = 1;
 		exitting    = 1;
@@ -100,19 +101,29 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 		verwho1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
 
 		propagating   = others_pid > 0 && info->si_pid != others_pid;
+		waiting       = propagating && server_iam;
 		listening     = 0;
 		reconfiguring = server_iam;
 		releasing     = 1;
 		exitting      = mirror_iam;
 	}
 
+	if (signal == SIGCHLD && !exitting)
+	{
+		verwho1("signal SIGCHLD received on %s and no exit signal detected", str_who[mirror_iam]);
+
+		updating = 1;
+		waiting  = 1;
+	}
+
 	// Propagate signals
 	if (propagating)
 	{
 		kill(others_pid, signal);
+	}
 
-		if (server_iam) {
-			waitpid(mirror_pid, NULL, 0);
-		}
+	// Wait for the children (mirror)
+	if (waiting) {
+		waitpid(mirror_pid, NULL, 0);
 	}
 }

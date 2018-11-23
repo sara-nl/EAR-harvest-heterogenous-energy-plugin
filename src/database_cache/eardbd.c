@@ -37,6 +37,7 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <common/process.h>
 #include <database_cache/eardbd.h>
 
 int EAR_VERBOSE_LEVEL = 1;
@@ -83,6 +84,8 @@ int fd_max;
 // Mirroring
 static char master_host[SZ_NAME_MEDIUM]; // This node name
 static char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
+process_data_t proc_data_srv;
+process_data_t proc_data_mir;
 pid_t server_pid;
 pid_t mirror_pid;
 pid_t others_pid;
@@ -102,16 +105,7 @@ packet_header_t sync_qst_header;
 sync_qst_t sync_qst_content;
 sync_ans_t sync_ans_content;
 
-// Data warehouse
-periodic_aggregation_t *aggrs;
-periodic_metric_t *enrgy;
-application_t *appsm;
-application_t *appsn;
-application_t *appsl;
-ear_event_t *evnts;
-loop_t *loops;
-
-// Metrics
+// Data
 time_t glb_time1[MAX_TYPES];
 time_t glb_time2[MAX_TYPES];
 time_t ins_time1[MAX_TYPES];
@@ -143,6 +137,7 @@ int listening;
 int releasing;
 int exitting;
 int updating;
+int veteran;
 int waiting;
 int forked;
 
@@ -174,7 +169,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	// Configuration
-#if 1
+#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
@@ -251,6 +246,19 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
+
+	// PID protection
+	process_data_initialize(&proc_data_srv, "eardbd_server", "/home/xgomez/Desktop/git/EAR");
+	process_data_initialize(&proc_data_mir, "eardbd_mirror", "/home/xgomez/Desktop/git/EAR");
+
+	int server_xst = process_exists(&proc_data_srv);
+	int mirror_xst = process_exists(&proc_data_mir);
+
+	server_too = server_too && !server_xst;
+	mirror_too = mirror_too && !mirror_xst;
+
+	if (!server_xst) process_pid_file_clean(&proc_data_srv);
+	if (!mirror_xst) process_pid_file_clean(&proc_data_mir);
 
 	// Server & mirro verbosity
 	vermast1("enabled cache server: %s",      server_too ? "OK": "NO");
@@ -373,6 +381,9 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 {
+	state_t state;
+
+	// Fork
 	if (mirror_too)
 	{
 		mirror_pid = fork();
@@ -447,6 +458,7 @@ static void init_signals()
 	sigdelset(&set, SIGUSR1);
 	sigdelset(&set, SIGUSR2);
 	sigdelset(&set, SIGTERM);
+	sigdelset(&set, SIGCHLD);
 	sigdelset(&set, SIGINT);
 	sigdelset(&set, SIGHUP);
 
@@ -463,6 +475,9 @@ static void init_signals()
         verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
     }
 	if (sigaction(SIGUSR2, &action, NULL) < 0) {
+		verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+	}
+	if (sigaction(SIGCHLD, &action, NULL) < 0) {
 		verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
 	}
 	if (sigaction(SIGTERM, &action, NULL) < 0) {
@@ -584,21 +599,21 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	ulong b_evnts = typ_sizof[i_evnts] * sam_inmax[i_evnts];
 	ulong b_loops = typ_sizof[i_loops] * sam_inmax[i_loops];
 
-	appsm = malloc(b_appsm);
-	appsn = malloc(b_appsn);
-	appsl = malloc(b_appsl);
-	loops = malloc(b_loops);
-	enrgy = malloc(b_enrgy);
-	aggrs = malloc(b_aggrs);
-	evnts = malloc(b_evnts);
+	typ_alloc[i_appsm] = malloc(b_appsm);
+	typ_alloc[i_appsn] = malloc(b_appsn);
+	typ_alloc[i_appsl] = malloc(b_appsl);
+	typ_alloc[i_loops] = malloc(b_loops);
+	typ_alloc[i_enrgy] = malloc(b_enrgy);
+	typ_alloc[i_aggrs] = malloc(b_aggrs);
+	typ_alloc[i_evnts] = malloc(b_evnts);
 
-	memset(appsm, 0, b_appsm);
-	memset(appsn, 0, b_appsn);
-	memset(appsl, 0, b_appsl);
-	memset(loops, 0, b_loops);
-	memset(enrgy, 0, b_enrgy);
-	memset(aggrs, 0, b_aggrs);
-	memset(evnts, 0, b_evnts);
+	memset(typ_alloc[i_appsm], 0, b_appsm);
+	memset(typ_alloc[i_appsn], 0, b_appsn);
+	memset(typ_alloc[i_appsl], 0, b_appsl);
+	memset(typ_alloc[i_loops], 0, b_loops);
+	memset(typ_alloc[i_enrgy], 0, b_enrgy);
+	memset(typ_alloc[i_aggrs], 0, b_aggrs);
+	memset(typ_alloc[i_evnts], 0, b_evnts);
 
 	float mb_aggrs = (double) (b_aggrs) / 1000000.0;
 	float mb_appsl = (double) (b_appsl) / 1000000.0;
@@ -649,6 +664,32 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	vermast1("TIP! this allocated space is per process server/mirror");
 }
 
+static void init_pid_files(int argc, char **argv)
+{
+	// Process PID save file
+	if (server_iam && server_too) {
+		process_pid_file_save(&proc_data_srv);
+	}
+
+	if (mirror_iam && mirror_too) {
+		process_update_pid(&proc_data_mir);
+		process_pid_file_save(&proc_data_mir);
+	}
+}
+
+/*
+ *
+ * Release
+ *
+ */
+
+void release()
+{
+	// Process PID cleaning
+	if (server_iam) process_pid_file_clean(&proc_data_srv);
+	if (mirror_iam) process_pid_file_clean(&proc_data_mir);
+}
+
 /*
  *
  *
@@ -691,9 +732,16 @@ int main(int argc, char **argv)
 		init_process_configuration(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 7: listening (processing every %lu s)", time_insr);
+		verline1("phase 7: PID files creation");
+		init_pid_files(argc, argv);
+
+		//
+		verline1("phase 8: listening (processing every %lu s)", time_insr);
 		body();
 	}
+
+	//
+	release();
 
 	return 0;
 }
