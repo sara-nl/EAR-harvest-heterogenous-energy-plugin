@@ -87,6 +87,7 @@ tests/check/check.sh
 *ear_set_ondemand
 *ear_report
 *ear_create_database
+*ear_cleandb
 *ear_end_job
 *ear_new_job
 *ear_energy_over_time
