@@ -198,6 +198,11 @@ int tprintf_format()
 	return 0;
 }
 
+void tprintf_close()
+{
+	columns = 0;
+}
+
 void strtoup(char *string)
 {
     while (*string) {

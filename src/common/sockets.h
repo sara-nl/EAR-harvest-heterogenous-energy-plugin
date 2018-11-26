@@ -78,7 +78,7 @@ state_t sockets_clean(socket_t *socket);
 
 state_t sockets_socket(socket_t *socket);
 
-state_t sockets_bind(socket_t *socket);
+state_t sockets_bind(socket_t *socket, time_t timeout);
 
 state_t sockets_listen(socket_t *socket);
 

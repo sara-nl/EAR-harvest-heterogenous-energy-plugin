@@ -61,6 +61,9 @@ int tprintf_init(FILE *stream, int mode, char *format);
 /** **/
 int tprintf_format();
 
+/** **/
+void tprintf_close();
+
 /** Cleans the character pointed by 'chr', adding an '\0' in its position. */
 char* strclean(char *string, char chr);
 

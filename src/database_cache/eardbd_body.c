@@ -38,6 +38,10 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
+#include <database_cache/eardbd_body.h>
+#include <database_cache/eardbd_sync.h>
+#include <database_cache/eardbd_signals.h>
+#include <database_cache/eardbd_storage.h>
 
 // Configuration
 extern cluster_conf_t conf_clus;
@@ -65,12 +69,16 @@ extern int fd_min;
 extern int fd_max;
 
 // Mirroring
+extern process_data_t proc_data_srv;
+extern process_data_t proc_data_mir;
 extern pid_t server_pid;
 extern pid_t mirror_pid;
 extern pid_t others_pid;
 extern int master_iam; // Master is who speaks
 extern int server_iam;
 extern int mirror_iam;
+extern int server_too;
+extern int mirror_too;
 
 // Data
 extern time_t glb_time1[MAX_TYPES];
@@ -104,8 +112,12 @@ extern int listening;
 extern int releasing;
 extern int exitting;
 extern int updating;
-extern int waiting;
+extern int dreaming;
+extern int veteran;
 extern int forked;
+
+// Extras
+extern sigset_t sigset;
 
 // Verbosity
 extern char *str_who[2];
@@ -150,14 +162,21 @@ static void body_alarm(struct timeval *timeout_slct)
 			// Synchronizing with the MAIN
 			if (mirror_iam)
 			{
+				sync_ans_t answer;
+
 				//TODO: MPKFA
 				// Asking the question
-				if(state_fail(sync_question(SYNC_ALL)))
+
+				// In case of fail the mirror have to insert the data
+				if(state_fail(sync_question(SYNC_ALL, veteran, &answer)))
 				{
-					// In case of fail the mirror have to insert the data
 					insert_hub(SYNC_ALL, RES_TIME);
+				// In case I'm veteran and the server is not
+				} else if (!answer.veteran && veteran)
+				{
+					insert_hub(SYNC_ALL, RES_TIME);
+				// In case of the answer is received just clear the data
 				} else {
-					// In case of the answer is received the mirror just have to clear the data
 					reset_all();
 				}
 			} else {
@@ -167,6 +186,9 @@ static void body_alarm(struct timeval *timeout_slct)
 
 			// If server the time reset is do it after the insert
 			time_reset_timeout_insr(0);
+
+			// I'm a veteran
+			veteran = 1;
 		}
 
 		time_reset_timeout_slct();
@@ -253,49 +275,18 @@ static void body_insert()
 
 }
 
-static void body_closing()
-{
-	int i;
-
-	for(i = fd_max; i >= fd_min && !listening; --i)
-	{
-		close(i);
-	}
-}
-
-static void body_free_resources()
-{
-	// Cleaning sockets
-	sockets_dispose(smets_srv);
-	sockets_dispose(smets_mir);
-	sockets_dispose(ssync_srv);
-
-	// Freeing data
-	if (typ_alloc[i_appsm] != NULL)
-	{
-		free(typ_alloc[i_appsm]);
-		free(typ_alloc[i_appsn]);
-		free(typ_alloc[i_appsl]);
-		free(typ_alloc[i_enrgy]);
-		free(typ_alloc[i_aggrs]);
-		free(typ_alloc[i_evnts]);
-		free(typ_alloc[i_loops]);
-
-		typ_alloc[i_appsm] = NULL;
-		typ_alloc[i_appsn] = NULL;
-		typ_alloc[i_appsl] = NULL;
-		typ_alloc[i_enrgy] = NULL;
-		typ_alloc[i_aggrs] = NULL;
-		typ_alloc[i_evnts] = NULL;
-		typ_alloc[i_loops] = NULL;
-	}
-
-	free_cluster_conf(&conf_clus);
-}
-
 void body()
 {
 	int s;
+
+	if (listening) {
+		printml1("phase 7: listening (processing every %lu s)", time_insr);
+	}
+
+
+	if (server_iam) {
+		sleep(242);
+	}
 
 	// BODY
 	while(listening)
@@ -318,20 +309,57 @@ void body()
 
 		updating = 0;
 	}
+}
 
-	body_closing();
+void dream()
+{
+	while (dreaming) {
+		sigsuspend(&sigset);
+	}
+}
 
-	if (waiting) {
-		waitpid(mirror_pid, NULL, 0);
+void release()
+{
+	int i;
+
+	// Socket closing
+	for(i = fd_max; i >= fd_min && !listening; --i) {
+		close(i);
 	}
 
-	if (releasing) {
-		body_free_resources();
-		releasing = 0;
+	// Cleaning sockets
+	sockets_dispose(smets_srv);
+	sockets_dispose(smets_mir);
+	sockets_dispose(ssync_srv);
+	sockets_dispose(ssync_mir);
+
+	// Freeing data
+	free_cluster_conf(&conf_clus);
+
+	for (i = 0; i < MAX_TYPES; ++i)
+	{
+		if (typ_alloc[i] != NULL)
+		{
+			free(typ_alloc[i]);
+			typ_alloc[i] = NULL;
+		}
 	}
 
-	if (reconfiguring) {
+	// Reconfiguring
+	if (reconfiguring)
+	{
 		sleep(5);
 		reconfiguring = 0;
 	}
+
+	// Process PID cleaning
+	if (server_iam && server_too) {
+		process_pid_file_clean(&proc_data_srv);
+	}
+	if (mirror_iam && mirror_too) {
+		process_pid_file_clean(&proc_data_mir);
+	}
+
+	// End releasing
+	releasing = 0;
 }

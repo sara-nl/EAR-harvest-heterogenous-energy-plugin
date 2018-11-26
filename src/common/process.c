@@ -50,21 +50,20 @@ void process_update_pid(process_data_t *prodata)
 	prodata->pid = getpid();
 }
 
-int process_exists(const process_data_t *prodata)
+int process_exists(const process_data_t *prodata, pid_t *pid)
 {
 	int value = 0;
 	state_t state;
-	pid_t pid;
 
 	//
-	state = process_pid_file_load(prodata, &pid);
+	state = process_pid_file_load(prodata, pid);
 
 	if (state_fail(state)) {
 		return 0;
 	}
 
 	//
-	value = !((kill(pid, 0) < 0) && (errno == ESRCH));
+	value = !((kill(*pid, 0) < 0) && (errno == ESRCH));
 
 	return value;
 }

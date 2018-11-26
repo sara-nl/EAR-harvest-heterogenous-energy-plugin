@@ -32,6 +32,14 @@
 
 #include <signal.h>
 
+#define error(...) \
+	printl0(); \
+	fprintf(stderr, "ERROR, " __VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+	error_handler();
+
 void signal_handler(int signal, siginfo_t *info, void *context);
+
+void error_handler();
 
 #endif //EAR_EARDBD_SIGNALS_H

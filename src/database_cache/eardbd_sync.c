@@ -28,6 +28,10 @@
 */
 
 #include <database_cache/eardbd.h>
+#include <database_cache/eardbd_body.h>
+#include <database_cache/eardbd_sync.h>
+#include <database_cache/eardbd_signals.h>
+#include <database_cache/eardbd_storage.h>
 
 //
 extern int master_iam; // Master is who speaks
@@ -39,7 +43,6 @@ extern socket_t *smets_srv;
 extern socket_t *smets_mir;
 extern socket_t *ssync_srv;
 extern socket_t *ssync_mir;
-
 
 // Synchronization
 extern packet_header_t sync_ans_header;
@@ -127,13 +130,16 @@ void time_reset_timeout_slct()
  *
  */
 
-int sync_question(uint sync_option)
+int sync_question(uint sync_option, int veteran, sync_ans_t *answer)
 {
 	time_t timeout_old;
 	state_t s;
 
-	verwho1("synchronization started: asking the question (%d)", sync_option);
+	verwho1("synchronization started: asking the question to %s (%d)",
+			ssync_mir->host_dst, sync_option);
+
 	sync_qst_content.sync_option = sync_option;
+	sync_qst_content.veteran = veteran;
 
 	// Preparing packet
 	sockets_header_update(&sync_qst_header);
@@ -142,41 +148,37 @@ int sync_question(uint sync_option)
 	s = sockets_socket(ssync_mir);
 
 	if (state_fail(s)) {
-		verwho1("failed to create client socket to MAIN (%d, inum: %d, istr: %s)",
-				s, intern_error_num, intern_error_str);
+		verwho1("failed to create client socket (%d, %s)", s, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	s = sockets_connect(ssync_mir);
 
 	if (state_fail(s)) {
-		verwho1("failed to connect to MAIN (%d, inum: %d, istr: %s)",
-				s, intern_error_num, intern_error_str);
+		verwho1("failed to connect (%d, %s)", s, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	s = sockets_send(ssync_mir, &sync_qst_header, (char *) &sync_qst_content);
 
 	if (state_fail(s)) {
-		verwho1("failed to send to MAIN (%d, num: %d, str: %s)",
-				s, intern_error_num, intern_error_str);
+		verwho1("failed to send (%d, %s)", s, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	// Setting new timeout
 	sockets_timeout_get(ssync_mir->fd, &timeout_old);
-	sockets_timeout_set(ssync_mir->fd, 10);
+	s = sockets_timeout_set(ssync_mir->fd, 10);
 
-	// Transferring
+	// Waiting
 	s = sockets_receive(ssync_mir->fd, &sync_ans_header,
-						(char *) &sync_ans_content, sizeof(sync_ans_t), 1);
+		(char *) &sync_ans_content, sizeof(sync_ans_t), 1);
 
 	// Recovering old timeout
 	sockets_timeout_set(ssync_mir->fd, timeout_old);
 
 	if (state_fail(s)) {
-		verwho1("failed to receive from MAIN (%d, num: %d, str: %s)",
-				s, intern_error_num, intern_error_str);
+		verwho1("failed to receive (%d, %s)", s, intern_error_str);
 		return EAR_ERROR;
 	}
 
@@ -184,10 +186,14 @@ int sync_question(uint sync_option)
 
 	verwho0("synchronization completed correctly");
 
+	if (answer != NULL) {
+		memcpy (answer, &sync_ans_content, sizeof(sync_ans_t));
+	}
+
 	return EAR_SUCCESS;
 }
 
-int sync_answer(int fd)
+int sync_answer(int fd, int veteran)
 {
 	socket_t sync_ans_socket;
 	state_t s;
@@ -201,13 +207,13 @@ int sync_answer(int fd)
 
 	// Header
 	sockets_header_update(&sync_ans_header);
+	sync_ans_content.veteran = veteran;
 
 	s = sockets_send(&sync_ans_socket, &sync_ans_header, (char *) &sync_ans_content);
 
 	if (state_fail(s)) {
-		verwho1("Failed to send to MIRROR (%d, num: %d, str: %s)",
-				s, intern_error_num, intern_error_str);
-		return EAR_ERROR;
+		verwho1("Failed to send to MIRROR (%d, %s)", s, intern_error_str);
+		return EAR_IGNORE;
 	}
 
 	verwho0("synchronization completed correctly");

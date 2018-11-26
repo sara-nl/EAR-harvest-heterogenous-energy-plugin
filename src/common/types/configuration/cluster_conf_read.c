@@ -1067,6 +1067,11 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 void free_cluster_conf(cluster_conf_t *conf)
 {
 	int i;
+
+	if (conf == NULL) {
+		return;
+	}
+
 	for (i = 0; i < conf->num_priv_users; i++)
 		free(conf->priv_users[i]);
 	free(conf->priv_users);

@@ -82,12 +82,18 @@ state_t sockets_listen(socket_t *socket)
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_bind(socket_t *socket)
+state_t sockets_bind(socket_t *socket, time_t timeout)
 {
-	// Assign to the socket the address and port
-	int r = bind(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
+	timeout = time(NULL) + timeout;
+	int s;
 
-	if (r < 0) {
+	do {
+		// Assign to the socket the address and port
+		s = bind(socket->fd, socket->info->ai_addr, socket->info->ai_addrlen);
+	}
+	while ((s < 0) && (time(NULL) < timeout) && !sleep(5));
+
+	if (s < 0) {
 		state_return_msg(EAR_SOCK_OP_ERROR, errno, (char *) strerror(errno));
 	}
 
@@ -399,7 +405,7 @@ state_t sockets_timeout_set(int fd, time_t timeout)
 	tv.tv_sec  = timeout;
 	tv.tv_usec = 0;
 
-	if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) timeout, sizeof(struct timeval)) != 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) &tv, sizeof(struct timeval)) != 0) {
 		state_return_msg(EAR_ERROR, errno, strerror(errno));
 	}
 

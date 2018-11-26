@@ -38,6 +38,10 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
+#include <database_cache/eardbd_body.h>
+#include <database_cache/eardbd_sync.h>
+#include <database_cache/eardbd_signals.h>
+#include <database_cache/eardbd_storage.h>
 
 // Mirroring
 extern pid_t server_pid;
@@ -53,7 +57,8 @@ extern int listening;
 extern int releasing;
 extern int exitting;
 extern int updating;
-extern int waiting;
+extern int dreaming;
+extern int veteran;
 extern int forked;
 
 // Strings
@@ -69,10 +74,11 @@ extern int verbosity;
 void signal_handler(int signal, siginfo_t *info, void *context)
 {
 	int propagating = 0;
+	int waiting = 0;
 
 	if (signal == SIGUSR1)
 	{
-		verwho1("signal SIGUSR1 received on %s, switching verbosity", str_who[mirror_iam]);
+		printpl0("signal SIGUSR1 received, switching verbosity");
 
 		updating  = 1;
 		verbosity = (verbosity + 1) % 4;
@@ -80,45 +86,48 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 
 	if (signal == SIGUSR2)
 	{
-		verwho1("signal SIGUSR2 received on %s, switching verbosity", str_who[mirror_iam]);
+		printpl0("signal SIGUSR2 received, switching verbosity");
 	}
 
 	// Case exit
 	if ((signal == SIGTERM || signal == SIGINT) && !exitting)
 	{
-		verwho1("signal SIGTERM/SIGINT received on %s, exitting", str_who[mirror_iam]);
+		printpl0("signal SIGTERM/SIGINT received, exitting");
 
 		propagating = others_pid > 0 && info->si_pid != others_pid;
 		waiting     = propagating && server_iam;
 		listening   = 0;
 		releasing   = 1;
+		dreaming    = 0;
 		exitting    = 1;
 	}
 
 	// Case reconfigure
 	if (signal == SIGHUP && !reconfiguring)
 	{
-		verwho1("signal SIGHUP received on %s, reconfiguring", str_who[mirror_iam]);
+		printpl0("signal SIGHUP received, reconfiguring");
 
 		propagating   = others_pid > 0 && info->si_pid != others_pid;
 		waiting       = propagating && server_iam;
 		listening     = 0;
 		reconfiguring = server_iam;
 		releasing     = 1;
+		dreaming      = 0;
 		exitting      = mirror_iam;
 	}
 
-	if (signal == SIGCHLD && !exitting)
+	if (signal == SIGCHLD)
 	{
-		verwho1("signal SIGCHLD received on %s and no exit signal detected", str_who[mirror_iam]);
+		printpl0("signal SIGCHLD received");
 
-		updating = 1;
-		waiting  = 1;
+		others_pid = 0;
+		updating   = 1;
+		waiting    = server_iam & (others_pid > 0);
+		dreaming   = 0;
 	}
 
 	// Propagate signals
-	if (propagating)
-	{
+	if (propagating) {
 		kill(others_pid, signal);
 	}
 
@@ -126,4 +135,21 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	if (waiting) {
 		waitpid(mirror_pid, NULL, 0);
 	}
+}
+
+void error_handler()
+{
+	// Terminate inmediately
+	if (!forked)
+	{
+		release();
+		exit(0);
+	}
+
+	// If I'am the server, inform and dream before exit
+	// If I'am the mirror, just exit
+	listening     = 0;
+	releasing     = 1;
+	dreaming      = server_iam & (others_pid > 0);
+	exitting      = 1;
 }
