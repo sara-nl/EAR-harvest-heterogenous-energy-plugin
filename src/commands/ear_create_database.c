@@ -70,6 +70,16 @@ void create_db(MYSQL *connection, char *db_name)
     if (mysql_query(connection, query)) execute_on_error(connection);
 }
 
+void create_indexes(MYSQL *connection)
+{
+    if (mysql_query(connection, "CREATE INDEX idx_end_time ON Periodic_metrics \
+                                 (end_time)")) execute_on_error(connection);
+    if (mysql_query(connection, "CREATE INDEX idx_job_id ON Periodic_metrics \
+                                 (job_id)")) execute_on_error(connection);
+    if (mysql_query(connection, "CREATE INDEX idx_user_id ON Jobs \
+                                 (user_id)")) execute_on_error(connection);
+}
+
 void create_tables(MYSQL *connection)
 {
 
@@ -299,6 +309,8 @@ void main(int argc,char *argv[])
     create_tables(connection);
 
     create_user(connection, my_cluster.database.database, my_cluster.database.user);
+
+    create_indexes(connection);
 
     mysql_close(connection);
 
