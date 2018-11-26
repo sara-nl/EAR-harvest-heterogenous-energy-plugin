@@ -453,14 +453,14 @@ void print()
 
 void read_applications()
 {
-	application_t *typ_alloc[i_appsn];
-	application_t *typ_alloc[i_appsl];
+	application_t *appsn;
+	application_t *appsl;
 	int n_appsn = 0;
 	int n_appsl = 0;
 	int i;
 
 	//
-	n_appsn = db_read_applications(&typ_alloc[i_appsn], 1, 1000, name_node);
+	n_appsn = db_read_applications(&appsn, 1, 1000, name_node);
 
 	if (n_appsn <= 0)
 	{
@@ -473,7 +473,7 @@ void read_applications()
 
 	
 	if (opt_a) {
-		n_appsl = db_read_applications(&typ_alloc[i_appsl], 0, 1000, name_node);
+		n_appsl = db_read_applications(&appsl, 0, 1000, name_node);
 	}
 
 	//
@@ -484,7 +484,7 @@ void read_applications()
 	memcpy(apps, appsn, n_appsn * sizeof(application_t));
 
 	if (opt_a) {
-		memcpy(&apps[n_appsn], typ_alloc[i_appsl], n_appsl * sizeof(application_t));
+		memcpy(&apps[n_appsn], appsl, n_appsl * sizeof(application_t));
 	}
 }
 
