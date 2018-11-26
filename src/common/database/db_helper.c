@@ -787,6 +787,45 @@ int db_read_applications_query(application_t **apps, char *query)
     return num_apps;
 }
 
+int db_run_query(char *query, char *user, char *passw)
+{
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        exit(1);
+    }
+
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+		return EAR_MYSQL_ERROR;
+    }
+    if (user == NULL)
+        user = db_config->user;
+    if (passw == NULL)
+        passw = db_config->pass;
+
+    if (!mysql_real_connect(connection, db_config->ip, user, passw, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+		return EAR_MYSQL_ERROR;
+    }
+
+    if (mysql_query(connection, query))
+    {
+        VERBOSE_N(0, "Error when executing query(%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+        return EAR_MYSQL_ERROR;
+    }
+
+    mysql_close(connection);
+
+    return EAR_SUCCESS;
+}
+
 int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name)
 {
     int num_apps = 0;
