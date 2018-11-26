@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     }
 
     /* The program reports coefficients in stdout and csv file */
-	state = file_read(argv[1], coeffs, size);
+	state = file_read(argv[1], (char *) coeffs, size);
 
 	if (state_fail(state)) {
 		state_print_error(state);
