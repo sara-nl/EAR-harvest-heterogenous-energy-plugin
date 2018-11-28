@@ -294,6 +294,8 @@ void dyncon_get_status(int fd, request_t *command)
     ulong num_status = propagate_status(command, my_cluster_conf.eard.port, &status);
     if (num_status < 1){
 		eard_verbose(0,"Panic propagate_status returns less than 1 status");
+		num_status=0;
+		write(fd, &num_status, sizeof(num_status));
         return;
 	}
 	powermon_get_status(&status[num_status-1]);

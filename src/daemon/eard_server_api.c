@@ -136,7 +136,7 @@ int wait_for_client(int s,struct sockaddr_in *client)
 		VERBOSE_N(0,"accept for eards socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
-	VERBOSE_N(2,"new connection ");
+	VERBOSE_N(1,"new connection ");
 	return new_sock;
 }
 
