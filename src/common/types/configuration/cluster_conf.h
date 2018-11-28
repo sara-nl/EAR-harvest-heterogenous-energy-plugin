@@ -287,7 +287,8 @@ void set_default_eardbd_conf(eardb_conf_t *eardbd_conf);
 void set_default_earlib_conf(earlib_conf_t *earlibc);
 
 // Concrete data functions
-
 int get_node_island(cluster_conf_t *conf, char *hostname);
+
+int get_node_server_mirror(const cluster_conf_t *conf, const char *hostname, char *mirror_of);
 
 #endif

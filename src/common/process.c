@@ -27,73 +27,78 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <math.h>
 #include <errno.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dirent.h>
 #include <unistd.h>
-#include <sys/stat.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <common/file.h>
 #include <common/sizes.h>
-#include <common/states.h>
-#include <common/types/coefficient.h>
+#include <common/process.h>
 
-static char buffer[SZ_PATH];
-
-void print_coefficients(coefficient_t *avg, int n_pstates)
+void process_data_initialize(process_data_t *prodata, char *name, char *path_pid)
 {
-	int i;
-
-	for (i=0;i<n_pstates;i++){
-		coeff_print(&avg[i]);
-	}
+	sprintf(prodata->path_pid, "%s/%s.pid", path_pid, name);
+	strcpy(prodata->name, name);
+	process_update_pid(prodata);
 }
 
-int main(int argc, char *argv[])
+void process_update_pid(process_data_t *prodata)
 {
-	coefficient_t *coeffs;
+	prodata->pid = getpid();
+}
+
+int process_exists(const process_data_t *prodata, pid_t *pid)
+{
+	int value = 0;
 	state_t state;
-	int n_pstates;
-	int size;
-    int i;
 
-    if (argc < 2) {
-        printf("Usage: %s coeffs_file\n",argv[0]);
-        exit(1);
-    }
-
-	size = file_size(argv[1]);
-
-	if (size < 0) {
-		sprintf(buffer, "ERROR, invalid coeffs path %s (%s)\n", argv[1], intern_error_str);
-		printf(buffer);
-		exit(1);
-	}
-
-    n_pstates = size / sizeof(coefficient_t);
-	printf("coefficients file size: %d\n", size);
-	printf("number of P_STATES: %d\n", n_pstates);
-
-    coeffs = (coefficient_t*) calloc(size ,1);
-
-    if (coeffs == NULL) {
-		printf("ERROR, not enough memory\n");
-		exit(1);
-    }
-
-    /* The program reports coefficients in stdout and csv file */
-	state = file_read(argv[1], (char *) coeffs, size);
+	//
+	state = process_pid_file_load(prodata, pid);
 
 	if (state_fail(state)) {
-		state_print_error(state);
-		exit(1);
+		return 0;
 	}
 
-    print_coefficients(coeffs, n_pstates);
+	//
+	value = !((kill(*pid, 0) < 0) && (errno == ESRCH));
 
-    return 0;
+	return value;
+}
+
+state_t process_pid_file_save(const process_data_t *prodata)
+{
+	char buffer[SZ_NAME_SHORT];
+	state_t state;
+
+	sprintf(buffer, "%d\n", prodata->pid);
+	state = file_write(prodata->path_pid, buffer, strlen(buffer));
+
+	if (state_fail(state)) {
+		return state;
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t process_pid_file_load(const process_data_t *prodata, pid_t *pid)
+{
+	char buffer[SZ_NAME_SHORT];
+	state_t state;
+
+	state = file_read(prodata->path_pid, buffer, SZ_NAME_SHORT);
+
+	if (state_fail(state)) {
+		state_return(state);
+	}
+
+	*pid = (pid_t) atoi(buffer);
+	state_return(EAR_SUCCESS);
+}
+
+state_t process_pid_file_clean(process_data_t *prodata)
+{
+	file_clean(prodata->path_pid);
 }

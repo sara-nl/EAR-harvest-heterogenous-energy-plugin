@@ -32,13 +32,10 @@
 
 #include <netdb.h>
 #include <common/config.h>
+#include <common/process.h>
 #include <common/sockets.h>
 #include <common/types/types.h>
 #include <common/string_enhanced.h>
-#include <database_cache/eardbd_body.h>
-#include <database_cache/eardbd_sync.h>
-#include <database_cache/eardbd_signals.h>
-#include <database_cache/eardbd_storage.h>
 
 #define CONTENT_TYPE_PER	1
 #define CONTENT_TYPE_APM	2
@@ -61,13 +58,13 @@
 #define RES_SYNC			0
 #define RES_TIME			1
 #define RES_OVER			2
-#define RES_FAIL			3
-#define i_enrgy 			0
-#define i_appsm 			1
-#define i_appsn				2
-#define i_appsl				3
-#define i_loops				4
-#define i_evnts				5
+#define RES_FAIL			4
+#define i_appsm 			0
+#define i_appsn				1
+#define i_appsl				2
+#define i_loops				3
+#define i_evnts				4
+#define i_enrgy 			5
 #define i_aggrs				6
 #define MAX_TYPES			7
 
@@ -79,9 +76,11 @@
 
 typedef struct sync_qst {
 	uint sync_option;
+	uint veteran;
 } sync_qst_t;
 
 typedef struct sync_ans {
+	uint veteran;
 	int answer;
 } sync_ans_t;
 

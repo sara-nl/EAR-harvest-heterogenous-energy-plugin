@@ -4,7 +4,7 @@ LDFLAGS = $(DB_LDFLAGS) -lm
 ######## FILES
 
 eardbd_OBJS = $(SRCDIR)/common/sockets.o \
-	              $(SRCDIR)/common/database.a \
+              $(SRCDIR)/common/database.a \
               $(SRCDIR)/common/types.a
 
 eardbd_SRCS = eardbd.c \

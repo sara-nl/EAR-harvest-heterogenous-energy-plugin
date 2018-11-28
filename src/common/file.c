@@ -77,7 +77,7 @@ void file_lock_clean(int fd,char *lock_file_name)
 
 int file_lock_create(char *lock_file_name)
 {
-	int fd = open(lock_file_name, O_WRONLY|O_CREAT,S_IWUSR);
+	int fd = open(lock_file_name, O_WRONLY | O_CREAT, S_IWUSR);
 	if (fd<0) return fd;
 	lock.l_start = 0;
 	lock.l_whence = SEEK_SET;
@@ -107,19 +107,54 @@ ssize_t file_size(char *path)
 	return size;
 }
 
-state_t file_read(char *path, char *container, size_t size)
+state_t file_read(const char *path, char *buffer, size_t size)
 {
 	int fd = open(path, O_RDONLY);
+	ssize_t r;
 
 	if (fd < 0) {
 		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
 	}
 
-	if (read(fd, container, size) != size){
-		state_return_msg(EAR_READ_ERROR, errno, strerror(errno));
+	while ((r = read(fd, buffer, size)) > 0){
+		size = size - r;
 	}
 
 	close(fd);
 
+	if (r < 0) {
+		state_return_msg(EAR_READ_ERROR, errno, strerror(errno));
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t file_write(const char *path, const char *buffer, size_t size)
+{
+	int fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	ssize_t w;
+
+	if (fd < 0) {
+		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+	}
+
+	while ((w = write(fd, buffer, size)) > 0) {
+		size = size - w;
+	}
+
+	close(fd);
+
+	if (w < 0) {
+		state_return_msg(EAR_READ_ERROR, errno, strerror(errno));
+	}
+
+	state_return(EAR_SUCCESS);
+}
+
+state_t file_clean(const char *path)
+{
+	if (remove(path) != 0) {
+		state_return_msg(EAR_ERROR, errno, strerror(errno));
+	}
 	state_return(EAR_SUCCESS);
 }

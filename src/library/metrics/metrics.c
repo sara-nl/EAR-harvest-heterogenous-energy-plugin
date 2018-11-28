@@ -358,6 +358,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		metrics->Gflops = metrics->Gflops / time_s; // Floating ops to FLOPS
 		metrics->Gflops = metrics->Gflops / 1000000000.0; // FLOPS to GFLOPS
 		metrics->Gflops = metrics->Gflops * (double) procs; // Core GFLOPS to node GFLOPS
+		/* if (s==APP) earl_verbose(0,"Total resources per node detected %d, GFlops per MPI process %lf \n",procs,metrics->Gflops); */
 	}
 
 	// Transactions and cycles

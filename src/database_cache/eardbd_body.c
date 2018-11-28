@@ -38,6 +38,10 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
+#include <database_cache/eardbd_body.h>
+#include <database_cache/eardbd_sync.h>
+#include <database_cache/eardbd_signals.h>
+#include <database_cache/eardbd_storage.h>
 
 // Configuration
 extern cluster_conf_t conf_clus;
@@ -65,23 +69,18 @@ extern int fd_min;
 extern int fd_max;
 
 // Mirroring
+extern process_data_t proc_data_srv;
+extern process_data_t proc_data_mir;
 extern pid_t server_pid;
 extern pid_t mirror_pid;
 extern pid_t others_pid;
 extern int master_iam; // Master is who speaks
 extern int server_iam;
 extern int mirror_iam;
+extern int server_too;
+extern int mirror_too;
 
-// Storage
-extern periodic_aggregation_t *aggrs;
-extern periodic_metric_t *enrgy;
-extern application_t *appsm;
-extern application_t *appsn;
-extern application_t *appsl;
-extern ear_event_t *evnts;
-extern loop_t *loops;
-
-// Metrics
+// Data
 extern time_t glb_time1[MAX_TYPES];
 extern time_t glb_time2[MAX_TYPES];
 extern time_t ins_time1[MAX_TYPES];
@@ -113,8 +112,12 @@ extern int listening;
 extern int releasing;
 extern int exitting;
 extern int updating;
-extern int waiting;
+extern int dreaming;
+extern int veteran;
 extern int forked;
+
+// Extras
+extern sigset_t sigset;
 
 // Verbosity
 extern char *str_who[2];
@@ -134,15 +137,20 @@ static void body_alarm(struct timeval *timeout_slct)
 
 		if (timeout_aggr.tv_sec == 0)
 		{
+			peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
+			peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
+
 			verwho1("completed the aggregation number %lu with energy %lu",
-					sam_index[i_aggrs], aggrs[sam_index[i_aggrs]].DC_energy);
+					sam_index[i_aggrs], q->DC_energy);
 
 			// Aggregation time done, so new aggregation incoming
 			storage_sample_add(NULL, sam_inmax[i_aggrs], &sam_index[i_aggrs], NULL, 0, SYNC_AGGRS);
 
 			// Initializing the new element
+			q = (peraggr_t *) &p[sam_index[i_aggrs]];
+
 			if (sam_inmax[i_aggrs] > 0) {
-				init_periodic_aggregation(&aggrs[sam_index[i_aggrs]]);
+				init_periodic_aggregation(q);
 			}
 
 			//
@@ -154,14 +162,21 @@ static void body_alarm(struct timeval *timeout_slct)
 			// Synchronizing with the MAIN
 			if (mirror_iam)
 			{
+				sync_ans_t answer;
+
 				//TODO: MPKFA
 				// Asking the question
-				if(state_fail(sync_question(SYNC_ALL)))
+
+				// In case of fail the mirror have to insert the data
+				if(state_fail(sync_question(SYNC_ALL, veteran, &answer)))
 				{
-					// In case of fail the mirror have to insert the data
 					insert_hub(SYNC_ALL, RES_TIME);
+				// In case I'm veteran and the server is not
+				} else if (!answer.veteran && veteran)
+				{
+					insert_hub(SYNC_ALL, RES_TIME);
+				// In case of the answer is received just clear the data
 				} else {
-					// In case of the answer is received the mirror just have to clear the data
 					reset_all();
 				}
 			} else {
@@ -171,6 +186,9 @@ static void body_alarm(struct timeval *timeout_slct)
 
 			// If server the time reset is do it after the insert
 			time_reset_timeout_insr(0);
+
+			// I'm a veteran
+			veteran = 1;
 		}
 
 		time_reset_timeout_slct();
@@ -257,49 +275,18 @@ static void body_insert()
 
 }
 
-static void body_closing()
-{
-	int i;
-
-	for(i = fd_max; i >= fd_min && !listening; --i)
-	{
-		close(i);
-	}
-}
-
-static void body_free_resources()
-{
-	// Cleaning sockets
-	sockets_dispose(smets_srv);
-	sockets_dispose(smets_mir);
-	sockets_dispose(ssync_srv);
-
-	// Freeing data
-	if (appsm != NULL)
-	{
-		free(appsm);
-		free(appsn);
-		free(appsl);
-		free(enrgy);
-		free(aggrs);
-		free(evnts);
-		free(loops);
-
-		appsm = NULL;
-		appsn = NULL;
-		appsl = NULL;
-		enrgy = NULL;
-		aggrs = NULL;
-		evnts = NULL;
-		loops = NULL;
-	}
-
-	free_cluster_conf(&conf_clus);
-}
-
 void body()
 {
 	int s;
+
+	if (listening) {
+		printml1("phase 7: listening (processing every %lu s)", time_insr);
+	}
+
+
+	if (server_iam) {
+		sleep(242);
+	}
 
 	// BODY
 	while(listening)
@@ -322,20 +309,57 @@ void body()
 
 		updating = 0;
 	}
+}
 
-	body_closing();
+void dream()
+{
+	while (dreaming) {
+		sigsuspend(&sigset);
+	}
+}
 
-	if (waiting) {
-		waitpid(mirror_pid, NULL, 0);
+void release()
+{
+	int i;
+
+	// Socket closing
+	for(i = fd_max; i >= fd_min && !listening; --i) {
+		close(i);
 	}
 
-	if (releasing) {
-		body_free_resources();
-		releasing = 0;
+	// Cleaning sockets
+	sockets_dispose(smets_srv);
+	sockets_dispose(smets_mir);
+	sockets_dispose(ssync_srv);
+	sockets_dispose(ssync_mir);
+
+	// Freeing data
+	free_cluster_conf(&conf_clus);
+
+	for (i = 0; i < MAX_TYPES; ++i)
+	{
+		if (typ_alloc[i] != NULL)
+		{
+			free(typ_alloc[i]);
+			typ_alloc[i] = NULL;
+		}
 	}
 
-	if (reconfiguring) {
+	// Reconfiguring
+	if (reconfiguring)
+	{
 		sleep(5);
 		reconfiguring = 0;
 	}
+
+	// Process PID cleaning
+	if (server_iam && server_too) {
+		process_pid_file_clean(&proc_data_srv);
+	}
+	if (mirror_iam && mirror_too) {
+		process_pid_file_clean(&proc_data_mir);
+	}
+
+	// End releasing
+	releasing = 0;
 }

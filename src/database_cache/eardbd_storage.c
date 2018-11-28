@@ -40,6 +40,10 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
+#include <database_cache/eardbd_body.h>
+#include <database_cache/eardbd_sync.h>
+#include <database_cache/eardbd_signals.h>
+#include <database_cache/eardbd_storage.h>
 
 // Buffers
 extern char input_buffer[SZ_BUFF_BIG];
@@ -54,16 +58,7 @@ extern int mirror_iam;
 extern struct timeval timeout_slct;
 extern time_t time_slct;
 
-// Storage
-extern periodic_aggregation_t *aggrs;
-extern periodic_metric_t *enrgy;
-extern application_t *appsm;
-extern application_t *appsn;
-extern application_t *appsl;
-extern ear_event_t *evnts;
-extern loop_t *loops;
-
-// Metrics
+// Data
 extern time_t glb_time1[MAX_TYPES];
 extern time_t glb_time2[MAX_TYPES];
 extern time_t ins_time1[MAX_TYPES];
@@ -82,7 +77,15 @@ extern uint   soc_unkwn;
 extern uint   soc_tmout;
 
 // State machine
+extern int reconfiguring;
+extern int listening;
+extern int releasing;
+extern int exitting;
+extern int updating;
+extern int dreaming;
+extern int veteran;
 extern int forked;
+
 
 // Verbosity
 extern char *str_who[2];
@@ -113,13 +116,13 @@ void metrics_print()
 	float block;
 	int i;
 
-	verline0();
+	printl0();
 
 	//
 	tprintf_init(stderr, STR_MODE_DEF, "15 13 9 10 10");
 
 	//
-	tprintf("sample (%d)||recv/alloc||%%||t. insr||t. recv", server_iam);
+	tprintf("sample (%d)||recv/alloc||%%||t. insr||t. recv", mirror_iam);
 	tprintf("-----------||----------||--||-------||-------");
 
 	for (i = 0; i < MAX_TYPES; ++i)
@@ -127,8 +130,12 @@ void metrics_print()
 		itime = ((float) difftime(ins_time2[i], ins_time1[i]));
 		gtime = ((float) difftime(glb_time2[i], glb_time1[i]));
 		alloc = ((float) (typ_sizof[i] * sam_inmax[i]) / 1000000.0);
-		prcnt = ((float) (sam_recvd[i]) / (float) (sam_inmax[i])) * 100.0f;
 		block = ((float) (sam_recvd[i] * typ_sizof[i]) / 1000000.0);
+		prcnt = 0.0f;
+
+		if (sam_inmax[i] > 0.0f) {
+			prcnt = ((float) (sam_recvd[i]) / (float) (sam_inmax[i])) * 100.0f;
+		}
 
 		tprintf("%s||%lu/%lu||%2.2f||%0.2fs||%0.2fs",
 				sam_iname[i], sam_index[i], sam_inmax[i],
@@ -142,7 +149,7 @@ void metrics_print()
 	fprintf(stderr, "timeout sockets: %u\n", soc_tmout);
 	fprintf(stderr, "unknown samples: %u\n", soc_tmout);
 
-	verline0();
+	printl0();
 
 	soc_accpt = 0;
 	soc_discn = 0;
@@ -158,10 +165,14 @@ void metrics_print()
 
 static void reset_aggregations()
 {
-	if (sam_index[i_aggrs] < sam_inmax[i_aggrs] && aggrs[sam_index[i_aggrs]].n_samples > 0) {
-		memcpy (aggrs, &aggrs[sam_index[i_aggrs]], sizeof(periodic_aggregation_t));
+	peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
+	peraggr_t  q = (peraggr_t  ) p[sam_index[i_aggrs]];
+
+	if (sam_index[i_aggrs] < sam_inmax[i_aggrs] && q.n_samples > 0)
+	{
+		memcpy (p, &q, sizeof(periodic_aggregation_t));
     } else {
-        init_periodic_aggregation(aggrs);
+        init_periodic_aggregation(p);
     }
 
     sam_index[i_aggrs] = 0;
@@ -196,7 +207,7 @@ void reset_all()
  * Insert
  *
  */
-#if 0
+#if 1
 	#define db_batch_insert_applications(a, b);
 	#define db_batch_insert_applications_no_mpi(a, b);
 	#define db_batch_insert_applications_learning(a, b);
@@ -213,7 +224,7 @@ static void insert_apps_mpi()
 	}
 
 	metrics_insert_start(i_appsm);
-	db_batch_insert_applications(appsm, sam_index[i_appsm]);
+	db_batch_insert_applications(typ_alloc[i_appsm], sam_index[i_appsm]);
 	metrics_insert_stop(i_appsm, sam_index[i_appsm]);
 }
 
@@ -226,7 +237,7 @@ static void insert_apps_non_mpi()
 	}
 
 	metrics_insert_start(i_appsn);
-	db_batch_insert_applications_no_mpi(appsn, sam_index[i_appsn]);
+	db_batch_insert_applications_no_mpi(typ_alloc[i_appsn], sam_index[i_appsn]);
 	metrics_insert_stop(i_appsn, sam_index[i_appsn]);
 }
 
@@ -239,7 +250,7 @@ static void insert_apps_learning()
 	}
 
 	metrics_insert_start(i_appsl);
-	db_batch_insert_applications_learning(appsl, sam_index[i_appsl]);
+	db_batch_insert_applications_learning(typ_alloc[i_appsl], sam_index[i_appsl]);
 	metrics_insert_stop(i_appsl, sam_index[i_appsl]);
 }
 
@@ -252,7 +263,7 @@ static void insert_loops()
 	}
 
 	metrics_insert_start(i_loops);
-	db_batch_insert_loops(loops, sam_index[i_loops]);
+	db_batch_insert_loops(typ_alloc[i_loops], sam_index[i_loops]);
 	metrics_insert_stop(i_loops, sam_index[i_loops]);
 }
 
@@ -265,7 +276,7 @@ static void insert_energy()
 	}
 
 	metrics_insert_start(i_enrgy);
-	db_batch_insert_periodic_metrics(enrgy, sam_index[i_enrgy]);
+	db_batch_insert_periodic_metrics(typ_alloc[i_enrgy], sam_index[i_enrgy]);
 	metrics_insert_stop(i_enrgy, sam_index[i_enrgy]);
 }
 
@@ -278,7 +289,7 @@ static void insert_aggregations()
 	}
 
 	metrics_insert_start(i_aggrs);
-	db_batch_insert_periodic_aggregations(aggrs, sam_index[i_aggrs]);
+	db_batch_insert_periodic_aggregations(typ_alloc[i_aggrs], sam_index[i_aggrs]);
 	metrics_insert_stop(i_aggrs, sam_index[i_aggrs]);
 }
 
@@ -291,14 +302,13 @@ static void insert_events()
 	}
 
 	metrics_insert_start(i_evnts);
-	db_batch_insert_ear_event(evnts, sam_index[i_evnts]);
+	db_batch_insert_ear_event(typ_alloc[i_evnts], sam_index[i_evnts]);
 	metrics_insert_stop(i_evnts, sam_index[i_evnts]);
 }
 
 void insert_hub(uint option, uint reason)
 {
 	verwho1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
-
 
 	metrics_print();
 
@@ -374,10 +384,9 @@ void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz,
 
 	if (*idx == len)
 	{
-		//TODO: MPKFA
 		if(server_iam) {
 			insert_hub(opt, RES_OVER);
-		} else if (state_fail(sync_question(opt))) {
+		} else if (state_fail(sync_question(opt, veteran, NULL))) {
 			insert_hub(opt, RES_OVER);
 		}
 	}
@@ -481,55 +490,58 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	// Storage
 	if (type == CONTENT_TYPE_APM)
 	{
-		storage_sample_add((char *) &appsm[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_appsm][sam_index[index]], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSM);
 	}
 	else if (type == CONTENT_TYPE_APN)
 	{
-		storage_sample_add((char *) &appsn[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_appsn][sam_index[index]], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSN);
 	}
 	else if (type == CONTENT_TYPE_APL)
 	{
-		storage_sample_add((char *) &appsl[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_appsl][sam_index[index]], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_APPSL);
 	}
 	else if (type == CONTENT_TYPE_EVE)
 	{
-		storage_sample_add((char *) &evnts[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_evnts][sam_index[index]], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_EVNTS);
 	}
 	else if (type == CONTENT_TYPE_LOO)
 	{
-		storage_sample_add((char *) &loops[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_loops][sam_index[index]], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_LOOPS);
 	}
 	else if (type == CONTENT_TYPE_PER)
 	{
+		peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
+		peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 		periodic_metric_t *met = (periodic_metric_t *) content;
 
 		// Add sample to the aggregation
-		add_periodic_aggregation(&aggrs[sam_index[index]], met->DC_energy,
-			met->start_time, met->end_time);
+		add_periodic_aggregation(q, met->DC_energy, met->start_time, met->end_time);
 
 		// Add sample to the energy array
-		storage_sample_add((char *) &enrgy[sam_index[index]], sam_inmax[index],
+		storage_sample_add((char *) &typ_alloc[i_enrgy][sam_index[index]], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_ENRGY);
 	}
 	else if (type == CONTENT_TYPE_QST)
 	{
-		sync_qst_t *q = (sync_qst_t *) content;
+		sync_qst_t *question = (sync_qst_t *) content;
 
-		//TODO: MPKFA
-		// Passing the question option
-		insert_hub(q->sync_option, RES_SYNC);
+		if (veteran || !question->veteran) {
+			//TODO: MPKFA
+			// Passing the question option
+			insert_hub(question->sync_option, RES_SYNC);
+		}
 
 		// Answering the mirror question
-		sync_answer(fd);
+		sync_answer(fd, veteran);
 
 		// In case it is a full sync the sync time is resetted before the answer
 		// with a very small offset (5 second is enough)
-		if (sync_option(q->sync_option, SYNC_ALL))
+		if (sync_option(question->sync_option, SYNC_ALL))
 		{
 			/// We get the timeout passed since the 'time_slct' got its value
 			// and added to 'timeout_insr', because when 'time_slct' would be
@@ -538,6 +550,9 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 			time_t timeout_passed = time_slct - timeout_slct.tv_sec;
 
 			time_reset_timeout_insr(timeout_passed + 5);
+
+			// I'm a veteran
+			veteran = 1;
 		}
 	}
 

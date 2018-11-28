@@ -27,73 +27,35 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <math.h>
-#include <errno.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <common/file.h>
+#ifndef EAR_PROCESS_H
+#define EAR_PROCESS_H
+
 #include <common/sizes.h>
 #include <common/states.h>
-#include <common/types/coefficient.h>
 
-static char buffer[SZ_PATH];
-
-void print_coefficients(coefficient_t *avg, int n_pstates)
+typedef struct process_data
 {
-	int i;
+	char path_pid[SZ_PATH];
+	char name[SZ_NAME_SHORT];
+	pid_t pid;
+} process_data_t;
 
-	for (i=0;i<n_pstates;i++){
-		coeff_print(&avg[i]);
-	}
-}
+/* */
+void process_data_initialize(process_data_t *prodata, char *name, char *path_pid);
 
-int main(int argc, char *argv[])
-{
-	coefficient_t *coeffs;
-	state_t state;
-	int n_pstates;
-	int size;
-    int i;
+/* */
+void process_update_pid(process_data_t *prodata);
 
-    if (argc < 2) {
-        printf("Usage: %s coeffs_file\n",argv[0]);
-        exit(1);
-    }
+/* */
+int process_exists(const process_data_t *prodata, pid_t *pid);
 
-	size = file_size(argv[1]);
+/* */
+state_t process_pid_file_save(const process_data_t *prodata);
 
-	if (size < 0) {
-		sprintf(buffer, "ERROR, invalid coeffs path %s (%s)\n", argv[1], intern_error_str);
-		printf(buffer);
-		exit(1);
-	}
+/* */
+state_t process_pid_file_load(const process_data_t *prodata, pid_t *pid);
 
-    n_pstates = size / sizeof(coefficient_t);
-	printf("coefficients file size: %d\n", size);
-	printf("number of P_STATES: %d\n", n_pstates);
+/* */
+state_t process_pid_file_clean(process_data_t *prodata);
 
-    coeffs = (coefficient_t*) calloc(size ,1);
-
-    if (coeffs == NULL) {
-		printf("ERROR, not enough memory\n");
-		exit(1);
-    }
-
-    /* The program reports coefficients in stdout and csv file */
-	state = file_read(argv[1], (char *) coeffs, size);
-
-	if (state_fail(state)) {
-		state_print_error(state);
-		exit(1);
-	}
-
-    print_coefficients(coeffs, n_pstates);
-
-    return 0;
-}
+#endif //EAR_PROCESS_H

@@ -33,32 +33,51 @@
 #define col1 "\x1b[35m"
 #define col2 "\x1b[0m"
 
+// Meaning:
+//  - m: master
+//  - l: line
+//  - p: shows the process
+//  - 0: no arguments
+//  - 1: arguments
+
 #define verwho0(format) \
     fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
 
 #define verwho1(format, ...) \
     fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 
-#define vermast1(...) \
+#define printpl0(format) \
+	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam]);
+
+#define printpl1(format, ...) \
+	printl0(); \
+	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
+
+#define printm1(...) \
     if (!forked || master_iam) { \
         fprintf(stderr, __VA_ARGS__); \
         fprintf(stderr, "\n"); \
     }
 
-#define verline0() \
+#define printmc1(...) \
+    if (!forked || master_iam) { \
+        fprintf(stderr, col1 __VA_ARGS__); \
+        fprintf(stderr, col2 "\n"); \
+    }
+
+#define printl0() \
         fprintf(stderr, col1 line col2);
 
-#define verline1(...) \
+#define printml1(...) \
     if (!forked || master_iam) { \
         fprintf(stderr, col1 line __VA_ARGS__); \
         fprintf(stderr, col2 "\n"); \
     }
 
-#define error(...) \
-    fprintf(stderr, "ERROR, " __VA_ARGS__); \
-    fprintf(stderr, "\n"); \
-    exit(1);
-
 void body();
+
+void release();
+
+void dream();
 
 #endif //EAR_EARDBD_BODY_H

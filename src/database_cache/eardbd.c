@@ -38,6 +38,10 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <database_cache/eardbd.h>
+#include <database_cache/eardbd_body.h>
+#include <database_cache/eardbd_sync.h>
+#include <database_cache/eardbd_signals.h>
+#include <database_cache/eardbd_storage.h>
 
 int EAR_VERBOSE_LEVEL = 1;
 
@@ -48,10 +52,6 @@ cluster_conf_t conf_clus;
 packet_header_t input_header;
 char input_buffer[SZ_BUFF_BIG];
 char extra_buffer[SZ_BUFF_BIG];
-
-// Extras
-static float alloc;
-static int isle;
 
 // Sockets
 static socket_t sockets[4];
@@ -83,18 +83,22 @@ int fd_max;
 // Mirroring
 static char master_host[SZ_NAME_MEDIUM]; // This node name
 static char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
-pid_t server_pid;
-pid_t mirror_pid;
-pid_t others_pid;
 static int server_port;
 static int mirror_port;
 static int synchr_port;
-static int server_too;
-static int mirror_too;
-static int others_too; // Just if other process exists
+int server_too;
+int mirror_too;
 int master_iam; // Master is who speaks
 int server_iam;
 int mirror_iam;
+
+// PID
+char *path_pid;
+process_data_t proc_data_srv;
+process_data_t proc_data_mir;
+pid_t server_pid;
+pid_t mirror_pid;
+pid_t others_pid;
 
 // Synchronization
 packet_header_t sync_ans_header;
@@ -102,22 +106,15 @@ packet_header_t sync_qst_header;
 sync_qst_t sync_qst_content;
 sync_ans_t sync_ans_content;
 
-// Data warehouse
-periodic_aggregation_t *aggrs;
-periodic_metric_t *enrgy;
-application_t *appsm;
-application_t *appsn;
-application_t *appsl;
-ear_event_t *evnts;
-loop_t *loops;
-
-// Metrics
+// Data
 time_t glb_time1[MAX_TYPES];
 time_t glb_time2[MAX_TYPES];
 time_t ins_time1[MAX_TYPES];
 time_t ins_time2[MAX_TYPES];
 size_t typ_sizof[MAX_TYPES];
+float  typ_vecmb[MAX_TYPES];
 uint   typ_prcnt[MAX_TYPES];
+float  typ_prcnl[MAX_TYPES];
 uint   typ_index[MAX_TYPES];
 char  *typ_alloc[MAX_TYPES];
 char  *sam_iname[MAX_TYPES];
@@ -143,8 +140,14 @@ int listening;
 int releasing;
 int exitting;
 int updating;
-int waiting;
+int dreaming;
+int veteran;
 int forked;
+
+// Extras
+static float alloc;
+static int isle;
+sigset_t sigset;
 
 // Strings
 char *str_who[2] = { "server", "mirror" };
@@ -158,9 +161,7 @@ int verbosity = 0;
 
 static void init_general_configuration(int argc, char **argv, cluster_conf_t *conf_clus)
 {
-	node_island_t *is;
-	int i, j, k, found;
-	char *p, *hl, *hs;
+	int mode;
 
 	// Cleaning 0 (who am I? Ok I'm the server, which is also the master for now)
 	mirror_iam = 0;
@@ -173,68 +174,29 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	mirror_pid = 0;
 	others_pid = 0;
 
+	gethostname(master_host, SZ_NAME_MEDIUM);
+
 	// Configuration
-#if 1
+#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
 
-	vermast1("reading '%s' configuration file", extra_buffer);
+	printm1("reading '%s' configuration file", extra_buffer);
 	read_cluster_conf(extra_buffer, conf_clus);
 
 	// Database
 	init_db_helper(&conf_clus->database);
 
 	// Mirror finding
-	hl = master_host;  // Long host pointer
-	hs = extra_buffer; // Short host pointer
+	mode = get_node_server_mirror();
 
-	gethostname(hl, SZ_NAME_MEDIUM);
-	strncpy(hs, hl, SZ_NAME_MEDIUM);
-	found = 0;
-
-	// Finding the short form 
-	if ((p = strchr(hs, '.')) != NULL) {
-		p[0] = '\0';
-	}
-
-	for (i = 0; i < conf_clus->num_islands && !found; ++i)
-	{
-		is = &conf_clus->islands[i];
-		//vermast1("i %d", i);
-
-		for (k = 0; k < is->num_ranges && !found; k++)
-		{
-			p = is->db_ips[is->ranges[k].db_ip];
-			//vermast1("r %s", p);
-
-			if (!server_too && p != NULL &&
-				((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0))))
-			{
-				//vermast1("db_ip %s", p);
-				server_too = 1;
-			}
-
-        	if (!mirror_too && is->ranges[k].sec_ip >= 0)
-			{
-				p = is->backup_ips[is->ranges[k].sec_ip];
-
-				if (p != NULL &&
-					((strncmp(p, hl, strlen(hl)) == 0) || (strncmp(p, hs, strlen(hs) == 0))))
-				{
-					//vermast1("db_ip_sec %s", p);
-					strcpy(server_host, is->db_ips[is->ranges[k].db_ip]);
-					mirror_too = 1;
-				}
-			}
-
-			found = server_too && mirror_too;
-		}
-	}
+	server_too = (mode & 0x01);
+	mirror_too = (mode & 0x02) > 0);
 #else
-	conf_clus->db_manager.tcp_port      = 4811;
-	conf_clus->db_manager.sec_tcp_port  = 4812;
-	conf_clus->db_manager.sync_tcp_port = 4813;
+	conf_clus->db_manager.tcp_port      = 8811;
+	conf_clus->db_manager.sec_tcp_port  = 8812;
+	conf_clus->db_manager.sync_tcp_port = 8813;
 	conf_clus->db_manager.mem_size      = 1;
 	conf_clus->db_manager.aggr_time     = 60;
 	conf_clus->db_manager.insr_time     = atoi(argv[4]);
@@ -252,9 +214,36 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
 
+	// PID protection
+	pid_t other_server_pid;
+	pid_t other_mirror_pid;
+	path_pid = "/var/run";
+
+	// PID test
+	process_data_initialize(&proc_data_srv, "eardbd_test", path_pid);
+
+	if (state_fail(process_pid_file_save(&proc_data_srv))) {
+		error("while testing the local state directory (%s)", intern_error_str);
+	}
+
+	process_pid_file_clean(&proc_data_srv);
+	process_data_initialize(&proc_data_srv, "eardbd_server", path_pid);
+	process_data_initialize(&proc_data_mir, "eardbd_mirror", path_pid);
+
+	int server_xst = process_exists(&proc_data_srv, &other_server_pid);
+	int mirror_xst = process_exists(&proc_data_mir, &other_mirror_pid);
+
+	server_too = server_too && !server_xst;
+	mirror_too = mirror_too && !mirror_xst;
+
+	if (!server_xst) process_pid_file_clean(&proc_data_srv);
+	if (!mirror_xst) process_pid_file_clean(&proc_data_mir);
+	if ( server_xst) server_pid = other_server_pid;
+	if ( mirror_xst) mirror_pid = other_mirror_pid;
+
 	// Server & mirro verbosity
-	vermast1("enabled cache server: %s",      server_too ? "OK": "NO");
-	vermast1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
+	printm1("enabled cache server: %s",      server_too ? "OK": "NO");
+	printm1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
 
 	if (!server_too && !mirror_too) {
 		error("this node is not configured as a server nor mirror");
@@ -268,11 +257,11 @@ static void init_time_configuration(int argc, char **argv, cluster_conf_t *conf_
 	time_aggr = (time_t) conf_clus->db_manager.aggr_time;
 
 	if (time_insr == 0) {
-		vermast1("insert time can't be 0, using 300 seconds (default)");
+		printm1("insert time can't be 0, using 300 seconds (default)");
 		time_insr = 300;
 	}
 	if (time_aggr == 0) {
-		vermast1("aggregation time can't be 0, using 60 seconds (default)");
+		printm1("aggregation time can't be 0, using 60 seconds (default)");
 		time_aggr = 60;
 	}
 
@@ -282,97 +271,74 @@ static void init_time_configuration(int argc, char **argv, cluster_conf_t *conf_
 	time_reset_timeout_slct();
 
 	// Times verbosity
-	vermast1("insertion time:   %lu seconds", time_insr);
-	vermast1("aggregation time: %lu seconds", time_aggr);
+	printm1("insertion time:   %lu seconds", time_insr);
+	printm1("aggregation time: %lu seconds", time_aggr);
+}
+
+static int init_sockets_single(socket_t *socket, char *host, int port, int bind)
+{
+	state_t s;
+
+	sockets_clean(socket);
+
+	sockets_init(socket, host, port, TCP);
+
+	//
+	if (!bind) {
+		return 0;
+	}
+	if (state_fail(sockets_socket(socket))) {
+		return intern_error_num;
+	}
+	if (state_fail(sockets_bind(socket, 2))) {
+		return intern_error_num;
+	}
+	if (state_fail(sockets_listen(socket))) {
+		return intern_error_num;
+	}
+
+	sockets_nonblock_set(socket->fd);
+
+	return 0;
 }
 
 static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 {
-	state_t s1 = EAR_SUCCESS;
-	state_t s2 = EAR_SUCCESS;
-	state_t s3 = EAR_SUCCESS;
-	time_t timeout;
-	int binded;
-
-	// Cleaning socket sets
-	FD_ZERO(&fds_incoming);
-	FD_ZERO(&fds_active);
-
-	// Cleaning sockets
-	sockets_clean(smets_srv);
-	sockets_clean(smets_mir);
-	sockets_clean(ssync_srv);
-	sockets_clean(smets_srv);
-
-	// Setting data
-	sockets_init(smets_srv, NULL, server_port, TCP);
-	sockets_init(ssync_srv, NULL, synchr_port, TCP);
-	sockets_init(smets_mir, NULL, mirror_port, TCP);
-	sockets_init(ssync_mir, server_host, synchr_port, TCP);
-
-	// Opening server socket
-	if (server_too) s1 = sockets_socket(smets_srv);
-	if (server_too) s2 = sockets_socket(ssync_srv);
-	if (mirror_too) s3 = sockets_socket(smets_mir);
-
-	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
-		error("while creating sockets (%s)", intern_error_str);
-	}
-
-	if (server_too) s1 = EAR_NOT_READY;
-    if (server_too) s2 = EAR_NOT_READY;
-    if (mirror_too) s3 = EAR_NOT_READY;
-	timeout = time(NULL) + 61;
-
-	// Binding socket
-	do {
-		if (server_too && state_fail(s1)) s1 = sockets_bind(smets_srv);
-		if (server_too && state_fail(s2)) s2 = sockets_bind(ssync_srv);
-		if (mirror_too && state_fail(s3)) s3 = sockets_bind(smets_mir);
-		binded = state_ok(s1) && state_ok(s2) && state_ok(s3);
-	}
-	while (!binded && time(NULL) < timeout && !sleep(10));
-
-	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
-		error("while binding sockets (%s) %d %d %d", intern_error_str, s1, s2, s3);
-	}
-
-	// Listening socket
-	if (server_too) s1 = sockets_listen(smets_srv);
-	if (server_too) s2 = sockets_listen(ssync_srv);
-	if (mirror_too) s3 = sockets_listen(smets_mir);
-
-	if (state_fail(s1) || state_fail(s2) || state_fail(s3)) {
-		error("while listening sockets (%s)", intern_error_str);
-	}
-
 	//
-	sockets_nonblock_set(smets_srv->fd);
-	sockets_nonblock_set(ssync_srv->fd);
-	sockets_nonblock_set(smets_mir->fd);
+	int errno1 = init_sockets_single(smets_srv, NULL, server_port, 1);
+	int errno2 = init_sockets_single(smets_mir, NULL, mirror_port, 1);
+	int errno3 = init_sockets_single(ssync_srv, NULL, synchr_port, 1);
+	int errno4 = init_sockets_single(ssync_mir, server_host, synchr_port, 0);
 
 	// Verbosity
-	char *str_sta[2] = { "listen", "closed" };
+	char *str_sta[3] = { "listen", "closed", "error" };
 
 	int fd1 = smets_srv->fd;
 	int fd2 = smets_mir->fd;
 	int fd3 = ssync_srv->fd;
 	int fd4 = ssync_mir->fd;
+	int st1 = (fd1 == -1) + ((fd1 == -1) * (errno1 != 0));
+	int st2 = (fd2 == -1) + ((fd2 == -1) * (errno2 != 0));
+	int st3 = (fd3 == -1) + ((fd3 == -1) * (errno3 != 0));
+	int st4 = (fd4 == -1) + ((fd4 == -1) * (errno4 != 0));
 
 	// Summary
-	tprintf_init(stderr, STR_MODE_DEF, "18 8 7 10 8");
+	tprintf_init(stderr, STR_MODE_DEF, "18 8 7 10 8 8");
 
-	tprintf("type||port||prot||stat||fd");
-	tprintf("----||----||----||----||--");
-	tprintf("server metrics||%d||TCP||%s||%d", smets_srv->port, str_sta[fd1 == -1], fd1);
-	tprintf("mirror metrics||%d||TCP||%s||%d", smets_mir->port, str_sta[fd2 == -1], fd2);
-	tprintf("server sync||%d||TCP||%s||%d", ssync_srv->port, str_sta[fd3 == -1], fd3);
-	tprintf("mirror sync||%d||TCP||%s||%d", ssync_mir->port, str_sta[fd4 == -1], fd4);
-	vermast1("TIP! mirror sync socket opens and closes intermittently");
+	tprintf("type||port||prot||stat||fd||err");
+	tprintf("----||----||----||----||--||---");
+	tprintf("server metrics||%d||TCP||%s||%d||%d", smets_srv->port, str_sta[st1], fd1, errno1);
+	tprintf("mirror metrics||%d||TCP||%s||%d||%d", smets_mir->port, str_sta[st2], fd2, errno2);
+	tprintf("server sync||%d||TCP||%s||%d||%d",    ssync_srv->port, str_sta[st3], fd3, errno3);
+	tprintf("mirror sync||%d||TCP||%s||%d||%d",    ssync_mir->port, str_sta[st4], fd4, errno4);
+	printm1("TIP! mirror sync socket opens and closes intermittently");
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 {
+	state_t state;
+
+	// Fork
 	if (mirror_too)
 	{
 		mirror_pid = fork();
@@ -385,7 +351,7 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 
 			mirror_pid = getpid();
 			others_pid = server_pid;
-			sleep(1);
+			sleep(2);
 		}
 		else if (mirror_pid > 0) {
 			others_pid = mirror_pid;
@@ -400,57 +366,27 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 	// Verbosity
 	char *str_sta[2] = { "(just sleeps)", "" };
 
-	vermast1("cache server pid: %d %s", server_pid, str_sta[server_too]);
-	vermast1("cache mirror pid: %d", mirror_pid);
-}
+	printm1("cache server pid: %d %s", server_pid, str_sta[server_too]);
+	printm1("cache mirror pid: %d", mirror_pid);
 
-static void init_sockets_mirror(int argc, char **argv, cluster_conf_t *conf_clus)
-{
-	// Destroying main sockets
-	sockets_dispose(smets_srv);
-	sockets_dispose(ssync_srv);
-
-	// Keep track of the biggest file descriptor
-	fd_max = smets_mir->fd;
-	fd_min = smets_mir->fd;
-
-	FD_SET(smets_mir->fd, &fds_active);
-}
-
-static void init_sockets_server(int argc, char **argv, cluster_conf_t *conf_clus)
-{
-	// Destroying mirror soockets
-	sockets_dispose(smets_mir);
-
-	// Keep track of the biggest file descriptor
-	fd_max = ssync_srv->fd;
-	fd_min = ssync_srv->fd;
-
-	if (smets_srv->fd > fd_max) {
-		fd_max = smets_srv->fd;
-	}
-	if (smets_srv->fd < fd_min) {
-		fd_min = smets_srv->fd;
-	}
-
-	FD_SET(smets_srv->fd, &fds_active);
-	FD_SET(ssync_srv->fd, &fds_active);
+	printm1("cache server pid file: '%s'", server_too ? proc_data_srv.path_pid: "");
+	printm1("cache mirror pid file: '%s'", mirror_too ? proc_data_mir.path_pid: "");
 }
 
 static void init_signals()
 {
 	struct sigaction action;
-	sigset_t set;
 
-	// Blocking all signals except PIPE, TERM, INT and HUP
-	sigfillset(&set);
-	sigdelset(&set, SIGUSR1);
-	sigdelset(&set, SIGUSR2);
-	sigdelset(&set, SIGTERM);
-	sigdelset(&set, SIGINT);
-	sigdelset(&set, SIGHUP);
+	// Blocking all signals except USR1, USR2, PIPE, TERM, CHLD, INT and HUP
+	sigfillset(&sigset);
+	sigdelset(&sigset, SIGUSR1);
+	sigdelset(&sigset, SIGUSR2);
+	sigdelset(&sigset, SIGTERM);
+	sigdelset(&sigset, SIGCHLD);
+	sigdelset(&sigset, SIGINT);
+	sigdelset(&sigset, SIGHUP);
 
-	sigprocmask(SIG_SETMASK, &set, NULL);
+	sigprocmask(SIG_SETMASK, &sigset, NULL);
 
 	// Editing signals individually
 	sigfillset(&action.sa_mask);
@@ -465,6 +401,9 @@ static void init_signals()
 	if (sigaction(SIGUSR2, &action, NULL) < 0) {
 		verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
 	}
+	if (sigaction(SIGCHLD, &action, NULL) < 0) {
+		verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+	}
 	if (sigaction(SIGTERM, &action, NULL) < 0) {
 		verwho1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
 	}
@@ -476,45 +415,37 @@ static void init_signals()
 	}
 }
 
-static void init_types(int argc, char **argv, cluster_conf_t *conf_clus)
+static void init_types_single(char i, char *name, size_t size, uint percent)
 {
-	// Types
-	sam_iname[i_aggrs] = "energy aggrs";
-	sam_iname[i_enrgy] = "energy reps";
-	sam_iname[i_appsm] = "apps mpi";
-	sam_iname[i_appsn] = "apps non-mpi";
-	sam_iname[i_appsl] = "apps learn.";
-	sam_iname[i_evnts] = "events";
-	sam_iname[i_loops] = "loops";
+	float mb_single;
+	float mb_batch;
+	ulong b_batch;
 
-	typ_sizof[i_aggrs] = sizeof(periodic_aggregation_t);
-	typ_sizof[i_enrgy] = sizeof(periodic_metric_t);
-	typ_sizof[i_appsm] = sizeof(application_t);
-	typ_sizof[i_appsn] = sizeof(application_t);
-	typ_sizof[i_appsl] = sizeof(application_t);
-	typ_sizof[i_evnts] = sizeof(ear_event_t);
-	typ_sizof[i_loops] = sizeof(loop_t);
+	//
+	sam_iname[i] = name;
+	typ_sizof[i] = size;
+	typ_prcnt[i] = typ_prcnt[i] + ((typ_prcnt[i] == 0) * percent);
+	typ_prcnl[i] = ((float) typ_prcnt[i]) / 100.0;
 
-	typ_prcnt[i_appsm] = 40;
-	typ_prcnt[i_appsn] = 20;
-	typ_prcnt[i_appsl] = 05;
-	typ_prcnt[i_loops] = 24;
-	typ_prcnt[i_enrgy] = 05;
-	typ_prcnt[i_aggrs] = 01;
-	typ_prcnt[i_evnts] = 05;
-}
+	//
+	mb_batch = ceilf(alloc * typ_prcnl[i]);
+	mb_single = ((float) typ_sizof[i]) / 1000000.0;
+	sam_inmax[i] = (ulong) (mb_batch / mb_single);
 
-static ulong get_allocation_elements(float percent, size_t size)
-{
-	float megabytes_blk = ceilf(alloc * percent);
-	float megabytes_one = ((float) size) / 1000000.0;
-	ulong elements = (ulong) (megabytes_blk / megabytes_one);
-
-	if (elements < 100) {
-		return 100;
+	if (sam_inmax[i] < 100 && sam_inmax[i] > 0) {
+		sam_inmax[i] = 100;
 	}
 
-	return elements;
+	// Allocation and set
+	b_batch = typ_sizof[i] * sam_inmax[i];
+	typ_vecmb[i] = (double) (b_batch) / 1000000.0;
+
+	typ_alloc[i] = malloc(b_batch);
+	memset(typ_alloc[i], 0, b_batch);
+
+	// Verbosity
+	tprintf("%s||%0.2f MBs||%lu Bs||%lu||%0.2f",
+			sam_iname[i], typ_vecmb[i], typ_sizof[i], sam_inmax[i], typ_prcnl[i]);
 }
 
 static void init_process_configuration(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -527,23 +458,45 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	updating  = 0;
 
 	// is not a listening socket?
-	waiting   = (server_iam && !listening);
-	releasing = waiting;
-
-	// Activating signal catch
-	init_signals();
-
-	if (waiting) {
-		return;
-	}
+	dreaming   = (server_iam && !listening);
+	releasing  = dreaming;
 
 	// Socket closing
 	if (mirror_iam) {
-		init_sockets_mirror(argc, argv, conf_clus);
+		// Destroying main sockets
+		sockets_dispose(smets_srv);
+		sockets_dispose(ssync_srv);
+
+		// Keep track of the biggest file descriptor
+		fd_max = smets_mir->fd;
+		fd_min = smets_mir->fd;
+
+		FD_SET(smets_mir->fd, &fds_active);
 	} else {
-		init_sockets_server(argc, argv, conf_clus);
+		// Destroying mirror soockets
+		sockets_dispose(smets_mir);
+
+		// Keep track of the biggest file descriptor
+		fd_max = ssync_srv->fd;
+		fd_min = ssync_srv->fd;
+
+		if (smets_srv->fd > fd_max) {
+			fd_max = smets_srv->fd;
+		}
+		if (smets_srv->fd < fd_min) {
+			fd_min = smets_srv->fd;
+		}
+
+		FD_SET(smets_srv->fd, &fds_active);
+		FD_SET(ssync_srv->fd, &fds_active);
 	}
 
+	// Ok, all here is done
+	if (dreaming) {
+		return;
+	}
+
+	// Types allocation counting
 	for (i = 0; i < EARDBD_TYPES; ++i) {
 		per_total += conf_clus->db_manager.mem_size_types[i];
 	}
@@ -558,57 +511,30 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 		typ_prcnt[i_evnts] = conf_clus->db_manager.mem_size_types[6];
 	}
 
-	float lpc_appsm = ((float) typ_prcnt[i_appsm]) / 100.0;
-	float lpc_appsn = ((float) typ_prcnt[i_appsn]) / 100.0;
-	float lpc_appsl = ((float) typ_prcnt[i_appsl]) / 100.0;
-	float lpc_loops = ((float) typ_prcnt[i_loops]) / 100.0;
-	float lpc_enrgy = ((float) typ_prcnt[i_enrgy]) / 100.0;
-	float lpc_aggrs = ((float) typ_prcnt[i_aggrs]) / 100.0;
-	float lpc_evnts = ((float) typ_prcnt[i_evnts]) / 100.0;
+	// Verbose
+	tprintf_init(stderr, STR_MODE_DEF, "15 15 11 9 8");
 
-	// Data allocation
-	sam_inmax[i_aggrs] = get_allocation_elements(lpc_aggrs, typ_sizof[i_aggrs]);
-	sam_inmax[i_appsl] = get_allocation_elements(lpc_appsl, typ_sizof[i_appsm]);
-	sam_inmax[i_appsm] = get_allocation_elements(lpc_appsm, typ_sizof[i_appsm]);
-	sam_inmax[i_appsn] = get_allocation_elements(lpc_appsn, typ_sizof[i_appsm]);
-	sam_inmax[i_enrgy] = get_allocation_elements(lpc_enrgy, typ_sizof[i_enrgy]);
-	sam_inmax[i_evnts] = get_allocation_elements(lpc_evnts, typ_sizof[i_evnts]);
-	sam_inmax[i_loops] = get_allocation_elements(lpc_loops, typ_sizof[i_loops]);
+	if(!master_iam) {
+		tprintf_close();
+	}
 
-	// Raw data
-	ulong b_aggrs = typ_sizof[i_aggrs] * sam_inmax[i_aggrs];
-	ulong b_enrgy = typ_sizof[i_enrgy] * sam_inmax[i_enrgy];
-	ulong b_appsl = typ_sizof[i_appsm] * sam_inmax[i_appsl];
-	ulong b_appsm = typ_sizof[i_appsm] * sam_inmax[i_appsm];
-	ulong b_appsn = typ_sizof[i_appsm] * sam_inmax[i_appsn];
-	ulong b_evnts = typ_sizof[i_evnts] * sam_inmax[i_evnts];
-	ulong b_loops = typ_sizof[i_loops] * sam_inmax[i_loops];
+	// Summary
+	tprintf("type||memory||sample||elems||%%");
+	tprintf("----||------||------||-----||----");
 
-	appsm = malloc(b_appsm);
-	appsn = malloc(b_appsn);
-	appsl = malloc(b_appsl);
-	loops = malloc(b_loops);
-	enrgy = malloc(b_enrgy);
-	aggrs = malloc(b_aggrs);
-	evnts = malloc(b_evnts);
+	init_types_single(i_appsm, "apps mpi",     sizeof(application_t),          60);
+	init_types_single(i_appsn, "apps non-mpi", sizeof(application_t),          22);
+	init_types_single(i_appsl, "apps learn.",  sizeof(application_t),          05);
+	init_types_single(i_loops, "loops",        sizeof(loop_t),                 00);
+	init_types_single(i_evnts, "events",       sizeof(ear_event_t),            07);
+	init_types_single(i_enrgy, "energy reps",  sizeof(periodic_metric_t),      05);
+	init_types_single(i_aggrs, "energy aggrs", sizeof(periodic_aggregation_t), 01);
 
-	memset(appsm, 0, b_appsm);
-	memset(appsn, 0, b_appsn);
-	memset(appsl, 0, b_appsl);
-	memset(loops, 0, b_loops);
-	memset(enrgy, 0, b_enrgy);
-	memset(aggrs, 0, b_aggrs);
-	memset(evnts, 0, b_evnts);
+	float mb_total = typ_vecmb[i_appsm] + typ_vecmb[i_appsn] + typ_vecmb[i_appsl] +
+		 typ_vecmb[i_loops] + typ_vecmb[i_evnts] + typ_vecmb[i_enrgy] + typ_vecmb[i_aggrs];
 
-	float mb_aggrs = (double) (b_aggrs) / 1000000.0;
-	float mb_appsl = (double) (b_appsl) / 1000000.0;
-	float mb_appsm = (double) (b_appsm) / 1000000.0;
-	float mb_appsn = (double) (b_appsn) / 1000000.0;
-	float mb_enrgy = (double) (b_enrgy) / 1000000.0;
-	float mb_loops = (double) (b_loops) / 1000000.0;
-	float mb_evnts = (double) (b_evnts) / 1000000.0;
-	float mb_total = mb_aggrs + mb_appsl + mb_appsm + mb_appsn +
-					 mb_enrgy + mb_loops + mb_evnts;
+	tprintf("TOTAL||%0.2f MBs", mb_total);
+	printm1("TIP! this allocated space is per process server/mirror");
 
 	// Synchronization headers
 	sockets_header_clean(&sync_ans_header);
@@ -618,35 +544,29 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	sync_ans_header.content_size = sizeof(sync_ans_t);
 	sync_qst_header.content_type = CONTENT_TYPE_QST;
 	sync_qst_header.content_size = sizeof(sync_qst_t);
+}
 
-	// Verbose
-	if(!master_iam) {
-		return;
+static void init_pid_files(int argc, char **argv)
+{
+	// Process PID save file
+	if (server_iam && server_too) {
+		process_update_pid(&proc_data_mir);
+
+		if (process_pid_file_save(&proc_data_srv)) {
+			if (mirror_too) {
+				error("while creating server PID file, waiting the mirror");
+			} else {
+				error("while creating server PID file");
+			}
+		}
+	} else if (mirror_iam && mirror_too)
+	{
+		process_update_pid(&proc_data_mir);
+
+		if (process_pid_file_save(&proc_data_mir)) {
+			error("while creating mirror PID file");
+		}
 	}
-
-	tprintf_init(stderr, STR_MODE_DEF, "15 15 11 9 8");
-
-	// Summary
-	tprintf("type||memory||sample||elems||%%");
-	tprintf("----||------||------||-----||----");
-
-	tprintf("mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f",
-			mb_appsm, typ_sizof[i_appsm], sam_inmax[i_appsm], lpc_appsm);
-	tprintf("non-mpi apps||%0.2f MBs||%lu Bs||%lu||%0.2f",
-			mb_appsn, typ_sizof[i_appsm], sam_inmax[i_appsn], lpc_appsn);
-	tprintf("learn apps||%0.2f MBs||%lu Bs||%lu||%0.2f",
-			mb_appsl, typ_sizof[i_appsm], sam_inmax[i_appsl], lpc_appsl);
-	tprintf("pwr metrics||%0.2f MBs||%lu Bs||%lu||%0.2f",
-			mb_enrgy, typ_sizof[i_enrgy], sam_inmax[i_enrgy], lpc_enrgy);
-	tprintf("app loops||%0.2f MBs||%lu Bs||%lu||%0.2f",
-			mb_loops, typ_sizof[i_loops], sam_inmax[i_loops], lpc_loops);
-	tprintf("events||%0.2f MBs||%lu Bs||%lu||%0.2f",
-			mb_evnts, typ_sizof[i_evnts], sam_inmax[i_evnts], lpc_evnts);
-	tprintf("aggregations||%0.2f MBs||%lu Bs||%lu||%0.2f",
-			mb_aggrs, typ_sizof[i_aggrs], sam_inmax[i_aggrs], lpc_aggrs);
-
-	tprintf("TOTAL||%0.2f MBs", mb_total);
-	vermast1("TIP! this allocated space is per process server/mirror");
 }
 
 /*
@@ -655,9 +575,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
  *
  */
 
-void usage(int argc, char **argv)
-{
-}
+void usage(int argc, char **argv) {}
 
 int main(int argc, char **argv)
 {
@@ -667,33 +585,50 @@ int main(int argc, char **argv)
 	while(!exitting)
 	{
 		//
-		verline1("phase 1: general configuration");
+		printml1("phase 1: general configuration");
 		init_general_configuration(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 2: time configuration");
+		printml1("phase 2: time configuration");
 		init_time_configuration(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 3: sockets initialization");
+		printml1("phase 3: sockets initialization");
 		init_sockets(argc, argv, &conf_clus);
 
 		//
-		verline1("phase 4: processes fork");
+		printml1("phase 4: processes fork");
 		init_fork(argc, argv, &conf_clus);
 
-		//
-		verline1("phase 5: types initialization");
-		init_types(argc, argv, &conf_clus);
+		/*
+		 * Post fork
+		 */
+
+		// Initializing signal handler
+		init_signals();
 
 		//
-		verline1("phase 6: process configuration & allocation");
+		printml1("phase 6: process configuration & allocation");
 		init_process_configuration(argc, argv, &conf_clus);
 
+		// Creating PID files
+		init_pid_files(argc, argv);
+
+		/*
+ 		 * Running
+ 		 */
+
 		//
-		verline1("phase 7: listening (processing every %lu s)", time_insr);
 		body();
+
+		//
+		release();
+
+		//
+		dream();
 	}
+
+	printml1("Bye");
 
 	return 0;
 }

@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <common/sizes.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/environment.h>
 
@@ -295,19 +296,20 @@ void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
 /*** DEFAULT VALUES ****/
 void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 {
-	eardbdc->aggr_time = 30;
-	eardbdc->insr_time = 30;
-	eardbdc->tcp_port = 4711;
-	eardbdc->sec_tcp_port = 4712;
+	eardbdc->aggr_time     = 60;
+	eardbdc->insr_time     = 30;
+	eardbdc->tcp_port      = 4711;
+	eardbdc->sec_tcp_port  = 4712;
 	eardbdc->sync_tcp_port = 4713;
-	eardbdc->mem_size = 120;
+	eardbdc->mem_size      = 120;
+
 	eardbdc->mem_size_types[0] = 60;
 	eardbdc->mem_size_types[1] = 22;
 	eardbdc->mem_size_types[2] = 5;
 	eardbdc->mem_size_types[3] = 0;
 	eardbdc->mem_size_types[4] = 7;
-	eardbdc->mem_size_types[5] = 1;
-	eardbdc->mem_size_types[6] = 5;
+	eardbdc->mem_size_types[5] = 5;
+	eardbdc->mem_size_types[6] = 1;
 }
 
 void set_default_eard_conf(eard_conf_t *eardc)
@@ -356,6 +358,12 @@ void set_default_db_conf(db_conf_t *db_conf)
     db_conf->port = 0;
 }
 
+/*
+ *
+ *
+ *
+ */
+
 int get_node_island(cluster_conf_t *conf, char *hostname)
 {
 	my_node_conf_t *node;
@@ -371,4 +379,67 @@ int get_node_island(cluster_conf_t *conf, char *hostname)
 	free(node);
 
 	return island;
+}
+
+int get_node_server_mirror(const cluster_conf_t *conf, const char *hostname, char *mirror_of)
+{
+	char hostalias[SZ_NAME_MEDIUM];
+	node_island_t *is;
+	const char *a, *n;
+	int found_server;
+	int found_mirror;
+	int found_both;
+	int i, k;
+	char *p;
+
+	//
+	strncpy(hostalias, hostname, SZ_NAME_MEDIUM);
+	found_both   = 0;
+	found_server = 0;
+	found_mirror = 0;
+	a = hostalias;
+	n = hostname;
+	
+	// Finding a possible short form
+	if ((p = strchr(a, '.')) != NULL) {
+		p[0] = '\0';
+	}
+
+	for (i = 0; i < conf->num_islands && !found_both; ++i)
+	{
+		is = &conf->islands[i];
+
+		for (k = 0; k < is->num_ranges && !found_both; k++)
+		{
+			p = is->db_ips[is->ranges[k].db_ip];
+
+			if (!found_server && p != NULL &&
+				((strncmp(p, n, strlen(n)) == 0) || (strncmp(p, a, strlen(a) == 0))))
+			{
+				found_server = 1;
+			}
+
+			if (!found_mirror && is->ranges[k].sec_ip >= 0)
+			{
+				p = is->backup_ips[is->ranges[k].sec_ip];
+
+				if (p != NULL &&
+					((strncmp(p, n, strlen(n)) == 0) || (strncmp(p, a, strlen(a) == 0))))
+				{
+					strcpy(mirror_of, is->db_ips[is->ranges[k].db_ip]);
+					found_mirror = 1;
+				}
+			}
+
+			found_both = found_server && found_mirror;
+		}
+	}
+
+	//Codes:
+	//	- 0000 (0x00): nothing
+	//	- 0001 (0x01): server
+	//	- 0010 (0x02): mirror
+	//	- 0011 (0x03): both
+	found_mirror = (found_mirror << 1);
+	return (found_server | found_mirror);
 }

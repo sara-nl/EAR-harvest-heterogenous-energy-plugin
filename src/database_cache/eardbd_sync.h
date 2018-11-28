@@ -40,8 +40,8 @@ void time_reset_timeout_aggr();
 
 void time_reset_timeout_slct();
 
-int sync_question(uint sync_option);
+int sync_question(uint sync_option, int veteran, sync_ans_t *answer);
 
-int sync_answer(int fd);
+int sync_answer(int fd, int veteran);
 
 #endif //EAR_EARDBD_SYNC_H

@@ -53,7 +53,13 @@ void file_lock_clean(int fd,char *lock_file_name);
 int file_is_regular(const char *path);
 
 /** */
-state_t file_read();
+state_t file_read(const char *path, char *buffer, size_t size);
+
+/** */
+state_t file_write(const char *path, const char *buffer, size_t size);
+
+/** */
+state_t file_clean(const char *path);
 
 #endif
 
