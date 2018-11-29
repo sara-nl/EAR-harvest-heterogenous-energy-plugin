@@ -381,7 +381,7 @@ int get_node_island(cluster_conf_t *conf, char *hostname)
 	return island;
 }
 
-int get_node_server_mirror(const cluster_conf_t *conf, const char *hostname, char *mirror_of)
+int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mirror_of)
 {
 	char hostalias[SZ_NAME_MEDIUM];
 	node_island_t *is;
