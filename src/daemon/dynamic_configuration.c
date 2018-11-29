@@ -301,6 +301,7 @@ void dyncon_get_status(int fd, request_t *command)
 	powermon_get_status(&status[num_status-1]);
     write(fd, &num_status, sizeof(num_status));
     write(fd, status, sizeof(status_t)*num_status);
+	eard_verbose(1,"Returning from dyncon_get_status\n");
     free(status);
 }
 

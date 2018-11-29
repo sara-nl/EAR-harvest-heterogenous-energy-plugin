@@ -910,8 +910,8 @@ void signal_handler(int sig)
     		#endif
 
         }
+		eard_verbose(0,"Configuration reloaded");
 	}
-	eard_verbose(0,"Configuration reloaded");
 	
 }
 

@@ -329,6 +329,7 @@ int propagate_status(request_t *command, int port, status_t **status)
     }
     else
     {
+		eard_verbose(1,"Sending status to %s\n",nextip1);
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip1);
@@ -348,6 +349,7 @@ int propagate_status(request_t *command, int port, status_t **status)
     }
     else
     {
+		eard_verbose(1,"Sending status to %s\n",nextip2);
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip2);
