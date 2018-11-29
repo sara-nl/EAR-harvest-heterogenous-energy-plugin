@@ -129,31 +129,8 @@ extern unsigned int eargmd_enbl;
  * Environment variables list:
  *   Var                                    | Opt | Local | Local Job | Remote | Remote PU
  * ---------------------------------------------------------------------------------------
- * - EAR									| x   | x     |           |        |
- * - EAR_PLUGIN
- * - EAR_DEFAULT							|     | x     |           |        |
- * - EAR_USER                               |     | x     |           |        |
- * - EAR_GROUP
- * - EAR_LEARNING_PHASE						| x   |       |           |        |
- * - EAR_VERBOSE							| x   | x     |           |        |
- * - EAR_POWER_POLICY						| x   | x     |           |        |
- * - EAR_P_STATE (obs)						| x   | x     |           | t      |
- * - EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN	| -   | -     | -         | -      |
- * - EAR_PERFORMANCE_PENALTY				| -   | -     | -         | -      |
- * - EAR_POWER_POLICY_TH					| x   | x     |           | t      |
- * - EAR_TRACES          					| x   |       |           |        |
- * - EAR_MPI_DIST                           | x   |       |           |        |
- * - EAR_USER_DB_PATHNAME                   | x   |       |           |        |
- * - EAR_DB_PATHNAME (obs)					|     | x     |           |        |
- * - EAR_COEFF_PATHNAME (obs)				|     | x     |           |        |
- * - EAR_PREDIR								|     | x     |           |        |
- * - EAR_ETCDIR								|     | x     |           |        |
- * - EAR_TMPDIR                             |     | x     |           |        |
- * - EAR_TMP								| -   | -     | -         | -      |
- * - TMP									| -   | -     | -         | -      |
- * - EAR_APP_NAME							|     | x     |           |        |
  * - LD_PRELOAD                             |     | x     |           |        |
- * - SLURM_CPU_FREQ_REQ                     |     |       | x         |        |
+ * - SLURM_CPU_FREQ_REQ                     |     |       | x*        |        |
  * - SLURM_NNODES                           |     |       | x         |        |
  * - SLURM_JOB_ID							|     |       | x         |        |
  * - SLURM_STEP_ID							|     |       | x         |        | 
@@ -161,34 +138,6 @@ extern unsigned int eargmd_enbl;
  * - SLURM_JOB_NAME							|     |       | x         |        | 
  * - SLURM_JOB_ACCOUNT						|     |       | x         |        | 
  * - SLURM_LAST_LOCAL_CONTEXT
- *
- * Reasons to stop the job:
- * 1) A problem inside option functions.
- * 2) The P_STATE is not found in 'ear.conf' P_STATE list.
- * 3) Unprivileged USER trying to use privileged options: EAR, EAR_VERBOSE,
- *    EAR_LEARNING_PHASE, EAR_POWER_POLICY, EAR_P_STATE, EAR_POWER_POLICY_TH,
- *    EAR_TRACES, EAR_DB_PATHNAME, EAR_COEFF_PATHNAME
- *
- * Reasons to disable EAR:
- * 1) Set environment variable fails.
- * 2) Writing in a sized buffer fails.
- *
- * Reading configuration times:
- * 1) In local context, prior to job creation
- * 2) In remote context, for specific node configuration
- *
- * Preguntas:
- * 1) Que pasa con el threshold? Si cada nodo tiene uno, que ocurre cuando
- *    se escribe uno manualmente con la opción? Lo mismo para el P_STATE. Ello
- *    implica la relectura de la configuración.
- * 2) Que variables son estrictamente necesarias tanto de EAR, como de EARD
- *    y EARGMD? Que hacer en caso de no encontrarse.
- *
- * Under construction:
- * 1) Energy tag
- * 2) Detection system to avoid EARD and EARGMD job end functions if there
- *    were an error in the job start functions.
- * 3) SBATCH/SALLOC context detection system.
  *
  */
 
@@ -206,21 +155,19 @@ static void remote_print_environment(spank_t sp)
     r_sta = getrlimit(RLIMIT_STACK, &sta);
     r_mem = getrlimit(RLIMIT_MEMLOCK, &mem);
 
-    plug_verbose_0("plugin compiled in %s", __DATE__);
+    plug_verbose_0("plugin compiled in '%s'", __DATE__);
     plug_verbose_0("buffers size %d", PATH_MAX);
-
     plug_verbose_0("stack size limit test (res %d, curr: %lld, max: %lld)",
                  r_sta, (long long) sta.rlim_cur, (long long) sta.rlim_max);
     plug_verbose_0("memlock size limit test (res %d, curr: %lld, max: %lld)",
                  r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
 
-    printenv_remote(sp, "EAR");
-    printenv_remote(sp, "EAR_PLUGIN");
-    printenv_remote(sp, "EAR_PLUGIN_VERBOSE");
-    printenv_remote(sp, "EAR_USER");
-    printenv_remote(sp, "EAR_GROUP");
+	printenv_remote(sp, "EAR_PLUGIN");
+	printenv_remote(sp, "EAR_PLUGIN_VERBOSE");
+    printenv_remote(sp, "EAR_LIBRARY");
+	printenv_remote(sp, "EAR_LIBRARY_VERBOSE");
+	// Policies
     printenv_remote(sp, "EAR_LEARNING_PHASE");
-    printenv_remote(sp, "EAR_VERBOSE");
     printenv_remote(sp, "EAR_POWER_POLICY");
     printenv_remote(sp, "EAR_P_STATE");
     printenv_remote(sp, "EAR_FREQUENCY");
@@ -230,13 +177,11 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "EAR_TRACES");
     printenv_remote(sp, "EAR_MPI_DIST");
     printenv_remote(sp, "EAR_USER_DB_PATHNAME");
-    printenv_remote(sp, "EAR_PREDIR");
-    printenv_remote(sp, "EAR_ETCDIR");
-    printenv_remote(sp, "EAR_TMPDIR");
     printenv_remote(sp, "EAR_APP_NAME");
     printenv_remote(sp, "EAR_ENERGY_TAG");
     printenv_remote(sp, "LD_PRELOAD");
     printenv_remote(sp, "LD_LIBRARY_PATH");
+    // SLURM
     printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
     printenv_remote(sp, "SLURM_NNODES");
     printenv_remote(sp, "SLURM_STEP_NUM_NODES");
@@ -257,14 +202,14 @@ static void remote_print_environment(spank_t sp)
 
 void _local_library_disable()
 {
-	setenv_local("EAR", "0", 1);
+	setenv_local("EAR_LIBRARY", "0", 1);
 }
 
 void _remote_library_disable(spank_t sp)
 {
-	if(isenv_remote(sp, "EAR", "1")) {
+	if(isenv_remote(sp, "EAR_LIBRARY", "1")) {
 		setenv_remote(sp, "LD_PRELOAD", "", 1);
-		setenv_remote(sp, "EAR", "0", 1);
+		setenv_remote(sp, "EAR_LIBRARY", "0", 1);
 	}
 }
 
@@ -326,16 +271,16 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 				// EAR == 1: enable
 				// EAR == 0: nothing
 				// EAR == whatever: enable (bug protection)
-				if (!isenv_local("EAR", "0")) {
-					setenv_local_ret_err("EAR", "1", 1);
+				if (!isenv_local("EAR_LIBRARY", "0")) {
+					setenv_local("EAR_LIBRARY", "1", 1);
 				} 
 			// If disabled by default or de administrator have misswritten
 			} else {
 				// EAR == 1: nothing
 				// EAR == 0: disable
 				// EAR == whatever: disable (bug protection)
-				if (!isenv_local("EAR", "1")) {
-					setenv_local_ret_err("EAR", "0", 1);
+				if (!isenv_local("EAR_LIBRARY", "1")) {
+					setenv_local("EAR_LIBRARY", "0", 1);
 				}
 			}
 		}
@@ -345,7 +290,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			found_tmpdir = 1;
 
 			plug_verbose(sp, 2, "plugstack found temporal files in path '%s'", tmp_dir);
-			setenv_local_ret_err("EAR_TMPDIR", tmp_dir, 1);
+			setenv_local("PLUGSTACK_TMP", tmp_dir, 1);
 		}
 		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
 		{
@@ -353,7 +298,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			found_predir = 1;
 
 			plug_verbose(sp, 2, "plugstack found prefix in path '%s'", pre_dir);
-			setenv_local_ret_err("EAR_PREDIR", pre_dir, 1);
+			setenv_local("PLUGSTACK_PFX", pre_dir, 1);
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
 		{
@@ -408,8 +353,8 @@ int _read_user_info(spank_t sp)
 	}
 
 	// To environment variables
-	setenv_local_ret_err("EAR_USER", upw->pw_name, 1);
-	setenv_local_ret_err("EAR_GROUP", gpw->gr_name, 1);
+	setenv_local("EAR_USER", upw->pw_name, 1);
+	setenv_local("EAR_GROUP", gpw->gr_name, 1);
 
 	plug_verbose(sp, 2, "user detected '%u -> %s'", uid, upw->pw_name);
 	plug_verbose(sp, 2, "user group detected '%u -> %s'", gid, gpw->gr_name);
@@ -427,7 +372,7 @@ int _set_ld_preload(spank_t sp)
 	buffer1[0] = '\0';
 	buffer2[0] = '\0';
 
-	if (getenv_local("EAR_PREDIR", &ear_root_dir) == 0)
+	if (getenv_local("PLUGSTACK_PFX", &ear_root_dir) == 0)
 	{
 		plug_verbose(sp, 2, "Error, wrong environment for setting LD_PRELOAD");
 		return ESPANK_ERROR;
@@ -436,13 +381,13 @@ int _set_ld_preload(spank_t sp)
 
 	// Appending libraries to LD_PRELOAD
 	if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-		snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
+		sprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
 	} else {
-		snprintf_ret_err(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
+		sprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
 	}
 
 	//
-	setenv_local_ret_err("LD_PRELOAD", buffer2, 1);
+	setenv_local("LD_PRELOAD", buffer2, 1);
 
 	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
@@ -514,7 +459,7 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 	local_eargmd_report_start(sp);
 
 	//
-	if (isenv_local("EAR", "1")) {
+	if (isenv_local("EAR_LIBRARY", "1")) {
 		_set_ld_preload(sp);
 	}
 

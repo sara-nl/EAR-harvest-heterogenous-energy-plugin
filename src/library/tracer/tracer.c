@@ -357,7 +357,7 @@ void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis,
 		enabled = 0;
 		return;
 	}
-	my_trace_rank=global_rank+1;
+	my_trace_rank = global_rank+1;
 	strcpy(my_app,app);
 
 	//
