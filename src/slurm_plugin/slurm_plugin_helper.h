@@ -32,25 +32,6 @@
 
 #include <slurm/spank.h>
 
-// Misc
-#define snprintf_ret_err(buffer, size, ...) \
-	if (snprintf(buffer, size, __VA_ARGS__) < 0) { \
-        plug_error("while writing a formatted output to sized buffer"); \
-		return (ESPANK_ERROR); \
-	}
-
-#define setenv_local_ret_err(p_name, p_value, replace) \
-	if (!setenv_local(p_name, p_value, replace)) { \
-        plug_error("while setting a local environment variable"); \
-		return (ESPANK_ERROR); \
-	}
-
-#define setenv_remote_ret_err(sp, p_name, p_value, replace) \
-	if(!setenv_remote(sp, p_name, p_value, replace)) { \
-        plug_error("while setting a remote environment variable"); \
-		return (ESPANK_ERROR); \
-	}
-
 // Verbosity
 #define plug_verbose(sp, level, ...) \
 	if (verbosity_test(sp, level) == 1) { \

@@ -283,11 +283,6 @@ void body()
 		printml1("phase 7: listening (processing every %lu s)", time_insr);
 	}
 
-
-	if (server_iam) {
-		sleep(242);
-	}
-
 	// BODY
 	while(listening)
 	{

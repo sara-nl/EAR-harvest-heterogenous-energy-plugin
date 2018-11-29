@@ -38,7 +38,7 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 
-#define SRUN_OPTIONS 9
+#define SRUN_OPTIONS 10
 
 struct spank_option spank_options_manual[SRUN_OPTIONS] =
 {
@@ -52,43 +52,47 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	{ "ear-cpufreq", "frequency", "Specifies the start frequency to be used by EAR policy (in KHz)",
 	  1, 0, (spank_opt_cb_f) _opt_ear_frequency
 	},
-    { "ear-policy-th", "value", "Specifies the threshold to be used by EAR policy" \
-      " {value=[0..1]}",
-      1, 0, (spank_opt_cb_f) _opt_ear_threshold
-    },
+	{ "ear-policy-th", "value", "Specifies the threshold to be used by EAR policy" \
+	  " {value=[0..1]}",
+	  1, 0, (spank_opt_cb_f) _opt_ear_threshold
+	},
 	{ "ear-user-db", "file",
 	  "Specifies the file to save the user applications metrics summary" \
 	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
-	  2, 0, (spank_opt_cb_f) _opt_ear_user_db
+	  1, 0, (spank_opt_cb_f) _opt_ear_user_db
 	},
 	{ "ear-mpi-dist", "dist",
 	  "Selects the MPI distribution for compatibility of your application" \
 	  "{dist=intel|openmpi}",
-	  2, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
+	  1, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
 	},
 	{ "ear-verbose", "value", "Specifies the level of the verbosity\n" \
 	  "{value=[0..5]}; default is 0",
-	  2, 0, (spank_opt_cb_f) _opt_ear_verbose
+	  1, 0, (spank_opt_cb_f) _opt_ear_verbose
 	},
 	{ "ear-learning", "value",
 	  "Enables the learning phase for a given P_STATE {value=[1..n]}",
 	  1, 0, (spank_opt_cb_f) _opt_ear_learning
 	},
 	{ "ear-tag", "tag", "Sets an energy tag (max 32 chars)",
-	  2, 0, (spank_opt_cb_f) _opt_ear_tag
+	  1, 0, (spank_opt_cb_f) _opt_ear_tag
+	},
+	{ "ear-traces", "path", "Saves application traces with metrics and internal details",
+	  1, 0, (spank_opt_cb_f) _opt_ear_traces
 	}
 };
 
-    /*{ "ear-traces", "", "Generates application traces with metrics and internal details",
-	 *  0, 0, (spank_opt_cb_f) _opt_ear_traces
- 	 *},*/
+    /**/
 
 int _opt_register(spank_t sp)
 {
 	spank_err_t s;
+	int length;
 	int i;
 
-	for (i = 0; i < SRUN_OPTIONS; ++i)
+	length = SRUN_OPTIONS - !existenv_local("EAR_GUI");
+
+	for (i = 0; i < length; ++i)
 	{
 		if ((s = spank_option_register(sp, &spank_options_manual[i])) != ESPANK_SUCCESS)
 		{
@@ -120,9 +124,9 @@ int _opt_ear (int val, const char *optarg, int remote)
 		strtoup(buffer2);
 
 		if (strcmp(buffer2, "ON") == 0) {
-			setenv_local_ret_err("EAR", "1", 1);
+			setenv_local("EAR_LIBRARY", "1", 1);
 		} else if (strcmp(buffer2, "OFF") == 0) {
-			setenv_local_ret_err("EAR", "0", 1);
+			setenv_local("EAR_LIBRARY", "0", 1);
 		} else {
 			plug_error("Invalid enabling value '%s'", buffer2);
 			return (ESPANK_BAD_ARG);
@@ -147,9 +151,9 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		snprintf_ret_err(buffer2, 4, "%d", ioptarg);
-		setenv_local_ret_err("EAR_LEARNING_PHASE", buffer2, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		snprintf(buffer2, 4, "%d", ioptarg);
+		setenv_local("EAR_LEARNING_PHASE", buffer2, 1);
+		setenv_local("EAR_LIBRARY", "1", 0);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -173,8 +177,8 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 			return (ESPANK_STOP);
 		}
 
-		setenv_local_ret_err("EAR_POWER_POLICY", buffer2, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		setenv_local("EAR_POWER_POLICY", buffer2, 1);
+		setenv_local("EAR_LIBRARY", "1", 0);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -193,9 +197,9 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
         }
 		
 		loptarg = (ulong) atol(optarg);
-        snprintf_ret_err(buffer2, 16, "%lu", loptarg);
-        setenv_local_ret_err("EAR_FREQUENCY", buffer2, 1);
-        setenv_local_ret_err("EAR", "1", 0);
+        snprintf(buffer2, 16, "%lu", loptarg);
+        setenv_local("EAR_FREQUENCY", buffer2, 1);
+        setenv_local("EAR_LIBRARY", "1", 0);
     }
 
     return (ESPANK_SUCCESS);
@@ -216,9 +220,9 @@ int _opt_ear_threshold (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		snprintf_ret_err(buffer2, 8, "%0.2f", foptarg);
-		setenv_local_ret_err("EAR_POWER_POLICY_TH", buffer2, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		snprintf(buffer2, 8, "%0.2f", foptarg);
+		setenv_local("EAR_POWER_POLICY_TH", buffer2, 1);
+		setenv_local("EAR_LIBRARY", "1", 0);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -234,8 +238,8 @@ int _opt_ear_user_db (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_local_ret_err("EAR_USER_DB_PATHNAME", optarg, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		setenv_local("EAR_USER_DB_PATHNAME", optarg, 1);
+		setenv_local("EAR_LIBRARY", "1", 0);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -256,10 +260,13 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 		ioptarg = atoi(optarg);
 		if (ioptarg < 0) ioptarg = 0;
 		if (ioptarg > 4) ioptarg = 4;
-		snprintf_ret_err(buffer2, 4, "%i", ioptarg);
+		snprintf(buffer2, 4, "%i", ioptarg);
 
-		setenv_local_ret_err("EAR_VERBOSE", buffer2, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		setenv_local("EAR_LIBRARY_VERBOSE", buffer2, 1);
+		setenv_local("EAR_LIBRARY", "1", 0);
+
+		// Obsolete
+		setenv_local("EAR_VERBOSE", buffer2, 1);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -271,8 +278,12 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 
 	if (!remote)
 	{
-		setenv_local_ret_err("EAR_TRACES", "1", 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		if (optarg == NULL) {
+			return (ESPANK_BAD_ARG);
+		}
+
+		setenv_local("EAR_TRACE_PATH", optarg, 1);
+		setenv_local("EAR_LIBRARY", "1", 0);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -288,8 +299,8 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_local_ret_err("EAR_MPI_DIST", optarg, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		setenv_local("EAR_MPI_DIST", optarg, 1);
+		setenv_local("EAR_LIBRARY", "1", 0);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -305,8 +316,8 @@ int _opt_ear_tag(int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_local_ret_err("EAR_ENERGY_TAG", optarg, 1);
-		setenv_local_ret_err("EAR", "1", 0);
+		setenv_local("EAR_ENERGY_TAG", optarg, 1);
+		setenv_local("EAR_LIBRARY", "1", 0);
 	}
 	return (ESPANK_SUCCESS);
 }

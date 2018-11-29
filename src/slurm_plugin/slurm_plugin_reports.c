@@ -64,7 +64,7 @@ static int _read_shared_data_remote(spank_t sp)
 	settings_conf_t *conf_sett = NULL;
 
 	// Getting TMP path
-	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
+	getenv_remote(sp, "PLUGSTACK_TMP", buffer1, sizeof(buffer1));
 
 	// Opening settings
 	get_settings_conf_path(buffer1, buffer2);
@@ -93,11 +93,11 @@ static int _read_shared_data_remote(spank_t sp)
 
 	// Variable EAR_P_STATE
 	snprintf(buffer2, 16, "%u", conf_sett->def_p_state);
-	setenv_remote_ret_err(sp, "EAR_P_STATE", buffer2, 1);
+	setenv_remote(sp, "EAR_P_STATE", buffer2, 1);
 
 	// Variable EAR_FREQUENCY
 	snprintf(buffer2, 16, "%lu", conf_sett->def_freq);
-	setenv_remote_ret_err(sp, "EAR_FREQUENCY", buffer2, 1);
+	setenv_remote(sp, "EAR_FREQUENCY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY, overwrite
 	if(policy_id_to_name(conf_sett->policy, buffer2) == EAR_ERROR)
@@ -107,12 +107,12 @@ static int _read_shared_data_remote(spank_t sp)
 		plug_verbose(sp, 2, "invalid policy returned");
 		return (ESPANK_ERROR);
 	}
-	setenv_remote_ret_err(sp, "EAR_POWER_POLICY", buffer2, 1);
+	setenv_remote(sp, "EAR_POWER_POLICY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY_TH, overwrite
 	snprintf(buffer2, 8, "%0.2f", conf_sett->th);
-	setenv_remote_ret_err(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
-	setenv_remote_ret_err(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
+	setenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
+	setenv_remote(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
 
 	// Variable EAR_LEARNING and EAR_P_STATE
 	if(!conf_sett->learning) {
@@ -122,10 +122,10 @@ static int _read_shared_data_remote(spank_t sp)
 
 	// Final library tweaks
 	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
-		setenv_remote_ret_err(sp, "EAR_APP_NAME", buffer2, 1);
+		setenv_remote(sp, "EAR_APP_NAME", buffer2, 1);
 	}
-	if (getenv_remote(sp, "EAR_TMPDIR", buffer2, sizeof(buffer2)) == 1) {
-		setenv_remote_ret_err(sp, "EAR_TMP", buffer2, 1);
+	if (getenv_remote(sp, "PLUGSTACK_TMP", buffer2, sizeof(buffer2)) == 1) {
+		setenv_remote(sp, "EAR_TMP", buffer2, 1);
 	}
 
 	// Closing shared memory
@@ -164,7 +164,7 @@ int remote_eard_report_start(spank_t sp)
 	}
 
 	// General variables
-	getenv_remote(sp, "EAR_TMPDIR", buffer1, sizeof(buffer1));
+	getenv_remote(sp, "PLUGSTACK_TMP", buffer1, sizeof(buffer1));
 	gethostname(eard_host, SZ_NAME_MEDIUM);
 
 	// Opening shared services memory
@@ -193,7 +193,7 @@ int remote_eard_report_start(spank_t sp)
 	init_application(&eard_appl);
 
 	// Gathering variables
-	if (!getenv_remote(sp, "EAR", buffer1, SZ_NAME_SHORT)) {
+	if (!getenv_remote(sp, "EAR_LIBRARY", buffer1, SZ_NAME_SHORT)) {
 		eard_appl.is_mpi = 0;
 	} else {
 		if (strcmp(buffer1,"0") == 0) {
