@@ -292,14 +292,15 @@ void dyncon_get_status(int fd, request_t *command)
 {
     status_t *status;
     int num_status = propagate_status(command, my_cluster_conf.eard.port, &status);
+	unsigned long return_status = num_status;
     if (num_status < 1){
 		eard_verbose(0,"Panic propagate_status returns less than 1 status");
-		num_status=0;
-		write(fd, &num_status, sizeof(num_status));
+		return_status=0;
+		write(fd, &return_status, sizeof(return_status));
         return;
 	}
 	powermon_get_status(&status[num_status-1]);
-    write(fd, &num_status, sizeof(num_status));
+    write(fd, &return_status, sizeof(return_status));
     write(fd, status, sizeof(status_t)*num_status);
 	eard_verbose(1,"Returning from dyncon_get_status\n");
     free(status);
