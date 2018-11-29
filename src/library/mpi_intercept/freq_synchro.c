@@ -81,21 +81,27 @@ void global_frequency_selection_send(ulong my_local_f)
 ulong global_frequency_selection_synchro()
 {
 	ulong global_f=0;
-	int i;
+	float avg_freq;
+	int i,flag=0;
 	MPI_Status status;
 	if (synchro_pending!=1) return 0;
 	if (masters_comm_created){
-                earl_verbose(1,"Master rank %u Waiting & Processing frequencies",my_master_rank);
-		PMPI_Wait(&synchro_request,&status);
-		synchro_pending=-1;
-                for (i=0;i<my_master_size;i++){
-                        if (my_master_rank==0) {
-                                earl_verbose(2,"Frequency selected by node %d %lu",i,remote_f[i]);
+        earl_verbose(1,"Master rank %u Waiting & Processing frequencies",my_master_rank);
+		PMPI_Test(&synchro_request, &flag, &status);
+		if (flag){
+		//PMPI_Wait(&synchro_request,&status);
+			synchro_pending=-1;
+            for (i=0;i<my_master_size;i++){
+            if (my_master_rank==0) {
+            	earl_verbose(2,"Frequency selected by node %d %lu",i,remote_f[i]);
                         }
-                        global_f+=(ulong)remote_f[i];
-                }
-                global_f=global_f/my_master_size;
-                if (my_master_rank==0) earl_verbose(1,"Global frequency should be %lu ",global_f);
+              	global_f+=(ulong)remote_f[i];
+            }
+            avg_freq=global_f/my_master_size;
+			avg_freq=avg_freq/(float)100000;
+			global_f=(ulong)avg_freq*100000;
+            if (my_master_rank==0) earl_verbose(1,"Global frequency should be %lu ",global_f);
+		}else return 0;
 
 	}
 	return global_f;

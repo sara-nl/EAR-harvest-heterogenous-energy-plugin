@@ -50,7 +50,7 @@
 #include <common/states.h>
 #include <daemon/eard_api.h>
 
-static int use_default=0;
+static int use_default=1;
 
 typedef struct policy
 {
@@ -273,7 +273,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	ear_debug(3, "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
 
 	use_def=getenv("USE_DEFAULT_COEFFICIENTS");
-	if (use_def!=NULL) use_default=1;
+	if (use_def!=NULL) use_default=atoi(use_def);
 
 	// Initializations
 	// We start t nominal by default
