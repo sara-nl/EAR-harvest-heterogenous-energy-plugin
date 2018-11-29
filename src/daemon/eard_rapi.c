@@ -185,9 +185,6 @@ int eards_remote_connect(char *nodename,uint port)
 
         set_socket_block(sfd, 0);
         
-//        if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-//            break;                  /* Success */
-
         int res = connect(sfd, rp->ai_addr, rp->ai_addrlen);
         if (res < 0 && errno != EINPROGRESS)
         {
@@ -538,7 +535,7 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_
     send_command_all(command, my_cluster_conf);
 }
 
-int correct_status(int target_ip, request_t *command, int port, status_t **status)
+int correct_status(uint target_ip, request_t *command, uint port, status_t **status)
 {
     status_t *final_status, *status1 = NULL, *status2 = NULL;
     int total_status, num_status1 = 0, num_status2 = 0;
@@ -553,7 +550,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     char nextip1[50], nextip2[50];
 
     struct sockaddr_in temp;
-    int self_ip, ip1, ip2; 
+    unsigned int self_ip, ip1, ip2; 
     self_ip = ip1 = ip2 = htonl(target_ip);
     ip1 += command->node_dist;
     temp.sin_addr.s_addr = ntohl(ip1);
@@ -616,13 +613,13 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     return total_status + 1;
 }
 
-void correct_error(int target_ip, request_t *command, int port)
+void correct_error(uint target_ip, request_t *command, uint port)
 {
     if (command->node_dist < 1) return;
     char nextip1[50], nextip2[50];
 
     struct sockaddr_in temp;
-    int ip1, ip2; 
+    unsigned int ip1, ip2; 
     ip1 = ip2 = htonl(target_ip);
     ip1 += command->node_dist;
     temp.sin_addr.s_addr = ntohl(ip1);
@@ -674,7 +671,7 @@ void correct_error(int target_ip, request_t *command, int port)
     } 
 }
 
-int correct_status_starter(char *host_name, request_t *command, int port, status_t **status)
+int correct_status_starter(char *host_name, request_t *command, uint port, status_t **status)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -711,7 +708,7 @@ int correct_status_starter(char *host_name, request_t *command, int port, status
 }
 
 
-void correct_error_starter(char *host_name, request_t *command, int port)
+void correct_error_starter(char *host_name, request_t *command, uint port)
 {
 	if (command->node_dist < 1) return;
     struct addrinfo hints;

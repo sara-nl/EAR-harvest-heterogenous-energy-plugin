@@ -45,8 +45,8 @@ void close_server_socket(int sock);
 
 int read_command(int s,request_t *command);
 void send_answer(int s,ulong *ack);
-void propagate_req(request_t *command, int port);
-int propagate_status(request_t *command, int port, status_t **status);
+void propagate_req(request_t *command, uint port);
+int propagate_status(request_t *command, uint port, status_t **status);
 
 #endif
 
