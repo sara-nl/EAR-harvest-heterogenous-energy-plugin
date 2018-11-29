@@ -39,20 +39,22 @@
 
 int EAR_VERBOSE_LEVEL = 1;
 
-#define CLEAN_PERIODIC_QUERY "DELETE FROM Periodic_metrics WHERE end_time <= UNIX_TIMESTAMP(SUBTIME(NOW(),'31 0:0:0.00'))"
+#define CLEAN_PERIODIC_QUERY "DELETE FROM Periodic_metrics WHERE end_time <= UNIX_TIMESTAMP(SUBTIME(NOW(),'%d 0:0:0.00'))"
 
 void usage(char *app)
 {
-	printf("Usage:%s [options]\n",app);
+	printf("Usage:%s num_days [options]\n",app);
     printf("\t-p\t\tSpecify the password for MySQL's root user.\n");
 	exit(0);
 }
   
 void main(int argc,char *argv[])
 {
-    char passw[256];
-    if (argc > 2) usage(argv[0]);
-    else if (argc == 2)
+    char passw[256], query[256];
+    int num_days;
+
+    if (argc > 3 || argc < 2) usage(argv[0]);
+    else if (argc == 3)
     {
         struct termios t;
         tcgetattr(STDIN_FILENO, &t);
@@ -70,6 +72,11 @@ void main(int argc,char *argv[])
     else
         strcpy(passw, "");
 
+    num_days = atoi(argv[1]);
+    if (num_days < 0 || num_days > 365)
+    {
+        fprintf(stderr, "Invalid number of days.");
+    }
     MYSQL *connection = mysql_init(NULL); 
 
     if (connection == NULL)
@@ -90,7 +97,9 @@ void main(int argc,char *argv[])
 
     init_db_helper(&my_cluster.database);
 
-    db_run_query(CLEAN_PERIODIC_QUERY, "root", passw); 
+    sprintf(query, CLEAN_PERIODIC_QUERY, num_days);
+
+    db_run_query(query, "root", passw); 
 
     free_cluster_conf(&my_cluster);
 

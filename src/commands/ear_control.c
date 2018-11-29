@@ -291,8 +291,8 @@ void main(int argc, char *argv[])
         if (c == -1)
             break;
 
-        ulong arg;
-		ulong arg2;
+        int arg;
+		int arg2;
 
         switch(c)
         {

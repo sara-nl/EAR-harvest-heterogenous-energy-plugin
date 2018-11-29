@@ -67,7 +67,7 @@ typedef union req_data{
 typedef struct request{
     uint        req;
     uint        node_dist;
-    uint        time_code;
+    int        time_code;
     req_data_t  my_req;
 }request_t;
 
@@ -77,7 +77,7 @@ typedef struct eard_policy_info{
 }eard_policy_info_t;
 
 typedef struct status{
-    int     ip;
+    unsigned int     ip;
     char    ok;
     eard_policy_info_t    policy_conf[TOTAL_POLICIES];
 	uint 	power;	

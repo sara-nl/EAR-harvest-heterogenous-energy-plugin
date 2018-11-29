@@ -173,14 +173,14 @@ void send_answer(int s,ulong *ack)
 	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer");
 	if (ret<0) VERBOSE_N(0,"(%s)",strerror(errno));
 }
-void propagate_req(request_t *command, int port)
+void propagate_req(request_t *command, uint port)
 {
      
     if (command->node_dist < 1) return;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;
-    int ip1, ip2;
+    unsigned int ip1, ip2;
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_len;
     ssize_t nread;
@@ -222,7 +222,7 @@ void propagate_req(request_t *command, int port)
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
-    int actual_dist = command->node_dist;
+    uint actual_dist = command->node_dist;
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
@@ -261,14 +261,14 @@ void propagate_req(request_t *command, int port)
     }
 }
 
-int propagate_status(request_t *command, int port, status_t **status)
+int propagate_status(request_t *command, uint port, status_t **status)
 {
     status_t *status1, *status2, *final_status;
     int num_status1, num_status2;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;
-    int ip1, ip2, self_ip;
+    unsigned int ip1, ip2, self_ip;
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_len;
     ssize_t nread;
@@ -318,7 +318,7 @@ int propagate_status(request_t *command, int port, status_t **status)
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
-    int actual_dist = command->node_dist;
+    uint actual_dist = command->node_dist;
 
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);

@@ -177,7 +177,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	gethostname(master_host, SZ_NAME_MEDIUM);
 
 	// Configuration
-#if 0
+#if 1
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		error("while getting ear.conf path");
 	}
@@ -189,10 +189,10 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	init_db_helper(&conf_clus->database);
 
 	// Mirror finding
-	mode = get_node_server_mirror();
+	mode = get_node_server_mirror(conf_clus, master_host, server_host);
 
 	server_too = (mode & 0x01);
-	mirror_too = (mode & 0x02) > 0);
+	mirror_too = (mode & 0x02) > 0;
 #else
 	conf_clus->db_manager.tcp_port      = 8811;
 	conf_clus->db_manager.sec_tcp_port  = 8812;
@@ -208,8 +208,8 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;
-    mirror_port = conf_clus->db_manager.sec_tcp_port;
-    synchr_port = conf_clus->db_manager.sync_tcp_port;
+    	mirror_port = conf_clus->db_manager.sec_tcp_port;
+    	synchr_port = conf_clus->db_manager.sync_tcp_port;
 
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
