@@ -174,7 +174,7 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
     printenv_remote(sp, "EAR_PERFORMANCE_PENALTY");
     printenv_remote(sp, "EAR_POWER_POLICY_TH");
-    printenv_remote(sp, "EAR_TRACES");
+    printenv_remote(sp, "EAR_TRACE_PATH");
     printenv_remote(sp, "EAR_MPI_DIST");
     printenv_remote(sp, "EAR_USER_DB_PATHNAME");
     printenv_remote(sp, "EAR_APP_NAME");
@@ -381,9 +381,9 @@ int _set_ld_preload(spank_t sp)
 
 	// Appending libraries to LD_PRELOAD
 	if (isenv_local("EAR_MPI_DIST", "openmpi")) {
-		sprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
+		snprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
 	} else {
-		sprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
+		snprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
 	}
 
 	//
