@@ -69,8 +69,10 @@ int send_command(request_t *command)
 			eard_verbose(0,"Error sending command \n");
 		}
 	}
-	ret=read(eards_sfd,&ack,sizeof(ulong));
+	//ret=read(eards_sfd,&ack,sizeof(ulong));
+	ret=recv(eards_sfd,&ack,sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
+		printf("ERRO: %d\n", errno);
 		eard_verbose(0,"Error receiving ack %s\n",strerror(errno));
 	}
 	else if (ret!=sizeof(ulong)){
@@ -96,7 +98,8 @@ int send_status(request_t *command, status_t **status)
 	}
 	eard_verbose(1,"Reading ack size \n");
 	/* We assume first long will not block */
-	ret=read(eards_sfd,&ack,sizeof(ulong));
+	//ret=read(eards_sfd,&ack,sizeof(ulong));
+	ret = recv(eards_sfd, &ack, sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
 		eard_verbose(0,"Error receiving ack in (status) (%s) \n",strerror(errno));
         return EAR_ERROR;
@@ -113,7 +116,8 @@ int send_status(request_t *command, status_t **status)
 	}
 	total=0;
 	pending=sizeof(status_t)*ack;
-    ret = read(eards_sfd, (char *)return_status+total, pending);
+    //ret = read(eards_sfd, (char *)return_status+total, pending);
+    ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
 	if (ret<0){
 		eard_verbose(0, "Error by reading status (%s)",strerror(errno));
         free(return_status);
@@ -122,7 +126,8 @@ int send_status(request_t *command, status_t **status)
 	total+=ret;
 	pending-=ret;
 	while ((ret>0) && (pending>0)){
-    	ret = read(eards_sfd, (char *)return_status+total, pending);
+    	//ret = read(eards_sfd, (char *)return_status+total, pending);
+    	ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
 		if (ret<0){
 			eard_verbose(0, "Error by reading status (%s)",strerror(errno));
         	free(return_status);

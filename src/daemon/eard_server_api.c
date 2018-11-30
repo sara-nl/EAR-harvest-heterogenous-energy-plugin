@@ -150,7 +150,9 @@ int read_command(int s,request_t *command)
 	int ret,pending,done;
 	pending=sizeof(request_t);
 	done=0;
-	ret=read(s,command,sizeof(request_t));
+
+	//ret=read(s,command,sizeof(request_t));
+	ret=recv(s,command,sizeof(request_t), MSG_DONTWAIT);
 	if (ret<0){
 		VERBOSE_N(0,"read_command error errno %s",strerror(errno));	
 		command->req=NO_COMMAND;
@@ -160,7 +162,8 @@ int read_command(int s,request_t *command)
 	done=ret;
 	while((ret>0) && (pending>0)){
 		VERBOSE_N(1,"Read command continue , pending %d",pending);
-		ret=read(s,(char*)command+done,pending);
+		//ret=read(s,(char*)command+done,pending);
+		ret=recv(s,(char*)command+done,pending, MSG_DONTWAIT);
 		if (ret<0) VERBOSE_N(0,"read_command error errno %s",strerror(errno));
 		pending-=ret;
 		done+=ret;
