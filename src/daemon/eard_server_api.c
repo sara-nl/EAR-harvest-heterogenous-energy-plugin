@@ -136,6 +136,9 @@ int wait_for_client(int s,struct sockaddr_in *client)
 		VERBOSE_N(0,"accept for eards socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
+    char conection_ok = 1;
+    write(new_sock, &conection_ok, sizeof(char));
+    VERBOSE_N(1, "Sending handshake byte to client.");
 	VERBOSE_N(2,"new connection ");
 	return new_sock;
 }
