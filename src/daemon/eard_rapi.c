@@ -86,7 +86,7 @@ int send_status(request_t *command, status_t **status)
 	int ret;
 	int total, pending;
     status_t *return_status;
-	eard_verbose(2,"Sending command %u\n",command->req);
+	eard_verbose(1,"Sending command %u\n",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
 			eard_verbose(0,"Error sending command (status) %s\n",strerror(errno));
@@ -94,6 +94,7 @@ int send_status(request_t *command, status_t **status)
 			eard_verbose(0,"Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
 		}
 	}
+	eard_verbose(1,"Reading ack size \n");
 	/* We assume first long will not block */
 	ret=read(eards_sfd,&ack,sizeof(ulong));
 	if (ret<0){
@@ -104,6 +105,7 @@ int send_status(request_t *command, status_t **status)
         eard_verbose(0, "Number of status expected is not valid: %d", ack);
         return EAR_ERROR;
     }
+	eard_verbose(0,"Waiting for %d ack bytes\n",ack);
     return_status = calloc(ack, sizeof(status_t));
 	if (return_status==NULL){
 		eard_verbose(0, "Not enough memory at send_status");
@@ -130,6 +132,7 @@ int send_status(request_t *command, status_t **status)
 		pending-=ret;
 	}
     *status = return_status;
+	eard_verbose(1,"Returning from send_status with %d\n",ack);
 	return ack;
 }
 
@@ -155,7 +158,10 @@ int eards_remote_connect(char *nodename,uint port)
     int sfd, s, j, res;
     fd_set set;
 
-	if (eards_remote_connected) return eards_sfd;
+	if (eards_remote_connected){ 
+		eard_verbose(1,"Connection already done!\n");
+		return eards_sfd;
+	}
    	memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
     hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
@@ -570,6 +576,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
 {
     status_t *final_status, *status1 = NULL, *status2 = NULL;
     int total_status, num_status1 = 0, num_status2 = 0;
+	eard_verbose(1,"correct_status for ip %d with distance %d\n",target_ip,command->node_dist);
     if (command->node_dist < 1) {
         final_status = calloc(1, sizeof(status_t));
         final_status[0].ip = target_ip;
@@ -604,6 +611,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     }
     else
     {
+		eard_verbose(1,"connection ok, sending status requests %s\n",nextip1);
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip1);
@@ -612,6 +620,8 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
         }
         else eards_remote_disconnect();
     }
+
+	eard_verbose(1,"Correcting second node\n");
 
     command->node_dist = actual_dist;
     //connect to second subnode
@@ -623,6 +633,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     }
     else
     {
+		eard_verbose(1,"connection ok, sending status requests %s\n",nextip2);
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip2);
@@ -641,6 +652,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     *status = final_status;
     free(status1);
     free(status2);
+	eard_verbose(1,"correct_status ends return value=%d\n",total_status + 1);
     return total_status + 1;
 }
 
