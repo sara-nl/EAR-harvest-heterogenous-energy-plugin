@@ -186,7 +186,7 @@ int eards_remote_connect(char *nodename,uint port)
     memset(&timeout, 0, sizeof(struct timeval));
     timeout.tv_sec = 0;
     timeout.tv_usec = 5000;
-    int optlen, valopt;
+    int optlen, valopt, sysret;
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {
         sfd = socket(rp->ai_family, rp->ai_socktype,
@@ -211,16 +211,29 @@ int eards_remote_connect(char *nodename,uint port)
         {
             FD_ZERO(&set);
             FD_SET(sfd, &set);
-            if (select(sfd+1, NULL, &set, NULL, &timeout) > 0) 
+            if (select(sfd+1, &set, &set, NULL, &timeout) >= 0) 
             {
                 optlen = sizeof(int);
-                getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
-                if (valopt)
+                sysret = getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
+                if (sysret)
+                {
+                    fprintf(stderr, "Error geting sockopt\n");
+                    close(sfd);
+                    continue;
+                }
+                else if (optlen != sizeof(int))
+                {
+                    fprintf(stderr, "Error with getsockopt\n");
+                    close(sfd);
+                    continue;
+                }
+                else if (valopt)
                 {
                     fprintf(stderr, "Error opening connection %s",nodename);
                     close(sfd);
                     continue;
                 }
+                else fprintf(stderr, "Connected\n");
             }
             else
             {
@@ -239,6 +252,24 @@ int eards_remote_connect(char *nodename,uint port)
 		#endif
 		return EAR_ERROR;
     }
+
+    char conection_ok = 0;
+
+    setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (void *)(&timeout), sizeof(timeout));
+    
+    if (read(sfd, &conection_ok, sizeof(char)) > 0)
+    {
+        eard_verbose(1, "Handshake with server completed.");
+    }
+    else
+    {
+        eard_verbose(1, "Couldn't complete handshake with server, closing conection.");
+        close(sfd);
+        return EAR_ERROR;
+    }
+
+    memset(&timeout, 0, sizeof(struct timeval));
+    setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (void *)(&timeout), sizeof(timeout));
 
    	freeaddrinfo(result);           /* No longer needed */
 	eards_remote_connected=1;
