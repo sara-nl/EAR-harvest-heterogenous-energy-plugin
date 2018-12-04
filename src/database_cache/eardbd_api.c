@@ -64,7 +64,7 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 
 	// If not initialized
 	if (!eardbd_is_initialized()) {
-		edb_state_return_msg(state_con, EAR_NOT_INITIALIZED, "server and mirror are not enabled");
+		edb_state_return_msg(state, EAR_NOT_INITIALIZED, "server and mirror are not enabled");
 	}
 
 	//
@@ -235,8 +235,8 @@ edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node, edb_sta
 	}
 
 	//
-	debug("srv.en %d, srv.st %d, srv.fd %d", enabled_server, state.server, server_sock.fd);
-	debug("mir.en %d, mir.st %d, mir.fd %d", enabled_mirror, state.mirror, mirror_sock.fd);
+	debug("srv.en %d, srv.st %d, srv.fd %d", enabled_server, state_con.server, server_sock.fd);
+	debug("mir.en %d, mir.st %d, mir.fd %d", enabled_mirror, state_con.mirror, mirror_sock.fd);
 
 	return state_con;
 }

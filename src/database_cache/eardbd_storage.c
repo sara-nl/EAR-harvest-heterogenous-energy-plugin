@@ -477,8 +477,9 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	type = storage_type_extract(header, content);
 	index = storage_index_extract(type, &name);
 
-	fprintf(stderr, "RECEIVED %dt %di %s\n", type, index, name); 
-	return;
+	if (verbosity) {
+		verwho1("received '%s' object from host '%s'", name, header->host_src); 
+	}
 
 	//TODO:
 	// Currently, sam_index and sam_recv are the same. In the near future
