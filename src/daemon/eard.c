@@ -564,10 +564,14 @@ int eard_system(int must_read)
 			{
 				if (!my_cluster_conf.eard.use_eardbd) {
 					ret1 = db_insert_ear_event(&req.req_data.event);
-				} else if (edb_state_fail(eardbd_send_event(&req.req_data.event))) {
-					eard_verbose(0, "Error sending event to eardb");
-					eardbd_reconnect(&my_cluster_conf, my_node_conf);
-					ret1 = EAR_ERROR;
+				} else {
+					edb_state_t state = eardbd_send_event(&req.req_data.event);
+
+					if (edb_state_fail(state)) {
+						eard_verbose(0, "Error sending event to eardb");
+						eardbd_reconnect(&my_cluster_conf, my_node_conf);
+						ret1 = EAR_ERROR;
+					}
 				}
 			}
 			#endif
@@ -587,10 +591,14 @@ int eard_system(int must_read)
 			{
 				if (!my_cluster_conf.eard.use_eardbd){
 					ret1 = db_insert_loop (&req.req_data.loop);
-				} else if (edb_state_fail(eardbd_send_loop(&req.req_data.loop))){
-					eard_verbose(0, "Error sending loop to eardb");
-					eardbd_reconnect(&my_cluster_conf, my_node_conf);
-					ret1 = EAR_ERROR;
+				} else {
+					edb_state_t state = eardbd_send_loop(&req.req_data.loop);
+
+					if (edb_state_fail(state)){
+						eard_verbose(0, "Error sending loop to eardb");
+						eardbd_reconnect(&my_cluster_conf, my_node_conf);
+						ret1 = EAR_ERROR;
+					}
 				}
 			}
 			#endif
@@ -894,23 +902,24 @@ void signal_handler(int sig)
 			}
 			if (my_cluster_conf.eard.use_mysql)
 			{
-    				if (my_cluster_conf.eard.use_eardbd)
-    				{
+				if (my_cluster_conf.eard.use_eardbd)
+				{
 					eardbd_disconnect();
+					edb_state_t state = eardbd_connect(&my_cluster_conf, my_node_conf);
 
-					if (edb_state_fail(eardbd_connect(&my_cluster_conf, my_node_conf))) {
-            					eard_verbose(0, "Error connecting with EARDB");
-        				} else {
+					if (edb_state_fail(state)) {
+						eard_verbose(0, "Error connecting with EARDB");
+					} else {
 						eard_verbose(1,"Connecting with EARDBD\n");
 						eardbd_connected=1;
 					}
-    				}
+				}
 
-    				if (!my_cluster_conf.eard.use_eardbd){
-        				eard_verbose(1,"Connecting with EAR DB directly");
-        				init_db_helper(&my_cluster_conf.database);
-        				db_helper_connected=1;
-    				}
+				if (!my_cluster_conf.eard.use_eardbd){
+					eard_verbose(1,"Connecting with EAR DB directly");
+					init_db_helper(&my_cluster_conf.database);
+					db_helper_connected=1;
+				}
 			}
     		#endif
 
@@ -1389,7 +1398,9 @@ void main(int argc,char *argv[])
 	{
 		if (my_cluster_conf.eard.use_eardbd)
 		{
-    		if (edb_state_fail(eardbd_connect(&my_cluster_conf, my_node_conf))) {
+			edb_state_t state = eardbd_connect(&my_cluster_conf, my_node_conf);
+
+    		if (edb_state_fail(state)) {
 				eard_verbose(0, "Error connecting with EARDB errnum:%d errmsg:%s\n",
 					intern_error_num,intern_error_str);
 			} else {
