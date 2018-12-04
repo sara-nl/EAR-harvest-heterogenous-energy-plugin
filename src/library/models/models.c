@@ -275,6 +275,8 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	use_def=getenv("USE_DEFAULT_COEFFICIENTS");
 	if (use_def!=NULL) use_default=atoi(use_def);
 
+	earl_verbose(1,"Using average coefficients=%d\n",use_default);
+
 	// Initializations
 	// We start t nominal by default
 	begin_pstate = model_nominal;

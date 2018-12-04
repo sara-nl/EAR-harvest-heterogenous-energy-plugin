@@ -69,6 +69,7 @@ void show_query_result(cluster_conf_t my_conf, char *query)
     }
     
     MYSQL_RES *result = mysql_store_result(connection);
+	int my_event;
   
     if (result == NULL) 
     {
@@ -86,7 +87,20 @@ void show_query_result(cluster_conf_t my_conf, char *query)
     { 
         for(i = 0; i < num_fields; i++) 
         {
-            printf("%15s ", row[i] ? row[i] : "NULL"); 
+			if (i==2){
+			my_event=atoi(row[i]);
+				switch(my_event){
+					case 0:printf("%15s ","ENERGY_POLICY_NEW_FREQ");break;
+					case 1:printf("%15s ","GLOBAL_ENERGY_POLICY");break;
+					case 2:printf("%15s ","ENERGY_POLICY_FAILS");break;
+					case 3:printf("%15s ","DYNAIS_OFF");break;
+					default: printf("%15s ","uknown event");break;
+				}
+	
+			}else{
+            	printf("%15s ", row[i] ? row[i] : "NULL"); 
+			}
+			
         }
 
         printf("\n"); 

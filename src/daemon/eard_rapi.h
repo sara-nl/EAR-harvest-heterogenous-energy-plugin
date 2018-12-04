@@ -136,15 +136,15 @@ void set_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf);
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf);
 
 /** Corrects a propagation error, sending to the child nodes when the parent isn't responding. */
-void correct_error(int target_ip, request_t *command, int port);
+void correct_error(uint target_ip, request_t *command, uint port);
 
 /** Corrects a status propagation error, sending to the child nodes when the parent isn't responding. 
 *   The corresponding status are placed in status, while the return value is the amount of status obtained. */
-int correct_status(int target_ip, request_t *command, int port, status_t **status);
+int correct_status(uint target_ip, request_t *command, uint port, status_t **status);
 
 /** Sends the status command through the currently open fd, reads the returning value and places it
 *   in **status. Returns the amount of status_t placed in **status. */
 int send_status(request_t *command, status_t **status);
 
-void correct_error_starter(char *host_name, request_t *command, int port);
+void correct_error_starter(char *host_name, request_t *command, uint port);
 #endif

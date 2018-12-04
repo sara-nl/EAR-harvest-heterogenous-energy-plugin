@@ -30,16 +30,9 @@
 #ifndef _NODE_CONF_H
 #define _NODE_CONF_H
 
-#include <stdio.h>
-#include <fcntl.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-
 #include <common/config.h>
-#include <common/types/configuration/policy_conf.h>
 #include <common/types/generic.h>
+#include <common/types/configuration/policy_conf.h>
 
 /**
 * @file node_conf.h

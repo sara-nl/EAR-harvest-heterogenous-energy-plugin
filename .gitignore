@@ -103,6 +103,8 @@ tests/check/check.sh
 *eargm_end_job
 *eardbd
 *ear_dbd_stress_test
+*edb_create
+*edb_clean_pm
 *ear_types
 
 *client_api_test

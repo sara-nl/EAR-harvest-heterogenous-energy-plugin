@@ -70,7 +70,9 @@ int send_command(request_t *command)
 		}
 	}
 	ret=read(eards_sfd,&ack,sizeof(ulong));
+	//ret=recv(eards_sfd,&ack,sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
+		printf("ERRO: %d\n", errno);
 		eard_verbose(0,"Error receiving ack %s\n",strerror(errno));
 	}
 	else if (ret!=sizeof(ulong)){
@@ -86,7 +88,7 @@ int send_status(request_t *command, status_t **status)
 	int ret;
 	int total, pending;
     status_t *return_status;
-	eard_verbose(2,"Sending command %u\n",command->req);
+	eard_verbose(1,"Sending command %u\n",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
 			eard_verbose(0,"Error sending command (status) %s\n",strerror(errno));
@@ -94,8 +96,10 @@ int send_status(request_t *command, status_t **status)
 			eard_verbose(0,"Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
 		}
 	}
+	eard_verbose(1,"Reading ack size \n");
 	/* We assume first long will not block */
 	ret=read(eards_sfd,&ack,sizeof(ulong));
+	//ret = recv(eards_sfd, &ack, sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
 		eard_verbose(0,"Error receiving ack in (status) (%s) \n",strerror(errno));
         return EAR_ERROR;
@@ -104,6 +108,7 @@ int send_status(request_t *command, status_t **status)
         eard_verbose(0, "Number of status expected is not valid: %d", ack);
         return EAR_ERROR;
     }
+	eard_verbose(0,"Waiting for %d ack bytes\n",ack);
     return_status = calloc(ack, sizeof(status_t));
 	if (return_status==NULL){
 		eard_verbose(0, "Not enough memory at send_status");
@@ -112,6 +117,7 @@ int send_status(request_t *command, status_t **status)
 	total=0;
 	pending=sizeof(status_t)*ack;
     ret = read(eards_sfd, (char *)return_status+total, pending);
+    //ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
 	if (ret<0){
 		eard_verbose(0, "Error by reading status (%s)",strerror(errno));
         free(return_status);
@@ -121,6 +127,7 @@ int send_status(request_t *command, status_t **status)
 	pending-=ret;
 	while ((ret>0) && (pending>0)){
     	ret = read(eards_sfd, (char *)return_status+total, pending);
+    	//ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
 		if (ret<0){
 			eard_verbose(0, "Error by reading status (%s)",strerror(errno));
         	free(return_status);
@@ -130,6 +137,7 @@ int send_status(request_t *command, status_t **status)
 		pending-=ret;
 	}
     *status = return_status;
+	eard_verbose(1,"Returning from send_status with %d\n",ack);
 	return ack;
 }
 
@@ -155,7 +163,10 @@ int eards_remote_connect(char *nodename,uint port)
     int sfd, s, j, res;
     fd_set set;
 
-	if (eards_remote_connected) return eards_sfd;
+	if (eards_remote_connected){ 
+		eard_verbose(1,"Connection already done!\n");
+		return eards_sfd;
+	}
    	memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
     hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
@@ -175,7 +186,7 @@ int eards_remote_connect(char *nodename,uint port)
     memset(&timeout, 0, sizeof(struct timeval));
     timeout.tv_sec = 0;
     timeout.tv_usec = 5000;
-    int optlen, valopt;
+    int optlen, valopt, sysret;
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {
         sfd = socket(rp->ai_family, rp->ai_socktype,
@@ -185,9 +196,6 @@ int eards_remote_connect(char *nodename,uint port)
 
         set_socket_block(sfd, 0);
         
-//        if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-//            break;                  /* Success */
-
         int res = connect(sfd, rp->ai_addr, rp->ai_addrlen);
         if (res < 0 && errno != EINPROGRESS)
         {
@@ -203,16 +211,29 @@ int eards_remote_connect(char *nodename,uint port)
         {
             FD_ZERO(&set);
             FD_SET(sfd, &set);
-            if (select(sfd+1, NULL, &set, NULL, &timeout) > 0) 
+            if (select(sfd+1, &set, &set, NULL, &timeout) >= 0) 
             {
                 optlen = sizeof(int);
-                getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
-                if (valopt)
+                sysret = getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
+                if (sysret)
+                {
+                    fprintf(stderr, "Error geting sockopt\n");
+                    close(sfd);
+                    continue;
+                }
+                else if (optlen != sizeof(int))
+                {
+                    fprintf(stderr, "Error with getsockopt\n");
+                    close(sfd);
+                    continue;
+                }
+                else if (valopt)
                 {
                     fprintf(stderr, "Error opening connection %s",nodename);
                     close(sfd);
                     continue;
                 }
+                else fprintf(stderr, "Connected\n");
             }
             else
             {
@@ -231,6 +252,24 @@ int eards_remote_connect(char *nodename,uint port)
 		#endif
 		return EAR_ERROR;
     }
+
+    char conection_ok = 0;
+
+    setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (void *)(&timeout), sizeof(timeout));
+    
+    if (read(sfd, &conection_ok, sizeof(char)) > 0)
+    {
+        eard_verbose(1, "Handshake with server completed.");
+    }
+    else
+    {
+        eard_verbose(1, "Couldn't complete handshake with server, closing conection.");
+        close(sfd);
+        return EAR_ERROR;
+    }
+
+    memset(&timeout, 0, sizeof(struct timeval));
+    setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (void *)(&timeout), sizeof(timeout));
 
    	freeaddrinfo(result);           /* No longer needed */
 	eards_remote_connected=1;
@@ -538,10 +577,11 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_
     send_command_all(command, my_cluster_conf);
 }
 
-int correct_status(int target_ip, request_t *command, int port, status_t **status)
+int correct_status(uint target_ip, request_t *command, uint port, status_t **status)
 {
     status_t *final_status, *status1 = NULL, *status2 = NULL;
     int total_status, num_status1 = 0, num_status2 = 0;
+	eard_verbose(1,"correct_status for ip %d with distance %d\n",target_ip,command->node_dist);
     if (command->node_dist < 1) {
         final_status = calloc(1, sizeof(status_t));
         final_status[0].ip = target_ip;
@@ -553,7 +593,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     char nextip1[50], nextip2[50];
 
     struct sockaddr_in temp;
-    int self_ip, ip1, ip2; 
+    unsigned int self_ip, ip1, ip2; 
     self_ip = ip1 = ip2 = htonl(target_ip);
     ip1 += command->node_dist;
     temp.sin_addr.s_addr = ntohl(ip1);
@@ -576,6 +616,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     }
     else
     {
+		eard_verbose(1,"connection ok, sending status requests %s\n",nextip1);
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip1);
@@ -584,6 +625,8 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
         }
         else eards_remote_disconnect();
     }
+
+	eard_verbose(1,"Correcting second node\n");
 
     command->node_dist = actual_dist;
     //connect to second subnode
@@ -595,6 +638,7 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     }
     else
     {
+		eard_verbose(1,"connection ok, sending status requests %s\n",nextip2);
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip2);
@@ -613,16 +657,17 @@ int correct_status(int target_ip, request_t *command, int port, status_t **statu
     *status = final_status;
     free(status1);
     free(status2);
+	eard_verbose(1,"correct_status ends return value=%d\n",total_status + 1);
     return total_status + 1;
 }
 
-void correct_error(int target_ip, request_t *command, int port)
+void correct_error(uint target_ip, request_t *command, uint port)
 {
     if (command->node_dist < 1) return;
     char nextip1[50], nextip2[50];
 
     struct sockaddr_in temp;
-    int ip1, ip2; 
+    unsigned int ip1, ip2; 
     ip1 = ip2 = htonl(target_ip);
     ip1 += command->node_dist;
     temp.sin_addr.s_addr = ntohl(ip1);
@@ -674,7 +719,7 @@ void correct_error(int target_ip, request_t *command, int port)
     } 
 }
 
-int correct_status_starter(char *host_name, request_t *command, int port, status_t **status)
+int correct_status_starter(char *host_name, request_t *command, uint port, status_t **status)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -711,7 +756,7 @@ int correct_status_starter(char *host_name, request_t *command, int port, status
 }
 
 
-void correct_error_starter(char *host_name, request_t *command, int port)
+void correct_error_starter(char *host_name, request_t *command, uint port)
 {
 	if (command->node_dist < 1) return;
     struct addrinfo hints;

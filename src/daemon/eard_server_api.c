@@ -136,7 +136,10 @@ int wait_for_client(int s,struct sockaddr_in *client)
 		VERBOSE_N(0,"accept for eards socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
-	VERBOSE_N(2,"new connection ");
+    char conection_ok = 1;
+    write(new_sock, &conection_ok, sizeof(char));
+    VERBOSE_N(1, "Sending handshake byte to client.");
+	VERBOSE_N(1,"new connection ");
 	return new_sock;
 }
 
@@ -150,7 +153,9 @@ int read_command(int s,request_t *command)
 	int ret,pending,done;
 	pending=sizeof(request_t);
 	done=0;
+
 	ret=read(s,command,sizeof(request_t));
+	//ret=recv(s,command,sizeof(request_t), MSG_DONTWAIT);
 	if (ret<0){
 		VERBOSE_N(0,"read_command error errno %s",strerror(errno));	
 		command->req=NO_COMMAND;
@@ -161,6 +166,7 @@ int read_command(int s,request_t *command)
 	while((ret>0) && (pending>0)){
 		VERBOSE_N(1,"Read command continue , pending %d",pending);
 		ret=read(s,(char*)command+done,pending);
+		//ret=recv(s,(char*)command+done,pending, MSG_DONTWAIT);
 		if (ret<0) VERBOSE_N(0,"read_command error errno %s",strerror(errno));
 		pending-=ret;
 		done+=ret;
@@ -173,14 +179,14 @@ void send_answer(int s,ulong *ack)
 	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer");
 	if (ret<0) VERBOSE_N(0,"(%s)",strerror(errno));
 }
-void propagate_req(request_t *command, int port)
+void propagate_req(request_t *command, uint port)
 {
      
     if (command->node_dist < 1) return;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;
-    int ip1, ip2;
+    unsigned int ip1, ip2;
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_len;
     ssize_t nread;
@@ -222,7 +228,7 @@ void propagate_req(request_t *command, int port)
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
-    int actual_dist = command->node_dist;
+    uint actual_dist = command->node_dist;
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
@@ -261,14 +267,14 @@ void propagate_req(request_t *command, int port)
     }
 }
 
-int propagate_status(request_t *command, int port, status_t **status)
+int propagate_status(request_t *command, uint port, status_t **status)
 {
     status_t *status1, *status2, *final_status;
     int num_status1, num_status2;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;
-    int ip1, ip2, self_ip;
+    unsigned int ip1, ip2, self_ip;
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_len;
     ssize_t nread;
@@ -318,7 +324,7 @@ int propagate_status(request_t *command, int port, status_t **status)
 
     //the next node will propagate the command at half the distance
     command->node_dist /= 2;
-    int actual_dist = command->node_dist;
+    uint actual_dist = command->node_dist;
 
     //connect to first subnode
     int rc = eards_remote_connect(nextip1, port);
@@ -329,6 +335,7 @@ int propagate_status(request_t *command, int port, status_t **status)
     }
     else
     {
+		eard_verbose(1,"Sending status to %s\n",nextip1);
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip1);
@@ -348,6 +355,7 @@ int propagate_status(request_t *command, int port, status_t **status)
     }
     else
     {
+		eard_verbose(1,"Sending status to %s\n",nextip2);
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
             fprintf(stderr, "Error propagating command to node %s\n", nextip2);
