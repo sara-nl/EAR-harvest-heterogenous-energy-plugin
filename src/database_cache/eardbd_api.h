@@ -62,7 +62,7 @@ typedef struct edb_state {
         state_fail(state.server) || state_fail(state.mirror)
 
 edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node);
-edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node);
+edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node, edb_state_t state);
 edb_state_t eardbd_disconnect();
 
 edb_state_t eardbd_send_ping();

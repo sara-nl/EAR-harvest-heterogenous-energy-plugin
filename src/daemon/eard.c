@@ -569,7 +569,7 @@ int eard_system(int must_read)
 
 					if (edb_state_fail(state)) {
 						eard_verbose(0, "Error sending event to eardb");
-						eardbd_reconnect(&my_cluster_conf, my_node_conf);
+						eardbd_reconnect(&my_cluster_conf, my_node_conf, state);
 						ret1 = EAR_ERROR;
 					}
 				}
@@ -596,7 +596,7 @@ int eard_system(int must_read)
 
 					if (edb_state_fail(state)){
 						eard_verbose(0, "Error sending loop to eardb");
-						eardbd_reconnect(&my_cluster_conf, my_node_conf);
+						eardbd_reconnect(&my_cluster_conf, my_node_conf, state);
 						ret1 = EAR_ERROR;
 					}
 				}

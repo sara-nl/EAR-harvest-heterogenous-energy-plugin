@@ -39,7 +39,7 @@
         fprintf(stderr, "EARDBD, " __VA_ARGS__); \
         fprintf(stderr, "\n");
 
-#if 0
+#if 1
 #define debug(format, ...) \
         fprintf(stderr, "%s(): " format "\n", __FUNCTION__, __VA_ARGS__);
 #else
@@ -63,8 +63,8 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 	edb_state_t state;
 
 	// If not initialized
-	if (!enabled_server && !enabled_mirror) {
-		edb_state_return_msg(state, EAR_NOT_INITIALIZED, "not initialized");
+	if (!eardbd_is_initialized()) {
+		edb_state_return_msg(state_con, EAR_NOT_INITIALIZED, "server and mirror are not enabled");
 	}
 
 	//
@@ -81,7 +81,9 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 	}
 
 	//
-	debug("state.server %d, state.mirror %d", state.server, state.mirror);
+	debug("srv.en %d, srv.st %d, srv.fd %d", enabled_server, state.server, server_sock.fd);
+	debug("mir.en %d, mir.st %d, mir.fd %d", enabled_mirror, state.mirror, mirror_sock.fd);
+
 
 	return state;
 }
@@ -117,10 +119,9 @@ static state_t _connect(socket_t *socket, char *host, uint port, uint protocol)
 	return EAR_SUCCESS;
 }
 
-static void _disconnect(socket_t *socket, int *enabled)
+static void _disconnect(socket_t *socket)
 {
     sockets_dispose(socket);
-    *enabled = 0;
 }
 
 /*
@@ -163,6 +164,11 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	uint server_port;
 	uint mirror_port;
 
+	//
+	if (eardbd_is_initialized()) {
+		edb_state_return_msg(state, EAR_ALREADY_INITIALIZED, "it's already initialized");
+	}
+
 #if 1
 	// Configuring hosts and ports
 	server_host = node->db_ip;
@@ -176,62 +182,82 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	mirror_host = "E7450";
 #endif
 
-
-	if (enabled_server || enabled_mirror) {
-		edb_state_return_msg(state, EAR_ALREADY_INITIALIZED, "it's already initialized");
-	}
-
 	enabled_server = (server_host != NULL) && (strlen(server_host) > 0);
 	enabled_mirror = (mirror_host != NULL) && (strlen(mirror_host) > 0);
-
-	//
-	debug("enabled_server %d, enabled_mirror %d", enabled_server, enabled_mirror);
-
-	// Neither server nor mirror enabled? Bad argument.
-	if (!enabled_server && !enabled_mirror) {
-		edb_state_return_msg(state, EAR_BAD_ARGUMENT, "server and mirror are not enabled");
-
-	}
+	debug("srv.host '%s', srv.en %d", server_host, enabled_server);
+	debug("mir.host '%s', mir.en %d", mirror_host, enabled_mirror);
 
 	// Maybe it's not enabled, but it's ok.
-	edb_state_init(state, EAR_SUCCESS);
+	edb_state_init(state, EAR_NOT_INITIALIZED);
 
-	if (enabled_server)
-	{
-		state.server = _connect(&server_sock, server_host, server_port, TCP);
-
-		if (state_fail(state.server)) {
-			_disconnect(&server_sock, &enabled_server);
-		}
-	}
-	if (enabled_mirror)
-	{
-		state.mirror = _connect(&mirror_sock, mirror_host, mirror_port, TCP);
-
-		if (state_fail(state.mirror)) {
-			_disconnect(&mirror_sock, &enabled_mirror);
-		}
-	}
-
-	//
-	debug("state.server %d, state.mirror %d", state.server, state.mirror);
+	// Reconnect is connect
+	state = eardbd_reconnect(conf, node, state);
 
 	return state;
 }
 
-edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node)
+edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node, edb_state_t state)
 {
-	eardbd_disconnect();
+	edb_state_t state_con;
+	char *server_host;
+	char *mirror_host;
+	uint server_port;
+	uint mirror_port;
 
-	return eardbd_connect(conf, node);
+	if (!eardbd_is_initialized()) {
+		edb_state_return_msg(state_con, EAR_NOT_INITIALIZED, "server and mirror are not enabled");
+	}
+
+	// Configuring again the hosts and ports
+	server_host = node->db_ip;
+	mirror_host = node->db_sec_ip;
+	server_port = conf->db_manager.tcp_port;
+	mirror_port = conf->db_manager.sec_tcp_port;
+
+	//
+	edb_state_init(state_con, EAR_SUCCESS);
+
+	if (enabled_server && state_fail(state.server))
+	{
+		state_con.server = _connect(&server_sock, server_host, server_port, TCP);
+
+		if (state_fail(state_con.server)) {
+			_disconnect(&server_sock);
+		}
+	}
+	if (enabled_mirror && state_fail(state.mirror))
+	{
+		state_con.mirror = _connect(&mirror_sock, mirror_host, mirror_port, TCP);
+
+		if (state_fail(state_con.mirror)) {
+			_disconnect(&mirror_sock);
+		}
+	}
+
+	//
+	debug("srv.en %d, srv.st %d, srv.fd %d", enabled_server, state.server, server_sock.fd);
+	debug("mir.en %d, mir.st %d, mir.fd %d", enabled_mirror, state.mirror, mirror_sock.fd);
+
+	return state_con;
 }
 
 edb_state_t eardbd_disconnect()
 {
 	edb_state_t state;
 
-	_disconnect(&server_sock, &enabled_server);
-	_disconnect(&mirror_sock, &enabled_mirror);
+	if (!eardbd_is_initialized()) {
+		edb_state_return(state, EAR_SUCCESS);
+	}
+
+	_disconnect(&server_sock);
+	_disconnect(&mirror_sock);
+	enabled_server = 0;
+	enabled_mirror = 0;
 
 	edb_state_return(state, EAR_SUCCESS);
+}
+
+int eardbd_is_initialized()
+{
+	return enabled_server || enabled_mirror;
 }

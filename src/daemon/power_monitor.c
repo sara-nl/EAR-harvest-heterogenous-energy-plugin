@@ -297,7 +297,7 @@ void report_powermon_app(powermon_app_t *app)
 
 			if (edb_state_fail(state)) {
 				eard_verbose(0, "Error when sending application to eardb");
-				eardbd_reconnect(&my_cluster_conf, my_node_conf);
+				eardbd_reconnect(&my_cluster_conf, my_node_conf, state);
 			}
 		}
 	}
@@ -688,7 +688,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 
 			if (edb_state_fail(state)) {
 				eard_verbose(0, "Error when sending periodic power metric to eardb");
-				state = eardbd_reconnect(&my_cluster_conf, my_node_conf);
+				state = eardbd_reconnect(&my_cluster_conf, my_node_conf, state);
 
 				if (edb_state_fail(state)) {
 					eard_verbose(0, "Error re-connecting with EARDB errnum:%d errmsg:%s\n",
