@@ -137,19 +137,20 @@ static void body_alarm(struct timeval *timeout_slct)
 
 		if (timeout_aggr.tv_sec == 0)
 		{
-			peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
-			peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
+			if (sam_index[i_enrgy] > 0 && sam_inmax[i_aggrs] > 0)
+			{
+				peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
+				peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 
-			verwho1("completed the aggregation number %lu with energy %lu",
+				verwho1("completed the aggregation number %lu with energy %lu",
 					sam_index[i_aggrs], q->DC_energy);
 
-			// Aggregation time done, so new aggregation incoming
-			storage_sample_add(NULL, sam_inmax[i_aggrs], &sam_index[i_aggrs], NULL, 0, SYNC_AGGRS);
+				// Aggregation time done, so new aggregation incoming
+				storage_sample_add(NULL, sam_inmax[i_aggrs], &sam_index[i_aggrs], NULL, 0, SYNC_AGGRS);
 
-			// Initializing the new element
-			q = (peraggr_t *) &p[sam_index[i_aggrs]];
+				// Initializing the new element
+				q = (peraggr_t *) &p[sam_index[i_aggrs]];
 
-			if (sam_inmax[i_aggrs] > 0) {
 				init_periodic_aggregation(q);
 			}
 

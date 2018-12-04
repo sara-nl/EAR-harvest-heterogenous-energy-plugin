@@ -284,6 +284,8 @@ static void insert_aggregations()
 {
 	time_t time_start;
 
+	verwho1("Inserting aggregations %d",  sam_index[i_aggrs]);
+
 	if (typ_prcnt[i_aggrs] == 0 || sam_index[i_aggrs] <= 0) {
 		return;
 	}
@@ -420,44 +422,46 @@ static int storage_type_extract(packet_header_t *header, char *content)
 	} else {
 		return CONTENT_TYPE_APN;
 	}
+	
+	return -1;
 }
 
-static int storage_index_extract(uint type, char *name)
+static int storage_index_extract(int type, char **name)
 {
 	switch (type)
 	{
 		case CONTENT_TYPE_APM:
-			name = sam_iname[i_appsm];
+			*name = sam_iname[i_appsm];
 			return i_appsm;
 		case CONTENT_TYPE_APN:
-			name = sam_iname[i_appsn];
+			*name = sam_iname[i_appsn];
 			return i_appsn;
 		case CONTENT_TYPE_APL:
-			name = sam_iname[i_appsl];
+			*name = sam_iname[i_appsl];
 			return i_appsl;
 		case CONTENT_TYPE_PER:
-			name = sam_iname[i_enrgy];
+			*name = sam_iname[i_enrgy];
 			return i_enrgy;
 		case CONTENT_TYPE_EVE:
-			name = sam_iname[i_evnts];
+			*name = sam_iname[i_evnts];
 			return i_evnts;
 		case CONTENT_TYPE_LOO:
-			name = sam_iname[i_loops];
+			*name = sam_iname[i_loops];
 			return i_loops;
 		case CONTENT_TYPE_AGG:
-			name = sam_iname[i_aggrs];
+			*name = sam_iname[i_aggrs];
 			return i_aggrs;
 		case CONTENT_TYPE_QST:
-			name = "sync_question";
+			*name = "sync_question";
 			return -1;
 		case CONTENT_TYPE_ANS:
-			name = "sync_answer";
+			*name = "sync_answer";
 			return -1;
 		case CONTENT_TYPE_PIN:
-			name = "ping";
+			*name = "ping";
 			return -1;
 		default:
-			name = "unknown";
+			*name = "unknown";
 			return -1;
 	}
 }
@@ -466,12 +470,15 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 {
 	time_t aux;
 	char *name;
-	uint index;
-	uint type;
+	int index;
+	int type;
 
 	// Data extraction
 	type = storage_type_extract(header, content);
-	index = storage_index_extract(type, name);
+	index = storage_index_extract(type, &name);
+
+	fprintf(stderr, "RECEIVED %dt %di %s\n", type, index, name); 
+	return;
 
 	//TODO:
 	// Currently, sam_index and sam_recv are the same. In the near future
@@ -518,6 +525,11 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
 		peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 		periodic_metric_t *met = (periodic_metric_t *) content;
+
+		// Verbosity mpkfa
+		//if (verbosity == 1) {
+		//	verwho1("RECEIVED %lu energy from %s", met->DC_energy, met->node_id);				
+		//}
 
 		// Add sample to the aggregation
 		add_periodic_aggregation(q, met->DC_energy, met->start_time, met->end_time);
