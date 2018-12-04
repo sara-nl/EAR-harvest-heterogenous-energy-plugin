@@ -894,22 +894,23 @@ void signal_handler(int sig)
 			}
 			if (my_cluster_conf.eard.use_mysql)
 			{
-    			if (my_cluster_conf.eard.use_eardbd)
-    			{
+    				if (my_cluster_conf.eard.use_eardbd)
+    				{
 					eardbd_disconnect();
 
-					if (edb_state_fail(eardbd_connect(&my_cluster_conf, my_node_conf)) {
-            			eard_verbose(0, "Error connecting with EARDB");
-        			} else {
+					if (edb_state_fail(eardbd_connect(&my_cluster_conf, my_node_conf))) {
+            					eard_verbose(0, "Error connecting with EARDB");
+        				} else {
 						eard_verbose(1,"Connecting with EARDBD\n");
 						eardbd_connected=1;
 					}
-    			}
-    			if (!my_cluster_conf.eard.use_eardbd){
-        			eard_verbose(1,"Connecting with EAR DB directly");
-        			init_db_helper(&my_cluster_conf.database);
-        			db_helper_connected=1;
-    			}
+    				}
+
+    				if (!my_cluster_conf.eard.use_eardbd){
+        				eard_verbose(1,"Connecting with EAR DB directly");
+        				init_db_helper(&my_cluster_conf.database);
+        				db_helper_connected=1;
+    				}
 			}
     		#endif
 
