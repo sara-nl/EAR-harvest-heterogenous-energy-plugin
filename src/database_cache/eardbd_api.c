@@ -35,13 +35,22 @@
 #include <sys/types.h>
 #include <database_cache/eardbd_api.h>
 
+#define verbose(...) \
+        fprintf(stderr, "EARDBD, " __VA_ARGS__); \
+        fprintf(stderr, "\n");
+
+#if 1
+#define debug(format, ...) \
+        fprintf(stderr, "%s: " format "\n", __FUNCTION__, __VA_ARGS__);
+#else
+#define debug(format, ...)
+#endif
+
+static packet_header_t header;
 static socket_t server_sock;
 static socket_t mirror_sock;
-static packet_header_t header;
-
-#define verbose(...) \
-	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
-	fprintf(stderr, "\n");
+static int enabled_server;
+static int enabled_mirror;
 
 /*
  *
@@ -49,72 +58,54 @@ static packet_header_t header;
  *
  */
 
-static state_t _packet_send(uint content_type, char *content, ssize_t content_size)
+static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 {
-	state_t server_state;
-	state_t mirror_state;
+	edb_state_t state;
 
-	if (server_sock.fd == -1 && mirror_sock.fd == -1) {
-		state_return_msg(EAR_DBD_ERROR_BOTH, 0, "API not initialized");
+	// If not initialized
+	if (!enabled_server && !enabled_mirror) {
+		edb_state_return_msg(state, EAR_NOT_INITIALIZED, "not initialized");
+
 	}
 
-	// Main packet
+	//
 	sockets_header_update(&header);
 	header.content_type = content_type;
 	header.content_size = content_size;
-	header.data_extra1 = 0; // Mirroring
-	header.data_extra2 = 0; // Its ok
+	edb_state_init(state, EAR_SUCCESS);
 
-	server_state = sockets_send(&server_sock, &header, content);
-
-	// If the sending fails
-	if (state_fail(server_state)) {
-		verbose("Failed to send to MAIN EARDBD (num: %d, inum: %d, istr: %s)",
-				server_state, intern_error_num, intern_error_str);
+	if (!enabled_server) {
+		state.server = sockets_send(&server_sock, &header, content);
+	}
+	if (!enabled_mirror) {
+		state.mirror = sockets_send(&mirror_sock, &header, content);
 	}
 
-	// Sending to mirror
-	if (mirror_sock.fd == -1) {
-		if (state_fail(server_state)) {
-			state_return(EAR_DBD_ERROR_MAIN);
-		}
-		state_return(server_state);
-	}
+	//
+	debug("state.server %d, state.mirror %d", state.server, state.mirror);
 
-	header.data_extra1 = 1; // Mirroring
-	header.data_extra2 = state_fail(server_state); // It's ok?
-	mirror_state = sockets_send(&mirror_sock, &header, content);
-
-	if (state_fail(mirror_state))
-	{
-		verbose("Failed to send to MIRROR EARDBD (num: %d, inum: %d, istr: %s)",
-				mirror_state, intern_error_num, intern_error_str);
-
-		if (state_fail(server_state)) {
-			state_return(EAR_DBD_ERROR_BOTH);
-		}
-		state_return(EAR_DBD_ERROR_MIRR);
-	}
-
-	state_return(EAR_SUCCESS);
+	return state;
 }
 
-static state_t _eardbd_prepare_socket(socket_t *socket, char *host, uint port, uint protocol)
+static state_t _connect(socket_t *socket, char *host, uint port, uint protocol)
 {
 	state_t s;
 
+	//
 	s = sockets_init(socket, host, port, protocol);
 
 	if (state_fail(s)) {
 		return s;
 	}
 
+	//
 	s = sockets_socket(socket);
 
 	if (state_fail(s)) {
 		return s;
 	}
 
+	//
 	if (protocol == TCP)
 	{
 		s = sockets_connect(socket);
@@ -127,9 +118,10 @@ static state_t _eardbd_prepare_socket(socket_t *socket, char *host, uint port, u
 	return EAR_SUCCESS;
 }
 
-static void _eardbd_disconnect(socket_t *socket)
+static void _disconnect(socket_t *socket, int *enabled)
 {
     sockets_dispose(socket);
+    *enabled = 0;
 }
 
 /*
@@ -138,40 +130,55 @@ static void _eardbd_disconnect(socket_t *socket)
  *
  */
 
-state_t eardbd_send_application(application_t *app)
+edb_state_t eardbd_send_application(application_t *app)
 {
-	return _packet_send(CONTENT_TYPE_APM, (char *) app, sizeof(application_t));
+	return _send(CONTENT_TYPE_APM, (char *) app, sizeof(application_t));
 }
 
-state_t eardbd_send_periodic_metric(periodic_metric_t *met)
+edb_state_t eardbd_send_periodic_metric(periodic_metric_t *met)
 {
-	return _packet_send(CONTENT_TYPE_PER, (char *) met, sizeof(periodic_metric_t));
+	return _send(CONTENT_TYPE_PER, (char *) met, sizeof(periodic_metric_t));
 }
 
-state_t eardbd_send_event(ear_event_t *eve)
+edb_state_t eardbd_send_event(ear_event_t *eve)
 {
-	return _packet_send(CONTENT_TYPE_EVE, (char *) eve, sizeof(ear_event_t));
+	return _send(CONTENT_TYPE_EVE, (char *) eve, sizeof(ear_event_t));
 }
 
-state_t eardbd_send_loop(loop_t *loop)
+edb_state_t eardbd_send_loop(loop_t *loop)
 {
-	return _packet_send(CONTENT_TYPE_LOO, (char *) loop, sizeof(loop_t));
+	return _send(CONTENT_TYPE_LOO, (char *) loop, sizeof(loop_t));
 }
 
-state_t eardbd_ping()
+edb_state_t eardbd_ping()
 {
 	char ping[] = "ping";
-	return _packet_send(CONTENT_TYPE_PIN, (char *) ping, sizeof(ping));
+	return _send(CONTENT_TYPE_PIN, (char *) ping, sizeof(ping));
 }
 
-state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
+edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 {
-	state_t server_state;
-	state_t mirror_state;
+	edb_state_t state;
 	char *server_host;
 	char *mirror_host;
 	uint server_port;
 	uint mirror_port;
+
+	if (enabled_server || enabled_mirror) {
+		edb_state_return_msg(state, EAR_ALREADY_INITIALIZED, "it's already initialized");
+	}
+
+	enabled_server = (server_host == NULL) || (strlen(server_host) == 0);
+	enabled_mirror = (mirror_host == NULL) || (strlen(mirror_host) == 0);
+
+	//
+	debug("enabled_server %d, enabled_mirror %d", enabled_server, enabled_mirror);
+
+	// Neither server nor mirror enabled? Bad argument.
+	if (!enabled_server && !enabled_mirror) {
+		edb_state_return_msg(state, EAR_BAD_ARGUMENT, "server and mirror are not enabled");
+
+	}
 
 #if 1
 	// Configuring hosts and ports
@@ -186,51 +193,45 @@ state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	mirror_host = "E7450";
 #endif
 
-	if (server_host == NULL || strlen(server_host) == 0) {
-		return EAR_ERROR;
-	}
+	// Maybe it's not enabled, but it's ok.
+	edb_state_init(state, EAR_SUCCESS);
 
-	// Resetting type data
-	sockets_clean(&server_sock);
-	sockets_clean(&mirror_sock);
-
-	// Connecting to main
-	server_state = _eardbd_prepare_socket(&server_sock, server_host, server_port, TCP);
-
-	if (state_fail(server_state) && mirror_host == NULL) {
-		_eardbd_disconnect(&server_sock);
-		return EAR_DBD_ERROR_MAIN;
-	}
-
-	if (mirror_host == NULL || strlen(mirror_host) == 0) {
-		return EAR_SUCCESS;
-	}
-
-	mirror_state = _eardbd_prepare_socket(&mirror_sock, mirror_host, mirror_port, TCP);
-
-	if (state_fail(mirror_state))
+	if (!enabled_server)
 	{
-		_eardbd_disconnect(&mirror_sock);
+		state.server = _connect(&server_sock, server_host, server_port, TCP);
 
-		if (state_fail(server_state)) {
-			return EAR_DBD_ERROR_BOTH;
+		if (state_fail(state.server)) {
+			_disconnect(&server_sock, &enabled_server);
 		}
-		return EAR_DBD_ERROR_MIRR;
+	}
+	if (!enabled_mirror)
+	{
+		state.mirror = _connect(&mirror_sock, mirror_host, mirror_port, TCP);
+
+		if (state_fail(state.mirror)) {
+			_disconnect(&mirror_sock, &enabled_mirror);
+		}
 	}
 
-	return EAR_SUCCESS;
+	//
+	debug("state.server %d, state.mirror %d", state.server, state.mirror);
+
+	return state;
 }
 
-state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node)
+edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node)
 {
 	eardbd_disconnect();
+
 	return eardbd_connect(conf, node);
 }
 
-state_t eardbd_disconnect()
+edb_state_t eardbd_disconnect()
 {
-	_eardbd_disconnect(&server_sock);
-	_eardbd_disconnect(&mirror_sock);
+	edb_state_t state;
 
-	return EAR_SUCCESS;
+	_disconnect(&server_sock, &enabled_server);
+	_disconnect(&mirror_sock, &enabled_mirror);
+
+	edb_state_return(state, EAR_SUCCESS);
 }

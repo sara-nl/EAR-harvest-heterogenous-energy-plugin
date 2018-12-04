@@ -274,31 +274,32 @@ void job_end_powermon_app()
 	// Metrics are not reported in this function
 }
 
-
 void report_powermon_app(powermon_app_t *app)
 {
-	int ret1;
 	// We can write here power information for this job
 	if (sig_reported==0){
 		eard_verbose(0,"Reporting not mpi application");
 		app->app.is_mpi=0;
 	}
+
 	report_application_data(&app->app);
 	report_application_in_file(&app->app);
 	
 	#if DB_MYSQL
-    if (my_cluster_conf.eard.use_mysql){ 
-		if (!my_cluster_conf.eard.use_eardbd){
-			if (!db_insert_application(&app->app)) DEBUG_F(1, "Application signature correctly written");
-		}else{
-    		if ((ret1=eardbd_send_application(&app->app))!=EAR_SUCCESS){
-        		eard_verbose(0,"Error when sending application to eardb");
-				eardbd_reconnect(&my_cluster_conf, my_node_conf);
-    		}
+    if (my_cluster_conf.eard.use_mysql)
+    {
+		if (!my_cluster_conf.eard.use_eardbd) {
+			if (!db_insert_application(&app->app))
+				DEBUG_F(1, "Application signature correctly written");
+		}
+		else if (edb_state_fail(eardbd_send_application(&app->app))) {
+			eard_verbose(0, "Error when sending application to eardb");
+			eardbd_reconnect(&my_cluster_conf, my_node_conf);
 		}
 	}
 	#endif
 }
+
 policy_conf_t per_job_conf;
 policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,application_t * appID)
 {
@@ -639,7 +640,6 @@ void powermon_reload_conf()
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 {
-	int ret1;
 	eard_verbose(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%.2lf,%.2lf)\n",
 		current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,
 		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
@@ -672,17 +672,22 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	}
 	#endif
 	#if DB_MYSQL
-	if (my_cluster_conf.eard.use_mysql){
-		if (!my_cluster_conf.eard.use_eardbd){
+	if (my_cluster_conf.eard.use_mysql)
+	{
+		if (!my_cluster_conf.eard.use_eardbd)
+		{
 			/* current sample reports the value of job_id and step_id active at this moment */
 			/* If we want to be strict, we must report intermediate samples at job start and job end */
-    		if (!db_insert_periodic_metric(&current_sample)) DEBUG_F(1, "Periodic power monitoring sample correctly written");
-		}else{
-			if ((ret1=eardbd_send_periodic_metric(&current_sample))!=EAR_SUCCESS){
-				eard_verbose(0,"Error when sending periodic power metric to eardb");
-				if (eardbd_reconnect(&my_cluster_conf, my_node_conf)!=EAR_SUCCESS){	
-					eard_verbose(0,"Error re-connecting with EARDB errnum:%d errmsg:%s\n",intern_error_num,intern_error_str);
-				}
+    		if (!db_insert_periodic_metric(&current_sample))
+    			DEBUG_F(1, "Periodic power monitoring sample correctly written");
+		}
+		else if (edb_state_fail(eardbd_send_periodic_metric(&current_sample)))
+		{
+			eard_verbose(0, "Error when sending periodic power metric to eardb");
+
+			if (edb_state_fail(eardbd_reconnect(&my_cluster_conf, my_node_conf))) {
+				eard_verbose(0, "Error re-connecting with EARDB errnum:%d errmsg:%s\n",
+					intern_error_num, intern_error_str);
 			}
 		}
 	}

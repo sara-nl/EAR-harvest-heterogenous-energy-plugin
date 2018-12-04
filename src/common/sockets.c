@@ -268,6 +268,11 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	char *output_content;
 	state_t state;
 
+	// Error handling
+	if (socket->fd < 0) {
+		state_return_msg(EAR_SOCK_DISCONNECTED, 0, "invalid file descriptor");
+	}
+
 	if (header == NULL || content == NULL) {
 		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
 	}
@@ -281,9 +286,7 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	memcpy (output_content, content, header->content_size);
 
 	// Sending
-	state = _send(socket, sizeof(packet_header_t) + header->content_size, output_buffer);
-
-	state_return(EAR_SUCCESS);
+	return _send(socket, sizeof(packet_header_t) + header->content_size, output_buffer);
 }
 
 // Receive:
@@ -352,8 +355,9 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 {
 	state_t state;
 
+	// Error handling
 	if (fd < 0) {
-		state_return_msg(EAR_BAD_ARGUMENT, 0, "invalid file descriptor");
+		state_return_msg(EAR_SOCK_DISCONNECTED, 0, "invalid file descriptor");
 	}
 
 	if (header == NULL || buffer == NULL) {
