@@ -4,7 +4,7 @@ COMPONENTS = common
 ifdef CPUF_BASE
 	COMPONENTS += control
 	ifdef DB_BASE
-    COMPONENTS += database_cache
+	COMPONENTS += database_cache
 	endif
 	ifdef PAPI_BASE
 		ifdef IPMI_BASE

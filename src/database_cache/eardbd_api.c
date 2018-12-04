@@ -39,9 +39,9 @@
         fprintf(stderr, "EARDBD, " __VA_ARGS__); \
         fprintf(stderr, "\n");
 
-#if 1
+#if 0
 #define debug(format, ...) \
-        fprintf(stderr, "%s: " format "\n", __FUNCTION__, __VA_ARGS__);
+        fprintf(stderr, "%s(): " format "\n", __FUNCTION__, __VA_ARGS__);
 #else
 #define debug(format, ...)
 #endif
@@ -65,7 +65,6 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 	// If not initialized
 	if (!enabled_server && !enabled_mirror) {
 		edb_state_return_msg(state, EAR_NOT_INITIALIZED, "not initialized");
-
 	}
 
 	//
@@ -74,10 +73,10 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 	header.content_size = content_size;
 	edb_state_init(state, EAR_SUCCESS);
 
-	if (!enabled_server) {
+	if (enabled_server) {
 		state.server = sockets_send(&server_sock, &header, content);
 	}
-	if (!enabled_mirror) {
+	if (enabled_mirror) {
 		state.mirror = sockets_send(&mirror_sock, &header, content);
 	}
 
@@ -164,22 +163,6 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	uint server_port;
 	uint mirror_port;
 
-	if (enabled_server || enabled_mirror) {
-		edb_state_return_msg(state, EAR_ALREADY_INITIALIZED, "it's already initialized");
-	}
-
-	enabled_server = (server_host == NULL) || (strlen(server_host) == 0);
-	enabled_mirror = (mirror_host == NULL) || (strlen(mirror_host) == 0);
-
-	//
-	debug("enabled_server %d, enabled_mirror %d", enabled_server, enabled_mirror);
-
-	// Neither server nor mirror enabled? Bad argument.
-	if (!enabled_server && !enabled_mirror) {
-		edb_state_return_msg(state, EAR_BAD_ARGUMENT, "server and mirror are not enabled");
-
-	}
-
 #if 1
 	// Configuring hosts and ports
 	server_host = node->db_ip;
@@ -193,10 +176,27 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	mirror_host = "E7450";
 #endif
 
+
+	if (enabled_server || enabled_mirror) {
+		edb_state_return_msg(state, EAR_ALREADY_INITIALIZED, "it's already initialized");
+	}
+
+	enabled_server = (server_host != NULL) && (strlen(server_host) > 0);
+	enabled_mirror = (mirror_host != NULL) && (strlen(mirror_host) > 0);
+
+	//
+	debug("enabled_server %d, enabled_mirror %d", enabled_server, enabled_mirror);
+
+	// Neither server nor mirror enabled? Bad argument.
+	if (!enabled_server && !enabled_mirror) {
+		edb_state_return_msg(state, EAR_BAD_ARGUMENT, "server and mirror are not enabled");
+
+	}
+
 	// Maybe it's not enabled, but it's ok.
 	edb_state_init(state, EAR_SUCCESS);
 
-	if (!enabled_server)
+	if (enabled_server)
 	{
 		state.server = _connect(&server_sock, server_host, server_port, TCP);
 
@@ -204,7 +204,7 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 			_disconnect(&server_sock, &enabled_server);
 		}
 	}
-	if (!enabled_mirror)
+	if (enabled_mirror)
 	{
 		state.mirror = _connect(&mirror_sock, mirror_host, mirror_port, TCP);
 
