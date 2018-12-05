@@ -211,7 +211,7 @@ int eards_remote_connect(char *nodename,uint port)
         {
             FD_ZERO(&set);
             FD_SET(sfd, &set);
-            if (select(sfd+1, &set, &set, NULL, &timeout) >= 0) 
+            if (select(sfd+1, &set, &set, NULL, &timeout) > 0) 
             {
                 optlen = sizeof(int);
                 sysret = getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
@@ -254,6 +254,8 @@ int eards_remote_connect(char *nodename,uint port)
     }
 
     char conection_ok = 0;
+
+    timeout.tv_sec = 1;
 
     setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (void *)(&timeout), sizeof(timeout));
     
