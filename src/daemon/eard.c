@@ -560,45 +560,54 @@ int eard_system(int must_read)
 			ack=EAR_COM_OK;
 			ret1=EAR_SUCCESS;
 			#if DB_MYSQL
-			if (my_cluster_conf.eard.use_mysql){ 
-				if (!my_cluster_conf.eard.use_eardbd){
-					ret1=db_insert_ear_event(&req.req_data.event);
-				}else{
-					if ((ret1=eardbd_send_event(&req.req_data.event))!=EAR_SUCCESS){
-						VERBOSE_N(0,"Error sending event to eardb");
-						eardbd_reconnect(&my_cluster_conf, my_node_conf);
+			if (my_cluster_conf.eard.use_mysql)
+			{
+				if (!my_cluster_conf.eard.use_eardbd) {
+					ret1 = db_insert_ear_event(&req.req_data.event);
+				} else {
+					edb_state_t state = eardbd_send_event(&req.req_data.event);
+
+					if (edb_state_fail(state)) {
+						eard_verbose(0, "Error sending event to eardb");
+						eardbd_reconnect(&my_cluster_conf, my_node_conf, state);
+						ret1 = EAR_ERROR;
 					}
 				}
 			}
 			#endif
+
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
+
 			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
-
 			break;
-
 		case WRITE_LOOP_SIGNATURE:
-			ack=EAR_COM_OK;
-			ret1=EAR_SUCCESS;
+			ack  = EAR_COM_OK;
+			ret1 = EAR_SUCCESS;
 			// print_loop_fd(1,&req.req_data.loop);
 			#if !LARGE_CLUSTER
 			#if DB_MYSQL
-			if (my_cluster_conf.eard.use_mysql){ 
+			if (my_cluster_conf.eard.use_mysql)
+			{
 				if (!my_cluster_conf.eard.use_eardbd){
 					ret1 = db_insert_loop (&req.req_data.loop);
-				}else{
-					if ((ret1=eardbd_send_loop(&req.req_data.loop))!=EAR_SUCCESS){
-						VERBOSE_N(0,"Error sending loop to eardb");
-						eardbd_reconnect(&my_cluster_conf, my_node_conf);
+				} else {
+					edb_state_t state = eardbd_send_loop(&req.req_data.loop);
+
+					if (edb_state_fail(state)){
+						eard_verbose(0, "Error sending loop to eardb");
+						eardbd_reconnect(&my_cluster_conf, my_node_conf, state);
+						ret1 = EAR_ERROR;
 					}
 				}
 			}
 			#endif
 			#endif
+
 			if (ret1 == EAR_SUCCESS) ack=EAR_COM_OK;
 			else ack=EAR_COM_ERROR;
-			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
 
+			write(ear_fd_ack[system_req], &ack, sizeof(ulong));
 		break;
 		default: return 0;
 	}
@@ -891,21 +900,26 @@ void signal_handler(int sig)
 					eardbd_disconnect();
 					eardbd_connected=0;
 			}
-			if (my_cluster_conf.eard.use_mysql){
-    			if (my_cluster_conf.eard.use_eardbd){
+			if (my_cluster_conf.eard.use_mysql)
+			{
+				if (my_cluster_conf.eard.use_eardbd)
+				{
 					eardbd_disconnect();
-        			if (eardbd_connect(&my_cluster_conf, my_node_conf)!=EAR_SUCCESS){
-            			eard_verbose(0,"Error connecting with EARDB");
-        			}else{ 
+					edb_state_t state = eardbd_connect(&my_cluster_conf, my_node_conf);
+
+					if (edb_state_fail(state)) {
+						eard_verbose(0, "Error connecting with EARDB");
+					} else {
 						eard_verbose(1,"Connecting with EARDBD\n");
 						eardbd_connected=1;
 					}
-    			}
-    			if (!my_cluster_conf.eard.use_eardbd){
-        			eard_verbose(1,"Connecting with EAR DB directly");
-        			init_db_helper(&my_cluster_conf.database);
-        			db_helper_connected=1;
-    			}
+				}
+
+				if (!my_cluster_conf.eard.use_eardbd){
+					eard_verbose(1,"Connecting with EAR DB directly");
+					init_db_helper(&my_cluster_conf.database);
+					db_helper_connected=1;
+				}
 			}
     		#endif
 
@@ -1380,16 +1394,23 @@ void main(int argc,char *argv[])
 	rfds_basic=rfds;
     // Database cache daemon
     #if DB_MYSQL
-	if (my_cluster_conf.eard.use_mysql){
-		if (my_cluster_conf.eard.use_eardbd){
-    		if (eardbd_connect(&my_cluster_conf,my_node_conf)!=EAR_SUCCESS){
-				eard_verbose(0,"Error connecting with EARDB errnum:%d errmsg:%s\n",intern_error_num,intern_error_str);
-			}else{ 
+	if (my_cluster_conf.eard.use_mysql)
+	{
+		if (my_cluster_conf.eard.use_eardbd)
+		{
+			edb_state_t state = eardbd_connect(&my_cluster_conf, my_node_conf);
+
+    		if (edb_state_fail(state)) {
+				eard_verbose(0, "Error connecting with EARDB errnum:%d errmsg:%s\n",
+					intern_error_num,intern_error_str);
+			} else {
 				eard_verbose(1,"Connecting with EARDBD\n");
 				eardbd_connected=1;
 			}
 		}
-		if (!my_cluster_conf.eard.use_eardbd){
+
+		if (!my_cluster_conf.eard.use_eardbd)
+		{
 			eard_verbose(1,"Connecting with EAR DB directly");
 			init_db_helper(&my_cluster_conf.database);
 			db_helper_connected=1;

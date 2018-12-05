@@ -40,19 +40,35 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <database_cache/eardbd.h>
 
-#define verbose(...) \
-	fprintf(stderr, "EARDBD, " __VA_ARGS__); \
-	fprintf(stderr, "\n");
+typedef struct edb_state {
+    state_t server;
+    state_t mirror;
+} edb_state_t;
 
-state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node);
-state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node);
-state_t eardbd_is_connected();
-state_t eardbd_disconnect();
+#define edb_state_init(state, val) \
+        state.server = state.mirror = val;
 
-state_t eardbd_send_ping();
-state_t eardbd_send_periodic_metric(periodic_metric_t *met);
-state_t eardbd_send_application(application_t *app);
-state_t eardbd_send_loop(loop_t *loop);
-state_t eardbd_send_event(ear_event_t *eve);
+#define edb_state_return(state, val) \
+        state.server = val; \
+        state.mirror = val; \
+        return state;
+
+#define edb_state_return_msg(state, val, msg) \
+        intern_error_num = 0;   \
+        intern_error_str = msg; \
+        edb_state_return(state, val)
+
+#define edb_state_fail(state) \
+        state_fail(state.server) || state_fail(state.mirror)
+
+edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node);
+edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node, edb_state_t state);
+edb_state_t eardbd_disconnect();
+
+edb_state_t eardbd_send_ping();
+edb_state_t eardbd_send_periodic_metric(periodic_metric_t *met);
+edb_state_t eardbd_send_application(application_t *app);
+edb_state_t eardbd_send_loop(loop_t *loop);
+edb_state_t eardbd_send_event(ear_event_t *eve);
 
 #endif //EAR_EARDBD_API_H

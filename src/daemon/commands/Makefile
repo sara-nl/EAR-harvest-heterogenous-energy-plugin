@@ -21,8 +21,8 @@ BINARIES = ear_set_node_freq \
            ear_red_freq \
            ear_inc_th \
            ear_set_th \
-		   ear_dbd_stress_test \
-		  ear_check_node_test
+           ear_check_node_test
+#		   ear_dbd_stress_test \
 
 ######## RULES
 
