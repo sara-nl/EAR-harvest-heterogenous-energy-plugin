@@ -59,9 +59,6 @@ extern socket_t *ssync_mir;
 
 // Descriptors
 extern struct sockaddr_storage addr_cli;
-extern fd_set fds_metr_tcp;
-extern fd_set fds_sync_tcp;
-extern fd_set fds_incoming;
 extern fd_set fds_incoming;
 extern fd_set fds_active;
 extern int fd_cli;
@@ -337,6 +334,9 @@ void release()
 	sockets_dispose(ssync_srv);
 	sockets_dispose(ssync_mir);
 
+	FD_ZERO(&fds_incoming);
+	FD_ZERO(&fds_active);
+
 	// Freeing data
 	free_cluster_conf(&conf_clus);
 
@@ -352,7 +352,7 @@ void release()
 	// Reconfiguring
 	if (reconfiguring)
 	{
-		sleep(5);
+		sleep(20);
 		reconfiguring = 0;
 	}
 

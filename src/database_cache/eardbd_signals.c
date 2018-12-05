@@ -50,6 +50,8 @@ extern pid_t others_pid;
 extern int master_iam; // Master is who speaks
 extern int server_iam;
 extern int mirror_iam;
+extern int server_too;
+extern int mirror_too;
 
 // State machine
 extern int reconfiguring;
@@ -94,12 +96,12 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	{
 		printpl0("signal SIGTERM/SIGINT received, exitting");
 
-		propagating = others_pid > 0 && info->si_pid != others_pid;
-		waiting     = propagating && server_iam;
-		listening   = 0;
-		releasing   = 1;
-		dreaming    = 0;
-		exitting    = 1;
+		propagating   = others_pid > 0 && info->si_pid != others_pid;
+		//waiting     = others_pid > 0 && server_iam;
+		listening     = 0;
+		releasing     = 1;
+		dreaming      = 0;
+		exitting      = 1;
 	}
 
 	// Case reconfigure
@@ -108,7 +110,7 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 		printpl0("signal SIGHUP received, reconfiguring");
 
 		propagating   = others_pid > 0 && info->si_pid != others_pid;
-		waiting       = propagating && server_iam;
+		//waiting       = others_pid > 0 && server_iam;
 		listening     = 0;
 		reconfiguring = server_iam;
 		releasing     = 1;
@@ -120,7 +122,6 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	{
 		printpl0("signal SIGCHLD received");
 
-		others_pid = 0;
 		updating   = 1;
 		waiting    = server_iam & (others_pid > 0);
 		dreaming   = 0;
@@ -132,8 +133,15 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	}
 
 	// Wait for the children (mirror)
-	if (waiting) {
+	if (waiting)
+	{
+		printpl0("waiting 1");
 		waitpid(mirror_pid, NULL, 0);
+		printpl0("waiting 2");
+
+		others_pid = 0;
+		mirror_pid = 0;
+		mirror_too = 0;
 	}
 }
 

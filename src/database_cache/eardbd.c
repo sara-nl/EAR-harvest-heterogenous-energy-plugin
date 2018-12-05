@@ -62,9 +62,6 @@ socket_t *ssync_mir = &sockets[3];
 
 // Descriptors
 struct sockaddr_storage addr_cli;
-fd_set fds_metr_tcp;
-fd_set fds_sync_tcp;
-fd_set fds_incoming;
 fd_set fds_incoming;
 fd_set fds_active;
 int fd_cli;
@@ -194,7 +191,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	server_too = (mode & 0x01);
 	mirror_too = (mode & 0x02) > 0;
 
-	#if 1
+	#if 0
 		conf_clus->db_manager.insr_time = atoi(argv[4]);
 		conf_clus->db_manager.aggr_time = 60;
 
@@ -400,14 +397,16 @@ static void init_signals()
 
 	// Editing signals individually
 	sigfillset(&action.sa_mask);
+	//sigemptyset(&action.sa_mask);
+	//sigaddset(&action.sa_mask, SIGCHLD);
 
 	action.sa_handler = NULL;
 	action.sa_sigaction = signal_handler;
 	action.sa_flags = SA_SIGINFO;
 
-    if (sigaction(SIGUSR1, &action, NULL) < 0) { 
-        verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
-    }
+	if (sigaction(SIGUSR1, &action, NULL) < 0) { 
+        	verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+	}
 	if (sigaction(SIGUSR2, &action, NULL) < 0) {
 		verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
 	}
