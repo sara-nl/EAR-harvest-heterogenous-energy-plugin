@@ -37,6 +37,7 @@
 #include <common/states.h>
 #include <common/types/generic.h>
 #include <daemon/app_api/app_conf_api.h>
+#include <limits.h>
 
 static int fd_app_to_eard;
 static int fd_eard_to_app;
@@ -110,4 +111,45 @@ int ear_energy(ulong *energy_mj,ulong *time_ms)
 	close_connection();
 
 	return my_data.ret;
+}
+
+
+/****** UTILS *****/
+static unsigned long ulong_diff_overflow(unsigned long begin, unsigned long end)
+{
+    unsigned long max_16 = USHRT_MAX;
+    unsigned long max_32 = ULONG_MAX;
+    unsigned long max_48 = 281474976710656; //2^48
+    unsigned long max_64 = ULLONG_MAX;
+
+    unsigned long ret = 0;
+
+    if (begin < max_16 && end < max_16)
+    {
+        ret = max_16 - begin + end;
+    }
+    else if (begin < max_32 && end < max_32 && max_32 < max_64)
+    {
+        ret = max_32 - begin + end;
+    }
+    if (begin < max_48 && end < max_48)
+    {
+        ret = max_48 - begin + end;
+    }
+    else
+    {
+        ret = max_64 - begin + end;
+    }
+    return ret;
+}
+
+
+void ear_energy_diff(unsigned long ebegin,unsigned long eend, unsigned long *ediff, unsigned long tbegin, unsigned long tend, unsigned long *tdiff)
+{
+	/* Energy */
+	if (eend>ebegin) *ediff=eend-ebegin;
+	else *ediff=ulong_diff_overflow(ebegin, eend);
+	/* Time */
+	if (tend>tbegin) *tdiff=tend-tbegin;
+	else *tdiff=ulong_diff_overflow(tbegin,tend);
 }
