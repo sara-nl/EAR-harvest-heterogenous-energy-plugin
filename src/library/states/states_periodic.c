@@ -205,46 +205,38 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 					traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
-					if (policy_freq != prev_f)
-					{
-						earl_verbose(1,
+					earl_verbose(1,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
 									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
-					} else {
-						earl_verbose(1,
-									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d\n\t\t Application Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)\n",
-									ear_app_name, prev_f, event, period, level, iterations, CPI, GBS, POWER, TIME,
-									ENERGY, EDP);
-					}
 					
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
+	                /* This function only sends selected frequency */
+   	             	if (global_synchro){
+   	                 	global_frequency_selection_send(policy_freq);
+   	             	}
+   	             	/* If global synchronizations are on, we get frequencies for the rest of the app */
+   	             	if (global_synchro){
+   	                 	global_f=global_frequency_selection_synchro();
+   	             	}
+		
+   	             	if (global_synchro){
+   	                 	earl_verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
+   	                 	if ((global_f) && (global_f!=policy_freq)){
+   	                     	policy_freq=select_near_freq(global_f);
+   	                     	force_global_frequency(policy_freq);
+   	                     	return;
+   	                 	}
+   	             	}
+
 				}
-				else{
-					/* Time was not enough */
+				else{ /* Time was not enough */
 					if (loop_signature.signature.time==0){
 						mpi_calls_in_period=mpi_calls_in_period*2;
 					}
 				}
-	            /* This function only sends selected frequency */
-    	        if (global_synchro){
-        	        global_frequency_selection_send(policy_freq);
-            	}
-				/* If global synchronizations are on, we get frequencies for the rest of the app */
-            	if (global_synchro){
-                	global_f=global_frequency_selection_synchro();
-            	}
-
-	            if (global_synchro){
-                	earl_verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
-                	if ((global_f) && (global_f!=policy_freq)){
-                    	policy_freq=select_near_freq(global_f);
-                    	force_global_frequency(policy_freq);
-                    	return;
-                }
-            }
 
 			break;
 		default: break;

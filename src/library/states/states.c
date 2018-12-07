@@ -470,12 +470,18 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			begin_iter = iterations;
 
 
-			// We compare the projection with the signature and the old signature
-			PP = projection_get(frequency_freq_to_pstate(policy_freq));
 			/* If global synchronizations are on, we get frequencies for the rest of the app */
 			if (global_synchro){
 				global_f=global_frequency_selection_synchro();
-			}
+                if ((global_f) && (global_f!=policy_freq)){
+                	earl_verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
+                    policy_freq=select_near_freq(global_f);
+                    force_global_frequency(policy_freq);
+                    earl_verbose(0,"Selecting with common frequency %lu",policy_freq);
+                    return;
+                }
+            }
+
 			/* We must evaluate policy decissions */
 			//pok=policy_ok(PP, &loop_signature.signature, &last_signature.signature);
 			l_sig=&signatures[def_pstate].signature;
@@ -492,6 +498,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
             	memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
             	sig_ready[curr_pstate]=1;
 			}
+			// We compare the projection with the signature and the old signature
+			PP = projection_get(frequency_freq_to_pstate(policy_freq));
 			pok=policy_ok(PP, &loop_signature.signature, l_sig);
 			if (pok)
 			{
@@ -506,6 +514,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			ear_app_name, TIME, POWER, ENERGY, l_sig->time,l_sig->DC_power, (l_sig->time*l_sig->DC_power));
 
 			if (pok) return;
+
 			// We can give the library a second change in case we are at def freq
 			if ((tries_current_loop<MAX_POLICY_TRIES) && (curr_pstate==def_pstate))
 			{
@@ -515,17 +524,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 
 
-			/* If policy is not ok and we are not running with the same freq, we can check again */
-			if (global_synchro){		
-				earl_verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
-				if ((global_f) && (global_f!=policy_freq)){
-					policy_freq=select_near_freq(global_f);
-					force_global_frequency(policy_freq);
-					earl_verbose(0,"trying with same frequency %lu",policy_freq);
-					tries_current_loop++;
-					return;
-				}
-			}
 			/* We must report a problem and go to the default configuration*/
 			if (tries_current_loop>=MAX_POLICY_TRIES){
 				log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);

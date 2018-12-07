@@ -29,6 +29,9 @@
 
 #ifndef _APP_API_H
 #define _APP_API_H
-void ear_energy(ulong *energy_mj,ulong *time_ms);
+/** returns the accumulated energy i(mili joules) and time (miliseconds) */
+void ear_energy(unsigned long *energy_mj,unsigned long *time_ms);
+/** Given two measures of energy and time computes the difference */
+void ear_energy_diff(unsigned long ebegin,unsigned long eend, unsigned long *ediff, unsigned long tbegin, unsigned long tend, unsigned long *tdiff);
 #else
 #endif

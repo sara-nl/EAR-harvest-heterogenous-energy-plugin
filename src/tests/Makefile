@@ -1,6 +1,6 @@
 ######## FILES
 
-COMPONENTS = check functionals
+COMPONENTS = check functionals app_api
 
 ######## RULES
 
@@ -28,3 +28,4 @@ depend-clean: depend-clean.components
 %.components:
 	@ $(MAKE) -C 'check' $* || exit
 	@ $(MAKE) -C 'functionals' $* || exit
+	@ $(MAKE) -C 'app_api' $* || exit
