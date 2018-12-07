@@ -16,10 +16,12 @@ app_server_api.o: app_server_api.c app_server_api.h
 ######## OPTIONS
 
 install: ;
+	cp libEARapi.a $(DESTDIR)/lib
+	cp app_api.h $(DESTDIR)/include/ear.h
 
 devel.install: 
 	cp libEARapi.a $(DESTDIR)/lib
-	cp app_api.h $(DESTDIR)/include/
+	cp app_api.h $(DESTDIR)/include/ear.h
 
 %.install: ;	
 
