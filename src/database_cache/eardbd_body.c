@@ -59,9 +59,6 @@ extern socket_t *ssync_mir;
 
 // Descriptors
 extern struct sockaddr_storage addr_cli;
-extern fd_set fds_metr_tcp;
-extern fd_set fds_sync_tcp;
-extern fd_set fds_incoming;
 extern fd_set fds_incoming;
 extern fd_set fds_active;
 extern int fd_cli;
@@ -137,20 +134,24 @@ static void body_alarm(struct timeval *timeout_slct)
 
 		if (timeout_aggr.tv_sec == 0)
 		{
-			peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
-			peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
+			if (sam_inmax[i_aggrs] > 0)
+			{
+				peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
+				peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 
-			verwho1("completed the aggregation number %lu with energy %lu",
+				verwho1("completed the aggregation number '%lu' with energy '%lu'",
 					sam_index[i_aggrs], q->DC_energy);
 
-			// Aggregation time done, so new aggregation incoming
-			storage_sample_add(NULL, sam_inmax[i_aggrs], &sam_index[i_aggrs], NULL, 0, SYNC_AGGRS);
+				if (q->n_samples > 0)
+				{
+					// Aggregation time done, so new aggregation incoming
+					storage_sample_add(NULL, sam_inmax[i_aggrs], &sam_index[i_aggrs], NULL, 0, SYNC_AGGRS);
 
-			// Initializing the new element
-			q = (peraggr_t *) &p[sam_index[i_aggrs]];
+					// Initializing the new element
+					q = (peraggr_t *) &p[sam_index[i_aggrs]];
 
-			if (sam_inmax[i_aggrs] > 0) {
-				init_periodic_aggregation(q);
+					init_periodic_aggregation(q);
+				}
 			}
 
 			//
@@ -232,6 +233,11 @@ static void body_connections()
 						}
 
 						soc_accpt += 1;
+
+						if (verbosity) {
+							sockets_get_address_fd(fd_cli, extra_buffer, sizeof(extra_buffer));
+                					verwho1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
+        					}
 					}
 				} while(state_ok(s));
 				// Handle data transfers
@@ -328,6 +334,9 @@ void release()
 	sockets_dispose(ssync_srv);
 	sockets_dispose(ssync_mir);
 
+	FD_ZERO(&fds_incoming);
+	FD_ZERO(&fds_active);
+
 	// Freeing data
 	free_cluster_conf(&conf_clus);
 
@@ -343,7 +352,7 @@ void release()
 	// Reconfiguring
 	if (reconfiguring)
 	{
-		sleep(5);
+		sleep(20);
 		reconfiguring = 0;
 	}
 

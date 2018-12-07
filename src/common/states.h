@@ -34,11 +34,12 @@
 #define EAR_SUCCESS              0
 #define EAR_ERROR               -1
 #define EAR_WARNING             -2
+#define EAR_IGNORE              -16
 #define EAR_ALLOC_ERROR         -3
 #define EAR_READ_ERROR          -4
 #define EAR_OPEN_ERROR			-5
 #define EAR_WRITE_ERROR			-6
-//								-7
+#define EAR_ALREADY_INITIALIZED -7
 #define EAR_NOT_INITIALIZED		-8
 #define EAR_NOT_READY		    -9
 #define EAR_BUSY				-10
@@ -47,15 +48,11 @@
 #define EAR_BAD_ARGUMENT		-13
 #define EAR_MYSQL_ERROR         -14
 #define EAR_MYSQL_STMT_ERROR    -15
-#define EAR_ADDR_NOT_FOUND		-19
-#define EAR_SOCK_OP_ERROR		-20
-#define EAR_SOCK_BAD_PROTOCOL	-21
-#define EAR_SOCK_DISCONNECTED	-22
-#define EAR_SOCK_TIMEOUT		-26
-#define EAR_DBD_ERROR_MAIN		-23
-#define EAR_DBD_ERROR_MIRR		-24
-#define EAR_DBD_ERROR_BOTH		-25
-#define EAR_IGNORE              -26
+#define EAR_ADDR_NOT_FOUND		-17
+#define EAR_SOCK_OP_ERROR		-18
+#define EAR_SOCK_BAD_PROTOCOL	-19
+#define EAR_SOCK_DISCONNECTED	-20
+#define EAR_SOCK_TIMEOUT		-21
 
 // TODO: this is a config not a state
 #define DYNAIS_ENABLED      1
