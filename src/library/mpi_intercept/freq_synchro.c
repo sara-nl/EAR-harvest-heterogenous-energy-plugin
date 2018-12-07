@@ -100,7 +100,7 @@ ulong global_frequency_selection_synchro()
             avg_freq=global_f/my_master_size;
 			avg_freq=avg_freq/(float)100000;
 			global_f=(ulong)avg_freq*100000;
-            if (my_master_rank==0) earl_verbose(1,"Global frequency should be %lu ",global_f);
+            earl_verbose(1,"Global frequency should be %lu ",global_f);
 		}else return 0;
 
 	}
