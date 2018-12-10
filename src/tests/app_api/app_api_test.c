@@ -83,7 +83,7 @@ int main(int argc,char *argv[])
 	/* READING ENERGY */
 	ear_energy(&e_mj_end,&t_ms_end);	
 	ear_energy_diff(e_mj_init,e_mj_end, &e_mj, t_ms_init,t_ms_end,&t_ms);
-	printf("Time consumed %lu, energy consumed %lu, Avg power %lf\n",e_mj,t_ms,(double)e_mj/(double)t_ms);
+	printf("Time consumed %lu (ms), energy consumed %lu(mJ), Avg power %lf\n",t_ms,e_mj,(double)e_mj/(double)t_ms);
 
     mkl_free(A);
     mkl_free(B);
