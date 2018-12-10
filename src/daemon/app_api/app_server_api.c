@@ -145,11 +145,9 @@ void ear_energy()
 	ulong energy_mj,time_ms;
 	
 	/* Execute specific request */
-	eard_verbose(0,"ear_energy command received\n");
 
 	read_dc_energy_time(&energy_mj,&time_ms);
 
-	eard_verbose(0,"Energy %lu Time %lu \n",energy_mj,time_ms);
 
 	/* Create connection */
 	if (connect_with_app()!=EAR_SUCCESS){
@@ -168,7 +166,6 @@ void ear_energy()
 	/* Close the connection with app */
 	close_app_connection();	
 
-	eard_verbose(0,"ear_energy finished\n");
 	
 	return;
 
