@@ -1,6 +1,6 @@
 ######## FILES
 
-COMPONENTS = check functionals
+COMPONENTS = check functionals app_api
 
 ######## RULES
 

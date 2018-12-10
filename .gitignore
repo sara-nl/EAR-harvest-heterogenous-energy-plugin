@@ -60,6 +60,7 @@ src/tools/coeffs_default
 src/database_cache/tmpi
 src/daemon/commands/ear_check_node_test
 src/tools/coeffs_compare
+src/tests/app_api/app_api_test
 
 # Build
 etc/module/ear
