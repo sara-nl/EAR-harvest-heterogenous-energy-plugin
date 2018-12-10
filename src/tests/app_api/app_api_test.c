@@ -31,7 +31,7 @@
 #include "mkl.h"
 int main(int argc,char *argv[])
 {
-	unsigned long e_mj,t_ms,e_mj_init,t_ms_init,e_mj_end,t_ms_end;
+	unsigned long e_mj=0,t_ms=0,e_mj_init,t_ms_init,e_mj_end,t_ms_end=0;
 	/* DGEMM COMPUTATION */
     double *A, *B, *C;
     int m, n, p, i, j;
@@ -41,7 +41,7 @@ int main(int argc,char *argv[])
             " Intel(R) MKL function dgemm, where A, B, and  C are matrices and \n"
             " alpha and beta are double precision scalars\n\n");
 
-    m = 2000, p = 200, n = 1000;
+    m = 2000, p = 2000, n = 1000;
     printf (" Initializing data for matrix multiplication C=A*B for matrix \n"
             " A(%ix%i) and matrix B(%ix%i)\n\n", m, p, p, n);
     alpha = 1.0; beta = 0.0;
@@ -75,8 +75,11 @@ int main(int argc,char *argv[])
     printf (" Computing matrix product using Intel(R) MKL dgemm function via CBLAS interface \n\n");
 	/* READING ENERGY */
 	ear_energy(&e_mj_init,&t_ms_init);	
+	int iter;
+	for (iter=0;iter<10;iter++){
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
                 m, n, p, alpha, A, p, B, n, beta, C, n);
+	}
 	/* READING ENERGY */
 	ear_energy(&e_mj_end,&t_ms_end);	
 	ear_energy_diff(e_mj_init,e_mj_end, &e_mj, t_ms_init,t_ms_end,&t_ms);
