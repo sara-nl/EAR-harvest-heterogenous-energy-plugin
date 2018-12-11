@@ -76,13 +76,16 @@ check:
 	@ $(MAKE) -C 'src' check
 
 install:
+	@ $(MAKE) -C 'etc' install || exit
 	@ $(MAKE) -C 'src' install || exit
 
 devel.install: install;
+	@ $(MAKE) -C 'etc' devel.install || exit
 	@ $(MAKE) -C 'src' devel.install || exit
 
 etc.install: ;
 	@ $(MAKE) -C 'etc' etc.install || exit
+	@ $(MAKE) -C 'src' etc.install || exit
 
 scripts.install: ;
 	@ $(MAKE) -C 'etc' scripts.install || exit
