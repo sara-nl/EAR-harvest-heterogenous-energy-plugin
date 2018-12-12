@@ -213,6 +213,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	while (fgets(line, 256, conf_file) != NULL)
 	{
 		if (line[0] == '#') continue;
+        remove_chars(line, 13);
 		token = strtok(line, "=");
 		strtoup(token);
 
