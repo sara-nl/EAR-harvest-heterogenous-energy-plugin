@@ -39,7 +39,7 @@
         fprintf(stderr, "EARDBD, " __VA_ARGS__); \
         fprintf(stderr, "\n");
 
-#if 1
+#if 0
 #define debug(format, ...) \
         fprintf(stderr, "%s(): " format "\n", __FUNCTION__, __VA_ARGS__);
 #else
