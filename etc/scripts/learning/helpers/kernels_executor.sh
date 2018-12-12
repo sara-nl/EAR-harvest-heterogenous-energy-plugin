@@ -21,7 +21,7 @@ function launching
     echo "----------------------------------------------------------"
 
     srun -N 1 -n $2 -J $1 -w $SLURMD_NODENAME --jobid=$SLURM_JOBID \
-    	--ear-policy=MONITORING_ONLY --ear-verbose=1 --ear-learning=$EAR_P_STATE \
+    	 --ear-verbose=1 --ear-learning=$EAR_P_STATE \
          $BENCHS_BIN_PATH/$1
 }
 

@@ -25,9 +25,7 @@ export SOCKETS=2
 export CORES_PER_SOCKET=20
 
 # Edit learning phase parameters
-export EAR_MIN_P_STATE=1
-export EAR_MAX_P_STATE=6
-export EAR_TIMES=3
+export EAR_TIMES=1
 
 # Edit output options
 export OUT_OUT="$HOME/OUT/out"
@@ -43,5 +41,5 @@ for i in ${HOSTLIST}
 do
 	echo "Executing learning phase in node=${i}"
 	sbatch -w ${i} -N 1 -n 1 --exclusive -o $OUT_OUT.${i} -e $OUT_ERR.${i} \
-		$EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_iterator.sh
+		$EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_iterator_test.sh
 done

@@ -74,35 +74,22 @@ int main (int argc, char *argv[])
     }
 
     // Initializations
-    requirement.tv_sec  = 0;
-    requirement.tv_nsec = 100000000L;
     iterations          = atoi(argv[1]);
-    call_time_us_dc     = 0;
-    call_time_us_ac     = 0;
-
+	call_time_us_dc     = 0;
+    start_time_us = PAPI_get_real_usec();
     for (i = 0; i < iterations; ++i)
     {
-        //if (nanosleep(&requirement, &remaining) != -1)
-        {
-            start_time_us = PAPI_get_real_usec();
             read_dc_energy(&energy);
-            call_time_us_dc += PAPI_get_real_usec() - start_time_us;
-
-            start_time_us = PAPI_get_real_usec();
-            read_ac_energy(&energy);
-            call_time_us_ac += PAPI_get_real_usec() - start_time_us;
-        }
     }
+    call_time_us_dc += PAPI_get_real_usec() - start_time_us;
 
     node_energy_dispose();
 
     call_time_avg_dc = (double) call_time_us_dc / (double) iterations;
-    call_time_avg_ac = (double) call_time_us_ac / (double) iterations;
     call_time_avg_dc = call_time_avg_dc / 1000;
-    call_time_avg_ac = call_time_avg_ac / 1000;
+
 
     printf("read_dc_energy overhead: %0.3lf ms\n", call_time_avg_dc);
-    printf("read_ac_energy overhead: %0.3lf ms\n", call_time_avg_ac);
 
     return 0;
 }

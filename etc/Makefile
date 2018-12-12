@@ -4,6 +4,7 @@ gen_FOLDERS = $(DESTDIR)/bin \
               $(DESTDIR)/bin/kernels \
               $(DESTDIR)/bin/scripts \
               $(DESTDIR)/bin/tools \
+              $(DESTDIR)/include \
               $(DESTDIR)/lib \
               $(DESTDIR)/sbin
 
@@ -15,9 +16,7 @@ etc_FOLDERS = $(ETCDIR) \
               $(ETCDIR)/systemd \
               $(ETCDIR)/slurm 
 
-
-dev_FOLDERS = $(DESTDIR)/include \
-              $(DESTDIR)/include/common \
+dev_FOLDERS = $(DESTDIR)/include/common \
               $(DESTDIR)/include/metrics/custom \
               $(DESTDIR)/include/metrics/ipmi \
               $(DESTDIR)/include/metrics/papi \
