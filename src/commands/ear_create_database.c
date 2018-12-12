@@ -122,8 +122,8 @@ signature_id INT unsigned)");
     sprintf(query, "CREATE TABLE IF NOT EXISTS Jobs (\
 id INT unsigned NOT NULL,\
 step_id INT unsigned NOT NULL, \
-user_id VARCHAR(256),\
-app_id VARCHAR(256),\
+user_id VARCHAR(128),\
+app_id VARCHAR(128),\
 start_time INT NOT NULL,\
 end_time INT NOT NULL,\
 start_mpi_time INT NOT NULL,\
