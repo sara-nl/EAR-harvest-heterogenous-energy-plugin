@@ -75,16 +75,16 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 
 	if (enabled_server) {
 		state.server = sockets_send(&server_sock, &header, content);
+
+		debug("server %s:%d, en %d, st %d, fd %d", server_sock.host, server_sock.port,
+			enabled_server, state.server, server_sock.fd);
 	}
 	if (enabled_mirror) {
 		state.mirror = sockets_send(&mirror_sock, &header, content);
-	}
 
-	//
-	debug("server %s:%d, en %d, st %d, fd %d", server_sock.host, server_sock.port,
-		  enabled_server, state.server, server_sock.fd);
-	debug("mirror %s:%d, en %d, st %d, fd %d", mirror_sock.host, mirror_sock.port,
-		  enabled_mirror, state.mirror, mirror_sock.fd);
+		debug("mirror %s:%d, en %d, st %d, fd %d", mirror_sock.host, mirror_sock.port,
+			enabled_mirror, state.mirror, mirror_sock.fd);
+	}
 
 	return state;
 }
