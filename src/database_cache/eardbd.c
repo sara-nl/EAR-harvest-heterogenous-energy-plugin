@@ -191,7 +191,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	server_too = (mode & 0x01);
 	mirror_too = (mode & 0x02) > 0;
 
-	#if 1
+	#if 0
 		conf_clus->db_manager.insr_time = atoi(argv[4]);
 		conf_clus->db_manager.aggr_time = 60;
 
