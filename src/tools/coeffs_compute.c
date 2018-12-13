@@ -414,12 +414,12 @@ int main(int argc, char *argv[])
     sprintf(coef_file, "%s/coeffs.%s", path_coef_file,nodename);
     OPEN(fd, coef_file, O_WRONLY | O_CREAT | O_TRUNC, CREATE_FLAGS);
 	p_state_max=freq_to_p_state(min_freq);
-    for (ref = 0; ref < p_state_max; ref++)
+    for (ref = 0; ref <= p_state_max; ref++)
     {
         if (samples_f[ref])
         {
 
-            for (f = 0; f < p_state_max; f++) // Coefficients per frequency
+            for (f = 0; f <= p_state_max; f++) // Coefficients per frequency
             {
                 if (ref == f)
                 {

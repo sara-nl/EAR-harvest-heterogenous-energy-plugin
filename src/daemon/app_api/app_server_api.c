@@ -148,6 +148,7 @@ void ear_energy()
 
 	read_dc_energy_time(&energy_mj,&time_ms);
 
+
 	/* Create connection */
 	if (connect_with_app()!=EAR_SUCCESS){
 		eard_verbose(0,"Error connecting with NON-EARL application \n");
@@ -164,6 +165,7 @@ void ear_energy()
 
 	/* Close the connection with app */
 	close_app_connection();	
+
 	
 	return;
 

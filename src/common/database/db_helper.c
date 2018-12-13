@@ -94,6 +94,7 @@ int db_insert_application(application_t *application)
     if (mysql_insert_application(connection, application) < 0)
     {
         VERBOSE_N(0, "ERROR while writing application to database.");
+        mysql_close(connection);
         return EAR_ERROR;
     }
 
@@ -134,6 +135,7 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
     {
     	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
         	VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            mysql_close(connection);
         	return EAR_ERROR;
     	}
 	}
@@ -142,6 +144,7 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
 	{
 		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
             VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            mysql_close(connection);
             return EAR_ERROR;
         }
 	}	 
@@ -183,6 +186,7 @@ int db_batch_insert_applications_learning(application_t *applications, int num_a
     {
     	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
         	VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            mysql_close(connection);
         	return EAR_ERROR;
     	}
 	}
@@ -191,6 +195,7 @@ int db_batch_insert_applications_learning(application_t *applications, int num_a
 	{
 		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
             VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            mysql_close(connection);
             return EAR_ERROR;
         }
 	}	 
@@ -235,6 +240,7 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
 	{
 		if (mysql_batch_insert_applications_no_mpi(connection, &applications[e], bulk_elms) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -243,6 +249,7 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
 	{
 		if (mysql_batch_insert_applications_no_mpi(connection, &applications[e], num_apps - e) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing applications to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -279,6 +286,7 @@ int db_insert_loop(loop_t *loop)
     if (mysql_insert_loop(connection, loop) < 0)
     {
         VERBOSE_N(0, "ERROR while writing loop signature to database.");
+        mysql_close(connection);
         return EAR_ERROR;
     }
 
@@ -319,6 +327,7 @@ int db_batch_insert_loops(loop_t *loops, int num_loops)
 	{
 		if (mysql_batch_insert_loops(connection, &loops[e], bulk_elms) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing loop signature to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -327,6 +336,7 @@ int db_batch_insert_loops(loop_t *loops, int num_loops)
 	{
 		if (mysql_batch_insert_loops(connection, &loops[e], num_loops - e) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing loop signature to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -362,6 +372,7 @@ int db_insert_power_signature(power_signature_t *pow_sig)
     if (mysql_insert_power_signature(connection, pow_sig) < 0)
     {
         VERBOSE_N(0, "ERROR while writing power_signature to database.");
+        mysql_close(connection);
         return EAR_ERROR;
     }
 
@@ -397,6 +408,7 @@ int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg)
     if (mysql_insert_periodic_aggregation(connection, per_agg) < 0)
     {
         VERBOSE_N(0, "ERROR while writing periodic_aggregation to database.");
+        mysql_close(connection);
         return EAR_ERROR;
     }
 
@@ -473,6 +485,7 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 	{
 		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], bulk_elms) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -481,6 +494,7 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 	{
 		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], num_mets - e) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing periodic metrics to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -523,6 +537,7 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
 	{
 		if (mysql_batch_insert_periodic_aggregations(connection, &per_aggs[e], bulk_elms) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing aggregations to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -531,6 +546,7 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
 	{
 		if (mysql_batch_insert_periodic_aggregations(connection, &per_aggs[e], num_aggs - e) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing aggregations to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -606,6 +622,7 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 	{
 		if (mysql_batch_insert_ear_events(connection, &ear_evs[e], bulk_elms) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing ear_event to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -614,6 +631,7 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 	{
 		if (mysql_batch_insert_ear_events(connection, &ear_evs[e], num_events - e) < 0) {
 			VERBOSE_N(0, "ERROR while batch writing ear_event to database.");
+            mysql_close(connection);
 			return EAR_ERROR;
 		}
 	}
@@ -649,6 +667,7 @@ int db_insert_gm_warning(gm_warning_t *warning)
     if (mysql_insert_gm_warning(connection, warning) < 0)
     {
         VERBOSE_N(0, "ERROR while writing gm_warning to database.");
+        mysql_close(connection);
         return EAR_ERROR;
     }
 
@@ -657,11 +676,12 @@ int db_insert_gm_warning(gm_warning_t *warning)
     return EAR_SUCCESS;
 }
 
-ulong stmt_error(MYSQL_STMT *statement)
+ulong stmt_error(MYSQL *connection, MYSQL_STMT *statement)
 {
     fprintf(stderr, "Error preparing statement (%d): %s\n",
             mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
+    mysql_close(connection);
     return -1;
 }
 
@@ -699,18 +719,19 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
     {
         VERBOSE_N(0, "Error creating statement (%d): %s\n", mysql_errno(connection),
                 mysql_error(connection));
+        mysql_close(connection);
         return -1;
     }
 
     if (is_aggregated)
     {
         if (mysql_stmt_prepare(statement, AGGREGATED_SUM_QUERY, strlen(AGGREGATED_SUM_QUERY)))
-                                                return stmt_error(statement);
+            return stmt_error(connection, statement);
     }
     else
     {
         if (mysql_stmt_prepare(statement, METRICS_SUM_QUERY, strlen(METRICS_SUM_QUERY)))
-                                                return stmt_error(statement);
+            return stmt_error(connection, statement);
     }
 
     //Query parameters binding
@@ -734,10 +755,10 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
     ulong result = 0;
     res_bind[0].buffer = &result;
 
-    if (mysql_stmt_bind_param(statement, bind)) return stmt_error(statement);
-    if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(statement);
-    if (mysql_stmt_execute(statement)) return stmt_error(statement);
-    if (mysql_stmt_store_result(statement)) return stmt_error(statement);
+    if (mysql_stmt_bind_param(statement, bind)) return stmt_error(connection, statement);
+    if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(connection, statement);
+    if (mysql_stmt_execute(statement)) return stmt_error(connection, statement);
+    if (mysql_stmt_store_result(statement)) return stmt_error(connection, statement);
 
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
@@ -824,6 +845,39 @@ int db_run_query(char *query, char *user, char *passw)
     mysql_close(connection);
 
     return EAR_SUCCESS;
+}
+
+MYSQL_RES *db_run_query_result(char *query)
+{
+    MYSQL *connection = mysql_init(NULL);
+
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+		return NULL;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+		return NULL;
+    }
+
+    if (mysql_query(connection, query))
+    {
+        VERBOSE_N(0, "Error when executing query(%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+        return NULL;
+    }
+
+    MYSQL_RES *result;
+    result = mysql_store_result(connection);
+
+    mysql_close(connection);
+
+    return result;
+
 }
 
 int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name)
@@ -939,6 +993,7 @@ ulong get_num_applications(char is_learning, char *node_name)
     {
         VERBOSE_N(0, "Error creating statement (%d): %s\n", mysql_errno(connection),
                 mysql_error(connection));
+        mysql_close(connection);
         return -1;
     }
 
@@ -961,9 +1016,9 @@ ulong get_num_applications(char is_learning, char *node_name)
     ulong result = 0;
     res_bind[0].buffer = &result;
 
-    if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(statement);
-    if (mysql_stmt_execute(statement)) return stmt_error(statement);
-    if (mysql_stmt_store_result(statement)) return stmt_error(statement);
+    if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(connection, statement);
+    if (mysql_stmt_execute(statement)) return stmt_error(connection, statement);
+    if (mysql_stmt_store_result(statement)) return stmt_error(connection, statement);
 
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)

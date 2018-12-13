@@ -23,7 +23,8 @@ fi
 export MIN_FREQUENCY=1900000
 
 # Edit output options
-export OUT_COE="$HOME/coe."
+export OUT_COE="$HOME/ear_coeffs"
+mkdir $OUT_COE
 
 # Non-edit region
 export HOSTLIST="$(echo $(cat $1))"

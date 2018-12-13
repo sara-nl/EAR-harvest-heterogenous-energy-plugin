@@ -41,10 +41,10 @@
 //  - 1: arguments
 
 #define verwho0(format) \
-    fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
+	fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
 
 #define verwho1(format, ...) \
-    fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
+	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 
 #define printpl0(format) \
 	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam]);
