@@ -826,6 +826,39 @@ int db_run_query(char *query, char *user, char *passw)
     return EAR_SUCCESS;
 }
 
+MYSQL_RES *db_run_query_result(char *query)
+{
+    MYSQL *connection = mysql_init(NULL);
+
+    if (db_config == NULL)
+    {
+        VERBOSE_N(0, "Database configuration not initialized.");
+		return NULL;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        VERBOSE_N(0, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+		return NULL;
+    }
+
+    if (mysql_query(connection, query))
+    {
+        VERBOSE_N(0, "Error when executing query(%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+        return NULL;
+    }
+
+    MYSQL_RES *result;
+    result = mysql_store_result(connection);
+
+    mysql_close(connection);
+
+    return result;
+
+}
+
 int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name)
 {
     int num_apps = 0;
