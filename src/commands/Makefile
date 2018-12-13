@@ -34,8 +34,8 @@ ereport: ear_report.c $(ereport_OBJS)
 edb_clean_pm: ear_cleandb.c $(ereport_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ear_cleandb_OBJS)
 
-edb_create: ear_create_database.c $(SRCDIR)/common/types.a
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(SRCDIR)/common/types.a
+edb_create: ear_create_database.c $(ear_cleandb_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ear_cleandb_OBJS)
 
 ######## OPTIONS
 

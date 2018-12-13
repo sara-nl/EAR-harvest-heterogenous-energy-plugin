@@ -34,10 +34,12 @@
 #include <termios.h>
 #include <mysql/mysql.h>
 #include <common/config.h>
+#include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
 
 int EAR_VERBOSE_LEVEL = 1;
 char print_out = 0;
+cluster_conf_t my_cluster;
 
 void usage(char *app)
 {
@@ -54,6 +56,33 @@ void execute_on_error(MYSQL *connection)
     fprintf(stderr, "Error: %s\n", mysql_error(connection));
     mysql_close(connection);
     exit(1);
+}
+
+int get_num_indexes(char *table)
+{
+    init_db_helper(&my_cluster.database);
+    char query[256];
+    sprintf(query, "SELECT COUNT(1) IndexIsThere FROM INFORMATION_SCHEMA.STATISTICS WHERE table_schema=DATABASE() AND table_name='%s'", table);
+    //db_run_query(query, my_cluster.database.user, my_cluster.database.pass);
+    MYSQL_RES *result = db_run_query_result(query);
+    int num_indexes;
+    if (result == NULL) printf("Erro while retrieving result\n");
+    else
+    {
+        MYSQL_ROW row;
+        unsigned int num_fields;
+        unsigned int i;
+
+        num_fields = mysql_num_fields(result);
+        while ((row = mysql_fetch_row(result)))
+        {
+            unsigned long *lengths;
+            lengths = mysql_fetch_lengths(result);
+            for(i = 0; i < num_fields; i++)
+                num_indexes = atoi(row[i]);
+        }
+    }
+    return num_indexes;
 }
 
 void run_query(MYSQL *connection, char *query)
@@ -85,14 +114,25 @@ void create_db(MYSQL *connection, char *db_name)
 void create_indexes(MYSQL *connection)
 {
     char query[256];
-    sprintf(query, "CREATE INDEX idx_end_time ON Periodic_metrics (end_time)");
-    run_query(connection, query);
+    if (get_num_indexes("Periodic_metrics") < 3)
+    {
+        sprintf(query, "CREATE INDEX idx_end_time ON Periodic_metrics (end_time)");
+        printf("Running query: %s\n", query);
+        run_query(connection, query);
 
-    sprintf(query, "CREATE INDEX idx_job_id ON Periodic_metrics (job_id)");
-    run_query(connection, query);
+        sprintf(query, "CREATE INDEX idx_job_id ON Periodic_metrics (job_id)");
+        printf("Running query: %s\n", query);
+        run_query(connection, query);
+    }
+    else printf("Periodic_metrics indexes already created, skipping...\n");
 
-    sprintf(query, "CREATE INDEX idx_user_id ON Jobs (user_id)");
-    run_query(connection, query);
+    if (get_num_indexes("Jobs") < 3)
+    {
+        sprintf(query, "CREATE INDEX idx_user_id ON Jobs (user_id)");
+        printf("Running query: %s\n", query);
+        run_query(connection, query);
+    }
+    else printf("Jobs indexes already created, skipping...\n");
     
 }
 
@@ -330,7 +370,7 @@ void main(int argc,char *argv[])
     }
 
 
-    cluster_conf_t my_cluster;
+    //cluster_conf_t my_cluster;
     char ear_path[256];
     if (get_ear_conf_path(ear_path) == EAR_ERROR)
     {
