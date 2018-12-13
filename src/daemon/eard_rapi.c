@@ -64,19 +64,19 @@ int send_command(request_t *command)
 	eard_verbose(2,"Sending command %u\n",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
-			eard_verbose(0,"Error sending command %s\n",strerror(errno));
+			eard_verbose(CONNECT_ERROR_VERBOSE,"Error sending command %s\n",strerror(errno));
 		}else{ 
-			eard_verbose(0,"Error sending command \n");
+			eard_verbose(CONNECT_ERROR_VERBOSE,"Error sending command \n");
 		}
 	}
 	ret=read(eards_sfd,&ack,sizeof(ulong));
 	//ret=recv(eards_sfd,&ack,sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
 		printf("ERRO: %d\n", errno);
-		eard_verbose(0,"Error receiving ack %s\n",strerror(errno));
+		eard_verbose(CONNECT_ERROR_VERBOSE,"Error receiving ack %s\n",strerror(errno));
 	}
 	else if (ret!=sizeof(ulong)){
-		eard_verbose(0,"Error receiving ack %d\n",ret);
+		eard_verbose(CONNECT_ERROR_VERBOSE,"Error receiving ack %d\n",ret);
 	}
 	return (ret==sizeof(ulong)); // Should we return ack ?
 }
@@ -91,9 +91,9 @@ int send_status(request_t *command, status_t **status)
 	eard_verbose(1,"Sending command %u\n",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
-			eard_verbose(0,"Error sending command (status) %s\n",strerror(errno));
+			eard_verbose(CONNECT_ERROR_VERBOSE,"Error sending command (status) %s\n",strerror(errno));
 		}else{ 
-			eard_verbose(0,"Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
+			eard_verbose(CONNECT_ERROR_VERBOSE,"Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
 		}
 	}
 	eard_verbose(1,"Reading ack size \n");
@@ -101,17 +101,17 @@ int send_status(request_t *command, status_t **status)
 	ret=read(eards_sfd,&ack,sizeof(ulong));
 	//ret = recv(eards_sfd, &ack, sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
-		eard_verbose(0,"Error receiving ack in (status) (%s) \n",strerror(errno));
+		eard_verbose(CONNECT_ERROR_VERBOSE,"Error receiving ack in (status) (%s) \n",strerror(errno));
         return EAR_ERROR;
 	}
     if (ack < 1){
-        eard_verbose(0, "Number of status expected is not valid: %d", ack);
+        eard_verbose(CONNECT_ERROR_VERBOSE, "Number of status expected is not valid: %d", ack);
         return EAR_ERROR;
     }
-	eard_verbose(0,"Waiting for %d ack bytes\n",ack);
+	eard_verbose(CONNECT_ERROR_VERBOSE,"Waiting for %d ack bytes\n",ack);
     return_status = calloc(ack, sizeof(status_t));
 	if (return_status==NULL){
-		eard_verbose(0, "Not enough memory at send_status");
+		eard_verbose(CONNECT_ERROR_VERBOSE, "Not enough memory at send_status");
 		return EAR_ERROR;
 	}
 	total=0;
@@ -119,7 +119,7 @@ int send_status(request_t *command, status_t **status)
     ret = read(eards_sfd, (char *)return_status+total, pending);
     //ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
 	if (ret<0){
-		eard_verbose(0, "Error by reading status (%s)",strerror(errno));
+		eard_verbose(CONNECT_ERROR_VERBOSE, "Error by reading status (%s)",strerror(errno));
         free(return_status);
 		return EAR_ERROR;
 	}
@@ -129,7 +129,7 @@ int send_status(request_t *command, status_t **status)
     	ret = read(eards_sfd, (char *)return_status+total, pending);
     	//ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
 		if (ret<0){
-			eard_verbose(0, "Error by reading status (%s)",strerror(errno));
+			eard_verbose(CONNECT_ERROR_VERBOSE, "Error by reading status (%s)",strerror(errno));
         	free(return_status);
 			return EAR_ERROR;
 		}
@@ -177,7 +177,7 @@ int eards_remote_connect(char *nodename,uint port)
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
 		#if API_DEBUG
-		fprintf(stderr,"getaddrinfo failt for %s and %s\n",nodename,port_number);
+		eard_verbose(CONNECT_VERBOSE,"getaddrinfo failt for %s and %s\n",nodename,port_number);
 		#endif
 		return EAR_ERROR;
     }
@@ -217,27 +217,27 @@ int eards_remote_connect(char *nodename,uint port)
                 sysret = getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
                 if (sysret)
                 {
-                    fprintf(stderr, "Error geting sockopt\n");
+                    eard_verbose(CONNECT_ERROR_VERBOSE, "Error geting sockopt\n");
                     close(sfd);
                     continue;
                 }
                 else if (optlen != sizeof(int))
                 {
-                    fprintf(stderr, "Error with getsockopt\n");
+                    eard_verbose(CONNECT_ERROR_VERBOSE, "Error with getsockopt\n");
                     close(sfd);
                     continue;
                 }
                 else if (valopt)
                 {
-                    fprintf(stderr, "Error opening connection %s",nodename);
+                    eard_verbose(CONNECT_ERROR_VERBOSE, "Error opening connection %s",nodename);
                     close(sfd);
                     continue;
                 }
-                else fprintf(stderr, "Connected\n");
+                else eard_verbose(CONNECT_VERBOSE, "Connected\n");
             }
             else
             {
-                fprintf(stderr, "Timeout connecting to %s node", nodename);
+                eard_verbose(CONNECT_ERROR_VERBOSE, "Timeout connecting to %s node", nodename);
                 close(sfd);
                 continue;
             }
@@ -248,7 +248,7 @@ int eards_remote_connect(char *nodename,uint port)
 
    	if (rp == NULL) {               /* No address succeeded */
 		#if API_DEBUG
-		fprintf(stderr,"Failing in connecting to remote erds\n");
+		eard_verbose(CONNECT_ERROR_VERBOSE,"Failing in connecting to remote eards\n");
 		#endif
 		return EAR_ERROR;
     }
@@ -431,10 +431,10 @@ void old_increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
                 }
     	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
-	    		    eard_verbose(0,"Error connecting with node %s", node_name);
+	    		    eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s", node_name);
             	}else{
 	        		eard_verbose(1,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
-		        	if (!eards_inc_th(th)) eard_verbose(0,"Error increasing the th for node %s", node_name);
+		        	if (!eards_inc_th(th)) eard_verbose(CONNECT_ERROR_VERBOSE,"Error increasing the th for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -463,11 +463,11 @@ void old_red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
                 }
     	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
-	    		    eard_verbose(0,"Error connecting with node %s", node_name);
+	    		    eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s", node_name);
             	}else{
     
                 	eard_verbose(1,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_red_max_and_def_freq(ps)) eard_verbose(0,"Error reducing the max freq for node %s", node_name);
+		        	if (!eards_red_max_and_def_freq(ps)) eard_verbose(CONNECT_ERROR_VERBOSE,"Error reducing the max freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -496,11 +496,11 @@ void old_ping_all_nodes(cluster_conf_t my_cluster_conf)
                 }   
                 rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
-                    eard_verbose(0,"Error connecting with node %s", node_name);
+                    eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s", node_name);
                 }else{
 
                     eard_verbose(1,"Node %s ping!\n", node_name);
-                    if (!eards_ping()) eard_verbose(0,"Error doing ping for node %s", node_name);
+                    if (!eards_ping()) eard_verbose(CONNECT_ERROR_VERBOSE,"Error doing ping for node %s", node_name);
                     eards_remote_disconnect();
                 }
             }
@@ -613,7 +613,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
     {
-        fprintf(stderr, "Error connecting to node: %s\n", nextip1);
+        eard_verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip1);
         num_status1 = correct_status(ntohl(ip1), command, port, &status1);
     }
     else
@@ -621,7 +621,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
 		eard_verbose(1,"connection ok, sending status requests %s\n",nextip1);
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
-            fprintf(stderr, "Error propagating command to node %s\n", nextip1);
+            eard_verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip1);
             eards_remote_disconnect();
             num_status1 = correct_status(ntohl(ip1), command, port, &status1);
         }
@@ -635,7 +635,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
-        fprintf(stderr, "Error connecting to node: %s\n", nextip2);
+        eard_verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip2);
         num_status2 = correct_status(ntohl(ip2), command, port, &status2);
     }
     else
@@ -643,7 +643,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
 		eard_verbose(1,"connection ok, sending status requests %s\n",nextip2);
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
-            fprintf(stderr, "Error propagating command to node %s\n", nextip2);
+            eard_verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip2);
             eards_remote_disconnect();
             num_status2 = correct_status(ntohl(ip2), command, port, &status2);
         }
@@ -687,14 +687,14 @@ void correct_error(uint target_ip, request_t *command, uint port)
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
     {
-        fprintf(stderr, "Error connecting to node: %s\n", nextip1);
+        eard_verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip1);
         correct_error(ntohl(ip1), command, port);
     }
     else
     {
         if (!send_command(command))
         {
-            fprintf(stderr, "Error propagating command to node %s\n", nextip1);
+            eard_verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip1);
             eards_remote_disconnect();
             correct_error(ntohl(ip1), command, port);
         }
@@ -706,14 +706,14 @@ void correct_error(uint target_ip, request_t *command, uint port)
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
-        fprintf(stderr, "Error connecting to node: %s\n", nextip2);
+        eard_verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip2);
         correct_error(ntohl(ip2), command, port);
     }
     else
     {
         if (!send_command(command))
         {
-            fprintf(stderr, "Error propagating command to node %s\n", nextip2);
+            eard_verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip2);
             eards_remote_disconnect();
             correct_error(ntohl(ip2), command, port);
         }
@@ -742,7 +742,7 @@ int correct_status_starter(char *host_name, request_t *command, uint port, statu
 
    	s = getaddrinfo(host_name, NULL, &hints, &result);
     if (s != 0) {
-		fprintf(stderr,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
+		eard_verbose(CONNECT_ERROR_VERBOSE,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
 		return EAR_ERROR;
     }
 
@@ -780,7 +780,7 @@ void correct_error_starter(char *host_name, request_t *command, uint port)
 
    	s = getaddrinfo(host_name, NULL, &hints, &result);
     if (s != 0) {
-		fprintf(stderr,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
+		eard_verbose(CONNECT_VERBOSE,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
 		return;
     }
 
@@ -824,13 +824,13 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
             }   
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
-                eard_verbose(0,"Error connecting with node %s, trying to correct it", node_name);
+                eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s, trying to correct it", node_name);
                 correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
             }
             else{
                 eard_verbose(1,"Node %s with distance %d contacted!\n", node_name, command.node_dist);
                 if (!send_command(&command)) {
-                    eard_verbose(0,"Error sending command to node %s, trying to correct it", node_name);
+                    eard_verbose(CONNECT_ERROR_VERBOSE,"Error sending command to node %s, trying to correct it", node_name);
                     correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
                 }
                 eards_remote_disconnect();
@@ -874,13 +874,13 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
-                eard_verbose(0,"Error connecting with node %s, trying to correct it", node_name);
+                eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s, trying to correct it", node_name);
                 num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
             }
             else{
                 eard_verbose(1,"Node %s with distance %d contacted with status!", node_name, command.node_dist);
                 if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
-                    eard_verbose(0,"Error doing status for node %s, trying to correct it", node_name);
+                    eard_verbose(CONNECT_ERROR_VERBOSE,"Error doing status for node %s, trying to correct it", node_name);
                     num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
                 }
                 eards_remote_disconnect();
@@ -920,10 +920,10 @@ void old_red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
                 }
     	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
-	    		    eard_verbose(0,"Error connecting with node %s", node_name);
+	    		    eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s", node_name);
             	}else{
                 	eard_verbose(1,"Reducing  the default and maximumfrequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_red_max_and_def_freq(ps)) eard_verbose(0,"Error reducing the default freq for node %s", node_name);
+		        	if (!eards_red_max_and_def_freq(ps)) eard_verbose(CONNECT_ERROR_VERBOSE,"Error reducing the default freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -957,10 +957,10 @@ void old_reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf
 
                 rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
-                    eard_verbose(0,"Error connecting with node %s",node_name);
+                    eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s",node_name);
                 }else{
                 	eard_verbose(1,"Setting  the frequency in node %s to %lu\n", node_name, freq);
-                	if (!eards_set_freq(freq)) eard_verbose(0,"Error reducing the freq for node %s", node_name);
+                	if (!eards_set_freq(freq)) eard_verbose(CONNECT_ERROR_VERBOSE,"Error reducing the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
             }
@@ -992,10 +992,10 @@ void old_set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
 
                 rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
-                    eard_verbose(0,"Error connecting with node %s",node_name);
+                    eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s",node_name);
                 }else{
                 	eard_verbose(1,"Setting  the frequency in node %s to %lu\n", node_name, freq);
-                	if (!eards_set_def_freq(freq)) eard_verbose(0,"Error setting the freq for node %s", node_name);
+                	if (!eards_set_def_freq(freq)) eard_verbose(CONNECT_ERROR_VERBOSE,"Error setting the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
             }
@@ -1027,10 +1027,10 @@ void old_restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
 
                 rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
-                    eard_verbose(0,"Error connecting with node %s",node_name);
+                    eard_verbose(CONNECT_ERROR_VERBOSE,"Error connecting with node %s",node_name);
                 }else{
                 	eard_verbose(1,"Restoring the configuartion in node %s\n", node_name);
-                	if (!eards_restore_conf()) eard_verbose(0,"Error restoring the configuration for node %s", node_name);
+                	if (!eards_restore_conf()) eard_verbose(CONNECT_ERROR_VERBOSE,"Error restoring the configuration for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
             }
