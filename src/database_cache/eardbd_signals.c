@@ -151,7 +151,7 @@ void error_handler()
 	if (!forked)
 	{
 		release();
-		exit(0);
+		exit(1);
 	}
 
 	// If I'am the server, inform and dream before exit
