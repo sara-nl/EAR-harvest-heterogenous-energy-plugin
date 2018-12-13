@@ -224,7 +224,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// PID protection
 	pid_t other_server_pid;
 	pid_t other_mirror_pid;
-	path_pid = "/var/run";
+	path_pid = conf_clus->tmp_dir;
 
 	// PID test
 	process_data_initialize(&proc_data_srv, "eardbd_test", path_pid);
