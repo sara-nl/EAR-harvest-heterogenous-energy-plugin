@@ -1336,7 +1336,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     int i = 0;
     int status = 0;
 
-    MYSQL_BIND bind[22];
+    MYSQL_BIND bind[12];
     memset(bind, 0, sizeof(bind));
     
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -1359,7 +1359,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     }
 
     //unsigned long long recievers
-    for (i = 10; i < 22; i++)
+    for (i = 10; i < 12; i++)
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[i].buffer_length = 8;
@@ -1377,24 +1377,10 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[7].buffer = &sig_aux->CPI;
     bind[8].buffer = &sig_aux->Gflops;
     bind[9].buffer = &sig_aux->time;
-#if !DB_SIMPLE
-    bind[10].buffer = &sig_aux->FLOPS[0];
-    bind[11].buffer = &sig_aux->FLOPS[1];
-    bind[12].buffer = &sig_aux->FLOPS[2];
-    bind[13].buffer = &sig_aux->FLOPS[3];
-    bind[14].buffer = &sig_aux->FLOPS[4];
-    bind[15].buffer = &sig_aux->FLOPS[5];
-    bind[16].buffer = &sig_aux->FLOPS[6];
-    bind[17].buffer = &sig_aux->FLOPS[7];
-    bind[18].buffer = &sig_aux->instructions;
-    bind[19].buffer = &sig_aux->cycles;
-    bind[20].buffer = &sig_aux->avg_f;
-    bind[21].buffer = &sig_aux->def_f;
-#else
+
     bind[10].buffer = &sig_aux->avg_f;
     bind[11].buffer = &sig_aux->def_f;
 
-#endif
 
     if (mysql_stmt_bind_result(statement, bind)) 
     {
