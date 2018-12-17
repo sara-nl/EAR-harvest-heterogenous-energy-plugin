@@ -133,12 +133,12 @@ Finally, when using `systemctl` commands, you can check messages reported by the
 
 Configuration
 -------------
-1) EAR works together with **SLURM**, so please, visit the [SLURM plugin page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
-2) Pass the learning phase in all your computing nodes by visiting the [learning phase page](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/etc/scripts/learning/README.md) and follow this guide.
+1) EAR works together with **SLURM**, so please, visit the [SLURM plugin page](./src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
+2) Pass the learning phase in all your computing nodes by visiting the [learning phase page](./etc/scripts/learning/README.md) and follow this guide.
 
 User guide
 ----------
-Finally, you can launch any MPI application next to EAR library by following the [library user guide](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/library/README.md).
+Finally, you can launch any MPI application next to EAR library by following the [library user guide](./src/library/README.md).
 
 License
 -------
