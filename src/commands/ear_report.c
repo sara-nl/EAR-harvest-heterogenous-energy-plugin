@@ -28,6 +28,8 @@
 */
 
 #define _XOPEN_SOURCE 700 //to get rid of the warning
+#define AGGREGATED 1
+
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -137,7 +139,11 @@ unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsi
     {
         sprintf(query, ETAG_QUERY, etag);
     }
+#if AGGREGATED
+    else strcpy(query, AGGR_QUERY);
+#else
     else strcpy(query, SUM_QUERY);
+#endif
 
     if (verbose) printf("QUERY: %s\n", query);
     if (mysql_stmt_prepare(statement, query, strlen(query)))
