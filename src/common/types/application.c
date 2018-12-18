@@ -64,6 +64,11 @@ void print_application_channel(FILE *file, application_t *app)
  *
  */
 
+#define APP_TEXT_FILE_FIELDS	33
+#define EXTENDED_DIFF		11
+#define PERMISSION              S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+#define OPTIONS                 O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
+
 int read_application_text_file(char *path, application_t **apps, char is_extended)
 {
 	char line[PIPE_BUF];
@@ -116,11 +121,24 @@ int read_application_text_file(char *path, application_t **apps, char is_extende
 	return i;
 }
 
+static int print_application_fd(int fd, application_t *app, int new_line, char is_extended)
+{
+	char buff[1024];
+	sprintf(buff, "%s;", app->node_id);
+	write(fd, buff, strlen(buff));
+	print_job_fd(fd, &app->job);
+	dprintf(fd, ";");
+	signature_print_fd(fd, &app->signature, is_extended);
+
+	if (new_line) {
+		dprintf(fd, "\n");
+	}
+
+	return EAR_SUCCESS;
+}
+
 int append_application_text_file(char *path, application_t *app, char is_extended)
 {
-	#define PERMISSION 		S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
-	#define OPTIONS			O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
-
 	//lacking: NODENAME(node_id in loop_t), not linked to any loop
 	char *HEADER;
 	if (is_extended)
@@ -234,22 +252,6 @@ int read_application_fd_binary(int fd,application_t *app)
  * We have to take a look these print functions and clean
  *
  */
-
-static int print_application_fd(int fd, application_t *app, int new_line, char is_extended)
-{
-	char buff[1024];
-	sprintf(buff, "%s;", app->node_id);
-	write(fd, buff, strlen(buff));
-	print_job_fd(fd, &app->job);
-	dprintf(fd, ";");
-	signature_print_fd(fd, &app->signature, is_extended);
-
-	if (new_line) {
-		dprintf(fd, "\n");
-	}
-
-	return EAR_SUCCESS;
-}
 
 int print_application(application_t *app)
 {
