@@ -501,8 +501,8 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	if (type == CONTENT_TYPE_APM)
 	{
 		if (verbosity == 2) {
-                        print_application_channel(stderr, (application_t *) content);
-                }
+			application_print_channel(stderr, (application_t *) content);
+		}
 
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSM);
@@ -510,7 +510,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	else if (type == CONTENT_TYPE_APN)
 	{
 		if (verbosity == 2) {
-			print_application_channel(stderr, (application_t *) content);
+			application_print_channel(stderr, (application_t *) content);
 		}
 
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
@@ -519,8 +519,8 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	else if (type == CONTENT_TYPE_APL)
 	{
 		if (verbosity == 2) {
-                        print_application_channel(stderr, (application_t *) content);
-                }
+			application_print_channel(stderr, (application_t *) content);
+		}
 
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_APPSL);

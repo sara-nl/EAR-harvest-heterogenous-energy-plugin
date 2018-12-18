@@ -48,7 +48,7 @@ void copy_application(application_t *destiny, application_t *source)
 	memcpy(destiny, source, sizeof(application_t));
 }
 
-void print_application_channel(FILE *file, application_t *app)
+void application_print_channel(FILE *file, application_t *app)
 {
 	fprintf(file, "application_t: id '%s', job id '%lu.%lu', node id '%s'\n",
 		app->job.app_id, app->job.id, app->job.step_id, app->node_id);
@@ -65,7 +65,7 @@ void print_application_channel(FILE *file, application_t *app)
  */
 
 #define APP_TEXT_FILE_FIELDS	33
-#define EXTENDED_DIFF		11
+#define EXTENDED_DIFF			11
 #define PERMISSION              S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define OPTIONS                 O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
 
@@ -187,9 +187,6 @@ int append_application_text_file(char *path, application_t *app, char is_extende
 
 int scan_application_fd(FILE *fd, application_t *app, char is_extended)
 {
-
-#define APP_TEXT_FILE_FIELDS 33
-#define EXTENDED_DIFF 11
 	application_t *a;
 	int ret;
 

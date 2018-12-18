@@ -45,6 +45,7 @@ typedef ulong				job_id;
 #define POLICY_NAME 		32
 #define ENERGY_TAG_SIZE		32
 #define MAX_PATH_SIZE		256
+#define NODE_SIZE			256
 
 #else
 #endif

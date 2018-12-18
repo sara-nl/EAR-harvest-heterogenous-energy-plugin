@@ -37,8 +37,6 @@
 #include <common/types/signature.h>
 #include <common/types/power_signature.h>
 
-#define GENERIC_NAME 256
-
 typedef struct application
 {
 	job_t job;	
@@ -56,7 +54,7 @@ void init_application(application_t *app);
 void copy_application(application_t *destiny, application_t *source);
 
 /** Cleaned remake of the classic print 'fd' function */
-void print_application_channel(FILE *file, application_t *app);
+void application_print_channel(FILE *file, application_t *app);
 
 /*
  *
