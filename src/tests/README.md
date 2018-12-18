@@ -1,6 +1,6 @@
 Tests
 -----
-The EAR package includes two type of tests. The **check tests**, prepared to be executed after the `make` by typing `make check`, with and without privileges, so probably you will have to check it with `sudo`. And also [functional tests](https://github.com/BarcelonaSupercomputingCenter/EAR/blob/development/src/tests/functionals/README.md), which tests library functionalities against your software and hardware platform.
+The EAR package includes two type of tests. The **check tests**, prepared to be executed after the `make` by typing `make check`, with and without privileges, so probably you will have to check it with `sudo`. And also [functional tests](./src/tests/functionals/README.md), which tests library functionalities against your software and hardware platform.
 
 When running a **check test**, 3 types of message are written in the output.
 1) **Error**: the hardware, software or libraries are incompatible with the library.
