@@ -374,12 +374,6 @@ int slurm_spank_task_post_fork (spank_t sp, int ac, char **av)
 	return (ESPANK_SUCCESS);
 }
 
-int slurm_spank_task_exit (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_task_exit");
-	return (ESPANK_SUCCESS);
-}
-
 int slurm_spank_job_epilog (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_job_epilog");

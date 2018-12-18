@@ -64,6 +64,7 @@ char buffer3[SZ_PATH]; // helper buffer
 extern char eargmd_host[SZ_NAME_MEDIUM];
 extern unsigned int eargmd_port;
 extern unsigned int eargmd_enbl;
+extern int eard_exst;
 
 /*
  * Manual
@@ -483,6 +484,26 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		remote_print_environment(sp);
 	}
 	
+	return (ESPANK_SUCCESS);
+}
+
+int slurm_spank_task_exit (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_task_exit");
+
+	spank_err_t err;
+	int status;
+
+	//
+	if (eard_exst == 0)
+	{
+		err = spank_get_item (sp, S_TASK_EXIT_STATUS, &status);
+
+		if (err == ESPANK_SUCCESS) {
+			eard_exst = status;
+		}
+	}
+
 	return (ESPANK_SUCCESS);
 }
 

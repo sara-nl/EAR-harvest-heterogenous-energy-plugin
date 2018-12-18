@@ -41,10 +41,11 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 
 // EARD variables
-static char eard_host[SZ_NAME_MEDIUM];
-static unsigned int  eard_port;
-static unsigned int  eard_conn;
-static application_t eard_appl;
+char eard_host[SZ_NAME_MEDIUM];
+unsigned int  eard_port;
+unsigned int  eard_conn;
+application_t eard_appl;
+int           eard_exst;
 
 // EARGMD variables
 char eargmd_host[SZ_NAME_MEDIUM];
@@ -297,7 +298,11 @@ int remote_eard_report_finish(spank_t sp)
 	if (eards_remote_connect(eard_host, eard_port) < 0) {
 		plug_verbose(sp, 2, "while connecting with EAR daemon");
 	}
+
+	// New value (eard_exst;
 	eards_end_job(eard_appl.job.id, eard_appl.job.step_id);
+
+	//
 	eards_remote_disconnect();
 
 	return (ESPANK_SUCCESS);
