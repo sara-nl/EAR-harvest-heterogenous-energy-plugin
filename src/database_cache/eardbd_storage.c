@@ -541,6 +541,10 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 		periodic_metric_t *met = (periodic_metric_t *) content;
 
+		if (verbosity == 2) {
+                        periodic_metrict_print_channel(stderr, met);
+                }
+
 		// Verbosity mpkfa
 		//if (verbosity == 1) {
 		//	verwho1("RECEIVED %lu energy from %s", met->DC_energy, met->node_id);				
