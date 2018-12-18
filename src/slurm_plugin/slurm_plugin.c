@@ -492,7 +492,7 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 	plug_verbose(sp, 2, "function slurm_spank_task_exit");
 
 	spank_err_t err;
-	int status;
+	int status = 0;
 
 	//
 	if (eard_exst == 0)
@@ -500,7 +500,7 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 		err = spank_get_item (sp, S_TASK_EXIT_STATUS, &status);
 
 		if (err == ESPANK_SUCCESS) {
-			eard_exst = status;
+			eard_exst = WEXITSTATUS(status);
 		}
 	}
 

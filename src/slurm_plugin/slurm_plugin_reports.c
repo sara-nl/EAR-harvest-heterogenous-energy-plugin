@@ -299,7 +299,7 @@ int remote_eard_report_finish(spank_t sp)
 		plug_verbose(sp, 2, "while connecting with EAR daemon");
 	}
 
-	// New value (eard_exst;
+	// New value (eard_exst)
 	eards_end_job(eard_appl.job.id, eard_appl.job.step_id);
 
 	//
