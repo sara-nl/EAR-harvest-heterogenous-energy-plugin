@@ -76,9 +76,9 @@ NodeForceFrequencies=1
 4) EAR Database Manager Daemon (EARDBD)
 
 ```
-# In seconds, time of accumulating data in every aggregation
+# In seconds, interval of time of accumulating data to generate an energy aggregation
 DBDaemonAggregationTime=60
-# In seconds, time between insert the buffered data
+# In seconds, time between inserts of the buffered data
 DBDaemonInsertionTime=30
 # Port where the EARDBD server is listening
 DBDaemonPortTCP=4711 , This port is used for main EARDBD
@@ -86,9 +86,9 @@ DBDaemonPortTCP=4711 , This port is used for main EARDBD
 DBDaemonPortSecTCP=4712
 # Port is used to synchronize the server and mirror
 DBDaemonSyncPort=4713
-# Memory allocated per process. It means that if there is a server and mirror in a node a double of that value will be allocated. It is expressed in MegaBytes.
+# Memory allocated per process. This allocations is used for buffering the data sent to the database by EARD or other components. If there is a server and mirror in a node a double of that value will be allocated. It is expressed in MegaBytes.
 DBDaemonMemorySize=120
-# The percentage of the memory block used by each type. These types are: mpi, non-mpi and learning applications, loops, energy metrics and aggregations and events, in that order.
+# The percentage of the memory buffer used by each type. These types are: mpi, non-mpi and learning applications, loops, energy metrics and aggregations and events, in that order.
 DBDaemonMemorySizePerType=40,20,5,24,5,1,5
 ```
 
