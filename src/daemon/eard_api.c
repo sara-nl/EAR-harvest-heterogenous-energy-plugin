@@ -72,7 +72,7 @@ static ulong freq_size;
 
 void signal_handler(int s)
 {
-	VERBOSE_N(0,"EARD has been disconnected");
+	verbose(0,"EARD has been disconnected");
 	app_connected=0;
 }
 void signal_catcher()
@@ -88,7 +88,7 @@ void signal_catcher()
     action.sa_flags = 0;
     
     if (sigaction(SIGPIPE, &action, NULL) < 0) {
-    	VERBOSE_N(0, "sigaction error on signal s=%d (%s)", SIGPIPE, strerror(errno));
+    	verbose(0, "sigaction error on signal s=%d (%s)", SIGPIPE, strerror(errno));
     }
 }    
 
@@ -114,11 +114,11 @@ uint warning(int return_value, int expected, char *msg)
 {
 	if (return_value!=expected){ 
 		app_connected=0;
-		VERBOSE_N(0, "eards: %s", msg);
+		verbose(0, "eards: %s", msg);
 	}
 	if (return_value<0){ 
 		app_connected=0;
-		VERBOSE_N(0, "eards: %s (%s)", msg,strerror(errno));
+		verbose(0, "eards: %s (%s)", msg,strerror(errno));
 	}
 	return (return_value!=expected);
 }
@@ -151,7 +151,7 @@ int eards_connect(application_t *my_app)
 	}
 
 	if (gethostname(nodename,sizeof(nodename)) < 0){
-		VERBOSE_N(0, "ERROR while getting the node name (%s)", strerror(errno));
+		verbose(0, "ERROR while getting the node name (%s)", strerror(errno));
 		return EAR_ERROR;
 	}
 
@@ -164,7 +164,7 @@ int eards_connect(application_t *my_app)
 
 	// We create a single ID
 	my_id=create_ID(my_app->job.id,my_app->job.step_id);
-	VERBOSE_N(2,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
+	verbose(2,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		DEBUG_F(2, "ear_client connecting with service %d", i);
@@ -183,7 +183,7 @@ int eards_connect(application_t *my_app)
 
 			if (!connected) {
 				// Not possible to connect with ear_daemon
-				VERBOSE_N(1, "ERROR while opening the communicator for requests %s (%d attempts) (%s)",
+				verbose(1, "ERROR while opening the communicator for requests %s (%d attempts) (%s)",
 						  ear_commreq, tries, strerror(errno));
 				return EAR_ERROR;
 			}
@@ -193,11 +193,11 @@ int eards_connect(application_t *my_app)
 			ret=mknod(ear_ping,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH,0);
 
 			if (ret < 0) {
-				VERBOSE_N(0, "ERROR while creating the ping file");
+				verbose(0, "ERROR while creating the ping file");
 			}
 
 			if ((ear_ping_fd = open(ear_ping,O_RDWR)) < 0){
-				VERBOSE_N(0, "ERROR while opening ping pipe (%s)", strerror(errno));
+				verbose(0, "ERROR while opening ping pipe (%s)", strerror(errno));
 				ear_fd_req[i]=-1;
 				return EAR_ERROR;
 			}
@@ -206,7 +206,7 @@ int eards_connect(application_t *my_app)
 		}else{
 			// ear_daemon will send an ack when pipe is created
 			if ((ear_fd_req[i]=open(ear_commreq,O_WRONLY)) < 0) {
-				VERBOSE_N(0, "ERROR while ipening the communicator for requests %s",
+				verbose(0, "ERROR while ipening the communicator for requests %s",
 							ear_commreq);
 				return EAR_ERROR;
 			}
@@ -218,7 +218,7 @@ int eards_connect(application_t *my_app)
 				// When using a single communicator, we should send only a frequency connection request 
 				req.req_service=CONNECT_FREQ; 
 				req.sec=create_sec_tag();
-				//VERBOSE_N(0,"Using sec_key for connection %lu",req.sec);
+				//verbose(0,"Using sec_key for connection %lu",req.sec);
 				break;
 		}
 
@@ -247,17 +247,17 @@ int eards_connect(application_t *my_app)
 			// At this point, if ear_commack doesn't exist, that means we are not the master
 			if ((ear_fd_ack[i]=open(ear_commack,O_RDONLY))<0)
 			{
-				VERBOSE_N(0, "ERROR while opening ack communicator (%s) (%s)",
+				verbose(0, "ERROR while opening ack communicator (%s) (%s)",
 			    			  ear_commack, strerror(errno));
 				ear_fd_req[i]=-1;
 				return EAR_ERROR;
 			}
-			VERBOSE_N(2, "ack communicator %s [%d] connected", nodename, i);
+			verbose(2, "ack communicator %s [%d] connected", nodename, i);
 		}
 	}
 	app_connected=1;
 	signal_catcher();
-	VERBOSE_N(2, "Connected");
+	verbose(2, "Connected");
 	return EAR_SUCCESS;
 
 }
@@ -441,7 +441,7 @@ ulong eards_end_compute_turbo_freq()
 		if (warning(read(ear_fd_ack[freq_req],&ack, sizeof(ulong)) , sizeof(ulong),
 				"ERROR reading ack for finishing frequency ")) return EAR_ERROR;
 
-		VERBOSE_N(2, "TURBO freq computed as  %lu",  ack);
+		verbose(2, "TURBO freq computed as  %lu",  ack);
 	} else {
 		DEBUG_F(0, "ear_daemon_client_end_compute_turbo_freq service not provided");
 	}
@@ -484,7 +484,7 @@ ulong eards_end_app_compute_turbo_freq()
 		if (warning(read(ear_fd_ack[freq_req],&ack,sizeof(ulong)) , sizeof(ulong),
 			"ERROR writing ack for finishing frequency for app ")) return EAR_ERROR;
 
-		VERBOSE_N(2, "TURBO freq computed as  %lu", ack);
+		verbose(2, "TURBO freq computed as  %lu", ack);
 	} else {
 		DEBUG_F(0, "ear_daemon_client_end_app_compute_turbo_freq service not provided");
 	}
@@ -507,7 +507,7 @@ void eards_set_turbo()
 			 "ERROR writing request for setting turbo")) return;
 		if (warning(read(ear_fd_ack[freq_req],&ack,sizeof(ulong)),sizeof(ulong),
 			 "ERROR reading ack for setting turbo ")) return;
-		VERBOSE_N(3, "turbo activated");
+		verbose(3, "turbo activated");
 		return;
 	}   
 	DEBUG_F(0, "turbo not provided");
@@ -533,7 +533,7 @@ ulong eards_change_freq(ulong newfreq)
 		if (warning(read(ear_fd_ack[freq_req], &real_freq, sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for changing frequency ")) return EAR_ERROR;
 
-		VERBOSE_N(3, "Frequency_changed to %lu",  real_freq);
+		verbose(3, "Frequency_changed to %lu",  real_freq);
 	} else {
 		real_freq = 0;
 		DEBUG_F(0, "change_freq service not provided");

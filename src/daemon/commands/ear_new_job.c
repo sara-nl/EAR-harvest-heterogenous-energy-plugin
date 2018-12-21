@@ -68,12 +68,12 @@ void main(int argc,char *argv[])
 		strcpy(myhost,argv[1]);
 	}
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }
-    VERBOSE_N(2,"Using %s as EARD configuration file",my_ear_conf_path);
+    verbose(2,"Using %s as EARD configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
-        VERBOSE_N(0," Error reading cluster configuration\n");
+        verbose(0," Error reading cluster configuration\n");
     }
 
 	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
@@ -81,7 +81,7 @@ void main(int argc,char *argv[])
 		fprintf(stderr,"Connection error\n");
 		exit(1);
 	}
-	VERBOSE_N(2,"Connected to host %s",myhost);
+	verbose(2,"Connected to host %s",myhost);
 	id=getenv("SLURM_JOB_ID");
 	sid=getenv("SLURM_STEP_ID");
 	if ((id==NULL) || (sid==NULL)){

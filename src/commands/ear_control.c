@@ -250,7 +250,7 @@ void main(int argc, char *argv[])
         exit(0);
     }
 
-    if (read_cluster_conf(path_name, &my_cluster_conf) != EAR_SUCCESS) VERBOSE_N(0, "ERROR reading cluster configuration\n");
+    if (read_cluster_conf(path_name, &my_cluster_conf) != EAR_SUCCESS) verbose(0, "ERROR reading cluster configuration\n");
     
     char *user = getlogin();
     if (user == NULL)
@@ -309,7 +309,7 @@ void main(int argc, char *argv[])
                 arg = atoi(optarg);
                 if (arg > 100)
                 {
-                    VERBOSE_N(0, "Indicated threshold increase above theoretical maximum (100%)");
+                    verbose(0, "Indicated threshold increase above theoretical maximum (100%)");
                     break;
                 }
                 increase_th_all_nodes(arg,my_cluster_conf);
@@ -318,13 +318,13 @@ void main(int argc, char *argv[])
                 arg = atoi(optarg);
 				if (optind+1 > argc)
 				{
-					VERBOSE_N(0, "Missing policy argument for set-def-freq");
+					verbose(0, "Missing policy argument for set-def-freq");
                     break;
 				}
 				arg2 = atoi(argv[optind+1]);
 				if (!is_valid_policy(arg2))
 				{
-					VERBOSE_N(0, "Invalid policy index.");
+					verbose(0, "Invalid policy index.");
                     break;
 				}
                 set_def_freq_all_nodes(arg, arg2, my_cluster_conf);
@@ -333,7 +333,7 @@ void main(int argc, char *argv[])
                 arg = atoi(optarg);
                 if (arg > 100)
                 {
-                    VERBOSE_N(0, "Indicated threshold increase above theoretical maximum (100%)");
+                    verbose(0, "Indicated threshold increase above theoretical maximum (100%)");
                     break;
                 }
                 set_th_all_nodes(arg, my_cluster_conf);
@@ -346,10 +346,10 @@ void main(int argc, char *argv[])
                 {
                     int rc=eards_remote_connect(optarg ,my_cluster_conf.eard.port);
                     if (rc<0){
-                        VERBOSE_N(0,"Error connecting with node %s", optarg);
+                        verbose(0,"Error connecting with node %s", optarg);
                     }else{
-                        VERBOSE_N(1,"Node %s ping!\n", optarg);
-                        if (!eards_ping()) VERBOSE_N(0,"Error doing ping for node %s", optarg);
+                        verbose(1,"Node %s ping!\n", optarg);
+                        if (!eards_ping()) verbose(0,"Error doing ping for node %s", optarg);
                         eards_remote_disconnect();
                     }
                 }
@@ -364,9 +364,8 @@ void main(int argc, char *argv[])
                 usage(argv[0]);
                 break;
             case 'v':
-                if (optarg)
-                    EAR_VERBOSE_LEVEL = atoi(optarg);
-                else EAR_VERBOSE_LEVEL = 1;
+                if (optarg) verb_level = atoi(optarg);
+                else verb_level = 1;
 
 
         }

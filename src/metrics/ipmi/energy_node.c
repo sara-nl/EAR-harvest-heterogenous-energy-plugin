@@ -93,7 +93,7 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
 	
 	//Creating the context
 	if (!(ipmi_ctx_pn = ipmi_ctx_create ())){
-        ear_verbose(0,"ear_daemon Error in ipmi_ctx_create for product name %s\n",strerror(errno));
+        verbose(0,"ear_daemon Error in ipmi_ctx_create for product name %s\n",strerror(errno));
 		return -1;
 	}
 	
@@ -115,7 +115,7 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
                                         	NULL, // driver_device
                                            	workaround_flags,
                                            	IPMI_FLAGS_DEFAULT)) < 0) {
-        ear_verbose(0,"ipmi_ctx_find_inband for product name: %s\n", ipmi_ctx_errormsg (ipmi_ctx_pn));
+        verbose(0,"ipmi_ctx_find_inband for product name: %s\n", ipmi_ctx_errormsg (ipmi_ctx_pn));
         // Close context
         ipmi_ctx_close (ipmi_ctx_pn);
         ipmi_ctx_destroy (ipmi_ctx_pn);
@@ -124,14 +124,14 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
 	// We have here a context
 	// Creating a fru context
 	if (!(fru_ctx_pn=ipmi_fru_ctx_create(ipmi_ctx_pn))){
-        ear_verbose(0,"ipmi_fru_ctx_create for product name: %s\n", ipmi_ctx_errormsg (ipmi_ctx_pn));
+        verbose(0,"ipmi_fru_ctx_create for product name: %s\n", ipmi_ctx_errormsg (ipmi_ctx_pn));
         // Close context
         ipmi_ctx_close (ipmi_ctx_pn);
         ipmi_ctx_destroy (ipmi_ctx_pn);
 		return -1;
 	}
 	if (ipmi_fru_open_device_id (fru_ctx_pn, 0) < 0){
-    	ear_verbose(0,"ipmi_fru_open_device_id %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
+    	verbose(0,"ipmi_fru_open_device_id %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
         	// Close context
         ipmi_ctx_close (ipmi_ctx_pn);
         ipmi_ctx_destroy (ipmi_ctx_pn);
@@ -139,7 +139,7 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
 	}
 	// FRU returns a list 
 	if (ipmi_fru_first(fru_ctx_pn)<0){
-    	ear_verbose(0,"ipmi_fru_first %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
+    	verbose(0,"ipmi_fru_first %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
         ipmi_ctx_close (ipmi_ctx_pn);
         ipmi_ctx_destroy (ipmi_ctx_pn);
 		return -1;
@@ -148,7 +148,7 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
 	do {
 	memset(areabuf, '\0', IPMI_FRU_AREA_SIZE_MAX + 1);
 	if (ipmi_fru_read_data_area(fru_ctx_pn,&area_type,&area_length,areabuf,IPMI_FRU_AREA_SIZE_MAX) < 0){
-    	ear_verbose(0,"ipmi_fru_read_data_area %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
+    	verbose(0,"ipmi_fru_read_data_area %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
         	// Close context
         ipmi_ctx_close (ipmi_ctx_pn);
         ipmi_ctx_destroy (ipmi_ctx_pn);
@@ -181,7 +181,7 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
                                   	&product_fru_file_id,
                                   	product_custom_fields,
                                   	IPMI_FRU_CUSTOM_FIELDS) < 0){
-            	ear_verbose(0,"ipmi_fru_product_info_area %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
+            	verbose(0,"ipmi_fru_product_info_area %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
                 ipmi_ctx_close (ipmi_ctx_pn);
                 ipmi_ctx_destroy (ipmi_ctx_pn);
 				return -1;
@@ -198,15 +198,15 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
                                             	language_code,
                                             	strbuf,
                                             	&strbuflen) < 0){
-                	ear_verbose(0,"ipmi_fru_type_length_field_to_string error\n");
+                	verbose(0,"ipmi_fru_type_length_field_to_string error\n");
             	}
             	if (strbuflen){ 
-					ear_verbose(1,"FRU Product Manufacturer name: %s\n",strbuf);
+					verbose(1,"FRU Product Manufacturer name: %s\n",strbuf);
 					strcpy(my_product_manufacturer_name,strbuf);
 				}
 	
         	}else{
-            	ear_verbose(0,"ipmi_fru_product_info_area returns 0 size for product_manufacturer_name\n");
+            	verbose(0,"ipmi_fru_product_info_area returns 0 size for product_manufacturer_name\n");
         	}
         	// product_name
         	strbuflen = IPMI_FRU_AREA_STRING_MAX;
@@ -218,14 +218,14 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
                                             	language_code,
                                             	strbuf,
                                             	&strbuflen) < 0){
-               		ear_verbose(0,"ipmi_fru_type_length_field_to_string error\n");
+               		verbose(0,"ipmi_fru_type_length_field_to_string error\n");
                 }
                 if (strbuflen){ 
-					ear_verbose(1,"FRU Product name: %s\n",strbuf);
+					verbose(1,"FRU Product name: %s\n",strbuf);
 					strcpy(my_product_name,strbuf);
 				}
            }else{
-           		ear_verbose(0,"ipmi_fru_product_info_area returns 0 size for product_name\n");
+           		verbose(0,"ipmi_fru_product_info_area returns 0 size for product_name\n");
            }
         	ready=1;
         	break;
@@ -260,9 +260,9 @@ int node_energy_init()
     case CPU_BROADWELL_X:
 		// Should we check the product name??
 		if (strstr(my_p_name,"nx360")!=NULL){
-			ear_verbose(0,"Product name %s detected \n",my_p_name);
+			verbose(0,"Product name %s detected \n",my_p_name);
 		} else{
-			ear_verbose(0,"Product name %s detected (Not known. default applied) \n",my_p_name);
+			verbose(0,"Product name %s detected (Not known. default applied) \n",my_p_name);
 		}
 		node_energy_ops.node_energy_init=ibm_node_energy_init;
 		node_energy_ops.count_energy_data_length=ibm_count_energy_data_length;
@@ -275,7 +275,7 @@ int node_energy_init()
 		// we should check for specific models 
 		if (strstr(my_p_name,"SD530")!=NULL){
 			// It is an air colling system
-			ear_verbose(0,"Product name %s detected \n",my_p_name);
+			verbose(0,"Product name %s detected \n",my_p_name);
 			node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
 			node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
@@ -284,7 +284,7 @@ int node_energy_init()
 			node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}else if (strstr(my_p_name,"SR650")!=NULL){
 			// It is an air colling system
-			ear_verbose(0,"Product name %s detected \n",my_p_name);
+			verbose(0,"Product name %s detected \n",my_p_name);
 			node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
 			node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
@@ -294,7 +294,7 @@ int node_energy_init()
 		}else if (strstr(my_p_name,"SD650")!=NULL){
 			//OceanCat
 			energy_interface=SD650_HFR;
-			ear_verbose(0,"Product name %s detected \n",my_p_name);
+			verbose(0,"Product name %s detected \n",my_p_name);
 			node_energy_ops.node_energy_init=lenovo_wct_node_energy_init;
 			node_energy_ops.count_energy_data_length=lenovo_wct_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_wct_read_dc_energy;
@@ -302,7 +302,7 @@ int node_energy_init()
 			node_energy_ops.read_ac_energy=lenovo_wct_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_wct_node_energy_dispose;
 		}else{
-			ear_verbose(0,"Product name %s detected (Not Known, using default) \n",my_p_name);
+			verbose(0,"Product name %s detected (Not Known, using default) \n",my_p_name);
             node_energy_ops.node_energy_init=lenovo_act_node_energy_init;
             node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
             node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;

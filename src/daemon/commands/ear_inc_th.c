@@ -62,12 +62,12 @@ void main(int argc,char *argv[])
 		exit(1);
 	}
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }
-    VERBOSE_N(0,"Using %s as EARGM configuration file",my_ear_conf_path);
+    verbose(0,"Using %s as EARGM configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
-        VERBOSE_N(0," Error reading cluster configuration\n");
+        verbose(0," Error reading cluster configuration\n");
     }
 
 	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);

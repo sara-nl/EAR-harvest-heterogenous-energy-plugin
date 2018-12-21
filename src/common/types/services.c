@@ -44,17 +44,17 @@ int new_service(char *service)
 	int must_recover=0;
     int fd,pid,ret;
 	sprintf(service_name,"/var/run/%s.pid",service);
-    VERBOSE_N(0,"Checking %s file",service_name);
+    verbose(0,"Checking %s file",service_name);
     pid=getpid();
     if ((fd=open(service_name,O_RDWR))>=0){
     	write(fd,&pid,sizeof(int));
 		must_recover=1;
 		close(fd);
     }else{
-        VERBOSE_N(1,"%s file doesn't exist,creating it",service_name);
+        verbose(1,"%s file doesn't exist,creating it",service_name);
         fd=open(service_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR);
         if (fd<0){
-            VERBOSE_N(0,"Error, %s file cannot be created (%s)",service_name,strerror(errno));
+            verbose(0,"Error, %s file cannot be created (%s)",service_name,strerror(errno));
         }else{
             write(fd,&pid,sizeof(int));
             close(fd);

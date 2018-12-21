@@ -117,7 +117,7 @@ int create_app_connection(char *root)
 uint read_app_command(app_send_t *app_req)
 {
 	if (read(fd_app_to_eard,app_req,sizeof(app_send_t))!=sizeof(app_send_t)){
-		eard_verbose(0,"Error reading NON-EARL application request\n");
+		verbose(0,"Error reading NON-EARL application request\n");
 		return INVALID_COMMAND;
 	}
 	return app_req->req;
@@ -151,7 +151,7 @@ void ear_energy()
 
 	/* Create connection */
 	if (connect_with_app()!=EAR_SUCCESS){
-		eard_verbose(0,"Error connecting with NON-EARL application \n");
+		verbose(0,"Error connecting with NON-EARL application \n");
 		return;
 	}
 
@@ -188,10 +188,10 @@ void process_request()
 		ear_energy();
 		break;
 	case INVALID_COMMAND:
-		eard_verbose(0,"PANIC, invalid command received and not recognized\n");
+		verbose(0,"PANIC, invalid command received and not recognized\n");
 		break;
 	default:
-		eard_verbose(0,"PANIC, non-earl command received and not recognized\n");
+		verbose(0,"PANIC, non-earl command received and not recognized\n");
 		break;
 	}
 	
@@ -208,7 +208,7 @@ void *eard_non_earl_api_service(void *noinfo)
 
 	/* Create connections */
 	if (create_app_connection(my_cluster_conf.tmp_dir)!= EAR_SUCCESS){ 
-		eard_verbose(0,"Error creating files for non-EARL requests\n");
+		verbose(0,"Error creating files for non-EARL requests\n");
 		pthread_exit(0);
 	}
 	FD_ZERO(&rfds);
@@ -218,7 +218,7 @@ void *eard_non_earl_api_service(void *noinfo)
     numfds_req=max_fd+1;
 	rfds_basic=rfds;
 	/* Wait for messages */
-	eard_verbose(0,"Waiting for non-earl requestst\n");
+	verbose(0,"Waiting for non-earl requestst\n");
 	while ((eard_must_exit==0) && (numfds_ready=select(numfds_req,&rfds,NULL,NULL,NULL))>=0){
 		if (numfds_ready>0){
 			/* There is only one fd, it MUST be this one */

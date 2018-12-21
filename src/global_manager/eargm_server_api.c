@@ -86,7 +86,7 @@ int create_server_socket(uint use_port)
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {
-		VERBOSE_N(0,"getaddrinfo fails for port %s \n",buff);
+		verbose(0,"getaddrinfo fails for port %s \n",buff);
 		return EAR_ERROR;
     }
 
@@ -98,7 +98,7 @@ int create_server_socket(uint use_port)
             continue;
 
        while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){
-		VERBOSE_N(0,"Waiting for connection");
+		verbose(0,"Waiting for connection");
 		sleep(10);
 		}
             break;                  /* Success */
@@ -107,20 +107,20 @@ int create_server_socket(uint use_port)
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		VERBOSE_N(0,"bind fails for eargm server\n");
+		verbose(0,"bind fails for eargm server\n");
 		return EAR_ERROR;
     }else{
-		VERBOSE_N(2,"socket and bind for erads socket success\n");
+		verbose(2,"socket and bind for erads socket success\n");
 	}
 
    	freeaddrinfo(result);           /* No longer needed */
 
    	if (listen(sfd,EARGM_EXTERNAL_CONNEXIONS)< 0){
-		VERBOSE_N(0,"listen eargm socket fails\n");
+		verbose(0,"listen eargm socket fails\n");
 		close(sfd);
  		return EAR_ERROR;
 	}
-	VERBOSE_N(1,"socket listen ready!\n");
+	verbose(1,"socket listen ready!\n");
  	return sfd;
 }
 int wait_for_client(int s,struct sockaddr_in *client)
@@ -131,10 +131,10 @@ int wait_for_client(int s,struct sockaddr_in *client)
     client_addr_size = sizeof(struct sockaddr_in);
     new_sock = accept(s, (struct sockaddr *) &client, &client_addr_size);
     if (new_sock < 0){ 
-		VERBOSE_N(0,"accept for eargm socket fails %s\n",strerror(errno));
+		verbose(0,"accept for eargm socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
-	VERBOSE_N(1,"new connection \n");
+	verbose(1,"new connection \n");
 	return new_sock;
 }
 void close_server_socket(int sock)
@@ -147,13 +147,13 @@ int read_command(int s,eargm_request_t *command)
 	int ret;
 	ret=read(s,command,sizeof(eargm_request_t));
 	if ((ret<0) || (ret!=sizeof(eargm_request_t))){
-		VERBOSE_N(0,"Error reading remote command\n");
-		if (ret<0) VERBOSE_N(0,"errno %s\n",strerror(errno));	
+		verbose(0,"Error reading remote command\n");
+		if (ret<0) verbose(0,"errno %s\n",strerror(errno));
 		command->req=NO_COMMAND;
 	}
 	return command->req;
 }
 void send_answer(int s,ulong *ack)
 {
-	if (write(s,ack,sizeof(ulong))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer\n");
+	if (write(s,ack,sizeof(ulong))!=sizeof(ulong)) verbose(0,"Error sending the answer\n");
 }

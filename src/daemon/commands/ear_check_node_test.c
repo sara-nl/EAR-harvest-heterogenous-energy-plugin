@@ -91,18 +91,18 @@ void main(int argc,char *argv[])
     }   
 	strcpy(nodename,myhost);
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }   
-    VERBOSE_N(0,"Using %s as EARD configuration file",my_ear_conf_path);
+    verbose(0,"Using %s as EARD configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
-        VERBOSE_N(0," Error reading cluster configuration\n");
+        verbose(0," Error reading cluster configuration\n");
 		exit(0);
     }   
 	print_cluster_conf(&my_cluster_conf);
 	my_node_conf=get_my_node_conf(&my_cluster_conf,myhost);
 	if (my_node_conf==NULL){
-		VERBOSE_N(0," Error in cluster configuration, node %s not found\n",myhost);
+		verbose(0," Error in cluster configuration, node %s not found\n",myhost);
 		exit(0);
 	}
 	print_my_node_conf(my_node_conf);

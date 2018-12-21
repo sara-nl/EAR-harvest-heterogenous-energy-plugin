@@ -248,7 +248,7 @@ static int write_command(uchar *ctl, int *cmd, int n_ctl, int n_cmd)
             res = pwrite(fd_functions[i], (void*) &cmd[k], sizeof(int), (int) ctl[j]);
             if (res == -1 || res != sizeof(int))
             {
-                ear_verbose(0, "pci_uncores.c: writing file error (fd %i) (%s)\n",
+                verbose(0, "pci_uncores.c: writing file error (fd %i) (%s)\n",
                             fd_functions[i], strerror(errno));
 
                 close(fd_functions[i]);
@@ -389,7 +389,7 @@ int pci_read_uncores(ull *values)
 
                 if (res == -1 || res != sizeof(ull))
                 {
-                    ear_verbose(0, "pci_uncores.c: reading file error (%s)\n",
+                    verbose(0, "pci_uncores.c: reading file error (%s)\n",
                                 strerror(errno));
                     close(fd_functions[i]);
                     fd_functions[i] = -1;

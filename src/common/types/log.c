@@ -78,10 +78,10 @@ void init_log()
 	gethostname(nodename, sizeof(nodename));
 	strtok(nodename, ".");
 	sprintf(log_name,"EAR.%s.log",nodename);
-	VERBOSE_N(2, "creating %s log file", log_name);
+	verbose(2, "creating %s log file", log_name);
 	fd_log=open(log_name,O_WRONLY|O_APPEND|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd_log<0){
-		VERBOSE_N(0, "ERROR while creating EAR log file %s (%s)", log_name, strerror(errno));
+		verbose(0, "ERROR while creating EAR log file %s (%s)", log_name, strerror(errno));
 	}
 	umask(my_mask);
     current_t=localtime(&curr_time);

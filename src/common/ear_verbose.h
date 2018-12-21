@@ -32,46 +32,7 @@
 
 #include <common/config.h>
 
-extern int EAR_VERBOSE_LEVEL;
-
-/** Prints a formatted string in case the level passed is greater or equal than
- *  the selected level of verbosity. */
-#define ear_verbose(level,...) \
-	if (level <= EAR_VERBOSE_LEVEL) fprintf(stderr, __VA_ARGS__);
-
-/** Prints a formatted string in case the level passed is greater or equal than
- *  the selected level of verbosity. This function prints the prefix string
- *  constant __NAME__, and a new line character as a suffix. */
-#define VERBOSE_N(level, ...) \
-        if (level <= EAR_VERBOSE_LEVEL) { \
-                fprintf(stderr, "%s: ", __NAME__); \
-                fprintf(stderr, __VA_ARGS__); \
-                fprintf(stderr, "\n"); \
-        }
-
-#define eard_verbose(level, ...) \
-        if (level <= EAR_VERBOSE_LEVEL) { \
-                fprintf(stderr, "%s[%s]: ", __NAME__,__HOST__); \
-                fprintf(stderr, __VA_ARGS__); \
-                fprintf(stderr, "\n"); \
-        }
-
-#define earl_verbose(level, ...) \
-        if (level <= EAR_VERBOSE_LEVEL) { \
-                fprintf(stderr, "%s[%s]: ", __NAME__,__HOST__); \
-                fprintf(stderr, __VA_ARGS__); \
-                fprintf(stderr, "\n"); \
-        }
-
-#define eargm_verbose(level, ...) \
-        if (level <= EAR_VERBOSE_LEVEL) { \
-                fprintf(stderr, "EARGM: "); \
-                fprintf(stderr, __VA_ARGS__); \
-                fprintf(stderr, "\n"); \
-        }
-
-
-/** Prints a formatted string in case the level passed is greater or equal then
+	/** Prints a formatted string in case the level passed is greater or equal then
  *  the selected level of debugging.*/
 #if BUILD(DEBUG)
 	#define ear_debug(level,...) \

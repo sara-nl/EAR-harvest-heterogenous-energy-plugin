@@ -87,7 +87,7 @@ int create_server_socket(uint port)
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {
-		VERBOSE_N(0,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
+		verbose(0,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
 		return EAR_ERROR;
     }
 
@@ -101,7 +101,7 @@ int create_server_socket(uint port)
 
 
         while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){ 
-			eard_verbose(0,"Waiting for connection");
+			verbose(0,"Waiting for connection");
 			sleep(10);
 	    }
             break;                  /* Success */
@@ -109,20 +109,20 @@ int create_server_socket(uint port)
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		VERBOSE_N(0,"bind fails for eards server (%s) ",strerror(errno));
+		verbose(0,"bind fails for eards server (%s) ",strerror(errno));
 		return EAR_ERROR;
     }else{
-		VERBOSE_N(1,"socket and bind for erads socket success");
+		verbose(1,"socket and bind for erads socket success");
 	}
 
    	freeaddrinfo(result);           /* No longer needed */
 
    	if (listen(sfd,DAEMON_EXTERNAL_CONNEXIONS)< 0){
-		VERBOSE_N(0,"listen eards socket fails (%s)",strerror(errno));
+		verbose(0,"listen eards socket fails (%s)",strerror(errno));
 		close(sfd);
  		return EAR_ERROR;
 	}
-	VERBOSE_N(1,"socket listen ready!");
+	verbose(1,"socket listen ready!");
  	return sfd;
 }
 int wait_for_client(int s,struct sockaddr_in *client)
@@ -133,13 +133,13 @@ int wait_for_client(int s,struct sockaddr_in *client)
     client_addr_size = sizeof(struct sockaddr_in);
     new_sock = accept(s, (struct sockaddr *) &client, &client_addr_size);
     if (new_sock < 0){ 
-		eard_verbose(CONNECT_ERROR_VERBOSE,"accept for eards socket fails %s\n",strerror(errno));
+		verbose(CONNECT_ERROR_VERBOSE,"accept for eards socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
     char conection_ok = 1;
     write(new_sock, &conection_ok, sizeof(char));
-    eard_verbose(CONNECT_VERBOSE, "Sending handshake byte to client.");
-	eard_verbose(CONNECT_VERBOSE, "new connection ");
+    verbose(CONNECT_VERBOSE, "Sending handshake byte to client.");
+	verbose(CONNECT_VERBOSE, "new connection ");
 	return new_sock;
 }
 
@@ -157,17 +157,17 @@ int read_command(int s,request_t *command)
 	ret=read(s,command,sizeof(request_t));
 	//ret=recv(s,command,sizeof(request_t), MSG_DONTWAIT);
 	if (ret<0){
-		eard_verbose(CONNECT_ERROR_VERBOSE,"read_command error errno %s",strerror(errno));	
+		verbose(CONNECT_ERROR_VERBOSE,"read_command error errno %s",strerror(errno));
 		command->req=NO_COMMAND;
 		return command->req;
 	}
 	pending-=ret;
 	done=ret;
 	while((ret>0) && (pending>0)){
-		eard_verbose(CONNECT_VERBOSE,"Read command continue , pending %d",pending);
+		verbose(CONNECT_VERBOSE,"Read command continue , pending %d",pending);
 		ret=read(s,(char*)command+done,pending);
 		//ret=recv(s,(char*)command+done,pending, MSG_DONTWAIT);
-		if (ret<0) eard_verbose(CONNECT_ERROR_VERBOSE,"read_command error errno %s",strerror(errno));
+		if (ret<0) verbose(CONNECT_ERROR_VERBOSE,"read_command error errno %s",strerror(errno));
 		pending-=ret;
 		done+=ret;
 	}
@@ -176,8 +176,8 @@ int read_command(int s,request_t *command)
 void send_answer(int s,ulong *ack)
 {
 	int ret;
-	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer");
-	if (ret<0) VERBOSE_N(0,"(%s)",strerror(errno));
+	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) verbose(0,"Error sending the answer");
+	if (ret<0) verbose(0,"(%s)",strerror(errno));
 }
 void propagate_req(request_t *command, uint port)
 {
@@ -204,7 +204,7 @@ void propagate_req(request_t *command, uint port)
 
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
-		eard_verbose(CONNECT_ERROR_VERBOSE,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
+		verbose(CONNECT_ERROR_VERBOSE,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
 		return;
     }
 
@@ -233,14 +233,14 @@ void propagate_req(request_t *command, uint port)
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
     {
-        eard_verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip1);
+        verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip1);
         correct_error(ntohl(ip1), command, port);
     }
     else
     {
         if (!send_command(command)) 
         {
-            eard_verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip1);
+            verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip1);
             eards_remote_disconnect();
             correct_error(ntohl(ip1), command, port);
         }
@@ -252,14 +252,14 @@ void propagate_req(request_t *command, uint port)
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
-        eard_verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip2);
+        verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip2);
         correct_error(ntohl(ip2), command, port);
     }
     else
     {
         if (!send_command(command)) 
         {
-            eard_verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip2);
+            verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip2);
             eards_remote_disconnect();
             correct_error(ntohl(ip2), command, port);
         }
@@ -292,7 +292,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
 
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
-		VERBOSE_N(0,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
+		verbose(0,"getaddrinfo fails for port %s (%s)",buff,strerror(errno));
 		return EAR_ERROR;
     }
 
@@ -330,15 +330,15 @@ int propagate_status(request_t *command, uint port, status_t **status)
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
     {
-        eard_verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip1);
+        verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip1);
         num_status1 = correct_status(ntohl(ip1), command, port, &status1);
     }
     else
     {
-		eard_verbose(CONNECT_VERBOSE,"Sending status to %s\n",nextip1);
+		verbose(CONNECT_VERBOSE,"Sending status to %s\n",nextip1);
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
-            eard_verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip1);
+            verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip1);
             eards_remote_disconnect();
             num_status1 = correct_status(ntohl(ip1), command, port, &status1);
         }
@@ -350,15 +350,15 @@ int propagate_status(request_t *command, uint port, status_t **status)
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
-        eard_verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip2);
+        verbose(CONNECT_ERROR_VERBOSE, "Error connecting to node: %s\n", nextip2);
         num_status2 = correct_status(ntohl(ip2), command, port, &status2);
     }
     else
     {
-		eard_verbose(CONNECT_VERBOSE,"Sending status to %s\n",nextip2);
+		verbose(CONNECT_VERBOSE,"Sending status to %s\n",nextip2);
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
-            eard_verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip2);
+            verbose(CONNECT_ERROR_VERBOSE, "Error propagating command to node %s\n", nextip2);
             eards_remote_disconnect();
             num_status2 = correct_status(ntohl(ip2), command, port, &status2);
         }

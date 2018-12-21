@@ -214,12 +214,12 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     if (app == NULL)
     {
-        VERBOSE_N(0, "APP is null.");
+        verbose(0, "APP is null.");
         return EAR_ERROR;
     }
     else if (num_apps < 1)
     {
-        VERBOSE_N(0, "Num_apps < 1 (%d)", num_apps);
+        verbose(0, "Num_apps < 1 (%d)", num_apps);
         return EAR_ERROR;
     }
     

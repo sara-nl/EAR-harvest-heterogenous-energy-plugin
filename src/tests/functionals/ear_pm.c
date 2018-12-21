@@ -99,8 +99,8 @@ void main(int argc,char *argv[])
 	
 	if (argc!=2) usage(argv[0]);
 	f_monitoring=atoi(argv[1]);
-	VERBOSE_N(0,"ear_power_monitoring started: sampling period %d usec\n",f_monitoring);
-	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0,"Error in init_power_ponitoring\n");
+	verbose(0,"ear_power_monitoring started: sampling period %d usec\n",f_monitoring);
+	if (init_power_ponitoring()!=EAR_SUCCESS) verbose(0,"Error in init_power_ponitoring\n");
 	t_ms=f_monitoring/1000;
 	aperf_init(16);
 	aperf_init_all_cpus(16,3200000);
