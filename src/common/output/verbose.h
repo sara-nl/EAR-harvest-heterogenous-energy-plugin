@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int verb_channel	__attribute__((weak));
+int verb_channel	__attribute__((weak)) = STDERR_FILENO;
 int verb_level		__attribute__((weak));
 
 #define verbose(v, ...) \
