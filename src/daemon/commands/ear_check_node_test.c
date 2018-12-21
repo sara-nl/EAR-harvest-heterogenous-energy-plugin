@@ -41,7 +41,6 @@ char nodename[MAX_PATH_SIZE];
 ulong eard_max_pstate=1;
 
 #define NAME_SIZE 128
-int EAR_VERBOSE_LEVEL=1;
 static const char *__NAME__ = "eard_check_test";
 int print_powermon_app_fd_binary(int fd,powermon_app_t *app)
 {

@@ -41,7 +41,7 @@
 #include <sys/types.h>
 #include <signal.h>
 
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <daemon/eard_api.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>

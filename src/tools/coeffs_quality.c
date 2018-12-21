@@ -39,8 +39,6 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/db_helper.h>
 
-int EAR_VERBOSE_LEVEL = 0;
-
 // buffers
 static char name_node[SZ_NAME_SHORT];
 static char path_coeffs[SZ_PATH];

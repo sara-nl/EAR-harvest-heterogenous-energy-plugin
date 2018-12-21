@@ -40,7 +40,7 @@
 #include <metrics/ipmi/energy_node/lenovo_nm.h>
 #include <metrics/ipmi/energy_node/lenovo_sd650.h>
 #include <metrics/ipmi/energy_node/ibm.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 
 #define FUNCVERB(function)                               \
     ear_debug(4, "ear_daemon(node_energy) " function "\n");

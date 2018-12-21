@@ -37,7 +37,6 @@
 #include <common/types/configuration/cluster_conf.h>
 
 #define NAME_SIZE 128
-int EAR_VERBOSE_LEVEL=1;
 static const char *__NAME__ = "end_job->eard";
 cluster_conf_t my_cluster_conf;
 

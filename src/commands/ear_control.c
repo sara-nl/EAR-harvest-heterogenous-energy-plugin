@@ -42,7 +42,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -61,8 +61,6 @@ typedef struct ip_table
 	uint power;
 	eard_policy_info_t policies[TOTAL_POLICIES];
 } ip_table_t;
-
-int EAR_VERBOSE_LEVEL = 0;
 
 cluster_conf_t my_cluster_conf;
 

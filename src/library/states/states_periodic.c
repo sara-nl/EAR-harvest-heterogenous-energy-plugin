@@ -43,7 +43,7 @@
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
 #include <library/models/models.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/log.h>
 #include <common/types/application.h>
 #include <common/types/loop.h>

@@ -38,7 +38,6 @@
 #include <stdint.h>
 
 #define NAME_SIZE 128
-int EAR_VERBOSE_LEVEL=0;
 static const char *__NAME__ = "new_job->eard";
 
 void usage(char *app)

@@ -49,7 +49,7 @@
 #include <daemon/eard_conf_rapi.h>
 #include <common/config.h>
 #include <common/sockets.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>

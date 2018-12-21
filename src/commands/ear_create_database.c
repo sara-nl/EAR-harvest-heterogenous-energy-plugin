@@ -37,7 +37,6 @@
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
 
-int EAR_VERBOSE_LEVEL = 1;
 char print_out = 0;
 cluster_conf_t my_cluster;
 

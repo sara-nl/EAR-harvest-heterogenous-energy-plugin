@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 
 static const char *__NAME__ = "services.pid";
 int new_service(char *service)

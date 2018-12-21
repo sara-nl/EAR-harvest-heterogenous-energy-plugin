@@ -51,7 +51,7 @@ typedef struct ear_event{
 
 #include <common/config.h>
 #include <common/types/log.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <daemon/eard_api.h>
 
 #define LOG_FILE 1

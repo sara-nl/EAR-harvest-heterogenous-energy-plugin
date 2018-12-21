@@ -35,7 +35,7 @@
 #include <metrics/papi/cache.h>
 #include <metrics/papi/generics.h>
 #include <metrics/custom/hardware_info.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 
 #define CACHE_SETS 3

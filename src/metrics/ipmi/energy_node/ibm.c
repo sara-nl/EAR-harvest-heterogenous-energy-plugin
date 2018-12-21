@@ -41,7 +41,7 @@
 #include <freeipmi/freeipmi.h>
 
 #include <metrics/custom/hardware_info.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 

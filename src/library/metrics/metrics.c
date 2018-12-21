@@ -44,7 +44,7 @@
 #include <library/metrics/metrics.h>
 #include <common/types/signature.h>
 #include <daemon/eard_api.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/math_operations.h>
 #include <library/common/externs.h>

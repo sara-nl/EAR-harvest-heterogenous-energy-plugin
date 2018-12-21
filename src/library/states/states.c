@@ -44,7 +44,7 @@
 #include <library/metrics/metrics.h>
 #include <library/models/models.h>
 #include <library/mpi_intercept/freq_synchro.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/log.h>
 #include <common/types/application.h>
 #include <common/states.h>

@@ -41,7 +41,7 @@
 
 #include <control/frequency.h>
 #include <common/types/generic.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 #include <metrics/custom/hardware_info.h>
 

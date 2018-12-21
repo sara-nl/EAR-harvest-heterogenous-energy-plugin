@@ -39,13 +39,12 @@
 
 #include <global_manager/eargm_conf_api.h>
 #include <global_manager/eargm_rapi.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 
 // Verbosity
 static const char *__NAME__ = "eargm_api";
 
-extern int EAR_VERBOSE_LEVEL;
 static int eargm_sfd;
 static uint eargm_remote_connected=0;
 

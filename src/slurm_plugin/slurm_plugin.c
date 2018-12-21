@@ -46,7 +46,6 @@ SPANK_PLUGIN(EAR_PLUGIN, 1)
 
 // Verbosity
 char *__HOST__ = "";
-int EAR_VERBOSE_LEVEL = 0;
 int verbosity = -1;
 
 // Context

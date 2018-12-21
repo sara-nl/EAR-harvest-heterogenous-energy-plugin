@@ -34,7 +34,7 @@
 #include <limits.h>
 #include <mysql/mysql.h>
 #include <common/states.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>

@@ -44,7 +44,7 @@
 #include <common/config.h>
 #include <common/types/generic.h>
 #include <common/states.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <global_manager/eargm_server_api.h>
 #include <daemon/eard_rapi.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -95,7 +95,6 @@ char  unit_name[128],unit_energy[128],unit_power[128];
 /* 
 * EAR Global Manager global data
 */
-int EAR_VERBOSE_LEVEL=1;
 int verbose_arg=-1;
 uint period_t1,period_t2;
 ulong total_energy_t2,energy_t1;

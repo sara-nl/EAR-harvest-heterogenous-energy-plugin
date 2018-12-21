@@ -100,7 +100,7 @@
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/bandwidth/uncores_pci.h>
 #include <common/types/generic.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 
 #define IJKFOR(i_len, j_len, k_len) \

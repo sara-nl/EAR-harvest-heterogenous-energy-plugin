@@ -40,7 +40,6 @@ cluster_conf_t my_cluster_conf;
 
 
 #define NAME_SIZE 128
-int EAR_VERBOSE_LEVEL=1;
 
 void usage(char *app)
 {

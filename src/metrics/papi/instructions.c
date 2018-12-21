@@ -33,7 +33,7 @@
 #include <papi.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 
 #define BASIC_SETS		1
 #define BASIC_EVS		2

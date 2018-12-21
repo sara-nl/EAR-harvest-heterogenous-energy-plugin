@@ -44,7 +44,7 @@
 #include <daemon/eard_conf_rapi.h>
 #include <daemon/eard_rapi.h>
 #include <common/states.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/job.h>
 
 // Verbosity

@@ -33,7 +33,7 @@
 #include <unistd.h>
 
 #include <common/config.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <daemon/eard_checkpoint.h>
 

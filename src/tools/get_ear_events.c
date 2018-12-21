@@ -37,7 +37,6 @@
 
 #define EVENT_QUERY "SELECT id, from_unixtime(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
 
-int EAR_VERBOSE_LEVEL=1;
 int verbose = 0;
 const char *__NAME__ = "ear_event_print";
 

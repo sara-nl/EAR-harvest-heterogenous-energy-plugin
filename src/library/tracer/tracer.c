@@ -38,7 +38,7 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 #include <common/config.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <library/tracer/tracer.h>
 
 #ifdef EAR_GUI

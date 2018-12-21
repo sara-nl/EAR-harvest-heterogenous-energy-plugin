@@ -36,7 +36,6 @@
 
 #define NODE_QUERY "SELECT distinct(node_id) from Periodic_metrics where end_time >= (unix_timestamp(now())-%d)"
 
-int EAR_VERBOSE_LEVEL=1;
 int verbose = 0;
 const char *__NAME__ = "ear_event_print";
 

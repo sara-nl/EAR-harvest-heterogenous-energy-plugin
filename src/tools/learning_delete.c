@@ -36,8 +36,6 @@
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 
-int EAR_VERBOSE_LEVEL=1;
-
 //#define ALL_QUERY   "DELETE Learning_signatures, Learning_applications, Learning_jobs FROM Learning_jobs " \
                     "INNER JOIN Learning_applications INNER JOIN Learning_signatures ON Learning_jobs.id=job_id " \
                     "AND Learning_jobs.step_id=Learning_applications.step_id AND Learning_signatures.id=signature_id"

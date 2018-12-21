@@ -32,7 +32,7 @@
 #include <string.h>
 #include <papi.h>
 #include <metrics/papi/generics.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 
 static const char *__NAME__ = "PAPI_GENERICS";
 

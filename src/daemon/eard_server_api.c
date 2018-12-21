@@ -47,7 +47,7 @@
 #include <netdb.h>
 
 #include <common/types/job.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/config.h>
 #include <daemon/eard_conf_rapi.h>

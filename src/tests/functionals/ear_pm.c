@@ -39,13 +39,12 @@
 #include <fcntl.h>
 #include <float.h>
 #include <errno.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/generic.h>
 
 #include <daemon/power_monitoring/ear_power_monitor.h>
 #include <metrics/custom/frequency.h>
 
-int EAR_VERBOSE_LEVEL=1;
 static const char *__NAME__ = "powermon: ";
 
 //  That constant is replicated. We must fix that

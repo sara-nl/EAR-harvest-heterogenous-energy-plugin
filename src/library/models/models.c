@@ -45,7 +45,7 @@
 #include <library/models/min_time.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/log.h>
 #include <common/states.h>
 #include <daemon/eard_api.h>

@@ -38,7 +38,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/ipmi/energy_node.h>

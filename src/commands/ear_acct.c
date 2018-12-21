@@ -42,7 +42,6 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/mysql_io_functions.h>
 cluster_conf_t my_conf;
-int EAR_VERBOSE_LEVEL=0;
 #endif
 int full_length = 0;
 int verbose = 0;

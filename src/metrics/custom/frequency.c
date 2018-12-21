@@ -76,7 +76,7 @@
 
 #include <metrics/custom/frequency.h>
 #include <metrics/custom/hardware_info.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 
 // INTEL APERF/MPERF MSR registers

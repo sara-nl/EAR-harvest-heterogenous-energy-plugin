@@ -45,7 +45,7 @@
 #include <common/types/job.h>
 #include <common/types/log.h>
 #include <common/types/loop.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/environment.h>
 #include <common/types/generic.h>
 #include <common/types/services.h>
@@ -132,7 +132,6 @@ char nodename[MAX_PATH_SIZE];
 int ear_ping_fd=-1;
 int eard_lockf;
 char eard_lock_file[MAX_PATH_SIZE];
-int EAR_VERBOSE_LEVEL=0;
 int application_id=-1;
 
 ulong energy_freq;

@@ -55,7 +55,7 @@
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
 #include <common/types/application.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/environment.h>
 #include <common/states.h>
 #include <common/config.h>

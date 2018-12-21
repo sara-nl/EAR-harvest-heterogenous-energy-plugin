@@ -37,7 +37,7 @@
 
 
 #include <common/config.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <library/common/externs.h>
 
 #if EAR_LIB_SYNC

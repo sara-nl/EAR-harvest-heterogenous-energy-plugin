@@ -51,7 +51,7 @@
 
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/bandwidth/uncores_pci.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/math_operations.h>
 
 #define FUNCVERB(function)                               \

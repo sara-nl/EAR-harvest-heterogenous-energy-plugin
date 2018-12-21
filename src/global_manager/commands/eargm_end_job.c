@@ -8,7 +8,6 @@
 #include <common/types/configuration/cluster_conf.h>
 
 #define NAME_SIZE 128
-int EAR_VERBOSE_LEVEL=0;
 static const char *__NAME__ = "end_job->eargmd";
 
 void usage(char *app)

@@ -35,7 +35,7 @@
 #include <papi.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/stalls.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 
 #define STALL_SETS 		1
 #define STALL_EVS 		2
