@@ -27,9 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -49,8 +46,6 @@
 #include <daemon/eard_api.h>
 
 #define MAX_TRIES 1
-
-static const char *__NAME__ = "EARL->EARD";
 
 // Pipes
 static int ear_fd_req[ear_daemon_client_requests];

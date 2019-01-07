@@ -27,28 +27,26 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
-
 #include <common/config.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/types/log.h>
+#include <common/types/projection.h>
+#include <common/types/application.h>
+#include <daemon/eard_api.h>
 #include <control/frequency.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
-#include <daemon/eard_api.h>
-#include <common/types/application.h>
-#include <common/types/projection.h>
-#include <common/output/verbose.h>
-#include <common/types/log.h>
-#include <common/states.h>
 
-static const char *__NAME__ = "min_time_to_solution:";
-extern const char *__HOST__;
+#define NO_MODELS_MT_VERBOSE	2
+
 static uint mt_policy_pstates;
 static uint mt_reset_freq=RESET_FREQ;
 extern coefficient_t **coefficients;
@@ -56,9 +54,6 @@ extern uint EAR_default_pstate;
 extern double performance_gain;
 extern application_t *signatures;
 extern uint *sig_ready;
-#define NO_MODELS_MT_VERBOSE	2
-
-
 static int use_models=1;
 
 void min_time_init(uint pstates)

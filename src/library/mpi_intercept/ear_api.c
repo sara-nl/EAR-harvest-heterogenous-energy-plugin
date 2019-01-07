@@ -38,9 +38,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-
 #include <papi.h>
-#include <control/frequency.h>
+#include <common/config.h>
+#include <common/states.h>
+#include <common/environment.h>
+#include <common/output/verbose.h>
+#include <common/types/application.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
@@ -52,19 +55,12 @@
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
 #include <library/mpi_intercept/freq_synchro.h>
+#include <control/frequency.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
-#include <common/types/application.h>
-#include <common/output/verbose.h>
-#include <common/environment.h>
-#include <common/states.h>
-#include <common/config.h>
 #include <metrics/metrics.h>
 
 // Statics
-static const char *__NAME__ = "EARL";
-char *__HOST__ ;
-
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
 #define USE_LOCK_FILES 		1
@@ -120,9 +116,6 @@ ulong *local_f;
 ulong *remote_f;
 unsigned masters_comm_created=0;
 #endif
-
-
-
 
 //
 static void print_local_data()
@@ -356,7 +349,6 @@ void ear_init()
 	// Fundamental data
 	gethostname(node_name, sizeof(node_name));
 	strtok(node_name, ".");
-	__HOST__=node_name;
 
 	verb_level = get_ear_verbose();
 	set_ear_total_processes(my_size);

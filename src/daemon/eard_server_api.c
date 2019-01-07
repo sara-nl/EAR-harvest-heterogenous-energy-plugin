@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,32 +34,25 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
-#include <linux/limits.h>
-
+#include <netdb.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
-#include <netdb.h>
-
+#include <linux/limits.h>
+#include <common/config.h>
+#include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
-#include <common/states.h>
-#include <common/config.h>
-#include <daemon/eard_conf_rapi.h>
 #include <daemon/eard_rapi.h>
-
-
-
-static char *__NAME__ = "EARD_API:";
-extern char *__HOST__;
+#include <daemon/eard_conf_rapi.h>
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
 
-static  int sfd;
+static int sfd;
 
 // based on getaddrinfo man pages
 int create_server_socket(uint port)

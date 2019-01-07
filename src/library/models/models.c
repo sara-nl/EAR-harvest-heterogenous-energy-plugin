@@ -27,27 +27,25 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
-
 #include <common/config.h>
-#include <control/frequency.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/types/log.h>
+#include <common/types/projection.h>
+#include <common/types/application.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
 #include <library/models/monitoring.h>
 #include <library/models/min_energy.h>
 #include <library/models/min_time.h>
-#include <common/types/application.h>
-#include <common/types/projection.h>
-#include <common/output/verbose.h>
-#include <common/types/log.h>
-#include <common/states.h>
+#include <control/frequency.h>
 #include <daemon/eard_api.h>
 
 static int use_default=1;
@@ -64,9 +62,6 @@ typedef struct policy
 
 policy_t app_policy;
 
-static const char *__NAME__ = "EARL";
-extern char *__HOST__ ;
-
 // Policy
 static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
 double performance_penalty ;
@@ -80,7 +75,6 @@ static uint reset_freq_opt = RESET_FREQ;
 static uint ear_models_pstates = 0;
 static ulong user_selected_freq;
 static int model_nominal=1;
-
 
 void init_policy_functions()
 {

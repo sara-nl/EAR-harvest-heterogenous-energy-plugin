@@ -36,16 +36,14 @@
 
 #define NODE_QUERY "SELECT distinct(node_id) from Periodic_metrics where end_time >= (unix_timestamp(now())-%d)"
 
-int verbose = 0;
-const char *__NAME__ = "ear_event_print";
+int _verbose = 0;
 
 void show_query_result(cluster_conf_t my_conf, char *query)
 {
     int i;
     MYSQL *connection = mysql_init(NULL);
 
-
-    if (verbose) printf("query: %s\n", query);
+    if (_verbose) printf("query: %s\n", query);
     
     if (connection == NULL)
     {

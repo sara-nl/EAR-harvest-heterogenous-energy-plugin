@@ -34,8 +34,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <library/common/externs.h>
@@ -53,8 +51,6 @@ extern unsigned masters_comm_created;
 
 #if COORDINATE_FREQUENCIES
 
-static const char *__NAME__ = "EARL-Sync";
-extern char *__HOST__ ;
 MPI_Request synchro_request;
 static int synchro_pending=0;
 

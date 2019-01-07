@@ -38,7 +38,7 @@
 #define BASIC_SETS		1
 #define BASIC_EVS		2
 
-static const char *__NAME__ = "METRICS_INSTRS";
+static const char *PAPI_NAME = "METRICS_INSTRS";
 static long long values[BASIC_SETS][BASIC_EVS];
 static long long acum_values[BASIC_EVS];
 static int event_sets[BASIC_SETS];
@@ -49,9 +49,9 @@ void init_basic_metrics()
 	int sets, events;
 	int cid, ret;
 
-	PAPI_INIT_TEST(__NAME__);
-	PAPI_INIT_MULTIPLEX_TEST(__NAME__);
-	PAPI_GET_COMPONENT(cid, "perf_event", __NAME__);
+	PAPI_INIT_TEST(PAPI_NAME);
+	PAPI_INIT_MULTIPLEX_TEST(PAPI_NAME);
+	PAPI_GET_COMPONENT(cid, "perf_event", PAPI_NAME);
 
 	for (sets=0;sets<BASIC_SETS;sets++)
 	{

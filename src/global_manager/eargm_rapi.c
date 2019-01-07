@@ -27,24 +27,21 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <errno.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/ip.h>
-#include <netdb.h> 
 #include <string.h>
 #include <stdint.h>
-#include <errno.h>
 #include <unistd.h>
-
-#include <global_manager/eargm_conf_api.h>
-#include <global_manager/eargm_rapi.h>
-#include <common/output/verbose.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <netinet/ip.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
+#include <global_manager/eargm_rapi.h>
+#include <global_manager/eargm_conf_api.h>
 
 // Verbosity
-static const char *__NAME__ = "eargm_api";
-
 static int eargm_sfd;
 static uint eargm_remote_connected=0;
 

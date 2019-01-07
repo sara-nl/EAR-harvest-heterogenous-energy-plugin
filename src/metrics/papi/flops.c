@@ -54,7 +54,7 @@
 #define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
 #define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
 
-static const char *__NAME__ = "METRICS_FLOPS";
+static const char *PAPI_NAME = "METRICS_FLOPS";
 static int weights[FLOPS_SETS][FLOPS_EVS] = {{1,4,8,16}, {1,2,4,8}};
 static long long acum_values[FLOPS_SETS][FLOPS_EVS];
 static long long values[FLOPS_SETS][FLOPS_EVS];
@@ -67,9 +67,9 @@ int init_flops_metrics()
 	int retval, cpu_model, cid;
 	int sets, events;
 
-	PAPI_INIT_TEST(__NAME__);
-	PAPI_INIT_MULTIPLEX_TEST(__NAME__);
-	PAPI_GET_COMPONENT(cid, "perf_event", __NAME__);
+	PAPI_INIT_TEST(PAPI_NAME);
+	PAPI_INIT_MULTIPLEX_TEST(PAPI_NAME);
+	PAPI_GET_COMPONENT(cid, "perf_event", PAPI_NAME);
 
 	for (sets = 0; sets < FLOPS_SETS; sets++)
 	{

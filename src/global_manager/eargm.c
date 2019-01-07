@@ -28,32 +28,33 @@
 */
 
 #define _XOPEN_SOURCE 700 //to get rid of the warning
+
+#include <time.h>
+#include <errno.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <signal.h>
-#include <errno.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <signal.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <signal.h>
-#include <common/config.h>
-#include <common/types/generic.h>
 #include <common/states.h>
+#include <common/config.h>
 #include <common/output/verbose.h>
+#include <common/database/db_helper.h>
+#include <common/types/generic.h>
+#include <common/types/gm_warning.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <global_manager/eargm_server_api.h>
 #include <daemon/eard_rapi.h>
-#include <common/types/configuration/cluster_conf.h>
-#include <common/types/gm_warning.h>
-#include <common/database/db_helper.h>
+
 #if SYSLOG_MSG
 #include <syslog.h>
 #endif
-
 
 /*
 *	EAR Global Manager constants
@@ -64,16 +65,12 @@
 #define WARNING_2	1
 #define PANIC		0
 #define NUM_LEVELS  4
-
-#define DEFCON_L4 0
-#define DEFCON_L3 1
-#define DEFCON_L2 2
-
-
-#define BASIC_U	1
-#define KILO_U	1000
-#define MEGA_U	1000000
-
+#define DEFCON_L4	0
+#define DEFCON_L3	1
+#define DEFCON_L2	2
+#define BASIC_U		1
+#define KILO_U		1000
+#define MEGA_U		1000000
 
 ulong th_level[NUM_LEVELS]={10,10,5,0};
 ulong pstate_level[NUM_LEVELS]={3,2,1,0};
@@ -89,7 +86,6 @@ pthread_t eargm_server_api_th;
 cluster_conf_t my_cluster_conf;
 char my_ear_conf_path[GENERIC_NAME];	
 uint total_nodes=0;
-static const char *__NAME__ = "EARGM";
 char  unit_name[128],unit_energy[128],unit_power[128];
 
 /* 

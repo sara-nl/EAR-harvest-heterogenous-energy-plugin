@@ -26,24 +26,18 @@
  * *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * *   The GNU LEsser General Public License is contained in the file COPYING  
  */
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
-
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <daemon/eard_checkpoint.h>
 
 extern char nodename[MAX_PATH_SIZE];
-static const char *__NAME__ = "checkpoint:";
-static const char *__HOST__=nodename;
 extern ulong eard_max_pstate;
-
-
-
 
 void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 {

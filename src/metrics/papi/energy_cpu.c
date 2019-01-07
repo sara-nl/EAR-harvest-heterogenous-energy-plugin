@@ -42,7 +42,7 @@
 #define RAPL_SETS		1
 #define MAX_RAPL_EVENTS		64
 
-static const char *__NAME__ = "metrics[rapl]";
+static const char *PAPI_NAME = "metrics[rapl]";
 long long acum_values[RAPL_SETS][RAPL_EVS];
 long long values[RAPL_SETS][RAPL_EVS];
 int event_sets[RAPL_SETS];
@@ -63,9 +63,9 @@ int init_rapl_metrics()
 
 	if (ear_papi_energy_connected) return EAR_SUCCESS;
 
-	PAPI_INIT_TEST(__NAME__);
-	PAPI_INIT_MULTIPLEX_TEST(__NAME__);
-	PAPI_GET_COMPONENT(cid, "rapl", __NAME__);
+	PAPI_INIT_TEST(PAPI_NAME);
+	PAPI_INIT_MULTIPLEX_TEST(PAPI_NAME);
+	PAPI_GET_COMPONENT(cid, "rapl", PAPI_NAME);
 
 	verbose(1, "rapl component found atd cid %d", cid);
 

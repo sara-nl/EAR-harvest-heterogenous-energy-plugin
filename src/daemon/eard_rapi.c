@@ -27,29 +27,22 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
+#include <errno.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/ip.h>
-#include <arpa/inet.h>
-#include <netdb.h> 
 #include <string.h>
 #include <stdint.h>
-#include <errno.h>
 #include <unistd.h>
-
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/ip.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <common/config.h>
-#include <daemon/eard_conf_rapi.h>
-#include <daemon/eard_rapi.h>
 #include <common/states.h>
-#include <common/output/verbose.h>
 #include <common/types/job.h>
-
-// Verbosity
-static const char *__NAME__ = "eard";
-static const char *__HOST__ ="api";
+#include <common/output/verbose.h>
+#include <daemon/eard_rapi.h>
+#include <daemon/eard_conf_rapi.h>
 
 static int eards_remote_connected=0;
 static int eards_sfd=-1;

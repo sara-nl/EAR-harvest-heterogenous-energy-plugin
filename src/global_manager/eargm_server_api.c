@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,30 +34,24 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
-#include <linux/limits.h>
-
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netdb.h>
-
-#include <common/output/verbose.h>
+#include <linux/limits.h>
 #include <common/states.h>
 #include <common/config.h>
-#include <global_manager/eargm_conf_api.h>
+#include <common/output/verbose.h>
 #include <global_manager/eargm_rapi.h>
-
+#include <global_manager/eargm_conf_api.h>
 
 int eargm_remote_socket,eargm_client;
 struct sockaddr_in eargm_remote_client;
 
-static char *__NAME__ = "eargm_api:";
-
 // 2000 and 65535
 #define EARGM_EXTERNAL_CONNEXIONS 1
-
 
 static  int sfd;
 // based on getaddrinfo man pages

@@ -62,12 +62,10 @@
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
-
 #if DB_MYSQL
 #include <database_cache/eardbd_api.h>
 #include <common/database/db_helper.h>
 #endif
-
 #include <daemon/eard.h>
 #include <daemon/app_api/app_server_api.h>
 
@@ -113,10 +111,6 @@ uint f_monitoring;
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a<b?a:b)
 #define RAPL_METRICS 	4
-
-// These two variables are used by the verbosity macros
-static const char *__NAME__ = "EARD";
-char *__HOST__;
 
 static int eardbd_connected=0;
 static int db_helper_connected=0;
@@ -1218,7 +1212,6 @@ void main(int argc,char *argv[])
         _exit(1);
     }
 	strtok(nodename, ".");
-	__HOST__=nodename;
 	verbose(1,"Executed in node name %s",nodename);
 	/** CONFIGURATION **/
 	// We read the cluster configuration and sets default values in the shared memory

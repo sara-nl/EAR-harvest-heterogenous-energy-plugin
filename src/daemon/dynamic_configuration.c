@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,16 +34,13 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
-#include <linux/limits.h>
-
+#include <netdb.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <netdb.h>
-
+#include <linux/limits.h>
 #include <common/config.h>
-#include <control/frequency.h>
 #include <common/types/job.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/output/verbose.h>
@@ -54,7 +49,7 @@
 #include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_conf_rapi.h>
-
+#include <control/frequency.h>
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;
@@ -66,8 +61,6 @@ extern cluster_conf_t my_cluster_conf;
 extern my_node_conf_t     *my_node_conf;
 extern my_node_conf_t  my_original_node_conf;
 
-static char *__NAME__ = "EARD";
-extern char *__HOST__;
 extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
 

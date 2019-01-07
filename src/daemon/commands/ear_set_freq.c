@@ -27,27 +27,22 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
 #include <common/config.h>
 #include <daemon/eard_rapi.h>
 #include <common/types/configuration/cluster_conf.h>
 
-static const char *__NAME__ = "set_freq->eard";
 cluster_conf_t my_cluster_conf;
-
-#define NAME_SIZE 128
 
 void usage(char *app)
 {
 	printf("usage:%s new_freq (in KHz)\n",app);
 	exit(1);
 }
-
-#define ID_SIZE 64
 
 void main(int argc,char *argv[])
 {

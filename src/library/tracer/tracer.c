@@ -62,10 +62,6 @@
 #define TRA_VPI		60017
 #define TRA_REC		60018
 
-static const char *__NAME__ = "EARL";
-extern char *__HOST__ ;
-
-
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
 

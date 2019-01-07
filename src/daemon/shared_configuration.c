@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
+#include <fcntl.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,20 +37,14 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-
-#include <common/output/verbose.h>
 #include <common/states.h>
-#include <common/types/configuration/cluster_conf.h>
+#include <common/output/verbose.h>
 #include <common/types/coefficient.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <daemon/shared_configuration.h>
 
 static int fd;
-static const char *__NAME__ = "EARD_shared";
 static int fd_cluster,fd_settings,fd_resched,fd_coeffs,fd_coeffs_default,fd_services,fd_freq;
-extern char *__HOST__;
-
 
 /** These functions created path names, just to avoid problems if changing the path name in the future */
 /** This functions creates the name of the file mapping the shared memory for the dynamic power settings, it is placed at TMP 

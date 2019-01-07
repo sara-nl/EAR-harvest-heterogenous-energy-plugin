@@ -37,7 +37,6 @@
 #include <sys/stat.h>
 #include <common/output/verbose.h>
 
-static const char *__NAME__ = "services.pid";
 int new_service(char *service)
 {
 	char service_name[128];

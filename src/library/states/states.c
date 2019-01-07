@@ -28,31 +28,27 @@
 */
 
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #include <common/config.h>
-#include <control/frequency.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/math_operations.h>
+#include <common/types/log.h>
+#include <common/types/application.h>
 #include <library/common/externs.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
 #include <library/models/models.h>
 #include <library/mpi_intercept/freq_synchro.h>
-#include <common/output/verbose.h>
-#include <common/types/log.h>
-#include <common/types/application.h>
-#include <common/states.h>
-#include <common/math_operations.h>
+#include <control/frequency.h>
 #include <daemon/eard_api.h>
-
-static const char *__NAME__ = "EARL";
-extern char *__HOST__ ;
 
 // static defines
 #define NO_PERIOD				0

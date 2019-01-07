@@ -1,14 +1,10 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
-
 #include <global_manager/eargm_rapi.h>
 #include <common/types/configuration/cluster_conf.h>
-
-#define NAME_SIZE 128
-static const char *__NAME__ = "end_job->eargmd";
 
 void usage(char *app)
 {
@@ -16,7 +12,6 @@ void usage(char *app)
 	exit(1);
 }
 
-#define ID_SIZE 64
 cluster_conf_t my_cluster;
 
 void main(int argc,char *argv[])

@@ -35,19 +35,14 @@
 #include <common/config.h>
 #include <daemon/eard_rapi.h>
 #include <common/types/configuration/cluster_conf.h>
-static const char *__NAME__ = "red_freq-->eard";
+
 cluster_conf_t my_cluster_conf;
-
-
-#define NAME_SIZE 128
 
 void usage(char *app)
 {
 	printf("usage:%s p_states \n",app);
 	exit(1);
 }
-
-#define ID_SIZE 64
 
 void main(int argc,char *argv[])
 {

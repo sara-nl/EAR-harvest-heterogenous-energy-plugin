@@ -68,16 +68,15 @@
  */
 
 #include <stdio.h>
-#include <unistd.h>
-#include <stdint.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
-
+#include <unistd.h>
+#include <stdint.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
 #include <metrics/custom/frequency.h>
 #include <metrics/custom/hardware_info.h>
-#include <common/output/verbose.h>
-#include <common/states.h>
 
 // INTEL APERF/MPERF MSR registers
 //
@@ -123,8 +122,6 @@
 // Documentation:
 // - Intel® 64 and IA-32 Architectures Software Developer’s Manual
 // chapter 35.
-
-static const char *__NAME__ = "AVG_FREQ_COMPUTATION";
 
 unsigned int _num_cpus;
 

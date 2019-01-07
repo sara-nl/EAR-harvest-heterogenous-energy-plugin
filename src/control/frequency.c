@@ -32,20 +32,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/version.h>
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
 #else
 #include <cpufreq.h>
 #endif
-
-#include <control/frequency.h>
+#include <common/states.h>
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
-#include <common/states.h>
+#include <control/frequency.h>
 #include <metrics/custom/hardware_info.h>
-
-static const char* __NAME__ = "frequency:";
 
 static struct cpufreq_policy previous_cpu0_policy;
 static ulong previous_cpu0_freq;
@@ -58,7 +54,6 @@ static ulong freq_nom; // Nominal frequency (assuming CPU 0)
 static uint num_freqs;
 static uint num_cpus;
 static uint is_turbo_enabled;
-
 
 //
 static ulong *get_frequencies_cpu()

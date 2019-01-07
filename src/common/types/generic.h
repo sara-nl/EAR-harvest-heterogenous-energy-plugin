@@ -40,12 +40,14 @@ typedef unsigned int		uint;
 typedef uint8_t				job_type;
 typedef ulong				job_id;
 
+// Obsolete
 #define GENERIC_NAME 		256
 #define	UID_NAME			8
 #define POLICY_NAME 		32
 #define ENERGY_TAG_SIZE		32
 #define MAX_PATH_SIZE		256
 #define NODE_SIZE			256
+#define NAME_SIZE			128
+#define ID_SIZE				64
 
-#else
 #endif

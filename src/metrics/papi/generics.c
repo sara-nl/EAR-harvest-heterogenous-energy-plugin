@@ -35,8 +35,6 @@
 #include <common/output/verbose.h>
 #include <metrics/papi/generics.h>
 
-static const char *__NAME__ = "PAPI_GENERICS";
-
 void metrics_get_app_name(char *app_name)
 {
 	const PAPI_exe_info_t *prginfo = NULL;

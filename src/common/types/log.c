@@ -40,23 +40,20 @@ typedef struct ear_event{
 */
 
 #include <time.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <common/config.h>
 #include <common/types/log.h>
 #include <common/output/verbose.h>
 #include <daemon/eard_api.h>
 
 #define LOG_FILE 1
-
-const char *__NAME__ = "LOG";
 
 static int fd_log=-1;
 static char my_log_buffer[1024];

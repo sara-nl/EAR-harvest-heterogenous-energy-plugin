@@ -32,8 +32,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <papi.h>
-
 #include <common/config.h>
+#include <common/states.h>
+#include <common/math_operations.h>
+#include <common/output/verbose.h>
+#include <common/types/signature.h>
 #include <metrics/metrics.h>
 #if 0
 #include <metrics/papi/flops.h>
@@ -41,13 +44,9 @@
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
 #endif
-#include <library/metrics/metrics.h>
-#include <common/types/signature.h>
 #include <daemon/eard_api.h>
-#include <common/output/verbose.h>
-#include <common/states.h>
-#include <common/math_operations.h>
 #include <library/common/externs.h>
+#include <library/metrics/metrics.h>
 
 #define TEST_MB 1
 
@@ -101,10 +100,6 @@
  * Avg. Freq. | ear_turbo.c (ear_frequency.c) | Per core, MSR registers. Hay que ver si acumula bien.
  *
  */
-
-// Verbosity
-static const char *__NAME__ = "ear/metrics";
-extern char *__HOST__ ;
 
 // Hardware
 static double hw_cache_line_size;

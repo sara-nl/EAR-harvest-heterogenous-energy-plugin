@@ -45,7 +45,6 @@
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 
 // Verbosity
-char *__HOST__ = "";
 int verbosity = -1;
 
 // Context

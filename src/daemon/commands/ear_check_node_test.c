@@ -37,11 +37,10 @@
 #include <metrics/power_metrics/power_metrics.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/eard_checkpoint.h>
+
 char nodename[MAX_PATH_SIZE];
 ulong eard_max_pstate=1;
 
-#define NAME_SIZE 128
-static const char *__NAME__ = "eard_check_test";
 int print_powermon_app_fd_binary(int fd,powermon_app_t *app)
 {
     print_application_fd_binary(fd,&app->app);

@@ -37,16 +37,14 @@
 
 #define EVENT_QUERY "SELECT id, from_unixtime(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
 
-int verbose = 0;
-const char *__NAME__ = "ear_event_print";
+int _verbose = 0;
 
 void show_query_result(cluster_conf_t my_conf, char *query)
 {
     int i;
     MYSQL *connection = mysql_init(NULL);
 
-
-    if (verbose) printf("query: %s\n", query);
+    if (_verbose) printf("query: %s\n", query);
     
     if (connection == NULL)
     {

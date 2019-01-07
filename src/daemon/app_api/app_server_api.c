@@ -26,19 +26,17 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <pthread.h>
 #include <errno.h>
-#include <signal.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <unistd.h>
-
-
+#include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/types/generic.h>
 #include <common/output/verbose.h>
+#include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/ipmi/energy_node.h>
@@ -53,8 +51,6 @@ static int fd_eard_to_app=-1;
 
 extern cluster_conf_t my_cluster_conf;
 extern int eard_must_exit;
-static char *__NAME__="EARD";
-extern char *__HOST__;
 
 /*********************************************************/
 /***************** PRIVATE FUNCTIONS in this module ******/

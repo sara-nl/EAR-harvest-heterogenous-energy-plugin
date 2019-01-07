@@ -27,18 +27,15 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
+#include <stdint.h>
 #include <common/config.h>
 #include <daemon/eard_rapi.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <stdint.h>
-
-#define NAME_SIZE 128
-static const char *__NAME__ = "new_job->eard";
 
 void usage(char *app)
 {
@@ -46,7 +43,6 @@ void usage(char *app)
 	exit(1);
 }
 
-#define ID_SIZE 64
 cluster_conf_t my_cluster_conf;
 
 void main(int argc,char *argv[])

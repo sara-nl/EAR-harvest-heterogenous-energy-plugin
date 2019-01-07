@@ -44,7 +44,7 @@
 #define L2 1
 #define L3 2
 
-static const char *__NAME__ = "METRICS_CACHE";
+static const char *PAPI_NAME = "METRICS_CACHE";
 static long long acum_values[CACHE_SETS];
 static long long values[CACHE_SETS][CACHE_EVS];
 static int event_sets[CACHE_SETS];
@@ -54,9 +54,9 @@ int init_cache_metrics()
 	PAPI_option_t cache_attach_opt[CACHE_SETS];
 	int ret, cid, sets, events;
 
-	PAPI_INIT_TEST(__NAME__);
-	PAPI_INIT_MULTIPLEX_TEST(__NAME__);
-	PAPI_GET_COMPONENT(cid, "perf_event", __NAME__);
+	PAPI_INIT_TEST(PAPI_NAME);
+	PAPI_INIT_MULTIPLEX_TEST(PAPI_NAME);
+	PAPI_GET_COMPONENT(cid, "perf_event", PAPI_NAME);
 
 	for (sets = 0; sets < CACHE_SETS; sets++)
 	{

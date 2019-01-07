@@ -34,7 +34,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -51,7 +50,6 @@
 #define MAX_PSTATE  16
 #define IP_LENGTH   24
 
-
 typedef struct ip_table
 {
     int ip_int;
@@ -63,8 +61,6 @@ typedef struct ip_table
 } ip_table_t;
 
 cluster_conf_t my_cluster_conf;
-
-static const char *__NAME__ = "econtrol";
 
 void fill_ip(char *buff, ip_table_t *table)
 {

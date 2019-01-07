@@ -27,31 +27,31 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
-
+#include <common/states.h>
 #include <common/config.h>
+#include <common/types/log.h>
+#include <common/types/signature.h>
+#include <common/types/projection.h>
+#include <common/types/application.h>
+#include <common/output/verbose.h>
+#include <daemon/eard_api.h>
 #include <control/frequency.h>
 #include <library/common/macros.h>
-#include <library/common/externs.h>
 #include <library/models/models.h>
-#include <daemon/eard_api.h>
-#include <common/types/application.h>
-#include <common/types/projection.h>
-#include <common/types/signature.h>
-#include <common/output/verbose.h>
-#include <common/types/log.h>
-#include <common/states.h>
+#include <library/common/externs.h>
 
+#define MIN_ENERGY_VERBOSE		0
+#define NO_MODELS_ME_VERB		2
+
+//
 static uint me_policy_pstates;
 static uint me_reset_freq=RESET_FREQ;
-static char *__NAME__ = "min_energy_policy";
-extern char *__HOST__;
 static int use_models=1;
 
 // Policy
@@ -63,13 +63,11 @@ extern uint *sig_ready;
 // Process
 extern uint EAR_default_pstate;
 
+//
 static double time_max;
 extern ulong user_selected_freq;
 
-#define MIN_ENERGY_VERBOSE 0
-#define NO_MODELS_ME_VERB	2
-
-
+//
 void min_energy_init(uint num_pstates)
 {
 	char *env_use_models;
@@ -77,6 +75,7 @@ void min_energy_init(uint num_pstates)
 	env_use_models=getenv("EAR_USE_MODELS");
 	if ((env_use_models!=NULL) && (atoi(env_use_models)==0)) use_models=0;
 }
+
 void min_energy_new_loop()
 {
     projection_reset(me_policy_pstates);

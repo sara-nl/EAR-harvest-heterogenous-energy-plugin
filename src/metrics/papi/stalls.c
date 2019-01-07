@@ -40,7 +40,7 @@
 #define STALL_SETS 		1
 #define STALL_EVS 		2
 
-static const char *__NAME__ = "METRICS_STALLs";
+static const char *PAPI_NAME = "METRICS_STALLs";
 static long long values[STALL_SETS][STALL_EVS];
 static long long acum_values[STALL_EVS];
 static int event_sets[STALL_SETS];
@@ -51,9 +51,9 @@ void init_stall_metrics()
 	int events, sets, cid, ret;
 
 	//
-	PAPI_INIT_TEST(__NAME__);
-	PAPI_INIT_MULTIPLEX_TEST(__NAME__);
-	PAPI_GET_COMPONENT(cid, "perf_event", __NAME__);
+	PAPI_INIT_TEST(PAPI_NAME);
+	PAPI_INIT_MULTIPLEX_TEST(PAPI_NAME);
+	PAPI_GET_COMPONENT(cid, "perf_event", PAPI_NAME);
 
 	//
 	for (sets = 0; sets < STALL_SETS; sets++)

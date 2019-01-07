@@ -41,15 +41,10 @@
 #include <errno.h>
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
-
 #include <daemon/power_monitoring/ear_power_monitor.h>
 #include <metrics/custom/frequency.h>
 
-static const char *__NAME__ = "powermon: ";
-
 //  That constant is replicated. We must fix that
-#define MAX_PATH_SIZE 256
-
 unsigned int f_monitoring;
 
 int idleNode=1;

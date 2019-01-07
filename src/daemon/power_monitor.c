@@ -66,8 +66,8 @@
 #endif
 
 #define REPORT_UNCORE	1
+
 uint64_t uncore_freq[2]={0,0};
-#define MAX_PATH_SIZE 256
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
 extern my_node_conf_t     *my_node_conf;
@@ -77,8 +77,6 @@ extern policy_conf_t default_policy_context,energy_tag_context,authorized_contex
 extern int ear_ping_fd;
 extern int ear_fd_ack[1];
 extern int application_id;
-static char *__NAME__="EARD";
-extern char *__HOST__;
 
 /* This variable controls the frequency for periodic power monitoring */
 extern uint f_monitoring;
