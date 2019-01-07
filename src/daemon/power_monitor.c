@@ -39,23 +39,22 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-
-#include <control/frequency.h>
-#include <metrics/custom/frequency_uncore.h>
-#include <daemon/power_monitor.h>
-#include <daemon/eard_checkpoint.h>
-#include <daemon/shared_configuration.h>
-#include <daemon/eard_conf_rapi.h>
 #include <common/config.h>
 #include <common/sockets.h>
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <metrics/power_metrics/power_metrics.h>
 #include <metrics/custom/frequency.h>
+#include <metrics/custom/frequency_uncore.h>
+#include <metrics/power_metrics/power_metrics.h>
+#include <control/frequency.h>
+#include <daemon/power_monitor.h>
+#include <daemon/eard_conf_rapi.h>
+#include <daemon/eard_checkpoint.h>
+#include <daemon/shared_configuration.h>
 
 #if SYSLOG_MSG
 #include <syslog.h>

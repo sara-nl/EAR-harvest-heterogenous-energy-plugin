@@ -39,9 +39,9 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <freeipmi/freeipmi.h>
-
-#include <metrics/custom/hardware_info.h>
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
+#include <metrics/custom/hardware_info.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 

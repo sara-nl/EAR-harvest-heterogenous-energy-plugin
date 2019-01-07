@@ -48,11 +48,11 @@
 
 #include <stdio.h>
 #include <string.h>
-
-#include <metrics/custom/hardware_info.h>
-#include <metrics/custom/bandwidth/uncores_pci.h>
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
+#include <metrics/custom/hardware_info.h>
+#include <metrics/custom/bandwidth/uncores_pci.h>
 
 #define FUNCVERB(function)                               \
     debug( "EAR_DAEMON(UNCORES) " function "\n");

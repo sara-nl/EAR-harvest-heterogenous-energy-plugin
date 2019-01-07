@@ -37,17 +37,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <signal.h>
-
+#include <common/config.h>
+#include <common/states.h>
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
-#include <daemon/eard_api.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
-#include <common/states.h>
-#include <common/config.h>
-
+#include <daemon/eard_api.h>
 
 #define MAX_TRIES 1
 

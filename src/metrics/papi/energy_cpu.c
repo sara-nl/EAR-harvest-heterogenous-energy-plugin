@@ -33,8 +33,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <common/output/verbose.h>
 #include <common/states.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/energy_cpu.h>
 

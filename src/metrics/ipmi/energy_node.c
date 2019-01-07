@@ -35,12 +35,13 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <freeipmi/freeipmi.h>
-
+#include <common/config.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
 #include <metrics/custom/hardware_info.h>
+#include <metrics/ipmi/energy_node/ibm.h>
 #include <metrics/ipmi/energy_node/lenovo_nm.h>
 #include <metrics/ipmi/energy_node/lenovo_sd650.h>
-#include <metrics/ipmi/energy_node/ibm.h>
-#include <common/output/verbose.h>
 
 #define FUNCVERB(function)                               \
     debug( "ear_daemon(node_energy) " function "\n");
