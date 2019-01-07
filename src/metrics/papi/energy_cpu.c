@@ -102,7 +102,7 @@ int init_rapl_metrics()
 			return EAR_ERROR;
 		}
 
-		DEBUG_F(4, "Processing event %d in pos %d name %s units %s", rapl_evinfo.event_code,
+		debug( "Processing event %d in pos %d name %s units %s", rapl_evinfo.event_code,
 				  ear_rapl_num_events, rapl_evinfo.symbol, rapl_evinfo.units);
 
     	strncpy(units[ear_rapl_num_events],rapl_evinfo.units, sizeof(units[0])-1);
@@ -165,7 +165,7 @@ int init_rapl_metrics()
 				PAPI_strerror(ret));
 				return EAR_ERROR;
 		}
-		DEBUG_F(3, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE0 success");
+		debug( "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE0 success");
 
 		// rapl:::DRAM_ENERGY:PACKAGE1
 		ret = PAPI_add_named_event(event_sets[sets],"rapl:::DRAM_ENERGY:PACKAGE1");
@@ -174,7 +174,7 @@ int init_rapl_metrics()
 				PAPI_strerror(ret));
 				return EAR_ERROR;
 		}
-		DEBUG_F(3, "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1  success");
+		debug( "PAPI_add_named_event rapl:::DRAM_ENERGY:PACKAGE1  success");
 
 		// rapl:::PACKAGE_ENERGY:PACKAGE0
 		ret = PAPI_add_named_event(event_sets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE0");
@@ -183,7 +183,7 @@ int init_rapl_metrics()
 				PAPI_strerror(ret));
 				return EAR_ERROR;
 		}
-		DEBUG_F(3, "PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0 success");
+		debug( "PAPI_add_named_event PACKAGE_ENERGY:PACKAGE0 success");
 
 		// rapl:::PACKAGE_ENERGY:PACKAGE1
 		ret = PAPI_add_named_event(event_sets[sets],"rapl:::PACKAGE_ENERGY:PACKAGE1");
@@ -192,7 +192,7 @@ int init_rapl_metrics()
 				PAPI_strerror(ret));
 				return EAR_ERROR;
 		}
-		DEBUG_F(3, "PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1 success");
+		debug( "PAPI_add_named_event rapl:::PACKAGE_ENERGY:PACKAGE1 success");
     }
 	verbose(2, "METRICS ON");
 	ear_papi_energy_connected=1;
@@ -263,11 +263,11 @@ int stop_rapl_metrics(unsigned long long *_values)
 				acum_values[sets][counts]+=values[sets][counts];
 
 				_values[counts] = (unsigned long long)values[sets][counts];
-				DEBUG_F(4, "Value for event %d %llu", counts, _values[counts]);
+				debug( "Value for event %d %llu", counts, _values[counts]);
 
 				acum_rapl += _values[counts];
 			}
-			DEBUG_F(3, "total energy %llu",acum_rapl);
+			debug( "total energy %llu",acum_rapl);
 	}
 	
 	return 0;

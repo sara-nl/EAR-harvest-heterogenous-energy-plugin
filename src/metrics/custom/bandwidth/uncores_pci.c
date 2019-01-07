@@ -295,7 +295,7 @@ static void pci_scan_uncores()
 
         if (read_tag == look_tag)
         {
-            ear_debug(1, "pci_uncores.c: uncore function found in %s\n", path);
+            debug( "pci_uncores.c: uncore function found in %s\n", path);
             fd_functions[n_functions] = fd;
             n_functions = n_functions + 1;
 
@@ -306,7 +306,7 @@ static void pci_scan_uncores()
     	}
     }
 
-    ear_debug(1, "pci_uncores.c: %i total uncore functions found\n", n_functions);
+    debug( "pci_uncores.c: %i total uncore functions found\n", n_functions);
 }
 
 // Compares the supposed quantity of buses to be
@@ -314,7 +314,7 @@ static void pci_scan_uncores()
 int pci_check_uncores()
 {
     int supposed = n_buses * get_cpu_n_functions();
-    ear_debug(1, "pci_uncores.c: %d detected functions versus %d supposed\n", n_functions, supposed);
+    debug( "pci_uncores.c: %d detected functions versus %d supposed\n", n_functions, supposed);
 
     if (supposed != n_functions) return EAR_WARNING;
     if (supposed <= 0) return EAR_ERROR;

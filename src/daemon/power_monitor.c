@@ -187,7 +187,7 @@ void report_application_in_file(application_t *app)
 	ret2 = append_application_text_file(database_csv_path, app,app->is_mpi);
 	if (ret1 == EAR_SUCCESS && ret2 == EAR_SUCCESS)
 	{
-		DEBUG_F(1, "application signature correctly written");
+		debug( "application signature correctly written");
 	} else {
 		verbose(1, "ERROR while application signature writing");
 	}
@@ -290,7 +290,7 @@ void report_powermon_app(powermon_app_t *app)
     {
 		if (!my_cluster_conf.eard.use_eardbd) {
 			if (!db_insert_application(&app->app))
-				DEBUG_F(1, "Application signature correctly written");
+				debug( "Application signature correctly written");
 		}
 		else {
 			edb_state_t state = eardbd_send_application(&app->app);
@@ -682,7 +682,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 			/* current sample reports the value of job_id and step_id active at this moment */
 			/* If we want to be strict, we must report intermediate samples at job start and job end */
     		if (!db_insert_periodic_metric(&current_sample))
-    			DEBUG_F(1, "Periodic power monitoring sample correctly written");
+    			debug( "Periodic power monitoring sample correctly written");
 		} else {
 			edb_state_t state = eardbd_send_periodic_metric(&current_sample);
 

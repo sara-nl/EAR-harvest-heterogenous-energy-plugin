@@ -43,7 +43,7 @@
 #include <common/output/verbose.h>
 
 #define FUNCVERB(function)                               \
-    ear_debug(4, "ear_daemon(node_energy) " function "\n");
+    debug( "ear_daemon(node_energy) " function "\n");
 
 static int ear_energy_node_connected=0;
 static int ear_energy_node_status=0;

@@ -270,7 +270,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	int i, ref;
 	char *use_def;
 
-	ear_debug(3, "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
+	debug( "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
 
 	use_def=getenv("USE_DEFAULT_COEFFICIENTS");
 	if (use_def!=NULL) use_default=atoi(use_def);
@@ -383,7 +383,7 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int
 
 	if (optimal_freq != ear_frequency)
 	{
-		ear_debug(3,"EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
+		debug("EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
 				  __FILE__,optimal_freq);
 
 		ear_frequency = max_freq = eards_change_freq(optimal_freq);
@@ -392,7 +392,7 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int
 			optimal_freq = max_freq;
 		}
 	} else {
-		ear_debug(4,"EAR(%s):: %u selected, no changes are required\n",__FILE__,optimal_freq);
+		debug("EAR(%s):: %u selected, no changes are required\n",__FILE__,optimal_freq);
 	}
 
 	return optimal_freq;

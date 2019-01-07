@@ -646,7 +646,7 @@ int eard_freq(int must_read)
 			connect_service(freq_req,&req.req_data.app);
 			break;
 		case SET_FREQ:
-			ear_debug(1,"Setting node frequency\n");
+			debug("Setting node frequency\n");
 			eard_set_freq(req.req_data.req_value,min(eard_max_freq,max_dyn_freq()));
 			break;
 		case START_GET_FREQ:
@@ -655,7 +655,7 @@ int eard_freq(int must_read)
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case END_GET_FREQ:
-			ear_debug(1,"get node frequency (trubo)\n");
+			debug("get node frequency (trubo)\n");
 			ack = aperf_get_avg_frequency_end_all_cpus();
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
@@ -664,7 +664,7 @@ int eard_freq(int must_read)
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case END_COMM:
-			ear_debug(1,"Closing comunication\n");
+			debug("Closing comunication\n");
 			// HIGHLIGHT: LIBRARY DISPOSE (1/2)
 			eard_close_comm();
 			break;
@@ -678,7 +678,7 @@ int eard_freq(int must_read)
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
 		case END_APP_COMP_FREQ:
-			ear_debug(1," get app node frequency (trubo)\n");
+			debug(" get app node frequency (trubo)\n");
 			ack=aperf_get_global_avg_frequency_end_all_cpus();
 			write(ear_fd_ack[freq_req],&ack,sizeof(unsigned long));
 			break;
@@ -706,12 +706,12 @@ int eard_uncore(int must_read)
 			connect_service(uncore_req,&req.req_data.app);
 			break;
 		case START_UNCORE:
-			ear_debug(1,"EAR_daemon_server: start uncore\n");
+			debug("EAR_daemon_server: start uncore\n");
 			start_uncores();
 			write(ear_fd_ack[uncore_req],&ack,sizeof(ack));
 			break;
 		case RESET_UNCORE:
-			ear_debug(1,"EAR_daemon_server: reset uncore\n");
+			debug("EAR_daemon_server: reset uncore\n");
 			reset_uncores();
 			write(ear_fd_ack[uncore_req],&ack,sizeof(ack));
 			break;
@@ -719,22 +719,22 @@ int eard_uncore(int must_read)
 		{
 			unsigned long demon_cas=0;
 			int i;
-			ear_debug(1,"EAR_daemon_server: read uncore\n");
+			debug("EAR_daemon_server: read uncore\n");
 			read_uncores(values);
 			write(ear_fd_ack[uncore_req], values, sizeof(unsigned long long) * num_uncore_counters);
 			for (i=0; i < num_uncore_counters; i++) demon_cas += values[i];
-			ear_debug(3,"DAEMON cas %lu %d values\n", demon_cas, num_uncore_counters);
+			debug("DAEMON cas %lu %d values\n", demon_cas, num_uncore_counters);
 			break;
 		}
         case STOP_UNCORE:
         {
             unsigned long demon_cas=0;
             int i;
-            ear_debug(1,"EAR_daemon_server: stop uncore\n");
+            debug("EAR_daemon_server: stop uncore\n");
             stop_uncores(values);
             write(ear_fd_ack[uncore_req], values, sizeof(unsigned long long) * num_uncore_counters);
             for (i=0; i < num_uncore_counters; i++) demon_cas += values[i];
-            ear_debug(3,"DAEMON cas %lu %d values\n", demon_cas, num_uncore_counters);
+            debug("DAEMON cas %lu %d values\n", demon_cas, num_uncore_counters);
             break;
         }
 
@@ -764,18 +764,18 @@ int eard_rapl(int must_read)
 			connect_service(rapl_req,&req.req_data.app);
 			break;
         case START_RAPL:
-    		ear_debug(1,"EAR_daemon_server: start RAPL counters\n");
+    		debug("EAR_daemon_server: start RAPL counters\n");
             start_rapl_metrics();
 			RAPL_counting=1;
             write(ear_fd_ack[comm_req],&ack,sizeof(ack));
             break;
         case RESET_RAPL:
-    		ear_debug(1,"EAR_daemon_server: reset RAPL\n");
+    		debug("EAR_daemon_server: reset RAPL\n");
             reset_rapl_metrics();
             write(ear_fd_ack[comm_req],&ack,sizeof(ack));
             break;
         case READ_RAPL:
-    		ear_debug(1,"EAR_daemon_server: read RAPL\n");
+    		debug("EAR_daemon_server: read RAPL\n");
             read_rapl_metrics(values);
 			RAPL_counting=0;
             write(ear_fd_ack[comm_req],values,sizeof(unsigned long long)*RAPL_EVS);
@@ -801,23 +801,23 @@ void select_service(int fd)
 	}
 	//verbose(0,"Sec check ok %d",req.sec);
 	if (eard_freq(0)){ 
-		ear_debug(0,"eard frequency service\n");
+		debug(0,"eard frequency service\n");
 		return;
 	}
 	if (eard_uncore(0)){ 
-		ear_debug(0,"eard uncore service\n");
+		debug(0,"eard uncore service\n");
 		return;
 	}
 	if (eard_rapl(0)){ 
-		ear_debug(0,"eard rapl service\n");
+		debug(0,"eard rapl service\n");
 		return;
 	}
 	if (eard_system(0)){ 
-		ear_debug(0,"eard system service\n");
+		debug(0,"eard system service\n");
 		return;
 	}
 	if (eard_node_energy(0)){ 
-		ear_debug(0,"eard node energy service\n");
+		debug(0,"eard node energy service\n");
 		return;
 	}
 	verbose(0," Error, request received not supported\n");
@@ -1386,9 +1386,9 @@ void main(int argc,char *argv[])
 		}
         FD_SET(ear_fd_req[i], &rfds);
 		max_fd=max(max_fd,ear_fd_req[i]);
-		ear_debug(2,"Adding %d fd to mask\n",ear_fd_req[i]);
+		debug("Adding %d fd to mask\n",ear_fd_req[i]);
 		numfds_req=max_fd+1;
-		ear_debug(3,"fd %d added to rdfd mask max=%d FD_SETSIZE=%d\n",ear_fd_req[i],numfds_req,FD_SETSIZE);
+		debug("fd %d added to rdfd mask max=%d FD_SETSIZE=%d\n",ear_fd_req[i],numfds_req,FD_SETSIZE);
 	}
 	rfds_basic=rfds;
     // Database cache daemon
@@ -1439,7 +1439,7 @@ void main(int argc,char *argv[])
 	// EAR daemon main loop
 	tv.tv_sec=20;tv.tv_usec=0;
 	my_to=NULL;
-	ear_debug(1,"eard waiting.....\n");
+	debug("eard waiting.....\n");
 	/*
 	*
 	*	MAIN LOOP 
@@ -1472,7 +1472,7 @@ void main(int argc,char *argv[])
 				verbose(0,"signal received");
 			}
 			rfds=rfds_basic;
-			ear_debug(1,"eard waiting.....\n");
+			debug("eard waiting.....\n");
 	}//while
 	//eard is closed by SIGTERM signal, we should not reach this point
 	verbose(0,"END\n");

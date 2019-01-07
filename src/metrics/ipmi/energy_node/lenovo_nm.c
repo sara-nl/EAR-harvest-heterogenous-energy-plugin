@@ -47,7 +47,7 @@
 #define IPMI_RAW_MAX_ARGS (1024)
 
 #define FUNCVERB(function)                               \
-ear_debug(4, "ear_daemon(lenovo_nm) " function "\n");
+debug( "ear_daemon(lenovo_nm) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
 static uint8_t *bytes_rq = NULL;

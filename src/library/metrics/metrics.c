@@ -416,7 +416,7 @@ int metrics_init()
 
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
-	DEBUG_F(0, "detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+	debug( "detected cache line has a size %0.2lf bytes", hw_cache_line_size);
 
 	// Local metrics initialization
 	init_basic_metrics();
@@ -444,7 +444,7 @@ int metrics_init()
 
 		get_weigth_fops_instructions(metrics_flops_weights);
 
-		DEBUG_F(0, "detected %d FLOP counter", flops_elements);
+		debug( "detected %d FLOP counter", flops_elements);
 	}
 
 	// Daemon metrics allocation (TODO: standarize data size)
@@ -486,8 +486,8 @@ int metrics_init()
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
 
-	DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
-	DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);
+	debug( "detected %d RAPL counter", rapl_elements);
+	debug( "detected %d bandwith counter", bandwith_elements);
 
 	metrics_reset();
 	metrics_global_start();
@@ -552,7 +552,7 @@ long long metrics_usecs_diff(long long end, long long init)
 
 	if (end < init)
 	{
-		DEBUG_F(0, "Timer overflow (end: %ll - init: %ll)\n", end, init);
+		debug( "Timer overflow (end: %ll - init: %ll)\n", end, init);
 		to_max = LLONG_MAX - init;
 		return (to_max + end);
 	}

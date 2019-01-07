@@ -146,7 +146,7 @@ int _papi_component_init(char *component_name)
 		return 0;
 	}
 
-	DEBUG_F(0, "PAPI component %s has been initialized correctly", component_name);
+	debug( "PAPI component %s has been initialized correctly", component_name);
 	return 1;
 }
 
@@ -163,6 +163,6 @@ int _papi_init()
 		exit(1);
 	}
 
-	DEBUG_F(0, "PAPI has been initialized correctly");
+	debug( "PAPI has been initialized correctly");
 	return 1;
 }

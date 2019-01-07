@@ -55,7 +55,7 @@
 #include <common/math_operations.h>
 
 #define FUNCVERB(function)                               \
-    ear_debug(4, "EAR_DAEMON(UNCORES) " function "\n");
+    debug( "EAR_DAEMON(UNCORES) " function "\n");
 
 struct uncore_op
 {
