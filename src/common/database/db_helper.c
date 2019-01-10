@@ -686,13 +686,15 @@ ulong stmt_error(MYSQL *connection, MYSQL_STMT *statement)
 }
 
 #define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? FROM Periodic_metrics WHERE end_time" \
-                                ">= ? AND end_time <= ?"
+                                ">= ? AND end_time <= ? AND DC_energy <= %d"
 #define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
+#define MAX_ENERGY              10000
 
 ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated)
 {
     MYSQL *connection = mysql_init(NULL);
+    char query[256];
 
     if (connection == NULL)
     {
@@ -730,7 +732,8 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
     }
     else
     {
-        if (mysql_stmt_prepare(statement, METRICS_SUM_QUERY, strlen(METRICS_SUM_QUERY)))
+        sprintf(query, METRICS_SUM_QUERY, MAX_ENERGY);
+        if (mysql_stmt_prepare(statement, query, strlen(query)))
             return stmt_error(connection, statement);
     }
 
@@ -950,6 +953,11 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
     {
         current_job_id = (*apps)[num_apps - 1].job.id;
         current_step_id = (*apps)[num_apps - 1].job.step_id;
+    }
+    else 
+    {
+        current_job_id = 0;
+        current_job_id = -1;
     }
     mysql_close(connection);
 	return num_apps;
