@@ -33,12 +33,12 @@
 #include <papi.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 
 #define BASIC_SETS		1
 #define BASIC_EVS		2
 
-static const char *__NAME__ = "METRICS_INSTRS";
+static const char *PAPI_NAME = "METRICS_INSTRS";
 static long long values[BASIC_SETS][BASIC_EVS];
 static long long acum_values[BASIC_EVS];
 static int event_sets[BASIC_SETS];
@@ -49,9 +49,9 @@ void init_basic_metrics()
 	int sets, events;
 	int cid, ret;
 
-	PAPI_INIT_TEST(__NAME__);
-	PAPI_INIT_MULTIPLEX_TEST(__NAME__);
-	PAPI_GET_COMPONENT(cid, "perf_event", __NAME__);
+	PAPI_INIT_TEST(PAPI_NAME);
+	PAPI_INIT_MULTIPLEX_TEST(PAPI_NAME);
+	PAPI_GET_COMPONENT(cid, "perf_event", PAPI_NAME);
 
 	for (sets=0;sets<BASIC_SETS;sets++)
 	{
@@ -66,14 +66,14 @@ void init_basic_metrics()
 		event_sets[sets]=PAPI_NULL;
 		if ((ret = PAPI_create_eventset(&event_sets[sets])) != PAPI_OK)
 		{
-			VERBOSE_N(0, "Creating %d eventset.Exiting:%s",
+			verbose(0, "Creating %d eventset.Exiting:%s",
 					sets,PAPI_strerror(ret));
 			exit(1);
 		}
 
 		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid))!=PAPI_OK)
 		{
-			VERBOSE_N(0, "PAPI_assign_eventset_component.Exiting:%s", PAPI_strerror(ret));
+			verbose(0, "PAPI_assign_eventset_component.Exiting:%s", PAPI_strerror(ret));
 			exit(1);
 		}
 
@@ -81,24 +81,24 @@ void init_basic_metrics()
  		attach_op[sets].attach.tid=getpid();
 		
 		if ((ret = PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*) &attach_op[sets])) != PAPI_OK){
-			VERBOSE_N(0, "PAPI_set_opt.%s", PAPI_strerror(ret));
+			verbose(0, "PAPI_set_opt.%s", PAPI_strerror(ret));
 		}
 		
 		ret = PAPI_set_multiplex(event_sets[sets]);
 		
 		if ((ret == PAPI_EINVAL) && (PAPI_get_multiplex(event_sets[sets]) > 0)){
-			VERBOSE_N(0, "Event set to compute BASIC already has multiplexing enabled");
+			verbose(0, "Event set to compute BASIC already has multiplexing enabled");
 		}else if (ret != PAPI_OK) { 
-			VERBOSE_N(0, "Error, event set to compute BASIC can not be multiplexed %s",
+			verbose(0, "Error, event set to compute BASIC can not be multiplexed %s",
 						PAPI_strerror(ret));
 		}
 		
 		if ((ret = PAPI_add_named_event(event_sets[sets],"PAPI_TOT_CYC")) != PAPI_OK){
-			VERBOSE_N(0, "PAPI_add_named_event %s.%s",
+			verbose(0, "PAPI_add_named_event %s.%s",
 						"ix86arch::UNHALTED_CORE_CYCLES",PAPI_strerror(ret));
 		}
 		if ((ret = PAPI_add_named_event(event_sets[sets],"PAPI_TOT_INS")) != PAPI_OK){
-			VERBOSE_N(0, "PAPI_add_named_event %s.%s",
+			verbose(0, "PAPI_add_named_event %s.%s",
 						"ix86arch::INSTRUCTION_RETIRED", PAPI_strerror(ret));
 		}
 	}
@@ -112,7 +112,7 @@ void reset_basic_metrics()
 	{
 		if ((ret=PAPI_reset(event_sets[sets]))!=PAPI_OK)
 		{
-			VERBOSE_N(0, "reset_basic_metrics set %d.%s",
+			verbose(0, "reset_basic_metrics set %d.%s",
 					  event_sets[sets],PAPI_strerror(ret));
 		}
 
@@ -129,7 +129,7 @@ void start_basic_metrics()
 	{
 		if ((ret=PAPI_start(event_sets[sets])) != PAPI_OK)
 		{
-			VERBOSE_N(0, "start_basic_metrics set %d .%s",
+			verbose(0, "start_basic_metrics set %d .%s",
 					  event_sets[sets],PAPI_strerror(ret));
 		}
 	}
@@ -148,7 +148,7 @@ void stop_basic_metrics(long long *cycles,long long *instructions)
 	{
 		if ((ret = PAPI_stop(event_sets[sets], (long long *) &values[sets])) != PAPI_OK)
 		{
-			VERBOSE_N(0, "stop_basic_metrics set %d.%s",
+			verbose(0, "stop_basic_metrics set %d.%s",
 					event_sets[sets], PAPI_strerror(ret));
 		} else
 		{

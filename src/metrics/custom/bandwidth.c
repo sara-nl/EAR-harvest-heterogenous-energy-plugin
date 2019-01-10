@@ -48,14 +48,14 @@
 
 #include <stdio.h>
 #include <string.h>
-
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
+#include <common/math_operations.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/bandwidth/uncores_pci.h>
-#include <common/ear_verbose.h>
-#include <common/math_operations.h>
 
 #define FUNCVERB(function)                               \
-    ear_debug(4, "EAR_DAEMON(UNCORES) " function "\n");
+    debug( "EAR_DAEMON(UNCORES) " function "\n");
 
 struct uncore_op
 {

@@ -27,28 +27,26 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
-
 #include <common/config.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/types/log.h>
+#include <common/types/projection.h>
+#include <common/types/application.h>
+#include <daemon/eard_api.h>
 #include <control/frequency.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
-#include <daemon/eard_api.h>
-#include <common/types/application.h>
-#include <common/types/projection.h>
-#include <common/ear_verbose.h>
-#include <common/types/log.h>
-#include <common/states.h>
 
-static const char *__NAME__ = "min_time_to_solution:";
-extern const char *__HOST__;
+#define NO_MODELS_MT_VERBOSE	2
+
 static uint mt_policy_pstates;
 static uint mt_reset_freq=RESET_FREQ;
 extern coefficient_t **coefficients;
@@ -56,9 +54,6 @@ extern uint EAR_default_pstate;
 extern double performance_gain;
 extern application_t *signatures;
 extern uint *sig_ready;
-#define NO_MODELS_MT_VERBOSE	2
-
-
 static int use_models=1;
 
 void min_time_init(uint pstates)
@@ -103,10 +98,10 @@ static int is_better_min_time(signature_t * curr_sig,signature_t *prev_sig)
 
 	curr_freq=curr_sig->def_f;
 	prev_freq=prev_sig->def_f;
-	earl_verbose(NO_MODELS_MT_VERBOSE,"curr %u prev %u\n",curr_freq,prev_freq);
+	verbose(NO_MODELS_MT_VERBOSE,"curr %u prev %u\n",curr_freq,prev_freq);
 	freq_gain=performance_gain*(double)((curr_freq-prev_freq)/(double)prev_freq);
    	perf_gain=(prev_sig->time-curr_sig->time)/prev_sig->time;
-	earl_verbose(NO_MODELS_MT_VERBOSE,"Performance gain %lf Frequency gain %lf\n",perf_gain,freq_gain);
+	verbose(NO_MODELS_MT_VERBOSE,"Performance gain %lf Frequency gain %lf\n",perf_gain,freq_gain);
 	if (perf_gain>=freq_gain) return 1;
     return 0;
 }
@@ -181,7 +176,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 	// ref=1 is nominal 0=turbo, we are not using it
 	#if EAR_PERFORMANCE_TESTS
 	if (ear_frequency == EAR_default_frequency){
-		VERBOSE_N(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u (ear_freq=%lu def_freq %lu )\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate,
+		verbose(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u (ear_freq=%lu def_freq %lu )\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate,
 		ear_frequency,EAR_default_frequency);
 	}
 	#endif
@@ -197,7 +192,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 			{
 				#if EAR_PERFORMANCE_TESTS
 				if (ear_frequency == EAR_default_frequency){
-					VERBOSE_N(1,"Comparing %u with %u",best_pstate,i);
+					verbose(1,"Comparing %u with %u",best_pstate,i);
 				}
 				#endif
                 power_proj=project_power(my_app,&coefficients[ref][i]);
@@ -207,7 +202,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 				perf_gain=(time_current-time_proj)/time_current;
 				#if EAR_PERFORMANCE_TESTS
 				if (ear_frequency == EAR_default_frequency){
-					VERBOSE_N(1,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
+					verbose(1,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
 				}
 				#endif
 
@@ -226,7 +221,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 			else{ 
 				#if EAR_PERFORMANCE_TESTS
 				if (ear_frequency == EAR_default_frequency){
-					VERBOSE_N(1,"Coefficients for node %s [%d][%d] not available.... try=0\n",node_name,ref,i);
+					verbose(1,"Coefficients for node %s [%d][%d] not available.... try=0\n",node_name,ref,i);
 					
 				}
 				#endif
@@ -236,7 +231,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 	}else{/* Use models is set to 0 */
         ulong prev_pstate,curr_pstate,next_pstate;
         signature_t *prev_sig;
-        earl_verbose(NO_MODELS_MT_VERBOSE,"We are not using models \n");
+        verbose(NO_MODELS_MT_VERBOSE,"We are not using models \n");
         /* We must not use models , we will check one by one*/
         /* If we are not running at default freq, we must check if we must follow */
         if (sig_ready[EAR_default_pstate]==0){
@@ -258,7 +253,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 					go_next_mt(curr_pstate,ready,&best_pstate,min_pstate);
 				}
         }
-		earl_verbose(NO_MODELS_MT_VERBOSE,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
+		verbose(NO_MODELS_MT_VERBOSE,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
      }
 
 
@@ -298,7 +293,7 @@ ulong  min_time_default_conf(ulong f)
     // Just in case the bestPstate was the frequency at which the application was running
     if ((system_conf!=NULL) && (f>system_conf->max_freq)){
         log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-        ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
+        verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
         f,system_conf->max_freq);
         return system_conf->max_freq;
     }else return f;

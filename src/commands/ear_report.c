@@ -82,7 +82,6 @@
 char *node_name = NULL;
 char *user_name = NULL;
 char *etag = NULL;
-int EAR_VERBOSE_LEVEL = 0;
 int verbose = 0;
 unsigned long long avg_pow = 0;
 time_t global_start_time = 0;

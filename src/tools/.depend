@@ -1,5 +1,5 @@
-coeffs_default.o: coeffs_default.c ../common/file.h ../common/states.h \
- ../common/sizes.h ../common/string_enhanced.h \
+coeffs_default.o: coeffs_default.c ../common/file.h ../common/sizes.h \
+ ../common/states.h ../common/string_enhanced.h \
  ../common/types/coefficient.h ../common/types/generic.h
 coeffs_quality.o: coeffs_quality.c ../common/sizes.h ../common/states.h \
  ../common/types/projection.h ../common/types/signature.h \
@@ -9,7 +9,7 @@ coeffs_quality.o: coeffs_quality.c ../common/sizes.h ../common/states.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h \
  ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/database/db_helper.h \
+ ../common/output/verbose.h ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h
@@ -21,7 +21,7 @@ learning_delete.o: learning_delete.c ../common/string_enhanced.h \
  ../common/config.h ../common/types/periodic_metric.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h \
- ../common/types/configuration/node_conf.h ../common/ear_verbose.h \
+ ../common/types/configuration/node_conf.h ../common/output/verbose.h \
  ../common/states.h ../common/types/application.h ../common/types/job.h \
  ../common/types/signature.h ../common/types/gm_warning.h \
  ../common/types/loop.h ../common/types/log.h
@@ -32,11 +32,11 @@ coeffs_compute.o: coeffs_compute.c ../common/config.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h \
  ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h ../common/types/coefficient.h \
- ../common/types/projection.h ../common/database/db_helper.h \
- ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
- ../common/types/gm_warning.h ../common/types/loop.h \
- ../common/types/log.h
+ ../common/output/verbose.h ../common/states.h \
+ ../common/types/coefficient.h ../common/types/projection.h \
+ ../common/database/db_helper.h ../common/types/periodic_aggregation.h \
+ ../common/types/periodic_metric.h ../common/types/gm_warning.h \
+ ../common/types/loop.h ../common/types/log.h
 learning_validate.o: learning_validate.c ../common/sizes.h \
  ../common/string_enhanced.h ../common/types/application.h \
  ../common/config.h ../common/types/job.h ../common/types/generic.h \
@@ -44,7 +44,7 @@ learning_validate.o: learning_validate.c ../common/sizes.h \
  ../common/types/coefficient.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h \
- ../common/types/configuration/node_conf.h ../common/ear_verbose.h \
+ ../common/types/configuration/node_conf.h ../common/output/verbose.h \
  ../common/states.h ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
@@ -53,8 +53,8 @@ coeffs_comparison.o: coeffs_comparison.c ../common/types/coefficient.h \
  ../common/types/generic.h
 coeffs_compare.o: coeffs_compare.c ../common/types/coefficient.h \
  ../common/types/generic.h
-coeffs_show.o: coeffs_show.c ../common/file.h ../common/states.h \
- ../common/sizes.h ../common/types/coefficient.h \
+coeffs_show.o: coeffs_show.c ../common/file.h ../common/sizes.h \
+ ../common/states.h ../common/types/coefficient.h \
  ../common/types/generic.h
 learning_show.o: learning_show.c ../common/string_enhanced.h \
  ../common/types/application.h ../common/config.h ../common/types/job.h \
@@ -62,7 +62,7 @@ learning_show.o: learning_show.c ../common/string_enhanced.h \
  ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h \
- ../common/types/configuration/node_conf.h ../common/ear_verbose.h \
+ ../common/types/configuration/node_conf.h ../common/output/verbose.h \
  ../common/states.h ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
@@ -74,10 +74,10 @@ get_ear_events.o: get_ear_events.c ../common/database/db_helper.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h \
  ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h ../common/types/application.h \
- ../common/types/job.h ../common/types/signature.h \
- ../common/types/gm_warning.h ../common/types/loop.h \
- ../common/types/log.h
+ ../common/output/verbose.h ../common/states.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/signature.h ../common/types/gm_warning.h \
+ ../common/types/loop.h ../common/types/log.h
 get_active_nodes.o: get_active_nodes.c ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/generic.h \
  ../common/types/power_signature.h ../common/config.h \
@@ -85,19 +85,19 @@ get_active_nodes.o: get_active_nodes.c ../common/database/db_helper.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h \
  ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/states.h ../common/types/application.h \
- ../common/types/job.h ../common/types/signature.h \
- ../common/types/gm_warning.h ../common/types/loop.h \
- ../common/types/log.h
+ ../common/output/verbose.h ../common/states.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/signature.h ../common/types/gm_warning.h \
+ ../common/types/loop.h ../common/types/log.h
 coeffs_jobproj.o: coeffs_jobproj.c ../common/sizes.h ../common/states.h \
- ../common/types/projection.h ../common/types/signature.h \
- ../common/types/generic.h ../common/config.h \
- ../common/types/coefficient.h ../common/types/application.h \
- ../common/types/job.h ../common/types/power_signature.h \
+ ../common/types/signature.h ../common/types/generic.h ../common/config.h \
+ ../common/types/projection.h ../common/types/coefficient.h \
+ ../common/types/application.h ../common/types/job.h \
+ ../common/types/power_signature.h \
  ../common/types/configuration/cluster_conf.h \
  ../common/types/configuration/policy_conf.h \
  ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
- ../common/ear_verbose.h ../common/database/db_helper.h \
+ ../common/output/verbose.h ../common/database/db_helper.h \
  ../common/types/periodic_aggregation.h ../common/types/periodic_metric.h \
  ../common/types/gm_warning.h ../common/types/loop.h \
  ../common/types/log.h

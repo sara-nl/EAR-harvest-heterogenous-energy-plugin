@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -35,24 +34,20 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #include <common/config.h>
-#include <control/frequency.h>
+#include <common/states.h>
+#include <common/math_operations.h>
+#include <common/output/verbose.h>
+#include <common/types/log.h>
+#include <common/types/application.h>
 #include <library/common/externs.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
-#include <library/metrics/metrics.h>
 #include <library/models/models.h>
+#include <library/metrics/metrics.h>
 #include <library/mpi_intercept/freq_synchro.h>
-#include <common/ear_verbose.h>
-#include <common/types/log.h>
-#include <common/types/application.h>
-#include <common/states.h>
-#include <common/math_operations.h>
+#include <control/frequency.h>
 #include <daemon/eard_api.h>
-
-static const char *__NAME__ = "ear/states";
-extern char *__HOST__ ;
 
 // static defines
 #define NO_PERIOD				0
@@ -79,7 +74,6 @@ static int current_loop_id;
 
 #define DYNAIS_CUTOFF	1
 
-
 #if EAR_OVERHEAD_CONTROL
 extern uint check_periodic_mode;
 #endif
@@ -96,7 +90,7 @@ ulong select_near_freq(ulong avg)
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
-	ear_verbose(1, "EAR(%s) Ends execution. \n", app_name);
+	verbose(1, "EAR(%s) Ends execution. \n", app_name);
 	end_log();
 }
 
@@ -129,7 +123,7 @@ int states_my_state()
 
 void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
-	ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %lu size %u_____BEGIN_____\n",
+	verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %lu size %u_____BEGIN_____\n",
 					ear_app_name, event, size);
 
 	EAR_STATE = FIRST_ITERATION;
@@ -163,7 +157,7 @@ static void check_dynais_on(signature_t *A, signature_t *B)
 {
 	if (!equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH*2) || !equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH*2)){
 		dynais_enabled=DYNAIS_ENABLED;
-		earl_verbose(1,"Dynais ON \n");
+		verbose(1,"Dynais ON \n");
 	}
 }
 
@@ -180,11 +174,11 @@ static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong
     	dynais_enabled=DYNAIS_DISABLED;
     	#endif
 	#if EAR_PERFORMANCE_TESTS
-    	earl_verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=%d,overhead=%lf",dynais_enabled, dynais_overhead_perc);
+    	verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=%d,overhead=%lf",dynais_enabled, dynais_overhead_perc);
 	#endif
     	log_report_dynais_off(application.job.id,application.job.step_id);
     }
-    earl_verbose(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+    verbose(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
     loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
     last_first_event=event;
     last_calls_in_loop=mpi_calls_iter;
@@ -206,7 +200,7 @@ static void print_loop_signature(char *title, signature_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000000.0;
 
-	earl_verbose(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+	verbose(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
@@ -234,14 +228,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 	if (system_conf!=NULL){
 	if (resched_conf->force_rescheduling){
-		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
+		verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",system_conf->max_freq,system_conf->th);
 
 		// We set the default number of iterations to the default for this loop
 		perf_count_period=loop_perf_count_period;
 		resched_conf->force_rescheduling=0;
 		// If the loop was already evaluated, we force the rescheduling
 		if (EAR_STATE==SIGNATURE_STABLE){ 
-			ear_verbose(0,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
+			verbose(0,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
 			EAR_STATE = EVALUATING_SIGNATURE;
 		}
 		// Should we reset these controls?
@@ -296,7 +290,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
-			if (comp_N_time == 0) ear_verbose(0, "EAR(%s):PANIC comp_N_time must be >0\n", ear_app_name);
+			if (comp_N_time == 0) {
+				verbose(0, "EAR(%s):PANIC comp_N_time must be >0\n", ear_app_name);
+			}
 
 			// We include a dynamic configurarion of DPD behaviour
 			if (comp_N_time < (long long) perf_accuracy_min_time) {
@@ -323,7 +319,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			#if EAR_OVERHEAD_CONTROL
 			check_periodic_mode=0;
 			#if EAR_PERFORMANCE_TESTS
-			earl_verbose(1,"Switching check periodic mode to %d\n",check_periodic_mode);
+			verbose(1,"Switching check periodic mode to %d\n",check_periodic_mode);
 			#endif
 			#endif
 
@@ -366,8 +362,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			signature_copy(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
-			earl_verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
-			earl_verbose(1,"\tAppSig-POL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)(New Freq %u in %s)\n",
+			verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
+			verbose(1,"\tAppSig-POL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)(New Freq %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
@@ -406,8 +402,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER);
 			traces_frequency(ear_my_rank, my_id, policy_freq);
 			traces_PP(ear_my_rank, my_id, PP->Time, PP->CPI, PP->Power);
-			earl_verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
-			earl_verbose(1,"\tAppSig-VAL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)(New Freq %u in %s)\n",
+			verbose(1,"EAR(%s)at%u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
+			verbose(1,"\tAppSig-VAL (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)(New Freq %u in %s)\n",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 			/* END VERBOSE */
 
@@ -424,21 +420,21 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			{
 				perf_count_period = perf_count_period * 2;
 				tries_current_loop=0;
-				earl_verbose(1,"Policy ok");
+				verbose(1,"Policy ok");
 			}else{
-				earl_verbose(1,"Policy NOT ok");
+				verbose(1,"Policy NOT ok");
 			}
-			earl_verbose(1,"EAR(%s): CurrentSig (Time %lf Power %lf Energy %lf) LastSig (Time %lf Power %lf Energy %lf) \n",
+			verbose(1,"EAR(%s): CurrentSig (Time %lf Power %lf Energy %lf) LastSig (Time %lf Power %lf Energy %lf) \n",
 			ear_app_name, TIME, POWER, ENERGY, last_signature.signature.time,last_signature.signature.DC_power,
 			(last_signature.signature.time*last_signature.signature.DC_power));
 			if (pok) return;
 			/* If policy is not ok and we are not running with the same freq, we can check again */
 			if (global_synchro){		
-				earl_verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
+				verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
 				if ((global_f) && (global_f!=policy_freq)){
 					policy_freq=select_near_freq(global_f);
 					force_global_frequency(policy_freq);
-					earl_verbose(0,"trying with same frequency %lu",policy_freq);
+					verbose(0,"trying with same frequency %lu",policy_freq);
 					tries_current_loop++;
 					return;
 				}

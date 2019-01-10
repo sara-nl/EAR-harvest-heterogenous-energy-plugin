@@ -40,7 +40,6 @@
 static double a[MATRIX_SIZE][MATRIX_SIZE];
 static double b[MATRIX_SIZE][MATRIX_SIZE];
 static double c[MATRIX_SIZE][MATRIX_SIZE];
-int EAR_VERBOSE_LEVEL=0;
 
 /* Naive matrix multiply */
 void run_test(int quiet) {

@@ -53,7 +53,6 @@ typedef struct ip_table
     int counter;
 } ip_table_t;
 
-int EAR_VERBOSE_LEVEL=1;
 int global_num = 0;
 
 void print_ips(ip_table_t *ips, int num_ips)

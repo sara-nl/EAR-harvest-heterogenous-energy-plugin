@@ -40,7 +40,6 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/db_helper.h>
 
-int EAR_VERBOSE_LEVEL = 0;
 int COLUMNS = 6;
 
 static char buffer [SZ_PATH];

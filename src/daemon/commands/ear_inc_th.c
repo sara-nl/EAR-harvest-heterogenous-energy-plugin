@@ -27,18 +27,15 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
 #include <common/config.h>
 #include <daemon/eard_rapi.h>
 #include <common/types/configuration/cluster_conf.h>
 
-#define NAME_SIZE 128
-int EAR_VERBOSE_LEVEL=1;
-static const char *__NAME__ = "inc_th->eard";
 cluster_conf_t my_cluster_conf;
 
 void usage(char *app)
@@ -46,8 +43,6 @@ void usage(char *app)
 	printf("usage:%s perc to be added to current PerformanceEfficiencyGain (5 means 5%)\n",app);
 	exit(1);
 }
-
-#define ID_SIZE 64
 
 void main(int argc,char *argv[])
 {
@@ -63,12 +58,12 @@ void main(int argc,char *argv[])
 		exit(1);
 	}
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }
-    VERBOSE_N(0,"Using %s as EARGM configuration file",my_ear_conf_path);
+    verbose(0,"Using %s as EARGM configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
-        VERBOSE_N(0," Error reading cluster configuration\n");
+        verbose(0," Error reading cluster configuration\n");
     }
 
 	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);

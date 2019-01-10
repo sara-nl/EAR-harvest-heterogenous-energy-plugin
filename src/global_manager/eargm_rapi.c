@@ -27,25 +27,21 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <errno.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/ip.h>
-#include <netdb.h> 
 #include <string.h>
 #include <stdint.h>
-#include <errno.h>
 #include <unistd.h>
-
-#include <global_manager/eargm_conf_api.h>
-#include <global_manager/eargm_rapi.h>
-#include <common/ear_verbose.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <netinet/ip.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
+#include <global_manager/eargm_rapi.h>
+#include <global_manager/eargm_conf_api.h>
 
 // Verbosity
-static const char *__NAME__ = "eargm_api";
-
-extern int EAR_VERBOSE_LEVEL;
 static int eargm_sfd;
 static uint eargm_remote_connected=0;
 
@@ -53,18 +49,18 @@ static int send_command(eargm_request_t *command)
 {
 	ulong ack;
 	int ret;
-	VERBOSE_N(2,"Sending command %u\n",command->req);
+	verbose(2,"Sending command %u\n",command->req);
 	if (!eargm_remote_connected) return 0;
 	if ((ret=write(eargm_sfd,command,sizeof(eargm_request_t)))!=sizeof(eargm_request_t)){
 		if (ret<0){ 
-			VERBOSE_N(0,"Error sending command %s\n",strerror(errno));
+			verbose(0,"Error sending command %s\n",strerror(errno));
 		}else{ 
-			VERBOSE_N(0,"Error sending command \n");
+			verbose(0,"Error sending command \n");
 		}
 	}
 	ret=read(eargm_sfd,&ack,sizeof(ulong));
 	if (ret<0){
-		VERBOSE_N(0,"Error receiving ack %d\n",ret);
+		verbose(0,"Error receiving ack %d\n",ret);
 	}
 	return (ret==sizeof(ulong)); // Should we return ack ?
 }
@@ -125,7 +121,7 @@ int eargm_new_job(uint num_nodes)
 	eargm_request_t command;
 	command.req=EARGM_NEW_JOB;
 	command.num_nodes=num_nodes;
-	VERBOSE_N(2,"command %u num_nodes %u\n",command.req,command.num_nodes);
+	verbose(2,"command %u num_nodes %u\n",command.req,command.num_nodes);
 	return send_command(&command);
 }
 
@@ -134,7 +130,7 @@ int eargm_end_job(uint num_nodes)
     eargm_request_t command;
     command.req=EARGM_END_JOB;
 	command.num_nodes=num_nodes;
-	VERBOSE_N(2,"command %u num_nodes %u\n",command.req,command.num_nodes);
+	verbose(2,"command %u num_nodes %u\n",command.req,command.num_nodes);
 	return send_command(&command);
 }
 

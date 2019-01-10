@@ -33,10 +33,8 @@
 #include <string.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/database/mysql_io_functions.h>
-
-static char *__NAME__ = "MYSQL_IO: ";
 
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id, power_signature_id) VALUES" \
                             "(?, ?, ?, ?, ?)"
@@ -214,12 +212,12 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     if (app == NULL)
     {
-        VERBOSE_N(0, "APP is null.");
+        verbose(0, "APP is null.");
         return EAR_ERROR;
     }
     else if (num_apps < 1)
     {
-        VERBOSE_N(0, "Num_apps < 1 (%d)", num_apps);
+        verbose(0, "Num_apps < 1 (%d)", num_apps);
         return EAR_ERROR;
     }
     

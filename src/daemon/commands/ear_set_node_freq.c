@@ -36,8 +36,6 @@
 #include <sys/types.h>
 #include <control/frequency.h>
 
-int EAR_VERBOSE_LEVEL=1;
-
 void usage(char *app)
 {
 	printf("usage:%s node_freq (in MHz) num_cpus\n",app);

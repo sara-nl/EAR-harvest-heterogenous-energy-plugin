@@ -9,8 +9,8 @@ eard_OBJS += app_api/app_server_api.o \
              dynamic_configuration.o \
              shared_configuration.o \
              eard_server_api.o \
-			 eard_rapi.o \
-			 eard_checkpoint.o
+             eard_rapi.o \
+             eard_checkpoint.o
 
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database.a
@@ -63,7 +63,7 @@ install: install.components install.others
 
 %.install: %.install.components %.install.others;
 
-clean: clean.others
+clean: clean.components clean.others
 	rm -f *.o *.a *.so eard
 
 ######## SUBFOLDERS
@@ -76,8 +76,8 @@ clean: clean.others
 
 ######## DEPENDENCIES
 
-depend: depend.others
+depend: depend.components depend.others
 
-depend-clean: depend-clean.others
+depend-clean: depend-clean.components depend-clean.others
 
 include $(SRCDIR)/Makefile.depend

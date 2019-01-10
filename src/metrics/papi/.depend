@@ -1,18 +1,15 @@
+generics.o: generics.c ../../metrics/papi/generics.h \
+ ../../common/output/verbose.h
 instructions.o: instructions.c ../../metrics/papi/generics.h \
- ../../metrics/papi/instructions.h ../../common/ear_verbose.h \
- ../../common/config.h
+ ../../metrics/papi/instructions.h ../../common/output/verbose.h
 flops.o: flops.c ../../metrics/papi/generics.h \
  ../../metrics/custom/hardware_info.h ../../metrics/papi/flops.h \
- ../../common/environment.h ../../common/ear_verbose.h \
- ../../common/config.h
-generics.o: generics.c ../../metrics/papi/generics.h \
- ../../common/ear_verbose.h ../../common/config.h
+ ../../common/environment.h ../../common/output/verbose.h
 stalls.o: stalls.c ../../metrics/papi/generics.h \
- ../../metrics/papi/stalls.h ../../common/ear_verbose.h \
- ../../common/config.h
+ ../../metrics/papi/stalls.h ../../common/output/verbose.h
 cache.o: cache.c ../../metrics/papi/cache.h ../../metrics/papi/generics.h \
- ../../metrics/custom/hardware_info.h ../../common/ear_verbose.h \
- ../../common/config.h ../../common/states.h
-energy_cpu.o: energy_cpu.c ../../common/ear_verbose.h \
- ../../common/config.h ../../common/states.h \
- ../../metrics/papi/generics.h ../../metrics/papi/energy_cpu.h
+ ../../metrics/custom/hardware_info.h ../../common/output/verbose.h \
+ ../../common/states.h
+energy_cpu.o: energy_cpu.c ../../common/output/verbose.h \
+ ../../common/states.h ../../metrics/papi/generics.h \
+ ../../metrics/papi/energy_cpu.h

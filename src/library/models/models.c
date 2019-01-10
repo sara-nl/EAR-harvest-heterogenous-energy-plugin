@@ -27,27 +27,25 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
-
 #include <common/config.h>
-#include <control/frequency.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/types/log.h>
+#include <common/types/projection.h>
+#include <common/types/application.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
 #include <library/models/monitoring.h>
 #include <library/models/min_energy.h>
 #include <library/models/min_time.h>
-#include <common/types/application.h>
-#include <common/types/projection.h>
-#include <common/ear_verbose.h>
-#include <common/types/log.h>
-#include <common/states.h>
+#include <control/frequency.h>
 #include <daemon/eard_api.h>
 
 static int use_default=1;
@@ -64,9 +62,6 @@ typedef struct policy
 
 policy_t app_policy;
 
-static const char *__NAME__ = "EARL";
-extern char *__HOST__ ;
-
 // Policy
 static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
 double performance_penalty ;
@@ -80,7 +75,6 @@ static uint reset_freq_opt = RESET_FREQ;
 static uint ear_models_pstates = 0;
 static ulong user_selected_freq;
 static int model_nominal=1;
-
 
 void init_policy_functions()
 {
@@ -136,27 +130,27 @@ int policy_global_configuration(int p_state)
 void policy_global_reconfiguration()
 {
 	if (system_conf!=NULL){
-	earl_verbose(DYN_VERBOSE,"policy_global_reconfiguration policy %d max %lu def %lu th %.2lf\n",
+	verbose(DYN_VERBOSE,"policy_global_reconfiguration policy %d max %lu def %lu th %.2lf\n",
 	power_model_policy,system_conf->max_freq,system_conf->def_freq,system_conf->th);
 	switch (power_model_policy){
 	case MIN_ENERGY_TO_SOLUTION:
 	    // We filter initial configuration
 	    if (system_conf->max_freq<EAR_default_frequency){
-	        earl_verbose(DYN_VERBOSE,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
+	        verbose(DYN_VERBOSE,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
 			EAR_default_frequency=system_conf->max_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 	    }
 		break;
 	case MIN_TIME_TO_SOLUTION:
 		if (system_conf->def_freq!=EAR_default_frequency){
-	        earl_verbose(DYN_VERBOSE,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
+	        verbose(DYN_VERBOSE,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
 			EAR_default_frequency=system_conf->def_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 		}
 		break;
 	case MONITORING_ONLY:
 		if (system_conf->max_freq<ear_frequency){
-			earl_verbose(DYN_VERBOSE,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
+			verbose(DYN_VERBOSE,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
 			EAR_default_frequency=system_conf->max_freq;
 			EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);	
 		}
@@ -169,7 +163,7 @@ void policy_global_reconfiguration()
 		break;
 	}
     if (performance_gain<system_conf->th){
-        	earl_verbose(DYN_VERBOSE,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
+        	verbose(DYN_VERBOSE,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
         	performance_gain=system_conf->th;
     }
 	}
@@ -217,7 +211,7 @@ void init_power_policy()
 	int min_p_state=0;
 	unsigned long def_freq;
 
-	ear_verbose(2,"EAR(%s): EAR_init_power_policy\n",__FILE__);
+	verbose(2,"EAR(%s): EAR_init_power_policy\n",__FILE__);
 	
 	power_model_policy = get_ear_power_policy();
 
@@ -245,7 +239,7 @@ void init_power_policy()
 
 	if (def_freq != EAR_default_frequency)
 	{
-		ear_verbose(0,"ear: warning max freq is limited by the system, using %u as default\n",
+		verbose(0,"ear: warning max freq is limited by the system, using %u as default\n",
 					def_freq);
 
 		EAR_default_frequency = def_freq;
@@ -270,12 +264,12 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	int i, ref;
 	char *use_def;
 
-	ear_debug(3, "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
+	debug( "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
 
 	use_def=getenv("USE_DEFAULT_COEFFICIENTS");
 	if (use_def!=NULL) use_default=atoi(use_def);
 
-	earl_verbose(1,"Using average coefficients=%d\n",use_default);
+	verbose(1,"Using average coefficients=%d\n",use_default);
 
 	// Initializations
 	// We start t nominal by default
@@ -292,14 +286,14 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 	sprintf(coeff_file, "%s%s", coeff_file, nodename);
 
-	ear_verbose(2, "EAR: Using coefficients %s\n", coeff_file);
+	verbose(2, "EAR: Using coefficients %s\n", coeff_file);
 
 
 	// Coefficient pointers allocation
 	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * p_states);
 
 	if (coefficients == NULL) {
-		ear_verbose(0, "EAR: Error allocating memory for p_states coefficients\n");
+		verbose(0, "EAR: Error allocating memory for p_states coefficients\n");
 		exit(1);
 	}
 
@@ -307,7 +301,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	{
 		coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * p_states);
 		if (coefficients[i] == NULL) {
-			ear_verbose(0,"EAR: Error allocating memory for p_states coefficients fn %d\n",i);
+			verbose(0,"EAR: Error allocating memory for p_states coefficients fn %d\n",i);
 			exit(1);
 		}
 
@@ -344,21 +338,21 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	}
 	if (num_coeffs>0){
 		num_coeffs=num_coeffs/sizeof(coefficient_t);
-		earl_verbose(2,"%d coefficients found",num_coeffs);
+		verbose(2,"%d coefficients found",num_coeffs);
 		int ccoeff;
 		for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
 			ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);	
 			i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
 			if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){ 
-				// earl_verbose(1,"Adding pstate ref %d and projection to %d",ref,i);
+				// verbose(1,"Adding pstate ref %d and projection to %d",ref,i);
 				init_coeff_data(&coefficients[ref][i],&coefficients_sm[ccoeff]);
 			}else{ 
-				earl_verbose(0,"Error: invalid coefficients for ref %ul or proj %ul\n",coefficients_sm[ccoeff].pstate_ref,
+				verbose(0,"Error: invalid coefficients for ref %ul or proj %ul\n",coefficients_sm[ccoeff].pstate_ref,
 				coefficients_sm[ccoeff].pstate);
 			}
 		}
 	}else{
-		earl_verbose(1,"NO coefficients found");
+		verbose(1,"NO coefficients found");
 	}
 	app_policy.init(p_states);
 }
@@ -383,7 +377,7 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int
 
 	if (optimal_freq != ear_frequency)
 	{
-		ear_debug(3,"EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
+		debug("EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
 				  __FILE__,optimal_freq);
 
 		ear_frequency = max_freq = eards_change_freq(optimal_freq);
@@ -392,7 +386,7 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int
 			optimal_freq = max_freq;
 		}
 	} else {
-		ear_debug(4,"EAR(%s):: %u selected, no changes are required\n",__FILE__,optimal_freq);
+		debug("EAR(%s):: %u selected, no changes are required\n",__FILE__,optimal_freq);
 	}
 
 	return optimal_freq;
@@ -418,7 +412,7 @@ void policy_end_loop()
 ulong policy_default_configuration()
 {
 	ear_frequency=app_policy.default_conf(user_selected_freq);
-	earl_verbose(0,"Going to default frequency %lu\n",ear_frequency);	
+	verbose(0,"Going to default frequency %lu\n",ear_frequency);
 	eards_change_freq(ear_frequency);
 	return ear_frequency;
 }

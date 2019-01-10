@@ -37,8 +37,6 @@
 #include <string.h>
 #include <control/frequency.h>
 
-int EAR_VERBOSE_LEVEL=1;
-
 void usage(char *prog)
 {
 	fprintf(stderr,"usage:%s cpus|[-h]\n",prog);

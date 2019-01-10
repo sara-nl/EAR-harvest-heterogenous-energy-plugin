@@ -68,16 +68,15 @@
  */
 
 #include <stdio.h>
-#include <unistd.h>
-#include <stdint.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
-
+#include <unistd.h>
+#include <stdint.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
 #include <metrics/custom/frequency.h>
 #include <metrics/custom/hardware_info.h>
-#include <common/ear_verbose.h>
-#include <common/states.h>
 
 // INTEL APERF/MPERF MSR registers
 //
@@ -123,8 +122,6 @@
 // Documentation:
 // - Intel® 64 and IA-32 Architectures Software Developer’s Manual
 // chapter 35.
-
-static const char *__NAME__ = "AVG_FREQ_COMPUTATION";
 
 unsigned int _num_cpus;
 
@@ -319,7 +316,7 @@ void aperf_get_avg_frequency_init_all_cpus()
     for (i = 0; i < _num_cpus; i++)
     {
         if (aperf_get_avg_frequency_init(i)) {
-            VERBOSE_N(0, "ERROR while preparing %i CPU bandwidth reading", i);
+            verbose(0, "ERROR while preparing %i CPU bandwidth reading", i);
         }
     }
 }
@@ -337,7 +334,7 @@ void aperf_get_global_avg_frequency_init_all_cpus()
     for (i = 0; i < _num_cpus; i++)
     {
         if (aperf_get_global_avg_frequency_init(i)) {
-            VERBOSE_N(0, "ERROR while preparing %i APERF VALUES reading", i);
+            verbose(0, "ERROR while preparing %i APERF VALUES reading", i);
         }
     }
 }
@@ -359,7 +356,7 @@ unsigned long aperf_get_avg_frequency_end_all_cpus()
 	for (i = 0; i < _num_cpus; i++)
 	{
         if (aperf_get_avg_frequency_end(i, &new_freq)) {
-            VERBOSE_N(0, "ERROR while reading %i APERF VALUES", i);
+            verbose(0, "ERROR while reading %i APERF VALUES", i);
         }
 
         freq += new_freq;
@@ -386,7 +383,7 @@ unsigned long aperf_get_global_avg_frequency_end_all_cpus()
     for (i = 0; i < _num_cpus; i++)
     {
         if (aperf_get_global_avg_frequency_end(i, &new_freq)) {
-            VERBOSE_N(0, "ERROR while reading %i APERF VALUES", i);
+            verbose(0, "ERROR while reading %i APERF VALUES", i);
         }
 
         freq += new_freq;
@@ -415,7 +412,7 @@ void aperf_periodic_avg_frequency_init_all_cpus()
     for (i = 0; i < _num_cpus; i++)
     {
         if (aperf_periodic_avg_frequency_init(i)) {
-            VERBOSE_N(0, "ERROR while preparing %i APERF VALUES", i);
+            verbose(0, "ERROR while preparing %i APERF VALUES", i);
         }
     }
 }
@@ -440,7 +437,7 @@ unsigned long aperf_periodic_avg_frequency_end_all_cpus()
     for (i = 0; i < _num_cpus; i++)
     {
         if (aperf_periodic_avg_frequency_end(i, &new_freq)) {
-            VERBOSE_N(0, "ERROR while reading %i APERF VALUES", i);
+            verbose(0, "ERROR while reading %i APERF VALUES", i);
         }
 
         freq += new_freq;
@@ -469,7 +466,7 @@ void aperf_job_avg_frequency_init_all_cpus()
     for (i = 0; i < _num_cpus; i++)
     {
         if (aperf_job_avg_frequency_init(i)) {
-            VERBOSE_N(0, "ERROR while preparing %i APERF VALUES", i);
+            verbose(0, "ERROR while preparing %i APERF VALUES", i);
         }
     }
 }
@@ -494,7 +491,7 @@ unsigned long aperf_job_avg_frequency_end_all_cpus()
     for (i = 0; i < _num_cpus; i++)
     {
         if (aperf_job_avg_frequency_end(i, &new_freq)) {
-            VERBOSE_N(0, "ERROR while reading %i APERF VALUES", i);
+            verbose(0, "ERROR while reading %i APERF VALUES", i);
         }
 
         freq += new_freq;

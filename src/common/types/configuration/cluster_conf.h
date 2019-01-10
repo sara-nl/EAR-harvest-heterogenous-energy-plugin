@@ -42,7 +42,7 @@
 #include <common/types/configuration/node_conf.h>
 #include <common/string_enhanced.h>
 #include <common/types/generic.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 
 #define GENERIC_NAME	256

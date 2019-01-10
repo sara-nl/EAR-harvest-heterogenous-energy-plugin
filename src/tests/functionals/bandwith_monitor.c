@@ -41,7 +41,6 @@
 #include <metrics/custom/hardware_info.h>
 #include <common/types/generic.h>
 
-int EAR_VERBOSE_LEVEL = 4;
 static char _buffer[32];
 
 static void _format_ull (ull n)

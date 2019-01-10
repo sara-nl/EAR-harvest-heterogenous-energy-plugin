@@ -34,8 +34,6 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/eard_rapi.c>
 
-int EAR_VERBOSE_LEVEL=1;
-
 void main(int argc,char *argv[])
 {
 	cluster_conf_t my_cluster;

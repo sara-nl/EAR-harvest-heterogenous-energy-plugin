@@ -1,8 +1,8 @@
-db_helper.o: db_helper.c ../../common/states.h ../../common/ear_verbose.h \
- ../../common/config.h ../../common/string_enhanced.h \
+db_helper.o: db_helper.c ../../common/states.h \
+ ../../common/output/verbose.h ../../common/string_enhanced.h \
  ../../common/database/db_helper.h \
  ../../common/types/periodic_aggregation.h ../../common/types/generic.h \
- ../../common/types/power_signature.h \
+ ../../common/types/power_signature.h ../../common/config.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
@@ -12,7 +12,7 @@ db_helper.o: db_helper.c ../../common/states.h ../../common/ear_verbose.h \
  ../../common/types/loop.h ../../common/types/log.h \
  ../../common/database/mysql_io_functions.h
 mysql_io_functions.o: mysql_io_functions.c ../../common/config.h \
- ../../common/states.h ../../common/ear_verbose.h \
+ ../../common/states.h ../../common/output/verbose.h \
  ../../common/database/mysql_io_functions.h ../../common/types/log.h \
  ../../common/types/generic.h ../../common/types/job.h \
  ../../common/types/loop.h ../../common/types/signature.h \

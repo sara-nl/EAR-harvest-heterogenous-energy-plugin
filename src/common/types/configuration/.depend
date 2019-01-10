@@ -4,7 +4,7 @@ cluster_conf_verbose.o: cluster_conf_verbose.c \
  ../../../common/types/configuration/policy_conf.h \
  ../../../common/types/generic.h \
  ../../../common/types/configuration/node_conf.h \
- ../../../common/string_enhanced.h ../../../common/ear_verbose.h \
+ ../../../common/string_enhanced.h ../../../common/output/verbose.h \
  ../../../common/states.h
 cluster_conf_read.o: cluster_conf_read.c \
  ../../../common/types/configuration/cluster_conf.h \
@@ -12,22 +12,23 @@ cluster_conf_read.o: cluster_conf_read.c \
  ../../../common/types/configuration/policy_conf.h \
  ../../../common/types/generic.h \
  ../../../common/types/configuration/node_conf.h \
- ../../../common/string_enhanced.h ../../../common/ear_verbose.h \
+ ../../../common/string_enhanced.h ../../../common/output/verbose.h \
  ../../../common/states.h
 node_conf.o: node_conf.c ../../../common/config.h \
+ ../../../common/environment.h \
  ../../../common/types/configuration/policy_conf.h \
  ../../../common/types/generic.h \
  ../../../common/types/configuration/cluster_conf.h \
  ../../../common/types/configuration/node_conf.h \
- ../../../common/string_enhanced.h ../../../common/ear_verbose.h \
- ../../../common/states.h ../../../common/environment.h
-cluster_conf.o: cluster_conf.c \
+ ../../../common/string_enhanced.h ../../../common/output/verbose.h \
+ ../../../common/states.h
+cluster_conf.o: cluster_conf.c ../../../common/sizes.h \
  ../../../common/types/configuration/cluster_conf.h \
  ../../../common/config.h \
  ../../../common/types/configuration/policy_conf.h \
  ../../../common/types/generic.h \
  ../../../common/types/configuration/node_conf.h \
- ../../../common/string_enhanced.h ../../../common/ear_verbose.h \
+ ../../../common/string_enhanced.h ../../../common/output/verbose.h \
  ../../../common/states.h ../../../common/environment.h
 policy_conf.o: policy_conf.c ../../../common/config.h \
  ../../../common/states.h \
@@ -35,4 +36,4 @@ policy_conf.o: policy_conf.c ../../../common/config.h \
  ../../../common/types/configuration/policy_conf.h \
  ../../../common/types/generic.h \
  ../../../common/types/configuration/node_conf.h \
- ../../../common/string_enhanced.h ../../../common/ear_verbose.h
+ ../../../common/string_enhanced.h ../../../common/output/verbose.h

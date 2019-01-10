@@ -38,7 +38,7 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 #include <common/config.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <library/tracer/tracer.h>
 
 #ifdef EAR_GUI
@@ -61,10 +61,6 @@
 #define TRA_MOD		60016
 #define TRA_VPI		60017
 #define TRA_REC		60018
-
-static const char *__NAME__ = "EARL";
-extern char *__HOST__ ;
-
 
 static char buffer1[SZ_BUFF_BIG];
 static char buffer2[SZ_BUFF_BIG];
@@ -205,7 +201,7 @@ static void trace_file_open(char *pathname, char *hostname)
 {
 	//
 	sprintf(buffer1, "%s/%d_%s.%d.prv", pathname, my_trace_rank,my_app,getpid());
-	earl_verbose(TRA_VER,"Generating trace file %s\n",buffer1);
+	verbose(TRA_VER,"Generating trace file %s\n",buffer1);
 
 	//
 	file_prv = open(buffer1,
@@ -338,13 +334,13 @@ static void trace_file_write_simple_event(int event)
 
 void traces_start()
 {
-	earl_verbose(TRA_VER,"traces start");
+	verbose(TRA_VER,"traces start");
 	working = 1;
 }
 
 void traces_stop()
 {
-	earl_verbose(TRA_VER,"traces stop");
+	verbose(TRA_VER,"traces stop");
 	working = 0;
 }
 
@@ -462,7 +458,7 @@ void traces_new_signature(int global_rank, int local_rank, double seconds,
 	ullong lpow;
     ullong lvpi;
 
-	earl_verbose(TRA_VER,"traces new signature");
+	verbose(TRA_VER,"traces new signature");
 	if (!enabled || !working) {
 		return;
 	}
@@ -506,7 +502,7 @@ void traces_frequency(int global_rank, int local_rank, unsigned long f)
 	if (!enabled || !working) {
 		return;
 	}
-	earl_verbose(TRA_VER,"traces frequency");
+	verbose(TRA_VER,"traces frequency");
 
 	trace_file_write(TRA_FRQ, f);
 }
