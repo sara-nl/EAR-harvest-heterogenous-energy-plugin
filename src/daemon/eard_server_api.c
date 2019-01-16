@@ -201,6 +201,11 @@ void propagate_req(request_t *command, uint port)
     hints.ai_next = NULL;
 
     gethostname(buff, 50);
+    strtok(buff,".");
+    #if USE_EXT
+    strcat(buff, NW_EXT);
+    #endif
+
 
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
@@ -289,6 +294,12 @@ int propagate_status(request_t *command, uint port, status_t **status)
     hints.ai_next = NULL;
 
     gethostname(buff, 50);
+
+    strtok(buff,".");
+    #if USE_EXT
+    strcat(buff, NW_EXT);
+    #endif
+
 
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {

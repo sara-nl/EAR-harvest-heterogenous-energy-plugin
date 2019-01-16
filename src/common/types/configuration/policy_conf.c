@@ -88,7 +88,7 @@ int policy_id_to_name(int policy_id,char *my_policy)
         case MONITORING_ONLY:
             strcpy(my_policy,"MONITORING_ONLY");
         	break;
-		default: ret=EAR_ERROR;
+		default: strcpy(my_policy,"UNKNOWN");;
     }
 	return ret;
 

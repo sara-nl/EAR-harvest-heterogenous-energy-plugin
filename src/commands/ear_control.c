@@ -128,6 +128,9 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
                 }   
                 new_ips = realloc(new_ips, sizeof(ip_table_t)*(num_ips+1));
                 strcpy(new_ips[num_ips].name, node_name);
+				#if USE_EXT
+				strcat(node_name,NW_EXT);
+				#endif
                 fill_ip(node_name, &new_ips[num_ips]);
                 num_ips++;
             }

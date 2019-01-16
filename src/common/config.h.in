@@ -109,3 +109,9 @@
 //#define EAR_GUI
 #define DYN_VERBOSE 2
 #define SYSLOG_MSG 1
+
+
+#define LRZ_VERBOSE_LEVEL 0
+#define USE_EXT 0
+#define NW_EXT  "-opa"
+

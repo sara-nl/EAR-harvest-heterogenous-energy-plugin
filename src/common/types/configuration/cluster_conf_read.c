@@ -204,15 +204,15 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 {
 	memset(conf, 0, sizeof(cluster_conf_t));
-	char line[256];
+	char line[256],token_clean[256];
 	char *token;
 
 	//filling the default policies before starting
 	fill_policies(conf);
-	
 	while (fgets(line, 256, conf_file) != NULL)
 	{
 		if (line[0] == '#') continue;
+        remove_chars(line, 13);
 		token = strtok(line, "=");
 		strtoup(token);
 
@@ -220,6 +220,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
+            remove_chars(token, ' ');
+			int token_id;
+			for (token_id=0;token_id<strlen(token);token_id++) printf("token[%d]=%c ",token_id,token[token_id]);
+			printf("\n");
+			printf("Last %d\n",token[strlen(token)-1]);
 			conf->default_policy = policy_name_to_id(token);
 		}
 		else if (!strcmp(token, "DATABASEPATHNAME"))
@@ -228,6 +233,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
             remove_chars(token, ' ');
 			strcpy(conf->DB_pathname, token);
+			printf("DATABASEPATHNAME=%s\n",conf->DB_pathname);
 		}
 
             //EARLIB CONF
@@ -290,12 +296,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			while (token != NULL)
 			{
 				strclean(token, '\n');
-				/*if (conf->num_policies == 1)
-					conf->power_policies = NULL;
-				//conf->power_policies = malloc(sizeof(policy_conf_t));
-				conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*conf->num_policies);
-
-				conf->power_policies[conf->num_policies-1].policy = policy_name_to_id(token);*/
                 int i;
                 for (i = 0; i < TOTAL_POLICIES; i++)
                     if (conf->power_policies[i].policy == policy_name_to_id(token)) conf->power_policies[i].is_available = 1;
@@ -814,6 +814,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.ip, token);
+			printf("MARIADBIP=%s\n",conf->database.ip);
 		}
 		else if (!strcmp(token, "MARIADBUSER"))
 		{
@@ -821,6 +822,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.user, token);
+			printf("MARIADBUSER %s\n",conf->database.user);
 		}
 		else if (!strcmp(token, "MARIADBPASSW"))
 		{
@@ -835,11 +837,13 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.database, token);
+			printf("MARIADBDATABASE %s\n",conf->database.database);
 		}
 		else if (!strcmp(token, "MARIADBPORT"))
 		{
 			token = strtok(NULL, "=");
 			conf->database.port = atoi(token);
+			printf("MARIADBPORT %d\n",conf->database.port);
 		}
 
             //COMMUNICATION NODES CONF

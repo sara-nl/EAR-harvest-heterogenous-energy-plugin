@@ -822,6 +822,10 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
                 while (t < command.node_dist) t *= 2;
                 command.node_dist = t;
             }   
+            #if USE_EXT
+            strcat(node_name, NW_EXT);
+            #endif
+
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
                 eard_verbose(0,"Error connecting with node %s, trying to correct it", node_name);
@@ -871,6 +875,9 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
                 while (t < command.node_dist) t *= 2;
                 command.node_dist = t;
             }   
+            #if USE_EXT
+            strcat(node_name, NW_EXT);
+            #endif
 
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
