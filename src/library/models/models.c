@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <common/types/log.h>
 #include <common/types/projection.h>

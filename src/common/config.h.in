@@ -45,18 +45,8 @@
 #define OMPI_F_LIB_PATH		"lib/libear_ompif.so"
 #define EAR_CONF_FILE		"sysconf/ear.conf"
 
-// Compile version type
-#define BUILD_TYPE			@BUILD_TYPE@
-#define DEVELOPMENT			0
-#define DEBUG				1
-#define RELEASE				2
-#define RELEASE_LRZ			3
-
 // Global max type sizes
 #define SIZE_NAME			NAME_MAX + 1
-
-#define BUILD(type) \
-	type == BUILD_TYPE
 
 // Database
 #define DB_FILES			@DB_FILES@

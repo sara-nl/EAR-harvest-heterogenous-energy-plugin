@@ -34,9 +34,10 @@
 #include <papi.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/math_operations.h>
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
+#include <common/math_operations.h>
 #include <metrics/metrics.h>
 #if 0
 #include <metrics/papi/flops.h>
@@ -411,7 +412,7 @@ int metrics_init()
 
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
-	debug( "detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+	debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
 
 	// Local metrics initialization
 	init_basic_metrics();

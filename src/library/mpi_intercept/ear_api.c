@@ -42,6 +42,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/environment.h>
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <library/common/externs_alloc.h>
