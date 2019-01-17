@@ -36,6 +36,7 @@
 #define FC_MAX_OBJECTS	10
 #define F_WR 			O_WRONLY
 #define F_CR 			O_CREAT
+#define F_TR			O_TRUNC
 #define F_UR 			S_IRUSR
 #define F_UW 			S_IWUSR
 #define F_UX 			S_IXUSR
