@@ -10,7 +10,7 @@ export LDFLAGS
 ######## FILES
 
 lib_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
-		   $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
+           $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
            $(SRCDIR)/metrics/papi/generics.o \
            $(SRCDIR)/metrics/papi/cache.o \
            $(SRCDIR)/metrics/papi/flops.o \
@@ -34,6 +34,7 @@ OBJS = dynais/dynais.o \
        states/states.o \
        states/states_periodic.o \
        tracer/tracer.o \
+       tracer/tracer_mpi.o \
        mpi_intercept/ear_api.o \
        mpi_intercept/freq_synchro.o \
        mpi_intercept/process_MPI.o

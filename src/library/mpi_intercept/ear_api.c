@@ -48,6 +48,7 @@
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
+#include <library/tracer/tracer_mpi.h>
 #include <library/states/states.h>
 #include <library/states/states_periodic.h>
 #include <library/models/models.h>
@@ -476,11 +477,13 @@ void ear_init()
 	#else
 	traces_init(application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	#endif
+
 	traces_start();
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 	traces_stop();
 
-
+	traces_mpi_init();
+	
 	// All is OK :D
 #if EAR_PERFORMANCE_TESTS
 	init_end_time=PAPI_get_real_usec();
@@ -524,6 +527,8 @@ void ear_finalize()
 	// Tracing
 	traces_stop();
 	traces_end(ear_my_rank, my_id, 0);
+
+	traces_mpi_end();
 
 	// Closing and obtaining global metrics
 	metrics_dispose(&application.signature, get_total_resources());

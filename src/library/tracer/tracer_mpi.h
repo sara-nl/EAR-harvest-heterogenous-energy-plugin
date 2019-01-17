@@ -30,10 +30,16 @@
 #ifndef EAR_TRACER_MPI_H
 #define EAR_TRACER_MPI_H
 
-#ifdef EAR_TRACER_MPI
+#ifdef EAR_TRAER_MPI
+void traces_mpi_init();
+
 void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
+
+void traces_mpi_end();
 #else
+#define traces_mpi_init();
 #define traces_mpi_call(g,l,t,e,a1,a2,a3);
+#define traces_mpi_end();
 #endif
 
 #endif //EAR_TRACER_MPI_H

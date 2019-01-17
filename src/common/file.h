@@ -29,7 +29,11 @@
 #ifndef _FILE_H
 #define _FILE_H
 
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <common/sizes.h>
 #include <common/states.h>
 

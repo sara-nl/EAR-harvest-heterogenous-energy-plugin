@@ -27,10 +27,12 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <common/file.h>
 #include <library/tracer/tracer_mpi.h>
 
-static ulong buffer[2];
+static char buffer[SZ_PATH];
 static int enabled;
 static int fd;
 
@@ -42,22 +44,26 @@ void traces_mpi_init()
 		return;
 	}
 
-	fd = open(buffer1, F_WR | F_CR | F_TR, F_UR | F_UW | F_GR | F_GW | F_OR | F_OW);
+	sprintf(buffer, "%s", pathname);
 
+	fd = open(buffer, F_WR | F_CR | F_TR, F_UR | F_UW | F_GR | F_GW | F_OR | F_OW);
 	enabled = (fd >= 0);
 }
 
 void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3)
 {
+	unsigned long *b;
 	ssize_t w;
 
 	if (!enabled) {
 		return;
 	}
 
-	buffer[0] = ev;
-	buffer[1] = time;
-	write(fd, buffer, sizeof(buffer));
+	b = (unsigned long *) buffer;
+	b[0] = ev;
+	b[1] = time;
+
+	write(fd, b, 16);
 }
 
 void traces_mpi_end()
