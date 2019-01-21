@@ -2,6 +2,8 @@ check.o: check.c ../../tests/check/check.h
 cpu_aperf.o: cpu_aperf.c ../../metrics/custom/hardware_info.h
 cpu_uncores_all.o: cpu_uncores_all.c ../../metrics/custom/bandwidth.h \
  ../../metrics/custom/hardware_info.h ../../common/states.h
+cpu_examinable.o: cpu_examinable.c ../../metrics/custom/hardware_info.h \
+ ../../common/states.h
 free_ipmi_version.o: free_ipmi_version.c
 slurm_version.o: slurm_version.c
 papi_comp_available.o: papi_comp_available.c
@@ -12,8 +14,6 @@ ear_types.o: ear_types.c ../../common/types/application.h \
  ../../common/types/generic.h ../../common/types/signature.h \
  ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h
-cpu_examinable.o: cpu_examinable.c ../../metrics/custom/hardware_info.h \
- ../../common/states.h
 gsl_version.o: gsl_version.c
 cpu_uncores.o: cpu_uncores.c ../../metrics/custom/bandwidth.h \
  ../../metrics/custom/hardware_info.h ../../common/states.h

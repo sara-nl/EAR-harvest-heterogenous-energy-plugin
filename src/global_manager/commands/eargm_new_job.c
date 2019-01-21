@@ -1,15 +1,10 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
-
 #include <global_manager/eargm_rapi.h>
 #include <common/types/configuration/cluster_conf.h>
-
-#define NAME_SIZE 128
-int EAR_VERBOSE_LEVEL=1;
-static const char *__NAME__ = "new_job->eargmd";
 
 void usage(char *app)
 {
@@ -17,7 +12,6 @@ void usage(char *app)
 	exit(1);
 }
 
-#define ID_SIZE 64
 cluster_conf_t my_cluster;
 
 void main(int argc,char *argv[])
@@ -29,7 +23,7 @@ void main(int argc,char *argv[])
 	num_nodes=(unsigned int)atoi(argv[1]);
 	// NEW_JOB
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-        VERBOSE_N(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }
 

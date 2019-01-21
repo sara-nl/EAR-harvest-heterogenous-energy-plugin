@@ -39,6 +39,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <common/database/db_helper.h>
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -374,12 +375,14 @@ void insert_hub(uint option, uint reason)
 
 void storage_sample_add(char *buf, ulong len, ulong *idx, char *cnt, size_t siz, uint opt)
 {
+	ulong address = siz * (*idx);
+
 	if (len == 0) {
 		return;
 	}
 
 	if (cnt != NULL) {
-		memcpy (buf, cnt, siz);
+		memcpy (&buf[address], cnt, siz);
 	}
 
 	*idx += 1;
@@ -498,27 +501,39 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	// Storage
 	if (type == CONTENT_TYPE_APM)
 	{
-		storage_sample_add((char *) &typ_alloc[i_appsm][sam_index[index]], sam_inmax[index],
+		if (verbosity == 2) {
+			application_print_channel(stderr, (application_t *) content);
+		}
+
+		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSM);
 	}
 	else if (type == CONTENT_TYPE_APN)
 	{
-		storage_sample_add((char *) &typ_alloc[i_appsn][sam_index[index]], sam_inmax[index],
+		if (verbosity == 2) {
+			application_print_channel(stderr, (application_t *) content);
+		}
+
+		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSN);
 	}
 	else if (type == CONTENT_TYPE_APL)
 	{
-		storage_sample_add((char *) &typ_alloc[i_appsl][sam_index[index]], sam_inmax[index],
+		if (verbosity == 2) {
+			application_print_channel(stderr, (application_t *) content);
+		}
+
+		storage_sample_add(typ_alloc[index], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_APPSL);
 	}
 	else if (type == CONTENT_TYPE_EVE)
 	{
-		storage_sample_add((char *) &typ_alloc[i_evnts][sam_index[index]], sam_inmax[index],
+		storage_sample_add(typ_alloc[index], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_EVNTS);
 	}
 	else if (type == CONTENT_TYPE_LOO)
 	{
-		storage_sample_add((char *) &typ_alloc[i_loops][sam_index[index]], sam_inmax[index],
+		storage_sample_add(typ_alloc[index], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_LOOPS);
 	}
 	else if (type == CONTENT_TYPE_PER)
@@ -526,6 +541,10 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
 		peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 		periodic_metric_t *met = (periodic_metric_t *) content;
+
+		if (verbosity == 2) {
+                        periodic_metrict_print_channel(stderr, met);
+                }
 
 		// Verbosity mpkfa
 		//if (verbosity == 1) {
@@ -536,7 +555,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		add_periodic_aggregation(q, met->DC_energy, met->start_time, met->end_time);
 
 		// Add sample to the energy array
-		storage_sample_add((char *) &typ_alloc[i_enrgy][sam_index[index]], sam_inmax[index],
+		storage_sample_add(typ_alloc[index], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_ENRGY);
 	}
 	else if (type == CONTENT_TYPE_QST)

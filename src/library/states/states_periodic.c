@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -35,24 +34,21 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #include <common/config.h>
-#include <control/frequency.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/types/log.h>
+#include <common/types/loop.h>
+#include <common/types/application.h>
+#include <common/math_operations.h>
 #include <library/common/externs.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
 #include <library/models/models.h>
-#include <common/ear_verbose.h>
-#include <common/types/log.h>
-#include <common/types/application.h>
-#include <common/types/loop.h>
-#include <common/states.h>
-#include <common/math_operations.h>
+#include <control/frequency.h>
 #include <daemon/eard_api.h>
 
-static const char *__NAME__ = "STATES_PERIOD";
-extern char *__HOST__ ;
 extern uint mpi_calls_in_period;
 
 // static defines
@@ -69,7 +65,7 @@ static ulong global_f;
 void states_periodic_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	if (my_id) return;
-	ear_verbose(1, "EAR(%s) Ends execution. \n", app_name);
+	verbose(1, "EAR(%s) Ends execution. \n", app_name);
 	end_log();
 }
 
@@ -85,7 +81,7 @@ void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)
 
 void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
-	ear_verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %lu size %u_____BEGIN_____\n",
+	verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %lu size %u_____BEGIN_____\n",
 					ear_app_name, event, size);
 
 	policy_new_loop();
@@ -116,7 +112,7 @@ static void print_loop_signature(char *title, signature_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000000.0;
 
-	VERBOSE_N(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+	verbose(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
@@ -152,7 +148,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	if (resched_conf->force_rescheduling)
 	{
 		traces_reconfiguration(ear_my_rank, my_id);
-		ear_verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",
+		verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",
 					system_conf->max_freq, system_conf->th);
 
 		// We set the default number of iterations to the default for this loop
@@ -205,7 +201,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 					traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
-					earl_verbose(1,
+					verbose(1,
 									"\n\nEAR(%s) at %u: LoopID=%u, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %u\n",
 									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
@@ -223,7 +219,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
    	             	}
 		
    	             	if (global_synchro){
-   	                 	earl_verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
+   	                 	verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
    	                 	if ((global_f) && (global_f!=policy_freq)){
    	                     	policy_freq=select_near_freq(global_f);
    	                     	force_global_frequency(policy_freq);

@@ -33,10 +33,8 @@
 #include <string.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/database/mysql_io_functions.h>
-
-static char *__NAME__ = "MYSQL_IO: ";
 
 #define APPLICATION_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id, power_signature_id) VALUES" \
                             "(?, ?, ?, ?, ?)"
@@ -214,12 +212,12 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     if (app == NULL)
     {
-        VERBOSE_N(0, "APP is null.");
+        verbose(0, "APP is null.");
         return EAR_ERROR;
     }
     else if (num_apps < 1)
     {
-        VERBOSE_N(0, "Num_apps < 1 (%d)", num_apps);
+        verbose(0, "Num_apps < 1 (%d)", num_apps);
         return EAR_ERROR;
     }
     
@@ -1336,7 +1334,11 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     int i = 0;
     int status = 0;
 
+#if !DB_SIMPLE
     MYSQL_BIND bind[22];
+#else
+    MYSQL_BIND bind[12];
+#endif
     memset(bind, 0, sizeof(bind));
     
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -1359,7 +1361,11 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     }
 
     //unsigned long long recievers
+#if !DB_SIMPLE
     for (i = 10; i < 22; i++)
+#else
+    for (i = 10; i < 12; i++)
+#endif
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[i].buffer_length = 8;
@@ -1377,6 +1383,7 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[7].buffer = &sig_aux->CPI;
     bind[8].buffer = &sig_aux->Gflops;
     bind[9].buffer = &sig_aux->time;
+#if !DB_SIMPLE
     bind[10].buffer = &sig_aux->FLOPS[0];
     bind[11].buffer = &sig_aux->FLOPS[1];
     bind[12].buffer = &sig_aux->FLOPS[2];
@@ -1389,6 +1396,10 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[19].buffer = &sig_aux->cycles;
     bind[20].buffer = &sig_aux->avg_f;
     bind[21].buffer = &sig_aux->def_f;
+#else
+    bind[10].buffer = &sig_aux->avg_f;
+    bind[11].buffer = &sig_aux->def_f;
+#endif
 
     if (mysql_stmt_bind_result(statement, bind)) 
     {

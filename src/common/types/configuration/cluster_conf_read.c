@@ -29,8 +29,6 @@
 
 #include <common/types/configuration/cluster_conf.h>
 
-static char *__NAME__ = "CONFIGURATION";
-
 static void insert_th_policy(cluster_conf_t *conf, char *token, int policy)
 {
 	int i;

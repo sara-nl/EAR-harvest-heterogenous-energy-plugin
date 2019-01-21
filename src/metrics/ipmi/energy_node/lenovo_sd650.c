@@ -39,15 +39,15 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 #include <freeipmi/freeipmi.h>
-
-#include <metrics/custom/hardware_info.h>
-#include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
+#include <metrics/custom/hardware_info.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
 #define FUNCVERB(function)                               \
-ear_debug(4, "ear_daemon(lenovo_wct) " function "\n");
+debug( "ear_daemon(lenovo_wct) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
 static uint8_t *bytes_rq = NULL;
@@ -65,13 +65,13 @@ int lenovo_wct_node_energy_init()
 	FUNCVERB("lenovo_SD650");
 	//Creating the context
 	if (!(ipmi_ctx = ipmi_ctx_create ())){
-        ear_verbose(0,"lenovo_SD650:Error in ipmi_ctx_create %s\n",strerror(errno));
+        verbose(0,"lenovo_SD650:Error in ipmi_ctx_create %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
 	// Checking for root
 	uid = getuid ();
 	if (uid != 0){ 
-		ear_verbose(0,"lenovo_SD650: No root permissions\n");
+		verbose(0,"lenovo_SD650: No root permissions\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -87,7 +87,7 @@ int lenovo_wct_node_energy_init()
 					NULL, // driver_device
                     workaround_flags,
                     IPMI_FLAGS_DEFAULT)) < 0) {
-		ear_verbose(0,"lenovo_SD650: %s\n",strerror(errno));
+		verbose(0,"lenovo_SD650: %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -95,7 +95,7 @@ int lenovo_wct_node_energy_init()
 		return EAR_ERROR;	
 	}
 	if (ret==0){
-		ear_verbose(0,"lenovo_SD650: Not inband device found\n");
+		verbose(0,"lenovo_SD650: Not inband device found\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -107,7 +107,7 @@ int lenovo_wct_node_energy_init()
 	send_len=8;
 	if (!(bytes_rq = calloc (send_len, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"lenovo_SD650: Allocating memory for request %s\n",strerror(errno));
+		verbose(0,"lenovo_SD650: Allocating memory for request %s\n",strerror(errno));
         // Close context
         ipmi_ctx_close (ipmi_ctx);
         // delete context
@@ -116,7 +116,7 @@ int lenovo_wct_node_energy_init()
 	}
 	if (!(bytes_rs = calloc (IPMI_RAW_MAX_ARGS, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"lenovo_SD650: Allocating memory for recv data %s\n",strerror(errno));
+		verbose(0,"lenovo_SD650: Allocating memory for recv data %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -173,7 +173,7 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
 
     int rs_len;
     if (ipmi_ctx==NULL){
-        ear_verbose(0,"lenovo_fast/accurate meter: IPMI context not initiallized\n");
+        verbose(0,"lenovo_fast/accurate meter: IPMI context not initiallized\n");
         return EAR_ERROR;
     }
     FUNCVERB("lenovo_read_dc_energy");
@@ -188,7 +188,7 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-        ear_verbose(0,"lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
+        verbose(0,"lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
         return EAR_ERROR;
     }
     assert(rs_len>=(RAW_SIZE+2));
@@ -238,7 +238,7 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
 
     int rs_len;
     if (ipmi_ctx==NULL){
-        ear_verbose(0,"lenovo_fast/accurate meter: IPMI context not initiallized\n");
+        verbose(0,"lenovo_fast/accurate meter: IPMI context not initiallized\n");
         return EAR_ERROR;
     }
     FUNCVERB("lenovo_read_dc_energy");
@@ -259,7 +259,7 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-        ear_verbose(0,"lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
+        verbose(0,"lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
         return EAR_ERROR;
     }
     assert(rs_len>=(RAW_SIZE+2));
@@ -328,7 +328,7 @@ int lenovo_wct_node_energy_dispose()
 {
 	FUNCVERB("lenovo_node_energy_dispose");
 	if (ipmi_ctx==NULL){ 
-		ear_verbose(0,"lenovo_water_cooling: IPMI context not initiallized\n");
+		verbose(0,"lenovo_water_cooling: IPMI context not initiallized\n");
 		return EAR_ERROR;
 	}
 	// // Close context

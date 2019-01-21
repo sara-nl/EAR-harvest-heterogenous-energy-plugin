@@ -39,8 +39,6 @@
 #define _GNU_SOURCE
 #define __USE_GNU
 
-int EAR_VERBOSE_LEVEL = 0;
-
 int cpu_model;
 unsigned int ear_num_cpus;
 unsigned long *ear_cpufreq;

@@ -36,17 +36,14 @@
 
 #define NODE_QUERY "SELECT distinct(node_id) from Periodic_metrics where end_time >= (unix_timestamp(now())-%d)"
 
-int EAR_VERBOSE_LEVEL=1;
-int verbose = 0;
-const char *__NAME__ = "ear_event_print";
+int _verbose = 0;
 
 void show_query_result(cluster_conf_t my_conf, char *query)
 {
     int i;
     MYSQL *connection = mysql_init(NULL);
 
-
-    if (verbose) printf("query: %s\n", query);
+    if (_verbose) printf("query: %s\n", query);
     
     if (connection == NULL)
     {
@@ -102,7 +99,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) VERBOSE_N(0, "ERROR reading cluster configuration\n");
+    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) verbose(0, "ERROR reading cluster configuration\n");
     
     char *user = getlogin();
     if (user == NULL)

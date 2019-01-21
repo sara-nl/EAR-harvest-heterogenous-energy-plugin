@@ -27,16 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <common/config.h>
-#include <time.h>
-
 #ifndef _EAR_TYPES_PERIODIC_METRIC
 #define _EAR_TYPES_PERIODIC_METRIC
 
+#include <time.h>
+#include <common/config.h>
 #include <common/types/generic.h>
-#define NODE_SIZE 256
 
-typedef struct periodic_metric 
+typedef struct periodic_metric
 {
     ulong DC_energy;
     ulong job_id;
@@ -49,32 +47,31 @@ typedef struct periodic_metric
     char node_id[NODE_SIZE];
 } periodic_metric_t;
 
-
-// Function declarations
+/** Initializes all values of the periodic_metric to 0 , sets the nodename */
+void init_periodic_metric(periodic_metric_t *pm);
 
 /** Replicates the periodic_metric in *source to *destiny */
 void copy_periodic_metric(periodic_metric_t *destiny, periodic_metric_t *source);
 
-/** Initializes all values of the periodic_metric to 0 , sets the nodename */
-void init_periodic_metric(periodic_metric_t *pm);
+/** Cleaned remake of the classic print 'fd' function */
+void periodic_metrict_print_channel(FILE *file, periodic_metric_t *pm);
 
-/** Sets the time for a new period
-*/
-void init_sample_period(periodic_metric_t *pm);
-
-/** Sets the end time for the period and the energy
-*/
-void end_sample_period(periodic_metric_t *pm,ulong energy);
-
-/** Modifies jid, sid at new job
-*/
+/** Modifies jid, sid at new job */
 void new_job_for_period(periodic_metric_t *pm,ulong job_id, ulong s_id);
 
-/** Sets to null job and sid
-*/
+/** Sets to null job and sid */
 void end_job_for_period(periodic_metric_t *pm);
 
-/** Outputs the power_signature contents to the file pointed by the fd. */
-void print_periodic_metric_fd(int fd, periodic_metric_t *pm);
+/*
+ *
+ * Obsolete?
+ *
+ */
+
+/** Sets the time for a new period */
+void init_sample_period(periodic_metric_t *pm);
+
+/** Sets the end time for the period and the energy */
+void end_sample_period(periodic_metric_t *pm,ulong energy);
 
 #endif

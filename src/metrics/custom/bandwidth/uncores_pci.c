@@ -96,12 +96,12 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <linux/limits.h>
-
+#include <common/states.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
+#include <common/types/generic.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/bandwidth/uncores_pci.h>
-#include <common/types/generic.h>
-#include <common/ear_verbose.h>
-#include <common/states.h>
 
 #define IJKFOR(i_len, j_len, k_len) \
     for(i = 0; i < i_len; i++)      \
@@ -248,7 +248,7 @@ static int write_command(uchar *ctl, int *cmd, int n_ctl, int n_cmd)
             res = pwrite(fd_functions[i], (void*) &cmd[k], sizeof(int), (int) ctl[j]);
             if (res == -1 || res != sizeof(int))
             {
-                ear_verbose(0, "pci_uncores.c: writing file error (fd %i) (%s)\n",
+                verbose(0, "pci_uncores.c: writing file error (fd %i) (%s)\n",
                             fd_functions[i], strerror(errno));
 
                 close(fd_functions[i]);
@@ -295,7 +295,7 @@ static void pci_scan_uncores()
 
         if (read_tag == look_tag)
         {
-            ear_debug(1, "pci_uncores.c: uncore function found in %s\n", path);
+            debug( "pci_uncores.c: uncore function found in %s\n", path);
             fd_functions[n_functions] = fd;
             n_functions = n_functions + 1;
 
@@ -306,7 +306,7 @@ static void pci_scan_uncores()
     	}
     }
 
-    ear_debug(1, "pci_uncores.c: %i total uncore functions found\n", n_functions);
+    debug( "pci_uncores.c: %i total uncore functions found\n", n_functions);
 }
 
 // Compares the supposed quantity of buses to be
@@ -314,7 +314,7 @@ static void pci_scan_uncores()
 int pci_check_uncores()
 {
     int supposed = n_buses * get_cpu_n_functions();
-    ear_debug(1, "pci_uncores.c: %d detected functions versus %d supposed\n", n_functions, supposed);
+    debug( "pci_uncores.c: %d detected functions versus %d supposed\n", n_functions, supposed);
 
     if (supposed != n_functions) return EAR_WARNING;
     if (supposed <= 0) return EAR_ERROR;
@@ -389,7 +389,7 @@ int pci_read_uncores(ull *values)
 
                 if (res == -1 || res != sizeof(ull))
                 {
-                    ear_verbose(0, "pci_uncores.c: reading file error (%s)\n",
+                    verbose(0, "pci_uncores.c: reading file error (%s)\n",
                                 strerror(errno));
                     close(fd_functions[i]);
                     fd_functions[i] = -1;

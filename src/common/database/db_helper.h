@@ -36,6 +36,7 @@
 #include <common/types/loop.h>
 #include <common/types/log.h>
 #include <common/config.h>
+#include <mysql/mysql.h>
 
 #if DB_MYSQL
 
@@ -83,6 +84,8 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 ulong get_num_applications(char is_learning, char *node_name);
 
 int db_run_query(char *query, char *user, char *passw);
+
+MYSQL_RES *db_run_query_result(char *query);
 
 int db_read_applications_query(application_t **apps, char *query);
 

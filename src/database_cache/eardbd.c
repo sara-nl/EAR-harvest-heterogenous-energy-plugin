@@ -43,8 +43,6 @@
 #include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
 
-int EAR_VERBOSE_LEVEL = 1;
-
 // Configuration
 cluster_conf_t conf_clus;
 
@@ -224,7 +222,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// PID protection
 	pid_t other_server_pid;
 	pid_t other_mirror_pid;
-	path_pid = "/var/run";
+	path_pid = conf_clus->tmp_dir;
 
 	// PID test
 	process_data_initialize(&proc_data_srv, "eardbd_test", path_pid);
@@ -297,7 +295,7 @@ static int init_sockets_single(socket_t *socket, char *host, int port, int bind)
 	if (state_fail(sockets_socket(socket))) {
 		return intern_error_num;
 	}
-	if (state_fail(sockets_bind(socket, 2))) {
+	if (state_fail(sockets_bind(socket, 60))) {
 		return intern_error_num;
 	}
 	if (state_fail(sockets_listen(socket))) {
@@ -313,9 +311,13 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 {
 	//
 	int errno1 = init_sockets_single(smets_srv, NULL, server_port, 1);
-	int errno2 = init_sockets_single(smets_mir, NULL, mirror_port, 1);
+	int errno2 = init_sockets_single(smets_mir, NULL, mirror_port, mirror_too);
 	int errno3 = init_sockets_single(ssync_srv, NULL, synchr_port, 1);
 	int errno4 = init_sockets_single(ssync_mir, server_host, synchr_port, 0);
+
+	if (errno1 != 0 || errno2 != 0 || errno3 != 0 || errno4 != 0) {
+		error("while binding sockets (%d %d %d %d)", errno1, errno2, errno3, errno4);
+	}
 
 	// Verbosity
 	char *str_sta[3] = { "listen", "closed", "error" };

@@ -32,20 +32,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/version.h>
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
 #else
 #include <cpufreq.h>
 #endif
-
-#include <control/frequency.h>
-#include <common/types/generic.h>
-#include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/types/generic.h>
+#include <common/output/verbose.h>
+#include <control/frequency.h>
 #include <metrics/custom/hardware_info.h>
-
-static const char* __NAME__ = "frequency:";
 
 static struct cpufreq_policy previous_cpu0_policy;
 static ulong previous_cpu0_freq;
@@ -59,7 +55,6 @@ static uint num_freqs;
 static uint num_cpus;
 static uint is_turbo_enabled;
 
-
 //
 static ulong *get_frequencies_cpu()
 {
@@ -69,7 +64,7 @@ static ulong *get_frequencies_cpu()
 	freqs = (ulong *) malloc(sizeof(ulong) * num_cpus);
 
 	if (freqs == NULL) {
-		VERBOSE_N(0, "ERROR while allocating memory, exiting");
+		verbose(0, "ERROR while allocating memory, exiting");
 		exit(1);
 	}
 
@@ -93,10 +88,10 @@ static ulong *get_frequencies_cpu()
 			freqs[i] = cpufreq_get(i);
 
 			if (freqs[i] == 0) {
-				VERBOSE_N(0, "ERROR, CPU %d is online but the returned freq is 0", i);
+				verbose(0, "ERROR, CPU %d is online but the returned freq is 0", i);
 			}
 		} else {
-			VERBOSE_N(0, "ERROR, CPU %d is offline", i); // 4
+			verbose(0, "ERROR, CPU %d is offline", i); // 4
 		}
 	}
 
@@ -115,7 +110,7 @@ static ulong *get_frequencies_rank()
 	first = list;
 
 	if (list == NULL) {
-		VERBOSE_N(0, "unable to find an available frequencies list");
+		verbose(0, "unable to find an available frequencies list");
 	}
 
 	while(list != NULL)
@@ -124,13 +119,13 @@ static ulong *get_frequencies_rank()
 		num_freqs++;
 	}
 
-	VERBOSE_N(2, "%d frequencies available ", num_freqs); // 2
+	verbose(2, "%d frequencies available ", num_freqs); // 2
 
 	//
 	pointer = (ulong *) malloc(sizeof(ulong) * num_freqs);
 
 	if (pointer == NULL) {
-		VERBOSE_N(0, "ERROR while allocating memory, exiting");
+		verbose(0, "ERROR while allocating memory, exiting");
 		exit(1);
 	}
 
@@ -167,7 +162,7 @@ int frequency_init(unsigned int _num_cpus)
 
 	if (is_turbo_enabled)	freq_nom = freq_list_rank[1];
 	else freq_nom = freq_list_rank[0];
-	VERBOSE_N(2, "nominal frequency is %lu (KHz)", freq_nom);
+	verbose(2, "nominal frequency is %lu (KHz)", freq_nom);
 
 	return EAR_SUCCESS;
 }
@@ -212,7 +207,7 @@ ulong frequency_set_all_cpus(ulong freq)
 {
 	int result, i = 0;
 
-	VERBOSE_N(1, "setting all cpus to %lu KHz", freq);
+	verbose(1, "setting all cpus to %lu KHz", freq);
 	if (is_valid_frequency(freq))
 	{
 
@@ -224,8 +219,8 @@ ulong frequency_set_all_cpus(ulong freq)
 			result = cpufreq_set_frequency(i, freq);
 
 			if (result < 0) {
-				//VERBOSE_N(0, "ERROR while switching cpu %d frequency to %lu (%s)", i, freq, strerror(-result));
-				VERBOSE_N(2, "ERROR while switching cpu %d frequency to %lu ", i, freq);
+				//verbose(0, "ERROR while switching cpu %d frequency to %lu (%s)", i, freq, strerror(-result));
+				verbose(2, "ERROR while switching cpu %d frequency to %lu ", i, freq);
 			}
 		}
 
@@ -282,7 +277,7 @@ ulong *frequency_get_freq_rank_list()
 ulong frequency_pstate_to_freq(uint pstate)
 {
 	if (pstate >= num_freqs) {
-		VERBOSE_N(0, "higher P_STATE (%u) than the maximum (%u), returning nominal", pstate, num_freqs);
+		verbose(0, "higher P_STATE (%u) than the maximum (%u), returning nominal", pstate, num_freqs);
 		return 1;
 	}
 	return freq_list_rank[pstate];
@@ -299,7 +294,7 @@ uint frequency_freq_to_pstate(ulong freq)
 		else found = 1;
 	}
 
-	VERBOSE_N(4, "the P_STATE of the frequency %lu is %d", freq, i);
+	verbose(4, "the P_STATE of the frequency %lu is %d", freq, i);
 
 	return i;
 }
@@ -340,7 +335,7 @@ void frequency_save_previous_frequency()
 	// Saving previous policy data
 	previous_cpu0_freq = freq_list_cpu[0];
 	
-	VERBOSE_N(1, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
+	verbose(1, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
 	
 	saved_previous_freq = 1;
 }
@@ -349,7 +344,7 @@ void frequency_save_previous_frequency()
 void frequency_recover_previous_frequency()
 {
 	if (!saved_previous_freq) {
-		VERBOSE_N(2, "previous frequency not saved");
+		verbose(2, "previous frequency not saved");
 		return;
 	}
 
@@ -370,7 +365,7 @@ void frequency_save_previous_policy()
 	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
 	strcpy(previous_cpu0_policy.governor, policy->governor);
 
-	VERBOSE_N(2, "previous policy governor was %s", policy->governor);
+	verbose(2, "previous policy governor was %s", policy->governor);
 
 	// Kernel dealloc
 	cpufreq_put_policy(policy);
@@ -382,7 +377,7 @@ void frequency_recover_previous_policy()
 	int status, i;
 
 	if (!saved_previous_policy) {
-		VERBOSE_N(2, "previous policy not saved");
+		verbose(2, "previous policy not saved");
 		return;
 	}
 
@@ -391,8 +386,8 @@ void frequency_recover_previous_policy()
 		status = cpufreq_set_policy(i, &previous_cpu0_policy);
 
 		if (status < 0) {
-			//VERBOSE_N(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
-			VERBOSE_N(0, "ERROR while switching policy for cpu %d ", i);
+			//verbose(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
+			verbose(0, "ERROR while switching policy for cpu %d ", i);
 		}
 	}
 

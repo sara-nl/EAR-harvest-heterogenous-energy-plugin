@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,31 +34,24 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
-#include <linux/limits.h>
-
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netdb.h>
-
-extern int EAR_VERBOSE_LEVEL;
-#include <common/ear_verbose.h>
+#include <linux/limits.h>
 #include <common/states.h>
 #include <common/config.h>
-#include <global_manager/eargm_conf_api.h>
+#include <common/output/verbose.h>
 #include <global_manager/eargm_rapi.h>
-
+#include <global_manager/eargm_conf_api.h>
 
 int eargm_remote_socket,eargm_client;
 struct sockaddr_in eargm_remote_client;
 
-static char *__NAME__ = "eargm_api:";
-
 // 2000 and 65535
 #define EARGM_EXTERNAL_CONNEXIONS 1
-
 
 static  int sfd;
 // based on getaddrinfo man pages
@@ -87,7 +78,7 @@ int create_server_socket(uint use_port)
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {
-		VERBOSE_N(0,"getaddrinfo fails for port %s \n",buff);
+		verbose(0,"getaddrinfo fails for port %s \n",buff);
 		return EAR_ERROR;
     }
 
@@ -99,7 +90,7 @@ int create_server_socket(uint use_port)
             continue;
 
        while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){
-		VERBOSE_N(0,"Waiting for connection");
+		verbose(0,"Waiting for connection");
 		sleep(10);
 		}
             break;                  /* Success */
@@ -108,20 +99,20 @@ int create_server_socket(uint use_port)
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		VERBOSE_N(0,"bind fails for eargm server\n");
+		verbose(0,"bind fails for eargm server\n");
 		return EAR_ERROR;
     }else{
-		VERBOSE_N(2,"socket and bind for erads socket success\n");
+		verbose(2,"socket and bind for erads socket success\n");
 	}
 
    	freeaddrinfo(result);           /* No longer needed */
 
    	if (listen(sfd,EARGM_EXTERNAL_CONNEXIONS)< 0){
-		VERBOSE_N(0,"listen eargm socket fails\n");
+		verbose(0,"listen eargm socket fails\n");
 		close(sfd);
  		return EAR_ERROR;
 	}
-	VERBOSE_N(1,"socket listen ready!\n");
+	verbose(1,"socket listen ready!\n");
  	return sfd;
 }
 int wait_for_client(int s,struct sockaddr_in *client)
@@ -132,10 +123,10 @@ int wait_for_client(int s,struct sockaddr_in *client)
     client_addr_size = sizeof(struct sockaddr_in);
     new_sock = accept(s, (struct sockaddr *) &client, &client_addr_size);
     if (new_sock < 0){ 
-		VERBOSE_N(0,"accept for eargm socket fails %s\n",strerror(errno));
+		verbose(0,"accept for eargm socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
-	VERBOSE_N(1,"new connection \n");
+	verbose(1,"new connection \n");
 	return new_sock;
 }
 void close_server_socket(int sock)
@@ -148,13 +139,13 @@ int read_command(int s,eargm_request_t *command)
 	int ret;
 	ret=read(s,command,sizeof(eargm_request_t));
 	if ((ret<0) || (ret!=sizeof(eargm_request_t))){
-		VERBOSE_N(0,"Error reading remote command\n");
-		if (ret<0) VERBOSE_N(0,"errno %s\n",strerror(errno));	
+		verbose(0,"Error reading remote command\n");
+		if (ret<0) verbose(0,"errno %s\n",strerror(errno));
 		command->req=NO_COMMAND;
 	}
 	return command->req;
 }
 void send_answer(int s,ulong *ack)
 {
-	if (write(s,ack,sizeof(ulong))!=sizeof(ulong)) VERBOSE_N(0,"Error sending the answer\n");
+	if (write(s,ack,sizeof(ulong))!=sizeof(ulong)) verbose(0,"Error sending the answer\n");
 }

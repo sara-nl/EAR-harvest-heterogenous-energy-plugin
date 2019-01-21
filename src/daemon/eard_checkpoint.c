@@ -26,24 +26,18 @@
  * *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * *   The GNU LEsser General Public License is contained in the file COPYING  
  */
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
-
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <common/config.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <daemon/eard_checkpoint.h>
 
 extern char nodename[MAX_PATH_SIZE];
-static const char *__NAME__ = "checkpoint:";
-static const char *__HOST__=nodename;
 extern ulong eard_max_pstate;
-
-
-
 
 void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 {
@@ -52,17 +46,17 @@ void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 	int fd;
 	if (eard_dyn_conf==NULL)	return;
 	sprintf(checkpoint_file,"%s/%s",eard_dyn_conf->cconf->tmp_dir,".eard_check");
-	eard_verbose(0,"Using checkpoint file %s",checkpoint_file);
+	verbose(0,"Using checkpoint file %s",checkpoint_file);
 	old_mask=umask(0);	
 	fd=open(checkpoint_file,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
 	if (fd<0){
-		eard_verbose(0,"Error creating checkpoint file (%s)",strerror(errno));
+		verbose(0,"Error creating checkpoint file (%s)",strerror(errno));
 		return;
 	}	
-	eard_verbose(0,"saving node conf");
+	verbose(0,"saving node conf");
 	print_my_node_conf(eard_dyn_conf->nconf);
 	print_my_node_conf_fd_binary(fd,eard_dyn_conf->nconf);
-	eard_verbose(0,"saving current app");
+	verbose(0,"saving current app");
 	print_powermon_app_fd_binary(fd,eard_dyn_conf->pm_app);
 
 	umask(old_mask);
@@ -74,19 +68,19 @@ void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 	int fd;
 	if (eard_dyn_conf==NULL)	return;
 	sprintf(checkpoint_file,"%s/%s",eard_dyn_conf->cconf->tmp_dir,".eard_check");
-	eard_verbose(0,"Using checkpoint file %s",checkpoint_file);
+	verbose(0,"Using checkpoint file %s",checkpoint_file);
     fd=open(checkpoint_file,O_RDONLY);
     if (fd<0){
-        eard_verbose(0,"Error creating checkpoint file (%s)",strerror(errno));
+        verbose(0,"Error creating checkpoint file (%s)",strerror(errno));
         return;
     }
 	read_my_node_conf_fd_binary(fd,eard_dyn_conf->nconf);	
 	read_powermon_app_fd_binary(fd,eard_dyn_conf->pm_app);
-	eard_verbose(0,"restoring node conf");
+	verbose(0,"restoring node conf");
 	eard_max_pstate=eard_dyn_conf->nconf->max_pstate;
-	eard_verbose(0,"Node information recovered");
+	verbose(0,"Node information recovered");
 	print_my_node_conf(eard_dyn_conf->nconf);
-	eard_verbose(0,"Job recovered");
+	verbose(0,"Job recovered");
 	report_job(&eard_dyn_conf->pm_app->app.job);
 	close(fd);
 }
