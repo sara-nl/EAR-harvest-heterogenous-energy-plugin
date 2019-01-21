@@ -32,6 +32,8 @@
 #include <common/file.h>
 #include <library/tracer/tracer_mpi.h>
 
+#ifdef EAR_TRACER_MPI
+
 static char buffer[SZ_PATH];
 static int enabled;
 static int fd;
@@ -76,3 +78,4 @@ void traces_mpi_end()
 
 	close(fd);
 }
+#endif

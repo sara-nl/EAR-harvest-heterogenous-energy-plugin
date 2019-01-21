@@ -6,7 +6,7 @@
 
 #define DEBUG_CHANNEL stderr
 
-#if DEBUG
+#ifdef DEBUG_EAR
 #define debug(...) \
         fprintf(DEBUG_CHANNEL, "%s: ", __FUNCTION__); \
         fprintf(DEBUG_CHANNEL, __VA_ARGS__); \

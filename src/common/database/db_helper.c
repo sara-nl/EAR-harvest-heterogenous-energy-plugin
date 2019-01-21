@@ -688,7 +688,6 @@ ulong stmt_error(MYSQL *connection, MYSQL_STMT *statement)
                                 ">= ? AND end_time <= ? AND DC_energy <= %d"
 #define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
-#define MAX_ENERGY              10000
 
 ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated)
 {
