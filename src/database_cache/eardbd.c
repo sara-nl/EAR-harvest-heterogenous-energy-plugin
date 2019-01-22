@@ -43,8 +43,6 @@
 #include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
 
-int EAR_VERBOSE_LEVEL = 1;
-
 // Configuration
 cluster_conf_t conf_clus;
 

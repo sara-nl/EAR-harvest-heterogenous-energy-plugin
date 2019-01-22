@@ -39,18 +39,12 @@
 #include <fcntl.h>
 #include <float.h>
 #include <errno.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/types/generic.h>
-
 #include <daemon/power_monitoring/ear_power_monitor.h>
 #include <metrics/custom/frequency.h>
 
-int EAR_VERBOSE_LEVEL=1;
-static const char *__NAME__ = "powermon: ";
-
 //  That constant is replicated. We must fix that
-#define MAX_PATH_SIZE 256
-
 unsigned int f_monitoring;
 
 int idleNode=1;
@@ -100,8 +94,8 @@ void main(int argc,char *argv[])
 	
 	if (argc!=2) usage(argv[0]);
 	f_monitoring=atoi(argv[1]);
-	VERBOSE_N(0,"ear_power_monitoring started: sampling period %d usec\n",f_monitoring);
-	if (init_power_ponitoring()!=EAR_SUCCESS) VERBOSE_N(0,"Error in init_power_ponitoring\n");
+	verbose(0,"ear_power_monitoring started: sampling period %d usec\n",f_monitoring);
+	if (init_power_ponitoring()!=EAR_SUCCESS) verbose(0,"Error in init_power_ponitoring\n");
 	t_ms=f_monitoring/1000;
 	aperf_init(16);
 	aperf_init_all_cpus(16,3200000);

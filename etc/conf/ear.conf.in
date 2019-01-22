@@ -20,6 +20,7 @@ GlobalManagerPeriodT1=90
 GlobalManagerPeriodT2=259200
 # in Joules
 GlobalManagerEnergyLimit=550000
+GlobalManagerUseAggregated=1
 GlobalManagerHost=node1001
 GlobalManagerUnits=K
 GlobalManagerPolicy=MaxEnergy

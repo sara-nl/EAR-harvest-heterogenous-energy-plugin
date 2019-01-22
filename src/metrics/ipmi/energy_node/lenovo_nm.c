@@ -35,19 +35,19 @@
 #include <string.h>
 #include <unistd.h>
 #include <endian.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/resource.h>
 #include <freeipmi/freeipmi.h>
-#include <sys/time.h>
-
-#include <metrics/custom/hardware_info.h>
-#include <common/ear_verbose.h>
 #include <common/states.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
+#include <metrics/custom/hardware_info.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
 #define FUNCVERB(function)                               \
-ear_debug(4, "ear_daemon(lenovo_nm) " function "\n");
+debug( "ear_daemon(lenovo_nm) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
 static uint8_t *bytes_rq = NULL;
@@ -65,13 +65,13 @@ int lenovo_act_node_energy_init()
 	FUNCVERB("lenovo_node_energy_init");
 	//Creating the context
 	if (!(ipmi_ctx = ipmi_ctx_create ())){
-        ear_verbose(0,"lenovo_NM:Error in ipmi_ctx_create %s\n",strerror(errno));
+        verbose(0,"lenovo_NM:Error in ipmi_ctx_create %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
 	// Checking for root
 	uid = getuid ();
 	if (uid != 0){ 
-		ear_verbose(0,"lenovo_NM: No root permissions\n");
+		verbose(0,"lenovo_NM: No root permissions\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -87,7 +87,7 @@ int lenovo_act_node_energy_init()
 					NULL, // driver_device
                     workaround_flags,
                     IPMI_FLAGS_DEFAULT)) < 0) {
-		ear_verbose(0,"lenovo_NM: %s\n",strerror(errno));
+		verbose(0,"lenovo_NM: %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -95,7 +95,7 @@ int lenovo_act_node_energy_init()
 		return EAR_ERROR;	
 	}
 	if (ret==0){
-		ear_verbose(0,"lenovo_NM: Not inband device found\n");
+		verbose(0,"lenovo_NM: Not inband device found\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -106,7 +106,7 @@ int lenovo_act_node_energy_init()
 	send_len=11;
 	if (!(bytes_rq = calloc (send_len, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"lenovo_NM: Allocating memory for request %s\n",strerror(errno));
+		verbose(0,"lenovo_NM: Allocating memory for request %s\n",strerror(errno));
         // Close context
         ipmi_ctx_close (ipmi_ctx);
         // delete context
@@ -115,7 +115,7 @@ int lenovo_act_node_energy_init()
 	}
 	if (!(bytes_rs = calloc (IPMI_RAW_MAX_ARGS, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"lenovo_NM: Allocating memory for recv data %s\n",strerror(errno));
+		verbose(0,"lenovo_NM: Allocating memory for recv data %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -143,12 +143,12 @@ int lenovo_act_node_energy_init()
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-        ear_verbose(0,"lenovo_NM: ipmi_cmd_raw fails when reading the parameter\n");
+        verbose(0,"lenovo_NM: ipmi_cmd_raw fails when reading the parameter\n");
         //return EAR_ERROR;
     }
 	// sudo ./ipmi-raw 0x0 0x2e 0x81 0x66 0x4a 0x00 0x20 0x01 0x82 0x0 0x08
 	if (bytes_rs[8]!=0x20){
-		ear_verbose(0,"eard:lenovo_NM warning raw argument != 0x20\n");
+		verbose(0,"eard:lenovo_NM warning raw argument != 0x20\n");
 		bytes_rs[8]=0x20;
 	}
 	bytes_rq[0]=(uint8_t)0x00;
@@ -179,7 +179,7 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
 	int rs_len;
 	int tries=0;
 	if (ipmi_ctx==NULL){ 
-		ear_verbose(0,"lenovo_NM: IPMI context not initiallized\n");
+		verbose(0,"lenovo_NM: IPMI context not initiallized\n");
 		return EAR_ERROR;
 	}
 	FUNCVERB("lenovo_read_dc_energy");
@@ -198,7 +198,7 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
 	}while((rs_len<0) && (tries<3));
     if (rs_len<0)
 	{
-		ear_verbose(0,"lenovo_NM: ipmi_cmd_raw fails after %d attempts\n",tries);
+		verbose(0,"lenovo_NM: ipmi_cmd_raw fails after %d attempts\n",tries);
 		return EAR_ERROR;
 	}
 	energyp=(unsigned long *)&bytes_rs[rs_len-8];
@@ -228,7 +228,7 @@ int lenovo_act_node_energy_dispose()
 {
 	FUNCVERB("lenovo_node_energy_dispose");
 	if (ipmi_ctx==NULL){ 
-		ear_verbose(0,"lenovo_NM: IPMI context not initiallized\n");
+		verbose(0,"lenovo_NM: IPMI context not initiallized\n");
 		return EAR_ERROR;
 	}
 	// // Close context

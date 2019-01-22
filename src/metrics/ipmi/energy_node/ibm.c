@@ -39,14 +39,14 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <freeipmi/freeipmi.h>
-
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
 #include <metrics/custom/hardware_info.h>
-#include <common/ear_verbose.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
 #define FUNCVERB(function)                               \
-ear_debug(4, "ear_daemon(ibm) " function "\n");
+debug( "ear_daemon(ibm) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
 static uint8_t *bytes_rq = NULL;
@@ -65,13 +65,13 @@ int ibm_node_energy_init()
 	FUNCVERB("ibm_node_energy_init");
 	//Creating the context
 	if (!(ipmi_ctx = ipmi_ctx_create ())){
-        ear_verbose(0,"ibm_node_energy_init:Error in ipmi_ctx_create %s\n",strerror(errno));
+        verbose(0,"ibm_node_energy_init:Error in ipmi_ctx_create %s\n",strerror(errno));
 		return -1;
 	}
 	// Checking for root
 	uid = getuid ();
 	if (uid != 0){ 
-		ear_verbose(0,"ibm_node_energy_init: No root permissions\n");
+		verbose(0,"ibm_node_energy_init: No root permissions\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -87,7 +87,7 @@ int ibm_node_energy_init()
 					NULL, // driver_device
                     workaround_flags,
                     IPMI_FLAGS_DEFAULT)) < 0) {
-		ear_verbose(0,"ibm_node_energy_init: %s\n",strerror(errno));
+		verbose(0,"ibm_node_energy_init: %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -95,7 +95,7 @@ int ibm_node_energy_init()
 		return -1;	
 	}
 	if (ret==0){
-		ear_verbose(0,"ibm_node_energy_init: Not inband device found\n");
+		verbose(0,"ibm_node_energy_init: Not inband device found\n");
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -106,7 +106,7 @@ int ibm_node_energy_init()
 	send_len=11;
 	if (!(bytes_rq = calloc (send_len, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"ibm_node_energy_init: Allocating memory for request %s\n",strerror(errno));
+		verbose(0,"ibm_node_energy_init: Allocating memory for request %s\n",strerror(errno));
         // Close context
         ipmi_ctx_close (ipmi_ctx);
         // delete context
@@ -116,7 +116,7 @@ int ibm_node_energy_init()
 	// We allocate a vector for the answer
 	if (!(bytes_rs = calloc (IPMI_RAW_MAX_ARGS, sizeof (uint8_t))))
 	{
-		ear_verbose(0,"ibm_node_energy_init: Allocating memory for recv data %s\n",strerror(errno));
+		verbose(0,"ibm_node_energy_init: Allocating memory for recv data %s\n",strerror(errno));
 		// Close context
 		ipmi_ctx_close (ipmi_ctx);
 		// delete context
@@ -145,7 +145,7 @@ int ibm_node_energy_init()
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-		ear_verbose(0,"ear_daemon:node_energy:ibm: ipmi_cmd_raw fails\n");
+		verbose(0,"ear_daemon:node_energy:ibm: ipmi_cmd_raw fails\n");
 		return -1;
 	}
 	// This byte must be copied at bytes_rq[6]
@@ -177,7 +177,7 @@ int ibm_read_dc_energy(unsigned long *energy)
 	unsigned long *energyp;
 	int rs_len;
 	if (ipmi_ctx==NULL){ 
-		ear_verbose(0,"ibm: IPMI context not initiallized\n");
+		verbose(0,"ibm: IPMI context not initiallized\n");
 		return -1;
 	}
 	FUNCVERB("ibm_read_dc_energy");
@@ -190,7 +190,7 @@ int ibm_read_dc_energy(unsigned long *energy)
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-		ear_verbose(0,"ibm_read_dc_energy: ipmi_cmd_raw fails\n");
+		verbose(0,"ibm_read_dc_energy: ipmi_cmd_raw fails\n");
 		return -1;
 	}
 	energyp=(unsigned long *)&bytes_rs[rs_len-8];
@@ -220,7 +220,7 @@ int ibm_node_energy_dispose()
 {
 	FUNCVERB("ibm_node_energy_dispose");
 	if (ipmi_ctx==NULL){ 
-		ear_verbose(0,"ibm: IPMI context not initiallized\n");
+		verbose(0,"ibm: IPMI context not initiallized\n");
 		return -1;
 	}
 	// // Close context

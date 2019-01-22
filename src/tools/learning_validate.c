@@ -42,9 +42,6 @@
 #include <common/database/db_helper.h>
 
 //
-int EAR_VERBOSE_LEVEL = 0;
-
-//
 char buffer[SZ_PATH];
 char buffer_nodename[256];
 

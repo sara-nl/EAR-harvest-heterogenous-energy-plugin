@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,43 +15,67 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-
-
-/** This program sets the node frequency . It must be executed with privileges
-*/
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <control/frequency.h>
+#include <common/file.h>
+#include <library/tracer/tracer_mpi.h>
 
-void usage(char *app)
+#ifdef EAR_TRACER_MPI
+
+static char buffer[SZ_PATH];
+static int enabled;
+static int fd;
+
+void traces_mpi_init()
 {
-	printf("usage:%s num_cpus\n",app);
-	exit(1);
+	char *pathname = getenv("EAR_TRACE_MPI_PATH");
+
+	if (enabled || pathname == NULL) {
+		return;
+	}
+
+	sprintf(buffer, "%s", pathname);
+
+	fd = open(buffer, F_WR | F_CR | F_TR, F_UR | F_UW | F_GR | F_GW | F_OR | F_OW);
+	enabled = (fd >= 0);
 }
 
-void main(int argc,char *argv[])
+void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3)
 {
-	int i;
-	int cpus;
-	if (argc!=2) usage(argv[0]);
-	cpus=atoi(argv[1]);
-	frequency_init(cpus);
-	for (i=0;i<cpus;i++){
-		printf("CPU freq for cpu %d is %lu\n",i,frequency_get_cpu_freq(i));
-	}	
-	frequency_dispose();
+	unsigned long *b;
+	ssize_t w;
+
+	if (!enabled) {
+		return;
+	}
+
+	b = (unsigned long *) buffer;
+	b[0] = ev;
+	b[1] = time;
+
+	write(fd, b, 16);
 }
+
+void traces_mpi_end()
+{
+	if (!enabled) {
+		return;
+	}
+
+	enabled = 0;
+
+	close(fd);
+}
+#endif

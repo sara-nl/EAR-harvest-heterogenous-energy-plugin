@@ -80,15 +80,18 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 
 	if (signal == SIGUSR1)
 	{
-		printpl0("signal SIGUSR1 received, switching verbosity");
-
+		verbosity = !verbosity;
 		updating  = 1;
-		verbosity = (verbosity + 1) % 2;
+		
+		printpl1("signal SIGUSR1 received, switching verbosity to '%d'", verbosity);
 	}
 
 	if (signal == SIGUSR2)
 	{
-		printpl0("signal SIGUSR2 received, switching verbosity");
+		verbosity = (verbosity != 2) * 2;
+		updating  = 1;
+		
+		printpl1("signal SIGUSR2 received, switching verbosity to '%d'", verbosity);
 	}
 
 	// Case exit

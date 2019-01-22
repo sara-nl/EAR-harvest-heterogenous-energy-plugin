@@ -35,7 +35,7 @@
 #include <metrics/papi/cache.h>
 #include <metrics/papi/generics.h>
 #include <metrics/custom/hardware_info.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 
 #define CACHE_SETS 3
@@ -44,7 +44,7 @@
 #define L2 1
 #define L3 2
 
-static const char *__NAME__ = "METRICS_CACHE";
+static const char *PAPI_NAME = "METRICS_CACHE";
 static long long acum_values[CACHE_SETS];
 static long long values[CACHE_SETS][CACHE_EVS];
 static int event_sets[CACHE_SETS];
@@ -54,9 +54,9 @@ int init_cache_metrics()
 	PAPI_option_t cache_attach_opt[CACHE_SETS];
 	int ret, cid, sets, events;
 
-	PAPI_INIT_TEST(__NAME__);
-	PAPI_INIT_MULTIPLEX_TEST(__NAME__);
-	PAPI_GET_COMPONENT(cid, "perf_event", __NAME__);
+	PAPI_INIT_TEST(PAPI_NAME);
+	PAPI_INIT_MULTIPLEX_TEST(PAPI_NAME);
+	PAPI_GET_COMPONENT(cid, "perf_event", PAPI_NAME);
 
 	for (sets = 0; sets < CACHE_SETS; sets++)
 	{
@@ -70,13 +70,13 @@ int init_cache_metrics()
 		/* Init event sets */
 		event_sets[sets]=PAPI_NULL;
 		if ((ret = PAPI_create_eventset(&event_sets[sets])) != PAPI_OK) {
-			VERBOSE_N(0, "ERROR while creating %d eventset (%s), exiting"
+			verbose(0, "ERROR while creating %d eventset (%s), exiting"
 					,sets, PAPI_strerror(ret));
 			exit(1);
 		}
 
 		if ((ret = PAPI_assign_eventset_component(event_sets[sets],cid)) != PAPI_OK){
-			VERBOSE_N(0, "ERROR while assigning event set component (%s), exiting",
+			verbose(0, "ERROR while assigning event set component (%s), exiting",
 				PAPI_strerror(ret));
 			exit(1);
 		}
@@ -86,15 +86,15 @@ int init_cache_metrics()
 
 		ret = PAPI_set_opt(PAPI_ATTACH,(PAPI_option_t*)&cache_attach_opt[sets]);
 		if (ret != PAPI_OK) {
-			VERBOSE_N(0, "ERROR while setting option (%s)", PAPI_strerror(ret));
+			verbose(0, "ERROR while setting option (%s)", PAPI_strerror(ret));
 		}
 
 		ret = PAPI_set_multiplex(event_sets[sets]);
 
 		if ((ret == PAPI_EINVAL) && (PAPI_get_multiplex(event_sets[sets]) > 0)){
-			VERBOSE_N(0, "cache events sets already has multiplexing enabled");
+			verbose(0, "cache events sets already has multiplexing enabled");
 		}else if (ret != PAPI_OK){ 
-			VERBOSE_N(0, "ERROR, cache events sets can not be multiplexed (%s)",
+			verbose(0, "ERROR, cache events sets can not be multiplexed (%s)",
 					  PAPI_strerror(ret));
 		}
 
@@ -102,23 +102,23 @@ int init_cache_metrics()
 		{
 		case L1:
 			if ((ret=PAPI_add_named_event(event_sets[sets], "PAPI_L1_DCM"))!=PAPI_OK){
-				VERBOSE_N(0, "PAPI_add_named_event %s (%s)","PAPI_L1_DCM",
+				verbose(0, "PAPI_add_named_event %s (%s)","PAPI_L1_DCM",
 						  PAPI_strerror(ret));
 			}
 			if ((ret=PAPI_add_named_event(event_sets[sets], "PAPI_L2_ICM"))!=PAPI_OK){
-				VERBOSE_N(0, "PAPI_add_named_event %s (%s)","PAPI_L2_ICM",
+				verbose(0, "PAPI_add_named_event %s (%s)","PAPI_L2_ICM",
 						  PAPI_strerror(ret));
 			}
 			break;
 		case L2:
 			if ((ret=PAPI_add_named_event(event_sets[sets], "PAPI_L2_TCM"))!=PAPI_OK){
-				VERBOSE_N(0, "PAPI_add_named_event %s (%s)","PAPI_L2_TCM",
+				verbose(0, "PAPI_add_named_event %s (%s)","PAPI_L2_TCM",
 						  PAPI_strerror(ret));
 			}
 			break;
 		case L3:
 			if ((ret=PAPI_add_named_event(event_sets[sets], "PAPI_L3_TCM"))!=PAPI_OK){
-				VERBOSE_N(0, "PAPI_add_named_event %s (%s)","PAPI_L3_TCM",
+				verbose(0, "PAPI_add_named_event %s (%s)","PAPI_L3_TCM",
 						  PAPI_strerror(ret));
 			}
 			break;
@@ -134,7 +134,7 @@ void reset_cache_metrics()
 	{
 		if ((ret=PAPI_reset(event_sets[sets]))!=PAPI_OK)
 		{
-			VERBOSE_N(0, "reset_cache_metrics (%s)", PAPI_strerror(ret));
+			verbose(0, "reset_cache_metrics (%s)", PAPI_strerror(ret));
 		}
 		for (events = 0; events < CACHE_EVS; events++) {
 			values[sets][events] = 0;
@@ -150,7 +150,7 @@ void start_cache_metrics()
 	{
 		if ((ret=PAPI_start(event_sets[sets])) != PAPI_OK)
 		{
-			VERBOSE_N(0, "start_cache_metrics (%s)", PAPI_strerror(ret));
+			verbose(0, "start_cache_metrics (%s)", PAPI_strerror(ret));
 		}
 	}
 }
@@ -163,7 +163,7 @@ void stop_cache_metrics(long long *L1_misses,long long * L2_misses,long long * L
 	*L3_misses=0;
 	for (sets=0;sets<CACHE_SETS;sets++){
 		if ((ret=PAPI_stop(event_sets[sets],(long long *)&values[sets]))!=PAPI_OK){
-			VERBOSE_N(0, "stop_cache_metrics (%s)",PAPI_strerror(ret));
+			verbose(0, "stop_cache_metrics (%s)",PAPI_strerror(ret));
 		}else{
 			if (sets==L1){ 
 				*L1_misses=values[sets][0]+values[sets][1];

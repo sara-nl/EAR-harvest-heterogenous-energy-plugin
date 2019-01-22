@@ -29,13 +29,18 @@
 #ifndef _FILE_H
 #define _FILE_H
 
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <common/sizes.h>
 #include <common/states.h>
 
 #define FC_MAX_OBJECTS	10
 #define F_WR 			O_WRONLY
 #define F_CR 			O_CREAT
+#define F_TR			O_TRUNC
 #define F_UR 			S_IRUSR
 #define F_UW 			S_IWUSR
 #define F_UX 			S_IXUSR

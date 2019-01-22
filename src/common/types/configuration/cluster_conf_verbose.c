@@ -50,18 +50,21 @@ static void print_eargm_conf(eargm_conf_t *conf)
 
 static void print_db_manager(eardb_conf_t *conf)
 {
+	fprintf(stderr,"--> EARDBD configuration\n");
 	fprintf(stderr, "---> Aggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tSync Port: %u\tCacheSize: %u\n",
 			conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->sync_tcp_port,conf->mem_size);
 }
 
 void print_database_conf(db_conf_t *conf)
 {
+	fprintf(stderr,"\n--> MARIADB configuration\n");
 	fprintf(stderr, "---> IP: %s\tUser: %s\tPort:%u\tDB:%s\n",
 			conf->ip, conf->user, conf->port, conf->database);
 }
 
 static void print_islands_conf(node_island_t *conf)
 {
+	fprintf(stderr, "Islands configuration\n");
 	fprintf(stderr, "--->id: %u\n", conf->id);
 	int i;
 	for (i = 0; i < conf->num_ranges; i++)

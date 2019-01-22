@@ -56,7 +56,6 @@
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
-int EAR_VERBOSE_LEVEL=1;
 application_t *app_list;
 application_t **sorted_app_list;
 coefficient_t **coeffs_list;

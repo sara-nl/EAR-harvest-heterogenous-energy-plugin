@@ -34,7 +34,6 @@
 #include <common/states.h>
 #include <common/types/configuration/cluster_conf.h>
 
-int EAR_VERBOSE_LEVEL=1;
 int total_errors = 0;
 int total_warnings = 0;
 

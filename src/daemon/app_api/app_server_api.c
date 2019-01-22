@@ -26,19 +26,17 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <pthread.h>
 #include <errno.h>
-#include <signal.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <unistd.h>
-
-
+#include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
 #include <common/types/generic.h>
-#include <common/ear_verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/ipmi/energy_node.h>
@@ -53,8 +51,6 @@ static int fd_eard_to_app=-1;
 
 extern cluster_conf_t my_cluster_conf;
 extern int eard_must_exit;
-static char *__NAME__="EARD";
-extern char *__HOST__;
 
 /*********************************************************/
 /***************** PRIVATE FUNCTIONS in this module ******/
@@ -117,7 +113,7 @@ int create_app_connection(char *root)
 uint read_app_command(app_send_t *app_req)
 {
 	if (read(fd_app_to_eard,app_req,sizeof(app_send_t))!=sizeof(app_send_t)){
-		eard_verbose(0,"Error reading NON-EARL application request\n");
+		verbose(0,"Error reading NON-EARL application request\n");
 		return INVALID_COMMAND;
 	}
 	return app_req->req;
@@ -151,7 +147,7 @@ void ear_energy()
 
 	/* Create connection */
 	if (connect_with_app()!=EAR_SUCCESS){
-		eard_verbose(0,"Error connecting with NON-EARL application \n");
+		verbose(0,"Error connecting with NON-EARL application \n");
 		return;
 	}
 
@@ -188,10 +184,10 @@ void process_request()
 		ear_energy();
 		break;
 	case INVALID_COMMAND:
-		eard_verbose(0,"PANIC, invalid command received and not recognized\n");
+		verbose(0,"PANIC, invalid command received and not recognized\n");
 		break;
 	default:
-		eard_verbose(0,"PANIC, non-earl command received and not recognized\n");
+		verbose(0,"PANIC, non-earl command received and not recognized\n");
 		break;
 	}
 	
@@ -208,7 +204,7 @@ void *eard_non_earl_api_service(void *noinfo)
 
 	/* Create connections */
 	if (create_app_connection(my_cluster_conf.tmp_dir)!= EAR_SUCCESS){ 
-		eard_verbose(0,"Error creating files for non-EARL requests\n");
+		verbose(0,"Error creating files for non-EARL requests\n");
 		pthread_exit(0);
 	}
 	FD_ZERO(&rfds);
@@ -218,7 +214,7 @@ void *eard_non_earl_api_service(void *noinfo)
     numfds_req=max_fd+1;
 	rfds_basic=rfds;
 	/* Wait for messages */
-	eard_verbose(0,"Waiting for non-earl requestst\n");
+	verbose(0,"Waiting for non-earl requestst\n");
 	while ((eard_must_exit==0) && (numfds_ready=select(numfds_req,&rfds,NULL,NULL,NULL))>=0){
 		if (numfds_ready>0){
 			/* There is only one fd, it MUST be this one */

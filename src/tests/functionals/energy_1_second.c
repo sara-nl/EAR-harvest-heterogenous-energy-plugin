@@ -34,8 +34,6 @@
 #include <unistd.h>
 #include <metrics/ipmi/energy_node.h>
 
-int EAR_VERBOSE_LEVEL=1;
-
 void main(int argc,char *argv[])
 {
 	unsigned long init, end;

@@ -32,8 +32,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <papi.h>
-
 #include <common/config.h>
+#include <common/states.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
+#include <common/types/signature.h>
+#include <common/math_operations.h>
 #include <metrics/metrics.h>
 #if 0
 #include <metrics/papi/flops.h>
@@ -41,13 +45,9 @@
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
 #endif
-#include <library/metrics/metrics.h>
-#include <common/types/signature.h>
 #include <daemon/eard_api.h>
-#include <common/ear_verbose.h>
-#include <common/states.h>
-#include <common/math_operations.h>
 #include <library/common/externs.h>
+#include <library/metrics/metrics.h>
 
 #define TEST_MB 1
 
@@ -101,10 +101,6 @@
  * Avg. Freq. | ear_turbo.c (ear_frequency.c) | Per core, MSR registers. Hay que ver si acumula bien.
  *
  */
-
-// Verbosity
-static const char *__NAME__ = "ear/metrics";
-extern char *__HOST__ ;
 
 // Hardware
 static double hw_cache_line_size;
@@ -232,7 +228,7 @@ static int metrics_partial_stop(uint where)
 	eards_node_dc_energy(&aux_energy_stop);
 	if ((where==SIG_END) && (aux_energy_stop==metrics_ipmi[LOO])){ 
 	#if 0
-		earl_verbose(1,"EAR_NOT_READY because of energy %u\n",aux_energy);
+		verbose(1,"EAR_NOT_READY because of energy %u\n",aux_energy);
 	#endif
 		return EAR_NOT_READY;
 	}
@@ -246,7 +242,7 @@ static int metrics_partial_stop(uint where)
 
 	if ((where==SIG_END) && (c_power<MIN_SIG_POWER)){ 
 	#if 0
-		earl_verbose(1,"EAR_NOT_READY because of power %f\n",c_power);
+		verbose(1,"EAR_NOT_READY because of power %f\n",c_power);
 	#endif
 		return EAR_NOT_READY;
 	}
@@ -358,7 +354,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		metrics->Gflops = metrics->Gflops / time_s; // Floating ops to FLOPS
 		metrics->Gflops = metrics->Gflops / 1000000000.0; // FLOPS to GFLOPS
 		metrics->Gflops = metrics->Gflops * (double) procs; // Core GFLOPS to node GFLOPS
-		/* if (s==APP) earl_verbose(0,"Total resources per node detected %d, GFlops per MPI process %lf \n",procs,metrics->Gflops); */
+		/* if (s==APP) { verbose(0,"Total resources per node detected %d, GFlops per MPI process %lf \n",procs,metrics->Gflops); } */
 	}
 
 	// Transactions and cycles
@@ -386,7 +382,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	if (s==APP){
 		double GBS_acum;
 		GBS_acum=cas_counter_acum * hw_cache_line_size / aux;
-		ear_verbose(2,"GBS global %.3lf . GBS accumulated %.3lf\n",metrics->GBS,GBS_acum);
+		verbose(2,"GBS global %.3lf . GBS accumulated %.3lf\n",metrics->GBS,GBS_acum);
 	}
 	#endif
 	metrics->CPI = (double) metrics_cycles[s] / (double) metrics_instructions[s];
@@ -396,7 +392,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	metrics->DC_power = (double) metrics_ipmi[s] / (time_s * 1000.0);
 	metrics->EDP = time_s * time_s * metrics->DC_power;
 	if ((metrics->DC_power>MAX_SIG_POWER) || (metrics->DC_power<MIN_SIG_POWER)){
-		earl_verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,metrics_ipmi[s],time_s* 1000.0);
+		verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,metrics_ipmi[s],time_s* 1000.0);
 	}
 
 	// Energy RAPL (TODO: ask for the two individual energy types separately)
@@ -416,7 +412,7 @@ int metrics_init()
 
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
-	DEBUG_F(0, "detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+	debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
 
 	// Local metrics initialization
 	init_basic_metrics();
@@ -438,13 +434,13 @@ int metrics_init()
 
 		if (metrics_flops[LOO] == NULL || metrics_flops[APP] == NULL)
 		{
-			VERBOSE_N(0,"error allocating memory, exiting");
+			verbose(0,"error allocating memory, exiting");
 			exit(1);
 		}
 
 		get_weigth_fops_instructions(metrics_flops_weights);
 
-		DEBUG_F(0, "detected %d FLOP counter", flops_elements);
+		debug( "detected %d FLOP counter", flops_elements);
 	}
 
 	// Daemon metrics allocation (TODO: standarize data size)
@@ -471,7 +467,7 @@ int metrics_init()
 		metrics_bandwith_end[LOO] == NULL || metrics_bandwith_end[APP] == NULL  ||
 			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL || last_rapl == NULL)
 	{
-			VERBOSE_N(0, "error allocating memory in metrics, exiting");
+			verbose(0, "error allocating memory in metrics, exiting");
 			exit(1);
 	}
 	memset(metrics_bandwith[LOO], 0, bandwith_size);
@@ -486,8 +482,8 @@ int metrics_init()
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
 
-	DEBUG_F(0, "detected %d RAPL counter", rapl_elements);
-	DEBUG_F(0, "detected %d bandwith counter", bandwith_elements);
+	debug( "detected %d RAPL counter", rapl_elements);
+	debug( "detected %d bandwith counter", bandwith_elements);
 
 	metrics_reset();
 	metrics_global_start();
@@ -534,7 +530,7 @@ int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulon
 	//
 	if ((aux_time<min_time_us) && !equal_with_th((double)aux_time, (double)min_time_us,0.1)) {
         #if 0
-                earl_verbose(1,"EAR_NOT_READY because of time %llu\n",aux_time);
+                verbose(1,"EAR_NOT_READY because of time %llu\n",aux_time);
         #endif
 		metrics->time=0;
 
@@ -560,7 +556,7 @@ long long metrics_usecs_diff(long long end, long long init)
 
 	if (end < init)
 	{
-		DEBUG_F(0, "Timer overflow (end: %ll - init: %ll)\n", end, init);
+		debug( "Timer overflow (end: %ll - init: %ll)\n", end, init);
 		to_max = LLONG_MAX - init;
 		return (to_max + end);
 	}

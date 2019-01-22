@@ -27,30 +27,27 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
-
 #include <common/config.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/types/log.h>
+#include <common/types/signature.h>
+#include <common/types/projection.h>
+#include <common/types/application.h>
 #include <control/frequency.h>
+#include <daemon/eard_api.h>
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
 #include <library/models/sig_projections.h>
-#include <daemon/eard_api.h>
-#include <common/types/application.h>
-#include <common/types/projection.h>
-#include <common/types/signature.h>
-#include <common/ear_verbose.h>
-#include <common/types/log.h>
-#include <common/states.h>
 
 static uint pc_policy_pstates;
-static char *__NAME__ = "power_capping";
 
 // Policy
 extern double power_cap_limit;
@@ -58,7 +55,6 @@ extern coefficient_t **coefficients;
 
 // Process
 extern uint EAR_default_pstate;
-
 extern ulong user_selected_freq;
 
 void power_cap_energy_init(uint num_pstates)
@@ -122,7 +118,7 @@ ulong power_cap_energy_policy(signature_t *sig)
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (best_freq>system_conf->max_freq){ 
 		log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-		ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
+		verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
 		best_freq,system_conf->max_freq);
 		best_freq=system_conf->max_freq;
 	}
@@ -141,7 +137,7 @@ ulong  min_energy_default_conf(ulong f)
     // Just in case the bestPstate was the frequency at which the application was running
     if (f>system_conf->max_freq){
         log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-        ear_verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
+        verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
         f,system_conf->max_freq);
 		return system_conf->max_freq;
     } else return f;

@@ -38,8 +38,6 @@
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
 
-int EAR_VERBOSE_LEVEL = 0;
-
 void main(int argc,char *argv[])
 {
     int verbose = 0;

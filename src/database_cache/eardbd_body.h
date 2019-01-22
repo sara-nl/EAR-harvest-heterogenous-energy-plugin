@@ -50,7 +50,6 @@
 	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam]);
 
 #define printpl1(format, ...) \
-	printl0(); \
 	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 
 #define printm1(...) \

@@ -40,23 +40,20 @@ typedef struct ear_event{
 */
 
 #include <time.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <common/config.h>
 #include <common/types/log.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <daemon/eard_api.h>
 
 #define LOG_FILE 1
-
-const char *__NAME__ = "LOG";
 
 static int fd_log=-1;
 static char my_log_buffer[1024];
@@ -78,10 +75,10 @@ void init_log()
 	gethostname(nodename, sizeof(nodename));
 	strtok(nodename, ".");
 	sprintf(log_name,"EAR.%s.log",nodename);
-	VERBOSE_N(2, "creating %s log file", log_name);
+	verbose(2, "creating %s log file", log_name);
 	fd_log=open(log_name,O_WRONLY|O_APPEND|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd_log<0){
-		VERBOSE_N(0, "ERROR while creating EAR log file %s (%s)", log_name, strerror(errno));
+		verbose(0, "ERROR while creating EAR log file %s (%s)", log_name, strerror(errno));
 	}
 	umask(my_mask);
     current_t=localtime(&curr_time);

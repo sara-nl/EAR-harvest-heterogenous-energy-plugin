@@ -68,7 +68,7 @@ uint projection_create(uint p_states)
 	proj_pstates=p_states;
 
 	if (projections == NULL) {
-		//ear_verbose(0, "EAR: Error allocating memory for perf. projections\n");
+		//verbose(0, "EAR: Error allocating memory for perf. projections\n");
 		exit(1);
 	}
 }

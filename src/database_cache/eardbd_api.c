@@ -33,18 +33,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
 #include <database_cache/eardbd_api.h>
-
-#define verbose(...) \
-        fprintf(stderr, "EARDBD, " __VA_ARGS__); \
-        fprintf(stderr, "\n");
-
-#if 1
-#define debug(format, ...) \
-        fprintf(stderr, "%s(): " format "\n", __FUNCTION__, __VA_ARGS__);
-#else
-#define debug(format, ...)
-#endif
 
 static packet_header_t header;
 static socket_t server_sock;

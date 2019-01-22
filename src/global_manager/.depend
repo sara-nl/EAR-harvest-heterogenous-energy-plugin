@@ -1,8 +1,8 @@
 eargm_rapi.o: eargm_rapi.c ../global_manager/eargm_conf_api.h \
- ../global_manager/eargm_rapi.h ../common/ear_verbose.h \
- ../common/config.h ../common/states.h
+ ../global_manager/eargm_rapi.h ../common/output/verbose.h \
+ ../common/states.h
 eargm.o: eargm.c ../common/config.h ../common/types/generic.h \
- ../common/states.h ../common/ear_verbose.h \
+ ../common/states.h ../common/output/verbose.h \
  ../global_manager/eargm_server_api.h ../global_manager/eargm_conf_api.h \
  ../daemon/eard_rapi.h ../common/types/application.h \
  ../common/types/job.h ../common/types/signature.h \
@@ -14,6 +14,6 @@ eargm.o: eargm.c ../common/config.h ../common/types/generic.h \
  ../common/database/db_helper.h ../common/types/periodic_aggregation.h \
  ../common/types/periodic_metric.h ../common/types/loop.h \
  ../common/types/log.h
-eargm_server_api.o: eargm_server_api.c ../common/ear_verbose.h \
- ../common/config.h ../common/states.h ../global_manager/eargm_conf_api.h \
+eargm_server_api.o: eargm_server_api.c ../common/output/verbose.h \
+ ../common/states.h ../common/config.h ../global_manager/eargm_conf_api.h \
  ../global_manager/eargm_rapi.h

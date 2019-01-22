@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef _EAR_TRACES_H_
 #define _EAR_TRACES_H_
 
@@ -78,9 +76,6 @@
 	void traces_earl_mode_dynais(int global_rank, int local_rank);
 	void traces_earl_mode_periodic(int global_rank, int local_rank);
 
-	/** Executed at each mpi_call */
-	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
-
 	/** External reconfiguration is requested */
 	void traces_reconfiguration(int global_rank, int local_rank);
 	
@@ -95,7 +90,6 @@
 	#define traces_PP(g,l,s,p)
 	#define traces_new_period(g,l,p)
 	#define traces_end_period(g,l)
-	#define traces_mpi_call(g,l,t,e,a1,a2,a3);
 	#define traces_policy_state(g,l,s);
 	#define traces_dynais(g,l,s);
 	#define traces_earl_mode_dynais(g,l);

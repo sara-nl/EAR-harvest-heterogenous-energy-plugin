@@ -37,8 +37,6 @@
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
 
-int EAR_VERBOSE_LEVEL = 1;
-
 #define CLEAN_PERIODIC_QUERY "DELETE FROM Periodic_metrics WHERE end_time <= UNIX_TIMESTAMP(SUBTIME(NOW(),'%d 0:0:0.00'))"
 
 void usage(char *app)

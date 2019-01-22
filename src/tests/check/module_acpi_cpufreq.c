@@ -43,7 +43,7 @@ int main ()
 	FILE *fd;
 
 	// General test
-	assert(find_module("ipmi_devintf"));
+	assert(find_module("acpi_cpufreq"));
 
 	// Test if scaling is supported
 	sprintf(path, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed");

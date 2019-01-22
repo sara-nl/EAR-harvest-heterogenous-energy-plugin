@@ -40,8 +40,6 @@
 #include <common/config.h>
 #include <papi.h>
 
-int EAR_VERBOSE_LEVEL = 4;
-
 void usage(char *bin)
 {
     printf("Usage: %s n_iterations\n", bin);

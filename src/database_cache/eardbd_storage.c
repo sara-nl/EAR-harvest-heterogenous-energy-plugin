@@ -39,6 +39,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <common/database/db_helper.h>
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -500,16 +501,28 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	// Storage
 	if (type == CONTENT_TYPE_APM)
 	{
+		if (verbosity == 2) {
+			application_print_channel(stderr, (application_t *) content);
+		}
+
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSM);
 	}
 	else if (type == CONTENT_TYPE_APN)
 	{
+		if (verbosity == 2) {
+			application_print_channel(stderr, (application_t *) content);
+		}
+
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSN);
 	}
 	else if (type == CONTENT_TYPE_APL)
 	{
+		if (verbosity == 2) {
+			application_print_channel(stderr, (application_t *) content);
+		}
+
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_APPSL);
 	}
@@ -528,6 +541,10 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
 		peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 		periodic_metric_t *met = (periodic_metric_t *) content;
+
+		if (verbosity == 2) {
+                        periodic_metrict_print_channel(stderr, met);
+                }
 
 		// Verbosity mpkfa
 		//if (verbosity == 1) {

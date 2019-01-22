@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#define STANDARD_NODENAME_LENGTH 25
-#define APP_TEXT_FILE_FIELDS 22 
+#define STANDARD_NODENAME_LENGTH    25
+#define APP_TEXT_FILE_FIELDS        22
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,22 +36,21 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/types/application.h>
+
 #if DB_MYSQL
 #include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/mysql_io_functions.h>
 cluster_conf_t my_conf;
-int EAR_VERBOSE_LEVEL=0;
 #endif
+
 int full_length = 0;
 int verbose = 0;
 int query_filters = 0;
 int all_mpi = 0;
 int avx = 0;
 char csv_path[256] = "";
-
-static const char *__NAME__ = "eacct";
 
 void usage(char *app)
 {
@@ -668,7 +667,7 @@ void main(int argc, char *argv[])
         exit(1);
     }
 
-    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) VERBOSE_N(0, "ERROR reading cluster configuration\n");
+    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) verbose(0, "ERROR reading cluster configuration\n");
     
     char *user = getlogin();
     if (user == NULL)

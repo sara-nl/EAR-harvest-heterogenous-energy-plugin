@@ -33,8 +33,6 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/db_helper.h>
 
-int EAR_VERBOSE_LEVEL=1;
-
 static char *paint[6] = { STR_RED, STR_GRE, STR_YLW, STR_BLU, STR_MGT, STR_CYA };
 static unsigned int opt_p;
 static unsigned int opt_c;

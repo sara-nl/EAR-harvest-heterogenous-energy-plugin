@@ -38,12 +38,17 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-
 #include <papi.h>
-#include <control/frequency.h>
+#include <common/config.h>
+#include <common/states.h>
+#include <common/environment.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
+#include <common/types/application.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
+#include <library/tracer/tracer_mpi.h>
 #include <library/states/states.h>
 #include <library/states/states_periodic.h>
 #include <library/models/models.h>
@@ -52,19 +57,12 @@
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
 #include <library/mpi_intercept/freq_synchro.h>
+#include <control/frequency.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
-#include <common/types/application.h>
-#include <common/ear_verbose.h>
-#include <common/environment.h>
-#include <common/states.h>
-#include <common/config.h>
 #include <metrics/metrics.h>
 
 // Statics
-static const char *__NAME__ = "EARL";
-char *__HOST__ ;
-
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
 #define USE_LOCK_FILES 		1
@@ -122,26 +120,23 @@ ulong *remote_f;
 unsigned masters_comm_created=0;
 #endif
 
-
-
-
 //
 static void print_local_data()
 {
 	#if EAR_LIB_SYNC 
 	if (my_master_rank==0) {
 	#endif
-	earl_verbose(1, "--------------------------------");
-	earl_verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
-	earl_verbose(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
-	earl_verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
-	earl_verbose(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
-	earl_verbose(1, "Tasks/nodes/ppn: %u/%d/%d", my_size, num_nodes, ppnode);
-	earl_verbose(1, "Policy (learning): %s (%d)", application.job.policy, ear_whole_app);
-	earl_verbose(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());
-	earl_verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
-	earl_verbose(1, "VAR path: %s", get_ear_tmp());
-	earl_verbose(1, "--------------------------------");
+	verbose(1, "--------------------------------");
+	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
+	verbose(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
+	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
+	verbose(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
+	verbose(1, "Tasks/nodes/ppn: %u/%d/%d", my_size, num_nodes, ppnode);
+	verbose(1, "Policy (learning): %s (%d)", application.job.policy, ear_whole_app);
+	verbose(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());
+	verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
+	verbose(1, "VAR path: %s", get_ear_tmp());
+	verbose(1, "--------------------------------");
 	#if EAR_LIB_SYNC
 	}
 	#endif
@@ -159,7 +154,7 @@ void notify_eard_connection(int status)
 	buffer_send = calloc(    1, sizeof(char));
 	buffer_recv = calloc(my_master_size, sizeof(char));
 	if ((buffer_send==NULL) || (buffer_recv==NULL)){
-			earl_verbose(0,"Error, memory not available for synchronization\n");
+			verbose(0,"Error, memory not available for synchronization\n");
 			my_id=1;
 			masters_comm_created=0;
 			return;
@@ -167,7 +162,9 @@ void notify_eard_connection(int status)
 	buffer_send[0] = (char)status; 
 
 	/* Not clear the error values */
-	if (my_master_rank==0) earl_verbose(MASTERS_SYNC_VERBOSE,"Number of nodes expected %d\n",my_master_size);
+	if (my_master_rank==0) {
+		verbose(MASTERS_SYNC_VERBOSE,"Number of nodes expected %d\n",my_master_size);
+	}
 	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_comm);
 
 
@@ -175,10 +172,14 @@ void notify_eard_connection(int status)
 	{       
 		masters_connected+=(int)buffer_recv[i];
 	}
-	if (my_master_rank==0) earl_verbose(MASTERS_SYNC_VERBOSE,"Total number of masters connected %d",masters_connected);
+	if (my_master_rank==0) {
+		verbose(MASTERS_SYNC_VERBOSE,"Total number of masters connected %d",masters_connected);
+	}
 	if (masters_connected!=num_nodes){
 	/* Some of the nodes is not ok , setting off EARL */
-		if (my_master_rank==0) earl_verbose(0,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
+		if (my_master_rank==0) {
+			verbose(0,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
+		}
 		my_id=1;
 		return;
 	}else{
@@ -186,7 +187,7 @@ void notify_eard_connection(int status)
 		local_f=(ulong *)calloc(1,sizeof(ulong));
 		remote_f=(ulong *)calloc(my_master_size,sizeof(ulong));
 		if ((local_f==NULL) || (remote_f==NULL)){
-			earl_verbose(0,"Error, memory not available for synchronization\n");
+			verbose(0,"Error, memory not available for synchronization\n");
 			masters_comm_created=0;
 		}
 	}
@@ -207,7 +208,7 @@ void attach_to_master_set(int master)
 	if ((masters_comm_created) && (!color)){
 		PMPI_Comm_rank(masters_comm,&my_master_rank);
 		PMPI_Comm_size(masters_comm,&my_master_size);
-		earl_verbose(MASTERS_SYNC_VERBOSE+1,"New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
+		verbose(MASTERS_SYNC_VERBOSE+1,"New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
 	}
 	#endif
 }
@@ -226,9 +227,9 @@ static int get_local_id(char *node_name)
 	}
 
 	if (master) {
-		earl_verbose(2, "Rank %d is not the master in node %s", ear_my_rank, node_name);
+		verbose(2, "Rank %d is not the master in node %s", ear_my_rank, node_name);
 	}else{
-		earl_verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
+		verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
 	}
 #else
 	master = get_ear_local_id();
@@ -259,7 +260,7 @@ static void get_job_identification()
 			if (step_id != NULL) {
 				my_step_id=atoi(step_id);
 			} else {
-				earl_verbose(0, "Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using SLURM_JOB_ID");
+				verbose(0, "Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using SLURM_JOB_ID");
 			}
 		}
 	} else {
@@ -323,9 +324,9 @@ void update_configuration()
 	if (ear_dynais_size!=NULL) set_ear_dynais_window_size(atoi(ear_dynais_size));
 	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
 	if (ear_mode!=NULL)	ear_periodic_mode=atoi(ear_mode);
-	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d ear_dynais_size %d \n",use_dynais,dynais_timeout,atoi(ear_dynais_size));	
-	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: lib_period %d check_every %d\n",lib_period,check_every);	
-	earl_verbose(0,"EAR_PERFORMANCE_TESTS ON: ear_mode %d (PERIODIC=%d DYNAIS=%d)\n",ear_periodic_mode,PERIODIC_MODE_ON,PERIODIC_MODE_OFF);
+	verbose(0,"EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d ear_dynais_size %d \n",use_dynais,dynais_timeout,atoi(ear_dynais_size));
+	verbose(0,"EAR_PERFORMANCE_TESTS ON: lib_period %d check_every %d\n",lib_period,check_every);
+	verbose(0,"EAR_PERFORMANCE_TESTS ON: ear_mode %d (PERIODIC=%d DYNAIS=%d)\n",ear_periodic_mode,PERIODIC_MODE_ON,PERIODIC_MODE_OFF);
 #endif
 }
 
@@ -353,9 +354,8 @@ void ear_init()
 	// Fundamental data
 	gethostname(node_name, sizeof(node_name));
 	strtok(node_name, ".");
-	__HOST__=node_name;
 
-	EAR_VERBOSE_LEVEL = get_ear_verbose();
+	verb_level = get_ear_verbose();
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
 	num_nodes = get_ear_num_nodes();
@@ -380,7 +380,7 @@ void ear_init()
 	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
 		update_configuration();	
 	}else{
-		earl_verbose(0,"Shared memory not present, not connecting with EARD");
+		verbose(0,"Shared memory not present, not connecting with EARD");
 		notify_eard_connection(0);
 		my_id=1;
 	}	
@@ -402,7 +402,7 @@ void ear_init()
 	// Getting environment data
 	get_app_name(ear_app_name);
 	if (application.is_learning){
-		earl_verbose(1,"Learning phase app %s p_state %lu\n",ear_app_name,application.job.def_f);
+		verbose(1,"Learning phase app %s p_state %lu\n",ear_app_name,application.job.def_f);
 	}
 	strcpy(application.job.user_id, getenv("LOGNAME"));
 	strcpy(application.node_id, node_name);
@@ -413,9 +413,9 @@ void ear_init()
 	//sets the job start_time
 	start_job(&application.job);
 
-	earl_verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
+	verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
 	if (eards_connect(&application) == EAR_SUCCESS) {
-		earl_verbose(2, "Rank %d connected with EARD", ear_my_rank);
+		verbose(2, "Rank %d connected with EARD", ear_my_rank);
 		notify_eard_connection(1);
 	}else{   
 		notify_eard_connection(0);
@@ -429,10 +429,10 @@ void ear_init()
 	if (ear_my_rank == 0)
 	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
-			earl_verbose(2, "turbo learning phase, turbo selected and start computing");
+			verbose(2, "turbo learning phase, turbo selected and start computing");
 			eards_set_turbo();
 		} else {
-			earl_verbose(2, "learning phase %d, turbo %d", ear_whole_app, ear_use_turbo);
+			verbose(2, "learning phase %d, turbo %d", ear_whole_app, ear_use_turbo);
 		}
 	}
 
@@ -480,20 +480,26 @@ void ear_init()
 	#else
 	traces_init(application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	#endif
+
 	traces_start();
 	traces_frequency(ear_my_rank, my_id, ear_current_freq);
 	traces_stop();
 
-
+	traces_mpi_init();
+	
 	// All is OK :D
 #if EAR_PERFORMANCE_TESTS
 	init_end_time=PAPI_get_real_usec();
-	earl_verbose(1, "EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
+	verbose(1, "EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
 #else
 	#if EAR_LIB_SYNC
-	if (my_master_rank==0) earl_verbose(1, "EAR initialized successfully ");
+	if (my_master_rank==0) {
+		verbose(1, "EAR initialized successfully ");
+	}
 	#else
-	if (ear_my_rank==0) earl_verbose(1, "EAR initialized successfully ");
+	if (ear_my_rank==0) {
+		verbose(1, "EAR initialized successfully ");
+	}
 	#endif
 #endif
 }
@@ -513,7 +519,7 @@ void ear_finalize()
 	}	
 
 #if USE_LOCK_FILES
-	earl_verbose(2, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
+	verbose(2, "Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
 	file_unlock_master(fd_master_lock,fd_lock_filename);
 #endif
 
@@ -522,6 +528,7 @@ void ear_finalize()
     if (my_master_rank==0) {
     #endif
 	earl_verbose(0, "DynAIS algorithm consumes %llu usecs in %u calls", ear_acum, calls);
+	verbose(0, "DynAIS algorithm consumes %llu usecs in %u calls", ear_acum, calls);
 	#if EAR_LIB_SYNC
 	}
 	#endif	
@@ -530,6 +537,8 @@ void ear_finalize()
 	// Tracing
 	traces_stop();
 	traces_end(ear_my_rank, my_id, 0);
+
+	traces_mpi_end();
 
 	// Closing and obtaining global metrics
 	metrics_dispose(&application.signature, get_total_resources());
@@ -543,7 +552,7 @@ void ear_finalize()
 
 	// Closing any remaining loop
 	if (loop_with_signature) {
-		earl_verbose(1, "loop ends with %d iterations detected", ear_iterations);
+		verbose(1, "loop ends with %d iterations detected", ear_iterations);
 	}
 #if EAR_OVERHEAD_CONTROL
 	switch(ear_periodic_mode){
@@ -613,7 +622,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 								ear_periodic_mode=PERIODIC_MODE_ON;
 								mpi_calls_in_period=(uint)(total_mpi_calls/dynais_timeout)*lib_period;
 								traces_start();
-								earl_verbose(1,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
+								verbose(1,"Going to periodic mode after %lf secs: mpi calls in period %u\n",
 									time_from_mpi_init,mpi_calls_in_period);
 								states_periodic_begin_period(my_id, NULL, 1, 1);
 								ear_iterations=0;
@@ -634,7 +643,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 					#if MEASURE_DYNAIS_OV
 					if (first_time_disabled==0){
 						first_time_disabled=1;
-						earl_verbose(1,"Number of Dynais calls executed before setting OFF %d\n",calls);
+						verbose(1,"Number of Dynais calls executed before setting OFF %d\n",calls);
 					}
 					#endif
 					#endif
@@ -649,7 +658,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 				if ((total_mpi_calls%mpi_calls_in_period)==0){
 					ear_iterations++;
 					#if EAR_PERFORMANCE_TESTS
-					earl_verbose(1,"New preriodic iteration %d\n",ear_iterations);
+					verbose(1,"New preriodic iteration %d\n",ear_iterations);
 					#endif
 					states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 				}
@@ -682,7 +691,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 		unsigned int ear_level;
 		unsigned long trace_data[5];
 
-		ear_debug(3,"EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
+		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
 						(ulong) PAPI_get_real_usec(),
@@ -723,7 +732,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				ear_debug(4,"NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
+				debug("NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
 				ear_iterations=0;
 				states_begin_period(my_id, NULL, ear_event, ear_size);
 				ear_loop_size=ear_size;
@@ -735,8 +744,10 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				#endif
 				break;
 			case END_NEW_LOOP:
-				ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
-				if (loop_with_signature) earl_verbose(1, "loop ends with %d iterations detected", ear_iterations);
+				debug("END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
+				if (loop_with_signature) {
+					verbose(1, "loop ends with %d iterations detected", ear_iterations);
+				}
 
 				loop_with_signature=0;
 				traces_end_period(ear_my_rank, my_id);
@@ -752,7 +763,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					earl_verbose(4,"new iteration detected for level %u, event %u, size %u and iterations %u",
+					verbose(4,"new iteration detected for level %u, event %u, size %u and iterations %u",
 							  ear_loop_level, ear_event, ear_loop_size, ear_iterations);
 				}
 
@@ -761,8 +772,10 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				break;
 			case END_LOOP:
-				ear_debug(4,"END_LOOP event %u\n",ear_event);
-				if (loop_with_signature) earl_verbose(1, "loop ends with %d iterations detected", ear_iterations);
+				debug("END_LOOP event %u\n",ear_event);
+				if (loop_with_signature) {
+					verbose(1, "loop ends with %d iterations detected", ear_iterations);
+				}
 				loop_with_signature=0;
 				states_end_period(ear_iterations);
 				traces_end_period(ear_my_rank, my_id);
@@ -795,7 +808,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		unsigned int ear_level;
 		unsigned long trace_data[5];
 
-		ear_debug(3,"EAR(%s) EAR executing before an MPI Call: DYNAIS ON \n",__FILE__);
+		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON \n",__FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) PAPI_get_real_usec(),
@@ -819,7 +832,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				ear_debug(4,"NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
+				debug("NEW_LOOP event %u level %u size %u\n",ear_event,ear_level,ear_size);
 				ear_iterations=0;
 				states_begin_period(my_id, NULL, ear_event, ear_size);
 				ear_loop_size=ear_size;
@@ -827,8 +840,10 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				break;
 			case END_NEW_LOOP:
-				ear_debug(4,"END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
-				if (loop_with_signature) earl_verbose(1, "loop ends with %d iterations detected", ear_iterations);
+				debug("END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
+				if (loop_with_signature) {
+					verbose(1, "loop ends with %d iterations detected", ear_iterations);
+				}
 
 				loop_with_signature=0;
 				traces_end_period(ear_my_rank, my_id);
@@ -843,20 +858,22 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					earl_verbose(4,"new iteration detected for level %u, event %u, size %u and iterations %u",
+					verbose(4,"new iteration detected for level %u, event %u, size %u and iterations %u",
 							  ear_level, ear_event, ear_loop_size, ear_iterations);
 				}
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event, ear_loop_size, ear_iterations);
 				#if EAR_PERFORMANCE_TESTS
-				earl_verbose(3,"New estimated iteration\n");
+				verbose(3,"New estimated iteration\n");
 				#endif
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
 			case END_LOOP:
-				ear_debug(4,"END_LOOP event %u\n",ear_event);
-				if (loop_with_signature) earl_verbose(1, "loop ends with %d iterations detected", ear_iterations);
+				debug("END_LOOP event %u\n",ear_event);
+				if (loop_with_signature) {
+					verbose(1, "loop ends with %d iterations detected", ear_iterations);
+				}
 				loop_with_signature=0;
 				states_end_period(ear_iterations);
 				traces_end_period(ear_my_rank, my_id);

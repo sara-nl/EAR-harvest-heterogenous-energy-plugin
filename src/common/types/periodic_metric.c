@@ -31,10 +31,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <common/config.h>
 #include <common/math_operations.h>
 #include <common/types/periodic_metric.h>
-#include <common/config.h>
 
 void copy_periodic_metric(periodic_metric_t *destiny, periodic_metric_t *source)
 {
@@ -49,34 +48,40 @@ void init_periodic_metric(periodic_metric_t *pm)
 	pm->job_id=0;
 	pm->step_id=0;	
 }
-void init_sample_period(periodic_metric_t *pm)
-{
-    time(&pm->start_time);
-}
-
-void end_sample_period(periodic_metric_t *pm,ulong energy)
-{
-	time(&pm->end_time);
-	pm->DC_energy=energy;	
-}
 
 void new_job_for_period(periodic_metric_t *pm,ulong job_id, ulong s_id)
 {
 	pm->job_id=job_id;
 	pm->step_id=s_id;	
 }
+
 void end_job_for_period(periodic_metric_t *pm)
 {
 	pm->job_id=0;
 	pm->step_id=0;	
 }
 
-void print_periodic_metric_t(int fd, periodic_metric_t *pm)
+void periodic_metrict_print_channel(FILE *file, periodic_metric_t *pm)
 {
-    /* print order: JOB_ID;STEP_ID;NODE_ID;START_TIME;END_TIME;ENERGY*/
-    int i;
-	//dprintf(fd, "%d;%d", pm ->job_id,pm->step_id);    
-    //dprintf(fd, "%s;", pm->node_id);
-	//dprintf(fd, "%s;%s;", ctime(&pm->start_time), ctime(&pm->start_time));
-    //dprinft(fd, "%llu;", pm->DC_energy);
+	fprintf(file, "periodic_metric_t: job id '%lu.%lu', node id '%s'\n",
+		pm->job_id, pm->step_id, pm->node_id);
+	fprintf(file, "periodic_metric_t: start '%lu', end '%lu', energy '%lu'\n",
+		pm->start_time, pm->end_time, pm->DC_energy);
+}
+
+/*
+ *
+ * Obsolete?
+ *
+ */
+
+void init_sample_period(periodic_metric_t *pm)
+{
+	time(&pm->start_time);
+}
+
+void end_sample_period(periodic_metric_t *pm,ulong energy)
+{
+	time(&pm->end_time);
+	pm->DC_energy=energy;
 }

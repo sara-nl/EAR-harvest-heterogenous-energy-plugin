@@ -33,8 +33,6 @@
 #include <metrics/custom/hardware_info.h>
 #include <common/states.h>
 
-int EAR_VERBOSE_LEVEL = 4;
-
 int main(void)
 {
 	int result;

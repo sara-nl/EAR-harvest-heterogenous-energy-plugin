@@ -34,10 +34,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
 #include <common/config.h>
-#include <common/ear_verbose.h>
+#include <common/output/verbose.h>
 #include <library/common/externs.h>
 
 #if EAR_LIB_SYNC
@@ -53,8 +51,6 @@ extern unsigned masters_comm_created;
 
 #if COORDINATE_FREQUENCIES
 
-static const char *__NAME__ = "EARL-Sync";
-extern char *__HOST__ ;
 MPI_Request synchro_request;
 static int synchro_pending=0;
 
@@ -65,14 +61,16 @@ void configure_global_synchronization()
 	if (ear_global_sync!=NULL){
 		global_synchro=atoi(ear_global_sync);
 	}
-	if (my_master_rank==0) earl_verbose(1,"Global synchronizations set to %d",global_synchro);
+	if (my_master_rank==0) {
+		verbose(1,"Global synchronizations set to %d",global_synchro);
+	}
 }
 
 void global_frequency_selection_send(ulong my_local_f)
 {
 	if ((masters_comm_created) && (synchro_pending==0)){
         	local_f[0]=my_local_f;
-		earl_verbose(2,"Node %d sending freq %lu to masters group (masters %d)",my_master_rank,my_local_f,my_master_size);
+		verbose(2,"Node %d sending freq %lu to masters group (masters %d)",my_master_rank,my_local_f,my_master_size);
 		/* Check for error values */
         	PMPI_Iallgather(local_f, 1, MPI_UNSIGNED_LONG, remote_f, 1, MPI_UNSIGNED_LONG, masters_comm,&synchro_request);
 		synchro_pending=1;
@@ -86,21 +84,23 @@ ulong global_frequency_selection_synchro()
 	MPI_Status status;
 	if (synchro_pending!=1) return 0;
 	if (masters_comm_created){
-        earl_verbose(1,"Master rank %u Waiting & Processing frequencies",my_master_rank);
+        verbose(1,"Master rank %u Waiting & Processing frequencies",my_master_rank);
 		PMPI_Test(&synchro_request, &flag, &status);
 		if (flag){
 		//PMPI_Wait(&synchro_request,&status);
 			synchro_pending=-1;
             for (i=0;i<my_master_size;i++){
             if (my_master_rank==0) {
-            	earl_verbose(2,"Frequency selected by node %d %lu",i,remote_f[i]);
+            	verbose(2,"Frequency selected by node %d %lu",i,remote_f[i]);
                         }
               	global_f+=(ulong)remote_f[i];
             }
             avg_freq=global_f/my_master_size;
 			avg_freq=avg_freq/(float)100000;
 			global_f=(ulong)avg_freq*100000;
-            earl_verbose(1,"Global frequency should be %lu ",global_f);
+            if (my_master_rank==0) {
+            	verbose(1,"Global frequency should be %lu ",global_f);
+            }
 		}else return 0;
 
 	}
