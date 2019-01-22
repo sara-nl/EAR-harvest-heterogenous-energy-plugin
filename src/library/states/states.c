@@ -310,6 +310,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			loop_perf_count_period=perf_count_period;
 			perf_count_period_10p=perf_count_period/10;
+			if (perf_count_period_10p==0) perf_count_period_10p=1;
 
 			// Once min iterations is computed for performance accuracy we start computing application signature
 			EAR_STATE = EVALUATING_SIGNATURE;
