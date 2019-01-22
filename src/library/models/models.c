@@ -274,8 +274,13 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 	use_def=getenv("USE_DEFAULT_COEFFICIENTS");
 	if (use_def!=NULL) use_default=atoi(use_def);
-
+    #if EAR_LIB_SYNC 
+    if (my_master_rank==0) {
+    #endif
 	earl_verbose(1,"Using average coefficients=%d\n",use_default);
+	#if EAR_LIB_SYNC 
+	}
+	#endif
 
 	// Initializations
 	// We start t nominal by default
