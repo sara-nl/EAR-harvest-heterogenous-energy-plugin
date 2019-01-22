@@ -291,7 +291,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 			if (comp_N_time>(perf_accuracy_min_time*0.1)){
-				earl_verbose(1,"Going to FIRST_ITERATION after %d iterations\n",iterations);
+				verbose(1,"Going to FIRST_ITERATION after %d iterations\n",iterations);
 				comp_N_begin=comp_N_end;
 				EAR_STATE=FIRST_ITERATION;
 				traces_start();
@@ -357,7 +357,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		case EVALUATING_SIGNATURE:
 			if ((iterations%perf_count_period_10p)==0){
 				if (time_ready_signature(perf_accuracy_min_time)){	
-					earl_verbose(1,"period update fom %u to %u\n",perf_count_period,iterations - 1);
+					verbose(1,"period update fom %u to %u\n",perf_count_period,iterations - 1);
 					perf_count_period=iterations - 1;
 				}
 			}
@@ -376,11 +376,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
                 double time_from_mpi_init;
                 time(&curr_time);    
                 time_from_mpi_init=difftime(curr_time,application.job.start_time);
-                earl_verbose(1,"Number of seconds since the application start_time at which signature is computed %lf\n",time_from_mpi_init);
+                verbose(1,"Number of seconds since the application start_time at which signature is computed %lf\n",time_from_mpi_init);
 				#if MEASURE_DYNAIS_OV
 				double time_since_start_loop;
 				time_since_start_loop=difftime(curr_time,start_loop_time);
-				earl_verbose(1,"time to compute signature %lf, first_iter_time %llu Niters %u \n",time_since_start_loop,comp_N_time,perf_count_period);
+				verbose(1,"time to compute signature %lf, first_iter_time %llu Niters %u \n",time_since_start_loop,comp_N_time,perf_count_period);
 				#endif
             }
             /* END */

@@ -303,9 +303,10 @@ void update_configuration()
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	/* Included for dynais tunning */
-	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
+	//set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
 	set_ear_learning(system_conf->learning);
-	dynais_timeout=system_conf->lib_info.dynais_timeout;
+	//dynais_timeout=system_conf->lib_info.dynais_timeout;
+	dynais_timeout=1000;
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
 	ear_whole_app=system_conf->learning;
@@ -526,7 +527,6 @@ void ear_finalize()
 	#if EAR_LIB_SYNC 
     if (my_master_rank==0) {
     #endif
-	earl_verbose(0, "DynAIS algorithm consumes %llu usecs in %u calls", ear_acum, calls);
 	verbose(0, "DynAIS algorithm consumes %llu usecs in %u calls", ear_acum, calls);
 	#if EAR_LIB_SYNC
 	}
