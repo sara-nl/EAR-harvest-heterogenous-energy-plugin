@@ -40,11 +40,21 @@
 
 #include <common/config.h>
 #include <common/types/generic.h>
+
+#if LRZ_POLICY
+#define TOTAL_POLICIES 4
+#else
 #define TOTAL_POLICIES          3
+#endif
 
 #define MIN_ENERGY_TO_SOLUTION  0
 #define MIN_TIME_TO_SOLUTION    1
 #define MONITORING_ONLY         2
+
+#if LRZ_POLICY
+#define SUPERMUC	3
+#endif
+
 typedef struct policy_conf
 {
     uint policy; 

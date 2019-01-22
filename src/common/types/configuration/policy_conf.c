@@ -55,6 +55,11 @@ void get_short_policy(char *buf, char *policy)
         case MONITORING_ONLY:
             strcpy(buf, "MO");
             break;
+		#if LRZ_POLICY
+		case SUPERMUC:
+			strcpy(buf, "SM-NG");
+			break;
+		#endif
         default:
             strcpy(buf, "NP");
             break;
@@ -68,6 +73,9 @@ int policy_name_to_id(char *my_policy)
         if ((strcmp(my_policy,"MIN_ENERGY_TO_SOLUTION")==0) || (strcmp(my_policy,"min_energy_to_solution")==0)) return MIN_ENERGY_TO_SOLUTION;
         else if ((strcmp(my_policy,"MIN_TIME_TO_SOLUTION")==0) || (strcmp(my_policy,"min_time_to_solution")==0)) return MIN_TIME_TO_SOLUTION;
         else if ((strcmp(my_policy,"MONITORING_ONLY")==0) || (strcmp(my_policy,"monitoring_only")==0)) return MONITORING_ONLY;
+		#if LRZ_POLICY
+        else if ((strcmp(my_policy,"SUPERMUC")==0) || (strcmp(my_policy,"supermuc")==0)) return SUPERMUC;
+		#endif
     }
 	return EAR_ERROR;
 }
@@ -88,6 +96,11 @@ int policy_id_to_name(int policy_id,char *my_policy)
         case MONITORING_ONLY:
             strcpy(my_policy,"MONITORING_ONLY");
         	break;
+		#if LRZ_POLICY
+		case SUPERMUC:
+			strcpy(my_policy,"SUPERMUC");
+			break;
+		#endif
 		default: strcpy(my_policy,"UNKNOWN");;
     }
 	return ret;

@@ -46,6 +46,9 @@
 #include <library/models/monitoring.h>
 #include <library/models/min_energy.h>
 #include <library/models/min_time.h>
+#if LRZ_POLICY
+#include <library/models/supermucng.h>
+#endif
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 
@@ -105,6 +108,16 @@ void init_policy_functions()
 			app_policy.policy_ok=monitoring_policy_ok;
 			app_policy.default_conf=monitoring_default_conf;
         break;
+		#if LRZ_POLICY
+        case SUPERMUC:
+			app_policy.init=supermuc_init;
+			app_policy.new_loop=supermuc_new_loop;
+			app_policy.end_loop=supermuc_end_loop;
+			app_policy.policy=supermuc_policy;
+			app_policy.policy_ok=supermuc_policy_ok;
+			app_policy.default_conf=supermuc_default_conf;
+        break;
+		#endif
     }
 
 }
@@ -119,6 +132,9 @@ int policy_global_configuration(int p_state)
 		return frequency_freq_to_pstate(system_conf->max_freq);
 		break;
 	case MIN_TIME_TO_SOLUTION:
+	#if LRZ_POLICY
+	case SUPERMUC:
+	#endif
 		performance_penalty=system_conf->th;
 	case MONITORING_ONLY:
 		return frequency_freq_to_pstate(system_conf->def_freq);
@@ -143,6 +159,9 @@ void policy_global_reconfiguration()
 	    }
 		break;
 	case MIN_TIME_TO_SOLUTION:
+    #if LRZ_POLICY
+    case SUPERMUC:
+    #endif
 		if (system_conf->def_freq!=EAR_default_frequency){
 	        verbose(DYN_VERBOSE,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
 			EAR_default_frequency=system_conf->def_freq;
@@ -196,6 +215,9 @@ double get_global_th()
 	switch (power_model_policy)
 	{
 		case MIN_TIME_TO_SOLUTION:
+    	#if LRZ_POLICY
+    	case SUPERMUC:
+    	#endif
 			if (system_conf!=NULL) return system_conf->th;
 			else return performance_gain;
 			break;
@@ -218,6 +240,9 @@ void init_power_policy()
 
 	if (power_model_policy==MIN_ENERGY_TO_SOLUTION) performance_penalty=get_ear_power_policy_th();
 	else if (power_model_policy==MIN_TIME_TO_SOLUTION) performance_gain=get_ear_power_policy_th();	
+	#if LRZ_POLICY
+	else if (power_model_policy==SUPERMUC) performance_gain=get_ear_power_policy_th();
+	#endif
 	if (is_cpu_boost_enabled()) model_nominal=1;
 	else model_nominal=0;
 
@@ -427,13 +452,16 @@ int policy_max_tries()
 {
         switch (power_model_policy)
         {
-                case MIN_TIME_TO_SOLUTION:
-			return 2;
-                        break;
-                case MIN_ENERGY_TO_SOLUTION:
-			return 1;
-                        break;
-                case MONITORING_ONLY:
+            case MIN_TIME_TO_SOLUTION:
+			#if LRZ_POLICY
+			case SUPERMUC:
+			#endif
+				return 2;
+                break;
+            case MIN_ENERGY_TO_SOLUTION:
+				return 1;
+                break;
+            case MONITORING_ONLY:
                         return 0;
         }
 

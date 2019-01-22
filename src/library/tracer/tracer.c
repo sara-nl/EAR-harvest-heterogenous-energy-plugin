@@ -222,7 +222,6 @@ static void trace_file_init(int n_nodes)
 	if (!enabled) {
 		return;
 	}
-en
 	time(&curr_time);
 	current_t = localtime(&curr_time);
 	strftime(s, 256, "%d/%m/%Y at %H:%M", current_t);
