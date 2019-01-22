@@ -510,6 +510,14 @@ void metrics_compute_signature_begin()
 	metrics_partial_start();
 }
 
+int time_ready_signature(ulong min_time_us)
+{
+	long long aux_time;
+	aux_time = metrics_usecs_diff(metrics_time(), metrics_usecs[LOO]);
+	if (aux_time<min_time_us) return 0;
+	else return 1;
+}
+
 int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulong min_time_us, ulong procs)
 {
     long long aux_time;

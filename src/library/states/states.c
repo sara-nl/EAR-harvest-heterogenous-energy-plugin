@@ -72,12 +72,15 @@ static uint tries_current_loop=0;
 static uint tries_current_loop_same_freq=0;
 
 static ulong perf_accuracy_min_time = 1000000;
-static uint perf_count_period = 100,loop_perf_count_period;
+static uint perf_count_period = 100,loop_perf_count_period,perf_count_period_10p;
 static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
 static int MAX_POLICY_TRIES;
 
 #define DYNAIS_CUTOFF	1
+#if MEASURE_DYNAIS_OV
+extern time_t start_loop_time;
+#endif
 
 
 #if EAR_OVERHEAD_CONTROL
@@ -194,8 +197,10 @@ static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong
 	#endif
     	log_report_dynais_off(application.job.id,application.job.step_id);
     }
-    verbose(2,"Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
-    loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
+	if (dynais_enabled==DYNAIS_DISABLED){
+    	verbose(1,"DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+    	loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
+	}
     last_first_event=event;
     last_calls_in_loop=mpi_calls_iter;
     last_loop_size=period;
@@ -285,7 +290,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		case TEST_LOOP:
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
-			if (comp_N_time>perf_accuracy_min_time*0.1){
+			if (comp_N_time>(perf_accuracy_min_time*0.1)){
+				verbose(1,"Going to FIRST_ITERATION after %d iterations\n",iterations);
 				comp_N_begin=comp_N_end;
 				EAR_STATE=FIRST_ITERATION;
 				traces_start();
@@ -303,6 +309,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period = 1;
 			}
 			loop_perf_count_period=perf_count_period;
+			perf_count_period_10p=perf_count_period/10;
+			if (perf_count_period_10p==0) perf_count_period_10p=1;
 
 			// Once min iterations is computed for performance accuracy we start computing application signature
 			EAR_STATE = EVALUATING_SIGNATURE;
@@ -348,7 +356,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
 			break;
 		case EVALUATING_SIGNATURE:
-
+			if ((iterations%perf_count_period_10p)==0){
+				if (time_ready_signature(perf_accuracy_min_time)){	
+					verbose(1,"period update fom %u to %u\n",perf_count_period,iterations - 1);
+					perf_count_period=iterations - 1;
+				}
+			}
 			if (((iterations - 1) % perf_count_period) || (iterations == 1)) return;
 			N_iter = iterations - begin_iter;
 			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);	
@@ -358,6 +371,20 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				return;
 			}
 			//print_loop_signature("signature computed", &loop_signature.signature);
+            /* Included for dynais test */
+            if (loop_with_signature==0){
+                time_t curr_time;
+                double time_from_mpi_init;
+                time(&curr_time);    
+                time_from_mpi_init=difftime(curr_time,application.job.start_time);
+                verbose(1,"Number of seconds since the application start_time at which signature is computed %lf\n",time_from_mpi_init);
+				#if MEASURE_DYNAIS_OV
+				double time_since_start_loop;
+				time_since_start_loop=difftime(curr_time,start_loop_time);
+				verbose(1,"time to compute signature %lf, first_iter_time %llu Niters %u \n",time_since_start_loop,comp_N_time,perf_count_period);
+				#endif
+            }
+            /* END */
 
 			loop_with_signature = 1;
 			#if EAR_OVERHEAD_CONTROL

@@ -67,8 +67,8 @@ DBDaemonMemorySizePerType=60,22,5,0,7,1,5
 # EAR Library (EARL)
 
 CoefficientsDir=@sysconfdir@/ear/coeffs
-DynAISLevels=4
-DynAISWindowSize=500
+DynAISLevels=5
+DynAISWindowSize=200
 # Maximum time (in seconds) EAR will wait until a signature is computed. After
 #  DynaisTimeout seconds, if no signature is computed, EAR will go to periodic
 #  mode.

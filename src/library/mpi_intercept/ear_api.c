@@ -76,6 +76,7 @@ static int fd_master_lock;
 #if MEASURE_DYNAIS_OV
 static long long begin_ov, end_ov, ear_acum;
 static unsigned int calls=0;
+time_t start_loop_time;
 #endif
 
 // Process information
@@ -301,9 +302,11 @@ void update_configuration()
 	set_ear_p_state(system_conf->def_p_state);
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
-	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
+	/* Included for dynais tunning */
+	//set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
 	set_ear_learning(system_conf->learning);
-	dynais_timeout=system_conf->lib_info.dynais_timeout;
+	//dynais_timeout=system_conf->lib_info.dynais_timeout;
+	dynais_timeout=1000;
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
 	ear_whole_app=system_conf->learning;
@@ -521,7 +524,13 @@ void ear_finalize()
 #endif
 
 #if MEASURE_DYNAIS_OV
+	#if EAR_LIB_SYNC 
+    if (my_master_rank==0) {
+    #endif
 	verbose(0, "DynAIS algorithm consumes %llu usecs in %u calls", ear_acum, calls);
+	#if EAR_LIB_SYNC
+	}
+	#endif	
 #endif
 
 	// Tracing
@@ -729,6 +738,9 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				ear_loop_level=ear_level;
 				in_loop=1;
 				mpi_calls_per_loop=1;
+				#if MEASURE_DYNAIS_OV
+				time(&start_loop_time);
+				#endif
 				break;
 			case END_NEW_LOOP:
 				debug("END_LOOP - NEW_LOOP event %u level %u\n",ear_event,ear_level);
