@@ -110,6 +110,7 @@ double avg_power_t2,avg_power_t1;
 void update_eargm_configuration(cluster_conf_t *conf)
 {
 	verb_level=conf->eargm.verbose;
+	verb_channel=2;
 	if (verbose_arg>0) verb_level=verbose_arg;
 
 	period_t1=conf->eargm.t1;
