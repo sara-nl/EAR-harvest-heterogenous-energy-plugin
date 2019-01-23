@@ -173,6 +173,9 @@ double getenv_ear_power_policy_th()
 			}else conf_ear_power_policy_th=DEFAULT_MIN_ENERGY_TH;
 			break;
 		case MIN_TIME_TO_SOLUTION:
+		#if LRZ_POLICY
+		case SUPERMUC:
+		#endif
 			my_th=getenv("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
 			if (my_th!=NULL){
 				conf_ear_power_policy_th=strtod(my_th,NULL);
@@ -208,6 +211,9 @@ unsigned long getenv_ear_p_state()
 			conf_ear_p_state = DEFAULT_MAX_P_STATE;
 			break;
 		case MIN_TIME_TO_SOLUTION:
+		#if LRZ_POLCY
+		case SUPERMUC:
+		#endif
 			my_pstate = getenv("EAR_MIN_P_STATE");
 
 			if (my_pstate == NULL) {

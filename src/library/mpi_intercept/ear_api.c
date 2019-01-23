@@ -356,6 +356,7 @@ void ear_init()
 	strtok(node_name, ".");
 
 	verb_level = get_ear_verbose();
+	verb_channel=2;
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
 	num_nodes = get_ear_num_nodes();

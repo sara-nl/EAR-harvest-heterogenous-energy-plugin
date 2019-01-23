@@ -105,3 +105,5 @@
 #define USE_EXT 0
 #define NW_EXT  "-opa"
 
+#define LRZ_POLICY 0
+

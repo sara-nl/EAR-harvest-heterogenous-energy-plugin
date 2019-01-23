@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
-int verb_channel	__attribute__((weak));
-int verb_level		__attribute__((weak));
+int verb_channel	__attribute__((weak))=2;
+int verb_level		__attribute__((weak))=0;
 
 #define verbose(v, ...) \
 	if (v <= verb_level) { \
