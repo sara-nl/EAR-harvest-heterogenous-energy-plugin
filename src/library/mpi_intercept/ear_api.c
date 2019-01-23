@@ -415,7 +415,7 @@ void ear_init()
 
 	verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
 	if (eards_connect(&application) == EAR_SUCCESS) {
-		verbose(2, "Rank %d connected with EARD", ear_my_rank);
+		verbose(1, "Rank %d connected with EARD", ear_my_rank);
 		notify_eard_connection(1);
 	}else{   
 		notify_eard_connection(0);
