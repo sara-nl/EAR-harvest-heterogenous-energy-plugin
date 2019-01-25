@@ -314,6 +314,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION);
+			insert_th_policy(conf, token, SUPERMUC);
 		}
 		else if (!strcmp(token, "MAXPERFORMANCEPENALTY"))
 		{
