@@ -107,3 +107,4 @@
 
 #define LRZ_POLICY 0
 
+#define SM_VERB 2

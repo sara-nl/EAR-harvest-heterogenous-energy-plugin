@@ -31,6 +31,7 @@ OBJS = dynais/dynais.o \
        models/min_time.o \
        models/min_energy.o \
        models/monitoring.o \
+       models/supermucng.o \
        states/states.o \
        states/states_periodic.o \
        tracer/tracer.o \
