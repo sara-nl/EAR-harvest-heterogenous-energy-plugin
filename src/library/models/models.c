@@ -132,13 +132,16 @@ int policy_global_configuration(int p_state)
 		return frequency_freq_to_pstate(system_conf->max_freq);
 		break;
 	case MIN_TIME_TO_SOLUTION:
-	#if LRZ_POLICY
-	case SUPERMUC:
-	#endif
 		performance_penalty=system_conf->th;
 	case MONITORING_ONLY:
 		return frequency_freq_to_pstate(system_conf->def_freq);
 		break;
+	#if LRZ_POLICY
+	case SUPERMUC:
+		performance_penalty=system_conf->th;
+		performance_penalty=system_conf->th2;
+		return frequency_freq_to_pstate(system_conf->def_freq);
+	#endif
 	}
 	}else return p_state;
 }
@@ -210,17 +213,40 @@ ulong get_global_def_freq()
 	else return EAR_default_pstate;
 }
 
+#if LRZ_POLICY
+double get_global_th(double *th, double *th2)
+#else
 double get_global_th()
+#endif
 {
 	switch (power_model_policy)
 	{
 		case MIN_TIME_TO_SOLUTION:
+			if (system_conf!=NULL){ 
+				#if LRZ_POLICY
+				*th=system_conf->th;
+				#endif
+				return system_conf->th;
+			}else{ 
+				#if LRZ_POLICY
+				*th=performance_gain;
+				#endif
+				return performance_gain;
+			}
+			break;
     	#if LRZ_POLICY
     	case SUPERMUC:
-    	#endif
-			if (system_conf!=NULL) return system_conf->th;
-			else return performance_gain;
+            if (system_conf!=NULL){ 
+                *th=system_conf->th;
+				*th2=system_conf->th2;
+                return system_conf->th;
+            }else{ 
+                *th=performance_gain;
+				*th2=performance_penalty;
+                return performance_gain;
+            }
 			break;
+    	#endif
 		case MIN_ENERGY_TO_SOLUTION:
 			return performance_penalty;
 			break;
@@ -241,7 +267,10 @@ void init_power_policy()
 	if (power_model_policy==MIN_ENERGY_TO_SOLUTION) performance_penalty=get_ear_power_policy_th();
 	else if (power_model_policy==MIN_TIME_TO_SOLUTION) performance_gain=get_ear_power_policy_th();	
 	#if LRZ_POLICY
-	else if (power_model_policy==SUPERMUC) performance_gain=get_ear_power_policy_th();
+	else if (power_model_policy==SUPERMUC){ 
+		performance_gain=get_ear_power_policy_th();
+		performance_penalty=get_ear_power_policy_th2();
+	}
 	#endif
 	if (is_cpu_boost_enabled()) model_nominal=1;
 	else model_nominal=0;

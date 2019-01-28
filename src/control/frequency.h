@@ -29,6 +29,13 @@
 
 #ifndef EAR_CONTROL_FREQUENCY_H
 #define EAR_CONTROL_FREQUENCY_H
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
+#include <cpupower.h>
+#else
+#include <cpufreq.h>
+#endif
+
 
 int frequency_init(uint cpus);
 void frequency_dispose();
@@ -53,5 +60,7 @@ void frequency_recover_previous_configuration();
 void frequency_recover_previous_policy();
 int frequency_is_valid_frequency(ulong freq);
 int frequency_is_valid_pstate(uint pstate);
+void get_governor(struct cpufreq_policy *governor);
+void set_governor(struct cpufreq_policy *governor);
 
 #endif //EAR_CONTROL_FREQUENCY_H

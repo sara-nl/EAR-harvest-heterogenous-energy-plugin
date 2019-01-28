@@ -474,7 +474,8 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	}
 	
 	//
-	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN"))
+	/* if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN"))*/
+	if (spank_context() == S_CTX_REMOTE )
 	{
 		//
 		remote_eard_report_start(sp);
@@ -517,7 +518,8 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 		local_eargmd_report_finish(sp);
 	}
 
-	if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN")) {
+	/*if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN")) {*/
+	if (spank_context() == S_CTX_REMOTE) {
 		remote_eard_report_finish(sp);
 	}
 

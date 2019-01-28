@@ -372,6 +372,32 @@ void frequency_save_previous_policy()
 	saved_previous_policy = 1;
 }
 
+void get_governor(struct cpufreq_policy *governor)
+{
+	struct cpufreq_policy *policy;	
+    policy = cpufreq_get_policy(0);
+
+    governor->min = policy->min;
+    governor->max = policy->max;
+
+    governor->governor = (char *) malloc(strlen(policy->governor) + 1);
+    strcpy(governor->governor, policy->governor);
+    cpufreq_put_policy(policy);
+	
+}
+
+void set_governor(struct cpufreq_policy *governor)
+{
+	int status,i;
+	for (i = 0; i < num_cpus; i++)
+    {
+        status = cpufreq_set_policy(i, &previous_cpu0_policy);
+
+        if (status < 0) {
+			verbose(0, "ERROR while switching policy for cpu %d ", i);
+		}
+	}		
+}
 void frequency_recover_previous_policy()
 {
 	int status, i;

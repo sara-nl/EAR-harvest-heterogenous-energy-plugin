@@ -29,13 +29,16 @@
 
 #include <common/types/configuration/cluster_conf.h>
 
-static void insert_th_policy(cluster_conf_t *conf, char *token, int policy)
+static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int main)
 {
 	int i;
 	for (i = 0; i < conf->num_policies; i++)
 	{
 		if (conf->power_policies[i].policy == policy)
-			conf->power_policies[i].th = atof(token);
+			if (main) conf->power_policies[i].th = atof(token);
+			#if LRZ_POLICY
+			else conf->power_policies[i].th2 = atof(token);
+			#endif
 	}
 
 }
@@ -127,6 +130,10 @@ static void fill_policies(cluster_conf_t *conf)
 	for (i = 0; i < TOTAL_POLICIES; i++){
 		conf->power_policies[i].policy = i;
 		conf->power_policies[i].is_available=0;
+		conf->power_policies[i].th=0;
+		#if LRZ_POLICY
+		conf->power_policies[i].th2=0;
+		#endif
 	}
 }
 
@@ -313,13 +320,19 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		else if (!strcmp(token, "MINEFFICIENCYGAIN"))
 		{
 			token = strtok(NULL, "=");
-			insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION);
-			insert_th_policy(conf, token, SUPERMUC);
+			insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION,1);
+			#if LRZ_POLICY
+			insert_th_policy(conf, token, SUPERMUC,1);
+			#endif
 		}
 		else if (!strcmp(token, "MAXPERFORMANCEPENALTY"))
 		{
 			token = strtok(NULL, "=");
-			insert_th_policy(conf, token, MIN_ENERGY_TO_SOLUTION);
+			insert_th_policy(conf, token, MIN_ENERGY_TO_SOLUTION,1);
+			#if LRZ_POLICY
+			insert_th_policy(conf, token, SUPERMUC,0);
+			#endif
+			
 		}
 		else if (!strcmp(token, "MINTIMEPERFORMANCEACCURACY"))
 		{

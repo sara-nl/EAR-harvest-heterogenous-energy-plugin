@@ -92,11 +92,19 @@ extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
 static int sig_reported=0;
 
-
-powermon_app_t current_ear_app;
+#define MAX_NESTED_LEVELS 10
+powermon_app_t *current_ear_app[MAX_NESTED_LEVELS];
+powermon_app_t default_app;
+int ccontext=-1;
 periodic_metric_t current_sample;
 double last_power_reported=0;
 
+
+powermon_app_t *get_powermon_app()
+{
+	if (ccontext>0) return current_ear_app[ccontext];
+	else return &default_app;
+}
 static void PM_my_sigusr1(int signun)
 {
     verbose(1," thread %u receives sigusr1\n",(uint)pthread_self());
@@ -167,13 +175,14 @@ void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src)
 	dest->job_created=src->job_created;
 	dest->energy_init=src->energy_init;
 	copy_application(&(dest->app),&(src->app));
+	dest->governor.min=src->governor.min;
+	dest->governor.max=src->governor.max;
+	dest->governor.governor=(char *)malloc(strlen(src->governor.governor)+1);
+	strcpy(dest->governor.governor,src->governor.governor);	
+	dest->current_freq=src->current_freq;
 
 }
 
-void reset_current_app()
-{
-	memset(&current_ear_app,0,sizeof(application_t));
-}
 
 #if DB_FILES
 char database_csv_path[PATH_MAX];
@@ -227,22 +236,22 @@ void form_database_paths()
 void job_init_powermon_app(application_t *new_app,uint from_mpi)
 {
 	energy_data_t c_energy;
-	current_ear_app.job_created=!from_mpi;
-	copy_application(&current_ear_app.app,new_app);	
-	strcpy(current_ear_app.app.node_id,nodename);
-	time(&current_ear_app.app.job.start_time);	
-	current_ear_app.app.job.start_mpi_time=0;
-	current_ear_app.app.job.end_mpi_time=0;
-	current_ear_app.app.job.end_time=0;
+	current_ear_app[ccontext]->job_created=!from_mpi;
+	copy_application(&current_ear_app[ccontext]->app,new_app);	
+	strcpy(current_ear_app[ccontext]->app.node_id,nodename);
+	time(&current_ear_app[ccontext]->app.job.start_time);	
+	current_ear_app[ccontext]->app.job.start_mpi_time=0;
+	current_ear_app[ccontext]->app.job.end_mpi_time=0;
+	current_ear_app[ccontext]->app.job.end_time=0;
 	// reset signature
-	signature_init(&current_ear_app.app.signature);
-	init_power_signature(&current_ear_app.app.power_sig);
-	current_ear_app.app.power_sig.max_DC_power=0;
-	current_ear_app.app.power_sig.min_DC_power=500;
-	current_ear_app.app.power_sig.def_f=dyn_conf->def_freq;
+	signature_init(&current_ear_app[ccontext]->app.signature);
+	init_power_signature(&current_ear_app[ccontext]->app.power_sig);
+	current_ear_app[ccontext]->app.power_sig.max_DC_power=0;
+	current_ear_app[ccontext]->app.power_sig.min_DC_power=500;
+	current_ear_app[ccontext]->app.power_sig.def_f=dyn_conf->def_freq;
 	// Initialize energy
 	read_enegy_data(&c_energy);
-	copy_energy_data(&current_ear_app.energy_init,&c_energy);
+	copy_energy_data(&current_ear_app[ccontext]->energy_init,&c_energy);
 	aperf_job_avg_frequency_init_all_cpus();
 }
 
@@ -253,18 +262,18 @@ void job_end_powermon_app()
 	node_data_t app_total;
 	power_data_t app_power;
 	double exec_time;
-	time(&current_ear_app.app.job.end_time);
+	time(&current_ear_app[ccontext]->app.job.end_time);
 	// Get the energy
 	read_enegy_data(&c_energy);
-	compute_power(&current_ear_app.energy_init,&c_energy,&app_power);
+	compute_power(&current_ear_app[ccontext]->energy_init,&c_energy,&app_power);
 	
-    current_ear_app.app.power_sig.DC_power=app_power.avg_dc;
-	if (app_power.avg_dc>current_ear_app.app.power_sig.max_DC_power) current_ear_app.app.power_sig.max_DC_power=app_power.avg_dc;
-	if (app_power.avg_dc<current_ear_app.app.power_sig.min_DC_power) current_ear_app.app.power_sig.min_DC_power=app_power.avg_dc;
-    current_ear_app.app.power_sig.DRAM_power=app_power.avg_dram[0]+app_power.avg_dram[1];
-    current_ear_app.app.power_sig.PCK_power=app_power.avg_cpu[0]+app_power.avg_cpu[1];
-    current_ear_app.app.power_sig.time=difftime(app_power.end,app_power.begin);
-	current_ear_app.app.power_sig.avg_f=aperf_job_avg_frequency_end_all_cpus();
+    current_ear_app[ccontext]->app.power_sig.DC_power=app_power.avg_dc;
+	if (app_power.avg_dc>current_ear_app[ccontext]->app.power_sig.max_DC_power) current_ear_app[ccontext]->app.power_sig.max_DC_power=app_power.avg_dc;
+	if (app_power.avg_dc<current_ear_app[ccontext]->app.power_sig.min_DC_power) current_ear_app[ccontext]->app.power_sig.min_DC_power=app_power.avg_dc;
+    current_ear_app[ccontext]->app.power_sig.DRAM_power=app_power.avg_dram[0]+app_power.avg_dram[1];
+    current_ear_app[ccontext]->app.power_sig.PCK_power=app_power.avg_cpu[0]+app_power.avg_cpu[1];
+    current_ear_app[ccontext]->app.power_sig.time=difftime(app_power.end,app_power.begin);
+	current_ear_app[ccontext]->app.power_sig.avg_f=aperf_job_avg_frequency_end_all_cpus();
 
 	// nominal is still pending
 
@@ -412,21 +421,21 @@ void powermon_mpi_init(application_t * appID)
 {
 	verbose(2,"powermon_mpi_init job_id %d step_id %d (is_mpi %u)\n",appID->job.id,appID->job.step_id,appID->is_mpi);
 	// As special case, we will detect if not job init has been specified
-	if (!current_ear_app.job_created){	// If the job is nt submitted through slurm, new_job would not be submitted 
+	if (!current_ear_app[ccontext]->job_created){	// If the job is nt submitted through slurm, new_job would not be submitted 
 		powermon_new_job(appID,1);
 	}
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
-	start_mpi(&current_ear_app.app.job);
-	current_ear_app.app.is_mpi=1;
+	start_mpi(&current_ear_app[ccontext]->app.job);
+	current_ear_app[ccontext]->app.is_mpi=1;
 	save_eard_conf(&eard_dyn_conf);	
 }
 
 void powermon_mpi_finalize()
 {
-	verbose(2,"powermon_mpi_finalize %d[%d]\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
-	end_mpi(&current_ear_app.app.job);
-	if (!current_ear_app.job_created){  // If the job is not submitted through slurm, end_job would not be submitted 
-		powermon_end_job(current_ear_app.app.job.id,current_ear_app.app.job.step_id);
+	verbose(2,"powermon_mpi_finalize %d[%d]\n",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
+	end_mpi(&current_ear_app[ccontext]->app.job);
+	if (!current_ear_app[ccontext]->job_created){  // If the job is not submitted through slurm, end_job would not be submitted 
+		powermon_end_job(current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
 	}
 }
 
@@ -439,7 +448,27 @@ void powermon_mpi_finalize()
 /
 
 
-/* This function is called by dynamic_configuration thread when a new_job command arrives */
+/* This functiono is called by dynamic_configuration thread when a new_job command arrives */
+
+void new_batch()
+{
+	ccontext++;
+	if (ccontext==MAX_NESTED_LEVELS){
+		verbose(0,"Panic: Maximum number of levels reached in new_job %d\n",ccontext);
+	}
+	current_ear_app[ccontext]=(powermon_app_t*)malloc(sizeof(powermon_app_t));
+	if (current_ear_app[ccontext]==NULL){
+		verbose(0,"Panic: malloc returns NULL for current context");
+	}
+	memset(current_ear_app[ccontext],0,sizeof(powermon_app_t));
+}
+void end_batch()
+{
+	free(current_ear_app[ccontext]->governor.governor);
+	free(current_ear_app[ccontext]);
+	current_ear_app[ccontext]=NULL;
+	ccontext--;
+}
 
 void powermon_new_job(application_t* appID,uint from_mpi)
 {
@@ -451,8 +480,11 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	ulong f;
 	uint user_type;
 	verbose(2,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
-	frequency_save_previous_frequency();
-	frequency_save_previous_policy();
+	new_batch();
+	/* Saving the context */
+	current_ear_app[ccontext]->current_freq=frequency_get_cpu_freq(0);
+	get_governor(&current_ear_app[ccontext]->governor);
+	/* Setting userspace */
 	frequency_set_userspace_governor_all_cpus();
 	user_type=get_user_type(&my_cluster_conf,appID->job.energy_tag,appID->job.user_id,appID->job.group_id,appID->job.user_acc,&my_tag);
 	verbose(0,"New job USER type is %u",user_type);
@@ -482,11 +514,12 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
     pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);	
-	verbose(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id,current_ear_app.app.is_mpi);
+	verbose(1,"Job created jid %u sid %u is_mpi %d\n",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id,current_ear_app[ccontext]->app.is_mpi);
 	verbose(1,"*******************\n");
 	sig_reported=0;
 
 }
+
 /* This function is called by dynamic_configuration thread when a end_job command arrives */
 
 void powermon_end_job(job_id jid,job_id sid)
@@ -494,29 +527,28 @@ void powermon_end_job(job_id jid,job_id sid)
     // Application disconnected
     powermon_app_t summary;
     char buffer[128];
-	if ((jid!=current_ear_app.app.job.id) || (sid!=current_ear_app.app.job.step_id)){ 
+	if ((jid!=current_ear_app[ccontext]->app.job.id) || (sid!=current_ear_app[ccontext]->app.job.step_id)){ 
 		verbose(0,"powermon_end_job inicorrect jid %d\n",jid);
 		return;
 	}
-	verbose(1,"powermon_end_job %d[%d]\n",current_ear_app.app.job.id,current_ear_app.app.job.step_id);
+	verbose(1,"powermon_end_job %d[%d]\n",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
     while (pthread_mutex_trylock(&app_lock));
         idleNode=1;
         job_end_powermon_app();
 		// After that function, the avg power is computed
-		memcpy(&summary,&current_ear_app,sizeof(powermon_app_t));
-        current_ear_app.app.job.id=0;
-		current_ear_app.job_created=0;
-		// we must report the current period for that job before the reset:PENDING
+		memcpy(&summary,current_ear_app[ccontext],sizeof(powermon_app_t));
+		// we must report the cur.rent period for that job before the reset:PENDING
 		end_job_for_period(&current_sample);
     pthread_mutex_unlock(&app_lock);
     report_powermon_app(&summary);
-	reset_current_app();
     save_eard_conf(&eard_dyn_conf);
-    frequency_recover_previous_policy();
-    frequency_recover_previous_frequency();
+	/* RESTORE FREQUENCY */
+	set_governor(&current_ear_app[ccontext]->governor);
+	frequency_set_all_cpus(current_ear_app[ccontext]->current_freq);
 	current_node_freq=frequency_get_cpu_freq(0);	
 	clean_job_environment(jid,sid);
 	reset_shared_memory();
+	end_batch();
 }
 
 /*
@@ -553,7 +585,7 @@ void powermon_new_max_freq(ulong maxf)
 {
 	uint ps;
 	/* Job running and not EAR-aware */
-	if ((current_ear_app.app.job.id>0) && (current_ear_app.app.is_mpi==0)){
+	if ((ccontext>0) && (current_ear_app[ccontext]->app.job.id>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
 		if (maxf<current_node_freq){
 			verbose(1,"MaxFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,maxf);
 			frequency_set_all_cpus(maxf);
@@ -571,7 +603,7 @@ void powermon_new_def_freq(uint p_id,ulong def)
 	int nump;
 	uint ps;
 	ps=frequency_freq_to_pstate(def);
-    if (current_ear_app.app.is_mpi==0){
+    if ((ccontext>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
         if (def<current_node_freq){
             verbose(1,"DefFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def);
             frequency_set_all_cpus(def);
@@ -595,7 +627,7 @@ void powermon_red_freq(ulong max_freq,ulong def_freq)
     uint ps_def,ps_max;
 	ps_def=frequency_freq_to_pstate(def_freq);
 	ps_max=frequency_freq_to_pstate(max_freq);
-	if (current_ear_app.app.is_mpi==0){
+	if ((ccontext>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
 		if (def_freq<current_node_freq){
 			verbose(1,"RedFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def_freq);
 			frequency_set_all_cpus(def_freq);
@@ -617,7 +649,7 @@ void powermon_set_freq(ulong freq)
     int nump;
     uint ps;
     ps=frequency_freq_to_pstate(freq);
-    if (current_ear_app.app.is_mpi==0){
+    if ((ccontext>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
         if (freq!=current_node_freq){
             verbose(1,"SetFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,freq);
             frequency_set_all_cpus(freq);
@@ -641,17 +673,30 @@ void powermon_reload_conf()
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 {
+	ulong jid,mpi;
+	double maxpower,minpower;
+	if (ccontext>0){ 
+		jid=current_ear_app[ccontext]->app.job.id;
+		mpi=current_ear_app[ccontext]->app.is_mpi;
+		maxpower=current_ear_app[ccontext]->app.power_sig.max_DC_power;
+		minpower=current_ear_app[ccontext]->app.power_sig.min_DC_power;
+	} else{ 
+		jid=0;
+		mpi=0;
+		maxpower=minpower=0;
+	}
 	verbose(0,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%.2lf,%.2lf)\n",
-		current_ear_app.app.job.id,current_ear_app.app.is_mpi,avg_f,my_current_power->avg_dc,
-		current_ear_app.app.power_sig.max_DC_power, current_ear_app.app.power_sig.min_DC_power,((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
+		jid,mpi,avg_f,my_current_power->avg_dc,maxpower,minpower,
+		((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),
+		((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
 	
 	while (pthread_mutex_trylock(&app_lock));
 	
-	if (current_ear_app.app.job.id>0){
-		if (my_current_power->avg_dc>current_ear_app.app.power_sig.max_DC_power) 
-			current_ear_app.app.power_sig.max_DC_power=my_current_power->avg_dc;
-		if (my_current_power->avg_dc<current_ear_app.app.power_sig.min_DC_power)
-			current_ear_app.app.power_sig.min_DC_power=my_current_power->avg_dc;
+	if ((ccontext>0) && (current_ear_app[ccontext]->app.job.id>0)){
+		if (my_current_power->avg_dc>maxpower) 
+			current_ear_app[ccontext]->app.power_sig.max_DC_power=my_current_power->avg_dc;
+		if (my_current_power->avg_dc<minpower)
+			current_ear_app[ccontext]->app.power_sig.min_DC_power=my_current_power->avg_dc;
 	}
 
 	pthread_mutex_unlock(&app_lock);
@@ -732,12 +777,15 @@ void create_powermon_out()
 
 void powermon_mpi_signature(application_t *app)
 {
-    signature_copy(&current_ear_app.app.signature,&app->signature);
-    current_ear_app.app.job.def_f=app->job.def_f;
-    current_ear_app.app.job.th=app->job.th;
-    current_ear_app.app.job.procs=app->job.procs;
-    strcpy(current_ear_app.app.job.policy,app->job.policy);
-    strcpy(current_ear_app.app.job.app_id,app->job.app_id);
+	if (ccontext<0){
+		verbose(0,"Panic,powermon_mpi_signature and not current context \n");
+	}
+    signature_copy(&current_ear_app[ccontext]->app.signature,&app->signature);
+    current_ear_app[ccontext]->app.job.def_f=app->job.def_f;
+    current_ear_app[ccontext]->app.job.th=app->job.th;
+    current_ear_app[ccontext]->app.job.procs=app->job.procs;
+    strcpy(current_ear_app[ccontext]->app.job.policy,app->job.policy);
+    strcpy(current_ear_app[ccontext]->app.job.app_id,app->job.app_id);
 	sig_reported=1;
 	save_eard_conf(&eard_dyn_conf);	
 }
@@ -759,6 +807,8 @@ void *eard_power_monitoring(void *noinfo)
 
 	PM_set_sigusr1();
 	form_database_paths();
+
+	memset((void *)&default_app,0,sizeof(powermon_app_t));
 
 	#if REPORT_UNCORE
 	state_t st= frequency_uncore_init(2, 24, 85);

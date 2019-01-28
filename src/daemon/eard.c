@@ -73,7 +73,6 @@
 pthread_t app_eard_api_th;
 #endif
 
-extern powermon_app_t current_ear_app;
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
@@ -1235,7 +1234,7 @@ void main(int argc,char *argv[])
 	/* This info is used for eard checkpointing */
 	eard_dyn_conf.cconf=&my_cluster_conf;
 	eard_dyn_conf.nconf=my_node_conf;
-	eard_dyn_conf.pm_app=&current_ear_app;
+	eard_dyn_conf.pm_app=get_powermon_app();
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
 	/* We initialize frecuency */
@@ -1293,7 +1292,6 @@ void main(int argc,char *argv[])
 	}
 	
 	/** We must control if we are come from a crash **/	
-	reset_current_app();
 	int must_recover=new_service("eard");
 	if (must_recover){
 		verbose(0,"We must recover from a crash");

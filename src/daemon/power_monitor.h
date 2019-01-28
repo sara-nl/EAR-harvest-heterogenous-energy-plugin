@@ -35,13 +35,22 @@
 */
 #ifndef _POWER_MONITORING_H_
 #define _POWER_MONITORING_H_
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
+#include <cpupower.h>
+#else
+#include <cpufreq.h>
+#endif
 
 #include <common/types/application.h>
 #include <metrics/power_metrics/power_metrics.h>
+
 typedef struct powermon_app{
     application_t app;
     uint job_created;
     energy_data_t energy_init;
+	struct cpufreq_policy governor;
+	ulong current_freq;
 }powermon_app_t;
 
 
@@ -68,6 +77,13 @@ void powermon_new_job(application_t *j,uint from_mpi);
 /** It must be called at when job ends
 */
 void powermon_end_job(job_id jid,job_id sid);
+
+/** It must be called at when sbatch starts*/
+void powermon_new_sbatch(application_t *j);
+/** It must be called at when sbatch ends
+ * */
+void powermon_end_sbatch(job_id jid);
+
 
 /** reports the application signature to the power_monitoring module 
 */
@@ -102,5 +118,7 @@ void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src);
 int print_powermon_app_fd_binary(int fd,powermon_app_t *app);
 int read_powermon_app_fd_binary(int fd,powermon_app_t *app);
 void print_powermon_app(powermon_app_t *app);
+
+powermon_app_t *get_powermon_app();
 
 #endif
