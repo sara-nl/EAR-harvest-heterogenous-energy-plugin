@@ -481,7 +481,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	policy_conf_t *my_policy;
 	ulong f;
 	uint user_type;
-	verbose(2,"powermon_new_job (%d,%d)\n",appID->job.id,appID->job.step_id);
+	verbose(1,"powermon_new_job (%u,%u)\n",appID->job.id,appID->job.step_id);
 	new_batch();
 	/* Saving the context */
 	current_ear_app[ccontext]->current_freq=frequency_get_cpu_freq(0);
@@ -534,7 +534,7 @@ void powermon_end_job(job_id jid,job_id sid)
 		verbose(0,"powermon_end_job inicorrect jid %u %u (current %u %d)\n",jid,sid,current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
 		return;
 	}
-	verbose(1,"powermon_end_job %d[%d]\n",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
+	verbose(1,"powermon_end_job %u[%u]\n",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
     while (pthread_mutex_trylock(&app_lock));
         idleNode=1;
         job_end_powermon_app();
