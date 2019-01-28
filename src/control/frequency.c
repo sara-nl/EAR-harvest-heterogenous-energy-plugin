@@ -391,7 +391,7 @@ void set_governor(struct cpufreq_policy *governor)
 	int status,i;
 	for (i = 0; i < num_cpus; i++)
     {
-        status = cpufreq_set_policy(i, &previous_cpu0_policy);
+        status = cpufreq_set_policy(i, governor);
 
         if (status < 0) {
 			verbose(0, "ERROR while switching policy for cpu %d ", i);
