@@ -531,7 +531,7 @@ void powermon_end_job(job_id jid,job_id sid)
     powermon_app_t summary;
     char buffer[128];
 	if ((jid!=current_ear_app[ccontext]->app.job.id) || (sid!=current_ear_app[ccontext]->app.job.step_id)){ 
-		verbose(0,"powermon_end_job inicorrect jid %u %u (current %u %d)\n",jid,sid,current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
+		verbose(0,"powermon_end_job inicorrect jid %u %u (current %u %u)\n",jid,sid,current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
 		return;
 	}
 	verbose(1,"powermon_end_job %u[%u]\n",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
