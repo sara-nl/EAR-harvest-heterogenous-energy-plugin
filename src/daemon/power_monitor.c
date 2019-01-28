@@ -461,9 +461,11 @@ void new_batch()
 		verbose(0,"Panic: malloc returns NULL for current context");
 	}
 	memset(current_ear_app[ccontext],0,sizeof(powermon_app_t));
+	verbose(0,"New context created %d\n",ccontext);
 }
 void end_batch()
 {
+	verbose(0,"Releasing context %d\n",ccontext);
 	free(current_ear_app[ccontext]->governor.governor);
 	free(current_ear_app[ccontext]);
 	current_ear_app[ccontext]=NULL;
@@ -484,6 +486,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	/* Saving the context */
 	current_ear_app[ccontext]->current_freq=frequency_get_cpu_freq(0);
 	get_governor(&current_ear_app[ccontext]->governor);
+	verbose(0,"Saving governor %s\n",current_ear_app[ccontext]->governor.governor);
 	/* Setting userspace */
 	frequency_set_userspace_governor_all_cpus();
 	user_type=get_user_type(&my_cluster_conf,appID->job.energy_tag,appID->job.user_id,appID->job.group_id,appID->job.user_acc,&my_tag);
@@ -543,8 +546,11 @@ void powermon_end_job(job_id jid,job_id sid)
     report_powermon_app(&summary);
     save_eard_conf(&eard_dyn_conf);
 	/* RESTORE FREQUENCY */
+	verbose(0,"restoring governor %s\n",current_ear_app[ccontext]->governor.governor);
 	set_governor(&current_ear_app[ccontext]->governor);
-	frequency_set_all_cpus(current_ear_app[ccontext]->current_freq);
+	if (strcmp(current_ear_app[ccontext]->governor.governor,"userspace")==0){
+		frequency_set_all_cpus(current_ear_app[ccontext]->current_freq);
+	}
 	current_node_freq=frequency_get_cpu_freq(0);	
 	clean_job_environment(jid,sid);
 	reset_shared_memory();
