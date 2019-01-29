@@ -401,6 +401,37 @@ int _set_ld_preload(spank_t sp)
  *
  */
 
+int _slurm_spank_local_user_init (spank_t sp, int ac, char **av)
+{
+    plug_verbose(sp, 2, "function slurm_spank_local_user_init");
+
+        // No need of testing the context
+        if(!_is_plugin_enabled(sp)) {
+                return ESPANK_SUCCESS;
+        }
+
+        // Reading plugstack.conf
+        if (_read_plugstack(sp, ac, av) != ESPANK_SUCCESS) {
+                _local_plugin_disable();
+                return ESPANK_SUCCESS;
+        }
+
+        // Filling user data
+        if (_read_user_info(sp) != ESPANK_SUCCESS) {
+                _local_library_disable();
+        }
+
+        // EARGMD contact
+        local_eargmd_report_start(sp);
+
+        //
+        if (isenv_local("EAR_LIBRARY", "1")) {
+                _set_ld_preload(sp);
+        }
+
+    return (ESPANK_SUCCESS);
+}
+
 int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init");
@@ -429,40 +460,10 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 
 	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH) {
 		_local_plugin_enable();
+		_slurm_spank_local_user_init(sp, ac, av);
 	}
 
 	return ESPANK_SUCCESS;
-}
-
-int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
-{
-    plug_verbose(sp, 2, "function slurm_spank_local_user_init");
-
-	// No need of testing the context
-	if(!_is_plugin_enabled(sp)) {
-		return ESPANK_SUCCESS;
-	}
-
-	// Reading plugstack.conf
-	if (_read_plugstack(sp, ac, av) != ESPANK_SUCCESS) {
-		_local_plugin_disable();
-		return ESPANK_SUCCESS;
-	}
-
-	// Filling user data
-	if (_read_user_info(sp) != ESPANK_SUCCESS) {
-		_local_library_disable();
-	}
-
-	// EARGMD contact
-	local_eargmd_report_start(sp);
-
-	//
-	if (isenv_local("EAR_LIBRARY", "1")) {
-		_set_ld_preload(sp);
-	}
-
-    return (ESPANK_SUCCESS);
 }
 
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
