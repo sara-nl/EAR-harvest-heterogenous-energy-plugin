@@ -220,9 +220,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
             remove_chars(token, ' ');
 			int token_id;
-			for (token_id=0;token_id<strlen(token);token_id++) printf("token[%d]=%c ",token_id,token[token_id]);
-			printf("\n");
-			printf("Last %d\n",token[strlen(token)-1]);
 			conf->default_policy = policy_name_to_id(token);
 		}
 		else if (!strcmp(token, "DATABASEPATHNAME"))
@@ -231,7 +228,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
             remove_chars(token, ' ');
 			strcpy(conf->DB_pathname, token);
-			printf("DATABASEPATHNAME=%s\n",conf->DB_pathname);
 		}
 
             //EARLIB CONF
@@ -314,7 +310,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION);
-			insert_th_policy(conf, token, SUPERMUC);
+//			insert_th_policy(conf, token, SUPERMUC);
 		}
 		else if (!strcmp(token, "MAXPERFORMANCEPENALTY"))
 		{
@@ -813,7 +809,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.ip, token);
-			printf("MARIADBIP=%s\n",conf->database.ip);
 		}
 		else if (!strcmp(token, "MARIADBUSER"))
 		{
@@ -821,7 +816,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.user, token);
-			printf("MARIADBUSER %s\n",conf->database.user);
 		}
 		else if (!strcmp(token, "MARIADBPASSW"))
 		{
@@ -836,13 +830,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.database, token);
-			printf("MARIADBDATABASE %s\n",conf->database.database);
 		}
 		else if (!strcmp(token, "MARIADBPORT"))
 		{
 			token = strtok(NULL, "=");
 			conf->database.port = atoi(token);
-			printf("MARIADBPORT %d\n",conf->database.port);
 		}
 
             //COMMUNICATION NODES CONF
