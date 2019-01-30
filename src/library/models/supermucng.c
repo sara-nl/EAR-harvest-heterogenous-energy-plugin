@@ -45,7 +45,7 @@
 #include <library/common/externs.h>
 #include <library/models/models.h>
 
-#define NO_MODELS_MT_VERBOSE	2
+#define NO_MODELS_SM_VERBOSE	0
 
 static uint sm_policy_pstates;
 static uint sm_reset_freq=RESET_FREQ;
@@ -55,13 +55,17 @@ extern double performance_gain;
 extern application_t *signatures;
 extern uint *sig_ready;
 static int use_models=1;
+static double *timep,*powerp;
 
 void supermuc_init(uint pstates)
 {
     sm_policy_pstates=pstates;
     char *env_use_models;
+	verbose(SM_VERB,"supermuc_init\n");
     env_use_models=getenv("EAR_USE_MODELS");
     if ((env_use_models!=NULL) && (atoi(env_use_models)==0)) use_models=0;
+	timep=(double*)malloc(pstates*sizeof(double));
+	powerp=(double*)malloc(pstates*sizeof(double));
 
 }
 
@@ -98,12 +102,34 @@ static int is_better_min_time(signature_t * curr_sig,signature_t *prev_sig)
 
 	curr_freq=curr_sig->def_f;
 	prev_freq=prev_sig->def_f;
-	verbose(NO_MODELS_MT_VERBOSE,"curr %u prev %u\n",curr_freq,prev_freq);
+	verbose(NO_MODELS_SM_VERBOSE,"curr %u prev %u\n",curr_freq,prev_freq);
 	freq_gain=performance_gain*(double)((curr_freq-prev_freq)/(double)prev_freq);
    	perf_gain=(prev_sig->time-curr_sig->time)/prev_sig->time;
-	verbose(NO_MODELS_MT_VERBOSE,"Performance gain %lf Frequency gain %lf\n",perf_gain,freq_gain);
+	verbose(NO_MODELS_SM_VERBOSE,"Performance gain %lf Frequency gain %lf\n",perf_gain,freq_gain);
 	if (perf_gain>=freq_gain) return 1;
     return 0;
+}
+
+static void fill_projections(signature_t *sig,int ref)
+{
+	int i;
+	for (i=0;i<pstates;i++)
+	{
+		if (i==ref){
+			timep[i]=sig->time;
+			powerp[i]=sig->DC_power;
+		}else{	
+			if (coefficients[ref][i].available){
+				timep[i]=project_time(sig,&coefficients[ref][i]);
+				powerp[i]=project_power(sig,&coefficients[ref][i]);
+			}else{
+				timep[i]=0;
+				powerp[i]=0;
+			}
+		
+		}
+		projection_set(i,timep[i],powerp[i]);
+	}
 }
 
 
@@ -117,16 +143,29 @@ ulong supermuc_policy(signature_t *sig,int *ready)
     double freq_gain,perf_gain;
     double power_proj,time_proj,cpi_proj,energy_proj,best_solution,energy_ref;
     double power_ref,cpi_ref,time_ref,time_current;
-    ulong best_pstate;
+    ulong best_freq;
     my_app=sig;
 
 	*ready=1;
 
+	verbose(SM_VERB,"supermuc_policy\n");
+	if ((timep==NULL) || (powerp==NULL)){
+		*ready=0;
+		return EAR_default_frequency
+	}
+
     if (ear_use_turbo) min_pstate=0;
     else min_pstate=get_global_min_pstate();
 
+
     // This is the frequency at which we were running
     ref = frequency_freq_to_pstate(ear_frequency);
+
+	/* Computes the projections for all the pstates and fill the timep and powerp vector */
+    time_ref=my_app->time;
+    power_ref=my_app->DC_power;
+
+	fill_projections(time_ref,power_ref,ref);
 
     // This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
     // We must check this is ok changing these values at this point
@@ -143,11 +182,11 @@ ulong supermuc_policy(signature_t *sig,int *ready)
     {
         if (coefficients[ref][EAR_default_pstate].available)
         {
-                power_ref=project_power(my_app,&coefficients[ref][EAR_default_pstate]);
-                time_ref=project_time(my_app,&coefficients[ref][EAR_default_pstate]);
+                power_ref=powerp[EAR_default_pstate];
+                time_ref=timep[EAR_default_pstate];
                 energy_ref=power_ref*time_ref;
                 best_solution=energy_ref;
-                best_pstate=EAR_default_frequency;
+                best_freq=EAR_default_frequency;
         }
         else
         {
@@ -156,7 +195,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
                 cpi_ref=my_app->CPI;
                 energy_ref=power_ref*time_ref;
                 best_solution=energy_ref;
-                best_pstate=ear_frequency;
+                best_freq=ear_frequency;
         }
     }
     // If it is the default P_STATE selected in the environment, then a projection
@@ -168,7 +207,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
             cpi_ref=my_app->CPI;
             energy_ref=power_ref*time_ref;
             best_solution=energy_ref;
-            best_pstate=ear_frequency;
+            best_freq=ear_frequency;
     }
 
 	projection_set(EAR_default_pstate,time_ref,power_ref);
@@ -195,11 +234,8 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 					verbose(1,"Comparing %u with %u",best_pstate,i);
 				}
 				#endif
-                power_proj=project_power(my_app,&coefficients[ref][i]);
-                time_proj=project_time(my_app,&coefficients[ref][i]);
-				projection_set(i,time_proj,power_proj);
-				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
-				perf_gain=(time_current-time_proj)/time_current;
+				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_freq)/(double)best_freq;
+				perf_gain=(time_current-timep[i])/time_current;
 				#if EAR_PERFORMANCE_TESTS
 				if (ear_frequency == EAR_default_frequency){
 					verbose(1,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
@@ -209,8 +245,8 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 				// OK
 				if (perf_gain>=freq_gain)
 				{
-					best_pstate=coefficients[ref][i].pstate;
-					time_current = time_proj;
+					best_freq=coefficients[ref][i].pstate;
+					time_current = timep[i];
 					i--;
 				}
 				else
@@ -231,7 +267,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 	}else{/* Use models is set to 0 */
         ulong prev_pstate,curr_pstate,next_pstate;
         signature_t *prev_sig;
-        verbose(NO_MODELS_MT_VERBOSE,"We are not using models \n");
+        verbose(NO_MODELS_SM_VERBOSE,"We are not using models \n");
         /* We must not use models , we will check one by one*/
         /* If we are not running at default freq, we must check if we must follow */
         if (sig_ready[EAR_default_pstate]==0){
@@ -253,7 +289,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 					go_next_mt(curr_pstate,ready,&best_pstate,min_pstate);
 				}
         }
-		verbose(NO_MODELS_MT_VERBOSE,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
+		verbose(NO_MODELS_SM_VERBOSE,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
      }
 
 
@@ -274,6 +310,8 @@ ulong supermuc_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t 
 {
 	double energy_proj, energy_real;
 
+	verbose(SM_VERB,"supermuc_policy_ok\n");
+
 	if (curr_sig->def_f==last_sig->def_f) return 1;
 
 	// Check that efficiency is enough
@@ -291,6 +329,7 @@ ulong supermuc_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t 
 ulong  supermuc_default_conf(ulong f)
 {
     // Just in case the bestPstate was the frequency at which the application was running
+    verbose(SM_VERB,"supermuc_default_conf\n");
     if ((system_conf!=NULL) && (f>system_conf->max_freq)){
         log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
         verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",

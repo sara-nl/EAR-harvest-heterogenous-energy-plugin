@@ -29,13 +29,16 @@
 
 #include <common/types/configuration/cluster_conf.h>
 
-static void insert_th_policy(cluster_conf_t *conf, char *token, int policy)
+static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int main)
 {
 	int i;
 	for (i = 0; i < conf->num_policies; i++)
 	{
 		if (conf->power_policies[i].policy == policy)
-			conf->power_policies[i].th = atof(token);
+			if (main) conf->power_policies[i].th = atof(token);
+			#if LRZ_POLICY
+			else conf->power_policies[i].th2 = atof(token);
+			#endif
 	}
 
 }
@@ -127,6 +130,10 @@ static void fill_policies(cluster_conf_t *conf)
 	for (i = 0; i < TOTAL_POLICIES; i++){
 		conf->power_policies[i].policy = i;
 		conf->power_policies[i].is_available=0;
+		conf->power_policies[i].th=0;
+		#if LRZ_POLICY
+		conf->power_policies[i].th2=0;
+		#endif
 	}
 }
 
@@ -220,9 +227,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
             remove_chars(token, ' ');
 			int token_id;
-			for (token_id=0;token_id<strlen(token);token_id++) printf("token[%d]=%c ",token_id,token[token_id]);
-			printf("\n");
-			printf("Last %d\n",token[strlen(token)-1]);
 			conf->default_policy = policy_name_to_id(token);
 		}
 		else if (!strcmp(token, "DATABASEPATHNAME"))
@@ -231,7 +235,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
             remove_chars(token, ' ');
 			strcpy(conf->DB_pathname, token);
-			printf("DATABASEPATHNAME=%s\n",conf->DB_pathname);
 		}
 
             //EARLIB CONF
@@ -313,12 +316,19 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		else if (!strcmp(token, "MINEFFICIENCYGAIN"))
 		{
 			token = strtok(NULL, "=");
-			insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION);
+			insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION,1);
+			#if LRZ_POLICY
+			insert_th_policy(conf, token, SUPERMUC,1);
+			#endif
 		}
 		else if (!strcmp(token, "MAXPERFORMANCEPENALTY"))
 		{
 			token = strtok(NULL, "=");
-			insert_th_policy(conf, token, MIN_ENERGY_TO_SOLUTION);
+			insert_th_policy(conf, token, MIN_ENERGY_TO_SOLUTION,1);
+			#if LRZ_POLICY
+			insert_th_policy(conf, token, SUPERMUC,0);
+			#endif
+			
 		}
 		else if (!strcmp(token, "MINTIMEPERFORMANCEACCURACY"))
 		{
@@ -812,7 +822,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.ip, token);
-			printf("MARIADBIP=%s\n",conf->database.ip);
 		}
 		else if (!strcmp(token, "MARIADBUSER"))
 		{
@@ -820,7 +829,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.user, token);
-			printf("MARIADBUSER %s\n",conf->database.user);
 		}
 		else if (!strcmp(token, "MARIADBPASSW"))
 		{
@@ -835,13 +843,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strclean(token, '\n');
             remove_chars(token, ' ');
 			strcpy(conf->database.database, token);
-			printf("MARIADBDATABASE %s\n",conf->database.database);
 		}
 		else if (!strcmp(token, "MARIADBPORT"))
 		{
 			token = strtok(NULL, "=");
 			conf->database.port = atoi(token);
-			printf("MARIADBPORT %d\n",conf->database.port);
 		}
 
             //COMMUNICATION NODES CONF

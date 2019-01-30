@@ -309,18 +309,21 @@ void process_remote_requests(int clientfd)
 	long ack=EAR_SUCCESS;
 	verbose(1,"connection received\n");
 	req=read_command(clientfd,&command);
-    if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time)
-    {
-        verbose(1, "Recieved repeating command: %d", req);
-        ack=EAR_IGNORE;
-	    send_answer(clientfd,&ack);
-        if ((command.node_dist>0) && (command.node_dist != last_dist))
-        {
-    		last_dist = command.node_dist;
-            propagate_req(&command, my_cluster_conf.eard.port);
-        }
-        return;
-    }
+	/* New job and end job are different */
+	if (req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB){
+    	if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time)
+    	{
+        	verbose(1, "Recieved repeating command: %d", req);
+        	ack=EAR_IGNORE;
+	    	send_answer(clientfd,&ack);
+        	if ((command.node_dist>0) && (command.node_dist != last_dist))
+        	{
+    			last_dist = command.node_dist;
+            	propagate_req(&command, my_cluster_conf.eard.port);
+        	}
+        	return;
+    	}
+	}
     last_dist = command.node_dist;
  	last_command = req;
  	last_command_time = command.time_code;

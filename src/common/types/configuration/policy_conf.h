@@ -59,6 +59,7 @@ typedef struct policy_conf
 {
     uint policy; 
     double th; 
+    double th2; 
     uint p_state;
     char is_available; //default at 0, not available
 } policy_conf_t;

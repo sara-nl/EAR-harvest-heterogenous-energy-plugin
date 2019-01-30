@@ -1,5 +1,4 @@
 #!/bin/bash
-
 if [[ $# -ne 1 ]]
 then
         echo -e "Usage: hostlist"
@@ -20,11 +19,15 @@ then
 fi
 
 # Edit minimum frequency (in KHz)
-export MIN_FREQUENCY=1900000
+export MIN_FREQUENCY=1700000
 
 # Edit output options
-export OUT_COE="$HOME/ear_coeffs"
+export OUT_COE="$HOME/EAR/etc/ear/coeffs"
 mkdir $OUT_COE
+export OUT_OUT="$HOME/OUT/out"
+export OUT_ERR="$HOME/ERR/err"
+mkdir $HOME/OUT
+mkdir $HOME/ERR
 
 # Non-edit region
 export HOSTLIST="$(echo $(cat $1))"
@@ -32,5 +35,7 @@ export HOSTLIST="$(echo $(cat $1))"
 for i in ${HOSTLIST}
 do
     echo "Computing coefficients for node=${i}"
-	$EAR_INSTALL_PATH/sbin/coeffs_compute $OUT_COE $MIN_FREQUENCY ${i}
+        sbatch  -w ${i} -N 1 -n 1 --exclusive -o $OUT_OUT.coeffs.${i} -e $OUT_ERR.coeffs.${i} \
+        $EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_coeffs.sh
+
 done

@@ -260,10 +260,10 @@ void print_full_apps(application_t *apps, int num_apps)
 
 void print_short_apps(application_t *apps, int num_apps, int fd)
 {
-    int current_job_id = -1;
-    int current_step_id = -1;
-    int current_is_mpi = 0;
-    int current_apps = 0;
+    uint current_job_id = -1;
+    uint current_step_id = -1;
+    uint current_is_mpi = 0;
+    uint current_apps = 0;
 
     int i = 0;
     double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy, avg_VPI, gflops_watt;

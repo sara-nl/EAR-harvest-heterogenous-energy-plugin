@@ -58,6 +58,9 @@ typedef struct settings_conf{
 	ulong	def_freq;
 	uint	def_p_state;
 	double 	th;
+#if LRZ_POLICY
+	double 	th2;
+#endif
 	earlib_conf_t lib_info;
 } settings_conf_t;
 

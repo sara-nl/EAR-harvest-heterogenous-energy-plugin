@@ -40,38 +40,31 @@
 //  - 0: no arguments
 //  - 1: arguments
 
-#define verwho0(format) \
-	fprintf(stderr, "%s, %s \n", str_who[mirror_iam], format);
+#define printp0(format) \
+	verb(0, "%s, %s", str_who[mirror_iam], format);
 
-#define verwho1(format, ...) \
-	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
+#define printp1(format, ...) \
+	verb(0, "%s, " format, str_who[mirror_iam], __VA_ARGS__);
 
 #define printpl0(format) \
-	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam]);
+	verb(0, "%s, " format "\n", str_who[mirror_iam]);
 
 #define printpl1(format, ...) \
-	fprintf(stderr, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
+	verb(0, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
 
 #define printm1(...) \
     if (!forked || master_iam) { \
-        fprintf(stderr, __VA_ARGS__); \
-        fprintf(stderr, "\n"); \
-    }
-
-#define printmc1(...) \
-    if (!forked || master_iam) { \
-        fprintf(stderr, col1 __VA_ARGS__); \
-        fprintf(stderr, col2 "\n"); \
+		verb(0, __VA_ARGS__); \
     }
 
 #define printl0() \
-        fprintf(stderr, col1 line col2);
+		verb(0, col1 line col2);
 
 #define printml1(...) \
     if (!forked || master_iam) { \
-        fprintf(stderr, col1 line __VA_ARGS__); \
-        fprintf(stderr, col2 "\n"); \
-    }
+        dprintf(verb_channel, col1 line __VA_ARGS__); \
+        dprintf(verb_channel, col2 "\n"); \
+	}
 
 void body();
 

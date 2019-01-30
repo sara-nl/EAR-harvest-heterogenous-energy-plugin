@@ -155,14 +155,18 @@ int remote_eard_report_start(spank_t sp)
 	services_conf_t *conf_serv = NULL;
 	ulong *frequencies;
 	int n_frequencies;
+	spank_err_t aux_res;
+	uint32_t aux_val;
 
 #if PRODUCTION
 	return ESPANK_SUCCESS;
 #endif
 
+/*
 	if (isenv_remote(sp, "EARD_CONNECTED", "1")) {
 		return ESPANK_SUCCESS;
 	}
+*/
 
 	// General variables
 	getenv_remote(sp, "PLUGSTACK_TMP", buffer1, sizeof(buffer1));
@@ -170,18 +174,18 @@ int remote_eard_report_start(spank_t sp)
 
 	// Opening shared services memory
 	get_services_conf_path(buffer1, buffer2);
-    conf_serv = attach_services_conf_shared_area(buffer2);
+	conf_serv = attach_services_conf_shared_area(buffer2);
 
-    if (conf_serv == NULL) {
+	if (conf_serv == NULL) {
 		plug_verbose(sp, 2, "ERROR while reading the shared services memory in '%s'", eard_host);
-        return (ESPANK_ERROR);
-    }   
+        	return (ESPANK_ERROR);
+	}
 
-    // Getting EARD connection variables
+	// Getting EARD connection variables
 	eard_port = conf_serv->eard.port;
 	
 	// Closing shared services memory
-    dettach_services_conf_shared_area();
+	dettach_services_conf_shared_area();
 
 	// Shared memory reading for frequencies
 	get_frequencies_path(buffer1, buffer2);
@@ -203,6 +207,17 @@ int remote_eard_report_start(spank_t sp)
 			eard_appl.is_mpi = 1;
 		}
 	}
+        if (spank_get_item (sp, S_JOB_ID, &aux_val) == ESPANK_SUCCESS) {
+                eard_appl.job.id = aux_val;
+        } else {
+                eard_appl.job.id = NO_VAL;
+        }
+	if (spank_get_item (sp, S_JOB_STEPID, &aux_val) == ESPANK_SUCCESS) {
+		eard_appl.job.step_id = aux_val;
+	} else {
+		eard_appl.job.step_id = NO_VAL;
+	}
+/*
 	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer1, SZ_NAME_SHORT)) {
 		eard_appl.job.id = 0;
 	} else {
@@ -213,6 +228,7 @@ int remote_eard_report_start(spank_t sp)
 	} else {
 		eard_appl.job.step_id = atoi(buffer1);
 	}
+*/
 	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", eard_appl.job.user_acc, SZ_NAME_SHORT)) {
 		strcpy(eard_appl.job.user_acc, "");
 	}
