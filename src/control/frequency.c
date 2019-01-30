@@ -37,9 +37,11 @@
 #else
 #include <cpufreq.h>
 #endif
+#include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
+#include <common/output/error.h>
 #include <control/frequency.h>
 #include <metrics/custom/hardware_info.h>
 
@@ -64,7 +66,7 @@ static ulong *get_frequencies_cpu()
 	freqs = (ulong *) malloc(sizeof(ulong) * num_cpus);
 
 	if (freqs == NULL) {
-		verbose(0, "ERROR while allocating memory, exiting");
+		error( "ERROR while allocating memory, exiting");
 		exit(1);
 	}
 
@@ -88,10 +90,10 @@ static ulong *get_frequencies_cpu()
 			freqs[i] = cpufreq_get(i);
 
 			if (freqs[i] == 0) {
-				verbose(0, "ERROR, CPU %d is online but the returned freq is 0", i);
+				error( "ERROR, CPU %d is online but the returned freq is 0", i);
 			}
 		} else {
-			verbose(0, "ERROR, CPU %d is offline", i); // 4
+			error( "ERROR, CPU %d is offline", i); // 4
 		}
 	}
 
@@ -110,7 +112,7 @@ static ulong *get_frequencies_rank()
 	first = list;
 
 	if (list == NULL) {
-		verbose(0, "unable to find an available frequencies list");
+		error("unable to find an available frequencies list");
 	}
 
 	while(list != NULL)
@@ -119,13 +121,13 @@ static ulong *get_frequencies_rank()
 		num_freqs++;
 	}
 
-	verbose(2, "%d frequencies available ", num_freqs); // 2
+	verbose(VMETRICS, "%d frequencies available ", num_freqs); // 2
 
 	//
 	pointer = (ulong *) malloc(sizeof(ulong) * num_freqs);
 
 	if (pointer == NULL) {
-		verbose(0, "ERROR while allocating memory, exiting");
+		error("ERROR while allocating memory, exiting");
 		exit(1);
 	}
 
@@ -162,7 +164,7 @@ int frequency_init(unsigned int _num_cpus)
 
 	if (is_turbo_enabled)	freq_nom = freq_list_rank[1];
 	else freq_nom = freq_list_rank[0];
-	verbose(2, "nominal frequency is %lu (KHz)", freq_nom);
+	verbose(VMETRICS, "nominal frequency is %lu (KHz)", freq_nom);
 
 	return EAR_SUCCESS;
 }
@@ -207,7 +209,7 @@ ulong frequency_set_all_cpus(ulong freq)
 {
 	int result, i = 0;
 
-	verbose(1, "setting all cpus to %lu KHz", freq);
+	verbose(VMETRICS, "setting all cpus to %lu KHz", freq);
 	if (is_valid_frequency(freq))
 	{
 
@@ -220,7 +222,7 @@ ulong frequency_set_all_cpus(ulong freq)
 
 			if (result < 0) {
 				//verbose(0, "ERROR while switching cpu %d frequency to %lu (%s)", i, freq, strerror(-result));
-				verbose(2, "ERROR while switching cpu %d frequency to %lu ", i, freq);
+				error( "ERROR while switching cpu %d frequency to %lu ", i, freq);
 			}
 		}
 
@@ -277,7 +279,7 @@ ulong *frequency_get_freq_rank_list()
 ulong frequency_pstate_to_freq(uint pstate)
 {
 	if (pstate >= num_freqs) {
-		verbose(0, "higher P_STATE (%u) than the maximum (%u), returning nominal", pstate, num_freqs);
+		error("higher P_STATE (%u) than the maximum (%u), returning nominal", pstate, num_freqs);
 		return 1;
 	}
 	return freq_list_rank[pstate];
@@ -294,7 +296,7 @@ uint frequency_freq_to_pstate(ulong freq)
 		else found = 1;
 	}
 
-	verbose(4, "the P_STATE of the frequency %lu is %d", freq, i);
+	verbose(VMETRICS, "the P_STATE of the frequency %lu is %d", freq, i);
 
 	return i;
 }
@@ -335,7 +337,7 @@ void frequency_save_previous_frequency()
 	// Saving previous policy data
 	previous_cpu0_freq = freq_list_cpu[0];
 	
-	verbose(1, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
+	verbose(VMETRICS, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
 	
 	saved_previous_freq = 1;
 }
@@ -344,7 +346,7 @@ void frequency_save_previous_frequency()
 void frequency_recover_previous_frequency()
 {
 	if (!saved_previous_freq) {
-		verbose(2, "previous frequency not saved");
+		verbose(VMETRICS, "previous frequency not saved");
 		return;
 	}
 
@@ -365,7 +367,7 @@ void frequency_save_previous_policy()
 	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
 	strcpy(previous_cpu0_policy.governor, policy->governor);
 
-	verbose(2, "previous policy governor was %s", policy->governor);
+	verbose(VMETRICS, "previous policy governor was %s", policy->governor);
 
 	// Kernel dealloc
 	cpufreq_put_policy(policy);
@@ -394,7 +396,7 @@ void set_governor(struct cpufreq_policy *governor)
         status = cpufreq_set_policy(i, governor);
 
         if (status < 0) {
-			verbose(0, "ERROR while switching policy for cpu %d ", i);
+			error( "ERROR while switching policy for cpu %d ", i);
 		}
 	}		
 }
@@ -403,7 +405,7 @@ void frequency_recover_previous_policy()
 	int status, i;
 
 	if (!saved_previous_policy) {
-		verbose(2, "previous policy not saved");
+		verbose(VMETRICS, "previous policy not saved");
 		return;
 	}
 
@@ -413,7 +415,7 @@ void frequency_recover_previous_policy()
 
 		if (status < 0) {
 			//verbose(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
-			verbose(0, "ERROR while switching policy for cpu %d ", i);
+			error("ERROR while switching policy for cpu %d ", i);
 		}
 	}
 
