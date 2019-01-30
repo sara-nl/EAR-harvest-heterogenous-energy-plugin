@@ -48,6 +48,10 @@ static int enabled_mirror;
  * Intern functions
  *
  */
+int eardbd_is_initialized()
+{
+	return enabled_server || enabled_mirror;
+}
 
 static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 {
@@ -255,9 +259,4 @@ edb_state_t eardbd_disconnect()
 	enabled_mirror = 0;
 
 	edb_state_return(state, EAR_SUCCESS);
-}
-
-int eardbd_is_initialized()
-{
-	return enabled_server || enabled_mirror;
 }

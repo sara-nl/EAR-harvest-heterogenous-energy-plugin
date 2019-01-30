@@ -407,22 +407,22 @@ static void init_signals()
 	action.sa_flags = SA_SIGINFO;
 
 	if (sigaction(SIGUSR1, &action, NULL) < 0) { 
-        	verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+        	printp1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
 	}
 	if (sigaction(SIGUSR2, &action, NULL) < 0) {
-		verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+		printp1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
 	}
 	if (sigaction(SIGCHLD, &action, NULL) < 0) {
-		verwho1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
+		printp1("sigaction error on signal %d (%s)", SIGUSR1, strerror(errno));
 	}
 	if (sigaction(SIGTERM, &action, NULL) < 0) {
-		verwho1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
+		printp1("sigaction error on signal %d (%s)", SIGTERM, strerror(errno));
 	}
 	if (sigaction(SIGINT, &action, NULL) < 0) {
-		verwho1("sigaction error on signal %d (%s)", SIGINT, strerror(errno));
+		printp1("sigaction error on signal %d (%s)", SIGINT, strerror(errno));
 	}
 	if (sigaction(SIGHUP, &action, NULL) < 0) {
-		verwho1("sigaction error on signal %d (%s)", SIGHUP, strerror(errno));
+		printp1("sigaction error on signal %d (%s)", SIGHUP, strerror(errno));
 	}
 }
 

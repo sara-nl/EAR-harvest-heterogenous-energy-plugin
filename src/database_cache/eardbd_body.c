@@ -139,7 +139,7 @@ static void body_alarm(struct timeval *timeout_slct)
 				peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
 				peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 
-				verwho1("completed the aggregation number '%lu' with energy '%lu'",
+				printp1("completed the aggregation number '%lu' with energy '%lu'",
 					sam_index[i_aggrs], q->DC_energy);
 
 				if (q->n_samples > 0)
@@ -236,7 +236,7 @@ static void body_connections()
 
 						if (verbosity) {
 							sockets_get_address_fd(fd_cli, extra_buffer, sizeof(extra_buffer));
-                					verwho1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
+                					printp1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
         					}
 					}
 				} while(state_ok(s));
@@ -254,16 +254,16 @@ static void body_connections()
 				else
 				{
 					if (state_is(s, EAR_SOCK_DISCONNECTED)) {
-						//verwho1("disconnected from socket %d (num: %d, str: %s)",
+						//printp1("disconnected from socket %d (num: %d, str: %s)",
 						//		i, intern_error_num, intern_error_str);
 						soc_discn += 1;
 					} if (state_is(s, EAR_SOCK_TIMEOUT)) {
 						sockets_get_address_fd(i, extra_buffer, SZ_BUFF_BIG);
-						//verwho1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
+						//printp1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
 						//		i, extra_buffer, intern_error_num, intern_error_str);
 						soc_tmout += 1;
 					} else {
-						//verwho1("on reception (num: %d, str: %s), disconnecting from socket %d",
+						//printp1("on reception (num: %d, str: %s), disconnecting from socket %d",
 						//		intern_error_num, intern_error_str, i);
 						soc_unkwn += 1;
 					}
