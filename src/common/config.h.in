@@ -135,6 +135,10 @@
 #define VCCONF 0
 #define VPRIV 0
 
+/* Used in base mysql library calls. */
+#define VMYSQL 3
+/* Used in db_helper.c */
+#define VDBH 0
 
 #define VMETRICS 2
 
