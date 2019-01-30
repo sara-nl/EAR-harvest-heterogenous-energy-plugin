@@ -58,9 +58,9 @@ int current_job_id = 0;
 
 
 #define PAINT(N) \
-	fprintf(stderr, "Elements to insert %d", N); \
-	fprintf(stderr, "Bulk elements %d", bulk_elms); \
-	fprintf(stderr, "Bulk sets %d", bulk_sets)
+	verbose(VDBH, "Elements to insert %d", N); \
+	verbose(VDBH, "Bulk elements %d", bulk_elms); \
+	verbose(VDBH, "Bulk sets %d", bulk_sets)
 
 void init_db_helper(db_conf_t *conf)
 {
@@ -73,26 +73,26 @@ int db_insert_application(application_t *application)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
     if (mysql_insert_application(connection, application) < 0)
     {
-        verbose(0, "ERROR while writing application to database.");
+        verbose(VDBH, "ERROR while writing application to database.");
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -112,19 +112,19 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
 	MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL) {   
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL) {   
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
         
     if (!mysql_real_connect(connection, db_config->ip, db_config->user,
             db_config->pass, db_config->database, db_config->port, NULL, 0)) 
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -133,7 +133,7 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
     {
     	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
-        	verbose(0, "ERROR while batch writing applications to database.");
+        	verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
         	return EAR_ERROR;
     	}
@@ -142,7 +142,7 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
 	if (e < num_apps)
 	{
 		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
-            verbose(0, "ERROR while batch writing applications to database.");
+            verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
             return EAR_ERROR;
         }
@@ -163,19 +163,19 @@ int db_batch_insert_applications_learning(application_t *applications, int num_a
 	MYSQL *connection = mysql_init(NULL);
 
     if (connection == NULL) {   
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL) {   
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
         
     if (!mysql_real_connect(connection, db_config->ip, db_config->user,
             db_config->pass, "EAR2", db_config->port, NULL, 0)) 
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -184,7 +184,7 @@ int db_batch_insert_applications_learning(application_t *applications, int num_a
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
     {
     	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
-        	verbose(0, "ERROR while batch writing applications to database.");
+        	verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
         	return EAR_ERROR;
     	}
@@ -193,7 +193,7 @@ int db_batch_insert_applications_learning(application_t *applications, int num_a
 	if (e < num_apps)
 	{
 		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
-            verbose(0, "ERROR while batch writing applications to database.");
+            verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
             return EAR_ERROR;
         }
@@ -216,20 +216,20 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user,
 			db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -238,7 +238,7 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
 		if (mysql_batch_insert_applications_no_mpi(connection, &applications[e], bulk_elms) < 0) {
-			verbose(0, "ERROR while batch writing applications to database.");
+			verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -247,7 +247,7 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
 	if (e < num_apps)
 	{
 		if (mysql_batch_insert_applications_no_mpi(connection, &applications[e], num_apps - e) < 0) {
-			verbose(0, "ERROR while batch writing applications to database.");
+			verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -265,26 +265,26 @@ int db_insert_loop(loop_t *loop)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
     if (mysql_insert_loop(connection, loop) < 0)
     {
-        verbose(0, "ERROR while writing loop signature to database.");
+        verbose(VDBH, "ERROR while writing loop signature to database.");
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -304,19 +304,19 @@ int db_batch_insert_loops(loop_t *loops, int num_loops)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -325,7 +325,7 @@ int db_batch_insert_loops(loop_t *loops, int num_loops)
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
 		if (mysql_batch_insert_loops(connection, &loops[e], bulk_elms) < 0) {
-			verbose(0, "ERROR while batch writing loop signature to database.");
+			verbose(VDBH, "ERROR while batch writing loop signature to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -334,7 +334,7 @@ int db_batch_insert_loops(loop_t *loops, int num_loops)
 	if (e < num_loops)
 	{
 		if (mysql_batch_insert_loops(connection, &loops[e], num_loops - e) < 0) {
-			verbose(0, "ERROR while batch writing loop signature to database.");
+			verbose(VDBH, "ERROR while batch writing loop signature to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -351,26 +351,26 @@ int db_insert_power_signature(power_signature_t *pow_sig)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
     
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
     if (mysql_insert_power_signature(connection, pow_sig) < 0)
     {
-        verbose(0, "ERROR while writing power_signature to database.");
+        verbose(VDBH, "ERROR while writing power_signature to database.");
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -386,27 +386,27 @@ int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
     if (mysql_insert_periodic_aggregation(connection, per_agg) < 0)
     {
-        verbose(0, "ERROR while writing periodic_aggregation to database.");
+        verbose(VDBH, "ERROR while writing periodic_aggregation to database.");
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -422,26 +422,26 @@ int db_insert_periodic_metric(periodic_metric_t *per_met)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
     if (mysql_insert_periodic_metric(connection, per_met) < 0)
     {
-        verbose(0, "ERROR while writing periodic_metric to database.");
+        verbose(VDBH, "ERROR while writing periodic_metric to database.");
         return EAR_ERROR;
     }
 
@@ -461,20 +461,20 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user,
 			db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -483,7 +483,7 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
 		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], bulk_elms) < 0) {
-			verbose(0, "ERROR while batch writing periodic metrics to database.");
+			verbose(VDBH, "ERROR while batch writing periodic metrics to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -492,7 +492,7 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 	if (e < num_mets)
 	{
 		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], num_mets - e) < 0) {
-			verbose(0, "ERROR while batch writing periodic metrics to database.");
+			verbose(VDBH, "ERROR while batch writing periodic metrics to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -514,19 +514,19 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -535,7 +535,7 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
 		if (mysql_batch_insert_periodic_aggregations(connection, &per_aggs[e], bulk_elms) < 0) {
-			verbose(0, "ERROR while batch writing aggregations to database.");
+			verbose(VDBH, "ERROR while batch writing aggregations to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -544,7 +544,7 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
 	if (e < num_aggs)
 	{
 		if (mysql_batch_insert_periodic_aggregations(connection, &per_aggs[e], num_aggs - e) < 0) {
-			verbose(0, "ERROR while batch writing aggregations to database.");
+			verbose(VDBH, "ERROR while batch writing aggregations to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -561,26 +561,26 @@ int db_insert_ear_event(ear_event_t *ear_ev)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
     if (mysql_insert_ear_event(connection, ear_ev) < 0)
     {
-        verbose(0, "ERROR while writing ear_event to database.");
+        verbose(VDBH, "ERROR while writing ear_event to database.");
         return EAR_ERROR;
     }
 
@@ -599,19 +599,19 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -620,7 +620,7 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
 		if (mysql_batch_insert_ear_events(connection, &ear_evs[e], bulk_elms) < 0) {
-			verbose(0, "ERROR while batch writing ear_event to database.");
+			verbose(VDBH, "ERROR while batch writing ear_event to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -629,7 +629,7 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 	if (e < num_events)
 	{
 		if (mysql_batch_insert_ear_events(connection, &ear_evs[e], num_events - e) < 0) {
-			verbose(0, "ERROR while batch writing ear_event to database.");
+			verbose(VDBH, "ERROR while batch writing ear_event to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
@@ -646,26 +646,26 @@ int db_insert_gm_warning(gm_warning_t *warning)
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
 
     if (mysql_insert_gm_warning(connection, warning) < 0)
     {
-        verbose(0, "ERROR while writing gm_warning to database.");
+        verbose(VDBH, "ERROR while writing gm_warning to database.");
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -677,7 +677,7 @@ int db_insert_gm_warning(gm_warning_t *warning)
 
 ulong stmt_error(MYSQL *connection, MYSQL_STMT *statement)
 {
-    fprintf(stderr, "Error preparing statement (%d): %s\n",
+    verbose(VMYSQL, "Error preparing statement (%d): %s\n",
             mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
     mysql_close(connection);
@@ -696,19 +696,19 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
 
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -717,7 +717,7 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement)
     {
-        verbose(0, "Error creating statement (%d): %s\n", mysql_errno(connection),
+        verbose(VDBH, "Error creating statement (%d): %s\n", mysql_errno(connection),
                 mysql_error(connection));
         mysql_close(connection);
         return -1;
@@ -780,18 +780,18 @@ int db_read_applications_query(application_t **apps, char *query)
 
     if (connection == NULL)
     {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        verbose(VDBH, "Error creating MYSQL object: %s \n", mysql_error(connection));
         exit(1);
     }
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
 		return num_apps;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(VDBH, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
 		return num_apps;
     }
@@ -799,7 +799,7 @@ int db_read_applications_query(application_t **apps, char *query)
    	num_apps = mysql_retrieve_applications(connection, query, apps, 0);
    
   	if (num_apps == EAR_MYSQL_ERROR){
-        verbose(0, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(VDBH, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
 		return num_apps;
     }
@@ -815,13 +815,13 @@ int db_run_query(char *query, char *user, char *passw)
 
     if (connection == NULL)
     {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        verbose(VDBH, "Error creating MYSQL object: %s \n", mysql_error(connection));
         exit(1);
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
 		return EAR_MYSQL_ERROR;
     }
     if (user == NULL)
@@ -831,14 +831,14 @@ int db_run_query(char *query, char *user, char *passw)
 
     if (!mysql_real_connect(connection, db_config->ip, user, passw, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(VDBH, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
 		return EAR_MYSQL_ERROR;
     }
 
     if (mysql_query(connection, query))
     {
-        verbose(0, "Error when executing query(%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(VDBH, "Error when executing query(%d): %s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
         return EAR_MYSQL_ERROR;
     }
@@ -854,20 +854,20 @@ MYSQL_RES *db_run_query_result(char *query)
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
 		return NULL;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(VDBH, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
 		return NULL;
     }
 
     if (mysql_query(connection, query))
     {
-        verbose(0, "Error when executing query(%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(VDBH, "Error when executing query(%d): %s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
         return NULL;
     }
@@ -888,24 +888,24 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 
     if (max_apps < 1)
     {
-        fprintf(stderr, "ERROR: querying less than 1 app is not possible (%d requested).\n", max_apps);
+        verbose(VDBH, "ERROR: querying less than 1 app is not possible (%d requested).\n", max_apps);
         return EAR_ERROR;
     }
 
     if (connection == NULL)
     {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        verbose(VDBH, "Error creating MYSQL object: %s \n", mysql_error(connection));
         exit(1);
     }
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
 		return num_apps;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(VDBH, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
 		return num_apps;
     }
@@ -931,7 +931,8 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
         sprintf(query,  "SELECT Applications.* FROM Applications WHERE (job_id > %d AND node_id='%s') OR "\
-                        "(job_id = %d AND step_id > %d AND node_id = '%s') ORDER BY job_id LIMIT %d", 
+                        "(job_id = %d AND step_id > %d AND node_id = '%s') ORDER BY job_id LIMIT %d AND signature_id in ("\
+                        "SELECT id from Signatures where time > 30 AND DC_power > 100 AND DC_power < 1000)", 
                         current_job_id, node_name, current_job_id, current_step_id, node_name, max_apps);
     else
         sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
@@ -939,11 +940,10 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id);
 
-//    fprintf(stderr, "QUERY: %s\n", query);
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    
   	if (num_apps == EAR_MYSQL_ERROR){
-        verbose(0, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(VDBH, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
 		return num_apps;
     }
@@ -975,19 +975,19 @@ ulong get_num_applications(char is_learning, char *node_name)
     char query[256];
     if (connection == NULL)
     {
-        verbose(0, "ERROR creating MYSQL object.");
+        verbose(VDBH, "ERROR creating MYSQL object.");
         return EAR_ERROR;
     }
 
     if (db_config == NULL)
     {
-        verbose(0, "Database configuration not initialized.");
+        verbose(VDBH, "Database configuration not initialized.");
         return EAR_ERROR;
     }
 
     if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
     {
-        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
         return EAR_ERROR;
     }
@@ -997,7 +997,7 @@ ulong get_num_applications(char is_learning, char *node_name)
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement)
     {
-        verbose(0, "Error creating statement (%d): %s\n", mysql_errno(connection),
+        verbose(VDBH, "Error creating statement (%d): %s\n", mysql_errno(connection),
                 mysql_error(connection));
         mysql_close(connection);
         return -1;

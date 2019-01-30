@@ -126,7 +126,7 @@
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
-    fprintf(stderr, "MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
+    verbose(VMYSQL, "MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
     return EAR_MYSQL_STMT_ERROR;
 }
@@ -162,9 +162,11 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     
     if (pow_sig_id < 0)
     {
-        if (pow_sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing power_signature to database.\n");
-        else if (pow_sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing power_signature to database.\n");
-        else fprintf(stderr,"Unknown error when writing power_signature to database.\n");
+        if (pow_sig_id == EAR_MYSQL_ERROR){
+            verbose(VMYSQL, "MYSQL error when writing power_signature to database.\n");
+        } else if (pow_sig_id == EAR_MYSQL_STMT_ERROR){
+            verbose(VMYSQL, "STMT error when writing power_signature to database.\n");
+        } else verbose(VMYSQL,"Unknown error when writing power_signature to database.\n");
     }
 
     if (is_mpi)
@@ -173,9 +175,11 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
 
         if (sig_id < 0)
         {
-            if (sig_id == EAR_MYSQL_ERROR) fprintf(stderr, "MYSQL error when writing signature to database.\n");
-            else if (sig_id == EAR_MYSQL_STMT_ERROR) fprintf(stderr, "STMT error when writing signature to database.\n");
-            else fprintf(stderr,"Unknown error when writing signature to database.\n");
+            if (sig_id == EAR_MYSQL_ERROR){
+                verbose(VMYSQL, "MYSQL error when writing signature to database.\n");
+            } else if (sig_id == EAR_MYSQL_STMT_ERROR){
+                verbose(VMYSQL, "STMT error when writing signature to database.\n");
+            } else verbose(VMYSQL,"Unknown error when writing signature to database.\n");
         }
 
     }
@@ -212,12 +216,12 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     if (app == NULL)
     {
-        verbose(0, "APP is null.");
+        verbose(VMYSQL, "APP is null.");
         return EAR_ERROR;
     }
     else if (num_apps < 1)
     {
-        verbose(0, "Num_apps < 1 (%d)", num_apps);
+        verbose(VMYSQL, "Num_apps < 1 (%d)", num_apps);
         return EAR_ERROR;
     }
     
@@ -242,7 +246,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     pow_sig_id = mysql_batch_insert_power_signatures(connection, app, num_apps);
     
     if (pow_sig_id < 0)
-        fprintf(stderr,"Unknown error when writing power_signature to database.\n");
+        verbose(VMYSQL,"Unknown error when writing power_signature to database.\n");
 
     for (i = 0; i < num_apps; i++)
         pow_sigs_ids[i] = pow_sig_id + i;
@@ -256,7 +260,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     sig_id = mysql_batch_insert_signatures(connection, cont, is_learning, num_apps);
 
     if (sig_id < 0)
-        fprintf(stderr,"Unknown error when writing signature to database. (%d)\n",sig_id);
+        verbose(VMYSQL,"Unknown error when writing signature to database. (%d)\n",sig_id);
 
     for (i = 0; i < num_apps; i++)
         sigs_ids[i] = sig_id + i;
@@ -456,7 +460,7 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
     pow_sig_id = mysql_batch_insert_power_signatures(connection, app, num_apps);
 
     if (pow_sig_id < 0)
-        fprintf(stderr,"Unknown error when writing power_signature to database.\n");
+        verbose(VMYSQL,"Unknown error when writing power_signature to database.\n");
 
     for (i = 0; i < num_apps; i++)
         pow_sigs_ids[i] = pow_sig_id + i;
@@ -580,7 +584,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         if (num_jobs < 1)
         {
             if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
-            //fprintf(stderr,"No job structure found in the database for job %d.%d.\n", job_id, step_id);
+            //verbose(VMYSQL,"No job structure found in the database for job %d.%d.\n", job_id, step_id);
             return EAR_ERROR;
         }
         copy_job(&app_aux->job, job_aux);
@@ -697,7 +701,7 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
     int sig_id = mysql_batch_insert_signatures(connection, cont, 0, num_loops);
 
     if (sig_id < 0){
-		fprintf(stderr,"Error inserting N=%d loops signatures\n",num_loops);
+		verbose(VMYSQL,"Error inserting N=%d loops signatures\n",num_loops);
         return EAR_ERROR;
 	}
 
@@ -1061,7 +1065,7 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
 
     my_ulonglong affected_rows = mysql_stmt_affected_rows(statement);
 
-    if (affected_rows != 1) printf("ERROR: inserting signature failed.\n");
+    if (affected_rows != 1) verbose(VMYSQL,"ERROR: inserting signature failed.\n");
 
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
@@ -1314,7 +1318,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
 
     if (affected_rows != num_sigs) 
     {
-        fprintf(stderr, "ERROR: inserting batch signature failed (affected rows does not match num_sigs).\n");
+        verbose(VMYSQL, "ERROR: inserting batch signature failed (affected rows does not match num_sigs).\n");
         id = EAR_ERROR;
     }
 
