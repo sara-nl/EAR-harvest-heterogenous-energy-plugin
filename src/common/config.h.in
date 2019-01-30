@@ -133,6 +133,10 @@
 
 /* Used to print the cluster_conf */
 #define VCCONF 0
+#define VPRIV 0
+
+
+#define VMETRICS 2
 
 
 
