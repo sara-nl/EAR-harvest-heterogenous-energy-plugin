@@ -27,6 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <common/config.h>
+#include <common/output/verbose.h>
+#include <common/output/error.h>
 #include <common/types/configuration/cluster_conf.h>
 
 static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int main)
@@ -1057,14 +1062,14 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	FILE *conf_file = fopen(conf_path, "r");
 	if (conf_file == NULL)
 	{
-		fprintf(stderr, "ERROR opening file: %s\n", conf_path);
+		error("ERROR opening file: %s\n", conf_path);
 		return EAR_ERROR;
 	}
 	set_ear_conf_default(my_conf);
 	get_cluster_config(conf_file, my_conf);
     if (my_conf->num_policies < 1 || my_conf->num_islands < 1 || my_conf->default_policy < 0)
     {
-		fprintf(stderr, "Error: ear.conf does not contain any island or policy definition or there is no default policy specified.\n");
+		error( "Error: ear.conf does not contain any island or policy definition or there is no default policy specified.\n");
 		return EAR_ERROR;
     }
 	fclose(conf_file);

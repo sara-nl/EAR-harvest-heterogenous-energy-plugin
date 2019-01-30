@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/environment.h>
+#include <common/output/verbose.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/node_conf.h>
 
@@ -132,9 +133,9 @@ void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
 void print_node_conf(node_conf_t *my_node_conf)
 {
     int i;
-    fprintf(stderr,"-->cpus %u island %u def_file: %s\n", my_node_conf->cpus, my_node_conf->island, my_node_conf->coef_file);
+    verbose(VCCONF,"-->cpus %u island %u def_file: %s\n", my_node_conf->cpus, my_node_conf->island, my_node_conf->coef_file);
     for (i = 0; i < my_node_conf->range_count; i++)
-        printf("---->prefix: %s\tstart: %u\tend: %u\n", my_node_conf->range[i].prefix, my_node_conf->range[i].start, my_node_conf->range[i].end);
+        verbose(VCCONF,"---->prefix: %s\tstart: %u\tend: %u\n", my_node_conf->range[i].prefix, my_node_conf->range[i].start, my_node_conf->range[i].end);
     for (i=0;i<my_node_conf->num_special_node_conf;i++){
         print_policy_conf(&my_node_conf->special_node_conf[i]);
     }   
@@ -144,15 +145,15 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 {
     int i;
     if (my_node_conf!=NULL){
-        fprintf(stderr,"My node: cpus %u max_pstate %lu island %u ip %s ",
+        verbose(VCCONF,"My node: cpus %u max_pstate %lu island %u ip %s ",
             my_node_conf->cpus,my_node_conf->max_pstate,my_node_conf->island,my_node_conf->db_ip);
         if (my_node_conf->db_sec_ip!=NULL){
-            fprintf(stderr,"sec_ip %s ",my_node_conf->db_sec_ip);
+            verbose(VCCONF,"sec_ip %s ",my_node_conf->db_sec_ip);
         }
         if (my_node_conf->coef_file!=NULL){
-            fprintf(stderr,"coeffs %s ",my_node_conf->coef_file);
+            verbose(VCCONF,"coeffs %s ",my_node_conf->coef_file);
         }
-        fprintf(stderr,"\n");
+        verbose(VCCONF,"\n");
         for (i=0;i<my_node_conf->num_policies;i++){
             print_policy_conf(&my_node_conf->policies[i]);
         }

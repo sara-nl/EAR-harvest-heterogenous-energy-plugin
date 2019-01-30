@@ -37,8 +37,11 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
+#include <common/output/debug.h>
+#include <common/output/error.h>
 #include <common/types/coefficient.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/shared_configuration.h>
@@ -82,33 +85,33 @@ void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int 
 	char buff[256];
 	mode_t my_mask;
 	if ((area_size==0) || (data==NULL) || (path==NULL)){
-		verbose(0,"warning, creatinf shared region, invalid arguments. Not created\n");
+		error("creatinf shared region, invalid arguments. Not created\n");
 		return NULL;
 	}
 	my_mask=umask(0);
 	strcpy(buff,path);
-	verbose(0,"creating file %s for shared memory\n",buff);
+	verbose(VCONF+2,"creating file %s for shared memory\n",buff);
 	fd=open(buff,O_CREAT|O_RDWR|O_TRUNC,S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 	if (fd<0){
-		verbose(0,"error creating sharing memory (%s)\n",strerror(errno));
+		error("error creating sharing memory (%s)\n",strerror(errno));
 		umask(my_mask);
 		return NULL;
 	}
-	verbose(0,"shared file for mmap created\n");
+	verbose(VCONF+2,"shared file for mmap created\n");
 	umask(my_mask);
 	// Default values
 	if (must_clean) bzero(data,area_size);
-	verbose(0,"writting default values\n");
+	verbose(VCONF+2,"writting default values\n");
 	ret=write(fd,data,area_size);
 	if (ret<0){
-		verbose(0,"error creating sharing memory (%s)\n",strerror(errno));
+		error("error creating sharing memory (%s)\n",strerror(errno));
 		close(fd);
 		return NULL;
 	}
-	verbose(0,"mapping shared memory\n");
+	verbose(VCONF+2,"mapping shared memory\n");
 	my_shared_region= mmap(NULL, area_size,PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);                                     
 	if ((my_shared_region == MAP_FAILED) || (my_shared_region == NULL)){
-		verbose(0," error creating sharing memory (%s)\n",strerror(errno));
+		error(" error creating sharing memory (%s)\n",strerror(errno));
 		close(fd);
 		return NULL;
 	}
@@ -126,13 +129,13 @@ void * attach_shared_area(char *path,int area_size,uint perm,int *shared_fd,int 
 	strcpy(buff,path);
     fd=open(buff,perm);
     if (fd<0){
-        verbose(0,"error attaching to sharing memory (%s)\n",strerror(errno));
+        error("error attaching to sharing memory (%s)\n",strerror(errno));
         return NULL;
     }
 	if (area_size==0){
 		size=lseek(fd,0,SEEK_END);
 		if (size<0){
-			verbose(0,"Error computing shared memory size (%s) ",strerror(errno));
+			error("Error computing shared memory size (%s) ",strerror(errno));
 		}else area_size=size;
 		if (s!=NULL) *s=size;
 	}
@@ -143,7 +146,7 @@ void * attach_shared_area(char *path,int area_size,uint perm,int *shared_fd,int 
 	}
     my_shared_region= mmap(NULL, area_size,flags, MAP_SHARED, fd, 0);
     if ((my_shared_region == MAP_FAILED) || (my_shared_region == NULL)){
-        verbose(0,"error attaching to sharing memory (%s)\n",strerror(errno));
+        error("error attaching to sharing memory (%s)\n",strerror(errno));
         close(fd);
         return NULL;
     }
@@ -192,9 +195,9 @@ void settings_conf_shared_area_dispose(char * path)
 
 void print_settings_conf(settings_conf_t *setting)
 {
-	fprintf(stderr,"settings: user_type(0=NORMAL,1=AUTH,2=ENERGY) %u learning %u lib_enabled %d policy(0=min_energy, 1=min_time,2=monitoring) %u \n",
+	verbose(VCONF,"settings: user_type(0=NORMAL,1=AUTH,2=ENERGY) %u learning %u lib_enabled %d policy(0=min_energy, 1=min_time,2=monitoring) %u \n",
 	setting->user_type,setting->learning,setting->lib_enabled,setting->policy);
-	fprintf(stderr,"\tmax_freq %lu def_freq %lu def_p_state %u th %.2lf\n",setting->max_freq,setting->def_freq,setting->def_p_state,setting->th);
+	verbose(VCONF,"\tmax_freq %lu def_freq %lu def_p_state %u th %.2lf\n",setting->max_freq,setting->def_freq,setting->def_p_state,setting->th);
 	print_ear_lib_conf(&setting->lib_info);	
 
 }

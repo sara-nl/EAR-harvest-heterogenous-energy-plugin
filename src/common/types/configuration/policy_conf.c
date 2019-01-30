@@ -32,6 +32,7 @@
 #include <strings.h>
 #include <stdlib.h>
 #include <common/config.h>
+#include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/types/configuration/cluster_conf.h>
 
@@ -120,9 +121,9 @@ void print_policy_conf(policy_conf_t *p)
     char buffer[64];
     policy_id_to_name(p->policy,buffer);
 	#if LRZ_POLICY
-    fprintf(stderr,"---> policy %s th %.2lf th2 %.2lf p_state %u\n",buffer,p->th,p->th2,p->p_state);
+    verbose(VCCONF,"---> policy %s th %.2lf th2 %.2lf p_state %u\n",buffer,p->th,p->th2,p->p_state);
 	#else
-    fprintf(stderr,"---> policy %s th %.2lf p_state %u\n",buffer,p->th,p->p_state);
+    verbose(VCCONF,"---> policy %s th %.2lf p_state %u\n",buffer,p->th,p->p_state);
 	#endif
 }
 
