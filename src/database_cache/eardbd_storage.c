@@ -285,7 +285,7 @@ static void insert_aggregations()
 {
 	time_t time_start;
 
-	verwho1("Inserting aggregations %d",  sam_index[i_aggrs]);
+	printp1("Inserting aggregations %lu",  sam_index[i_aggrs]);
 
 	if (typ_prcnt[i_aggrs] == 0 || sam_index[i_aggrs] <= 0) {
 		return;
@@ -311,7 +311,7 @@ static void insert_events()
 
 void insert_hub(uint option, uint reason)
 {
-	verwho1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
+	printp1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 
 	metrics_print();
 
@@ -481,7 +481,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	index = storage_index_extract(type, &name);
 
 	if (verbosity) {
-		verwho1("received '%s' object from host '%s'", name, header->host_src); 
+		printp1("received '%s' object from host '%s'", name, header->host_src);
 	}
 
 	//TODO:
@@ -548,7 +548,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 
 		// Verbosity mpkfa
 		//if (verbosity == 1) {
-		//	verwho1("RECEIVED %lu energy from %s", met->DC_energy, met->node_id);				
+		//	printp1("RECEIVED %lu energy from %s", met->DC_energy, met->node_id);
 		//}
 
 		// Add sample to the aggregation
