@@ -452,7 +452,7 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
         // local_eargmd_report_start(sp);
 
         //
-        if (isenv_local("EAR_LIBRARY", "1")) {
+        if (isenv_local("EAR_LIBRARY", "1") && spank_context() == S_CTX_SRUN) {
                 _set_ld_preload(sp);
         }
 
