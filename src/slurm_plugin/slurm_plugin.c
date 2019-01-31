@@ -161,11 +161,13 @@ static void remote_print_environment(spank_t sp)
     plug_verbose_0("memlock size limit test (res %d, curr: %lld, max: %lld)",
                  r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
 
-	printenv_remote(sp, "EAR_PLUGIN");
-	printenv_remote(sp, "EAR_PLUGIN_VERBOSE");
+    printenv_remote(sp, "EAR_PLUGIN");
+    printenv_remote(sp, "EAR_PLUGIN_VERBOSE");
     printenv_remote(sp, "EAR_LIBRARY");
-	printenv_remote(sp, "EAR_LIBRARY_VERBOSE");
-	// Policies
+    printenv_remote(sp, "EAR_LIBRARY_VERBOSE");
+    printenv_remote(sp, "EAR_USER");
+    printenv_remote(sp, "EAR_GROUP");
+    // POLICIES
     printenv_remote(sp, "EAR_LEARNING_PHASE");
     printenv_remote(sp, "EAR_POWER_POLICY");
     printenv_remote(sp, "EAR_P_STATE");
@@ -178,6 +180,7 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "EAR_USER_DB_PATHNAME");
     printenv_remote(sp, "EAR_APP_NAME");
     printenv_remote(sp, "EAR_ENERGY_TAG");
+    // LOADER
     printenv_remote(sp, "LD_PRELOAD");
     printenv_remote(sp, "LD_LIBRARY_PATH");
     // SLURM
@@ -191,6 +194,9 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "SLURM_JOB_NAME");
     printenv_remote(sp, "SLURM_JOB_ACCOUNT");
     printenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT");
+    // PLUGSTACK
+    printenv_remote(sp, "PLUGSTACK_PFX");
+    printenv_remote(sp, "PLUGSTACK_TMP");
 }
 
 /*
@@ -401,9 +407,10 @@ int _set_ld_preload(spank_t sp)
  *
  */
 
-int _slurm_spank_local_user_init (spank_t sp, int ac, char **av)
+//int slurm_spank_local_user_init(spank_t sp, int ac, char **av)
+int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 {
-    plug_verbose(sp, 2, "function slurm_spank_local_user_init");
+    plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
 
         // No need of testing the context
         if(!_is_plugin_enabled(sp)) {
@@ -432,40 +439,61 @@ int _slurm_spank_local_user_init (spank_t sp, int ac, char **av)
     return (ESPANK_SUCCESS);
 }
 
+
 int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init");
 
 	_opt_register(sp);
 
-	/*if (spank_context() == S_CTX_SRUN)
-	{
-		if (!setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SRUN", 1))
-		{
-			plug_verbose(sp, 2, "while setting last local context variable (severe error)");
-			_local_plugin_disable();
-			return ESPANK_SUCCESS;
-		}
+	if (spank_context() == S_CTX_SRUN) {
+		setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SRUN", 1);
 	}
-
-	if (spank_context() == S_CTX_SBATCH)
+	if (spank_context() == S_CTX_SBATCH) {
+		setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SBATCH", 1);
+	}
+	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH)
 	{
-		if (!setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SBATCH", 1))
-		{
-			plug_verbose(sp, 2, "while setting last local context variable (severe error)");
-			_local_plugin_disable();
-			return ESPANK_SUCCESS;
-		}
-	}*/
-
-	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH) {
 		_local_plugin_enable();
-		_slurm_spank_local_user_init(sp, ac, av);
+		//
+	//	_slurm_spank_local_user_init(sp, ac, av);
 	}
+
 
 	return ESPANK_SUCCESS;
 }
+/*
+int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
+{
+    plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
 
+        // No need of testing the context
+        if(!_is_plugin_enabled(sp)) {
+                return ESPANK_SUCCESS;
+        }
+
+        // Reading plugstack.conf
+        if (_read_plugstack(sp, ac, av) != ESPANK_SUCCESS) {
+                _local_plugin_disable();
+                return ESPANK_SUCCESS;
+        }
+
+        // Filling user data
+        if (_read_user_info(sp) != ESPANK_SUCCESS) {
+                _local_library_disable();
+        }
+
+        // EARGMD contact
+        local_eargmd_report_start(sp);
+
+        //
+        if (isenv_local("EAR_LIBRARY", "1")) {
+                _set_ld_preload(sp);
+        }
+
+    return (ESPANK_SUCCESS);
+}
+*/
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_user_init");
@@ -474,13 +502,10 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		return (ESPANK_SUCCESS);
 	}
 	
-	//
-	/* if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN"))*/
 	if (spank_context() == S_CTX_REMOTE)
 	{
-		//
 		remote_eard_report_start(sp);
-
+		//
 		remote_print_environment(sp);
 	}
 	
@@ -519,7 +544,6 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 		local_eargmd_report_finish(sp);
 	}
 
-	/*if (spank_context() == S_CTX_REMOTE && isenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT", "SRUN")) {*/
 	if (spank_context() == S_CTX_REMOTE) {
 		remote_eard_report_finish(sp);
 	}
