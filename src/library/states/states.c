@@ -311,8 +311,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period = 1;
 			}
 			loop_perf_count_period=perf_count_period;
+			/* Included to accelerate the signature computation */
 			perf_count_period_10p=perf_count_period/10;
 			if (perf_count_period_10p==0) perf_count_period_10p=1;
+			/**/
 
 			// Once min iterations is computed for performance accuracy we start computing application signature
 			EAR_STATE = EVALUATING_SIGNATURE;
@@ -334,6 +336,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			} else {
 				perf_count_period = 1;
 			}                                        
+			/* Included to accelerate the signature computation */
+			perf_count_period_10p=perf_count_period/10;
+			if (perf_count_period_10p==0) perf_count_period_10p=1;
+			/**/
 			loop_perf_count_period=perf_count_period;
 			EAR_STATE = EVALUATING_SIGNATURE;
 			traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
@@ -353,15 +359,22 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			} else {
 				perf_count_period = 1;
 			}
+			/* Included to accelerate the signature computation */
+			perf_count_period_10p=perf_count_period/10;
+			if (perf_count_period_10p==0) perf_count_period_10p=1;
+			/**/
 			loop_perf_count_period=perf_count_period;
 			EAR_STATE = SIGNATURE_STABLE;
 			traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
 			break;
 		case EVALUATING_SIGNATURE:
+			/* We check from time to time if if the signature is ready */
+			/* Included to accelerate the signature computation */
 			if ((iterations%perf_count_period_10p)==0){
 				if (time_ready_signature(perf_accuracy_min_time)){	
 					verbose(1,"period update fom %u to %u\n",perf_count_period,iterations - 1);
 					perf_count_period=iterations - 1;
+					if (perf_count_period==0) perf_count_period=1;
 				}
 			}
 			if (((iterations - 1) % perf_count_period) || (iterations == 1)) return;

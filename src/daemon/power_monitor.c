@@ -403,6 +403,12 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 		my_policy->p_state=frequency_freq_to_pstate(frequency_get_cpu_freq(0));
 		verbose(VJOBPMON,"Application is not using ear and force_frequencies=off, frequencies are not changed pstate=%u\n",my_policy->p_state);
 		
+	}else{
+		/* We have to force the frequency */
+		ulong f;
+		frequency_set_userspace_governor_all_cpus();
+		f=frequency_pstate_to_freq(my_policy->p_state);
+		frequency_set_all_cpus(f);
 	}
 	appID->is_mpi=0;
 	return my_policy;
@@ -489,7 +495,6 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	get_governor(&current_ear_app[ccontext]->governor);
 	verbose(VJOBPMON+1,"Saving governor %s\n",current_ear_app[ccontext]->governor.governor);
 	/* Setting userspace */
-	frequency_set_userspace_governor_all_cpus();
 	user_type=get_user_type(&my_cluster_conf,appID->job.energy_tag,appID->job.user_id,appID->job.group_id,appID->job.user_acc,&my_tag);
 	verbose(VJOBPMON+1,"New job USER type is %u",user_type);
 	if (my_tag!=NULL) print_energy_tag(my_tag);
@@ -508,7 +513,6 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	dyn_conf->def_p_state=my_policy->p_state;
 	dyn_conf->th=my_policy->th;
 	/* End app configuration */
-	frequency_set_all_cpus(f);
 	current_node_freq=f;
 	appID->job.def_f=dyn_conf->def_freq;	
     	while (pthread_mutex_trylock(&app_lock));
