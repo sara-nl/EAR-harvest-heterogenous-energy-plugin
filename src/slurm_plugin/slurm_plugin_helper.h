@@ -43,7 +43,8 @@
 	slurm_error("EARPLUG ERROR, " __VA_ARGS__);
 #define plug_warning(...) \
 	slurm_error("EARPLUG WARNING, " __VA_ARGS__);
-#define plug_nude(...)
+#define plug_nude(...) \
+	slurm_error("EARPLUG NUDE, " __VA_ARGS__);
 
 int verbosity_test(spank_t sp, int level);
 

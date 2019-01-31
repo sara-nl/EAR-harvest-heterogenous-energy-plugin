@@ -40,9 +40,9 @@
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 
-#define PRODUCTION 		 0
-#define ESPANK_STOP 	-1
-#define S_CTX_SRUN 		S_CTX_LOCAL
+#define PRODUCTION	 0
+#define ESPANK_STOP	-1
+#define S_CTX_SRUN	S_CTX_LOCAL
 #define S_CTX_SBATCH	S_CTX_ALLOCATOR
 
 // Verbosity
