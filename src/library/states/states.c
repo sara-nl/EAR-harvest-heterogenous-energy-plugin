@@ -182,6 +182,7 @@ static void check_dynais_on(signature_t *A, signature_t *B)
 
 static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
 {
+#if EAR_OVERHEAD_CONTROL
     ulong dynais_overhead_usec=0;
     float dynais_overhead_perc;
 
@@ -205,6 +206,7 @@ static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong
     last_calls_in_loop=mpi_calls_iter;
     last_loop_size=period;
     last_loop_level=level;
+#endif
     
 }
 static int policy_had_effect(signature_t *A, signature_t *B)

@@ -96,8 +96,10 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <linux/limits.h>
+#include <common/config.h>
 #include <common/states.h>
 #include <common/output/debug.h>
+#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <metrics/custom/hardware_info.h>
@@ -248,7 +250,7 @@ static int write_command(uchar *ctl, int *cmd, int n_ctl, int n_cmd)
             res = pwrite(fd_functions[i], (void*) &cmd[k], sizeof(int), (int) ctl[j]);
             if (res == -1 || res != sizeof(int))
             {
-                verbose(0, "pci_uncores.c: writing file error (fd %i) (%s)\n",
+                error( "pci_uncores.c: writing file error (fd %i) (%s)\n",
                             fd_functions[i], strerror(errno));
 
                 close(fd_functions[i]);
@@ -389,7 +391,7 @@ int pci_read_uncores(ull *values)
 
                 if (res == -1 || res != sizeof(ull))
                 {
-                    verbose(0, "pci_uncores.c: reading file error (%s)\n",
+                    error("pci_uncores.c: reading file error (%s)\n",
                                 strerror(errno));
                     close(fd_functions[i]);
                     fd_functions[i] = -1;

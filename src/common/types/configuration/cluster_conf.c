@@ -27,6 +27,12 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <common/config.h>
+#include <common/output/verbose.h>
+#include <common/output/error.h>
+#include <common/output/debug.h>
 #include <common/sizes.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/environment.h>
@@ -163,7 +169,7 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
     if (user!=NULL){
 		i=0;
         while((i<my_tag->num_users) && (!found)){
-			fprintf(stderr,"Can_use_energy_tag user %s vs %s\n",user,my_tag->users[i]);
+			debug("Can_use_energy_tag user %s vs %s\n",user,my_tag->users[i]);
             if (strcmp(user,my_tag->users[i])==0) found=1;
 			else if (strcmp(my_tag->users[i],"all")==0) found=1;
 			else i++;
@@ -174,7 +180,7 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
 		i=0;
         while((i<my_tag->num_groups) && (!found))
 		{
-			fprintf(stderr,"Can_use_energy_tag group %s (%lu) vs %s (%lu)\n",
+			debug("Can_use_energy_tag group %s (%lu) vs %s (%lu)\n",
 					group, strlen(group), my_tag->groups[i], strlen(my_tag->groups[i]));
 
             if (strcmp(group,my_tag->groups[i])==0) found=1;
@@ -185,7 +191,7 @@ energy_tag_t * can_use_energy_tag(char *user,char *group, char *acc,energy_tag_t
     if (acc!=NULL){
 		i=0;
         while((i<my_tag->num_accounts) && (!found)){
-			fprintf(stderr,"Can_use_energy_tag acc %s vs %s\n",acc,my_tag->accounts[i]);
+			debug("Can_use_energy_tag acc %s vs %s\n",acc,my_tag->accounts[i]);
             if (strcmp(acc,my_tag->accounts[i])==0) found=1;
 			else i++;
         }
@@ -234,7 +240,7 @@ uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *g
 	energy_tag_t *is_tag;
 	int flag;
 	*my_tag=NULL;
-	fprintf(stderr,"Checking user %s group %s acc %s etag %s\n",user,group,acc,energy_tag);
+	verbose(VPRIV,"Checking user %s group %s acc %s etag %s\n",user,group,acc,energy_tag);
 	/* We first check if it is authorized user */
 	flag=is_privileged(my_conf,user,group,acc);
 	if (flag){
@@ -269,9 +275,9 @@ void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src)
 void print_ear_lib_conf(earlib_conf_t *libc)
 {
 	if (libc!=NULL){
-		fprintf(stderr,"coeffs %s dynais level %u dynais window_size %u\n",
+		verbose(VCCONF,"coeffs %s dynais level %u dynais window_size %u\n",
 		libc->coefficients_pathname,libc->dynais_levels,libc->dynais_window);
-		fprintf(stderr,"dynais timeout %u lib_period %u check_every %u\n",
+		verbose(VCCONF,"dynais timeout %u lib_period %u check_every %u\n",
 		libc->dynais_timeout,libc->lib_period,libc->check_every);
 	}
 }

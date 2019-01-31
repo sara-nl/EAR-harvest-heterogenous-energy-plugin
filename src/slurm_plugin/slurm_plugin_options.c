@@ -361,10 +361,15 @@ int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av)
 	return (ESPANK_SUCCESS);
 }
 
-int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
+int _slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
-    plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
+        plug_verbose(sp, 2, "function slurm_spank_local_user_init");
+        return (ESPANK_SUCCESS);
+}
 
+int _slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
 	return (ESPANK_SUCCESS);
 }
 

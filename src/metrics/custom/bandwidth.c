@@ -48,8 +48,10 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <common/config.h>
 #include <common/output/debug.h>
 #include <common/output/verbose.h>
+#include <common/output/error.h>
 #include <common/math_operations.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/bandwidth/uncores_pci.h>
