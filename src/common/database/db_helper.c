@@ -173,7 +173,7 @@ int db_batch_insert_applications_learning(application_t *applications, int num_a
     }
         
     if (!mysql_real_connect(connection, db_config->ip, db_config->user,
-            db_config->pass, "EAR2", db_config->port, NULL, 0)) 
+            db_config->pass, db_config->database, db_config->port, NULL, 0)) 
     {
         verbose(0, "ERROR connecting to the database: %s", mysql_error(connection));
         mysql_close(connection);
