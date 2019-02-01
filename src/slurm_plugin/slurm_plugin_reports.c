@@ -58,9 +58,9 @@ unsigned int eargmd_conn;
 extern char buffer1[SZ_PATH];
 extern char buffer2[SZ_PATH];
 
-static int _read_shared_data_set_environment(spank_t sp)
+int remote_read_shared_data_set_environment(spank_t sp)
 {
-	plug_verbose(sp, 2, "function _read_shared_data_set_environment");
+	plug_verbose(sp, 2, "function remote_read_shared_data_set_environment");
 
 	settings_conf_t *conf_sett = NULL;
 
@@ -273,11 +273,7 @@ int remote_eard_report_start(spank_t sp)
 	if (!eard_conn) {
 		return ESPANK_ERROR;
 	}
-
-	if (isenv_remote(sp, "PLG_LST_CTX", "SRUN")) {
-		return _read_shared_data_set_environment(sp);
-	}
-
+	
 	return ESPANK_SUCCESS;
 }
 

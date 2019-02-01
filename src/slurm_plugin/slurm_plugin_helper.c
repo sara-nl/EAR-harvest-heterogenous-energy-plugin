@@ -149,6 +149,17 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	}
 }
 
+int replenv_local(char *env_old, char *env_new)
+{
+        char *p;
+
+        if (getenv_local(env_old, &p)) {
+                setenv_local(env_new, p, 1);
+        }
+
+	return 1;
+}
+
 int setenv_local(const char *name, const char *value, int replace)
 {
 	if (name == NULL || value == NULL) {
@@ -185,6 +196,7 @@ int setenv_control(spank_t sp, char *name, char *value, int replace)
 int unsetenv_local(char *name)
 {
 	unsetenv(name);
+	return 1;
 }
 
 int unsetenv_remote(spank_t sp, char *name)
