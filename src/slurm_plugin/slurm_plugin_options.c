@@ -158,7 +158,7 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 		}
 
 		snprintf(buffer2, 4, "%d", ioptarg);
-		setenv_local("EAR_LEARNING_PHASE", buffer2, 1);
+		setenv_local("PLG_LEARNING_PHASE", buffer2, 1);
 		setenv_local("EAR_LIBRARY", "1", 1);
 	}
 
@@ -183,7 +183,7 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 			return (ESPANK_STOP);
 		}
 
-		setenv_local("EAR_POWER_POLICY", buffer2, 1);
+		setenv_local("PLG_POWER_POLICY", buffer2, 1);
 		setenv_local("EAR_LIBRARY", "1", 1);
 	}
 
@@ -204,7 +204,7 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
 		
 		loptarg = (ulong) atol(optarg);
         snprintf(buffer2, 16, "%lu", loptarg);
-        setenv_local("EAR_FREQUENCY", buffer2, 1);
+        setenv_local("PLG_FREQUENCY", buffer2, 1);
         setenv_local("EAR_LIBRARY", "1", 1);
     }
 
@@ -227,7 +227,7 @@ int _opt_ear_threshold (int val, const char *optarg, int remote)
 		}
 
 		snprintf(buffer2, 8, "%0.2f", foptarg);
-		setenv_local("EAR_POWER_POLICY_TH", buffer2, 1);
+		setenv_local("PLG_POWER_POLICY_TH", buffer2, 1);
 		setenv_local("EAR_LIBRARY", "1", 1);
 	}
 
@@ -244,7 +244,7 @@ int _opt_ear_user_db (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_local("EAR_USER_DB_PATHNAME", optarg, 1);
+		setenv_local("PLG_USER_DB_PATHNAME", optarg, 1);
 		setenv_local("EAR_LIBRARY", "1", 1);
 	}
 
@@ -288,7 +288,7 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_local("EAR_TRACE_PATH", optarg, 1);
+		setenv_local("PLG_TRACE_PATH", optarg, 1);
 		setenv_local("EAR_LIBRARY", "1", 1);
 	}
 
@@ -305,7 +305,7 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_local("EAR_MPI_DIST", optarg, 1);
+		setenv_local("PLG_MPI_DIST", optarg, 1);
 		setenv_local("EAR_LIBRARY", "1", 1);
 	}
 
@@ -322,7 +322,7 @@ int _opt_ear_tag(int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_local("EAR_ENERGY_TAG", optarg, 1);
+		setenv_local("PLG_ENERGY_TAG", optarg, 1);
 		setenv_local("EAR_LIBRARY", "1", 1);
 	}
 	return (ESPANK_SUCCESS);

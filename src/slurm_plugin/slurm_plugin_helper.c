@@ -182,6 +182,11 @@ int setenv_control(spank_t sp, char *name, char *value, int replace)
 	return (spank_job_control_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
 }
 
+int unsetenv_local(char *name)
+{
+	unsetenv(name);
+}
+
 int unsetenv_remote(spank_t sp, char *name)
 {
     if (name == NULL) {
