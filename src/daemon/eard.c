@@ -224,7 +224,7 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 			error("Error creating ear communicator for requests %s\n",strerror(errno));
 		}
 	}
-	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IRUSR|S_IWGRP|S_IROTH|S_IWOTH);
+	chmod(ear_commreq,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 }
 
 void connect_service(int req,application_t *new_app)
