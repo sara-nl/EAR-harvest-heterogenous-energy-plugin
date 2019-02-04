@@ -76,6 +76,9 @@ typedef struct file_chkp {
 int file_is_regular(const char *path);
 
 /** */
+ssize_t file_size(char *path);
+
+/** */
 state_t file_read(const char *path, char *buffer, size_t size);
 
 /** */

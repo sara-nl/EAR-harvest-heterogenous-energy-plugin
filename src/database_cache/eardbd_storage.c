@@ -225,7 +225,7 @@ static void insert_apps_mpi()
 	}
 
 	metrics_insert_start(i_appsm);
-	db_batch_insert_applications(typ_alloc[i_appsm], sam_index[i_appsm]);
+	db_batch_insert_applications((application_t *) typ_alloc[i_appsm], sam_index[i_appsm]);
 	metrics_insert_stop(i_appsm, sam_index[i_appsm]);
 }
 
@@ -238,7 +238,7 @@ static void insert_apps_non_mpi()
 	}
 
 	metrics_insert_start(i_appsn);
-	db_batch_insert_applications_no_mpi(typ_alloc[i_appsn], sam_index[i_appsn]);
+	db_batch_insert_applications_no_mpi((application_t *) typ_alloc[i_appsn], sam_index[i_appsn]);
 	metrics_insert_stop(i_appsn, sam_index[i_appsn]);
 }
 
@@ -251,7 +251,7 @@ static void insert_apps_learning()
 	}
 
 	metrics_insert_start(i_appsl);
-	db_batch_insert_applications_learning(typ_alloc[i_appsl], sam_index[i_appsl]);
+	db_batch_insert_applications_learning((application_t *) typ_alloc[i_appsl], sam_index[i_appsl]);
 	metrics_insert_stop(i_appsl, sam_index[i_appsl]);
 }
 
@@ -264,7 +264,7 @@ static void insert_loops()
 	}
 
 	metrics_insert_start(i_loops);
-	db_batch_insert_loops(typ_alloc[i_loops], sam_index[i_loops]);
+	db_batch_insert_loops((loop_t *) typ_alloc[i_loops], sam_index[i_loops]);
 	metrics_insert_stop(i_loops, sam_index[i_loops]);
 }
 
@@ -277,7 +277,7 @@ static void insert_energy()
 	}
 
 	metrics_insert_start(i_enrgy);
-	db_batch_insert_periodic_metrics(typ_alloc[i_enrgy], sam_index[i_enrgy]);
+	db_batch_insert_periodic_metrics((periodic_metric_t *) typ_alloc[i_enrgy], sam_index[i_enrgy]);
 	metrics_insert_stop(i_enrgy, sam_index[i_enrgy]);
 }
 
@@ -292,7 +292,7 @@ static void insert_aggregations()
 	}
 
 	metrics_insert_start(i_aggrs);
-	db_batch_insert_periodic_aggregations(typ_alloc[i_aggrs], sam_index[i_aggrs]);
+	db_batch_insert_periodic_aggregations((periodic_aggregation_t *) typ_alloc[i_aggrs], sam_index[i_aggrs]);
 	metrics_insert_stop(i_aggrs, sam_index[i_aggrs]);
 }
 
@@ -305,7 +305,7 @@ static void insert_events()
 	}
 
 	metrics_insert_start(i_evnts);
-	db_batch_insert_ear_event(typ_alloc[i_evnts], sam_index[i_evnts]);
+	db_batch_insert_ear_event((ear_event_t *) typ_alloc[i_evnts], sam_index[i_evnts]);
 	metrics_insert_stop(i_evnts, sam_index[i_evnts]);
 }
 
