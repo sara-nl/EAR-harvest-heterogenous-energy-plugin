@@ -29,10 +29,11 @@
 
 #ifndef _EAR_TYPES_JOB
 #define _EAR_TYPES_JOB
-#include <stdint.h>
 #include <time.h>
-#include <common/types/generic.h>
+#include <stdint.h>
 #include <common/config.h>
+#include <common/types/generic.h>
+#include <common/output/verbose.h>
 
 
 

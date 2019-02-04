@@ -30,7 +30,9 @@
 #ifndef _EAR_TYPES_COEFFICIENT
 #define _EAR_TYPES_COEFFICIENT
 
+#include <common/config.h>
 #include <common/types/generic.h>
+#include <common/output/verbose.h>
 
 typedef struct coefficient
 {
