@@ -5,9 +5,9 @@
 #include <string.h>
 #include <common/config.h>
 
-int verb_channel	__attribute__((weak))=2;
-int warn_channel	__attribute__((weak))=2;
-int verb_level		__attribute__((weak))=0;
+int verb_channel	__attribute__((weak)) = 2;
+int warn_channel	__attribute__((weak)) = 2;
+int verb_level		__attribute__((weak)) = 0;
 
 #define verbose(v, ...) \
 	if (v <= verb_level) { \
@@ -19,7 +19,7 @@ int verb_level		__attribute__((weak))=0;
 	verbose(v, __VA_ARGS__)
 
 #if SHOW_WARNINGS0
-#define warning(...) dprintf(warn_channel, __VA_ARGS__); 
+#define warning(...) dprintf(warn_channel, __VA_ARGS__);
 #else
 #define warning(...)
 #endif
@@ -29,6 +29,5 @@ int verb_level		__attribute__((weak))=0;
 #else
 #define warning1(...)
 #endif
-
 
 #endif //EAR_VERBOSE_H

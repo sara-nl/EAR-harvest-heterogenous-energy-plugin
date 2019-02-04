@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <string.h>
 
-int err_channel    __attribute__((weak))=2;
+int err_channel    __attribute__((weak)) = 2;
+
 #if SHOW_ERRORS
-#define error(...) dprintf(err_channel, __VA_ARGS__); 
+#define error(...) \
+	dprintf(err_channel, __VA_ARGS__); \
+	dprintf(verb_channel, "\n");
 #else
 #define error(...)
 #endif
-
 
 #endif //EAR_ERROR_H

@@ -274,24 +274,24 @@ void report_application_data(application_t *app)
 	strftime(etmpi, sizeof(etmpi), "%c", tmp);
 
 
-	fprintf(stderr,"----------------------------------- Application Summary[%s] --\n",app->node_id);
-	fprintf(stderr,"-- App id: %s, user id: %s, job id: %lu.%lu", app->job.app_id, app->job.user_id, app->job.id,app->job.step_id);
-	fprintf(stderr,"   procs: %lu  acc %s\n", app->job.procs,app->job.user_acc);
-	fprintf(stderr,"   start time %s end time %s start mpi %s end mpi %s\n",st,et,stmpi,etmpi);
-	fprintf(stderr,"-- power_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->power_sig.time, pdef_f, pavg_f);
-	fprintf(stderr,"DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->power_sig.DC_power, app->power_sig.DRAM_power,
+	verbose(VTYPE,"----------------------------------- Application Summary[%s] --\n",app->node_id);
+	verbose(VTYPE,"-- App id: %s, user id: %s, job id: %lu.%lu", app->job.app_id, app->job.user_id, app->job.id,app->job.step_id);
+	verbose(VTYPE,"   procs: %lu  acc %s\n", app->job.procs,app->job.user_acc);
+	verbose(VTYPE,"   start time %s end time %s start mpi %s end mpi %s\n",st,et,stmpi,etmpi);
+	verbose(VTYPE,"-- power_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->power_sig.time, pdef_f, pavg_f);
+	verbose(VTYPE,"DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->power_sig.DC_power, app->power_sig.DRAM_power,
 			app->power_sig.PCK_power);
-	fprintf(stderr,"\tmax_DC_power/min_DC_power: %0.3lf/%0.3lf (W)\n",app->power_sig.max_DC_power,app->power_sig.min_DC_power);
+	verbose(VTYPE,"\tmax_DC_power/min_DC_power: %0.3lf/%0.3lf (W)\n",app->power_sig.max_DC_power,app->power_sig.min_DC_power);
 	if (app->is_mpi){
 
-		fprintf(stderr,"-- mpi_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
-		fprintf(stderr,"   procs: %lu (s)\n", app->job.procs);
-		fprintf(stderr,"\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
+		verbose(VTYPE,"-- mpi_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
+		verbose(VTYPE,"   procs: %lu (s)\n", app->job.procs);
+		verbose(VTYPE,"\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
 				app->signature.GBS, app->signature.Gflops);
-		fprintf(stderr,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power,
+		verbose(VTYPE,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power,
 				app->signature.PCK_power);
 	}
-	fprintf(stderr,"-----------------------------------------------------------------------------------------------\n");
+	verbose(VTYPE,"-----------------------------------------------------------------------------------------------\n");
 }
 
 void report_mpi_application_data(application_t *app)
@@ -301,17 +301,17 @@ void report_mpi_application_data(application_t *app)
 	float pavg_f = ((double) app->power_sig.avg_f) / 1000000.0;
 	float pdef_f = ((double) app->power_sig.def_f) / 1000000.0;
 
-	fprintf(stderr,"---------------------------------------------- Application Summary [%s] --\n",app->node_id);
-	fprintf(stderr,"-- App id: %s, user id: %s, job id: %lu.%lu", app->job.app_id, app->job.user_id, app->job.id,app->job.step_id);
-	fprintf(stderr,"   acc %s\n", app->job.user_acc);
+	verbose(VTYPE,"---------------------------------------------- Application Summary [%s] --\n",app->node_id);
+	verbose(VTYPE,"-- App id: %s, user id: %s, job id: %lu.%lu", app->job.app_id, app->job.user_id, app->job.id,app->job.step_id);
+	verbose(VTYPE,"   acc %s\n", app->job.user_acc);
 	if (app->is_mpi){
 
-		fprintf(stderr,"-- mpi_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
-		fprintf(stderr,"   tasks: %lu \n", app->job.procs);
-		fprintf(stderr,"\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
+		verbose(VTYPE,"-- mpi_sig: E. time: %0.3lf (s), nom freq: %0.3f (MHz), avg freq: %0.3f (MHz), ", app->signature.time, def_f, avg_f);
+		verbose(VTYPE,"   tasks: %lu \n", app->job.procs);
+		verbose(VTYPE,"\tCPI/TPI: %0.3lf/%0.3lf, GB/s: %0.3lf, GFLOPS: %0.3lf, ", app->signature.CPI, app->signature.TPI,
 				app->signature.GBS, app->signature.Gflops);
-		fprintf(stderr,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W) GFlops/Watts %.3lf\n", app->signature.DC_power, app->signature.DRAM_power,
+		verbose(VTYPE,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W) GFlops/Watts %.3lf\n", app->signature.DC_power, app->signature.DRAM_power,
 				app->signature.PCK_power,app->signature.Gflops/app->signature.DC_power);
 	}
-	fprintf(stderr,"-----------------------------------------------------------------------------------------------\n");
+	verbose(VTYPE,"-----------------------------------------------------------------------------------------------\n");
 }

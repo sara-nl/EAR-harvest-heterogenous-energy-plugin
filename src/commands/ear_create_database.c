@@ -95,7 +95,11 @@ void run_query(MYSQL *connection, char *query)
 void create_user(MYSQL *connection, char *db_name, char *db_user)
 {
     char query[256];
+    sprintf(query, "CREATE USER '%s'@'%%'", db_user);
+    run_query(connection, query);
     sprintf(query, "GRANT INSERT, SELECT ON %s.* TO '%s'@'%%'", db_name, db_user);
+    run_query(connection, query);
+    sprintf(query, "FLUSH PRIVILEGES");
     run_query(connection, query);
 }
 

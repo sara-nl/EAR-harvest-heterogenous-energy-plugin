@@ -125,19 +125,6 @@ extern int eard_exst;
  *   while in SRUN is defined as 'S_CTX_LOCAL'. So in remote context some
  *   control have to be added.
  *
- * Environment variables list:
- *   Var                                    | Opt | Local | Local Job | Remote | Remote PU
- * ---------------------------------------------------------------------------------------
- * - LD_PRELOAD                             |     | x     |           |        |
- * - SLURM_CPU_FREQ_REQ                     |     |       | x*        |        |
- * - SLURM_NNODES                           |     |       | x         |        |
- * - SLURM_JOB_ID							|     |       | x         |        |
- * - SLURM_STEP_ID							|     |       | x         |        | 
- * - SLURM_JOB_USER							|     |       |           |        | x
- * - SLURM_JOB_NAME							|     |       | x         |        | 
- * - SLURM_JOB_ACCOUNT						|     |       | x         |        | 
- * - SLURM_LAST_LOCAL_CONTEXT
- *
  */
 
 static void remote_print_environment(spank_t sp) 
@@ -161,13 +148,11 @@ static void remote_print_environment(spank_t sp)
     plug_verbose_0("memlock size limit test (res %d, curr: %lld, max: %lld)",
                  r_mem, (long long) mem.rlim_cur, (long long) mem.rlim_max);
 
-    printenv_remote(sp, "EAR_PLUGIN");
-    printenv_remote(sp, "EAR_PLUGIN_VERBOSE");
-    printenv_remote(sp, "EAR_LIBRARY");
-    printenv_remote(sp, "EAR_LIBRARY_VERBOSE");
-    printenv_remote(sp, "EAR_USER");
-    printenv_remote(sp, "EAR_GROUP");
+	printenv_remote(sp, "EAR_PLUGIN");
+	printenv_remote(sp, "EAR_PLUGIN_VERBOSE");
+	printenv_remote(sp, "EAR_LIBRARY");
     // POLICIES
+	printenv_remote(sp, "EAR_LIBRARY_VERBOSE");
     printenv_remote(sp, "EAR_LEARNING_PHASE");
     printenv_remote(sp, "EAR_POWER_POLICY");
     printenv_remote(sp, "EAR_P_STATE");
@@ -181,8 +166,14 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "EAR_APP_NAME");
     printenv_remote(sp, "EAR_ENERGY_TAG");
     // LOADER
-    printenv_remote(sp, "LD_PRELOAD");
-    printenv_remote(sp, "LD_LIBRARY_PATH");
+	printenv_remote(sp, "LD_PRELOAD");
+	printenv_remote(sp, "LD_LIBRARY_PATH");
+	// OTHERS
+	printenv_remote(sp, "EAR_USER");
+	printenv_remote(sp, "EAR_GROUP");
+	printenv_remote(sp, "PLG_PATH_PFX");
+	printenv_remote(sp, "PLG_PATH_TMP");
+	printenv_remote(sp, "PLG_LST_CTX");
     // SLURM
     printenv_remote(sp, "SLURM_CPU_FREQ_REQ");
     printenv_remote(sp, "SLURM_NNODES");
@@ -193,11 +184,96 @@ static void remote_print_environment(spank_t sp)
     printenv_remote(sp, "SLURM_JOB_USER");
     printenv_remote(sp, "SLURM_JOB_NAME");
     printenv_remote(sp, "SLURM_JOB_ACCOUNT");
-    printenv_remote(sp, "SLURM_LAST_LOCAL_CONTEXT");
-    // PLUGSTACK
-    printenv_remote(sp, "PLUGSTACK_PFX");
-    printenv_remote(sp, "PLUGSTACK_TMP");
 }
+
+/*
+ * Environment variables list:
+ *	Var								prop | lib | sav | upd | new | cln |
+ * ---------------------------------------------------------------------------------------
+ *	EAR_PLUGIN						x    | -   | -   | -   | -   | -   |
+ *	EAR_PLUGIN_VERBOSE				x    | -   | -   | -   | -   | -   |
+ *	EAR_LIBRARY						x    | -   | -   | -   | -   | -   |
+ *	EAR_LIBRARY_VERBOSE				x    | -   | -   | -   | -   | -   |
+ * ---------------------------------------------------------------------------------------
+ *	EAR_LEARNING_PHASE				o    | x   | -   | -   | -   | x   |
+ *	EAR_POWER_POLICY				o    | x   | -   | -   | -   | x   |
+ *	EAR_POWER_POLICY_TH				o    | x   | -   | -   | -   | x   |
+ *	EAR_P_STATE						-    | x   | -   | -   | -   | x   |
+ *	EAR_FREQUENCY					o    | x   | -   | -   | -   | x   |
+ *	EAR_MIN_PERFORMANCE_EF...		-    | x   | -   | -   | -   | x   |
+ *	EAR_PERFORMANCE_PEN...			o    | -   | -   | -   | -   | x   |
+ *	EAR_TRACE_PATH					o    | x   | -   | -   | -   | x   |
+ *	EAR_MPI_DIST					o    | x   | -   | -   | -   | x   |
+ *	EAR_USER_DB_PATHNAME			o    | x   | -   | -   | -   | x   |
+ *	EAR_ENERGY_TAG					o    | -   | -   | -   | -   | x   |
+ *	EAR_APP_NAME					-    | x   | -   | o   | -   | x   |
+ *	EAR_TMP							-    | x   | -   | o   | -   | x   |
+ * ---------------------------------------------------------------------------------------
+ *	PLG_LEARNING_PHASE				x    | -   | -   | -   | x   | -   |
+ *	PLG_POWER_POLICY				x    | -   | -   | -   | x   | -   |
+ *	PLG_POWER_POLICY_TH				x    | -   | -   | -   | x   | -   |
+ *	PLG_P_STATE						x    | -   | -   | -   | x   | -   |
+ *	PLG_FREQUENCY					x    | -   | -   | -   | x   | -   |
+ *	PLG_MIN_PERFORMANCE_EF...		x    | -   | -   | -   | x   | -   |
+ *	PLG_PERFORMANCE_PEN...			x    | -   | -   | -   | x   | -   |
+ *	PLG_TRACE_PATH					x    | -   | -   | -   | x   | -   |
+ *	PLG_MPI_DIST					x    | -   | -   | -   | x   | -   |
+ *	PLG_USER_DB_PATHNAME			x    | -   | -   | -   | x   | -   |
+ *	PLG_ENERGY_TAG					x    | -   | -   | -   | x   | -   |
+ *	PLG_APP_NAME					x    | -   | -   | -   | x   | -   |
+ *	PLG_TMP							x    | -   | -   | -   | x   | -   |
+ * ---------------------------------------------------------------------------------------
+ *	EAR_USER						-    | -   | -   | x   | -   | -   |
+ *	EAR_GROUP						-    | -   | -   | x   | -   | -   |
+ * ---------------------------------------------------------------------------------------
+ *	LD_PRELOAD						-    | x   | x   | -   | -   | x   |
+ * ---------------------------------------------------------------------------------------
+ *	PLG_PATH_PFX					-    | -   | -   | x   | -   | -   |
+ *	PLG_PATH_TMP					-    | -   | -   | x   | -   | -   |
+ * ---------------------------------------------------------------------------------------
+ *	PLG_LST_CTX						-    | -   | -   | x   | -   | -   |
+ *	---------------------------------------------------------------------------------------
+ *	EARGMD_CONNECTED				xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ */
+
+void _local_init_environment(spank_t sp, int ac, char **av)
+{
+	// Unsetting options
+	unsetenv_local("EAR_LEARNING_PHASE");
+	unsetenv_local("EAR_POWER_POLICY");
+	unsetenv_local("EAR_POWER_POLICY_TH");
+	unsetenv_local("EAR_P_STATE");
+	unsetenv_local("EAR_FREQUENCY");
+	unsetenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
+	unsetenv_local("EAR_PERFORMANCE_PENALTY");
+	unsetenv_local("EAR_TRACE_PATH");
+	unsetenv_local("EAR_MPI_DIST");
+	unsetenv_local("EAR_USER_DB_PATHNAME");
+	unsetenv_local("EAR_ENERGY_TAG");
+	unsetenv_local("EAR_APP_NAME");
+	unsetenv_local("EAR_TMP");
+	// Unsetting loader
+	unsetenv_local("LD_PRELOAD");
+
+	#define REPLENV(name) \
+		replenv_local("PLG_" name, "EAR_" name);
+
+	// Replacing options
+	REPLENV("LEARNING_PHASE");
+	REPLENV("POWER_POLICY");
+	REPLENV("POWER_POLICY_TH");
+	REPLENV("P_STATE");
+	REPLENV("FREQUENCY");
+	REPLENV("MIN_PERFORMANCE_EFFICIENCY_GAIN");
+	REPLENV("PERFORMANCE_PENALTY");
+	REPLENV("TRACE_PATH");
+	REPLENV("MPI_DIST");
+	REPLENV("USER_DB_PATHNAME");
+	REPLENV("ENERGY_TAG");
+	REPLENV("APP_NAME");
+	REPLENV("TMP");
+}
+
 
 /*
  *
@@ -218,7 +294,8 @@ void _remote_library_disable(spank_t sp)
 	}
 }
 
-void _local_plugin_enable() {
+void _local_plugin_enable()
+{
 	setenv_local("EAR_PLUGIN", "1", 1);
 }
 
@@ -295,7 +372,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			found_tmpdir = 1;
 
 			plug_verbose(sp, 2, "plugstack found temporal files in path '%s'", tmp_dir);
-			setenv_local("PLUGSTACK_TMP", tmp_dir, 1);
+			setenv_local("PLG_PATH_TMP", tmp_dir, 1);
 		}
 		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
 		{
@@ -303,7 +380,7 @@ int _read_plugstack(spank_t sp, int ac, char **av)
 			found_predir = 1;
 
 			plug_verbose(sp, 2, "plugstack found prefix in path '%s'", pre_dir);
-			setenv_local("PLUGSTACK_PFX", pre_dir, 1);
+			setenv_local("PLG_PATH_PFX", pre_dir, 1);
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
 		{
@@ -377,7 +454,7 @@ int _set_ld_preload(spank_t sp)
 	buffer1[0] = '\0';
 	buffer2[0] = '\0';
 
-	if (getenv_local("PLUGSTACK_PFX", &ear_root_dir) == 0)
+	if (getenv_local("PLG_PATH_PFX", &ear_root_dir) == 0)
 	{
 		plug_verbose(sp, 2, "Error, wrong environment for setting LD_PRELOAD");
 		return ESPANK_ERROR;
@@ -414,16 +491,14 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 	_opt_register(sp);
 
 	if (spank_context() == S_CTX_SRUN) {
-		setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SRUN", 1);
+		setenv_local("PLG_LST_CTX", "SRUN", 1);
 	}
 	if (spank_context() == S_CTX_SBATCH) {
-		setenv_local("SLURM_LAST_LOCAL_CONTEXT", "SBATCH", 1);
+		setenv_local("PLG_LST_CTX", "SBATCH", 1);
 	}
-	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH)
-	{
+	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH) {
 		_local_plugin_enable();
 	}
-
 
 	return ESPANK_SUCCESS;
 }
@@ -432,29 +507,29 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 {
     plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
 
-        // No need of testing the context
-        if(!_is_plugin_enabled(sp)) {
-                return ESPANK_SUCCESS;
-        }
+	// No need of testing the context
+	if(!_is_plugin_enabled(sp)) {
+		return ESPANK_SUCCESS;
+	}
 
-        // Reading plugstack.conf
-        if (_read_plugstack(sp, ac, av) != ESPANK_SUCCESS) {
-                _local_plugin_disable();
-                return ESPANK_SUCCESS;
-        }
+	_local_init_environment(sp, ac, av);
 
-        // Filling user data
-        if (_read_user_info(sp) != ESPANK_SUCCESS) {
-                _local_library_disable();
-        }
+	// Reading plugstack.conf
+	if (_read_plugstack(sp, ac, av) != ESPANK_SUCCESS) {
+		_local_plugin_disable();
+		return ESPANK_SUCCESS;
+	}
 
-        // EARGMD contact
-        // local_eargmd_report_start(sp);
+	// Filling user data
+	if (_read_user_info(sp) != ESPANK_SUCCESS) {
+		_local_library_disable();
+		return ESPANK_SUCCESS;
+	}
 
-        //
-        if (isenv_local("EAR_LIBRARY", "1") && spank_context() == S_CTX_SRUN) {
-                _set_ld_preload(sp);
-        }
+	//
+	if (spank_context() == S_CTX_SRUN && isenv_local("EAR_LIBRARY", "1")) {
+		_set_ld_preload(sp);
+	}
 
     return (ESPANK_SUCCESS);
 }
@@ -466,12 +541,18 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	if(!_is_plugin_enabled(sp)) {
 		return (ESPANK_SUCCESS);
 	}
-	
+
+	//
 	if (spank_context() == S_CTX_REMOTE)
-	{
-		remote_eard_report_start(sp);
-		//
-		remote_print_environment(sp);
+  	{
+        	if (remote_eard_report_start(sp) == ESPANK_SUCCESS)
+        	{
+            		if (isenv_remote(sp, "EAR_LIBRARY", "1") && isenv_remote(sp, "PLG_LST_CTX", "SRUN")) {
+                		remote_read_shared_data_set_environment(sp);
+			}
+		}
+
+        	remote_print_environment(sp);
 	}
 	
 	return (ESPANK_SUCCESS);
@@ -484,7 +565,7 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 	spank_err_t err;
 	int status = 0;
 
-	//
+	// Not needed to test if the plugin is enabled
 	if (eard_exst == 0)
 	{
 		err = spank_get_item (sp, S_TASK_EXIT_STATUS, &status);
@@ -501,14 +582,7 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "slurm_spank_exit");
 
-	if(!_is_plugin_enabled(sp)) {
-		return ESPANK_SUCCESS;
-	}
-
-	if (spank_context() == S_CTX_SRUN) {
-		//local_eargmd_report_finish(sp);
-	}
-
+	// Not needed to test if the plugin is enabled
 	if (spank_context() == S_CTX_REMOTE) {
 		remote_eard_report_finish(sp);
 	}

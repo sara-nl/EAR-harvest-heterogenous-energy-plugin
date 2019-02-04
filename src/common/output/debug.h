@@ -4,13 +4,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#define DEBUG_CHANNEL stderr
+int debug_channel	__attribute__((weak)) = 2;
 
-#ifdef DEBUG_EAR
+#ifdef SHOW_DEBUGS
 #define debug(...) \
-        fprintf(DEBUG_CHANNEL, "%s: ", __FUNCTION__); \
-        fprintf(DEBUG_CHANNEL, __VA_ARGS__); \
-        fprintf(DEBUG_CHANNEL, "\n");
+        dprintf(debug_channel, "%s: ", __FUNCTION__); \
+        dprintf(debug_channel, __VA_ARGS__); \
+        dprintf(debug_channel, "\n");
 #else
 #define debug(...)
 #endif

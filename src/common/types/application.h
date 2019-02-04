@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <common/config.h>
+#include <common/output/verbose.h>
 #include <common/types/job.h>
 #include <common/types/signature.h>
 #include <common/types/power_signature.h>

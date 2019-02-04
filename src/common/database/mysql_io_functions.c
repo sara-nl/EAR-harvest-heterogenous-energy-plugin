@@ -123,10 +123,13 @@
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
                                     "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
+int autoincrement_offset = 1;
+
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
     verbose(VMYSQL, "MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
+    printf("MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
     return EAR_MYSQL_STMT_ERROR;
 }
@@ -249,7 +252,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
         verbose(VMYSQL,"Unknown error when writing power_signature to database.\n");
 
     for (i = 0; i < num_apps; i++)
-        pow_sigs_ids[i] = pow_sig_id + i;
+        pow_sigs_ids[i] = pow_sig_id + i*autoincrement_offset;
 
 
     //inserting signatures (if the application is mpi)
@@ -263,7 +266,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
         verbose(VMYSQL,"Unknown error when writing signature to database. (%d)\n",sig_id);
 
     for (i = 0; i < num_apps; i++)
-        sigs_ids[i] = sig_id + i;
+        sigs_ids[i] = sig_id + i*autoincrement_offset;
     
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
@@ -463,7 +466,7 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
         verbose(VMYSQL,"Unknown error when writing power_signature to database.\n");
 
     for (i = 0; i < num_apps; i++)
-        pow_sigs_ids[i] = pow_sig_id + i;
+        pow_sigs_ids[i] = pow_sig_id + i*autoincrement_offset;
 
 
     //binding preparations
@@ -708,7 +711,7 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
     long long *sigs_ids = calloc(num_loops, sizeof(long long));
 
     for (i = 0; i < num_loops; i++)
-        sigs_ids[i] = sig_id+i;
+        sigs_ids[i] = sig_id + i*autoincrement_offset;
 
     for (i = 0; i < num_loops; i++)
     {
@@ -1845,6 +1848,7 @@ int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggrega
 
     return EAR_SUCCESS;
 }
+
 int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);

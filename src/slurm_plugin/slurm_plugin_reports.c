@@ -58,14 +58,14 @@ unsigned int eargmd_conn;
 extern char buffer1[SZ_PATH];
 extern char buffer2[SZ_PATH];
 
-static int _read_shared_data_remote(spank_t sp)
+int remote_read_shared_data_set_environment(spank_t sp)
 {
-	plug_verbose(sp, 2, "function _read_shared_data_remote");
+	plug_verbose(sp, 2, "function remote_read_shared_data_set_environment");
 
 	settings_conf_t *conf_sett = NULL;
 
 	// Getting TMP path
-	getenv_remote(sp, "PLUGSTACK_TMP", buffer1, sizeof(buffer1));
+	getenv_remote(sp, "PLG_PATH_TMP", buffer1, sizeof(buffer1));
 
 	// Opening settings
 	get_settings_conf_path(buffer1, buffer2);
@@ -125,7 +125,7 @@ static int _read_shared_data_remote(spank_t sp)
 	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
 		setenv_remote(sp, "EAR_APP_NAME", buffer2, 1);
 	}
-	if (getenv_remote(sp, "PLUGSTACK_TMP", buffer2, sizeof(buffer2)) == 1) {
+	if (getenv_remote(sp, "PLG_PATH_TMP", buffer2, sizeof(buffer2)) == 1) {
 		setenv_remote(sp, "EAR_TMP", buffer2, 1);
 	}
 
@@ -155,21 +155,10 @@ int remote_eard_report_start(spank_t sp)
 	services_conf_t *conf_serv = NULL;
 	ulong *frequencies;
 	int n_frequencies;
-	spank_err_t aux_res;
 	uint32_t aux_val;
 
-#if PRODUCTION
-	return ESPANK_SUCCESS;
-#endif
-
-/*
-	if (isenv_remote(sp, "EARD_CONNECTED", "1")) {
-		return ESPANK_SUCCESS;
-	}
-*/
-
 	// General variables
-	getenv_remote(sp, "PLUGSTACK_TMP", buffer1, sizeof(buffer1));
+	getenv_remote(sp, "PLG_PATH_TMP", buffer1, sizeof(buffer1));
 	gethostname(eard_host, SZ_NAME_MEDIUM);
 
 	// Opening shared services memory
@@ -178,7 +167,7 @@ int remote_eard_report_start(spank_t sp)
 
 	if (conf_serv == NULL) {
 		plug_verbose(sp, 2, "ERROR while reading the shared services memory in '%s'", eard_host);
-        	return (ESPANK_ERROR);
+        	return ESPANK_ERROR;
 	}
 
 	// Getting EARD connection variables
@@ -217,18 +206,6 @@ int remote_eard_report_start(spank_t sp)
 	} else {
 		eard_appl.job.step_id = NO_VAL;
 	}
-/*
-	if (!getenv_remote(sp, "SLURM_JOB_ID", buffer1, SZ_NAME_SHORT)) {
-		eard_appl.job.id = 0;
-	} else {
-		eard_appl.job.id = atoi(buffer1);
-	}
-	if (!getenv_remote(sp, "SLURM_STEP_ID", buffer1, SZ_NAME_SHORT)) {
-		eard_appl.job.step_id = 0;
-	} else {
-		eard_appl.job.step_id = atoi(buffer1);
-	}
-*/
 	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", eard_appl.job.user_acc, SZ_NAME_SHORT)) {
 		strcpy(eard_appl.job.user_acc, "");
 	}
@@ -273,35 +250,35 @@ int remote_eard_report_start(spank_t sp)
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
 
+	// Assuming the EARD connection will go fine
+	eard_conn = 1;
+
 	// Connection
-	if (eards_remote_connect(eard_host, eard_port) < 0) {
+	if (eards_remote_connect(eard_host, eard_port) < 0)
+	{
 		plug_verbose(sp, 2, "while connecting with EAR daemon");
+		eard_conn = 0;
 	}
-	if (!eards_new_job(&eard_appl)) {
+	if (eard_conn && !eards_new_job(&eard_appl))
+	{
 		plug_verbose(sp, 2, "while connecting with EAR daemon");
+		eard_conn = 0;
 	}
 	eards_remote_disconnect();
 
 	// Shared memory reading for job information
 	dettach_frequencies_shared_area();
 
-	// Informing that this report has to be finished
-	eard_conn = 1;
-
-	// Informing that no nested process has to connect to EARD again
-	setenv_remote(sp, "EARD_CONNECTED", "1", 1);
-
-	// Getting the new information stored in shared memory
-	return _read_shared_data_remote(sp);
+	if (!eard_conn) {
+		return ESPANK_ERROR;
+	}
+	
+	return ESPANK_SUCCESS;
 }
 
 int remote_eard_report_finish(spank_t sp)
 {
 	plug_verbose(sp, 2, "function remote_eard_report_finish");
-
-#if PRODUCTION
-	return ESPANK_SUCCESS;
-#endif
 
 	// Not connected before, so doesn't need to be finished
 	if (!eard_conn) {
@@ -328,10 +305,6 @@ int local_eargmd_report_start(spank_t sp)
 {
 	plug_verbose(sp, 2, "function local_eargmd_report_start");
 	char *c_eargmd_nods;
-
-#if PRODUCTION
-	return ESPANK_SUCCESS;
-#endif
 
 	// Not enabled
 	if (!eargmd_enbl || isenv_local("EARGMD_CONNECTED", "1")) {
@@ -368,10 +341,6 @@ int local_eargmd_report_start(spank_t sp)
 int local_eargmd_report_finish(spank_t sp)
 {
 	plug_verbose(sp, 2, "function local_eargmd_report_finish");
-
-#if PRODUCTION
-	return (ESPANK_SUCCESS);
-#endif
 
 	// Not connected, so doesn't need to be finished
 	if (!eargmd_conn) {

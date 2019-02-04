@@ -73,7 +73,7 @@ void print_job_fd(int fd, job_t *job)
 	char job_buff[4096];
 	assert(job!=NULL);
 	if ((job->user_id==NULL) || (job->app_id==NULL) || (job->policy==NULL)){
-		fprintf(stderr,"print_job_fd some of the args are null\n");
+		verbose(VTYPE,"print_job_fd some of the args are null\n");
 		return;
 	}
 //    sprintf(job_buff, "%s;%s;%lu;%s;%s;%lf", job->user_id, job->group_id,job->id, job->app_id, job->policy, job->th);
@@ -89,9 +89,9 @@ void print_job_fd(int fd, job_t *job)
 /** Reports the content of the job into the stderr*/
 void report_job(job_t *job)
 {
-	fprintf(stderr,"Job: ID %lu step %lu user %s group %s name %s account %s etag %s\n",
+	verbose(VTYPE,"Job: ID %lu step %lu user %s group %s name %s account %s etag %s\n",
 	job->id,job->step_id,job->user_id,job->group_id,job->app_id,job->user_acc,job->energy_tag);
-	fprintf(stderr,"start time %ld end time %ld start mpi %ld end mpi %ld policy %s th %lf def_f %lu\n",
+	verbose(VTYPE,"start time %ld end time %ld start mpi %ld end mpi %ld policy %s th %lf def_f %lu\n",
 	job->start_time,job->end_time,job->start_mpi_time,job->end_mpi_time,job->policy,job->th,job->def_f);
 	
 }
