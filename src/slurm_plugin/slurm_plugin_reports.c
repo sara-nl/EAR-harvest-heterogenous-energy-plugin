@@ -155,7 +155,6 @@ int remote_eard_report_start(spank_t sp)
 	services_conf_t *conf_serv = NULL;
 	ulong *frequencies;
 	int n_frequencies;
-	spank_err_t aux_res;
 	uint32_t aux_val;
 
 	// General variables
