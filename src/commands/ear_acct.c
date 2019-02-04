@@ -579,10 +579,12 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     query_filters = 0;
     if (job_id >= 0)
         add_int_filter(query, "id", job_id);
+    if (step_id >= 0)
+        add_int_filter(query, "Jobs.step_id", step_id);
     if (user != NULL)
         add_string_filter(query, "user_id", user);
     
-    strcat(query, ") order by Jobs.end_time desc");
+    strcat(query, ") order by Jobs.id desc, Jobs.step_id desc, Jobs.end_time desc");
 
     if (verbose) fprintf(stderr, "Retrieving applications\n");
     num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
