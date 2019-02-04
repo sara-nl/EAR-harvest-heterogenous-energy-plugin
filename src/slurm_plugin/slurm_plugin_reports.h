@@ -30,6 +30,8 @@
 #ifndef EAR_SLURM_PLUGIN_REPORTS_H
 #define EAR_SLURM_PLUGIN_REPORTS_H
 
+int remote_read_shared_data_set_environment(spank_t sp);
+
 int remote_eard_report_start(spank_t sp);
 int remote_eard_report_finish(spank_t sp);
 

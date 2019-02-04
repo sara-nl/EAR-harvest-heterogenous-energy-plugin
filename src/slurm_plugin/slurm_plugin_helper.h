@@ -43,9 +43,9 @@
 	slurm_error("EARPLUG ERROR, " __VA_ARGS__);
 #define plug_warning(...) \
 	slurm_error("EARPLUG WARNING, " __VA_ARGS__);
-#define plug_nude(...) \
-	slurm_error("EARPLUG NUDE, " __VA_ARGS__);
+#define plug_nude(...)
 
+//
 int verbosity_test(spank_t sp, int level);
 
 // Environment
@@ -56,9 +56,11 @@ void print_remote_environment(spank_t sp);
 void printenv_remote(spank_t sp, char *name);
 void appendenv(char *destiny, char *source, int destiny_length);
 
+int replenv_local(char *env_old, char *env_new);
 int setenv_local(const char *name, const char *value, int replace);
 int setenv_remote(spank_t sp, char *name, char *value, int replace);
 int setenv_control(spank_t sp, char *name, char *value, int replace);
+int unsetenv_local(char *name);
 int unsetenv_remote(spank_t sp, char *name);
 int getenv_local(char *name, char **env);
 int getenv_remote(spank_t sp, char *name, char *value, int length);
