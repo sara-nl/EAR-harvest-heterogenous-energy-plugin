@@ -561,8 +561,8 @@ void main(int argc,char *argv[])
 			start_time=end_time-period_t1;
 	
     
-	    	if ( db_select_acum_energy_idx(  divisor, use_aggregation,&last_id.&result)<0){
-				error("Asing for last T1 energy period. Using aggregated %d.Last id =%u\n",use_aggregation,*last_id);
+	    	if ( db_select_acum_energy_idx(  divisor, use_aggregation,&last_id,&result)<0){
+				error("Asing for last T1 energy period. Using aggregated %d.Last id =%u\n",use_aggregation,last_id);
 			}
 	    	if (!result){ 
 				verbose(VGM+1,"No results in that period of time found\n");
