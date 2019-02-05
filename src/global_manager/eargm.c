@@ -80,6 +80,7 @@ uint use_aggregation;
 uint units;
 uint policy;
 uint divisor = 1;
+uint last_id=0;
 
 uint t1_expired=0;
 uint must_refill=0;
@@ -538,7 +539,7 @@ void main(int argc,char *argv[])
 	
 	time(&end_time);
 	start_time=end_time-period_t2;
-	result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
+	result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id);
 	fill_periods(result);
 	/*
 	*
@@ -558,7 +559,7 @@ void main(int argc,char *argv[])
 			start_time=end_time-period_t1;
 	
     
-	    	result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
+	    	result = db_select_acum_energy_idx(  divisor, use_aggregation,&last_id);
 	    	if (!result){ 
 				verbose(VGM+1,"No results in that period of time found\n");
 	    	}else{ 
@@ -570,8 +571,7 @@ void main(int argc,char *argv[])
 			new_energy_sample(result);
 			#if 0
 			/* we can use this approach for some debugging purposses, uncomment this code and comment total_energy_t2=compute_energy_t2() */
-			start_time=end_time-period_t2;
-    		result2 = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
+			start_time=end_time-period_t2result2 = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
 			total_energy_t2=result2;
 			#endif
 			energy_t1=result;
@@ -665,7 +665,8 @@ void main(int argc,char *argv[])
     		energy_consumed=malloc(sizeof(ulong)*aggregate_samples);
 		    time(&end_time);
     		start_time=end_time-period_t2;
-    		result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
+			last_id=0;
+    		result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id);
     		fill_periods(result);
 		}
 	}

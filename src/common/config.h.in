@@ -147,6 +147,7 @@
 #define VDBH 0
 
 #define VMETRICS 2
+#define VTYPE	2
 
 
 
