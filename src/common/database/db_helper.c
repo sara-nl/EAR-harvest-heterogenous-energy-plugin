@@ -684,9 +684,9 @@ ulong stmt_error(MYSQL *connection, MYSQL_STMT *statement)
     return -1;
 }
 
-#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/?, MAX(id) FROM Periodic_metrics WHERE end_time" \
+#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE end_time" \
                                 ">= ? AND end_time <= ? AND DC_energy <= %d"
-#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/?, MAX(id) FROM Periodic_aggregations WHERE end_time"\
+#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
 
 ulong db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index)
@@ -774,9 +774,9 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong divisor, char is
 }
 
 
-#define METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/?, MAX(id) FROM Periodic_metrics WHERE " \
+#define METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE " \
                                 "id > %d AND DC_energy <= %d"
-#define AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/?, MAX(id) FROM Periodic_aggregations WHERE "\
+#define AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE "\
                                 "id > %d ?"
 
 ulong db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index)
