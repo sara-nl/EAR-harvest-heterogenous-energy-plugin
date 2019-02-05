@@ -130,6 +130,8 @@
 /* USed in GM */
 #define VGM 0
 
+/* Used to print information of types */
+#define VTYPE 0
 
 /* Used to print the cluster_conf */
 #define VCCONF 0

@@ -684,12 +684,12 @@ ulong stmt_error(MYSQL *connection, MYSQL_STMT *statement)
     return -1;
 }
 
-#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? FROM Periodic_metrics WHERE end_time" \
+#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/?, MAX(id) FROM Periodic_metrics WHERE end_time" \
                                 ">= ? AND end_time <= ? AND DC_energy <= %d"
-#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? FROM Periodic_aggregations WHERE end_time"\
+#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/?, MAX(id) FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
 
-ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated)
+ulong db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index)
 {
     MYSQL *connection = mysql_init(NULL);
     char query[256];
@@ -750,11 +750,12 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
 
 
     //Result parameters
-    MYSQL_BIND res_bind[1];
+    MYSQL_BIND res_bind[2];
     memset(res_bind, 0, sizeof(res_bind));
-    res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
+    res_bind[0].buffer_type = res_bind[1].buffer_type = MYSQL_TYPE_LONGLONG;
     ulong result = 0;
     res_bind[0].buffer = &result;
+    res_bind[1].buffer = last_index;
 
     if (mysql_stmt_bind_param(statement, bind)) return stmt_error(connection, statement);
     if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(connection, statement);
@@ -770,8 +771,94 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char i
 
     return result;
 
+}
+
+
+#define METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/?, MAX(id) FROM Periodic_metrics WHERE " \
+                                "id > %d AND DC_energy <= %d"
+#define AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/?, MAX(id) FROM Periodic_aggregations WHERE "\
+                                "id > %d ?"
+
+ulong db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index)
+{
+    MYSQL *connection = mysql_init(NULL);
+    char query[256];
+
+    if (connection == NULL)
+    {
+        verbose(VDBH, "ERROR creating MYSQL object.");
+        return EAR_ERROR;
+    }
+
+    if (db_config == NULL)
+    {
+        verbose(VDBH, "Database configuration not initialized.");
+        return EAR_ERROR;
+    }
+
+    if (!mysql_real_connect(connection, db_config->ip, db_config->user, db_config->pass, db_config->database, db_config->port, NULL, 0))
+    {
+        verbose(VDBH, "ERROR connecting to the database: %s", mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement)
+    {
+        verbose(VDBH, "Error creating statement (%d): %s\n", mysql_errno(connection),
+                mysql_error(connection));
+        mysql_close(connection);
+        return -1;
+    }
+
+    if (is_aggregated)
+    {
+        sprintf(query, AGGREGATED_ID_SUM_QUERY, *last_index);
+        if (mysql_stmt_prepare(statement, query, strlen(query)))
+            return stmt_error(connection, statement);
+    }
+    else
+    {
+        sprintf(query, METRICS_ID_SUM_QUERY, MAX_ENERGY, *last_index);
+        if (mysql_stmt_prepare(statement, query, strlen(query)))
+            return stmt_error(connection, statement);
+    }
+
+    //Query parameters binding
+    MYSQL_BIND bind[1];
+    memset(bind, 0, sizeof(bind));
+
+    bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[0].is_unsigned = 1;
+
+    bind[0].buffer = (char *)&divisor;
+
+    //Result parameters
+    MYSQL_BIND res_bind[2];
+    memset(res_bind, 0, sizeof(res_bind));
+    res_bind[0].buffer_type = res_bind[1].buffer_type = MYSQL_TYPE_LONGLONG;
+    ulong result = 0;
+    res_bind[0].buffer = &result;
+    res_bind[1].buffer = last_index;
+
+    if (mysql_stmt_bind_param(statement, bind)) return stmt_error(connection, statement);
+    if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(connection, statement);
+    if (mysql_stmt_execute(statement)) return stmt_error(connection, statement);
+    if (mysql_stmt_store_result(statement)) return stmt_error(connection, statement);
+
+    int status = mysql_stmt_fetch(statement);
+    if (status != 0 && status != MYSQL_DATA_TRUNCATED)
+        result = -2;
+
+    mysql_stmt_close(statement);
+    mysql_close(connection);
+
+    return result;
 
 }
+
 
 int db_read_applications_query(application_t **apps, char *query)
 {
@@ -930,9 +1017,9 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
-        sprintf(query,  "SELECT Applications.* FROM Applications WHERE (job_id > %d AND node_id='%s') OR "\
-                        "(job_id = %d AND step_id > %d AND node_id = '%s') ORDER BY job_id LIMIT %d AND signature_id in ("\
-                        "SELECT id from Signatures where time > 30 AND DC_power > 100 AND DC_power < 1000)", 
+        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN Signatures ON signature_id = Signatures.id WHERE (job_id > %d AND node_id='%s') OR "\
+                        "(job_id = %d AND step_id > %d AND node_id = '%s') AND  "\
+                        " time > 60 AND DC_power > 100 AND DC_power < 1000 ORDER BY job_id LIMIT %d", 
                         current_job_id, node_name, current_job_id, current_step_id, node_name, max_apps);
     else
         sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
@@ -952,19 +1039,25 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
         current_job_id = (*apps)[num_apps - 1].job.id;
         current_step_id = (*apps)[num_apps - 1].job.step_id;
     }
-    else 
-    {
-        current_job_id = 0;
-        current_job_id = -1;
-    }
+    else if (num_apps == 0)
+        db_reset_counters();
+    else
+        verbose(VDBH, "EAR's mysql internal error: %d\n", num_apps);
     mysql_close(connection);
 	return num_apps;
+}
+
+void db_reset_counters()
+{
+    current_job_id = 0;
+    current_step_id = -1;
 }
 
 #define LEARNING_APPS_QUERY     "SELECT COUNT(*) FROM Learning_applications WHERE node_id = '%s'"
 //#define LEARNING_APPS_ALL_QUERY "SELECT COUNT(*) FROM Learning_applications"
 #define LEARNING_APPS_ALL_QUERY "SELECT COUNT(*) FROM (SELECT * FROM Learning_applications GROUP BY job_id, step_id) AS t1"
-#define APPS_QUERY              "SELECT COUNT(*) FROM Applications WHERE node_id = '%s'"
+#define APPS_QUERY              "SELECT COUNT(*) FROM Applications INNER JOIN Signatures ON signature_id = Signatures.id WHERE node_id = '%s' AND "\
+                                "time > 60 AND DC_power > 100 AND DC_power < 1000"
 #define APPS_ALL_QUERY          "SELECT COUNT(*) FROM (SELECT * FROM Applications GROUP BY job_id, step_id) AS t1"
 //#define APPS_ALL_QUERY          "SELECT COUNT(*) FROM Applications"
 

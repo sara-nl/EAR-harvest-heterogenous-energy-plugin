@@ -264,6 +264,9 @@ void job_end_powermon_app()
 	power_data_t app_power;
 	double exec_time;
 	time(&current_ear_app[ccontext]->app.job.end_time);
+	if (current_ear_app[ccontext]->app.job.end_time==current_ear_app[ccontext]->app.job.start_time){	
+		current_ear_app[ccontext]->app.job.end_time=current_ear_app[ccontext]->app.job.start_time+1;
+	}
 	// Get the energy
 	read_enegy_data(&c_energy);
 	compute_power(&current_ear_app[ccontext]->energy_init,&c_energy,&app_power);
