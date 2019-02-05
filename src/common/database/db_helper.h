@@ -74,7 +74,9 @@ int db_batch_insert_loops(loop_t *loops, int num_loops);
 /** Returns the accumulated energy (units depend on divisor, divisor=1 means mJ) for a given period.
 *   The is_aggregated parameter indicates if the data is to be retrieved from the aggregated table 
 *   or the individual one.*/
-ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated);
+ulong db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_aggregated, uint *last_index);
+
+ulong db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index);
 
 /** Reads applications from the normal DB or the learning DB depending on is_learning. It allocates 
 *   memory for apps. Returns the number of applications readed */
@@ -88,5 +90,7 @@ int db_run_query(char *query, char *user, char *passw);
 MYSQL_RES *db_run_query_result(char *query);
 
 int db_read_applications_query(application_t **apps, char *query);
+
+void db_reset_counters();
 
 #endif
