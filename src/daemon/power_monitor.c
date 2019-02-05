@@ -732,6 +732,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	}
 	#endif
 	#if DB_MYSQL
+    if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<MAX_ERROR_POWER)){
 	if (my_cluster_conf.eard.use_mysql)
 	{
 		if (!my_cluster_conf.eard.use_eardbd) {
@@ -753,6 +754,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 			}
 		}
 	}
+	}/*if ((my_current_power->avg_dc==0)...*/
 	#endif
 
 	return;
