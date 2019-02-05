@@ -27,20 +27,53 @@
  * *   The GNU LEsser General Public License is contained in the file COPYING
  * */
 
-#ifndef EAR_ERROR_H
-#define EAR_ERROR_H
 
-#include <stdio.h>
-#include <string.h>
+#ifndef _OUTCONF_H
+#define _OUTCONF_H
 
-int err_channel    __attribute__((weak)) = 2;
+/* LRZ_POLICY verbose level */
+#define SM_VERB 0
 
-#if SHOW_ERRORS
-#define error(...) \
-	dprintf(err_channel, __VA_ARGS__); \
-	dprintf(verb_channel, "\n");
-#else
-#define error(...)
+/* EARD VERBOSE constants */
+/* Used in eard_rapi.h */
+#define VCONNECT 1
+#define VMSG    3
+/* Used in eard.c */
+#define VCONF   1
+#define VEARD   2
+/* Used in power monitoring */
+#define VNODEPMON   1
+#define VJOBPMON    1
+/* Used in dynamic_configuration */
+#define VRAPI 2
+/* Used in eard_api.c */
+#define VAPI    2
+/* Used in checkpoint */
+#define VCHCK 2
+
+
+/* USed in GM */
+#define VGM 0
+
+
+/* Used to print the cluster_conf */
+#define VCCONF 0
+#define VPRIV 0
+
+/* Used in base mysql library calls. */
+#define VMYSQL 3
+/* Used in db_helper.c */
+#define VDBH 0
+
+
+#define VMETRICS 2
+#define VTYPE   2
+/* Specifies if warnings are shown or not */
+#define SHOW_WARNINGS0 1
+#define SHOW_WARNINGS1 1
+#define SHOW_ERRORS   1
+
+#define DYN_VERBOSE 2
+#define LRZ_VERBOSE_LEVEL 0
+
 #endif
-
-#endif //EAR_ERROR_H

@@ -27,7 +27,10 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 #include <linux/limits.h>
+#include <common/output/output_conf.h>
 
 // Emergency paths
 #define CPUPOWER_LIB_PATH   "@CPUPOWER_LIBDIR@"
@@ -101,58 +104,12 @@
 #define COORDINATE_FREQUENCIES 0
 
 //#define EAR_GUI
-#define DYN_VERBOSE 2
 #define SYSLOG_MSG 1
 
 
-#define LRZ_VERBOSE_LEVEL 0
 #define USE_EXT 0
 #define NW_EXT  "-opa"
 
 #define LRZ_POLICY 0
 
-#define SM_VERB 2
-
-/* EARD VERBOSE constants */
-/* Used in eard_rapi.h */
-#define VCONNECT 1
-#define VMSG    3
-/* Used in eard.c */
-#define VCONF   1
-#define VEARD   2
-/* Used in power monitoring */
-#define VNODEPMON   1
-#define VJOBPMON    1
-/* Used in dynamic_configuration */
-#define VRAPI 2
-/* Used in eard_api.c */
-#define VAPI    2
-/* Used in checkpoint */
-#define VCHCK 2
-
-
-/* USed in GM */
-#define VGM 0
-
-/* Used to print information of types */
-#define VTYPE 0
-
-/* Used to print the cluster_conf */
-#define VCCONF 0
-#define VPRIV 0
-
-/* Used in base mysql library calls. */
-#define VMYSQL 3
-/* Used in db_helper.c */
-#define VDBH 0
-
-#define VMETRICS 2
-#define VTYPE	2
-
-
-
-/* Specifies if warnings are shown or not */
-#define SHOW_WARNINGS0 1
-#define SHOW_WARNINGS1 1
-#define SHOW_ERRORS   1
-
+#endif
