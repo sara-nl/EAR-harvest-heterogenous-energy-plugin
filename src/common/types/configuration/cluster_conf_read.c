@@ -754,18 +754,33 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			conf->eargm.t2 = atoi(token);
 		}
 		else if (!strcmp(token, "GLOBALMANAGERUNITS"))
-        {
-            token = strtok(NULL, "=");
+		{
+			token = strtok(NULL, "=");
+		
+			//
+			strclean(token, '\n');
+			remove_chars(token, ' ');
+			strtoup(token);
+
 			if (!strcmp(token,"-"))	conf->eargm.units=BASIC;
-			else if (!strcmp(token,"K"))    conf->eargm.units=KILO;
-			else if (!strcmp(token,"M"))   conf->eargm.units=MEGA;
+			else if (!strcmp(token,"K")) conf->eargm.units=KILO;
+			else if (!strcmp(token,"M")) conf->eargm.units=MEGA;
 			else conf->eargm.units=KILO;
-        }
+		}
 		else if (!strcmp(token, "GLOBALMANAGERPOLICY"))
 		{
 			token = strtok(NULL, "=");
-			if (strcmp(token,"MAXENERGY")==0)	conf->eargm.policy=MAXENERGY;
-			else conf->eargm.policy=MAXPOWER;
+	               
+			// 
+			strclean(token, '\n');
+                        remove_chars(token, ' ');
+                        strtoup(token);
+
+			if (strcmp(token,"MAXENERGY") == 0) {
+				conf->eargm.policy=MAXENERGY;
+			} else {
+				conf->eargm.policy=MAXPOWER;
+			}
 		}
 		else if (!strcmp(token, "GLOBALMANAGERENERGYLIMIT"))
 		{
@@ -778,18 +793,18 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			/* It mas be included in power */
 			conf->eargm.energy = atoi(token);
 		}
-        else if (!strcmp(token, "GLOBALMANAGERWARNINGSPERC"))
-        {
-            token = strtok(NULL, "=");
-            token = strtok(token, ",");
-		    int perc=0;
-            while (token != NULL)
-            {
-            	conf->eargm.defcon_limits[perc++] = atoi(token);
-                token = strtok(NULL, ",");
-            }
-        }
+		else if (!strcmp(token, "GLOBALMANAGERWARNINGSPERC"))
+		{
+			token = strtok(NULL, "=");
+			token = strtok(token, ",");
+			int perc=0;
 
+			while (token != NULL)
+			{
+				conf->eargm.defcon_limits[perc++] = atoi(token);
+				token = strtok(NULL, ",");
+			}
+		}
 		else if (!strcmp(token, "GLOBALMANAGERGRACEPERIODS"))
 		{
 			token = strtok(NULL, "=");
@@ -809,18 +824,18 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
-            remove_chars(token, ' ');
+			remove_chars(token, ' ');
 			strcpy(conf->eargm.mail, token);
 		}
 		else if (!strcmp(token, "GLOBALMANAGERHOST"))
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
-            remove_chars(token, ' ');
+			remove_chars(token, ' ');
 			strcpy(conf->eargm.host, token);
 		}
 
-			//MARIADB/MYSQL config
+		//MARIADB/MYSQL config
 		else if (!strcmp(token, "MARIADBIP"))
 		{
 			token = strtok(NULL, "=");

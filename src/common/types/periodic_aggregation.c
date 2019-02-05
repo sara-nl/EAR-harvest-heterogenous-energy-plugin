@@ -35,7 +35,7 @@ void init_periodic_aggregation(peraggr_t *aggr)
 	memset(aggr, 0, sizeof(peraggr_t));
 }
 
-void add_periodic_aggregation(peraggr_t *aggr, ulong DC_energy, time_t end_time, time_t start_time)
+void add_periodic_aggregation(peraggr_t *aggr, ulong DC_energy, time_t start_time, time_t end_time)
 {
 	aggr->DC_energy += DC_energy;
 	aggr->n_samples += 1;
