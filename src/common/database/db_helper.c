@@ -850,8 +850,10 @@ ulong db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_in
 
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
+    {
         result = -2;
-
+        return stmt_error(connection, statement);
+    }
     mysql_stmt_close(statement);
     mysql_close(connection);
 
