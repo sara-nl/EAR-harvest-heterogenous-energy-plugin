@@ -420,7 +420,7 @@ ulong eargm_reduce_frequencies_all_nodes(int level)
     int i,rc;
     ulong ps;
 	ps=pstate_level[level];
-	reduce_frequencies_all_nodes(ps,my_cluster_conf);
+	red_def_max_pstate_all_nodes(ps,my_cluster_conf);
 	return ps;
 }
 void report_status(gm_warning_t *my_warning)

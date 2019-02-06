@@ -103,7 +103,7 @@ double last_power_reported=0;
 
 powermon_app_t *get_powermon_app()
 {
-	if (ccontext>0) return current_ear_app[ccontext];
+	if (ccontext>=0) return current_ear_app[ccontext];
 	else return &default_app;
 }
 static void PM_my_sigusr1(int signun)
@@ -599,7 +599,7 @@ void powermon_new_max_freq(ulong maxf)
 {
 	uint ps;
 	/* Job running and not EAR-aware */
-	if ((ccontext>0) && (current_ear_app[ccontext]->app.job.id>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
+	if ((ccontext>=0) && (current_ear_app[ccontext]->app.job.id>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
 		if (maxf<current_node_freq){
 			verbose(VJOBPMON,"MaxFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,maxf);
 			frequency_set_all_cpus(maxf);
@@ -617,7 +617,7 @@ void powermon_new_def_freq(uint p_id,ulong def)
 	int nump;
 	uint ps;
 	ps=frequency_freq_to_pstate(def);
-    if ((ccontext>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
+    if ((ccontext>=0) && (current_ear_app[ccontext]->app.is_mpi==0)){
         if (def<current_node_freq){
             verbose(VJOBPMON,"DefFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def);
             frequency_set_all_cpus(def);
@@ -641,7 +641,7 @@ void powermon_red_freq(ulong max_freq,ulong def_freq)
     uint ps_def,ps_max;
 	ps_def=frequency_freq_to_pstate(def_freq);
 	ps_max=frequency_freq_to_pstate(max_freq);
-	if ((ccontext>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
+	if ((ccontext>=0) && (current_ear_app[ccontext]->app.is_mpi==0)){
 		if (def_freq<current_node_freq){
 			verbose(VJOBPMON,"RedFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,def_freq);
 			frequency_set_all_cpus(def_freq);
@@ -663,9 +663,9 @@ void powermon_set_freq(ulong freq)
     int nump;
     uint ps;
     ps=frequency_freq_to_pstate(freq);
-    if ((ccontext>0) && (current_ear_app[ccontext]->app.is_mpi==0)){
+    if (ccontext>=0){
         if (freq!=current_node_freq){
-            verbose(VJOBPMON,"SetFreq: Application is not mpi, automatically changing freq from %lu to %lu\n",current_node_freq,freq);
+            verbose(VJOBPMON,"SetFreq:  changing freq from %lu to %lu\n",current_node_freq,freq);
             frequency_set_all_cpus(freq);
             current_node_freq=freq;
         }
@@ -689,7 +689,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 {
 	ulong jid,mpi;
 	double maxpower,minpower;
-	if (ccontext>0){ 
+	if (ccontext>=0){ 
 		jid=current_ear_app[ccontext]->app.job.id;
 		mpi=current_ear_app[ccontext]->app.is_mpi;
 		maxpower=current_ear_app[ccontext]->app.power_sig.max_DC_power;
@@ -706,7 +706,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	
 	while (pthread_mutex_trylock(&app_lock));
 	
-	if ((ccontext>0) && (current_ear_app[ccontext]->app.job.id>0)){
+	if ((ccontext>=0) && (current_ear_app[ccontext]->app.job.id>0)){
 		if (my_current_power->avg_dc>maxpower) 
 			current_ear_app[ccontext]->app.power_sig.max_DC_power=my_current_power->avg_dc;
 		if (my_current_power->avg_dc<minpower)
