@@ -539,7 +539,9 @@ void main(int argc,char *argv[])
 	
 	time(&end_time);
 	start_time=end_time-period_t2;
-	result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id);
+	if (db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id,&result)<0){
+		error("Asking for total energy system. Using aggregated %d\n",use_aggregation);
+	}
 	fill_periods(result);
 	/*
 	*
@@ -559,7 +561,9 @@ void main(int argc,char *argv[])
 			start_time=end_time-period_t1;
 	
     
-	    	result = db_select_acum_energy_idx(  divisor, use_aggregation,&last_id);
+	    	if ( db_select_acum_energy_idx(  divisor, use_aggregation,&last_id,&result)<0){
+				error("Asing for last T1 energy period. Using aggregated %d.Last id =%u\n",use_aggregation,last_id);
+			}
 	    	if (!result){ 
 				verbose(VGM+1,"No results in that period of time found\n");
 	    	}else{ 
@@ -666,7 +670,9 @@ void main(int argc,char *argv[])
 		    time(&end_time);
     		start_time=end_time-period_t2;
 			last_id=0;
-    		result = db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id);
+    		if (db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id,&result)<0){
+				error("Asking for total energy system. Using aggregated %d\n",use_aggregation);
+			}
     		fill_periods(result);
 		}
 	}

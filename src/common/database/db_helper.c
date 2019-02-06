@@ -675,7 +675,7 @@ int db_insert_gm_warning(gm_warning_t *warning)
     return EAR_SUCCESS;
 }
 
-ulong stmt_error(MYSQL *connection, MYSQL_STMT *statement)
+int stmt_error(MYSQL *connection, MYSQL_STMT *statement)
 {
     verbose(VMYSQL, "Error preparing statement (%d): %s\n",
             mysql_stmt_errno(statement), mysql_stmt_error(statement));
@@ -689,10 +689,11 @@ ulong stmt_error(MYSQL *connection, MYSQL_STMT *statement)
 #define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
 
-ulong db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index)
+int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
     MYSQL *connection = mysql_init(NULL);
     char query[256];
+    *energy = 0;
 
     if (connection == NULL)
     {
@@ -720,7 +721,7 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong divisor, char is
         verbose(VDBH, "Error creating statement (%d): %s\n", mysql_errno(connection),
                 mysql_error(connection));
         mysql_close(connection);
-        return -1;
+        return EAR_ERROR;
     }
 
     if (is_aggregated)
@@ -753,8 +754,7 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong divisor, char is
     MYSQL_BIND res_bind[2];
     memset(res_bind, 0, sizeof(res_bind));
     res_bind[0].buffer_type = res_bind[1].buffer_type = MYSQL_TYPE_LONGLONG;
-    ulong result = 0;
-    res_bind[0].buffer = &result;
+    res_bind[0].buffer = energy;
     res_bind[1].buffer = last_index;
 
     if (mysql_stmt_bind_param(statement, bind)) return stmt_error(connection, statement);
@@ -764,12 +764,14 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong divisor, char is
 
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
-        result = -2;
+    {
+        return stmt_error(connection, statement);
+    }
 
     mysql_stmt_close(statement);
     mysql_close(connection);
 
-    return result;
+    return EAR_SUCCESS;
 
 }
 
@@ -777,12 +779,13 @@ ulong db_select_acum_energy(int start_time, int end_time, ulong divisor, char is
 #define METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE " \
                                 "id > %d AND DC_energy <= %d"
 #define AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE "\
-                                "id > %d ?"
+                                "id > %d"
 
-ulong db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index)
+int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
     MYSQL *connection = mysql_init(NULL);
     char query[256];
+    *energy = 0;
 
     if (connection == NULL)
     {
@@ -810,7 +813,7 @@ ulong db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_in
         verbose(VDBH, "Error creating statement (%d): %s\n", mysql_errno(connection),
                 mysql_error(connection));
         mysql_close(connection);
-        return -1;
+        return EAR_ERROR;
     }
 
     if (is_aggregated)
@@ -839,8 +842,7 @@ ulong db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_in
     MYSQL_BIND res_bind[2];
     memset(res_bind, 0, sizeof(res_bind));
     res_bind[0].buffer_type = res_bind[1].buffer_type = MYSQL_TYPE_LONGLONG;
-    ulong result = 0;
-    res_bind[0].buffer = &result;
+    res_bind[0].buffer = energy;
     res_bind[1].buffer = last_index;
 
     if (mysql_stmt_bind_param(statement, bind)) return stmt_error(connection, statement);
@@ -851,13 +853,13 @@ ulong db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_in
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
     {
-        result = -2;
         return stmt_error(connection, statement);
     }
+
     mysql_stmt_close(statement);
     mysql_close(connection);
 
-    return result;
+    return EAR_SUCCESS;
 
 }
 
@@ -895,7 +897,7 @@ int db_read_applications_query(application_t **apps, char *query)
 
     mysql_close(connection);
 
-    return num_apps;
+    return EAR_SUCCESS;
 }
 
 int db_run_query(char *query, char *user, char *passw)
