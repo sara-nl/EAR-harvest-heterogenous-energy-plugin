@@ -693,6 +693,7 @@ int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_a
 {
     MYSQL *connection = mysql_init(NULL);
     char query[256];
+    *energy = 0;
 
     if (connection == NULL)
     {
@@ -784,6 +785,7 @@ int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_inde
 {
     MYSQL *connection = mysql_init(NULL);
     char query[256];
+    *energy = 0;
 
     if (connection == NULL)
     {
