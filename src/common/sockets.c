@@ -311,11 +311,11 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 //	Returning EAR_ERROR
 //	 - On EBADF, ENOTSOCK, EOPNOTSUPP, EINTR, EIO, ENOBUFS and ENOMEM
 
-inline static void _spin_delay()
+static void _spin_delay()
 {
-	int i;
+	volatile int i;
 
-	for (i = 0; i < 7500; ++i)
+	for (i = 0; i < 10000; ++i)
 	{}
 }
 
@@ -344,10 +344,6 @@ static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
 				  fd, bytes_recv, bytes_expc - bytes_left, bytes_expc,
 				  intents, errno, strerror(errno));
 
-			#ifndef SHOW_DEBUGS
-			_spin_delay();
-			#endif
-
 			switch (errno) {
 				case ENOTCONN:
 				case ETIMEDOUT:
@@ -361,6 +357,10 @@ static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
 					} else {
 						state_return_msg(EAR_SOCK_TIMEOUT, errno, strerror(errno));
 					}
+
+					#ifndef SHOW_DEBUGS
+					_spin_delay();
+					#endif
 					break;
 				default:
 					state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
