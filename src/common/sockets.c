@@ -311,6 +311,14 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 //	Returning EAR_ERROR
 //	 - On EBADF, ENOTSOCK, EOPNOTSUPP, EINTR, EIO, ENOBUFS and ENOMEM
 
+inline static void _spin_delay()
+{
+	int i;
+
+	for (i = 0; i < 7500; ++i)
+	{}
+}
+
 static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
 {
 	ssize_t bytes_left = bytes_expc;
@@ -332,9 +340,13 @@ static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
 		}
 		else if (bytes_recv < 0)
 		{
-			//debug("fd '%d', %ld to add to %ld/%ld (intent: %d, errno: %d, strerrno: %s)",
-			//	  fd, bytes_recv, bytes_expc - bytes_left, bytes_expc,
-			//	  intents, errno, strerror(errno));
+			debug("fd '%d', %ld to add to %ld/%ld (intent: %d, errno: %d, strerrno: %s)",
+				  fd, bytes_recv, bytes_expc - bytes_left, bytes_expc,
+				  intents, errno, strerror(errno));
+
+			#ifndef SHOW_DEBUGS
+			_spin_delay();
+			#endif
 
 			switch (errno) {
 				case ENOTCONN:
