@@ -203,7 +203,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	conf_clus->db_manager.tcp_port      = 8811;
 	conf_clus->db_manager.sec_tcp_port  = 8812;
 	conf_clus->db_manager.sync_tcp_port = 8813;
-	conf_clus->db_manager.mem_size      = 1;
+	conf_clus->db_manager.mem_size      = 20;
 	conf_clus->db_manager.aggr_time     = 60;
 	conf_clus->db_manager.insr_time     = atoi(argv[4]);
 

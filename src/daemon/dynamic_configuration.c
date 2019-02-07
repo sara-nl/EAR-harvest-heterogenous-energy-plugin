@@ -80,30 +80,39 @@ void print_f_list(uint p_states,ulong *freql)
 	}
 }
 
-uint is_valid_freq(ulong f, uint p_states,ulong *freql)
+uint is_valid_freq(ulong f, uint p_states, ulong *f_list)
 {
-	int i=0;
-	while (i<p_states){
-		if (freql[i]==f){
+	int i = 0;
+
+	while (i < p_states)
+	{
+		if (f_list[i] == f){
 			return 1;
 		}
 		i++;
 	}
 	return 0;
-	
+
 }
-ulong lower_valid_freq(ulong f, uint p_states,ulong *freql)
+
+ulong lower_valid_freq(ulong f, uint p_states, ulong *f_list)
 {
-	ulong freq=f-100000;
-	while(!is_valid_freq(freq,p_states,freql)) freq=freq-100000;
-	if (freq>=freql[p_states-1]){
-		warning("Invalid frequencies selecting the lower one valid: requested %lu selected %lu\n",f,freq);
-		return freq;
-	}else{
-		error("PANIC no alternative freq can be selected for %lu\n",f);
+	ulong f2 = f - 100000;
+
+	if (((long) f2) < 0) {
+		warning(stderr, "Invalid frequency\n");
 		return -1;
 	}
-
+	while(!is_valid_freq(f2, p_states, f_list) && f2 > f_list[p_states - 1]) {
+		f2 = f2 - 100000;
+	}
+	if (f2 >= f_list[p_states - 1]) {
+		warning("Invalid freq, selecting the lower one: requested %lu selected %lu\n", f, f2);
+		return f2;
+	} else {
+		error("PANIC no alternative freq can be selected for %lu\n", f);
+		return -1;
+	}
 }
 
 static void DC_my_sigusr1(int signun)

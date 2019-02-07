@@ -543,8 +543,8 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		periodic_metric_t *met = (periodic_metric_t *) content;
 
 		if (verbosity == 2) {
-                        periodic_metrict_print_channel(stderr, met);
-                }
+			periodic_metrict_print_channel(stderr, met);
+		}
 
 		// Verbosity mpkfa
 		//if (verbosity == 1) {

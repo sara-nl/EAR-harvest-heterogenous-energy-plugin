@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <common/sockets.h>
+#include <common/output/debug.h>
 
 static char output_buffer[SZ_BUFF_BIG];
 static state_t s;
@@ -230,17 +231,23 @@ static state_t _send(socket_t *socket, ssize_t bytes_expc, char *buffer)
 	ssize_t bytes_left = bytes_expc;
 	ssize_t bytes_sent = 0;
 
-	while(bytes_sent < bytes_expc)
+	// In the near future, it will be better to include a non-blocking
+	// implementation with a controlled retry system
+	while(bytes_left > 0)
 	{
 		if (socket->protocol == TCP) {
-			bytes_sent += send(socket->fd, buffer + bytes_sent, bytes_left, 0);
+			bytes_sent = send(socket->fd, buffer + bytes_sent, bytes_left, 0);
 		} else {
-			bytes_sent += sendto(socket->fd, buffer + bytes_sent, bytes_left, 0,
-								 socket->info->ai_addr, socket->info->ai_addrlen);
+			bytes_sent = sendto(socket->fd, buffer + bytes_sent, bytes_left, 0,
+				socket->info->ai_addr, socket->info->ai_addrlen);
 		}
 
 		if (bytes_sent < 0)
 		{
+			debug("fd '%d', %ld to add to %ld/%ld (errno: %d, strerrno: %s)",
+				  socket->fd, bytes_sent, bytes_expc - bytes_left, bytes_expc,
+				  errno, strerror(errno));
+
 			switch (bytes_sent) {
 				case ENETUNREACH:
 				case ENETDOWN:
@@ -325,13 +332,17 @@ static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
 		}
 		else if (bytes_recv < 0)
 		{
+			//debug("fd '%d', %ld to add to %ld/%ld (intent: %d, errno: %d, strerrno: %s)",
+			//	  fd, bytes_recv, bytes_expc - bytes_left, bytes_expc,
+			//	  intents, errno, strerror(errno));
+
 			switch (errno) {
 				case ENOTCONN:
 				case ETIMEDOUT:
 				case ECONNRESET:
 					state_return_msg(EAR_SOCK_DISCONNECTED, errno, strerror(errno));
 					break;
-				case EINVAL:
+				case EINVAL: // Not sure about this
 				case EAGAIN:
 					if (!block && intents < NON_BLOCK_TRYS) {
 						intents += 1;

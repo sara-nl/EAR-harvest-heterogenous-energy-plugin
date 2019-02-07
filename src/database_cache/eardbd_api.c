@@ -71,14 +71,14 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 	if (enabled_server) {
 		state.server = sockets_send(&server_sock, &header, content);
 
-		debug("server %s:%d, en %d, st %d, fd %d", server_sock.host, server_sock.port,
-			enabled_server, state.server, server_sock.fd);
+		debug("server '%s':%d, enabled %d, state %d, fd %d", server_sock.host,
+			server_sock.port, enabled_server, state.server, server_sock.fd);
 	}
 	if (enabled_mirror) {
 		state.mirror = sockets_send(&mirror_sock, &header, content);
 
-		debug("mirror %s:%d, en %d, st %d, fd %d", mirror_sock.host, mirror_sock.port,
-			enabled_mirror, state.mirror, mirror_sock.fd);
+		debug("mirror '%s':%d, enabled %d, state %d, fd %d", mirror_sock.host,
+			mirror_sock.port, enabled_mirror, state.mirror, mirror_sock.fd);
 	}
 
 	return state;
@@ -182,8 +182,8 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	enabled_mirror = (mirror_host != NULL) && (strlen(mirror_host) > 0);
 
 	//
-	debug("server %s:%d, en %d", server_host, server_port, enabled_server);
-	debug("mirror %s:%d, en %d", mirror_host, mirror_port, enabled_mirror);
+	debug("server '%s':%d, enabled %d", server_host, server_port, enabled_server);
+	debug("mirror '%s':%d, enabled %d", mirror_host, mirror_port, enabled_mirror);
 
 	// Maybe it's not enabled, but it's ok.
 	edb_state_init(state, EAR_NOT_INITIALIZED);

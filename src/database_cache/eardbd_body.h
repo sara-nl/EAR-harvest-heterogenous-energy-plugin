@@ -29,7 +29,7 @@
 #ifndef EAR_EARDBD_BODY_H
 #define EAR_EARDBD_BODY_H
 
-#define line "---------------------------------------------------------------\n"
+#define line "---------------------------------------------------------------"
 #define col1 "\x1b[35m"
 #define col2 "\x1b[0m"
 
@@ -62,7 +62,7 @@
 
 #define printml1(...) \
     if (!forked || master_iam) { \
-        dprintf(verb_channel, col1 line __VA_ARGS__); \
+        dprintf(verb_channel, col1 line "\n" __VA_ARGS__); \
         dprintf(verb_channel, col2 "\n"); \
 	}
 
