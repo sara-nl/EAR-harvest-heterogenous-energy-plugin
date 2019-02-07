@@ -55,17 +55,16 @@
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;
+extern policy_conf_t default_policy_context;
+extern cluster_conf_t my_cluster_conf;
+extern my_node_conf_t     *my_node_conf;
+extern my_node_conf_t  my_original_node_conf;
+extern settings_conf_t *dyn_conf;
+extern resched_t *resched_conf;
 
 int eards_remote_socket,eards_client;
 struct sockaddr_in eards_remote_client;
 char *my_tmp;
-extern cluster_conf_t my_cluster_conf;
-extern my_node_conf_t     *my_node_conf;
-extern my_node_conf_t  my_original_node_conf;
-
-extern settings_conf_t *dyn_conf;
-extern resched_t *resched_conf;
-
 static ulong* f_list;
 static uint num_f;
 int last_command = -1;
@@ -97,22 +96,14 @@ uint is_valid_freq(ulong f, uint p_states, ulong *f_list)
 
 ulong lower_valid_freq(ulong f, uint p_states, ulong *f_list)
 {
-	ulong f2 = f - 100000;
-
-	if (((long) f2) < 0) {
-		warning(stderr, "Invalid frequency\n");
-		return -1;
+	uint i=0,found=0;
+	while(!found && (i<p_states)){
+		if (f_list[i]<f)	found=1;
+		else i++;
 	}
-	while(!is_valid_freq(f2, p_states, f_list) && f2 > f_list[p_states - 1]) {
-		f2 = f2 - 100000;
-	}
-	if (f2 >= f_list[p_states - 1]) {
-		warning("Invalid freq, selecting the lower one: requested %lu selected %lu\n", f, f2);
-		return f2;
-	} else {
-		error("PANIC no alternative freq can be selected for %lu\n", f);
-		return -1;
-	}
+	if (found) return f_list[i];
+	else	   return f_list[default_policy_context.p_state];
+	
 }
 
 static void DC_my_sigusr1(int signun)
