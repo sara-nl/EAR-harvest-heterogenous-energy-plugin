@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <common/config.h>
+#include <common/output/output_conf.h>
 
 int verb_channel	__attribute__((weak)) = 2;
 int warn_channel	__attribute__((weak)) = 2;

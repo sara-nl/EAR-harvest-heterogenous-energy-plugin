@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #include <common/file.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
 #include <common/types/application.h>
 
 void init_application(application_t *app)

@@ -897,7 +897,7 @@ int db_read_applications_query(application_t **apps, char *query)
 
     mysql_close(connection);
 
-    return EAR_SUCCESS;
+    return num_apps;
 }
 
 int db_run_query(char *query, char *user, char *passw)
