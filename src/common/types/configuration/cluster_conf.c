@@ -123,10 +123,30 @@ int get_ear_conf_path(char *ear_conf_path)
 	fd=open(my_path,O_RDONLY);
     if (fd>0){
         strcpy(ear_conf_path,my_path);
+		close(fd);
         return EAR_SUCCESS;
     }
 	return EAR_ERROR;
 }
+
+/** returns the eardbd.conf path. It checks at $EAR_ETC/ear/eardbd.conf  */
+int get_eardbd_conf_path(char *ear_conf_path)
+{
+    char my_path[GENERIC_NAME];
+    char *my_etc;
+    int fd;
+    my_etc=getenv("EAR_ETC");
+    if (my_etc==NULL) return EAR_ERROR;
+    sprintf(my_path,"%s/ear/eardbd.conf",my_etc);
+    fd=open(my_path,O_RDONLY);
+    if (fd>0){
+        strcpy(ear_conf_path,my_path);
+		close(fd);
+        return EAR_SUCCESS;
+    }
+    return EAR_ERROR;
+}
+
 
 /** CHECKING USER TYPE */
 /* returns true if the username, group and/or accounts is presents in the list of authorized users/groups/accounts */

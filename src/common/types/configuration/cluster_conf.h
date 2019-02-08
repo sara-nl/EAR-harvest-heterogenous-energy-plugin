@@ -207,6 +207,9 @@ typedef struct cluster_conf
 /** returns the ear.conf path. It checks first at /etc/ear/ear.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/sysconf/ear.conf */
 int get_ear_conf_path(char *ear_conf_path);
 
+/** returns the eardbd.conf path. It checks first at /etc/ear/eardbd.conf and, it is not available, checks at $EAR_INSTALL_PATH/etc/sysconf/eardbd.conf */
+int get_eardbd_conf_path(char *ear_conf_path);
+
 /** returns the pointer to the information of nodename */
 node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename);
 
@@ -218,6 +221,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename);
 
 /** read the cluster configuration from the ear_cluster.conf pointed by conf path */
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf);
+/** Reads data for EAR DB connection for eardbd and eard */
+int read_eardbd_conf(char *conf_path,char *username,char *pass);
 
 /** frees a cluster_conf_t */
 void free_cluster_conf(cluster_conf_t *conf);

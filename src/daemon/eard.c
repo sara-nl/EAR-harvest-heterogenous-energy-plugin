@@ -95,6 +95,9 @@ coefficient_t *my_coefficients_default;
 coefficient_t *coeffs_conf;
 coefficient_t *coeffs_default_conf;
 char my_ear_conf_path[GENERIC_NAME];
+char my_eardbd_conf_path[GENERIC_NAME];
+char eardbd_user[GENERIC_NAME];
+char eardbd_pass[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
 char coeffs_path[GENERIC_NAME];
@@ -876,6 +879,9 @@ void signal_handler(int sig)
 
 				if (!my_cluster_conf.eard.use_eardbd){
 					verbose(VCONF,"Connecting with EAR DB directly");
+					get_eardbd_conf_path(my_eardbd_conf_path,eardbd_user,eardbd_pass);
+					strcpy(my_cluster_conf.database.user,eardbd_user);
+					strcpy(my_cluster_conf.database.pass,eardbd_pass);
 					init_db_helper(&my_cluster_conf.database);
 					db_helper_connected=1;
 				}
@@ -1129,9 +1135,15 @@ void main(int argc,char *argv[])
 	/** CONFIGURATION **/
 	// We read the cluster configuration and sets default values in the shared memory
 	if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-		error("Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+		error("Error opening ear.conf file, not available at regular paths ($EAR_ETC/ear/ear.conf)");
 		_exit(0);
 	}
+	#if DB_MYSQL
+	if (get_eardbd_conf_path(my_eardbd_conf_path)==EAR_ERROR){
+        error("Error opening eardbd.conf file, not available at regular path ( $EAR_ETC/ear/eardbd.conf)");
+        _exit(0);
+    }
+	#endif
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         error(" Error reading cluster configuration\n");
         _exit(1);
@@ -1317,13 +1329,15 @@ void main(int argc,char *argv[])
 		if (!my_cluster_conf.eard.use_eardbd)
 		{
 			verbose(VCONF,"Connecting with EAR DB directly");
+            get_eardbd_conf_path(my_eardbd_conf_path,eardbd_user,eardbd_pass);
+            strcpy(my_cluster_conf.database.user,eardbd_user);
+            strcpy(my_cluster_conf.database.pass,eardbd_pass);
 			init_db_helper(&my_cluster_conf.database);
 			db_helper_connected=1;
 		}
 	}
 	#endif
 
-	verbose(VCONF,"Using  %d seconds for periodic power monitoring",power_mon_freq);
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL)){
 		errno=ret;
 		error("error creating power_monitoring thread %s\n",strerror(errno));

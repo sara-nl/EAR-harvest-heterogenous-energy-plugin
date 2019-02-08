@@ -1092,6 +1092,26 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 	return EAR_SUCCESS;
 }
 
+int read_eardbd_conf(char *conf_path,char *username,char *pass)
+{
+    FILE *conf_file = fopen(conf_path, "r");
+	char line[256];
+    if (conf_file == NULL)
+    {
+        error("ERROR opening file: %s\n", conf_path);
+        return EAR_ERROR;
+    }
+	int current_line=0;
+    while ((fgets(line, 256, conf_file) != NULL) && (current_line<2))
+    {
+		if (current_line==0) 	strcpy(username,line);
+		else 					strcpy(pass,line);
+		current_line++;
+	}
+    fclose(conf_file);
+	return EAR_SUCCESS;
+}
+
 void free_cluster_conf(cluster_conf_t *conf)
 {
 	int i;
