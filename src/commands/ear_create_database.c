@@ -92,13 +92,24 @@ void run_query(MYSQL *connection, char *query)
         if (mysql_query(connection, query)) execute_on_error(connection);
 }
 
-void create_user(MYSQL *connection, char *db_name, char *db_user)
+void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user_pass, char *eardbd_user, char *eardbd_pass)
 {
     char query[256];
-    sprintf(query, "CREATE USER '%s'@'%%'", db_user);
+    if (strlen(db_user_pass) > 1)
+        sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY %s", db_user, db_user_pass);
+    else
+        sprintf(query, "CREATE USER '%s'@'%%'", db_user);
     run_query(connection, query);
-    sprintf(query, "GRANT INSERT, SELECT ON %s.* TO '%s'@'%%'", db_name, db_user);
+
+    sprintf(query, "GRANT INSERT ON %s.* TO '%s'@'%%'", db_name, db_user);
     run_query(connection, query);
+    
+    if (strlen(eardbd_pass) > 1)
+        sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY %s", eardbd_user, eardbd_pass);
+    else
+        sprintf(query, "CREATE USER '%s'@'%%'", eardbd_user);
+    run_query(connection, query);
+    
     sprintf(query, "FLUSH PRIVILEGES");
     run_query(connection, query);
 }
@@ -375,11 +386,28 @@ void main(int argc,char *argv[])
 
     //cluster_conf_t my_cluster;
     char ear_path[256];
+    char eardbd_path[256];
+    char eardbd_user[256];
+    char eardbd_pass[256];
     if (get_ear_conf_path(ear_path) == EAR_ERROR)
     {
         fprintf(stderr, "Error getting ear.conf path\n");
         exit(0);
     }
+    
+    if (get_eardbd_conf_path(eardbd_path) == EAR_ERROR)
+    {
+        fprintf(stderr, "Error getting eardbd.conf path\n");
+        exit(0);
+    }
+
+    if (read_eardbd_conf(eardbd_path, eardbd_user, eardbd_pass) == EAR_ERROR)
+    {
+        fprintf(stderr, "Error getting eardbd.conf path\n");
+        exit(0);
+    }
+
+
     read_cluster_conf(ear_path, &my_cluster);
 
 	print_database_conf(&my_cluster.database);
@@ -398,7 +426,7 @@ void main(int argc,char *argv[])
     
     create_tables(connection);
 
-    create_user(connection, my_cluster.database.database, my_cluster.database.user);
+    create_users(connection, my_cluster.database.database, my_cluster.database.user, my_cluster.database.pass, eardbd_user, eardbd_pass);
 
     create_indexes(connection);
 
