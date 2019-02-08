@@ -879,7 +879,7 @@ void signal_handler(int sig)
 
 				if (!my_cluster_conf.eard.use_eardbd){
 					verbose(VCONF,"Connecting with EAR DB directly");
-					get_eardbd_conf_path(my_eardbd_conf_path,eardbd_user,eardbd_pass);
+					read_eardbd_conf(my_eardbd_conf_path,eardbd_user,eardbd_pass);
 					strcpy(my_cluster_conf.database.user,eardbd_user);
 					strcpy(my_cluster_conf.database.pass,eardbd_pass);
 					init_db_helper(&my_cluster_conf.database);
@@ -1329,7 +1329,7 @@ void main(int argc,char *argv[])
 		if (!my_cluster_conf.eard.use_eardbd)
 		{
 			verbose(VCONF,"Connecting with EAR DB directly");
-            get_eardbd_conf_path(my_eardbd_conf_path,eardbd_user,eardbd_pass);
+            read_eardbd_conf(my_eardbd_conf_path,eardbd_user,eardbd_pass);
             strcpy(my_cluster_conf.database.user,eardbd_user);
             strcpy(my_cluster_conf.database.pass,eardbd_pass);
 			init_db_helper(&my_cluster_conf.database);

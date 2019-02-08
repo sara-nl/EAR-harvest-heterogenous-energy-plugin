@@ -181,6 +181,14 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	printm1("reading '%s' configuration file", extra_buffer);
 	read_cluster_conf(extra_buffer, conf_clus);
 
+	// Database configuration
+	if (get_eardbd_conf_path(extra_buffer) == EAR_ERROR){
+		error("while getting eardbd.conf path");
+	}
+
+	printm1("reading '%s' database configuration file", extra_buffer);
+	read_eardbd_conf(extra_buffer, conf_clus->database.user, conf_clus->database.pass);
+
 	// Database
 	init_db_helper(&conf_clus->database);
 
@@ -190,21 +198,14 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	server_too = (mode & 0x01);
 	mirror_too = (mode & 0x02) > 0;
 
+	#if 0
+	conf_clus->db_manager.insr_time = atoi(argv[4]);
+	conf_clus->db_manager.aggr_time = 60;
 
-	#if 1
-	strcpy(conf_clus->database.user, "eardbd_user");
-	strcpy(conf_clus->database.pass, "1234");
-
+	server_too = atoi(argv[1]);
+	mirror_too = atoi(argv[2]);
+	strcpy(server_host, argv[3]);
 	#endif
-
-		#if 0
-		conf_clus->db_manager.insr_time = atoi(argv[4]);
-		conf_clus->db_manager.aggr_time = 60;
-
-		server_too = atoi(argv[1]);
-		mirror_too = atoi(argv[2]);
-		strcpy(server_host, argv[3]);
-		#endif
 	#else
 	conf_clus->db_manager.tcp_port      = 8811;
 	conf_clus->db_manager.sec_tcp_port  = 8812;
@@ -218,11 +219,10 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	strcpy(server_host, argv[3]);
 	#endif
 
-
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;
-    	mirror_port = conf_clus->db_manager.sec_tcp_port;
-    	synchr_port = conf_clus->db_manager.sync_tcp_port;
+	mirror_port = conf_clus->db_manager.sec_tcp_port;
+    synchr_port = conf_clus->db_manager.sync_tcp_port;
 
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
