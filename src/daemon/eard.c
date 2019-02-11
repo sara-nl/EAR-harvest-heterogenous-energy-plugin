@@ -879,9 +879,11 @@ void signal_handler(int sig)
 
 				if (!my_cluster_conf.eard.use_eardbd){
 					verbose(VCONF,"Connecting with EAR DB directly");
+					#ifdef USE_EARDBD_CONF
 					read_eardbd_conf(my_eardbd_conf_path,eardbd_user,eardbd_pass);
 					strcpy(my_cluster_conf.database.user,eardbd_user);
 					strcpy(my_cluster_conf.database.pass,eardbd_pass);
+					#endif
 					init_db_helper(&my_cluster_conf.database);
 					db_helper_connected=1;
 				}
@@ -1139,10 +1141,12 @@ void main(int argc,char *argv[])
 		_exit(0);
 	}
 	#if DB_MYSQL
+	#ifdef USE_EARDBD_CONF
 	if (get_eardbd_conf_path(my_eardbd_conf_path)==EAR_ERROR){
         error("Error opening eardbd.conf file, not available at regular path ( $EAR_ETC/ear/eardbd.conf)");
         _exit(0);
     }
+	#endif
 	#endif
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         error(" Error reading cluster configuration\n");
@@ -1329,9 +1333,11 @@ void main(int argc,char *argv[])
 		if (!my_cluster_conf.eard.use_eardbd)
 		{
 			verbose(VCONF,"Connecting with EAR DB directly");
+			#ifdef USE_EARDBD_CONF
             read_eardbd_conf(my_eardbd_conf_path,eardbd_user,eardbd_pass);
             strcpy(my_cluster_conf.database.user,eardbd_user);
             strcpy(my_cluster_conf.database.pass,eardbd_pass);
+			#endif
 			init_db_helper(&my_cluster_conf.database);
 			db_helper_connected=1;
 		}

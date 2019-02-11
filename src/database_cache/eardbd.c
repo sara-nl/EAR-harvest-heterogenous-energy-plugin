@@ -181,6 +181,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	printm1("reading '%s' configuration file", extra_buffer);
 	read_cluster_conf(extra_buffer, conf_clus);
 
+	#ifdef USE_EARDBD_CONF
 	// Database configuration
 	if (get_eardbd_conf_path(extra_buffer) == EAR_ERROR){
 		error("while getting eardbd.conf path");
@@ -188,7 +189,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 	printm1("reading '%s' database configuration file", extra_buffer);
 	read_eardbd_conf(extra_buffer, conf_clus->database.user, conf_clus->database.pass);
-
+	#endif
 	// Database
 	init_db_helper(&conf_clus->database);
 
