@@ -1104,6 +1104,7 @@ int read_eardbd_conf(char *conf_path,char *username,char *pass)
 	int current_line=0;
     while ((fgets(line, 256, conf_file) != NULL) && (current_line<2))
     {
+        strclean(line, '\n');
 		if (current_line==0) 	strcpy(username,line);
 		else 					strcpy(pass,line);
 		current_line++;

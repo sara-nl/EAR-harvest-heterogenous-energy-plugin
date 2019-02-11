@@ -53,8 +53,9 @@ void usage(char *app)
 void execute_on_error(MYSQL *connection)
 {
     fprintf(stderr, "Error: %s\n", mysql_error(connection));
-    mysql_close(connection);
-    exit(1);
+    return;
+//    mysql_close(connection);
+//    exit(1);
 }
 
 int get_num_indexes(char *table)
@@ -105,7 +106,7 @@ void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user
     run_query(connection, query);
     
     if (strlen(eardbd_pass) > 1)
-        sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY %s", eardbd_user, eardbd_pass);
+        sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", eardbd_user, eardbd_pass);
     else
         sprintf(query, "CREATE USER '%s'@'%%'", eardbd_user);
     run_query(connection, query);
