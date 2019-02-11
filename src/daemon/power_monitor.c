@@ -688,7 +688,7 @@ void powermon_reload_conf()
 void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 {
 	ulong jid,mpi;
-	double maxpower,minpower;
+	double maxpower,minpower,RAPL, corrected_power;
 	if (ccontext>=0){ 
 		jid=current_ear_app[ccontext]->app.job.id;
 		mpi=current_ear_app[ccontext]->app.is_mpi;
@@ -719,7 +719,12 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 
 	current_sample.start_time=my_current_power->begin;
 	current_sample.end_time=my_current_power->end;
-	current_sample.DC_energy=my_current_power->avg_dc*(ulong)difftime(my_current_power->end,my_current_power->begin);
+	RAPL=my_current_power->avg_dram[0]+my_current_power->avg_dram[1]+my_current_power->avg_cpu[0]+my_current_power->avg_cpu[1];
+	if (my_current_power->avg_dc<RAPL){
+		corrected_power=RAPL;
+	}
+	
+	current_sample.DC_energy=corrected_power*(ulong)difftime(my_current_power->end,my_current_power->begin);
 	last_power_reported=my_current_power->avg_dc;
 	
 	#if DEMO
@@ -731,6 +736,12 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
 	}
 	#endif
+    if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>MAX_SIG_POWER)){
+    	warning("Resetting IPMI interface since power is %.2lf\n",my_current_power->avg_dc);
+    	node_energy_dispose();
+        node_energy_init();
+    }
+
 	#if DB_MYSQL
     if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<MAX_ERROR_POWER)){
 	if (my_cluster_conf.eard.use_mysql)
