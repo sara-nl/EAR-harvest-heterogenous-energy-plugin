@@ -35,7 +35,7 @@
 int main ()
 {
     int examinable = is_cpu_examinable();
-    printf("%d\n", examinable);
+    verbose(0, "%d", examinable);
     assert(examinable == EAR_SUCCESS);
     return 0;
 }

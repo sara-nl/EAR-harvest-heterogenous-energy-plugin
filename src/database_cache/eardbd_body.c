@@ -298,7 +298,7 @@ void body()
 		{
 			if (listening && !updating)
 			{
-				error("during select (%s)", strerror(errno));
+				_error("during select (%s)", strerror(errno));
 			}
 		}
 

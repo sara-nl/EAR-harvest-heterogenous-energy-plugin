@@ -40,7 +40,7 @@ cluster_conf_t my_cluster_conf;
 
 void usage(char *app)
 {
-	printf("usage:%s MinPerformanceEfficiencyGain (75 means 0.75%)\n",app);
+	verbose(0, "usage: %s MinPerformanceEfficiencyGain (75 means 0.75%)", app);
 	exit(1);
 }
 
@@ -54,25 +54,29 @@ void main(int argc,char *argv[])
 	p=atol(argv[1]);
 	// SET FREQ
 	if (gethostname(myhost,NAME_SIZE)<0){
-		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
+		verbose(0, "Error getting hostname %s", strerror(errno)); //error
 		exit(1);
 	}
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
         verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
-        exit(0);
+        exit(0); //error
     }
     verbose(0,"Using %s as EARGM configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
-        verbose(0," Error reading cluster configuration\n");
+        verbose(0, "Error reading cluster configuration"); //error
     }
 
 	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
-	if(eards<0){ 
-		fprintf(stderr,"Connection error\n");
+	if(eards<0){
+		verbose(0, "Connection error"); //error
 		exit(1);
 	}
-	fprintf(stdout,"Setting the PerformanceEfficiencyGain in all the nodes to %lu\n",p);
 
-	if (!eards_set_th(p)) fprintf(stderr,"eards_set_th error sending eards_set_th command\n");
+	verbose(0, "Setting the PerformanceEfficiencyGain in all the nodes to %lu", p);
+
+	if (!eards_set_th(p)) {
+		verbose(0, "eards_set_th error sending eards_set_th command"); //error
+	}
+
 	eards_remote_disconnect();
 }

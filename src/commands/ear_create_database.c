@@ -42,17 +42,17 @@ cluster_conf_t my_cluster;
 
 void usage(char *app)
 {
-	printf("Usage:%s [options]\n",app);
-    printf("\t-p\t\tSpecify the password for MySQL's root user.\n");
-    printf("\t-o\t\tOutputs the commands that would run.\n");
-    printf("\t-r\t\tRuns the program. If '-o' this option will be override.\n");
-    printf("\t-h\t\tShows this message.\n");
+	verbose(0, "Usage:%s [options]", app);
+    verbose(0, "\t-p\t\tSpecify the password for MySQL's root user.");
+    verbose(0, "\t-o\t\tOutputs the commands that would run.");
+    verbose(0, "\t-r\t\tRuns the program. If '-o' this option will be override.");
+    verbose(0, "\t-h\t\tShows this message.");
 	exit(0);
 }
 
 void execute_on_error(MYSQL *connection)
 {
-    fprintf(stderr, "Error: %s\n", mysql_error(connection));
+    verbose(0, "Error: %s", mysql_error(connection)); //error
     mysql_close(connection);
     exit(1);
 }
@@ -65,9 +65,9 @@ int get_num_indexes(char *table)
     //db_run_query(query, my_cluster.database.user, my_cluster.database.pass);
     MYSQL_RES *result = db_run_query_result(query);
     int num_indexes;
-    if (result == NULL) printf("Erro while retrieving result\n");
-    else
-    {
+    if (result == NULL) {
+        verbose(0, "Error while retrieving result");
+    } else {
         MYSQL_ROW row;
         unsigned int num_fields;
         unsigned int i;
@@ -86,10 +86,13 @@ int get_num_indexes(char *table)
 
 void run_query(MYSQL *connection, char *query)
 {
-    if (print_out)
-        printf("%s\n\n", query);
-    else
-        if (mysql_query(connection, query)) execute_on_error(connection);
+    if (print_out) {
+        verbose(0, "%s\n", query);
+    } else {
+        if (mysql_query(connection, query)) {
+            execute_on_error(connection);
+        }
+    }
 }
 
 void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user_pass, char *eardbd_user, char *eardbd_pass)
@@ -131,22 +134,25 @@ void create_indexes(MYSQL *connection)
     if (get_num_indexes("Periodic_metrics") < 3)
     {
         sprintf(query, "CREATE INDEX idx_end_time ON Periodic_metrics (end_time)");
-        printf("Running query: %s\n", query);
+        verbose(0, "Running query: %s", query);
         run_query(connection, query);
 
         sprintf(query, "CREATE INDEX idx_job_id ON Periodic_metrics (job_id)");
-        printf("Running query: %s\n", query);
+        verbose(0, "Running query: %s", query);
         run_query(connection, query);
+    } else {
+        verbose(0, "Periodic_metrics indexes already created, skipping...");
     }
-    else printf("Periodic_metrics indexes already created, skipping...\n");
 
     if (get_num_indexes("Jobs") < 3)
     {
         sprintf(query, "CREATE INDEX idx_user_id ON Jobs (user_id)");
-        printf("Running query: %s\n", query);
+        verbose(0, "Running query: %s", query);
         run_query(connection, query);
     }
-    else printf("Jobs indexes already created, skipping...\n");
+    else {
+        verbose(0, "Jobs indexes already created, skipping...");
+    }
     
 }
 
@@ -359,13 +365,13 @@ void main(int argc,char *argv[])
                 t.c_lflag &= ~ECHO;
                 tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
-                printf("Introduce root's password:");
+                verbosen(0, "Introduce root's password:");
                 fflush(stdout);
                 fgets(passw, sizeof(passw), stdin);
                 t.c_lflag |= ECHO;
                 tcsetattr(STDIN_FILENO, TCSANOW, &t);
                 strclean(passw, '\n');
-                printf("\n");
+                verbose(0, " ");
                 break;
             case 'r':
                 break;
@@ -379,7 +385,7 @@ void main(int argc,char *argv[])
 
     if (connection == NULL)
     {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
         exit(1);
     }
 
@@ -389,21 +395,22 @@ void main(int argc,char *argv[])
     char eardbd_path[256];
     char eardbd_user[256];
     char eardbd_pass[256];
+
     if (get_ear_conf_path(ear_path) == EAR_ERROR)
     {
-        fprintf(stderr, "Error getting ear.conf path\n");
+        verbose(0, "Error getting ear.conf path"); //error
         exit(0);
     }
     
     if (get_eardbd_conf_path(eardbd_path) == EAR_ERROR)
     {
-        fprintf(stderr, "Error getting eardbd.conf path\n");
+        verbose(0, "Error getting eardbd.conf path"); //error
         exit(0);
     }
 
     if (read_eardbd_conf(eardbd_path, eardbd_user, eardbd_pass) == EAR_ERROR)
     {
-        fprintf(stderr, "Error getting eardbd.conf path\n");
+        verbose(0, "Error getting eardbd.conf path"); //error
         exit(0);
     }
 
@@ -416,7 +423,7 @@ void main(int argc,char *argv[])
     {
         if (!mysql_real_connect(connection, my_cluster.database.ip, "root", passw, NULL, my_cluster.database.port, NULL, 0))
         {
-            fprintf(stderr, "Error connecting to database: %s\n", mysql_error(connection));
+            verbose(0, "Error connecting to database: %s", mysql_error(connection)); //error
             free_cluster_conf(&my_cluster);
             exit(0);
         }
@@ -434,7 +441,7 @@ void main(int argc,char *argv[])
 
     free_cluster_conf(&my_cluster);
 
-    printf("Database successfully created\n");
+    verbose(0, "Database successfully created");
 
     exit(1);
 }

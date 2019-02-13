@@ -142,18 +142,19 @@ int append_application_text_file(char *path, application_t *app, char is_extende
 {
 	//lacking: NODENAME(node_id in loop_t), not linked to any loop
 	char *HEADER;
-	if (is_extended)
+	int fd, ret;
+
+	if (is_extended) {
 		HEADER = "NODE_ID;JOB_ID;STEP_ID;USER_ID;GROUP_ID;APP_ID;USER_ACC;ENERGY_TAG;POLICY;"\
         "POLICY_TH;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;CYCLES;"\
         "INSTRUCTIONS;GFLOPS;L1_MISSES;L2_MISSES;L3_MISSES;SP_SINGLE;SP_128;SP_256;SP_512;DP_SINGLE;"\
         "DP_128;DP_256;DP_512";
 
-	else
+	} else {
 		HEADER = "NODE_ID;JOB_ID;STEP_ID;USER_ID;GROUP_ID;APP_ID;USER_ACC;ENERGY_TAG;POLICY;"\
         "POLICY_TH;AVG.FREQ;DEF.FREQ;TIME;CPI;TPI;GBS;DC-NODE-POWER;DRAM-POWER;PCK-POWER;CYCLES;"\
         "INSTRUCTIONS;GFLOPS";
-
-	int fd, ret;
+	}
 
 	if (path == NULL) {
 		return EAR_ERROR;

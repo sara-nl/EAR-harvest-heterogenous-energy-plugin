@@ -49,7 +49,7 @@ void run_test(int quiet) {
 	
 
        if (!quiet) {
-            printf("Doing a naive %dx%d MMM...\n",MATRIX_SIZE,MATRIX_SIZE);
+            verbose(0, "Doing a naive %dx%d MMM...",MATRIX_SIZE,MATRIX_SIZE);
        }
 
        for(i=0;i<MATRIX_SIZE;i++) {
@@ -76,7 +76,9 @@ void run_test(int quiet) {
         }
        }
 
-       if (!quiet) printf("Matrix multiply sum: s=%lf\n",s);
+       if (!quiet) {
+       		verbose(0, "Matrix multiply sum: s=%lf",s);
+       }
 }
 
 void main(int argc,char *argv[])
@@ -99,17 +101,17 @@ void main(int argc,char *argv[])
 	my_app.job.step_id=0;
 
 	struct timeval begin_time, end_time;
-	fprintf(stderr, "ear_daemon_test usage: ear_daemon_test [nsteps, def=%d] \n",nsteps);
+	verbose(0, "ear_daemon_test usage: ear_daemon_test [nsteps, def=%d]", nsteps);
 	if (argc>1){ 
 		nsteps=atoi(argv[1]);
 	}
-	fprintf(stderr, "ear_daemon_test: Using %d steps every %d sec\n",nsteps,sleep_time);
+	verbose(0, "ear_daemon_test: Using %d steps every %d sec", nsteps, sleep_time);
 	eards_connect(&my_app);
 	freq_events=eards_get_data_size_frequency();
 	uncore_events=eards_get_data_size_uncore();
 	rapl_events=eards_get_data_size_rapl();
-	fprintf(stdout,"Uncore counters provides %d events\n",uncore_events/sizeof(long long));	
-	fprintf(stdout,"RAPL counters provides %d events\n",rapl_events/sizeof(long long));	
+	verbose(0, "Uncore counters provides %d events", uncore_events/sizeof(long long));
+	verbose(0, "RAPL counters provides %d events", rapl_events/sizeof(long long));
 	uncore_values=(long long*)malloc(uncore_events);
 	rapl_values=(long long*)malloc(rapl_events);
 	for (i=0;i<nsteps;i++){
@@ -128,20 +130,20 @@ void main(int argc,char *argv[])
 		gettimeofday(&end_time,NULL);
 		elapsed=(unsigned long)(end_time.tv_sec*1000000+end_time.tv_usec)-(begin_time.tv_sec*1000000+begin_time.tv_usec);
 		elapsed_sec=(double)elapsed/(double)1000000;
-		fprintf(stdout,"---------------------------\n");
-		fprintf(stdout,"Time between events %lu\n",elapsed);
+		verbose(0, "---------------------------");
+		verbose(0, "Time between events %lu", elapsed);
 		for (events=0;events<uncore_events/sizeof(long long);events++){
 			mem_bd+=uncore_values[events];
 		}
 		rapl_pack=rapl_values[2]+rapl_values[3];
 		rapl_memory=rapl_values[0]+rapl_values[1];
-		fprintf(stdout,"MEMORY_BD %lf GBS (CAS_COUNT %llu)\n",(double)(mem_bd*64)/(double)(elapsed_sec*(1024*1024*1024)),mem_bd);
+		verbose(0, "MEMORY_BD %lf GBS (CAS_COUNT %llu)", (double)(mem_bd*64)/(double)(elapsed_sec*(1024*1024*1024)), mem_bd);
 
-		fprintf(stdout,"PACK AVG POWER = %lf W (%llu/%lu)\n",(double)(rapl_pack/1.0e9)/elapsed_sec,rapl_pack,elapsed);
-		fprintf(stdout,"DRAM AVG POWER = %lf W (%llu/%lu)\n",(double)(rapl_memory/1.0e9)/elapsed_sec,rapl_memory,elapsed);
+		verbose(0, "PACK AVG POWER = %lf W (%llu/%lu)", (double)(rapl_pack/1.0e9)/elapsed_sec, rapl_pack, elapsed);
+		verbose(0, "DRAM AVG POWER = %lf W (%llu/%lu)", (double)(rapl_memory/1.0e9)/elapsed_sec, rapl_memory, elapsed);
 
-		fprintf(stdout,"PACK ENERGY = %lf J \n",(double)rapl_pack/1.0e9);
-		fprintf(stdout,"DRAM ENERGY = %lf J \n",(double)rapl_memory/1.0e9);
+		verbose(0, "PACK ENERGY = %lf J", (double) rapl_pack / 1.0e9);
+		verbose(0, "DRAM ENERGY = %lf J", (double) rapl_memory / 1.0e9);
 	}
 	eards_disconnect();
 }	

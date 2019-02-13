@@ -51,7 +51,7 @@ static int create_connection()
 
     tmp=getenv("EAR_TMP");
     if (tmp==NULL){
-        fprintf(stderr,"Error, EAR_TMP not defined. Load ear module\n");
+        verbose(0, "Error, EAR_TMP not defined. Load ear module"); //error
         return EAR_ERROR;
     }
     sprintf(app_to_eard,"%s/.app_to_eard",tmp);

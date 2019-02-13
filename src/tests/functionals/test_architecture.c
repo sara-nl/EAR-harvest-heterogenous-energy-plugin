@@ -68,7 +68,7 @@ unsigned int frequency_freq_to_pstate(unsigned long f)
 void frequency_dispose()
 {
 	int i;
-	printf("Restoring previous governor %s\n",prev_policy.governor);
+	verbose(0, "Restoring previous governor %s", prev_policy.governor);
 	for (i=0;i<ear_num_cpus;i++){
 		cpufreq_set_policy(i,&prev_policy);
 	}
@@ -118,7 +118,7 @@ unsigned long frequency_set_all_cpus(unsigned long newfreq)
 {
     unsigned int i=0;
     if (ear_is_valid_frequency(newfreq)){
-        printf("Setting node: freq = %u\n",newfreq);
+        verbose(0, "Setting node: freq = %u", newfreq);
         for (i=0;i<ear_num_cpus;i++){
             ear_cpufreq[i]=newfreq;
             // This is a privileged function
@@ -160,29 +160,30 @@ int main(int argc,char *argv[])
 	unsigned long f;
 	struct cpufreq_available_frequencies *list_f,*first;
 	//Init the PAPI library
-	printf("Initializing PAPI to read machine configuration\n");
+	verbose(0, "Initializing PAPI to read machine configuration");
 	if (PAPI_is_initialized()==PAPI_NOT_INITED){
 		retval=PAPI_library_init(PAPI_VER_CURRENT );
 		if ( (retval != PAPI_VER_CURRENT ) && (retval>0)){
-			printf("Papi can not be initialised \n");
+			verbose(0, "Papi can not be initialised");
 			return -1;
 		}
 	}
 	ear_cpufreq_hwinfo= PAPI_get_hardware_info();
 	if (ear_cpufreq_hwinfo==NULL){
-		printf("PAPI_get_hardware_info returns NULL\n");
+		verbose(0, "PAPI_get_hardware_info returns NULL");
 		return -1;
 	}else{
 		cpu_model=get_model();
-		printf("CPU model %d\n",cpu_model);
+		verbose(0, "CPU model %d",cpu_model);
 		// 1- We detect the number of cpus based on papi information
 		ear_num_cpus=ear_cpufreq_hwinfo->sockets*ear_cpufreq_hwinfo->cores*ear_cpufreq_hwinfo->threads;
-		printf("%u cpus detected (sockets %u cores %u threads %u)\n",ear_num_cpus,ear_cpufreq_hwinfo->sockets,ear_cpufreq_hwinfo->cores,ear_cpufreq_hwinfo->threads);
+		verbose(0, "%u cpus detected (sockets %u cores %u threads %u)",
+			   ear_num_cpus, ear_cpufreq_hwinfo->sockets, ear_cpufreq_hwinfo->cores, ear_cpufreq_hwinfo->threads);
 	}
-	printf("Reading cpu frequencies information\n");
+	verbose(0, "Reading cpu frequencies information");
 	ear_cpufreq=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_cpus); 
 	if (ear_cpufreq==NULL){
-		printf("malloc return NULL in frequency_init\n");
+		verbose(0, "malloc return NULL in frequency_init");
 		return -1;
 	}
 	// 2-We check all the cpus are online, we should detect cores but
@@ -203,11 +204,11 @@ int main(int argc,char *argv[])
 		list_f=list_f->next;
 		ear_num_p_states++;
 	}
-	printf("%d p_states available\n",ear_num_p_states);
+	verbose(0, "%d p_states available", ear_num_p_states);
 	// 4-Detecting the list of pstates available
 	ear_cpufreq_pstates=(unsigned long *)malloc(sizeof(unsigned long)*ear_num_p_states);
 	if (ear_cpufreq_pstates==NULL){
-		printf("malloc return NULL in frequency_init\n");
+		verbose(0, "malloc return NULL in frequency_init");
 		return -1;
 	}
 	
@@ -216,11 +217,11 @@ int main(int argc,char *argv[])
 	while(list_f!=NULL){
 		ear_cpufreq_pstates[i]=list_f->frequency;	
 		list_f=list_f->next;
-		printf("P_state %d is %u\n",i,ear_cpufreq_pstates[i]);
+		verbose(0, "P_state %d is %u",i,ear_cpufreq_pstates[i]);
 		i++;
 	}	
 	ear_nominal_freq=ear_cpufreq_pstates[1];
-	printf(" Nominal frequency set to %u\n",ear_nominal_freq);
+	verbose(0, "Nominal frequency set to %u", ear_nominal_freq);
 	// this functions releases the memory allocated in cpufreq_get_available_frequencies function
 	cpufreq_put_available_frequencies(first);
 	// we get (and latter put) the current policy=governor
@@ -229,28 +230,28 @@ int main(int argc,char *argv[])
 	prev_policy.max=current_policy->max;
 	prev_policy.governor=(char *)malloc(strlen(current_policy->governor)+1);
 	strcpy(prev_policy.governor,current_policy->governor);
-	printf("Saving current governor %s\n",current_policy->governor);
+	verbose(0, "Saving current governor %s", current_policy->governor);
 	cpufreq_put_policy(current_policy);
 	frequency_set_userspace_governor_all_cpus();
 	// AFTER INIT
-	printf("After init...checking\n");
-	printf("nominal freq is %u\n",frequency_get_nominal_freq());
-	printf("num_p_states %d\n",frequency_get_num_pstates());
-	printf("ear_max_f %u\n",ear_max_f());
-	printf("ear_min_f %u\n",ear_min_f());
-	printf("changing node freq to %u\n",ear_max_f());
+	verbose(0, "After init...checking");
+	verbose(0, "nominal freq is %u", frequency_get_nominal_freq());
+	verbose(0, "num_p_states %d", frequency_get_num_pstates());
+	verbose(0, "ear_max_f %u", ear_max_f());
+	verbose(0, "ear_min_f %u", ear_min_f());
+	verbose(0, "changing node freq to %u", ear_max_f());
 	frequency_set_all_cpus(ear_max_f());
-	printf("frequency_get_num_pstates cpu %d =%u\n",	ear_num_cpus-1,frequency_get_num_pstates(ear_num_cpus-1));
-	printf("checking for valid frequency %u....%d(1=ok,0=not valid)\n",ear_max_f(),ear_is_valid_frequency(ear_max_f()));
-	printf("checking for not valid frequency %u....%d(1=ok,0=not valid)\n",ear_max_f()+1000000,ear_is_valid_frequency(ear_max_f()+1000000));
-	printf("changing freq for CPU 0 to min_f %u\n",ear_min_f());
+	verbose(0, "frequency_get_num_pstates cpu %d =%u", ear_num_cpus-1, frequency_get_num_pstates(ear_num_cpus-1));
+	verbose(0, "checking for valid frequency %u....%d(1=ok,0=not valid)", ear_max_f(), ear_is_valid_frequency(ear_max_f()));
+	verbose(0, "checking for not valid frequency %u....%d(1=ok,0=not valid)", ear_max_f()+1000000, ear_is_valid_frequency(ear_max_f()+1000000));
+	verbose(0, "changing freq for CPU 0 to min_f %u", ear_min_f());
 	f=ear_cpufreq_set(0,ear_min_f());
-	printf("after changing...frequency was %u and now it is %u\n",f,frequency_get_num_pstates(0));
+	verbose(0, "after changing...frequency was %u and now it is %u", f, frequency_get_num_pstates(0));
 	sleep(1);
 	ear_cpufreq_set(0,f);
-	printf("changing again....and checking	%u\n",frequency_get_num_pstates(0));
-	printf("p_state for nominal is %d,maxf %d and minf %d\n",frequency_freq_to_pstate(frequency_get_nominal_freq()),
-		frequency_freq_to_pstate(ear_max_f()),frequency_freq_to_pstate(ear_min_f()));
+	verbose(0, "changing again....and checking %u", frequency_get_num_pstates(0));
+	verbose(0, "p_state for nominal is %d,maxf %d and minf %d", frequency_freq_to_pstate(frequency_get_nominal_freq()),
+		frequency_freq_to_pstate(ear_max_f()), frequency_freq_to_pstate(ear_min_f()));
 	return 0;
 }
 

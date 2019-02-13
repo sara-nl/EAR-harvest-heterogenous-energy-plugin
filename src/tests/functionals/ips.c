@@ -84,7 +84,7 @@ void fill_ip(char *buff, ip_table_t *table)
 
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
-		fprintf(stderr,"getaddrinfo fails for port %s (%s)\n",buff,strerror(errno));
+		verbose(0,"getaddrinfo fails for port %s (%s)", buff, strerror(errno)); //error
 		return;
     }
 

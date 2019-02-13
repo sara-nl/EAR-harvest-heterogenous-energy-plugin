@@ -441,10 +441,10 @@ void report_status(gm_warning_t *my_warning)
 */
 void usage(char *app)
 {
-    printf("Usage: %s [-h]|[--help]|verbose_level] \n", app);
-	printf("This program controls the energy consumed in a period T2 seconds defined in $ETC/ear/ear.conf file\n");
-	printf("energy is checked every T1 seconds interval\n");
-	printf("Global manager can be configured in active or passive mode. Automatic actions are taken in active mode (defined in ear.conf file)\n");
+    verbose(0, "Usage: %s [-h]|[--help]|verbose_level]", app);
+	verbose(0, "This program controls the energy consumed in a period T2 seconds defined in $ETC/ear/ear.conf file");
+	verbose(0, "energy is checked every T1 seconds interval");
+	verbose(0, "Global manager can be configured in active or passive mode. Automatic actions are taken in active mode (defined in ear.conf file)");
     exit(0);
 }
 

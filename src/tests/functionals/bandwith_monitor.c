@@ -46,7 +46,7 @@ static char _buffer[32];
 static void _format_ull (ull n)
 {
     if (n < 0) {
-        printf ("-");
+        verbose(0,"-");
         _format_ull(-n);
         return;
     }
@@ -69,8 +69,8 @@ char* format_ull(ull n)
 
 void usage(char *app)
 {
-	printf("Usage: sudo ./%s num_seconds\n",app);
-	printf("reports the memory bandwith every seconds during num_seconds seconds\n");
+	verbose(0, "Usage: sudo ./%s num_seconds", app);
+	verbose(0, "reports the memory bandwith every seconds during num_seconds seconds");
 	exit(0);
 }
 
@@ -78,7 +78,7 @@ void print_uncores(unsigned long long *v,int num){
 	int i;
 	for (i = 0; i < num; i += 2)
 	{
-		printf("%s\t  %s\n", format_ull(v[i]), format_ull(v[i+1]));
+		verbose(0, "%s\t %s", format_ull(v[i]), format_ull(v[i+1]));
 	}
 }
 
@@ -94,18 +94,18 @@ int main (int argc, char *argv[])
 	int num_steps;
 
 	if (getuid()!=0){
-		printf("Warning, this test need root privileges, execute it as root or with sudo\n");
+		verbose(0, "Warning, this test need root privileges, execute it as root or with sudo");
 	}
 	
     if (argc<2) usage(argv[0]);
 
     num_steps=atoi(argv[1]);
 
-    printf("Testing %s\n", argv[1]);
+    verbose(0, "Testing %s", argv[1]);
     cpu_model = get_model(85);
-    printf("CPU Model: \t\t%i\n", cpu_model);
+    verbose(0, "CPU Model: \t\t%i", cpu_model);
     num_counters = init_uncores(cpu_model);
-    printf("Uncores detected: \t%i\n", num_counters);
+    verbose(0, "Uncores detected: \t%i", num_counters);
 
     read_uncores(values_begin);
     start_uncores();
@@ -113,24 +113,24 @@ int main (int argc, char *argv[])
     {
 		total_bytes=0;
 		total_cas=0;
-        printf("-------------------------- Working\n");
+        verbose(0, "-------------------------- Working");
         sleep(1);
 		read_uncores(values_end);
 		// print_uncores(values_end,num_counters);
 		diff_uncores(values,values_end,values_begin,num_counters);
 		copy_uncores(values_begin,values_end,num_counters);
 
-        printf("Reads\t  Writes\n");
+        verbose(0, "Reads\t  Writes");
         for (i = 0; i < num_counters; i += 2)
         {
-            printf("%s\t  %s\n", format_ull(values[i]), format_ull(values[i+1]));
+            verbose(0, "%s\t %s", format_ull(values[i]), format_ull(values[i+1]));
             total_cas += values[i] + values[i+1];
         }
         total_bytes = total_cas * 64;
         gbytes = ((double) total_bytes) / 1000000000.0;
 
-        printf("-------------------------- Summary\n");
-        printf("%0.3lf GB/sec.\n", gbytes);
+        verbose(0, "-------------------------- Summary");
+        verbose(0, "%0.3lf GB/sec.", gbytes);
         ++j;
     }
 

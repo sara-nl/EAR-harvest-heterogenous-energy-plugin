@@ -880,15 +880,15 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             conf->comm_nodes = realloc(conf->comm_nodes, sizeof(communication_node_t)*(conf->num_comm_nodes+1));
             memset(&conf->comm_nodes[conf->num_comm_nodes], 0, sizeof(communication_node_t));
             strcpy(conf->comm_nodes[conf->num_comm_nodes].name, token);
-            printf("tok0: %s\n", token);
+            verbose(0, "tok0: %s", token);
             token = strtok(NULL, " ");
-            printf("tok1: %s\n", token);
+            verbose(0, "tok1: %s", token);
             token = strtok(token, "=");
-            printf("tok2: %s\n", token);
+            verbose(0, "tok2: %s", token);
             if (!strcmp(token, "DISTANCE"))
             {
                 token = strtok(NULL, "=");
-            printf("tok3: %s\n", token);
+            verbose(0, "tok3: %s", token);
                 conf->comm_nodes[conf->num_comm_nodes].distance = atoi(token);
             }
             conf->num_comm_nodes++;

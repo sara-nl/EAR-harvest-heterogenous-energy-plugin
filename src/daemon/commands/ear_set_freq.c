@@ -54,25 +54,27 @@ void main(int argc,char *argv[])
 	f=atol(argv[1]);
 	// SET FREQ
 	if (gethostname(myhost,NAME_SIZE)<0){
-		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
+		verbose(0, "Error getting hostname %s", strerror(errno)); //error
 		exit(1);
 	}
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
         verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
         exit(0);
     }
-    verbose(0,"Using %s as EARGM configuration file",my_ear_conf_path);
+    verbose(0, "Using %s as EARGM configuration file", my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         verbose(0," Error reading cluster configuration\n");
     }
 
 	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
 	if(eards<0){ 
-		fprintf(stderr,"Connection error\n");
+		verbose(0, "Connection error"); //error
 		exit(1);
 	}
-	fprintf(stdout,"Setting the frequency in all the nodes to %lu\n",f);
+	verbose(0, "Setting the frequency in all the nodes to %lu", f);
 
-	if (!eards_set_freq(f)) fprintf(stderr,"ear_set_freq error sending eards_set_freq command\n");
+	if (!eards_set_freq(f)) {
+		verbose(0, "ear_set_freq error sending eards_set_freq command");
+	}
 	eards_remote_disconnect();
 }

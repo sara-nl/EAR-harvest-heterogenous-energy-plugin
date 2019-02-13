@@ -50,7 +50,7 @@
 
 #define PAPI_GET_COMPONENT(cid, event, name) \
 	if ((cid = PAPI_get_component_index(event)) < 0) { \
-		fprintf(stderr, "%s: '%s' component not found (%s), exiting\n", \
+		verbose(0, "%s: '%s' component not found (%s), exiting", \
 			name, event, PAPI_strerror(cid)); \
 		exit(1); \
 	}

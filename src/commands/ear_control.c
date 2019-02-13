@@ -82,7 +82,7 @@ void fill_ip(char *buff, ip_table_t *table)
 
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
-		fprintf(stderr,"getaddrinfo fails for port %s (%s)\n",buff,strerror(errno));
+		verbose(0, "getaddrinfo fails for port %s (%s)", buff, strerror(errno));
 		return;
     }
 
@@ -137,44 +137,45 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 void print_ips(ip_table_t *ips, int num_ips)
 {
     int i, j, counter = 0;
-    printf("%10s\t%10s\t%5s\t", "hostname", "ip", "power");
-    for (i = 0; i < TOTAL_POLICIES; i++)
-        printf("  %6s  %6s%5s\t   ", "policy", "pstate", "th");
-    printf("\n");
+    verbose(0,"%10s\t%10s\t%5s\t", "hostname", "ip", "power");
+    for (i = 0; i < TOTAL_POLICIES; i++) {
+        verbose(0,"  %6s  %6s%5s\t   ", "policy", "pstate", "th");
+    }
+    verbose(0," ");
 	char temp[GENERIC_NAME];
     char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
         if (ips[i].counter && ips[i].power != 0 )
         {
-            printf("%10s\t%10s\t%5d", ips[i].name, ips[i].ip, ips[i].power); 
+            verbose(0,"%10s\t%10s\t%5d", ips[i].name, ips[i].ip, ips[i].power);
 		    for (j = 0; j < TOTAL_POLICIES; j++)
 		    {
 			    policy_id_to_name(j, temp);
                 get_short_policy(final, temp);
-			    printf("  %5s  %5u  %8u\t", final, ips[i].policies[j].pstate, ips[i].policies[j].th); 
+			    verbosen(0, "  %5s  %5u  %8u\t", final, ips[i].policies[j].pstate, ips[i].policies[j].th);
 		    }
-            printf("\n");
+            verbose(0,"");
             if (ips[i].power < MAX_SIG_POWER)
                 counter++;
         }
 	}
     if (counter < num_ips)
     {
-        printf("\n\nINACTIVE NODES\n");
+        verbose(0,"\n\nINACTIVE NODES");
         for (i = 0; i <num_ips; i++)
         {
             if (!ips[i].counter)
-                printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
+                verbose(0, "%10s\t%10s", ips[i].name, ips[i].ip);
             else if (!ips[i].power || ips[i].power > MAX_SIG_POWER)
-                printf("%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
+                verbose(0, "%10s\t%10s\t->power error (reported %dW)", ips[i].name, ips[i].ip, ips[i].power);
         }
     }
 }
 
 void usage(char *app)
 {
-	printf("Usage: %s [options]"\
+	verbose(0, "Usage: %s [options]"\
             "\n\t--set-freq \tnewfreq\t\t\t->sets the frequency of all nodes to the requested one"\
             "\n\t--set-def-freq \tnewfreq\tpolicy_id\t->sets the default frequency for the selected policy id"\
             "\n\t--set-max-freq \tnewfreq\t\t\t->sets the maximum frequency"\
@@ -188,7 +189,7 @@ void usage(char *app)
             "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
             "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
             "\n\t--help \t\t\t\t\t->displays this message."\
-            "\n\nThis app requires privileged access privileged accesss to execute.\n", app);
+            "\n\nThis app requires privileged access privileged accesss to execute.", app);
 	exit(1);
 }
 
@@ -229,8 +230,9 @@ void process_status(int num_status, status_t *status)
         print_ips(ips, num_ips);
         free(status);
     }
-    else
-        printf("An error retrieving status has occurred.\n");
+    else {
+        verbose(0, "An error retrieving status has occurred.");
+    }
 }
 
 
@@ -245,7 +247,7 @@ void main(int argc, char *argv[])
     if (argc < 2) usage(argv[0]);
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
-        printf("Error getting ear.conf path\n");
+        verbose(0, "Error getting ear.conf path"); //error
         exit(0);
     }
 
@@ -254,15 +256,15 @@ void main(int argc, char *argv[])
     char *user = getlogin();
     if (user == NULL)
     {
-        fprintf(stderr, "ERROR getting username, cannot verify identity of user executing the command. Exiting...\n");
+        verbose(0, "ERROR getting username, cannot verify identity of user executing the command. Exiting..."); //error
         free_cluster_conf(&my_cluster_conf);
         exit(1);
     }
     else if (!is_privileged(&my_cluster_conf, user, NULL, NULL) && getuid() != 0)
     {
-        fprintf(stderr, "This command can only be executed by privileged users, and the current one (%s) is not. Contact your admin for more info.\n", user);
+        verbose(0, "This command can only be executed by privileged users, and the current one (%s) is not. Contact your admin for more info.", user);
         free_cluster_conf(&my_cluster_conf);
-        exit(1);
+        exit(1); //error
     }
 
     while (1)

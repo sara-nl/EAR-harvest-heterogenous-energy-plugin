@@ -34,7 +34,7 @@
 #include <stdio.h>
 
 #ifdef EAR_INTERFACE_C_DEBUG
-#define VERBOSE_C(tags,text,...) fprintf(stderr,"EAR_INTERFACE_C[%d]: %s\n",getpid(),text);
+#define VERBOSE_C(tags,text,...) verbose(0, "EAR_INTERFACE_C[%d]: %s", getpid(), text);
 #else
 #define VERBOSE_C(tags,text,...)
 #endif

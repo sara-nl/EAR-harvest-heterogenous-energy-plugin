@@ -32,10 +32,9 @@
 
 #include <signal.h>
 
-#define error(...) \
+#define _error(...) \
 	printl0(); \
-	fprintf(stderr, "ERROR, " __VA_ARGS__); \
-	fprintf(stderr, "\n"); \
+	verbose(0, "ERROR, " __VA_ARGS__)
 	error_handler();
 
 void signal_handler(int signal, siginfo_t *info, void *context);

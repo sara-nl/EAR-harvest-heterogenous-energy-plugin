@@ -57,7 +57,7 @@ void main(int argc,char *argv[])
 	if (argc==1){
 	/*NEW_JOB*/
 		if (gethostname(myhost,NAME_SIZE)<0){
-			fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
+			verbose(0, "Error getting hostname %s", strerror(errno)); //error
 			exit(1);
 		}
 	}else{
@@ -74,14 +74,14 @@ void main(int argc,char *argv[])
 
 	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
 	if(eards<0){ 
-		fprintf(stderr,"Connection error\n");
+		verbose(0, "Connection error"); //error
 		exit(1);
 	}
 	verbose(2,"Connected to host %s",myhost);
 	id=getenv("SLURM_JOB_ID");
 	sid=getenv("SLURM_STEP_ID");
 	if ((id==NULL) || (sid==NULL)){
-		fprintf(stderr,"ear_new_job error: job id or step id have null values\n");
+		verbose(0,"ear_new_job error: job id or step id have null values"); //error
 		exit(1);
 	}
 	my_job.job.id=atoi(id);
@@ -110,7 +110,7 @@ void main(int argc,char *argv[])
 	if (myth==NULL) my_job.job.th=0;
 	else my_job.job.th=my_job.job.th=strtod(myth,NULL);
 	#if API_DEBUG
-	fprintf(stdout,"ear_new_job: id %d step_id %d appname %s user %s policy %s th %lf\n",
+	verbose(0, "ear_new_job: id %d step_id %d appname %s user %s policy %s th %lf",
 	my_job.job.id,my_job.job.step_id,my_job.job.app_id,my_job.job.user_id,my_job.job.policy,my_job.job.th);
 	#endif
 	if (learning!=NULL){
@@ -122,6 +122,8 @@ void main(int argc,char *argv[])
 		my_job.job.def_f=(ulong)atoi(p_state);
 	}
 
-	if (!eards_new_job(&my_job)) fprintf(stderr,"ear_new_job error sending new_job command\n");
+	if (!eards_new_job(&my_job)) {
+		verbose(0,"ear_new_job error sending new_job command"); //error
+	}
 	eards_remote_disconnect();
 }

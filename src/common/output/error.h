@@ -33,14 +33,18 @@
 #include <stdio.h>
 #include <string.h>
 
-int err_channel    __attribute__((weak)) = 2;
+int error_channel    __attribute__((weak)) = 2;
 
 #if SHOW_ERRORS
 #define error(...) \
-	dprintf(err_channel, __VA_ARGS__); \
-	dprintf(verb_channel, "\n");
+	dprintf(error_channel, __VA_ARGS__); \
+	dprintf(error_channel, "\n");
 #else
 #define error(...)
 #endif
+
+// Set
+#define ERROR_SET_FD(fd) \
+	error_channel = fd;
 
 #endif //EAR_ERROR_H

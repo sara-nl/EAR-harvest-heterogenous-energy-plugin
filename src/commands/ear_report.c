@@ -89,22 +89,22 @@ time_t global_end_time = 0;
 
 void usage(char *app)
 {
-    printf("%s is a tool that reports energy consumption data\n", app);
-	printf("Usage: %s [options]\n", app);
-    printf("Options are as follows:\n"\
+    verbose(0, "%s is a tool that reports energy consumption data", app);
+	verbose(0, "Usage: %s [options]", app);
+    verbose(0, "Options are as follows:"\
             "\t-s start_time     \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
             "\t-e end_time       \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
             "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
             "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
             "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
-            "\t-h                \t shows this message.\n");
+            "\t-h                \t shows this message.");
 	exit(1);
 }
 
 
 long long stmt_error(MYSQL_STMT *statement)
 {
-    fprintf(stderr, "Error preparing statement (%d): %s\n", 
+    verbose(0, "Error preparing statement (%d): %s",
             mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
     return -1;
@@ -116,8 +116,8 @@ unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsi
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement)
     {
-        fprintf(stderr, "Error creating statement (%d): %s\n", mysql_errno(connection), 
-                mysql_error(connection));
+        verbose(0, "Error creating statement (%d): %s", mysql_errno(connection),
+                mysql_error(connection)); //error
         return -1;
     }
     
@@ -144,7 +144,9 @@ unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsi
     else strcpy(query, SUM_QUERY);
 #endif
 
-    if (verbose) printf("QUERY: %s\n", query);
+    if (verbose) {
+        verbose(0, "QUERY: %s", query);
+    }
     if (mysql_stmt_prepare(statement, query, strlen(query)))
                                                 return stmt_error(statement);
 
@@ -180,9 +182,13 @@ unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsi
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
         result = -2;
 
-    if (mysql_stmt_free_result(statement)) fprintf(stderr, "ERROR when freing result.\n");
+    if (mysql_stmt_free_result(statement)) {
+        verbose(0, "ERROR when freing result."); //error
+    }
 
-    if (mysql_stmt_close(statement)) printf("\nERROR when freeing statement\n");
+    if (mysql_stmt_close(statement)) {
+        verbose(0, "\nERROR when freeing statement"); //error
+    }
 
     return result;
 
@@ -196,7 +202,7 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
         MYSQL_STMT *statement = mysql_stmt_init(connection);
         if (!statement)
         {
-            fprintf(stderr, "Error creating statement (%d): %s\n", mysql_errno(connection), 
+            verbose(0, "Error creating statement (%d): %s", mysql_errno(connection),
                     mysql_error(connection));
             return;
         }
@@ -211,7 +217,10 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
         else
             strcpy(query, MET_TIME);
 
-        if (verbose) printf("QUERY: %s\n", query);
+        if (verbose) {
+            verbose(0, "QUERY: %s", query);
+        }
+
         if (mysql_stmt_prepare(statement, query, strlen(query)))
         {
             avg_pow = stmt_error(statement);
@@ -257,19 +266,19 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
         char sbuff[64], ebuff[64];
         if (verbose)
         {
-            printf("original  \t start_time: %d\t end_time: %d\n\n", start_time, end_time);
-            printf("from query\t start_time: %d\t end_time: %d\n\n", global_start_time, global_end_time);
-            printf("from query\t start_time: %s\t end_time: %s\n\n", 
+            verbose(0, "original  \t start_time: %d\t end_time: %d\n", start_time, end_time);
+            verbose(0, "from query\t start_time: %d\t end_time: %d\n", global_start_time, global_end_time);
+            verbose(0, "from query\t start_time: %s\t end_time: %s\n",
                     ctime_r(&global_start_time, sbuff), ctime_r(&global_end_time, ebuff));
-            printf("result: %llu\n", result);
+            verbose(0, "result: %llu", result);
         }
         if (global_start_time != global_end_time && result > 0)
             avg_pow = result / (global_end_time-global_start_time);
     
         if (verbose)
         {
-            printf("avg_pow after computation: %lu\n", avg_pow);
-            printf("end-start: %d\n", global_end_time-global_start_time);
+            verbose(0, "avg_pow after computation: %lu", avg_pow);
+            verbose(0, "end-start: %d", global_end_time-global_start_time);
         }
 
         mysql_stmt_close(statement);
@@ -284,48 +293,50 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)
     char all_nodes = 0;
 
     sprintf(query, inc_query, start_time, end_time);
-    if (verbose) printf("query: %s\n", query);
+
+    if (verbose) {
+        verbose(0, "query: %s", query);
+    }
     
     if (mysql_query(connection, query))
     {
-        fprintf(stderr, "MYSQL error\n"); 
+        verbose(0, "MYSQL error");
         return;
     }
     MYSQL_RES *result = mysql_store_result(connection);
   
     if (result == NULL) 
     {
-        fprintf(stderr, "MYSQL error\n"); 
+        verbose(0, "MYSQL error");
         return;
     }
 
     int num_fields = mysql_num_fields(result);
 
     MYSQL_ROW row;
-    if (!strcmp(inc_query, ALL_USERS))
-        printf("%15s %15s\n", "Energy (J)", "User"); 
-    else if (!strcmp(inc_query, ALL_TAGS))
-        printf("%15s %15s\n", "Energy (J)", "Energy tag"); 
-    else if (global_end_time > 0)
-    {
-        printf("%15s %15s %15s\n", "Energy (J)", "Node", "Avg. Power"); 
+    if (!strcmp(inc_query, ALL_USERS)) {
+        verbose(0, "%15s %15s", "Energy (J)", "User");
+    } else if (!strcmp(inc_query, ALL_TAGS)) {
+        verbose(0, "%15s %15s", "Energy (J)", "Energy tag");
+    } else if (global_end_time > 0) {
+        verbose(0, "%15s %15s %15s", "Energy (J)", "Node", "Avg. Power");
         all_nodes = 1;
     }
-    else
-        printf("%15s %15s\n", "Energy (J)", "Node"); 
+    else {
+        verbose(0, "%15s %15s", "Energy (J)", "Node");
+    }
 
 
     while ((row = mysql_fetch_row(result))!= NULL) 
     { 
-        for(i = 0; i < num_fields; i++) 
-        {
-            printf("%15s ", row[i] ? row[i] : "NULL"); 
+        for(i = 0; i < num_fields; i++) {
+            verbosen(0, "%15s ", row[i] ? row[i] : "NULL");
         }
           
         if (row[0] && all_nodes) //when getting energy we compute the avg_power
-            printf("%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
+            verbosen(0, ("%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
 
-        printf("\n"); 
+        verbose(0, " ");
     }
     mysql_free_result(result);
 }
@@ -345,16 +356,18 @@ void main(int argc,char *argv[])
 
     if (get_ear_conf_path(path_name) == EAR_ERROR)
     {
-        fprintf(stderr, "Error getting ear.conf path.\n");
+        verbose(0, "Error getting ear.conf path."); //error
         exit(1);
     }
 
-    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) fprintf(stderr, "Error reading configuration");
+    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) {
+        verbose(0, "Error reading configuration"); //error
+    }
     
     char *user = getlogin();
     if (user == NULL)
     {
-        fprintf(stderr, "Error getting username, cannot verify identity of user executing the command. Exiting...\n");
+        verbose(0, "Error getting username, cannot verify identity of user executing the command. Exiting..."); //error
         free_cluster_conf(&my_conf);
         exit(1);
     }
@@ -362,15 +375,15 @@ void main(int argc,char *argv[])
     MYSQL *connection = mysql_init(NULL);
     if (!connection)
     {
-        fprintf(stderr, "Error creating MYSQL object\n");
+        verbose(0, "Error creating MYSQL object"); //error
         free_cluster_conf(&my_conf);
         exit(1);
     }
 
     if (!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user, "", my_conf.database.database, my_conf.database.port, NULL, 0))
     {
-        fprintf(stderr, "Error connecting to the database (%d) :%s\n",
-                mysql_errno(connection), mysql_error(connection));
+        verbose(0, "Error connecting to the database (%d): %s",
+                mysql_errno(connection), mysql_error(connection)); //error
         mysql_close(connection);
         free_cluster_conf(&my_conf);
         exit(1);
@@ -406,7 +419,7 @@ void main(int argc,char *argv[])
             case 'e':
                 if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
                 {
-                    fprintf(stderr, "Incorrect time format. Supported format is YYYY-MM-DD\n");
+                    verbose(0, "Incorrect time format. Supported format is YYYY-MM-DD"); //error
                     mysql_close(connection);
                     free_cluster_conf(&my_conf);
                     exit(1);
@@ -417,7 +430,7 @@ void main(int argc,char *argv[])
             case 's':
                 if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
                 {
-                    fprintf(stderr, "Incorrect time format. Supported format is YYYY-MM-DD\n");
+                    verbose(0, "Incorrect time format. Supported format is YYYY-MM-DD"); //error
                     mysql_close(connection);
                     free_cluster_conf(&my_conf);
                     exit(1);
@@ -433,10 +446,11 @@ void main(int argc,char *argv[])
         unsigned long long result = get_sum(connection, start_time, end_time, divisor);
         compute_pow(connection, start_time, end_time, result);
     
-        if (!result) printf("No results in that period of time found\n");
-        else if (result < 0) 
+        if (!result) {
+            verbose(0, "No results in that period of time found");
+        } else if (result < 0)
         {
-            fprintf(stderr, "Error querying the database.\n");
+            verbose(0, "Error querying the database."); //error
             exit(1);
         }
         else
@@ -444,14 +458,15 @@ void main(int argc,char *argv[])
             char sbuff[64], ebuff[64];
             strtok(ctime_r(&end_time, ebuff), "\n");
             strtok(ctime_r(&start_time, sbuff), "\n");
-            printf("Total energy spent from %s to %s: %llu J\n", sbuff, ebuff, result);
+            verbose(0, "Total energy spent from %s to %s: %llu J", sbuff, ebuff, result);
             if (avg_pow <= 0)
             {
                 if (user_name == NULL && etag == NULL && verbose)
-                    fprintf(stderr, "Error when reading time info from database, could not compute average power.\n");
+                    verbose(0, "Error when reading time info from database, could not compute average power."); //error
             }
-            else if (avg_pow > 0)
-                printf("Average power during the period: %lu W\n", avg_pow);
+            else if (avg_pow > 0) {
+                verbose(0, "Average power during the period: %lu W", avg_pow);
+            }
         }    
     }
     else if (all_users)

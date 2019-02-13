@@ -40,7 +40,7 @@
 #endif
 
 #ifdef EAR_INTERCEPT_F_DEBUG
-#define verbose(tags,text,...)  fprintf(stderr,"EAR_interceptF[%d]: %s\n",getpid(),text);
+#define verbose(tags,text,...)  verbose(0, "EAR_interceptF[%d]: %s", getpid(), text);
 #else
 #define verbose(tags,text,...)
 #endif

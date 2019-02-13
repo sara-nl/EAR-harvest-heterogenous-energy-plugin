@@ -175,7 +175,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// Configuration
 #if 1
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
-		error("while getting ear.conf path");
+		_error("while getting ear.conf path");
 	}
 
 	printm1("reading '%s' configuration file", extra_buffer);
@@ -183,7 +183,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 	// Database configuration
 	if (get_eardbd_conf_path(extra_buffer) == EAR_ERROR){
-		error("while getting eardbd.conf path");
+		_error("while getting eardbd.conf path");
 	}
 
 	printm1("reading '%s' database configuration file", extra_buffer);
@@ -236,7 +236,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	process_data_initialize(&proc_data_srv, "eardbd_test", path_pid);
 
 	if (state_fail(process_pid_file_save(&proc_data_srv))) {
-		error("while testing the local state directory (%s)", intern_error_str);
+		_error("while testing the local state directory (%s)", intern_error_str);
 	}
 
 	process_pid_file_clean(&proc_data_srv);
@@ -259,7 +259,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	printm1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
 
 	if (!server_too && !mirror_too) {
-		error("this node is not configured as a server nor mirror");
+		_error("this node is not configured as a server nor mirror");
 	}
 }
 
@@ -324,7 +324,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	int errno4 = init_sockets_single(ssync_mir, server_host, synchr_port, 0);
 
 	if (errno1 != 0 || errno2 != 0 || errno3 != 0 || errno4 != 0) {
-		error("while binding sockets (%d %d %d %d)", errno1, errno2, errno3, errno4);
+		_error("while binding sockets (%d %d %d %d)", errno1, errno2, errno3, errno4);
 	}
 
 	// Verbosity
@@ -373,7 +373,7 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 		else if (mirror_pid > 0) {
 			others_pid = mirror_pid;
 		} else {
-			error("error while forking, terminating the program");
+			_error("error while forking, terminating the program");
 		}
 	}
 
@@ -573,9 +573,9 @@ static void init_pid_files(int argc, char **argv)
 
 		if (process_pid_file_save(&proc_data_srv)) {
 			if (mirror_too) {
-				error("while creating server PID file, waiting the mirror");
+				_error("while creating server PID file, waiting the mirror");
 			} else {
-				error("while creating server PID file");
+				_error("while creating server PID file");
 			}
 		}
 	} else if (mirror_iam && mirror_too)
@@ -583,7 +583,7 @@ static void init_pid_files(int argc, char **argv)
 		process_update_pid(&proc_data_mir);
 
 		if (process_pid_file_save(&proc_data_mir)) {
-			error("while creating mirror PID file");
+			_error("while creating mirror PID file");
 		}
 	}
 }

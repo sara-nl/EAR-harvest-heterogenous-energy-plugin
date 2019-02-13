@@ -75,7 +75,7 @@ uint *samples_f, i, *current;
 #define MALLOC(var, type, mult)                       \
     var = (type *) malloc(sizeof(type) * mult);       \
     if (var == NULL) {                                \
-        fprintf(stderr, "Error allocating memory\n"); \
+        verbose(0, "Error allocating memory"); \
         exit(1);                                      \
     }
 #define OPEN(desc, file_name, permissions, flags)     \
@@ -233,7 +233,7 @@ void init_list_coeffs(uint ref, uint i, uint f, double A, double B, double C, do
 
 void usage(char *app)
 {
-    fprintf(stdout, "Usage: %s coefficients_path min_freq [nodename] \n", app);
+    verbose(0, "Usage: %s coefficients_path min_freq [nodename]", app);
     exit(1);
 }
 
@@ -260,7 +260,7 @@ int main(int argc, char *argv[])
 	}else{
     	if (gethostname(nodename, sizeof(nodename)) < 0)
     	{
-    	    fprintf(stderr, "Error getting node name (%s)", strerror(errno));
+    	    verbose(0, "Error getting node name (%s)", strerror(errno)); //error
     	    _exit(1);
     	}
     	strtok(nodename, ".");
@@ -294,14 +294,14 @@ int main(int argc, char *argv[])
     read_cluster_conf(ear_path,&my_conf);
 	my_node=get_my_node_conf(&my_conf,nodename);
     if (my_node==NULL){
-    	fprintf(stderr," Error in cluster configuration, node %s not found\n",nodename);
+    	verbose(0," Error in cluster configuration, node %s not found", nodename); //error
     }
-	fprintf(stdout,"ear.conf ready\n");
+	verbose(0, "ear.conf ready");
     init_db_helper(&my_conf.database);
 	num_apps =get_num_applications(is_learning, nodename);
  	MALLOC(app_list, application_t, num_apps);
  	MALLOC(apps, application_t, num_apps);
-	fprintf(stdout,"%d applications in DB for learning phase\n",num_apps);
+	verbose(0, "%d applications in DB for learning phase", num_apps);
     ret=db_read_applications(&tmp_apps,is_learning, num_apps,nodename);
     if (ret>0){
         for (i=0;i<ret;i++){
@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
         average_list_samples(&app_list[i].signature, samples_per_app[i]);
     }
 
-    fprintf(stdout, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u\n",
+    verbose(0, "%s: %u total P_STATES (1: %u KHz), readed %d applications with f >= %u",
             nodename, num_node_p_states, nom_freq, num_apps, min_freq);
 
     // We maintain the name's of applications to generate graphs
@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
 	sprintf(path_coef_file,"%s/island%d",coeff_root,my_node->island);
 	if (mkdir (path_coef_file,S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IROTH)<0){
 		if (errno!=EEXIST){
-			fprintf(stderr,"Error , path %s cannot be created (%s)\n",path_coef_file,strerror(errno));
+			verbose(0, "Error, path %s cannot be created (%s)", path_coef_file, strerror(errno)); //error
 			exit(1);
 		}
 	}
@@ -423,7 +423,7 @@ int main(int argc, char *argv[])
                 if (ref == f)
                 {
                     init_list_coeffs(ref, f, p_state_to_freq(f), 1, 0, 0, 1, 0, 0);
-					fprintf(stdout,"Writting coeffs for freq=%lu projection %lu\n",ref,f);
+					verbose(0, "Writting coeffs for freq=%lu projection %lu", ref, f);
             		if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                 		perror("Error writting coefficients file\n");
                 		exit(1);
@@ -436,7 +436,7 @@ int main(int argc, char *argv[])
                     if (n > 0)
                     {
                         #if CC_DEBUG
-                        fprintf(stdout, "Computing POWER regression for freq %u with %u samples (REF=%u)\n",
+                        verbose(0, "Computing POWER regression for freq %u with %u samples (REF=%u)",
                                 p_state_to_freq(f), samples_f[f], p_state_to_freq(ref));
                         #endif
                         gsl_matrix *SIGNATURE_POWER = gsl_matrix_calloc(n, 3);
@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
                         gsl_multifit_linear(SIGNATURE_POWER, POWER, COEFFS, cov, &chisq, wspc);
 
                         #if CC_DEBUG
-                        fprintf(stdout, "Coefficient for power: %g*DC_power + %g*TPI_f0 + %g\n",
+                        verbose(0, "Coefficient for power: %g*DC_power + %g*TPI_f0 + %g",
                                 gsl_vector_get(COEFFS, 1), gsl_vector_get(COEFFS, 2), gsl_vector_get(COEFFS, 0));
                         #endif
                         A = gsl_vector_get(COEFFS, 1);
@@ -476,7 +476,7 @@ int main(int argc, char *argv[])
                     if (n > 0)
                     {
                         #if CC_DEBUG
-                        fprintf(stdout, "Computing CPI regression for freq %u with %u samples (REF=%u)\n",
+                        verbose(0, "Computing CPI regression for freq %u with %u samples (REF=%u)",
                                 p_state_to_freq(f), samples_f[f], p_state_to_freq(ref));
                         #endif
                         gsl_matrix *SIGNATURE_CPI = gsl_matrix_calloc(n, 3);
@@ -502,7 +502,7 @@ int main(int argc, char *argv[])
                         gsl_multifit_linear(SIGNATURE_CPI, CPI, COEFFS, cov, &chisq, wspc);
 
                         #if CC_DEBUG
-                        fprintf(stdout, "Coefficient for cpi: %g*CPI_f0 + %g*TPI_f0 + %g\n",
+                        verbose(0, "Coefficient for cpi: %g*CPI_f0 + %g*TPI_f0 + %g",
                                 gsl_vector_get(COEFFS, 1), gsl_vector_get(COEFFS, 2), gsl_vector_get(COEFFS, 0));
                         #endif
                         D = gsl_vector_get(COEFFS, 1);
@@ -516,13 +516,13 @@ int main(int argc, char *argv[])
                         gsl_multifit_linear_free(wspc);
 
                         init_list_coeffs(ref, f, p_state_to_freq(f), A, B, C, D, E, F);
-						fprintf(stdout,"Writting coeffs for freq=%lu projection %lu\n",ref,f);
+						verbose(0, "Writting coeffs for freq=%lu projection %lu", ref, f);
             			if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                 			perror("Error writting coefficients file\n");
                 			exit(1);
             			}
                     }else{
-                        fprintf(stdout,"Writting NULL coeffs for freq=%lu projection %lu\n",ref,f);
+                        verbose(0, "Writting NULL coeffs for freq=%lu projection %lu", ref, f);
                         if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                             perror("Error writting coefficients file\n");
                             exit(1);
@@ -533,7 +533,7 @@ int main(int argc, char *argv[])
 
 
         }else{
-			fprintf(stdout,"Writting NULL coeffs for freq=%lu projections %lu\n",ref,p_state_max);
+			verbose(0, "Writting NULL coeffs for freq=%lu projections %lu", ref, p_state_max);
             if (write(fd, &coeffs_list[ref][0], sizeof(coefficient_t)* p_state_max) != sizeof(coefficient_t)*p_state_max ) {
             	perror("Error writting coefficients file\n");
             	exit(1);
@@ -542,6 +542,6 @@ int main(int argc, char *argv[])
     }
     close(fd);
 
-    fprintf(stdout, " %s: computed coefficients\n", nodename);
+    verbose(0, " %s: computed coefficients", nodename);
     return 0;
 }

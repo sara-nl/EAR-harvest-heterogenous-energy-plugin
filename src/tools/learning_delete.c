@@ -98,13 +98,13 @@ void main(int argc,char *argv[])
     
     if (connection == NULL)
     {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
         exit(1);
     }
 
     if(!mysql_real_connect(connection, my_conf.database.ip, "root", passw, my_conf.database.database, my_conf.database.port, NULL, 0))
     {
-        fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(0, "Error connecting to the database(%d):%s", mysql_errno(connection), mysql_error(connection)); //error
         mysql_close(connection);
         exit(0);
     }
@@ -114,26 +114,26 @@ void main(int argc,char *argv[])
     {
         if (mysql_query(connection, query))
         {
-            fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 
+            verbose(0, "MYSQL error(%d): %s", mysql_errno(connection), mysql_error(connection)); //error
             exit(0);
         }
         strcpy(query, ALL_QUERY2);
         if (mysql_query(connection, query))
         {
-            fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 
+            verbose(0, "MYSQL error(%d): %s", mysql_errno(connection), mysql_error(connection)); //error
             exit(0);
         }
         strcpy(query, ALL_QUERY3);
         if (mysql_query(connection, query))
         {
-            fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 
+            verbose(0, "MYSQL error(%d): %s", mysql_errno(connection), mysql_error(connection)); //error
             exit(0);
         }
         strcpy(query, ALL_QUERY4);
     }
     if (mysql_query(connection, query))
     {
-        fprintf(stderr, "MYSQL error(%d): %s\n", mysql_errno(connection), mysql_error(connection)); 
+        verbose(0, "MYSQL error(%d): %s", mysql_errno(connection), mysql_error(connection)); //error
         exit(0);
     }
     mysql_close(connection);
