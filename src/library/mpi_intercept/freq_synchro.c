@@ -76,6 +76,7 @@ void global_frequency_selection_send(ulong my_local_f)
 		synchro_pending=1;
 	}
 }
+
 ulong global_frequency_selection_synchro()
 {
 	ulong global_f=0;
@@ -106,10 +107,5 @@ ulong global_frequency_selection_synchro()
 	}
 	return global_f;
 }
-#else
-ulong global_frequency_selection_synchro(){return 0;}
-void global_frequency_selection_send(ulong my_local_f){}
-void configure_global_synchronization(){}
+
 #endif
-
-
