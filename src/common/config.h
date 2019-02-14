@@ -30,6 +30,8 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#include <common/config_install.h>
+
 #define PERFORMANCE_GAIN 					0.75
 #define EAR_ACCEPTED_TH						0.05
 #define EAR_MIN_P_STATE						3
