@@ -49,5 +49,7 @@ void states_end_job(int my_id, FILE *ear_fd, char *app_name);
 /** Returns the current EAR state */
 int states_my_state();
 
-#else
+/** */
+ulong select_near_freq(ulong avg);
+
 #endif

@@ -66,19 +66,25 @@ ulong policy_default_configuration();
 void force_global_frequency(ulong new_f);
 
 uint get_global_def_pstate();
+
 ulong get_global_def_freq();
+
 #if LRZ_POLICY
 double get_global_th(double *th,double *th2);
 #else
 double get_global_th();
 #endif
-void policy_global_reconfiguration();
 
+/* */
+void policy_global_reconfiguration();
 
 /* Returns the maximum tries per policy */
 int policy_max_tries();
+
 /* Returns the default freq for the current policy */
 ulong policy_get_default_freq();
 
-#else
+/** */
+uint get_global_min_pstate();
+
 #endif

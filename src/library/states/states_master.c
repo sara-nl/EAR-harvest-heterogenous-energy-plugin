@@ -78,16 +78,6 @@ static int current_loop_id;
 extern uint check_periodic_mode;
 #endif
 
-/** This funcion must be policy dependent */
-ulong select_near_freq(ulong avg)
-{
-	ulong near;
-	ulong norm;
-	norm=avg/100000;
-	near=norm*100000;
-	return near;
-}
-
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	verbose(1, "EAR(%s) Ends execution. \n", app_name);
