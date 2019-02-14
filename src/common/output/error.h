@@ -37,8 +37,10 @@ int error_channel    __attribute__((weak)) = 2;
 
 #if SHOW_ERRORS
 #define error(...) \
-	dprintf(error_channel, __VA_ARGS__); \
-	dprintf(error_channel, "\n");
+	{ \
+		dprintf(error_channel, __VA_ARGS__); \
+		dprintf(error_channel, "\n"); \
+	}
 #else
 #define error(...)
 #endif
