@@ -27,17 +27,18 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 #include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
+#include <common/output/verbose.h>
 #include <daemon/app_api/app_conf_api.h>
-#include <limits.h>
 
 static int fd_app_to_eard;
 static int fd_eard_to_app;

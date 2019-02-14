@@ -34,7 +34,7 @@
 
 #define _error(...) \
 	printl0(); \
-	verbose(0, "ERROR, " __VA_ARGS__)
+	verbose(0, "ERROR, " __VA_ARGS__); \
 	error_handler();
 
 void signal_handler(int signal, siginfo_t *info, void *context);
