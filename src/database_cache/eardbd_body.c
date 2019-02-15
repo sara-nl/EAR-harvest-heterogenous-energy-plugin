@@ -209,6 +209,7 @@ static int body_new_connection(int fd)
 
 static void body_connections()
 {
+	long ip;
 	state_t s;
 	int fd_old;
 	int i;
@@ -233,7 +234,8 @@ static void body_connections()
 					if (!sync_fd_is_mirror(i))
 					{
 						// Disconnect if previously connected
-						sockets_get_address_fd(fd_cli, extra_buffer, sizeof(extra_buffer));
+						sockets_get_hostname_fd(fd_cli, extra_buffer, sizeof(extra_buffer));
+						sockets_get_ip(addr_cli, &ip);
 
 						if (sync_fd_exists(extra_buffer, &fd_old)) {
 							sync_fd_disconnect(fd_old);
@@ -249,7 +251,7 @@ static void body_connections()
 						sync_fd_add(fd_cli, extra_buffer);
 
 						if (verbosity) {
-							printp1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
+							printp1("accepted fd '%d' from host '%s' %ld", fd_cli, extra_buffer, ip);
 						}
 					}
 				} while(state_ok(s));
@@ -271,7 +273,7 @@ static void body_connections()
 						//		i, intern_error_num, intern_error_str);
 						soc_discn += 1;
 					} if (state_is(s, EAR_SOCK_TIMEOUT)) {
-						sockets_get_address_fd(i, extra_buffer, SZ_BUFF_BIG);
+						//sockets_get_hostname_fd(i, extra_buffer, SZ_BUFF_BIG);
 						//printp1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
 						//		i, extra_buffer, intern_error_num, intern_error_str);
 						soc_tmout += 1;
