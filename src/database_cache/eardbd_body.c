@@ -218,7 +218,7 @@ static void body_connections()
 		if (listening && FD_ISSET(i, &fds_incoming)) // we got one!!
 		{
 			// Handle new connections (just for TCP)
-			if (body_new_connection(i))
+			if (sync_fd_is_new(i))
 			{
 				do {
 					// i      -> listening descriptor
@@ -230,17 +230,27 @@ static void body_connections()
 						break;
 					}
 
-					if (sync_fd_exists(fd_cli, &fd_old)) {
-						sync_fd_disconnect(fd_old);
+					if (!sync_fd_is_mirror(i))
+					{
+						// Disconnect if previously connected
+						sockets_get_address_fd(fd_cli, extra_buffer, sizeof(extra_buffer));
+
+						if (sync_fd_exists(extra_buffer, &fd_old)) {
+							sync_fd_disconnect(fd_old);
+						}
 					}
 
 					// Test if the maximum number of connection has been reached
 					// (soc_activ >= MAX_CONNECTIONS), and if fulfills that
 					// condition disconnect inmediately.
-					if (soc_activ >= MAX_CONNECTIONS) {
+					if (!sync_fd_is_mirror(i) && soc_activ >= MAX_CONNECTIONS) {
 						sync_fd_disconnect(fd_old);
 					} else {
-						sync_fd_add(fd_cli);
+						sync_fd_add(fd_cli, extra_buffer);
+
+						if (verbosity) {
+							printp1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
+						}
 					}
 				} while(state_ok(s));
 				// Handle data transfers

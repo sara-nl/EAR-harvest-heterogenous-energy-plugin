@@ -39,7 +39,9 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#if 0
 #include <common/database/db_helper.h>
+#endif
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -146,8 +148,8 @@ void metrics_print()
 
 	//
 	fprintf(stderr, "--\n");
-	fprintf(stderr, "accept. sockets: %u\n", soc_accpt);
 	fprintf(stderr, "active. sockets: %u\n", soc_activ);
+	fprintf(stderr, "accept. sockets: %u\n", soc_accpt);
 	fprintf(stderr, "discon. sockets: %u\n", soc_discn);
 	fprintf(stderr, "timeout sockets: %u\n", soc_tmout);
 	fprintf(stderr, "unknown samples: %u\n", soc_tmout);

@@ -92,7 +92,7 @@ extern uint   soc_tmout;
 
 // Strings
 extern char *str_who[2];
-extern int verbosity0;
+extern int verbosity;
 
 /*
  *
@@ -139,20 +139,28 @@ void time_reset_timeout_slct()
  *
  */
 
-int sync_fd_exists(int fd, int *fd_old)
+int sync_fd_is_new(int fd)
+{
+	int nc;
+
+	nc  = !mirror_iam && (fd == smets_srv->fd || fd == ssync_srv->fd);
+	nc |=  mirror_iam && (fd == smets_mir->fd);
+
+	return nc;
+}
+
+int sync_fd_is_mirror(int fd_lst)
+{
+	return !mirror_iam && (fd_lst == ssync_srv->fd);
+}
+
+int sync_fd_exists(char *hostname, int *fd_old)
 {
 	int i;
 
-	// Disconnect if previously connected
-	sockets_get_address_fd(fd, extra_buffer, sizeof(extra_buffer));
-
-	if (verbosity) {
-		printp1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
-	}
-
 	for (i = 0; i < (fd_max + 1); ++i)
 	{
-		if (FD_ISSET(i, &fds_active) && strcmp(fd_hosts[i], extra_buffer) == 0)
+		if (FD_ISSET(i, &fds_active) && strcmp(fd_hosts[i], hostname) == 0)
 		{
 			*fd_old = i;
 			return 1;
@@ -191,7 +199,6 @@ void sync_fd_disconnect(int fd)
 	// Metrics
 	soc_activ -= 1;
 }
-
 
 /*
  *

@@ -40,6 +40,16 @@ void time_reset_timeout_aggr();
 
 void time_reset_timeout_slct();
 
+int sync_fd_is_new(int fd);
+
+int sync_fd_is_mirror(int fd_lst);
+
+int sync_fd_exists(char *hostname, int *fd_old);
+
+void sync_fd_add(int fd, char *hostname);
+
+void sync_fd_disconnect(int fd);
+
 int sync_question(uint sync_option, int veteran, sync_ans_t *answer);
 
 int sync_answer(int fd, int veteran);

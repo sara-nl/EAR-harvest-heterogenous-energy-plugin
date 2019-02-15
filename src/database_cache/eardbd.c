@@ -37,7 +37,9 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#if 0
 #include <common/database/db_helper.h>
+#endif
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -236,7 +238,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	pid_t other_server_pid;
 	pid_t other_mirror_pid;
 	path_pid = conf_clus->tmp_dir;
-
+#if 0
 	// PID test
 	process_data_initialize(&proc_data_srv, "eardbd_test", path_pid);
 
@@ -258,7 +260,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	if (!mirror_xst) process_pid_file_clean(&proc_data_mir);
 	if ( server_xst) server_pid = other_server_pid;
 	if ( mirror_xst) mirror_pid = other_mirror_pid;
-
+#endif
 	// Server & mirro verbosity
 	printm1("enabled cache server: %s",      server_too ? "OK": "NO");
 	printm1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
@@ -354,7 +356,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	tprintf("server sync||%d||TCP||%s||%d||%d",    ssync_srv->port, str_sta[st3], fd3, errno3);
 	tprintf("mirror sync||%d||TCP||%s||%d||%d",    ssync_mir->port, str_sta[st4], fd4, errno4);
 	printm1("TIP! mirror sync socket opens and closes intermittently");
-	printm1("maximum number of connections: %u", MAX_CONNECTIONS);
+	printm1("maximum #connections per process: %u", MAX_CONNECTIONS);
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -391,7 +393,7 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	printm1("cache server pid: %d %s", server_pid, str_sta[server_too]);
 	printm1("cache mirror pid: %d", mirror_pid);
-
+return;
 	printm1("cache server pid file: '%s'", server_too ? proc_data_srv.path_pid: "");
 	printm1("cache mirror pid file: '%s'", mirror_too ? proc_data_mir.path_pid: "");
 }
@@ -580,6 +582,7 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 
 static void init_pid_files(int argc, char **argv)
 {
+	return;
 	// Process PID save file
 	if (server_iam && server_too) {
 		process_update_pid(&proc_data_mir);
