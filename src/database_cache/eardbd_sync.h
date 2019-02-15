@@ -44,9 +44,9 @@ int sync_fd_is_new(int fd);
 
 int sync_fd_is_mirror(int fd_lst);
 
-int sync_fd_exists(char *hostname, int *fd_old);
+int sync_fd_exists(long ip, int *fd_old);
 
-void sync_fd_add(int fd, char *hostname);
+void sync_fd_add(int fd, long ip);
 
 void sync_fd_disconnect(int fd);
 

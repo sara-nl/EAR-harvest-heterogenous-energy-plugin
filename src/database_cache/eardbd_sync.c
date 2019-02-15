@@ -64,7 +64,7 @@ extern int fd_min;
 extern int fd_max;
 
 // Descriptors storage
-extern char *fd_hosts[FD_SETSIZE];
+extern long fd_hosts[FD_SETSIZE];
 
 //
 extern struct timeval timeout_insr;
@@ -154,13 +154,17 @@ int sync_fd_is_mirror(int fd_lst)
 	return !mirror_iam && (fd_lst == ssync_srv->fd);
 }
 
-int sync_fd_exists(char *hostname, int *fd_old)
+int sync_fd_exists(long ip, int *fd_old)
 {
 	int i;
 
+	if (ip == 0) {
+		return 0;
+	}
+
 	for (i = 0; i < (fd_max + 1); ++i)
 	{
-		if (FD_ISSET(i, &fds_active) && strcmp(fd_hosts[i], hostname) == 0)
+		if (FD_ISSET(i, &fds_active) && fd_hosts[i] == ip)
 		{
 			*fd_old = i;
 			return 1;
@@ -170,9 +174,9 @@ int sync_fd_exists(char *hostname, int *fd_old)
 	return 0;
 }
 
-void sync_fd_add(int fd, char *hostname)
+void sync_fd_add(int fd, long ip)
 {
-	strcpy(fd_hosts[fd], hostname);
+	fd_hosts[fd] = ip;
 
 	FD_SET(fd, &fds_active);
 
@@ -190,7 +194,7 @@ void sync_fd_add(int fd, char *hostname)
 
 void sync_fd_disconnect(int fd)
 {
-	memset((void *) fd_hosts[fd], 0, SZ_NAME_SHORT);
+	fd_hosts[fd] = 0;
 
 	sockets_close_fd(fd);
 

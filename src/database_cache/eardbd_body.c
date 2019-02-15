@@ -234,10 +234,14 @@ static void body_connections()
 					if (!sync_fd_is_mirror(i))
 					{
 						// Disconnect if previously connected
-						sockets_get_hostname_fd(fd_cli, extra_buffer, sizeof(extra_buffer));
-						sockets_get_ip(addr_cli, &ip);
+						sockets_get_ip(&addr_cli, &ip);
 
-						if (sync_fd_exists(extra_buffer, &fd_old)) {
+						if (sync_fd_exists(ip, &fd_old))
+						{
+							sockets_get_hostname(&addr_cli, extra_buffer, sizeof(extra_buffer));
+							log("multiple connections from host '%s', disconnecting previous", extra_buffer);
+							//error("multiple connections from host '%s', disconnecting previous", extra_buffer);
+							
 							sync_fd_disconnect(fd_old);
 						}
 					}
@@ -248,10 +252,10 @@ static void body_connections()
 					if (!sync_fd_is_mirror(i) && soc_activ >= MAX_CONNECTIONS) {
 						sync_fd_disconnect(fd_old);
 					} else {
-						sync_fd_add(fd_cli, extra_buffer);
+						sync_fd_add(fd_cli, ip);
 
 						if (verbosity) {
-							printp1("accepted fd '%d' from host '%s' %ld", fd_cli, extra_buffer, ip);
+							printp1("accepted fd '%d' from ip '%ld'", fd_cli, ip);
 						}
 					}
 				} while(state_ok(s));
@@ -377,6 +381,9 @@ void release()
 	if (mirror_iam && mirror_too) {
 		process_pid_file_clean(&proc_data_mir);
 	}
+
+	//
+	log_close();
 
 	// End releasing
 	releasing = 0;

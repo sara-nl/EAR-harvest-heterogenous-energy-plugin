@@ -70,7 +70,7 @@ int fd_min;
 int fd_max;
 
 //
-char *fd_hosts[FD_SETSIZE];
+long fd_hosts[FD_SETSIZE];
 
 // Nomenclature:
 // 	- Server: main buffer of the gathered metrics. Inserts buffered metrics in
@@ -176,6 +176,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	mirror_pid = 0;
 	others_pid = 0;
 
+	log_open("eardbd");
 	gethostname(master_host, SZ_NAME_MEDIUM);
 
 	// Configuration
@@ -262,8 +263,8 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	if ( mirror_xst) mirror_pid = other_mirror_pid;
 #endif
 	// Server & mirro verbosity
-	printm1("enabled cache server: %s",      server_too ? "OK": "NO");
-	printm1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
+	printm1("enabled cache server: %s",                  server_too ? "OK": "NO");
+	printm1("enabled cache mirror: %s (of server '%s')", mirror_too ? "OK" : "NO", server_host);
 
 	if (!server_too && !mirror_too) {
 		_error("this node is not configured as a server nor mirror");
@@ -521,13 +522,6 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	// Ok, all here is done
 	if (dreaming) {
 		return;
-	}
-
-	// Allocating hostname for file descriptors
-	char *p = (char *) calloc(FD_SETSIZE, SZ_NAME_SHORT);
-
-	for (i = 0; i < FD_SETSIZE; ++i) {
-		fd_hosts[i] = &p[i * SZ_NAME_SHORT];
 	}
 
 	// Types allocation counting

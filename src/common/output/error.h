@@ -32,13 +32,15 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <syslog.h>
+#include <common/output/output_conf.h>
 
 int error_channel    __attribute__((weak)) = 2;
 
 #if SHOW_ERRORS
 #define error(...) \
 	{ \
-		dprintf(error_channel, __VA_ARGS__); \
+		dprintf(error_channel, "ERROR: " __VA_ARGS__); \
 		dprintf(error_channel, "\n"); \
 	}
 #else
@@ -48,5 +50,23 @@ int error_channel    __attribute__((weak)) = 2;
 // Set
 #define ERROR_SET_FD(fd) \
 	error_channel = fd;
+
+// Log
+#if SHOW_LOGS
+#define log_open(package) openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
+
+#define log_close() closelog();
+
+#define log(...) \
+	{ \
+		syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__); \
+	}
+#else
+#define log_open(package);
+
+#define log_close()
+
+#define log(...)
+#endif
 
 #endif //EAR_ERROR_H
