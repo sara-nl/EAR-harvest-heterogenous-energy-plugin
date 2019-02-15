@@ -519,8 +519,7 @@ void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length)
 
 	// convert the IP to a string and print it
 	//inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
-
-    getnameinfo(host_addr, addrlen, buffer, length, NULL, 0, 0);
+	getnameinfo(host_addr, addrlen, buffer, length, NULL, 0, 0);
 }
 
 void sockets_get_address_fd(int fd, char *buffer, int length)

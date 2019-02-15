@@ -39,7 +39,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/types.h>
-#if 0
+#if !OFFLINE
 #include <common/database/db_helper.h>
 #endif
 #include <database_cache/eardbd.h>
@@ -212,7 +212,7 @@ void reset_all()
  * Insert
  *
  */
-#if 1
+#if OFFLINE
 	#define db_batch_insert_applications(a, b);
 	#define db_batch_insert_applications_no_mpi(a, b);
 	#define db_batch_insert_applications_learning(a, b);

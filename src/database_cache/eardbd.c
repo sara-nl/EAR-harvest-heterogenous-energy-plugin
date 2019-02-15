@@ -37,7 +37,7 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#if 0
+#if !OFFLINE
 #include <common/database/db_helper.h>
 #endif
 #include <database_cache/eardbd.h>
@@ -179,7 +179,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	gethostname(master_host, SZ_NAME_MEDIUM);
 
 	// Configuration
-#if 0
+	#if !OFFLINE
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		_error("while getting ear.conf path");
 	}
@@ -229,7 +229,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;
 	mirror_port = conf_clus->db_manager.sec_tcp_port;
-    synchr_port = conf_clus->db_manager.sync_tcp_port;
+	synchr_port = conf_clus->db_manager.sync_tcp_port;
 
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
