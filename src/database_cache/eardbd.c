@@ -67,6 +67,9 @@ int fd_cli;
 int fd_min;
 int fd_max;
 
+//
+char *fd_hosts[FD_SETSIZE];
+
 // Nomenclature:
 // 	- Server: main buffer of the gathered metrics. Inserts buffered metrics in
 //	the database.
@@ -118,6 +121,7 @@ ulong  sam_inmax[MAX_TYPES];
 ulong  sam_index[MAX_TYPES];
 uint   sam_recvd[MAX_TYPES];
 uint   soc_accpt;
+uint   soc_activ;
 uint   soc_discn;
 uint   soc_unkwn;
 uint   soc_tmout;
@@ -173,7 +177,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	gethostname(master_host, SZ_NAME_MEDIUM);
 
 	// Configuration
-#if 1
+#if 0
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
 		_error("while getting ear.conf path");
 	}
@@ -350,6 +354,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	tprintf("server sync||%d||TCP||%s||%d||%d",    ssync_srv->port, str_sta[st3], fd3, errno3);
 	tprintf("mirror sync||%d||TCP||%s||%d||%d",    ssync_mir->port, str_sta[st4], fd4, errno4);
 	printm1("TIP! mirror sync socket opens and closes intermittently");
+	printm1("maximum number of connections: %u", MAX_CONNECTIONS);
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -478,8 +483,8 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	updating  = 0;
 
 	// is not a listening socket?
-	dreaming   = (server_iam && !listening);
-	releasing  = dreaming;
+	dreaming  = (server_iam && !listening);
+	releasing = dreaming;
 
 	// Socket closing
 	if (mirror_iam) {
@@ -514,6 +519,13 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	// Ok, all here is done
 	if (dreaming) {
 		return;
+	}
+
+	// Allocating hostname for file descriptors
+	char *p = (char *) calloc(FD_SETSIZE, SZ_NAME_SHORT);
+
+	for (i = 0; i < FD_SETSIZE; ++i) {
+		fd_hosts[i] = &p[i * SZ_NAME_SHORT];
 	}
 
 	// Types allocation counting

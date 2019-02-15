@@ -91,6 +91,7 @@ extern ulong  sam_inmax[MAX_TYPES];
 extern ulong  sam_index[MAX_TYPES];
 extern uint   sam_recvd[MAX_TYPES];
 extern uint   soc_accpt;
+extern uint   soc_activ;
 extern uint   soc_discn;
 extern uint   soc_unkwn;
 extern uint   soc_tmout;
@@ -209,6 +210,7 @@ static int body_new_connection(int fd)
 static void body_connections()
 {
 	state_t s;
+	int fd_old;
 	int i;
 
 	for(i = fd_min; i <= fd_max && listening && !updating; i++)
@@ -219,25 +221,26 @@ static void body_connections()
 			if (body_new_connection(i))
 			{
 				do {
+					// i      -> listening descriptor
+					// fd_cli -> current communications descriptor
+					// fd_old -> previous communications descriptor
 					s = sockets_accept(i, &fd_cli, &addr_cli);
 
-					if (state_ok(s))
-					{
-						FD_SET(fd_cli, &fds_active);
+					if (state_fail(s)) {
+						break;
+					}
 
-						if (fd_cli > fd_max) {
-							fd_max = fd_cli;
-						}
-						if (fd_cli < fd_min) {
-							fd_min = fd_cli;
-						}
+					if (sync_fd_exists(fd_cli, &fd_old)) {
+						sync_fd_disconnect(fd_old);
+					}
 
-						soc_accpt += 1;
-
-						if (verbosity) {
-							sockets_get_address_fd(fd_cli, extra_buffer, sizeof(extra_buffer));
-                					printp1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
-        					}
+					// Test if the maximum number of connection has been reached
+					// (soc_activ >= MAX_CONNECTIONS), and if fulfills that
+					// condition disconnect inmediately.
+					if (soc_activ >= MAX_CONNECTIONS) {
+						sync_fd_disconnect(fd_old);
+					} else {
+						sync_fd_add(fd_cli);
 					}
 				} while(state_ok(s));
 				// Handle data transfers
@@ -268,8 +271,7 @@ static void body_connections()
 						soc_unkwn += 1;
 					}
 
-					sockets_close_fd(i);
-					FD_CLR(i, &fds_active);
+					sync_fd_disconnect(i);
 				}
 			}
 		} // FD_ISSET

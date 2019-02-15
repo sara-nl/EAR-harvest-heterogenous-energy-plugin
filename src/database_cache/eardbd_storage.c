@@ -73,6 +73,7 @@ extern ulong  sam_inmax[MAX_TYPES];
 extern ulong  sam_index[MAX_TYPES];
 extern uint   sam_recvd[MAX_TYPES];
 extern uint   soc_accpt;
+extern uint   soc_activ;
 extern uint   soc_discn;
 extern uint   soc_unkwn;
 extern uint   soc_tmout;
@@ -146,6 +147,7 @@ void metrics_print()
 	//
 	fprintf(stderr, "--\n");
 	fprintf(stderr, "accept. sockets: %u\n", soc_accpt);
+	fprintf(stderr, "active. sockets: %u\n", soc_activ);
 	fprintf(stderr, "discon. sockets: %u\n", soc_discn);
 	fprintf(stderr, "timeout sockets: %u\n", soc_tmout);
 	fprintf(stderr, "unknown samples: %u\n", soc_tmout);
@@ -208,7 +210,7 @@ void reset_all()
  * Insert
  *
  */
-#if 0
+#if 1
 	#define db_batch_insert_applications(a, b);
 	#define db_batch_insert_applications_no_mpi(a, b);
 	#define db_batch_insert_applications_learning(a, b);

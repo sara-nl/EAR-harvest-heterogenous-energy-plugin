@@ -33,6 +33,11 @@
 #include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
 
+// Buffers
+extern packet_header_t input_header;
+extern char input_buffer[SZ_BUFF_BIG];
+extern char extra_buffer[SZ_BUFF_BIG];
+
 //
 extern int master_iam; // Master is who speaks
 extern int server_iam;
@@ -49,6 +54,17 @@ extern packet_header_t sync_ans_header;
 extern packet_header_t sync_qst_header;
 extern sync_qst_t sync_qst_content;
 extern sync_ans_t sync_ans_content;
+
+// Descriptors
+extern struct sockaddr_storage addr_cli;
+extern fd_set fds_incoming;
+extern fd_set fds_active;
+extern int fd_cli;
+extern int fd_min;
+extern int fd_max;
+
+// Descriptors storage
+extern char *fd_hosts[FD_SETSIZE];
 
 //
 extern struct timeval timeout_insr;
@@ -69,6 +85,7 @@ extern char  *sam_iname[MAX_TYPES];
 extern ulong  sam_inmax[MAX_TYPES];
 extern uint   sam_recvd[MAX_TYPES];
 extern uint   soc_accpt;
+extern uint   soc_activ;
 extern uint   soc_discn;
 extern uint   soc_unkwn;
 extern uint   soc_tmout;
@@ -122,6 +139,58 @@ void time_reset_timeout_slct()
  *
  */
 
+int sync_fd_exists(int fd, int *fd_old)
+{
+	int i;
+
+	// Disconnect if previously connected
+	sockets_get_address_fd(fd, extra_buffer, sizeof(extra_buffer));
+
+	if (verbosity) {
+		printp1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
+	}
+
+	for (i = 0; i < (fd_max + 1); ++i)
+	{
+		if (FD_ISSET(i, &fds_active) && strcmp(fd_hosts[i], extra_buffer) == 0)
+		{
+			*fd_old = i;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+void sync_fd_add(int fd, char *hostname)
+{
+	strcpy(fd_hosts[fd], hostname);
+
+	FD_SET(fd, &fds_active);
+
+	if (fd > fd_max) {
+		fd_max = fd;
+	}
+	if (fd < fd_min) {
+		fd_min = fd;
+	}
+
+	// Metrics
+	soc_accpt += 1;
+	soc_activ += 1;
+}
+
+void sync_fd_disconnect(int fd)
+{
+	memset((void *) fd_hosts[fd], 0, SZ_NAME_SHORT);
+
+	sockets_close_fd(fd);
+
+	FD_CLR(fd, &fds_active);
+
+	// Metrics
+	soc_activ -= 1;
+}
 
 
 /*
