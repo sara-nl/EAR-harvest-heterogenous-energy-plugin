@@ -33,9 +33,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <string.h>
+#include <sys/types.h>
 #include <control/frequency.h>
+#include <common/output/verbose.h>
 
 void usage(char *prog)
 {

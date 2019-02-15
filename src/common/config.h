@@ -27,18 +27,55 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_EARDBD_SIGNALS_H
-#define EAR_EARDBD_SIGNALS_H
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 
-#include <signal.h>
+#include <common/config_install.h>
 
-#define _error(...) \
-	printl0(); \
-	verbose(0, "ERROR, " __VA_ARGS__); \
-	error_handler();
+#define PERFORMANCE_GAIN 					0.75
+#define EAR_ACCEPTED_TH						0.05
+#define EAR_MIN_P_STATE						3
+#define USE_TURBO							0
+#define RESET_FREQ							0
+#define MAX_POWER_ERROR						0.05
+#define MAX_DYNAIS_OVERHEAD					5
+#define EAR_OVERHEAD_CONTROL				1
+#define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE   30
+#define MPI_CALLS_TO_CHECK_PERIODIC         1000
+#define PERIOD                              30
 
-void signal_handler(int signal, siginfo_t *info, void *context);
+#define EAR_PERFORMANCE_TESTS				0
+#define MEASURE_DYNAIS_OV					0
 
-void error_handler();
+#define POWERMON_FREQ						30
+#define DAEMON_PORT_NUMBER					50000
 
-#endif //EAR_EARDBD_SIGNALS_H
+#define DEFAULT_T1							60
+#define DEFAULT_T2							600
+#define MAX_ENERGY							300
+#define EARGM_PORT_NUMBER					60000
+#define DEFAULT_POWER						275
+#define GRACE_T1							3
+
+#define LARGE_CLUSTER						1
+#define DB_SIMPLE							1
+#define DEMO								0
+#define COEFFS_V3							1
+#define APP_API								1
+
+#define MIN_SIG_POWER                       70.0
+#define MAX_SIG_POWER                       600.0
+#define MAX_ERROR_POWER                     700.0
+
+#define EARDBD_TYPES						7
+
+#define EAR_LIB_SYNC						1
+#define COORDINATE_FREQUENCIES				0
+
+#define SYSLOG_MSG							1
+#define USE_EXT								0
+#define NW_EXT								"-opa"
+#define LRZ_POLICY							0
+//#define EAR_GUI
+
+#endif

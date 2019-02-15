@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <common/file.h>
+#include <common/output/verbose.h>
 
 static struct flock lock;
 

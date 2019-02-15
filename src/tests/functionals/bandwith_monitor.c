@@ -35,11 +35,11 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
-
-#include <metrics/custom/bandwidth.h>
-#include <metrics/custom/bandwidth_notpriv.h>
-#include <metrics/custom/hardware_info.h>
 #include <common/types/generic.h>
+#include <common/output/verbose.h>
+#include <metrics/custom/bandwidth.h>
+#include <metrics/custom/hardware_info.h>
+#include <metrics/custom/bandwidth_notpriv.h>
 
 static char _buffer[32];
 

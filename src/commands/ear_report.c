@@ -333,8 +333,9 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)
             verbosen(0, "%15s ", row[i] ? row[i] : "NULL");
         }
           
-        if (row[0] && all_nodes) //when getting energy we compute the avg_power
-            verbosen(0, ("%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
+        if (row[0] && all_nodes) { //when getting energy we compute the avg_power
+            verbosen(0, "%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
+	}
 
         verbose(0, " ");
     }

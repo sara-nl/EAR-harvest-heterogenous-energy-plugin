@@ -27,18 +27,27 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_EARDBD_SIGNALS_H
-#define EAR_EARDBD_SIGNALS_H
+#ifndef EAR_PATHS_H
+#define EAR_PATHS_H
 
-#include <signal.h>
+// Library paths
+#define CPUPOWER_LIB_PATH   "@CPUPOWER_LIBDIR@"
+#define FREEIPMI_LIB_PATH   "@FREEIPMI_LIBDIR@"
+#define SLURM_LIB_PATH      "@SLURM_LIBDIR@"
+#define PAPI_LIB_PATH       "@PAPI_LIBDIR@"
+#define GSL_LIB_PATH        "@GSL_LIBDIR@"
+#define EAR_INSTALL_PATH    "@prefix@"
 
-#define _error(...) \
-	printl0(); \
-	verbose(0, "ERROR, " __VA_ARGS__); \
-	error_handler();
+// File paths
+#define EAR_DAEMON_PATH     ""
+#define EAR_CONF_FILE		""
+#define IMPI_C_LIB_PATH		"lib/libear.so"
+#define OMPI_C_LIB_PATH		"lib/libear_ompi.so"
+#define IMPI_F_LIB_PATH		""
+#define OMPI_F_LIB_PATH		""
 
-void signal_handler(int signal, siginfo_t *info, void *context);
+// Database
+#define DB_FILES			@DB_FILES@
+#define DB_MYSQL			@DB_MYSQL@
 
-void error_handler();
-
-#endif //EAR_EARDBD_SIGNALS_H
+#endif //EAR_PATHS_H

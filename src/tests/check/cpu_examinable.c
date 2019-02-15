@@ -29,8 +29,9 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <metrics/custom/hardware_info.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
+#include <metrics/custom/hardware_info.h>
 
 int main ()
 {

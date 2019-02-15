@@ -27,25 +27,26 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/output/verbose.h>
 #include <common/types/log.h>
 #include <common/types/loop.h>
 #include <common/types/application.h>
+#include <common/output/verbose.h>
 #include <common/math_operations.h>
-#include <library/common/externs.h>
+#include <library/models/models.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
+#include <library/common/externs.h>
 #include <library/metrics/metrics.h>
-#include <library/models/models.h>
+#include <library/mpi_intercept/freq_synchro.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 

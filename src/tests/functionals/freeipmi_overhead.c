@@ -30,15 +30,16 @@
 
 
 #define _GNU_SOURCE
+
 #include <time.h>
+#include <papi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-
-#include <metrics/ipmi/energy_node.h>
 #include <common/config.h>
-#include <papi.h>
+#include <common/output/verbose.h>
+#include <metrics/ipmi/energy_node.h>
 
 void usage(char *bin)
 {

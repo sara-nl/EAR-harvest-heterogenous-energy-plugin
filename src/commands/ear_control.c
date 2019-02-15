@@ -165,10 +165,11 @@ void print_ips(ip_table_t *ips, int num_ips)
         verbose(0,"\n\nINACTIVE NODES");
         for (i = 0; i <num_ips; i++)
         {
-            if (!ips[i].counter)
+            if (!ips[i].counter) {
                 verbose(0, "%10s\t%10s", ips[i].name, ips[i].ip);
-            else if (!ips[i].power || ips[i].power > MAX_SIG_POWER)
+            } else if (!ips[i].power || ips[i].power > MAX_SIG_POWER) {
                 verbose(0, "%10s\t%10s\t->power error (reported %dW)", ips[i].name, ips[i].ip, ips[i].power);
+	    }
         }
     }
 }
