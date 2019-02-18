@@ -60,6 +60,7 @@ static char my_log_buffer[1024];
 static char log_name[128];
 static char log_nodename[GENERIC_NAME];
 
+
 void init_log()
 {
 #if LOG_FILE

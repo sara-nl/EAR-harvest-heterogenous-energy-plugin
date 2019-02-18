@@ -31,6 +31,7 @@
 #define _EAR_LOG_H
 
 #include <time.h>
+#include <common/config.h>
 #include <common/types/generic.h>
 #include <common/types/job.h>
 
@@ -47,6 +48,8 @@ typedef struct ear_event {
 #define GLOBAL_ENERGY_POLICY	1
 #define ENERGY_POLICY_FAILS		2
 #define DYNAIS_OFF				3
+
+
 
 /** Creates the log file and starts it with the current time. If it can't
 *   create the file it reports it to stderr */

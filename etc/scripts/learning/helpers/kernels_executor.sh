@@ -90,7 +90,7 @@ function learning_phase
                 mv $BENCH_SRC_PATH/release/dgemm_example $BENCHS_BIN_PATH
             fi
             if [ "$BENCHS_MODE" == "test" ]; then
-                export KMP_AFFINITY=granularity=fine,compact,1,0
+                #export KMP_AFFINITY=granularity=fine,compact,1,0
                 export MKL_NUM_THREADS=$CORES
                 launching dgemm_example $MPIS
             fi

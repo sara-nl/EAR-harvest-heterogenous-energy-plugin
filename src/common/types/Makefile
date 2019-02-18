@@ -13,7 +13,8 @@ OBJS = application.o \
        projection.o \
        signature.o \
        gm_warning.o \
-       services.o
+       services.o \
+	   daemon_log.o
 
 ######## RULES
 
