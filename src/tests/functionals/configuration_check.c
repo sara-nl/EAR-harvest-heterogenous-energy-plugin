@@ -181,7 +181,7 @@ void main(int argc,char *argv[])
     FILE *conf_file = fopen(ear_path, "r");
     if (conf_file == NULL)
     {
-        fprintf(stderr, "ERROR opening file: %s\n", ear_path);
+        verbose(0, "ERROR opening file: %s", ear_path); //error
         exit(0);
     }
     

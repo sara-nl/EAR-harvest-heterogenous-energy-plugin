@@ -35,10 +35,11 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/output/verbose.h>
 #include <common/types/log.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>
+#include <common/output/verbose.h>
+#include <common/math_operations.h>
 #include <daemon/eard_api.h>
 #include <control/frequency.h>
 #include <library/common/macros.h>

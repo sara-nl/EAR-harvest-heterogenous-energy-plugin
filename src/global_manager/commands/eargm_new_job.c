@@ -8,7 +8,7 @@
 
 void usage(char *app)
 {
-	printf("usage:%s num_nodes \n",app);
+	verbose(0, "usage:%s num_nodes", app);
 	exit(1);
 }
 
@@ -29,13 +29,15 @@ void main(int argc,char *argv[])
 
 	read_cluster_conf(my_ear_conf_path,&my_cluster);
 	#if API_DEBUG
-	fprintf(stderr,"Using port %u\n",my_cluster.eargm.port);
+	verbose(0, "Using port %u", my_cluster.eargm.port);
 	#endif
 	eargms=eargm_connect(my_cluster.eargm.host,my_cluster.eargm.port);
 	if(eargms<0){ 
-		fprintf(stderr,"Connection error\n");
+		verbose(0, "Connection error");
 		exit(1);
 	}
-	if (!eargm_new_job(num_nodes)) fprintf(stderr,"eargm_new_job error sending new_job command\n");
+	if (!eargm_new_job(num_nodes)) {
+		verbose(0, "eargm_new_job error sending new_job command"); //error
+	}
 	eargm_disconnect();
 }

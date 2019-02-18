@@ -27,17 +27,18 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 #include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
+#include <common/output/verbose.h>
 #include <daemon/app_api/app_conf_api.h>
-#include <limits.h>
 
 static int fd_app_to_eard;
 static int fd_eard_to_app;
@@ -51,7 +52,7 @@ static int create_connection()
 
     tmp=getenv("EAR_TMP");
     if (tmp==NULL){
-        fprintf(stderr,"Error, EAR_TMP not defined. Load ear module\n");
+        verbose(0, "Error, EAR_TMP not defined. Load ear module"); //error
         return EAR_ERROR;
     }
     sprintf(app_to_eard,"%s/.app_to_eard",tmp);

@@ -53,7 +53,6 @@
 #include <metrics/power_metrics/power_metrics.h>
 #include <control/frequency.h>
 #include <daemon/power_monitor.h>
-#include <daemon/eard_conf_rapi.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 

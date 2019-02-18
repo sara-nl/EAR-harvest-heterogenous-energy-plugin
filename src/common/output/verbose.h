@@ -32,12 +32,11 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <common/config.h>
 #include <common/output/output_conf.h>
 
+int verb_level		__attribute__((weak)) = 0;
 int verb_channel	__attribute__((weak)) = 2;
 int warn_channel	__attribute__((weak)) = 2;
-int verb_level		__attribute__((weak)) = 0;
 
 #define verbose(v, ...) \
 	if (v <= verb_level) { \
@@ -45,9 +44,24 @@ int verb_level		__attribute__((weak)) = 0;
         dprintf(verb_channel, "\n"); \
 	}
 
+// Compact version
 #define verb(v, ...) \
 	verbose(v, __VA_ARGS__)
 
+// No new line version
+#define verbosen(v, ...) \
+	if (v <= verb_level) { \
+        dprintf(verb_channel, __VA_ARGS__); \
+	}
+
+// Set
+#define VERB_SET_FD(fd) \
+	verb_channel = fd;
+
+#define VERB_SET_LVL(level) \
+	verb_level = level;
+
+// Warnings
 #if SHOW_WARNINGS0
 #define warning(...) dprintf(warn_channel, __VA_ARGS__);
 #else

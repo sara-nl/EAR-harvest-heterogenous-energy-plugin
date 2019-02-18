@@ -157,7 +157,7 @@ void init_frequency_list()
 	get_frequencies_path(my_cluster_conf.tmp_dir,frequencies_path);
 	shared_frequencies=create_frequencies_shared_area(frequencies_path,frequencies,size);
 	for (i=0;i<ps;i++){
-		fprintf(stderr,"shared_frequencies[%d]=%lu\n",i,shared_frequencies[i]);
+		verbose(0, "shared_frequencies[%d]=%lu", i, shared_frequencies[i]);
 	}
 }
 
@@ -802,9 +802,9 @@ void select_service(int fd)
 // eard creates different pipes to receive requests and to send values requested
 void Usage(char *app)
 {
-	fprintf(stderr,"Usage: %s [-h|verbose_level] \n", app);
-	fprintf(stderr,"\tear.conf file is used to define node settings. It must be available at\n"); 
-	fprintf(stderr,"\t $EAR_ETC/ear/ear.conf \n");
+	verbose(0, "Usage: %s [-h|verbose_level]", app);
+	verbose(0, "\tear.conf file is used to define node settings. It must be available at");
+	verbose(0, "\t $EAR_ETC/ear/ear.conf");
 	_exit(1);
 }
 

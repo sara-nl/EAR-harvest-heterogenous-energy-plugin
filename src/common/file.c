@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <common/file.h>
+#include <common/output/verbose.h>
 
 static struct flock lock;
 
@@ -180,13 +181,13 @@ state_t file_chkp_add_multiple(file_chkp_t *fc, char *format, int num_args, ...)
 	char *p;
 	int i;
 
-	fprintf(stderr, "num args: %d\n", num_args);
+	verbose(0, "num args: %d", num_args);
 
 	va_start(list, num_args);
 	for(i = 0; i < num_args; i++)
 	{
 		p = va_arg(list, char *);
-		fprintf(stderr, "'%s'\n", p);
+		verbose(0, "'%s'", p);
 
 		if (format[i] == 'S') {
 			file_chkp_add_string(fc, p);
@@ -213,7 +214,7 @@ state_t file_chkp_read(file_chkp_t *fc)
 	// Reading the 'n'
 	r = read(fd, &fc->n, sizeof(int));
 
-	fprintf(stderr, "n: %d\n", fc->n);
+	verbose(0, "n: %d", fc->n);
 
 	// Reading the 'size[n]'
 	r = read(fd, fc->size, sizeof(size_t) * fc->n);
@@ -222,7 +223,7 @@ state_t file_chkp_read(file_chkp_t *fc)
 	while (n < fc->n)
 	{
 		size = fc->size[n];
-		fprintf(stderr, "size: %lu\n", size);
+		verbose(0, "size: %lu", size);
 		r = read(fd, fc->address[n], size);
 		n += 1;
 	}

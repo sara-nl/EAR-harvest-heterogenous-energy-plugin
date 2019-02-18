@@ -163,7 +163,7 @@ static void write_coefficients()
     int fd;
     int i;
 
-	fprintf(stdout, "-----------------------------------------------------------------------------------------------------\n");	
+	verbose(0, "-----------------------------------------------------------------------------------------------------");
 
 	if (!opt_o) {
 		sprintf(path_output, "%s/coeffs.default", path_root);
@@ -189,7 +189,7 @@ static void write_coefficients()
 		}
     }
 	
-	fprintf(stdout, "file written '%s'\n", path_output); 
+	verbose(0, "file written '%s'\n", path_output);
 
 	close(fd);
 }
@@ -260,14 +260,14 @@ static int usage(int argc, char *argv[])
 
 	if (argc < 3)
 	{
-		fprintf(stdout, "Usage: %s coeffs.path node.list [OPTIONS...]\n\n", argv[0]);
-		fprintf(stdout, "  The coeffs.path includes the island.\n");
-		fprintf(stdout, "  The node.list is splitted by spaces.\n");
-		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-A\tDoes the armonic mean, reducing the weight\n");
-		fprintf(stdout, "\t\tof radical coefficient values.\n");
-		fprintf(stdout, "\t-O <p>\tSaves the default coefficients file in a\n");
-		fprintf(stdout, "\t\tfile of custom location.\n");
+		verbose(0, "Usage: %s coeffs.path node.list [OPTIONS...]\n", argv[0]);
+		verbose(0, "  The coeffs.path includes the island.");
+		verbose(0, "  The node.list is splitted by spaces.");
+		verbose(0, "\nOptions:");
+		verbose(0, "\t-A\tDoes the armonic mean, reducing the weight");
+		verbose(0, "\t\tof radical coefficient values.");
+		verbose(0, "\t-O <p>\tSaves the default coefficients file in a");
+		verbose(0, "\t\tfile of custom location.");
 		
 		exit(1);
 	}

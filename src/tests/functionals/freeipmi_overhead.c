@@ -30,20 +30,21 @@
 
 
 #define _GNU_SOURCE
+
 #include <time.h>
+#include <papi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-
-#include <metrics/ipmi/energy_node.h>
 #include <common/config.h>
-#include <papi.h>
+#include <common/output/verbose.h>
+#include <metrics/ipmi/energy_node.h>
 
 void usage(char *bin)
 {
-    printf("Usage: %s n_iterations\n", bin);
-    printf("- n_iterations: number of executing iterations to determine the average overhead\n");
+    verbose(0, "Usage: %s n_iterations", bin);
+    verbose(0, "- n_iterations: number of executing iterations to determine the average overhead");
     exit(1);
 }
 
@@ -57,7 +58,7 @@ int main (int argc, char *argv[])
     int i;
 
     if (getuid()!=0){
-        printf("Warning, this test need root privileges, execute it as root or with sudo\n");
+        verbose(0, "Warning, this test need root privileges, execute it as root or with sudo");
     }
 
 
@@ -67,7 +68,7 @@ int main (int argc, char *argv[])
 
     if (node_energy_init() < 0)
     {
-        printf("Error\n");
+        verbose(0, "Error");
         return 0;
     }
 
@@ -87,7 +88,7 @@ int main (int argc, char *argv[])
     call_time_avg_dc = call_time_avg_dc / 1000;
 
 
-    printf("read_dc_energy overhead: %0.3lf ms\n", call_time_avg_dc);
+    verbose(0, "read_dc_energy overhead: %0.3lf ms", call_time_avg_dc);
 
     return 0;
 }

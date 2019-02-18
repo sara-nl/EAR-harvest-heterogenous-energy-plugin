@@ -264,7 +264,7 @@ static void compute()
 
 void print()
 {
-	#define LINE "-----------------------------------------------------------------------------------------------------\n"
+	#define LINE "-----------------------------------------------------------------------------------------------------"
 	int c, a, n, i;
 	char *col_time;
 	char *col_powe;
@@ -272,9 +272,9 @@ void print()
 	// Headers
 	if (opt_c) {
 		if (!opt_g) {
-			fprintf(stderr, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err\n");
+			verbose(0, "App Name;Freq. From;Freq. To;T. Real;T. Proj;T. Err;P. Real;P. Proj;P. Err");
 		} else if(opt_g && opt_h) {
-			fprintf(stderr, "Node name;Freq. from;T. Err.;P. Err.\n");
+			verbose(0, "Node name;Freq. from;T. Err.;P. Err.");
 		}
 	}
 
@@ -294,7 +294,7 @@ void print()
 		if (opt_g && !opt_h)
 		{
         	if (opt_c) {
-            	fprintf(stderr, "%s;-;-;-\n", name_node);
+            	verbose(0, "%s;-;-;-", name_node);
         	} else {
             	tprintf("%s||-|| | -||-||-|| | -||-||-", name_node);
         	}
@@ -340,7 +340,7 @@ void print()
 
 						if ((!opt_s || (opt_s)) && opt_c)
 						{
-							fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
+							verbose(0, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf",
 								mrgd[a].job.app_id, mrgd[a].signature.def_f, coeffs[c].pstate,
 								m->signature.time    , prjs_b[c + 1], errs_b[c + 1],
 								m->signature.DC_power, prjs_b[c + 2], errs_b[c + 2]);
@@ -362,7 +362,7 @@ void print()
 					{
 						if (opt_c)
 						{
-							fprintf(stderr, "%s;%s;--;%lu;--;--;--;--;--;--\n",
+							verbose(0, "%s;%s;--;%lu;--;--;--;--;--;--",
 								name_node, mrgd[a].job.app_id, coeffs[c].pstate);
 						}
 						else
@@ -377,13 +377,13 @@ void print()
 
 	// Medium error per coefficient
 	if (opt_s) {
-		fprintf(stdout, LINE);
+		verbose(0, LINE);
 	}
 
 	if (opt_s)
 	{
 		if (opt_c) {
-			fprintf(stderr, "Freq. From;Freq. To;T. Err;P. Err\n");
+			verbose(0, "Freq. From;Freq. To;T. Err;P. Err");
 		} else {
 			tprintf("medium error||@%u|| | -||-||T. Err|| | -||-||P. Err", frq_base);
 		}
@@ -394,7 +394,7 @@ void print()
 		if (errs_med[i+3] > 0.0)
 		{
 			if (opt_c) {
-				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf\n",
+				verbose(0, "%s;%lu;%lu;%0.2lf;%0.2lf",
 					name_node, frq_base, coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
 			} else {
 				col_time = (errs_med[i+1] < 6.0) ? "": STR_YLW;
@@ -412,7 +412,7 @@ void print()
 	if (opt_s && !opt_g)
 	{
 		if (opt_c) {
-			fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf\n",
+			verbose(0, "%s;%lu;%lu;%0.2lf;%0.2lf",
 				name_node, frq_base, frq_base, errs_gen[1], errs_gen[2]);
 		} else {
 			col_time = (errs_gen[1] < 6.0) ? "": STR_YLW;
@@ -428,7 +428,7 @@ void print()
 	if (opt_g)
 	{
 		if (opt_c) {
-			fprintf(stderr, "%s;%lu;%0.2lf;%0.2lf\n",
+			verbose(0, "%s;%lu;%0.2lf;%0.2lf",
 				name_node, frq_base, errs_gen[1], errs_gen[2]);
 		} else
 		{
@@ -463,7 +463,7 @@ void read_applications()
 	if (n_appsn <= 0)
 	{
 		if (!opt_g) {
-			fprintf(stderr, "ERROR, no learning apps found for the node '%s'\n", name_node);
+			verbose(0, "ERROR, no learning apps found for the node '%s'", name_node); //error
 		}
 
 		return;
@@ -498,7 +498,7 @@ void read_coefficients()
 	{
 		if (!opt_g)
 		{
-			fprintf(stderr, "ERROR, no island found for node %s\n", node);
+			verbose(0, "ERROR, no island found for node %s", node); //error
 			return;
 		}
 	}
@@ -529,7 +529,7 @@ void read_coefficients()
 		if (n_coeffs <= 0)
 		{
 			if (!opt_g) {
-				fprintf(stderr, "ERROR, no default coefficients found\n");
+				verbose(0, "ERROR, no default coefficients found"); //error
 			}
 		}
 	}
@@ -547,17 +547,17 @@ void usage(int argc, char *argv[])
 
 	if (argc < 3)
 	{
-		fprintf(stdout, "Usage: %s hostname frequency [OPTIONS...]\n\n", argv[0]);
-		fprintf(stdout, "  The hostname of the node where to test the coefficients quality.\n");
-		fprintf(stdout, "  The frequency is the nominal base frequency of that node.\n\n");
-		fprintf(stdout, "Options:\n");
-		fprintf(stdout, "\t-A\tAdds also the applications database.\n");
-		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
-		fprintf(stdout, "\t-D\tUses the default coefficients.\n");
-		fprintf(stdout, "\t-G\tShows one lined general summary.\n");
-		fprintf(stdout, "\t-H\tShows the header when general summary is enabled.\n");
-		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
-		fprintf(stdout, "\t-S\tShows the medium and opt_g errors.\n");
+		verbose(0, "Usage: %s hostname frequency [OPTIONS...]\n", argv[0]);
+		verbose(0, "  The hostname of the node where to test the coefficients quality.");
+		verbose(0, "  The frequency is the nominal base frequency of that node.\n");
+		verbose(0, "Options:");
+		verbose(0, "\t-A\tAdds also the applications database.");
+		verbose(0, "\t-C\tPrints the console output in CSV format.");
+		verbose(0, "\t-D\tUses the default coefficients.");
+		verbose(0, "\t-G\tShows one lined general summary.");
+		verbose(0, "\t-H\tShows the header when general summary is enabled.");
+		verbose(0, "\t-I <p>\tUse a custom coefficients file.");
+		verbose(0, "\t-S\tShows the medium and opt_g errors.");
 		exit(1);
 	}
 
@@ -616,7 +616,7 @@ void init()
 	get_ear_conf_path(buffer);
 
 	if (read_cluster_conf(buffer, &conf) != EAR_SUCCESS){
-		fprintf(stderr, "ERROR while reading cluster configuration.\n");
+		verbose(0, "ERROR while reading cluster configuration."); //error
 		exit(1);
 	}
 

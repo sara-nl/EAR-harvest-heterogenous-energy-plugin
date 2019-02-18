@@ -91,6 +91,7 @@ extern ulong  sam_inmax[MAX_TYPES];
 extern ulong  sam_index[MAX_TYPES];
 extern uint   sam_recvd[MAX_TYPES];
 extern uint   soc_accpt;
+extern uint   soc_activ;
 extern uint   soc_discn;
 extern uint   soc_unkwn;
 extern uint   soc_tmout;
@@ -208,7 +209,9 @@ static int body_new_connection(int fd)
 
 static void body_connections()
 {
+	long ip;
 	state_t s;
+	int fd_old;
 	int i;
 
 	for(i = fd_min; i <= fd_max && listening && !updating; i++)
@@ -216,28 +219,44 @@ static void body_connections()
 		if (listening && FD_ISSET(i, &fds_incoming)) // we got one!!
 		{
 			// Handle new connections (just for TCP)
-			if (body_new_connection(i))
+			if (sync_fd_is_new(i))
 			{
 				do {
+					// i      -> listening descriptor
+					// fd_cli -> current communications descriptor
+					// fd_old -> previous communications descriptor
 					s = sockets_accept(i, &fd_cli, &addr_cli);
 
-					if (state_ok(s))
+					if (state_fail(s)) {
+						break;
+					}
+
+					if (!sync_fd_is_mirror(i))
 					{
-						FD_SET(fd_cli, &fds_active);
+						// Disconnect if previously connected
+						sockets_get_ip(&addr_cli, &ip);
 
-						if (fd_cli > fd_max) {
-							fd_max = fd_cli;
+						if (sync_fd_exists(ip, &fd_old))
+						{
+							sockets_get_hostname(&addr_cli, extra_buffer, sizeof(extra_buffer));
+							log("multiple connections from host '%s', disconnecting previous", extra_buffer);
+							//error("multiple connections from host '%s', disconnecting previous", extra_buffer);
+							
+							sync_fd_disconnect(fd_old);
 						}
-						if (fd_cli < fd_min) {
-							fd_min = fd_cli;
-						}
+					}
 
-						soc_accpt += 1;
+					// Test if the maximum number of connection has been reached
+					// (soc_activ >= MAX_CONNECTIONS), and if fulfills that
+					// condition disconnect inmediately.
+					if (!sync_fd_is_mirror(i) && soc_activ >= MAX_CONNECTIONS) {
+						sync_fd_disconnect(fd_old);
+					} else {
+						sync_fd_add(fd_cli, ip);
 
 						if (verbosity) {
-							sockets_get_address_fd(fd_cli, extra_buffer, sizeof(extra_buffer));
-                					printp1("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
-        					}
+							printp1("accepted fd '%d' from ip '%ld'", fd_cli, ip);
+						}
 					}
 				} while(state_ok(s));
 				// Handle data transfers
@@ -258,7 +277,7 @@ static void body_connections()
 						//		i, intern_error_num, intern_error_str);
 						soc_discn += 1;
 					} if (state_is(s, EAR_SOCK_TIMEOUT)) {
-						sockets_get_address_fd(i, extra_buffer, SZ_BUFF_BIG);
+						//sockets_get_hostname_fd(i, extra_buffer, SZ_BUFF_BIG);
 						//printp1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
 						//		i, extra_buffer, intern_error_num, intern_error_str);
 						soc_tmout += 1;
@@ -268,8 +287,7 @@ static void body_connections()
 						soc_unkwn += 1;
 					}
 
-					sockets_close_fd(i);
-					FD_CLR(i, &fds_active);
+					sync_fd_disconnect(i);
 				}
 			}
 		} // FD_ISSET
@@ -298,7 +316,7 @@ void body()
 		{
 			if (listening && !updating)
 			{
-				error("during select (%s)", strerror(errno));
+				_error("during select (%s)", strerror(errno));
 			}
 		}
 
@@ -363,6 +381,9 @@ void release()
 	if (mirror_iam && mirror_too) {
 		process_pid_file_clean(&proc_data_mir);
 	}
+
+	//
+	log_close();
 
 	// End releasing
 	releasing = 0;

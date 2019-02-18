@@ -33,6 +33,11 @@
 #include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
 
+// Buffers
+extern packet_header_t input_header;
+extern char input_buffer[SZ_BUFF_BIG];
+extern char extra_buffer[SZ_BUFF_BIG];
+
 //
 extern int master_iam; // Master is who speaks
 extern int server_iam;
@@ -49,6 +54,17 @@ extern packet_header_t sync_ans_header;
 extern packet_header_t sync_qst_header;
 extern sync_qst_t sync_qst_content;
 extern sync_ans_t sync_ans_content;
+
+// Descriptors
+extern struct sockaddr_storage addr_cli;
+extern fd_set fds_incoming;
+extern fd_set fds_active;
+extern int fd_cli;
+extern int fd_min;
+extern int fd_max;
+
+// Descriptors storage
+extern long fd_hosts[FD_SETSIZE];
 
 //
 extern struct timeval timeout_insr;
@@ -69,13 +85,14 @@ extern char  *sam_iname[MAX_TYPES];
 extern ulong  sam_inmax[MAX_TYPES];
 extern uint   sam_recvd[MAX_TYPES];
 extern uint   soc_accpt;
+extern uint   soc_activ;
 extern uint   soc_discn;
 extern uint   soc_unkwn;
 extern uint   soc_tmout;
 
 // Strings
 extern char *str_who[2];
-extern int verbosity0;
+extern int verbosity;
 
 /*
  *
@@ -122,7 +139,70 @@ void time_reset_timeout_slct()
  *
  */
 
+int sync_fd_is_new(int fd)
+{
+	int nc;
 
+	nc  = !mirror_iam && (fd == smets_srv->fd || fd == ssync_srv->fd);
+	nc |=  mirror_iam && (fd == smets_mir->fd);
+
+	return nc;
+}
+
+int sync_fd_is_mirror(int fd_lst)
+{
+	return !mirror_iam && (fd_lst == ssync_srv->fd);
+}
+
+int sync_fd_exists(long ip, int *fd_old)
+{
+	int i;
+
+	if (ip == 0) {
+		return 0;
+	}
+
+	for (i = 0; i < (fd_max + 1); ++i)
+	{
+		if (FD_ISSET(i, &fds_active) && fd_hosts[i] == ip)
+		{
+			*fd_old = i;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+void sync_fd_add(int fd, long ip)
+{
+	fd_hosts[fd] = ip;
+
+	FD_SET(fd, &fds_active);
+
+	if (fd > fd_max) {
+		fd_max = fd;
+	}
+	if (fd < fd_min) {
+		fd_min = fd;
+	}
+
+	// Metrics
+	soc_accpt += 1;
+	soc_activ += 1;
+}
+
+void sync_fd_disconnect(int fd)
+{
+	fd_hosts[fd] = 0;
+
+	sockets_close_fd(fd);
+
+	FD_CLR(fd, &fds_active);
+
+	// Metrics
+	soc_activ -= 1;
+}
 
 /*
  *

@@ -35,7 +35,7 @@
 #include <mpi.h>
 
 #ifdef EAR_INTERFACE_F_DEBUG
-#define VERBOSE_INTERFACE(tags,text,...)  fprintf(stderr,"EAR_interfaceF[%d]: %s\n",getpid(),text);
+#define VERBOSE_INTERFACE(tags,text,...)  verbose(0, "EAR_interfaceF[%d]: %s", getpid(), text);
 #else
 #define VERBOSE_INTERFACE(tags,text,...)  
 #endif

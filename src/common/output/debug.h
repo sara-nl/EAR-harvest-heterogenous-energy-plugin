@@ -44,4 +44,8 @@ int debug_channel	__attribute__((weak)) = 2;
 #define debug(...)
 #endif
 
+// Set
+#define DEBUG_SET_FD(fd) \
+	debug_channel = fd;
+
 #endif //EAR_DEBUG_H

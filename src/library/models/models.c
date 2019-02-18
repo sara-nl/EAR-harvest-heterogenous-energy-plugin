@@ -43,14 +43,15 @@
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
-#include <library/models/monitoring.h>
-#include <library/models/min_energy.h>
 #include <library/models/min_time.h>
+#include <library/models/min_energy.h>
+#include <library/models/monitoring.h>
 #if LRZ_POLICY
 #include <library/models/supermucng.h>
 #endif
-#include <control/frequency.h>
 #include <daemon/eard_api.h>
+#include <control/frequency.h>
+#include <metrics/custom/hardware_info.h>
 
 static int use_default=1;
 

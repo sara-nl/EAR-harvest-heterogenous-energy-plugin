@@ -29,13 +29,14 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <metrics/custom/hardware_info.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
+#include <metrics/custom/hardware_info.h>
 
 int main ()
 {
     int examinable = is_cpu_examinable();
-    printf("%d\n", examinable);
+    verbose(0, "%d", examinable);
     assert(examinable == EAR_SUCCESS);
     return 0;
 }

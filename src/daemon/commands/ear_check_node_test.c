@@ -58,14 +58,14 @@ int read_powermon_app_fd_binary(int fd,powermon_app_t *app)
 void print_powermon_app(powermon_app_t *app)
 {
     print_application(&app->app);
-    printf("job created %d\n",app->job_created);
+    verbose(0, "job created %d", app->job_created);
 	print_energy_data(&app->energy_init);
 }
 
 
 void usage(char *app)
 {
-	printf("Usage: %s nodename\n",app);
+	verbose(0, "Usage: %s nodename",app);
 	exit(0);
 }
 
@@ -118,9 +118,9 @@ void main(int argc,char *argv[])
 	my_conf.nconf=my_node_conf;
 	my_conf.pm_app=&my_app;
 
-	printf("Saving configuration\n");	
+	verbose(0, "Saving configuration");
 	save_eard_conf(&my_conf);
-	printf("Restoring configuration\n");
+	verbose(0, "Restoring configuration");
 	restore_eard_conf(&my_conf);
 
 	print_cluster_conf(my_conf.cconf);

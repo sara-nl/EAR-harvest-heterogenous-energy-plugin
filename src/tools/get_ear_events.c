@@ -48,20 +48,20 @@ void show_query_result(cluster_conf_t my_conf, char *query)
     
     if (connection == NULL)
     {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
         exit(1);
     }
 
     if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user,"", my_conf.database.database, my_conf.database.port, NULL, 0))
     {
-        fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(0, "Error connecting to the database(%d): %s", mysql_errno(connection), mysql_error(connection)); //error
         mysql_close(connection);
         exit(0);
     }
     
     if (mysql_query(connection, query))
     {
-        fprintf(stderr, "MYSQL error\n"); 
+        verbose(0, "MYSQL error"); //error
         return;
     }
     
@@ -70,7 +70,7 @@ void show_query_result(cluster_conf_t my_conf, char *query)
   
     if (result == NULL) 
     {
-        fprintf(stderr, "MYSQL error\n"); 
+        verbose(0, "MYSQL error"); //error
         return;
     }
 
@@ -115,12 +115,14 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) verbose(0, "ERROR reading cluster configuration\n");
+    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) {
+        verbose(0, "ERROR reading cluster configuration");
+    }
     
     char *user = getlogin();
     if (user == NULL)
     {
-        fprintf(stderr, "ERROR getting username, cannot verify identity of user executing the command. Exiting...\n");
+        verbose(0, "ERROR getting username, cannot verify identity of user executing the command. Exiting..."); //error
         free_cluster_conf(&my_conf);
         exit(1);
     }

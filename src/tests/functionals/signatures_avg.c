@@ -79,20 +79,20 @@ void main(int argc,char *argv[])
 
     if (connection == NULL)
     {
-        fprintf(stderr, "ERROR creating MYSQL object.\n");
+        verbose(0, "ERROR creating MYSQL object."); //error
         exit(0);
     }
 
     if (!mysql_real_connect(connection,my_cluster.database.ip, my_cluster.database.user, my_cluster.database.pass, my_cluster.database.database, my_cluster.database.port, NULL, 0))
     {
-        fprintf(stderr, "ERROR connecting to the database: %s\n", mysql_error(connection));
+        verbose(0, "ERROR connecting to the database: %s", mysql_error(connection)); //error
         mysql_close(connection);
         exit(0);
     }
 
     if (mysql_batch_insert_avg_signatures(connection, apps, num_apps) < 0)
     {
-        fprintf(stderr, "ERROR while writing application to database.\n");
+        verbose(0, "ERROR while writing application to database."); //error
         exit(0);
     }
 

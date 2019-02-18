@@ -48,14 +48,14 @@ void main(int argc,char *argv[])
     id=getenv("SLURM_JOB_ID");
     sid=getenv("SLURM_STEP_ID");
     if ((id==NULL) || (sid==NULL)){
-        fprintf(stderr,"ear_new_job error: job id or step id have null values\n");
+        verbose(0, "ear_new_job error: job id or step id have null values"); //error
         exit(1);
     }
     jid=atoi(id);
     step_id=atoi(sid);
 	if (argc==1){
     	if (gethostname(myhost,NAME_SIZE)<0){
-    	    fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
+    	    verbose(0, "Error getting hostname %s", strerror(errno)); //error
     	    exit(1);
     	}
 	}else{
@@ -64,22 +64,22 @@ void main(int argc,char *argv[])
 
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
         verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
-        exit(0);
+        exit(0); //error
     }
     verbose(2,"Using %s as eard configuration file",my_ear_conf_path);
     if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
-        verbose(0," Error reading cluster configuration\n");
+        verbose(0," Error reading cluster configuration\n"); //error
     }
 
 
 	// END_JOB
 	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
 	if(eards<0){ 
-		fprintf(stderr,"Connection error\n");
+		verbose(0, "Connection error"); //error
 		exit(1);
 	}
 	#if API_DEBUG
-	fprintf(stdout,"ear_end_job id %d step_id %d\n",jid,step_id);
+	verbose(0, "ear_end_job id %d step_id %d", jid, step_id);
 	#endif
 	eards_end_job(jid,step_id);
 	eards_remote_disconnect();

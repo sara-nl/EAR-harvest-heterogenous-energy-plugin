@@ -40,7 +40,7 @@ cluster_conf_t my_cluster_conf;
 
 void usage(char *app)
 {
-	printf("usage:%s p_states \n",app);
+	verbose(0, "usage: %s p_states",app);
 	exit(1);
 }
 
@@ -54,7 +54,7 @@ void main(int argc,char *argv[])
 	p_states=atol(argv[1]);
 	// SET FREQ
 	if (gethostname(myhost,NAME_SIZE)<0){
-		fprintf(stderr,"Error getting hostname %s\n",strerror(errno));
+		verbose(0, "Error getting hostname %s", strerror(errno));
 		exit(1);
 	}
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
@@ -68,11 +68,13 @@ void main(int argc,char *argv[])
 
 	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
 	if(eards<0){ 
-		fprintf(stderr,"Connection error\n");
+		verbose(0, "Connection error");
 		exit(1);
 	}
-	fprintf(stdout,"Reducing the frequency in all the nodes by %u p_states\n",p_states);
+	verbose(0, "Reducing the frequency in all the nodes by %u p_states", p_states);
 
-	if (!eards_red_max_and_def_freq(p_states)) fprintf(stderr,"ear_red_freq error sending eards_red_freq command\n");
+	if (!eards_red_max_and_def_freq(p_states)) {
+		verbose(0, "ear_red_freq error sending eards_red_freq command");
+	}
 	eards_remote_disconnect();
 }
