@@ -49,7 +49,7 @@ typedef struct user {
 } user_t;
 
 /** Get complete user information */
-state_t user_full_ids_get(user_t *user);
+state_t user_all_ids_get(user_t *user);
 
 /** Get real user id */
 state_t user_ruid_get(uid_t *uid, char *uname);

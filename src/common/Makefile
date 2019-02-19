@@ -53,6 +53,9 @@ file.o: file.c file.h
 math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c $<
 
+process.o: process.c process.h
+	$(CC) $(CFLAGS) -c $<
+
 sockets.o: sockets.c sockets.h
 	$(CC) $(CFLAGS) -c $<
 
