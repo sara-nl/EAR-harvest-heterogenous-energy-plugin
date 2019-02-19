@@ -175,7 +175,7 @@ void set_global_eard_variables()
 	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	verb_level=my_cluster_conf.eard.verbose;
 	verb_channel=fd_my_log;
-	err_channel=fd_my_log;
+	error_channel=fd_my_log;
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -1243,7 +1243,7 @@ void main(int argc,char *argv[])
 		if (strcmp(argv[1],"-h")==0 || strcmp(argv[1],"--help")==0) Usage(argv[0]);
 		verb_level = atoi(argv[1]);
 	    verb_channel=fd_my_log;
-	    err_channel=fd_my_log;
+	    error_channel=fd_my_log;
 
 
 		if ((verb_level < 0) || (verb_level > 4)) {

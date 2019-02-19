@@ -265,7 +265,7 @@ int dynconf_red_pstates(uint p_id,uint p_states)
 	/* We must update my_node_info */
 
 	for (i=0;i<TOTAL_POLICIES;i++){
-		my_node_conf->policies[i].p_state=my_node_conf->policies[i].p_state-p_states;
+		my_node_conf->policies[i].p_state=my_node_conf->policies[i].p_state+p_states;
 	}
 	powermon_new_max_freq(new_max_freq);	
 }
