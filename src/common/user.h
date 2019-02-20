@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 #include <common/states.h>
+#include <common/types/configuration/cluster_conf.h>
 
 typedef struct user {
 	char ruid_name[SZ_PATH_KERNEL];
@@ -62,5 +63,8 @@ state_t user_rgid_get(gid_t *gid, char *gname);
 
 /** Get effective group id */
 state_t user_egid_get(gid_t *gid, char *gname);
+
+/** Checks the ruid and rgid and returns 1 if it's a privileged user, 0 if it's not. */
+int is_privileged_command(cluster_conf_t *my_conf);
 
 #endif //EAR_USER_H

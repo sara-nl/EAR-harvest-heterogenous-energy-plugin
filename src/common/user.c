@@ -78,3 +78,15 @@ state_t user_egid_get(gid_t *gid, char *gname)
 	strcpy(gname, gpw->gr_name);
 	return EAR_SUCCESS;
 }
+
+int is_privileged_command(cluster_conf_t *my_conf)
+{
+    user_t user_info;
+    if (user_all_ids_get(&user_info) != EAR_SUCCESS)
+    {
+        warning("Failed to retrieve user data\n");
+        return 0;
+    }
+
+    return is_privileged(my_conf, user_info.ruid_name, user_info.rgid_name, NULL);
+}
