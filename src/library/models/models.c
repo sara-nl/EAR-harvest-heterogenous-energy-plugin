@@ -214,36 +214,22 @@ ulong get_global_def_freq()
 	else return EAR_default_pstate;
 }
 
-#if LRZ_POLICY
-double get_global_th(double *th, double *th2)
-#else
 double get_global_th()
-#endif
 {
 	switch (power_model_policy)
 	{
 		case MIN_TIME_TO_SOLUTION:
 			if (system_conf!=NULL){ 
-				#if LRZ_POLICY
-				*th=system_conf->th;
-				#endif
 				return system_conf->th;
 			}else{ 
-				#if LRZ_POLICY
-				*th=performance_gain;
-				#endif
 				return performance_gain;
 			}
 			break;
     	#if LRZ_POLICY
     	case SUPERMUC:
             if (system_conf!=NULL){ 
-                *th=system_conf->th;
-				*th2=system_conf->th2;
                 return system_conf->th;
             }else{ 
-                *th=performance_gain;
-				*th2=performance_penalty;
                 return performance_gain;
             }
 			break;

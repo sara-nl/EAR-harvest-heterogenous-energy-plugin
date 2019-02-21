@@ -47,6 +47,7 @@
 
 #define NO_MODELS_SM_VERBOSE	0
 
+
 static uint sm_policy_pstates;
 static uint sm_reset_freq=RESET_FREQ;
 extern coefficient_t **coefficients;
@@ -66,6 +67,7 @@ void supermuc_init(uint pstates)
     if ((env_use_models!=NULL) && (atoi(env_use_models)==0)) use_models=0;
 	timep=(double*)malloc(pstates*sizeof(double));
 	powerp=(double*)malloc(pstates*sizeof(double));
+	sm_penalty=0.1;
 
 }
 
@@ -113,6 +115,7 @@ static int is_better_min_time(signature_t * curr_sig,signature_t *prev_sig)
 static void fill_projections(signature_t *sig,int ref)
 {
 	int i;
+	verbose(SM_VERB,"Creating projections using time_ref=%lf power_ref=%lf , ref=%ul \n",sig->time,sig->DC_power,ref);
 	for (i=0;i<pstates;i++)
 	{
 		if (i==ref){
@@ -139,7 +142,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 {
     signature_t *my_app;
     int i,min_pstate;
-    unsigned int ref,try_next;
+    unsigned int ref,try_next,boosted=0;
     double freq_gain,perf_gain;
     double power_proj,time_proj,cpi_proj,energy_proj,best_solution,energy_ref;
     double power_ref,cpi_ref,time_ref,time_current;
@@ -161,11 +164,8 @@ ulong supermuc_policy(signature_t *sig,int *ready)
     // This is the frequency at which we were running
     ref = frequency_freq_to_pstate(ear_frequency);
 
-	/* Computes the projections for all the pstates and fill the timep and powerp vector */
-    time_ref=my_app->time;
-    power_ref=my_app->DC_power;
 
-	fill_projections(time_ref,power_ref,ref);
+	fill_projections(sig,ref);
 
     // This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
     // We must check this is ok changing these values at this point
@@ -213,34 +213,19 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 	projection_set(EAR_default_pstate,time_ref,power_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
-	#if EAR_PERFORMANCE_TESTS
-	if (ear_frequency == EAR_default_frequency){
-		verbose(2,"MIN_TIME: def_pstate %u max_pstate %u th %.2lf best=%u (ear_freq=%lu def_freq %lu )\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate,
-		ear_frequency,EAR_default_frequency);
-	}
-	#endif
 
 		try_next=1;
 		i=EAR_default_pstate-1;
 		time_current=time_ref;
 
+		/* MIN_TIME PHASE */
 
 		while(try_next && (i >= min_pstate))
 		{
 			if (coefficients[ref][i].available)
 			{
-				#if EAR_PERFORMANCE_TESTS
-				if (ear_frequency == EAR_default_frequency){
-					verbose(1,"Comparing %u with %u",best_pstate,i);
-				}
-				#endif
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_freq)/(double)best_freq;
 				perf_gain=(time_current-timep[i])/time_current;
-				#if EAR_PERFORMANCE_TESTS
-				if (ear_frequency == EAR_default_frequency){
-					verbose(1,"Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
-				}
-				#endif
 
 				// OK
 				if (perf_gain>=freq_gain)
@@ -248,6 +233,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 					best_freq=coefficients[ref][i].pstate;
 					time_current = timep[i];
 					i--;
+					boosted=1;
 				}
 				else
 				{
@@ -255,15 +241,32 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 				}
 			} // Coefficients available
 			else{ 
-				#if EAR_PERFORMANCE_TESTS
-				if (ear_frequency == EAR_default_frequency){
-					verbose(1,"Coefficients for node %s [%d][%d] not available.... try=0\n",node_name,ref,i);
-					
-				}
-				#endif
 				try_next=0;
 			}
 		}	
+		/* after that phase, we will chech if we should reduce the frequency */
+		if (!boosted){
+		/* MIN_ENERGY PHASE */
+			best_solution=powerp[ref]*timep[ref];
+			time_max=timep[ref]+timep[ref]*sm_penalty;
+			verbose(SM_VERB,"Min_energy phase: reference = time  %lf power %lf energy %lf\n",timep[ref],powerp[ref],best_solution);
+			for (i = EAR_default_pstate+1; i < sm_policy_pstates;i++)
+			{
+			/* If coeffs are available */
+						if (coefficients[ref][i].available)
+						{
+						energy_proj=powerp[i]*timep[i];
+						if ((energy_proj < best_solution) && (timep[i] < time_max))
+						{
+							best_freq = coefficients[ref][i].pstate;
+							best_solution = energy_proj;
+							verbose(SM_VERB,"Selecting freq %lu\n",best_freq);
+						}
+						}
+			}
+			verbose(SM_VERB,"Frequency selected after MIN_ENERGY phase %ul energy estimated %lf\n",best_freq,best_solution);
+
+		}
 	}else{/* Use models is set to 0 */
         ulong prev_pstate,curr_pstate,next_pstate;
         signature_t *prev_sig;
@@ -292,17 +295,19 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 		verbose(NO_MODELS_SM_VERBOSE,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
      }
 
+	
+
 
 	// Coefficients were not available for this nominal frequency
 	if (system_conf!=NULL){
 	// Just in case the bestPstate was the frequency at which the application was running
-	if (best_pstate>system_conf->max_freq){ 
+	if (best_freq>system_conf->max_freq){ 
 		log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-		best_pstate=system_conf->max_freq;
+		best_freq=system_conf->max_freq;
 	}
 	}
 
-	return best_pstate;
+	return best_freq;
 }
 
 
