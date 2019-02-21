@@ -774,13 +774,7 @@ void main(int argc, char *argv[])
     }
     
     char *user = getlogin();
-    if (user == NULL)
-    {
-        verbose(0, "ERROR getting username, cannot verify identity of user executing the command. Exiting...");
-        free_cluster_conf(&my_conf);
-        exit(1); //error
-    }
-    else if (getuid() == 0 || is_privileged_command(&my_conf))
+    if (getuid() == 0 || is_privileged_command(&my_conf))
     {
         user = NULL; //by default, privilegd users or root will query all user jobs
     }

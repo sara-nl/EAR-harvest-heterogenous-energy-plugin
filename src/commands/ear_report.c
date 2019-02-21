@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <common/user.h>
 #include <common/states.h>
 #include <common/config.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -91,7 +92,7 @@ void usage(char *app)
 {
     verbose(0, "%s is a tool that reports energy consumption data", app);
 	verbose(0, "Usage: %s [options]", app);
-    verbose(0, "Options are as follows:"\
+    verbose(0, "Options are as follows:\n"\
             "\t-s start_time     \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
             "\t-e end_time       \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
             "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
@@ -365,12 +366,11 @@ void main(int argc,char *argv[])
         verbose(0, "Error reading configuration"); //error
     }
     
-    char *user = getlogin();
-    if (user == NULL)
+    if (getuid() != 0 && !is_privileged_command(&my_conf))
     {
-        verbose(0, "Error getting username, cannot verify identity of user executing the command. Exiting..."); //error
+        verbose(0, "This command can only be executed by privileged users. Contact your admin for more info.");
         free_cluster_conf(&my_conf);
-        exit(1);
+        exit(1); //error
     }
 
     MYSQL *connection = mysql_init(NULL);
