@@ -47,6 +47,7 @@
 #include <common/output/verbose.h>
 #include <common/output/debug.h>
 #include <common/output/error.h>
+#include <common/types/daemon_log.h>
 #include <common/database/db_helper.h>
 #include <common/types/generic.h>
 #include <common/types/gm_warning.h>
@@ -106,14 +107,14 @@ uint aggregate_samples;
 uint in_action=0;
 double perc_energy,perc_time,perc_power;
 double avg_power_t2,avg_power_t1;
-
+static int fd_my_log=2;
 
 
 
 void update_eargm_configuration(cluster_conf_t *conf)
 {
 	verb_level=conf->eargm.verbose;
-	verb_channel=2;
+
 	if (verbose_arg>0) verb_level=verbose_arg;
 
 	period_t1=conf->eargm.t1;
@@ -484,6 +485,12 @@ void main(int argc,char *argv[])
     else{
         print_cluster_conf(&my_cluster_conf);
     }
+	#if 0
+	fd_my_log=create_log(my_cluster_conf.tmp_dir,"eargmd");
+	#endif
+    VERB_SET_FD(fd_my_log);
+    ERROR_SET_FD(fd_my_log);
+
     update_eargm_configuration(&my_cluster_conf);
 
 

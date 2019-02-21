@@ -118,7 +118,7 @@ uint f_monitoring;
 
 static int eardbd_connected=0;
 static int db_helper_connected=0;
-static int fd_my_log;
+static int fd_my_log=2;
 
 int ear_fd_req[ear_daemon_client_requests];
 int ear_fd_ack[ear_daemon_client_requests];
@@ -174,8 +174,8 @@ void set_global_eard_variables()
 {
 	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	verb_level=my_cluster_conf.eard.verbose;
-	verb_channel=fd_my_log;
-	error_channel=fd_my_log;
+    VERB_SET_FD(fd_my_log);
+    ERROR_SET_FD(fd_my_log);
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -1169,8 +1169,10 @@ void main(int argc,char *argv[])
 	eard_dyn_conf.pm_app=get_powermon_app();
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
+	#if 0
     fd_my_log=create_log(my_cluster_conf.tmp_dir,"eard");
     if (fd_my_log<0) fd_my_log=2;
+	#endif
 
 	/* We initialize frecuency */
 	if (frequency_init(metrics_get_node_size()) < 0) {
@@ -1242,8 +1244,8 @@ void main(int argc,char *argv[])
 	{
 		if (strcmp(argv[1],"-h")==0 || strcmp(argv[1],"--help")==0) Usage(argv[0]);
 		verb_level = atoi(argv[1]);
-	    verb_channel=fd_my_log;
-	    error_channel=fd_my_log;
+		VERB_SET_FD(fd_my_log);
+		ERROR_SET_FD(fd_my_log);
 
 
 		if ((verb_level < 0) || (verb_level > 4)) {

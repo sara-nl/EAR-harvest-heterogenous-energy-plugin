@@ -47,6 +47,12 @@ devel.install: devel.install.components;
 
 clean: clean.components
 
+eard.install:daemon.install
+eardbd.install:database_cache.install
+eargmd.install:global_manager.install
+earplug.install:slurm_plugin.install
+
+
 ######## SUBFOLDERS
 
 %.components:
