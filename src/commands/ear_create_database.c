@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <mysql/mysql.h>
+#include <common/user.h>
 #include <common/config.h>
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -403,6 +404,10 @@ void main(int argc,char *argv[])
         exit(0);
     }
     
+    read_cluster_conf(ear_path, &my_cluster);
+
+	print_database_conf(&my_cluster.database);
+
     if (get_eardbd_conf_path(eardbd_path) == EAR_ERROR)
     {
         verbose(0, "Error getting eardbd.conf path"); //error
@@ -415,10 +420,6 @@ void main(int argc,char *argv[])
         exit(0);
     }
 
-
-    read_cluster_conf(ear_path, &my_cluster);
-
-	print_database_conf(&my_cluster.database);
 
     if (!print_out)
     {

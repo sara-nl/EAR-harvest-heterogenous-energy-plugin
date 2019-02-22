@@ -75,7 +75,7 @@
 #define SYSLOG_MSG							1
 #define USE_EXT								0
 #define NW_EXT								"-opa"
-#define LRZ_POLICY							0
+#define LRZ_POLICY							1
 //#define EAR_GUI
 
 #endif

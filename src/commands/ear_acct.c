@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <common/user.h>
 #include <common/config.h>
 #include <common/types/application.h>
 
@@ -773,13 +774,7 @@ void main(int argc, char *argv[])
     }
     
     char *user = getlogin();
-    if (user == NULL)
-    {
-        verbose(0, "ERROR getting username, cannot verify identity of user executing the command. Exiting...");
-        free_cluster_conf(&my_conf);
-        exit(1); //error
-    }
-    else if (is_privileged(&my_conf, user, NULL, NULL) || getuid() == 0)
+    if (getuid() == 0 || is_privileged_command(&my_conf))
     {
         user = NULL; //by default, privilegd users or root will query all user jobs
     }

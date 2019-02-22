@@ -778,7 +778,7 @@ void create_powermon_out()
 	// We are using EAR_TMP but this info will go to the DB
 	my_mask=umask(0);	
 	sprintf(output_name,"%s/%s.pm_data.csv",ear_tmp,nodename);
-	fd_powermon=open(output_name,O_WRONLY,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+	fd_powermon=open(output_name,O_WRONLY|O_APPEND,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd_powermon<0){
 		fd_powermon=open(output_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 		if (fd_powermon>=0) write(fd_powermon,header,strlen(header));
@@ -789,7 +789,7 @@ void create_powermon_out()
 		verbose(VNODEPMON+1," Created node power monitoring  file %s\n",output_name);
 	}	
     sprintf(output_name,"%s/%s.pm_periodic_data.txt",ear_tmp,nodename);
-    fd_periodic=open(output_name,O_WRONLY,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    fd_periodic=open(output_name,O_WRONLY|O_APPEND,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     if (fd_periodic<0){
         fd_periodic=open(output_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     }

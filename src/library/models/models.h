@@ -69,11 +69,7 @@ uint get_global_def_pstate();
 
 ulong get_global_def_freq();
 
-#if LRZ_POLICY
-double get_global_th(double *th,double *th2);
-#else
 double get_global_th();
-#endif
 
 /* */
 void policy_global_reconfiguration();

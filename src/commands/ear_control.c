@@ -38,6 +38,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <common/user.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>
@@ -254,16 +255,9 @@ void main(int argc, char *argv[])
 
     if (read_cluster_conf(path_name, &my_cluster_conf) != EAR_SUCCESS) verbose(0, "ERROR reading cluster configuration\n");
     
-    char *user = getlogin();
-    if (user == NULL)
+    if (getuid() != 0 && !is_privileged_command(&my_cluster_conf))
     {
-        verbose(0, "ERROR getting username, cannot verify identity of user executing the command. Exiting..."); //error
-        free_cluster_conf(&my_cluster_conf);
-        exit(1);
-    }
-    else if (!is_privileged(&my_cluster_conf, user, NULL, NULL) && getuid() != 0)
-    {
-        verbose(0, "This command can only be executed by privileged users, and the current one (%s) is not. Contact your admin for more info.", user);
+        verbose(0, "This command can only be executed by privileged users. Contact your admin for more info.");
         free_cluster_conf(&my_cluster_conf);
         exit(1); //error
     }
