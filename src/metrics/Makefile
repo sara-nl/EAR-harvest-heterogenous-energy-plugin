@@ -58,5 +58,5 @@ depend-clean: depend-clean.components
 	@ $(MAKE) -C 'custom' $* || exit
 	@ $(MAKE) -C 'ipmi' $* || exit
 	@ $(MAKE) -C 'papi' $* || exit
-	@ $(MAKE) -C 'rapl' $* || exit
+	@ $(MAKE) -C 'msr' $* || exit
 	@ $(MAKE) -C 'power_metrics' $* || exit
