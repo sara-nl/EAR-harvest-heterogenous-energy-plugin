@@ -235,8 +235,8 @@ start_time INT NOT NULL, \
 end_time INT NOT NULL, \
 DC_energy INT unsigned NOT NULL, \
 node_id VARCHAR(256) NOT NULL, \
-job_id INT NOT NULL, \
-step_id INT NOT NULL, "
+job_id INT unsigned NOT NULL, \
+step_id INT unsigned NOT NULL, "
 #if DEMO
 "avg_f INT, "
 #endif
@@ -261,8 +261,8 @@ PRIMARY KEY (id))");
 id INT unsigned NOT NULL AUTO_INCREMENT, \
 timestamp INT NOT NULL, \
 event_type INT NOT NULL, \
-job_id INT NOT NULL, \
-step_id INT NOT NULL, \
+job_id INT unsigned NOT NULL, \
+step_id INT unsigned NOT NULL, \
 freq INT unsigned NOT NULL, \
 node_id VARCHAR(256), \
 PRIMARY KEY (id))");
