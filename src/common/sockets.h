@@ -112,8 +112,10 @@ state_t sockets_header_clean(packet_header_t *header);
 state_t sockets_header_update(packet_header_t *header);
 
 /* Addresses */
-void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length);
+void sockets_get_hostname(struct sockaddr_storage *host_addr, char *buffer, int length);
 
-void sockets_get_address_fd(int fd, char *buffer, int length);
+void sockets_get_hostname_fd(int fd, char *buffer, int length);
+
+void sockets_get_ip(struct sockaddr_storage *host_addr, long *ip);
 
 #endif //EAR_SOCKETS_H

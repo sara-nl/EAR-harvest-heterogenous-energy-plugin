@@ -252,6 +252,12 @@ int node_energy_init()
 
     FUNCVERB("node_energy_init");
 	if ((ret=ipmi_get_product_name(my_p_manufacturer_name,my_p_name))<0){
+		node_energy_ops.node_energy_init=NULL;
+		node_energy_ops.count_energy_data_length=NULL;
+		node_energy_ops.read_dc_energy=NULL;
+		node_energy_ops.read_dc_energy_time=NULL;
+		node_energy_ops.read_ac_energy=NULL;
+		node_energy_ops.node_energy_dispose=NULL;
 		return -1;
 	}
 	

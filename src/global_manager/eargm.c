@@ -47,6 +47,7 @@
 #include <common/output/verbose.h>
 #include <common/output/debug.h>
 #include <common/output/error.h>
+#include <common/types/daemon_log.h>
 #include <common/database/db_helper.h>
 #include <common/types/generic.h>
 #include <common/types/gm_warning.h>
@@ -106,14 +107,14 @@ uint aggregate_samples;
 uint in_action=0;
 double perc_energy,perc_time,perc_power;
 double avg_power_t2,avg_power_t1;
-
+static int fd_my_log=2;
 
 
 
 void update_eargm_configuration(cluster_conf_t *conf)
 {
 	verb_level=conf->eargm.verbose;
-	verb_channel=2;
+
 	if (verbose_arg>0) verb_level=verbose_arg;
 
 	period_t1=conf->eargm.t1;
@@ -441,10 +442,10 @@ void report_status(gm_warning_t *my_warning)
 */
 void usage(char *app)
 {
-    printf("Usage: %s [-h]|[--help]|verbose_level] \n", app);
-	printf("This program controls the energy consumed in a period T2 seconds defined in $ETC/ear/ear.conf file\n");
-	printf("energy is checked every T1 seconds interval\n");
-	printf("Global manager can be configured in active or passive mode. Automatic actions are taken in active mode (defined in ear.conf file)\n");
+    verbose(0, "Usage: %s [-h]|[--help]|verbose_level]", app);
+	verbose(0, "This program controls the energy consumed in a period T2 seconds defined in $ETC/ear/ear.conf file");
+	verbose(0, "energy is checked every T1 seconds interval");
+	verbose(0, "Global manager can be configured in active or passive mode. Automatic actions are taken in active mode (defined in ear.conf file)");
     exit(0);
 }
 
@@ -484,6 +485,12 @@ void main(int argc,char *argv[])
     else{
         print_cluster_conf(&my_cluster_conf);
     }
+	#if 0
+	fd_my_log=create_log(my_cluster_conf.tmp_dir,"eargmd");
+	#endif
+    VERB_SET_FD(fd_my_log);
+    ERROR_SET_FD(fd_my_log);
+
     update_eargm_configuration(&my_cluster_conf);
 
 

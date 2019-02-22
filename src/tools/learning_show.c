@@ -43,14 +43,14 @@ void usage(int argc, char *argv[])
 
 	if (argc < 2)
 	{
-		fprintf(stdout, "Usage: %s node.id [OPTIONS]\n\n", argv[0]);
-		fprintf(stdout, "  The node.id of the node to display the information.\n");
-		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-P <num>\tPrints the output with a different color,\n");
-		fprintf(stdout, "\t\tcan be used when displaying different batch of\n");
-		fprintf(stdout, "\t\tapplications by script.\n");
-		fprintf(stdout, "\t-C\tShows other jobs of the same application,\n");
-		fprintf(stdout, "\t\tnode, policy and number of processes.\n");
+		verbose(0, "Usage: %s node.id [OPTIONS]\n", argv[0]);
+		verbose(0, "  The node.id of the node to display the information.");
+		verbose(0, "\nOptions:");
+		verbose(0, "\t-P <num>\tPrints the output with a different color,");
+		verbose(0, "\t\tcan be used when displaying different batch of");
+		verbose(0, "\t\tapplications by script.");
+		verbose(0, "\t-C\tShows other jobs of the same application,");
+		verbose(0, "\t\tnode, policy and number of processes.");
 		exit(1);
 	}
 
@@ -104,7 +104,7 @@ void main(int argc,char *argv[])
 		tprintf("Node name||Def. F.||Avg. F.||Seconds||Watts||GBS||CPI|||App name");
 		tprintf("---------||-------||-------||-------||-----||---||---|||--------");
 	} else {
-		fprintf(stderr, "Node name;Def. F.;Avg. F.;Seconds;Watts;GBS;CPI;App name\n");
+		verbose(0, "Node name;Def. F.;Avg. F.;Seconds;Watts;GBS;CPI;App name");
 	}
 
 	while (num_apps > 0)
@@ -122,7 +122,7 @@ void main(int argc,char *argv[])
 			}
 
 			if (opt_c) {
-				fprintf(stderr, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%s\n",
+				verbose(0, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%s",
                     apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
                     apps[i].signature.time, apps[i].signature.DC_power,
                     apps[i].signature.GBS, apps[i].signature.CPI,

@@ -170,7 +170,7 @@ static void print()
 	// Headers
 	if (opt_c && !opt_h)
 	{
-		fprintf(stderr, "Node;Coe.;Freq.;T. Real;T. 1;T. 2;T. 3;T. 4;T. 5;P. Real;P. 1;P. 2;P. 3;P. 4;P. 5\n");
+		verbose(0, "Node;Coe.;Freq.;T. Real;T. 1;T. 2;T. 3;T. 4;T. 5;P. Real;P. 1;P. 2;P. 3;P. 4;P. 5");
 	}
 	else if (!opt_c)
 	{
@@ -226,7 +226,7 @@ static void print()
 
 		if (opt_c)
 		{
-			fprintf(stderr, "%s;%s;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf\n",
+			verbose(0, "%s;%s;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%0.2lf",
 				p_apps->node_id, cofs_str[cofs_s[n]], p_apps->signature.def_f,
 				proj_tim[0], proj_tim[1], proj_tim[2], proj_tim[3], proj_tim[4], proj_tim[5],
 				proj_pow[0], proj_pow[1], proj_pow[2], proj_pow[3], proj_pow[4], proj_pow[5]);
@@ -249,7 +249,7 @@ static void print()
 	}
 
 	// Print legend
-	fprintf(stderr, "-------------------------\n");
+	verbose(0, "-------------------------");
 	
 	tprintf_init(stderr, STR_MODE_DEF, "5 12 12");
 	tprintf("Idx||Freq. from||Freq. to");
@@ -278,7 +278,7 @@ static void read_applications()
 	apps_n = db_read_applications_query(&apps_aux, buffer);
 
 	if (apps_n == 0) {
-		fprintf(stderr, "No apps found for the job_id '%lu'\n", jobp_id);
+		verbose(0, "No apps found for the job_id '%lu'", jobp_id); //error
 		exit(1);
 	}
 	
@@ -311,7 +311,7 @@ void read_coefficients()
 	//printf("%s %s %lu\n", apps[i].job.app_id, apps[i].node_id, apps[i].signature.time);
 
 		if (island == EAR_ERROR) {
-			fprintf(stderr, "ERROR, no island found for node %s\n", node);
+			verbose(0, "ERROR, no island found for node %s", node); //error
 			exit(1);
 		}
 
@@ -326,7 +326,7 @@ void read_coefficients()
 			cofs_n[i] = coeff_file_read(path_input, &cofs[i]);
 
 			if (cofs_n[i] <= 0) {
-				fprintf(stderr, "no custom coefficients found\n");
+				verbose(0, "no custom coefficients found"); //error
 				exit(1);
 			}
 		} else {
@@ -343,7 +343,7 @@ void read_coefficients()
 				cofs_n[i] = coeff_file_read(buffer, &cofs[i]);
 
 				if (cofs_n[i] <= 0) {
-					fprintf(stderr, "no coefficients found for node %s\n", node);
+					verbose(0, "no coefficients found for node %s", node);
 					exit(1);
 				}
 			}
@@ -371,17 +371,17 @@ void usage(int argc, char *argv[])
 
 	if (argc < 3)
 	{
-		fprintf(stdout, "Usage: %s job.id step.id [OPTIONS]\n\n", argv[0]);
-		fprintf(stdout, "  The job.id of the job to project.\n");
-		fprintf(stdout, "  The step.id of the job to project.\n");
-		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-A\tShows other jobs of the same application,\n");
-		fprintf(stdout, "\t\tnode, policy and number of processes.\n");
-		fprintf(stdout, "\t-C\tPrints the console output in CSV format.\n");
-		fprintf(stdout, "\t-H\tHides the header and the summary.\n");
-		fprintf(stdout, "\t-I <p>\tUse a custom coefficients file.\n");
-		fprintf(stdout, "\t-M <p>\tProject using the mean of all applications\n");
-		fprintf(stdout, "\t\tsignatures and custom coefficients file.\n");
+		verbose(0, "Usage: %s job.id step.id [OPTIONS]\n", argv[0]);
+		verbose(0, "  The job.id of the job to project.");
+		verbose(0, "  The step.id of the job to project.");
+		verbose(0, "\nOptions:");
+		verbose(0, "\t-A\tShows other jobs of the same application,");
+		verbose(0, "\t\tnode, policy and number of processes.");
+		verbose(0, "\t-C\tPrints the console output in CSV format.");
+		verbose(0, "\t-H\tHides the header and the summary.");
+		verbose(0, "\t-I <p>\tUse a custom coefficients file.");
+		verbose(0, "\t-M <p>\tProject using the mean of all applications");
+		verbose(0, "\t\tsignatures and custom coefficients file.");
 		exit(1);
 	}
 
@@ -426,7 +426,7 @@ void init()
 	get_ear_conf_path(buffer);
 
 	if (read_cluster_conf(buffer, &conf) != EAR_SUCCESS) {
-		fprintf(stderr, "Error reading cluster configuration.\n");
+		verbose(0, "Error reading cluster configuration."); //error
 		exit(1);
 	}
 

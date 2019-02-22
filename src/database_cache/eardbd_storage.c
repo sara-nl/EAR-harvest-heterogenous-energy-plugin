@@ -39,7 +39,9 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#if !OFFLINE
 #include <common/database/db_helper.h>
+#endif
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -73,6 +75,7 @@ extern ulong  sam_inmax[MAX_TYPES];
 extern ulong  sam_index[MAX_TYPES];
 extern uint   sam_recvd[MAX_TYPES];
 extern uint   soc_accpt;
+extern uint   soc_activ;
 extern uint   soc_discn;
 extern uint   soc_unkwn;
 extern uint   soc_tmout;
@@ -145,6 +148,7 @@ void metrics_print()
 
 	//
 	fprintf(stderr, "--\n");
+	fprintf(stderr, "active. sockets: %u\n", soc_activ);
 	fprintf(stderr, "accept. sockets: %u\n", soc_accpt);
 	fprintf(stderr, "discon. sockets: %u\n", soc_discn);
 	fprintf(stderr, "timeout sockets: %u\n", soc_tmout);
@@ -208,7 +212,7 @@ void reset_all()
  * Insert
  *
  */
-#if 0
+#if OFFLINE
 	#define db_batch_insert_applications(a, b);
 	#define db_batch_insert_applications_no_mpi(a, b);
 	#define db_batch_insert_applications_learning(a, b);

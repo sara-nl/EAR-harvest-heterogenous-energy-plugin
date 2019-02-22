@@ -39,29 +39,29 @@ int main(int argc,char *argv[])
     int m, n, p, i, j;
     double alpha, beta;
 
-    printf ("\n This example computes real matrix C=alpha*A*B+beta*C using \n"
+    verbose(0,"\n This example computes real matrix C=alpha*A*B+beta*C using \n"
             " Intel(R) MKL function dgemm, where A, B, and  C are matrices and \n"
-            " alpha and beta are double precision scalars\n\n");
+            " alpha and beta are double precision scalars\n");
 
     m = 4096, p = 4096, n = 4096;
-    printf (" Initializing data for matrix multiplication C=A*B for matrix \n"
-            " A(%ix%i) and matrix B(%ix%i)\n\n", m, p, p, n);
+    verbose(0," Initializing data for matrix multiplication C=A*B for matrix \n"
+            " A(%ix%i) and matrix B(%ix%i)\n", m, p, p, n);
     alpha = 1.0; beta = 0.0;
 
-    printf (" Allocating memory for matrices aligned on 64-byte boundary for better \n"
-            " performance \n\n");
+    verbose(0," Allocating memory for matrices aligned on 64-byte boundary for better \n"
+            " performance \n");
     A = (double *)mkl_malloc( m*p*sizeof( double ), 64 );
     B = (double *)mkl_malloc( p*n*sizeof( double ), 64 );
     C = (double *)mkl_malloc( m*n*sizeof( double ), 64 );
     if (A == NULL || B == NULL || C == NULL) {
-        printf( "\n ERROR: Can't allocate memory for matrices. Aborting... \n\n");
+        printf("\n ERROR: Can't allocate memory for matrices. Aborting... \n");
         mkl_free(A);
         mkl_free(B);
         mkl_free(C);
         return 1;
     }
 
-    printf (" Intializing matrix data \n\n");
+    verbose(0," Intializing matrix data \n");
     for (i = 0; i < (m*p); i++) {
         A[i] = (double)(i+1);
     }
@@ -74,7 +74,7 @@ int main(int argc,char *argv[])
         C[i] = 0.0;
     }
 
-    printf (" Computing matrix product using Intel(R) MKL dgemm function via CBLAS interface \n\n");
+    verbose(0," Computing matrix product using Intel(R) MKL dgemm function via CBLAS interface \n");
 	/* READING ENERGY */
 	ear_energy(&e_mj_init,&t_ms_init);	
 	int iter;

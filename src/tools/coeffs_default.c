@@ -1,3 +1,32 @@
+/**************************************************************
+*   Energy Aware Runtime (EAR)
+*   This program is part of the Energy Aware Runtime (EAR).
+*
+*   EAR provides a dynamic, transparent and ligth-weigth solution for
+*   Energy management.
+*
+*       It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017
+*   BSC Contact     mailto:ear-support@bsc.es
+*   Lenovo contact  mailto:hpchelp@lenovo.com
+*
+*   EAR is free software; you can redistribute it and/or
+*   modify it under the terms of the GNU Lesser General Public
+*   License as published by the Free Software Foundation; either
+*   version 2.1 of the License, or (at your option) any later version.
+*
+*   EAR is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*   Lesser General Public License for more details.
+*
+*   You should have received a copy of the GNU Lesser General Public
+*   License along with EAR; if not, write to the Free Software
+*   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*   The GNU LEsser General Public License is contained in the file COPYING
+*/
+
 #include <math.h>
 #include <errno.h>
 #include <stdio.h>
@@ -163,7 +192,7 @@ static void write_coefficients()
     int fd;
     int i;
 
-	fprintf(stdout, "-----------------------------------------------------------------------------------------------------\n");	
+	verbose(0, "-----------------------------------------------------------------------------------------------------");
 
 	if (!opt_o) {
 		sprintf(path_output, "%s/coeffs.default", path_root);
@@ -189,7 +218,7 @@ static void write_coefficients()
 		}
     }
 	
-	fprintf(stdout, "file written '%s'\n", path_output); 
+	verbose(0, "file written '%s'\n", path_output);
 
 	close(fd);
 }
@@ -260,14 +289,14 @@ static int usage(int argc, char *argv[])
 
 	if (argc < 3)
 	{
-		fprintf(stdout, "Usage: %s coeffs.path node.list [OPTIONS...]\n\n", argv[0]);
-		fprintf(stdout, "  The coeffs.path includes the island.\n");
-		fprintf(stdout, "  The node.list is splitted by spaces.\n");
-		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-A\tDoes the armonic mean, reducing the weight\n");
-		fprintf(stdout, "\t\tof radical coefficient values.\n");
-		fprintf(stdout, "\t-O <p>\tSaves the default coefficients file in a\n");
-		fprintf(stdout, "\t\tfile of custom location.\n");
+		verbose(0, "Usage: %s coeffs.path node.list [OPTIONS...]\n", argv[0]);
+		verbose(0, "  The coeffs.path includes the island.");
+		verbose(0, "  The node.list is splitted by spaces.");
+		verbose(0, "\nOptions:");
+		verbose(0, "\t-A\tDoes the armonic mean, reducing the weight");
+		verbose(0, "\t\tof radical coefficient values.");
+		verbose(0, "\t-O <p>\tSaves the default coefficients file in a");
+		verbose(0, "\t\tfile of custom location.");
 		
 		exit(1);
 	}

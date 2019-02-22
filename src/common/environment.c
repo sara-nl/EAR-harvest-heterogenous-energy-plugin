@@ -457,7 +457,7 @@ void ear_print_lib_environment()
 	sprintf(environ,"%s/ear_lib_environment.txt",tmp);
 	fd=open(environ,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd<0){
-		fprintf(stderr,"EAR error reporting environment variables %s\n",strerror(errno));
+		verbose(0, "EAR error reporting environment variables %s", strerror(errno));
 		return;
 	}
 	sprintf(var,"EAR_TMP=%s\n",get_ear_tmp());

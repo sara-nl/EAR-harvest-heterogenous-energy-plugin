@@ -28,11 +28,11 @@
 */
 
 
-
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <common/output/verbose.h>
 #include <metrics/ipmi/energy_node.h>
 
 void main(int argc,char *argv[])
@@ -42,7 +42,7 @@ void main(int argc,char *argv[])
 	unsigned long min_interval;
 
     if (getuid()!=0){
-        printf("Warning, this test need root privileges, execute it as root or with sudo\n");
+        verbose(0, "Warning, this test need root privileges, execute it as root or with sudo");
     }
 
 	// Init 
@@ -62,7 +62,7 @@ void main(int argc,char *argv[])
      min_interval  = (end_time.tv_sec * 1000000 + end_time.tv_usec);
      min_interval -= (begin_time.tv_sec *1000000 + begin_time.tv_usec);
 
-	fprintf(stderr,"Energy changes every %u usecs....\n",min_interval);
+	verbose(0, "Energy changes every %u usecs....", min_interval);
 	node_energy_dispose();
 
 }

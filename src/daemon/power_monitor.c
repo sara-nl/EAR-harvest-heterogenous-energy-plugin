@@ -53,7 +53,6 @@
 #include <metrics/power_metrics/power_metrics.h>
 #include <control/frequency.h>
 #include <daemon/power_monitor.h>
-#include <daemon/eard_conf_rapi.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 
@@ -688,7 +687,7 @@ void powermon_reload_conf()
 void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 {
 	ulong jid,mpi;
-	double maxpower,minpower;
+	double maxpower,minpower,RAPL, corrected_power;
 	if (ccontext>=0){ 
 		jid=current_ear_app[ccontext]->app.job.id;
 		mpi=current_ear_app[ccontext]->app.is_mpi;
@@ -719,7 +718,12 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 
 	current_sample.start_time=my_current_power->begin;
 	current_sample.end_time=my_current_power->end;
-	current_sample.DC_energy=my_current_power->avg_dc*(ulong)difftime(my_current_power->end,my_current_power->begin);
+	RAPL=my_current_power->avg_dram[0]+my_current_power->avg_dram[1]+my_current_power->avg_cpu[0]+my_current_power->avg_cpu[1];
+	if (my_current_power->avg_dc<RAPL){
+		corrected_power=RAPL;
+	}
+	
+	current_sample.DC_energy=corrected_power*(ulong)difftime(my_current_power->end,my_current_power->begin);
 	last_power_reported=my_current_power->avg_dc;
 	
 	#if DEMO
@@ -731,6 +735,12 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
 	}
 	#endif
+    if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>MAX_SIG_POWER)){
+    	warning("Resetting IPMI interface since power is %.2lf\n",my_current_power->avg_dc);
+    	node_energy_dispose();
+        node_energy_init();
+    }
+
 	#if DB_MYSQL
     if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<MAX_ERROR_POWER)){
 	if (my_cluster_conf.eard.use_mysql)
@@ -768,7 +778,7 @@ void create_powermon_out()
 	// We are using EAR_TMP but this info will go to the DB
 	my_mask=umask(0);	
 	sprintf(output_name,"%s/%s.pm_data.csv",ear_tmp,nodename);
-	fd_powermon=open(output_name,O_WRONLY,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+	fd_powermon=open(output_name,O_WRONLY|O_APPEND,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (fd_powermon<0){
 		fd_powermon=open(output_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 		if (fd_powermon>=0) write(fd_powermon,header,strlen(header));
@@ -779,7 +789,7 @@ void create_powermon_out()
 		verbose(VNODEPMON+1," Created node power monitoring  file %s\n",output_name);
 	}	
     sprintf(output_name,"%s/%s.pm_periodic_data.txt",ear_tmp,nodename);
-    fd_periodic=open(output_name,O_WRONLY,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    fd_periodic=open(output_name,O_WRONLY|O_APPEND,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     if (fd_periodic<0){
         fd_periodic=open(output_name,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     }

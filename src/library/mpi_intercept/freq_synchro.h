@@ -33,13 +33,16 @@
 
 #ifndef _FREQ_SYNCHRO_H
 #define _FREQ_SYNCHRO_H
-#if COORDINATE_FREQUENCIES
 
+#if COORDINATE_FREQUENCIES
 void global_frequency_selection(ulong my_local_f);
 ulong global_frequency_selection_synchro();
 void configure_global_synchronization();
+#else
+#define global_frequency_selection_send(m);
+#define global_frequency_selection_synchro() 0;
+#define configure_global_synchronization();
 #endif
 
-#else
 #endif
 

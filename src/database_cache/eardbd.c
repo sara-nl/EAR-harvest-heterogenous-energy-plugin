@@ -37,7 +37,9 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#if !OFFLINE
 #include <common/database/db_helper.h>
+#endif
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -66,6 +68,9 @@ fd_set fds_active;
 int fd_cli;
 int fd_min;
 int fd_max;
+
+//
+long fd_hosts[FD_SETSIZE];
 
 // Nomenclature:
 // 	- Server: main buffer of the gathered metrics. Inserts buffered metrics in
@@ -118,6 +123,7 @@ ulong  sam_inmax[MAX_TYPES];
 ulong  sam_index[MAX_TYPES];
 uint   sam_recvd[MAX_TYPES];
 uint   soc_accpt;
+uint   soc_activ;
 uint   soc_discn;
 uint   soc_unkwn;
 uint   soc_tmout;
@@ -170,12 +176,13 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	mirror_pid = 0;
 	others_pid = 0;
 
+	log_open("eardbd");
 	gethostname(master_host, SZ_NAME_MEDIUM);
 
 	// Configuration
-#if 1
+	#if !OFFLINE
 	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
-		error("while getting ear.conf path");
+		_error("while getting ear.conf path");
 	}
 
 	printm1("reading '%s' configuration file", extra_buffer);
@@ -184,7 +191,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	#ifdef USE_EARDBD_CONF
 	// Database configuration
 	if (get_eardbd_conf_path(extra_buffer) == EAR_ERROR){
-		error("while getting eardbd.conf path");
+		_error("while getting eardbd.conf path");
 	}
 
 	printm1("reading '%s' database configuration file", extra_buffer);
@@ -223,7 +230,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;
 	mirror_port = conf_clus->db_manager.sec_tcp_port;
-    synchr_port = conf_clus->db_manager.sync_tcp_port;
+	synchr_port = conf_clus->db_manager.sync_tcp_port;
 
 	// Allocation
 	alloc = (float) conf_clus->db_manager.mem_size;
@@ -232,12 +239,12 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	pid_t other_server_pid;
 	pid_t other_mirror_pid;
 	path_pid = conf_clus->tmp_dir;
-
+#if 0
 	// PID test
 	process_data_initialize(&proc_data_srv, "eardbd_test", path_pid);
 
 	if (state_fail(process_pid_file_save(&proc_data_srv))) {
-		error("while testing the local state directory (%s)", intern_error_str);
+		_error("while testing the local state directory (%s)", intern_error_str);
 	}
 
 	process_pid_file_clean(&proc_data_srv);
@@ -254,13 +261,13 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	if (!mirror_xst) process_pid_file_clean(&proc_data_mir);
 	if ( server_xst) server_pid = other_server_pid;
 	if ( mirror_xst) mirror_pid = other_mirror_pid;
-
+#endif
 	// Server & mirro verbosity
-	printm1("enabled cache server: %s",      server_too ? "OK": "NO");
-	printm1("enabled cache mirror: %s (%s)", mirror_too ? "OK" : "NO", server_host);
+	printm1("enabled cache server: %s",                  server_too ? "OK": "NO");
+	printm1("enabled cache mirror: %s (of server '%s')", mirror_too ? "OK" : "NO", server_host);
 
 	if (!server_too && !mirror_too) {
-		error("this node is not configured as a server nor mirror");
+		_error("this node is not configured as a server nor mirror");
 	}
 }
 
@@ -325,7 +332,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	int errno4 = init_sockets_single(ssync_mir, server_host, synchr_port, 0);
 
 	if (errno1 != 0 || errno2 != 0 || errno3 != 0 || errno4 != 0) {
-		error("while binding sockets (%d %d %d %d)", errno1, errno2, errno3, errno4);
+		_error("while binding sockets (%d %d %d %d)", errno1, errno2, errno3, errno4);
 	}
 
 	// Verbosity
@@ -350,6 +357,7 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 	tprintf("server sync||%d||TCP||%s||%d||%d",    ssync_srv->port, str_sta[st3], fd3, errno3);
 	tprintf("mirror sync||%d||TCP||%s||%d||%d",    ssync_mir->port, str_sta[st4], fd4, errno4);
 	printm1("TIP! mirror sync socket opens and closes intermittently");
+	printm1("maximum #connections per process: %u", MAX_CONNECTIONS);
 }
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
@@ -374,7 +382,7 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 		else if (mirror_pid > 0) {
 			others_pid = mirror_pid;
 		} else {
-			error("error while forking, terminating the program");
+			_error("error while forking, terminating the program");
 		}
 	}
 
@@ -386,7 +394,7 @@ static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 
 	printm1("cache server pid: %d %s", server_pid, str_sta[server_too]);
 	printm1("cache mirror pid: %d", mirror_pid);
-
+return;
 	printm1("cache server pid file: '%s'", server_too ? proc_data_srv.path_pid: "");
 	printm1("cache mirror pid file: '%s'", mirror_too ? proc_data_mir.path_pid: "");
 }
@@ -478,8 +486,8 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	updating  = 0;
 
 	// is not a listening socket?
-	dreaming   = (server_iam && !listening);
-	releasing  = dreaming;
+	dreaming  = (server_iam && !listening);
+	releasing = dreaming;
 
 	// Socket closing
 	if (mirror_iam) {
@@ -568,15 +576,16 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 
 static void init_pid_files(int argc, char **argv)
 {
+	return;
 	// Process PID save file
 	if (server_iam && server_too) {
 		process_update_pid(&proc_data_mir);
 
 		if (process_pid_file_save(&proc_data_srv)) {
 			if (mirror_too) {
-				error("while creating server PID file, waiting the mirror");
+				_error("while creating server PID file, waiting the mirror");
 			} else {
-				error("while creating server PID file");
+				_error("while creating server PID file");
 			}
 		}
 	} else if (mirror_iam && mirror_too)
@@ -584,7 +593,7 @@ static void init_pid_files(int argc, char **argv)
 		process_update_pid(&proc_data_mir);
 
 		if (process_pid_file_save(&proc_data_mir)) {
-			error("while creating mirror PID file");
+			_error("while creating mirror PID file");
 		}
 	}
 }

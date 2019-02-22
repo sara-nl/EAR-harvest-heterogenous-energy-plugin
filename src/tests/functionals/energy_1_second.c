@@ -28,10 +28,10 @@
 */
 
 
-
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <common/output/verbose.h>
 #include <metrics/ipmi/energy_node.h>
 
 void main(int argc,char *argv[])
@@ -39,7 +39,7 @@ void main(int argc,char *argv[])
 	unsigned long init, end;
 
     if (getuid()!=0){
-        printf("Warning, this test need root privileges, execute it as root or with sudo\n");
+        verbose(0, "Warning, this test need root privileges, execute it as root or with sudo");
     }
 
 	// Init 
@@ -49,7 +49,7 @@ void main(int argc,char *argv[])
 	sleep(1);
 	// get accumulated energy
 	read_dc_energy(&end);
-	fprintf(stderr,"Total energy consumed after 1 sec  %lu J (%lu-%lu)\n",(end-init)/1000,end,init);
+	verbose(0, "Total energy consumed after 1 sec  %lu J (%lu-%lu)", (end-init)/1000, end, init);
 	node_energy_dispose();
 
 }

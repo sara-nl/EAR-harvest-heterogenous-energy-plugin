@@ -28,67 +28,30 @@
 */
 
 
-
-#define _GNU_SOURCE
-
-#include <time.h>
-#include <papi.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <common/config.h>
-#include <common/output/verbose.h>
-#include <metrics/ipmi/energy_node.h>
 
-void usage(char *bin)
+
+int create_log(char *path,char *service_name)
 {
-    verbose(0, "Usage: %s n_iterations", bin);
-    verbose(0, "- n_iterations: number of executing iterations to determine the average overhead");
-    exit(1);
+        int fd;
+        char logfile[256];
+        mode_t my_mask;
+        my_mask=umask(0);
+
+        sprintf(logfile,"%s/%s.log",path,service_name);
+        unlink(logfile);
+        fd=open(logfile,O_CREAT|O_WRONLY|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+        chmod(logfile,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+        
+        umask(my_mask);
+
+        return fd;
 }
 
-int main (int argc, char *argv[])
-{
-    struct timespec requirement, remaining;
-    long long start_time_us, call_time_us_ac, call_time_us_dc;
-    double call_time_avg_ac, call_time_avg_dc;
-    unsigned long energy;
-    int iterations;
-    int i;
-
-    if (getuid()!=0){
-        verbose(0, "Warning, this test need root privileges, execute it as root or with sudo");
-    }
-
-
-	if (argc != 2) {
-		usage(argv[0]);
-	}
-
-    if (node_energy_init() < 0)
-    {
-        verbose(0, "Error");
-        return 0;
-    }
-
-    // Initializations
-    iterations          = atoi(argv[1]);
-	call_time_us_dc     = 0;
-    start_time_us = PAPI_get_real_usec();
-    for (i = 0; i < iterations; ++i)
-    {
-            read_dc_energy(&energy);
-    }
-    call_time_us_dc += PAPI_get_real_usec() - start_time_us;
-
-    node_energy_dispose();
-
-    call_time_avg_dc = (double) call_time_us_dc / (double) iterations;
-    call_time_avg_dc = call_time_avg_dc / 1000;
-
-
-    verbose(0, "read_dc_energy overhead: %0.3lf ms", call_time_avg_dc);
-
-    return 0;
-}

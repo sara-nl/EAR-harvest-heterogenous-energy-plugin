@@ -27,16 +27,16 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <stdio.h>
-#include <assert.h>
-#include <common/states.h>
-#include <common/output/verbose.h>
-#include <metrics/custom/hardware_info.h>
+#ifndef _EAR_DAEMON_LOG_H
+#define _EAR_DAEMON_LOG_H
 
-int main ()
-{
-    int examinable = is_cpu_examinable();
-    verbose(0, "%d", examinable);
-    assert(examinable == EAR_SUCCESS);
-    return 0;
-}
+#include <time.h>
+#include <common/config.h>
+#include <common/types/generic.h>
+
+
+
+/** Creates a log file targeted to be used as verbose and/or error channel, returns the fd */
+int create_log(char *path,char *service_name);
+
+#endif

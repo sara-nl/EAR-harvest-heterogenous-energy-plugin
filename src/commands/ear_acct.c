@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <common/user.h>
 #include <common/config.h>
 #include <common/types/application.h>
 
@@ -106,7 +107,7 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
     
     if (num_nodes == 0)
     {
-        fprintf(stderr, "No nodes found.\n");
+        verbose(0, "No nodes found."); //error
         return;
     }
     
@@ -166,7 +167,8 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
 
     if (i == 1)
     {
-        fprintf(stderr, "No jobs were found with id: %u.\n", job_id);
+        verbose(0, "No jobs were found with id: %u", job_id); //error
+
         free(nodelog_file_path);
         for (i = 0; i < num_nodes; i++)
             free(nodes[i]);
@@ -629,13 +631,13 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
 
     if (connection == NULL)
     {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
         exit(1);
     }
 
     if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user,my_conf.database.pass, my_conf.database.database, my_conf.database.port, NULL, 0))
     {
-        fprintf(stderr, "Error connecting to the database(%d):%s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(0, "Error connecting to the database(%d):%s", mysql_errno(connection), mysql_error(connection)); //error
         mysql_close(connection);
         exit(1);
     }
@@ -644,7 +646,9 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     
     char is_learning = 0;
      
-    if (verbose) fprintf(stderr, "Preparing query statement\n");
+    if (verbose) {
+        verbose(0, "Preparing query statement");
+    }
     
     sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id and Applications.step_id = Jobs.step_id where Jobs.end_time in (select end_time from (select end_time from Jobs" );
     application_t *apps;
@@ -674,16 +678,24 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     
     strcat(query, ") order by Jobs.id desc, Jobs.step_id desc, Jobs.end_time desc");
 
-    if (verbose) fprintf(stderr, "Retrieving applications\n");
-    num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
-    if (verbose) fprintf(stderr, "Finalized retrieving applications\n");
+    if (verbose) {
+        verbose(0, "Retrieving applications");
+    }
 
-    if (verbose) fprintf(stderr, "QUERY: %s\n", query);
+    num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
+    if (verbose) {
+        verbose(0, "Finalized retrieving applications");
+    }
+
+    if (verbose) {
+        verbose(0, "QUERY: %s", query);
+    }
+
     if (num_apps == EAR_MYSQL_ERROR)
     {
-        fprintf(stderr, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        verbose(0, "Error retrieving information from database (%d): %s", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
-        exit(1);
+        exit(1); //error
     }
 
     if (num_apps < 1)
@@ -757,16 +769,12 @@ void main(int argc, char *argv[])
         exit(1);
     }
 
-    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) verbose(0, "ERROR reading cluster configuration\n");
+    if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) {
+        verbose(0, "ERROR reading cluster configuration");
+    }
     
     char *user = getlogin();
-    if (user == NULL)
-    {
-        fprintf(stderr, "ERROR getting username, cannot verify identity of user executing the command. Exiting...\n");
-        free_cluster_conf(&my_conf);
-        exit(1);
-    }
-    else if (is_privileged(&my_conf, user, NULL, NULL) || getuid() == 0)
+    if (getuid() == 0 || is_privileged_command(&my_conf))
     {
         user = NULL; //by default, privilegd users or root will query all user jobs
     }

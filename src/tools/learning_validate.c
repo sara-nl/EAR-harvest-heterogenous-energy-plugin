@@ -244,7 +244,7 @@ static void read_applications()
 	get_ear_conf_path(buffer);
 
 	if (read_cluster_conf(buffer, &conf) != EAR_SUCCESS){
-		fprintf(stderr, "Error reading cluster configuration.\n");
+		verbose(0, "Error reading cluster configuration."); //error
 		exit(1);
 	}
 
@@ -280,11 +280,11 @@ static void usage(int argc, char *argv[])
 
 	if (argc < 2)
 	{
-		fprintf(stdout, "Usage: %s node.name [OPTIONS...]\n\n", argv[0]);
-		fprintf(stdout, "  node.name is the name of the node to analyze\n");
-		fprintf(stdout, "\nOptions:\n");
-		fprintf(stdout, "\t-G \tShows one lined general summary \n");
-		fprintf(stdout, "\t-H \tShows the header in one lined summary mode.\n");
+		verbose(0, "Usage: %s node.name [OPTIONS...]\n", argv[0]);
+		verbose(0, "  node.name is the name of the node to analyze");
+		verbose(0, "\nOptions:");
+		verbose(0, "\t-G \tShows one lined general summary");
+		verbose(0, "\t-H \tShows the header in one lined summary mode.");
 
 		exit(1);
 	}

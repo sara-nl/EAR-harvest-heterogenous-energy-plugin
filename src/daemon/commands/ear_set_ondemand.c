@@ -33,14 +33,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <string.h>
+#include <sys/types.h>
 #include <control/frequency.h>
+#include <common/output/verbose.h>
 
 void usage(char *prog)
 {
-	fprintf(stderr,"usage:%s cpus|[-h]\n",prog);
-	fprintf(stdout,"This program changes the governor to ondemand. You need root privileges\n");
+	verbose(0, "usage:%s cpus|[-h]", prog);
+	verbose(0, "This program changes the governor to ondemand. You need root privileges");
 	exit(0);
 }
 void main(int argc,char *argv[])

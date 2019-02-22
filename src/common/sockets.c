@@ -487,43 +487,30 @@ state_t sockets_header_update(packet_header_t *header)
  *
  */
 
-void sockets_get_address(struct sockaddr *host_addr, char *buffer, int length)
+void sockets_get_hostname(struct sockaddr_storage *host_addr, char *buffer, int length)
 {
 	socklen_t addrlen;
-	char *ip_version;
-	void *address;
-	int port;
 
 	if (length < INET6_ADDRSTRLEN) {
 		return;
 	}
 
 	// IPv4
-	if (host_addr->sa_family == AF_INET)
-	{
+	if (host_addr->ss_family == AF_INET) {
 		struct sockaddr_in *ipv4 = (struct sockaddr_in *) host_addr;
-		port = (int) ntohs(ipv4->sin_port);
-		address = &(ipv4->sin_addr);
 		addrlen = INET_ADDRSTRLEN;
-		ip_version = "IPv4";
 	}
 	// IPv6
-	else
-	{
+	else {
 		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
-		port = (int) ntohs(ipv6->sin6_port);
-		address = &(ipv6->sin6_addr);
 		addrlen = INET6_ADDRSTRLEN;
-		ip_version = "IPv6";
 	}
 
 	// convert the IP to a string and print it
-	//inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
-
-    getnameinfo(host_addr, addrlen, buffer, length, NULL, 0, 0);
+	getnameinfo((struct sockaddr *) host_addr, addrlen, buffer, length, NULL, 0, 0);
 }
 
-void sockets_get_address_fd(int fd, char *buffer, int length)
+void sockets_get_hostname_fd(int fd, char *buffer, int length)
 {
 	struct sockaddr_storage s_addr;
 	socklen_t s_len;
@@ -532,5 +519,34 @@ void sockets_get_address_fd(int fd, char *buffer, int length)
 	memset(&s_addr, 0, s_len);
 
 	getpeername(fd, (struct sockaddr *) &s_addr, &s_len);
-	sockets_get_address((struct sockaddr *) &s_addr, buffer, length);
+	sockets_get_hostname(&s_addr, buffer, length);
+}
+
+void sockets_get_ip(struct sockaddr_storage *host_addr, long *ip)
+{
+	//socklen_t addrlen;
+	//void *address;
+	//int port;
+
+	// IPv4
+	if (host_addr->ss_family == AF_INET)
+	{
+		struct sockaddr_in *ipv4 = (struct sockaddr_in *) host_addr;
+		//port = (int) ntohs(ipv4->sin_port);
+		//addrlen = INET_ADDRSTRLEN;
+		//address = &(ipv4->sin_addr);
+		*ip = ipv4->sin_addr.s_addr;
+	}
+	// IPv6
+	else
+	{
+		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
+		//port = (int) ntohs(ipv6->sin6_port);
+		//addrlen = INET6_ADDRSTRLEN;
+		//address = &(ipv6->sin6_addr);
+		*ip = (long) ipv6->sin6_addr.s6_addr[8];
+	}
+
+	// convert the IP to a string and print it
+	//inet_ntop(host_addr->sa_family, address, buffer, INET6_ADDRSTRLEN);
 }

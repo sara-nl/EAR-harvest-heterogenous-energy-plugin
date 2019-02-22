@@ -35,13 +35,16 @@
 */
 #ifndef _POWER_MONITORING_H_
 #define _POWER_MONITORING_H_
+
 #include <linux/version.h>
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
 #else
 #include <cpufreq.h>
 #endif
 
+#include <daemon/eard_conf_rapi.h>
 #include <common/types/application.h>
 #include <metrics/power_metrics/power_metrics.h>
 
@@ -84,7 +87,6 @@ void powermon_new_sbatch(application_t *j);
  * */
 void powermon_end_sbatch(job_id jid);
 
-
 /** reports the application signature to the power_monitoring module 
 */
 void powermon_mpi_signature(application_t *application);
@@ -115,10 +117,15 @@ void reset_current_app();
 /** Copy src into dest */
 void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src);
 
+/** */
 int print_powermon_app_fd_binary(int fd,powermon_app_t *app);
+
 int read_powermon_app_fd_binary(int fd,powermon_app_t *app);
+
 void print_powermon_app(powermon_app_t *app);
 
 powermon_app_t *get_powermon_app();
+
+void powermon_get_status(status_t *my_status);
 
 #endif

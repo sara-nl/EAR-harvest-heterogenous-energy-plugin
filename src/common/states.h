@@ -91,7 +91,7 @@ int intern_error_num;
 	return state;
 
 #define state_print_error(id) \
-	printf("ERROR, state id: %d (errno: %d, strerrno: %s)\n", \
+	verbose(0, "ERROR, state id: %d (errno: %d, strerrno: %s)", \
 		id, intern_error_num, intern_error_str)
 
 #endif //STATES_H

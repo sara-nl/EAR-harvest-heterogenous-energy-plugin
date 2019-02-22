@@ -27,54 +27,44 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef EAR_USER_H
+#define EAR_USER_H
+
+#include <pwd.h>
+#include <grp.h>
 #include <unistd.h>
-#include <common/config.h>
-#include <daemon/eard_rapi.h>
+#include <sys/types.h>
+#include <common/sizes.h>
+#include <common/states.h>
 #include <common/types/configuration/cluster_conf.h>
 
-cluster_conf_t my_cluster_conf;
+typedef struct user {
+	char ruid_name[SZ_PATH_KERNEL];
+	char euid_name[SZ_PATH_KERNEL];
+	char rgid_name[SZ_PATH_KERNEL];
+	char egid_name[SZ_PATH_KERNEL];
+	uid_t ruid;
+	uid_t euid;
+	gid_t rgid;
+	gid_t egid;
+} user_t;
 
-void usage(char *app)
-{
-	printf("usage:%s new_freq (in KHz)\n",app);
-	exit(1);
-}
+/** Get complete user information */
+state_t user_all_ids_get(user_t *user);
 
-void main(int argc,char *argv[])
-{
-	int eards;
-	unsigned long f;
-	
-	char myhost[NAME_SIZE],my_ear_conf_path[NAME_SIZE];
-	if (argc!=2) usage(argv[0]);
-	f=atol(argv[1]);
-	// SET FREQ
-	if (gethostname(myhost,NAME_SIZE)<0){
-		verbose(0, "Error getting hostname %s", strerror(errno)); //error
-		exit(1);
-	}
-    if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-        verbose(0,"Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
-        exit(0);
-    }
-    verbose(0, "Using %s as EARGM configuration file", my_ear_conf_path);
-    if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
-        verbose(0," Error reading cluster configuration\n");
-    }
+/** Get real user id */
+state_t user_ruid_get(uid_t *uid, char *uname);
 
-	eards=eards_remote_connect(myhost,my_cluster_conf.eard.port);
-	if(eards<0){ 
-		verbose(0, "Connection error"); //error
-		exit(1);
-	}
-	verbose(0, "Setting the frequency in all the nodes to %lu", f);
+/** Get effective user id */
+state_t user_euid_get(uid_t *uid, char *uname);
 
-	if (!eards_set_freq(f)) {
-		verbose(0, "ear_set_freq error sending eards_set_freq command");
-	}
-	eards_remote_disconnect();
-}
+/** Get real group id */
+state_t user_rgid_get(gid_t *gid, char *gname);
+
+/** Get effective group id */
+state_t user_egid_get(gid_t *gid, char *gname);
+
+/** Checks the ruid and rgid and returns 1 if it's a privileged user, 0 if it's not. */
+int is_privileged_command(cluster_conf_t *my_conf);
+
+#endif //EAR_USER_H

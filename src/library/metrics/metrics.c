@@ -45,6 +45,7 @@
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
 #endif
+#include <metrics/custom/bandwidth_notpriv.h>
 #include <daemon/eard_api.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>

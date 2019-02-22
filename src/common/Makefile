@@ -9,6 +9,7 @@ OBJS = environment.o \
        process.o \
        sockets.o \
        string_enhanced.o \
+       user.o \
        types.a
 
 ifdef DB_BASE
@@ -21,7 +22,8 @@ types_OBJECTS = $(shell find ./types/ -type f -name '*.o') \
                 string_enhanced.o \
                 math_operations.o \
                 process.o \
-                file.o
+                file.o \
+                user.o
 
 types_SOURCES = $(shell find ./types/ -type f -name '*.c' -o -name '*.h') \
                 string_enhanced.c \
@@ -31,7 +33,9 @@ types_SOURCES = $(shell find ./types/ -type f -name '*.c' -o -name '*.h') \
                 process.c \
                 process.h \
                 file.c \
-                file.h
+                file.h \
+                user.c \
+                user.h
 
 ######## RULES
 
@@ -49,10 +53,16 @@ file.o: file.c file.h
 math_operations.o: math_operations.c math_operations.h
 	$(CC) $(CFLAGS) -c $<
 
+process.o: process.c process.h
+	$(CC) $(CFLAGS) -c $<
+
 sockets.o: sockets.c sockets.h
 	$(CC) $(CFLAGS) -c $<
 
 string_enhanced.o: string_enhanced.c string_enhanced.h
+	$(CC) $(CFLAGS) -c $<
+
+user.o: user.c user.h
 	$(CC) $(CFLAGS) -c $<
 
 database.a: $(database_OBJS)

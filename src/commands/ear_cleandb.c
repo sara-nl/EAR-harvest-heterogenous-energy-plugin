@@ -41,8 +41,8 @@
 
 void usage(char *app)
 {
-	printf("Usage:%s num_days [options]\n",app);
-    printf("\t-p\t\tSpecify the password for MySQL's root user.\n");
+	verbose(0, "Usage:%s num_days [options]", app);
+    verbose(0, "\t-p\t\tSpecify the password for MySQL's root user.");
 	exit(0);
 }
   
@@ -59,13 +59,13 @@ void main(int argc,char *argv[])
         t.c_lflag &= ~ECHO;
         tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
-        printf("Introduce root's password:");
+        verbose(0, "Introduce root's password:");
         fflush(stdout);
         fgets(passw, sizeof(passw), stdin);
         t.c_lflag |= ECHO;
         tcsetattr(STDIN_FILENO, TCSANOW, &t);
         strclean(passw, '\n');
-        printf("\n");
+        verbose(0, " ");
     }
     else
         strcpy(passw, "");
@@ -73,13 +73,13 @@ void main(int argc,char *argv[])
     num_days = atoi(argv[1]);
     if (num_days < 0 || num_days > 365)
     {
-        fprintf(stderr, "Invalid number of days.");
+        verbose(0, "Invalid number of days."); //error
     }
     MYSQL *connection = mysql_init(NULL); 
 
     if (connection == NULL)
     {
-        fprintf(stderr, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
         exit(1);
     }
 
@@ -87,7 +87,7 @@ void main(int argc,char *argv[])
     char ear_path[256];
     if (get_ear_conf_path(ear_path) == EAR_ERROR)
     {
-        fprintf(stderr, "Error getting ear.conf path\n");
+        verbose(0, "Error getting ear.conf path"); //error
         exit(0);
     }
 
@@ -101,7 +101,7 @@ void main(int argc,char *argv[])
 
     free_cluster_conf(&my_cluster);
 
-    printf("Database successfully cleaned.\n");
+    verbose(0, "Database successfully cleaned.");
 
     exit(1);
 }

@@ -178,8 +178,9 @@ void report_periodic_power(int fd,power_data_t *my_power)
     current_t=localtime(&(my_power->end));
     strftime(s, sizeof(s), "%c", current_t);
 
-    sprintf(my_buffer,"%s : Avg. DC node power %.2lf Avg. DRAM %.2lf Avg. CPU %.2lf\n",s,my_power->avg_dc,
-    my_power->avg_dram[0]+my_power->avg_dram[1],my_power->avg_cpu[0]+my_power->avg_cpu[1]);
+    sprintf(my_buffer,"%s : Avg. DC node power %.2lf Avg. DRAM %.2lf[%.2lf,%.2lf] Avg. CPU %.2lf[%.2lf,%.2lf]\n",s,my_power->avg_dc,
+    my_power->avg_dram[0]+my_power->avg_dram[1],my_power->avg_dram[0],my_power->avg_dram[1],
+	my_power->avg_cpu[0]+my_power->avg_cpu[1],my_power->avg_cpu[0],my_power->avg_cpu[1]);
 	write(fd,my_buffer,strlen(my_buffer));
 }
 

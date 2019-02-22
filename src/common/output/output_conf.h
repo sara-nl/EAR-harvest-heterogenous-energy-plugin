@@ -31,6 +31,11 @@
 #ifndef _OUTCONF_H
 #define _OUTCONF_H
 
+#define SHOW_WARNINGS0  1
+#define SHOW_WARNINGS1  1
+#define SHOW_ERRORS     1
+#define SHOW_LOGS       1
+
 /* LRZ_POLICY verbose level */
 #define SM_VERB 0
 
@@ -68,10 +73,6 @@
 
 #define VMETRICS 2
 #define VTYPE   2
-/* Specifies if warnings are shown or not */
-#define SHOW_WARNINGS0 1
-#define SHOW_WARNINGS1 1
-#define SHOW_ERRORS   1
 
 #define DYN_VERBOSE 2
 #define LRZ_VERBOSE_LEVEL 0

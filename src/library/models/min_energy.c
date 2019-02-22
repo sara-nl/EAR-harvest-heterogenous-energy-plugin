@@ -191,7 +191,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	// MIN_ENERGY_TO_SOLUTION ALGORITHM
 	for (i = min_pstate; i < me_policy_pstates;i++)
 	{
-		// If coeffs are available
+		/* If coeffs are available */
 		if (coefficients[ref][i].available)
 		{
 				power_proj=project_power(my_app,&coefficients[ref][i]);

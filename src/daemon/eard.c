@@ -43,6 +43,7 @@
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/log.h>
+#include <common/types/daemon_log.h>
 #include <common/types/loop.h>
 #include <common/output/debug.h>
 #include <common/output/error.h>
@@ -117,6 +118,7 @@ uint f_monitoring;
 
 static int eardbd_connected=0;
 static int db_helper_connected=0;
+static int fd_my_log=2;
 
 int ear_fd_req[ear_daemon_client_requests];
 int ear_fd_ack[ear_daemon_client_requests];
@@ -155,7 +157,7 @@ void init_frequency_list()
 	get_frequencies_path(my_cluster_conf.tmp_dir,frequencies_path);
 	shared_frequencies=create_frequencies_shared_area(frequencies_path,frequencies,size);
 	for (i=0;i<ps;i++){
-		fprintf(stderr,"shared_frequencies[%d]=%lu\n",i,shared_frequencies[i]);
+		verbose(0, "shared_frequencies[%d]=%lu", i, shared_frequencies[i]);
 	}
 }
 
@@ -172,7 +174,8 @@ void set_global_eard_variables()
 {
 	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	verb_level=my_cluster_conf.eard.verbose;
-	verb_channel=2;
+    VERB_SET_FD(fd_my_log);
+    ERROR_SET_FD(fd_my_log);
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -799,9 +802,9 @@ void select_service(int fd)
 // eard creates different pipes to receive requests and to send values requested
 void Usage(char *app)
 {
-	fprintf(stderr,"Usage: %s [-h|verbose_level] \n", app);
-	fprintf(stderr,"\tear.conf file is used to define node settings. It must be available at\n"); 
-	fprintf(stderr,"\t $EAR_ETC/ear/ear.conf \n");
+	verbose(0, "Usage: %s [-h|verbose_level]", app);
+	verbose(0, "\tear.conf file is used to define node settings. It must be available at");
+	verbose(0, "\t $EAR_ETC/ear/ear.conf");
 	_exit(1);
 }
 
@@ -1166,6 +1169,11 @@ void main(int argc,char *argv[])
 	eard_dyn_conf.pm_app=get_powermon_app();
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
+	#if 0
+    fd_my_log=create_log(my_cluster_conf.tmp_dir,"eard");
+    if (fd_my_log<0) fd_my_log=2;
+	#endif
+
 	/* We initialize frecuency */
 	if (frequency_init(metrics_get_node_size()) < 0) {
 		error("ERROR, frequency information can't be initialized");
@@ -1236,7 +1244,9 @@ void main(int argc,char *argv[])
 	{
 		if (strcmp(argv[1],"-h")==0 || strcmp(argv[1],"--help")==0) Usage(argv[0]);
 		verb_level = atoi(argv[1]);
-		verb_channel=2;
+		VERB_SET_FD(fd_my_log);
+		ERROR_SET_FD(fd_my_log);
+
 
 		if ((verb_level < 0) || (verb_level > 4)) {
 			Usage(argv[0]);

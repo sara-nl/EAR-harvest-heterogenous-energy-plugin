@@ -85,7 +85,7 @@ int eargm_connect(char *nodename,uint use_port)
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
 		#if DEBUG
-		printf("getaddrinfo failt for %s and %s\n",nodename,port_number);
+		verbose(0, "getaddrinfo failt for %s and %s", nodename, port_number);
 		#endif
 		return EAR_ERROR;
     }
@@ -104,7 +104,7 @@ int eargm_connect(char *nodename,uint use_port)
 
    	if (rp == NULL) {               /* No address succeeded */
 		#if DEBUG
-		printf("Failing in connecting to remote erds\n");
+		verbose(0, "Failing in connecting to remote erds");
 		#endif
 		return EAR_ERROR;
     }

@@ -43,14 +43,15 @@
 #include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
-#include <library/models/monitoring.h>
-#include <library/models/min_energy.h>
 #include <library/models/min_time.h>
+#include <library/models/min_energy.h>
+#include <library/models/monitoring.h>
 #if LRZ_POLICY
 #include <library/models/supermucng.h>
 #endif
-#include <control/frequency.h>
 #include <daemon/eard_api.h>
+#include <control/frequency.h>
+#include <metrics/custom/hardware_info.h>
 
 static int use_default=1;
 
@@ -213,36 +214,22 @@ ulong get_global_def_freq()
 	else return EAR_default_pstate;
 }
 
-#if LRZ_POLICY
-double get_global_th(double *th, double *th2)
-#else
 double get_global_th()
-#endif
 {
 	switch (power_model_policy)
 	{
 		case MIN_TIME_TO_SOLUTION:
 			if (system_conf!=NULL){ 
-				#if LRZ_POLICY
-				*th=system_conf->th;
-				#endif
 				return system_conf->th;
 			}else{ 
-				#if LRZ_POLICY
-				*th=performance_gain;
-				#endif
 				return performance_gain;
 			}
 			break;
     	#if LRZ_POLICY
     	case SUPERMUC:
             if (system_conf!=NULL){ 
-                *th=system_conf->th;
-				*th2=system_conf->th2;
                 return system_conf->th;
             }else{ 
-                *th=performance_gain;
-				*th2=performance_penalty;
                 return performance_gain;
             }
 			break;
@@ -337,16 +324,9 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	ear_models_pstates = p_states;
 
 	// Coefficient file
-	strcpy(coeff_file, get_ear_coeff_db_pathname());
 	gethostname(nodename, sizeof(nodename));
 	strtok(nodename,".");
 
-	// Default coefficient file
-	sprintf(coeff_default_file, "%sdefault", coeff_file);
-
-	sprintf(coeff_file, "%s%s", coeff_file, nodename);
-
-	verbose(2, "EAR: Using coefficients %s\n", coeff_file);
 
 
 	// Coefficient pointers allocation
