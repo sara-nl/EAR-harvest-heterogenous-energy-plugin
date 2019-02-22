@@ -19,7 +19,7 @@ metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
                $(SRCDIR)/metrics/custom/bandwidth.o \
                $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
                $(SRCDIR)/metrics/power_metrics/power_metrics.o \
-               $(SRCDIR)/metrics/rapl/energy_cpu.o
+               $(SRCDIR)/metrics/msr/energy_cpu.o
 
 
 ######## RULES

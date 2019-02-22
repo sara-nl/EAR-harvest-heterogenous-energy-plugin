@@ -37,7 +37,7 @@
 #include <sys/types.h>
 
 #include <metrics/power_metrics/power_metrics.h>
-#include <metrics/rapl/energy_cpu.h>
+#include <metrics/msr/energy_cpu.h>
 #include <common/math_operations.h>
 
 uint8_t power_mon_connected=0; 

@@ -39,7 +39,7 @@
 #include <common/output/verbose.h>
 
 #include <metrics/common/msr.h>
-#include <metrics/rapl/energy_cpu.h>
+#include <metrics/msr/energy_cpu.h>
 #include <metrics/power_metrics/power_metrics.h>
 
 
