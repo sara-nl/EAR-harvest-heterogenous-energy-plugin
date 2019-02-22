@@ -37,6 +37,7 @@
 #include <sys/types.h>
 
 #include <metrics/power_metrics/power_metrics.h>
+#include <metrics/rapl/energy_cpu.h>
 #include <common/math_operations.h>
 
 uint8_t power_mon_connected=0; 
@@ -122,6 +123,7 @@ int pm_connect()
 	if (rootp){
 		pm_connected_status=node_energy_init();
 		if (pm_connected_status==EAR_SUCCESS) pm_connected_status=init_rapl_metrics();
+		//init_rapl_msr();
 		pm_already_connected=1;
 		return pm_connected_status;
 	}else{
@@ -252,6 +254,7 @@ int read_enegy_data(energy_data_t *acc_energy)
 		if (acc_energy==NULL) return POWER_MON_ERROR;
 		// Contacting the eards api
 		pm_read_rapl(RAPL_metrics);
+		//read_rapl_msr(RAPL_metrics);
 		//pm_start_rapl();
 		pm_node_dc_energy(&dc);
 		//pm_node_ac_energy(&ac); Not implemened yet
