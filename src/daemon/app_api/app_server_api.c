@@ -36,6 +36,9 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
+#include <common/output/error.h>
+#define SHOW_DEBUGS 1
+#include <common/output/debug.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
@@ -48,6 +51,17 @@ static char eard_to_app[MAX_PATH_SIZE];
 
 static int fd_app_to_eard=-1;
 static int fd_eard_to_app=-1;
+
+#define MAX_FDS 100
+typedef struct connect{
+	int recv;
+	int send;
+	int pid;
+}connect_t;
+static int connections=0;
+static connect_t apps_eard[MAX_FDS];
+static fd_set rfds_basic;
+static int numfds_req;
 
 extern cluster_conf_t my_cluster_conf;
 extern int eard_must_exit;
@@ -72,9 +86,9 @@ static int connect_with_app()
     else return EAR_ERROR;
 }
 
-static int send_app_answer(app_recv_t *data)
+static int send_app_answer(int fd_out,app_recv_t *data)
 {
-	if (write(fd_eard_to_app,data,sizeof(app_recv_t))!=sizeof(app_recv_t))	return EAR_ERROR;
+	if (write(fd_out,data,sizeof(app_recv_t))!=sizeof(app_recv_t))	return EAR_ERROR;
 	return EAR_SUCCESS;
 }
 
@@ -86,8 +100,15 @@ static int send_app_answer(app_recv_t *data)
 int create_app_connection(char *root)
 {
 	mode_t old_mask;
+	int i;
+	debug("create_app_connection\n");
+	for (i=0;i<MAX_FDS;i++){
+		apps_eard[i].recv=-1;
+		apps_eard[i].send=-1;
+		apps_eard[i].pid=-1;
+	}
     sprintf(app_to_eard,"%s/.app_to_eard",root);
-    sprintf(eard_to_app,"%s/.eard_to_app",root);
+    /*sprintf(eard_to_app,"%s/.eard_to_app",root);*/
 	old_mask=umask(0);
 	// app_to_eard is used to send requests from app to eard
     if (mknod(app_to_eard,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
@@ -95,25 +116,144 @@ int create_app_connection(char *root)
 			return EAR_ERROR;
         }
     }
+	#if 0
 	if (mknod(eard_to_app,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
         if (errno!=EEXIST){
             return EAR_ERROR;
         }
     }
+	#endif
 	umask(old_mask);
 	fd_app_to_eard=open(app_to_eard,O_RDWR);
 	if (fd_app_to_eard<0){
 		return EAR_ERROR;
 	}
+	#if 0
 	fd_eard_to_app=open(eard_to_app,O_RDWR);
 	if (fd_eard_to_app<0)	return EAR_ERROR;
+	#endif
 	return EAR_SUCCESS;
 }
 
-uint read_app_command(app_send_t *app_req)
+int find_first_free()
 {
-	if (read(fd_app_to_eard,app_req,sizeof(app_send_t))!=sizeof(app_send_t)){
-		verbose(0,"Error reading NON-EARL application request\n");
+	int i;
+	while ((apps_eard[i].recv==-1) && (i<MAX_FDS)) i++;
+	if (i==MAX_FDS) return -1;
+	return i;	
+}
+
+void check_connection(char *root,int i);
+void remove_connection(char *root,int i);
+
+void accept_new_connection(char *root,int pid)
+{
+	int i;	
+	char eard_to_app[MAX_PATH_SIZE];
+	char app_to_eard[MAX_PATH_SIZE];
+	debug("accepting connection from %d\n",pid);
+	sprintf(app_to_eard,"%s/.app_to_eard.%d",root,pid);
+	sprintf(eard_to_app,"%s/.eard_to_app.%d",root,pid);
+	if (connections<MAX_FDS) i=connections;
+	else{
+		i=find_first_free();
+		if (i<0){ 
+			/* At this point we must check if connections are still alive */
+			for (i=0;i<MAX_FDS;i++){
+				if (apps_eard[i].recv>=0){ check_connection(root,i);}
+			}
+			if ((i=find_first_free())<0) return;
+		}
+	}
+	apps_eard[i].recv=open(app_to_eard,O_RDONLY|O_NONBLOCK);
+	apps_eard[i].send=open(eard_to_app,O_WRONLY|O_NONBLOCK);	
+	if ((apps_eard[i].recv>=0) && (apps_eard[i].send>=0)){
+		debug("Connection established\n");
+		FD_SET(apps_eard[i].recv,&rfds_basic);
+		if (apps_eard[i].recv>=numfds_req) numfds_req=apps_eard[i].recv+1;
+		apps_eard[i].pid=pid;
+		connections++;
+	}else{
+		close(apps_eard[i].recv);
+		close(apps_eard[i].send);
+		apps_eard[i].recv=-1;
+		apps_eard[i].send=-1;
+	}
+}
+
+void check_connection(char *root,int i)
+{
+    char eard_to_app[MAX_PATH_SIZE];
+	
+    debug("checking connection from %d\n",apps_eard[i].pid);
+    sprintf(eard_to_app,"%s/.eard_to_app.%d",root,apps_eard[i].pid);
+	close(apps_eard[i].send);
+    apps_eard[i].send=open(eard_to_app,O_WRONLY|O_NONBLOCK);
+    if (apps_eard[i].send>=0){
+        debug("Connection is still alive\n");
+	}else{
+		remove_connection(root,i);
+	}
+}
+/* This function is similar to close but we must clean the environment */
+void remove_connection(char *root,int i)
+{
+	int fd_in,max=-1,new_con=0,pid;
+	char eard_to_app[MAX_PATH_SIZE];
+	char app_to_eard[MAX_PATH_SIZE];
+	pid=apps_eard[i].pid;
+	debug("cleaning connection from %d\n",pid);
+	sprintf(app_to_eard,"%s/.app_to_eard.%d",root,pid);
+	sprintf(eard_to_app,"%s/.eard_to_app.%d",root,pid);
+	fd_in=apps_eard[i].recv;
+	close(fd_in);
+	apps_eard[i].recv=-1;
+	apps_eard[i].pid=-1;
+	FD_CLR(fd_in,&rfds_basic);
+    /* We reconfigure the arguments */
+    for (i=0;i<MAX_FDS;i++){
+        if (apps_eard[i].recv>=0){
+            if (apps_eard[i].recv>max) max=apps_eard[i].recv;
+            new_con=i;
+        }
+    }
+    connections=new_con;
+    numfds_req=max+1;
+	unlink(app_to_eard);
+	unlink(eard_to_app);
+}
+void close_connection(int fd_in,int fd_out)
+{
+	int i,found=0;
+	int max=-1,new_con=0;
+	debug("closing connections %d - %d\n",fd_in,fd_out);
+	close(fd_in);
+	close(fd_out);
+	for (i=0;i<connections && !found;i++){
+		if (apps_eard[i].recv==fd_in){
+			found=1;
+			apps_eard[i].recv=-1;
+			apps_eard[i].send=-1;
+			apps_eard[i].pid=-1;
+			FD_CLR(fd_in,&rfds_basic);
+		}
+	}
+	/* We reconfigure the arguments */
+	for (i=0;i<MAX_FDS;i++){
+		if (apps_eard[i].recv>=0){
+			if (apps_eard[i].recv>max) max=apps_eard[i].recv;		
+			new_con=i;
+		}
+	}
+	connections=new_con;
+	numfds_req=max+1;
+	
+}
+
+uint read_app_command(int fd_in,app_send_t *app_req)
+{
+	if (read(fd_in,app_req,sizeof(app_send_t))!=sizeof(app_send_t)){
+		error("Error reading NON-EARL application request\n");
 		return INVALID_COMMAND;
 	}
 	return app_req->req;
@@ -124,9 +264,11 @@ uint read_app_command(app_send_t *app_req)
 void dispose_app_connection()
 {
 	close(fd_app_to_eard);
-	close(fd_eard_to_app);
 	unlink(app_to_eard);
+	#if 0
+	close(fd_eard_to_app);
 	unlink(eard_to_app);
+	#endif
 }
 
 /*********************************************************/
@@ -134,7 +276,7 @@ void dispose_app_connection()
 /*********************************************************/
 
 /** Returns the energy in mJ and the time in ms  */
-void ear_energy()
+void ear_energy(int fd_out)
 {
 	int fd_ack;
 	app_recv_t data;
@@ -142,30 +284,84 @@ void ear_energy()
 	
 	/* Execute specific request */
 
+	debug("ear_energy command\n");
+
 	read_dc_energy_time(&energy_mj,&time_ms);
 
-
+	#if 0
 	/* Create connection */
 	if (connect_with_app()!=EAR_SUCCESS){
 		verbose(0,"Error connecting with NON-EARL application \n");
 		return;
 	}
-
+	#endif
 
 	/* Prepare the answer */
 	data.ret=EAR_SUCCESS;
 	data.my_data.my_energy.energy_mj=energy_mj;
 	data.my_data.my_energy.time_ms=time_ms;
 
-	send_app_answer(&data);
-
+	send_app_answer(fd_out,&data);
+	#if 0
 	/* Close the connection with app */
 	close_app_connection();	
+	#endif
 
 	
 	return;
 
 }
+
+void ear_energy_debug(int fd_out)
+{
+        int fd_ack;
+        app_recv_t data;
+        ulong energy_j,energy_mj,time_sec,time_ms;
+        struct timespec tspec;
+
+        memset(&data.my_data.my_energy,sizeof(data.my_data.my_energy),0);
+
+        /* Execute specific request */
+        data.ret=EAR_SUCCESS;
+
+        if (clock_gettime(CLOCK_REALTIME, &tspec)) {
+                data.ret=EAR_ERROR;
+                data.my_data.my_energy.os_time_sec=0;
+                data.my_data.my_energy.os_time_ms=0;
+        }else{
+                data.my_data.my_energy.os_time_sec=tspec.tv_sec;
+                data.my_data.my_energy.os_time_ms=tspec.tv_nsec/1000000;
+        }
+
+        read_dc_energy_time_debug(&energy_j,&energy_mj,&time_sec,&time_ms);
+
+		#if 0
+        /* Create connection */
+        if (connect_with_app()!=EAR_SUCCESS){
+                verbose(0,"Error connecting with NON-EARL application \n");
+                return;
+        }
+		#endif
+
+
+        /* Prepare the answer */
+        data.my_data.my_energy.energy_j=energy_j;
+        data.my_data.my_energy.energy_mj=energy_mj;
+        data.my_data.my_energy.time_sec=time_sec;
+        data.my_data.my_energy.time_ms=time_ms;
+
+        send_app_answer(fd_out,&data);
+
+		#if 0
+        /* Close the connection with app */
+        close_app_connection();
+		#endif
+
+
+        return;
+
+}
+
 
 
 
@@ -174,15 +370,46 @@ void ear_energy()
 /***************** THREAD IMPLEMENTING NON-EARL API ************/
 /***************************************************************/
 
-void process_request()
+void process_connection(char *root)
+{
+	app_send_t req;
+	debug("process_connection\n");
+	if (read(fd_app_to_eard,&req,sizeof(app_send_t))!=sizeof(app_send_t)) return;
+	switch (req.req){
+		case CONNECT:
+			accept_new_connection(root,req.pid);
+			break;
+	}	
+}
+
+int get_fd_out(int fd_in)
+{
+	int i;
+	for(i=0;i<connections;i++){
+		if (apps_eard[i].recv==fd_in) return apps_eard[i].send;
+	}
+	return EAR_ERROR;
+}
+
+void process_request(int fd_in)
 {
 	int req;
 	app_send_t app_req;
-	req=read_app_command(&app_req);
+	int fd_out;
+	debug("process_request from %d\n",fd_in);
+	fd_out=get_fd_out(fd_in);
+	if (fd_out==EAR_ERROR) return;
+	req=read_app_command(fd_in,&app_req);
 	switch (req){
-	case ENERGY_TIME:
-		ear_energy();
+	case DISCONNECT:
+        close_connection(fd_in,fd_out);
 		break;
+	case ENERGY_TIME:
+		ear_energy(fd_out);
+		break;
+     case ENERGY_TIME_DEBUG:
+     	ear_energy_debug(fd_out);
+     	break;
 	case INVALID_COMMAND:
 		verbose(0,"PANIC, invalid command received and not recognized\n");
 		break;
@@ -196,9 +423,8 @@ void process_request()
 void *eard_non_earl_api_service(void *noinfo)
 {
 	fd_set rfds;
-    fd_set rfds_basic;
-	int numfds_ready,numfds_req;
-	int max_fd;
+	int numfds_ready;
+	int max_fd,i;
 
 	app_api_set_sigterm();
 
@@ -217,11 +443,15 @@ void *eard_non_earl_api_service(void *noinfo)
 	verbose(0,"Waiting for non-earl requestst\n");
 	while ((eard_must_exit==0) && (numfds_ready=select(numfds_req,&rfds,NULL,NULL,NULL))>=0){
 		if (numfds_ready>0){
-			/* There is only one fd, it MUST be this one */
-        	if (FD_ISSET(fd_app_to_eard,&rfds)){
-				/* Process the request  and send the answer */
-				process_request();	
-			}
+			for (i=0;i<numfds_req;i++){
+				if (FD_ISSET(i,&rfds)){
+					if (i==fd_app_to_eard){
+						process_connection(my_cluster_conf.tmp_dir);
+					}else{
+						process_request(i);	
+					}
+				}
+			}	
 		}
 		rfds=rfds_basic;	
 	}

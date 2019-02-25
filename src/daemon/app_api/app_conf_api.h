@@ -32,11 +32,18 @@
 #include <common/config.h>
 
 #define ENERGY_TIME		1000
+#define ENERGY_TIME_DEBUG               1001
+#define CONNECT		2000
+#define DISCONNECT 	2001
 #define INVALID_COMMAND 1
 
 typedef struct energy{
-	ulong energy_mj;
-	ulong time_ms;	
+        ulong energy_j;
+        ulong energy_mj;
+        ulong time_sec;
+        ulong time_ms;
+        ulong os_time_sec;
+        ulong os_time_ms;
 }energy_t;
 
 union app_recv_opt {
@@ -45,7 +52,7 @@ union app_recv_opt {
 
 typedef struct app_send{
 	uint req;
-	/* union app_send_opt my_data; */
+	int pid;
 }app_send_t;
 
 

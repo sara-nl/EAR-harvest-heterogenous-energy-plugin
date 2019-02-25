@@ -352,6 +352,12 @@ int read_dc_energy_time(ulong *energy,ulong *time_ms)
     }
 }
 
+int read_dc_energy_time_debug(ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
+{
+        return lenovo_wct_read_dc_energy_and_time(energy_j,energy_mj,time_sec,time_ms);
+}
+
+
 int read_ac_energy(unsigned long *energy)
 {
 	FUNCVERB("read_ac_energy");
