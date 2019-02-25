@@ -40,7 +40,7 @@
 #include <common/states.h>
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <daemon/app_api/app_conf_api.h>
 
@@ -50,10 +50,11 @@ static char app_to_eard[MAX_PATH_SIZE];
 static char eard_to_app[MAX_PATH_SIZE];
 static char my_app_to_eard[MAX_PATH_SIZE];
 
+#define MAX_TRIES 100
 static int create_connection()
 {
 	char *tmp;
-	int pid;
+	int pid,tries=0;
 	app_send_t req;
     /* Creating the connection */
 	debug("create_connection\n");
@@ -77,32 +78,52 @@ static int create_connection()
 	}
 	/* This pipe is to receive data */
 	debug("Creating pipe %s\n",eard_to_app);
+	chmod(my_app_to_eard,S_IWUSR|S_IRGRP|S_IROTH);
     if (mknod(eard_to_app,S_IFIFO|S_IRUSR|S_IWGRP|S_IWOTH,0)<0){
-		if (errno!=EEXIST) return EAR_ERROR;
+		if (errno!=EEXIST){ 
+			debug("Error un mknod\n");
+			return EAR_ERROR;
+		}
     }
+	chmod(eard_to_app,S_IRUSR|S_IWGRP|S_IWOTH);
 	/* EARD connection */	
 	debug("opening pipe and sending request\n");
-    fd_app_to_eard=open(app_to_eard,O_WRONLY|O_NONBLOCK);
-	if (fd_app_to_eard<0) return EAR_ERROR;
+    	fd_app_to_eard=open(app_to_eard,O_WRONLY|O_NONBLOCK);
+	if (fd_app_to_eard<0){ 
+		debug("Error opening connection pipe %s",strerror(errno));
+		return EAR_ERROR;
+	}
 	if (write(fd_app_to_eard,&req,sizeof(req))!=sizeof(req)) return EAR_ERROR;
 	close(fd_app_to_eard);
 	
 	/* Now we open our specific connection */
-	debug("Connecting\n");
-    fd_app_to_eard=open(my_app_to_eard,O_WRONLY|O_NONBLOCK);
-	if (fd_app_to_eard<0) return EAR_ERROR;
-    fd_eard_to_app=open(eard_to_app,O_RDONLY|O_NONBLOCK);
-	if (fd_eard_to_app<0) return EAR_ERROR;
+	debug("Connecting specific pipes\n");
+    	fd_app_to_eard=open(my_app_to_eard,O_WRONLY|O_NONBLOCK);
+	if (fd_app_to_eard<0){ 
+		if (errno!=ENXIO) return EAR_ERROR;
+		else{
+		while(((fd_app_to_eard=open(my_app_to_eard,O_WRONLY|O_NONBLOCK))<0) && (errno == ENXIO) && (tries<MAX_TRIES)) tries++;		
+		}
+		if (fd_app_to_eard<0) return EAR_ERROR;
+	}
+    	fd_eard_to_app=open(eard_to_app,O_RDONLY|O_NONBLOCK);
+	if (fd_eard_to_app<0){ 
+		debug("Error opening %s (%s)",eard_to_app,strerror(errno));
+		return EAR_ERROR;
+	}
 
 	return EAR_SUCCESS;
 }
 static int send_request(app_send_t *req)
 {
-	int ret=EAR_SUCCESS;
+	int ret;
 	debug("Send request\n");
-	if (write(fd_app_to_eard,req,sizeof(app_send_t))!=sizeof(app_send_t)) return EAR_ERROR;
-
-	return ret;
+	if ((ret=write(fd_app_to_eard,req,sizeof(app_send_t)))!=sizeof(app_send_t)){
+		debug("Error sending request %d",ret); 
+		return EAR_ERROR;
+	}
+	debug("request sent");
+	return EAR_SUCCESS;
 }
 static int wait_answer(app_recv_t *rec)
 {
@@ -123,9 +144,12 @@ static int wait_answer(app_recv_t *rec)
         if (retval<=0) return EAR_ERROR;
 
         /* we can read now */
-        if (read(fd_eard_to_app,rec,sizeof(app_recv_t))!=sizeof(app_recv_t)) return EAR_ERROR;
-		debug("Data received\n");
-        return ret;
+        if ((ret=read(fd_eard_to_app,rec,sizeof(app_recv_t)))!=sizeof(app_recv_t)){ 
+		debug("Error receiving data %d",ret);
+		return EAR_ERROR;
+	}
+	debug("Data received\n");
+        return EAR_SUCCESS;
 }
 
 static void close_connection()

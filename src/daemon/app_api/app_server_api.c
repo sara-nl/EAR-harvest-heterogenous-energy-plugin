@@ -37,7 +37,7 @@
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/output/error.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -53,6 +53,7 @@ static int fd_app_to_eard=-1;
 static int fd_eard_to_app=-1;
 
 #define MAX_FDS 100
+#define MAX_TRIES 100
 typedef struct connect{
 	int recv;
 	int send;
@@ -148,7 +149,7 @@ void remove_connection(char *root,int i);
 
 void accept_new_connection(char *root,int pid)
 {
-	int i;	
+	int i,tries=0;	
 	char eard_to_app[MAX_PATH_SIZE];
 	char app_to_eard[MAX_PATH_SIZE];
 	debug("accepting connection from %d\n",pid);
@@ -167,6 +168,12 @@ void accept_new_connection(char *root,int pid)
 	}
 	apps_eard[i].recv=open(app_to_eard,O_RDONLY|O_NONBLOCK);
 	apps_eard[i].send=open(eard_to_app,O_WRONLY|O_NONBLOCK);	
+	if (apps_eard[i].send<0){
+		if (errno==ENXIO){
+		while((tries<MAX_TRIES) && ((apps_eard[i].send=open(eard_to_app,O_WRONLY|O_NONBLOCK))<0) && (errno==ENXIO)) tries++;
+		}
+	}
+
 	if ((apps_eard[i].recv>=0) && (apps_eard[i].send>=0)){
 		debug("Connection established\n");
 		FD_SET(apps_eard[i].recv,&rfds_basic);
@@ -174,6 +181,7 @@ void accept_new_connection(char *root,int pid)
 		apps_eard[i].pid=pid;
 		connections++;
 	}else{
+		debug("Not connected %d-%d",apps_eard[i].recv,apps_eard[i].send);
 		close(apps_eard[i].recv);
 		close(apps_eard[i].send);
 		apps_eard[i].recv=-1;
@@ -239,6 +247,7 @@ void close_connection(int fd_in,int fd_out)
 		}
 	}
 	/* We reconfigure the arguments */
+	max=fd_app_to_eard;
 	for (i=0;i<MAX_FDS;i++){
 		if (apps_eard[i].recv>=0){
 			if (apps_eard[i].recv>max) max=apps_eard[i].recv;		
