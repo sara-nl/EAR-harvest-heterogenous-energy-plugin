@@ -123,16 +123,58 @@
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
                                     "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-int autoincrement_offset = 1;
+#define AUTO_QUERY "SHOW VARIABLES LIKE 'auto_increment_inc%%'"
+
+
+long autoincrement_offset = 0;
 
 
 int mysql_statement_error(MYSQL_STMT *statement)
 {
     verbose(VMYSQL, "MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
-    printf("MYSQL statement error (%d): %s\n", mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
     return EAR_MYSQL_STMT_ERROR;
 }
+
+int get_autoincrement(MYSQL *connection, long *acum)
+{
+
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement)
+    {
+        return EAR_MYSQL_ERROR;
+    }
+
+    if (mysql_stmt_prepare(statement, AUTO_QUERY, strlen(AUTO_QUERY)))
+            return mysql_statement_error(statement);
+
+    //Result parameters
+    char name[256];
+    MYSQL_BIND res_bind[2];
+    memset(res_bind, 0, sizeof(res_bind));
+    res_bind[1].buffer_type = MYSQL_TYPE_LONGLONG;
+    res_bind[1].buffer = acum;
+    res_bind[0].buffer_type = MYSQL_TYPE_VAR_STRING;
+    res_bind[0].buffer = &name;
+    res_bind[0].buffer_length = strlen(name);
+
+    if (mysql_stmt_bind_result(statement, res_bind)) return mysql_statement_error(statement);
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+    if (mysql_stmt_store_result(statement)) return mysql_statement_error(statement);
+    int status = mysql_stmt_fetch(statement);
+    
+    if (status != 0 && status != MYSQL_DATA_TRUNCATED)
+    {
+        return mysql_statement_error(statement);
+    }
+
+    mysql_stmt_close(statement);
+    mysql_close(connection);
+
+    return EAR_SUCCESS;
+
+}
+
 
 int mysql_insert_application(MYSQL *connection, application_t *app)
 {
@@ -245,6 +287,16 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     long long *pow_sigs_ids = calloc(num_apps, sizeof(long long));
     long long *sigs_ids = calloc(num_apps, sizeof(long long));
     
+    if (autoincrement_offset < 1)
+    {
+        verbose(VMYSQL, "autoincrement_offset not set, reading from database...");
+        if (get_autoincrement(connection, &autoincrement_offset) != EAR_SUCCESS)
+        {
+            verbose(VMYSQL, "error reading offset, setting to default (1)");
+            autoincrement_offset = 1;
+        }
+        verbose(VMYSQL, "autoincrement_offset set to %d\n", autoincrement_offset);
+    }
     //inserting all powersignatures (always present)
     pow_sig_id = mysql_batch_insert_power_signatures(connection, app, num_apps);
     

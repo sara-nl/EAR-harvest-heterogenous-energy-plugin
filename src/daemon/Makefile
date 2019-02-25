@@ -1,5 +1,5 @@
 API_DEBUG =
-CFLAGS    = -I$(SRCDIR) $(CONSTANTS) -pthread $(API_DEBUG) -O3
+CFLAGS    = -I$(SRCDIR) $(CONSTANTS) -pthread $(API_DEBUG) -O3 -lm
 LDFLAGS   = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -pthread
 
 ######## FILES

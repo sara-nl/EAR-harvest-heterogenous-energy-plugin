@@ -18,7 +18,9 @@ metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
                $(SRCDIR)/metrics/ipmi/energy_node/lenovo_sd650.o \
                $(SRCDIR)/metrics/custom/bandwidth.o \
                $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
-               $(SRCDIR)/metrics/power_metrics/power_metrics.o
+               $(SRCDIR)/metrics/power_metrics/power_metrics.o \
+               $(SRCDIR)/metrics/msr/energy_cpu.o
+
 
 ######## RULES
 
@@ -56,4 +58,5 @@ depend-clean: depend-clean.components
 	@ $(MAKE) -C 'custom' $* || exit
 	@ $(MAKE) -C 'ipmi' $* || exit
 	@ $(MAKE) -C 'papi' $* || exit
+	@ $(MAKE) -C 'msr' $* || exit
 	@ $(MAKE) -C 'power_metrics' $* || exit

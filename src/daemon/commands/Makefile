@@ -1,6 +1,6 @@
 
 DEBUG=
-CFLAGS    = -I$(SRCDIR) $(DEBUG)
+CFLAGS    = -I$(SRCDIR) $(DEBUG) -lm
 
 ######## FILES
 
