@@ -73,6 +73,7 @@
 
 #define VMETRICS 2
 #define VTYPE   2
+#define VJOBINFO 1
 
 #define DYN_VERBOSE 2
 #define LRZ_VERBOSE_LEVEL 0

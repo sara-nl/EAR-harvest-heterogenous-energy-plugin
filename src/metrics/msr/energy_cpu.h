@@ -31,6 +31,12 @@
 #ifndef _RAPL_METRICS_H_
 #define _RAPL_METRICS_H_
 
+#define RAPL_EVS            4
+#define RAPL_DRAM0          0
+#define RAPL_DRAM1          1
+#define RAPL_PACKAGE0       2
+#define RAPL_PACKAGE1       3
+
 
 /** Opens the necessary fds to read the MSR registers. Returns 0 on success 
 * 	and -1 on error. */
@@ -39,9 +45,6 @@ int init_rapl_msr();
 /** Resets (zeroes) rapl events. Returns 0 on success and -1 on error. */
 int reset_rapl_msr();
 
-/** Stops rapl events and copies events values in values array. Returns 0 on
-*   success and -1 on error. */
-int stop_rapl_msr(unsigned long long *values);
 
 /** Reads rapl counters and stores them in values array. Returns 0 on success 
 *	and -1 on error. */

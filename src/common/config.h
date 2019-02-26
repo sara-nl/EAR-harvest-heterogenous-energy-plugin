@@ -82,5 +82,6 @@
 //#define EAR_GUI
 
 // #define USE_EARDBD_CONF	0
+#define USE_MSR_RAPL	1
 
 #endif
