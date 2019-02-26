@@ -857,6 +857,20 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             remove_chars(token, ' ');
 			strcpy(conf->database.pass, token);
 		}
+        else if (!strcmp(token, "MARIADBCOMMANDSUSER"))
+        {
+            token = strtok(NULL, "=");
+            strclean(token, '\n');
+            remove_chars(token, ' ');
+            strcpy(conf->database.user_commands, token);
+        }
+        else if (!strcmp(token, "MARIADBCOMMANDSPASSW"))
+        {
+            token = strtok(NULL, "=");
+            strclean(token, '\n');
+            remove_chars(token, ' ');
+            strcpy(conf->database.pass_commands, token);
+        }
 		else if (!strcmp(token, "MARIADBDATABASE"))
 		{
 			token = strtok(NULL, "=");

@@ -148,6 +148,8 @@ typedef struct db_conf
     char ip[USER];
     char user[USER];
     char pass[USER];
+    char user_commands[USER];
+    char pass_commands[USER];
     char database[USER];
     uint port;
 } db_conf_t;
