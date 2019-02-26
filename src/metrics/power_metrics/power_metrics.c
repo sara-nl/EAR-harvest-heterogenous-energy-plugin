@@ -37,7 +37,11 @@
 #include <sys/types.h>
 
 #include <metrics/power_metrics/power_metrics.h>
+#if USE_MSR_RAPL
 #include <metrics/msr/energy_cpu.h>
+#else
+#include <metrics/papi/energy_cpu.h>
+#endif
 #include <common/math_operations.h>
 
 uint8_t power_mon_connected=0; 
@@ -71,7 +75,11 @@ void pm_disconnect()
 int pm_start_rapl()
 {
 	if (rootp){
+#if USE_MSR_RAPL
+		return start_rapl_msr();
+#else
 		return start_rapl_metrics();
+#endif
 	}else{
 		return EAR_ERROR;
 		//return eards_start_rapl();
@@ -80,7 +88,12 @@ int pm_start_rapl()
 int pm_stop_rapl(rapl_data_t *rm)
 {
 	if (rootp){
+#if USE_MSR_RAPL
+		memset(rm,0,sizeof(rapl_data_t));
+		return -1;
+#else
 		return stop_rapl_metrics(rm);
+#endif
 	}else{
 		return EAR_ERROR;
 		//return eards_read_rapl(rm);
@@ -89,7 +102,11 @@ int pm_stop_rapl(rapl_data_t *rm)
 int pm_read_rapl(rapl_data_t *rm)
 {
 	if (rootp){
+#if USE_MSR_RAPL
+		return read_rapl_msr(rm);
+#else
 		return read_rapl_metrics(rm);
+#endif
 	}else{
 		return EAR_ERROR;
 		//return eards_read_rapl(rm);
@@ -122,8 +139,13 @@ int pm_connect()
 	if (getuid()==0)	rootp=1;
 	if (rootp){
 		pm_connected_status=node_energy_init();
-		if (pm_connected_status==EAR_SUCCESS) pm_connected_status=init_rapl_metrics();
-		//init_rapl_msr();
+		if (pm_connected_status==EAR_SUCCESS){ 
+		#if USE_MSR_RAPL
+			pm_connected_status=init_rapl_msr();
+		#else
+			pm_connected_status=init_rapl_metrics();
+		#endif
+		}
 		pm_already_connected=1;
 		return pm_connected_status;
 	}else{
@@ -242,9 +264,6 @@ void end_power_monitoring()
 	power_mon_connected=0;
 }
 
-// acc_energy must be a valid address
-// RAPL events: rapl:::DRAM_ENERGY:PACKAGE0, rapl:::DRAM_ENERGY:PACKAGE1
-// 				rapl:::PACKAGE_ENERGY:PACKAGE0,rapl:::PACKAGE_ENERGY:PACKAGE1
 
 int read_enegy_data(energy_data_t *acc_energy)
 {

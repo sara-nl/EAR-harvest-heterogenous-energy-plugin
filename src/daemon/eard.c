@@ -53,7 +53,11 @@
 #include <common/types/services.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <control/frequency.h>
+#if USE_MSR_RAPL
+#include <metrics/msr/energy_cpu.h>
+#else
 #include <metrics/papi/energy_cpu.h>
+#endif
 #include <metrics/papi/generics.h>
 #include <metrics/custom/bandwidth.h>
 #include <metrics/ipmi/energy_node.h>
@@ -456,7 +460,11 @@ void eard_close_comm()
 	// Stop counting
 	if (RAPL_counting)
 	{
+		#if USE_MSR_RAPL
+		warning("stop_rapl counters not supported");
+		#else
 		stop_rapl_metrics(values);
+		#endif
 		//reset_rapl_metrics();
 		RAPL_counting=0;
 	}
@@ -746,16 +754,28 @@ int eard_rapl(int must_read)
 			connect_service(rapl_req,&req.req_data.app);
 			break;
         case START_RAPL:
+			#if USE_MSR_RAPL
+			warning("starting rapl msr not supported");
+			#else
             start_rapl_metrics();
+			#endif
 			RAPL_counting=1;
             write(ear_fd_ack[comm_req],&ack,sizeof(ack));
             break;
         case RESET_RAPL:
+			#if USE_MSR_RAPL
+			if (reset_rapl_msr()<0) error("Error resetting rapl msr counters");
+			#else
             reset_rapl_metrics();
+			#endif
             write(ear_fd_ack[comm_req],&ack,sizeof(ack));
             break;
         case READ_RAPL:
+			#if USE_MSR_RAPL
+			if (read_rapl_msr(values)<0) error("Error reading rapl msr counters");
+			#else
             read_rapl_metrics(values);
+			#endif
 			RAPL_counting=0;
             write(ear_fd_ack[comm_req],values,sizeof(unsigned long long)*RAPL_EVS);
             break;
@@ -1293,8 +1313,12 @@ void main(int argc,char *argv[])
 	start_uncores();
 
 	// We initialize rapl counters
+	#if USE_MSR_RAPL
+	if (init_rapl_msr()<0) error("Error initializing rapl");
+	#else
 	init_rapl_metrics();
 	start_rapl_metrics();
+	#endif
 	// We initilize energy_node
 	if (node_energy_init()<0){
 		warning("node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
