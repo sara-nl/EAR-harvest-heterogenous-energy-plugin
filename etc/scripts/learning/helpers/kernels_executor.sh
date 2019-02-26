@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Paths
 export BENCHS_SRC_PATH=$EAR_SOURCE_PATH/kernels
 export BENCHS_BIN_PATH=$EAR_INSTALL_PATH/bin/kernels
 
@@ -16,13 +17,20 @@ function configuring
 
 function launching
 {
-    echo "----------------------------------------------------------"
-    echo "Launching (SLURM) $1 $2 (P_STATE $EAR_P_STATE)"
-    echo "----------------------------------------------------------"
+	# Learning flag, comment to avoid the learning phase
+	if   [ "$BENCHS_MODE" == "learning" ]; then
+		export FLAGS="--ear-verbose=1 --ear-learning=$EAR_P_STATE"
+	elif [ "$BENCHS_MODE" == "test" ]; then
+		export FLAGS=""
+	fi		
 
-    srun -N 1 -n $2 -J $1 -w $SLURMD_NODENAME --jobid=$SLURM_JOBID \
-    	 --ear-verbose=1 --ear-learning=$EAR_P_STATE \
-         $BENCHS_BIN_PATH/$1
+	echo "------------------------------------------------------------------"
+	echo "Launching (SLURM) $1 $2 (P_STATE $EAR_P_STATE) (mode $BENCHS_MODE)"
+	echo "------------------------------------------------------------------"
+
+	# Launching
+	srun -N 1 -n $2 -J $1 -w $SLURMD_NODENAME --jobid=$SLURM_JOBID \
+    		$FLAGS $BENCHS_BIN_PATH/$1
 }
 
 function learning_phase
@@ -41,8 +49,7 @@ function learning_phase
                 mkdir -p $BENCH_SRC_PATH/bin
                 cd $BENCH_SRC_PATH;make $BENCHMARK CLASS=$CLASS NPROCS=$MPIS
                 mv $BENCH_SRC_PATH/bin/$BENCHMARK.$CLASS.$MPIS $BENCHS_BIN_PATH
-            fi
-            if [ "$BENCHS_MODE" == "test" ]; then
+            else
                 export OMP_NUM_THREADS=1
                 launching $BENCHMARK.$CLASS.$MPIS $MPIS
             fi
@@ -63,8 +70,7 @@ function learning_phase
                 mkdir -p $BENCH_SRC_PATH/bin
                 cd $BENCH_SRC_PATH;make $BENCHMARK CLASS=$CLASS NPROCS=$MPIS
                 mv $BENCH_SRC_PATH/bin/$BENCHMARK.$CLASS.$MPIS $BENCHS_BIN_PATH
-            fi
-            if [ "$BENCHS_MODE" == "test" ]; then
+            else
                 launching $BENCHMARK.$CLASS.$MPIS $MPIS
             fi
         ;;
@@ -75,8 +81,7 @@ function learning_phase
                 mkdir -p $BENCH_SRC_PATH/bin
                 cd $BENCH_SRC_PATH;make $BENCHMARK CLASS=$CLASS
                 mv $BENCH_SRC_PATH/bin/$BENCHMARK.$CLASS.x $BENCHS_BIN_PATH
-            fi
-            if [ "$BENCHS_MODE" == "test" ]; then
+            else
                 export OMP_NUM_THREADS=$CORES
                 launching $BENCHMARK.$CLASS.x $MPIS
             fi
@@ -88,8 +93,7 @@ function learning_phase
                 mkdir -p $BENCH_SRC_PATH/release
                 cd $BENCH_SRC_PATH;make $BENCHMARK
                 mv $BENCH_SRC_PATH/release/dgemm_example $BENCHS_BIN_PATH
-            fi
-            if [ "$BENCHS_MODE" == "test" ]; then
+            else
                 #export KMP_AFFINITY=granularity=fine,compact,1,0
                 export MKL_NUM_THREADS=$CORES
                 launching dgemm_example $MPIS
@@ -101,9 +105,8 @@ function learning_phase
             if [ "$BENCHS_MODE" == "compile" ]; then
                 cd $BENCH_SRC_PATH;make $BENCHMARK
                 mv $BENCH_SRC_PATH/stream_mpi $BENCHS_BIN_PATH
-            fi
-            if [ "$BENCHS_MODE" == "test" ]; then
-				ulimit -s unlimited
+            else
+		ulimit -s unlimited
                 export OMP_NUM_THREADS=1
                 launching stream_mpi $MPIS
             fi

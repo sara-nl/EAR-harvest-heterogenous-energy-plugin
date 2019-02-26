@@ -16,6 +16,6 @@ do
         learning_phase lu-mz C
         learning_phase ua C
         learning_phase dgemm
-        learning_phase stream
+       	learning_phase stream
     done
 done
