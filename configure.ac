@@ -114,9 +114,9 @@ X_AC_FREEIPMI
 #########
 # MYSQL #
 #########
+#
 
 X_AC_MYSQL
-
 
 ############
 # FEATURES #

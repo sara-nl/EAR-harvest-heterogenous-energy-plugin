@@ -27,7 +27,7 @@ To execute this component, this `systemctl` command examples are provided:
 
 Log messages are generated during the execution. Use journalctl command to see eard message:
 
-- `sudo journalctl -u eard -f` to force to reload the configuration of the EARD service.
+- `sudo journalctl -u eard -f`
 
 Reconfiguration
 ---------------
