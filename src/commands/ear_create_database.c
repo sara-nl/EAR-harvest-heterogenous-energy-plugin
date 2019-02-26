@@ -106,15 +106,23 @@ void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user
         sprintf(query, "CREATE USER '%s'@'%%'", db_user);
     run_query(connection, query);
 
-    sprintf(query, "GRANT INSERT ON %s.* TO '%s'@'%%'", db_name, db_user);
+    sprintf(query, "GRANT SELECT, INSERT ON %s.* TO '%s'@'%%'", db_name, db_user);
     run_query(connection, query);
     
-    if (strlen(eardbd_pass) > 1)
-        sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", eardbd_user, eardbd_pass);
-    else
-        sprintf(query, "CREATE USER '%s'@'%%'", eardbd_user);
-    run_query(connection, query);
+    if (strlen(eardbd_user))
+    {       
+        if (strlen(eardbd_pass) > 1)
+            sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", eardbd_user, eardbd_pass);
+        else
+            sprintf(query, "CREATE USER '%s'@'%%'", eardbd_user);
+        run_query(connection, query);
     
+        sprintf(query, "GRANT SELECT ON %s.* TO '%s'@'%%'", db_name, eardbd_user);
+        run_query(connection, query);
+    
+        sprintf(query, "ALTER USER '%s'@'%%' WITH MAX_USER_CONNECTIONS %n", eardbd_user, MAX_DB_CONNECTIONS);
+        run_query(connection, query);
+    }
     sprintf(query, "FLUSH PRIVILEGES");
     run_query(connection, query);
 }
@@ -394,9 +402,6 @@ void main(int argc,char *argv[])
 
     //cluster_conf_t my_cluster;
     char ear_path[256];
-    char eardbd_path[256];
-    char eardbd_user[256];
-    char eardbd_pass[256];
 
     if (get_ear_conf_path(ear_path) == EAR_ERROR)
     {
@@ -408,18 +413,9 @@ void main(int argc,char *argv[])
 
 	print_database_conf(&my_cluster.database);
 
-    if (get_eardbd_conf_path(eardbd_path) == EAR_ERROR)
-    {
-        verbose(0, "Error getting eardbd.conf path"); //error
-        exit(0);
-    }
 
-    if (read_eardbd_conf(eardbd_path, eardbd_user, eardbd_pass) == EAR_ERROR)
-    {
-        verbose(0, "Error getting eardbd.conf path"); //error
-        exit(0);
-    }
-
+    char user_commands[USER];
+    char pass_commands[USER];
 
     if (!print_out)
     {
@@ -435,7 +431,7 @@ void main(int argc,char *argv[])
     
     create_tables(connection);
 
-    create_users(connection, my_cluster.database.database, my_cluster.database.user, my_cluster.database.pass, eardbd_user, eardbd_pass);
+    create_users(connection, my_cluster.database.database, my_cluster.database.user, my_cluster.database.pass, my_cluster.database.user_commands, my_cluster.database.pass_commands);
 
     create_indexes(connection);
 

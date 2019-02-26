@@ -58,7 +58,7 @@
 #define GRACE_T1							3
 
 #define LARGE_CLUSTER						1
-#define DB_SIMPLE							1
+#define DB_SIMPLE							0
 #define DEMO								0
 #define COEFFS_V3							1
 #define APP_API								1
@@ -83,5 +83,7 @@
 
 // #define USE_EARDBD_CONF	0
 #define USE_MSR_RAPL	1
+
+#define MAX_DB_CONNECTIONS 5
 
 #endif
