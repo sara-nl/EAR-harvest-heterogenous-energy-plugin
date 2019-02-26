@@ -635,7 +635,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
         exit(1);
     }
 
-    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user,my_conf.database.pass, my_conf.database.database, my_conf.database.port, NULL, 0))
+    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user_commands,my_conf.database.pass_commands, my_conf.database.database, my_conf.database.port, NULL, 0))
     {
         verbose(0, "Error connecting to the database(%d):%s", mysql_errno(connection), mysql_error(connection)); //error
         mysql_close(connection);
