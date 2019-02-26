@@ -4,7 +4,6 @@ EAR configuration file
 
 Usually the first word in the configuration file expresses the component related with the option. Lines starting with # are comments. Not all the options and arguments are required because some of the components or functionallity could be disabled.
 
-
 A test for ear.conf file can be found in the path `src/test/functionals/ear_conf`
 
 # Services configuration parameters
@@ -21,7 +20,7 @@ MariaDBPort=0
 #
 MariaDBPassw=
 #
-MariaDBDatabase=EAR_DB
+MariaDBDatabase=EAR
 ```
 
 2) EAR Global Manager (EARGMD)

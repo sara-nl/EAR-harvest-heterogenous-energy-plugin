@@ -1,24 +1,24 @@
 EAR Library 
 -----------
-The EAR library is the core of the EAR package. The EARL offers a ligthweigth and simple solution to select the optional frequency for MPI applications at runtime.
+The EAR library is the core of the EAR package. The EARL offers a ligthweight and simple solution to select the optional frequency for MPI applications at runtime.
 
-EARL is dynamically loaded next to the running applications using the PMPI interface, which it's used by many other runtime solutions. The current EARL version only supports this mechanism but it is under development an API to be inserted in the OpenMPI library.
+EARL is dynamically loaded next to the running applications using the PMPI interface, which it is used by many other runtime solutions. The current EARL version only supports this mechanism but it is under development an API to be inserted in the OpenMPI library.
 
 At runtime, EARL goes through the following phase:
 
-<img src="../../etc/images/EAR_stack.png" align="right" width="280">
+<img src="../../etc/images/EAR_stack.png" align="right" width="340">
 
 1. Automatic detection of application outer loops. This is done by dynamically intercepting MPI calls (using `LD_PRELOAD`) and invoking the Dynamic Application Iterative Structure detector algorithm. DynAIS is highly optimized for new Intel architectures reporting low overhead.
 
-2. Computation of the application signature. Once DynAIS starts reporting iterations for the outer loop, EAR starts computing the application signature. This signature includes: iteration time, DC power consumption, CPI and TPI (transactions per instruction). Since DC power measurements error highly depends on the hardware, EAR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
+2. Computation of the application signature. Once DynAIS starts reporting iterations for the outer loop, EAR starts to compute the application signature. This signature includes: iteration time, DC power consumption, bandwidth, cycles, instructions, etc. Since the DC power measurements error highly depends on the hardware, EAR automatically detects the hardware characteristics and sets a minimum time to compute the signature in order to minimize the average error.
 
-<img src="../../etc/images/Models.png"  align="centered" width="640">
+<img src="../../etc/images/Models.png"  align="centered" width="480">
 
 3. Power and performance projection. EAR has its own performance and power models which requires as an input, the application and the system signatures. The system signature is a set of coefficients characterizing each node in the system. They are computed at the learning phase at the EAR configuration time. EAR projects the power used and computing time (performance) of the running application for all the available frequencies in the system.
 
-<img src="../../etc/images/Projections.png"  align="centered" width="640">
+<img src="../../etc/images/Projections.png"  align="centered" width="480">
 
-4. Apply the selected power policy. EAR includes two power policies to be selected at runtime: 'minimize time to solution' and 'minimize energy to solution' if are permitted by the system administrator. At this point, EAR executes the power policy, using the projections computed in the previous phase, and selects the optimal frequency for this application and this particular run.
+4. Apply the selected power policy. EAR includes two power policies to be selected at runtime: 'minimize time to solution' and 'minimize energy to solution', if permitted by the system administrator. At this point, EAR executes the power policy, using the projections computed in the previous phase, and selects the optimal frequency for this application and this particular run.
 
 Configuration
 -------------

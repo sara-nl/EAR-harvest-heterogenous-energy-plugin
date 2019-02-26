@@ -14,15 +14,15 @@ This data, called the **application signature**, together with the node characte
 Given the predictions and the power policy, the *best* CPU frequency is selected. For instance, given an application with a memory intensive behavior, EARL will:
 1) Detect dynamically the iterative section for the application.
 2) Compute the application signature.
-3) Apply perforance and power models.
+3) Apply the performance and power models.
 4) Apply the power policy.
-5) And finally, select and change the CPU frequency. In that kind of applications, reducing the CPU frequency will not significantly affect the application performance.
+5) And finally, select and change the CPU frequency. Becausa in that kind of applications, reducing the CPU frequency will not significantly affect the application performance.
 
 The system signature is a set of coefficients and it's computed once at configuration time. The process of computing the system signature is called the **learning phase**. It consist in the execution of a set of pre-selected stressing benchmarks included in the package distribution. The application signature is computed at runtime since it characterizes the application.
 
 ## EAR (node) Daemon
 
-EAR Daemon ([EARD](./daemon/README.md)) is a daemon running in all the compute nodes. It is a core component and It provides three types of services: access to privileged metrics, periodic power monitoring and power control commands.
+EAR Daemon ([EARD](./daemon/README.md)) is a daemon running in all the compute nodes. It is a core component and it provides three types of services: access to privileged metrics, periodic power monitoring and power control commands.
 
 EARD is used by the library to read those metrics that requires root privileges. It also offers a simplified API to be used by applications. This API only provides the reading of the metrics (not control operations such as changing the frequency).
 

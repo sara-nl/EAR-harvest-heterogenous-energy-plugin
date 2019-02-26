@@ -7,15 +7,15 @@ Energy Aware Runtime (EAR) package provides an energy efficient solution for sup
 
 EAR also provides mechanism for those experts users that perfectly knows their application, to change the frequency and view the effects in form of metrics.
 
-EAR library has been integrated in a full energy management system incluing a complete accounting mechanism, and a global energy manager. All the componets together provides three main services:
+EAR library has been integrated in a full energy management system including a complete accounting mechanism and a global energy manager. All the componets together provides three main services:
 
-1) A **simple and ligthweigth system** to automatically select the optimal CPU frequency according to the application, the node, and the power policy.  This  services is provided by two components: the EAR library (**EARL**) and the EAR daemon (**EARD**). EARL is a smart component which selects the CPU frequency for the running applications. EARD is provides basic services to the rest of components (not only EARL).
+1) A **simple and ligthweigth system** to automatically select the optimal CPU frequency according to the application, the node characteristics, and the power policy.  This  services is provided by two components: the EAR library (**EARL**) and the EAR daemon (**EARD**). EARL is a smart component which selects the CPU frequency for the running applications. EARD is provides basic services to the rest of components (not only EARL).
 
 2) A complete **energy accounting system** based on MySQL database. The energy accounting system is configurable in terms of application details and updates frequency.
 
 3) A **global energy manager** which monitors and controls the energy consumed in the system. Energy control is configurable and dynamically adapts power policy settings based on global energy limits and application characteristics.
 
-All three components are configurable using a single, centralized, and simple text file called 'ear.conf'. This mechanism makes easy the cluster definition and configuration. This 'ear.conf' includes default values, pre-defined application configurations, etc. More details can be found in [configuration section](./etc/conf/README.md).
+All three components are configurable using a single, centralized and simple text file called 'ear.conf'. This mechanism makes easy the cluster definition and configuration. This 'ear.conf' includes default values, pre-defined application configurations, etc. More details can be found in [configuration section](./etc/conf/README.md).
 
 Please visit [the main components page](./src/README.md) for a detailed description of each of the main components of EAR.
 
@@ -31,7 +31,7 @@ EAR requires some third party libraríes and headers to compile and run, in addi
 | FreeIPMI  | Yes                   | 1.5.7           | [Website](https://www.gnu.org/software/freeipmi/) |
 | SLURM     | Just for SLURM plugin | 17.02.6         | [Website](https://slurm.schedmd.com/)             |
 | MPI       | Yes                   | -               | -                                                  |
-| MySQL     | No                    | -               | -                                                  |
+| MySQL     | Yes                   | 15.1             | -                                                  |
 * Depending on the version, may you have to change the name of the library function call (or the parameter).
 
 Also, some **drivers** has to be present and loaded in the system:
@@ -62,8 +62,7 @@ Customize installation
 `configure` is based on shell variables which initial value could be given by setting variables in the command line, or in the environment. Take a look to the table with the most popular variables:
 
 | Variable | Description                                                                                                  |
-| -------- | ------------------------------------------------------------------------------------------------------------ |
-| DEBUG    | Enables debug messages [0..4]. Debug messages with lower or equal level are printed.                         |
+| -------- | ------------------------------------------------------------------------------------------------------------
 | MPICC    | C compiler MPI script.                                                                                       |
 | OMPICC   | OpenMPI compiler.                                                                                            |
 | CC       | C compiler command.                                                                                          |
@@ -77,7 +76,7 @@ Customize installation
 | DOC      |  Defines the documentation directory (default: PREFIX/doc) (you can use also --docdir=DIR)                         |
 
 - This is an example of `CC`, `CFLAGS` and `DEBUG` variables overwriting: </br>
-`./configure CC=c99 CFLAGS=-g DEBUG=4`
+`./configure CC=c99 CFLAGS=-g ETC=/hpc/opt/etc`
 
 You can choose the root folder by typing `./configure --PREFIX=<path>`. But there are other options in the following table:
 
@@ -92,11 +91,13 @@ This is the list of the inner installation folders and their content:
 | Directory    | Root         | Content / description                |
 | ------------ | ------------ | ------------------------------------ |
 | /lib         | \<*PREFIX*\> | Libraries.                           |
-| /bin         | \<*PREFIX*\> | Tools and benchmark kernels.         |
-| /bin/kernels | \<*PREFIX*\> | Benchmarks (or stress tests).        |
+| /bin         | \<*PREFIX*\> | Benchmark kernels.
+             |
+| /bin/kernels | \<*PREFIX*\> | Benchmarks (or stress tests).     |
 | /sbin        | \<*PREFIX*\> | Privileged components.               |
-| /scripts     | \<*PREFIX*\> | Scripts.                            |
-| /man         | \<*PREFIX*\> | Documentation.                      |
+| /bin/scripts | \<*PREFIX*\> | Scripts.                             |
+| /bin/tools   | \<*PREFIX*\> | User space tools.                    |
+| /man         | \<*PREFIX*\> | Documentation.                       |
 | /ear         | \<*ETC*\>    | Configuration file.                  |
 | /ear/coeffs  | \<*ETC*\>    | Coefficient files store.             |
 | /module      | \<*ETC*\>    | Environment module.                  |
@@ -124,7 +125,7 @@ If unusual procedures must be done to compile the package, please try to figure 
 
 Unit services
 -------------
-The way to launch the EAR daemons is by unit services method. The generated unit services for the EAR Daemon, EAR Global Manager Daemon and EAR Database Daemon are generated and installed in `$(ETC)/systemd`. You have to copy those unit service files to your `systemd` operating system folder. Once copied, use the `systemctl` command to run the daemons.
+The way to launch the EAR daemons is by the unit services method. The generated unit services for the EAR Daemon, EAR Global Manager Daemon and EAR Database Daemon are generated and installed in `$(ETC)/systemd`. You have to copy those unit service files to your `systemd` operating system folder ant then use the `systemctl` command to run the daemons.
 
 Check the [EARD](./src/daemon/README.md), [EARDBD](./src/database_cache/README.md), [EARGMD](./src/global_manager/README.md) pages to find the precise execution commands.
 
@@ -134,7 +135,7 @@ Finally, when using `systemctl` commands, you can check messages reported by the
 Configuration
 -------------
 1) EAR works together with **SLURM**, so please, visit the [SLURM plugin page](./src/slurm_plugin/README.md) to add the plugin to your SLURM installation.
-2) Pass the learning phase in all your computing nodes by visiting the [learning phase page](./etc/scripts/learning/README.md) and follow this guide.
+2) Pass the learning phase in your computing nodes by visiting the [learning phase page](./etc/scripts/learning/README.md) and follow this guide.
 
 User guide
 ----------
