@@ -97,7 +97,7 @@ void run_query(MYSQL *connection, char *query)
     }
 }
 
-void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user_pass, char *eardbd_user, char *eardbd_pass)
+void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user_pass, char *commands_user, char *commands_pass)
 {
     char query[256];
     if (strlen(db_user_pass) > 1)
@@ -109,18 +109,18 @@ void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user
     sprintf(query, "GRANT SELECT, INSERT ON %s.* TO '%s'@'%%'", db_name, db_user);
     run_query(connection, query);
     
-    if (strlen(eardbd_user))
+    if (strlen(commands_user))
     {       
-        if (strlen(eardbd_pass) > 1)
-            sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", eardbd_user, eardbd_pass);
+        if (strlen(commands_pass) > 1)
+            sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", commands_user, commands_pass);
         else
-            sprintf(query, "CREATE USER '%s'@'%%'", eardbd_user);
+            sprintf(query, "CREATE USER '%s'@'%%'", commands_user);
         run_query(connection, query);
     
-        sprintf(query, "GRANT SELECT ON %s.* TO '%s'@'%%'", db_name, eardbd_user);
+        sprintf(query, "GRANT SELECT ON %s.* TO '%s'@'%%'", db_name, commands_user);
         run_query(connection, query);
     
-        sprintf(query, "ALTER USER '%s'@'%%' WITH MAX_USER_CONNECTIONS %n", eardbd_user, MAX_DB_CONNECTIONS);
+        sprintf(query, "ALTER USER '%s'@'%%' WITH MAX_USER_CONNECTIONS %n", commands_user, MAX_DB_CONNECTIONS);
         run_query(connection, query);
     }
     sprintf(query, "FLUSH PRIVILEGES");
