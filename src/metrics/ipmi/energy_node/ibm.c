@@ -207,6 +207,12 @@ int ibm_read_dc_energy_time(ulong *energy,ulong *ms)
     *ms=t.tv_sec*1000+t.tv_usec/1000;
     return ret;
 }
+int ibm_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms)
+{
+	*energy=0;
+	*seconds=0;
+	return ibm_read_dc_energy_time(energy_mj,ms);
+}
 
 
 /* AC energy is not yet supported */

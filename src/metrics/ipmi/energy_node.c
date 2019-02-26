@@ -43,8 +43,6 @@
 #include <metrics/ipmi/energy_node/lenovo_nm.h>
 #include <metrics/ipmi/energy_node/lenovo_sd650.h>
 
-#define FUNCVERB(function)                               \
-    debug( "ear_daemon(node_energy) " function "\n");
 
 static int ear_energy_node_connected=0;
 static int ear_energy_node_status=0;
@@ -59,6 +57,7 @@ struct node_energy_op
 	int (*count_energy_data_length)();
 	int (*read_dc_energy) (ulong *energy);
 	int (*read_dc_energy_time) (ulong *energy,ulong *time);
+	int (*read_dc_energy_and_time) (ulong *energy_j,ulong *energy_mj,ulong *time_s,ulong *time_ms);
 	int (*read_ac_energy) (ulong *energy);
 	int (*node_energy_dispose) ();
 } node_energy_ops;
@@ -250,7 +249,7 @@ int node_energy_init()
 
 	if (ear_energy_node_connected) return ear_energy_node_status;
 
-    FUNCVERB("node_energy_init");
+    debug("node_energy_init");
 	if ((ret=ipmi_get_product_name(my_p_manufacturer_name,my_p_name))<0){
 		node_energy_ops.node_energy_init=NULL;
 		node_energy_ops.count_energy_data_length=NULL;
@@ -275,6 +274,7 @@ int node_energy_init()
 		node_energy_ops.count_energy_data_length=ibm_count_energy_data_length;
 		node_energy_ops.read_dc_energy=ibm_read_dc_energy;
 		node_energy_ops.read_dc_energy_time=ibm_read_dc_energy_time;
+		node_energy_ops.read_dc_energy_and_time=ibm_read_dc_energy_and_time;
 		node_energy_ops.read_ac_energy=ibm_read_ac_energy;
 		node_energy_ops.node_energy_dispose=ibm_node_energy_dispose;
 		break;	
@@ -287,6 +287,7 @@ int node_energy_init()
 			node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
 			node_energy_ops.read_dc_energy_time=lenovo_act_read_dc_energy_time;
+			node_energy_ops.read_dc_energy_and_time=lenovo_act_read_dc_energy_and_time;
 			node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}else if (strstr(my_p_name,"SR650")!=NULL){
@@ -296,6 +297,7 @@ int node_energy_init()
 			node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
 			node_energy_ops.read_dc_energy_time=lenovo_act_read_dc_energy_time;
+			node_energy_ops.read_dc_energy_and_time=lenovo_act_read_dc_energy_and_time;
 			node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}else if (strstr(my_p_name,"SD650")!=NULL){
@@ -306,6 +308,7 @@ int node_energy_init()
 			node_energy_ops.count_energy_data_length=lenovo_wct_count_energy_data_length;
 			node_energy_ops.read_dc_energy=lenovo_wct_read_dc_energy;
 			node_energy_ops.read_dc_energy_time=lenovo_wct_read_dc_energy_time;
+			node_energy_ops.read_dc_energy_and_time=lenovo_wct_read_dc_energy_and_time;
 			node_energy_ops.read_ac_energy=lenovo_wct_read_ac_energy;
 			node_energy_ops.node_energy_dispose=lenovo_wct_node_energy_dispose;
 		}else{
@@ -314,6 +317,7 @@ int node_energy_init()
             node_energy_ops.count_energy_data_length=lenovo_act_count_energy_data_length;
             node_energy_ops.read_dc_energy=lenovo_act_read_dc_energy;
             node_energy_ops.read_dc_energy_time=lenovo_act_read_dc_energy_time;
+			node_energy_ops.read_dc_energy_and_time=lenovo_act_read_dc_energy_and_time;
             node_energy_ops.read_ac_energy=lenovo_act_read_ac_energy;
             node_energy_ops.node_energy_dispose=lenovo_act_node_energy_dispose;
 		}
@@ -327,13 +331,13 @@ int node_energy_init()
 }
 int count_energy_data_length()
 {
-	FUNCVERB("count_energy_data_length");
+	debug("count_energy_data_length");
 	if (node_energy_ops.count_energy_data_length!=NULL) return node_energy_ops.count_energy_data_length();
 	else return 0;
 }
 int read_dc_energy(unsigned long *energy)
 {
-	FUNCVERB("read_dc_energy");
+	debug("read_dc_energy");
 	if (node_energy_ops.read_dc_energy!=NULL) return node_energy_ops.read_dc_energy(energy);
 	else{	
 		*energy=0;
@@ -343,7 +347,7 @@ int read_dc_energy(unsigned long *energy)
 
 int read_dc_energy_time(ulong *energy,ulong *time_ms)
 {
-    FUNCVERB("read_dc_energy_time");
+    debug("read_dc_energy_time");
     if (node_energy_ops.read_dc_energy_time!=NULL) return node_energy_ops.read_dc_energy_time(energy,time_ms);
     else{
         *energy=0;
@@ -352,9 +356,24 @@ int read_dc_energy_time(ulong *energy,ulong *time_ms)
     }
 }
 
+int read_dc_energy_time_debug(ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
+{
+    debug("read_dc_energy_time_debug");
+    if (node_energy_ops.read_dc_energy_and_time!=NULL) return node_energy_ops.read_dc_energy_and_time(energy_j,energy_mj,time_sec,time_ms);
+    else{
+        *energy_j=0;
+        *energy_mj=0;
+		*time_sec=0;
+        *time_ms=0;
+        return -1;
+    }
+
+}
+
+
 int read_ac_energy(unsigned long *energy)
 {
-	FUNCVERB("read_ac_energy");
+	debug("read_ac_energy");
 	if (node_energy_ops.read_ac_energy!=NULL) return node_energy_ops.read_ac_energy(energy);
 	else{
 		*energy=0;
@@ -363,7 +382,7 @@ int read_ac_energy(unsigned long *energy)
 }
 int node_energy_dispose()
 {
-	FUNCVERB("node_energy_dispose");
+	debug("node_energy_dispose");
 	ear_energy_node_connected=0;
 	if (node_energy_ops.node_energy_dispose!=NULL) return node_energy_ops.node_energy_dispose();
 	else return -1;

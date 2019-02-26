@@ -37,6 +37,7 @@ int ibm_node_energy_init();
 int ibm_count_energy_data_length();
 int ibm_read_dc_energy(unsigned long *energy);
 int ibm_read_dc_energy_time(ulong *energy,ulong *ms);
+int ibm_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms);
 
 /** AC energy is not yet supported */
 int ibm_read_ac_energy(unsigned long *energy);
