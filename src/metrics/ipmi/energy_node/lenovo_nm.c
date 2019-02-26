@@ -216,6 +216,14 @@ int lenovo_act_read_dc_energy_time(ulong *energy,ulong *ms)
 	return ret;
 }
 
+int lenovo_act_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms)
+{
+	*energy=0;
+	*seconds=0;
+	return lenovo_act_read_dc_energy_time(energy_mj,ms);
+}
+
+
 /* AC energy is not yet supported */
 int lenovo_act_read_ac_energy(unsigned long *energy)
 {
