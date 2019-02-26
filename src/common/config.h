@@ -78,11 +78,11 @@
 
 #define USE_EXT								0
 #define NW_EXT								"-opa"
-#define LRZ_POLICY							1
+#define LRZ_POLICY							0
 //#define EAR_GUI
 
 // #define USE_EARDBD_CONF	0
-#define USE_MSR_RAPL	1
+#define USE_MSR_RAPL	0
 
 #define MAX_DB_CONNECTIONS 5
 
