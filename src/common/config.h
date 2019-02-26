@@ -81,4 +81,6 @@
 #define LRZ_POLICY							1
 //#define EAR_GUI
 
+// #define USE_EARDBD_CONF	0
+
 #endif
