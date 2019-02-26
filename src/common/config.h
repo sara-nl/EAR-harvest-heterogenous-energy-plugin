@@ -73,6 +73,9 @@
 #define COORDINATE_FREQUENCIES				0
 
 #define SYSLOG_MSG							1
+#define EARGMD_FILE_LOG 0
+#define EARD_FILE_LOG   0
+
 #define USE_EXT								0
 #define NW_EXT								"-opa"
 #define LRZ_POLICY							1
