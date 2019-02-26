@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ $# -ne 1 ]]
+if [[ $# -eq 0 ]]
 then
         echo -e "Usage: hostlist"
         echo -e "    hostlist: a hostname list of the nodes"
@@ -20,9 +20,9 @@ then
 fi
 
 # Edit architecture values
-export CORES=40
+export CORES=24
 export SOCKETS=2
-export CORES_PER_SOCKET=20
+export CORES_PER_SOCKET=12
 
 # Edit learning phase parameters
 export EAR_MIN_P_STATE=1
@@ -30,14 +30,12 @@ export EAR_MAX_P_STATE=6
 export EAR_TIMES=3
 
 # Edit output options
-export OUT_OUT="$HOME/OUT/out"
-export OUT_ERR="$HOME/ERR/err"
-mkdir $HOME/OUT
-mkdir $HOME/ERR
+export OUT_OUT="$HOME/out"
+export OUT_ERR="$HOME/err"
 
 # Non-edit region
 export HOSTLIST="$(echo $(cat $1))"
-export BENCHS_MODE="test"
+export BENCHS_MODE="learning"
 
 for i in ${HOSTLIST}
 do

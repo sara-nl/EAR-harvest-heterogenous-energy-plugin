@@ -15,9 +15,9 @@ then
 fi
 
 # Edit architecture values
-export CORES=16
+export CORES=24
 export SOCKETS=2
-export CORES_PER_SOCKET=8
+export CORES_PER_SOCKET=12
 
 # Non-edit region
 export EAR_MIN_P_STATE=1
@@ -25,7 +25,6 @@ export EAR_MAX_P_STATE=1
 export EAR_TIMES=1
 
 # Non-edit region
-export EAR_LEARNING_PHASE=0
 export BENCHS_MODE="compile"
 
 $EAR_INSTALL_PATH/bin/scripts/learning/helpers/kernels_iterator.sh
