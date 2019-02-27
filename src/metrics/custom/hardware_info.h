@@ -30,6 +30,8 @@
 #ifndef _HW_INFO_H_
 #define _HW_INFO_H_
 
+#include <common/states.h>
+
 // Intel models, Based on arch/x86/include/asm/intel-family.h
 // Tip: X means E, EP, ED and Server.
 #define CPU_UNIDENTIFIED        -1

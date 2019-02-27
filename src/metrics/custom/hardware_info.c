@@ -33,7 +33,6 @@
 #include <string.h>
 #include <common/file.h>
 #include <common/sizes.h>
-#include <common/states.h>
 #include <metrics/custom/hardware_info.h>
 
 // Linux files
