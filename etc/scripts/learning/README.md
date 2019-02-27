@@ -90,10 +90,10 @@ Remember to load the EAR module, which specifies the location of the `ear.conf` 
 
 Automatized kernels compilation script
 --------------------------------------
-A set of scripts are provided for speed up with minimum edition requirements. These files are placed in the `bin/scripts` folder in your EAR installation folder.
+A set of scripts are provided for speed up with minimum edition requirements. These files are placed in the `bin/scripts/learning` folder in your EAR installation folder.
 
-The compiling script is located in `bin/scripts/learning/learning_compile.sh`. Before execute it, you have to perform some adjustments:
-1) Open `learning_compile.sh` and look for these lines:
+The compiling script is located in `bin/scripts/learning/kernels_compile.sh`. Before execute it, you have to perform some adjustments:
+1) Open `kernels_compile.sh` and look for these lines:
 ```
 # Edit architecture values
 export CORES=28
@@ -104,7 +104,7 @@ export CORES_PER_SOCKET=14
 - **CORES**: the total number of cores in a single computing node.<br />
 - **SOCKETS**: the total number of sockets in a single computing node.<br />
 - **CORES_PER_SOCKET**: the total number of cores per socket in a single computing node.<br />
-3) Launch the compiling phase by typing `./learning_compile.sh` in your compile node.
+3) Launch the compiling phase by typing `./kernels_compile.sh` in your compile node.
 
 Also you can easily customize your kernels by adjusting the script located in `bin/scripts/learning/helpers/kernels_iterator.sh`. For example if you want to increase its execution time of a kernel compiled with class letter C, switch it by D. Or if you want to decrease the execution time of a kernel compiled with class letter B, switch the letter by A. Then compile and execute again.
 
@@ -127,7 +127,7 @@ Automatized kernels execution script
 Next to the kernels compilation script, the executing version is also provided. Having the kernels compiled, installed and tested, you are ready to execute the learning phase.
 
  Before that, you have to perform some adjustments:
-1) Open the script `bin/scripts/learning/learning_execute.sh`.
+1) Open the script `bin/scripts/learning/kernels_learn.sh`.
 2) Look at these lines
 ```
 # Edit architecture values
@@ -146,6 +146,6 @@ export EAR_MAX_P_STATE=6
 - **EAR_MIN_P_STATE**: defines the maximum frequency to set during the learning phase. The default value is 1, meaning that the nominal frequency will be the maximum frequency that your cluster nodes will set. In the current version of EAR turbo support is not included.<br />
 - **EAR_MAX_P_STATE**: defines the minimum frequency to test during the learning phase. If 6 is set and EAR_MIN_P_STATE is 1, it means that 6 frequencies will be set during the learning phase, from 1 to 6. This set of frequencies have to match with the set of frequencies that your cluster nodes are able to set during computing time.<br />
 4) Edit the execution command located in `bin/scripts/learning/helpers/kernels_executor.sh` in the function `launching_slurm()`. By default it will use the `srun` command, but you can switch it by other one, like `mpirun`. Just try to figure how to translate the written command to yours.
-5) Execute the learning phase in all of your nodes by typing a command like: `./learning_execute.sh <hostlist>`, passing a the path of a file containing the list of nodes where you want to perform the learning phase. An `sbatch` will be launched exclusively in every node, performing a `srun` series of the kernel in the same node.
-6) Execute the coefficients compute binary by typing `./learning_coeffs.sh <hostlist>` in a node which shares the same architecture (or at least the P_STATEs list) of the nodes of the completed learning phase.
+5) Execute the learning phase in all of your nodes by typing a command like: `./kernels_learn.sh <hostlist>`, passing a the path of a file containing the list of nodes where you want to perform the learning phase. An `sbatch` will be launched exclusively in every node, performing a `srun` series of the kernel in the same node.
+6) Execute the coefficients compute binary by typing `./coeffs_compute.sh <hostlist>` in a node which shares the same architecture (or at least the P_STATEs list) of the nodes of the completed learning phase.
 7) Check that there are the correct number of coefficients in the selected coefficients installation path.
