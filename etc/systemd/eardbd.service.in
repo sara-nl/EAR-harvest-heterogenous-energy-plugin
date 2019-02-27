@@ -1,17 +1,17 @@
 [Unit]
 Description=EARDBD - Energy Aware Runtime database cache daemon
 ConditionPathExists=@localstatedir@
-Requires=mariadb.service
-After=mariadb.service
 
 [Service]
+#User=ear
+#Groupt=ear
 Type=simple
 Environment="EAR_ETC=@sysconfdir@"
 ExecStart=@prefix@/sbin/eardbd
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
+#Restart=on-failure
 KillMode=process
-Restart=on-failure
 LimitMEMLOCK=infinity
 LimitSTACK=infinity
 
