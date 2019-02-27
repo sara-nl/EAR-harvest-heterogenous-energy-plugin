@@ -5,6 +5,8 @@
 MariaDBIp=192.168.1.1
 MariaDBUser=root
 MariaDBPassw=password
+MariaDBCommandsUser=root
+MariaDBCommandsPassw=password
 MariaDBPort=1100
 MariaDBDatabase=EAR
 
