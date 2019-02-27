@@ -36,11 +36,17 @@
 #include <common/states.h>
 #include <metrics/custom/hardware_info.h>
 
+// Linux files
 #define PATH_SYS_SYSTEM		"/sys/devices/system"
 #define PATH_SYS_CPU0_TOCO	"/sys/devices/system/cpu/cpu0/topology/core_siblings"
 #define PATH_SYS_CPU0_TOTH	"/sys/devices/system/cpu/cpu0/topology/thread_siblings"
 
-state_t hardware_sibling_read(const char *path, int *result)
+static int file_is_accessible(const char *path)
+{
+	return (access(path, F_OK) == 0);
+}
+
+static state_t hardware_sibling_read(const char *path, int *result)
 {
 	char cbuf[2];
 	ssize_t r;

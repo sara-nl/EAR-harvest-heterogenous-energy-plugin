@@ -27,6 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#ifndef _HW_INFO_H_
+#define _HW_INFO_H_
+
 // Intel models, Based on arch/x86/include/asm/intel-family.h
 // Tip: X means E, EP, ED and Server.
 #define CPU_UNIDENTIFIED        -1
@@ -55,6 +58,9 @@ typedef struct topology {
 	int numas;
 } topology_t;
 
+/** */
+state_t hardware_topology_get(topology_t *topo);
+
 /** Returns if the cpu is examinable by this library */
 int is_cpu_examinable();
 
@@ -78,3 +84,5 @@ int is_cpu_hyperthreading_capable();
 
 /** Returns true if turbo is enabled */
 int is_cpu_boost_enabled();
+
+#endif

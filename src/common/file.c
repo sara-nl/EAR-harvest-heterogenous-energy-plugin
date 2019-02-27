@@ -94,11 +94,6 @@ int file_is_directory(const char *path)
 	return 0;
 }
 
-int file_is_accessible(const char *path)
-{
-	return (access(path, F_OK) == 0);
-}
-
 ssize_t file_size(char *path)
 {
 	int fd = open(path, O_RDONLY);
@@ -142,7 +137,7 @@ state_t file_write(const char *path, const char *buffer, size_t size)
 	ssize_t w;
 
 	if (fd < 0) {
-		state_return_msg(EAR_SOCK_OP_ERROR, errno, strerror(errno));
+		state_return_msg(EAR_OPEN_ERROR, errno, strerror(errno));
 	}
 
 	while ((w = write(fd, buffer, size)) > 0) {
