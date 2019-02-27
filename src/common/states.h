@@ -30,6 +30,8 @@
 #ifndef STATES_H
 #define STATES_H
 
+#include <errno.h>
+
 /* error definitions */
 #define EAR_SUCCESS              0
 #define EAR_ERROR               -1

@@ -48,6 +48,13 @@
 #define INTEL_VENDOR_NAME       "GenuineIntel"
 #define AMD_VENDOR_NAME         "AuthenticAMD"
 
+typedef struct topology {
+	int cores;
+	int threads;
+	int sockets;
+	int numas;
+} topology_t;
+
 /** Returns if the cpu is examinable by this library */
 int is_cpu_examinable();
 
