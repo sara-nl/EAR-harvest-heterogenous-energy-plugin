@@ -91,12 +91,11 @@ This is the list of the inner installation folders and their content:
 | Directory    | Root         | Content / description                |
 | ------------ | ------------ | ------------------------------------ |
 | /lib         | \<*PREFIX*\> | Libraries.                           |
-| /bin         | \<*PREFIX*\> | Benchmark kernels.
-             |
-| /bin/kernels | \<*PREFIX*\> | Benchmarks (or stress tests).     |
-| /sbin        | \<*PREFIX*\> | Privileged components.               |
+| /bin         | \<*PREFIX*\> | Benchmark kernels.                   |
+| /bin/kernels | \<*PREFIX*\> | Benchmarks (or stress tests).        |
 | /bin/scripts | \<*PREFIX*\> | Scripts.                             |
 | /bin/tools   | \<*PREFIX*\> | User space tools.                    |
+| /sbin        | \<*PREFIX*\> | Privileged components.               |
 | /man         | \<*PREFIX*\> | Documentation.                       |
 | /ear         | \<*ETC*\>    | Configuration file.                  |
 | /ear/coeffs  | \<*ETC*\>    | Coefficient files store.             |
