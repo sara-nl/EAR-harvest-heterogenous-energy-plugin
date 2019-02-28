@@ -30,7 +30,16 @@
 #ifndef _HW_INFO_H_
 #define _HW_INFO_H_
 
+#include <common/sizes.h>
 #include <common/states.h>
+#include <common/types/generic.h>
+#include <metrics/common/cpuid.h>
+#include <metrics/common/syscall.h>
+
+// Linux files
+#define PATH_SYS_SYSTEM		"/sys/devices/system"
+#define PATH_SYS_CPU0_TOCO	"/sys/devices/system/cpu/cpu0/topology/core_siblings"
+#define PATH_SYS_CPU0_TOTH	"/sys/devices/system/cpu/cpu0/topology/thread_siblings"
 
 // Intel models, Based on arch/x86/include/asm/intel-family.h
 // Tip: X means E, EP, ED and Server.
@@ -60,8 +69,15 @@ typedef struct topology {
 	int numas;
 } topology_t;
 
+/** Return the passed microseconds (usec). No state is returned because the
+  * time retrieving function has to return as fast as possible. */
+llong hardware_gettime();
+
 /** */
-state_t hardware_topology_get(topology_t *topo);
+state_t hardware_gettopology(topology_t *topo);
+
+/** */
+state_t hardware_topology_getsize(uint *size);
 
 /** Returns if the cpu is examinable by this library */
 int is_cpu_examinable();

@@ -3,6 +3,8 @@ CFLAGS  = -fPIC -shared -O3
 ######## FILES
 
 metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
+               $(SRCDIR)/metrics/common/cpuid.o \
+               $(SRCDIR)/metrics/common/syscall.o \
                $(SRCDIR)/metrics/custom/frequency.o \
                $(SRCDIR)/metrics/custom/frequency_uncore.o \
                $(SRCDIR)/metrics/custom/hardware_info.o \
