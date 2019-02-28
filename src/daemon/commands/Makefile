@@ -1,11 +1,12 @@
-DEBUG  =
-CFLAGS = -I$(SRCDIR) $(DEBUG) -lm
+DEBUG   =
+CFLAGS  = -I$(SRCDIR) $(DEBUG)
+LDFLAGS = -lm
 
 ######## FILES
 
-FREQ_OBJS = $(SRCDIR)/metrics/papi/generics.o \
-            $(SRCDIR)/metrics/custom/hardware_info.o \
-            $(SRCDIR)/control/frequency.o
+FREQ_OBJS = \
+            $(SRCDIR)/control/frequency.o \
+            $(SRCDIR)/metrics/libmetrics.a 
 
 REMOTE_OBJS = $(SRCDIR)/daemon/eard_rapi.o
 
@@ -13,15 +14,15 @@ TYPES_OBJS = $(SRCDIR)/common/types.a
 
 BINARIES = ear_set_node_freq \
            ear_get_node_freq \
-		   ear_set_ondemand \
-		   ear_new_job \
+           ear_set_ondemand \
+           ear_new_job \
            ear_end_job \
            ear_set_freq \
            ear_red_freq \
            ear_inc_th \
            ear_set_th \
            ear_check_node_test
-#		   ear_dbd_stress_test \
+#          ear_dbd_stress_test \
 
 ######## RULES
 

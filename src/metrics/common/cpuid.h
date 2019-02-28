@@ -33,10 +33,10 @@
 #include <common/types/generic.h>
 
 typedef struct cpuid_regs {
-	unsigned int eax = 0;
-    unsigned int ebx = 0;
-    unsigned int ecx = 0;
-    unsigned int edx = 0;
+    unsigned int eax;
+    unsigned int ebx;
+    unsigned int ecx;
+    unsigned int edx;
 } cpuid_regs_t;
 
 #define CPUID(t, EAX, ECX) \

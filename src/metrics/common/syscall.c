@@ -27,9 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <unistd.h>
 #include <metrics/common/syscall.h>
 
-void syscall_gettime(struct timespect *time)
+void syscall_gettime(struct timespec *time)
 {
-	syscall(SYS_TIME, CLOCK_REALTIME, &tsc);
+	syscall(SYS_TIME, CLOCK_REALTIME, &time);
 }

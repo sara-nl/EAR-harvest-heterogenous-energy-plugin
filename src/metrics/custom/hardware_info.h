@@ -30,6 +30,7 @@
 #ifndef _HW_INFO_H_
 #define _HW_INFO_H_
 
+#include <common/file.h>
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/types/generic.h>
@@ -50,7 +51,7 @@
 #define CPU_IVY_BRIDGE_X        62
 #define CPU_HASWELL             60
 #define CPU_HASWELL_X           63
-#define CPU_BROADWELL		    61
+#define CPU_BROADWELL		61
 #define CPU_BROADWELL_X         79
 #define CPU_BROADWELL_XEON_D	86
 #define CPU_SKYLAKE             94

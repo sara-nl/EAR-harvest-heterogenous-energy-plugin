@@ -30,10 +30,11 @@
 #ifndef EAR_SYSCALL_H
 #define EAR_SYSCALL_H
 
+#include <time.h>
 #include <sys/syscall.h>
 
 #define SYS_TIME __NR_clock_gettime
 
-void syscall_gettime(struct timespect *time);
+void syscall_gettime(struct timespec *time);
 
 #endif //EAR_SYSCALL_H
