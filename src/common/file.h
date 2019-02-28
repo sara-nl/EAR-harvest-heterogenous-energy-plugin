@@ -39,6 +39,7 @@
 
 #define FC_MAX_OBJECTS	10
 #define F_WR 			O_WRONLY
+#define F_RD			O_RDONLY
 #define F_CR 			O_CREAT
 #define F_TR			O_TRUNC
 #define F_UR 			S_IRUSR
@@ -51,29 +52,29 @@
 #define F_OW 			S_IWOTH
 #define F_OX 			S_IXOTH
 
-typedef struct file_chkp {
-	char *address[FC_MAX_OBJECTS];
-	size_t size[FC_MAX_OBJECTS];
-	char path[SZ_PATH];
-	int n;
-} file_chkp_t;
+/** Locks the file for writting in a fixe dpart */
+int file_lock(int fd);
 
-// Format: file_chkp_t *fc, (object_t) obj
-#define file_chkp_add_vector(fc, vec, nelems) \
-	file_chkp_add(fc, (char *) vec, nelems * sizeof(obj[0]));
+/** Creates a file to be used  as lock. It doesn't locks the file */
+int file_lock_create(char *lock_file_name);
 
-#define file_chkp_add_object(fc, obj) \
-	file_chkp_add(fc, (char *) &obj, sizeof(obj));
+/** Opens a file with O_EXCL, only one process per node will do that */
+int file_lock_master(char *lock_file_name);
 
-// Format: file_chkp_t *fc, (char *) str
-#define file_chkp_add_string(fc, str) \
-	file_chkp_add(fc, str, strlen(str));
+/** Closes and removes the lock file */
+void file_lock_clean(int fd,char *lock_file_name);
 
-#define file_chkp_addm(fc, fmt, nargs, ...) \
-	file_chkp_add_multiple(fc, fmt, strlen(fmt), nargs, __VA_ARGS__);
+/** Unlocks the file */
+int file_unlock(int fd);
+
+/** Releases a lock file */
+void file_unlock_master(int fd,char *lock_file_name);
 
 /** */
 int file_is_regular(const char *path);
+
+/** */
+int file_is_directory(const char *path);
 
 /** */
 ssize_t file_size(char *path);
@@ -87,38 +88,4 @@ state_t file_write(const char *path, const char *buffer, size_t size);
 /** */
 state_t file_clean(const char *path);
 
-/** */
-state_t file_chkp_init(file_chkp_t *fc, char *path, char *name);
-
-/** */
-state_t file_chkp_add(file_chkp_t *fc, char *object, size_t size);
-
-/** */
-state_t file_chkp_add_multiple(file_chkp_t *fc, char *format, int num_args, ...);
-
-/** */
-state_t file_chkp_read(file_chkp_t *fc);
-
-/** */
-state_t file_chkp_write(file_chkp_t *fc);
-
-/** Locks the file for writting in a fixe dpart */
-int file_lock(int fd);
-
-/** Unlocks the file */
-int file_unlock(int fd);
-
-/** Opens a file with O_EXCL, only one process per node will do that */
-int file_lock_master(char *lock_file_name);
-
-/** Releases a lock file */
-void file_unlock_master(int fd,char *lock_file_name);
-
-/** Creates a file to be used  as lock. It doesn't locks the file */
-int file_lock_create(char *lock_file_name);
-
-/** Closes and removes the lock file */
-void file_lock_clean(int fd,char *lock_file_name);
-
 #endif
-
