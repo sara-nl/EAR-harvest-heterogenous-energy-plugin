@@ -299,4 +299,7 @@ int get_node_island(cluster_conf_t *conf, char *hostname);
 
 int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mirror_of);
 
+/** given a node name, get all ips of its range*/
+int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips);
+
 #endif

@@ -29,6 +29,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <common/output/error.h>
@@ -40,6 +46,98 @@
 
 //#define __OLD__CONF__
 
+/** IP functions */
+int get_ip(char *nodename)
+{
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    char buff[256];
+    int sfd, s;
+    int ip1 = -1;
+    struct sockaddr_storage peer_addr;
+    socklen_t peer_addr_len;
+    ssize_t nread;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+    strcpy(buff, nodename);
+    #if USE_EXT
+    strcat(buff, NW_EXT);
+    #endif
+   	s = getaddrinfo(buff, NULL, &hints, &result);
+    if (s != 0) {
+		verbose(0, "getaddrinfo fails for port %s (%s)", buff, strerror(errno));
+		return EAR_ERROR;
+    }
+
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        if (rp->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
+            ip1 = saddr->sin_addr.s_addr;
+        }
+    }
+    freeaddrinfo(result);
+    return ip1;
+}
+
+int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
+{
+    int i, j, range_idx;
+    int *aux_ips;
+    //iterar en els ranges i trobar el nom.
+    char aux_name[256];
+    for (i = 0; i < my_conf->num_islands; i++)
+    {
+        range_idx = island_range_conf_contains_node(&my_conf->islands[i], nodename);
+        printf("range_idx: %d\n", range_idx);
+        if (range_idx < 0) continue;
+
+        node_range_t range = my_conf->islands[i].ranges[range_idx];
+        if (range.end == -1)
+        {
+            sprintf(aux_name, "%s", range.prefix);
+            aux_ips = calloc(1, sizeof(int));
+            aux_ips[0] = get_ip(aux_name);
+            *ips = aux_ips;
+            return 1;
+        }
+        if (range.end == range.start)
+        {
+            sprintf(aux_name, "%s%u", range.prefix, range.start);
+            aux_ips = calloc(1, sizeof(int));
+            aux_ips[0] = get_ip(aux_name);
+            *ips = aux_ips;
+            return 1;
+        }
+
+        int total_ips = range.end-range.start + 1;
+        int it = 0;
+        aux_ips = calloc(total_ips, sizeof(int));
+        for (j = range.end; j >= range.start && j > 0; j--)
+        {
+            if (j < 10 && range.end > 10)
+                sprintf(aux_name, "%s0%u", range.prefix, j);
+            else
+                sprintf(aux_name, "%s%u", range.prefix, j);
+
+            printf("getting_ip for %s (%d of %d)\n", aux_name, it, total_ips);
+            aux_ips[it] = get_ip(aux_name);
+            it ++;
+        }
+        *ips = aux_ips;
+        return total_ips;
+    }
+
+    return EAR_ERROR;
+}
 
 /*
 * NODE FUNCTIONS
