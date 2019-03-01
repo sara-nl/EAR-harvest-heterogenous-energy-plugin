@@ -31,10 +31,12 @@
 #define _EAR_TYPES_GENERIC
 
 #include <stdint.h>
+#include <limits.h>
 
 typedef unsigned char		uchar;
 typedef unsigned long long	ull;
 typedef unsigned long long	ullong;
+typedef   signed long long	llong;
 typedef unsigned long 		ulong;
 typedef unsigned int		uint;
 typedef uint8_t				job_type;

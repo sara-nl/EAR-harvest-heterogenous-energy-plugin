@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <metrics/custom/hardware_info.h>
 
 llong hardware_get_usec()
@@ -84,12 +85,12 @@ static state_t hardware_sibling_read(const char *path, int *result)
 	state_return(EAR_SUCCESS);
 }
 
-state_t hardware_topology_size(uint *size)
+state_t hardware_topology_getsize(uint *size)
 {
 	topology_t topo;
 	state_t s;
 
-	s = hardware_topology_get(&topo);
+	s = hardware_gettopology(&topo);
 
 	if (state_fail(s)) {
 		return s;
@@ -100,7 +101,7 @@ state_t hardware_topology_size(uint *size)
 	return EAR_SUCCESS;
 }
 
-state_t hardware_topology_get(topology_t *topo)
+state_t hardware_gettopology(topology_t *topo)
 {
 	char path[SZ_NAME_LARGE];
 	int aux1 = -1;

@@ -19,6 +19,7 @@ metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
                $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
                $(SRCDIR)/metrics/ipmi/energy_node/lenovo_sd650.o \
                $(SRCDIR)/metrics/custom/bandwidth.o \
+               $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
                $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
                $(SRCDIR)/metrics/power_metrics/power_metrics.o \
                $(SRCDIR)/metrics/msr/energy_cpu.o

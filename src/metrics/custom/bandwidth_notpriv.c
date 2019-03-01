@@ -27,8 +27,27 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <limits.h>
 #include <string.h>
 #include <common/math_operations.h>
+
+unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end)
+{
+    unsigned long long max_64 = ULLONG_MAX;
+    unsigned long long max_48 = 281474976710656; //2^48
+
+    unsigned long long ret = 0;
+
+    if (begin < max_48 && end < max_48)
+    {
+        ret = max_48 - begin + end;
+    }
+    else
+    {
+        ret = max_64 - begin + end;
+    }
+    return ret;
+}
 
 /** Calculates diff=end-begin, with vectors of N elements */
 void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned long long  *begin,int N)
