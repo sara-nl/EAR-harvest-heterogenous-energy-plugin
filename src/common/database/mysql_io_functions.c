@@ -297,14 +297,19 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
         }
         verbose(VMYSQL, "autoincrement_offset set to %d\n", autoincrement_offset);
     }
+
+fprintf(stderr, "1\n");
     //inserting all powersignatures (always present)
     pow_sig_id = mysql_batch_insert_power_signatures(connection, app, num_apps);
+fprintf(stderr, "2\n");
     
     if (pow_sig_id < 0)
         verbose(VMYSQL,"Unknown error when writing power_signature to database.\n");
 
     for (i = 0; i < num_apps; i++)
         pow_sigs_ids[i] = pow_sig_id + i*autoincrement_offset;
+
+fprintf(stderr, "3\n");
 
 
     //inserting signatures (if the application is mpi)
@@ -317,11 +322,15 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
     if (sig_id < 0)
         verbose(VMYSQL,"Unknown error when writing signature to database. (%d)\n",sig_id);
 
+fprintf(stderr, "4\n");
+
     for (i = 0; i < num_apps; i++)
         sigs_ids[i] = sig_id + i*autoincrement_offset;
     
+fprintf(stderr, "5\n");
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
+fprintf(stderr, "6\n");
 
     char *params = ", (?, ?, ?, ?, ?)";
     char *query;

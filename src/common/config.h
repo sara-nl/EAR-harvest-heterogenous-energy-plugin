@@ -58,7 +58,7 @@
 #define GRACE_T1							3
 
 #define LARGE_CLUSTER						1
-#define DB_SIMPLE							0
+#define DB_SIMPLE							1
 #define DEMO								0
 #define COEFFS_V3							1
 #define APP_API								1

@@ -48,6 +48,10 @@
 #include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
 
+
+// Configuration
+extern cluster_conf_t conf_clus;
+
 // Buffers
 extern char input_buffer[SZ_BUFF_BIG];
 extern char extra_buffer[SZ_BUFF_BIG];
@@ -224,12 +228,16 @@ void reset_all()
 
 static void insert_apps_mpi()
 {
+	int r;
+
 	if (typ_prcnt[i_appsm] == 0 || sam_index[i_appsm] <= 0) {
 		return;
 	}
 
 	metrics_insert_start(i_appsm);
+	debug("trying to insert '%d' applications (simple: '%d')", i_appsm, DB_SIMPLE);
 	db_batch_insert_applications((application_t *) typ_alloc[i_appsm], sam_index[i_appsm]);
+	debug("called db_batch_insert_applications() with result '%d'", r);	
 	metrics_insert_stop(i_appsm, sam_index[i_appsm]);
 }
 
@@ -289,7 +297,7 @@ static void insert_aggregations()
 {
 	time_t time_start;
 
-	printp1("Inserting aggregations %lu",  sam_index[i_aggrs]);
+	printp1("inserting aggregations %lu",  sam_index[i_aggrs]);
 
 	if (typ_prcnt[i_aggrs] == 0 || sam_index[i_aggrs] <= 0) {
 		return;
@@ -315,7 +323,9 @@ static void insert_events()
 
 void insert_hub(uint option, uint reason)
 {
+	db_conf_t *db = &conf_clus.database;
 	printp1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
+	debug("database '%s' in '%s:%d' with user '%s'", db->database, db->ip, db->port, db->user);
 
 	metrics_print();
 
@@ -507,6 +517,11 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	{
 		if (verbosity == 2) {
 			application_print_channel(stderr, (application_t *) content);
+	application_t *a = (application_t *) content;
+	power_signature_t *sig = &a->power_sig;
+	fprintf(stderr, "%lu;%lu\n", sig->avg_f, sig->def_f);
+	fprintf(stderr, "%lf\n", sig->time);
+	fprintf(stderr, "%lf;%lf;%lf\n", sig->DC_power, sig->DRAM_power, sig->PCK_power);		
 		}
 
 		storage_sample_add(typ_alloc[index], sam_inmax[index],

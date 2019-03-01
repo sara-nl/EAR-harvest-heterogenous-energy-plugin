@@ -66,7 +66,7 @@
 #define VPRIV 0
 
 /* Used in base mysql library calls. */
-#define VMYSQL 3
+#define VMYSQL 0
 /* Used in db_helper.c */
 #define VDBH 0
 

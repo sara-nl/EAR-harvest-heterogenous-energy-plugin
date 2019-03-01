@@ -9,13 +9,7 @@ export LDFLAGS
 
 ######## FILES
 
-lib_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o \
-           $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
-           $(SRCDIR)/metrics/papi/generics.o \
-           $(SRCDIR)/metrics/papi/cache.o \
-           $(SRCDIR)/metrics/papi/flops.o \
-           $(SRCDIR)/metrics/papi/instructions.o \
-           $(SRCDIR)/metrics/papi/stalls.o \
+lib_OBJS = $(SRCDIR)/metrics/libmetrics.a \
            $(SRCDIR)/control/frequency.o \
            $(SRCDIR)/daemon/eard_api.o \
            $(SRCDIR)/daemon/shared_configuration.o \

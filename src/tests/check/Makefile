@@ -75,7 +75,7 @@ slurm_version: slurm_version.c
 free_ipmi_version: free_ipmi_version.c
 	$(CC) $(CFLAGS) $(IPMI_CFLAGS) -o free_ipmi_version free_ipmi_version.c
 
-ear_types:ear_types.c 
+ear_types: ear_types.c 
 	$(CC) $(CFLAGS) -o ear_types ear_types.c
 
 ######## OPTIONS
