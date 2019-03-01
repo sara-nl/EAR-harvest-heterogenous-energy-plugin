@@ -37,12 +37,16 @@
 #define USE_TURBO							0
 /* When set to 1, frequency is set to default when a new loop starts. Otherwise, the current frequency is used till the policy is applied */
 #define RESET_FREQ							0
+/** DEV */
 /* When set to 1, environment variables values oversubscribe ear.conf values. Must be set to 0 on production. To be used under development only */
 #define EAR_PERFORMANCE_TESTS				0
+/** DEV */
 /* When set to 1, dynais overhead is measured and reported at application end */
 #define MEASURE_DYNAIS_OV					0
+/** PONERLO A 1 EN TOS LAOS Y QUIAR COMENT */
 /* When set to 1, master processes synchronize at application start to identify the nombre of masters connected and expected. EARL is set to off in case expected!=connected */
 #define EAR_LIB_SYNC						1
+/** DEV */
 /* Frequencies are shared between master processes. Under development, must be set to 0 in production*/
 #define COORDINATE_FREQUENCIES				0
 
@@ -65,13 +69,14 @@
 /* These two options go together. USE_EXT defines if a automatic network extension must be added for inter-nodes communications. Targeted to architectures where hostname returned is not valid to communicate accross nodes. In that case, NW_EXT specified the extension to concatenate to hostname */
 #define USE_EXT								0
 #define NW_EXT								"-opa"
+
+/** DEV*/
 /* When set to 1, activates the new SupermucNG policy */
-
-
 #define LRZ_POLICY							0
 /* When defined, activates dynamic traces on EARL */
 /*#define EAR_GUI */
 
+/** DEV*/
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
 #define USE_MSR_RAPL	0
 
@@ -83,17 +88,22 @@
 /* When set to 1, some fields are neither created not reported to the DB to save space */
 #define DB_SIMPLE                           0
 /* When set to 1, avg frequency is reported with periodic metrics */
+/** DEV*/
 #define DEMO                                0
+/** DEV*/
 /* Use eardbd.conf file to read privileges mysql user and password  or use ear.conf, comment it to use ear.conf */
 /* #define USE_EARDBD_CONF	0 */
+/** EARDBD*/
 #define EARDBD_TYPES						7
 
-
+/** DEV*/
 /** EARD threads selection, do not modify except for debug purposes **/
 /* When set to 1 , creates a thread in EARD to support application queries apart from EARL, do not set to 0 except for debug purposes */
 #define APP_API_THREAD						1
+/** DEV*/
 /* When set to 1 , creates a thread in EARD for powermonitoring, do not set to 0 except for debug purposes */
 #define POWERMON_THREAD						1
+/** DEV*/
 /* When set to 1 , creates a thread in EARD for external commands, do not set to 0 except for debug purposes */
 #define EXTERNAL_COMMANDS_THREAD 			1
 
