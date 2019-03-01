@@ -478,6 +478,7 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 void set_default_db_conf(db_conf_t *db_conf)
 {
     strcpy(db_conf->user, "ear_daemon");
+    strcpy(db_conf->user_commands, "ear_daemon");
     strcpy(db_conf->ip, "127.0.0.1");
     db_conf->port = 0;
 }

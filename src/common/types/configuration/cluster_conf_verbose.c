@@ -61,8 +61,8 @@ static void print_db_manager(eardb_conf_t *conf)
 void print_database_conf(db_conf_t *conf)
 {
 	verbose(VCCONF,"\n--> MARIADB configuration\n");
-	verbose(VCCONF, "---> IP: %s\tUser: %s\tPort:%u\tDB:%s\n",
-			conf->ip, conf->user, conf->port, conf->database);
+	verbose(VCCONF, "---> IP: %s\tUser: %s\tUser commands %s\tPort:%u\tDB:%s\n",
+			conf->ip, conf->user, conf->user_commands,conf->port, conf->database);
 }
 
 static void print_islands_conf(node_island_t *conf)

@@ -256,7 +256,7 @@ void init_power_policy()
 	#if LRZ_POLICY
 	else if (power_model_policy==SUPERMUC){ 
 		performance_gain=get_ear_power_policy_th();
-		#warning this variable 'performance_penalty' has to be fixed
+		//warning this variable 'performance_penalty' has to be fixed
 		performance_penalty=0.1;
 	}
 	#endif

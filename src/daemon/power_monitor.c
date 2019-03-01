@@ -718,6 +718,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 
 	current_sample.start_time=my_current_power->begin;
 	current_sample.end_time=my_current_power->end;
+	corrected_power=my_current_power->avg_dc;
 	RAPL=my_current_power->avg_dram[0]+my_current_power->avg_dram[1]+my_current_power->avg_cpu[0]+my_current_power->avg_cpu[1];
 	if (my_current_power->avg_dc<RAPL){
 		corrected_power=RAPL;

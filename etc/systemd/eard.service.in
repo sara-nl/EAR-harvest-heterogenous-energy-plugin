@@ -1,9 +1,6 @@
 [Unit]
 Description=EARD - Energy Aware Runtime node daemon
 ConditionPathExists=@localstatedir@
-# Requires=mariadb.service
-# Wants=slurmd.service
-# After=mariadb.service,slurmd.service
 
 [Service]
 Type=simple
