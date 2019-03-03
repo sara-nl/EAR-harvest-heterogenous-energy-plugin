@@ -75,7 +75,7 @@
 #include <daemon/eard.h>
 #include <daemon/app_api/app_server_api.h>
 
-#if APP_API
+#if APP_API_THREAD
 pthread_t app_eard_api_th;
 #endif
 
@@ -1195,7 +1195,7 @@ void main(int argc,char *argv[])
 	#endif
 
 	/* We initialize frecuency */
-	if (frequency_init(metrics_get_node_size()) < 0) {
+	if (frequency_init(1) < 0) {
 		error("ERROR, frequency information can't be initialized");
 		_exit(1);
 	}
@@ -1378,15 +1378,18 @@ void main(int argc,char *argv[])
 	}
 	#endif
 
+	#if POWERMON_THREAD
 	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL)){
 		errno=ret;
 		error("error creating power_monitoring thread %s\n",strerror(errno));
 	}
+	#endif
+	#if EXTERNAL_COMMANDS_THREAD
 	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
 		error("error creating dynamic_configuration thread \n");
 	}
-
-	#if APP_API
+	#endif
+	#if APP_API_THREAD
 	if (ret=pthread_create(&app_eard_api_th,NULL,eard_non_earl_api_service,NULL)){
 		error("error creating server thread for non-earl api\n");
 	}

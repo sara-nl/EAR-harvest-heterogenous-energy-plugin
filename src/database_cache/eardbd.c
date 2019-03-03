@@ -200,6 +200,9 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// Database
 	init_db_helper(&conf_clus->database);
 
+	debug("dbcon info: '%s@%s' access", conf_clus->database.database, conf_clus->database.user);
+	debug("dbcon info: '%s:%d' socket", conf_clus->database.ip, conf_clus->database.port);
+
 	// Mirror finding
 	mode = get_node_server_mirror(conf_clus, master_host, server_host);
 
