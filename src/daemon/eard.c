@@ -75,7 +75,7 @@
 #include <daemon/eard.h>
 #include <daemon/app_api/app_server_api.h>
 
-#if APP_API
+#if APP_API_THREAD
 pthread_t app_eard_api_th;
 #endif
 

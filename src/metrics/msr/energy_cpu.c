@@ -87,7 +87,6 @@ static int detect_packages(void) {
 		if (package_map[package]==-1) {
 			total_packages++;
 			package_map[package]=i;
-			printf("Packages: %d\n", i);
 		}
 	}
 	total_cores=i;

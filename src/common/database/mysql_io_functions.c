@@ -169,7 +169,6 @@ int get_autoincrement(MYSQL *connection, long *acum)
     }
 
     mysql_stmt_close(statement);
-    mysql_close(connection);
 
     return EAR_SUCCESS;
 

@@ -55,6 +55,9 @@
 #define DAEMON_EXTERNAL_CONNEXIONS 1
 
 static int sfd;
+int *ips;
+int total_ips = -1;
+int self_id = -1;
 
 // based on getaddrinfo man pages
 int create_server_socket(uint port)
@@ -263,6 +266,36 @@ void propagate_req(request_t *command, uint port)
         }
         else eards_remote_disconnect();
     }
+}
+
+int init_ips(cluster_conf_t *my_conf)
+{
+    int ret, i, temp_ip;
+    char buff[64];
+    gethostname(buff, 64);
+    ret = get_range_ips(my_conf, buff, &ips);
+    if (ret < 1) return EAR_ERROR;
+#if USE_EXT
+    strcat(buff, NW_EXT);
+#endif
+    temp_ip = get_ip(buff);
+    for (i = 0; i < ret; i++)
+    {
+        if (ips[i] == temp_ip)
+        {
+            self_id = i;
+            break;
+        }
+    }
+    if (self_id < 0)
+    {
+        free(ips);
+        return EAR_ERROR;
+    }
+    total_ips = ret;
+    return EAR_SUCCESS;
+
+  
 }
 
 int propagate_status(request_t *command, uint port, status_t **status)

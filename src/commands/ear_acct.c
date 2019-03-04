@@ -642,6 +642,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
         exit(1);
     }
 
+    char subquery[256];
     char query[512];
     
     char is_learning = 0;
@@ -650,7 +651,7 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
         verbose(0, "Preparing query statement");
     }
     
-    sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id and Applications.step_id = Jobs.step_id where Jobs.end_time in (select end_time from (select end_time from Jobs" );
+    sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id and Applications.step_id = Jobs.step_id where Jobs.id in (select id from (select id, end_time from Jobs" );
     application_t *apps;
     if (job_id >= 0)
         add_int_filter(query, "id", job_id);
@@ -663,8 +664,8 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
 
     if (limit > 0)
     {
-        strcat(query, " ORDER BY Jobs.end_time desc LIMIT %u");
-        sprintf(query, query, limit);
+        sprintf(subquery, " ORDER BY Jobs.end_time desc LIMIT %d", limit);
+        strcat(query, subquery);
     }
     strcat(query, ") as t1");
 
@@ -682,13 +683,13 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
         verbose(0, "Retrieving applications");
     }
 
+    if (verbose) {
+        verbose(0, "QUERY: %s", query);
+    }
+
     num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
     if (verbose) {
         verbose(0, "Finalized retrieving applications");
-    }
-
-    if (verbose) {
-        verbose(0, "QUERY: %s", query);
     }
 
     if (num_apps == EAR_MYSQL_ERROR)
