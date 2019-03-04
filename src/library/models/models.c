@@ -385,11 +385,12 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 			ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);	
 			i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
 			if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){ 
-				// verbose(1,"Adding pstate ref %d and projection to %d",ref,i);
 				init_coeff_data(&coefficients[ref][i],&coefficients_sm[ccoeff]);
 			}else{ 
-				verbose(0,"Error: invalid coefficients for ref %ul or proj %ul\n",coefficients_sm[ccoeff].pstate_ref,
-				coefficients_sm[ccoeff].pstate);
+				if (coefficients_sm[ccoeff].available){
+					verbose(0,"Error: invalid coefficients for ref %lu or proj %lu\n",coefficients_sm[ccoeff].pstate_ref,
+					coefficients_sm[ccoeff].pstate);
+				}
 			}
 		}
 	}else{
