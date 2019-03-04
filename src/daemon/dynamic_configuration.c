@@ -405,7 +405,9 @@ void * eard_dynamic_configuration(void *tmp)
 	f_list=frequency_get_freq_rank_list();
 	print_f_list(num_f,f_list);
 	verbose(VRAPI+2,"We have %u valid p_states\n",num_f);
-	
+#if USE_NEW_PROP
+    init_ips(&my_cluster_conf);
+#endif
 
 
 	verbose(VRAPI,"Creating socket for remote commands\n");

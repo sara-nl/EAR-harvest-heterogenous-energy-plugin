@@ -65,15 +65,17 @@
 /* These two options go together. USE_EXT defines if a automatic network extension must be added for inter-nodes communications. Targeted to architectures where hostname returned is not valid to communicate accross nodes. In that case, NW_EXT specified the extension to concatenate to hostname */
 #define USE_EXT								0
 #define NW_EXT								"-opa"
+
 /* When set to 1, activates the new SupermucNG policy */
-
-
 #define LRZ_POLICY							0
 /* When defined, activates dynamic traces on EARL */
 /*#define EAR_GUI */
 
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
 #define USE_MSR_RAPL	0
+
+/** Specifies if the new version of the commands propagation is used */
+#define USE_NEW_PROP    0
 
 /** These definitions affects DB configuration */
 /* Maximum number of simultaneous DB connection for mysql user commands */
