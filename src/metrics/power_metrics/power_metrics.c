@@ -76,7 +76,7 @@ int pm_start_rapl()
 {
 	if (rootp){
 #if USE_MSR_RAPL
-		return start_rapl_msr();
+		//return start_rapl_msr();
 #else
 		return start_rapl_metrics();
 #endif

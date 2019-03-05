@@ -2,7 +2,7 @@ CFLAGS = -I$(SRCDIR) $(IPMI_CFLAGS) $(SLURM_CFLAGS)
 
 ######## FILES
 
-HARDWARE_OBJS = $(SRCDIR)/metrics/custom/hardware_info.o
+HARDWARE_OBJS = $(SRCDIR)/metrics/libmetrics.a
 
 BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a
 
@@ -14,15 +14,15 @@ BINARIES = cpu_examinable      \
            cpu_aperf           \
            cpu_uncores         \
            cpu_uncores_all     \
+           free_ipmi_version   \
+           gsl_version         \
            module_acpi_cpufreq \
            module_ipmi_devintf \
            papi_init           \
            papi_version        \
            papi_comp_available \
            papi_comp_enabled   \
-           gsl_version         \
-           free_ipmi_version \
-			ear_types
+           ear_types
 ifdef SLURM_BASE
 	BINARIES += slurm_version
 endif
@@ -75,7 +75,7 @@ slurm_version: slurm_version.c
 free_ipmi_version: free_ipmi_version.c
 	$(CC) $(CFLAGS) $(IPMI_CFLAGS) -o free_ipmi_version free_ipmi_version.c
 
-ear_types:ear_types.c 
+ear_types: ear_types.c 
 	$(CC) $(CFLAGS) -o ear_types ear_types.c
 
 ######## OPTIONS

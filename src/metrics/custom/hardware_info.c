@@ -27,18 +27,27 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <time.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <common/file.h>
-#include <common/sizes.h>
+#include <unistd.h>
 #include <metrics/custom/hardware_info.h>
 
-// Linux files
-#define PATH_SYS_SYSTEM		"/sys/devices/system"
-#define PATH_SYS_CPU0_TOCO	"/sys/devices/system/cpu/cpu0/topology/core_siblings"
-#define PATH_SYS_CPU0_TOTH	"/sys/devices/system/cpu/cpu0/topology/thread_siblings"
+llong hardware_get_usec()
+{
+	struct timespec tsc;
+	llong time;
+
+	syscall_gettime(&tsc);
+	// Passing seconds to micro-seconds
+	time  = (llong) tsc.tv_sec * (llong) 1000000;
+	// Passing nano-seconds to micro-seconds
+	time += (llong) (tsc.tv_nsec / 1000);
+
+	return time;
+}
 
 static int file_is_accessible(const char *path)
 {
@@ -76,11 +85,28 @@ static state_t hardware_sibling_read(const char *path, int *result)
 	state_return(EAR_SUCCESS);
 }
 
-state_t hardware_topology_get(topology_t *topo)
+state_t hardware_topology_getsize(uint *size)
+{
+	topology_t topo;
+	state_t s;
+
+	s = hardware_gettopology(&topo);
+
+	if (state_fail(s)) {
+		return s;
+	}
+
+	*size = topo.sockets * topo.cores * topo.threads;
+
+	return EAR_SUCCESS;
+}
+
+state_t hardware_gettopology(topology_t *topo)
 {
 	char path[SZ_NAME_LARGE];
 	int aux1 = -1;
 	int aux2 = -1;
+	state_t s;
 
 	topo->cores = 0;
 	topo->threads = 0;
@@ -95,13 +121,26 @@ state_t hardware_topology_get(topology_t *topo)
 
 	/* Number of threads per core */
 	if (file_is_accessible(PATH_SYS_CPU0_TOTH)) {
-		hardware_sibling_read(PATH_SYS_CPU0_TOTH, &topo->threads);
+		s = hardware_sibling_read(PATH_SYS_CPU0_TOTH, &topo->threads);
+
+		if (state_fail(s)) {
+			return s;
+		}
 	}
 
 	/* Number of cores per socket */
 	if (file_is_accessible(PATH_SYS_CPU0_TOCO) && topo->threads > 0) {
-		hardware_sibling_read(PATH_SYS_CPU0_TOCO, &topo->cores);
+		s = hardware_sibling_read(PATH_SYS_CPU0_TOCO, &topo->cores);
+
+		if (state_fail(s)) {
+			return s;
+		}
+
 		topo->cores /= topo->threads;
+	}
+
+	if (topo->cores <= 0) {
+		return s;
 	}
 
 	/* Number of CPUs per numa node */
@@ -120,57 +159,8 @@ state_t hardware_topology_get(topology_t *topo)
 	if (topo->threads > 0 && topo->cores > 0) {
 		topo->sockets = aux2 / topo->cores / topo->threads;
 	}
-}
 
-// CPUID
-#define CREGS()           \
-    unsigned int eax = 0; \
-    unsigned int ebx = 0; \
-    unsigned int ecx = 0; \
-    unsigned int edx = 0;
-
-#define CPUID(EAX,ECX)    \
-    eax = EAX;            \
-    ebx = 0;              \
-    ecx = ECX;            \
-    edx = 0;              \
-    native_cpuid(&eax, &ebx, &ecx, &edx);
-
-static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
-								unsigned int *ecx, unsigned int *edx)
-{
-	asm volatile("cpuid"
-		: "=a" (*eax),
-		  "=b" (*ebx),
-		  "=c" (*ecx),
-		  "=d" (*edx)
-		: "0"  (*eax), "2" (*ecx));
-}
-
-static unsigned int extract_bits(unsigned int reg, int left_bit, int right_bit)
-{
-	unsigned int shift = left_bit - right_bit;
-	unsigned int mask  = (((0x01 << shift) - 1) << 1) + 1;
-	return ((reg >> right_bit) & mask);
-}
-
-static state_t is_cpu_leaf_present(unsigned int leaf)
-{
-    CREGS();
-
-    CPUID(0,0);
-    // If max leafs are less
-    if (eax < leaf) {
-        return EAR_ERROR;
-	}
-
-    CPUID(leaf,0);
-    // EBX confirms its presence
-	if (ebx == 0) {
-        return EAR_ERROR;
-	}
-
-    return EAR_SUCCESS;
+	return EAR_SUCCESS;
 }
 
 int is_cpu_examinable()
@@ -182,7 +172,7 @@ int is_cpu_examinable()
     if(strcmp(INTEL_VENDOR_NAME, vendor_id) != 0) {
         return EAR_ERROR;
 	}
-	if (state_fail(is_cpu_leaf_present(11))) {
+	if (!cpuid_isleaf(11)) {
 		return EAR_WARNING;
 	}
     return EAR_SUCCESS;
@@ -190,64 +180,65 @@ int is_cpu_examinable()
 
 int get_vendor_id(char *vendor_id)
 {
-    CREGS();
+    cpuid_regs_t r;
 	int *pointer = (int *) vendor_id;
 
-	CPUID(0,0);
-	pointer[0] = ebx;
-	pointer[1] = edx;
-	pointer[2] = ecx;
+	CPUID(r,0,0);
+	pointer[0] = r.ebx;
+	pointer[1] = r.edx;
+	pointer[2] = r.ecx;
 	return 1;
 }
 
 int get_family()
 {
-    CREGS();
-	CPUID(1,0);
-	return extract_bits(eax, 11, 8);
+    cpuid_regs_t r;
+	CPUID(r,1,0);
+	return cpuid_getbits(r.eax, 11, 8);
 }
 
 int get_model()
 {
-    CREGS();
+    cpuid_regs_t r;
 	int model_full;
 	int model_low;
 
-	CPUID(1,0);
-	model_low  = extract_bits(eax, 7, 4);
-	model_full = extract_bits(eax, 19, 16);
+	CPUID(r,1,0);
+	model_low  = cpuid_getbits(r.eax, 7, 4);
+	model_full = cpuid_getbits(r.eax, 19, 16);
 	return (model_full << 4) | model_low;
 }
 
 int is_aperf_compatible()
 {
-    CREGS();
+    cpuid_regs_t r;
 
-	if (state_fail(is_cpu_leaf_present(11))) {
+	if (!cpuid_isleaf(11)) {
 		return EAR_ERROR;
 	}
 
-	CPUID(6,0);
-    return ecx & 0x01;
+	CPUID(r,6,0);
+    return r.ecx & 0x01;
 }
 
 int get_cache_line_size()
 {
-    CREGS();
-    unsigned int level = 0;
     unsigned int max_level = 0;
     unsigned int line_size = 0;
+	unsigned int level = 0;
+	cpuid_regs_t r;
 	int index = 0;
 
 	while (1)
 	{
-		CPUID(4,index);
-		if (!(eax & 0x0F)) return line_size;
-        level = extract_bits(eax, 7, 5);
+		CPUID(r,4,index);
+
+		if (!(r.eax & 0x0F)) return line_size;
+        level = cpuid_getbits(r.eax, 7, 5);
 
         if (level >= max_level) {
             max_level = level;
-            line_size = extract_bits(ebx, 11, 0) + 1;
+            line_size = cpuid_getbits(r.ebx, 11, 0) + 1;
 		}
 
 		index = index + 1;
@@ -256,9 +247,11 @@ int get_cache_line_size()
 
 int is_cpu_hyperthreading_capable()
 {
-    CREGS();
-    CPUID(1,0);
-    return extract_bits(edx, 28, 28);
+    cpuid_regs_t r;
+    //
+    CPUID(r,1,0);
+    //
+    return cpuid_getbits(r.edx, 28, 28);
 }
 
 // References:
@@ -268,10 +261,10 @@ int is_cpu_hyperthreading_capable()
 // 	  Thermal and Power Management Leaf
 int is_cpu_boost_enabled()
 {
-	CREGS();
-
-	CPUID(6,0);
-
-	return extract_bits(eax, 1, 1);
+	cpuid_regs_t r;
+	//
+	CPUID(r,6,0);
+	//
+	return cpuid_getbits(r.eax, 1, 1);
 }
 

@@ -7,14 +7,14 @@ BINARIES = bandwith_monitor \
            freeipmi_overhead \
            energy_1_second \
            energy_updates_freq \
-		   ear_conf \
-		   my_node_conf \
-		   configuration_check \
-		   batch_insert \
-		   read_from_file \
-		   ping \
-		   ips \
-		   signatures_avg
+           ear_conf \
+           my_node_conf \
+           configuration_check \
+           batch_insert \
+           read_from_file \
+           ping \
+           ips \
+           signatures_avg
 # ear_pm
 # test_architecture
 
@@ -51,8 +51,7 @@ ping: ping.c $(SRCDIR)/common/types.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o ping $^
 
 bandwith_monitor: bandwith_monitor.c \
-        $(SRCDIR)/metrics/custom/hardware_info.o \
-        $(SRCDIR)/metrics/custom/bandwidth.a  
+        $(SRCDIR)/metrics/libmetrics.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o bandwith_monitor $^
 
 eard_monitor: eard_monitor.c \
@@ -61,23 +60,19 @@ eard_monitor: eard_monitor.c \
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o eard_monitor $^
 
 freeipmi_overhead: freeipmi_overhead.c \
-        $(SRCDIR)/metrics/ipmi/energy_node.a \
-        $(SRCDIR)/metrics/custom/hardware_info.o
+        $(SRCDIR)/metrics/libmetrics.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o freeipmi_overhead $^ $(IPMI_LDFLAGS) $(PAPI_LDFLAGS)
 
 energy_1_second: energy_1_second.c \
-        $(SRCDIR)/metrics/ipmi/energy_node.a \
-        $(SRCDIR)/metrics/custom/hardware_info.o
+        $(SRCDIR)/metrics/libmetrics.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o energy_1_second $^ $(IPMI_LDFLAGS)
 
 energy_updates_freq: energy_updates_freq.c \
-        $(SRCDIR)/metrics/ipmi/energy_node.a \
-        $(SRCDIR)/metrics/custom/hardware_info.o
+        $(SRCDIR)/metrics/libmetrics.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -o energy_updates_freq $^ $(IPMI_LDFLAGS)
 
 test_architecture: test_architecture.c \
-        $(SRCDIR)/metrics/ipmi/energy_node.a \
-        $(SRCDIR)/metrics/custom/hardware_info.o
+        $(SRCDIR)/metrics/libmetrics.a
 	$(CC) $(CC_FLAGS) $(PAPI_CFLAGS) $(CFLAGS) -o test_architecture $^ \
 	$(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS)
 
