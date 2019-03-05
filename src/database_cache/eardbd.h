@@ -71,7 +71,7 @@
 #define i_aggrs				6
 #define MAX_TYPES			7
 #define MAX_CONNECTIONS		FD_SETSIZE - 48
-#define OFFLINE			0
+#define OFFLINE				0
 
 #define sync_option(option, type) \
 	((option & type) > 0)
