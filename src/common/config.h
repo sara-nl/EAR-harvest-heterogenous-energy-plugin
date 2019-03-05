@@ -67,7 +67,7 @@
 #define NW_EXT								"-opa"
 
 /* When set to 1, activates the new SupermucNG policy */
-#define LRZ_POLICY							1
+#define LRZ_POLICY							0
 /* When defined, activates dynamic traces on EARL */
 /*#define EAR_GUI */
 
