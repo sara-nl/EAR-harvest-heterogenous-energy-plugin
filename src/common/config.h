@@ -72,7 +72,7 @@
 /*#define EAR_GUI */
 
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
-#define USE_MSR_RAPL	0
+#define USE_MSR_RAPL	1
 
 /** Specifies if the new version of the commands propagation is used */
 #define USE_NEW_PROP    0
