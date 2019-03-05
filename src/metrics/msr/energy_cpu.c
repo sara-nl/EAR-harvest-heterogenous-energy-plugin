@@ -64,7 +64,6 @@ static int ear_papi_energy_connected=0;
 #define MAX_CPUS        24
 #define MAX_PACKAGES	16
 
-#define TEST_HW_INFO    0
 
 int num_cpus = -1;
 int num_cores = -1;
@@ -84,18 +83,12 @@ static int detect_packages(void) {
     topology_t topo;
     hardware_gettopology(&topo);
     num_cpus = topo.sockets;
-    num_cores = topo.cores;
-#if TEST_HW_INFO
+    num_cores = topo.cores*topo.sockets;
     if (num_cpus < 1 || num_cores < 1)
         return EAR_ERROR;
-#endif
 	for(i=0;i<MAX_PACKAGES;i++) package_map[i]=-1;
 
-#if TEST_HW_INFO
 	for(i=0;i<num_cores;i++) {
-#else
-	for(i=0;i<MAX_CPUS;i++) {
-#endif
 		sprintf(filename,"/sys/devices/system/cpu/cpu%d/topology/physical_package_id",i);
 		fff=fopen(filename,"r");
 		if (fff==NULL) break;
