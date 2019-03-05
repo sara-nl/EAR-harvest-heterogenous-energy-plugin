@@ -27,22 +27,22 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <stdint.h>
+#include <time.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <limits.h>
 #include <unistd.h>
 #include <sys/types.h>
-
-#include <metrics/power_metrics/power_metrics.h>
+#include <common/config.h>
+#include <common/math_operations.h>
 #if USE_MSR_RAPL
 #include <metrics/msr/energy_cpu.h>
 #else
 #include <metrics/papi/energy_cpu.h>
 #endif
-#include <common/math_operations.h>
+#include <metrics/power_metrics/power_metrics.h>
 
 uint8_t power_mon_connected=0; 
 rapl_data_t *RAPL_metrics;

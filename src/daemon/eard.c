@@ -56,11 +56,11 @@
 #if USE_MSR_RAPL
 #include <metrics/msr/energy_cpu.h>
 #else
+#include <metrics/papi/generics.h>
 #include <metrics/papi/energy_cpu.h>
 #endif
-#include <metrics/papi/generics.h>
-#include <metrics/custom/bandwidth.h>
 #include <metrics/ipmi/energy_node.h>
+#include <metrics/custom/bandwidth.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/frequency.h>
 #include <daemon/eard_conf_api.h>

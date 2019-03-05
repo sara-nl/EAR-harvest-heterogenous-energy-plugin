@@ -323,9 +323,8 @@ static void insert_events()
 
 void insert_hub(uint option, uint reason)
 {
-	db_conf_t *db = &conf_clus.database;
 	printp1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
-
+	
 	metrics_print();
 
 	if (sync_option_m(option, SYNC_APPSM, SYNC_ALL))
@@ -516,18 +515,6 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	{
 		if (verbosity == 2) {
 			application_print_channel(stderr, (application_t *) content);
-
-	application_t *a = (application_t *) content;
-	power_signature_t *sig = &a->power_sig;
-
-	fprintf(stderr, "%lu;%lu\n", sig->avg_f, sig->def_f);
-	fprintf(stderr, "%lf\n", sig->time);
-	fprintf(stderr, "%lf;%lf;%lf\n", sig->DC_power, sig->DRAM_power, sig->PCK_power);		
-	memset ((void *) &a->power_sig, 0, sizeof(power_signature_t));
-	memset ((void *) &a->signature, 0, sizeof(signature_t));
-        fprintf(stderr, "%lu;%lu\n", sig->avg_f, sig->def_f);
-        fprintf(stderr, "%lf\n", sig->time);
-        fprintf(stderr, "%lf;%lf;%lf\n", sig->DC_power, sig->DRAM_power, sig->PCK_power);
 		}
 
 		storage_sample_add(typ_alloc[index], sam_inmax[index],

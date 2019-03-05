@@ -1,12 +1,12 @@
 DEBUG   =
 CFLAGS  = -I$(SRCDIR) $(DEBUG)
-LDFLAGS = -lm
+LDFLAGS = 
 
 ######## FILES
 
-FREQ_OBJS = \
-            $(SRCDIR)/control/frequency.o \
-            $(SRCDIR)/metrics/libmetrics.a 
+METS_OBJS = $(SRCDIR)/metrics/libmetrics.a 
+
+FREQ_OBJS = $(SRCDIR)/control/frequency.o $(METS_OBJS)
 
 REMOTE_OBJS = $(SRCDIR)/daemon/eard_rapi.o
 
@@ -40,8 +40,8 @@ ear_get_node_freq: ear_get_node_freq.c $(FREQ_OBJS)
 ear_new_job: ear_new_job.c $(REMOTE_OBJS) $(TYPES_OBJS)
 	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS)
 
-ear_check_node_test:ear_check_node_test.c $(TYPES_OBJS) ../eard_checkpoint.o $(SRCDIR)/metrics/libmetrics.a
-	$(CC) $(CFLAGS) $(PAPI_LDFLAGS) $(IPMI_LDFLAGS) -o $@ $<   ../eard_checkpoint.o $(SRCDIR)/metrics/libmetrics.a $(TYPES_OBJS)
+ear_check_node_test:ear_check_node_test.c ../eard_checkpoint.o $(TYPES_OBJS) $(METS_OBJS)
+	$(CC) $(CFLAGS) -o $@ $<   ../eard_checkpoint.o $(METS_OBJS) $(TYPES_OBJS) $(PAPI_LDFLAGS) $(IPMI_LDFLAGS) -lm
 
 ear_set_freq: ear_set_freq.c $(REMOTE_OBJS) $(TYPES_OBJS)
 	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS)
