@@ -37,7 +37,7 @@
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/output/error.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
