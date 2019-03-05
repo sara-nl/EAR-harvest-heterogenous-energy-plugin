@@ -302,4 +302,7 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 /** given a node name, get all ips of its range*/
 int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips);
 
+/** returns the ip of the nodename specified */
+int get_ip(char *nodename);
+
 #endif

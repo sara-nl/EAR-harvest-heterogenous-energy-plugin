@@ -261,9 +261,42 @@ void close_connection(int fd_in,int fd_out)
 
 uint read_app_command(int fd_in,app_send_t *app_req)
 {
-	if (read(fd_in,app_req,sizeof(app_send_t))!=sizeof(app_send_t)){
-		error("Error reading NON-EARL application request\n");
-		return INVALID_COMMAND;
+	int ret;
+    int flags,orig_flags,tries;
+
+	if ((ret=read(fd_in,app_req,sizeof(app_send_t)))!=sizeof(app_send_t)){
+		if (ret<0){		
+			error("Error reading NON-EARL application request\n");
+			return INVALID_COMMAND;
+		}else{    
+			/* If we have read something different, we read in non blocking mode */
+			orig_flags = fcntl(fd_in, F_GETFD);
+		    if (orig_flags<0){
+        		error("Error getting flags for pipe %s",app_to_eard);
+    		}
+    		flags = orig_flags | O_NONBLOCK;
+    		if (fcntl(fd_in, F_SETFD, flags)<0){
+        		error("Error setting O_NONBLOCK flag for pipe %s",app_to_eard);
+    		}
+			/* It is a short type, it has no sense to execute a loop */
+			int pending=sizeof(app_send_t)-ret,pos=ret;
+			tries=0;
+			while((pending >0) && (tries<MAX_TRIES)){
+				ret=read(fd_in,(char *)app_req+pos,pending);
+				if ((ret<0) && (errno!=EAGAIN)) pending=0;
+				else if (ret>=0){
+					pending-=ret;
+					pos+=ret;
+				}
+				tries++;
+			}	
+			/* Set again original flags */
+			fcntl(fd_in, F_SETFD, orig_flags);
+			if (pending>0){	
+				error("Error reading NON-EARL application request\n");
+				return INVALID_COMMAND;
+			}
+		}
 	}
 	return app_req->req;
 }
