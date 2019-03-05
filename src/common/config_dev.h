@@ -46,7 +46,7 @@
 /* When set to 1, activates the new SupermucNG policy */
 #define LRZ_POLICY							0
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
-#define USE_MSR_RAPL						0
+#define USE_MSR_RAPL						1
 /* When set to 1, avg frequency is reported with periodic metrics */
 #define DEMO                                0
 /** EARD threads selection, do not modify except for debug purposes **/
