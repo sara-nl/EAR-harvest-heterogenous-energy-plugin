@@ -74,6 +74,9 @@
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
 #define USE_MSR_RAPL	0
 
+/* Uses the new API for core and uncores to compute the frequency */
+#define USE_NEW_CORE_UNCORE_API	1
+
 /** Specifies if the new version of the commands propagation is used */
 #define USE_NEW_PROP    0
 
