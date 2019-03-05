@@ -138,10 +138,11 @@ static int wait_answer(app_recv_t *rec)
         FD_SET(fd_eard_to_app, &rfds);
 
         tv.tv_sec = 0;
-        tv.tv_usec = 5000;
+        tv.tv_usec = 100000;
 
         retval = select(fd_eard_to_app+1, &rfds, NULL, NULL, &tv);
-        if (retval<=0) return EAR_ERROR;
+        if (retval==0) return EAR_SOCK_TIMEOUT;
+	if (retval<0) return EAR_ERROR;
 
         /* we can read now */
         if ((ret=read(fd_eard_to_app,rec,sizeof(app_recv_t)))!=sizeof(app_recv_t)){ 
@@ -184,7 +185,7 @@ int ear_energy(ulong *energy_mj,ulong *time_ms)
 	if ((ret=send_request(&my_req))!=EAR_SUCCESS) return ret;
 
 	/* Waiting for an answer */
-	if (wait_answer(&my_data)!=EAR_SUCCESS) return ret;
+	if ((ret=wait_answer(&my_data))!=EAR_SUCCESS) return ret;
 
 	/* Parsing the output */
 

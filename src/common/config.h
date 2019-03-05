@@ -48,8 +48,8 @@
 
 
 /* These three values are used to configure what is considered valid power values. AVG power less than MIN_SIG_POWER or greather than MAX_SIG_POWER generates a warning and a syslog message when activated. Values greather than MAX_ERROR_POWER are considered an error and not reported into the DB */
-#define MIN_SIG_POWER                       70.0
-#define MAX_SIG_POWER                       600.0
+#define MIN_SIG_POWER                       50.0
+#define MAX_SIG_POWER                       500.0
 #define MAX_ERROR_POWER                     700.0
 
 
@@ -67,7 +67,7 @@
 #define NW_EXT								"-opa"
 
 /* When set to 1, activates the new SupermucNG policy */
-#define LRZ_POLICY							0
+#define LRZ_POLICY							1
 /* When defined, activates dynamic traces on EARL */
 /*#define EAR_GUI */
 
@@ -83,7 +83,7 @@
 /* When set to 1, loops signatures are not reported to the DB to save space */
 #define LARGE_CLUSTER                       1
 /* When set to 1, some fields are neither created not reported to the DB to save space */
-#define DB_SIMPLE                           0
+#define DB_SIMPLE                           1
 /* When set to 1, avg frequency is reported with periodic metrics */
 #define DEMO                                0
 /* Use eardbd.conf file to read privileges mysql user and password  or use ear.conf, comment it to use ear.conf */
