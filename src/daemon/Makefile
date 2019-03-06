@@ -1,6 +1,6 @@
 API_DEBUG =
 CFLAGS    = -I$(SRCDIR) $(CONSTANTS) $(API_DEBUG) -O2
-LDFLAGS   = $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -lm -pthread
+LDFLAGS   = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -lm -pthread
 
 ######## FILES
 
@@ -8,9 +8,9 @@ eard_OBJS += app_api/app_server_api.o \
              power_monitor.o \
              dynamic_configuration.o \
              shared_configuration.o \
+             eard_checkpoint.o \
              eard_server_api.o \
-             eard_rapi.o \
-             eard_checkpoint.o
+             eard_rapi.o
 
 ifdef DB_BASE
 eard_OBJS += $(SRCDIR)/common/database.a
@@ -33,7 +33,7 @@ BINS = eard_api.o \
 all: all.components $(BINS) all.others
 
 eard: eard.c $(eard_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(PAPI_CFLAGS) $(DB_CFLAGS) -o $@ $< $(eard_OBJS) $(LDFLAGS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(eard_OBJS) $(LDFLAGS)
 
 power_monitor.o: power_monitor.c power_monitor.h 
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c $<
@@ -48,7 +48,7 @@ eard_rapi.o: eard_rapi.c eard_rapi.h
 	$(CC) -fPIC $(CFLAGS) -c $<
 
 eard_server_api.o: eard_server_api.c eard_server_api.h
-	$(CC) $(CFLAGS) -c eard_server_api.c 
+	$(CC) $(CFLAGS) -c $< 
 
 eard_api.o: eard_api.c eard_api.h ../../Makefile
 	$(CC) -fPIC $(CFLAGS) -c $<

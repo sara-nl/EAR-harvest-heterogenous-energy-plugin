@@ -108,23 +108,7 @@ unsigned long long ullong_diff_overflow(unsigned long long begin, unsigned long 
     }
     return ret;
 }
-unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end)
-{
-    unsigned long long max_64 = ULLONG_MAX;
-    unsigned long long max_48 = 281474976710656; //2^48
 
-    unsigned long long ret = 0;
-
-    if (begin < max_48 && end < max_48)
-    {
-        ret = max_48 - begin + end;
-    }
-    else
-    {
-        ret = max_64 - begin + end;
-    }
-    return ret;
-}
 long long llong_diff_overflow(long long begin, long long end)
 {
 	long long max_64=LLONG_MAX;

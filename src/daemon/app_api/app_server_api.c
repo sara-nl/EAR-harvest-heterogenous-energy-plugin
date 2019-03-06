@@ -175,11 +175,12 @@ void accept_new_connection(char *root,int pid)
 	}
 
 	if ((apps_eard[i].recv>=0) && (apps_eard[i].send>=0)){
-		debug("Connection established\n");
+		debug("Connection established pos %d  fds=%d-%d\n",i,apps_eard[i].recv,apps_eard[i].send);
 		FD_SET(apps_eard[i].recv,&rfds_basic);
 		if (apps_eard[i].recv>=numfds_req) numfds_req=apps_eard[i].recv+1;
 		apps_eard[i].pid=pid;
 		connections++;
+		debug("connections %d numfds_req %d",connections,numfds_req);
 	}else{
 		debug("Not connected %d-%d",apps_eard[i].recv,apps_eard[i].send);
 		close(apps_eard[i].recv);
@@ -233,13 +234,14 @@ void remove_connection(char *root,int i)
 void close_connection(int fd_in,int fd_out)
 {
 	int i,found=0;
-	int max=-1,new_con=0;
+	int max=-1,new_con=-1;
 	debug("closing connections %d - %d\n",fd_in,fd_out);
 	close(fd_in);
 	close(fd_out);
 	for (i=0;i<connections && !found;i++){
 		if (apps_eard[i].recv==fd_in){
 			found=1;
+			debug("Cleaning position %d fds=%d-%d",i,apps_eard[i].recv,apps_eard[i].send);
 			apps_eard[i].recv=-1;
 			apps_eard[i].send=-1;
 			apps_eard[i].pid=-1;
@@ -254,8 +256,9 @@ void close_connection(int fd_in,int fd_out)
 			new_con=i;
 		}
 	}
-	connections=new_con;
+	connections=new_con+1;
 	numfds_req=max+1;
+	debug("connections %d numfds_req %d\n",connections,numfds_req);
 	
 }
 
@@ -440,7 +443,10 @@ void process_request(int fd_in)
 	int fd_out;
 	debug("process_request from %d\n",fd_in);
 	fd_out=get_fd_out(fd_in);
-	if (fd_out==EAR_ERROR) return;
+	if (fd_out==EAR_ERROR){ 
+		debug("fd_out not found for %d",fd_in);
+		return;
+	}
 	req=read_app_command(fd_in,&app_req);
 	switch (req){
 	case DISCONNECT:

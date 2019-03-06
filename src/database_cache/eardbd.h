@@ -37,6 +37,7 @@
 #include <common/types/types.h>
 #include <common/string_enhanced.h>
 #include <common/output/error.h>
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
 
 #define CONTENT_TYPE_PER	1
@@ -70,7 +71,7 @@
 #define i_aggrs				6
 #define MAX_TYPES			7
 #define MAX_CONNECTIONS		FD_SETSIZE - 48
-#define OFFLINE			0
+#define OFFLINE				0
 
 #define sync_option(option, type) \
 	((option & type) > 0)

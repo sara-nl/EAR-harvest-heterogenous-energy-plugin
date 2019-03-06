@@ -44,13 +44,19 @@
 #include <common/output/debug.h>
 #include <daemon/app_api/app_conf_api.h>
 
-static int fd_app_to_eard;
-static int fd_eard_to_app;
+static int fd_app_to_eard=-1;
+static int fd_eard_to_app=-1;
 static char app_to_eard[MAX_PATH_SIZE];
 static char eard_to_app[MAX_PATH_SIZE];
 static char my_app_to_eard[MAX_PATH_SIZE];
 
 #define MAX_TRIES 100
+
+static void remove_pipes()
+{        
+	unlink(eard_to_app);
+        unlink(my_app_to_eard);
+}
 static int create_connection()
 {
 	char *tmp;
@@ -100,16 +106,36 @@ static int create_connection()
 	debug("Connecting specific pipes\n");
     	fd_app_to_eard=open(my_app_to_eard,O_WRONLY|O_NONBLOCK);
 	if (fd_app_to_eard<0){ 
-		if (errno!=ENXIO) return EAR_ERROR;
-		else{
-		while(((fd_app_to_eard=open(my_app_to_eard,O_WRONLY|O_NONBLOCK))<0) && (errno == ENXIO) && (tries<MAX_TRIES)) tries++;		
+		if (errno!=ENXIO){ 
+			remove_pipes();
+			return EAR_ERROR;
+		} else{
+			while(((fd_app_to_eard=open(my_app_to_eard,O_WRONLY|O_NONBLOCK))<0) && (errno == ENXIO) && (tries<MAX_TRIES)) tries++;		
 		}
-		if (fd_app_to_eard<0) return EAR_ERROR;
+		if (fd_app_to_eard<0){ 
+			remove_pipes();
+			return EAR_ERROR;
+		}
 	}
     	fd_eard_to_app=open(eard_to_app,O_RDONLY|O_NONBLOCK);
 	if (fd_eard_to_app<0){ 
+		if (errno!=ENXIO){
 		debug("Error opening %s (%s)",eard_to_app,strerror(errno));
-		return EAR_ERROR;
+			close(fd_app_to_eard);
+			fd_app_to_eard=-1;
+			remove_pipes();
+			return EAR_ERROR;
+		}else{
+			tries=0;
+			while((fd_eard_to_app=open(eard_to_app,O_RDONLY|O_NONBLOCK)<0) && (errno == ENXIO) && (tries<MAX_TRIES)) tries++;
+		}
+		if (fd_eard_to_app<0){
+		debug("Error opening %s (%s)",eard_to_app,strerror(errno));
+			close(fd_app_to_eard);
+			fd_app_to_eard=-1;
+			remove_pipes();
+			return EAR_ERROR;
+		}
 	}
 
 	return EAR_SUCCESS;
@@ -132,16 +158,20 @@ static int wait_answer(app_recv_t *rec)
         struct timeval tv;
         int retval;
 
-		debug("wait for data\n");
+	debug("wait for data\n");
         /* Addin fd_eard_to_app to the fdset */
         FD_ZERO(&rfds);
         FD_SET(fd_eard_to_app, &rfds);
 
         tv.tv_sec = 0;
-        tv.tv_usec = 5000;
+        tv.tv_usec = 100000;
 
         retval = select(fd_eard_to_app+1, &rfds, NULL, NULL, &tv);
-        if (retval<=0) return EAR_ERROR;
+        if (retval<0) return EAR_ERROR;
+	if (retval==0){
+		debug("timeout expired");
+		return EAR_SOCK_TIMEOUT;
+	}
 
         /* we can read now */
         if ((ret=read(fd_eard_to_app,rec,sizeof(app_recv_t)))!=sizeof(app_recv_t)){ 
@@ -157,13 +187,15 @@ static void close_connection()
 	app_send_t req;
 
 	debug("Closing connection\n");
+	if (fd_app_to_eard<0) return;
 	req.pid=getpid();
 	req.req=DISCONNECT;
 	if (write(fd_app_to_eard,&req,sizeof(req))!=sizeof(req)) return;
 	close(fd_app_to_eard);
-	close(fd_app_to_eard);
-	unlink(eard_to_app);
-	unlink(my_app_to_eard);
+	close(fd_eard_to_app);
+	fd_app_to_eard=-1;
+	fd_eard_to_app=-1;
+	remove_pipes();
 }
 
 int ear_energy(ulong *energy_mj,ulong *time_ms)
@@ -184,7 +216,7 @@ int ear_energy(ulong *energy_mj,ulong *time_ms)
 	if ((ret=send_request(&my_req))!=EAR_SUCCESS) return ret;
 
 	/* Waiting for an answer */
-	if (wait_answer(&my_data)!=EAR_SUCCESS) return ret;
+	if ((ret=wait_answer(&my_data))!=EAR_SUCCESS) return ret;
 
 	/* Parsing the output */
 

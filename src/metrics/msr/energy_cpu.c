@@ -35,11 +35,13 @@
 #include <string.h>
 
 #include <common/states.h>
+#include <common/output/error.h>
 #include <common/output/debug.h>
 #include <common/output/verbose.h>
 
 #include <metrics/common/msr.h>
 #include <metrics/msr/energy_cpu.h>
+#include <metrics/custom/hardware_info.h>
 #include <metrics/power_metrics/power_metrics.h>
 
 
@@ -59,8 +61,12 @@
 
 static int ear_papi_energy_connected=0;
 
-#define MAX_CPUS		24
+#define MAX_CPUS        24
 #define MAX_PACKAGES	16
+
+
+int num_cpus = -1;
+int num_cores = -1;
 
 static int total_cores=0,total_packages=0;
 static int package_map[MAX_PACKAGES];
@@ -74,10 +80,15 @@ static int detect_packages(void) {
 	FILE *fff;
 	int package;
 	int i;
-
+    topology_t topo;
+    hardware_gettopology(&topo);
+    num_cpus = topo.sockets;
+    num_cores = topo.cores*topo.sockets;
+    if (num_cpus < 1 || num_cores < 1)
+        return EAR_ERROR;
 	for(i=0;i<MAX_PACKAGES;i++) package_map[i]=-1;
 
-	for(i=0;i<MAX_CPUS;i++) {
+	for(i=0;i<num_cores;i++) {
 		sprintf(filename,"/sys/devices/system/cpu/cpu%d/topology/physical_package_id",i);
 		fff=fopen(filename,"r");
 		if (fff==NULL) break;
@@ -96,7 +107,11 @@ static int detect_packages(void) {
 
 int init_rapl_msr()
 {
-	detect_packages();
+    if (detect_packages() == EAR_ERROR)
+    {
+        error("ERROR reading hardware info\n");
+        return EAR_ERROR;
+    }
 
 	unsigned long long result;
 	int fd, j;

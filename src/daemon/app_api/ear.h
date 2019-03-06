@@ -31,6 +31,7 @@
 #define _APP_API_H
 #define EAR_SUCCESS 0
 #define EAR_ERROR -1
+#define EAR_TIMEOUT -21
 /** returns the accumulated energy i(mili joules) and time (miliseconds) */
 int ear_energy(unsigned long *energy_mj,unsigned long *time_ms);
 /** Given two measures of energy and time computes the difference */

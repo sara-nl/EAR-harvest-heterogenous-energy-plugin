@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,41 +15,52 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef _EAR_TYPES_GENERIC
-#define _EAR_TYPES_GENERIC
+#include <metrics/common/cpuid.h>
 
-#include <stdint.h>
-#include <limits.h>
+void cpuid_native(uint *eax, uint *ebx, uint *ecx, uint *edx)
+{
+	asm volatile("cpuid"
+	: "=a" (*eax),
+	  "=b" (*ebx),
+	  "=c" (*ecx),
+	  "=d" (*edx)
+	: "0"  (*eax), "2" (*ecx));
+}
 
-typedef unsigned char		uchar;
-typedef unsigned long long	ull;
-typedef unsigned long long	ullong;
-typedef   signed long long	llong;
-typedef unsigned long 		ulong;
-typedef unsigned int		uint;
-typedef uint8_t				job_type;
-typedef ulong				job_id;
+uint cpuid_getbits(uint reg, int left_bit, int right_bit)
+{
+	uint shift = left_bit - right_bit;
+	uint mask  = (((0x01 << shift) - 1) << 1) + 1;
+	return ((reg >> right_bit) & mask);
+}
 
-// Obsolete
-#define GENERIC_NAME 		256
-#define	UID_NAME			8
-#define POLICY_NAME 		32
-#define ENERGY_TAG_SIZE		32
-#define MAX_PATH_SIZE		256
-#define NODE_SIZE			256
-#define NAME_SIZE			128
-#define ID_SIZE				64
+uint cpuid_isleaf(uint leaf)
+{
+	cpuid_regs_t r;
 
-#endif
+	CPUID(r,0,0);
+	// If max leafs are less
+	if (r.eax < leaf) {
+		return 0;
+	}
+
+	CPUID(r,leaf,0);
+	// EBX confirms its presence
+	if (r.ebx == 0) {
+		return 0;
+	}
+
+	return 1;
+}

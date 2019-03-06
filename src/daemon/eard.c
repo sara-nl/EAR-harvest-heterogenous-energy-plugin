@@ -56,11 +56,11 @@
 #if USE_MSR_RAPL
 #include <metrics/msr/energy_cpu.h>
 #else
+#include <metrics/papi/generics.h>
 #include <metrics/papi/energy_cpu.h>
 #endif
-#include <metrics/papi/generics.h>
-#include <metrics/custom/bandwidth.h>
 #include <metrics/ipmi/energy_node.h>
+#include <metrics/custom/bandwidth.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/frequency.h>
 #include <daemon/eard_conf_api.h>
@@ -1194,15 +1194,29 @@ void main(int argc,char *argv[])
     if (fd_my_log<0) fd_my_log=2;
 	#endif
 
-	/* We initialize frecuency */
-	if (frequency_init(metrics_get_node_size()) < 0) {
-		error("ERROR, frequency information can't be initialized");
+	int node_size;
+	state_t s;
+
+	/* We initialize topology */
+	s = hardware_topology_getsize(&node_size);
+	
+	if (state_fail(s) || node_size <= 0)
+	{
+		error("topology information can't be initialized (%d)", s);
 		_exit(1);
 	}
+
+	/* We initialize frecuency */
+	if (frequency_init(node_size) < 0) {
+		error("frequency information can't be initialized");
+		_exit(1);
+	}
+
 	/** Shared memory is used between EARD and EARL **/
 	init_frequency_list();
+	
 	/* This area is for shared info */
-    verbose(VCONF,"creating shared memory regions");
+	verbose(VCONF,"creating shared memory regions");
 	get_settings_conf_path(my_cluster_conf.tmp_dir,dyn_conf_path);
 	verbose(VCONF+1,"Using %s as settings path (shared memory region)",dyn_conf_path);
     dyn_conf=create_settings_conf_shared_area(dyn_conf_path);

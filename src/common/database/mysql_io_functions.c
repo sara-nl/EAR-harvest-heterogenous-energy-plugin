@@ -296,6 +296,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
         }
         verbose(VMYSQL, "autoincrement_offset set to %d\n", autoincrement_offset);
     }
+
     //inserting all powersignatures (always present)
     pow_sig_id = mysql_batch_insert_power_signatures(connection, app, num_apps);
     
@@ -304,7 +305,6 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     for (i = 0; i < num_apps; i++)
         pow_sigs_ids[i] = pow_sig_id + i*autoincrement_offset;
-
 
     //inserting signatures (if the application is mpi)
     signature_container_t cont;
@@ -324,7 +324,6 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
 
     char *params = ", (?, ?, ?, ?, ?)";
     char *query;
-
 
     if (!is_learning)
     {

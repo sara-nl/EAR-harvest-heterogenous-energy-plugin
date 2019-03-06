@@ -40,7 +40,6 @@
 
 #include <common/states.h>
 #include <metrics/ipmi/energy_node.h>
-#include <metrics/papi/energy_cpu.h>
 
 #define NUM_SOCKETS 2
 #define POWER_MON_OK	EAR_SUCCESS
