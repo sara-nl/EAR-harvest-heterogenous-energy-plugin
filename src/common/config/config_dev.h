@@ -46,7 +46,7 @@
 /* When set to 1, activates the new SupermucNG policy */
 #define LRZ_POLICY							0
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
-#define USE_MSR_RAPL						0
+#define USE_MSR_RAPL						1
 /* When set to 1, avg frequency is reported with periodic metrics */
 #define DEMO                                0
 /** EARD threads selection, do not modify except for debug purposes **/
@@ -61,5 +61,9 @@
 #define EXTERNAL_COMMANDS_THREAD 			1
 /* Just for ear.conf reading. */
 #define EARDBD_TYPES						7
+
+/** Specifies if the new version of the commands propagation is used */
+#define USE_NEW_PROP                        0
+
 
 #endif //EAR_CONFIG_DEV_H
