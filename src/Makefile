@@ -47,21 +47,25 @@ devel.install: devel.install.components;
 
 clean: clean.components
 
-eard.install:daemon.install
-eardbd.install:database_cache.install
-eargmd.install:global_manager.install
-earplug.install:slurm_plugin.install
-
-
 ######## SUBFOLDERS
 
 %.components:
 	@ for i in $(COMPONENTS); do                     \
 		echo "===================================="; \
-		echo "= Compilling $$i";                     \
+		echo "= Compiling $$i";                      \
 		echo "===================================="; \
 		$(MAKE) -C $${i} $* || exit;                 \
 	done
+
+######## ALIASES
+
+eard.install: daemon.install;
+
+eardbd.install: database_cache.install;
+
+eargmd.install: global_manager.install;
+
+earplug.install: slurm_plugin.install;
 
 ######## DEPENDENCIES
 

@@ -27,21 +27,27 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#ifndef EAR_PATHS_H
+#define EAR_PATHS_H
 
-#include <common/config/config_def.h>
-#include <common/config/config_dev.h>
-#include <common/config/config_install.h>
+// Library paths
+#define CPUPOWER_LIB_PATH   ""
+#define FREEIPMI_LIB_PATH   ""
+#define SLURM_LIB_PATH      ""
+#define PAPI_LIB_PATH       ""
+#define GSL_LIB_PATH        ""
+#define EAR_INSTALL_PATH    "/usr/local"
 
-/* These two options go together. USE_EXT defines if a automatic network
- * extension must be added for inter-nodes communications. Targeted to
- * architectures where hostname returned is not valid to communicate across
- * nodes. In that case, NW_EXT specified the extension to concatenate to
- * hostname */
-#define USE_EXT								0
-#define NW_EXT								"-opa"
-/* When defined, activates dynamic traces on EARL */
-/*#define EAR_GUI */
+// File paths
+#define EAR_DAEMON_PATH     ""
+#define EAR_CONF_FILE		""
+#define IMPI_C_LIB_PATH		"lib/libear.so"
+#define OMPI_C_LIB_PATH		"lib/libear_ompi.so"
+#define IMPI_F_LIB_PATH		""
+#define OMPI_F_LIB_PATH		""
 
-#endif
+// Database
+#define DB_FILES			0
+#define DB_MYSQL			0
+
+#endif //EAR_PATHS_H

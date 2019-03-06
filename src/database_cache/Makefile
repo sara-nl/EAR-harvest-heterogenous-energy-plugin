@@ -27,7 +27,7 @@ eardbd_api.o: eardbd_api.c eardbd_api.h
 	$(CC) $(CFLAGS) -c $<
 
 eardbd: $(eardbd_SRCS) $(eardbd_HDRS) $(eardbd_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $(eardbd_SRCS) $(LDFLAGS) $(eardbd_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $(eardbd_SRCS) $(eardbd_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 

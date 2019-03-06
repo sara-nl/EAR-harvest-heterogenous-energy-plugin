@@ -18,7 +18,7 @@ BINS = eargmd
 all: $(OBJS) $(BINS) all.others 
 
 eargmd: eargm.c $(manager_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(LDFLAGS) $(manager_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(manager_OBJS) $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) -fPIC $(CFLAGS) -c $<
