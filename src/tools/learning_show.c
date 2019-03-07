@@ -123,13 +123,13 @@ void main(int argc,char *argv[])
 
 			if (opt_c) {
 				verbose(0, "%s;%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%s",
-                    apps[i].node_id, apps[i].app_id, apps[i].job.def_f, apps[i].signature.avg_f,
+                    apps[i].node_id, apps[i].job.app_id, apps[i].job.def_f, apps[i].signature.avg_f,
                     apps[i].signature.time, apps[i].signature.DC_power,
                     apps[i].signature.GBS, apps[i].signature.CPI,
 					apps[i].job.app_id);
 			} else {
 				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf|||%s", paint[opt_p],
-					apps[i].node_id, apps[i].app_id, apps[i].job.def_f, apps[i].signature.avg_f,
+					apps[i].node_id, apps[i].job.app_id, apps[i].job.def_f, apps[i].signature.avg_f,
 					apps[i].signature.time, apps[i].signature.DC_power,
 					apps[i].signature.GBS, apps[i].signature.CPI,
 					apps[i].job.app_id);
