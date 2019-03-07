@@ -64,7 +64,7 @@ install: install.components install.others
 
 %.install: %.install.components %.install.others;
 
-clean: clean.components clean.others
+clean: clean.components clean.others rclean
 	rm -f *.o *.a *.so eard
 
 ######## SUBFOLDERS

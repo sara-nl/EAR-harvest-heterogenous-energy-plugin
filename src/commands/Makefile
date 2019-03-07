@@ -14,13 +14,18 @@ ear_cleandb_OBJS = $(SRCDIR)/common/database/db_helper.o \
                    $(SRCDIR)/common/types.a
 
 ifdef DB_BASE
-BINS  = eacct econtrol ereport
-SBINS = edb_create edb_clean_pm
+G1_BINS = eacct econtrol ereport
+G1_PATH = $(DESTDIR)/bin
+G1_PERM = 2751
+
+G2_BINS = edb_create edb_clean_pm
+G2_PATH = $(DESTDIR)/sbin
+G2_PERM = 0751
 endif
 
 ######## RULES
 
-all: $(BINS) $(SBINS)
+all: $(G1_BINS) $(G2_BINS)
 
 eacct: ear_acct.c $(ereport_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ereport_OBJS)
@@ -39,18 +44,11 @@ edb_create: ear_create_database.c $(ear_cleandb_OBJS)
 
 ######## OPTIONS
 
-install:
-ifdef DB_BASE
-	cp $(BINS) $(DESTDIR)/bin/
-	cp $(SBINS) $(DESTDIR)/sbin/
-	@(cd $(DESTDIR)/bin && chmod 2751 $(BINS))
-	@(cd $(DESTDIR)/sbin && chmod 0750 $(SBINS))
-endif
+install: G1.ginstall G2.ginstall
 
 %.install: ;
 
-clean:
-	rm -f $(BINS) $(SBINS)
+clean: rclean G1.gclean G2.gclean
 
 ######## DEPENDENCIES
 

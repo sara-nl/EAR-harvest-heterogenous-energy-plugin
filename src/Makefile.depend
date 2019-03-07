@@ -12,4 +12,15 @@ rdepend: $(wildcard ./*.c)
 depend-clean:
 	@ rm -f .depend
 
+######## ADDITIONAL
+
+rclean:
+	@ rm -f *.o *.a *.so
+
+%.gclean:
+	@ rm -f $($*_BINS)
+
+%.ginstall:
+	@ (cp $($*_BINS) $($*_PATH) && cd $($*_PATH) && chmod $($*_PERM) $($*_BINS))
+
 -include .depend

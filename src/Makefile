@@ -19,11 +19,11 @@ ifdef CPUF_BASE
 		COMPONENTS += tools
 	endif
 endif
-ifdef SLURM_BASE
-	COMPONENTS += slurm_plugin
-endif
 ifdef DB_BASE
 	COMPONENTS += global_manager
+endif
+ifdef SLURM_BASE
+	COMPONENTS += slurm_plugin
 endif
 
 ######## RULES
