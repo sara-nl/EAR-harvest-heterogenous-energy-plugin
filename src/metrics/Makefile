@@ -42,6 +42,8 @@ install: install.components
 devel.install: devel.install.components;
 	cp metrics.h $(DESTDIR)/include/metrics/
 	cp libmetrics.so $(DESTDIR)/lib/
+	chmod 440 $(DESTDIR)/include/metrics/metrics.h
+	chmod 440 $(DESTDIR)/lib/libmetrics.so
 
 %.install: %.install.components;
 

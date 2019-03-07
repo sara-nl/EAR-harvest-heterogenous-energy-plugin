@@ -33,6 +33,7 @@ eardbd: $(eardbd_SRCS) $(eardbd_HDRS) $(eardbd_OBJS)
 
 install:
 	cp eardbd $(DESTDIR)/sbin
+	chmod 750 $(DESTDIR)/sbin/eardbd
 
 %.install: ;
 

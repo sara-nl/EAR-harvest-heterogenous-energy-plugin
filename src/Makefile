@@ -10,7 +10,6 @@ ifdef CPUF_BASE
 		ifdef IPMI_BASE
 			COMPONENTS += metrics \
                           daemon \
-                          global_manager \
                           commands \
                           tests
 		endif

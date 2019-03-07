@@ -60,6 +60,7 @@ eard_checkpoint.o: eard_checkpoint.c eard_checkpoint.h
 
 install: install.components install.others
 	cp eard $(DESTDIR)/sbin
+	chmod 750 $(DESTDIR)/sbin/eard
 
 %.install: %.install.components %.install.others;
 

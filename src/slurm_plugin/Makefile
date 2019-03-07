@@ -29,6 +29,7 @@ earplug.so: $(SRCS) $(HDRS)
 
 install:
 	cp earplug.so $(DESTDIR)/lib
+	chmod 640 $(DESTDIR)/lib/earplug.so 
 
 %.install: ;
 

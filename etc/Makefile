@@ -11,7 +11,6 @@ gen_FOLDERS = $(DESTDIR)/bin \
 etc_FOLDERS = $(ETCDIR) \
               $(ETCDIR)/ear \
               $(ETCDIR)/ear/coeffs \
-              $(ETCDIR)/ear/dbs \
               $(ETCDIR)/module \
               $(ETCDIR)/systemd \
               $(ETCDIR)/slurm 
@@ -28,8 +27,8 @@ install:
 	@ mkdir -p $(gen_FOLDERS) 
 	cp -r scripts/* $(DESTDIR)/bin/scripts/
 	@ rm $(DESTDIR)/bin/scripts/README.md
-	@ rm $(DESTDIR)/bin/scripts/learning/README.md
 	@ rm $(DESTDIR)/bin/scripts/tools/README.md
+	@ rm $(DESTDIR)/bin/scripts/learning/README.md
 
 etc.install: ;
 	@ mkdir -p $(etc_FOLDERS) 
@@ -39,6 +38,7 @@ etc.install: ;
 	cp -i systemd/eard.service $(ETCDIR)/systemd
 	cp -i systemd/eardbd.service $(ETCDIR)/systemd
 	cp -i systemd/eargmd.service $(ETCDIR)/systemd
+	
 
 devel.install: ;
 	@ mkdir -p $(dev_FOLDERS)

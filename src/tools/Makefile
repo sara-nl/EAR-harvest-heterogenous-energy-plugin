@@ -8,16 +8,16 @@ COMMON_OBJS = $(ROOTDIR)/src/common/types.a
 BINARIES = \
            coeffs_quality \
            coeffs_compute \
+           coeffs_compare \
            coeffs_jobproj \
            coeffs_show \
            coeffs_default \
-		   coeffs_null \
-		   get_ear_events \
-		   get_active_nodes \
-		   learning_show \
-		   learning_validate \
-		   learning_delete \
-		   coeffs_compare
+           coeffs_null \
+           get_ear_events \
+           get_active_nodes \
+           learning_show \
+           learning_validate \
+           learning_delete
 
 all: $(BINARIES)
 
@@ -61,6 +61,7 @@ learning_validate: learning_validate.c $(ROOTDIR)/src/common/database.a $(COMMON
 
 install:
 	cp $(BINARIES) $(DESTDIR)/bin/tools
+	@(cd $(DESTDIR)/bin/tools && chmod 0750 $(BINARIES))
 
 %.install: ;
 

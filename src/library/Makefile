@@ -62,6 +62,7 @@ all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
 
 install:
 	cp $(libs_ALL) $(DESTDIR)/lib/
+	@(cd $(DESTDIR)/lib && chmod 640 $(libs_ALL))
 
 %.install: ;
 

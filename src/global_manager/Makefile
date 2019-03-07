@@ -26,7 +26,8 @@ eargmd: eargm.c $(manager_OBJS)
 ######## OPTIONS
 
 install: install.others
-	cp $(BINS) $(DESTDIR)/sbin
+	cp eargmd $(DESTDIR)/sbin
+	chmod 750 $(DESTDIR)/sbin/eargmd
 
 devel.install: devel.install.others;
 

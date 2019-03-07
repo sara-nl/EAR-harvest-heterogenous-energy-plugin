@@ -9,9 +9,9 @@ ereport_OBJS  = $(SRCDIR)/common/database/mysql_io_functions.o \
 econtrol_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
                 $(SRCDIR)/common/types.a
 
-ear_cleandb_OBJS =	$(SRCDIR)/common/database/db_helper.o \
-					$(SRCDIR)/common/database/mysql_io_functions.o \
-					$(SRCDIR)/common/types.a
+ear_cleandb_OBJS = $(SRCDIR)/common/database/db_helper.o \
+                   $(SRCDIR)/common/database/mysql_io_functions.o \
+                   $(SRCDIR)/common/types.a
 
 ifdef DB_BASE
 BINS  = eacct econtrol ereport
@@ -43,6 +43,8 @@ install:
 ifdef DB_BASE
 	cp $(BINS) $(DESTDIR)/bin/
 	cp $(SBINS) $(DESTDIR)/sbin/
+	@(cd $(DESTDIR)/bin && chmod 2751 $(BINS))
+	@(cd $(DESTDIR)/sbin && chmod 0750 $(SBINS))
 endif
 
 %.install: ;
