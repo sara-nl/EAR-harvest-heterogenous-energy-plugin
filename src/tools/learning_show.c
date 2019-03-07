@@ -99,12 +99,12 @@ void main(int argc,char *argv[])
 
 	//
 	if (!opt_c) {
-		tprintf_init(stdout, STR_MODE_COL, "12 10 10 8 8 8 30");
+		tprintf_init(stdout, STR_MODE_COL, "12 12 10 10 8 8 8 30");
 
-		tprintf("Node name||Def. F.||Avg. F.||Seconds||Watts||GBS||CPI|||App name");
-		tprintf("---------||-------||-------||-------||-----||---||---|||--------");
+		tprintf("Node name||App name||Def. F.||Avg. F.||Seconds||Watts||GBS||CPI|||App name");
+		tprintf("---------||--------||-------||-------||-------||-----||---||---|||--------");
 	} else {
-		verbose(0, "Node name;Def. F.;Avg. F.;Seconds;Watts;GBS;CPI;App name");
+		verbose(0, "Node name;App name;Def. F.;Avg. F.;Seconds;Watts;GBS;CPI;App name");
 	}
 
 	while (num_apps > 0)
@@ -122,14 +122,14 @@ void main(int argc,char *argv[])
 			}
 
 			if (opt_c) {
-				verbose(0, "%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%s",
-                    apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
+				verbose(0, "%s;%s;%lu;%lu;%0.2lf;%0.2lf;%0.2lf;%0.2lf;%s",
+                    apps[i].node_id, apps[i].app_id, apps[i].job.def_f, apps[i].signature.avg_f,
                     apps[i].signature.time, apps[i].signature.DC_power,
                     apps[i].signature.GBS, apps[i].signature.CPI,
 					apps[i].job.app_id);
 			} else {
-				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf|||%s",
-					paint[opt_p], apps[i].node_id, apps[i].job.def_f, apps[i].signature.avg_f,
+				tprintf("%s%s||%lu||%lu||%0.2lf||%0.2lf||%0.2lf||%0.2lf|||%s", paint[opt_p],
+					apps[i].node_id, apps[i].app_id, apps[i].job.def_f, apps[i].signature.avg_f,
 					apps[i].signature.time, apps[i].signature.DC_power,
 					apps[i].signature.GBS, apps[i].signature.CPI,
 					apps[i].job.app_id);
