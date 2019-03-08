@@ -1,77 +1,86 @@
-DEBUG   =
 CFLAGS  = -I$(SRCDIR) $(DEBUG)
-LDFLAGS = 
+LDFLAGS = $(PAPI_LDFLAGS) $(IPMI_LDFLAGS) -lm
+CCC     = $(CCC)
+
+######## INSTALLATION
+
+coma_BINS = ear_set_node_freq \
+    ear_get_node_freq \
+    ear_set_ondemand \
+    ear_new_job \
+    ear_end_job \
+    ear_set_freq \
+    ear_red_freq \
+    ear_inc_th \
+    ear_set_th \
+    ear_check_node_test
+#   ear_dbd_stress_test \
+coma_PATH = $(DESTDIR)/bin
+coma_PERM = 0770
 
 ######## FILES
 
-METS_OBJS = $(SRCDIR)/metrics/libmetrics.a 
+freq_OBJS = $(SRCDIR)/control/frequency.o $(mets_OBJS)
 
-FREQ_OBJS = $(SRCDIR)/control/frequency.o $(METS_OBJS)
+type_OBJS = $(SRCDIR)/common/types.a
 
-REMOTE_OBJS = $(SRCDIR)/daemon/eard_rapi.o
+remt_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
+    $(type_OBJS)
 
-TYPES_OBJS = $(SRCDIR)/common/types.a
+mets_OBJS = ../eard_checkpoint.o \
+    $(SRCDIR)/metrics/libmetrics.a \
+    $(type_OBJS)
 
-BINARIES = ear_set_node_freq \
-           ear_get_node_freq \
-           ear_set_ondemand \
-           ear_new_job \
-           ear_end_job \
-           ear_set_freq \
-           ear_red_freq \
-           ear_inc_th \
-           ear_set_th \
-           ear_check_node_test
-#          ear_dbd_stress_test \
+sock_OBJS = $(SRCDIR)/common/sockets.o \
+    $(SRCDIR)/database_cache/eardbd_api.o \
+    $(type_OBJS)
 
 ######## RULES
 
-all: $(BINARIES)
+all: $(coma_BINS)
 
-ear_set_node_freq: ear_set_node_freq.c $(FREQ_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS) $(LDFLAGS)
+ear_set_node_freq: ear_set_node_freq.c $(freq_OBJS)
+	$(CCC) -o $@ $< $(freq_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
-ear_set_ondemand: ear_set_ondemand.c $(FREQ_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS) $(LDFLAGS)
+ear_set_ondemand: ear_set_ondemand.c $(freq_OBJS)
+	$(CCC) -o $@ $< $(freq_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
-ear_get_node_freq: ear_get_node_freq.c $(FREQ_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(FREQ_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS) $(LDFLAGS)
+ear_get_node_freq: ear_get_node_freq.c $(freq_OBJS)
+	$(CCC) -o $@ $< $(freq_OBJS) $(CPUF_LDFLAGS) $(PAPI_LDFLAGS)
 
-ear_new_job: ear_new_job.c $(REMOTE_OBJS) $(TYPES_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS) $(LDFLAGS)
+ear_new_job: ear_new_job.c $(remt_OBJS)
+	$(CCC) -o $@ $< $(remt_OBJS)
 
-ear_check_node_test:ear_check_node_test.c ../eard_checkpoint.o $(TYPES_OBJS) $(METS_OBJS)
-	$(CC) $(CFLAGS) -o $@ $<   ../eard_checkpoint.o $(METS_OBJS) $(TYPES_OBJS) $(PAPI_LDFLAGS) $(IPMI_LDFLAGS) -lm
+ear_check_node_test: ear_check_node_test.c $(mets_OBJS)
+	$(CCC) -o $@ $< $(mets_OBJS) $(LDFLAGS)
 
-ear_set_freq: ear_set_freq.c $(REMOTE_OBJS) $(TYPES_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS) $(LDFLAGS)
+ear_set_freq: ear_set_freq.c $(remt_OBJS)
+	$(CCC) -o $@ $< $(remt_OBJS)
 
-ear_red_freq: ear_red_freq.c $(REMOTE_OBJS) $(TYPES_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS) $(LDFLAGS)
+ear_red_freq: ear_red_freq.c $(remt_OBJS)
+	$(CCC) -o $@ $< $(remt_OBJS)
 
-ear_inc_th: ear_inc_th.c $(REMOTE_OBJS) $(TYPES_OBJS) $(LDFLAGS)
-	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS) $(LDFLAGS)
+ear_inc_th: ear_inc_th.c $(remt_OBJS)
+	$(CCC) -o $@ $< $(remt_OBJS)
 
-ear_set_th: ear_set_th.c $(REMOTE_OBJS) $(TYPES_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS) $(LDFLAGS)
+ear_set_th: ear_set_th.c $(remt_OBJS)
+	$(CCC) -o $@ $< $(remt_OBJS)
 
-ear_end_job: ear_end_job.c $(REMOTE_OBJS) $(TYPES_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(REMOTE_OBJS) $(TYPES_OBJS) $(LDFLAGS)
+ear_end_job: ear_end_job.c $(remt_OBJS)
+	$(CCC) -o $@ $< $(remt_OBJS)
 
-ear_dbd_stress_test:ear_dbd_stress_test.c $(TYPES_OBJS) $(SRCDIR)/database_cache/eardbd_api.o $(SRCDIR)/common/sockets.o
-	$(CC) $(CFLAGS) -o $@  $<  $(TYPES_OBJS) $(DB_LDFLAGS) $(SRCDIR)/database_cache/eardbd_api.o $(SRCDIR)/common/sockets.o $(LDFLAGS)
+ear_dbd_stress_test:ear_dbd_stress_test.c $(sock_OBJS)
+	$(CCC) -o $@ $< $(sock_OBJS) $(DB_LDFLAGS))
 
 ######## OPTIONS
 
-install:
+install: ;
 
-devel.install: ;
-	cp $(BINARIES) $(DESTDIR)/bin
+devel.install: coma.ginstall;
 
 %.install: ;
 
-clean:
-	rm -f $(BINARIES)
+clean: coma.gclean;
 
 ######## DEPENDENCIES
 

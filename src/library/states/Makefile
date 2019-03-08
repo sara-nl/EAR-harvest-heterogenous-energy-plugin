@@ -15,8 +15,7 @@ allt: $(OBJS)
 
 ######## OPTIONS 
 
-clean:
-	rm -f *.o *.a *.so
+clean: rclean;
 
 ######## DEPENDENCIES
 

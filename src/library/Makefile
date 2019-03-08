@@ -1,5 +1,5 @@
-CFLAGS   = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
-LDFLAGS  = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
+CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
+LDFLAGS = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
 
 ######## VARS
 
@@ -7,68 +7,73 @@ export DIR
 export CFLAGS
 export LDFLAGS
 
-######## FILES
-
-lib_OBJS = $(SRCDIR)/metrics/libmetrics.a \
-           $(SRCDIR)/control/frequency.o \
-           $(SRCDIR)/daemon/eard_api.o \
-           $(SRCDIR)/daemon/shared_configuration.o \
-           $(SRCDIR)/common/environment_common.o \
-           $(SRCDIR)/common/file.o \
-           $(SRCDIR)/common/environment.o \
-           $(SRCDIR)/common/math_operations.o \
-           $(SRCDIR)/common/types.a
-
-OBJS = dynais/dynais.o \
-       metrics/metrics.o \
-       models/models.o \
-       models/min_time.o \
-       models/min_energy.o \
-       models/monitoring.o \
-       states/states.o \
-       states/states_periodic.o \
-       tracer/tracer.o \
-       tracer/tracer_mpi.o \
-       mpi_intercept/ear_api.o \
-       mpi_intercept/freq_synchro.o \
-       mpi_intercept/process_MPI.o
-
-MPIC_OBJS = mpi_intercept/MPI_intercept.o \
-            mpi_intercept/MPI_interface.o  
-	
-MPIF_OBJS = mpi_intercept/MPI_interceptF.o \
-            mpi_intercept/MPI_interfaceF.o
+########
 
 ifdef MPICC
-libs_ALL += libear.so
-impi_ALL = all.impi.components libear.so
+libs_BINS += libear.so
+libs_PATH  = $(DESTDIR)/lib
+impi_OBJS  = all.impi.components
+libs_PERM  = 0640
 endif
 
 ifdef OMPICC
-libs_ALL += libear_ompi.so
-ompi_ALL = all.ompi.components libear.ompi.so
+libs_BINS += libear_ompi.so
+libs_PATH  = $(DESTDIR)/lib
+ompi_OBJS  = all.ompi.components
+libs_PERM  = 0640
 endif
+
+######## FILES
+
+comm_OBJS = $(SRCDIR)/metrics/libmetrics.a \
+    $(SRCDIR)/control/frequency.o \
+    $(SRCDIR)/daemon/eard_api.o \
+    $(SRCDIR)/daemon/shared_configuration.o \
+    $(SRCDIR)/common/environment_common.o \
+    $(SRCDIR)/common/file.o \
+    $(SRCDIR)/common/environment.o \
+    $(SRCDIR)/common/math_operations.o \
+    $(SRCDIR)/common/types.a
+
+xmpi_OBJS = dynais/dynais.o \
+    metrics/metrics.o \
+    models/models.o \
+    models/min_time.o \
+    models/min_energy.o \
+    models/monitoring.o \
+    states/states.o \
+    states/states_periodic.o \
+    tracer/tracer.o \
+    tracer/tracer_mpi.o \
+    mpi_intercept/ear_api.o \
+    mpi_intercept/freq_synchro.o \
+    mpi_intercept/process_MPI.o
+
+MPIC_OBJS = mpi_intercept/MPI_intercept.o \
+    mpi_intercept/MPI_interface.o
+	
+MPIF_OBJS = mpi_intercept/MPI_interceptF.o \
+    mpi_intercept/MPI_interfaceF.o
 
 ######## RULES
 
-all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
+all: all.gnrc.components $(impi_OBJS) $(ompi_OBJS) $(libs_BIN)
 
-%.ompi.so: $(OBJS) $(lib_OBJS)
-	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(LDFLAGS) $(OBJS) $(MPIC_OBJS) $(MPIF_OBJS) $(lib_OBJS) 
+%.ompi.so: $(xmpi_OBJS) $(comm_OBJS)
+	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(xmpi_OBJS) $(MPIC_OBJS) \
+	$(MPIF_OBJS) $(comm_OBJS) $(LDFLAGS)
 
-%.so: $(OBJS) $(lib_OBJS)
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.so $(LDFLAGS) $(OBJS) $(MPIC_OBJS) $(lib_OBJS) 
+%.so: $(xmpi_OBJS) $(comm_OBJS)
+	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.so $(xmpi_OBJS) $(MPIC_OBJS) \
+	$(comm_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 
-install:
-	cp $(libs_ALL) $(DESTDIR)/lib/
-	@(cd $(DESTDIR)/lib && chmod 640 $(libs_ALL))
+install: libs.ginstall;
 
 %.install: ;
 
-clean: clean.gnrc.components clean.impi.components
-	rm -f *.o *.a *.so
+clean: clean.gnrc.components clean.impi.components rclean;
 
 ######## SUBFOLDERS
 
