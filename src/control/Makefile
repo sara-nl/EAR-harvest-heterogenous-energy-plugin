@@ -1,6 +1,5 @@
 CFLAGS  = -fPIC -I$(SRCDIR) $(CPUF_CFLAGS) $(CONSTANTS)
 
-
 ######## RULES
 
 all: frequency.o

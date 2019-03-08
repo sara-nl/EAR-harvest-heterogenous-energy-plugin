@@ -14,11 +14,11 @@ depend-clean:
 
 ######## ADDITIONAL
 
-rclean:
-	@ rm -f *.o *.a *.so
-
 %.gclean:
 	@ rm -f $($*_BINS)
+
+rclean:
+	@ rm -f *.o *.a *.so
 
 %.ginstall:
 	@ (cp $($*_BINS) $($*_PATH) && cd $($*_PATH) && chmod $($*_PERM) $($*_BINS))

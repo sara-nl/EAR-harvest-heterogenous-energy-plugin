@@ -1,45 +1,48 @@
 CFLAGS  = -I$(SRCDIR) $(CONSTANTS)
 LDFLAGS = $(DB_LDFLAGS) -lm
 
+######## INSTALLATION
+
+eard_BINS = eardbd
+eard_PATH = $(DESTDIR)/sbin
+eard_PERM = 0750
+oths_BINS = eardbd_api.o
+
 ######## FILES
 
-eardbd_OBJS = $(SRCDIR)/common/sockets.o \
-              $(SRCDIR)/common/database.a \
-              $(SRCDIR)/common/types.a
+eard_OBJS = $(SRCDIR)/common/sockets.o \
+    $(SRCDIR)/common/database.a \
+    $(SRCDIR)/common/types.a
 
-eardbd_SRCS = eardbd.c \
-              eardbd_body.c \
-              eardbd_sync.c \
-              eardbd_signals.c \
-              eardbd_storage.c
+eard_SRCS = eardbd.c \
+    eardbd_body.c \
+    eardbd_sync.c \
+    eardbd_signals.c \
+    eardbd_storage.c
 
-eardbd_HDRS = eardbd.h \
-              eardbd_body.h \
-              eardbd_sync.h \
-              eardbd_signals.h \
-              eardbd_storage.h
+eard_HDRS = eardbd.h \
+    eardbd_body.h \
+    eardbd_sync.h \
+    eardbd_signals.h \
+    eardbd_storage.h
 
 ######## RULES
 
-all: eardbd_api.o eardbd
+all: $(oths_BINS) $(eard_BINS)
 
 eardbd_api.o: eardbd_api.c eardbd_api.h
 	$(CC) $(CFLAGS) -c $<
 
-eardbd: $(eardbd_SRCS) $(eardbd_HDRS) $(eardbd_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $(eardbd_SRCS) $(eardbd_OBJS) $(LDFLAGS)
+eardbd: $(eard_SRCS) $(eard_HDRS) $(eard_OBJS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $(eard_SRCS) $(eard_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 
-install:
-	cp eardbd $(DESTDIR)/sbin
-	chmod 750 $(DESTDIR)/sbin/eardbd
+install: eard.ginstall;
 
 %.install: ;
 
-clean:
-	rm -f $(BINARIES)
-	rm -f *.o *.a *.so eardbd
+clean: eard.gclean rclean;
 
 ######## DEPENDENCIES
 

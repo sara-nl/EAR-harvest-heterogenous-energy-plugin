@@ -48,6 +48,7 @@ ifdef OMPICC
 libs_ALL += libear_ompi.so
 ompi_ALL = all.ompi.components libear.ompi.so
 endif
+
 ######## RULES
 
 all: all.gnrc.components $(impi_ALL) $(ompi_ALL)
