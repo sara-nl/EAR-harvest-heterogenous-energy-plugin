@@ -1,91 +1,89 @@
 CFLAGS = -I$(SRCDIR) $(IPMI_CFLAGS) $(SLURM_CFLAGS)
 
+######## INSTALLATION
+
+chck_BINS = cpu_examinable \
+    cpu_aperf           \
+    cpu_uncores         \
+    cpu_uncores_all     \
+    free_ipmi_version   \
+    gsl_version         \
+    module_acpi_cpufreq \
+    module_ipmi_devintf \
+    papi_init           \
+    papi_version        \
+    papi_comp_available \
+    papi_comp_enabled   \
+    ear_types
+ifdef SLURM_BASE
+	chck_BINS += slurm_version
+endif
+
 ######## FILES
 
-HARDWARE_OBJS = $(SRCDIR)/metrics/libmetrics.a
+metr_OBJS = $(SRCDIR)/metrics/libmetrics.a
 
-BANDWIDTH_OBJS = $(SRCDIR)/metrics/custom/bandwidth.a
+stri_OBJS = $(SRCDIR)/common/string_enhanced.o
 
-MODULE_OBJS = $(SRCDIR)/common/string_enhanced.o
-
-OBJS = check.o
-
-BINARIES = cpu_examinable      \
-           cpu_aperf           \
-           cpu_uncores         \
-           cpu_uncores_all     \
-           free_ipmi_version   \
-           gsl_version         \
-           module_acpi_cpufreq \
-           module_ipmi_devintf \
-           papi_init           \
-           papi_version        \
-           papi_comp_available \
-           papi_comp_enabled   \
-           ear_types
-ifdef SLURM_BASE
-	BINARIES += slurm_version
-endif
+chck_OBJS = check.o
  
 ######## RULES
 
 .PHONY: check
 
-all: $(OBJS) $(BINARIES)
+all: $(chck_OBJS) $(chck_BINS)
 
-check.o: check.h check.c
-	$(CC) $(CFLAGS) -c check.c
+check.o: check.c check.h
+	$(CC) $(CFLAGS) -c $<
 
 papi_init: papi_init.c
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_init papi_init.c $(PAPI_LDFLAGS)
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o $@ $< $(PAPI_LDFLAGS)
 
 papi_version: papi_version.c
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_version papi_version.c
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o $@ $<
 
 papi_comp_available: papi_comp_available.c
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_comp_available papi_comp_available.c $(PAPI_LDFLAGS)
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o $@ $< $(PAPI_LDFLAGS)
 
 papi_comp_enabled: papi_comp_enabled.c
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o papi_comp_enabled papi_comp_enabled.c $(PAPI_LDFLAGS)
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o $@ $< $(PAPI_LDFLAGS)
 
-module_acpi_cpufreq: module_acpi_cpufreq.c $(OBJS) $(MODULE_OBJS)
-	$(CC) $(CFLAGS) -o module_acpi_cpufreq module_acpi_cpufreq.c $(OBJS) $(MODULE_OBJS)
+module_acpi_cpufreq: module_acpi_cpufreq.c $(chck_OBJS) $(stri_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(chck_OBJS) $(stri_OBJS)
 
-module_ipmi_devintf: module_ipmi_devintf.c $(OBJS) $(MODULE_OBJS)
-	$(CC) $(CFLAGS) -o module_ipmi_devintf module_ipmi_devintf.c $(OBJS) $(MODULE_OBJS)
+module_ipmi_devintf: module_ipmi_devintf.c $(chck_OBJS) $(stri_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(chck_OBJS) $(stri_OBJS)
 
-cpu_examinable: cpu_examinable.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -o cpu_examinable cpu_examinable.c $(HARDWARE_OBJS)
+cpu_examinable: cpu_examinable.c
+	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS)
 
-cpu_aperf: cpu_aperf.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -o cpu_aperf cpu_aperf.c $(HARDWARE_OBJS)
+cpu_aperf: cpu_aperf.c
+	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS)
 
-cpu_uncores: cpu_uncores.c $(OUTER_OBJS)
-	$(CC) $(CFLAGS) -o cpu_uncores cpu_uncores.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
+cpu_uncores: cpu_uncores.c
+	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS) $(metr_OBJS)
 
 cpu_uncores_all: cpu_uncores_all.c
-	$(CC) $(CFLAGS) -o cpu_uncores_all cpu_uncores_all.c $(BANDWIDTH_OBJS) $(HARDWARE_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS) $(metr_OBJS)
 
 gsl_version: gsl_version.c
-	$(CC) $(CFLAGS) $(GSL_CFLAGS) -o gsl_version gsl_version.c
+	$(CC) $(CFLAGS) $(GSL_CFLAGS) -o $@ $<
 
 slurm_version: slurm_version.c	
-	$(CC) $(CFLAGS) $(SLURM_CFLAGS) -o slurm_version slurm_version.c
+	$(CC) $(CFLAGS) $(SLURM_CFLAGS) -o $@ $<
 
 free_ipmi_version: free_ipmi_version.c
-	$(CC) $(CFLAGS) $(IPMI_CFLAGS) -o free_ipmi_version free_ipmi_version.c
+	$(CC) $(CFLAGS) $(IPMI_CFLAGS) -o $@ $<
 
 ear_types: ear_types.c 
-	$(CC) $(CFLAGS) -o ear_types ear_types.c
+	$(CC) $(CFLAGS) -o $@ $<
 
 ######## OPTIONS
 
 check:
 	@./check.sh
 
-clean:
-	rm -f $(BINARIES)
-	rm -f *.o *.a *.so
+clean: chck.gclean rclean;
 
 ######## DEPENDENCIES
 

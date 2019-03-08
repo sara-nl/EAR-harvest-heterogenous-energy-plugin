@@ -33,7 +33,7 @@ earplug.so: $(plug_SRCS) $(plug_HDRS)
 
 ######## OPTIONS
 
-install: plug.ginstall
+install: plug.ginstall;
 
 %.install: ;
 
