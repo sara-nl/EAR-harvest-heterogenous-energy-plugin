@@ -62,8 +62,10 @@
 /* Just for ear.conf reading. */
 #define EARDBD_TYPES						7
 
-/** Specifies if the new version of the commands propagation is used */
+/** Specifies if the new version of the commands propagation is used and the number
+ * of jumps per node. */
 #define USE_NEW_PROP                        0
+#define NUM_PROPS                           3
 
 
 #endif //EAR_CONFIG_DEV_H

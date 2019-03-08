@@ -88,16 +88,88 @@ int get_ip(char *nodename)
     return ip1;
 }
 
+int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
+{
+    
+    int i, j, k, range_idx;
+    int **aux_ips;
+    int *sec_aux_ips;
+    int *ip_counter;
+    char aux_name[256];
+    int total_ranges = 0;
+    int current_range = 0;
+    //get total number of ranges
+    for (i = 0; i < my_conf->num_islands; i++)
+        total_ranges += my_conf->islands[i].num_ranges;
+    
+    if (total_ranges < 1)
+    {
+        error("No IP ranges found.");
+        return EAR_ERROR;
+    }
+    //allocate memory for each range of IPs as well as each range's IP counter
+    ip_counter = calloc(total_ranges, sizeof(int));
+    aux_ips = calloc(total_ranges, sizeof(int*));
+
+    for (i = 0; i < my_conf->num_islands; i++)
+    {
+        for (j = 0; j < my_conf->islands[i].num_ranges; j++)
+        {
+            node_range_t range = my_conf->islands[i].ranges[j];
+            if (range.end == -1)
+            {
+                sprintf(aux_name, "%s", range.prefix);
+                sec_aux_ips = calloc(1, sizeof(int));
+                sec_aux_ips[0] = get_ip(aux_name);
+                aux_ips[current_range] = sec_aux_ips;
+                ip_counter[current_range] = 1;
+                current_range++;
+                continue;
+            }
+            if (range.end == range.start)
+            {
+                sprintf(aux_name, "%s%u", range.prefix, range.start);
+                sec_aux_ips = calloc(1, sizeof(int));
+                sec_aux_ips[0] = get_ip(aux_name);
+                aux_ips[current_range] = sec_aux_ips;
+                ip_counter[current_range] = 1;
+                current_range++;
+                continue;
+            }
+
+            int total_ips = range.end-range.start + 1;
+            int it = 0;
+            sec_aux_ips = calloc(total_ips, sizeof(int));
+            for (j = range.start; j <= range.end ; j++)
+            {
+                if (j < 10 && range.end > 10)
+                    sprintf(aux_name, "%s0%u", range.prefix, j);
+                else
+                    sprintf(aux_name, "%s%u", range.prefix, j);
+
+                sec_aux_ips[it] = get_ip(aux_name);
+                it ++;
+            }
+            aux_ips[current_range] = sec_aux_ips;
+            ip_counter[current_range] = it;
+            current_range++;
+        }
+    }
+    *ips = aux_ips;
+    *num_ips = ip_counter;
+    
+    return total_ranges;
+        
+}
+
 int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
 {
     int i, j, range_idx;
     int *aux_ips;
-    //iterar en els ranges i trobar el nom.
     char aux_name[256];
     for (i = 0; i < my_conf->num_islands; i++)
     {
         range_idx = island_range_conf_contains_node(&my_conf->islands[i], nodename);
-        printf("range_idx: %d\n", range_idx);
         if (range_idx < 0) continue;
 
         node_range_t range = my_conf->islands[i].ranges[range_idx];
@@ -121,14 +193,13 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
         int total_ips = range.end-range.start + 1;
         int it = 0;
         aux_ips = calloc(total_ips, sizeof(int));
-        for (j = range.end; j >= range.start && j > 0; j--)
+        for (j = range.start; j <= range.end ; j++)
         {
             if (j < 10 && range.end > 10)
                 sprintf(aux_name, "%s0%u", range.prefix, j);
             else
                 sprintf(aux_name, "%s%u", range.prefix, j);
 
-            printf("getting_ip for %s (%d of %d)\n", aux_name, it, total_ips);
             aux_ips[it] = get_ip(aux_name);
             it ++;
         }
