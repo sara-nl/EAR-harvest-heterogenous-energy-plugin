@@ -383,7 +383,7 @@ void process_remote_requests(int clientfd)
 	}	
 	send_answer(clientfd,&ack);
 #if USE_NEW_PROP
-    if (req != EAR_RC_PING && req != NO_COMMAND)
+    if (req != EAR_RC_PING && req != NO_COMMAND && req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB)
 #else
     if (command.node_dist > 0 && req != EAR_RC_PING && req != NO_COMMAND)
 #endif
