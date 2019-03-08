@@ -99,7 +99,7 @@ void main(int argc,char *argv[])
 
 	//
 	if (!opt_c) {
-		tprintf_init(stdout, STR_MODE_COL, "12 12 10 10 8 8 8 30");
+		tprintf_init(stdout, STR_MODE_COL, "17 12 10 10 8 8 8 30");
 
 		tprintf("Node name||App name||Def. F.||Avg. F.||Seconds||Watts||GBS||CPI|||App name");
 		tprintf("---------||--------||-------||-------||-------||-----||---||---|||--------");
@@ -117,8 +117,8 @@ void main(int argc,char *argv[])
 				strcpy(buffer, apps[i].node_id);
 			}
 
-			if (strlen(apps[i].node_id) > 10) {
-				apps[i].node_id[10] = '\0';
+			if (strlen(apps[i].node_id) > 15) {
+				apps[i].node_id[15] = '\0';
 			}
 
 			if (opt_c) {
