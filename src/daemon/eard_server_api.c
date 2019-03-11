@@ -55,6 +55,7 @@
 #define DAEMON_EXTERNAL_CONNEXIONS 1
 
 static int sfd;
+
 int *ips;
 int total_ips = -1;
 int self_id = -1;
@@ -121,6 +122,7 @@ int create_server_socket(uint port)
 	verbose(VAPI,"socket listen ready!");
  	return sfd;
 }
+
 int wait_for_client(int s,struct sockaddr_in *client)
 {
 	int new_sock;
@@ -169,12 +171,110 @@ int read_command(int s,request_t *command)
 	}
 	return command->req;
 }
+
 void send_answer(int s,ulong *ack)
 {
 	int ret;
 	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) error("Error sending the answer");
 	if (ret<0) error("(%s)",strerror(errno));
 }
+
+int init_ips(cluster_conf_t *my_conf)
+{
+    int ret, i, temp_ip;
+    char buff[64];
+    gethostname(buff, 64);
+    strtok(buff,".");
+    ret = get_range_ips(my_conf, buff, &ips);
+    if (ret < 1) return EAR_ERROR;
+#if USE_EXT
+    strcat(buff, NW_EXT);
+#endif
+    temp_ip = get_ip(buff);
+    for (i = 0; i < ret; i++)
+    {
+        if (ips[i] == temp_ip)
+        {
+            self_id = i;
+            break;
+        }
+    }
+    if (self_id < 0)
+    {
+        free(ips);
+        error("Couldn't find node in IP list.");
+        return EAR_ERROR;
+    }
+    total_ips = ret;
+    for (i = 0; i < total_ips; i++)
+    {
+        struct sockaddr_in temp;
+        temp.sin_addr.s_addr = ips[i];
+    }
+    return EAR_SUCCESS;
+  
+}
+
+void close_ips()
+{
+    if (total_ips > 0)
+    {
+        free(ips);
+        total_ips = -1;
+        self_id = -1;
+    }
+    else
+    {
+        warning("IPS were not initialised.\n");
+    }
+}
+
+#if USE_NEW_PROP
+void propagate_req(request_t *command, uint port)
+{
+     
+    if (command->node_dist > total_ips) return;
+
+    struct sockaddr_in temp;
+
+    int i, rc;
+    unsigned int ip1, ip2, current_dist;
+	char next_ip[50]; 
+
+    current_dist = command->node_dist;
+
+    for (i = 1; i <= NUM_PROPS; i++)
+    {
+        //check that the next ip exists within the range
+        if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+
+        //prepare next node data
+        temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+        strcpy(next_ip, inet_ntoa(temp.sin_addr));
+        //prepare next node distance
+        command->node_dist = current_dist + i*NUM_PROPS;
+
+        //connect and send data
+        rc = eards_remote_connect(next_ip, port);
+        if (rc < 0)
+        {
+            error("propagate_req:Error connecting to node: %s\n", next_ip);
+            correct_error(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+        }
+        else
+        {
+            if (!send_command(command)) 
+            {
+                error("propagate_req: Error propagating command to node %s\n", next_ip);
+                eards_remote_disconnect();
+                correct_error(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+            }
+            else eards_remote_disconnect();
+        }
+    }
+}
+
+#else
 void propagate_req(request_t *command, uint port)
 {
      
@@ -267,37 +367,86 @@ void propagate_req(request_t *command, uint port)
         else eards_remote_disconnect();
     }
 }
-
-int init_ips(cluster_conf_t *my_conf)
-{
-    int ret, i, temp_ip;
-    char buff[64];
-    gethostname(buff, 64);
-    ret = get_range_ips(my_conf, buff, &ips);
-    if (ret < 1) return EAR_ERROR;
-#if USE_EXT
-    strcat(buff, NW_EXT);
 #endif
-    temp_ip = get_ip(buff);
-    for (i = 0; i < ret; i++)
+
+
+#if USE_NEW_PROP
+int propagate_status(request_t *command, uint port, status_t **status)
+{
+    status_t **temp_status, *final_status;
+    int num_status[NUM_PROPS];
+    int rc, i;
+    struct sockaddr_in temp;
+    unsigned int ip1, current_dist;
+	char next_ip[50], nextip2[50]; 
+    temp_status = calloc(NUM_PROPS, sizeof(status_t *));
+    memset(num_status, 0, sizeof(num_status));
+
+    if (command->node_dist > total_ips)
     {
-        if (ips[i] == temp_ip)
+        final_status = calloc(1, sizeof(status_t));
+        final_status[0].ip = ips[self_id];
+        final_status[0].ok = STATUS_OK;
+        *status = final_status;
+        return 1;
+    }
+
+    current_dist = command->node_dist;
+
+    for (i = 1; i <= NUM_PROPS; i++)
+    {
+        //check that the next ip exists within the range
+        if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+
+        //prepare next node data
+        temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+        strcpy(next_ip, inet_ntoa(temp.sin_addr));
+        //prepare next node distance
+        command->node_dist = current_dist + i*NUM_PROPS;
+
+        //connect and send data
+        rc = eards_remote_connect(next_ip, port);
+        if (rc < 0)
         {
-            self_id = i;
-            break;
+            error("propagate_req: Error connecting to node: %s\n", next_ip);
+            num_status[i-1] = correct_status(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
+        }
+        else
+        {
+            if ((num_status[i-1] = send_status(command, &temp_status[i-1])) < 1) 
+            {
+                error("propagate_req: Error propagating command to node %s\n", next_ip);
+                eards_remote_disconnect();
+                num_status[i-1] = correct_status(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
+            }
+            else eards_remote_disconnect();
         }
     }
-    if (self_id < 0)
-    {
-        free(ips);
-        return EAR_ERROR;
-    }
-    total_ips = ret;
-    return EAR_SUCCESS;
+    
+    //memory allocation for final status
+    int total_status = 0;
+    for (i = 0; i < NUM_PROPS; i++)
+        total_status += num_status[i];
+    final_status = calloc(total_status + 1, sizeof(status_t));
+    
+    //copy results to final status
+    memcpy(final_status, temp_status[0], sizeof(status_t)*num_status[0]);
+    for (i = 1; i < NUM_PROPS; i++)
+        memcpy(&final_status[num_status[i-1]], temp_status[i], sizeof(status_t)*num_status[i]);
 
-  
+    //set self ip
+    final_status[total_status].ip = ips[self_id];
+    final_status[total_status].ok = STATUS_OK;
+    *status = final_status;
+
+    for (i = 0; i < NUM_PROPS; i++)
+        free(temp_status[i]);
+
+    return total_status + 1;
+
 }
 
+#else
 int propagate_status(request_t *command, uint port, status_t **status)
 {
     status_t *status1, *status2, *final_status;
@@ -413,3 +562,4 @@ int propagate_status(request_t *command, uint port, status_t **status)
     return total_status + 1;
 
 }
+#endif

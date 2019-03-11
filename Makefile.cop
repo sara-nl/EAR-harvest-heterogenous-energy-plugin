@@ -1,0 +1,106 @@
+CC           = icc
+CC_FLAGS     = -static-intel
+MPICC        = /hpc/base/intel/compilers_and_libraries_2019.0.117/linux/mpi/intel64/bin/mpiicc
+MPICC_FLAGS  = -static-intel
+OMPICC       = 
+OMPICC_FLAGS = 
+ROOTDIR      = $(shell pwd)
+SRCDIR       = $(ROOTDIR)/src
+DESTDIR      = /hpc/base/ctt/packages/EAR/1808
+ETCDIR       = /hpc/base/ctt/packages/EAR/1808/etc
+TMPDIR       = /var/ear
+DOCDIR       = ${prefix}/share/doc/${PACKAGE_TARNAME}
+PAPI_BASE    = /hpc/base/ctt/packages/papi/5.6.0_ear
+PAPI_CFLAGS  = -I/hpc/base/ctt/packages/papi/5.6.0_ear/include
+PAPI_LDFLAGS = -L/hpc/base/ctt/packages/papi/5.6.0_ear/lib -Wl,-rpath,/hpc/base/ctt/packages/papi/5.6.0_ear/lib -lpapi
+GSL_BASE     = /hpc/base/ctt/packages/gsl/1.16
+GSL_CFLAGS   = -I/hpc/base/ctt/packages/gsl/1.16/include
+GSL_LDFLAGS  = -L/hpc/base/ctt/packages/gsl/1.16/lib -lm -lgsl -lgslcblas
+SLURM_BASE   = /usr
+SLURM_CFLAGS = -I/usr/include
+CPUF_BASE    = /usr
+CPUF_CFLAGS  = 
+CPUF_LDFLAGS =  -lcpupower
+IPMI_BASE    = /usr
+IPMI_CFLAGS  = 
+IPMI_LDFLAGS =  -lfreeipmi
+DB_BASE      = /usr
+DB_CFLAGS    = 
+DB_LDFLAGS   = -L/usr/lib64/mysql -lmysqlclient
+CONSTANTS    = -DSEC_KEY=10001
+DEBUG        = 
+
+######## VARS
+
+export CC
+export CC_FLAGS
+export MPICC
+export MPICC_FLAGS
+export OMPICC
+export OMPICC_FLAGS
+export ROOTDIR
+export SRCDIR
+export DESTDIR
+export ETCDIR
+export TMPDIR
+export DOCDIR
+export PAPI_BASE
+export PAPI_CFLAGS
+export PAPI_LDFLAGS
+export GSL_BASE
+export GSL_CFLAGS
+export GSL_LDFLAGS
+export IPMI_BASE
+export IPMI_CFLAGS
+export IPMI_LDFLAGS
+export SLURM_BASE
+export SLURM_CFLAGS
+export CPUF_BASE
+export CPUF_LDFLAGS
+export DB_BASE
+export DB_CFLAGS
+export DB_LDFLAGS
+export CONSTANTS
+export DEBUG
+
+######## RULES
+
+.PHONY: check functionals
+
+all:
+	@ $(MAKE) -C 'src' all || exit
+
+full: clean all 
+
+check:
+	@ $(MAKE) -C 'src' check
+
+install:
+	@ $(MAKE) -C 'etc' install || exit
+	@ $(MAKE) -C 'src' install || exit
+
+devel.install: install;
+	@ $(MAKE) -C 'etc' devel.install || exit
+	@ $(MAKE) -C 'src' devel.install || exit
+
+etc.install: ;
+	@ $(MAKE) -C 'etc' etc.install || exit
+	@ $(MAKE) -C 'src' etc.install || exit
+
+scripts.install: ;
+	@ $(MAKE) -C 'etc' scripts.install || exit
+
+doc.install: ;
+	@ $(MAKE) -C 'doc' install || exit 
+
+%.install: ;
+	@ $(MAKE) -C src $*.install || exit
+
+clean:
+	@ $(MAKE) -C 'src' clean || exit
+
+depend:
+	@ $(MAKE) -C 'src' depend || exit
+
+depend-clean:
+	@ $(MAKE) -C 'src' depend-clean || exit

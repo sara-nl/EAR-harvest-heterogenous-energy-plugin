@@ -45,6 +45,7 @@
 #include <common/output/error.h>
 #include <daemon/eard_rapi.h>
 #include <daemon/eard_conf_rapi.h>
+#include <daemon/eard_server_api.h>
 
 static int eards_remote_connected=0;
 static int eards_sfd=-1;
@@ -571,6 +572,88 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_
     send_command_all(command, my_cluster_conf);
 }
 
+#if USE_NEW_PROP
+int correct_status(int target_idx, int total_ips, int *ips, request_t *command, uint port, status_t **status)
+{
+    status_t **temp_status, *final_status;
+    int num_status[NUM_PROPS];
+    int rc, i;
+    struct sockaddr_in temp;
+    unsigned int ip1, current_dist;
+	char next_ip[50], nextip2[50]; 
+    memset(num_status, 0, sizeof(num_status));
+    temp_status = calloc(NUM_PROPS, sizeof(status_t*));
+
+	verbose(VCONNECT+1,"correct_status for ip %d with distance %d\n",ips[target_idx],command->node_dist);
+    if (command->node_dist > total_ips)
+    {
+        final_status = calloc(1, sizeof(status_t));
+        final_status[0].ip = ips[target_idx];
+        final_status[0].ok = STATUS_BAD;
+        *status = final_status;
+        return 1;
+    }
+
+    current_dist = command->node_dist;
+
+    for (i = 1; i <= NUM_PROPS; i++)
+    {
+        //check that the next ip exists within the range
+        if ((target_idx + current_dist + i*NUM_PROPS) >= total_ips) break;
+
+        //prepare next node data
+        temp.sin_addr.s_addr = ips[target_idx + current_dist + i*NUM_PROPS];
+        strcpy(next_ip, inet_ntoa(temp.sin_addr));
+        //prepare next node distance
+        command->node_dist = current_dist + i*NUM_PROPS;
+
+        //connect and send data
+        rc = eards_remote_connect(next_ip, port);
+        if (rc < 0)
+        {
+            error("propagate_req:Error connecting to node: %s\n", next_ip);
+            num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
+        }
+        else
+        {
+            if ((num_status[i-1] = send_status(command, &temp_status[i-1])) < 1) 
+            {
+                error("propagate_req: Error propagating command to node %s\n", next_ip);
+                eards_remote_disconnect();
+                num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
+            }
+            else eards_remote_disconnect();
+        }
+    }
+    
+    //memory allocation for final status
+    int total_status = 0;
+    for (i = 0; i < NUM_PROPS; i++)
+        total_status += num_status[i];
+    final_status = calloc(total_status + 1, sizeof(status_t));
+    
+    //copy results to final status
+    memcpy(final_status, temp_status[0], sizeof(status_t)*num_status[0]);
+    for (i = 1; i < NUM_PROPS; i++)
+        memcpy(&final_status[num_status[i-1]], temp_status[i], sizeof(status_t)*num_status[i]);
+
+    //set self ip
+    final_status[total_status].ip = ips[target_idx];
+    final_status[total_status].ok = STATUS_BAD;
+    *status = final_status;
+
+
+    for (i = 0; i < NUM_PROPS; i++)
+    {
+        //check that the next ip exists within the range
+        if ((target_idx + current_dist + (i+1)*NUM_PROPS) >= total_ips) break;
+        free(temp_status[i]);
+    }
+    return total_status + 1;
+
+}
+
+#else
 int correct_status(uint target_ip, request_t *command, uint port, status_t **status)
 {
     status_t *final_status, *status1 = NULL, *status2 = NULL;
@@ -654,7 +737,51 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
 	verbose(VCONNECT+1,"correct_status ends return value=%d\n",total_status + 1);
     return total_status + 1;
 }
+#endif
 
+#if USE_NEW_PROP
+void correct_error(int target_idx, int total_ips, int *ips, request_t *command, uint port)
+{
+    if (command->node_dist > total_ips) return;
+    struct sockaddr_in temp;
+
+    int i, rc;
+    unsigned int ip1, ip2, current_dist;
+	char next_ip[50]; 
+
+    current_dist = command->node_dist;
+
+    for (i = 1; i <= NUM_PROPS; i++)
+    {
+        //check that the next ip exists within the range
+        if ((current_dist + i*NUM_PROPS) >= total_ips) break;
+
+        //prepare next node data
+        temp.sin_addr.s_addr = ips[target_idx + current_dist + i*NUM_PROPS];
+        strcpy(next_ip, inet_ntoa(temp.sin_addr));
+        //prepare next node distance
+        command->node_dist = current_dist + i*NUM_PROPS;
+
+        //connect and send data
+        rc = eards_remote_connect(next_ip, port);
+        if (rc < 0)
+        {
+            error("propagate_req:Error connecting to node: %s\n", next_ip);
+            correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+        }
+        else
+        {
+            if (!send_command(command)) 
+            {
+                error("propagate_req: Error propagating command to node %s\n", next_ip);
+                eards_remote_disconnect();
+                correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+            }
+            else eards_remote_disconnect();
+        }
+    }
+}
+#else
 void correct_error(uint target_ip, request_t *command, uint port)
 {
     if (command->node_dist < 1) return;
@@ -712,7 +839,9 @@ void correct_error(uint target_ip, request_t *command, uint port)
         else eards_remote_disconnect();
     } 
 }
+#endif
 
+#if !USE_NEW_PROP
 int correct_status_starter(char *host_name, request_t *command, uint port, status_t **status)
 {
     struct addrinfo hints;
@@ -748,7 +877,6 @@ int correct_status_starter(char *host_name, request_t *command, uint port, statu
     freeaddrinfo(result);
     return correct_status(host_ip, command, port, status);
 }
-
 
 void correct_error_starter(char *host_name, request_t *command, uint port)
 {
@@ -786,7 +914,49 @@ void correct_error_starter(char *host_name, request_t *command, uint port)
     freeaddrinfo(result);
     correct_error(host_ip, command, port);
 }
+#endif
 
+#if USE_NEW_PROP
+void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
+{
+    int i, j, k, rc, total_ranges;
+    int **ips, *ip_counts;
+    struct sockaddr_in temp;
+    char next_ip[256];
+    time_t ctime = time(NULL);
+    command.time_code = ctime;
+    total_ranges = get_ip_ranges(&my_cluster_conf, &ip_counts, &ips);
+    for (i = 0; i < total_ranges; i++)
+    {
+        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++)
+        {
+            command.node_dist = 0;
+            temp.sin_addr.s_addr = ips[i][j];
+            strcpy(next_ip, inet_ntoa(temp.sin_addr));
+            
+            rc=eards_remote_connect(next_ip, my_cluster_conf.eard.port);
+            if (rc<0){
+                verbose(VCONNECT,"Error connecting with node %s, trying to correct it", next_ip);
+                correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
+            }
+            else{
+                verbose(VCONNECT+1,"Node %s with distance %d contacted!\n", next_ip, command.node_dist);
+                if (!send_command(&command)) {
+                    verbose(VCONNECT,"Error sending command to node %s, trying to correct it", next_ip);
+                    correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
+                }
+                eards_remote_disconnect();
+            }
+            
+        }
+    }
+    for (i = 0; i < total_ranges; i++)
+        free(ips[i]);
+    free(ips);
+    free(ip_counts);
+
+}
+#else
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc; 
@@ -835,7 +1005,64 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
         }
     }
 }
+#endif
 
+#if USE_NEW_PROP
+int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
+{
+    int i, j, k, rc, total_ranges, num_all_status = 0, num_temp_status;
+    int **ips, *ip_counts;
+    struct sockaddr_in temp;
+    status_t *temp_status, *all_status = NULL;
+    request_t command;
+    char next_ip[256];
+    time_t ctime = time(NULL);
+    
+    command.time_code = ctime;
+    command.req = EAR_RC_STATUS;
+
+    total_ranges = get_ip_ranges(&my_cluster_conf, &ip_counts, &ips);
+    for (i = 0; i < total_ranges; i++)
+    {
+        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++)
+        {
+            command.node_dist = 0;
+            temp.sin_addr.s_addr = ips[i][j];
+            strcpy(next_ip, inet_ntoa(temp.sin_addr));
+            
+            rc=eards_remote_connect(next_ip, my_cluster_conf.eard.port);
+            if (rc<0){
+                verbose(VCONNECT,"Error connecting with node %s, trying to correct it", next_ip);
+                num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
+            }
+            else{
+                verbose(VCONNECT+1,"Node %s with distance %d contacted!\n", next_ip, command.node_dist);
+                if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
+                    verbose(VCONNECT,"Error sending command to node %s, trying to correct it", next_ip);
+                    num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
+                }
+                eards_remote_disconnect();
+            }
+        
+            if (num_temp_status > 0)
+            {
+                all_status = realloc(all_status, sizeof(status_t)*(num_all_status+num_temp_status));
+                memcpy(&all_status[num_all_status], temp_status, sizeof(status_t)*num_temp_status);
+                free(temp_status);
+                num_all_status += num_temp_status;
+            }
+            else
+            {
+                warning("Connection to node %s returned 0 status\n", next_ip)
+            }
+            
+        }
+    }
+    *status = all_status;
+
+    return num_all_status;
+}
+#else
 int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 {
     int i, j, k, rc; 
@@ -898,6 +1125,7 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
     *status = all_status;
     return num_all_status;
 }
+#endif
 
 void old_red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {

@@ -83,7 +83,7 @@ void fill_ip(char *buff, ip_table_t *table)
 
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
-		printf( "getaddrinfo fails for port %s (%s)", buff, strerror(errno));
+		printf("getaddrinfo fails for port %s (%s)", buff, strerror(errno));
 		return;
     }
 
@@ -154,7 +154,7 @@ void print_ips(ip_table_t *ips, int num_ips)
 		    {
 			    policy_id_to_name(j, temp);
                 get_short_policy(final, temp);
-			    printf( "  %5s  %5u  %8u\t", final, ips[i].policies[j].pstate, ips[i].policies[j].th);
+			    printf("  %5s  %5u  %8u\t", final, ips[i].policies[j].pstate, ips[i].policies[j].th);
 		    }
             printf("\n");
             if (ips[i].power < MAX_SIG_POWER)
@@ -167,9 +167,9 @@ void print_ips(ip_table_t *ips, int num_ips)
         for (i = 0; i <num_ips; i++)
         {
             if (!ips[i].counter) {
-                printf( "%10s\t%10s\n", ips[i].name, ips[i].ip);
+                printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
             } else if (!ips[i].power || ips[i].power > MAX_SIG_POWER) {
-                printf( "%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
+                printf("%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
 	    }
         }
     }
@@ -177,7 +177,7 @@ void print_ips(ip_table_t *ips, int num_ips)
 
 void usage(char *app)
 {
-	printf( "Usage: %s [options]"\
+	printf("Usage: %s [options]"\
             "\n\t--set-freq \tnewfreq\t\t\t->sets the frequency of all nodes to the requested one"\
             "\n\t--set-def-freq \tnewfreq\tpolicy_id\t->sets the default frequency for the selected policy id"\
             "\n\t--set-max-freq \tnewfreq\t\t\t->sets the maximum frequency"\
@@ -191,13 +191,15 @@ void usage(char *app)
             "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
             "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
             "\n\t--help \t\t\t\t\t->displays this message."\
-            "\n\nThis app requires privileged access privileged accesss to execute.", app);
+            "\n\nThis app requires privileged access privileged accesss to execute.\n", app);
 	exit(1);
 }
 
 void check_ip(status_t status, ip_table_t *ips, int num_ips)
 {
     int i, j;
+    struct sockaddr_in temp;
+    temp.sin_addr.s_addr = status.ip;
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
 		{
@@ -233,7 +235,7 @@ void process_status(int num_status, status_t *status)
         free(status);
     }
     else {
-        printf( "An error retrieving status has occurred.");
+        printf("An error retrieving status has occurred.\n");
     }
 }
 
@@ -249,15 +251,15 @@ void main(int argc, char *argv[])
     if (argc < 2) usage(argv[0]);
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
-        printf( "Error getting ear.conf path"); //error
+        printf("Error getting ear.conf path\n"); //error
         exit(0);
     }
 
-    if (read_cluster_conf(path_name, &my_cluster_conf) != EAR_SUCCESS) printf( "ERROR reading cluster configuration\n");
+    if (read_cluster_conf(path_name, &my_cluster_conf) != EAR_SUCCESS) printf("ERROR reading cluster configuration\n");
     
     if (getuid() != 0 && !is_privileged_command(&my_cluster_conf))
     {
-        printf( "This command can only be executed by privileged users. Contact your admin for more info.");
+        printf("This command can only be executed by privileged users. Contact your admin for more info.\n");
         free_cluster_conf(&my_cluster_conf);
         exit(1); //error
     }
@@ -305,7 +307,7 @@ void main(int argc, char *argv[])
                 arg = atoi(optarg);
                 if (arg > 100)
                 {
-                    printf( "Indicated threshold increase above theoretical maximum (100%)");
+                    printf("Indicated threshold increase above theoretical maximum (100%)\n");
                     break;
                 }
                 increase_th_all_nodes(arg,my_cluster_conf);
@@ -314,13 +316,13 @@ void main(int argc, char *argv[])
                 arg = atoi(optarg);
 				if (optind+1 > argc)
 				{
-					printf( "Missing policy argument for set-def-freq");
+					printf("Missing policy argument for set-def-freq\n");
                     break;
 				}
 				arg2 = atoi(argv[optind+1]);
 				if (!is_valid_policy(arg2))
 				{
-					printf( "Invalid policy index.");
+					printf("Invalid policy index.\n");
                     break;
 				}
                 set_def_freq_all_nodes(arg, arg2, my_cluster_conf);
@@ -329,7 +331,7 @@ void main(int argc, char *argv[])
                 arg = atoi(optarg);
                 if (arg > 100)
                 {
-                    printf( "Indicated threshold increase above theoretical maximum (100%)");
+                    printf("Indicated threshold increase above theoretical maximum (100%)\n");
                     break;
                 }
                 set_th_all_nodes(arg, my_cluster_conf);
@@ -342,10 +344,10 @@ void main(int argc, char *argv[])
                 {
                     int rc=eards_remote_connect(optarg ,my_cluster_conf.eard.port);
                     if (rc<0){
-                        printf("Error connecting with node %s", optarg);
+                        printf("Error connecting with node %s\n", optarg);
                     }else{
                         verbose(1,"Node %s ping!\n", optarg);
-                        if (!eards_ping()) printf("Error doing ping for node %s", optarg);
+                        if (!eards_ping()) printf("Error doing ping for node %s\n", optarg);
                         eards_remote_disconnect();
                     }
                 }
