@@ -734,18 +734,32 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 	#if SYSLOG_MSG
+	#if EAR_CONF_EXT
+	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< my_node_conf->min_sig_power) || (my_current_power->avg_dc>my_node_conf->max_sig_power)){
+		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
+	}
+	#else
 	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< MIN_SIG_POWER) || (my_current_power->avg_dc>MAX_SIG_POWER)){
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
 	}
 	#endif
+	#endif
+	#if EAR_CONF_EXT
     if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>MAX_SIG_POWER)){
+	#else
+    if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>my_node_conf->max_error_power)){
+	#endif
     	warning("Resetting IPMI interface since power is %.2lf\n",my_current_power->avg_dc);
     	node_energy_dispose();
         node_energy_init();
     }
 
 	#if DB_MYSQL
+	#if EAR_CONF_EXT
+    if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<my_node_conf->max_error_power)){
+	#else
     if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<MAX_ERROR_POWER)){
+	#endif
 	if (my_cluster_conf.eard.use_mysql)
 	{
 		if (!my_cluster_conf.eard.use_eardbd) {

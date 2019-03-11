@@ -44,7 +44,7 @@
  * set to 0 in production*/
 #define COORDINATE_FREQUENCIES				0
 /* When set to 1, activates the new SupermucNG policy */
-#define LRZ_POLICY							0
+#define LRZ_POLICY							1
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
 #define USE_MSR_RAPL						1
 /* When set to 1, avg frequency is reported with periodic metrics */
@@ -67,5 +67,6 @@
 #define USE_NEW_PROP                        0
 #define NUM_PROPS                           3
 
-#define EAR_TRACER_MPI 1
+// #define EAR_TRACER_MPI 1
+#define EAR_CONF_EXT						1
 #endif //EAR_CONFIG_DEV_H

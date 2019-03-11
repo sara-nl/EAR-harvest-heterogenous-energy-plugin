@@ -485,9 +485,9 @@ void main(int argc,char *argv[])
     else{
         print_cluster_conf(&my_cluster_conf);
     }
-	#if EARGMD_FILE_LOG
-	fd_my_log=create_log(my_cluster_conf.tmp_dir,"eargmd");
-	#endif
+	if (my_cluster_conf.eargm.use_log){
+		fd_my_log=create_log(my_cluster_conf.tmp_dir,"eargmd");
+	}
     VERB_SET_FD(fd_my_log);
     ERROR_SET_FD(fd_my_log);
 
