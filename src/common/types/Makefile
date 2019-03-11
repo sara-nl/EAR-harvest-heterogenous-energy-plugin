@@ -1,24 +1,12 @@
-CFLAGS = -Wformat -fPIC -I$(SRCDIR) $(CONSTANTS)
+CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-OBJS = application.o \
-       coefficient.o \
-       job.o \
-       log.o \
-       loop.o \
-       periodic_aggregation.o \
-       periodic_metric.o \
-       power_signature.o \
-       projection.o \
-       signature.o \
-       gm_warning.o \
-       services.o \
-	   daemon_log.o
+type_OBJS = $(patsubst %.c, %.o, $(shell find -maxdepth 1 -type f -name '*.c'))
 
 ######## RULES
 
-all: all.components $(OBJS)
+all: all.components $(type_OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
@@ -29,8 +17,7 @@ install: install.components
 
 %.install: %.install.components;
 
-clean: clean.components
-	rm -f *.o *.a *.so
+clean: clean.components rclean;
 
 ######## SUBFOLDERS
 

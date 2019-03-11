@@ -2,13 +2,13 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 
 ######## FILES
 
-OBJS = ibm.o \
+ipmi_OBJS = ibm.o \
        lenovo_nm.o \
        lenovo_sd650.o
 
 ######## RULES
 
-all: $(OBJS)
+all: $(ipmi_OBJS)
 
 lenovo_nm.o: lenovo_nm.c lenovo_nm.h
 	$(CC) $(CFLAGS) -c $<
@@ -25,8 +25,7 @@ install:
 
 %.install: ;
 
-clean:
-	rm -rf *.o *.a *.so
+clean: rclean;
 
 ######## DEPENDENCIES
 

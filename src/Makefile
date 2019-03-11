@@ -1,6 +1,6 @@
 ######## FILES
 
-COMPONENTS = common
+COMPONENTS = common control database_cache metrics daemon commands tests library tools global_manager slurm_plugin
 ifdef CPUF_BASE
 	COMPONENTS += control
 	ifdef DB_BASE

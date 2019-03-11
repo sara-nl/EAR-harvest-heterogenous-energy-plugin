@@ -28,8 +28,7 @@ devel.install: devel.install.components;
 
 %.install: %.install.components;
 
-clean: clean.components
-	rm -f *.o *.a *.so
+clean: clean.components rclean;
 
 ######## SUBFOLDERS
 
