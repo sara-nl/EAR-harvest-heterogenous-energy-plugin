@@ -410,6 +410,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 		ulong f;
 		frequency_set_userspace_governor_all_cpus();
 		f=frequency_pstate_to_freq(my_policy->p_state);
+	  verbose(VJOBPMON,"Setting userpace and frequency to %u",f);
 		frequency_set_all_cpus(f);
 	}
 	appID->is_mpi=0;
@@ -553,7 +554,7 @@ void powermon_end_job(job_id jid,job_id sid)
     report_powermon_app(&summary);
     save_eard_conf(&eard_dyn_conf);
 	/* RESTORE FREQUENCY */
-	verbose(VJOBPMON+1,"restoring governor %s\n",current_ear_app[ccontext]->governor.governor);
+	verbose(VJOBPMON,"restoring governor %s\n",current_ear_app[ccontext]->governor.governor);
 	set_governor(&current_ear_app[ccontext]->governor);
 	if (strcmp(current_ear_app[ccontext]->governor.governor,"userspace")==0){
 		frequency_set_all_cpus(current_ear_app[ccontext]->current_freq);
