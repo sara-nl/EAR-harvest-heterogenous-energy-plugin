@@ -49,6 +49,7 @@ void propagate_req(request_t *command, uint port);
 int propagate_status(request_t *command, uint port, status_t **status);
 
 int init_ips(cluster_conf_t *my_conf);
+void close_ips();
 
 #endif
 
