@@ -746,9 +746,9 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif
 	#endif
 	#if EAR_CONF_EXT
-    if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>MAX_SIG_POWER)){
-	#else
     if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>my_node_conf->max_error_power)){
+	#else
+    if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>MAX_SIG_POWER)){
 	#endif
     	warning("Resetting IPMI interface since power is %.2lf\n",my_current_power->avg_dc);
     	node_energy_dispose();
