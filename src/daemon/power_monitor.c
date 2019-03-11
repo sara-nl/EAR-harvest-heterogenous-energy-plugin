@@ -664,9 +664,11 @@ void powermon_set_freq(ulong freq)
     ps=frequency_freq_to_pstate(freq);
     if (ccontext>=0){
         if (freq!=current_node_freq){
+		if ((my_cluster_conf.eard.force_frequencies) || (current_ear_app[ccontext]->app.is_mpi)){
             verbose(VJOBPMON,"SetFreq:  changing freq from %lu to %lu\n",current_node_freq,freq);
             frequency_set_all_cpus(freq);
             current_node_freq=freq;
+		}
         }
     }
     my_node_conf->max_pstate=ps;
