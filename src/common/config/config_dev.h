@@ -65,5 +65,5 @@
 /** Specifies if the new version of the commands propagation is used */
 #define USE_NEW_PROP                        0
 
-
+#define EAR_TRACER_MPI 1
 #endif //EAR_CONFIG_DEV_H
