@@ -1192,10 +1192,12 @@ void main(int argc,char *argv[])
 	eard_dyn_conf.pm_app=get_powermon_app();
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
+	#if EAR_CONF_EXT
 	if (my_cluster_conf.eard.use_log){
     	fd_my_log=create_log(my_cluster_conf.tmp_dir,"eard");
     	if (fd_my_log<0) fd_my_log=2;
 	}
+	#endif
 
 	int node_size;
 	state_t s;
