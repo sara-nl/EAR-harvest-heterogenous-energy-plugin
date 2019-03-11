@@ -5,52 +5,44 @@ CCC     = $(CC) $(CC_FLAGS) $(CFLAGS)
 ######## INSTALLATION
 
 ifdef DB_BASE
-G1_BINS = eacct econtrol ereport
-G1_PATH = $(DESTDIR)/bin
-G1_PERM = 2751
-G2_BINS = edb_create edb_clean_pm
-G2_PATH = $(DESTDIR)/sbin
-G2_PERM = 0751
+com1_BINS = eacct econtrol ereport
+com1_PATH = $(DESTDIR)/bin
+com1_PERM = 2751
+com2_BINS = edb_create edb_clean_pm
+com2_PATH = $(DESTDIR)/sbin
+com2_PERM = 0751
 endif
 
 ######## FILES
 
-erep_OBJS = $(SRCDIR)/common/database/mysql_io_functions.o \
-            $(SRCDIR)/common/types.a
-
-econ_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
-            $(SRCDIR)/common/types.a
-
-edbc_OBJS = $(SRCDIR)/common/database/db_helper.o \
-            $(SRCDIR)/common/database/mysql_io_functions.o \
-            $(SRCDIR)/common/types.a
+comm_OBJS = $(SRCDIR)/common/libcommon.a
 
 ######## RULES
 
-all: $(G1_BINS) $(G2_BINS)
+all: $(com1_BINS) $(com2_BINS)
 
-eacct: ear_acct.c $(ereport_OBJS)
-	$(CCC) $(DB_CFLAGS) -o $@ $< $(erep_OBJS) $(DB_LDFLAGS)
+eacct: ear_acct.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-econtrol: ear_control.c $(econ_OBJS)
-	$(CCC) -o $@ $< $(econ_OBJS)
+econtrol: ear_control.c $(comm_OBJS)
+	$(CCC) -o $@ $< $(comm_OBJS)
 
-ereport: ear_report.c $(ereport_OBJS)
-	$(CCC) $(DB_CFLAGS) -o $@ $< $(erep_OBJS) $(DB_LDFLAGS)
+ereport: ear_report.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-edb_clean_pm: ear_cleandb.c $(ereport_OBJS)
-	$(CCC) $(DB_CFLAGS) -o $@ $< $(edbc_OBJS) $(DB_LDFLAGS)
+edb_clean_pm: ear_cleandb.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-edb_create: ear_create_database.c $(ear_cleandb_OBJS)
-	$(CCC) $(DB_CFLAGS) -o $@ $< $(edbc_OBJS) $(DB_LDFLAGS)
+edb_create: ear_create_database.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
 ######## OPTIONS
 
-install: G1.ginstall G2.ginstall
+install: com1.ginstall com2.ginstall
 
 %.install: ;
 
-clean: G1.gclean G2.gclean rclean
+clean: com1.gclean com2.gclean rclean
 
 ######## DEPENDENCIES
 

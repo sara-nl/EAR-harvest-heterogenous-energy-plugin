@@ -71,5 +71,3 @@ earplug.install: slurm_plugin.install;
 depend: depend.components
 
 depend-clean: depend-clean.components
-
-include $(SRCDIR)/Makefile.depend

@@ -10,9 +10,7 @@ oths_BINS = eardbd_api.o
 
 ######## FILES
 
-eard_OBJS = $(SRCDIR)/common/sockets.o \
-    $(SRCDIR)/common/database.a \
-    $(SRCDIR)/common/types.a
+eard_OBJS = $(SRCDIR)/common/libcommon.a
 
 eard_SRCS = eardbd.c \
     eardbd_body.c \

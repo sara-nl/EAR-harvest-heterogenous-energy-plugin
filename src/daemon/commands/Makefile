@@ -22,18 +22,18 @@ coma_PERM = 0770
 
 freq_OBJS = $(SRCDIR)/control/frequency.o $(mets_OBJS)
 
-type_OBJS = $(SRCDIR)/common/types.a
+comm_OBJS = $(SRCDIR)/common/libcommon.a
 
 remt_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
-    $(type_OBJS)
+    $(comm_OBJS)
 
 mets_OBJS = ../eard_checkpoint.o \
     $(SRCDIR)/metrics/libmetrics.a \
-    $(type_OBJS)
+    $(comm_OBJS)
 
 sock_OBJS = $(SRCDIR)/common/sockets.o \
     $(SRCDIR)/database_cache/eardbd_api.o \
-    $(type_OBJS)
+    $(comm_OBJS)
 
 ######## RULES
 

@@ -12,7 +12,7 @@ endif
 
 ######## FILES
 
-extern_OBJS = $(SRCDIR)/common/types.a \
+extern_OBJS = $(SRCDIR)/common/libcommon.a \
     $(SRCDIR)/global_manager/eargm_rapi.o
 
 ######## RULES

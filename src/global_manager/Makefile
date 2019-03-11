@@ -10,8 +10,7 @@ eard_PERM = 0750
 ######## FILES
 
 comm_BINS = $(SRCDIR)/daemon/eard_rapi.o \
-    $(SRCDIR)/common/database.a \
-    $(SRCDIR)/common/types.a \
+    $(SRCDIR)/common/libcommon.a \
     eargm_server_api.o
 
 eard_OBJS = eargm_rapi.o \

@@ -29,11 +29,7 @@ comm_OBJS = $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/control/frequency.o \
     $(SRCDIR)/daemon/eard_api.o \
     $(SRCDIR)/daemon/shared_configuration.o \
-    $(SRCDIR)/common/environment_common.o \
-    $(SRCDIR)/common/file.o \
-    $(SRCDIR)/common/environment.o \
-    $(SRCDIR)/common/math_operations.o \
-    $(SRCDIR)/common/types.a
+    $(SRCDIR)/common/libcommon.a
 
 xmpi_OBJS = dynais/dynais.o \
     metrics/metrics.o \
@@ -97,5 +93,3 @@ clean: clean.gnrc.components clean.impi.components rclean;
 depend: depend.gnrc.components depend.impi.components
 
 depend-clean: depend-clean.gnrc.components depend-clean.impi.components
-
-include $(SRCDIR)/Makefile.depend

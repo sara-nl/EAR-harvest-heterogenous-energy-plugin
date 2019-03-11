@@ -1,0 +1,9 @@
+energy_cpu.o: energy_cpu.c ../../common/states.h \
+ ../../common/output/error.h ../../common/output/output_conf.h \
+ ../../common/output/debug.h ../../common/output/verbose.h \
+ ../../metrics/common/msr.h ../../common/types/generic.h \
+ ../../metrics/msr/energy_cpu.h ../../metrics/custom/hardware_info.h \
+ ../../common/file.h ../../common/sizes.h ../../metrics/common/cpuid.h \
+ ../../metrics/common/syscall.h \
+ ../../metrics/power_metrics/power_metrics.h \
+ ../../metrics/ipmi/energy_node.h

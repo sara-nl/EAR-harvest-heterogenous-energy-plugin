@@ -1,84 +1,111 @@
 ear_check_node_test.o: ear_check_node_test.c ../../common/config.h \
- ../../common/types/application.h ../../common/types/job.h \
- ../../common/types/generic.h ../../common/types/signature.h \
- ../../common/types/power_signature.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/types/application.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
+ ../../common/types/job.h ../../common/types/generic.h \
+ ../../common/types/signature.h ../../common/types/power_signature.h \
  ../../metrics/power_metrics/power_metrics.h ../../common/states.h \
- ../../metrics/ipmi/energy_node.h ../../metrics/papi/energy_cpu.h \
+ ../../metrics/ipmi/energy_node.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../daemon/eard_checkpoint.h ../../daemon/power_monitor.h
+ ../../common/string_enhanced.h ../../daemon/eard_checkpoint.h \
+ ../../daemon/power_monitor.h ../../daemon/eard_conf_rapi.h
 ear_new_job.o: ear_new_job.c ../../common/config.h \
- ../../daemon/eard_rapi.h ../../common/types/application.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h \
- ../../common/types/configuration/cluster_conf.h \
- ../../common/types/configuration/policy_conf.h \
- ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../daemon/eard_conf_rapi.h
-ear_inc_th.o: ear_inc_th.c ../../common/config.h ../../daemon/eard_rapi.h \
- ../../common/types/application.h ../../common/types/job.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../daemon/eard_rapi.h \
+ ../../common/types/application.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \
  ../../common/types/power_signature.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../daemon/eard_conf_rapi.h
-ear_set_ondemand.o: ear_set_ondemand.c ../../control/frequency.h
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../daemon/eard_conf_rapi.h
+ear_inc_th.o: ear_inc_th.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../daemon/eard_rapi.h \
+ ../../common/types/application.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../daemon/eard_conf_rapi.h
+ear_set_ondemand.o: ear_set_ondemand.c ../../control/frequency.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h
 ear_control.o: ear_control.c ../../daemon/eard_rapi.h \
- ../../common/config.h ../../common/types/application.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h \
- ../../common/types/configuration/cluster_conf.h \
- ../../common/types/configuration/policy_conf.h \
- ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../daemon/eard_conf_rapi.h
-ear_set_th.o: ear_set_th.c ../../common/config.h ../../daemon/eard_rapi.h \
- ../../common/types/application.h ../../common/types/job.h \
+ ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/types/application.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \
  ../../common/types/power_signature.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../daemon/eard_conf_rapi.h
-ear_set_freq.o: ear_set_freq.c ../../common/config.h \
- ../../daemon/eard_rapi.h ../../common/types/application.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h \
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../daemon/eard_conf_rapi.h
+ear_set_th.o: ear_set_th.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../daemon/eard_rapi.h \
+ ../../common/types/application.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../daemon/eard_conf_rapi.h
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../daemon/eard_conf_rapi.h
+ear_set_freq.o: ear_set_freq.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../daemon/eard_rapi.h \
+ ../../common/types/application.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../daemon/eard_conf_rapi.h
 ear_get_node_freq.o: ear_get_node_freq.c ../../control/frequency.h
 ear_end_job.o: ear_end_job.c ../../common/config.h \
- ../../daemon/eard_rapi.h ../../common/types/application.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../daemon/eard_rapi.h \
+ ../../common/types/application.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../daemon/eard_conf_rapi.h
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../daemon/eard_conf_rapi.h
 ear_set_node_freq.o: ear_set_node_freq.c ../../control/frequency.h
 ear_red_freq.o: ear_red_freq.c ../../common/config.h \
- ../../daemon/eard_rapi.h ../../common/types/application.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../daemon/eard_rapi.h \
+ ../../common/types/application.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../daemon/eard_conf_rapi.h
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../daemon/eard_conf_rapi.h
 ear_dbd_stress_test.o: ear_dbd_stress_test.c \
  ../../database_cache/eardbd_api.h ../../common/sockets.h \
  ../../common/sizes.h ../../common/states.h ../../common/types/generic.h \
- ../../common/types/log.h ../../common/types/job.h ../../common/config.h \
+ ../../common/types/log.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/types/job.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
  ../../common/types/loop.h ../../common/types/signature.h \
  ../../common/types/application.h ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h \
@@ -86,6 +113,6 @@ ear_dbd_stress_test.o: ear_dbd_stress_test.c \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../database_cache/eardbd.h ../../common/process.h \
- ../../common/types/types.h
+ ../../common/string_enhanced.h ../../database_cache/eardbd.h \
+ ../../common/process.h ../../common/types/types.h \
+ ../../common/output/error.h ../../common/output/debug.h

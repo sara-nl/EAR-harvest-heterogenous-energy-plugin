@@ -23,7 +23,7 @@ endif
 
 metr_OBJS = $(SRCDIR)/metrics/libmetrics.a
 
-stri_OBJS = $(SRCDIR)/common/string_enhanced.o
+comm_OBJS = $(SRCDIR)/common/libcommon.o
 
 chck_OBJS = check.o
  
@@ -48,11 +48,11 @@ papi_comp_available: papi_comp_available.c
 papi_comp_enabled: papi_comp_enabled.c
 	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -o $@ $< $(PAPI_LDFLAGS)
 
-module_acpi_cpufreq: module_acpi_cpufreq.c $(chck_OBJS) $(stri_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(chck_OBJS) $(stri_OBJS)
+module_acpi_cpufreq: module_acpi_cpufreq.c $(chck_OBJS) $(comm_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(chck_OBJS) $(comm_OBJS)
 
-module_ipmi_devintf: module_ipmi_devintf.c $(chck_OBJS) $(stri_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< $(chck_OBJS) $(stri_OBJS)
+module_ipmi_devintf: module_ipmi_devintf.c $(chck_OBJS) $(comm_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(chck_OBJS) $(comm_OBJS)
 
 cpu_examinable: cpu_examinable.c
 	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS)
