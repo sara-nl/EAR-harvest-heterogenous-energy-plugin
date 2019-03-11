@@ -85,3 +85,4 @@ clean: coma.gclean;
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

@@ -73,3 +73,4 @@ depend: depend.components depend.others
 depend-clean: depend-clean.components depend-clean.others
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

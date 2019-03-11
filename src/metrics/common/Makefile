@@ -28,3 +28,4 @@ clean: rclean;
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

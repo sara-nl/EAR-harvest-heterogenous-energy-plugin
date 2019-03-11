@@ -38,3 +38,4 @@ clean: gmdc.gclean rclean;
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

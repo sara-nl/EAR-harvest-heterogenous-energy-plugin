@@ -47,3 +47,4 @@ clean: com1.gclean com2.gclean rclean
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

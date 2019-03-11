@@ -90,6 +90,8 @@ clean: clean.gnrc.components clean.impi.components rclean;
 
 ######## DEPENDENCIES
 
-depend: depend.gnrc.components depend.impi.components
+depend: depend.gnrc.components depend.impi.components;
 
 depend-clean: depend-clean.gnrc.components depend-clean.impi.components
+
+include $(SRCDIR)/Makefile.extra
