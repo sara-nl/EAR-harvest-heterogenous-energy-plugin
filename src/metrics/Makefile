@@ -47,7 +47,7 @@ devel.install: devel.install.components;
 
 %.install: %.install.components;
 
-clean: clean.components rclean;
+clean: clean.components;
 
 ######## SUBFOLDERS
 
@@ -64,3 +64,5 @@ clean: clean.components rclean;
 depend: depend.components
 
 depend-clean: depend-clean.components
+
+include $(SRCDIR)/Makefile.depend

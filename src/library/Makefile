@@ -98,3 +98,4 @@ depend: depend.gnrc.components depend.impi.components
 
 depend-clean: depend-clean.gnrc.components depend-clean.impi.components
 
+include $(SRCDIR)/Makefile.depend

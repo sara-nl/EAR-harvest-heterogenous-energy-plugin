@@ -23,7 +23,7 @@ tool_PERM = 0750
 ######## FILES
 
 comm_OBJS = $(ROOTDIR)/src/common/types.a
-dtbs_OBJS = $(dtbs_OBJS)
+dtbs_OBJS = $(ROOTDIR)/src/common/database.a
 
 ######## RULES
 
