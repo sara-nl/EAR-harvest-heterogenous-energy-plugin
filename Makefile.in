@@ -62,6 +62,8 @@ export CPUF_LDFLAGS
 export DB_BASE
 export DB_CFLAGS
 export DB_LDFLAGS
+export CHOWN_USR
+export CHOWN_GRP
 export CONSTANTS
 export DEBUG
 
