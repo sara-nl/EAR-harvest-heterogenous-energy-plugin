@@ -17,6 +17,7 @@ eard_OBJS = eard_checkpoint.o \
 	power_monitor.o \
 	shared_configuration.o \
 	app_api/app_server_api.o
+
 eard_OBJS += $(SRCDIR)/common/libcommon.a \
 	$(SRCDIR)/control/frequency.o \
 	$(SRCDIR)/database_cache/eardbd_api.o \
@@ -63,8 +64,7 @@ clean: clean.components clean.others eard.gclean rclean;
 %.components:
 	$(MAKE) -C 'app_api' $*
 
-%.others:
-	$(MAKE) -C 'commands' $*
+%.others: ;
 
 ######## DEPENDENCIES
 
