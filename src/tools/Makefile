@@ -53,7 +53,7 @@ get_ear_events: get_ear_events.c $(comm_OBJS)
 	$(CCC) -g -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
 get_active_nodes: get_active_nodes.c $(comm_OBJS)
-	$(CCC) -g -o $@ $< (comm_OBJS) $(DB_LDFLAGS)
+	$(CCC) -g -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
 learning_show: learning_show.c $(comm_OBJS)
 	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)

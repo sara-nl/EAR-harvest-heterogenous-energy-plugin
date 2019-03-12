@@ -2,7 +2,7 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## INSTALLATION
 
-eard_BINS = eard
+eard_BINS = libEARapi.a
 eard_PATH = $(DESTDIR)/lib
 eard_PERM = 0660
 oths_BINS = ear.h

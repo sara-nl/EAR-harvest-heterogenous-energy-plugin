@@ -23,7 +23,7 @@ endif
 
 metr_OBJS = $(SRCDIR)/metrics/libmetrics.a
 
-comm_OBJS = $(SRCDIR)/common/libcommon.o
+comm_OBJS = $(SRCDIR)/common/libcommon.a
 
 chck_OBJS = check.o
  

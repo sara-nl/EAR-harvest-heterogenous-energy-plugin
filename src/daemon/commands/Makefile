@@ -1,6 +1,6 @@
 CFLAGS  = -I$(SRCDIR) $(DEBUG)
 LDFLAGS = $(PAPI_LDFLAGS) $(IPMI_LDFLAGS) -lm
-CCC     = $(CCC)
+CCC     = $(CC) $(CC_FLAGS) $(CFLAGS)
 
 ######## INSTALLATION
 
