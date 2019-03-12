@@ -140,12 +140,12 @@ int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
             int total_ips = range.end-range.start + 1;
             int it = 0;
             sec_aux_ips = calloc(total_ips, sizeof(int));
-            for (j = range.start; j <= range.end ; j++)
+            for (k = range.start; k <= range.end ; k++)
             {
-                if (j < 10 && range.end > 10)
-                    sprintf(aux_name, "%s0%u", range.prefix, j);
+                if (k < 10 && range.end > 10)
+                    sprintf(aux_name, "%s0%u", range.prefix, k);
                 else
-                    sprintf(aux_name, "%s%u", range.prefix, j);
+                    sprintf(aux_name, "%s%u", range.prefix, k);
 
                 sec_aux_ips[it] = get_ip(aux_name);
                 it ++;
