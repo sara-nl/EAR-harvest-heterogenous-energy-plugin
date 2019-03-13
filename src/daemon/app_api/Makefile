@@ -1,8 +1,17 @@
 CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
+######## INSTALLATION
+
+eard_BINS = libEARapi.a
+eard_PATH = $(DESTDIR)/lib
+eard_PERM = 0660
+oths_BINS = ear.h
+oths_PATH = $(DESTDIR)/include
+oths_PERM = 0660
+
 ######## RULES
 
-all: libEARapi.a app_server_api.o
+all: app_server_api.o $(eard_BINS)
 
 libEARapi.a: app_api.o
 	$(AR) rcs $@ app_api.o
@@ -16,19 +25,14 @@ app_server_api.o: app_server_api.c app_server_api.h
 ######## OPTIONS
 
 install: ;
-	cp libEARapi.a $(DESTDIR)/lib
-	cp ear.h $(DESTDIR)/include/ear.h
 
-devel.install: 
-	cp libEARapi.a $(DESTDIR)/lib
-	cp ear.h $(DESTDIR)/include/ear.h
+devel.install: eard.ginstall oths.ginstall;
 
 %.install: ;	
 
-clean:
-	rm -f *.o *.a *.so
+clean: eard.gclean rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
-
+include $(SRCDIR)/Makefile.extra

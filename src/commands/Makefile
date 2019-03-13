@@ -1,55 +1,52 @@
 CFLAGS  = -I$(SRCDIR)
 LDFLAGS =
+CCC     = $(CC) $(CC_FLAGS) $(CFLAGS)
+
+######## INSTALLATION
+
+ifdef DB_BASE
+com1_BINS = eacct econtrol ereport
+com1_PATH = $(DESTDIR)/bin
+com1_PERM = 2771
+com2_BINS = edb_create edb_clean_pm
+com2_PATH = $(DESTDIR)/sbin
+com2_PERM = 0770
+endif
 
 ######## FILES
 
-ereport_OBJS  = $(SRCDIR)/common/database/mysql_io_functions.o \
-                $(SRCDIR)/common/types.a
+comm_OBJS = $(SRCDIR)/common/libcommon.a
 
-econtrol_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
-                $(SRCDIR)/common/types.a
-
-ear_cleandb_OBJS =	$(SRCDIR)/common/database/db_helper.o \
-					$(SRCDIR)/common/database/mysql_io_functions.o \
-					$(SRCDIR)/common/types.a
-
-ifdef DB_BASE
-BINS  = eacct econtrol ereport
-SBINS = edb_create edb_clean_pm
-endif
+rapi_OBJS = $(SRCDIR)/daemon/eard_rapi.o
 
 ######## RULES
 
-all: $(BINS) $(SBINS)
+all: $(com1_BINS) $(com2_BINS)
 
-eacct: ear_acct.c $(ereport_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ereport_OBJS)
+eacct: ear_acct.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-econtrol: ear_control.c $(econtrol_OBJS) 
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(econtrol_OBJS) 
+econtrol: ear_control.c $(rapi_OBJS) $(comm_OBJS)
+	$(CCC) -o $@ $< $(rapi_OBJS) $(comm_OBJS)
 
-ereport: ear_report.c $(ereport_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ereport_OBJS)
+ereport: ear_report.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-edb_clean_pm: ear_cleandb.c $(ereport_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ear_cleandb_OBJS)
+edb_clean_pm: ear_cleandb.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-edb_create: ear_create_database.c $(ear_cleandb_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(DB_LDFLAGS) $(ear_cleandb_OBJS)
+edb_create: ear_create_database.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
 ######## OPTIONS
 
-install:
-ifdef DB_BASE
-	cp $(BINS) $(DESTDIR)/bin/
-	cp $(SBINS) $(DESTDIR)/sbin/
-endif
+install: com1.ginstall com2.ginstall
 
 %.install: ;
 
-clean:
-	rm -f $(BINS) $(SBINS)
+clean: com1.gclean com2.gclean rclean
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

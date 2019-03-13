@@ -1,20 +1,23 @@
-API_DEBUG=
+CFLAGS  = -I$(SRCDIR)
 LDFLAGS =
-CFLAGS  = -I$(SRCDIR) $(API_DEBUG)
+
+######## INSTALLATION
+
+ifdef DB_BASE
+gmdc_BINS += eargm_new_job eargm_end_job
+gmdc_BINS = eargmd
+gmdc_PATH = $(DESTDIR)/sbin
+gmdc_PERM = 0750
+endif
 
 ######## FILES
 
-extern_OBJS = $(SRCDIR)/common/types.a \
-              $(SRCDIR)/global_manager/eargm_rapi.o
-
-ifdef DB_BASE
-BINS += eargm_new_job \
-        eargm_end_job
-endif
+extern_OBJS = $(SRCDIR)/common/libcommon.a \
+    $(SRCDIR)/global_manager/eargm_rapi.o
 
 ######## RULES
 
-all: $(BINS)
+all: $(gmdc_BINS)
 
 eargm_new_job: eargm_new_job.c $(extern_OBJS)
 	$(CC) $(CFLAGS) -o $@ $< $(extern_OBJS)
@@ -24,16 +27,15 @@ eargm_end_job: eargm_end_job.c $(extern_OBJS)
 
 ######## OPTIONS
 
-install:
+install: ;
 
-devel.install: ;
-	cp $(BINS) $(DESTDIR)/sbin
+devel.install: gmdc.ginstall;
 
 %.install: ;
 
-clean:
-	rm -f $(BINS)
+clean: gmdc.gclean rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

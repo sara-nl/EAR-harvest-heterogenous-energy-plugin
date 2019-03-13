@@ -42,7 +42,6 @@
 #include <common/types/application.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
-#include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
 #include <library/models/sig_projections.h>

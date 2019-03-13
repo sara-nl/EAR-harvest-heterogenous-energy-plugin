@@ -1,73 +1,78 @@
 CFLAGS  = -I$(SRCDIR) $(GSL_CFLAGS) $(CPUF_CFLAGS)
 LDFLAGS = $(CPUF_LDFLAGS) $(GSL_LDFLAGS)
+CCC     = $(CC) $(CC_FLAGS) $(CFLAGS)
+
+######## INSTALLATION
+
+tool_BINS = \
+    coeffs_quality \
+    coeffs_compute \
+    coeffs_compare \
+    coeffs_jobproj \
+    coeffs_show \
+    coeffs_default \
+    coeffs_null \
+    get_ear_events \
+    get_active_nodes \
+    learning_show \
+    learning_validate \
+    learning_delete
+tool_PATH = $(DESTDIR)/bin/tools
+tool_PERM = 0770
 
 ######## FILES
 
-COMMON_OBJS = $(ROOTDIR)/src/common/types.a
+comm_OBJS = $(ROOTDIR)/src/common/libcommon.a
 
-BINARIES = \
-           coeffs_quality \
-           coeffs_compute \
-           coeffs_jobproj \
-           coeffs_show \
-           coeffs_default \
-		   coeffs_null \
-		   get_ear_events \
-		   get_active_nodes \
-		   learning_show \
-		   learning_validate \
-		   learning_delete \
-		   coeffs_compare
+######## RULES
 
-all: $(BINARIES)
+all: $(tool_BINS)
 
-coeffs_compute: coeffs_compute.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+coeffs_compute: coeffs_compute.c $(comm_OBJS)
+	$(CCC) -o $@ $< $(LDFLAGS) $(comm_OBJS) $(DB_LDFLAGS)
 
-coeffs_jobproj: coeffs_jobproj.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+coeffs_jobproj: coeffs_jobproj.c $(comm_OBJS)
+	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-coeffs_quality: coeffs_quality.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+coeffs_quality: coeffs_quality.c $(comm_OBJS)
+	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-coeffs_show: coeffs_show.c $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
+coeffs_show: coeffs_show.c $(comm_OBJS)
+	$(CCC) -I$(SRCDIR) -o $@ $< $(comm_OBJS)
 
-coeffs_null: coeffs_null.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+coeffs_null: coeffs_null.c $(comm_OBJS)
+	$(CCC) -I$(SRCDIR) -o $@ $< $(comm_OBJS)
 
-coeffs_default: coeffs_default.c $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(ROOTDIR)/src/common/file.o $(COMMON_OBJS)
+coeffs_default: coeffs_default.c $(comm_OBJS)
+	$(CCC) -I$(SRCDIR) -o $@ $< $(comm_OBJS)
 
-coeffs_compare: coeffs_compare.c $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -I$(SRCDIR) -o $@ $< $(COMMON_OBJS)
+coeffs_compare: coeffs_compare.c $(comm_OBJS)
+	$(CCC) -I$(SRCDIR) -o $@ $< $(comm_OBJS)
 
-get_ear_events: get_ear_events.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+get_ear_events: get_ear_events.c $(comm_OBJS)
+	$(CCC) -g -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-get_active_nodes: get_active_nodes.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+get_active_nodes: get_active_nodes.c $(comm_OBJS)
+	$(CCC) -g -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-learning_show: learning_show.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+learning_show: learning_show.c $(comm_OBJS)
+	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-learning_delete: learning_delete.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -g -o $@ $< $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+learning_delete: learning_delete.c $(comm_OBJS)
+	$(CCC) -g -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
-learning_validate: learning_validate.c $(ROOTDIR)/src/common/database.a $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROOTDIR)/src/common/database.a $(DB_LDFLAGS) $(COMMON_OBJS)
+learning_validate: learning_validate.c $(comm_OBJS)
+	$(CCC) -o $@ $< $(LDFLAGS) $(comm_OBJS) $(DB_LDFLAGS)
 
 ######## OPTIONS
 
-install:
-	cp $(BINARIES) $(DESTDIR)/bin/tools
+install: tool.ginstall;
 
 %.install: ;
 
-clean:
-	rm -f $(BINARIES)
-	rm -f *.o *.a *.so
+clean: tool.gclean rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

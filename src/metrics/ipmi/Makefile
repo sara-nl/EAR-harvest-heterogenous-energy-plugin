@@ -13,10 +13,10 @@ OBJS = energy_node.a
 
 all: all.components $(OBJS)
 
-energy_node.o: energy_node.c energy_node.h
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-energy_node.a: energy_node.o $(ENERGY_OBJS)
+energy_node.a: energy_node.o $(lib_OBJS)
 	$(AR) rvs $@ $< $(lib_OBJS)
 
 ######## OPTIONS
@@ -24,12 +24,10 @@ energy_node.a: energy_node.o $(ENERGY_OBJS)
 install: install.components
 
 devel.install: devel.install.components;
-	cp *.h $(DESTDIR)/include/metrics/ipmi
 
 %.install: %.install.components;
 
-clean: clean.components
-	rm -f *.o *.a *.so
+clean: clean.components rclean;
 
 ######## SUBFOLDERS
 
@@ -43,3 +41,4 @@ depend: depend.components
 depend-clean: depend-clean.components
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

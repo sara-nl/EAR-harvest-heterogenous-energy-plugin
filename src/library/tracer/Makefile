@@ -10,9 +10,9 @@ allt: tracer.o tracer_mpi.o
 
 ######## OPTIONS
 
-clean:
-	rm -f *.o *.a *.so
+clean: rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

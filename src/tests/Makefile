@@ -1,10 +1,10 @@
 ######## FILES
 
-COMPONENTS = check functionals app_api
+COMPONENTS = check
 
 ######## RULES
 
-.PHONY: check functionals
+.PHONY: check
 
 all: all.components
 
@@ -27,4 +27,3 @@ depend-clean: depend-clean.components
 
 %.components:
 	@ $(MAKE) -C 'check' $* || exit
-	@ $(MAKE) -C 'functionals' $* || exit

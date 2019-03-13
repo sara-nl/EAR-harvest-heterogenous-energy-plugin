@@ -1,8 +1,8 @@
-CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -O3
+CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -O2
 
 ######## FILES
 
-OBJS = flops.o \
+papi_OBJS = flops.o \
        cache.o \
        generics.o \
        energy_cpu.o \
@@ -11,7 +11,7 @@ OBJS = flops.o \
 
 ######## RULES
 
-all: $(OBJS)
+all: $(papi_OBJS)
 
 generics.o: generics.c generics.h
 	$(CC) $(CFLAGS) -c $<
@@ -36,13 +36,12 @@ energy_cpu.o: energy_cpu.c energy_cpu.h
 install:
 
 devel.install: ;
-	cp *.h $(DESTDIR)/include/metrics/papi
 
 %.install: ;
 
-clean:
-	rm -f *.o *.a *.so
+clean: rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

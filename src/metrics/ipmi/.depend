@@ -1,5 +1,10 @@
 energy_node.o: energy_node.c ../../common/config.h \
- ../../common/output/verbose.h ../../metrics/custom/hardware_info.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/output/debug.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
+ ../../metrics/custom/hardware_info.h ../../common/file.h \
+ ../../common/sizes.h ../../common/states.h ../../common/types/generic.h \
+ ../../metrics/common/cpuid.h ../../metrics/common/syscall.h \
  ../../metrics/ipmi/energy_node/ibm.h \
  ../../metrics/ipmi/energy_node/lenovo_nm.h \
  ../../metrics/ipmi/energy_node/lenovo_sd650.h

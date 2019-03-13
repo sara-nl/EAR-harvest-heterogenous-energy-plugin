@@ -11,36 +11,48 @@ gen_FOLDERS = $(DESTDIR)/bin \
 etc_FOLDERS = $(ETCDIR) \
               $(ETCDIR)/ear \
               $(ETCDIR)/ear/coeffs \
-              $(ETCDIR)/ear/dbs \
               $(ETCDIR)/module \
               $(ETCDIR)/systemd \
               $(ETCDIR)/slurm 
 
-dev_FOLDERS = $(DESTDIR)/include/common \
-              $(DESTDIR)/include/metrics/custom \
-              $(DESTDIR)/include/metrics/ipmi \
-              $(DESTDIR)/include/metrics/papi \
-              $(DESTDIR)/include/metrics/power_metrics
+conf_BINS = ear.conf
+conf_FOLD = conf
+conf_PATH = $(ETCDIR)/ear
+conf_PERM = 0660
+modl_BINS = ear
+modl_FOLD = module
+modl_PATH = $(ETCDIR)/module
+modl_PERM = 0660
+serv_BINS = eard.service eardbd.service eargmd.service
+serv_FOLD = systemd
+serv_PATH = $(ETCDIR)/systemd
+serv_PERM = 0660
+slur_BINS = ear.plugstack.conf
+slur_FOLD = slurm
+slur_PATH = $(ETCDIR)/slurm
+slur_PERM = 0660
 
 ######## OPTIONS
- 
-install:
+
+announce:
+	@ echo "===================================="; \
+	  echo "= Installing etc";                     \
+	  echo "====================================";
+
+install: announce
 	@ mkdir -p $(gen_FOLDERS) 
 	cp -r scripts/* $(DESTDIR)/bin/scripts/
 	@ rm $(DESTDIR)/bin/scripts/README.md
-	@ rm $(DESTDIR)/bin/scripts/learning/README.md
 	@ rm $(DESTDIR)/bin/scripts/tools/README.md
+	@ rm $(DESTDIR)/bin/scripts/learning/README.md
 
-etc.install: ;
+etc.install: announce conf.finstall modl.finstall serv.finstall slur.finstall;
 	@ mkdir -p $(etc_FOLDERS) 
-	#cp -i conf/ear.conf $(ETCDIR)/ear
-	cp -i module/ear $(ETCDIR)/module/
-	cp -i slurm/ear.plugstack.conf $(ETCDIR)/slurm/
-	cp -i systemd/eard.service $(ETCDIR)/systemd
-	cp -i systemd/eardbd.service $(ETCDIR)/systemd
-	cp -i systemd/eargmd.service $(ETCDIR)/systemd
 
 devel.install: ;
-	@ mkdir -p $(dev_FOLDERS)
 
-scripts.install: install;	
+scripts.install: install;
+
+######## DEPENDENCIES
+
+include $(SRCDIR)/Makefile.extra

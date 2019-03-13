@@ -2,15 +2,15 @@ CFLAGS = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-OBJS = policy_conf.o \
-	   node_conf.o \
-	   cluster_conf.o \
-       cluster_conf_read.o \
-       cluster_conf_verbose.o 
+conf_OBJS = policy_conf.o \
+    node_conf.o \
+    cluster_conf.o \
+    cluster_conf_read.o \
+    cluster_conf_verbose.o
 
 ######## RULES
 
-all: $(OBJS)
+all: $(conf_OBJS)
 
 %.o: %.c cluster_conf.h
 	$(CC) $(CFLAGS) -c $<
@@ -21,9 +21,9 @@ install:
 
 %.install: ;
 
-clean:
-	rm -f *.o *.a *.so
+clean: rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

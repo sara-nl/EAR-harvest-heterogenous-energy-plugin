@@ -40,7 +40,6 @@
 #include <common/types/log.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>
-#include <library/common/macros.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
 #include <library/models/min_time.h>
