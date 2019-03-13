@@ -2,11 +2,11 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-OBJS = msr.o cpuid.o syscall.o
+comm_OBJS = msr.o cpuid.o syscall.o
 
 ######## RULES
 
-all: $(OBJS)
+all: $(comm_OBJS)
 
 msr.o: msr.c msr.h
 	$(CC) $(CFLAGS) -c $<
@@ -23,9 +23,9 @@ install: ;
 
 %.install: ;
 
-clean:
-	rm -f *.o *.a *.so
+clean: rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

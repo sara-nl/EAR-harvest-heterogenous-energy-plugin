@@ -1,46 +1,42 @@
 CFLAGS  = -I$(SRCDIR)
 LDFLAGS = $(DB_LDFLAGS) -lpthread
 
+######## INSTALLATION
+
+eard_BINS = eargmd
+eard_PATH = $(DESTDIR)/sbin
+eard_PERM = 0770
+
 ######## FILES
 
-manager_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
-               $(SRCDIR)/common/database.a \
-               $(SRCDIR)/common/types.a \
-               eargm_server_api.o
+comm_BINS = $(SRCDIR)/daemon/eard_rapi.o \
+    $(SRCDIR)/common/libcommon.a \
+    eargm_server_api.o
 
-OBJS = eargm_rapi.o \
-       eargm_server_api.o
-
-BINS = eargmd
+eard_OBJS = eargm_rapi.o \
+    eargm_server_api.o
 
 ######## RULES
 
-all: $(OBJS) $(BINS) all.others 
+all: $(eard_OBJS) $(eard_BINS) all.others
 
-eargmd: eargm.c $(manager_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(manager_OBJS) $(LDFLAGS)
+eargmd: eargm.c $(comm_BINS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(comm_BINS) $(LDFLAGS)
 
 %.o: %.c %.h
-	$(CC) -fPIC $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -fPIC -c $<
 
 ######## OPTIONS
 
-install: install.others
-	cp eargmd $(DESTDIR)/sbin
-	chmod 750 $(DESTDIR)/sbin/eargmd
+install: install.others eard.ginstall;
 
-devel.install: devel.install.others;
+%.install: %.install.others;
 
-%.install: ;
-
-clean: clean.others
-	rm -f $(BINS)
-	rm -f *.o *.a *.so
+clean: clean.others eard.gclean rclean;
 
 ######## SUBFOLDERS
 
-%.others:
-	@ $(MAKE) -C 'commands' $* || exit
+%.others: ;
 
 ######## DEPENDENCIES
 
@@ -49,3 +45,4 @@ depend: depend.others
 depend-clean: depend-clean.others
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

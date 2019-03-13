@@ -1,70 +1,99 @@
-min_time.o: min_time.c ../../common/config.h ../../control/frequency.h \
- ../../library/common/macros.h ../../library/common/externs.h \
- ../../common/types/application.h ../../common/types/job.h \
- ../../common/types/generic.h ../../common/types/signature.h \
- ../../common/types/power_signature.h ../../common/types/loop.h \
+min_time.o: min_time.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/states.h \
+ ../../common/types/log.h ../../common/types/generic.h \
+ ../../common/types/job.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/types/projection.h \
+ ../../common/types/signature.h ../../common/types/coefficient.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
+ ../../common/math_operations.h ../../daemon/eard_api.h \
+ ../../daemon/eard_conf_api.h ../../common/types/loop.h \
+ ../../control/frequency.h ../../library/common/externs.h \
  ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../common/types/coefficient.h \
- ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection.h ../../daemon/eard_api.h \
- ../../common/types/log.h ../../daemon/eard_conf_api.h
-power_capping.o: power_capping.c ../../common/config.h \
- ../../control/frequency.h ../../library/common/macros.h \
- ../../library/common/externs.h ../../common/types/application.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h \
- ../../common/types/loop.h ../../daemon/shared_configuration.h \
- ../../common/types/configuration/cluster_conf.h \
- ../../common/types/configuration/policy_conf.h \
- ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../common/types/coefficient.h \
- ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection.h ../../daemon/eard_api.h \
- ../../common/types/log.h ../../daemon/eard_conf_api.h
-monitoring.o: monitoring.c ../../common/types/application.h \
- ../../common/config.h ../../common/types/job.h \
- ../../common/types/generic.h ../../common/types/signature.h \
- ../../common/types/power_signature.h ../../common/types/projection.h \
- ../../common/types/coefficient.h ../../library/common/externs.h \
- ../../common/types/loop.h ../../daemon/shared_configuration.h \
- ../../common/types/configuration/cluster_conf.h \
- ../../common/types/configuration/policy_conf.h \
- ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../library/models/models.h \
+ ../../common/string_enhanced.h ../../library/models/models.h \
  ../../common/environment.h
-models.o: models.c ../../common/config.h ../../control/frequency.h \
- ../../library/common/macros.h ../../library/common/externs.h \
- ../../common/types/application.h ../../common/types/job.h \
- ../../common/types/generic.h ../../common/types/signature.h \
- ../../common/types/power_signature.h ../../common/types/loop.h \
+power_capping.o: power_capping.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/states.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
+ ../../common/types/log.h ../../common/types/generic.h \
+ ../../common/types/job.h ../../common/types/signature.h \
+ ../../common/types/projection.h ../../common/types/coefficient.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
+ ../../control/frequency.h ../../daemon/eard_api.h \
+ ../../daemon/eard_conf_api.h ../../common/types/loop.h \
+ ../../library/common/externs.h ../../daemon/shared_configuration.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h ../../library/models/models.h \
+ ../../common/environment.h
+monitoring.o: monitoring.c ../../common/types/application.h \
+ ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
+ ../../common/types/job.h ../../common/types/generic.h \
+ ../../common/types/signature.h ../../common/types/power_signature.h \
+ ../../common/types/projection.h ../../common/types/coefficient.h \
+ ../../library/common/externs.h ../../common/types/loop.h \
  ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../common/types/coefficient.h \
- ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection.h ../../library/models/monitoring.h \
- ../../library/models/min_energy.h ../../library/models/min_time.h \
- ../../common/types/log.h ../../daemon/eard_api.h \
- ../../daemon/eard_conf_api.h
-min_energy.o: min_energy.c ../../common/config.h \
- ../../control/frequency.h ../../library/common/macros.h \
- ../../library/common/externs.h ../../common/types/application.h \
- ../../common/types/job.h ../../common/types/generic.h \
- ../../common/types/signature.h ../../common/types/power_signature.h \
- ../../common/types/loop.h ../../daemon/shared_configuration.h \
+ ../../common/string_enhanced.h ../../common/states.h \
+ ../../library/models/models.h ../../common/environment.h
+models.o: models.c ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/states.h ../../common/output/debug.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
+ ../../common/types/log.h ../../common/types/generic.h \
+ ../../common/types/job.h ../../common/types/projection.h \
+ ../../common/types/signature.h ../../common/types/coefficient.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
+ ../../library/common/externs.h ../../common/types/loop.h \
+ ../../daemon/shared_configuration.h \
  ../../common/types/configuration/cluster_conf.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/output/verbose.h \
- ../../common/states.h ../../common/types/coefficient.h \
- ../../library/models/models.h ../../common/environment.h \
- ../../common/types/projection.h ../../daemon/eard_api.h \
- ../../common/types/log.h ../../daemon/eard_conf_api.h
+ ../../common/string_enhanced.h ../../library/models/models.h \
+ ../../common/environment.h ../../library/models/min_time.h \
+ ../../library/models/min_energy.h ../../library/models/monitoring.h \
+ ../../daemon/eard_api.h ../../daemon/eard_conf_api.h \
+ ../../control/frequency.h ../../metrics/custom/hardware_info.h \
+ ../../common/file.h ../../common/sizes.h ../../metrics/common/cpuid.h \
+ ../../metrics/common/syscall.h
+min_energy.o: min_energy.c ../../common/states.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/types/log.h \
+ ../../common/types/generic.h ../../common/types/job.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
+ ../../common/types/signature.h ../../common/types/projection.h \
+ ../../common/types/coefficient.h ../../common/types/application.h \
+ ../../common/types/power_signature.h ../../daemon/eard_api.h \
+ ../../daemon/eard_conf_api.h ../../common/types/loop.h \
+ ../../control/frequency.h ../../library/models/models.h \
+ ../../common/environment.h ../../library/common/externs.h \
+ ../../daemon/shared_configuration.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h
+supermucng.o: supermucng.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/states.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
+ ../../common/types/log.h ../../common/types/generic.h \
+ ../../common/types/job.h ../../common/types/projection.h \
+ ../../common/types/signature.h ../../common/types/coefficient.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
+ ../../daemon/eard_api.h ../../daemon/eard_conf_api.h \
+ ../../common/types/loop.h ../../control/frequency.h \
+ ../../library/common/externs.h ../../daemon/shared_configuration.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h ../../library/models/models.h \
+ ../../common/environment.h

@@ -16,13 +16,12 @@ energy_cpu.o: energy_cpu.c energy_cpu.h
 install:
 
 devel.install: ;
-	cp *.h $(DESTDIR)/include/metrics/msr
 
 %.install: ;
 
-clean:
-	rm -f *.o *.a *.so
+clean: rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

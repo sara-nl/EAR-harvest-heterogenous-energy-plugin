@@ -42,7 +42,6 @@
 #include <common/output/verbose.h>
 #include <daemon/eard_api.h>
 #include <control/frequency.h>
-#include <library/common/macros.h>
 #include <library/models/models.h>
 #include <library/common/externs.h>
 

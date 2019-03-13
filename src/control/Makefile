@@ -1,6 +1,5 @@
 CFLAGS  = -fPIC -I$(SRCDIR) $(CPUF_CFLAGS) $(CONSTANTS)
 
-
 ######## RULES
 
 all: frequency.o
@@ -14,9 +13,9 @@ install: ;
 
 %.install: ;
 
-clean:
-	rm -f *.o *.a *.so
+clean: rclean;
 
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

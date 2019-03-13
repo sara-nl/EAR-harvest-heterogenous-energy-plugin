@@ -108,4 +108,11 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
             DB_MYSQL=1
             DB_FILES=1
     ])
+
+    #
+    # INSTALLATION USER/GROUP
+    #
+	AC_ARG_VAR([USER],[Sets the owner user of your installed files])
+-	AC_ARG_VAR([GROUP],[Sets the owner group of your installed files])
+
 ])

@@ -2,48 +2,33 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-bandwidth_OBJS = bandwidth/uncores_pci.o bandwidth_notpriv.o $(SRCDIR)/common/math_operations.o
-
-OBJS = frequency.o \
-       frequency_uncore.o \
-       hardware_info.o \
-       bandwidth.o \
-	   bandwidth_notpriv.o \
-       bandwidth.a
+cstm_OBJS = frequency.o \
+    frequency_uncore.o \
+    hardware_info.o \
+    bandwidth.o \
+    bandwidth_notpriv.o
 
 ######## RULES
 
-all: all.components $(OBJS)
+all: all.components $(cstm_OBJS)
 
-frequency.o: frequency.c frequency.h
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
-
-frequency_uncore.o: frequency_uncore.c frequency_uncore.h
-	$(CC) $(CFLAGS) -c $<
-
-hardware_info.o: hardware_info.c hardware_info.h
-	$(CC) $(CFLAGS) -c $<
-
-bandwidth.o: bandwidth.c bandwidth.h
-	$(CC) $(CFLAGS) -c $<
-
-bandwidth_notpriv.o: bandwidth_notpriv.c bandwidth_notpriv.h
-	$(CC) $(CFLAGS) -c $<
-
-bandwidth.a: bandwidth.o $(bandwidth_OBJS)
-	$(AR) rcs $@ $< $(bandwidth_OBJS)
 
 ######## OPTIONS
 
 install: install.components
 
-devel.install: devel.install.components;
-	cp *.h $(DESTDIR)/include/metrics/custom
+devel.install: ;
 
 %.install: %.install.components;
 
-clean: clean.components
-	rm -f *.o *.a *.so
+clean: clean.components rclean;
+
+######## SUBFOLDERS
+
+%.components:
+	@ $(MAKE) -C 'bandwidth' $* || exit
 
 ######## DEPENDENCIES
 
@@ -52,8 +37,4 @@ depend: depend.components
 depend-clean: depend-clean.components
 
 include $(SRCDIR)/Makefile.depend
-
-######## SUBFOLDERS
-
-%.components:
-	@ $(MAKE) -C 'bandwidth' $* || exit
+include $(SRCDIR)/Makefile.extra
