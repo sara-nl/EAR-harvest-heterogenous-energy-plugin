@@ -633,9 +633,12 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
     final_status = calloc(total_status + 1, sizeof(status_t));
     
     //copy results to final status
-    memcpy(final_status, temp_status[0], sizeof(status_t)*num_status[0]);
-    for (i = 1; i < NUM_PROPS; i++)
-        memcpy(&final_status[num_status[i-1]], temp_status[i], sizeof(status_t)*num_status[i]);
+    int temp_idx = 0;
+    for (i = 0; i < NUM_PROPS; i++)
+	{
+        memcpy(&final_status[temp_idx], temp_status[i], sizeof(status_t)*num_status[i]);
+		temp_idx += num_status[i];
+	}
 
     //set self ip
     final_status[total_status].ip = ips[target_idx];

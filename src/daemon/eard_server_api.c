@@ -375,7 +375,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
 {
     status_t **temp_status, *final_status;
     int num_status[NUM_PROPS];
-    int rc, i;
+    int rc, i, j;
     struct sockaddr_in temp;
     unsigned int ip1, current_dist;
 	char next_ip[50], nextip2[50]; 
@@ -403,6 +403,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
         strcpy(next_ip, inet_ntoa(temp.sin_addr));
         //prepare next node distance
         command->node_dist = current_dist + i*NUM_PROPS;
+		verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
 
         //connect and send data
         rc = eards_remote_connect(next_ip, port);
@@ -430,11 +431,15 @@ int propagate_status(request_t *command, uint port, status_t **status)
     final_status = calloc(total_status + 1, sizeof(status_t));
     
     //copy results to final status
-    memcpy(final_status, temp_status[0], sizeof(status_t)*num_status[0]);
-    for (i = 1; i < NUM_PROPS; i++)
-        memcpy(&final_status[num_status[i-1]], temp_status[i], sizeof(status_t)*num_status[i]);
-
+    int temp_idx = 0;
+    for (i = 0; i < NUM_PROPS; i++)
+	{
+        memcpy(&final_status[temp_idx], temp_status[i], sizeof(status_t)*num_status[i]);
+		temp_idx += num_status[i];
+	}
+	
     //set self ip
+	temp.sin_addr.s_addr = ips[self_id];
     final_status[total_status].ip = ips[self_id];
     final_status[total_status].ok = STATUS_OK;
     *status = final_status;
