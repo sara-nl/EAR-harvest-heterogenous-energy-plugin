@@ -1024,6 +1024,9 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
+	#if EAR_CONF_EXT
+	dyn->min_sig_power=node->min_sig_power;
+	#endif
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
 	f_monitoring=my_cluster_conf.eard.period_powermon;
 	resched_conf->force_rescheduling=0;
@@ -1189,9 +1192,11 @@ void main(int argc,char *argv[])
 	eard_dyn_conf.pm_app=get_powermon_app();
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
-	#if EARD_FILE_LOG
-    fd_my_log=create_log(my_cluster_conf.tmp_dir,"eard");
-    if (fd_my_log<0) fd_my_log=2;
+	#if EAR_CONF_EXT
+	if (my_cluster_conf.eard.use_log){
+    	fd_my_log=create_log(my_cluster_conf.tmp_dir,"eard");
+    	if (fd_my_log<0) fd_my_log=2;
+	}
 	#endif
 
 	int node_size;

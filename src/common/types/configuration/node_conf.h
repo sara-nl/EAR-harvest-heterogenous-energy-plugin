@@ -83,6 +83,12 @@ typedef struct my_node_conf
 	char *coef_file;
 	uint num_policies;
 	policy_conf_t policies[TOTAL_POLICIES];
+	#if EAR_CONF_EXT
+    double min_sig_power;
+    double max_sig_power;
+    double max_error_power;
+	uint 	use_log;
+	#endif
 }my_node_conf_t;
 
 
@@ -95,6 +101,11 @@ typedef struct node_island
     uint num_ips;
 	char **backup_ips;
     uint num_backups;
+    #if EAR_CONF_EXT
+    double min_sig_power;
+    double max_sig_power;
+    double max_error_power;
+    #endif
 } node_island_t;
 
 

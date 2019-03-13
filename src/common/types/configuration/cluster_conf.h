@@ -78,6 +78,9 @@ typedef struct eard_conf
 	uint use_mysql;			/* Must EARD report to DB */
 	uint use_eardbd;		/* Must EARD report to DB using EARDBD */
 	uint force_frequencies; /* 1=EARD will force pstates specified in policies , 0=will not */
+    #if EAR_CONF_EXT
+    uint    use_log;
+    #endif
 } eard_conf_t;
 
 /*
@@ -111,6 +114,9 @@ typedef struct eargm_conf
 	uint	grace_periods;
 	char 	mail[GENERIC_NAME];
     char    host[GENERIC_NAME];
+	#if EAR_CONF_EXT
+	uint  	use_log;
+	#endif
 } eargm_conf_t;
 
 typedef struct eardb_conf 
@@ -122,6 +128,10 @@ typedef struct eardb_conf
 	uint sync_tcp_port;
     uint mem_size;
     uchar mem_size_types[EARDBD_TYPES];
+    #if EAR_CONF_EXT
+    uint    use_log;
+    #endif
+
 } eardb_conf_t;
 
 
@@ -294,6 +304,9 @@ void set_default_eardbd_conf(eardb_conf_t *eardbd_conf);
 /** Initializes the default values for earlib conf */
 void set_default_earlib_conf(earlib_conf_t *earlibc);
 
+/** Initializes the default values for a given island id conf. This function doesn't allocate memory */
+void set_default_island_conf(node_island_t *isl_conf,uint id);
+
 // Concrete data functions
 int get_node_island(cluster_conf_t *conf, char *hostname);
 
@@ -301,6 +314,7 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 
 /** given a node name, get all ips of its range*/
 int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips);
+int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips);
 
 /** returns the ip of the nodename specified */
 int get_ip(char *nodename);

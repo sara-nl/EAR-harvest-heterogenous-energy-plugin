@@ -20,7 +20,7 @@ then
 fi
 
 # Edit minimum frequency (in KHz)
-export MIN_FREQUENCY=1900000
+export MIN_FREQUENCY=2000000
 
 # Edit output options
 export OUT_COE="$HOME/coefficients/"

@@ -38,6 +38,9 @@ static void print_eard_conf(eard_conf_t *conf)
 	verbose(VCCONF,"\t eard: verbose %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
 	verbose(VCCONF,"\t eard: turbo %u port %u use_db %u use_eardbd %u \n",conf->turbo,conf->port,conf->use_mysql,conf->use_eardbd);
 	verbose(VCCONF,"\t eard: force_frequencies %u\n",conf->force_frequencies);
+	#if EAR_CONF_EXT
+	verbose(VCCONF,"\t eard: use_log %u\n",conf->use_log);
+	#endif
 
 }
 
@@ -49,6 +52,9 @@ static void print_eargm_conf(eargm_conf_t *conf)
 	verbose(VCCONF,"\t eargm: defcon levels [%u,%u,%u] grace period %u\n",conf->defcon_limits[0],conf->defcon_limits[1],conf->defcon_limits[2],
 	conf->grace_periods);
 	verbose(VCCONF,"\t policy %u (0=MaxEnergy,1=MaxPower) units=%u (-,K,M)\n",conf->policy,conf->units); 
+	#if EAR_CONF_EXT
+	verbose(VCCONF,"\t use_log %u\n",conf->use_log);
+	#endif
 }
 
 static void print_db_manager(eardb_conf_t *conf)
@@ -56,6 +62,10 @@ static void print_db_manager(eardb_conf_t *conf)
 	verbose(VCCONF,"--> EARDBD configuration\n");
 	verbose(VCCONF, "---> Aggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tSync Port: %u\tCacheSize: %u\n",
 			conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->sync_tcp_port,conf->mem_size);
+	#if EAR_CONF_EXT
+	verbose(VCCONF,"--> use_log %u\n",conf->use_log);
+	#endif
+	
 }
 
 void print_database_conf(db_conf_t *conf)
@@ -68,7 +78,11 @@ void print_database_conf(db_conf_t *conf)
 static void print_islands_conf(node_island_t *conf)
 {
 	verbose(VCCONF, "Islands configuration\n");
+	#if EAR_CONF_EXT
+	verbose(VCCONF, "--->id: %u (min_power %.0lf, max_power %.0lf,power>%.0lf is an error)\n", conf->id,conf->min_sig_power,conf->max_sig_power,conf->max_error_power);
+	#else
 	verbose(VCCONF, "--->id: %u\n", conf->id);
+	#endif
 	int i;
 	for (i = 0; i < conf->num_ranges; i++)
 	{

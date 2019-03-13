@@ -29,7 +29,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include <common/config.h>
 #include <common/file.h>
+#include <common/output/verbose.h>
 #include <library/tracer/tracer_mpi.h>
 
 #ifdef EAR_TRACER_MPI
@@ -40,13 +44,18 @@ static int fd;
 
 void traces_mpi_init()
 {
+	char myhost[128];
+	
 	char *pathname = getenv("EAR_TRACE_MPI_PATH");
+
+	if (pathname!=NULL) verbose(1,"Dynais traces ON. Traces %s",pathname);
 
 	if (enabled || pathname == NULL) {
 		return;
 	}
 
-	sprintf(buffer, "%s", pathname);
+	gethostname(myhost,sizeof(myhost));
+	sprintf(buffer, "%s.%s", pathname,myhost);
 
 	fd = open(buffer, F_WR | F_CR | F_TR, F_UR | F_UW | F_GR | F_GW | F_OR | F_OW);
 	enabled = (fd >= 0);

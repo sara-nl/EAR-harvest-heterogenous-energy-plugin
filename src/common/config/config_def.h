@@ -52,6 +52,10 @@
 /* When set to 1, verbose,debug, and error output is sent to eard.log file
  * stored at EAR_TMP */
 #define EARD_FILE_LOG						0
+/* When set to 1, verbose,debug, and error output is sent to eardbd.log file
+ *  * stored at EAR_TMP */
+#define EARDBD_FILE_LOG                       0
+
 /** These definitions affects DB configuration */
 /* When set to 1, loops signatures are not reported to the DB to save space */
 #define LARGE_CLUSTER                       1
