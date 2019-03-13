@@ -757,11 +757,12 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
     for (i = 1; i <= NUM_PROPS; i++)
     {
         //check that the next ip exists within the range
-        if ((current_dist + i*NUM_PROPS) >= total_ips) break;
+        if ((target_idx + current_dist + i*NUM_PROPS) >= total_ips) break;
 
         //prepare next node data
         temp.sin_addr.s_addr = ips[target_idx + current_dist + i*NUM_PROPS];
         strcpy(next_ip, inet_ntoa(temp.sin_addr));
+
         //prepare next node distance
         command->node_dist = current_dist + i*NUM_PROPS;
 
