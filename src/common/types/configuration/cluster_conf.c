@@ -88,16 +88,88 @@ int get_ip(char *nodename)
     return ip1;
 }
 
+int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
+{
+    
+    int i, j, k, range_idx;
+    int **aux_ips;
+    int *sec_aux_ips;
+    int *ip_counter;
+    char aux_name[256];
+    int total_ranges = 0;
+    int current_range = 0;
+    //get total number of ranges
+    for (i = 0; i < my_conf->num_islands; i++)
+        total_ranges += my_conf->islands[i].num_ranges;
+    
+    if (total_ranges < 1)
+    {
+        error("No IP ranges found.");
+        return EAR_ERROR;
+    }
+    //allocate memory for each range of IPs as well as each range's IP counter
+    ip_counter = calloc(total_ranges, sizeof(int));
+    aux_ips = calloc(total_ranges, sizeof(int*));
+
+    for (i = 0; i < my_conf->num_islands; i++)
+    {
+        for (j = 0; j < my_conf->islands[i].num_ranges; j++)
+        {
+            node_range_t range = my_conf->islands[i].ranges[j];
+            if (range.end == -1)
+            {
+                sprintf(aux_name, "%s", range.prefix);
+                sec_aux_ips = calloc(1, sizeof(int));
+                sec_aux_ips[0] = get_ip(aux_name);
+                aux_ips[current_range] = sec_aux_ips;
+                ip_counter[current_range] = 1;
+                current_range++;
+                continue;
+            }
+            if (range.end == range.start)
+            {
+                sprintf(aux_name, "%s%u", range.prefix, range.start);
+                sec_aux_ips = calloc(1, sizeof(int));
+                sec_aux_ips[0] = get_ip(aux_name);
+                aux_ips[current_range] = sec_aux_ips;
+                ip_counter[current_range] = 1;
+                current_range++;
+                continue;
+            }
+
+            int total_ips = range.end-range.start + 1;
+            int it = 0;
+            sec_aux_ips = calloc(total_ips, sizeof(int));
+            for (k = range.start; k <= range.end ; k++)
+            {
+                if (k < 10 && range.end > 10)
+                    sprintf(aux_name, "%s0%u", range.prefix, k);
+                else
+                    sprintf(aux_name, "%s%u", range.prefix, k);
+
+                sec_aux_ips[it] = get_ip(aux_name);
+                it ++;
+            }
+            aux_ips[current_range] = sec_aux_ips;
+            ip_counter[current_range] = it;
+            current_range++;
+        }
+    }
+    *ips = aux_ips;
+    *num_ips = ip_counter;
+    
+    return total_ranges;
+        
+}
+
 int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
 {
     int i, j, range_idx;
     int *aux_ips;
-    //iterar en els ranges i trobar el nom.
     char aux_name[256];
     for (i = 0; i < my_conf->num_islands; i++)
     {
         range_idx = island_range_conf_contains_node(&my_conf->islands[i], nodename);
-        printf("range_idx: %d\n", range_idx);
         if (range_idx < 0) continue;
 
         node_range_t range = my_conf->islands[i].ranges[range_idx];
@@ -121,14 +193,13 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
         int total_ips = range.end-range.start + 1;
         int it = 0;
         aux_ips = calloc(total_ips, sizeof(int));
-        for (j = range.end; j >= range.start && j > 0; j--)
+        for (j = range.start; j <= range.end ; j++)
         {
             if (j < 10 && range.end > 10)
                 sprintf(aux_name, "%s0%u", range.prefix, j);
             else
                 sprintf(aux_name, "%s%u", range.prefix, j);
 
-            printf("getting_ip for %s (%d of %d)\n", aux_name, it, total_ips);
             aux_ips[it] = get_ip(aux_name);
             it ++;
         }
@@ -184,6 +255,12 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 			if ((my_conf->islands[i].ranges[range_id].sec_ip>=0) && (my_conf->islands[i].num_backups)){
             	strcpy(n->db_sec_ip, my_conf->islands[i].backup_ips[my_conf->islands[i].ranges[range_id].sec_ip]);
 			}
+			#if EAR_CONF_EXT
+			n->max_sig_power=my_conf->islands[i].max_sig_power;
+			n->min_sig_power=my_conf->islands[i].min_sig_power;
+			n->max_error_power=my_conf->islands[i].max_error_power;
+			n->use_log=my_conf->eard.use_log;
+			#endif
 		}
 		i++;
 	}while(i<my_conf->num_islands);
@@ -434,6 +511,9 @@ void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 	eardbdc->mem_size_types[4] = 7;
 	eardbdc->mem_size_types[5] = 5;
 	eardbdc->mem_size_types[6] = 1;
+	#if EAR_CONF_EXT
+	eardbdc->use_log=EARDBD_FILE_LOG;
+	#endif
 }
 
 void set_default_eard_conf(eard_conf_t *eardc)
@@ -446,6 +526,10 @@ void set_default_eard_conf(eard_conf_t *eardc)
     eardc->use_mysql=1;         /* Must EARD report to DB */
     eardc->use_eardbd=1;        /* Must EARD report to DB using EARDBD */
 	eardc->force_frequencies=1; /* EARD will force frequencies */
+	#if EAR_CONF_EXT
+	eardc->use_log=EARD_FILE_LOG;
+    #endif
+
 }
 
 void set_default_earlib_conf(earlib_conf_t *earlibc)
@@ -473,6 +557,9 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->defcon_limits[2]=95;
 	eargmc->grace_periods=GRACE_T1;
 	strcpy(eargmc->mail,"nomail");
+	#if EAR_CONF_EXT
+	eargmc->use_log=EARGMD_FILE_LOG;
+	#endif
 }
 
 void set_default_db_conf(db_conf_t *db_conf)
@@ -481,6 +568,37 @@ void set_default_db_conf(db_conf_t *db_conf)
     strcpy(db_conf->user_commands, "ear_daemon");
     strcpy(db_conf->ip, "127.0.0.1");
     db_conf->port = 0;
+}
+
+/*
+    uint id;
+    uint num_ranges;
+    node_range_t *ranges;
+    char **db_ips;
+    uint num_ips;
+    char **backup_ips;
+    uint num_backups;
+    #if EAR_CONF_EXT
+    double min_sig_power;
+    double max_sig_power;
+    double max_error_power;
+    #endif
+*/
+
+void set_default_island_conf(node_island_t *isl_conf,uint id)
+{
+	isl_conf->id=id;
+	isl_conf->num_ranges=0;
+	isl_conf->ranges=NULL;
+	isl_conf->db_ips=NULL;
+	isl_conf->num_ips=0;	
+	isl_conf->backup_ips=NULL;
+	isl_conf->num_backups=0;
+    #if EAR_CONF_EXT
+	isl_conf->min_sig_power=MIN_SIG_POWER;
+	isl_conf->max_sig_power=MAX_SIG_POWER;
+	isl_conf->max_error_power=MAX_ERROR_POWER;
+	#endif
 }
 
 /*

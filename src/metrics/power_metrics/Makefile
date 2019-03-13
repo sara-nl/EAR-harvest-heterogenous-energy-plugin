@@ -36,9 +36,9 @@ libpowermetrics.so: $(OBJS) $(libs_OBJS) $(COMMON_OBJS)
 
 ######## OPTIONS
 
-install:
+install: ;
 
-devel.install: libs.ginstall incl.ginstall; 
+devel.install: ; 
 
 %.install: ;
 

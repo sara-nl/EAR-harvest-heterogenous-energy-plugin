@@ -382,7 +382,11 @@ void process_remote_requests(int clientfd)
 			error("Invalid remote command\n");
 	}	
 	send_answer(clientfd,&ack);
+#if USE_NEW_PROP
+    if (req != EAR_RC_PING && req != NO_COMMAND && req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB)
+#else
     if (command.node_dist > 0 && req != EAR_RC_PING && req != NO_COMMAND)
+#endif
     {
         verbose(VRAPI+1, "command=%d propagated distance=%d",req,command.node_dist);
         propagate_req(&command, my_cluster_conf.eard.port);
@@ -406,6 +410,7 @@ void * eard_dynamic_configuration(void *tmp)
 	print_f_list(num_f,f_list);
 	verbose(VRAPI+2,"We have %u valid p_states\n",num_f);
 #if USE_NEW_PROP
+    verbose(0, "Init for ips\n");
     init_ips(&my_cluster_conf);
 #endif
 
@@ -430,6 +435,9 @@ void * eard_dynamic_configuration(void *tmp)
 		}
 	}while(eard_must_exit==0);
     warning("eard_dynamic_configuration exiting\n");
+#if USE_NEW_PROP
+    close_ips();
+#endif
     //ear_conf_shared_area_dispose(my_tmp);
     close_server_socket(eards_remote_socket);
     pthread_exit(0);

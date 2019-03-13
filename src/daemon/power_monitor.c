@@ -410,6 +410,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 		ulong f;
 		frequency_set_userspace_governor_all_cpus();
 		f=frequency_pstate_to_freq(my_policy->p_state);
+	  verbose(VJOBPMON,"Setting userpace and frequency to %u",f);
 		frequency_set_all_cpus(f);
 	}
 	appID->is_mpi=0;
@@ -553,7 +554,7 @@ void powermon_end_job(job_id jid,job_id sid)
     report_powermon_app(&summary);
     save_eard_conf(&eard_dyn_conf);
 	/* RESTORE FREQUENCY */
-	verbose(VJOBPMON+1,"restoring governor %s\n",current_ear_app[ccontext]->governor.governor);
+	verbose(VJOBPMON,"restoring governor %s\n",current_ear_app[ccontext]->governor.governor);
 	set_governor(&current_ear_app[ccontext]->governor);
 	if (strcmp(current_ear_app[ccontext]->governor.governor,"userspace")==0){
 		frequency_set_all_cpus(current_ear_app[ccontext]->current_freq);
@@ -664,9 +665,11 @@ void powermon_set_freq(ulong freq)
     ps=frequency_freq_to_pstate(freq);
     if (ccontext>=0){
         if (freq!=current_node_freq){
+		if ((my_cluster_conf.eard.force_frequencies) || (current_ear_app[ccontext]->app.is_mpi)){
             verbose(VJOBPMON,"SetFreq:  changing freq from %lu to %lu\n",current_node_freq,freq);
             frequency_set_all_cpus(freq);
             current_node_freq=freq;
+		}
         }
     }
     my_node_conf->max_pstate=ps;
@@ -732,18 +735,32 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	#endif	
 
 	#if SYSLOG_MSG
+	#if EAR_CONF_EXT
+	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< my_node_conf->min_sig_power) || (my_current_power->avg_dc>my_node_conf->max_sig_power)){
+		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
+	}
+	#else
 	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< MIN_SIG_POWER) || (my_current_power->avg_dc>MAX_SIG_POWER)){
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
 	}
 	#endif
+	#endif
+	#if EAR_CONF_EXT
+    if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>my_node_conf->max_error_power)){
+	#else
     if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>MAX_SIG_POWER)){
+	#endif
     	warning("Resetting IPMI interface since power is %.2lf\n",my_current_power->avg_dc);
     	node_energy_dispose();
         node_energy_init();
     }
 
 	#if DB_MYSQL
+	#if EAR_CONF_EXT
+    if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<my_node_conf->max_error_power)){
+	#else
     if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<MAX_ERROR_POWER)){
+	#endif
 	if (my_cluster_conf.eard.use_mysql)
 	{
 		if (!my_cluster_conf.eard.use_eardbd) {

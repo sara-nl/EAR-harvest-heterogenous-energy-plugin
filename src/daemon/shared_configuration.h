@@ -37,6 +37,7 @@
 #ifndef _SHARED_CONF_H
 #define _SHARED_CONF_H
 
+#include <common/config.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/coefficient.h>
@@ -62,6 +63,9 @@ typedef struct settings_conf{
 	double 	th2;
 #endif
 	earlib_conf_t lib_info;
+	#if EAR_CONF_EXT
+	double min_sig_power;
+	#endif
 } settings_conf_t;
 
 typedef struct resched{

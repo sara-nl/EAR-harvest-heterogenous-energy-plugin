@@ -685,6 +685,14 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->eard.force_frequencies = atoi(token);
         }
+		#if EAR_CONF_EXT
+		else if (!strcmp(token, "NODEUSELOG"))
+        {
+            token = strtok(NULL, "=");
+            conf->eard.use_log = atoi(token);
+        }
+
+		#endif
 
 		//DB MANAGER
 		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))
@@ -731,6 +739,13 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				i++;
 			}
 		}
+		#if EAR_CONF_EXT
+		else if (!strcmp(token, "DBDAEMONUSELOG"))
+		{
+            token = strtok(NULL, "=");
+            conf->db_manager.use_log = atoi(token);
+		}
+		#endif
 
 		//GLOBAL MANAGER
 		else if (!strcmp(token, "GLOBALMANAGERVERBOSE"))
@@ -834,6 +849,13 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			remove_chars(token, ' ');
 			strcpy(conf->eargm.host, token);
 		}
+		#if EAR_CONF_EXT
+        else if (!strcmp(token, "GLOBALMANAGERUSELOG"))
+        {
+			token = strtok(NULL, "=");
+			conf->eargm.use_log = atoi(token);
+        }
+		#endif
 
 		//MARIADB/MYSQL config
 		else if (!strcmp(token, "MARIADBIP"))
@@ -940,10 +962,27 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                     if (idx < 0)
                     {
 			            conf->islands = realloc(conf->islands, sizeof(node_island_t)*(conf->num_islands+1));
+						set_default_island_conf(&conf->islands[conf->num_islands],atoi(token));
+						#if 0
             			memset(&conf->islands[conf->num_islands], 0, sizeof(node_island_t));
 	    				conf->islands[conf->num_islands].id = atoi(token);
+						#endif
                     }
 				}
+				#if EAR_CONF_EXT
+				else if (!strcmp(token, "MAX_POWER")){
+					token = strtok(NULL, " ");
+					conf->islands[conf->num_islands].max_sig_power=(double)atoi(token);
+				}
+				else if (!strcmp(token, "MIN_POWER")){
+					token = strtok(NULL, " ");
+					conf->islands[conf->num_islands].min_sig_power=(double)atoi(token);
+				}
+				else if (!strcmp(token, "ERROR_POWER")){
+					token = strtok(NULL, " ");
+					conf->islands[conf->num_islands].max_error_power=(double)atoi(token);
+				}
+				#endif
 				else if (!strcmp(token, "DBIP"))
 				{
 					token = strtok(NULL, " ");
@@ -1065,6 +1104,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                         generate_node_ranges(&conf->islands[idx], token);
                     }
 				}
+				
 				token = strtok(NULL, "=");
 			}
             if (idx < 0)

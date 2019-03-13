@@ -30,7 +30,7 @@ eargmd: eargm.c $(comm_BINS)
 
 install: install.others eard.ginstall;
 
-devel.install: devel.install.others;
+%.install: %.install.others;
 
 clean: clean.others eard.gclean rclean;
 

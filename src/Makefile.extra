@@ -7,6 +7,7 @@ rclean:
 	rm -f *.o *.a *.so
 
 %.ginstall:
+	@ (mkdir -p $($*_PATH))
 	@ (cp $($*_BINS) $($*_PATH))
 ifdef CHOWN_USR
 	@ (cd $($*_PATH) && chown $(CHOWN_USR) $($*_BINS))
@@ -15,5 +16,17 @@ ifdef CHOWN_GRP
 	@ (cd $($*_PATH) && chgrp $(CHOWN_GRP) $($*_BINS))
 endif
 	@ (cd $($*_PATH) && chmod $($*_PERM) $($*_BINS))
+
+%.finstall:
+	@ (mkdir -p $($*_PATH))
+	@ (cd $($*_FOLD) && cp $($*_BINS) $($*_PATH))
+ifdef CHOWN_USR
+	@ (cd $($*_PATH) && chown $(CHOWN_USR) $($*_BINS))
+endif
+ifdef CHOWN_GRP
+	@ (cd $($*_PATH) && chgrp $(CHOWN_GRP) $($*_BINS))
+endif
+	@ (cd $($*_PATH) && chmod $($*_PERM) $($*_BINS))
+
 
 -include .extra

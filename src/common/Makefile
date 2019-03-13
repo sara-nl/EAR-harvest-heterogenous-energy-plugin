@@ -6,7 +6,7 @@ libc_BINS = libcommon.a
 libc_OBJS = $(patsubst %.c, %.o, $(shell find -maxdepth 1 -type f -name '*.c'))
 incl_BINS = states.h
 incl_PATH = $(DESTDIR)/include
-incl_PATH = 0660
+incl_PERM = 0660
 
 ######## FILES
 
@@ -24,7 +24,7 @@ libcommon.a: $(libc_OBJS)
 
 install: install.components;
 
-devel.install: devel.install.component incl.ginstall;
+devel.install: devel.install.components incl.ginstall;
 
 %.install: %.install.components;
 

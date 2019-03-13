@@ -597,6 +597,14 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	/* The learning phase avoids EAR internals ear_whole_app is set to 1 when learning-phase is set */
 	if (!ear_whole_app)
 	{
+		unsigned long ear_event = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
+	    traces_mpi_call(ear_my_rank, my_id,
+                        (ulong) PAPI_get_real_usec(),
+                        (ulong) ear_event,
+                        (ulong) buf,
+                        (ulong) dest,
+                        (ulong) call_type);
+
 		total_mpi_calls++;
 		/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
 		 * ear_periodic_mode can be ON or OFF 
@@ -692,12 +700,12 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 
 		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
-		traces_mpi_call(ear_my_rank, my_id,
+		/*traces_mpi_call(ear_my_rank, my_id,
 						(ulong) PAPI_get_real_usec(),
 						(ulong) ear_event,
 						(ulong) buf,
 						(ulong) dest,
-						(ulong) call_type);
+						(ulong) call_type);*/
 
 		mpi_calls_per_loop++;
 		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm

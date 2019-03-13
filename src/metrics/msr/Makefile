@@ -16,7 +16,6 @@ energy_cpu.o: energy_cpu.c energy_cpu.h
 install:
 
 devel.install: ;
-	cp *.h $(DESTDIR)/include/metrics/msr
 
 %.install: ;
 
