@@ -12,7 +12,7 @@ plug_PERM = 0640
 plug_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
         $(SRCDIR)/daemon/shared_configuration.o \
         $(SRCDIR)/global_manager/eargm_rapi.o \
-        $(SRCDIR)/common/types.a
+        $(SRCDIR)/common/libcommon.a
 
 plug_SRCS = slurm_plugin.c \
         slurm_plugin_helper.c \

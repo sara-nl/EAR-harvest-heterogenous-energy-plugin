@@ -17,7 +17,7 @@ all: $(dtbs_OBJS)
 
 ######## OPTIONS
 
-install:
+install: ;
 
 %.install: ;
 

@@ -5,23 +5,25 @@ LDFLAGS   = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -lm -pthread
 
 eard_BINS = eard
 eard_PATH = $(DESTDIR)/sbin
-eard_PERM = 0750
+eard_PERM = 0770
 oths_BINS = eard_api.o
 
 ######## FILES
 
-eard_OBJS = eard_checkpoint.o \
-	eard_rapi.o \
-	eard_server_api.o \
-	dynamic_configuration.o \
-	power_monitor.o \
-	shared_configuration.o \
-	app_api/app_server_api.o
+eard_OBJS = \
+    eard_checkpoint.o \
+    eard_rapi.o \
+    eard_server_api.o \
+    dynamic_configuration.o \
+    power_monitor.o \
+    shared_configuration.o \
+    app_api/app_server_api.o
 
-eard_OBJS += $(SRCDIR)/common/libcommon.a \
-	$(SRCDIR)/control/frequency.o \
-	$(SRCDIR)/database_cache/eardbd_api.o \
-	$(SRCDIR)/metrics/libmetrics.a
+eard_OBJS += \
+    $(SRCDIR)/control/frequency.o \
+    $(SRCDIR)/database_cache/eardbd_api.o \
+    $(SRCDIR)/common/libcommon.a \
+    $(SRCDIR)/metrics/libmetrics.a
 
 ######## RULES
 

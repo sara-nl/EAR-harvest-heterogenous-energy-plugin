@@ -53,7 +53,7 @@ MPIF_OBJS = mpi_intercept/MPI_interceptF.o \
 
 ######## RULES
 
-all: all.gnrc.components $(impi_OBJS) $(ompi_OBJS) $(libs_BIN)
+all: all.gnrc.components $(impi_OBJS) $(ompi_OBJS) $(libs_BINS)
 
 %.ompi.so: $(xmpi_OBJS) $(comm_OBJS)
 	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(xmpi_OBJS) $(MPIC_OBJS) \

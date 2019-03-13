@@ -5,7 +5,7 @@ LDFLAGS = $(DB_LDFLAGS) -lpthread
 
 eard_BINS = eargmd
 eard_PATH = $(DESTDIR)/sbin
-eard_PERM = 0750
+eard_PERM = 0770
 
 ######## FILES
 
@@ -36,8 +36,7 @@ clean: clean.others eard.gclean rclean;
 
 ######## SUBFOLDERS
 
-%.others:
-	@ $(MAKE) -C 'commands' $* || exit
+%.others: ;
 
 ######## DEPENDENCIES
 

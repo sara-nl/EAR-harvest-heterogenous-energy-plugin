@@ -22,9 +22,9 @@ libcommon.a: $(libc_OBJS)
 
 ######## OPTIONS
 
-install: install.components libc.ginstall;
+install: install.components;
 
-devel.install: devel.install.components;
+devel.install: devel.install.component incl.ginstall;
 
 %.install: %.install.components;
 

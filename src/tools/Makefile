@@ -18,7 +18,7 @@ tool_BINS = \
     learning_validate \
     learning_delete
 tool_PATH = $(DESTDIR)/bin/tools
-tool_PERM = 0750
+tool_PERM = 0770
 
 ######## FILES
 
