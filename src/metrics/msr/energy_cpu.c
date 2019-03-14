@@ -59,6 +59,11 @@
 #define MSR_DRAM_PERF_STATUS			0x61B
 #define MSR_DRAM_POWER_INFO				0x61C
 
+/* Thermal Domain */
+#define IA32_THERM_STATUS               0x19C
+#define MSR_TEMPERATURE_TARGET          0x1A2
+
+
 static int ear_papi_energy_connected=0;
 
 #define MAX_CPUS        24
@@ -67,12 +72,14 @@ static int ear_papi_energy_connected=0;
 
 int num_cpus = -1;
 int num_cores = -1;
+int msr_initialised = 0;
 
 static int total_cores=0,total_packages=0;
 static int package_map[MAX_PACKAGES];
 static int fd_map[MAX_PACKAGES];
 
 double power_units, cpu_energy_units, time_units, dram_energy_units;
+int throttling_temp[NUM_SOCKETS];
 
 static int detect_packages(void) {
 
@@ -107,6 +114,7 @@ static int detect_packages(void) {
 
 int init_rapl_msr()
 {
+    if (msr_initialised) return EAR_SUCCESS;
     if (detect_packages() == EAR_ERROR)
     {
         error("ERROR reading hardware info\n");
@@ -137,7 +145,13 @@ int init_rapl_msr()
 		cpu_energy_units=pow(0.5,(double)((result>>8)&0x1f));
 		time_units=pow(0.5,(double)((result>>16)&0xf));
 		dram_energy_units=pow(0.5,(double)16);
+
+		if (msr_read(&fd, &result, sizeof result, MSR_TEMPERATURE_TARGET))
+			return EAR_ERROR;
+
+        throttling_temp[j] = (result >> 16);
 	}
+    msr_initialised = 1;
 	return EAR_SUCCESS;
 }
 
@@ -187,4 +201,24 @@ void dispose_rapl_msr()
 	int j;
 	for (j = 0; j < total_packages; j++)
 		msr_close(&fd_map[j]);
+    msr_initialised = 0;
 }
+
+int read_temp_msr(unsigned long long *_values)
+{
+    unsigned long long result;
+	int fd, j;
+
+	for(j=0;j<NUM_SOCKETS;j++) {
+        int ret;
+
+		/* PKG reading */	    
+	    if (msr_read(&fd_map[j], &result, sizeof result, IA32_THERM_STATUS))
+			return EAR_ERROR;
+		_values[j] = throttling_temp[j] - ((result>>16)&0xf);
+
+		
+    }
+	return EAR_SUCCESS;
+}
+

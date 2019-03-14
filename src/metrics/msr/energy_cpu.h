@@ -49,6 +49,7 @@ int reset_rapl_msr();
 /** Reads rapl counters and stores them in values array. Returns 0 on success 
 *	and -1 on error. */
 int read_rapl_msr(unsigned long long *_values);
+int read_temp_msr(unsigned long long *_values);
 
 #else
 #endif
