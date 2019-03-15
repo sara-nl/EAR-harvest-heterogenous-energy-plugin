@@ -61,6 +61,7 @@
 
 /* Thermal Domain */
 #define IA32_THERM_STATUS               0x19C
+#define IA32_PKG_THERM_STATUS           0x1B1
 #define MSR_TEMPERATURE_TARGET          0x1A2
 
 
@@ -210,12 +211,13 @@ int read_temp_msr(unsigned long long *_values)
 	int fd, j;
 
 	for(j=0;j<NUM_SOCKETS;j++) {
+        printf("toal_packages: %d\n", total_packages);
         int ret;
 
 		/* PKG reading */	    
-	    if (msr_read(&fd_map[j], &result, sizeof result, IA32_THERM_STATUS))
+	    if (msr_read(&fd_map[j], &result, sizeof result, IA32_PKG_THERM_STATUS))
 			return EAR_ERROR;
-		_values[j] = throttling_temp[j] - ((result>>16)&0xf);
+		_values[j] = throttling_temp[j] - ((result>>16)&0xff);
 
 		
     }
