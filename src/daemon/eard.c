@@ -180,6 +180,7 @@ void set_global_eard_variables()
 	verb_level=my_cluster_conf.eard.verbose;
     VERB_SET_FD(fd_my_log);
     ERROR_SET_FD(fd_my_log);
+	WARN_SET_FD(fd_my_log);
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -584,7 +585,8 @@ int eard_system(int must_read)
 			ack  = EAR_COM_OK;
 			ret1 = EAR_SUCCESS;
 			// print_loop_fd(1,&req.req_data.loop);
-			#if !LARGE_CLUSTER
+			#if EAR_CONF_EXT
+			if (my_cluster_conf.database.report_loops){
 			#if DB_MYSQL
 			if (my_cluster_conf.eard.use_mysql)
 			{
@@ -600,6 +602,27 @@ int eard_system(int must_read)
 					}
 				}
 			}
+			#endif
+			}
+			#else
+			/* Once EAR_CONF_EXT is oficial, remove this code */
+			#if !LARGE_CLUSTER
+            #if DB_MYSQL
+            if (my_cluster_conf.eard.use_mysql)
+            {
+                if (!my_cluster_conf.eard.use_eardbd){
+                    ret1 = db_insert_loop (&req.req_data.loop);
+                } else {
+                    edb_state_t state = eardbd_send_loop(&req.req_data.loop);
+
+                    if (edb_state_fail(state)){
+                        error("Error sending loop to eardb");
+                        eardbd_reconnect(&my_cluster_conf, my_node_conf, state);
+                        ret1 = EAR_ERROR;
+                    }
+                }
+            }
+            #endif
 			#endif
 			#endif
 
@@ -987,6 +1010,10 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
     dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
+	#if EAR_CONF_EXT
+	dyn->min_sig_power=node->min_sig_power;
+	dyn->report_loops=cluster->database.report_loops;
+	#endif
 	resched->force_rescheduling=1;
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
 	f_monitoring=my_cluster_conf.eard.period_powermon;
@@ -1026,7 +1053,9 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
     dyn->th=my_policy->th;
 	#if EAR_CONF_EXT
 	dyn->min_sig_power=node->min_sig_power;
+    dyn->report_loops=cluster->database.report_loops;
 	#endif
+
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
 	f_monitoring=my_cluster_conf.eard.period_powermon;
 	resched_conf->force_rescheduling=0;
@@ -1285,6 +1314,7 @@ void main(int argc,char *argv[])
 		verb_level = atoi(argv[1]);
 		VERB_SET_FD(fd_my_log);
 		ERROR_SET_FD(fd_my_log);
+		WARN_SET_FD(fd_my_log);
 
 
 		if ((verb_level < 0) || (verb_level > 4)) {
