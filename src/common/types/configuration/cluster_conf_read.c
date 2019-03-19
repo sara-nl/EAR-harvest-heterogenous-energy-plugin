@@ -905,6 +905,30 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->database.port = atoi(token);
 		}
+		#if EAR_CONF_EXT
+		else if (!strcmp(token, "MAXCONNECTIONS"))
+        {
+            token = strtok(NULL, "=");
+            conf->database.max_connections = atoi(token);
+        }
+		else if (!strcmp(token, "REPORTNODEDETAIL"))
+        {
+            token = strtok(NULL, "=");
+            conf->database.report_node_detail = atoi(token);
+		}
+		else if (!strcmp(token, "REPORTSIGDETAIL"))
+        {
+            token = strtok(NULL, "=");
+            conf->database.report_sig_detail = atoi(token);
+
+
+        }
+		else if (!strcmp(token, "REPORTLOOPS"))
+        {
+            token = strtok(NULL, "=");
+            conf->database.report_loops = atoi(token);
+        }
+		#endif
 
             //COMMUNICATION NODES CONF
 /*        else if (!strcmp(token, "COMMNODE"))

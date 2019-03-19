@@ -162,6 +162,12 @@ typedef struct db_conf
     char pass_commands[USER];
     char database[USER];
     uint port;
+	#if EAR_CONF_EXT
+	uint max_connections;
+	uint report_node_detail;
+	uint report_sig_detail;
+	uint report_loops;
+	#endif
 } db_conf_t;
 
 
