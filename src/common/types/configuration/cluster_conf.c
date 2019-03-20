@@ -568,6 +568,12 @@ void set_default_db_conf(db_conf_t *db_conf)
     strcpy(db_conf->user_commands, "ear_daemon");
     strcpy(db_conf->ip, "127.0.0.1");
     db_conf->port = 0;
+	#if EAR_CONF_EXT
+	db_conf->max_connections=MAX_DB_CONNECTIONS;
+	db_conf->report_node_detail=!DB_SIMPLE;
+	db_conf->report_sig_detail=!DB_SIMPLE;
+	db_conf->report_loops=!LARGE_CLUSTER;
+	#endif
 }
 
 /*
