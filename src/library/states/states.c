@@ -99,7 +99,7 @@ ulong select_near_freq(ulong avg)
 
 void states_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
-	verbose(1, "EAR(%s) Ends execution. \n", app_name);
+	verbose(2, "EAR(%s) Ends execution. \n", app_name);
 	end_log();
 }
 
@@ -161,9 +161,18 @@ void states_end_period(uint iterations)
 	{
 		loop.total_iterations = iterations;
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
+		#if EAR_CONF_EXT
+		if (system_conf->report_loops){
+		#if DB_MYSQL
+		eards_write_loop_signature(&loop);
+		#endif
+		}
+		#else
+		/* Once EAR_CONF_EXT is oficial, remove this code */
 		#if !LARGE_CLUSTERS
 		#if DB_MYSQL
 		eards_write_loop_signature(&loop);
+		#endif
 		#endif
 		#endif
 	}
@@ -293,7 +302,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 			if (comp_N_time>(perf_accuracy_min_time*0.1)){
-				verbose(1,"Going to FIRST_ITERATION after %d iterations\n",iterations);
+				verbose(2,"Going to FIRST_ITERATION after %d iterations\n",iterations);
 				comp_N_begin=comp_N_end;
 				EAR_STATE=FIRST_ITERATION;
 				traces_start();
@@ -372,7 +381,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* Included to accelerate the signature computation */
 			if ((iterations%perf_count_period_10p)==0){
 				if (time_ready_signature(perf_accuracy_min_time)){	
-					verbose(1,"period update fom %u to %u\n",perf_count_period,iterations - 1);
+					verbose(2,"period update fom %u to %u\n",perf_count_period,iterations - 1);
 					perf_count_period=iterations - 1;
 					if (perf_count_period==0) perf_count_period=1;
 				}
@@ -392,7 +401,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
                 double time_from_mpi_init;
                 time(&curr_time);    
                 time_from_mpi_init=difftime(curr_time,application.job.start_time);
-                verbose(1,"Number of seconds since the application start_time at which signature is computed %lf\n",time_from_mpi_init);
+                verbose(2,"Number of seconds since the application start_time at which signature is computed %lf\n",time_from_mpi_init);
 				#if MEASURE_DYNAIS_OV
 				double time_since_start_loop;
 				time_since_start_loop=difftime(curr_time,start_loop_time);

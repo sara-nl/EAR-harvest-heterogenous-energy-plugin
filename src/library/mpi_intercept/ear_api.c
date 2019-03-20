@@ -551,7 +551,7 @@ void ear_finalize()
 
 	// Closing any remaining loop
 	if (loop_with_signature) {
-		verbose(1, "loop ends with %d iterations detected", ear_iterations);
+		verbose(2, "loop ends with %d iterations detected", ear_iterations);
 	}
 #if EAR_OVERHEAD_CONTROL
 	switch(ear_periodic_mode){

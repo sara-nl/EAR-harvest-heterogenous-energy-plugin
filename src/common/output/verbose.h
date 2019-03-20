@@ -58,6 +58,9 @@ int warn_channel	__attribute__((weak)) = 2;
 #define VERB_SET_FD(fd) \
 	verb_channel = fd;
 
+#define WARN_SET_FD(fd) \
+	warn_channel = fd;
+
 #define VERB_SET_LVL(level) \
 	verb_level = level;
 

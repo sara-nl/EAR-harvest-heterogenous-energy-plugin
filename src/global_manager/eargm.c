@@ -493,6 +493,7 @@ void main(int argc,char *argv[])
 	#endif
     VERB_SET_FD(fd_my_log);
     ERROR_SET_FD(fd_my_log);
+	WARN_SET_FD(fd_my_log);
 
     update_eargm_configuration(&my_cluster_conf);
 

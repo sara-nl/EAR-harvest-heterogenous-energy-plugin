@@ -230,6 +230,19 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	strcpy(server_host, argv[3]);
 	#endif
 
+	// Print
+	#if EAR_CONF_EXT
+	int fd_log = 2;
+
+	if (conf_clus->db_manager.use_log) {
+		fd_log = create_log(conf_clus->tmp_dir, "eardbd");
+	}
+
+	VERB_SET_FD(fd_log);
+	ERROR_SET_FD(fd_log);
+	DEBUG_SET_FD(fd_log);
+	#endif
+
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;
 	mirror_port = conf_clus->db_manager.sec_tcp_port;
