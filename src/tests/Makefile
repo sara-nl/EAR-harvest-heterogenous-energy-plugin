@@ -12,12 +12,12 @@ install: ;
 
 %.install: ;
 
+clean: clean.components;
+
 ######## OPTIONS
 
 check:
 	@ $(MAKE) -C check check || exit
-
-clean: clean.components
 
 depend: depend.components
 
@@ -27,3 +27,4 @@ depend-clean: depend-clean.components
 
 %.components:
 	@ $(MAKE) -C 'check' $* || exit
+	@ $(MAKE) -C 'functionals' $* || exit
