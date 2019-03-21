@@ -33,13 +33,25 @@
 #include <stdio.h>
 #include <string.h>
 #include <syslog.h>
+#include <time.h>
 #include <common/output/output_conf.h>
 
 int error_channel    __attribute__((weak)) = 2;
+int error_timestamp   __attribute__((weak)) = 0;
+static time_t error_time_log;\
+static struct tm *error_tm_log;\
+static char s_log[64];\
+
 
 #if SHOW_ERRORS
 #define error(...) \
 	{ \
+		if (error_timestamp){ \
+        time(&error_time_log);\
+        error_tm_log=localtime(&error_time_log);\
+        strftime(s_log, sizeof(s_log), "%c", error_tm_log);\
+        dprintf(error_channel, "%s:",s_log); \
+		} \
 		dprintf(error_channel, "ERROR: " __VA_ARGS__); \
 		dprintf(error_channel, "\n"); \
 	}
@@ -51,6 +63,7 @@ int error_channel    __attribute__((weak)) = 2;
 #define ERROR_SET_FD(fd) \
 	error_channel = fd;
 
+#define ERROR_SET_TS(ts) error_timestamp=ts;
 // Log
 #if SHOW_LOGS
 #define log_open(package) openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
