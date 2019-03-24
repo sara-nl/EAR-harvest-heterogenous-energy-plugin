@@ -144,7 +144,7 @@ struct daemon_req req;
 
 int RAPL_counting=0;
 int eard_must_exit=0;
-
+topology_t node_desc;
 
 
 void update_coefficients(char *new,char *old)
@@ -1232,8 +1232,8 @@ void main(int argc,char *argv[])
 	state_t s;
 
 	/* We initialize topology */
-	s = hardware_topology_getsize(&node_size);
-	
+	s = hardware_gettopology(&node_desc);
+	node_size=node_desc.sockets * node_desc.cores * node_desc.threads;	
 	if (state_fail(s) || node_size <= 0)
 	{
 		error("topology information can't be initialized (%d)", s);
@@ -1297,7 +1297,7 @@ void main(int argc,char *argv[])
         _exit(0);
 	}
 	
-	/** We must control if we are come from a crash **/	
+	/** We must control if we come from a crash **/	
 	int must_recover=new_service("eard");
 	if (must_recover){
 		verbose(VCONF,"We must recover from a crash");

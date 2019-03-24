@@ -47,6 +47,7 @@
 #include <daemon/eard_conf_rapi.h>
 #include <common/types/application.h>
 #include <metrics/power_metrics/power_metrics.h>
+#include <daemon/node_metrics.h>
 
 typedef struct powermon_app{
     application_t app;
@@ -55,6 +56,7 @@ typedef struct powermon_app{
 	struct cpufreq_policy governor;
 	ulong current_freq;
 }powermon_app_t;
+
 
 
 /** Periodically monitors the node power monitoring. 
