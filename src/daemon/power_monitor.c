@@ -49,8 +49,8 @@
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
 #include <common/types/configuration/cluster_conf.h>
-#if 0
 #include <metrics/custom/frequency.h>
+#if 0
 #include <metrics/custom/frequency_uncore.h>
 #endif
 #include <metrics/power_metrics/power_metrics.h>
