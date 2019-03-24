@@ -56,8 +56,8 @@ void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 		return;
 	}	
 	verbose(VCHCK,"saving node conf");
-	print_my_node_conf(eard_dyn_conf->nconf);
-	print_my_node_conf_fd_binary(fd,eard_dyn_conf->nconf);
+	// print_my_node_conf(eard_dyn_conf->nconf);
+	// print_my_node_conf_fd_binary(fd,eard_dyn_conf->nconf);
 	verbose(VCHCK,"saving current app");
 	print_powermon_app_fd_binary(fd,eard_dyn_conf->pm_app);
 

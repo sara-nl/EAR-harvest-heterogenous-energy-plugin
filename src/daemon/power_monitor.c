@@ -765,7 +765,7 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
     ((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),
     ((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
 	#endif
-	verbose(VNODEPMON,"ID %u MPI=%u  Current power %lf max %lf min %lf",
+	verbose(VNODEPMON,"ID %u MPI=%u  Current power %.1lf max %.1lf min %.1lf",
 	jid,mpi,my_current_power->avg_dc,maxpower,minpower);
 	verbose_node_metrics(&my_nm_id,nm);
 

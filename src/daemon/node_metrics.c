@@ -161,12 +161,21 @@ int print_node_metrics(nm_t *id,nm_data_t *nm)
 int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 {
 	int i;
+	char msg[1024],buff[128];
+	uint64_t uncore_total=0;
+	unsigned long long temp_total=0;
 	if ((nm==NULL) || (id==NULL) || (id->con!=NM_CONNECTED)){
 		debug("verbose_node_metrics invalid argument");
 		return EAR_ERROR;
 	}
-	verbose(VNODEPMON,"node_metrics avg_cpu_freq %lu ",nm->avg_cpu_freq);
-	for (i=0;i<id->nsockets;i++) verbose(VNODEPMON,"uncore_freq[%d]=%llu ",i,nm->uncore_freq[i]);
-	for (i=0;i<id->nsockets;i++) verbose(VNODEPMON,"temp[%d]=%llu ",i,nm->temp[i]);
+	for (i=0;i<id->nsockets;i++){
+		uncore_total+=nm->uncore_freq[i];
+	}
+	uncore_total=uncore_total/2600000000;
+	for (i=0;i<id->nsockets;i++){
+		temp_total+=nm->temp[i];
+	}
+	sprintf(msg," avg_cpu_freq %.2lf uncore_freq=%llu temp=%llu",(double)nm->avg_cpu_freq/(double)1000000,uncore_total,temp_total);
+	verbose(VNODEPMON,msg);
 	return EAR_SUCCESS;
 }
