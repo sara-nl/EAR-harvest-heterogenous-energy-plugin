@@ -75,7 +75,7 @@ uint64_t uncore_freq[2]={0,0};
 #endif
 
 nm_t my_nm_id;
-nm_data_t nm_init,nm_end,nm_diff;
+nm_data_t nm_init,nm_end,nm_diff,last_mm;
 
 extern topology_t node_desc;
 
@@ -792,7 +792,10 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 	}
 	
 	current_sample.DC_energy=corrected_power*(ulong)difftime(my_current_power->end,my_current_power->begin);
+
+	/* To be usd by status */
 	last_power_reported=my_current_power->avg_dc;
+	copy_node_metrics(&my_nm_id,&last_mm,nm);
 	
 	#if DEMO
 	current_sample.avg_f=nm->avg_cpu_freq;
@@ -999,11 +1002,31 @@ void *eard_power_monitoring(void *noinfo)
 void powermon_get_status(status_t *my_status)
 {
 	int i;
+	#if 1
 	my_status->power=(uint)last_power_reported;
 	for (i=0;i<TOTAL_POLICIES;i++){
 		my_status->policy_conf[i].pstate=(uint)my_node_conf->policies[i].p_state;
 		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].th*100.0);
 	}
+	#else
+	for (i=0;i<TOTAL_POLICIES;i++){
+		my_status->policy_conf[i].freq=frequency_pstate_to_freq(my_node_conf->policies[i].p_state);
+		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].th*100.0);
+	}
+	/* Current app info */
+	if (ccontext>=0){
+		my_status->app.job_id=current_ear_app[ccontext]->app.job.id;
+		my_status->app.step_id=current_ear_app[ccontext]->app.job.step_id;
+	}else{
+		/* No job running */
+		my_status->app.job_id=0;
+	}
+	/* Node info */
+	my_status->node.avg_freq=(ulong)last_nm.avg_cpu_freq;
+	my_status->node.temp=(ulong)get_nm_temp(&last_nm);
+	my_status->node.power=(ulong)last_power_reported
+	my_status->node.max_freq=(ulong)frequency_pstate_to_freq(my_node_conf->max_pstate);
+	#endif
 }
 
 int print_powermon_app_fd_binary(int fd,powermon_app_t *app)

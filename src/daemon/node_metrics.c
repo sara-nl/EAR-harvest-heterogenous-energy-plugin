@@ -50,6 +50,17 @@ uint64_t *temp;
 }nm_data_t;
 */
 
+unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm)
+{
+	int i;
+	unsigned long long temp_total;
+	if ((id==NULL) || (nm==NULL) || (id->con!=NM_CONNECTED))	return 0;
+	for (i=0;i<id->nsockets;i++){
+        temp_total+=nm->temp[i];
+    }
+	return temp_total;
+}
+
 int init_node_metrics(nm_t *id,uint sockets, uint cpus_per_socket,uint cores_model,ulong def_freq)
 {
 	if ((id==NULL)	|| (sockets<=0) || (cpus_per_socket <=0) || (def_freq<=0)){
