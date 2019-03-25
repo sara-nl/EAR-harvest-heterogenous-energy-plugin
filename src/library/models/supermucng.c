@@ -35,6 +35,9 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+
+#define SHOW_DEBUGS 1
+
 #include <common/output/verbose.h>
 #include <common/output/debug.h>
 #include <common/types/log.h>
@@ -110,10 +113,10 @@ static int is_better_min_time(signature_t * curr_sig,signature_t *prev_sig)
 
 	curr_freq=curr_sig->def_f;
 	prev_freq=prev_sig->def_f;
-	verbose(NO_MODELS_SM_VERBOSE,"curr %u prev %u\n",curr_freq,prev_freq);
+	debug("curr %u prev %u\n",curr_freq,prev_freq);
 	freq_gain=performance_gain*(double)((curr_freq-prev_freq)/(double)prev_freq);
    	perf_gain=(prev_sig->time-curr_sig->time)/prev_sig->time;
-	verbose(NO_MODELS_SM_VERBOSE,"Performance gain %lf Frequency gain %lf\n",perf_gain,freq_gain);
+	debug("Performance gain %lf Frequency gain %lf\n",perf_gain,freq_gain);
 	if (perf_gain>=freq_gain) return 1;
     return 0;
 }
@@ -121,7 +124,7 @@ static int is_better_min_time(signature_t * curr_sig,signature_t *prev_sig)
 static void fill_projections(signature_t *sig,int ref)
 {
 	int i;
-	verbose(SM_VERB,"Creating projections using time_ref=%lf power_ref=%lf , ref=%d \n",sig->time,sig->DC_power,ref);
+	debug("Creating projections using time_ref=%lf power_ref=%lf , ref=%d \n",sig->time,sig->DC_power,ref);
 	for (i=0;i<sm_policy_pstates;i++)
 	{
 		if (i==ref){
@@ -253,14 +256,14 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 		}	
 		if (boosted){
 			sm_phase=BOOST;
-			verbose(SM_VERB,"Frequency selected after MIN_TIME phase %u \n",best_freq);
+			debug("Frequency selected after MIN_TIME phase %u \n",best_freq);
 		}
 		/* after that phase, we will chech if we should reduce the frequency */
 		if (!boosted){
 		/* MIN_ENERGY PHASE */
 			best_solution=powerp[ref]*timep[ref];
 			time_max=timep[ref]+timep[ref]*sm_penalty;
-			verbose(SM_VERB,"Min_energy phase: reference = time  %lf power %lf energy %lf\n",timep[ref],powerp[ref],best_solution);
+			debug("Min_energy phase: reference = time  %lf power %lf energy %lf\n",timep[ref],powerp[ref],best_solution);
 			for (i = EAR_default_pstate+1; i < sm_policy_pstates;i++)
 			{
 			/* If coeffs are available */
@@ -271,18 +274,18 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 						{
 							best_freq = coefficients[ref][i].pstate;
 							best_solution = energy_proj;
-							verbose(SM_VERB,"Selecting freq %lu\n",best_freq);
+							debug("Selecting freq %lu\n",best_freq);
 							sm_phase=ENERGY;
 						}
 						}
 			}
-			verbose(SM_VERB,"Frequency selected after MIN_ENERGY phase %u energy estimated %lf\n",best_freq,best_solution);
+			debug("Frequency selected after MIN_ENERGY phase %u energy estimated %lf\n",best_freq,best_solution);
 
 		}
 	}else{/* Use models is set to 0 */
         ulong prev_pstate,curr_pstate,next_pstate;
         signature_t *prev_sig;
-        verbose(NO_MODELS_SM_VERBOSE,"We are not using models \n");
+        debug("We are not using models \n");
         /* We must not use models , we will check one by one*/
         /* If we are not running at default freq, we must check if we must follow */
         if (sig_ready[EAR_default_pstate]==0){
@@ -304,7 +307,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 					go_next_mt(curr_pstate,ready,&best_freq,min_pstate);
 				}
         }
-		verbose(NO_MODELS_SM_VERBOSE,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_freq,*ready);
+		debug("Curr freq %u next freq %u ready=%d\n",ear_frequency,best_freq,*ready);
      }
 
 	
@@ -360,7 +363,7 @@ ulong  supermuc_default_conf(ulong f)
     debug("supermuc_default_conf");
     if ((system_conf!=NULL) && (f>system_conf->max_freq)){
         log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-        verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
+        debug("EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
         f,system_conf->max_freq);
         return system_conf->max_freq;
     }else return f;
