@@ -29,6 +29,8 @@
 
 
 #include <mpi.h>
+
+#include <common/config.h>
 #if IN_MPI_TIME
 #include <papi.h>
 #include <common/math_operations.h>
@@ -39,6 +41,7 @@
 long long ear_in_mpi=0;
 long long begin_in_mpi,end_mpi_time;
 long long ear_total_in_mpi=0;
+long long ear_iteration_in_mpi=0;
 #endif
 void before_init(){
 }
@@ -59,6 +62,7 @@ void after_mpi(mpi_call call_type){
 	if (end_mpi_time>begin_in_mpi) ear_in_mpi=end_mpi_time-begin_in_mpi;
 	else ear_in_mpi= llong_diff_overflow(begin_in_mpi,end_mpi_time);
 	ear_total_in_mpi+=ear_in_mpi;
+	ear_iteration_in_mpi+=ear_in_mpi;
 	#endif
 }
 
