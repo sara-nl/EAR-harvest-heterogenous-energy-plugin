@@ -56,6 +56,7 @@ void traces_mpi_init()
 
 	gethostname(myhost,sizeof(myhost));
 	sprintf(buffer, "%s.%s", pathname,myhost);
+	//fprintf("saving trace in %s\n", buffer);
 
 	fd = open(buffer, F_WR | F_CR | F_TR, F_UR | F_UW | F_GR | F_GW | F_OR | F_OW);
 	enabled = (fd >= 0);
