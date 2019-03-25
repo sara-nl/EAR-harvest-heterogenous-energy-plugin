@@ -471,6 +471,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* This function only sends selected frequency */
 			if (global_synchro){
 				my_local_info.local_f=policy_freq;
+				my_local_info.iter_time=(ulong)(TIME*1000000);
+				my_local_info.mpi_iter_time=0;
+				#if IN_MPI_TIME
+				my_local_info.mpi_iter_time=(ulong)(IN_MPI_SEC*1000000);
+				#endif
 				global_frequency_selection_send(&my_local_info);
 			}
 			/* When the policy is ready to be evaluated, we go to the next state */
