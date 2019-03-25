@@ -448,7 +448,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			#if IN_MPI_TIME
 			IN_MPI_SEC=(double)ear_iteration_in_mpi/(double)1000000;
 			IN_MPI_PERC=IN_MPI_SEC/TIME;
-			verbose(1,"IN_MPI %s:%s: %.3lf",ear_app_name,application.node_id,IN_MPI_PERC);
+			verbose(1,"IN_MPI %s:%s: time %.3lf perc %.3lf",ear_app_name,application.node_id,IN_MPI_SEC,IN_MPI_PERC);
 			ear_iteration_in_mpi=0;
 			#endif
 

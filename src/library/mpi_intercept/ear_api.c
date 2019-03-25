@@ -78,6 +78,9 @@ static long long begin_ov, end_ov, ear_acum;
 static unsigned int calls=0;
 time_t start_loop_time;
 #endif
+#if IN_MPI_TIME
+extern long long ear_total_in_mpi;
+#endif
 
 
 // Process information
@@ -554,6 +557,9 @@ void ear_finalize()
 	if (loop_with_signature) {
 		verbose(2, "loop ends with %d iterations detected", ear_iterations);
 	}
+	#if IN_MPI_TIME
+	verbose(1,"Total mpi time %llu secs",ear_total_in_mpi/1000000);
+	#endif
 #if EAR_OVERHEAD_CONTROL
 	switch(ear_periodic_mode){
 		case PERIODIC_MODE_OFF:
