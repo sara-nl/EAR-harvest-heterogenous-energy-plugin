@@ -159,6 +159,10 @@ void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned 
         init_application(&signatures[i]);
         sig_ready[i]=0;
     }
+	#if IN_MPI_TIME
+    ear_iteration_in_mpi=0;
+    #endif
+
 }
 
 void states_end_period(uint iterations)
