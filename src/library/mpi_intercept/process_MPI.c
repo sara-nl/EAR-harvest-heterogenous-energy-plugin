@@ -59,13 +59,15 @@ void before_mpi(mpi_call call_type, p2i buf, p2i dest) {
 void after_mpi(mpi_call call_type){
 	#if IN_MPI_TIME
 	end_mpi_time=PAPI_get_real_usec();
-	if (end_mpi_time>begin_in_mpi){ 
-		ear_in_mpi=end_mpi_time-begin_in_mpi;
-	}else{ 
-		ear_in_mpi= llong_diff_overflow(begin_in_mpi,end_mpi_time);
+	if ((begin_in_mpi>=0) && (end_mpi_time>=0)){
+		if (end_mpi_time>begin_in_mpi){ 
+			ear_in_mpi=end_mpi_time-begin_in_mpi;
+		}else{ 
+			ear_in_mpi= llong_diff_overflow(begin_in_mpi,end_mpi_time);
+		}
+		ear_total_in_mpi+=ear_in_mpi;
+		ear_iteration_in_mpi+=ear_in_mpi;
 	}
-	ear_total_in_mpi+=ear_in_mpi;
-	ear_iteration_in_mpi+=ear_in_mpi;
 	#endif
 }
 
