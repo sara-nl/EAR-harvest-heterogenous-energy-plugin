@@ -35,7 +35,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <common/config.h>
+
+#define SHOW_DEBUGS 1
+
 #include <common/output/verbose.h>
+#include <common/output/debug.h>
+#include <common/output/error.h>
 #include <library/common/externs.h>
 
 #if EAR_LIB_SYNC
@@ -68,7 +73,7 @@ void configure_global_synchronization()
     local_f=(local_loop_info_t *)calloc(1,sizeof(local_loop_info_t));
     remote_f=(local_loop_info_t *)calloc(my_master_size,sizeof(local_loop_info_t));
     if ((local_f==NULL) || (remote_f==NULL)){
-            verbose(0,"Error, memory not available for synchronization\n");
+            error("Error, memory not available for synchronization\n");
             masters_comm_created=0;
     }
  
@@ -77,7 +82,7 @@ void configure_global_synchronization()
 void global_frequency_selection_send(local_loop_info_t *my_info)
 {
 	if ((masters_comm_created) && (synchro_pending==0)){
-			verbose(1,"Node %d sending (%lu,%lu,%lu) to masters group (masters %d)",my_master_rank,my_info->local_f,my_info->iter_time,my_info->mpi_iter_time,my_master_size);
+			debug("Node %d sending (%lu,%lu,%lu) to masters group (masters %d)",my_master_rank,my_info->local_f,my_info->iter_time,my_info->mpi_iter_time,my_master_size);
 			/* Check for error values */
         	PMPI_Iallgather(my_info, 3, MPI_UNSIGNED_LONG, remote_f, 3, MPI_UNSIGNED_LONG, masters_comm,&synchro_request);
 			synchro_pending=1;
@@ -92,15 +97,15 @@ ulong global_frequency_selection_synchro()
 	MPI_Status status;
 	if (synchro_pending!=1) return 0;
 	if (masters_comm_created){
-        verbose(1,"Master rank %u Waiting & Processing frequencies",my_master_rank);
+        debug("Master rank %u Waiting & Processing frequencies",my_master_rank);
 		PMPI_Test(&synchro_request, &flag, &status);
 		if (flag){
 			synchro_pending=0;
             for (i=0;i<my_master_size;i++){
             	if (my_master_rank==0) {
-            		verbose(1,"Frequency selected by node %d %lu",i,remote_f[i].local_f);
-            		verbose(1,"IterTime noe %d %lu",i,remote_f[i].iter_time);
-            		verbose(1,"MpiIterTimenode %d %lu",i,remote_f[i].mpi_iter_time);
+            		debug("Frequency selected by node %d %lu",i,remote_f[i].local_f);
+            		debug("IterTime node %d %lu",i,remote_f[i].iter_time);
+            		debug("MpiIterTime node %d %lu",i,remote_f[i].mpi_iter_time);
             	}
             	global_f+=(ulong)remote_f[i].local_f;
             }
