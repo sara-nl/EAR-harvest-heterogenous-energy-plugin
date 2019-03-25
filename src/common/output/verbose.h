@@ -37,7 +37,7 @@
 
 int verb_level		__attribute__((weak)) = 0;
 int verb_channel	__attribute__((weak)) = 2;
-int verb_timestamp	__attribute__((weak)) = 1;
+int verb_timestamp	__attribute__((weak)) = 0;
 int warn_channel	__attribute__((weak)) = 2;
 
 static time_t verbose_time_log;
