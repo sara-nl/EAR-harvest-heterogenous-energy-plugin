@@ -36,8 +36,8 @@
 
 typedef struct local_loop_info{
 	ulong local_f;
-	ulong iter_time_us;
-	ulong mpi_iter_time_us;
+	ulong iter_time;
+	ulong mpi_iter_time;
 }local_loop_info_t;
 
 #if COORDINATE_FREQUENCIES

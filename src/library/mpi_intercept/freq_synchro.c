@@ -44,13 +44,13 @@ extern int num_masters;
 extern int my_master_rank;
 extern int my_master_size;
 extern int masters_connected;
-ulong *local_f;
-ulong *remote_f;
 extern unsigned masters_comm_created;
 #endif
 
 #if COORDINATE_FREQUENCIES
 #include <library/mpi_intercept/freq_synchro.h>
+local_loop_info_t *local_f;
+local_loop_info_t *remote_f;
 
 MPI_Request synchro_request;
 static int synchro_pending=0;
@@ -65,21 +65,21 @@ void configure_global_synchronization()
 	if (my_master_rank==0) {
 		verbose(1,"Global synchronizations set to %d",global_synchro);
 	}
-    local_f=(ulong *)calloc(1,sizeof(ulong));
-    remote_f=(ulong *)calloc(my_master_size,sizeof(ulong));
+    local_f=(local_loop_info_t *)calloc(1,sizeof(local_loop_info_t));
+    remote_f=(local_loop_info_t *)calloc(my_master_size,sizeof(local_loop_info_t));
     if ((local_f==NULL) || (remote_f==NULL)){
             verbose(0,"Error, memory not available for synchronization\n");
             masters_comm_created=0;
     }
+ 
 }
 
 void global_frequency_selection_send(local_loop_info_t *my_info)
 {
 	if ((masters_comm_created) && (synchro_pending==0)){
-        	local_f[0]=my_info->local_f;
-			verbose(2,"Node %d sending freq %lu to masters group (masters %d)",my_master_rank,my_info->local_f,my_master_size);
+			verbose(1,"Node %d sending (%lu,%lu,%lu) to masters group (masters %d)",my_master_rank,my_info->local_f,my_info->iter_time,my_info->mpi_iter_time,my_master_size);
 			/* Check for error values */
-        	PMPI_Iallgather(local_f, 1, MPI_UNSIGNED_LONG, remote_f, 1, MPI_UNSIGNED_LONG, masters_comm,&synchro_request);
+        	PMPI_Iallgather(my_info, 3, MPI_UNSIGNED_LONG, remote_f, 3, MPI_UNSIGNED_LONG, masters_comm,&synchro_request);
 			synchro_pending=1;
 	}
 }
@@ -98,9 +98,11 @@ ulong global_frequency_selection_synchro()
 			synchro_pending=0;
             for (i=0;i<my_master_size;i++){
             	if (my_master_rank==0) {
-            		verbose(2,"Frequency selected by node %d %lu",i,remote_f[i]);
+            		verbose(1,"Frequency selected by node %d %lu",i,remote_f[i].local_f);
+            		verbose(1,"IterTime noe %d %lu",i,remote_f[i].iter_time);
+            		verbose(1,"MpiIterTimenode %d %lu",i,remote_f[i].mpi_iter_time);
             	}
-            	global_f+=(ulong)remote_f[i];
+            	global_f+=(ulong)remote_f[i].local_f;
             }
             avg_freq=global_f/my_master_size;
 			avg_freq=avg_freq/(float)100000;
