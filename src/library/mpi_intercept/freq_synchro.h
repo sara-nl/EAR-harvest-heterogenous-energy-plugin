@@ -34,8 +34,15 @@
 #ifndef _FREQ_SYNCHRO_H
 #define _FREQ_SYNCHRO_H
 
+typedef struct local_loop_info{
+	ulong local_f;
+	ulong iter_time_us;
+	ulong mpi_iter_time_us;
+}local_loop_info_t;
+
 #if COORDINATE_FREQUENCIES
-void global_frequency_selection(ulong my_local_f);
+
+void global_frequency_selection(local_loop_info_t *my_info);
 ulong global_frequency_selection_synchro();
 void configure_global_synchronization();
 #else
