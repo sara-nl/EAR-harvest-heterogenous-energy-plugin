@@ -558,7 +558,7 @@ void ear_finalize()
 		verbose(2, "loop ends with %d iterations detected", ear_iterations);
 	}
 	#if IN_MPI_TIME
-	verbose(1,"Total mpi time %llu secs",ear_total_in_mpi/1000000);
+	verbose(1,"Total mpi time %lld secs",ear_total_in_mpi/1000000);
 	#endif
 #if EAR_OVERHEAD_CONTROL
 	switch(ear_periodic_mode){

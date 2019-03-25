@@ -38,8 +38,8 @@
 #include <library/mpi_intercept/ear_api.h>
 
 #if IN_MPI_TIME
-long long ear_in_mpi=0;
-long long begin_in_mpi,end_mpi_time;
+static long long ear_in_mpi=0;
+static long long begin_in_mpi,end_mpi_time;
 long long ear_total_in_mpi=0;
 long long ear_iteration_in_mpi=0;
 #endif
