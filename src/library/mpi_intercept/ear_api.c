@@ -119,8 +119,6 @@ int num_masters;
 int my_master_rank;
 int my_master_size;
 int masters_connected=0;
-ulong *local_f;
-ulong *remote_f;
 unsigned masters_comm_created=0;
 #endif
 
@@ -186,14 +184,6 @@ void notify_eard_connection(int status)
 		}
 		my_id=1;
 		return;
-	}else{
-		/* if ok, we allocate buffers for frequency synchronization (if selected) */
-		local_f=(ulong *)calloc(1,sizeof(ulong));
-		remote_f=(ulong *)calloc(my_master_size,sizeof(ulong));
-		if ((local_f==NULL) || (remote_f==NULL)){
-			verbose(0,"Error, memory not available for synchronization\n");
-			masters_comm_created=0;
-		}
 	}
 	}
 	#endif

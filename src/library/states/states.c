@@ -70,6 +70,7 @@ application_t *signatures;
 uint *sig_ready;
 // static application_t last_signature;
 static projection_t *PP;
+local_loop_info_t my_local_info;
 
 static long long comp_N_begin, comp_N_end, comp_N_time;
 static uint begin_iter, N_iter;
@@ -469,7 +470,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			/* This function only sends selected frequency */
 			if (global_synchro){
-				global_frequency_selection_send(policy_freq);
+				my_local_info.local_f=policy_freq;
+				global_frequency_selection_send(&my_local_info);
 			}
 			/* When the policy is ready to be evaluated, we go to the next state */
 			if (ready){
