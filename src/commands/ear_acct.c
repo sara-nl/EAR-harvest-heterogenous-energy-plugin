@@ -634,8 +634,10 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
         verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
         exit(1);
     }
+    if (strlen(my_conf.database.user_commands) < 1) 
+        verbose(0, "Warning: commands' user is not defined in ear.conf");
 
-    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user_commands,my_conf.database.pass_commands, my_conf.database.database, my_conf.database.port, NULL, 0))
+    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user_commands, my_conf.database.pass_commands, my_conf.database.database, my_conf.database.port, NULL, 0))
     {
         verbose(0, "Error connecting to the database(%d):%s", mysql_errno(connection), mysql_error(connection)); //error
         mysql_close(connection);

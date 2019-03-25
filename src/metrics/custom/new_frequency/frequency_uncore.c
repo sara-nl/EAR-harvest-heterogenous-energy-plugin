@@ -42,7 +42,7 @@ static state_t counters_start(uint cpu)
 {
 	uint64_t command;
 	state_t r;
-	int fd;
+	int fd=-1;
 
 	/* Open*/
 	if ((r = msr_open(cpu, &fd)) != EAR_SUCCESS) {

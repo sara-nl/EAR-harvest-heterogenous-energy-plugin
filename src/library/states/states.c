@@ -60,6 +60,12 @@
 #define SIGNATURE_HAS_CHANGED	6
 #define TEST_LOOP		7
 
+
+#if IN_MPI_TIME
+extern long long ear_iteration_in_mpi;
+#endif
+
+
 application_t *signatures;
 uint *sig_ready;
 // static application_t last_signature;
@@ -250,7 +256,7 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
 
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
-	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI;
+	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI, IN_MPI_PERC,IN_MPI_SEC;
 	unsigned long prev_f;
 	int ready;
 	ull VI;
@@ -330,6 +336,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			metrics_compute_signature_begin();
 			begin_iter = iterations;
+
+			#if IN_MPI_TIME
+			ear_iteration_in_mpi=0;
+			#endif
 			
 			// Loop printing algorithm
 			loop.id.event = event;
@@ -435,6 +445,13 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			VPI=(double)VI/(double)loop_signature.signature.instructions;
 			begin_iter = iterations;
 
+			#if IN_MPI_TIME
+			IN_MPI_SEC=(double)ear_iteration_in_mpi/(double)1000000;
+			IN_MPI_PERC=IN_MPI_SEC/TIME;
+			verbose(1,"IN_MPI %s:%s: %.3lf",ear_app_name,application.node_id,IN_MPI_PERC);
+			ear_iteration_in_mpi=0;
+			#endif
+
 			loop_signature.signature.def_f=prev_f;
 			// memcpy(&last_signature, &loop_signature, sizeof(application_t));
 			memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
@@ -503,6 +520,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			ENERGY = TIME * POWER;
 			EDP = ENERGY * TIME;
+
+            #if IN_MPI_TIME
+            IN_MPI_SEC=(double)ear_iteration_in_mpi/(double)1000000;
+            IN_MPI_PERC=IN_MPI_SEC/TIME;
+            verbose(1,"IN_MPI %s:%s: %.3lf",ear_app_name,application.node_id,IN_MPI_PERC);
+			ear_iteration_in_mpi=0;
+            #endif
+
 
 			signature_copy(&loop.signature, &loop_signature.signature);
 			report_loop_signature(iterations,&loop,&loop_signature.job);

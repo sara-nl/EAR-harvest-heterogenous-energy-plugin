@@ -1073,14 +1073,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             if (!strcmp(conf->islands[conf->num_islands].backup_ips[i], token)) ip_id = i;
                         if (ip_id < 0)
                         {
-                            conf->islands[conf->num_islands].backup_ips = realloc(conf->islands[conf->num_islands].backup_ips,
-                                                                            (conf->islands[conf->num_islands].num_backups+1)*sizeof(char *));
-                            conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups] = malloc(strlen(token)+1);
                             remove_chars(token, ' ');
-                            strcpy(conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups], token);
-                            for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
-                                conf->islands[conf->num_islands].ranges[i].sec_ip = conf->islands[conf->num_islands].num_backups;
-                            conf->islands[conf->num_islands].num_backups++;
+                            if (strlen(token) > 0)
+                            {
+                                conf->islands[conf->num_islands].backup_ips = realloc(conf->islands[conf->num_islands].backup_ips,
+                                                                                (conf->islands[conf->num_islands].num_backups+1)*sizeof(char *));
+                                conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups] = malloc(strlen(token)+1);
+                                strcpy(conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups], token);
+                                for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
+                                    conf->islands[conf->num_islands].ranges[i].sec_ip = conf->islands[conf->num_islands].num_backups;
+                                conf->islands[conf->num_islands].num_backups++;
+                            }
                         }
                         else
                         {
@@ -1097,14 +1100,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             if (!strcmp(conf->islands[idx].backup_ips[i], token)) ip_id = i;
                         if (ip_id < 0)
                         {
-                            conf->islands[idx].backup_ips = realloc(conf->islands[idx].backup_ips,
-                                                                            (conf->islands[idx].num_backups+1)*sizeof(char *));
-                            conf->islands[idx].backup_ips[conf->islands[idx].num_backups] = malloc(strlen(token)+1);
                             remove_chars(token, ' ');
-                            strcpy(conf->islands[idx].backup_ips[conf->islands[idx].num_backups], token);
-                            for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)
-                                conf->islands[idx].ranges[i].sec_ip = conf->islands[idx].num_backups;
-                            conf->islands[idx].num_backups++;
+                            if (strlen(token) > 0)
+                            {
+                                conf->islands[idx].backup_ips = realloc(conf->islands[idx].backup_ips,
+                                                                                (conf->islands[idx].num_backups+1)*sizeof(char *));
+                                conf->islands[idx].backup_ips[conf->islands[idx].num_backups] = malloc(strlen(token)+1);
+                                strcpy(conf->islands[idx].backup_ips[conf->islands[idx].num_backups], token);
+                                for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)
+                                    conf->islands[idx].ranges[i].sec_ip = conf->islands[idx].num_backups;
+                                conf->islands[idx].num_backups++;
+                            }
                         }
                         else
                         {

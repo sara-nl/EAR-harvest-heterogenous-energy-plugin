@@ -28,49 +28,41 @@
 */
 
 
-#include <mpi.h>
+/**
+*    \file node_metrics.h
+*
+*/
+#ifndef _NODE_METRICS_H_
+#define _NODE_METRICS_H_
 
-#include <common/config.h>
-#if IN_MPI_TIME
-#include <papi.h>
-#include <common/math_operations.h>
+#include <common/types/generic.h>
+
+
+typedef struct nm{
+	uint ncpus;
+    uint nsockets;
+    ulong def_f;
+	uint con;
+}nm_t;
+
+typedef struct node_metrics{
+    ulong avg_cpu_freq;
+    uint64_t *uncore_freq;
+    unsigned long long *temp;  
+}nm_data_t;
+
+int init_node_metrics(nm_t *id,uint sockets, uint cpus_per_socket,uint cores_model,ulong def_freq);
+int init_node_metrics_data(nm_t *id,nm_data_t *mm);
+int start_compute_node_metrics(nm_t *id,nm_data_t *nm);
+int end_compute_node_metrics(nm_t *id,nm_data_t *nm);
+int dispose_node_metrics(nm_t *id);
+
+
+int diff_node_metrics(nm_t *id,nm_data_t *init,nm_data_t *end,nm_data_t *diff_nm);
+int copy_node_metrics(nm_t *id,nm_data_t* dest, nm_data_t * src);
+int print_node_metrics(nm_t *id,nm_data_t *nm);
+int verbose_node_metrics(nm_t *id,nm_data_t *nm);
+unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm);
+
+
 #endif
-#include <library/mpi_intercept/ear_api.h>
-
-#if IN_MPI_TIME
-long long ear_in_mpi=0;
-long long begin_in_mpi,end_mpi_time;
-long long ear_total_in_mpi=0;
-long long ear_iteration_in_mpi=0;
-#endif
-void before_init(){
-}
-
-void after_init(){
-	ear_init();
-}
-void before_mpi(mpi_call call_type, p2i buf, p2i dest) {
-	ear_mpi_call(call_type,buf,dest);
-	#if IN_MPI_TIME
-	begin_in_mpi=PAPI_get_real_usec();
-	#endif
-}
-
-void after_mpi(mpi_call call_type){
-	#if IN_MPI_TIME
-	end_mpi_time=PAPI_get_real_usec();
-	if (end_mpi_time>begin_in_mpi) ear_in_mpi=end_mpi_time-begin_in_mpi;
-	else ear_in_mpi= llong_diff_overflow(begin_in_mpi,end_mpi_time);
-	ear_total_in_mpi+=ear_in_mpi;
-	ear_iteration_in_mpi+=ear_in_mpi;
-	#endif
-}
-
-void before_finalize() {
-	ear_finalize();
-}
-
-void after_finalize() {
-}
-
-

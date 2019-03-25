@@ -39,6 +39,7 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
 #include <common/config.h>
 #include <common/sockets.h>
 #include <common/output/debug.h>
@@ -49,10 +50,14 @@
 #include <common/types/periodic_metric.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <metrics/custom/frequency.h>
+#if 0
 #include <metrics/custom/frequency_uncore.h>
+#endif
 #include <metrics/power_metrics/power_metrics.h>
+#include <metrics/custom/hardware_info.h>
 #include <control/frequency.h>
 #include <daemon/power_monitor.h>
+#include <daemon/node_metrics.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 
@@ -65,9 +70,15 @@
 #include <common/database/db_helper.h>
 #endif
 
-#define REPORT_UNCORE	1
-
+#if 0
 uint64_t uncore_freq[2]={0,0};
+#endif
+
+nm_t my_nm_id;
+nm_data_t nm_init,nm_end,nm_diff,last_mm;
+
+extern topology_t node_desc;
+
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
 extern my_node_conf_t     *my_node_conf;
@@ -138,11 +149,11 @@ void reset_shared_memory()
 		policy_conf_t *my_policy;
     my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
     dyn_conf->user_type=NORMAL;
-		dyn_conf->learning=0;
+	dyn_conf->learning=0;
     dyn_conf->lib_enabled=1;
     dyn_conf->policy=my_cluster_conf.default_policy;
     dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
-		dyn_conf->def_p_state=my_policy->p_state;
+	dyn_conf->def_p_state=my_policy->p_state;
     dyn_conf->th=my_policy->th;
 }
 
@@ -734,7 +745,7 @@ void powermon_reload_conf()
 
 
 // Each sample is processed by this function
-void update_historic_info(power_data_t *my_current_power,ulong avg_f)
+void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 {
 	ulong jid,mpi;
 	double maxpower,minpower,RAPL, corrected_power;
@@ -748,10 +759,16 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 		mpi=0;
 		maxpower=minpower=0;
 	}
-	verbose(VNODEPMON,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%.2lf,%.2lf)",
-		jid,mpi,avg_f,my_current_power->avg_dc,maxpower,minpower,
-		((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),
-		((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
+	#if 0
+  	verbose(VNODEPMON,"ID %u MPI=%u agv_f %lu Current power %lf max %lf min %lf uncore_freqs(%.2lf,%.2lf)",
+    jid,mpi,avg_f,my_current_power->avg_dc,maxpower,minpower,
+    ((double)uncore_freq[0]/(double)(f_monitoring*2400000000)),
+    ((double)uncore_freq[1]/(double)(f_monitoring*2400000000)));
+	#endif
+	verbose(VNODEPMON,"ID %u MPI=%u  Current power %.1lf max %.1lf min %.1lf",
+	jid,mpi,my_current_power->avg_dc,maxpower,minpower);
+	verbose_node_metrics(&my_nm_id,nm);
+
 	
 	while (pthread_mutex_trylock(&app_lock));
 	
@@ -764,7 +781,7 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 
 	pthread_mutex_unlock(&app_lock);
 		
-  report_periodic_power(fd_periodic, my_current_power);
+  	report_periodic_power(fd_periodic, my_current_power);
 
 	current_sample.start_time=my_current_power->begin;
 	current_sample.end_time=my_current_power->end;
@@ -775,10 +792,13 @@ void update_historic_info(power_data_t *my_current_power,ulong avg_f)
 	}
 	
 	current_sample.DC_energy=corrected_power*(ulong)difftime(my_current_power->end,my_current_power->begin);
+
+	/* To be usd by status */
 	last_power_reported=my_current_power->avg_dc;
+	copy_node_metrics(&my_nm_id,&last_mm,nm);
 	
 	#if DEMO
-	current_sample.avg_f=avg_f;
+	current_sample.avg_f=nm->avg_cpu_freq;
 	#endif	
 
 	#if SYSLOG_MSG
@@ -869,6 +889,22 @@ void powermon_mpi_signature(application_t *app)
 	save_eard_conf(&eard_dyn_conf);	
 }
 
+void powermon_init_nm()
+{
+    if (init_node_metrics(&my_nm_id,node_desc.sockets,node_desc.cores, get_model(),frequency_get_nominal_freq())!=EAR_SUCCESS){
+        error("Initializing node metrics");
+    }
+    if (init_node_metrics_data(&my_nm_id,&nm_init)!=EAR_SUCCESS){
+        error("init_node_metrics_data init");
+    }
+    if (init_node_metrics_data(&my_nm_id,&nm_end)!=EAR_SUCCESS){
+        error("init_node_metrics_data end");
+    }
+    if (init_node_metrics_data(&my_nm_id,&nm_diff)!=EAR_SUCCESS){
+        error("init_node_metrics_data diff");
+    }
+}
+
 /*
 *	MAIN POWER MONITORING THREAD
 */
@@ -888,28 +924,29 @@ void *eard_power_monitoring(void *noinfo)
 	form_database_paths();
 
 	memset((void *)&default_app,0,sizeof(powermon_app_t));
-
-	#if REPORT_UNCORE
-	state_t st= frequency_uncore_init(2, 24, 85);
-	verbose(VNODEPMON+1,"frequency_uncore_init returns %d",st);
-	#endif	
-
+	
 	verbose(VJOBPMON," power monitoring thread created");
 	if (init_power_ponitoring()!=EAR_SUCCESS) {
 		error("Error in init_power_ponitoring");
 	}
 	// current_sample is the current powermonitoring period
 	init_periodic_metric(&current_sample);
-		
 	create_powermon_out();
 
 	// We will collect and report avg power until eard finishes
 	// Get time and Energy
 	read_enegy_data(&e_begin);
+	#if 0
+	state_t st= frequency_uncore_init(2, 24, 85);
+	verbose(VNODEPMON+1,"frequency_uncore_init returns %d",st);
 	aperf_periodic_avg_frequency_init_all_cpus();
-	#if REPORT_UNCORE
 	frequency_uncore_counters_start();
 	#endif
+	/* Update with the curent node conf */
+	powermon_init_nm();
+	if (start_compute_node_metrics(&my_nm_id,&nm_init)!=EAR_SUCCESS){
+		error("start_compute_node_metrics");
+	}
 	#if SYSLOG_MSG
 	openlog("eard",LOG_PID|LOG_PERROR,LOG_DAEMON);
 	#endif
@@ -926,8 +963,14 @@ void *eard_power_monitoring(void *noinfo)
 		
 		// Get time and Energy
 		read_enegy_data(&e_end);
+
+		// Get node metrics
+		end_compute_node_metrics(&my_nm_id,&nm_end);
+		diff_node_metrics(&my_nm_id,&nm_init,&nm_end,&nm_diff);
+		start_compute_node_metrics(&my_nm_id,&nm_init);
+
+		#if 0
 		avg_f=aperf_periodic_avg_frequency_end_all_cpus();
-		#if REPORT_UNCORE
 		frequency_uncore_counters_stop(uncore_freq);
 		frequency_uncore_counters_start();
 		#endif
@@ -936,7 +979,7 @@ void *eard_power_monitoring(void *noinfo)
 		compute_power(&e_begin,&e_end,&my_current_power);
 		
 		// Save current power
-		update_historic_info(&my_current_power,avg_f);
+		update_historic_info(&my_current_power,&nm_diff);
 
 
 		// Set values for next iteration
@@ -944,10 +987,12 @@ void *eard_power_monitoring(void *noinfo)
 		
 		t_begin=t_end;
 	}
-	#if REPORT_UNCORE
+	#if 0
 	st = frequency_uncore_dispose();
-	verbose(VNODEPMON+1,"frequency_uncore_dispose returns %d",st);
 	#endif
+	if (dispose_node_metrics(&my_nm_id)!=EAR_SUCCESS){
+		error("dispose_node_metrics ");
+	}	
 
 
 	pthread_exit(0);
@@ -957,11 +1002,31 @@ void *eard_power_monitoring(void *noinfo)
 void powermon_get_status(status_t *my_status)
 {
 	int i;
+	#if 1
 	my_status->power=(uint)last_power_reported;
 	for (i=0;i<TOTAL_POLICIES;i++){
 		my_status->policy_conf[i].pstate=(uint)my_node_conf->policies[i].p_state;
 		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].th*100.0);
 	}
+	#else
+	for (i=0;i<TOTAL_POLICIES;i++){
+		my_status->policy_conf[i].freq=frequency_pstate_to_freq(my_node_conf->policies[i].p_state);
+		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].th*100.0);
+	}
+	/* Current app info */
+	if (ccontext>=0){
+		my_status->app.job_id=current_ear_app[ccontext]->app.job.id;
+		my_status->app.step_id=current_ear_app[ccontext]->app.job.step_id;
+	}else{
+		/* No job running */
+		my_status->app.job_id=0;
+	}
+	/* Node info */
+	my_status->node.avg_freq=(ulong)last_nm.avg_cpu_freq;
+	my_status->node.temp=(ulong)get_nm_temp(&last_nm);
+	my_status->node.power=(ulong)last_power_reported
+	my_status->node.max_freq=(ulong)frequency_pstate_to_freq(my_node_conf->max_pstate);
+	#endif
 }
 
 int print_powermon_app_fd_binary(int fd,powermon_app_t *app)

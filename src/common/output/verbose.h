@@ -32,14 +32,28 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <common/output/output_conf.h>
 
 int verb_level		__attribute__((weak)) = 0;
 int verb_channel	__attribute__((weak)) = 2;
+int verb_timestamp	__attribute__((weak)) = 1;
 int warn_channel	__attribute__((weak)) = 2;
+
+static time_t verbose_time_log;
+static struct tm *verbose_tm_log;
+static char s_log[64];
+
+
 
 #define verbose(v, ...) \
 	if (v <= verb_level) { \
+		if (verb_timestamp){ \
+        time(&verbose_time_log);\
+        verbose_tm_log=localtime(&verbose_time_log);\
+        strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
+        dprintf(verb_channel, "%s:",s_log); \
+		}\
         dprintf(verb_channel, __VA_ARGS__); \
         dprintf(verb_channel, "\n"); \
 	}
@@ -51,6 +65,12 @@ int warn_channel	__attribute__((weak)) = 2;
 // No new line version
 #define verbosen(v, ...) \
 	if (v <= verb_level) { \
+        if (verb_timestamp){ \
+        time(&verbose_time_log);\
+        verbose_tm_log=localtime(&verbose_time_log);\
+        strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
+        dprintf(verb_channel, "%s:",s_log); \
+        }\
         dprintf(verb_channel, __VA_ARGS__); \
 	}
 
@@ -64,15 +84,36 @@ int warn_channel	__attribute__((weak)) = 2;
 #define VERB_SET_LVL(level) \
 	verb_level = level;
 
+#define VERB_SET_TS(ts) verb_timestamp=ts;
+
 // Warnings
 #if SHOW_WARNINGS0
-#define warning(...) dprintf(warn_channel, __VA_ARGS__);
+#define warning(...) \
+{\
+        if (verb_timestamp){ \
+        time(&verbose_time_log);\
+        verbose_tm_log=localtime(&verbose_time_log);\
+        strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
+        dprintf(warn_channel, "%s:",s_log); \
+        }\
+	 	dprintf(warn_channel, __VA_ARGS__);\
+}
+
 #else
 #define warning(...)
 #endif
 
 #if SHOW_WARNINGS1
-#define warning1(...) dprintf(warn_channel, __VA_ARGS__); 
+#define warning1(...) \
+{ \
+        if (verb_timestamp){ \
+        time(&verbose_time_log);\
+        verbose_tm_log=localtime(&verbose_time_log);\
+        strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
+        dprintf(warn_channel, "%s:",s_log); \
+        }\
+		dprintf(warn_channel, __VA_ARGS__); \
+	}
 #else
 #define warning1(...)
 #endif

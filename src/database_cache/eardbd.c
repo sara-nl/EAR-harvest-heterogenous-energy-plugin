@@ -45,6 +45,7 @@
 #include <database_cache/eardbd_sync.h>
 #include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
+#include <common/types/daemon_log.h>
 
 // Configuration
 cluster_conf_t conf_clus;

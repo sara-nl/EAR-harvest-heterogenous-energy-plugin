@@ -382,7 +382,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
     temp_status = calloc(NUM_PROPS, sizeof(status_t *));
     memset(num_status, 0, sizeof(num_status));
 
-    if (command->node_dist > total_ips)
+    if (command->node_dist > total_ips || self_id < 0)
     {
         final_status = calloc(1, sizeof(status_t));
         final_status[0].ip = ips[self_id];

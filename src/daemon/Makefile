@@ -17,7 +17,8 @@ eard_OBJS = \
     dynamic_configuration.o \
     power_monitor.o \
     shared_configuration.o \
-    app_api/app_server_api.o
+    app_api/app_server_api.o \
+	node_metrics.o
 
 eard_OBJS += \
     $(SRCDIR)/control/frequency.o \
@@ -33,6 +34,9 @@ eard: eard.c $(eard_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(eard_OBJS) $(LDFLAGS)
 
 power_monitor.o: power_monitor.c power_monitor.h 
+	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c $<
+
+node_metrics.o:node_metrics.c node_metrics.h
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c $<
 
 dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
