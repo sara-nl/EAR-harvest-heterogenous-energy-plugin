@@ -453,7 +453,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			ear_iteration_in_mpi=ear_iteration_in_mpi/N_iter;
 			IN_MPI_SEC=(double)ear_iteration_in_mpi/1000000.0;
 			IN_MPI_PERC=IN_MPI_SEC/TIME;
-			verbose(1,"IN_MPI %s:%s: usec %lld time %.3lf perc %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
+			verbose(1,"IN_MPI %s:%s: usec %llu time %.3lf perc %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
 			ear_iteration_in_mpi=0;
 			#endif
 
@@ -530,7 +530,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			ear_iteration_in_mpi=ear_iteration_in_mpi/N_iter;
             IN_MPI_SEC=(double)ear_iteration_in_mpi/1000000.0;
             IN_MPI_PERC=IN_MPI_SEC/TIME;
-            verbose(1,"IN_MPI %s:%s: %lld %.3lf %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
+            verbose(1,"IN_MPI %s:%s: %llu %.3lf %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
 			ear_iteration_in_mpi=0;
             #endif
 
