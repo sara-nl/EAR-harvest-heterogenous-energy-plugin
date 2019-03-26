@@ -742,11 +742,11 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				debug("NEW_LOOP event %u level %u size %u\n",ear_event_l,ear_level,ear_size);
+				debug("NEW_LOOP event %u level %hu size %hu\n",ear_event_l,ear_level,ear_size);
 				ear_iterations=0;
-				states_begin_period(my_id, NULL, ear_event_l, ear_size);
-				ear_loop_size=ear_size;
-				ear_loop_level=ear_level;
+				states_begin_period(my_id, NULL, ear_event_l, (uint)ear_size);
+				ear_loop_size=(uint)ear_size;
+				ear_loop_level=(uint)ear_level;
 				in_loop=1;
 				mpi_calls_per_loop=1;
 				#if MEASURE_DYNAIS_OV
@@ -754,7 +754,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				#endif
 				break;
 			case END_NEW_LOOP:
-				debug("END_LOOP - NEW_LOOP event %u level %u\n",ear_event_l,ear_level);
+				debug("END_LOOP - NEW_LOOP event %u level %hu\n",ear_event_l,ear_level);
 				if (loop_with_signature) {
 					verbose(1, "loop ends with %d iterations detected", ear_iterations);
 				}
@@ -764,9 +764,9 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
-				ear_loop_size=ear_size;
-				ear_loop_level=ear_level;
-				states_begin_period(my_id, NULL, ear_event_l, ear_size);
+				ear_loop_size=(uint)ear_size;
+				ear_loop_level=(uint)ear_level;
+				states_begin_period(my_id, NULL, ear_event_l, (uint)ear_size);
 				break;
 			case NEW_ITERATION:
 				ear_iterations++;
@@ -816,8 +816,8 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		unsigned long  trace_data[5];
 		unsigned long  ear_event_l;
 		unsigned short ear_event_s;
-		unsigned int   ear_size;
-		unsigned int   ear_level;
+		unsigned short ear_size;
+		unsigned short ear_level;
 
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);
@@ -846,15 +846,16 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				debug("NEW_LOOP event %u level %u size %u\n",ear_event_l,ear_level,ear_size);
+				debug("NEW_LOOP event %u level %hu size %hu\n", ear_event_l, ear_level, ear_size);
 				ear_iterations=0;
-				states_begin_period(my_id, NULL, ear_event_l, ear_size);
-				ear_loop_size=ear_size;
+				//TODO
+				states_begin_period(my_id, NULL, ear_event_l, (uint) ear_size);
+				ear_loop_size=(uint)ear_size;
 				in_loop=1;
 				mpi_calls_per_loop=1;
 				break;
 			case END_NEW_LOOP:
-				debug("END_LOOP - NEW_LOOP event %u level %u\n",ear_event_l,ear_level);
+				debug("END_LOOP - NEW_LOOP event %u level %hu\n",ear_event_l,ear_level);
 				if (loop_with_signature) {
 					verbose(1, "loop ends with %d iterations detected", ear_iterations);
 				}
@@ -864,15 +865,15 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
-				ear_loop_size=ear_size;
-				states_begin_period(my_id, NULL, ear_event_l, ear_size);
+				ear_loop_size=(uint)ear_size;
+				states_begin_period(my_id, NULL, ear_event_l, (uint)ear_size);
 				break;
 			case NEW_ITERATION:
 				ear_iterations++;
 
 				if (loop_with_signature)
 				{
-					verbose(4,"new iteration detected for level %u, event %u, size %u and iterations %u",
+					verbose(4,"new iteration detected for level %hu, event %u, size %u and iterations %u",
 							  ear_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
@@ -880,7 +881,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				#if EAR_PERFORMANCE_TESTS
 				verbose(3,"New estimated iteration\n");
 				#endif
-				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_level, ear_event_l, mpi_calls_per_loop);
+				states_new_iteration(my_id, ear_loop_size, ear_iterations, (uint)ear_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
 			case END_LOOP:
