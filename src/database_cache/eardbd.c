@@ -242,6 +242,8 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	VERB_SET_FD(fd_log);
 	ERROR_SET_FD(fd_log);
 	DEBUG_SET_FD(fd_log);
+	WARN_SET_FD(fd_log);
+	VERB_SET_TS(!conf_clus->db_manager.use_log);
 	#endif
 
 	// Ports

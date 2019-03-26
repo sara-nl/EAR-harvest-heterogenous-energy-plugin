@@ -178,9 +178,11 @@ void set_global_eard_variables()
 {
 	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	verb_level=my_cluster_conf.eard.verbose;
-    VERB_SET_FD(fd_my_log);
-    ERROR_SET_FD(fd_my_log);
+  VERB_SET_FD(fd_my_log);
+  ERROR_SET_FD(fd_my_log);
 	WARN_SET_FD(fd_my_log);
+	DEBUG_SET_FD(fd_my_log);
+	VERB_SET_TS(!my_cluster_conf.eard.use_log);
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -1315,6 +1317,9 @@ void main(int argc,char *argv[])
 		VERB_SET_FD(fd_my_log);
 		ERROR_SET_FD(fd_my_log);
 		WARN_SET_FD(fd_my_log);
+		DEBUG_SET_FD(fd_my_log);
+ 		VERB_SET_TS(!my_cluster_conf.eard.use_log);
+
 
 
 		if ((verb_level < 0) || (verb_level > 4)) {

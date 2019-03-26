@@ -318,7 +318,7 @@ void report_powermon_app(powermon_app_t *app)
 		app->app.is_mpi=0;
 	}
 
-	print_application(&app->app);
+	verbose_application_data(0,&app->app);
 	report_application_in_file(&app->app);
 	
 	#if DB_MYSQL

@@ -494,6 +494,8 @@ void main(int argc,char *argv[])
     VERB_SET_FD(fd_my_log);
     ERROR_SET_FD(fd_my_log);
 	WARN_SET_FD(fd_my_log);
+	DEBUG_SET_FD(fd_my_log);
+	VERB_SET_TS(!my_cluster_conf.eargm.use_log);
 
     update_eargm_configuration(&my_cluster_conf);
 

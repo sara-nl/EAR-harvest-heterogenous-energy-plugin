@@ -556,6 +556,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			
 			begin_iter = iterations;
 
+			if (sig_ready[curr_pstate]==0){
+            	memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
+            	sig_ready[curr_pstate]=1;
+			}
+
 
 			/* If global synchronizations are on, we get frequencies for the rest of the app */
 			if (global_synchro){
@@ -565,6 +570,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
                     policy_freq=select_near_freq(global_f);
                     force_global_frequency(policy_freq);
                     verbose(0,"Selecting with common frequency %lu",policy_freq);
+					tries_current_loop=0;
+					EAR_STATE = EVALUATING_SIGNATURE;
                     return;
                 }
             }
@@ -580,10 +587,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
             		sig_ready[curr_pstate]=1;
 				}
 				return;
-			}
-			if (sig_ready[curr_pstate]==0){
-            	memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
-            	sig_ready[curr_pstate]=1;
 			}
 			// We compare the projection with the signature and the old signature
 			PP = projection_get(frequency_freq_to_pstate(policy_freq));
@@ -628,9 +631,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				EAR_STATE = SIGNATURE_HAS_CHANGED;
 				comp_N_begin = metrics_time();
 				policy_new_loop();
-                        	#if DYNAIS_CUTOFF
+                #if DYNAIS_CUTOFF
 				check_dynais_on(&loop_signature.signature, l_sig);
-                        	#endif
+                #endif
 			} else {
 					EAR_STATE = EVALUATING_SIGNATURE;
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
