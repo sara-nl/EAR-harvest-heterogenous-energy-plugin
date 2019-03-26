@@ -100,6 +100,7 @@ int print_application(application_t *app);
 
 /** Prints a summary of the application to STDOUT */
 void report_application_data(application_t *app);
+void verbose_application_data(uint vl,application_t *app);
 
 /** Prints a summary of the application (only mpi part,power signature is not reported) to STDOUT */
 void report_mpi_application_data(application_t *app);

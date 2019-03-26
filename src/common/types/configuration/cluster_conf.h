@@ -78,9 +78,7 @@ typedef struct eard_conf
 	uint use_mysql;			/* Must EARD report to DB */
 	uint use_eardbd;		/* Must EARD report to DB using EARDBD */
 	uint force_frequencies; /* 1=EARD will force pstates specified in policies , 0=will not */
-    #if EAR_CONF_EXT
-    uint    use_log;
-    #endif
+  uint    use_log;
 } eard_conf_t;
 
 /*
@@ -114,9 +112,7 @@ typedef struct eargm_conf
 	uint	grace_periods;
 	char 	mail[GENERIC_NAME];
     char    host[GENERIC_NAME];
-	#if EAR_CONF_EXT
 	uint  	use_log;
-	#endif
 } eargm_conf_t;
 
 typedef struct eardb_conf 
@@ -128,9 +124,7 @@ typedef struct eardb_conf
 	uint sync_tcp_port;
     uint mem_size;
     uchar mem_size_types[EARDBD_TYPES];
-    #if EAR_CONF_EXT
     uint    use_log;
-    #endif
 
 } eardb_conf_t;
 
@@ -162,12 +156,10 @@ typedef struct db_conf
     char pass_commands[USER];
     char database[USER];
     uint port;
-	#if EAR_CONF_EXT
 	uint max_connections;
 	uint report_node_detail;
 	uint report_sig_detail;
 	uint report_loops;
-	#endif
 } db_conf_t;
 
 

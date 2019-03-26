@@ -374,7 +374,7 @@ void ear_init()
 	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
 		update_configuration();	
 	}else{
-		verbose(0,"Shared memory not present, not connecting with EARD");
+		debug("Shared memory not present");
 		notify_eard_connection(0);
 		my_id=1;
 	}	
