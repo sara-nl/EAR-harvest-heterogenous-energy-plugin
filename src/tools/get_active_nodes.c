@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <mysql/mysql.h>
+#include <common/output/verbose.h>
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
 

@@ -33,6 +33,7 @@
 #include <string.h>
 #include <assert.h>
 #include <common/types/job.h>
+#include <common/output/verbose.h>
 
 void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs)
 {

@@ -34,6 +34,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
 #include <common/types/coefficient.h>
 
 #define PERMISSION  S_IRUSR  | S_IWUSR | S_IRGRP | S_IROTH

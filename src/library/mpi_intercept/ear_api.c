@@ -682,7 +682,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 {
 	char men[128];
-	ushort ear_status;
+	short ear_status;
 	int ret;
 
 	if (my_id) {

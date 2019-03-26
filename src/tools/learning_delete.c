@@ -31,10 +31,11 @@
 #include <unistd.h>
 #include <termios.h>
 #include <mysql/mysql.h>
+#include <common/output/verbose.h>
 #include <common/string_enhanced.h>
-#include <common/database/db_helper.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/database/db_helper.h>
 
 //#define ALL_QUERY   "DELETE Learning_signatures, Learning_applications, Learning_jobs FROM Learning_jobs " \
                     "INNER JOIN Learning_applications INNER JOIN Learning_signatures ON Learning_jobs.id=job_id " \

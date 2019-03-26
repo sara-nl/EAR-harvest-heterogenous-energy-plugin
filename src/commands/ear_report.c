@@ -38,6 +38,7 @@
 #include <common/user.h>
 #include <common/states.h>
 #include <common/config.h>
+#include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 
 #include <mysql/mysql.h>

@@ -29,6 +29,7 @@
 
 #include <string.h>
 #include <common/user.h>
+#include <common/output/verbose.h>
 
 state_t user_all_ids_get(user_t *user)
 {

@@ -32,7 +32,6 @@
 
 #include <common/config.h>
 #include <common/types/generic.h>
-#include <common/output/verbose.h>
 
 typedef struct coefficient
 {

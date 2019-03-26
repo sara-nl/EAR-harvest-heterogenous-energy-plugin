@@ -29,13 +29,11 @@
 
 #ifndef _EAR_TYPES_JOB
 #define _EAR_TYPES_JOB
+
 #include <time.h>
 #include <stdint.h>
 #include <common/config.h>
 #include <common/types/generic.h>
-#include <common/output/verbose.h>
-
-
 
 /* Proposal for new job
 typedef struct job
