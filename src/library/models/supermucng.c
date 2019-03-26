@@ -36,7 +36,7 @@
 #include <common/config.h>
 #include <common/states.h>
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/output/debug.h>
@@ -49,7 +49,7 @@
 #include <library/models/models.h>
 #include <common/math_operations.h>
 
-#define NO_MODELS_SM_VERBOSE	0
+#define SM_VERB	0
 
 
 static uint sm_policy_pstates;
@@ -256,7 +256,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 		}	
 		if (boosted){
 			sm_phase=BOOST;
-			debug("Frequency selected after MIN_TIME phase %u \n",best_freq);
+			verbose(SM_VERB,"Frequency selected after MIN_TIME phase %u \n",best_freq);
 		}
 		/* after that phase, we will chech if we should reduce the frequency */
 		if (!boosted){
@@ -279,7 +279,7 @@ ulong supermuc_policy(signature_t *sig,int *ready)
 						}
 						}
 			}
-			debug("Frequency selected after MIN_ENERGY phase %u energy estimated %lf\n",best_freq,best_solution);
+			verbose(SM_VERB,"Frequency selected after MIN_ENERGY phase %u energy estimated %lf\n",best_freq,best_solution);
 
 		}
 	}else{/* Use models is set to 0 */

@@ -255,12 +255,10 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 			if ((my_conf->islands[i].ranges[range_id].sec_ip>=0) && (my_conf->islands[i].num_backups)){
             	strcpy(n->db_sec_ip, my_conf->islands[i].backup_ips[my_conf->islands[i].ranges[range_id].sec_ip]);
 			}
-			#if EAR_CONF_EXT
 			n->max_sig_power=my_conf->islands[i].max_sig_power;
 			n->min_sig_power=my_conf->islands[i].min_sig_power;
 			n->max_error_power=my_conf->islands[i].max_error_power;
 			n->use_log=my_conf->eard.use_log;
-			#endif
 		}
 		i++;
 	}while(i<my_conf->num_islands);
@@ -511,9 +509,7 @@ void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 	eardbdc->mem_size_types[4] = 7;
 	eardbdc->mem_size_types[5] = 5;
 	eardbdc->mem_size_types[6] = 1;
-	#if EAR_CONF_EXT
 	eardbdc->use_log=EARDBD_FILE_LOG;
-	#endif
 }
 
 void set_default_eard_conf(eard_conf_t *eardc)
@@ -526,9 +522,7 @@ void set_default_eard_conf(eard_conf_t *eardc)
     eardc->use_mysql=1;         /* Must EARD report to DB */
     eardc->use_eardbd=1;        /* Must EARD report to DB using EARDBD */
 	eardc->force_frequencies=1; /* EARD will force frequencies */
-	#if EAR_CONF_EXT
 	eardc->use_log=EARD_FILE_LOG;
-    #endif
 
 }
 
@@ -557,9 +551,7 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->defcon_limits[2]=95;
 	eargmc->grace_periods=GRACE_T1;
 	strcpy(eargmc->mail,"nomail");
-	#if EAR_CONF_EXT
 	eargmc->use_log=EARGMD_FILE_LOG;
-	#endif
 }
 
 void set_default_db_conf(db_conf_t *db_conf)
@@ -568,28 +560,12 @@ void set_default_db_conf(db_conf_t *db_conf)
     strcpy(db_conf->user_commands, "ear_daemon");
     strcpy(db_conf->ip, "127.0.0.1");
     db_conf->port = 0;
-	#if EAR_CONF_EXT
 	db_conf->max_connections=MAX_DB_CONNECTIONS;
 	db_conf->report_node_detail=!DB_SIMPLE;
 	db_conf->report_sig_detail=!DB_SIMPLE;
 	db_conf->report_loops=!LARGE_CLUSTER;
-	#endif
 }
 
-/*
-    uint id;
-    uint num_ranges;
-    node_range_t *ranges;
-    char **db_ips;
-    uint num_ips;
-    char **backup_ips;
-    uint num_backups;
-    #if EAR_CONF_EXT
-    double min_sig_power;
-    double max_sig_power;
-    double max_error_power;
-    #endif
-*/
 
 void set_default_island_conf(node_island_t *isl_conf,uint id)
 {
@@ -600,11 +576,9 @@ void set_default_island_conf(node_island_t *isl_conf,uint id)
 	isl_conf->num_ips=0;	
 	isl_conf->backup_ips=NULL;
 	isl_conf->num_backups=0;
-    #if EAR_CONF_EXT
 	isl_conf->min_sig_power=MIN_SIG_POWER;
 	isl_conf->max_sig_power=MAX_SIG_POWER;
 	isl_conf->max_error_power=MAX_ERROR_POWER;
-	#endif
 }
 
 /*

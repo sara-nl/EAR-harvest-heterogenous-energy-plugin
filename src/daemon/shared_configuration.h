@@ -63,10 +63,8 @@ typedef struct settings_conf{
 	double 	th2;
 #endif
 	earlib_conf_t lib_info;
-	#if EAR_CONF_EXT
 	double min_sig_power;
 	uint report_loops;
-	#endif
 } settings_conf_t;
 
 typedef struct resched{

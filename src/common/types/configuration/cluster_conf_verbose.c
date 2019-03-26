@@ -38,9 +38,7 @@ static void print_eard_conf(eard_conf_t *conf)
 	verbosen(VCCONF,"\t eard: verbosen %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
 	verbosen(VCCONF,"\t eard: turbo %u port %u use_db %u use_eardbd %u \n",conf->turbo,conf->port,conf->use_mysql,conf->use_eardbd);
 	verbosen(VCCONF,"\t eard: force_frequencies %u\n",conf->force_frequencies);
-	#if EAR_CONF_EXT
 	verbosen(VCCONF,"\t eard: use_log %u\n",conf->use_log);
-	#endif
 
 }
 
@@ -52,9 +50,7 @@ static void print_eargm_conf(eargm_conf_t *conf)
 	verbosen(VCCONF,"\t eargm: defcon levels [%u,%u,%u] grace period %u\n",conf->defcon_limits[0],conf->defcon_limits[1],conf->defcon_limits[2],
 	conf->grace_periods);
 	verbosen(VCCONF,"\t policy %u (0=MaxEnergy,1=MaxPower) units=%u (-,K,M)\n",conf->policy,conf->units); 
-	#if EAR_CONF_EXT
 	verbosen(VCCONF,"\t use_log %u\n",conf->use_log);
-	#endif
 }
 
 static void print_db_manager(eardb_conf_t *conf)
@@ -62,9 +58,7 @@ static void print_db_manager(eardb_conf_t *conf)
 	verbosen(VCCONF,"--> EARDBD configuration\n");
 	verbosen(VCCONF, "---> Aggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tSync Port: %u\tCacheSize: %u\n",
 			conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->sync_tcp_port,conf->mem_size);
-	#if EAR_CONF_EXT
 	verbosen(VCCONF,"--> use_log %u\n",conf->use_log);
-	#endif
 	
 }
 
@@ -73,19 +67,13 @@ void print_database_conf(db_conf_t *conf)
 	verbosen(VCCONF,"\n--> MARIADB configuration\n");
 	verbosen(VCCONF, "---> IP: %s\tUser: %s\tUser commands %s\tPort:%u\tDB:%s\n",
 			conf->ip, conf->user, conf->user_commands,conf->port, conf->database);
-	#if EAR_CONF_EXT
 	verbosen(VCCONF,"-->max_connections %u report_node_details %u report_sig_details %u report_loops %u\n",conf->max_connections,conf->report_node_detail,conf->report_sig_detail,conf->report_loops);
-	#endif
 }
 
 static void print_islands_conf(node_island_t *conf)
 {
 	verbosen(VCCONF, "Islands configuration\n");
-	#if EAR_CONF_EXT
 	verbosen(VCCONF, "--->id: %u (min_power %.0lf, max_power %.0lf,power>%.0lf is an error)\n", conf->id,conf->min_sig_power,conf->max_sig_power,conf->max_error_power);
-	#else
-	verbosen(VCCONF, "--->id: %u\n", conf->id);
-	#endif
 	int i;
 	for (i = 0; i < conf->num_ranges; i++)
 	{
