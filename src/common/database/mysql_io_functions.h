@@ -64,12 +64,18 @@
 #endif
 
 
+
+
+
 typedef struct
 {
     char type;
     application_t *app;
     loop_t *loop;
 } signature_container_t;
+
+/** Sets the database layer to operate with full signatures or simplified one. */
+void set_signature_simple(char full_sig);
 
 /** Given a MYSQL connection and an application, inserts said application into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
