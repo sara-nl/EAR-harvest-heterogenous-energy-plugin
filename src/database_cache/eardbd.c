@@ -232,7 +232,6 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	#endif
 
 	// Print
-	#if EAR_CONF_EXT
 	int fd_log = 2;
 
 	if (conf_clus->db_manager.use_log) {
@@ -244,7 +243,6 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	DEBUG_SET_FD(fd_log);
 	WARN_SET_FD(fd_log);
 	VERB_SET_TS(!conf_clus->db_manager.use_log);
-	#endif
 
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;

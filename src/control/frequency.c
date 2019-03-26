@@ -326,18 +326,9 @@ void frequency_set_ondemand_governor_all_cpus()
 void frequency_set_userspace_governor_all_cpus()
 {
 	int i,status;
-  struct cpufreq_policy user;
-	user.min=freq_list_cpu[num_freqs-1];
-	user.max=freq_list_cpu[0];
-	user.governor = (char *) malloc(strlen("userspace") + 1);
-	strcpy(user.governor,"userspace");
 
 	for (i = 0; i < num_cpus; i++) {
-		//cpufreq_modify_policy_governor(i, "userspace");
-		status = cpufreq_set_policy(i, &user);
-		if (status < 0) {
-		             error( "ERROR while switching policy for cpu %d ", i);
-	  }
+		cpufreq_modify_policy_governor(i, "userspace");
 	}
 }
 

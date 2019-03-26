@@ -172,20 +172,11 @@ void states_end_period(uint iterations)
 	{
 		loop.total_iterations = iterations;
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
-		#if EAR_CONF_EXT
 		if (system_conf->report_loops){
 		#if DB_MYSQL
 		eards_write_loop_signature(&loop);
 		#endif
 		}
-		#else
-		/* Once EAR_CONF_EXT is oficial, remove this code */
-		#if !LARGE_CLUSTERS
-		#if DB_MYSQL
-		eards_write_loop_signature(&loop);
-		#endif
-		#endif
-		#endif
 	}
 
 	loop_with_signature = 0;
