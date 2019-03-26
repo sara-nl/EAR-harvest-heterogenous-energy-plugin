@@ -1,4 +1,3 @@
-#include "bithack.h"
 #include <library/dynais/dynais.h>
 #include <library/dynais/dynais_core.h>
 

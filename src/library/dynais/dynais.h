@@ -31,6 +31,7 @@
 #ifndef EAR_DYNAIS_H
 #define EAR_DYNAIS_H
 
+#include <immintrin.h> // -mavx -mfma
 #include <common/types/generic.h>
 
 #define MAX_LEVELS      10

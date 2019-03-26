@@ -681,9 +681,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 {
-	unsigned int ear_status;
-	int ret;
 	char men[128];
+	ushort ear_status;
+	int ret;
 
 	if (my_id) {
 		return;
@@ -695,8 +695,8 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 		unsigned long  trace_data[5];
 		unsigned long  ear_event_l;
 		unsigned short ear_event_s;
-		unsigned int   ear_size;
-		unsigned int   ear_level;
+		unsigned short ear_size;
+		unsigned short ear_level;
 
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);

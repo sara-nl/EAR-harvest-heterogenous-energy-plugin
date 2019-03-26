@@ -190,7 +190,7 @@ short dynais(ushort sample, ushort *size, ushort *govern_level)
 	short result;
 	short reach;
 	short l, ll;
-	cc++;
+	
 	// Hierarchical algorithm call. The maximum level
 	// reached is returned. All those values were updated
 	// by the basic DynAIS algorithm call.
@@ -264,6 +264,6 @@ short dynais(ushort sample, ushort *size, ushort *govern_level)
 ushort dynais_sample_convert(ulong sample)
 {
 	uint *p = (uint *) &sample;
-	p[0] = _mm_crc32_u32(p_i[0], p_i[1]);
+	p[0] = _mm_crc32_u32(p[0], p[1]);
 	return (ushort) p[0];
 }

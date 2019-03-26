@@ -1,7 +1,6 @@
 #ifndef EAR_DYNAIS_CORE_H
 #define EAR_DYNAIS_CORE_H
 
-#include <immintrin.h> // -mavx -mfma
 #include <common/types/generic.h>
 
 void dynais_core_n(ushort sample, ushort size, ushort level);
