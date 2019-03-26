@@ -128,11 +128,9 @@ void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
 	for (i=0;i<TOTAL_POLICIES;i++){
 		copy_policy_conf(&dest->policies[i],&src->policies[i]);
 	}
-	#if EAR_CONF_EXT
 	dest->max_sig_power=src->max_sig_power;
 	dest->min_sig_power=src->min_sig_power;
 	dest->max_error_power=src->max_error_power;
-	#endif
 	
 }
 
@@ -164,20 +162,14 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
             print_policy_conf(&my_node_conf->policies[i]);
         }
     }
-	#if EAR_CONF_EXT
 	verbose(VCCONF,"max_sig_power %.0lf min_sig_power %.0lf error_power %.0lf",my_node_conf->max_sig_power,my_node_conf->min_sig_power,my_node_conf->max_error_power);
-	#endif
 }
 int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 {
     int coef_len;
     int part1,part2;
     part1=sizeof(uint)*2+sizeof(ulong)+NODE_PREFIX*2;
-	#if EAR_CONF_EXT
     part2=sizeof(uint)+sizeof(policy_conf_t)*TOTAL_POLICIES+sizeof(double)*3;
-	#else
-    part2=sizeof(uint)+sizeof(policy_conf_t)*TOTAL_POLICIES;
-	#endif
     write(fd,(char *)myconf,part1);
     if (myconf->coef_file!=NULL){
         coef_len=strlen(myconf->coef_file);
@@ -195,11 +187,7 @@ int read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
     int coef_len;
     int part1,part2;
     part1=sizeof(uint)*2+sizeof(ulong)+NODE_PREFIX*2;
-	#if EAR_CONF_EXT
     part2=sizeof(uint)+sizeof(policy_conf_t)*TOTAL_POLICIES+sizeof(double)*3;
-	#else
-    part2=sizeof(uint)+sizeof(policy_conf_t)*TOTAL_POLICIES;
-	#endif
     read(fd,(char *)myconf,part1);
     read(fd,(char *)&coef_len,sizeof(int));
     if (coef_len>0){

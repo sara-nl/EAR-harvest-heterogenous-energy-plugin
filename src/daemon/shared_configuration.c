@@ -199,9 +199,7 @@ void print_settings_conf(settings_conf_t *setting)
 	setting->user_type,setting->learning,setting->lib_enabled,setting->policy);
 	verbose(VCONF,"\tmax_freq %lu def_freq %lu def_p_state %u th %.2lf\n",setting->max_freq,setting->def_freq,setting->def_p_state,setting->th);
 	print_ear_lib_conf(&setting->lib_info);	
-	#if EAR_CONF_EXT
 	verbose(VCONF,"\tmin_sig_power %.0lf",setting->min_sig_power);
-	#endif
 
 }
 

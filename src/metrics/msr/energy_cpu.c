@@ -211,7 +211,6 @@ int read_temp_msr(unsigned long long *_values)
 	int fd, j;
 
 	for(j=0;j<NUM_SOCKETS;j++) {
-        printf("toal_packages: %d\n", total_packages);
         int ret;
 
 		/* PKG reading */	    

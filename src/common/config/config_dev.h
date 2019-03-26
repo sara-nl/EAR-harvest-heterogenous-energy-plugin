@@ -68,7 +68,6 @@
 #define NUM_PROPS                           3
 
 // #define EAR_TRACER_MPI 1
-#define EAR_CONF_EXT						1
 
 #define IN_MPI_TIME 						1
 #endif //EAR_CONFIG_DEV_H
