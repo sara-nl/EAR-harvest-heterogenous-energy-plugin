@@ -31,7 +31,7 @@ comm_OBJS = $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/daemon/shared_configuration.o \
     $(SRCDIR)/common/libcommon.a
 
-xmpi_OBJS = dynais/dynais.a \
+xmpi_OBJS = \
     metrics/metrics.o \
     models/models.o \
     models/min_time.o \
@@ -44,7 +44,8 @@ xmpi_OBJS = dynais/dynais.a \
     tracer/tracer_mpi.o \
     mpi_intercept/ear_api.o \
     mpi_intercept/freq_synchro.o \
-    mpi_intercept/process_MPI.o
+    mpi_intercept/process_MPI.o \
+    dynais/dynais.a \
 
 MPIC_OBJS = mpi_intercept/MPI_intercept.o \
     mpi_intercept/MPI_interface.o

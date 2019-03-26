@@ -31,6 +31,9 @@
 #ifndef EAR_DYNAIS_H
 #define EAR_DYNAIS_H
 
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <immintrin.h> // -mavx -mfma
 #include <common/types/generic.h>
 
@@ -52,6 +55,8 @@ short dynais(ushort sample, ushort *size, ushort *level);
 
 /** Converts a long sample to short sample. */
 ushort dynais_sample_convert(ulong sample);
+
+int dynais_build_type();
 
 /** Allocates memory in preparation to use dynais. Returns 0 on success */
 int dynais_init(ushort window, ushort levels);

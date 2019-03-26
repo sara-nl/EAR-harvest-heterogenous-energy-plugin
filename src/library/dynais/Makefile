@@ -1,5 +1,3 @@
-CC = icc
-
 ######## FILES
 
 OBJS = dynais.o \
