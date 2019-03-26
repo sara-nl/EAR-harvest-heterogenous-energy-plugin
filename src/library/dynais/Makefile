@@ -1,9 +1,19 @@
-all: dynais.o
+######## FILES
 
-dynais.o: dynais.c dynais.h
-	$(CC) $(CFLAGS) -march=native -c dynais.c
+OBJS = dynais.o \
+       dynais_core.o
 
-######## OPTIONS 
+######## RULES
+
+all: dynais.a
+
+dynais.a: $(OBJS)
+	$(AR) rvs $@ $(OBJS)
+
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -march=native -c $<
+
+######## OPTIONS
 
 clean: rclean;
 

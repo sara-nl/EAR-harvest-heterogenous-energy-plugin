@@ -31,7 +31,7 @@ comm_OBJS = $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/daemon/shared_configuration.o \
     $(SRCDIR)/common/libcommon.a
 
-xmpi_OBJS = dynais/dynais.o \
+xmpi_OBJS = dynais/dynais.a \
     metrics/metrics.o \
     models/models.o \
     models/min_time.o \
