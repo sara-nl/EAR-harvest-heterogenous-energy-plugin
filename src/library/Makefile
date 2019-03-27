@@ -79,6 +79,7 @@ clean: clean.gnrc.components clean.impi.components rclean;
 	@ $(MAKE) -C 'dynais' $* || exit
 	@ $(MAKE) -C 'metrics' $* || exit
 	@ $(MAKE) -C 'models' $* || exit
+	@ $(MAKE) -C 'micro_library' $* || exit
 
 %.impi.components:
 	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
