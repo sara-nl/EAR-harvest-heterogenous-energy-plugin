@@ -85,8 +85,8 @@
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-#define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f)"\
-                                        "VALUES (?, ?, ?, ?, ?, ?, ?)"
+#define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f,temp)"\
+                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 
 #define PERIODIC_METRIC_QUERY_SIMPLE    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
                                         "VALUES (?, ?, ?, ?, ?, ?)"
@@ -122,8 +122,8 @@
 /*char *LEARNING_SIGNATURE_QUERY;
 char *SIGNATURE_QUERY;
 char *AVG_SIGNATURE_QUERY;*/
-char full_signature = !DB_SIMPLE;
-char node_detail = DEMO;
+static char full_signature = !DB_SIMPLE;
+static char node_detail = DEMO;
 
 #if !DB_SIMPLE
 char *LEARNING_SIGNATURE_QUERY = LEARNING_SIGNATURE_QUERY_FULL;
@@ -1761,7 +1761,7 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 		#endif
 
     if (node_detail)
-        bind = calloc(7, sizeof(MYSQL_BIND));
+        bind = calloc(8, sizeof(MYSQL_BIND));
     else
         bind = calloc(6, sizeof(MYSQL_BIND));
 
@@ -1793,6 +1793,9 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
         bind[6].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[6].is_unsigned = 1;
         bind[6].buffer = (char *)&per_met->avg_f;
+        bind[7].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[7].is_unsigned = 1;
+        bind[7].buffer = (char *)&per_met->temp;
     }
         
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);

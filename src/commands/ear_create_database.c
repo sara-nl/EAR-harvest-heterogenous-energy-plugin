@@ -41,6 +41,7 @@
 char print_out = 0;
 cluster_conf_t my_cluster;
 char signature_detail = !DB_SIMPLE;
+char db_node_detail = DEMO;
 
 void usage(char *app)
 {
@@ -252,6 +253,7 @@ def_f INT unsigned, \
 PRIMARY KEY (id))");
     run_query(connection, query);
 
+if (db_node_detail){
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
 id INT unsigned NOT NULL AUTO_INCREMENT, \
 start_time INT NOT NULL, \
@@ -260,10 +262,19 @@ DC_energy INT unsigned NOT NULL, \
 node_id VARCHAR(256) NOT NULL, \
 job_id INT unsigned NOT NULL, \
 step_id INT unsigned NOT NULL, "
-#if DEMO
-"avg_f INT, "
-#endif
+"avg_f INT, temp INT"
                             "PRIMARY KEY (id))");
+}else{
+    sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
+id INT unsigned NOT NULL AUTO_INCREMENT, \
+start_time INT NOT NULL, \
+end_time INT NOT NULL, \
+DC_energy INT unsigned NOT NULL, \
+node_id VARCHAR(256) NOT NULL, \
+job_id INT unsigned NOT NULL, \
+step_id INT unsigned NOT NULL, "
+                            "PRIMARY KEY (id))");
+}
     run_query(connection, query);
 
     sprintf(query, "CREATE TABLE IF NOT EXISTS Power_signatures (  \
@@ -444,6 +455,7 @@ void main(int argc,char *argv[])
 	print_database_conf(&my_cluster.database);
 
     signature_detail = my_cluster.database.report_sig_detail;
+		db_node_detail= my_cluster.database.report_node_detail;
 
     char user_commands[USER];
     char pass_commands[USER];
