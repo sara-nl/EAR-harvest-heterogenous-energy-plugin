@@ -66,7 +66,7 @@ void init_db_helper(db_conf_t *conf)
 {
     db_config = conf;
     set_signature_simple(db_config->report_sig_detail);
-		set_periodic_metrics_simple(db_config->report_node_detail);
+    set_node_detail(db_config->report_node_detail);
 }
 
 int db_insert_application(application_t *application)
