@@ -159,7 +159,7 @@ void print_ips(ip_table_t *ips, int num_ips)
 		    {
 			    policy_id_to_name(j, temp);
                 get_short_policy(final, temp);
-			    printf("  %2s  %5u  %3u", final, ips[i].policies[j].pstate, ips[i].policies[j].th);
+			    printf("  %2s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
 		    }
             printf("\n");
             if (ips[i].power < ips[i].max_power)
@@ -209,11 +209,11 @@ void check_ip(status_t status, ip_table_t *ips, int num_ips)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
 		{
             ips[i].counter |= status.ok;
-			ips[i].power = status.power;
+			ips[i].power = status.node.power;
 			//refactor
 			for (j = 0; j < TOTAL_POLICIES; j++)
 			{
-				ips[i].policies[j].pstate = status.policy_conf[j].pstate;
+				ips[i].policies[j].freq = status.policy_conf[j].freq;
 				ips[i].policies[j].th = status.policy_conf[j].th;
 			}	
 		}
