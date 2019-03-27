@@ -67,6 +67,7 @@ void init_db_helper(db_conf_t *conf)
     db_config = conf;
 #if EAR_CONF_EXT
     set_signature_simple(db_config->report_sig_detail);
+    set_node_detail(db_config->report_node_detail);
 #endif
 }
 

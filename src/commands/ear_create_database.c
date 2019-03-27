@@ -121,7 +121,7 @@ void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user
         sprintf(query, "GRANT SELECT ON %s.* TO '%s'@'%%'", db_name, commands_user);
         run_query(connection, query);
     
-        sprintf(query, "ALTER USER '%s'@'%%' WITH MAX_USER_CONNECTIONS %d", commands_user, MAX_DB_CONNECTIONS);
+        sprintf(query, "ALTER USER '%s'@'%%' WITH MAX_USER_CONNECTIONS %d", commands_user, my_cluster.database.max_connections);
         run_query(connection, query);
     }
     sprintf(query, "FLUSH PRIVILEGES");
