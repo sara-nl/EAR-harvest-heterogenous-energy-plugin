@@ -42,7 +42,7 @@
 #define EAR_LIB_SYNC						1
 /* Frequencies are shared between master processes. Under development, must be
  * set to 0 in production*/
-#define COORDINATE_FREQUENCIES				0
+#define COORDINATE_FREQUENCIES				1
 /* When set to 1, activates the new SupermucNG policy */
 #define LRZ_POLICY							1
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */

@@ -256,12 +256,12 @@ int remote_eard_report_start(spank_t sp)
 	// Connection
 	if (eards_remote_connect(eard_host, eard_port) < 0)
 	{
-		plug_verbose(sp, 2, "while connecting with EAR daemon");
+		plug_verbose(sp, 2, "while connecting with EAR daemon in host '%s'", eard_host);
 		eard_conn = 0;
 	}
 	if (eard_conn && !eards_new_job(&eard_appl))
 	{
-		plug_verbose(sp, 2, "while connecting with EAR daemon");
+		plug_verbose(sp, 2, "while connecting with EAR daemon in host '%s'", eard_host);
 		eard_conn = 0;
 	}
 	eards_remote_disconnect();

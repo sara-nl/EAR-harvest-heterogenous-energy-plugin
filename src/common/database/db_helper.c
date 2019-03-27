@@ -65,6 +65,9 @@ int current_job_id = 0;
 void init_db_helper(db_conf_t *conf)
 {
     db_config = conf;
+#if EAR_CONF_EXT
+    set_signature_simple(db_config->report_sig_detail);
+#endif
 }
 
 int db_insert_application(application_t *application)
@@ -888,6 +891,7 @@ int db_read_applications_query(application_t **apps, char *query)
     }
 
    	num_apps = mysql_retrieve_applications(connection, query, apps, 0);
+    
    
   	if (num_apps == EAR_MYSQL_ERROR){
         verbose(VDBH, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));

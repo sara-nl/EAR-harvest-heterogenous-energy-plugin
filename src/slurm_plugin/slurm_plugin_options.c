@@ -46,13 +46,8 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  1, 0, (spank_opt_cb_f) _opt_ear
 	},
 	{ 
-	  #if LRZ_POLICY	
-	  "ear-policy", "type", "Selects an energy policy for EAR\n" \
-	  "{type=MIN_ENERGY_TO_SOLUTION|MIN_TIME_TO_SOLUTION|MONITORING_ONLY|SUPERMUC}",
-	  #else
 	  "ear-policy", "type", "Selects an energy policy for EAR\n" \
 	  "{type=MIN_ENERGY_TO_SOLUTION|MIN_TIME_TO_SOLUTION|MONITORING_ONLY}",
-	  #endif
 	  1, 0, (spank_opt_cb_f) _opt_ear_policy
 	},
 	{ "ear-cpufreq", "frequency", "Specifies the start frequency to be used by EAR policy (in KHz)",
