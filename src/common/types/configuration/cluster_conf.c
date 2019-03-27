@@ -258,6 +258,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 			n->max_sig_power=my_conf->islands[i].max_sig_power;
 			n->min_sig_power=my_conf->islands[i].min_sig_power;
 			n->max_error_power=my_conf->islands[i].max_error_power;
+			n->max_temp=my_conf->islands[i].max_temp;
 			n->use_log=my_conf->eard.use_log;
 		}
 		i++;
@@ -579,6 +580,7 @@ void set_default_island_conf(node_island_t *isl_conf,uint id)
 	isl_conf->min_sig_power=MIN_SIG_POWER;
 	isl_conf->max_sig_power=MAX_SIG_POWER;
 	isl_conf->max_error_power=MAX_ERROR_POWER;
+	isl_conf->max_temp=MAX_TEMP;
 }
 
 /*

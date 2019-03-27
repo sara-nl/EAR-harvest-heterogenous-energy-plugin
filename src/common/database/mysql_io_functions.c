@@ -124,6 +124,7 @@
 char *SIGNATURE_QUERY;
 char *AVG_SIGNATURE_QUERY;*/
 char full_signature = !DB_SIMPLE;
+char full_periodic_metrics=!DB_SIMPLE;
 
 #if !DB_SIMPLE
 char *LEARNING_SIGNATURE_QUERY = LEARNING_SIGNATURE_QUERY_FULL;
@@ -152,6 +153,11 @@ void set_signature_simple(char full_sig)
         AVG_SIGNATURE_QUERY = AVG_SIGNATURE_QUERY_SIMPLE;     
     }
 
+}
+
+void set_periodic_metrics_simple(char full_periodic)
+{
+	full_periodic_metrics=full_periodic;
 }
 
 int mysql_statement_error(MYSQL_STMT *statement)
@@ -1724,12 +1730,25 @@ int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signat
 
 }
 
+#define FULL_PARAMS_PERIODIC
+#define SHORT_PARAM_PERIODIC 6
+
 int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
+		uint num_params;
 
     if (mysql_stmt_prepare(statement, PERIODIC_METRIC_QUERY, strlen(PERIODIC_METRIC_QUERY))) return mysql_statement_error(statement);
+		#if 0
+		if (full_periodic_metrics){
+			num_params=FULL_PARAMS_PERIODIC;
+		}else{
+			num_params=SHORT_PARAM_PERIODIC;
+		}
+
+		MYSQL_BIND *bind = calloc(num_params, sizeof(MYSQL_BIND));
+		#endif
 
 #if DEMO
     MYSQL_BIND bind[7];

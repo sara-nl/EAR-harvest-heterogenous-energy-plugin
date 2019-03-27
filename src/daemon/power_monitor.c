@@ -440,6 +440,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 	}else{
 		/* We have to force the frequency */
 		ulong f;
+		verbose(VJOBPMON,"Setting userspace governor pstate=%u",my_policy->p_state);
 		frequency_set_userspace_governor_all_cpus();
 		f=frequency_pstate_to_freq(my_policy->p_state);
 		frequency_set_all_cpus(f);
@@ -538,7 +539,7 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	check_context("powermon_new_job: after new_batch!");
 	current_ear_app[ccontext]->current_freq=frequency_get_cpu_freq(0);
 	get_governor(&current_ear_app[ccontext]->governor);
-	verbose(VJOBPMON+1,"Saving governor %s",current_ear_app[ccontext]->governor.governor);
+	verbose(VJOBPMON,"Saving governor %s",current_ear_app[ccontext]->governor.governor);
 	/* Setting userspace */
 	user_type=get_user_type(&my_cluster_conf,appID->job.energy_tag,appID->job.user_id,appID->job.group_id,appID->job.user_acc,&my_tag);
 	verbose(VJOBPMON+1,"New job USER type is %u",user_type);
@@ -612,7 +613,7 @@ void powermon_end_job(job_id jid,job_id sid)
     report_powermon_app(&summary);
     save_eard_conf(&eard_dyn_conf);
 		/* RESTORE FREQUENCY */
-		verbose(VJOBPMON+1,"restoring governor %s",current_ear_app[ccontext]->governor.governor);
+		verbose(VJOBPMON,"restoring governor %s",current_ear_app[ccontext]->governor.governor);
 		set_governor(&current_ear_app[ccontext]->governor);
 		if (strcmp(current_ear_app[ccontext]->governor.governor,"userspace")==0){
 			frequency_set_all_cpus(current_ear_app[ccontext]->current_freq);
@@ -796,24 +797,26 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 	/* To be usd by status */
 	last_power_reported=my_current_power->avg_dc;
 	copy_node_metrics(&my_nm_id,&last_mm,nm);
-	
-	#if DEMO
-	current_sample.avg_f=nm->avg_cpu_freq;
-	#endif	
+
+	current_sample.avg_f=(ulong)get_nm_cpufreq(&my_nm_id,nm);;
+	current_sample.temp=(ulong)get_nm_temp(&my_nm_id,nm);
 
 	#if SYSLOG_MSG
-	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< MIN_SIG_POWER) || (my_current_power->avg_dc>MAX_SIG_POWER)){
-		syslog(LOG_DAEMON|LOG_ERR,"Node %s report %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
+	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< my_node_conf->min_sig_power) || (my_current_power->avg_dc>my_node_conf->max_sig_power)){
+		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
+	}
+	if (current_sample.temp>my_node_conf->max_temp){
+		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %llu degress (max %lu)\n",nodename,current_sample.temp,my_node_conf->max_temp);
 	}
 	#endif
-    if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>MAX_SIG_POWER)){
+  if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>my_node_conf->max_error_power)){
     	warning("Resetting IPMI interface since power is %.2lf",my_current_power->avg_dc);
     	node_energy_dispose();
-        node_energy_init();
+      node_energy_init();
     }
 
 	#if DB_MYSQL
-    if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<MAX_ERROR_POWER)){
+    if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<my_node_conf->max_error_power)){
 	if (my_cluster_conf.eard.use_mysql)
 	{
 		if (!my_cluster_conf.eard.use_eardbd) {

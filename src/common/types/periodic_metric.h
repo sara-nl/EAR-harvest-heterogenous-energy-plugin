@@ -36,15 +36,16 @@
 
 typedef struct periodic_metric
 {
+		/* short */
     ulong DC_energy;
     ulong job_id;
     ulong step_id;
-#if DEMO
-    ulong avg_f;
-#endif
     time_t start_time;
     time_t end_time;
     char node_id[NODE_SIZE];
+		/* Full */
+    ulong avg_f;
+		ulong temp;
 } periodic_metric_t;
 
 /** Initializes all values of the periodic_metric to 0 , sets the nodename */

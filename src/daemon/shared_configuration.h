@@ -64,6 +64,7 @@ typedef struct settings_conf{
 #endif
 	earlib_conf_t lib_info;
 	double min_sig_power;
+	double max_sig_power;
 	uint report_loops;
 } settings_conf_t;
 

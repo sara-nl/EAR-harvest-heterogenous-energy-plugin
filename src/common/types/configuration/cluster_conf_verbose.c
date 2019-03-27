@@ -73,7 +73,7 @@ void print_database_conf(db_conf_t *conf)
 static void print_islands_conf(node_island_t *conf)
 {
 	verbosen(VCCONF, "Islands configuration\n");
-	verbosen(VCCONF, "--->id: %u (min_power %.0lf, max_power %.0lf,power>%.0lf is an error)\n", conf->id,conf->min_sig_power,conf->max_sig_power,conf->max_error_power);
+	verbosen(VCCONF, "--->id: %u (min_power %.0lf, max_power %.0lf,power>%.0lf or temp>%lu are errors)\n", conf->id,conf->min_sig_power,conf->max_sig_power,conf->max_error_power,conf->max_temp);
 	int i;
 	for (i = 0; i < conf->num_ranges; i++)
 	{
