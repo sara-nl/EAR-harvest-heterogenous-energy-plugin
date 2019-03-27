@@ -611,14 +611,14 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
-            error("propagate_req:Error connecting to node: %s\n", next_ip);
+            warning("propagate_req:Error connecting to node: %s\n", next_ip);
             num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
         }
         else
         {
             if ((num_status[i-1] = send_status(command, &temp_status[i-1])) < 1) 
             {
-                error("propagate_req: Error propagating command to node %s\n", next_ip);
+                warning("propagate_req: Error propagating command to node %s\n", next_ip);
                 eards_remote_disconnect();
                 num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
             }
@@ -770,14 +770,14 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
-            error("propagate_req:Error connecting to node: %s\n", next_ip);
+            warning("propagate_req:Error connecting to node: %s\n", next_ip);
             correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
         }
         else
         {
             if (!send_command(command)) 
             {
-                error("propagate_req: Error propagating command to node %s\n", next_ip);
+                warning("propagate_req: Error propagating command to node %s\n", next_ip);
                 eards_remote_disconnect();
                 correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
             }
