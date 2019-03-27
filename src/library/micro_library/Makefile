@@ -1,3 +1,5 @@
+LDFLAGS = -shared $(CPUF_LDFLAGS)
+
 ######## FILES
 
 inn_OBJS = micro.o \
@@ -7,7 +9,8 @@ inn_OBJS = micro.o \
     MPI_interceptF.o \
     MPI_interfaceF.o
 
-ext_OBJS = ../dynais/dynais.a
+ext_OBJS = ../dynais/dynais.a \
+    ../../common/libcommon.a
 
 ######## RULES
 
@@ -17,10 +20,10 @@ allt: DEFINES=-DEAR_GUI
 allt: $(OBJS)
 
 %.o: %.c %.h
-	$(MPICC) $(CFLAGS) $(DEFINES) -c $<
+	$(MPICC) -Wall $(CFLAGS) $(DEFINES) -c $<
 
 libear.so: $(inn_OBJS)
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o libear.so $(inn_OBJS) $(ext_OBJS) $(LDFLAGS)
+	$(MPICC) -Wall $(MPICC_FLAGS) $(CFLAGS) -o libear.so $(inn_OBJS) $(ext_OBJS) $(LDFLAGS)
 
 ######## OPTIONS 
 
