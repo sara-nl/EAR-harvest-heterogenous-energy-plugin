@@ -1739,9 +1739,6 @@ int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signat
 
 }
 
-#define FULL_PARAMS_PERIODIC
-#define SHORT_PARAM_PERIODIC 6
-
 int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -1750,15 +1747,6 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 		uint num_params;
 
     if (mysql_stmt_prepare(statement, PERIODIC_METRIC_QUERY, strlen(PERIODIC_METRIC_QUERY))) return mysql_statement_error(statement);
-		#if 0
-		if (full_periodic_metrics){
-			num_params=FULL_PARAMS_PERIODIC;
-		}else{
-			num_params=SHORT_PARAM_PERIODIC;
-		}
-
-		MYSQL_BIND *bind = calloc(num_params, sizeof(MYSQL_BIND));
-		#endif
 
     if (node_detail)
         bind = calloc(8, sizeof(MYSQL_BIND));
@@ -1849,9 +1837,10 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
     if (!statement) return EAR_MYSQL_ERROR;
 
     char *params;
+    int num_args = node_detail ? 8 : 6;
 
     if (node_detail)
-        params = ", (?, ?, ?, ?, ?, ?, ?)";
+        params = ", (?, ?, ?, ?, ?, ?, ?, ?)";
     else
         params = ", (?, ?, ?, ?, ?, ?)";
 
@@ -1868,12 +1857,13 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement); 
     
 
-    MYSQL_BIND *bind = calloc(num_mets*PERIODIC_METRIC_ARGS, sizeof(MYSQL_BIND));
+    MYSQL_BIND *bind = calloc(num_mets*num_args, sizeof(MYSQL_BIND));
 
     for (i = 0; i < num_mets; i++)
     {
-        int offset = i*PERIODIC_METRIC_ARGS;
-        for (j = 0; j < PERIODIC_METRIC_ARGS; j++)
+
+        int offset = i*num_args;
+        for (j = 0; j < num_args; j++)
         {
             bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
             bind[offset+j].is_unsigned = 1;
@@ -1889,9 +1879,8 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
         bind[5+offset].buffer = (char *)&per_mets[i].step_id;
         if (node_detail)
         {
-            bind[6+offset].buffer_type = MYSQL_TYPE_LONGLONG;
-            bind[6+offset].is_unsigned = 1;
             bind[6+offset].buffer = (char *)&per_mets[i].avg_f;
+            bind[7+offset].buffer = (char *)&per_mets[i].temp;   
         }
     }
 
