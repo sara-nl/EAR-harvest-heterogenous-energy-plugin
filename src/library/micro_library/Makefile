@@ -5,11 +5,11 @@ LDFLAGS = -shared $(CPUF_LDFLAGS)
 inn_OBJS = micro.o \
     process_MPI.o \
     MPI_intercept.o \
-    MPI_interface.o \
-    MPI_interceptF.o \
-    MPI_interfaceF.o
+    MPI_interface.o
+    #MPI_interceptF.o \
+    #MPI_interfaceF.o
 
-ext_OBJS = ../dynais/dynais.a \
+ext_OBJS = ../dynais/dynais_old.o \
     ../../common/libcommon.a
 
 ######## RULES

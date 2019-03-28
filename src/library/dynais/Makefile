@@ -16,6 +16,7 @@ dynais.a: $(DEPS)
 dynais_core.o: dynais_core.c dynais_core.h
 	$(CC) $(CFLAGS) -DDYN_CORE_N -march=native -o dynais_core_n.o -c $<
 	$(CC) $(CFLAGS) -DDYN_CORE_0 -march=native -o dynais_core_0.o -c $<
+	$(CC) $(CFLAGS) -march=native -o dynais_old.o -c dynais_old.c
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -march=native -c $< 

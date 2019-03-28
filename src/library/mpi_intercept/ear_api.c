@@ -416,7 +416,7 @@ void ear_init()
 	}
 	configure_global_synchronization();
 	// Initializing sub systems
-	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	dynais_init(500, get_ear_dynais_levels());
 	metrics_init();
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
 

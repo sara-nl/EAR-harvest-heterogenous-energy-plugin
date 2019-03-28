@@ -5,7 +5,11 @@
 #include <string.h>
 #include <cpufreq.h>
 #include <common/file.h>
+#if 1
+#include <library/dynais/dynais_old.h>
+#else
 #include <library/dynais/dynais.h>
+#endif
 #include <library/micro_library/micro.h>
 
 char file[1024];
@@ -21,6 +25,7 @@ void micro_init()
 	char *var = NULL;
 	int res = 0;
 	int cpu = 0;
+	int win = 200;
 
 	// Mode
 	//mode = 0; // Disabled
@@ -53,10 +58,17 @@ void micro_init()
         return;
     }
 
-	dynais_init(100, 10);
+	//
+	var = getenv("MICRO_WINDOW");
+
+	if (var != NULL) {
+		win = atoi(var);
+	}
+
+	dynais_init(win, 10);
 
 	met_cpu = sched_getcpu();
-	fprintf(stderr, "MICRO INIT, host '%s'-'%u'\n", host, met_cpu);
+	fprintf(stderr, "MICRO INIT, host '%s'-'%u', dynais %u\n", host, met_cpu, win);
 
 #if 0
 	// CPUPower performance
@@ -76,21 +88,37 @@ void micro_init()
 void micro_call(mpi_call call_type, p2i buf, p2i dest)
 {
 	unsigned long  event_l;
+	#if 1
+	unsigned long event_s;
+    int result;
+    unsigned int level;
+    unsigned int size;
+	#else
 	unsigned short event_s;
-	unsigned short result;
+	short result;
 	unsigned short level;
 	unsigned short size;
+	#endif
 
 	if (!mode) {
 		return;
 	}
 
+	#if 1
+	event_l = (unsigned long) ((((buf >> 5) ^ dest) << 5) | call_type);
+	event_s = event_l;
+	#else
 	event_l = (unsigned long) ((((buf >> 5) ^ dest) << 5) | call_type);
 	event_s = dynais_sample_convert(event_l);
+	#endif
 	result = dynais(event_s, &size, &level);
 
 	met_calls += 1;
 	met_loops += result >= 3;
+
+	if (result >= 3) {
+		fprintf(stderr, "%lu %u\n", event_s, size);
+	}
 }
 
 void micro_end()
