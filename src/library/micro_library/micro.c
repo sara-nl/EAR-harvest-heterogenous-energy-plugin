@@ -10,45 +10,55 @@
 
 char file[1024];
 char host[1024];
-
-int fd_master_lock;
-int disabled;
-int power;
-
 unsigned int met_calls;
 unsigned int met_loops;
+unsigned int met_cpu;
+int fd_lock;
+int mode;
 
 void micro_init()
 {
+	char *var = NULL;
 	int res = 0;
 	int cpu = 0;
-	char *var = NULL;
+
+	// Mode
+	//mode = 0; // Disabled
+	  mode = 1; // DynAIS master
+	//mode = 2; // DynAIS all
 
 	// Dynais
-	var = getenv("MICRO_DISABLED");
-	disabled = (var != NULL) && (var[0] == '1');;
+	var = getenv("MICRO_MODE");
 
-	if (disabled) {
+	if (var != NULL) {
+		mode = atoi(var);
+	}
+
+	if (!mode) {
 		return;
 	}
 
 	gethostname(host, 1024);
 	sprintf(file, "/home/xjaneas/lock.%s", host);
 
-	if ((fd_master_lock = file_lock_master(file)) < 0) {
-		disabled = 1;
-	} else {
-		disabled = 0;
+
+	if (mode == 1)
+	{
+		if ((fd_lock = file_lock_master(file)) < 0) {
+			mode = 0;
+		}
 	}
 	
-	//fprintf(stderr, "MICRO INITIALIZING (disabled -> %u)\n", disabled);
-
-    if (disabled) {
+    if (!mode) {
         return;
     }
 
 	dynais_init(100, 10);
 
+	met_cpu = sched_getcpu();
+	fprintf(stderr, "MICRO INIT, host '%s'-'%u'\n", host, met_cpu);
+
+#if 0
 	// CPUPower performance
 	var = getenv("MICRO_POWER");
 	power = (var != NULL) && (var[0] == '1');
@@ -60,6 +70,7 @@ void micro_init()
 
 	// Summary
 	fprintf(stderr, "MICRO INIT, host '%s' ('%up','%uc','%dr')\n", host, power, cpu, res);
+#endif
 }
 
 void micro_call(mpi_call call_type, p2i buf, p2i dest)
@@ -70,7 +81,7 @@ void micro_call(mpi_call call_type, p2i buf, p2i dest)
 	unsigned short level;
 	unsigned short size;
 
-	if (disabled) {
+	if (!mode) {
 		return;
 	}
 
@@ -84,10 +95,12 @@ void micro_call(mpi_call call_type, p2i buf, p2i dest)
 
 void micro_end()
 {
-	if (disabled) {
+	if (!mode) {
         return;
     }
 
-	file_unlock_master(fd_master_lock, file);
-	fprintf(stderr, "MICRO END, %u calls and %u loops detected\n", met_calls, met_loops);
+	file_unlock_master(fd_lock, file);
+
+	fprintf(stderr, "MICRO END, host '%s'-'%u'-'%u' (calls: %u, loops: %u)\n",
+		host, sched_getcpu(), met_cpu, met_calls, met_loops);
 }
