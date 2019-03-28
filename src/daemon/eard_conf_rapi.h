@@ -71,28 +71,14 @@ typedef struct request{
     req_data_t  my_req;
 }request_t;
 
-#if 1
-
-typedef struct eard_policy_info{
-	uint pstate; /* default pstate */
-	uint th; 	 /* th x 100 */
-}eard_policy_info_t;
-
-typedef struct status{
-    unsigned int     ip;
-    char    ok;
-    eard_policy_info_t    policy_conf[TOTAL_POLICIES];
-	uint 	power;	
-} status_t;
-
-#else
-typedef node_info{
+typedef struct status_node_info{
 	ulong avg_freq; // In KH
 	ulong temp; // In degres, No creo que haya falta enviar un unsigned long long
 	ulong power; // In Watts 
 	ulong max_freq;// in KH
-} node_info_t;
-typedef app_info{
+} status_node_info_t;
+
+typedef struct app_info{
 	uint job_id;
 	uint step_id;
 }app_info_t;
@@ -108,10 +94,9 @@ typedef struct status{
     unsigned int     ip;
     char    ok;
     eard_policy_info_t    policy_conf[TOTAL_POLICIES];
-    node_info_t  node;
+    status_node_info_t  node;
     app_info_t  app;
 } status_t;
-#endif
 
 #define EAR_RC_NEW_JOB     0
 #define EAR_RC_END_JOB     1

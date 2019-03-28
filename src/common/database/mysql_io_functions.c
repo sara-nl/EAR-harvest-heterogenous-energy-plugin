@@ -84,13 +84,12 @@
 
 #define POWER_SIGNATURE_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-#if DEMO
-#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f)"\
-                                "VALUES (?, ?, ?, ?, ?, ?, ?)"
-#else
-#define PERIODIC_METRIC_QUERY   "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
-                                "VALUES (?, ?, ?, ?, ?, ?)"
-#endif
+
+#define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f,temp)"\
+                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+
+#define PERIODIC_METRIC_QUERY_SIMPLE    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
+                                        "VALUES (?, ?, ?, ?, ?, ?)"
 
 #define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time) VALUES (?, ?, ?)"
 
@@ -123,7 +122,8 @@
 /*char *LEARNING_SIGNATURE_QUERY;
 char *SIGNATURE_QUERY;
 char *AVG_SIGNATURE_QUERY;*/
-char full_signature = !DB_SIMPLE;
+static char full_signature = !DB_SIMPLE;
+static char node_detail = DEMO;
 
 #if !DB_SIMPLE
 char *LEARNING_SIGNATURE_QUERY = LEARNING_SIGNATURE_QUERY_FULL;
@@ -134,6 +134,12 @@ char *LEARNING_SIGNATURE_QUERY = LEARNING_SIGNATURE_QUERY_SIMPLE;
 char *SIGNATURE_QUERY = SIGNATURE_QUERY_SIMPLE;    
 char *AVG_SIGNATURE_QUERY = AVG_SIGNATURE_QUERY_SIMPLE;      
 #endif
+#if DEMO
+char *PERIODIC_METRIC_QUERY = PERIODIC_METRIC_QUERY_DETAIL;
+#else
+char *PERIODIC_METRIC_QUERY = PERIODIC_METRIC_QUERY_SIMPLE;
+#endif
+
 long autoincrement_offset = 0;
 
 void set_signature_simple(char full_sig)
@@ -152,6 +158,15 @@ void set_signature_simple(char full_sig)
         AVG_SIGNATURE_QUERY = AVG_SIGNATURE_QUERY_SIMPLE;     
     }
 
+}
+
+void set_node_detail(char node_det)
+{
+    node_detail = node_det;
+    if (node_detail)
+        PERIODIC_METRIC_QUERY = PERIODIC_METRIC_QUERY_DETAIL;
+    else
+        PERIODIC_METRIC_QUERY = PERIODIC_METRIC_QUERY_SIMPLE;
 }
 
 int mysql_statement_error(MYSQL_STMT *statement)
@@ -1724,18 +1739,32 @@ int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signat
 
 }
 
+#define FULL_PARAMS_PERIODIC
+#define SHORT_PARAM_PERIODIC 6
+
 int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
+    MYSQL_BIND *bind;
     if (!statement) return EAR_MYSQL_ERROR;
+		uint num_params;
 
     if (mysql_stmt_prepare(statement, PERIODIC_METRIC_QUERY, strlen(PERIODIC_METRIC_QUERY))) return mysql_statement_error(statement);
+		#if 0
+		if (full_periodic_metrics){
+			num_params=FULL_PARAMS_PERIODIC;
+		}else{
+			num_params=SHORT_PARAM_PERIODIC;
+		}
 
-#if DEMO
-    MYSQL_BIND bind[7];
-#else
-    MYSQL_BIND bind[6];
-#endif
+		MYSQL_BIND *bind = calloc(num_params, sizeof(MYSQL_BIND));
+		#endif
+
+    if (node_detail)
+        bind = calloc(8, sizeof(MYSQL_BIND));
+    else
+        bind = calloc(6, sizeof(MYSQL_BIND));
+
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -1759,12 +1788,16 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     bind[3].buffer = (char *)&per_met->node_id;
     bind[4].buffer = (char *)&per_met->job_id;
     bind[5].buffer = (char *)&per_met->step_id;
-#if DEMO
-    bind[6].buffer_type = MYSQL_TYPE_LONGLONG;
-    bind[6].is_unsigned = 1;
-    bind[6].buffer = (char *)&per_met->avg_f;
-#endif
-
+    if (node_detail)
+    {
+        bind[6].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[6].is_unsigned = 1;
+        bind[6].buffer = (char *)&per_met->avg_f;
+        bind[7].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[7].is_unsigned = 1;
+        bind[7].buffer = (char *)&per_met->temp;
+    }
+        
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
     if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
@@ -1815,11 +1848,13 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
-#if DEMO
-    char *params = ", (?, ?, ?, ?, ?, ?, ?)";
-#else
-    char *params = ", (?, ?, ?, ?, ?, ?)";
-#endif
+    char *params;
+
+    if (node_detail)
+        params = ", (?, ?, ?, ?, ?, ?, ?)";
+    else
+        params = ", (?, ?, ?, ?, ?, ?)";
+
     char *query = malloc(strlen(PERIODIC_METRIC_QUERY)+(num_mets-1)*strlen(params)+1);
     strcpy(query, PERIODIC_METRIC_QUERY);
 
@@ -1852,11 +1887,12 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
         bind[3+offset].buffer = (char *)&per_mets[i].node_id;
         bind[4+offset].buffer = (char *)&per_mets[i].job_id;
         bind[5+offset].buffer = (char *)&per_mets[i].step_id;
-#if DEMO
-        bind[6+offset].buffer_type = MYSQL_TYPE_LONGLONG;
-        bind[6+offset].is_unsigned = 1;
-        bind[6+offset].buffer = (char *)&per_mets[i].avg_f;
-#endif
+        if (node_detail)
+        {
+            bind[6+offset].buffer_type = MYSQL_TYPE_LONGLONG;
+            bind[6+offset].is_unsigned = 1;
+            bind[6+offset].buffer = (char *)&per_mets[i].avg_f;
+        }
     }
 
     if (mysql_stmt_bind_param(statement, bind)) 

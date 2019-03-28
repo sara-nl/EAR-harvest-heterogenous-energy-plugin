@@ -235,7 +235,7 @@ static void insert_apps_mpi()
 	}
 
 	metrics_insert_start(i_appsm);
-	debug("trying to insert '%d' applications (simple: '%d')", i_appsm, DB_SIMPLE);
+	debug("trying to insert '%d' applications (simple: '%d')", i_appsm, !conf_clus.database.report_sig_detail);
 	db_batch_insert_applications((application_t *) typ_alloc[i_appsm], sam_index[i_appsm]);
 	debug("called db_batch_insert_applications() with result '%d'", r);	
 	metrics_insert_stop(i_appsm, sam_index[i_appsm]);

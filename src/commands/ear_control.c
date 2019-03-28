@@ -58,6 +58,7 @@ typedef struct ip_table
     char name[IP_LENGTH];
     int counter;
 	uint power;
+    uint max_power;
 	eard_policy_info_t policies[TOTAL_POLICIES];
 } ip_table_t;
 
@@ -105,6 +106,7 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
     int i, j, k, rc; 
     char node_name[256];
     int num_ips = 0;
+    my_node_conf_t *aux_node_conf;
     ip_table_t *new_ips = NULL;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -123,6 +125,12 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
                 }   
                 new_ips = realloc(new_ips, sizeof(ip_table_t)*(num_ips+1));
                 strcpy(new_ips[num_ips].name, node_name);
+                aux_node_conf = get_my_node_conf(&my_cluster_conf, node_name);
+                if (aux_node_conf == NULL) 
+                    fprintf(stderr, "Error reading node %s configuration\n", node_name);
+                else
+                    new_ips[num_ips].max_power = (uint) aux_node_conf->max_error_power;
+
 				#if USE_EXT
 				strcat(node_name,NW_EXT);
 				#endif
@@ -138,26 +146,23 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 void print_ips(ip_table_t *ips, int num_ips)
 {
     int i, j, counter = 0;
-    printf("%10s\t%10s\t%5s\t", "hostname", "ip", "power");
-    for (i = 0; i < TOTAL_POLICIES; i++) {
-        printf("  %6s  %6s%5s\t   ", "policy", "pstate", "th");
-    }
-    printf("\n");
+    printf("%10s\t%5s", "hostname", "power");
+    printf("  %6s  %6s%5s\n", "policy", "pstate", "th");
 	char temp[GENERIC_NAME];
     char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
         if (ips[i].counter && ips[i].power != 0 )
         {
-            printf("%10s\t%10s\t%5d", ips[i].name, ips[i].ip, ips[i].power);
+            printf("%10s\t%5d", ips[i].name, ips[i].power);
 		    for (j = 0; j < TOTAL_POLICIES; j++)
 		    {
 			    policy_id_to_name(j, temp);
                 get_short_policy(final, temp);
-			    printf("  %5s  %5u  %8u\t", final, ips[i].policies[j].pstate, ips[i].policies[j].th);
+			    printf("  %2s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
 		    }
             printf("\n");
-            if (ips[i].power < MAX_SIG_POWER)
+            if (ips[i].power < ips[i].max_power)
                 counter++;
         }
 	}
@@ -168,7 +173,7 @@ void print_ips(ip_table_t *ips, int num_ips)
         {
             if (!ips[i].counter) {
                 printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
-            } else if (!ips[i].power || ips[i].power > MAX_SIG_POWER) {
+            } else if (!ips[i].power || ips[i].power > ips[i].max_power) {
                 printf("%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
 	    }
         }
@@ -204,11 +209,11 @@ void check_ip(status_t status, ip_table_t *ips, int num_ips)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
 		{
             ips[i].counter |= status.ok;
-			ips[i].power = status.power;
+			ips[i].power = status.node.power;
 			//refactor
 			for (j = 0; j < TOTAL_POLICIES; j++)
 			{
-				ips[i].policies[j].pstate = status.policy_conf[j].pstate;
+				ips[i].policies[j].freq = status.policy_conf[j].freq;
 				ips[i].policies[j].th = status.policy_conf[j].th;
 			}	
 		}
@@ -247,7 +252,7 @@ void main(int argc, char *argv[])
     char path_name[128];
     status_t *status;
     int num_status = 0;
-   
+    verb_level = -1;
     if (argc < 2) usage(argv[0]);
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){

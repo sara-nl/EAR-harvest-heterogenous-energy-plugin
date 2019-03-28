@@ -131,6 +131,7 @@ void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
 	dest->max_sig_power=src->max_sig_power;
 	dest->min_sig_power=src->min_sig_power;
 	dest->max_error_power=src->max_error_power;
+	dest->max_temp=src->max_temp;
 	
 }
 
@@ -162,7 +163,7 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
             print_policy_conf(&my_node_conf->policies[i]);
         }
     }
-	verbose(VCCONF,"max_sig_power %.0lf min_sig_power %.0lf error_power %.0lf",my_node_conf->max_sig_power,my_node_conf->min_sig_power,my_node_conf->max_error_power);
+	verbose(VCCONF,"max_sig_power %.0lf min_sig_power %.0lf error_power %.0lf max_temp %lu",my_node_conf->max_sig_power,my_node_conf->min_sig_power,my_node_conf->max_error_power,my_node_conf->max_temp);
 }
 int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 {

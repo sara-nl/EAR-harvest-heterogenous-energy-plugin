@@ -228,9 +228,7 @@ static int metrics_partial_stop(uint where)
 	// Manual IPMI accumulation
 	eards_node_dc_energy(&aux_energy_stop);
 	if ((where==SIG_END) && (aux_energy_stop==metrics_ipmi[LOO])){ 
-	#if 0
-		verbose(1,"EAR_NOT_READY because of energy %u\n",aux_energy);
-	#endif
+		debug("EAR_NOT_READY because of energy %u\n",aux_energy);
 		return EAR_NOT_READY;
 	}
 	aux_time_stop = metrics_time();
@@ -241,10 +239,8 @@ static int metrics_partial_stop(uint where)
 	/* energy is computed in mJ and time in usecs */
 	c_power=(float)(c_energy*1000.0)/(float)c_time;
 
-	if ((where==SIG_END) && (c_power<MIN_SIG_POWER)){ 
-	#if 0
-		verbose(1,"EAR_NOT_READY because of power %f\n",c_power);
-	#endif
+	if ((where==SIG_END) && (c_power<system_conf->min_sig_power)){ 
+		debug("EAR_NOT_READY because of power %f\n",c_power);
 		return EAR_NOT_READY;
 	}
 	aux_energy=aux_energy_stop;
@@ -392,7 +388,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	// Energy IPMI
 	metrics->DC_power = (double) metrics_ipmi[s] / (time_s * 1000.0);
 	metrics->EDP = time_s * time_s * metrics->DC_power;
-	if ((metrics->DC_power>MAX_SIG_POWER) || (metrics->DC_power<MIN_SIG_POWER)){
+	if ((metrics->DC_power>system_conf->max_sig_power) || (metrics->DC_power<system_conf->min_sig_power)){
 		verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,metrics_ipmi[s],time_s* 1000.0);
 	}
 

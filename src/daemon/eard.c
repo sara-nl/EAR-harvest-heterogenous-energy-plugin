@@ -991,6 +991,7 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
 	dyn->min_sig_power=node->min_sig_power;
+	dyn->max_sig_power=node->max_sig_power;
 	dyn->report_loops=cluster->database.report_loops;
 	resched->force_rescheduling=1;
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
@@ -1030,6 +1031,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
     dyn->def_freq=deff;
     dyn->th=my_policy->th;
 	dyn->min_sig_power=node->min_sig_power;
+	dyn->max_sig_power=node->max_sig_power;
     dyn->report_loops=cluster->database.report_loops;
 
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);

@@ -65,8 +65,8 @@ void periodic_metrict_print_channel(FILE *file, periodic_metric_t *pm)
 {
 	fprintf(file, "periodic_metric_t: job id '%lu.%lu', node id '%s'\n",
 		pm->job_id, pm->step_id, pm->node_id);
-	fprintf(file, "periodic_metric_t: start '%lu', end '%lu', energy '%lu'\n",
-		pm->start_time, pm->end_time, pm->DC_energy);
+	fprintf(file, "periodic_metric_t: start '%lu', end '%lu', energy '%lu' avg_freq %lu temp %lu\n",
+		pm->start_time, pm->end_time, pm->DC_energy,pm->avg_f,pm->temp);
 }
 
 /*

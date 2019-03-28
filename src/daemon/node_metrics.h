@@ -63,6 +63,7 @@ int copy_node_metrics(nm_t *id,nm_data_t* dest, nm_data_t * src);
 int print_node_metrics(nm_t *id,nm_data_t *nm);
 int verbose_node_metrics(nm_t *id,nm_data_t *nm);
 unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm);
+ulong get_nm_cpufreq(nm_t *id,nm_data_t *nm);
 
 
 #endif

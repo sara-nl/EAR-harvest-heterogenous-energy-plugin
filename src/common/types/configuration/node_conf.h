@@ -86,6 +86,7 @@ typedef struct my_node_conf
     double min_sig_power;
     double max_sig_power;
     double max_error_power;
+		ulong  max_temp;
 	uint 	use_log;
 }my_node_conf_t;
 
@@ -102,6 +103,7 @@ typedef struct node_island
     double min_sig_power;
     double max_sig_power;
     double max_error_power;
+		ulong  max_temp;
 } node_island_t;
 
 

@@ -41,20 +41,22 @@
 
 char print_out = 0;
 cluster_conf_t my_cluster;
+char signature_detail = !DB_SIMPLE;
+char db_node_detail = DEMO;
 
 void usage(char *app)
 {
-	verbose(0, "Usage:%s [options]", app);
-    verbose(0, "\t-p\t\tSpecify the password for MySQL's root user.");
-    verbose(0, "\t-o\t\tOutputs the commands that would run.");
-    verbose(0, "\t-r\t\tRuns the program. If '-o' this option will be override.");
-    verbose(0, "\t-h\t\tShows this message.");
+	fprintf(stdout, "Usage:%s [options]", app);
+    fprintf(stdout, "\t-p\t\tSpecify the password for MySQL's root user.");
+    fprintf(stdout, "\t-o\t\tOutputs the commands that would run.");
+    fprintf(stdout, "\t-r\t\tRuns the program. If '-o' this option will be override.");
+    fprintf(stdout, "\t-h\t\tShows this message.");
 	exit(0);
 }
 
 void execute_on_error(MYSQL *connection)
 {
-    verbose(0, "Error: %s", mysql_error(connection)); //error
+    fprintf(stdout, "Error: %s", mysql_error(connection)); //error
     return;
     //mysql_close(connection);
     //exit(1);
@@ -69,7 +71,7 @@ int get_num_indexes(char *table)
     MYSQL_RES *result = db_run_query_result(query);
     int num_indexes;
     if (result == NULL) {
-        verbose(0, "Error while retrieving result");
+        fprintf(stdout, "Error while retrieving result");
     } else {
         MYSQL_ROW row;
         unsigned int num_fields;
@@ -90,7 +92,7 @@ int get_num_indexes(char *table)
 void run_query(MYSQL *connection, char *query)
 {
     if (print_out) {
-        verbose(0, "%s\n", query);
+        fprintf(stdout, "%s\n", query);
     } else {
         if (mysql_query(connection, query)) {
             execute_on_error(connection);
@@ -121,7 +123,7 @@ void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user
         sprintf(query, "GRANT SELECT ON %s.* TO '%s'@'%%'", db_name, commands_user);
         run_query(connection, query);
     
-        sprintf(query, "ALTER USER '%s'@'%%' WITH MAX_USER_CONNECTIONS %n", commands_user, MAX_DB_CONNECTIONS);
+        sprintf(query, "ALTER USER '%s'@'%%' WITH MAX_USER_CONNECTIONS %d", commands_user, my_cluster.database.max_connections);
         run_query(connection, query);
     }
     sprintf(query, "FLUSH PRIVILEGES");
@@ -145,24 +147,24 @@ void create_indexes(MYSQL *connection)
     if (get_num_indexes("Periodic_metrics") < 3)
     {
         sprintf(query, "CREATE INDEX idx_end_time ON Periodic_metrics (end_time)");
-        verbose(0, "Running query: %s", query);
+        fprintf(stdout, "Running query: %s", query);
         run_query(connection, query);
 
         sprintf(query, "CREATE INDEX idx_job_id ON Periodic_metrics (job_id)");
-        verbose(0, "Running query: %s", query);
+        fprintf(stdout, "Running query: %s", query);
         run_query(connection, query);
     } else {
-        verbose(0, "Periodic_metrics indexes already created, skipping...");
+        fprintf(stdout, "Periodic_metrics indexes already created, skipping...");
     }
 
     if (get_num_indexes("Jobs") < 3)
     {
         sprintf(query, "CREATE INDEX idx_user_id ON Jobs (user_id)");
-        verbose(0, "Running query: %s", query);
+        fprintf(stdout, "Running query: %s", query);
         run_query(connection, query);
     }
     else {
-        verbose(0, "Jobs indexes already created, skipping...");
+        fprintf(stdout, "Jobs indexes already created, skipping...");
     }
     
 }
@@ -210,7 +212,8 @@ e_tag VARCHAR(256), \
 PRIMARY KEY(id, step_id))");
     run_query(connection, query);
 
-    sprintf(query, "CREATE TABLE IF NOT EXISTS Signatures (\
+    if (signature_detail)
+        sprintf(query, "CREATE TABLE IF NOT EXISTS Signatures (\
 id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
@@ -220,9 +223,8 @@ GBS FLOAT,\
 TPI FLOAT,\
 CPI FLOAT,\
 Gflops FLOAT,\
-time FLOAT,"
-#if !DB_SIMPLE
-"FLOPS1 INT unsigned,\
+time FLOAT,\
+FLOPS1 INT unsigned,\
 FLOPS2 INT unsigned,\
 FLOPS3 INT unsigned,\
 FLOPS4 INT unsigned,\
@@ -231,13 +233,28 @@ FLOPS6 INT unsigned,\
 FLOPS7 INT unsigned,\
 FLOPS8 INT unsigned,\
 instructions INT unsigned, \
-cycles INT unsigned,"
-#endif
-"avg_f INT unsigned,\
+cycles INT unsigned,\
+avg_f INT unsigned,\
+def_f INT unsigned, \
+PRIMARY KEY (id))");
+    else
+        sprintf(query, "CREATE TABLE IF NOT EXISTS Signatures (\
+id INT unsigned NOT NULL AUTO_INCREMENT,\
+DC_power FLOAT,\
+DRAM_power FLOAT,\
+PCK_power FLOAT,\
+EDP FLOAT,\
+GBS FLOAT,\
+TPI FLOAT,\
+CPI FLOAT,\
+Gflops FLOAT,\
+time FLOAT,\
+avg_f INT unsigned,\
 def_f INT unsigned, \
 PRIMARY KEY (id))");
     run_query(connection, query);
 
+if (db_node_detail){
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
 id INT unsigned NOT NULL AUTO_INCREMENT, \
 start_time INT NOT NULL, \
@@ -246,10 +263,19 @@ DC_energy INT unsigned NOT NULL, \
 node_id VARCHAR(256) NOT NULL, \
 job_id INT unsigned NOT NULL, \
 step_id INT unsigned NOT NULL, "
-#if DEMO
-"avg_f INT, "
-#endif
+"avg_f INT, temp INT"
                             "PRIMARY KEY (id))");
+}else{
+    sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
+id INT unsigned NOT NULL AUTO_INCREMENT, \
+start_time INT NOT NULL, \
+end_time INT NOT NULL, \
+DC_energy INT unsigned NOT NULL, \
+node_id VARCHAR(256) NOT NULL, \
+job_id INT unsigned NOT NULL, \
+step_id INT unsigned NOT NULL, "
+                            "PRIMARY KEY (id))");
+}
     run_query(connection, query);
 
     sprintf(query, "CREATE TABLE IF NOT EXISTS Power_signatures (  \
@@ -324,7 +350,8 @@ DC_energy INT unsigned, \
 PRIMARY KEY(id))");
     run_query(connection, query);
 
-    sprintf(query, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
+    if (signature_detail)
+        sprintf(query, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
 id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
@@ -334,9 +361,8 @@ GBS FLOAT,\
 TPI FLOAT,\
 CPI FLOAT,\
 Gflops FLOAT,\
-time FLOAT,"
-#if !DB_SIMPLE
-"FLOPS1 INT unsigned,\
+time FLOAT,\
+FLOPS1 INT unsigned,\
 FLOPS2 INT unsigned,\
 FLOPS3 INT unsigned,\
 FLOPS4 INT unsigned,\
@@ -345,11 +371,26 @@ FLOPS6 INT unsigned,\
 FLOPS7 INT unsigned,\
 FLOPS8 INT unsigned,\
 instructions INT unsigned, \
-cycles INT unsigned,"
-#endif
-"avg_f INT unsigned,\
+cycles INT unsigned,\
+avg_f INT unsigned,\
 def_f INT unsigned, \
 PRIMARY KEY (id))");
+    else
+        sprintf(query, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
+id INT unsigned NOT NULL AUTO_INCREMENT,\
+DC_power FLOAT,\
+DRAM_power FLOAT,\
+PCK_power FLOAT,\
+EDP FLOAT,\
+GBS FLOAT,\
+TPI FLOAT,\
+CPI FLOAT,\
+Gflops FLOAT,\
+time FLOAT,\
+avg_f INT unsigned,\
+def_f INT unsigned, \
+PRIMARY KEY (id))");
+
     run_query(connection, query);
 
 }
@@ -382,7 +423,7 @@ void main(int argc,char *argv[])
                 t.c_lflag |= ECHO;
                 tcsetattr(STDIN_FILENO, TCSANOW, &t);
                 strclean(passw, '\n');
-                verbose(0, " ");
+                fprintf(stdout, " ");
                 break;
             case 'r':
                 break;
@@ -396,7 +437,7 @@ void main(int argc,char *argv[])
 
     if (connection == NULL)
     {
-        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
+        fprintf(stdout, "Error creating MYSQL object: %s", mysql_error(connection)); //error
         exit(1);
     }
 
@@ -406,7 +447,7 @@ void main(int argc,char *argv[])
 
     if (get_ear_conf_path(ear_path) == EAR_ERROR)
     {
-        verbose(0, "Error getting ear.conf path"); //error
+        fprintf(stdout, "Error getting ear.conf path"); //error
         exit(0);
     }
     
@@ -414,6 +455,8 @@ void main(int argc,char *argv[])
 
 	print_database_conf(&my_cluster.database);
 
+    signature_detail = my_cluster.database.report_sig_detail;
+		db_node_detail= my_cluster.database.report_node_detail;
 
     char user_commands[USER];
     char pass_commands[USER];
@@ -422,7 +465,7 @@ void main(int argc,char *argv[])
     {
         if (!mysql_real_connect(connection, my_cluster.database.ip, "root", passw, NULL, my_cluster.database.port, NULL, 0))
         {
-            verbose(0, "Error connecting to database: %s", mysql_error(connection)); //error
+            fprintf(stdout, "Error connecting to database: %s", mysql_error(connection)); //error
             free_cluster_conf(&my_cluster);
             exit(0);
         }
@@ -434,13 +477,14 @@ void main(int argc,char *argv[])
 
     create_users(connection, my_cluster.database.database, my_cluster.database.user, my_cluster.database.pass, my_cluster.database.user_commands, my_cluster.database.pass_commands);
 
-    create_indexes(connection);
-
-    mysql_close(connection);
-
+    if (!print_out)
+    {
+        create_indexes(connection);
+        mysql_close(connection);
+    }
     free_cluster_conf(&my_cluster);
 
-    verbose(0, "Database successfully created");
+    if (!print_out) fprintf(stdout, "Database successfully created");
 
     exit(1);
 }
