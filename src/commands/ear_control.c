@@ -59,6 +59,10 @@ typedef struct ip_table
     int counter;
 	uint power;
     uint max_power;
+    int job_id;
+    int step_id;
+    uint current_freq;
+    uint temp;
 	eard_policy_info_t policies[TOTAL_POLICIES];
 } ip_table_t;
 
@@ -146,20 +150,21 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 void print_ips(ip_table_t *ips, int num_ips)
 {
     int i, j, counter = 0;
-    printf("%10s\t%5s", "hostname", "power");
-    printf("  %6s  %6s%5s\n", "policy", "pstate", "th");
+    printf("%10s\t%5s\t%4s\t%4s\t%6s\t%6s", "hostname", "power", "temp", "freq", "job_id", "stepid");
+    printf("  %6s  %5s  %2s\n", "policy", "pfreq", "th");
 	char temp[GENERIC_NAME];
     char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
         if (ips[i].counter && ips[i].power != 0 )
         {
-            printf("%10s\t%5d", ips[i].name, ips[i].power);
+            printf("%10s\t%5d\t%3dC\t%.2lf\t%6d\t%6d", ips[i].name, ips[i].power, ips[i].temp, 
+                            (double)ips[i].current_freq/1000000.0, ips[i].job_id, ips[i].step_id);
 		    for (j = 0; j < TOTAL_POLICIES; j++)
 		    {
 			    policy_id_to_name(j, temp);
                 get_short_policy(final, temp);
-			    printf("  %2s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
+			    printf("  %6s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
 		    }
             printf("\n");
             if (ips[i].power < ips[i].max_power)
@@ -210,6 +215,10 @@ void check_ip(status_t status, ip_table_t *ips, int num_ips)
 		{
             ips[i].counter |= status.ok;
 			ips[i].power = status.node.power;
+            ips[i].current_freq = status.node.avg_freq;
+            ips[i].temp = status.node.temp;
+            ips[i].job_id = status.app.job_id;
+            ips[i].step_id = status.app.step_id;
 			//refactor
 			for (j = 0; j < TOTAL_POLICIES; j++)
 			{
