@@ -77,6 +77,9 @@ typedef struct
 /** Sets the database layer to operate with full signatures or simplified one. */
 void set_signature_simple(char full_sig);
 
+/** Sets the database layer to operate with normal periodic_metrics or exteded ones. */
+void set_node_detail(char node_det);
+
 /** Sets the database layer to operate with full periodic_metrics or simplified one. */
 void set_periodic_metrics_simple(char full_periodic);
 
