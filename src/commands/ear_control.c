@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <limits.h>
 #include <getopt.h>
 #include <string.h>
 #include <stdlib.h>
@@ -248,9 +249,35 @@ void process_status(int num_status, status_t *status)
         print_ips(ips, num_ips);
         free(status);
     }
-    else {
-        printf("An error retrieving status has occurred.\n");
+    else printf("An error retrieving status has occurred.\n");
+}
+
+void generate_ip(ip_table_t *ips, char *node_name)
+{
+    my_node_conf_t *aux_node_conf;
+    strcpy(ips[0].name, node_name);
+    aux_node_conf = get_my_node_conf(&my_cluster_conf, node_name);
+    if (aux_node_conf == NULL) 
+        fprintf(stderr, "Error reading node %s configuration\n", node_name);
+    else
+        ips[0].max_power = (uint) aux_node_conf->max_error_power;
+#if USE_EXT
+    strcat(node_name,NW_EXT);
+#endif
+    fill_ip(node_name, &ips[0]);
+
+}
+
+void process_single_status(int num_status, status_t *status, char *node_name)
+{
+    if (num_status > 0)
+    {
+        ip_table_t ips;
+        generate_ip(&ips, node_name);
+        check_ip(*status, &ips, 1);
+        print_ips(&ips, 1);
     }
+    else printf("An error retrieving status has occurred.\n");
 }
 
 
@@ -291,7 +318,7 @@ void main(int argc, char *argv[])
             {"set-th",          required_argument, 0, 5},
             {"restore-conf", 	no_argument, 0, 6},
 	        {"ping", 	     	optional_argument, 0, 'p'},
-            {"status",       	no_argument, 0, 's'},
+            {"status",       	optional_argument, 0, 's'},
             {"help",         	no_argument, 0, 'h'},
             {0, 0, 0, 0}
         };
@@ -369,8 +396,25 @@ void main(int argc, char *argv[])
                     old_ping_all_nodes(my_cluster_conf);
                 break;
             case 's':
-                num_status = status_all_nodes(my_cluster_conf, &status);
-                process_status(num_status, status);
+                if (optarg)
+                {
+                    int rc=eards_remote_connect(optarg ,my_cluster_conf.eard.port);
+                    if (rc<0){
+                        printf("Error connecting with node %s\n", optarg);
+                    }else{
+                        request_t command;
+                        command.req = EAR_RC_STATUS;
+                        command.node_dist = INT_MAX;
+                        if ((num_status = send_status(&command, &status)) != 1) printf("Error doing status for node %s, returned (%d)\n", optarg, num_status);
+                        process_single_status(num_status, status, optarg);
+                        eards_remote_disconnect();
+                    }
+                }
+                else
+                {
+                    num_status = status_all_nodes(my_cluster_conf, &status);
+                    process_status(num_status, status);
+                }
                 break;
             case 'h':
                 usage(argv[0]);
