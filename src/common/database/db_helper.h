@@ -89,6 +89,8 @@ int db_run_query(char *query, char *user, char *passw);
 
 MYSQL_RES *db_run_query_result(char *query);
 
+int run_query_int_result(char *query);
+
 int db_read_applications_query(application_t **apps, char *query);
 
 void db_reset_counters();

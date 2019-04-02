@@ -55,6 +55,8 @@ int current_job_id = 0;
 #define LOO_VARS			LOOP_ARGS
 #define AGG_VARS			PERIODIC_AGGREGATION_ARGS
 #define EVE_VARS			EAR_EVENTS_ARGS
+#define IS_SIG_FULL_QUERY   "SELECT COUNT(*) FROM information_schema.columns where TABLE_NAME='Signatures' AND TABLE_SCHEMA='%s'"
+#define IS_NODE_FULL_QUERY  "SELECT COUNT(*) FROM information_schema.columns where TABLE_NAME='Periodic_metrics' AND TABLE_SCHEMA='%s'"
 
 
 #define PAINT(N) \
@@ -65,8 +67,53 @@ int current_job_id = 0;
 void init_db_helper(db_conf_t *conf)
 {
     db_config = conf;
-    set_signature_simple(db_config->report_sig_detail);
-    set_node_detail(db_config->report_node_detail);
+    char query[256];
+    int num_sig_args, num_per_args;
+
+    sprintf(query, IS_SIG_FULL_QUERY, db_config->database);
+    num_sig_args = run_query_int_result(query);
+    if (num_sig_args == EAR_ERROR)
+        set_signature_simple(db_config->report_sig_detail);
+    else if (num_sig_args < 20)
+        set_signature_simple(0);
+    else 
+        set_signature_simple(1);
+
+
+    sprintf(query, IS_NODE_FULL_QUERY, db_config->database);
+    num_per_args = run_query_int_result(query);
+    if (num_per_args == EAR_ERROR)
+        set_node_detail(db_config->report_node_detail);
+    else if (num_per_args < 8)
+        set_node_detail(0);
+    else
+        set_node_detail(1);
+
+}
+
+
+int run_query_int_result(char *query)
+{
+    MYSQL_RES *result = db_run_query_result(query);
+    int num_indexes;
+    if (result == NULL) {
+        verbose(VDBH, "Error while retrieving result");
+        return EAR_ERROR;
+    } else {
+        MYSQL_ROW row;
+        unsigned int num_fields;
+        unsigned int i;
+
+        num_fields = mysql_num_fields(result);
+        while ((row = mysql_fetch_row(result)))
+        {
+            unsigned long *lengths;
+            lengths = mysql_fetch_lengths(result);
+            for(i = 0; i < num_fields; i++)
+                num_indexes = atoi(row[i]);
+        }
+    }
+    return num_indexes;
 }
 
 int db_insert_application(application_t *application)

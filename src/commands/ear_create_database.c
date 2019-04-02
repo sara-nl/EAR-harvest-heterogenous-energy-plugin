@@ -45,20 +45,18 @@ char db_node_detail = DEMO;
 
 void usage(char *app)
 {
-	fprintf(stdout, "Usage:%s [options]", app);
-    fprintf(stdout, "\t-p\t\tSpecify the password for MySQL's root user.");
-    fprintf(stdout, "\t-o\t\tOutputs the commands that would run.");
-    fprintf(stdout, "\t-r\t\tRuns the program. If '-o' this option will be override.");
-    fprintf(stdout, "\t-h\t\tShows this message.");
+	fprintf(stdout, "Usage:%s [options]\n", app);
+    fprintf(stdout, "\t-p\t\tSpecify the password for MySQL's root user.\n");
+    fprintf(stdout, "\t-o\t\tOutputs the commands that would run.\n");
+    fprintf(stdout, "\t-r\t\tRuns the program. If '-o' this option will be override.\n");
+    fprintf(stdout, "\t-h\t\tShows this message.\n");
 	exit(0);
 }
 
 void execute_on_error(MYSQL *connection)
 {
-    fprintf(stdout, "Error: %s", mysql_error(connection)); //error
+    fprintf(stdout, "Error: %s\n", mysql_error(connection)); //error
     return;
-    //mysql_close(connection);
-    //exit(1);
 }
 
 int get_num_indexes(char *table)
@@ -66,25 +64,7 @@ int get_num_indexes(char *table)
     init_db_helper(&my_cluster.database);
     char query[256];
     sprintf(query, "SELECT COUNT(1) IndexIsThere FROM INFORMATION_SCHEMA.STATISTICS WHERE table_schema=DATABASE() AND table_name='%s'", table);
-    //db_run_query(query, my_cluster.database.user, my_cluster.database.pass);
-    MYSQL_RES *result = db_run_query_result(query);
-    int num_indexes;
-    if (result == NULL) {
-        fprintf(stdout, "Error while retrieving result");
-    } else {
-        MYSQL_ROW row;
-        unsigned int num_fields;
-        unsigned int i;
-
-        num_fields = mysql_num_fields(result);
-        while ((row = mysql_fetch_row(result)))
-        {
-            unsigned long *lengths;
-            lengths = mysql_fetch_lengths(result);
-            for(i = 0; i < num_fields; i++)
-                num_indexes = atoi(row[i]);
-        }
-    }
+    int num_indexes = run_query_int_result(query);
     return num_indexes;
 }
 
@@ -153,7 +133,7 @@ void create_indexes(MYSQL *connection)
         fprintf(stdout, "Running query: %s", query);
         run_query(connection, query);
     } else {
-        fprintf(stdout, "Periodic_metrics indexes already created, skipping...");
+        fprintf(stdout, "Periodic_metrics indexes already created, skipping...\n");
     }
 
     if (get_num_indexes("Jobs") < 3)
@@ -163,7 +143,7 @@ void create_indexes(MYSQL *connection)
         run_query(connection, query);
     }
     else {
-        fprintf(stdout, "Jobs indexes already created, skipping...");
+        fprintf(stdout, "Jobs indexes already created, skipping...\n");
     }
     
 }
@@ -261,9 +241,10 @@ end_time INT NOT NULL, \
 DC_energy INT unsigned NOT NULL, \
 node_id VARCHAR(256) NOT NULL, \
 job_id INT unsigned NOT NULL, \
-step_id INT unsigned NOT NULL, "
-"avg_f INT, temp INT"
-                            "PRIMARY KEY (id))");
+step_id INT unsigned NOT NULL, \
+avg_f INT, \
+temp INT, \
+PRIMARY KEY (id))");
 }else{
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
 id INT unsigned NOT NULL AUTO_INCREMENT, \
@@ -273,7 +254,7 @@ DC_energy INT unsigned NOT NULL, \
 node_id VARCHAR(256) NOT NULL, \
 job_id INT unsigned NOT NULL, \
 step_id INT unsigned NOT NULL, "
-                            "PRIMARY KEY (id))");
+"PRIMARY KEY (id))");
 }
     run_query(connection, query);
 
@@ -483,7 +464,7 @@ void main(int argc,char *argv[])
     }
     free_cluster_conf(&my_cluster);
 
-    if (!print_out) fprintf(stdout, "Database successfully created");
+    if (!print_out) fprintf(stdout, "Database successfully created\n");
 
     exit(1);
 }
