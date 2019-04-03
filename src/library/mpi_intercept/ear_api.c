@@ -47,8 +47,6 @@
 #include <common/types/application.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
-//TODO: MICRO
-#include <library/dynais/dynais_old.h>
 #include <library/tracer/tracer.h>
 #include <library/tracer/tracer_mpi.h>
 #include <library/states/states.h>
@@ -124,12 +122,6 @@ int my_master_size;
 int masters_connected=0;
 unsigned masters_comm_created=0;
 #endif
-
-//TODO: MICRO
-int micro_cont;
-int micro_dyna;
-int micro_wind;
-unsigned int calls;
 
 //
 static void print_local_data()
@@ -330,26 +322,6 @@ void update_configuration()
 	verbose(0,"EAR_PERFORMANCE_TESTS ON: lib_period %d check_every %d\n",lib_period,check_every);
 	verbose(0,"EAR_PERFORMANCE_TESTS ON: ear_mode %d (PERIODIC=%d DYNAIS=%d)\n",ear_periodic_mode,PERIODIC_MODE_ON,PERIODIC_MODE_OFF);
 #endif
-
-	//TODO: MICRO
-	char *var;
-	
-	micro_cont = 0;
-	var = getenv("MICRO_CONTROL");
-	if (var != NULL) micro_cont = atoi(var);
-	
-	micro_wind = 200;
-	var = getenv("MICRO_WINDOW");
-	if (var != NULL) micro_wind = atoi(var);
-
-	micro_dyna = 0;
-	var = getenv("MICRO_DYNAIS");
-	if (var != NULL) micro_dyna = atoi(var);
-
-	if (!micro_cont) dynais_timeout = 900000000;
-
-	verbose(0, "MICRO: control %u, window %u, dynais %u\n",
-		micro_cont, micro_wind, micro_dyna);
 }
 
 void ear_init()
@@ -445,11 +417,8 @@ void ear_init()
 	}
 	configure_global_synchronization();
 	
-	// TODO: MICRO
 	// Initializing sub systems
-	//dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
-	dynais_init    (micro_wind, get_ear_dynais_levels());
-	dynais_old_init(micro_wind, get_ear_dynais_levels());
+	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	
 	metrics_init();
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
@@ -560,8 +529,6 @@ void ear_finalize()
 	}
 	#endif	
 #endif
-	//TODO: MICRO
-	verbose(0, "MICRO: DynAIS algorithm consumes %u calls", calls);
 
 	// Tracing
 	traces_stop();
@@ -761,13 +728,8 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			return;
 		}
 		#else
-
-		// TODO: MICRO
 		// This is key to detect periods
-		// ear_status = dynais(ear_event_s, &ear_size, &ear_level);
-		calls++;
-		if (!micro_dyna) ear_status = dynais(ear_event_s, &ear_size, &ear_level);
-		else ear_status = (short) dynais_old(ear_event_s, &ear_size, &ear_level);
+		ear_status = dynais(ear_event_s, &ear_size, &ear_level);
 		#endif
 
 		#if MEASURE_DYNAIS_OV

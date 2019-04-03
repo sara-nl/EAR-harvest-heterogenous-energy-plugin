@@ -45,7 +45,6 @@ xmpi_OBJS = \
     mpi_intercept/ear_api.o \
     mpi_intercept/freq_synchro.o \
     mpi_intercept/process_MPI.o \
-    dynais/dynais_old.o \
     dynais/dynais.a
 
 MPIC_OBJS = mpi_intercept/MPI_intercept.o \
@@ -80,7 +79,6 @@ clean: clean.gnrc.components clean.impi.components rclean;
 	@ $(MAKE) -C 'dynais' $* || exit
 	@ $(MAKE) -C 'metrics' $* || exit
 	@ $(MAKE) -C 'models' $* || exit
-	@ $(MAKE) -C 'micro_library' $* || exit
 
 %.impi.components:
 	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
