@@ -42,13 +42,11 @@
 #define EAR_LIB_SYNC						1
 /* Frequencies are shared between master processes. Under development, must be
  * set to 0 in production*/
-#define COORDINATE_FREQUENCIES				1
+#define COORDINATE_FREQUENCIES				0
 /* When set to 1, activates the new SupermucNG policy */
 #define LRZ_POLICY							1
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
 #define USE_MSR_RAPL						1
-/* When set to 1, avg frequency is reported with periodic metrics */
-#define DEMO                                0
 /** EARD threads selection, do not modify except for debug purposes **/
 /* When set to 1 , creates a thread in EARD to support application queries apart
  * from EARL, do not set to 0 except for debug purposes */
@@ -61,13 +59,11 @@
 #define EXTERNAL_COMMANDS_THREAD 			1
 /* Just for ear.conf reading. */
 #define EARDBD_TYPES						7
-
 /** Specifies if the new version of the commands propagation is used and the number
  * of jumps per node. */
 #define USE_NEW_PROP                        1
 #define NUM_PROPS                           3
-
 // #define EAR_TRACER_MPI 1
-
 #define IN_MPI_TIME 						0
+
 #endif //EAR_CONFIG_DEV_H
