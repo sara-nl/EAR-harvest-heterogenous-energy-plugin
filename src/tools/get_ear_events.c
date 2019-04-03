@@ -31,8 +31,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <mysql/mysql.h>
-#include <common/database/db_helper.h>
+#include <common/output/verbose.h>
 #include <common/types/application.h>
+#include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
 
 #define EVENT_QUERY "SELECT id, from_unixtime(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"

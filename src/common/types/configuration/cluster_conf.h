@@ -37,14 +37,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
 #include <common/config.h>
+#include <common/states.h>
+#include <common/types/generic.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/node_conf.h>
 #include <common/string_enhanced.h>
-#include <common/types/generic.h>
-#include <common/output/verbose.h>
-#include <common/states.h>
 
 #define GENERIC_NAME	256
 #define USER			64

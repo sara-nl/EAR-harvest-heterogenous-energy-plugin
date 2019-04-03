@@ -31,6 +31,12 @@
 #ifndef EAR_DYNAIS_H
 #define EAR_DYNAIS_H
 
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <immintrin.h> // -mavx -mfma
+#include <common/types/generic.h>
+
 #define MAX_LEVELS      10
 #define METRICS_WINDOW  40000
 
@@ -42,22 +48,20 @@
 #define NEW_LOOP        3
 #define END_NEW_LOOP    4
 
-// DynAIS build type
-#define DYNAIS_NORMAL	0
-#define DYNAIS_AVX512	1
-
 // Functions
 /** Given a sample and its size, returns the state the application is in (in
 *   a loop, in an iteration, etc.). */
-int dynais(unsigned long sample, unsigned int *size, unsigned int *level);
+short dynais(ushort sample, ushort *size, ushort *level);
+
+/** Converts a long sample to short sample. */
+ushort dynais_sample_convert(ulong sample);
+
+int dynais_build_type();
 
 /** Allocates memory in preparation to use dynais. Returns 0 on success */
-int dynais_init(unsigned int window, unsigned int levels);
+int dynais_init(ushort window, ushort levels);
 
 /** Frees the memory previously allocated. */
 void dynais_dispose();
-
-/** Returns the building type of dynais. */
-int dynais_build_type();
 
 #endif //EAR_DYNAIS_H

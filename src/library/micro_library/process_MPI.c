@@ -27,37 +27,34 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _EAR_TYPES_COEFFICIENT
-#define _EAR_TYPES_COEFFICIENT
+#include <mpi.h>
+#include <library/micro_library/micro.h>
 
-#include <common/config.h>
-#include <common/types/generic.h>
-
-typedef struct coefficient
+void before_init()
 {
-	ulong pstate_ref;	
-    ulong pstate;
-    uint available;
-    /* For power projection */
-    double A;
-    double B;
-    double C;
-    /* For CPI projection */
-    double D;
-    double E;
-    double F;
-} coefficient_t;
+}
 
-// File
-int coeff_file_size(char *path);
+void after_init()
+{
+	micro_init();
+}
 
-int coeff_file_read(char *path, coefficient_t **coeffs);
+void before_mpi(mpi_call call_type, p2i buf, p2i dest)
+{
+	micro_call(call_type, buf, dest);
+}
 
-int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size);
+void after_mpi(mpi_call call_type)
+{
+}
 
-// Misc
-void coeff_reset(coefficient_t *coeff);
+void before_finalize()
+{
+	micro_end();
+}
 
-void coeff_print(coefficient_t *coeff);
+void after_finalize()
+{
+}
 
-#endif
+

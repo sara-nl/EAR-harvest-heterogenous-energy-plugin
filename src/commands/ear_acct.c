@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <common/user.h>
 #include <common/config.h>
+#include <common/output/verbose.h>
 #include <common/types/application.h>
 
 #if DB_MYSQL

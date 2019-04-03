@@ -388,7 +388,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	// Energy IPMI
 	metrics->DC_power = (double) metrics_ipmi[s] / (time_s * 1000.0);
 	metrics->EDP = time_s * time_s * metrics->DC_power;
-	if ((metrics->DC_power>system_conf->max_sig_power) || (metrics->DC_power<system_conf->min_sig_power)){
+	if ((metrics->DC_power > MAX_SIG_POWER) || (metrics->DC_power < MIN_SIG_POWER)){
 		verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,metrics_ipmi[s],time_s* 1000.0);
 	}
 

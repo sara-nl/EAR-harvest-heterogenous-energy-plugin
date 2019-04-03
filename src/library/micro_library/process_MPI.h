@@ -27,37 +27,30 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _EAR_TYPES_COEFFICIENT
-#define _EAR_TYPES_COEFFICIENT
 
-#include <common/config.h>
-#include <common/types/generic.h>
 
-typedef struct coefficient
-{
-	ulong pstate_ref;	
-    ulong pstate;
-    uint available;
-    /* For power projection */
-    double A;
-    double B;
-    double C;
-    /* For CPI projection */
-    double D;
-    double E;
-    double F;
-} coefficient_t;
+#ifndef PROCESS_MPI_H
+#define PROCESS_MPI_H
 
-// File
-int coeff_file_size(char *path);
+#include <library/mpi_intercept/MPI_types.h>
 
-int coeff_file_read(char *path, coefficient_t **coeffs);
+/** called before the MPI_init. Connects with ear_daemon */
+void before_init();
 
-int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size);
+/** called after the MPI_init */
+void after_init();
 
-// Misc
-void coeff_reset(coefficient_t *coeff);
+/** called before all the mpi calls except mpi_init and mpi_finalize. It calls dynais and, based on 
+*    dynais reported status, calls the main EAR functionallity */
+void before_mpi(int call, p2i buf, p2i dest);
 
-void coeff_print(coefficient_t *coeff);
+/** called after all the mpi calls excel mpi_init and mpi_finalize. */
+void after_mpi();
 
-#endif
+/** called before mpi_finalize, it calls EAR functions to summarize metrics */
+void before_finalize();
+
+/** called after mpi_finalize */
+void after_finalize();
+
+#endif //PROCESS_MPI_H

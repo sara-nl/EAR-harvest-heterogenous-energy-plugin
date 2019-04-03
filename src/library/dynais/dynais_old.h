@@ -27,37 +27,34 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _EAR_TYPES_COEFFICIENT
-#define _EAR_TYPES_COEFFICIENT
 
-#include <common/config.h>
-#include <common/types/generic.h>
+#ifndef EAR_DYNAIS_H
+#define EAR_DYNAIS_H
 
-typedef struct coefficient
-{
-	ulong pstate_ref;	
-    ulong pstate;
-    uint available;
-    /* For power projection */
-    double A;
-    double B;
-    double C;
-    /* For CPI projection */
-    double D;
-    double E;
-    double F;
-} coefficient_t;
+#define MAX_LEVELS      10
+#define METRICS_WINDOW  40000
 
-// File
-int coeff_file_size(char *path);
+// DynAIS output states
+#define END_LOOP       -1
+#define NO_LOOP         0
+#define IN_LOOP         1
+#define NEW_ITERATION   2
+#define NEW_LOOP        3
+#define END_NEW_LOOP    4
 
-int coeff_file_read(char *path, coefficient_t **coeffs);
+// DynAIS build type
+#define DYNAIS_NORMAL	0
+#define DYNAIS_AVX512	1
 
-int coeff_file_read_no_alloc(char *path, coefficient_t *coeffs, int size);
+// Functions
+/** Given a sample and its size, returns the state the application is in (in
+*   a loop, in an iteration, etc.). */
+int dynais_old(unsigned short sample, unsigned short *size, unsigned short *level);
 
-// Misc
-void coeff_reset(coefficient_t *coeff);
+/** Allocates memory in preparation to use dynais. Returns 0 on success */
+int dynais_old_init(unsigned short window, unsigned short levels);
 
-void coeff_print(coefficient_t *coeff);
+/** Frees the memory previously allocated. */
+void dynais_old_dispose();
 
-#endif
+#endif //EAR_DYNAIS_H

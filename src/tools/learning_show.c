@@ -28,6 +28,7 @@
 */
 
 #include <stdio.h>
+#include <common/output/verbose.h>
 #include <common/string_enhanced.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>

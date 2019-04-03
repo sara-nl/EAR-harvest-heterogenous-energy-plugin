@@ -38,6 +38,7 @@ typedef unsigned long long	ull;
 typedef unsigned long long	ullong;
 typedef   signed long long	llong;
 typedef unsigned long 		ulong;
+typedef unsigned short      ushort;
 typedef unsigned int		uint;
 typedef uint8_t				job_type;
 typedef ulong				job_id;

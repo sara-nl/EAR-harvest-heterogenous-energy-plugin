@@ -35,6 +35,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <common/sizes.h>
+#include <common/output/verbose.h>
 #include <common/string_enhanced.h>
 #include <common/types/application.h>
 #include <common/types/coefficient.h>
