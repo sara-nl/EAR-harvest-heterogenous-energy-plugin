@@ -94,6 +94,11 @@ extern time_t start_loop_time;
 extern uint check_periodic_mode;
 #endif
 
+//TODO: MICRO
+extern int micro_cont;
+extern int micro_dyna;
+extern int micro_wind;
+
 /** This funcion must be policy dependent */
 ulong select_near_freq(ulong avg)
 {
@@ -193,6 +198,9 @@ static void check_dynais_on(signature_t *A, signature_t *B)
 
 static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
 {
+	//TODO: MICRO
+	if (!micro_cont) return;
+
 #if EAR_OVERHEAD_CONTROL
     ulong dynais_overhead_usec=0;
     float dynais_overhead_perc;

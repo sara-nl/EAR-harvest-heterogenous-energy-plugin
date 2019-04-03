@@ -49,15 +49,12 @@
 // Functions
 /** Given a sample and its size, returns the state the application is in (in
 *   a loop, in an iteration, etc.). */
-int dynais(unsigned long sample, unsigned int *size, unsigned int *level);
+int dynais_old(unsigned short sample, unsigned short *size, unsigned short *level);
 
 /** Allocates memory in preparation to use dynais. Returns 0 on success */
-int dynais_init(unsigned int window, unsigned int levels);
+int dynais_old_init(unsigned short window, unsigned short levels);
 
 /** Frees the memory previously allocated. */
-void dynais_dispose();
-
-/** Returns the building type of dynais. */
-int dynais_build_type();
+void dynais_old_dispose();
 
 #endif //EAR_DYNAIS_H

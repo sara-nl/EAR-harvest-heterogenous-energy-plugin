@@ -93,12 +93,15 @@ unsigned int level_index[MAX_LEVELS];
 //
 //
 
-int dynais_init(unsigned int window, unsigned int levels)
+int dynais_old_init(unsigned short window_s, unsigned short levels_s)
 {
 	unsigned long *p_smpls;
 	unsigned int *p_zeros, *p_sizes, *p_indes;
 	int mem_res1, mem_res2, mem_res3, mem_res4;
 	int i, k;
+
+	unsigned int window = (unsigned int) window_s;
+	unsigned int levels = (unsigned int) levels_s;
 
 	unsigned int multiple = window / 16;
 	window = 16 * (multiple + 1);
@@ -156,23 +159,12 @@ int dynais_init(unsigned int window, unsigned int levels)
 	return 0;
 }
 
-void dynais_dispose()
+void dynais_old_dispose()
 {
 	free((void *) samples_vec[0]);
 	free((void *) zeros_vec[0]);
 	free((void *) sizes_vec[0]);
 	free((void *) indes_vec[0]);
-}
-
-int dynais_build_type()
-{
-	#if AVX_512
-	return 1;
-	#elif AVX_256
-	return 2;
-	#else
-	return 0;
-	#endif
 }
 
 // How it works?
@@ -656,13 +648,15 @@ static int dynais_hierarchical(unsigned long sample, unsigned int size, unsigned
 	return level;
 }
 
-int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
+int dynais_old(unsigned short sample_s, unsigned short *size, unsigned short *govern_level)
 {
 	int end_loop = 0;
 	int in_loop = 0;
 	int result;
 	int reach;
 	int l, ll;
+
+	unsigned long sample = (unsigned long) sample_s;
 
 	// Hierarchical algorithm call. The maximum level
 	// reached is returned. All those values were updated
@@ -690,8 +684,8 @@ int dynais(unsigned long sample, unsigned int *size, unsigned int *govern_level)
 
 		if (level_result[l] >= IN_LOOP)
 		{
-			*govern_level = l;
-			*size = level_length[l];
+			*govern_level = (unsigned short) l;
+			*size = (unsigned short) level_length[l];
 
 			// END_LOOP is detected above, it means that in this and
 			// below levels the status is NEW_LOOP or END_NEW_LOOP,

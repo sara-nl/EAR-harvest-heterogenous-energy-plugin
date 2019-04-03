@@ -45,7 +45,8 @@ xmpi_OBJS = \
     mpi_intercept/ear_api.o \
     mpi_intercept/freq_synchro.o \
     mpi_intercept/process_MPI.o \
-    dynais/dynais.a \
+    dynais/dynais_old.o \
+    dynais/dynais.a
 
 MPIC_OBJS = mpi_intercept/MPI_intercept.o \
     mpi_intercept/MPI_interface.o
