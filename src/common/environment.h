@@ -46,9 +46,9 @@
 #define DEFAULT_MAX_P_STATE             1
 #define DEFAULT_MIN_P_STATE             EAR_MIN_P_STATE
 #define DEFAULT_P_STATE                 DEFAULT_MAX_P_STATE
-#define DEFAULT_DYNAIS_LEVELS           4
-#define DEFAULT_DYNAIS_WINDOW_SIZE      500
-#define DYNAIS_TIMEOUT                  30
+#define DEFAULT_DYNAIS_LEVELS           10
+#define DEFAULT_DYNAIS_WINDOW_SIZE      200
+#define DYNAIS_TIMEOUT                  15
 
 /** Tries to get the EAR_TMP environment variable's value and returns it.
 *   If it fails, it defaults to TMP's value and then HOME's. */ 
