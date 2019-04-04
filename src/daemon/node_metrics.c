@@ -55,8 +55,9 @@ unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm)
 	int i;
 	unsigned long long temp_total=0;
 	if ((id==NULL) || (nm==NULL) || (id->con!=NM_CONNECTED))	return 0;
-	for (i=0;i<id->nsockets;i++){
-        temp_total+=nm->temp[i];
+	temp_total=nm->temp[0];
+	for (i=1;i<id->nsockets;i++){
+        if (temp_total<nm->temp[i]) temp_total=nm->temp[i];
     }
 	return temp_total;
 }
