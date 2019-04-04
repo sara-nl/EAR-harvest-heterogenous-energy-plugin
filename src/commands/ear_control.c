@@ -289,6 +289,7 @@ void main(int argc, char *argv[])
     status_t *status;
     int num_status = 0;
     verb_level = -1;
+    verb_enabled = 0;
     if (argc < 2) usage(argv[0]);
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
@@ -420,6 +421,7 @@ void main(int argc, char *argv[])
                 usage(argv[0]);
                 break;
             case 'v':
+                verb_enabled = 1;
                 if (optarg) verb_level = atoi(optarg);
                 else verb_level = 1;
 

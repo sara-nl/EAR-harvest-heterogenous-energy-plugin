@@ -61,7 +61,7 @@ int send_command(request_t *command)
 		if (ret<0){ 
 			error("Error sending command %s\n",strerror(errno));
 		}else{ 
-			warning("Warning sending command:sent %d ret %d \n",sizeof(request_t),ret);
+			debug("Warning sending command:sent %d ret %d \n",sizeof(request_t),ret);
 		}
 	}
 	ret=read(eards_sfd,&ack,sizeof(ulong));
@@ -71,7 +71,7 @@ int send_command(request_t *command)
 		error("Error receiving ack %s\n",strerror(errno));
 	}
 	else if (ret!=sizeof(ulong)){
-		warning("Error receiving ack: expected %d ret %d\n",sizeof(ulong),ret);
+		debug("Error receiving ack: expected %d ret %d\n",sizeof(ulong),ret);
 	}
 	return (ret==sizeof(ulong)); // Should we return ack ?
 }
@@ -88,7 +88,7 @@ int send_status(request_t *command, status_t **status)
 		if (ret<0){ 
 			error("Error sending command (status) %s\n",strerror(errno));
 		}else{ 
-			warning("Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
+			debug("Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
 		}
 	}
 	debug("Reading ack size \n");
@@ -159,7 +159,7 @@ int eards_remote_connect(char *nodename,uint port)
     fd_set set;
 
 	if (eards_remote_connected){ 
-		warning1("Connection already done!\n");
+		debug("Connection already done!\n");
 		return eards_sfd;
 	}
    	memset(&hints, 0, sizeof(struct addrinfo));
@@ -171,7 +171,7 @@ int eards_remote_connect(char *nodename,uint port)
 	sprintf(port_number,"%d",port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
-		warning1("getaddrinfo fail for %s and %s\n",nodename,port_number);
+		debug("getaddrinfo fail for %s and %s\n",nodename,port_number);
 		return EAR_ERROR;
     }
 
@@ -230,7 +230,7 @@ int eards_remote_connect(char *nodename,uint port)
             }
             else
             {
-                warning("Timeout connecting to %s node", nodename);
+                debug("Timeout connecting to %s node\n", nodename);
                 close(sfd);
                 continue;
             }
@@ -240,7 +240,7 @@ int eards_remote_connect(char *nodename,uint port)
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		warning("Failing in connecting to remote eards\n");
+		debug("Failing in connecting to remote eards\n");
 		return EAR_ERROR;
     }
 
@@ -425,7 +425,7 @@ void old_increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
 	    		    verbose(VCONNECT,"Error connecting with node %s", node_name);
             	}else{
 	        		verbose(VMSG+2,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
-		        	if (!eards_inc_th(th)) warning1("Error increasing the th for node %s", node_name);
+		        	if (!eards_inc_th(th)) debug("Error increasing the th for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -459,7 +459,7 @@ void old_red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
             	}else{
     
                 	verbose(VMSG+2,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_red_max_and_def_freq(ps)) warning1("Error reducing the max freq for node %s", node_name);
+		        	if (!eards_red_max_and_def_freq(ps)) debug("Error reducing the max freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -611,14 +611,14 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
-            warning("propagate_req:Error connecting to node: %s\n", next_ip);
+            debug("propagate_req:Error connecting to node: %s\n", next_ip);
             num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
         }
         else
         {
             if ((num_status[i-1] = send_status(command, &temp_status[i-1])) < 1) 
             {
-                warning("propagate_req: Error propagating command to node %s\n", next_ip);
+                debug("propagate_req: Error propagating command to node %s\n", next_ip);
                 eards_remote_disconnect();
                 num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
             }
@@ -770,14 +770,14 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
-            warning("propagate_req:Error connecting to node: %s\n", next_ip);
+            debug("propagate_req:Error connecting to node: %s\n", next_ip);
             correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
         }
         else
         {
             if (!send_command(command)) 
             {
-                warning("propagate_req: Error propagating command to node %s\n", next_ip);
+                debug("propagate_req: Error propagating command to node %s\n", next_ip);
                 eards_remote_disconnect();
                 correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
             }
@@ -1057,7 +1057,7 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
             }
             else
             {
-                warning("Connection to node %s returned 0 status\n", next_ip)
+                debug("Connection to node %s returned 0 status\n", next_ip)
             }
             
         }
