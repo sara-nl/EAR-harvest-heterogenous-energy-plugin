@@ -13,7 +13,7 @@ oths_PERM = 0660
 
 all: app_server_api.o $(eard_BINS)
 
-libEARapi.a: app_api.o
+libear_api.a: app_api.o
 	$(AR) rcs $@ app_api.o
 
 app_api.o: app_api.c ear.h
