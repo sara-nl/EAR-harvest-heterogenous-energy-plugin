@@ -238,6 +238,10 @@ static void remote_print_environment(spank_t sp)
 
 void _local_init_environment(spank_t sp, int ac, char **av)
 {
+	//
+	VERB_SET_MUTE();
+	ERROR_SET_MUTE();
+
 	// Unsetting options
 	unsetenv_local("EAR_LEARNING_PHASE");
 	unsetenv_local("EAR_POWER_POLICY");
@@ -272,6 +276,12 @@ void _local_init_environment(spank_t sp, int ac, char **av)
 	REPLENV("ENERGY_TAG");
 	REPLENV("APP_NAME");
 	REPLENV("TMP");
+}
+
+void _remote_init_environment(spank_t sp, int ac, char **av)
+{
+	VERB_SET_MUTE();
+	ERROR_SET_MUTE();
 }
 
 
@@ -497,7 +507,7 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 		setenv_local("PLG_LST_CTX", "SBATCH", 1);
 	}
 	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH) {
-		_local_plugin_enable();
+		_local_plugin_enable();	
 	}
 
 	return ESPANK_SUCCESS;
@@ -545,14 +555,16 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	//
 	if (spank_context() == S_CTX_REMOTE)
   	{
-        	if (remote_eard_report_start(sp) == ESPANK_SUCCESS)
-        	{
-            		if (isenv_remote(sp, "EAR_LIBRARY", "1") && isenv_remote(sp, "PLG_LST_CTX", "SRUN")) {
-                		remote_read_shared_data_set_environment(sp);
+		_remote_init_environment(sp, ac, av);
+
+		if (remote_eard_report_start(sp) == ESPANK_SUCCESS)
+		{
+			if (isenv_remote(sp, "EAR_LIBRARY", "1") && isenv_remote(sp, "PLG_LST_CTX", "SRUN")) {
+				remote_read_shared_data_set_environment(sp);
 			}
 		}
 
-        	remote_print_environment(sp);
+		remote_print_environment(sp);
 	}
 	
 	return (ESPANK_SUCCESS);

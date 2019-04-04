@@ -2,7 +2,7 @@ CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## INSTALLATION
 
-eard_BINS = libEARapi.a
+eard_BINS = libear_api.a
 eard_PATH = $(DESTDIR)/lib
 eard_PERM = 0660
 oths_BINS = ear.h
@@ -24,7 +24,7 @@ app_server_api.o: app_server_api.c app_server_api.h
 
 ######## OPTIONS
 
-install: ;
+install: eard.ginstall oths.ginstall;
 
 devel.install: eard.ginstall oths.ginstall;
 

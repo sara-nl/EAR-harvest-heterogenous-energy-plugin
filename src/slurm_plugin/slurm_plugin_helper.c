@@ -38,6 +38,14 @@
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_helper.h>
 
+// Verbosity
+extern int verbosity;
+
+// Buffers
+extern char buffer1[SZ_PATH];
+extern char buffer2[SZ_PATH];
+extern char buffer3[SZ_PATH]; // helper buffer
+
 /*
  *
  * Verbosity
@@ -124,7 +132,7 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	int len_dst;
 
 	if ((dst == NULL) || (src == NULL) || (strlen(src) == 0)) {
-		plug_error("Something is null in appendenv");
+		plug_error_0("Something is null in appendenv");
 		return;
 	}
 
@@ -133,7 +141,7 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	new_cap = len_dst + len_src + (len_dst > 0) + 1;
 
 	if (new_cap > dst_capacity) {
-		plug_error("Variable could not be appended, too many characters on %d", new_cap);
+		plug_error_0("Variable could not be appended, too many characters on %d", new_cap);
 		return;
 	}
 
@@ -163,12 +171,12 @@ int replenv_local(char *env_old, char *env_new)
 int setenv_local(const char *name, const char *value, int replace)
 {
 	if (name == NULL || value == NULL) {
-		plug_error("NULL environment variable");
+		plug_error_0("NULL environment variable");
 		return 0;
 	}
 
     if (setenv (name, value, replace) == -1) {
-       	plug_error("while setting envar %s (%s)", name, strerror(errno));
+       	plug_error_0("while setting envar %s (%s)", name, strerror(errno));
         return 0;
     }
 

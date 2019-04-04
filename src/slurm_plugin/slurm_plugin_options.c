@@ -40,6 +40,12 @@
 
 #define SRUN_OPTIONS 10
 
+// Shared buffers
+extern char buffer1[SZ_PATH];
+extern char buffer2[SZ_PATH];
+extern char buffer3[SZ_PATH]; // helper buffer
+
+
 struct spank_option spank_options_manual[SRUN_OPTIONS] =
 {
 	{ "ear", "on|off", "Enables/disables Energy Aware Runtime",
@@ -97,7 +103,7 @@ int _opt_register(spank_t sp)
 	{
 		if ((s = spank_option_register(sp, &spank_options_manual[i])) != ESPANK_SUCCESS)
 		{
-			plug_error("unable to register SPANK option %s", spank_options_manual[i].name);
+			plug_error_0("unable to register SPANK option %s", spank_options_manual[i].name);
 			return s;
 		}
 	}
@@ -129,7 +135,7 @@ int _opt_ear (int val, const char *optarg, int remote)
 		} else if (strcmp(buffer2, "OFF") == 0) {
 			setenv_local("EAR_LIBRARY", "0", 1);
 		} else {
-			plug_error("Invalid enabling value '%s'", buffer2);
+			plug_error_0("Invalid enabling value '%s'", buffer2);
 			return (ESPANK_BAD_ARG);
 		}
 	}
@@ -174,7 +180,7 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 		strtoup(buffer2);
 
 		if (policy_name_to_id(buffer2) < 0) {
-			plug_error("Invalid policy '%s'", buffer2);
+			plug_error_0("Invalid policy '%s'", buffer2);
 			return (ESPANK_STOP);
 		}
 
