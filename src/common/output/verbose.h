@@ -30,13 +30,14 @@
 #ifndef EAR_VERBOSE_H
 #define EAR_VERBOSE_H
 
+#include <time.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <common/output/output_conf.h>
 
 int verb_level		__attribute__((weak)) = 0;
 int verb_channel	__attribute__((weak)) = 2;
+int verb_enabled	__attribute__((weak)) = 1;
 int verb_timestamp	__attribute__((weak)) = 0;
 int warn_channel	__attribute__((weak)) = 2;
 
@@ -44,16 +45,15 @@ static time_t verbose_time_log;
 static struct tm *verbose_tm_log;
 static char s_log[64];
 
-
-
 #define verbose(v, ...) \
-	if (v <= verb_level) { \
-		if (verb_timestamp){ \
-        time(&verbose_time_log);\
-        verbose_tm_log=localtime(&verbose_time_log);\
-        strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
-        dprintf(verb_channel, "%s:",s_log); \
-		}\
+	if (verb_enabled && v <= verb_level) \
+	{ \
+		if (verb_timestamp) { \
+        	time(&verbose_time_log);\
+        	verbose_tm_log=localtime(&verbose_time_log);\
+        	strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
+        	dprintf(verb_channel, "%s:",s_log); \
+		} \
         dprintf(verb_channel, __VA_ARGS__); \
         dprintf(verb_channel, "\n"); \
 	}
@@ -64,27 +64,24 @@ static char s_log[64];
 
 // No new line version
 #define verbosen(v, ...) \
-	if (v <= verb_level) { \
+	if (verb_enabled && v <= verb_level) \
+	{ \
         if (verb_timestamp){ \
-        time(&verbose_time_log);\
-        verbose_tm_log=localtime(&verbose_time_log);\
-        strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
-        dprintf(verb_channel, "%s:",s_log); \
+        	time(&verbose_time_log);\
+        	verbose_tm_log=localtime(&verbose_time_log);\
+        	strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
+        	dprintf(verb_channel, "%s:",s_log); \
         }\
         dprintf(verb_channel, __VA_ARGS__); \
 	}
 
 // Set
-#define VERB_SET_FD(fd) \
-	verb_channel = fd;
+#define VERB_SET_FD(fd)		verb_channel = fd;
+#define VERB_SET_MUTE()		verb_enabled = 0;
+#define VERB_SET_LVL(level)	verb_level = level;
+#define WARN_SET_FD(fd)		warn_channel = fd;
 
-#define WARN_SET_FD(fd) \
-	warn_channel = fd;
-
-#define VERB_SET_LVL(level) \
-	verb_level = level;
-
-#define VERB_SET_TS(ts) verb_timestamp=ts;
+#define VERB_SET_TS(ts)		verb_timestamp = ts;
 
 // Warnings
 #if SHOW_WARNINGS0

@@ -36,50 +36,53 @@
 #include <time.h>
 #include <common/output/output_conf.h>
 
-int error_channel    __attribute__((weak)) = 2;
+int error_channel	__attribute__((weak)) = 2;
+int error_enabled	__attribute__((weak)) = 1;
 int error_timestamp   __attribute__((weak)) = 0;
+
 static time_t error_time_log;\
 static struct tm *error_tm_log;\
 static char s_log[64];\
-
 
 #if SHOW_ERRORS
 #define error(...) \
 	{ \
 		if (error_timestamp){ \
-        time(&error_time_log);\
-        error_tm_log=localtime(&error_time_log);\
-        strftime(s_log, sizeof(s_log), "%c", error_tm_log);\
-        dprintf(error_channel, "%s:",s_log); \
+        	time(&error_time_log);\
+        	error_tm_log=localtime(&error_time_log);\
+        	strftime(s_log, sizeof(s_log), "%c", error_tm_log);\
+        	dprintf(error_channel, "%s:",s_log); \
 		} \
-		dprintf(error_channel, "ERROR: " __VA_ARGS__); \
-		dprintf(error_channel, "\n"); \
+		\
+		if (error_enabled) { \
+			dprintf(error_channel, "ERROR: " __VA_ARGS__); \
+			dprintf(error_channel, "\n"); \
+		} \
 	}
 #else
 #define error(...)
 #endif
 
 // Set
-#define ERROR_SET_FD(fd) \
-	error_channel = fd;
+#define ERROR_SET_FD(fd)	error_channel = fd;
+#define ERROR_SET_MUTE()	error_enabled = 0;
+#define ERROR_SET_TS(ts)	error_timestamp = ts;
 
-#define ERROR_SET_TS(ts) error_timestamp=ts;
 // Log
 #if SHOW_LOGS
-#define log_open(package) openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
-
-#define log_close() closelog();
 
 #define log(...) \
 	{ \
 		syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__); \
 	}
+
+#define log_open(package)	openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
+#define log_close()			closelog();
 #else
-#define log_open(package);
-
-#define log_close()
-
 #define log(...)
+
+#define log_open(package);
+#define log_close()
 #endif
 
 #endif //EAR_ERROR_H

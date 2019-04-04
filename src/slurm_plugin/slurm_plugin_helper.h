@@ -39,8 +39,12 @@
 	}
 #define plug_verbose_0(...) \
 		slurm_error("EARPLUG, " __VA_ARGS__);
-#define plug_error(...) \
-	slurm_error("EARPLUG ERROR, " __VA_ARGS__);
+#define plug_error(sp, ...) \
+	if (verbosity_test(sp, 1) == 1) { \
+		slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
+	}
+#define plug_error_0(...) \
+		slurm_error("EARPLUG ERROR, " __VA_ARGS__);
 #define plug_warning(...) \
 	slurm_error("EARPLUG WARNING, " __VA_ARGS__);
 #define plug_nude(...)
