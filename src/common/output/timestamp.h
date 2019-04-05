@@ -30,6 +30,7 @@
 #ifndef EAR_TIMESTAMP_H
 #define EAR_TIMESTAMP_H
 
+#include <time.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -44,7 +45,7 @@ static char s_log[64];
 	if (time_enabled) \
 	{ \
 		time(&time_log); \
-		verbose_tm_log = localtime(&time_log); \
+		tm_log = localtime(&time_log); \
 		strftime(s_log, sizeof(s_log), "%c", tm_log); \
 		dprintf(channel, "%s:", s_log); \
 	}

@@ -48,7 +48,7 @@ int error_enabled	__attribute__((weak)) = 1;
 #define error(...) \
 	if (error_enabled) \
 	{ \
-		timestamp(error_channel);
+		timestamp(error_channel); \
 		dprintf(error_channel, "ERROR: " __VA_ARGS__); \
 		dprintf(error_channel, "\n"); \
 	}
@@ -58,9 +58,9 @@ int error_enabled	__attribute__((weak)) = 1;
 
 // Log
 #if SHOW_LOGS
-#define log(...)			syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__); \
+#define log(...)		syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__);
 #define log_open(package)	openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
-#define log_close()			closelog();
+#define log_close()		closelog();
 #else
 #define log(...)
 #define log_open(package);
