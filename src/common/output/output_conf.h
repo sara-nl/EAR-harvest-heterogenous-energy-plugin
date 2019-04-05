@@ -31,8 +31,7 @@
 #ifndef _OUTCONF_H
 #define _OUTCONF_H
 
-#define SHOW_WARNINGS0  1
-#define SHOW_WARNINGS1  1
+#define SHOW_WARNINGS  1
 #define SHOW_ERRORS     1
 #define SHOW_LOGS       1
 

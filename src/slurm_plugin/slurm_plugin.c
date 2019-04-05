@@ -239,8 +239,8 @@ static void remote_print_environment(spank_t sp)
 void _local_init_environment(spank_t sp, int ac, char **av)
 {
 	//
-	VERB_SET_MUTE();
-	ERROR_SET_MUTE();
+	VERB_SET_EN(0);
+	ERROR_SET_EN(0);
 
 	// Unsetting options
 	unsetenv_local("EAR_LEARNING_PHASE");
@@ -280,8 +280,8 @@ void _local_init_environment(spank_t sp, int ac, char **av)
 
 void _remote_init_environment(spank_t sp, int ac, char **av)
 {
-	VERB_SET_MUTE();
-	ERROR_SET_MUTE();
+	VERB_SET_EN(0);
+	ERROR_SET_EN(0);
 }
 
 
