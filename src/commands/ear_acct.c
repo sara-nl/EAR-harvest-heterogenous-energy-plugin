@@ -625,11 +625,27 @@ void add_int_filter(char *query, char *addition, int value)
     query_filters ++;
 }
 
+void add_int_list_filter(char *query, char *addition, char *value)
+{
+    if (query_filters < 1)
+        strcat(query, " WHERE ");
+    else
+        strcat(query, " AND ");
+
+    strcat(query, addition);
+    strcat(query, " IN ");
+    strcat(query, "(");
+    strcat(query, value);
+    strcat(query, ")");
+//    sprintf(query, query, value);
+    query_filters ++;
+}
+
 
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
 #if DB_MYSQL
-int read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag) 
+int read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag, char *job_ids) 
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -662,6 +678,8 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     application_t *apps;
     if (job_id >= 0)
         add_int_filter(query, "id", job_id);
+    else if (strlen(job_ids) > 0)
+        add_int_list_filter(query, "id", job_ids);
     if (step_id >= 0)
         add_int_filter(query, "step_id", step_id);
     if (user != NULL)
@@ -679,6 +697,8 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     query_filters = 0;
     if (job_id >= 0)
         add_int_filter(query, "id", job_id);
+    else if (strlen(job_ids) > 0)
+        add_int_list_filter(query, "id", job_ids);
     if (step_id >= 0)
         add_int_filter(query, "Jobs.step_id", step_id);
     if (user != NULL)
@@ -771,6 +791,7 @@ void main(int argc, char *argv[])
     char path_name[256];
     char *file_name = NULL;
     char e_tag[64] = "";
+    char job_ids[256] = "";
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -801,9 +822,16 @@ void main(int argc, char *argv[])
                 user = optarg;
                 break;
             case 'j':
-                job_id = atoi(strtok(optarg, "."));
-                token = strtok(NULL, ".");
-                if (token != NULL) step_id = atoi(token);
+                if (strchr(optarg, ','))
+                {
+                    strcpy(job_ids, optarg);
+                }
+                else
+                {
+                    job_id = atoi(strtok(optarg, "."));
+                    token = strtok(NULL, ".");
+                    if (token != NULL) step_id = atoi(token);
+                }
                 break;
             case 'f':
                 file_name = optarg;
@@ -836,7 +864,7 @@ void main(int argc, char *argv[])
     if (verbose) printf("Limit set to %d\n", limit);
 
     if (file_name != NULL) read_from_files(file_name, user, job_id, limit, step_id);
-    else read_from_database(user, job_id, limit, step_id, e_tag); 
+    else read_from_database(user, job_id, limit, step_id, e_tag, job_ids); 
 
     free_cluster_conf(&my_conf);
     exit(1);
