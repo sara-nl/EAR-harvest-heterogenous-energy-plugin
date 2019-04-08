@@ -62,7 +62,7 @@ void usage(char *app)
 "\t\t-h\tdisplays this message\n"\
 "\t\t-v\tverbose mode for debugging purposes\n" \
 "\t\t-u\tspecifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]\n" \
-"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid].\n" \
+"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid] or the format [jobid1,jobid2,...,jobid_n].\n" \
 "\t\t\t\tA user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
 "\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
 "\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
