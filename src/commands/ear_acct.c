@@ -226,9 +226,9 @@ void print_full_apps(application_t *apps, int num_apps)
     int i = 0;
     double avg_f, vpi;
 
-    printf("%-6s-%-7s\t %-10s %-15s %-20s %-10s %-10s %-14s %-14s %-14s %-14s %-20s %-14s\n",
+    printf("%-6s-%-7s\t %-10s %-15s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-20s %-7s %-10s\n",
             "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ", "TIME",
-            "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI");
+            "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI", "MAX POWER");
 
     for (i = 0; i < num_apps; i++)
     {
@@ -245,17 +245,17 @@ void print_full_apps(application_t *apps, int num_apps)
             compute_vpi(&vpi, &apps[i].signature);
             if (apps[i].job.step_id != 4294967294)
             {
-                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s %-14.2lf\n",
+                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
                     apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi);
+                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi, apps[i].power_sig.max_DC_power);
             }
             else
             {
-                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s %-14.2lf\n",
+                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
                     apps[i].job.id, "sbatch", apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi);
+                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi, apps[i].power_sig.max_DC_power);
             }
         }
         else
@@ -263,17 +263,17 @@ void print_full_apps(application_t *apps, int num_apps)
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
             if (apps[i].job.step_id != 4294967294)
             {
-                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s %-14s\n",
+                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-20s %-7s %-10.2lf\n",
                     apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
-                    apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL");
+                    apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL", apps[i].power_sig.max_DC_power);
             }
             else
             {
-                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s %-14s\n",
+                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-20s %-7s %-10.2lf\n",
                     apps[i].job.id, "sbatch", apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
-                    apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL");
+                    apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL", apps[i].power_sig.max_DC_power);
 
             }
         }
