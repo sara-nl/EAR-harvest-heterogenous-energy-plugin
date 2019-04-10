@@ -501,19 +501,21 @@ void old_ping_all_nodes(cluster_conf_t my_cluster_conf)
     }
 }
 
-void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
+void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_INC_TH;
     command.my_req.ear_conf.th=th;
+    command.my_req.ear_conf.p_id;
     send_command_all(command, my_cluster_conf);
 }
 
-void set_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
+void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_NEW_TH;
     command.my_req.ear_conf.th=th;
+    command.my_req.ear_conf.p_id;
     send_command_all(command, my_cluster_conf);
 }
 

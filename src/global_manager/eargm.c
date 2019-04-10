@@ -413,7 +413,8 @@ ulong eargm_increase_th_all_nodes(int level)
 	int i,rc;
 	ulong th;
 	th=th_level[level];
-	increase_th_all_nodes(th,my_cluster_conf);
+#warning Policy being used in inc_th_all_nodes is currently hard_coded (0) and should be changed
+	increase_th_all_nodes(th, 0, my_cluster_conf);
 	return th;
 }
 ulong eargm_reduce_frequencies_all_nodes(int level)

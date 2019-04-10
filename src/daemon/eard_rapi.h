@@ -95,7 +95,7 @@ int eards_ping();
 int eards_remote_disconnect();
 
 /** Increases the current threshold to all nodes in my_cluster_conf. */
-void increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf);
+void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf);
 
 /** Sets the maximum and default freq to all nodes in my_cluster_conf. */
 void set_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
@@ -130,7 +130,7 @@ int send_command(request_t *command);
 void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
 
 /** Sets the th to all nodes. */
-void set_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf);
+void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf);
 
 /** Sends the command to all nodes in ear.conf */
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf);
