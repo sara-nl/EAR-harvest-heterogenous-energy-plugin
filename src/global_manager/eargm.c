@@ -413,7 +413,7 @@ ulong eargm_increase_th_all_nodes(int level)
 	int i,rc;
 	ulong th;
 	th=th_level[level];
-	increase_th_all_nodes(th,my_cluster_conf);
+	increase_th_all_nodes(th, policy, my_cluster_conf);
 	return th;
 }
 ulong eargm_reduce_frequencies_all_nodes(int level)

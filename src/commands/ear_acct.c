@@ -62,7 +62,7 @@ void usage(char *app)
 "\t\t-h\tdisplays this message\n"\
 "\t\t-v\tverbose mode for debugging purposes\n" \
 "\t\t-u\tspecifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]\n" \
-"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid].\n" \
+"\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid] or the format [jobid1,jobid2,...,jobid_n].\n" \
 "\t\t\t\tA user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
 "\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
 "\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
@@ -226,9 +226,9 @@ void print_full_apps(application_t *apps, int num_apps)
     int i = 0;
     double avg_f, vpi;
 
-    printf("%-6s-%-7s\t %-10s %-15s %-20s %-10s %-10s %-14s %-14s %-14s %-14s %-20s %-14s\n",
+    printf("%-6s-%-7s\t %-10s %-15s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-20s %-7s %-10s\n",
             "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ", "TIME",
-            "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI");
+            "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI", "MAX POWER");
 
     for (i = 0; i < num_apps; i++)
     {
@@ -245,17 +245,17 @@ void print_full_apps(application_t *apps, int num_apps)
             compute_vpi(&vpi, &apps[i].signature);
             if (apps[i].job.step_id != 4294967294)
             {
-                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s %-14.2lf\n",
+                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
                     apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi);
+                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi, apps[i].power_sig.max_DC_power);
             }
             else
             {
-                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-14.2lf %-20s %-14.2lf\n",
+                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
                     apps[i].job.id, "sbatch", apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi);
+                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi, apps[i].power_sig.max_DC_power);
             }
         }
         else
@@ -263,17 +263,17 @@ void print_full_apps(application_t *apps, int num_apps)
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
             if (apps[i].job.step_id != 4294967294)
             {
-                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s %-14s\n",
+                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-20s %-7s %-10.2lf\n",
                     apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
-                    apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL");
+                    apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL", apps[i].power_sig.max_DC_power);
             }
             else
             {
-                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-14.2lf %-14s %-14s %-14.2lf %-20s %-14s\n",
+                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-20s %-7s %-10.2lf\n",
                     apps[i].job.id, "sbatch", apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
-                    apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL");
+                    apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL", apps[i].power_sig.max_DC_power);
 
             }
         }
@@ -625,11 +625,27 @@ void add_int_filter(char *query, char *addition, int value)
     query_filters ++;
 }
 
+void add_int_list_filter(char *query, char *addition, char *value)
+{
+    if (query_filters < 1)
+        strcat(query, " WHERE ");
+    else
+        strcat(query, " AND ");
+
+    strcat(query, addition);
+    strcat(query, " IN ");
+    strcat(query, "(");
+    strcat(query, value);
+    strcat(query, ")");
+//    sprintf(query, query, value);
+    query_filters ++;
+}
+
 
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
 #if DB_MYSQL
-int read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag) 
+int read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag, char *job_ids) 
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -662,6 +678,8 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     application_t *apps;
     if (job_id >= 0)
         add_int_filter(query, "id", job_id);
+    else if (strlen(job_ids) > 0)
+        add_int_list_filter(query, "id", job_ids);
     if (step_id >= 0)
         add_int_filter(query, "step_id", step_id);
     if (user != NULL)
@@ -679,6 +697,8 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     query_filters = 0;
     if (job_id >= 0)
         add_int_filter(query, "id", job_id);
+    else if (strlen(job_ids) > 0)
+        add_int_list_filter(query, "id", job_ids);
     if (step_id >= 0)
         add_int_filter(query, "Jobs.step_id", step_id);
     if (user != NULL)
@@ -771,6 +791,7 @@ void main(int argc, char *argv[])
     char path_name[256];
     char *file_name = NULL;
     char e_tag[64] = "";
+    char job_ids[256] = "";
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -801,9 +822,16 @@ void main(int argc, char *argv[])
                 user = optarg;
                 break;
             case 'j':
-                job_id = atoi(strtok(optarg, "."));
-                token = strtok(NULL, ".");
-                if (token != NULL) step_id = atoi(token);
+                if (strchr(optarg, ','))
+                {
+                    strcpy(job_ids, optarg);
+                }
+                else
+                {
+                    job_id = atoi(strtok(optarg, "."));
+                    token = strtok(NULL, ".");
+                    if (token != NULL) step_id = atoi(token);
+                }
                 break;
             case 'f':
                 file_name = optarg;
@@ -836,7 +864,7 @@ void main(int argc, char *argv[])
     if (verbose) printf("Limit set to %d\n", limit);
 
     if (file_name != NULL) read_from_files(file_name, user, job_id, limit, step_id);
-    else read_from_database(user, job_id, limit, step_id, e_tag); 
+    else read_from_database(user, job_id, limit, step_id, e_tag, job_ids); 
 
     free_cluster_conf(&my_conf);
     exit(1);

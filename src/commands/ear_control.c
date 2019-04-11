@@ -190,19 +190,20 @@ void usage(char *app)
 {
 	printf("Usage: %s [options]"\
             "\n\t--set-freq \tnewfreq\t\t\t->sets the frequency of all nodes to the requested one"\
-            "\n\t--set-def-freq \tnewfreq\tpolicy_id\t->sets the default frequency for the selected policy id"\
+            "\n\t--set-def-freq \tnewfreq\tpolicy_name\t->sets the default frequency for the selected policy "\
             "\n\t--set-max-freq \tnewfreq\t\t\t->sets the maximum frequency"\
-            "\n\t--inc-th \tnew_th\t\t\t->increases the threshold for all nodes"\
-            "\n\t--set-th \tnew_th\t\t\t->sets the threshold for all nodes"\
+            "\n\t--inc-th \tnew_th\tpolicy_name\t->increases the threshold for all nodes"\
+            "\n\t--set-th \tnew_th\tpolicy_name\t->sets the threshold for all nodes"\
             "\n\t--red-def-freq \tn_pstates\t\t->reduces the default and max frequency by n pstates"\
             "\n\t--restore-conf \t\t\t\t->restores the configuration to all node"\
             "\n\t--status \t\t\t\t->requests the current status for all nodes. The ones responding show the current "\
             "\n\t\t\t\t\t\t\tpower, IP address and policy configuration. A list with the ones not"\
             "\n\t\t\t\t\t\t\tresponding is provided with their hostnames and IP address."\
+            "\n\t\t\t\t\t\t\t--status=node_name retrieves the status of that node individually."\
             "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
             "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
-            "\n\t--help \t\t\t\t\t->displays this message."\
-            "\n\nThis app requires privileged access privileged accesss to execute.\n", app);
+            "\n\t--help \t\t\t\t\t->displays this message.");
+    printf("\n\nThis app requires privileged access privileged accesss to execute.\n", app);
 	exit(1);
 }
 
@@ -347,12 +348,23 @@ void main(int argc, char *argv[])
                 break;
             case 3:
                 arg = atoi(optarg);
+				if (optind+1 > argc)
+				{
+					printf("Missing policy argument for set-def-freq\n");
+                    break;
+				}
+				arg2 = policy_name_to_id(argv[optind]);
+				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
+				{
+					printf("Invalid policy (%s).\n", argv[optind]);
+                    break;
+				}
                 if (arg > 100)
                 {
                     printf("Indicated threshold increase above theoretical maximum (100%)\n");
                     break;
                 }
-                increase_th_all_nodes(arg,my_cluster_conf);
+                increase_th_all_nodes(arg, arg2, my_cluster_conf);
                 break;
             case 4:
                 arg = atoi(optarg);
@@ -361,10 +373,10 @@ void main(int argc, char *argv[])
 					printf("Missing policy argument for set-def-freq\n");
                     break;
 				}
-				arg2 = atoi(argv[optind+1]);
-				if (!is_valid_policy(arg2))
+				arg2 = policy_name_to_id(argv[optind]);
+				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
 				{
-					printf("Invalid policy index.\n");
+					printf("Invalid policy (%s).\n", argv[optind]);
                     break;
 				}
                 set_def_freq_all_nodes(arg, arg2, my_cluster_conf);
@@ -376,7 +388,18 @@ void main(int argc, char *argv[])
                     printf("Indicated threshold increase above theoretical maximum (100%)\n");
                     break;
                 }
-                set_th_all_nodes(arg, my_cluster_conf);
+                if (optind+1 > argc)
+				{
+					printf("Missing policy argument for set-def-freq\n");
+                    break;
+				}
+				arg2 = policy_name_to_id(argv[optind]);
+				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
+				{
+					printf("Invalid policy (%s).\n", argv[optind]);
+                    break;
+				}
+                set_th_all_nodes(arg, arg2, my_cluster_conf);
                 break;
             case 6:
                 restore_conf_all_nodes(my_cluster_conf);
