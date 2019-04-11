@@ -251,7 +251,7 @@ void _local_init_environment(spank_t sp, int ac, char **av)
 	unsetenv_local("EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN");
 	unsetenv_local("EAR_PERFORMANCE_PENALTY");
 	unsetenv_local("EAR_TRACE_PATH");
-	unsetenv_local("EAR_MPI_DIST");
+	//unsetenv_local("EAR_MPI_DIST");
 	unsetenv_local("EAR_USER_DB_PATHNAME");
 	unsetenv_local("EAR_ENERGY_TAG");
 	unsetenv_local("EAR_APP_NAME");
