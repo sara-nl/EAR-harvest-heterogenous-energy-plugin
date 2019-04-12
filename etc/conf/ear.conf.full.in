@@ -111,6 +111,7 @@ TmpDir=@localstatedir@
 EtcDir=@sysconfdir@
 DataBasePathName=@sysconfdir@/ear/dbs/dbs.
 Verbose=0
+NetworkExtension=-net_ext
 
 # Authorized Users
 
