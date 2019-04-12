@@ -12,14 +12,14 @@ export LDFLAGS
 ifdef MPICC
 libs_BINS += libear.so
 libs_PATH  = $(DESTDIR)/lib
-impi_OBJS  = all.impi.components
+impi_OBJS  = all.impi.components libear.so
 libs_PERM  = 0666
 endif
 
 ifdef OMPICC
 libs_BINS += libear_ompi.so
 libs_PATH  = $(DESTDIR)/lib
-ompi_OBJS  = all.ompi.components
+ompi_OBJS  = all.ompi.components libear_ompi.so
 libs_PERM  = 0666
 endif
 
@@ -55,7 +55,7 @@ MPIF_OBJS = mpi_intercept/MPI_interceptF.o \
 
 ######## RULES
 
-all: all.gnrc.components $(impi_OBJS) $(ompi_OBJS) $(libs_BINS)
+all: all.gnrc.components $(impi_OBJS) $(ompi_OBJS)
 
 %.ompi.so: $(xmpi_OBJS) $(comm_OBJS)
 	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(xmpi_OBJS) $(MPIC_OBJS) \
