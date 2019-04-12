@@ -47,7 +47,7 @@
 //#define __OLD__CONF__
 
 /** IP functions */
-int get_ip(char *nodename)
+int get_ip(char *nodename, cluster_conf_t *conf)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -67,9 +67,11 @@ int get_ip(char *nodename)
     hints.ai_next = NULL;
 
     strcpy(buff, nodename);
-    #if USE_EXT
+    /*#if USE_EXT
     strcat(buff, NW_EXT);
-    #endif
+    #endif*/
+    if (strlen(conf->net_ext) > 0)
+        strcat(buff, conf->net_ext);
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
 		verbose(0, "getaddrinfo fails for port %s (%s)", buff, strerror(errno));
@@ -120,7 +122,7 @@ int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
             {
                 sprintf(aux_name, "%s", range.prefix);
                 sec_aux_ips = calloc(1, sizeof(int));
-                sec_aux_ips[0] = get_ip(aux_name);
+                sec_aux_ips[0] = get_ip(aux_name, my_conf);
                 aux_ips[current_range] = sec_aux_ips;
                 ip_counter[current_range] = 1;
                 current_range++;
@@ -130,7 +132,7 @@ int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
             {
                 sprintf(aux_name, "%s%u", range.prefix, range.start);
                 sec_aux_ips = calloc(1, sizeof(int));
-                sec_aux_ips[0] = get_ip(aux_name);
+                sec_aux_ips[0] = get_ip(aux_name, my_conf);
                 aux_ips[current_range] = sec_aux_ips;
                 ip_counter[current_range] = 1;
                 current_range++;
@@ -147,7 +149,7 @@ int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
                 else
                     sprintf(aux_name, "%s%u", range.prefix, k);
 
-                sec_aux_ips[it] = get_ip(aux_name);
+                sec_aux_ips[it] = get_ip(aux_name, my_conf);
                 it ++;
             }
             aux_ips[current_range] = sec_aux_ips;
@@ -177,7 +179,7 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
         {
             sprintf(aux_name, "%s", range.prefix);
             aux_ips = calloc(1, sizeof(int));
-            aux_ips[0] = get_ip(aux_name);
+            aux_ips[0] = get_ip(aux_name, my_conf);
             *ips = aux_ips;
             return 1;
         }
@@ -185,7 +187,7 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
         {
             sprintf(aux_name, "%s%u", range.prefix, range.start);
             aux_ips = calloc(1, sizeof(int));
-            aux_ips[0] = get_ip(aux_name);
+            aux_ips[0] = get_ip(aux_name, my_conf);
             *ips = aux_ips;
             return 1;
         }
@@ -200,7 +202,7 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
             else
                 sprintf(aux_name, "%s%u", range.prefix, j);
 
-            aux_ips[it] = get_ip(aux_name);
+            aux_ips[it] = get_ip(aux_name, my_conf);
             it ++;
         }
         *ips = aux_ips;

@@ -845,11 +845,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			remove_chars(token, ' ');
 			strcpy(conf->eargm.host, token);
 		}
-    else if (!strcmp(token, "GLOBALMANAGERUSELOG"))
-    {
+        else if (!strcmp(token, "GLOBALMANAGERUSELOG"))
+        {
 			token = strtok(NULL, "=");
 			conf->eargm.use_log = atoi(token);
-     }
+        }
+        //COMMON CONFIG
+        else if (!strcmp(token, "NETWORKEXTENSION"))
+        {
+            token = strtok(NULL, "=");
+            strcpy(conf->net_ext, token);
+        }
 
 		//MARIADB/MYSQL config
 		else if (!strcmp(token, "MARIADBIP"))
