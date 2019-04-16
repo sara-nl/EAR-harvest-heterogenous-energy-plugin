@@ -29,8 +29,7 @@ plug_HDRS = slurm_plugin.h \
 all: $(plug_BINS)
 
 earplug.so: $(plug_SRCS) $(plug_HDRS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -I /hpc/opt/slurm/include/slurm -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS) \
-		-L /hpc/opt/slurm/lib/ -Wl,-rpath,/hpc/opt/slurm/lib/ -lslurm
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 
