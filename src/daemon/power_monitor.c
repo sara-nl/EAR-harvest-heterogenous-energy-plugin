@@ -530,7 +530,10 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	ulong f;
 	uint user_type;
 	verbose(VJOBPMON,"powermon_new_job (%u,%u)",appID->job.id,appID->job.step_id);
-	new_batch();
+	if (new_batch()!=EAR_SUCCESS){
+		error("Maximum number of contexts reached, no more concurrent jobs supported");
+		return;
+	}
 	/* Saving the context */
 	check_context("powermon_new_job: after new_batch!");
 	current_ear_app[ccontext]->current_freq=frequency_get_cpu_freq(0);
