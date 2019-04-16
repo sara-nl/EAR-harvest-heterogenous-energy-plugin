@@ -498,13 +498,13 @@ void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
 /*** DEFAULT VALUES ****/
 void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 {
-	eardbdc->aggr_time     = 60;
-	eardbdc->insr_time     = 30;
-	eardbdc->tcp_port      = 4711;
-	eardbdc->sec_tcp_port  = 4712;
-	eardbdc->sync_tcp_port = 4713;
-	eardbdc->mem_size      = 120;
-
+	eardbdc->aggr_time		= DEF_DBD_AGGREGATION_TIME;
+	eardbdc->insr_time		= DEF_DBD_INSERTION_TIME;
+	eardbdc->tcp_port		= DEF_DBD_SERVER_PORT;
+	eardbdc->sec_tcp_port	= DEF_DBD_MIRROR_PORT;
+	eardbdc->sync_tcp_port	= DEF_DBD_SYNCHR_PORT;
+	eardbdc->mem_size		= DEF_DBD_ALLOC_MBS;
+	eardbdc->use_log		= DEF_DBD_FILE_LOG;
 	eardbdc->mem_size_types[0] = 60;
 	eardbdc->mem_size_types[1] = 22;
 	eardbdc->mem_size_types[2] = 5;
@@ -512,7 +512,6 @@ void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 	eardbdc->mem_size_types[4] = 7;
 	eardbdc->mem_size_types[5] = 5;
 	eardbdc->mem_size_types[6] = 1;
-	eardbdc->use_log=EARDBD_FILE_LOG;
 }
 
 void set_default_eard_conf(eard_conf_t *eardc)
@@ -526,7 +525,6 @@ void set_default_eard_conf(eard_conf_t *eardc)
     eardc->use_eardbd=1;        /* Must EARD report to DB using EARDBD */
 	eardc->force_frequencies=1; /* EARD will force frequencies */
 	eardc->use_log=EARD_FILE_LOG;
-
 }
 
 void set_default_earlib_conf(earlib_conf_t *earlibc)
