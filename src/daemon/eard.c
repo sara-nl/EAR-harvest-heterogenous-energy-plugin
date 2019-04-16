@@ -1303,6 +1303,7 @@ void main(int argc,char *argv[])
 
 	}
 	set_ear_verbose(verb_level);
+	VERB_SET_LV(verb_level);
 
 	// We catch signals
 	signal_catcher();
