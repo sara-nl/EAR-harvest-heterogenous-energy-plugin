@@ -173,16 +173,19 @@ int is_valid_sec_tag(ulong tag)
 #endif
 }
 
-
-void set_global_eard_variables()
+void set_verbose_variables()
 {
-	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	verb_level=my_cluster_conf.eard.verbose;
   VERB_SET_FD(fd_my_log);
   ERROR_SET_FD(fd_my_log);
 	WARN_SET_FD(fd_my_log);
 	DEBUG_SET_FD(fd_my_log);
 	TIMESTAMP_SET_EN(my_cluster_conf.eard.use_log);
+}
+
+void set_global_eard_variables()
+{
+	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -1200,12 +1203,13 @@ void main(int argc,char *argv[])
 	eard_dyn_conf.cconf=&my_cluster_conf;
 	eard_dyn_conf.nconf=my_node_conf;
 	eard_dyn_conf.pm_app=get_powermon_app();
+	set_global_eard_variables();
 	create_tmp(ear_tmp);
 	if (my_cluster_conf.eard.use_log){
     	fd_my_log=create_log(my_cluster_conf.tmp_dir,"eard");
     	if (fd_my_log<0) fd_my_log=2;
 	}
-	set_global_eard_variables();
+	set_verbose_variables();
 
 	int node_size;
 	state_t s;
@@ -1393,9 +1397,9 @@ void main(int argc,char *argv[])
 		{
 			verbose(VCONF,"Connecting with EAR DB directly");
 			#ifdef USE_EARDBD_CONF
-            read_eardbd_conf(my_eardbd_conf_path,eardbd_user,eardbd_pass);
-            strcpy(my_cluster_conf.database.user,eardbd_user);
-            strcpy(my_cluster_conf.database.pass,eardbd_pass);
+      read_eardbd_conf(my_eardbd_conf_path,eardbd_user,eardbd_pass);
+      strcpy(my_cluster_conf.database.user,eardbd_user);
+      strcpy(my_cluster_conf.database.pass,eardbd_pass);
 			#endif
 			init_db_helper(&my_cluster_conf.database);
 			db_helper_connected=1;
