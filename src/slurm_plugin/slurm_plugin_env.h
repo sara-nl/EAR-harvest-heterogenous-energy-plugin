@@ -27,8 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef EAR_SLURM_PLUGIN_H
-#define EAR_SLURM_PLUGIN_H
+#ifndef EAR_SLURM_PLUGIN_ENV_H
+#define EAR_SLURM_PLUGIN_ENV_H
+
+#include <slurm_plugin/slurm_plugin.h>
 
 // Verbosity
 #define plug_verbose(sp, level, ...) \

@@ -36,12 +36,21 @@
 #include <common/config.h>
 #include <common/output/error.h>
 #include <common/output/verbose.h>
+#include <common/types/generic.h>
+#include <common/types/application.h>
+#include <daemon/eard_rapi.h>
+#include <daemon/shared_configuration.h>
+#include <global_manager/eargm_rapi.h>
+#include <slurm_plugin/slurm_plugin_env.h>
+#include <slurm_plugin/slurm_plugin_helper.h>
+#include <slurm_plugin/slurm_plugin_options.h>
+#include <slurm_plugin/slurm_plugin_rcom.h>
 
-#define ESPANK_STOP		-1
-#define S_CTX_SRUN		S_CTX_LOCAL
+#define ESPANK_STOP	-1
+#define S_CTX_SRUN	S_CTX_LOCAL
 #define S_CTX_SBATCH	S_CTX_ALLOCATOR
-#define ENV_LIB_EN		"LIB_EN"
-#define ENV_PLG_EN		"PLG_EN"
-#define ENV_PLG_CTX		"PLG_CTX"
+#define ENV_LIB_EN	"LIB_EN"
+#define ENV_PLG_EN	"PLG_EN"
+#define ENV_PLG_CTX	"PLG_CTX"
 
 #endif

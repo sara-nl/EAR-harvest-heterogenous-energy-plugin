@@ -1,1 +1,0 @@
-dynais.o: dynais.c ../../library/dynais/dynais.h

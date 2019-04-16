@@ -31,7 +31,6 @@
 
 // EARD variables
 uint eard_port;
-int  eard_exst;
 
 // Externs
 extern char buffer1[SZ_PATH];

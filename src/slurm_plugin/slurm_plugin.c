@@ -27,6 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <slurm_plugin/slurm_plugin.h>
+
 // Spank
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 
@@ -35,13 +37,16 @@ char buffer1[SZ_PATH];
 char buffer2[SZ_PATH];
 char buffer3[SZ_PATH];
 
+//
+extern int eard_exst;
+
 int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init");
 
 	_opt_register(sp);
 
-	if (plug_env_islocal())
+	if (plug_env_islocal(sp))
 	{
 		if (spank_context() == S_CTX_SRUN) {
 			plug_env_setenv(sp, ENV_PLG_CTX, "SRUN", 1);
@@ -91,16 +96,13 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_user_init");
 
-	if(!plug_env_isenv(sp, ENV_PLG_EN)) {
+	if(!plug_env_isenv(sp, ENV_PLG_EN, "1")) {
 		return (ESPANK_SUCCESS);
 	}
 
 	//
-	if (spank_context() == S_CTX_REMOTE)
-  	{
-		//_remote_init_environment(sp, ac, av);
+	if (spank_context() == S_CTX_REMOTE) {
 		plug_rcom_eard_job_start(sp);
-		//remote_print_environment(sp);
 	}
 	
 	return (ESPANK_SUCCESS);
