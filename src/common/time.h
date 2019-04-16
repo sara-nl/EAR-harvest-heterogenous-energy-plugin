@@ -30,7 +30,7 @@
 #ifndef EAR_COMMON_TIME_H
 #define EAR_COMMON_TIME_H
 
-#include "time3.h"
+#include <time.h>
 #include <common/types/generic.h>
 
 // Time units
@@ -67,8 +67,11 @@ void timestamp_getfast(timestamp *ts);
  */
 void timestamp_getreal(timestamp *ts);
 
-ullong timestamp_convert(timestamp *ts, ulong time_unit);
+/* Converts timestamp_t format to ullong in the selected time units. */
+ullong timestamp_convert(timestamp *ts, ullong time_unit);
 
-ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ulong time_unit);
+/* Computes the difference between two timestamp_t values and converts to the
+ * selected time units. */
+ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit);
 
 #endif //EAR_COMMON_TIME_H

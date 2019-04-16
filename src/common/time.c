@@ -33,22 +33,22 @@
 
 void timestamp_get(timestamp *ts)
 {
-	time_getstamp_fast(ts);
+	timestamp_getfast(ts);
 }
 
 void timestamp_getprecise(timestamp *ts)
 {
-	clock_gettime(CLOCK_MONOTONIC, spec);
+	clock_gettime(CLOCK_MONOTONIC, ts);
 }
 
 void timestamp_getfast(timestamp *ts)
 {
-	clock_gettime(CLOCK_MONOTONIC_COARSE, spec);
+	clock_gettime(CLOCK_MONOTONIC_COARSE, ts);
 }
 
 void timestamp_getreal(timestamp *ts)
 {
-	clock_gettime(CLOCK_REALTIME_COARSE, spec);
+	clock_gettime(CLOCK_REALTIME_COARSE, ts);
 }
 
 ullong timestamp_convert(timestamp *ts, ullong time_unit)
