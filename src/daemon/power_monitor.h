@@ -109,9 +109,9 @@ void powermon_set_freq(ulong freq);
 void powermon_restore_conf();
 
 /** Sets temporally the policy th for min_time */
-void powermon_set_th(double th);
+void powermon_set_th(uint p_id,double th);
 /** Increases temporally the policy th for min_time */
-void powermon_inc_th(double th);
+void powermon_inc_th(uint p_id,double th);
 
 /** Resets the current appl data */
 void reset_current_app();

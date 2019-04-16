@@ -444,6 +444,9 @@ void eard_exit(uint restart)
 	if (restart==0){ 
 		end_service("eard");
 		_exit(0);
+	}else if (restart==2){
+		end_service("eard");
+		_exit(1);
 	}else{
 		eard_restart();
 	}
@@ -1436,6 +1439,11 @@ void main(int argc,char *argv[])
 	*
 	*/
 	while (((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0) || ((numfds_ready<0) && (errno==EINTR))){
+			if (eard_must_exit){
+				verbose(0,"eard exiting");
+				eard_close_comm();
+				eard_exit(2);
+			}
 			if (numfds_ready>=0){ 
 				if (numfds_ready>0){
 					for (i=0;i<ear_daemon_client_requests;i++){

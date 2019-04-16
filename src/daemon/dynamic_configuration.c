@@ -134,18 +134,18 @@ ulong max_dyn_freq()
 	return dyn_conf->max_freq;
 }
 
-int dynconf_inc_th(ulong th)
+int dynconf_inc_th(uint p_id,ulong th)
 {
 	double dth;
 	verbose(VCONF,"Increasing th by  %u",th);
 	dth=(double)th/100.0;
-	if (dyn_conf->policy==MIN_TIME_TO_SOLUTION){
+	if (dyn_conf->policy==p_id){
 		if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
     		dyn_conf->th=dyn_conf->th+dth;
     		resched_conf->force_rescheduling=1;
 		}
 	}
-	powermon_inc_th(dth);
+	powermon_inc_th(p_id,dth);
     return EAR_SUCCESS;
 
 }
@@ -173,11 +173,11 @@ int dynconf_max_freq(ulong max_freq)
 
 int dynconf_def_freq(uint p_id,ulong def)
 {
-	verbose(VCONF,"Setting default freq to %u",def);
+	verbose(VCONF,"Setting default freq for pid %u to %u",p_id,def);
     if (is_valid_freq(def,num_f,f_list)){
 		if (dyn_conf->policy==p_id){
         	dyn_conf->def_freq=def;
-			dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
+					dyn_conf->def_p_state=frequency_freq_to_pstate(dyn_conf->def_freq);
         	resched_conf->force_rescheduling=1;
 		}
         powermon_new_def_freq(p_id,def);
@@ -241,7 +241,7 @@ int dyncon_restore_conf()
 	return EAR_SUCCESS;
 }
 
-int dynconf_red_pstates(uint p_id,uint p_states)
+int dynconf_red_pstates(uint p_states)
 {
 	// Reduces p_states both the maximum and the default
 	ulong max,def,i;
@@ -269,17 +269,16 @@ int dynconf_red_pstates(uint p_id,uint p_states)
 	}
 	powermon_new_max_freq(new_max_freq);	
 }
-/** This function is supposed to affect only to MIN_TIME_TO_SOLUTION */
-int dynconf_set_th(ulong th)
+int dynconf_set_th(ulong p_id,ulong th)
 {
 	double dth;
 	dth=(double)th/100.0;
 	if ((dth > 0 ) && (dth <=1.0 )){
-		if (dyn_conf->policy==MIN_TIME_TO_SOLUTION){
+		if (dyn_conf->policy==p_id){
 			dyn_conf->th=dth;
 			resched_conf->force_rescheduling=1;	
 		}
-		powermon_set_th(dth);
+		powermon_set_th(p_id,dth);
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }
@@ -347,16 +346,15 @@ void process_remote_requests(int clientfd)
 			break;
 		case EAR_RC_NEW_TH:
 			verbose(VRAPI,"new_th command received %lu\n",command.my_req.ear_conf.th);
-			ack=dynconf_set_th(command.my_req.ear_conf.th);
+			ack=dynconf_set_th(command.my_req.ear_conf.p_id,command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_INC_TH:
 			verbose(VRAPI,"inc_th command received, %lu\n",command.my_req.ear_conf.th);
-			ack=dynconf_inc_th(command.my_req.ear_conf.th);
+			ack=dynconf_inc_th(command.my_req.ear_conf.p_id,command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_RED_PSTATE:
 			verbose(VRAPI,"red_max_and_def_p_state command received\n");
-			/* p_id is missing , it is currently applied to all the policies */
-			ack=dynconf_red_pstates(command.my_req.ear_conf.p_id,command.my_req.ear_conf.p_states);
+			ack=dynconf_red_pstates(command.my_req.ear_conf.p_states);
 			break;
 		case EAR_RC_SET_FREQ:
 			verbose(VRAPI,"set freq command received\n");
@@ -429,6 +427,12 @@ void * eard_dynamic_configuration(void *tmp)
 		eards_client=wait_for_client(eards_remote_socket,&eards_remote_client);	
 		if (eards_client<0){	
 			error(" wait_for_client returns error\n");
+			close_server_socket(eards_remote_socket);
+			eards_remote_socket=create_server_socket(my_cluster_conf.eard.port);
+			if (eards_remote_socket<0){
+				eard_must_exit=1;
+				error("Panic, we cannot create socket for connection again,exiting");
+			}
 		}else{ 
 			process_remote_requests(eards_client);
 			close(eards_client);

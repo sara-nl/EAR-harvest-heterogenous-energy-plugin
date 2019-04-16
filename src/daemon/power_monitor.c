@@ -97,10 +97,11 @@ extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
 static int sig_reported=0;
 
-#define MAX_NESTED_LEVELS 20
+#define MAX_NESTED_LEVELS 16384
 powermon_app_t *current_ear_app[MAX_NESTED_LEVELS];
 powermon_app_t default_app;
 int ccontext=-1;
+int num_contexts=0;
 periodic_metric_t current_sample;
 double last_power_reported=0;
 
@@ -485,24 +486,25 @@ void powermon_mpi_finalize()
 *
 *   JOB PART
 *
-*
-/
-
+*/
 
 /* This functiono is called by dynamic_configuration thread when a new_job command arrives */
 
-void new_batch()
+int new_batch()
 {
 	ccontext++;
 	if (ccontext==MAX_NESTED_LEVELS){
 		error("Panic: Maximum number of levels reached in new_job %d",ccontext);
+		return EAR_ERROR;
 	}
 	current_ear_app[ccontext]=(powermon_app_t*)malloc(sizeof(powermon_app_t));
 	if (current_ear_app[ccontext]==NULL){
 		error("Panic: malloc returns NULL for current context");
+		return EAR_ERROR;
 	}
 	memset(current_ear_app[ccontext],0,sizeof(powermon_app_t));
 	verbose(VJOBPMON+1,"New context created %d",ccontext);
+	return EAR_SUCCESS;
 }
 void end_batch()
 {
@@ -622,28 +624,32 @@ void powermon_end_job(job_id jid,job_id sid)
 * These functions are called by dynamic_configuration thread: Used to notify when a configuracion setting is changed
 *
 */
-void powermon_inc_th(double th)
+void powermon_inc_th(uint p_id,double th)
 {
-    policy_conf_t *min_time_p;
-    min_time_p=get_my_policy_conf(my_node_conf,MIN_TIME_TO_SOLUTION);
-    if (min_time_p==NULL){
-        warning("MIN_TIME_TO_SOLUTION not supported, th setting has no effect");
+    policy_conf_t *p;
+    p=get_my_policy_conf(my_node_conf,p_id);
+    if (p==NULL){
+        warning("policy %u not supported, th setting has no effect",p_id);
+				return;
     }else{
-		if (((min_time_p->th+th)>0) && ((min_time_p->th+th)<=1.0)){
-        	min_time_p->th=min_time_p->th+th;
+		if (((p->th+th)>0) && ((p->th+th)<=1.0)){
+        	p->th=p->th+th;
+		}else{
+			warning("Current th + new is out of range, not changed");
 		}
     }
     save_eard_conf(&eard_dyn_conf);
 }
 
-void powermon_set_th(double th)
+void powermon_set_th(uint p_id,double th)
 {
-	policy_conf_t *min_time_p;
-	min_time_p=get_my_policy_conf(my_node_conf,MIN_TIME_TO_SOLUTION);
-	if (min_time_p==NULL){
-		warning("MIN_TIME_TO_SOLUTION not supported, th setting has no effect");
+	policy_conf_t *p;
+	p=get_my_policy_conf(my_node_conf,p_id);
+	if (p==NULL){
+		warning("policy %u not supported, th setting has no effect",p_id);
+		return;
 	}else{
-		min_time_p->th=th;
+		p->th=th;
 	}
 	save_eard_conf(&eard_dyn_conf);
 }
@@ -669,13 +675,17 @@ void powermon_new_def_freq(uint p_id,ulong def)
 {
 	int nump;
 	uint ps;
+	uint cpolicy;
 	ps=frequency_freq_to_pstate(def);
   if ((ccontext>=0) && (current_ear_app[ccontext]->app.is_mpi==0)){
+				cpolicy=policy_name_to_id(current_ear_app[ccontext]->app.job.policy);
+				if (cpolicy==p_id){ /* If the process runs at selected policy */
         if (def<current_node_freq){
             verbose(VJOBPMON,"DefFreq: Application is not mpi, automatically changing freq from %lu to %lu",current_node_freq,def);
             frequency_set_all_cpus(def);
             current_node_freq=def;
         }
+				}
   }
 	if (is_valid_policy(p_id)){
 		verbose(VJOBPMON,"New default pstate %u for policy %u freq=%lu",ps,my_node_conf->policies[p_id].policy,def);
