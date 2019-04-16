@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <slurm.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -168,7 +167,7 @@ int remote_eard_report_start(spank_t sp)
 
 	if (conf_serv == NULL) {
 		plug_error(sp, "while reading the shared services memory in '%s'", eard_host);
-		return ESPANK_ERROR;
+        return ESPANK_ERROR;
 	}
 
 	// Getting EARD connection variables
@@ -248,47 +247,30 @@ int remote_eard_report_start(spank_t sp)
 		strcpy(eard_appl.job.energy_tag, "");
 	}
 
-	/*
- 	 *
- 	 */
-
-	dettach_frequencies_shared_area();
-	
-	/*
-	 *
-	 */
-
-	hostlist_t hostlist = NULL;
-	int local_connect = 1;
-	char *host;
-
+	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARD with host '%s' and port '%u'", eard_host, eard_port);
+
+	// Assuming the EARD connection will go fine
 	eard_conn = 1;
-	
-	if (isenv_remote(sp, "PLG_LST_CTX", "SBATCH"))
+
+	// Connection
+	if (eards_remote_connect(eard_host, eard_port) < 0)
 	{
-		if(getenv_remote(sp, "SLURM_STEP_NODELIST", buffer1, SZ_PATH))
-		{
-			hostlist = slurm_hostlist_create(buffer1);
-			local_connect = 0;
-			
-			while ((host = slurm_hostlist_shift(hostlist)) != NULL)
-			{
-				plug_verbose(sp, 2, "remote connect to host: '%s:%d'", host, eard_port);
-				eards_remote_connect(host, eard_port);
-				eards_new_job(&eard_appl);
-				eards_remote_disconnect();
-				free(host);
-			}
-		}
+		plug_error(sp, "while connecting with EAR daemon in host '%s'", eard_host);
+		eard_conn = 0;
 	}
-	
-	if (local_connect)
+	if (eard_conn && !eards_new_job(&eard_appl))
 	{
-		plug_verbose(sp, 2, "remote (local) connect to host: '%s:%d'", eard_host, eard_port);
-		eards_remote_connect(eard_host, eard_port);
-		eards_new_job(&eard_appl);
-		eards_remote_disconnect();
+		plug_error(sp, "while connecting with EAR daemon in host '%s'", eard_host);
+		eard_conn = 0;
+	}
+	eards_remote_disconnect();
+
+	// Shared memory reading for job information
+	dettach_frequencies_shared_area();
+
+	if (!eard_conn) {
+		return ESPANK_ERROR;
 	}
 	
 	return ESPANK_SUCCESS;
