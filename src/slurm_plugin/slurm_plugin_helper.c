@@ -27,104 +27,73 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <errno.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/resource.h>
-#include <slurm_plugin/slurm_plugin.h>
-#include <slurm_plugin/slurm_plugin_helper.h>
-
-// Verbosity
-extern int verbosity;
-
-// Buffers
-extern char buffer1[SZ_PATH];
-extern char buffer2[SZ_PATH];
-extern char buffer3[SZ_PATH]; // helper buffer
-
-/*
- *
- * Verbosity
- *
- */
-
-int verbosity_test(spank_t sp, int level)
+int setenv_local(const char *var, const char *val, int ow)
 {
-	char env_remote[8];
-	char *env_local;
+	if (var == NULL || val == NULL) {
+		return 0;
+	}
+    if (setenv (var, val, ow) == -1) {
+        return 0;
+    }
+    return 1;
+}
 
-	if (verbosity == -1) {
-		if (spank_remote(sp)) {
-			if (getenv_remote(sp, "EAR_PLUGIN_VERBOSE", env_remote, 8) == 1) {
-				verbosity = atoi(env_remote);
-			} else {
-				verbosity = 0;
-			}
-		} else {
-			if (getenv_local("EAR_PLUGIN_VERBOSE", &env_local) == 1) {
-				verbosity = atoi(env_local);
-			} else {
-				verbosity = 0;
-			}
-		}
+int setenv_remote(spank_t sp, char *var, char *val, int ow)
+{
+	if (var == NULL || val == NULL) {
+		return 0;
+	}
+    return (spank_setenv (sp, var, val, ow) == ESPANK_SUCCESS);
+}
+
+int unsetenv_local(char *var)
+{
+	if (var == NULL) {
+		return 0;
+	}
+	return unsetenv(var) == 0;
+}
+
+int unsetenv_remote(spank_t sp, char *var)
+{
+    if (var == NULL) {
+        return 0;
+    }   
+	return (spank_unsetenv(sp, var) == ESPANK_SUCCESS);
+}
+
+int getenv_local(char *var, char *buf, int len)
+{
+	char *c = getenv(var);
+
+	if (c != NULL) {
+		return 0;
 	}
 
-	return verbosity >= level;
+	snprintf(buf, len, "%s", c);
 }
 
-/*
- *
- * Environment
- *
- */
-
-extern char **environ;
-
-void print_local_environment(spank_t sp)
+int getenv_remote(spank_t sp, char *var, char *buf, int len)
 {
-	char *env = *environ;
-	int i = 1;
-	
-	for (; env; i++) {
-        plug_verbose(sp, 2, "env %s", env);
-    	env = *(environ + i);
-	}
+	spank_err_t serrno;
 
-	return;
-}
-
-void print_remote_environment(spank_t sp)
-{
-	const char **env = NULL;
-
-    if (spank_get_item (sp, S_JOB_ENV, &env) != ESPANK_SUCCESS) {
-        return;
-    }
-
-    while (*env != NULL) {
-        plug_verbose(sp, 2, "env %s", *env);
-        ++env;
-    }
-}
-
-void printenv_remote(spank_t sp, char *name)
-{
-	if (name == NULL) {
-		return;
+	if (var == NULL || buf == NULL) {
+		return 0;
 	}
 	
-	if(getenv_remote(sp, name, buffer3, sizeof(buffer3))) {
-		plug_verbose_0("%s '%s'", name, buffer3);
-	} else {
-		plug_verbose_0("%s '%s'", name, "NULL");
+	serrno = spank_getenv (sp, var, buf, len);
+
+	if (serrno != ESPANK_SUCCESS) {
+		return 0;
 	}
+	if (strlen(buf) <= 0) {
+		return 0;
+	}
+
+	return 1;
 }
 
-void appendenv(char *dst, char *src, int dst_capacity)
+int apenv(char *dst, char *src, int dst_capacity)
 {
 	char *pointer;
 	int new_cap;
@@ -132,8 +101,7 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	int len_dst;
 
 	if ((dst == NULL) || (src == NULL) || (strlen(src) == 0)) {
-		plug_error_0("Something is null in appendenv");
-		return;
+		return 0;
 	}
 
 	len_dst = strlen(dst);
@@ -141,8 +109,7 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	new_cap = len_dst + len_src + (len_dst > 0) + 1;
 
 	if (new_cap > dst_capacity) {
-		plug_error_0("Variable could not be appended, too many characters on %d", new_cap);
-		return;
+		return 0;
 	}
 
 	if (len_dst > 0)
@@ -155,194 +122,77 @@ void appendenv(char *dst, char *src, int dst_capacity)
 	} else {
 		strcpy(dst, src);
 	}
-}
-
-int replenv_local(char *env_old, char *env_new)
-{
-        char *p;
-
-        if (getenv_local(env_old, &p)) {
-                setenv_local(env_new, p, 1);
-        }
 
 	return 1;
 }
 
-int setenv_local(const char *name, const char *value, int replace)
-{
-	if (name == NULL || value == NULL) {
-		plug_error_0("NULL environment variable");
-		return 0;
-	}
-
-    if (setenv (name, value, replace) == -1) {
-       	plug_error_0("while setting envar %s (%s)", name, strerror(errno));
-        return 0;
-    }
-
-    return 1;
-}
-
-int setenv_remote(spank_t sp, char *name, char *value, int replace)
-{
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-
-    return (spank_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
-}
-
-int setenv_control(spank_t sp, char *name, char *value, int replace)
-{
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-
-	return (spank_job_control_setenv (sp, name, value, replace) == ESPANK_SUCCESS);
-}
-
-int unsetenv_local(char *name)
-{
-	unsetenv(name);
-	return 1;
-}
-
-int unsetenv_remote(spank_t sp, char *name)
-{
-    if (name == NULL) {
-        return 0;
-    }   
-
-	return (spank_unsetenv(sp, name) == ESPANK_SUCCESS);
-}
-
-int getenv_local(char *name, char **env)
-{
-	char *p;
-
-	if ((name == NULL) || (env == NULL)) {
-		return 0;
-	}
-	p = getenv(name);
-
-	if (p == NULL) {
-		return 0;
-	}
-	if (strlen(p) == 0) {
-		return 0;
-	}
-	*env = p;
-
-	return 1;
-}
-
-int getenv_remote(spank_t sp, char *name, char *value, int length)
-{
-	spank_err_t serrno;
-
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-	
-	serrno = spank_getenv (sp, name, value, length);
-
-	if (serrno != ESPANK_SUCCESS) {
-		return 0;
-	}
-	if (strlen(value) <= 0) {
-		return 0;
-	}
-
-	return 1;
-}
-
-int getenv_control(spank_t sp, char *name, char *value, int length)
-{
-	spank_err_t serrno;
-
-	if (name == NULL || value == NULL) {
-		return 0;
-	}
-
-	serrno = spank_job_control_getenv (sp, name, value, length);
-
-	if (serrno != ESPANK_SUCCESS) {
-		return 0;
-	}
-	if (value == NULL) {
-		return 0;
-	}
-	if (strlen(value) <= 0) {
-		return 0;
-	}
-
-	return 1;
-}
-
-int existenv_local(char *name)
-{
-    char *env;
-
-    if (name == NULL) {
-    	return 0;
-    }
-
-	env = getenv(name);
-	return (env != NULL) && (strlen(env) > 0);
-}
-
-int existenv_remote(spank_t sp, char *name)
-{
-	spank_err_t serrno;
-    char test[4];
-
-	if (name == NULL) {
-		return 0;
-	}
-
-    serrno = spank_getenv (sp, name, test, 4);
-
-    return (serrno == ESPANK_SUCCESS || serrno == ESPANK_NOSPACE) &&
-			(test != NULL) && (strlen(test)) > 0;
-}
-
-int isenv_local(char *name, char *value)
+int isenv_local(char *var, char *val)
 {
 	char *env;
 
-	if (name == NULL || value == NULL) {
+	if (var == NULL || val == NULL) {
 		return 0;
 	}
 
-	if ((env = getenv(name)) != NULL) {
-        return (strcmp(env, value) == 0);
+	if ((env = getenv(var)) != NULL) {
+        return (strcmp(env, val) == 0);
     }
 
     return 0;
 }
 
-int isenv_remote(spank_t sp, char *name, char *value)
+int isenv_remote(spank_t sp, char *var, char *val)
 {
-    if (name == NULL || value == NULL) {
+    if (var == NULL || val == NULL) {
 		return 0;
 	}
 
-    if (getenv_remote(sp, name, buffer3, sizeof(buffer3))) {
-        return (strcmp(buffer3, value) == 0);
+    if (getenv_remote(sp, var, buffer3, sizeof(buffer3))) {
+        return (strcmp(buffer3, val) == 0);
     }
 
     return 0;
 }
 
-int isenv_control(spank_t sp, char *name, char *value)
+int exenv_local(char *var)
 {
-	if (name == NULL || value == NULL) {
+	char *env;
+
+	if (var == NULL) {
 		return 0;
 	}
 
-	if (getenv_control(sp, name, buffer3, sizeof(buffer3))) {
-		return (strcmp(buffer3, value) == 0);
+	env = getenv(var);
+	return (env != NULL) && (strlen(env) > 0);
+}
+
+int exenv_remote(spank_t sp, char *var)
+{
+	spank_err_t serrno;
+	char test[4];
+
+	if (var == NULL) {
+		return 0;
 	}
 
-	return 0;
+	serrno = spank_getenv (sp, var, test, 4);
+
+	return (serrno == ESPANK_SUCCESS || serrno == ESPANK_NOSPACE) &&
+		   (test != NULL) && (strlen(test)) > 0;
+}
+
+int repenv_local(char *var_old, char *var_new)
+{
+	char *p;
+
+	if (getenv_local(var_old, &p)) {
+		setenv_local(var_new, p, 1);
+	}
+
+	return 1;
+}
+
+int repenv_remote(spank_t sp, char *var_old, char *var_new)
+{
+	return 1;
 }

@@ -30,49 +30,24 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
-#include <slurm/spank.h>
+int setenv_local(const char *var, const char *val, int ow);
+int setenv_remote(spank_t sp, char *var, char *val, int ow);
 
-// Verbosity
-#define plug_verbose(sp, level, ...) \
-	if (verbosity_test(sp, level) == 1) { \
-		slurm_error("EARPLUG, " __VA_ARGS__); \
-	}
-#define plug_verbose_0(...) \
-		slurm_error("EARPLUG, " __VA_ARGS__);
-#define plug_error(sp, ...) \
-	if (verbosity_test(sp, 1) == 1) { \
-		slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
-	}
-#define plug_error_0(...) \
-		slurm_error("EARPLUG ERROR, " __VA_ARGS__);
-#define plug_warning(...) \
-	slurm_error("EARPLUG WARNING, " __VA_ARGS__);
-#define plug_nude(...)
+int unsetenv_local(char *var);
+int unsetenv_remote(spank_t sp, char *var);
 
-//
-int verbosity_test(spank_t sp, int level);
+int getenv_local(char *var, char *buf, int len);
+int getenv_remote(spank_t sp, char *var, char *buf, int len);
 
-// Environment
-void print_local_environment(spank_t sp);
-void print_remote_environment(spank_t sp);
+int apenv(char *dst, char *src, int dst_capacity);
 
-// Environment variables
-void printenv_remote(spank_t sp, char *name);
-void appendenv(char *destiny, char *source, int destiny_length);
+int isenv_local(char *var, char *val);
+int isenv_remote(spank_t sp, char *var, char *val);
 
-int replenv_local(char *env_old, char *env_new);
-int setenv_local(const char *name, const char *value, int replace);
-int setenv_remote(spank_t sp, char *name, char *value, int replace);
-int setenv_control(spank_t sp, char *name, char *value, int replace);
-int unsetenv_local(char *name);
-int unsetenv_remote(spank_t sp, char *name);
-int getenv_local(char *name, char **env);
-int getenv_remote(spank_t sp, char *name, char *value, int length);
-int getenv_control(spank_t sp, char *name, char *value, int length);
-int existenv_local(char *name);
-int existenv_remote(spank_t sp, char *name);
-int isenv_local(char *name, char *value);
-int isenv_remote(spank_t sp, char *name, char *value);
-int isenv_control(spank_t sp, char *name, char *value);
+int exenv_local(char *var);
+int exenv_remote(spank_t sp, char *var);
+
+int repenv_local(char *var_old, char *var_new);
+int repenv_remote(spank_t sp, char *var_old, char *var_new);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H

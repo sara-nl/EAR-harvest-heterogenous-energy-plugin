@@ -27,24 +27,13 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <ctype.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/resource.h>
-#include <slurm_plugin/slurm_plugin.h>
-#include <slurm_plugin/slurm_plugin_helper.h>
-#include <slurm_plugin/slurm_plugin_options.h>
 
 #define SRUN_OPTIONS 10
 
 // Shared buffers
 extern char buffer1[SZ_PATH];
 extern char buffer2[SZ_PATH];
-extern char buffer3[SZ_PATH]; // helper buffer
-
+extern char buffer3[SZ_PATH];
 
 struct spank_option spank_options_manual[SRUN_OPTIONS] =
 {
@@ -89,15 +78,13 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	}
 };
 
-    /**/
-
 int _opt_register(spank_t sp)
 {
 	spank_err_t s;
 	int length;
 	int i;
 
-	length = SRUN_OPTIONS - !existenv_local("EAR_GUI");
+	length = SRUN_OPTIONS - !exenv_local("EAR_GUI");
 
 	for (i = 0; i < length; ++i)
 	{
@@ -131,9 +118,9 @@ int _opt_ear (int val, const char *optarg, int remote)
 		strtoup(buffer2);
 
 		if (strcmp(buffer2, "ON") == 0) {
-			setenv_local("EAR_LIBRARY", "1", 1);
+			setenv_local(ENV_LIB_EN, "1", 1);
 		} else if (strcmp(buffer2, "OFF") == 0) {
-			setenv_local("EAR_LIBRARY", "0", 1);
+			setenv_local(ENV_LIB_EN, "0", 1);
 		} else {
 			plug_error_0("Invalid enabling value '%s'", buffer2);
 			return (ESPANK_BAD_ARG);
@@ -160,7 +147,7 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 
 		snprintf(buffer2, 4, "%d", ioptarg);
 		setenv_local("PLG_LEARNING_PHASE", buffer2, 1);
-		setenv_local("EAR_LIBRARY", "1", 1);
+		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -185,7 +172,7 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 		}
 
 		setenv_local("PLG_POWER_POLICY", buffer2, 1);
-		setenv_local("EAR_LIBRARY", "1", 1);
+		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -206,7 +193,7 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
 		loptarg = (ulong) atol(optarg);
         snprintf(buffer2, 16, "%lu", loptarg);
         setenv_local("PLG_FREQUENCY", buffer2, 1);
-        setenv_local("EAR_LIBRARY", "1", 1);
+        setenv_local(ENV_LIB_EN, "1", 1);
     }
 
     return (ESPANK_SUCCESS);
@@ -229,7 +216,7 @@ int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 		snprintf(buffer2, 8, "%0.2f", foptarg);
 		setenv_local("PLG_POWER_POLICY_TH", buffer2, 1);
-		setenv_local("EAR_LIBRARY", "1", 1);
+		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -246,7 +233,7 @@ int _opt_ear_user_db (int val, const char *optarg, int remote)
 		}
 
 		setenv_local("PLG_USER_DB_PATHNAME", optarg, 1);
-		setenv_local("EAR_LIBRARY", "1", 1);
+		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -270,7 +257,7 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 		snprintf(buffer2, 4, "%i", ioptarg);
 
 		setenv_local("EAR_LIBRARY_VERBOSE", buffer2, 1);
-		setenv_local("EAR_LIBRARY", "1", 1);
+		setenv_local(ENV_LIB_EN, "1", 1);
 
 		// Obsolete
 		setenv_local("EAR_VERBOSE", buffer2, 1);
@@ -290,7 +277,7 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 		}
 
 		setenv_local("PLG_TRACE_PATH", optarg, 1);
-		setenv_local("EAR_LIBRARY", "1", 1);
+		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -307,7 +294,7 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 		}
 
 		setenv_local("PLG_MPI_DIST", optarg, 1);
-		setenv_local("EAR_LIBRARY", "1", 1);
+		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -324,71 +311,7 @@ int _opt_ear_tag(int val, const char *optarg, int remote)
 		}
 
 		setenv_local("PLG_ENERGY_TAG", optarg, 1);
-		setenv_local("EAR_LIBRARY", "1", 1);
+		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 	return (ESPANK_SUCCESS);
 }
-
-/*
- *
- *
- * SLURM framework
- *
- *
- */
-
-#if PRODUCTION
-int slurm_spank_slurmd_init (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_slurmd_init");
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_slurmd_exit (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_slurmd_exit");
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_job_prolog (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_job_prolog");
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_task_init_privileged (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_task_init_privileged");
-	return (ESPANK_SUCCESS);
-}
-
-int _slurm_spank_local_user_init (spank_t sp, int ac, char **av)
-{
-        plug_verbose(sp, 2, "function slurm_spank_local_user_init");
-        return (ESPANK_SUCCESS);
-}
-
-int _slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_task_init (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_task_init");
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_task_post_fork (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_task_post_fork");
-	return (ESPANK_SUCCESS);
-}
-
-int slurm_spank_job_epilog (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_job_epilog");
-	return (ESPANK_SUCCESS);
-}
-#endif

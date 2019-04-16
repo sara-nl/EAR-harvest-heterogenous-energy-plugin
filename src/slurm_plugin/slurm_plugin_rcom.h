@@ -30,12 +30,14 @@
 #ifndef EAR_SLURM_PLUGIN_REPORTS_H
 #define EAR_SLURM_PLUGIN_REPORTS_H
 
-int remote_read_shared_data_set_environment(spank_t sp);
+#include <slurm_plugin/slurm_plugin.h>
 
-int remote_eard_report_start(spank_t sp);
-int remote_eard_report_finish(spank_t sp);
+int plug_shared_readsetts(spank_t sp);
 
-int local_eargmd_report_start(spank_t sp);
-int local_eargmd_report_finish(spank_t sp);
+int plug_rcom_eard_job_start(spank_t sp);
+int plug_rcom_eard_job_finish(spank_t sp);
+
+int plug_rcom_eargmd_job_start(spank_t sp);
+int plug_rcom_eargmd_job_finish(spank_t sp);
 
 #endif //EAR_SLURM_PLUGIN_REPORTS_H

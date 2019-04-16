@@ -30,18 +30,59 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
-#include <slurm/spank.h>
-#include <slurm/slurm.h>
-#include <common/sizes.h>
-#include <common/config.h>
-#include <common/output/error.h>
-#include <common/output/verbose.h>
+// Verbosity
+#define plug_verbose(sp, level, ...) \
+	if (plug_env_verbtest(sp, level) == 1) { \
+		slurm_error("EARPLUG, " __VA_ARGS__); \
+	}
+#define plug_error(sp, ...) \
+	if (plug_env_verbtest(sp, 1) == 1) { \
+		slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
+	}
 
-#define ESPANK_STOP		-1
-#define S_CTX_SRUN		S_CTX_LOCAL
-#define S_CTX_SBATCH	S_CTX_ALLOCATOR
-#define ENV_LIB_EN		"LIB_EN"
-#define ENV_PLG_EN		"PLG_EN"
-#define ENV_PLG_CTX		"PLG_CTX"
+int plug_env_verbtest(spank_t sp, int level);
+
+/*
+ * Agnostic environment manipulation
+ */
+int plug_env_islocal(spank_t sp);
+
+int plug_env_isremote(spank_t sp);
+
+int plug_env_unsetenv(spank_t sp, char *var);
+
+int plug_env_setenv(spank_t sp, char *var, char *val, int ow);
+
+int plug_env_getenv(spank_t sp, char *var, char *buf, int len);
+
+int plug_env_isenv(spank_t sp, char *var, char *val);
+
+int plug_env_repenv(spank_t sp, char *var_old, char *var_new);
+
+/*
+ * Environment clean
+ */
+
+void plug_env_clean(spank_t sp, int ac, char **av);
+
+/*
+ * Environment read
+ */
+
+int plug_env_readstack(spank_t sp, int ac, char **av);
+
+int plug_env_readuser(spank_t sp);
+
+int plug_env_readapp(spank_t sp, application_t *app, ulong *freqs, int n_freqs);
+
+int plug_env_readnodes(spank_t sp, hostlist_t nodes);
+
+/*
+ * Environment set
+ */
+
+int plug_env_setpreload(spank_t sp);
+
+int plug_env_setenviron(spank_t sp, settings_conf_t *setts);
 
 #endif
