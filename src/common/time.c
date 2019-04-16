@@ -51,15 +51,16 @@ void timestamp_getreal(timestamp *ts)
 	clock_gettime(CLOCK_REALTIME_COARSE, spec);
 }
 
-ullong timestamp_convert(timestamp *ts, ulong time_unit)
+ullong timestamp_convert(timestamp *ts, ullong time_unit)
 {
 	ullong stamp;
 	stamp  = (ullong) (ts->tv_sec * 1000000000);
-	stamp += (ullong) (ts->tv_nsec / time_unit);
+	stamp += (ullong) (ts->tv_nsec);
+	stamp /= time_unit;
 	return stamp;
 }
 
-ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ulong time_unit)
+ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 {
 	ullong stamp;
 
@@ -68,6 +69,8 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ulong time_unit)
 	}
 
 	stamp  = (ullong) ((ts2->tv_sec - ts1->tv_sec) * 1000000000);
-	stamp += (ullong) ((ts2->tv_nsec - ts1->tv_nsec) / time_unit);
+	stamp += (ullong) ((ts2->tv_nsec - ts1->tv_nsec));
+	stamp /= time_unit;
+
 	return stamp;
 }
