@@ -30,27 +30,45 @@
 #ifndef EAR_COMMON_TIME_H
 #define EAR_COMMON_TIME_H
 
-#include <time.h>
+#include "time3.h"
 #include <common/types/generic.h>
 
-#define TIME_GET_S	1000000000
-#define TIME_GET_MS	1000000
-#define TIME_GET_US	1000
-#define TIME_GET_NS	1
+// Time units
+#define TIME_SECS	1000000000
+#define TIME_MSECS	1000000
+#define TIME_USECS	1000
+#define TIME_NSECS	1
+
+typedef struct timespec timestamp;
+
+/* Generic monotonic timestamp
+ *	- Builded with the fast or precise versions under the hood. Without
+ *	  considering any of its properties.
+ *	- The monotonic timestamp is used to measure the elapsed time. Its value is
+ *	  related with the system boot time, not to the system date.
+ */
+void timestamp_get(timestamp *ts);
 
 /* Returns a monotonic timestamp
  * 	- precision: ns
  * 	- resolution: 1ns
  */
-ulong time_gettimestamp_precise(ulong time_unit);
+void timestamp_getprecise(timestamp *ts);
 
 /* Returns a monotonic timestamp
  * 	- precision: ns
  * 	- resolution: 1-4ms
  * 	- Performance: 5x faster than 'time_gettimestamp_precise'
  */
-ulong time_gettimestamp_fast(ulong time_unit);
+void timestamp_getfast(timestamp *ts);
 
-ulong time_contimestamp();
+/* Realtime timestamp
+ *	- Used to get the system time (or date) in timestamp format.
+ */
+void timestamp_getreal(timestamp *ts);
+
+ullong timestamp_convert(timestamp *ts, ulong time_unit);
+
+ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ulong time_unit);
 
 #endif //EAR_COMMON_TIME_H

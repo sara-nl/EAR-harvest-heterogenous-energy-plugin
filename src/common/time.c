@@ -31,45 +31,43 @@
 #include <unistd.h>
 #include <common/time.h>
 
-ulong time_gettimestamp_precise(ulong time_unit)
+void timestamp_get(timestamp *ts)
 {
-	struct timespec ts;
-	ulong stamp;
+	time_getstamp_fast(ts);
+}
 
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	stamp = ts.tv_sec * 1000000000;
-	stamp = stamp + ts.tv_nsec;
-	stamp = stamp / time_unit;
+void timestamp_getprecise(timestamp *ts)
+{
+	clock_gettime(CLOCK_MONOTONIC, spec);
+}
 
+void timestamp_getfast(timestamp *ts)
+{
+	clock_gettime(CLOCK_MONOTONIC_COARSE, spec);
+}
+
+void timestamp_getreal(timestamp *ts)
+{
+	clock_gettime(CLOCK_REALTIME_COARSE, spec);
+}
+
+ullong timestamp_convert(timestamp *ts, ulong time_unit)
+{
+	ullong stamp;
+	stamp  = (ullong) (ts->tv_sec * 1000000000);
+	stamp += (ullong) (ts->tv_nsec / time_unit);
 	return stamp;
 }
 
-ulong time_gettimestamp_fast(ulong time_unit)
+ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ulong time_unit)
 {
-	struct timespec ts;
-	ulong stamp;
+	ullong stamp;
 
-	clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
-	stamp = ts.tv_sec * 1000000000;
-	stamp = stamp + ts.tv_nsec;
-	stamp = stamp / time_unit;
-
-	return stamp;
-}
-
-int main(int argc, char *argv[])
-{
-	double fstamp;
-	ulong stamp;
-	ulong aux;
-	int i;
-
-	stamp = time_gettimestamp_precise(TIME_GET_US);
-	for (i = 0; i < 120000000;++i) {
-		aux = time_gettimestamp_precise(TIME_GET_S);
-		aux = time_gettimestamp_precise(TIME_GET_S) - aux;
+	if (ts2->tv_nsec < ts1->tv_nsec) {
+		ts2->tv_nsec += 1000000000;
 	}
-	stamp = time_gettimestamp_precise(TIME_GET_US) - stamp;
-	fstamp = (double) stamp / 1000000.0;
-	printf("stamp p: %0.2lf\n", fstamp);
+
+	stamp  = (ullong) ((ts2->tv_sec - ts1->tv_sec) * 1000000000);
+	stamp += (ullong) ((ts2->tv_nsec - ts1->tv_nsec) / time_unit);
+	return stamp;
 }

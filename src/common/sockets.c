@@ -27,7 +27,7 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <time.h>
+#include "time3.h"
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
