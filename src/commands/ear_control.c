@@ -205,7 +205,7 @@ void usage(char *app)
             "\n\t\t\t\t\t\t\t--status=node_name retrieves the status of that node individually."\
             "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
             "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
-            "\n\t--help \t\t\t\t\t->displays this message.\n",app);
+            "\n\t--help \t\t\t\t\t->displays this message.", app);
     printf("\n\nThis app requires privileged access privileged accesss to execute.\n");
 	exit(1);
 }

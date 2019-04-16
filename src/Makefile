@@ -42,7 +42,7 @@ etc.install: etc.install.components;
 devel.install: devel.install.components;
 
 %.install:
-	@ $(MAKE) -C $*.install || exit
+	@ $(MAKE) -C $* install || exit
 
 clean: clean.components
 

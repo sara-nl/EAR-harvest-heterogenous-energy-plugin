@@ -53,9 +53,6 @@
 /* When set to 1, verbose,debug, and error output is sent to eard.log file
  * stored at EAR_TMP */
 #define EARD_FILE_LOG						1
-/* When set to 1, verbose,debug, and error output is sent to eardbd.log file
- *  * stored at EAR_TMP */
-#define EARDBD_FILE_LOG						0
 /** These definitions affects DB configuration */
 /* When set to 1, loops signatures are not reported to the DB to save space */
 #define LARGE_CLUSTER                       1
@@ -66,8 +63,6 @@
 #define DEMO								0
 /* Maximum number of simultaneous DB connection for mysql user commands */
 #define MAX_DB_CONNECTIONS					20
-
-
 /* */
 #define PERFORMANCE_GAIN                    0.75
 #define EAR_ACCEPTED_TH                     0.05
@@ -91,5 +86,16 @@
 /* When set to 1, Pieces of code are activated to reduce the overhead introduced
  * by dynais */
 #define PERIOD                              10
+
+/** Database Daemon Deaults */
+/* Enabling it, the output of EARDBD is sended to the log file stored in TMP */
+#define DEF_DBD_FILE_LOG					0
+#define DEF_DBD_AGGREGATION_TIME			60
+#define DEF_DBD_INSERTION_TIME				30
+#define DEF_DBD_SERVER_PORT					4711
+#define DEF_DBD_MIRROR_PORT					4712
+#define DEF_DBD_SYNCHR_PORT					4713
+/* MegaBytes allocated for caching the node metrics. */
+#define DEF_DBD_ALLOC_MBS					120
 
 #endif //EAR_CONFIG_DEF_H
