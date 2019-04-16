@@ -122,8 +122,17 @@ void print_cluster_conf(cluster_conf_t *conf)
 	policy_id_to_name(conf->default_policy,buffer);	
 	verbosen(VCCONF, "\nDIRECTORIES\n--->DB_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n",
 			conf->DB_pathname, conf->tmp_dir, conf->etc_dir);
-	verbosen(VCCONF, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %s\n--->Min_time_perf_acc: %u\n",
-			conf->verbose, buffer, conf->min_time_perf_acc);
+    if (strlen(conf->net_ext) > 1)
+    {
+    	verbosen(VCCONF, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %s\n--->Min_time_perf_acc: %u\n--->Network_extension: %s\n",
+	    		conf->verbose, buffer, conf->min_time_perf_acc, conf->net_ext);
+    }
+    else
+    {
+    	verbosen(VCCONF, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %s\n--->Min_time_perf_acc: %u\n",
+	    		conf->verbose, buffer, conf->min_time_perf_acc);
+    }
+
 	int i;
 	verbosen(VCCONF, "\nAVAILABLE POLICIES\n");
 	for (i = 0; i < conf->num_policies; i++)
