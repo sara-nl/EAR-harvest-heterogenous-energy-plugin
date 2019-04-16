@@ -47,7 +47,7 @@
 //#define __OLD__CONF__
 
 /** IP functions */
-int get_ip(char *nodename)
+int get_ip(char *nodename, cluster_conf_t *conf)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -67,9 +67,11 @@ int get_ip(char *nodename)
     hints.ai_next = NULL;
 
     strcpy(buff, nodename);
-    #if USE_EXT
+    /*#if USE_EXT
     strcat(buff, NW_EXT);
-    #endif
+    #endif*/
+    if (strlen(conf->net_ext) > 0)
+        strcat(buff, conf->net_ext);
    	s = getaddrinfo(buff, NULL, &hints, &result);
     if (s != 0) {
 		verbose(0, "getaddrinfo fails for port %s (%s)", buff, strerror(errno));
@@ -120,7 +122,7 @@ int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
             {
                 sprintf(aux_name, "%s", range.prefix);
                 sec_aux_ips = calloc(1, sizeof(int));
-                sec_aux_ips[0] = get_ip(aux_name);
+                sec_aux_ips[0] = get_ip(aux_name, my_conf);
                 aux_ips[current_range] = sec_aux_ips;
                 ip_counter[current_range] = 1;
                 current_range++;
@@ -130,7 +132,7 @@ int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
             {
                 sprintf(aux_name, "%s%u", range.prefix, range.start);
                 sec_aux_ips = calloc(1, sizeof(int));
-                sec_aux_ips[0] = get_ip(aux_name);
+                sec_aux_ips[0] = get_ip(aux_name, my_conf);
                 aux_ips[current_range] = sec_aux_ips;
                 ip_counter[current_range] = 1;
                 current_range++;
@@ -147,7 +149,7 @@ int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
                 else
                     sprintf(aux_name, "%s%u", range.prefix, k);
 
-                sec_aux_ips[it] = get_ip(aux_name);
+                sec_aux_ips[it] = get_ip(aux_name, my_conf);
                 it ++;
             }
             aux_ips[current_range] = sec_aux_ips;
@@ -177,7 +179,7 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
         {
             sprintf(aux_name, "%s", range.prefix);
             aux_ips = calloc(1, sizeof(int));
-            aux_ips[0] = get_ip(aux_name);
+            aux_ips[0] = get_ip(aux_name, my_conf);
             *ips = aux_ips;
             return 1;
         }
@@ -185,7 +187,7 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
         {
             sprintf(aux_name, "%s%u", range.prefix, range.start);
             aux_ips = calloc(1, sizeof(int));
-            aux_ips[0] = get_ip(aux_name);
+            aux_ips[0] = get_ip(aux_name, my_conf);
             *ips = aux_ips;
             return 1;
         }
@@ -200,7 +202,7 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips)
             else
                 sprintf(aux_name, "%s%u", range.prefix, j);
 
-            aux_ips[it] = get_ip(aux_name);
+            aux_ips[it] = get_ip(aux_name, my_conf);
             it ++;
         }
         *ips = aux_ips;
@@ -496,13 +498,13 @@ void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
 /*** DEFAULT VALUES ****/
 void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 {
-	eardbdc->aggr_time     = 60;
-	eardbdc->insr_time     = 30;
-	eardbdc->tcp_port      = 4711;
-	eardbdc->sec_tcp_port  = 4712;
-	eardbdc->sync_tcp_port = 4713;
-	eardbdc->mem_size      = 120;
-
+	eardbdc->aggr_time		= DEF_DBD_AGGREGATION_TIME;
+	eardbdc->insr_time		= DEF_DBD_INSERTION_TIME;
+	eardbdc->tcp_port		= DEF_DBD_SERVER_PORT;
+	eardbdc->sec_tcp_port	= DEF_DBD_MIRROR_PORT;
+	eardbdc->sync_tcp_port	= DEF_DBD_SYNCHR_PORT;
+	eardbdc->mem_size		= DEF_DBD_ALLOC_MBS;
+	eardbdc->use_log		= DEF_DBD_FILE_LOG;
 	eardbdc->mem_size_types[0] = 60;
 	eardbdc->mem_size_types[1] = 22;
 	eardbdc->mem_size_types[2] = 5;
@@ -510,7 +512,6 @@ void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 	eardbdc->mem_size_types[4] = 7;
 	eardbdc->mem_size_types[5] = 5;
 	eardbdc->mem_size_types[6] = 1;
-	eardbdc->use_log=EARDBD_FILE_LOG;
 }
 
 void set_default_eard_conf(eard_conf_t *eardc)
@@ -524,7 +525,6 @@ void set_default_eard_conf(eard_conf_t *eardc)
     eardc->use_eardbd=1;        /* Must EARD report to DB using EARDBD */
 	eardc->force_frequencies=1; /* EARD will force frequencies */
 	eardc->use_log=EARD_FILE_LOG;
-
 }
 
 void set_default_earlib_conf(earlib_conf_t *earlibc)

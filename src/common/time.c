@@ -27,33 +27,50 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_FREQUENCY_UNCORE_H
-#define EAR_FREQUENCY_UNCORE_H
+#include <stdio.h>
+#include <unistd.h>
+#include <common/time.h>
 
-#include <common/states.h>
-#include <common/types/generic.h>
+void timestamp_get(timestamp *ts)
+{
+	timestamp_getfast(ts);
+}
 
-#define U_MSR_PMON_FIXED_CTR_OFF	0x000704
-#define U_MSR_PMON_FIXED_CTL_OFF	0x000703
-#define U_MSR_PMON_FIXED_CTL_STA	0x400000
-#define U_MSR_PMON_FIXED_CTL_STO	0x000000
-#define U_MSR_UNCORE_RATIO_LIMIT	0x000620
-#define U_MSR_UNCORE_RL_MASK_MAX	0x00007F
-#define U_MSR_UNCORE_RL_MASK_MIN	0x007F00
+void timestamp_getprecise(timestamp *ts)
+{
+	clock_gettime(CLOCK_MONOTONIC, ts);
+}
 
-/* */
-state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model);
+void timestamp_getfast(timestamp *ts)
+{
+	clock_gettime(CLOCK_MONOTONIC_COARSE, ts);
+}
 
-/* */
-state_t frequency_uncore_dispose();
+void timestamp_getreal(timestamp *ts)
+{
+	clock_gettime(CLOCK_REALTIME_COARSE, ts);
+}
 
-/* */
-state_t frequency_uncore_counters_start();
+ullong timestamp_convert(timestamp *ts, ullong time_unit)
+{
+	ullong stamp;
+	stamp  = (ullong) (ts->tv_sec * 1000000000);
+	stamp += (ullong) (ts->tv_nsec);
+	stamp /= time_unit;
+	return stamp;
+}
 
-/* */
-state_t frequency_uncore_counters_stop(uint64_t *buffer);
+ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
+{
+	ullong stamp;
 
-state_t frequency_uncore_get_limits(uint32_t *buffer);
-state_t frequency_uncore_set_limits(uint32_t *buffer);
+	if (ts2->tv_nsec < ts1->tv_nsec) {
+		ts2->tv_nsec += 1000000000;
+	}
 
-#endif //EAR_FREQUENCY_UNCORE_H
+	stamp  = (ullong) ((ts2->tv_sec - ts1->tv_sec) * 1000000000);
+	stamp += (ullong) ((ts2->tv_nsec - ts1->tv_nsec));
+	stamp /= time_unit;
+
+	return stamp;
+}

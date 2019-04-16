@@ -27,54 +27,27 @@
  * *   The GNU LEsser General Public License is contained in the file COPYING
  * */
 
-#ifndef EAR_VERBOSE_H
-#define EAR_VERBOSE_H
+#ifndef EAR_TIMESTAMP_H
+#define EAR_TIMESTAMP_H
 
+#include <time.h>
 #include <stdio.h>
 #include <string.h>
-#include <common/output/timestamp.h>
-#include <common/output/output_conf.h>
 
-int verb_level		__attribute__((weak)) = 0;
-int verb_channel	__attribute__((weak)) = 2;
-int verb_enabled	__attribute__((weak)) = 1;
-int warn_channel	__attribute__((weak)) = 2;
+int time_enabled __attribute__((weak)) = 0;
+static struct tm *tm_log;
+static time_t time_log;
+static char s_log[64];
 
-// Set
-#define WARN_SET_FD(fd)	warn_channel = fd;
-#define VERB_SET_FD(fd)	verb_channel = fd;
-#define VERB_SET_EN(en)	verb_enabled = en;
-#define VERB_SET_LV(lv)	verb_level   = lv;
+#define TIMESTAMP_SET_EN(en) time_enabled = en;
 
-#define verbose(v, ...) \
-	if (verb_enabled && v <= verb_level) \
+#define timestamp(channel) \
+	if (time_enabled) \
 	{ \
-		timestamp(verb_channel); \
-        dprintf(verb_channel, __VA_ARGS__); \
-        dprintf(verb_channel, "\n"); \
+		time(&time_log); \
+		tm_log = localtime(&time_log); \
+		strftime(s_log, sizeof(s_log), "%c", tm_log); \
+		dprintf(channel, "%s:", s_log); \
 	}
-
-// No new line version
-#define verbosen(v, ...) \
-	if (verb_enabled && v <= verb_level) \
-	{ \
-		timestamp(verb_channel); \
-        dprintf(verb_channel, __VA_ARGS__); \
-	}
-
-// Warnings
-#if SHOW_WARNINGS
-#define warning(...) \
-	{ \
-    	timestamp(warn_channel); \
-	 	dprintf(warn_channel, __VA_ARGS__);\
-	}
-#else
-#define warning(...)
-#endif
-
-// Abbreviations
-#define verb(v, ...) \
-	verbose(v, __VA_ARGS__);
 
 #endif //EAR_VERBOSE_H

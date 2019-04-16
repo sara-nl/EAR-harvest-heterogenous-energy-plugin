@@ -47,6 +47,7 @@
 #define GENERIC_NAME	256
 #define USER			64
 #define ACC				64
+#define SMALL           16
 
 #define NORMAL 		0
 #define AUTHORIZED	1
@@ -177,6 +178,7 @@ typedef struct cluster_conf
 	char tmp_dir[GENERIC_NAME];
 	char etc_dir[GENERIC_NAME];
 	char DB_pathname[GENERIC_NAME];
+    char net_ext[SMALL];
 	uint verbose;
 	eard_conf_t		eard;
 	eargm_conf_t 	eargm;
@@ -313,6 +315,6 @@ int get_range_ips(cluster_conf_t *my_conf, char *nodename, int **ips);
 int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips);
 
 /** returns the ip of the nodename specified */
-int get_ip(char *nodename);
+int get_ip(char *nodename, cluster_conf_t *conf);
 
 #endif
