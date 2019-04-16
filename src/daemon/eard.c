@@ -1200,12 +1200,12 @@ void main(int argc,char *argv[])
 	eard_dyn_conf.cconf=&my_cluster_conf;
 	eard_dyn_conf.nconf=my_node_conf;
 	eard_dyn_conf.pm_app=get_powermon_app();
-	set_global_eard_variables();
 	create_tmp(ear_tmp);
 	if (my_cluster_conf.eard.use_log){
     	fd_my_log=create_log(my_cluster_conf.tmp_dir,"eard");
     	if (fd_my_log<0) fd_my_log=2;
 	}
+	set_global_eard_variables();
 
 	int node_size;
 	state_t s;
@@ -1291,12 +1291,6 @@ void main(int argc,char *argv[])
 	{
 		if (strcmp(argv[1],"-h")==0 || strcmp(argv[1],"--help")==0) Usage(argv[0]);
 		verb_level = atoi(argv[1]);
-		VERB_SET_FD(fd_my_log);
-		ERROR_SET_FD(fd_my_log);
-		WARN_SET_FD(fd_my_log);
-		DEBUG_SET_FD(fd_my_log);
-		TIMESTAMP_SET_EN(my_cluster_conf.eard.use_log);
-
 
 
 		if ((verb_level < 0) || (verb_level > 4)) {
