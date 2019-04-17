@@ -27,13 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <slurm_plugin/slurm_plugin.h>
 
 #define SRUN_OPTIONS 10
 
-// Shared buffers
-extern char buffer1[SZ_PATH];
-extern char buffer2[SZ_PATH];
-extern char buffer3[SZ_PATH];
+static char buffer[SZ_PATH];
 
 struct spank_option spank_options_manual[SRUN_OPTIONS] =
 {
@@ -114,15 +112,15 @@ int _opt_ear (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		strncpy(buffer2, optarg, 8);
-		strtoup(buffer2);
+		strncpy(buffer, optarg, 8);
+		strtoup(buffer);
 
-		if (strcmp(buffer2, "ON") == 0) {
+		if (strcmp(buffer, "ON") == 0) {
 			setenv_local(ENV_LIB_EN, "1", 1);
-		} else if (strcmp(buffer2, "OFF") == 0) {
+		} else if (strcmp(buffer, "OFF") == 0) {
 			setenv_local(ENV_LIB_EN, "0", 1);
 		} else {
-			plug_error_0("Invalid enabling value '%s'", buffer2);
+			plug_error_0("Invalid enabling value '%s'", buffer);
 			return (ESPANK_BAD_ARG);
 		}
 	}
@@ -145,8 +143,8 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		snprintf(buffer2, 4, "%d", ioptarg);
-		setenv_local("PLG_LEARNING_PHASE", buffer2, 1);
+		snprintf(buffer, 4, "%d", ioptarg);
+		setenv_local("PLG_LEARNING_PHASE", buffer, 1);
 		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
@@ -163,15 +161,15 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		strncpy(buffer2, optarg, 32);
-		strtoup(buffer2);
+		strncpy(buffer, optarg, 32);
+		strtoup(buffer);
 
-		if (policy_name_to_id(buffer2) < 0) {
-			plug_error_0("Invalid policy '%s'", buffer2);
+		if (policy_name_to_id(buffer) < 0) {
+			plug_error_0("Invalid policy '%s'", buffer);
 			return (ESPANK_STOP);
 		}
 
-		setenv_local("PLG_POWER_POLICY", buffer2, 1);
+		setenv_local("PLG_POWER_POLICY", buffer, 1);
 		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
@@ -191,8 +189,8 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
         }
 		
 		loptarg = (ulong) atol(optarg);
-        snprintf(buffer2, 16, "%lu", loptarg);
-        setenv_local("PLG_FREQUENCY", buffer2, 1);
+        snprintf(buffer, 16, "%lu", loptarg);
+        setenv_local("PLG_FREQUENCY", buffer, 1);
         setenv_local(ENV_LIB_EN, "1", 1);
     }
 
@@ -214,8 +212,8 @@ int _opt_ear_threshold (int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		snprintf(buffer2, 8, "%0.2f", foptarg);
-		setenv_local("PLG_POWER_POLICY_TH", buffer2, 1);
+		snprintf(buffer, 8, "%0.2f", foptarg);
+		setenv_local("PLG_POWER_POLICY_TH", buffer, 1);
 		setenv_local(ENV_LIB_EN, "1", 1);
 	}
 
@@ -254,13 +252,13 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 		ioptarg = atoi(optarg);
 		if (ioptarg < 0) ioptarg = 0;
 		if (ioptarg > 4) ioptarg = 4;
-		snprintf(buffer2, 4, "%i", ioptarg);
+		snprintf(buffer, 4, "%i", ioptarg);
 
-		setenv_local("EAR_LIBRARY_VERBOSE", buffer2, 1);
+		setenv_local("EAR_LIBRARY_VERBOSE", buffer, 1);
 		setenv_local(ENV_LIB_EN, "1", 1);
 
 		// Obsolete
-		setenv_local("EAR_VERBOSE", buffer2, 1);
+		setenv_local("EAR_VERBOSE", buffer, 1);
 	}
 
 	return (ESPANK_SUCCESS);

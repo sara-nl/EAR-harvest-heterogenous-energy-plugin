@@ -27,26 +27,27 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <slurm_plugin/slurm_plugin_rcom.h>
+#include <slurm_plugin/slurm_plugin.h>
 
 // Buffers
-extern char buffer1[SZ_PATH];
-extern char buffer2[SZ_PATH];
-extern char buffer3[SZ_PATH];
+static char buffer[SZ_PATH];
 
-int plug_shared_readservs(spank_t sp, char *path)
+//
+extern int eard_port;
+
+int plug_shared_readservs(spank_t sp, char *path, services_conf_t *servs)
 {
 	plug_verbose(sp, 2, "function plug_shared_readservs");
 
-	get_services_conf_path(path, buffer2);
-	conf_serv = attach_services_conf_shared_area(buffer2);
+	get_services_conf_path(path, buffer);
+	servs = attach_services_conf_shared_area(buffer);
 
-	if (conf_serv == NULL) {
-		plug_error(sp, "while reading the shared services memory in '%s'", eard_host);
+	if (servs == NULL) {
+		plug_error(sp, "while reading the shared services memory in '%s'", "hostxxx");
 		return ESPANK_ERROR;
 	}
 
-	eard_port = conf_serv->eard.port;
+	eard_port = servs->eard.port;
 	dettach_services_conf_shared_area();
 }
 
@@ -54,8 +55,8 @@ int plug_shared_readfreqs(spank_t sp, char *path, ulong *freqs, int *n_freqs)
 {
 	plug_verbose(sp, 2, "function plug_shared_readfreqs");
 
-	get_frequencies_path(path, buffer2);
-	freqs = attach_frequencies_shared_area(buffer2, n_freqs);
+	get_frequencies_path(path, buffer);
+	freqs = attach_frequencies_shared_area(buffer, n_freqs);
 	*n_freqs = *n_freqs / sizeof(ulong);
 	dettach_frequencies_shared_area();
 }
@@ -65,11 +66,11 @@ int plug_shared_readsetts(spank_t sp, char *path, settings_conf_t *setts)
 	plug_verbose(sp, 2, "function plug_shared_readsetts");
 
 	// Opening settings
-	get_settings_conf_path(path, buffer2);
-	setts = attach_settings_conf_shared_area(buffer2);
+	get_settings_conf_path(path, buffer);
+	setts = attach_settings_conf_shared_area(buffer);
 
 	if (setts == NULL) {
-		plug_error(sp, "while reading the shared configuration memory in node '%s'", eard_host);
+		plug_error(sp, "while reading the shared configuration memory in node '%s'", "hostxxx");
 		return ESPANK_ERROR;
 	}
 

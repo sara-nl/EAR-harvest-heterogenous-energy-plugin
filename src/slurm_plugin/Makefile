@@ -30,8 +30,8 @@ plug_HDRS = slurm_plugin.h \
 
 ######## RULES
 
-#all: $(plug_BINS)
-all: slurm_plugin.o slurm_plugin_env.o
+all: $(plug_BINS)
+#all: slurm_plugin.o slurm_plugin_env.o slurm_plugin_helper.o slurm_plugin_options.o slurm_plugin_rcom_eard.o slurm_plugin_rcom_eargmd.o slurm_plugin_rcom_local.o
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

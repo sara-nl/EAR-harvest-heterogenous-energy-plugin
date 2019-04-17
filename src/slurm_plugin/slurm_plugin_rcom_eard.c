@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <slurm_plugin/slurm_plugin_rcom.h>
+#include <slurm_plugin/slurm_plugin.h>
 
 // EARD variables
 uint eard_port;
@@ -89,12 +89,12 @@ int plug_rcom_eard_job_start(spank_t sp)
 	plug_env_readnodes(sp, nodes);
 
 	//
-	plug_rcom_eard_xxx(sp, nodes, app, 1);
+	plug_rcom_eard_xxx(sp, nodes, &app, 1);
 
 	//
 	if (plug_env_isenv(sp, ENV_LIB_EN, "1") && plug_env_isenv(sp, ENV_PLG_CTX, "SRUN"))
 	{
-		plug_shared_readsetts(sp, path, setts);
+		plug_shared_readsetts(sp, buffer3, setts);
 
 		plug_env_setenviron(sp, setts);
 	}

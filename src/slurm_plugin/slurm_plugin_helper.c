@@ -27,6 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <slurm_plugin/slurm_plugin.h>
+
+// Buffers
+static char buffer[SZ_PATH];
+
 int setenv_local(const char *var, const char *val, int ow)
 {
 	if (var == NULL || val == NULL) {
@@ -56,21 +61,25 @@ int unsetenv_local(char *var)
 
 int unsetenv_remote(spank_t sp, char *var)
 {
-    if (var == NULL) {
-        return 0;
-    }   
+	if (var == NULL) {
+        	return 0;
+    	}
 	return (spank_unsetenv(sp, var) == ESPANK_SUCCESS);
 }
 
 int getenv_local(char *var, char *buf, int len)
 {
-	char *c = getenv(var);
+	char *c;
 
-	if (c != NULL) {
+	if (var == NULL || buf == NULL) {
+		return 0;
+	}
+	if ((c = getenv(var)) == NULL) {
 		return 0;
 	}
 
 	snprintf(buf, len, "%s", c);
+	return 1;
 }
 
 int getenv_remote(spank_t sp, char *var, char *buf, int len)
@@ -114,9 +123,9 @@ int apenv(char *dst, char *src, int dst_capacity)
 
 	if (len_dst > 0)
 	{
-		strcpy(buffer3, dst);
+		strcpy(buffer, dst);
 		pointer = &dst[len_src];
-		strcpy(&pointer[1], buffer3);
+		strcpy(&pointer[1], buffer);
 		strcpy(dst, src);
 		pointer[0] = ':';
 	} else {
@@ -147,8 +156,8 @@ int isenv_remote(spank_t sp, char *var, char *val)
 		return 0;
 	}
 
-    if (getenv_remote(sp, var, buffer3, sizeof(buffer3))) {
-        return (strcmp(buffer3, val) == 0);
+    if (getenv_remote(sp, var, buffer, sizeof(buffer))) {
+        return (strcmp(buffer, val) == 0);
     }
 
     return 0;
@@ -169,27 +178,23 @@ int exenv_local(char *var)
 int exenv_remote(spank_t sp, char *var)
 {
 	spank_err_t serrno;
-	char test[4];
 
 	if (var == NULL) {
 		return 0;
 	}
 
-	serrno = spank_getenv (sp, var, test, 4);
+	serrno = spank_getenv (sp, var, buffer, SZ_PATH);
 
 	return (serrno == ESPANK_SUCCESS || serrno == ESPANK_NOSPACE) &&
-		   (test != NULL) && (strlen(test)) > 0;
+		   (buffer != NULL) && (strlen(buffer)) > 0;
 }
 
 int repenv_local(char *var_old, char *var_new)
 {
-	char *p;
-
-	if (getenv_local(var_old, &p)) {
-		setenv_local(var_new, p, 1);
+	if (!getenv_local(var_old, buffer, SZ_PATH)) {
+		return 0;
 	}
-
-	return 1;
+	return setenv_local(var_new, buffer, 1);
 }
 
 int repenv_remote(spank_t sp, char *var_old, char *var_new)

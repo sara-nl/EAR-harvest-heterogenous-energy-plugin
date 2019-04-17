@@ -41,6 +41,9 @@
 	if (plug_env_verbtest(sp, 1) == 1) { \
 		slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
 	}
+#define plug_error_0(...) \
+		slurm_error("EARPLUG ERROR, " __VA_ARGS__);
+#define plug_nude(...) 
 
 int plug_env_verbtest(spank_t sp, int level);
 
