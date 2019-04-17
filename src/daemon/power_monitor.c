@@ -492,11 +492,11 @@ void powermon_mpi_finalize()
 
 int new_batch()
 {
-	ccontext++;
-	if (ccontext==MAX_NESTED_LEVELS){
+	if (ccontext==MAX_NESTED_LEVELS-1){
 		error("Panic: Maximum number of levels reached in new_job %d",ccontext);
 		return EAR_ERROR;
 	}
+	ccontext++;
 	current_ear_app[ccontext]=(powermon_app_t*)malloc(sizeof(powermon_app_t));
 	if (current_ear_app[ccontext]==NULL){
 		error("Panic: malloc returns NULL for current context");
