@@ -31,24 +31,10 @@
 #include <grp.h>
 #include <slurm_plugin/slurm_plugin.h>
 
-// Context
-static struct passwd *upw;
-static struct group *gpw;
-static uid_t uid;
-static gid_t gid;
-
 // Buffers
 static char buffer1[SZ_PATH];
 static char buffer2[SZ_PATH];
 static char buffer3[SZ_PATH];
-
-// Externs
-extern char eargmd_host[SZ_NAME_MEDIUM];
-extern uint eargmd_port;
-extern uint eargmd_nods;
-extern uint eargmd_enbl;
-extern int  eargmd_conn;
-
 
 /*
  *
@@ -123,33 +109,26 @@ int plug_env_repenv(spank_t sp, char *var_old, char *var_new)
  *
  */
 
-void plug_env_clean(spank_t sp, int ac, char **av)
+int plug_comp_setenabled(spank_t sp, plug_comp_t comp, int enabled)
 {
-	// Unsetting loader
-	plug_env_unsetenv(sp, "LD_PRELOAD");
-
-	#define unset_and_replace(name) \
-		plug_env_unsetenv(sp, "EAR_" name); \
-		plug_env_repenv(sp, "PLG_" name, "EAR_" name);
-
-	// Replacing options
-	unset_and_replace("LEARNING_PHASE");
-	unset_and_replace("POWER_POLICY");
-	unset_and_replace("POWER_POLICY_TH");
-	unset_and_replace("P_STATE");
-	unset_and_replace("FREQUENCY");
-	unset_and_replace("MIN_PERFORMANCE_EFFICIENCY_GAIN");
-	unset_and_replace("PERFORMANCE_PENALTY");
-	unset_and_replace("TRACE_PATH");
-	unset_and_replace("MPI_DIST");
-	unset_and_replace("USER_DB_PATHNAME");
-	unset_and_replace("ENERGY_TAG");
-	unset_and_replace("APP_NAME");
-	unset_and_replace("TMP");
+	if (enabled) return plug_env_setenv(sp, comp, "1", 1);
+	             return plug_env_setenv(sp, comp, "0", 1);
 }
 
+int plug_comp_isenabled(spank_t sp, plug_comp_t comp)
+{
+	return plug_env_isenv(sp, comp, "1");
+}
 
-int plug_env_verbtest(spank_t sp, int level)
+/*
+ *
+ *
+ *
+ *
+ *
+ */
+
+int plug_verb_test(spank_t sp, int level)
 {
 	static int verbosity = -1;
 	char env_remote[8];
@@ -175,99 +154,39 @@ int plug_env_verbtest(spank_t sp, int level)
  *
  */
 
-int plug_env_readstack(spank_t sp, int ac, char **av)
+int plug_env_readvars(spank_t sp)
 {
-	plug_verbose(sp, 2, "function plug_env_readstack");
+	#define replace(name) \
+		plug_env_unsetenv(sp, "EAR_" name); \
+		plug_env_repenv  (sp, "PLG_" name, "EAR_" name);
 
-	int found_earmgd_port = 0;
-	int found_eargmd_host = 0;
-	int found_predir = 0;
-	int found_tmpdir = 0;
-	char *pre_dir = NULL;
-	char *tmp_dir = NULL;
-	int i;
+	// Replacing options
+	replace("LEARNING_PHASE");
+	replace("POWER_POLICY");
+	replace("POWER_POLICY_TH");
+	replace("P_STATE");
+	replace("FREQUENCY");
+	replace("MIN_PERFORMANCE_EFFICIENCY_GAIN");
+	replace("PERFORMANCE_PENALTY");
+	replace("TRACE_PATH");
+	//replace("MPI_DIST");
+	replace("USER_DB_PATHNAME");
+	replace("ENERGY_TAG");
+	replace("APP_NAME");
+	replace("TMP");
 
-	for (i = 0; i < ac; ++i)
-	{
-		if ((strlen(av[i]) > 8) && (strncmp ("default=", av[i], 8) == 0))
-		{
-			plug_verbose(sp, 2, "plugstack found library by default '%s'", &av[i][8]);
-			
-			// If enabled by default
-			if (strncmp ("default=on", av[i], 10) == 0) {
-				// EAR == 1: enable
-				// EAR == 0: nothing
-				// EAR == whatever: enable (bug protection)
-				if (!plug_env_isenv(sp, ENV_LIB_EN, "0")) {
-					plug_env_setenv(sp, ENV_LIB_EN, "1", 1);
-				} 
-			// If disabled by default or de administrator have misswritten
-			} else {
-				// EAR == 1: nothing
-				// EAR == 0: disable
-				// EAR == whatever: disable (bug protection)
-				if (!plug_env_isenv(sp, ENV_LIB_EN, "1")) {
-					plug_env_setenv(sp, ENV_LIB_EN, "0", 1);
-				}
-			}
-		}
-		if ((strlen(av[i]) > 14) && (strncmp ("localstatedir=", av[i], 14) == 0))
-		{
-			tmp_dir = &av[i][14];
-			found_tmpdir = 1;
-
-			plug_verbose(sp, 2, "plugstack found temporal files in path '%s'", tmp_dir);
-			plug_env_setenv(sp, "PLG_PATH_TMP", tmp_dir, 1);
-		}
-		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
-		{
-			pre_dir = &av[i][7];
-			found_predir = 1;
-
-			plug_verbose(sp, 2, "plugstack found prefix in path '%s'", pre_dir);
-			plug_env_setenv(sp, "PLG_PATH_PFX", pre_dir, 1);
-		}
-		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
-		{
-			found_eargmd_host = 1;
-			strncpy(eargmd_host, &av[i][12], SZ_NAME_MEDIUM);
-		}
-		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0))
-		{
-			found_earmgd_port = 1;
-			eargmd_port = atoi(&av[i][12]);
-		}
-	}
-
-	// EARGMD enabled?
-	eargmd_enbl = found_eargmd_host && found_earmgd_port;
-
-	// TMP folder missing?
-	if (!found_tmpdir) {
-		plug_verbose(sp, 2, "missing plugstack localstatedir directory");
-		return (ESPANK_STOP);
-	}
-
-	// Prefix folder missing?
-	if (!found_predir) {
-		plug_verbose(sp, 2, "missing plugstack prefix directory");
-		return (ESPANK_ERROR);
-	}
-
-	return (EAR_SUCCESS);
+	return EAR_SUCCESS;
 }
 
-int plug_env_readuser(spank_t sp)
+int plug_env_readjob(spank_t sp, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_env_readuser");
-	
-	// Getting user ids
-	uid = geteuid();
-	gid = getgid();
 
-	// Getting user names
-	upw = getpwuid(uid);
-	gpw = getgrgid(gid);
+	// User information
+	uid_t uid = geteuid();
+	gid_t gid = getgid();
+	struct passwd *upw = getpwuid(uid);
+	struct group *gpw = getgrgid(gid);
 
 	if (upw == NULL) {
 		plug_verbose(sp, 2, "converting UID in username");
@@ -279,18 +198,107 @@ int plug_env_readuser(spank_t sp)
 		return (ESPANK_ERROR);
 	}
 
-	// To environment variables
-	plug_env_setenv(sp, "EAR_USER", upw->pw_name, 1);
-	plug_env_setenv(sp, "EAR_GROUP", gpw->gr_name, 1);
+	strcpy(job->user.name_upw, upw->pw_name, SZ_NAME_MEDIUM);
+	strcpy(job->user.name_gpw, gpw->gr_name, SZ_NAME_MEDIUM);
+	plug_env_getenv(sp, "SLURM_JOB_ACCOUNT", job->user.name_acc, SZ_NAME_MEDIUM);
 
-	plug_verbose(sp, 2, "user detected '%u -> %s'", uid, upw->pw_name);
-	plug_verbose(sp, 2, "user group detected '%u -> %s'", gid, gpw->gr_name);
-	plug_verbose(sp, 2, "user account detected '%s'", getenv("SLURM_JOB_ACCOUNT"));
+	plug_verbose(sp, 2, "user '%u' ('%s')", job->user.uid, job->user.name_upw);
+	plug_verbose(sp, 2, "user group '%u' ('%s')", job->user.gid, job->user.name_gpw);
+	plug_verbose(sp, 2, "user account '%s'", job->user.name_acc);
 
-	return (ESPANK_SUCCESS);
+	// Reservation
+	plug_env_getenv(sp, "SLURM_NNODES", buffer, SZ_PATH);
+	job->n_nodes = atoi(buffer);
+
+	// User environment variables
+	plug_env_getenv(sp, "LD_PRELOAD", job->var_ld_preload, SZ_PATH);
+	plug_env_getenv(sp, "LD_LIBRARY_PATH", job->var_ld_library, SZ_PATH);
+
+	// Context
+	job->local_context = spank_context();
+
+	return ESPANK_SUCCESS;
 }
 
-static int frequency_exists(ulong *freqs, int n_freqs, ulong freq)
+int plug_env_readstack(spank_t sp, int ac, char **av, plug_pack_t *pack)
+{
+	plug_verbose(sp, 2, "function plug_env_readstack");
+
+	int found_earmgd_port = 0;
+	int found_eargmd_host = 0;
+	int found_path_inst = 0;
+	int found_path_temp = 0;
+	int i;
+
+	for (i = 0; i < ac; ++i)
+	{
+		if ((strlen(av[i]) > 8) && (strncmp ("default=", av[i], 8) == 0))
+		{
+			plug_verbose(sp, 2, "plugstack found library by default '%s'", &av[i][8]);
+			
+			// If enabled by default
+			if (strncmp ("default=on", av[i], 10) == 0) {
+				// Library == 1: enable
+				// Library == 0: nothing
+				// Library == whatever: enable (bug protection)
+				if (!plug_env_isenv(sp, comp.library, "0")) {
+					plug_comp_setenabled(sp, comp.library, 1);
+				} 
+			// If disabled by default or de administrator have misswritten
+			} else {
+				// Library == 1: nothing
+				// Library == 0: disable
+				// Library == whatever: disable (bug protection)
+				if (!plug_env_isenv(sp, comp.library, "1")) {
+					plug_comp_setenabled(sp, comp.library, 0);
+				}
+			}
+		}
+		if ((strlen(av[i]) > 14) && (strncmp ("localstatedir=", av[i], 14) == 0))
+		{
+			strncpy(pack->path_temp, &av[i][14], SZ_NAME_MEDIUM);
+			found_path_temp = 1;
+
+			plug_verbose(sp, 2, "plugstack found temporal files in path '%s'", pack->path_temp);
+		}
+		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
+		{
+			strncpy(pack->path_inst, &av[i][7], SZ_NAME_MEDIUM);
+			found_path_inst = 1;
+
+			plug_verbose(sp, 2, "plugstack found prefix in path '%s'", pack->path_inst);
+		}
+		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
+		{
+			strncpy(pack->eargmd.host, &av[i][12], SZ_NAME_MEDIUM);
+			found_eargmd_host = 1;
+		}
+		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0))
+		{
+			pack->eargmd.port = atoi(&av[i][12]);
+			found_earmgd_port = 1;
+		}
+	}
+
+	// EARGMD enabled?
+	pack->eargmd.enabled = found_eargmd_host && found_earmgd_port;
+
+	// TMP folder missing?
+	if (!found_path_temp) {
+		plug_verbose(sp, 2, "missing plugstack localstatedir directory");
+		return (ESPANK_STOP);
+	}
+
+	// Prefix folder missing?
+	if (!found_path_inst) {
+		plug_verbose(sp, 2, "missing plugstack prefix directory");
+		return (ESPANK_ERROR);
+	}
+
+	return ESPANK_SUCCESS;
+}
+
+static int frequency_exists(plug_freqs_t *freqs, ulong freq)
 {
 	int i;
 	for (i = 0; i < n_freqs; ++i) {
@@ -301,9 +309,12 @@ static int frequency_exists(ulong *freqs, int n_freqs, ulong freq)
 	return 0;
 }
 
-int plug_env_readapp(spank_t sp, application_t *app, ulong *freqs, int n_freqs)
+int plug_env_readapp(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
-	uint32_t aux_val;
+	application_t *app = &job->app;
+	ulong *freqs = pack->eard.freqs.freqs;
+	int n_freqs = pack->eard.freqs.n_freqs;
+	uint32_t item;
 
 	init_application(app);
 
@@ -317,13 +328,13 @@ int plug_env_readapp(spank_t sp, application_t *app, ulong *freqs, int n_freqs)
 			app->is_mpi = 1;
 		}
 	}
-	if (spank_get_item (sp, S_JOB_ID, &aux_val) == ESPANK_SUCCESS) {
-		app->job.id = aux_val;
+	if (spank_get_item (sp, S_JOB_ID, &item) == ESPANK_SUCCESS) {
+		app->job.id = item;
 	} else {
 		app->job.id = NO_VAL;
 	}
-	if (spank_get_item (sp, S_JOB_STEPID, &aux_val) == ESPANK_SUCCESS) {
-		app->job.step_id = aux_val;
+	if (spank_get_item (sp, S_JOB_STEPID, &item) == ESPANK_SUCCESS) {
+		app->job.step_id = item;
 	} else {
 		app->job.step_id = NO_VAL;
 	}
@@ -336,7 +347,7 @@ int plug_env_readapp(spank_t sp, application_t *app, ulong *freqs, int n_freqs)
 	if (!plug_env_getenv(sp, "EAR_GROUP", app->job.group_id, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.group_id, "");
 	}
-	if (!plug_env_getenv(sp, "SLURM_JOB_NAME",  app->job.app_id, SZ_NAME_MEDIUM)) {
+	if (!plug_env_getenv(sp, "SLURM_JOB_NAME", app->job.app_id, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.app_id, "");
 	}
 	if (!plug_env_getenv(sp, "SLURM_JOB_ACCOUNT", app->job.user_acc, SZ_NAME_MEDIUM)) {
@@ -368,67 +379,92 @@ int plug_env_readapp(spank_t sp, application_t *app, ulong *freqs, int n_freqs)
 		strcpy(app->job.energy_tag, "");
 	}
 
-	return 1;
+	return ESPANK_SUCCESS;
 }
 
-int plug_env_readnodes(spank_t sp, hostlist_t nodes)
+int plug_env_readnodes(spank_t sp, plug_pack_t *pack)
 {
-	if (plug_env_isenv(sp, ENV_PLG_CTX, "SBATCH"))
+	if (job->local_context = S_CTX_SBATCH)
 	{
-		if (plug_env_isenv(sp, "EAR_MONITOR", "1"))
+		if (plug_comp_isenabled(sp, comp.monitor))
 		{
 			if (plug_env_getenv(sp, "SLURM_STEP_NODELIST", buffer1, SZ_PATH))  {
 				nodes = slurm_hostlist_create(buffer1);
-				return 1;
+				return ESPANK_SUCCESS;
 			}
 		}
-		if (gethostname(buffer1, SZ_NAME_MEDIUM) == 0) {
-			nodes = slurm_hostlist_create(buffer1);
-			return 1;
-		}
 	}
-	return 0;
+	nodes = slurm_hostlist_create(pack->eard.host);
+	return ESPANK_SUCCESS;
 }
 
 /*
  *
  *
- *
+ * Serialize/deserialize
  *
  *
  */
 
-int plug_env_setpreload(spank_t sp)
+int plug_env_serialize_remote(spank_t sp, plug_job_t *job)
 {
-	plug_verbose(sp, 2, "function plug_env_setpreload");
-	
-	buffer1[0] = '\0';
-	buffer2[0] = '\0';
-	buffer3[0] = '\0';
-
-	if (plug_env_getenv(sp, "PLG_PATH_PFX", buffer3, SZ_PATH) == 0)
-	{
-		plug_verbose(sp, 2, "Error, wrong environment for setting LD_PRELOAD");
-		return ESPANK_ERROR;
-	}
-	apenv(buffer1, buffer3, sizeof(buffer1));
+	// LD_PRELOAD
+	apenv(job->var_ld_preload, pack->path_inst, SZ_PATH);
 
 	// Appending libraries to LD_PRELOAD
 	if (plug_env_isenv(sp, "EAR_MPI_DIST", "openmpi")) {
-		snprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
+		snprintf(buffer2, sizeof(buffer2), "%s/%s", job->var_ld_preload, OMPI_C_LIB_PATH);
 	} else {
-		snprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
+		snprintf(buffer2, sizeof(buffer2), "%s/%s", job->var_ld_preload, IMPI_C_LIB_PATH);
 	}
 
-	//
 	plug_env_setenv(sp, "LD_PRELOAD", buffer2, 1);
-
 	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
-	return (ESPANK_SUCCESS);
+	// Last local context
+	if (job->local_context == S_CTX_SRUN) {
+		plug_env_setenv(sp, "PLUG_CONTEXT", "SRUN", 1);
+	}
+	if (job->local_context == S_CTX_SBATCH) {
+		plug_env_setenv(sp, "PLUG_CONTEXT", "SBATCH", 1);
+	}
+
+	// Paths
+	plug_env_setenv(sp, "PLUG_PATH_TEMP", pack->path_temp, 1);
+	plug_env_setenv(sp, "PLUG_PATH_INST", pack->path_inst, 1);
+
+	// User things
+	plug_env_setenv(sp,  "EAR_USER", job.user->name_upw, 1);
+	plug_env_setenv(sp, "EAR_GROUP", job.user->name_gpw, 1);
+
+	return ESPANK_SUCCESS;
 }
 
-int plug_env_setenviron(spank_t sp, settings_conf_t *setts)
+int plug_env_deserialize_remote(spank_t sp, plug_job_t *job)
+{
+	// Local node
+	gethostname(pack->eard.host, SZ_NAME_MEDIUM);
+
+	// Local context
+	if (plug_env_isenv(sp, "PLUG_CONTEXT", "SRUN")) {
+		job->local_context = S_CTX_SRUN;
+	}
+	if (plug_env_isenv(sp, "PLUG_CONTEXT", "SBATCH")) {
+		job->local_context = S_CTX_SBATCH;
+	}
+
+	// Paths
+	plug_env_getenv(sp, "PLUG_PATH_TEMP", pack->path_temp);
+	plug_env_getenv(sp, "PLUG_PATH_INST", pack->path_inst);
+
+	// User things
+	plug_env_getenv(sp,  "EAR_USER", job.user->name_upw);
+	plug_env_getenv(sp, "EAR_GROUP", job.user->name_gpw);
+
+	return ESPANK_SUCCESS;
+}
+
+int plug_env_serialize_task()
 {
 	// Variable EAR_ENERGY_TAG, unset
 	if (setts->user_type != ENERGY_TAG) {
@@ -444,14 +480,9 @@ int plug_env_setenviron(spank_t sp, settings_conf_t *setts)
 	plug_env_setenv(sp, "EAR_FREQUENCY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY, overwrite
-	if(policy_id_to_name(setts->policy, buffer2) == EAR_ERROR)
-	{
-		// Closing shared memory
-		dettach_settings_conf_shared_area();
-		plug_error(sp, "invalid policy returned");
-		return (ESPANK_ERROR);
+	if(!policy_id_to_name(setts->policy, buffer2) == EAR_ERROR) {
+		plug_env_setenv(sp, "EAR_POWER_POLICY", buffer2, 1);
 	}
-	plug_env_setenv(sp, "EAR_POWER_POLICY", buffer2, 1);
 
 	// Variable EAR_POWER_POLICY_TH, overwrite
 	snprintf(buffer2, 16, "%0.2f", setts->th);
@@ -468,7 +499,9 @@ int plug_env_setenviron(spank_t sp, settings_conf_t *setts)
 	if (plug_env_getenv(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
 		plug_env_setenv(sp, "EAR_APP_NAME", buffer2, 1);
 	}
-	if (plug_env_getenv(sp, "PLG_PATH_TMP", buffer2, sizeof(buffer2)) == 1) {
+	if (plug_env_getenv(sp, "PLUG_PATH_TEMP", buffer2, sizeof(buffer2)) == 1) {
 		plug_env_setenv(sp, "EAR_TMP", buffer2, 1);
 	}
+
+	return ESPANK_SUCCESS;
 }

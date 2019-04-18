@@ -29,65 +29,53 @@
 
 #include <slurm_plugin/slurm_plugin_rcom.h>
 
-//
-char eargmd_host[SZ_NAME_MEDIUM];
-uint eargmd_port;
-uint eargmd_nods;
-uint eargmd_enbl;
-int  eargmd_conn;
-
 // Externs
-extern char buffer1[SZ_PATH];
-extern char buffer2[SZ_PATH];
-extern char buffer3[SZ_PATH];
+static char buffer[SZ_PATH];
 
-int plug_rcom_eargmd_job_start(spank_t sp)
+int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_start");
 
-	// Not enabled
-	if (!eargmd_enbl || plug_env_isenv(sp, "EARGMD_CONNECTED", "1")) {
-		return ESPANK_SUCCESS;
-	}
+	// Disabled
+	return ESPANK_SUCCESS;
 
-	// Gathering variables
-	plug_env_getenv(sp, "SLURM_NNODES", buffer1, SZ_PATH);
-	eargmd_nods = atoi(buffer1);
+	// Pack deserialization
+	plug_env_getenv(sp, "EARGMD_CONNECTED", buffer, SZ_PATH);
+	pack->eargmd.connected = atoi(buffer);
+
+	if (pack.eargmd.enabled && !pack->eargmd->connected) {
+		return ESPANK_ERROR;
+	}
 
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",
-		eargmd_host, eargmd_port, eargmd_nods);
+		pack->eargmd.host, pack->eargmd.port, job->n_nodes);
 
 	// Connection
-	if (eargm_connect(eargmd_host, eargmd_port) < 0) {
+	if (eargm_connect(pack->eargmd.host, pack->eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
-	if (!eargm_new_job(eargmd_nods)) {
+	if (!eargm_new_job(job->n_nodes)) {
 		plug_error(sp, "while speaking with EAR global manager daemon");
 	}
 	eargm_disconnect();
 
 	// Informing that this report has to be finished
-	eargmd_conn = 1;
+	pack->eargmd.connected = 1;
 
-	// Informing that no nested process has to connect to EARGMD again
+	// Enabling protection
 	plug_env_setenv(sp, "EARGMD_CONNECTED", "1", 1);
 
 	return (ESPANK_SUCCESS);
 }
 
-int plug_rcom_eargmd_job_finish(spank_t sp)
+int plug_rcom_eargmd_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_finish");
 
-	// Not connected, so doesn't need to be finished
-	if (!eargmd_conn) {
-		return ESPANK_SUCCESS;
-	}
-
-	// Disabling protection
-	plug_env_setenv(sp, "EARGMD_CONNECTED", "0", 1);
+	// Disabled
+	return ESPANK_SUCCESS;
 
 	if (eargm_connect(eargmd_host, eargmd_port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
@@ -98,6 +86,9 @@ int plug_rcom_eargmd_job_finish(spank_t sp)
 		return ESPANK_ERROR;
 	}
 	eargm_disconnect();
+
+	// Disabling protection
+	plug_env_setenv(sp, "EARGMD_CONNECTED", "0", 1);
 
 	return (ESPANK_SUCCESS);
 }

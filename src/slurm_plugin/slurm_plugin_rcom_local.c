@@ -32,14 +32,13 @@
 // Buffers
 static char buffer[SZ_PATH];
 
-//
-extern int eard_port;
-
-int plug_shared_readservs(spank_t sp, char *path, services_conf_t *servs)
+int plug_shared_readservs(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_shared_readservs");
 
-	get_services_conf_path(path, buffer);
+	services_conf_t *servs;
+
+	get_services_conf_path(pack->path_tmp, buffer);
 	servs = attach_services_conf_shared_area(buffer);
 
 	if (servs == NULL) {
@@ -47,26 +46,45 @@ int plug_shared_readservs(spank_t sp, char *path, services_conf_t *servs)
 		return ESPANK_ERROR;
 	}
 
-	eard_port = servs->eard.port;
+	memcpy(&pack->eard.servs, servs, sizeof(services_conf_t));
+	pack->eards.port = servs->eard.port;
 	dettach_services_conf_shared_area();
+
+	return ESPANK_SUCCESS;
 }
 
-int plug_shared_readfreqs(spank_t sp, char *path, ulong *freqs, int *n_freqs)
+int plug_shared_readfreqs(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_shared_readfreqs");
 
-	get_frequencies_path(path, buffer);
-	freqs = attach_frequencies_shared_area(buffer, n_freqs);
-	*n_freqs = *n_freqs / sizeof(ulong);
+	ulong *freqs;
+	int n_freqs;
+
+	get_frequencies_path(pack->path_tmp, buffer);
+	freqs = attach_frequencies_shared_area(buffer, &n_freqs);
+
+	if (freqs == NULL) {
+		plug_error(sp, "while reading the shared services memory in '%s'", "hostxxx");
+		return ESPANK_ERROR;
+	}
+
+	pack->eard.freqs.n_freqs = n_freqs / sizeof(ulong);
+	malloc(&pack->eard.freqs.freqs, n_freqs * sizeof(ulong));
+	memcpy(&pack->eard.freqs.freqs, freqs, n_freqs * sizeof(ulong));
+
 	dettach_frequencies_shared_area();
+
+	return ESPANK_SUCCESS;
 }
 
-int plug_shared_readsetts(spank_t sp, char *path, settings_conf_t *setts)
+int plug_shared_readsetts(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_shared_readsetts");
 
+	settings_conf_t *setts;
+
 	// Opening settings
-	get_settings_conf_path(path, buffer);
+	get_settings_conf_path(pack->path_tmp, buffer);
 	setts = attach_settings_conf_shared_area(buffer);
 
 	if (setts == NULL) {
@@ -74,7 +92,9 @@ int plug_shared_readsetts(spank_t sp, char *path, settings_conf_t *setts)
 		return ESPANK_ERROR;
 	}
 
-	if (plug_env_verbtest(sp, 4)) {
+	memcpy(&pack->eard.setts, setts, sizeof(settings_conf_t));
+
+	if (plug_verb_test(sp, 4)) {
 		print_settings_conf(setts);
 	}
 
@@ -83,8 +103,8 @@ int plug_shared_readsetts(spank_t sp, char *path, settings_conf_t *setts)
 
 	// Variable EAR and LD_PRELOAD
 	if (!setts->lib_enabled || setts->user_type == ENERGY_TAG) {
-		return (ESPANK_ERROR);
+		return ESPANK_ERROR;
 	}
 
-	return (ESPANK_SUCCESS);
+	return ESPANK_SUCCESS;
 }

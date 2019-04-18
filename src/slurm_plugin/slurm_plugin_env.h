@@ -34,18 +34,18 @@
 
 // Verbosity
 #define plug_verbose(sp, level, ...) \
-	if (plug_env_verbtest(sp, level) == 1) { \
+	if (plug_verb_test(sp, level) == 1) { \
 		slurm_error("EARPLUG, " __VA_ARGS__); \
 	}
 #define plug_error(sp, ...) \
-	if (plug_env_verbtest(sp, 1) == 1) { \
+	if (plug_verb_test(sp, 1) == 1) { \
 		slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
 	}
 #define plug_error_0(...) \
 		slurm_error("EARPLUG ERROR, " __VA_ARGS__);
 #define plug_nude(...) 
 
-int plug_env_verbtest(spank_t sp, int level);
+int plug_verb_test(spank_t sp, int level);
 
 /*
  * Agnostic environment manipulation
@@ -68,25 +68,25 @@ int plug_env_repenv(spank_t sp, char *var_old, char *var_new);
  * Environment clean
  */
 
-void plug_env_clean(spank_t sp, int ac, char **av);
+void plug_env_readenviron(spank_t sp, int ac, char **av);
 
 /*
  * Environment read
  */
 
-int plug_env_readstack(spank_t sp, int ac, char **av);
+int plug_env_readstack(spank_t sp, int ac, char **av, plug_pack_t *pack);
 
-int plug_env_readuser(spank_t sp);
+int plug_env_readjob(spank_t sp, plug_job_t *job);
 
-int plug_env_readapp(spank_t sp, application_t *app, ulong *freqs, int n_freqs);
+int plug_env_readapp(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
-int plug_env_readnodes(spank_t sp, hostlist_t nodes);
+int plug_env_readnodes(spank_t sp, plug_pack_t *pack);
 
 /*
  * Environment set
  */
 
-int plug_env_setpreload(spank_t sp);
+int plug_env_setenviron(spank_t sp);
 
 int plug_env_setenviron(spank_t sp, settings_conf_t *setts);
 

@@ -29,16 +29,13 @@
 
 #include <slurm_plugin/slurm_plugin.h>
 
-// EARD variables
-uint eard_port;
+// Buffers
+static char buffer[SZ_PATH];
 
-// Externs
-extern char buffer1[SZ_PATH];
-extern char buffer2[SZ_PATH];
-extern char buffer3[SZ_PATH];
-
-static void plug_rcom_eard_xxx(spank_t sp, hostlist_t nodes, application_t *app, int new_job)
+int plug_rcom_eard_job_start(spank_t sp, )
 {
+	plug_verbose(sp, 2, "function plug_rcom_eard_job_start");
+
 	char *node;
 
 	while ((node = slurm_hostlist_shift(nodes)) != NULL)
@@ -58,45 +55,6 @@ static void plug_rcom_eard_xxx(spank_t sp, hostlist_t nodes, application_t *app,
 
 		eards_remote_disconnect();
 		free(node);
-	}
-}
-
-int plug_rcom_eard_job_start(spank_t sp)
-{
-	plug_verbose(sp, 2, "function plug_rcom_eard_job_start");
-
-	// Frequency vars
-	hostlist_t nodes;
-	settings_conf_t *setts;
-	services_conf_t *servs;
-	application_t app;
-	ulong *freqs;
-	int n_freqs;
-
-	// General data
-	plug_env_getenv(sp, "PLG_PATH_TMP", buffer3, sizeof(buffer3));
-
-	//
-	plug_shared_readservs(sp, buffer3, servs);
-
-	//
-	plug_shared_readfreqs(sp, buffer3, freqs, &n_freqs);
-
-	//
-	plug_env_readapp(sp, &app, freqs, n_freqs);
-
-	//
-	plug_env_readnodes(sp, nodes);
-
-	//
-	plug_rcom_eard_xxx(sp, nodes, &app, 1);
-
-	//
-	if (plug_env_isenv(sp, ENV_LIB_EN, "1") && plug_env_isenv(sp, ENV_PLG_CTX, "SRUN"))
-	{
-		plug_shared_readsetts(sp, buffer3, setts);
-
-		plug_env_setenviron(sp, setts);
 	}
 
 	return ESPANK_SUCCESS;

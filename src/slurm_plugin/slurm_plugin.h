@@ -46,11 +46,76 @@
 #include <slurm_plugin/slurm_plugin_options.h>
 #include <slurm_plugin/slurm_plugin_rcom.h>
 
-#define ESPANK_STOP	-1
-#define S_CTX_SRUN	S_CTX_LOCAL
+#define ESPANK_STOP		-1
+#define S_CTX_SRUN		S_CTX_LOCAL
 #define S_CTX_SBATCH	S_CTX_ALLOCATOR
-#define ENV_LIB_EN	"LIB_EN"
-#define ENV_PLG_EN	"PLG_EN"
-#define ENV_PLG_CTX	"PLG_CTX"
+#define ENV_PLG_CTX		"PLUG_CONTEXT"
+#define ENV_PLG_EN		"PLUG_PLUGIN"
+#define ENV_LIB_EN		"PLUG_LIBRARY"
+#define ENV_MON_EN		"PLUG_MONITOR"
+
+typedef struct plug_user {
+	char *name_acc[SZ_NAME_MEDIUM];
+	char *name_upw[SZ_NAME_MEDIUM];
+	char *name_gpw[SZ_NAME_MEDIUM];
+} plug_user_t;
+
+typedef struct plug_node {
+	char host[SZ_NAME_MEDIUM];
+} plug_node_t;
+
+typedef struct plug_job {
+	plug_user_t user;
+	char var_ld_preload[SZ_PATH];
+	char var_ld_library[SZ_PATH];
+	application_t app;
+	int local_context;
+	int exit_status;
+	int verbosity;
+	uint n_nodes;
+} plug_job_t;
+
+typedef struct plug_freqs {
+	ulong *freqs;
+	int n_freqs;
+} plug_freqs_t;
+
+typedef struct plug_eard {
+	settings_conf_t setts;
+	services_conf_t servs;
+	plug_freqs_t freqs;
+	hostlist_t hostlist;
+	uint port;
+} plug_eard_t;
+
+typedef struct plug_eargmd {
+	char host[SZ_NAME_MEDIUM];
+	uint connected;
+	uint enabled;
+	uint port;
+} plug_eargmd_t;
+
+typedef struct plug_pack {
+	plug_comps_t comps;
+	plug_eargmd_t eargmd;
+	plug_eards_sbatch eards;
+	plug_eard_srun eard;
+	char path_temp[SZ_PATH];
+	char path_inst[SZ_PATH];
+} plug_pack_t;
+
+typedef char *plug_comp_t;
+
+struct comp {
+	plug_comp_t plugin = "PLUG_PLUGIN";
+	plug_comp_t library = "PLUG_LIBRARY";
+	plug_comp_t monitor = "PLUG_MONITOR";
+};
+
+struct cntx {
+	int srun = S_CTX_LOCAL;
+	int sbatch = S_CTX_ALLOCATOR;
+	int remote = 0;
+};
 
 #endif

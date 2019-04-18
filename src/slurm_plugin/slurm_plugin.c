@@ -32,82 +32,119 @@
 // Spank
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 
-// Buffers
-char buffer1[SZ_PATH];
-char buffer2[SZ_PATH];
-char buffer3[SZ_PATH];
-
 //
-extern int eard_exst;
+static plug_pack_t pack;
+static plug_job_t job;
 
+// Function order:
+// 	- Local 1
+// 	- Remote 1
 int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init");
 
 	_opt_register(sp);
 
-	if (plug_env_islocal(sp))
-	{
-		if (spank_context() == S_CTX_SRUN) {
-			plug_env_setenv(sp, ENV_PLG_CTX, "SRUN", 1);
-		}
-		if (spank_context() == S_CTX_SBATCH) {
-			plug_env_setenv(sp, ENV_PLG_CTX, "SBATCH", 1);
-		}
-
-		plug_env_setenv(sp, ENV_PLG_EN, "1", 1);
-	}
-
 	return ESPANK_SUCCESS;
 }
 
+// Function order:
+// 	- Local 2
+// 	- Remote 0
 int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 {
     plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
 
-	// No need of testing the context, post_opt is always local
-	if(!plug_env_isenv(sp, ENV_PLG_EN, "1")) {
+	// Disabling policy
+	// 	- Disable plugin means no plugin, so no serialization, no library
+	//	- Disable library means the plugin works but no library is loaded
+	// ADVISE! No need of testing the context, post_opt is always local
+
+	if (plug_env_islocal(sp)) {
+		plug_comp_setenabled(sp, comp.plugin, 1);
+	}
+
+	// Cleaning EAR variables
+	plug_env_readvars(sp);
+
+	// Filling job data
+	if (plug_env_readjob(sp, &job) != ESPANK_SUCCESS) {
+		plug_comp_setenabled(sp, comp.plugin, 0);
 		return ESPANK_SUCCESS;
 	}
 
-	plug_env_clean(sp, ac, av);
-
-	// Reading plugstack.conf
-	if (plug_env_readstack(sp, ac, av) != ESPANK_SUCCESS) {
-		plug_env_setenv(sp, ENV_PLG_EN, "0", 1);
+	// Reading plugstack.conf file
+	if (plug_env_readstack(sp, ac, av, &pack) != ESPANK_SUCCESS) {
+		plug_comp_setenabled(sp, comp.plugin, 0);
 		return ESPANK_SUCCESS;
 	}
 
-	// Filling user data
-	if (plug_env_readuser(sp) != ESPANK_SUCCESS) {
-		plug_env_setenv(sp, ENV_LIB_EN, "0", 1);
-		return ESPANK_SUCCESS;
+	// EARGMD connection
+	if (plug_comp_isenabled(sp, comp.plugin)) {
+		plug_rcom_eargmd_job_start(sp, &pack, &job);
 	}
 
-	//
-	if (spank_context() == S_CTX_SRUN && plug_env_isenv(sp, ENV_LIB_EN, "1")) {
-		plug_env_setpreload(sp);
+	// The serialization enables the LD_PRELOAD library
+	if (job->local_context == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library)) {
+		plug_env_serialize_remote_job(sp);
 	}
 
     return (ESPANK_SUCCESS);
 }
 
+// Function order:
+// 	- Local 0
+// 	- Remote 2
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_user_init");
 
-	if(!plug_env_isenv(sp, ENV_PLG_EN, "1")) {
-		return (ESPANK_SUCCESS);
+	//
+	if (spank_context() != S_CTX_REMOTE) {
+		return ESPANK_SUCCESS;
 	}
 
 	//
-	if (spank_context() == S_CTX_REMOTE) {
-		plug_rcom_eard_job_start(sp);
+	plug_env_deserialize_remote();
+
+	if (!plug_comp_isenabled(sp, comp.plugin)) {
+		return ESPANK_SUCCESS;
 	}
-	
+
+	// If no shared services, EARD contact won't work, so plugin disabled
+	if (plug_shared_readservs(sp, &pack, &job) != ESPANK_SUCCESS) {
+		plug_comp_setenabled(sp, comp.plugin, 0);
+		return ESPANK_SUCCESS;
+	}
+
+	// If no frequencies the EARD contact can be done, so library is disabled
+	if (plug_shared_readfreqs(sp, &pack) != ESPANK_SUCCESS) {
+		plug_comp_setenabled(sp, comp.library, 0);
+	}
+
+	// The application can be filled as an empty object if something happen
+	plug_env_readapp(sp, &pack, &job);
+
+	// The node list is filled with at least the current node
+	plug_env_readnodes(sp, &job);
+
+	// EARD/s connection/s
+	plug_rcom_eard_job_start(sp);
+
+	//
+	if (job->local_context == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library)) {
+	{
+		plug_shared_readsetts(sp, &pack, &job);
+
+		plug_env_serialize_task(sp, pack);
+	}
+
 	return (ESPANK_SUCCESS);
 }
 
+// Function order:
+// 	- Local 0
+// 	- Remote 3e
 int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_task_exit");
@@ -116,25 +153,33 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 	int status = 0;
 
 	// Not needed to test if the plugin is enabled
-	if (eard_exst == 0)
+	if (job.exit_status == 0)
 	{
 		err = spank_get_item (sp, S_TASK_EXIT_STATUS, &status);
 
 		if (err == ESPANK_SUCCESS) {
-			eard_exst = WEXITSTATUS(status);
+			job.exit_status = WEXITSTATUS(status);
 		}
 	}
 
 	return (ESPANK_SUCCESS);
 }
 
+// Function order:
+// 	- Local 3e
+// 	- Remote 4e
 int slurm_spank_exit (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "slurm_spank_exit");
 
-	// Not needed to test if the plugin is enabled
+	// EARD disconnection
 	if (spank_context() == S_CTX_REMOTE) {
 		plug_rcom_eard_job_finish(sp);
+	}
+
+	// EARGMD disconnection
+	if (plug_env_islocal()) {
+		plug_rcom_eargmd_job_finish(sp);
 	}
 
 	return (ESPANK_SUCCESS);
