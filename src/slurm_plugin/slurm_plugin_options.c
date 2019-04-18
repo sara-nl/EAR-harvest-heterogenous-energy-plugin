@@ -28,6 +28,9 @@
 */
 
 #include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_env.h>
+#include <slurm_plugin/slurm_plugin_helper.h>
+#include <slurm_plugin/slurm_plugin_options.h>
 
 #define SRUN_OPTIONS 10
 

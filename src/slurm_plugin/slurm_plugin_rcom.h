@@ -34,10 +34,10 @@
 
 int plug_shared_readservs(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 int plug_shared_readfreqs(spank_t sp, plug_pack_t *pack, plug_job_t *job);
-int plug_shared_readsetts(spank_t sp, plug_pack_t *pack, plug_job_t *jobs);
+int plug_shared_readsetts(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
-int plug_rcom_eard_job_start(spank_t sp);
-int plug_rcom_eard_job_finish(spank_t sp);
+int plug_rcom_eard_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_rcom_eard_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
 int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 int plug_rcom_eargmd_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job);

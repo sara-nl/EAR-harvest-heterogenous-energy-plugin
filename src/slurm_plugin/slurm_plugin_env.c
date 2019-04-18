@@ -30,6 +30,8 @@
 #include <pwd.h>
 #include <grp.h>
 #include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_env.h>
+#include <slurm_plugin/slurm_plugin_helper.h>
 
 // Buffers
 static char buffer1[SZ_PATH];
@@ -120,14 +122,6 @@ int plug_comp_isenabled(spank_t sp, plug_comp_t comp)
 	return plug_env_isenv(sp, comp, "1");
 }
 
-/*
- *
- *
- *
- *
- *
- */
-
 int plug_verb_test(spank_t sp, int level)
 {
 	static int verbosity = -1;
@@ -188,27 +182,22 @@ int plug_env_readjob(spank_t sp, plug_job_t *job)
 	struct passwd *upw = getpwuid(uid);
 	struct group *gpw = getgrgid(gid);
 
-	if (upw == NULL) {
-		plug_verbose(sp, 2, "converting UID in username");
+	if (upw == NULL || gpw == NULL) {
+		plug_verbose(sp, 2, "converting UID/GID in username");
 		return (ESPANK_ERROR);
 	}
 
-	if (gpw == NULL) {
-		plug_verbose(sp, 2, "converting GID in groupname");
-		return (ESPANK_ERROR);
-	}
-
-	strcpy(job->user.name_upw, upw->pw_name, SZ_NAME_MEDIUM);
-	strcpy(job->user.name_gpw, gpw->gr_name, SZ_NAME_MEDIUM);
+	strncpy(job->user.name_upw, upw->pw_name, SZ_NAME_MEDIUM);
+	strncpy(job->user.name_gpw, gpw->gr_name, SZ_NAME_MEDIUM);
 	plug_env_getenv(sp, "SLURM_JOB_ACCOUNT", job->user.name_acc, SZ_NAME_MEDIUM);
 
-	plug_verbose(sp, 2, "user '%u' ('%s')", job->user.uid, job->user.name_upw);
-	plug_verbose(sp, 2, "user group '%u' ('%s')", job->user.gid, job->user.name_gpw);
+	plug_verbose(sp, 2, "user '%u' ('%s')", uid, job->user.name_upw);
+	plug_verbose(sp, 2, "user group '%u' ('%s')", gid, job->user.name_gpw);
 	plug_verbose(sp, 2, "user account '%s'", job->user.name_acc);
 
 	// Reservation
-	plug_env_getenv(sp, "SLURM_NNODES", buffer, SZ_PATH);
-	job->n_nodes = atoi(buffer);
+	plug_env_getenv(sp, "SLURM_NNODES", buffer2, SZ_PATH);
+	job->n_nodes = atoi(buffer2);
 
 	// User environment variables
 	plug_env_getenv(sp, "LD_PRELOAD", job->var_ld_preload, SZ_PATH);
@@ -270,7 +259,7 @@ int plug_env_readstack(spank_t sp, int ac, char **av, plug_pack_t *pack)
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
 		{
-			strncpy(pack->eargmd.host, &av[i][12], SZ_NAME_MEDIUM);
+			strncpy(pack->eargmd.hostname, &av[i][12], SZ_NAME_MEDIUM);
 			found_eargmd_host = 1;
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0))
@@ -298,7 +287,7 @@ int plug_env_readstack(spank_t sp, int ac, char **av, plug_pack_t *pack)
 	return ESPANK_SUCCESS;
 }
 
-static int frequency_exists(plug_freqs_t *freqs, ulong freq)
+static int frequency_exists(ulong *freqs, int n_freqs, ulong freq)
 {
 	int i;
 	for (i = 0; i < n_freqs; ++i) {
@@ -382,19 +371,19 @@ int plug_env_readapp(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	return ESPANK_SUCCESS;
 }
 
-int plug_env_readnodes(spank_t sp, plug_pack_t *pack)
+int plug_env_readnodes(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
-	if (job->local_context = S_CTX_SBATCH)
+	if (job->local_context == cntx.sbatch)
 	{
 		if (plug_comp_isenabled(sp, comp.monitor))
 		{
 			if (plug_env_getenv(sp, "SLURM_STEP_NODELIST", buffer1, SZ_PATH))  {
-				nodes = slurm_hostlist_create(buffer1);
+				job->hostlist = slurm_hostlist_create(buffer1);
 				return ESPANK_SUCCESS;
 			}
 		}
 	}
-	nodes = slurm_hostlist_create(pack->eard.host);
+	job->hostlist = slurm_hostlist_create(job->hostname);
 	return ESPANK_SUCCESS;
 }
 
@@ -406,7 +395,7 @@ int plug_env_readnodes(spank_t sp, plug_pack_t *pack)
  *
  */
 
-int plug_env_serialize_remote(spank_t sp, plug_job_t *job)
+int plug_env_serialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
 	// LD_PRELOAD
 	apenv(job->var_ld_preload, pack->path_inst, SZ_PATH);
@@ -434,16 +423,16 @@ int plug_env_serialize_remote(spank_t sp, plug_job_t *job)
 	plug_env_setenv(sp, "PLUG_PATH_INST", pack->path_inst, 1);
 
 	// User things
-	plug_env_setenv(sp,  "EAR_USER", job.user->name_upw, 1);
-	plug_env_setenv(sp, "EAR_GROUP", job.user->name_gpw, 1);
+	plug_env_setenv(sp,  "EAR_USER", job->user.name_upw, 1);
+	plug_env_setenv(sp, "EAR_GROUP", job->user.name_gpw, 1);
 
 	return ESPANK_SUCCESS;
 }
 
-int plug_env_deserialize_remote(spank_t sp, plug_job_t *job)
+int plug_env_deserialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 {
 	// Local node
-	gethostname(pack->eard.host, SZ_NAME_MEDIUM);
+	gethostname(job->hostname, SZ_NAME_MEDIUM);
 
 	// Local context
 	if (plug_env_isenv(sp, "PLUG_CONTEXT", "SRUN")) {
@@ -454,18 +443,19 @@ int plug_env_deserialize_remote(spank_t sp, plug_job_t *job)
 	}
 
 	// Paths
-	plug_env_getenv(sp, "PLUG_PATH_TEMP", pack->path_temp);
-	plug_env_getenv(sp, "PLUG_PATH_INST", pack->path_inst);
+	plug_env_getenv(sp, "PLUG_PATH_TEMP", pack->path_temp, SZ_PATH);
+	plug_env_getenv(sp, "PLUG_PATH_INST", pack->path_inst, SZ_PATH);
 
 	// User things
-	plug_env_getenv(sp,  "EAR_USER", job.user->name_upw);
-	plug_env_getenv(sp, "EAR_GROUP", job.user->name_gpw);
+	plug_env_getenv(sp,  "EAR_USER", job->user.name_upw, SZ_NAME_MEDIUM);
+	plug_env_getenv(sp, "EAR_GROUP", job->user.name_gpw, SZ_NAME_MEDIUM);
 
 	return ESPANK_SUCCESS;
 }
 
 int plug_env_serialize_task()
 {
+#if 0
 	// Variable EAR_ENERGY_TAG, unset
 	if (setts->user_type != ENERGY_TAG) {
 		plug_env_unsetenv(sp, "EAR_ENERGY_TAG");
@@ -504,4 +494,5 @@ int plug_env_serialize_task()
 	}
 
 	return ESPANK_SUCCESS;
+#endif
 }

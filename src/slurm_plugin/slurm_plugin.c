@@ -28,6 +28,9 @@
 */
 
 #include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_env.h>
+#include <slurm_plugin/slurm_plugin_options.h>
+#include <slurm_plugin/slurm_plugin_rcom.h>
 
 // Spank
 SPANK_PLUGIN(EAR_PLUGIN, 1)
@@ -53,7 +56,7 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 // 	- Remote 0
 int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 {
-    plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
+	plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
 
 	// Disabling policy
 	// 	- Disable plugin means no plugin, so no serialization, no library
@@ -85,11 +88,11 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	}
 
 	// The serialization enables the LD_PRELOAD library
-	if (job->local_context == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library)) {
-		plug_env_serialize_remote_job(sp);
+	if (job.local_context == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library)) {
+		plug_env_serialize_remote(sp, &job);
 	}
-
-    return (ESPANK_SUCCESS);
+	
+	return ESPANK_SUCCESS;
 }
 
 // Function order:
@@ -105,7 +108,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	}
 
 	//
-	plug_env_deserialize_remote();
+	plug_env_deserialize_remote(sp, &job);
 
 	if (!plug_comp_isenabled(sp, comp.plugin)) {
 		return ESPANK_SUCCESS;
@@ -118,7 +121,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	}
 
 	// If no frequencies the EARD contact can be done, so library is disabled
-	if (plug_shared_readfreqs(sp, &pack) != ESPANK_SUCCESS) {
+	if (plug_shared_readfreqs(sp, &pack, &job) != ESPANK_SUCCESS) {
 		plug_comp_setenabled(sp, comp.library, 0);
 	}
 
@@ -126,13 +129,13 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	plug_env_readapp(sp, &pack, &job);
 
 	// The node list is filled with at least the current node
-	plug_env_readnodes(sp, &job);
+	plug_env_readnodes(sp, &pack, &job);
 
 	// EARD/s connection/s
 	plug_rcom_eard_job_start(sp);
 
 	//
-	if (job->local_context == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library)) {
+	if (job.local_context == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library))
 	{
 		plug_shared_readsetts(sp, &pack, &job);
 
@@ -162,12 +165,9 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 		}
 	}
 
-	return (ESPANK_SUCCESS);
+	return ESPANK_SUCCESS;
 }
 
-// Function order:
-// 	- Local 3e
-// 	- Remote 4e
 int slurm_spank_exit (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "slurm_spank_exit");
@@ -178,11 +178,11 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 	}
 
 	// EARGMD disconnection
-	if (plug_env_islocal()) {
-		plug_rcom_eargmd_job_finish(sp);
+	if (plug_env_islocal(sp)) {
+		plug_rcom_eargmd_job_finish(sp, &pack, &job);
 	}
 
-	return (ESPANK_SUCCESS);
+	return ESPANK_SUCCESS;
 }
 
 #if 0

@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <slurm_plugin/slurm_plugin_env.h>
 #include <slurm_plugin/slurm_plugin_rcom.h>
 
 // Externs
@@ -43,16 +44,16 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	plug_env_getenv(sp, "EARGMD_CONNECTED", buffer, SZ_PATH);
 	pack->eargmd.connected = atoi(buffer);
 
-	if (pack.eargmd.enabled && !pack->eargmd->connected) {
+	if (pack->eargmd.enabled && !pack->eargmd.connected) {
 		return ESPANK_ERROR;
 	}
 
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",
-		pack->eargmd.host, pack->eargmd.port, job->n_nodes);
+		pack->eargmd.hostname, pack->eargmd.port, job->n_nodes);
 
 	// Connection
-	if (eargm_connect(pack->eargmd.host, pack->eargmd.port) < 0) {
+	if (eargm_connect(pack->eargmd.hostname, pack->eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
@@ -77,11 +78,11 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	// Disabled
 	return ESPANK_SUCCESS;
 
-	if (eargm_connect(eargmd_host, eargmd_port) < 0) {
+	if (eargm_connect(pack->eargmd.hostname, pack->eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
-	if (!eargm_end_job(eargmd_nods)) {
+	if (!eargm_end_job(job->n_nodes)) {
 		plug_error(sp, "while speaking with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}

@@ -65,29 +65,34 @@ int plug_env_isenv(spank_t sp, char *var, char *val);
 int plug_env_repenv(spank_t sp, char *var_old, char *var_new);
 
 /*
- * Environment clean
+ *
  */
+int plug_comp_setenabled(spank_t sp, plug_comp_t comp, int enabled);
 
-void plug_env_readenviron(spank_t sp, int ac, char **av);
+int plug_comp_isenabled(spank_t sp, plug_comp_t comp);
+
+int plug_verb_test(spank_t sp, int level);
 
 /*
  * Environment read
  */
-
-int plug_env_readstack(spank_t sp, int ac, char **av, plug_pack_t *pack);
+int plug_env_readvars(spank_t sp);
 
 int plug_env_readjob(spank_t sp, plug_job_t *job);
 
+int plug_env_readstack(spank_t sp, int ac, char **av, plug_pack_t *pack);
+
 int plug_env_readapp(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
-int plug_env_readnodes(spank_t sp, plug_pack_t *pack);
+int plug_env_readnodes(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
 /*
  * Environment set
  */
+int plug_env_serialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
-int plug_env_setenviron(spank_t sp);
+int plug_env_deserialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
-int plug_env_setenviron(spank_t sp, settings_conf_t *setts);
+int plug_env_serialize_task();
 
 #endif
