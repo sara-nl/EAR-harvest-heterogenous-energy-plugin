@@ -30,13 +30,14 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
-typedef char *plug_comp_t;
+typedef char *plug_component_t;
+typedef int   plug_context_t;
 
 struct component {
-	plug_comp_t plugin;
-	plug_comp_t library;
-	plug_comp_t monitor;
-} comp = {
+	plug_component_t plugin;
+	plug_component_t library;
+	plug_component_t monitor;
+} Component = {
 		.plugin  = "PLUG_PLUGIN",
 		.library = "PLUG_LIBRARY",
 		.monitor = "PLUG_MONITOR"
@@ -46,10 +47,11 @@ struct context {
 	int srun;
 	int sbatch;
 	int remote;
-} cntx = {
+} Context = {
 		.srun   = S_CTX_LOCAL,
 		.sbatch = S_CTX_ALLOCATOR,
 		.remote = S_CTX_REMOTE,
+		.local  = -1;
 };
 
 /*
@@ -68,21 +70,24 @@ int repenv_agnostic(spank_t sp, char *var_old, char *var_new);
 
 int apenv_agnostic(char *dst, char *src, int len);
 
-/*
- * Environment
- */
-int plug_env_islocal(spank_t sp);
-
-int plug_env_isremote(spank_t sp);
-
-int plug_env_verbotest(spank_t sp, int level);
 
 /*
  * Components
  */
 
-int plug_comp_setenabled(spank_t sp, plug_comp_t comp, int enabled);
+int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled);
 
-int plug_comp_isenabled(spank_t sp, plug_comp_t comp);
+int plug_component_isenabled(spank_t sp, plug_component_t comp);
+
+/*
+ * Context
+ */
+int plug_context_is(spank_t sp, plug_context_t ctxt);
+
+/*
+ * Verbosity
+ */
+
+int plug_verbosity_test(spank_t sp, int level);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H

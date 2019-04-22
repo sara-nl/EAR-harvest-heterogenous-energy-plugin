@@ -33,7 +33,7 @@
 // Externs
 static char buffer[SZ_PATH];
 
-int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job)
+int plug_rcom_eargmd_job_start(spank_t sp, plug_package_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_start");
 
@@ -71,7 +71,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	return (ESPANK_SUCCESS);
 }
 
-int plug_rcom_eargmd_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job)
+int plug_rcom_eargmd_job_finish(spank_t sp, plug_package_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_finish");
 

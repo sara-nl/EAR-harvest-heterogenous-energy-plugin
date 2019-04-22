@@ -32,7 +32,8 @@
 #include <slurm_plugin/slurm_plugin_helper.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 
-#define SRUN_OPTIONS 10
+#define SRUN_OPTIONS	10
+#define ENV_LIB_EN		"PLUG_LIBRARY"
 
 static char buffer[SZ_PATH];
 

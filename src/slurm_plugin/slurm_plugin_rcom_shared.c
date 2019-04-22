@@ -32,7 +32,7 @@
 // Buffers
 static char buffer[SZ_PATH];
 
-int plug_shared_readservs(spank_t sp, plug_pack_t *pack, plug_job_t *job)
+int plug_shared_readservs(spank_t sp, plug_package_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_shared_readservs");
 
@@ -53,7 +53,7 @@ int plug_shared_readservs(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	return ESPANK_SUCCESS;
 }
 
-int plug_shared_readfreqs(spank_t sp, plug_pack_t *pack, plug_job_t *job)
+int plug_shared_readfreqs(spank_t sp, plug_package_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_shared_readfreqs");
 
@@ -77,7 +77,7 @@ int plug_shared_readfreqs(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	return ESPANK_SUCCESS;
 }
 
-int plug_shared_readsetts(spank_t sp, plug_pack_t *pack, plug_job_t *job)
+int plug_shared_readsetts(spank_t sp, plug_package_t *pack, plug_job_t *job)
 {
 	plug_verbose(sp, 2, "function plug_shared_readsetts");
 
@@ -94,7 +94,7 @@ int plug_shared_readsetts(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 
 	memcpy(&pack->eard.setts, setts, sizeof(settings_conf_t));
 
-	if (plug_env_verbotest(sp, 4)) {
+	if (plug_verbosity_test(sp, 4)) {
 		print_settings_conf(setts);
 	}
 

@@ -34,11 +34,11 @@
 
 // Verbosity
 #define plug_verbose(sp, level, ...) \
-	if (plug_env_verbotest(sp, level) == 1) { \
+	if (plug_verbosity_test(sp, level) == 1) { \
 		slurm_error("EARPLUG, " __VA_ARGS__); \
 	}
 #define plug_error(sp, ...) \
-	if (plug_env_verbotest(sp, 1) == 1) { \
+	if (plug_verbosity_test(sp, 1) == 1) { \
 		slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
 	}
 #define plug_error_0(...) \
@@ -48,21 +48,21 @@
 /*
  * Reading function
  */
-int plug_env_readstack(spank_t sp, int ac, char **av, plug_pack_t *pack);
+int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd);
 
-int plug_env_readapp(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_read_application(spank_t sp, plug_serialization_t *sd);
 
-int plug_env_readnodes(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_read_hostlist(spank_t sp, plug_serialization_t *sd);
 
 /*
  * Serialization functions
  */
 int plug_deserialize_local(spank_t sp, plug_job_t *job);
 
-int plug_serialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_serialize_remote(spank_t sp, plug_serialization_t *sd);
 
-int plug_deserialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd);
 
-int plug_serialize_task(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_serialize_task(spank_t sp, plug_serialization_t *sd);
 
 #endif

@@ -41,49 +41,34 @@
 #include <daemon/eard_rapi.h>
 #include <daemon/shared_configuration.h>
 #include <global_manager/eargm_rapi.h>
-//#include <slurm_plugin/slurm_plugin_env.h>
-//#include <slurm_plugin/slurm_plugin_helper.h>
-//#include <slurm_plugin/slurm_plugin_options.h>
-//#include <slurm_plugin/slurm_plugin_rcom.h>
 
 #define ESPANK_STOP		-1
-#define S_CTX_SRUN		S_CTX_LOCAL
-#define S_CTX_SBATCH	S_CTX_ALLOCATOR
-#define ENV_PLUG_CTX		"PLUG_CONTEXT"
-#define ENV_PLUG_EN		"PLUG_PLUGIN"
-#define ENV_LIB_EN		"PLUG_LIBRARY"
-#define ENV_MON_EN		"PLUG_MONITOR"
 
 /*
  * Job data
  */
 
 typedef struct plug_vars {
-	char var_ld_preload[SZ_PATH];
-	char var_ld_library[SZ_PATH];
+	char ld_preload[SZ_PATH];
+	char ld_library[SZ_PATH];
 } plug_vars_t;
 
 typedef struct plug_user {
 	char user[SZ_NAME_MEDIUM];
 	char group[SZ_NAME_MEDIUM];
 	char account[SZ_NAME_MEDIUM];
-	plug_vars_t environment;
+	plug_vars_t env;
 } plug_user_t;
 
 typedef struct plug_job
 {
-	hostlist_t hostlist;
+	application_t app;
 	plug_user_t user;
 	uint n_nodes;
-	// Current context
-	char host[SZ_NAME_MEDIUM];
-	application_t app;
-	int context_local;
-	int exit_status;
 } plug_job_t;
 
 /*
- * Package data
+ * EAR Package data
  */
 
 typedef struct plug_freqs {
@@ -92,6 +77,7 @@ typedef struct plug_freqs {
 } plug_freqs_t;
 
 typedef struct plug_eard {
+	hostlist_t hostlist;
 	settings_conf_t setts;
 	services_conf_t servs;
 	plug_freqs_t freqs;
@@ -105,11 +91,28 @@ typedef struct plug_eargmd {
 	uint port;
 } plug_eargmd_t;
 
-typedef struct plug_pack {
+typedef struct plug_package {
 	char path_temp[SZ_PATH];
 	char path_inst[SZ_PATH];
 	plug_eargmd_t eargmd;
 	plug_eard_t eard;
-} plug_pack_t;
+} plug_package_t;
+
+/*
+ * Current subject
+ */
+typedef struct plug_subject
+{
+	char host[SZ_NAME_MEDIUM];
+	int context_local;
+	int exit_status;
+} plug_subject_t;
+
+typedef struct plug_serialization
+{
+	plug_subject_t subject;
+	plug_package_t pack;
+	plug_job_t job;
+} plug_serialization_t;
 
 #endif

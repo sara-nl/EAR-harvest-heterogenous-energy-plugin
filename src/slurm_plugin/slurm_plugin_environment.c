@@ -28,6 +28,7 @@
 */
 
 #include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_environment.h>
 
 // Buffers
 static char buffer[SZ_PATH];
@@ -175,7 +176,7 @@ static int repenv_remote(spank_t sp, char *var_old, char *var_new)
 
 int unsetenv_agnostic(spank_t sp, char *var)
 {
-	if (plug_env_islocal(sp)) {
+	if (plug_context_is(sp, Context.local)) {
 		return unsetenv_local(var);
 	} else {
 		return unsetenv_remote(sp, var);
@@ -184,7 +185,7 @@ int unsetenv_agnostic(spank_t sp, char *var)
 
 int setenv_agnostic(spank_t sp, char *var, char *val, int ow)
 {
-	if (plug_env_islocal(sp)) {
+	if (sp == NULL || plug_context_is(sp, Context.local)) {
 		return setenv_local(var, val, ow);
 	} else {
 		return setenv_remote(sp, var, val, ow);
@@ -193,7 +194,7 @@ int setenv_agnostic(spank_t sp, char *var, char *val, int ow)
 
 int getenv_agnostic(spank_t sp, char *var, char *buf, int len)
 {
-	if (plug_env_islocal(sp)) {
+	if (plug_context_is(sp, Context.local)) {
 		return getenv_local(var, buf, len);
 	} else {
 		return getenv_remote(sp, var, buf, len);
@@ -202,7 +203,7 @@ int getenv_agnostic(spank_t sp, char *var, char *buf, int len)
 
 int isenv_agnostic(spank_t sp, char *var, char *val)
 {
-	if (plug_env_islocal(sp)) {
+	if (plug_context_is(sp, Context.local)) {
 		return isenv_local(var, val);
 	} else {
 		return isenv_remote(sp, var, val);
@@ -211,7 +212,7 @@ int isenv_agnostic(spank_t sp, char *var, char *val)
 
 int repenv_agnostic(spank_t sp, char *var_old, char *var_new)
 {
-	if (plug_env_islocal(sp)) {
+	if (plug_context_is(sp, Context.local)) {
 		return repenv_local(var_old, var_new);
 	} else {
 		return repenv_remote(sp, var_old, var_new);
@@ -252,52 +253,47 @@ int apenv_agnostic(char *dst, char *src, int dst_capacity)
 }
 
 /*
- *
- *
- *
- *
+ * Component
  */
 
-int plug_comp_setenabled(spank_t sp, plug_comp_t comp, int enabled)
+int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled)
 {
 	if (enabled) return setenv_agnostic(sp, comp, "1", 1);
 	return setenv_agnostic(sp, comp, "0", 1);
 }
 
-int plug_comp_isenabled(spank_t sp, plug_comp_t comp)
+int plug_component_isenabled(spank_t sp, plug_component_t comp)
 {
 	return isenv_agnostic(sp, comp, "1");
 }
 
-int plug_env_islocal(spank_t sp)
-{
-	int context = spank_context();
-	return context == S_CTX_SRUN || context == S_CTX_SBATCH;
-}
+/*
+ * Context
+ */
 
-int plug_env_isremote(spank_t sp)
+int plug_context_is(spank_t sp, plug_context_t ctxt)
 {
-	int context = spank_context();
-	return context == S_CTX_REMOTE;
+	int cur = spank_context();
+
+	if (ctxt == Context.local) {
+		return cur == Context.srun || cur == Context.sbatch;
+	}
+
+	return cur == ctxt;
 }
 
 /*
- *
- *
- *
- *
+ * Verbosity
  */
 
-int plug_env_verbotest(spank_t sp, int level)
+int plug_verbosity_test(spank_t sp, int level)
 {
 	static int verbosity = -1;
-	char env_remote[8];
-	char *env_local;
 
 	if (verbosity == -1)
 	{
-		if (getenv_agnostic(sp, "EAR_PLUGIN_VERBOSE", env_remote, 8) == 1) {
-			verbosity = atoi(env_remote);
+		if (getenv_agnostic(sp, "EAR_PLUGIN_VERBOSE", buffer, 8) == 1) {
+			verbosity = atoi(buffer);
 		} else {
 			verbosity = 0;
 		}

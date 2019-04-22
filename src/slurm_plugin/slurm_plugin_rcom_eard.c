@@ -28,28 +28,30 @@
 */
 
 #include <slurm_plugin/slurm_plugin.h>
-#include <slurm_plugin/slurm_plugin_env.h>
+#include <slurm_plugin/slurm_plugin_rcom.h>
+#include <slurm_plugin/slurm_plugin_environment.h>
 
 // Buffers
 static char buffer[SZ_PATH];
 
-static int plug_rcom_eard(spank_t sp, plug_pack_t *pack, plug_job_t *job, int new_job)
+static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 {
 	char *node;
 
 	while ((node = slurm_hostlist_shift(job->hostlist)) != NULL)
 	{
-		plug_verbose(sp, 2, "remote connect to host: '%s:%d'", node, pack->eard.port);
+		plug_verbose(sp, 2, "remote connect to host: '%s:%d'",
+			node, sd->pack.eard.port);
 
-		if (eards_remote_connect(node, pack->eard.port) < 0) {
+		if (eards_remote_connect(node, sd->pack.eard.port) < 0) {
 			plug_error(sp, "while connecting with EAR daemon");
 			continue;
 		}
 
 		if (new_job) {
-			eards_new_job(&job->app);
+			eards_new_job(sd->job.app);
 		} else {
-			eards_end_job(job->app.job.id, job->app.job.step_id);
+			eards_end_job(sd->job.app.job.id, sd->job.app.job.step_id);
 		}
 
 		eards_remote_disconnect();
@@ -60,14 +62,14 @@ static int plug_rcom_eard(spank_t sp, plug_pack_t *pack, plug_job_t *job, int ne
 }
 
 
-int plug_rcom_eard_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job)
+int plug_rcom_eard_job_start(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eard_job_start");
-	return plug_rcom_eard(sp, pack, job, 1);
+	return plug_rcom_eard(sp, sd, 1);
 }
 
-int plug_rcom_eard_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job)
+int plug_rcom_eard_job_finish(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eard_job_finish");
-	return plug_rcom_eard(sp, pack, job, 0);
+	return plug_rcom_eard(sp, sd, 0);
 }

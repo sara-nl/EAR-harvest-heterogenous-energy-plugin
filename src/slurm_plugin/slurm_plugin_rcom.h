@@ -32,14 +32,14 @@
 
 #include <slurm_plugin/slurm_plugin.h>
 
-int plug_shared_readservs(spank_t sp, plug_pack_t *pack, plug_job_t *job);
-int plug_shared_readfreqs(spank_t sp, plug_pack_t *pack, plug_job_t *job);
-int plug_shared_readsetts(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_shared_readservs(spank_t sp, plug_serialization_t *sd);
+int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd);
+int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd);
 
-int plug_rcom_eard_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job);
-int plug_rcom_eard_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_rcom_eard_job_start(spank_t sp, plug_serialization_t *sd);
+int plug_rcom_eard_job_finish(spank_t sp, plug_serialization_t *sd);
 
-int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job);
-int plug_rcom_eargmd_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd);
+int plug_rcom_eargmd_job_finish(spank_t sp, plug_serialization_t *sd);
 
 #endif //EAR_SLURM_PLUGIN_REPORTS_H
