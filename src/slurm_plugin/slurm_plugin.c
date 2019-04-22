@@ -67,11 +67,8 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 		plug_comp_setenabled(sp, comp.plugin, 1);
 	}
 
-	// Cleaning EAR variables
-	plug_env_readvars(sp);
-
 	// Filling job data
-	if (plug_env_readjob(sp, &job) != ESPANK_SUCCESS) {
+	if (plug_deserialize_local(sp, &job) != ESPANK_SUCCESS) {
 		plug_comp_setenabled(sp, comp.plugin, 0);
 		return ESPANK_SUCCESS;
 	}
@@ -88,8 +85,8 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	}
 
 	// The serialization enables the LD_PRELOAD library
-	if (job.local_context == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library)) {
-		plug_env_serialize_remote(sp, &job);
+	if (job.context_local == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library)) {
+		plug_serialize_remote(sp, &job);
 	}
 	
 	return ESPANK_SUCCESS;
@@ -108,7 +105,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	}
 
 	//
-	plug_env_deserialize_remote(sp, &job);
+	plug_deserialize_remote(sp, &job);
 
 	if (!plug_comp_isenabled(sp, comp.plugin)) {
 		return ESPANK_SUCCESS;
@@ -135,11 +132,11 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	plug_rcom_eard_job_start(sp);
 
 	//
-	if (job.local_context == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library))
+	if (job.context_local == S_CTX_SRUN && plug_comp_isenabled(sp, comp.library))
 	{
 		plug_shared_readsetts(sp, &pack, &job);
 
-		plug_env_serialize_task(sp, pack);
+		plug_serialize_task(sp, pack);
 	}
 
 	return (ESPANK_SUCCESS);

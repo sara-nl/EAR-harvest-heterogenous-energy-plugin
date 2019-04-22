@@ -30,24 +30,59 @@
 #ifndef EAR_SLURM_PLUGIN_HELPER_H
 #define EAR_SLURM_PLUGIN_HELPER_H
 
-int setenv_local(const char *var, const char *val, int ow);
-int setenv_remote(spank_t sp, char *var, char *val, int ow);
+typedef char *plug_comp_t;
 
-int unsetenv_local(char *var);
-int unsetenv_remote(spank_t sp, char *var);
+struct component {
+	plug_comp_t plugin;
+	plug_comp_t library;
+	plug_comp_t monitor;
+} comp = {
+		.plugin  = "PLUG_PLUGIN",
+		.library = "PLUG_LIBRARY",
+		.monitor = "PLUG_MONITOR"
+};
 
-int getenv_local(char *var, char *buf, int len);
-int getenv_remote(spank_t sp, char *var, char *buf, int len);
+struct context {
+	int srun;
+	int sbatch;
+	int remote;
+} cntx = {
+		.srun   = S_CTX_LOCAL,
+		.sbatch = S_CTX_ALLOCATOR,
+		.remote = S_CTX_REMOTE,
+};
 
-int apenv(char *dst, char *src, int dst_capacity);
+/*
+ * Agnostic environment manipulation
+ */
 
-int isenv_local(char *var, char *val);
-int isenv_remote(spank_t sp, char *var, char *val);
+int unsetenv_agnostic(spank_t sp, char *var);
 
-int exenv_local(char *var);
-int exenv_remote(spank_t sp, char *var);
+int setenv_agnostic(spank_t sp, char *var, char *val, int ow);
 
-int repenv_local(char *var_old, char *var_new);
-int repenv_remote(spank_t sp, char *var_old, char *var_new);
+int getenv_agnostic(spank_t sp, char *var, char *buf, int len);
+
+int isenv_agnostic(spank_t sp, char *var, char *val);
+
+int repenv_agnostic(spank_t sp, char *var_old, char *var_new);
+
+int apenv_agnostic(char *dst, char *src, int len);
+
+/*
+ * Environment
+ */
+int plug_env_islocal(spank_t sp);
+
+int plug_env_isremote(spank_t sp);
+
+int plug_env_verbotest(spank_t sp, int level);
+
+/*
+ * Components
+ */
+
+int plug_comp_setenabled(spank_t sp, plug_comp_t comp, int enabled);
+
+int plug_comp_isenabled(spank_t sp, plug_comp_t comp);
 
 #endif //EAR_SLURM_PLUGIN_HELPER_H

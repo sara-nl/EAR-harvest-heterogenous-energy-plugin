@@ -41,7 +41,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	return ESPANK_SUCCESS;
 
 	// Pack deserialization
-	plug_env_getenv(sp, "EARGMD_CONNECTED", buffer, SZ_PATH);
+	getenv_agnostic(sp, "EARGMD_CONNECTED", buffer, SZ_PATH);
 	pack->eargmd.connected = atoi(buffer);
 
 	if (pack->eargmd.enabled && !pack->eargmd.connected) {
@@ -50,10 +50,10 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",
-		pack->eargmd.hostname, pack->eargmd.port, job->n_nodes);
+		pack->eargmd.host, pack->eargmd.port, job->n_nodes);
 
 	// Connection
-	if (eargm_connect(pack->eargmd.hostname, pack->eargmd.port) < 0) {
+	if (eargm_connect(pack->eargmd.host, pack->eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
@@ -66,7 +66,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	pack->eargmd.connected = 1;
 
 	// Enabling protection
-	plug_env_setenv(sp, "EARGMD_CONNECTED", "1", 1);
+	setenv_agnostic(sp, "EARGMD_CONNECTED", "1", 1);
 
 	return (ESPANK_SUCCESS);
 }
@@ -78,7 +78,7 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	// Disabled
 	return ESPANK_SUCCESS;
 
-	if (eargm_connect(pack->eargmd.hostname, pack->eargmd.port) < 0) {
+	if (eargm_connect(pack->eargmd.host, pack->eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
@@ -89,7 +89,7 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 	eargm_disconnect();
 
 	// Disabling protection
-	plug_env_setenv(sp, "EARGMD_CONNECTED", "0", 1);
+	setenv_agnostic(sp, "EARGMD_CONNECTED", "0", 1);
 
 	return (ESPANK_SUCCESS);
 }

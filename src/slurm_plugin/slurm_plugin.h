@@ -49,29 +49,42 @@
 #define ESPANK_STOP		-1
 #define S_CTX_SRUN		S_CTX_LOCAL
 #define S_CTX_SBATCH	S_CTX_ALLOCATOR
-#define ENV_PLG_CTX		"PLUG_CONTEXT"
-#define ENV_PLG_EN		"PLUG_PLUGIN"
+#define ENV_PLUG_CTX		"PLUG_CONTEXT"
+#define ENV_PLUG_EN		"PLUG_PLUGIN"
 #define ENV_LIB_EN		"PLUG_LIBRARY"
 #define ENV_MON_EN		"PLUG_MONITOR"
 
-typedef struct plug_user {
-	char name_acc[SZ_NAME_MEDIUM];
-	char name_upw[SZ_NAME_MEDIUM];
-	char name_gpw[SZ_NAME_MEDIUM];
-} plug_user_t;
+/*
+ * Job data
+ */
 
-typedef struct plug_job {
-	plug_user_t user;
-	hostlist_t hostlist;
-	char hostname[SZ_NAME_MEDIUM];
+typedef struct plug_vars {
 	char var_ld_preload[SZ_PATH];
 	char var_ld_library[SZ_PATH];
-	application_t app;
-	int local_context;
-	int exit_status;
-	int verbosity;
+} plug_vars_t;
+
+typedef struct plug_user {
+	char user[SZ_NAME_MEDIUM];
+	char group[SZ_NAME_MEDIUM];
+	char account[SZ_NAME_MEDIUM];
+	plug_vars_t environment;
+} plug_user_t;
+
+typedef struct plug_job
+{
+	hostlist_t hostlist;
+	plug_user_t user;
 	uint n_nodes;
+	// Current context
+	char host[SZ_NAME_MEDIUM];
+	application_t app;
+	int context_local;
+	int exit_status;
 } plug_job_t;
+
+/*
+ * Package data
+ */
 
 typedef struct plug_freqs {
 	ulong *freqs;
@@ -86,39 +99,17 @@ typedef struct plug_eard {
 } plug_eard_t;
 
 typedef struct plug_eargmd {
-	char hostname[SZ_NAME_MEDIUM];
+	char host[SZ_NAME_MEDIUM];
 	uint connected;
 	uint enabled;
 	uint port;
 } plug_eargmd_t;
 
 typedef struct plug_pack {
-	plug_eargmd_t eargmd;
-	plug_eard_t eard;
 	char path_temp[SZ_PATH];
 	char path_inst[SZ_PATH];
+	plug_eargmd_t eargmd;
+	plug_eard_t eard;
 } plug_pack_t;
-
-typedef char *plug_comp_t;
-
-struct comp_t {
-	plug_comp_t plugin;
-	plug_comp_t library;
-	plug_comp_t monitor;
-} comp = {
-	.plugin = "PLUG_PLUGIN",
-	.library = "PLUG_LIBRARY",
-	.monitor = "PLUG_MONITOR"
-};
-
-struct cntx_t {
-	int srun;
-	int sbatch;
-	int remote;
-} cntx = {
-	.srun = S_CTX_LOCAL,
-	.sbatch = S_CTX_ALLOCATOR,
-	.remote = 0
-};
 
 #endif

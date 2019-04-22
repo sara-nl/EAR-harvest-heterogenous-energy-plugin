@@ -34,52 +34,20 @@
 
 // Verbosity
 #define plug_verbose(sp, level, ...) \
-	if (plug_verb_test(sp, level) == 1) { \
+	if (plug_env_verbotest(sp, level) == 1) { \
 		slurm_error("EARPLUG, " __VA_ARGS__); \
 	}
 #define plug_error(sp, ...) \
-	if (plug_verb_test(sp, 1) == 1) { \
+	if (plug_env_verbotest(sp, 1) == 1) { \
 		slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
 	}
 #define plug_error_0(...) \
 		slurm_error("EARPLUG ERROR, " __VA_ARGS__);
-#define plug_nude(...) 
-
-int plug_verb_test(spank_t sp, int level);
+#define plug_nude(...)
 
 /*
- * Agnostic environment manipulation
+ * Reading function
  */
-int plug_env_islocal(spank_t sp);
-
-int plug_env_isremote(spank_t sp);
-
-int plug_env_unsetenv(spank_t sp, char *var);
-
-int plug_env_setenv(spank_t sp, char *var, char *val, int ow);
-
-int plug_env_getenv(spank_t sp, char *var, char *buf, int len);
-
-int plug_env_isenv(spank_t sp, char *var, char *val);
-
-int plug_env_repenv(spank_t sp, char *var_old, char *var_new);
-
-/*
- *
- */
-int plug_comp_setenabled(spank_t sp, plug_comp_t comp, int enabled);
-
-int plug_comp_isenabled(spank_t sp, plug_comp_t comp);
-
-int plug_verb_test(spank_t sp, int level);
-
-/*
- * Environment read
- */
-int plug_env_readvars(spank_t sp);
-
-int plug_env_readjob(spank_t sp, plug_job_t *job);
-
 int plug_env_readstack(spank_t sp, int ac, char **av, plug_pack_t *pack);
 
 int plug_env_readapp(spank_t sp, plug_pack_t *pack, plug_job_t *job);
@@ -87,12 +55,14 @@ int plug_env_readapp(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 int plug_env_readnodes(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
 /*
- * Environment set
+ * Serialization functions
  */
-int plug_env_serialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_deserialize_local(spank_t sp, plug_job_t *job);
 
-int plug_env_deserialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+int plug_serialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
-int plug_env_serialize_task();
+int plug_deserialize_remote(spank_t sp, plug_pack_t *pack, plug_job_t *job);
+
+int plug_serialize_task(spank_t sp, plug_pack_t *pack, plug_job_t *job);
 
 #endif

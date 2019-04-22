@@ -94,7 +94,7 @@ int plug_shared_readsetts(spank_t sp, plug_pack_t *pack, plug_job_t *job)
 
 	memcpy(&pack->eard.setts, setts, sizeof(settings_conf_t));
 
-	if (plug_verb_test(sp, 4)) {
+	if (plug_env_verbotest(sp, 4)) {
 		print_settings_conf(setts);
 	}
 
