@@ -144,9 +144,6 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 
 	init_application(app);
 
-	printenv_agnostic(sp, "EAR_POWER_POLICY");
-	printenv_agnostic(sp, "PLUG_POWER_POLICY");
-
 	// Gathering variables
 	app->is_mpi = plug_component_isenabled(sp, Component.library);
 
@@ -160,27 +157,27 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 	} else {
 		app->job.step_id = NO_VAL;
 	}
-	if (!getenv_agnostic(sp, "EAR_USER", app->job.user_id, SZ_NAME_MEDIUM)) {
-		strcpy(app->job.user_id, "");
-	}
-	if (!getenv_agnostic(sp, "EAR_GROUP", app->job.group_id, SZ_NAME_MEDIUM)) {
-		strcpy(app->job.group_id, "");
-	}
 	if (!getenv_agnostic(sp, "SLURM_JOB_NAME", app->job.app_id, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.app_id, "");
+	}
+	if (!getenv_agnostic(sp, "SLURM_EAR_USER", app->job.user_id, SZ_NAME_MEDIUM)) {
+		strcpy(app->job.user_id, "");
+	}
+	if (!getenv_agnostic(sp, "SLURM_EAR_GROUP", app->job.group_id, SZ_NAME_MEDIUM)) {
+		strcpy(app->job.group_id, "");
 	}
 	if (!getenv_agnostic(sp, "SLURM_JOB_ACCOUNT", app->job.user_acc, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.user_acc, "");
 	}
-	if (!getenv_agnostic(sp, "EAR_POWER_POLICY", app->job.policy, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, "SLURM_EAR_POWER_POLICY", app->job.policy, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.policy, "");
 	}
-	if (!getenv_agnostic(sp, "EAR_POWER_POLICY_TH", buffer, SZ_NAME_SHORT)) {
+	if (!getenv_agnostic(sp, "SLURM_EAR_POWER_POLICY_TH", buffer, SZ_NAME_SHORT)) {
 		app->job.th = -1.0;
 	} else {
 		app->job.th = atof(buffer);
 	}
-	if (!getenv_agnostic(sp, "EAR_FREQUENCY", buffer, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, "SLURM_EAR_FREQUENCY", buffer, SZ_NAME_MEDIUM)) {
 		app->job.def_f = 0;
 	} else {
 		app->job.def_f = (ulong) atol(buffer);
@@ -188,13 +185,13 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 			app->job.def_f = 0;
 		}
 	}
-	if (!getenv_agnostic(sp, "EAR_LEARNING_PHASE", buffer, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, "SLURM_EAR_LEARNING_PHASE", buffer, SZ_NAME_MEDIUM)) {
 		app->is_learning = 0;
 	} else {
 		app->is_learning = 1;
 		app->job.def_f = freqs[atoi(buffer)];
 	}
-	if (!getenv_agnostic(sp, "EAR_ENERGY_TAG", app->job.energy_tag, 32)) {
+	if (!getenv_agnostic(sp, "SLURM_EAR_ENERGY_TAG", app->job.energy_tag, 32)) {
 		strcpy(app->job.energy_tag, "");
 	}
 
@@ -227,7 +224,6 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
  *
  *
  */
-
 int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_env_readuser");
@@ -235,29 +231,26 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	/*
  	 * EAR variables
  	 */
-	#define replace(name) \
-		repenv_agnostic  (sp, "PLUG_" name, "EAR_" name);
+	#define replace1(name) \
+		unetenv_agnostic(sp, "SLURM_EAR_"); \
+		repenv_agnostic(sp, "OPT_" name, "SLURM_EAR_" name);
 
-	replace("LEARNING_PHASE");
-slurm_error("EAR_POWER_POLICY %s", getenv("EAR_POWER_POLICY"));
-slurm_error("PLUG_POWER_POLICY %s", getenv("PLUG_POWER_POLICY"));
-printenv_agnostic(sp, "EAR_POWER_POLICY");
-printenv_agnostic(sp, "PLUG_POWER_POLICY");
-	replace("POWER_POLICY");
-slurm_error("EAR_POWER_POLICY %s", getenv("EAR_POWER_POLICY"));
-printenv_agnostic(sp, "EAR_POWER_POLICY");
-printenv_agnostic(sp, "PLUG_POWER_POLICY");
-	replace("POWER_POLICY_TH");
-	replace("P_STATE");
-	replace("FREQUENCY");
-	replace("MIN_PERFORMANCE_EFFICIENCY_GAIN");
-	replace("PERFORMANCE_PENALTY");
-	replace("TRACE_PATH");
-	replace("MPI_DIST");
-	replace("USER_DB_PATHNAME");
-	replace("ENERGY_TAG");
-	replace("APP_NAME");
-	replace("TMP");
+	// EARD approvation
+	replace1("POWER_POLICY");
+	replace1("POWER_POLICY_TH");
+	replace1("FREQUENCY");
+	replace1("LEARNING_PHASE");
+	replace1("ENERGY_TAG");
+	// Non-EARD dependency
+	replace1("USER_DB_PATHNAME");
+	replace1("PATH_TRACE");
+	replace1("MPI_DIST");
+	// Oldies
+	//replace1("APP_NAME");
+	//replace1("PERFORMANCE_PENALTY");
+	//replace1("MIN_PERFORMANCE_EFFICIENCY_GAIN");
+	//replace1("P_STATE");
+	//replace1("TMP");
 
 	/*
 	 * User information
@@ -299,18 +292,18 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * User
 	 */
-	setenv_agnostic(sp, "EAR_USER",  sd->job.user.user,  1);
-	setenv_agnostic(sp, "EAR_GROUP", sd->job.user.group, 1);
-	setenv_agnostic(sp, "PLUG_PATH_TEMP", sd->pack.path_temp, 1);
-	setenv_agnostic(sp, "PLUG_PATH_INST", sd->pack.path_inst, 1);
+	setenv_agnostic(sp, "SLURM_EAR_USER",  sd->job.user.user,  1);
+	setenv_agnostic(sp, "SLURM_EAR_GROUP", sd->job.user.group, 1);
+	setenv_agnostic(sp, "SLURM_EAR_PATH_TEMP", sd->pack.path_temp, 1);
+	setenv_agnostic(sp, "SLURM_EAR_PATH_INST", sd->pack.path_inst, 1);
 
 	/*
 	 * Subject
 	 */
 	if (plug_context_is(sp, Context.srun)) {
-		setenv_agnostic(sp, "PLUG_CONTEXT", "SRUN", 1);
+		setenv_agnostic(sp, "SLURM_EAR_PLUG_CONTEXT", "SRUN", 1);
 	} else if (plug_context_is(sp, Context.sbatch)) {
-		setenv_agnostic(sp, "PLUG_CONTEXT", "SBATCH", 1);
+		setenv_agnostic(sp, "SLURM_EAR_PLUG_CONTEXT", "SBATCH", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -323,19 +316,19 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * User
 	 */
-	getenv_agnostic(sp, "EAR_USER",  sd->job.user.user,  SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, "EAR_GROUP", sd->job.user.group, SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, "PLUG_PATH_TEMP", sd->pack.path_temp, SZ_PATH);
-	getenv_agnostic(sp, "PLUG_PATH_INST", sd->pack.path_inst, SZ_PATH);
+	getenv_agnostic(sp, "SLURM_EAR_USER",  sd->job.user.user,  SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, "SLURM_EAR_GROUP", sd->job.user.group, SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, "SLURM_PATH_TEMP", sd->pack.path_temp, SZ_PATH);
+	getenv_agnostic(sp, "SLURM_PATH_INST", sd->pack.path_inst, SZ_PATH);
 
 	/*
  	 * Subject
  	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
-	if (isenv_agnostic(sp, "PLUG_CONTEXT", "SRUN")) {
+	if (isenv_agnostic(sp, "SLURM_EAR_PLUG_CONTEXT", "SRUN")) {
 		sd->subject.context_local = Context.srun;
-	} else if (isenv_agnostic(sp, "PLUG_CONTEXT", "SBATCH")) {
+	} else if (isenv_agnostic(sp, "SLURM_EAR_PLUG_CONTEXT", "SBATCH")) {
 		sd->subject.context_local = Context.sbatch;
 	}
 
@@ -345,7 +338,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_serialize_task");
-	
+
 	/*
   	 * EAR variables
   	 */
