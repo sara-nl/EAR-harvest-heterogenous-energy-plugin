@@ -128,7 +128,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	plug_read_hostlist(sp, &sd);
 
 	// EARD/s connection/s
-	plug_rcom_eard_job_start(sp);
+	plug_rcom_eard_job_start(sp, &sd);
 
 	//
 	if (sd.subject.context_local == Context.srun)
@@ -155,12 +155,12 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 	int status = 0;
 
 	// ADVISE! No need of testing anything
-	if (job.exit_status == 0)
+	if (sd.subject.exit_status == 0)
 	{
 		err = spank_get_item (sp, S_TASK_EXIT_STATUS, &status);
 
 		if (err == ESPANK_SUCCESS) {
-			job.exit_status = WEXITSTATUS(status);
+			sd.subject.exit_status = WEXITSTATUS(status);
 		}
 	}
 
@@ -176,7 +176,7 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 	{
 		plug_read_hostlist(sp, &sd);
 
-		plug_rcom_eard_job_finish(sp);
+		plug_rcom_eard_job_finish(sp, &sd);
 	}
 
 	// EARGMD disconnection

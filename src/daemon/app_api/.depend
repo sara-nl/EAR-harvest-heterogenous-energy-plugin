@@ -1,0 +1,17 @@
+app_api.o: app_api.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/states.h \
+ ../../common/types/generic.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../common/output/debug.h \
+ ../../daemon/app_api/app_conf_api.h
+app_server_api.o: app_server_api.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/states.h \
+ ../../common/output/verbose.h ../../common/output/output_conf.h \
+ ../../common/output/error.h ../../common/output/debug.h \
+ ../../common/types/generic.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h ../../daemon/app_api/app_conf_api.h \
+ ../../metrics/ipmi/energy_node.h

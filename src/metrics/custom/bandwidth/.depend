@@ -1,0 +1,9 @@
+uncores_pci.o: uncores_pci.c ../../../common/config.h \
+ ../../../common/config/config_def.h ../../../common/config/config_dev.h \
+ ../../../common/config/config_install.h ../../../common/states.h \
+ ../../../common/output/debug.h ../../../common/output/error.h \
+ ../../../common/output/output_conf.h ../../../common/output/verbose.h \
+ ../../../common/types/generic.h ../../../metrics/custom/hardware_info.h \
+ ../../../common/file.h ../../../common/sizes.h \
+ ../../../metrics/common/cpuid.h ../../../metrics/common/syscall.h \
+ ../../../metrics/custom/bandwidth/uncores_pci.h

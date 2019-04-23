@@ -135,12 +135,17 @@ static int frequency_exists(ulong *freqs, int n_freqs, ulong freq)
 
 int plug_read_application(spank_t sp, plug_serialization_t *sd)
 {
+	plug_verbose(sp, 2, "function plug_read_application");
+	
 	application_t *app = &sd->job.app;
 	ulong *freqs = sd->pack.eard.freqs.freqs;
 	int n_freqs = sd->pack.eard.freqs.n_freqs;
 	uint32_t item;
 
 	init_application(app);
+
+	printenv_agnostic(sp, "EAR_POWER_POLICY");
+	printenv_agnostic(sp, "PLUG_POWER_POLICY");
 
 	// Gathering variables
 	app->is_mpi = plug_component_isenabled(sp, Component.library);
@@ -198,6 +203,8 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 
 int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
 {
+	plug_verbose(sp, 2, "function plug_read_hostlist");
+	
 	if (sd->subject.context_local == Context.sbatch)
 	{
 		if (plug_component_isenabled(sp, Component.monitor))
@@ -208,6 +215,7 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
 			}
 		}
 	}
+	
 	sd->pack.eard.hostlist = slurm_hostlist_create(sd->subject.host);
 	return ESPANK_SUCCESS;
 }
@@ -220,7 +228,7 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
  *
  */
 
-int plug_deserialize_local(spank_t sp, plug_job_t *job)
+int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_env_readuser");
 
@@ -228,11 +236,17 @@ int plug_deserialize_local(spank_t sp, plug_job_t *job)
  	 * EAR variables
  	 */
 	#define replace(name) \
-		unsetenv_agnostic(sp, "EAR_" name); \
 		repenv_agnostic  (sp, "PLUG_" name, "EAR_" name);
 
 	replace("LEARNING_PHASE");
+slurm_error("EAR_POWER_POLICY %s", getenv("EAR_POWER_POLICY"));
+slurm_error("PLUG_POWER_POLICY %s", getenv("PLUG_POWER_POLICY"));
+printenv_agnostic(sp, "EAR_POWER_POLICY");
+printenv_agnostic(sp, "PLUG_POWER_POLICY");
 	replace("POWER_POLICY");
+slurm_error("EAR_POWER_POLICY %s", getenv("EAR_POWER_POLICY"));
+printenv_agnostic(sp, "EAR_POWER_POLICY");
+printenv_agnostic(sp, "PLUG_POWER_POLICY");
 	replace("POWER_POLICY_TH");
 	replace("P_STATE");
 	replace("FREQUENCY");
@@ -258,12 +272,12 @@ int plug_deserialize_local(spank_t sp, plug_job_t *job)
 		return (ESPANK_ERROR);
 	}
 
-	strncpy(sd->job.user.user, upw->pw_name, SZ_NAME_MEDIUM);
+	strncpy(sd->job.user.user,  upw->pw_name, SZ_NAME_MEDIUM);
 	strncpy(sd->job.user.group, gpw->gr_name, SZ_NAME_MEDIUM);
 
 	getenv_agnostic(sp, "SLURM_JOB_ACCOUNT", sd->job.user.account, SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, "LD_LIBRARY_PATH", sd->job.ld_library, SZ_PATH);
-	getenv_agnostic(sp, "LD_PRELOAD", sd->job.ld_preload, SZ_PATH);
+	getenv_agnostic(sp, "LD_LIBRARY_PATH", sd->job.user.env.ld_library, SZ_PATH);
+	getenv_agnostic(sp, "LD_PRELOAD", sd->job.user.env.ld_preload, SZ_PATH);
 
 	plug_verbose(sp, 2, "user '%u' ('%s')", uid, sd->job.user.user);
 	plug_verbose(sp, 2, "user group '%u' ('%s')", gid, sd->job.user.group);
@@ -280,6 +294,8 @@ int plug_deserialize_local(spank_t sp, plug_job_t *job)
 
 int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 {
+	plug_verbose(sp, 2, "function plug_serialize_remote");
+	
 	/*
 	 * User
 	 */
@@ -302,6 +318,8 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 
 int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 {
+	plug_verbose(sp, 2, "function plug_deserialize_remote");
+	
 	/*
 	 * User
 	 */
@@ -326,6 +344,8 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 
 int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 {
+	plug_verbose(sp, 2, "function plug_serialize_task");
+	
 	/*
   	 * EAR variables
   	 */
@@ -342,7 +362,7 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	snprintf(buffer, 16, "%lu", setts->def_freq);
 	setenv_agnostic(sp, "EAR_FREQUENCY", buffer, 1);
 
-	if(!policy_id_to_name(setts->policy, buffer) == EAR_ERROR) {
+	if(policy_id_to_name(setts->policy, buffer) != EAR_ERROR) {
 		setenv_agnostic(sp, "EAR_POWER_POLICY", buffer, 1);
 	}
 
@@ -366,13 +386,13 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	 * LD_PRELOAD
 	 */
 	getenv_agnostic(sp, "LD_PRELOAD", sd->job.user.env.ld_preload, SZ_PATH);
-	apenv_agnostic(sd->job.ld_preload, sd->pack.path_inst, SZ_PATH);
+	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, SZ_PATH);
 
 	// Appending libraries to LD_PRELOAD
 	if (isenv_agnostic(sp, "EAR_MPI_DIST", "openmpi")) {
-		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.ld_preload, OMPI_C_LIB_PATH);
+		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH);
 	} else {
-		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.ld_preload, IMPI_C_LIB_PATH);
+		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH);
 	}
 
 	setenv_agnostic(sp, "LD_PRELOAD", buffer, 1);

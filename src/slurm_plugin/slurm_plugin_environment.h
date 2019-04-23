@@ -27,40 +27,50 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef EAR_SLURM_PLUGIN_HELPER_H
-#define EAR_SLURM_PLUGIN_HELPER_H
+#ifndef EAR_SLURM_PLUGIN_ENVIRONMENT_H
+#define EAR_SLURM_PLUGIN_ENVIRONMENT_H
+
+// Verbosity
+#define plug_verbose(sp, level, ...) \
+        if (plug_verbosity_test(sp, level) == 1) { \
+                slurm_error("EARPLUG, " __VA_ARGS__); \
+        }
+#define plug_error(sp, ...) \
+        if (plug_verbosity_test(sp, 1) == 1) { \
+                slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
+        }
 
 typedef char *plug_component_t;
 typedef int   plug_context_t;
 
-struct component {
+struct component_s {
 	plug_component_t plugin;
 	plug_component_t library;
 	plug_component_t monitor;
-} Component = {
-		.plugin  = "PLUG_PLUGIN",
-		.library = "PLUG_LIBRARY",
-		.monitor = "PLUG_MONITOR"
+} Component __attribute__((weak)) = {
+	.plugin  = "PLUG_PLUGIN",
+	.library = "PLUG_LIBRARY",
+	.monitor = "PLUG_MONITOR"
 };
 
-struct context {
-	int srun;
-	int sbatch;
-	int remote;
-} Context = {
-		.srun   = S_CTX_LOCAL,
-		.sbatch = S_CTX_ALLOCATOR,
-		.remote = S_CTX_REMOTE,
-		.local  = -1;
+struct context_s {
+	plug_context_t srun;
+	plug_context_t sbatch;
+	plug_context_t remote;
+	plug_context_t local;
+} Context __attribute__((weak)) = {
+	.srun   = S_CTX_LOCAL,
+	.sbatch = S_CTX_ALLOCATOR,
+	.remote = S_CTX_REMOTE,
+	.local  = -1
 };
 
 /*
  * Agnostic environment manipulation
  */
-
 int unsetenv_agnostic(spank_t sp, char *var);
 
-int setenv_agnostic(spank_t sp, char *var, char *val, int ow);
+int setenv_agnostic(spank_t sp, char *var, const char *val, int ow);
 
 int getenv_agnostic(spank_t sp, char *var, char *buf, int len);
 
@@ -70,11 +80,13 @@ int repenv_agnostic(spank_t sp, char *var_old, char *var_new);
 
 int apenv_agnostic(char *dst, char *src, int len);
 
+int exenv_agnostic(spank_t sp, char *var);
+
+void printenv_agnostic(spank_t sp, char *var);
 
 /*
  * Components
  */
-
 int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled);
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp);
@@ -87,7 +99,6 @@ int plug_context_is(spank_t sp, plug_context_t ctxt);
 /*
  * Verbosity
  */
-
 int plug_verbosity_test(spank_t sp, int level);
 
-#endif //EAR_SLURM_PLUGIN_HELPER_H
+#endif //EAR_SLURM_PLUGIN_ENVIRONMENT_H

@@ -44,7 +44,7 @@ static int setenv_local(const char *var, const char *val, int ow)
     return 1;
 }
 
-static int setenv_remote(spank_t sp, char *var, char *val, int ow)
+static int setenv_remote(spank_t sp, char *var, const char *val, int ow)
 {
 	if (var == NULL || val == NULL) {
 		return 0;
@@ -183,7 +183,7 @@ int unsetenv_agnostic(spank_t sp, char *var)
 	}
 }
 
-int setenv_agnostic(spank_t sp, char *var, char *val, int ow)
+int setenv_agnostic(spank_t sp, char *var, const char *val, int ow)
 {
 	if (sp == NULL || plug_context_is(sp, Context.local)) {
 		return setenv_local(var, val, ow);
@@ -252,6 +252,23 @@ int apenv_agnostic(char *dst, char *src, int dst_capacity)
 	return 1;
 }
 
+int exenv_agnostic(spank_t sp, char *var)
+{
+	if (sp == NULL || plug_context_is(sp, Context.local)) {
+		return exenv_local(var);
+        } else {
+		return exenv_remote(sp, var);
+	}
+}
+
+void printenv_agnostic(spank_t sp, char *var)
+{
+	if (!getenv_agnostic(sp, var, buffer, SZ_PATH)) {
+		sprintf(buffer, "NULL");
+	}
+	plug_verbose(sp, 2, "%s = '%s'", var, buffer);
+}
+
 /*
  * Component
  */
@@ -289,13 +306,16 @@ int plug_context_is(spank_t sp, plug_context_t ctxt)
 int plug_verbosity_test(spank_t sp, int level)
 {
 	static int verbosity = -1;
-
+	
 	if (verbosity == -1)
 	{
-		if (getenv_agnostic(sp, "EAR_PLUGIN_VERBOSE", buffer, 8) == 1) {
+		if (getenv_agnostic(sp, "PLUG_VERBOSE", buffer, 8) == 1) {
 			verbosity = atoi(buffer);
 		} else {
 			verbosity = 0;
+		}
+		
+		if (getenv_agnostic(sp, "PLUG_VERBOSE_LIMIT", buffer, 8) == 1) {
 		}
 	}
 

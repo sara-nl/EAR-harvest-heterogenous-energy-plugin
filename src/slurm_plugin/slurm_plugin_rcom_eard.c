@@ -27,29 +27,27 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_rcom.h>
-#include <slurm_plugin/slurm_plugin_environment.h>
 
 // Buffers
 static char buffer[SZ_PATH];
 
 static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 {
+	int port = sd->pack.eard.servs.eard.port;
 	char *node;
 
-	while ((node = slurm_hostlist_shift(job->hostlist)) != NULL)
+	while ((node = slurm_hostlist_shift(sd->pack.eard.hostlist)) != NULL)
 	{
-		plug_verbose(sp, 2, "remote connect to host: '%s:%d'",
-			node, sd->pack.eard.port);
+		plug_verbose(sp, 2, "connecting to EARD: '%s:%d'", node, port);
 
-		if (eards_remote_connect(node, sd->pack.eard.port) < 0) {
+		if (eards_remote_connect(node, port) < 0) {
 			plug_error(sp, "while connecting with EAR daemon");
 			continue;
 		}
 
 		if (new_job) {
-			eards_new_job(sd->job.app);
+			eards_new_job(&sd->job.app);
 		} else {
 			eards_end_job(sd->job.app.job.id, sd->job.app.job.step_id);
 		}

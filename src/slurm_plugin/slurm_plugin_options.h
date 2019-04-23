@@ -30,6 +30,10 @@
 #ifndef EAR_SLURM_PLUGIN_OPTIONS_H
 #define EAR_SLURM_PLUGIN_OPTIONS_H
 
+#define plug_error_0(...)
+#define plug_nude(...) \
+	plug_verbose(NULL, 2, __VA_ARGS__);
+
 int _opt_register(spank_t sp);
 int _opt_ear (int val, const char *optarg, int remote);
 int _opt_ear_learning (int val, const char *optarg, int remote);

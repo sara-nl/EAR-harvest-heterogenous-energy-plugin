@@ -41,9 +41,6 @@
 	if (plug_verbosity_test(sp, 1) == 1) { \
 		slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
 	}
-#define plug_error_0(...) \
-		slurm_error("EARPLUG ERROR, " __VA_ARGS__);
-#define plug_nude(...)
 
 /*
  * Reading function
@@ -57,7 +54,7 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd);
 /*
  * Serialization functions
  */
-int plug_deserialize_local(spank_t sp, plug_job_t *job);
+int plug_deserialize_local(spank_t sp, plug_serialization_t *sd);
 
 int plug_serialize_remote(spank_t sp, plug_serialization_t *sd);
 

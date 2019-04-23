@@ -28,12 +28,11 @@
 */
 
 #include <slurm_plugin/slurm_plugin.h>
-#include <slurm_plugin/slurm_plugin_env.h>
-#include <slurm_plugin/slurm_plugin_helper.h>
+#include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 
 #define SRUN_OPTIONS	10
-#define ENV_LIB_EN		"PLUG_LIBRARY"
+#define ENV_LIB_EN	"PLUG_LIBRARY"
 
 static char buffer[SZ_PATH];
 
@@ -86,7 +85,7 @@ int _opt_register(spank_t sp)
 	int length;
 	int i;
 
-	length = SRUN_OPTIONS - !exenv_local("EAR_GUI");
+	length = SRUN_OPTIONS - !exenv_agnostic(sp, "EAR_GUI");
 
 	for (i = 0; i < length; ++i)
 	{
@@ -169,15 +168,15 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 		strtoup(buffer);
 
 		if (policy_name_to_id(buffer) < 0) {
-			plug_error_0("Invalid policy '%s'", buffer);
-			return (ESPANK_STOP);
+			plug_nude("Invalid policy '%s'", buffer);
+			return ESPANK_STOP;
 		}
 
 		setenv_agnostic(NULL, "PLUG_POWER_POLICY", buffer, 1);
 		setenv_agnostic(NULL, ENV_LIB_EN, "1", 1);
 	}
 
-	return (ESPANK_SUCCESS);
+	return ESPANK_SUCCESS;
 }
 
 int _opt_ear_frequency (int val, const char *optarg, int remote)

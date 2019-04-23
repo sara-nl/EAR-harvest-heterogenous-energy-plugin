@@ -1,0 +1,20 @@
+ibm.o: ibm.c ../../../common/output/debug.h \
+ ../../../common/output/verbose.h ../../../common/output/output_conf.h \
+ ../../../metrics/custom/hardware_info.h ../../../common/file.h \
+ ../../../common/sizes.h ../../../common/states.h \
+ ../../../common/types/generic.h ../../../metrics/common/cpuid.h \
+ ../../../metrics/common/syscall.h
+lenovo_sd650.o: lenovo_sd650.c ../../../common/config.h \
+ ../../../common/config/config_def.h ../../../common/config/config_dev.h \
+ ../../../common/config/config_install.h ../../../common/states.h \
+ ../../../common/output/debug.h ../../../common/output/error.h \
+ ../../../common/output/output_conf.h ../../../common/output/verbose.h \
+ ../../../metrics/custom/hardware_info.h ../../../common/file.h \
+ ../../../common/sizes.h ../../../common/types/generic.h \
+ ../../../metrics/common/cpuid.h ../../../metrics/common/syscall.h
+lenovo_nm.o: lenovo_nm.c ../../../common/states.h \
+ ../../../common/output/debug.h ../../../common/output/verbose.h \
+ ../../../common/output/output_conf.h \
+ ../../../metrics/custom/hardware_info.h ../../../common/file.h \
+ ../../../common/sizes.h ../../../common/types/generic.h \
+ ../../../metrics/common/cpuid.h ../../../metrics/common/syscall.h

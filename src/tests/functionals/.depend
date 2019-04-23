@@ -1,0 +1,8 @@
+ear_conf.o: ear_conf.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/states.h \
+ ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/generic.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h

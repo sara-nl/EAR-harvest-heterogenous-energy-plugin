@@ -30,8 +30,8 @@ plug_HDRS = slurm_plugin.h \
 
 ######## RULES
 
-#all: $(plug_BINS)
-all: slurm_plugin.o slurm_plugin_environment.o slurm_plugin_options.o \
+all: $(plug_BINS)
+#all: slurm_plugin.o slurm_plugin_environment.o slurm_plugin_options.o \
 	slurm_plugin_rcom_eard.o slurm_plugin_rcom_eargmd.o slurm_plugin_rcom_shared.o \
 	slurm_plugin_serialization.o
 

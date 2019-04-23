@@ -1,0 +1,6 @@
+power_metrics.o: power_metrics.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/math_operations.h \
+ ../../metrics/msr/energy_cpu.h \
+ ../../metrics/power_metrics/power_metrics.h ../../common/states.h \
+ ../../metrics/ipmi/energy_node.h

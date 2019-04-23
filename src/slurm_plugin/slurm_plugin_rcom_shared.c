@@ -27,18 +27,18 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_rcom.h>
 
 // Buffers
 static char buffer[SZ_PATH];
 
-int plug_shared_readservs(spank_t sp, plug_package_t *pack, plug_job_t *job)
+int plug_shared_readservs(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_shared_readservs");
 
 	services_conf_t *servs;
 
-	get_services_conf_path(pack->path_tmp, buffer);
+	get_services_conf_path(sd->pack.path_temp, buffer);
 	servs = attach_services_conf_shared_area(buffer);
 
 	if (servs == NULL) {
@@ -46,21 +46,21 @@ int plug_shared_readservs(spank_t sp, plug_package_t *pack, plug_job_t *job)
 		return ESPANK_ERROR;
 	}
 
-	memcpy(&pack->eard.servs, servs, sizeof(services_conf_t));
-	pack->eards.port = servs->eard.port;
+	memcpy(&sd->pack.eard.servs, servs, sizeof(services_conf_t));
+	sd->pack.eard.port = servs->eard.port;
 	dettach_services_conf_shared_area();
 
 	return ESPANK_SUCCESS;
 }
 
-int plug_shared_readfreqs(spank_t sp, plug_package_t *pack, plug_job_t *job)
+int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_shared_readfreqs");
 
 	ulong *freqs;
 	int n_freqs;
 
-	get_frequencies_path(pack->path_tmp, buffer);
+	get_frequencies_path(sd->pack.path_temp, buffer);
 	freqs = attach_frequencies_shared_area(buffer, &n_freqs);
 
 	if (freqs == NULL) {
@@ -68,23 +68,23 @@ int plug_shared_readfreqs(spank_t sp, plug_package_t *pack, plug_job_t *job)
 		return ESPANK_ERROR;
 	}
 
-	pack->eard.freqs.n_freqs = n_freqs / sizeof(ulong);
-	malloc(&pack->eard.freqs.freqs, n_freqs * sizeof(ulong));
-	memcpy(&pack->eard.freqs.freqs, freqs, n_freqs * sizeof(ulong));
+	sd->pack.eard.freqs.n_freqs = n_freqs / sizeof(ulong);
+	sd->pack.eard.freqs.freqs = malloc(n_freqs * sizeof(ulong));
+	memcpy(&sd->pack.eard.freqs.freqs, freqs, n_freqs * sizeof(ulong));
 
 	dettach_frequencies_shared_area();
 
 	return ESPANK_SUCCESS;
 }
 
-int plug_shared_readsetts(spank_t sp, plug_package_t *pack, plug_job_t *job)
+int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_shared_readsetts");
 
 	settings_conf_t *setts;
 
 	// Opening settings
-	get_settings_conf_path(pack->path_tmp, buffer);
+	get_settings_conf_path(sd->pack.path_temp, buffer);
 	setts = attach_settings_conf_shared_area(buffer);
 
 	if (setts == NULL) {
@@ -92,7 +92,7 @@ int plug_shared_readsetts(spank_t sp, plug_package_t *pack, plug_job_t *job)
 		return ESPANK_ERROR;
 	}
 
-	memcpy(&pack->eard.setts, setts, sizeof(settings_conf_t));
+	memcpy(&sd->pack.eard.setts, setts, sizeof(settings_conf_t));
 
 	if (plug_verbosity_test(sp, 4)) {
 		print_settings_conf(setts);

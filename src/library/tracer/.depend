@@ -1,0 +1,10 @@
+tracer_mpi.o: tracer_mpi.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/file.h \
+ ../../common/sizes.h ../../common/states.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../library/tracer/tracer_mpi.h
+tracer.o: tracer.c ../../common/sizes.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/output/verbose.h \
+ ../../common/output/output_conf.h ../../library/tracer/tracer.h \
+ ../../common/types/generic.h

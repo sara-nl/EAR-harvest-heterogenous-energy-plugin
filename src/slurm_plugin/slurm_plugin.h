@@ -42,7 +42,7 @@
 #include <daemon/shared_configuration.h>
 #include <global_manager/eargm_rapi.h>
 
-#define ESPANK_STOP		-1
+#define ESPANK_STOP	-1
 
 /*
  * Job data

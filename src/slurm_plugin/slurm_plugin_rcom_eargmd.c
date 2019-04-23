@@ -27,13 +27,12 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <slurm_plugin/slurm_plugin_env.h>
 #include <slurm_plugin/slurm_plugin_rcom.h>
 
 // Externs
 static char buffer[SZ_PATH];
 
-int plug_rcom_eargmd_job_start(spank_t sp, plug_package_t *pack, plug_job_t *job)
+int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_start");
 
@@ -42,47 +41,47 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_package_t *pack, plug_job_t *job
 
 	// Pack deserialization
 	getenv_agnostic(sp, "EARGMD_CONNECTED", buffer, SZ_PATH);
-	pack->eargmd.connected = atoi(buffer);
+	sd->pack.eargmd.connected = atoi(buffer);
 
-	if (pack->eargmd.enabled && !pack->eargmd.connected) {
+	if (sd->pack.eargmd.enabled && !sd->pack.eargmd.connected) {
 		return ESPANK_ERROR;
 	}
 
 	// Verbosity
 	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",
-		pack->eargmd.host, pack->eargmd.port, job->n_nodes);
+		sd->pack.eargmd.host, sd->pack.eargmd.port, sd->job.n_nodes);
 
 	// Connection
-	if (eargm_connect(pack->eargmd.host, pack->eargmd.port) < 0) {
+	if (eargm_connect(sd->pack.eargmd.host, sd->pack.eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
-	if (!eargm_new_job(job->n_nodes)) {
+	if (!eargm_new_job(sd->job.n_nodes)) {
 		plug_error(sp, "while speaking with EAR global manager daemon");
 	}
 	eargm_disconnect();
 
 	// Informing that this report has to be finished
-	pack->eargmd.connected = 1;
+	sd->pack.eargmd.connected = 1;
 
 	// Enabling protection
 	setenv_agnostic(sp, "EARGMD_CONNECTED", "1", 1);
 
-	return (ESPANK_SUCCESS);
+	return ESPANK_SUCCESS;
 }
 
-int plug_rcom_eargmd_job_finish(spank_t sp, plug_package_t *pack, plug_job_t *job)
+int plug_rcom_eargmd_job_finish(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_finish");
 
 	// Disabled
 	return ESPANK_SUCCESS;
 
-	if (eargm_connect(pack->eargmd.host, pack->eargmd.port) < 0) {
+	if (eargm_connect(sd->pack.eargmd.host, sd->pack.eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
-	if (!eargm_end_job(job->n_nodes)) {
+	if (!eargm_end_job(sd->job.n_nodes)) {
 		plug_error(sp, "while speaking with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
@@ -91,5 +90,5 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_package_t *pack, plug_job_t *jo
 	// Disabling protection
 	setenv_agnostic(sp, "EARGMD_CONNECTED", "0", 1);
 
-	return (ESPANK_SUCCESS);
+	return ESPANK_SUCCESS;
 }
