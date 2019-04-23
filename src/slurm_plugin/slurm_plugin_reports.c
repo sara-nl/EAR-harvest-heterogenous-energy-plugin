@@ -65,7 +65,7 @@ int remote_read_shared_data_set_environment(spank_t sp)
 	settings_conf_t *conf_sett = NULL;
 
 	// Getting TMP path
-	getenv_remote(sp, "PLG_PATH_TMP", buffer1, sizeof(buffer1));
+	getenv_remote(sp, "SLURM_EAR_PATH_TEMP", buffer1, sizeof(buffer1));
 
 	// Opening settings
 	get_settings_conf_path(buffer1, buffer2);
@@ -80,27 +80,27 @@ int remote_read_shared_data_set_environment(spank_t sp)
 		print_settings_conf(conf_sett);
 	}
 
-	// Variable EAR and LD_PRELOAD
+	// Variable EAR and SLURM_LD_PRELOAD
 	if (!conf_sett->lib_enabled || conf_sett->user_type == ENERGY_TAG)
 	{
 		dettach_settings_conf_shared_area();
 		return (ESPANK_ERROR);
 	}
 
-	// Variable EAR_ENERGY_TAG, unset
+	// Variable SLURM_EAR_ENERGY_TAG, unset
 	if (conf_sett->user_type != ENERGY_TAG) {
-		unsetenv_remote(sp, "EAR_ENERGY_TAG");
+		unsetenv_remote(sp, "SLURM_EAR_ENERGY_TAG");
 	}
 
-	// Variable EAR_P_STATE
+	// Variable SLURM_EAR_P_STATE
 	snprintf(buffer2, 16, "%u", conf_sett->def_p_state);
 	setenv_remote(sp, "EAR_P_STATE", buffer2, 1);
 
-	// Variable EAR_FREQUENCY
+	// Variable SLURM_EAR_FREQUENCY
 	snprintf(buffer2, 16, "%lu", conf_sett->def_freq);
 	setenv_remote(sp, "EAR_FREQUENCY", buffer2, 1);
 
-	// Variable EAR_POWER_POLICY, overwrite
+	// Variable SLURM_EAR_POWER_POLICY, overwrite
 	if(policy_id_to_name(conf_sett->policy, buffer2) == EAR_ERROR)
 	{
 		// Closing shared memory
@@ -110,12 +110,12 @@ int remote_read_shared_data_set_environment(spank_t sp)
 	}
 	setenv_remote(sp, "EAR_POWER_POLICY", buffer2, 1);
 
-	// Variable EAR_POWER_POLICY_TH, overwrite
+	// Variable SLURM_SLURM_EAR_POWER_POLICY_TH, overwrite
 	snprintf(buffer2, 8, "%0.2f", conf_sett->th);
 	setenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
 	setenv_remote(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
 
-	// Variable EAR_LEARNING and EAR_P_STATE
+	// Variable EAR_LEARNING and SLURM_EAR_P_STATE
 	if(!conf_sett->learning) {
 		unsetenv_remote(sp, "EAR_P_STATE");
 		unsetenv_remote(sp, "EAR_LEARNING_PHASE");
@@ -125,7 +125,7 @@ int remote_read_shared_data_set_environment(spank_t sp)
 	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
 		setenv_remote(sp, "EAR_APP_NAME", buffer2, 1);
 	}
-	if (getenv_remote(sp, "PLG_PATH_TMP", buffer2, sizeof(buffer2)) == 1) {
+	if (getenv_remote(sp, "SLURM_EAR_PATH_TEMP", buffer2, sizeof(buffer2)) == 1) {
 		setenv_remote(sp, "EAR_TMP", buffer2, 1);
 	}
 
@@ -158,7 +158,7 @@ int remote_eard_report_start(spank_t sp)
 	uint32_t aux_val;
 
 	// General variables
-	getenv_remote(sp, "PLG_PATH_TMP", buffer1, sizeof(buffer1));
+	getenv_remote(sp, "SLURM_EAR_PATH_TEMP", buffer1, sizeof(buffer1));
 	gethostname(eard_host, SZ_NAME_MEDIUM);
 
 	// Opening shared services memory
@@ -187,7 +187,7 @@ int remote_eard_report_start(spank_t sp)
 	init_application(&eard_appl);
 
 	// Gathering variables
-	if (!getenv_remote(sp, "EAR_LIBRARY", buffer1, SZ_NAME_SHORT)) {
+	if (!getenv_remote(sp, "SLURM_EAR_LIBRARY", buffer1, SZ_NAME_SHORT)) {
 		eard_appl.is_mpi = 0;
 	} else {
 		if (strcmp(buffer1,"0") == 0) {
@@ -209,10 +209,10 @@ int remote_eard_report_start(spank_t sp)
 	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", eard_appl.job.user_acc, SZ_NAME_SHORT)) {
 		strcpy(eard_appl.job.user_acc, "");
 	}
-	if (!getenv_remote(sp, "EAR_USER", eard_appl.job.user_id, SZ_NAME_MEDIUM)) {
+	if (!getenv_remote(sp, "SLURM_EAR_USER", eard_appl.job.user_id, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.user_id, "");
 	}
-	if (!getenv_remote(sp, "EAR_GROUP", eard_appl.job.group_id, SZ_NAME_MEDIUM)) {
+	if (!getenv_remote(sp, "SLURM_EAR_GROUP", eard_appl.job.group_id, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.group_id, "");
 	}
 	if (!getenv_remote(sp, "SLURM_JOB_NAME",  eard_appl.job.app_id, SZ_NAME_MEDIUM)) {
@@ -221,15 +221,15 @@ int remote_eard_report_start(spank_t sp)
 	if (!getenv_remote(sp, "SLURM_JOB_ACCOUNT", eard_appl.job.user_acc, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.user_acc, "");
 	}
-	if (!getenv_remote(sp, "EAR_POWER_POLICY", eard_appl.job.policy, SZ_NAME_MEDIUM)) {
+	if (!getenv_remote(sp, "SLURM_EAR_POWER_POLICY", eard_appl.job.policy, SZ_NAME_MEDIUM)) {
 		strcpy(eard_appl.job.policy, "");
 	}
-	if (!getenv_remote(sp, "EAR_POWER_POLICY_TH", buffer1, SZ_NAME_SHORT)) {
+	if (!getenv_remote(sp, "SLURM_SLURM_EAR_POWER_POLICY_TH", buffer1, SZ_NAME_SHORT)) {
 		eard_appl.job.th = -1.0;
 	} else {
 		eard_appl.job.th = atof(buffer1);
 	}
-	if (!getenv_remote(sp, "EAR_FREQUENCY", buffer1, SZ_NAME_MEDIUM)) {
+	if (!getenv_remote(sp, "SLURM_EAR_FREQUENCY", buffer1, SZ_NAME_MEDIUM)) {
 		eard_appl.job.def_f = 0;
 	} else {
 		eard_appl.job.def_f = (ulong) atol(buffer1);
@@ -237,13 +237,13 @@ int remote_eard_report_start(spank_t sp)
 			eard_appl.job.def_f = 0;
 		}
 	}
-	if (!getenv_remote(sp, "EAR_LEARNING_PHASE", buffer1, SZ_NAME_MEDIUM)) {
+	if (!getenv_remote(sp, "SLURM_EAR_LEARNING_PHASE", buffer1, SZ_NAME_MEDIUM)) {
 		eard_appl.is_learning = 0;
 	} else {
 		eard_appl.is_learning = 1;
 		eard_appl.job.def_f = frequencies[atoi(buffer1)];
 	}
-	if (!getenv_remote(sp, "EAR_ENERGY_TAG", eard_appl.job.energy_tag, 32)) {
+	if (!getenv_remote(sp, "SLURM_EAR_ENERGY_TAG", eard_appl.job.energy_tag, 32)) {
 		strcpy(eard_appl.job.energy_tag, "");
 	}
 
@@ -307,7 +307,7 @@ int local_eargmd_report_start(spank_t sp)
 	char *c_eargmd_nods;
 
 	// Not enabled
-	if (!eargmd_enbl || isenv_local("EARGMD_CONNECTED", "1")) {
+	if (!eargmd_enbl || isenv_local("SLURM_EARGMD_CONNECTED", "1")) {
 		return ESPANK_SUCCESS;
 	}
 
@@ -333,7 +333,7 @@ int local_eargmd_report_start(spank_t sp)
 	eargmd_conn = 1;
 
 	// Informing that no nested process has to connect to EARGMD again
-	setenv_local("EARGMD_CONNECTED", "1", 1);
+	setenv_local("SLURM_EARGMD_CONNECTED", "1", 1);
 
 	return (ESPANK_SUCCESS);
 }
@@ -347,7 +347,7 @@ int local_eargmd_report_finish(spank_t sp)
 		return ESPANK_SUCCESS;
 	} else {
 		// Disabling protection
-		setenv_local("EARGMD_CONNECTED", "0", 1);
+		setenv_local("SLURM_EARGMD_CONNECTED", "0", 1);
 	}
 
 	if (eargm_connect(eargmd_host, eargmd_port) < 0) {

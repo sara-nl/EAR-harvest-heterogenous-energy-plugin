@@ -59,13 +59,13 @@ int verbosity_test(spank_t sp, int level)
 
 	if (verbosity == -1) {
 		if (spank_remote(sp)) {
-			if (getenv_remote(sp, "EAR_PLUGIN_VERBOSE", env_remote, 8) == 1) {
+			if (getenv_remote(sp, "SLURM_PLUGIN_VERBOSE", env_remote, 8) == 1) {
 				verbosity = atoi(env_remote);
 			} else {
 				verbosity = 0;
 			}
 		} else {
-			if (getenv_local("EAR_PLUGIN_VERBOSE", &env_local) == 1) {
+			if (getenv_local("SLURM_PLUGIN_VERBOSE", &env_local) == 1) {
 				verbosity = atoi(env_local);
 			} else {
 				verbosity = 0;
